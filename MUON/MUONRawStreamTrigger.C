@@ -31,6 +31,9 @@
 #include "AliMUONRegHeader.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONDDLTrigger.h"
+#include "AliMUONTriggerCrateStore.h"
+#include "AliMUONTriggerCrate.h"
+#include "AliMUONLocalTriggerBoard.h"
 
 #endif
 
@@ -46,7 +49,7 @@
 // The class AliMUONDDLTrigger manages the structure containers.
 // The number of structures in the rawdata file could be set.
 
-void MUONRawStreamTrigger(Int_t maxEvent = 1000, Int_t minDDL = 0, Int_t maxDDL = 1, TString fileName = "./")
+void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1, TString fileName = "./")
 {
    AliRawReader* rawReader = 0x0;
 
@@ -73,6 +76,10 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1000, Int_t minDDL = 0, Int_t maxDDL 
    AliMUONDarcHeader*       darcHeader  = 0x0;
    AliMUONRegHeader*        regHeader   = 0x0;
    AliMUONLocalStruct*      localStruct = 0x0;
+
+   // crate manager
+   AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();   
+   crateManager->ReadFromFile();
 
    // Loop over events  
    Int_t iEvent = 0;
@@ -106,6 +113,10 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1000, Int_t minDDL = 0, Int_t maxDDL 
 	 regHeader =  darcHeader->GetRegHeaderEntry(iReg);
 	 //  printf("Reg length %d\n",regHeader->GetHeaderLength());
 
+	 // crate info
+	 AliMUONTriggerCrate* crate = crateManager->Crate(rawStream->GetDDL(), iReg);
+	 TObjArray *boards = crate->Boards();
+
 	 // loop over local structures
 	 Int_t nLocal = regHeader->GetLocalEntries();
 	 for(Int_t iLocal = 0; iLocal < nLocal; iLocal++) {  
@@ -115,13 +126,17 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1000, Int_t minDDL = 0, Int_t maxDDL 
 	   // check if trigger 
 	   if (localStruct->GetTriggerY() == 0) { // no empty data
 
-	     printf("LocalId %d\n", localStruct->GetId());
+	       // local trigger circuit number
+	       AliMUONLocalTriggerBoard* localBoard = (AliMUONLocalTriggerBoard*)boards->At(iLocal+1);
 
-	     Int_t loStripX  = (Int_t)localStruct->GetXPos();
-	     Int_t loStripY  = (Int_t)localStruct->GetYPos();
-	     Int_t loDev     = (Int_t)localStruct->GetXDev();
+	       printf("LocalId %d\n", localStruct->GetId());
+
+	       Int_t iLocCard = localBoard->GetNumber();
+	       Int_t loStripX  = (Int_t)localStruct->GetXPos();
+	       Int_t loStripY  = (Int_t)localStruct->GetYPos();
+	       Int_t loDev     = (Int_t)localStruct->GetXDev();
 	    
-	     printf("XPos: %d, YPos: %d Dev: %d\n", loStripX, loStripY, loDev);
+	     printf("iLocCard: %d, XPos: %d, YPos: %d Dev: %d\n", iLocCard, loStripX, loStripY, loDev);
 	   }
 	 } // iLocal
        } // iReg
