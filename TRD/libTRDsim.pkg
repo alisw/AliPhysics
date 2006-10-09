@@ -1,5 +1,4 @@
 SRCS= AliTRDhit.cxx \
-      AliTRDtrackHits.cxx \
       AliTRDpoints.cxx \
       AliTRDsim.cxx \
       AliTRD.cxx \

@@ -9,7 +9,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliTRDhit+;
-#pragma link C++ class  AliTRDtrackHits+;
 #pragma link C++ class  AliTRDpoints+;
 #pragma link C++ class  AliTRDsim+;
 #pragma link C++ class  AliTRD+;
