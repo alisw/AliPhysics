@@ -31,6 +31,12 @@ ifndef ALIQUIET
 endif
 		$(MUTE)rm -f `find @MODULE@/check -name '*.i'` `find @MODULE@/check -name '*.ii'` `find @MODULE@/check -name '*.viol'`
 
+clean-smell-@MODULE@:
+ifndef ALIQUIET
+		@echo "***** Cleaning code smell for @MODULE@ *****"
+endif
+		$(MUTE)rm -f `find @MODULE@/check -name '*.ml'` `find @MODULE@/check -name '*.smell'`
+
 clean-reveng-@MODULE@:
 ifndef ALIQUIET
 		@echo "***** Cleaning reverse engineering files for @MODULE@ *****"
