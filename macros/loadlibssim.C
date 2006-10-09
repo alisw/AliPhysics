@@ -14,8 +14,8 @@ void loadlibssim ()
   // Waiting for a better solution
   //  gSystem->Load("libg2c_sh");
   gSystem->Load("libmicrocern");
-  gSystem->Load("libpdf");
   gSystem->Load("libpythia6");
+  gSystem->Load("libpdf");
 
   gSystem->Load("libEG");
   gSystem->Load("libGeom");
