@@ -36,6 +36,8 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
+#include "AliTracker.h"
+#include "AliMagFMaps.h"
 
 // MUON includes
 #include "AliMUON.h"
@@ -50,6 +52,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTriggerConstants.h"
 #include "AliMUONTriggerCircuitNew.h"
+#include "AliMUONTriggerCrateStore.h"
 
 #include "AliMpVSegmentation.h"
 #include "AliMpIntPair.h"
@@ -220,6 +223,7 @@ void MUONsdigits(Int_t event2Check=0, char * filename="galice.root")
     if (event2Check!=0) ievent=nevents;
   }  // end event loop
   MUONLoader->UnloadSDigits();
+
 }
 
 void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filename="galice.root") {
@@ -452,9 +456,25 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     return;
   }
 
-  // Loading MUON subsystem
-  RunLoader->LoadgAlice();
-  AliMUON* pMUON = (AliMUON*)RunLoader->GetAliRun()->GetModule("MUON");
+  AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();   
+  crateManager->ReadFromFile();
+
+  AliMpSegFactory* segFactory = new AliMpSegFactory();
+    
+  AliMUONGeometryTransformer* transformer = new AliMUONGeometryTransformer(kFALSE);
+  transformer->ReadGeometryData("volpath.dat", "geometry.root");
+
+  TClonesArray*  triggerCircuit = new TClonesArray("AliMUONTriggerCircuitNew", 234);
+
+  for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
+      AliMUONTriggerCircuitNew* c = new AliMUONTriggerCircuitNew();
+      c->SetSegFactory(segFactory);
+      c->SetTransformer(transformer);
+      c->Init(i,*crateManager);
+      TClonesArray& circuit = *triggerCircuit;
+      new(circuit[circuit.GetEntriesFast()])AliMUONTriggerCircuitNew(*c);
+      delete c;
+  }
   
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadDigits("READ");
@@ -511,7 +531,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
       if (PRINTOUT) locTrg->Print("full");
       
-      AliMUONTriggerCircuitNew * circuit = &(pMUON->TriggerCircuitNew(locTrg->LoCircuit()-1));
+      AliMUONTriggerCircuitNew* circuit = (AliMUONTriggerCircuitNew*)triggerCircuit->At(locTrg->LoCircuit()-1); 
       
       TgtupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),locTrg->LoApt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
     } // end of loop on Local Trigger
@@ -527,6 +547,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   
   // Print out summary if loop ran over all event
   if (!event2Check){
+
     printf("\n");
     printf("===================================================\n");
     printf("===================  SUMMARY  =====================\n");
@@ -550,6 +571,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     printf("%i\t%i\t%i\t",LSLowpt,LSHighpt, LSAllpt);
     printf("\n");
     printf("===================================================\n");
+    fflush(stdout);
   }
   
   if (WRITE){
@@ -560,6 +582,12 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   }
 
   MUONLoader->UnloadRecPoints();
+
+  delete crateManager;
+  delete segFactory;
+  delete transformer;
+  delete triggerCircuit;
+  
 }
 
 
@@ -573,7 +601,12 @@ void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
     printf(">>> Error : Error Opening %s file \n",filename);
     return;
   }
-  
+    // waiting for mag field in CDB 
+  printf("Loading field map...\n");
+  if (!AliTracker::GetFieldMap()) {
+    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+    AliTracker::SetFieldMap(field, kFALSE);
+  }
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadTracks("READ");
   // Creating MUON data container
