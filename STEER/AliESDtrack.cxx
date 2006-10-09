@@ -868,9 +868,14 @@ Bool_t AliESDtrack::RelateToVertex
   fZ = GetParameter()[1] - zv;
   
   Double_t cov[6]; vtx->GetCovMatrix(cov);
-  fCdd = GetCovariance()[0] + cov[2];      // neglecting non-diagonals
-  fCdz = GetCovariance()[1];               //     in the vertex's    
-  fCzz = GetCovariance()[2] + cov[5];      //    covariance matrix
+
+  //***** Improvements by A.Dainese
+  alpha=GetAlpha(); sn=TMath::Sin(alpha); cs=TMath::Cos(alpha);
+  Double_t s2ylocvtx = cov[0]*sn*sn + cov[2]*cs*cs - 2.*cov[1]*cs*sn;
+  fCdd = GetCovariance()[0] + s2ylocvtx;   // neglecting correlations
+  fCdz = GetCovariance()[1];               // between (x,y) and z    
+  fCzz = GetCovariance()[2] + cov[5];      // in vertex's covariance matrix
+  //*****
 
   {//Try to constrain 
     Double_t p[2]={yv,zv}, c[3]={cov[2],0.,cov[5]};
