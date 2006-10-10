@@ -36,6 +36,7 @@ public:
 
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
   void SetSampledEdx(Float_t q, Int_t i);
+  Float_t GetSampledEdx(Int_t i) const {return fdEdxSample[i];}
   void CookdEdx(Double_t low=0., Double_t up=0.51);
   void SetDetectorIndex(Int_t i) {SetLabel(i);}
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }

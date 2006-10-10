@@ -72,10 +72,10 @@ public:
 
   void SetFakeRatio(Float_t ratio) {fFakeRatio=ratio;}
   Float_t  GetFakeRatio()   const {return fFakeRatio;}
+  void SetMass(Double_t mass) {fMass=mass;}
 
 protected:
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
-  void SetMass(Double_t mass) {fMass=mass;}
 
   Int_t fLab;             // track label
   Float_t fFakeRatio;     // fake ratio

@@ -17,12 +17,12 @@
 #include "AliTracker.h"
 #include "AliTPCreco.h"
 #include "AliPID.h"
+#include "AliTPCclusterMI.h"
 
 
 class TFile;
 class AliTPCParam;
 class AliTPCseed;
-class AliTPCclusterMI;
 class AliTPCTrackerPoint;
 class AliESD;   
 class TTree;
@@ -107,8 +107,6 @@ public:
 //**************** Internal tracker class ********************** 
    class AliTPCSector;
    class AliTPCRow {
-     friend class AliTPCtrackerMI;
-     friend class AliTPCtrackerMI::AliTPCSector;
    public:
      AliTPCRow();
      ~AliTPCRow();
@@ -125,6 +123,23 @@ public:
      
      void SetX(Double_t x) {fX=x;}
      Double_t GetX() const {return fX;}
+     Float_t GetDeadZone() const {return fDeadZone;}
+     void SetDeadZone(Float_t d) {fDeadZone=d;}
+     Int_t GetN1() const {return fN1;}
+     void SetN1(Int_t n) {fN1=n;}
+     Int_t GetN2() const {return fN2;}
+     void SetN2(Int_t n) {fN2=n;}
+     AliTPCclusterMI* GetClusters1() const {return fClusters1;}
+     AliTPCclusterMI* GetClusters2() const {return fClusters2;}
+     void SetClusters1(AliTPCclusterMI* cl) {fClusters1=cl;}
+     void SetClusters2(AliTPCclusterMI* cl) {fClusters2=cl;}
+     void SetCluster1(Int_t i, AliTPCclusterMI cl) {fClusters1[i]=cl;}
+     void SetCluster2(Int_t i, AliTPCclusterMI cl) {fClusters2[i]=cl;}
+     AliTPCclusterMI* GetCluster1(Int_t i) const {return &fClusters1[i];}
+     AliTPCclusterMI* GetCluster2(Int_t i) const {return &fClusters2[i];}
+     Short_t GetFastCluster(Int_t i) const {return fFastCluster[i];}
+     void SetFastCluster(Int_t i, Short_t cl) {fFastCluster[i]=cl;}
+
 private:  
      AliTPCRow & operator=(const AliTPCRow & );
      AliTPCRow(const AliTPCRow& /*r*/);           //dummy copy constructor
@@ -145,7 +160,6 @@ private:
 
 //**************** Internal tracker class ********************** 
    class AliTPCSector {
-     friend class AliTPCtrackerMI;
    public:
      AliTPCSector() { fN=0; fRow = 0; }
     ~AliTPCSector() { delete[] fRow; }

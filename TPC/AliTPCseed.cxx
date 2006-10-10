@@ -238,7 +238,7 @@ void AliTPCseed::RebuildSeed()
   AliTPCclusterMI cldummy;
   cldummy.SetQ(0);
   AliTPCTrackPoint pdummy;
-  pdummy.GetTPoint().fIsShared = 10;
+  pdummy.GetTPoint().SetShared(10);
   for (Int_t i=0;i<160;i++){
     AliTPCclusterMI * cl0 = fClusterPointer[i];
     AliTPCTrackPoint *trpoint = (AliTPCTrackPoint*)fPoints->UncheckedAt(i);     

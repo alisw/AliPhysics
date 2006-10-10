@@ -321,8 +321,6 @@ private:
 	/* ALICE related objects */
 	AliITSgeom  *fGeom;       //! ITS Geometry
 	
-	friend class AliITStrackerANN::AliITStrackANN;
-
 	/* ROOT class implementation routines */
 	ClassDef(AliITStrackerANN, 1)
 };

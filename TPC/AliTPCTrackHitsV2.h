@@ -18,11 +18,6 @@ class AliTPCCurrentHitV2;
 class AliHit;
 
 class AliTrackHitsParamV2 : public TObject {
-  friend class   AliTPC;
-  friend class   AliTRD;
-  friend class   AliTPCTrackHitsV2;
-  friend class   AliTPCTempHitInfoV2;
-  friend class   AliTRDtrackHits;
 
 public:
   AliTrackHitsParamV2();
@@ -32,10 +27,67 @@ public:
      {hit.Copy(*this); return (*this);}
   ~AliTrackHitsParamV2();
 
+  Int_t   GetTrackID()            const {return fTrackID;}
+  Int_t   GetVolumeID()           const {return fVolumeID;}
+  Float_t GetR()                  const {return fR;}
+  Float_t GetZ()                  const {return fZ;}
+  Float_t GetFi()                 const {return fFi;}
+  Float_t GetAn()                 const {return fAn;}
+  Float_t GetAd()                 const {return fAd;}
+  Float_t GetTheta()              const {return fTheta;}
+  Float_t GetThetaD()             const {return fThetaD;}
+  Int_t   GetNHits()              const {return fNHits;}
+
+  Short_t HitDistance(Int_t i) const {return fHitDistance[i];}
+  Short_t Charge(Int_t i)      const {return fCharge[i];}
+  Short_t Time(Int_t i)        const {return fTime[i];}
+
+  Short_t& HitDistance(Int_t i) {return fHitDistance[i];}
+  Short_t& Charge(Int_t i)      {return fCharge[i];}
+  Short_t& Time(Int_t i)        {return fTime[i];}
+
+  void SetHitDistance(Int_t i)
+    {Short_t *s=new Short_t[i];
+    delete [] fHitDistance; fHitDistance=s;}
+
+  void SetCharge(Int_t i)
+    {Short_t *s=new Short_t[i];
+    delete [] fCharge; fCharge=s;}
+
+  void SetTime(Int_t i)
+    {Short_t *s=new Short_t[i];
+    delete [] fTime; fTime=s;}
+
+  void ResizeHitDistance(Int_t i)
+    {Short_t *s=new Short_t[i];
+    memcpy(s, fHitDistance, sizeof(Short_t)*i); 
+    delete [] fHitDistance; fHitDistance=s;}
+
+  void ResizeCharge(Int_t i)
+    {Short_t *s=new Short_t[i];
+    memcpy(s, fCharge, sizeof(Short_t)*i); 
+    delete [] fCharge; fCharge=s;}
+
+  void ResizeTime(Int_t i)
+    {Short_t *s=new Short_t[i];
+    memcpy(s, fTime, sizeof(Short_t)*i); 
+    delete [] fTime; fTime=s;}
+
+  void SetTrackID(Int_t id)    {fTrackID=id;}
+  void SetVolumeID(Short_t id) {fVolumeID=id;}
+  void SetR(Float_t r)         {fR=r;}
+  void SetZ(Float_t z)         {fZ=z;}
+  void SetFi(Float_t fi)       {fFi=fi;}
+  void SetAn(Float_t an)       {fAn=an;}
+  void SetAd(Float_t ad)       {fAd=ad;}
+  void SetTheta(Float_t t)     {fTheta=t;}
+  void SetThetaD(Float_t t)    {fThetaD=t;}
+  void SetNHits(Int_t n)       {fNHits=n;}
+
   Float_t Eta() const;
 
  private:
-  Int_t fTrackID; // ID of the track
+  Int_t fTrackID; // ID of the trac©k
   Short_t fVolumeID;// volume ID
   Float_t fR;  //radius
   Float_t fZ;  //z position
@@ -59,7 +111,6 @@ public:
 
 
 class AliTPCTrackHitsV2 : public TObject {
-  friend class AliTPCTempHitInfoV2;
 
 public:
   AliTPCTrackHitsV2(); 
@@ -87,6 +138,8 @@ public:
   Bool_t  FlushHitStack(Bool_t force=kTRUE);    //
   Int_t *  GetVolumes(){ return fVolumes;}
   Int_t GetNVolumes() const {return fNVolumes;}
+  static Double_t GetKPrecision()  {return fgkPrecision;}
+  static Double_t GetKPrecision2() {return fgkPrecision2;}
 
 public:
   void AddVolume(Int_t volume); //add volumes to tthe list of volumes
@@ -117,7 +170,17 @@ private:
   ClassDef(AliTPCTrackHitsV2,2) 
 };
 
-struct AliTPCCurrentHitV2 {
+class AliTPCCurrentHitV2 {
+public:
+  Int_t    GetStackIndex() const {return fStackIndex;}
+  void     SetStackIndex(Int_t i) {fStackIndex=i;}
+  Int_t    GetParamIndex() const {return fParamIndex;}
+  void     SetParamIndex(Int_t i) {fParamIndex=i;}
+  Double_t GetR() const {return fR;}
+  void     SetR(Double_t r) {fR=r;}
+  Bool_t   GetStatus() const {return fStatus;}
+  void     SetStatus(Bool_t s) {fStatus=s;}
+private:
   Int_t   fParamIndex;//  - current param pointer
   Int_t   fStackIndex; // - current hit stack index
   Double_t fR;   //current Radius

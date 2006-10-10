@@ -2283,7 +2283,7 @@ void AliTPC::RemapTrackHitIDs(Int_t *map)
     TClonesArray * arr = fTrackHits->GetArray();;
     for (Int_t i=0;i<arr->GetEntriesFast();i++){
       AliTrackHitsParamV2 * info = (AliTrackHitsParamV2 *)(arr->At(i));
-      info->fTrackID = map[info->fTrackID];
+      info->SetTrackID(map[info->GetTrackID()]);
     }
   }
 }

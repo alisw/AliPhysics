@@ -141,13 +141,13 @@ Int_t AliClusters::Find(Double_t y) const
   //
   AliComplexCluster* cl;
   cl=(AliComplexCluster*)fClusters->UncheckedAt(0);
-  if (y <= cl->fY) return 0;  
+  if (y <= cl->GetY()) return 0;  
   cl=(AliComplexCluster*)fClusters->UncheckedAt(fNclusters-1);
-  if (y > cl->fY) return fNclusters; 
+  if (y > cl->GetY()) return fNclusters; 
   Int_t b=0, e=fNclusters-1, m=(b+e)/2;
   for (; b<e; m=(b+e)/2) {
     cl = (AliComplexCluster*)fClusters->UncheckedAt(m);
-    if (y > cl->fY) b=m+1;
+    if (y > cl->GetY()) b=m+1;
     else e=m; 
   }
   return m;
@@ -166,8 +166,8 @@ void AliClusters::DrawClusters(Float_t shiftx, Float_t shifty,
   for (Int_t i=0;i<ncl;i++){
     AliComplexCluster *cl = (AliComplexCluster*)fClusters->UncheckedAt(i);
     TMarker * marker = new TMarker;
-    marker->SetX(cl->fX+shiftx);
-    marker->SetY(cl->fY+shifty);
+    marker->SetX(cl->GetX()+shiftx);
+    marker->SetY(cl->GetY()+shifty);
     marker->SetMarkerSize(size);
     marker->SetMarkerStyle(style);
     marker->SetMarkerColor(color);

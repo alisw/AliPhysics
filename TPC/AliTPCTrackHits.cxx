@@ -60,7 +60,6 @@ const Double_t AliTPCTrackHits::fgkTimePrecision=20.e-9;  //hit time precision
 
 
 class AliTPCCurrentHit {
-  friend class AliTPCTrackHits;
 private:
   AliTPChit fHit;     //   - hit in "standard" representation
   UInt_t   fInfoIndex;//   - current info pointer 
@@ -72,7 +71,6 @@ private:
 
 
 class  AliTPCTempHitInfo {
-  friend class AliTPCTrackHits;
 private:
   enum    { kStackSize = 100};
   AliTPCTempHitInfo(); 

@@ -19,8 +19,6 @@ class AliTPCCurrentHit;
 class AliObjectArray;
 
 class AliTrackHitsInfo   {
-  friend  class  AliTPCTrackHits;
-  friend class   AliTPC;
 
  public:
   AliTrackHitsInfo();
@@ -38,8 +36,6 @@ private:
 
 
 class AliTrackHitsParam {
-  friend  class  AliTPCTrackHits;
-  friend  class  AliTPCTempHitInfo;
  public:
   AliTrackHitsParam();
   ~AliTrackHitsParam(){fgCounter1--;}
@@ -59,8 +55,6 @@ class AliTrackHitsParam {
 
 
 class AliHitInfo {
-  friend  class  AliTPCTrackHits;
-  friend  class  AliTPCTempHitInfo;
 public:
   AliHitInfo() : fHitDistance(0), fCharge(0) {fgCounter1++;fgCounter2++;}
   ~AliHitInfo(){fgCounter1--;}
@@ -77,8 +71,6 @@ public:
 
 
 class AliTPCTrackHits : public TObject{
-  friend class AliTPC;
-  friend class AliTPCTempHitInfo;
 public:
   AliTPCTrackHits(); 
   ~AliTPCTrackHits();

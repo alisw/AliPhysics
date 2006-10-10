@@ -28,7 +28,6 @@ class AliESD;
 class TClonesArray;
 
 class AliTPCseed : public AliTPCtrack {
-  friend class AliTPCtrackerMI;
   public:  
      AliTPCseed();
      virtual ~AliTPCseed();
@@ -44,6 +43,7 @@ class AliTPCseed : public AliTPCtrack {
      virtual Bool_t Update(const AliCluster* c2, Double_t chi2, Int_t i);
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
      AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
+     void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl) {fClusterPointer[irow]=cl;}
      void RebuildSeed(); // rebuild seed to be ready for storing
      Double_t GetDensityFirst(Int_t n);
      Double_t GetSigma2C() const {
@@ -75,6 +75,53 @@ class AliTPCseed : public AliTPCtrack {
      //     void CookdEdx2(Double_t low=0.05, Double_t up=0.70);
      Bool_t IsActive() const { return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
+     AliTPCclusterMI* GetClusterPointer(Int_t i) const {return fClusterPointer[i];}
+     Int_t GetSector() const {return fSector;}
+     Float_t GetCurrentSigmaY2() const {return fCurrentSigmaY2;}
+     Float_t GetCurrentSigmaZ2() const {return fCurrentSigmaZ2;}
+     Int_t GetRelativeSector() const {return fRelativeSector;}
+     Char_t GetCircular() const {return fCircular;}
+
+     void SetCurrentSigmaY2(Float_t s) {fCurrentSigmaY2=s;}
+     void SetCurrentSigmaZ2(Float_t s) {fCurrentSigmaZ2=s;}
+     void SetRelativeSector(Int_t r) {fRelativeSector=r;}
+     void SetCircular(Char_t c) {fCircular=c;}
+     void SetIsSeeding(Bool_t s) {fIsSeeding=s;}
+     void SetSeedType(Int_t s) {fSeedType=s;}
+     void SetSeed1(Int_t s) {fSeed1=s;}
+     void SetSeed2(Int_t s) {fSeed2=s;}
+     void SetESD(AliESDtrack* esd) {fEsd=esd;}
+     void SetBSigned(Bool_t s) {fBSigned=s;}
+     void SetSort(Int_t s) {fSort=s;}
+     void SetOverlapLabel(Int_t i, Int_t l) {fOverlapLabels[i]=l;}
+     void SetCurrentCluster(AliTPCclusterMI* cl) {fCurrentCluster=cl;}
+     void SetNoCluster(Int_t n) {fNoCluster=n;}
+     void SetRow(Int_t n) {fRow=n;}
+     void SetSector(Int_t n) {fSector=n;}
+     void SetCurrentClusterIndex1(Int_t n) {fCurrentClusterIndex1=n;}
+     void SetInDead(Bool_t s) {fInDead=s;}
+     void SetPoints(TClonesArray* p) {fPoints=p;}
+     void SetEPoints(TClonesArray* p) {fEPoints=p;}
+
+     Double_t TPCrPID(Int_t i) const {return fTPCr[i];}
+     Double_t* TPCrPIDs() {return fTPCr;}
+     Bool_t GetIsSeeding() const {return fIsSeeding;}
+     Int_t GetSeedType() const {return fSeedType;}
+     Int_t GetSeed1() const {return fSeed1;}
+     Int_t GetSeed2() const {return fSeed2;}
+     AliESDtrack* GetESD() {return fEsd;}
+     Float_t GetSDEDX(Int_t i) const {return fSDEDX[i];}
+     Int_t GetNCDEDX(Int_t i) const {return fNCDEDX[i];}
+     Bool_t GetBSigned() const {return fBSigned;}
+     Int_t GetSort() const {return fSort;}
+     Int_t GetOverlapLabel(Int_t i) const {return fOverlapLabels[i];}
+     AliTPCclusterMI* GetCurrentCluster() const {return fCurrentCluster;}
+     Int_t GetNoCluster() const {return fNoCluster;}
+     Int_t GetRow() const {return fRow;}
+     Int_t GetCurrentClusterIndex1() const {return fCurrentClusterIndex1;}
+     Bool_t GetInDead() const {return fInDead;}
+     Float_t GetErrorY2() const {return fErrorY2;}
+     Float_t GetErrorZ2() const {return fErrorZ2;}
      //
      //
  private:

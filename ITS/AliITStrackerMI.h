@@ -82,7 +82,6 @@ public:
   };
 
   class AliITSlayer {
-    friend class AliITStrackerMI;
   public:
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
@@ -110,6 +109,8 @@ public:
     void  SetSkip(Int_t skip){fSkip=skip;}
     void IncAccepted(){fAccepted++;}
     Int_t GetAccepted() const {return fAccepted;}    
+    Int_t GetClusterTracks(Int_t i, Int_t j) const {return fClusterTracks[i][j];}
+    void SetClusterTracks(Int_t i, Int_t j, Int_t c) {fClusterTracks[i][j]=c;}
   protected:
     AliITSlayer(const AliITSlayer& /*layer*/);
     AliITSlayer & operator=(const AliITSlayer& /*layer*/);
@@ -292,11 +293,11 @@ inline Double_t AliITStrackerMI::NormalizedChi2(AliITStrackMI * track, Int_t lay
   //--------------------------------------------------------------------
   //get normalize chi2
   //--------------------------------------------------------------------
-  track->fNormChi2[layer] = 2.*track->fNSkipped+0.25*track->fNDeadZone+track->fdEdxMismatch+track->GetChi2()/
+  track->SetNormChi2(layer,2.*track->GetNSkipped()+0.25*track->GetNDeadZone()+track->GetdEdxMismatch()+track->GetChi2()/
   //track->fNormChi2[layer] = 2.*track->fNSkipped+0.25*track->fNDeadZone+track->fdEdxMismatch+track->fChi22/
-    TMath::Max(double(track->GetNumberOfClusters()-track->fNSkipped),
-	       1./(1.+track->fNSkipped));
-  return track->fNormChi2[layer];
+    TMath::Max(double(track->GetNumberOfClusters()-track->GetNSkipped()),
+	       1./(1.+track->GetNSkipped())));
+  return track->GetNormChi2(layer);
 }
 inline void  AliITStrackerMI::AliITSdetector::GetGlobalXYZ(const AliITSRecPoint *cl, Double_t xyz[3]) const
 {

@@ -43,6 +43,7 @@ public:
   Double_t GetPIDsignal()  const {return GetdEdx();}
 
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
+  void  SetClusterIndex(Int_t i, Int_t idx) {fIndex[i]=idx;}
 
   Double_t GetC() const {return AliExternalTrackParam::GetC(GetBz());}
 
@@ -70,6 +71,23 @@ public:
   Int_t*  GetKinkIndexes() { return fKinkIndexes;}
   Int_t   GetV0Index(Int_t i) const{ return fV0Indexes[i];}
   Int_t*  GetV0Indexes() { return fV0Indexes;}
+
+  void SetFirstPoint(Int_t f) {fFirstPoint=f;}
+  void SetLastPoint(Int_t f) {fLastPoint=f;}
+  void SetRemoval(Int_t f) {fRemoval=f;}
+  void SetLab2(Int_t f) {fLab2=f;}
+  void SetKinkIndex(Int_t i, Int_t idx) {fKinkIndexes[i]=idx;}
+  void SetBConstrain(Bool_t b) {fBConstrain=b;}
+  void SetNFoundable(Int_t n) {fNFoundable=n;}
+  void SetNShared(Int_t s) {fNShared=s;}
+
+  Int_t GetFirstPoint() const {return fFirstPoint;}
+  Int_t GetLastPoint() const {return fLastPoint;}
+  Int_t GetRemoval() const {return fRemoval;}
+  Int_t GetLab2() const {return fLab2;}
+  Bool_t GetBConstrain() const {return fBConstrain;}
+  Int_t GetNShared() const {return fNShared;}
+  Int_t GetNFoundable() const {return fNFoundable;}
 
 protected: 
   Double_t GetBz() const;

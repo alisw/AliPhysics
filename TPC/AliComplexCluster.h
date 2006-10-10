@@ -16,10 +16,6 @@
 //
 
 class AliComplexCluster : public TObject {
-  friend class AliTPC;
-  friend class AliTPCClusterFinder;
-  friend class AliClusters;
-  friend class AliTPCFast;
 public:
 
   AliComplexCluster() {
@@ -58,8 +54,6 @@ private:
 
 
 class AliTPCTrackerPoint  {  
-  friend class AliTPCtrackerMI;
-  friend class AliTPCseed;
  public:
 
   AliTPCTrackerPoint():
@@ -94,6 +88,10 @@ class AliTPCTrackerPoint  {
 
   void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
   void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
+
+  Char_t   IsShared() const {return fIsShared;}
+  void     SetShared(Char_t s) {fIsShared=s;}
+
   //
  private:
   Short_t   fTX;        // x position of the cluster  in cm - 10 mum prec
@@ -145,7 +143,6 @@ class AliTPCClusterPoint  {
 
 
 class AliTPCExactPoint : public TObject{
-  friend class AliTPCtrackerMI;
  public:
   AliTPCExactPoint(){fEZ=fEY=fEAngleZ=fEAngleY=fEAmp=fEPrim=fTrackID=0;}
  private:
@@ -164,7 +161,6 @@ class AliTPCExactPoint : public TObject{
 
 
 class AliTPCTrackPoint: public TObject{
-  friend class AliTPCtrackerMI;
  public:
   AliTPCTrackPoint(){}
   // AliTPCClusterPoint & GetCPoint(){return fCPoint;}
@@ -179,7 +175,6 @@ class AliTPCTrackPoint: public TObject{
 };
 
 class AliTPCTrackPoint2: public AliTPCTrackPoint{
-  friend class AliTPCtrackerMI;
  public:
   AliTPCTrackPoint2(){}
  private: 
@@ -208,7 +203,6 @@ class AliTPCTrackPoint2: public AliTPCTrackPoint{
 
 
 class AliTPCTrackPointRef: public AliTPCTrackPoint{
-  friend class AliTPCtrackerMI;
  public:
   AliTPCExactPoint & GetExactPoint(){return fEPoint;}
   AliTPCExactPoint & GetNearestPoint(){return fNPoint;}  
