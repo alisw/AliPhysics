@@ -2,7 +2,7 @@ How to open session:
 	use static method  AliRunLoader::Open("galice.root","AlicE","update") or just AliRunLoader::Open() for defaults. 
         Returns pointer to AliRunLoader on success or fatal termination on error
 How to get total number of events in galice.root:
-	AliRunLoader::GetNumberOfEvents()  (or AliRun::GetEventsPerRun() using f.e. gAlice depricated)
+	AliRunLoader::GetNumberOfEvents()  (or AliRun::GetEventsPerRun() using f.e. gAlice deprecated)
 How to get pointer to RICH:
         AliRunLoader()->GetAliRun()->GetDetector("RICH") but before one needs to AliRunLoade()->Set
 How to avoid using gAlice:
@@ -95,15 +95,15 @@ hits->sdigit:
         Then, total charge collected for this hit is calculated by AliRICHParam::Hit2Qdc.    
         Area of disintegration is a list of pads affected by current hit. This is a parameter of Mathienson    
 sdigits->digits:
-	The necessety of sdigits is dictated by the fact that trasport engine transports tracks in a continious sequence track by track. 
-  It means that it may happen that the same pad is affected by few tracks. But this might be known only after the trasport of full event is finished. 
+	The necessety of sdigits is dictated by the fact that transport engine transports tracks in a continuous sequence track by track. 
+  It means that it may happen that the same pad is affected by few tracks. But this might be known only after the transport of full event is finished. 
 
 digits->clusters
-	A set of neighbouring digits compose cluster. The aim of this trasformation is to construct a list of clusters out of digits list.
+	A set of neighboring digits compose cluster. The aim of this transformation is to construct a list of clusters out of digits list.
   The calling sequence is:
   AliReconstruction::Run()
   
-  	AliRICHReconstructor::Reconstruct() creates an empty clusters list,  loops on chambers, retrives a list of digits for a given chamber, gives it to the methode Dig2Clu() and finally serializes
+  	AliRICHReconstructor::Reconstruct() creates an empty clusters list,  loops on chambers, retrieves a list of digits for a given chamber, gives it to the method Dig2Clu() and finally serializes
                                         the list 
                                         
     	AliRICHReconstructor::Dig2Clu() which knows no details about 
@@ -178,59 +178,59 @@ Run()
 RICH calibration and alignment.
 
 Abstract
-RICH calibrartion and alignment strategy is described with emphasis put on those aspects of the procedure which are relevant for reconstruction and thus the final detector
-figure of merit. In particulare, the refractive index calibration tecknique based on mass plot shifts analisys and chamber alignment with respect to core detectors 
-are explained in details. External sources of calibration and alignment data are aslo mentioned as well as the way RICH intends to handle those data, including initial CDB
-creater. 
+RICH calibration and alignment strategy is described with emphasis put on those aspects of the procedure which are relevant for reconstruction and thus the final detector
+figure of merit. In particular, the refractive index calibration technique based on mass plot shifts analysis and chamber alignment with respect to core detectors 
+are explained in details. External sources of calibration and alignment data are also mentioned as well as the way RICH intends to handle those data, including initial CDB
+creator. 
 
 Calibration. 
-Looking on RICH chamber structure, full description of which is availbale elsewhere (ref RichTDR), easy to compile the table of all possible parameters affecting reconstruction.
-The first one of major importance is a freon refractive index. Although the full optical path visiable by photons includes freon vessel, proximity and amplification gaps filled 
-with methane and quartz window seperating above mentioned volumes, only freon refractive index is subject for calibration.  Refractive index of SiO2 window is not practically 
-affected by any external parameters, while influence of methane temperature to it's refractive index is negligable. So it's enough to measure there optical curves just once.
-In the rest, the only changable parameter is refractive index of freon. Temperature influence on freon refractive index was measured experimentally. The parametrization 
+Looking on RICH chamber structure, full description of which is available elsewhere (ref RichTDR), easy to compile the table of all possible parameters affecting reconstruction.
+The first one of major importance is a freon refractive index. Although the full optical path visible by photons includes freon vessel, proximity and amplification gaps filled 
+with methane and quartz window separating above mentioned volumes, only freon refractive index is subject for calibration.  Refractive index of SiO2 window is not practically 
+affected by any external parameters, while influence of methane temperature to it's refractive index is negligible. So it's enough to measure there optical curves just once.
+In the rest, the only changeable parameter is refractive index of freon. Temperature influence on freon refractive index was measured experimentally. The parametrization 
 found to be:
   n=n0-0.0005(T-20)                        where T is freon temperature in degrees Celsius
-  n0=Sqrt(1+ 0.554*lamda^2/(lamda^2-5796)) where lamda is photon wavelength in nm taken at 20 degress Celsius
-Preliminary, the parametrization itself is considered to be permamnent one. The only parameter to store and retrieve is freon temperature. Since this value is available from
-DCS DB and expected to be served by a SHUTTLE program which is not yet ready, the following temporaroly solution has been adopted.
-In local CDB storage (deafult directory is $ALICE_ROOT) two versions of freon refractive index are written by external macro RichCdb.C :
+  n0=Sqrt(1+ 0.554*lamda^2/(lamda^2-5796)) where lamda is photon wavelength in nm taken at 20 degrees Celsius
+Preliminary, the parametrization itself is considered to be permanent one. The only parameter to store and retrieve is freon temperature. Since this value is available from
+DCS DB and expected to be served by a SHUTTLE program which is not yet ready, the following temporarily solution has been adopted.
+In local CDB storage (default directory is $ALICE_ROOT) two versions of freon refractive index are written by external macro RichCdb.C :
 Run0_0_v0_s0.root contains DiMauro's parametrization and the temperature is set to 20 degrees. To be used as default for simulation and reconstruction.
 Run0_0_v0_s1.root contains DiMauro's parametrization and the temperature is set to 50 degrees. To be used in special uncalibrated reconstruction to test calibration procedure. 
 Both of them are valid in run range from run number 0 to run number 0, thus in no way affecting any normal operations.   
 
-Refractive index of freon (C6F14) is taken in AliRICHRecon for 3 different photon energies by means of 2 methodes: Set
+Refractive index of freon (C6F14) is taken in AliRICHRecon for 3 different photon energies by means of 2 methods: Set
 
 
 
 Alignment.
 Information about detector position and orientation is needed during reconstruction phase. This information affects track-cluster matching procedure, the relevant peace of 
-code comes to AliRICHTracker::PropogateBack(). Matching precedure consists in prolongation of the track reconstructed in core detectores up to each RICH chamber plane in 
-a sequenmce. The plane used is the entrance to RICH radiators. If the intersection exists and inside the sensitive area, the point of intersection is to be tranformed to RICH
-local reference system. Note, that in this check, the dead zones inbetween radiators are not taken into account. This operation requiring MARS to LORS transformations is done
-in AliRICHHelix::RichIntersection(). Plane to be intersected is defined by a point beloging to that plane served by AliRICHParam::Center(ChamberNumber) and a vector normal 
+code comes to AliRICHTracker::PropogateBack(). Matching procedure consists in prolongation of the track reconstructed in core detectors up to each RICH chamber plane in 
+a sequence. The plane used is the entrance to RICH radiators. If the intersection exists and inside the sensitive area, the point of intersection is to be transformed to RICH
+local reference system. Note, that in this check, the dead zones in-between radiators are not taken into account. This operation requiring MARS to LORS transformations is done
+in AliRICHHelix::RichIntersection(). Plane to be intersected is defined by a point belonging to that plane served by AliRICHParam::Center(ChamberNumber) and a vector normal 
 to the plane served by AliRICHParam::Norm(ChamberNumber). Transformations itself are done in AliRICHParam::Mars2Lors() and AliRICHParam::Lors2Mars(). Internaly in AliRICHParam, 
-each chamber is reresented by TGeoHMatrix. It's worth to stress again that geometry related operations are needed to be done for 3 different planes per chamber, namly entrance 
-to radiator, anod wires plane and photocathode plane. So AliRICHParam sustains 7*3=21 planes. Also important to say, that direct usage of TGeoHMatrix::MasterToLocal() 
-and virce versa is not possible due to special nature of RICH LORS. According to the decision made about 3 years ago, RICH local reference system is centered in low left
-hand corner of the chamber if one looks from outside to direction pointing to interection point.
-So the most obvious candidate for alignable objects to be stored are thess 21 TGeoHMatrix objects. 
-The approach suggested in AliAlignObj is not quite feasable mainly due to the fact it relays on incrementing procedure using import from geometry.root. RICH geometry is defined 
+each chamber is represented by TGeoHMatrix. It's worth to stress again that geometry related operations are needed to be done for 3 different planes per chamber, namely entrance 
+to radiator, anode wires plane and photocathode plane. So AliRICHParam sustains 7*3=21 planes. Also important to say, that direct usage of TGeoHMatrix::MasterToLocal() 
+and vice versa is not possible due to special nature of RICH LORS. According to the decision made about 3 years ago, RICH local reference system is centered in low left
+hand corner of the chamber if one looks from outside to direction pointing to intersection point.
+So the most obvious candidate for alignable objects to be stored are these 21 TGeoHMatrix objects. 
+The approach suggested in AliAlignObj is not quite feasible mainly due to the fact it relays on incrementing procedure using import from geometry.root. RICH geometry is defined 
 in a way that there is no volumes exactly corresponding to the RICH planes. 
 
 Geometry of RICH chambers.
-After the decision to rotate the whole RICH setup from 12 o'clock position to 2 o'clock position we have the following situtation:
+After the decision to rotate the whole RICH setup from 12 o'clock position to 2 o'clock position we have the following situation:
 
-Theta = 109.5 degress for chambers 1,3
-Theta =  90.0 degress for chambers 2,4,6
-Theta =  70.5 degress for chambers 5,7
+Theta = 109.5 degrees for chambers 1,3
+Theta =  90.0 degrees for chambers 2,4,6
+Theta =  70.5 degrees for chambers 5,7
 
-Phi   =  50.0 degress for chambers 6,7 
-Phi   =  30.0 degress for chambers 3,4,5 
-Phi   =  10.0 degress for chambers 1,2 
+Phi   =  50.0 degrees for chambers 6,7 
+Phi   =  30.0 degrees for chambers 3,4,5 
+Phi   =  10.0 degrees for chambers 1,2 
 
 
-Old parametrisation by AliRICHChamber:
+Old parametrization by AliRICHChamber:
 RICH chamber 1 (454.877118 ,  80.207109 , -163.565361)(rho,theta,phi)=(490.0,109.5,10.0)
 RICH chamber 2 (482.555799 ,  85.087607 ,    0.000000)(rho,theta,phi)=(490.0, 90.0,10.0)
 RICH chamber 3 (400.012224 , 230.947165 , -163.565361)(rho,theta,phi)=(490.0,109.5,30.0)
@@ -239,32 +239,78 @@ RICH chamber 5 (400.012224 , 230.947165 ,  163.565361)(rho,theta,phi)=(490.0, 70
 RICH chamber 6 (314.965929 , 375.361777 ,    0.000000)(rho,theta,phi)=(490.0, 90.0,50.0)
 RICH chamber 7 (296.899953 , 353.831585 ,  163.565361)(rho,theta,phi)=(490.0, 70.5,50.0)
 
-New parametrization by TGeoHMatrix: 
-RICH 1
+New parametrization by TGeoHMatrix:  perfect geometry, no misalignment
+RICH 0
  -0.328736   -0.173648    0.928321    Tx = 454.877118
  -0.057965    0.984808    0.163688    Ty =  80.207109
  -0.942641    0.000000   -0.333807    Tz = -163.565361
-RICH 2
+RICH 1
   0.000000   -0.173648    0.984808    Tx = 482.555799
   0.000000    0.984808    0.173648    Ty =  85.087607
  -1.000000    0.000000    0.000000    Tz =   0.000000
-RICH 3
+RICH 2
  -0.289085   -0.500000    0.816351    Tx = 400.012224
  -0.166903    0.866025    0.471321    Ty = 230.947165
  -0.942641    0.000000   -0.333807    Tz = -163.565361
-RICH 4
+RICH 3
   0.000000   -0.500000    0.866025    Tx = 424.352448
   0.000000    0.866025    0.500000    Ty = 245.000000
  -1.000000    0.000000    0.000000    Tz =   0.000000
-RICH 5
+RICH 4
   0.289085   -0.500000    0.816351    Tx = 400.012224
   0.166903    0.866025    0.471321    Ty = 230.947165
  -0.942641    0.000000    0.333807    Tz = 163.565361
-RICH 6
+RICH 5
   0.000000   -0.766044    0.642788    Tx = 314.965929
   0.000000    0.642788    0.766044    Ty = 375.361777
  -1.000000    0.000000    0.000000    Tz =   0.000000
-RICH 7
+RICH 6
   0.214567   -0.766044    0.605918    Tx = 296.899953
   0.255711    0.642788    0.722105    Ty = 353.831585
  -0.942641    0.000000    0.333807    Tz = 163.565361
+
+
+Map of all RICH PC planes, coordinates are in spherical system= distance from IP in cm, Theta and Phi in degrees: 
+ 
+ _______________________________   _______________________________
+| 506.21                506.21|   | 506.21                506.21|
+|  63.26                 78.07|   |  82.59                 97.41|
+|  58.02                 57.32|   |  57.22                 57.22|
+|                             |   |                             |
+|          498.00             |   |          498.00             | Sensitive area (130.60,126.16)
+|           70.50             |   |           90.00             | Lors Center     ( 65.30, 63.08)
+|           50.00             |   |           50.00             |
+|                             |   |                             |
+| 506.21                506.21|   | 506.21                506.21|
+|  63.26                 78.07|   |  82.59                 97.41|
+|  41.98                 42.68|   |  57.22                 57.22|
+-------------------------------   -------------------------------
+
+_______________________________   _______________________________   _______________________________
+| 506.21                506.21|   | 506.21                506.21|   | 506.21                506.21|
+|  63.26                 78.07|   |  82.59                 97.41|   | 101.93                116.74|
+|  38.02                 37.32|   |  37.22                 37.22|   |  37.32                 38.02|
+|                             |   |                             |   |                             |
+|          498.00             |   |          498.00             |   |          498.00             |
+|           70.50             |   |           90.00             |   |          109.50             |
+|           30.00             |   |           30.00             |   |           30.00             |
+|                             |   |                             |   |                             |
+| 506.21                506.21|   | 506.21                506.21|   | 506.21                506.21|
+|  63.26                 78.07|   |  82.59                 97.41|   | 101.93                116.74|
+|  38.02                 37.32|   |  37.22                 37.22|   |  37.32                 38.02|
+-------------------------------   -------------------------------   -------------------------------
+
+                                  _______________________________   _______________________________
+                                  | 506.21                506.21|   | 506.21                506.21|
+                                  |  82.59                 97.41|   | 101.93                116.74|
+                                  |  17.22                 17.22|   |  17.32                 18.02|
+                                  |                             |   |                             |
+                                  |          498.00             |   |          498.00             |
+                                  |           90.00             |   |          109.50             |
+                                  |           10.00             |   |           10.00             |
+                                  |                             |   |                             |
+                                  | 506.21                506.21|   | 506.21                506.21|
+                                  |  82.59                 97.41|   | 101.93                116.74|
+                                  |  17.22                 17.22|   |  17.32                 18.02|
+                                  -------------------------------   -------------------------------
+
