@@ -702,9 +702,9 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
 	  }
 	}
 
-	if ((track->StatusForTOF()                          >   0) &&
-            (track->fNCross                                ==   0) && 
-            (Float_t(track->fN)/Float_t(track->fNExpected)  > 0.4)) {
+	if ((track->StatusForTOF()                                                   >   0) &&
+            (track->GetNCross()                                                     ==   0) && 
+            (Float_t(track->GetNumberOfClusters()) / Float_t(track->GetNExpected())  > 0.4)) {
 	  //seed->UpdateTrackParams(track->GetBackupTrack(), AliESDtrack::kTRDbackup);
 	}
 
@@ -803,7 +803,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
     }
 
     seed->SetTRDQuality(track->StatusForTOF());    
-    seed->SetTRDBudget(track->fBudget[0]);    
+    seed->SetTRDBudget(track->GetBudget(0));    
   
     delete track;
 
@@ -1005,9 +1005,9 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 
       Int_t ilayer = GetGlobalTimeBin(0,iplane,itime);
       expectedNumberOfClusters++;       
-      t.fNExpected++;
+      t.SetNExpected(t.GetNExpected() + 1);
       if (t.GetX() > 345.0) {
-        t.fNExpectedLast++;
+        t.SetNExpectedLast(t.GetNExpectedLast() + 1);
       }
       AliTRDpropagationLayer &timeBin = *(fTrSec[sector]->GetLayer(ilayer));
       AliTRDcluster          *cl      = 0;
@@ -1047,8 +1047,8 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 	  Int_t    det      = cl->GetDetector();    
 	  Int_t    plane    = fGeom->GetPlane(det);
 	  if (t.GetX() > 345.0) {
-	    t.fNLast++;
-	    t.fChi2Last += maxChi2;
+	    t.SetNLast(t.GetNLast() + 1);
+	    t.SetChi2Last(t.GetChi2Last() + maxChi2);
 	  }
 
 	  Double_t xcluster = cl->GetX();
@@ -1170,9 +1170,9 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 
       Int_t ilayer = GetGlobalTimeBin(0, iplane,itime);
       expectedNumberOfClusters++;       
-      t.fNExpected++;
+      t.SetNExpected(t.GetNExpected() + 1);
       if (t.GetX() > 345.0) {
-        t.fNExpectedLast++;
+        t.SetNExpectedLast(t.GetNExpectedLast() + 1);
       }
       AliTRDpropagationLayer &timeBin = *(fTrSec[sector]->GetLayer(ilayer));
       AliTRDcluster          *cl      = 0;
@@ -1198,8 +1198,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 	  Int_t    det      = cl->GetDetector();    
 	  Int_t    plane    = fGeom->GetPlane(det);
 	  if (t.GetX() > 345.0) {
-	    t.fNLast++;
-	    t.fChi2Last += maxChi2;
+	    t.SetNLast(t.GetNLast() + 1);
+	    t.SetChi2Last(t.GetChi2Last() + maxChi2);
 	  }
 	  Double_t xcluster = cl->GetX();
 	  t.PropagateTo(xcluster,radLength,rho);
@@ -1217,8 +1217,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 
 	  // Reset material budget if 2 consecutive gold
 	  if (plane > 0) { 
-	    if (t.fTracklets[plane].GetN() + t.fTracklets[plane-1].GetN() > 20) {
-	      t.fBudget[2] = 0;
+	    if ((t.GetTracklets(plane).GetN() + t.GetTracklets(plane-1).GetN()) > 20) {
+	      t.SetBudget(2,0.0);
 	    }
 	  }
 
@@ -1229,14 +1229,14 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
     }
 
     ratio0 = ncl / Float_t(fTimeBinsPerPlane);
-    Float_t ratio1 = Float_t(t.fN+1) / Float_t(t.fNExpected+1.0);	
-    if ((tracklet.GetChi2()     <  18.0) && 
-        (ratio0                 >   0.8) && 
-        (ratio1                 >   0.6) && 
-        (ratio0+ratio1          >   1.5) && 
-        (t.GetNCross()          ==    0) && 
-        (TMath::Abs(t.GetSnp()) <  0.85) &&
-        (t.fN                   >    20)){
+    Float_t ratio1 = Float_t(t.GetNumberOfClusters()+1) / Float_t(t.GetNExpected()+1);	
+    if ((tracklet.GetChi2()      <  18.0) && 
+        (ratio0                  >   0.8) && 
+        (ratio1                  >   0.6) && 
+        (ratio0+ratio1           >   1.5) && 
+        (t.GetNCross()           ==    0) && 
+        (TMath::Abs(t.GetSnp())  <  0.85) &&
+        (t.GetNumberOfClusters() >    20)){
       t.MakeBackupTrack(); // Make backup of the track until is gold
     }
     
@@ -2749,10 +2749,10 @@ void AliTRDtracker::UseClusters(const AliKalmanTrack *t, Int_t from) const
     Int_t index  = t->GetClusterIndex(i);
     AliTRDcluster *c = (AliTRDcluster *) fClusters->UncheckedAt(index);
     Int_t iplane = fGeom->GetPlane(c->GetDetector());
-    if (track->fTracklets[iplane].GetChi2() > kmaxchi2) {
+    if (track->GetTracklets(iplane).GetChi2() > kmaxchi2) {
       continue; 
     }
-    if (track->fTracklets[iplane].GetN()    <   kmincl) {
+    if (track->GetTracklets(iplane).GetN()    <   kmincl) {
       continue; 
     }
     if (!(c->IsUsed())) {
@@ -3944,8 +3944,8 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
   tracklet.SetSigma2(expectederr);
   tracklet.SetChi2(tchi2s[bestiter]);
   tracklet.SetMaxPos(maxpos,maxpos4,maxpos5);
-  track->fTracklets[plane] = tracklet;
-  track->fNWrong += nbad[0];
+  track->SetTracklets(plane,tracklet);
+  track->SetNWrong(track->GetNWrong() + nbad[0]);
 
   //
   // Debuging part

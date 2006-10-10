@@ -22,6 +22,8 @@ class AliTrackReference;
 const unsigned kMAXCLUSTERSPERTRACK = 210; 
 
 class AliTRDtrack : public AliKalmanTrack {
+
+ public:
    
   enum { kNdet      = 540
        , kNstacks   =  90
@@ -30,10 +32,6 @@ class AliTRDtrack : public AliKalmanTrack {
        , kNsect     =  18
        , kNslice    =   3
        , kNtimeBins =  22 };
-
-  friend class AliTRDtracker;
-
- public:
 
    AliTRDtrack();
    AliTRDtrack(const AliTRDcluster *c, Int_t index, const Double_t xx[5]
@@ -66,9 +64,15 @@ class AliTRDtrack : public AliKalmanTrack {
            Int_t   *GetIndexes()                                            { return fIndex;                       }
            Int_t    GetProlongation(Double_t xk, Double_t &y, Double_t &z);
            Bool_t   GetStop() const                                         { return fStopped;                     }
-           Int_t    GetNWrong() const                                       { return fNWrong;                      }
            Int_t    GetNRotate() const                                      { return fNRotate;                     }
+           Int_t    GetNWrong() const                                       { return fNWrong;                      }
            Int_t    GetNCross() const                                       { return fNCross;                      }
+           Int_t    GetNExpected() const                                    { return fNExpected;                   }
+           Int_t    GetNLast() const                                        { return fNLast;                       }
+           Int_t    GetNExpectedLast() const                                { return fNExpectedLast;               }
+  AliTRDtracklet    GetTracklets(Int_t i) const                             { return fTracklets[i];                }
+           Float_t  GetBudget(Int_t i) const                                { return fBudget[i];                   }
+           Float_t  GetChi2Last() const                                     { return fChi2Last;                    }
   AliTRDtrack      *GetBackupTrack()                                        { return fBackupTrack;                 }
 
            void     SetdEdx(Double_t dedx)                                  { fdEdx                      = dedx;   }
@@ -79,6 +83,14 @@ class AliTRDtrack : public AliKalmanTrack {
            void     SetSampledEdx(Float_t q, Int_t i);
            void     SetSampledEdx(Float_t q);
            void     SetSeedLabel(Int_t lab)                                 { fSeedLab                   = lab;    }
+           void     SetNWrong(Int_t nwrong)                                 { fNWrong                    = nwrong; }
+           void     SetNCross(Int_t ncross)                                 { fNCross                    = ncross; }
+           void     SetNExpected(Int_t nexp)                                { fNExpected                 = nexp;   }
+           void     SetNLast(Int_t nlast)                                   { fNLast                     = nlast;  }
+           void     SetNExpectedLast(Int_t nexp)                            { fNExpectedLast             = nexp;   }
+           void     SetChi2Last(Float_t chi2)                               { fChi2Last                  = chi2;   }
+           void     SetTracklets(Int_t i, AliTRDtracklet t)                 { fTracklets[i]              = t;      }
+           void     SetBudget(Int_t i, Float_t budget)                      { fBudget[i]                 = budget; }
 
            Int_t    PropagateToX(Double_t xr, Double_t step);
            Int_t    PropagateToR(Double_t xr, Double_t step);
