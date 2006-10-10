@@ -1220,3 +1220,52 @@ AliEMCALShishKebabTrd1Module* AliEMCALv0::GetShishKebabModule(Int_t neta)
   }
   return trd1;
 }
+
+//_____________________________________________________________________________
+void AliEMCALv0::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be synchronized with
+  // eventual changes in the geometry.
+  //
+
+  TString vpstr1 = "ALIC_1/XEN1_1/SMOD_";
+  TString snstr1 = "EMCAL/FullSupermodule";
+  TString volpath, symname;
+
+  //Int_t nSMod = ((AliEMCALGeometry*)GetGeometry())->GetNumberOfSuperModules();
+  //could use this, but what happens if it is > 10?
+
+  try{
+    for (Int_t smodnum=0; smodnum < 10; smodnum++) {
+      symname = snstr1;
+      symname += (smodnum+1);
+      volpath = vpstr1;
+      volpath += (smodnum+1);
+      gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    }
+  } catch (TString) {
+    AliFatal("Trying to set alignable entry with open geometry");
+  }
+
+  TString gn( ((AliEMCALGeometry*)GetGeometry())->GetName() );
+  gn.ToUpper();
+  if(gn.Contains("110DEG")) {
+    TString vpstr2 = "ALIC_1/XEN1_1/SM10_";
+    TString snstr2 = "EMCAL/HalfSupermodule";    
+    try{
+      for (Int_t smodnum=0; smodnum < 2; smodnum++) {
+	symname = snstr2;
+	symname += (smodnum+1);
+	volpath = vpstr2;
+	volpath += (smodnum+1);
+	gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+      }
+    } catch (TString) {
+      AliFatal("Trying to set alignable entry with open geometry");
+    }
+  }
+
+}
+
