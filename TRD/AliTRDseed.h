@@ -18,8 +18,6 @@ class AliTRDcluster;
 
 class AliTRDseed : public TObject {
 
-  friend class AliTRDtracker;
-
  public:
 
   AliTRDseed(); 
@@ -35,7 +33,64 @@ class AliTRDseed : public TObject {
           void     CookLabels();
           void     UpdateUsed();
           void     Reset();
-          Bool_t   IsOK() const                             { return fN2 > 8; }
+
+          Bool_t   IsOK() const                             { return fN2 > 8;        }
+          Bool_t   IsUsable(Int_t i) const                  { return fUsable[i];     }
+ 
+          Float_t  GetTilt() const                          { return fTilt;          }
+          Float_t  GetPadLength() const                     { return fPadLength;     }
+          Float_t  GetX0() const                            { return fX0;            }
+          Float_t  GetX(Int_t i) const                      { return fX[i];          }
+          Float_t  GetY(Int_t i) const                      { return fY[i];          }
+          Float_t  GetZ(Int_t i) const                      { return fZ[i];          }
+          Int_t    GetIndexes(Int_t i) const                { return fIndexes[i];    }
+  AliTRDcluster   *GetClusters(Int_t i) const               { return fClusters[i];   }
+          Float_t  GetYref(Int_t i) const                   { return fYref[i];       }
+          Float_t  GetZref(Int_t i) const                   { return fZref[i];       }
+          Float_t  GetYfit(Int_t i) const                   { return fYfit[i];       }
+          Float_t  GetYfitR(Int_t i) const                  { return fYfitR[i];      }
+          Float_t  GetZfit(Int_t i) const                   { return fZfit[i];       }
+          Float_t  GetZfitR(Int_t i) const                  { return fZfitR[i];      }
+          Float_t  GetSigmaY() const                        { return fSigmaY;        }
+          Float_t  GetSigmaY2() const                       { return fSigmaY2;       }
+          Float_t  GetMeanz() const                         { return fMeanz;         }
+          Float_t  GetZProb() const                         { return fZProb;         }
+          Int_t    GetLabels(Int_t i) const                 { return fLabels[i];     }
+          Int_t    GetN2() const                            { return fN2;            }
+          Int_t    GetNUsed() const                         { return fNUsed;         }
+          Int_t    GetFreq() const                          { return fFreq;          }
+          Float_t  GetC() const                             { return fC;             }
+          Float_t  GetCC() const                            { return fCC;            }
+          Float_t  GetChi2() const                          { return fChi2;          }
+          Float_t  GetChi2Z() const                         { return fChi2Z;         }
+
+          void     SetTilt(Float_t tilt)                    { fTilt        = tilt;   }
+          void     SetPadLength(Float_t len)                { fPadLength   = len;    }
+          void     SetX0(Float_t x0)                        { fX0          = x0;     }
+          void     SetX(Int_t i, Float_t x)                 { fX[i]        = x;      } 
+          void     SetY(Int_t i, Float_t y)                 { fY[i]        = y;      }
+          void     SetZ(Int_t i, Float_t z)                 { fZ[i]        = z;      }
+          void     SetIndexes(Int_t i, Int_t idx)           { fIndexes[i]  = idx;    }
+          void     SetClusters(Int_t i, AliTRDcluster *c)   { fClusters[i] = c;      }
+          void     SetUsable(Int_t i, Bool_t usable)        { fUsable[i]   = usable; }
+          void     SetYref(Int_t i, Float_t yref)           { fYref[i]     = yref;   }
+          void     SetZref(Int_t i, Float_t zref)           { fZref[i]     = zref;   }
+          void     SetYfit(Int_t i, Float_t yfit)           { fYfit[i]     = yfit;   }
+          void     SetYfitR(Int_t i, Float_t yfitr)         { fYfitR[i]    = yfitr;  }
+          void     SetZfit(Int_t i, Float_t zfit)           { fZfit[i]     = zfit;   }
+          void     SetZfitR(Int_t i, Float_t zfitr)         { fZfitR[i]    = zfitr;  }
+          void     SetSigmaY(Float_t sigmay)                { fSigmaY      = sigmay; }
+          void     SetSigmaY2(Float_t sigmay)               { fSigmaY2     = sigmay; }
+          void     SetMeanz(Float_t meanz)                  { fMeanz       = meanz;  }
+          void     SetZProb(Float_t zprob)                  { fZProb       = zprob;  }
+          void     SetLabels(Int_t i, Int_t label)          { fLabels[i]   = label;  }
+          void     SetN2(Int_t n2)                          { fN2          = n2;     }
+          void     SetNUsed(Int_t nused)                    { fNUsed       = nused;  }
+          void     SetFreq(Int_t freq)                      { fFreq        = freq;   }
+          void     SetC(Float_t c)                          { fC           = c;      }
+          void     SetCC(Float_t cc)                        { fCC          = cc;     }
+          void     SetChi2(Float_t chi2)                    { fChi2        = chi2;   }
+          void     SetChi2Z(Float_t chi2z)                  { fChi2Z       = chi2z;  }
 
  private:
 

@@ -1606,14 +1606,14 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
             chi2R = 0.0;
 
 	    for (Int_t iLayer = 0; iLayer < 4; iLayer++) {
-	      cseed[sLayer+iLayer].fZref[0] = rieman.GetZat(xcl[sLayer+iLayer]);
-	      chi2Z += (cseed[sLayer+iLayer].fZref[0]- zcl[sLayer+iLayer])
-		     * (cseed[sLayer+iLayer].fZref[0]- zcl[sLayer+iLayer]);
-	      cseed[sLayer+iLayer].fZref[1] = rieman.GetDZat(xcl[sLayer+iLayer]);	      
-	      cseed[sLayer+iLayer].fYref[0] = rieman.GetYat(xcl[sLayer+iLayer]);
-	      chi2R += (cseed[sLayer+iLayer].fYref[0]- ycl[sLayer+iLayer])
-		     * (cseed[sLayer+iLayer].fYref[0]- ycl[sLayer+iLayer]);
-	      cseed[sLayer+iLayer].fYref[1] = rieman.GetDYat(xcl[sLayer+iLayer]);
+	      cseed[sLayer+iLayer].SetZref(0,rieman.GetZat(xcl[sLayer+iLayer]));
+	      chi2Z += (cseed[sLayer+iLayer].GetZref(0)- zcl[sLayer+iLayer])
+		     * (cseed[sLayer+iLayer].GetZref(0)- zcl[sLayer+iLayer]);
+	      cseed[sLayer+iLayer].SetZref(1,rieman.GetDZat(xcl[sLayer+iLayer]));	      
+	      cseed[sLayer+iLayer].SetYref(0,rieman.GetYat(xcl[sLayer+iLayer]));
+	      chi2R += (cseed[sLayer+iLayer].GetYref(0)- ycl[sLayer+iLayer])
+		     * (cseed[sLayer+iLayer].GetYref(0)- ycl[sLayer+iLayer]);
+	      cseed[sLayer+iLayer].SetYref(1,rieman.GetDYat(xcl[sLayer+iLayer]));
 	    }
 	    if (TMath::Sqrt(chi2R) > 1.0/iter) {
               continue;
@@ -1625,12 +1625,12 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    Float_t minmax[2] = { -100.0,  100.0 };
 	    for (Int_t iLayer = 0; iLayer < 4; iLayer++) {
 	      Float_t max = zcl[sLayer+iLayer]+padlength[sLayer+iLayer] * 0.5
-                          + 1.0 - cseed[sLayer+iLayer].fZref[0];
+                          + 1.0 - cseed[sLayer+iLayer].GetZref(0);
 	      if (max < minmax[1]) {
                 minmax[1] = max; 
 	      }
 	      Float_t min = zcl[sLayer+iLayer]-padlength[sLayer+iLayer] * 0.5
-                          - 1.0 - cseed[sLayer+iLayer].fZref[0];
+                          - 1.0 - cseed[sLayer+iLayer].GetZref(0);
 	      if (min > minmax[0]) {
                 minmax[0] = min; 
 	      }
@@ -1689,9 +1689,9 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 
 	    for (Int_t jLayer = 0; jLayer < 4; jLayer++) {
 
-	      cseed[sLayer+jLayer].fTilt      = hL[sLayer+jLayer];
-	      cseed[sLayer+jLayer].fPadLength = padlength[sLayer+jLayer];
-	      cseed[sLayer+jLayer].fX0        = xcl[sLayer+jLayer];
+	      cseed[sLayer+jLayer].SetTilt(hL[sLayer+jLayer]);
+	      cseed[sLayer+jLayer].SetPadLength(padlength[sLayer+jLayer]);
+	      cseed[sLayer+jLayer].SetX0(xcl[sLayer+jLayer]);
 
 	      for (Int_t iter = 0; iter < 2; iter++) {
 
@@ -1715,7 +1715,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 
 		  if (iter > 0) {
 		    // Try 2 pad-rows in second iteration
-		    zexp = tseed.fZref[0] + tseed.fZref[1]*dxlayer;
+		    zexp = tseed.GetZref(0) + tseed.GetZref(1) * dxlayer;
 		    if (zexp > cl[sLayer+jLayer]->GetZ()) {
                       zexp = cl[sLayer+jLayer]->GetZ() + padlength[sLayer+jLayer]*0.5;
 		    }
@@ -1724,28 +1724,28 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 		    }
 		  }
 
-		  Double_t yexp  = tseed.fYref[0] + tseed.fYref[1]*dxlayer;
+		  Double_t yexp  = tseed.GetYref(0) + tseed.GetYref(1) * dxlayer;
 		  Int_t    index = layer.FindNearestCluster(yexp,zexp,kRoad1y,roadz);
 		  if (index <= 0) {
                     continue; 
 		  }
 		  AliTRDcluster *cl = (AliTRDcluster *) GetCluster(index);	      
 
-		  tseed.fIndexes[iTime]  = index;
-		  tseed.fClusters[iTime] = cl;         // Register cluster
-		  tseed.fX[iTime]        = dxlayer;    // Register cluster
-		  tseed.fY[iTime]        = cl->GetY(); // Register cluster
-		  tseed.fZ[iTime]        = cl->GetZ(); // Register cluster
+		  tseed.SetIndexes(iTime,index);
+		  tseed.SetClusters(iTime,cl);  // Register cluster
+		  tseed.SetX(iTime,dxlayer);    // Register cluster
+		  tseed.SetY(iTime,cl->GetY()); // Register cluster
+		  tseed.SetZ(iTime,cl->GetZ()); // Register cluster
 
 		}
 
 		tseed.Update();
 
 		// Count the number of clusters and distortions into quality
-		Float_t dangle   = tseed.fYfit[1] - tseed.fYref[1];
-		Float_t tquality = (18.0 - tseed.fN2) / 2.0 + TMath::Abs(dangle) / 0.1
-                                 + TMath::Abs(tseed.fYfit[0] - tseed.fYref[0])   / 0.2
-                                 + 2.0 * TMath::Abs(tseed.fMeanz-tseed.fZref[0]) / padlength[jLayer];
+		Float_t dangle   = tseed.GetYfit(1) - tseed.GetYref(1);
+		Float_t tquality = (18.0 - tseed.GetN2()) / 2.0 + TMath::Abs(dangle) / 0.1
+                                 + TMath::Abs(tseed.GetYfit(0) - tseed.GetYref(0))   / 0.2
+                                 + 2.0 * TMath::Abs(tseed.GetMeanz() - tseed.GetZref(0)) / padlength[jLayer];
 		if ((iter == 0) && tseed.IsOK()) {
 		  cseed[sLayer+jLayer] = tseed;
 		  quality              = tquality;
@@ -1766,7 +1766,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 
 	      cseed[sLayer+jLayer].CookLabels();
 	      cseed[sLayer+jLayer].UpdateUsed();
-	      nusedCl += cseed[sLayer+jLayer].fNUsed;
+	      nusedCl += cseed[sLayer+jLayer].GetNUsed();
 	      if (nusedCl > 25) {
 		isOK = kFALSE;
 		break;
@@ -1780,7 +1780,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    nclusters = 0;
 	    for (Int_t iLayer = 0; iLayer < 4; iLayer++) {
 	      if (cseed[sLayer+iLayer].IsOK()) {
-		nclusters += cseed[sLayer+iLayer].fN2;	    
+		nclusters += cseed[sLayer+iLayer].GetN2();	    
 	      }
 	    }
 
@@ -1788,8 +1788,8 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    rieman.Reset();
 	    for (Int_t iLayer = 0; iLayer < 4; iLayer++) {
 	      rieman.AddPoint(xcl[sLayer+iLayer]
-                             ,cseed[sLayer+iLayer].fYfitR[0]
-                             ,cseed[sLayer+iLayer].fZProb
+			     ,cseed[sLayer+iLayer].GetYfitR(0)
+			     ,cseed[sLayer+iLayer].GetZProb()
                              ,1
                              ,10);
 	    }
@@ -1799,24 +1799,24 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
             chi2Z = 0.0;
 
 	    for (Int_t iLayer = 0; iLayer < 4; iLayer++) {
-	      cseed[sLayer+iLayer].fYref[0] = rieman.GetYat(xcl[sLayer+iLayer]);
-	      chi2R += (cseed[sLayer+iLayer].fYref[0] - cseed[sLayer+iLayer].fYfitR[0])
-                     * (cseed[sLayer+iLayer].fYref[0] - cseed[sLayer+iLayer].fYfitR[0]);
-	      cseed[sLayer+iLayer].fYref[1] = rieman.GetDYat(xcl[sLayer+iLayer]);
-	      cseed[sLayer+iLayer].fZref[0] = rieman.GetZat(xcl[sLayer+iLayer]);
-	      chi2Z += (cseed[sLayer+iLayer].fZref[0] - cseed[sLayer+iLayer].fMeanz)
-                     * (cseed[sLayer+iLayer].fZref[0]- cseed[sLayer+iLayer].fMeanz);
-	      cseed[sLayer+iLayer].fZref[1] = rieman.GetDZat(xcl[sLayer+iLayer]);
+	      cseed[sLayer+iLayer].SetYref(0,rieman.GetYat(xcl[sLayer+iLayer]));
+	      chi2R += (cseed[sLayer+iLayer].GetYref(0) - cseed[sLayer+iLayer].GetYfitR(0))
+                     * (cseed[sLayer+iLayer].GetYref(0) - cseed[sLayer+iLayer].GetYfitR(0));
+	      cseed[sLayer+iLayer].SetYref(1,rieman.GetDYat(xcl[sLayer+iLayer]));
+	      cseed[sLayer+iLayer].SetZref(0,rieman.GetZat(xcl[sLayer+iLayer]));
+	      chi2Z += (cseed[sLayer+iLayer].GetZref(0) - cseed[sLayer+iLayer].GetMeanz())
+                     * (cseed[sLayer+iLayer].GetZref(0) - cseed[sLayer+iLayer].GetMeanz());
+	      cseed[sLayer+iLayer].SetZref(1,rieman.GetDZat(xcl[sLayer+iLayer]));
 	    }
 	    Double_t curv = rieman.GetC();
 
 	    //
 	    // Likelihoods
 	    //
-	    Double_t sumda     = TMath::Abs(cseed[sLayer+0].fYfitR[1] - cseed[sLayer+0].fYref[1])
-                               + TMath::Abs(cseed[sLayer+1].fYfitR[1] - cseed[sLayer+1].fYref[1])
-                               + TMath::Abs(cseed[sLayer+2].fYfitR[1] - cseed[sLayer+2].fYref[1])
-                               + TMath::Abs(cseed[sLayer+3].fYfitR[1]- cseed[sLayer+3].fYref[1]);
+	    Double_t sumda     = TMath::Abs(cseed[sLayer+0].GetYfitR(1) - cseed[sLayer+0].GetYref(1))
+                               + TMath::Abs(cseed[sLayer+1].GetYfitR(1) - cseed[sLayer+1].GetYref(1))
+                               + TMath::Abs(cseed[sLayer+2].GetYfitR(1) - cseed[sLayer+2].GetYref(1))
+                               + TMath::Abs(cseed[sLayer+3].GetYfitR(1) - cseed[sLayer+3].GetYref(1));
 	    Double_t likea     = TMath::Exp(-sumda*10.6);
 	    Double_t likechi2  = 0.0000000001;
 	    if (chi2R < 0.5) {
@@ -1825,9 +1825,9 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    Double_t likechi2z = TMath::Exp(-chi2Z * 0.088) / TMath::Exp(-chi2Z * 0.019);
 	    Double_t likeN     = TMath::Exp(-(72 - nclusters) * 0.19);
 	    Double_t like      = likea * likechi2 * likechi2z * likeN;
-	    Double_t likePrimY = TMath::Exp(-TMath::Abs(cseed[sLayer+0].fYref[1] - 130.0*curv) * 1.9);
-	    Double_t likePrimZ = TMath::Exp(-TMath::Abs(cseed[sLayer+0].fZref[1]
-                                                      - cseed[sLayer+0].fZref[0] / xcl[sLayer+0]) * 5.9);
+	    Double_t likePrimY = TMath::Exp(-TMath::Abs(cseed[sLayer+0].GetYref(1) - 130.0*curv) * 1.9);
+	    Double_t likePrimZ = TMath::Exp(-TMath::Abs(cseed[sLayer+0].GetZref(1)
+                                                      - cseed[sLayer+0].GetZref(0) / xcl[sLayer+0]) * 5.9);
 	    Double_t likePrim  = TMath::Max(likePrimY*likePrimZ,0.0005);
 					    
 	    seedquality[registered] = like; 
@@ -1870,12 +1870,12 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    for (Int_t iLayer = 0; iLayer < 2; iLayer++) {
 	      Int_t jLayer = tLayer[iLayer]; // Set tracking layer	      
 	      cseed[jLayer].Reset();
-	      cseed[jLayer].fTilt      = hL[jLayer];
-	      cseed[jLayer].fPadLength = padlength[jLayer];
-	      cseed[jLayer].fX0        = xcl[jLayer];
+	      cseed[jLayer].SetTilt(hL[jLayer]);
+	      cseed[jLayer].SetPadLength(padlength[jLayer]);
+	      cseed[jLayer].SetX0(xcl[jLayer]);
 	      // Get pad length and rough cluster
-	      Int_t indexdummy = reflayers[jLayer]->FindNearestCluster(cseed[jLayer].fYref[0]
-                                                                      ,cseed[jLayer].fZref[0]
+	      Int_t indexdummy = reflayers[jLayer]->FindNearestCluster(cseed[jLayer].GetYref(0)
+								      ,cseed[jLayer].GetZref(0)
                                                                       ,kRoad2y
                                                                       ,kRoad2z);
 	      if (indexdummy <= 0) {
@@ -1895,7 +1895,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	      if ((jLayer == 5) && !(cseed[4].IsOK())) {
                 continue;  // break not allowed
 	      }
-	      Float_t  zexp   = cseed[jLayer].fZref[0];
+	      Float_t  zexp   = cseed[jLayer].GetZref(0);
 	      Double_t zroad  = padlength[jLayer] * 0.5 + 1.0;
 
 	      for (Int_t iter = 0; iter < 2; iter++) {
@@ -1906,26 +1906,26 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 		for (Int_t iTime = 2; iTime < 20; iTime++) { 
 		  AliTRDpropagationLayer &layer = *(fTrSec[ns]->GetLayer(layers[jLayer][1]-iTime));
 		  Double_t dxlayer = layer.GetX()-xcl[jLayer];
-		  Double_t yexp    = tseed.fYref[0] + tseed.fYref[1]*dxlayer;
+		  Double_t yexp    = tseed.GetYref(0) + tseed.GetYref(1) * dxlayer;
 		  Float_t  yroad   = kRoad1y;
 		  Int_t    index   = layer.FindNearestCluster(yexp,zexp,yroad,zroad);
 		  if (index <= 0) {
                     continue; 
 		  }
 		  AliTRDcluster *cl = (AliTRDcluster *) GetCluster(index);	      
-		  tseed.fIndexes[iTime]  = index;
-		  tseed.fClusters[iTime] = cl;         // Register cluster
-		  tseed.fX[iTime]        = dxlayer;    // Register cluster
-		  tseed.fY[iTime]        = cl->GetY(); // Register cluster
-		  tseed.fZ[iTime]        = cl->GetZ(); // Register cluster
+		  tseed.SetIndexes(iTime,index);
+		  tseed.SetClusters(iTime,cl);  // Register cluster
+		  tseed.SetX(iTime,dxlayer);    // Register cluster
+		  tseed.SetY(iTime,cl->GetY()); // Register cluster
+		  tseed.SetZ(iTime,cl->GetZ()); // Register cluster
 		}
 
 		tseed.Update();
 		if (tseed.IsOK()) {
-		  Float_t dangle   = tseed.fYfit[1] - tseed.fYref[1];
-		  Float_t tquality = (18.0 - tseed.fN2)/2.0 + TMath::Abs(dangle)   / 0.1
-                                   + TMath::Abs(tseed.fYfit[0] - tseed.fYref[0])   / 0.2
-                                   + 2.0 * TMath::Abs(tseed.fMeanz-tseed.fZref[0]) / padlength[jLayer];
+		  Float_t dangle   = tseed.GetYfit(1) - tseed.GetYref(1);
+		  Float_t tquality = (18.0 - tseed.GetN2())/2.0 + TMath::Abs(dangle) / 0.1
+                                   + TMath::Abs(tseed.GetYfit(0) - tseed.GetYref(0)) / 0.2
+                                   + 2.0 * TMath::Abs(tseed.GetMeanz() - tseed.GetZref(0)) / padlength[jLayer];
 		  if (tquality < quality) {
 		    cseed[jLayer] = tseed;
 		    quality       = tquality;
@@ -1939,7 +1939,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	      if ( cseed[jLayer].IsOK()) {
 		cseed[jLayer].CookLabels();
 		cseed[jLayer].UpdateUsed();
-		nusedf += cseed[jLayer].fNUsed;
+		nusedf += cseed[jLayer].GetNUsed();
 		AliTRDseed::FitRiemanTilt(cseed,kTRUE);
 	      }
 
@@ -1964,11 +1964,11 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	      for (Int_t jLayer = 0; jLayer < 6; jLayer++) {
 		if (bseed[jLayer].IsOK()) { 
 		  AliTRDseed &tseed = bseed[jLayer];
-		  Double_t zcor     =  tseed.fTilt * (tseed.fZProb - tseed.fZref[0]);
-		  Float_t  dangle   = tseed.fYfit[1] - tseed.fYref[1];
-		  Float_t  tquality = (18.0 - tseed.fN2) / 2.0 + TMath::Abs(dangle)        / 0.1
-                                    + TMath::Abs(tseed.fYfit[0] - (tseed.fYref[0] - zcor)) / 0.2
-                                    + 2.0 * TMath::Abs(tseed.fMeanz - tseed.fZref[0])      / padlength[jLayer];
+		  Double_t zcor     = tseed.GetTilt() * (tseed.GetZProb() - tseed.GetZref(0));
+		  Float_t  dangle   = tseed.GetYfit(1) - tseed.GetYref(1);
+		  Float_t  tquality = (18.0 - tseed.GetN2()) / 2.0 + TMath::Abs(dangle)        / 0.1
+                                    + TMath::Abs(tseed.GetYfit(0) - (tseed.GetYref(0) - zcor)) / 0.2
+                                    + 2.0 * TMath::Abs(tseed.GetMeanz() - tseed.GetZref(0))    / padlength[jLayer];
 		  squality[jLayer]  = tquality;
 		}
 		else {
@@ -1999,43 +1999,43 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 
 		  AliTRDpropagationLayer &layer = *(fTrSec[ns]->GetLayer(layers[bLayer][1]-iTime));
 		  Double_t dxlayer = layer.GetX() - xcl[bLayer];
-		  Double_t zexp    =  tseed.fZref[0];
-		  Double_t zcor    =  tseed.fTilt * (tseed.fZProb - tseed.fZref[0]);
+		  Double_t zexp    = tseed.GetZref(0);
+		  Double_t zcor    = tseed.GetTilt() * (tseed.GetZProb() - tseed.GetZref(0));
 		  Float_t  roadz   = padlength[bLayer] + 1;
- 		  if (TMath::Abs(tseed.fZProb-zexp) > padlength[bLayer]*0.5) {
+ 		  if (TMath::Abs(tseed.GetZProb() - zexp) > 0.5*padlength[bLayer]) {
                     roadz = padlength[bLayer] * 0.5;
                   }
-		  if (tseed.fZfit[1]*tseed.fZref[1] < 0) {
+		  if (tseed.GetZfit(1)*tseed.GetZref(1)   < 0.0) {
                     roadz = padlength[bLayer] * 0.5;
                   }
-		  if (TMath::Abs(tseed.fZProb-zexp) < 0.1*padlength[bLayer]) {
-		    zexp  = tseed.fZProb; 
+		  if (TMath::Abs(tseed.GetZProb() - zexp) < 0.1*padlength[bLayer]) {
+		    zexp  = tseed.GetZProb(); 
 		    roadz = padlength[bLayer] * 0.5;
 		  }
 
-		  Double_t yexp  = tseed.fYref[0] + tseed.fYref[1]*dxlayer-zcor;
+		  Double_t yexp  = tseed.GetYref(0) + tseed.GetYref(1) * dxlayer - zcor;
 		  Int_t    index = layer.FindNearestCluster(yexp,zexp,kRoad1y,roadz);
 		  if (index <= 0) {
                     continue; 
 		  }
 		  AliTRDcluster *cl = (AliTRDcluster *) GetCluster(index);	      
 
-		  tseed.fIndexes[iTime]  = index;
-		  tseed.fClusters[iTime] = cl;         // Register cluster
-		  tseed.fX[iTime]        = dxlayer;    // Register cluster
-		  tseed.fY[iTime]        = cl->GetY(); // Register cluster
-		  tseed.fZ[iTime]        = cl->GetZ(); // Register cluster
+		  tseed.SetIndexes(iTime,index);
+		  tseed.SetClusters(iTime,cl);  // Register cluster
+		  tseed.SetX(iTime,dxlayer);    // Register cluster
+		  tseed.SetY(iTime,cl->GetY()); // Register cluster
+		  tseed.SetZ(iTime,cl->GetZ()); // Register cluster
 
 		}
 
 		tseed.Update();
 		if (tseed.IsOK()) {
-		  Float_t  dangle   = tseed.fYfit[1] - tseed.fYref[1];
-		  Double_t zcor     = tseed.fTilt * (tseed.fZProb - tseed.fZref[0]);
-		  Float_t  tquality = (18.0 - tseed.fN2) / 2.0 
-                                    + TMath::Abs(dangle) / 0.1
-                                    + TMath::Abs(tseed.fYfit[0] - (tseed.fYref[0] - zcor)) / 0.2
-                                    + 2.0 * TMath::Abs(tseed.fMeanz - tseed.fZref[0]) / padlength[jLayer];
+		  Float_t  dangle   = tseed.GetYfit(1) - tseed.GetYref(1);
+		  Double_t zcor     = tseed.GetTilt() * (tseed.GetZProb() - tseed.GetZref(0));
+		  Float_t  tquality = (18.0 - tseed.GetN2()) / 2.0 
+                                    + TMath::Abs(dangle)     / 0.1
+                                    + TMath::Abs(tseed.GetYfit(0) - (tseed.GetYref(0) - zcor)) / 0.2
+                                    + 2.0 * TMath::Abs(tseed.GetMeanz() - tseed.GetZref(0))    / padlength[jLayer];
 		  if (tquality<squality[bLayer]) {
 		    bseed[bLayer] = tseed;
 		  }
@@ -2051,11 +2051,11 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    nlayers   = 0;
 	    findable  = 0;
 	    for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-	      if (TMath::Abs(cseed[iLayer].fYref[0] / cseed[iLayer].fX0) < 0.15) {
+	      if (TMath::Abs(cseed[iLayer].GetYref(0) / cseed[iLayer].GetX0()) < 0.15) {
 		findable++;
 	      }
 	      if (cseed[iLayer].IsOK()) {
-		nclusters += cseed[iLayer].fN2;	    
+		nclusters += cseed[iLayer].GetN2();	    
 		nlayers++;
 	      }
 	    }
@@ -2066,8 +2066,8 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
 	      if (cseed[iLayer].IsOK()) {
                 rieman.AddPoint(xcl[iLayer]
-                               ,cseed[iLayer].fYfitR[0]
-                               ,cseed[iLayer].fZProb
+			       ,cseed[iLayer].GetYfitR(0)
+			       ,cseed[iLayer].GetZProb()
                                ,1
                                ,10);
 	      }
@@ -2078,14 +2078,14 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    chi2ZF = 0.0;
 	    for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
 	      if (cseed[iLayer].IsOK()) {
-		cseed[iLayer].fYref[0] = rieman.GetYat(xcl[iLayer]);
-		chi2RF += (cseed[iLayer].fYref[0] - cseed[iLayer].fYfitR[0])
-                        * (cseed[iLayer].fYref[0] - cseed[iLayer].fYfitR[0]);
-		cseed[iLayer].fYref[1] = rieman.GetDYat(xcl[iLayer]);
-		cseed[iLayer].fZref[0] = rieman.GetZat(xcl[iLayer]);
-		chi2ZF += (cseed[iLayer].fZref[0] - cseed[iLayer].fMeanz)
-                        * (cseed[iLayer].fZref[0] - cseed[iLayer].fMeanz);
-		cseed[iLayer].fZref[1] = rieman.GetDZat(xcl[iLayer]);
+		cseed[iLayer].SetYref(0,rieman.GetYat(xcl[iLayer]));
+		chi2RF += (cseed[iLayer].GetYref(0) - cseed[iLayer].GetYfitR(0))
+                        * (cseed[iLayer].GetYref(0) - cseed[iLayer].GetYfitR(0));
+		cseed[iLayer].SetYref(1,rieman.GetDYat(xcl[iLayer]));
+		cseed[iLayer].SetZref(0,rieman.GetZat(xcl[iLayer]));
+		chi2ZF += (cseed[iLayer].GetZref(0) - cseed[iLayer].GetMeanz())
+                        * (cseed[iLayer].GetZref(0) - cseed[iLayer].GetMeanz());
+		cseed[iLayer].SetZref(1,rieman.GetDZat(xcl[iLayer]));
 	      }
 	    }
 	    chi2RF /= TMath::Max((nlayers - 3.0),1.0);
@@ -2112,18 +2112,18 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 
 	      for (Int_t itime = 0; itime < 25; itime++) {
 
-		if (!cseed[iLayer].fUsable[itime]) {
+		if (!cseed[iLayer].IsUsable(itime)) {
                   continue;
 		}
                 // X relative to the middle chamber
-		Double_t x  = cseed[iLayer].fX[itime] + cseed[iLayer].fX0 - xref2;  
-		Double_t y  = cseed[iLayer].fY[itime];
-		Double_t z  = cseed[iLayer].fZ[itime];
+		Double_t x  = cseed[iLayer].GetX(itime) + cseed[iLayer].GetX0() - xref2;  
+		Double_t y  = cseed[iLayer].GetY(itime);
+		Double_t z  = cseed[iLayer].GetZ(itime);
 		// ExB correction to the correction
 		// Tilted rieman
 		Double_t uvt[6];
                 // Global x
-		Double_t x2 = cseed[iLayer].fX[itime] + cseed[iLayer].fX0;      
+		Double_t x2 = cseed[iLayer].GetX(itime) + cseed[iLayer].GetX0();      
 		Double_t t  = 1.0 / (x2*x2 + y*y);
 		uvt[1] = t;                 // t
 		uvt[0] = 2.0 * x2 * uvt[1]; // u 
@@ -2136,7 +2136,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 		//
 		// Constrained rieman
 		// 
-		z = cseed[iLayer].fZ[itime];
+		z = cseed[iLayer].GetZ(itime);
 		uvt[0] = 2.0 * x2 * t; // u 
 		uvt[1] = 2.0 * hL[iLayer] * x2 * uvt[1];	      
 		uvt[2] = 2.0 * (y + hL[iLayer] * (z - GetZ())) * t;
@@ -2162,7 +2162,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
 	      if (cseed[iLayer].IsOK()) {
 		Double_t zT2 = rpolz0 + rpolz1 * (xcl[iLayer] - xref2);
-		if (TMath::Abs(cseed[iLayer].fZProb - zT2) > padlength[iLayer] * 0.5 + 1.0) {
+		if (TMath::Abs(cseed[iLayer].GetZProb() - zT2) > padlength[iLayer] * 0.5 + 1.0) {
 		  acceptablez = kFALSE;
 		}
 	      }
@@ -2200,8 +2200,8 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	      if (cseed[iLayer].IsOK()) {
 		Double_t zT2 = rpolz0 + rpolz1 * (xcl[iLayer] - xref2);
 		Double_t zTC = polz0c + polz1c * (xcl[iLayer] - xref2);
-		chi2ZT2 += TMath::Abs(cseed[iLayer].fMeanz - zT2);
-		chi2ZTC += TMath::Abs(cseed[iLayer].fMeanz - zTC);
+		chi2ZT2 += TMath::Abs(cseed[iLayer].GetMeanz() - zT2);
+		chi2ZTC += TMath::Abs(cseed[iLayer].GetMeanz() - zTC);
 	      }
 	    }
 	    chi2ZT2 /= TMath::Max((nlayers - 3.0),1.0);
@@ -2211,8 +2211,8 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    Float_t sumdaf = 0.0;
 	    for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
 	      if (cseed[iLayer].IsOK()) {
-		sumdaf += TMath::Abs((cseed[iLayer].fYfit[1] - cseed[iLayer].fYref[1])
-                                    / cseed[iLayer].fSigmaY2);
+		sumdaf += TMath::Abs((cseed[iLayer].GetYfit(1) - cseed[iLayer].GetYref(1))
+                                    / cseed[iLayer].GetSigmaY2());
 	      }
 	    }
 	    sumdaf /= Float_t (nlayers - 2.0);
@@ -2245,13 +2245,13 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
                 index0 = 2;
 	      }
 	    }
-	    seedparams[registered][0] = cseed[index0].fX0;
-	    seedparams[registered][1] = cseed[index0].fYref[0];
-	    seedparams[registered][2] = cseed[index0].fZref[0];
+	    seedparams[registered][0] = cseed[index0].GetX0();
+	    seedparams[registered][1] = cseed[index0].GetYref(0);
+	    seedparams[registered][2] = cseed[index0].GetZref(0);
 	    seedparams[registered][5] = cR;
-	    seedparams[registered][3] = cseed[index0].fX0 * cR - TMath::Sin(TMath::ATan(cseed[0].fYref[1]));
-	    seedparams[registered][4] = cseed[index0].fZref[1]
-                                      /	TMath::Sqrt(1.0 + cseed[index0].fYref[1] * cseed[index0].fYref[1]);
+	    seedparams[registered][3] = cseed[index0].GetX0() * cR - TMath::Sin(TMath::ATan(cseed[0].GetYref(1)));
+	    seedparams[registered][4] = cseed[index0].GetZref(1)
+                                      /	TMath::Sqrt(1.0 + cseed[index0].GetYref(1) * cseed[index0].GetYref(1));
 	    seedparams[registered][6] = ns;
 
 	    Int_t labels[12];
@@ -2261,12 +2261,12 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	      if (!cseed[iLayer].IsOK()) {
                 continue;
 	      }
-	      if (cseed[iLayer].fLabels[0] >= 0) {
-		labels[nlab] = cseed[iLayer].fLabels[0];
+	      if (cseed[iLayer].GetLabels(0) >= 0) {
+		labels[nlab] = cseed[iLayer].GetLabels(0);
 		nlab++;
 	      }
-	      if (cseed[iLayer].fLabels[1] >= 0) {
-		labels[nlab] = cseed[iLayer].fLabels[1];
+	      if (cseed[iLayer].GetLabels(1) >= 0) {
+		labels[nlab] = cseed[iLayer].GetLabels(1);
 		nlab++;
 	      }
 	    }
@@ -2274,11 +2274,11 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	    Int_t label     = outlab[0];
 	    Int_t frequency = outlab[1];
 	    for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-	      cseed[iLayer].fFreq  = frequency;
-	      cseed[iLayer].fC     = cR;
-	      cseed[iLayer].fCC    = cC;
-	      cseed[iLayer].fChi2  = chi2TR;
-	      cseed[iLayer].fChi2Z = chi2ZF;
+	      cseed[iLayer].SetFreq(frequency);
+	      cseed[iLayer].SetC(cR);
+	      cseed[iLayer].SetCC(cC);
+	      cseed[iLayer].SetChi2(chi2TR);
+	      cseed[iLayer].SetChi2Z(chi2ZF);
 	    }
 
 	    // Debugging print
@@ -2387,20 +2387,20 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 
 	for (Int_t jLayer = 0; jLayer < 6; jLayer++) {
 
-	  if (TMath::Abs(seed[index][jLayer].fYref[0] / xcl[jLayer]) < 0.15) {
+	  if (TMath::Abs(seed[index][jLayer].GetYref(0) / xcl[jLayer]) < 0.15) {
 	    findable++;
 	  }
 	  if (seed[index][jLayer].IsOK()) {
 	    seed[index][jLayer].UpdateUsed();
-	    ncl   +=seed[index][jLayer].fN2;
-	    nused +=seed[index][jLayer].fNUsed;
+	    ncl   +=seed[index][jLayer].GetN2();
+	    nused +=seed[index][jLayer].GetNUsed();
 	    nlayers++;
 	    // Cooking label
 	    for (Int_t itime = 0; itime < 25; itime++) {
-	      if (seed[index][jLayer].fUsable[itime]) {
+	      if (seed[index][jLayer].IsUsable(itime)) {
 		naccepted++;
 		for (Int_t ilab = 0; ilab < 3; ilab++) {
-		  Int_t tindex = seed[index][jLayer].fClusters[itime]->GetLabel(ilab);
+		  Int_t tindex = seed[index][jLayer].GetClusters(itime)->GetLabel(ilab);
 		  if (tindex >= 0) {
 		    labelsall[nlabelsall] = tindex;
 		    nlabelsall++;
@@ -2463,12 +2463,12 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	Int_t nlab = 0;
 	for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
 	  if (seed[index][iLayer].IsOK()) {
-	    if (seed[index][iLayer].fLabels[0] >= 0) {
-	      labels[nlab] = seed[index][iLayer].fLabels[0];
+	    if (seed[index][iLayer].GetLabels(0) >= 0) {
+	      labels[nlab] = seed[index][iLayer].GetLabels(0);
 	      nlab++;
 	    }
-	    if (seed[index][iLayer].fLabels[1] >= 0) {
-	      labels[nlab] = seed[index][iLayer].fLabels[1];
+	    if (seed[index][iLayer].GetLabels(1) >= 0) {
+	      labels[nlab] = seed[index][iLayer].GetLabels(1);
 	      nlab++;
 	    }
 	  }   
@@ -2484,7 +2484,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	if (ratio < 0.25) {
 	  for (Int_t jLayer = 0; jLayer < 6; jLayer++) {
 	    if ((seed[index][jLayer].IsOK()) && 
-                (TMath::Abs(seed[index][jLayer].fYfit[1] - seed[index][jLayer].fYfit[1]) < 0.2)) {
+                (TMath::Abs(seed[index][jLayer].GetYfit(1) - seed[index][jLayer].GetYfit(1)) < 0.2)) {
 	      seed[index][jLayer].UseClusters(); // Sign gold
 	    }
 	  }
@@ -4115,9 +4115,9 @@ AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed *seeds, Double_t *params)
   for (Int_t ilayer = 0; ilayer < 6; ilayer++) {
     if (seeds[ilayer].IsOK()) {
       for (Int_t itime = 22; itime > 0; itime--) {
-	if (seeds[ilayer].fIndexes[itime] > 0) {
-	  index = seeds[ilayer].fIndexes[itime];
-	  cl    = seeds[ilayer].fClusters[itime];
+	if (seeds[ilayer].GetIndexes(itime) > 0) {
+	  index = seeds[ilayer].GetIndexes(itime);
+	  cl    = seeds[ilayer].GetClusters(itime);
 	  break;
 	}
       }
