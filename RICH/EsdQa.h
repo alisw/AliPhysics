@@ -8,10 +8,7 @@
 #ifndef EsdQa_h
 #define EsdQa_h
 
-#include <TROOT.h>
-#include <TChain.h>
-#include <TFile.h>
-#include <TSelector.h>
+#include <TSelector.h>        //base class
 #include <AliESD.h>           //dtor deletes fEsd
 
 class TH2F;
@@ -20,9 +17,8 @@ class TH1F;
 class EsdQa : public TSelector {
 
  public :
-           EsdQa(TTree *tree=0) : TSelector(), fChain(0), fEsd(0), fCkovMomH(0), fdist(0), fX(0), fY(0), fsigma2(0)  
-                                                                                                         {for(Int_t i=0;i<5;i++) fProbH[i]=0;}
-  virtual ~EsdQa(             )                                                                          {delete fEsd;}
+           EsdQa():TSelector(),fChain(0),fEsd(0),fCkovP(0),fMipXY(0),fDifXY(0),fSigP(0) {for(Int_t i=0;i<5;i++) fProb[i]=0;}
+  virtual ~EsdQa()                                                                      {delete fEsd;}
 
 
   virtual Int_t   Version        () const {return 2;}
@@ -42,9 +38,8 @@ class EsdQa : public TSelector {
   TTree          *fChain ;   //!pointer to the analyzed TTree or TChain
   AliESD         *fEsd ;     //!
 
-  TH2F           *fCkovMomH,*fdist; //!
-  TH1F           *fX, *fY, *fsigma2;
-  TH1F           *fProbH[5]; //!
+  TH2F           *fCkovP,*fMipXY,*fDifXY,*fSigP; //!
+  TH1F           *fProb[5];                      //!
 
   ClassDef(EsdQa,0);
 };
