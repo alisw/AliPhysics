@@ -26,7 +26,6 @@ class TClonesArray ;
 
 // --- AliRoot header files ---
 #include "AliGeometry.h"
-#include "AliEMCALAlignData.h"
 #include "TArrayD.h"
 
 class AliEMCALGeometry : public AliGeometry {
@@ -37,10 +36,10 @@ public:
   static AliEMCALGeometry * GetInstance(const Text_t* name,
 					const Text_t* title="") ; 
   static AliEMCALGeometry * GetInstance() ;
-  AliEMCALGeometry & operator = (const AliEMCALGeometry  & /*rvalue*/) const {
+  AliEMCALGeometry & operator = (const AliEMCALGeometry  & /*rvalue*/) {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented");
-    return *(GetInstance()); 
+    return *this;
   };
   
   void FillTRU(const TClonesArray * digits, TClonesArray * amptru, TClonesArray * timeRtru)  ; //Fills Trigger Unit matrices with digit amplitudes and time
@@ -174,8 +173,6 @@ public:
 protected:
   AliEMCALGeometry(const Text_t* name, const Text_t* title);// ctor only for internal usage (singleton)
 
-  AliEMCALGeometry(const Text_t* name, const Text_t* title, AliEMCALAlignData* alignData);
-
   void Init(void);     			// initializes the parameters of EMCAL
   void CheckAdditionalOptions();        //
   void DefineSamplingFraction();        // Jun 5, 2006
@@ -183,7 +180,6 @@ protected:
 private:
   static AliEMCALGeometry * fgGeom;	// pointer to the unique instance of the singleton
   static Bool_t fgInit;			// Tells if geometry has been succesfully set up.
-  static AliEMCALAlignData *fgAlignData;// Alignment data, to be replaced by AliAlignData soon
 
   TString fGeoName;                     //geometry name
 

@@ -17,8 +17,7 @@ AliEMCALHistoUtilities.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALDigit.cxx \
-AliEMCALCalibData.cxx \
-AliEMCALAlignData.cxx
+AliEMCALCalibData.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 

@@ -23,7 +23,6 @@
 #pragma link C++ class AliEMCALDigitizer+;
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALCalibData+;
-#pragma link C++ class AliEMCALAlignData+;
 
 
 #endif

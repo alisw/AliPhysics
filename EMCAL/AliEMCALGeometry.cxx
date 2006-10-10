@@ -54,18 +54,24 @@
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALHistoUtilities.h"
-#include "AliEMCALAlignData.h"
 
 ClassImp(AliEMCALGeometry)
 
 // these initialisations are needed for a singleton
 AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
 Bool_t             AliEMCALGeometry::fgInit      = kFALSE;
-AliEMCALAlignData *AliEMCALGeometry::fgAlignData = 0;
 
 
-
-AliEMCALGeometry::AliEMCALGeometry() : AliGeometry() 
+AliEMCALGeometry::AliEMCALGeometry() 
+  : AliGeometry(),
+    fGeoName(0),fArrayOpts(0),fAlFrontThick(0.),fECPbRadThickness(0.),fECScintThick(0.),
+    fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
+    fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
+    fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
+    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
+    fNCells(0),fNCellsInSupMod(0),fNCellsInTower(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fPhiGapForSM(0.),fKey110DEG(0),fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fEtaCentersOfCells(0),
+    fXCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(),fNAdditionalOpts(0) 
 { 
   // default ctor only for internal usage (singleton)
   // must be kept public for root persistency purposes, but should never be called by the outside world    
@@ -73,79 +79,77 @@ AliEMCALGeometry::AliEMCALGeometry() : AliGeometry()
   AliDebug(2, "AliEMCALGeometry : default ctor ");
 }
 //______________________________________________________________________
-AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title) :
-AliGeometry(name, title) {// ctor only for internal usage (singleton)
+AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title) 
+  : AliGeometry(name, title),
+    fGeoName(0),fArrayOpts(0),fAlFrontThick(0.),fECPbRadThickness(0.),fECScintThick(0.),
+    fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
+    fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
+    fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
+    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
+    fNCells(0),fNCellsInSupMod(0),fNCellsInTower(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fPhiGapForSM(0.),fKey110DEG(0),fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fEtaCentersOfCells(0),
+    fXCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(),fNAdditionalOpts(0)
+{
+  // ctor only for internal usage (singleton)
   AliDebug(2, Form("AliEMCALGeometry(%s,%s) ", name,title));
   Init();
   CreateListOfTrd1Modules();
 }
 //______________________________________________________________________
-AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title, AliEMCALAlignData* alignData) :
-  AliGeometry(name, title) {// Align data in action
-  fgAlignData = alignData;
-  Init();
-  CreateListOfTrd1Modules();
-}
-//______________________________________________________________________
-AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom):AliGeometry(geom) {
+AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
+  : AliGeometry(geom),
+    fGeoName(geom.fGeoName),
+    fArrayOpts(geom.fArrayOpts),
+    fAlFrontThick(geom.fAlFrontThick),
+    fECPbRadThickness(geom.fECPbRadThickness),
+    fECScintThick(geom.fECScintThick),
+    fNECLayers(geom.fNECLayers),
+    fArm1PhiMin(geom.fArm1PhiMin),
+    fArm1PhiMax(geom.fArm1PhiMax),
+    fArm1EtaMin(geom.fArm1EtaMin),
+    fArm1EtaMax(geom.fArm1EtaMax),
+    fIPDistance(geom.fIPDistance),
+    fShellThickness(geom.fShellThickness),
+    fZLength(geom.fZLength),
+    fGap2Active(geom.fGap2Active),
+    fNZ(geom.fNZ),
+    fNPhi(geom.fNPhi),
+    fSampling(geom.fSampling),
+    fNumberOfSuperModules(geom.fNumberOfSuperModules),
+    fSteelFrontThick(geom.fSteelFrontThick),
+    fFrontSteelStrip(geom.fFrontSteelStrip),
+    fLateralSteelStrip(geom.fLateralSteelStrip),
+    fPassiveScintThick(geom.fPassiveScintThick),
+    fPhiModuleSize(geom.fPhiModuleSize),
+    fEtaModuleSize(geom.fEtaModuleSize),
+    fPhiTileSize(geom.fPhiTileSize),
+    fEtaTileSize(geom.fEtaTileSize),
+    fLongModuleSize(geom.fLongModuleSize),
+    fNPhiSuperModule(geom.fNPhiSuperModule),
+    fNPHIdiv(geom.fNPHIdiv),
+    fNETAdiv(geom.fNETAdiv),
+    fNCells(geom.fNCells),
+    fNCellsInSupMod(geom.fNCellsInSupMod),
+    fNCellsInTower(geom.fNCellsInTower),
+    fNTRU(geom.fNTRU),
+    fNTRUEta(geom.fNTRUEta),
+    fNTRUPhi(geom.fNTRUPhi),
+    fTrd1Angle(geom.fTrd1Angle),
+    f2Trd1Dx2(geom.f2Trd1Dx2),
+    fPhiGapForSM(geom.fPhiGapForSM),
+    fKey110DEG(geom.fKey110DEG),
+    fTrd2AngleY(geom.fTrd2AngleY),
+    f2Trd2Dy2(geom.f2Trd2Dy2),
+    fEmptySpace(geom.fEmptySpace),
+    fTubsR(geom.fTubsR),
+    fTubsTurnAngle(geom.fTubsTurnAngle),
+    fEtaCentersOfCells(geom.fEtaCentersOfCells),
+    fXCentersOfCells(geom.fXCentersOfCells),
+    fPhiCentersOfCells(geom.fPhiCentersOfCells),
+    fShishKebabTrd1Modules(geom.fShishKebabTrd1Modules),
+    fNAdditionalOpts(geom.fNAdditionalOpts)
+{
   //copy ctor
-  fGeoName = geom.fGeoName;
-
-  fArrayOpts = geom.fArrayOpts;
-
-  fAlFrontThick = geom.fAlFrontThick;
-  fECPbRadThickness = geom.fECPbRadThickness;
-  fECScintThick = geom.fECScintThick;
-  fNECLayers = geom.fNECLayers;
-  fArm1PhiMin = geom.fArm1PhiMin;
-  fArm1PhiMax = geom.fArm1PhiMax;
-  fArm1EtaMin = geom.fArm1EtaMin;
-  fArm1EtaMax = geom.fArm1EtaMax;
-
-  fIPDistance = geom.fIPDistance;
-  fShellThickness = geom.fShellThickness;
-  fZLength = geom.fZLength;
-  fGap2Active = geom.fGap2Active;
-  fNZ = geom.fNZ;
-  fNPhi = geom.fNPhi;
-  fSampling = geom.fSampling;
-
-  fNumberOfSuperModules = geom.fNumberOfSuperModules;
-  fSteelFrontThick = geom.fSteelFrontThick;
-  fFrontSteelStrip = geom.fFrontSteelStrip;
-  fLateralSteelStrip = geom.fLateralSteelStrip;
-  fPassiveScintThick = geom.fPassiveScintThick;
-  fPhiModuleSize = geom.fPhiModuleSize;
-  fEtaModuleSize = geom.fEtaModuleSize;
-  fPhiTileSize = geom.fPhiTileSize;
-  fEtaTileSize = geom.fEtaTileSize;
-  fLongModuleSize = geom.fLongModuleSize;
-  fNPhiSuperModule = geom.fNPhiSuperModule;
-  fNPHIdiv = geom.fNPHIdiv;
-  fNETAdiv = geom.fNETAdiv;
-
-  fNCells = geom.fNCells;
-  fNCellsInSupMod = geom.fNCellsInSupMod;
-  fNCellsInTower = geom.fNCellsInTower;
-  fNTRU = geom.fNTRU;
-  fNTRUEta = geom.fNTRUEta;
-  fNTRUPhi = geom.fNTRUPhi;
-  fTrd1Angle = geom.fTrd1Angle;
-  f2Trd1Dx2 = geom.f2Trd1Dx2;
-  fPhiGapForSM = geom.fPhiGapForSM;
-  fKey110DEG = geom.fKey110DEG;
-  fTrd2AngleY = geom.fTrd2AngleY;
-  f2Trd2Dy2 = geom.f2Trd2Dy2;
-  fEmptySpace = geom.fEmptySpace;
-  fTubsR = geom.fTubsR;
-  fTubsTurnAngle = geom.fTubsTurnAngle;
-  fEtaCentersOfCells = geom.fEtaCentersOfCells;
-  fXCentersOfCells = geom.fXCentersOfCells;
-  fPhiCentersOfCells = geom.fPhiCentersOfCells;
-
-  fShishKebabTrd1Modules = geom.fShishKebabTrd1Modules;
-
-  fNAdditionalOpts = geom.fNAdditionalOpts;
 }
 
 //______________________________________________________________________
@@ -325,11 +329,8 @@ void AliEMCALGeometry::Init(void){
   fEnvelop[0]     = fIPDistance; // mother volume inner radius
   fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
   fEnvelop[2]     = 1.00001*fZLength; // add some padding for mother volume. 
-  
-  if(fgAlignData != NULL) {
-    // Number of modules is read from Alignment DB if exists
-    fNumberOfSuperModules = fgAlignData->GetNSuperModules();
-  }
+
+  fNumberOfSuperModules = 12;
  
   fgInit = kTRUE; 
   
