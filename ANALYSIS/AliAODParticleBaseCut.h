@@ -277,6 +277,8 @@ class AliAODLogicalOperCut:  public AliAODParticleBaseCut
      AliAODParticleBaseCut* fFirst;   //second cut
      AliAODParticleBaseCut* fSecond;  //first cut
    private:  
+     AliAODLogicalOperCut(const AliAODLogicalOperCut & src);
+     AliAODLogicalOperCut & operator=(const AliAODLogicalOperCut & src);
     class  AliAODDummyBaseCut: public AliAODParticleBaseCut 
      {
        Double_t  GetValue(AliVAODParticle * /*part*/) const {return 0.0;}

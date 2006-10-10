@@ -33,6 +33,9 @@ public:
   const char* GetURL(const char* name) const ;
   void        Print(Option_t* opt) const;
 private:
+  TGliteXmlEventlist(const TGliteXmlEventlist & src);
+  TGliteXmlEventlist & operator=(const TGliteXmlEventlist & src);
+
   TString     fXmlFile;//Andi - please put a comment
   TList*      fEventList;//Andi - please put a comment
   TIter*      fEventListIter;//Andi - please put a comment

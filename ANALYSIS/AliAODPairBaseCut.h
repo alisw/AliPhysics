@@ -379,6 +379,8 @@ class AliAODLogicalOperPairCut:  public AliAODPairBaseCut
      AliAODPairBaseCut* fFirst;   //second cut
      AliAODPairBaseCut* fSecond;  //first cut
    private:
+     AliAODLogicalOperPairCut(const AliAODLogicalOperPairCut & src);
+     AliAODLogicalOperPairCut & operator=(const AliAODLogicalOperPairCut & src);
     class  AliAODDummyBasePairCut: public AliAODPairBaseCut
      {
        Double_t  GetValue(AliAODPair* /*pair*/) const {return 0.0;}

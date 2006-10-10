@@ -19,13 +19,13 @@ const Int_t AliAODPairCut::fgkMaxCuts = 50;
 /**********************************************************/
 
 AliAODPairCut::AliAODPairCut():
+  fFirstPartCut(new AliAODParticleEmptyCut()), //empty cuts
+  fSecondPartCut(new AliAODParticleEmptyCut()), //empty cuts
+  fCuts(new AliAODPairBaseCut*[fgkMaxCuts]),
   fNCuts(0)
 {
   //constructor
-  fFirstPartCut = new AliAODParticleEmptyCut(); //empty cuts
-  fSecondPartCut= new AliAODParticleEmptyCut(); //empty cuts
     
-  fCuts = new AliAODPairBaseCut*[fgkMaxCuts];
   for (Int_t i = 0;i<fNCuts;i++)
    {
      fCuts[i] = 0x0;
@@ -34,14 +34,14 @@ AliAODPairCut::AliAODPairCut():
 /**********************************************************/
 
 AliAODPairCut::AliAODPairCut(const AliAODPairCut& in):
- TNamed(in)
+  TNamed(in),
+  fFirstPartCut((AliAODParticleCut*)in.fFirstPartCut->Clone()),
+  fSecondPartCut((AliAODParticleCut*)in.fSecondPartCut->Clone()),
+  fCuts(new AliAODPairBaseCut*[fgkMaxCuts]),
+  fNCuts(in.fNCuts)
 {
   //copy constructor
-  fCuts = new AliAODPairBaseCut*[fgkMaxCuts];
-  fNCuts = in.fNCuts;
 
-  fFirstPartCut = (AliAODParticleCut*)in.fFirstPartCut->Clone();
-  fSecondPartCut = (AliAODParticleCut*)in.fSecondPartCut->Clone();
  
   for (Int_t i = 0;i<fNCuts;i++)
     {

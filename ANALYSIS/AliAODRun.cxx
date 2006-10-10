@@ -16,10 +16,10 @@
 ClassImp(AliAODRun)
 /**************************************************************************/ 
 
-AliAODRun::AliAODRun()
+AliAODRun::AliAODRun():
+  fEvents(new TObjArray())
 { 
  //contructor
-  fEvents = new TObjArray();//create array for AliAODs
   if(!fEvents) Fatal("AliAODRun::AliAODRun","Can not allocate memory");
   fEvents->SetOwner(); //array is an owner: when is deleted or cleared it deletes objects that it contains
 }

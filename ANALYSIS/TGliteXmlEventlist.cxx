@@ -26,13 +26,15 @@
 ClassImp(TGliteXmlEventlist)
 
 
-TGliteXmlEventlist::TGliteXmlEventlist(const char* localfilename) {
+TGliteXmlEventlist::TGliteXmlEventlist(const char* localfilename):
+  TObject(),
+  fXmlFile(localfilename),
+  fEventList(new TList()),
+  fEventListIter(new TIter(fEventList)),
+  fCurrent(0)
+{
 //Andi - please put a comment
-  fXmlFile = localfilename;
-  fEventList = new TList();
   fEventList->SetOwner(kTRUE);
-  fEventListIter = new TIter(fEventList);
-  fCurrent = 0;
   ReadXML();
 }
 

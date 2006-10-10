@@ -46,6 +46,9 @@ class AliRunAnalysis: public TTask
     Bool_t        Rejected(AliAOD* recevent, AliAOD* simevent);
     
   private:
+    AliRunAnalysis(const AliRunAnalysis & src);
+    AliRunAnalysis & operator=(const AliRunAnalysis & src);
+
     void SetName(const char *){}//change SetName to be private
     
     ClassDef(AliRunAnalysis,1)

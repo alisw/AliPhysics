@@ -49,13 +49,13 @@ AliAODParticleCut::AliAODParticleCut():
 /******************************************************************/
 
 AliAODParticleCut::AliAODParticleCut(const AliAODParticleCut& in):
- TObject(in)
+  TObject(in),
+  fCuts(new AliAODParticleBaseCut* [fgkMaxCuts]),//last property in the property
+                                                 //property enum => defines number of properties
+  fNCuts(in.fNCuts),
+  fPID(in.fPID)
 {
   //cpy ctor
-  fCuts = new AliAODParticleBaseCut* [fgkMaxCuts];//last property in the property
-                                         //property enum => defines number of properties
-  fNCuts = in.fNCuts;
-  fPID  = in.fPID;
   for (Int_t i = 0;i<fNCuts;i++)
    {
      fCuts[i] = (AliAODParticleBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
