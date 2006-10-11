@@ -10,6 +10,7 @@
 #include <math.h>
 #include "TMath.h"
 #include "AliITSstatistics2.h"
+#include "Riostream.h"
 
 ClassImp(AliITSstatistics2)
 
