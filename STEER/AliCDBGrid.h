@@ -77,6 +77,7 @@ public:
 
 	virtual Bool_t Validate(const char* gridString);
         virtual AliCDBParam* CreateParameter(const char* gridString);
+	virtual ~AliCDBGridFactory(){}
 
 protected:
         virtual AliCDBStorage* Create(const AliCDBParam* param);

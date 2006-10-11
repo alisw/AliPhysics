@@ -26,7 +26,7 @@
 #include <TFile.h>
 #include <TKey.h>
 #include <TROOT.h>
-#include <TSystem.h>
+//#include <TSystem.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TRegexp.h>
@@ -567,19 +567,19 @@ Bool_t AliCDBGrid::AddTag(TString& folderToTag, const char* tagname){
 Bool_t AliCDBGrid::TagFileId(TString& filename, const AliCDBId* id){
 // tag stored object in CDB table using object Id's parameters
 
-	TString addTagValue_1 = Form("addTagValue %s CDB ", filename.Data());
-	TString addTagValue_2 = Form("first_run=%d last_run=%d version=%d ",
+	TString addTagValue1 = Form("addTagValue %s CDB ", filename.Data());
+	TString addTagValue2 = Form("first_run=%d last_run=%d version=%d ",
 					id->GetFirstRun(),
 					id->GetLastRun(),
 					id->GetVersion());
-	TString addTagValue_3 = Form("path_level_0=\"%s\" path_level_1=\"%s\" path_level_2=\"%s\"",
+	TString addTagValue3 = Form("path_level_0=\"%s\" path_level_1=\"%s\" path_level_2=\"%s\"",
 					id->GetLevel0().Data(),
 					id->GetLevel1().Data(),
 					id->GetLevel2().Data());
 	TString addTagValue = Form("%s%s%s",
-					addTagValue_1.Data(),
-					addTagValue_2.Data(),
-					addTagValue_3.Data());
+					addTagValue1.Data(),
+					addTagValue2.Data(),
+					addTagValue3.Data());
 
 	Bool_t result = kFALSE;
 	AliDebug(2, Form("Tagging file. Tag command: %s", addTagValue.Data()));
@@ -602,18 +602,18 @@ Bool_t AliCDBGrid::TagFileId(TString& filename, const AliCDBId* id){
 Bool_t AliCDBGrid::TagFileMetaData(TString& filename, const AliCDBMetaData* md){
 // tag stored object in CDB table using object Id's parameters
 
-	TString addTagValue_1 = Form("addTagValue %s CDB_MD ", filename.Data());
-	TString addTagValue_2 = Form("object_classname=\"%s\" responsible=\"%s\" beam_period=%d ",
+	TString addTagValue1 = Form("addTagValue %s CDB_MD ", filename.Data());
+	TString addTagValue2 = Form("object_classname=\"%s\" responsible=\"%s\" beam_period=%d ",
 					md->GetObjectClassName(),
 					md->GetResponsible(),
 					md->GetBeamPeriod());
-	TString addTagValue_3 = Form("aliroot_version=\"%s\" comment=\"%s\"",
+	TString addTagValue3 = Form("aliroot_version=\"%s\" comment=\"%s\"",
 					md->GetAliRootVersion(),
 					md->GetComment());
 	TString addTagValue = Form("%s%s%s",
-					addTagValue_1.Data(),
-					addTagValue_2.Data(),
-					addTagValue_3.Data());
+					addTagValue1.Data(),
+					addTagValue2.Data(),
+					addTagValue3.Data());
 
 	Bool_t result = kFALSE;
 	AliDebug(2, Form("Tagging file. Tag command: %s", addTagValue.Data()));
