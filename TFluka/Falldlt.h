@@ -38,7 +38,11 @@ extern "C" {
 //*                        emitted during energy loss fluctuation pro-   *
 //*                        cesses                                        *
 //*               Tallmn = minimum energy of the recorded primary        *
-//*                        electrons                                     *
+//*                        electrons
+//*       X/Y/Zalldl (m) = position coord. of the m_th primary electron  *
+//*                        emitted during energy loss fluctuation pro-   *
+//*                        cesses                                        *
+//*
 //*               Nalldl = number of recorded primary electrons          *
 //*               Lalldl = logical flag for primary electrons recording  *
 //*                                                                      *
@@ -47,11 +51,17 @@ extern "C" {
 //      PARAMETER ( MXALLD = 5000 )
 //*
 //      LOGICAL LALLDL
-//      COMMON / ALLDLT / TALLDL (MXALLD), TALLMN, NALLDL, LALLDL
+//         COMMON / ALLDLT / TALLDL (MXALLD), XALLDL (MXALLD),
+//     &                  YALLDL (MXALLD), ZALLDL (MXALLD),
+//     &                  TALLMN, NALLDL, LALLDL
 //      SAVE / ALLDLT /
+
     const Int_t mxalld = 5000;
     typedef struct {
 	Double_t talldl[mxalld];
+	Double_t xalldl[mxalld];
+	Double_t yalldl[mxalld];
+	Double_t zalldl[mxalld];
 	Double_t tallmn;
 	Int_t    nalldl;
 	Int_t    lalldl;
