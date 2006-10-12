@@ -5,10 +5,19 @@
 
 #include <TGLObject.h>
 
+class TGLViewer;
+class TGLScene;
+
 namespace Reve {
 
-class CLASS
+class STEM;
+
+class CLASS : public TGLObject
 {
+private:
+  CLASS(const CLASS&);            // Not implemented
+  CLASS& operator=(const CLASS&); // Not implemented
+
 protected:
   STEM* fM; // fModel dynamic-casted to CLASS
 
@@ -20,6 +29,10 @@ public:
 
   virtual Bool_t SetModel(TObject* obj);
   virtual void   SetBBox();
+
+  // To support two-level selection
+  // virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
+  // virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
 
   ClassDef(CLASS, 0);
 }; // endclass CLASS

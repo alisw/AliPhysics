@@ -21,6 +21,8 @@ protected:
   Bool_t      fAverage;
 
   Bool_t      fUseTexture;
+  Bool_t      fPickEmpty;
+  Int_t       fPickMode;  // 0-print, 1-1dhisto of pad, 2-2dhisto of padrow
 
 public:
   TPCSector2D(const Text_t* n="TPCSector2D", const Text_t* t=0);
@@ -28,6 +30,9 @@ public:
 
   void SetShowMax(Bool_t sm)  { fShowMax  = sm;  IncRTS(); }
   void SetAverage(Bool_t avg) { fAverage  = avg; IncRTS(); }
+
+  Int_t GetPickMode() const     { return fPickMode; }
+  void  SetPickMode(Int_t mode) { fPickMode = mode; }
 
   virtual void ComputeBBox();
 

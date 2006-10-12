@@ -3,15 +3,9 @@
 #include "TPCSector2DEditor.h"
 #include <Alieve/TPCSector2D.h>
 
-#include <TVirtualPad.h>
-#include <TColor.h>
-
-#include <TGLabel.h>
 #include <TGButton.h>
-#include <TGNumberEntry.h>
-#include <TGColorSelect.h>
-#include <TGSlider.h>
-#include <TGDoubleSlider.h>
+#include <TGComboBox.h>
+#include <TGLabel.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -22,19 +16,14 @@ using namespace Alieve;
 
 ClassImp(TPCSector2DEditor)
 
-TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p, Int_t id,
-                                     Int_t width, Int_t height,
+TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p,
+				     Int_t width, Int_t height,
 				     UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
-  fShowMax(0), fAverage(0), fUseTexture(0)
+  fShowMax(0), fAverage(0), fUseTexture(0), fPickEmpty(0), fPickMode(0)
 {
   MakeTitle("TPCSector2D");
-
-  fUseTexture = new TGCheckButton(this, "UseTexture");
-  AddFrame(fUseTexture, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
-  fUseTexture->Connect
-    ("Toggled(Bool_t)","Alieve::TPCSector2DEditor", this, "DoUseTexture()");
 
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
@@ -44,15 +33,33 @@ TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p, Int_t id,
     fAverage = new TGCheckButton(f, "Average");
     f->AddFrame(fAverage, new TGLayoutHints(kLHintsLeft, 3, 1, 1, 0));
     fAverage->Connect("Toggled(Bool_t)","Alieve::TPCSector2DEditor", this, "DoAverage()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
+    AddFrame(f);
   }
-
-  // Register the editor.
-  TClass *cl = TPCSector2DEditor::Class();
-  TGedElement *ge = new TGedElement;
-  ge->fGedFrame = this;
-  ge->fCanvas = 0;
-  cl->GetEditorList()->Add(ge);
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    fUseTexture = new TGCheckButton(f, "UseTexture");
+    f->AddFrame(fUseTexture, new TGLayoutHints(kLHintsTop, 3, 9, 1, 0));
+    fUseTexture->Connect("Toggled(Bool_t)","Alieve::TPCSector2DEditor", this, "DoUseTexture()");
+    fPickEmpty = new TGCheckButton(f, "PickEmpty");
+    f->AddFrame(fPickEmpty, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
+    fPickEmpty->Connect("Toggled(Bool_t)","Alieve::TPCSector2DEditor", this, "DoPickEmpty()");
+    AddFrame(f);
+  }
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    TGLabel* lab = new TGLabel(f, "PickMode");
+    f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 10, 1, 2));
+    fPickMode = new TGComboBox(f);
+    fPickMode->AddEntry("Print", 0);
+    fPickMode->AddEntry("1D histo", 1);
+    fPickMode->AddEntry("2D histo", 2);
+    TGListBox* lb = fPickMode->GetListBox();
+    lb->Resize(lb->GetWidth(), 3*16);
+    fPickMode->Resize(80, 20);
+    fPickMode->Connect("Selected(Int_t)", "Alieve::TPCSector2DEditor", this, "DoPickMode(Int_t)");
+    f->AddFrame(fPickMode, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
+    AddFrame(f);
+  }
 }
 
 TPCSector2DEditor::~TPCSector2DEditor()
@@ -60,27 +67,16 @@ TPCSector2DEditor::~TPCSector2DEditor()
 
 /**************************************************************************/
 
-void TPCSector2DEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
+void TPCSector2DEditor::SetModel(TObject* obj)
 {
-  fModel = 0;
-  fPad   = 0;
-
-  if (!obj || !obj->InheritsFrom(TPCSector2D::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
-    SetActive(kFALSE);
-    return;
-  }
-
-  fModel = obj;
-  fPad   = pad;
-
-  fM = dynamic_cast<TPCSector2D*>(fModel);
+  fM = dynamic_cast<TPCSector2D*>(obj);
 
   fShowMax->SetState(fM->fShowMax ? kButtonDown : kButtonUp);
   SetupAverage();
 
   fUseTexture->SetState(fM->fUseTexture ? kButtonDown : kButtonUp);
-
-  SetActive();
+  fPickEmpty->SetState(fM->fPickEmpty ? kButtonDown : kButtonUp);
+  fPickMode->Select(fM->fPickMode, kFALSE);
 }
 
 /**************************************************************************/
@@ -114,4 +110,16 @@ void TPCSector2DEditor::DoUseTexture()
 {
   fM->fUseTexture = fUseTexture->IsOn();
   Update();
+}
+
+void TPCSector2DEditor::DoPickEmpty()
+{
+  fM->fPickEmpty = fPickEmpty->IsOn();
+  // Update();
+}
+
+void TPCSector2DEditor::DoPickMode(Int_t mode)
+{
+  fM->fPickMode = mode;
+  // Update();
 }

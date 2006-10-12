@@ -8,6 +8,8 @@
 #include <Alieve/TPCSector2D.h>
 #include <Alieve/TPCSectorData.h>
 
+class TGLViewer;
+class TGLScene;
 
 namespace Alieve {
 
@@ -46,6 +48,8 @@ public:
   virtual Bool_t SetModel(TObject* obj); 
   virtual void   SetBBox();
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
+
+  virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
 
   static void TraceStepsUp  (const TPCSectorData::SegmentInfo& s);
   static void TraceStepsDown(const TPCSectorData::SegmentInfo& s);

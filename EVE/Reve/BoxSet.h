@@ -22,7 +22,7 @@ struct Box
   Box(Color_t col = 1)
   { Reve::ColorFromIdx(col, color); }
   Box(Color_t col, Float_t* p)
-  { Reve::ColorFromIdx(col, color); memcpy(vertices, p, 32*sizeof(Float_t)); }
+  { Reve::ColorFromIdx(col, color); memcpy(vertices, p, 24*sizeof(Float_t)); }
 
   Box(TRandom& rnd, Float_t origin, Float_t size);
 

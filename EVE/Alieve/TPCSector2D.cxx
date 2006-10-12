@@ -39,7 +39,9 @@ TPCSector2D::TPCSector2D(const Text_t* n, const Text_t* t) :
   fShowMax (kTRUE),
   fAverage (kFALSE),
 
-  fUseTexture (kTRUE)
+  fUseTexture (kTRUE),
+  fPickEmpty  (kFALSE),
+  fPickMode   (0)
 {}
 
 TPCSector2D::~TPCSector2D()

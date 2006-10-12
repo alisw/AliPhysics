@@ -264,30 +264,30 @@ void TrackList::Init()
   fMarkerColor = 5;
   // fMarker->SetMarkerSize(0.05);
 
-  mRnrStyle = new TrackRnrStyle;
-  SetMainColorPtr(&mRnrStyle->fColor);
+  if (fRnrStyle== 0) fRnrStyle = new TrackRnrStyle;
+  SetMainColorPtr(&fRnrStyle->fColor);
 }
 
-TrackList::TrackList(Int_t n_tracks) :
+TrackList::TrackList(Int_t n_tracks, TrackRnrStyle* rs) :
   RenderElementListBase(),
   TPolyMarker3D(n_tracks),
 
   fTitle(),
 
-  mRnrStyle   (0),
+  fRnrStyle   (rs),
   fRnrMarkers (kTRUE),
   fRnrTracks  (kTRUE)
 {
   Init();
 }
 
-TrackList::TrackList(const Text_t* name, Int_t n_tracks) :
+TrackList::TrackList(const Text_t* name, Int_t n_tracks, TrackRnrStyle* rs) :
   RenderElementListBase(),
   TPolyMarker3D(n_tracks),
-
+  
   fTitle(),
 
-  mRnrStyle   (0),
+  fRnrStyle   (rs),
   fRnrMarkers (kTRUE),
   fRnrTracks  (kTRUE)
 {
@@ -373,45 +373,45 @@ void TrackList::MakeMarkers()
 
 void TrackList::SetMaxR(Float_t x)
 {
-  mRnrStyle->fMaxR = x;
+  fRnrStyle->fMaxR = x;
   MakeTracks();
   MakeMarkers();
 }
 
 void TrackList::SetMaxZ(Float_t x)
 {
-  mRnrStyle->fMaxZ = x;
+  fRnrStyle->fMaxZ = x;
   MakeTracks();
   MakeMarkers();
 }
 
 void TrackList::SetMaxOrbs(Float_t x)
 {
-  mRnrStyle->fMaxOrbs = x;
+  fRnrStyle->fMaxOrbs = x;
   MakeTracks();
 }
 
 void TrackList::SetMinAng(Float_t x)
 {
-  mRnrStyle->fMinAng = x;
+  fRnrStyle->fMinAng = x;
   MakeTracks();
 }
 
 void TrackList::SetDelta(Float_t x)
 {
-  mRnrStyle->fDelta = x;
+  fRnrStyle->fDelta = x;
   MakeTracks();
 }
 
 void TrackList::SetFitDaughters(Bool_t x)
 {
-  mRnrStyle->fFitDaughters = x;
+  fRnrStyle->fFitDaughters = x;
   MakeTracks();
 }
 
 void TrackList::SetFitDecay(Bool_t x)
 {
-  mRnrStyle->fFitDecay = x;
+  fRnrStyle->fFitDecay = x;
   MakeTracks();
 }
 

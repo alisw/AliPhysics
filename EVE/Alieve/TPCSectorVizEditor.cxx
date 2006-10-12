@@ -24,10 +24,10 @@ using namespace Alieve;
 
 ClassImp(TPCSectorVizEditor)
 
-TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id,
+TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p,
                                        Int_t width, Int_t height,
                                        UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fSectorID  (0), fTrans   (0),
   fRnrInn    (0), fRnrOut1 (0), fRnrOut2(0),
@@ -35,6 +35,7 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id,
   fTime      (0)
 {
   MakeTitle("TPCSectorViz");
+  fPriority = 40;
 
   Int_t labelW = 60;
 
@@ -77,7 +78,7 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id,
   fThreshold->SetLabelWidth(labelW);
   fThreshold->Build();
   fThreshold->GetSlider()->SetWidth(120);
-  fThreshold->SetLimits(0,149);
+  fThreshold->SetLimits(0,250);
   fThreshold->Connect("ValueSet(Double_t)",
 		      "Alieve::TPCSectorVizEditor", this, "DoThreshold()");
   AddFrame(fThreshold, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
@@ -87,7 +88,7 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id,
   fMaxVal->SetLabelWidth(labelW);
   fMaxVal->Build();
   fMaxVal->GetSlider()->SetWidth(120);
-  fMaxVal->SetLimits(0, 299);
+  fMaxVal->SetLimits(0, 500);
   fMaxVal->Connect("ValueSet(Double_t)",
 		   "Alieve::TPCSectorVizEditor", this, "DoMaxVal()");
   AddFrame(fMaxVal, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
@@ -101,14 +102,6 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id,
   fTime->Connect("ValueSet()",
 		 "Alieve::TPCSectorVizEditor", this, "DoTime()");
   AddFrame(fTime, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
-
-
-  // Register the editor.
-  TClass *cl = TPCSectorViz::Class();
-  TGedElement *ge = new TGedElement;
-  ge->fGedFrame = this;
-  ge->fCanvas = 0;
-  cl->GetEditorList()->Add(ge);
 }
 
 TPCSectorVizEditor::~TPCSectorVizEditor()
@@ -116,20 +109,9 @@ TPCSectorVizEditor::~TPCSectorVizEditor()
 
 /**************************************************************************/
 
-void TPCSectorVizEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*/)
+void TPCSectorVizEditor::SetModel(TObject* obj)
 {
-  fModel = 0;
-  fPad   = 0;
-
-  if (!obj || !obj->InheritsFrom(TPCSectorViz::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
-    SetActive(kFALSE);
-    return;
-  }
-
-  fModel = obj;
-  fPad   = pad;
-
-  fM = dynamic_cast<TPCSectorViz*>(fModel);
+  fM = dynamic_cast<TPCSectorViz*>(obj);
 
   fSectorID->SetValue(fM->fSectorID);
   fTrans->SetState(fM->fTrans  ? kButtonDown : kButtonUp);
@@ -142,8 +124,6 @@ void TPCSectorVizEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*
   fMaxVal->SetValue(fM->fMaxVal);
 
   fTime->SetValues(fM->fMinTime, fM->fMaxTime);
-
-  SetActive();
 }
 
 /**************************************************************************/

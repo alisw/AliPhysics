@@ -44,37 +44,14 @@ using namespace Reve;
 
 Reve::RGTopFrame* gReve = 0;
 
-namespace {
-
-enum RGBrowserMT {
-  M_LAYOUT_1,
-  M_LAYOUT_2,
-  M_LAYOUT_3
-};
-
-const char *xpm_names[] = {
-    "lay1.xpm",
-    "lay2.xpm",
-    "lay3.xpm",
-    0
-};
-
-ToolBarData_t tb_data[] = {
-  { "", "Standard list layout",     kFALSE, M_LAYOUT_1,        NULL },
-  { "", "TParticle latout",         kFALSE, M_LAYOUT_2,        NULL },
-  { "", "TGeo layout",              kFALSE, M_LAYOUT_3,        NULL },
-  { NULL,            NULL,          0,      0,                 NULL }
-};
-
-} // unnamed namespace
-
 /**************************************************************************/
 
 RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
   TGMainFrame(p, w, h),
 
-  fCC          (0),
-  fHistoCanvas (0),
+  fMasterFrame (0),
+  fMasterTab   (0),
+  fGLCanvas    (0),
   fSelector    (0),
   fBrowser     (0),
   fStatusBar   (0),
@@ -104,54 +81,44 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
 
   // Build GUI
 
-  TGLayoutHints *fL0 = new TGLayoutHints(kLHintsCenterX |kLHintsCenterY | kLHintsExpandY|  kLHintsExpandX);
-  TGLayoutHints *fL1 = new TGLayoutHints(kLHintsCenterX |kLHintsCenterY | kLHintsExpandY|  kLHintsExpandX,2,0,2,2);
-  TGLayoutHints* fL2 = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,
-					 2, 2, 2, 2);
-  TGCompositeFrame*  fMainFrame = new TGCompositeFrame(this, w, h,kHorizontalFrame | kRaisedFrame);
-  fMainFrame->SetCleanup(kDeepCleanup);
-  TGVerticalFrame* fV2 = new TGVerticalFrame(fMainFrame, GetWidth()-40, GetHeight()-40, kSunkenFrame);
+  TGLayoutHints *lay0 = new TGLayoutHints(kLHintsCenterX | kLHintsCenterY | kLHintsExpandY | kLHintsExpandX);
+  TGLayoutHints *lay1 = new TGLayoutHints(kLHintsCenterX | kLHintsCenterY | kLHintsExpandY | kLHintsExpandX, 2, 0, 2, 2);
+  TGLayoutHints *lay2 = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 2, 2, 2, 2);
 
-  fMainFrame->AddFrame(fV2, fL1);
+  fMasterFrame = new TGCompositeFrame(this, w, h, kHorizontalFrame | kRaisedFrame);
+  TGVerticalFrame* fV2 = new TGVerticalFrame(fMasterFrame, GetWidth()-40, GetHeight()-40, kSunkenFrame);
 
-  // ??? TGCanvas* fCanvasWindow = new TGCanvas(fV2,w,h);
-  TGTab*    fDisplayFrame = new TGTab(fV2, GetWidth(), GetHeight());  
+  fMasterFrame->AddFrame(fV2, lay1);
+
+  fMasterTab = new TGTab(fV2, GetWidth(), GetHeight());  
 
   // browser tab
-  TGCompositeFrame* tFrame1 = fDisplayFrame->AddTab("Object Browser");
-  fBrowser = new RGBrowser(tFrame1, w, h);
-  tFrame1->AddFrame(fBrowser, fL2);
+  TGCompositeFrame* tframe1 = fMasterTab->AddTab("Object Browser");
+  fBrowser = new RGBrowser(tframe1, w, h);
+  tframe1->AddFrame(fBrowser, lay2);
 
   // tree selection tab
-  TGCompositeFrame* tFrame2 = fDisplayFrame->AddTab("Tree Selections");  
-  fSelector = new VSDSelector(fBrowser->GetListTree(), tFrame2);
+  TGCompositeFrame* tframe2 = fMasterTab->AddTab("Tree Selections");  
+  fSelector = new VSDSelector(tframe2);
 
-  // canvas
+  // gl-canvas
   Reve::PushPad();
-  TGCompositeFrame* tFrame3 = fDisplayFrame->AddTab("Canvas");
-  TRootEmbeddedCanvas* fEmbeddedCanvas3 = new TRootEmbeddedCanvas("fEmbeddedCanvas3", tFrame3, 580, 360);
-  tFrame3->AddFrame(fEmbeddedCanvas3, fL2);
-  fEmbeddedCanvas3->GetCanvas()->SetBorderMode(0);
-  fCC = fEmbeddedCanvas3->GetCanvas();
-  // fCC->SetFillColor(1);
+  TGCompositeFrame* tframe3 = fMasterTab->AddTab("GLCanvas");
+  TRootEmbeddedCanvas* ecanvas3 = new TRootEmbeddedCanvas("GLCanvas", tframe3, 580, 360);
+  tframe3->AddFrame(ecanvas3, lay2);
+  fGLCanvas = ecanvas3->GetCanvas();
+  fGLCanvas->SetEditable(kFALSE);
   Reve::PopPad();
 
-  // histo canvas
-  TGCompositeFrame* frame4 = fDisplayFrame->AddTab("HistoCanvas");
-  TRootEmbeddedCanvas* ecanvas4 = new TRootEmbeddedCanvas("HistoCanvas", frame4, 580, 360);
-  frame4->AddFrame(ecanvas4, fL2);
-  fHistoCanvas =  ecanvas4->GetCanvas();
-  fHistoCanvas->SetBorderMode(0);
-
-  fV2->AddFrame(fDisplayFrame, fL0);
-  AddFrame(fMainFrame, fL0);
+  fV2->AddFrame(fMasterTab, lay0);
+  AddFrame(fMasterFrame, lay0);
    
   // Create status bar
   Int_t parts[] = {45, 45, 10};
   fStatusBar = new TGStatusBar(this, 50, 10, kHorizontalFrame);
   fStatusBar->SetParts(parts, 3);
-  TGLayoutHints* fL6 = new TGLayoutHints(kLHintsBottom| kLHintsExpandX, 0, 0, 0, 0);
-  AddFrame(fStatusBar, fL6);
+  TGLayoutHints* lay6 = new TGLayoutHints(kLHintsBottom| kLHintsExpandX, 0, 0, 0, 0);
+  AddFrame(fStatusBar, lay6);
   fStatusBar->SetText("GUI created", 0);
 
   MapSubwindows();
@@ -159,22 +126,21 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
   /**************************************************************************/
   /**************************************************************************/
   
-
   switch(look) {
   case LT_Classic: {
-    fBrowser->SetupClassicLook(fEditor, fCC);
-    fCC->GetViewer3D("ogl");
+    fBrowser->SetupClassicLook(fEditor, fGLCanvas);
+    fGLCanvas->GetViewer3D("ogl");
     break;
   }
 
   case LT_Editor: {
-    fBrowser->SetupEditorLook(fEditor, fCC);
-    fCC->GetViewer3D("ogl");
+    fBrowser->SetupEditorLook(fEditor, fGLCanvas);
+    fGLCanvas->GetViewer3D("ogl");
     break;
   }
 
   case LT_GLViewer: {
-    fBrowser->SetupGLViewerLook(fEditor, fCC);
+    fBrowser->SetupGLViewerLook(fEditor, fGLCanvas);
     break;
   }
 
@@ -184,11 +150,16 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
   }
   }
 
-  TGLViewer* glv = dynamic_cast<TGLViewer*>(fCC->GetViewer3D());
+  TGLViewer* glv = dynamic_cast<TGLViewer*>(fGLCanvas->GetViewer3D());
   if(glv) {
     glv->SetSmartRefresh(kTRUE);
     glv->SetResetCamerasOnUpdate(kFALSE);
     glv->SetResetCameraOnDoubleClick(kFALSE);
+    TGLSAViewer* glsav = dynamic_cast<TGLSAViewer*>(glv);
+    if(glsav) {
+      TGedEditor* e = glsav->GetGedEditor();
+      e->SetModel(e->GetPad(), glsav, kButton1Down);
+    }
   }
 
   /**************************************************************************/
@@ -207,6 +178,23 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
   fEditor->DisplayObject(0);
 
   gSystem->ProcessEvents();
+}
+
+/**************************************************************************/
+
+TCanvas* RGTopFrame::AddCanvasTab(const char* name)
+{
+  TGCompositeFrame    *f  = fMasterTab->AddTab(name);
+  TRootEmbeddedCanvas *ec = new TRootEmbeddedCanvas(name, f, 580, 360);
+  f->AddFrame(ec, new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,
+				    2, 2, 2, 2));
+
+  f->MapSubwindows();
+  f->MapWindow();
+  fMasterTab->GetTabTab(name)->MapWindow();
+  fMasterTab->Layout();
+  
+  return ec->GetCanvas();
 }
 
 /**************************************************************************/
@@ -233,9 +221,7 @@ void RGTopFrame::EditRenderElement(RenderElement* rnr_element)
 {
   static const Exc_t eH("RGTopFrame::EditRenderElement ");
 
-  TObject* tobj = 0;
-  if(rnr_element) tobj = rnr_element->GetObject();
-  fEditor->DisplayObject(tobj);
+  fEditor->DisplayRenderElement(rnr_element);
 }
 
 /**************************************************************************/
@@ -252,11 +238,12 @@ void RGTopFrame::DoRedraw3D()
 {
   // printf("RGTopFrame::DoRedraw3D redraw triggered\n");
   if (fResetCameras) {
-    fCC->GetViewer3D()->ResetCamerasAfterNextUpdate();
+    fGLCanvas->GetViewer3D()->ResetCamerasAfterNextUpdate();
     fResetCameras = kFALSE;
   }
-  fCC->Modified();
-  fCC->Update();
+
+  fGLCanvas->Modified();
+  fGLCanvas->Update();
   fTimerActive = kFALSE;
 }
 
@@ -279,17 +266,29 @@ int RGTopFrame::SpawnGuiAndRun(int argc, char **argv)
 
   TRint theApp("App", &argc, argv);
 
-  /* gReve = */ new RGTopFrame(gClient->GetRoot(), w, h, revemode);
+  /* gReve = */ new RGTopFrame(gClient ? gClient->GetRoot() : 0, w, h, revemode);
+
  run_loop:
   try {
     theApp.Run();
   }
-  catch(std::string exc) {
-    gReve->GetStatusBar()->SetText(exc.c_str());
-    fprintf(stderr, "Exception: %s\n", exc.c_str());
+  catch(Exc_t& exc) {
+    gReve->GetStatusBar()->SetText(exc.Data());
+    fprintf(stderr, "Exception: %s\n", exc.Data());
     goto run_loop;
   }
   return 0;
+}
+
+void RGTopFrame::SpawnGui(LookType_e revemode)
+{
+  Int_t w = 540;
+  Int_t h = 500;
+  if(revemode == LT_GLViewer) {
+    w = 1024; h = 768;
+  }
+
+  /* gReve = */ new RGTopFrame(gClient->GetRoot(), w, h, revemode);
 }
 
 /**************************************************************************/
@@ -361,20 +360,29 @@ void RGTopFrame::RemoveRenderElement(RenderElement* parent,
     rel->RemoveElement(rnr_element);
 }
 
+void RGTopFrame::PreDeleteRenderElement(RenderElement* rnr_element)
+{
+  if (fEditor->GetRnrElement() == rnr_element)
+    fEditor->DisplayObject(0);
+}
+
 /**************************************************************************/
 
 void RGTopFrame::DrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad)
 {
-  if(pad == 0) pad = GetCC();
+  if(pad == 0) pad = fGLCanvas;
+
   { Reve::PadHolder pHolder(false, pad);
+    if (pad == fGLCanvas) fGLCanvas->SetEditable(kTRUE);
     rnr_element->GetObject()->Draw();
+    if (pad == fGLCanvas) fGLCanvas->SetEditable(kFALSE);
   }
   Redraw3D();
 }
 
 void RGTopFrame::UndrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad)
 {
-  if(pad == 0) pad = GetCC();
+  if(pad == 0) pad = fGLCanvas;
   { Reve::PadHolder pHolder(false, pad);
     pad->GetListOfPrimitives()->Remove(rnr_element->GetObject());
   }
@@ -390,6 +398,7 @@ void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t state)
 
   RenderElement* rnrEl = (RenderElement*) obj;
   rnrEl->SetRnrElement(state);
+  Redraw3D();
 }
 
 /**************************************************************************/
@@ -448,4 +457,15 @@ TGeoManager* RGTopFrame::GetGeometry(const TString& filename)
     fGeometries[filename] = gGeoManager;
     return gGeoManager;
   }
+}
+
+/**************************************************************************/
+// Testing exceptions
+/**************************************************************************/
+
+void RGTopFrame::ThrowException(const char* text)
+{
+  static const Exc_t eH("RGTopFrame::ThrowException ");
+
+  throw(eH + text);
 }

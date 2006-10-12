@@ -12,6 +12,7 @@
 class TMacro;
 class TFolder;
 class TCanvas;
+class TGTab;
 class TGStatusBar;
 class TGListTree;
 class TGListTreeItem;
@@ -37,8 +38,10 @@ public:
   enum LookType_e { LT_Classic, LT_Editor, LT_GLViewer };
 
 private:
-  TCanvas             *fCC;
-  TCanvas             *fHistoCanvas;
+  TGCompositeFrame    *fMasterFrame;
+  TGTab               *fMasterTab;
+
+  TCanvas             *fGLCanvas;
   VSDSelector         *fSelector;
   RGBrowser           *fBrowser;
   TGStatusBar         *fStatusBar;
@@ -64,10 +67,15 @@ protected:
 public:
   RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look=LT_Classic);
 
-  TCanvas*     GetCC()         { return fCC; }
+  TGCompositeFrame* GetMasterFrame() { return fMasterFrame; }
+  TGTab*            GetMasterTab()   { return fMasterTab; }
+
+  TCanvas*     GetGLCanvas()   { return fGLCanvas; }
   VSDSelector* GetSelector()   { return fSelector; }
   RGBrowser*   GetBrowser()    { return fBrowser; }
   TGStatusBar* GetStatusBar()  { return fStatusBar; }
+
+  TCanvas*     AddCanvasTab(const char* name);
 
   TGListTree*        GetListTree() const;
   EventBase*         GetCurrentEvent() const { return fCurrentEvent; }
@@ -89,7 +97,8 @@ public:
   void RegisterRedraw3D();
   void DoRedraw3D();
 
-  static int SpawnGuiAndRun(int argc, char **argv);
+  static int  SpawnGuiAndRun(int argc, char **argv);
+  static void SpawnGui(LookType_e revemode = LT_Editor);
 
   // These are more like ReveManager stuff.
   TGListTreeItem* AddEvent(EventBase* event); // Could have Reve::Event ...
@@ -99,6 +108,7 @@ public:
   TGListTreeItem* AddGlobalRenderElement(RenderElement* parent, RenderElement* rnr_element);
 
   void RemoveRenderElement(RenderElement* parent, RenderElement* rnr_element);
+  void PreDeleteRenderElement(RenderElement* rnr_element);
 
   void DrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad=0);
   void UndrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad=0);
@@ -110,6 +120,8 @@ public:
 
   // Hmmph ... geometry management?
   TGeoManager* GetGeometry(const TString& filename);
+
+  void ThrowException(const char* text="foo");
 
   ClassDef(RGTopFrame, 0);
 };

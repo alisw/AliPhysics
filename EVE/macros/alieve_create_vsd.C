@@ -2,13 +2,14 @@ void alieve_create_vsd()
 {
   // Invoke as: aliroot alieve_create_vsd.C
 
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libEG.so");
-  gSystem->Load("libTreePlayer.so");
-  gSystem->Load("libGed.so");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libEG");
+  gSystem->Load("libTreePlayer");
+  gSystem->Load("libGed");
+  gSystem->Load("libRGL");
 
-  gSystem->Load("libReve.so");
-  gSystem->Load("libAlieve.so");
+  gSystem->Load("libReve");
+  gSystem->Load("libAlieve");
 
   Reve::DisablePODTObjectStreamers();
 

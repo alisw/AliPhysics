@@ -11,7 +11,7 @@
 #include <TInterpreter.h>
 
 #include <list>
-
+#include <string>
 #include <iostream>
 
 //______________________________________________________________________
@@ -19,6 +19,20 @@
 //
 
 namespace Reve {
+
+// TString .vs. string
+
+bool operator==(const TString& t, const std::string& s)
+{ return (s == t.Data()); }
+
+bool operator==(const std::string&  s, const TString& t)
+{ return (s == t.Data()); }
+
+// Exc
+
+Exc_t::Exc_t(const std::string& s) : TString(s.c_str()) {}
+
+// Exc + ops
 
 Exc_t operator+(const Exc_t &s1, const std::string &s2)
 { return Exc_t((std::string&)s1 + s2); }
@@ -29,6 +43,7 @@ Exc_t operator+(const Exc_t &s1, const TString &s2)
 Exc_t operator+(const Exc_t &s1,  const char *s2)
 { return Exc_t((std::string&)s1 + s2); }
 
+// ----------------------------------------------------------------
 
 void WarnCaller(const TString& warning)
 {
@@ -65,6 +80,12 @@ void SetupEnvironment()
   // Setup Include and Macro paths.
 
   static const Exc_t eH("Reve::SetupEnvironment");
+  static Bool_t setupDone = kFALSE;
+
+  if (setupDone) {
+    Info(eH.Data(), "has already been run.");
+    return;
+  }
 
   if(gSystem->Getenv("REVESYS") == 0) {
     if(gSystem->Getenv("ALICE_ROOT") != 0) {
@@ -89,6 +110,8 @@ void SetupEnvironment()
     gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
   }
   gROOT->SetMacroPath(macPath);
+
+  setupDone = kTRUE;
 }
 
 /**************************************************************************/

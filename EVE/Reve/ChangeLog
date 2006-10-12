@@ -1,3 +1,120 @@
+2006-10-12  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+	
+	* BoxSet.h:
+	Fix wrong numerical constant in transformation assignment.
+
+	* RGBrowser.cxx:
+	Added comment about problems with getting context-menu for
+	pointed-to object.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Added data-members for important GUI elements (master-frame,
+	master-tab); added method 'AddCanvasTab(const char* name)'.
+
+	* Reve.cxx:
+	* Reve.h:
+	Use TString as exception base instead of std::string.
+
+	* VSDSelector.cxx:
+	* VSDSelector.h:
+	Brought in sync with changes in render-element
+	management/conventions.
+
+2006-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+	
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Made RenderElement::ExportToCINT() virtual and reimplemented it in
+	RenderElementObjPtr.
+
+	* Track.cxx:
+	* Track.h:
+	Added optional TrackRnrStyle* argument to TrackList constructors;
+	renamed mRnrStyle to fRnrStyle.
+
+2006-10-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+	
+	* .SKEL-ged.cxx:
+	* .SKEL-ged.h:
+	* .SKEL-gl.cxx:
+	* .SKEL-gl.h:
+	* .SKEL.h:
+	Changes for new geditor and gl two-level selection; added
+	delarations of private copy-ctor and assignment-op.
+
+	* RGEditor.h:
+	Added method GetRnrElement().
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	* RenderElement.cxx:
+	Added RGTopFrame::PreDeleteRenderElement() and calls to it; so far
+	it checks if the object is being displayed in the editor but can
+	in principle check other things as well.
+
+	* RenderElementEditor.cxx:
+	Assgined RenderElementEditor fPriority 0 (to appear on top).
+
+2006-09-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	* VSDSelector.cxx:
+	Made GLCanvas un-editable to prevent users from drawing things
+	over 3D scene; renamed the canvas data member from fCC to
+	fGLCanvas. Renamed local variables not to dress-up as
+	data-members.
+
+2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RGBrowser.cxx:
+	Hack to fix RenderElementObjPtr's colors in tree-view is no longer
+	needed.
+
+	* RGEditor.cxx:
+	* RGEditor.h:
+	Properly update items of render-elements; call gReve::Redraw3D()
+	instead of pad modified/update. Added separate method
+	DisplayRenderElement() that caches the render-element in a
+	data-member to update it on change (needed for RenderElementObjPtr).
+
+	* RGTopFrame.cxx:
+	Use RGEditor::DisplayRenderElement() instead of
+	DisplayObject(). Removed some never-used static structures.
+
+	* RenderElement.cxx:
+	Removed Redraw3D() from UpdateItems() as it can now be called from
+	RGEditor::Update(); optimized item-updates in SetRnrElement() and
+	SetMainColor().
+
+	* PointSetArrayEditor.cxx:
+	* TrackEditors.cxx:
+	Added call to Update() in SetRange() methods.
+
+2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RGBrowser.cxx:
+	* RGEditor.cxx:
+	* RGEditor.h:
+	Use new functionality from TGedEditor.
+
+	* PointSetArrayEditor.cxx:
+	* PointSetArrayEditor.h:
+	* RGeoNodeEditors.cxx:
+	* RGeoNodeEditors.h:
+	* RenderElementEditor.cxx:
+	* RenderElementEditor.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Conform to new TGedFrame paradigm in ROOT.
+
 2006-09-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* MCHelixLine.hi:

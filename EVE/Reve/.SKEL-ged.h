@@ -15,15 +15,23 @@ class STEM;
 
 class CLASS : public TGedFrame
 {
+private:
+  CLASS(const CLASS&);            // Not implemented
+  CLASS& operator=(const CLASS&); // Not implemented
+
 protected:
   STEM* fM; // fModel dynamic-casted to CLASS
 
+  // Declare widgets
+  // TGSomeWidget*   fXYZZ;
+
 public:
-  CLASS(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
-  ~CLASS();
+  CLASS(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  virtual ~CLASS();
 
-  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+  virtual void SetModel(TObject* obj);
 
+  // Declare callback/slot methods
   // void DoXYZZ();
 
   ClassDef(CLASS, 1); // Editor for STEM

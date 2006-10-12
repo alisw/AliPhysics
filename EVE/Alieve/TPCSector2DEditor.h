@@ -6,10 +6,7 @@
 #include <TGedFrame.h>
 
 class TGCheckButton;
-class TGNumberEntry;
-class TGColorSelect;
-class TGDoubleHSlider;
-class TGHSlider;
+class TGComboBox;
 
 
 namespace Alieve {
@@ -28,18 +25,23 @@ protected:
   TGCheckButton*   fAverage;
 
   TGCheckButton*   fUseTexture;
+  TGCheckButton*   fPickEmpty;
+  TGComboBox*      fPickMode;
 
 public:
-  TPCSector2DEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  TPCSector2DEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+		    UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   ~TPCSector2DEditor();
 
-  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+  virtual void SetModel(TObject* obj);
 
   void DoShowMax();
   void DoAverage();
   void SetupAverage();
 
   void DoUseTexture();
+  void DoPickEmpty();
+  void DoPickMode(Int_t mode);
 
   ClassDef(TPCSector2DEditor, 0); // Editor for TPCSector2D
 }; // endclass TPCSector2DEditor

@@ -4,6 +4,9 @@
 
 #include <Alieve/TPCData.h>
 
+#include <TH1S.h>
+#include <TH2S.h>
+#include <TVirtualPad.h>
 #include <TStopwatch.h>
 
 #include <TGLDrawFlags.h>
@@ -68,6 +71,71 @@ void TPCSector2DGL::SetBBox()
 #else
   SetAxisAlignedBBox(((TPCSector2D*)fExternalObj)->AssertBBox());
 #endif
+}
+
+/**************************************************************************/
+
+void TPCSector2DGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
+{
+  if (ptr[0] != 3) return;
+  ptr += 3; // skip n, zmin, zmax
+  Int_t row = ptr[1];
+  Int_t pad = ptr[2];
+  Int_t seg = fSector->fSectorID;
+  if (row < 0 || row >= TPCSectorData::GetNAllRows()) return;
+  if (pad < 0 || pad >= TPCSectorData::GetNPadsInRow(row)) return;
+  // EVE -> Std convention
+  Int_t sseg = seg, srow = row;
+  if (row >= TPCSectorData::GetInnSeg().GetNRows()) {
+    sseg += 18;
+    srow -= TPCSectorData::GetInnSeg().GetNRows();
+  }
+  switch (fSector->fPickMode)
+    {
+    case 0: {
+      printf("TPCSector2DGL::ProcessSelection segment=%d, row=%d, pad=%d\n",
+	     sseg, srow, pad);
+      break;
+    }
+    case 1: {
+      if (fSectorData == 0) return;
+      Int_t mint = fSector->GetMinTime();
+      Int_t maxt = fSector->GetMaxTime();
+      TH1S* h = new TH1S(Form("Seg%d_Row%d_Pad%d", sseg, srow, pad),
+			 Form("Segment %d, Row %d, Pad %d", sseg, srow, pad),
+			 maxt - mint +1 , mint, maxt);
+      h->SetXTitle("Time");
+      h->SetYTitle("ADC");
+      TPCSectorData::PadIterator i = fSectorData->MakePadIterator(row, pad);
+      while (i.Next())
+	h->Fill(i.Time(), i.Signal());
+      h->Draw();
+      gPad->Modified();
+      gPad->Update();
+      break;
+    }
+    case 2: {
+      if (fSectorData == 0) return;
+      Int_t mint = fSector->GetMinTime();
+      Int_t maxt = fSector->GetMaxTime();
+      Int_t npad = TPCSectorData::GetNPadsInRow(row);
+      TH2S* h = new TH2S(Form("Seg%d_Row%d", sseg, srow),
+			 Form("Segment %d, Row %d", sseg, srow),
+			 maxt - mint +1 , mint, maxt,
+			 npad, 0, npad - 1);
+      h->SetXTitle("Time");
+      h->SetYTitle("Pad");
+      h->SetZTitle("ADC");
+      TPCSectorData::RowIterator i = fSectorData->MakeRowIterator(row);
+      while (i.NextPad())
+	while (i.Next())
+	  h->Fill(i.Time(), i.Pad(), i.Signal());
+      h->Draw();
+      gPad->Modified();
+      gPad->Update();
+      break;
+    }
+    } // switch
 }
 
 /**************************************************************************/
@@ -310,9 +378,7 @@ void TPCSector2DGL::DisplayNamedQuads(const TPCSectorData::SegmentInfo& seg,
     glPushName(0);
     for (Int_t pad=deltaPad; pad<maxPad; pad++, pix+=4) {
       x = x_off + pad*padW;
-      // !!! Potentially replace following 'if', add an option to TPCSector2D.
-      // !!! Details depend on how data is processed during extraction.
-      if (pix[3] != 0) {
+      if (pix[3] != 0 || fSector->fPickEmpty) {
 	glLoadName(pad - deltaPad);
 	glBegin(GL_QUADS);
         glVertex2f(x+padW, y_d);

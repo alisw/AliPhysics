@@ -27,10 +27,11 @@ protected:
   Reve::RGDoubleValuator* fRange;
 
 public:
-  PointSetArrayEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  PointSetArrayEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+		      UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   ~PointSetArrayEditor();
 
-  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+  virtual void SetModel(TObject* obj);
 
   void DoRange();
 

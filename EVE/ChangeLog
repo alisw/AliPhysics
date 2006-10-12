@@ -1,3 +1,88 @@
+2006-10-12  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Merge changes from EVE-dev to HEAD.
+	Delete all intermediate tags.
+	Tag HEAD:    EVE-head-after-merge.
+	Tag EVE-dev: EVE-dev-after-merge.
+
+2006-10-12  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* macros/reve_sa_init.C:
+	New file: initialization script for reve when launched from
+	root.exe (there is unsolved problem with exception-catching in
+	main event-loop).
+
+2006-10-11  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/geom_all.C:
+	New file: full alice geometry.
+
+	* alice-macros/geom_trd_tof.C:
+	New file: combined top-level TRD and TOF geometry.
+
+	* macros/alieve_create_vsd.C:
+	Added loading of libRGL; removed '.so' extensions from all
+	libraries for call to gSystem->Load.
+
+2006-10-11  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/geom_pmd.C:
+	New file: PMD geometry.
+
+	* alice-macros/trd_hits.C:
+	Changed default color.
+
+	* alice-macros/trd_hits_z_split.C:
+	New file: TRD hits split by z-coordinate.
+
+2006-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/esd_tracks.C:
+	Added function esd_tracks_vertex_cut() that imports esd-tracks and
+	stores them into several containers according to their distance to
+	primary vertex.
+
+	* alice-macros/tpc_digits.C:
+	Added new mode (3): import all sectors and display them in 3D.
+
+2006-10-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/hits_from_label.C:
+	Reduce marker size (new convention).
+
+	* alice-macros/tpc_digits.C:
+	Follow-up to change in interface of RGTopFrame.
+
+2006-09-27  Matevz TADEL  <matevz.tadel@ijs.si>
+
+	Merged HEAD to EVE-dev. Tagged EVE-dev as
+	EVE-dev-after-second-merge.
+	HEAD was reverted back to work with offical version of ROOT.
+	Now I can get HEAD back to what was until now by:
+	1. going to EVE-head-after-merge
+	2. update -j EVE-dev-after-merge -j EVE-dev
+
+2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/clusters_from_label.C:
+	Add point-set containing clusters directly as render element (it
+	was wrapped in a RenderElementObjPtr by mistake (not fixed when
+	changing it from TPolyMarker3D)).
+
+	* alice-macros/primary_vertex.C:
+	Removed code that gave vertex markers some volume (to avoid being
+	discarded by a too smart GLViewer).
+
 2006-09-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_hits.C:

@@ -19,7 +19,7 @@ using namespace Reve;
 
 ClassImp(CLASS)
 
-CLASS::CLASS()
+CLASS::CLASS() : TGLObject(), fM(0)
 {
   // fCached = false; // Disable display list.
 }
@@ -31,13 +31,17 @@ CLASS::~CLASS()
 
 Bool_t CLASS::SetModel(TObject* obj)
 {
-  return set_model(obj, "Reve::STEM");
+  if(SetModelCheckClass(obj, STEM::Class())) {
+    fM = dynamic_cast<STEM*>(obj);
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 void CLASS::SetBBox()
 {
   // !! This ok if master sub-classed from TAttBBox
-  set_axis_aligned_bbox(((STEM*)fExternalObj)->AssertBBox());
+  SetAxisAlignedBBox(((STEM*)fExternalObj)->AssertBBox());
 }
 
 /**************************************************************************/

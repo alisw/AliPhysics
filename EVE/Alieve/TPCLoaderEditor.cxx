@@ -25,10 +25,10 @@ using namespace Alieve;
 
 ClassImp(TPCLoaderEditor)
 
-TPCLoaderEditor::TPCLoaderEditor(const TGWindow *p, Int_t id,
+TPCLoaderEditor::TPCLoaderEditor(const TGWindow *p,
                                  Int_t width, Int_t height,
 				 UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
 
   fM (0),
 
@@ -98,13 +98,6 @@ TPCLoaderEditor::TPCLoaderEditor(const TGWindow *p, Int_t id,
 		     "Alieve::TPCLoaderEditor", this, "DoDeleteSectors3D()");
     AddFrame(f, new TGLayoutHints(kLHintsExpandX, 8,8,8,0));
   }
-
-  // Register the editor.
-  TClass *cl = TPCLoader::Class();
-  TGedElement *ge = new TGedElement;
-  ge->fGedFrame = this;
-  ge->fCanvas = 0;
-  cl->GetEditorList()->Add(ge);
 }
 
 TPCLoaderEditor::~TPCLoaderEditor()
@@ -112,20 +105,9 @@ TPCLoaderEditor::~TPCLoaderEditor()
 
 /**************************************************************************/
 
-void TPCLoaderEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*/)
+void TPCLoaderEditor::SetModel(TObject* obj)
 {
-  fModel = 0;
-  fPad   = 0;
-
-  if (!obj || !obj->InheritsFrom(TPCLoader::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
-    SetActive(kFALSE);
-    return;
-  }
-
-  fModel = obj;
-  fPad   = pad;
-
-  fM = dynamic_cast<TPCLoader*>(fModel);
+  fM = dynamic_cast<TPCLoader*>(obj);
 
   // !!!! order changed, need TGTextEntry::SetText NO BLOODY EMIT.
   fFile->SetToolTipText(gSystem->DirName(fM->fFile));
@@ -133,8 +115,6 @@ void TPCLoaderEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*/)
   fEvent->SetValue(fM->fEvent);
   fEvent->SetEnabled(fM->fEvent >= 0);
   fDoubleSR->SetState(fM->fDoubleSR  ? kButtonDown : kButtonUp);
-
-  SetActive();
 }
 
 /**************************************************************************/
@@ -172,7 +152,7 @@ void TPCLoaderEditor::FileChanged()
 void TPCLoaderEditor::DoOpen()
 {
   fM->OpenFile();
-  SetModel(fPad, fModel, 0);
+  SetModel(fM);
 }
 
 /**************************************************************************/
@@ -180,7 +160,7 @@ void TPCLoaderEditor::DoOpen()
 void TPCLoaderEditor::DoEvent()
 {
   fM->GotoEvent((Int_t) fEvent->GetValue());
-  SetModel(fPad, fModel, 0);
+  SetModel(fM);
 }
 
 void TPCLoaderEditor::DoDoubleSR()

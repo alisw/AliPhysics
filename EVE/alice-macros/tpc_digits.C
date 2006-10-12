@@ -45,7 +45,7 @@ void tpc_digits(Int_t mode=0)
     gReve->AddRenderElement(s);
     gReve->Redraw3D();
 
-    TGLViewer* cam = dynamic_cast<TGLViewer*>(gReve->GetCC()->GetViewer3D());
+    TGLViewer* cam = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
     //cam->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
     //cam->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom); 
     //printf("%f %f %f %f\n", left, right, top, bottom);
@@ -96,6 +96,43 @@ void tpc_digits(Int_t mode=0)
     s->SetDataSource(g_tpc_data);
     gReve->AddRenderElement(s);
     gReve->Redraw3D();
+    break;
+  }
+
+  case 3: { // Display all sectors in 3D
+    gReve->DisableRedraw();
+    {
+      Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 1");
+      l->SetTitle("TPC Plate");
+      l->SetMainColor(Color_t(col));
+      gReve->AddRenderElement(l);
+      
+      for(Int_t i = 0; i<18; i++) {
+	Alieve::TPCSector3D* s = new Alieve::TPCSector3D();
+	s->SetSectorID(i);
+	s->SetDataSource(g_tpc_data);
+	s->SetFrameColor(col);
+	s->SetTrans(true);
+	gReve->AddRenderElement(l, s);
+      }
+    }
+    {
+      Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 2");
+      l->SetTitle("TPC Plate");
+      l->SetMainColor(Color_t(col));
+
+      gReve->AddRenderElement(l);
+      for(Int_t i = 18; i<36; i++) {
+	Alieve::TPCSector3D* s = new Alieve::TPCSector3D();
+	s->SetSectorID(i);
+	s->SetDataSource(g_tpc_data);
+	s->SetFrameColor(col);
+	s->SetTrans(true);
+	gReve->AddRenderElement(l, s);
+      }
+    }
+    gReve->EnableRedraw();
+
     break;
   }
 

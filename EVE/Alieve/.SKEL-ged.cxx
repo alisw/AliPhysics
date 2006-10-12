@@ -21,21 +21,18 @@ using namespace Alieve;
 
 ClassImp(CLASS)
 
-CLASS::CLASS(const TGWindow *p, Int_t id, Int_t width, Int_t height,
+CLASS::CLASS(const TGWindow *p, Int_t width, Int_t height,
 	     UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back)
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
+  fM(0)
+  // Initialize widget pointers to 0
 {
-  fM = 0;
   MakeTitle("STEM");
 
-  //!!! create the widgets here ...
-
-  // Register the editor.
-  TClass *cl = STEM::Class();
-  TGedElement *ge = new TGedElement;
-  ge->fGedFrame = this;
-  ge->fCanvas = 0;
-  cl->GetEditorList()->Add(ge);
+  // Create widgets
+  // fXYZZ = new TGSomeWidget(this, ...);
+  // AddFrame(fXYZZ, new TGLayoutHints(...));
+  // fXYZZ->Connect("SignalName()", "Alieve::CLASS", this, "DoXYZZ()");
 }
 
 CLASS::~CLASS()
@@ -43,22 +40,20 @@ CLASS::~CLASS()
 
 /**************************************************************************/
 
-void CLASS::SetModel(TVirtualPad* pad, TObject* obj, Int_t event)
+void CLASS::SetModel(TObject* obj)
 {
-  fModel = 0;
-  fPad   = 0;
+  fM = dynamic_cast<STEM*>(obj);
 
-  if (!obj || !obj->InheritsFrom(STEM::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
-    SetActive(kFALSE);
-    return;
-  }
-
-  fModel = obj;
-  fPad   = pad;
-
-  fM = dynamic_cast<STEM*>(fModel);
-
-  SetActive();
+  // Set values of widgets
+  // fXYZZ->SetValue(fM->GetXYZZ());
 }
 
 /**************************************************************************/
+
+// Implements callback/slot methods
+
+// void CLASS::DoXYZZ()
+// {
+//   fM->SetXYZZ(fXYZZ->GetValue());
+//   Update();
+// }

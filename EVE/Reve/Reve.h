@@ -3,34 +3,33 @@
 #ifndef REVE_Reve_H
 #define REVE_Reve_H
 
-#include <string>
+// #include <string>
+#include <exception>
 #include <TString.h>
 #include <TError.h>
 #include <Gtypes.h>
-
-inline bool operator==(const TString& t, const std::string& s)
-{ return (s == t.Data()); }
-
-inline bool operator==(const std::string&  s, const TString& t)
-{ return (s == t.Data()); }
 
 class TVirtualPad;
 class TGeoManager;
 
 namespace Reve {
 
-class Exc_t : public std::string
+bool operator==(const TString& t, const std::string& s);
+bool operator==(const std::string& s, const TString& t);
+
+class Exc_t : public std::exception, public TString
 {
  public:
   Exc_t() {}
-  Exc_t(const std::string& s) : std::string(s) {}
-  Exc_t(const char* s)        : std::string(s) {}
+  Exc_t(const TString& s) : TString(s) {}
+  Exc_t(const char* s)    : TString(s) {}
+  Exc_t(const std::string& s);
 
-  virtual ~Exc_t() {}
+  virtual ~Exc_t() throw () {}
 
-  const char* Data() const { return c_str(); }
+  virtual const char* what() const throw () { return Data(); }
 
-  ClassDef(Reve::Exc_t, 1);
+  ClassDef(Exc_t, 1);
 };
 
 Exc_t operator+(const Exc_t &s1, const std::string  &s2);

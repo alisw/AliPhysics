@@ -11,10 +11,15 @@ namespace Alieve {
 
 class CLASS
 {
+private:
+  CLASS(const CLASS&);            // Not implemented
+  CLASS& operator=(const CLASS&); // Not implemented
+
 protected:
 
 public:
   CLASS();
+  virtual ~CLASS() {}
 
   ClassDef(CLASS, 1);
 }; // endclass CLASS

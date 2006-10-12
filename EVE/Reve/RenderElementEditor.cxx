@@ -20,10 +20,10 @@ using namespace Reve;
 
 ClassImp(RenderElementEditor)
 
-RenderElementEditor::RenderElementEditor(const TGWindow *p, Int_t id,
+RenderElementEditor::RenderElementEditor(const TGWindow *p,
                                          Int_t width, Int_t height,
                                          UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
 
   fRE         (0),
   fHFrame     (0),
@@ -31,6 +31,7 @@ RenderElementEditor::RenderElementEditor(const TGWindow *p, Int_t id,
   fMainColor  (0)
 {
   MakeTitle("RenderElement");
+  fPriority = 0;
 
   fHFrame = new TGHorizontalFrame(this);
 
@@ -48,13 +49,6 @@ RenderElementEditor::RenderElementEditor(const TGWindow *p, Int_t id,
      "Reve::RenderElementEditor", this, "DoRnrElement()");
 
   AddFrame(fHFrame, new TGLayoutHints(kLHintsTop, 0, 0, 1, 1));    
-
-  // Register the editor.
-  TClass *cl = RenderElement::Class();
-  TGedElement *ge = new TGedElement;
-  ge->fGedFrame = this;
-  ge->fCanvas = 0;
-  cl->GetEditorList()->Add(ge);
 }
 
 RenderElementEditor::~RenderElementEditor()
@@ -62,20 +56,9 @@ RenderElementEditor::~RenderElementEditor()
 
 /**************************************************************************/
 
-void RenderElementEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
+void RenderElementEditor::SetModel(TObject* obj)
 {
-  fModel = 0;
-  fPad   = 0;
-
-  if (!obj || !obj->InheritsFrom(RenderElement::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
-    SetActive(kFALSE);
-    return;
-  }
-
-  fModel = obj;
-  fPad   = pad;
-
-  fRE = dynamic_cast<RenderElement*>(fModel);
+  fRE = dynamic_cast<RenderElement*>(obj);
 
   if (fRE->CanEditRnrElement()) {
     fRnrElement->SetState(fRE->GetRnrElement() ? kButtonDown : kButtonUp);
@@ -92,8 +75,6 @@ void RenderElementEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
   }
 
   fHFrame->Layout();
-
-  SetActive();
 }
 
 /**************************************************************************/

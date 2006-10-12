@@ -13,8 +13,8 @@ void alieve_loadlibs ()
   // Waiting for a better solution
   //  gSystem->Load("libg2c_sh");
   // And the following works for gcc-4.
-  // gSystem->Load("/usr/lib/libg2c");
-  gSystem->Load("/usr/lib/gcc/i386-redhat-linux/4.1.0/libgfortran");
+  gSystem->Load("/usr/lib/libg2c");
+  // gSystem->Load("/usr/lib/gcc/i386-redhat-linux/4.1.0/libgfortran");
   gSystem->Load("libmicrocern");
   gSystem->Load("libpdf");
   gSystem->Load("libpythia6");

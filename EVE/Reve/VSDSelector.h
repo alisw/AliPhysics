@@ -8,33 +8,34 @@
 
 namespace Reve {
 
+class RenderElement;
 class TrackRnrStyle;
 class TrackList;
 
-class VSDSelector : public ::Reve::VSD
+class VSDSelector : public VSD
 {
   VSDSelector(const VSDSelector&);            // Not implemented
   VSDSelector& operator=(const VSDSelector&); // Not implemented
 
-private:
-  void NotifyBrowser(TGListTreeItem* parent);
-  TGListTree*               fListTree;
-
 protected:
   TGTextEntry*              mParticleSelection;
+  TGCheckButton*            fRecursiveSelect;
+
   TGTextEntry*              mHitSelection;
   TGTextEntry*              mClusterSelection;
   TGTextEntry*              mRecSelection;
 
 public: 
-  TGCheckButton*            fRecursiveSelect;
-  VSDSelector(TGListTree* lt, TGCompositeFrame *tFrame);
+
+  VSDSelector(TGCompositeFrame *tFrame);
 
   virtual void LoadVSD(const Text_t* vsd_file_name,
                        const Text_t* dir_name="Event0");
 
   void SelectParticles (const Text_t* selection=0);
-  void ImportDaughtersRec(TGListTreeItem* parent, TrackList* cont, Int_t first, Int_t last);
+  void ImportDaughtersRec(RenderElement* parent, TrackList* cont,
+			  Int_t first, Int_t last);
+
   void SelectHits();
   void SelectClusters();
   void SelectRecTracks();

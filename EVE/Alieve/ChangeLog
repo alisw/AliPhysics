@@ -1,3 +1,53 @@
+2006-10-09  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* VSDCreator.cxx:
+	Youri's changes (merge of V0 and V0MI) were lost after CVS
+	gymnastics (reverting EVE-head to work with tagged version of
+	ROOT).
+
+2006-10-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* .SKEL-ged.cxx:
+	* .SKEL-ged.h:
+	* .SKEL-gl.cxx:
+	* .SKEL-gl.h:
+	* .SKEL.h:
+	Changes for new geditor and gl two-level selection; added
+	delarations of private copy-ctor and assignment-op.
+
+	* TPCSector2D.cxx:
+	* TPCSector2D.h:
+	* TPCSector2DEditor.cxx:
+	* TPCSector2DEditor.h:
+	* TPCSector2DGL.cxx:
+	* TPCSector2DGL.h:
+	Added control of pick-mode and display of pad/pad-row histograms
+	as a response to second-level selection hit.
+
+	* TPCSectorViz.h:
+	Added methods GetMin/MaxTime().
+
+	* TPCSectorVizEditor.cxx:
+	Increased widget limits on fThreshold and fMaxVal.
+
+2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCLoaderEditor.cxx:
+	* TPCLoaderEditor.h:
+	* TPCSector2DEditor.cxx:
+	* TPCSector2DEditor.h:
+	* TPCSector3DEditor.cxx:
+	* TPCSector3DEditor.h:
+	* TPCSectorVizEditor.cxx:
+	* TPCSectorVizEditor.h:
+	Conform to new TGedFrame paradigm in ROOT.
+
 2006-09-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* MUONDigitsInfo.cxx:

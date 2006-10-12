@@ -31,10 +31,11 @@ protected:
   TGNumberEntry*  fTransparency;
 
 public:
-  GeoNodeRnrElEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  GeoNodeRnrElEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+		     UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~GeoNodeRnrElEditor() {}
 
-  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+  virtual void SetModel(TObject* obj);
 
   void DoVizNode();
   void DoVizNodeDaughters();
@@ -60,10 +61,11 @@ protected:
   TGNumberEntry*     fVisLevel;
 
 public:
-  GeoTopNodeRnrElEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  GeoTopNodeRnrElEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+			UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   virtual ~GeoTopNodeRnrElEditor() {}
 
-  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+  virtual void SetModel(TObject* obj);
 
   void DoVisOption();
   void DoVisLevel();
