@@ -987,7 +987,7 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
   Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.5, 0.5, 1.5, 0.5};
   Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 0.5};
 
-  Int_t markers[] = {22,22,22,22,22,22,22};
+  Int_t markers[] = {20,20,21,22,23,28,29};
   Int_t colors[]  = {1,2,3,4,6,8,102};
 
   // cross section from Pythia
@@ -995,7 +995,7 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
   Float_t sigmaDD = 9.78;
   Float_t sigmaSD = 14.30;
 
-  
+
   TH1F* dNdEta[7];
 
   TH1F* ratios[7];
@@ -1004,24 +1004,26 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
 
 
   for (Int_t i=0; i<7; i++) {
-    // calculating relative 
+    // calculating relative
     fin = TFile::Open(Form("systematics_%s_%s.root",plot,changes[i]));
-    
+
     dNdEta[i] = (TH1F*)(fin->Get("dndeta/dndeta_dNdEta_corrected_2"))->Clone();
-    
+
     for (Int_t b=0; b<dNdEta[i]->GetNbinsX(); b++) {
       if (TMath::Abs(dNdEta[i]->GetBinCenter(b))>0.9) {
 	dNdEta[i]->SetBinContent(b,0);
 	dNdEta[i]->SetBinError(b,0);
       }
     }
-    
+
     dNdEta[i]->Rebin(4);
-    
+
     dNdEta[i]->SetLineWidth(2);
     dNdEta[i]->SetLineColor(colors[i]);
     dNdEta[i]->SetMarkerStyle(markers[i]);
-    dNdEta[i]->SetMarkerSize(0.8);
+    dNdEta[i]->SetMarkerSize(0.9);
+    dNdEta[i]->SetMarkerColor(colors[i]);
+
 
 
     ratios[i] = (TH1F*)dNdEta[i]->Clone("ratio");
@@ -1080,24 +1082,22 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
   for (Int_t i=1; i<7; i++) 
     ratios[i]->Draw("same");
   //     dNdEta[i]->Draw("same");
-  
+
+  TLegend* legend = new TLegend(0.6, 0.6, 0.95, 0.95);
+  legend->SetFillColor(0);
+
   TLatex* text[7];
   for (Int_t i=1; i<7; i++) {
-    
-    text[i] = new TLatex(0.75,0.95-0.05*i, descr[i]);
-    text[i]->SetTextSize(0.04);
-    text[i]->SetTextColor(colors[i]);
-    text[i]->SetNDC(kTRUE);
-    text[i]->Draw();
-    
-    
+    legend->AddEntry(dNdEta[i], descr[i]);
   }
+
+  legend->Draw();
   //text(0.2,0.88,"Effect of changing",0.045,1,kTRUE);
   //text(0.2,0.83,"relative cross-sections",0.045,1,kTRUE);
   //text(0.2,0.78,"(vertex reconstruction corr.)",0.043,13,kTRUE);
 
   c->SaveAs(Form("%s.gif", c->GetName()));
-
+  c->SaveAs(Form("%s.eps", c->GetName()));
 }
 
 
@@ -1314,4 +1314,46 @@ void changePtSpectrum()
   printf("Rel. %f %f\n", fraction1 / fraction, fraction2 / fraction);
 
   canvas->SaveAs("changePtSpectrum.gif");
+}
+
+void FractionBelowPt()
+{
+  gSystem->Load("libPWG0base");
+
+  AlidNdEtaCorrection* fdNdEtaCorrection[4];
+
+  TFile::Open("systematics.root");
+
+  for (Int_t i=0; i<4; ++i)
+  {
+    TString name;
+    name.Form("correction_%d", i);
+    fdNdEtaCorrection[i] = new AlidNdEtaCorrection(name, name);
+    fdNdEtaCorrection[i]->LoadHistograms("systematics.root", name);
+  }
+
+  Double_t geneCount[5];
+  Double_t measCount[5];
+  geneCount[4] = 0;
+  measCount[4] = 0;
+
+  for (Int_t i=0; i<4; ++i)
+  {
+    TH3F* hist = (TH3F*) fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
+    geneCount[i] = hist->Integral(hist->GetXaxis()->FindBin(-10), hist->GetXaxis()->FindBin(10),
+                                  hist->GetYaxis()->FindBin(-0.8), hist->GetYaxis()->FindBin(0.8),
+                                  1, hist->GetZaxis()->FindBin(0.3));
+
+    hist = (TH3F*) fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+    measCount[i] = hist->Integral(hist->GetXaxis()->FindBin(-10), hist->GetXaxis()->FindBin(10), hist->GetYaxis()->FindBin(-0.8), hist->GetYaxis()->FindBin(0.8), 1, hist->GetZaxis()->FindBin(0.3));
+
+    geneCount[4] += geneCount[i];
+    measCount[4] += measCount[i];
+
+    printf("Particle %s: %d gene, %d meas\n", ((i == 0) ? "pi" : (i == 1) ? "K" : (i == 2) ? "p" : "others"), (Int_t) geneCount[i], (Int_t) measCount[i]);
+  }
+
+  printf("Generated ratios are:     %f pi, %f K, %f p, %f others\n", geneCount[0] / geneCount[4], geneCount[1] / geneCount[4], geneCount[2] / geneCount[4], geneCount[3] / geneCount[4]);
+
+  printf("Reconstructed ratios are: %f pi, %f K, %f p, %f others\n", measCount[0] / measCount[4], measCount[1] / measCount[4], measCount[2] / measCount[4], measCount[3] / measCount[4]);
 }
