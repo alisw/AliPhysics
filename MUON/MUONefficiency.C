@@ -57,8 +57,9 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
-#include "AliMagF.h"
+#include "AliMagFMaps.h"
 #include "AliESD.h"
+#include "AliTracker.h"
 
 // MUON includes
 #include "AliMUONTrackParam.h"
@@ -175,8 +176,11 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 
   TLorentzVector fV1, fV2, fVtot;
 
-  // set off mag field 
-  AliMagF::SetReadField(kFALSE);
+  // set  mag field 
+  // waiting for mag field in CDB 
+  printf("Loading field map...\n");
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+  AliTracker::SetFieldMap(field, kFALSE);
 
   // open run loader and load gAlice, kinematics and header
   AliRunLoader* runLoader = AliRunLoader::Open(filename);
