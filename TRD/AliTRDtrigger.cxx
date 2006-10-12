@@ -639,7 +639,7 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   fTrkTest->MakeTrackletGraph(fGeo,fField);
 
   // TRD Online calibration
-  if (calibra->Getmcmtracking()) {
+  if (calibra->GetMcmTracking()) {
     calibra->UpdateHistogramcm(fTrkTest);
   }
 

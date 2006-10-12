@@ -1099,8 +1099,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
   if (!calibra) {
     AliInfo("Could not get Calibra instance\n");
   }
-  if (calibra->GetMItracking()) {
-    calibra->Resettrack();
+  if (calibra->GetMITracking()) {
+    calibra->ResetTrack();
   }
 
   for (Int_t i = 0; i < 1000; i++) {
@@ -1211,7 +1211,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 	    }
           }  
 
-          if (calibra->GetMItracking()) {
+          if (calibra->GetMITracking()) {
             calibra->UpdateHistograms(cl,&t);
           }
 
