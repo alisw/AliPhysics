@@ -26,6 +26,7 @@ public:
   virtual void   CreateMaterials();
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 7;}
+  virtual void   AddAlignableVolumes() const;
   virtual void   TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
 		       Float_t zlenB);
   virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t) {};

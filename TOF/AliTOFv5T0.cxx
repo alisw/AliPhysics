@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2006/08/22 13:34:46  arcelli
+removal of effective c++ warnings (C.Zampolli)
+
 Revision 1.11  2006/07/12 16:03:44  arcelli
 updates to match the new numbering of the TOF/TRD mother volumes in FRAME (ALICE convention)
 
@@ -84,6 +87,7 @@ Revision 0.1 2004 November G. Cara Romeo and A. De Caro
 #include "TLorentzVector.h"
 #include "TNode.h"
 #include "TVirtualMC.h"
+#include "TGeoManager.h"
 
 #include "AliConst.h"
 #include "AliLog.h"
@@ -165,6 +169,99 @@ AliTOFv5T0::AliTOFv5T0(const char *name, const char *title):
 
 } 
 
+//_____________________________________________________________________________
+void AliTOFv5T0::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  //
+
+  TString volPath;
+  TString symName;
+
+  TString vpL0  = "ALIC_1/B077_1/BSEGMO";
+  TString vpL1 = "_1/BTOF";
+  TString vpL2 = "_1";
+  TString vpL3 = "/FTOA_0";
+  TString vpL4 = "/FLTA_0/FSTR_";
+
+  TString snSM  = "TOF/sm";
+  TString snSTRIP = "/strip";
+
+  Int_t nSectors=fTOFGeometry->NSectors();
+  Int_t nStrips =fTOFGeometry->NStripA()+
+                 2*fTOFGeometry->NStripB()+
+                 2*fTOFGeometry->NStripC();
+
+  //
+  // The TOF MRPC Strips
+  // The symbolic names are: TOF/sm00/strip01
+  //                           ...
+  //                         TOF/sm17/strip91
+ 
+  Int_t imod=0;
+
+  for (Int_t isect = 0; isect < nSectors; isect++) {
+    for (Int_t istr = 1; istr <= nStrips; istr++) {
+      
+      volPath  = vpL0;
+      volPath += isect;
+      volPath += vpL1;
+      volPath += isect;
+      volPath += vpL2;
+      volPath += vpL3;
+      volPath += vpL4;
+      volPath += istr;
+
+      
+      symName  = snSM;
+      symName += Form("%02d",isect);
+      symName += snSTRIP;
+      symName += Form("%02d",istr);
+            
+      AliDebug(2,"--------------------------------------------"); 
+      AliDebug(2,Form("Alignable object %d", imod)); 
+      AliDebug(2,Form("volPath=%s\n",volPath.Data()));
+      AliDebug(2,Form("symName=%s\n",symName.Data()));
+      AliDebug(2,"--------------------------------------------"); 
+	      
+      gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+      imod++;
+    }
+  }
+
+
+  //
+  // The TOF supermodules
+  // The symbolic names are: TOF/sm00
+  //                           ...
+  //                         TOF/sm17
+  //
+  for (Int_t isect = 0; isect < nSectors; isect++) {
+
+    volPath  = vpL0;
+    volPath += isect;
+    volPath += vpL1;
+    volPath += isect;
+    volPath += vpL2;
+    volPath += vpL3;
+
+    symName  = snSM;
+    symName += Form("%02d",isect);
+
+      AliDebug(2,"--------------------------------------------"); 
+      AliDebug(2,Form("Alignable object %d", isect+imod)); 
+      AliDebug(2,Form("volPath=%s\n",volPath.Data()));
+      AliDebug(2,Form("symName=%s\n",symName.Data()));
+      AliDebug(2,"--------------------------------------------"); 
+	      
+    gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+
+  }
+  
+}
 //____________________________________________________________________________
 void AliTOFv5T0::BuildGeometry()
 {
