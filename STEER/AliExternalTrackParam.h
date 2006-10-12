@@ -104,6 +104,7 @@ class AliExternalTrackParam: public TObject {
   Double_t PropagateToDCA(AliExternalTrackParam *p, Double_t b);
   Bool_t PropagateToDCA(const AliESDVertex *vtx, Double_t b, Double_t maxd);
 
+  void GetDirection(Double_t d[3]) const;
   Bool_t GetPxPyPz(Double_t *p) const;
   Bool_t GetXYZ(Double_t *p) const;
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;

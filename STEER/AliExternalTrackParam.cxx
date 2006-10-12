@@ -677,6 +677,20 @@ Bool_t Local2GlobalPosition(Double_t r[3],Double_t alpha) {
   return kTRUE;
 }
 
+void AliExternalTrackParam::GetDirection(Double_t d[3]) const {
+  //----------------------------------------------------------------
+  // This function returns a unit vector along the track direction
+  // in the global coordinate system.
+  //----------------------------------------------------------------
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  Double_t snp=fP[2];
+  Double_t csp =TMath::Sqrt(1.- snp*snp);
+  Double_t norm=TMath::Sqrt(1.+ fP[3]*fP[3]);
+  d[0]=(csp*cs - snp*sn)/norm; 
+  d[1]=(snp*cs + csp*sn)/norm; 
+  d[2]=fP[3]/norm;
+}
+
 Bool_t AliExternalTrackParam::GetPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
