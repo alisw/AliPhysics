@@ -22,7 +22,7 @@ libAliHLTTPCDisplay_la_SOURCES	= AliHLTTPCDisplayMain.cxx \
 				  AliHLTTPCDisplayResiduals.cxx
 
 DEFAULT_GEOMETRY		= alice.geom
-libAliHLTTPCDisplay_la_DATA	= $(DEFAULT_GEOMETRY)
+libAliHLTTPCDisplay_la_DATA	= $(srcdir)/$(DEFAULT_GEOMETRY)
 libAliHLTTPCDisplay_ladir	= $(pkgdatadir)
 AM_CPPFLAGS			+= -DDEFAULT_GEOMETRY=\"$(libAliHLTTPCDisplay_ladir)/$(DEFAULT_GEOMETRY)\"
 
@@ -61,7 +61,8 @@ DICTINCLUDE			= AliHLTTPCSpacePointData.h \
 nodist_libAliHLTTPCDisplay_la_SOURCES  =  $(COMPILE_INFO) \
 				 	  $(DICTCPP)
 
-CLEANFILES			= 
+EXTRA_DIST			= $(libAliHLTTPCDisplay_la_DATA)
+CLEANFILES			= $(COMPILE_INFO)
 
 include $(top_srcdir)/make.dict
 

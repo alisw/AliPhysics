@@ -321,6 +321,22 @@ AM_CONDITIONAL(EN_HLT_TPC, test x$enable_tpc = xyes)
 AC_MSG_RESULT([$enable_tpc])
 
 dnl ------------------------------------------------------------------
+AC_MSG_CHECKING([whether to compile phos library])
+AH_TEMPLATE([HLT_PHOS],[hlt phos library])
+AC_ARG_ENABLE(phos,
+  [AC_HELP_STRING([--enable-phos],
+      [compile the phos library ])],
+  [],[enable_phos=yes])
+if test "x$have_aliroot" = "xno" ; then
+   enable_phos="no...requires.AliRoot"
+fi
+if test "x$enable_phos" = "xyes" ; then 
+  AC_DEFINE(HLT_PHOS)
+fi
+AM_CONDITIONAL(EN_HLT_PHOS, test x$enable_phos = xyes)
+AC_MSG_RESULT([$enable_phos])
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable HLT logging])
 AH_TEMPLATE([NOLOGGING],[disable hlt logging])
 AC_ARG_ENABLE(logging,
@@ -401,6 +417,7 @@ AC_CONFIG_FILES([Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx
 		 TPCLib/OnlineDisplay/Makefile
+		 PHOS/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
 

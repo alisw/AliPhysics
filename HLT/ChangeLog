@@ -1,3 +1,4 @@
+2006-10-12 added the PHOS library to the package
 2006-10-05 extensions in AliHLTTPCDisplay
 	- handling of new include directory structure of the HOMER header files
 	- default geometry file introduced

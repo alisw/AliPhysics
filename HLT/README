@@ -8,8 +8,20 @@ Foundation. Also see files AUTHORS and THANKS.
 This packages is maintained by Matthias.Richter@ift.uib.no
 Comments, bug reports, suggestions welcome! 
 
-Overview
-========
+TOC
+===
+1. Overview
+2. Requirements
+3. Setting up a version retrieved from CVS
+4. Modifying a distributed package
+5. Installation
+6. Documentation
+7. Further information
+8. Reporting bugs/Asking for support
+9. Committing to the AliRoot CVS
+
+1. Overview
+===========
 This package provides a compilation of shared libraries of the ALICE
 HLT project and is intended for stand-alone compilation, i.e. not as part 
 of the AliRoot compilation. 
@@ -31,8 +43,8 @@ compilation, but will be part of it.
 The old stand-alone build system is still available. Check the README
 file in the doc folder.
 
-Requirements
-============
+2. Requirements
+===============
 The package needs both ROOT and AliRoot. Both must be set up in the
 usual way (ROOTSYS, ALICE_ROOT, library locations evtl. specified in
 LD_LIBRARY_PATH, ...). Actually, the BASE and SampleLib modules are
@@ -46,8 +58,8 @@ you want to change the Makefiles.
 If your GNU build tools are too old, ask the maintainers for a distributed
 package.  
 
-Setting up a version retrieved from CVS
-=======================================
+3. Setting up a version retrieved from CVS
+==========================================
 Skip this section if you have started from the tar ball.
 
 A version checked out from CVS requires a few steps to set up the Makefiles.
@@ -57,8 +69,8 @@ autoreconf -i -f
 Then continue with the package configuration described in the 'Installation'
 section.
 
-Modifying a distributed package
-===============================
+4. Modifying a distributed package
+==================================
 If you are going the modify a distributed package you might need to re-make 
 the GNU build system by running
  autoreconf -f -i
@@ -69,8 +81,8 @@ you consider them worth to be merged into the project.
 Then continue with the package configuration described in the 'Installation'
 section.
 
-Installation
-============
+5. Installation
+===============
 NOTE: The Makefiles which are in repository are part of the old build system.
 Now, the Makefile.am templates are valid.
 
@@ -103,19 +115,19 @@ top directory:
 ./configure --help | less
 
 
-Documentation
-=============
+6. Documentation
+================
 Documentation is generated from the source code at compile time if 
 doxygen is installed on the machine. From the build directory, open
 doc/html/index.html with a web browser.
 
-Further information
-===================
+7. Further information
+======================
 A wiki with detailed information is set up at
 http://www.kip.uni-heidelberg.de/wiki/HLT
 
-Reporting bugs/Asking for support
-=================================
+8. Reporting bugs/Asking for support
+====================================
 Please include the following information into your request:
 - config.log from your build directory
 - output of the make process. Note: Redirect BOTH the stdout and stderr
@@ -123,3 +135,18 @@ Please include the following information into your request:
     bash: make 2>&1 | tee make.log 
     csh: make |& tee make.log
   The 'tee' command just duplicates the output.
+- history of the commands you are using for compilation
+  history > history.log
+
+9. Committing to the AliRoot CVS
+================================
+For development of HLT analysis code check out a HEAD version from the 
+repository and implement your code. For committing do:
+1. cvs update
+2. correct merging conflicts
+3. compile and test your code again
+4. send the whole HLT module except the build sub-directories to
+   Matthias.Richter@ift.uib.no
+5. you will get a notification when the code is committed, right after that you
+   must either do another cvs update or check out the complete module again in
+   order to have the right CVS information

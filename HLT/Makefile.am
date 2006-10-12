@@ -10,9 +10,14 @@ if EN_HLT_TPC
 TPC_DIR=TPCLib	
 endif
 
+if EN_HLT_PHOS
+PHOS_DIR=PHOS
+endif
+
 SUBDIRS 		= BASE \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
+			  $(PHOS_DIR) \
 			  doc
 
 DIST_SUBDIRS		= $(SUBDIRS)
