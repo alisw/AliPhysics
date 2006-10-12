@@ -973,7 +973,15 @@ mergeCorrections4SystematicStudies(Char_t* standardCorrectionFileName="correctio
 }
 
 
-DrawVertexRecoSyst(const char* plot = "vtxreco") {
+DrawVertexRecoSyst() {
+  // Draws the ratio of the dN/dEta obtained with changed SD and DD
+  // cross-sections vertex reco corrections to the dN/dEta obtained
+  // from the standard pythia cross-sections 
+  //
+  // The files with the vertex reco corrections for different
+  // processes (and with the other standard corrections) are expected
+  // to have the names "analysis_esd_X.root", where the Xs are defined
+  // in the array changes below.
 
   Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless"};
   Char_t* descr[]  =   {"",
@@ -995,17 +1003,14 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
   Float_t sigmaDD = 9.78;
   Float_t sigmaSD = 14.30;
 
-
   TH1F* dNdEta[7];
-
   TH1F* ratios[7];
 
   TFile* fin;
 
-
   for (Int_t i=0; i<7; i++) {
     // calculating relative
-    fin = TFile::Open(Form("systematics_%s_%s.root",plot,changes[i]));
+    fin = TFile::Open(Form("analysis_esd_%s.root",changes[i]));
 
     dNdEta[i] = (TH1F*)(fin->Get("dndeta/dndeta_dNdEta_corrected_2"))->Clone();
 
@@ -1024,8 +1029,6 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
     dNdEta[i]->SetMarkerSize(0.9);
     dNdEta[i]->SetMarkerColor(colors[i]);
 
-
-
     ratios[i] = (TH1F*)dNdEta[i]->Clone("ratio");
     ratios[i]->Divide(ratios[i],dNdEta[0],1,1,"B");
     
@@ -1041,9 +1044,6 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
 
   gStyle->SetTextSize(0.2);
   gStyle->SetTitleSize(0.05,"xyz");
-  //gStyle->SetTitleFont(133, "xyz");
-  //gStyle->SetLabelFont(133, "xyz");
-  //gStyle->SetLabelSize(17, "xyz");
   gStyle->SetLabelOffset(0.01, "xyz");
 
 
@@ -1068,8 +1068,6 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
 
   p1->Draw();
   p1->cd();
-
-  
   
   
   TH2F* null = new TH2F("","",100,-1.5,1.5,100,0.9601,1.099);
@@ -1081,7 +1079,6 @@ DrawVertexRecoSyst(const char* plot = "vtxreco") {
   
   for (Int_t i=1; i<7; i++) 
     ratios[i]->Draw("same");
-  //     dNdEta[i]->Draw("same");
 
   TLegend* legend = new TLegend(0.6, 0.6, 0.95, 0.95);
   legend->SetFillColor(0);
