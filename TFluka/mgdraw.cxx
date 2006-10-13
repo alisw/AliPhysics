@@ -12,6 +12,7 @@
 #include "Fflkstk.h"  //(FLKSTK) fluka common
 #include "Fltclcm.h"  //(LTCLCM) fluka common
 #include "Fpaprop.h"  //(PAPROP) fluka common
+#include "Falldlt.h"  //(ALLDLT) fluka common
 
 #ifndef WIN32
 # define mgdraw mgdraw_
@@ -60,20 +61,12 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 //    
     Int_t mlttc = TRACKR.lt1trk; // LTCLCM.mlatm1;
     fluka->SetMreg(mreg, mlttc);
-//    fluka->SetNewreg(mreg, mlttc); // dont used!!
     fluka->SetIcode((FlukaProcessCode_t) icode);
     fluka->SetCaller(kMGDRAW);
 
     Int_t nodeId;
-    Int_t volId = fluka->CurrentVolID(nodeId);
+    Int_t volId   = fluka->CurrentVolID(nodeId);
     Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
-
-//
-//    if( (fluka->GetNstep() > 43912170 && fluka->GetNstep() < 43912196 ) ||
-//        (fluka->GetNstep() > 47424560 && fluka->GetNstep() < 47424581 ) ||
-//        (fluka->GetNstep() > 54388266 && fluka->GetNstep() < 54388319 )
-//      ) fluka->SetVerbosityLevel(3);
-//    else fluka->SetVerbosityLevel(0);
 
     // check region lattice consistency (debug Ernesto)
     // *****************************************************
@@ -91,17 +84,34 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     // *****************************************************
 
     if (!TRACKR.ispusr[mkbmx2 - 2]) {
-        //
-        // Single step
-        if (verbosityLevel >= 3) {
-           cout << endl << "mgdraw: energy deposition for:" << trackId
-                 << " icode=" << icode
-                 << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
-                 << " flukaid="<< TRACKR.jtrack
-                 << " mreg=" << mreg << endl;
-        }
-        (TVirtualMCApplication::Instance())->Stepping();
-        fluka->SetTrackIsNew(kFALSE);
+	if (verbosityLevel >= 3) {
+	    cout << endl << "mgdraw: energy deposition for:" << trackId
+		 << " icode=" << icode
+		 << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
+		 << " flukaid="<< TRACKR.jtrack
+		 << " mreg=" << mreg
+		 << " np  =" << ALLDLT.nalldl
+		 << endl;
+	         
+	}
+	Int_t nprim = 0;
+//	printf("mgdraw %5d %5d \n", ALLDLT.nalldl, ALLDLT.lalldl );
+	
+	if ((nprim = ALLDLT.nalldl) > 0) {
+	    //
+	    // Multiple steps (primary ionisation)	   
+	    for (Int_t i = 0; i < nprim; i++) {
+		(TVirtualMCApplication::Instance())->Stepping();
+		fluka->SetCurrentPrimaryElectronIndex(i);
+		if (i == 0) fluka->SetTrackIsNew(kFALSE);
+	    }
+	    fluka->SetCurrentPrimaryElectronIndex(-1);
+	} else {
+	    // Single step
+	    (TVirtualMCApplication::Instance())->Stepping();
+	    fluka->SetTrackIsNew(kFALSE);
+	}
+	
     } else {
         //
         // Tracking is being resumed after secondary tracking
