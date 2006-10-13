@@ -9,7 +9,7 @@ SRCS:=  TFluka.cxx TFlukaMCGeometry.cxx TFlukaCerenkov.cxx \
 HDRS:= TFluka.h TFlukaMCGeometry.h TFlukaCerenkov.h TFlukaConfigOption.h \
 	TFlukaScoringOption.h
 
-FSRCS:= FLUKA_input.f crnkvp.f mydedx.f cmpips.f
+FSRCS:= FLUKA_input.f crnkvp.f cmpips.f
 
 # ROOT Dictionary
 DHDR:= TFlukaLinkDef.h
