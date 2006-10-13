@@ -92,6 +92,8 @@ void Event::Open()
     }
     if(fRunLoader->LoadgAlice() != 0)
       throw(eH + "failed loading gAlice.");
+    if(fRunLoader->LoadHeader() != 0)
+      throw(eH + "failed loading header.");
 
     if(fRunLoader->GetEvent(fEventId) != 0)
       throw(eH + "failed getting required event.");
