@@ -1,3 +1,9 @@
+2006-10-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	Added contructor from TPartice.
+
 2006-10-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev

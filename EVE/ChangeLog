@@ -1,3 +1,9 @@
+2006-10-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/kine_tracks.C:
+	New file: visualize tracks from kinematics tree; minimal
+	implementation.
+
 2006-10-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	Merge changes from EVE-dev to HEAD.
