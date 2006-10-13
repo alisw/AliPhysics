@@ -137,6 +137,7 @@ TFluka::TFluka()
    fStopped(kFALSE),
    fStopEvent(kFALSE),
    fStopRun(kFALSE),
+   fPrimaryElectronIndex(-1),
    fMaterials(0),
    fNVolumes(0),
    fCurrentFlukaRegion(-1),
@@ -174,6 +175,7 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fStopped(kFALSE),
    fStopEvent(kFALSE),
    fStopRun(kFALSE),
+   fPrimaryElectronIndex(-1),
    fMaterials(0),
    fNVolumes(0),
    fCurrentFlukaRegion(-1),
@@ -1335,11 +1337,22 @@ void TFluka::TrackPosition(TLorentzVector& position) const
     position.SetZ(GetZsco());
     position.SetT(TRACKR.atrack);
   }
-  else if (caller == kMGDRAW) { 
-    position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
-    position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
-    position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
-    position.SetT(TRACKR.atrack);
+  else if (caller == kMGDRAW) {
+      Int_t i = -1;
+      if ((i = fPrimaryElectronIndex) > -1) {
+	  // Primary Electron Ionisation
+	  Double_t x, y, z;
+	  GetPrimaryElectronPosition(i, x, y, z);
+	  position.SetX(x);
+	  position.SetY(y);
+	  position.SetZ(z);
+	  position.SetT(TRACKR.atrack);
+      } else {
+	  position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
+	  position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
+	  position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
+	  position.SetT(TRACKR.atrack);
+      }
   }
   else if (caller == kSODRAW) { 
     position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
@@ -1369,14 +1382,19 @@ void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
   if (caller == kENDRAW    || caller == kUSDRAW || 
       caller == kBXExiting || caller == kBXEntering || 
       caller == kUSTCKV) { 
-    x = GetXsco();
-    y = GetYsco();
-    z = GetZsco();
+      x = GetXsco();
+      y = GetYsco();
+      z = GetZsco();
   }
   else if (caller == kMGDRAW || caller == kSODRAW) { 
-    x = TRACKR.xtrack[TRACKR.ntrack];
-    y = TRACKR.ytrack[TRACKR.ntrack];
-    z = TRACKR.ztrack[TRACKR.ntrack];
+      Int_t i = -1;
+      if ((i = fPrimaryElectronIndex) > -1) {
+	  GetPrimaryElectronPosition(i, x, y, z);
+      } else {
+	  x = TRACKR.xtrack[TRACKR.ntrack];
+	  y = TRACKR.ytrack[TRACKR.ntrack];
+	  z = TRACKR.ztrack[TRACKR.ntrack];
+      }
   }
   else if (caller == kMGResumedTrack) {
     x = TRACKR.spausr[0];
@@ -1553,15 +1571,23 @@ Double_t TFluka::Edep() const
   if (caller == kBXExiting || caller == kBXEntering || 
       caller == kUSDRAW    || caller == kMGResumedTrack) return 0.0;
   Double_t sum = 0;
-  if (TRACKR.mtrack > 1) printf("Edep: %6d\n", TRACKR.mtrack);
+  Int_t i = -1;
   
-  for ( Int_t j=0;j<TRACKR.mtrack;j++) {
-      sum +=TRACKR.dtrack[j];  
-  }
-  if (TRACKR.ntrack == 0 && TRACKR.mtrack == 0)
-      return fRull + sum;
-  else {
-      return sum;
+  if ((i = fPrimaryElectronIndex) > -1) {
+      // Primary ionisation
+      return GetPrimaryElectronKineticEnergy(i);
+  } else {
+      // Normal ionisation
+      if (TRACKR.mtrack > 1) printf("Edep: %6d\n", TRACKR.mtrack);
+      
+      for ( Int_t j=0;j<TRACKR.mtrack;j++) {
+	  sum +=TRACKR.dtrack[j];  
+      }
+      if (TRACKR.ntrack == 0 && TRACKR.mtrack == 0)
+	  return fRull + sum;
+      else {
+	  return sum;
+      }
   }
 }
 
@@ -2289,10 +2315,11 @@ Int_t TFluka::GetNPrimaryElectrons()
 }
 
 //______________________________________________________________________________
-Double_t TFluka::GetPrimaryElectronKineticEnergy(Int_t i)
+Double_t TFluka::GetPrimaryElectronKineticEnergy(Int_t i) const
 {
-    Double_t ekin = -1.;
     // Returns kinetic energy of primary electron i
+
+    Double_t ekin = -1.;
     if (i >= 0 && i < ALLDLT.nalldl) {
         ekin =  ALLDLT.talldl[i];
     } else {
@@ -2302,3 +2329,22 @@ Double_t TFluka::GetPrimaryElectronKineticEnergy(Int_t i)
     }
     return ekin;
 }
+
+void TFluka::GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z) const
+{
+    // Returns position  of primary electron i
+        if (i >= 0 && i < ALLDLT.nalldl) {
+	    x = ALLDLT.xalldl[i];
+	    y = ALLDLT.yalldl[i];
+	    z = ALLDLT.zalldl[i];
+	    return;
+	} else {
+	    Warning("GetPrimaryElectronPosition",
+		    "Primary electron index out of range %d %d \n",
+		    i, ALLDLT.nalldl);
+	    return;
+	}
+	return;
+}
+
+

@@ -351,7 +351,7 @@ class TFluka : public TVirtualMC {
   void  SetRull(Double_t r) {fRull = r;}
   void  SetXsco(Double_t x) {fXsco = x;}
   void  SetYsco(Double_t y) {fYsco = y;}
-  void SetZsco(Double_t z) {fZsco = z;}
+  void  SetZsco(Double_t z) {fZsco = z;}
 
   void  SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
   void  SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
@@ -369,10 +369,10 @@ class TFluka : public TVirtualMC {
   void   EnableField(Bool_t flag=kTRUE) {fFieldFlag = flag;}
   Bool_t IsFieldEnabled() const {return fFieldFlag;}
   
-  Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
+  Int_t  GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
 
   TObjArray *          GetFlukaMaterials();
-  virtual void SetRootGeometry() {;} // Dummy
+  virtual void         SetRootGeometry() {;} // Dummy
   virtual Int_t        NofVolDaughters(const char* volName) const;
   virtual const char*  VolDaughterName(const char* volName, Int_t i) const;
   virtual Int_t        VolDaughterCopyNo(const char* volName, Int_t i) const;
@@ -381,9 +381,11 @@ class TFluka : public TVirtualMC {
   //
   // Info about primary ionization electrons
   Int_t    GetNPrimaryElectrons();
-  Double_t GetPrimaryElectronKineticEnergy(Int_t i);
+  Double_t GetPrimaryElectronKineticEnergy(Int_t i) const;
+  void     GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z) const;
+  void     SetCurrentPrimaryElectronIndex(Int_t i)  {fPrimaryElectronIndex = i;}
 
-  private:
+ private:
    
   // Copy constructor and operator= declared but not implemented (-Weff++ flag)
   TFluka(const TFluka &mc); //: TVirtualMC(mc) {;}
@@ -405,15 +407,16 @@ class TFluka : public TVirtualMC {
   Double_t              fXsco;             // Fluka Draw procedures formal parameter
   Double_t              fYsco;             // Fluka Draw procedures formal parameter
   Double_t              fZsco;             // Fluka Draw procedures formal parameter
-  Bool_t   fTrackIsEntering;  // Flag for track entering
-  Bool_t   fTrackIsExiting;   // Flag for track exiting  
-  Bool_t   fTrackIsNew;       // Flag for new track
-  Bool_t   fFieldFlag;        // Flag for magnetic field
-  Bool_t   fGeneratePemf;     // Flag for automatic .pemf generation
-  Int_t    fDummyBoundary;    // Flag for crossing dummy boundaries
-  Bool_t   fStopped;          // Flag for stopping 
-  Bool_t   fStopEvent;        // Flag for stopped event
-  Bool_t   fStopRun;          // Flag for stopped run 
+  Bool_t   fTrackIsEntering;      // Flag for track entering
+  Bool_t   fTrackIsExiting;       // Flag for track exiting  
+  Bool_t   fTrackIsNew;           // Flag for new track
+  Bool_t   fFieldFlag;            // Flag for magnetic field
+  Bool_t   fGeneratePemf;         // Flag for automatic .pemf generation
+  Int_t    fDummyBoundary;        // Flag for crossing dummy boundaries
+  Bool_t   fStopped;              // Flag for stopping 
+  Bool_t   fStopEvent;            // Flag for stopped event
+  Bool_t   fStopRun;              // Flag for stopped run 
+  Int_t    fPrimaryElectronIndex; // Primary electron Index
   
   //
   //Geometry through TGeo
