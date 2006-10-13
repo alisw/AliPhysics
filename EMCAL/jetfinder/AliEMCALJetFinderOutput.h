@@ -40,7 +40,12 @@ class AliEMCALJetFinderOutput : public TObject
 		TClonesArray *GetParticles() {return fParticlesArray; }
 		Int_t GetNParticles() const {return fNParticles;}
 
-	ClassDef(AliEMCALJetFinderOutput,5)
+		AliEMCALJetFinderOutput (const AliEMCALJetFinderOutput&);
+		AliEMCALJetFinderOutput & operator = (const AliEMCALJetFinderOutput & ) {
+		  Fatal("operator =", "not implemented") ;
+		  return *this ;
+		}
+
 	private:
 		void InitArrays();
 		TClonesArray	*fJetsArray;     	// Array of jet objects
@@ -54,6 +59,8 @@ class AliEMCALJetFinderOutput : public TObject
                 Int_t           fNMaxPartons;   	// Maximum number of primary particles
                 Int_t           fDebug;			// Debug level
 		Bool_t 		fInitialised;		// stores whether or not the arrays have been initialised
+
+	ClassDef(AliEMCALJetFinderOutput,5)
 		
 };
 #endif

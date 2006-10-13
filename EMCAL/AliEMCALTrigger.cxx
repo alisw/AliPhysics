@@ -60,21 +60,17 @@ ClassImp(AliEMCALTrigger)
 AliEMCALTrigger::AliEMCALTrigger()
   : AliTriggerDetector(),
     f2x2MaxAmp(-1), f2x2CellPhi(-1),  f2x2CellEta(-1),
-    f4x4MaxAmp(-1), f4x4CellPhi(-1),  f4x4CellEta(-1), 
-    fL0Threshold(100),fL1JetLowPtThreshold(200), 
-    fL1JetMediumPtThreshold(500), fL1JetHighPtThreshold(1000), 
+    f2x2SM(0),
+    f4x4MaxAmp(-1), f4x4CellPhi(-1),  f4x4CellEta(-1),
+    f4x4SM(0),
+    fADCValuesHigh4x4(0x0),fADCValuesLow4x4(0x0),
+    fADCValuesHigh2x2(0x0),fADCValuesLow2x2(0x0),
+    fDigitsList(0x0),
+    fL0Threshold(100),fL1JetLowPtThreshold(200),
+    fL1JetMediumPtThreshold(500), fL1JetHighPtThreshold(1000),
     fSimulation(kTRUE)
-
 {
   //ctor 
-
-  fADCValuesHigh4x4 = 0x0; //new Int_t[fTimeBins];
-  fADCValuesLow4x4  = 0x0; //new Int_t[fTimeBins];
-  fADCValuesHigh2x2 = 0x0; //new Int_t[fTimeBins];
-  fADCValuesLow2x2  = 0x0; //new Int_t[fTimeBins];
-
-  fDigitsList = 0x0 ;
-
 
   SetName("EMCAL");
   CreateInputs();
@@ -86,30 +82,27 @@ AliEMCALTrigger::AliEMCALTrigger()
 
 //____________________________________________________________________________
 AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig) 
-  : AliTriggerDetector(trig) 
+  : AliTriggerDetector(trig),
+    f2x2MaxAmp(trig.f2x2MaxAmp), 
+    f2x2CellPhi(trig.f2x2CellPhi),  
+    f2x2CellEta(trig.f2x2CellEta),
+    f2x2SM(trig.f2x2SM),
+    f4x4MaxAmp(trig.f4x4MaxAmp), 
+    f4x4CellPhi(trig.f4x4CellPhi),  
+    f4x4CellEta(trig.f4x4CellEta),
+    f4x4SM(trig.f4x4SM),
+    fADCValuesHigh4x4(trig.fADCValuesHigh4x4),
+    fADCValuesLow4x4(trig.fADCValuesLow4x4),
+    fADCValuesHigh2x2(trig.fADCValuesHigh2x2),
+    fADCValuesLow2x2(trig.fADCValuesLow2x2),
+    fDigitsList(trig.fDigitsList),
+    fL0Threshold(trig.fL0Threshold),
+    fL1JetLowPtThreshold(trig.fL1JetLowPtThreshold),
+    fL1JetMediumPtThreshold(trig.fL1JetMediumPtThreshold), 
+    fL1JetHighPtThreshold(trig.fL1JetHighPtThreshold),
+    fSimulation(trig.fSimulation)
 {
-
   // cpy ctor
-
-  f2x2MaxAmp               = trig.f2x2MaxAmp ;
-  f4x4MaxAmp               = trig.f4x4MaxAmp ;
-  f2x2CellPhi              = trig.f2x2CellPhi ;
-  f4x4CellPhi              = trig.f4x4CellPhi ;
-  f2x2CellEta              = trig.f2x2CellEta ;
-  f4x4CellEta              = trig.f4x4CellEta ;
-  fADCValuesHigh4x4        = trig.fADCValuesHigh4x4 ; 
-  fADCValuesLow4x4         = trig.fADCValuesLow4x4  ; 
-  fADCValuesHigh2x2        = trig.fADCValuesHigh2x2 ; 
-  fADCValuesLow2x2         = trig.fADCValuesLow2x2  ;
-  fDigitsList              = trig.fDigitsList ;
-  fL0Threshold             = trig.fL0Threshold ; 
-  fL1JetLowPtThreshold     = trig.fL1JetLowPtThreshold ;
-  fL1JetMediumPtThreshold  = trig.fL1JetMediumPtThreshold ;
-  fL1JetHighPtThreshold    = trig.fL1JetHighPtThreshold ;
-  fSimulation              = trig.fSimulation ;
-
-
-
 }
 
 //----------------------------------------------------------------------

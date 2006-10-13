@@ -37,21 +37,23 @@ ClassImp(AliEMCALTick)
 
 
 //____________________________________________________________________________ 
-  AliEMCALTick::AliEMCALTick():TObject() 
+AliEMCALTick::AliEMCALTick()
+  : TObject(),
+    fTime(0),
+    fA(0),
+    fB(0)
 {
   //ctor
-  fTime = 0;
-  fA = 0;
-  fB = 0 ;
 }
 
 //____________________________________________________________________________ 
-AliEMCALTick::AliEMCALTick(Float_t time, Float_t a, Float_t slope):TObject()
+AliEMCALTick::AliEMCALTick(Float_t time, Float_t a, Float_t slope)
+  : TObject(),
+    fTime(time),
+    fA(a),
+    fB(slope)
 {
   //ctor
-  fTime = time;
-  fA = a;
-  fB = slope ;  
 }
 
 

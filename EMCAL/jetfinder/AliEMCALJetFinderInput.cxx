@@ -36,10 +36,9 @@ class TClonesArray;
 ClassImp(AliEMCALJetFinderInput)
 
 AliEMCALJetFinderInput::AliEMCALJetFinderInput(): 
-fDigitsArray(0),
-fTracksArray(0),
-fPartonsArray(0),
-fParticlesArray(0)
+  fDigitsArray(0),fNDigits(0),fNMaxDigits(0),fTracksArray(0),fNTracks(0),fNMaxTracks(0),
+  fPartonsArray(0),fNPartons(0),fNMaxPartons(0),fParticlesArray(0),
+  fNParticles(0),fNMaxParticles(0),fDebug(0),fInitialised(0)
 {
 // Default constructor
 // Defines all TClonesArrays  
@@ -57,6 +56,17 @@ fParticlesArray(0)
   fNPartons       = 0;
   fNParticles     = 0;
 
+}
+
+
+AliEMCALJetFinderInput::AliEMCALJetFinderInput(const AliEMCALJetFinderInput& ji)
+  : TObject(ji), fDigitsArray(ji.fDigitsArray),fNDigits(ji.fNDigits),fNMaxDigits(ji.fNMaxDigits),
+    fTracksArray(ji.fTracksArray),fNTracks(ji.fNTracks),fNMaxTracks(ji.fNMaxTracks),
+    fPartonsArray(ji.fPartonsArray),fNPartons(ji.fNPartons),fNMaxPartons(ji.fNMaxPartons),
+    fParticlesArray(ji.fParticlesArray),fNParticles(ji.fNParticles),fNMaxParticles(ji.fNMaxParticles),
+    fDebug(ji.fDebug),fInitialised(ji.fInitialised)
+{
+  //copy ctor
 }
 
 void AliEMCALJetFinderInput::InitArrays()

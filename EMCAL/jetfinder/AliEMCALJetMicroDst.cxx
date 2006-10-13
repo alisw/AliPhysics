@@ -48,7 +48,12 @@ TString gAliNameTree("jetMDST"); // 7-feb-2002
 
 extern "C" void sgpdge_(Int_t &i, Int_t &pdggea);
 
-AliEMCALJetMicroDst::AliEMCALJetMicroDst(const char *name, const char *tit) : TNamed(name,tit)
+AliEMCALJetMicroDst::AliEMCALJetMicroDst(const char *name, const char *tit) : 
+  TNamed(name,tit),
+  fDebug(0),fFile(0),fTree(0),fListHist(0),fFileName(0),fdecone(0.),fptcone(0.),
+  fnpart(0),fnjet(0),fncell(0),fngrid(0),fnchp(0),fhPtPart(0),fhNJet(0),fhPtJet(0),
+  fhEtaPhiPart(0),fhEtaPhiJet(0),fhNcell(0),fhCellId(0),fhCellEt(0),fhSumEt(0),fhNgrid(0),
+  fhGridId(0),fhGridEt(0),fhSumEtGrForJF(0)
 {
 	//constructor
   fFile  = 0;
@@ -79,6 +84,38 @@ AliEMCALJetMicroDst::AliEMCALJetMicroDst(const char *name, const char *tit) : TN
   fhSumEtGrForJF  = new TH1F("fhSumEtGrForJF","sum Et in EMCAL grid for JF", 1000, 0.0, 1000.);
 
   fListHist = MoveHistsToList("Hist For AliEMCALJetMicroDst", kFALSE); 
+}
+
+
+AliEMCALJetMicroDst::AliEMCALJetMicroDst(const AliEMCALJetMicroDst& jet) : 
+  TNamed(jet.GetName(),jet.GetTitle()),
+  fDebug(jet.fDebug),
+  fFile(jet.fFile),
+  fTree(jet.fTree),
+  fListHist(jet.fListHist),
+  fFileName(jet.fFileName),
+  fdecone(jet.fdecone),
+  fptcone(jet.fptcone),
+  fnpart(jet.fnpart),
+  fnjet(jet.fnjet),
+  fncell(jet.fncell),
+  fngrid(jet.fngrid),
+  fnchp(jet.fnchp),
+  fhPtPart(jet.fhPtPart),
+  fhNJet(jet.fhNJet),
+  fhPtJet(jet.fhPtJet),
+  fhEtaPhiPart(jet.fhEtaPhiPart),
+  fhEtaPhiJet(jet.fhEtaPhiJet),
+  fhNcell(jet.fhNcell),
+  fhCellId(jet.fhCellId),
+  fhCellEt(jet.fhCellEt),
+  fhSumEt(jet.fhSumEt),
+  fhNgrid(jet.fhNgrid),
+  fhGridId(jet.fhGridId),
+  fhGridEt(jet.fhGridEt),
+  fhSumEtGrForJF(jet.fhSumEtGrForJF)
+{
+  //copy constructor
 }
 
 AliEMCALJetMicroDst::~AliEMCALJetMicroDst()

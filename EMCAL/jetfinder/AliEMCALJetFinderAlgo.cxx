@@ -30,12 +30,24 @@
 #include "AliMagF.h"
 ClassImp(AliEMCALJetFinderAlgo)
 
-AliEMCALJetFinderAlgo::AliEMCALJetFinderAlgo()
+AliEMCALJetFinderAlgo::AliEMCALJetFinderAlgo() :
+  fInputPointer(0),fOutputPointer(0),fOutputAllocated(kFALSE),
+  fDebug(0),fPythiaComparison(0)
 {
    fDebug =0;
    fOutputPointer=0;
    fInputPointer=0;
    fOutputAllocated=kFALSE;
+}
+
+
+AliEMCALJetFinderAlgo::AliEMCALJetFinderAlgo(const AliEMCALJetFinderAlgo& jfa) 
+  : TTask(jfa.GetName(), jfa.GetTitle()),
+    fInputPointer(jfa.fInputPointer),fOutputPointer(jfa.fOutputPointer),
+    fOutputAllocated(jfa.fOutputAllocated), fDebug(jfa.fDebug),
+    fPythiaComparison(jfa.fPythiaComparison)
+{
+  //copy ctor
 }
 
 AliEMCALJetFinderAlgo::~AliEMCALJetFinderAlgo()

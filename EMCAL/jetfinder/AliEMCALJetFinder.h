@@ -25,6 +25,13 @@ class AliEMCALJetFinder : public TTask {
     AliEMCALJetFinder();
     AliEMCALJetFinder(const char* name, const char *title);
     virtual ~AliEMCALJetFinder();
+
+    AliEMCALJetFinder (const AliEMCALJetFinder&);
+    AliEMCALJetFinder & operator = (const AliEMCALJetFinder & ) {
+      Fatal("operator =", "not implemented") ;
+      return *this ;
+    }
+
     virtual void  Init();
     virtual void  Find(Int_t ncell, Int_t ncelltot, Float_t etc[30000], 
 		      Float_t etac[30000], Float_t phic[30000],

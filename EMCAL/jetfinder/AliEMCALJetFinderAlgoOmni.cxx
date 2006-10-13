@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.2  2006/06/02 23:03:03  pavlinov
+ALICE numbering scheme
+
 Revision 1.1  2006/02/28 21:56:34  jklay
 moving jetfinder code to subdirectory
 
@@ -89,11 +92,18 @@ Changed hadron correction and added saving EMCAL and track contributions
 #include "AliEMCALJet.h"
 
 
-ClassImp(AliEMCALJetFinderAlgoOmni)
+ClassImp(AliEMCALJetFinderAlgoOmni) 
 
-  AliEMCALJetFinderAlgoOmni::AliEMCALJetFinderAlgoOmni()
+AliEMCALJetFinderAlgoOmni::AliEMCALJetFinderAlgoOmni() :
+  fUnit(0),fUnitNoCuts(0),fHadCorr(0),fBGType(kRatio),fNumIter(0),
+  fNumUnits(0),fESeed(0.),fConeRad(0.),fJetEMin(0.),fEtMin(0.),
+  fMinMove(0.),fMaxMove(0.),fBGMaxMove(0.),fPtCut(0.),fBGPar(0.),
+  fEBGTotal(0.),fEBGTotalOld(0.),fEBGAve(0.),fEnergy(0.),fJetEta(0.),
+  fJetPhi(0.),fEtaInit(0.),fPhiInit(0.),fEtaB(0.),fPhiB(0.),fJetESum(0.),
+  fJetEtaSum(0.),fJetPhiSum(0.),fDEta(0.),fDPhi(0.),fDistP(0.),fDistI(0.),
+  fTempE(0.),fRad(0.),fNumInCone(0),fNumJets(0),fArrayInitialised(0)
 {
-  //Default constructor
+ //Default constructor
 if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance("EMCAL_55_25","EMCAL");
   fNumIter           = 0;
@@ -131,6 +141,24 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
   fArrayInitialised  = 0;        //Set to FALSE to start
   fBGType            = kRatio;   //Set Ratio method as default BG subtraction method 
   fBGPar             = -1.0;      //Set to 1 to start
+}
+
+
+AliEMCALJetFinderAlgoOmni::AliEMCALJetFinderAlgoOmni(const AliEMCALJetFinderAlgoOmni& jfao) 
+  : AliEMCALJetFinderAlgo(jfao),
+    fUnit(jfao.fUnit),fUnitNoCuts(jfao.fUnitNoCuts),fHadCorr(jfao.fHadCorr),
+    fBGType(jfao.fBGType),fNumIter(jfao.fNumIter),fNumUnits(jfao.fNumUnits),
+    fESeed(jfao.fESeed),fConeRad(jfao.fConeRad),fJetEMin(jfao.fJetEMin),
+    fEtMin(jfao.fEtMin), fMinMove(jfao.fMinMove),fMaxMove(jfao.fMaxMove),
+    fBGMaxMove(jfao.fBGMaxMove),fPtCut(jfao.fPtCut),fBGPar(jfao.fBGPar),
+    fEBGTotal(jfao.fEBGTotal),fEBGTotalOld(jfao.fEBGTotalOld),fEBGAve(jfao.fEBGAve),
+    fEnergy(jfao.fEnergy),fJetEta(jfao.fJetEta), fJetPhi(jfao.fJetPhi),fEtaInit(jfao.fEtaInit),
+    fPhiInit(jfao.fPhiInit),fEtaB(jfao.fEtaB),fPhiB(jfao.fPhiB),fJetESum(jfao.fJetESum),
+    fJetEtaSum(jfao.fJetEtaSum),fJetPhiSum(jfao.fJetPhiSum),fDEta(jfao.fDEta),fDPhi(jfao.fDPhi),
+    fDistP(jfao.fDistP),fDistI(jfao.fDistI),fTempE(jfao.fTempE),fRad(jfao.fRad),
+    fNumInCone(jfao.fNumInCone),fNumJets(jfao.fNumJets),fArrayInitialised(jfao.fArrayInitialised)
+{
+  //copy ctor
 }
 
  AliEMCALJetFinderAlgoOmni::~AliEMCALJetFinderAlgoOmni()

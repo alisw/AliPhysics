@@ -65,6 +65,12 @@ public:
   AliEMCALJetFinderAlgoUA1Unit* GetUnitArrayPointer() const {return fUnit;}
   AliEMCALJetFinderAlgoUA1Unit* GetUnitArrayPointerNoCuts() const {return fUnitNoCuts;}
 
+  AliEMCALJetFinderAlgoOmni (const AliEMCALJetFinderAlgoOmni&);
+  AliEMCALJetFinderAlgoOmni & operator = (const AliEMCALJetFinderAlgoOmni & ) {
+    Fatal("operator =", "not implemented") ;
+    return *this ;
+  }
+
 protected:
   AliEMCALJetFinderAlgoUA1Unit   *fUnit; //Array of JetFinder Unit objects (treated as the cells)
   AliEMCALJetFinderAlgoUA1Unit   *fUnitNoCuts; //Second array of JetFinder Unit objects ('raw data')

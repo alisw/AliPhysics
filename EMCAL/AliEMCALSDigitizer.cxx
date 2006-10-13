@@ -72,45 +72,62 @@
 ClassImp(AliEMCALSDigitizer)
            
 //____________________________________________________________________________ 
-  AliEMCALSDigitizer::AliEMCALSDigitizer():TTask("","") 
+AliEMCALSDigitizer::AliEMCALSDigitizer()
+  : TTask("",""),
+    fA(0.),fB(0.),fECPrimThreshold(0.),
+    fDefaultInit(kTRUE),
+    fEventFolderName(0),
+    fInit(0),
+    fSDigitsInRun(0),
+    fFirstEvent(0),
+    fLastEvent(0),
+    fSampling(0.),
+    fControlHists(0),
+    fHists(0)
 {
   // ctor
-  fFirstEvent = fLastEvent  = fControlHists = 0;  
   InitParameters();
-  fDefaultInit = kTRUE ; 
-  fHists = 0;
 }
 
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName, 
-				       const char * eventFolderName):
-  TTask("EMCAL"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
-  fEventFolderName(eventFolderName)
+				       const char * eventFolderName)
+  : TTask("EMCAL"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
+    fA(0.),fB(0.),fECPrimThreshold(0.),
+    fDefaultInit(kFALSE),
+    fEventFolderName(eventFolderName),
+    fInit(0),
+    fSDigitsInRun(0),
+    fFirstEvent(0),
+    fLastEvent(0),
+    fSampling(0.),
+    fControlHists(1),
+    fHists(0)
 {
   // ctor
-  fFirstEvent = fLastEvent  = fControlHists = 0 ; // runs one event by defaut  
   Init();
   InitParameters() ; 
-  fDefaultInit = kFALSE ; 
-  fHists = 0;
-  fControlHists = 1;
   if(fControlHists) BookControlHists(1);
 }
 
 
 //____________________________________________________________________________ 
-AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd) {
+AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) 
+  : TTask(sd.GetName(),sd.GetTitle()),
+    fA(sd.fA),
+    fB(sd.fB),
+    fECPrimThreshold(sd.fECPrimThreshold),
+    fDefaultInit(sd.fDefaultInit),
+    fEventFolderName(sd.fEventFolderName),
+    fInit(sd.fInit),
+    fSDigitsInRun(sd.fSDigitsInRun),
+    fFirstEvent(sd.fFirstEvent),
+    fLastEvent(sd.fLastEvent),
+    fSampling(sd.fSampling),
+    fControlHists(sd.fControlHists),
+    fHists(sd.fHists)
+{
   //cpy ctor 
-
-  fFirstEvent    = sd.fFirstEvent ; 
-  fLastEvent     = sd.fLastEvent ;
-  fA             = sd.fA ;
-  fB             = sd.fB ;
-  fECPrimThreshold  = sd.fECPrimThreshold ;
-  fSDigitsInRun  = sd.fSDigitsInRun ;
-  SetName(sd.GetName()) ; 
-  SetTitle(sd.GetTitle()) ; 
-  fEventFolderName = sd.fEventFolderName;
 }
 
 

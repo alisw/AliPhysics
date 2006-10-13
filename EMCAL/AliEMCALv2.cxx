@@ -47,12 +47,22 @@
 ClassImp(AliEMCALv2)
 
 //______________________________________________________________________
-AliEMCALv2::AliEMCALv2():AliEMCALv1(), fGeometry(0){
+AliEMCALv2::AliEMCALv2()
+  : AliEMCALv1(), 
+    fGeometry(0),
+    fHDe(0),
+    fHNhits(0)
+{
   // ctor
 }
 
 //______________________________________________________________________
-AliEMCALv2::AliEMCALv2(const char *name, const char *title): AliEMCALv1(name,title) {
+AliEMCALv2::AliEMCALv2(const char *name, const char *title)
+  : AliEMCALv1(name,title),
+    fGeometry(0),
+    fHDe(0),
+    fHNhits(0)
+{
     // Standard Creator.
 
     fHits= new TClonesArray("AliEMCALHit",1000);
@@ -76,12 +86,13 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title): AliEMCALv1(name,tit
 }
 
 //______________________________________________________________________
-AliEMCALv2::AliEMCALv2(const AliEMCALv2 & emcal):AliEMCALv1(emcal)
+AliEMCALv2::AliEMCALv2(const AliEMCALv2 & emcal)
+  : AliEMCALv1(emcal),
+    fGeometry(emcal.fGeometry),
+    fHDe(emcal.fHDe),
+    fHNhits(emcal.fHNhits)
 {
   //copy ctor
-  fGeometry = emcal.fGeometry;
-  fHDe = emcal.fHDe;
-  fHNhits = emcal.fHNhits;
 
 }
 

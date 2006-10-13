@@ -31,6 +31,13 @@ public:
   Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);  	
   Bool_t GetPythiaComparison(){return fPythiaComparison;}
   void SetPythiaComparison(Bool_t value){fPythiaComparison=value;}
+
+  AliEMCALJetFinderAlgo (const AliEMCALJetFinderAlgo&);
+  AliEMCALJetFinderAlgo & operator = (const AliEMCALJetFinderAlgo & ) {
+    Fatal("operator =", "not implemented") ;
+    return *this ;
+  }
+
 protected:
    
   AliEMCALJetFinderInput*        fInputPointer;  // pointer to the input object 

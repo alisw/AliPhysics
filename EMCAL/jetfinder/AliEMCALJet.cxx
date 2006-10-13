@@ -25,30 +25,39 @@ ClassImp(AliEMCALJet)
 
 //____________________________________________________________________________
 AliEMCALJet::AliEMCALJet()
+  : fEnergy(0.), fEMCALEnergy(0.),
+    fEMCALEnergyBGSub(0), fTrackEnergy(0.),
+    fTrackEnergyPtCut(0.), fHCEnergy(0.),
+    fIsWeightedEnergy(kFALSE), fEta(0.),
+    fPhi(0.), fNt(0), fPtT(0), fEtaT(0),
+    fPhiT(0), fPdgT(0)
 {
 // Default constructor
-  fEnergy = 0.;
-  fEMCALEnergy = 0.;
-  fEMCALEnergyBGSub = 0;
-  fTrackEnergy = 0.;
-  fTrackEnergyPtCut = 0.;
-  fHCEnergy = 0.;
-  fIsWeightedEnergy = kFALSE;
-  fEta = 0.;
-  fPhi = 0.;
-  fNt = 0;
-  fPtT = 0;
-  fEtaT = 0;
-  fPhiT = 0;
-  fPdgT = 0;
 }
 
 AliEMCALJet::AliEMCALJet(Float_t energy, Float_t phi, Float_t eta)
+  : fEnergy(energy), fEMCALEnergy(0.),
+    fEMCALEnergyBGSub(0), fTrackEnergy(0.),
+    fTrackEnergyPtCut(0.), fHCEnergy(0.),
+    fIsWeightedEnergy(kFALSE), fEta(eta),
+    fPhi(phi), fNt(0), fPtT(0), fEtaT(0),
+    fPhiT(0), fPdgT(0)
 {
 // Constructor
-    fEnergy = energy;
-    fPhi    = phi;
-    fEta    = eta;
+}
+
+AliEMCALJet::AliEMCALJet(const AliEMCALJet& jet) 
+  : TObject(jet), fEnergy(jet.fEnergy), fEMCALEnergy(jet.fEMCALEnergy),
+    fEMCALEnergyBGSub(jet.fEMCALEnergyBGSub), 
+    fTrackEnergy(jet.fTrackEnergy),
+    fTrackEnergyPtCut(jet.fTrackEnergyPtCut), 
+    fHCEnergy(jet.fHCEnergy),
+    fIsWeightedEnergy(jet.fIsWeightedEnergy), 
+    fEta(jet.fEta),fPhi(jet.fPhi), fNt(jet.fNt), 
+    fPtT(jet.fPtT), fEtaT(jet.fEtaT),
+    fPhiT(jet.fPhiT), fPdgT(jet.fPdgT)
+{
+// Copy Constructor
 }
 
 //____________________________________________________________________________

@@ -63,7 +63,15 @@ Int_t    AliEMCAL::fgThreshold = 1;
 Int_t    AliEMCAL::fgChannelsPerDDL = 768; // 2*(1152/3 or 12*32) 
  
 //____________________________________________________________________________
-AliEMCAL::AliEMCAL():AliDetector()
+AliEMCAL::AliEMCAL()
+  : AliDetector(),
+    fBirkC0(0),
+    fBirkC1(0.),
+    fBirkC2(0.),
+    fHighCharge(0.),
+    fHighGain(0.),
+    fHighLowGainFactor(0.),
+    fLowGainOffset(0)
 {
   // Default ctor 
   fName = "EMCAL" ;
@@ -72,7 +80,15 @@ AliEMCAL::AliEMCAL():AliDetector()
 }
 
 //____________________________________________________________________________
-AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
+AliEMCAL::AliEMCAL(const char* name, const char* title)
+  : AliDetector(name,title),
+    fBirkC0(0),
+    fBirkC1(0.),
+    fBirkC2(0.),
+    fHighCharge(0.),
+    fHighGain(0.),
+    fHighLowGainFactor(0.),
+    fLowGainOffset(0)
 {
   //   ctor : title is used to identify the layout
   Init();
@@ -80,10 +96,18 @@ AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 }
 
 //____________________________________________________________________________
-AliEMCAL::AliEMCAL(const AliEMCAL& emcal) : AliDetector(emcal)
+AliEMCAL::AliEMCAL(const AliEMCAL& emcal) 
+  : AliDetector(emcal),
+    fBirkC0(emcal.fBirkC0),
+    fBirkC1(emcal.fBirkC1),
+    fBirkC2(emcal.fBirkC2),
+    fHighCharge(emcal.fHighCharge),
+    fHighGain(emcal.fHighGain),
+    fHighLowGainFactor(emcal.fHighLowGainFactor),
+    fLowGainOffset(emcal.fLowGainOffset)
 {
   //copy ctor
-  Init();
+  //  Init();
 
 }
 

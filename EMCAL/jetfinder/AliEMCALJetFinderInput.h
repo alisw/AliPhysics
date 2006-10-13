@@ -44,6 +44,12 @@ class AliEMCALJetFinderInput : public TObject
 		TParticle* GetParticle(Int_t particleID);
 		Int_t GetNParticles() const {return fNParticles;}
 
+		AliEMCALJetFinderInput (const AliEMCALJetFinderInput&);
+		AliEMCALJetFinderInput & operator = (const AliEMCALJetFinderInput &) {
+		  Fatal("operator =", "not implemented") ;
+		  return *this ;
+		}
+
 	private:
 		void InitArrays();
 		TClonesArray*	fDigitsArray;	//-> This is the digits array for the EMCAL

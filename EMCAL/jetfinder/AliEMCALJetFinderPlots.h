@@ -27,6 +27,13 @@ class AliEMCALJetFinderPlots : public TObject
 	public:	
 	AliEMCALJetFinderPlots();
 	~AliEMCALJetFinderPlots();
+
+	AliEMCALJetFinderPlots (const AliEMCALJetFinderPlots&);
+	AliEMCALJetFinderPlots & operator = (AliEMCALJetFinderPlots &) {
+	  Fatal("operator =", "not implemented") ;
+	  return *this ;
+	}
+
 	void SetConeRadius(Float_t coneradius){fConeRadius = coneradius;}
 	void SetNominalEnergy(Float_t energy){fNominalEnergy = energy;}
 	void SetDebug(Int_t debug){fDebug = debug;}

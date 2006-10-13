@@ -36,23 +36,34 @@
 ClassImp(AliEMCALClusterizer)
 
 //____________________________________________________________________________
-  AliEMCALClusterizer::AliEMCALClusterizer():TTask("","")
+AliEMCALClusterizer::AliEMCALClusterizer()
+  : TTask("",""),
+    fEventFolderName(""),
+    fFirstEvent(0),
+    fLastEvent(-1)
 {
   // ctor
-  fEventFolderName = "" ;  
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ; 
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer(const TString alirunFileName, 
-					 const TString eventFolderName):
-  TTask("EMCAL"+AliConfig::Instance()->GetReconstructionerTaskName(), alirunFileName),
- fEventFolderName(eventFolderName)
+					 const TString eventFolderName)
+  : TTask("EMCAL"+AliConfig::Instance()->GetReconstructionerTaskName(), alirunFileName),
+    fEventFolderName(eventFolderName),
+    fFirstEvent(0),
+    fLastEvent(-1)
 {
   // ctor
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ;   
+}
+
+//____________________________________________________________________________
+AliEMCALClusterizer::AliEMCALClusterizer(const AliEMCALClusterizer& clu)
+  : TTask(clu.GetName(),clu.GetTitle()),
+    fEventFolderName(clu.fEventFolderName),
+    fFirstEvent(clu.fFirstEvent),
+    fLastEvent(clu.fLastEvent)
+{
+  // copy ctor
 }
 
 //____________________________________________________________________________

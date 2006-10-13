@@ -90,7 +90,8 @@ void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 
 //______________________________________________________________________	
 AliEMCALHadronCorrectionv1::AliEMCALHadronCorrectionv1(const char *name,const char *title) 
-                           :AliEMCALHadronCorrection(name, title)
+  :AliEMCALHadronCorrection(name, title),
+   fSamplingFraction(0.)
 {
   fgHadrCorr = this;
   fSamplingFraction = 1.0;

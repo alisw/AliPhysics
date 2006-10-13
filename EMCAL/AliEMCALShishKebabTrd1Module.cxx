@@ -41,10 +41,20 @@ ClassImp(AliEMCALShishKebabTrd1Module)
   Double_t AliEMCALShishKebabTrd1Module::fgtanBetta=0; //
 
 //_____________________________________________________________________________
-AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEMCALGeometry *g) : TNamed()
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEMCALGeometry *g) 
+  : TNamed(),
+    fOK(),
+    fA(0.),
+    fB(0.),
+    fThetaA(0.),
+    fTheta(theta),
+    fOK1(),
+    fOK2(),
+    fOB(),
+    fOB1(),
+    fOB2()
 { 
   // theta in radians ; first object shold be with theta=pi/2.
-  fTheta = theta;
   if(fgGeometry==0) {
     fTheta = TMath::PiOver2();
     fgGeometry = g;
@@ -57,7 +67,18 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
 }
 
 //_____________________________________________________________________________
-AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor) : TNamed()
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor) 
+  : TNamed(),
+    fOK(),
+    fA(0.),
+    fB(0.),
+    fThetaA(0.),
+    fTheta(0.),
+    fOK1(),
+    fOK2(),
+    fOB(),
+    fOB1(),
+    fOB2()
 { 
   //  printf("** Left Neighbor : %s **\n", leftNeighbor.GetName());
   TObject::SetUniqueID(leftNeighbor.GetUniqueID()+1);
@@ -66,20 +87,20 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
 }
 
 //________________________________________________________________
-AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod) : TNamed(mod.GetName(),mod.GetTitle()) 
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod) 
+  : TNamed(mod.GetName(),mod.GetTitle()),
+    fOK(mod.fOK),
+    fA(mod.fA),
+    fB(mod.fB),
+    fThetaA(mod.fThetaA),
+    fTheta(mod.fTheta),
+    fOK1(mod.fOK1),
+    fOK2(mod.fOK2),
+    fOB(mod.fOB),
+    fOB1(mod.fOB1),
+    fOB2(mod.fOB2)
 {
   //copy ctor
-  fOK = mod.fOK;
-  fA = mod.fA;
-  fB = mod.fB;
-  fThetaA = mod.fThetaA;
-  fTheta = mod.fTheta;
-  fOK1 = mod.fOK1;
-  fOK2 = mod.fOK2;
-  fOB = mod.fOB;
-  fOB1 = mod.fOB1;
-  fOB2 = mod.fOB2;
-
 }
 
 //________________________________________________________________

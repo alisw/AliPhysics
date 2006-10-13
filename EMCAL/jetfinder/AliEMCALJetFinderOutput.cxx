@@ -37,7 +37,11 @@
 ClassImp(AliEMCALJetFinderOutput)
 
 //________________________________________________________________________
-AliEMCALJetFinderOutput::AliEMCALJetFinderOutput(){ 
+AliEMCALJetFinderOutput::AliEMCALJetFinderOutput() :
+  fJetsArray(0),fPartonsArray(0),fNPartons(0),fNJets(0),
+  fParticlesArray(0),fNParticles(0),fNMaxJets(0),fNMaxParticles(0),
+  fNMaxPartons(0),fDebug(0),fInitialised(kFALSE)
+{ 
 	// Default constructor
 	
 	fNMaxJets=10;
@@ -55,7 +59,19 @@ AliEMCALJetFinderOutput::AliEMCALJetFinderOutput(){
 
 if (fDebug>0) Info("AliEMCALJetFinderOutput","Beginning Constructor");
 
-} //________________________________________________________________________
+} 
+
+//________________________________________________________________________
+AliEMCALJetFinderOutput::AliEMCALJetFinderOutput(const AliEMCALJetFinderOutput& jfo) 
+  : TObject(jfo), fJetsArray(jfo.fJetsArray),fPartonsArray(jfo.fPartonsArray),fNPartons(jfo.fNPartons),
+    fNJets(jfo.fNJets), fParticlesArray(jfo.fParticlesArray),fNParticles(jfo.fNParticles),
+    fNMaxJets(jfo.fNMaxJets),fNMaxParticles(jfo.fNMaxParticles),fNMaxPartons(jfo.fNMaxPartons),
+    fDebug(jfo.fDebug),fInitialised(jfo.fInitialised)
+{ 
+  //copy ctor
+}
+
+//________________________________________________________________________
 void AliEMCALJetFinderOutput::InitArrays()
 {
 	// Initialise arrays - legacy from TClones days

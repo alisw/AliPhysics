@@ -42,7 +42,12 @@ public:
   AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   virtual ~AliEMCALClusterizerv1()  ;
   virtual void Browse(TBrowser* b);
-  
+
+  AliEMCALClusterizerv1 & operator = (const AliEMCALClusterizerv1 &) {
+    Fatal("operator =", "not implemented") ;
+    return *this ;
+  }
+
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 

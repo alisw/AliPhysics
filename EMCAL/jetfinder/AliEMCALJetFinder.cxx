@@ -71,6 +71,20 @@ ClassImp(AliEMCALJetFinder)
 
 //____________________________________________________________________________
 AliEMCALJetFinder::AliEMCALJetFinder()
+  : fBGFileName(""), fEMCALWeight(0.), fTrackWeight(0.), fRandomBg(kFALSE),
+    fWrite(kTRUE), fWeightingMethod(kFALSE), fJets(0), fLego(0), fLegoB(0),
+    fhLegoTracks(0), fhLegoEMCAL(0), fhLegoHadrCorr(0), fhEff(0), fhCellEt(0),
+    fhCellEMCALEt(0), fhTrackPt(0), fhTrackPtBcut(0), fhChPartMultInTpc(0),
+    fhSinTheta(0), fC1(0), fHistsList(0), fHadronCorrector(0), fHCorrection(0),
+    fDebug(0), fBackground(0), fConeRadius(0.3), 
+    fPtCut(0.), fEtSeed(0.), fMinJetEt(0.), fMinCellEt(0.),
+    fSamplingF(0.), fSmear(0), fEffic(0), fK0N(0),
+    fNjets(0), fDeta(0.), fDphi(0.), fNcell(0), fNtot(0),
+    fNbinEta(0), fNbinPhi(0), fEtaMin(0.), fEtaMax(0.), fPhiMin(0.),
+    fPhiMax(0.), fNt(0), fNChTpc(0), fNtS(0), fTrackList(0), fPtT(0),
+    fEtaT(0), fPhiT(0), fPdgT(0), fNtB(0), fTrackListB(0), fPtB(0),
+    fEtaB(0),fPhiB(0), fPdgB(0), fMode(0), fMinMove(0.), fMaxMove(0.),
+    fPrecBg(0.), fError(0), fOutFileName(0), fOutFile(0), fInFile(0), fEvent(0)
 {
 // Default constructor
     fJets             = 0;
@@ -105,7 +119,21 @@ AliEMCALJetFinder::AliEMCALJetFinder()
 }
 
 AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
-    : TTask(name, title)
+  : TTask(name, title),
+    fBGFileName(""), fEMCALWeight(0.), fTrackWeight(0.), fRandomBg(kFALSE),
+    fWrite(kTRUE), fWeightingMethod(kFALSE), fJets(0), fLego(0), fLegoB(0),
+    fhLegoTracks(0), fhLegoEMCAL(0), fhLegoHadrCorr(0), fhEff(0), fhCellEt(0),
+    fhCellEMCALEt(0), fhTrackPt(0), fhTrackPtBcut(0), fhChPartMultInTpc(0),
+    fhSinTheta(0), fC1(0), fHistsList(0), fHadronCorrector(0), fHCorrection(0),
+    fDebug(0), fBackground(0), fConeRadius(0.3), 
+    fPtCut(0.), fEtSeed(0.), fMinJetEt(0.), fMinCellEt(0.),
+    fSamplingF(0.), fSmear(0), fEffic(0), fK0N(0),
+    fNjets(0), fDeta(0.), fDphi(0.), fNcell(0), fNtot(0),
+    fNbinEta(0), fNbinPhi(0), fEtaMin(0.), fEtaMax(0.), fPhiMin(0.),
+    fPhiMax(0.), fNt(0), fNChTpc(0), fNtS(0), fTrackList(0), fPtT(0),
+    fEtaT(0), fPhiT(0), fPdgT(0), fNtB(0), fTrackListB(0), fPtB(0),
+    fEtaB(0),fPhiB(0), fPdgB(0), fMode(0), fMinMove(0.), fMaxMove(0.),
+    fPrecBg(0.), fError(0), fOutFileName(0), fOutFile(0), fInFile(0), fEvent(0)
 {
 // Constructor 
 // Title is used in method GetFileNameForParameters();
@@ -151,6 +179,29 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
 
     fRandomBg         = 0;
     SetParametersForBgSubtraction();
+}
+
+
+AliEMCALJetFinder::AliEMCALJetFinder(const AliEMCALJetFinder& jf)
+  : TTask(jf.GetName(), jf.GetTitle()),
+    fBGFileName(jf.fBGFileName), fEMCALWeight(jf.fEMCALWeight), fTrackWeight(jf.fTrackWeight), 
+    fRandomBg(jf.fRandomBg),fWrite(jf.fWrite), fWeightingMethod(jf.fWeightingMethod), fJets(jf.fJets), 
+    fLego(jf.fLego), fLegoB(jf.fLegoB), fhLegoTracks(jf.fhLegoTracks), fhLegoEMCAL(jf.fhLegoEMCAL), 
+    fhLegoHadrCorr(jf.fhLegoHadrCorr), fhEff(jf.fhEff), fhCellEt(jf.fhCellEt),fhCellEMCALEt(jf.fhCellEMCALEt), 
+    fhTrackPt(jf.fhTrackPt), fhTrackPtBcut(jf.fhTrackPtBcut), fhChPartMultInTpc(jf.fhChPartMultInTpc),
+    fhSinTheta(jf.fhSinTheta), fC1(jf.fC1), fHistsList(jf.fHistsList), fHadronCorrector(jf.fHadronCorrector), 
+    fHCorrection(jf.fHCorrection),fDebug(jf.fDebug), fBackground(jf.fBackground), fConeRadius(jf.fConeRadius), 
+    fPtCut(jf.fPtCut), fEtSeed(jf.fEtSeed), fMinJetEt(jf.fMinJetEt), fMinCellEt(jf.fMinCellEt), 
+    fSamplingF(jf.fSamplingF), fSmear(jf.fSmear), fEffic(jf.fEffic), fK0N(jf.fK0N), fNjets(jf.fNjets), 
+    fDeta(jf.fDeta), fDphi(jf.fDphi), fNcell(jf.fNcell), fNtot(jf.fNtot), fNbinEta(jf.fNbinEta), 
+    fNbinPhi(jf.fNbinPhi), fEtaMin(jf.fEtaMin), fEtaMax(jf.fEtaMax), fPhiMin(jf.fPhiMin),
+    fPhiMax(jf.fPhiMax), fNt(jf.fNt), fNChTpc(jf.fNChTpc), fNtS(jf.fNtS), fTrackList(jf.fTrackList), 
+    fPtT(jf.fPtT), fEtaT(jf.fEtaT), fPhiT(jf.fPhiT), fPdgT(jf.fPdgT), fNtB(jf.fNtB), fTrackListB(jf.fTrackListB), 
+    fPtB(jf.fPtB), fEtaB(jf.fEtaB),fPhiB(jf.fPhiB), fPdgB(jf.fPdgB), fMode(jf.fMode), fMinMove(jf.fMinMove), 
+    fMaxMove(jf.fMaxMove), fPrecBg(jf.fPrecBg), fError(jf.fError), fOutFileName(jf.fOutFileName), 
+    fOutFile(jf.fOutFile), fInFile(jf.fInFile), fEvent(jf.fEvent)
+{
+// Copy Constructor 
 }
 
 void AliEMCALJetFinder::SetParametersForBgSubtraction

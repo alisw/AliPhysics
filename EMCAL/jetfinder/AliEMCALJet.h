@@ -14,6 +14,13 @@ class AliEMCALJet : public TObject {
   AliEMCALJet();
   AliEMCALJet(Float_t energy, Float_t phi, Float_t eta); 
   virtual ~AliEMCALJet();
+
+  AliEMCALJet (const AliEMCALJet&);
+  AliEMCALJet & operator = (const AliEMCALJet & ) {
+    Fatal("operator =", "not implemented") ;
+    return *this ;
+  }
+
   void SetEnergy(Float_t val) {fEnergy = val;}
   void SetEMCALEnergy(Float_t val) {fEMCALEnergy = val;}
   void SetEMCALEnergyBGSub(Float_t val){fEMCALEnergyBGSub = val;}

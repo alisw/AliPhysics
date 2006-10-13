@@ -26,8 +26,8 @@ class AliEMCALJetMicroDst: public TNamed {
   public:
   AliEMCALJetMicroDst(const char *name="jetMicroDst",
   const char *tit="jet Micro Dst for preparation of proposal");
-  AliEMCALJetMicroDst(const  AliEMCALJetMicroDst &) : TNamed("", ""){
-    Fatal("cpy ctor", "not implemented") ; }
+  AliEMCALJetMicroDst(const  AliEMCALJetMicroDst &);
+
   virtual ~AliEMCALJetMicroDst();
   Bool_t  Create(TFile *file);
   Bool_t  Create(const char  *fname);

@@ -26,6 +26,7 @@ public:
 
   AliEMCALClusterizer() ;        // default ctor
   AliEMCALClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
+  AliEMCALClusterizer(const AliEMCALClusterizer &); //copy ctor
   virtual ~AliEMCALClusterizer() ; // dtorEM
 
   virtual Float_t GetTowerClusteringThreshold()const {Warning("GetTowerClusteringThreshold", "Not Defined") ; return 0. ; }

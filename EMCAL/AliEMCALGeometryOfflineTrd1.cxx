@@ -46,7 +46,17 @@ AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::GetInstance()
 }
 
 //___________________________________________________________________________
-AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1() : TNamed("geomTRD1","")
+AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1() 
+  : TNamed("geomTRD1",""),
+    fGeometry(0),
+    fMaxInEta(0),
+    fSMMaxEta(0),
+    fSMPositionEta(0),
+    fSMPositionPhi(0),
+    fShiftOnPhi(0.),
+    fNPhiSuperModule(0),
+    fSuperModuleRotationX(),
+    fXYZofCells(0)
 { 
   // this private constarctor
   fGeometry = AliEMCALGeometry::GetInstance("SHISH_62_TRD1");
@@ -54,27 +64,28 @@ AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1() : TNamed("geomTRD1","
 }
 
 //___________________________________________________________________________
-AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1(const AliEMCALGeometryOfflineTrd1& geom):TNamed(geom.GetName(),geom.GetTitle())
+AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1(const AliEMCALGeometryOfflineTrd1& geom)
+  : TNamed(geom.GetName(),geom.GetTitle()),
+    fGeometry(geom.fGeometry),
+    fMaxInEta(geom.fMaxInEta),
+    fSMMaxEta(geom.fSMMaxEta),
+    fSMPositionEta(geom.fSMPositionEta),
+    fSMPositionPhi(geom.fSMPositionPhi),
+    fShiftOnPhi(geom.fShiftOnPhi),
+    fNPhiSuperModule(geom.fNPhiSuperModule),
+    fSuperModuleRotationX(geom.fSuperModuleRotationX),
+    fXYZofCells(geom.fXYZofCells)
 {
   //copy ctor
-  fGeometry = geom.fGeometry;
-  fMaxInEta = geom.fMaxInEta;
 
   for(Int_t mod = 0; mod < 26; mod++) fTrd1Modules[mod] = geom.fTrd1Modules[mod];
-
-  fSMMaxEta = geom.fSMMaxEta;
   for(Int_t i = 0; i < fSMMaxEta; i++) fSMPositionEta[i] = geom.fSMPositionEta[i];
   
-  fSMPositionPhi = geom.fSMPositionPhi;
-  fShiftOnPhi = geom.fShiftOnPhi;
-  fNPhiSuperModule = geom.fNPhiSuperModule;
   for(Int_t rot = 0; rot < 6; rot++) {
     fSuperModuleRotationZ[rot] = geom.fSuperModuleRotationZ[rot];
     fNameSuperModuleRotationZ[rot] = geom.fNameSuperModuleRotationZ[rot];
   }
-  fSuperModuleRotationX = geom.fSuperModuleRotationX;
   for(Int_t rot = 0; rot < 12; rot++) fSuperModuleRotation[rot] = geom.fSuperModuleRotation[rot];
-  fXYZofCells = geom.fXYZofCells;
 
 }
 

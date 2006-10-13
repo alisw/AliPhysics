@@ -46,23 +46,26 @@ ClassImp(AliEMCALRecPoint)
 
 //____________________________________________________________________________
 AliEMCALRecPoint::AliEMCALRecPoint()
-  : AliRecPoint()
+  : AliRecPoint(),
+    fGeomPtr(0),
+    fClusterType(-1),
+    fCoreEnergy(0),
+    fDispersion(0),
+    fEnergyList(0),
+    fTimeList(0),
+    fAbsIdList(0),
+    fTime(0.),
+    fCoreRadius(10),  //HG check this
+    fMulParent(0),
+    fMaxParent(0),
+    fParentsList(0),
+    fSuperModuleNumber(0)
 {
   // ctor
-  fClusterType = -1;
   fMaxTrack = 0 ;
-  fMulDigit   = 0 ;  
-  fMaxParent = 0;
-  fMulParent = 0;
+  fMulDigit = 0 ;
   fAmp   = 0. ;   
-  fCoreEnergy = 0 ; 
-  fEnergyList = 0 ;
-  fTimeList = 0 ;
-  fAbsIdList  = 0;
-  fParentsList = 0;
-  fTime = 0. ;
   //  fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
-  fCoreRadius = 10;        //HG Check this
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
@@ -71,38 +74,56 @@ AliEMCALRecPoint::AliEMCALRecPoint()
 }
 
 //____________________________________________________________________________
-AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
+AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) 
+  : AliRecPoint(opt),
+    fGeomPtr(0),
+    fClusterType(-1),
+    fCoreEnergy(0),
+    fDispersion(0),
+    fEnergyList(0),
+    fTimeList(0),
+    fAbsIdList(0),
+    fTime(-1.),
+    fCoreRadius(10),  //HG check this
+    fMulParent(0),
+    fMaxParent(1000),
+    fParentsList(0),
+    fSuperModuleNumber(0)
 {
   // ctor
-  fClusterType = -1;
   fMaxTrack = 1000 ;
-  fMaxParent = 1000;
   fMulDigit   = 0 ; 
-  fMulParent = 0; 
   fAmp   = 0. ;   
-  fCoreEnergy = 0 ; 
-  fEnergyList = 0 ;
-  fTimeList = 0 ;
-  fAbsIdList  = 0;
   fParentsList = new Int_t[fMaxParent];
-  fTime = -1. ;
+
   //fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
-  fCoreRadius = 10;        //HG Check this
   //fGeomPtr = AliEMCALGeometry::GetInstance();
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   fGeomPtr->GetTransformationForSM(); // Global <-> Local
 }
+
 //____________________________________________________________________________
-AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp) : AliRecPoint(rp)
+AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp) 
+  : AliRecPoint(rp),
+    fGeomPtr(rp.fGeomPtr),
+    fClusterType(rp.fClusterType),
+    fCoreEnergy(rp.fCoreEnergy),
+    fDispersion(rp.fDispersion),
+    fEnergyList(0),
+    fTimeList(0),
+    fAbsIdList(0),
+    fTime(rp.fTime),
+    fCoreRadius(rp.fCoreRadius),
+    fMulParent(rp.fMulParent),
+    fMaxParent(rp.fMaxParent),
+    fParentsList(0),
+    fSuperModuleNumber(rp.fSuperModuleNumber)
 {
   //copy ctor
-  fGeomPtr = rp.fGeomPtr;
-  fClusterType = rp.fClusterType;
-  fCoreEnergy = rp.fCoreEnergy;
   fLambda[0] = rp.fLambda[0];
   fLambda[1] = rp.fLambda[1];
-  fDispersion = rp.fDispersion;
+
   fEnergyList = new Float_t[rp.fMulDigit];
   fTimeList = new Float_t[rp.fMulDigit];
   fAbsIdList = new Int_t[rp.fMulDigit];
@@ -111,13 +132,8 @@ AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp) : AliRecPoint(rp
     fTimeList[i] = rp.fTimeList[i];
     fAbsIdList[i] = rp.fAbsIdList[i];
   }
-  fTime = rp.fTime;
-  fCoreRadius = rp.fCoreRadius;
-  fMulParent = rp.fMulParent;
-  fMaxParent = rp.fMaxParent;
   fParentsList = new Int_t[rp.fMulParent];
   for(Int_t i = 0; i < rp.fMulParent; i++) fParentsList[i] = rp.fParentsList[i];
-  fSuperModuleNumber = rp.fSuperModuleNumber;
 
 }
 //____________________________________________________________________________

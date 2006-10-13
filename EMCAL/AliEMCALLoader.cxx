@@ -59,6 +59,11 @@ AliEMCALCalibData* AliEMCALLoader::fgCalibData = 0; //calibation data
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
+  : fDebug(0),
+    fHits(0),
+    fDigits(0),
+    fSDigits(0),
+    fRecPoints(0)
 {
   //Default constructor for EMCAL Loader Class
 
@@ -70,8 +75,13 @@ AliEMCALLoader::AliEMCALLoader()
 }
 
 //____________________________________________________________________________ 
-AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername):
-  AliLoader(detname,eventfoldername)
+AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername)
+  : AliLoader(detname,eventfoldername),
+    fDebug(0),
+    fHits(0),
+    fDigits(0),
+    fSDigits(0),
+    fRecPoints(0)
 {
   //Specific constructor for EMCAL Loader class
 
@@ -83,16 +93,15 @@ AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfolderna
 }
 
 //____________________________________________________________________________
-AliEMCALLoader::AliEMCALLoader(const AliEMCALLoader & obj):AliLoader(obj)
+AliEMCALLoader::AliEMCALLoader(const AliEMCALLoader & obj)
+  : AliLoader(obj),
+    fDebug(obj.fDebug),
+    fHits(obj.fHits),
+    fDigits(obj.fDigits),
+    fSDigits(obj.fSDigits),
+    fRecPoints(obj.fRecPoints)
 {
   //copy ctor
-
-  fDebug = obj.fDebug;
-  fHits = obj.fHits;
-  fDigits = obj.fDigits;
-  fSDigits = obj.fSDigits;
-  fRecPoints = obj.fRecPoints;
-
 }
 
 //____________________________________________________________________________ 

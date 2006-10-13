@@ -28,7 +28,8 @@
 
 ClassImp(AliEMCALJetFinderAlgoUA1Unit)
 
-AliEMCALJetFinderAlgoUA1Unit::AliEMCALJetFinderAlgoUA1Unit()
+AliEMCALJetFinderAlgoUA1Unit::AliEMCALJetFinderAlgoUA1Unit() 
+  : fUnitEnergy(0.),fUnitEta(0.),fUnitPhi(0.),fUnitID(0),fUnitFlag(kOutJet)
 {
 	// Default constructor
       fUnitEnergy         = 0.0;

@@ -29,7 +29,7 @@ class AliEMCALv0 : public AliEMCAL {
 
  public:
 
-  AliEMCALv0():AliEMCAL() {}
+  AliEMCALv0();
   AliEMCALv0(const char *name, const char *title="") ;
   virtual ~AliEMCALv0(){} 
 

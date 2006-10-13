@@ -33,46 +33,53 @@
 ClassImp(AliEMCALHit)
 
 //______________________________________________________________________
-AliEMCALHit::AliEMCALHit(){
+AliEMCALHit::AliEMCALHit()
+  : fId(0),
+    fELOS(0.),
+    fPrimary(0),
+    fPx(0.),
+    fPy(0.),
+    fPz(0.),
+    fPe(0.),
+    fIparent(0),
+    fIenergy(0.),
+    fTime(0.)
+{
     // Default ctor
-   
-    fId      = 0;
-    fELOS    = 0.0;
-    fTime    = 0.0;
-    fPrimary = 0;
-    fTrack   = 0;
-    fX       = 0.0;
-    fY       = 0.0;
-    fZ       = 0.0;
-    fPx      = 0.0;
-    fPy      = 0.0;
-    fPz      = 0.0;
-    fPe      = 0.0;
-    fIparent = 0;
-    fIenergy = 0.0;
 }
+
 //______________________________________________________________________
-AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit) : AliHit(hit){
+AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit) 
+  : AliHit(hit),
+    fId(hit.fId),
+    fELOS(hit.fELOS),
+    fPrimary(hit.fPrimary),
+    fPx(hit.fPx),
+    fPy(hit.fPy),
+    fPz(hit.fPz),
+    fPe(hit.fPe),
+    fIparent(hit.fIparent),
+    fIenergy(hit.fIenergy),
+    fTime(hit.fTime)
+{
     // copy ctor
-   
-    fId      = hit.fId ; 
-    fELOS    = hit.fELOS ;
-    fPrimary = hit.fPrimary ; 
-    fTrack   = hit.fTrack ; 
-    fX       = hit.fX;
-    fY       = hit.fY;
-    fZ       = hit.fZ;
-    fPx       = hit.fPx;
-    fPy       = hit.fPy;
-    fPz       = hit.fPz;
-    fPe       = hit.fPe;
-    fIparent = hit.fIparent;
-    fIenergy = hit.fIenergy;
-    fTime    = hit.fTime  ;
 }
+
 //______________________________________________________________________
 AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, Float_t ienergy, Int_t id,
-			 Float_t *hits,Float_t *p):AliHit(shunt, track){
+			 Float_t *hits,Float_t *p)
+  : AliHit(shunt, track),
+    fId(id),
+    fELOS(0.),
+    fPrimary(primary),
+    fPx(0.),
+    fPy(0.),
+    fPz(0.),
+    fPe(0.),
+    fIparent(iparent),
+    fIenergy(ienergy),
+    fTime(0.)
+{
     //
     // Create an EMCAL  hit object
     //
@@ -80,15 +87,11 @@ AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, 
     fY          = hits[1];
     fZ          = hits[2];
     fTime       = hits[3] ;
-    fId         = id;
     fELOS       = hits[4];
-    fPrimary    = primary;
     fPx          = p[0];
     fPy          = p[1];
     fPz          = p[2];
     fPe          = p[3];
-    fIparent    = iparent;
-    fIenergy    = ienergy;
 }
 
 //______________________________________________________________________

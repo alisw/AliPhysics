@@ -36,7 +36,12 @@ ClassImp(AliEMCALShishKebabModule)
   Double_t AliEMCALShishKebabModule::fgr=0.; 
 
 //_________________________________________________________________________
-AliEMCALShishKebabModule::AliEMCALShishKebabModule() : TNamed()
+AliEMCALShishKebabModule::AliEMCALShishKebabModule() 
+  : TNamed(),
+    fOK(0),
+    fA(0.),
+    fB(0.),
+    fTheta(0.)
 { 
   // theta in radians ; first object shold be with theta=pi/2.
   if(fgGeometry==0) {
@@ -51,7 +56,12 @@ AliEMCALShishKebabModule::AliEMCALShishKebabModule() : TNamed()
 }
 
 //_________________________________________________________________________
-AliEMCALShishKebabModule::AliEMCALShishKebabModule(AliEMCALShishKebabModule &leftNeighbor) : TNamed()
+AliEMCALShishKebabModule::AliEMCALShishKebabModule(AliEMCALShishKebabModule &leftNeighbor) 
+  : TNamed(),
+    fOK(0),
+    fA(0.),
+    fB(0.),
+    fTheta(0.)
 { 
   // 22-sep-04
   TObject::SetUniqueID(leftNeighbor.GetUniqueID()+1);
@@ -59,14 +69,14 @@ AliEMCALShishKebabModule::AliEMCALShishKebabModule(AliEMCALShishKebabModule &lef
 }
 
 //_________________________________________________________________________
-AliEMCALShishKebabModule::AliEMCALShishKebabModule(const AliEMCALShishKebabModule& mod) : TNamed(mod.GetName(),mod.GetTitle())
+AliEMCALShishKebabModule::AliEMCALShishKebabModule(const AliEMCALShishKebabModule& mod) 
+  : TNamed(mod.GetName(),mod.GetTitle()),
+    fOK(mod.fOK),
+    fA(mod.fA),
+    fB(mod.fB),
+    fTheta(mod.fTheta)
 {
   //copy ctor
-  fOK = mod.fOK;
-  fA = mod.fA;
-  fB = mod.fB;
-  fTheta = mod.fTheta;
-
 }
 
 //_________________________________________________________________________

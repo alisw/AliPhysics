@@ -24,28 +24,17 @@ ClassImp(AliEMCALParton)
     
 //____________________________________________________________________________
 AliEMCALParton::AliEMCALParton()
+  : fEnergy(0.), fEta(0.), fPhi(0.),
+    fNTracks(0), fPartonCode(0)
 {
   // Default constructor
-//  fTrackEnergy = 0;
-//  fTrackEta    = 0;
-//  fTrackPhi    = 0;
-//  fTrackPDG    = 0;
-  fNTracks     = 0;
-  fPartonCode = 0;
 }
 
 AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
+  : fEnergy(energy), fEta(eta), fPhi(phi),
+    fNTracks(0), fPartonCode(0)
 {
   // Constructor
-  fEnergy = energy;
-  fPhi    = phi;
-  fEta    = eta;
-//  fTrackEnergy = 0;
-//  fTrackEta    = 0;
-//  fTrackPhi    = 0;
-//  fTrackPDG    = 0;
-  fNTracks     = 0;
-  fPartonCode = 0;
 }
 
 void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)

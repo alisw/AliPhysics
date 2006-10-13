@@ -30,7 +30,18 @@
 
 ClassImp(AliEMCALJetFinderPlots)
 	
-AliEMCALJetFinderPlots::AliEMCALJetFinderPlots()
+AliEMCALJetFinderPlots::AliEMCALJetFinderPlots() :
+  fDebug(0),fConeRadius(0.),fNominalEnergy(0.),fOutput(0),
+  fhFragmFcn(0),fhPartonFragmFcn(0),fhPartonJT(0),fhPartonPL(0),
+  fhJetJT(0),fhJetPL(0),fhJetEt(0),fhJetEtDiff(0),fhJetEta(0),fhJetPhi(0),
+  fhPartonEta(0),fhPartonPhi(0),fhEtaDiff(0),fhPhiDiff(0),fhEtaPhiSpread(0),
+  fhNJets(0),fhFragmFcn2(0),fhPartonFragmFcn2(0),fhPartonJT2(0),fhPartonPL2(0),
+  fhJetJT2(0),fhJetPL2(0),fhJetEt2(0),fhJetEtDiff2(0),fhJetEta2(0),fhJetPhi2(0),
+  fhPartonEta2(0),fhPartonPhi2(0),fhEtaDiff2(0),fhPhiDiff2(0),fhEtaPhiSpread2(0),
+  fhNJets2(0),fhJetEtSecond2(0),fhJetEtRatio2(0),fhEtaPhiDist2(0),fhInputOutput(0),
+  fhRecoBinPt(0),fhRecoBinPtNoBg(0),fhRecoBinPartonPt(0),fhRecoBinJetEt(0),fhRecoBinInputJetEt(0),
+  fhJetPT(0),fhPartonPT(0),fhJetPT2(0),fhPartonPT2(0),fhRecoBinFragmFcn(0),fhRecoBinFragmFcnNoBg(0),
+  fhRecoBinPartonFragmFcn(0),fhJetInvE(0),fhJetInvE2(0),fhBackHisto(0),fScaleFactor(0),fInitialised(0)
 {
 	// Constructor to initialise variables
   fInitialised = kFALSE;
@@ -93,6 +104,29 @@ fhJetInvE2=0;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
 fScaleFactor = 1.0/0.6731;
 fhBackHisto=0;
 
+}
+
+AliEMCALJetFinderPlots::AliEMCALJetFinderPlots(const AliEMCALJetFinderPlots& jfp) 
+  : TObject(jfp), fDebug(jfp.fDebug),fConeRadius(jfp.fConeRadius),fNominalEnergy(jfp.fNominalEnergy),
+    fOutput(jfp.fOutput),fhFragmFcn(jfp.fhFragmFcn),fhPartonFragmFcn(jfp.fhPartonFragmFcn),
+    fhPartonJT(jfp.fhPartonJT),fhPartonPL(jfp.fhPartonPL),fhJetJT(jfp.fhJetJT),fhJetPL(jfp.fhJetPL),
+    fhJetEt(jfp.fhJetEt),fhJetEtDiff(jfp.fhJetEtDiff),fhJetEta(jfp.fhJetEta),fhJetPhi(jfp.fhJetPhi),
+    fhPartonEta(jfp.fhPartonEta),fhPartonPhi(jfp.fhPartonPhi),fhEtaDiff(jfp.fhEtaDiff),
+    fhPhiDiff(jfp.fhPhiDiff),fhEtaPhiSpread(jfp.fhEtaPhiSpread),fhNJets(jfp.fhNJets),
+    fhFragmFcn2(jfp.fhFragmFcn2),fhPartonFragmFcn2(jfp.fhPartonFragmFcn2),fhPartonJT2(jfp.fhPartonJT2),
+    fhPartonPL2(jfp.fhPartonPL2),fhJetJT2(jfp.fhJetJT2),fhJetPL2(jfp.fhJetPL2),fhJetEt2(jfp.fhJetEt2),
+    fhJetEtDiff2(jfp.fhJetEtDiff2),fhJetEta2(jfp.fhJetEta2),fhJetPhi2(jfp.fhJetPhi2), fhPartonEta2(jfp.fhPartonEta2),
+    fhPartonPhi2(jfp.fhPartonPhi2),fhEtaDiff2(jfp.fhEtaDiff2),fhPhiDiff2(jfp.fhPhiDiff2),
+    fhEtaPhiSpread2(jfp.fhEtaPhiSpread2),fhNJets2(jfp.fhNJets2),fhJetEtSecond2(jfp.fhJetEtSecond2),
+    fhJetEtRatio2(jfp.fhJetEtRatio2),fhEtaPhiDist2(jfp.fhEtaPhiDist2),fhInputOutput(jfp.fhInputOutput),
+    fhRecoBinPt(jfp.fhRecoBinPt),fhRecoBinPtNoBg(jfp.fhRecoBinPtNoBg),fhRecoBinPartonPt(jfp.fhRecoBinPartonPt),
+    fhRecoBinJetEt(jfp.fhRecoBinJetEt),fhRecoBinInputJetEt(jfp.fhRecoBinInputJetEt),fhJetPT(jfp.fhJetPT),
+    fhPartonPT(jfp.fhPartonPT),fhJetPT2(jfp.fhJetPT2),fhPartonPT2(jfp.fhPartonPT2),fhRecoBinFragmFcn(jfp.fhRecoBinFragmFcn),
+    fhRecoBinFragmFcnNoBg(jfp.fhRecoBinFragmFcnNoBg),fhRecoBinPartonFragmFcn(jfp.fhRecoBinPartonFragmFcn),
+    fhJetInvE(jfp.fhJetInvE),fhJetInvE2(jfp.fhJetInvE2),fhBackHisto(jfp.fhBackHisto),fScaleFactor(jfp.fScaleFactor),
+    fInitialised(jfp.fInitialised)
+{
+  //copy ctor
 }
 
 void AliEMCALJetFinderPlots::InitPlots()

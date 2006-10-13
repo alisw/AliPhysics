@@ -39,18 +39,18 @@
 ClassImp(AliEMCALReconstructor)
 
 //____________________________________________________________________________
-  AliEMCALReconstructor::AliEMCALReconstructor() : fDebug(kFALSE) 
+AliEMCALReconstructor::AliEMCALReconstructor() 
+  : fDebug(kFALSE) 
 {
   // ctor
-
 } 
 
 //____________________________________________________________________________
-AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec): AliReconstructor(rec)
+AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec)
+  : AliReconstructor(rec),
+    fDebug(rec.fDebug)
 {
   //copy ctor
-  fDebug = rec.fDebug;
-
 }
 
 //____________________________________________________________________________

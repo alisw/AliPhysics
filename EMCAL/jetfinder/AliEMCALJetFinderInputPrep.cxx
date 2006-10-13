@@ -37,7 +37,8 @@
 ClassImp(AliEMCALJetFinderInputPrep)
 
 //________________________________________________________________________
-AliEMCALJetFinderInputPrep::AliEMCALJetFinderInputPrep()
+AliEMCALJetFinderInputPrep::AliEMCALJetFinderInputPrep() 
+  : fDebug(0),fInputObject(),fPythiaComparison(0)
 {
 	// Default constructor
 if (fDebug > 0) Info("AliEMCALJetFinderInputPrep","Beginning Constructor");	

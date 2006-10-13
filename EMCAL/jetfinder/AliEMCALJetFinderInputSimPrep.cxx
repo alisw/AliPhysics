@@ -54,7 +54,9 @@
 
 ClassImp(AliEMCALJetFinderInputSimPrep)
 	
-AliEMCALJetFinderInputSimPrep::AliEMCALJetFinderInputSimPrep()
+AliEMCALJetFinderInputSimPrep::AliEMCALJetFinderInputSimPrep() 
+  : fEMCALType(kHits),fSmearType(kSmearEffic),fTrackType(kCharged),fFileType(kPythia),fEfficiency(0.90),
+    fTimeCut(0.),fEtaMax(0.),fEtaMin(0.),fPhiMax(0.),fPhiMin(0.)
 {
 	// Default constructor
 if (fDebug > 0) Info("AliEMCALJetFinderInputSimPrep","Beginning Constructor");	

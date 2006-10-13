@@ -46,13 +46,24 @@ ClassImp(AliEMCALv1)
 
 
 //______________________________________________________________________
-AliEMCALv1::AliEMCALv1():AliEMCALv0(), fCurPrimary(-1), fCurParent(-1), fCurTrack(-1){
-  // ctor
+AliEMCALv1::AliEMCALv1()
+  : AliEMCALv0(), 
+    fCurPrimary(-1), 
+    fCurParent(-1), 
+    fCurTrack(-1),
+    fTimeCut(30e-09)
+{
+  // default ctor
 }
 
 //______________________________________________________________________
-AliEMCALv1::AliEMCALv1(const char *name, const char *title):
-    AliEMCALv0(name,title), fCurPrimary(-1), fCurParent(-1), fCurTrack(-1) {
+AliEMCALv1::AliEMCALv1(const char *name, const char *title)
+  : AliEMCALv0(name,title), 
+    fCurPrimary(-1), 
+    fCurParent(-1), 
+    fCurTrack(-1), 
+    fTimeCut(30e-09)
+{
     // Standard Creator.
 
     fHits= new TClonesArray("AliEMCALHit",1000);
@@ -60,18 +71,17 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
 
     fNhits = 0;
     fIshunt     =  2; // All hits are associated with particles entering the calorimeter
-    fTimeCut = 30e-09;
 }
 
 //______________________________________________________________________
-AliEMCALv1::AliEMCALv1(const AliEMCALv1 & emcal):AliEMCALv0(emcal)
+AliEMCALv1::AliEMCALv1(const AliEMCALv1 & emcal)
+  : AliEMCALv0(emcal),
+    fCurPrimary(emcal.fCurPrimary),
+    fCurParent(emcal.fCurParent),
+    fCurTrack(emcal.fCurTrack),
+    fTimeCut(emcal.fTimeCut)
 {
   //copy ctor
-  fCurPrimary = emcal.fCurPrimary;
-  fCurParent = emcal.fCurParent;
-  fCurTrack = emcal.fCurTrack;
-  fTimeCut = emcal.fTimeCut;
-
 }
 
 //______________________________________________________________________

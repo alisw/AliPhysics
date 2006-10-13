@@ -80,58 +80,72 @@ class AliCDBStorage;
 ClassImp(AliEMCALClusterizerv1)
 
 //____________________________________________________________________________
-  AliEMCALClusterizerv1::AliEMCALClusterizerv1() : AliEMCALClusterizer()
+AliEMCALClusterizerv1::AliEMCALClusterizerv1() 
+  : AliEMCALClusterizer(),
+    fHists(0),fPointE(0),fPointL1(0),fPointL2(0),
+    fPointDis(0),fPointMult(0),fDigitAmp(0),fMaxE(0),
+    fMaxL1(0),fMaxL2(0),fMaxDis(0),fGeom(0),
+    fDefaultInit(kTRUE),
+    fToUnfold(kFALSE),
+    fNumberOfECAClusters(0),fNTowerInGroup(0),fCalibData(0),
+    fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
+    fECAW0(0.),fRecPointsInRun(0),fTimeGate(0.),fMinECut(0.)
 {
   // default ctor (to be used mainly by Streamer)
   
   InitParameters() ; 
-  fDefaultInit = kTRUE ;
   fGeom = AliEMCALGeometry::GetInstance();
   fGeom->GetTransformationForSM(); // Global <-> Local
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizerv1::AliEMCALClusterizerv1(const TString alirunFileName, const TString eventFolderName)
-:AliEMCALClusterizer(alirunFileName, eventFolderName)
+  : AliEMCALClusterizer(alirunFileName, eventFolderName),
+    fHists(0),fPointE(0),fPointL1(0),fPointL2(0),
+    fPointDis(0),fPointMult(0),fDigitAmp(0),fMaxE(0),
+    fMaxL1(0),fMaxL2(0),fMaxDis(0),fGeom(0),
+    fDefaultInit(kFALSE),
+    fToUnfold(kFALSE),
+    fNumberOfECAClusters(0),fNTowerInGroup(0),fCalibData(0),
+    fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
+    fECAW0(0.),fRecPointsInRun(0),fTimeGate(0.),fMinECut(0.)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
   InitParameters() ; 
   Init() ;
-  fDefaultInit = kFALSE ; 
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizerv1::AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus):AliEMCALClusterizer(clus)
+AliEMCALClusterizerv1::AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus)
+  : AliEMCALClusterizer(clus),
+    fHists(clus.fHists),
+    fPointE(clus.fPointE),
+    fPointL1(clus.fPointL1),
+    fPointL2(clus.fPointL2),
+    fPointDis(clus.fPointDis),
+    fPointMult(clus.fPointMult),
+    fDigitAmp(clus.fDigitAmp),
+    fMaxE(clus.fMaxE),
+    fMaxL1(clus.fMaxL1),
+    fMaxL2(clus.fMaxL2),
+    fMaxDis(clus.fMaxDis),
+    fGeom(clus.fGeom),
+    fDefaultInit(clus.fDefaultInit),
+    fToUnfold(clus.fToUnfold),
+    fNumberOfECAClusters(clus.fNumberOfECAClusters),
+    fNTowerInGroup(clus.fNTowerInGroup),
+    fCalibData(clus.fCalibData),
+    fADCchannelECA(clus.fADCchannelECA),
+    fADCpedestalECA(clus.fADCpedestalECA),
+    fECAClusteringThreshold(clus.fECAClusteringThreshold),
+    fECALocMaxCut(clus.fECALocMaxCut),
+    fECAW0(clus.fECAW0),
+    fRecPointsInRun(clus.fRecPointsInRun),
+    fTimeGate(clus.fTimeGate),
+    fMinECut(clus.fMinECut)
 {
   //copy ctor
-  fHists = clus.fHists;
-  fPointE = clus.fPointE;
-  fPointL1 = clus.fPointL1;
-  fPointL2 = clus.fPointL2;
-  fPointDis = clus.fPointDis;
-  fPointMult = clus.fPointMult;
-  fDigitAmp = clus.fDigitAmp;
-  fMaxE = clus.fMaxE;
-  fMaxL1 = clus.fMaxL1;
-  fMaxL2 = clus.fMaxL2;
-  fMaxDis = clus.fMaxDis;
-
-  fGeom = clus.fGeom;
-  fDefaultInit = clus.fDefaultInit;
-  fToUnfold = clus.fToUnfold;
-  fNumberOfECAClusters = clus.fNumberOfECAClusters;
-  fNTowerInGroup = clus.fNTowerInGroup;
-  fCalibData = clus.fCalibData;
-  fADCchannelECA = clus.fADCchannelECA;
-  fADCpedestalECA = clus.fADCpedestalECA;
-  fECAClusteringThreshold = clus.fECAClusteringThreshold;
-  fECALocMaxCut = clus.fECALocMaxCut;
-  fECAW0 = clus.fECAW0;
-  fRecPointsInRun = clus.fRecPointsInRun;
-  fTimeGate = clus.fTimeGate;
-  fMinECut = clus.fMinECut;
-
 }
 
 //____________________________________________________________________________

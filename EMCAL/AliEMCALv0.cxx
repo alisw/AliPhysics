@@ -63,9 +63,22 @@ enum
   kIdSC    = 1601, 
   kIdSTEEL = 1603
  };
+
+
 //______________________________________________________________________
-AliEMCALv0::AliEMCALv0(const char *name, const char *title):
-  AliEMCAL(name,title)
+AliEMCALv0::AliEMCALv0()
+  : AliEMCAL(),
+    fShishKebabModules(),fEnvelop1(0),fIdRotm(0),fIdTmedArr(0),
+    fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0)
+{
+  //default ctor
+}
+
+//______________________________________________________________________
+AliEMCALv0::AliEMCALv0(const char *name, const char *title)
+  : AliEMCAL(name,title),
+    fShishKebabModules(),fEnvelop1(0),fIdRotm(0),fIdTmedArr(0),
+    fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0)
 {
   // ctor : title is used to identify the layout
     // Apr 25, 2006
@@ -82,17 +95,18 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title):
 }
 
 //______________________________________________________________________
-AliEMCALv0::AliEMCALv0(const AliEMCALv0 & emcal):AliEMCAL(emcal)
+AliEMCALv0::AliEMCALv0(const AliEMCALv0 & emcal)
+  : AliEMCAL(emcal),
+    fShishKebabModules(emcal.fShishKebabModules),
+    fEnvelop1(emcal.fEnvelop1),
+    fIdRotm(emcal.fIdRotm),
+    fIdTmedArr(emcal.fIdTmedArr),
+    fSampleWidth(emcal.fSampleWidth),
+    fSmodPar0(emcal.fSmodPar0),
+    fSmodPar1(emcal.fSmodPar1),
+    fSmodPar2(emcal.fSmodPar2)
 {
   //copy ctor
-  fShishKebabModules = emcal.fShishKebabModules;
-  fEnvelop1 = emcal.fEnvelop1;
-  fIdRotm = emcal.fIdRotm;
-  fIdTmedArr = emcal.fIdTmedArr;
-  fSampleWidth = emcal.fSampleWidth;
-  fSmodPar0 = emcal.fSmodPar0;
-  fSmodPar1 = emcal.fSmodPar1;
-  fSmodPar2 = emcal.fSmodPar2;
   for(Int_t i = 0; i < 5; i++) fParEMOD[i] = emcal.fParEMOD[i];
 
 }

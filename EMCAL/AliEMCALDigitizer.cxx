@@ -85,63 +85,128 @@ ClassImp(AliEMCALDigitizer)
 
 
 //____________________________________________________________________________ 
-  AliEMCALDigitizer::AliEMCALDigitizer():AliDigitizer("",""),
-				       fInput(0),
-				       fInputFileNames(0x0),
-				       fEventNames(0x0)
+AliEMCALDigitizer::AliEMCALDigitizer()
+  : AliDigitizer("",""),
+    fDefaultInit(kTRUE),
+    fDigitsInRun(0),
+    fInit(0),
+    fInput(0),
+    fInputFileNames(0x0),
+    fEventNames(0x0),
+    fDigitThreshold(0),
+    fMeanPhotonElectron(0),
+    fPedestal(0),
+    fSlope(0),
+    fPinNoise(0),
+    fTimeResolution(0),
+    fTimeThreshold(0),    
+    fTimeSignalLength(0),
+    fADCchannelEC(0),
+    fADCpedestalEC(0),
+    fNADCEC(0),
+    fEventFolderName(""),
+    fFirstEvent(0),
+    fLastEvent(0),
+    fControlHists(0),
+    fHists(0)
 {
   // ctor
   InitParameters() ; 
-  fDefaultInit = kTRUE ; 
   fManager = 0 ;                     // We work in the standalong mode
-  fEventFolderName = "" ; 
 }
 
 //____________________________________________________________________________ 
-AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolderName):
-  AliDigitizer("EMCAL"+AliConfig::Instance()->GetDigitizerTaskName(), alirunFileName),
-  fInputFileNames(0), fEventNames(0), fEventFolderName(eventFolderName)
+AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolderName)
+  : AliDigitizer("EMCAL"+AliConfig::Instance()->GetDigitizerTaskName(), alirunFileName),
+    fDefaultInit(kFALSE),
+    fDigitsInRun(0),
+    fInit(0),
+    fInput(0),
+    fInputFileNames(0), 
+    fEventNames(0), 
+    fDigitThreshold(0),
+    fMeanPhotonElectron(0),
+    fPedestal(0),
+    fSlope(0),
+    fPinNoise(0),
+    fTimeResolution(0),
+    fTimeThreshold(0),
+    fTimeSignalLength(0),
+    fADCchannelEC(0),
+    fADCpedestalEC(0),
+    fNADCEC(0),
+    fEventFolderName(eventFolderName),
+    fFirstEvent(0),
+    fLastEvent(0),
+    fControlHists(0),
+    fHists(0)
 {
   // ctor
-
   InitParameters() ; 
   Init() ;
-  fDefaultInit = kFALSE ; 
   fManager = 0 ;                     // We work in the standalong mode
 }
 
 //____________________________________________________________________________ 
-AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d) : AliDigitizer(d)
+AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d) 
+  : AliDigitizer(d.GetName(),d.GetTitle()),
+    fDefaultInit(d.fDefaultInit),
+    fDigitsInRun(d.fDigitsInRun),
+    fInit(d.fInit),
+    fInput(d.fInput),
+    fInputFileNames(d.fInputFileNames),
+    fEventNames(d.fEventNames),
+    fDigitThreshold(d.fDigitThreshold),
+    fMeanPhotonElectron(d.fMeanPhotonElectron),
+    fPedestal(d.fPedestal),
+    fSlope(d.fSlope),
+    fPinNoise(d.fPinNoise),
+    fTimeResolution(d.fTimeResolution),
+    fTimeThreshold(d.fTimeThreshold),
+    fTimeSignalLength(d.fTimeSignalLength),
+    fADCchannelEC(d.fADCchannelEC),
+    fADCpedestalEC(d.fADCpedestalEC),
+    fNADCEC(d.fNADCEC),
+    fEventFolderName(d.fEventFolderName),
+    fFirstEvent(d.fFirstEvent),
+    fLastEvent(d.fLastEvent),
+    fControlHists(d.fControlHists),
+    fHists(d.fHists)
 {
   // copyy ctor 
-
-  SetName(d.GetName()) ; 
-  SetTitle(d.GetTitle()) ; 
-  fDigitThreshold = d.fDigitThreshold ; 
-  fMeanPhotonElectron = d.fMeanPhotonElectron ; 
-  fPedestal           = d.fPedestal ; 
-  fSlope              = d.fSlope ; 
-  fPinNoise           = d.fPinNoise ; 
-  fTimeResolution     = d.fTimeResolution ; 
-  fTimeThreshold      = d.fTimeThreshold ; 
-  fTimeSignalLength   = d.fTimeSignalLength ; 
-  fADCchannelEC       = d.fADCchannelEC ; 
-  fADCpedestalEC      = d.fADCpedestalEC ; 
-  fNADCEC             = d.fNADCEC ;
-  fEventFolderName    = d.fEventFolderName;
  }
 
 //____________________________________________________________________________ 
-AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
- AliDigitizer(rd,"EMCAL"+AliConfig::Instance()->GetDigitizerTaskName()),
- fEventFolderName(0)
+AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
+  : AliDigitizer(rd,"EMCAL"+AliConfig::Instance()->GetDigitizerTaskName()),
+    fDefaultInit(kFALSE),
+    fDigitsInRun(0),
+    fInit(0),
+    fInput(0),
+    fInputFileNames(0),
+    fEventNames(0),
+    fDigitThreshold(0.),
+    fMeanPhotonElectron(0),
+    fPedestal(0),
+    fSlope(0.),
+    fPinNoise(0),
+    fTimeResolution(0.),
+    fTimeThreshold(0),
+    fTimeSignalLength(0),
+    fADCchannelEC(0),
+    fADCpedestalEC(0),
+    fNADCEC(0),
+    fEventFolderName(0),
+    fFirstEvent(0),
+    fLastEvent(0),
+    fControlHists(0),
+    fHists(0)
 {
   // ctor Init() is called by RunDigitizer
   fManager = rd ; 
   fEventFolderName = fManager->GetInputFolderName(0) ;
   SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
-  fDefaultInit = kFALSE ; 
 }
 
 //____________________________________________________________________________ 
