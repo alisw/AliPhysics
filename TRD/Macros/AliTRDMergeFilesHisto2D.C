@@ -1,6 +1,5 @@
 #if !defined( __CINT__) || defined(__MAKECINT__)
 
-#include <vector>
 #include <TChain.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -8,8 +7,9 @@
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TH1F.h>
+#include <TH2.h>
 #include <AliCDBManager.h>
-#include <AliTRDCalibra.h>
+#include <../TRD/AliTRDCalibra.h>
 
 #endif
 

@@ -2,21 +2,25 @@
 
 #include <vector>
 #include <TChain.h>
+#include <TObjArray.h>
 #include <TFile.h>
+#include <TGraphErrors.h>
 #include <TTree.h>
+#include <TDirectory.h>
+#include <TROOT.h>
 #include <TString.h>
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TH1F.h>
 #include <AliCDBManager.h>
-#include <AliTRDCalibra.h>
+#include "../TRD/AliTRDCalibra.h"
 
 #endif
 
 
 Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, const char* dire, const char* namefile){
   //
-  // After having simulated and reconstructed events in subrepertories 0%d of dire
+  // After having simulated and reconstructed events in subrepertories 000%d of dire
   // this macro searchs in the subdirectories the file TRD.calibration.root
   // takes the vectors and merge them
   // variablecali can be treeCH2d, treePH2d or treePRF2d
@@ -30,13 +34,13 @@ Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, cons
    
 
   //Variables
-  std::vector<Int_t> vectorplace;
-  std::vector<std::vector<Int_t> > whereinthechain;
+  TObjArray *vectorplace = new TObjArray();
+  TObjArray *whereinthechain = new TObjArray();
 
 
   //TRDCalibra
   AliCDBManager *man = AliCDBManager::Instance();
-  man->GetStorage("local://$ALICE_ROOT");
+  man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
   AliTRDCalibra *calibra = AliTRDCalibra::Instance();
 
@@ -58,40 +62,35 @@ Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, cons
       
       sprintf(fullname,"%s/%s",dir,name);
       printf("Process file: %s\n",fullname);
-      TFile *file = (TFile *) TFile::Open(fullname,"READ");
+      TFile *file = new TFile(fullname,"READ");
       if(!file) continue;
       TTree *treecurrent = (TTree *) file->Get(variablecali);
       if(!treecurrent) continue;
-      std::vector<Int_t> vectorcurrent = calibra->ConvertTreeVector(treecurrent);
-      printf("Size of the current tree: %d\n",(Int_t) vectorcurrent.size());
-      printf("Size of whereinthechain: %d\n",(Int_t) whereinthechain.size());
+      gDirectory = gROOT;
+      TObjArray *vectorcurrent = calibra->ConvertTreeVector(treecurrent);
+      printf("Size of the current tree: %d\n",(Int_t) vectorcurrent->GetEntriesFast());
+      printf("Size of whereinthechain: %d\n",(Int_t) whereinthechain->GetEntriesFast());
       printf("Size of the chain: %d\n", (Int_t) treeChain->GetEntries());
       Int_t j = (Int_t) treeChain->GetEntries();
-	for(Int_t jui = 0; jui < (Int_t) vectorcurrent.size(); jui++){
+	for(Int_t jui = 0; jui < (Int_t) vectorcurrent->GetEntriesFast(); jui++){
 	  //Search if already found
-	  Int_t place = calibra->SearchInTreeVector(vectorplace,vectorcurrent[jui]);
+	  Int_t place = calibra->SearchInTreeVector(vectorplace,((AliTRDCalibra::AliTRDPlace *)vectorcurrent->At(jui))->GetPlace());
 	  //Create a new element in the two std vectors
 	  if(place == -1){
-	    std::vector<Int_t> chainplace;
-	    chainplace.push_back((Int_t) (j+jui));
-	    for(Int_t i = 0; i < (Int_t) chainplace.size(); i++){
-	      //cout << "i: " << i << "value: " << chainplace[i] << endl;
-	    }
-	    vectorplace.push_back((Int_t) (vectorcurrent[jui]));
-	    whereinthechain.push_back(chainplace);
-	   
+	    AliTRDCalibra::AliTRDPlace *placejui = new AliTRDCalibra::AliTRDPlace();
+	    placejui->SetPlace(j+jui);
+	    TObjArray *chainplace = new TObjArray();
+	    chainplace->Add((TObject *) placejui);
+	    vectorplace->Add((TObject *) (vectorcurrent->At(jui)));
+	    whereinthechain->Add((TObject *) chainplace);
 	  }
 	  //Update the element at the place "place" in the std vector whereinthechain
 	  else {
-	    std::vector<Int_t> chainplace = whereinthechain[place];
-	    chainplace.push_back((Int_t) (j+jui));
-	    //cout << "size of chainplace place > -1: " << (Int_t) chainplace.size() << endl;
-	    for(Int_t i = 0; i < (Int_t) chainplace.size(); i++){
-	      //cout << "i: " << i << "value: " << chainplace[i] << endl;
-	    }
-	    std::vector<std::vector<Int_t> >::iterator it = whereinthechain.begin()+place;
-	    whereinthechain.erase(it);
-	    whereinthechain.insert(it,chainplace);
+	    AliTRDCalibra::AliTRDPlace *placejui = new AliTRDCalibra::AliTRDPlace();
+	    placejui->SetPlace((j+jui));
+	    TObjArray *chainplace = ((TObjArray *) whereinthechain->At(place));
+	    chainplace->Add((TObject *) placejui);
+	    whereinthechain->AddAt((TObject *)chainplace, place);
 	  }
 	} 
 	treeChain->AddFile(fullname);
@@ -119,12 +118,12 @@ Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, cons
     //Init histsum
     if(treeChain->GetEntries() < 1) return kFALSE; 
     
-    printf("FINAL Size of the chain: %d\n", (Int_t) treeChain->GetEntries());
-    printf("FINAL Size of vectorplace: %d\n", (Int_t) vectorplace.size());
-    for(Int_t h = 0; h < (Int_t) vectorplace.size(); h++){
-      group = vectorplace[h];
-      std::vector<Int_t> chainplace = whereinthechain[h];
-      treeChain->GetEntry(chainplace[0]);
+    printf("FINAL Size of the chain: %d\n", (Int_t) treeChain->GetEntriesFast());
+    printf("FINAL Size of vectorplace: %d\n", (Int_t) vectorplace->GetEntriesFast());
+    for(Int_t h = 0; h < (Int_t) vectorplace->GetEntriesFast(); h++){
+      group = ((AliTRDCalibra::AliTRDPlace *)vectorplace->At(h))->GetPlace();
+      TObjArray *chainplace = ((TObjArray *)whereinthechain->At(h));
+      treeChain->GetEntry(((AliTRDCalibra::AliTRDPlace *)chainplace->At(0))->GetPlace());
       //Init for the first time
       if(h == 0)  {
 	histsum = new TH1F("","",his->GetXaxis()->GetNbins(),his->GetXaxis()->GetBinLowEdge(1),his->GetXaxis()->GetBinUpEdge(his->GetXaxis()->GetNbins()));
@@ -137,9 +136,9 @@ Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, cons
 	histsum->SetBinError(l,0.0);
       }
       histsum->Add(his,1);
-      if((Int_t) chainplace.size() > 1){
-	for(Int_t s = 1; s < (Int_t)chainplace.size(); s++){
-	  treeChain->GetEntry(chainplace[s]);
+      if((Int_t) chainplace->GetEntriesFast() > 1){
+	for(Int_t s = 1; s < (Int_t)chainplace->GetEntriesFast(); s++){
+	  treeChain->GetEntry(((AliTRDCalibra::AliTRDPlace *)chainplace->At(s))->GetPlace());
 	  histsum->Add(his,1);
 	}
       }
@@ -164,12 +163,12 @@ Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, cons
     //Init histsum
     if(treeChain->GetEntries() < 1) return kFALSE; 
     
-    printf("FINAL Size of the chain: %d\n", (Int_t) treeChain->GetEntries());
-    printf("FINAL Size of vectorplace: %d\n", (Int_t) vectorplace.size());
-    for(Int_t h = 0; h < (Int_t) vectorplace.size(); h++){
-      group = vectorplace[h];
-      std::vector<Int_t> chainplace = whereinthechain[h];
-      treeChain->GetEntry(chainplace[0]);
+    printf("FINAL Size of the chain: %d\n", (Int_t) treeChain->GetEntriesFast());
+    printf("FINAL Size of vectorplace: %d\n", (Int_t) vectorplace->GetEntriesFast());
+    for(Int_t h = 0; h < (Int_t) vectorplace->GetEntriesFast(); h++){
+      group = ((AliTRDCalibra::AliTRDPlace *)vectorplace->At(h))->GetPlace();
+      TObjArray *chainplace = ((TObjArray *)whereinthechain->At(h));
+      treeChain->GetEntry(((AliTRDCalibra::AliTRDPlace *)chainplace->At(0))->GetPlace());
       //Init for the fisrt time
       Int_t nbins = his->GetN();
       Double_t *x;
@@ -202,9 +201,9 @@ Bool_t AliTRDCreateVector2DSum(const char* variablecali, const char* noime, cons
      
       //Add the first
       histsum = calibra->AddProfiles(his,histsum);
-      if((Int_t) chainplace.size() > 1){
-	for(Int_t s = 1; s < (Int_t)chainplace.size(); s++){
-	  treeChain->GetEntry(chainplace[s]);
+      if((Int_t) chainplace->GetEntriesFast() > 1){
+	for(Int_t s = 1; s < (Int_t)chainplace->GetEntriesFast(); s++){
+	  treeChain->GetEntry(((AliTRDCalibra::AliTRDPlace *)chainplace->At(s))->GetPlace());
 	  histsum = calibra->AddProfiles(his,histsum);
 	}
       }

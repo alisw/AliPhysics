@@ -4,7 +4,8 @@
 #include <Riostream.h>
 #include <TSystem.h>
 #include "AliReconstruction.h"
-#include "AliTRDCalibra.h"
+#include "../TRD/AliTRDCalibra.h"
+#include <TStopwatch.h>
 
 #endif
 
@@ -25,12 +26,12 @@ void AliTRDReconstructandFill()
   AliTRDCalibra *calibra = AliTRDCalibra::Instance();
 
   ////What do you want to use?
-  //calibra->SetMItracking(); //Offline tracking
-  calibra->Setmcmtracking();
+  calibra->SetMITracking(); //Offline tracking
+  //calibra->Setmcmtracking();
   
   
   ////Do you want to try the correction due to the angles of the tracks for mcm tracklets?
-  calibra->Setmcmcorrectangle();
+  calibra->SetMcmCorrectAngle();
   
   ////What do you want to fill?
   calibra->SetCH2dOn();//relative gain calibration
@@ -56,7 +57,7 @@ void AliTRDReconstructandFill()
   
   
   ////Do you want to accept more tracks?
-  calibra->SetProcent(2);//For the gain if one group has a signal above 1.2 the other group then fill
+  calibra->SetProcent(1.2);//For the gain if one group has a signal above 1.2 the other group then fill
   calibra->SetDifference(10);//For the drift velocity if one group has at least 10 time bins then fill
   calibra->SetNumberClusters(18);//For mcm tracklets only fill only with tracklet with at least 18 clusters
   
@@ -85,10 +86,11 @@ void AliTRDReconstructandFill()
   rec.SetRunHLTTracking(kFALSE);
   rec.SetFillESD("");
   rec.SetFillTriggerESD(kFALSE);
+  rec.SetRunVertexFinder(kFALSE);
   rec.Run();
   timer.Stop();
   timer.Print();
-  
+  calibra->Write2d();    
 
 
   TStopwatch timerfit;
@@ -113,7 +115,7 @@ void AliTRDReconstructandFill()
   calibra->FitPHOnline(); 
   calibra->FitCHOnline(); 
   calibra->FitPRFOnline();  
-
+  
   
   timerfit.Stop();
   timerfit.Print();
