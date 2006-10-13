@@ -229,9 +229,6 @@ void AliTRDv1::AddAlignableVolumes() const
         symName += snApp2;
         symName += iplan;
 
-        printf("volPath=%s\n",volPath.Data());
-        printf("symName=%s\n",symName.Data());
-
         gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
 
       }

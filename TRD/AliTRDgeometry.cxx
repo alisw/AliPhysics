@@ -337,7 +337,6 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   parTrd[3] = fgkSheight/2.0;
   gMC->Gsvolu("UTR1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
-  // 
   // The outer aluminum plates of the super module (Al)
   parTrd[0] = fgkSwidth1/2.0;
   parTrd[1] = fgkSwidth2/2.0;
@@ -720,11 +719,12 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   Char_t  cTagV[5];
 
   // The rotation matrices
-  const Int_t kNmatrix = 3;
+  const Int_t kNmatrix = 4;
   Int_t   matrix[kNmatrix];
   gMC->Matrix(matrix[0], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
   gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0);
   gMC->Matrix(matrix[2],   0.0,   0.0,  90.0,  90.0,  90.0,   0.0);
+  gMC->Matrix(matrix[3], 180.0,   0.0,  90.0,  90.0,  90.0, 180.0);
 
   AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
@@ -761,16 +761,25 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   zpos  = 0.0;
   gMC->Gspos("UTCW",1,"UTCL", xpos,ypos,zpos,0,"ONLY");
 
-  for (iplan = 0; iplan < kNplan; iplan++) { 
+  for (iplan = 1; iplan < kNplan; iplan++) { 
+
     xpos  = fCwidth[iplan]/2.0 + kCOLwid/2.0 + kCOLposx;
     ypos  = 0.0;
     zpos  = fgkVrocsm + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
           + iplan * (fgkCH + fgkVspace);
-    // To avoid overlaps !
-    if (iplan == 0) zpos += 0.25;  
-    gMC->Gspos("UTCL",iplan+1         ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
-    gMC->Gspos("UTCL",iplan+1+  kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
+    gMC->Gspos("UTCL",iplan       ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
+    gMC->Gspos("UTCL",iplan+kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
+
   }
+
+  // The upper most layer (reaching into TOF acceptance)
+  xpos  = fCwidth[5]/2.0 - kCOLhgt/2.0 - 2.3;
+  ypos  = 0.0;
+  zpos  = fgkVrocsm + kCOLwid/2.0 - fgkSheight/2.0
+        + 6.0*fgkCH + 6.0*fgkVspace;
+                    
+  gMC->Gspos("UTCL",6       ,"UTI1", xpos,ypos,zpos,matrix[3],"ONLY");
+  gMC->Gspos("UTCL",6+kNplan,"UTI1",-xpos,ypos,zpos,matrix[3],"ONLY");
 
   //
   // The power bars
@@ -787,16 +796,24 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   parPWR[2] = kPWRhgt/2.0;
   gMC->Gsvolu("UTPW","BOX ",idtmed[1325-1],parPWR,kNparPWR);
   
-  for (iplan = 0; iplan < kNplan; iplan++) { 
+  for (iplan = 1; iplan < kNplan; iplan++) { 
     
     xpos  = fCwidth[iplan]/2.0 + kPWRwid/2.0 + kPWRposx;
     ypos  = 0.0;
     zpos  = fgkVrocsm + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
           + iplan * (fgkCH + fgkVspace);
-    gMC->Gspos("UTPW",iplan+1         ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
-    gMC->Gspos("UTPW",iplan+1+  kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
+    gMC->Gspos("UTPW",iplan       ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
+    gMC->Gspos("UTPW",iplan+kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
 
   }
+
+  // The upper most layer (reaching into TOF acceptance)
+  xpos  = fCwidth[5]/2.0 + kPWRhgt/2.0 - 2.3;
+  ypos  = 0.0;
+  zpos  = fgkVrocsm + kPWRwid/2.0 - fgkSheight/2.0
+        + 6.0*fgkCH + 6.0*fgkVspace;
+  gMC->Gspos("UTPW",6       ,"UTI1", xpos,ypos,zpos,matrix[3],"ONLY");
+  gMC->Gspos("UTPW",6+kNplan,"UTI1",-xpos,ypos,zpos,matrix[3],"ONLY");
 
   //
   // The volumes for the services at the chambers
@@ -957,8 +974,6 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // Position the MCMs in the mother volume
   for (icham = 0; icham < kNcham;   icham++) {
     for (iplan = 0; iplan < kNplan; iplan++) {
-    // Take out upper plane until TRD mothervolume is adjusted
-    //for (iplan = 0; iplan < kNplan-1; iplan++) { 
       Int_t   iDet    = GetDetectorSec(iplan,icham);
       Int_t   iCopy   = GetDetector(iplan,icham,0) * 1000;
       Int_t   nMCMrow = commonParam->GetRowMax(iplan,icham,0);
