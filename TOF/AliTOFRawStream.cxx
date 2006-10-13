@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2006/08/22 13:30:17  arcelli
+removal of effective c++ warnings (C.Zampolli)
+
 Revision 1.7  2006/08/10 14:46:54  decaro
 TOF raw data format: updated version
 
@@ -638,7 +641,7 @@ Bool_t AliTOFRawStream::Next()
   fDDL  = fRawReader->GetDDLID();
 
   // orphane digits
-  AliTOFtdcDigit orphaneLeadingDigit;
+  AliTOFtdcDigit orphaneLeadingDigit={0,0,0,0,0,0,0};
 
   fWordType = GetField(data,WORD_TYPE_MASK,WORD_TYPE_POSITION);
 
