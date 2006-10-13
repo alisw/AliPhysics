@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.100  2006/08/11 12:36:26  cvetan
+ * Update of the PHOS code needed in order to read and reconstruct the beam test raw data (i.e. without an existing galice.root)
+ *
  * Revision 1.99  2006/06/28 11:36:09  cvetan
  * New detector numbering scheme (common for DAQ/HLT/Offline). All the subdetectors shall use the AliDAQ class for the sim and rec of the raw data. The AliDAQ and raw reader classes now provide all the necessary interfaces to write and select the detector specific raw-data payload. Look into the AliDAQ.h and AliRawReader.h for more details.
  *
@@ -82,6 +85,8 @@ class TFile;
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSDigit.h"
 #include "AliAltroBuffer.h"
+#include "AliAltroMapping.h"
+#include "AliPHOSAltroMapping.h"
 #include "AliLog.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -459,8 +464,27 @@ void AliPHOS::Digits2Raw()
       continue;    // ignore digits from CPV
    // End FIXME 
 
-    // PHOS EMCA has 4 DDL per module. Splitting is done based on the row number
-    Int_t iDDL = 4 * (module - 1) + (4 * (relId[2] - 1)) / geom->GetNPhi();
+    Int_t row = relId[2]-1;
+    Int_t col = relId[3]-1;
+
+    Int_t iRCU = -111;
+
+    //RCU0
+    if(0<=row&&row<32 && 0<=col&&col<28) iRCU=0;
+
+    //RCU1
+    if(0<=row&&row<32 && 28<=col&&col<56) iRCU=1;
+
+    //RCU2
+    if(32<=row&&row<64 && 0<=col&&col<28) iRCU=2;
+
+    //RCU3
+    if(32<=row&&row<64 && 28<=col&&col<56) iRCU=3;
+
+
+    // PHOS EMCA has 4 DDL per module. Splitting is based on the (row,column) numbers.
+    // PHOS internal convention: 1<module<5.
+    Int_t iDDL = 4 * (module - 1) + iRCU;
 
     // new DDL
     if (iDDL != prevDDL) {
@@ -473,7 +497,14 @@ void AliPHOS::Digits2Raw()
 
       // open new file and write dummy header
       TString fileName = AliDAQ::DdlFileName("PHOS",iDDL);
-      buffer = new AliAltroBuffer(fileName.Data());
+
+      TString path = gSystem->Getenv("ALICE_ROOT");
+      path += "/PHOS/mapping/RCU";
+      path += iRCU;
+      path += ".data";
+
+      AliAltroMapping* mapping = new AliPHOSAltroMapping(path.Data());
+      buffer = new AliAltroBuffer(fileName.Data(),mapping);
       buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
 
       prevDDL = iDDL;
@@ -481,6 +512,7 @@ void AliPHOS::Digits2Raw()
 
     // out of time range signal (?)
     if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
+      printf("Signal is out of time range.\n");
       buffer->FillBuffer((Int_t)digit->GetEnergy());
       buffer->FillBuffer(GetRawFormatTimeBins() );  // time bin
       buffer->FillBuffer(3);          // bunch length      
@@ -500,10 +532,10 @@ void AliPHOS::Digits2Raw()
       Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
       if (lowgain) 
-	buffer->WriteChannel(relId[3], relId[2], module + GetGeometry()->GetNModules() + 1, 
+	buffer->WriteChannel(relId[3]-1, relId[2]-1, 0, 
 			     GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
       else 
-	buffer->WriteChannel(relId[3], relId[2], module, 
+	buffer->WriteChannel(relId[3]-1, relId[2]-1, 1, 
 			     GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
       
     }
