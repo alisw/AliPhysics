@@ -36,8 +36,9 @@ AliITSreconstruction::AliITSreconstruction():
  fInit(kFALSE),
  fEnt(0),
  fEnt0(0),
- //fITS(0x0),
+ fDetTypeRec(0x0),
  fDfArp(kFALSE),
+ fITSgeom(0x0),
  fLoader(0x0),
  fRunLoader(0x0)
 {
@@ -56,8 +57,9 @@ AliITSreconstruction::AliITSreconstruction(AliRunLoader *rl):
  fInit(kFALSE),
  fEnt(0),
  fEnt0(0),
- //fITS(0x0),
+ fDetTypeRec(0x0),
  fDfArp(kFALSE),
+ fITSgeom(0x0),
  fLoader(0x0),
  fRunLoader(rl)
 {
@@ -68,8 +70,9 @@ AliITSreconstruction::AliITSreconstruction(const char* filename):
  fInit(kFALSE),
  fEnt(0),
  fEnt0(0),
- //fITS(0x0),
+ fDetTypeRec(0x0),
  fDfArp(kFALSE),
+ fITSgeom(0x0),
  fLoader(0x0),
  fRunLoader(0x0)
 {
@@ -103,19 +106,30 @@ AliITSreconstruction::AliITSreconstruction(const char* filename):
       } // end if !gAlice
 
 }
+
 //______________________________________________________________________
-AliITSreconstruction::AliITSreconstruction(const AliITSreconstruction &/*rec*/):TTask(/*rec*/){
+AliITSreconstruction::AliITSreconstruction(const AliITSreconstruction &rec):TTask(rec),
+fInit(rec.fInit),
+fEnt(rec.fEnt),
+fEnt0(rec.fEnt0),
+fDetTypeRec(rec.fDetTypeRec),
+fDfArp(rec.fDfArp),
+fITSgeom(rec.fITSgeom),
+fLoader(rec.fLoader),
+fRunLoader(rec.fRunLoader)
+{
     // Copy constructor. 
 
-  Error("Copy constructor","Copy constructor not allowed");
   
 }
+
 //______________________________________________________________________
-AliITSreconstruction& AliITSreconstruction::operator=(const AliITSreconstruction& /*source*/){
-    // Assignment operator. This is a function which is not allowed to be
-    // done.
-    Error("operator=","Assignment operator not allowed\n");
-    return *this; 
+AliITSreconstruction& AliITSreconstruction::operator=(const AliITSreconstruction& source){
+    // Assignment operator. 
+  this->~AliITSreconstruction();
+  new(this) AliITSreconstruction(source);
+  return *this;
+
 }
 
 //______________________________________________________________________

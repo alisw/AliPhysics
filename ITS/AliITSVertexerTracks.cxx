@@ -41,62 +41,78 @@ ClassImp(AliITSVertexerTracks)
 
 
 //----------------------------------------------------------------------------
-AliITSVertexerTracks::AliITSVertexerTracks():AliITSVertexer() {
+AliITSVertexerTracks::AliITSVertexerTracks():AliITSVertexer(),
+fInFile(0),
+fOutFile(0),
+fMinTracks(0),
+fMaxChi2PerTrack(0),
+fTrkArray(0),
+fTrksToSkip(0),
+fNTrksToSkip(0) {
 //
 // Default constructor
 //
-  fInFile  = 0;
-  fOutFile = 0;
   SetVtxStart();
   SetMinTracks();
-  fTrksToSkip = 0;
-  fNTrksToSkip = 0;
 
 }
 //----------------------------------------------------------------------------
 AliITSVertexerTracks::AliITSVertexerTracks(TFile *inFile,TFile *outFile,
                                            Int_t fEv,Int_t lEv,
-                                           Double_t xStart,Double_t yStart) {
+                                           Double_t xStart,Double_t yStart):
+fInFile(inFile),
+fOutFile(outFile),
+fMinTracks(0),
+fMaxChi2PerTrack(0),
+fTrkArray(0),
+fTrksToSkip(0),
+fNTrksToSkip(0) {
 //
 // Standard constructor
 //
   fCurrentVertex = 0;
-  fInFile  = inFile;
-  fOutFile = outFile;
   SetFirstEvent(fEv);
   SetLastEvent(lEv);
   SetVtxStart(xStart,yStart);
   SetMinTracks();
-  fTrksToSkip = 0;
-  fNTrksToSkip = 0;
   SetDebug();
 }
 //----------------------------------------------------------------------------
 AliITSVertexerTracks::AliITSVertexerTracks(TString fn,
 					   Double_t xStart,Double_t yStart)
-                                          :AliITSVertexer(fn) {
+                                          :AliITSVertexer(fn),
+fInFile(0),
+fOutFile(0),
+fMinTracks(0),
+fMaxChi2PerTrack(0),
+fTrkArray(0),
+fTrksToSkip(0),
+fNTrksToSkip(0) {
 //
 // Alternative constructor
 //
-  fInFile  = 0;
-  fOutFile = 0;
   SetVtxStart(xStart,yStart);
   SetMinTracks();
-  fTrksToSkip = 0;
-  fNTrksToSkip = 0;
-}
-//______________________________________________________________________
-AliITSVertexerTracks::AliITSVertexerTracks(const AliITSVertexerTracks &vtxr) : AliITSVertexer(vtxr) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSVertexerTracks","Copy constructor not allowed\n");
 }
 
 //______________________________________________________________________
-AliITSVertexerTracks& AliITSVertexerTracks::operator=(const AliITSVertexerTracks& /* vtxr */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+AliITSVertexerTracks::AliITSVertexerTracks(const AliITSVertexerTracks &vtxr) : AliITSVertexer(vtxr),
+fInFile(vtxr.fInFile),
+fOutFile(vtxr.fOutFile),
+fMinTracks(vtxr.fMinTracks),
+fMaxChi2PerTrack(vtxr.fMaxChi2PerTrack),
+fTrkArray(vtxr.fTrkArray),
+fTrksToSkip(vtxr.fTrksToSkip),
+fNTrksToSkip(vtxr.fNTrksToSkip) {
+  // Copy constructor
+
+}
+
+//______________________________________________________________________
+AliITSVertexerTracks& AliITSVertexerTracks::operator=(const AliITSVertexerTracks&  vtxr ){
+  //Assignment operator
+  this->~AliITSVertexerTracks();
+  new(this) AliITSVertexerTracks(vtxr);
   return *this;
 }
 

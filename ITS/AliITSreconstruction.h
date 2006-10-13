@@ -22,8 +22,6 @@ class AliITSreconstruction : public TTask{
     AliITSreconstruction(); // default constructor
     AliITSreconstruction(const char *filename); // standard constructor
     AliITSreconstruction(AliRunLoader *rl); // standard constructor
-    AliITSreconstruction(const AliITSreconstruction& rec);
-    AliITSreconstruction& operator=(const AliITSreconstruction &source);
     virtual ~AliITSreconstruction();//Destructor
     virtual Bool_t Init();
     virtual void Exec(const Option_t *opt="ALL");
@@ -31,6 +29,10 @@ class AliITSreconstruction : public TTask{
  private:
     Bool_t InitRec();  // Standard Reconstrution initilization.
  private:
+
+    AliITSreconstruction(const AliITSreconstruction& rec);
+    AliITSreconstruction& operator=(const AliITSreconstruction &source);
+
     Bool_t  fDet[3];   //! logical specifing which detectors to reconstruct.
     Bool_t  fInit;     //! True if Init was sucessfull, else false.
     Int_t   fEnt;      //! Number of events to processevent index.

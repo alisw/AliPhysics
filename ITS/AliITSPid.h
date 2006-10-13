@@ -48,7 +48,7 @@ protected:
 	// copy constructor and assignment operator are protected
 	// since they are not allowed
         AliITSPid(const AliITSPid &source); // copy constructor. 
-        AliITSPid& operator=(const AliITSPid& /* source */); // = operator.
+        AliITSPid& operator=(const AliITSPid&  source); // = operator.
 
 	int	Qcomp(Float_t* qa,Float_t* qb) const {return qa[0]>qb[0]?1:0;}
 	Float_t Qtrm(Int_t track);

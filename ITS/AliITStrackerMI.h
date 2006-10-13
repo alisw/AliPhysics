@@ -25,9 +25,9 @@ class AliITSgeom;
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {
 public:
-  AliITStrackerMI():AliTracker(){}
+  AliITStrackerMI();
   AliITStrackerMI(const AliITSgeom *geom);
-  ~AliITStrackerMI();
+  virtual ~AliITStrackerMI();
   AliCluster *GetCluster(Int_t index) const;
   virtual Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
   AliITSRecPoint *GetClusterLayer(Int_t layn, Int_t ncl) const
@@ -56,9 +56,8 @@ public:
   Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
   class AliITSdetector { 
   public:
-    AliITSdetector(){}
-    AliITSdetector(Double_t r,Double_t phi) {fR=r; fPhi=phi; fSinPhi = TMath::Sin(phi); fCosPhi = TMath::Cos(phi);
-    fYmin=10000;fYmax=-1000; fZmin=10000;fZmax=-1000;}
+    AliITSdetector():fR(0),fPhi(0),fSinPhi(0),fCosPhi(0),fYmin(0),fYmax(0),fZmin(0),fZmax(0){}
+    AliITSdetector(Double_t r,Double_t phi):fR(r),fPhi(phi),fSinPhi(TMath::Sin(phi)),fCosPhi(TMath::Cos(phi)),fYmin(10000),fYmax(-1000),fZmin(10000),fZmax(-1000) {}
     inline void GetGlobalXYZ( const AliITSRecPoint *cl, Double_t xyz[3]) const;
     Double_t GetR()   const {return fR;}
     Double_t GetPhi() const {return fPhi;}
@@ -112,8 +111,10 @@ public:
     Int_t GetClusterTracks(Int_t i, Int_t j) const {return fClusterTracks[i][j];}
     void SetClusterTracks(Int_t i, Int_t j, Int_t c) {fClusterTracks[i][j]=c;}
   protected:
-    AliITSlayer(const AliITSlayer& /*layer*/);
-    AliITSlayer & operator=(const AliITSlayer& /*layer*/);
+    AliITSlayer(const AliITSlayer& layer);
+    AliITSlayer & operator=(const AliITSlayer& layer){
+      this->~AliITSlayer();new(this) AliITSlayer(layer);
+      return *this;}
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Int_t fNladders;            // number of ladders
@@ -233,8 +234,8 @@ protected:
   AliESD  * fEsd;                        //! pointer to the ESD event
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
 private:
-  AliITStrackerMI(const AliITStrackerMI &);
-  AliITStrackerMI & operator=(const AliITStrackerMI &);
+  AliITStrackerMI(const AliITStrackerMI &tracker);
+  AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
   ClassDef(AliITStrackerMI,2)   //ITS tracker MI
 };
 

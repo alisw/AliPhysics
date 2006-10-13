@@ -35,13 +35,17 @@ ClassImp(AliITSVertexerFast)
 
 
 //______________________________________________________________________
-AliITSVertexerFast::AliITSVertexerFast():AliITSVertexer() {
+AliITSVertexerFast::AliITSVertexerFast():AliITSVertexer(),
+fSmear(0) 
+{
   // Default Constructor
   fSmear = 0;
 }
 
 //______________________________________________________________________
-AliITSVertexerFast::AliITSVertexerFast(Double_t *smear):AliITSVertexer() {
+AliITSVertexerFast::AliITSVertexerFast(Double_t *smear):AliITSVertexer(),
+fSmear(0)
+{
   // Standard constructor
   fSmear = new Double_t[3];
   for(Int_t i=0;i<3;i++)fSmear[i]=smear[i];

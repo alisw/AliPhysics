@@ -49,7 +49,7 @@ class AliITSVertexerZ : public AliITSVertexer {
 
  protected:
   AliITSVertexerZ(const AliITSVertexerZ& vtxr);
-  AliITSVertexerZ& operator=(const AliITSVertexerZ& /* vtxr */);
+  AliITSVertexerZ& operator=(const AliITSVertexerZ& vtxr );
   void ResetHistograms();
   void VertexZFinder(Int_t evnumber);
   Float_t GetPhiMaxIter(Int_t i) const {return fPhiDiffIter[i];}

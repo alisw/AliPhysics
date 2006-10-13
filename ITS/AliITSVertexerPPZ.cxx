@@ -36,29 +36,43 @@ ClassImp(AliITSVertexerPPZ)
 
 
 //______________________________________________________________________
-AliITSVertexerPPZ::AliITSVertexerPPZ():AliITSVertexer() {
+AliITSVertexerPPZ::AliITSVertexerPPZ():AliITSVertexer(),
+fFirstL1(0),
+fLastL1(0),
+fFirstL2(0),
+fLastL2(0),
+fDiffPhiMax(0),
+fX0(0),
+fY0(0),
+fZFound(0),
+fZsig(0),
+fWindow(0){
   // Default Constructor
 
   SetDiffPhiMax(0);
-  fX0 = 0.;
-  fY0 = 0.;
   SetFirstLayerModules(0);
   SetSecondLayerModules(0);
-  fZFound = 0;
-  fZsig = 0.;
   //fITS = 0;
   SetWindow(0);
 }
 
-AliITSVertexerPPZ::AliITSVertexerPPZ(TString fn, Float_t x0, Float_t y0):AliITSVertexer(fn) {
+AliITSVertexerPPZ::AliITSVertexerPPZ(TString fn, Float_t x0, Float_t y0):AliITSVertexer(fn),
+fFirstL1(0),
+fLastL1(0),
+fFirstL2(0),
+fLastL2(0),
+fDiffPhiMax(0),
+fX0(x0),
+fY0(y0),
+fZFound(0),
+fZsig(0),
+fWindow(0) {
   // Standard constructor
   SetDiffPhiMax();
   fX0 = x0;
   fY0 = y0;
   SetFirstLayerModules();
   SetSecondLayerModules();
-  fZFound = 0;
-  fZsig = 0.;
   //fITS = 0;
   SetWindow();
 }

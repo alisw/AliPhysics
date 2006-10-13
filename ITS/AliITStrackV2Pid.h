@@ -1,6 +1,8 @@
 #ifndef ALIITSTRACKV2PID_H
 #define ALIITSTRACKV2PID_H
-
+/////////////////////////////////////////
+// ITS trackV2 pid class               //
+/////////////////////////////////////////                     
 #include <TMath.h>
 #include <Riostream.h>
 #include "AliITStrackV2.h"

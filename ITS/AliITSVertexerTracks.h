@@ -74,12 +74,12 @@ class AliITSVertexerTracks : public AliITSVertexer {
   void  SetVtxStart(Double_t x=0,Double_t y=0) 
     { fNominalPos[0]=x; fNominalPos[1]=y; return; }
   
- private:
-    // copy constructor (NO copy allowed: the constructor is protected
-    // to avoid misuse)
+ protected:
     AliITSVertexerTracks(const AliITSVertexerTracks& vtxr);
-    // assignment operator (NO assignment allowed)
-    AliITSVertexerTracks& operator=(const AliITSVertexerTracks& /* vtxr */);
+    AliITSVertexerTracks& operator=(const AliITSVertexerTracks& vtxr);
+
+ private:
+
   TFile    *fInFile;          // input file (with tracks)
   TFile    *fOutFile;         // output file for vertices
   Double_t  fNominalPos[2];   // initial knowledge on vertex position

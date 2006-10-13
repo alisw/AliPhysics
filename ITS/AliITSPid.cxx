@@ -17,30 +17,34 @@
 ClassImp(AliITSPid)
 
 
-AliITSPid::AliITSPid(const AliITSPid &source) : TObject(source){
+AliITSPid::AliITSPid(const AliITSPid &source) : TObject(source),
+fMxtrs(source.fMxtrs),
+fTrs(source.fTrs),
+fWpi(source.fWpi),
+fWk(source.fWk),
+fWp(source.fWp),
+fRpik(source.fRpik),
+fRppi(source.fRppi),
+fRpka(source.fRpka),
+fRp(source.fRp),
+fPcode(source.fPcode),
+fSigmin(source.fSigmin),
+fSilent(source.fSilent),
+fCutKa(source.fCutKa),
+fCutPr(source.fCutPr),
+fggpi(source.fggpi),
+fggka(source.fggka),
+fggpr(source.fggpr){
     // Copy constructor. This is a function which is not allowed to be
-    // done: protected It exits with an error.
-    // Inputs:
-    //      AliITSPid &source  An AliITSPid class.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
 
-  Error("AliITSPid","You are not allowed to make a copy of the AliITSPid\n");
+  
 }
+  
 //______________________________________________________________________
-AliITSPid& AliITSPid::operator=(const AliITSPid& /* source */){
-    // Assignment operator. This is a function which is not allowed to be
-    // done to the ITS. It exits with an error.
-    // Inputs:
-    //      AliITSPid &source  An AliITSPid class.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
-
-  Error("=operator","Assignment operator not allowed for this class\n");
+AliITSPid& AliITSPid::operator=(const AliITSPid& source){
+  // Assignment operator. This is a function which is not allowed to be
+  this->~AliITSPid();
+  new(this) AliITSPid(source);
   return *this;
 }
 
@@ -376,15 +380,30 @@ void AliITSPid::Reset(void)
   }
 }
 //-----------------------------------------------------------
-AliITSPid::AliITSPid(Int_t ntrack)
-{
+AliITSPid::AliITSPid(Int_t ntrack):
+fMxtrs(0),
+fTrs(0),
+fWpi(0),
+fWk(0),
+fWp(0),
+fRpik(0),
+fRppi(0),
+fRpka(0),
+fRp(0),
+fPcode(0),
+fSigmin(0.01),
+fSilent(0),
+fCutKa(0),
+fCutPr(0),
+fggpi(0),
+fggka(0),
+fggpr(0){
   //Constructor for AliITSPid class
-  fSigmin=0.01;
+ 
     fTrs = new TClonesArray("TVector",ntrack);
     TClonesArray &arr=*fTrs;
     for(Int_t i=0;i<ntrack;i++)new(arr[i])TVector(0,11);
-    fMxtrs=0;
-    //   
+     //   
     fCutKa=new TF1("fcutka","pol4",0.05,0.4);
     Double_t ka[5]={25.616, -161.59, 408.97, -462.17, 192.86};
     fCutKa->SetParameters(ka);

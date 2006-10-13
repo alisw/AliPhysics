@@ -29,7 +29,10 @@
 ClassImp(AliITSVertexerIons)
   
 //______________________________________________________________________
-  AliITSVertexerIons::AliITSVertexerIons():AliITSVertexer() {
+  AliITSVertexerIons::AliITSVertexerIons():AliITSVertexer(),
+fNpThreshold(0),
+fMaxDeltaPhi(0),
+fMaxDeltaZ(0){
   // Default Constructor
 
   //fITS = 0;
@@ -39,7 +42,10 @@ ClassImp(AliITSVertexerIons)
 }
 
 //______________________________________________________________________
-AliITSVertexerIons::AliITSVertexerIons(TString fn):AliITSVertexer(fn) {
+AliITSVertexerIons::AliITSVertexerIons(TString fn):AliITSVertexer(fn),
+fNpThreshold(0),
+fMaxDeltaPhi(0),
+fMaxDeltaZ(0) {
   // Standard constructor
   
   //fITS = 0;
@@ -47,21 +53,21 @@ AliITSVertexerIons::AliITSVertexerIons(TString fn):AliITSVertexer(fn) {
   SetMaxDeltaPhi();
   SetMaxDeltaZ();
 }
-
+/*
 //______________________________________________________________________
 AliITSVertexerIons::AliITSVertexerIons(const AliITSVertexerIons &source):AliITSVertexer(source) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Error("AliITSVertexerIons","Copy constructor not allowed\n");
 }
-
+*/
 //_________________________________________________________________________
-AliITSVertexerIons& AliITSVertexerIons::operator=(const AliITSVertexerIons &/*source*/) {
+//AliITSVertexerIons& AliITSVertexerIons::operator=(const AliITSVertexerIons &/*source*/) {
   // Assignment operator
   // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
-}
+  //Error("= operator","Assignment operator not allowed\n");
+  //return *this;
+//}
 
 
 //______________________________________________________________________

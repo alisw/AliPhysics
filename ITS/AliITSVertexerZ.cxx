@@ -35,18 +35,29 @@ ClassImp(AliITSVertexerZ)
 
 
 //______________________________________________________________________
-AliITSVertexerZ::AliITSVertexerZ():AliITSVertexer() {
+AliITSVertexerZ::AliITSVertexerZ():AliITSVertexer(),
+fFirstL1(0),
+fLastL1(0),
+fFirstL2(0),
+fLastL2(0),
+fDiffPhiMax(0),
+fX0(0.),
+fY0(0.),
+fZFound(0),
+fZsig(0.),
+fZCombc(0),
+fZCombv(0),
+fZCombf(0),
+fLowLim(0.),
+fHighLim(0.),
+fStepCoarse(0),
+fStepFine(0),
+fTolerance(0.),
+fMaxIter(0){
   // Default constructor
   SetDiffPhiMax(0);
-  fX0 = 0.;
-  fY0 = 0.;
   SetFirstLayerModules(0);
   SetSecondLayerModules(0);
-  fZFound = 0;
-  fZsig = 0.;
-  fZCombc = 0;
-  fZCombf = 0;
-  fZCombv = 0;
   SetLowLimit(0.);
   SetHighLimit(0.);
   SetBinWidthCoarse(0.);
@@ -57,18 +68,29 @@ AliITSVertexerZ::AliITSVertexerZ():AliITSVertexer() {
 }
 
 //______________________________________________________________________
-AliITSVertexerZ::AliITSVertexerZ(TString fn, Float_t x0, Float_t y0):AliITSVertexer(fn) {
+AliITSVertexerZ::AliITSVertexerZ(TString fn, Float_t x0, Float_t y0):AliITSVertexer(fn),
+fFirstL1(0),
+fLastL1(0),
+fFirstL2(0),
+fLastL2(0),
+fDiffPhiMax(0),
+fX0(x0),
+fY0(y0),
+fZFound(0),
+fZsig(0.),
+fZCombc(0),
+fZCombv(0),
+fZCombf(0),
+fLowLim(0.),
+fHighLim(0.),
+fStepCoarse(0),
+fStepFine(0),
+fTolerance(0.),
+fMaxIter(0) {
   // Standard Constructor
   SetDiffPhiMax();
-  fX0 = x0;
-  fY0 = y0;
   SetFirstLayerModules();
   SetSecondLayerModules();
-  fZFound = 0;
-  fZsig = 0.;
-  fZCombc = 0;
-  fZCombf = 0;
-  fZCombv = 0;
   SetLowLimit();
   SetHighLimit();
   SetBinWidthCoarse();
@@ -80,17 +102,35 @@ AliITSVertexerZ::AliITSVertexerZ(TString fn, Float_t x0, Float_t y0):AliITSVerte
 }
 
 //______________________________________________________________________
-AliITSVertexerZ::AliITSVertexerZ(const AliITSVertexerZ &vtxr) : AliITSVertexer(vtxr) {
+AliITSVertexerZ::AliITSVertexerZ(const AliITSVertexerZ &vtxr) : AliITSVertexer(vtxr),
+fFirstL1(vtxr.fFirstL1),
+fLastL1(vtxr.fLastL1),
+fFirstL2(vtxr.fFirstL2),
+fLastL2(vtxr.fLastL2),
+fDiffPhiMax(vtxr.fDiffPhiMax),
+fX0(vtxr.fX0),
+fY0(vtxr.fY0),
+fZFound(vtxr.fZFound),
+fZsig(vtxr.fZsig),
+fZCombc(vtxr.fZCombc),
+fZCombv(vtxr.fZCombv),
+fZCombf(vtxr.fZCombf),
+fLowLim(vtxr.fLowLim),
+fHighLim(vtxr.fHighLim),
+fStepCoarse(vtxr.fStepCoarse),
+fStepFine(vtxr.fStepFine),
+fTolerance(vtxr.fTolerance),
+fMaxIter(vtxr.fMaxIter) {
   // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSVertexerZ","Copy constructor not allowed\n");
+
 }
 
 //______________________________________________________________________
-AliITSVertexerZ& AliITSVertexerZ::operator=(const AliITSVertexerZ& /* vtxr */){
+AliITSVertexerZ& AliITSVertexerZ::operator=(const AliITSVertexerZ&  vtxr ){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+
+  this->~AliITSVertexerZ();
+  new(this) AliITSVertexerZ(vtxr);
   return *this;
 }
 

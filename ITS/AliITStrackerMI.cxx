@@ -43,8 +43,38 @@ ClassImp(AliITStrackerMI)
 
 
 AliITStrackerMI::AliITSlayer AliITStrackerMI::fgLayers[kMaxLayer]; // ITS layers
+AliITStrackerMI::AliITStrackerMI():AliTracker(),
+fI(0),
+fBestTrack(),
+fTrackToFollow(),
+fTrackHypothesys(),
+fBestHypothesys(),
+fOriginal(),
+fCurrentEsdTrack(),
+fPass(0),
+fAfterV0(kFALSE),
+fLastLayerToTrackTo(0),
+fCoeficients(0),
+fEsd(0),
+fDebugStreamer(0){
+  //Default constructor
+}
 
-AliITStrackerMI::AliITStrackerMI(const AliITSgeom *geom) : AliTracker() {
+
+AliITStrackerMI::AliITStrackerMI(const AliITSgeom *geom) : AliTracker(),
+fI(kMaxLayer),
+fBestTrack(),
+fTrackToFollow(),
+fTrackHypothesys(),
+fBestHypothesys(),
+fOriginal(),
+fCurrentEsdTrack(),
+fPass(0),
+fAfterV0(kFALSE),
+fLastLayerToTrackTo(kLastLayerToTrackTo),
+fCoeficients(0),
+fEsd(0),
+fDebugStreamer(0){
   //--------------------------------------------------------------------
   //This is the AliITStrackerMI constructor
   //--------------------------------------------------------------------
@@ -107,6 +137,31 @@ AliITStrackerMI::AliITStrackerMI(const AliITSgeom *geom) : AliTracker() {
   fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
 
 }
+
+AliITStrackerMI::AliITStrackerMI(const AliITStrackerMI &tracker):AliTracker(tracker),
+fI(tracker.fI),
+fBestTrack(tracker.fBestTrack),
+fTrackToFollow(tracker.fTrackToFollow),
+fTrackHypothesys(tracker.fTrackHypothesys),
+fBestHypothesys(tracker.fBestHypothesys),
+fOriginal(tracker.fOriginal),
+fCurrentEsdTrack(tracker.fCurrentEsdTrack),
+fPass(tracker.fPass),
+fAfterV0(tracker.fAfterV0),
+fLastLayerToTrackTo(tracker.fLastLayerToTrackTo),
+fCoeficients(tracker.fCoeficients),
+fEsd(tracker.fEsd),
+fDebugStreamer(tracker.fDebugStreamer){
+  //Copy constructor
+}
+
+AliITStrackerMI & AliITStrackerMI::operator=(const AliITStrackerMI &tracker){
+  //Assignment operator
+  this->~AliITStrackerMI();
+  new(this) AliITStrackerMI(tracker);
+  return *this;
+}
+
 
 AliITStrackerMI::~AliITStrackerMI()
 {
@@ -948,14 +1003,35 @@ AliITStrackerMI::AliITSlayer & AliITStrackerMI::GetLayer(Int_t layer) const
   //
   return fgLayers[layer];
 }
-AliITStrackerMI::AliITSlayer::AliITSlayer() {
+
+AliITStrackerMI::AliITSlayer::AliITSlayer():
+fR(0),
+fPhiOffset(0),
+fNladders(0),
+fZOffset(0),
+fNdetectors(0),
+fDetectors(0),
+fN(0),
+fDy5(0),
+fDy10(0),
+fDy20(0),
+fClustersCs(0),
+fClusterIndexCs(0),
+fYcs(0),
+fZcs(0),
+fNcs(0),
+fCurrentSlice(-1),
+fZmax(0),
+fYmin(0),
+fYmax(0),
+fI(0),
+fImax(0),
+fSkip(0),
+fAccepted(0),
+fRoad(0){
   //--------------------------------------------------------------------
   //default AliITSlayer constructor
   //--------------------------------------------------------------------
-  fN=0;
-  fDetectors=0;
-  fSkip = 0;
-  fCurrentSlice=-1;
   for (Int_t i=0; i<kMaxClusterPerLayer;i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
@@ -966,19 +1042,66 @@ AliITStrackerMI::AliITSlayer::AliITSlayer() {
 }
 
 AliITStrackerMI::AliITSlayer::
-AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd) {
+AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd):
+fR(r),
+fPhiOffset(p),
+fNladders(nl),
+fZOffset(z),
+fNdetectors(nd),
+fDetectors(0),
+fN(0),
+fDy5(0),
+fDy10(0),
+fDy20(0),
+fClustersCs(0),
+fClusterIndexCs(0),
+fYcs(0),
+fZcs(0),
+fNcs(0),
+fCurrentSlice(-1),
+fZmax(0),
+fYmin(0),
+fYmax(0),
+fI(0),
+fImax(0),
+fSkip(0),
+fAccepted(0),
+fRoad(0) {
   //--------------------------------------------------------------------
   //main AliITSlayer constructor
   //--------------------------------------------------------------------
-  fR=r; fPhiOffset=p; fZOffset=z;
-  fNladders=nl; fNdetectors=nd;
   fDetectors=new AliITSdetector[fNladders*fNdetectors];
-
-  fN=0;
-  fI=0;
-  fSkip = 0;
   fRoad=2*fR*TMath::Sqrt(3.14/1.);//assuming that there's only one cluster
 }
+
+AliITStrackerMI::AliITSlayer::AliITSlayer(const AliITSlayer& layer):
+fR(layer.fR),
+fPhiOffset(layer.fPhiOffset),
+fNladders(layer.fNladders),
+fZOffset(layer.fZOffset),
+fNdetectors(layer.fNdetectors),
+fDetectors(layer.fDetectors),
+fN(layer.fN),
+fDy5(layer.fDy5),
+fDy10(layer.fDy10),
+fDy20(layer.fDy20),
+fClustersCs(layer.fClustersCs),
+fClusterIndexCs(layer.fClusterIndexCs),
+fYcs(layer.fYcs),
+fZcs(layer.fZcs),
+fNcs(layer.fNcs),
+fCurrentSlice(layer.fCurrentSlice),
+fZmax(layer.fZmax),
+fYmin(layer.fYmin),
+fYmax(layer.fYmax),
+fI(layer.fI),
+fImax(layer.fImax),
+fSkip(layer.fSkip),
+fAccepted(layer.fAccepted),
+fRoad(layer.fRoad){
+  //Copy constructor
+}
+
 
 AliITStrackerMI::AliITSlayer::~AliITSlayer() {
   //--------------------------------------------------------------------
