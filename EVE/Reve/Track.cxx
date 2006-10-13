@@ -38,6 +38,30 @@ Track::Track() :
   fTitle()
 {}
 
+Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
+  RenderElement(),
+  TPolyLine3D(),
+
+  fV(t->Vx(), t->Vy(), t->Vz()),
+  fP(t->Px(), t->Py(), t->Pz()),
+  fBeta(t->P()/t->Energy()),
+  fCharge(0),
+  fLabel(label),
+  fPathMarks(),
+
+  fRnrStyle(rs),
+
+  fName(t->GetName()),
+  fTitle()
+{
+  fLineColor = fRnrStyle->GetColor();
+  fMainColorPtr = &fLineColor;
+
+  TParticlePDG* pdgp = t->GetPDG();
+  if (pdgp)
+    fCharge = (Int_t) TMath::Nint(pdgp->Charge()/3);
+}
+
 Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
   RenderElement(),
   TPolyLine3D(),

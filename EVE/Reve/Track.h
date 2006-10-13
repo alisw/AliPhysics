@@ -40,6 +40,7 @@ protected:
 
 public: 
   Track();
+  Track(TParticle* t, Int_t label, TrackRnrStyle* rs);
   Track(Reve::MCTrack*  t, TrackRnrStyle* rs);
   Track(Reve::RecTrack* t, TrackRnrStyle* rs);
   virtual ~Track();
