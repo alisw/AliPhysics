@@ -21,11 +21,9 @@ class AliRunLoader;
 class AliMUONRecoCheck : public TObject 
 {
 public:
-  AliMUONRecoCheck(Char_t *chLoader);
+  AliMUONRecoCheck(AliRunLoader *runloader, AliMUONData *muondata);
   virtual          ~AliMUONRecoCheck();
 
-                /// Return MUON data 
-  AliMUONData*  GetMUONData() {return fMUONData;}
   void MakeTrackRef();
                 /// Add track reference
   void AddMuonTrackReference(const AliMUONTrack *muonTrack) 
@@ -33,8 +31,6 @@ public:
 
   void PrintEvent() const;
   void ResetTracks() const;
-                /// Return run loader
-  AliRunLoader* GetRunLoader() {return fRunLoader;}
   void CleanMuonTrackRef();
   void ReconstructibleTracks();
                 /// Return number of reconstructible tracks

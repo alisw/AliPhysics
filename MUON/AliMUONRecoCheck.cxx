@@ -42,7 +42,7 @@ ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
-  AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
+  AliMUONRecoCheck::AliMUONRecoCheck(AliRunLoader *runloader, AliMUONData *muondata)
   : TObject(),
   fRunLoader(0x0),
   fMUONData(0x0),
@@ -55,38 +55,30 @@ ClassImp(AliMUONRecoCheck)
 
   fMuonTrackRef = new TClonesArray("AliMUONTrack", 10);
 
-  // open the run loader
-  fRunLoader = AliRunLoader::Open(chLoader);
+  // run loader
+  fRunLoader = runloader;
   if (!fRunLoader) {
-    AliError(Form("no run loader found in file %s","galice.root" ));
+    AliError(Form("no run loader found " ));
     return;
   }
-  // initialize loader's
-  AliLoader *loader = fRunLoader->GetLoader("MUONLoader");
 
-  // initialize container
-  fMUONData  = new AliMUONData(loader,"MUON","MUON");
-
-   // Loading AliRun master
-  if (fRunLoader->GetAliRun() == 0x0) fRunLoader->LoadgAlice();
-
-  fRunLoader->LoadKinematics("READ");
-  fRunLoader->LoadTrackRefs("READ");
-  loader->LoadTracks("READ");
+  // container
+  fMUONData  = muondata;
+  if (!fMUONData) {
+    AliError(Form("no MUONData found " ));
+    return;
+  }
 
 }
+
 
 //_____________________________________________________________________________
 AliMUONRecoCheck::~AliMUONRecoCheck()
 {
 /// Destructor
 
-  fRunLoader->UnloadKinematics();
-  fRunLoader->UnloadTrackRefs();
-  fRunLoader->UnloadTracks();
   fMuonTrackRef->Delete();
   delete fMuonTrackRef;
-  delete fMUONData;
 }
 
 //_____________________________________________________________________________
@@ -245,10 +237,10 @@ TClonesArray* AliMUONRecoCheck::GetTrackReco()
 {
 /// Return TClonesArray of reconstructed tracks
 
-  GetMUONData()->ResetRecTracks();
-  GetMUONData()->SetTreeAddress("RT");
-  fTrackReco = GetMUONData()->RecTracks(); 
-  GetMUONData()->GetRecTracks();
+  fMUONData->ResetRecTracks();
+  fMUONData->SetTreeAddress("RT");
+  fTrackReco = fMUONData->RecTracks(); 
+  fMUONData->GetRecTracks();
   fRecoTracks = fTrackReco->GetEntriesFast();
   return fTrackReco;
 }

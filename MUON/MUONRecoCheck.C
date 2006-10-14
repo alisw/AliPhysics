@@ -25,6 +25,7 @@
 #include "AliMC.h"
 #include "AliStack.h"
 #include "AliRunLoader.h"
+#include "AliMagFMaps.h"
 
 // MUON includes
 #include "AliMUON.h"
@@ -32,6 +33,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrackParam.h"
+#include "AliTracker.h"
 
 Int_t TrackCheck( Bool_t *compTrack);
 
@@ -73,11 +75,21 @@ void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
   TH1F *hResMomVertex = new TH1F("hMomVertex"," delta P vertex (GeV/c)",100,-10.,10);
   TH1F *hResMomFirstHit = new TH1F("hMomFirstHit"," delta P first hit (GeV/c)",100,-10.,10);
 
+  // set  mag field 
+  // waiting for mag field in CDB 
+  printf("Loading field map...\n");
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+  AliTracker::SetFieldMap(field, kFALSE);
 
+  AliRunLoader* runLoader = AliRunLoader::Open(filename,"read");
+  AliLoader * MUONLoader = runLoader->GetLoader("MUONLoader");
+  AliMUONData * MUONData = new AliMUONData(MUONLoader,"MUON","MUON");
+
+  runLoader->LoadKinematics("READ");
+  runLoader->LoadTrackRefs("READ");
+  MUONLoader->LoadTracks("READ");
   
-  AliMUONRecoCheck rc(filename);
-  AliRunLoader *runLoader = rc.GetRunLoader();
-
+  AliMUONRecoCheck rc(runLoader,MUONData);
     
   Int_t nevents = runLoader->GetNumberOfEvents();
   
@@ -193,6 +205,12 @@ void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
     } // end loop track ref.
 
   } // end loop on event  
+
+  MUONLoader->UnloadTracks();
+  runLoader->UnloadKinematics();
+  runLoader->UnloadTrackRefs();
+  runLoader->Delete();
+  field->Delete();
 
   printf(" nb of reconstructible tracks: %d \n", nReconstructibleTracks);
   printf(" nb of reconstructed tracks: %d \n", nReconstructedTracks);
