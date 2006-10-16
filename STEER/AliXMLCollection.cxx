@@ -67,7 +67,7 @@ Bool_t AliXMLCollection::WriteHeader() {
 }
 
 //___________________________________________________________________________
-Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, TEventList *list) {
+Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* turl, TEventList *list) {
   //Writes the body of the xml collection
   TString listline;
   for(Int_t i = 0; i < list->GetN(); i++) {
@@ -84,7 +84,10 @@ Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, TEventList *
   line1 += "guid=\"";
   line1 += guid;
   line1 += "\" ";
-  line1 += "eventlist=\"";
+  line1 += "turl=\"";
+  line1 += turl;
+  line1 += "\" ";
+  line1 += "evlist=\"";
   line1 += listline;
   line1 += "\"";
   line1 += " />";

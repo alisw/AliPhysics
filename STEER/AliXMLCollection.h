@@ -28,7 +28,7 @@ class AliXMLCollection : public TObject {
   
   //____________________________________________________//
   Bool_t WriteHeader();
-  Bool_t WriteBody(Int_t counter, const char* guid, TEventList *fEventList);
+  Bool_t WriteBody(Int_t counter, const char* guid, const char *turl, TEventList *fEventList);
   Bool_t Export();
 
   void SetCollectionName(const char* name) {fCollectionName = name;}
