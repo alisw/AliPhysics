@@ -11,7 +11,7 @@ SRCS= TGliteXmlEventlist.cxx\
       AliTrackPoints.cxx AliClusterMap.cxx \
       AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx AliFlowAnalysis.cxx \
       AliMuonAnalysis.cxx  AliAODv0.cxx  AliAODxi.cxx  AliAODevent.cxx \
-      AliAnalysisEventCuts.cxx AliAnalysisTrackCuts.cxx AliBalance.cxx
+      AliAnalysisEventCuts.cxx AliAnalysisTrackCuts.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
@@ -28,6 +28,6 @@ EXPORT:=AliAOD.h AliEventBuffer.h\
       AliTrackPoints.h      AliClusterMap.h   \
       AliFlowAnalysis.h     AliReaderESDTree.h \
       AliMuonAnalysis.h     AliAODv0.h   AliAODxi.h  AliAODevent.h \
-      AliAnalysisEventCuts.h AliAnalysisTrackCuts.h AliBalance.h
+      AliAnalysisEventCuts.h AliAnalysisTrackCuts.h
 
 EINCLUDE:= TPC ITS
