@@ -18,6 +18,8 @@ class TTask;
 class AliMUONDigitMaker;
 class AliMUONTriggerCrateStore;
 class TClonesArray;
+class AliMpSegFactory;
+class AliMUONGeometryTransformer;
 
 class AliMUONReconstructor: public AliReconstructor 
 {
@@ -43,6 +45,8 @@ class AliMUONReconstructor: public AliReconstructor
     virtual void         FillESD(AliRunLoader* runLoader, 
 				 AliRawReader* /*rawReader*/, AliESD* esd) const;
      
+    enum {kNone, kOriginal, kKalman, kCombi};
+
 private:
 
     TTask* GetCalibrationTask(AliMUONData* data) const;
@@ -59,7 +63,9 @@ private:
 
     TClonesArray* fTriggerCircuit;   //!< trigger circuit
  
- 
+    AliMpSegFactory* fSegFactory;        //!< Mapping segmentation factory
+
+    AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
 
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };
