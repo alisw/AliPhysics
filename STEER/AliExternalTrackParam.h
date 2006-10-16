@@ -97,6 +97,8 @@ class AliExternalTrackParam: public TObject {
       if (PropagateTo(x,b)) return kTRUE;
     return kFALSE;
   }
+  void   Propagate(Double_t len,Double_t x[3],Double_t p[3],Double_t bz) const;
+  Bool_t Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) const;
 
   void GetHelixParameters(Double_t h[6], Double_t b) const;
   Double_t GetDCA(const AliExternalTrackParam *p, Double_t b,

@@ -352,6 +352,76 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   return kTRUE;
 }
 
+void AliExternalTrackParam::Propagate(Double_t len, Double_t x[3],
+Double_t p[3], Double_t bz) const {
+  //+++++++++++++++++++++++++++++++++++++++++    
+  // Origin: K. Shileev (Kirill.Shileev@cern.ch)
+  // Extrapolate track along simple helix in magnetic field
+  // Arguments: len -distance alogn helix, [cm]
+  //            bz  - mag field, [kGaus]   
+  // Returns: x and p contain extrapolated positon and momentum  
+  // The momentum returned for straight-line tracks is meaningless !
+  //+++++++++++++++++++++++++++++++++++++++++    
+  GetXYZ(x);
+    
+  if (TMath::Abs(Get1Pt()) < kAlmost0){ //straight-line tracks
+     Double_t unit[3]; GetDirection(unit);
+     x[0]+=unit[0]*len;   
+     x[1]+=unit[1]*len;   
+     x[2]+=unit[2]*len;
+
+     p[0]=unit[0]/kAlmost0;   
+     p[1]=unit[1]/kAlmost0;   
+     p[2]=unit[2]/kAlmost0;   
+  } else {
+     GetPxPyPz(p);
+     Double_t pp=GetP();
+     Double_t a = -kB2C*bz*GetSign();
+     Double_t rho = a/pp;
+     x[0] += p[0]*TMath::Sin(rho*len)/a - p[1]*(1-TMath::Cos(rho*len))/a;
+     x[1] += p[1]*TMath::Sin(rho*len)/a + p[0]*(1-TMath::Cos(rho*len))/a;
+     x[2] += p[2]*len/pp;
+
+     Double_t p0=p[0];
+     p[0] = p0  *TMath::Cos(rho*len) - p[1]*TMath::Sin(rho*len);
+     p[1] = p[1]*TMath::Cos(rho*len) + p0  *TMath::Sin(rho*len);
+  }
+}
+
+Bool_t AliExternalTrackParam::Intersect(Double_t pnt[3], Double_t norm[3],
+Double_t bz) const {
+  //+++++++++++++++++++++++++++++++++++++++++    
+  // Origin: K. Shileev (Kirill.Shileev@cern.ch)
+  // Finds point of intersection (if exists) of the helix with the plane. 
+  // Stores result in fX and fP.   
+  // Arguments: planePoint,planeNorm - the plane defined by any plane's point 
+  // and vector, normal to the plane
+  // Returns: kTrue if helix intersects the plane, kFALSE otherwise.
+  //+++++++++++++++++++++++++++++++++++++++++    
+  Double_t x0[3]; GetXYZ(x0); //get track position in MARS
+  
+  //estimates initial helix length up to plane
+  Double_t s=
+    (pnt[0]-x0[0])*norm[0] + (pnt[1]-x0[1])*norm[1] + (pnt[2]-x0[2])*norm[2];
+  Double_t dist=99999,distPrev=dist;
+  Double_t x[3],p[3]; 
+  while(TMath::Abs(dist)>0.00001){
+    //calculates helix at the distance s from x0 ALONG the helix
+    Propagate(s,x,p,bz);
+
+    //distance between current helix position and plane
+    dist=(x[0]-pnt[0])*norm[0]+(x[1]-pnt[1])*norm[1]+(x[2]-pnt[2])*norm[2];
+
+    if(TMath::Abs(dist) >= TMath::Abs(distPrev)) {return kFALSE;}
+    distPrev=dist;
+    s-=dist;
+  }
+  //on exit pnt is intersection point,norm is track vector at that point, 
+  //all in MARS
+  for (Int_t i=0; i<3; i++) {pnt[i]=x[i]; norm[i]=p[i];}
+  return kTRUE;
+}
+
 Double_t 
 AliExternalTrackParam::GetPredictedChi2(Double_t p[2],Double_t cov[3]) const {
   //----------------------------------------------------------------
