@@ -20,13 +20,19 @@
 
 class TObjArray;
 class AliMUONTriggerCrateStore;
+class AliMpSegFactory;
+class AliMUONGeometryTransformer;
 
 class AliMUONTriggerCircuitNew : public TObject 
 {
 public: 
   AliMUONTriggerCircuitNew();  
   virtual ~AliMUONTriggerCircuitNew();
-  
+     // copy constructor
+  AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew); 
+  // assignment operator
+  AliMUONTriggerCircuitNew& operator=(const AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew); 
+
   // initializations
   void Init(Int_t iCircuit, const AliMUONTriggerCrateStore& crates);    
   
@@ -44,36 +50,38 @@ public:
   //  void dump(const char* what, const Float_t* array, Int_t size);
   //  void dump(const char* what, const Int_t* array, Int_t size);
   
-    // copy constructor
-  AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew); 
-  // assignment operator
-  AliMUONTriggerCircuitNew& operator=(const AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew); 
-  
+  void  SetSegFactory(AliMpSegFactory* segFactory) {fSegFactory = segFactory;}
+  void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fTransformer = transformer;}
+
 private:
-    void LoadYPos(const AliMUONTriggerCrateStore& crates);
+
+  void LoadYPos(const AliMUONTriggerCrateStore& crates);
   void LoadXPos(const AliMUONTriggerCrateStore& crates);
   Int_t FirstStrip(const char* localBoardName);
-  void FillXstrips(const AliMUONGeometryTransformer* kGeomTransformer,
-                   const AliMpVSegmentation* seg,
-                   const Int_t detElemId, const Int_t icol, 
+
+  void FillXstrips(const AliMpVSegmentation* seg,
+		   const Int_t detElemId, const Int_t icol, 
                    const Int_t iFirstStrip, const Int_t iLastStrip,
                    Int_t liStripCircuit, Float_t *tab);
   
-  void FillYstrips(const AliMUONGeometryTransformer* kGeomTransformer,
-                   const AliMpVSegmentation* seg,
-                   const Int_t detElemId, const Int_t iFirstStrip,
+  void FillYstrips(const AliMpVSegmentation* seg,
+		   const Int_t detElemId, const Int_t iFirstStrip,
                    const Int_t iLastStrip, Int_t liStripCircuit,
                    const Bool_t doubling);
-  void XYGlobal(
-                const AliMUONGeometryTransformer* kGeomTransformer,
-                Int_t detElemId, const AliMpPad& pad,
+
+  void XYGlobal(Int_t detElemId, const AliMpPad& pad,
                 Double_t xyGlobal[4]);    
   
+
 private:    
   Int_t fILocalBoard;          ///< local board number
   Float_t fXpos11[16];         ///< X position of Y strips in MC11
   Float_t fYpos11[31];         ///< Y position of X strips in MC11
   Float_t fYpos21[63];         ///< Y position of X strips in MC21
+
+  AliMpSegFactory* fSegFactory; //!< Mapping segmentation factory
+
+  const AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
 
   ClassDef(AliMUONTriggerCircuitNew,1) // Trigger Circuit class
 };

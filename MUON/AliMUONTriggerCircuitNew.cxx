@@ -28,8 +28,6 @@
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONTriggerConstants.h"
-#include "AliMUONGeometrySegmentation.h"
-#include "AliMUONSegmentation.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
 #include "AliMUONLocalTriggerBoard.h"
@@ -41,6 +39,7 @@
 #include "AliMpPCB.h"
 #include "AliMpVSegmentation.h"
 #include "AliMUONGeometryTransformer.h"
+#include "AliMpSegFactory.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerCircuitNew)
@@ -49,7 +48,9 @@ ClassImp(AliMUONTriggerCircuitNew)
 //----------------------------------------------------------------------
 AliMUONTriggerCircuitNew::AliMUONTriggerCircuitNew()
 : TObject(),
-fILocalBoard(0)
+  fILocalBoard(0),
+  fSegFactory(0x0),
+  fTransformer(0x0)
 {
 /// Constructor
   
@@ -104,7 +105,7 @@ void AliMUONTriggerCircuitNew::Init(Int_t iCircuit, const AliMUONTriggerCrateSto
 {
 /// initialize circuit characteristics
   fILocalBoard=iCircuit+1;//AliMUONTriggerConstants::CircuitId(iCircuit);
-  
+ 
   LoadXPos(crates);
   LoadYPos(crates);
   
@@ -127,10 +128,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
   Int_t ichamber = 0;
   Int_t icathode = 0;    
   
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON"); 
   const AliMpVSegmentation* seg;
-  const AliMUONGeometryTransformer* kGeomTransformer 
-    = pMUON->GetGeometryTransformer();
   
   Int_t zeroDown = localBoard->GetSwitch(AliMUONLocalTriggerBoard::kZeroDown);
   Int_t zeroUp = localBoard->GetSwitch(AliMUONLocalTriggerBoard::kZeroUp);
@@ -143,25 +141,25 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
   DecodeBoardName(localBoard->GetName(),side,iline,icol);
   
   Int_t detElemId = DetElemId(ichamber,side,iline);
-  seg = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,icathode);  
-  
+  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+
   Int_t iFirstStrip = FirstStrip(localBoard->GetName());
   Int_t iLastStrip = iFirstStrip + 16;    
   Int_t iStripCircuit = 0;
-  FillXstrips(kGeomTransformer,seg,detElemId,icol, 
+  FillXstrips(seg,detElemId,icol, 
               iFirstStrip,iLastStrip,iStripCircuit,fYpos11);
   
   //--- second plane 
   ichamber = 12;
   
   detElemId = DetElemId(ichamber,side,iline);
-  seg = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,icathode);
-  
+  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+
   // second plane middle part
   Int_t iFirstStripMiddle = FirstStrip(localBoard->GetName());
   Int_t iLastStripMiddle = iFirstStrip + 16;
   iStripCircuit=8;
-  FillXstrips(kGeomTransformer,seg,detElemId,icol, 
+  FillXstrips(seg,detElemId,icol, 
               iFirstStripMiddle,iLastStripMiddle,iStripCircuit,fYpos21);
   
   // second plane upper part
@@ -172,20 +170,21 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
     // check if we need to move to another detElemId
     AliMpPad pad = seg->PadByIndices(AliMpIntPair(icol-1,iLastStripMiddle+1),kFALSE);
     if (pad.IsValid()) { // upper strips within same detElemId
-	    iFirstStripUp = iLastStripMiddle;
-	    iLastStripUp = iFirstStripUp + 8;
+      iFirstStripUp = iLastStripMiddle;
+      iLastStripUp = iFirstStripUp + 8;
       //	    icolUp = icol;
     } else {             // upper strips in another detElemId
-	    detElemId = DetElemId(ichamber,side,iline+1); // get detElemId
-	    seg = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,icathode);  
-	    iFirstStripUp = 0;
-	    iLastStripUp = iFirstStripUp + 8;
-	    if (iline == 4) icolUp = icol - 1; // special case
-	    if (iline == 5) icolUp = icol + 1; // special case
+      detElemId = DetElemId(ichamber,side,iline+1); // get detElemId
+      seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+
+      iFirstStripUp = 0;
+      iLastStripUp = iFirstStripUp + 8;
+      if (iline == 4) icolUp = icol - 1; // special case
+      if (iline == 5) icolUp = icol + 1; // special case
     }
     
     iStripCircuit=24;
-    FillXstrips(kGeomTransformer,seg,detElemId,icolUp, 
+    FillXstrips(seg,detElemId,icolUp, 
                 iFirstStripUp,iLastStripUp,iStripCircuit,fYpos21);
     
     // fill strip between middle and upper part
@@ -194,8 +193,8 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
   
   // restore current detElemId & segmentation
   detElemId = DetElemId(ichamber,side,iline); 
-  seg = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,icathode);  
-  
+  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+
   // second plane lower part
   if (zeroDown == 0) { // something down
     Int_t iFirstStripDo;
@@ -205,26 +204,26 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
     // check if we need to move to another detElemId      
     AliMpPad pad = seg->PadByIndices(AliMpIntPair(icol-1,iFirstStripMiddle-1),kFALSE);
     if (pad.IsValid()) { // lower strips within same detElemId
-	    iFirstStripDo = iFirstStripMiddle - 8;
-	    iLastStripDo = iFirstStripDo + 8;	      
+      iFirstStripDo = iFirstStripMiddle - 8;
+      iLastStripDo = iFirstStripDo + 8;	      
       //	    icolDo = icol;
     } else {             // lower strips in another detElemId 
-	    detElemId = DetElemId(ichamber,side,iline-1); // get detElemId
-	    seg = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,icathode);  
-      
+      detElemId = DetElemId(ichamber,side,iline-1); // get detElemId
+      seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+
       // get iFirstStrip in this module 
-	    const AliMpTriggerSegmentation* trig = (AliMpTriggerSegmentation*)(seg);
-	    const AliMpTrigger* t = trig->Slat();
-	    const AliMpSlat* slat = t->GetLayer(0);
-	    if (iline == 5) icolDo = icol + 1; // special case
-	    if (iline == 6) icolDo = icol - 1; // special case	    
-	    const AliMpPCB* pcb = slat->GetPCB(icolDo-1);
-	    iFirstStripDo = (pcb->Iymax() + 1) - 8;
-	    iLastStripDo =  iFirstStripDo + 8;
+      const AliMpTriggerSegmentation* trig = (AliMpTriggerSegmentation*)(seg);
+      const AliMpTrigger* t = trig->Slat();
+      const AliMpSlat* slat = t->GetLayer(0);
+      if (iline == 5) icolDo = icol + 1; // special case
+      if (iline == 6) icolDo = icol - 1; // special case	    
+      const AliMpPCB* pcb = slat->GetPCB(icolDo-1);
+      iFirstStripDo = (pcb->Iymax() + 1) - 8;
+      iLastStripDo =  iFirstStripDo + 8;
     }  
     
     iStripCircuit=0;
-    FillXstrips(kGeomTransformer,seg,detElemId,icolDo, 
+    FillXstrips(seg,detElemId,icolDo, 
                 iFirstStripDo,iLastStripDo,iStripCircuit,fYpos21);
     
     // fill strip between middle and upper part
@@ -262,19 +261,16 @@ void AliMUONTriggerCircuitNew::LoadXPos(const AliMUONTriggerCrateStore& crates)
   Int_t iLastStrip = 0;
   Bool_t doubling = kFALSE;
   
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON"); 
   const AliMpVSegmentation* seg;
-  const AliMUONGeometryTransformer* kGeomTransformer 
-    = pMUON->GetGeometryTransformer();
-  
+
   char side;
   Int_t iline, icol;
   
   DecodeBoardName(localBoard->GetName(),side,iline,icol);
   
   Int_t detElemId=DetElemId(ichamber,side,iline); // get detElemId
-  seg = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,icathode);
-  
+  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+
   // check if one needs a strip doubling or not
   if ( (x2u == 1 || x2m == 1 || x2d == 1) && x2m == 1) doubling = kTRUE;
   
@@ -292,13 +288,12 @@ void AliMUONTriggerCircuitNew::LoadXPos(const AliMUONTriggerCrateStore& crates)
   if (doubling) iLastStrip = iFirstStrip + 8;
   else iLastStrip = iFirstStrip + 16;
   
-  FillYstrips(kGeomTransformer,seg,detElemId, 
+  FillYstrips(seg,detElemId, 
               iFirstStrip,iLastStrip,iStripCircuit,doubling);  
 }
 
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuitNew::FillYstrips(
-                                           const AliMUONGeometryTransformer* kGeomTransformer,
                                            const AliMpVSegmentation* seg,
                                            const Int_t detElemId, 
                                            const Int_t iFirstStrip, const Int_t iLastStrip, Int_t liStripCircuit,
@@ -310,19 +305,19 @@ void AliMUONTriggerCircuitNew::FillYstrips(
     AliMpPad pad = seg->PadByIndices(AliMpIntPair(istrip,0),kTRUE);
     if ( !pad.IsValid() )
     {
-	    StdoutToAliError(cout << "Pad not found in seg " << endl;
-                       seg->Print();
-                       cout << " ix,iy=" << istrip << "," << 0 << endl;
-                       );
+	StdoutToAliError(cout << "Pad not found in seg " << endl;
+			 seg->Print();
+			 cout << " ix,iy=" << istrip << "," << 0 << endl;
+			 );
     }
-    XYGlobal(kGeomTransformer,detElemId,pad,xyGlobal);
+    XYGlobal(detElemId,pad,xyGlobal);
     
     if (!doubling) {	    
-	    fXpos11[liStripCircuit]=xyGlobal[0];
+      fXpos11[liStripCircuit]=xyGlobal[0];
     } else if (doubling) {	    
-	    fXpos11[2*liStripCircuit]=TMath::Sign(1.,xyGlobal[0]) * 
-      (TMath::Abs(xyGlobal[0]) - xyGlobal[2]/2.);
-	    fXpos11[2*liStripCircuit+1]=TMath::Sign(1.,xyGlobal[0]) *
+      fXpos11[2*liStripCircuit]=TMath::Sign(1.,xyGlobal[0]) * 
+	(TMath::Abs(xyGlobal[0]) - xyGlobal[2]/2.);
+      fXpos11[2*liStripCircuit+1]=TMath::Sign(1.,xyGlobal[0]) *
         (TMath::Abs(fXpos11[2*liStripCircuit]) + xyGlobal[2]); 
     }	
     liStripCircuit++;
@@ -331,7 +326,6 @@ void AliMUONTriggerCircuitNew::FillYstrips(
 
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuitNew::FillXstrips(
-                                           const AliMUONGeometryTransformer* kGeomTransformer,
                                            const AliMpVSegmentation* seg,
                                            const Int_t detElemId, const Int_t icol, 
                                            const Int_t iFirstStrip, const Int_t iLastStrip, 
@@ -343,13 +337,13 @@ void AliMUONTriggerCircuitNew::FillXstrips(
     AliMpPad pad = seg->PadByIndices(AliMpIntPair(icol-1,istrip),kTRUE);
     if ( !pad.IsValid() )
     {
-	    StdoutToAliError(cout << "Pad not found in seg " << endl;
+      StdoutToAliError(cout << "Pad not found in seg " << endl;
                        seg->Print();
                        cout << " ix,iy=" << icol-1 << "," << istrip << endl;
                        );
     }
     
-    XYGlobal(kGeomTransformer,detElemId,pad,xyGlobal);
+    XYGlobal(detElemId,pad,xyGlobal);
     
     tab[2*liStripCircuit]=xyGlobal[1];
     if (istrip!=(iLastStrip-1)) tab[2*liStripCircuit+1]=xyGlobal[1]+xyGlobal[3];
@@ -564,7 +558,6 @@ AliMUONTriggerCircuitNew::FirstStrip(const char* boardName)
 
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuitNew::XYGlobal(
-                                        const AliMUONGeometryTransformer* kGeomTransformer,
                                         Int_t detElemId, const AliMpPad& pad,
                                         Double_t xyGlobal[4])
 {
@@ -579,6 +572,6 @@ void AliMUONTriggerCircuitNew::XYGlobal(
   Double_t zg1=0;
   
   // positions from local to global 
-  kGeomTransformer->Local2Global(detElemId, xl1, yl1, 0, 
+  fTransformer->Local2Global(detElemId, xl1, yl1, 0, 
                                  xyGlobal[0], xyGlobal[1], zg1);
 }
