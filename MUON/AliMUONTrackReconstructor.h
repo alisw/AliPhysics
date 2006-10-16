@@ -23,14 +23,13 @@ class TFile;
 class TTree;
 class AliMUONData;
 class AliRunLoader;
-class AliLoader;
 class AliMUONTriggerTrack;
 
 class AliMUONTrackReconstructor : public TObject {
 
  public:
-  AliMUONTrackReconstructor(AliLoader* loader, AliMUONData* data); // default Constructor
-  virtual ~AliMUONTrackReconstructor(void); // Destructor
+  AliMUONTrackReconstructor(AliMUONData* data); // default Constructor
+  virtual ~AliMUONTrackReconstructor(); // Destructor
 
   // Parameters for track reconstruction: public methods
   // Get and Set, Set to defaults
@@ -157,9 +156,6 @@ class AliMUONTrackReconstructor : public TObject {
 
   // data container
   AliMUONData* fMUONData; ///< Data container for MUON subsystem 
-
-  // alice loader
-  AliLoader* fLoader; ///< MUON loader to get data
 
   Int_t fMuons; ///< AZ - number of muons within acceptance - just for tests
 
