@@ -28,6 +28,7 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void   SetDefaults();
     virtual void   DrawModule() const;
     virtual void   StepManager();
+    virtual void   AddAlignableVolumes() const;
     virtual void   SetWriteDet(Bool_t det=kFALSE){ // set .det write
 	                                         fGeomDetOut = det;}
     virtual void   SetWriteDet(const char *f){ // set write file

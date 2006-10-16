@@ -100,7 +100,15 @@ the AliITS class.
 ClassImp(AliITS)
 
 //______________________________________________________________________
-AliITS::AliITS() : AliDetector(){
+AliITS::AliITS() : AliDetector(),
+fDetTypeSim(0),
+fEuclidOut(0),
+fOpt("All"),
+fIdN(0),
+fIdSens(0),
+fIdName(0),
+fITSmodules(0)
+{
   // Default initializer for ITS
   //      The default constructor of the AliITS class. In addition to
   // creating the AliITS class it zeros the variables fIshunt (a member
@@ -108,21 +116,19 @@ AliITS::AliITS() : AliDetector(){
   // fIdSens, and fIdName. The AliDetector default constructor
   // is also called.
   
-  fEuclidOut=0;
-  fOpt="All";
-  fIdSens=0;
-  fIdName=0;
-  fDetTypeSim=0;
-  fIshunt     = 0;   // not zeroed in AliDetector.
-  fHits =0;
-  fNhits=0;
-  fITSmodules=0;
- 
 //    SetDetectors(); // default to fOpt="All". This variable not written out.
     SetMarkerColor(kRed);
 }
 //______________________________________________________________________
-AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
+AliITS::AliITS(const char *name, const char *title):AliDetector(name,title),
+fDetTypeSim(0),
+fEuclidOut(0),
+fOpt("All"),
+fIdN(0),
+fIdSens(0),
+fIdName(0),
+fITSmodules(0)
+{
   //     The standard Constructor for the ITS class. 
   // It also zeros the variables
   // fIshunt (a member of AliDetector class), fEuclidOut, and zeros
@@ -133,25 +139,12 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   // class for a description of these parameters and its constructor
   // functions.
   
-  fEuclidOut=0;
-  fOpt="All";
-  fIdSens=0;
-  fIdName=0;
-  fDetTypeSim=0;
   fHits = new TClonesArray("AliITShit",1560);
   if(gAlice->GetMCApp()) gAlice->GetMCApp()->AddHitList(fHits);
-  fNhits=0;
-  fITSmodules = 0;
+  //fNhits=0;  //done in AliDetector(name,title)
 
-  fIshunt     = 0;  // not zeroed in AliDetector
-  // Not done in AliDetector.
-
-  fEuclidOut  = 0;
   SetDetectors(); // default to fOpt="All". This variable not written out.
-  
-  fIdName     = 0;
-  fIdSens     = 0;
-  
+    
   fDetTypeSim   = new AliITSDetTypeSim();
   
   SetMarkerColor(kRed);
@@ -192,7 +185,15 @@ AliITS::~AliITS(){
     }
 }
 //______________________________________________________________________
-AliITS::AliITS(const AliITS &source) : AliDetector(source){
+AliITS::AliITS(const AliITS &source) : AliDetector(source),
+fDetTypeSim(0),
+fEuclidOut(0),
+fOpt("All"),
+fIdN(0),
+fIdSens(0),
+fIdName(0),
+fITSmodules(0)
+{
     // Copy constructor. This is a function which is not allowed to be
     // done to the ITS. It exits with an error.
     // Inputs:
@@ -1290,6 +1291,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 //______________________________________________________________________
 void AliITS::UpdateInternalGeometry(){
 
+  //reads new geometry from TGeo 
   Info("UpdateInternalGeometry", "Delete ITSgeom and create a new one reading TGeo");
   AliITSInitGeometry *initgeom = new AliITSInitGeometry("AliITSvPPRasymmFMD",2);
   AliITSgeom* geom = initgeom->CreateAliITSgeom();

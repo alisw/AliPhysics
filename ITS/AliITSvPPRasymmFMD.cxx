@@ -70,7 +70,20 @@
 ClassImp(AliITSvPPRasymmFMD)
  
 //______________________________________________________________________
-AliITSvPPRasymmFMD::AliITSvPPRasymmFMD() {
+AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(): AliITS(),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fByThick(kTRUE),
+fMajorVersion(IsVersion()),
+fMinorVersion(-1),
+fDet1(0),
+fDet2(0),
+fChip1(0),
+fChip2(0),
+fRails(0),
+fFluid(0),
+fIDMother(0)
+ {
     //    Standard default constructor for the ITS version 10.
     // Inputs:
     //   none.
@@ -79,15 +92,6 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD() {
     // Return:
     //   none.
     Int_t i;
-
-    fIdN          = 0;
-    fIdName       = 0;
-    fIdSens       = 0;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
-    fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Read .det file
-    fMajorVersion = IsVersion();
-    fMinorVersion = -1;
     for(i=0;i<60;i++) fRead[i] = '\0';
     for(i=0;i<60;i++) fWrite[i] = '\0';
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
@@ -95,7 +99,19 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD() {
 }
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title) 
-    : AliITS("ITS", title){
+  : AliITS("ITS", title),
+    fGeomDetOut(kFALSE),
+    fGeomDetIn(kFALSE),
+    fByThick(kTRUE),
+    fMajorVersion(IsVersion()),
+    fMinorVersion(2),
+    fDet1(0),
+    fDet2(0),
+    fChip1(0),
+    fChip2(0),
+    fRails(0),
+    fFluid(0),
+    fIDMother(0) {
     //    Standard constructor for the ITS version 10.
     // Inputs:
     //   const char * name   Ignored, set to "ITS"
@@ -117,11 +133,6 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
     fIdName[5] = "ITS6";
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
-    fMajorVersion = IsVersion();
-    fMinorVersion = 2;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
-    fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Read .det file
     SetThicknessDet1();
     SetThicknessDet2();
     SetThicknessChip1();
@@ -136,7 +147,19 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
 }
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source) :
- AliITS(source){
+ AliITS(source),
+ fGeomDetOut(kFALSE),
+ fGeomDetIn(kFALSE),
+ fByThick(kTRUE),
+ fMajorVersion(IsVersion()),
+ fMinorVersion(2),
+ fDet1(0),
+ fDet2(0),
+ fChip1(0),
+ fChip2(0),
+ fRails(0),
+ fFluid(0),
+ fIDMother(0) {
     //     Copy Constructor for ITS version 10. This function is not to be
     // used. If any other instance of this function, other than "this" is
     // passed, an error message is returned.
@@ -178,6 +201,278 @@ AliITSvPPRasymmFMD::~AliITSvPPRasymmFMD() {
     // Return:
     //   none.
 }
+
+//______________________________________________________________________
+void AliITSvPPRasymmFMD::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path.
+  // 
+  AliInfo("Add ITS alignable volumes");
+
+  if (!gGeoManager) {
+    AliFatal("TGeoManager doesn't exist !");
+    return;
+  }
+
+  if( !gGeoManager->SetAlignableEntry("ITS","ALIC_1/ITSV_1") )
+    AliFatal("Unable to set alignable entry!!");    
+
+  TString strSPD = "ITS/SPD";
+  TString strSDD = "ITS/SDD";
+  TString strSSD = "ITS/SSD";
+  TString strStave = "/Stave";
+  TString strLadder = "/Ladder";
+  TString strSector = "/Sector";
+  TString strSensor = "/Sensor";
+  TString strEntryName1;
+  TString strEntryName2;
+  TString strEntryName3;
+
+  //===== SPD layer1 =====
+  {
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";
+    TString str1 = "/I10B_";
+    TString str2 = "/I107_";
+  
+    TString sector;
+    TString stave;
+    TString module;
+
+    for(Int_t c1 = 1; c1<=10; c1++){
+
+      sector = str0;
+      sector += c1; // this is one full sector
+      strEntryName1 = strSPD;
+      strEntryName1 += 0;
+      strEntryName1 += strSector;
+      strEntryName1 += (c1-1);
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
+	AliFatal("Unable to set alignable entry!!");    
+      //printf("%s   ==   %s\n",strEntryName1.Data(),sector.Data());
+      
+      for(Int_t c2 =1; c2<=2; c2++){
+	
+	stave = sector;
+	stave += str1;
+	stave += c2;
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strStave;
+	strEntryName2 += (c2-1);
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),stave.Data()))
+	  AliFatal("Unable to set alignable entry!!");    
+	//printf("%s   ==   %s\n",strEntryName2.Data(),stave.Data()); // this is a stave
+
+	for(Int_t c3 =1; c3<=4; c3++){
+	  
+	  module = stave;
+	  module += str2;
+	  module += c3;
+	  strEntryName3 = strEntryName2;
+	  strEntryName3 += strLadder;
+	  strEntryName3 += (c3-1);
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),module.Data()))
+	    AliFatal("Unable to set alignable entry!!");    
+	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
+	}
+      }
+    }
+  }
+
+  //===== SPD layer2 =====
+  {
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";
+    TString str1 = "/I20B_";
+    TString str2 = "/I1D7_";
+  
+    TString sector;
+    TString stave;
+    TString module;
+
+    for(Int_t c1 = 1; c1<=10; c1++){
+
+      sector = str0;
+      sector += c1; // this is one full sector
+      strEntryName1 = strSPD;
+      strEntryName1 += 1;
+      strEntryName1 += strSector;
+      strEntryName1 += (c1-1);
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
+	AliFatal("Unable to set alignable entry!!");    
+      //printf("%s   ==   %s\n",strEntryName1.Data(),sector.Data());
+      
+      for(Int_t c2 =1; c2<=4; c2++){
+	
+	stave = sector;
+	stave += str1;
+	stave += c2;
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strStave;
+	strEntryName2 += (c2-1);
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),stave.Data()))
+	  AliFatal("Unable to set alignable entry!!");    
+	//printf("%s   ==   %s\n",strEntryName2.Data(),stave.Data()); // this is a stave
+
+	for(Int_t c3 =1; c3<=4; c3++){
+	  
+	  module = stave;
+	  module += str2;
+	  module += c3;
+	  strEntryName3 = strEntryName2;
+	  strEntryName3 += strLadder;
+	  strEntryName3 += (c3-1);
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),module.Data()))
+	    AliFatal("Unable to set alignable entry!!");
+	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
+	}
+      }
+    }
+  }
+
+  //===== SDD layer1 =====
+  {
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
+    TString str1 = "/I302_";
+
+    TString ladder;
+    TString wafer;
+
+    for(Int_t c1 = 1; c1<=14; c1++){
+
+      ladder = str0;
+      ladder += c1; // the set of wafers from one ladder
+      strEntryName1 = strSDD;
+      strEntryName1 += 2;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
+	AliFatal("Unable to set alignable entry!!");    
+      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+
+      for(Int_t c2 =1; c2<=6; c2++){
+
+	wafer = ladder;
+	wafer += str1;
+	wafer += c2;    // one wafer
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strSensor;
+	strEntryName2 += (c2-1);
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	  AliFatal("Unable to set alignable entry!!");    
+	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+
+      }
+    }
+  }
+
+  //===== SDD layer2 =====
+  {
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_";
+    TString str1 = "/I402_";
+
+    TString ladder;
+    TString wafer;
+
+    for(Int_t c1 = 1; c1<=22; c1++){
+
+      ladder = str0;
+      ladder += c1; // the set of wafers from one ladder
+      strEntryName1 = strSDD;
+      strEntryName1 += 3;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
+	AliFatal("Unable to set alignable entry!!");    
+      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+
+      for(Int_t c2 =1; c2<=8; c2++){
+
+	wafer = ladder;
+	wafer += str1;
+	wafer += c2;    // one wafer
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strSensor;
+	strEntryName2 += (c2-1);
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	  AliFatal("Unable to set alignable entry!!");    
+	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+      }
+    }
+  }
+
+  //===== SSD layer1 =====
+  {
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_";
+    TString str1 = "/I562_";
+
+    TString ladder;
+    TString wafer;
+
+    for(Int_t c1 = 1; c1<=34; c1++){
+
+      ladder = str0;
+      ladder += c1; // the set of wafers from one ladder
+      strEntryName1 = strSSD;
+      strEntryName1 += 4;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
+	AliFatal("Unable to set alignable entry!!");    
+      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+
+      for(Int_t c2 = 1; c2<=22; c2++){
+
+	wafer = ladder;
+	wafer += str1;
+	wafer += c2;     // one wafer
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strSensor;
+	strEntryName2 += (c2-1);
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	  AliFatal("Unable to set alignable entry!!");    
+	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+      }
+    }
+  }
+
+  //===== SSD layer2 =====
+  {
+    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
+    TString str1 = "/I566_";
+
+    TString ladder;
+    TString wafer;
+
+    for(Int_t c1 = 1; c1<=38; c1++){
+
+      ladder = str0;
+      ladder += c1; // the set of wafers from one ladder
+      strEntryName1 = strSSD;
+      strEntryName1 += 5;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
+	AliFatal("Unable to set alignable entry!!");    
+      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+
+      for(Int_t c2 = 1; c2<=25; c2++){
+
+	wafer = ladder;
+	wafer += str1;
+	wafer += c2;     // one wafer
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strSensor;
+	strEntryName2 += (c2-1);
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	  AliFatal("Unable to set alignable entry!!");    
+	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+
+      }
+    }
+  }
+
+} 
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::BuildGeometry(){
     //    Geometry builder for the ITS version 10. Event Display geometry.
@@ -5235,8 +5530,8 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     //   none.
     const Int_t knlayers = 6;
     const Int_t kndeep = 3;
-    const AliITSDetector idet[knlayers]={kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
-    const TString names[2][knlayers] = {
+    const AliITSDetector kidet[knlayers]={kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
+    const TString knames[2][knlayers] = {
      {"/ALIC_1/ITSV_1/ITSD_1/IT12_1/I12A_%d/I10A_%d/I103_%d/I101_1/ITS1_1", // lay=1
       "/ALIC_1/ITSV_1/ITSD_1/IT12_1/I12A_%d/I20A_%d/I1D3_%d/I1D1_1/ITS2_1", // lay=2
       "/ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_%d/I302_%d/ITS3_%d", // lay=3
@@ -5250,7 +5545,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
       "/ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
       "/ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_%d/I566_%d/ITS6_%d"}
     };
-    const Int_t itsGeomTreeCopys[knlayers][kndeep]= {{10, 2, 4},// lay=1
+    const Int_t kitsGeomTreeCopys[knlayers][kndeep]= {{10, 2, 4},// lay=1
                                                      {10, 4, 4},// lay=2
                                                      {14, 6, 1},// lay=3
                                                      {22, 8, 1},// lay=4
@@ -5269,8 +5564,8 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     mod = 0;
     for(i=0;i<knlayers;i++){
         k = 1;
-        for(j=0;j<kndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
-            k *= TMath::Abs(itsGeomTreeCopys[i][j]);
+        for(j=0;j<kndeep;j++) if(kitsGeomTreeCopys[i][j]!=0)
+            k *= TMath::Abs(kitsGeomTreeCopys[i][j]);
         mod += k;
     } // end for i
 
@@ -5281,10 +5576,10 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     SetITSgeom(geom);
     mod = 0;
     for(lay=1;lay<=knlayers;lay++){
-        for(cp0=1;cp0<=itsGeomTreeCopys[lay-1][0];cp0++){
-            for(cp1=1;cp1<=itsGeomTreeCopys[lay-1][1];cp1++){
-                for(cp2=1;cp2<=itsGeomTreeCopys[lay-1][2];cp2++){
-                    path.Form(names[fMinorVersion-1][lay-1].Data(),
+        for(cp0=1;cp0<=kitsGeomTreeCopys[lay-1][0];cp0++){
+            for(cp1=1;cp1<=kitsGeomTreeCopys[lay-1][1];cp1++){
+                for(cp2=1;cp2<=kitsGeomTreeCopys[lay-1][2];cp2++){
+                    path.Form(knames[fMinorVersion-1][lay-1].Data(),
                               cp0,cp1,cp2);
                     switch (lay){
                     case 1:{
@@ -5306,7 +5601,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
                     gMC->GetShape(path.Data(),shapeName,shapePar);
                     shapeParF.Set(shapePar.GetSize());
                     for(i=0;i<shapePar.GetSize();i++) shapeParF[i]=shapePar[i];
-                    geom->CreateMatrix(mod,lay,lad,det,idet[lay-1],trans,rot);
+                    geom->CreateMatrix(mod,lay,lad,det,kidet[lay-1],trans,rot);
                     geom->SetTrans(mod,materix.GetTranslation());
                     geom->SetRotMatrix(mod,materix.GetRotationMatrix());
 		    geom->GetGeomMatrix(mod)->SetPath(path.Data());
