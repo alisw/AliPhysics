@@ -55,6 +55,8 @@ class AliMUONDigitMaker : public TObject
 
   void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
 
+  void  SetSegFactory(AliMpSegFactory* segFactory) {fSegFactory = segFactory;}
+
  private:
 
   AliMUONData*     fMUONData;          //!< Data container for MUON subsystem 

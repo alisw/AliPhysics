@@ -86,7 +86,7 @@ ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
   : TObject(),
     fMUONData(0x0),
-    fSegFactory(new AliMpSegFactory()),
+    fSegFactory(0x0),
     fBusPatchManager(new AliMpBusPatch()),
     fScalerEvent(kFALSE),
     fDigitFlag(flag),
@@ -126,8 +126,6 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
   // clean up
   // and time processing measure
   //
-  delete fSegFactory;  
-
   delete fRawStreamTracker;
   delete fRawStreamTrigger;
 
