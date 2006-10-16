@@ -78,14 +78,7 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
       fTagFilename += "/";
       fTagFilename += name;
 	  	
-      TFile * fTag = TFile::Open(fTagFilename);
-      if((!fTag) || (!fTag->IsOpen())) {
-	AliError(Form("Tag file not opened!!!"));
-	continue;
-      } 
       fChain->Add(fTagFilename);  
-      fTag->Close();
-      delete fTag;
     }//pattern check
   }//directory loop
   AliInfo(Form("Chained tag files: %d ",fChain->GetEntries()));
@@ -107,9 +100,7 @@ void AliTagAnalysis::ChainGridTags(TGridResult *res) {
  
   for(Int_t i = 0; i < nEntries; i++) {
     alienUrl = ftagresult->GetKey(i,"turl");
-    TFile *f = TFile::Open(alienUrl,"READ");
     fChain->Add(alienUrl);
-    delete f;	 
   }//grid result loop  
 }
 
@@ -172,6 +163,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliEventTagCuts *Ev
   //Event list
   TEventList *fEventList = new TEventList();
   TString guid = 0x0;
+  TString turl = 0x0;
   
   //Defining tag objects
   AliRunTag *tag = new AliRunTag;
@@ -185,9 +177,10 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliEventTagCuts *Ev
     for(Int_t i = 0; i < iEvents; i++) {
       evTag = (AliEventTag *) tagList->At(i);
       guid = evTag->GetGUID(); 
+      turl = evTag->GetTURL(); 
       if(EvTagCuts->IsAccepted(evTag)) fEventList->Enter(i);
     }//event loop
-    collection->WriteBody(iTagFiles+1,guid,fEventList);
+    collection->WriteBody(iTagFiles+1,guid,turl,fEventList);
     fEventList->Clear();
   }//tag file loop
   collection->Export();
