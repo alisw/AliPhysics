@@ -28,9 +28,9 @@ class AliRunTagCuts : public TObject {
   void SetMagneticField(Float_t Pmag) {fAliceMagneticField = Pmag; fAliceMagneticFieldFlag = kTRUE;}
   void SetRunStartTimeRange(Int_t t0, Int_t t1) {fAliceRunStartTimeMin = t0; fAliceRunStartTimeMax = t1; fAliceRunStartTimeFlag = kTRUE;}
   void SetRunStopTimeRange(Int_t t0, Int_t t1) {fAliceRunStopTimeMin = t0; fAliceRunStopTimeMax = t1; fAliceRunStartTimeFlag = kTRUE;}
-  void SetAlirootVersion(TString v) {fAlirootVersion = v; fAlirootVersionFlag = kTRUE;}
-  void SetRootVersion(TString v) {fRootVersion = v; fRootVersionFlag = kTRUE;}
-  void SetGeant3Version(TString v) {fGeant3Version = v; fGeant3VersionFlag = kTRUE;}
+  void SetAlirootVersion(TString v) {fAlirootVersion = "VO_ALICE@AliRoot::"; fAlirootVersion += v; fAlirootVersionFlag = kTRUE;}
+  void SetRootVersion(TString v) {fRootVersion = "VO_ALICE@ROOT::"; fRootVersion += v; fRootVersionFlag = kTRUE;}
+  void SetGeant3Version(TString v) {fGeant3Version = "VO_ALICE@GEANT3::"; fGeant3Version += v; fGeant3VersionFlag = kTRUE;}
   void SetRunQuality(Int_t Pn) {fAliceRunQuality = Pn; fAliceRunQualityFlag = kTRUE;}
   void SetBeamEnergy(Float_t PE) {fAliceBeamEnergy = PE; fAliceBeamTypeFlag = kTRUE;}
   void SetBeamType(TString Ptype) {fAliceBeamType = Ptype; fAliceCalibrationVersionFlag = kTRUE;}
