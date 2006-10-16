@@ -1,55 +1,67 @@
+/**************************************************************************
+ * Copyright(c) 2006-2008, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 ////////////////////////////////////////////////
+//                                            //
 //  RawData classes for set:ITS               //
+//                                            //
 ////////////////////////////////////////////////
 
-#include <TMath.h>
 #include <TObjArray.h>
 #include <Riostream.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "AliITSHuffman.h"
-#include "AliITSRawData.h"
 
-ClassImp(AliITSHNode)
+ClassImp(AliITSHuffman)
 
 //_____________________________________________________________________________
 
-AliITSHNode::AliITSHNode()
-{
-  // constructor
-    fLeft=0;
-    fRight=0;
-    fFather=0;
+  AliITSHuffman::AliITSHNode::AliITSHNode(): 
+TObject(),
+fSymbol(),
+fFrequency(0),
+fLeft(),
+fRight(),
+fFather() {
+  // default constructor
 }
 //_____________________________________________________________________________
 
-AliITSHNode::AliITSHNode(UChar_t sym, ULong_t freq)
-{
+AliITSHuffman::AliITSHNode::AliITSHNode(UChar_t sym, ULong_t freq):
+TObject(),
+fSymbol(sym),
+fFrequency(freq),
+fLeft(),
+fRight(),
+fFather() {
   // standard constructor
-    fSymbol=sym;
-    fFrequency=freq;
-    fLeft=0;
-    fRight=0;
-    fFather=0;
 }
 
 //__________________________________________________________________________
-AliITSHNode::AliITSHNode(const AliITSHNode &source) : TObject(source){
+AliITSHuffman::AliITSHNode::AliITSHNode(const AliITSHNode &source): 
+TObject(source),
+fSymbol(source.fSymbol),
+fFrequency(source.fFrequency),
+fLeft(source.fLeft),
+fRight(source.fRight),
+fFather(source.fFather) {
   //     Copy Constructor 
-  if(&source == this) return;
-  this->fSymbol = source.fSymbol;
-  this->fFrequency = source.fFrequency;
-  this->fLeft = source.fLeft;
-  this->fRight = source.fRight;
-  this->fFather = source.fFather;
   return;
 }
 
 //_________________________________________________________________________
-AliITSHNode& 
-  AliITSHNode::operator=(const AliITSHNode &source) {
+AliITSHuffman::AliITSHNode& 
+  AliITSHuffman::AliITSHNode::operator=(const AliITSHuffman::AliITSHNode &source) {
   //    Assignment operator
   if(&source == this) return *this;
   this->fSymbol = source.fSymbol;
@@ -61,7 +73,7 @@ AliITSHNode&
 }
 
 //____________________________________________
-Int_t AliITSHNode::Compare(const TObject *obj) const
+Int_t AliITSHuffman::AliITSHNode::Compare(const TObject *obj) const
 {
   // function called by Sort method of TObjArray
 
@@ -72,25 +84,32 @@ Int_t AliITSHNode::Compare(const TObject *obj) const
          else if (f<fo) return -1;
          else return 0;
 }
-//_____________________________________________________________________________
 
-
-ClassImp(AliITSHTable)
 
 //_____________________________________________________________________________
 
-AliITSHTable::AliITSHTable()
+AliITSHuffman::AliITSHuffman():
+TObject(),
+fSize(0),
+fCodeLen(),
+fCode(),
+fSym(),
+fHNodes(),
+fNnodes(0)
 {
-  // constructor
-    fCodeLen=0;
-    fCode=0;
-    fHNodes=0;
-    fNnodes=0;
+  // default constructor
    
 }
 //_____________________________________________________________________________
 
-AliITSHTable::AliITSHTable(Int_t size)
+AliITSHuffman::AliITSHuffman(Int_t size):
+TObject(),
+fSize(size),
+fCodeLen(),
+fCode(),
+fSym(),
+fHNodes(),
+fNnodes(0)
 {
   //
   // Creates the look-up table for the 1D compression
@@ -98,7 +117,6 @@ AliITSHTable::AliITSHTable(Int_t size)
 
   //initialise
 
-  fSize=size;
   fCodeLen = new UChar_t[fSize]; 
   fCode = new ULong_t[fSize]; 
   fHNodes = new TObjArray;
@@ -112,21 +130,21 @@ AliITSHTable::AliITSHTable(Int_t size)
 }
 
 //__________________________________________________________________________
-AliITSHTable::AliITSHTable(const AliITSHTable &source) : TObject(source){
+AliITSHuffman::AliITSHuffman(const AliITSHuffman &source) : 
+TObject(source),
+fSize(source.fSize),
+fCodeLen(source.fCodeLen),
+fCode(source.fCode),
+fSym(source.fSym),
+fHNodes(source.fHNodes),
+fNnodes(source.fNnodes)
+{
   //     Copy Constructor 
-  if(&source == this) return;
-  this->fSize = source.fSize;
-  this->fCodeLen = source.fCodeLen;
-  this->fCode = source.fCode;
-  this->fSym = source.fSym;
-  this->fHNodes = source.fHNodes;
-  this->fNnodes = source.fNnodes;
-  return;
 }
 
 //_________________________________________________________________________
-AliITSHTable& 
-  AliITSHTable::operator=(const AliITSHTable &source) {
+AliITSHuffman& 
+  AliITSHuffman::operator=(const AliITSHuffman &source) {
   //    Assignment operator
   if(&source == this) return *this;
   this->fSize = source.fSize;
@@ -139,7 +157,7 @@ AliITSHTable&
 }
 
 //_____________________________________________________________________________
-void AliITSHTable::GetFrequencies(Int_t len, UChar_t *stream)
+void AliITSHuffman::GetFrequencies(Int_t len, UChar_t *stream)
 {
   // get frequencies
   printf("Get Frequencies: sym %p \n",(void*)fSym);
@@ -158,7 +176,7 @@ void AliITSHTable::GetFrequencies(Int_t len, UChar_t *stream)
 
 
 //_____________________________________________________________________________
-void AliITSHTable::BuildHTable()
+void AliITSHuffman::BuildHTable()
 {
   // build Htable
 
@@ -168,7 +186,7 @@ void AliITSHTable::BuildHTable()
         fNnodes++;
         cout<< "i fCode[i] fNnodes "<<i<<" "<<fCode[i]<<" "<<fNnodes<<endl;
 	//printf("i, fCode[i] fNnodes %d %d %d\n",i,fCode[i],fNnodes);
-        fHNodes->Add(new AliITSHNode((UChar_t)i,fCode[i]));
+        fHNodes->Add(new AliITSHuffman::AliITSHNode((UChar_t)i,fCode[i]));
      }
   }
 
@@ -183,11 +201,11 @@ void AliITSHTable::BuildHTable()
      AliITSHNode *aux = new AliITSHNode(0,0);
      AliITSHNode *node= (AliITSHNode*)fHNodes->UncheckedAt(nindex-1);
      AliITSHNode *node1= (AliITSHNode*)fHNodes->UncheckedAt(nindex);
-     aux->fLeft = node;
-     aux->fRight = node1;
-     aux->fFrequency = node->fFrequency + node1->fFrequency;
-     printf("symbol symbol1 freq freq1 %d %d %d %d\n",(int)node->fSymbol,(int)node1->fSymbol,(int)node->fFrequency,(int)node1->fFrequency);
-     cout << "aux - frequency "<< (Int_t)(aux->fFrequency) <<endl;
+     aux->SetLeft(node);
+     aux->SetRight(node1);
+     aux->SetFrequency(node->GetFrequency() + node1->GetFrequency());
+     printf("symbol symbol1 freq freq1 %d %d %d %d\n",(int)node->GetSymbol(),(int)node1->GetSymbol(),(int)node->GetFrequency(),(int)node1->GetFrequency());
+     cout << "aux - frequency "<< (Int_t)(aux->GetFrequency()) <<endl;
      fHNodes->RemoveAt(nindex-1);
      fHNodes->AddAt(aux,nindex-1);
      nindex--;
@@ -210,7 +228,7 @@ void AliITSHTable::BuildHTable()
 }
 
 //_____________________________________________________________________________
-AliITSHTable::~AliITSHTable()
+AliITSHuffman::~AliITSHuffman()
 {
   // HTable
     printf("HTable destructor !\n");
@@ -224,7 +242,7 @@ AliITSHTable::~AliITSHTable()
 
 
 //____________________________________________
-Bool_t AliITSHTable::SpanTree(AliITSHNode *start, ULong_t code, UChar_t len)
+Bool_t AliITSHuffman::SpanTree(AliITSHNode *start, ULong_t code, UChar_t len)
 {
   // span tree
   AliITSHNode * visited;
@@ -232,8 +250,8 @@ Bool_t AliITSHTable::SpanTree(AliITSHNode *start, ULong_t code, UChar_t len)
 
   printf("outside: code, len %d %d\n",(int)code,(int)len);
 
-  Int_t idx=(Int_t)visited->fSymbol;
-  if (!visited->fLeft) {
+  Int_t idx=(Int_t)visited->GetSymbol();
+  if (!visited->GetLeft()) {
 	fCode[idx] = code; 
 	fCodeLen[idx] = len;
         printf("idx, fCode[idx], fCodeLen[idx] %d %d %d\n",idx,(int)fCode[idx],
@@ -243,16 +261,16 @@ Bool_t AliITSHTable::SpanTree(AliITSHNode *start, ULong_t code, UChar_t len)
 
 // reccursive stuff
 
-  if (SpanTree(visited->fLeft, code << 1, len + 1)) {
+  if (SpanTree(visited->GetLeft(), code << 1, len + 1)) {
           printf("code, len %d %d\n",(int)code,(int)len);
-	  if (visited->fRight) 
-                  SpanTree(visited->fRight, code << 1 | 0x01, len + 1);
+	  if (visited->GetRight()) 
+                  SpanTree(visited->GetRight(), code << 1 | 0x01, len + 1);
   }
   return kTRUE;
 }
 
 //____________________________________________
-void AliITSHTable::ResetHNodes()
+void AliITSHuffman::ResetHNodes()
 {
     //
     // Reset number of HNodes and the HNodes array 
@@ -263,7 +281,7 @@ void AliITSHTable::ResetHNodes()
 }
 
 //_____________________________________________________________________________
-void AliITSHTable::ClearTable()
+void AliITSHuffman::ClearTable()
 {
   // clear
     memset(fCodeLen,0,sizeof(UChar_t)*fSize);

@@ -44,8 +44,8 @@
 #pragma link C++ class  AliITSstatistics2+;
 // These streamers must be formatted according to the raw data fromat
 
-#pragma link C++ class  AliITSHNode+;
-#pragma link C++ class  AliITSHTable+;
+//        #pragma link C++ class  AliITSHNode+;
+#pragma link C++ class  AliITSHuffman+;
 #pragma link C++ class  AliITSetfSDD+;
 // SSD simulation and reconstruction
 #pragma link C++ class  AliITSdcsSSD+;

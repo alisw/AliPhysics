@@ -5,16 +5,18 @@
 //  Huffman Table associated classes for set:ITS //
 ///////////////////////////////////////////////////
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// Attention! Two classes in this file.
-// They have to stay in the same file.
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #include <TObject.h>
 
 class AliITSInStream;
 class TObjectArray;
-class AliITSHNode: public TObject  {
+
+
+//___________________________________________
+class AliITSHuffman: public TObject{
+  
+public:
+class AliITSHNode : public TObject {
 
  public:
   AliITSHNode();
@@ -30,45 +32,45 @@ class AliITSHNode: public TObject  {
     return kTRUE;
   }
   Int_t Compare(const TObject *obj) const;
-  
-  ClassDef(AliITSHNode,1)     //HuffT node object for set:ITS
+  UChar_t GetSymbol() const {return fSymbol;}
+  ULong_t GetFrequency() const {return fFrequency;}
+  AliITSHNode *GetLeft() const {return fLeft;}
+  AliITSHNode *GetRight() const {return fRight;}
+  AliITSHNode *GetFather() const {return fFather;}
+  //  void SetSymbol(UChar_r s){fSymbol=s;}
+  void SetFrequency(ULong_t fq){fFrequency=fq;}
+  void SetLeft(AliITSHNode *n){fLeft = n;}
+  void SetRight(AliITSHNode *n){fRight = n;}
+  void SetFather(AliITSHNode *n){fFather = n;}
 
- public:
+
+ private:
 
   UChar_t    fSymbol;        // comment to be written
   ULong_t    fFrequency;     // comment to be written
   AliITSHNode     *fLeft;    // comment to be written
   AliITSHNode     *fRight;   // comment to be written
   AliITSHNode     *fFather;  // not used
-};
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  Attention! Next class has kept deliberaty in 
-//  the same file as the previous one
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-//___________________________________________
-class AliITSHTable: public TObject{
+};  
+  AliITSHuffman(); 
+  AliITSHuffman(Int_t size);
+  virtual   ~AliITSHuffman();
+  AliITSHuffman(const AliITSHuffman &source); // copy constructor
+  AliITSHuffman& operator=(const AliITSHuffman &source); // ass. op.
   
-public:
-  AliITSHTable(); 
-  AliITSHTable(Int_t size);
-  virtual   ~AliITSHTable();
-  AliITSHTable(const AliITSHTable &source); // copy constructor
-  AliITSHTable& operator=(const AliITSHTable &source); // ass. op.
-  
-  Int_t  Size() {
+  Int_t  Size() const {
     // size
     return fSize;
   }
-  UChar_t   *CodeLen() {
+  UChar_t   *CodeLen() const {
     // code len
     return fCodeLen;
   }
-  ULong_t *Code() {
+  ULong_t *Code() const {
     // code
     return fCode;
   }
-  TObjArray  *HNodes() {
+  TObjArray  *HNodes() const {
     // HNodes
     return fHNodes;
   }
@@ -76,10 +78,10 @@ public:
   
   void GetFrequencies(Int_t len, UChar_t *stream);
   void BuildHTable();   
-  Bool_t SpanTree(AliITSHNode*start, ULong_t code, UChar_t len);
+  Bool_t SpanTree(AliITSHuffman::AliITSHNode*start, ULong_t code, UChar_t len);
   void ResetHNodes();
   void ClearTable();
-  
+
  protected:
 
   Int_t          fSize;     // size of the arrays
@@ -90,7 +92,7 @@ public:
   TObjArray     *fHNodes;   // array of nodes
   Int_t          fNnodes;   // number of nodes
 
-  ClassDef(AliITSHTable,1)     //Huffman Table  object for set:ITS
+  ClassDef(AliITSHuffman,1)     //Huffman Table  object for set:ITS
     };
 
 #endif
