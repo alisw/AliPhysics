@@ -102,8 +102,9 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 {   
   // Creates digits from hits
      
-  Int_t       adc[80];    // 48 values on V0C + 32 on V0A
-  Float_t    time[80], adc_gain[80];    
+  Int_t       map[80];    // 48 values on V0C + 32 on V0A
+  Int_t       adc[64];    // 32 PMs on V0C + 32 PMs on V0A
+  Float_t    time[80], time2[64], adc_gain[80];    
   fNdigits     =    0;  
   Float_t cPM  = fPhotoCathodeEfficiency * fPMGain;
 
@@ -112,8 +113,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   // as I have no beam burst structure - odd or even beam burst number
   
   // Reminder : We have 16 scintillating cells mounted on 8 PMs 
-  // on Ring 3 and Ring 4 in V0C - in principle I should add ADC outputs 
-  // on these rings... I do not do it...
+  // on Ring 3 and Ring 4 in V0C -  added to produce  ADC outputs 
+  // on these rings... 
    
   for(Int_t i=0; i<16; i++) { adc_gain[i]  = fCalibData->GetGain(i) ; };
   
@@ -165,7 +166,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
       continue; }
     
     Float_t timeV0 = 1e12;      
-    for(Int_t i=0; i<80; i++) { adc[i]  = 0; time[i] = 0.0; }
+    for(Int_t i=0; i<80; i++) { map[i]  = 0; time[i] = 0.0; }
 	      
     TClonesArray* hits = vzero->Hits();
              
@@ -180,8 +181,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
 	Int_t nPhot = hit->Nphot();
 	Int_t cell  = hit->Cell();                                    
-	adc[cell] += nPhot;
-	Float_t dt_scintillator = gRandom->Gaus(0,0.3);
+	map[cell] += nPhot;
+	Float_t dt_scintillator = gRandom->Gaus(0,0.7);
 	time[cell] = dt_scintillator + 1e9*hit->Tof();
 	if(time[cell] < timeV0) timeV0 = time[cell];
       }           // hit   loop
@@ -190,22 +191,44 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
     loader->UnloadHits();
 
   }               // input loop
+
+// Now builds the scintillator cell response (80 cells i.e. 80 responses)
          
-  for (Int_t i=0; i<80; i++) {    
-     Float_t q1 = Float_t ( adc[i] )* cPM * kQe;
-     Float_t noise = gRandom->Gaus(10.5,3.22);
-     Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
-      + noise*1e-3;
-     adc[i] = Int_t( pmResponse * adc_gain[i]);
-     if(adc[i] > 0) {
-//         printf(" Event, cell, adc, tof = %d %d %d %f\n", 
-//                  outRunLoader->GetEventNumber(),i, adc[i], time[i]*100.0);
+   for (Int_t i=0; i<80; i++) {    
+       Float_t q1 = Float_t ( map[i] )* cPM * kQe;
+       Float_t noise = gRandom->Gaus(10.5,3.22);
+       Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
+        + noise*1e-3;
+       map[i] = Int_t( pmResponse * adc_gain[i]);
+     }
+     
+ 
+// Now transforms 80 cell responses into 64 photomultiplier responses 
+	
+   for (Int_t j=0; j<32; j++){
+	adc[j]  = map [j];
+	time2[j]= time[j];}
+	
+   for (Int_t j=48; j<80; j++){
+	adc[j-16]  = map [j];
+	time2[j-16]= time[j];}
+	
+   for (Int_t j=0; j<16; j++){
+	adc[16+j] = map [16 + 2*j]+ map [16 + 2*j + 1];
+	time2[16+j] = TMath::Min(time [16 + 2*j], time [16 + 2*j + 1]);}
+	
+// Now add digits to the digit Tree 
+        
+   for (Int_t i=0; i<64; i++) {      
+      if(adc[i] > 0) {
+//    printf(" Event, cell, adc, tof = %d %d %d %f\n", 
+//                  outRunLoader->GetEventNumber(),i, map[i], time[i]*100.0);
 //   multiply by 10 to have 100 ps per channel :
-     AddDigit(i, adc[i], Int_t(time[i]*10.0) );
-    } 
+      AddDigit(i, adc[i], Int_t(time2[i]*10.0) );
+     } 
+   }
 
-  }
-
+  
   treeD->Fill();
   outLoader->WriteDigits("OVERWRITE");  
   outLoader->UnloadDigits();     
@@ -213,13 +236,13 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t cellnumber, Int_t adc, Int_t time) 
+void AliVZERODigitizer::AddDigit(Int_t PMnumber, Int_t adc, Int_t time) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
-  new(ldigits[fNdigits++]) AliVZEROdigit(cellnumber,adc,time);
+  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time);
 }
 //____________________________________________________________________________
 void AliVZERODigitizer::ResetDigit()

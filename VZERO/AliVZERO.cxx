@@ -281,16 +281,16 @@ void AliVZERO::Digits2Raw()
     if(fVerbose == 2) {ftxt.open("VZEROdigits.txt",ios::app);}
     for(Int_t k=0; k<ndig; k++){
         AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);			
-	Int_t ADC   = fVZERODigit->ADC();
-	Int_t cell  = fVZERODigit->CellNumber();
-	Int_t Time  = fVZERODigit->Time();
-        if(fVerbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tcell: "
-	                    <<cell<<"\tADC: "<< ADC << "\tTime: "<< Time << endl;} 
+	Int_t ADC       = fVZERODigit->ADC();
+	Int_t PMNumber  = fVZERODigit->PMNumber();
+	Int_t Time      = fVZERODigit->Time();
+        if(fVerbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
+	                    <<PMNumber<<"\tADC: "<< ADC << "\tTime: "<< Time << endl;} 
 	if(fVerbose == 2) {
-	    ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tcell: "
-	                   <<cell<<"\tADC: "<< ADC << endl;	      
+	    ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
+	                   <<PMNumber<<"\tADC: "<< ADC << "\tTime: "<< Time << endl;	      
 	}
-        buffer->WriteBinary(cell, ADC, Time);
+        buffer->WriteBinary(PMNumber, ADC, Time);
     }
   if(fVerbose==2) ftxt.close();
   }

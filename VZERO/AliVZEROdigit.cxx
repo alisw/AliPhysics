@@ -19,7 +19,7 @@ ClassImp(AliVZEROdigit)
 
 AliVZEROdigit::AliVZEROdigit()
 {
-  fCellNumber = 0;
+  fPMNumber   = 0;
   fADC        = 0;
   fTime       = 0;
 }
@@ -36,9 +36,9 @@ AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
   fEvent      =  digits[0];  
 }
 
-AliVZEROdigit::AliVZEROdigit(Int_t cellnumber, Int_t adc, Int_t time)
+AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time)
 {  
-  fCellNumber = cellnumber;
+  fPMNumber   = PMnumber;
   fADC        = adc;
   fTime       = time;
 }

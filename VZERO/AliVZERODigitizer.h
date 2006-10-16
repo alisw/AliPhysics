@@ -32,7 +32,7 @@ class AliVZERODigitizer: public AliDigitizer {
    virtual Bool_t Init();
    virtual void   Exec(Option_t* option=0);
 
-   void AddDigit(Int_t cellnumber, Int_t adc, Int_t time);
+   void AddDigit(Int_t PMnumber, Int_t adc, Int_t time);
    void ResetDigit();
   
    AliVZEROCalibData *GetCalibData() const;

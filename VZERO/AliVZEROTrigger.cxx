@@ -75,15 +75,15 @@ void AliVZEROTrigger::Trigger()
       //      vzeroDigitsTree->GetEvent(d);
       AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(d);
       
-      Int_t   cellNumber = digit->CellNumber();
+      Int_t   PMNumber   = digit->PMNumber();
       Float_t adc        = digit->ADC();
       Float_t tdc        = digit->Time(); // in 100 of picoseconds
       
-      if (cellNumber<=47 && adc>fAdcThresHold) {
+      if (PMNumber<=31 && adc>fAdcThresHold) {
 	nLeftDig++;
 	if (tdc<firstTimeLeft) firstTimeLeft = tdc;
       }	
-      if (cellNumber>=48 && adc>fAdcThresHold) {
+      if (PMNumber>=32 && adc>fAdcThresHold) {
 	nRightDig++;
 	if (tdc<firstTimeRight) firstTimeRight = tdc;
       }
@@ -113,7 +113,7 @@ void AliVZEROTrigger::Trigger()
     }
   }
   
-  AliDebug(1,Form("VZERO cells fired: %d (left) %d (right)", nLeftDig, nRightDig));
+  AliDebug(1,Form("VZERO PMs fired: %d (left) %d (right)", nLeftDig, nRightDig));
 
   return;
 }
