@@ -25,7 +25,6 @@ class TFile;
 class TTree;
 
 class AliLoader;
-class AliMUONTriggerCircuitNew;
 class AliMUONData;
 class AliMUONResponse;
 class AliMUONSegmentation;
@@ -141,8 +140,6 @@ class AliMUON : public  AliDetector
     virtual AliMUONChamber& Chamber(Int_t id)
       {return *((AliMUONChamber *) (*fChambers)[id]);}
                   /// Return reference to New Circuit \a id 
-    virtual AliMUONTriggerCircuitNew& TriggerCircuitNew(Int_t id)
-	{return *((AliMUONTriggerCircuitNew*) (*fTriggerCircuitsNew)[id]);}
 
     // Return pointers to digit
     AliMUONRawCluster    *RawCluster(Int_t ichamber, Int_t icathod,
@@ -164,7 +161,6 @@ class AliMUON : public  AliDetector
     AliMUONData*          fMUONData;           ///< Data container for MUON subsystem  
     Int_t                 fSplitLevel;         ///< Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           ///< List of Tracking Chambers
-    TObjArray*            fTriggerCircuitsNew; ///< List of Trigger Circuits
     AliMUONGeometryBuilder*  fGeometryBuilder; ///< Geometry builder 
     AliMUONSegmentation*  fSegmentation;       ///< New segmentation 
    

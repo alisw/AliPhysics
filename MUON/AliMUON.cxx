@@ -57,7 +57,6 @@
 #include "AliMUONHit.h"	
 #include "AliMUONRawCluster.h"
 #include "AliMUONTransientDigit.h"
-#include "AliMUONTriggerCircuitNew.h"
 #include "AliMUONGeometry.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryBuilder.h"
@@ -105,7 +104,6 @@ AliMUON::AliMUON()
     fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
-    fTriggerCircuitsNew(0),
     fGeometryBuilder(0),
     fSegmentation(0),
     fAccCut(kFALSE),
@@ -143,7 +141,6 @@ AliMUON::AliMUON(const char *name, const char *title,
     fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
-    fTriggerCircuitsNew(0),
     fGeometryBuilder(0),
     fSegmentation(0),
     fAccCut(kFALSE),
@@ -207,12 +204,7 @@ AliMUON::AliMUON(const char *name, const char *title,
 	}
       } // Chamber stCH (0, 1) in 
     }     // Station st (0...)
-    
-// trigger circuits
-    fTriggerCircuitsNew = new TObjArray(AliMUONConstants::NTriggerCircuit());
-    for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
-      fTriggerCircuitsNew->AddAt(new AliMUONTriggerCircuitNew(),circ);          
-    }
+
 }
 
 //____________________________________________________________________
@@ -226,10 +218,6 @@ AliMUON::~AliMUON()
   if (fChambers){
     fChambers->Delete();
     delete fChambers;
-  }
-  if (fTriggerCircuitsNew){
-    fTriggerCircuitsNew->Delete();
-    delete fTriggerCircuitsNew;
   }
   
   delete fMUONData;
