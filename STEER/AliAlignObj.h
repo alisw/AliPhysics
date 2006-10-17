@@ -2,11 +2,14 @@
 #define ALIALIGNOBJ_H
 
 //************************************************************************
-// AliAlignObj: alignment base class for the storage of alignment        *
-//   information for a single volume, that is a displacement (a shift    *
-//   a rotation) plus the identity of the volume itself in form of a     *
-//   symbolic volume name (eventually a TGeo path) and as a unique       *
-//   integer identifier                                                  *
+// AliAlignObj: alignment base class for the storage of the alignment    *
+//   constants for a single volume:                                      *
+//   -  a displacement (a shift and a rotation) either as                *
+//      - the 6 doubles which identify it or as                          *
+//      - the matrix which identifies it                                 *
+//   -  the identity of the volume itself in form of a symbolic volume   *
+//      name for alignable volumes, in form of a TGeo path otherwise,    *
+//      and as a unique integer identifier                               *
 //************************************************************************
 #include "TObject.h"
 #include "TString.h"
@@ -101,7 +104,7 @@ class AliAlignObj : public TObject {
 
   //Volume identifiers
   TString  fVolPath; // Symbolic volume name; in case could coincide with
-                     // the volume path inside TGeo geometry
+      // the volume path inside TGeo geometry (for non-alignable volumes)
   UShort_t fVolUID;  // Unique volume ID
 
   static Int_t       fgLayerSize[kLastLayer - kFirstLayer]; // Size of layers

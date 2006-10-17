@@ -21,7 +21,6 @@
 
 #include "AliAlignObj.h"
 #include "AliAlignObjAngles.h"
-//#include "AliLog.h"
 
 ClassImp(AliAlignObjAngles)
 
@@ -109,6 +108,9 @@ AliAlignObjAngles::~AliAlignObjAngles()
 //_____________________________________________________________________________
 void AliAlignObjAngles::SetTranslation(const TGeoMatrix& m)
 {
+  // set the translation parameters extracting them from the matrix
+  // passed as argument
+  // 
   if(m.IsTranslation()){
     const Double_t* tr = m.GetTranslation();
     fTranslation[0]=tr[0];  fTranslation[1]=tr[1]; fTranslation[2]=tr[2];
@@ -120,6 +122,9 @@ void AliAlignObjAngles::SetTranslation(const TGeoMatrix& m)
 //_____________________________________________________________________________
 Bool_t AliAlignObjAngles::SetRotation(const TGeoMatrix& m)
 {
+  // set the rotation parameters extracting them from the matrix
+  // passed as argument
+  // 
   if(m.IsRotation()){
     const Double_t* rot = m.GetRotationMatrix();
     return MatrixToAngles(rot,fRotation);
@@ -132,6 +137,7 @@ Bool_t AliAlignObjAngles::SetRotation(const TGeoMatrix& m)
 //_____________________________________________________________________________
 void AliAlignObjAngles::GetMatrix(TGeoHMatrix& m) const
 {
+  // get the transformation matrix from the data memebers parameters
   m.SetTranslation(&fTranslation[0]);
   Double_t rot[9];
   AnglesToMatrix(fRotation,rot);
@@ -141,8 +147,9 @@ void AliAlignObjAngles::GetMatrix(TGeoHMatrix& m) const
 //_____________________________________________________________________________
 AliAlignObj& AliAlignObjAngles::Inverse() const
 {
-  // Return a temporary inverse of the alignment
-  // object. This means 'mis
+  // Return a temporary "inverse" of the alignment object, that is return
+  // an object with inverted transformation matrix.
+  //
    static AliAlignObjAngles a;
    a = *this;
 

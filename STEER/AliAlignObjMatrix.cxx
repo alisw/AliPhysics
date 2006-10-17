@@ -21,7 +21,6 @@
 
 #include "AliAlignObj.h"
 #include "AliAlignObjMatrix.h"
-//#include "AliLog.h"
 
 ClassImp(AliAlignObjMatrix)
 
@@ -115,6 +114,9 @@ AliAlignObjMatrix::~AliAlignObjMatrix()
 //_____________________________________________________________________________
 void AliAlignObjMatrix::SetTranslation(Double_t x, Double_t y, Double_t z)
 {
+  // set the translation coefficients of the data member matrix
+  // from the parameters passed as arguments
+  // 
   Double_t tr[3];
   tr[0]=x; tr[1]=y; tr[2]=z;
   fMatrix.SetTranslation(tr);
@@ -123,6 +125,9 @@ void AliAlignObjMatrix::SetTranslation(Double_t x, Double_t y, Double_t z)
 //_____________________________________________________________________________
 void AliAlignObjMatrix::SetTranslation(const TGeoMatrix& m)
 {
+  // set the translation coefficients of the data member matrix
+  // from the matrix passed as argument
+  // 
   const Double_t *tr = m.GetTranslation();
   fMatrix.SetTranslation(tr);
 }
@@ -130,6 +135,8 @@ void AliAlignObjMatrix::SetTranslation(const TGeoMatrix& m)
 //_____________________________________________________________________________
 void AliAlignObjMatrix::SetRotation(Double_t psi, Double_t theta, Double_t phi)
 {
+  // set the rotation parameters from the parameters passed as arguments
+  // 
   Double_t angles[3] = {psi, theta, phi};
   Double_t rot[9];
   AnglesToMatrix(angles,rot);
@@ -139,6 +146,9 @@ void AliAlignObjMatrix::SetRotation(Double_t psi, Double_t theta, Double_t phi)
 //_____________________________________________________________________________
 Bool_t AliAlignObjMatrix::SetRotation(const TGeoMatrix& m)
 {
+  // set the rotation coefficients of the data member matrix
+  // from the matrix passed as argument
+  // 
   const Double_t* rot = m.GetRotationMatrix();
   fMatrix.SetRotation(rot);
   return kTRUE;
@@ -176,8 +186,9 @@ void AliAlignObjMatrix::GetMatrix(TGeoHMatrix& m) const
 //_____________________________________________________________________________
 AliAlignObj& AliAlignObjMatrix::Inverse() const
 {
-  // Return a temporary inverse of the alignment
-  // object. This means 'mis
+  // Return a temporary "inverse" of the alignment object, that is return
+  // an object with inverted transformation matrix.
+  //
    static AliAlignObjMatrix a;
    a = *this;
 
