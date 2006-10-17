@@ -30,10 +30,11 @@
 #include <TTree.h>
 #include <TBranch.h>
 
-#include <AliRun.h>
-#include <AliRunLoader.h>
-#include <AliLoader.h>
-#include <AliRunDigitizer.h>
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+#include "AliLog.h"
+#include "AliRunDigitizer.h"
 #include "AliITSDigitizer.h"
 #include "AliITSgeom.h"
 #include "AliITSsimulation.h"
@@ -213,11 +214,13 @@ void AliITSDigitizer::Exec(Option_t* opt){
     
     // Digitize
     fITS->MakeBranchInTreeD(outgime->TreeD());
-    if(fRoif!=0) Info("AliITSDigitizer","Region of Interest digitization selected");
-    else Info("AliITSDigitizer","No Region of Interest selected. Digitizing everything");
-    //cout <<"fModActive="<<fModActive<<" fRoif="<<fRoif;
+    if(fRoif!=0) {
+      AliDebug(1,"Region of Interest digitization selected");
+    }
+    else {
+      AliDebug(1,"No Region of Interest selected. Digitizing everything");
+    }
     if(fModActive==0) fRoif = 0; // fModActive array must be define for RIO cuts.
-    //cout <<" fRoif="<<fRoif<<endl;
 
     for(ifiles=0; ifiles<nfiles; ifiles++ )
      {
@@ -343,7 +346,7 @@ void AliITSDigitizer::SetByRegionOfInterest(TTree *ts){
       //cout << fModActive[m];
       //cout << endl;
     } // end for m
-    Info("AliITSDigitizer","Digitization by Region of Interest selected");
+    AliDebug(1,"Digitization by Region of Interest selected");
     sdig->Clear();
     delete sdig;
     return;

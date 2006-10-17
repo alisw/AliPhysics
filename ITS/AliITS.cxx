@@ -1145,8 +1145,8 @@ AliLoader* AliITS::MakeLoader(const char* topfoldername){
     //builds ITSgetter (AliLoader type)
     //if detector wants to use castomized getter, it must overload this method
 
-    Info("MakeLoader","Creating AliITSLoader. Top folder is %s.",
-         topfoldername);
+    AliDebug(1,Form("Creating AliITSLoader. Top folder is %s.",
+         topfoldername));
     fLoader = new AliITSLoader(GetName(),topfoldername);
     return fLoader;
 }

@@ -323,7 +323,7 @@ AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
     Error("GetITSgeom","no ITS geometry available");
     return NULL;
   }
-  AliWarning("AliITSgeom object has been fetched from galice.root file");
+  AliDebug(1,"AliITSgeom object has been fetched from galice.root file");
   return fGeom;
 }
 //______________________________________________________________________

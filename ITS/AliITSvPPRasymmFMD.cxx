@@ -654,14 +654,14 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     }// end if
 
 
-    AliInfo(Form("Detector thickness on layer 1 is set to %f microns",ddet1));
-    AliInfo(Form("Chip thickness on layer 1 is set to %f microns",dchip1));
-    AliInfo(Form("Detector thickness on layer 2 is set to %f microns",ddet2));
-    AliInfo(Form("Chip thickness on layer 2 is set to %f microns",dchip2));
+    AliDebug(1,Form("Detector thickness on layer 1 is set to %f microns",ddet1));
+    AliDebug(1,Form("Chip thickness on layer 1 is set to %f microns",dchip1));
+    AliDebug(1,Form("Detector thickness on layer 2 is set to %f microns",ddet2));
+    AliDebug(1,Form("Chip thickness on layer 2 is set to %f microns",dchip2));
     if(rails == 0 ) {
-      AliInfo("Rails are out.");
+      AliDebug(1,"Rails are out.");
     } else {
-      AliInfo("Rails are in.");
+      AliDebug(1,"Rails are in.");
     }// end if
 
     ddet1  = ddet1*0.0001/2.; // conversion from tot length in um to half in cm
@@ -5644,7 +5644,7 @@ void AliITSvPPRasymmFMD::Init(){
     // Return:
     //   none.
 
-    AliInfo(Form("Init: Major version %d Minor version %d",fMajorVersion,
+    AliDebug(1,Form("Init: Major version %d Minor version %d",fMajorVersion,
 		 fMinorVersion));
     //
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
