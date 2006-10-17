@@ -23,6 +23,7 @@
 // http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/shishkebabALICE.html
 //_________________________________________________________________________
 
+#include "AliLog.h"
 #include "AliEMCALShishKebabTrd1Module.h"
 //#include <assert.h>
 #include "AliEMCALGeometry.h"
@@ -63,7 +64,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     }
   } else Warning("AliEMCALShishKebabTrd1Module(theta)","You should call this constractor just once !!");
   DefineName(fTheta);
-  cout<< "AliEMCALShishKebabTrd1Module - first module:  theta " << fTheta << " geometry " << g << endl;  
+  AliInfo(Form("AliEMCALShishKebabTrd1Module - first module:  theta %1.4f geometry %s",fTheta,g->GetName()));  
 }
 
 //_____________________________________________________________________________

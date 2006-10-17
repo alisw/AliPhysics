@@ -69,6 +69,7 @@
 #include "TObjectTable.h"
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
@@ -498,6 +499,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   } 
 
   if (strstr(option,"print")) {
+
     Print();
     return ; 
   }
@@ -540,8 +542,8 @@ void AliEMCALDigitizer::Exec(Option_t *option)
 
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
-    printf("Exec: took %f seconds for Digitizing %f seconds per event", 
-	 gBenchmark->GetCpuTime("EMCALDigitizer"), gBenchmark->GetCpuTime("EMCALDigitizer")/nEvents ) ;
+    AliInfo(Form("Exec: took %f seconds for Digitizing %f seconds per event", 
+	 gBenchmark->GetCpuTime("EMCALDigitizer"), gBenchmark->GetCpuTime("EMCALDigitizer")/nEvents )) ;
   } 
 }
 

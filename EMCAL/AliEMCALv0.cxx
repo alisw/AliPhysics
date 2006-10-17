@@ -369,7 +369,7 @@ void AliEMCALv0::CreateGeometry()
 
     if(gn.Contains("SHISH")){
       // COMPACT, TWIST, TRD2 or TRD1
-      AliInfo(Form("Shish-Kebab geometry : %s", GetTitle())); 
+      AliDebug(2,Form("Shish-Kebab geometry : %s", GetTitle())); 
       CreateShishKebabGeometry();
     }
 }

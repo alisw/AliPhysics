@@ -178,7 +178,20 @@ void AliEMCALSDigitizer::InitParameters()
 
  // threshold for deposit energy of hit
   fECPrimThreshold  = 0.; // 24-nov-04 - was 1.e-6;
-  Print("");
+
+  AliDebug(2,Form("Print: \n------------------- %s -------------\n",GetName()));
+  AliDebug(2,Form("   fInit                                 %i\n", int(fInit)));
+  AliDebug(2,Form("   fFirstEvent                           %i\n", fFirstEvent));
+  AliDebug(2,Form("   fLastEvent                            %i\n", fLastEvent));
+  AliDebug(2,Form("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()));
+  AliDebug(2,Form("   with digitization parameters       A = %f\n", fA));
+  AliDebug(2,Form("                                      B = %f\n", fB));
+  AliDebug(2,Form("   Threshold for EC Primary assignment  = %f\n", fECPrimThreshold));
+  AliDebug(2,Form("   Sampling                             = %f\n", fSampling));
+  AliDebug(2,Form("---------------------------------------------------\n"));
+
+  //  Print("");
+
 }
 
 //____________________________________________________________________________
@@ -187,7 +200,19 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   // Collects all hit of the same tower into digits
   TString o(option); o.ToUpper();
   if (strstr(option, "print") ) {
-    Print() ; 
+
+    AliDebug(2,Form("Print: \n------------------- %s -------------\n",GetName()));
+    AliDebug(2,Form("   fInit                                 %i\n", int(fInit)));
+    AliDebug(2,Form("   fFirstEvent                           %i\n", fFirstEvent));
+    AliDebug(2,Form("   fLastEvent                            %i\n", fLastEvent));
+    AliDebug(2,Form("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()));
+    AliDebug(2,Form("   with digitization parameters       A = %f\n", fA));
+    AliDebug(2,Form("                                      B = %f\n", fB));
+    AliDebug(2,Form("   Threshold for EC Primary assignment  = %f\n", fECPrimThreshold));
+    AliDebug(2,Form("   Sampling                             = %f\n", fSampling));
+    AliDebug(2,Form("---------------------------------------------------\n"));
+
+    //    Print();
     return ; 
   }
   
