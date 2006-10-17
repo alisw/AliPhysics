@@ -740,7 +740,9 @@ void AliVZEROv7::Init()
 // Initialises version of the VZERO Detector given in Config
 // Just prints an information message
 
-   AliInfo(Form("VZERO version %d initialized \n",IsVersion()));
+//   AliInfo(Form("VZERO version %d initialized \n",IsVersion()));
+   
+   AliDebug(1,"VZERO version 7 initialized");
    AliVZERO::Init();  
 }
 

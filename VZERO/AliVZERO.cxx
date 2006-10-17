@@ -189,8 +189,9 @@ AliLoader* AliVZERO::MakeLoader(const char* topfoldername)
   // Builds VZEROgetter (AliLoader type)
   // if detector wants to use customized getter, it must overload this method
   //
-
-  Info("MakeLoader","Creating AliVZEROLoader. Top folder is %s.",topfoldername);
+//  Info("MakeLoader","Creating AliVZEROLoader. Top folder is %s.",topfoldername); 
+ 
+  AliDebug(1,Form("Creating AliVZEROLoader, Top folder is %s ",topfoldername));
   fLoader = new AliVZEROLoader(GetName(),topfoldername);
   return fLoader;
 }
