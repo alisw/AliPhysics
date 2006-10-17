@@ -184,8 +184,7 @@ Bool_t AliTagCreator::MergeTags() {
     const char * name = 0x0;
     // Add all files matching *pattern* to the chain
     while((name = gSystem->GetDirEntry(dirp))) {
-      if (strstr(name,tagPattern))       
-	fgChain->Add(name);  
+      if (strstr(name,tagPattern)) fgChain->Add(name);  
     }//directory loop
     AliInfo(Form("Chained tag files: %d",fgChain->GetEntries()));
   }//local mode
@@ -205,7 +204,6 @@ Bool_t AliTagCreator::MergeTags() {
   }//grid mode
  
   AliRunTag *tag = new AliRunTag;
-  AliEventTag *evTag = new AliEventTag;
   fgChain->SetBranchAddress("AliTAG",&tag);
    
   //Defining new tag objects
@@ -215,12 +213,7 @@ Bool_t AliTagCreator::MergeTags() {
   btag->SetCompressionLevel(9);
   for(Int_t iTagFiles = 0; iTagFiles < fgChain->GetEntries(); iTagFiles++) {
     fgChain->GetEntry(iTagFiles);
-    newTag->SetRunId(tag->GetRunId());
-    const TClonesArray *tagList = tag->GetEventTags();
-    for(Int_t j = 0; j < tagList->GetEntries(); j++) {
-      evTag = (AliEventTag *) tagList->At(j);
-      newTag->AddEventTag(*evTag);
-    }
+    newTag = tag;
     ttag.Fill();
     newTag->Clear();
   }//tag file loop 
@@ -251,7 +244,6 @@ Bool_t AliTagCreator::MergeTags() {
   ttag.Write();
   ftag->Close();
 
-  delete tag;
   delete newTag;
 
   return kTRUE;
@@ -272,7 +264,6 @@ Bool_t AliTagCreator::MergeTags(TGridResult *result) {
   }
   AliInfo(Form("Chained tag files: %d",fgChain->GetEntries()));
   AliRunTag *tag = new AliRunTag;
-  AliEventTag *evTag = new AliEventTag;
   fgChain->SetBranchAddress("AliTAG",&tag);
    
   //Defining new tag objects
@@ -282,12 +273,7 @@ Bool_t AliTagCreator::MergeTags(TGridResult *result) {
   btag->SetCompressionLevel(9);
   for(Int_t iTagFiles = 0; iTagFiles < fgChain->GetEntries(); iTagFiles++) {
     fgChain->GetEntry(iTagFiles);
-    newTag->SetRunId(tag->GetRunId());
-    const TClonesArray *tagList = tag->GetEventTags();
-    for(Int_t j = 0; j < tagList->GetEntries(); j++) {
-      evTag = (AliEventTag *) tagList->At(j);
-      newTag->AddEventTag(*evTag);
-    }
+    newTag = tag;
     ttag.Fill();
     newTag->Clear();
   }//tag file loop 
@@ -318,7 +304,6 @@ Bool_t AliTagCreator::MergeTags(TGridResult *result) {
   ttag.Write();
   ftag->Close();
 
-  delete tag;
   delete newTag;
 
   return kTRUE;
