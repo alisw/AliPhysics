@@ -16,7 +16,9 @@ ClassImp(AliSTARTRawReader)
     :  TTask("STARTRawReader","read raw START data"),
        fDigits(NULL),
        fTree(tree),
-       fRawReader(rawReader)
+       fRawReader(rawReader),
+       fData(NULL),
+       fPosition(0)
 {
   //
 // create an object to read STARTraw digits
@@ -55,12 +57,17 @@ Bool_t  AliSTARTRawReader::Next()
 // vertex trigger       TRM=1; chain=0; TDC 12          channel 4
 // trigger central      TRM=1; chain=0; TDC 13          channel 0
 // tigger semicenral    TRM=1; chain=0; TDC 13          channel 2
-
+//
+// allData array collect data from all channels in one :
+// allData[0] - allData[23] 24 CFD channels
+// allData[24] -   allData[47] 24 LED channels
+//  allData[48]  mean (T0) signal  
+// allData[49]   time difference (vertex)
 
   UInt_t word;
   Int_t time=0,  itdc=0, ichannel=0; 
   Int_t numberOfWordsInTRM=0, iTRM=0;
-  Int_t tdcTime, koef ;
+  Int_t tdcTime, koef, meanTime, timeDiff ;
   Int_t allData[107];
 
   TArrayI *timeTDC1 = new TArrayI(24);
@@ -132,6 +139,10 @@ Bool_t  AliSTARTRawReader::Next()
        chargeTDC1->AddAt(allData[in+54],in);
        chargeTDC2->AddAt(allData[in+78],in);
      }      
+
+   meanTime = allData[48];  // T0 !!!!!!
+   timeDiff = allData[49];
+
    word = GetNextWord();
    word = GetNextWord();
    
@@ -140,6 +151,9 @@ Bool_t  AliSTARTRawReader::Next()
    
    fDigits->SetTimeAmp(*timeTDC1);
    fDigits->SetADCAmp(*chargeTDC2);
+
+   fDigits->SetMeanTime(meanTime);
+   fDigits->SetDiffTime(timeDiff);
    fTree->Fill();
    
    delete timeTDC1 ;
