@@ -372,7 +372,7 @@ Bool_t AliSimulation::ApplyAlignObjsToGeom(TObjArray* alObjArray)
     }
 
   if (AliDebugLevelClass() >= 1) {
-    gGeoManager->GetTopNode()->CheckOverlaps(20);
+    gGeoManager->GetTopNode()->CheckOverlaps(1);
     TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
     if(ovexlist->GetEntriesFast()){  
       AliError("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
