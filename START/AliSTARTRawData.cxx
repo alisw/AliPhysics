@@ -137,8 +137,8 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits)
   fDigits->GetADC(*fADC1);
   fDigits->GetTimeAmp(*fTimeLED);
   fDigits->GetADCAmp(*fADC0);
-  Int_t meantime = fDigits->MeanTime(); cout<<"meantime "<< meantime<<endl;
-  Int_t timediff = fDigits->TimeDiff(); cout<<" vertex "<<timediff<<endl;
+  Int_t meantime = fDigits->MeanTime(); 
+  Int_t timediff = fDigits->TimeDiff(); 
   Int_t mult0=fDigits->SumMult();
   Int_t mult1=fDigits->SumMult();
   Int_t timeA = fDigits->BestTimeLeft();
