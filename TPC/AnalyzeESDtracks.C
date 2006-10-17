@@ -88,7 +88,7 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 
 
 void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mean09)<0.5", Int_t maxS=100);
-void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t tmax, Float_t fraction=0.8);
+void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t tmax, Float_t fraction=0.7);
 
 void AnalyzeESDtracks(Int_t run){
   //
@@ -164,10 +164,10 @@ void AnalyzeESDtracks(Int_t run){
   TTreeSRedirector * pcestream = new  TTreeSRedirector("TimeRoot.root");
   TTree * treece = (TTree*)fs.Get("Signalce");
   if (tree) {
-    LaserCalib(*pcestream, treece, 900,1000, 0.8);
+    LaserCalib(*pcestream, treece, 900,1000, 0.7);
     delete pcestream;
   }
-  FitSignals(treeB,"Max-Median>150&&RMS06<1.0&&RMS09<1.5&&abs(Median-Mean09)<0.2&&abs(Mean06-Mean09)<0.2",200);
+  FitSignals(treeB,"Max-Median>150&&RMS06<1.0&&RMS09<1.5&&abs(Median-Mean09)<0.2&&abs(Mean06-Mean09)<0.2",1000);
   //
 }
 
@@ -301,6 +301,7 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
   //
   //
   //
+  const Double_t kMaxDelta=10;
   AliTPCParamSR param;
   param.Update();
   TFile fce("TPCsignal.root");
@@ -347,6 +348,9 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
     firstS[isector]=-1; 
     lastS[isector] =-1;
   };
+  TH1F  hisT("hisT","hisT",100,tmin,tmax);
+  treece->Draw("Time>>hisT","");
+  Float_t cbin = hisT.GetBinCenter(hisT.GetMaximumBin());
 
   for (Int_t ientry=0; ientry<treece->GetEntriesFast(); ientry++){
     treece->GetEvent(ientry);
@@ -362,7 +366,7 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
 	//	brtime->GetEvent(ientry2);
 	//  brsector->GetEvent(ientry2);
 	treece->GetEvent(ientry2);
-	if (time>tmin&&time<tmax){
+	if (time>tmin&&time<tmax && TMath::Abs(time-cbin)<kMaxDelta){
 	  padTimes[ngood]=time;
 	  ngood++;	
 	  if (firstS[sector]<0)  firstS[sector]= ngood;
@@ -372,22 +376,23 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
       //
       //
       Double_t mean,sigma;
-      restim.EvaluateUni(ngood,padTimes,mean, sigma,int(ngood*fraction));
+      restim.EvaluateUni(ngood,padTimes,mean, sigma,int(float(ngood)*fraction));
       printf("Event\t%d\t%f\t%f\n",count, mean, sigma);
       for (Int_t isector=0; isector<72; isector++){
 	sectorsID[isector]=sector;
 	if (firstS[isector]>=0 &&lastS[isector]>=0 && lastS[isector]>firstS[isector] ){
 	  Int_t ngoodS = lastS[isector]-firstS[isector];
 	  restim.EvaluateUni(ngoodS, &padTimes[firstS[isector]],meanS[isector], 
-			     sigmaS[isector],int(ngoodS*fraction));
+			     sigmaS[isector],int(float(ngoodS)*fraction));
 	}
       }
       TGraph  graphM(72,sectorsID,meanS);
       TGraph  graphS(72,sectorsID,sigmaS);
       cstream<<"TimeS"<<
+	"CBin="<<cbin<<
 	"Event="<<count<<
-	"GM.="<<&graphM<<
-	"GS.="<<&graphS<<
+	"GM="<<&graphM<<
+	"GS="<<&graphS<<
 	"\n";
       
 
@@ -403,6 +408,7 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
 	Int_t npadS = lastS[sector]-firstS[sector];
 	cstream<<"Time"<<
 	  "Event="<<count<<
+	  "CBin="<<cbin<<
 	  "x="<<x<<
 	  "y="<<y<<
 	  "gx="<<gx<<
