@@ -895,7 +895,6 @@ void AliTPCv2::SetInnerChambersAlignable() const
   TString snappend="/InnerChamber";
   TString volpath, symname;
   
-  try{
     for(Int_t cnt=1; cnt<=18; cnt++){
       volpath = vpstr1;
       volpath += cnt;
@@ -903,12 +902,10 @@ void AliTPCv2::SetInnerChambersAlignable() const
       symname = snstr1;
       symname += cnt;
       symname += snappend;
-      gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
       modnum++;
     }
-  } catch (TString) {
-    AliFatal("Trying to set alignable entry with open geometry");
-  }
 
   for(Int_t cnt=1; cnt<=18; cnt++){
     volpath = vpstr2;
@@ -917,12 +914,12 @@ void AliTPCv2::SetInnerChambersAlignable() const
     symname = snstr2;
     symname += cnt;
     symname += snappend;
-    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
     modnum++;
   }
 }
 
- 
 //_____________________________________________________________________________
 void AliTPCv2::SetOuterChambersAlignable() const
 {
@@ -943,9 +940,11 @@ void AliTPCv2::SetOuterChambersAlignable() const
     symname = snstr1;
     symname += cnt;
     symname += snappend;
-    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
     modnum++;
   }
+
   for(Int_t cnt=1; cnt<=18; cnt++){
     volpath = vpstr2;
     volpath += cnt;
@@ -953,7 +952,8 @@ void AliTPCv2::SetOuterChambersAlignable() const
     symname = snstr2;
     symname += cnt;
     symname += snappend;
-    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
     modnum++;
   }
 }
