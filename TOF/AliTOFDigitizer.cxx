@@ -415,7 +415,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 
   AliTOFCal * cal= calib->GetTOFCalSimArray();
 
-  AliInfo(Form("Size of AliTOFCal = %i",cal->NPads()));
+  AliDebug(2,Form("Size of AliTOFCal = %i",cal->NPads()));
   for (Int_t ipad = 0 ; ipad<cal->NPads(); ipad++){
     AliTOFChannel *calChannel = cal->GetChannel(ipad);
     Float_t par[6];
@@ -504,9 +504,9 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
   }
 
   if(hToT->GetEntries()<=0 || !dbEntry){
-    AliInfo("Standard Production, no miscalibrated digits");   
+    AliDebug(1,"Standard Production, no miscalibrated digits");   
   }else{
-    AliInfo("Miscalibrated digits");   
+    AliDebug(1,"Miscalibrated digits");   
   }
 
   return;

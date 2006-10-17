@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2006/10/12 16:35:43  arcelli
+definition of the alignable volumes symbolic names added
+
 Revision 1.12  2006/08/22 13:34:46  arcelli
 removal of effective c++ warnings (C.Zampolli)
 
@@ -149,12 +152,12 @@ AliTOFv5T0::AliTOFv5T0(const char *name, const char *title):
     fTOFGeometry = new AliTOFGeometryV5();
 
     if(frame->IsVersion()==1) {
-      AliInfo(Form("Frame version %d", frame->IsVersion())); 
-      AliInfo("Full Coverage for TOF");
+      AliDebug(1,Form("Frame version %d", frame->IsVersion())); 
+      AliDebug(1,"Full Coverage for TOF");
       fTOFHoles=false;}    
     else {
-      AliInfo(Form("Frame version %d", frame->IsVersion())); 
-      AliInfo("TOF with Holes for PHOS");
+      AliDebug(1,Form("Frame version %d", frame->IsVersion())); 
+      AliDebug(1,"TOF with Holes for PHOS");
       fTOFHoles=true;}      
   }
   fTOFGeometry->SetHoles(fTOFHoles);

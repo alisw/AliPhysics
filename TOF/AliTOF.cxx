@@ -707,7 +707,7 @@ void AliTOF::Digits2Raw()
   //AliTOFDDLRawData rawWriter;
   rawWriter.SetVerbose(0);
   
-  AliInfo("Formatting raw data for TOF");
+  AliDebug(1,"Formatting raw data for TOF");
   digits->GetEvent(0);
   rawWriter.RawDataTOF(digits->GetBranch("TOF"));  
 
