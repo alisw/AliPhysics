@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.92  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.91  2006/04/29 20:25:30  hristov
  * Decalibration is implemented (Yu.Kharlov)
  *
@@ -262,8 +265,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   Int_t ReadEvent = event ; 
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
-  AliInfo(Form("Adding event %d from input stream 0 %s %s", 
-	       ReadEvent, GetTitle(), fEventFolderName.Data())) ; 
+  AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
+		  ReadEvent, GetTitle(), fEventFolderName.Data())) ; 
   gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
