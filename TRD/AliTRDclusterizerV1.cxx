@@ -256,9 +256,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         AliTRDdataArrayI *tracksTmp = fDigitsManager->GetDictionary(idet,0);
         tracksTmp->Expand();
 
-        AliDebug(1,Form("Analyzing chamber %d, plane %d, sector %d.\n"
-		       ,icham,iplan,isect));
-
 	Int_t nRowMax = commonParam->GetRowMax(iplan,icham,isect);
 	Int_t nColMax = commonParam->GetColMax(iplan);
 
@@ -713,8 +710,6 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI *digitsIn
 
 	// Store the amplitude of the digit if above threshold
 	if (outADC[iTime] > ADCthreshold) {
-	  AliDebug(2,Form("  iRow = %d, iCol = %d, iTime = %d, adc = %f\n"
-		         ,iRow,iCol,iTime,outADC[iTime]));
 	  digitsOut->SetDataUnchecked(iRow,iCol,iTime,outADC[iTime]);
 	}
 

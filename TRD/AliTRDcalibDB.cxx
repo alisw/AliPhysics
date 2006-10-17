@@ -271,8 +271,6 @@ AliCDBEntry *AliTRDcalibDB::GetCDBEntry(const char *cdbPath)
     return 0; 
   }
   
-  AliDebug(1,Form("AliTRDcalibDB: Retrieved object: %s",cdbPath));
-
   return entry;
 
 }
