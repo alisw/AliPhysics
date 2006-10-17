@@ -63,8 +63,6 @@ public:
     void     ProcessHADR();
     void     ProcessMULS();
     void     ProcessLOSS();
-    void     ProcessSTRA();
-    
     
     void     ProcessCUTGAM();
     void     ProcessCUTELE();
