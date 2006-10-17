@@ -32,6 +32,7 @@ class AliTPCRecoParam : public TObject
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
+  Bool_t   GetBYMirror() const { return fBYMirror;}
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env. 
   static   AliTPCRecoParam *GetLaserTestParam(Bool_t bPedestal);  // special setting for laser 
@@ -41,6 +42,7 @@ class AliTPCRecoParam : public TObject
   Double_t fCtgRange;        // +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
   Double_t fMaxSnpTracker;   // max sin of local angle  - for TPC tracker
   Double_t fMaxSnpTrack;     // max sin of local angle  - for track 
+  Bool_t   fBYMirror;        // mirror of the y - pad coordinate 
   //
   //   clusterer parameters
   //
