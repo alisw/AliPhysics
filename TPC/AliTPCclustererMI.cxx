@@ -490,6 +490,11 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c){
   w=fZWidth;
   c.SetSigmaZ2(s2*w*w);
   c.SetY((meani - 2.5 - 0.5*fMaxPad)*fParam->GetPadPitchWidth(fSector));
+  if (!fRecoParam->GetBYMirror()){
+    if (fSector%36>17){
+      c.SetY(-(meani - 2.5 - 0.5*fMaxPad)*fParam->GetPadPitchWidth(fSector));
+    }
+  }
   c.SetZ(fZWidth*(meanj-3)); 
   c.SetZ(c.GetZ() - 3.*fParam->GetZSigma() + fParam->GetNTBinsL1()*fParam->GetZWidth()); // PASA delay + L1 delay
   c.SetZ(fSign*(fParam->GetZLength() - c.GetZ()));
@@ -618,8 +623,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   }
 
   fRowDig = NULL;
-
+  AliTPCROC * roc = AliTPCROC::Instance();
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
+  AliTPCRawStream input(rawReader);
 
   Int_t nclusters  = 0;
   
@@ -629,11 +635,26 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   const Int_t kNS = kNIS + kNOS;
   fZWidth = fParam->GetZWidth();
   Int_t zeroSup = fParam->GetZeroSup();
-
+  //
+  //alocate memory for sector - maximal case
+  //
   Float_t** allBins = NULL;
   Float_t** allBinsRes = NULL;
-
+  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
+  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
+  allBins = new Float_t*[nRowsMax];
+  allBinsRes = new Float_t*[nRowsMax];
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+    //
+    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    allBins[iRow] = new Float_t[maxBin];
+    allBinsRes[iRow] = new Float_t[maxBin];
+    memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
+    memset(allBinsRes[iRow],0,sizeof(Float_t)*maxBin);
+  }
+  //
   // Loop over sectors
+  //
   for(fSector = 0; fSector < kNS; fSector++) {
 
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
@@ -653,9 +674,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       indexDDL = (fSector-kNIS) * 4 + kNIS * 2;
     }
 
-    allBins = new Float_t*[nRows];
-    allBinsRes = new Float_t*[nRows];
-
     for (Int_t iRow = 0; iRow < nRows; iRow++) {
       Int_t maxPad;
       if (fSector < kNIS)
@@ -664,21 +682,21 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	maxPad = fParam->GetNPadsUp(iRow);
       
       Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
-      allBins[iRow] = new Float_t[maxBin];
-      allBinsRes[iRow] = new Float_t[maxBin];
       memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
       memset(allBinsRes[iRow],0,sizeof(Float_t)*maxBin);
     }
     
     // Loas the raw data for corresponding DDLs
     rawReader->Reset();
-    AliTPCRawStream input(rawReader);
     input.SetOldRCUFormat(fIsOldRCUFormat);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
-    
+    Int_t digCounter=0;
     // Begin loop over altro data
+    Bool_t calcPedestal = fRecoParam->GetCalcPedestal();
+    Float_t gain =1;
+    Int_t lastPad=-1;
     while (input.Next()) {
-
+      digCounter++;
       if (input.GetSector() != fSector)
 	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
 
@@ -687,44 +705,34 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       if (iRow < 0 || iRow >= nRows)
 	AliFatal(Form("Pad-row index (%d) outside the range (%d -> %d) !",
 		      iRow, 0, nRows -1));
-
-      Int_t iPad = input.GetPad() + 3;
-
-      Int_t maxPad;
-      if (fSector < kNIS)
-	maxPad = fParam->GetNPadsLow(iRow);
-      else
-	maxPad = fParam->GetNPadsUp(iRow);
-
-      if (input.GetPad() < 0 || input.GetPad() >= maxPad)
+      //pad
+      Int_t iPad = input.GetPad();
+      if (iPad < 0 || iPad >= nPadsMax)
 	AliFatal(Form("Pad index (%d) outside the range (%d -> %d) !",
-		      input.GetPad(), 0, maxPad -1));
-
-      Int_t iTimeBin = input.GetTime() + 3;
-      if ( input.GetTime() < 0 || input.GetTime() >= fParam->GetMaxTBin())
+		      iPad, 0, nPadsMax-1));
+      if (iPad!=lastPad){
+	gain    = gainROC->GetValue(iRow,iPad);
+	lastPad = iPad;
+      }
+      iPad+=3;
+      //time
+      Int_t iTimeBin = input.GetTime();
+      if ( iTimeBin < 0 || iTimeBin >= fParam->GetMaxTBin())
 	AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
-		      input.GetTime(), 0, fParam->GetMaxTBin() -1));
-
-      Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
-
-      if (((iPad*fMaxTime+iTimeBin) >= maxBin) ||
-	  ((iPad*fMaxTime+iTimeBin) < 0))
-	AliFatal(Form("Index outside the allowed range"
-		      " Sector=%d Row=%d Pad=%d Timebin=%d"
-		      " (Max.index=%d)",fSector,iRow,iPad,iTimeBin,maxBin));
-
+		      iTimeBin, 0, iTimeBin -1));
+      iTimeBin+=3;
+      //signal
       Float_t signal = input.GetSignal();
-      //      if (!fPedSubtraction && signal <= zeroSup) continue;
-      if (!fRecoParam->GetCalcPedestal() && signal <= zeroSup) continue;
-
-      Float_t gain = gainROC->GetValue(iRow,input.GetPad());
+      if (!calcPedestal && signal <= zeroSup) continue;      
       allBins[iRow][iPad*fMaxTime+iTimeBin] = signal/gain;
       allBins[iRow][iPad*fMaxTime+0] = 1;  // pad with signal
     } // End of the loop over altro data
-
+    //
+    //
     // Now loop over rows and perform pedestal subtraction
+    if (digCounter==0) continue;
     //    if (fPedSubtraction) {
-    if (fRecoParam->GetCalcPedestal()) {
+    if (calcPedestal) {
       for (Int_t iRow = 0; iRow < nRows; iRow++) {
 	Int_t maxPad;
 	if (fSector < kNIS)
@@ -750,7 +758,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	}
       }
     }
-
     // Now loop over rows and find clusters
     for (fRow = 0; fRow < nRows; fRow++) {
       fRowCl = new AliTPCClustersRow;
@@ -777,19 +784,16 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       delete fRowCl;    
       nclusters += fNcluster;    
     } // End of loop to find clusters
-
- 
-    for (Int_t iRow = 0; iRow < nRows; iRow++) {
-      delete [] allBins[iRow];
-      delete [] allBinsRes[iRow];
-    }
-
-    delete [] allBins;
-    delete [] allBinsRes;
-
   } // End of loop over sectors
-
-  Info("Digits2Clusters", "Number of found clusters : %d\n", nclusters);
+  
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+    delete [] allBins[iRow];
+    delete [] allBinsRes[iRow];
+  }  
+  delete [] allBins;
+  delete [] allBinsRes;
+  
+  Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n", rawReader->GetEventId(), nclusters);
 
 }
 
@@ -868,49 +872,116 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   // id[0] - sector
   // id[1] - row
-  // id[2] - pad  
-  Int_t offset =100;
-  Float_t kMin =fRecoParam->GetDumpAmplitudeMin();   // minimal signal to be dumped
-  Double_t median = TMath::Median(nchannels-offset, &(signal[offset]));
-  if (AliLog::GetDebugLevel("","AliTPCclustererMI")==0) return median;
-  //
+  // id[2] - pad 
 
-  Double_t mean   = TMath::Mean(nchannels-offset, &(signal[offset]));
-  Double_t rms    = TMath::RMS(nchannels-offset, &(signal[offset]));
-  Double_t *dsignal = new Double_t[nchannels];
-  Double_t *dtime   = new Double_t[nchannels];
-  Float_t max    =  0;
-  Float_t maxPos =  0;
-  for (Int_t i=0; i<nchannels; i++){
-    dtime[i] = i;
-    dsignal[i] = signal[i];
-    if (i<offset) continue;
-    if (signal[i]>max && i <fMaxTime-100) {  // temporary remove spike signals at the end
+  //
+  // ESTIMATE pedestal and the noise
+  // 
+  Int_t offset =100;
+  const Int_t kPedMax = 100;
+  Float_t  max    =  0;
+  Float_t  maxPos =  0;
+  Int_t    median =  -1;
+  Int_t    count0 =  0;
+  Int_t    count1 =  0;
+  //
+  UShort_t histo[kPedMax];
+  memset(histo,0,kPedMax*sizeof(UShort_t));
+  for (Int_t i=0; i<fMaxTime; i++){
+    if (signal[i]<=0) continue;
+    if (signal[i]>max) {
       max = signal[i];
       maxPos = i;
-    }    
+    }
+    if (signal[i]>kPedMax-1) continue;
+    histo[int(signal[i]+0.5)]++;
+    count0++;
   }
-  
-  Double_t mean06=0, mean09=0;
-  Double_t rms06=0, rms09=0; 
-  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean06, rms06, int(0.6*(nchannels-offset)));
-  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean09, rms09, int(0.9*(nchannels-offset)));
   //
+  for (Int_t i=1; i<kPedMax; i++){
+    if (count1<count0*0.5) median=i;
+    count1+=histo[i];
+  }
+  // truncated mean  
+  //
+  Double_t count10=histo[median] ,mean=histo[median]*median,  rms=histo[median]*median*median ;
+  Double_t count06=histo[median] ,mean06=histo[median]*median,  rms06=histo[median]*median*median ;
+  Double_t count09=histo[median] ,mean09=histo[median]*median,  rms09=histo[median]*median*median ;
+  //
+  for (Int_t idelta=1; idelta<10; idelta++){
+    if (median-idelta<=0) continue;
+    if (median+idelta>kPedMax) continue;
+    if (count06<0.6*count1){
+      count06+=histo[median-idelta];
+      mean06 +=histo[median-idelta]*(median-idelta);
+      rms06  +=histo[median-idelta]*(median-idelta)*(median-idelta);
+      count06+=histo[median+idelta];
+      mean06 +=histo[median+idelta]*(median+idelta);
+      rms06  +=histo[median+idelta]*(median+idelta)*(median+idelta);
+    }
+    if (count09<0.9*count1){
+      count09+=histo[median-idelta];
+      mean09 +=histo[median-idelta]*(median-idelta);
+      rms09  +=histo[median-idelta]*(median-idelta)*(median-idelta);
+      count09+=histo[median+idelta];
+      mean09 +=histo[median+idelta]*(median+idelta);
+      rms09  +=histo[median+idelta]*(median+idelta)*(median+idelta);
+    }
+    if (count10<0.95*count1){
+      count10+=histo[median-idelta];
+      mean +=histo[median-idelta]*(median-idelta);
+      rms  +=histo[median-idelta]*(median-idelta)*(median-idelta);
+      count10+=histo[median+idelta];
+      mean +=histo[median+idelta]*(median+idelta);
+      rms  +=histo[median+idelta]*(median+idelta)*(median+idelta);
+    }
+  }
+  mean  /=count10;
+  mean06/=count06;
+  mean09/=count09;
+  rms    = TMath::Sqrt(TMath::Abs(rms/count10-mean*mean));
+  rms06    = TMath::Sqrt(TMath::Abs(rms06/count06-mean06*mean06));
+  rms09    = TMath::Sqrt(TMath::Abs(rms09/count09-mean09*mean09));
+  //
+  if (AliLog::GetDebugLevel("","AliTPCclustererMI")==0) return median;
   //
   UInt_t uid[3] = {UInt_t(id[0]),UInt_t(id[1]),UInt_t(id[2])};
-  if (uid[0]< AliTPCROC::Instance()->GetNSectors() 
-      && uid[1]<  AliTPCROC::Instance()->GetNRows(uid[0])  && 
-      uid[2] < AliTPCROC::Instance()->GetNPads(uid[0], uid[1])){
-    if (!fAmplitudeHisto){
-      fAmplitudeHisto = new TObjArray(72);
-    }
+  //
+  // Dump mean signal info
+  //
+  (*fDebugStreamer)<<"Signal"<<
+    "Sector="<<uid[0]<<
+    "Row="<<uid[1]<<
+    "Pad="<<uid[2]<<
+    "Max="<<max<<
+    "MaxPos="<<maxPos<<
+    //
+    "Median="<<median<<
+    "Mean="<<mean<<
+    "RMS="<<rms<<      
+    "Mean06="<<mean06<<
+    "RMS06="<<rms06<<
+    "Mean09="<<mean09<<
+    "RMS09="<<rms09<<
+    "\n";
+  //
+  // fill pedestal histogram
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  if (!fAmplitudeHisto){
+    fAmplitudeHisto = new TObjArray(72);
+  }  
+  //
+  if (uid[0]<roc->GetNSectors() 
+      && uid[1]< roc->GetNRows(uid[0])  && 
+      uid[2] <roc->GetNPads(uid[0], uid[1])){
     TObjArray  * sectorArray = (TObjArray*)fAmplitudeHisto->UncheckedAt(uid[0]);
     if (!sectorArray){
-      Int_t npads = AliTPCROC::Instance()->GetNChannels(uid[0]);
+      Int_t npads =roc->GetNChannels(uid[0]);
       sectorArray = new TObjArray(npads);
       fAmplitudeHisto->AddAt(sectorArray, uid[0]);
     }
-    Int_t position =  uid[2]+ AliTPCROC::Instance()->GetRowIndexes(uid[0])[uid[1]];
+    Int_t position =  uid[2]+roc->GetRowIndexes(uid[0])[uid[1]];
     TH1F * histo = (TH1F*)sectorArray->UncheckedAt(position);
     if (!histo){
       char hname[100];
@@ -923,9 +994,20 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       if (backup) backup->cd();
     }
     for (Int_t i=0; i<nchannels; i++){
-      if (signal[i]>0) histo->Fill(signal[i]);
+      histo->Fill(signal[i]);
     }
   }
+  //
+  //
+  //
+  Float_t kMin =fRecoParam->GetDumpAmplitudeMin();   // minimal signal to be dumped
+  Float_t *dsignal = new Float_t[nchannels];
+  Float_t *dtime   = new Float_t[nchannels];
+  for (Int_t i=0; i<nchannels; i++){
+    dtime[i] = i;
+    dsignal[i] = signal[i];
+  }
+  //
   //
   TGraph * graph;
   Bool_t random = (gRandom->Rndm()<0.0001);
@@ -968,21 +1050,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     delete graph;
   }
   
-  (*fDebugStreamer)<<"Signal"<<
-    "Sector="<<uid[0]<<
-    "Row="<<uid[1]<<
-    "Pad="<<uid[2]<<
-    "Max="<<max<<
-    "MaxPos="<<maxPos<<
-    //
-    "Median="<<median<<
-    "Mean="<<mean<<
-    "RMS="<<rms<<      
-    "Mean06="<<mean06<<
-    "RMS06="<<rms06<<
-    "Mean09="<<mean09<<
-    "RMS09="<<rms09<<
-    "\n";
   //
   //
   //  Central Electrode signal analysis  
@@ -994,34 +1061,46 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Double_t ceSumThreshold=8.*cerms;
   const Int_t    kCemin=5;  // range for the analysis of the ce signal +- channels from the peak
   const Int_t    kCemax=5;
-  for (Int_t i=nchannels-2; i>1; i--){
+  for (Int_t i=nchannels-2; i>nchannels/2; i--){
     if ( (dsignal[i]-mean06)>ceThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] ){
       cemaxpos=i;
       break;
     }
   }
   if (cemaxpos!=0){
-      for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; i++){
-	  if (i>0 && i<nchannels&&dsignal[i]- cemean>0){
-	      Double_t val=dsignal[i]- cemean;
-	      ceTime+=val*dtime[i];
-	      ceQsum+=val;
-	      if (val>ceQmax) ceQmax=val;
-	  }
+    ceQmax = 0;
+    Int_t cemaxpos2=0;
+    for (Int_t i=cemaxpos-20; i<cemaxpos+5; i++){
+      if (i<0 || i>nchannels-1) continue;
+      Double_t val=dsignal[i]- cemean;
+      if (val>ceQmax){
+	cemaxpos2=i;
+	ceQmax = val;
       }
-      if (ceQmax&&ceQsum>ceSumThreshold) {
-	  ceTime/=ceQsum;
-	  (*fDebugStreamer)<<"Signalce"<<
-	      "Sector="<<uid[0]<<
-	      "Row="<<uid[1]<<
-	      "Pad="<<uid[2]<<
-	      "Max="<<ceQmax<<
-	      "Qsum="<<ceQsum<<
-	      "Time="<<ceTime<<
-	      "RMS06="<<rms06<<
-	      //
-	      "\n";
+    }
+    cemaxpos = cemaxpos2;
+ 
+    for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; i++){
+      if (i>0 && i<nchannels&&dsignal[i]- cemean>0){
+	Double_t val=dsignal[i]- cemean;
+	ceTime+=val*dtime[i];
+	ceQsum+=val;
+	if (val>ceQmax) ceQmax=val;
       }
+    }
+    if (ceQmax&&ceQsum>ceSumThreshold) {
+      ceTime/=ceQsum;
+      (*fDebugStreamer)<<"Signalce"<<
+	"Sector="<<uid[0]<<
+	"Row="<<uid[1]<<
+	"Pad="<<uid[2]<<
+	"Max="<<ceQmax<<
+	"Qsum="<<ceQsum<<
+	"Time="<<ceTime<<
+	"RMS06="<<rms06<<
+	//
+	"\n";
+    }
   }
   // end of ce signal analysis
   //
@@ -1035,7 +1114,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Double_t ggThreshold=5.*ggrms;
   Double_t ggSumThreshold=8.*ggrms;
 
-  for (Int_t i=1; i<nchannels-1; i++){
+  for (Int_t i=1; i<nchannels/4; i++){
     if ( (dsignal[i]-mean06)>ggThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] &&
 	 (dsignal[i]+dsignal[i+1]+dsignal[i-1]-3*mean06)>ggSumThreshold){
       ggmaxpos=i;
@@ -1078,7 +1157,11 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 
 
 void AliTPCclustererMI::DumpHistos(){
+  //
+  // Dump histogram information
+  //
   if (!fAmplitudeHisto) return;
+  AliTPCROC * roc = AliTPCROC::Instance();
   for (UInt_t isector=0; isector<AliTPCROC::Instance()->GetNSectors(); isector++){
     TObjArray * array = (TObjArray*)fAmplitudeHisto->UncheckedAt(isector);
     if (!array) continue;
@@ -1095,8 +1178,8 @@ void AliTPCclustererMI::DumpHistos(){
 
       // get pad number
       UInt_t row=0, pad =0;
-      const UInt_t *indexes = AliTPCROC::Instance()->GetRowIndexes(isector);
-      for (UInt_t irow=0; irow< AliTPCROC::Instance()->GetNRows(isector); irow++){
+      const UInt_t *indexes =roc->GetRowIndexes(isector);
+      for (UInt_t irow=0; irow<roc->GetNRows(isector); irow++){
 	if (indexes[irow]<ipad){
 	  row = irow;
 	  pad = ipad-indexes[irow];
