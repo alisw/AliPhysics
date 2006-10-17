@@ -11,7 +11,7 @@ void MakeEMCALResMisAlignment(){
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
 
-  const TString basepath = "ALIC_1/XEN1_1/SMOD_";
+  const TString basepath = "EMCAL/FullSupermodule";
   TString pathstr;
 
   Int_t iIndex=0; // let all modules have index=0 in a layer with no LUT

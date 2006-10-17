@@ -18,16 +18,16 @@ void MakeTPCFullMisAlignment(){
   for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
 
-      Float_t dx = (rnd->Uniform()-0.5)*sigmatr;
-      Float_t dy = (rnd->Uniform()-0.5)*sigmatr;
-      Float_t dz = (rnd->Uniform()-0.5)*sigmatr;
-      Float_t dpsi = (rnd->Uniform()-0.5)*sigmarot;
-      Float_t dtheta = (rnd->Uniform()-0.5)*sigmarot;
-      Float_t dphi = (rnd->Uniform()-0.5)*sigmarot;
+      Double_t dx = (rnd->Uniform()-0.5)*sigmatr;
+      Double_t dy = (rnd->Uniform()-0.5)*sigmatr;
+      Double_t dz = (rnd->Uniform()-0.5)*sigmatr;
+      Double_t dpsi = (rnd->Uniform()-0.5)*sigmarot;
+      Double_t dtheta = (rnd->Uniform()-0.5)*sigmarot;
+      Double_t dphi = (rnd->Uniform()-0.5)*sigmarot;
 
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *path = AliAlignObj::SymName(volid);
-      new(alobj[j]) AliAlignObjAngles(path, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+      const char *symname = AliAlignObj::SymName(volid);
+      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
       j++;
     }
   }

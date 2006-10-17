@@ -23,7 +23,7 @@ void MakeTOFFullMisAlignment(){
 
   for(i=0; i<18; i++) {
     Char_t  path[100];
-    sprintf(path,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0",i,i);
+    sprintf(path,"TOF/sm%02d",i);
     dx = rnd->Gaus(0.,sigmatr);
     dy = 0;
     dz = rnd->Gaus(0.,sigmatr);

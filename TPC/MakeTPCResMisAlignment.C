@@ -28,8 +28,8 @@ void MakeTPCResMisAlignment(){
       dphi = (rnd->Uniform()-0.5)*sigmarot;
 
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *path = AliAlignObj::SymName(volid);
-      new(alobj[j]) AliAlignObjAngles(path, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+      const char *symname = AliAlignObj::SymName(volid);
+      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
       j++;
     }
   }

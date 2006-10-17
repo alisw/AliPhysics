@@ -9,14 +9,6 @@ void MakeTRDResMisAlignment(){
 
   AliAlignObjAngles a;
 
-  // sigmas for the supermodules
-  Double_t smdx=3; // 300 microns
-  Double_t smdy=3; // 300 microns
-  Double_t smdz=3; // 300 microns
-  Double_t smrx=0.4/1000/TMath::Pi()*180; // 0.4 mrad
-  Double_t smry=2.0/1000/TMath::Pi()*180; // 2 mrad
-  Double_t smrz=0.4/1000/TMath::Pi()*180; // 0.4 mrad
-
   // sigmas for the chambers
   Double_t chdx=0.02; // 200 microns
   Double_t chdy=0.03; // 300 microns
@@ -32,36 +24,6 @@ void MakeTRDResMisAlignment(){
   UShort_t volid;
   const char *path;
 
-  //generate the paths for the 18 supermodules
-  Double_t r=325.;
-  Double_t phi;
-  Int_t isec;
-  TString ts0;
-  TString* sm_path = new TString[18];
-  TRegexp regexp(".*BTRD[0-9][^/]*");
-
-  for (isec=0; isec<18; isec++) {
-    phi=(isec+0.5)/18*2*TMath::Pi();
-    gGeoManager->FindNode(r*cos(phi),r*sin(phi),0.);
-    ts0 = gGeoManager->GetPath();
-    sm_path[isec] = ts0(regexp);
-    sm_path[isec] +='\0';
-  }
-
-  // create the supermodules' alignment objects
-  for (int i; i<18; i++) {
-    ran.Rannor(dx,rx);
-    ran.Rannor(dy,ry);
-    ran.Rannor(dz,rz);
-    dx*=smdx;
-    dy*=smdy;
-    dz*=smdz;
-    rx*=smrx;
-    ry*=smry;
-    rz*=smrz;
-    new(alobj[j++]) AliAlignObjAngles(sm_path[i].Data(),0,dx,dy,dz,rx,ry,rz,kFALSE);
-  }
-
   // create the chambers' alignment objects
   for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
@@ -75,8 +37,8 @@ void MakeTRDResMisAlignment(){
       ry*=chry;
       rz*=chrz;
       volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      path = AliAlignObj::SymName(volid);
-      new(alobj[j++]) AliAlignObjAngles(path,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      symname = AliAlignObj::SymName(volid);
+      new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }
 

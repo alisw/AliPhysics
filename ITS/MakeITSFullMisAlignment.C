@@ -23,7 +23,7 @@ void MakeITSFullMisAlignment(){
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
   Int_t j = 0;
-  new(alobj[j]) AliAlignObjAngles("ALIC_1/ITSV_1", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[j]) AliAlignObjAngles("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
   j++;
 
   for ( Int_t l = AliAlignObj::kSPD1; l <= AliAlignObj::kSSD2; l++) {
@@ -76,9 +76,9 @@ void MakeITSFullMisAlignment(){
       default: Printf("Wrong layer index in ITS (%d) !",l);
       };
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *path = AliAlignObj::SymName(volid);
+      const char *symname = AliAlignObj::SymName(volid);
 
-      new(alobj[j]) AliAlignObjAngles(path, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
       j++;
 
     }

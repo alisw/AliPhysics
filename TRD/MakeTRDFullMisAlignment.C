@@ -24,14 +24,6 @@ void MakeTRDFullMisAlignment(){
   UShort_t volid;
   const char *path;
 
-  //generate the paths for the 18 supermodules
-  Double_t r=325.;
-  Double_t phi;
-  Int_t isec;
-  TString ts0;
-  TString* sm_path = new TString[18];
-  TRegexp regexp(".*BTRD[0-9][^/]*");
-
   // create the chambers' alignment objects
   for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
@@ -45,8 +37,8 @@ void MakeTRDFullMisAlignment(){
       ry*=chry;
       rz*=chrz;
       volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      path = AliAlignObj::SymName(volid);
-      new(alobj[j++]) AliAlignObjAngles(path,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      symname = AliAlignObj::SymName(volid);
+      new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }
 

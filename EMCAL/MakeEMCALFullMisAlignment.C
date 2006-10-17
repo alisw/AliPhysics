@@ -16,7 +16,7 @@ void MakeEMCALFullMisAlignment(){
 
   // null shifts and rotations
 
-  const TString basepath = "ALIC_1/XEN1_1/SMOD_";
+  const TString basepath = "EMCAL/FullSupermodule";
   TString pathstr;
 
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT

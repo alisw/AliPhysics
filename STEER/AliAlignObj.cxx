@@ -14,10 +14,10 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------
-//   Implementation of the alignment object class through the abstract
-//  class AliAlignObj. From it two derived concrete representation of
-//  alignment object class (AliAlignObjAngles, AliAlignObjMatrix) are
-//  derived in separate files.
+//  Implementation of the alignment object class, holding the alignment
+//  constants for a single volume, through the abstract class AliAlignObj.
+//  From it two derived concrete representation of alignment object class
+//  (AliAlignObjAngles, AliAlignObjMatrix) are derived in separate files.
 //-----------------------------------------------------------------
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
@@ -153,10 +153,12 @@ void AliAlignObj::SetVolUID(ELayerID detId, Int_t modId)
 //_____________________________________________________________________________
 void AliAlignObj::GetVolUID(ELayerID &layerId, Int_t &modId) const
 {
-  // From detector name and module number (according to detector numbering)
-  // build fVolUID, unique numerical identity of that volume inside ALICE
-  // fVolUID is 16 bits, first 5 reserved for detID (32 possible values),
-  // remaining 11 for module ID inside det (2048 possible values).
+  // From the fVolUID, unique numerical identity of that volume inside ALICE,
+  // (voluid is 16 bits, first 5 reserved for layerID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values)), sets
+  // the argument layerId to the identity of the layer to which that volume
+  // belongs and sets the argument modId to the identity of that volume
+  // internally to the layer.
   //
   layerId = VolUIDToLayer(fVolUID,modId);
 }
@@ -201,6 +203,7 @@ Int_t AliAlignObj::Compare(const TObject *obj) const
   // Used in the sorting during
   // the application of alignment
   // objects to the geometry
+  //
   Int_t level = GetLevel();
   Int_t level2 = ((AliAlignObj *)obj)->GetLevel();
   if (level == level2)
@@ -214,6 +217,7 @@ void AliAlignObj::AnglesToMatrix(const Double_t *angles, Double_t *rot) const
 {
   // Calculates the rotation matrix using the 
   // Euler angles in "x y z" notation
+  //
   Double_t degrad = TMath::DegToRad();
   Double_t sinpsi = TMath::Sin(degrad*angles[0]);
   Double_t cospsi = TMath::Cos(degrad*angles[0]);
@@ -240,6 +244,7 @@ Bool_t AliAlignObj::MatrixToAngles(const Double_t *rot, Double_t *angles) const
   // using the rotation matrix
   // Returns false in case the rotation angles can not be
   // extracted from the matrix
+  //
   if(TMath::Abs(rot[0])<1e-7 || TMath::Abs(rot[8])<1e-7) {
     AliError("Failed to extract roll-pitch-yall angles!");
     return kFALSE;
@@ -258,7 +263,7 @@ void AliAlignObj::Transform(AliTrackPoint &p) const
   // transformation matrix provided by the AliAlignObj
   // The covariance matrix is not affected since we assume
   // that the transformations are sufficiently small
-
+  //
   if (fVolUID != p.GetVolumeID())
     AliWarning(Form("Alignment object ID is not equal to the space-point ID (%d != %d)",fVolUID,p.GetVolumeID())); 
 
@@ -283,6 +288,7 @@ void AliAlignObj::Transform(AliTrackPointArray &array) const
 {
   // This method is used to transform all the track points
   // from the input AliTrackPointArray
+  // 
   AliTrackPoint p;
   for (Int_t i = 0; i < array.GetNPoints(); i++) {
     array.GetPoint(p,i);
@@ -297,6 +303,7 @@ void AliAlignObj::Print(Option_t *) const
   // Print the contents of the
   // alignment object in angles and
   // matrix representations
+  //
   Double_t tr[3];
   GetTranslation(tr);
   Double_t angles[3];
@@ -321,8 +328,9 @@ void AliAlignObj::Print(Option_t *) const
 //_____________________________________________________________________________
 Int_t AliAlignObj::LayerSize(Int_t layerId)
 {
-  // Get the corresponding layer size.
+  // Get the layer size for layer corresponding to layerId.
   // Implemented only for ITS,TPC,TRD,TOF and RICH
+  //
   if (layerId < kFirstLayer || layerId >= kLastLayer) {
     AliErrorClass(Form("Invalid layer index %d ! Layer range is (%d -> %d) !",layerId,kFirstLayer,kLastLayer));
     return 0;
@@ -335,8 +343,9 @@ Int_t AliAlignObj::LayerSize(Int_t layerId)
 //_____________________________________________________________________________
 const char* AliAlignObj::LayerName(Int_t layerId)
 {
-  // Get the corresponding layer name.
+  // Get the layer name corresponding to layerId.
   // Implemented only for ITS,TPC,TRD,TOF and RICH
+  //
   if (layerId < kFirstLayer || layerId >= kLastLayer) {
     AliErrorClass(Form("Invalid layer index %d ! Layer range is (%d -> %d) !",layerId,kFirstLayer,kLastLayer));
     return "Invalid Layer!";
@@ -349,8 +358,9 @@ const char* AliAlignObj::LayerName(Int_t layerId)
 //_____________________________________________________________________________
 UShort_t AliAlignObj::LayerToVolUID(ELayerID layerId, Int_t modId)
 {
-  // From detector (layer) name and module number (according to detector numbering)
-  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // From detector (layer) name and module number (according to detector
+  // internal numbering) build the unique numerical identity of that volume
+  // inside ALICE
   // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
   // remaining 11 for module ID inside det (2048 possible values).
   //
@@ -360,8 +370,9 @@ UShort_t AliAlignObj::LayerToVolUID(ELayerID layerId, Int_t modId)
 //_____________________________________________________________________________
 UShort_t AliAlignObj::LayerToVolUID(Int_t   layerId, Int_t modId)
 {
-  // From detector (layer) index and module number (according to detector numbering)
-  // build fVolUID, unique numerical identity of that volume inside ALICE
+  // From detector (layer) name and module number (according to detector
+  // internal numbering) build the unique numerical identity of that volume
+  // inside ALICE
   // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
   // remaining 11 for module ID inside det (2048 possible values).
   //
@@ -371,10 +382,11 @@ UShort_t AliAlignObj::LayerToVolUID(Int_t   layerId, Int_t modId)
 //_____________________________________________________________________________
 AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid, Int_t &modId)
 {
-  // From detector (layer) name and module number (according to detector numbering)
-  // build fVolUID, unique numerical identity of that volume inside ALICE
-  // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
-  // remaining 11 for module ID inside det (2048 possible values).
+  // From voluid, unique numerical identity of that volume inside ALICE,
+  // (voluid is 16 bits, first 5 reserved for layerID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values)), return
+  // the identity of the layer to which that volume belongs and sets the
+  // argument modId to the identity of that volume internally to the layer.
   //
   modId = voluid & 0x7ff;
 
@@ -384,10 +396,10 @@ AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid, Int_t &modId)
 //_____________________________________________________________________________
 AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid)
 {
-  // From detector (layer) name and module number (according to detector numbering)
-  // build fVolUID, unique numerical identity of that volume inside ALICE
-  // fVolUID is 16 bits, first 5 reserved for layerID (32 possible values),
-  // remaining 11 for module ID inside det (2048 possible values).
+  // From voluid, unique numerical identity of that volume inside ALICE,
+  // (voluid is 16 bits, first 5 reserved for layerID (32 possible values),
+  // remaining 11 for module ID inside det (2048 possible values)), return
+  // the identity of the layer to which that volume belongs
   //
   return ELayerID((voluid >> 11) & 0x1f);
 }
@@ -396,8 +408,9 @@ AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid)
 void AliAlignObj::SetPars(Double_t x, Double_t y, Double_t z,
 			  Double_t psi, Double_t theta, Double_t phi)
 {
-  // Set rotation matrix and translation
-  // using 3 angles and 3 translations
+  // Set rotation matrix and translation using 3 angles and 3 translations
+  // The three angles are expressed in degrees
+  // 
   SetTranslation(x,y,z);
   SetRotation(psi,theta,phi);
 }
@@ -406,11 +419,12 @@ void AliAlignObj::SetPars(Double_t x, Double_t y, Double_t z,
 Bool_t AliAlignObj::SetLocalPars(Double_t x, Double_t y, Double_t z,
 				 Double_t psi, Double_t theta, Double_t phi)
 {
-  // Set the translations and angles by using parameters
-  // defined in the local (in TGeo means) coordinate system
-  // of the alignable volume. In case that the TGeo was
-  // initialized, returns false and the object parameters are
-  // not set.
+  // Set the translations and angles (in degrees) by considering the
+  // parameters passed as arguments as expressed in the local reference
+  // system of the alignable volume (known by TGeo geometry).
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
   TGeoHMatrix m;
   Double_t tr[3] = {x, y, z};
   m.SetTranslation(tr);
@@ -426,12 +440,12 @@ Bool_t AliAlignObj::SetLocalPars(Double_t x, Double_t y, Double_t z,
 //_____________________________________________________________________________
 Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
 {
-  // Set the translations and angles by using TGeo matrix
-  // defined in the local (in TGeo means) coordinate system
-  // of the alignable volume. In case that the TGeo was
-  // initialized, returns false and the object parameters are
-  // not set.
-
+  // Set the translations and angles by considering the TGeo matrix
+  // passed as argument as expressing the transformation in the local
+  // reference system of the alignable volume (known by TGeo geometry).
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
   if (!gGeoManager || !gGeoManager->IsClosed()) {
     AliError("Can't set the alignment object parameters! gGeoManager doesn't exist or it is still opened!");
     return kFALSE;
@@ -472,8 +486,10 @@ Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
 //_____________________________________________________________________________
 Bool_t AliAlignObj::SetMatrix(const TGeoMatrix& m)
 {
-  // Set rotation matrix and translation
-  // using TGeoMatrix
+  // Set rotation matrix and translation using the TGeoMatrix passed
+  // as argument considering it as relative to the global reference
+  // system
+  //
   SetTranslation(m);
   return SetRotation(m);
 }
@@ -481,9 +497,10 @@ Bool_t AliAlignObj::SetMatrix(const TGeoMatrix& m)
 //_____________________________________________________________________________
 Bool_t AliAlignObj::ApplyToGeometry()
 {
-  // Apply the current alignment object
-  // to the TGeo geometry
-
+  // Apply the current alignment object to the TGeo geometry
+  // This method returns FALSE if the symname of the object was not
+  // valid neither to get a TGeoPEntry nor as a volume path
+  //
   if (!gGeoManager || !gGeoManager->IsClosed()) {
     AliError("Can't apply the alignment object! gGeoManager doesn't exist or it is still opened!");
     return kFALSE;
@@ -494,18 +511,22 @@ Bool_t AliAlignObj::ApplyToGeometry()
   TGeoPhysicalNode* node;
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
   if(pne){
-    node = gGeoManager->MakeAlignablePN(pne);
-    if(!node) return kFALSE;
     path = pne->GetTitle();
+    if(!gGeoManager->CheckPath(path)){
+      AliDebug(1,Form("Valid PNEntry but invalid volume path %s!",path));
+          // this should happen only for volumes in disactivated branches
+      return kTRUE;
+    }
+    node = gGeoManager->MakeAlignablePN(pne);
   }else{
     AliWarning(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as a volume path!",symname));
     path=symname;
-    if (gGeoManager->GetListOfPhysicalNodes()->FindObject(path)) {
-      AliError(Form("Volume %s has already been misaligned!",path));
+    if (!gGeoManager->CheckPath(path)) {
+      AliError(Form("Volume path %s not valid!",path));
       return kFALSE;
     }
-    if (!gGeoManager->cd(path)) {
-      AliError(Form("Volume path %s not valid!",path));
+    if (gGeoManager->GetListOfPhysicalNodes()->FindObject(path)) {
+      AliError(Form("Volume %s has already been misaligned!",path));
       return kFALSE;
     }
     node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(path);
@@ -540,6 +561,9 @@ Bool_t AliAlignObj::GetFromGeometry(const char *symname, AliAlignObj &alobj)
   // symname (in case equal to the TGeo volume path)
   // The method is extremely slow due to the searching by string.
   // Therefore it should be used with great care!!
+  // This method returns FALSE if the symname of the object was not
+  // valid neither to get a TGeoPEntry nor as a volume path, or if the path
+  // associated to the TGeoPNEntry was not valid.
   //
 
   // Reset the alignment object
@@ -624,6 +648,7 @@ void  AliAlignObj::InitAlignObjFromGeometry()
 //_____________________________________________________________________________
 AliAlignObj* AliAlignObj::GetAlignObj(UShort_t voluid) {
   // Returns the alignment object for given volume ID
+  //
   Int_t modId;
   ELayerID layerId = VolUIDToLayer(voluid,modId);
   return GetAlignObj(layerId,modId);
@@ -632,7 +657,8 @@ AliAlignObj* AliAlignObj::GetAlignObj(UShort_t voluid) {
 //_____________________________________________________________________________
 AliAlignObj* AliAlignObj::GetAlignObj(ELayerID layerId, Int_t modId)
 {
-  // Returns pointer to alignment object givent its layer and module ID
+  // Returns pointer to alignment object given its layer and module ID
+  //
   if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
@@ -644,7 +670,8 @@ AliAlignObj* AliAlignObj::GetAlignObj(ELayerID layerId, Int_t modId)
 
 //_____________________________________________________________________________
 const char* AliAlignObj::SymName(UShort_t voluid) {
-  // Returns the volume path for given volume ID
+  // Returns the symbolic volume name for given volume ID
+  //
   Int_t modId;
   ELayerID layerId = VolUIDToLayer(voluid,modId);
   return SymName(layerId,modId);
@@ -653,7 +680,9 @@ const char* AliAlignObj::SymName(UShort_t voluid) {
 //_____________________________________________________________________________
 const char* AliAlignObj::SymName(ELayerID layerId, Int_t modId)
 {
-  // Returns volume path to alignment object givent its layer and module ID
+  // Returns the symbolic volume name given for a given layer
+  // and module ID
+  //
   if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
@@ -666,40 +695,48 @@ const char* AliAlignObj::SymName(ELayerID layerId, Int_t modId)
 //_____________________________________________________________________________
 void AliAlignObj::InitSymNames()
 {
-  // Initialize the LUTs which contain
-  // the TGeo volume paths for each
-  // alignable volume. The LUTs are
-  // static, so they are created during
-  // the creation of the first intance
-  // of AliAlignObj
-
+  // Initialize the LUTs which associate the symbolic volume names
+  // for each alignable volume with their unique numerical identity.
+  // The LUTs are static, so they are created during the instantiation
+  // of the first intance of AliAlignObj
+  //
   if (fgVolPath[0]) return;
 
   for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++)
     fgVolPath[iLayer] = new TString[fgLayerSize[iLayer]];
 
+  TString symname;
+  Int_t modnum; // in the following, set it to 0 at the start of each layer
+
+  /*********************       ITS layers  ***********************/
+  TString strSPD = "ITS/SPD";
+  TString strSDD = "ITS/SDD";
+  TString strSSD = "ITS/SSD";
+  TString strStave = "/Stave";
+  TString strLadder = "/Ladder";
+  TString strSector = "/Sector";
+  TString strSensor = "/Sensor";
+  TString strEntryName1;
+  TString strEntryName2;
+
   /*********************       SPD layer1  ***********************/
   {
-    Int_t modnum = 0;
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_"; //".../I12A_"
-    TString str1 = "/I10B_";    //"/I10A_";
-    TString str2 = "/I107_";    //"/I103_"
-    //    TString str3 = "/I101_1/ITS1_1";
-    TString symname, symname1, symname2;
+    modnum = 0;
 
     for(Int_t c1 = 1; c1<=10; c1++){
-      symname = str0;
-      symname += c1;
-      symname += str1;
+      strEntryName1 = strSPD;
+      strEntryName1 += 0;
+      strEntryName1 += strSector;
+      strEntryName1 += (c1-1);
       for(Int_t c2 =1; c2<=2; c2++){
-	symname1 = symname;
-	symname1 += c2;
-	symname1 += str2;
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strStave;
+	strEntryName2 += (c2-1);
 	for(Int_t c3 =1; c3<=4; c3++){
-	  symname2 = symname1;
-	  symname2 += c3;
-	  //	  symname2 += str3;
-	  fgVolPath[kSPD1-kFirstLayer][modnum] = symname2.Data();
+	  symname = strEntryName2;
+	  symname += strLadder;
+	  symname += (c3-1);
+	  fgVolPath[kSPD1-kFirstLayer][modnum] = symname.Data();
 	  modnum++;
 	}
       }
@@ -708,26 +745,22 @@ void AliAlignObj::InitSymNames()
   
   /*********************       SPD layer2  ***********************/
   {
-    Int_t modnum = 0;
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";  //".../I12A_"
-    TString str1 = "/I20B_";  //"/I20A"
-    TString str2 = "/I1D7_";  //"/I1D3"
-    //    TString str3 = "/I1D1_1/ITS2_1";
-    TString symname, symname1, symname2;
+    modnum = 0;
 
     for(Int_t c1 = 1; c1<=10; c1++){
-      symname = str0;
-      symname += c1;
-      symname += str1;
+      strEntryName1 = strSPD;
+      strEntryName1 += 1;
+      strEntryName1 += strSector;
+      strEntryName1 += (c1-1);
       for(Int_t c2 =1; c2<=4; c2++){
-	symname1 = symname;
-	symname1 += c2;
-	symname1 += str2;
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strStave;
+	strEntryName2 += (c2-1);
 	for(Int_t c3 =1; c3<=4; c3++){
-	  symname2 = symname1;
-	  symname2 += c3;
-	  //	  symname2 += str3;
-	  fgVolPath[kSPD2-kFirstLayer][modnum] = symname2.Data();
+	  symname = strEntryName2;
+	  symname += strLadder;
+	  symname += (c3-1);
+	  fgVolPath[kSPD2-kFirstLayer][modnum] = symname.Data();
 	  modnum++;
 	}
       }
@@ -736,21 +769,18 @@ void AliAlignObj::InitSymNames()
 
   /*********************       SDD layer1  ***********************/
   {
-    Int_t modnum=0;
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
-    TString str1 = "/I302_";
-    //    TString str2 = "/ITS3_1";
-    TString symname, symname1;
+    modnum=0;
 
     for(Int_t c1 = 1; c1<=14; c1++){
-      symname = str0;
-      symname += c1;
-      symname += str1;
+      strEntryName1 = strSDD;
+      strEntryName1 += 2;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
       for(Int_t c2 =1; c2<=6; c2++){
-	symname1 = symname;
-	symname1 += c2;
-	//	symname1 += str2;
-	fgVolPath[kSDD1-kFirstLayer][modnum] = symname1.Data();
+	symname = strEntryName1;
+	symname += strSensor;
+	symname += (c2-1);
+	fgVolPath[kSDD1-kFirstLayer][modnum] = symname.Data();
 	modnum++;
       }
     }
@@ -758,21 +788,18 @@ void AliAlignObj::InitSymNames()
 
   /*********************       SDD layer2  ***********************/
   {
-    Int_t modnum=0;
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_";
-    TString str1 = "/I402_";
-    //    TString str2 = "/ITS4_1";
-    TString symname, symname1;
+    modnum=0;
 
     for(Int_t c1 = 1; c1<=22; c1++){
-      symname = str0;
-      symname += c1;
-      symname += str1;
+      strEntryName1 = strSDD;
+      strEntryName1 += 3;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
       for(Int_t c2 = 1; c2<=8; c2++){
-	symname1 = symname;
-	symname1 += c2;
-	//	symname1 += str2;
-	fgVolPath[kSDD2-kFirstLayer][modnum] = symname1.Data();
+	symname = strEntryName1;
+	symname += strSensor;
+	symname += (c2-1);
+	fgVolPath[kSDD2-kFirstLayer][modnum] = symname.Data();
 	modnum++;
       }
     }
@@ -780,67 +807,64 @@ void AliAlignObj::InitSymNames()
 
   /*********************       SSD layer1  ***********************/
   {
-    Int_t modnum=0;
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_";
-    TString str1 = "/I562_";
-    //    TString str2 = "/ITS5_1";
-    TString symname, symname1;
+    modnum=0;
 
     for(Int_t c1 = 1; c1<=34; c1++){
-      symname = str0;
-      symname += c1;
-      symname += str1;
+      strEntryName1 = strSSD;
+      strEntryName1 += 4;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
       for(Int_t c2 = 1; c2<=22; c2++){
-	symname1 = symname;
-	symname1 += c2;
-	//	symname1 += str2;
-	fgVolPath[kSSD1-kFirstLayer][modnum] = symname1.Data();
+	symname = strEntryName1;
+	symname += strSensor;
+	symname += (c2-1);
+	fgVolPath[kSSD1-kFirstLayer][modnum] = symname.Data();
 	modnum++;
       }
     }
   }
 
-  /*********************       SSD layer1  ***********************/
+  /*********************       SSD layer2  ***********************/
   {
-    Int_t modnum=0;
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
-    TString str1 = "/I566_";
-    //    TString str2 = "/ITS6_1";
-    TString symname, symname1;
+    modnum=0;
 
     for(Int_t c1 = 1; c1<=38; c1++){
-      symname = str0;
-      symname += c1;
-      symname += str1;
+      strEntryName1 = strSSD;
+      strEntryName1 += 5;
+      strEntryName1 +=strLadder;
+      strEntryName1 += (c1-1);
       for(Int_t c2 = 1; c2<=25; c2++){
-	symname1 = symname;
-	symname1 += c2;
-	//	symname1 += str2;
-	fgVolPath[kSSD2-kFirstLayer][modnum] = symname1.Data();
+	symname = strEntryName1;
+	symname += strSensor;
+	symname += (c2-1);
+	fgVolPath[kSSD2-kFirstLayer][modnum] = symname.Data();
 	modnum++;
       }
     }
   }
 
+
+  /***************    TPC inner and outer layers    ****************/
+  TString sAsector="TPC/EndcapA/Sector";
+  TString sCsector="TPC/EndcapC/Sector";
+  TString sInner="/InnerChamber";
+  TString sOuter="/OuterChamber";
+  
   /***************    TPC inner chambers' layer    ****************/
   {
-    Int_t modnum = 0;
-    TString str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
-    TString str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
-    TString strIn = "/TPC_IROC_1";
-    TString symname;
+    modnum = 0;
     
     for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = str1;
+      symname = sAsector;
       symname += cnt;
-      symname += strIn;
+      symname += sInner;
       fgVolPath[kTPC1-kFirstLayer][modnum] = symname.Data();
       modnum++;
     }
     for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = str2;
+      symname = sCsector;
       symname += cnt;
-      symname += strIn;
+      symname += sInner;
       fgVolPath[kTPC1-kFirstLayer][modnum] = symname.Data();
       modnum++;
     }
@@ -848,23 +872,19 @@ void AliAlignObj::InitSymNames()
 
   /***************    TPC outer chambers' layer    ****************/
   {
-    Int_t modnum = 0;
-    TString str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
-    TString str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
-    TString strOut = "/TPC_OROC_1";
-    TString symname;
+    modnum = 0;
     
     for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = str1;
+      symname = sAsector;
       symname += cnt;
-      symname += strOut;
+      symname += sOuter;
       fgVolPath[kTPC2-kFirstLayer][modnum] = symname.Data();
       modnum++;
     }
     for(Int_t cnt=1; cnt<=18; cnt++){
-      symname = str2;
+      symname = sCsector;
       symname += cnt;
-      symname += strOut;
+      symname += sOuter;
       fgVolPath[kTPC2-kFirstLayer][modnum] = symname.Data();
       modnum++;
     }
@@ -872,36 +892,26 @@ void AliAlignObj::InitSymNames()
 
   /*********************       TOF layer   ***********************/
   {
+    modnum=0;
+    
     Int_t nstrA=15;
     Int_t nstrB=19;
     Int_t nstrC=19;
-    Int_t nsec=18;
-    Int_t nStripSec=nstrA+2*nstrB+2*nstrC;
-    Int_t nStrip=nStripSec*nsec;
-
-    for (Int_t modnum=0; modnum < nStrip; modnum++) {
-
-      Int_t sector = modnum/nStripSec;
-      Char_t  string1[100];
-      Char_t  string2[100];
-      Int_t icopy=-1;
-      icopy=sector; 
-
-      // Old 6h convention
-      // if(sector<13){
-      //	icopy=sector+5;}  
-      // else{ icopy=sector-13;}
-
-      sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",sector,sector);
-      
-      Int_t strInSec=modnum%nStripSec;
-      icopy= strInSec;
-      icopy++;
-      sprintf(string2,"FSTR_%i",icopy);      
-      Char_t  path[100];
-      sprintf(path,"%s/%s",string1,string2); 
-      //      printf("%d  %s\n",modnum,path);
-      fgVolPath[kTOF-kFirstLayer][modnum] = path;
+    Int_t nSectors=18;
+    Int_t nStrips=nstrA+2*nstrB+2*nstrC;
+    
+    TString snSM  = "TOF/sm";
+    TString snSTRIP = "/strip";
+    
+    for (Int_t isect = 0; isect < nSectors; isect++) {
+      for (Int_t istr = 1; istr <= nStrips; istr++) {	
+	symname  = snSM;
+	symname += Form("%02d",isect);
+	symname += snSTRIP;
+	symname += Form("%02d",istr);
+	fgVolPath[kTOF-kFirstLayer][modnum] = symname.Data();	
+	modnum++;
+      }
     }
   } 
 
@@ -910,53 +920,37 @@ void AliAlignObj::InitSymNames()
     TString str = "ALIC_1/RICH_";
     TString symname;
 
-    for (Int_t modnum=0; modnum < 7; modnum++) {
+    for (modnum=0; modnum < 7; modnum++) {
       symname = str;
       symname += (modnum+1);
       fgVolPath[kRICH-kFirstLayer][modnum] = symname.Data();
     }
   }
 
-  /*********************      TRD layers 0-6   *******************/
+  /*********************      TRD layers 1-6   *******************/
+  //!! 6 layers with index increasing in outwards direction
   {
-    TString strSM[18]={"ALIC_1/B077_1/BSEGMO0_1/BTRD0_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO1_1/BTRD1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO2_1/BTRD2_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO3_1/BTRD3_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO4_1/BTRD4_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO5_1/BTRD5_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO6_1/BTRD6_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO7_1/BTRD7_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO8_1/BTRD8_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO9_1/BTRD9_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO10_1/BTRD10_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO11_1/BTRD11_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO12_1/BTRD12_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO13_1/BTRD13_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO14_1/BTRD14_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO15_1/BTRD15_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO16_1/BTRD16_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO17_1/BTRD17_1/UTR1_1/UTS1_1/UTI1_1/UT"};
-    TString strPost = "_1";
-    TString zeroStr = "0";
-    TString symname;
-
     Int_t arTRDlayId[6] = {kTRD1, kTRD2, kTRD3, kTRD4, kTRD5, kTRD6};
 
+    TString snStr  = "TRD/sm";
+    TString snApp1 = "/st";
+    TString snApp2 = "/pl";
+    
     for(Int_t layer=0; layer<6; layer++){
-      Int_t modnum=0;
-      for(Int_t sm = 0; sm < 18; sm++){
-	for(Int_t stacknum = 0; stacknum < 5; stacknum++){
-	  Int_t chnum = layer + stacknum*6;
-	  symname = strSM[sm];
-	  if(chnum<10) symname += zeroStr;
-	  symname += chnum;
-	  symname += strPost;
+      modnum=0;
+      for (Int_t isect = 0; isect < 18; isect++) {
+	for (Int_t icham = 0; icham < 5; icham++) {
+	  symname  = snStr;
+	  symname += Form("%02d",isect);
+	  symname += snApp1;
+	  symname += icham;
+	  symname += snApp2;
+	  symname += layer;
 	  fgVolPath[arTRDlayId[layer]-kFirstLayer][modnum] = symname.Data();
 	  modnum++;
 	}
       }
     }
   }
-
 }
+
