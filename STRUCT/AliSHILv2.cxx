@@ -40,6 +40,7 @@ ClassImp(AliSHILv2)
 
  
 //_____________________________________________________________________________
+
 AliSHILv2::AliSHILv2():
     fPbCone(kTRUE),
     fWriteGeometry(kFALSE)
@@ -1590,7 +1591,6 @@ void AliSHILv2::CreateGeometry()
       
       TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
       TGeoVolume* yout1 =  gGeoManager->GetVolume("YOUT1");
-      cout << zstart << "..." << dz << endl;
       yout1->AddNode(extraShield1, 1, new TGeoCombiTrans(0., 0., -zstart - ( 49.7 + dzKeep), rotxz));
       yout1->AddNode(extraShield2, 1, new TGeoCombiTrans(0., 0., -zstart - (kZch21 - zstart + dz ), rotxz));
 
