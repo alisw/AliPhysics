@@ -65,6 +65,7 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 #include "TCut.h"
 #include "TFitter.h"
 #include  "TMatrixD.h"
+#include  "TRobustEstimator.h"
 
 #include  "AliLog.h"
 #include  "AliMagF.h"
@@ -75,6 +76,10 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 #include  "AliTracker.h"
 #include  "AliTPCseed.h"
 #include  "AliTPCclusterMI.h"
+#include  "AliTPCParamSR.h"
+#include  "AliTPCROC.h"
+
+
 #include  "TTreeStream.h"
 #include  "TF1.h"
 #include  "TGraph.h"
@@ -82,8 +87,8 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 #include  "TCanvas.h"
 
 
-void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mean09)<0.5");
-
+void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mean09)<0.5", Int_t maxS=100);
+void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t tmax, Float_t fraction=0.8);
 
 void AnalyzeESDtracks(Int_t run){
   //
@@ -153,11 +158,21 @@ void AnalyzeESDtracks(Int_t run){
   //
   TFile fs("TPCsignal.root");
   TTree *treeB =(TTree*)fs.Get("SignalB");
-  //  FitSignals(treeB,"Max-Median>150&&RMS06<2.5");
+  //
+  // Fit central electrode part
+  //
+  TTreeSRedirector * pcestream = new  TTreeSRedirector("TimeRoot.root");
+  TTree * treece = (TTree*)fs.Get("Signalce");
+  if (tree) {
+    LaserCalib(*pcestream, treece, 900,1000, 0.8);
+    delete pcestream;
+  }
+  FitSignals(treeB,"Max-Median>150&&RMS06<1.0&&RMS09<1.5&&abs(Median-Mean09)<0.2&&abs(Mean06-Mean09)<0.2",200);
+  //
 }
 
 
-void FitSignals(TTree * treeB, TCut cut){
+void FitSignals(TTree * treeB, TCut cut, Int_t max){
   AliSignalProcesor proc;
   TF1 * f1 = proc.GetAsymGauss();
   TTreeSRedirector cstream("FitSignal.root");
@@ -169,7 +184,10 @@ void FitSignals(TTree * treeB, TCut cut){
   sprintf(lname,">>Fit%s", cut.GetTitle());
   treeB->Draw(lname,cut);
   treeB->SetEventList(list);
+  Int_t nFits=0;
   for (Int_t ievent=0; ievent<list->GetN(); ievent++){
+    if (nFits>max) break;
+    if (nFits%50==0) printf("%d\n",nFits);
     char ename[100];
     sprintf(ename,"Fit%d", ievent);
     Double_t nsample = treeB->Draw("Graph.fY-Mean09:Graph.fX","","",1,ievent);
@@ -273,9 +291,149 @@ void FitSignals(TTree * treeB, TCut cut){
       "p52="<<params2[5]<<
       "\n";
     //    delete his;
+    nFits++;
   }
 
 }
+
+
+void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t tmax, Float_t fraction){
+  //
+  //
+  //
+  AliTPCParamSR param;
+  param.Update();
+  TFile fce("TPCsignal.root");
+  TTree   * treece =(TTree*)fce.Get("Signalce");
+  if (chain) treece=chain;
+  //
+  TBranch * brsector  = treece->GetBranch("Sector");
+  TBranch * brpad     = treece->GetBranch("Pad");
+  TBranch * brrow     = treece->GetBranch("Row");
+  //
+  TBranch * brtime    = treece->GetBranch("Time");
+  TBranch * brrms     = treece->GetBranch("RMS06");
+  TBranch * brmax     = treece->GetBranch("Max");
+  TBranch * brsum     = treece->GetBranch("Qsum");
+
+  Int_t sector, pad, row=0;
+  Double_t time=0, rms=0, qMax=0, qSum=0;
+  brsector->SetAddress(&sector);
+  brrow->SetAddress(&row);
+  brpad->SetAddress(&pad);
+  
+  brtime->SetAddress(&time);
+  brrms->SetAddress(&rms);
+  brmax->SetAddress(&qMax);
+  brsum->SetAddress(&qSum);
+
+
+  brsector->GetEntry(0);
+  //
+  Int_t firstSector  = sector;
+  Int_t lastSector   = sector;
+  Int_t fentry = 0;
+  Int_t lentry = 0;
+  //
+  // find time offset for differnt events
+  //
+  Int_t count = 0;
+  Double_t padTimes[500000];
+  TRobustEstimator restim;
+  Double_t meanS[72], sigmaS[72];
+  Int_t   firstS[72], lastS[72];
+  Double_t   sectorsID[72];
+  for (Int_t isector=0;isector<72; isector++){
+    firstS[isector]=-1; 
+    lastS[isector] =-1;
+  };
+
+  for (Int_t ientry=0; ientry<treece->GetEntriesFast(); ientry++){
+    treece->GetEvent(ientry);
+    //
+    if (sector!=lastSector && sector==firstSector){
+      //if (sector!=lastSector){
+      lentry = ientry;
+      printf("\nEvent\t%d\tFirst\t%d\tLast\t%d\t%d\n",count, fentry, lentry, lentry-fentry);
+      //
+      //
+      Int_t ngood=0;      
+      for (Int_t ientry2=fentry; ientry2<lentry; ientry2++){
+	//	brtime->GetEvent(ientry2);
+	//  brsector->GetEvent(ientry2);
+	treece->GetEvent(ientry2);
+	if (time>tmin&&time<tmax){
+	  padTimes[ngood]=time;
+	  ngood++;	
+	  if (firstS[sector]<0)  firstS[sector]= ngood;
+	  if (firstS[sector]>=0) lastS[sector] = ngood;
+	}	
+      }
+      //
+      //
+      Double_t mean,sigma;
+      restim.EvaluateUni(ngood,padTimes,mean, sigma,int(ngood*fraction));
+      printf("Event\t%d\t%f\t%f\n",count, mean, sigma);
+      for (Int_t isector=0; isector<72; isector++){
+	sectorsID[isector]=sector;
+	if (firstS[isector]>=0 &&lastS[isector]>=0 && lastS[isector]>firstS[isector] ){
+	  Int_t ngoodS = lastS[isector]-firstS[isector];
+	  restim.EvaluateUni(ngoodS, &padTimes[firstS[isector]],meanS[isector], 
+			     sigmaS[isector],int(ngoodS*fraction));
+	}
+      }
+      TGraph  graphM(72,sectorsID,meanS);
+      TGraph  graphS(72,sectorsID,sigmaS);
+      cstream<<"TimeS"<<
+	"Event="<<count<<
+	"GM.="<<&graphM<<
+	"GS.="<<&graphS<<
+	"\n";
+      
+
+      for (Int_t ientry2=fentry; ientry2<lentry-1; ientry2++){
+	treece->GetEvent(ientry2);
+	Double_t x      = param.GetPadRowRadii(sector,row);
+	Int_t    maxpad = AliTPCROC::Instance()->GetNPads(sector,row);
+	Double_t y = (pad - 2.5 - 0.5*maxpad)*param.GetPadPitchWidth(sector);
+	Double_t alpha = TMath::DegToRad()*(10.+20.*(sector%18));	
+	Double_t gx = x*TMath::Cos(alpha)-y*TMath::Sin(alpha);
+	Double_t gy = y*TMath::Cos(alpha)+x*TMath::Sin(alpha);
+	
+	Int_t npadS = lastS[sector]-firstS[sector];
+	cstream<<"Time"<<
+	  "Event="<<count<<
+	  "x="<<x<<
+	  "y="<<y<<
+	  "gx="<<gx<<
+	  "gy="<<gy<<
+	  "Sector="<<sector<<
+	  "Row="<<row<<
+	  "Pad="<<pad<<
+	  "Time="<<time<<
+	  "RMS="<<rms<<
+	  "Time0="<<mean<<
+	  "Sigma0="<<sigma<< 
+	  "TimeS0="<<meanS[sector]<<
+	  "SigmaS0="<<sigmaS[sector]<<
+	  "npad0="<<ngood<<
+	  "npadS="<<npadS<<
+	  "Max="<<qMax<<
+	  "Sum="<<qSum<<
+	  "\n";
+      }
+      treece->GetEvent(ientry);
+      fentry = ientry;
+      count++;      
+      for (Int_t isector=0;isector<72; isector++){
+	firstS[isector]=-1; 
+	lastS[isector] =-1;
+      }
+    }
+    lastSector=sector;
+  }
+}
+
 
 
 
