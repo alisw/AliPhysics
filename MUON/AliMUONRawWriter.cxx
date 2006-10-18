@@ -44,38 +44,37 @@
 #include "AliMUONRawWriter.h"
 
 #include "AliBitPacking.h" 
-#include "AliRawReader.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUON.h"
-#include "AliMUONConstants.h"
-
-#include "AliMUONDarcHeader.h"
-#include "AliMUONRegHeader.h"
-#include "AliMUONLocalStruct.h"
-#include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
-
+#include "AliMUONBusStruct.h"
+#include "AliMUONConstants.h"
+#include "AliMUONDarcHeader.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
+#include "AliMUONDspHeader.h"
 #include "AliMUONGlobalTrigger.h"
+#include "AliMUONLocalStruct.h"
 #include "AliMUONLocalTrigger.h"
-
-#include "AliMpBusPatch.h"
-#include "AliMUONTriggerCrateStore.h"
-#include "AliMUONTriggerCrate.h"
 #include "AliMUONLocalTriggerBoard.h"
-
+#include "AliMUONRegHeader.h"
+#include "AliMUONTriggerCrate.h"
+#include "AliMUONTriggerCrateStore.h"
+#include "AliMpBusPatch.h"
 #include "AliMpDEManager.h"
+#include "AliMpExMap.h"
+#include "AliMpIntPair.h"
+#include "AliMpManuList.h"
+#include "TList.h"
 #include "AliMpPad.h"
 #include "AliMpPlaneType.h"
 #include "AliMpSegFactory.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
-#include "AliMpExMap.h"
-
-#include "TClonesArray.h"
+#include "AliRawReader.h"
 #include "TObjArray.h"
+#include "AliMpConstants.h"
 
 ClassImp(AliMUONRawWriter) // Class implementation in ROOT context
 
@@ -85,6 +84,10 @@ Int_t AliMUONRawWriter::fgManuPerBusSwp1NB[12] = {1, 27, 53, 79, 105, 131, 157, 
 Int_t AliMUONRawWriter::fgManuPerBusSwp2B[12]  = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 226, 246};
 Int_t AliMUONRawWriter::fgManuPerBusSwp2NB[12] = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 227, 245};
 
+namespace 
+{
+  enum ETimer { kWriteTracker, kWriteTrigger, kDigitLoop, kGetBusPatch, kTest, kLast };
+}
 
 //__________________________________________________________________________
 AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
@@ -92,7 +95,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
     fMUONData(data),
     fBlockHeader(new AliMUONBlockHeader()),
     fDspHeader(new AliMUONDspHeader()),
-    fBusStruct(new AliMUONBusStruct()),
     fDarcHeader(new AliMUONDarcHeader()),
     fRegHeader(new AliMUONRegHeader()),
     fLocalStruct(new AliMUONLocalStruct()),
@@ -100,10 +102,9 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
     fCrateManager(new AliMUONTriggerCrateStore()),
     fScalerEvent(kFALSE),
     fHeader(),
-    fTrackerTimer(),
-    fTriggerTimer(),
-    fMappingTimer(),
+    fTimers(new TStopwatch[kLast]),
     fSegFactory(new AliMpSegFactory())
+
 {
   //
   // Standard Constructor
@@ -115,7 +116,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
   // setting data key to default value (only for writting)
   fBlockHeader->SetDataKey(fBlockHeader->GetDefaultDataKey());
   fDspHeader->SetDataKey(fDspHeader->GetDefaultDataKey());
-  fBusStruct->SetDataKey(fBusStruct->GetDefaultDataKey());
 
   // bus patch managers
   fBusPatchManager->ReadBusPatchFile();
@@ -124,9 +124,11 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
   fCrateManager->ReadFromFile();
 
   // timers
-  fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
-  fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
-  fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
+  for ( Int_t i = 0; i < kLast; ++i )
+  {
+    fTimers[i].Start(kTRUE); 
+    fTimers[i].Stop();
+  }
   
 }
 
@@ -136,7 +138,6 @@ AliMUONRawWriter::AliMUONRawWriter()
     fMUONData(0),
     fBlockHeader(0),
     fDspHeader(0),
-    fBusStruct(0),
     fDarcHeader(0),
     fRegHeader(0),
     fLocalStruct(0),
@@ -144,9 +145,7 @@ AliMUONRawWriter::AliMUONRawWriter()
     fCrateManager(0x0),
     fScalerEvent(kFALSE),
     fHeader(),
-    fTrackerTimer(),
-    fTriggerTimer(),
-    fMappingTimer(),
+    fTimers(0),
     fSegFactory(0x0)
 {
   //
@@ -156,9 +155,6 @@ AliMUONRawWriter::AliMUONRawWriter()
   fFile[0] = fFile[1] = 0x0;  
   fFile[2] = fFile[3] = 0x0;  
 
-  fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
-  fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
-  fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
 }
 
 //__________________________________________________________________________
@@ -171,7 +167,6 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
   
   delete fBlockHeader;
   delete fDspHeader;
-  delete fBusStruct;
   delete fDarcHeader;
   delete fRegHeader;
   delete fLocalStruct;
@@ -181,14 +176,51 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
 
   delete fSegFactory;
   
-  AliInfo(Form("Execution time for MUON tracker : R:%.2fs C:%.2fs",
-               fTrackerTimer.RealTime(),fTrackerTimer.CpuTime()));
-  AliInfo(Form("   Execution time for MUON tracker (mapping calls part) "
-               ": R:%.2fs C:%.2fs",
-               fMappingTimer.RealTime(),fMappingTimer.CpuTime()));
-  AliInfo(Form("Execution time for MUON trigger : R:%.2fs C:%.2fs",
-               fTriggerTimer.RealTime(),fTriggerTimer.CpuTime()));
+  for ( Int_t i = 0; i < kLast; ++i )
+  {
+    AliInfo(Form("Execution time (timer %d) : R:%7.2fs C:%7.2fs",i,
+                 fTimers[i].RealTime(),fTimers[i].CpuTime()));
+  }
+  
+  delete[] fTimers;
 }
+
+//______________________________________________________________________________
+//void
+//AliMUONRawWriter::CheckDigits()
+//{
+//  std::map<int,std::map<int,int> > m;
+//  
+//  for (Int_t iSt = 0; iSt < AliMUONConstants::NTrackingCh()/2; ++iSt) 
+//  {
+//    for (Int_t iCh = iSt*2; iCh <= iSt*2 + 1; ++iCh) 
+//    {      
+//      TClonesArray* muonDigits = fMUONData->Digits(iCh);
+//      for (Int_t idig = 0; idig < muonDigits->GetEntriesFast(); idig++) 
+//      {        
+//        AliMUONDigit* digit = (AliMUONDigit*) muonDigits->UncheckedAt(idig);
+//        Int_t busPatchId = GetBusPatch(*digit);
+//        m[busPatchId][digit->ManuId()]++;
+//      }
+//    } 
+//  }
+//  
+//  std::map<int,std::map<int,int> >::const_iterator it;
+//  
+//  Int_t nManuMax(0);
+//  
+//  for ( it = m.begin(); it != m.end(); ++it )
+//  {
+//    AliDebug(1,Form("BusPatch %3d has %3d manus",it->first,it->second.size()));
+//    nManuMax = std::max((Int_t)it->second.size(),nManuMax);
+//    std::map<int,int>::const_iterator it2;
+//    for ( it2 = it->second.begin(); it2 != it->second.end(); ++it2 )
+//    {
+//      AliDebug(1,Form("        BusPatch %3d Manu %4d Nch %3d",it->first,it2->first,it2->second));
+//    }
+//  }
+//  AliDebug(1,Form("Max manus per busPatch : %3d",nManuMax));
+//}
 
 //____________________________________________________________________
 Int_t AliMUONRawWriter::Digits2Raw()
@@ -209,9 +241,11 @@ Int_t AliMUONRawWriter::Digits2Raw()
   // This will get both tracker and trigger digits.
   fMUONData->GetDigits();
   
-  // tracking chambers
+//  CheckDigits();
 
-  for (Int_t iSt = 0; iSt < AliMUONConstants::NTrackingCh()/2; iSt++) {
+  // tracking chambers
+  
+  for (Int_t iSt = 0; iSt < AliMUONConstants::NTrackingCh()/2; ++iSt) {
 
     // open files for one station
     // cos station 3, 1/4 of DE's from 2 chambers has same DDL number 
@@ -241,6 +275,8 @@ Int_t AliMUONRawWriter::Digits2Raw()
      
   }
  
+  AliDebug(1,"Tracker written");
+  
   // trigger chambers
  
   // open files
@@ -258,10 +294,14 @@ Int_t AliMUONRawWriter::Digits2Raw()
   fclose(fFile[0]);
   fclose(fFile[1]);
 
+  AliDebug(1,"Trigger written");
+
   fMUONData->ResetDigits();
   fMUONData->ResetTrigger();  
   fMUONData->GetLoader()->UnloadDigits();
 
+  AliDebug(1,"muondata reset");
+  
   return kTRUE;
 }
 
@@ -271,20 +311,13 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   // writing DDL for tracker
   // used inverse mapping
   //
-  fTrackerTimer.Start(kFALSE);
+  fTimers[kWriteTracker].Start(kFALSE);
   
-
   static const Int_t kMAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
 
   // resets
   TClonesArray* muonDigits = 0;
 
-
-  // TExMap
-  AliMpExMap* busMap = new AliMpExMap(true);
-  busMap->SetSize(900);
-  
-  //
   // DDL header
   Int_t headerSize = sizeof(fHeader)/4;
 
@@ -315,91 +348,90 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   Int_t indexDsp;
   Int_t indexBlk;
 
-  // digits
-  Int_t* buffer = 0;
-  Int_t padX;
-  Int_t padY;
-  Int_t cathode = 0;
-  Int_t detElemId;
+  // buffer size (max'ed out)
+  // (((43 manus max per bus patch *64 channels + 4 bus patch words) * 5 bus patch 
+  //   + 10 dsp words)*5 dsps + 8 block words)*2 blocks 
+  static const Int_t kBufferSize = (((43*64 + 4)*5 + 10)*5 + 8)*2;
+  
   Int_t nDigits;
 
-  const AliMUONDigit* digit;
-
-  AliMUONBusStruct* busStructPtr = 0x0;
-
-
-  for (Int_t iCh = iSt*2; iCh <= iSt*2 + 1; iCh++) {
+  AliMpExMap busPatchMap(kTRUE);
+  
+  fTimers[kDigitLoop].Start(kFALSE);
+  
+  for (Int_t iCh = iSt*2; iCh <= iSt*2 + 1; ++iCh) {
 
     muonDigits = fMUONData->Digits(iCh);
-
+    
     nDigits = muonDigits->GetEntriesFast();
-    AliDebug(3,Form("ndigits = %d\n",nDigits));
- 
+    
     // loop over digit
-    for (Int_t idig = 0; idig < nDigits; idig++) {
-
-      digit = (AliMUONDigit*) muonDigits->UncheckedAt(idig);
-
-      padX = digit->PadX();
-      padY = digit->PadY();
+    for (Int_t idig = 0; idig < nDigits; ++idig) {
+      
+      AliMUONDigit* digit = static_cast<AliMUONDigit*>(muonDigits->UncheckedAt(idig));
+      
       charge = digit->ADC();
       if ( charge > kMAXADC )
-	{
-	  // This is most probably an error in the digitizer (which should insure
-	  // the adc is below kMAXADC), so make it a (non-fatal) error indeed.
-	  AliError(Form("adc value %d above %x. Setting to %x",
-			charge,kMAXADC,kMAXADC));
-	  charge = kMAXADC;
-	}
-      cathode = digit->Cathode();
-      detElemId = digit->DetElemId();
-
+      {
+        // This is most probably an error in the digitizer (which should insure
+        // the adc is below kMAXADC), so make it a (non-fatal) error indeed.
+        AliError(Form("adc value %d above %x for ch %d . Setting to %x. Digit is:",iCh,
+                      charge,kMAXADC,kMAXADC));
+        StdoutToAliError(digit->Print());
+        charge = kMAXADC;
+      }
+      
       // inverse mapping
+      fTimers[kGetBusPatch].Start(kFALSE);
       busPatchId = GetBusPatch(*digit);
+      fTimers[kGetBusPatch].Stop();
       if (busPatchId<0) continue;
-
+      
+      fTimers[kTest].Start(kFALSE);
+      busPatchId = GetBusPatch(*digit);
+      fTimers[kTest].Stop();
+      
       if ( digit->ManuId() > 0x7FF || digit->ManuId() < 0 ||
-	   digit->ManuChannel() > 0x3F || digit->ManuChannel() < 0 )
-	{
-	  StdoutToAliError(digit->Print(););
-	  AliFatal("ManuId,ManuChannel are invalid for the digit above.");
-	}
-    
+           digit->ManuChannel() > 0x3F || digit->ManuChannel() < 0 )
+      {
+        StdoutToAliError(digit->Print(););
+        AliFatal("ManuId,ManuChannel are invalid for the digit above.");
+      }
+      
       manuId = ( digit->ManuId() & 0x7FF ); // 11 bits
       channelId = ( digit->ManuChannel() & 0x3F ); // 6 bits
-
-      AliDebug(3,Form("input  IdDE %d busPatchId %d PadX %d PadY %d iCath %d \n", 
-		      detElemId, busPatchId, padX, padY, cathode));
-
-      AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", busPatchId, manuId, 
-		      channelId ));
-
+            
       //packing word
       word = 0;
       AliBitPacking::PackWord((UInt_t)manuId,word,18,28);
       AliBitPacking::PackWord((UInt_t)channelId,word,12,17);
       AliBitPacking::PackWord((UInt_t)charge,word,0,11);
-
+      
       // parity word
       parity = word & 0x1;
-      for (Int_t i = 1; i <= 30; i++) 
-	parity ^=  ((word >> i) & 0x1);
+      for (Int_t i = 1; i <= 30; ++i) 
+        parity ^=  ((word >> i) & 0x1);
       AliBitPacking::PackWord((UInt_t)parity,word,31,31);
-
-      // filling bus Map
-      if ( (busStructPtr = (AliMUONBusStruct*)busMap->GetValue(busPatchId)) ) {
-	busStructPtr->AddData(word);
-	busStructPtr->SetBusPatchId(busPatchId);
-     } else {
-	fBusStruct->SetLength(0);
-	fBusStruct->AddData(word);
-	fBusStruct->SetBusPatchId(busPatchId);
-	busMap->Add(busPatchId, (new AliMUONBusStruct(*fBusStruct)));
+      
+      AliMUONBusStruct* busStruct = 
+        static_cast<AliMUONBusStruct*>(busPatchMap.GetValue(busPatchId));
+      
+      if (!busStruct)
+      {
+        busStruct = new AliMUONBusStruct;
+        busStruct->SetDataKey(busStruct->GetDefaultDataKey());
+        busStruct->SetBusPatchId(busPatchId);
+        busStruct->SetLength(0);
+        busPatchMap.Add(busPatchId,busStruct);
       }
-    }
-  } // loop over chamber in station
 
-  // end of TreeD reading and storing in TClonesArray
+      // set sub Event
+      busStruct->AddData(word);
+      
+    } // idig
+  } // loop over chamber in station
+    
+  fTimers[kDigitLoop].Stop();
   
   // getting info for the number of buspatches
   Int_t iBusPatch;
@@ -408,154 +440,137 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   Int_t iDspMax; //number max of DSP per block
   Int_t iFile = 0;
 
-  busStructPtr = 0x0;
+  AliMUONBusStruct* busStructPtr(0x0);
 
   // open DDL files, 4 per station
-  for (Int_t iDDL = iSt*4; iDDL < 4 + iSt*4; iDDL++) {
+  for (Int_t iDDL = iSt*4; iDDL < 4 + iSt*4; ++iDDL) {
 
     fBusPatchManager->ResetBusItr(iDDL);
     fBusPatchManager->GetDspInfo(iDDL, iDspMax, iBusPerDSP);
 
+    Int_t buffer[kBufferSize];
+    
     totalDDLLength = 0;
-
-    // buffer size
-    // ((43 manus max*64 ch + 4 bus word) * 5 DSPs + 10 DSP word) * 2 blocks + 8 block words = 27588
-    static const Int_t kBufferSize = ((43*64 + 4)*5 + 10)*2 + 8;
-
-    // buffer allocation
-    buffer = new Int_t [kBufferSize];
 
     indexBlk = 0;
     indexDsp = 0;
     index = 0;
 
     // two blocks A and B per DDL
-    for (Int_t iBlock = 0; iBlock < 2; iBlock++) {
-
+    for (Int_t iBlock = 0; iBlock < 2; ++iBlock) {
+      
       // block header
       length = fBlockHeader->GetHeaderLength();
       memcpy(&buffer[index],fBlockHeader->GetHeader(),length*4);
       indexBlk = index;
       index += length; 
-
+      
       // 5 DSP's max per block
-      for (Int_t iDsp = 0; iDsp < iDspMax; iDsp++) {
-
-	// DSP header
-	length = fDspHeader->GetHeaderLength();
-	memcpy(&buffer[index],fDspHeader->GetHeader(),length*4);
-	indexDsp = index;
-	index += length; 
-
-	// 5 buspatches max per DSP
-	for (Int_t i = 0; i < iBusPerDSP[iDsp]; i++) {
-
-	  // iteration over bus patch in DDL
-	  if ((iBusPatch = fBusPatchManager->NextBusInDDL(iDDL)) == -1) {
-	    AliWarning(Form("Error in bus itr in DDL %d\n", iDDL));
-	    continue;
-	  }
-
-	  // 4 DDL's per station, condition needed for station 3
-	  iFile = iDDL - iSt*4; // works only if DDL begins at zero (as it should be) !!!
-
-	  AliDebug(3,Form("iSt %d iDDL %d iBlock %d iDsp %d busPatchId %d", iSt, iDDL, iBlock, 
-			  iDsp, iBusPatch));
-
-	  // check buspatch occurence in digit
-	  if ( (busStructPtr = (AliMUONBusStruct*)busMap->GetValue(iBusPatch)) ) 
-	    busPatchId = busStructPtr->GetBusPatchId();
-	  else 
-	    busPatchId = -1;
-
-	  // check if buspatchid has digit
-	  if (busPatchId != -1) {
-	    // add bus patch structure header
-	    length = busStructPtr->GetHeaderLength();
-	    memcpy(&buffer[index],busStructPtr->GetHeader(),length*4);
-	    index += length;
-
-	    // add bus patch data
-	    length = busStructPtr->GetLength();
-	    memcpy(&buffer[index],busStructPtr->GetData(),length*4);
-	    index += length;
-
-	    if (AliLog::GetGlobalDebugLevel() == 3) {
-	      for (Int_t j = 0; j < busStructPtr->GetLength(); j++) {
-		printf("busPatchId %d, manuId %d channelId %d\n", busStructPtr->GetBusPatchId(), 
-		       busStructPtr->GetManuId(j), busStructPtr->GetChannelId(j));
-	      }
-	    }
-	    
-	  } else { //buspatch == -1
-	    // writting anyhow buspatch structure (empty ones)
-	    buffer[index++] = busStructPtr->GetDefaultDataKey(); // fill it also for empty data size
-	    buffer[index++] = busStructPtr->GetHeaderLength(); // header length
-	    buffer[index++] = 0; // raw data length
-	    buffer[index++] = iBusPatch; // bus patch
-	  }
-	} // bus patch
-
-	// check if totalLength even
-	// set padding word in case
-	// Add one word 0xBEEFFACE at the end of DSP structure
-	totalDspLength  = index - indexDsp;
-	if ((totalDspLength % 2) == 1) { 
-	  buffer[indexDsp + fDspHeader->GetHeaderLength() - 2] = 1;
-	  buffer[index++] = fDspHeader->GetDefaultPaddingWord();
-	  totalDspLength++;
-	}
-
-	dspLength          = totalDspLength - fDspHeader->GetHeaderLength();
-
-	buffer[indexDsp+1] = totalDspLength; // dsp total length
-	buffer[indexDsp+2] = dspLength; // data length  
-	   
+      for (Int_t iDsp = 0; iDsp < iDspMax; ++iDsp) {
+        
+        // DSP header
+        length = fDspHeader->GetHeaderLength();
+        memcpy(&buffer[index],fDspHeader->GetHeader(),length*4);
+        indexDsp = index;
+        index += length; 
+        
+        // 5 buspatches max per DSP
+        for (Int_t i = 0; i < iBusPerDSP[iDsp]; i++) {
+          
+          iBusPatch = fBusPatchManager->NextBusInDDL(iDDL);
+          
+          // iteration over bus patch in DDL
+          if (iBusPatch == -1) {
+            AliWarning(Form("Error in bus itr in DDL %d\n", iDDL));
+            continue;
+          }
+          
+          // 4 DDL's per station, condition needed for station 3
+          iFile = iDDL - iSt*4; // works only if DDL begins at zero (as it should be) !!!
+          
+          busStructPtr = static_cast<AliMUONBusStruct*>(busPatchMap.GetValue(iBusPatch));
+          
+          // check if buspatchid has digit
+          if (busStructPtr) {
+            // add bus patch structure header
+            length = busStructPtr->GetHeaderLength();
+            memcpy(&buffer[index],busStructPtr->GetHeader(),length*4);
+            index += length;
+            
+            // add bus patch data
+            length = busStructPtr->GetLength();
+            memcpy(&buffer[index],busStructPtr->GetData(),length*4);
+            index += length;
+            
+            if (AliLog::GetGlobalDebugLevel() == 3) {
+              for (Int_t j = 0; j < busStructPtr->GetLength(); j++) {
+                printf("busPatchId %d, manuId %d channelId %d\n", busStructPtr->GetBusPatchId(), 
+                       busStructPtr->GetManuId(j), busStructPtr->GetChannelId(j));
+              }
+            }
+          } else {
+            // writting anyhow buspatch structure (empty ones)
+            buffer[index++] = busStructPtr->GetDefaultDataKey(); // fill it also for empty data size
+            buffer[index++] = busStructPtr->GetHeaderLength(); // header length
+            buffer[index++] = 0; // raw data length
+            buffer[index++] = iBusPatch; // bus patch
+          }
+        } // bus patch
+        
+        // check if totalLength even
+        // set padding word in case
+        // Add one word 0xBEEFFACE at the end of DSP structure
+        totalDspLength  = index - indexDsp;
+        if ((totalDspLength % 2) == 1) { 
+          buffer[indexDsp + fDspHeader->GetHeaderLength() - 2] = 1;
+          buffer[index++] = fDspHeader->GetDefaultPaddingWord();
+          totalDspLength++;
+        }
+        
+        dspLength          = totalDspLength - fDspHeader->GetHeaderLength();
+        
+        buffer[indexDsp+1] = totalDspLength; // dsp total length
+        buffer[indexDsp+2] = dspLength; // data length  
+        
       } // dsp
-
+      
       totalBlkLength  = index - indexBlk;
       blkLength       = totalBlkLength - fBlockHeader->GetHeaderLength();
       totalDDLLength += totalBlkLength;
-
+      
       buffer[indexBlk+1] = totalBlkLength; // total block length
       buffer[indexBlk+2] = blkLength;
-
+      
     } // block
     
     //writting onto disk
     // write DDL 1 - 4
-    fHeader.fSize = (totalDDLLength + headerSize) * 4;// total length in bytes
+    // total length in bytes
+    fHeader.fSize = (totalDDLLength + headerSize) * 4;
+      
     fwrite((char*)(&fHeader),headerSize*4,1,fFile[iFile]);
     fwrite(buffer,sizeof(int),index,fFile[iFile]);
-   
-    delete[] buffer;
   }
-
-  delete busMap;
-  fTrackerTimer.Stop();
+  
+  fTimers[kWriteTracker].Stop();
   return kTRUE;
 }
 
 //____________________________________________________________________
-Int_t AliMUONRawWriter::GetBusPatch(const AliMUONDigit& digit)
+Int_t AliMUONRawWriter::GetBusPatch(Int_t detElemId, Int_t manuId) const
 {
   //
   // Determine the BusPatch this digit belongs to.
   //
-  fMappingTimer.Start(kFALSE);
   
   Int_t* ptr = 0;
-
-  // information from digits
-  Int_t detElemId  = digit.DetElemId();
-
-  AliMpVSegmentation* seg = 
-    fSegFactory->CreateMpSegmentationByElectronics(detElemId, digit.ManuId());
+    
+  AliMpPlaneType plane = 
+    (manuId & AliMpConstants::ManuMask(kNonBendingPlane)) ? 
+    kNonBendingPlane : kBendingPlane; 
   
-  AliMpPlaneType plane = seg->PlaneType();
-
   AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
-
+  
   if ( stationType == kStation1 || stationType == kStation2 )
   {
     if (plane == kBendingPlane) 
@@ -578,21 +593,21 @@ Int_t AliMUONRawWriter::GetBusPatch(const AliMUONDigit& digit)
       ptr = &fgManuPerBusSwp2NB[0];
     }
   }
-
+  
   // Getting buspatch id
   TArrayI* vec = fBusPatchManager->GetBusfromDE(detElemId);
   Int_t pos = 0;
-
-  Int_t m = ( digit.ManuId() & 0x3FF ); // remove bit 10
-                                //FIXME : how can we remove that condition
-  // on the 10-th bit ? All the rest need not any knowledge about it,
-  // can't we find a way to get manu<->buspatch transparent to this too ?
+  
+  Int_t m = ( manuId & 0x3FF ); // remove bit 10
+                                        //FIXME : how can we remove that condition
+                                        // on the 10-th bit ? All the rest need not any knowledge about it,
+                                        // can't we find a way to get manu<->buspatch transparent to this too ?
   
   if ( stationType == kStation1 || stationType == kStation2 )
   {
-    for (Int_t i = 0; i < 12; i++)
+    for (pos = 11; pos >=0 ; --pos)
     {
-      if (m >= *(ptr + pos++)) break;
+      if (m >= ptr[pos]) break;
     }
   }
   else 
@@ -600,24 +615,38 @@ Int_t AliMUONRawWriter::GetBusPatch(const AliMUONDigit& digit)
     // offset of 100 in manuId for following bus patch
     pos = m/100;
   }
-
+  
+  
   if (pos >(Int_t) vec->GetSize())
   {
     AliError(Form("pos greater %d than size %d manuId %d detElemId %d \n", 
-		    pos, (Int_t)vec->GetSize(), digit.ManuId(), detElemId));
+                  pos, (Int_t)vec->GetSize(), manuId, detElemId));
     AliError(Form("Chamber %s Plane %s manuId %d m %d",
-                    StationTypeName(stationType).Data(),
-                    PlaneTypeName(plane).Data(),
-                    digit.ManuId(),
-                    m));
+                  StationTypeName(stationType).Data(),
+                  PlaneTypeName(plane).Data(),
+                  manuId,
+                  m));
     return -1;
   }
   
   Int_t busPatchId = vec->At(pos);
-
-  fMappingTimer.Stop();
+  
+  if ( ( stationType == kStation1 || stationType == kStation2 ) &&
+       ( plane == kNonBendingPlane ) )
+  {
+    busPatchId += 12;
+  }
   
   return busPatchId;
+}
+
+//____________________________________________________________________
+Int_t AliMUONRawWriter::GetBusPatch(const AliMUONDigit& digit) const
+{
+  //
+  // Determine the BusPatch this digit belongs to.
+  //
+  return GetBusPatch(digit.DetElemId(),digit.ManuId());
 }
 
 //____________________________________________________________________
@@ -626,7 +655,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   //
   // Write trigger DDL
   //
-  fTriggerTimer.Start(kFALSE);
+  fTimers[kWriteTrigger].Start(kFALSE);
   
  // DDL event one per half chamber
 
@@ -646,6 +675,12 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   // global trigger for trigger pattern
   globalTrigger = fMUONData->GlobalTrigger(); 
   gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
+  if (!gloTrg) 
+  {
+    fTimers[kWriteTrigger].Stop();
+    return 0;
+  }
+  
   Int_t gloTrigResp = gloTrg->GetGlobalResponse();
 
   // local trigger 
@@ -902,7 +937,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   }
   delete[] buffer;
 
-  fTriggerTimer.Stop();
+  fTimers[kWriteTrigger].Stop();
   
   return kTRUE;
 }

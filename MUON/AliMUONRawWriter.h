@@ -5,16 +5,14 @@
 
 /*$Id$*/
 
-/// \ingroup rec
+/// \ingroup sim
 /// \class AliMUONRawWriter
 /// \brief Raw data class for trigger and tracker chambers
 ///
-/// Writring Raw data class for trigger and tracker chambers
+/// \author Christian Finck and Laurent Aphecetche, Subatech
 
 #include <TObject.h>
-#include "AliMUONBusStruct.h"
 #include "AliRawDataHeader.h"
-#include "TStopwatch.h"
 
 class AliMUONData;
 class AliMUONDigit;
@@ -23,11 +21,13 @@ class AliMUONBlockHeader;
 class AliMUONDarcHeader;
 class AliMUONRegHeader;
 class AliMUONLocalStruct;
+class AliMpExMap;
+class AliMUONBusStruct;
 class AliMUONGlobalTrigger;
 class AliMpBusPatch;
 class AliMUONTriggerCrateStore;
 class AliMpSegFactory;
-class AliMpExMap;
+class TStopwatch;
 
 class AliMUONRawWriter : public TObject 
 {
@@ -49,7 +49,10 @@ protected:
   
 private:
 
-  Int_t GetBusPatch(const AliMUONDigit& digit);
+    void AddData(const AliMUONBusStruct& event);
+
+  Int_t GetBusPatch(const AliMUONDigit& digit) const;
+  Int_t GetBusPatch(Int_t detElemId, Int_t manuId) const;
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
 
@@ -58,10 +61,9 @@ private:
   AliMUONData*  fMUONData;           //!< Data container for MUON subsystem 
  
   FILE*         fFile[4];            //!< DDL binary file pointer one per 1/2 chamber, 4 for one station
-   
+
   AliMUONBlockHeader* fBlockHeader;  //!< DDL block header class pointers
   AliMUONDspHeader*   fDspHeader;    //!< DDL Dsp header class pointers
-  AliMUONBusStruct*   fBusStruct;    //!< DDL bus patch structure class pointers
   AliMUONDarcHeader*  fDarcHeader;   //!< DDL darc header class pointers
   AliMUONRegHeader*   fRegHeader;    //!< DDL regional header class pointers
   AliMUONLocalStruct* fLocalStruct;  //!< DDL local structure class pointers
@@ -79,16 +81,14 @@ private:
   static Int_t fgManuPerBusSwp2B[12];   //!< array containing the first manuId for each buspatch st2, Bending
   static Int_t fgManuPerBusSwp2NB[12];  //!< array containing the first manuId for each buspatch st2, NBending
   
-  TStopwatch fTrackerTimer;             //!< time watcher for tracker part
-  TStopwatch fTriggerTimer;             //!< time watcher for trigger part
-  TStopwatch fMappingTimer;             //!< time watcher for mapping-tracker part
+  TStopwatch* fTimers;             //!< time watchers
   
   AliMpSegFactory* fSegFactory;         //!< mapping segmentation factory
   
   AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
   AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs); // assignment operator
 
-  ClassDef(AliMUONRawWriter,1) // MUON cluster reconstructor in ALICE
+  ClassDef(AliMUONRawWriter,2) // MUON cluster reconstructor in ALICE
 };
 	
 #endif
