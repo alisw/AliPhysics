@@ -1657,4 +1657,36 @@ void AliPMDv1::GetParameters()
 
   
 }
+// ---------------------------------------------------------------
+void AliPMDv1::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  // 
+  SetSectorAlignable();
 
+}
+// ----------------------------------------------------------------
+void AliPMDv1::SetSectorAlignable() const
+{
+  //
+
+  TString vpsector = "ALIC_1/EPM";
+  TString vpappend = "_1";
+
+  TString snsector="PMD/Sector";
+
+  TString volpath, symname;
+  
+  for(Int_t cnt=1; cnt<=4; cnt++){
+    volpath = vpsector;
+    volpath += cnt;
+    volpath += vpappend;
+    symname = snsector;
+    symname += cnt;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+  }
+}
+// ------------------------------------------------------------------
