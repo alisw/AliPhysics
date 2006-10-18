@@ -189,7 +189,7 @@ void TPCLoader::UpdateSectors()
           s->SetThreshold(fInitThreshold);
         }
 
-	s->SetTrans(kTRUE);
+	s->SetAutoTrans(kTRUE);
 	s->SetFrameColor(36);
 
 	gReve->AddRenderElement(this, s);
@@ -219,7 +219,7 @@ void TPCLoader::CreateSectors3D()
       if(fSec2Ds[i] != 0)
 	s->CopyVizParams(*fSec2Ds[i]);
 
-      s->SetTrans(kTRUE);
+      s->SetAutoTrans(kTRUE);
       s->SetFrameColor(36);
 
       gReve->AddRenderElement(this, s);

@@ -48,7 +48,7 @@ void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
 
   s = new TPCSector2D();
   s->SetSectorID(default_sector);
-  s->SetTrans(kTRUE); // place on proper 3D coordinates
+  s->SetAutoTrans(kTRUE); // place on proper 3D coordinates
   s->SetDataSource(x);
   s->SetFrameColor(36);
   gReve->AddRenderElement(s);
@@ -56,7 +56,7 @@ void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
 
   t = new TPCSector3D();
   t->SetSectorID(default_sector);
-  t->SetTrans(kTRUE);
+  t->SetAutoTrans(kTRUE);
   t->SetDataSource(x);
   t->SetMaxTime(1023);
   t->SetDriftVel(2.273);

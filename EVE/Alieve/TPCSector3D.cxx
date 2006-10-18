@@ -86,9 +86,7 @@ void TPCSector3D::Paint(Option_t* /*option*/)
   buffer.fID           = this;
   buffer.fColor        = 1;
   buffer.fTransparency = 0;
-  buffer.fLocalFrame   = fTrans; 
-  if (fTrans)
-    memcpy(buffer.fLocalMaster, fMatrix, 16*sizeof(Double_t));
+  fHMTrans.SetBuffer3D(buffer);
   buffer.SetSectionsValid(TBuffer3D::kCore);
    
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
@@ -96,7 +94,7 @@ void TPCSector3D::Paint(Option_t* /*option*/)
     return;
   }
 
-  printf("TPCSector3D::Paint only GL supported.\n");
+  Error("TPCSector3D::Paint", "only direct OpenGL rendering supported.");
   return;
 }
 

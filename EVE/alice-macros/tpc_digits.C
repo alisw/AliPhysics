@@ -66,7 +66,7 @@ void tpc_digits(Int_t mode=0)
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
-	s->SetTrans(true);
+	s->SetAutoTrans(kTRUE);
 	gReve->AddRenderElement(l, s);
       }
     }
@@ -81,7 +81,7 @@ void tpc_digits(Int_t mode=0)
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
-	s->SetTrans(true);
+	s->SetAutoTrans(kTRUE);
 	gReve->AddRenderElement(l, s);
       }
     }
@@ -112,7 +112,7 @@ void tpc_digits(Int_t mode=0)
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
-	s->SetTrans(true);
+	s->SetAutoTrans(kTRUE);
 	gReve->AddRenderElement(l, s);
       }
     }
@@ -127,7 +127,7 @@ void tpc_digits(Int_t mode=0)
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
-	s->SetTrans(true);
+	s->SetAutoTrans(kTRUE);
 	gReve->AddRenderElement(l, s);
       }
     }
