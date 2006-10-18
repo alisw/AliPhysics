@@ -72,15 +72,15 @@ public:
    static const Int_t  fgkHeaderLength;   ///< header length in word
    static const UInt_t fgkDefaultDataKey; ///< default data key word for Bus Patch Header 
 
-   UInt_t*   fData;          ///< data 
-
    Int_t     fBufSize;       ///< initial size for data array
+
+   UInt_t*   fData;          ///< data 
 
    Int_t     fDspId;         ///< Dsp number for monitoring
    Int_t     fBlkId;         ///< block numer for monitoring
 
    void ResizeData(Int_t size = 0);
 
-   ClassDef(AliMUONBusStruct,2)  // MUON DDL Tracker
+   ClassDef(AliMUONBusStruct,3)  // MUON DDL Tracker
 };
 #endif

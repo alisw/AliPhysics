@@ -42,8 +42,10 @@ AliMUONBusStruct::AliMUONBusStruct()
      fTotalLength(0),
      fLength(0),
      fBusPatchId(0),
-     fData(new UInt_t[1024]),
-     fBufSize(1024),
+     fBufSize(43*64), 
+  /* assuming 43 manus max per bustpatch.
+  Anyway fData is resized where needed (though it makes it slower) */
+     fData(new UInt_t[fBufSize]),
      fDspId(0),
      fBlkId(0)
 {
@@ -65,8 +67,8 @@ AliMUONBusStruct::~AliMUONBusStruct()
 void AliMUONBusStruct::SetAlloc(Int_t size)
 {
   //
-  // Allocate size per default 1024;
-  // return if size < 1024
+  // Allocate size 
+  // return if size < fBufSize 
   //
   if (size < fBufSize) 
     return;
@@ -91,6 +93,7 @@ void AliMUONBusStruct::ResizeData(Int_t size)
   // In case of resizing the vector
   // the most simplest way to do it
   //
+  AliInfo("reallocating");
   if (size == 0)
     fBufSize *= 2;
   else
@@ -109,8 +112,8 @@ AliMUONBusStruct(const AliMUONBusStruct& event)
     fTotalLength(event.fTotalLength),
     fLength(event.fLength),
     fBusPatchId(event.fBusPatchId),
-    fData(new UInt_t[event.fBufSize]),
     fBufSize(event.fBufSize),
+    fData(new UInt_t[event.fBufSize]),
     fDspId(event.fDspId),
     fBlkId(event.fBlkId)
 {
@@ -162,7 +165,7 @@ void AliMUONBusStruct::Clear(Option_t *)
   // clear
   // delete the allocated memory 
   //
-
+  AliInfo("here");
   delete[] fData;
 }
 //___________________________________________
