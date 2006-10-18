@@ -50,7 +50,7 @@ RGValuator::RGValuator(const TGWindow *p, const char* title,
   fSlider (0)
 {}
 
-void RGValuator::Build()
+void RGValuator::Build(Bool_t connect)
 {
   TGCompositeFrame *hf1, *hfs;
   if(fShowSlider && fSliderNewLine) {
@@ -85,16 +85,17 @@ void RGValuator::Build()
     hf1->AddFrame(labfr, labfrh);
   }
 
-  // entry
+  // number-entry
   TGLayoutHints*  elh =  new TGLayoutHints(kLHintsLeft, 0,0,0,0);
   fEntry = new TGNumberEntry(hf1, 0, fNELength);
   fEntry->SetHeight(fNEHeight);
   fEntry->GetNumberEntry()->SetToolTipText("Enter Slider Value");
   hf1->AddFrame(fEntry, elh);
 
-  fEntry->Associate(this);   
-  fEntry->Connect("ValueSet(Long_t)",
-		  "Reve::RGValuator", this, "EntryCallback()");
+  fEntry->Associate(this);  
+  if (connect)
+    fEntry->Connect("ValueSet(Long_t)",
+		    "Reve::RGValuator", this, "EntryCallback()");
   
   // slider
   if(fShowSlider) {
@@ -102,8 +103,9 @@ void RGValuator::Build()
     hfs->AddFrame(fSlider, new TGLayoutHints(kLHintsLeft|kLHintsTop, 1,1,0,0));
    
     fSlider->Associate(this);
-    fSlider->Connect("PositionChanged(Int_t)",
-		     "Reve::RGValuator", this, "SliderCallback()");
+    if (connect)
+      fSlider->Connect("PositionChanged(Int_t)",
+		       "Reve::RGValuator", this, "SliderCallback()");
   }
 }
 
@@ -204,7 +206,7 @@ RGDoubleValuator::RGDoubleValuator(const TGWindow *p, const char* title,
   fSlider(0)
 {}
 
-void RGDoubleValuator::Build()
+void RGDoubleValuator::Build(Bool_t connect)
 {
   TGCompositeFrame *hf1, *hfs;
   if(fShowSlider) {
@@ -245,16 +247,18 @@ void RGDoubleValuator::Build()
   fMinEntry->SetHeight(fNEHeight);
   fMinEntry->GetNumberEntry()->SetToolTipText("Enter Slider Min Value");
   hf1->AddFrame(fMinEntry, new TGLayoutHints(kLHintsLeft, 0,0,0,0));
-  fMinEntry->Connect("ValueSet(Long_t)",
-		     "Reve::RGDoubleValuator", this, "MinEntryCallback()");
+  if (connect)
+    fMinEntry->Connect("ValueSet(Long_t)",
+		       "Reve::RGDoubleValuator", this, "MinEntryCallback()");
   fMinEntry->Associate(this);   
    
   fMaxEntry = new TGNumberEntry(this, 0, fNELength);
   fMaxEntry->SetHeight(fNEHeight);
   fMaxEntry->GetNumberEntry()->SetToolTipText("Enter Slider Max Value");
   hf1->AddFrame(fMaxEntry,  new TGLayoutHints(kLHintsLeft, 2,0,0,0));
-  fMaxEntry->Connect("ValueSet(Long_t)",
-		     "Reve::RGDoubleValuator", this, "MaxEntryCallback()");
+  if (connect)
+    fMaxEntry->Connect("ValueSet(Long_t)",
+		       "Reve::RGDoubleValuator", this, "MaxEntryCallback()");
   fMaxEntry->Associate(this);   
   
   // slider
@@ -262,8 +266,9 @@ void RGDoubleValuator::Build()
     fSlider = new TGDoubleHSlider(hfs, GetWidth(), kDoubleScaleBoth);
     hfs->AddFrame(fSlider, new TGLayoutHints(kLHintsTop|kLHintsLeft, 0,0,1,0));
     fSlider->Associate(this);
-    fSlider->Connect("PositionChanged()",
-		     "Reve::RGDoubleValuator", this, "SliderCallback()");
+    if (connect)
+      fSlider->Connect("PositionChanged()",
+		       "Reve::RGDoubleValuator", this, "SliderCallback()");
   }
 }
 
@@ -318,3 +323,66 @@ void RGDoubleValuator::ValueSet()
 {
   Emit("ValueSet()");
 }
+
+
+/**************************************************************************/
+// RGTriVecValuator
+/**************************************************************************/
+
+RGTriVecValuator::RGTriVecValuator(const TGWindow *p, const char* name,
+				   UInt_t w, UInt_t h) :
+  TGCompositeFrame(p, w, h),
+
+  fLabelWidth (0),
+  fNELength   (5),
+  fNEHeight   (20)
+{
+  SetName(name);
+}
+
+RGTriVecValuator::~RGTriVecValuator()
+{}
+
+void RGTriVecValuator::Build(Bool_t vertical, const char* lab0, const char* lab1, const char* lab2)
+{
+  if (vertical) SetLayoutManager(new TGVerticalLayout(this));
+  else          SetLayoutManager(new TGHorizontalLayout(this));
+
+  const char *labs[3] = { lab0, lab1, lab2 };
+  TGLayoutHints* lh;
+  for (Int_t i=0; i<3; ++i) {
+    fVal[i] = new RGValuator(this, labs[i], 10, 0);
+    fVal[i]->SetLabelWidth(fLabelWidth);
+    fVal[i]->SetShowSlider(kFALSE);
+    fVal[i]->SetNELength(fNELength);
+    fVal[i]->SetNEHeight(fNEHeight);
+    fVal[i]->Build();
+    fVal[i]->Connect
+      ("ValueSet(Double_t)", "Reve::RGTriVecValuator", this, "ValueSet()");
+    if (vertical) lh = new TGLayoutHints(kLHintsTop,  1, 1, 1, 1);
+    else          lh = new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 1, 1);
+    AddFrame(fVal[i], lh);
+  }
+}
+
+void RGTriVecValuator::ValueSet()
+{
+  Emit("ValueSet()");
+}
+
+/**************************************************************************/
+
+void RGTriVecValuator::SetLimits(Int_t min, Int_t max)
+{
+  for (Int_t i=0; i<3; ++i)
+    fVal[i]->SetLimits(min, max);
+}
+
+void RGTriVecValuator::SetLimits(Float_t min, Float_t max,
+				 TGNumberFormat::EStyle nef)
+{
+  for (Int_t i=0; i<3; ++i)
+    fVal[i]->SetLimits(min, max, 0, nef);
+}
+
+
