@@ -37,6 +37,9 @@
 #pragma link C++ class Reve::RecV0+;
 #pragma link C++ class Reve::GenInfo+;
 
+// ZTrans
+#pragma link C++ class Reve::ZTrans-;
+
 // EventBase, VSDEvent, VSD
 #pragma link C++ class Reve::EventBase+;
 #pragma link C++ class Reve::EvTree+;
@@ -79,6 +82,7 @@
 #pragma link C++ class Reve::RGValuatorBase+;
 #pragma link C++ class Reve::RGValuator+;
 #pragma link C++ class Reve::RGDoubleValuator+;
+#pragma link C++ class Reve::RGTriVecValuator+;
 
 //================================
 // g3d/
@@ -105,9 +109,15 @@
 #pragma link C++ class Reve::GeoNodeRnrEl+;
 #pragma link C++ class Reve::GeoTopNodeRnrEl+;
 
+// TrianlgeSet
+#pragma link C++ class Reve::TriangleSet;
+
 //================================
 // ged/
 //================================
+
+#pragma link C++ class Reve::ZTransSubEditor+;
+#pragma link C++ class Reve::ZTransEditor+;
 
 #pragma link C++ class Reve::RenderElementEditor+;
 #pragma link C++ class Reve::TrackListEditor+;
@@ -116,6 +126,8 @@
 
 #pragma link C++ class Reve::PointSetArrayEditor+;
 
+#pragma link C++ class Reve::TriangleSetEditor;
+
 //================================
 // gl/
 //================================
@@ -123,3 +135,4 @@
 // ReveGLRenderers
 #pragma link C++ class Reve::QuadSetGL+;
 #pragma link C++ class Reve::BoxSetGL+;
+#pragma link C++ class Reve::TriangleSetGL;
