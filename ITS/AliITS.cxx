@@ -1292,9 +1292,9 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 void AliITS::UpdateInternalGeometry(){
 
   //reads new geometry from TGeo 
-  Info("UpdateInternalGeometry", "Delete ITSgeom and create a new one reading TGeo");
-  AliITSInitGeometry *initgeom = new AliITSInitGeometry("AliITSvPPRasymmFMD",2);
-  AliITSgeom* geom = initgeom->CreateAliITSgeom();
+  AliDebug(1,"Delete ITSgeom and create a new one reading TGeo");
+  AliITSInitGeometry initgeom("AliITSvPPRasymmFMD",2);
+  AliITSgeom* geom = initgeom.CreateAliITSgeom();
   SetITSgeom(geom);
 
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
