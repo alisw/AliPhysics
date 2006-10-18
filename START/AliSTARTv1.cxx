@@ -37,6 +37,7 @@
 #include <TNode.h>
 #include <TTUBE.h>
 #include <TVirtualMC.h>
+#include "TGeoManager.h"
 
 #include "AliLog.h"
 #include "AliMagF.h"
@@ -56,12 +57,12 @@ ClassImp(AliSTARTv1)
 
 //--------------------------------------------------------------------
 AliSTARTv1::AliSTARTv1(const char *name, const char *title):
- AliSTART(name,title)
+  AliSTART(name,title),
+  fIdSens1(0)
 {
   //
   // Standart constructor for START Detector version 0
   //
-  fIdSens1=0;
   fIshunt = 2;
 }
 //_____________________________________________________________________________
@@ -357,6 +358,43 @@ void AliSTARTv1::CreateGeometry()
          
  
 }    
+//------------------------------------------------------------------------
+void AliSTARTv1::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  //
+
+  TString volPath;
+  TString symName, sn;
+
+  TString vpA  = "ALIC_1/0STL_1/0INS_";
+  TString vpC  = "ALIC_1/0STR_1/0INS_";
+  TString vpInside  = "/0PMT_1/OTOP_1";
+
+
+  for (Int_t imod=0; imod<24; imod++)
+    {
+      if (imod < 12) 
+	{volPath  = vpA; sn="START/A/PMT";}
+      else  
+	{volPath  = vpC; sn="START/C/PMT";}
+      volPath += imod+1;
+      volPath += vpInside;
+      
+      symName = sn;
+      symName += imod+1;
+      
+      AliDebug(2,"--------------------------------------------");
+      AliDebug(2,Form("Alignable object %d", imod));
+      AliDebug(2,Form("volPath=%s\n",volPath.Data()));
+      AliDebug(2,Form("symName=%s\n",symName.Data()));
+      AliDebug(2,"--------------------------------------------");
+      gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+    }
+}   
 //------------------------------------------------------------------------
 void AliSTARTv1::CreateMaterials()
 {

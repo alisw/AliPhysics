@@ -21,11 +21,13 @@ public:
   AliSTARTv1(const char *name, const char *title);
   virtual       ~AliSTARTv1();
   virtual void   CreateGeometry();
+  virtual void   AddAlignableVolumes() const;
   virtual void   CreateMaterials();
   virtual void   DrawDetector();
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   virtual void   StepManager();
+
 
 protected:
   Int_t fIdSens1; // Sensetive volume  in START
