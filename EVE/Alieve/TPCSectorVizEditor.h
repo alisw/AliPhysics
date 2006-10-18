@@ -14,6 +14,7 @@ class TGHSlider;
 namespace Reve {
 class RGValuator;
 class RGDoubleValuator;
+class ZTransSubEditor;
 }
 
 namespace Alieve {
@@ -28,8 +29,10 @@ class TPCSectorVizEditor : public TGedFrame
 protected:
   TPCSectorViz* fM; // fModel dynamic-casted to TPCSectorVizEditor
 
+  Reve::ZTransSubEditor* fHMTrans;
+
   Reve::RGValuator* fSectorID;
-  TGCheckButton*    fTrans;
+  TGCheckButton*    fAutoTrans;
 
   TGCheckButton*    fRnrInn;
   TGCheckButton*    fRnrOut1;
@@ -48,7 +51,7 @@ public:
   virtual void SetModel(TObject* obj);
 
   void DoSectorID();
-  void DoTrans();
+  void DoAutoTrans();
 
   void DoRnrInn();
   void DoRnrOut1();

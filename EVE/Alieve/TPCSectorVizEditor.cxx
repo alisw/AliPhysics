@@ -4,6 +4,7 @@
 #include <Alieve/TPCSectorViz.h>
 
 #include <Reve/RGValuators.h>
+#include <Reve/ZTransEditor.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -29,15 +30,24 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p,
                                        UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
-  fSectorID  (0), fTrans   (0),
-  fRnrInn    (0), fRnrOut1 (0), fRnrOut2(0),
-  fThreshold (0), fMaxVal  (0),
+  fHMTrans   (0),
+  fSectorID  (0), fAutoTrans (0),
+  fRnrInn    (0), fRnrOut1   (0), fRnrOut2(0),
+  fThreshold (0), fMaxVal    (0),
   fTime      (0)
 {
-  MakeTitle("TPCSectorViz");
   fPriority = 40;
 
   Int_t labelW = 60;
+
+  MakeTitle("Transformation matrix");
+
+  fHMTrans = new ZTransSubEditor(this);
+  fHMTrans->Connect("UseTrans()",     "Alieve::TPCSectorVizEditor", this, "Update()");
+  fHMTrans->Connect("TransChanged()", "Alieve::TPCSectorVizEditor", this, "Update()");
+  AddFrame(fHMTrans, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
+
+  MakeTitle("TPCSectorViz");
 
   fSectorID = new RGValuator(this, "SectorID", 110, 0);
   fSectorID->SetLabelWidth(labelW);
@@ -48,11 +58,11 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p,
   fSectorID->SetToolTip("0-17 +z plate; 18-35 -z plate");
   fSectorID->Connect("ValueSet(Double_t)",
 		     "Alieve::TPCSectorVizEditor", this, "DoSectorID()");
-  // Reuse sectorID for transformation button
-  fTrans = new TGCheckButton(fSectorID, "Trans");
-  fTrans->SetToolTipText("Translate to true position");
-  fSectorID->AddFrame(fTrans, new TGLayoutHints(kLHintsLeft, 12, 0, 1, 0));
-  fTrans->Connect("Toggled(Bool_t)","Alieve::TPCSectorVizEditor", this, "DoTrans()");
+  // Reuse sectorID for auto-transformation button
+  fAutoTrans = new TGCheckButton(fSectorID, "AutoTrans");
+  fAutoTrans->SetToolTipText("Automatically set transformation to true position");
+  fSectorID->AddFrame(fAutoTrans, new TGLayoutHints(kLHintsLeft, 12, 0, 1, 0));
+  fAutoTrans->Connect("Toggled(Bool_t)","Alieve::TPCSectorVizEditor", this, "DoAutoTrans()");
   AddFrame(fSectorID, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
   {
@@ -113,8 +123,10 @@ void TPCSectorVizEditor::SetModel(TObject* obj)
 {
   fM = dynamic_cast<TPCSectorViz*>(obj);
 
+  fHMTrans->SetDataFromTrans(&fM->fHMTrans);
+
   fSectorID->SetValue(fM->fSectorID);
-  fTrans->SetState(fM->fTrans  ? kButtonDown : kButtonUp);
+  fAutoTrans->SetState(fM->fAutoTrans  ? kButtonDown : kButtonUp);
 
   fRnrInn ->SetState(fM->fRnrInn  ? kButtonDown : kButtonUp);
   fRnrOut1->SetState(fM->fRnrOut1 ? kButtonDown : kButtonUp);
@@ -134,9 +146,9 @@ void TPCSectorVizEditor::DoSectorID()
   Update();
 }
 
-void TPCSectorVizEditor::DoTrans()
+void TPCSectorVizEditor::DoAutoTrans()
 {
-  fM->SetTrans(fTrans->IsOn());
+  fM->SetAutoTrans(fAutoTrans->IsOn());
   Update();
 }
 

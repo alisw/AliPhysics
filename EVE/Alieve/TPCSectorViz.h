@@ -4,6 +4,7 @@
 #define ALIEVE_TPCSectorViz_H
 
 #include <Reve/RenderElement.h>
+#include <Reve/ZTrans.h>
 
 #include <TNamed.h> 
 #include <TAtt3D.h>
@@ -49,8 +50,8 @@ protected:
 
   Color_t     fFrameColor;
   Bool_t      fRnrFrame;
-  Bool_t      fTrans;
-  Double_t    fMatrix[16];
+  Reve::ZTrans fHMTrans;
+  Bool_t       fAutoTrans;
   UInt_t      fRTS;       //! Rendering TimeStamp
 
   void SetupColor(Int_t val, UChar_t* pix) const;
@@ -68,7 +69,7 @@ public:
   virtual void CopyVizParams(const TPCSectorViz& v);
 
   virtual UInt_t IncRTS()           { return ++fRTS; }
-  virtual Bool_t CanEditMainColor() { return true; }
+  virtual Bool_t CanEditMainColor() { return kTRUE; }
 
   void SetDataSource(TPCData* data);
   void SetSectorID(Int_t id);
@@ -90,7 +91,10 @@ public:
 
   void SetFrameColor(Color_t col)     { fFrameColor = col; IncRTS(); }
   virtual void SetRnrFrame(Bool_t rf) { fRnrFrame = rf;  IncRTS(); }
-  void SetTrans(Bool_t t);
+  void SetAutoTrans(Bool_t t);
+
+  Reve::ZTrans& RefHMTrans() { return fHMTrans; }
+  void SetUseTrans(Bool_t t) { fHMTrans.SetUseTrans(t); }
 
   ClassDef(TPCSectorViz, 1); // Base-class for TPC raw-data visualization
 }; // endclass TPCSectorViz

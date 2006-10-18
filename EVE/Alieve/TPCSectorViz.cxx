@@ -40,7 +40,7 @@ TPCSectorViz::TPCSectorViz(const Text_t* n, const Text_t* t) :
 
   fFrameColor ((Color_t) 4),
   fRnrFrame (kTRUE),
-  fTrans    (kFALSE),
+  fAutoTrans(kFALSE),
   fRTS      (1),
 
   fColorArray (0)
@@ -80,8 +80,8 @@ void TPCSectorViz::SetSectorID(Int_t id)
   if(id < 0)  id = 0;
   if(id > 35) id = 35;
   fSectorID = id;
-  if(fTrans)
-    SetTrans(kTRUE); // Force repositioning.
+  if(fAutoTrans)
+    SetAutoTrans(kTRUE); // Force repositioning.
   IncRTS();
 }
 
@@ -108,12 +108,11 @@ void TPCSectorViz::SetMaxVal(Int_t mv)
 
 /**************************************************************************/
 
-void TPCSectorViz::SetTrans(Bool_t trans) 
+void TPCSectorViz::SetAutoTrans(Bool_t trans) 
 {
-  fTrans = trans;
-  if(fTrans) {
-    for (Int_t k=0; k<16; ++k)
-      fMatrix[k] = 0.;
+  fAutoTrans = trans;
+  if(fAutoTrans) {
+    fHMTrans.UnitTrans();
 
     using namespace TMath;
     Float_t c = Cos((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
@@ -124,15 +123,15 @@ void TPCSectorViz::SetTrans(Bool_t trans)
       z = -z;
       d = -d;
     }
-  
+
     // column major
-    fMatrix[0]  = -c;
-    fMatrix[1]  = -s;
-    fMatrix[4]  = -s;
-    fMatrix[5]  =  c;
-    fMatrix[10] =  d;
-    fMatrix[14] =  z;
-    fMatrix[15] =  1;
+    fHMTrans[0]  = -c;
+    fHMTrans[1]  = -s;
+    fHMTrans[4]  = -s;
+    fHMTrans[5]  =  c;
+    fHMTrans[10] =  d;
+    fHMTrans[14] =  z;
+    fHMTrans[15] =  1;
   }
 }
 
