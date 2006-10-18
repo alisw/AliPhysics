@@ -109,7 +109,7 @@ AliLoader* AliPMD::MakeLoader(const char* topfoldername)
  
   if (fLoader)
     {
-      AliInfo("Success");
+      AliDebug(100,"Success");
     }
   else
     {
@@ -319,6 +319,9 @@ void AliPMD::Digits2Raw()
 
   fLoader->UnloadDigits();
 }
-
+Bool_t AliPMD::Raw2SDigits()
+{
+  
+}
 
 
