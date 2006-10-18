@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////
  
 #include "AliPMD.h"
-
+#include "TGeoManager.h"
 //___________________________________________
  
 class AliPMDv1 : public AliPMD {
@@ -29,6 +29,8 @@ public:
   virtual Int_t IsVersion() const {return 1;}
   virtual void  StepManager();
   virtual void  DrawModule() const;
+  virtual void  AddAlignableVolumes() const;
+  void          SetSectorAlignable() const;
 
 private:
 
@@ -66,7 +68,7 @@ private:
   Float_t fDboxmm2[3];  // Master MODULE EMPB of aluminum for PMD
   Float_t fDboxmm22[3]; // Master MODULE EMCB of aluminum for CPV
  
-  ClassDef(AliPMDv1,2)     //Hits manager for set:PMD
+  ClassDef(AliPMDv1,3)     //Hits manager for set:PMD
 };
  
 #endif
