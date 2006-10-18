@@ -1,3 +1,17 @@
+2006-10-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCSectorViz.cxx:
+	* TPCSectorViz.h:
+	* TPCSectorVizEditor.cxx:
+	* TPCSectorVizEditor.h:
+	Use Reve::ZTrans to hold the transformation matrix; renamed member
+	fTrans to less ambiguous fAutoTrans.
+
+	* TPCLoader.cxx:
+	* TPCSector2D.cxx:
+	* TPCSector3D.cxx:
+	Changes accompanying migration to usage of ZTrans in TPCSectorViz.
+
 2006-10-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:

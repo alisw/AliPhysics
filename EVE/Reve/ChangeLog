@@ -1,3 +1,31 @@
+2006-10-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ZTrans.cxx:
+	* ZTrans.h:
+	* ZTransEditor.cxx:
+	* ZTransEditor.h:
+	New files: implementation of homogeneous transformation matrix
+	with accompanying geditor.
+
+	* TriangleSet.cxx:
+	* TriangleSet.h:
+	* TriangleSetEditor.cxx:
+	* TriangleSetEditor.h:
+	* TriangleSetGL.cxx:
+	* TriangleSetGL.h:
+	New files: arbitrary triangulated surface.
+
+	* RGTopFrame.cxx:
+	Create a dummy event directory if none exists on AddRenderElement.
+
+	* RGValuators.cxx:
+	* RGValuators.h:
+	Added class RGTriVecValuator, a composite widget for editing
+	three-vectors. Used by ZTransEditor.
+
+	* LinkDef.h:
+	List new classes.
+
 2006-10-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:

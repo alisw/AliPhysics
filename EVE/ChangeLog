@@ -1,3 +1,9 @@
+2006-10-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/tpc_digits.C:
+	* test-macros/tpc_sector_raw_test.C:
+	Changes accompanying migration to usage of ZTrans in TPCSectorViz.
+
 2006-10-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/kine_tracks.C:
