@@ -65,7 +65,7 @@
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"
-#include "AliMpManuList.h"
+#include "AliMpConstants.h"
 #include "TList.h"
 #include "AliMpPad.h"
 #include "AliMpPlaneType.h"
@@ -74,7 +74,7 @@
 #include "AliMpVSegmentation.h"
 #include "AliRawReader.h"
 #include "TObjArray.h"
-#include "AliMpConstants.h"
+#include "TStopwatch.h"
 
 ClassImp(AliMUONRawWriter) // Class implementation in ROOT context
 
