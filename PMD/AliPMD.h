@@ -47,6 +47,7 @@ public:
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
   virtual void  Digits2Raw();
+  virtual Bool_t Raw2SDigits();
   
  protected:
   Float_t fPar[4];           // pmdin, pmdout, thgas, thcell
@@ -55,6 +56,6 @@ public:
   Float_t fPadSize[4];       // size of the pads
   Int_t   fNumPads[4];       // number of the pads
 
-  ClassDef(AliPMD,6)  // Base Class for Photon Multiplicity Detector
+  ClassDef(AliPMD,7)  // Base Class for Photon Multiplicity Detector
 };
 #endif
