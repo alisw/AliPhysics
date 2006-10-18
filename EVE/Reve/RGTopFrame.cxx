@@ -306,6 +306,8 @@ TGListTreeItem* RGTopFrame::AddEvent(EventBase* event)
 
 TGListTreeItem* RGTopFrame::AddRenderElement(RenderElement* rnr_element)
 {
+  if (fCurrentEvent == 0)
+    AddEvent(new EventBase("Event", "Auto-created event directory"));
   return AddRenderElement(fCurrentEvent, rnr_element);
 }
 
