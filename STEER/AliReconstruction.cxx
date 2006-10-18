@@ -183,6 +183,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fRawReader(NULL),
 
   fVertexer(NULL),
+  fDiamondProfile(NULL),
 
   fAlignObjArray(NULL),
   fCDBUri(cdbUri),
@@ -227,6 +228,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRawReader(NULL),
 
   fVertexer(NULL),
+  fDiamondProfile(NULL),
 
   fAlignObjArray(rec.fAlignObjArray),
   fCDBUri(rec.fCDBUri),
@@ -647,6 +649,7 @@ Bool_t AliReconstruction::Run(const char* input,
   gROOT->cd();
 
   AliVertexerTracks tVertexer;
+  if(fDiamondProfile) tVertexer.SetVtxStart(fDiamondProfile);
 
   // loop over events
   if (fRawReader) fRawReader->RewindEvents();
@@ -1507,6 +1510,8 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
   }
   delete fVertexer;
   fVertexer = NULL;
+  delete fDiamondProfile;
+  fDiamondProfile = NULL;
 
   delete fRunLoader;
   fRunLoader = NULL;

@@ -27,6 +27,7 @@ class AliRawReader;
 class AliLoader;
 class AliTracker;
 class AliVertexer;
+class AliESDVertex;
 class AliESD;
 class TFile;
 
@@ -75,7 +76,7 @@ public:
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
-
+  void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
 		   
   void           SetCheckPointLevel(Int_t checkPointLevel)
     {fCheckPointLevel = checkPointLevel;}
@@ -160,13 +161,14 @@ private:
   AliLoader*     fLoader[fgkNDetectors];   //! detector loaders
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
+  AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks
 
   TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
 
   TString	 fCDBUri;	      // Uri of the default CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
-  ClassDef(AliReconstruction, 8)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 9)      // class for running the reconstruction
 };
 
 #endif
