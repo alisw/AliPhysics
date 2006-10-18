@@ -234,7 +234,7 @@ void AliAnalysisTask::DefineInput(Int_t islot, TClass *type)
 // Define an input slot and its type.
    AliAnalysisDataSlot *input = new AliAnalysisDataSlot(type, this);
    if (fNinputs<islot+1) fNinputs = islot+1;
-   fInputs->AddAt(input, islot);
+   fInputs->AddAtAndExpand(input, islot);
 }
 
 //______________________________________________________________________________
@@ -252,7 +252,7 @@ void AliAnalysisTask::DefineOutput(Int_t islot, TClass *type)
       fOutputReady = new Bool_t[fNoutputs];
       memset(fOutputReady, 0, fNoutputs*sizeof(Bool_t));
    } 
-   fOutputs->AddAt(output, islot);
+   fOutputs->AddAtAndExpand(output, islot);
 }
 
 //______________________________________________________________________________
