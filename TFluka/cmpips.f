@@ -35,8 +35,6 @@
 *
       SAVE NSTART, CUMTTR
 *
-D     IF ( ABS ( CTRACK - STEP ) .GT. CSNNRM * CTRACK )
-D    &   CALL FLABRT ( 'CMPIPS', 'STEP!=CTRACK' )
       LBGSTP = STEPTT .LT. AZRZRZ
 *  +-------------------------------------------------------------------*
 *  |  Beginning of a step:
@@ -50,7 +48,7 @@ D    &   CALL FLABRT ( 'CMPIPS', 'STEP!=CTRACK' )
       END IF
 *  |
 *  +-------------------------------------------------------------------*
-      NRNGEN = NALLDL - NALLD0
+      NRNGEN = MIN ( NALLDL, MXALLD ) - NALLD0
       IF ( NRNGEN .LE. 0 ) RETURN
       CALL FLRNLP ( RNDVEC, NRNGEN )
 *  The previous line can be substituted by:
