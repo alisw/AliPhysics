@@ -23,7 +23,8 @@
 
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"	
-#include "AliMUONGeometryStore.h"	
+
+#include "AliMpExMap.h"	
 
 #include "AliLog.h"	
 
@@ -54,7 +55,7 @@ AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleI
   fTransformation = new TGeoHMatrix("");
 
   // Det elements transformation stores
-  fDetElements = new AliMUONGeometryStore(true);
+  fDetElements = new AliMpExMap(true);
   
   // Compose module name
   fModuleName = fgkModuleNamePrefix;
@@ -199,7 +200,7 @@ AliMUONGeometryModuleTransformer::GetDetElement(Int_t detElemId, Bool_t warn) co
 
    // Get detection element
    AliMUONGeometryDetElement* detElement
-     = (AliMUONGeometryDetElement*) fDetElements->Get(detElemId, warn);
+     = (AliMUONGeometryDetElement*) fDetElements->GetValue(detElemId);
 
    if (!detElement) {
      if (warn)

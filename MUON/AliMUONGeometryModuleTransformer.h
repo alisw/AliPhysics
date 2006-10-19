@@ -20,7 +20,8 @@
 #include <TString.h>
 
 class AliMUONGeometryDetElement;
-class AliMUONGeometryStore;
+
+class AliMpExMap;
 
 class TGeoTranslation;
 class TGeoRotation;
@@ -34,6 +35,9 @@ class AliMUONGeometryModuleTransformer : public TObject
     AliMUONGeometryModuleTransformer(Int_t moduleId);
     AliMUONGeometryModuleTransformer();
     virtual ~AliMUONGeometryModuleTransformer();
+
+    // static methods
+    static TString GetModuleNamePrefix();
 
     // methods
     void Global2Local(Int_t detElemId,
@@ -62,10 +66,9 @@ class AliMUONGeometryModuleTransformer : public TObject
     TString  GetMotherVolumeName() const;
 
     const TGeoHMatrix*  GetTransformation() const;    
-
-    AliMUONGeometryStore*       GetDetElementStore() const;
-    AliMUONGeometryDetElement*  GetDetElement(
-                                   Int_t detElemId, Bool_t warn = true) const;    
+    AliMpExMap*         GetDetElementStore() const; 
+    AliMUONGeometryDetElement*  
+                        GetDetElement(Int_t detElemId, Bool_t warn = true) const;    
 
   protected:
     AliMUONGeometryModuleTransformer(const AliMUONGeometryModuleTransformer& rhs);
@@ -83,12 +86,17 @@ class AliMUONGeometryModuleTransformer : public TObject
                                        /// or envelope in geometry
     TGeoHMatrix*          fTransformation;///< \brief the module transformation wrt to top
                                           /// volume (world)
-    AliMUONGeometryStore* fDetElements;   ///< detection elements
+    AliMpExMap*           fDetElements;   ///< detection elements
  
   ClassDef(AliMUONGeometryModuleTransformer,3) // MUON geometry module class
 };
 
 // inline functions
+
+/// Return module name prefix
+inline TString 
+AliMUONGeometryModuleTransformer::GetModuleNamePrefix()
+{ return fgkModuleNamePrefix; }
 
 /// Set the full path of aligned module volume or envelope in geometry
 inline void 
@@ -116,7 +124,7 @@ AliMUONGeometryModuleTransformer::GetTransformation() const
 { return fTransformation; }
 
 /// Return detection elements associated with this module
-inline  AliMUONGeometryStore* 
+inline  AliMpExMap* 
 AliMUONGeometryModuleTransformer::GetDetElementStore() const
 { return fDetElements; }
 
