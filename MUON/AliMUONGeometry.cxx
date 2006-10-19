@@ -25,7 +25,8 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONStringIntMap.h"
-#include "AliMUONGeometryStore.h"
+
+#include "AliMpDEManager.h"
 
 #include "AliLog.h"
 
@@ -98,7 +99,7 @@ void AliMUONGeometry::FillData3(const TString& sensVolumePath,
 /// Fill the mapping of the sensitive volume path to the detection element.
 
   // Module Id
-  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
     
   // Get module
   AliMUONGeometryModule* module 
@@ -273,7 +274,7 @@ AliMUONGeometry::GetModuleByDEId(Int_t detElemId, Bool_t warn) const
 /// Return the geometry module specified by detElemId
 
   // Get module index
-  Int_t index = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t index = AliMpDEManager::GetGeomModuleId(detElemId);
 
   return GetModule(index, warn);
 }    
