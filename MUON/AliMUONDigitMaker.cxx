@@ -135,12 +135,12 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
 
   delete fBusPatchManager;
 
-  AliInfo(Form("Execution time for MUON tracker : R:%.2fs C:%.2fs",
+  AliDebug(1, Form("Execution time for MUON tracker : R:%.2fs C:%.2fs",
                fTrackerTimer.RealTime(),fTrackerTimer.CpuTime()));
-  AliInfo(Form("   Execution time for MUON tracker (mapping calls part) "
+  AliDebug(1, Form("   Execution time for MUON tracker (mapping calls part) "
                ": R:%.2fs C:%.2fs",
                fMappingTimer.RealTime(),fMappingTimer.CpuTime()));
-  AliInfo(Form("Execution time for MUON trigger : R:%.2fs C:%.2fs",
+  AliDebug(1, Form("Execution time for MUON trigger : R:%.2fs C:%.2fs",
                fTriggerTimer.RealTime(),fTriggerTimer.CpuTime()));
 
   return;

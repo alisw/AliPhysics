@@ -178,7 +178,7 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
   
   for ( Int_t i = 0; i < kLast; ++i )
   {
-    AliInfo(Form("Execution time (timer %d) : R:%7.2fs C:%7.2fs",i,
+    AliDebug(1, Form("Execution time (timer %d) : R:%7.2fs C:%7.2fs",i,
                  fTimers[i].RealTime(),fTimers[i].CpuTime()));
   }
   
@@ -731,7 +731,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   }
 
   if (!nEntries)
-    AliInfo("No Trigger information available");
+    AliDebug(1, "No Trigger information available");
 
   if(fScalerEvent)
     buffer = new Int_t [kScalerBufferSize];

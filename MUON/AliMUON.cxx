@@ -419,7 +419,7 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 /// FIXME: the selection of the class should be done through a factory
 /// mechanism. (see also Hits2SDigits()).
   
-  AliInfo(Form("Digitizer used : %s",fDigitizerType.Data()));
+  AliDebug(1, Form("Digitizer used : %s",fDigitizerType.Data()));
   
   if ( fDigitizerType == "digitizer:default" ) // NewDigitizerNewTrigger
   {
@@ -462,7 +462,7 @@ void AliMUON::Hits2SDigits()
 /// FIXME: the selection of the sdigitizer should be done through a
 /// factory mechanism.
   
-  AliInfo(Form("SDigitizer used : %s",fSDigitizerType.Data()));
+  AliDebug(1, Form("SDigitizer used : %s",fSDigitizerType.Data()));
 
   if ( fSDigitizerType == "sdigitizer:default" )
   {

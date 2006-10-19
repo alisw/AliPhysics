@@ -112,15 +112,15 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   delete fTriggerProcessor;
   delete fNoiseFunction;
   
-  AliInfo(Form("Execution time for FindDigitIndex() : R:%.2fs C:%.2fs",
+  AliDebug(1, Form("Execution time for FindDigitIndex() : R:%.2fs C:%.2fs",
                fFindDigitIndexTimer.RealTime(),fFindDigitIndexTimer.CpuTime()));
   if ( fGenerateNoisyDigits )
   {
-    AliInfo(Form("Execution time for GenerateNoisyDigits() : R:%.2fs C:%.2fs",
+    AliDebug(1, Form("Execution time for GenerateNoisyDigits() : R:%.2fs C:%.2fs",
                  fGenerateNoisyDigitsTimer.RealTime(),
                  fGenerateNoisyDigitsTimer.CpuTime()));
   }
-  AliInfo(Form("Execution time for Exec() : R:%.2fs C:%.2fs",
+  AliDebug(1, Form("Execution time for Exec() : R:%.2fs C:%.2fs",
                fExecTimer.RealTime(),fExecTimer.CpuTime()));
   
 }
@@ -710,7 +710,7 @@ AliMUONDigitizerV3::Init()
     fTriggerEfficiency = fCalibrationData->TriggerEfficiency();
     if ( fTriggerEfficiency )
     {
-      AliInfo("Will apply trigger efficiency");
+      AliDebug(1, "Will apply trigger efficiency");
     }
     else
     {
@@ -721,7 +721,7 @@ AliMUONDigitizerV3::Init()
   
   if ( fGenerateNoisyDigits )
   {
-    AliInfo("Will generate noise-only digits for tracker");
+    AliDebug(1, "Will generate noise-only digits for tracker");
   }
   
   fIsInitialized = kTRUE;
