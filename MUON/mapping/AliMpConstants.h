@@ -32,7 +32,8 @@ class AliMpConstants : public TObject
   static Double_t LengthTolerance();
   static Double_t LengthStep();
   static Int_t    StartPadIndex();
-  static Int_t    NCh();
+  static Int_t    NofChambers();
+  static Int_t    NofGeomModules();
   static Int_t    ManuMask(AliMpPlaneType planeType);
   
  private:
@@ -44,7 +45,8 @@ class AliMpConstants : public TObject
   static const Double_t  fgkLengthStep;     ///< \brief the step in length used to move from
                                             /// a geometric border inside (pad, motif)
   static const Int_t     fgkStartPadIndex;  ///< global pad indices start value
-  static const Int_t     fgkNCh;            ///< number of chambers
+  static const Int_t     fgkNofChambers;    ///< number of chambers
+  static const Int_t     fgkNofGeomModules; ///< number of geometry modules
   static const Int_t     fgkNonBendingManuMask; ///< bit to set to indicate a manu located in non-bending plane
   
   ClassDef(AliMpConstants,3) //Class for globally used constants definition
@@ -52,10 +54,11 @@ class AliMpConstants : public TObject
 
 // inline functions
 
-inline Double_t AliMpConstants::LengthTolerance() {return fgkLengthTolerance;}
-inline Double_t AliMpConstants::LengthStep()      {return fgkLengthStep;}
-inline Int_t    AliMpConstants::StartPadIndex()   {return fgkStartPadIndex;}
-inline Int_t    AliMpConstants::NCh()             {return fgkNCh;}
+inline Double_t AliMpConstants::LengthTolerance() { return fgkLengthTolerance;}
+inline Double_t AliMpConstants::LengthStep()      { return fgkLengthStep;}
+inline Int_t    AliMpConstants::StartPadIndex()   { return fgkStartPadIndex;}
+inline Int_t    AliMpConstants::NofChambers()     { return fgkNofChambers;}
+inline Int_t    AliMpConstants::NofGeomModules()  { return fgkNofGeomModules;}
 
 #endif //ALI_MP_CONSTANTS_H
 

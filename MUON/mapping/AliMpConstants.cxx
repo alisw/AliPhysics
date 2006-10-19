@@ -36,7 +36,8 @@ ClassImp(AliMpConstants)
 const Double_t AliMpConstants::fgkLengthTolerance = 1e-05; // 0.1 mum
 const Double_t AliMpConstants::fgkLengthStep = 0.1; // 1 mm
 const Int_t    AliMpConstants::fgkStartPadIndex = 1;
-const Int_t    AliMpConstants::fgkNCh = 14;
+const Int_t    AliMpConstants::fgkNofChambers = 14;
+const Int_t    AliMpConstants::fgkNofGeomModules = 20;
 const Int_t AliMpConstants::fgkNonBendingManuMask(1<<10);
 
 //_____________________________________________________________________________
