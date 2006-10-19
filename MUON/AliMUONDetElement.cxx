@@ -78,8 +78,8 @@ AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClust
   fHitsForRec = new TClonesArray("AliMUONHitForRec",10);
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON");
   AliMUONSegmentation *pSegmentation = pMUON->GetSegmentation();
-  fSeg[0] = pSegmentation->GetModuleSegmentation(fChamber, 0);
-  fSeg[1] = pSegmentation->GetModuleSegmentation(fChamber, 1);
+  fSeg[0] = pSegmentation->GetModuleSegmentationByDEId(fidDE, 0);
+  fSeg[1] = pSegmentation->GetModuleSegmentationByDEId(fidDE, 1);
   Float_t x, y, z;
   fSeg[dig->Cathode()]->GetPadC(fidDE, dig->PadX(), dig->PadY(), x, y, z);
   fZ = z;

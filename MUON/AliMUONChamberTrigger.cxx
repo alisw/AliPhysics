@@ -89,7 +89,7 @@ void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,
   for (Int_t i = 1; i <= 2; i++) {
 
     AliMUONGeometrySegmentation* segmentation=
-      fMUON->GetSegmentation()->GetModuleSegmentation(fId, i-1); 
+      fMUON->GetSegmentation()->GetModuleSegmentationByDEId(id, i-1); 
 
     
 // Find the module & strip Id. which has fired

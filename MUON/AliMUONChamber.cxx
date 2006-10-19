@@ -124,7 +124,7 @@ void AliMUONChamber::DisIntegration(AliMUONHit *hit,
     Float_t qcath = qtot * (i==1? fCurrentCorrel : 1/fCurrentCorrel);
     
     AliMUONGeometrySegmentation* segmentation=
-      fMUON->GetSegmentation()->GetModuleSegmentation(fId, i-1); 
+      fMUON->GetSegmentation()->GetModuleSegmentationByDEId(id, i-1); 
 
     for (segmentation->FirstPad(id, xhit, yhit, zhit, dx, dy); 
 	 segmentation->MorePads(id); 

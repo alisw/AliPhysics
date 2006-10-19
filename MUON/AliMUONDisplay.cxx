@@ -1056,8 +1056,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
 
-    AliMUONGeometrySegmentation*  segmentation2 = 0x0;
-
     GetMUONData()->SetTreeAddress("D");
 
     TClonesArray *muonDigits  = GetMUONData()->Digits(chamber-1);
@@ -1095,8 +1093,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	if (chamber > 10) printf(">>> old segmentation for trigger \n");
 	else printf(">>> old segmentation for tracking \n");
 
-	segmentation2
-	    = pMUON->GetSegmentation()->GetModuleSegmentation(chamber-1, cathode-1);
 	for (Int_t digit = 0; digit < ndigits; digit++) {
 	    mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
 	    if (mdig->Cathode() != cathode-1) continue;
@@ -1130,6 +1126,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    Float_t dpx, dpy;
 	    
 	    Int_t detElemId = mdig->DetElemId();
+	    AliMUONGeometrySegmentation* segmentation2
+	      = pMUON->GetSegmentation()->GetModuleSegmentationByDEId(detElemId, cathode-1);
 	    segmentation2->GetPadC(detElemId, mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
 	    isec = segmentation2->Sector(detElemId, mdig->PadX(), mdig->PadY());
 	    dpx = segmentation2->Dpx(detElemId, isec)/2;

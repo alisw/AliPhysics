@@ -109,8 +109,8 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     delete fgMathieson;
     fgMathieson = new AliMUONMathieson();
 
-    fSegmentation2[0]= fgSegmentation->GetModuleSegmentation(chamber, 0);
-    fSegmentation2[1]= fgSegmentation->GetModuleSegmentation(chamber, 1);
+    fSegmentation2[0]= fgSegmentation->GetModuleSegmentationByDEId(fDetElemId, 0);
+    fSegmentation2[1]= fgSegmentation->GetModuleSegmentationByDEId(fDetElemId, 1);
 
     fNseg = 2;
     if (chamber < AliMUONConstants::NTrackingCh()) {
@@ -136,7 +136,7 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     fDetElemId = idDE;
     fDigits[0] = dig;
 
-    fSegmentation2[0]= fgSegmentation->GetModuleSegmentation(chamber, 0);
+    fSegmentation2[0]= fgSegmentation->GetModuleSegmentationByDEId(fDetElemId, 0);
     fNseg=1;
 }
 
@@ -192,11 +192,11 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cat
 // par[0]    x-position of cluster
 // par[1]    y-position of cluster
 
-    Float_t q1;
-    fSegmentation2[cath]->SetPad(fDetElemId, fix[i][cath], fiy[i][cath]);
-    //  First Cluster
-    fSegmentation2[cath]->SetHit(fDetElemId, par[0],par[1],fZ);
-    q1 = fgMathieson->IntXY(fDetElemId, fSegmentation2[cath]);
+   Float_t q1;
+   fSegmentation2[cath]-> SetPad(fDetElemId, fix[i][cath], fiy[i][cath]);
+   //  First Cluster
+   fSegmentation2[cath]-> SetHit(fDetElemId, par[0],par[1],fZ);
+   q1 = fgMathieson->IntXY(fDetElemId, fSegmentation2[cath]);
        
    Float_t value = fQtot[cath]*q1;
    return value;
