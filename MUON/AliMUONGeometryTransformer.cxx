@@ -24,8 +24,10 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryBuilder.h"
+
+#include "AliMpDEManager.h"
+#include "AliMpExMap.h"
 
 #include "AliLog.h"
 #include "AliAlignObjMatrix.h"
@@ -56,7 +58,7 @@ AliMUONGeometryTransformer::AliMUONGeometryTransformer(Bool_t isOwner,
 /// Standard constructor
 
   // Create array for geometry modules
-  fModuleTransformers = new TObjArray();
+  fModuleTransformers = new TObjArray(100);
   fModuleTransformers->SetOwner(isOwner);
 }
 
@@ -139,10 +141,10 @@ void AliMUONGeometryTransformer::FillDetElemVolPath(Int_t detElemId,
 /// Create detection element with the given detElemId and volPath
 
   // Module Id
-  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
 
   // Get detection element store
-  AliMUONGeometryStore* detElements = 
+  AliMpExMap* detElements = 
     GetModuleTransformer(moduleId)->GetDetElementStore();     
 
   // Add detection element
@@ -159,10 +161,6 @@ void AliMUONGeometryTransformer::FillModuleTransform(Int_t moduleId,
  		  Double_t a4, Double_t a5, Double_t a6) 
 {
 /// Fill the transformation of the module.
-
-  // Get/Create geometry module transformer
-  moduleId--;
-      // Modules numbers in the file are starting from 1
 
   AliMUONGeometryModuleTransformer* moduleTransformer
     = GetModuleTransformerNonConst(moduleId, false);
@@ -189,7 +187,7 @@ void AliMUONGeometryTransformer::FillDetElemTransform(
 /// Fill the transformation of the detection element.
 
   // Module Id
-  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
 
   // Get module transformer
   const AliMUONGeometryModuleTransformer* kModuleTransformer
@@ -240,10 +238,10 @@ AliMUONGeometryTransformer::ReadVolPaths(ifstream& in)
     // 	 << "volPath= " << volumePath
     //	 << endl;   
 
-    if ( key == TString("CH") ) 
+    if ( key == AliMUONGeometryModuleTransformer::GetModuleNamePrefix() ) 
       FillModuleVolPath(id, volumePath);
   
-    else if ( key == TString("DE") )
+    else if ( key == AliMUONGeometryDetElement::GetDENamePrefix() )
       FillDetElemVolPath(id, volumePath);
   
     else {
@@ -262,8 +260,8 @@ TString  AliMUONGeometryTransformer::ReadModuleTransforms(ifstream& in)
 /// Read and fill modules transformations from the stream.
 /// Return true, if reading finished correctly.
 
-  TString key("CH");
-  while ( key == TString("CH") ) {
+  TString key(AliMUONGeometryModuleTransformer::GetModuleNamePrefix());
+  while ( key == AliMUONGeometryModuleTransformer::GetModuleNamePrefix() ) {
     Int_t id;
     Double_t  x, y, z;
     Double_t  a1, a2, a3, a4, a5, a6;
@@ -304,8 +302,8 @@ TString  AliMUONGeometryTransformer::ReadDetElemTransforms(ifstream& in)
 /// Read detection elements transformations from the stream.
 /// Return true, if reading finished correctly.
 
-  TString key("DE");
-  while ( key == TString("DE") ) {
+  TString key(AliMUONGeometryDetElement::GetDENamePrefix());
+  while ( key == AliMUONGeometryDetElement::GetDENamePrefix() ) {
 
     // Input data
     Int_t detElemId;
@@ -375,12 +373,11 @@ AliMUONGeometryTransformer::LoadTransforms(TGeoManager* tgeoManager)
     moduleTransformer->SetTransformation(matrix);
     
     // Loop over detection elements
-    AliMUONGeometryStore* detElements 
-      = moduleTransformer->GetDetElementStore();    
+    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
    
-    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+    for (Int_t j=0; j<detElements->GetSize(); j++) {
       AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
 
       // Det element path
       TString dePath = detElement->GetVolumePath();
@@ -455,9 +452,9 @@ AliMUONGeometryTransformer::ReadTransformations(const TString& fileName)
   TString key;
   in >> key;
   while ( !in.eof() ) {
-    if (key == TString("CH")) 
+    if ( key == AliMUONGeometryModuleTransformer::GetModuleNamePrefix() ) 
       key = ReadModuleTransforms(in);
-    else if (key == TString("DE"))
+    else if ( key == AliMUONGeometryDetElement::GetDENamePrefix() )
       key = ReadDetElemTransforms(in);
     else {
       AliFatal(Form("%s key not recognized",  key.Data()));
@@ -526,7 +523,7 @@ void AliMUONGeometryTransformer::WriteModuleVolPaths(ofstream& out) const
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
 
     // Write data on out
-    out << "CH " 
+    out << AliMUONGeometryModuleTransformer::GetModuleNamePrefix() << " "
         << setw(4) << moduleTransformer->GetModuleId() << "    " 
         << moduleTransformer->GetVolumePath() << endl;
   }     
@@ -542,15 +539,14 @@ void AliMUONGeometryTransformer::WriteDetElemVolPaths(ofstream& out) const
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-    AliMUONGeometryStore* detElements 
-      = moduleTransformer->GetDetElementStore();    
+    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
 
-    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+    for (Int_t j=0; j<detElements->GetSize(); j++) {
       AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
 	
       // Write data on out
-      out << "DE " 
+      out << AliMUONGeometryDetElement::GetDENamePrefix() << " " 
           << setw(4) << detElement->GetId() << "    " 
           << detElement->GetVolumePath() << endl;
     }
@@ -570,8 +566,8 @@ void AliMUONGeometryTransformer::WriteModuleTransforms(ofstream& out) const
       = moduleTransformer->GetTransformation();    
 
     // Write data on out
-    out << "CH " 
-        << setw(4) << moduleTransformer->GetModuleId() + 1;
+    out << AliMUONGeometryModuleTransformer::GetModuleNamePrefix() << " " 
+        << setw(4) << moduleTransformer->GetModuleId();
     
     WriteTransform(out, transform);
   }
@@ -587,17 +583,17 @@ void AliMUONGeometryTransformer::WriteDetElemTransforms(ofstream& out) const
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-    AliMUONGeometryStore* detElements 
-      = moduleTransformer->GetDetElementStore();    
+    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
 
-    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+    for (Int_t j=0; j<detElements->GetSize(); j++) {
       AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
       const TGeoMatrix* transform 
         = detElement->GetLocalTransformation(); 
 	
       // Write data on out
-      out << "DE " << setw(4) << detElement->GetId();
+      out << AliMUONGeometryDetElement::GetDENamePrefix() << " " 
+          << setw(4) << detElement->GetId();
      
       WriteTransform(out, transform);
     }
@@ -632,7 +628,7 @@ TString AliMUONGeometryTransformer::GetDESymName(Int_t detElemId) const
   }   
   
   // Module Id
-  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
 
   return GetModuleSymName(moduleId) + "/" + kDetElement->GetDEName();
 }  
@@ -805,8 +801,12 @@ void AliMUONGeometryTransformer::AddModuleTransformer(
 {
 /// Add the module transformer to the array
 
-  fModuleTransformers->AddAt(moduleTransformer, 
-                             moduleTransformer->GetModuleId());
+  // Expand the size if not sufficient
+  Int_t moduleId = moduleTransformer->GetModuleId();
+  if (  moduleId >= fModuleTransformers->GetSize() )
+    fModuleTransformers->Expand(moduleId+1);
+
+  fModuleTransformers->AddAt(moduleTransformer, moduleId);
 }
 
 //_____________________________________________________________________________
@@ -886,12 +886,11 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
     //     << "  volPath: " << module->GetVolumePath() << endl;
 
     // Detection elements
-    AliMUONGeometryStore* detElements 
-      = module->GetDetElementStore();    
+    AliMpExMap* detElements = module->GetDetElementStore();    
 
-    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+    for (Int_t j=0; j<detElements->GetSize(); j++) {
       AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
 	
       // Set detection element symbolic name
       gGeoManager->SetAlignableEntry(GetDESymName(detElement->GetId()), 
@@ -934,12 +933,11 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-    AliMUONGeometryStore* detElements 
-      = moduleTransformer->GetDetElementStore();    
+    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
 
-    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+    for (Int_t j=0; j<detElements->GetSize(); j++) {
       AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
 	
       Int_t detElemId = detElement->GetId();
   
@@ -1034,7 +1032,7 @@ AliMUONGeometryTransformer::GetModuleTransformerByDEId(Int_t detElemId,
 /// Return the geometry module transformer specified by detection element ID
 
   // Get module index
-  Int_t index = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t index = AliMpDEManager::GetGeomModuleId(detElemId);
 
   return GetModuleTransformer(index, warn);
 }    
