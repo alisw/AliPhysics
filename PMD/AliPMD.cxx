@@ -321,7 +321,7 @@ void AliPMD::Digits2Raw()
 }
 Bool_t AliPMD::Raw2SDigits()
 {
-  
+  return kTRUE;
 }
 
 
