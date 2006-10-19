@@ -21,22 +21,25 @@
 // Author: Ivana Hrivnacova, IPN Orsay
 // 23/01/2004
 
-#include <Riostream.h>
-#include <TObjArray.h>
-#include <TSystem.h>
-#include <TGeoMatrix.h>
-#include <TVirtualMC.h>
-
 #include "AliMUONVGeometryBuilder.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
 #include "AliMUONGeometryBuilder.h"
 #include "AliMUONStringIntMap.h"
+
+#include "AliMpDEManager.h"
+#include "AliMpExMap.h"
+
 #include "AliLog.h"
+
+#include <Riostream.h>
+#include <TObjArray.h>
+#include <TSystem.h>
+#include <TGeoMatrix.h>
+#include <TVirtualMC.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONVGeometryBuilder)
@@ -44,9 +47,8 @@ ClassImp(AliMUONVGeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(
-                            Int_t moduleId1, Int_t moduleId2,
-                            Int_t moduleId3, Int_t moduleId4,
-                            Int_t moduleId5, Int_t moduleId6)
+                            Int_t firstModuleId, 
+                            Int_t nofModules)
  : TObject(),
    fGeometryModules(0),
    fReferenceFrame()
@@ -55,24 +57,9 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(
 
   // Create the module geometries array
   fGeometryModules = new TObjArray();
-  
-  if ( moduleId1 >= 0 ) 
-    fGeometryModules->Add(new AliMUONGeometryModule(moduleId1));
- 
-  if ( moduleId2 >= 0 ) 
-    fGeometryModules->Add(new AliMUONGeometryModule(moduleId2));
 
-  if ( moduleId3 >= 0 ) 
-    fGeometryModules->Add(new AliMUONGeometryModule(moduleId3));
-
-  if ( moduleId4 >= 0 ) 
-    fGeometryModules->Add(new AliMUONGeometryModule(moduleId4));
-
-  if ( moduleId5 >= 0 ) 
-    fGeometryModules->Add(new AliMUONGeometryModule(moduleId5));
-
-  if ( moduleId6 >= 0 ) 
-    fGeometryModules->Add(new AliMUONGeometryModule(moduleId6));
+  for (Int_t i=0; i<nofModules; i++ )
+    fGeometryModules->Add(new AliMUONGeometryModule(firstModuleId++));
 }
 
 //______________________________________________________________________________
@@ -150,7 +137,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
 /// and map it to the detection element Id if it is a sensitive volume
 
   // Get module sensitive volumes map
-  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
   AliMUONStringIntMap* svMap = GetSVMap(moduleId);     
 
   Int_t nofDaughters = gMC->NofVolDaughters(volName);
@@ -162,7 +149,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     TString volName(path0(npos1, npos2-npos1));  
     
     // Check if it is sensitive volume
-    Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+    Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
     AliMUONGeometryModule* geometry = GetGeometry(moduleId);
     if (  geometry->IsSensitiveVolume(volName) &&
         ! svMap->Get(path0) ) {
@@ -238,6 +225,25 @@ AliMUONVGeometryBuilder::GetSVMap(Int_t moduleId) const
   
   return geometry->GetSVMap();
 }  
+
+//______________________________________________________________________________
+Int_t                          
+AliMUONVGeometryBuilder::GetModuleId(const TString& envName) const
+{
+/// Return module Id which has the envelope with given name
+
+  for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
+
+    AliMUONGeometryModule* geometry 
+      = (AliMUONGeometryModule*)fGeometryModules->At(i);
+      
+    if ( geometry->GetEnvelopeStore()->FindEnvelope(envName) ) 
+      return geometry->GetModuleId();
+  }   
+  
+  return -1;
+}  
+
 
 //______________________________________________________________________________
 void AliMUONVGeometryBuilder::SetTranslation(Int_t moduleId, 
@@ -356,7 +362,7 @@ void  AliMUONVGeometryBuilder::CreateDetElements() const
     const TObjArray* envelopes 
       = geometry->GetEnvelopeStore()->GetEnvelopes();    
     
-    AliMUONGeometryStore* detElements 
+    AliMpExMap* detElements 
       = geometry->GetTransformer()->GetDetElementStore(); 
       
     for (Int_t j=0; j<envelopes->GetEntriesFast(); j++) {
@@ -377,7 +383,7 @@ void  AliMUONVGeometryBuilder::CreateDetElements() const
       AliMUONGeometryDetElement* detElement
         = new AliMUONGeometryDetElement(detElemId, volPath);
       detElements->Add(detElemId, detElement);
-
+      
       // Compose  local transformation
       const TGeoCombiTrans* transform = envelope->GetTransformation(); 
       // Apply frame transform

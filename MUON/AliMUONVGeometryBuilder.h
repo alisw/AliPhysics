@@ -25,18 +25,12 @@ class TGeoCombiTrans;
 
 class AliMUONGeometryModule;
 class AliMUONGeometryEnvelopeStore;
-class AliMUONGeometryStore;
 class AliMUONStringIntMap;
 
 class AliMUONVGeometryBuilder : public TObject
 {
   public:
-    AliMUONVGeometryBuilder(Int_t geometryModuleId1,
-                            Int_t geometryModuleId2 = -1,
-                            Int_t geometryModuleId3 = -1,
-                            Int_t geometryModuleId4 = -1,
-                            Int_t geometryModuleId5 = -1,
-                            Int_t geometryModuleId6 = -1);
+    AliMUONVGeometryBuilder(Int_t firstModuleId, Int_t nofModules);
     AliMUONVGeometryBuilder();
     virtual ~AliMUONVGeometryBuilder();
   
@@ -91,6 +85,7 @@ class AliMUONVGeometryBuilder : public TObject
     AliMUONGeometryModule*         GetGeometry(Int_t moduleId) const;
     AliMUONGeometryEnvelopeStore*  GetEnvelopes(Int_t moduleId) const;
     AliMUONStringIntMap*           GetSVMap(Int_t moduleId) const;
+    Int_t                          GetModuleId(const TString& envName) const;
     
     // set module transformation
     void SetTranslation(Int_t moduleId, 
