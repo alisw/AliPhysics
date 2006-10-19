@@ -28,7 +28,8 @@
 #include "AliMUONVGeometryDESegmentation.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryStore.h"
+
+#include "AliMpExMap.h"
 
 #include "AliLog.h"
 
@@ -56,9 +57,10 @@ AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
 {
 /// Standard constructor
 
-  fDESegmentations = new AliMUONGeometryStore(false);
+  fDESegmentations = new AliMpExMap(true);
+  fDESegmentations->SetOwner(false);
  
-  fDENames = new AliMUONGeometryStore(true);
+  fDENames = new AliMpExMap(true);
 
   AliDebug(1, Form("ctor this = %p", this) ); 
 }
@@ -113,7 +115,7 @@ Bool_t AliMUONGeometrySegmentation::OwnNotify(Int_t detElemId, Bool_t warn) cons
     }     
 
     AliMUONVGeometryDESegmentation* segmentation 
-      = (AliMUONVGeometryDESegmentation*) fDESegmentations->Get(detElemId, warn);
+      = (AliMUONVGeometryDESegmentation*) fDESegmentations->GetValue(detElemId);
     if (!segmentation) {
       if (warn)
         AliError(Form("Segmentation for detection element %d not defined",
@@ -172,7 +174,7 @@ TString AliMUONGeometrySegmentation::GetDEName(Int_t detElemId) const
 {
 /// Return name of the given detection element
 
-  TObjString* deName = (TObjString*)fDENames->Get(detElemId, false);
+  TObjString* deName = (TObjString*)fDENames->GetValue(detElemId);
   
   if (deName)
     return deName->GetString();
@@ -190,7 +192,7 @@ void AliMUONGeometrySegmentation::Print(Option_t* opt) const
 
   std::cout << "fDESegmentations (class " 
 	    << fDESegmentations->Class()->GetName() << ") entries=" 
-	    << fDESegmentations->GetNofEntries() 
+	    << fDESegmentations->GetSize() 
 	    << std::endl;
   fDESegmentations->Print(opt);	
 }
@@ -200,9 +202,9 @@ void AliMUONGeometrySegmentation::SetPadSize(Float_t p1, Float_t p2)
 {
 /// Set pad size Dx*Dy to all detection element segmentations 
 
-  for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
+  for (Int_t i=0; i<fDESegmentations->GetSize(); i++) {
      AliMUONVGeometryDESegmentation* segmentation
-       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetEntry(i);
+       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetObject(i);
      segmentation->SetPadSize(p1, p2);
   }   
 }
@@ -212,9 +214,9 @@ void AliMUONGeometrySegmentation::SetDAnod(Float_t d)
 {
 /// Set anod pitch to all detection element segmentations
 
-  for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
+  for (Int_t i=0; i<fDESegmentations->GetSize(); i++) {
      AliMUONVGeometryDESegmentation* segmentation
-       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetEntry(i);
+       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetObject(i);
      segmentation->SetDAnod(d);
   }   
 }
@@ -305,21 +307,25 @@ void AliMUONGeometrySegmentation::Init(Int_t chamber)
 /// Check that all detection elements have segmanetation set
 
   // Loop over detection elements
-  AliMUONGeometryStore* detElements = fkModuleTransformer->GetDetElementStore();
+  AliMpExMap* detElements = fkModuleTransformer->GetDetElementStore();
 
-  for (Int_t i=0; i<detElements->GetNofEntries(); i++) {
+  for (Int_t i=0; i<detElements->GetSize(); i++) {
+
+    // Skip not filled entries
+    if (!detElements->GetObject(i)) continue;
 
     // Get detction element Id
-    Int_t detElemId = detElements->GetEntry(i)->GetUniqueID();
+    Int_t detElemId = detElements->GetObject(i)->GetUniqueID();
 
     // Check segmentation
-    if (! fDESegmentations->Get(detElemId) ) {
-      AliError(Form("Detection element %d has not a segmentation set.",
-               detElements->GetEntry(i)->GetUniqueID()));
+    if (! fDESegmentations->GetValue(detElemId) ) {
+      AliErrorStream()
+        << "Detection element " << detElemId << " has not a segmentation set." 
+	<< endl;
     }
     else {	        
       // Initialize DE Segmentation
-      ((AliSegmentation*)fDESegmentations->Get(detElemId))->Init(chamber);
+      ((AliSegmentation*)fDESegmentations->GetValue(detElemId))->Init(chamber);
     }  	       
   }	           
 }
@@ -637,9 +643,9 @@ void AliMUONGeometrySegmentation::Draw(const char* opt)
 {
 /// Draw the segmentation zones for all detElemId 
 
-  for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
+  for (Int_t i=0; i<fDESegmentations->GetSize(); i++) {
      AliMUONVGeometryDESegmentation* segmentation
-       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetEntry(i);
+       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetObject(i);
      segmentation->Draw(opt);
   }   
 }

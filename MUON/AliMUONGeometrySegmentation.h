@@ -25,10 +25,11 @@ class TObjArray;
 class TF1;
 
 class AliMUONGeometryModuleTransformer;
-class AliMUONGeometryStore;
 class AliMUONGeometryDetElement;
 class AliMUONVGeometryDESegmentation;
 class AliMUONSegmentManuIndex;
+
+class AliMpExMap;
 
 class AliMUONGeometrySegmentation : public TObject
 {
@@ -199,8 +200,8 @@ class AliMUONGeometrySegmentation : public TObject
     mutable  AliMUONVGeometryDESegmentation* fCurrentSegmentation;///< current DE segmentation
    
     const AliMUONGeometryModuleTransformer*  fkModuleTransformer; ///< associated geometry transformer
-    AliMUONGeometryStore*        fDESegmentations;///< DE segmentations
-    AliMUONGeometryStore*        fDENames;        ///< DE names
+    AliMpExMap*  fDESegmentations; ///< DE segmentations
+    AliMpExMap*  fDENames;         ///< DE names
     
  
    ClassDef(AliMUONGeometrySegmentation,3) // Geometry segmentation
