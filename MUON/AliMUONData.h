@@ -60,13 +60,7 @@ class AliMUONData : public TNamed
 			     Int_t* digits); 
     virtual void   AddDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
     virtual void   AddSDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
-    virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
-			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
-			  Float_t tof, Float_t momentum, Float_t theta, 
-			  Float_t phi, Float_t length, Float_t destep, 
-			  Float_t Xref,Float_t Yref,Float_t Zref);
-			  // TBR
-    virtual void   AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId, 
+    virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t detElemId, 
 			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
 			  Float_t tof, Float_t momentum, Float_t theta, 
 			  Float_t phi, Float_t length, Float_t destep, 
