@@ -24,6 +24,8 @@ class AliMUONConstants : public TObject {
     static Int_t    NTriggerCircuit() {return fgNTriggerCircuit;}
     /// Return number of detection element
     static Int_t    NDetElem() {return fgNDetElem;}
+    /// Return number of geometry modules
+    static Int_t    NGeomModules() {return fgNGeomModules;}
     /// Return position of chamber i
     static Float_t  DefaultChamberZ(Int_t i) {return fgDefaultChamberZ[i];}
     /// Return ratio between trigger chambers
@@ -77,6 +79,7 @@ class AliMUONConstants : public TObject {
     static Int_t  fgNTriggerCh;         ///<  Number of Trigger Chambers
     static Int_t  fgNTriggerCircuit;    ///<  Number of Trigger Circuits
     static Int_t  fgNDetElem;           ///<  Number of Detection Elements.
+    static Int_t  fgNGeomModules;       ///<  Number of Geometry modules   
 
     static Float_t  fgDefaultChamberZ[14];    //!< Z-positions of chambers
     static Float_t  fgDefaultRatioTriggerChamber[4]; ///< Ratio between trigger chambers

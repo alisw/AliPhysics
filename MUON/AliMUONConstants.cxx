@@ -41,6 +41,7 @@ Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Int_t   AliMUONConstants::fgNDetElem = 228;
+Int_t   AliMUONConstants::fgNGeomModules = 20;
 
 
 
