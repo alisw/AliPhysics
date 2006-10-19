@@ -284,11 +284,25 @@ Bool_t AliMpDEManager::IsValid(Int_t detElemId, Int_t cath, Bool_t warn)
 }    
 
 //______________________________________________________________________________
-Bool_t AliMpDEManager::IsValidModuleId(Int_t moduleId, Bool_t warn)
+Bool_t AliMpDEManager::IsValidChamberId(Int_t chamberId, Bool_t warn)
+{
+/// Return true if chamberId is valid
+
+  if ( chamberId >= 0 && chamberId < AliMpConstants::NofChambers() ) 
+    return true;
+ 
+  if (warn) 
+    AliErrorClassStream() << "Wrong chamber Id " << chamberId << endl;
+  
+  return false;
+}    
+
+//______________________________________________________________________________
+Bool_t AliMpDEManager::IsValidGeomModuleId(Int_t moduleId, Bool_t warn)
 {
 /// Return true if moduleId is valid
 
-  if ( moduleId >= 0 && moduleId < AliMpConstants::NCh() ) 
+  if ( moduleId >= 0 && moduleId < AliMpConstants::NofGeomModules() ) 
     return true;
  
   if (warn) 
@@ -341,13 +355,52 @@ TString AliMpDEManager::GetDETypeName(Int_t detElemId, Int_t cath, Bool_t warn)
 }    
 
 //______________________________________________________________________________
-Int_t  AliMpDEManager::GetModuleId(Int_t detElemId, Bool_t warn)
+Int_t  AliMpDEManager::GetChamberId(Int_t detElemId, Bool_t warn)
 {
-/// Return module Id for given detElemId
+/// Return chamber Id for given detElemId
 
   if ( ! IsValidDetElemId(detElemId, warn) ) return -1;
   
   return detElemId/fgkCoefficient - 1;
+}  
+
+//______________________________________________________________________________
+Int_t AliMpDEManager::GetGeomModuleId(Int_t detElemId, Bool_t warn)
+{
+/// <pre>
+/// Get module Id from detection element Id                 
+/// !!! moduleId != chamberId
+/// Station 1:   Chamber:  1   Module:  0   Det elements:  100-103
+///              Chamber:  2   Module:  1   Det elements:  200-203
+/// Station 2:   Chamber:  3   Module:  2   Det elements:  300-303
+///              Chamber:  4   Module:  3   Det elements:  400-403
+/// Station 3:   Chamber:  5   Module:  4   Det elements:  500-504, 514-517
+///                            Module:  5   Det elements:  505-513,
+///              Chamber:  6   Module:  6   Det elements:  600-604, 614-617
+///                            Module:  7   Det elements:  605-613
+/// Station 4:   Chamber:  7   Module:  8   Det elements:  700-706, 720-725
+///                            Module:  9   Det elements:  707-719
+///              Chamber:  8   Module: 10   Det elements:  800-806, 820-825
+///                            Module: 11   Det elements:  807-819
+/// Station 5:   Chamber:  9   Module: 12   Det elements:  900-906, 920-925
+///                            Module: 13   Det elements:  907-919        
+///              Chamber: 10   Module: 14   Det elements: 1000-1006,1020-1025
+///                            Module: 15   Det elements: 1007-1019
+/// Station 6:   Chamber: 11   Module: 16   Det elements: 1100-1117
+///              Chamber: 12   Module: 17   Det elements: 1200-1217
+/// Station 7:   Chamber: 13   Module: 18   Det elements: 1300-1317
+///              Chamber: 14   Module: 19   Det elements: 1400-1417
+/// </pre>
+
+  if ( ! IsValidDetElemId(detElemId, warn) ) return -1;
+  
+  return detElemId/fgkCoefficient 
+           + (detElemId >=  505 && detElemId <=  513 || detElemId >= 600 )
+	   + (detElemId >=  605 && detElemId <=  613 || detElemId >= 700 )
+	   + (detElemId >=  707 && detElemId <=  719 || detElemId >= 800 )
+	   + (detElemId >=  807 && detElemId <=  819 || detElemId >= 900 )
+	   + (detElemId >=  907 && detElemId <=  919 || detElemId >= 1000 )
+	   + (detElemId >= 1007 && detElemId <= 1019 || detElemId >= 1100 ) - 1;
 }  
 
 //______________________________________________________________________________
@@ -387,16 +440,16 @@ AliMpStationType AliMpDEManager::GetStationType(Int_t detElemId)
     return kStation1;
   }  
   
-  Int_t moduleId = GetModuleId(detElemId, false);
-  if ( ! IsValidModuleId(moduleId, true) ) {
+  Int_t chamberId = GetChamberId(detElemId, false);
+  if ( ! IsValidChamberId(chamberId, true) ) {
     AliFatalClass("Cannot return AliMpStationType value.");
     return kStation1;
   }  
   
-  if ( moduleId ==  0 || moduleId ==  1 )  return kStation1;
-  if ( moduleId ==  2 || moduleId ==  3 )  return kStation2;
-  if ( moduleId >=  4 && moduleId <=  9 )  return kStation345;
-  if ( moduleId >= 10 && moduleId <= 13 )  return kStationTrigger;
+  if ( chamberId ==  0 || chamberId ==  1 )  return kStation1;
+  if ( chamberId ==  2 || chamberId ==  3 )  return kStation2;
+  if ( chamberId >=  4 && chamberId <=  9 )  return kStation345;
+  if ( chamberId >= 10 && chamberId <= 13 )  return kStationTrigger;
 
   // Should never get to this line
   AliFatalClass("Cannot return AliMpStationType value.");

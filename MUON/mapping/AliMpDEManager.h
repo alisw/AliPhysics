@@ -37,11 +37,13 @@ class AliMpDEManager : public  TObject {
     static Bool_t IsValidDetElemId(Int_t detElemId, Bool_t warn = false);
     static Bool_t IsValidCathod(Int_t cath, Bool_t warn = false);
     static Bool_t IsValid(Int_t detElemId, Int_t cath, Bool_t warn = false);
-    static Bool_t IsValidModuleId(Int_t moduleId, Bool_t warn = false);
+    static Bool_t IsValidChamberId(Int_t chamberId, Bool_t warn = false);
+    static Bool_t IsValidGeomModuleId(Int_t moduleId, Bool_t warn = false);
 
     static TString GetDEName(Int_t detElemId, Int_t cath, Bool_t warn = true);
     static TString GetDETypeName(Int_t detElemId, Int_t cath, Bool_t warn = true);
-    static Int_t   GetModuleId(Int_t detElemId, Bool_t warn = true);    
+    static Int_t   GetChamberId(Int_t detElemId, Bool_t warn = true);    
+    static Int_t   GetGeomModuleId(Int_t detElemId, Bool_t warn = true);    
     static AliMpPlaneType   GetPlaneType(Int_t detElemId, Int_t cath);
     static AliMpStationType GetStationType(Int_t detElemId);
     static Int_t            GetCathod(Int_t detElemId, AliMpPlaneType planeType);
