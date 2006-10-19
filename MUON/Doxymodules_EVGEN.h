@@ -43,7 +43,6 @@
     class  AliGeVSimParticle {};
     class  AliGenBeamGas {};
     class  AliGenAfterBurnerFlow {};
-    class  AliStructFuncType {};
     class  AliGenSlowNucleons {};
     class  AliSlowNucleonModel {};
     class  AliSlowNucleonModelExp {};

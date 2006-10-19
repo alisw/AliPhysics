@@ -64,27 +64,9 @@
     class AliVertexGenFile {};
     class AliVertexer {};
     class AliVertexerTracks {};
+    class AliStrLine {};
     class AliV0vertexer {};
     class AliCascadeVertexer {};
-
-    class AliCDBPath {};
-    class AliCDBRunRange {};
-    class AliCDBId {};
-    class AliCDBMetaData {};
-    class AliCDBEntry {};
-    class AliCDBStorage {};
-    class AliCDBStorageFactory {};
-    class AliCDBManager {};
-    class AliCDBParam {};
-    class AliCDBLocal {};
-    class AliCDBLocalFactory {};
-    class AliCDBLocalParam {};
-    class AliCDBDump {};
-    class AliCDBDumpFactory {};
-    class AliCDBDumpParam {}; 
-    class AliCDBGrid {};
-    class AliCDBGridFactory {};
-    class AliCDBGridParam {}; 
 
     class AliExpression {};
     class AliVariableExpression {};
@@ -124,6 +106,15 @@
     class AliCentralTrigger {};
     class AliCTPRawData {};
     class AliCTPRawStream {};
+    class AliMathBase {};
+    class AliSignalProcesor {};
+    class AliHelix {};
+    class AliCluster {};
+    class AliTracker {};
+    class AliV0 {};
+    class AliKink {};
+
+    class AliSelectorRL {};
 
 /** @} */
 
@@ -142,18 +133,15 @@
     class  AliESDHLTtrack {};
     class  AliESDv0 {};
     class  AliESDcascade {};
-    class  AliESDVertex {};
     class  AliVertex {};
+    class  AliESDVertex {};
     class  AliESDpid {};
     class  AliESDkink {};
-    class  AliESDV0MI {};
-    class  AliESDV0MIParams {};
+    class  AliESDV0Params {};
     class  AliESDCaloCluster {};
 
     class  AliKalmanTrack {};
-    class  AliHelix {};
     class  AliExternalTrackParam {};
-    class  AliStrLine {};
     class  AliLog {};
     class  AliPID {};
     class  AliTrackPointArray {};
@@ -166,17 +154,53 @@
 
     class  AliTagCreator {};
     class  AliTagAnalysis {};
+    class  AliRunTagCuts {};
     class  AliEventTagCuts {};
+    class  AliXMLCollection {};
 
     class  AliTrackPointArray {};
     class  AliTrackPoint {};
-    class  AliCluster {};
-    class  AliTracker {};
 
     class  AliESDFMD {};
     class  AliFMDMap {};
     class  AliFMDFloatMap {};
 
     class  AliESDMultITS {};
+    class  AliMultiplicity {};
+
+    class  AliSelector {};
 
 /** @} */
+
+/** @defgroup STEER_CDB STEER_CDB
+ *  Category of AliRoot Conditions database classes
+ *  @{
+ */
+
+    class AliCDBPath {};
+    class AliCDBRunRange {};
+    class AliCDBId {};
+    class AliCDBMetaData {};
+    class AliCDBEntry {};
+    class AliCDBStorage {};
+    class AliCDBStorageFactory {};
+    class AliCDBManager {};
+    class AliCDBParam {};
+    class AliCDBLocal {};
+    class AliCDBLocalFactory {};
+    class AliCDBLocalParam {};
+    class AliCDBDump {};
+    class AliCDBDumpFactory {};
+    class AliCDBDumpParam {}; 
+    class AliCDBGrid {};
+    class AliCDBGridFactory {};
+    class AliCDBGridParam {};
+
+    class AliDCSValue {};
+
+    class AliPreprocessor {};
+
+    class AliShuttleInterface {};
+
+/** @} */
+
