@@ -25,6 +25,9 @@ class AliMUONGeometryDetElement : public TObject
     AliMUONGeometryDetElement();
     virtual ~AliMUONGeometryDetElement();
 
+    // static methods
+    static TString GetDENamePrefix();
+
     // methods
     void Global2Local(
                  Float_t xg, Float_t yg, Float_t zg, 
@@ -78,6 +81,10 @@ class AliMUONGeometryDetElement : public TObject
 };
 
 // inline functions
+
+/// Return module name prefix
+inline TString AliMUONGeometryDetElement::GetDENamePrefix()
+{ return fgkDENamePrefix; }
 
 /// Set the full path of the aligned volume or envelope in geometry
 inline void AliMUONGeometryDetElement::SetVolumePath(const TString& volumePath)
