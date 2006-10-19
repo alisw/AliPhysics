@@ -25,8 +25,9 @@
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryBuilder.h"
+
+#include "AliMpExMap.h"
 
 #include "AliLog.h"
 
@@ -41,7 +42,7 @@ ClassImp(AliMUONGeometryEnvelopeStore)
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(
-                                 AliMUONGeometryStore* detElements)
+                                    AliMpExMap* detElements)
  : TObject(),
    fEnvelopes(0),
    fDetElements(detElements),
@@ -127,7 +128,7 @@ Bool_t AliMUONGeometryEnvelopeStore::AlignEnvelope(
   if (detElemId == 0) return false;
   
   AliMUONGeometryDetElement* detElement 
-    = (AliMUONGeometryDetElement*) fDetElements->Get(detElemId);
+    = (AliMUONGeometryDetElement*) fDetElements->GetValue(detElemId);
   if (!detElement) {
     AliWarning("Transformation not found.");
     return false;

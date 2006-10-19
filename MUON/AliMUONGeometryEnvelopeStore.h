@@ -27,12 +27,12 @@ class TString;
 
 class AliMUONChamber;
 class AliMUONGeometryEnvelope;
-class AliMUONGeometryStore;
+class AliMpExMap;
 
 class AliMUONGeometryEnvelopeStore : public TObject
 {
   public:
-    AliMUONGeometryEnvelopeStore(AliMUONGeometryStore* detElements);
+    AliMUONGeometryEnvelopeStore(AliMpExMap* detElements);
     AliMUONGeometryEnvelopeStore();
     virtual ~AliMUONGeometryEnvelopeStore();
 
@@ -119,6 +119,8 @@ class AliMUONGeometryEnvelopeStore : public TObject
     const TObjArray*  GetEnvelopes() const;
     Int_t             GetNofDetElements() const;
 
+    AliMUONGeometryEnvelope* FindEnvelope(const TString& name) const;
+
   protected:
     AliMUONGeometryEnvelopeStore(const AliMUONGeometryEnvelopeStore& rhs);
     AliMUONGeometryEnvelopeStore& operator = (const AliMUONGeometryEnvelopeStore& rhs);
@@ -126,14 +128,13 @@ class AliMUONGeometryEnvelopeStore : public TObject
   private:
     // methods
     TGeoHMatrix ConvertDETransform(const TGeoHMatrix& transform) const;
-    AliMUONGeometryEnvelope* FindEnvelope(const TString& name) const;
     Bool_t AlignEnvelope(AliMUONGeometryEnvelope* envelope) const;
  
     // data members
-    TObjArray*  fEnvelopes; ///< \brief the envelopes names and transformations
-		            /// wrt to the chamber position in mother volume                                 
-    AliMUONGeometryStore*  fDetElements; ///< \brief detection elements
-                                         /// used for alignement of envelopes
+    TObjArray*   fEnvelopes; ///< \brief the envelopes names and transformations
+		             /// wrt to the chamber position in mother volume                                 
+    AliMpExMap*  fDetElements; ///< \brief detection elements
+                               /// used for alignement of envelopes
     TGeoCombiTrans fReferenceFrame; ///< \brief the transformation from the builder 
                                     /// reference frame to that of the transform 
 				    /// data files
