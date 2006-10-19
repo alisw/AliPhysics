@@ -30,8 +30,9 @@
 #include "AliMUONGeometryEnvelope.h"	
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryConstituent.h"
+
+#include "AliMpDEManager.h"
 
 #include "AliModule.h"
 #include "AliLog.h"
@@ -281,6 +282,20 @@ void AliMUONGeometryBuilder::CreateGeometryWithTGeo()
         AliMUONGeometryEnvelope* env 
 	  = (AliMUONGeometryEnvelope*)kEnvelopes->At(k);
 	  
+	// Check consistency of detElemId and module Id
+	if ( env->GetUniqueID() > 0 && 
+	     AliMpDEManager::GetGeomModuleId(env->GetUniqueID()) 
+	     != geometry->GetModuleId() ) {
+	     
+	  AliErrorStream() 
+	    << "Detection element " << env->GetUniqueID() 
+	    << " is being placed in geometry module " << geometry->GetModuleId()
+	    << " but should go in " 
+	    << AliMpDEManager::GetGeomModuleId(env->GetUniqueID())
+	    <<  endl;
+	  AliFatal("Inconsistent IDs");
+	}          
+	  
         const TGeoCombiTrans* kEnvTrans = env->GetTransformation();
         const char* only = "ONLY";
         if (env->IsMANY()) only = "MANY";
@@ -377,6 +392,20 @@ void AliMUONGeometryBuilder::CreateGeometryWithoutTGeo()
         // Get envelope
         AliMUONGeometryEnvelope* env 
 	  = (AliMUONGeometryEnvelope*)kEnvelopes->At(k);
+	  
+	// Check consistency of detElemId and module Id
+	if ( env->GetUniqueID() > 0 && 
+	     AliMpDEManager::GetGeomModuleId(env->GetUniqueID()) 
+	     != geometry->GetModuleId() ) {
+	     
+	  AliErrorStream() 
+	    << "Detection element " << env->GetUniqueID() 
+	    << " is being placed in geometry module " << geometry->GetModuleId()
+	    << " but should go in " 
+	    << AliMpDEManager::GetGeomModuleId(env->GetUniqueID())
+	    <<  endl;
+	  AliFatal("Inconsistent IDs");
+	}          
 	  
         const TGeoCombiTrans* kEnvTrans = env->GetTransformation();
         const char* only = "ONLY";
@@ -540,7 +569,7 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
 
   // Read sensitive volume map from a file
   fGeometry->ReadSVMap(svmapFileName);
-      
+
   // Set the chamber (sensitive region) GEANT identifier
   //
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
