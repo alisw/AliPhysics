@@ -1,6 +1,9 @@
 #ifndef ALIITSNEURALTRACK_H
 #define ALIITSNEURALTRACK_H
-
+///////////////////////////////////////////////////
+//                                               //
+// Neural track class                            //
+///////////////////////////////////////////////////
 #include <TMatrixD.h>
 
 class TObjArray;
@@ -11,9 +14,10 @@ class AliITSIOTrack;
 class AliITSNeuralTrack : public TObject {
 
 public:
-	         AliITSNeuralTrack();
-				AliITSNeuralTrack(AliITSNeuralTrack &track);
-	virtual ~AliITSNeuralTrack();
+  AliITSNeuralTrack();
+  AliITSNeuralTrack(const AliITSNeuralTrack &track);
+  AliITSNeuralTrack& operator=(const AliITSNeuralTrack& track );
+  virtual ~AliITSNeuralTrack();
 		
 	// Points insertion and goodness evaluation
 
@@ -22,8 +26,8 @@ public:
 	void     CleanAllSlots(Bool_t del = kFALSE)        {Int_t i; for(i=0;i<6;i++) CleanSlot(i,del);}
 	void     GetModuleData(Int_t i, Int_t &mod, Int_t &pos);
 	void     Insert(AliITSNeuralPoint *point);
-	Bool_t   IsGood(Int_t min)                         {return (fCount >= min);}
-	Int_t    OccupationMask();
+	Bool_t   IsGood(Int_t min)                   const      {return (fCount >= min);}
+	Int_t    OccupationMask() const;
 	void     PrintLabels();
 		
 	// Fit procedures

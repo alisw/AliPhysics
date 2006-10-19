@@ -18,12 +18,10 @@ public:
 
 
 	/* Constructors */
-	AliITStrackerANN() : AliITStrackerV2() { /* does nothing */ };
+        AliITStrackerANN();
 	AliITStrackerANN(const AliITSgeom *geom, Int_t msglev = 0);
-	AliITStrackerANN(const AliITStrackerANN &n) : AliITStrackerV2((AliITStrackerV2&)n)  
-		{ /* nothing */ }
-	AliITStrackerANN& operator=(const AliITStrackerANN& /*arg*/)
-		{ return *this; }
+	AliITStrackerANN(const AliITStrackerANN &n);
+	AliITStrackerANN& operator=(const AliITStrackerANN& arg);
 	
 	/* Destructor */
 	// virtual ~AliITStrackerANN();
@@ -39,8 +37,8 @@ public:
 	
 		AliITSnode();
 		~AliITSnode();
-		AliITSnode(const AliITSnode &n) : TObject((TObject&)n)  
-		{ /* nothing */ }
+		AliITSnode(const AliITSnode &n); 
+ 
 		AliITSnode& operator=(const AliITSnode& /*arg*/)
 		{ return *this; }
 	
@@ -108,10 +106,10 @@ public:
 		AliITSneuron() : fUsed(0), fActivation(0.), fInner(0), fOuter(0), fGain(0) 
 			{fGain = new TObjArray;}
 		AliITSneuron(AliITSnode *inner, AliITSnode *outer, Double_t minAct, Double_t maxAct);
-		AliITSneuron(const AliITSneuron &n) : TObject((TObject&)n)  
-		{ /* nothing */ }
-		AliITSneuron& operator=(const AliITSneuron& /*arg*/)
-		{ return *this; }
+		AliITSneuron(const AliITSneuron &n);
+		AliITSneuron& operator=(const AliITSneuron& arg)
+		{this->~AliITSneuron();new(this) AliITSneuron(arg);
+		return *this; }
 		
 								
 		/* (NEURON) Destructor: frees memory from dynamic allocated objects */
@@ -148,13 +146,13 @@ public:
 	class AliITSlink : public TObject {
 	public:
 	
-		AliITSlink() {fWeight = 0.0; fLinked = 0;}
+		AliITSlink():fWeight(0.0),fLinked() {}
 		AliITSlink(Double_t w, AliITSneuron *n) : fWeight(w), fLinked(n) { }
 		virtual ~AliITSlink() {fLinked = 0;}
-		AliITSlink(const AliITSlink &n) : TObject((TObject&)n)  
-		{ /* nothing */ }
-		AliITSlink& operator=(const AliITSlink& /*arg*/)
-		{ return *this; }
+		AliITSlink(const AliITSlink &n) : TObject((TObject&)n),fWeight(n.fWeight),fLinked(n.fLinked) {}
+		AliITSlink& operator=(const AliITSlink& arg)
+		{ this->~AliITSlink();new(this) AliITSlink(arg);
+		return *this; }
 		
 		/* contribution */
 		Double_t Contribution() {return fLinked->Activation() * fWeight;}
@@ -176,8 +174,7 @@ public:
 	public:
 	
 		AliITStrackANN(Int_t dim = 0);
-		AliITStrackANN(const AliITStrackANN &n) : TObject((TObject&)n)  
-		{ /* nothing */ }
+		AliITStrackANN(const AliITStrackANN &n); 
 		AliITStrackANN& operator=(const AliITStrackANN& /*arg*/)
 		{ return *this; }
 	

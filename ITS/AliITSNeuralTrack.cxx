@@ -50,21 +50,31 @@ ClassImp(AliITSNeuralTrack)
 //
 //
 //
-AliITSNeuralTrack::AliITSNeuralTrack() : fMatrix(5,5), fVertex()
-{
+AliITSNeuralTrack::AliITSNeuralTrack() :  
+fXC(0.0),
+fYC(0.0),
+fR(0.0),
+fC(0.0),
+fTanL(0.0),
+fG0(0.0),
+fDt(0.0),
+fDz(0.0),
+fStateR(0.0),
+fStatePhi(0.0),
+fStateZ(0.0),
+fMatrix(5,5),
+fChi2(0.0),
+fNSteps(0.0),
+fMass(0.1396),// default assumption: pion
+fField(2.0),// default assumption: B = 0.4 Tesla
+fPDG(0),
+fLabel(0),
+fCount(0),
+fVertex(){
 	// Default constructor
 	
 	Int_t i;
 
-	fMass  = 0.1396;   // default assumption: pion
-	fField = 2.0;      // default assumption: B = 0.4 Tesla
-
-	fXC = fYC = fR = fC = 0.0;
-	fTanL = fG0 = fDt = fDz = 0.0;
-	fStateR = fStatePhi = fStateZ = fChi2 = fNSteps = 0.0;
-
-	fLabel = 0;
-	fCount = 0;
 	for (i = 0; i < 6; i++) fPoint[i] = 0;
 
 	fVertex.X() = 0.0;
@@ -77,9 +87,28 @@ AliITSNeuralTrack::AliITSNeuralTrack() : fMatrix(5,5), fVertex()
 //
 //
 //
-AliITSNeuralTrack::AliITSNeuralTrack(AliITSNeuralTrack &track) 
-: TObject((TObject&)track), fMatrix(5,5), fVertex()
-{
+AliITSNeuralTrack::AliITSNeuralTrack(const AliITSNeuralTrack &track) 
+: TObject((TObject&)track), 
+fXC(0.0),
+fYC(0.0),
+fR(0.0),
+fC(0.0),
+fTanL(0.0),
+fG0(0.0),
+fDt(0.0),
+fDz(0.0),
+fStateR(0.0),
+fStatePhi(0.0),
+fStateZ(0.0),
+fMatrix(5,5),
+fChi2(0.0),
+fNSteps(0.0),
+fMass(0.1396),// default assumption: pion
+fField(2.0),// default assumption: B = 0.4 Tesla
+fPDG(0),
+fLabel(0),
+fCount(0),
+fVertex(){
 // copy constructor
 
 	Int_t i;
@@ -105,6 +134,13 @@ AliITSNeuralTrack::AliITSNeuralTrack(AliITSNeuralTrack &track)
 //
 //
 //
+
+AliITSNeuralTrack& AliITSNeuralTrack::operator=(const AliITSNeuralTrack& track){
+  //assignment operator
+  this->~AliITSNeuralTrack();
+  new(this) AliITSNeuralTrack(track);
+  return *this;
+}
 AliITSNeuralTrack::~AliITSNeuralTrack()
 {
 	Int_t l;
@@ -218,7 +254,7 @@ void AliITSNeuralTrack::Insert(AliITSNeuralPoint *point)
 //
 //
 //
-Int_t AliITSNeuralTrack::OccupationMask()
+Int_t AliITSNeuralTrack::OccupationMask() const
 {
 // Returns a byte which maps the occupied slots. 
 // Each bit represents a layer going from the less significant on.

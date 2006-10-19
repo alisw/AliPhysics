@@ -22,9 +22,6 @@ class AliITSNeuralTracker : public TObject {
 public:
 
 	AliITSNeuralTracker();
-	AliITSNeuralTracker(const AliITSNeuralTracker &t);
-	AliITSNeuralTracker& operator=(const AliITSNeuralTracker&);
-	
 	virtual ~AliITSNeuralTracker();
 
 	// ******************************************************************************
@@ -35,18 +32,17 @@ public:
 	// ******************************************************************************
 	class AliITSNode : public AliITSNeuralPoint {
 	public:
-		AliITSNode() {fInnerOf = fOuterOf = fMatches = 0; fNext = fPrev = 0;}
-		AliITSNode(const AliITSNode &t);
-		AliITSNode(AliITSNeuralPoint *p, Bool_t init = kTRUE) // declared inline
-			: AliITSNeuralPoint(p) { fInnerOf = fOuterOf = fMatches = 0; fNext = fPrev = 0;
+		AliITSNode():fPosInTree(0),fInnerOf(0),fOuterOf(0),fMatches(0),fNext(0),fPrev(0){}
+		
+		AliITSNode(AliITSNeuralPoint *p, Bool_t init = kTRUE): AliITSNeuralPoint(p),fPosInTree(0),fInnerOf(0),fOuterOf(0),fMatches(0),fNext(0),fPrev(0) {
 			if (init) { fInnerOf = new TObjArray; fOuterOf = new TObjArray; fMatches = new TObjArray;}}
 		AliITSNode(AliITSRecPoint *p, AliITSgeomMatrix *gm)
-			: AliITSNeuralPoint(p,gm) {fInnerOf = fOuterOf = fMatches = 0; fNext = fPrev = 0;}
+			: AliITSNeuralPoint(p,gm),fPosInTree(0),fInnerOf(0),fOuterOf(0),fMatches(0),fNext(0),fPrev(0) {}
 
 		virtual  ~AliITSNode() 
 			{fInnerOf = fOuterOf = fMatches = 0; fNext = fPrev = 0;}
 			
-		AliITSNode& operator=(const AliITSNode&);
+	
 		
 		Double_t  ThetaDeg()                    {return GetTheta()*180.0/TMath::Pi();}
 
@@ -63,9 +59,9 @@ public:
 		AliITSNode*& Prev() {return fPrev;}
 		
 	private:
-		
+		AliITSNode(const AliITSNode &t);
+		AliITSNode& operator=(const AliITSNode& t);
 		Int_t        fPosInTree;  // position in tree of converted points
-
 		TObjArray   *fInnerOf; //!
 		TObjArray   *fOuterOf; //! 
 		TObjArray   *fMatches; //!
@@ -87,10 +83,10 @@ public:
 	class AliITSneuron : public TObject {
 	public:
 		AliITSneuron():fUsed(0),fActivation(0.),fInner(0),fOuter(0),fGain(0) { }
-		AliITSneuron(const AliITSneuron &t); 
+		
 		virtual    ~AliITSneuron() {fInner=fOuter=0;fGain=0;}
 		
-		AliITSneuron& operator=(const AliITSneuron&);
+		
 
 		Double_t    Weight(AliITSneuron *n);
 		void        Add2Gain(AliITSneuron *n, Double_t multconst, Double_t exponent);
@@ -102,6 +98,9 @@ public:
 		TObjArray*&  Gain()  {return fGain;}
 		
 	private:
+
+		AliITSneuron(const AliITSneuron &t); 
+		AliITSneuron& operator=(const AliITSneuron& t);
 
 		Int_t             fUsed;        //  utility flag
 		Double_t          fActivation;  //  Activation value
@@ -123,15 +122,17 @@ public:
 	class AliITSlink : public TObject {
 	public:
 		AliITSlink() : fWeight(0.), fLinked(0) { }
-		AliITSlink(const AliITSlink &t);
-		virtual ~AliITSlink()   {fLinked = 0;}
 		
-		AliITSlink& operator=(const AliITSlink&);
+		virtual ~AliITSlink()   {fLinked = 0;}
+				
 		
 		Double_t& Weight() {return fWeight;}
 		AliITSneuron*& Linked() {return fLinked;}
 		
 	private:
+		
+		AliITSlink(const AliITSlink &t);
+		AliITSlink& operator=(const AliITSlink& t);
 
 		Double_t      fWeight;  //  Weight value
 		AliITSneuron *fLinked;  //! the connected neuron
@@ -182,6 +183,9 @@ public:
 	void     WriteChains()                 {fChains->Write();}
 
 private:
+
+	AliITSNeuralTracker(const AliITSNeuralTracker &n);
+	AliITSNeuralTracker& operator=(const AliITSNeuralTracker& t);
 
 	Bool_t       CheckOccupation() const; 
 

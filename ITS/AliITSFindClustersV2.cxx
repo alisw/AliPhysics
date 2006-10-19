@@ -38,7 +38,16 @@
 ClassImp(AliITSFindClustersV2)
 
 //______________________________________________________________________
-AliITSFindClustersV2::AliITSFindClustersV2(){
+AliITSFindClustersV2::AliITSFindClustersV2():
+fAr(0),
+fDeletfAr(kFALSE),
+fGeom(0),
+fInFileName(0),
+fOutFileName(0),
+fIn(0),
+fOut(0),
+fInit(kFALSE),
+fSlowFast(kFALSE){
     // Default constructor.
     // Inputs:
     //  none.
@@ -47,19 +56,19 @@ AliITSFindClustersV2::AliITSFindClustersV2(){
     // Return:
     //    A zero-ed constructed AliITSFindClustersV2 class.
 
-    fAr          = 0;
-    fDeletfAr     = kFALSE; // fAr=0 dont't delete it.
-    fGeom        = 0;
-    fInFileName  = 0;
-    fOutFileName = 0;
-    fIn          = 0;
-    fOut         = 0;
-    fSlowFast    = kFALSE;  // slow simulation
-    fInit        = kFALSE;  // Init failed
 }
 //______________________________________________________________________
 AliITSFindClustersV2::AliITSFindClustersV2(const TString infile,
-                                           const TString outfile){
+                                           const TString outfile):
+fAr(0),
+fDeletfAr(kFALSE),
+fGeom(0),
+fInFileName(0),
+fOutFileName(0),
+fIn(0),
+fOut(0),
+fInit(kFALSE),
+fSlowFast(kFALSE){
     // Standard constructor.
     // Inputs:
     //  const TString infile   Input file name where the RecPoints are
@@ -71,16 +80,6 @@ AliITSFindClustersV2::AliITSFindClustersV2(const TString infile,
     //   none.
     // Return:
     //    A standardly constructed AliITSFindClustersV2 class.
-
-    fAr          = 0;
-    fDeletfAr    = kFALSE; // fAr=0 dont't delete it.
-    fGeom        = 0;
-    fInFileName  = 0;
-    fOutFileName = 0;
-    fIn          = 0;
-    fOut         = 0;
-    fSlowFast    = kFALSE;  // slow simulation
-    fInit        = kFALSE;  // Init failed
 
     fInFileName = new TString(infile);
     if(outfile.CompareTo("")!=0){
@@ -130,7 +129,16 @@ AliITSFindClustersV2::AliITSFindClustersV2(const TString infile,
 }
 //______________________________________________________________________
 AliITSFindClustersV2::AliITSFindClustersV2(TFile *in,
-					   TFile *out){
+					   TFile *out):
+fAr(0),
+fDeletfAr(kFALSE),
+fGeom(0),
+fInFileName(0),
+fOutFileName(0),
+fIn(0),
+fOut(0),
+fInit(kFALSE),
+fSlowFast(kFALSE){
     // Standard constructor.
     // Inputs:
     //  const TFile *in   Input file where the RecPoints are
@@ -142,16 +150,6 @@ AliITSFindClustersV2::AliITSFindClustersV2(TFile *in,
     //   none.
     // Return:
     //    A standardly constructed AliITSFindClustersV2 class.
-
-    fAr          = 0;
-    fDeletfAr    = kFALSE; // fAr=0 dont't delete it.
-    fGeom        = 0;
-    fInFileName  = 0;
-    fOutFileName = 0;
-    fIn          = 0;
-    fOut         = 0;
-    fSlowFast    = kFALSE;  // slow simulation
-    fInit        = kFALSE;  // Init failed
 
     fIn  = in;
     fOut = out;
@@ -186,7 +184,16 @@ AliITSFindClustersV2::AliITSFindClustersV2(TFile *in,
 }
 //______________________________________________________________________
 AliITSFindClustersV2::AliITSFindClustersV2(AliRun *ar,
-					   const TString outfile){
+					   const TString outfile):
+fAr(0),
+fDeletfAr(kFALSE),
+fGeom(0),
+fInFileName(0),
+fOutFileName(0),
+fIn(0),
+fOut(0),
+fInit(kFALSE),
+fSlowFast(kFALSE){
     // Standard constructor.
     // Inputs:
     //  const TString infile   Input file name where the RecPoints are
@@ -198,16 +205,6 @@ AliITSFindClustersV2::AliITSFindClustersV2(AliRun *ar,
     //   none.
     // Return:
     //    A standardly constructed AliITSFindClustersV2 class.
-
-    fAr          = 0;
-    fDeletfAr    = kFALSE; // fAr=0 dont't delete it.
-    fGeom        = 0;
-    fInFileName  = 0;
-    fOutFileName = 0;
-    fIn          = 0;
-    fOut         = 0;
-    fSlowFast    = kFALSE;  // slow simulation
-    fInit        = kFALSE;  // Init failed
 
     if(outfile.CompareTo("")!=0){
 	fOutFileName = new TString(outfile);
@@ -246,18 +243,26 @@ AliITSFindClustersV2::AliITSFindClustersV2(AliRun *ar,
     fInit = kTRUE;
 }
 //______________________________________________________________________
-AliITSFindClustersV2::AliITSFindClustersV2(const AliITSFindClustersV2 &/*rec*/):TTask(/*rec*/){
+AliITSFindClustersV2::AliITSFindClustersV2(const AliITSFindClustersV2 &rec):TTask(rec),
+fAr(rec.fAr),
+fDeletfAr(rec.fDeletfAr),
+fGeom(rec.fGeom),
+fInFileName(rec.fInFileName),
+fOutFileName(rec.fOutFileName),
+fIn(rec.fIn),
+fOut(rec.fOut),
+fInit(rec.fInit),
+fSlowFast(rec.fSlowFast){
     // Copy constructor. 
 
-  Error("Copy constructor","Copy constructor not allowed");
   
 }
 //______________________________________________________________________
-AliITSFindClustersV2& AliITSFindClustersV2::operator=(const AliITSFindClustersV2& /*source*/){
-    // Assignment operator. This is a function which is not allowed to be
-    // done.
-    Error("operator=","Assignment operator not allowed\n");
-    return *this; 
+AliITSFindClustersV2& AliITSFindClustersV2::operator=(const AliITSFindClustersV2& source){
+    // Assignment operator. 
+  this->~AliITSFindClustersV2();
+  new(this) AliITSFindClustersV2(source);
+  return *this;
 }
 
 //______________________________________________________________________

@@ -47,8 +47,25 @@ ClassImp(AliITSNeuralTracker)
 
 //--------------------------------------------------------------------------------------------
 
-AliITSNeuralTracker::AliITSNeuralTracker()
-{
+AliITSNeuralTracker::AliITSNeuralTracker():
+fSectorNum(1),
+fSectorWidth(0),
+fPolarInterval(45.0),
+fCurvNum(0),
+fCurvCut(0),
+fStructureOK(kFALSE),
+fVX(0.0),
+fVY(0.0),
+fVZ(0.0),
+fActMinimum(0.5),
+fEdge1(0.3),
+fEdge2(0.7),
+fTemperature(1.0),
+fStabThreshold(0.001),
+fGain2CostRatio(1.0),
+fAlignExponent(1.0),
+fChains(0),
+fNeurons(0){
 	// CONSTRUCTOR
 	//
 	// Initializes some data-members:
@@ -60,16 +77,8 @@ AliITSNeuralTracker::AliITSNeuralTracker()
 	// With these settings the neural tracker can't work
 	// because it has not any curvature cut set.
 	
-	fCurvNum = 0;
-	fCurvCut = 0;
 
-	fSectorNum   = 1;
 	fSectorWidth = TMath::Pi() * 2.0;
-	fPolarInterval = 45.0;
-
-	fStructureOK = kFALSE;
-
-	fVX = fVY = fVZ = 0.0;
 
 	Int_t ilayer, itheta;
 	for (ilayer = 0; ilayer < 6; ilayer++) {
@@ -82,16 +91,8 @@ AliITSNeuralTracker::AliITSNeuralTracker()
 		fHelixMatchCutMax[ilayer] = 1.0;
 	}
 
-	fEdge1 = 0.3;
-	fEdge2=  0.7;
 
-	fTemperature = 1.0;
-	fStabThreshold = 0.001;
-	fGain2CostRatio = 1.0;
-	fAlignExponent = 1.0;
-	fActMinimum = 0.5;
 
-	fNeurons = 0;
 
 	fChains = new TTree("TreeC", "Sextines of points");
 	fChains->Branch("l0", &fPoint[0], "l0/I");
@@ -100,6 +101,35 @@ AliITSNeuralTracker::AliITSNeuralTracker()
 	fChains->Branch("l3", &fPoint[3], "l3/I");
 	fChains->Branch("l4", &fPoint[4], "l4/I");
 	fChains->Branch("l5", &fPoint[5], "l5/I");
+}
+
+AliITSNeuralTracker::AliITSNeuralTracker(const AliITSNeuralTracker &n):TObject(n),
+fSectorNum(n.fSectorNum),
+fSectorWidth(n.fSectorWidth),
+fPolarInterval(n.fPolarInterval),
+fCurvNum(n.fCurvNum),
+fCurvCut(n.fCurvCut),
+fStructureOK(n.fStructureOK),
+fVX(n.fVX),
+fVY(n.fVY),
+fVZ(n.fVZ),
+fActMinimum(n.fActMinimum),
+fEdge1(n.fEdge1),
+fEdge2(n.fEdge2),
+fTemperature(n.fTemperature),
+fStabThreshold(n.fStabThreshold),
+fGain2CostRatio(n.fGain2CostRatio),
+fAlignExponent(n.fAlignExponent),
+fChains(n.fChains),
+fNeurons(n.fNeurons){
+  //copy contructor
+}
+
+AliITSNeuralTracker& AliITSNeuralTracker::operator=(const AliITSNeuralTracker& t){
+  //assignment operator
+  this->~AliITSNeuralTracker();
+  new(this) AliITSNeuralTracker(t);
+  return *this;
 }
 //
 //--------------------------------------------------------------------------------------------
@@ -1252,60 +1282,62 @@ Double_t AliITSNeuralTracker::AliITSneuron::Weight(AliITSneuron *n)
 //
 //
 //
-AliITSNeuralTracker::AliITSNeuralTracker(const AliITSNeuralTracker &t)
-: TObject((TObject&)t)
+
+
+AliITSNeuralTracker::AliITSNode::AliITSNode(const AliITSNode &t): AliITSNeuralPoint((AliITSNeuralPoint&)t),
+fPosInTree(t.fPosInTree),
+fInnerOf(t.fInnerOf),
+fOuterOf(t.fOuterOf),
+fMatches(t.fMatches),
+fNext(t.fNext),
+fPrev(t.fPrev)
 { 
-	// NO copy constructor
-	Fatal("AliITSNeuralTracker", "No copy constructor allowed!");
-	exit(0);
+	//copy constructor
 }
-AliITSNeuralTracker& AliITSNeuralTracker::operator=(const AliITSNeuralTracker&)
+
+AliITSNeuralTracker::AliITSNode& AliITSNeuralTracker::AliITSNode::operator=(const AliITSNode& t)
 { 
-	// NO assignment operator
-	Fatal("AliITSNeuralTracker", "No assignment allowed!");
-	return *this;
+	// assignment operator
+  this->~AliITSNode(); 
+  new(this) AliITSNode(t);
+  return *this;
 }
-//
-AliITSNeuralTracker::AliITSNode::AliITSNode(const AliITSNode &t)
-: AliITSNeuralPoint((AliITSNeuralPoint&)t)
-{ 
-	// NO copy constructor
-	Fatal("AliITSNode", "No copy constructor allowed!");
-	exit(0);
-}
-AliITSNeuralTracker::AliITSNode& AliITSNeuralTracker::AliITSNode::operator=(const AliITSNode&)
-{ 
-	// NO assignment operator
-	Fatal("AliITSNode", "No assignment allowed!");
-	return *this;
-}
-//
+
+
 AliITSNeuralTracker::AliITSneuron::AliITSneuron(const AliITSneuron &t)
-: TObject((TObject&)t)
+  : TObject((TObject&)t),
+fUsed(t.fUsed),
+fActivation(t.fActivation),
+fInner(t.fInner),
+fOuter(t.fOuter),
+fGain(t.fGain)
 { 
-	// NO copy constructor
-	Fatal("AliITSneuron", "No copy constructor allowed!");
-	exit(0);
+	//copy constructor
 }
-AliITSNeuralTracker::AliITSneuron& AliITSNeuralTracker::AliITSneuron::operator=(const AliITSneuron&)
+
+AliITSNeuralTracker::AliITSneuron& AliITSNeuralTracker::AliITSneuron::operator=(const AliITSneuron& t)
 { 
-	// NO assignment operator
-	Fatal("AliITSneuron", "No assignment allowed!");
-	return *this;
+  //assignment operator
+  this->~AliITSneuron(); 
+  new(this) AliITSneuron(t);
+  return *this;
 }
-//
+
+
 AliITSNeuralTracker::AliITSlink::AliITSlink(const AliITSlink &t)
-: TObject((TObject&)t)
+  : TObject((TObject&)t),
+fWeight(t.fWeight), 
+fLinked(t.fLinked)
 { 
-	// NO copy constructor
-	Fatal("AliITSlink", "No copy constructor allowed!");
-	exit(0);
+  //copy constructor
 }
-AliITSNeuralTracker::AliITSlink& AliITSNeuralTracker::AliITSlink::operator=(const AliITSlink&)
+
+AliITSNeuralTracker::AliITSlink& AliITSNeuralTracker::AliITSlink::operator=(const AliITSlink& t)
 { 
-	// NO assignment operator
-	Fatal("AliITSlink", "No assignment allowed!");
-	return *this;
+  // assignment operator
+  this->~AliITSlink(); 
+  new(this) AliITSlink(t);
+  return *this;
 }
 
 

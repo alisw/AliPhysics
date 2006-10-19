@@ -42,9 +42,61 @@ const Double_t AliITStrackerANN::fgkTwoPi  = 6.283185307; // 2 * pi
 
 ClassImp(AliITStrackerANN)
 
+
+AliITStrackerANN::AliITStrackerANN() : AliITStrackerV2(), 
+fVertexX(0.0),
+fVertexY(0.0),
+fVertexZ(0.0),
+fSectorNum(0),
+fSectorWidth(0),
+fPolarInterval(0),
+fCurvNum(0),
+fCurvCut(0),
+fActMinimum(0),
+fEdge1(0),
+fEdge2(0),
+fStabThreshold(0),
+fTemperature(0),
+fGain2CostRatio(0),
+fExponent(0),
+fNLayers(0),
+fFirstModInLayer(0),
+fIndexMap(0),
+fFoundTracks(0),
+fNodes(0),
+fNeurons(0),
+fMsgLevel(0),
+fStructureOK(0),
+fGeom(0){
+  //Default constructor
+}
 //__________________________________________________________________________________
 AliITStrackerANN::AliITStrackerANN(const AliITSgeom *geom, Int_t msglev) 
-: AliITStrackerV2(geom), fMsgLevel(msglev)
+: AliITStrackerV2(geom), 
+fVertexX(0.0),
+fVertexY(0.0),
+fVertexZ(0.0),
+fSectorNum(0),
+fSectorWidth(0),
+fPolarInterval(0),
+fCurvNum(0),
+fCurvCut(0),
+fActMinimum(0),
+fEdge1(0),
+fEdge2(0),
+fStabThreshold(0),
+fTemperature(0),
+fGain2CostRatio(0),
+fExponent(0),
+fNLayers(0),
+fFirstModInLayer(0),
+fIndexMap(0),
+fFoundTracks(0),
+fNodes(0),
+fNeurons(0),
+fMsgLevel(msglev),
+fStructureOK(0),
+fGeom(0)
 {
 /**************************************************************************
 
@@ -134,6 +186,42 @@ AliITStrackerANN::AliITStrackerANN(const AliITSgeom *geom, Int_t msglev)
 	fFoundTracks = 0;
 }
 
+
+AliITStrackerANN::AliITStrackerANN(const AliITStrackerANN &n) : AliITStrackerV2((AliITStrackerV2&)n),  
+fVertexX(n.fVertexX),
+fVertexY(n.fVertexY),
+fVertexZ(n.fVertexZ),
+fSectorNum(n.fSectorNum),
+fSectorWidth(n.fSectorWidth),
+fPolarInterval(n.fPolarInterval),
+fCurvNum(n.fCurvNum),
+fCurvCut(n.fCurvCut),
+fActMinimum(n.fActMinimum),
+fEdge1(n.fEdge1),
+fEdge2(n.fEdge2),
+fStabThreshold(n.fStabThreshold),
+fTemperature(n.fTemperature),
+fGain2CostRatio(n.fGain2CostRatio),
+fExponent(n.fExponent),
+fNLayers(n.fNLayers),
+fFirstModInLayer(n.fFirstModInLayer),
+fIndexMap(n.fIndexMap),
+fFoundTracks(n.fFoundTracks),
+fNodes(n.fNodes),
+fNeurons(n.fNeurons),
+fMsgLevel(n.fMsgLevel),
+fStructureOK(n.fStructureOK),
+fGeom(n.fGeom){
+  //Copy constructor
+}
+
+AliITStrackerANN& AliITStrackerANN::operator=(const AliITStrackerANN& arg){
+  //Assignment operator
+  this->~AliITStrackerANN();
+  new(this) AliITStrackerANN(arg);
+  return *this;
+}
+	
 //__________________________________________________________________________________
 void AliITStrackerANN::SetCuts
 (Int_t ncurv, Double_t *curv, Double_t *theta2D, Double_t *theta3D, Double_t *helix)
@@ -1687,18 +1775,42 @@ Double_t AliITStrackerANN::Weight(AliITSneuron *nAB, AliITSneuron *nBC)
  ******************************************/
  
 //__________________________________________________________________________________ 
-AliITStrackerANN::AliITSnode::AliITSnode()
-: fUsed(kFALSE), fClusterRef(-1), 
-  fMatches(NULL), fInnerOf(NULL), fOuterOf(NULL), 
-  fNext(NULL), fPrev(NULL)
+AliITStrackerANN::AliITSnode::AliITSnode(): 
+fX(0.0),
+fY(0.0),
+fZ(0.0),
+fEX2(0.0),
+fEY2(0.0),
+fEZ2(0.0),
+fUsed(kFALSE), 
+fClusterRef(-1), 
+fMatches(NULL), 
+fInnerOf(NULL), 
+fOuterOf(NULL), 
+fNext(NULL), 
+fPrev(NULL)
 {
 	// Constructor for the embedded 'AliITSnode' class.
 	// It initializes all pointer-like objects.
 	
-	fX = fY = fZ = 0.0;
-	fEX2 = fEY2 = fEZ2 = 0.0;
 }
 
+AliITStrackerANN::AliITSnode::AliITSnode(const AliITSnode &n) : TObject((TObject&)n),
+fX(n.fX),
+fY(n.fY),
+fZ(n.fZ),
+fEX2(n.fEX2),
+fEY2(n.fEY2),
+fEZ2(n.fEZ2),
+fUsed(n.fUsed),
+fClusterRef(n.fClusterRef),
+fMatches(n.fMatches),
+fInnerOf(n.fInnerOf),
+fOuterOf(n.fOuterOf),
+fNext(n.fNext),
+fPrev(n.fPrev){
+  //copy constructor
+} 
 //__________________________________________________________________________________ 
 AliITStrackerANN::AliITSnode::~AliITSnode()
 {
@@ -1794,14 +1906,26 @@ Double_t AliITStrackerANN::AliITSnode::GetError(Option_t *option)
  
 //__________________________________________________________________________________
 AliITStrackerANN::AliITSneuron::AliITSneuron
-(AliITSnode *inner, AliITSnode *outer, Double_t minAct, Double_t maxAct)
-	: fUsed(0), fInner(inner), fOuter(outer) 
+(AliITSnode *inner, AliITSnode *outer, Double_t minAct, Double_t maxAct): 
+fUsed(0), 
+fActivation(0),
+fInner(inner), 
+fOuter(outer),
+fGain(0) 
 {
 	// Default neuron constructor
 	fActivation = gRandom->Rndm() * (maxAct-minAct) + minAct;
 	fGain = new TObjArray;
 }
- 
+
+AliITStrackerANN::AliITSneuron::AliITSneuron(const AliITSneuron &n) : TObject((TObject&)n),
+fUsed(n.fUsed),
+fActivation(n.fActivation),
+fInner(n.fInner),
+fOuter(n.fOuter),
+fGain(n.fGain){
+  //copy constructor
+} 
 //__________________________________________________________________________________
 Double_t AliITStrackerANN::AliITSneuron::Activate(Double_t temperature)
 {
@@ -1899,17 +2023,19 @@ Double_t AliITStrackerANN::AliITSneuron::Activate(Double_t temperature)
   **********************************************/
  
 //__________________________________________________________________________________
-AliITStrackerANN::AliITStrackANN::AliITStrackANN(Int_t dim) : fNPoints(dim)
+AliITStrackerANN::AliITStrackANN::AliITStrackANN(Int_t dim) : 
+fNPoints(dim),
+fXCenter(0.0),
+fYCenter(0.0),
+fRadius(0.0),
+fCurv(0.0),
+fDTrans(0.0),
+fDLong(0.0),
+fTanLambda(0.0),
+fPhi(0.0),
+fNode(0)
 {
 	// Default constructor for the AliITStrackANN class
-	
-	fXCenter = 0.0;
-	fYCenter = 0.0;
-	fRadius = 0.0;
-	fCurv = 0.0;
-	fDTrans = 0.0;
-	fDLong = 0.0;
-	fTanLambda = 0.0;
 	
 	if (! dim) {
 		fNode = 0;
@@ -1921,6 +2047,20 @@ AliITStrackerANN::AliITStrackANN::AliITStrackANN(Int_t dim) : fNPoints(dim)
 	}
 }
 
+AliITStrackerANN::AliITStrackANN::AliITStrackANN(const AliITStrackANN &n) : TObject((TObject&)n),
+fNPoints(n.fNPoints),
+fXCenter(n.fXCenter),
+fYCenter(n.fYCenter),
+fRadius(n.fRadius),
+fCurv(n.fCurv),
+fDTrans(n.fDTrans),
+fDLong(n.fDLong),
+fTanLambda(n.fTanLambda),
+fPhi(n.fPhi),
+fNode(n.fNode)
+{
+  //copy constructor
+}
 //__________________________________________________________________________________
 Int_t AliITStrackerANN::AliITStrackANN::CheckOccupation() const
 {

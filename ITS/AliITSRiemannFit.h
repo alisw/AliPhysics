@@ -66,9 +66,11 @@ class AliITSRiemannFit : public TObject{
       void SetVertexPhi(Float_t vert=0) { fVertexPhi = vert;}
     private :
       // copy constructor (NO copy ctr. allowed)
-      AliPointtl(const AliPointtl& /*ap */) {}
+      AliPointtl(const AliPointtl& ap);
     // assignment operator (NO assignment allowed)
-      AliPointtl& operator=(const AliPointtl& /* ap */) {return *this;}
+    AliPointtl& operator=(const AliPointtl& ap){
+       this->~AliPointtl(); new(this) AliPointtl(ap);return *this;
+    }
       Int_t fLay,fLad,fDet,fTrack;       // layer,ladder,detector and track
       Float_t fx,fy,fz,fr;               // global position of point 
       Float_t fdE,fdx,fdy,fdz;               // Errors

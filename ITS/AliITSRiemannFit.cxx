@@ -74,37 +74,40 @@
 ClassImp(AliITSRiemannFit)
 
 
-AliITSRiemannFit::AliITSRiemannFit() {
+AliITSRiemannFit::AliITSRiemannFit():
+fSizeEvent(0),
+fPrimaryTracks(0),
+fPoints(0),
+fParticles(0),
+fPointRecs(0) {
   ///////////////////////////////////////////////////////////
   // Default constructor.
   // Set everything to zero.
   ////////////////////////////////////////////////////////////
 
-  fSizeEvent     = 0;
-  fPoints        = 0;
-  fPrimaryTracks = 0;
-  fPointRecs     = 0;
-  //
-  //  test erase
-//    fspdi          = 0;
-//    fspdo          = 0;
+
   for(Int_t i=0;i<6;i++)fPLay[i] = 0;
   
 }
 
 //______________________________________________________________________
-AliITSRiemannFit::AliITSRiemannFit(const AliITSRiemannFit &rf) : TObject(rf) {
+AliITSRiemannFit::AliITSRiemannFit(const AliITSRiemannFit &rf) : TObject(rf),
+fSizeEvent(rf.fSizeEvent),
+fPrimaryTracks(rf.fPrimaryTracks),
+fPoints(rf.fPoints),
+fParticles(rf.fParticles),
+fPointRecs(rf.fPointRecs) {
   // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSRiemannFit","Copy constructor not allowed\n");
+
 }
 
 //______________________________________________________________________
-AliITSRiemannFit& AliITSRiemannFit::operator=(const AliITSRiemannFit& /* rf */){
+AliITSRiemannFit& AliITSRiemannFit::operator=(const AliITSRiemannFit& rf){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+  this->~AliITSRiemannFit();
+  new(this) AliITSRiemannFit(rf);
   return *this;
+
 }
 
 //______________________________________________________________________
@@ -130,20 +133,19 @@ AliITSRiemannFit::~AliITSRiemannFit() {
 }
 //----------------------------------------------------------------------
 
-AliITSRiemannFit::AliITSRiemannFit(Int_t size,Int_t ntracks) {
+AliITSRiemannFit::AliITSRiemannFit(Int_t size,Int_t ntracks):
+fSizeEvent(size),
+fPrimaryTracks(ntracks),
+fPoints(0),
+fParticles(0),
+fPointRecs(0)  {
   ///////////////////////////////////////////////////////////
   // Constructor.
   // Set fSizeEvent to size and fPrimaryTracks to ntracks.
   // Others to zero.
   ////////////////////////////////////////////////////////////
 
-  fSizeEvent     = size;
-  fPoints        = 0;
-  fPrimaryTracks = ntracks;
-  //
-  // test erase
-//    fspdi          = 0;
-//    fspdo          = 0;
+
   AliPointtl *first = new AliPointtl[fSizeEvent];
   AliPointtl **pointRecs = new AliPointtl*[fSizeEvent];
   for(Int_t i=0;i<6;i++)fPLay[i] = 0;
@@ -152,7 +154,26 @@ AliITSRiemannFit::AliITSRiemannFit(Int_t size,Int_t ntracks) {
 }
 
 // ---------------------------------------------------------------------
-AliITSRiemannFit::AliPointtl::AliPointtl(){
+AliITSRiemannFit::AliPointtl::AliPointtl():
+fLay(0),
+fLad(0),
+fDet(0),
+fTrack(0),
+fx(0),
+fy(0),
+fz(0),
+fr(0),
+fdE(0),
+fdx(0),
+fdy(0),
+fdz(0),
+fOrigin(0),
+fMomentum(0),
+fCode(0),
+fName(0),
+fPt(0),
+fPhi(0),
+fEta(0),fVertexPhi(0){
   // default constructor
   SetLay();
   SetLad();
@@ -175,6 +196,33 @@ AliITSRiemannFit::AliPointtl::AliPointtl(){
   SetEta();
   SetVertexPhi();
 }
+
+AliITSRiemannFit::AliPointtl::AliPointtl(const AliPointtl& ap):
+fLay(ap.fLay),
+fLad(ap.fLad),
+fDet(ap.fDet),
+fTrack(ap.fTrack),
+fx(ap.fx),
+fy(ap.fy),
+fz(ap.fz),
+fr(ap.fr),
+fdE(ap.fdE),
+fdx(ap.fdx),
+fdy(ap.fdy),
+fdz(ap.fdz),
+fOrigin(ap.fOrigin),
+fMomentum(ap.fMomentum),
+fCode(ap.fCode),
+fName(ap.fName),
+fPt(ap.fPt),
+fPhi(ap.fPhi),
+fEta(ap.fEta),
+fVertexPhi(ap.fVertexPhi){
+  //copy constructor
+}
+
+
+
 
 // ---------------------------------------------------------------------
 

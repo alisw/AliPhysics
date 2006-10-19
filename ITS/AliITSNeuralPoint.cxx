@@ -22,39 +22,71 @@ ClassImp(AliITSNeuralPoint)
 //
 //------------------------------------------------------------------------------------------------------
 //
-AliITSNeuralPoint::AliITSNeuralPoint()
-{
+AliITSNeuralPoint::AliITSNeuralPoint():
+fX(0),
+fY(0),
+fZ(0),
+fConfX(0),
+fConfY(0),
+fEX(0),
+fEY(0),
+fEZ(0),
+fCharge(0),
+fModule(0),
+fIndex(0),
+fLayer(0),
+fUser(0),
+fZSort(0){
 	// Default constructor.
 	// Defines the point as a noise point in the origin.
 	
-	fX = fY = fZ = 0.;
-	fEX = fEY = fEZ = 0.;
-	fLayer = 0;
 	fLabel[0] = fLabel[1] = fLabel[2] = -1;
-	fModule = 0;
-	fIndex = 0;
-	fUser = 0;
+
 }
 //
 //------------------------------------------------------------------------------------------------------
 //
 AliITSNeuralPoint::AliITSNeuralPoint(AliITSNeuralPoint *p) :
-fX(p->fX), fY(p->fY), fZ(p->fZ), fEX(p->fEX), fEY(p->fEY), fEZ(p->fEZ)
+fX(p->fX), 
+fY(p->fY), 
+fZ(p->fZ),
+fConfX(p->fConfX),
+fConfY(p->fConfY), 
+fEX(p->fEX), 
+fEY(p->fEY), 
+fEZ(p->fEZ),
+fCharge(p->fCharge),
+fModule(p->fModule),
+fIndex(p->fIndex),
+fLayer(p->fLayer),
+fUser(p->fUser),
+fZSort(p->fZSort)
 {
 	// Modified copy constructor.
 	// Accepts a pointer to a like object and copies its datamembers.
 	
-	fLayer = p->fLayer;
+
 	for (Int_t i = 0; i < 3; i++) fLabel[i] = p->fLabel[i];
-	fModule = p->fModule;
-	fIndex = p->fIndex;
-	fUser = p->fUser;
-	fCharge = p->fCharge;
+
 }
 //
 //------------------------------------------------------------------------------------------------------
 //
-AliITSNeuralPoint::AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm)
+AliITSNeuralPoint::AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm):
+fX(0),
+fY(0),
+fZ(0),
+fConfX(0),
+fConfY(0),
+fEX(0),
+fEY(0),
+fEZ(0),
+fCharge(0),
+fModule(0),
+fIndex(0),
+fLayer(0),
+fUser(0),
+fZSort(0)
 {
 	// Conversion constructor.
 	// Accepts a AliITSRecPoint and a AliITSgeomMatrix,
@@ -98,8 +130,21 @@ AliITSNeuralPoint::AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeomMatrix *gm)
 //
 //-------------------------------------------------------------------------------------------------
 //
-AliITSNeuralPoint::AliITSNeuralPoint
-(AliITSRecPoint *rp, AliITSgeom *geom, Short_t module, Short_t index)
+AliITSNeuralPoint::AliITSNeuralPoint(AliITSRecPoint *rp, AliITSgeom *geom, Short_t module, Short_t index):
+fX(0),
+fY(0),
+fZ(0),
+fConfX(0),
+fConfY(0),
+fEX(0),
+fEY(0),
+fEZ(0),
+fCharge(0),
+fModule(0),
+fIndex(0),
+fLayer(0),
+fUser(0),
+fZSort(0)
 {
 	// Conversion constructor.
 	// Accepts a AliITSRecPoint and an AliITSgeom,
