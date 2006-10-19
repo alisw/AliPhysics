@@ -47,8 +47,9 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryBuilder.h"
+
+#include "AliMpExMap.h"
 
 #include "AliLog.h"
 
@@ -284,18 +285,17 @@ AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
 	      // no mis align object created
       newModuleTransformer->SetTransformation(moduleTransform);
 
-      AliMUONGeometryStore *detElements =
-	kModuleTransformer->GetDetElementStore();
+      AliMpExMap *detElements = kModuleTransformer->GetDetElementStore();
 
       if (verbose)
 	AliInfo(Form
 		("%i DEs in old GeometryStore  %i",
-		 detElements->GetNofEntries(), iMt));
+		 detElements->GetSize(), iMt));
 
-      for (Int_t iDe = 0; iDe < detElements->GetNofEntries(); iDe++)
+      for (Int_t iDe = 0; iDe < detElements->GetSize(); iDe++)
 	{			// detection elements.
 	  AliMUONGeometryDetElement *detElement =
-	    (AliMUONGeometryDetElement *) detElements->GetEntry(iDe);
+	    (AliMUONGeometryDetElement *) detElements->GetObject(iDe);
 	  if (!detElement)
 	    AliFatal("Detection element not found.");
 
