@@ -99,10 +99,20 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 	
 	if ((nprim = ALLDLT.nalldl) > 0) {
 	    //
-	    // Multiple steps (primary ionisation)	   
+	    // Multiple steps (primary ionisation)
+	    if (nprim >= mxalld) {
+		nprim = mxalld;
+		Warning("mgdraw", "nprim > mxalld, nprim: %6d  pdg: %6d mreg %6d p %13.3f step %13.3f\n", 
+		       ALLDLT.nalldl, 
+		       fluka->PDGFromId(TRACKR.jtrack), 
+		       mreg, 
+		       TRACKR.ptrack, 
+		       TRACKR.ctrack);
+		
+	    }
 	    for (Int_t i = 0; i < nprim; i++) {
-		(TVirtualMCApplication::Instance())->Stepping();
 		fluka->SetCurrentPrimaryElectronIndex(i);
+		(TVirtualMCApplication::Instance())->Stepping();
 		if (i == 0) fluka->SetTrackIsNew(kFALSE);
 	    }
 	    fluka->SetCurrentPrimaryElectronIndex(-1);
