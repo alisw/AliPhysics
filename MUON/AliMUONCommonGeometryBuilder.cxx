@@ -36,7 +36,7 @@ ClassImp(AliMUONCommonGeometryBuilder)
  
 //______________________________________________________________________________//___________________________________________
 AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(AliMUON* muon)
-  : AliMUONVGeometryBuilder(-1),
+  : AliMUONVGeometryBuilder(-1, 0),
     fMUON(muon)
 {
 /// Standard constructor

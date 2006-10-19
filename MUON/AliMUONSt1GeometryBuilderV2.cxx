@@ -130,7 +130,7 @@ const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
-  : AliMUONVGeometryBuilder(0, 1),
+  : AliMUONVGeometryBuilder(0, 2),
     fMUON(muon)
 {
 /// Standard constructor
