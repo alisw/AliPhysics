@@ -28,7 +28,6 @@
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryDetElement.h"	
-#include "AliMUONGeometryStore.h"	
 #include "AliMUONStringIntMap.h"	
 
 #include "AliLog.h"	
