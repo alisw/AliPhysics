@@ -116,7 +116,7 @@ void AliMpDEIterator::ReadData()
 AliMpDEIterator::AliMpDEIterator()
     : TObject(),
       fIndex(-1),
-      fModuleId(-1)
+      fChamberId(-1)
 {  
 /// Standard and default constructor
 
@@ -127,7 +127,7 @@ AliMpDEIterator::AliMpDEIterator()
 AliMpDEIterator::AliMpDEIterator(const AliMpDEIterator& rhs)
  : TObject(rhs),
    fIndex(rhs.fIndex),
-   fModuleId(rhs.fModuleId)
+   fChamberId(rhs.fChamberId)
 {
 /// Copy constructor
 }
@@ -150,8 +150,8 @@ AliMpDEIterator&  AliMpDEIterator::operator=(const AliMpDEIterator& rhs)
   // base class assignment
   TObject::operator=(rhs);
 
-  fIndex    = rhs.fIndex;
-  fModuleId = rhs.fModuleId;
+  fIndex = rhs.fIndex;
+  fChamberId = rhs.fChamberId;
 
   return *this;
 } 
@@ -166,34 +166,34 @@ void AliMpDEIterator::First()
 /// Set iterator to the first DE Id defined 
 
   fIndex = 0;
-  fModuleId = -1;
+  fChamberId = -1;
 }  
 
 //______________________________________________________________________________
-void AliMpDEIterator::First(Int_t moduleId)
+void AliMpDEIterator::First(Int_t chamberId)
 {
 /// Reset the iterator, so that it points to the first DE
  
-  fModuleId = -1;
+  fChamberId = -1;
   fIndex = -1;  
-  if ( ! AliMpDEManager::IsValidModuleId(moduleId) ) {
-    AliErrorStream() << "Invalid module Id " << moduleId << endl;
+  if ( ! AliMpDEManager::IsValidChamberId(chamberId) ) {
+    AliErrorStream() << "Invalid chamber Id " << chamberId << endl;
     return;
   }    
 
   Int_t i=0;
-  while ( i < fgNofDetElemIds && fModuleId < 0 ) {
+  while ( i < fgNofDetElemIds && fChamberId < 0 ) {
     Int_t detElemId = fgDetElemIds.At(i);
-    if ( AliMpDEManager::GetModuleId(detElemId) == moduleId ) {
-      fModuleId = moduleId;
+    if ( AliMpDEManager::GetChamberId(detElemId) == chamberId ) {
+      fChamberId = chamberId;
       fIndex = i;
     } 
     i++; 
   }
 
-  if ( fModuleId < 0 ) {
+  if ( fChamberId < 0 ) {
     AliErrorStream() 
-      << "No DEs of Module Id " << moduleId << " found" << endl;
+      << "No DEs of Chamber Id " << chamberId << " found" << endl;
     return;
   }    
 
@@ -208,8 +208,8 @@ void AliMpDEIterator::Next()
 
   // Invalidate if at the end
   if ( ( fIndex == fgNofDetElemIds ) ||
-       ( fModuleId >= 0 &&    
-         AliMpDEManager::GetModuleId(CurrentDE()) != fModuleId ) ) {
+       ( fChamberId >= 0 &&    
+         AliMpDEManager::GetChamberId(CurrentDE()) != fChamberId ) ) {
     fIndex = -1;
   }   
 }

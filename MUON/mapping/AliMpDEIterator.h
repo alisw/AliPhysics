@@ -8,11 +8,11 @@
 /// \class AliMpDEIterator
 /// \brief The iterator over valid detection element IDs
 ///
-/// The valid detection element Ids are defined in the files denames*.dat.    \n
+/// The valid detection element Ids are defined in the files denames*.dat.     \n
 /// It can iterate 
 /// - over all valid detection elements, if started with First() function; 
-/// - or over detection elements in a selected module, if started with
-///   First(Int_t moduleId) function                                          \n 
+/// - or over detection elements in a selected chamber, if started with
+///   First(Int_t chamberId) function                                          \n 
 /// 
 /// \author Ivana Hrivnacova, IPN Orsay
 
@@ -40,7 +40,7 @@ class AliMpDEIterator : public  TObject {
     // Methods for iterating over DE elements
     // 
     void First();
-    void First(Int_t moduleId);
+    void First(Int_t chamberId);
     void Next();
     Bool_t IsDone() const;
     Int_t CurrentDE() const;
@@ -56,8 +56,8 @@ class AliMpDEIterator : public  TObject {
     static Int_t        fgNofDetElemIds;      ///< Number of DE Ids	
 
     // data members	
-    Int_t  fIndex;    ///< Current DE index
-    Int_t  fModuleId; ///< The iterated module 
+    Int_t  fIndex;     ///< Current DE index
+    Int_t  fChamberId; ///< The iterated chamber 
 
   ClassDef(AliMpDEIterator,0)  // The iterator over valid detection element IDs
 };
