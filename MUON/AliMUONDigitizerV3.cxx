@@ -34,6 +34,7 @@
 #include "AliMpPad.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpDEManager.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
@@ -567,7 +568,8 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cath
   // Called by GenerateNoisyDigits()
   //
   
-  TClonesArray* digits = fOutputData->Digits(detElemId/100-1);
+  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+  TClonesArray* digits = fOutputData->Digits(chamberId);
   
   const AliMpVSegmentation* seg = Segmentation()->GetMpSegmentation(detElemId,cathode);
   Int_t nofPads = seg->NofPads();

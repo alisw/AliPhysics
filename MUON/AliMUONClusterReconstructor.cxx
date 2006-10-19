@@ -33,6 +33,9 @@
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONRawCluster.h"
+
+#include "AliMpDEManager.h"
+
 #include "AliLog.h"
 
 ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
@@ -70,7 +73,7 @@ AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
   
   if ( fDigitsCath0->GetEntriesFast() || fDigitsCath1->GetEntriesFast() )
   {
-    Int_t iChamber = detElemId/100 - 1;
+    Int_t iChamber = AliMpDEManager::GetChamberId(detElemId);
     AliMUONClusterInput::Instance()->SetDigits(iChamber, detElemId,
                                                fDigitsCath0,fDigitsCath1);
     AliDebug(3,Form("ClusterizeOneDE iChamber=%d DE=%d",iChamber,detElemId));

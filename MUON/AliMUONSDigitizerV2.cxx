@@ -23,10 +23,12 @@
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONHit.h"
+#include "AliMpDEManager.h"
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "TObjArray.h"
+
 
 ///
 /// The sdigitizer performs the transformation from hits (energy deposits by
@@ -152,7 +154,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
       if ( d->Signal() > 0 ) // that check would be better in the disintegrate
         // method, but to compare with old sdigitizer, it has to be there.
       {
-        muonData.AddSDigit(d->DetElemId()/100-1,*d);
+        muonData.AddSDigit(AliMpDEManager::GetChamberId(d->DetElemId()),*d);
       }
     }
     muonData.Fill("S");

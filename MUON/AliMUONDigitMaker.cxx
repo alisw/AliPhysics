@@ -247,7 +247,7 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 	    }
 
 	    // fill digits
-	    iChamber = fDigit->DetElemId()/100 - 1;
+	    iChamber = AliMpDEManager::GetChamberId(fDigit->DetElemId());
 
 	    if (fDigitFlag)
 	      fMUONData->AddDigit(iChamber, *fDigit);
@@ -390,7 +390,7 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 		AliMUONDigit* digit = (AliMUONDigit*)digitList.At(iEntry);
 		
 		// filling S container
-		Int_t iChamber = digit->DetElemId()/100 - 1;
+		Int_t iChamber = AliMpDEManager::GetChamberId(digit->DetElemId());
 		fMUONData->AddSDigit(iChamber, *digit);
 
 	      }

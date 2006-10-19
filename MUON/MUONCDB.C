@@ -227,8 +227,7 @@ void plotCDB(const char* calibType)
   {
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
-    
-    Int_t station = detElemId/100 - 1;
+    Int_t station = AliMpDEmanager::GetChamberId(detElemId);
     
     AliMUONVCalibParam* value = 
     dynamic_cast<AliMUONVCalibParam*>(store->Get(detElemId,manuId));
