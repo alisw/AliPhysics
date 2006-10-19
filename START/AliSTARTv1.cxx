@@ -86,12 +86,15 @@ void AliSTARTv1::CreateGeometry()
 
 
    Int_t *idtmed = fIdtmed->GetArray();
-  
-  AliSTARTParameters* param = AliSTARTParameters::Instance();
-  param->Init();
+   /*
+   AliSTARTParameters* param = AliSTARTParameters::Instance();
+   param->Init();
   Float_t zdetC = param->GetZposition(0);
   Float_t zdetA = param->GetZposition(1);
-  
+   */
+   Float_t zdetC = 69.7;
+   Float_t zdetA = 373.;
+
   Int_t is;
   Int_t idrotm[999];
   Float_t x,y,z;
@@ -329,7 +332,7 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gspos("0SC2",1,"0SUP",0,0,z,0,"ONLY"); 
     z += par[2];
    
-     par[0]=3.15;
+    par[0]=3.15;
     par[1]=4.9;
     par[2]=0.1/2;
     gMC->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
@@ -370,17 +373,17 @@ void AliSTARTv1::AddAlignableVolumes() const
   TString volPath;
   TString symName, sn;
 
-  TString vpA  = "ALIC_1/0STL_1/0INS_";
-  TString vpC  = "ALIC_1/0STR_1/0INS_";
-  TString vpInside  = "/0PMT_1/OTOP_1";
+  TString vpA  = "/ALIC_1/0STL_1/0INS_";
+  TString vpC  = "/ALIC_1/0STR_1/0INS_";
+  TString vpInside  = "/0PMT_1/0TOP_1";
 
 
   for (Int_t imod=0; imod<24; imod++)
     {
       if (imod < 12) 
-	{volPath  = vpA; sn="START/A/PMT";}
-      else  
 	{volPath  = vpC; sn="START/C/PMT";}
+      else  
+	{volPath  = vpA; sn="START/A/PMT";}
       volPath += imod+1;
       volPath += vpInside;
       
@@ -392,7 +395,11 @@ void AliSTARTv1::AddAlignableVolumes() const
       AliDebug(2,Form("volPath=%s\n",volPath.Data()));
       AliDebug(2,Form("symName=%s\n",symName.Data()));
       AliDebug(2,"--------------------------------------------");
-      gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+      //  gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+      if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data()))
+	AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", 
+		      symName.Data(),volPath.Data()));
+      
     }
 }   
 //------------------------------------------------------------------------
