@@ -25,7 +25,6 @@
 class AliMUONGeometryEnvelope;
 class AliMUONGeometryEnvelopeStore;
 class AliMUONGeometryDetElement;
-class AliMUONGeometryStore;
 class AliMUONStringIntMap;
 
 class TGeoTranslation;
