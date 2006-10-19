@@ -26,31 +26,19 @@ class AliMUONHit : public AliHit {
  public:
     
     AliMUONHit();
-    AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits); 
-               // TBR
-    AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits,
-               Bool_t isNew);
+    AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
 
-    AliMUONHit(Int_t fIshunt, Int_t track, Int_t iChamber, Int_t idpart, 
-               Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
-	       Float_t theta, Float_t phi, Float_t length, Float_t destep);
-	       // TBR
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t detElemId, Int_t idpart, 
                Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
-	       Float_t theta, Float_t phi, Float_t length, Float_t destep, Bool_t isNew);
+	       Float_t theta, Float_t phi, Float_t length, Float_t destep);
 
-    AliMUONHit(Int_t fIshunt, Int_t track, Int_t iChamber, Int_t idpart, 
+    AliMUONHit(Int_t fIshunt, Int_t track, Int_t detElemId, Int_t idpart, 
                Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
                Float_t theta, Float_t phi, Float_t length, Float_t destep,
                Float_t Xref, Float_t Yref, Float_t Zref);
-	       // TBR
-    AliMUONHit(Int_t fIshunt, Int_t track, Int_t detElemId, Int_t idpart, 
-               Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
-               Float_t theta, Float_t phi, Float_t length, Float_t destep,
-               Float_t Xref, Float_t Yref, Float_t Zref, Bool_t isNew);
     virtual ~AliMUONHit();
 
-    Int_t   DetElemId()const;
+    Int_t   DetElemId()const {return fDetElemId;} ///< Return detection element ID
     Int_t   Chamber()  const;
 
     virtual void Print(Option_t* opt="") const;
@@ -77,7 +65,6 @@ class AliMUONHit : public AliHit {
     Float_t Zref()     const {return fZref;}      ///< Return Z position of hit in the center of the chamber (without angle effect)
 
  private:  
-    Bool_t    fIsDetElemId;   ///< False if fDetElemId contains Chamber Id (old code) 
     Int_t     fDetElemId;     ///< Detection element ID
     Float_t   fParticle;      ///< Geant3 particle type
     Float_t   fTheta ;        ///< Incident theta angle in degrees      
@@ -98,6 +85,6 @@ class AliMUONHit : public AliHit {
     Float_t   fZref;          ///< Z position of hit in the center of the chamber (without angle effect)
 
     
-    ClassDef(AliMUONHit,1)    //Hit object for MUON
+    ClassDef(AliMUONHit,2)    //Hit object for MUON
 };
 #endif
