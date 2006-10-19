@@ -28,9 +28,9 @@
 #include "AliMUONSegmentation.h"
 #include "AliMUONVGeometryDESegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONGeometryStore.h"
-
+\
 #include "AliMpVSegmentation.h"
+#include "AliMpDEManager.h"
 
 #include "AliLog.h"
 
@@ -92,6 +92,37 @@ AliMUONSegmentation::~AliMUONSegmentation()
   delete fModuleSegmentations[0];
   delete fModuleSegmentations[1];
 }
+
+//
+// private functions
+//
+
+//_____________________________________________________________________________
+AliMUONGeometrySegmentation* 
+AliMUONSegmentation::GetModuleSegmentation(
+                        Int_t moduleId, Int_t cathod, Bool_t warn) const
+{
+/// Return the geometry module segmentation specified by moduleId
+
+  if (cathod < 0 || cathod >= 2) {
+    if (warn) {
+      AliWarningStream() 
+        << "Cathod: " << cathod << " outside limits" << std::endl;
+    }			 
+    return 0;  
+  }  
+
+  if (moduleId < 0 || moduleId >= fModuleSegmentations[cathod]->GetEntriesFast()) {
+    if (warn) {
+      AliWarningStream() 
+        << "Index: " << moduleId << " outside limits" << std::endl;
+    }			 
+    return 0;  
+  }  
+
+  return (AliMUONGeometrySegmentation*) 
+            fModuleSegmentations[cathod]->At(moduleId);
+}    
 
 //
 // public functions
@@ -170,40 +201,13 @@ void  AliMUONSegmentation::Init()
 			    
 //_____________________________________________________________________________
 AliMUONGeometrySegmentation* 
-AliMUONSegmentation::GetModuleSegmentation(
-                        Int_t moduleId, Int_t cathod, Bool_t warn) const
-{
-/// Return the geometry module segmentation specified by moduleId
-
-  if (cathod < 0 || cathod >= 2) {
-    if (warn) {
-      AliWarningStream() 
-        << "Cathod: " << cathod << " outside limits" << std::endl;
-    }			 
-    return 0;  
-  }  
-
-  if (moduleId < 0 || moduleId >= fModuleSegmentations[cathod]->GetEntriesFast()) {
-    if (warn) {
-      AliWarningStream() 
-        << "Index: " << moduleId << " outside limits" << std::endl;
-    }			 
-    return 0;  
-  }  
-
-  return (AliMUONGeometrySegmentation*) 
-            fModuleSegmentations[cathod]->At(moduleId);
-}    
-
-//_____________________________________________________________________________
-AliMUONGeometrySegmentation* 
 AliMUONSegmentation::GetModuleSegmentationByDEId(
                         Int_t detElemId, Int_t cathod, Bool_t warn) const
 {
 /// Return the geometry module specified by detElemId/cathod
 
   // Get moduleId 
-  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+  Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
 
   return GetModuleSegmentation(moduleId, cathod, warn);
 }    

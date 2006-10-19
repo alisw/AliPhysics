@@ -56,8 +56,6 @@ class AliMUONSegmentation : public TObject
     
     // Geometry segmentations
     //
-    AliMUONGeometrySegmentation* GetModuleSegmentation(
-                     Int_t moduleId, Int_t cathod, Bool_t warn = true) const;
 
     AliMUONGeometrySegmentation* GetModuleSegmentationByDEId(
                      Int_t detElemId, Int_t cathod, Bool_t warn = true) const;
@@ -85,6 +83,9 @@ class AliMUONSegmentation : public TObject
     AliMUONSegmentation&  operator = (const AliMUONSegmentation& right);
      
   private:
+    AliMUONGeometrySegmentation* GetModuleSegmentation(
+                     Int_t moduleId, Int_t cathod, Bool_t warn = true) const;
+
     // data members
     TObjArray*  fMpSegmentations;        ///< array of mapping segmentations
     TObjArray*  fDESegmentations;        ///< array of DE segmentations
