@@ -10,7 +10,7 @@ cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C $OUTDIR
 cd $OUTDIR
 
 FULLPATH="$CURDIR/$OUTDIR"
-NEVENTS=10
+NEVENTS=100
 SEED=1234567
 
 echo "Running simulation  ..."
