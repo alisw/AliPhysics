@@ -19,9 +19,9 @@
 //  Class for trigger analysis.
 //  Digits are grouped in TRU's (Trigger Units). A TRU consist of 16x28 
 //  crystals ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 
-//  4x4 crystal combinations per each TRU, adding the digits amplitude and 
-//  finding the maximum. Maximums are transformed in ADC time samples. 
-//  Each time bin is compared to the trigger threshold until it is larger 
+//  2x2 and nxn (n multiple of 4) crystal combinations per each TRU, adding the 
+//  digits amplitude and  finding the maximum. Maxima are transformed in ADC 
+//  time samples. Each time bin is compared to the trigger threshold until it is larger 
 //  and then, triggers are set. Thresholds need to be fixed. 
 //  Usage:
 //
@@ -55,15 +55,15 @@ ClassImp(AliPHOSTrigger)
 AliPHOSTrigger::AliPHOSTrigger()
   : AliTriggerDetector(),
     f2x2MaxAmp(-1), f2x2CrystalPhi(-1),  f2x2CrystalEta(-1), f2x2SM(0),
-    f4x4MaxAmp(-1), f4x4CrystalPhi(-1),  f4x4CrystalEta(-1), f4x4SM(0),
-    fADCValuesHigh4x4(0), fADCValuesLow4x4(0),
+    fnxnMaxAmp(-1), fnxnCrystalPhi(-1),  fnxnCrystalEta(-1), fnxnSM(0),
+    fADCValuesHighnxn(0), fADCValuesLownxn(0),
     fADCValuesHigh2x2(0), fADCValuesLow2x2(0), fDigitsList(0),
     fL0Threshold(50), fL1JetLowPtThreshold(200), fL1JetHighPtThreshold(500),
-    fNTRU(8), fNTRUZ(2), fNTRUPhi(4), fSimulation(kTRUE)
+    fNTRU(8), fNTRUZ(2), fNTRUPhi(4),  fPatchSize(1), fSimulation(kTRUE)
 {
   //ctor
-  fADCValuesHigh4x4 = 0x0; //new Int_t[fTimeBins];
-  fADCValuesLow4x4  = 0x0; //new Int_t[fTimeBins];
+  fADCValuesHighnxn = 0x0; //new Int_t[fTimeBins];
+  fADCValuesLownxn  = 0x0; //new Int_t[fTimeBins];
   fADCValuesHigh2x2 = 0x0; //new Int_t[fTimeBins];
   fADCValuesLow2x2  = 0x0; //new Int_t[fTimeBins];
 
@@ -80,12 +80,12 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   f2x2CrystalPhi(trig.f2x2CrystalPhi),
   f2x2CrystalEta(trig.f2x2CrystalEta),
   f2x2SM(trig.f2x2SM),
-  f4x4MaxAmp(trig.f4x4MaxAmp),
-  f4x4CrystalPhi(trig.f4x4CrystalPhi),
-  f4x4CrystalEta(trig.f4x4CrystalEta),
-  f4x4SM(trig.f4x4SM),
-  fADCValuesHigh4x4(trig.fADCValuesHigh4x4),
-  fADCValuesLow4x4(trig.fADCValuesLow4x4),
+  fnxnMaxAmp(trig.fnxnMaxAmp),
+  fnxnCrystalPhi(trig.fnxnCrystalPhi),
+  fnxnCrystalEta(trig.fnxnCrystalEta),
+  fnxnSM(trig.fnxnSM),
+  fADCValuesHighnxn(trig.fADCValuesHighnxn),
+  fADCValuesLownxn(trig.fADCValuesLownxn),
   fADCValuesHigh2x2(trig.fADCValuesHigh2x2),
   fADCValuesLow2x2(trig.fADCValuesLow2x2),
   fDigitsList(trig.fDigitsList),
@@ -95,7 +95,7 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   fNTRU(trig.fNTRU),
   fNTRUZ(trig.fNTRUZ),
   fNTRUPhi(trig.fNTRUPhi),
-  fSimulation(trig.fSimulation)
+  fPatchSize(trig.fPatchSize), fSimulation(trig.fSimulation)
 {
   // cpy ctor
 }
@@ -163,7 +163,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
   for(Int_t idig = 0 ; idig < digits->GetEntriesFast() ; idig++){
     
     dig    = static_cast<AliPHOSDigit *>(digits->At(idig)) ;
-    amp    = dig->GetAmp() ;   // Energy of the digit (arbitrary units)
+    amp    = dig->GetEnergy() ;   // Energy of the digit 
     id     = dig->GetId() ;    // Id label of the cell
     timeR  = dig->GetTimeR() ; // Earliest time of the digit
     geom->AbsToRelNumbering(id, relid) ;
@@ -222,8 +222,8 @@ void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,
 
 }
 //____________________________________________________________________________
-void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t imod, TMatrixD *ampmax2, TMatrixD *ampmax4, const AliPHOSGeometry *geom){
-  //Sums energy of all possible 2x2 (L0) and 4x4 (L1) crystals per each TRU. 
+void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t imod, TMatrixD *ampmax2, TMatrixD *ampmaxn, const AliPHOSGeometry *geom){
+  //Sums energy of all possible 2x2 (L0) and nxn (L1) crystals per each TRU. 
   //Fast signal in the experiment is given by 2x2 crystals, 
   //for this reason we loop inside the TRU crystals by 2. 
  
@@ -231,18 +231,17 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
   Int_t nCrystalsPhi = geom->GetNPhi()/fNTRUPhi ;// 64/4=16
   Int_t nCrystalsZ   = geom->GetNZ()/fNTRUZ ;// 56/2=28
   Float_t amp2 = 0 ;
-  Float_t amp4 = 0 ; 
-  for(Int_t i = 0; i < 3; i++){
+  Float_t ampn = 0 ; 
+  for(Int_t i = 0; i < 4; i++){
     for(Int_t j = 0; j < fNTRU; j++){
       (*ampmax2)(i,j) = -1;
-      (*ampmax4)(i,j) = -1;
+      (*ampmaxn)(i,j) = -1;
     }
   }
 
   //Create matrix that will contain 2x2 amplitude sums
-  //used to calculate the 4x4 sums
+  //used to calculate the nxn sums
   TMatrixD  * tru2x2 = new TMatrixD(nCrystalsPhi/2,nCrystalsZ/2) ;
-
   for(Int_t i = 0; i < nCrystalsPhi/2; i++)
     for(Int_t j = 0; j < nCrystalsZ/2; j++)
       (*tru2x2)(i,j) = 0.0;
@@ -258,7 +257,8 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
       for(Int_t icol = 0 ; icol < nCrystalsZ ; icol += 2){
 	amp2 = (*amptru)(irow,icol)+(*amptru)(irow+1,icol)+
 	  (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
-	//Fill new matrix with added 2x2 crystals for use in 4x4 sums
+	
+	//Fill new matrix with added 2x2 crystals for use in nxn sums
 	(*tru2x2)(irow/2,icol/2) = amp2 ;
 	//Select 2x2 maximum sums to select L0 
 	if(amp2 > (*ampmax2)(0,mtru)){
@@ -282,37 +282,48 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
       }
     }
 
-    //Sliding 4x4, add 4x4 amplitudes (OVERLAP)
-    for(Int_t irow = 0 ; irow <  nCrystalsPhi/2; irow++){ 
-      for(Int_t icol = 0 ; icol < nCrystalsZ/2 ; icol++){
-	if( (irow+1) < nCrystalsPhi/2 && (icol+1) < nCrystalsZ/2){//Avoid exit the TRU
-	  amp4 = (*tru2x2)(irow,icol)+(*tru2x2)(irow+1,icol)+
-	    (*tru2x2)(irow,icol+1)+(*tru2x2)(irow+1,icol+1);
-	  //Select 4x4 maximum sums to select L1 
-	  if(amp4 > (*ampmax4)(0,mtru)){
-	    (*ampmax4)(0,mtru) = amp4 ; 
-	    (*ampmax4)(1,mtru) = irow*2;
-	    (*ampmax4)(2,mtru) = icol*2;
+    //Sliding nxn, add nxn amplitudes (OVERLAP)
+    if(fPatchSize > 0){
+      for(Int_t irow = 0 ; irow <  nCrystalsPhi/2; irow++){ 
+	for(Int_t icol = 0 ; icol < nCrystalsZ/2 ; icol++){
+	  ampn = 0;
+	  if( (irow+fPatchSize) < nCrystalsPhi/2 && (icol+fPatchSize) < nCrystalsZ/2){//Avoid exit the TRU
+	    for(Int_t i = 0 ; i <= fPatchSize ; i++)
+	      for(Int_t j = 0 ; j <= fPatchSize ; j++)
+		ampn += (*tru2x2)(irow+i,icol+j);
+	    //Select nxn maximum sums to select L1 
+	    if(ampn > (*ampmaxn)(0,mtru)){
+	      (*ampmaxn)(0,mtru) = ampn ; 
+	      (*ampmaxn)(1,mtru) = irow*2;
+	      (*ampmaxn)(2,mtru) = icol*2;
+	    }
+	  }
+	}
+      }
+      
+      //Find most recent time in selected nxn cell
+      (*ampmaxn)(3,mtru) = 1 ;
+      Int_t rown =  static_cast <Int_t> ((*ampmaxn)(1,mtru));
+      Int_t coln =  static_cast <Int_t> ((*ampmaxn)(2,mtru));
+      for(Int_t i = 0; i<4*fPatchSize; i++){
+	for(Int_t j = 0; j<4*fPatchSize; j++){
+	  if( (rown+i) < nCrystalsPhi && (coln+j) < nCrystalsZ/2){//Avoid exit the TRU
+	    if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
+	      if((*timeRtru)(rown+i,coln+j) <  (*ampmaxn)(3,mtru)  )
+		(*ampmaxn)(3,mtru) =  (*timeRtru)(rown+i,coln+j);
+	    }
 	  }
 	}
       }
     }
-
-    //Find most recent time in selected 4x4 cell
-    (*ampmax4)(3,mtru) = 1 ;
-    Int_t row4 =  static_cast <Int_t> ((*ampmax4)(1,mtru));
-    Int_t col4 =  static_cast <Int_t> ((*ampmax4)(2,mtru));
-    for(Int_t i = 0; i<4; i++){
-      for(Int_t j = 0; j<4; j++){
-	if((*amptru)(row4+i,col4+j) > 0 &&  (*timeRtru)(row4+i,col4+j)> 0){
-	  if((*timeRtru)(row4+i,col4+j) <  (*ampmax4)(3,mtru)  )
-	    (*ampmax4)(3,mtru) =  (*timeRtru)(row4+i,col4+j);
-	}
+    else {  
+	(*ampmaxn)(0,mtru) =  (*ampmax2)(0,mtru); 
+	(*ampmaxn)(1,mtru) =  (*ampmax2)(1,mtru);
+	(*ampmaxn)(2,mtru) =  (*ampmax2)(2,mtru);
+	(*ampmaxn)(3,mtru) =  (*ampmax2)(3,mtru);
       }
-    }
   }
 }
-
 //____________________________________________________________________________
 void AliPHOSTrigger::Print(const Option_t * opt) const 
 {
@@ -327,9 +338,13 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
   printf( "               -2x2 crystals sum (not overlapped): %10.2f, in Super Module %d\n",
 	  f2x2MaxAmp,f2x2SM) ; 
   printf( "               -2x2 from row %d to row %d and from column %d to column %d\n", f2x2CrystalPhi, f2x2CrystalPhi+2, f2x2CrystalEta, f2x2CrystalEta+2) ; 
-  printf( "               -4x4 crystals sum (overlapped)    : %10.2f, in Super Module %d\n",
-	  f4x4MaxAmp,f4x4SM) ; 
-  printf( "               -4x4 from row %d to row %d and from column %d to column %d\n", f4x4CrystalPhi, f4x4CrystalPhi+4, f4x4CrystalEta, f4x4CrystalEta+4) ; 
+
+  if(fPatchSize > 0){
+    printf( "             Patch Size, n x n: %d x %d cells\n",4*fPatchSize, 4*fPatchSize);
+    printf( "               -nxn crystals sum (overlapped)    : %10.2f, in Super Module %d\n",
+	    fnxnMaxAmp,fnxnSM) ; 
+    printf( "               -nxn from row %d to row %d and from column %d to column %d\n", fnxnCrystalPhi, fnxnCrystalPhi+4, fnxnCrystalEta, fnxnCrystalEta+4) ; 
+  }
   printf( "             Threshold for LO %10.1f\n", 
 	  fL0Threshold) ;  
   
@@ -351,16 +366,16 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, const TMatrixD * ampmax4, const AliPHOSGeometry *geom)  
+void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, const TMatrixD * ampmaxn, const AliPHOSGeometry *geom)  
 {
-  //Checks the 2x2 and 4x4 maximum amplitude per each TRU and compares 
+  //Checks the 2x2 and nxn maximum amplitude per each TRU and compares 
   //with the different L0 and L1 triggers thresholds
 
   //Initialize variables
   Float_t max2[] = {-1,-1,-1,-1} ;
-  Float_t max4[] = {-1,-1,-1,-1} ;
+  Float_t maxn[] = {-1,-1,-1,-1} ;
   Int_t   itru2  = -1 ;
-  Int_t   itru4  = -1 ;
+  Int_t   itrun  = -1 ;
 
 
   //Find maximum summed amplitude of all the TRU 
@@ -373,18 +388,18 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
       max2[3] =  (*ampmax2)(3,i) ; // corresponding most recent time
       itru2   = i ; // TRU number
     }
-    if(max4[0] < (*ampmax4)(0,i) ){
-      max4[0] =  (*ampmax4)(0,i) ; // 4x4 summed max amplitude
-      max4[1] =  (*ampmax4)(1,i) ; // corresponding phi position in TRU
-      max4[2] =  (*ampmax4)(2,i) ; // corresponding eta position in TRU
-      max4[3] =  (*ampmax4)(3,i) ; // corresponding most recent time
-      itru4   = i ; // TRU number
+    if(maxn[0] < (*ampmaxn)(0,i) ){
+      maxn[0] =  (*ampmaxn)(0,i) ; // nxn summed max amplitude
+      maxn[1] =  (*ampmaxn)(1,i) ; // corresponding phi position in TRU
+      maxn[2] =  (*ampmaxn)(2,i) ; // corresponding eta position in TRU
+      maxn[3] =  (*ampmaxn)(3,i) ; // corresponding most recent time
+      itrun   = i ; // TRU number
     }
   }
   
   //Set max amplitude if larger than in other Modules
   Float_t maxtimeR2 = -1 ;
-  Float_t maxtimeR4 = -1 ;
+  Float_t maxtimeRn = -1 ;
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
   AliPHOS * phos  = gime->PHOS();
   Int_t nTimeBins = phos->GetRawFormatTimeBins() ;
@@ -417,38 +432,38 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
 // 	    <<"; 2x2 High Gain "<<fADCValuesHigh2x2[i]<<endl;
   }
 
-  //Set max 4x4 amplitude and select L1 triggers
-  if(max4[0] > f4x4MaxAmp ){
-    f4x4MaxAmp  = max4[0] ;
-    f4x4SM      = iMod ;
-    maxtimeR4   = max4[3] ;
-    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itru4,static_cast<Int_t>(max4[1]),static_cast<Int_t>(max4[2]),f4x4CrystalPhi,f4x4CrystalEta,geom) ; 
+  //Set max nxn amplitude and select L1 triggers
+  if(maxn[0] > fnxnMaxAmp ){
+    fnxnMaxAmp  = maxn[0] ;
+    fnxnSM      = iMod ;
+    maxtimeRn   = maxn[3] ;
+    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itrun,static_cast<Int_t>(maxn[1]),static_cast<Int_t>(maxn[2]),fnxnCrystalPhi,fnxnCrystalEta,geom) ; 
     
     //Transform digit amplitude in Raw Samples
-    fADCValuesHigh4x4 = new Int_t[nTimeBins];
-    fADCValuesLow4x4  = new Int_t[nTimeBins];
-    phos->RawSampledResponse(maxtimeR4, f4x4MaxAmp, fADCValuesHigh4x4, fADCValuesLow4x4) ;
+    fADCValuesHighnxn = new Int_t[nTimeBins];
+    fADCValuesLownxn  = new Int_t[nTimeBins];
+    phos->RawSampledResponse(maxtimeRn, fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //SetL1 Low
     for(Int_t i = 0 ; i < nTimeBins ; i++){
-      if(fADCValuesHigh4x4[i] >= fL1JetLowPtThreshold  || fADCValuesLow4x4[i] >= fL1JetLowPtThreshold){
+      if(fADCValuesHighnxn[i] >= fL1JetLowPtThreshold  || fADCValuesLownxn[i] >= fL1JetLowPtThreshold){
 	SetInput("PHOS_JetLPt_L1") ;
 	break; 
       }
     }
     //SetL1 High
     for(Int_t i = 0 ; i < nTimeBins ; i++){
-      if(fADCValuesHigh4x4[i] >= fL1JetHighPtThreshold || fADCValuesLow4x4[i] >= fL1JetHighPtThreshold){
+      if(fADCValuesHighnxn[i] >= fL1JetHighPtThreshold || fADCValuesLownxn[i] >= fL1JetHighPtThreshold){
 	SetInput("PHOS_JetHPt_L1") ;
 	break;
       }
     }
 //     for(Int_t i = 0 ; i < 256 ; i++)
-//       if(fADCValuesLow4x4[i]!=0||fADCValuesHigh4x4[i]!=0)
-// 	cout<< "4x4 Time Bin "<<i
-// 	    <<"; 4x4 Low Gain  "<<fADCValuesLow4x4[i]
-// 	    <<"; 4x4 High Gain "<<fADCValuesHigh4x4[i]<<endl;
+//       if(fADCValuesLownxn[i]!=0||fADCValuesHighnxn[i]!=0)
+// 	cout<< "nxn Time Bin "<<i
+// 	    <<"; nxn Low Gain  "<<fADCValuesLownxn[i]
+// 	    <<"; nxn High Gain "<<fADCValuesHighnxn[i]<<endl;
   }
 }
 
@@ -470,7 +485,7 @@ void AliPHOSTrigger::Trigger()
 
   //Intialize data members each time the trigger is called in event loop
   f2x2MaxAmp = -1; f2x2CrystalPhi = -1;  f2x2CrystalEta = -1;
-  f4x4MaxAmp = -1; f4x4CrystalPhi = -1;  f4x4CrystalEta = -1;
+  fnxnMaxAmp = -1; fnxnCrystalPhi = -1;  fnxnCrystalEta = -1;
 
   //Take the digits list if simulation
   if(fSimulation)
@@ -488,12 +503,12 @@ void AliPHOSTrigger::Trigger()
   //Initialize varible that will contain maximum amplitudes and 
   //its corresponding cell position in eta and phi, and time.
   TMatrixD  * ampmax2 = new TMatrixD(4,fNTRU) ;
-  TMatrixD  * ampmax4 = new TMatrixD(4,fNTRU) ;
+  TMatrixD  * ampmaxn = new TMatrixD(4,fNTRU) ;
 
   for(Int_t imod = 1 ; imod <= nModules ; imod++) {
-    //Do 2x2 and 4x4 sums, select maximums. 
-    MakeSlidingCell(amptrus, timeRtrus, imod, ampmax2, ampmax4, geom);
+    //Do 2x2 and nxn sums, select maximums. 
+    MakeSlidingCell(amptrus, timeRtrus, imod, ampmax2, ampmaxn, geom);
     //Set the trigger
-    SetTriggers(imod,ampmax2,ampmax4, geom) ;
+    SetTriggers(imod,ampmax2,ampmaxn, geom) ;
   }
 }

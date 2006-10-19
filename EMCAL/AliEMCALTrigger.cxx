@@ -18,18 +18,18 @@
 //_________________________________________________________________________  
 //
 //  Class for trigger analysis.
-//  Digits are grouped in TRU's (384 cells? ordered fNTRUPhi x fNTRUEta). 
-//  The algorithm searches all possible 4x4 cell combinations per each TRU, 
-//  adding the digits amplitude and finding the maximum. Maximums are compared 
-//  to triggers threshold and they are set. Thresholds need to be fixed. 
-//  Last 2 modules are half size in Phi, I considered that the number of TRU
-//  is maintained for the last modules but decision not taken. If different, 
-//  then this must be changed. 
+//  Digits are grouped in TRU's (384 cells ordered fNTRUPhi x fNTRUEta). 
+//  The algorithm searches all possible 2x2 and nxn (n is a multiple of 4) cell 
+//  combinations per each TRU,  adding the digits amplitude and finding the 
+//  maximum. Maxima are compared to triggers threshold and they are set. 
+//  Thresholds need to be fixed. Last 2 modules are half size in Phi, I considered 
+//  that the number of TRU is maintained for the last modules but decision not taken. 
+//  If different, then this must be changed. 
 //  Usage:
 //
 //  //Inside the event loop
 //  AliEMCALTrigger *tr = new AliEMCALTrigger();//Init Trigger
-//  tr->SetL0Threshold(100);
+//  tr->SetL0Threshold(100); //Arbitrary threshold values
 //  tr->SetL1JetLowPtThreshold(1000);
 //  tr->SetL1JetMediumPtThreshold(10000);
 //  tr->SetL1JetHighPtThreshold(20000);
@@ -61,14 +61,14 @@ AliEMCALTrigger::AliEMCALTrigger()
   : AliTriggerDetector(),
     f2x2MaxAmp(-1), f2x2CellPhi(-1),  f2x2CellEta(-1),
     f2x2SM(0),
-    f4x4MaxAmp(-1), f4x4CellPhi(-1),  f4x4CellEta(-1),
-    f4x4SM(0),
-    fADCValuesHigh4x4(0x0),fADCValuesLow4x4(0x0),
+    fnxnMaxAmp(-1), fnxnCellPhi(-1),  fnxnCellEta(-1),
+    fnxnSM(0),
+    fADCValuesHighnxn(0x0),fADCValuesLownxn(0x0),
     fADCValuesHigh2x2(0x0),fADCValuesLow2x2(0x0),
     fDigitsList(0x0),
     fL0Threshold(100),fL1JetLowPtThreshold(200),
     fL1JetMediumPtThreshold(500), fL1JetHighPtThreshold(1000),
-    fSimulation(kTRUE)
+    fPatchSize(1), fSimulation(kTRUE)
 {
   //ctor 
 
@@ -87,12 +87,12 @@ AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig)
     f2x2CellPhi(trig.f2x2CellPhi),  
     f2x2CellEta(trig.f2x2CellEta),
     f2x2SM(trig.f2x2SM),
-    f4x4MaxAmp(trig.f4x4MaxAmp), 
-    f4x4CellPhi(trig.f4x4CellPhi),  
-    f4x4CellEta(trig.f4x4CellEta),
-    f4x4SM(trig.f4x4SM),
-    fADCValuesHigh4x4(trig.fADCValuesHigh4x4),
-    fADCValuesLow4x4(trig.fADCValuesLow4x4),
+    fnxnMaxAmp(trig.fnxnMaxAmp), 
+    fnxnCellPhi(trig.fnxnCellPhi),  
+    fnxnCellEta(trig.fnxnCellEta),
+    fnxnSM(trig.fnxnSM),
+    fADCValuesHighnxn(trig.fADCValuesHighnxn),
+    fADCValuesLownxn(trig.fADCValuesLownxn),
     fADCValuesHigh2x2(trig.fADCValuesHigh2x2),
     fADCValuesLow2x2(trig.fADCValuesLow2x2),
     fDigitsList(trig.fDigitsList),
@@ -100,7 +100,7 @@ AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig)
     fL1JetLowPtThreshold(trig.fL1JetLowPtThreshold),
     fL1JetMediumPtThreshold(trig.fL1JetMediumPtThreshold), 
     fL1JetHighPtThreshold(trig.fL1JetHighPtThreshold),
-    fSimulation(trig.fSimulation)
+    fPatchSize(trig.fPatchSize), fSimulation(trig.fSimulation)
 {
   // cpy ctor
 }
@@ -121,9 +121,9 @@ void AliEMCALTrigger::CreateInputs()
 }
 
 //____________________________________________________________________________
-void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t isupermod,TMatrixD *ampmax2, TMatrixD *ampmax4, AliEMCALGeometry *geom){
+void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t isupermod,TMatrixD *ampmax2, TMatrixD *ampmaxn, AliEMCALGeometry *geom){
   
-  //Sums energy of all possible 2x2 (L0) and 4x4 (L1) cells per each TRU. 
+  //Sums energy of all possible 2x2 (L0) and nxn (L1) cells per each TRU. 
   //Fast signal in the experiment is given by 2x2 cells, 
   //for this reason we loop inside the TRU cells by 2. 
 
@@ -137,16 +137,16 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
   Int_t nTRU          = geom->GetNTRU();//3 TRU per super module
 
   Float_t amp2 = 0 ;
-  Float_t amp4 = 0 ; 
+  Float_t ampn = 0 ; 
   for(Int_t i = 0; i < 4; i++){
     for(Int_t j = 0; j < nTRU; j++){
       (*ampmax2)(i,j) = -1;
-      (*ampmax4)(i,j) = -1;
+      (*ampmaxn)(i,j) = -1;
     }
   }
 
   //Create matrix that will contain 2x2 amplitude sums
-  //used to calculate the 4x4 sums
+  //used to calculate the nxn sums
   TMatrixD  * tru2x2 = new TMatrixD(nCellsPhi/2,nCellsEta/2) ;
   for(Int_t i = 0; i < nCellsPhi/2; i++)
     for(Int_t j = 0; j < nCellsEta/2; j++)
@@ -164,7 +164,7 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
 	amp2 = (*amptru)(irow,icol)+(*amptru)(irow+1,icol)+
 	  (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
 
-	//Fill matrix with added 2x2 crystals for use in 4x4 sums
+	//Fill matrix with added 2x2 crystals for use in nxn sums
 	(*tru2x2)(irow/2,icol/2) = amp2 ;
 	//Select 2x2 maximum sums to select L0 
 	if(amp2 > (*ampmax2)(0,mtru)){
@@ -187,35 +187,47 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
 	}
       }
     }
-    
-    //Sliding 4x4, add 4x4 amplitudes  (OVERLAP)
-    for(Int_t irow = 0 ; irow <  nCellsPhi/2; irow++){ 
-      for(Int_t icol = 0 ; icol < nCellsEta/2 ; icol++){
-	if( (irow+1) < nCellsPhi/2 && (icol+1) < nCellsEta/2){//Avoid exit the TRU
-	  amp4 = (*tru2x2)(irow,icol)+(*tru2x2)(irow+1,icol)+
-	    (*tru2x2)(irow,icol+1)+(*tru2x2)(irow+1,icol+1);
-	  //Select 4x4 maximum sums to select L1 
-	  if(amp4 > (*ampmax4)(0,mtru)){
-	    (*ampmax4)(0,mtru) = amp4 ; 
-	    (*ampmax4)(1,mtru) = irow*2;
-	    (*ampmax4)(2,mtru) = icol*2;
+
+    //Sliding nxn, add nxn amplitudes  (OVERLAP)
+    if(fPatchSize > 0){
+      for(Int_t irow = 0 ; irow <  nCellsPhi/2; irow++){ 
+	for(Int_t icol = 0 ; icol < nCellsEta/2 ; icol++){
+	  ampn = 0;
+	  if( (irow+fPatchSize) < nCellsPhi/2 && (icol+fPatchSize) < nCellsEta/2){//Avoid exit the TRU
+	    for(Int_t i = 0 ; i <= fPatchSize ; i++)
+	      for(Int_t j = 0 ; j <= fPatchSize ; j++)
+		ampn += (*tru2x2)(irow+i,icol+j);
+	    //Select nxn maximum sums to select L1 
+	    if(ampn > (*ampmaxn)(0,mtru)){
+	      (*ampmaxn)(0,mtru) = ampn ; 
+	      (*ampmaxn)(1,mtru) = irow*2;
+	      (*ampmaxn)(2,mtru) = icol*2;
+	    }
+	  }
+	}
+      }
+      
+      //Find most recent time in selected nxn cell
+      (*ampmaxn)(3,mtru) = 1 ;
+      Int_t rown =  static_cast <Int_t> ((*ampmaxn)(1,mtru));
+      Int_t coln =  static_cast <Int_t> ((*ampmaxn)(2,mtru));
+      for(Int_t i = 0; i<4*fPatchSize; i++){
+	for(Int_t j = 0; j<4*fPatchSize; j++){
+	  if( (rown+i) < nCellsPhi && (coln+j) < nCellsEta/2){//Avoid exit the TRU
+	    if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
+	      if((*timeRtru)(rown+i,coln+j) <  (*ampmaxn)(3,mtru)  )
+		(*ampmaxn)(3,mtru) =  (*timeRtru)(rown+i,coln+j);
+	    }
 	  }
 	}
       }
     }
-    
-    //Find most recent time in selected 4x4 cell
-    (*ampmax4)(3,mtru) = 1 ;
-    Int_t row4 =  static_cast <Int_t> ((*ampmax4)(1,mtru));
-    Int_t col4 =  static_cast <Int_t> ((*ampmax4)(2,mtru));
-    for(Int_t i = 0; i<4; i++){
-      for(Int_t j = 0; j<4; j++){
-	if((*amptru)(row4+i,col4+j) > 0 &&  (*timeRtru)(row4+i,col4+j)> 0){
-	  if((*timeRtru)(row4+i,col4+j) <  (*ampmax4)(3,mtru)  )
-	    (*ampmax4)(3,mtru) =  (*timeRtru)(row4+i,col4+j);
-	}
+    else {  
+	(*ampmaxn)(0,mtru) =  (*ampmax2)(0,mtru); 
+	(*ampmaxn)(1,mtru) =  (*ampmax2)(1,mtru);
+	(*ampmaxn)(2,mtru) =  (*ampmax2)(2,mtru);
+	(*ampmaxn)(3,mtru) =  (*ampmax2)(3,mtru);
       }
-    }
   }
 }
 
@@ -232,10 +244,15 @@ void AliEMCALTrigger::Print(const Option_t * opt) const
   printf( "             Maximum Amplitude after Sliding Cell, \n") ; 
   printf( "               -2x2 cells sum (not overlapped): %10.2f, in Super Module %d\n",
 	  f2x2MaxAmp,f2x2SM) ; 
-   printf( "               -2x2 from row %d to row %d and from column %d to column %d\n", f2x2CellPhi, f2x2CellPhi+2, f2x2CellEta, f2x2CellEta+2) ; 
-  printf( "               -4x4 cells sum (overlapped)    : %10.2f, in Super Module %d\n",
-	  f4x4MaxAmp,f4x4SM) ; 
-  printf( "               -4x4 from row %d to row %d and from column %d to column %d\n", f4x4CellPhi, f4x4CellPhi+4, f4x4CellEta, f4x4CellEta+4) ; 
+  printf( "               -2x2 from row %d to row %d and from column %d to column %d\n", f2x2CellPhi, f2x2CellPhi+2, f2x2CellEta, f2x2CellEta+2) ; 
+ 
+  if(fPatchSize > 0){
+    printf( "             Patch Size, n x n: %d x %d cells\n",4*fPatchSize, 4*fPatchSize);
+    printf( "               -nxn cells sum (overlapped)    : %10.2f, in Super Module %d\n",
+	    fnxnMaxAmp,fnxnSM) ; 
+    printf( "               -nxn from row %d to row %d and from column %d to column %d\n", fnxnCellPhi, fnxnCellPhi+4*fPatchSize, fnxnCellEta, fnxnCellEta+4*fPatchSize) ; 
+  }
+ 
   printf( "             Threshold for LO %10.2f\n", 
 	  fL0Threshold) ;  
   in = (AliTriggerInput*)fInputs.FindObject( "EMCAL_L0" );
@@ -264,15 +281,15 @@ void AliEMCALTrigger::Print(const Option_t * opt) const
 
 //____________________________________________________________________________
 void AliEMCALTrigger::SetTriggers(const Int_t iSM, const TMatrixD *ampmax2, 
-				  const TMatrixD *ampmax4, AliEMCALGeometry *geom)  
+				  const TMatrixD *ampmaxn, AliEMCALGeometry *geom)  
 {
 
-  //Checks the 2x2 and 4x4 maximum amplitude per each TRU and 
+  //Checks the 2x2 and nxn maximum amplitude per each TRU and 
   //compares with the different L0 and L1 triggers thresholds
   Float_t max2[] = {-1,-1,-1,-1} ;
-  Float_t max4[] = {-1,-1,-1,-1} ;
+  Float_t maxn[] = {-1,-1,-1,-1} ;
   Int_t   itru2  = -1 ;
-  Int_t   itru4  = -1 ;
+  Int_t   itrun  = -1 ;
 
   //Find maximum summed amplitude of all the TRU 
   //in a Super Module
@@ -284,18 +301,18 @@ void AliEMCALTrigger::SetTriggers(const Int_t iSM, const TMatrixD *ampmax2,
 	max2[3] =  (*ampmax2)(3,i) ; // corresponding most recent time
 	itru2   = i ;
       }
-      if(max4[0] < (*ampmax4)(0,i) ){
-	max4[0] =  (*ampmax4)(0,i) ; // 4x4 summed max amplitude
-	max4[1] =  (*ampmax4)(1,i) ; // corresponding phi position in TRU
-	max4[2] =  (*ampmax4)(2,i) ; // corresponding eta position in TRU
-	max4[3] =  (*ampmax4)(3,i) ; // corresponding most recent time
-	itru4   = i ;
+      if(maxn[0] < (*ampmaxn)(0,i) ){
+	maxn[0] =  (*ampmaxn)(0,i) ; // nxn summed max amplitude
+	maxn[1] =  (*ampmaxn)(1,i) ; // corresponding phi position in TRU
+	maxn[2] =  (*ampmaxn)(2,i) ; // corresponding eta position in TRU
+	maxn[3] =  (*ampmaxn)(3,i) ; // corresponding most recent time
+	itrun   = i ;
       }
     }
 
   //--------Set max amplitude if larger than in other Super Modules------------
   Float_t maxtimeR2 = -1 ;
-  Float_t maxtimeR4 = -1 ;
+  Float_t maxtimeRn = -1 ;
   AliRunLoader *rl  = AliRunLoader::GetRunLoader();
   AliRun * gAlice   = rl->GetAliRun(); 
   AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
@@ -326,24 +343,24 @@ void AliEMCALTrigger::SetTriggers(const Int_t iSM, const TMatrixD *ampmax2,
     }
   }
   
-  //------------Set max of 4x4 amplitudes and select L1 trigger---------
-  if(max4[0] > f4x4MaxAmp ){
-    f4x4MaxAmp  = max4[0] ;
-    f4x4SM      = iSM ;
-    maxtimeR4   = max4[3] ;
-    geom->GetCellPhiEtaIndexInSModuleFromTRUIndex(itru4, 
-						  static_cast<Int_t>(max4[1]),
-						  static_cast<Int_t>(max4[2]),
-						  f4x4CellPhi,f4x4CellEta) ; 
+  //------------Set max of nxn amplitudes and select L1 trigger---------
+  if(maxn[0] > fnxnMaxAmp ){
+    fnxnMaxAmp  = maxn[0] ;
+    fnxnSM      = iSM ;
+    maxtimeRn   = maxn[3] ;
+    geom->GetCellPhiEtaIndexInSModuleFromTRUIndex(itrun, 
+						  static_cast<Int_t>(maxn[1]),
+						  static_cast<Int_t>(maxn[2]),
+						  fnxnCellPhi,fnxnCellEta) ; 
     //Transform digit amplitude in Raw Samples
-    fADCValuesHigh4x4 = new Int_t[nTimeBins];
-    fADCValuesLow4x4  = new Int_t[nTimeBins];
-    emcal->RawSampledResponse(maxtimeR4, f4x4MaxAmp, fADCValuesHigh4x4, fADCValuesLow4x4) ;
+    fADCValuesHighnxn = new Int_t[nTimeBins];
+    fADCValuesLownxn  = new Int_t[nTimeBins];
+    emcal->RawSampledResponse(maxtimeRn, fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //SetL1 Low
     for(Int_t i = 0 ; i < nTimeBins ; i++){
-      if(fADCValuesHigh4x4[i] >= fL1JetLowPtThreshold  || fADCValuesLow4x4[i] >= fL1JetLowPtThreshold){
+      if(fADCValuesHighnxn[i] >= fL1JetLowPtThreshold  || fADCValuesLownxn[i] >= fL1JetLowPtThreshold){
 	SetInput("EMCAL_JetLPt_L1") ;
 	break; 
       }
@@ -351,7 +368,7 @@ void AliEMCALTrigger::SetTriggers(const Int_t iSM, const TMatrixD *ampmax2,
     
     //SetL1 Medium
     for(Int_t i = 0 ; i < nTimeBins ; i++){
-      if(fADCValuesHigh4x4[i] >= fL1JetMediumPtThreshold || fADCValuesLow4x4[i] >= fL1JetMediumPtThreshold){
+      if(fADCValuesHighnxn[i] >= fL1JetMediumPtThreshold || fADCValuesLownxn[i] >= fL1JetMediumPtThreshold){
 	SetInput("EMCAL_JetMPt_L1") ;
 	break;
       }
@@ -359,7 +376,7 @@ void AliEMCALTrigger::SetTriggers(const Int_t iSM, const TMatrixD *ampmax2,
     
     //SetL1 High
     for(Int_t i = 0 ; i < nTimeBins ; i++){
-      if(fADCValuesHigh4x4[i] >= fL1JetHighPtThreshold || fADCValuesLow4x4[i] >= fL1JetHighPtThreshold){
+      if(fADCValuesHighnxn[i] >= fL1JetHighPtThreshold || fADCValuesLownxn[i] >= fL1JetHighPtThreshold){
 	SetInput("EMCAL_JetHPt_L1") ;
 	break;
       }
@@ -391,7 +408,7 @@ void AliEMCALTrigger::Trigger()
 
   //Intialize data members each time the trigger is called in event loop
   f2x2MaxAmp = -1; f2x2CellPhi = -1;  f2x2CellEta = -1;
-  f4x4MaxAmp = -1; f4x4CellPhi = -1;  f4x4CellEta = -1;
+  fnxnMaxAmp = -1; fnxnCellPhi = -1;  fnxnCellEta = -1;
 
   //Take the digits list if simulation
   if(fSimulation){
@@ -413,13 +430,13 @@ void AliEMCALTrigger::Trigger()
   //Initialize varible that will contain maximum amplitudes and 
   //its corresponding cell position in eta and phi, and time.
   TMatrixD  * ampmax2 = new TMatrixD(4,nTRU) ;
-  TMatrixD  * ampmax4 = new TMatrixD(4,nTRU) ;
+  TMatrixD  * ampmaxn = new TMatrixD(4,nTRU) ;
 
   for(Int_t iSM = 0 ; iSM < nSuperModules ; iSM++) {
-    //Do 2x2 and 4x4 sums, select maximums. 
-    MakeSlidingCell(amptrus, timeRtrus, iSM, ampmax2, ampmax4, geom);
+    //Do 2x2 and nxn sums, select maximums. 
+    MakeSlidingCell(amptrus, timeRtrus, iSM, ampmax2, ampmaxn, geom);
   
     //Set the trigger
-    SetTriggers(iSM, ampmax2, ampmax4, geom) ;
+    SetTriggers(iSM, ampmax2, ampmaxn, geom) ;
   }
 }

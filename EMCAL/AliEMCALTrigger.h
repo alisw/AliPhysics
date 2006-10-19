@@ -8,10 +8,10 @@
 //___________________________________________________________
 //  Class for trigger analysis.
 //  Digits are grouped in TRU's (Trigger Units). A TRU consist of 384 cells 
-//  ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 
-//  4x4 crystal combinations per each TRU, adding the digits amplitude and 
-//  finding the maximum. Maximums are transformed in adc time samples. 
-//  Each time bin is compared to the trigger threshold until it is larger 
+//  ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 2x2 and 
+//  nxn (n multiple of 4) crystal combinations per each TRU, adding the digits 
+//  amplitude and finding the maximum. Maximums are transformed in adc time 
+//  samples. Each time bin is compared to the trigger threshold until it is larger 
 //  and then, triggers are set. Thresholds need to be fixed. 
 //  Last 2 modules are half size in Phi, I considered that the number 
 //  of TRU is maintained for the last modules but final decision has not 
@@ -55,24 +55,25 @@ class AliEMCALTrigger : public AliTriggerDetector {
 
   //Getters
   Float_t  Get2x2MaxAmplitude()  const {return f2x2MaxAmp ; }
-  Float_t  Get4x4MaxAmplitude()  const {return f4x4MaxAmp ; }
+  Float_t  GetnxnMaxAmplitude()  const {return fnxnMaxAmp ; }
   Int_t    Get2x2CellPhi()       const {return f2x2CellPhi ; }
-  Int_t    Get4x4CellPhi()       const {return f4x4CellPhi ; }
+  Int_t    GetnxnCellPhi()       const {return fnxnCellPhi ; }
   Int_t    Get2x2CellEta()       const {return f2x2CellEta ; }
-  Int_t    Get4x4CellEta()       const {return f4x4CellEta ; }
+  Int_t    GetnxnCellEta()       const {return fnxnCellEta ; }
   Int_t    Get2x2SuperModule()   const {return f2x2SM ; }
-  Int_t    Get4x4SuperModule()   const {return f4x4SM ; }
+  Int_t    GetnxnSuperModule()   const {return fnxnSM ; }
 
   Int_t *  GetADCValuesLowGainMax2x2Sum()  {return fADCValuesLow2x2; }
   Int_t *  GetADCValuesHighGainMax2x2Sum() {return fADCValuesHigh2x2; }
-  Int_t *  GetADCValuesLowGainMax4x4Sum()  {return fADCValuesLow4x4; }
-  Int_t *  GetADCValuesHighGainMax4x4Sum() {return fADCValuesHigh4x4; }
+  Int_t *  GetADCValuesLowGainMaxnxnSum()  {return fADCValuesLownxn; }
+  Int_t *  GetADCValuesHighGainMaxnxnSum() {return fADCValuesHighnxn; }
 
   Float_t  GetL0Threshold() const           {return fL0Threshold ; } 
   Float_t  GetL1JetLowPtThreshold() const   {return fL1JetLowPtThreshold ; }
   Float_t  GetL1JetMediumPtThreshold()const {return fL1JetMediumPtThreshold ; }
   Float_t  GetL1JetHighPtThreshold() const  {return fL1JetHighPtThreshold ; }
-  
+
+  Float_t  GetPatchSize() const  {return fPatchSize ; }
   Bool_t   IsSimulation() const {return fSimulation ; }
   
   //Setters
@@ -88,14 +89,15 @@ class AliEMCALTrigger : public AliTriggerDetector {
   void     SetL1JetHighPtThreshold(Int_t amp)
     {fL1JetHighPtThreshold   = amp; }
 
+  void SetPatchSize(Int_t ps)                {fPatchSize = ps ; }
   void SetSimulation(Bool_t sim )          {fSimulation = sim ; }
 
  private:
  
-  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus,const Int_t supermod, TMatrixD *ampmax2, TMatrixD *ampmax4, AliEMCALGeometry * geom) ; 
+  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus,const Int_t supermod, TMatrixD *ampmax2, TMatrixD *ampmaxn, AliEMCALGeometry * geom) ; 
   
 
-  void SetTriggers(const Int_t iSM, const TMatrixD *ampmax2, const TMatrixD *ampmax4, AliEMCALGeometry *geom) ;
+  void SetTriggers(const Int_t iSM, const TMatrixD *ampmax2, const TMatrixD *ampmaxn, AliEMCALGeometry *geom) ;
     
  private: 
 
@@ -103,13 +105,13 @@ class AliEMCALTrigger : public AliTriggerDetector {
   Int_t   f2x2CellPhi ;       //! upper right cell, row(phi)   
   Int_t   f2x2CellEta ;       //! and column(eta)  
   Int_t   f2x2SM ;            //! Super Module where maximum is found
-  Float_t f4x4MaxAmp ;        //! Maximum 4x4 added amplitude (overlapped)
-  Int_t   f4x4CellPhi ;       //! upper right cell, row(phi)   
-  Int_t   f4x4CellEta ;       //! and column(eta)
-  Int_t   f4x4SM ;            //! Super Module where maximum is found
+  Float_t fnxnMaxAmp ;        //! Maximum nxn added amplitude (overlapped)
+  Int_t   fnxnCellPhi ;       //! upper right cell, row(phi)   
+  Int_t   fnxnCellEta ;       //! and column(eta)
+  Int_t   fnxnSM ;            //! Super Module where maximum is found
 
-  Int_t*   fADCValuesHigh4x4 ; //! Sampled ADC high gain values for the 4x4 crystals amplitude sum
-  Int_t*   fADCValuesLow4x4  ; //! " low gain  " 
+  Int_t*   fADCValuesHighnxn ; //! Sampled ADC high gain values for the nxn crystals amplitude sum
+  Int_t*   fADCValuesLownxn  ; //! " low gain  " 
   Int_t*   fADCValuesHigh2x2 ; //! " high gain " 2x2 "
   Int_t*   fADCValuesLow2x2  ; //! " low gaing " "
 
@@ -120,6 +122,8 @@ class AliEMCALTrigger : public AliTriggerDetector {
   Float_t fL1JetMediumPtThreshold ; //! L1 Medium pT trigger energy threshold
   Float_t fL1JetHighPtThreshold ;   //! L1 High pT trigger energy threshold
 
+  Int_t fPatchSize;                 //! Trigger patch factor, to be multiplied to 2x2 cells
+                                            // 0 means 2x2, 1 means nxn, 2 means 8x8 ...
   Bool_t  fSimulation ;           //! Flag to do the trigger during simulation or reconstruction
 
   ClassDef(AliEMCALTrigger,1)

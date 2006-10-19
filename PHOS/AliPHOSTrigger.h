@@ -10,9 +10,9 @@
 //  Class for trigger analysis.
 //  Digits are grouped in TRU's (Trigger Units). A TRU consist of 16x28 
 //  crystals ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 
-//  4x4 crystal combinations per each TRU, adding the digits amplitude and 
-//  finding the maximum. Maximums are transformed in ADC time samples. 
-//  Each time bin is compared to the trigger threshold until it is larger 
+//  2x2 and nxn  (n multiple of 4) crystal combinations per each TRU, adding the 
+//  digits amplitude and finding the maximum. Maxima are transformed in ADC 
+//  time samples.  Each time bin is compared to the trigger threshold until it is larger 
 //  and then, triggers are set. Thresholds need to be fixed. 
 //  Usage:
 //
@@ -50,19 +50,19 @@ class AliPHOSTrigger : public AliTriggerDetector {
   virtual void    Trigger();  //Make PHOS trigger
 
   //Getters
-  Float_t  Get2x2MaxAmplitude()  const {return f4x4MaxAmp ; }
-  Float_t  Get4x4MaxAmplitude()  const {return f4x4MaxAmp ; }
+  Float_t  Get2x2MaxAmplitude()  const {return f2x2MaxAmp ; }
+  Float_t  GetnxnMaxAmplitude()  const {return fnxnMaxAmp ; }
   Int_t    Get2x2CrystalPhi()    const {return f2x2CrystalPhi ; }
-  Int_t    Get4x4CrystalPhi()    const {return f4x4CrystalPhi ; }
+  Int_t    GetnxnCrystalPhi()    const {return fnxnCrystalPhi ; }
   Int_t    Get2x2CrystalEta()    const {return f2x2CrystalEta ; }
-  Int_t    Get4x4CrystalEta()    const {return f4x4CrystalEta ; }
+  Int_t    GetnxnCrystalEta()    const {return fnxnCrystalEta ; }
   Int_t    Get2x2SuperModule()   const {return f2x2SM ; }
-  Int_t    Get4x4SuperModule()   const {return f4x4SM ; }
+  Int_t    GetnxnSuperModule()   const {return fnxnSM ; }
 
   Int_t *  GetADCValuesLowGainMax2x2Sum()  {return fADCValuesLow2x2; }
   Int_t *  GetADCValuesHighGainMax2x2Sum() {return fADCValuesHigh2x2; }
-  Int_t *  GetADCValuesLowGainMax4x4Sum()  {return fADCValuesLow4x4; }
-  Int_t *  GetADCValuesHighGainMax4x4Sum() {return fADCValuesHigh4x4; }
+  Int_t *  GetADCValuesLowGainMaxnxnSum()  {return fADCValuesLownxn; }
+  Int_t *  GetADCValuesHighGainMaxnxnSum() {return fADCValuesHighnxn; }
 
   void GetCrystalPhiEtaIndexInModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru,Int_t &ietaMod,Int_t &iphiMod, const AliPHOSGeometry *geom) const ;
 
@@ -73,7 +73,8 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t    GetNTRU()    const  {return fNTRU ; }
   Int_t    GetNTRUZ()   const  {return fNTRUZ ; }
   Int_t    GetNTRUPhi() const  {return fNTRUPhi ; }
-
+  
+  Float_t  GetPatchSize() const  {return fPatchSize ; }
   Bool_t   IsSimulation() const {return fSimulation ; }
 
   //Setters
@@ -93,6 +94,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   void     SetL1JetHighPtThreshold(Int_t amp)
     {fL1JetHighPtThreshold = amp ; }
 
+  void SetPatchSize(Int_t ps)                {fPatchSize = ps ; }
   void SetSimulation(Bool_t sim )          {fSimulation = sim ; }
 
  private:
@@ -101,9 +103,9 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * amptru, TClonesArray * timeRtru) const ;
 
-  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmax4, const AliPHOSGeometry *geom) ;
+  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmaxn, const AliPHOSGeometry *geom) ;
 
-  void SetTriggers(Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmax4, const AliPHOSGeometry *geom) ;
+  void SetTriggers(Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmaxn, const AliPHOSGeometry *geom) ;
 
  private: 
 
@@ -111,13 +113,13 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t   f2x2CrystalPhi ; //! upper right cell, row(phi)   
   Int_t   f2x2CrystalEta ; //! and column(eta) 
   Int_t   f2x2SM ;         //! Module where maximum is found
-  Float_t f4x4MaxAmp ;     //! Maximum 4x4 added amplitude (overlapped)
-  Int_t   f4x4CrystalPhi ; //! upper right cell, row(phi)   
-  Int_t   f4x4CrystalEta ; //! and column(eta)
-  Int_t   f4x4SM ;         //! Module where maximum is found
+  Float_t fnxnMaxAmp ;     //! Maximum nxn added amplitude (overlapped)
+  Int_t   fnxnCrystalPhi ; //! upper right cell, row(phi)   
+  Int_t   fnxnCrystalEta ; //! and column(eta)
+  Int_t   fnxnSM ;         //! Module where maximum is found
 
-  Int_t*   fADCValuesHigh4x4 ; //! Sampled ADC high gain values for the 4x4 crystals amplitude sum
-  Int_t*   fADCValuesLow4x4  ; //! " low gain  " 
+  Int_t*   fADCValuesHighnxn ; //! Sampled ADC high gain values for the nxn crystals amplitude sum
+  Int_t*   fADCValuesLownxn  ; //! " low gain  " 
   Int_t*   fADCValuesHigh2x2 ; //! " high gain " 2x2 "
   Int_t*   fADCValuesLow2x2  ; //! " low gaing " "
 
@@ -130,7 +132,8 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t   fNTRU ;                 //! Number of TRUs per module
   Int_t   fNTRUZ ;                //! Number of crystal rows per Z in one TRU
   Int_t   fNTRUPhi ;              //! Number of crystal rows per Phi in one TRU
-
+  Int_t fPatchSize;               //! Trigger patch factor, to be multiplied to 2x2 cells
+                                          // 0 means 2x2, 1 means nxn, 2 means 8x8 ...
   Bool_t  fSimulation ;           //! Flag to do the trigger during simulation or reconstruction
   ClassDef(AliPHOSTrigger,4)
 } ;
