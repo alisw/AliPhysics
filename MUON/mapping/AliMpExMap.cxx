@@ -220,7 +220,7 @@ void AliMpExMap::SetOwner(Bool_t owner)
 //_____________________________________________________________________________
 Int_t AliMpExMap::GetSize() const
 {
-/// Return TExMap iterator set to the beginning of the map
+/// Return the map size
 
   return fObjects.GetEntriesFast();
 }
@@ -232,6 +232,20 @@ TExMapIter AliMpExMap::GetIterator() const
 
   return TExMapIter(&fMap);
 }
+
+//_____________________________________________________________________________
+TObject* AliMpExMap::GetObject(Int_t index) const
+{
+/// Return the object via its index in the array
+/// (This function makes possible looping over map as over an array)
+
+  if ( index < 0 || index >= fObjects.GetEntriesFast() ) {
+    AliErrorStream() << "Index outside limits" << endl;
+    return 0;
+  }
+  
+  return fObjects.At(index);
+}      
 
 //_____________________________________________________________________________
 TObject* AliMpExMap::GetValue(const AliMpIntPair& key) const
