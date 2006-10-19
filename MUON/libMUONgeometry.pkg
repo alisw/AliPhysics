@@ -16,7 +16,6 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONGeometry.cxx \
 	 AliMUONVGeometryBuilder.cxx \
 	 AliMUONGeometryBuilder.cxx \
-	 AliMUONGeometryStore.cxx \
 	 AliMUONVGeometryDESegmentation.cxx \
 	 AliMUONGeometrySegmentation.cxx \
 	 AliMUONSegmentation.cxx \

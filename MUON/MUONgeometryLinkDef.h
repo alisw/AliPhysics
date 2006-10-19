@@ -16,7 +16,6 @@
 #pragma link C++ class  AliMUONGeometry+;
 #pragma link C++ class  AliMUONVGeometryBuilder+;
 #pragma link C++ class  AliMUONGeometryBuilder+;
-#pragma link C++ class  AliMUONGeometryStore+;
 #pragma link C++ class  AliMUONVGeometryDESegmentation+;
 #pragma link C++ class  AliMUONGeometrySegmentation+;
 #pragma link C++ class  AliMUONSegmentation+;
