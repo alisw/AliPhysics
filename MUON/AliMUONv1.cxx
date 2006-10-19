@@ -34,6 +34,8 @@
 #include "AliMUONStringIntMap.h"	
 #include "AliMUONGeometryDetElement.h"	
 
+#include "AliMpDEManager.h"
+
 #include "AliConst.h" 
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -195,18 +197,18 @@ void AliMUONv1::Init()
 }
 
 //__________________________________________________________________
-Int_t  AliMUONv1::GetChamberId(Int_t volId) const
+Int_t  AliMUONv1::GetGeomModuleId(Int_t volId) const
 {
 /// Check if the volume with specified  volId is a sensitive volume (gas) 
 /// of some chamber and return the chamber number;
 /// if not sensitive volume - return 0.
 
-  for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
+  for (Int_t i = 0; i < AliMUONConstants::NGeomModules(); i++) {
     if ( GetGeometry()->GetModule(i)->IsSensitiveVolume(volId) )
-      return i+1;
+      return i;
   }    
 
-  return 0;
+  return -1;
 }
 
 //_______________________________________________________________________________
@@ -245,8 +247,6 @@ void AliMUONv1::StepManager()
   // Only gas gap inside chamber
   // Tag chambers and record hits when track enters 
   static Int_t   idvol=-1, iEnter = 0;
-  Int_t   iChamber=0;
-  Int_t   id=0;
   Int_t   copy;
   const  Float_t kBig = 1.e10;
   static Double_t xyzEnter[3];
@@ -254,25 +254,31 @@ void AliMUONv1::StepManager()
   //
   // Only gas gap inside chamber
   // Tag chambers and record hits when track enters 
-  id=gMC->CurrentVolID(copy);
-  iChamber = GetChamberId(id);
-  idvol = iChamber -1;
+  Int_t id=gMC->CurrentVolID(copy);
+  Int_t iGeomModule = GetGeomModuleId(id);
+  if (iGeomModule == -1) return;
 
-  if (idvol == -1) return;
-  
   // Detection elements id
   const AliMUONGeometryModule* kGeometryModule
-    = GetGeometry()->GetModule(iChamber-1);
-
+    = GetGeometry()->GetModule(iGeomModule);
   AliMUONGeometryDetElement* detElement
     = kGeometryModule->FindBySensitiveVolume(CurrentVolumePath());
+    
+  if (!detElement && iGeomModule < AliMUONConstants::NGeomModules()-2) {
+    iGeomModule++;
+    const AliMUONGeometryModule* kGeometryModule2
+      = GetGeometry()->GetModule(iGeomModule);
+    detElement 
+      = kGeometryModule2->FindBySensitiveVolume(CurrentVolumePath());
+  }    
 
   Int_t detElemId = 0;
   if (detElement) detElemId = detElement->GetUniqueID(); 
  
   if (!detElemId) {
-    cerr << "Chamber id: "
-  	 << setw(3) << iChamber << "  "
+    AliErrorStream() 
+         << "Geometry module id: "
+  	 << setw(3) << iGeomModule << "  "
   	 << "Current SV: " 
   	 <<  CurrentVolumePath() 
          << "  detElemId: "
@@ -280,11 +286,15 @@ void AliMUONv1::StepManager()
          << endl;
     Double_t x, y, z;
     gMC->TrackPosition(x, y, z);	 
-    cerr << "	global position: "
+    AliErrorStream() 
+         << "	global position: "
   	 << x << ", " << y << ", " << z
   	 << endl;
-    AliError("DetElemId not identified.");
-  }  
+    AliErrorStream() << "DetElemId not identified." << endl;
+  } 
+  
+  Int_t iChamber = AliMpDEManager::GetChamberId(detElemId) + 1; 
+  idvol = iChamber -1;
     
   // Filling TrackRefs file for MUON. Our Track references are the active volume of the chambers
   if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting() ) ) {
@@ -409,7 +419,7 @@ void AliMUONv1::StepManager()
     }
     
     // One hit per chamber
-    GetMUONData()->AddHit2(fIshunt, 
+    GetMUONData()->AddHit(fIshunt, 
 			  gAlice->GetMCApp()->GetCurrentTrackNumber(), 
 			  detElemId, ipart,
 			  fTrackPosition.X(), 

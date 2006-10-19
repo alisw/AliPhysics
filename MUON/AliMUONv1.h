@@ -50,7 +50,7 @@ class AliMUONv1 : public AliMUON
    AliMUONv1(const AliMUONv1& right);
    AliMUONv1&  operator = (const AliMUONv1& right);
 
-   virtual Int_t  GetChamberId(Int_t volId) const;
+   virtual Int_t  GetGeomModuleId(Int_t volId) const;
    TString CurrentVolumePath() const;	     
 
    Bool_t  fAngleEffect;           ///< Angle Effect along wires, Default is true
