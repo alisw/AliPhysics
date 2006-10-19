@@ -23,11 +23,10 @@
 #include "AliMUONLoader.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTransientDigit.h"
-#include "AliLog.h"
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONGeometryModule.h"
-#include "AliMUONGeometryStore.h"
 
+#include "AliMpDEIterator.h"
+
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
@@ -458,30 +457,24 @@ void AliMUONDigitizer::InitArrays()
 
 
       AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
+
       AliMUONSegmentation* segmentation = fMUON->GetSegmentation();
-      AliMUONGeometrySegmentation* c1Segmentation 
-        = segmentation->GetModuleSegmentation(i, 0); // Cathode plane 1
-      AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
-      AliMUONGeometrySegmentation* c2Segmentation 
-        = segmentation->GetModuleSegmentation(i, 1); // Cathode plane 2
 
-      const AliMUONGeometryTransformer* kGeometryTransformer 
-        = fMUON->GetGeometryTransformer();
- 
-      AliMUONGeometryStore* detElements 
-        = kGeometryTransformer->GetModuleTransformer(i)->GetDetElementStore();
-    
-
-    // Loop over detection elements
-      for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
-       
-	idDE = detElements->GetEntry(j)->GetUniqueID();
+      // Loop over detection elements
+      AliMpDEIterator it;
+      for ( it.First(i+1); !it.IsDone(); it.Next() ) { 
+        
+	idDE = it.CurrentDE();
 	fNDetElemId[idDE] = k;
 
+        AliMUONGeometrySegmentation* c1Segmentation 
+          = segmentation->GetModuleSegmentationByDEId(idDE, 0); // Cathode plane 1
         Int_t npx1 = c1Segmentation->Npx(idDE)+1;
         Int_t npy1 = c1Segmentation->Npy(idDE)+1;
 	fHitMap[k] = new AliMUONHitMapA1(npx1, npy1, fTDList); 
      
+        AliMUONGeometrySegmentation* c2Segmentation 
+          = segmentation->GetModuleSegmentationByDEId(idDE, 1); // Cathode plane 1
         Int_t npx2 = c2Segmentation->Npx(idDE)+1;
         Int_t npy2 = c2Segmentation->Npy(idDE)+1;
 	fHitMap[k+AliMUONConstants::NDetElem()] = new AliMUONHitMapA1(npx2, npy2, fTDList);
