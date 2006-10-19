@@ -7,7 +7,7 @@
 /// \class AliMUONSegFactory
 /// \brief New factory for building segmentations at all levels
 ///
-/// The factory is associated with a AliMUONGeometryTransformer
+/// The factory is associated with the AliMUONGeometryTransformer
 /// object, used in geometry (module) segmentations for performing
 /// trasformation between the global reference frame and the local DE one.
 /// This transformer object can be passed by pointer or can be created 
@@ -63,14 +63,6 @@ class AliMUONSegFactory : public  TObject {
       CreateMpSegmentation(Int_t detElemId, Int_t cath);
               // Create mapping segmentation only 
 
-    AliMUONVGeometryDESegmentation*  
-      CreateDESegmentation(Int_t detElemId, Int_t cath);
-              // Create DE segmentation, operating in local reference frame
-    
-    AliMUONGeometrySegmentation*     
-      CreateModuleSegmentation(Int_t moduleId, Int_t cath); 
-              // Create module segmentation, operating in global reference frame
-
     AliMUONSegmentation*  
       CreateSegmentation(const TString& option = "default"); 
               // Create segmentations on all levels and return their container.
@@ -87,16 +79,19 @@ class AliMUONSegFactory : public  TObject {
     AliMUONSegFactory& operator=(const AliMUONSegFactory& rhs);
 
   private:
+    AliMUONVGeometryDESegmentation*  
+      CreateDESegmentation(Int_t detElemId, Int_t cath);
+              // Create DE segmentation, operating in local reference frame
+    
+    void
+      CreateModuleSegmentations(Int_t chamberId, Int_t cath); 
+              // Create module segmentation(s) for a given chamber, operating 
+	      // in global reference frame
+
     // methods
     Bool_t IsGeometryDefined(Int_t ichamber);
     AliMUONSegmentation* Segmentation();
     
-    // Old segmentations (not based on mapping)
-    void BuildStation3();
-    void BuildStation4();
-    void BuildStation5();
-    void BuildStation6();
-
     // data members	
     AliMpSegFactory       fMpSegFactory;   ///< Mapping segmentation factory
     AliMpStringObjMap     fDESegmentations;///< Map of DE segmentations to DE names
