@@ -43,13 +43,47 @@
 ClassImp(AliITStrackerSA)
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA():AliITStrackerMI(){
+AliITStrackerSA::AliITStrackerSA():AliITStrackerMI(),
+fPhiEstimate(0),
+fLambdac(0),
+fPhic(0),
+fCoef1(0),
+fCoef2(0),
+fCoef3(0),
+fNloop(0),
+fPhiWin(0),
+fLambdaWin(0),
+fVert(0),
+fVertexer(0),
+fGeom(0),
+fListOfTracks(0),
+fITSclusters(0),
+fSixPoints(0),
+fCluLayer(0),
+fCluCoord(0){
   // Default constructor
   Init();
  
 }
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerMI(geom) 
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerMI(geom),
+fPhiEstimate(0),
+fLambdac(0),
+fPhic(0),
+fCoef1(0),
+fCoef2(0),
+fCoef3(0),
+fNloop(0),
+fPhiWin(0),
+fLambdaWin(0),
+fVert(0),
+fVertexer(0),
+fGeom(0),
+fListOfTracks(0),
+fITSclusters(0),
+fSixPoints(0),
+fCluLayer(0),
+fCluCoord(0) 
 {
   // Standard constructor (Vertex is known and passed to this obj.)
   Init();
@@ -59,17 +93,50 @@ AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerMI(geom)
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerMI(geom) 
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerMI(geom),
+fPhiEstimate(0),
+fLambdac(0),
+fPhic(0),
+fCoef1(0),
+fCoef2(0),
+fCoef3(0),
+fNloop(0),
+fPhiWin(0),
+fLambdaWin(0),
+fVert(vert),
+fVertexer(0),
+fGeom(0),
+fListOfTracks(0),
+fITSclusters(0),
+fSixPoints(0),
+fCluLayer(0),
+fCluCoord(0) 
 {
   // Standard constructor (Vertex is known and passed to this obj.)
   Init();
-  fVert = vert;
   fGeom = geom;
  
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):AliITStrackerMI(geom) 
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):AliITStrackerMI(geom),
+fPhiEstimate(0),
+fLambdac(0),
+fPhic(0),
+fCoef1(0),
+fCoef2(0),
+fCoef3(0),
+fNloop(0),
+fPhiWin(0),
+fLambdaWin(0),
+fVert(),
+fVertexer(vertexer),
+fGeom(0),
+fListOfTracks(0),
+fITSclusters(0),
+fSixPoints(0),
+fCluLayer(0),
+fCluCoord(0)  
 {
   // Standard constructor (Vertex is unknown - vertexer is passed to this obj)
   Init();
@@ -79,43 +146,49 @@ AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):Ali
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA& tracker):AliITStrackerMI(){
+AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA& tracker):AliITStrackerMI(),
+fPhiEstimate(tracker.fPhiEstimate),
+fLambdac(tracker.fLambdac),
+fPhic(tracker.fPhic),
+fCoef1(tracker.fCoef1),
+fCoef2(tracker.fCoef2),
+fCoef3(tracker.fCoef3),
+fNloop(tracker.fNloop),
+fPhiWin(tracker.fPhiWin),
+fLambdaWin(tracker.fLambdaWin),
+fVert(tracker.fVert),
+fVertexer(tracker.fVertexer),
+fGeom(tracker.fGeom),
+fListOfTracks(tracker.fListOfTracks),
+fITSclusters(tracker.fITSclusters),
+fSixPoints(tracker.fSixPoints),
+fCluLayer(tracker.fCluLayer),
+fCluCoord(tracker.fCluCoord) {
   // Copy constructor
-  fPhiEstimate = tracker.fPhiEstimate;
   for(Int_t i=0;i<2;i++){
     fPoint1[i]=tracker.fPoint1[i];
     fPoint2[i]=tracker.fPoint2[i];
     fPoint3[i]=tracker.fPoint3[i];
     fPointc[i]=tracker.fPointc[i];
   }
-  fLambdac = tracker.fLambdac;
-  fPhic = tracker.fPhic;
-  fCoef1 = tracker.fCoef1;
-  fCoef2 = tracker.fCoef2;
-  fCoef3 = tracker.fCoef3;
-  fNloop = tracker.fNloop;
-  fPhiWin = tracker.fPhiWin;
-  fLambdaWin = tracker.fLambdaWin;
   if(tracker.fVertexer && tracker.fVert){
     fVert = new AliESDVertex(*tracker.fVert);
   }
   else {
     fVert = tracker.fVert;
   }
-  fVertexer = tracker.fVertexer;
-  fGeom = tracker.fGeom;
-  fListOfTracks = tracker.fListOfTracks;
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     fCluLayer[i] = tracker.fCluLayer[i];
     fCluCoord[i] = tracker.fCluCoord[i];
   } 
 }
 //______________________________________________________________________
-AliITStrackerSA& AliITStrackerSA::operator=(const AliITStrackerSA& /*source*/){
-    // Assignment operator. This is a function which is not allowed to be
-    // done.
-    Error("operator=","Assignment operator not allowed\n");
-    return *this; 
+AliITStrackerSA& AliITStrackerSA::operator=(const AliITStrackerSA& source){
+    // Assignment operator. 
+  this->~AliITStrackerSA();
+  new(this) AliITStrackerSA(source);
+  return *this;
+ 
 }
 
 //____________________________________________________________________________

@@ -31,7 +31,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackerSA(AliITSgeom *geom,AliESDVertex *vert);
   AliITStrackerSA(AliITSgeom *geom,AliITSVertexer *vertexer);
   AliITStrackerSA(const AliITStrackerSA& tracker);
-  AliITStrackerSA& operator=(const AliITStrackerSA& /* trkr */);
+  AliITStrackerSA& operator=(const AliITStrackerSA& source);
   virtual ~AliITStrackerSA();  
   virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerMI::Clusters2Tracks(event); if(!rc) rc=FindTracks(event); return rc;}
   Int_t FindTracks(AliESD* event);

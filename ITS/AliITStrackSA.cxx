@@ -30,7 +30,9 @@
 ClassImp(AliITStrackSA)
 
 //_____________________________________
-AliITStrackSA:: AliITStrackSA() : AliITStrackMI(){
+AliITStrackSA:: AliITStrackSA() : AliITStrackMI(),
+fNSA(0)
+{
 // Default constructor  
   SetNumberOfClusters(0);
   SetNumberOfClustersSA(0);
@@ -44,7 +46,8 @@ AliITStrackSA:: AliITStrackSA() : AliITStrackMI(){
 
 //___________________________________________________
 AliITStrackSA::AliITStrackSA(const AliITStrackMI& t) : 
-AliITStrackMI(t){
+AliITStrackMI(t),
+fNSA(0){
 // Copy a V2 track into a SA track
   SetNumberOfClustersSA(0);
   ResetIndexSA();
@@ -56,7 +59,8 @@ AliITStrackMI(t){
 }
 //___________________________________________________
 AliITStrackSA::AliITStrackSA(const AliITStrackSA& t) : 
-AliITStrackMI(t){
+AliITStrackMI(t),
+fNSA(t.fNSA){
 // Copy constructor
 
 
@@ -77,7 +81,9 @@ AliITStrackMI(t){
   }
 }
 //____________________________________________________
-AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t detector, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ) {
+AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t detector, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ):
+fNSA(0) 
+{
   // standard constructor. Used for ITS standalone tracking
 
   if(!geom){
