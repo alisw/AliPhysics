@@ -32,7 +32,7 @@ public:
   
   virtual ~AliMUON2DMapIterator();
   
-  /** The object returned by this iterator is a TPair(TObject* key,TObject* value)
+  /** The object returned by this iterator is an AliMUONObjectPair(TObject* key,TObject* value)
     where key is an AliMpIntPair (detElemId,manuId), and value is 
     an AliMUONVCalibParam.
     The returned object must be deleted by the user.

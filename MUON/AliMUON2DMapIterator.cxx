@@ -20,6 +20,7 @@
 #include "TMap.h"
 #include "AliLog.h"
 #include "AliMpIntPair.h"
+#include "AliMUONObjectPair.h"
 
 /// \class AliMUON2DMapIterator
 /// \brief Implementation of AliMUONVDataIterator for 2Dmaps
@@ -105,8 +106,10 @@ AliMUON2DMapIterator::Next()
     delete fIter2;
     fIter2 = new TExMapIter(m->GetIterator());
     o = GetValue(*fIter2,fCurrentJ);
-  }
-  return new TPair(new AliMpIntPair(fCurrentI,fCurrentJ),o);
+  }  
+  return new AliMUONObjectPair(new AliMpIntPair(fCurrentI,fCurrentJ),o,
+                               kTRUE, /* owner of intpair */
+                               kFALSE /* but not of o */);
 }
 
 //_____________________________________________________________________________
