@@ -40,6 +40,8 @@ public:
     /// Retrieve the value for a given (channel,dim) as an integer.
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const = 0;
 
+  static Float_t InvalidFloatValue() { return 1E38; }
+  
   ClassDef(AliMUONVCalibParam,0) // 
 };
 
