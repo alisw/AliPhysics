@@ -18,34 +18,30 @@
 // Macro which loads the libraries needed for simulation and reconstruction
 // with MUON configuration macros
 // Christian Finck
+// New libraries list by Laurent Aphecetche
 
 void loadlibs () 
 {
-  gSystem->Load("libPhysics");
-  gSystem->Load("libmicrocern");
-  gSystem->Load("libpdf");
-  gSystem->Load("libpythia6");
-  gSystem->Load("libEG");
-  gSystem->Load("libGeom");
   gSystem->Load("libVMC");
-  gSystem->Load("libEGPythia6");
-
+  gSystem->Load("libMinuit");
+  
   gSystem->Load("libESD");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libRAWDatabase");
-  gSystem->Load("libRAWDatarec");
-  gSystem->Load("libRAWDatasim");
-  gSystem->Load("libEVGEN");
-  gSystem->Load("libFASTSIM");
-  gSystem->Load("libAliPythia6");
-  gSystem->Load("libSTRUCT");
+  
+  gSystem->Load("libSTEER"); 
+  gSystem->Load("libCDB");
+  
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
+
+  gSystem->Load("libRAWDatabase");
   gSystem->Load("libMUONraw");
+  
+  gSystem->Load("libMUONshuttle");
 
-  gSystem->Load("libMUONsim");
-  new AliRun("gAlice","The ALICE Off-line Simulation Framework");
-
+  gSystem->Load("libRAWDatarec");
   gSystem->Load("libMUONrec");
+  
+  gSystem->Load("libRAWDatasim");
+  gSystem->Load("libMUONsim");
 }
