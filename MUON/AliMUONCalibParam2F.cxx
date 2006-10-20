@@ -47,7 +47,7 @@ AliMUONCalibParam2F::AliMUONCalibParam2F()
 }
 
 //_____________________________________________________________________________
-AliMUONCalibParam2F::AliMUONCalibParam2F(Int_t theSize, Int_t fillWithValue) 
+AliMUONCalibParam2F::AliMUONCalibParam2F(Int_t theSize, Float_t fillWithValue) 
 : AliMUONVCalibParam(),
   fSize(theSize),
   fN(fSize*Dimension()),
@@ -60,7 +60,10 @@ AliMUONCalibParam2F::AliMUONCalibParam2F(Int_t theSize, Int_t fillWithValue)
   if ( fN > 0 )
   {
     fValues = new Float_t[fN];
-    memset(fValues,fillWithValue,fN*sizeof(Float_t));
+    for ( Int_t i = 0; i < fN; ++i )
+    {
+      fValues[i] = fillWithValue;
+    }
   }
 }
 

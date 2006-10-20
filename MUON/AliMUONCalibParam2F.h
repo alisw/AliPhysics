@@ -20,7 +20,7 @@ class AliMUONCalibParam2F : public AliMUONVCalibParam
 {
 public:
   AliMUONCalibParam2F();
-  AliMUONCalibParam2F(Int_t theSize, Int_t fillWithValue=0);
+  AliMUONCalibParam2F(Int_t theSize, Float_t fillWithValue=0);
   AliMUONCalibParam2F(const AliMUONCalibParam2F& other);
   AliMUONCalibParam2F& operator=(const AliMUONCalibParam2F& other);
   
