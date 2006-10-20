@@ -1671,7 +1671,7 @@ void AliPMDv1::AddAlignableVolumes() const
 // ----------------------------------------------------------------
 void AliPMDv1::SetSectorAlignable() const
 {
-  //
+  // 
 
   TString vpsector = "ALIC_1/EPM";
   TString vpappend = "_1";
@@ -1687,6 +1687,10 @@ void AliPMDv1::SetSectorAlignable() const
     symname = snsector;
     symname += cnt;
     gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      {
+	AliFatal("Unable to set alignable entry!");
+      }
   }
 }
 // ------------------------------------------------------------------
