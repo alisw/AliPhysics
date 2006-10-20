@@ -39,17 +39,25 @@ class AliVertex : public TNamed {
   virtual Double_t GetZv() const { return fPosition[2]; }
   virtual Double_t GetDispersion() const { return fSigma; }
   virtual Int_t    GetNContributors() const { return fNContributors; }
+  virtual Int_t    GetNIndices() const { return fNIndices; }
 
   virtual void     Print(Option_t* option = "") const;
+  virtual void     SetIndices(Int_t nindices,UShort_t *indices); 
+  virtual UShort_t *GetIndices() const { return fIndices; }
+  virtual Bool_t   UsesTrack(Int_t index) const;
+  virtual void     PrintIndices() const { if(fNIndices>0) 
+    for(Int_t i=0;i<fNIndices;i++) printf("AliVertex uses track %d\n",fIndices[i]); return; }
 
  protected:
 
-  Double_t fPosition[3];  // vertex position
-  Double_t fSigma;  // track dispersion around found vertex
+  Double_t fPosition[3];    // vertex position
+  Double_t fSigma;          // track dispersion around found vertex
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
+  Int_t    fNIndices;       // # of indices 
+  UShort_t *fIndices;       //[fNIndices] indices of tracks used for vertex
 
 
-  ClassDef(AliVertex,1)  // Class for Primary Vertex
+  ClassDef(AliVertex,2)  // Class for Primary Vertex
 };
 
 #endif

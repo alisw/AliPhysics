@@ -30,12 +30,14 @@ ClassImp(AliVertex)
 AliVertex::AliVertex() :
   TNamed(),
   fSigma(0),
-  fNContributors(0)
+  fNContributors(0),
+  fNIndices(0)
 {
 //
 // Default Constructor, set everything to 0
 //
   for(Int_t k=0;k<3;k++) fPosition[k]   = 0;
+  fIndices = 0;
 }
 
 //--------------------------------------------------------------------------
@@ -43,13 +45,15 @@ AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
 		     Int_t nContributors):
   TNamed(),
   fSigma(dispersion),
-  fNContributors(nContributors)
+  fNContributors(nContributors),
+  fNIndices(0)
 {
   //
   // Standard Constructor
   //
 
   for(Int_t k=0;k<3;k++) fPosition[k]   = position[k];
+  fIndices = 0;
   SetName("BaseVertex");
 
 }
@@ -58,12 +62,17 @@ AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
 AliVertex::AliVertex(const AliVertex &source):
   TNamed(source),
   fSigma(source.GetDispersion()),
-  fNContributors(source.GetNContributors())
+  fNContributors(source.GetNContributors()),
+  fNIndices(source.GetNIndices())
 {
   //
   // Copy constructor
   //
   for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
+  if(source.fNIndices>0) {
+    fIndices = new UShort_t[fNIndices];
+    memcpy(fIndices,source.fIndices,fNIndices*sizeof(UShort_t));
+  }
 }
 
 //--------------------------------------------------------------------------
@@ -77,6 +86,11 @@ AliVertex &AliVertex::operator=(const AliVertex &source){
   for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
   fSigma = source.GetDispersion();
   fNContributors = source.GetNContributors();
+  fNIndices = source.GetNIndices();
+  if(source.fNIndices>0) {
+    fIndices = new UShort_t[fNIndices];
+    memcpy(fIndices,source.fIndices,fNIndices*sizeof(UShort_t));
+  }
   return *this;
 }
 
@@ -86,7 +100,7 @@ AliVertex::~AliVertex() {
 //  
 // Default Destructor
 //
-
+  delete [] fIndices;
 }
 //--------------------------------------------------------------------------
 void AliVertex::GetXYZ(Double_t position[3]) const {
@@ -98,6 +112,28 @@ void AliVertex::GetXYZ(Double_t position[3]) const {
   position[2] = fPosition[2];
 
   return;
+}
+//--------------------------------------------------------------------------
+void AliVertex::SetIndices(Int_t nindices,UShort_t *indices) {
+//
+// Set indices of tracks used for vertex determination 
+//
+  if(fNContributors<1)  { printf("fNContributors<1"); return; }
+  fNIndices = nindices;
+  fIndices = new UShort_t[fNIndices];
+  for(Int_t i=0;i<fNIndices;i++) fIndices[i] = indices[i]; 
+  return;
+}
+//--------------------------------------------------------------------------
+Bool_t AliVertex::UsesTrack(Int_t index) const {
+//
+// checks if a track is used for the vertex 
+//
+  if(fNIndices<1)  { printf("fNIndices<1"); return kFALSE; }
+  for(Int_t i=0;i<fNIndices;i++) {
+    if((Int_t)fIndices[i]==index) return kTRUE;
+  }
+  return kFALSE;
 }
 //--------------------------------------------------------------------------
 void AliVertex::Print(Option_t* /*option*/) const {
