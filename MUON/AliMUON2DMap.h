@@ -20,9 +20,11 @@ class AliMpExMap;
 class AliMUON2DMap : public AliMUONV2DStore
 {
 public:
-  AliMUON2DMap();  
+  AliMUON2DMap(Bool_t optimizeForDEManu=kFALSE);  
   virtual ~AliMUON2DMap();
 
+  AliMUONV2DStore* CloneEmpty() const;
+  
   /// The returned iterator is owned by the client.
   AliMUONVDataIterator* Iterator() const;
   
@@ -32,8 +34,7 @@ public:
   virtual Bool_t IsOwner() const { return kTRUE; } 
 
   virtual void Print(Option_t* opt="") const;
-
-protected:
+  
   AliMUON2DMap(const AliMUON2DMap& other);
   AliMUON2DMap&  operator = (const AliMUON2DMap& other);
 
@@ -42,8 +43,9 @@ private:
 
 private:
   AliMpExMap* fMap; ///< Our internal map (an AliMpExMap of AliMpExMaps)
+  Bool_t fOptimizeForDEManu; ///< whether (i,j) pair is supposed to be (DetElemId,ManuId) (allow us to allocate right amount of memory, that's all it does.
   
-  ClassDef(AliMUON2DMap,1) // A 2D container
+  ClassDef(AliMUON2DMap,2) // A 2D container
 };
 
 #endif

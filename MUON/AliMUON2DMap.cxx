@@ -22,6 +22,9 @@
 #include "AliMUON2DMapIterator.h"
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"
+#include "AliMpManuList.h"
+#include "AliMpDEManager.h"
+#include "AliMUONConstants.h"
 
 /// \class AliMUON2DMap
 /// \brief Basic implementation of AliMUONV2DStore container using
@@ -35,15 +38,28 @@ ClassImp(AliMUON2DMap)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUON2DMap::AliMUON2DMap() : AliMUONV2DStore(), fMap(new AliMpExMap(true))
+AliMUON2DMap::AliMUON2DMap(Bool_t optimizeForDEManu) 
+: AliMUONV2DStore(), 
+  fMap(new AliMpExMap(true)), 
+  fOptimizeForDEManu(optimizeForDEManu)
 {
 /// Default constructor.
+    if ( fOptimizeForDEManu )
+    {
+      Int_t nDEs(0);
+      for ( Int_t i = 0; i < AliMUONConstants::NTrackingCh(); ++i )
+      {
+        nDEs += AliMpDEManager::GetNofDEInChamber(i);
+      }
+      fMap->SetSize(nDEs);
+    }
 }
 
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap(const AliMUON2DMap& other)
 : AliMUONV2DStore(),
-fMap(0x0)
+fMap(0x0),
+fOptimizeForDEManu(kFALSE)
 {
  /// Copy constructor.
 
@@ -70,12 +86,22 @@ AliMUON2DMap::~AliMUON2DMap()
 }
 
 //_____________________________________________________________________________
-void
-AliMUON2DMap::CopyTo(AliMUON2DMap&) const
+AliMUONV2DStore*
+AliMUON2DMap::CloneEmpty() const
 {
-/// Copy this into dest.
+  /// Create a void copy of *this. 
+  return new AliMUON2DMap;
+}
 
-  AliFatal("Implement me if needed");
+//_____________________________________________________________________________
+void
+AliMUON2DMap::CopyTo(AliMUON2DMap& dest) const
+{
+  /// Copy this into dest.
+
+  delete dest.fMap;
+  dest.fMap = new AliMpExMap(*fMap);
+  dest.fOptimizeForDEManu = fOptimizeForDEManu;
 }
 
 //_____________________________________________________________________________
@@ -127,6 +153,19 @@ AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
   if ( !o )
   {
     AliMpExMap* m = new AliMpExMap(true);
+    if ( fOptimizeForDEManu ) 
+    {
+      Int_t n(AliMpManuList::NumberOfManus(i));
+      if (!n)
+      {
+        AliError(Form("This does not look right : i = %d is supposed to "
+                      "be a DetElemId with n = %d manus!",i,n));
+      }
+      else
+      {
+        m->SetSize(n);
+      }
+    }
     fMap->Add(i,m);
     o = fMap->GetValue(i);
   }
