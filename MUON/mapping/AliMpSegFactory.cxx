@@ -49,6 +49,8 @@
 ClassImp(AliMpSegFactory)
 /// \endcond
 
+Int_t AliMpSegFactory::fgNumberOfInstances(0);
+
 //______________________________________________________________________________
 AliMpSegFactory::AliMpSegFactory()
 : TObject(),
@@ -58,6 +60,7 @@ AliMpSegFactory::AliMpSegFactory()
     /// Standard constructor
     AliDebug(1,"");
     fMpMap->SetOwner(true);
+    ++fgNumberOfInstances;
 }
 
 //______________________________________________________________________________
@@ -68,6 +71,7 @@ AliMpSegFactory::~AliMpSegFactory()
 
   // The segmentations is supposed to be deleted in the client code
   AliDebug(1,"");
+  --fgNumberOfInstances;
 }
 
 //
@@ -81,7 +85,7 @@ AliMpSegFactory::FillMpMap(Int_t detElemId)
 /// Fill the map of electronic cards IDs to segmentations for
 /// given detElemId
 
-  AliDebug(1,Form("detElemId=%d",detElemId));
+  AliDebugStream(2) << "detElemId=" << detElemId << endl;;
   
   AliMpExMap* mde = new AliMpExMap(true);
   mde->SetOwner(kFALSE);
@@ -132,8 +136,9 @@ AliMpSegFactory::CreateMpSegmentation(Int_t detElemId, Int_t cath)
   TObject* object = fMpSegmentations.Get(deName);
   if ( object ) return (AliMpVSegmentation*)object;
 
-  AliDebug(1,Form("Creating segmentation for detElemId=%d cath=%d",
-                  detElemId,cath));
+  AliDebugStream(3)
+    << "Creating segmentation for detElemId=" << detElemId 
+    << " cath=" << cath << endl;
   
   // Read mapping data and create segmentation
   //

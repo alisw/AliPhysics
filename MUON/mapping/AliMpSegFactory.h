@@ -44,6 +44,8 @@ class AliMpSegFactory : public  TObject {
 
     void DeleteSegmentations();
 
+    static Int_t NumberOfInstances() { return fgNumberOfInstances; }
+    
   private:
     AliMpSegFactory(const AliMpSegFactory& rhs);
     AliMpSegFactory& operator=(const AliMpSegFactory& rhs);
@@ -53,6 +55,8 @@ class AliMpSegFactory : public  TObject {
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE names
     AliMpExMap*        fMpMap;          ///< Map of el. cards IDs to segmentations
       
+    static Int_t fgNumberOfInstances; ///< number of AliMpSegFactory objects...
+    
   ClassDef(AliMpSegFactory,0)  // The factory for building mapping segmentations
 };
 
