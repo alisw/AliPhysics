@@ -41,6 +41,7 @@ MuonRec.SetRunTracking("");
 MuonRec.SetRunVertexFinder(kFALSE);
 MuonRec.SetRunLocalReconstruction("MUON");
 MuonRec.SetFillESD("MUON");
+MuonRec.SetLoadAlignData("MUON")
 MuonRec.Run();
 .q
 EOF
