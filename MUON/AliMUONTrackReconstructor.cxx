@@ -235,8 +235,6 @@ void AliMUONTrackReconstructor::EventReconstruct(void)
     AliMUONTrack * track = (AliMUONTrack*) GetRecTracksPtr()->At(i);
     fMUONData->AddRecTrack(*track);
   }
-
-  return;
 }
 
 //__________________________________________________________________________
@@ -245,7 +243,6 @@ void AliMUONTrackReconstructor::EventReconstructTrigger(void)
   // To reconstruct one event
   AliDebug(1,"Enter EventReconstructTrigger");
   MakeTriggerTracks();  
-  return;
 }
 
   //__________________________________________________________________________
@@ -414,12 +411,14 @@ void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the raw cluster (cm)
       hitForRec->SetZ(clus->GetZ(0));
-      if (AliLog::GetGlobalDebugLevel() > 1) {
-	cout << "chamber (0...): " << ch <<
-	  " raw cluster (0...): " << iclus << endl;
-	clus->Dump();
-	cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
-	hitForRec->Dump();}
+      
+      StdoutToAliDebug(3,
+                       cout << "Chamber " << ch <<
+                       " raw cluster  " << iclus << " : " << endl;
+                       clus->Print("full");
+                       cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
+                       hitForRec->Print("full");
+                       );
     } // end of cluster loop
   } // end of chamber loop
   SortHitsForRecWithIncreasingChamber(); 
@@ -436,22 +435,23 @@ void AliMUONTrackReconstructor::MakeSegments(void)
   // Loop over stations
   Int_t nb = (fTrackMethod != 1) ? 3 : 0; //AZ
   for (Int_t st = nb; st < AliMUONConstants::NTrackingCh()/2; st++) 
+  {
     MakeSegmentsPerStation(st); 
-  if (AliLog::GetGlobalDebugLevel() > 1) {
+  }
+  
+  StdoutToAliDebug(3,
     cout << "end of MakeSegments" << endl;
-    for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) {
-      cout << "station(0...): " << st
-	   << "  Segments: " << fNSegments[st]
-	   << endl;
-      for (Int_t seg = 0;
-	   seg < fNSegments[st];
-	   seg++) {
-	cout << "Segment index(0...): " << seg << endl;
-	((*fSegmentsPtr[st])[seg])->Dump();
+    for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) 
+    {
+      cout << "station " << st
+	    << "  has " << fNSegments[st] << " segments:"
+	    << endl;
+      for (Int_t seg = 0; seg < fNSegments[st]; seg++) 
+      {
+	      ((*fSegmentsPtr[st])[seg])->Print();
       }
     }
-  }
-  return;
+                   );
 }
 
   //__________________________________________________________________________
