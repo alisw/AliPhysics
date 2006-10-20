@@ -15,6 +15,12 @@
 
 /*
  $Log$
+ Revision 1.11  2006/10/02 16:38:39  jgrosseo
+ update (alberto):
+ fixed memory leaks
+ storing of objects that failed to be stored to the grid before
+ interfacing of shuttle status table in daq system
+
  Revision 1.10  2006/08/15 10:50:00  jgrosseo
  effc++ corrections (alberto)
 
@@ -68,7 +74,7 @@
 // 
 // This class is to deal with DAQ LogBook and DAQ "end of run" notification.
 // It has severeal two modes:
-// 	1) syncrhnized - Collect(), CollectNew() and CollectAll methods
+// 	1) synchronized - Collect()
 // 	2) asynchronized - Run() - starts listening for DAQ "end of run"
 // 		notification by DIM service.
 //
@@ -76,31 +82,17 @@
 #include "AliShuttleTrigger.h"
 
 #include <TSystem.h>
+
 #include "AliLog.h"
 #include "AliShuttleConfig.h"
 #include "AliShuttle.h"
 #include "DATENotifier.h"
 
 ClassImp(TerminateSignalHandler)
-
-//______________________________________________________________________
-TerminateSignalHandler::TerminateSignalHandler(const TerminateSignalHandler& /*other*/):
-TSignalHandler(), fTrigger()
-{
-// copy constructor (not implemented)
-
-}
-
-//______________________________________________________________________
-TerminateSignalHandler &TerminateSignalHandler::operator=(const TerminateSignalHandler& /*other*/)
-{
-// assignment operator (not implemented)
-
-return *this;
-}
+ClassImp(AliShuttleTrigger)
 
 //______________________________________________________________________________________________
-Bool_t TerminateSignalHandler::Notify() 
+Bool_t TerminateSignalHandler::Notify()
 {
 // Sentd terminate command to the Shuttle trigger
 
@@ -111,18 +103,13 @@ Bool_t TerminateSignalHandler::Notify()
 }
 
 //______________________________________________________________________________________________
-//______________________________________________________________________________________________
-
-ClassImp(AliShuttleTrigger)
-
-//______________________________________________________________________________________________
 AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 		UInt_t timeout, Int_t retries):
 	fConfig(config), fShuttle(NULL),
 	fNotified(kFALSE), fTerminate(kFALSE),
 	fMutex(), fCondition(&fMutex),
-	fQuitSignalHandler(this, kSigQuit),
-	fInterruptSignalHandler(this, kSigInterrupt)
+	fQuitSignalHandler(0),
+	fInterruptSignalHandler(0)
 {
 	//
 	// config - pointer to the AliShuttleConfig object which represents
@@ -133,53 +120,35 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 
 	fShuttle = new AliShuttle(config, timeout, retries);
 
-	gSystem->AddSignalHandler(&fQuitSignalHandler);
-	gSystem->AddSignalHandler(&fInterruptSignalHandler);
+  TerminateSignalHandler* fQuitSignalHandler = new TerminateSignalHandler(this, kSigQuit);
+  TerminateSignalHandler* fInterruptSignalHandler = new TerminateSignalHandler(this, kSigInterrupt);
+
+	gSystem->AddSignalHandler(fQuitSignalHandler);
+	gSystem->AddSignalHandler(fInterruptSignalHandler);
 
 }
-
-
-
-//______________________________________________________________________
-AliShuttleTrigger::AliShuttleTrigger(const AliShuttleTrigger& /*other*/):
-	TObject(), fConfig(), fShuttle(NULL),
-	fNotified(kFALSE), fTerminate(kFALSE),
-	fMutex(), fCondition(&fMutex),
-	fQuitSignalHandler(this, kSigQuit),
-	fInterruptSignalHandler(this, kSigInterrupt)
-
-{
-// copy constructor (not implemented)
-
-}
-
-//______________________________________________________________________
-AliShuttleTrigger &AliShuttleTrigger::operator=(const AliShuttleTrigger& /*other*/)
-{
-// assignment operator (not implemented)
-
-return *this;
-}
-
-
-
-
 
 //______________________________________________________________________________________________
 AliShuttleTrigger::~AliShuttleTrigger() 
 {
-// destructor
+  // destructor
 
-	gSystem->RemoveSignalHandler(&fQuitSignalHandler);
-	gSystem->RemoveSignalHandler(&fInterruptSignalHandler);
+	gSystem->RemoveSignalHandler(fQuitSignalHandler);
+	gSystem->RemoveSignalHandler(fInterruptSignalHandler);
 
 	delete fShuttle;
+
+  delete fQuitSignalHandler;
+  fQuitSignalHandler = 0;
+
+  delete fInterruptSignalHandler;
+  fInterruptSignalHandler = 0;
 }
 
 //______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::Notify() {
 	//
-	// Trigger CollectNew() methods in asynchronized (listen) mode.
+	// Trigger Collect() methods in asynchronized (listen) mode.
 	// Usually called automaticly by DATENotifier on "end of run" 
 	// notification event.
 	//
@@ -210,7 +179,7 @@ void AliShuttleTrigger::Run() {
 	//
 	// AliShuttleTrigger main loop for asynchronized (listen) mode.
 	// It spawns DIM service listener and waits for DAQ "end of run"
-	// notification. Calls CollectNew() on notification.
+	// notification. Calls Collect() on notification.
 	//
 
 	fTerminate = kFALSE;
@@ -234,7 +203,7 @@ void AliShuttleTrigger::Run() {
 			break;		
 		}
 	
-		CollectNew();
+		Collect();
 	}
 
 	delete notifier;
@@ -244,29 +213,9 @@ void AliShuttleTrigger::Run() {
 Bool_t AliShuttleTrigger::Collect(Int_t run)
 {
 	//
-	// Collects conditions data for the given run.
+	// this function creates a thread that runs the shuttle
+	// then it checks if the shuttle is still running by checking the monitoring functions of the shuttle
 	//
 
-	return fShuttle->Collect(run);
+  return fShuttle->Collect(run);
 }
-
-//______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::CollectNew()
-{
-	//
-	// Collects conditions data for all UNPROCESSED run written to DAQ LogBook.
-	//
-
-	return fShuttle->CollectNew();
-}
-
-//______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::CollectAll()
-{
-	//
-	// Collects conditions data for all runs (even if they're already done!) written in Shuttle LogBook.
-	//
-
-	return fShuttle->CollectAll();
-}
-

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.9  2006/10/02 16:38:39  jgrosseo
+update (alberto):
+fixed memory leaks
+storing of objects that failed to be stored to the grid before
+interfacing of shuttle status table in daq system
+
 Revision 1.8  2006/08/15 10:50:00  jgrosseo
 effc++ corrections (alberto)
 
@@ -156,7 +162,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
 	fIsValid(kFALSE),
 	fDAQlbHost(""), fDAQlbUser(""), fDAQlbPass(""),
-	fMaxPPRetries(0), fMaxRetries(0), fDetectorMap(), fDetectorList(),
+	fMaxRetries(0), fPPTimeOut(0), fDetectorMap(), fDetectorList(),
 	fShuttleInstanceHost(""), fProcessedDetectors(), fProcessAll(kFALSE)
 {
 	//
@@ -297,23 +303,23 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 	fDAQlbPass = anAttribute->GetValue();
 
-	anAttribute = anEntry->GetAttribute("MaxPPRetries");
-	if (!anAttribute) {
-		AliError("Can't find MaxPPRetries attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	TString tmpStr = anAttribute->GetValue();
-	fMaxPPRetries = tmpStr.Atoi();
-
 	anAttribute = anEntry->GetAttribute("MaxRetries");
 	if (!anAttribute) {
 		AliError("Can't find MaxRetries attribute!");
 		delete aResult; delete anEntry;
 		return;
 	}
-	tmpStr = anAttribute->GetValue();
+	TString tmpStr = anAttribute->GetValue();
 	fMaxRetries = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("PPTimeOut");
+	if (!anAttribute) {
+		AliError("Can't find PPTimeOut attribute!");
+		delete aResult; delete anEntry;
+		return;
+	}
+	tmpStr = anAttribute->GetValue();
+	fPPTimeOut = tmpStr.Atoi();
 
 	delete aResult; delete anEntry;
 
@@ -509,7 +515,7 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 		result += "\n\n";
 	}
 
-	result += Form("Max PP retries = %d - Max total retries = %d\n\n", fMaxPPRetries, fMaxRetries);
+	result += Form("PP time out = %d - Max total retries = %d\n\n", fPPTimeOut, fMaxRetries);
 
 	result += Form("DAQ Logbook Configuration \n \tHost: %s - User: %s - ",
 		fDAQlbHost.Data(), fDAQlbUser.Data());

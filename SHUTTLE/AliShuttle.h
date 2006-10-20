@@ -29,6 +29,7 @@ class AliCDBMetaData;
 class TSQLServer;
 class AliCDBEntry;
 class AliCDBPath;
+class TMutex;
 
 class AliShuttle: public AliShuttleInterface {
 public:
@@ -39,11 +40,13 @@ public:
 
 	virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
 
-	Bool_t Collect(Int_t run);
-	Bool_t CollectNew();
-	Bool_t CollectAll();
+	Bool_t Collect(Int_t run = -1);
 
 	Bool_t Process(AliShuttleLogbookEntry* entry);
+
+	// monitoring functions
+	ULong_t GetTimeOfLastAction() const;
+	const TString GetLastAction() const;
 
 	Int_t GetCurrentRun() const;
 	UInt_t GetCurrentStartTime() const;
@@ -115,6 +118,8 @@ private:
   	Bool_t ContinueProcessing();
   	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
   	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
+  	
+  	void SetLastAction(const char* action);
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
 
@@ -142,6 +147,10 @@ private:
 
 	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved
 	Bool_t fGridError; 	   // Grid storage error flag
+	
+	TMutex* fMonitoringMutex;   // mutex to lock the monitoring class members
+	UInt_t fLastActionTime;    // time of last action for monitoring
+	TString fLastAction;       // string description for last action
 
 	//TODO Test only, remove later !
 	static Bool_t fgkProcessDCS; // flag to enable DCS archive data processing

@@ -29,16 +29,15 @@ class TerminateSignalHandler: public TSignalHandler {
 public:
 	TerminateSignalHandler(): TSignalHandler((ESignals) 0,0), fTrigger(0) { }
 	TerminateSignalHandler(AliShuttleTrigger* trigger, ESignals signal):
-		TSignalHandler(signal, kFALSE), fTrigger(trigger) {}
+	TSignalHandler(signal, kFALSE), fTrigger(trigger) {}
 
 	virtual ~TerminateSignalHandler() { }
 	virtual Bool_t Notify();
 
 private:
-
-	TerminateSignalHandler(const TerminateSignalHandler& other); 	
-	TerminateSignalHandler& operator= (const TerminateSignalHandler& other); 	
-
+	TerminateSignalHandler(const TerminateSignalHandler& other);
+	TerminateSignalHandler& operator= (const TerminateSignalHandler& other);
+  
 	AliShuttleTrigger* fTrigger;  // pointer to the current AliShuttleTrigger
 
 	ClassDef(TerminateSignalHandler, 0)
@@ -52,9 +51,7 @@ public:
 
 	AliShuttle* GetShuttle() {return fShuttle;}
 
-	Bool_t Collect(Int_t run);
-	Bool_t CollectNew();
-	Bool_t CollectAll();
+	Bool_t Collect(Int_t run = -1);
 
 	virtual Bool_t Notify();
 	void Terminate();
@@ -75,8 +72,8 @@ private:
 	TMutex fMutex;  		// Mutex
 	TCondition fCondition;  	// Condition 
 
-	TerminateSignalHandler fQuitSignalHandler; 		// Quit signal 
-	TerminateSignalHandler fInterruptSignalHandler;  	// Interrupt signal
+	TerminateSignalHandler* fQuitSignalHandler; 		// Quit signal
+	TerminateSignalHandler* fInterruptSignalHandler;  	// Interrupt signal
 
 
 	ClassDef(AliShuttleTrigger, 0)

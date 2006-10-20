@@ -38,14 +38,14 @@ objectidentifier GLOBAL_CONFIG SHUTTLE_BASE:3
 attributetype ( GLOBAL_CONFIG:1 NAME 'DAQLogbookHost'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( GLOBAL_CONFIG:2 NAME 'DAQLogbookUser'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( GLOBAL_CONFIG:3 NAME 'DAQLogbookPassword'  DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:4 NAME 'MaxPPRetries'  DESC 'number of retries of a crashed preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:5 NAME 'MaxRetries'  DESC 'number of retries for all other failures'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:4 NAME 'MaxRetries'  DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:5 NAME 'PPTimeOut'  DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'AliShuttleGlobalConfig'
         DESC 'ALICE: Access to DAQ logbook settings'
         SUP top
-        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ MaxPPRetries $ MaxRetries) )
+        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ MaxRetries $ PPTimeOut) )
 
 
 objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:4
