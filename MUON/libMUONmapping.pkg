@@ -17,7 +17,8 @@ SRCS +=  \
 	 mapping/AliMpVIndexed.cxx  \
 	 mapping/AliMpVPadIterator.cxx  \
 	 mapping/AliMpVSegmentation.cxx  \
-
+	 mapping/AliMpManuList.cxx 
+   
 # Category motif
 #
 SRCS +=  \
