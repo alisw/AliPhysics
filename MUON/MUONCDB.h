@@ -12,19 +12,36 @@ class TList;
 class AliMUONV1DStore;
 class AliMUONV2DStore;
 
-static const char* CDBPath = "local://$ALICE_ROOT/";
+static const char* CDBPath = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
 
 void generateTrigger(const char* cdbpath=CDBPath);
 
-void generateCalibrations(const char* cdbpath=CDBPath, Bool_t defaultValues = kTRUE);
+void getBoundaries(const AliMUONV2DStore& store,
+                   Float_t& x0min, Float_t& x0max,
+                   Float_t& x1min, Float_t& x1max);
 
-TList* manuList(Bool_t reset=kFALSE);
+void plot(const AliMUONV2DStore& store, const char* name, Int_t nbins=512);
 
-void plotCDB(const char* calibType="MUON/Calib/Pedestals");
+void plotCDB(const char* calibType="MUON/Calib/Pedestals", Int_t runNumber=0);
 
-AliMUONV2DStore* read2D(const char* calibType="MUON/Calib/Pedestals");
-AliMUONV1DStore* read1D(const char* calibType="MUON/Calib/LocalBoardMasks");
+AliMUONV2DStore* diff(AliMUONV2DStore& store1, AliMUONV2DStore& store2, const char* opt="abs");
+
+AliMUONV2DStore* read2D(const char* calibType="MUON/Calib/Pedestals", Int_t runNumber=0);
+
+AliMUONV1DStore* read1D(const char* calibType="MUON/Calib/LocalBoardMasks", Int_t runNumber=0);
 
 void testMakeStores(Int_t readLoop=10);
+
+void writeToCDB(const char* cdbpath, const char* calibpath, TObject* object, 
+                Int_t startRun, Int_t endRun, Bool_t defaultValues);
+
+void writePedestals(const char* cdbpath, Bool_t defaultValues,
+                    Int_t startRun, Int_t endRun);
+
+void writeGains(const char* cdbpath, Bool_t defaultValues,
+                Int_t startRun, Int_t endRun);
+
+void writeDeadChannels(const char* cdbpath, Bool_t defaultValues,
+                       Int_t startRun, Int_t endRun);
 
 #endif
