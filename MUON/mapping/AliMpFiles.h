@@ -101,7 +101,7 @@ class AliMpFiles : public TObject
     static const TString fgkMotifSpecialPrefix; ///< special motif data file name 
     static const TString fgkPadPosPrefix;  ///< pad position data file name
     static const TString fgkDataExt;       ///< file extension
-    static const TString fgkBergToGCFileName;  ///< BergToGC mapping filr name
+    static const TString fgkBergToGCFileName;  ///< BergToGC mapping file name
     static const TString fgkTriggerLocalBoards;///<  local board name to id mapping
     static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
     
