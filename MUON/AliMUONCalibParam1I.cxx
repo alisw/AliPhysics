@@ -62,7 +62,10 @@ AliMUONCalibParam1I::AliMUONCalibParam1I(Int_t theSize, Int_t fillWithValue)
   if ( fSize > 0 )
   {
     fValues = new Int_t[fSize];
-    memset(fValues,fillWithValue,fSize*sizeof(Int_t));
+    for ( Int_t i = 0; i < fSize; ++i )
+    {
+      fValues[i] = fillWithValue;
+    }
   }
 }
 
