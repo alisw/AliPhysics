@@ -17,32 +17,28 @@ class AliMUONDigit : public TObject
  public:
     AliMUONDigit();
     AliMUONDigit(const AliMUONDigit& rhs);
-    // deprecated
-    AliMUONDigit(Int_t *digits);
-    // deprecated
-    AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual ~AliMUONDigit();
 
     AliMUONDigit& operator=(const AliMUONDigit& rhs);
     
     virtual Bool_t IsSortable() const {return kTRUE;}        ///< Return true if sortable
-    virtual int Compare(const TObject *obj) const;
+    virtual Int_t Compare(const TObject *obj) const;
 
     virtual Int_t DetElemId()const     {return fDetElemId;}  ///< Return detection element ID  
     virtual Int_t PadX() const         {return fPadX;}       ///< Return pad number along x
     virtual Int_t PadY() const         {return fPadY;}       ///< Return pad number along y
     virtual Int_t Cathode() const      {return fCathode;}    ///< Return cathode number
     
-    virtual Int_t Signal() const       {return fSignal;}     ///< Return signal amplitude
+    virtual Float_t Signal() const       {return fSignal;}     ///< Return signal amplitude
     
-    virtual Int_t Physics() const      {return fPhysics;}    ///< Return MC physics contribution to signal
+    virtual Float_t Physics() const      {return fPhysics;}    ///< Return MC physics contribution to signal
     
     virtual Int_t Hit() const          {return fHit;}        ///< Return MC hit number
     
     virtual Int_t Ntracks() const { return fNtracks; }       ///< Return MC tracks making to this digit
-    virtual void AddTrack(Int_t trackNumber, Int_t trackCharge);
+    virtual void AddTrack(Int_t trackNumber, Float_t trackCharge);
     virtual Int_t Track(Int_t i) const;
-    virtual Int_t TrackCharge(Int_t i) const;
+    virtual Float_t TrackCharge(Int_t i) const;
     
     virtual Int_t ADC() const { return fADC; }                 ///< Return ADC value
     virtual Int_t ManuId() const { return fManuId; }           ///< Return Id of the MANU chip
@@ -57,12 +53,12 @@ class AliMUONDigit : public TObject
     virtual void SetDetElemId(Int_t id)    {fDetElemId = id;}  ///< Set detection element ID
     virtual void SetPadX(Int_t pad)        {fPadX = pad;}      ///< Set pad number along x
     virtual void SetPadY(Int_t pad)        {fPadY = pad;}      ///< Set pad number along y
-    virtual void SetSignal(Int_t q)        {fSignal = q;}      ///< Set signal amplitude
-    virtual void AddSignal(Int_t q)        {fSignal += q;}     ///< Add signal amplitude
-    virtual void AddPhysicsSignal(Int_t q) {fPhysics += q;}    ///< Add MC physics contribution to signal
+    virtual void SetSignal(Float_t q)        {fSignal = q;}      ///< Set signal amplitude
+    virtual void AddSignal(Float_t q)        {fSignal += q;}     ///< Add signal amplitude
+    virtual void AddPhysicsSignal(Float_t q) {fPhysics += q;}    ///< Add MC physics contribution to signal
     virtual void SetHit(Int_t n)           {fHit = n;}         ///< Set MC hit number
     virtual void SetCathode(Int_t c)       {fCathode = c;}     ///< Set cathode number
-    virtual void SetPhysicsSignal(Int_t q) {fPhysics = q; }    ///< Set MC physics contribution to signal
+    virtual void SetPhysicsSignal(Float_t q) {fPhysics = q; }    ///< Set MC physics contribution to signal
     
     virtual void Print(Option_t* opt="") const;
     
@@ -81,7 +77,7 @@ private:
     Int_t fDetElemId;     ///< Detection element ID
     Int_t fManuId;        ///< Id of the MANU chip.
     Int_t fManuChannel;   ///< Channel within the MANU chip.
-    Int_t fSignal;        ///< Signal amplitude    
+    Float_t fSignal;        ///< Signal amplitude    
       
     Int_t fPadX;          ///< Pad number along x
     Int_t fPadY;          ///< Pad number along y
@@ -92,17 +88,17 @@ private:
     Int_t fNtracks;       ///< MC tracks making to this digit.
     
     /// charges of MC track making this digit
-    Int_t* fTcharges;     //[fNtracks]  charges of MC track making this digit
+    Float_t* fTcharges;     //[fNtracks]  charges of MC track making this digit
 
     /// primary MC tracks making this digit
     Int_t* fTracks;       //[fNtracks]  primary MC tracks making this digit
 
-    Int_t fPhysics;       ///< MC physics contribution to signal 
+    Float_t fPhysics;       ///< MC physics contribution to signal 
     Int_t fHit;           ///< MC hit number - temporary solution
   
     static const UInt_t fgkSaturatedMask = 0x1; ///< the mask (part of fFlags) to indicate this digit is saturated
     static const UInt_t fgkNoiseOnlyMask = 0x1000; ///< indicate a simulated digit due to noise only
     
-    ClassDef(AliMUONDigit,4)  //Digits for MUON
+    ClassDef(AliMUONDigit,5)  //Digits for MUON
 };
 #endif
