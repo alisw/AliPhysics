@@ -27,6 +27,7 @@
 #include "AliMUONHit.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
+#include "Riostream.h"
 
 ClassImp(AliMUONHitForRec) // Class implementation in ROOT context
 
@@ -228,4 +229,21 @@ Double_t AliMUONHitForRec::NormalizedChi2WithHitForRec(AliMUONHitForRec* hitForR
   if (normDiff > 1.0) return chi2Max;
   chi2 = chi2 + normDiff;
   return chi2;
+}
+
+//______________________________________________________________________________
+void
+AliMUONHitForRec::Print(Option_t* /*opt*/) const
+{
+  cout << "<AliMUONHitForRec> Coordinates (B,NB,Z) = (" 
+  << setw(8) << setprecision(5) << fBendingCoor
+  << "," << setw(8) << setprecision(5) << fNonBendingCoor << "," 
+  << setw(8) << setprecision(5) << fZ << ") "
+  << "Reso (B,NB)=(" << setw(8) << setprecision(5) << TMath::Sqrt(fBendingReso2) 
+  << "," << setw(8) << setprecision(5) << TMath::Sqrt(fNonBendingReso2)
+  << ") " 
+  << "Number " << setw(3) << fHitNumber 
+  << " within chamber " << setw(3) <<fChamberNumber 
+  << " DE " << setw(4) << fDetElemId
+  << endl;
 }

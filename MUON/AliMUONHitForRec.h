@@ -66,7 +66,8 @@ class AliMUONHitForRec : public TObject {
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* HitForRec) const; // "Compare" function for sorting
 
-
+  virtual void Print(Option_t* opt="") const;
+  
  private:
   Double_t fBendingCoor; ///< coordinate (cm) in bending plane
   Double_t fNonBendingCoor; ///< coordinate (cm) in non bending plane

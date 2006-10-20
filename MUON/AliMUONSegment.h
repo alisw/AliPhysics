@@ -56,6 +56,8 @@ class AliMUONSegment : public TObject
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* Segment) const; // "Compare" function for sorting
 
+  void Print(Option_t* opt="") const;
+  
  private:
   AliMUONHitForRec* fHitForRecPtr1; ///< pointer to HitForRec in first chamber
   AliMUONHitForRec* fHitForRecPtr2; ///< pointer to HitForRec in second chamber

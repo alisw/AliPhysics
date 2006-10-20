@@ -362,3 +362,33 @@ void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, 
 //   fNonBendingSlopeReso2 = sReso2 + 2.0 * MCSfactor;
 //   return;
 // }
+
+//_____________________________________________________________________________
+void
+AliMUONSegment::Print(Option_t*) const
+{
+  cout.precision(5);
+  cout.width(5);
+  
+  cout << "<AliMUONSegment>" 
+    << "(Coor,Slope,Impact)Bending=("
+    << fBendingCoor << "," << fBendingSlope << "," << fBendingImpact
+    << ")" << endl
+    << "(Coor,Slope,Impact)NonBending=("
+    << fNonBendingCoor << "," << fNonBendingSlope << "," << fNonBendingImpact
+    << ")" << endl
+    << "Cov (coor,slope,coor & slope)Bending=("
+    << fBendingCoorReso2 << "," << fBendingSlopeReso2 << "," << fBendingCoorSlopeReso2 << endl
+    << "Cov (coor,slope,coor & slope)NonBending=("
+    << fNonBendingCoorReso2 << "," << fNonBendingSlopeReso2 << "," << fNonBendingCoorSlopeReso2 << endl;
+  if ( fHitForRecPtr1 ) 
+  {
+    cout << "HitForRec1=";
+    fHitForRecPtr1->Print();
+  }
+  if ( fHitForRecPtr2 ) 
+  {
+    cout << "HitForRec2=";
+    fHitForRecPtr2->Print();
+  }
+}
