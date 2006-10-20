@@ -19,9 +19,9 @@
 
 #include "AliPID.h"
 #include <TVector3.h>
-#include <TParticle.h>
 #include <TLorentzVector.h>
 
+class TParticle;
 class AliESDtrack;
 
 class AliRsnDaughter : public TObject
@@ -72,7 +72,7 @@ public:
 	void           SetTruePDG(Short_t pdg)  					  {fTruePDG = pdg;}
 	void           SetVxVyVz(Double_t vx,Double_t vy,Double_t vz) {fV[0]=vx;fV[1]=vy;fV[2]=vz;}
 	
-	friend AliRsnDaughter operator+(AliRsnDaughter t1, AliRsnDaughter t2);
+	static AliRsnDaughter Sum(AliRsnDaughter t1, AliRsnDaughter t2);
 	
 private:
 	

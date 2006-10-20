@@ -24,12 +24,12 @@ public:
 			       AliRsnDaughterCut() {  }
 	virtual       ~AliRsnDaughterCut() {  }
 	
-	        Bool_t IsPairCut() {return fPairCut;}
-	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2 = 0);
+	        Bool_t IsPairCut() const {return fPairCut;}
+	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2 = 0) const;
 	
 protected:
 
-	Bool_t  fPairCut;
+	Bool_t  fPairCut;  // this flag is TRUE for all pair cuts
 	
 	ClassDef(AliRsnDaughterCut,1)
 };
@@ -42,7 +42,7 @@ public:
 			       AliRsnDaughterCutPtSingle(Double_t min, Double_t max) {fPairCut=kFALSE;fPtMin=min;fPtMax=max;}
 	virtual       ~AliRsnDaughterCutPtSingle()                           { }
 	
-	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2 = 0);
+	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2 = 0) const;
 
 protected:
 
@@ -60,7 +60,7 @@ public:
 			       AliRsnDaughterCutPtPair(Double_t min, Double_t max) {fPairCut=kTRUE;fPtMin=min;fPtMax=max;}
 	virtual       ~AliRsnDaughterCutPtPair()                           { }
 	
-	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2);
+	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2) const;
 
 protected:
 

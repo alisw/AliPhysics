@@ -6,6 +6,10 @@
 //-------------------------------------------------------------------------
 //                      Class AliRsnAnalysis
 //             Reconstruction and analysis of K* Rsn
+// ........................................
+// ........................................
+// ........................................
+// ........................................
 // 
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
@@ -28,6 +32,8 @@ class AliRsnAnalysis : public TObject
 public:
 
 	         AliRsnAnalysis();
+			 AliRsnAnalysis(const AliRsnAnalysis &copy) : TObject(copy) { }
+			 AliRsnAnalysis& operator=(const AliRsnAnalysis & /*copy*/) { return (*this); }
 	virtual ~AliRsnAnalysis() {Clear();}
 	
 	void     AddCutPair(AliRsnDaughterCut *cut);
@@ -41,7 +47,7 @@ public:
 	void     SetEventsTree(TTree *tree)                       {fEventsTree = tree;}
 	void     SetRejectFakes(Bool_t doit=kTRUE)                {fRejectFakes = doit;}		
 	void     SetTrueMotherPDG(Int_t pdg)                      {fTrueMotherPDG = pdg;}
-	void     WriteHistograms();
+	void     WriteHistograms() const;
 	
 private:
 
@@ -53,13 +59,13 @@ private:
 				   
 		virtual ~AliPairDef()                 { }
 		
-		Char_t                 GetSign1()     {return fSign1;}
-		Char_t                 GetSign2()     {return fSign2;}
-		Bool_t                 GetOnlyTrue()  {return fOnlyTrue;}
-		AliPID::EParticleType  GetParticle1() {return fParticle1;}
-		AliPID::EParticleType  GetParticle2() {return fParticle2;}
-		Double_t               GetMass1()     {return fMass1;}
-		Double_t               GetMass2()     {return fMass2;}
+		Char_t                 GetSign1() const {return fSign1;}
+		Char_t                 GetSign2() const {return fSign2;}
+		Bool_t                 GetOnlyTrue() const {return fOnlyTrue;}
+		AliPID::EParticleType  GetParticle1() const {return fParticle1;}
+		AliPID::EParticleType  GetParticle2() const {return fParticle2;}
+		Double_t               GetMass1() const {return fMass1;}
+		Double_t               GetMass2() const {return fMass2;}
 				
 	    void SetSign1(Char_t value)                 {fSign1 = value;}
 		void SetSign2(Char_t value)                 {fSign2 = value;}
@@ -68,25 +74,25 @@ private:
 		void SetParticle1(AliPID::EParticleType p)  {fParticle1 = p;}
 		void SetParticle2(AliPID::EParticleType p)  {fParticle2 = p;}
 		
-		Text_t* ParticleName(AliPID::EParticleType part);
+		Text_t* ParticleName(AliPID::EParticleType part) const;
 		
 	private:
 	
 		Bool_t                 fOnlyTrue;	   // flag to be used for spectra of true pairs
 		Int_t                  fTrueMotherPDG; // PDG code of true mother (if requested)
 		
-		Double_t               fMass1;     //
-		Char_t                 fSign1;     // info about particle 1
-		AliPID::EParticleType  fParticle1; //
+		Double_t               fMass1;     // info
+		Char_t                 fSign1;     // about
+		AliPID::EParticleType  fParticle1; // particle 1
 	
-		Double_t               fMass2;     //
-		Char_t                 fSign2;     // info about particle 2
-		AliPID::EParticleType  fParticle2; //
+		Double_t               fMass2;     // info
+		Char_t                 fSign2;     // about
+		AliPID::EParticleType  fParticle2; // particle 2
 	};
 	
 	Stat_t     Compute(AliPairDef *pd, TH1D* &h, AliRsnEvent *ev1, AliRsnEvent *ev2);
-	Bool_t     SingleCutCheck(Int_t itype, AliRsnDaughter *track);
-	Bool_t     PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *track2);
+	Bool_t     SingleCutCheck(Int_t itype, AliRsnDaughter *track) const;
+	Bool_t     PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *track2) const;
 	
 	Bool_t     fRejectFakes;             // reject particles labeled as fake
 	

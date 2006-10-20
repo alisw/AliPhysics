@@ -17,6 +17,13 @@
 //                     Class AliRsnReader
 //
 //   Reader for conversion of ESD or Kinematics output into AliRsnEvent
+//   .....
+//   .....
+//   .....
+//   .....
+//   .....
+//   .....
+//   .....
 // 
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
@@ -26,13 +33,10 @@
 #include <TH1.h>
 #include <TH3.h>
 #include <TFile.h>
-#include <TChain.h>
+#include <TTree.h>
 #include <TArrayF.h>
 #include <TParticle.h>
 #include <TRandom.h>
-#include <TObjString.h>
-#include <TObjectTable.h>
-#include <TOrdCollection.h>
 
 #include "AliRun.h"
 #include "AliESD.h"
@@ -40,7 +44,6 @@
 #include "AliHeader.h"
 #include "AliESDtrack.h"
 #include "AliRunLoader.h"
-#include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 
 #include "AliRsnDaughter.h"
@@ -51,6 +54,7 @@ ClassImp(AliRsnReader)
 
 //--------------------------------------------------------------------------------------------------------
 AliRsnReader::AliRsnReader()
+{
 //
 // Constructor.
 // Initializes all working parameters to default values:
@@ -58,7 +62,6 @@ AliRsnReader::AliRsnReader()
 // - rejection of non-ITS-refitted tracks
 // - maximum distance allowed from primary vertex = 3.0 cm (beam pipe)
 //
-{
 	fPIDMethod = kESDPID;
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = 1.0;
@@ -77,12 +80,12 @@ AliRsnReader::AliRsnReader()
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnReader::AliRsnReader(const AliRsnReader &copy) : TObject(copy)
+{
 //
 // Copy constructor.
 // Initializes all working parameters to same values of another simlar object.
 // TTree data member is not created.
 //
-{
 	fPIDMethod = copy.fPIDMethod;
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = copy.fPrior[i];
@@ -101,13 +104,40 @@ AliRsnReader::AliRsnReader(const AliRsnReader &copy) : TObject(copy)
 	fResPhi = copy.fResPhi;
 }
 //--------------------------------------------------------------------------------------------------------
+AliRsnReader& AliRsnReader::operator=(const AliRsnReader &copy)
+{
+//
+// Assignment operator.
+// Initializes all working parameters to same values of another simlar object.
+// TTree data member is not created.
+//
+	fPIDMethod = copy.fPIDMethod;
+	Int_t i;
+	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = copy.fPrior[i];
+	fPtLimit4PID = copy.fPtLimit4PID;
+	fProbThreshold = copy.fProbThreshold;
+	fMaxRadius = copy.fMaxRadius;
+
+	fEvents = 0;
+	for (i = AliPID::kElectron; i <= AliPID::kProton; i++) {
+		fEffPos[i] = copy.fEffPos[i];
+		fEffNeg[i] = copy.fEffNeg[i];
+	}
+	
+	fResPt = copy.fResPt;
+	fResLambda = copy.fResLambda;
+	fResPhi = copy.fResPhi;
+	
+	return (*this);
+}
+//--------------------------------------------------------------------------------------------------------
 void AliRsnReader::Clear(Option_t *option)
+{
 //
 // Clear collection of filenames.
 // If requested with the option "DELETELIST", 
 // the collection object is also deleted.
 //
-{
 	TString opt(option);
 	
 	if (!opt.CompareTo("TREE", TString::kIgnoreCase)) {
@@ -129,6 +159,7 @@ void AliRsnReader::Clear(Option_t *option)
 }
 //--------------------------------------------------------------------------------------------------------
 Bool_t AliRsnReader::EffSim(Int_t pdg, Double_t pt, Double_t eta, Double_t z)
+{
 //
 // If efficiency histogram are present, they are used to simulate efficiency.
 // Pt, Eta and Z are used to find reconstruction efficiency value to be used
@@ -136,7 +167,6 @@ Bool_t AliRsnReader::EffSim(Int_t pdg, Double_t pt, Double_t eta, Double_t z)
 // An extraction is done, and it is supposed that particle must be accepted
 // only when this function retunrs kTRUE (= successful extraction).
 //
-{
 	// find particle sign from PDG code
 	Int_t sign;
 	if (TMath::Abs(pdg) >= 211) {
@@ -164,11 +194,11 @@ Bool_t AliRsnReader::EffSim(Int_t pdg, Double_t pt, Double_t eta, Double_t z)
 	return (ran <= ref);
 }
 //--------------------------------------------------------------------------------------------------------
-Double_t* AliRsnReader::GetPIDprobabilities(AliRsnDaughter track)
+Double_t* AliRsnReader::GetPIDprobabilities(AliRsnDaughter track) const
+{
 //
 // Computes PID probabilites starting from priors and weights
 //
-{
 	Double_t *prob = new Double_t[AliPID::kSPECIES];
 	
 	Int_t i;
@@ -190,10 +220,10 @@ Double_t* AliRsnReader::GetPIDprobabilities(AliRsnDaughter track)
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnReader::Identify(AliRsnDaughter &track)
+{
 //
 // Identifies a track according to method selected
 //
-{
 	Bool_t doESDPID = (fPIDMethod == kESDPID);
 	Bool_t keepRecSign = (fPIDMethod == kPerfectPIDwithRecSign);
 	
@@ -232,6 +262,7 @@ void AliRsnReader::Identify(AliRsnDaughter &track)
 }
 //--------------------------------------------------------------------------------------------------------
 TTree* AliRsnReader::ReadParticles(const char *path, Option_t *option)
+{
 //
 // Opens the file "galice.root" and kinematics in the path specified,
 // loads Kinematics informations and fills and AliRsnEvent object
@@ -245,7 +276,6 @@ TTree* AliRsnReader::ReadParticles(const char *path, Option_t *option)
 // - "E" --> do efficiency simulation
 // - "P" --> do momentum smearing
 //
-{
 	fPIDMethod = kPerfectPID;
 
 	TTree *events = new TTree("selection", "AliRsnEvents");
@@ -364,6 +394,7 @@ TTree* AliRsnReader::ReadParticles(const char *path, Option_t *option)
 }
 //--------------------------------------------------------------------------------------------------------
 TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
+{
 //
 // Reads AliESD in a given path, with and "experimental" method.
 // When using this method, no Kinematics information is assumed
@@ -373,7 +404,6 @@ TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
 // - "R" : reject tracks which do not have the flag "kITSRefit" set to TRUE
 // - "F" : reject 'fake' tracks (negative label)
 //
-{
 	fPIDMethod = kESDPID;
 
 	TTree *events = new TTree("selection", "AliRsnEvents");
@@ -475,6 +505,7 @@ TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
 }
 //--------------------------------------------------------------------------------------------------------
 TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
+{
 //
 // Reads AliESD in a given path, getting also informations from Kinematics.
 // In this case, the PID method used is the one selected with apposite setter.
@@ -483,7 +514,6 @@ TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
 // - "F" : reject 'fake' tracks (negative label)
 // - "M" : use 'true' momentum instead of reconstructed one
 //
-{
 	TTree *events = new TTree("selection", "AliRsnEvents");
 	TTree::SetBranchStyle(1);
 	AliRsnEvent *event = new AliRsnEvent;
@@ -624,22 +654,22 @@ TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnReader::SetEfficiencyHistogram(AliPID::EParticleType type, TH3D *h, Bool_t pos)
+{
 //
 // Sets efficiency histogram for a given particle species.
 // If third argument is "true", histo is assigned to positive particles,
 // otherwise it is assigned to negative particles.
 //
-{
 	if (type >= AliPID::kElectron && type < AliPID::kPhoton) {
 		if (pos) fEffPos[type] = h; else fEffNeg[type] = h;
 	}
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnReader::SetPriorProbabilities(Double_t *prior)
+{
 //
 // Set prior probabilities to be used in case of ESD PID.
 //
-{
 	if (!prior) return;
 	
 	Int_t i = 0;
@@ -647,19 +677,19 @@ void AliRsnReader::SetPriorProbabilities(Double_t *prior)
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnReader::SetPriorProbability(AliPID::EParticleType type, Double_t value)
+{
 //
 // Sets prior probability referred to a single particle species.
 //
-{
 	if (type >= AliPID::kElectron && type < AliPID::kPhoton) fPrior[type] = value;
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnReader::SmearMomentum(Double_t &px, Double_t &py, Double_t &pz) 
+{
 //
 // Use resolution histograms to do smearing of momentum
 // (to introduce reconstruction effects)
 //
-{
 	Double_t pt = TMath::Sqrt(px*px + py*py);
 	Double_t lambda = TMath::ATan2(pz, pt);
 	Double_t phi = TMath::ATan2(py, px);
@@ -688,10 +718,10 @@ void AliRsnReader::SmearMomentum(Double_t &px, Double_t &py, Double_t &pz)
 }
 //--------------------------------------------------------------------------------------------------------
 AliPID::EParticleType AliRsnReader::FindType(Int_t pdg)
+{
 //
 // Finds the enum value corresponding to a PDG code
 //
-{
 	pdg = TMath::Abs(pdg);
 	switch (pdg) {
 		case   11: return AliPID::kElectron; break;
@@ -704,10 +734,10 @@ AliPID::EParticleType AliRsnReader::FindType(Int_t pdg)
 }
 //--------------------------------------------------------------------------------------------------------
 AliRunLoader* AliRsnReader::OpenRunLoader(const char *path)
+{
 //
 // Open the Run loader with events in a given path
 //
-{
 	// clear gALICE
 	if (gAlice) {
 		delete gAlice;
