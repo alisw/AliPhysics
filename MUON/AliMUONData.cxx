@@ -976,7 +976,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
       branch->SetAddress(&fHits);
     }
     else { //can be invoked before branch creation
-      AliWarning(Form("(%s) Failed for Hits. Can not find branch in tree.",GetName()));
+      //AliWarning(Form("(%s) Failed for Hits. Can not find branch in tree.",GetName()));
     }
   }
   
