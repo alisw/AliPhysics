@@ -7,7 +7,8 @@ void mlibs()
 {
   // add include path
   // gSystem->SetIncludePath(" -I$MINSTALL/include");
-  
+  gSystem->SetIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/MUON/mapping");
+
   // load Root libraries
   gSystem->Load("libPhysics"); 
   
