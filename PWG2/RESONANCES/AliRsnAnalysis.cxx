@@ -16,6 +16,11 @@
 //-------------------------------------------------------------------------
 //                     Class AliRsnAnalysis
 //            Reconstruction and analysis of a binary resonance
+// ........................................
+// ........................................
+// ........................................
+// ........................................
+// ........................................
 // 
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
@@ -24,9 +29,6 @@
 
 #include <TH1.h>
 #include <TTree.h>
-#include <TRefArray.h>
-#include <TParticle.h>
-#include <TObjectTable.h>
 #include <TDatabasePDG.h>
 
 #include "AliRsnDaughter.h"
@@ -38,11 +40,11 @@ ClassImp(AliRsnAnalysis)
 
 //--------------------------------------------------------------------------------------------------------
 AliRsnAnalysis::AliRsnAnalysis() 
+{
 //
 // Constructor
 // Initializes all pointers and collections to NULL.
 //
-{
 	fMixHistograms = 0;
 	fHistograms = 0;
 	fEventsTree = 0;
@@ -55,11 +57,11 @@ AliRsnAnalysis::AliRsnAnalysis()
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnAnalysis::AddCutPair(AliRsnDaughterCut *cut)
+{
 //
 // Add a cut on pairs.
 // This cut is global for all pairs.
 //
-{
 	if (!cut->IsPairCut()) {
 		Warning("AddCutPair", "This is a single cut, cannot be added");
 		return;
@@ -71,11 +73,11 @@ void AliRsnAnalysis::AddCutPair(AliRsnDaughterCut *cut)
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnAnalysis::AddCutSingle(AliPID::EParticleType type, AliRsnDaughterCut *cut)
+{
 //
 // Add a cut on single particles.
 // This cut must be specified for each particle type.
 //
-{
 	if (cut->IsPairCut()) {
 		Warning("AddCutSingle", "This is a pair cut, cannot be added");
 		return;
@@ -89,33 +91,33 @@ void AliRsnAnalysis::AddCutSingle(AliPID::EParticleType type, AliRsnDaughterCut 
 //--------------------------------------------------------------------------------------------------------
 void AliRsnAnalysis::AddMixPairDef
 (AliPID::EParticleType p1, Char_t sign1, AliPID::EParticleType p2, Char_t sign2)
+{
 //
 // Adds a new pair definition to create a new histogram,
 // for the event mixing step.
 // If the pair defs array is NULL, it is initialized here.
 //
-{
 	if (!fMixPairDefs) fMixPairDefs = new TObjArray(0);
 	fMixPairDefs->AddLast( new AliPairDef(p1, sign1, p2, sign2, 0, kFALSE) );
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnAnalysis::AddPairDef
 (AliPID::EParticleType p1, Char_t sign1, AliPID::EParticleType p2, Char_t sign2, Bool_t onlyTrue)
+{
 //
 // Adds a new pair definition to create a new histogram,
 // for the signal evaluation (same event) step.
 // If the pair defs array is NULL, it is initialized here.
 //
-{
 	if (!fPairDefs) fPairDefs = new TObjArray(0);
 	fPairDefs->AddLast( new AliPairDef(p1, sign1, p2, sign2, fTrueMotherPDG, onlyTrue) );
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnAnalysis::Clear(Option_t* /* option */)
+{
 //
 // Clear heap
 //
-{
 	fHistograms->Clear("C");
 	fPairDefs->Clear("C");
 		
@@ -128,6 +130,7 @@ void AliRsnAnalysis::Clear(Option_t* /* option */)
 }
 //--------------------------------------------------------------------------------------------------------
 Stat_t AliRsnAnalysis::EventMix(Int_t nmix, Int_t multDiffMax, Double_t vzDiffMax, Bool_t compareTotMult)
+{
 //
 // Performs event mixing.
 // It takes the array of fMixPairDefs and stores results in fMixHistograms.
@@ -149,7 +152,6 @@ Stat_t AliRsnAnalysis::EventMix(Int_t nmix, Int_t multDiffMax, Double_t vzDiffMa
 // analysis->AddMixPairDef(AliRsnEvent::kPion, '+', AliRsnEvent::kKaon, '-');
 // analysis->AddMixPairDef(AliRsnEvent::kKaon, '-', AliRsnEvent::kPion, '+');
 //
-{
 	// allocate the histograms array
 	Int_t i, npairdefs = (Int_t)fMixPairDefs->GetEntries();
 	fMixHistograms = new TObjArray(npairdefs);
@@ -260,6 +262,7 @@ Stat_t AliRsnAnalysis::EventMix(Int_t nmix, Int_t multDiffMax, Double_t vzDiffMa
 }
 //--------------------------------------------------------------------------------------------------------
 Stat_t AliRsnAnalysis::Process()
+{
 //
 // Reads the list 'fPairDefs', and builds an inv-mass histogram for each definition.
 // For each event, particle of 'type 1' are combined with particles of 'type 2' as 
@@ -269,7 +272,6 @@ Stat_t AliRsnAnalysis::Process()
 // It can also be used when one wants to evaluate the 'background' with the 'wrong sign'
 // particle pairs.
 //
-{
 	// allocate the histograms array in order to contain 
 	// as many objects as the number of pair definitionss
 	Int_t i, npairdefs = (Int_t)fPairDefs->GetEntries();
@@ -316,11 +318,11 @@ Stat_t AliRsnAnalysis::Process()
 	return nPairs;
 }
 //--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::WriteHistograms()
+void AliRsnAnalysis::WriteHistograms() const
+{
 //
 // Writes histograms in current directory
 //
-{
 	TH1D *histogram;
 	TObjArrayIter iter(fHistograms);
 	while ( (histogram = (TH1D*)iter.Next()) ) {
@@ -337,12 +339,12 @@ void AliRsnAnalysis::WriteHistograms()
 //--------------------------------------------------------------------------------------------------------
 Stat_t AliRsnAnalysis::Compute
 (AliPairDef *pd, TH1D* &histogram, AliRsnEvent *event1, AliRsnEvent *event2)
+{
 //
 // Adds to the specified histogram the invariant mass spectrum calculated taking
 // particles of type 1 from event 1, and particles of type 2 from event 2.
 // Events can be equal (signal) or different (background with event mixing).
 //
-{
 	// define two 'cursor' objects
 	AliRsnDaughter *track1 = 0, *track2 = 0;
 	
@@ -387,7 +389,7 @@ Stat_t AliRsnAnalysis::Compute
 			// total 4-momentum
 			track1->SetMass(pd->GetMass1());
 			track2->SetMass(pd->GetMass2());
-			AliRsnDaughter sum = (*track1) + (*track2);
+			AliRsnDaughter sum = AliRsnDaughter::Sum(*track1, *track2);
 				
 			// if the choice to get ONLY true pairs is selected, a check is made on the mothers
 			if (pd->GetOnlyTrue()) {
@@ -410,11 +412,11 @@ Stat_t AliRsnAnalysis::Compute
 	return nPairs;
 }
 //--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnAnalysis::SingleCutCheck(Int_t itype, AliRsnDaughter *track)
+Bool_t AliRsnAnalysis::SingleCutCheck(Int_t itype, AliRsnDaughter *track) const
+{
 //
 // Checks a track against single particle cuts (if defined)
 //
-{
 	if (!fCuts[itype]) return kTRUE;
 	
 	TObjArrayIter iter(fCuts[itype]);
@@ -426,11 +428,11 @@ Bool_t AliRsnAnalysis::SingleCutCheck(Int_t itype, AliRsnDaughter *track)
 	return kTRUE;
 }
 //--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnAnalysis::PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *track2)
+Bool_t AliRsnAnalysis::PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *track2) const
+{
 //
 // Checks a pair against pair cuts (if defined)
 //
-{
 	if (!fPairCuts) return kTRUE;
 	
 	TObjArrayIter iter(fPairCuts);
@@ -445,10 +447,10 @@ Bool_t AliRsnAnalysis::PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *trac
 AliRsnAnalysis::AliPairDef::AliPairDef
 (AliPID::EParticleType p1, Char_t sign1, 
  AliPID::EParticleType p2, Char_t sign2, Int_t pdgMother, Bool_t onlyTrue)
+{
 //
 // Constructor for nested class
 //
-{
 	fOnlyTrue = onlyTrue;
 	fTrueMotherPDG = 0;
 	if (fOnlyTrue) fTrueMotherPDG = pdgMother;
@@ -475,12 +477,12 @@ AliRsnAnalysis::AliPairDef::AliPairDef
 	}
 }
 //--------------------------------------------------------------------------------------------------------
-Text_t* AliRsnAnalysis::AliPairDef::ParticleName(AliPID::EParticleType part)
+Text_t* AliRsnAnalysis::AliPairDef::ParticleName(AliPID::EParticleType part) const
+{
 //
 // [PRIVATE]
 // Returns the name of the particle in text format
 //
-{
 	if (part == AliPID::kElectron) return ("E");
 	else if (part == AliPID::kMuon) return ("Mu");
 	else if (part == AliPID::kPion) return ("Pi");

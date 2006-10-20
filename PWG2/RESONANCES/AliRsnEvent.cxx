@@ -15,23 +15,21 @@
  
 //-------------------------------------------------------------------------
 //                      Class AliRsnEvent
-//  Simple collection of reconstructed tracks, selected from an ESD event
+//                     -------------------
+//           Simple collection of reconstructed tracks
+//           selected from an ESD event
+//           to be used for analysis.
+//           .........................................
 // 
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
 
 #include <Riostream.h>
 
-#include <TTree.h>
 #include <TString.h>
-#include <TParticle.h>
 #include <TObjArray.h>
-#include <TRefArray.h>
 #include <TClonesArray.h>
 
-#include "AliESD.h"
-#include "AliStack.h"
-#include "AliESDtrack.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 
@@ -45,10 +43,10 @@ AliRsnEvent::AliRsnEvent() :
  fPVy(0.0),
  fPVz(0.0),
  fMultiplicity(-1)
+{
 //
 // Default constructor
 //
-{
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) {
 		fPos[i] = NULL;
@@ -64,11 +62,11 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
  fPVy(event.fPVy), 
  fPVz(event.fPVz),
  fMultiplicity(event.fMultiplicity)
+{
 //
 // Copy constructor.
 // Creates new instances of all collections to store a copy of all objects.
 //
-{
 	// clone tracks collections
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) {
@@ -78,12 +76,36 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
 		if (event.fNeg[i]) fNeg[i] = (TClonesArray*)event.fNeg[i]->Clone();
 	}
 }
-//--------------------------------------------------------------------------------------------------------
+AliRsnEvent& AliRsnEvent::operator=(const AliRsnEvent &event)
+{
+//
+// Assignment operator.
+// Creates new instances of all collections to store a copy of all objects.
+//
+	fIsESD = event.fIsESD;
+	fPath = event.fPath;
+	fPVx = event.fPVx; 
+	fPVy = event.fPVy; 
+	fPVz = event.fPVz;
+	fMultiplicity = event.fMultiplicity;
+
+	// clone tracks collections
+	Int_t i;
+	for (i = 0; i < AliPID::kSPECIES; i++) {
+		fPos[i] = 0;
+		fNeg[i] = 0;
+		if (event.fPos[i]) fPos[i] = (TClonesArray*)event.fPos[i]->Clone();
+		if (event.fNeg[i]) fNeg[i] = (TClonesArray*)event.fNeg[i]->Clone();
+	}
+	
+	return (*this);
+}
+//--------------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------------
 void AliRsnEvent::AddTrack(AliRsnDaughter track)
+{
 //
 // Stores a track into the correct array
 //
-{
 	Int_t pdg, sign, ifirst, ilast;
 	
 	// if sign is zero, track is not stored
@@ -120,12 +142,12 @@ void AliRsnEvent::AddTrack(AliRsnDaughter track)
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnEvent::Clear(Option_t *option)
+{
 //
 // Clears list of tracks and references.
 // If the string "DELETE" is specified, the collection classes
 // are also cleared from heap.
 //
-{
 	// evaluate option
 	TString opt(option);
 	Bool_t deleteCollections = opt.Contains("DELETE", TString::kIgnoreCase);
@@ -144,12 +166,12 @@ void AliRsnEvent::Clear(Option_t *option)
 }
 //--------------------------------------------------------------------------------------------------------
 Int_t AliRsnEvent::GetMultiplicity(Bool_t recalc)
+{
 //
 // Computes multiplicity.
 // If it is already computed (fMultiplicity > -1), it returns that value,
 // unless one sets the argument to kTRUE.
 //
-{
 	if (fMultiplicity < 0) recalc = kTRUE;
 	if (recalc) {
 		fMultiplicity = 0;
@@ -163,11 +185,11 @@ Int_t AliRsnEvent::GetMultiplicity(Bool_t recalc)
 	return fMultiplicity;
 }
 //--------------------------------------------------------------------------------------------------------
-const char * AliRsnEvent::GetOriginFileName()
+const char * AliRsnEvent::GetOriginFileName() const
+{
 //
 // Returns the path where input file was stored
 //
-{
 	TString str(fPath);
 	if (fIsESD) {
 		str.Append("/AliESDs.root");
@@ -180,10 +202,10 @@ const char * AliRsnEvent::GetOriginFileName()
 }
 //--------------------------------------------------------------------------------------------------------
 TClonesArray* AliRsnEvent::GetTracks(Char_t sign, AliPID::EParticleType type)
+{
 //
 // Returns the particle collection specified in argument
 //
-{
 	Int_t itype = (Int_t)type;
 	if (itype >= 0 && itype < AliPID::kSPECIES) {
 		if (sign == '+') return fPos[type]; else return fNeg[type];
@@ -194,11 +216,11 @@ TClonesArray* AliRsnEvent::GetTracks(Char_t sign, AliPID::EParticleType type)
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnEvent::Init()
+{
 //
 // Action 1: define default values for some data members (including pointers).
 // Action 2: if 'ntracks' > 0 allocates memory to store tracks.
 //
-{
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) {
 		fPos[i] = new TClonesArray("AliRsnDaughter", 0);
@@ -209,10 +231,10 @@ void AliRsnEvent::Init()
 }
 //--------------------------------------------------------------------------------------------------------
 Int_t AliRsnEvent::PDG2Enum(Int_t pdgcode)
+{
 //
 // Converts a PDG code into the correct slot in the EParticleType enumeration in AliPID
 //
-{
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) {
 		if (AliPID::ParticleCode((AliPID::EParticleType)i) == TMath::Abs(pdgcode)) {
@@ -224,10 +246,10 @@ Int_t AliRsnEvent::PDG2Enum(Int_t pdgcode)
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnEvent::PrintTracks()
+{
 //
 // Print data for particles stored in this event
 //
-{
 	cout << endl;
 	
 	AliRsnDaughter *track = 0;

@@ -13,7 +13,6 @@
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
 
-#include <TMath.h>
 #include "AliPID.h"
 
 class AliRsnDaughter;
@@ -23,33 +22,34 @@ class AliRsnEvent : public TObject
 public:
 	               AliRsnEvent();
 	               AliRsnEvent(const AliRsnEvent& copy);
+				   AliRsnEvent& operator=(const AliRsnEvent& copy);
 			 
 	virtual       ~AliRsnEvent() {Clear("DELETE");}
 	
 	void           AddTrack(AliRsnDaughter track);
 	void           Clear(Option_t *option = "");
 	Int_t          GetMultiplicity(Bool_t recalc = kFALSE);
-	const char*    GetOriginFileName();
-	Double_t       GetPrimaryVertexX()                                     {return fPVx;}
-	Double_t       GetPrimaryVertexY()                                     {return fPVy;}
-	Double_t       GetPrimaryVertexZ()                                     {return fPVz;}
-	void           GetPrimaryVertex(Double_t &x, Double_t &y, Double_t &z) {x=fPVx;y=fPVy;z=fPVz;}
+	const char*    GetOriginFileName() const;
+	Double_t       GetPrimaryVertexX() const {return fPVx;}
+	Double_t       GetPrimaryVertexY() const {return fPVy;}
+	Double_t       GetPrimaryVertexZ() const {return fPVz;}
+	void           GetPrimaryVertex(Double_t &x, Double_t &y, Double_t &z) const {x=fPVx;y=fPVy;z=fPVz;}
 	TClonesArray*  GetTracks(Char_t sign, AliPID::EParticleType type);
 	void           Init();
 	Int_t          PDG2Enum(Int_t pdgcode);
 	void           PrintTracks();
-	void           SetESD(Bool_t yesno = kTRUE)                            {fIsESD=yesno;}
-	void           SetPath(TString path)                                   {fPath=path;}
-	void           SetPrimaryVertex(Double_t x, Double_t y, Double_t z)    {fPVx=x;fPVy=y;fPVz=z;}
+	void           SetESD(Bool_t yesno = kTRUE) {fIsESD=yesno;}
+	void           SetPath(TString path) {fPath=path;}
+	void           SetPrimaryVertex(Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
 
 private:
 
 	Bool_t         fIsESD;                    // if true, it is ESD event, otherwise it comes from Kine
 	TString        fPath;                     // complete path where input event file is stored
 	
-	Double_t       fPVx;  			          //
-	Double_t       fPVy;  			          // primary vertex
-	Double_t       fPVz;  			          //
+	Double_t       fPVx;  			          // position of
+	Double_t       fPVy;  			          // primary
+	Double_t       fPVz;  			          // vertex
 	
 	Int_t          fMultiplicity;             // global event multiplicity
 

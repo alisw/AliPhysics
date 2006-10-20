@@ -15,7 +15,7 @@
  
 //-------------------------------------------------------------------------
 //                      Class AliRsnDaughter
-//  
+//                     ----------------------
 //           A simple object which describes a reconstructed track
 //           with some references to its related generated particle
 //           and some facilities which could help in composing its
@@ -27,7 +27,6 @@
 #include <Riostream.h>
 
 #include <TParticle.h>
-#include <TParticlePDG.h>
 
 #include "AliESDtrack.h"
 #include "AliRsnDaughter.h"
@@ -36,12 +35,12 @@ ClassImp(AliRsnDaughter)
 
 //--------------------------------------------------------------------------------------------------------
 AliRsnDaughter::AliRsnDaughter()
+{
 // 
 // Default constructor.
 // Its unique argument defines how many PID weights are allowed. 
 // Actually, it should be the same as AliESDtrack::kSPECIES (=5).
-//
-{ 
+// 
 	fSign = (Char_t)0;
 	fPDG = (UShort_t)0;
 	fIndex = (UShort_t)0;
@@ -62,10 +61,10 @@ AliRsnDaughter::AliRsnDaughter()
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) : TObject(copy)
+{
 //
 // Copy constructor
 //
-{
 	fSign = copy.fSign;
 	fPDG = copy.fPDG;
 	fIndex = copy.fIndex;
@@ -88,6 +87,7 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) : TObject(copy)
 }
 //--------------------------------------------------------------------------------------------------------
 Bool_t AliRsnDaughter::Adopt(const AliESDtrack* esdTrack, Bool_t checkITSRefit)
+{
 //
 // Copies reconstructed data from an AliESDtrack:
 //
@@ -104,7 +104,6 @@ Bool_t AliRsnDaughter::Adopt(const AliESDtrack* esdTrack, Bool_t checkITSRefit)
 // - if the passed label is negative, track is considered as "fake", and 
 //   this info is kept to allow fake tracks exclusion when doing analysis
 //
-{
 	// check for refit in the ITS (if requested)
 	if (checkITSRefit) {
 		if ( !(esdTrack->GetStatus() & AliESDtrack::kITSrefit) ) {
@@ -138,6 +137,7 @@ Bool_t AliRsnDaughter::Adopt(const AliESDtrack* esdTrack, Bool_t checkITSRefit)
 }
 //--------------------------------------------------------------------------------------------------------
 Bool_t AliRsnDaughter::Adopt(TParticle* particle)
+{
 //
 // Copies data from a generated particle:
 // 
@@ -150,7 +150,6 @@ Bool_t AliRsnDaughter::Adopt(TParticle* particle)
 // When an AliRsnDaughter is copied from a TParticle, it is 
 // considered always good for analysis and never fake.
 //
-{
 	// get particle sign form the sign of PDG code
 	Int_t pdg = particle->GetPdgCode();
 	if (TMath::Abs(pdg) < 20) {
@@ -178,12 +177,11 @@ Bool_t AliRsnDaughter::Adopt(TParticle* particle)
 	return kTRUE;
 }
 //--------------------------------------------------------------------------------------------------------
-AliRsnDaughter operator+(AliRsnDaughter t1, AliRsnDaughter t2)
+AliRsnDaughter AliRsnDaughter::Sum(AliRsnDaughter t1, AliRsnDaughter t2)
+{
 //
-// Sum operator overloading.
 // Builds a new AliRsnDaughter object with the sum of momenta of two particles.
 //
-{
 	// create new AliRsnDaughter with default useless values for datamembers
 	AliRsnDaughter out;
 	
@@ -201,11 +199,11 @@ AliRsnDaughter operator+(AliRsnDaughter t1, AliRsnDaughter t2)
 	}
 
 	// compute total 4-momentum
-	Double_t Etot  = t1.GetEnergy() + t2.GetEnergy();
+	Double_t etot  = t1.GetEnergy() + t2.GetEnergy();
 	Double_t pxTot = t1.GetPx() + t2.GetPx();
 	Double_t pyTot = t1.GetPy() + t2.GetPy();
 	Double_t pzTot = t1.GetPz() + t2.GetPz();
-	Double_t mass  = TMath::Sqrt(Etot*Etot - pxTot*pxTot - pyTot*pyTot - pzTot*pzTot);
+	Double_t mass  = TMath::Sqrt(etot*etot - pxTot*pxTot - pyTot*pyTot - pzTot*pzTot);
 	
 	//TLorentzVector v1 = track1.Get4Momentum();
 	//TLorentzVector v2 = track2.Get4Momentum();

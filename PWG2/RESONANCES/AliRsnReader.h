@@ -7,6 +7,10 @@
 //                      Class AliRsnEventReader
 //             
 //   Reader for conversion of ESD or Kinematics output into AliRsnEvent
+//   .....
+//   .....
+//   .....
+//   .....
 // 
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
@@ -35,12 +39,13 @@ public:
 
 	           AliRsnReader();
 		  	   AliRsnReader(const AliRsnReader& copy);
+			   AliRsnReader& operator=(const AliRsnReader& copy);
 	virtual   ~AliRsnReader() {Clear("DELTREE");}
 	
 	void       Clear(Option_t *option = "");
 	Bool_t     EffSim(Int_t pdg, Double_t pt, Double_t eta, Double_t z);
 	TTree*     GetEvents() const  						                  {return fEvents;}
-	Double_t*  GetPIDprobabilities(AliRsnDaughter track);
+	Double_t*  GetPIDprobabilities(AliRsnDaughter track) const;
 	void       Identify(AliRsnDaughter &track);
 	TTree*     ReadParticles(const char *path, Option_t *option="");
 	TTree*     ReadTracks(const char *path, Option_t *option="R");
