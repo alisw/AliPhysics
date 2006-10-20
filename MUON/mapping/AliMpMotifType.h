@@ -77,7 +77,7 @@ class AliMpMotifType : public TObject
     // Other methods
     void AddConnection(const AliMpIntPair &localIndices, 
                        AliMpConnection* connection);
-    virtual void Print(Option_t *option) const;
+    virtual void Print(Option_t *option="") const;
     Int_t   PadNum(const TString &padName) const;
     TString PadName(Int_t padNum) const;
     Bool_t  HasPad(const AliMpIntPair& localIndices) const;
