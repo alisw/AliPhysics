@@ -57,6 +57,7 @@ AliMUONGeometryDetElement::AliMUONGeometryDetElement(
 //______________________________________________________________________________
 AliMUONGeometryDetElement::AliMUONGeometryDetElement()
  : TObject(),
+   fDEName(),
    fVolumePath(),
    fLocalTransformation(0),
    fGlobalTransformation(0)
