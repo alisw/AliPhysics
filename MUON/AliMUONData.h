@@ -54,10 +54,6 @@ class AliMUONData : public TNamed
     AliMUONData();
     AliMUONData(AliLoader * loader, const char* name, const char* title);
     virtual ~AliMUONData();  
-    virtual void   AddDigit(Int_t id, Int_t* tracks, Int_t* charges,
-			     Int_t* digits); 
-    virtual void   AddSDigit(Int_t id, Int_t* tracks, Int_t* charges,
-			     Int_t* digits); 
     virtual void   AddDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
     virtual void   AddSDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
     virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t detElemId, 

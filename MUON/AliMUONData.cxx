@@ -157,28 +157,12 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t detElemId,
 				  Xref,Yref,Zref);
 }
 //_____________________________________________________________________________
-void AliMUONData::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
-{
-/// Add a MUON digit to the list of Digits of the detection plane id
- 
-  TClonesArray &ldigits = * Digits(id) ; 
-  new(ldigits[fNdigits[id]++]) AliMUONDigit(tracks,charges,digits);
-}
-//_____________________________________________________________________________
 void AliMUONData::AddDigit(Int_t id, const AliMUONDigit& digit)
 {
 /// Add a MUON digit to the list of Digits of the detection plane id
 
   TClonesArray &ldigits = * Digits(id) ; 
   new(ldigits[fNdigits[id]++]) AliMUONDigit(digit);
-}
-//_____________________________________________________________________________
-void AliMUONData::AddSDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *sdigits)
-{
-/// Add a MUON Sdigit to the list of SDigits of the detection plane id
-
-  TClonesArray &lSdigits = * SDigits(id) ; 
-  new(lSdigits[fNSdigits[id]++]) AliMUONDigit(tracks,charges,sdigits);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddSDigit(Int_t id, const AliMUONDigit& Sdigit)
