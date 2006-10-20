@@ -172,7 +172,12 @@ Bool_t AliSelector::Notify()
   if (fTree)
   {
     TFile *f = fTree->GetCurrentFile();
-    AliDebug(AliLog::kInfo, Form("Processing %d. file %s", fCountFiles, f->GetName()));
+    if (f)
+    {
+      AliDebug(AliLog::kInfo, Form("Processing %d. file %s", fCountFiles, f->GetName()));
+    }
+    else
+      AliDebug(AliLog::kError, "fTree->GetCurrentFile() is 0");
   }
   else
   {
