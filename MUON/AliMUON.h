@@ -42,9 +42,7 @@ class AliMUON : public  AliDetector
 {
   public:
     AliMUON();
-    AliMUON(const char* name, const char *title="FactoryV4",
-            const char* sDigitizerType="sdigitizer:AliMUONSDigitizerV2",
-            const char* digitizerType="digitizer:default");
+    AliMUON(const char* name);
     virtual ~AliMUON();
    
     // Geometry
@@ -122,18 +120,22 @@ class AliMUON : public  AliDetector
                    /// Set scaler event for trigger
     virtual void  SetTriggerScalerEvent(Bool_t scaler = true){fTriggerScalerEvent = scaler;}
 
-    // trigger response version
+                  /// Set trigger response version
     virtual void  SetTriggerResponseV1(Bool_t trigResV1 = false)
-	{fTriggerResponseV1 = trigResV1;}
+	{ fTriggerResponseV1 = trigResV1; }
     virtual Bool_t GetTriggerResponseV1() const;
-    // trigger coinc44
+                  /// Set trigger coinc44
     virtual void  SetTriggerCoinc44(Int_t trigCoinc44 = 0)
-	{fTriggerCoinc44 = trigCoinc44;}
+	{ fTriggerCoinc44 = trigCoinc44; }
     virtual Int_t GetTriggerCoinc44() const;
-    // trigger chamber efficiency by cells
+                 /// Set trigger chamber efficiency by cells
     virtual void SetTriggerEffCells(Bool_t trigEffCells = false)
-	{fTriggerEffCells = trigEffCells;}
+	{ fTriggerEffCells = trigEffCells; }
     virtual Bool_t GetTriggerEffCells() const;
+                 /// Set off generation of noisy digits
+    virtual void SetDigitizerWithNoise(Bool_t digitizerWithNoise)
+        { fDigitizerWithNoise = digitizerWithNoise; }
+    virtual Bool_t GetDigitizerWithNoise() const; 
     
     // Getters
                   /// Return reference to Chamber \a id
@@ -146,9 +148,6 @@ class AliMUON : public  AliDetector
 				     Int_t icluster);
     // Inherited and overridden from AliModule:
     //PH    virtual void RemapTrackHitIDs(Int_t * map);
-
-    TString SDigitizerType() const;
-    TString DigitizerType() const;
     
   protected:
     AliMUON(const AliMUON& rMUON);
@@ -179,13 +178,12 @@ class AliMUON : public  AliDetector
     Int_t fMaxIterPad;        ///< Maximum pad index
     Int_t fCurIterPad;        ///< Current pad index
    
+    // Options
     Bool_t fTriggerScalerEvent; ///< Flag to generates scaler event
     Bool_t fTriggerResponseV1;  ///< Flag to select TriggerResponseV1
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
     Bool_t fTriggerEffCells;    ///< Flag to select TriggerEffCells
-    
-    TString fSDigitizerType;    ///< Class to use for SDigitizer
-    TString fDigitizerType;     ///< Class to use for Digitizer
+    Bool_t fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
     
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     

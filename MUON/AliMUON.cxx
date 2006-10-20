@@ -56,15 +56,12 @@
 #include "AliMUONConstants.h"
 #include "AliMUONHit.h"	
 #include "AliMUONRawCluster.h"
-#include "AliMUONTransientDigit.h"
 #include "AliMUONGeometry.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryBuilder.h"
 #include "AliMUONCommonGeometryBuilder.h"
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMUONDigitizerv2.h"
-#include "AliMUONSDigitizerv1.h"
 #include "AliMUONRawWriter.h"
 #include "AliMUONSegmentation.h"
 #include "AliLog.h"
@@ -119,8 +116,7 @@ AliMUON::AliMUON()
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),
     fTriggerEffCells(0),
-    fSDigitizerType(""),
-    fDigitizerType(""),
+    fDigitizerWithNoise(kTRUE),
     fRawWriter(0x0),
     fDigitMaker(0x0)
 
@@ -132,10 +128,8 @@ AliMUON::AliMUON()
 }
 
 //__________________________________________________________________
-AliMUON::AliMUON(const char *name, const char *title,
-                 const char* sDigitizerClassName,
-                 const char* digitizerClassName)
-  : AliDetector(name,title),
+AliMUON::AliMUON(const char *name)
+  : AliDetector(name,name),
     fNCh(AliMUONConstants::NCh()),
     fNTrackingCh(AliMUONConstants::NTrackingCh()),
     fMUONData(0),
@@ -156,8 +150,7 @@ AliMUON::AliMUON(const char *name, const char *title,
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),
     fTriggerEffCells(0),
-    fSDigitizerType(sDigitizerClassName),
-    fDigitizerType(digitizerClassName),
+    fDigitizerWithNoise(kTRUE),
     fRawWriter(0x0),
     fDigitMaker(new AliMUONDigitMaker(kFALSE)) 
 {
@@ -416,33 +409,9 @@ void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
 //____________________________________________________________________
 AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 {
-/// FIXME: the selection of the class should be done through a factory
-/// mechanism. (see also Hits2SDigits()).
+/// Return digitizer
   
-  AliDebug(1, Form("Digitizer used : %s",fDigitizerType.Data()));
-  
-  if ( fDigitizerType == "digitizer:default" ) // NewDigitizerNewTrigger
-  {
-      return new AliMUONDigitizerV3(manager,kTRUE);
-  } 
-  else if ( fDigitizerType == "digitizer:NewDigitizerWONoiseNewTrigger" ) 
-  {                                     
-      return new AliMUONDigitizerV3(manager,kFALSE);
-  }
-  else
-  {
-    AliFatal(Form("Unknown digitizer type : %s",fDigitizerType.Data()));
-  }
-  return 0x0;
-}
-
-//_____________________________________________________________________
-TString
-AliMUON::SDigitizerType() const
-{
-/// Return digitizer type
-
-  return fSDigitizerType;
+  return new AliMUONDigitizerV3(manager, fDigitizerWithNoise);
 }
 
 //_____________________________________________________________________
@@ -459,43 +428,10 @@ void AliMUON::SDigits2Digits()
 //_____________________________________________________________________
 void AliMUON::Hits2SDigits()
 {
-/// FIXME: the selection of the sdigitizer should be done through a
-/// factory mechanism.
+/// Perform Hits2Digits using SDigitizerV2
   
-  AliDebug(1, Form("SDigitizer used : %s",fSDigitizerType.Data()));
-
-  if ( fSDigitizerType == "sdigitizer:default" )
-  {
-    // Adaption of AliMUONSDigitizerv1 to be excuted by the AliSimulation framework
-    AliRunLoader* runLoader = fLoader->GetRunLoader();
-    AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
-    manager->SetInputStream(0,runLoader->GetFileName(),AliConfig::GetDefaultEventFolderName());
-    AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
-    fLoader->LoadHits("READ");
-    for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-      runLoader->GetEvent(iEvent);
-      dMUON->Exec("");
-    }
-    fLoader->UnloadHits();
-  }
-  else if ( fSDigitizerType == "sdigitizer:AliMUONSDigitizerV2" )
-  {
-    TTask* sdigitizer = new AliMUONSDigitizerV2;
-    sdigitizer->ExecuteTask();
-  }
-  else
-  {
-    AliFatal(Form("Unknown sdigitizer classname : %s",fSDigitizerType.Data()));
-  }
-}
-
-//_____________________________________________________________________
-TString
-AliMUON::DigitizerType() const
-{
-/// Return digitizer type
-
-  return fDigitizerType;
+  TTask* sdigitizer = new AliMUONSDigitizerV2;
+  sdigitizer->ExecuteTask();
 }
 
 //_____________________________________________________________________
@@ -620,6 +556,16 @@ Bool_t  AliMUON::GetTriggerEffCells() const
 /// Returns fTriggerEffCells
 ///  
     return fTriggerEffCells;
+    
+}  
+
+//____________________________________________________________________
+Bool_t  AliMUON::GetDigitizerWithNoise() const
+{
+///
+/// Returns fDigitizerWithNoise
+///  
+    return fDigitizerWithNoise;
     
 }  
 
