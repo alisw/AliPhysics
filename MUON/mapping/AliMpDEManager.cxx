@@ -44,6 +44,7 @@ const char  AliMpDEManager::fgkCommentPrefix = '#';
 const Int_t AliMpDEManager::fgkCoefficient = 100;
 AliMpExMap  AliMpDEManager::fgDENamesMap(true);
 AliMpExMap  AliMpDEManager::fgDECathBNBMap(true);
+TArrayI     AliMpDEManager::fgNofDEPerChamber(AliMpConstants::NofChambers());
 
 //______________________________________________________________________________
 
@@ -212,6 +213,7 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
                          new TPair(new TObjString(name1), new TObjString(name2)));
         fgDECathBNBMap.Add(detElemId,
                            new AliMpIntPair(planeForCathode[0],planeForCathode[1]));
+        fgNofDEPerChamber[GetChamberId(detElemId)]++;
       } 
     } 
     in >> word;
@@ -227,7 +229,7 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
 void AliMpDEManager::FillDENames()
 {
 /// Fill DE names from files
-
+  AliDebugClass(1,"");
   Bool_t result1 = ReadDENames(kStation1);
   Bool_t result2 = ReadDENames(kStation2);
   Bool_t result3 = ReadDENames(kStation345);
@@ -454,5 +456,16 @@ AliMpStationType AliMpDEManager::GetStationType(Int_t detElemId)
   // Should never get to this line
   AliFatalClass("Cannot return AliMpStationType value.");
   return kStation1;
+}
+
+//______________________________________________________________________________
+Int_t AliMpDEManager::GetNofDEInChamber(Int_t chamberId, Bool_t warn)
+{
+/// Return the number of detection elements in the chamber with the given 
+/// chamberId
+
+  if ( fgDENamesMap.GetSize() == 0 ) FillDENames();
+  if (!IsValidChamberId(chamberId,warn) ) return 0;
+  return fgNofDEPerChamber[chamberId];
 }
 

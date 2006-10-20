@@ -21,6 +21,7 @@
 #define ALI_MP_DE_MANAGER_H
 
 #include <TObject.h>
+#include <TArrayI.h>
 
 #include "AliMpExMap.h"
 #include "AliMpPlaneType.h"
@@ -48,6 +49,7 @@ class AliMpDEManager : public  TObject {
     static AliMpStationType GetStationType(Int_t detElemId);
     static Int_t            GetCathod(Int_t detElemId, AliMpPlaneType planeType);
 
+    static Int_t GetNofDEInChamber(Int_t chamberId, Bool_t warn = true);
   private:
     AliMpDEManager();
     AliMpDEManager(const AliMpDEManager& rhs);
@@ -71,7 +73,8 @@ class AliMpDEManager : public  TObject {
                                       /// a pair of DE names for 2 cathods
     static  AliMpExMap fgDECathBNBMap;///< \brief  Map between DE Is and a pair
                                       /// of planeTypes for cathodes (0,1)
-
+    static  TArrayI fgNofDEPerChamber;///< number of detElemId per chamber
+      
   ClassDef(AliMpDEManager,0)  // The manager class for definition of detection element types
 };
 
