@@ -4,7 +4,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliQuarkoniaAcceptance+; 
-
+#pragma link C++ class AliQuarkoniaEfficiency+; 
 #endif
 
 
