@@ -6,5 +6,10 @@
 /// By Laurent Aphecetche
 
 {
+  cout << "Loading MUON libraries ..." << endl;
+  gROOT->LoadMacro("${ALICE_ROOT}/MUON/loadlibs.C");
+  gInterpreter->ProcessLine("loadlibs()");
+    
+  cout << "Setting include path ..." << endl;
   gSystem->SetIncludePath("-I${ALICE_ROOT}/include -I${ALICE_ROOT}/MUON -I${ALICE_ROOT}/MUON/mapping");
 }
