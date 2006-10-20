@@ -151,18 +151,9 @@ void Config(char directory[100]="", char option[6]="param")
   //=================== MUON Subsystem ===========================
   cout << ">>> Config.C: Creating AliMUONv1 ..."<<endl;
 
-  // With the following compact ctor, what you get (in case you wonder...) is :
-  //
-  // - "FactoryV4", that is all stations using new segmentations/mapping
-  // - "sdigitizer:AliMUONSDigitizerV2", performing decalibration
-  // - "digitizer:NewDigitizerNewTrigger" => 
-  //    digitizer=AliMUONDigitizerV3,
-  //    using the "new" trigger code, performing calibration, and
-  //    generating noise-only digits for the tracker.
-
   AliMUON *MUON = new AliMUONv1("MUON");
 
-  // the 3 switches below are to be used for the trigger code
+  // The 3 switches below are to be used for the trigger code
   // their default value is set in AliMUON.h
   // activate trigger cluster-size (0=default, 1=cluster-size according to AliMUONResponseTriggerV1
   //  MUON->SetTriggerResponseV1(0);
@@ -171,11 +162,8 @@ void Config(char directory[100]="", char option[6]="param")
   // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
   //  MUON->SetTriggerEffCells(0);
 
-  // To get same as above w/o noise-only digits for the tracker please use :
-  //
-  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
-  //				"sdigitizer:AliMUONSDigitizerV2",
-  //				"digitizer:NewDigitizerWONoiseNewTrigger");
+  // To get same as above w/o noise-only digits for the tracker do  :
+  // MUON->SetDigitizerWithNoise(kKALSE);
 
   //
   // If SetAlign, the detection elements transformations
