@@ -1,0 +1,18 @@
+# $Id$
+
+SRCS:= \
+AliMUONPreprocessor.cxx \
+AliMUONVSubprocessor.cxx \
+AliMUONPedestalSubprocessor.cxx \
+AliMUON2DStoreValidator.cxx \
+AliMUONPedestalEventGenerator.cxx \
+AliMUONCheckItem.cxx \
+AliMUONCheckItemIterator.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= MUONshuttleLinkDef.h
+
+EINCLUDE := MUON/mapping
+
+
