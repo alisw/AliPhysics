@@ -70,7 +70,7 @@ class AliITSPident : public TObject{
   Float_t CookProd(Double_t condfun[][3],Int_t part) const;
   Float_t CookSum(Double_t condfun[][3],Float_t *prior) const;
   AliITSPident(const AliITSPident &ob); // copy constructor
-  AliITSPident& operator=(const AliITSPident & /* source */); // ass. op.
+  AliITSPident& operator=(const AliITSPident & ob); // ass. op.
 
   Float_t fMom;                   // Particle momentum
   Double_t fdEdx;                 // Particle dE/dx

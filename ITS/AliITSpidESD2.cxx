@@ -36,15 +36,18 @@
 
 ClassImp(AliITSpidESD2)
 //_________________________________________________________________________
-AliITSpidESD2::AliITSpidESD2():AliITSpidESD()
+  AliITSpidESD2::AliITSpidESD2():AliITSpidESD(),
+fTracker(0),
+fLoader(0),
+fSp(0)
 { //
   //  The main constructor
-  fTracker=0;
-  fLoader=0;
-  fSp=0;
 }
 //_________________________________________________________________________
-AliITSpidESD2::AliITSpidESD2(AliITStrackerMI* tracker,AliITSLoader* loader):AliITSpidESD()
+AliITSpidESD2::AliITSpidESD2(AliITStrackerMI* tracker,AliITSLoader* loader):AliITSpidESD(),
+fTracker(0),
+fLoader(0),
+fSp(0)
 { //
   //  The main constructor
   fTracker=tracker;
@@ -60,17 +63,20 @@ AliITSpidESD2::~AliITSpidESD2(){
 
 }
 //______________________________________________________________________
-AliITSpidESD2::AliITSpidESD2(const AliITSpidESD2 &ob) :AliITSpidESD(ob) {
+AliITSpidESD2::AliITSpidESD2(const AliITSpidESD2 &ob) :AliITSpidESD(ob),
+fTracker(ob.fTracker),
+fLoader(ob.fLoader),
+fSp(ob.fSp) 
+{
   // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSpidESD2","Copy constructor not allowed\n");
+ 
 }
 
 //______________________________________________________________________
-AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& /* ob */){
+AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& ob ){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+  this->~AliITSpidESD2();
+  new(this) AliITSpidESD2(ob);
   return *this;
 }
 

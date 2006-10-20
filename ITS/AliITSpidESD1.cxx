@@ -26,21 +26,22 @@
 
 ClassImp(AliITSpidESD1)
 
-AliITSpidESD1::AliITSpidESD1(): AliITSpidESD() {
+AliITSpidESD1::AliITSpidESD1(): AliITSpidESD(),
+fMIP(0),
+fRes(0),
+fRange(0) 
+{
   //Default constructor
-  fMIP=0;
-  fRes=0;
-  fRange=0;
 }
 //_________________________________________________________________________
-AliITSpidESD1::AliITSpidESD1(Double_t *param): AliITSpidESD()
+AliITSpidESD1::AliITSpidESD1(Double_t *param): AliITSpidESD(),
+fMIP(param[0]),
+fRes(param[1]),
+fRange(param[2])
 {
   //
   //  The main constructor
   //
-  fMIP=param[0];
-  fRes=param[1];
-  fRange=param[2];
 }
 
 

@@ -34,7 +34,7 @@ class AliITSSteerPid : public TObject{
 
   AliITSPidParItem* Item(TClonesArray *Vect,Float_t mom);
   AliITSSteerPid(const AliITSSteerPid &ob); // copy constructor
-  AliITSSteerPid& operator=(const AliITSSteerPid & /* source */); // ass. op.
+  AliITSSteerPid& operator=(const AliITSSteerPid & ob); // ass. op.
 
 
   TFile *fClonarr2;              // file of TClones Array

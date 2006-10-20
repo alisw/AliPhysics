@@ -11,13 +11,20 @@
 ClassImp(AliITSSteerPid)
 
   //______________________________________________________________
-  AliITSSteerPid::AliITSSteerPid(){
+AliITSSteerPid::AliITSSteerPid():
+fClonarr2(0),
+fVect2(0),
+fVect2lay1(0),
+fVect2lay2(0),
+fVect2lay3(0),
+fVect2lay4(0),
+fFitTree(0),
+fItem(0),
+fPCenter(0),
+fPWidth(0)
+{
   // default constructor
-  fClonarr2=0;
-  fVect2=0;
-  fItem=0;
-  fFitTree=0;
-}
+ }
 //______________________________________________________________
 AliITSSteerPid::~AliITSSteerPid(){
   // destructor
@@ -26,17 +33,25 @@ AliITSSteerPid::~AliITSSteerPid(){
 }
 
 //______________________________________________________________________
-AliITSSteerPid::AliITSSteerPid(const AliITSSteerPid &ob) :TObject(ob) {
+AliITSSteerPid::AliITSSteerPid(const AliITSSteerPid &ob) :TObject(ob),
+fClonarr2(ob.fClonarr2),
+fVect2(ob.fVect2),
+fVect2lay1(ob.fVect2lay1),
+fVect2lay2(ob.fVect2lay2),
+fVect2lay3(ob.fVect2lay3),
+fVect2lay4(ob.fVect2lay4),
+fFitTree(ob.fFitTree),
+fItem(ob.fItem),
+fPCenter(ob.fPCenter),
+fPWidth(ob.fPWidth) {
   // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSSteerPid","Copy constructor not allowed\n");
 }
 
 //______________________________________________________________________
-AliITSSteerPid& AliITSSteerPid::operator=(const AliITSSteerPid& /* ob */){
+AliITSSteerPid& AliITSSteerPid::operator=(const AliITSSteerPid& ob){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+  this->~AliITSSteerPid();
+  new(this) AliITSSteerPid(ob);
   return *this;
 }
 

@@ -45,9 +45,10 @@
 ClassImp(AliITSReconstructor)
 
 //___________________________________________________________________________
-AliITSReconstructor::AliITSReconstructor() : AliReconstructor(){
+AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),
+fItsPID(0)
+{
   // Default constructor
-  fItsPID=0;
 }
  //___________________________________________________________________________
 AliITSReconstructor::~AliITSReconstructor(){
@@ -55,21 +56,21 @@ AliITSReconstructor::~AliITSReconstructor(){
   delete fItsPID;
 } 
 //______________________________________________________________________
-AliITSReconstructor::AliITSReconstructor(const AliITSReconstructor &ob) :AliReconstructor(ob) {
+AliITSReconstructor::AliITSReconstructor(const AliITSReconstructor &ob) :AliReconstructor(ob),
+fItsPID(ob.fItsPID) 
+{
   // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSpidESD2","Copy constructor not allowed\n");
 }
 
 //______________________________________________________________________
-AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor& /* ob */){
+AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor&  ob ){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+  this->~AliITSReconstructor();
+  new(this) AliITSReconstructor(ob);
   return *this;
 }
 //______________________________________________________________________
-void AliITSReconstructor::Init(AliRunLoader *runLoader){
+void AliITSReconstructor::Init(AliRunLoader *runLoader) const{
     // Initalize this constructor bet getting/creating the objects
     // nesseary for a proper ITS reconstruction.
     // Inputs:

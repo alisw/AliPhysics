@@ -9,18 +9,19 @@
 
 ClassImp(AliITSPident)
   //_______________________________________________________________________
-AliITSPident::AliITSPident(){
+AliITSPident::AliITSPident():
+fMom(0),
+fdEdx(0),
+fPBayesp(0),
+fPBayesk(0),
+fPBayespi(0),
+fPPriorip(0),
+fPPriorik(0),
+fPPrioripi(0),
+fPPriorie(0),
+fInvPt(0)
+{
   // default constructor
-  fMom=0;
-  fdEdx=0;
-  fInvPt=0;
-  fPBayesp=0;
-  fPBayesk=0;
-  fPBayespi=0;
-  fPPriorip=0;
-  fPPriorik=0;
-  fPPrioripi=0;
-  fPPriorie=0;
   for (Int_t i=0;i<4;i++){
     fCondFunProLay[i]=0;
     fCondFunKLay[i]=0;
@@ -32,28 +33,45 @@ AliITSPident::~AliITSPident(){
   // destructor
 }
 //______________________________________________________________________
-AliITSPident::AliITSPident(const AliITSPident &ob) :TObject(ob) {
+AliITSPident::AliITSPident(const AliITSPident &ob) :TObject(ob),
+fMom(ob.fMom),
+fdEdx(ob.fdEdx),
+fPBayesp(ob.fPBayesp),
+fPBayesk(ob.fPBayesk),
+fPBayespi(ob.fPBayespi),
+fPPriorip(ob.fPPriorip),
+fPPriorik(ob.fPPriorik),
+fPPrioripi(ob.fPPrioripi),
+fPPriorie(ob.fPPriorie),
+fInvPt(ob.fInvPt)  
+{
   // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSPident","Copy constructor not allowed\n");
 }
 
 //______________________________________________________________________
-AliITSPident& AliITSPident::operator=(const AliITSPident& /* ob */){
+AliITSPident& AliITSPident::operator=(const AliITSPident&  ob){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+  this->~AliITSPident();
+  new(this) AliITSPident(ob);
   return *this;
 }
 
 
 //_______________________________________________________________________
-AliITSPident::AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie){
+AliITSPident::AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
+fMom(mom),
+fdEdx(dEdx),
+fPBayesp(0),
+fPBayesk(0),
+fPBayespi(0),
+fPPriorip(priorip),
+fPPriorik(priorik),
+fPPrioripi(prioripi),
+fPPriorie(priorie),
+fInvPt(invPt){
 
   //test
 
-  fMom=mom;
-  fInvPt=invPt;
   for(Int_t la=0;la<4;la++){//loop on layers
     Double_t parp[3];Double_t park[3];Double_t parpi[3];
     sp->GetParFitLayer(la,fMom,parp,park,parpi);
@@ -72,11 +90,6 @@ AliITSPident::AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteer
       CookFunItsLay(la,2,parpi,Qlay[la],fMom,range[4],range[5],"fPi");
     
   }
-  fPPriorip=priorip;
-  fPPriorik=priorik;
-  fPPrioripi=prioripi;
-  fPPriorie=priorie;
-
 
   Float_t prior[4];Double_t condFun[4][3];
 
@@ -94,12 +107,22 @@ AliITSPident::AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteer
   fPBayesp=CookCombinedBayes(condFun,prior,0);
   fPBayesk=CookCombinedBayes(condFun,prior,1); 
   fPBayespi=CookCombinedBayes(condFun,prior,2); 
-  fdEdx=dEdx;
-}
+ }
 
 
 //_______________________________________________________________________
-AliITSPident::AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie){
+AliITSPident::AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
+fMom(0),
+fdEdx(0),
+fPBayesp(0),
+fPBayesk(0),
+fPBayespi(0),
+fPPriorip(priorip),
+fPPriorik(priorik),
+fPPrioripi(prioripi),
+fPPriorie(priorie),
+fInvPt(0)
+{
   //
   Double_t xr;
   Double_t par[5];
@@ -127,11 +150,6 @@ AliITSPident::AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Q
       CookFunItsLay(la,1,park,Qlay[la],fMom,range[2],range[3],"fKao");
       CookFunItsLay(la,2,parpi,Qlay[la],fMom,range[4],range[5],"fPi");
   }
-  fPPriorip=priorip;
-  fPPriorik=priorik;
-  fPPrioripi=prioripi;
-  fPPriorie=priorie;
-
 
   Float_t prior[4];Double_t condFun[4][3];
 

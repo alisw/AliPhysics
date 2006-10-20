@@ -10,18 +10,20 @@
 
 ClassImp(AliITSPidParItem)
 //____________________________________________________________________
-AliITSPidParItem::AliITSPidParItem(){
+AliITSPidParItem::AliITSPidParItem():
+fPCenter(0),
+fPWidth(0)
+{
   // default constructor
-  fPCenter=0;
-  fPWidth=0;
   for(Int_t i=0;i<39;i++){
   fBuff[i]=0;
   }
 }//____________________________________________________________________
-AliITSPidParItem::AliITSPidParItem(Float_t center,Float_t width,Double_t *buff){
+AliITSPidParItem::AliITSPidParItem(Float_t center,Float_t width,Double_t *buff):
+fPCenter(center),
+fPWidth(width)
+{
   // standard constructor
-  fPCenter=center;
-  fPWidth=width;
   for (Int_t i=0;i<39;i++) fBuff[i]=buff[i];
 
 }
