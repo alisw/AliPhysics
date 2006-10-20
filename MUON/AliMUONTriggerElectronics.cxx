@@ -48,7 +48,9 @@
 #include "TBits.h"
 #include "TSystem.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerElectronics)
+/// \endcond
 
 //___________________________________________
 AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONCalibrationData* calibData) 
@@ -62,8 +64,8 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONC
   fGlobalTrigger(new AliMUONGlobalTrigger())
 
 {
-//* CONSTRUCTOR
-//*
+/// CONSTRUCTOR
+///
   if (!fMUONData)
   {  
     AliFatal("NO MUON TRIGGER DATA");
@@ -77,8 +79,8 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONC
 //___________________________________________
 AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 {
-//* DESTRUCTOR
-//*
+/// DESTRUCTOR
+///
   delete fGlobalTriggerBoard;
   delete fCrates;
   delete fLocalTrigger;
@@ -89,8 +91,8 @@ AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 //___________________________________________
 void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
 {  
- //* BUILD ALL ELECTRONICS
- //*
+ /// BUILD ALL ELECTRONICS
+ ///
 
 // get coinc44 from AliMUON (added 12/09/06)
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
@@ -122,8 +124,8 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
 //___________________________________________
 void AliMUONTriggerElectronics::FeedM()
 {
-//* FILL INPUTS
-//*
+/// FILL INPUTS
+///
     for (Int_t ichamber=10; ichamber<14; ichamber++) 
     {
       TClonesArray *muonDigits = fMUONData->Digits(ichamber);
@@ -264,8 +266,8 @@ void AliMUONTriggerElectronics::FeedM()
 //___________________________________________
 void AliMUONTriggerElectronics::Feed(UShort_t pattern[2][4])
 {
-  //* FILL INPUTS
-  //*
+  /// FILL INPUTS
+  ///
   AliMUONTriggerCrate* cr;
    
    fCrates->FirstCrate();
@@ -290,8 +292,8 @@ void AliMUONTriggerElectronics::Feed(UShort_t pattern[2][4])
 //___________________________________________
 void AliMUONTriggerElectronics::DumpOS()
 {
-//* DUMP IN THE OLD WAY
-//*
+/// DUMP IN THE OLD WAY
+///
    for (Int_t i= 0; i < 234;i++)
    {
       AliMUONLocalTriggerBoard *board = fCrates->LocalBoard(i);
@@ -303,8 +305,8 @@ void AliMUONTriggerElectronics::DumpOS()
 //___________________________________________
 void AliMUONTriggerElectronics::Scan(Option_t *option)
 {
-  //* SCAN
-  //*
+  /// SCAN
+  ///
 
   AliMUONTriggerCrate* cr;
   
@@ -338,8 +340,8 @@ void AliMUONTriggerElectronics::Scan(Option_t *option)
 //___________________________________________
 void AliMUONTriggerElectronics::Reset()
 {
-  //* RESET
-  //*
+  /// RESET
+  ///
   
    AliMUONTriggerCrate* cr;
    
@@ -418,6 +420,7 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 //___________________________________________
 void AliMUONTriggerElectronics::LocalResponse()
 {
+/// \todo add comment
 	
   AliMUONTriggerCrate* cr;
   
@@ -518,8 +521,8 @@ void AliMUONTriggerElectronics::GlobalResponse()
 //___________________________________________
 void AliMUONTriggerElectronics::BoardName(Int_t ix, Int_t iy, char *name)
 {
-//* BOARD NAME FROM PAD INFO (OLD MAPPING)
-//*
+/// BOARD NAME FROM PAD INFO (OLD MAPPING)
+///
    TString s = (ix>0) ? "R" : "L"; 
 
    Int_t board = iy / 16, bid[4] = {12,34,56,78}; 
@@ -539,8 +542,8 @@ void AliMUONTriggerElectronics::BoardName(Int_t ix, Int_t iy, char *name)
 //___________________________________________
 void AliMUONTriggerElectronics::BuildName(Int_t icirc, char name[20])
 {
-//* GET BOARD NAME FROM OLD NUMBERING
-//*
+/// GET BOARD NAME FROM OLD NUMBERING
+///
    const Int_t kCircuitId[234] = 
       {
           111,  121,  131,  141,  151,  161,  171,
@@ -585,16 +588,16 @@ void AliMUONTriggerElectronics::BuildName(Int_t icirc, char name[20])
 void 
 AliMUONTriggerElectronics::Exec(Option_t*)
 {
-//*
-//*
+/// \todo add comment
+///
   Digits2Trigger();
 }
 
 //_______________________________________________________________________
 void AliMUONTriggerElectronics::Trigger()
 {
-//*
-//*
+/// \todo add comment
+///
    FeedM();
    LocalResponse();
    RegionalResponse();      
