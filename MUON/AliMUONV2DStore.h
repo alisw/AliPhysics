@@ -24,6 +24,9 @@ public:
   AliMUONV2DStore();
   virtual ~AliMUONV2DStore();
   
+  /// Return an empty copy of self.
+  virtual AliMUONV2DStore* CloneEmpty() const { return 0x0; }
+  
   virtual AliMUONVDataIterator* Iterator() const { return 0x0; }
   
   /// Return the object stored at (i,j).
