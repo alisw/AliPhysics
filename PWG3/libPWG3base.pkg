@@ -1,6 +1,6 @@
 # $Id$
 
-SRCS:=  AliQuarkoniaAcceptance.cxx         
+SRCS:=  AliQuarkoniaAcceptance.cxx   AliQuarkoniaEfficiency.cxx        
      
      
 HDRS:= $(SRCS:.cxx=.h)
