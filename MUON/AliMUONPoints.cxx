@@ -161,7 +161,7 @@ void AliMUONPoints::InspectDigit()
       //      pad->AddText(ptitle[11]);
   for (int i=0;i<digit->Ntracks();i++) {
       if (digit->Track(i) == 0) continue;  
-      sprintf(ptitle[i],"fTrackIndex: %d  Charge: %d",
+      sprintf(ptitle[i],"fTrackIndex: %d  Charge: %e",
 	      digit->Track(i), digit->TrackCharge(i));
       pad->AddText(ptitle[i]);
   }
