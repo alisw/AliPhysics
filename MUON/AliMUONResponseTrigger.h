@@ -18,9 +18,6 @@ class AliMUONResponseTrigger : public AliMUONResponse
   AliMUONResponseTrigger();
   virtual ~AliMUONResponseTrigger(){} 
 
-  virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where) const;
-
-
   // Set the GenerCluster parameter       
   virtual Int_t SetGenerCluster(){return 0;}
 

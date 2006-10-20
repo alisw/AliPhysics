@@ -85,9 +85,6 @@ class AliMUONResponseV0 : public AliMUONResponse
     // Charge disintegration
     virtual Float_t  IntXY(Int_t idDE, 
 			   AliMUONGeometrySegmentation* segmentation) const;
-    // Noise, zero-suppression, adc saturation
-    virtual Int_t DigitResponse(Int_t digit, 
-				AliMUONTransientDigit* where) const;
 
     virtual Float_t GetAnod(Float_t x) const;
     

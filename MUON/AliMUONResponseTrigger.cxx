@@ -70,20 +70,6 @@ AliMUONResponseTrigger::AliMUONResponseTrigger()
 // Default constructor
 }
 
-//------------------------------------------------------------------   
-Int_t AliMUONResponseTrigger::DigitResponse(Int_t digit, 
-					    AliMUONTransientDigit* /*where*/) const
-{
-//  only digital (0/1) information available
-
-  if (digit) 
-    return kTRUE; 
-  else 
-    return digit;
-
-}
-
-
 //_____________________________________________________________________________
 void 
 AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
