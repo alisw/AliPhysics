@@ -28,6 +28,7 @@
 #pragma link C++ class AliMUONTriggerCrateStore+; 
 
 // containers
+#pragma link C++ class AliMUONObjectPair+;
 #pragma link C++ class AliMUONData+; 
 #pragma link C++ class AliMUONDataIterator+; 
 #pragma link C++ class AliMUONVDataIterator+; 
@@ -36,7 +37,6 @@
 #pragma link C++ class AliMUONHit+; 
 #pragma link C++ class AliMUONRawCluster+;
 #pragma link C++ class AliMUONDigit+; 
-#pragma link C++ class AliMUONTransientDigit+;
 #pragma link C++ class AliMUONGlobalTrigger+; 
 #pragma link C++ class AliMUONRegionalTrigger+; 
 #pragma link C++ class AliMUONLocalTrigger+; 

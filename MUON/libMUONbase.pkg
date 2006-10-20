@@ -13,11 +13,11 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONData.cxx \
         AliMUONDataIterator.cxx \
         AliMUONVDataIterator.cxx \
+        AliMUONObjectPair.cxx \
         AliMUONDataDigitIterator.cxx \
         AliMUONPoints.cxx \
         AliMUONHit.cxx \
         AliMUONDigit.cxx \
-        AliMUONTransientDigit.cxx \
         AliMUONRawCluster.cxx \
         AliMUONGlobalTrigger.cxx  \
         AliMUONRegionalTrigger.cxx \
