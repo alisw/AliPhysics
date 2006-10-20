@@ -75,10 +75,8 @@ AliMUONv1::AliMUONv1()
 } 
 
 //___________________________________________
-AliMUONv1::AliMUONv1(const char *name, const char *title,
-                     const char* sDigitizerClassName,
-                     const char* digitizerClassName)
-: AliMUON(name,title,sDigitizerClassName,digitizerClassName), 
+AliMUONv1::AliMUONv1(const char *name)
+: AliMUON(name), 
     fAngleEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),
@@ -172,17 +170,11 @@ void AliMUONv1::Init()
   AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
  
 
-  std::string ftype(GetTitle());
-
   // Build segmentation
   // using geometry parametrisation
   //
   AliMUONSegFactory segFactory(GetGeometryTransformer());
-  fSegmentation = segFactory.CreateSegmentation(ftype);
-
-  if (!fSegmentation) {
-    AliFatal(Form("Wrong factory type : %s",ftype.c_str()));
-  }        
+  fSegmentation = segFactory.CreateSegmentation();
 
   // Build response
   //

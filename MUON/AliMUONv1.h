@@ -24,9 +24,7 @@ class AliMUONv1 : public AliMUON
 {
  public:
    AliMUONv1();
-   AliMUONv1(const char *name, const char *title="FactoryV4",
-           const char* sDigitizerType="sdigitizer:AliMUONSDigitizerV2",
-           const char* digitizerType="digitizer:default");
+   AliMUONv1(const char *name);
    virtual  ~AliMUONv1();
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();
