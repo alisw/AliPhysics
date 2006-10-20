@@ -16,11 +16,13 @@
 #include "AliMpVPainter.h"
 
 class AliMpMotifPosition;
+class AliMpMotifType;
 
 class AliMpMotifPainter : public AliMpVPainter
 {
  public:
   AliMpMotifPainter();
+  AliMpMotifPainter(AliMpMotifType* motifType);
   AliMpMotifPainter(AliMpMotifPosition *motifPos);
   virtual ~AliMpMotifPainter();
   
@@ -34,7 +36,7 @@ class AliMpMotifPainter : public AliMpVPainter
   AliMpMotifPainter&  operator = (const AliMpMotifPainter& right);
 
   AliMpMotifPosition *fMotifPos; ///< the motif to draw
-
+  
   ClassDef(AliMpMotifPainter,1) // Motif painter
 };
 #endif //ALI_MP_MOTIF_PAINTER_H

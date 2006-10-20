@@ -37,6 +37,7 @@
 #include "AliMpSubZonePainter.h"
 #include "AliMpRowSegmentPainter.h"
 #include "AliMpMotifPainter.h"
+#include "AliMpMotifType.h"
 #include "AliMpPCB.h"
 #include "AliMpPCBPainter.h"
 #include "AliMpSlat.h"
@@ -156,6 +157,8 @@ AliMpVPainter *AliMpVPainter::CreatePainter(TObject *object)
     painter = new AliMpRowSegmentPainter((AliMpVRowSegment *)object);
   else if (object->InheritsFrom(AliMpMotifPosition::Class()))
     painter = new AliMpMotifPainter((AliMpMotifPosition *)object);
+  else if (object->InheritsFrom(AliMpMotifType::Class()))
+    painter = new AliMpMotifPainter((AliMpMotifType *)object);
   else if (object->InheritsFrom(AliMpPCB::Class()))
     painter = new AliMpPCBPainter((AliMpPCB *)object);
   else if (object->InheritsFrom(AliMpSlat::Class()))

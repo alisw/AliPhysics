@@ -26,9 +26,37 @@
 #include "AliMpSt345Reader.h"
 #include "AliMpSlat.h"
 #include "AliMpVPainter.h"
-
+#include "AliMpMotifReader.h"
+#include "AliMpMotifType.h"
+#include "AliMpMotifPosition.h"
+#include "AliMpMotif.h"
+#include "TVector2.h"
+#include "TCanvas.h"
 #endif
 
+void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = TVector2(2.5,0.5))
+{
+  // Warning : this function leaks memory. But should be fine as only used 
+  // interactively to check a few motifs at once...
+  //
+  AliMpMotifReader reader(kStation345,kBendingPlane);
+  AliMpMotifType* type = reader.BuildMotifType(motifType);
+  if (!type)
+  {
+    cerr << "Motif not found" << endl;
+    return;
+  }
+  AliMpMotif* motif = new AliMpMotif(motifType,type,padSizes);
+  AliMpMotifPosition* pos = new AliMpMotifPosition(0,motif,TVector2(0,0));
+  AliMpVPainter* painter = AliMpVPainter::CreatePainter(pos);
+  if (!painter)
+  {
+    cerr << "Could not get a painter !" << endl;
+    return;
+  }
+  TCanvas* c = new TCanvas();
+  painter->Draw("MP");
+}
 
 //112230N
 //112233NR3

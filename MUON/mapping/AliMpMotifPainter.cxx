@@ -27,8 +27,10 @@
 #include "AliMpGraphContext.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
+#include "AliMpMotif.h"
 #include "AliMpConnection.h"
 #include "AliMpIntPair.h"
+#include "AliLog.h"
 
 #include <TVirtualX.h>
 #include <TPad.h>
@@ -51,7 +53,28 @@ AliMpMotifPainter::AliMpMotifPainter(AliMpMotifPosition *motifPos)
     fMotifPos(motifPos)
 {
   /// Standard constructor 
+      AliDebug(1,"Default ctor");
+}
 
+//_______________________________________________________________________
+AliMpMotifPainter::AliMpMotifPainter(AliMpMotifType* motifType)
+: AliMpVPainter(),
+fMotifPos(0x0)
+{
+  /// Constructor from a motif Type. We hereby create a MotifPosition
+  /// object from it, using arbitrary pad sizes, as this is just a way
+  /// to visualize the *shape* of the motif.
+  
+  AliDebug(1,"Ctor from motifType");
+  
+  const Double_t dx = 5;
+  const Double_t dy = 5; // cm but arbitrary anyway
+  
+  AliMpVMotif* motif = new AliMpMotif(motifType->GetID(),
+                                      motifType,
+                                      TVector2(dx,dy));
+
+  fMotifPos = new AliMpMotifPosition(-1,motif,motif->Dimensions());
 }
 
 //_______________________________________________________________________
@@ -132,45 +155,46 @@ void AliMpMotifPainter::Paint(Option_t *option)
     }
     break;
   case 'P':
-    {
-      //PaintWholeBox(kFALSE);
-      AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
-      for (Int_t j=motifType->GetNofPadsY()-1;j>=0;j--){
-	   for (Int_t i=0;i<motifType->GetNofPadsX();i++){
-	     AliMpIntPair indices = AliMpIntPair(i,j);
-               AliMpConnection* connect = 
-                 motifType->FindConnectionByLocalIndices(indices);
-	     if (connect){
-    	       TVector2 realPadPos = 
+  {
+    //PaintWholeBox(kFALSE);
+    AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
+    StdoutToAliDebug(1,motifType->Print("G"););
+    for (Int_t j=motifType->GetNofPadsY()-1;j>=0;j--){
+      for (Int_t i=0;i<motifType->GetNofPadsX();i++){
+        AliMpIntPair indices(i,j);
+        AliMpConnection* connect = 
+          motifType->FindConnectionByLocalIndices(indices);
+        if (connect){
+          TVector2 realPadPos = 
 	        GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
-	       TVector2 padPadPos,padPadDim;
-	       gr->RealToPad(realPadPos,
-                               fMotifPos->GetMotif()->GetPadDimensions(indices),
-	     		 padPadPos,padPadDim);
-	       TVector2 bl = padPadPos - padPadDim;
-	       TVector2 ur = padPadPos + padPadDim;
-
-
-	       Style_t sty = gVirtualX->GetFillStyle();
-	       gVirtualX->SetFillStyle(1);
-	       gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
-	       gVirtualX->SetFillStyle(0);
-	       gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
-	       gVirtualX->SetFillStyle(sty);
-	       if (option[1]=='T'){
-	         Float_t textSize =   gVirtualX->GetTextSize();
-	         gVirtualX->SetTextSize(10);
-		 gVirtualX->SetTextAlign(22);
-		 //	         gPad->PaintText(padPadPos.X()-0.01,padPadPos.Y()-0.01,
-	         gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
-			      Form("%d",connect->GetGassiNum()));
-	      
-	         gVirtualX->SetTextSize(textSize);
+          TVector2 padPadPos,padPadDim;
+          gr->RealToPad(realPadPos,
+                        fMotifPos->GetMotif()->GetPadDimensions(indices),
+                        padPadPos,padPadDim);
+          TVector2 bl = padPadPos - padPadDim;
+          TVector2 ur = padPadPos + padPadDim;
+          
+          
+          Style_t sty = gVirtualX->GetFillStyle();
+          gVirtualX->SetFillStyle(1);
+          gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
+          gVirtualX->SetFillStyle(0);
+          gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
+          gVirtualX->SetFillStyle(sty);
+          if (option[1]=='T'){
+            Float_t textSize =   gVirtualX->GetTextSize();
+            gVirtualX->SetTextSize(10);
+            gVirtualX->SetTextAlign(22);
+            //	         gPad->PaintText(padPadPos.X()-0.01,padPadPos.Y()-0.01,
+            gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
+                            Form("%d",connect->GetGassiNum()));
+            
+            gVirtualX->SetTextSize(textSize);
                  }
 	    }
           }
       }
-
+    
     }
     break;
 
