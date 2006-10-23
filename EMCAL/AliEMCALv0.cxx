@@ -1250,17 +1250,14 @@ void AliEMCALv0::AddAlignableVolumes() const
 
   //Int_t nSMod = ((AliEMCALGeometry*)GetGeometry())->GetNumberOfSuperModules();
   //could use this, but what happens if it is > 10?
-
-  try{
-    for (Int_t smodnum=0; smodnum < 10; smodnum++) {
-      symname = snstr1;
-      symname += (smodnum+1);
-      volpath = vpstr1;
-      volpath += (smodnum+1);
-      gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
-    }
-  } catch (TString) {
-    AliFatal("Trying to set alignable entry with open geometry");
+ 
+  for (Int_t smodnum=0; smodnum < 10; smodnum++) {
+    symname = snstr1;
+    symname += (smodnum+1);
+    volpath = vpstr1;
+    volpath += (smodnum+1);
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      AliFatal("Unable to set alignable entry!!");
   }
 
   TString gn( ((AliEMCALGeometry*)GetGeometry())->GetName() );
@@ -1268,16 +1265,13 @@ void AliEMCALv0::AddAlignableVolumes() const
   if(gn.Contains("110DEG")) {
     TString vpstr2 = "ALIC_1/XEN1_1/SM10_";
     TString snstr2 = "EMCAL/HalfSupermodule";    
-    try{
-      for (Int_t smodnum=0; smodnum < 2; smodnum++) {
-	symname = snstr2;
-	symname += (smodnum+1);
-	volpath = vpstr2;
-	volpath += (smodnum+1);
-	gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
-      }
-    } catch (TString) {
-      AliFatal("Trying to set alignable entry with open geometry");
+    for (Int_t smodnum=0; smodnum < 2; smodnum++) {
+      symname = snstr2;
+      symname += (smodnum+1);
+      volpath = vpstr2;
+      volpath += (smodnum+1);
+      if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+	AliFatal("Unable to set alignable entry!!");
     }
   }
 
