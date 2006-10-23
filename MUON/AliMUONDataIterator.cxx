@@ -22,13 +22,13 @@
 #include "AliMUONDataDigitIterator.h"
 #include "TString.h"
 
-//
-// A wrapper to various iterators used to loop over
-// objects handled by AliMUONData, like sdigits, digits, rawclusters, 
-// and so on.
-//
-// Currently only implemented for digits, as a proof-of-principle.
-//
+/// \class AliMUONDataIterator
+/// A wrapper to various iterators used to loop over
+/// objects handled by AliMUONData, like sdigits, digits, rawclusters, 
+/// and so on.
+/// Currently only implemented for digits, as a proof-of-principle.
+///
+/// \author Laurent Aphecetche
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDataIterator)

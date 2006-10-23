@@ -20,9 +20,11 @@
 #include <assert.h>
 #include "AliLog.h"
 
-/// \class AliMUONRegionalTrigger
-/// Regional Trigger algorithm data outputs
-/// \author Ch. Finck
+// -----------------------------
+// Class AliMUONRegionalTrigger
+// -----------------------------
+// Regional Trigger algorithm data outputs
+// Author:  Ch. Finck
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRegionalTrigger)
