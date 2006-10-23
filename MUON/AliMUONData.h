@@ -90,14 +90,9 @@ class AliMUONData : public TNamed
       if (fLoader && fLoader->TreeH())
 	fLoader->TreeH()->GetEvent(it);
     }
-                   /// Get number of entries in hits three
-    Int_t          GetNtracks() const      {
-      Int_t ntrk = 0;
-      if (fLoader && fLoader->TreeH())
-	ntrk = (Int_t) fLoader->TreeH()->GetEntries();
-      return ntrk;
-    }
+    Int_t          GetNtracks() const;
     void           GetDigits() const;
+    
                    /// Load sdigits tree
     void           GetSDigits() const {
       if (fLoader && fLoader->TreeS())

@@ -829,6 +829,18 @@ AliMUONData::RegionalTrigger() const
 }
 
 //____________________________________________________________________________
+Int_t          
+AliMUONData::GetNtracks() const      
+{
+/// Get number of entries in hits three
+
+  Int_t ntrk = 0;
+  if (fLoader && fLoader->TreeH())
+    ntrk = (Int_t) fLoader->TreeH()->GetEntries();
+  return ntrk;
+}
+
+//____________________________________________________________________________
 void
 AliMUONData::GetDigits() const 
 {
