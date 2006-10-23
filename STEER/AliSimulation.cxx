@@ -528,7 +528,7 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   	TObjArray* detArray = runLoader->GetAliRun()->Detectors();
   	for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
   		AliModule* det = (AliModule*) detArray->At(iDet);
-  		if (!det) continue;
+  		if (!det || !det->IsActive()) continue;
   		if (IsSelected(det->GetName(), detStr)) {
   			if(!SetAlignObjArraySingleDet(det->GetName())){
   				dataNotLoaded += det->GetName();
@@ -542,9 +542,9 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   
   	if ((detStr.CompareTo("ALL") == 0)) detStr = "";
   	dataNotLoaded += detStr;
-  	AliInfo(Form("Alignment data loaded for: %s",
+  	if(!dataLoaded.IsNull()) AliInfo(Form("Alignment data loaded for: %s",
   			  dataLoaded.Data()));
-  	AliInfo(Form("Didn't/couldn't load alignment data for: %s",
+  	if(!dataNotLoaded.IsNull()) AliInfo(Form("Didn't/couldn't load alignment data for: %s",
   			  dataNotLoaded.Data()));
   } // fLoadAlignFromCDB flag
  

@@ -494,9 +494,9 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
   
   	if ((detStr.CompareTo("ALL") == 0)) detStr = "";
   	dataNotLoaded += detStr;
-  	AliInfo(Form("Alignment data loaded for: %s",
+  	if(!dataLoaded.IsNull()) AliInfo(Form("Alignment data loaded for: %s",
   			  dataLoaded.Data()));
-  	AliInfo(Form("Didn't/couldn't load alignment data for: %s",
+  	if(!dataNotLoaded.IsNull()) AliInfo(Form("Didn't/couldn't load alignment data for: %s",
   			  dataNotLoaded.Data()));
   } // fLoadAlignFromCDB flag
  
