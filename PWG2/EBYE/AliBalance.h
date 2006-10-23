@@ -12,20 +12,19 @@
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
+#include <TNamed.h>
 
 #define MAXIMUM_NUMBER_OF_STEPS	1024
 
 class TLorentzVector;
 class TGraphErrors;
 
-class AliBalance : public TObject
+class AliBalance : public TNamed
 {
  public:
-  AliBalance();
-  
-  AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Steps);
-  
+  AliBalance(const char* name, const char* title);
+  AliBalance(const char* name, const char* title, Double_t p2Start, Double_t p2Stop, Int_t p2Steps);
+  AliBalance(const AliBalance& balance);
   ~AliBalance();
   
   void SetParticles(TLorentzVector *P, Double_t *charge, Int_t dim);
@@ -33,14 +32,20 @@ class AliBalance : public TObject
   void SetAnalysisType(Int_t iType);
   void SetInterval(Double_t p2Start, Double_t p2Stop);
 
-  void CalculateBalance();
-  
+  void SetNp(Int_t np) {fNp = np;}
+  void SetNn(Int_t nn) {fNn = nn;}
+  void SetNnn(Double_t *nn);
+  void SetNpp(Double_t *pp);
+  void SetNpn(Double_t *pn);
+ 
   Double_t GetNp() const { return 1.0*fNp; }
   Double_t GetNn() const { return 1.0*fNn; }
   Double_t GetNnn(Int_t p2) const { return 1.0*fNnn[p2]; }
   Double_t GetNpp(Int_t p2) const { return 1.0*fNpp[p2]; }
   Double_t GetNpn(Int_t p2) const { return 1.0*fNpn[p2]; }
  
+  void CalculateBalance();
+  
   Double_t GetBalance(Int_t p2);
   Double_t GetError(Int_t p2);
 
@@ -67,7 +72,9 @@ class AliBalance : public TObject
   Double_t fB[MAXIMUM_NUMBER_OF_STEPS]; //BF matrix
   Double_t ferror[MAXIMUM_NUMBER_OF_STEPS]; //error of the BF
    
+  AliBalance & operator=(const AliBalance & ) {return *this;}
+
   ClassDef(AliBalance, 1)
-} ;
+};
 
 #endif
