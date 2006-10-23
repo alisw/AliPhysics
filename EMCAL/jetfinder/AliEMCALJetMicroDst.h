@@ -6,8 +6,13 @@
 /* $Id$ */
 
 //_________________________________________________________________________
+//
+// JetMicroDst to store information about
+// jetfinding for offline analysis
 //                  
 //*-- Author: Aleksei Pavlinov (WSU)
+//
+
 #include <TNamed.h>
 class TFile;
 class TTree;
@@ -61,9 +66,10 @@ class AliEMCALJetMicroDst: public TNamed {
   TVector3& GetGridVector(Int_t i) const ;
   // 13-apr-2003
   Double_t GetSumInCone(TVector3 &jet, Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet) const ;
-  Double_t GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5) ;
-  Double_t GetTpcPtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5) ;
+  Double_t GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5);
+  Double_t GetTpcPtInCone(TVector3 &jet, Double_t cellEtCut=0.0, Double_t rJet=0.5);
   Double_t GetSum(Int_t n, Float_t *ar, Double_t cut=0.0) const ;
+
   Double_t GetSumEmcal(Double_t cut=0.0) {return GetSum(fncell, fetcell, cut);}
   Double_t GetSumTpc(Double_t cut=0.0) {return GetSum(fnchp, fppt, cut);}
 
@@ -76,7 +82,7 @@ class AliEMCALJetMicroDst: public TNamed {
 
   Bool_t  IsPythiaDst() const ;
   virtual Bool_t  IsFolder() const;
-  virtual void Browse(TBrowser* b) ;
+  virtual void Browse(TBrowser* b) const;
 
   // service routine
   static TList *MoveHistsToList(const char* name="ListOfHists", Bool_t putToBrowser=kTRUE);

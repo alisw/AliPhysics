@@ -16,7 +16,14 @@
 
 /* $Id$ */
 
+//----------------------------------------
+//
+// JetMicroDst to store information about
+// jetfinding for offline analysis
+//
 //*-- Authors: Aleksei Pavlinov (WSU) 
+//
+//-----------------------------------------
 
 //*
 
@@ -686,7 +693,7 @@ TVector3& AliEMCALJetMicroDst::GetGridVector(Int_t i) const
   return vec;
 }
 
-Double_t AliEMCALJetMicroDst::GetSumInCone(TVector3 &jet,Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet) const 
+Double_t AliEMCALJetMicroDst::GetSumInCone(TVector3 &jet,Int_t nc, Float_t *et,Float_t *eta,Float_t *phi, Double_t cellEtCut, Double_t rJet) const
 {
   // Get Sum in cone
   static Double_t sum=0.;
@@ -709,7 +716,7 @@ Double_t AliEMCALJetMicroDst::GetSumInCone(TVector3 &jet,Int_t nc, Float_t *et,F
   return sum;
 }
 
-Double_t AliEMCALJetMicroDst::GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut, Double_t rJet) 
+Double_t AliEMCALJetMicroDst::GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut, Double_t rJet)
 {
   // Get EMCAL Et in cone
   Int_t nc = fncell;
@@ -731,7 +738,7 @@ Double_t AliEMCALJetMicroDst::GetEmcalEtInCone(TVector3 &jet, Double_t cellEtCut
   return eTotal;
 }
 
-Double_t AliEMCALJetMicroDst::GetTpcPtInCone(TVector3 &jet,Double_t cellEtCut, Double_t rJet) 
+Double_t AliEMCALJetMicroDst::GetTpcPtInCone(TVector3 &jet,Double_t cellEtCut, Double_t rJet)
 {
   // Get TPC PT in cone
   if(fnchp<=0) return 0.;
@@ -757,7 +764,7 @@ void AliEMCALJetMicroDst::Close()
   fTree = 0;
 }
 
-void AliEMCALJetMicroDst::Browse(TBrowser* b) 
+void AliEMCALJetMicroDst::Browse(TBrowser* b) const
 {
   // Browse
    if(fTree)      b->Add((TObject*)fTree);
@@ -799,6 +806,8 @@ TList* AliEMCALJetMicroDst::MoveHistsToList(const char* name, Bool_t putToBrowse
 
 void AliEMCALJetMicroDst::FillH1(TList *l, Int_t ind, Double_t x, Double_t w)
 {
+  //Fill 1d histogram with input data
+
   static TH1* hid=0;
   if(l == 0) return;
   if(ind < l->GetSize()){
@@ -809,6 +818,8 @@ void AliEMCALJetMicroDst::FillH1(TList *l, Int_t ind, Double_t x, Double_t w)
 
 void AliEMCALJetMicroDst::FillH2(TList *l, Int_t ind, Double_t x, Double_t y, Double_t w)
 {
+  //Fill 2d histogram with input data
+
   static TH2* hid=0;
   if(l == 0) return;
   if(ind < l->GetSize()){
@@ -819,6 +830,8 @@ void AliEMCALJetMicroDst::FillH2(TList *l, Int_t ind, Double_t x, Double_t y, Do
 
 int AliEMCALJetMicroDst::SaveListOfHists(TList *list,const char* name,Bool_t kSingleKey,const char* opt)
 {
+  //Save histograms to file
+
   printf(" Name of out file |%s|\n", name); 
   int save = 0;
   if(list && list->GetSize() && strlen(name)){
