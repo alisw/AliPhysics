@@ -65,6 +65,7 @@ AliESDtrackCuts::AliESDtrackCuts() : TNamed(),
   fRapMin(0),
   fRapMax(0),
   fHistogramsOn(0),
+  ffDTheoretical(0),				     
   fhCutStatistics(0),         
   fhCutCorrelation(0)
 {
@@ -169,6 +170,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : TNamed(c),
   fRapMin(0),
   fRapMax(0),
   fHistogramsOn(0),
+  ffDTheoretical(0),				     
   fhCutStatistics(0),         
   fhCutCorrelation(0)
 {
@@ -219,7 +221,12 @@ AliESDtrackCuts::~AliESDtrackCuts()
       delete fhDZNormalized[i];            
     if (fhDXYvsDZNormalized[i])
       delete fhDXYvsDZNormalized[i];       
+    if (fhNSigmaToVertex[i])
+      delete fhNSigmaToVertex[i];
   }
+  
+  if (ffDTheoretical)
+    delete ffDTheoretical;
 
   if (fhCutStatistics)
     delete fhCutStatistics;             
@@ -290,7 +297,9 @@ void AliESDtrackCuts::Init()
     fhDXYNormalized[i] = 0;
     fhDZNormalized[i] = 0;
     fhDXYvsDZNormalized[i] = 0;
+    fhNSigmaToVertex[i] = 0;
   }
+  ffDTheoretical = 0;
 
   fhCutStatistics = 0;
   fhCutCorrelation = 0;
@@ -375,7 +384,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
     if (fhDXYNormalized[i]) target.fhDXYNormalized[i] = (TH1F*) fhDXYNormalized[i]->Clone();
     if (fhDZNormalized[i]) target.fhDZNormalized[i] = (TH1F*) fhDZNormalized[i]->Clone();
     if (fhDXYvsDZNormalized[i]) target.fhDXYvsDZNormalized[i] = (TH2F*) fhDXYvsDZNormalized[i]->Clone();
+    if (fhNSigmaToVertex[i]) target.fhNSigmaToVertex[i] = (TH1F*) fhNSigmaToVertex[i]->Clone();
   }
+  if (ffDTheoretical) target.ffDTheoretical = (TF1*) ffDTheoretical->Clone();
 
   if (fhCutStatistics) target.fhCutStatistics = (TH1F*) fhCutStatistics->Clone();
   if (fhCutCorrelation) target.fhCutCorrelation = (TH2F*) fhCutCorrelation->Clone();
@@ -433,6 +444,8 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       fhDXYNormalized[i]     ->Add(entry->fhDXYNormalized[i]    ); 
       fhDZNormalized[i]      ->Add(entry->fhDZNormalized[i]     ); 
       fhDXYvsDZNormalized[i] ->Add(entry->fhDXYvsDZNormalized[i]); 
+      fhNSigmaToVertex[i]    ->Add(entry->fhNSigmaToVertex[i]); 
+
     }      
 
     fhCutStatistics  ->Add(entry->fhCutStatistics);        
@@ -448,7 +461,7 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
 //____________________________________________________________________
 Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
 {
-  //
+  // Calculates the number of sigma to the vertex.
 
   Float_t b[2];
   Float_t bRes[2];
@@ -683,6 +696,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
       fhDZNormalized[0]->Fill(b[1]/bRes[1]);
       fhDXYNormalized[0]->Fill(b[0]/bRes[0]);
       fhDXYvsDZNormalized[0]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+      fhNSigmaToVertex[0]->Fill(nSigmaToVertex);
     }
   }
 
@@ -724,6 +738,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
       fhDZNormalized[1]->Fill(b[1]/bRes[1]);
       fhDXYNormalized[1]->Fill(b[0]/bRes[0]);
       fhDXYvsDZNormalized[1]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+      fhNSigmaToVertex[1]->Fill(nSigmaToVertex);
     }
   }
 
@@ -825,6 +840,7 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
     fhDZNormalized[i]        = new  TH1F(Form("dZNormalized%s",str),"",500,-10,10);
     fhDXYvsDZNormalized[i]   = new  TH2F(Form("dXYvsDZNormalized%s",str),"",200,-10,10,200,-10,10);
 
+    fhNSigmaToVertex[i]         = new  TH1F(Form("nSigmaToVertex%s",str),"",500,0,50);
 
     fhNClustersITS[i]->SetXTitle("n ITS clusters");
     fhNClustersTPC[i]->SetXTitle("n TPC clusters");
@@ -846,6 +862,7 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
     fhDZNormalized[i]->SetXTitle("normalized long impact par");
     fhDXYvsDZNormalized[i]->SetXTitle("normalized long impact par"); 
     fhDXYvsDZNormalized[i]->SetYTitle("normalized trans impact par");
+    fhNSigmaToVertex[i]->SetXTitle("n #sigma to vertex");
 
     fhNClustersITS[i]->SetLineColor(color);   fhNClustersITS[i]->SetLineWidth(2);
     fhNClustersTPC[i]->SetLineColor(color);   fhNClustersTPC[i]->SetLineWidth(2);
@@ -862,8 +879,13 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
     fhDZ[i]->SetLineColor(color);   fhDZ[i]->SetLineWidth(2);
 
     fhDXYNormalized[i]->SetLineColor(color);   fhDXYNormalized[i]->SetLineWidth(2);
-    fhDZNormalized[i]->SetLineColor(color);   fhDZNormalized[i]->SetLineWidth(2);
+    fhDZNormalized[i]->SetLineColor(color);    fhDZNormalized[i]->SetLineWidth(2);
+    fhNSigmaToVertex[i]->SetLineColor(color);  fhNSigmaToVertex[i]->SetLineWidth(2); 
   }
+
+  // The number of sigmas to the vertex is per definition gaussian
+  ffDTheoretical = new TF1("nSigmaToVertexTheoretical","([0]/2.506628274)*exp(-(x**2)/2)",0,50);
+  ffDTheoretical->SetParameter(0,1);
 }
 
 
@@ -897,6 +919,10 @@ void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
   gDirectory->mkdir("before_cuts");
   gDirectory->mkdir("after_cuts");
  
+  // a factor of 2 is needed since n sigma is positive
+  ffDTheoretical->SetParameter(0,2*fhNSigmaToVertex[0]->Integral("width"));
+  ffDTheoretical->Write("nSigmaToVertexTheory");
+
   fhCutStatistics->Write();
   fhCutCorrelation->Write();
 
@@ -924,6 +950,7 @@ void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
     fhDXYNormalized[i]       ->Write();
     fhDZNormalized[i]        ->Write();
     fhDXYvsDZNormalized[i]   ->Write();
+    fhNSigmaToVertex[i]      ->Write();
 
     gDirectory->cd("../");
   }

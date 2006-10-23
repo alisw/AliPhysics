@@ -18,13 +18,13 @@
 //  - update print method
 //  - is there a smarter way to manage the cuts?
 //  - put comments to each variable
-//  - implement destructor !!!
 //
 
 #ifndef ALIESDTRACKCUTS_H
 #define ALIESDTRACKCUTS_H
 
 #include <TNamed.h>
+#include <TF1.h>
 #include <TH2.h>
 
 class AliESD;
@@ -151,6 +151,9 @@ protected:
   TH1F* fhDXYNormalized[2];           //->
   TH1F* fhDZNormalized[2];            //->
   TH2F* fhDXYvsDZNormalized[2];       //->
+  TH1F* fhNSigmaToVertex[2];          //->  
+
+  TF1*  ffDTheoretical;               //-> theoretical distance to vertex normalized (2d gauss)
 
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
