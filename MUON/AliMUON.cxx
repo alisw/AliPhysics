@@ -128,8 +128,8 @@ AliMUON::AliMUON()
 }
 
 //__________________________________________________________________
-AliMUON::AliMUON(const char *name)
-  : AliDetector(name,name),
+AliMUON::AliMUON(const char *name, const char* title)
+  : AliDetector(name, title),
     fNCh(AliMUONConstants::NCh()),
     fNTrackingCh(AliMUONConstants::NTrackingCh()),
     fMUONData(0),

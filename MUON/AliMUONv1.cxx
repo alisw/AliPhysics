@@ -75,8 +75,8 @@ AliMUONv1::AliMUONv1()
 } 
 
 //___________________________________________
-AliMUONv1::AliMUONv1(const char *name)
-: AliMUON(name), 
+AliMUONv1::AliMUONv1(const char *name, const char* title)
+: AliMUON(name, title), 
     fAngleEffect(kTRUE),
     fStepMaxInActiveGas(0.6),
     fStepSum(0x0),

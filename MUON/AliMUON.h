@@ -42,7 +42,7 @@ class AliMUON : public  AliDetector
 {
   public:
     AliMUON();
-    AliMUON(const char* name);
+    AliMUON(const char* name, const char* title);
     virtual ~AliMUON();
    
     // Geometry

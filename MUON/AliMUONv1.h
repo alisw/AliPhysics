@@ -24,7 +24,7 @@ class AliMUONv1 : public AliMUON
 {
  public:
    AliMUONv1();
-   AliMUONv1(const char *name);
+   AliMUONv1(const char *name, const char* title = "default");
    virtual  ~AliMUONv1();
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();

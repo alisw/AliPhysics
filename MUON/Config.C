@@ -151,7 +151,7 @@ void Config(char directory[100]="", char option[6]="param")
   //=================== MUON Subsystem ===========================
   cout << ">>> Config.C: Creating AliMUONv1 ..."<<endl;
 
-  AliMUON *MUON = new AliMUONv1("MUON");
+  AliMUON *MUON = new AliMUONv1("MUON", "default");
 
   // The 3 switches below are to be used for the trigger code
   // their default value is set in AliMUON.h
