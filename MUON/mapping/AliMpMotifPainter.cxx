@@ -67,12 +67,12 @@ fMotifPos(0x0)
   
   AliDebug(1,"Ctor from motifType");
   
-  const Double_t dx = 5;
-  const Double_t dy = 5; // cm but arbitrary anyway
+  const Double_t kdx = 5;
+  const Double_t kdy = 5; // cm but arbitrary anyway
   
   AliMpVMotif* motif = new AliMpMotif(motifType->GetID(),
                                       motifType,
-                                      TVector2(dx,dy));
+                                      TVector2(kdx,kdy));
 
   fMotifPos = new AliMpMotifPosition(-1,motif,motif->Dimensions());
 }
