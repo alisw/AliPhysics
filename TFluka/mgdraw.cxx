@@ -1,27 +1,28 @@
 #include <Riostream.h>
 #include "TVirtualMCApplication.h"
 #include "TVirtualMCStack.h"
-
 #include "TFluka.h"
 #include "TFlukaCodes.h"
-// Fluka include
-#include "Fdimpar.h"  //(DIMPAR) fluka include
-#include "Fdblprc.h"  //(DBLPRC) fluka common
-#include "Ftrackr.h"  //(TRACKR) fluka common
-#include "Fopphst.h"  //(OPPHST) fluka common
-#include "Fflkstk.h"  //(FLKSTK) fluka common
-#include "Fltclcm.h"  //(LTCLCM) fluka common
-#include "Fpaprop.h"  //(PAPROP) fluka common
-#include "Falldlt.h"  //(ALLDLT) fluka common
+
+// Fluka includes
+#include "Fdimpar.h"  //(DIMPAR) 
+#include "Fdblprc.h"  //(DBLPRC) 
+#include "Ftrackr.h"  //(TRACKR) 
+#include "Fopphst.h"  //(OPPHST) 
+#include "Fflkstk.h"  //(FLKSTK) 
+#include "Fltclcm.h"  //(LTCLCM) 
+#include "Fpaprop.h"  //(PAPROP) 
+#include "Falldlt.h"  //(ALLDLT) 
+#include "Fdpdxcm.h"  //(DPDXCM) 
+#include "Fflkmat.h"  //(FLKMAT) 
+
+#include "TGeoManager.h"
 
 #ifndef WIN32
 # define mgdraw mgdraw_
 #else
 # define mgdraw MGDRAW
 #endif
-
-
-#include "TGeoManager.h" // <- delete
 
 extern "C" {
 void mgdraw(Int_t& icode, Int_t& mreg)
@@ -83,6 +84,10 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     }
     // *****************************************************
 
+    
+    Int_t med   = FLKMAT.medium[mreg - 1];  // Medium
+    Int_t msd   = DPDXCM.msdpdx[med  - 1];  // Iionisation model
+
     if (!TRACKR.ispusr[mkbmx2 - 2]) {
 	if (verbosityLevel >= 3) {
 	    cout << endl << "mgdraw: energy deposition for:" << trackId
@@ -94,12 +99,12 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 		 << endl;
 	         
 	}
-	Int_t nprim = 0;
-//	printf("mgdraw %5d %5d \n", ALLDLT.nalldl, ALLDLT.lalldl );
-	
-	if ((nprim = ALLDLT.nalldl) > 0) {
-	    //
-	    // Multiple steps (primary ionisation)
+
+	if (msd > 0) {
+//
+// Primary ionsiations
+	    Int_t nprim = ALLDLT.nalldl;
+// Protection against nprim > mxalld
 	    if (nprim >= mxalld) {
 		nprim = mxalld;
 		Warning("mgdraw", "nprim > mxalld, nprim: %6d  pdg: %6d mreg %6d p %13.3f step %13.3f\n", 
@@ -110,11 +115,20 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 		       TRACKR.ctrack);
 		
 	    }
-	    for (Int_t i = 0; i < nprim; i++) {
-		fluka->SetCurrentPrimaryElectronIndex(i);
+// Multiple steps for nprim > 0
+	    if (nprim > 0) {
+		for (Int_t i = 0; i < nprim; i++) {
+		    fluka->SetCurrentPrimaryElectronIndex(i);
+		    (TVirtualMCApplication::Instance())->Stepping();
+		    if (i == 0) fluka->SetTrackIsNew(kFALSE);
+		}
+	    } else {
+		// No primary electron ionisation
+		// Call Stepping anyway but flag nprim = 0 as index = -2
+		fluka->SetCurrentPrimaryElectronIndex(-2);
 		(TVirtualMCApplication::Instance())->Stepping();
-		if (i == 0) fluka->SetTrackIsNew(kFALSE);
 	    }
+	    // Reset the index
 	    fluka->SetCurrentPrimaryElectronIndex(-1);
 	} else {
 	    // Single step
@@ -146,7 +160,9 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 
         fluka->SetTrackIsNew(kFALSE);
         fluka->SetCaller(kMGDRAW);
+	if (msd > 0) fluka->SetCurrentPrimaryElectronIndex(-2);
         (TVirtualMCApplication::Instance())->Stepping();
+	if (msd > 0) fluka->SetCurrentPrimaryElectronIndex(-1);
     }
 } // end of mgdraw
 } // end of extern "C"
