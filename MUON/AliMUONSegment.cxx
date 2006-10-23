@@ -367,6 +367,8 @@ void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, 
 void
 AliMUONSegment::Print(Option_t*) const
 {
+  // Printing
+
   cout.precision(5);
   cout.width(5);
   

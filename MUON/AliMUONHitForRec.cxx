@@ -235,6 +235,8 @@ Double_t AliMUONHitForRec::NormalizedChi2WithHitForRec(AliMUONHitForRec* hitForR
 void
 AliMUONHitForRec::Print(Option_t* /*opt*/) const
 {
+/// Printing
+
   cout << "<AliMUONHitForRec> Coordinates (B,NB,Z) = (" 
   << setw(8) << setprecision(5) << fBendingCoor
   << "," << setw(8) << setprecision(5) << fNonBendingCoor << "," 

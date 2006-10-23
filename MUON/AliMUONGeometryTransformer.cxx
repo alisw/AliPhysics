@@ -619,6 +619,7 @@ TString AliMUONGeometryTransformer::GetModuleSymName(Int_t moduleId) const
 //______________________________________________________________________________
 TString AliMUONGeometryTransformer::GetDESymName(Int_t detElemId) const
 {
+/// Return the detection element symbolic name (used for alignment)
 
   const AliMUONGeometryDetElement* kDetElement 
     = GetDetElement(detElemId);

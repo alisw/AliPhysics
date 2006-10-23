@@ -71,6 +71,8 @@ AliMUONTriggerCircuitNew::AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNe
    :  TObject(circuit),
       fILocalBoard(circuit.fILocalBoard)
 {
+/// Copy constructor
+
   for (Int_t i = 0; i < 16; ++i)
     fXpos11[i] = circuit.fXpos11[i];
 
@@ -84,6 +86,8 @@ AliMUONTriggerCircuitNew::AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNe
 //----------------------------------------------------------------------
 AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew::operator=(const AliMUONTriggerCircuitNew& circuit) 
 {
+/// Assignment operator
+
   if (this == &circuit) return *this;
 
   fILocalBoard = circuit.fILocalBoard;
