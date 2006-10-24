@@ -1686,7 +1686,6 @@ void AliPMDv1::SetSectorAlignable() const
     volpath += vpappend;
     symname = snsector;
     symname += cnt;
-    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
     if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
       {
 	AliFatal("Unable to set alignable entry!");
