@@ -9,6 +9,8 @@
 /// \ingroup base
 /// \class AliMUONTriggerLut
 /// \brief MUON trigger look up table class 
+///
+/// \author Philippe Crochet
 
 #include <TNamed.h>
 
@@ -24,7 +26,7 @@ class AliMUONTriggerLut : public TNamed
   void ReadFromFile(const char* filename);
   
   void GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev, Int_t ystrip, 
-		    Int_t lutLpt[2], Int_t lutHpt[2], Int_t lutApt[2]);
+		    Int_t lutLpt[2], Int_t lutHpt[2]);
 
  protected:
   // assignment operator

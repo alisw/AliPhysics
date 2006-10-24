@@ -15,10 +15,13 @@
 
 /* $Id$ */
 
-/// \class AliMUONTriggerLut
-/// Local Trigger Look Up Table - reading interface
-/// LUT data is stored into TH3S histograms and readout 
-/// from the Local Trigger algorithm.
+/// -----------------------
+/// Class AliMUONTriggerLut
+/// -----------------------
+/// Local Trigger Look Up Table
+/// reading interface LUT data is stored into TH3S histograms and readout 
+/// from the Local Trigger algorithm
+/// Author: Philippe Crochet
 
 #include "AliMUONTriggerLut.h"
 
@@ -100,7 +103,7 @@ AliMUONTriggerLut::ReadFromFile(const char* filename)
 //----------------------------------------------------------------------
 void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
 				     Int_t ystrip, Int_t lutLpt[2], 
-				     Int_t lutHpt[2], Int_t lutApt[2])
+				     Int_t lutHpt[2])
 {
 /// Return output of LuT for corresponding TH3S  
 
@@ -138,7 +141,7 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
   bin    =          fHptUnde->GetBin(circuit,xstrip,idev);
   binc   = (Short_t)fHptUnde->GetBinContent(bin);
   if ((binc & mask)!=0) lutHpt[0]=lutHpt[1]=1;
-
+/*
   // All pts.............................................
   bin    =          fAptPlus->GetBin(circuit,xstrip,idev);
   binc   = (Short_t)fAptPlus->GetBinContent(bin);
@@ -151,7 +154,7 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
   bin    =          fAptUnde->GetBin(circuit,xstrip,idev);
   binc   = (Short_t)fAptUnde->GetBinContent(bin);
   if ((binc & mask)!=0) lutApt[0]=lutApt[1]=1;
-
+*/
 }
 
 //----------------------------------------------------------------------
