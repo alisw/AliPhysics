@@ -428,7 +428,7 @@ void MUONrecpoints(Int_t event2Check=0, char * filename="galice.root") {
   MUONLoader->UnloadRecPoints();
 }
 
-void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t WRITE = 0)
+void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t WRITE = 0, Bool_t readFromRP = 0)
 {
 
   // reads and dumps trigger objects from MUON.RecPoints.root
@@ -439,15 +439,15 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   Int_t PRINTOUT = (event2Check == 0 ) ? 0 : 1 ;  
 
   // Book a ntuple for more detailled studies
-  TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
-  TNtuple *TgtupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","ev:LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:LoApt:y11:y21:x11");
+  TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:splpt:smlpt:undeflpt:sphpt:smhpt:undefhpt:uplpt:uphpt");
+  TNtuple *TgtupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","ev:LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:y11:y21:x11");
 
   // counters
-  Int_t SPLowpt=0,SPHighpt=0,SPAllpt=0;
-  Int_t SMLowpt=0,SMHighpt=0,SMAllpt=0;
-  Int_t SULowpt=0,SUHighpt=0,SUAllpt=0;
-  Int_t USLowpt=0,USHighpt=0,USAllpt=0;
-  Int_t LSLowpt=0,LSHighpt=0,LSAllpt=0;
+  Int_t SPLowpt=0,SPHighpt=0;
+  Int_t SMLowpt=0,SMHighpt=0;
+  Int_t SULowpt=0,SUHighpt=0;
+  Int_t USLowpt=0,USHighpt=0;
+  Int_t LSLowpt=0,LSHighpt=0;
 
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -476,8 +476,18 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
       delete c;
   }
   
+  Char_t fileName[30];
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
-  MUONLoader->LoadDigits("READ");
+  if (!readFromRP) {
+      cout << " reading from digits \n";
+      MUONLoader->LoadDigits("READ");
+      sprintf(fileName,"TriggerCheckFromDigits.root");
+  } else {
+      cout << " reading from RecPoints \n";
+      MUONLoader->LoadRecPoints("READ");
+      sprintf(fileName,"TriggerCheckFromRP.root");
+  }
+
   // Creating MUON data container
   AliMUONData muondata(MUONLoader,"MUON","MUON");
   
@@ -493,9 +503,14 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     if (ievent%100==0 || event2Check) cout << "Processing event " << ievent << endl;
     RunLoader->GetEvent(ievent);
     
-    muondata.SetTreeAddress("D,GLT"); 
-    muondata.GetTriggerD();
-    
+    if (!readFromRP) {
+	muondata.SetTreeAddress("D,GLT"); 
+	muondata.GetTriggerD();
+    } else {    
+	muondata.SetTreeAddress("RC,TC"); 
+	muondata.GetTrigger();
+    }
+
     globalTrigger = muondata.GlobalTrigger();
     localTrigger = muondata.LocalTrigger();
     
@@ -509,37 +524,30 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
       
       SPLowpt+=gloTrg->SinglePlusLpt() ;
       SPHighpt+=gloTrg->SinglePlusHpt() ;
-      SPAllpt+=gloTrg->SinglePlusApt() ;
       SMLowpt+=gloTrg->SingleMinusLpt();
       SMHighpt+=gloTrg->SingleMinusHpt();
-      SMAllpt+=gloTrg->SingleMinusApt();
       SULowpt+=gloTrg->SingleUndefLpt();
       SUHighpt+=gloTrg->SingleUndefHpt();
-      SUAllpt+=gloTrg->SingleUndefApt();
       USLowpt+=gloTrg->PairUnlikeLpt(); 
       USHighpt+=gloTrg->PairUnlikeHpt();
-      USAllpt+=gloTrg->PairUnlikeApt();
       LSLowpt+=gloTrg->PairLikeLpt(); 
       LSHighpt+=gloTrg->PairLikeHpt();
-      LSAllpt+=gloTrg->PairLikeApt();
       
       if (PRINTOUT) gloTrg->Print("full");
 
     } // end of loop on Global Trigger
-    
+
     for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
       if (PRINTOUT) locTrg->Print("full");
       
       AliMUONTriggerCircuitNew* circuit = (AliMUONTriggerCircuitNew*)triggerCircuit->At(locTrg->LoCircuit()-1); 
       
-      TgtupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),locTrg->LoApt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
+      TgtupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
     } // end of loop on Local Trigger
 
-
     // fill ntuple
-    //TNtuple *Tgtuple = new TNtuple("Tgtuple","Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
-       TgtupleGlo->Fill(ievent,nglobals,gloTrg->SinglePlusApt(),gloTrg->SingleMinusApt(),gloTrg->SingleUndefApt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt(),gloTrg->PairLikeApt());
+    TgtupleGlo->Fill(ievent,nglobals,gloTrg->SinglePlusLpt(),gloTrg->SingleMinusLpt(),gloTrg->SingleUndefLpt(),gloTrg->SinglePlusHpt(),gloTrg->SingleMinusHpt(),gloTrg->SingleUndefHpt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt());
 
     muondata.ResetTrigger();
     if (event2Check!=0) ievent=nevents;
@@ -549,36 +557,36 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   if (!event2Check){
 
     printf("\n");
-    printf("===================================================\n");
-    printf("===================  SUMMARY  =====================\n");
+    printf("=============================================\n");
+    printf("================  SUMMARY  ==================\n");
     printf("\n");
     printf("Total number of events processed %d \n", (event2Check==0) ? nevents : 1);
     printf("\n");
-    printf(" Global Trigger output       Low pt  High pt   All\n");
+    printf(" Global Trigger output       Low pt  High pt\n");
     printf(" number of Single Plus      :\t");
-    printf("%i\t%i\t%i\t",SPLowpt,SPHighpt,SPAllpt);
+    printf("%i\t%i\t",SPLowpt,SPHighpt);
     printf("\n");
     printf(" number of Single Minus     :\t");
-    printf("%i\t%i\t%i\t",SMLowpt,SMHighpt,SMAllpt);
+    printf("%i\t%i\t",SMLowpt,SMHighpt);
     printf("\n");
     printf(" number of Single Undefined :\t"); 
-    printf("%i\t%i\t%i\t",SULowpt,SUHighpt,SUAllpt);
+    printf("%i\t%i\t",SULowpt,SUHighpt);
     printf("\n");
     printf(" number of UnlikeSign pair  :\t"); 
-    printf("%i\t%i\t%i\t",USLowpt,USHighpt,USAllpt);
+    printf("%i\t%i\t",USLowpt,USHighpt);
     printf("\n");
     printf(" number of LikeSign pair    :\t");  
-    printf("%i\t%i\t%i\t",LSLowpt,LSHighpt, LSAllpt);
+    printf("%i\t%i\t",LSLowpt,LSHighpt);
     printf("\n");
-    printf("===================================================\n");
+    printf("=============================================\n");
     fflush(stdout);
   }
   
   if (WRITE){
-    TFile *myFile = new TFile("TriggerCheck.root", "RECREATE");  
-    TgtupleGlo->Write();
-    TgtupleLoc->Write();
-    myFile->Close();
+      TFile *myFile = new TFile(fileName, "RECREATE");
+      TgtupleGlo->Write();
+      TgtupleLoc->Write();
+      myFile->Close();
   }
 
   MUONLoader->UnloadRecPoints();
