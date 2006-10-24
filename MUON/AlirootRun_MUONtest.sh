@@ -33,7 +33,7 @@ echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF
 gRandom->SetSeed($SEED);
-AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
 AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root");
 MuonRec.SetInput("$FULLPATH/");

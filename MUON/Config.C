@@ -2,12 +2,10 @@
 // Remember to define the directory and option
 // gAlice->SetConfigFunction("Config('$HOME','box');");
 
-void Config(char directory[100]="", char option[6]="param")
+void Config(char directory[100]="", char option[6]="hijing")
 {
-  //
+  //=====================================================================
   // Config file for MUON test
-  //
-
   //=====================================================================
   //  Libraries required by geant321
   gSystem->Load("libgeant321.so");
@@ -20,70 +18,53 @@ void Config(char directory[100]="", char option[6]="param")
   cout << ">>> Config.C: Creating Run Loader ..."<<endl;
   AliRunLoader* rl=0x0;
   rl = AliRunLoader::Open(
-	filename, AliConfig::GetDefaultEventFolderName(), "recreate");
-  if (rl == 0x0) {
-    gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
-    return;
-  }
+			  filename, AliConfig::GetDefaultEventFolderName(), "recreate");
+  if (rl == 0x0) 
+    { gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+      return; }
   rl->SetCompressionLevel(2);
   rl->SetNumberOfEventsPerFile(100);
   gAlice->SetRunLoader(rl);
-
+  //=======================================================================
+  // For having more debuging messages
   //AliLog::SetModuleDebugLevel("MUON", 1);
-  
   //=======================================================================
   // Set External decayer
   TVirtualMCDecayer *decayer = new AliDecayerPythia();
   decayer->SetForceDecay(kAll);
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
-
-  //
   //=======================================================================
   // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
-    gMC->SetProcess("DCAY",1);
-    gMC->SetProcess("PAIR",1);
-    gMC->SetProcess("COMP",1);
-    gMC->SetProcess("PHOT",1);
-    gMC->SetProcess("PFIS",0);
-    gMC->SetProcess("DRAY",0);
-    gMC->SetProcess("ANNI",1);
-    gMC->SetProcess("BREM",1);
-    gMC->SetProcess("MUNU",1);
-    gMC->SetProcess("CKOV",1);
-    gMC->SetProcess("HADR",1);
-    gMC->SetProcess("LOSS",2);
-    gMC->SetProcess("MULS",1);
-    gMC->SetProcess("RAYL",1);
-
-    Float_t cut = 1.e-3;        // 1MeV cut by default
-    Float_t tofmax = 1.e10;
-
-    gMC->SetCut("CUTGAM", cut);
-    gMC->SetCut("CUTELE", cut);
-    gMC->SetCut("CUTNEU", cut);
-    gMC->SetCut("CUTHAD", cut);
-    gMC->SetCut("CUTMUO", cut);
-    gMC->SetCut("BCUTE",  cut); 
-    gMC->SetCut("BCUTM",  cut); 
-    gMC->SetCut("DCUTE",  cut); 
-    gMC->SetCut("DCUTM",  cut); 
-    gMC->SetCut("PPCUTM", cut);
-    gMC->SetCut("TOFMAX", tofmax); 
-  //
+  gMC->SetProcess("DCAY",1);
+  gMC->SetProcess("PAIR",1);
+  gMC->SetProcess("COMP",1);
+  gMC->SetProcess("PHOT",1);
+  gMC->SetProcess("PFIS",0);
+  gMC->SetProcess("DRAY",0);
+  gMC->SetProcess("ANNI",1);
+  gMC->SetProcess("BREM",1);
+  gMC->SetProcess("MUNU",1);
+  gMC->SetProcess("CKOV",1);
+  gMC->SetProcess("HADR",1);
+  gMC->SetProcess("LOSS",2);
+  gMC->SetProcess("MULS",1);
+  gMC->SetProcess("RAYL",1);
+  Float_t cut = 1.e-3;        // 1MeV cut by default
+  Float_t tofmax = 1.e10;
+  gMC->SetCut("CUTGAM", cut);
+  gMC->SetCut("CUTELE", cut);
+  gMC->SetCut("CUTNEU", cut);
+  gMC->SetCut("CUTHAD", cut);
+  gMC->SetCut("CUTMUO", cut);
+  gMC->SetCut("BCUTE",  cut); 
+  gMC->SetCut("BCUTM",  cut); 
+  gMC->SetCut("DCUTE",  cut); 
+  gMC->SetCut("DCUTM",  cut); 
+  gMC->SetCut("PPCUTM", cut);
+  gMC->SetCut("TOFMAX", tofmax); 
   //=======================================================================
-  // ************* STEERING parameters FOR ALICE SIMULATION **************
-  // Chamber positions
-  // From AliMUONConstants class we get :
-  //   Position Z (along beam) of the chambers (in cm) 
-  //        (from AliMUONConstants class):  
-  //    533.5,  546.5,  678.5, 693.5,  964.0, 986.0, 1251.5, 1278.5, 
-  //   1416.5, 1443.5,  1610, 1625.,  1710., 1725. 
-  //   Internal Radius (in cm)   
-  //     36.4,  46.2,  66.0,  80.,  80., 100., 100.    
-  //   External Radius (in cm)
-  //    183.,  245.,  395.,  560., 563., 850., 900.  
-  //=======================================================================
+  // Examples of generators. Only option param is sistematically tested
   if (!strcmp(option,"box")) {
     AliGenBox * gener = new AliGenBox(1);
     gener->SetMomentumRange(20.,20.1);
@@ -94,9 +75,6 @@ void Config(char directory[100]="", char option[6]="param")
     gener->SetSigma(0.0, 0.0, 0.0);         //Sigma in (X,Y,Z) (cm) on IP position
   }
   if (!strcmp(option,"gun")) {
-    //*********************************************
-    // Example for Fixed Particle Gun             *
-    //*********************************************
     AliGenFixed *gener = new AliGenFixed(ntracks);
     gener->SetMomentum(10);
     gener->SetPhiRange(0.);
@@ -115,9 +93,6 @@ void Config(char directory[100]="", char option[6]="param")
     gener->SetRange(100, -300., 300., 100, -300., 300., 1, 2000, 2000);
   }  
   if (!strcmp(option,"param")) {
-    //*******************************************************
-    // Example for J/psi or Upsilon Production from  Parameterisation *
-    //*******************************************************
     AliGenParam *gener = new AliGenParam(1, AliGenMUONlib::kUpsilon);
     gener->SetMomentumRange(0,999);
     gener->SetPtRange(0,100.);
@@ -130,11 +105,50 @@ void Config(char directory[100]="", char option[6]="param")
     gener->SetTrackingFlag(1);
     gener->Init();
   }
+  if (!strcmp(option,"hijing")) { //Hijing generator from ConfigPPR in macros
+    AliGenHijing *gener = new AliGenHijing(-1);
+    // centre of mass energy 
+    gener->SetEnergyCMS(5500.);
+    // reference frame
+    gener->SetReferenceFrame("CMS");
+    // projectile
+    gener->SetProjectile("A", 208, 82);
+    gener->SetTarget    ("A", 208, 82);
+    // tell hijing to keep the full parent child chain
+    gener->KeepFullEvent();
+    // enable jet quenching
+    gener->SetJetQuenching(1);
+    // enable shadowing
+    gener->SetShadowing(1);
+    // neutral pion and heavy particle decays switched off
+    gener->SetDecaysOff(1);
+    // Don't track spectators
+    gener->SetSpectators(0);
+    // kinematic selection
+    gener->SetSelectAll(0);
+    // impact parameter range
+    gener->SetImpactParameterRange(0., 5.); // 0. - 5. fm corresponds to ~10% most central
+    gener->Init();
+  }
+  if (!strcmp(option,"muoncocktail")) { // Muon cocktail for PbPb
+    AliGenMUONCocktail * gener = new AliGenMUONCocktail();
+    gener->SetPtRange(1.,100.);       // Transverse momentum range  
+    gener->SetPhiRange(0.,360.);    // Azimuthal angle range 
+    gener->SetYRange(-4.0,-2.5);
+    gener->SetMuonPtCut(0.5);
+    gener->SetMuonThetaCut(171.,178.);
+    gener->SetMuonMultiplicity(2);
+    gener->SetImpactParameterRange(0.,5.); // 10% most centra PbPb collisions
+    gener->SetVertexSmear(kPerTrack);  
+    gener->SetOrigin(0,0,0);        // Vertex position
+    gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
+    gener->Init();
+  }  
   //============================================================= 
-  // Field (L3 0.4 T)
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+  // Field (L3 0.5 T)
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   gAlice->SetField(field);
-
+  //============================================================= 
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");
   //=================== ABSO parameters ============================
@@ -149,8 +163,6 @@ void Config(char directory[100]="", char option[6]="param")
   AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
 
   //=================== MUON Subsystem ===========================
-  cout << ">>> Config.C: Creating AliMUONv1 ..."<<endl;
-
   AliMUON *MUON = new AliMUONv1("MUON", "default");
 
   // The 3 switches below are to be used for the trigger code
