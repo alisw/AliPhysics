@@ -30,6 +30,7 @@
 #include "AliRun.h"
 #include "TList.h"
 #include "AliMUONTriggerSegmentationV2.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMUONResponseTrigger)
 
@@ -60,9 +61,6 @@ namespace
   }
 }
 
-const Float_t 
-AliMUONResponseTrigger::fgkTofLimit = 75E-9;
-
 //------------------------------------------------------------------   
 AliMUONResponseTrigger::AliMUONResponseTrigger()
   : AliMUONResponse()
@@ -91,7 +89,7 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
   
   Float_t tof = hit.Age();
   Int_t twentyNano(100);
-  if (tof<fgkTofLimit)
+  if (tof<AliMUONConstants::TriggerTofLimit())
   {
     twentyNano=1;
   }

@@ -33,6 +33,7 @@
 #include "AliMpVSegmentation.h"
 #include "AliRun.h"
 #include "AliMUONSegmentation.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMUONResponseTriggerV1)
 
@@ -137,7 +138,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
   
   Float_t tof = hit.Age();
   Int_t twentyNano(100);
-  if (tof<fgkTofLimit)
+  if (tof<AliMUONConstants::TriggerTofLimit())
   {
     twentyNano=1;
   }

@@ -22,8 +22,6 @@ class AliMUONResponseTrigger : public AliMUONResponse
   virtual Int_t SetGenerCluster(){return 0;}
 
   virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
-
-  static const Float_t fgkTofLimit;  ///< Particle above this threshold are discarded
   
  private:
 
