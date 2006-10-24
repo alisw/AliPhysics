@@ -142,7 +142,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     Float_t *amplFloat = clust->GetEnergiesList();
     Float_t *timeFloat = clust->GetTimeList();
     Int_t   *digitInts = clust->GetAbsId();
-    Float_t *elipAxis  = new Float_t();
+    Float_t elipAxis[2];
     clust->GetElipsAxis(elipAxis);
 
    // Convert Float_t* and Int_t* to UShort_t* to save memory
