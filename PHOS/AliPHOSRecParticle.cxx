@@ -180,7 +180,8 @@ Int_t AliPHOSRecParticle::GetPrimaryIndex() const
       bestDigitIndex = iDigit;
     }
   }
-  digit = gime->Digit(digitList[bestDigitIndex]);
+  if (bestDigitIndex>-1)
+    digit = gime->Digit(digitList[bestDigitIndex]);
   if (digit==0) return -12345;
 
   
