@@ -50,7 +50,6 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONTriggerConstants.h"
 #include "AliMUONTriggerCircuitNew.h"
 #include "AliMUONTriggerCrateStore.h"
 
@@ -439,7 +438,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   Int_t PRINTOUT = (event2Check == 0 ) ? 0 : 1 ;  
 
   // Book a ntuple for more detailled studies
-  TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:splpt:smlpt:undeflpt:sphpt:smhpt:undefhpt:uplpt:uphpt");
+  TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:splpt:smlpt:undeflpt:sphpt:smhpt:undefhpt:uplpt:uphpt:lplpt:lplpt");
   TNtuple *TgtupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","ev:LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:y11:y21:x11");
 
   // counters
@@ -547,7 +546,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     } // end of loop on Local Trigger
 
     // fill ntuple
-    TgtupleGlo->Fill(ievent,nglobals,gloTrg->SinglePlusLpt(),gloTrg->SingleMinusLpt(),gloTrg->SingleUndefLpt(),gloTrg->SinglePlusHpt(),gloTrg->SingleMinusHpt(),gloTrg->SingleUndefHpt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt());
+    TgtupleGlo->Fill(ievent,nglobals,gloTrg->SinglePlusLpt(),gloTrg->SingleMinusLpt(),gloTrg->SingleUndefLpt(),gloTrg->SinglePlusHpt(),gloTrg->SingleMinusHpt(),gloTrg->SingleUndefHpt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairLikeLpt(),gloTrg->PairLikeHpt());
 
     muondata.ResetTrigger();
     if (event2Check!=0) ievent=nevents;
