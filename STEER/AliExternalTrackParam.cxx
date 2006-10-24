@@ -178,8 +178,8 @@ Double_t AliExternalTrackParam::GetLinearD(Double_t xv,Double_t yv) const {
   return -d;
 }
 
-Bool_t AliExternalTrackParam::
-CorrectForMaterial(Double_t d,  Double_t x0, Double_t mass) {
+Bool_t AliExternalTrackParam::CorrectForMaterial
+(Double_t d,  Double_t x0, Double_t mass, Double_t (*Bethe)(Double_t)) {
   //------------------------------------------------------------------
   // This function corrects the track parameters for the crossed material
   // "d"    - the thickness (fraction of the radiation length)
@@ -213,14 +213,30 @@ CorrectForMaterial(Double_t d,  Double_t x0, Double_t mass) {
   //Energy losses************************
   if (x0!=0. && beta2<1) {
      d*=x0;
-     Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d;
-     if (beta2/(1-beta2)>3.5*3.5)
-       dE=0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2)*d;
+     Double_t dE=Bethe(beta2)*d;
+     Double_t e=TMath::Sqrt(p2 + mass*mass);
+     fP4*=(1.- e/p2*dE);
 
-     fP4*=(1.- TMath::Sqrt(p2 + mass*mass)/p2*dE);
+     // Approximate energy loss fluctuation (M.Ivanov)
+     const Double_t cnst=0.07; // To be tuned.  
+     Double_t sigmadE=cnst*TMath::Sqrt(TMath::Abs(dE)); 
+     fC44+=((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
+ 
   }
 
   return kTRUE;
+}
+
+Double_t ApproximateBetheBloch(Double_t beta2) {
+  //------------------------------------------------------------------
+  // This is an approximation of the Bethe-Bloch formula with 
+  // the density effect taken into account at beta*gamma > 3.5
+  // (the approximation is reasonable only for solid materials) 
+  //------------------------------------------------------------------
+  if (beta2/(1-beta2)>3.5*3.5)
+     return 0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2);
+
+  return 0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2);
 }
 
 Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {

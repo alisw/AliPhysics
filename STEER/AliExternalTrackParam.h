@@ -31,6 +31,8 @@ const Double_t kMostProbablePt=0.35;
 
 class AliESDVertex;
 
+Double_t ApproximateBetheBloch(Double_t);
+
 class AliExternalTrackParam: public TObject {
  public:
   AliExternalTrackParam();
@@ -87,7 +89,8 @@ class AliExternalTrackParam: public TObject {
   void GetDZ(Double_t x,Double_t y,Double_t z,Double_t b,Float_t dz[2]) const; 
   Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
-  Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass);
+  Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
+			    Double_t (*f)(Double_t)=ApproximateBetheBloch);
   Double_t GetPredictedChi2(Double_t p[2],Double_t cov[3]) const;
   Bool_t Update(Double_t p[2],Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
