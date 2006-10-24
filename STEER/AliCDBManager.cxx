@@ -34,10 +34,14 @@ ClassImp(AliCDBParam)
 
 ClassImp(AliCDBManager)
 
+//TODO OCDB and Reference folder should not be fully hardcoded but built from run number (or year/LHC period)
+TString AliCDBManager::fgkCondUri("alien://folder=/alice/cern.ch/user/a/aliprod/testCDB/CDB?user=aliprod");
+TString AliCDBManager::fgkRefUri("alien://folder=/alice/cern.ch/user/a/aliprod/testCDB/Reference?user=aliprod");
 AliCDBManager* AliCDBManager::fgInstance = 0x0;
 
 //_____________________________________________________________________________
-AliCDBManager* AliCDBManager::Instance() {
+AliCDBManager* AliCDBManager::Instance()
+{
 // returns AliCDBManager instance (singleton)
 
 	if (!fgInstance) {
@@ -58,6 +62,8 @@ void AliCDBManager::Init() {
 	if(!gSystem->Exec("root-config --has-alien |grep yes 2>&1 > /dev/null")){ // returns 0 if yes
 		AliInfo("AliEn classes enabled in Root. AliCDBGrid factory registered.");
 		RegisterFactory(new AliCDBGridFactory());
+		fCondParam = CreateParameter(fgkCondUri);
+		fRefParam = CreateParameter(fgkRefUri);
 	}
 }
 //_____________________________________________________________________________
@@ -74,6 +80,8 @@ void AliCDBManager::Destroy() {
 //_____________________________________________________________________________
 AliCDBManager::AliCDBManager():
   TObject(),
+  fCondParam(0),
+  fRefParam(0),
   fFactories(),
   fActiveStorages(),
   fSpecificStorages(),
@@ -98,6 +106,8 @@ AliCDBManager::~AliCDBManager() {
 	fFactories.Delete();
 	fDrainStorage = 0x0;
 	fDefaultStorage = 0x0;
+	delete fCondParam;
+	delete fRefParam;
 }
 
 //_____________________________________________________________________________
@@ -233,7 +243,7 @@ void AliCDBManager::SetDrain(const char* dbString) {
 //_____________________________________________________________________________
 void AliCDBManager::SetDrain(const AliCDBParam* param) {
 // set drain storage from AliCDBParam
-	
+
 	fDrainStorage = GetStorage(param);
 }
 
@@ -248,7 +258,7 @@ void AliCDBManager::SetDrain(AliCDBStorage* storage) {
 Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 // drain retrieved object to drain storage
 
-	AliInfo("Draining into drain storage...");
+	AliDebug(2, "Draining into drain storage...");
 	return fDrainStorage->Put(entry);
 }
 
@@ -264,7 +274,7 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 // set default storage from AliCDBParam object
 	
-	fDrainStorage = GetStorage(param);
+	fDefaultStorage = GetStorage(param);
 }
 
 //_____________________________________________________________________________
@@ -320,7 +330,7 @@ AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* calibType) {
 
 	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(calibType);
 	if(!checkPar){
-		AliError(Form("%s storage not found!",calibType));
+		AliError(Form("%s storage not found!", calibType));
 		return NULL;
 	} else {
 		return GetStorage(checkPar);
@@ -411,7 +421,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 		entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
 
   	if(entry) {
-		AliInfo(Form("Object %s retrieved from cache !!",query.GetPath().Data()));
+		AliDebug(2, Form("Object %s retrieved from cache !!",query.GetPath().Data()));
 		return entry;
 	}
   	
@@ -516,20 +526,20 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData){
+Bool_t AliCDBManager::Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData, DataType type){
 // store an AliCDBEntry object into the database
 
 	AliCDBEntry anEntry(object, id, metaData);
-	return Put(&anEntry);
+	return Put(&anEntry, type);
 
 }
 
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::Put(AliCDBEntry* entry){
+Bool_t AliCDBManager::Put(AliCDBEntry* entry, DataType type){
 // store an AliCDBEntry object into the database
 
-	if(!fDefaultStorage) {
+	if(type == kPrivate && !fDefaultStorage) {
 		AliError("No storage set!");
 		return kFALSE;
 	}
@@ -558,15 +568,23 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry){
 	
 	if(aPar) {
 		aStorage=GetStorage(aPar);
-		TString str = aPar->GetURI();
-		AliDebug(2,Form("Storing object into storage: %s",str.Data()));
-		
 	} else {
-		aStorage=GetDefaultStorage();
-		AliDebug(2,"Storing object into default storage");	
+		switch(type){
+			case kCondition:
+				aStorage = GetStorage(fCondParam);
+				break;
+			case kReference:
+				aStorage = GetStorage(fRefParam);
+				break;
+			case kPrivate:
+				aStorage = GetDefaultStorage();
+				break;
+		}
 	}
 
-	return aStorage->Put(entry);
+	AliDebug(2,Form("Storing object into storage: %s", aStorage->GetURI().Data()));
+
+	return aStorage->Put(entry, type);
 
 
 }
@@ -586,38 +604,30 @@ void AliCDBManager::CacheEntry(const char* path, AliCDBEntry* entry)
 void AliCDBManager::Print(Option_t* /*option*/) const
 {
 // Print list of active storages and their URIs
-	AliInfo(Form("Run number: %d\n",fRun));
 
-	TString output;
-	output = "Cache is ";
+	TString output=Form("Run number = %d; ",fRun);
+	output += "Cache is ";
 	if(!fCache) output += "NOT ";
-	output += "ACTIVE\n";
-	AliInfo(output.Data());
+	output += Form("ACTIVE; Number of active storages: %d\n",fActiveStorages.GetEntries());
 
 	if(fDefaultStorage) {
-		AliInfo("*** Default Storage: ***");
-		output = Form("%s\n",fDefaultStorage->GetURI().Data());
-		AliInfo(output.Data());
+		output += Form("\t*** Default Storage URI: \"%s\"\n",fDefaultStorage->GetURI().Data());
+//		AliInfo(output.Data());
 	}
 	if(fSpecificStorages.GetEntries()>0) {
-		AliInfo("*** Specific Storages: ***");
 		TIter iter(fSpecificStorages.GetTable());
 		TPair *aPair=0;
+		Int_t i=1;
 		while((aPair = (TPair*) iter.Next())){
-			output = Form("Key: %s - Storage: %s",
-				((TObjString*) aPair->Key())->GetName(),
+			output += Form("\t*** Specific storage %d: Path \"%s\" -> URI \"%s\"\n",
+				i++, ((TObjString*) aPair->Key())->GetName(),
 				((AliCDBParam*) aPair->Value())->GetURI().Data());
-			AliInfo(output.Data());
 		}
-		printf("\n");
 	}
 	if(fDrainStorage) {
-		AliInfo("*** Drain Storage: ***");
-		output = Form("%s\n",fDrainStorage->GetURI().Data());
-		AliInfo(output.Data());
+		output += Form("*** Drain Storage URI: %s\n",fDrainStorage->GetURI().Data());
 	}
-	AliInfo(Form("Total number of active storages: %d",fActiveStorages.GetEntries()));
-
+	AliInfo(output.Data());
 }
 
 //_____________________________________________________________________________
@@ -704,6 +714,19 @@ void AliCDBManager::QueryCDB() {
 	}
 }
 
+//______________________________________________________________________________________________
+const char* AliCDBManager::GetDataTypeName(DataType type)
+{
+  // returns the name (string) of the data type
+
+      switch (type){
+	    case kCondition: return "Conditions";
+	    case kReference: return "Reference";
+	    case kPrivate: return "Private";
+     }
+     return 0;
+
+}
 
 ///////////////////////////////////////////////////////////
 // AliCDBManager Parameter class                         //

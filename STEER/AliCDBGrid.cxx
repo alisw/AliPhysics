@@ -365,9 +365,9 @@ AliCDBEntry* AliCDBGrid::GetEntryFromFile(TString& filename, const AliCDBId* dat
 		AliCDBId entryId = anEntry->GetId();
 		if(!((entryId.GetAliCDBRunRange()).IsEqual(&(dataId->GetAliCDBRunRange()))) ||
 			entryId.GetVersion() != dataId->GetVersion()){
-			AliWarning(Form("Either RunRange or gridVersion in the object's metadata"));
-			AliWarning(Form("do noth match with fileName numbers:"));
-			AliWarning(Form("someone renamed file by hand!"));
+			AliWarning(Form("Mismatch between file name and object's Id!"));
+			AliWarning(Form("File name: %s", dataId->ToString().Data()));
+			AliWarning(Form("Object's Id: %s", entryId.ToString().Data()));
 		}
 	}
 

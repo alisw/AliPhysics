@@ -286,9 +286,9 @@ void AliReconstruction::InitCDBStorage()
     fCDBUri = "";
   }
   else {
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning(Form("Default CDB storage is set to: %s",fCDBUri.Data()));
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliDebug(2, Form("Default CDB storage is set to: %s",fCDBUri.Data()));
+    AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     man->SetDefaultStorage(fCDBUri);
   }
 
@@ -296,9 +296,9 @@ void AliReconstruction::InitCDBStorage()
   for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
     TObject* obj = fSpecCDBUri[i];
     if (!obj) continue;
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning(Form("Specific CDB storage for %s is set to: %s",obj->GetName(),obj->GetTitle()));
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliDebug(2, Form("Specific CDB storage for %s is set to: %s",obj->GetName(),obj->GetTitle()));
+    AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     man->SetSpecificStorage(obj->GetName(), obj->GetTitle());
   }
   man->Print();

@@ -14,22 +14,26 @@
 
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
+#include "AliCDBManager.h"
 
 #include <TList.h>
 #include <TObjArray.h>
 
 class AliCDBEntry;
 class AliCDBPath;
+class AliCDBParam;
 
 class AliCDBStorage: public TObject {
 
 public:
+
 	AliCDBStorage();
 
 	void SetURI(const TString& uri) {fURI = uri;}
 	const TString& GetURI() const {return fURI;}
 	const TString& GetType() const {return fType;}
 	const TString& GetBaseFolder() const {return fBaseFolder;}
+	AliCDBManager::DataType GetDataType() const;
 
 
 	void ReadSelectionFromFile(const char *fileName);
@@ -73,9 +77,9 @@ public:
 	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1);
 	
-	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData);
-	Bool_t Put(AliCDBEntry* entry);
-
+	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData,
+				AliCDBManager::DataType type=AliCDBManager::kPrivate);
+	Bool_t Put(AliCDBEntry* entry, AliCDBManager::DataType type=AliCDBManager::kPrivate);
 
 	virtual Bool_t IsReadOnly() const = 0;
 	virtual Bool_t HasSubVersion() const = 0;

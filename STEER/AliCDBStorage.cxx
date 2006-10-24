@@ -15,8 +15,8 @@
 
 #include <TKey.h>
 #include <TH1.h>
-#include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "AliCDBGrid.h"
 
 #include "AliCDBEntry.h"
 #include "AliLog.h"
@@ -227,7 +227,7 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
   	if (entry) {
 		// this is to make the SHUTTLE output lighter
 		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
-    			AliInfo(Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
+    			AliDebug(2, Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
   	} else {
 		// this is to make the SHUTTLE output lighter
 		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
@@ -284,16 +284,14 @@ TList* AliCDBStorage::GetAll(const AliCDBId& query) {
   		TH1::AddDirectory(kTRUE);
 
  	Int_t nEntries = result->GetEntries();
- 	if (nEntries) {
- 		 AliInfo(Form("%d objects retrieved.",nEntries));
-		 for(int i=0; i<nEntries;i++){
-		 	AliCDBEntry *entry = (AliCDBEntry*) result->At(i);
-			AliInfo(Form("%s",entry->GetId().ToString().Data()));
-		 
-		 }
- 	} else {
-     		 AliInfo(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
+
+ 	AliInfo(Form("%d objects retrieved. Request was: %s",
+		 	nEntries, query.ToString().Data()));
+	for(int i=0; i<nEntries;i++){
+		AliCDBEntry *entry = (AliCDBEntry*) result->At(i);
+		AliInfo(Form("%s",entry->GetId().ToString().Data()));
 	}
+
 
 	// if drain storage is set, drain entries into drain storage
 	if((AliCDBManager::Instance())->IsDrainSet()){
@@ -326,16 +324,16 @@ TList* AliCDBStorage::GetAll(const AliCDBPath& path,
 
 
 //_____________________________________________________________________________
-Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData) {
+Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData, AliCDBManager::DataType type) {
 // store an AliCDBEntry object into the database
 	
 	AliCDBEntry anEntry(object, id, metaData);
 
-	return Put(&anEntry);
-} 
+	return Put(&anEntry, type);
+}
 
 //_____________________________________________________________________________
-Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
+Bool_t AliCDBStorage::Put(AliCDBEntry* entry, AliCDBManager::DataType type) {
 // store an AliCDBEntry object into the database
 
 	if (!entry){
@@ -353,6 +351,15 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
 		AliError(Form("Unspecified entry ID: %s",
 			entry->GetId().ToString().Data()));
 		return kFALSE;
+	}
+
+	AliCDBManager::DataType expectedType = GetDataType();
+
+	if(expectedType != AliCDBManager::kPrivate && type != expectedType) {
+		AliError(Form("It is forbidden to store %s data into a folder of type %s!",
+			AliCDBManager::GetDataTypeName(type),
+			AliCDBManager::GetDataTypeName(expectedType)));
+			return 0;
 	}
 
 	// set object's class name into metaData!
@@ -418,3 +425,18 @@ void AliCDBStorage::PrintQueryCDB(){
 	AliInfo(Form("%s", message.Data()));
 }
 
+//_____________________________________________________________________________
+AliCDBManager::DataType AliCDBStorage::GetDataType() const {
+// returns the type of the data that should be stored into this storage:
+// kConditions: conditions data; kReference: reference data; kPrivate: private (user-defined) data type
+
+	if(GetType() != "alien") return AliCDBManager::kPrivate;
+
+	TString condFolder = ((AliCDBGridParam*) AliCDBManager::Instance()->GetCondParam())->GetDBFolder();
+	TString refFolder = ((AliCDBGridParam*) AliCDBManager::Instance()->GetRefParam())->GetDBFolder();
+
+	if(GetBaseFolder().Contains(condFolder)) return AliCDBManager::kCondition;
+	if(GetBaseFolder().Contains(refFolder)) return AliCDBManager::kReference;
+
+	return AliCDBManager::kPrivate;
+}

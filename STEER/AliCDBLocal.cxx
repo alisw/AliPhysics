@@ -413,10 +413,11 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
  
  	if(!((entryId.GetAliCDBRunRange()).IsEqual(& dataId.GetAliCDBRunRange())) || 
     		(entryId.GetVersion() != dataId.GetVersion()) || (entryId.GetSubVersion() != dataId.GetSubVersion())){
-    		AliWarning(Form("Either object Id's RunRange or version do noth match with file name:"));
-    		AliWarning("someone renamed file by hand!");
+		AliWarning(Form("Mismatch between file name and object's Id!"));
+		AliWarning(Form("File name: %s", dataId.ToString().Data()));
+		AliWarning(Form("Object's Id: %s", entryId.ToString().Data()));
         }
-	
+
 	// close file, return retieved entry
 	file.Close();
 	return anEntry;

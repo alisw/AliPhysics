@@ -26,16 +26,20 @@ class AliCDBParam;
 class AliCDBManager: public TObject {
 
  public:
+	enum DataType {kCondition=0, kReference, kPrivate};
 
 	void RegisterFactory(AliCDBStorageFactory* factory);
 
 	Bool_t HasStorage(const char* dbString) const;
 
 	AliCDBParam* CreateParameter(const char* dbString) const;
+	AliCDBParam* GetCondParam() const {return fCondParam;}
+	AliCDBParam* GetRefParam() const {return fRefParam;}
+	static const char* GetDataTypeName(DataType type);
 
 	AliCDBStorage* GetStorage(const char* dbString);
 	AliCDBStorage* GetStorage(const AliCDBParam* param);
-	
+
 	TList* GetActiveStorages();
 
 	void SetDefaultStorage(const char* dbString);
@@ -45,7 +49,7 @@ class AliCDBManager: public TObject {
 	Bool_t IsDefaultStorageSet() const {return fDefaultStorage != 0;}
 	AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
 	void UnsetDefaultStorage() {fDefaultStorage = 0x0;}
-	
+
 	void SetSpecificStorage(const char* calibType, const char* dbString);
 	void SetSpecificStorage(const char* calibType, AliCDBParam* param);
 
@@ -73,9 +77,10 @@ class AliCDBManager: public TObject {
 	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1); 
 
-	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData);
-	Bool_t Put(AliCDBEntry* entry);
-		
+	Bool_t Put(TObject* object, AliCDBId& id,
+			AliCDBMetaData* metaData, DataType type=kPrivate);
+	Bool_t Put(AliCDBEntry* entry, DataType type=kPrivate);
+
 	void SetCacheFlag(Bool_t cacheFlag) {fCache=cacheFlag;}
 	Bool_t GetCacheFlag() const {return fCache;}
 
@@ -97,7 +102,12 @@ class AliCDBManager: public TObject {
 	static AliCDBManager* Instance(); 
 
  private:
-		
+
+	static TString fgkCondUri;	// URI of the Conditions data base folder
+	static TString fgkRefUri;	// URI of the Reference data base folder
+	AliCDBParam* fCondParam; 	// Conditions data storage parameters
+	AliCDBParam* fRefParam;		// Reference data storage parameters
+
 	AliCDBManager();
 	AliCDBManager(const AliCDBManager & source);
 	AliCDBManager & operator=(const AliCDBManager & source);
