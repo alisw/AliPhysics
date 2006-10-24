@@ -112,31 +112,34 @@ AliITSMultReconstructor& AliITSMultReconstructor::operator=(const AliITSMultReco
 //______________________________________________________________________
 AliITSMultReconstructor::~AliITSMultReconstructor(){
   // Destructor
-  if(fhClustersDPhiAcc)delete fhClustersDPhiAcc;
-  if(fhClustersDThetaAcc)delete fhClustersDThetaAcc;
-  if(fhClustersDZetaAcc)delete fhClustersDZetaAcc;
-  if(fhClustersDPhiAll)delete fhClustersDPhiAll;
-  if(fhClustersDThetaAll)delete fhClustersDThetaAll;
-  if(fhClustersDZetaAll)delete fhClustersDZetaAll;
-  if(fhDPhiVsDThetaAll)delete fhDPhiVsDThetaAll;
-  if(fhDPhiVsDThetaAcc)delete fhDPhiVsDThetaAcc;
-  if(fhDPhiVsDZetaAll)delete fhDPhiVsDZetaAll;
-  if(fhDPhiVsDZetaAcc)delete fhDPhiVsDZetaAcc;
-  if(fhetaTracklets)delete fhetaTracklets;
-  if(fhphiTracklets)delete fhphiTracklets;
-  if(fhetaClustersLay1)delete fhetaClustersLay1;
-  if(fhphiClustersLay1)delete fhphiClustersLay1;
-  if(fClustersLay1){
-    for(Int_t i=0; i<300000; i++) {
-      delete [] fClustersLay1[i];
-      delete [] fClustersLay2[i];
-      delete [] fTracklets[i];
-    }
-    delete fClustersLay1;
-    delete  fClustersLay2;
-    delete fTracklets;
+
+  // delete histograms
+  delete fhClustersDPhiAcc;
+  delete fhClustersDThetaAcc;
+  delete fhClustersDZetaAcc;
+  delete fhClustersDPhiAll;
+  delete fhClustersDThetaAll;
+  delete fhClustersDZetaAll;
+  delete fhDPhiVsDThetaAll;
+  delete fhDPhiVsDThetaAcc;
+  delete fhDPhiVsDZetaAll;
+  delete fhDPhiVsDZetaAcc;
+  delete fhetaTracklets;
+  delete fhphiTracklets;
+  delete fhetaClustersLay1;
+  delete fhphiClustersLay1;
+
+  // delete arrays
+  for(Int_t i=0; i<300000; i++) {
+    delete [] fClustersLay1[i];
+    delete [] fClustersLay2[i];
+    delete [] fTracklets[i];
   }
-  if(fAssociationFlag)delete fAssociationFlag;
+  delete [] fClustersLay1;
+  delete [] fClustersLay2;
+  delete [] fTracklets;
+
+  delete [] fAssociationFlag;
 }
 
 //____________________________________________________________________
