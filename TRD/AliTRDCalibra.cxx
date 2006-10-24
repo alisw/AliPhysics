@@ -724,8 +724,10 @@ Bool_t AliTRDCalibra::FitCHOnline()
     
     // Number of entries
     Double_t nentries = 0.0;
-    for (Int_t k = 0; k < fNumberBinCharge; k++) {
-      nentries += projch->GetBinContent(k+1);
+    if (projch) {
+      for (Int_t k = 0; k < fNumberBinCharge; k++) {
+        nentries += projch->GetBinContent(k+1);
+      }
     }
   
     // Rebin and statistic stuff
@@ -874,10 +876,12 @@ Bool_t AliTRDCalibra::FitCHOnline(TTree *tree)
     
     // Number of entries
     Double_t nentries = 0.0;
-    for (Int_t k = 0; k < projch->GetXaxis()->GetNbins(); k++) {
-      nentries += projch->GetBinContent(k+1);
-    }
-    
+    if (projch) {
+      for (Int_t k = 0; k < projch->GetXaxis()->GetNbins(); k++) {
+        nentries += projch->GetBinContent(k+1);
+      }
+    }    
+
     // Rebin and statistic stuff
     // Rebin
     if ((fRebin  >  1) && 
@@ -4421,20 +4425,20 @@ void AliTRDCalibra::CreateFitHistoT0(Int_t nbins, Double_t low, Double_t high)
   fErrorT0[1] = new TH1I("errorT01","",300  ,-0.1,0.1);
 
   fCoefT0[0]->SetXTitle("Det/pad groups");
-  fCoefT0[0]->SetYTitle("t0 [#mus]");
+  fCoefT0[0]->SetYTitle("t0 [timebin]");
   fCoefT0[1]->SetXTitle("Det/pad groups");
-  fCoefT0[1]->SetYTitle("t0 [#mus]");
+  fCoefT0[1]->SetYTitle("t0 [timebin]");
   fCoefT0[2]->SetXTitle("Det/pad groups");
-  fCoefT0[2]->SetYTitle("t0 [#mus]");
+  fCoefT0[2]->SetYTitle("t0 [timebin]");
 
   fDeltaT0[0]->SetXTitle("Det/pad groups");
-  fDeltaT0[0]->SetYTitle("#Deltat0 [#mus]");
+  fDeltaT0[0]->SetYTitle("#Deltat0 [timebin]");
   fDeltaT0[1]->SetXTitle("Det/pad groups");
-  fDeltaT0[1]->SetYTitle("#Deltat0 [#mus]");
+  fDeltaT0[1]->SetYTitle("#Deltat0 [timebin]");
 
-  fErrorT0[0]->SetXTitle("#Deltat0 [#mus]");
+  fErrorT0[0]->SetXTitle("#Deltat0 [timebin]");
   fErrorT0[0]->SetYTitle("counts");
-  fErrorT0[1]->SetXTitle("#Deltat0 [#mus]");
+  fErrorT0[1]->SetXTitle("#Deltat0 [timebin]");
   fErrorT0[1]->SetYTitle("counts");
 
   fCoefT0[0]->SetStats(0);
@@ -7403,7 +7407,11 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
     binmin = 2;
     AliInfo("Put the binmax from 1 to 2 to enable the fit");
   }
-  pente->Fit("pol2","0MR","",TMath::Max(pente->GetBinCenter(binmin-1),0.0),TMath::Min(pente->GetBinCenter(binmin+2),(Double_t) limit));
+  pente->Fit("pol2"
+            ,"0MR"
+            ,""
+            ,TMath::Max(pente->GetBinCenter(binmin-1),             0.0)
+            ,TMath::Min(pente->GetBinCenter(binmin+2),(Double_t) limit));
   Float_t l3P1dr = pente->GetFunction("pol2")->GetParameter(1);
   Float_t l3P2dr = pente->GetFunction("pol2")->GetParameter(2);
   if (l3P2dr != 0) {
@@ -7415,7 +7423,10 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
       (fPhd[1] > fPhd[0])) {
     fVdriftCoef[1] = (kDrWidth) / (fPhd[2]-fPhd[1]);
     if (fPhd[0] >= 0.0) {
-      fT0Coef[1] = fPhd[0] - fT0Shift;
+      fT0Coef[1] = (fPhd[0] - fT0Shift) / widbins;
+      if (fT0Coef[1] <= -1.0) {
+        fT0Coef[1] = - TMath::Abs(fT0Coef[2]);
+      }
     }
     else {
       fT0Coef[1] = -TMath::Abs(fT0Coef[2]);
