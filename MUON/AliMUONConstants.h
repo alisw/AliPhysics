@@ -66,7 +66,9 @@ class AliMUONConstants : public TObject {
     static Float_t Pitch()    {return fgPitch;}
     /// Return wire pitch for Station 1 & 2
     static Float_t PitchSt1() {return fgPitchSt1;}
-
+    /// Return Trigger ToF Limit (75 ns)
+    static Float_t TriggerTofLimit() {return fgkTriggerTofLimit;}
+ 
  protected:
     /// Default constructor
     AliMUONConstants() : TObject() {}
@@ -101,6 +103,7 @@ class AliMUONConstants : public TObject {
     static Float_t  fgPitchSt1;          ///< Wire pitch for Station 1
 
     static Int_t    fgMaxZoom;           ///< Maximum Zoom for event display
+    static Float_t fgkTriggerTofLimit;   ///< Particle above this threshold are discarded in trigger algorithm
     
     ClassDef(AliMUONConstants, 0) // MUON global constants 
 };

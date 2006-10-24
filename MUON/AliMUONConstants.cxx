@@ -42,8 +42,7 @@ Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Int_t   AliMUONConstants::fgNDetElem = 228;
 Int_t   AliMUONConstants::fgNGeomModules = 20;
-
-
+Float_t AliMUONConstants::fgkTriggerTofLimit = 75E-9;
 
 Float_t AliMUONConstants::fgDefaultChamberZ[14] = 
   {-526.16, -545.24, -676.4, -695.4, // St12
