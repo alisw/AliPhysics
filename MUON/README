@@ -161,7 +161,7 @@ For MUON, HELIX is a not a good approximation and we must
 use RKUTA to get the optimal mass resolution of the 
 spectrometer. The choice of HELIX or RKUTA is done in the
 config file when the magnetic field is defined:
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", TRACKING, FACTOR, MAXB, AliMagFMaps::k4kG);
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", TRACKING, FACTOR, MAXB, AliMagFMaps::k5kG);
   gAlice->SetField(field);
 TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX))
 FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.

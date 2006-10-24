@@ -179,7 +179,7 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
   // set  mag field 
   // waiting for mag field in CDB 
   printf("Loading field map...\n");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kFALSE);
 
   // open run loader and load gAlice, kinematics and header

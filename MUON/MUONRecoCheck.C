@@ -78,7 +78,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
   // set  mag field 
   // waiting for mag field in CDB 
   printf("Loading field map...\n");
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kFALSE);
 
   AliRunLoader* runLoader = AliRunLoader::Open(filename,"read");
