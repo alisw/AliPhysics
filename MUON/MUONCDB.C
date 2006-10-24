@@ -346,7 +346,7 @@ void plot(const AliMUONV2DStore& store, const char* name, Int_t nbins)
   {
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
-    Int_t station = AliMpDEmanager::GetChamberId(detElemId);
+    Int_t station = AliMpDEManager::GetChamberId(detElemId);
     
     AliMpVSegmentation* seg = 
       segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
