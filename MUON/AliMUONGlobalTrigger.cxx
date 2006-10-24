@@ -39,23 +39,18 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger()
   : TObject(),
     fSinglePlusLpt(0),
     fSinglePlusHpt(0),
-    fSinglePlusApt(0),
   
     fSingleMinusLpt(0),
     fSingleMinusHpt(0),
-    fSingleMinusApt(0),
   
     fSingleUndefLpt(0),
     fSingleUndefHpt(0),
-    fSingleUndefApt(0),
     
     fPairUnlikeLpt(0),
     fPairUnlikeHpt(0),
-    fPairUnlikeApt(0),
     
     fPairLikeLpt(0),
-    fPairLikeHpt(0),
-    fPairLikeApt(0)
+    fPairLikeHpt(0)
 { 
   /// Default constructor 
 }
@@ -66,23 +61,18 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger(const AliMUONGlobalTrigger& theMUONGl
   
     fSinglePlusLpt(theMUONGlobalTrig.fSinglePlusLpt),
     fSinglePlusHpt(theMUONGlobalTrig.fSinglePlusHpt),
-    fSinglePlusApt(theMUONGlobalTrig.fSinglePlusApt),
     
     fSingleMinusLpt(theMUONGlobalTrig.fSingleMinusLpt),
     fSingleMinusHpt(theMUONGlobalTrig.fSingleMinusHpt),
-    fSingleMinusApt(theMUONGlobalTrig.fSingleMinusApt),
     
     fSingleUndefLpt(theMUONGlobalTrig.fSingleUndefLpt),
     fSingleUndefHpt(theMUONGlobalTrig.fSingleUndefHpt),
-    fSingleUndefApt(theMUONGlobalTrig.fSingleUndefApt),
     
     fPairUnlikeLpt(theMUONGlobalTrig.fPairUnlikeLpt),
     fPairUnlikeHpt(theMUONGlobalTrig.fPairUnlikeHpt),
-    fPairUnlikeApt(theMUONGlobalTrig.fPairUnlikeApt),
     
     fPairLikeLpt(theMUONGlobalTrig.fPairLikeLpt),
-    fPairLikeHpt(theMUONGlobalTrig.fPairLikeHpt),
-    fPairLikeApt(theMUONGlobalTrig.fPairLikeApt)
+    fPairLikeHpt(theMUONGlobalTrig.fPairLikeHpt)
 {
   /// Copy constructor
 }
@@ -107,23 +97,18 @@ AliMUONGlobalTrigger& AliMUONGlobalTrigger::operator=(const AliMUONGlobalTrigger
 
   fSinglePlusLpt  = theMUONGlobalTrig.fSinglePlusLpt;
   fSinglePlusHpt  = theMUONGlobalTrig.fSinglePlusHpt;
-  fSinglePlusApt  = theMUONGlobalTrig.fSinglePlusApt;
   
   fSingleMinusLpt = theMUONGlobalTrig.fSingleMinusLpt;
   fSingleMinusHpt = theMUONGlobalTrig.fSingleMinusHpt;
-  fSingleMinusApt = theMUONGlobalTrig.fSingleMinusApt;
   
   fSingleUndefLpt = theMUONGlobalTrig.fSingleUndefLpt;
   fSingleUndefHpt = theMUONGlobalTrig.fSingleUndefHpt;
-  fSingleUndefApt = theMUONGlobalTrig.fSingleUndefApt;
   
   fPairUnlikeLpt  = theMUONGlobalTrig.fPairUnlikeLpt;
   fPairUnlikeHpt  = theMUONGlobalTrig.fPairUnlikeHpt;
-  fPairUnlikeApt  = theMUONGlobalTrig.fPairUnlikeApt;
   
   fPairLikeLpt    = theMUONGlobalTrig.fPairLikeLpt;
   fPairLikeHpt    = theMUONGlobalTrig.fPairLikeHpt;
-  fPairLikeApt    = theMUONGlobalTrig.fPairLikeApt;
 
   return *this;
 }
@@ -137,23 +122,18 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger(Int_t *singlePlus,
   
     fSinglePlusLpt(singlePlus[0]),
     fSinglePlusHpt(singlePlus[1]),
-    fSinglePlusApt(singlePlus[2]),
 
     fSingleMinusLpt(singleMinus[0]),
     fSingleMinusHpt(singleMinus[1]),
-    fSingleMinusApt(singleMinus[2]),
 
     fSingleUndefLpt(singleUndef[0]),
     fSingleUndefHpt(singleUndef[1]),
-    fSingleUndefApt(singleUndef[2]),
 
     fPairUnlikeLpt(pairUnlike[0]),
     fPairUnlikeHpt(pairUnlike[1]),
-    fPairUnlikeApt(pairUnlike[2]),
 
     fPairLikeLpt(pairLike[0]),    
-    fPairLikeHpt(pairLike[1]),  
-    fPairLikeApt(pairLike[2])
+    fPairLikeHpt(pairLike[1])
   
 {
   /// Set the Global Trigger object
@@ -168,23 +148,18 @@ void AliMUONGlobalTrigger::SetGlobalPattern(Int_t gloTrigPat)
 
   fSinglePlusLpt = (gloTrigPat     ) & 0x1;
   fSinglePlusHpt = (gloTrigPat >> 1) & 0x1; 
-  fSinglePlusApt = (gloTrigPat >> 2) & 0x1;
 
-  fSingleMinusLpt = (gloTrigPat >> 3) & 0x1;
-  fSingleMinusHpt = (gloTrigPat >> 4) & 0x1;
-  fSingleMinusApt = (gloTrigPat >> 5) & 0x1; 
+  fSingleMinusLpt = (gloTrigPat >> 2) & 0x1;
+  fSingleMinusHpt = (gloTrigPat >> 3) & 0x1;
 
-  fSingleUndefLpt = (gloTrigPat >> 6) & 0x1;
-  fSingleUndefHpt = (gloTrigPat >> 7) & 0x1;
-  fSingleUndefApt = (gloTrigPat >> 8) & 0x1;
+  fSingleUndefLpt = (gloTrigPat >> 4) & 0x1;
+  fSingleUndefHpt = (gloTrigPat >> 5) & 0x1;
 
-  fPairUnlikeLpt = (gloTrigPat >> 9) & 0x1;
-  fPairUnlikeHpt = (gloTrigPat >> 10) & 0x1;
-  fPairUnlikeApt = (gloTrigPat >> 11) & 0x1;
+  fPairUnlikeLpt = (gloTrigPat >> 6) & 0x1;
+  fPairUnlikeHpt = (gloTrigPat >> 7) & 0x1;
 
-  fPairLikeLpt   = (gloTrigPat >> 12) & 0x1;
-  fPairLikeHpt   = (gloTrigPat >> 13) & 0x1;
-  fPairLikeApt   = (gloTrigPat >> 14) & 0x1;
+  fPairLikeLpt   = (gloTrigPat >> 8) & 0x1;
+  fPairLikeHpt   = (gloTrigPat >> 9) & 0x1;
 
 }
 //-----------------------------------------------------------
@@ -193,26 +168,21 @@ void AliMUONGlobalTrigger::SetGlobalPattern(UShort_t globalResponse)
   /// Set class member from global response
   /// coming from trigger electronics
   /// should be unformized with rawdata (->oct 06)
-  /// [Hpt, Lpt, Apt] with [+, -, US, LS]
-  fSinglePlusLpt = ((globalResponse & 0xC0)  >>  6) == 2;
-  fSinglePlusHpt = ((globalResponse & 0xC00) >> 10) == 2;
-  fSinglePlusApt = ((globalResponse & 0xC)   >>  2) == 2;
+  /// [Hpt, Lpt] with [+, -, US, LS]
+  fSinglePlusHpt = ((globalResponse & 0xC0)  >>  6) == 2;
+  fSinglePlusLpt = ((globalResponse & 0xC)   >>  2) == 2;
 
-  fSingleMinusLpt = ((globalResponse & 0xC0)  >>  6) == 1;
-  fSingleMinusHpt = ((globalResponse & 0xC00) >> 10) == 1;
-  fSingleMinusApt = ((globalResponse & 0xC)   >>  2) == 1;
+  fSingleMinusHpt = ((globalResponse & 0xC0)  >>  6) == 1;
+  fSingleMinusLpt = ((globalResponse & 0xC)   >>  2) == 1;
 
-  fSingleUndefLpt = ((globalResponse & 0xC0)  >>  6) == 3;
-  fSingleUndefHpt = ((globalResponse & 0xC00) >> 10) == 3;
-  fSingleUndefApt = ((globalResponse & 0xC)   >>  2) == 3;
+  fSingleUndefHpt = ((globalResponse & 0xC0)  >>  6) == 3;
+  fSingleUndefLpt = ((globalResponse & 0xC)   >>  2) == 3;
 
-  fPairUnlikeLpt = (globalResponse & 0x10)  >> 4;
-  fPairUnlikeHpt = (globalResponse & 0x100) >> 8;
-  fPairUnlikeApt = (globalResponse & 0x1);
+  fPairUnlikeHpt = (globalResponse & 0x10)  >> 4;
+  fPairUnlikeLpt = (globalResponse & 0x1);
   
-  fPairLikeLpt = (globalResponse & 0x20)  >> 5;
-  fPairLikeHpt = (globalResponse & 0x200) >> 9;
-  fPairLikeApt = (globalResponse & 0x2)   >> 1;
+  fPairLikeHpt = (globalResponse & 0x20)  >> 5;
+  fPairLikeLpt = (globalResponse & 0x2)   >> 1;
   
 }
 //-----------------------------------------------------------
@@ -244,23 +214,18 @@ Int_t AliMUONGlobalTrigger::GetGlobalPattern() const
 
   if (SinglePlusLpt())  gloTrigPat|= 0x1;
   if (SinglePlusHpt())  gloTrigPat|= 0x2;
-  if (SinglePlusApt())  gloTrigPat|= 0x4;
  
-  if (SingleMinusLpt()) gloTrigPat|= 0x8;
-  if (SingleMinusHpt()) gloTrigPat|= 0x10;
-  if (SingleMinusApt()) gloTrigPat|= 0x20;
+  if (SingleMinusLpt()) gloTrigPat|= 0x4;
+  if (SingleMinusHpt()) gloTrigPat|= 0x8;
  
-  if (SingleUndefLpt()) gloTrigPat|= 0x40;
-  if (SingleUndefHpt()) gloTrigPat|= 0x80;
-  if (SingleUndefApt()) gloTrigPat|= 0x100;
+  if (SingleUndefLpt()) gloTrigPat|= 0x10;
+  if (SingleUndefHpt()) gloTrigPat|= 0x20;
  
-  if (PairUnlikeLpt())  gloTrigPat|= 0x200;
-  if (PairUnlikeHpt())  gloTrigPat|= 0x400;
-  if (PairUnlikeApt())  gloTrigPat|= 0x800;
+  if (PairUnlikeLpt())  gloTrigPat|= 0x40;
+  if (PairUnlikeHpt())  gloTrigPat|= 0x80;
 
-  if (PairLikeLpt())    gloTrigPat|= 0x1000;
-  if (PairLikeHpt())    gloTrigPat|= 0x2000;
-  if (PairLikeApt())    gloTrigPat|= 0x4000;
+  if (PairLikeLpt())    gloTrigPat|= 0x100;
+  if (PairLikeHpt())    gloTrigPat|= 0x200;
 
   return gloTrigPat;
 
@@ -284,7 +249,7 @@ UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
   if (SinglePlusHpt() || SingleMinusHpt())  respS |= 0x2;
 
   if (PairLikeLpt())    respLS |= 0x1;
-  if (PairLikeHpt())    respLS |= 0x1;
+  if (PairLikeHpt())    respLS |= 0x2;
   respLS <<= 2;
 
   if (PairUnlikeLpt())  respUS |= 0x1;
@@ -306,29 +271,29 @@ void AliMUONGlobalTrigger::Print(Option_t* opt) const
   sopt.ToUpper();
   if ( sopt.Contains("FULL") ) { 
 
-      printf("===================================================\n");
-      printf(" Global Trigger output       Low pt  High pt   All\n");
+      printf("=============================================\n");
+      printf(" Global Trigger output       Low pt  High pt\n");
       printf(" number of Single Plus      :\t");
-      printf("%i\t%i\t%i\t",SinglePlusLpt(),SinglePlusHpt(),SinglePlusApt());
+      printf("%i\t%i\t",SinglePlusLpt(),SinglePlusHpt());
       printf("\n");
       
       printf(" number of Single Minus     :\t");
-      printf("%i\t%i\t%i\t",SingleMinusLpt(),SingleMinusHpt(),SingleMinusApt());
+      printf("%i\t%i\t",SingleMinusLpt(),SingleMinusHpt());
       printf("\n");
       
       printf(" number of Single Undefined :\t"); 
-      printf("%i\t%i\t%i\t",SingleUndefLpt(),SingleUndefHpt(),SingleUndefApt());
+      printf("%i\t%i\t",SingleUndefLpt(),SingleUndefHpt());
       printf("\n");
       
       printf(" number of UnlikeSign pair  :\t"); 
-      printf("%i\t%i\t%i\t",PairUnlikeLpt(),PairUnlikeHpt(),PairUnlikeApt());
+      printf("%i\t%i\t",PairUnlikeLpt(),PairUnlikeHpt());
       printf("\n");
       
       printf(" number of LikeSign pair    :\t");  
-      printf("%i\t%i\t%i\t",PairLikeLpt(),PairLikeHpt(),PairLikeApt());
+      printf("%i\t%i\t",PairLikeLpt(),PairLikeHpt());
       printf("\n");
       
-      printf("===================================================\n");
+      printf("=============================================\n");
   }  
 }
 

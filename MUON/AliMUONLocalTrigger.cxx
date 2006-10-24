@@ -40,7 +40,6 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
     fLoStripY(0),
     fLoLpt(0),
     fLoHpt(0),
-    fLoApt(0),
     
     fX1Pattern(0),
     fX2Pattern(0),
@@ -66,7 +65,6 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
       fLoStripY(theMUONLocalTrig.fLoStripY),
       fLoLpt(theMUONLocalTrig.fLoLpt),
       fLoHpt(theMUONLocalTrig.fLoHpt),
-      fLoApt(theMUONLocalTrig.fLoApt),
       
       fX1Pattern(theMUONLocalTrig.fX1Pattern),
       fX2Pattern(theMUONLocalTrig.fX2Pattern),
@@ -102,7 +100,6 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
   fLoStripY  = theMUONLocalTrig.fLoStripY;           
   fLoLpt     = theMUONLocalTrig.fLoLpt;
   fLoHpt     = theMUONLocalTrig.fLoHpt;
-  fLoApt     = theMUONLocalTrig.fLoApt;
 
   fX1Pattern  = theMUONLocalTrig.fX1Pattern;
   fX2Pattern  = theMUONLocalTrig.fX2Pattern;
@@ -129,8 +126,7 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& di
     fLoStripY(localtr[3]),          
     fLoLpt(localtr[4]),
     fLoHpt(localtr[5]),
-    fLoApt(localtr[6]),
-    // keep on with this way
+     // keep on with this way
     fX1Pattern((UShort_t)localtr[7]),
     fX2Pattern((UShort_t)localtr[8]),
     fX3Pattern((UShort_t)localtr[9]),
@@ -250,7 +246,7 @@ void AliMUONLocalTrigger::Print(Option_t* opt) const
  
   if ( sopt.Contains("FULL") ) { 
 
-      printf("<AliMUONLocalTrigger> Circuit %d StripX %d Dev %d StripY %d Lpt %d Hpt %d Apt %d \n",LoCircuit(),LoStripX(),LoDev(),LoStripY(),LoLpt(),LoHpt(),LoApt());
+      printf("<AliMUONLocalTrigger> Circuit %d StripX %d Dev %d StripY %d Lpt %d Hpt %d \n",LoCircuit(),LoStripX(),LoDev(),LoStripY(),LoLpt(),LoHpt());
 
   }
 }

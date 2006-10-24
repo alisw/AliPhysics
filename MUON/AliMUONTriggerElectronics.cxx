@@ -656,9 +656,8 @@ void AliMUONTriggerElectronics::Digits2Trigger()
           
           //             SAVE LUT OUTPUT 
           UShort_t response = board->GetResponse();
-          fLocalTrigger->SetLoLpt((response & 12) >> 2);
-          fLocalTrigger->SetLoHpt((response & 48) >> 4);
-          fLocalTrigger->SetLoApt(response &  3);
+          fLocalTrigger->SetLoHpt((response & 12) >> 2);
+	  fLocalTrigger->SetLoLpt(response &  3);
 
 	  // calculates regional inputs from local for the moment
 	  UInt_t hPt = (response >> 4) & 0x3;

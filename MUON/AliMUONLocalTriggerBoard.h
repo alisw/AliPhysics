@@ -146,7 +146,6 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       Int_t    fLutLpt[2];        ///< Low Pt cuts estimated from LUT
       Int_t    fLutHpt[2];        ///< High Pt cuts estimated from LUT
-      Int_t    fLutApt[2];        ///< All Pt cuts estimated from LUT
 
 //    Outputs of the local logic
       Int_t    fOutput;           ///< Board has triggered

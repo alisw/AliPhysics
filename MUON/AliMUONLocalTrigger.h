@@ -39,8 +39,6 @@ class AliMUONLocalTrigger : public TObject {
   Int_t LoLpt() const {return fLoLpt;}
         /// Return High p
   Int_t LoHpt() const {return fLoHpt;}
-        /// Return All pt
-  Int_t LoApt() const {return fLoApt;}
 
            /// Return X strip pattern for chamber 11
   UShort_t GetX1Pattern() const {return fX1Pattern;}
@@ -76,8 +74,6 @@ class AliMUONLocalTrigger : public TObject {
   void SetLoLpt(Int_t loLpt)     {fLoLpt = loLpt;}
            /// Set High pt
   void SetLoHpt(Int_t loHpt)     {fLoHpt = loHpt;}
-           /// Set All pt
-  void SetLoApt(Int_t loApt)     {fLoApt = loApt;}
 
            /// Set X strip pattern for chamber 11
   void SetX1Pattern(UShort_t pat) {fX1Pattern = pat;}
@@ -121,7 +117,6 @@ private:
   Int_t fLoStripY;  ///< Y strip in MT11 
   Int_t fLoLpt;     ///< Low pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
   Int_t fLoHpt;     ///< High pt 0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
-  Int_t fLoApt;     ///< All pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
 
   UShort_t fX1Pattern; ///< X strip pattern for chamber 11
   UShort_t fX2Pattern; ///< X strip pattern for chamber 12

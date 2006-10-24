@@ -63,10 +63,9 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
   
   FILE *fdat=fopen(digitdat,"w");          
   
-  Int_t nevents,coincmuon,muonapt,muonlpt,muonhpt;
+  Int_t nevents,coincmuon,muonlpt,muonhpt;
   Int_t CoincMuPlus,CoincMuMinus;
   coincmuon=0;
-  muonapt=0;
   muonlpt=0;  
   muonhpt=0;         
   
@@ -161,7 +160,6 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
     for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
       gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
       
-       if (gloTrg->PairUnlikeApt()>=1) muonapt++;                     
        if (gloTrg->PairUnlikeLpt()>=1) muonlpt++;
        if (gloTrg->PairUnlikeHpt()>=1) muonhpt++;
                                
@@ -176,11 +174,10 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
   
  
   // calculate efficiency with as a ref. at least 3/4 planes fired
-  Float_t efficiencyapt,efficiencylpt,efficiencyhpt;
-  Double_t coincmu,aptmu,lptmu,hptmu;  
+  Float_t efficiencylpt,efficiencyhpt;
+  Double_t coincmu,lptmu,hptmu;  
   Float_t error;  
-  coincmu=Double_t(coincmuon);  
-  aptmu=Double_t(muonapt);
+  coincmu=Double_t(coincmuon);
   lptmu=Double_t(muonlpt); 
   hptmu=Double_t(muonhpt); 
 
@@ -189,15 +186,10 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
   fprintf(fdat,"\n"); 
   fprintf(fdat," Number of events = %d \n",nevents);  
   fprintf(fdat," Number of events with 3/4 coinc = %d \n",coincmuon);  
-  fprintf(fdat," Number of dimuons with 3/4 coinc Apt cut = %d \n",muonapt);  
   fprintf(fdat," Nomber of dimuons with 3/4 coinc Lpt cut = %d \n",muonlpt);  
   fprintf(fdat," Number of dimuons with 3/4 coinc Hpt cut = %d \n",muonhpt);  
   fprintf(fdat,"\n");
   
-  efficiencyapt=aptmu/coincmu;
-  error=efficiencyapt*TMath::Sqrt((aptmu+coincmu)/(aptmu*coincmu));
-  fprintf(fdat," Efficiency Apt cut = %4.4f +/- %4.4f\n",efficiencyapt,error);
-               
   efficiencylpt=lptmu/coincmu;  
   error=efficiencylpt*TMath::Sqrt((lptmu+coincmu)/(lptmu*coincmu));  
   fprintf(fdat," Efficiency Lpt cut = %4.4f +/- %4.4f\n",efficiencylpt,error); 

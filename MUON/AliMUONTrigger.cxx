@@ -108,23 +108,18 @@ void AliMUONTrigger::Trigger()
    // set CTP
    if (globalTrigger->SinglePlusLpt())  SetInput("MUON_SPlus_LPt_L0");
    if (globalTrigger->SinglePlusHpt())  SetInput("MUON_SPlus_HPt_L0");
-   if (globalTrigger->SinglePlusApt())  SetInput("MUON_SPlus_All_L0");
    
    if (globalTrigger->SingleMinusLpt()) SetInput("MUON_SMinus_LPt_L0");
    if (globalTrigger->SingleMinusHpt()) SetInput("MUON_SMinus_HPt_L0");
-   if (globalTrigger->SingleMinusApt()) SetInput("MUON_SMinus_All_L0");
    
    if (globalTrigger->SingleUndefLpt()) SetInput("MUON_SUndef_LPt_L0");
    if (globalTrigger->SingleUndefHpt()) SetInput("MUON_SUndef_HPt_L0");
-   if (globalTrigger->SingleUndefApt()) SetInput("MUON_SUndef_All_L0");
    
    if (globalTrigger->PairUnlikeLpt())  SetInput("MUON_Unlike_LPt_L0");
    if (globalTrigger->PairUnlikeHpt())  SetInput("MUON_Unlike_HPt_L0");
-   if (globalTrigger->PairUnlikeApt())  SetInput("MUON_Unlike_All_L0");
    
    if (globalTrigger->PairLikeLpt())    SetInput("MUON_Like_LPt_L0");
    if (globalTrigger->PairLikeHpt())    SetInput("MUON_Like_HPt_L0");
-   if (globalTrigger->PairLikeApt())    SetInput("MUON_Like_All_L0");
 
    muonData->ResetTrigger();
    muonLoader->UnloadDigits();
