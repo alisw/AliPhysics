@@ -30,10 +30,12 @@
 #pragma link C++ class AliTPCDigitsArray+;
 
 #pragma link C++ class AliTPCROC+;
+#pragma link C++ class AliTPCmapper+;
 #pragma link C++ class AliTPCCalROC-;
 #pragma link C++ class AliTPCCalPad+;
 #pragma link C++ class AliTPCCalDet+;
 #pragma link C++ class  AliTPCcalibDB+;
+#pragma link C++ class  AliTPCLaserTracks+;
 
 #pragma link C++ class AliTPCAltroMapping+;
 #pragma link C++ class AliTPCRawStream+;

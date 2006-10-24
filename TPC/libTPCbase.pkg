@@ -4,9 +4,11 @@ SRCS:=  AliSegmentID.cxx  AliSegmentArray.cxx AliDigits.cxx AliH2F.cxx \
         AliTPCParamSR.cxx AliTPCParamCR.cxx \
         AliTPCdigit.cxx \
         AliSimDigits.cxx AliDigitsArray.cxx AliTPCDigitsArray.cxx \
+	AliTPCmapper.cxx \
 	AliTPCROC.cxx AliTPCCalROC.cxx AliTPCCalPad.cxx AliTPCCalDet.cxx \
 	AliTPCcalibDB.cxx \
-	AliTPCAltroMapping.cxx AliTPCRawStream.cxx AliTPCRawStreamOld.cxx
+	AliTPCAltroMapping.cxx AliTPCRawStream.cxx AliTPCRawStreamOld.cxx \
+	AliTPCLaserTracks.cxx
 
 
 	
