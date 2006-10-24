@@ -1200,9 +1200,11 @@ void   AliTPCtrackerMI::Transform(AliCluster * cluster){
   TGeoHMatrix  *mat = fParam->GetClusterMatrix(cluster->GetDetector());
   //TGeoHMatrix  mat;
   Double_t pos[3]= {cluster->GetX(),cluster->GetY(),cluster->GetZ()};
-  Double_t posC[3];
-  //mat.LocalToMaster(pos,posC);
-  mat->LocalToMaster(pos,posC);
+  Double_t posC[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+  if (mat) mat->LocalToMaster(pos,posC);
+  else{
+    // chack Loading of Geo matrices from GeoManager - TEMPORARY FIX
+  }
   cluster->SetX(posC[0]);
   cluster->SetY(posC[1]);
   cluster->SetZ(posC[2]);
