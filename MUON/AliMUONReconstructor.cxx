@@ -452,8 +452,10 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   // Get vertex 
   Double_t vertex[3] = {0};
   const AliESDVertex *esdVert = esd->GetVertex(); 
-  if (esdVert) esdVert->GetXYZ(vertex);
-  
+  if (esdVert->GetNContributors()) {
+    esdVert->GetXYZ(vertex);
+    printf("find vertex\n");
+  }
   // setting ESD MUON class
   AliESDMuonTrack* theESDTrack = new  AliESDMuonTrack() ;
 
@@ -487,7 +489,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
     trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
    
-    if (esdVert)
+    if (esdVert->GetNContributors())
       trackParam->ExtrapToVertex(vertex[0],vertex[1],vertex[2]);
 
     bendingSlope            = trackParam->GetBendingSlope();

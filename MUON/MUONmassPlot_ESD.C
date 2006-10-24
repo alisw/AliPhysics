@@ -181,9 +181,9 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
     }
 
     // get the SPD reconstructed vertex (vertexer) and fill the histogram
-    AliESDVertex* Vertex = (AliESDVertex*) esd->AliESD::GetVertex();
+    AliESDVertex* Vertex = (AliESDVertex*) esd->GetVertex();
 
-    if (Vertex) {
+    if (Vertex->GetNContributors()) {
       fZVertex = Vertex->GetZv();
       fYVertex = Vertex->GetYv();
       fXVertex = Vertex->GetXv();
@@ -201,7 +201,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 
       AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
 
-      if (!Vertex) {
+      if (!Vertex->GetNContributors()) {
 	//re-extrapolate to vertex, if not kown before.
 	trackParam.GetParamFrom(*muonTrack);
 	trackParam.ExtrapToVertex(fXVertex, fYVertex, fZVertex);
@@ -257,7 +257,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 	  
 	  AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack2);
 
-	  if (!Vertex) {
+	  if (!Vertex->GetNContributors()) {
 	    trackParam.GetParamFrom(*muonTrack);
 	    trackParam.ExtrapToVertex(fXVertex, fYVertex, fZVertex);
 	    trackParam.SetParamFor(*muonTrack);
