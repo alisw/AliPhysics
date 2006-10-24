@@ -25,7 +25,6 @@
 
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerLut.h"
-#include "AliMUONTriggerConstants.h"
 
 #include "AliLog.h"
 
@@ -82,7 +81,7 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
 
    for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
 
-   for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = fLutApt[i] = 0;
+   for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
 }
 
 //___________________________________________
@@ -114,7 +113,7 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
 
    for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
 
-   for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = fLutApt[i] = 0;
+   for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
 }
 
 //______________________________________________________________________________
@@ -166,7 +165,7 @@ void AliMUONLocalTriggerBoard::Reset()
    
    fStripX11 = fStripY11 = fDev = 0;
 
-   for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = fLutApt[i] = 0;
+   for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
 }
 
 //___________________________________________
@@ -1112,7 +1111,7 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
       fDev += 15;
 
 //    GET LUT OUTPUT FOR icirc/istripX1/deviation/istripY
-      fLUT->GetLutOutput(fNumber, fStripX11, fDev, fStripY11, fLutLpt, fLutHpt, fLutApt);
+      fLUT->GetLutOutput(fNumber, fStripX11, fDev, fStripY11, fLutLpt, fLutHpt);
    }  
 }
 
@@ -1235,19 +1234,17 @@ void AliMUONLocalTriggerBoard::Resp(Option_t *option) const
       for (Int_t i=0; i<4; i++) deviation += Int_t(fMinDev[i]<<i);   
 
       Float_t pt = 0.; //triggerCircuit->PtCal(fStripX11, fDev, fStripY11);
-      printf("-------------------------------------------\n");
+      printf("-------------------------------------\n");
       printf(" Local Trigger info for circuit Id %i (number %i ) \n", idCircuit, icirc);
       printf(" istripX1 signDev deviation istripY = %i %i %i %i \n", fStripX11, fMinDev[4], deviation, iStripY);
       printf(" pt = %f  (GeV/c) \n", pt);
-      printf("-------------------------------------------\n");
+      printf("-------------------------------------\n");
       printf(" Local Trigger Lut Output = Lpt : ");
       for (Int_t i=1; i>=0; i--) printf("%i", fLutLpt[i]);
       printf(" Hpt : ");
       for (Int_t i=1; i>=0; i--) printf("%i", fLutHpt[i]);
-      printf(" Apt : ");
-      for (Int_t i=1; i>=0; i--) printf("%i", fLutApt[i]);
       printf("\n");
-      printf("-------------------------------------------\n");
+      printf("-------------------------------------\n");
    }      
 }
 
@@ -1331,15 +1328,13 @@ void AliMUONLocalTriggerBoard::Response()
 
    TrigY(yY1, yY2, yY3, yY4, yY3U, yY3D, yY4U, yY4D);
    
-// ASIGN fLutLpt, fLutHpt, fLutApt
+// ASIGN fLutLpt, fLutHpt
    LocalTrigger(); 
 
-   fResponse = fLutApt[0]                      + 
-               static_cast<int>(fLutApt[1]<<1) + 
-               static_cast<int>(fLutLpt[0]<<2) + 
-               static_cast<int>(fLutLpt[1]<<3) + 
-               static_cast<int>(fLutHpt[0]<<4) + 
-               static_cast<int>(fLutHpt[1]<<5);
+   fResponse = fLutLpt[0]                      + 
+       static_cast<int>(fLutLpt[1]<<1) + 
+       static_cast<int>(fLutHpt[0]<<2) + 
+       static_cast<int>(fLutHpt[1]<<3);
 }
 
 ClassImp(AliMUONLocalTriggerBoard)
