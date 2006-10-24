@@ -3,7 +3,6 @@
 SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONMathieson.cxx \
         AliMUONConstants.cxx \
-        AliMUONTriggerConstants.cxx \
         AliMUONDataInterface.cxx \
         AliMUONLoader.cxx \
         AliMUONChamber.cxx \

@@ -29,7 +29,6 @@
 
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
-#include "AliMUONTriggerConstants.h"
 #include "AliMUONChamber.h"
 #include "AliMUONResponseV0.h"
 #include "AliMUONResponseTrigger.h"

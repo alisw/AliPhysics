@@ -149,7 +149,7 @@ void AliMUONTriggerSegmentation::GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc,
 {    
 /// converts ixLoc & iyLoc into ixGlo & iyGLo (module,strip number)
 
-    ixGlo = 0; // see AliMUONTriggerConstants::fgkModuleI
+    ixGlo = 0; // 
     iyGlo = 0; // from 0 to (fNtrip-1) in module   
     if (fBending) { 
 	ixGlo = 10*fLineNumber + ixLoc;

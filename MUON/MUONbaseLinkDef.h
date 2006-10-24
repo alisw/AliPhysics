@@ -19,7 +19,6 @@
 
 // info classes 
 #pragma link C++ class AliMUONConstants+; 
-#pragma link C++ class AliMUONTriggerConstants+; 
 #pragma link C++ class AliMUONDataInterface+; 
 #pragma link C++ class AliMUONLoader+; 
 #pragma link C++ class AliMUONChamber+; 

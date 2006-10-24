@@ -36,7 +36,6 @@
 #include "AliMUONSt345SlatSegmentationV2.h"
 #include "AliMUONTriggerSegmentation.h"
 #include "AliMUONTriggerSegmentationV2.h"
-#include "AliMUONTriggerConstants.h"
 
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"

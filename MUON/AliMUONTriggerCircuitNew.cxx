@@ -27,7 +27,6 @@
 #include "AliMUONTriggerCircuitNew.h"
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONTriggerConstants.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
 #include "AliMUONLocalTriggerBoard.h"
