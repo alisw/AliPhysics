@@ -16,7 +16,9 @@
 #include "TGenerator.h"
 //*KEND.
 #endif
-typedef enum {kDpmMb, kDpmMbNonDiffr} DpmProcess_t;
+
+typedef enum {kDpmMb, kDpmMbNonDiffr, kDpmDiffr, kDpmSingleDiffr, kDpmDoubleDiffr} DpmProcess_t;
+
 
 class TDPMjet : public TGenerator {
 

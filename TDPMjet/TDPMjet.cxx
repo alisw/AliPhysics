@@ -261,11 +261,17 @@ void TDPMjet::Initialize()
 //  PHOJET specific
     fprintf(out, "PHOINPUT\n");
     fprintf(out, "DEBUG      0 0 0 \n");
-    
+
     if (fProcess == kDpmMb) {
 	fprintf(out, "PROCESS           1 0 1 1 1 1 1 1\n");
     } else if (fProcess == kDpmMbNonDiffr) {
 	fprintf(out, "PROCESS           1 0 1 1 0 0 0 1\n");
+    } else if (fProcess == kDpmDiffr) {
+	fprintf(out, "PROCESS           0 0 0 0 1 1 1 0\n");
+    }else if (fProcess == kDpmSingleDiffr) {
+        fprintf(out, "PROCESS           0 0 0 0 1 1 0 0\n");
+    }else if (fProcess == kDpmDoubleDiffr) {
+        fprintf(out, "PROCESS           0 0 0 0 0 0 1 0\n");
     }
     
     fprintf(out, "ENDINPUT\n");
