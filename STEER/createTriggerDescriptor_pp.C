@@ -23,8 +23,8 @@ createTriggerDescriptor_pp()
    descrip.AddCondition( "ITS_SPD_HMULT_L0","ITS_SPD_HMULT_L0","SPD high mult. 150 ",       (ULong64_t)0x1 << 6 );
 
    // standalong MUON inputs
-   descrip.AddCondition( "MUON_SPlus_LPt_L0",
-                         "MUON_SPlus_LPt_L0",           "Muon Plus Low Pt",
+   descrip.AddCondition( "MUON_Single_LPt_L0",
+                         "MUON_Single_LPt_L0",           "Muon Plus Low Pt",
                          (ULong64_t)0x1 << 7 );
    descrip.AddCondition( "MUON_Unlike_LPt_L0",
                          "MUON_Unlike_LPt_L0",          "Di Muon Unlike sign Low Pt",
@@ -49,7 +49,7 @@ createTriggerDescriptor_pp()
                          "Minimum Bias with TOF",
                          (ULong64_t)0x1 << 13 );
 
-   descrip.AddCondition( "ITS_SPD_GFO_L0 & VZERO_AND & MUON_SPlus_LPt_L0",
+   descrip.AddCondition( "ITS_SPD_GFO_L0 & VZERO_AND & MUON_Single_LPt_L0",
                          "MUONSingle_MB",                "Muon Single Low Pt Minimum Bias",
                          (ULong64_t)0x1 << 14 );
    descrip.AddCondition( "ITS_SPD_GFO_L0 & VZERO_AND & MUON_Unlike_LPt_L0",
