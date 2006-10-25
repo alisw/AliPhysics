@@ -7,9 +7,13 @@
 #include <TNamed.h>
 #include <TAtt3D.h>
 #include <TAttBBox.h>
+#include <Reve/RenderElement.h>
 #include <Reve/Reve.h>
+#include "ZTrans.h"
+
 #include <vector>
 
+class TGeoMatrix;
 class TRandom;
 
 namespace Reve {
@@ -19,27 +23,37 @@ struct Box
   Float_t  vertices[24];
   UChar_t  color[4];
 
-  Box(Color_t col = 1)
-  { Reve::ColorFromIdx(col, color); }
-  Box(Color_t col, Float_t* p)
-  { Reve::ColorFromIdx(col, color); memcpy(vertices, p, 24*sizeof(Float_t)); }
+  Box(Color_t col = 1);
+  Box(Color_t col, Float_t* p);
+  Box(Color_t col, Float_t  x, Float_t  y, Float_t  z,
+                   Float_t dx, Float_t dy, Float_t dz);
 
   Box(TRandom& rnd, Float_t origin, Float_t size);
 
   virtual ~Box() {}
+
+  void MakeAxisAlignedBox(Float_t  x, Float_t  y, Float_t  z,
+			  Float_t dx, Float_t dy, Float_t dz);
 
   ClassDef(Box, 1);
 };
 
 /**************************************************************************/
 
-class BoxSet: public TNamed, public TAtt3D, public TAttBBox
+class BoxSet: public RenderElement,
+              public TNamed,
+              public TAtt3D,
+              public TAttBBox
 {
   friend class BoxSetGL;
 
+public:
+  enum RenderMode_e { RM_AsIs, RM_Line, RM_Fill };
+
 protected:
-  Double_t          fMatrix[16];
-  Bool_t            fTrans;
+  Color_t           fDefaultColor;
+  RenderMode_e      fRenderMode;
+  ZTrans            fHMTrans;
 
 public:
   std::vector<Box>  fBoxes;
@@ -47,14 +61,20 @@ public:
   BoxSet(const Text_t* n="BoxSet", const Text_t* t="");
   virtual ~BoxSet() {}
 
+  void AddBox(const Box& b) { fBoxes.push_back(b); }
   void ClearSet() { fBoxes.clear(); }
 
-  Bool_t GetTrans() const   { return fTrans; }
-  void   SetTrans(Bool_t t) { fTrans = t; }
-  Double_t* ArrTrans()      { return fMatrix; }
+  virtual Bool_t CanEditMainColor() { return kTRUE; }
 
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option = "");
+
+  RenderMode_e  GetRenderMode() const { return fRenderMode; }
+  void SetRenderMode(RenderMode_e rm) { fRenderMode = rm; }
+
+  ZTrans& RefHMTrans() { return fHMTrans; }
+  void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
+  void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 
   void Test(Int_t nboxes);
 

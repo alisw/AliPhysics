@@ -13,29 +13,52 @@ using namespace Reve;
 // Box
 /**************************************************************************/
 
+Box::Box(Color_t col)
+{
+  Reve::ColorFromIdx(col, color);
+}
+
+Box::Box(Color_t col, Float_t* p)
+{
+  Reve::ColorFromIdx(col, color);
+  memcpy(vertices, p, 24*sizeof(Float_t));
+}
+
+Box::Box(Color_t col, Float_t  x, Float_t  y, Float_t  z,
+                      Float_t dx, Float_t dy, Float_t dz)
+{
+  Reve::ColorFromIdx(col, color);
+  MakeAxisAlignedBox(x, y, z, dx, dy, dz);
+}
+
 Box::Box(TRandom& rnd, Float_t origin, Float_t size)
 {
   Reve::ColorFromIdx(Int_t(30*rnd.Rndm()), color);
-  Float_t x0 = 2*origin*(rnd.Rndm() - 0.5);
-  Float_t y0 = 2*origin*(rnd.Rndm() - 0.5);
-  Float_t z0 = 2*origin*(rnd.Rndm() - 0.5);
-  Float_t xo = 2*size*(rnd.Rndm() - 0.5);
-  Float_t yo = 2*size*(rnd.Rndm() - 0.5);
-  Float_t zo = 2*size*(rnd.Rndm() - 0.5);
-  Float_t* p = vertices;
-
-  //bottom
-  p[0] = x0 - xo;  p[1] = y0 + yo, p[2] = z0 - zo;  p += 3;
-  p[0] = x0 + xo;  p[1] = y0 + yo, p[2] = z0 - zo;  p += 3;
-  p[0] = x0 + xo;  p[1] = y0 - yo, p[2] = z0 - zo;  p += 3;
-  p[0] = x0 - xo;  p[1] = y0 - yo, p[2] = z0 - zo;  p += 3;
-  //top
-  p[0] = x0 - xo;  p[1] = y0 + yo, p[2] = z0 + zo;  p += 3;
-  p[0] = x0 + xo;  p[1] = y0 + yo, p[2] = z0 + zo;  p += 3;
-  p[0] = x0 + xo;  p[1] = y0 - yo, p[2] = z0 + zo;  p += 3;
-  p[0] = x0 - xo;  p[1] = y0 - yo, p[2] = z0 + zo;
+  Float_t  x = 2*origin*(rnd.Rndm() - 0.5);
+  Float_t  y = 2*origin*(rnd.Rndm() - 0.5);
+  Float_t  z = 2*origin*(rnd.Rndm() - 0.5);
+  Float_t dx = 2*size*(rnd.Rndm() - 0.5);
+  Float_t dy = 2*size*(rnd.Rndm() - 0.5);
+  Float_t dz = 2*size*(rnd.Rndm() - 0.5);
+  MakeAxisAlignedBox(x, y, z, dx, dy, dz);
 }
 
+void Box::MakeAxisAlignedBox(Float_t  x, Float_t  y, Float_t  z,
+			     Float_t dx, Float_t dy, Float_t dz)
+{
+  Float_t* p = vertices;
+  //bottom
+  p[0] = x - dx;  p[1] = y + dy, p[2] = z - dz;  p += 3;
+  p[0] = x + dx;  p[1] = y + dy, p[2] = z - dz;  p += 3;
+  p[0] = x + dx;  p[1] = y - dy, p[2] = z - dz;  p += 3;
+  p[0] = x - dx;  p[1] = y - dy, p[2] = z - dz;  p += 3;
+  //top
+  p[0] = x - dx;  p[1] = y + dy, p[2] = z + dz;  p += 3;
+  p[0] = x + dx;  p[1] = y + dy, p[2] = z + dz;  p += 3;
+  p[0] = x + dx;  p[1] = y - dy, p[2] = z + dz;  p += 3;
+  p[0] = x - dx;  p[1] = y - dy, p[2] = z + dz;
+ 
+}
 
 //______________________________________________________________________
 // BoxSet
@@ -44,8 +67,9 @@ Box::Box(TRandom& rnd, Float_t origin, Float_t size)
 ClassImp(BoxSet)
 
 BoxSet::BoxSet(const Text_t* n, const Text_t* t) :
+  RenderElement(fDefaultColor),
   TNamed(n, t),
-  fTrans(kFALSE)
+  fRenderMode (RM_AsIs)
 {}
 
 /**************************************************************************/
@@ -86,9 +110,7 @@ void BoxSet::Paint(Option_t* /*option*/)
   buff.fID           = this;
   buff.fColor        = 1;
   buff.fTransparency = 0;
-  buff.fLocalFrame   = fTrans;
-  if (fTrans)
-    memcpy(buff.fLocalMaster, fMatrix, 16*sizeof(Double_t));
+  fHMTrans.SetBuffer3D(buff);
   buff.SetSectionsValid(TBuffer3D::kCore);
 
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buff);
