@@ -87,9 +87,6 @@ void AliMUONGlobalTriggerBoard::Response()
       
       rank /= 2; 
    }
-   cout << " ===============================================" << "\n";
-  cout << " here ----------------- " << t[0] << "\n";
-  cout << " ===============================================" << "\n";
    UChar_t sLpt, sHpt, lsLpt, lsHpt, usLpt, usHpt;
    sLpt  = ((t[0] & 0xC)  != 0);
    sHpt  = ((t[0] & 0xC0) != 0);
@@ -105,12 +102,6 @@ void AliMUONGlobalTriggerBoard::Response()
    usHpt <<= 5;
 
    fResponse = sLpt | sHpt | lsLpt | lsHpt | usLpt |usHpt;
-
-   cout << " ===============================================" << "\n";
-   cout << sLpt << " " << sHpt << " " << lsLpt << " "<<  lsHpt << " " 
-	<< " " << usLpt  << " " << usHpt <<"\n";
-  cout << " here +++++++++++++++++++ " << fResponse << "\n";
-  cout << " ===============================================" << "\n";
 }
 
 //___________________________________________
