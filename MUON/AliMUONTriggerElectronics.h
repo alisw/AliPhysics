@@ -52,9 +52,7 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void Feed(UShort_t pattern[2][4]);
 		  virtual void FeedM();
-
-      virtual void BoardName(Int_t ix, Int_t iy, char *name);
-
+		  
       virtual void Reset();
 
       virtual void Scan(Option_t *option);
@@ -62,8 +60,6 @@ class AliMUONTriggerElectronics : public TTask
       virtual void LocalResponse();
       virtual void RegionalResponse();
       virtual void GlobalResponse();
-
-      virtual void BuildName(Int_t icirc, char name[20]);
 
       virtual void DumpOS();
 
@@ -81,7 +77,7 @@ class AliMUONTriggerElectronics : public TTask
       AliMUONTriggerCrateStore  *fCrates;             ///< Crate array
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
       AliMUONData               *fMUONData;           //!< Data container for MUON subsystem 
-      TArrayI                    fDigitNumbers[234];  //!< The digit number that fired a circuit.
+      TArrayI                    fDigitNumbers[235];  //!< The digit number that fired a circuit.
 
       AliMUONLocalTrigger*       fLocalTrigger;       //!< pointer for local trigger container
       AliMUONGlobalTrigger*      fGlobalTrigger;      //!< pointer for global trigger container

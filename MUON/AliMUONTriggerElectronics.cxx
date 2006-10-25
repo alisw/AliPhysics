@@ -518,72 +518,6 @@ void AliMUONTriggerElectronics::GlobalResponse()
   fGlobalTriggerBoard->Response();
 }
 
-//___________________________________________
-void AliMUONTriggerElectronics::BoardName(Int_t ix, Int_t iy, char *name)
-{
-/// BOARD NAME FROM PAD INFO (OLD MAPPING)
-///
-   TString s = (ix>0) ? "R" : "L"; 
-
-   Int_t board = iy / 16, bid[4] = {12,34,56,78}; 
-
-   ix = abs(ix);
-
-   Int_t line = ix / 10, column = ix - 10 * line;
-
-// old scheme: line==1 is line==9
-   line -= 9; line = TMath::Abs(line); line++;
-
-   sprintf(name,"%sC%dL%dB%d", s.Data(), column, line, bid[board]);
-   
-   AliDebug(3, Form("Strip ( %d , %d ) connected to board %s ", ix, iy, name));
-}
-
-//___________________________________________
-void AliMUONTriggerElectronics::BuildName(Int_t icirc, char name[20])
-{
-/// GET BOARD NAME FROM OLD NUMBERING
-///
-   const Int_t kCircuitId[234] = 
-      {
-          111,  121,  131,  141,  151,  161,  171,
-          211,  212,  221,  222,  231,  232,  241,  242,  251,  252,  261,  262,  271,
-          311,  312,  321,  322,  331,  332,  341,  342,  351,  352,  361,  362,  371,
-          411,  412,  413,  421,  422,  423,  424,  431,  432,  433,  434,  441,  442,  451,  452,  461,  462,  471,
-          521,  522,  523,  524,  531,  532,  533,  534,  541,  542,  551,  552,  561,  562,  571, 
-          611,  612,  613,  621,  622,  623,  624,  631,  632,  633,  634,  641,  642,  651,  652,  661,  662,  671,
-          711,  712,  721,  722,  731,  732,  741,  742,  751,  752,  761,  762,  771,
-          811,  812,  821,  822,  831,  832,  841,  842,  851,  852,  861,  862,  871,
-          911,  921,  931,  941,  951,  961,  971,
-         -111, -121, -131, -141, -151, -161, -171,
-         -211, -212, -221, -222, -231, -232, -241, -242, -251, -252, -261, -262, -271,
-         -311, -312, -321, -322, -331, -332, -341, -342, -351, -352, -361, -362, -371,
-         -411, -412, -413, -421, -422, -423, -424, -431, -432, -433, -434, -441, -442, -451, -452, -461, -462, -471,
-         -521, -522, -523, -524, -531, -532, -533, -534, -541, -542, -551, -552, -561, -562, -571, 
-         -611, -612, -613, -621, -622, -623, -624, -631, -632, -633, -634, -641, -642, -651, -652, -661, -662, -671,
-         -711, -712, -721, -722, -731, -732, -741, -742, -751, -752, -761, -762, -771,
-         -811, -812, -821, -822, -831, -832, -841, -842, -851, -852, -861, -862, -871,
-         -911, -921, -931, -941, -951, -961, -971 
-      };
-
-   Int_t b[4] = {12, 34, 56, 78};
-
-   Int_t code = TMath::Abs(kCircuitId[icirc]);
-
-   Int_t lL = code / 100;
-
-   Int_t cC = ( code - 100 * lL ) / 10;
-   
-   Int_t bB = code - 100 * lL - 10 * cC;
-   
-   const char *side = (kCircuitId[icirc]>0) ? "R" : "L";
-
-// lL=1 AT TOP
-   lL -= 9; lL = abs(lL); lL++;
-
-   sprintf(name,"%sC%dL%dB%d",side,cC,lL,b[bB-1]);
-}
-
 //_______________________________________________________________________
 void 
 AliMUONTriggerElectronics::Exec(Option_t*)
@@ -608,21 +542,16 @@ void AliMUONTriggerElectronics::Trigger()
 void AliMUONTriggerElectronics::Digits2Trigger()
 {
   /// Main method to go from digits to trigger decision
-
   AliMUONRegionalTrigger *pRegTrig = new AliMUONRegionalTrigger();
-
   ClearDigitNumbers();
-  
   fMUONData->ResetTrigger(); 
-  
   // RUN THE FULL BEE CHAIN
   Trigger();
-  //  	DumpOS();
+//    DumpOS();
 	
   AliMUONTriggerCrate* cr;
-  
   fCrates->FirstCrate();
-  
+
   while ( ( cr = fCrates->NextCrate() ) )
   {            
     TObjArray *boards = cr->Boards();
@@ -648,7 +577,7 @@ void AliMUONTriggerElectronics::Digits2Trigger()
         {
           
           Int_t icirc = board->GetNumber();
-          
+
           fLocalTrigger->SetLoCircuit(icirc);
           fLocalTrigger->SetLoStripX(board->GetStripX11());
           fLocalTrigger->SetLoDev(board->GetDev());
@@ -667,9 +596,8 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 	  regInpLpt |= lPt << (30 - (j-1)*2);
 	  localMask |= (0x1 << (j-1)); // local mask
 
-
           TBits rrr;
-          rrr.Set(6,&response);
+          rrr.Set(6,&response);	  
           
           //             SAVE BIT PATTERN
           fLocalTrigger->SetX1Pattern(board->GetXY(0,0));
@@ -686,6 +614,7 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 
           //             ADD A NEW LOCAL TRIGGER          
           fMUONData->AddLocalTrigger(*fLocalTrigger);  
+	  
         }
       }
     }
@@ -695,7 +624,7 @@ void AliMUONTriggerElectronics::Digits2Trigger()
     pRegTrig->SetOutput((regBoard->GetResponse() >> 4) & 0xF); // to be uniformized (oct06 ?)
 
     fMUONData->AddRegionalTrigger(*pRegTrig);  
-
+    
   }
   delete pRegTrig;
   
