@@ -438,13 +438,11 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   Int_t PRINTOUT = (event2Check == 0 ) ? 0 : 1 ;  
 
   // Book a ntuple for more detailled studies
-  TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:splpt:smlpt:undeflpt:sphpt:smhpt:undefhpt:uplpt:uphpt:lplpt:lplpt");
+  TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:slpt:shpt:uplpt:uphpt:lplpt:lplpt");
   TNtuple *TgtupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","ev:LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:y11:y21:x11");
 
   // counters
-  Int_t SPLowpt=0,SPHighpt=0;
-  Int_t SMLowpt=0,SMHighpt=0;
-  Int_t SULowpt=0,SUHighpt=0;
+  Int_t SLowpt=0,SHighpt=0;
   Int_t USLowpt=0,USHighpt=0;
   Int_t LSLowpt=0,LSHighpt=0;
 
@@ -521,12 +519,8 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
       gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
       
-      SPLowpt+=gloTrg->SinglePlusLpt() ;
-      SPHighpt+=gloTrg->SinglePlusHpt() ;
-      SMLowpt+=gloTrg->SingleMinusLpt();
-      SMHighpt+=gloTrg->SingleMinusHpt();
-      SULowpt+=gloTrg->SingleUndefLpt();
-      SUHighpt+=gloTrg->SingleUndefHpt();
+      SLowpt+=gloTrg->SingleLpt() ;
+      SHighpt+=gloTrg->SingleHpt() ;
       USLowpt+=gloTrg->PairUnlikeLpt(); 
       USHighpt+=gloTrg->PairUnlikeHpt();
       LSLowpt+=gloTrg->PairLikeLpt(); 
@@ -546,7 +540,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     } // end of loop on Local Trigger
 
     // fill ntuple
-    TgtupleGlo->Fill(ievent,nglobals,gloTrg->SinglePlusLpt(),gloTrg->SingleMinusLpt(),gloTrg->SingleUndefLpt(),gloTrg->SinglePlusHpt(),gloTrg->SingleMinusHpt(),gloTrg->SingleUndefHpt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairLikeLpt(),gloTrg->PairLikeHpt());
+    TgtupleGlo->Fill(ievent,nglobals,gloTrg->SingleLpt(),gloTrg->SingleHpt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairLikeLpt(),gloTrg->PairLikeHpt());
 
     muondata.ResetTrigger();
     if (event2Check!=0) ievent=nevents;
@@ -562,14 +556,8 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     printf("Total number of events processed %d \n", (event2Check==0) ? nevents : 1);
     printf("\n");
     printf(" Global Trigger output       Low pt  High pt\n");
-    printf(" number of Single Plus      :\t");
-    printf("%i\t%i\t",SPLowpt,SPHighpt);
-    printf("\n");
-    printf(" number of Single Minus     :\t");
-    printf("%i\t%i\t",SMLowpt,SMHighpt);
-    printf("\n");
-    printf(" number of Single Undefined :\t"); 
-    printf("%i\t%i\t",SULowpt,SUHighpt);
+    printf(" number of Single           :\t");
+    printf("%i\t%i\t",SLowpt,SHighpt);
     printf("\n");
     printf(" number of UnlikeSign pair  :\t"); 
     printf("%i\t%i\t",USLowpt,USHighpt);

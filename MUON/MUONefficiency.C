@@ -448,11 +448,9 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 	      
 	      //trigger info 
 	      if (ResType == 553)
-		ptTrig = 0x400;// mask for Hpt unlike sign pair
+		ptTrig = 0x20;// mask for Hpt unlike sign pair
 	      else if (ResType == 443)
-		ptTrig = 0x800;// mask for Apt unlike sign pair
-	      else 
-		ptTrig = 0x200;// mask for Lpt unlike sign pair
+		ptTrig = 0x10;// mask for Lpt unlike sign pair
 	      
 	      
 	      if (esd->GetTriggerMask() &  ptTrig) NbTrigger++;

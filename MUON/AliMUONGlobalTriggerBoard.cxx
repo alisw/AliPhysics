@@ -60,8 +60,12 @@ void AliMUONGlobalTriggerBoard::Response()
 {
    // COMPUTE THE GLOBAL TRIGGER BOARD
    // RESPONSE ACCORDING TO THE Algo() METHOD
-   Int_t t[16];
+/// output from global trigger algorithm
+/// [+, -, LS, US] * [Hpt, Lpt]
+/// transformed to [usHpt, usLpt, lsHpt, lsLpt, sHpt, sLpt] according
+/// to Global Trigger Unit user manual
 
+   Int_t t[16];
    for (Int_t i=0;i<16;i++) t[i] = fRegionalResponse[i] & fMask[i];
 
    Int_t rank = 8;
@@ -83,8 +87,30 @@ void AliMUONGlobalTriggerBoard::Response()
       
       rank /= 2; 
    }
+   cout << " ===============================================" << "\n";
+  cout << " here ----------------- " << t[0] << "\n";
+  cout << " ===============================================" << "\n";
+   UChar_t sLpt, sHpt, lsLpt, lsHpt, usLpt, usHpt;
+   sLpt  = ((t[0] & 0xC)  != 0);
+   sHpt  = ((t[0] & 0xC0) != 0);
+   lsLpt = ((t[0] & 0x2)  != 0);
+   lsHpt = ((t[0] & 0x20) != 0);
+   usLpt = ((t[0] & 0x1 ) != 0);
+   usHpt = ((t[0] & 0x10) != 0);
 
-   fResponse = t[0]; // 8-bit [H4:L4]
+   sHpt  <<= 1;
+   lsLpt <<= 2;
+   lsHpt <<= 3;
+   usLpt <<= 4;
+   usHpt <<= 5;
+
+   fResponse = sLpt | sHpt | lsLpt | lsHpt | usLpt |usHpt;
+
+   cout << " ===============================================" << "\n";
+   cout << sLpt << " " << sHpt << " " << lsLpt << " "<<  lsHpt << " " 
+	<< " " << usLpt  << " " << usHpt <<"\n";
+  cout << " here +++++++++++++++++++ " << fResponse << "\n";
+  cout << " ===============================================" << "\n";
 }
 
 //___________________________________________

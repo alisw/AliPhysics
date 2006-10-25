@@ -300,9 +300,9 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 	      hInvMassAll_vs_Pt->Fill(invMass,fVtot.Pt());
 	      Int_t ptTrig;
 	      if (ResType == 553) 
-		ptTrig =  0x400;// mask for Hpt unlike sign pair
+		ptTrig =  0x20;// mask for Hpt unlike sign pair
 	      else 
-		ptTrig =  0x200;// mask for Lpt unlike sign pair
+		ptTrig =  0x10;// mask for Lpt unlike sign pair
 
 	      if (esd->GetTriggerMask() &  ptTrig) NbTrigger++; 
 	      if (invMass > massMin && invMass < massMax) {

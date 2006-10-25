@@ -55,25 +55,14 @@ void AliMUONTrigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "MUON_SPlus_LPt_L0", "Single Plus Low Pt",  0x01 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_SPlus_HPt_L0", "Single Plus High Pt", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_SPlus_All_L0", "Single Plus All",     0x04 ) );
+   fInputs.AddLast( new AliTriggerInput( "MUON_Single_LPt_L0", "Single Low Pt",  0x01 ) );
+   fInputs.AddLast( new AliTriggerInput( "MUON_Single_HPt_L0", "Single High Pt", 0x02 ) );
 
-   fInputs.AddLast( new AliTriggerInput( "MUON_SMinus_LPt_L0", "Single Minus Low Pt",  0x08 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_SMinus_HPt_L0", "Single Minus High Pt", 0x10 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_SMinus_All_L0", "Single Minus All",     0x20 ) );
+   fInputs.AddLast( new AliTriggerInput( "MUON_Unlike_LPt_L0", "Dimuon Unlike Sign pair Low Pt",  0x04 ) );
+   fInputs.AddLast( new AliTriggerInput( "MUON_Unlike_HPt_L0", "Dimuon Unlike Sign pair High Pt", 0x08 ) );
 
-   fInputs.AddLast( new AliTriggerInput( "MUON_SUndef_LPt_L0", "Single Undefined Low Pt",  0x40 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_SUndef_HPt_L0", "Single Undefined High Pt", 0x80 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_SUndef_All_L0", "Single Undefined All",     0x100 ) );
-
-   fInputs.AddLast( new AliTriggerInput( "MUON_Unlike_LPt_L0", "Single Unlike Sign pair Low Pt",  0x200 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_Unlike_HPt_L0", "Single Unlike Sign pair High Pt", 0x400 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_Unlike_All_L0", "Single Unlike Sign pair All",     0x800 ) );
-
-   fInputs.AddLast( new AliTriggerInput( "MUON_Like_LPt_L0", "Single Like Sign pair Low Pt",  0x1000 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_Like_HPt_L0", "Single Like Sign pair High Pt", 0x2000 ) );
-   fInputs.AddLast( new AliTriggerInput( "MUON_Like_All_L0", "Single Like Sign pair All",     0x4000 ) );
+   fInputs.AddLast( new AliTriggerInput( "MUON_Like_LPt_L0", "Dimuon Like Sign pair Low Pt",  0x10 ) );
+   fInputs.AddLast( new AliTriggerInput( "MUON_Like_HPt_L0", "Dimuon Like Sign pair High Pt", 0x20 ) );
 }
 
 //----------------------------------------------------------------------
@@ -106,14 +95,8 @@ void AliMUONTrigger::Trigger()
      return;
    }
    // set CTP
-   if (globalTrigger->SinglePlusLpt())  SetInput("MUON_SPlus_LPt_L0");
-   if (globalTrigger->SinglePlusHpt())  SetInput("MUON_SPlus_HPt_L0");
-   
-   if (globalTrigger->SingleMinusLpt()) SetInput("MUON_SMinus_LPt_L0");
-   if (globalTrigger->SingleMinusHpt()) SetInput("MUON_SMinus_HPt_L0");
-   
-   if (globalTrigger->SingleUndefLpt()) SetInput("MUON_SUndef_LPt_L0");
-   if (globalTrigger->SingleUndefHpt()) SetInput("MUON_SUndef_HPt_L0");
+   if (globalTrigger->SingleLpt())      SetInput("MUON_Single_LPt_L0");
+   if (globalTrigger->SingleHpt())      SetInput("MUON_Single_HPt_L0");
    
    if (globalTrigger->PairUnlikeLpt())  SetInput("MUON_Unlike_LPt_L0");
    if (globalTrigger->PairUnlikeHpt())  SetInput("MUON_Unlike_HPt_L0");
