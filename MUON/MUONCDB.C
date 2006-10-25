@@ -443,14 +443,8 @@ Int_t makePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValues)
     AliMUONVCalibParam* ped = new AliMUONCalibParam2F(nChannels,AliMUONVCalibParam::InvalidFloatValue());
     
     Int_t detElemId = p->GetFirst();
-    
-    if ( detElemId / 100 == 1 || detElemId / 1000 == 1 ) continue;
-    
-    if ( detElemId == 501 || detElemId == 903 ) continue;
-    
+        
     Int_t manuId = p->GetSecond();
-    
-    if ( manuId == 4 && detElemId / 700 > 0 ) continue;
     
     AliMpVSegmentation* seg = 
       segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
