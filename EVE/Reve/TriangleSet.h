@@ -6,6 +6,7 @@
 #include "RenderElement.h"
 #include <TNamed.h>
 #include <TAttBBox.h>
+#include <TAtt3D.h>
 
 #include "ZTrans.h"
 
@@ -14,8 +15,9 @@ class TGeoMatrix;
 namespace Reve {
 
 class TriangleSet : public RenderElement,
-		    public TNamed,
-		    public TAttBBox
+                    public TNamed,
+                    public TAttBBox,
+                    public TAtt3D
 {
   friend class TriangleSetEditor;
   friend class TriangleSetGL;
@@ -58,6 +60,8 @@ public:
 
   void GenerateTriangleNormals();
   void GenerateRandomColors();
+  void GenerateZNormalColors(Float_t fac=20, Int_t min=-20, Int_t max=20,
+			     Bool_t interp=kFALSE, Bool_t wrap=kFALSE);
 
   virtual void ComputeBBox();
   virtual void Paint(Option_t* = "");

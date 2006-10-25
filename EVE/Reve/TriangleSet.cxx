@@ -8,7 +8,6 @@
 #include <TVirtualViewer3D.h>
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
-#include <TGeoMatrix.h>
 
 using namespace Reve;
 
@@ -71,6 +70,23 @@ void TriangleSet::GenerateRandomColors()
       C[1] = (UChar_t) r.Uniform(60, 255);
       C[2] = (UChar_t) r.Uniform(60, 255);
     }
+}
+
+void TriangleSet::GenerateZNormalColors(Float_t fac, Int_t min, Int_t max,
+					Bool_t interp, Bool_t wrap)
+{
+  if (fTringCols  == 0)  fTringCols = new UChar_t[3*fNTrings];
+  if (fTringNorms == 0)  GenerateTriangleNormals();
+
+  Reve::RGBAPalette pal(min, max, interp, wrap);
+  UChar_t *C = fTringCols;
+  Float_t *N = fTringNorms;
+  for(Int_t t=0; t<fNTrings; ++t, C+=3, N+=3)
+    {
+      Int_t v = TMath::Nint(fac * N[2]);
+      pal.ColorFromArray(v, C, kFALSE);
+    }
+  gPad->Modified(); gPad->Update();
 }
 
 /**************************************************************************/
