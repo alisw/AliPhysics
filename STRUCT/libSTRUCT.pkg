@@ -2,7 +2,7 @@ SRCS=  AliMAG.cxx      AliABSO.cxx       AliABSOv0.cxx \
        AliDIPO.cxx     AliDIPOv2.cxx \
        AliFRAME.cxx    AliFRAMEv0.cxx    AliFRAMEv1.cxx AliFRAMEv2.cxx \
        AliHALL.cxx     AliSHIL.cxx 	 AliSHILv0.cxx AliSHILvF.cxx AliABSOv3.cxx\
-       AliPIPE.cxx     AliPIPEv0.cxx AliPIPEvGEO.cxx \
+       AliPIPE.cxx     AliPIPEv0.cxx AliPIPEv3.cxx \
        AliBODY.cxx     AliALIFE.cxx AliSHILv2.cxx AliSHILv3.cxx \
        AliFieldReader.cxx	
 
