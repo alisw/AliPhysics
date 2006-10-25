@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliMUONHitForRec.h"
 
 class AliESDMuonTrack;
 class AliMagF;
@@ -23,10 +24,10 @@ class AliMUONTrackParam : public TObject
 {
  public:
   AliMUONTrackParam(); // Constructor
-  virtual ~AliMUONTrackParam(){} // Destructor
+  virtual ~AliMUONTrackParam(); // Destructor
   
-  AliMUONTrackParam(const AliMUONTrackParam& rhs);// copy constructor (should be added per default !)
-  AliMUONTrackParam& operator=(const  AliMUONTrackParam& rhs);// (should be added per default !)
+  AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam);
+  AliMUONTrackParam& operator=(const  AliMUONTrackParam& theMUONTrackParam);
 
   void GetParamFrom(const AliESDMuonTrack& esdMuonTrack);
   void SetParamFor(AliESDMuonTrack& esdMuonTrack);
@@ -45,10 +46,17 @@ class AliMUONTrackParam : public TObject
   void     SetBendingCoor(Double_t BendingCoor) {fBendingCoor = BendingCoor;}
   Double_t GetNonBendingCoor(void) const {return fNonBendingCoor;}
   void     SetNonBendingCoor(Double_t NonBendingCoor) {fNonBendingCoor = NonBendingCoor;}
+  void              SetTrackParam(AliMUONTrackParam& TrackParam);
+  AliMUONHitForRec* GetHitForRecPtr(void) const;
+  void              SetHitForRecPtr(AliMUONHitForRec* HitForRec) {fHitForRecPtr = HitForRec;}
+  
   Double_t Px() const;  // return px
   Double_t Py() const;  // return py
   Double_t Pz() const;  // return pz
   Double_t P()  const;  // return total momentum
+
+  Bool_t IsSortable () const {return kTRUE;} // necessary for sorting TClonesArray of TrackHit's
+  Int_t Compare(const TObject* TrackParam) const; // "Compare" function for sorting
 
   void ExtrapToZ(Double_t Z);
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);
@@ -86,8 +94,10 @@ class AliMUONTrackParam : public TObject
   void GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge);
 
   void GetField(Double_t *Position, Double_t *Field) const;
-
-  ClassDef(AliMUONTrackParam, 1) // Track parameters in ALICE dimuon spectrometer
+  
+  AliMUONHitForRec *fHitForRecPtr; //!< Pointer to associated HitForRec if any
+  
+  ClassDef(AliMUONTrackParam, 2) // Track parameters in ALICE dimuon spectrometer
     };
 	
 #endif

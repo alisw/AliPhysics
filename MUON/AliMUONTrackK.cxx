@@ -135,7 +135,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClo
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   //: AliMUONTrack(segment, segment, fgTrackReconstructor)
-  : AliMUONTrack(NULL, segment, fgTrackReconstructor),
+  : AliMUONTrack(NULL, segment),
     fStartSegment(segment),
     fPosition(0.),
     fPositionNew(0.),
@@ -1276,8 +1276,6 @@ void AliMUONTrackK::FillMUONTrack(void)
 {
 /// Compute track parameters at hit positions (as for AliMUONTrack)
 
-  // Set number of hits per track
-  SetNTrackHits(fNmbTrackHits);
   // Set Chi2
   SetFitFMin(fChi2);
 
@@ -1295,7 +1293,7 @@ void AliMUONTrackK::FillMUONTrack(void)
       // Take saved info
       SetTrackParam(&trackParam, (TMatrixD*)fParSmooth->UncheckedAt(i), ((AliMUONHitForRec*)((*fTrackHits)[i]))->GetZ());
     }
-    AddTrackParamAtHit(&trackParam); 
+    AddTrackParamAtHit(&trackParam,(AliMUONHitForRec*)fTrackHits->UncheckedAt(i));
     // Fill array of HitForRec's
     AddHitForRecAtHit((AliMUONHitForRec*)fTrackHits->UncheckedAt(i)); 
   }

@@ -41,7 +41,10 @@ MuonRec.SetRunTracking("");
 MuonRec.SetRunVertexFinder(kFALSE);
 MuonRec.SetRunLocalReconstruction("MUON");
 MuonRec.SetFillESD("MUON");
-MuonRec.SetLoadAlignData("MUON")
+MuonRec.SetLoadAlignData("MUON");
+// Uncoment following line to run reconstruction with the orginal tracking method
+// instead of the kalman one (default)
+// MuonRec.SetOption("MUON","Original");
 MuonRec.Run();
 .q
 EOF

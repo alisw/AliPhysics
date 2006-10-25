@@ -24,6 +24,8 @@ class TTree;
 class AliMUONData;
 class AliRunLoader;
 class AliMUONTriggerTrack;
+class AliMUONTrack;
+class TVirtualFitter;
 
 class AliMUONTrackReconstructor : public TObject {
 
@@ -56,6 +58,7 @@ class AliMUONTrackReconstructor : public TObject {
   Double_t GetEfficiency(void) const {return fEfficiency;}
   void SetEfficiency(Double_t Efficiency) {fEfficiency = Efficiency;}
   void SetReconstructionParametersToDefaults(void);
+  static TVirtualFitter* Fitter(void) {return fgFitter;}
 
   // Hits for reconstruction
   Int_t GetNHitsForRec(void) const {return fNHitsForRec;} // Number
@@ -65,11 +68,6 @@ class AliMUONTrackReconstructor : public TObject {
   void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
   TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
  
-  // Hits on reconstructed tracks
-  Int_t GetNRecTrackHits() const {return fNRecTrackHits;} // Number
-  void SetNRecTrackHits(Int_t NRecTrackHits) {fNRecTrackHits = NRecTrackHits;}
-  TClonesArray* GetRecTrackHitsPtr(void) const {return fRecTrackHitsPtr;} // Array
-
   // Functions
   Double_t GetImpactParamFromBendingMomentum(Double_t BendingMomentum) const;
   Double_t GetBendingMomentumFromImpactParam(Double_t ImpactParam) const;
@@ -90,10 +88,6 @@ class AliMUONTrackReconstructor : public TObject {
 
  private:
 
-  // Constants which should be elsewhere ????
-  static const Int_t fgkMaxMuonTrackingChambers = 10; ///< Max number of Muon tracking chambers
-  static const Int_t fgkMaxMuonTrackingStations = 5; ///< Max number of Muon tracking stations
-
   // Defaults parameters for reconstruction
   static const Double_t fgkDefaultMinBendingMomentum; ///< default min. bending momentum for reconstruction
   static const Double_t fgkDefaultMaxBendingMomentum; ///< default max. bending momentum for reconstruction
@@ -101,7 +95,6 @@ class AliMUONTrackReconstructor : public TObject {
   static const Double_t fgkDefaultMaxSigma2Distance; ///< default square of max. distance for window size 
   static const Double_t fgkDefaultBendingResolution; ///< default bending coordinate resolution for reconstruction 
   static const Double_t fgkDefaultNonBendingResolution; ///< default non bending coordinate resolution for reconstruction
-  static const Double_t fgkDefaultChamberThicknessInX0; ///< default chamber thickness in X0 for reconstruction
   // Simple magnetic field:
   // Value taken from macro MUONtracking.C: 0.7 T, hence 7 kG
   // Length and Position from reco_muon.F, with opposite sign:
@@ -113,6 +106,7 @@ class AliMUONTrackReconstructor : public TObject {
   static const Double_t fgkDefaultSimpleBPosition; ///< default position of magnetic field (dipole)
   static const Double_t fgkDefaultEfficiency; ///< default chamber efficiency for track ref. hits recontruction
 
+  static TVirtualFitter* fgFitter; //!< Pointer to track fitter
 
   Int_t fTrackMethod; ///< AZ - tracking method
 
@@ -122,10 +116,10 @@ class AliMUONTrackReconstructor : public TObject {
   Double_t fMaxBendingMomentum; ///< maximum value (GeV/c) of momentum in bending plane
   Double_t fMaxChi2; ///< maximum Chi2 per degree of Freedom
   Double_t fMaxSigma2Distance; ///< maximum square distance in units of the variance (maximum chi2)
-  Double_t fRMin[fgkMaxMuonTrackingChambers]; ///< minimum radius (cm)
-  Double_t fRMax[fgkMaxMuonTrackingChambers]; ///< maximum radius (cm)
-  Double_t fSegmentMaxDistBending[fgkMaxMuonTrackingStations]; ///< maximum distance (cm) for segments in bending plane
-  Double_t fSegmentMaxDistNonBending[fgkMaxMuonTrackingStations]; ///< maximum distance (cm) for segments in non bending plane
+  Double_t* fRMin; ///< minimum radius (cm)
+  Double_t* fRMax; ///< maximum radius (cm)
+  Double_t* fSegmentMaxDistBending; ///< maximum distance (cm) for segments in bending plane
+  Double_t* fSegmentMaxDistNonBending; ///< maximum distance (cm) for segments in non bending plane
   Double_t fBendingResolution; ///< chamber resolution (cm) in bending plane
   Double_t fNonBendingResolution; ///< chamber resolution (cm) in non bending plane
   Double_t fChamberThicknessInX0; ///< chamber thickness in number of radiation lengths
@@ -136,23 +130,19 @@ class AliMUONTrackReconstructor : public TObject {
   Double_t fEfficiency; ///< chamber efficiency (used for track ref. hits only)
   
   // Hits for reconstruction (should be in AliMUON ????)
-  TClonesArray *fHitsForRecPtr; ///< pointer to the array of hits for reconstruction
+  TClonesArray* fHitsForRecPtr; ///< pointer to the array of hits for reconstruction
   Int_t fNHitsForRec; ///< number of hits for reconstruction
   // Information per chamber (should be in AliMUONChamber ????)
-  Int_t fNHitsForRecPerChamber[fgkMaxMuonTrackingChambers]; ///< number of HitsForRec
-  Int_t fIndexOfFirstHitForRecPerChamber[fgkMaxMuonTrackingChambers]; ///< index (0...) of first HitForRec
+  Int_t* fNHitsForRecPerChamber; ///< number of HitsForRec
+  Int_t* fIndexOfFirstHitForRecPerChamber; ///< index (0...) of first HitForRec
 
   // Segments inside a station
-  TClonesArray *fSegmentsPtr[fgkMaxMuonTrackingStations]; ///< array of pointers to the segments for each station
-  Int_t fNSegments[fgkMaxMuonTrackingStations]; ///< number of segments for each station
+  TClonesArray** fSegmentsPtr; ///< array of pointers to the segments for each station
+  Int_t* fNSegments; ///< number of segments for each station
 
   // Reconstructed tracks
   TClonesArray *fRecTracksPtr; ///< pointer to array of reconstructed tracks
   Int_t fNRecTracks; ///< number of reconstructed tracks
-
-  // Track hits on reconstructed tracks
-  TClonesArray *fRecTrackHitsPtr; ///< pointer to array of hits on reconstructed tracks
-  Int_t fNRecTrackHits; ///< number of hits on reconstructed tracks
 
   // data container
   AliMUONData* fMUONData; ///< Data container for MUON subsystem 
@@ -175,14 +165,14 @@ class AliMUONTrackReconstructor : public TObject {
   void MakeSegmentsPerStation(Int_t Station);
   void MakeTracks(void);
   Bool_t MakeTriggerTracks(void);
-  void ResetTrackHits(void);
   void ResetTracks(void);
+  void MakeTrackCandidates(void);
   Int_t MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment);
   Int_t MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment);
-  void MakeTrackCandidates(void);
+  void CalcTrackParamAtVertex(AliMUONTrack *Track);
   void FollowTracks(void);
+  void Fit(AliMUONTrack *Track, Int_t FitStart, Int_t FitMCS);
   void RemoveDoubleTracks(void);
-  void UpdateTrackParamAtHit(void);
   void UpdateHitForRecAtHit(void);
   void ValidateTracksWithTrigger(void);
 

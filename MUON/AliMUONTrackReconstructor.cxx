@@ -49,11 +49,11 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONSegment.h"
 #include "AliMUONTrack.h"
-#include "AliMUONTrackHit.h"
 #include "AliMagF.h"
 #include "AliMUONTrackK.h" 
 #include "AliLog.h"
 #include "AliTracker.h"
+#include <TVirtualFitter.h>
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;
@@ -62,7 +62,6 @@ const Double_t AliMUONTrackReconstructor::fgkDefaultMaxChi2 = 100.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultMaxSigma2Distance = 16.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultBendingResolution = 0.01;
 const Double_t AliMUONTrackReconstructor::fgkDefaultNonBendingResolution = 0.144;
-const Double_t AliMUONTrackReconstructor::fgkDefaultChamberThicknessInX0 = 0.03;
 // Simple magnetic field:
 // Value taken from macro MUONtracking.C: 0.7 T, hence 7 kG
 // Length and Position from reco_muon.F, with opposite sign:
@@ -74,6 +73,16 @@ const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBLength = 428.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBPosition = 1019.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultEfficiency = 0.95;
 
+TVirtualFitter* AliMUONTrackReconstructor::fgFitter = NULL; 
+
+// Functions to be minimized with Minuit
+void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
+void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
+
+void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
+
+Double_t MultipleScatteringAngle2(AliMUONTrackParam *param);
+
 ClassImp(AliMUONTrackReconstructor) // Class implementation in ROOT context
 
 //__________________________________________________________________________
@@ -84,24 +93,39 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliMUONData* data)
     fMaxBendingMomentum(fgkDefaultMaxBendingMomentum),
     fMaxChi2(fgkDefaultMaxChi2),
     fMaxSigma2Distance(fgkDefaultMaxSigma2Distance),
+    fRMin(0x0),
+    fRMax(0x0),
+    fSegmentMaxDistBending(0x0),
+    fSegmentMaxDistNonBending(0x0),
     fBendingResolution(fgkDefaultBendingResolution),
     fNonBendingResolution(fgkDefaultNonBendingResolution),
-    fChamberThicknessInX0(fgkDefaultChamberThicknessInX0),
+    fChamberThicknessInX0(AliMUONConstants::DefaultChamberThicknessInX0()),
     fSimpleBValue(fgkDefaultSimpleBValue),
     fSimpleBLength(fgkDefaultSimpleBLength),
     fSimpleBPosition(fgkDefaultSimpleBPosition),
     fEfficiency(fgkDefaultEfficiency),
     fHitsForRecPtr(0x0),
     fNHitsForRec(0),
+    fNHitsForRecPerChamber(0x0),
+    fIndexOfFirstHitForRecPerChamber(0x0),
+    fSegmentsPtr(0x0),
+    fNSegments(0x0),
     fRecTracksPtr(0x0),
     fNRecTracks(0),
-    fRecTrackHitsPtr(0x0),
-    fNRecTrackHits(0),
     fMUONData(data),
     fMuons(0),
     fTriggerTrack(new AliMUONTriggerTrack()),
     fTriggerCircuit(0x0)
 {
+  
+  // Memory allocation
+  fRMin = new Double_t[AliMUONConstants::NTrackingCh()];
+  fRMax = new Double_t[AliMUONConstants::NTrackingCh()];
+  fSegmentMaxDistBending = new Double_t[AliMUONConstants::NTrackingSt()];
+  fSegmentMaxDistNonBending = new Double_t[AliMUONConstants::NTrackingSt()];
+  fNHitsForRecPerChamber = new Int_t[AliMUONConstants::NTrackingCh()];
+  fIndexOfFirstHitForRecPerChamber = new Int_t[AliMUONConstants::NTrackingCh()];
+  
   // Constructor for class AliMUONTrackReconstructor
   SetReconstructionParametersToDefaults();
 
@@ -111,17 +135,15 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliMUONData* data)
 
   // Memory allocation for the TClonesArray's of segments in stations
   // Is 2000 the right size ????
-  for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) {
+  fSegmentsPtr = new TClonesArray*[AliMUONConstants::NTrackingSt()];
+  fNSegments = new Int_t[AliMUONConstants::NTrackingSt()];
+  for (Int_t st = 0; st < AliMUONConstants::NTrackingSt(); st++) {
     fSegmentsPtr[st] = new TClonesArray("AliMUONSegment", 2000);
     fNSegments[st] = 0; // really needed or GetEntriesFast sufficient ????
   }
   // Memory allocation for the TClonesArray of reconstructed tracks
   // Is 10 the right size ????
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 10);
-
-  // Memory allocation for the TClonesArray of hits on reconstructed tracks
-  // Is 100 the right size ????
-  fRecTrackHitsPtr = new TClonesArray("AliMUONTrackHit", 100);
 
   const AliMagF* kField = AliTracker::GetFieldMap();
   if (!kField) AliFatal("No field available");
@@ -142,11 +164,19 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliMUONData* data)
 AliMUONTrackReconstructor::~AliMUONTrackReconstructor(void)
 {
   // Destructor for class AliMUONTrackReconstructor
-  delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
-  for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++)
-    delete fSegmentsPtr[st]; // Correct destruction of everything ????
-
+  delete [] fRMin;
+  delete [] fRMax;
+  delete [] fSegmentMaxDistBending;
+  delete [] fSegmentMaxDistNonBending;
+  delete [] fNHitsForRecPerChamber;
+  delete [] fIndexOfFirstHitForRecPerChamber;
   delete fTriggerTrack;
+  delete fHitsForRecPtr;
+  // Correct destruction of everything ????
+  for (Int_t st = 0; st < AliMUONConstants::NTrackingSt(); st++) delete fSegmentsPtr[st];
+  delete [] fSegmentsPtr;
+  delete [] fNSegments;
+  delete fRecTracksPtr;
 }
   //__________________________________________________________________________
 void AliMUONTrackReconstructor::SetReconstructionParametersToDefaults(void)
@@ -221,7 +251,6 @@ void AliMUONTrackReconstructor::EventReconstruct(void)
   // To reconstruct one event
   AliDebug(1,"Enter EventReconstruct");
   ResetTracks(); //AZ
-  ResetTrackHits(); //AZ 
   ResetSegments(); //AZ
   ResetHitsForRec(); //AZ
   MakeEventToBeReconstructed();
@@ -229,10 +258,10 @@ void AliMUONTrackReconstructor::EventReconstruct(void)
   MakeTracks();
   if (fMUONData->IsTriggerTrackBranchesInTree()) 
     ValidateTracksWithTrigger(); 
-
+  
   // Add tracks to MUON data container 
-  for(Int_t i=0; i<GetNRecTracks(); i++) {
-    AliMUONTrack * track = (AliMUONTrack*) GetRecTracksPtr()->At(i);
+  for(Int_t i=0; i<fNRecTracks; i++) {
+    AliMUONTrack * track = (AliMUONTrack*) fRecTracksPtr->At(i);
     fMUONData->AddRecTrack(*track);
   }
 }
@@ -278,16 +307,6 @@ void AliMUONTrackReconstructor::ResetTracks(void)
   // Delete in order that the Track destructors are called,
   // hence the space for the TClonesArray of pointers to TrackHit's is freed
   fNRecTracks = 0;
-  return;
-}
-
-
-  //__________________________________________________________________________
-void AliMUONTrackReconstructor::ResetTrackHits(void)
-{
-  // To reset the TClonesArray of hits on reconstructed tracks
-  if (fRecTrackHitsPtr) fRecTrackHitsPtr->Clear();
-  fNRecTrackHits = 0;
   return;
 }
 
@@ -575,7 +594,6 @@ void AliMUONTrackReconstructor::MakeTracks(void)
   AliDebug(1,"Enter MakeTracks");
   // The order may be important for the following Reset's
   //AZ ResetTracks();
-  //AZ ResetTrackHits();
   if (fTrackMethod != 1) { //AZ - Kalman filter
     MakeTrackCandidatesK();
     if (fRecTracksPtr->GetEntriesFast() == 0) return;
@@ -594,7 +612,6 @@ void AliMUONTrackReconstructor::MakeTracks(void)
     FollowTracks();
     // Remove double tracks
     RemoveDoubleTracks();
-    UpdateTrackParamAtHit();
     UpdateHitForRecAtHit();
   }
   return;
@@ -605,15 +622,49 @@ void AliMUONTrackReconstructor::ValidateTracksWithTrigger(void)
 {
   // Try to match track from tracking system with trigger track
   AliMUONTrack *track;
-  TClonesArray *recTriggerTracks;
+  AliMUONTrackParam trackParam; 
+  AliMUONTriggerTrack *triggerTrack;
   
   fMUONData->SetTreeAddress("RL");
   fMUONData->GetRecTriggerTracks();
-  recTriggerTracks = fMUONData->RecTriggerTracks();
-
+  TClonesArray *recTriggerTracks = fMUONData->RecTriggerTracks();
+  
+  Bool_t MatchTrigger;
+  Double_t distSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
+  Double_t distTriggerTrack[3];
+  Double_t Chi2MatchTrigger, xTrack, yTrack, ySlopeTrack, dTrigTrackMin2, dTrigTrack2 = 0.;
+  
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
-    track->MatchTriggerTrack(recTriggerTracks);
+    MatchTrigger = kFALSE;
+    Chi2MatchTrigger = 0.;
+    
+    trackParam = *((AliMUONTrackParam*) (track->GetTrackParamAtHit()->Last()));
+    trackParam.ExtrapToZ(AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
+    
+    xTrack = trackParam.GetNonBendingCoor();
+    yTrack = trackParam.GetBendingCoor();
+    ySlopeTrack = trackParam.GetBendingSlope();
+    dTrigTrackMin2 = 999.;
+  
+    triggerTrack = (AliMUONTriggerTrack*) recTriggerTracks->First();
+    while(triggerTrack){
+      distTriggerTrack[0] = (triggerTrack->GetX11()-xTrack)/distSigma[0];
+      distTriggerTrack[1] = (triggerTrack->GetY11()-yTrack)/distSigma[1];
+      distTriggerTrack[2] = (TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack)/distSigma[2];
+      dTrigTrack2 = 0.;
+      for (Int_t iVar = 0; iVar < 3; iVar++) dTrigTrack2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
+      if (dTrigTrack2 < dTrigTrackMin2 && dTrigTrack2 < GetMaxSigma2Distance()) {
+        dTrigTrackMin2 = dTrigTrack2;
+        MatchTrigger = kTRUE;
+        Chi2MatchTrigger =  dTrigTrack2/3.; // Normalized Chi2, 3 variables (X,Y,slopeY)
+      }
+      triggerTrack = (AliMUONTriggerTrack*) recTriggerTracks->After(triggerTrack);
+    }
+    
+    track->SetMatchTrigger(MatchTrigger);
+    track->SetChi2MatchTrigger(Chi2MatchTrigger);
+    
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
   }
 
@@ -697,6 +748,39 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
 }
 
   //__________________________________________________________________________
+void AliMUONTrackReconstructor::MakeTrackCandidates(void)
+{
+  // To make track candidates
+  // with at least 3 aligned points in stations(1..) 4 and 5
+  // (two Segment's or one Segment and one HitForRec)
+  Int_t begStation, iBegSegment, nbCan1Seg1Hit, nbCan2Seg;
+  AliMUONSegment *begSegment;
+  AliDebug(1,"Enter MakeTrackCandidates");
+  // Loop over stations(1..) 5 and 4 for the beginning segment
+  for (begStation = 4; begStation > 2; begStation--) {
+    // Loop over segments in the beginning station
+    for (iBegSegment = 0; iBegSegment < fNSegments[begStation]; iBegSegment++) {
+      // pointer to segment
+      begSegment = (AliMUONSegment*) ((*fSegmentsPtr[begStation])[iBegSegment]);
+      AliDebug(2,Form("Look for TrackCandidate's with Segment %d  in Station(0..) %d", iBegSegment, begStation));
+      // Look for track candidates with two segments,
+      // "begSegment" and all compatible segments in other station.
+      // Only for beginning station(1..) 5
+      // because candidates with 2 segments have to looked for only once.
+      if (begStation == 4)
+	nbCan2Seg = MakeTrackCandidatesWithTwoSegments(begSegment);
+      // Look for track candidates with one segment and one point,
+      // "begSegment" and all compatible HitForRec's in other station.
+      // Only if "begSegment" does not belong already to a track candidate.
+      // Is that a too strong condition ????
+      if (!(begSegment->GetInTrack()))
+	nbCan1Seg1Hit = MakeTrackCandidatesWithOneSegmentAndOnePoint(begSegment);
+    } // for (iBegSegment = 0;...
+  } // for (begStation = 4;...
+  return;
+}
+
+  //__________________________________________________________________________
 Int_t AliMUONTrackReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment)
 {
   // To make track candidates with two segments in stations(1..) 4 and 5,
@@ -735,8 +819,9 @@ Int_t AliMUONTrackReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
       // to be done in track constructor ????
       BegSegment->SetInTrack(kTRUE);
       endSegment->SetInTrack(kTRUE);
-      recTrack = new ((*fRecTracksPtr)[fNRecTracks])
-	AliMUONTrack(BegSegment, endSegment, this);
+      recTrack = new ((*fRecTracksPtr)[fNRecTracks]) AliMUONTrack(BegSegment, endSegment);
+      // Set track parameters at vertex from last stations 4 & 5
+      CalcTrackParamAtVertex(recTrack);
       fNRecTracks++;
       if (AliLog::GetGlobalDebugLevel() > 1) recTrack->RecursiveDump();
       // increment number of track candidates with 2 segments
@@ -793,8 +878,9 @@ Int_t AliMUONTrackReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
 	// flag for beginning segments in one track:
 	// to be done in track constructor ????
 	BegSegment->SetInTrack(kTRUE);
-	recTrack = new ((*fRecTracksPtr)[fNRecTracks])
-	  AliMUONTrack(BegSegment, hit, this);
+	recTrack = new ((*fRecTracksPtr)[fNRecTracks]) AliMUONTrack(BegSegment, hit);
+        // Set track parameters at vertex from last stations 4 & 5
+        CalcTrackParamAtVertex(recTrack);
 	// the right place to eliminate "double counting" ???? how ????
 	fNRecTracks++;
 	if (AliLog::GetGlobalDebugLevel() > 1) recTrack->RecursiveDump();
@@ -808,36 +894,35 @@ Int_t AliMUONTrackReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::MakeTrackCandidates(void)
+void AliMUONTrackReconstructor::CalcTrackParamAtVertex(AliMUONTrack *Track)
 {
-  // To make track candidates
-  // with at least 3 aligned points in stations(1..) 4 and 5
-  // (two Segment's or one Segment and one HitForRec)
-  Int_t begStation, iBegSegment, nbCan1Seg1Hit, nbCan2Seg;
-  AliMUONSegment *begSegment;
-  AliDebug(1,"Enter MakeTrackCandidates");
-  // Loop over stations(1..) 5 and 4 for the beginning segment
-  for (begStation = 4; begStation > 2; begStation--) {
-    // Loop over segments in the beginning station
-    for (iBegSegment = 0; iBegSegment < fNSegments[begStation]; iBegSegment++) {
-      // pointer to segment
-      begSegment = (AliMUONSegment*) ((*fSegmentsPtr[begStation])[iBegSegment]);
-      AliDebug(2,Form("Look for TrackCandidate's with Segment %d  in Station(0..) %d", iBegSegment, begStation));
-      // Look for track candidates with two segments,
-      // "begSegment" and all compatible segments in other station.
-      // Only for beginning station(1..) 5
-      // because candidates with 2 segments have to looked for only once.
-      if (begStation == 4)
-	nbCan2Seg = MakeTrackCandidatesWithTwoSegments(begSegment);
-      // Look for track candidates with one segment and one point,
-      // "begSegment" and all compatible HitForRec's in other station.
-      // Only if "begSegment" does not belong already to a track candidate.
-      // Is that a too strong condition ????
-      if (!(begSegment->GetInTrack()))
-	nbCan1Seg1Hit = MakeTrackCandidatesWithOneSegmentAndOnePoint(begSegment);
-    } // for (iBegSegment = 0;...
-  } // for (begStation = 4;...
-  return;
+  // Set track parameters at vertex.
+  // TrackHit's are assumed to be only in stations(1..) 4 and 5,
+  // and sorted according to increasing Z..
+  // Parameters are calculated from information in HitForRec's
+  // of first and last TrackHit's.
+  AliMUONTrackParam *trackParamVertex = Track->GetTrackParamAtVertex(); // pointer to track parameters at vertex
+  // Pointer to HitForRec attached to first TrackParamAtHit
+  AliMUONHitForRec *firstHit = ((AliMUONTrackParam*) (Track->GetTrackParamAtHit()->First()))->GetHitForRecPtr();
+  // Pointer to HitForRec attached to last TrackParamAtHit
+  AliMUONHitForRec *lastHit = ((AliMUONTrackParam*) (Track->GetTrackParamAtHit()->Last()))->GetHitForRecPtr();
+  // Z difference between first and last hits
+  Double_t deltaZ = firstHit->GetZ() - lastHit->GetZ();
+  // bending slope in stations(1..) 4 and 5
+  Double_t bendingSlope = (firstHit->GetBendingCoor() - lastHit->GetBendingCoor()) / deltaZ;
+  trackParamVertex->SetBendingSlope(bendingSlope);
+  // impact parameter
+  Double_t impactParam = firstHit->GetBendingCoor() - bendingSlope * firstHit->GetZ();
+  // signed bending momentum
+  trackParamVertex->SetInverseBendingMomentum(1.0 / GetBendingMomentumFromImpactParam(impactParam));
+  // bending slope at vertex
+  trackParamVertex->SetBendingSlope(bendingSlope + impactParam / GetSimpleBPosition());
+  // non bending slope
+  trackParamVertex->SetNonBendingSlope((firstHit->GetNonBendingCoor() - lastHit->GetNonBendingCoor()) / deltaZ);
+  // vertex coordinates at (0,0,0)
+  trackParamVertex->SetZ(0.0);
+  trackParamVertex->SetBendingCoor(0.0);
+  trackParamVertex->SetNonBendingCoor(0.0);
 }
 
   //__________________________________________________________________________
@@ -862,15 +947,13 @@ void AliMUONTrackReconstructor::FollowTracks(void)
   track = (AliMUONTrack*) fRecTracksPtr->First();
   trackIndex = -1;
   while (track) {
-    // Follow function for each track candidate ????
     trackIndex++;
     nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track); // prepare next track
     AliDebug(2,Form("FollowTracks: track candidate(0..): %d", trackIndex));
-    // Fit track candidate
-    track->SetFitMCS(0); // without multiple Coulomb scattering
-    track->SetFitNParam(3); // with 3 parameters (X = Y = 0)
-    track->SetFitStart(0); // from parameters at vertex
-    track->Fit();
+    // Fit track candidate from parameters at vertex
+    // -> with 3 parameters (X_vertex and Y_vertex are fixed)
+    // without multiple Coulomb scattering
+    Fit(track,0,0);
     if (AliLog::GetGlobalDebugLevel()> 2) {
       cout << "FollowTracks: track candidate(0..): " << trackIndex
 	   << " after fit in stations(0..) 3 and 4" << endl;
@@ -881,8 +964,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
     // otherwise: majority coincidence 2 !!!!
     for (station = 2; station >= 0; station--) {
       // Track parameters at first track hit (smallest Z)
-      trackParam1 = ((AliMUONTrackHit*)
-		     (track->GetTrackHitsPtr()->First()))->GetTrackParam();
+      trackParam1 = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
       // extrapolation to station
       trackParam1->ExtrapToStation(station, trackParam);
       extrapSegment = new AliMUONSegment(); //  empty segment
@@ -900,11 +982,9 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       dZ3 = AliMUONConstants::DefaultChamberZ(2 * station) -
 	    AliMUONConstants::DefaultChamberZ(2 * station + 1);
       extrapSegment->SetBendingCoorReso2(fBendingResolution * fBendingResolution);
-      extrapSegment->
-	SetNonBendingCoorReso2(fNonBendingResolution * fNonBendingResolution);
-      extrapSegment->UpdateFromStationTrackParam
-	(trackParam, mcsFactor, dZ1, dZ2, dZ3, station,
-	 trackParam1->GetInverseBendingMomentum());
+      extrapSegment->SetNonBendingCoorReso2(fNonBendingResolution * fNonBendingResolution);
+      extrapSegment->UpdateFromStationTrackParam(trackParam, mcsFactor, dZ1, dZ2, dZ3, station,
+      						 trackParam1->GetInverseBendingMomentum());
       bestChi2 = 5.0;
       bestSegment = NULL;
       if (AliLog::GetGlobalDebugLevel() > 2) {
@@ -921,14 +1001,13 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	segment = (AliMUONSegment*) ((*fSegmentsPtr[station])[iSegment]);
 	// correction of corrected segment (fBendingCoor and fNonBendingCoor)
 	// according to real Z value of "segment" and slopes of "extrapSegment"
-	(&(trackParam[0]))->ExtrapToZ(segment->GetZ());
-	(&(trackParam[1]))->ExtrapToZ(segment->GetZ());
+	trackParam[0].ExtrapToZ(segment->GetZ());
+	trackParam[1].ExtrapToZ(segment->GetZ()); // now same as trackParam[0] !?!?!?!?!?!
 	extrapSegment->SetBendingCoor((&(trackParam[0]))->GetBendingCoor());
 	extrapSegment->SetNonBendingCoor((&(trackParam[0]))->GetNonBendingCoor());
 	extrapSegment->SetBendingSlope((&(trackParam[0]))->GetBendingSlope());
 	extrapSegment->SetNonBendingSlope((&(trackParam[0]))->GetNonBendingSlope());
-	chi2 = segment->
-	  NormalizedChi2WithSegment(extrapSegment, maxSigma2Distance);
+	chi2 = segment->NormalizedChi2WithSegment(extrapSegment, maxSigma2Distance);
 	if (chi2 < bestChi2) {
 	  // update best Chi2 and Segment if better found
 	  bestSegment = segment;
@@ -937,16 +1016,13 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       }
       if (bestSegment) {
 	// best segment found: add it to track candidate
-	(&(trackParam[0]))->ExtrapToZ(bestSegment->GetZ());
-	(&(trackParam[1]))->ExtrapToZ(bestSegment->GetZ());
-	track->AddSegment(bestSegment);
-	// set track parameters at these two TrakHit's
-	track->SetTrackParamAtHit(track->GetNTrackHits() - 2, &(trackParam[0]));
-	track->SetTrackParamAtHit(track->GetNTrackHits() - 1, &(trackParam[1]));
+	trackParam[0].ExtrapToZ(bestSegment->GetZ());
+	track->AddTrackParamAtHit(&(trackParam[0]),bestSegment->GetHitForRec1());
+	trackParam[1].ExtrapToZ(bestSegment->GetZ()); // now same as trackParam[0] !?!?!?!?!?!
+	track->AddTrackParamAtHit(&(trackParam[1]),bestSegment->GetHitForRec2());
 	AliDebug(3, Form("FollowTracks: track candidate(0..): %d  Added segment in station(0..): %d", trackIndex, station));
 	if (AliLog::GetGlobalDebugLevel()>2) track->RecursiveDump();
-      }
-      else {
+      } else {
 	// No best segment found:
 	// Look for best compatible HitForRec in station:
 	// should consider all possibilities ????
@@ -960,17 +1036,12 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	// Loop over chambers of the station
 	for (chInStation = 0; chInStation < 2; chInStation++) {
 	  ch = 2 * station + chInStation;
-	  for (iHit = fIndexOfFirstHitForRecPerChamber[ch];
-	       iHit < fIndexOfFirstHitForRecPerChamber[ch] +
-		 fNHitsForRecPerChamber[ch];
-	       iHit++) {
+	  for (iHit = fIndexOfFirstHitForRecPerChamber[ch]; iHit < fIndexOfFirstHitForRecPerChamber[ch]+fNHitsForRecPerChamber[ch]; iHit++) {
 	    hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[iHit]);
 	    // coordinates of extrapolated hit
-	    (&(trackParam[chInStation]))->ExtrapToZ(hit->GetZ());
-	    extrapHit->
-	      SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor());
-	    extrapHit->
-	      SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor());
+	    trackParam[chInStation].ExtrapToZ(hit->GetZ());
+	    extrapHit->SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor());
+	    extrapHit->SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor());
 	    // resolutions from "extrapSegment"
 	    extrapHit->SetBendingReso2(extrapSegment->GetBendingCoorReso2());
 	    extrapHit->SetNonBendingReso2(extrapSegment->GetNonBendingCoorReso2());
@@ -987,21 +1058,18 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	}
 	if (bestHit) {
 	  // best hit found: add it to track candidate
-	  (&(trackParam[chBestHit]))->ExtrapToZ(bestHit->GetZ());
-	  track->AddHitForRec(bestHit);
-	  // set track parameters at this TrackHit
-	  track->SetTrackParamAtHit(track->GetNTrackHits() - 1,
-				    &(trackParam[chBestHit]));
+	  trackParam[chBestHit].ExtrapToZ(bestHit->GetZ());
+	  track->AddTrackParamAtHit(&(trackParam[chBestHit]),bestHit);
 	  if (AliLog::GetGlobalDebugLevel() > 2) {
 	    cout << "FollowTracks: track candidate(0..): " << trackIndex
 		 << " Added hit in station(0..): " << station << endl;
 	    track->RecursiveDump();
 	  }
-	}
-	else {
+	} else {
 	  // Remove current track candidate
 	  // and corresponding TrackHit's, ...
-	  track->Remove();
+	  fRecTracksPtr->Remove(track);
+	  fNRecTracks--;
 	  delete extrapSegment;
 	  delete extrapHit;
 	  break; // stop the search for this candidate:
@@ -1010,28 +1078,26 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	delete extrapHit;
       }
       delete extrapSegment;
-      // Sort track hits according to increasing Z
-      track->GetTrackHitsPtr()->Sort();
+      // Sort TrackParamAtHit according to increasing Z
+      track->GetTrackParamAtHit()->Sort();
       // Update track parameters at first track hit (smallest Z)
-      trackParam1 = ((AliMUONTrackHit*)
-		     (track->GetTrackHitsPtr()->First()))->GetTrackParam();
+      trackParam1 = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
       bendingMomentum = 0.;
       if (TMath::Abs(trackParam1->GetInverseBendingMomentum()) > 0.)
 	bendingMomentum = TMath::Abs(1/(trackParam1->GetInverseBendingMomentum()));
       // Track removed if bendingMomentum not in window [min, max]
       if ((bendingMomentum < fMinBendingMomentum) || (bendingMomentum > fMaxBendingMomentum)) {
-	track->Remove();
+	fRecTracksPtr->Remove(track);
+	fNRecTracks--;
 	break; // stop the search for this candidate:
 	// exit from the loop over station 
       }
-      // Track fit
+      // Track fit from parameters at first hit
+      // -> with 5 parameters (momentum and position)
       // with multiple Coulomb scattering if all stations
-      if (station == 0) track->SetFitMCS(1);
+      if (station == 0) Fit(track,1,1);
       // without multiple Coulomb scattering if not all stations
-      else track->SetFitMCS(0);
-      track->SetFitNParam(5);  // with 5 parameters (momentum and position)
-      track->SetFitStart(1);  // from parameters at first hit
-      track->Fit();
+      else Fit(track,1,0);
       Double_t numberOfDegFree = (2.0 * track->GetNTrackHits() - 5);
       if (numberOfDegFree > 0) {
         chi2Norm =  track->GetFitFMin() / numberOfDegFree;
@@ -1040,7 +1106,8 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       }
       // Track removed if normalized chi2 too high
       if (chi2Norm > fMaxChi2) {
-	track->Remove();
+	fRecTracksPtr->Remove(track);
+	fNRecTracks--;
 	break; // stop the search for this candidate:
 	// exit from the loop over station 
       }
@@ -1052,7 +1119,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       // Track extrapolation to the vertex through the absorber (Branson)
       // after going through the first station
       if (station == 0) {
-	trackParamVertex = *trackParam1;
+	trackParamVertex = *((AliMUONTrackParam*) (track->GetTrackParamAtHit()->First()));
 	(&trackParamVertex)->ExtrapToVertex(0.,0.,0.);
 	track->SetTrackParamAtVertex(&trackParamVertex);
 	if (AliLog::GetGlobalDebugLevel() > 0) {
@@ -1065,10 +1132,412 @@ void AliMUONTrackReconstructor::FollowTracks(void)
     // go really to next track
     track = nextTrack;
   } // while (track)
-  // Compression of track array (necessary after Remove ????)
+  // Compression of track array (necessary after Remove)
   fRecTracksPtr->Compress();
   return;
 }
+
+  //__________________________________________________________________________
+void AliMUONTrackReconstructor::Fit(AliMUONTrack *Track, Int_t FitStart, Int_t FitMCS)
+{
+  // Fit the track "Track",
+  // with or without multiple Coulomb scattering according to "FitMCS",
+  // starting, according to "FitStart",
+  // with track parameters at vertex or at the first TrackHit.
+  
+  if ((FitStart != 0) && (FitStart != 1)) {
+    cout << "ERROR in AliMUONTrackReconstructor::Fit(...)" << endl;
+    cout << "FitStart = " << FitStart << " is neither 0 nor 1" << endl;
+    exit(0);
+  }
+  if ((FitMCS != 0) && (FitMCS != 1)) {
+    cout << "ERROR in AliMUONTrackReconstructor::Fit(...)" << endl;
+    cout << "FitMCS = " << FitMCS << " is neither 0 nor 1" << endl;
+    exit(0);
+  }
+  
+  Double_t arg[1], benC, errorParam, invBenP, lower, nonBenC, upper, x, y;
+  char parName[50];
+  AliMUONTrackParam *trackParam;
+  // Check if Minuit is initialized...
+  fgFitter = TVirtualFitter::Fitter(Track,5);
+  fgFitter->Clear(); // necessary ???? probably yes
+  // how to reset the printout number at every fit ????
+  // is there any risk to leave it like that ????
+  // how to go faster ???? choice of Minuit parameters like EDM ????
+  // choice of function to be minimized according to fFitMCS
+  if (FitMCS == 0) fgFitter->SetFCN(TrackChi2);
+  else fgFitter->SetFCN(TrackChi2MCS);
+  // Switch off printout
+  arg[0] = -1;
+  fgFitter->ExecuteCommand("SET PRINT", arg, 1); // More printing !!!!
+  // No warnings
+  fgFitter->ExecuteCommand("SET NOW", arg, 0);
+  // Parameters according to "fFitStart"
+  // (should be a function to be used at every place where needed ????)
+  if (FitStart == 0) trackParam = Track->GetTrackParamAtVertex();
+  else trackParam = (AliMUONTrackParam*) (Track->GetTrackParamAtHit()->First());
+  // set first 3 Minuit parameters
+  // could be tried with no limits for the search (min=max=0) ????
+  fgFitter->SetParameter(0, "InvBenP",
+			 trackParam->GetInverseBendingMomentum(),
+			 0.003, -0.4, 0.4);
+  fgFitter->SetParameter(1, "BenS",
+			 trackParam->GetBendingSlope(),
+			 0.001, -0.5, 0.5);
+  fgFitter->SetParameter(2, "NonBenS",
+			 trackParam->GetNonBendingSlope(),
+			 0.001, -0.5, 0.5);
+  if (FitStart == 1) {
+    // set last 2 Minuit parameters when we start from first track hit
+    // mandatory limits in Bending to avoid NaN values of parameters
+    fgFitter->SetParameter(3, "X",
+			   trackParam->GetNonBendingCoor(),
+			   0.03, -500.0, 500.0);
+    // mandatory limits in non Bending to avoid NaN values of parameters
+    fgFitter->SetParameter(4, "Y",
+			   trackParam->GetBendingCoor(),
+			   0.10, -500.0, 500.0);
+  }
+  // search without gradient calculation in the function
+  fgFitter->ExecuteCommand("SET NOGRADIENT", arg, 0);
+  // minimization
+  fgFitter->ExecuteCommand("MINIMIZE", arg, 0);
+  // exit from Minuit
+  //  fgFitter->ExecuteCommand("EXIT", arg, 0); // necessary ????
+  // get results into "invBenP", "benC", "nonBenC" ("x", "y")
+  fgFitter->GetParameter(0, parName, invBenP, errorParam, lower, upper);
+  trackParam->SetInverseBendingMomentum(invBenP);
+  fgFitter->GetParameter(1, parName, benC, errorParam, lower, upper);
+  trackParam->SetBendingSlope(benC);
+  fgFitter->GetParameter(2, parName, nonBenC, errorParam, lower, upper);
+  trackParam->SetNonBendingSlope(nonBenC);
+  if (FitStart == 1) {
+    fgFitter->GetParameter(3, parName, x, errorParam, lower, upper);
+    trackParam->SetNonBendingCoor(x);
+    fgFitter->GetParameter(4, parName, y, errorParam, lower, upper);
+    trackParam->SetBendingCoor(y);
+  }
+  // global result of the fit
+  Double_t fedm, errdef, FitFMin;
+  Int_t npari, nparx;
+  fgFitter->GetStats(FitFMin, fedm, errdef, npari, nparx);
+  Track->SetFitFMin(FitFMin);
+}
+
+  //__________________________________________________________________________
+void TrackChi2(Int_t &NParam, Double_t * /*Gradient*/, Double_t &Chi2, Double_t *Param, Int_t /*Flag*/)
+{
+  // Return the "Chi2" to be minimized with Minuit for track fitting,
+  // with "NParam" parameters
+  // and their current values in array pointed to by "Param".
+  // Assumes that the track hits are sorted according to increasing Z.
+  // Track parameters at each TrackHit are updated accordingly.
+  // Multiple Coulomb scattering is not taken into account
+  AliMUONTrack *trackBeingFitted;
+  AliMUONTrackParam param1;
+  AliMUONTrackParam* TrackParamAtHit;
+  AliMUONHitForRec* HitForRec;
+  Chi2 = 0.0; // initialize Chi2
+  // copy of track parameters to be fitted
+  trackBeingFitted = (AliMUONTrack*) AliMUONTrackReconstructor::Fitter()->GetObjectFit();
+  // 3 parameters means fit track candidate from parameters at vertex (X_vertex and Y_vertex are fixed)
+  if (NParam == 3) param1 = *(trackBeingFitted->GetTrackParamAtVertex());
+  else param1 = *((AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->First()));
+  // Minuit parameters to be fitted into this copy
+  param1.SetInverseBendingMomentum(Param[0]);
+  param1.SetBendingSlope(Param[1]);
+  param1.SetNonBendingSlope(Param[2]);
+  if (NParam == 5) {
+    param1.SetNonBendingCoor(Param[3]);
+    param1.SetBendingCoor(Param[4]);
+  }
+  // Follow track through all planes of track hits
+  TrackParamAtHit = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->First());
+  while (TrackParamAtHit) {
+    HitForRec = TrackParamAtHit->GetHitForRecPtr();
+    // extrapolation to the plane of the HitForRec attached to the current TrackParamAtHit
+    param1.ExtrapToZ(HitForRec->GetZ());
+    // update track parameters of the current hit
+    TrackParamAtHit->SetTrackParam(param1);
+    // Increment Chi2
+    // done hit per hit, with hit resolution,
+    // and not with point and angle like in "reco_muon.F" !!!!
+    // Needs to add multiple scattering contribution ????
+    Double_t dX = HitForRec->GetNonBendingCoor() - param1.GetNonBendingCoor();
+    Double_t dY = HitForRec->GetBendingCoor() - param1.GetBendingCoor();
+    Chi2 = Chi2 + dX * dX / HitForRec->GetNonBendingReso2() + dY * dY / HitForRec->GetBendingReso2();
+    TrackParamAtHit = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->After(TrackParamAtHit));
+  }
+}
+
+  //__________________________________________________________________________
+void TrackChi2MCS(Int_t &NParam, Double_t * /*Gradient*/, Double_t &Chi2, Double_t *Param, Int_t /*Flag*/)
+{
+  // Return the "Chi2" to be minimized with Minuit for track fitting,
+  // with "NParam" parameters
+  // and their current values in array pointed to by "Param".
+  // Assumes that the track hits are sorted according to increasing Z.
+  // Track parameters at each TrackHit are updated accordingly.
+  // Multiple Coulomb scattering is taken into account with covariance matrix.
+  AliMUONTrack *trackBeingFitted;
+  AliMUONTrackParam param1;
+  AliMUONTrackParam* TrackParamAtHit;
+  AliMUONHitForRec* HitForRec;
+  Chi2 = 0.0; // initialize Chi2
+  // copy of track parameters to be fitted
+  trackBeingFitted = (AliMUONTrack*) AliMUONTrackReconstructor::Fitter()->GetObjectFit();
+  // 3 parameters means fit track candidate from parameters at vertex (X_vertex and Y_vertex are fixed)
+  if (NParam == 3) param1 = *(trackBeingFitted->GetTrackParamAtVertex());
+  else param1 = *((AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->First()));
+  // Minuit parameters to be fitted into this copy
+  param1.SetInverseBendingMomentum(Param[0]);
+  param1.SetBendingSlope(Param[1]);
+  param1.SetNonBendingSlope(Param[2]);
+  if (NParam == 5) {
+    param1.SetNonBendingCoor(Param[3]);
+    param1.SetBendingCoor(Param[4]);
+  }
+
+  Int_t chCurrent, chPrev = 0, hitNumber, hitNumber1, hitNumber2, hitNumber3;
+  Double_t z1, z2, z3;
+  AliMUONTrackParam *TrackParamAtHit1, *TrackParamAtHit2, *TrackParamAtHit3;
+  AliMUONHitForRec *HitForRec1, *HitForRec2;
+  Double_t hbc1, hbc2, pbc1, pbc2;
+  Double_t hnbc1, hnbc2, pnbc1, pnbc2;
+  Int_t numberOfHit = trackBeingFitted->GetNTrackHits();
+  TMatrixD *covBending = new TMatrixD(numberOfHit, numberOfHit);
+  TMatrixD *covNonBending = new TMatrixD(numberOfHit, numberOfHit);
+  Double_t *msa2 = new Double_t[numberOfHit];
+
+  // Predicted coordinates and  multiple scattering angles are first calculated
+  for (hitNumber = 0; hitNumber < numberOfHit; hitNumber++) {
+    TrackParamAtHit = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber));
+    HitForRec = TrackParamAtHit->GetHitForRecPtr();
+    // extrapolation to the plane of the HitForRec attached to the current TrackParamAtHit
+    param1.ExtrapToZ(HitForRec->GetZ());
+    // update track parameters of the current hit
+    TrackParamAtHit->SetTrackParam(param1);
+    // square of multiple scattering angle at current hit, with one chamber
+    msa2[hitNumber] = MultipleScatteringAngle2(&param1);
+    // correction for eventual missing hits or multiple hits in a chamber,
+    // according to the number of chambers
+    // between the current hit and the previous one
+    chCurrent = HitForRec->GetChamberNumber();
+    if (hitNumber > 0) msa2[hitNumber] = msa2[hitNumber] * (chCurrent - chPrev);
+    chPrev = chCurrent;
+  }
+
+  // Calculates the covariance matrix
+  for (hitNumber1 = 0; hitNumber1 < numberOfHit; hitNumber1++) { 
+    TrackParamAtHit1 = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber1));
+    HitForRec1 = TrackParamAtHit1->GetHitForRecPtr();
+    z1 = HitForRec1->GetZ();
+    for (hitNumber2 = hitNumber1; hitNumber2 < numberOfHit; hitNumber2++) {
+      TrackParamAtHit2 = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber2));
+      z2 = TrackParamAtHit2->GetHitForRecPtr()->GetZ();
+      // initialization to 0 (diagonal plus upper triangular part)
+      (*covBending)(hitNumber2, hitNumber1) = 0.0;
+      // contribution from multiple scattering in bending plane:
+      // loop over upstream hits
+      for (hitNumber3 = 0; hitNumber3 < hitNumber1; hitNumber3++) { 	
+        TrackParamAtHit3 = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber3));
+	z3 = TrackParamAtHit3->GetHitForRecPtr()->GetZ();
+	(*covBending)(hitNumber2, hitNumber1) = (*covBending)(hitNumber2, hitNumber1) + ((z1 - z3) * (z2 - z3) * msa2[hitNumber3]); 
+      }
+      // equal contribution from multiple scattering in non bending plane
+      (*covNonBending)(hitNumber2, hitNumber1) = (*covBending)(hitNumber2, hitNumber1);
+      if (hitNumber1 == hitNumber2) {
+	// Diagonal elements: add contribution from position measurements
+	// in bending plane
+	(*covBending)(hitNumber2, hitNumber1) = (*covBending)(hitNumber2, hitNumber1) + HitForRec1->GetBendingReso2();
+	// and in non bending plane
+	(*covNonBending)(hitNumber2, hitNumber1) = (*covNonBending)(hitNumber2, hitNumber1) + HitForRec1->GetNonBendingReso2();
+      } else {
+	// Non diagonal elements: symmetrization
+	// for bending plane
+	(*covBending)(hitNumber1, hitNumber2) = (*covBending)(hitNumber2, hitNumber1);
+	// and non bending plane
+	(*covNonBending)(hitNumber1, hitNumber2) = (*covNonBending)(hitNumber2, hitNumber1);
+      }
+    } // for (hitNumber2 = hitNumber1;...
+  } // for (hitNumber1 = 0;...
+    
+  // Inversion of covariance matrices
+  // with "mnvertLocal", local "mnvert" function of Minuit.
+  // One cannot use directly "mnvert" since "TVirtualFitter" does not know it.
+  // One will have to replace this local function by the right inversion function
+  // from a specialized Root package for symmetric positive definite matrices,
+  // when available!!!!
+  Int_t ifailBending;
+  mnvertLocal(&((*covBending)(0,0)), numberOfHit, numberOfHit, numberOfHit, ifailBending);
+  Int_t ifailNonBending;
+  mnvertLocal(&((*covNonBending)(0,0)), numberOfHit, numberOfHit, numberOfHit, ifailNonBending);
+
+  // It would be worth trying to calculate the inverse of the covariance matrix
+  // only once per fit, since it cannot change much in principle,
+  // and it would save a lot of computing time !!!!
+  
+  // Calculates Chi2
+  if ((ifailBending == 0) && (ifailNonBending == 0)) {
+    // with Multiple Scattering if inversion correct
+    for (hitNumber1 = 0; hitNumber1 < numberOfHit ; hitNumber1++) { 
+      TrackParamAtHit1 = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber1));
+      HitForRec1 = TrackParamAtHit1->GetHitForRecPtr();
+      hbc1 = HitForRec1->GetBendingCoor();
+      pbc1 = TrackParamAtHit1->GetBendingCoor();
+      hnbc1 = HitForRec1->GetNonBendingCoor();
+      pnbc1 = TrackParamAtHit1->GetNonBendingCoor();
+      for (hitNumber2 = 0; hitNumber2 < numberOfHit; hitNumber2++) {
+	TrackParamAtHit2 = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber2));
+        HitForRec2 = TrackParamAtHit2->GetHitForRecPtr();
+	hbc2 = HitForRec2->GetBendingCoor();
+	pbc2 = TrackParamAtHit2->GetBendingCoor();
+	hnbc2 = HitForRec2->GetNonBendingCoor();
+	pnbc2 = TrackParamAtHit2->GetNonBendingCoor();
+	Chi2 += ((*covBending)(hitNumber2, hitNumber1) * (hbc1 - pbc1) * (hbc2 - pbc2)) +
+		((*covNonBending)(hitNumber2, hitNumber1) * (hnbc1 - pnbc1) * (hnbc2 - pnbc2));
+      }
+    }
+  } else {
+    // without Multiple Scattering if inversion impossible
+    for (hitNumber1 = 0; hitNumber1 < numberOfHit ; hitNumber1++) { 
+      TrackParamAtHit1 = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber1));
+      HitForRec1 = TrackParamAtHit1->GetHitForRecPtr();
+      hbc1 = HitForRec1->GetBendingCoor();
+      pbc1 = TrackParamAtHit1->GetBendingCoor();
+      hnbc1 = HitForRec1->GetNonBendingCoor();
+      pnbc1 = TrackParamAtHit1->GetNonBendingCoor();
+      Chi2 += ((hbc1 - pbc1) * (hbc1 - pbc1) / HitForRec1->GetBendingReso2()) +
+	      ((hnbc1 - pnbc1) * (hnbc1 - pnbc1) / HitForRec1->GetNonBendingReso2());
+    }
+  }
+  
+  delete covBending;
+  delete covNonBending;
+  delete [] msa2;
+}
+
+Double_t MultipleScatteringAngle2(AliMUONTrackParam *param)
+{
+  // Returns square of multiple Coulomb scattering angle
+  // from TrackParamAtHit pointed to by "param"
+  Double_t slopeBending, slopeNonBending, radiationLength, inverseBendingMomentum2, inverseTotalMomentum2;
+  Double_t varMultipleScatteringAngle;
+  // Better implementation in AliMUONTrack class ????
+  slopeBending = param->GetBendingSlope();
+  slopeNonBending = param->GetNonBendingSlope();
+  // thickness in radiation length for the current track,
+  // taking local angle into account
+  radiationLength = AliMUONConstants::DefaultChamberThicknessInX0() *
+		    TMath::Sqrt(1.0 + slopeBending*slopeBending + slopeNonBending*slopeNonBending);
+  inverseBendingMomentum2 =  param->GetInverseBendingMomentum() * param->GetInverseBendingMomentum();
+  inverseTotalMomentum2 = inverseBendingMomentum2 * (1.0 + slopeBending * slopeBending) /
+			  (1.0 + slopeBending *slopeBending + slopeNonBending * slopeNonBending); 
+  varMultipleScatteringAngle = 0.0136 * (1.0 + 0.038 * TMath::Log(radiationLength));
+  // The velocity is assumed to be 1 !!!!
+  varMultipleScatteringAngle = inverseTotalMomentum2 * radiationLength * varMultipleScatteringAngle * varMultipleScatteringAngle;
+  return varMultipleScatteringAngle;
+}
+
+//______________________________________________________________________________
+ void mnvertLocal(Double_t *a, Int_t l, Int_t, Int_t n, Int_t &ifail)
+{
+//*-*-*-*-*-*-*-*-*-*-*-*Inverts a symmetric matrix*-*-*-*-*-*-*-*-*-*-*-*-*
+//*-*                    ==========================
+//*-*        inverts a symmetric matrix.   matrix is first scaled to
+//*-*        have all ones on the diagonal (equivalent to change of units)
+//*-*        but no pivoting is done since matrix is positive-definite.
+//*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+  // taken from TMinuit package of Root (l>=n)
+  // fVERTs, fVERTq and fVERTpp changed to localVERTs, localVERTq and localVERTpp
+  //  Double_t localVERTs[n], localVERTq[n], localVERTpp[n];
+  Double_t * localVERTs = new Double_t[n];
+  Double_t * localVERTq = new Double_t[n];
+  Double_t * localVERTpp = new Double_t[n];
+  // fMaxint changed to localMaxint
+  Int_t localMaxint = n;
+
+    /* System generated locals */
+    Int_t aOffset;
+
+    /* Local variables */
+    Double_t si;
+    Int_t i, j, k, kp1, km1;
+
+    /* Parameter adjustments */
+    aOffset = l + 1;
+    a -= aOffset;
+
+    /* Function Body */
+    ifail = 0;
+    if (n < 1) goto L100;
+    if (n > localMaxint) goto L100;
+//*-*-                  scale matrix by sqrt of diag elements
+    for (i = 1; i <= n; ++i) {
+        si = a[i + i*l];
+        if (si <= 0) goto L100;
+        localVERTs[i-1] = 1 / TMath::Sqrt(si);
+    }
+    for (i = 1; i <= n; ++i) {
+        for (j = 1; j <= n; ++j) {
+            a[i + j*l] = a[i + j*l]*localVERTs[i-1]*localVERTs[j-1];
+        }
+    }
+//*-*-                                       . . . start main loop . . . .
+    for (i = 1; i <= n; ++i) {
+        k = i;
+//*-*-                  preparation for elimination step1
+        if (a[k + k*l] != 0) localVERTq[k-1] = 1 / a[k + k*l];
+        else goto L100;
+        localVERTpp[k-1] = 1;
+        a[k + k*l] = 0;
+        kp1 = k + 1;
+        km1 = k - 1;
+        if (km1 < 0) goto L100;
+        else if (km1 == 0) goto L50;
+        else               goto L40;
+L40:
+        for (j = 1; j <= km1; ++j) {
+            localVERTpp[j-1] = a[j + k*l];
+            localVERTq[j-1]  = a[j + k*l]*localVERTq[k-1];
+            a[j + k*l]   = 0;
+        }
+L50:
+        if (k - n < 0) goto L51;
+        else if (k - n == 0) goto L60;
+        else                goto L100;
+L51:
+        for (j = kp1; j <= n; ++j) {
+            localVERTpp[j-1] = a[k + j*l];
+            localVERTq[j-1]  = -a[k + j*l]*localVERTq[k-1];
+            a[k + j*l]   = 0;
+        }
+//*-*-                  elimination proper
+L60:
+        for (j = 1; j <= n; ++j) {
+            for (k = j; k <= n; ++k) { a[j + k*l] += localVERTpp[j-1]*localVERTq[k-1]; }
+        }
+    }
+//*-*-                  elements of left diagonal and unscaling
+    for (j = 1; j <= n; ++j) {
+        for (k = 1; k <= j; ++k) {
+            a[k + j*l] = a[k + j*l]*localVERTs[k-1]*localVERTs[j-1];
+            a[j + k*l] = a[k + j*l];
+        }
+    }
+    delete [] localVERTs;
+    delete [] localVERTq;
+    delete [] localVERTpp;
+    return;
+//*-*-                  failure return
+L100:
+    delete [] localVERTs;
+    delete [] localVERTq;
+    delete [] localVERTpp;
+    ifail = 1;
+} /* mnvertLocal */
 
   //__________________________________________________________________________
 void AliMUONTrackReconstructor::RemoveDoubleTracks(void)
@@ -1079,78 +1548,62 @@ void AliMUONTrackReconstructor::RemoveDoubleTracks(void)
   // Among two identical tracks, one keeps the track with the larger number of hits
   // or, if these numbers are equal, the track with the minimum Chi2.
   AliMUONTrack *track1, *track2, *trackToRemove;
-  Bool_t identicalTracks;
   Int_t hitsInCommon, nHits1, nHits2;
-  identicalTracks = kTRUE;
-  while (identicalTracks) {
-    identicalTracks = kFALSE;
-    // Loop over first track of the pair
-    track1 = (AliMUONTrack*) fRecTracksPtr->First();
-    while (track1 && (!identicalTracks)) {
-      nHits1 = track1->GetNTrackHits();
-      // Loop over second track of the pair
-      track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-      while (track2 && (!identicalTracks)) {
-	nHits2 = track2->GetNTrackHits();
-	// number of hits in common between two tracks
-	hitsInCommon = track1->HitsInCommon(track2);
-	// check for identical tracks
-	if ((4 * hitsInCommon) >= (nHits1 + nHits2)) {
-	  identicalTracks = kTRUE;
-	  // decide which track to remove
-	  if (nHits1 > nHits2) trackToRemove = track2;
-	  else if (nHits1 < nHits2) trackToRemove = track1;
-	  else if ((track1->GetFitFMin()) < (track2->GetFitFMin()))
-	    trackToRemove = track2;
-	  else trackToRemove = track1;
-	  // remove it
-	  trackToRemove->Remove();
-	}
-	track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
-      } // track2
-      track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
-    } // track1
-  }
-  return;
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackReconstructor::UpdateTrackParamAtHit()
-{
-  // Set track parameters after track fitting. Fill fTrackParamAtHit of AliMUONTrack's
-  AliMUONTrack *track;
-  AliMUONTrackHit *trackHit;
-  AliMUONTrackParam *trackParam;
-  track = (AliMUONTrack*) fRecTracksPtr->First();
-  while (track) {
-    trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->First();
-    while (trackHit) {
-      trackParam = trackHit->GetTrackParam();
-      track->AddTrackParamAtHit(trackParam);
-      trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->After(trackHit); 
-    } // trackHit    
-    track = (AliMUONTrack*) fRecTracksPtr->After(track);
-  } // track
+  Bool_t removedTrack1;
+  // Loop over first track of the pair
+  track1 = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track1) {
+    removedTrack1 = kFALSE;
+    nHits1 = track1->GetNTrackHits();
+    // Loop over second track of the pair
+    track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+    while (track2) {
+      nHits2 = track2->GetNTrackHits();
+      // number of hits in common between two tracks
+      hitsInCommon = track1->HitsInCommon(track2);
+      // check for identical tracks
+      if ((4 * hitsInCommon) >= (nHits1 + nHits2)) {
+        // decide which track to remove
+        if ((nHits1 > nHits2) || ((nHits1 == nHits2) && (track1->GetFitFMin() < track2->GetFitFMin()))) {
+	  // remove track2 and continue the second loop with the track next to track2
+	  trackToRemove = track2;
+	  track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+	  fRecTracksPtr->Remove(trackToRemove);
+	  fNRecTracks--;
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+        } else {
+	  // else remove track1 and continue the first loop with the track next to track1
+	  trackToRemove = track1;
+	  track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+          fRecTracksPtr->Remove(trackToRemove);
+	  fNRecTracks--;
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  removedTrack1 = kTRUE;
+	  break;
+        }
+      } else track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+    } // track2
+    if (removedTrack1) continue;
+    track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+  } // track1
   return;
 }
 
   //__________________________________________________________________________
 void AliMUONTrackReconstructor::UpdateHitForRecAtHit()
 {
-  // Set cluster parameterss after track fitting. Fill fHitForRecAtHit of AliMUONTrack's
+  // Set cluster parameters after track fitting. Fill fHitForRecAtHit of AliMUONTrack's
   AliMUONTrack *track;
-  AliMUONTrackHit *trackHit;
-  AliMUONHitForRec *hitForRec;
+  AliMUONTrackParam *trackParamAtHit;
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
-    trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->First();
-    while (trackHit) {
-      hitForRec = trackHit->GetHitForRecPtr();
-      track->AddHitForRecAtHit(hitForRec);
-      trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->After(trackHit); 
-    } // trackHit    
+    trackParamAtHit = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
+    while (trackParamAtHit) {
+      track->AddHitForRecAtHit(trackParamAtHit->GetHitForRecPtr());
+      trackParamAtHit = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->After(trackParamAtHit)); 
+    }
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
-  } // track
+  }
   return;
 }
 
@@ -1207,8 +1660,7 @@ void AliMUONTrackReconstructor::EventDump(void)
 		     z, x, y, pX, pY, pZ, c));
 
     // track parameters at first hit
-    trackParam1 = ((AliMUONTrackHit*)
-		   (track->GetTrackHitsPtr()->First()))->GetTrackParam();
+    trackParam1 = (AliMUONTrackParam*) track->GetTrackParamAtHit()->First();
     x = trackParam1->GetNonBendingCoor();
     y = trackParam1->GetBendingCoor();
     z = trackParam1->GetZ();

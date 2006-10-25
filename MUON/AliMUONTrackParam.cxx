@@ -33,6 +33,7 @@
 #include "AliMagF.h" 
 #include "AliLog.h" 
 #include "AliTracker.h"
+#include "AliMUONHitForRec.h"
 
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
 
@@ -44,7 +45,9 @@ AliMUONTrackParam::AliMUONTrackParam()
     fNonBendingSlope(0.),
     fZ(0.),
     fBendingCoor(0.),
-    fNonBendingCoor(0.)
+    fNonBendingCoor(0.),
+    fkField(0x0),
+    fHitForRecPtr(0x0)
 {
 // Constructor
   // get field from outside
@@ -53,8 +56,23 @@ AliMUONTrackParam::AliMUONTrackParam()
 }
 
   //_________________________________________________________________________
-AliMUONTrackParam& 
-AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
+AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
+  : TObject(theMUONTrackParam),
+    fInverseBendingMomentum(theMUONTrackParam.fInverseBendingMomentum), 
+    fBendingSlope(theMUONTrackParam.fBendingSlope),
+    fNonBendingSlope(theMUONTrackParam.fNonBendingSlope),
+    fZ(theMUONTrackParam.fZ),
+    fBendingCoor(theMUONTrackParam.fBendingCoor),
+    fNonBendingCoor(theMUONTrackParam.fNonBendingCoor),
+    fkField(theMUONTrackParam.fkField),
+    fHitForRecPtr(theMUONTrackParam.fHitForRecPtr)
+{
+  // Copy constructor
+
+}
+
+  //_________________________________________________________________________
+AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
 {
   // Asignment operator
   if (this == &theMUONTrackParam)
@@ -69,21 +87,51 @@ AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
   fZ                      =  theMUONTrackParam.fZ; 
   fBendingCoor            =  theMUONTrackParam.fBendingCoor; 
   fNonBendingCoor         =  theMUONTrackParam.fNonBendingCoor;
+  fkField                 =  theMUONTrackParam.fkField;
+  fHitForRecPtr           =  theMUONTrackParam.fHitForRecPtr;
 
   return *this;
 }
-  //_________________________________________________________________________
-AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
-  : TObject(theMUONTrackParam),
-    fInverseBendingMomentum(theMUONTrackParam.fInverseBendingMomentum), 
-    fBendingSlope(theMUONTrackParam.fBendingSlope),
-    fNonBendingSlope(theMUONTrackParam.fNonBendingSlope),
-    fZ(theMUONTrackParam.fZ),
-    fBendingCoor(theMUONTrackParam.fBendingCoor),
-    fNonBendingCoor(theMUONTrackParam.fNonBendingCoor)
-{
-  // Copy constructor
 
+  //__________________________________________________________________________
+AliMUONTrackParam::~AliMUONTrackParam()
+{
+/// Destructor
+/// Update the number of TrackHit's connected to the attached HitForRec if any
+  if (fHitForRecPtr) fHitForRecPtr->SetNTrackHits(fHitForRecPtr->GetNTrackHits() - 1); // decrement NTrackHits of hit
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::SetTrackParam(AliMUONTrackParam& theMUONTrackParam)
+{
+  /// Set track parameters from "TrackParam" leaving pointer to fHitForRecPtr unchanged
+  fInverseBendingMomentum =  theMUONTrackParam.fInverseBendingMomentum; 
+  fBendingSlope           =  theMUONTrackParam.fBendingSlope; 
+  fNonBendingSlope        =  theMUONTrackParam.fNonBendingSlope; 
+  fZ                      =  theMUONTrackParam.fZ; 
+  fBendingCoor            =  theMUONTrackParam.fBendingCoor; 
+  fNonBendingCoor         =  theMUONTrackParam.fNonBendingCoor;
+  
+}
+
+  //__________________________________________________________________________
+AliMUONHitForRec* AliMUONTrackParam::GetHitForRecPtr(void) const
+{
+/// return pointer to HitForRec attached to the current TrackParam
+/// this method should not be called when fHitForRecPtr == NULL
+  if (!fHitForRecPtr) AliWarning("AliMUONTrackParam::GetHitForRecPtr: fHitForRecPtr == NULL");
+  return fHitForRecPtr;
+}
+
+  //__________________________________________________________________________
+Int_t AliMUONTrackParam::Compare(const TObject* TrackParam) const
+{
+/// "Compare" function to sort with decreasing Z (spectro. muon Z <0).
+/// Returns 1 (0, -1) if Z of current TrackHit
+/// is smaller than (equal to, larger than) Z of TrackHit
+  if (fHitForRecPtr->GetZ() < ((AliMUONTrackParam*)TrackParam)->fHitForRecPtr->GetZ()) return(1);
+  else if (fHitForRecPtr->GetZ() == ((AliMUONTrackParam*)TrackParam)->fHitForRecPtr->GetZ()) return(0);
+  else return(-1);
 }
 
   //_________________________________________________________________________

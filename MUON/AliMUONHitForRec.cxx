@@ -46,8 +46,6 @@ AliMUONHitForRec::AliMUONHitForRec()
     fTrackRefSignal(0),
     fIndexOfFirstSegment(0),
     fNSegments(0),
-    fFirstTrackHitPtr(0x0),
-    fLastTrackHitPtr(0x0),
     fNTrackHits(0)
 {
 /// Default Constructor
@@ -69,8 +67,6 @@ AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
     fTrackRefSignal(0),
     fIndexOfFirstSegment(-1),
     fNSegments(0),
-    fFirstTrackHitPtr(0x0),
-    fLastTrackHitPtr(0x0),
     fNTrackHits(0)
 {
 /// Constructor for AliMUONHitForRec from a track ref. hit.
@@ -119,8 +115,6 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
     fTrackRefSignal(-1),
     fIndexOfFirstSegment(-1),
     fNSegments(0),
-    fFirstTrackHitPtr(0x0),
-    fLastTrackHitPtr(0x0),
     fNTrackHits(0)
 {
 /// Constructor for AliMUONHitForRec from a raw cluster.
@@ -146,8 +140,6 @@ AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
     fTrackRefSignal(theMUONHitForRec.fTrackRefSignal),
     fIndexOfFirstSegment(theMUONHitForRec.fIndexOfFirstSegment),
     fNSegments(theMUONHitForRec.fNSegments),
-    fFirstTrackHitPtr(theMUONHitForRec.fFirstTrackHitPtr),
-    fLastTrackHitPtr(theMUONHitForRec.fLastTrackHitPtr),
     fNTrackHits(theMUONHitForRec.fNTrackHits)
 {
 /// Copy constructor
@@ -171,8 +163,6 @@ AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& theMUONHi
   fTrackRefSignal = theMUONHitForRec.fTrackRefSignal;
   fIndexOfFirstSegment = theMUONHitForRec.fIndexOfFirstSegment;
   fNSegments = theMUONHitForRec.fNSegments;
-  fFirstTrackHitPtr = theMUONHitForRec.fFirstTrackHitPtr;
-  fLastTrackHitPtr = theMUONHitForRec.fLastTrackHitPtr;
   fNTrackHits = theMUONHitForRec.fNTrackHits;
   return *this;
 }

@@ -18,6 +18,8 @@ class AliMUONConstants : public TObject {
     static Int_t    NCh() {return fgNCh;}
     /// Return number of tracking chambers
     static Int_t    NTrackingCh() {return fgNTrackingCh;}
+    /// Return number of tracking stations
+    static Int_t    NTrackingSt() {return fgNTrackingSt;}
     /// Return number of trigger chambers
     static Int_t    NTriggerCh() {return fgNTriggerCh;}
     /// Return number of trigger circuits
@@ -66,6 +68,8 @@ class AliMUONConstants : public TObject {
     static Float_t Pitch()    {return fgPitch;}
     /// Return wire pitch for Station 1 & 2
     static Float_t PitchSt1() {return fgPitchSt1;}
+    /// Return chamber thickness in X0
+    static Double_t DefaultChamberThicknessInX0() {return fgDefaultChamberThicknessInX0;}
     /// Return Trigger ToF Limit (75 ns)
     static Float_t TriggerTofLimit() {return fgkTriggerTofLimit;}
  
@@ -78,6 +82,7 @@ class AliMUONConstants : public TObject {
  private:
     static Int_t  fgNCh;                ///<  Number of Chambers    
     static Int_t  fgNTrackingCh;        ///<  Number of Tracking Chambers
+    static Int_t  fgNTrackingSt;        ///<  Number of Tracking Stations
     static Int_t  fgNTriggerCh;         ///<  Number of Trigger Chambers
     static Int_t  fgNTriggerCircuit;    ///<  Number of Trigger Circuits
     static Int_t  fgNDetElem;           ///<  Number of Detection Elements.
@@ -102,6 +107,8 @@ class AliMUONConstants : public TObject {
     static Float_t  fgPitch;             ///< Wire pitch for St2 & Slats
     static Float_t  fgPitchSt1;          ///< Wire pitch for Station 1
 
+    static Double_t  fgDefaultChamberThicknessInX0; ///< default chamber thickness in X0 for reconstruction
+    
     static Int_t    fgMaxZoom;           ///< Maximum Zoom for event display
     static Float_t fgkTriggerTofLimit;   ///< Particle above this threshold are discarded in trigger algorithm
     

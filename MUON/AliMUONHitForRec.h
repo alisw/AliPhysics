@@ -51,10 +51,6 @@ class AliMUONHitForRec : public TObject {
   void SetIndexOfFirstSegment(Int_t IndexOfFirstSegment) { fIndexOfFirstSegment = IndexOfFirstSegment;}
   Int_t GetNSegments(void) const { return fNSegments;}
   void SetNSegments(Int_t NSegments) { fNSegments = NSegments;}
-  AliMUONTrackHit* GetFirstTrackHitPtr(void) const { return fFirstTrackHitPtr;}
-  void SetFirstTrackHitPtr(AliMUONTrackHit* FirstTrackHitPtr) { fFirstTrackHitPtr = FirstTrackHitPtr;}
-  AliMUONTrackHit* GetLastTrackHitPtr(void) const { return fLastTrackHitPtr;}
-  void SetLastTrackHitPtr(AliMUONTrackHit* LastTrackHitPtr) { fLastTrackHitPtr = LastTrackHitPtr;}
   Int_t GetNTrackHits(void) const { return fNTrackHits;}
   void SetNTrackHits(Int_t NTrackHits) { fNTrackHits = NTrackHits;}
 
@@ -88,9 +84,6 @@ class AliMUONHitForRec : public TObject {
   Int_t fIndexOfFirstSegment; //!<  index of first Segment
   Int_t fNSegments; //!<  number of Segments
 
-  // links forward to reconstructed track hits
-  AliMUONTrackHit *fFirstTrackHitPtr ; //!<  pointer to first TrackHit made with HitForRec
-  AliMUONTrackHit *fLastTrackHitPtr ; //!<  pointer to last TrackHit made with HitForRec
   Int_t fNTrackHits; //!<  number of TrackHit's made with HitForRec
   
   ClassDef(AliMUONHitForRec, 2) // Hit for reconstruction in ALICE dimuon spectrometer

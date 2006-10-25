@@ -38,6 +38,7 @@ ClassImp(AliMUONConstants)
 
 Int_t   AliMUONConstants::fgNCh = 14;
 Int_t   AliMUONConstants::fgNTrackingCh = 10;
+Int_t   AliMUONConstants::fgNTrackingSt = 5;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Int_t   AliMUONConstants::fgNDetElem = 228;
@@ -78,6 +79,9 @@ Float_t  AliMUONConstants::fgDmin[7]  = {   36.4,  46.2,  63.0,   79.0,   79.0, 
 Float_t  AliMUONConstants::fgDmax[7]  = {  176.6, 229.0, 308.84, 418.2,  522.0, 850.0, 900.0};   // cm
  
 Int_t    AliMUONConstants::fgMaxZoom = 20;
+
+// Defaults parameters for track reconstruction
+Double_t  AliMUONConstants::fgDefaultChamberThicknessInX0 = 0.03;
 
 //______________________________________________________________________________
 Int_t AliMUONConstants::ChamberNumber(Float_t z) 

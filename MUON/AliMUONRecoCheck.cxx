@@ -179,7 +179,7 @@ void AliMUONRecoCheck::MakeTrackRef()
 	else iChamber = AliMUONConstants::ChamberNumber(z);
 	hitForRec->SetChamberNumber(iChamber);
 
-	muonTrack->AddTrackParamAtHit(trackParam);
+	muonTrack->AddTrackParamAtHit(trackParam,hitForRec);
 	muonTrack->AddHitForRecAtHit(hitForRec);
 	muonTrack->SetTrackID(track);
 
@@ -386,7 +386,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
 	trackParam->SetInverseBendingMomentum(1./bendingMomentum);
 
       trackNew->AddHitForRecAtHit(hitForRec);
-      trackNew->AddTrackParamAtHit(trackParam);
+      trackNew->AddTrackParamAtHit(trackParam,hitForRec);
       
       iHit1++;
     } // end iHit1
