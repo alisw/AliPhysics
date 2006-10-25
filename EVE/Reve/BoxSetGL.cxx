@@ -72,7 +72,7 @@ void BoxSetGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
   Reve::ColorFromIdx(mB.fDefaultColor, defCol);
   for(std::vector<Box>::iterator q=mB.fBoxes.begin(); q!=mB.fBoxes.end(); ++q) {
     UChar_t* c = q->color;
-    if (c[3] == 0 && c[2] = 0 && c[1] == 0 && c[0] == 0) {
+    if (c[3] == 0 && c[2] == 0 && c[1] == 0 && c[0] == 0) {
       glColor4ubv(defCol);
     } else {
       glColor4ubv(c);
