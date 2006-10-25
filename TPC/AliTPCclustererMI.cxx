@@ -1030,7 +1030,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	"Mean09="<<mean09<<
 	"RMS09="<<rms09<<
 	"\n";
-    if (max-median>kMin) 
+    if (max-median>kMin &&maxPos>AliTPCReconstructor::GetRecoParam()->GetFirstBin()) 
       (*fDebugStreamer)<<"SignalB"<<     // pads with signal
 	"Sector="<<uid[0]<<
 	"Row="<<uid[1]<<

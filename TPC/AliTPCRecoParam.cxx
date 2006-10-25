@@ -93,6 +93,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   param->fLastBin  = 1000;
   param->fBCalcPedestal = bPedestal;
   param->fBDoUnfold     = kFALSE;
+  param->fDumpAmplitudeMin = 150;
   param->fBKinkFinder   = kFALSE;
   param->fMaxSnpTracker = 0.98;
   param->fMaxC          = 0.02;
