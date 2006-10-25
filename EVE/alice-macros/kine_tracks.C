@@ -16,7 +16,7 @@ Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100)
   Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
   rnrStyle->fColor = 8;
   // !!! Watch the '-', apparently different sign convention then for ESD.
-  rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() )
+  rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
 
   gReve->AddRenderElement(cont);
 
