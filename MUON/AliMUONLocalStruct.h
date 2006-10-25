@@ -12,6 +12,7 @@
 /// \author Christian Finck
 
 #include <TObject.h>
+#include <TMath.h>
 
 class AliMUONLocalStruct : public TObject{
  
@@ -57,14 +58,21 @@ public:
    UChar_t GetSwitch()  const {return (fEOS >> 2) & 0x3FF;}
    UChar_t GetComptXY() const {return  fEOS & 3;}
 
-   UShort_t GetXY1(Int_t n) const {return  (n % 2 == 0) ? 
-       (fScaler[n] &  0xFFFF) : (fScaler[n] >> 16) &  0xFFFF;}
-   UShort_t GetXY2(Int_t n) const {return  (n % 2 == 0) ? 
-       (fScaler[8 + n] &  0xFFFF) : (fScaler[8 + n] >> 16) &  0xFFFF;}
-   UShort_t GetXY3(Int_t n) const {return  (n % 2 == 0) ? 
-       (fScaler[8*2 + n] &  0xFFFF) : (fScaler[8*2 + n] >> 16) &  0xFFFF;}
-   UShort_t GetXY4(Int_t n) const {return  (n % 2 == 0) ? 
-       (fScaler[8*3 + n] &  0xFFFF) : (fScaler[8*3 + n] >> 16) &  0xFFFF;}
+   UShort_t GetXY1(Int_t n) const {return  (n % 2 == 0) ?
+       (fScaler[TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
+       (fScaler[TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
+
+   UShort_t GetXY2(Int_t n) const {return  (n % 2 == 0) ?
+       (fScaler[8 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
+       (fScaler[8 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
+
+   UShort_t GetXY3(Int_t n) const {return  (n % 2 == 0) ?
+       (fScaler[8*2 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
+       (fScaler[8*2 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
+
+   UShort_t GetXY4(Int_t n) const {return  (n % 2 == 0) ?
+       (fScaler[8*3 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
+       (fScaler[8*3 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
    UInt_t* GetScalers()  {return &fL0;} 
 
