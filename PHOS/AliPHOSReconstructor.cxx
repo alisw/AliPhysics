@@ -142,8 +142,8 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     // Convert Float_t* and Int_t* to UShort_t* to save memory
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
       AliPHOSDigit *digit = gime->Digit(digitsList[iDigit]);
-      amplList[iDigit] = (UShort_t)(digit->GetEnergy()*500);
-      amplList[iDigit] = (UShort_t)(digit->GetTime()*1e9*100);
+      amplList[iDigit] = (UShort_t)(digit->GetEnergy()*500); // Energy in units of GeV/500
+      timeList[iDigit] = (UShort_t)(digit->GetTime()*1e9*100); // time in units of 0.01 ns
       digiList[iDigit] = (UShort_t)(digit->GetId());
     }
     ec->SetGlobalPosition(xyz);                 //rec.point position in MARS
