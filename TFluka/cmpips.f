@@ -36,6 +36,10 @@
       SAVE NSTART, CUMTTR
 *
       LBGSTP = STEPTT .LT. AZRZRZ
+      if (ntrack .eq. 0) THEN
+*         WRITE(6,*) "Warning ntrack = 0", NALLD0, STEPID, STEPTT, STEP
+         RETURN
+      ENDIF
 *  +-------------------------------------------------------------------*
 *  |  Beginning of a step:
       IF ( LBGSTP ) THEN
