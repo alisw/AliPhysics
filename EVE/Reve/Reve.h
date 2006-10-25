@@ -127,6 +127,9 @@ Color_t* FindColorVar(TObject* obj, const Text_t* varname);
 
 class RGBAPalette : public TObject, public ReferenceCount
 {
+  RGBAPalette(const RGBAPalette&);            // Not implemented
+  RGBAPalette& operator=(const RGBAPalette&); // Not implemented
+
 protected:
   Int_t     fMinVal;
   Int_t     fMaxVal;
@@ -134,7 +137,7 @@ protected:
   Bool_t    fInterpolate;
   Bool_t    fWrap;
 
-  mutable UChar_t* fColorArray;
+  mutable UChar_t* fColorArray; //!
 
   void SetupColor(Int_t val, UChar_t* pix) const;
   
