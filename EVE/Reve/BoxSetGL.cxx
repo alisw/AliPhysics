@@ -61,13 +61,22 @@ void BoxSetGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
   glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
   glEnable(GL_COLOR_MATERIAL);
   glDisable(GL_CULL_FACE);
+  if (mB.fRenderMode == BoxSet::RM_Fill)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  else if (mB.fRenderMode == BoxSet::RM_Line)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-  Float_t c[4]; glGetFloatv(GL_CURRENT_COLOR, c);
 
   glBegin(GL_QUADS);
+  UChar_t defCol[4];
+  Reve::ColorFromIdx(mB.fDefaultColor, defCol);
   for(std::vector<Box>::iterator q=mB.fBoxes.begin(); q!=mB.fBoxes.end(); ++q) {
-    UChar_t* c = (UChar_t*) &q->color;
-    glColor3ub(c[0], c[1], c[2]);
+    UChar_t* c = q->color;
+    if (c[3] == 0 && c[2] = 0 && c[1] == 0 && c[0] == 0) {
+      glColor4ubv(defCol);
+    } else {
+      glColor4ubv(c);
+    }
 
     // bottom: 3210
     glNormal3f(0, 0, -1);
