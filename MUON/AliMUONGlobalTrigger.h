@@ -34,7 +34,6 @@ class AliMUONGlobalTrigger : public TObject {
 	/// Return number of Like sign pair High pt
   Int_t PairLikeHpt()    const {return fPairLikeHpt ;}     
   
-  void  SetGlobalPattern(UShort_t globalResponse);
   void  SetFromGlobalResponse(UShort_t globalResponse);
 
   Int_t GetGlobalPattern() const;
