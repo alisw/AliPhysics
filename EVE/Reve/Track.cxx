@@ -260,6 +260,7 @@ TrackRnrStyle::TrackRnrStyle() :
   TObject(),
 
   fColor(1),
+  fWidth(1),
   fMagField(fgDefMagField),
 
   fMaxR  (350),
@@ -394,6 +395,17 @@ void TrackList::MakeMarkers()
 
 /**************************************************************************/
 /*************************************************************************/
+
+void TrackList::SetWidth(Width_t w)
+{
+  Width_t oldw = fRnrStyle->fWidth;
+  fRnrStyle->fWidth = w;
+  for (lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+    Track& t = *((Track*)(*i));
+    if (t.GetLineWidth() == oldw)
+      t.SetLineWidth(w);
+  }
+}
 
 void TrackList::SetMaxR(Float_t x)
 {

@@ -13,6 +13,7 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGDoubleSlider.h>
+#include "TGComboBox.h"
 
 using namespace Reve;
 
@@ -119,14 +120,23 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
 
   // --- Rendering control
 
-  fRnrTracks = new TGCheckButton(this, "Render tracks");
-  AddFrame(fRnrTracks, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
-  fRnrTracks->Connect
-    ("Toggled(Bool_t)",
-     "Reve::TrackListEditor", this, "DoRnrTracks()");
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    fRnrTracks = new TGCheckButton(f, "Render tracks");
+    f->AddFrame(fRnrTracks, new TGLayoutHints(kLHintsLeft, 3, 1, 2, 0));
+    fRnrTracks->Connect
+      ("Toggled(Bool_t)", "Reve::TrackListEditor", this, "DoRnrTracks()");
+    fWidthCombo = new TGLineWidthComboBox(f);
+    fWidthCombo->Resize(80, 18);
+    f->AddFrame(fWidthCombo, new TGLayoutHints(kLHintsLeft, 8, 1, 0, 0));
+
+    fWidthCombo->Connect
+      ("Selected(Int_t)", "Reve::TrackListEditor", this, "DoLineWidth(Int_t)"); 
+    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 3, 0));
+  }
 
   fRnrMarkers = new TGCheckButton(this, "Render markers");
-  AddFrame(fRnrMarkers, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
+  AddFrame(fRnrMarkers, new TGLayoutHints(kLHintsTop, 3, 1, 2, 0));
   fRnrMarkers->Connect
     ("Toggled(Bool_t)",
      "Reve::TrackListEditor", this, "DoRnrMarkers()");  
@@ -134,11 +144,11 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
   // --- Kinematics fitting
 
   fFitDaughters = new TGCheckButton(this, "Fit daughters");
-  AddFrame(fFitDaughters, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
+  AddFrame(fFitDaughters, new TGLayoutHints(kLHintsTop, 3, 1, 2, 0));
   fFitDaughters->Connect("Toggled(Bool_t)","Reve::TrackListEditor", this, "DoFitDaughters()");
 
   fFitDecay = new TGCheckButton(this, "Fit decay");
-  AddFrame(fFitDecay, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
+  AddFrame(fFitDecay, new TGLayoutHints(kLHintsTop, 3, 1, 2, 0));
   fFitDecay->Connect("Toggled(Bool_t)","Reve::TrackListEditor", this, "DoFitDecay()");  
 
   // --- Selectors
@@ -167,6 +177,8 @@ void TrackListEditor::SetModel(TObject* obj)
   fMaxOrbits->SetNumber(fTC->GetMaxOrbs());
   fMinAng->SetNumber(fTC->GetMinAng());
   fDelta->SetNumber(fTC->GetDelta());
+
+  fWidthCombo->Select(fTC->GetWidth());
 
   fRnrTracks->SetState(fTC->GetRnrTracks() ? kButtonDown : kButtonUp);
   fRnrMarkers->SetState(fTC->GetRnrMarkers() ? kButtonDown : kButtonUp);
@@ -207,6 +219,14 @@ void TrackListEditor::DoMinAng()
 void TrackListEditor::DoDelta()
 {
   fTC->SetDelta(fDelta->GetNumber());
+  Update();
+}
+
+/**************************************************************************/
+
+void TrackListEditor::DoLineWidth(Int_t width)
+{
+  fTC->SetWidth(width);
   Update();
 }
 
