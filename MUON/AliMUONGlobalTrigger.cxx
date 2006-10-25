@@ -120,18 +120,7 @@ Int_t AliMUONGlobalTrigger::GetGlobalPattern() const
   /// Global trigger pattern calculation
   /// from class member values
 
-  Int_t gloTrigPat = 0;
-
-  if (SingleLpt())     gloTrigPat|= 0x1;
-  if (SingleHpt())     gloTrigPat|= 0x2;
-
-  if (PairLikeLpt())   gloTrigPat|= 0x4;
-  if (PairLikeHpt())   gloTrigPat|= 0x8;
- 
-  if (PairUnlikeLpt()) gloTrigPat|= 0x10;
-  if (PairUnlikeHpt()) gloTrigPat|= 0x20;
-
-  return gloTrigPat;
+    return (Int_t)GetGlobalResponse();
 }
 
 //-----------------------------------------------------------
@@ -140,28 +129,19 @@ UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
   /// Global trigger response
   /// from class member values
   /// [US:2, LS:2, Single:2] with [Hpt, Lpt]
-  /// remove Apt
 
-  UChar_t response = 0;
-  UChar_t respUS  = 0;
-  UChar_t respLS  = 0;
-  UChar_t respS  = 0;
+  Int_t response = 0;
 
-  if (SingleLpt())  respS |= 0x1;
-  if (SingleHpt())  respS |= 0x2;
+  if (SingleLpt())     response|= 0x1;
+  if (SingleHpt())     response|= 0x2;
 
-  if (PairLikeLpt())    respLS |= 0x1;
-  if (PairLikeHpt())    respLS |= 0x2;
-  respLS <<= 2;
-
-  if (PairUnlikeLpt())  respUS |= 0x1;
-  if (PairUnlikeHpt())  respUS |= 0x2;
-  respUS <<= 4;
-
-  response = respUS | respLS | respS;
+  if (PairLikeLpt())   response|= 0x4;
+  if (PairLikeHpt())   response|= 0x8;
+ 
+  if (PairUnlikeLpt()) response|= 0x10;
+  if (PairUnlikeHpt()) response|= 0x20;
 
   return response;
-
 }
 //----------------------------------------------------------------------
 void AliMUONGlobalTrigger::Print(Option_t* opt) const
