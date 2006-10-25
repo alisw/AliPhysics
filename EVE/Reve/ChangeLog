@@ -1,3 +1,36 @@
+2006-10-25  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* BoxSet.cxx:
+	* BoxSet.h:
+	Changed inheritance to include Reve::RenderElement;
+	use ZTrans to store transformation matrix;
+	added render-mode state (to force line/fill drawing).
+	
+	In class Box added ctor and function MakeAxisAlignedBox() to
+	facilitate creation of regular boxes.
+
+	* BoxSetGL.cxx:
+	Support different render modes.
+
+	* LinkDef.h:
+	* Reve.cxx:
+	* Reve.h:
+	New class Reve::RGBAPalette: allow easier creation of color
+	paletts mapped to integer-value range.
+
+	* Track.cxx:
+	* Track.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Added parameter 'Width_t fWidth' to TrackRnrStyle and a method to
+	change width of all tracks in TrackList.
+
+	* TriangleSet.cxx:
+	* TriangleSet.h:
+	Added method method GenerateZNormalColors() that uses
+	Reve::RGBAPalette to set-up triangle color based on z-component of
+	the normal.
+
 2006-10-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* ZTrans.cxx:
