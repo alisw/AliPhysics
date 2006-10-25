@@ -12,7 +12,10 @@ class TList;
 class AliMUONV1DStore;
 class AliMUONV2DStore;
 
-static const char* CDBPath = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
+// Use the following for testing the Shuttle preprocessor
+//static const char* CDBPath = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
+// Or this one for "normal" use
+static const char* CDBPath = "local://$ALICE_ROOT";
 
 void generateTrigger(const char* cdbpath=CDBPath);
 
