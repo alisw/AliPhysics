@@ -478,11 +478,13 @@ AliMUONGeometryTransformer::ReadTransformations2(const TString& fileName)
   filePath += fileName;
   
   // Load root geometry
-  TGeoManager* tgeoManager = TGeoManager::Import(fileName);
+  TGeoManager* tgeoManager = gGeoManager;
+  if (!tgeoManager)
+    tgeoManager = TGeoManager::Import(fileName);
 
   // Retrieve matrices
   LoadTransforms(tgeoManager);     
-
+  
   return true;
 }
 
