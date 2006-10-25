@@ -49,7 +49,7 @@ AliMUONTrackParam::AliMUONTrackParam()
 // Constructor
   // get field from outside
   fkField = AliTracker::GetFieldMap();
-  if (!fkField) AliFatal("No field available");
+  if (!fkField) AliWarning("No field available");
 }
 
   //_________________________________________________________________________
