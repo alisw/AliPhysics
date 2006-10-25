@@ -1,16 +1,41 @@
+//===================================================================
+//  Class AliQuarkoniaEfficiency                               
+//
+//  This class will provide the quarkonia reconstruction efficiency 
+//  in ALICE without acceptance consideration.
+//
+//
+//  Reconstruction efficiency has been evaluated by means of a flat
+//  y and pt distribution of quarkonia in -4 < y < -2.5, 
+//  0 < pt < 20 GeV/c. Weights have been used to evaluate the
+//  reconstruction efficiency in different parameterizations.
+//
+//  Beware that efficiency histos are preliminary.
+//  Just Jpsi, Dimuon, UnlikePair trigger
+//  efficiencies should be considered.
+//
+//
+//  Example:
+//   Double_t eff,error;
+//   AliQuarkoniaEfficiency * JPsiEff = new AliQuarkoniaEfficiency();
+//   JPsiEff->Init();
+//   JPsiEff->GetEfficiency(Rapidity,Pt,eff,error);
+//   printf(" eff = %2.2e  error %2.2e \n",eff,error);
+//                                                          
+//                                                              
+//  Subatech 2006
+//===================================================================
 
 // Root 
-#include "TAxis.h"
 #include "TFile.h"
 #include "TH2.h"
-#include "TString.h"
-#include "TDirectory.h"
 
 // AliRoot includes
 #include "AliQuarkoniaEfficiency.h"
 #include "AliLog.h"
 
 
+//_______________________________________________________________________
 AliQuarkoniaEfficiency::AliQuarkoniaEfficiency(Int_t quarkoniaResonance, Int_t decayChannel,
 					       Int_t simParameterization):
   fEfficiencyFileName("QuarkoniaEfficiency.root"),
@@ -21,16 +46,20 @@ AliQuarkoniaEfficiency::AliQuarkoniaEfficiency(Int_t quarkoniaResonance, Int_t d
   fTrigger(kFALSE),
   fEfficiency(0x0)
 {
-
+  // Constructor
 }
 
+//_______________________________________________________________________
 AliQuarkoniaEfficiency::~AliQuarkoniaEfficiency()
 {
+  // Destructor
   delete fEfficiency;
 }
 
+//_______________________________________________________________________
 void AliQuarkoniaEfficiency::Init()
 {
+  // Initialize method
   switch (fQuarkoniaResonance)  {  
   case kJpsi:
     SetTitle("Jpsi");
@@ -171,8 +200,10 @@ void AliQuarkoniaEfficiency::Init()
 
 }
 
+//_______________________________________________________________________
 TH2F*  AliQuarkoniaEfficiency::GetEfficiencyHisto() const
 {
+  // Returns the efficiency histogram
   if (fEfficiency) return fEfficiency;
   else {
     AliError(Form("Efficiency data for quarkonia %s and channel %s not found",GetTitle(),GetName()));
@@ -180,8 +211,10 @@ TH2F*  AliQuarkoniaEfficiency::GetEfficiencyHisto() const
   }
 }
 
+//_______________________________________________________________________
 void  AliQuarkoniaEfficiency::GetEfficiency(Float_t rap, Float_t pT, Double_t &eff, Double_t &error)
 {
+  // Evaluates the efficiency for a given (y,Pt) of the quarkonia
   Int_t binx=0;
   Int_t biny=0;
   

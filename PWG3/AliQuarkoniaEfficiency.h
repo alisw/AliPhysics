@@ -1,5 +1,5 @@
-#ifndef ALIQUARKONIAEFFICENCY_H
-#define ALIQUARKONIAEFFICENCY_H
+#ifndef ALIQUARKONIAEFFICIENCY_H
+#define ALIQUARKONIAEFFICIENCY_H
 
 //===================================================================
 //  Class AliQuarkoniaEfficiency                               
@@ -64,17 +64,20 @@ class AliQuarkoniaEfficiency : public TNamed{
   TH2F*  GetEfficiencyHisto() const;
   void   GetEfficiency(Float_t rap, Float_t pT, Double_t & eff, Double_t & error); 
 
-  inline void  SetEfficiencyFileName(char * efficiencyFileName) { fEfficiencyFileName = efficiencyFileName; }
-  inline void  SetQuarkoniaResonance(Int_t quarkoniaResonance = kJpsi) { fQuarkoniaResonance= quarkoniaResonance;}
-  inline void  SetDecayChannel(Int_t decayChannel = kDimuon) { fDecayChannel = decayChannel;}
-  inline void  SetSimulatedParameterization(Int_t simParameterization = kCDFscaledPP) { 
+  void  SetEfficiencyFileName(char * efficiencyFileName) { fEfficiencyFileName = efficiencyFileName; }
+  void  SetQuarkoniaResonance(Int_t quarkoniaResonance = kJpsi) { fQuarkoniaResonance= quarkoniaResonance;}
+  void  SetDecayChannel(Int_t decayChannel = kDimuon) { fDecayChannel = decayChannel;}
+  void  SetSimulatedParameterization(Int_t simParameterization = kCDFscaledPP) { 
     fParameterization = simParameterization;
   }
-  inline void  SetTrigger(bool trigger = kFALSE, Int_t triggerType = kPairUnlikeApt){ 
+  void  SetTrigger(bool trigger = kFALSE, Int_t triggerType = kPairUnlikeApt){ 
     fTrigger = trigger; fTriggerType = triggerType;
   }
   
  private:
+
+  AliQuarkoniaEfficiency(const AliQuarkoniaEfficiency& rhs);
+  AliQuarkoniaEfficiency& operator=(const AliQuarkoniaEfficiency& rhs);
 
   TString        fEfficiencyFileName;      // Name of the efficiency root file
   Int_t          fQuarkoniaResonance;      // Resonance Acceptance
