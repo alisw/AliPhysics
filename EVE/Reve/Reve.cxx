@@ -5,6 +5,8 @@
 #include <TError.h>
 #include <TPad.h>
 #include <TGeoManager.h>
+
+#include <TStyle.h>
 #include <TColor.h>
 
 #include <TROOT.h>
@@ -18,7 +20,11 @@
 // Reve
 //
 
+/**************************************************************************/
+/**************************************************************************/
 namespace Reve {
+/**************************************************************************/
+
 
 // TString .vs. string
 
@@ -48,27 +54,6 @@ Exc_t operator+(const Exc_t &s1,  const char *s2)
 void WarnCaller(const TString& warning)
 {
   std::cout << "WRN: " << warning << std::endl;
-}
-
-void ColorFromIdx(Color_t ci, UChar_t* col)
-{
-  TColor* c = gROOT->GetColor(ci);
-  if(c) { 
-    col[0] = (UChar_t)(255*c->GetRed());  
-    col[1] = (UChar_t)(255*c->GetGreen());
-    col[2] = (UChar_t)(255*c->GetBlue()); 
-    col[3] = 255;
-  }
-}
-
-Color_t* FindColorVar(TObject* obj, const Text_t* varname)
-{
-  static const Exc_t eH("Reve::FindColorVar");
-
-  Int_t off = obj->IsA()->GetDataMemberOffset(varname);
-  if(off == 0)
-    throw(eH + "could not find member '" + varname + "' in class " + obj->IsA()->GetName() + ".");
-  return (Color_t*) (((char*)obj) + off);
 }
 
 /**************************************************************************/
@@ -220,5 +205,152 @@ GeoManagerHolder::~GeoManagerHolder()
   gGeoManager = fManager;
 }
 
+/**************************************************************************/
+// Color, palette management
+/**************************************************************************/
 
+void ColorFromIdx(Color_t ci, UChar_t* col, Bool_t alpha)
+{
+  if (ci < 0) {
+    col[0] = col[1] = col[2] = col[3] = 0;
+    return;
+  }
+  TColor* c = gROOT->GetColor(ci);
+  if(c) { 
+    col[0] = (UChar_t)(255*c->GetRed());  
+    col[1] = (UChar_t)(255*c->GetGreen());
+    col[2] = (UChar_t)(255*c->GetBlue()); 
+    if (alpha) col[3] = 255;
+  }
 }
+
+void ColorFromIdx(Float_t f1, Color_t c1, Float_t f2, Color_t c2,
+		  UChar_t* col, Bool_t alpha)
+{
+  TColor* t1 = gROOT->GetColor(c1);
+  TColor* t2 = gROOT->GetColor(c2);
+  if(t1 && t2) { 
+    col[0] = (UChar_t)(255*(f1*t1->GetRed()   + f2*t2->GetRed()));
+    col[1] = (UChar_t)(255*(f1*t1->GetGreen() + f2*t2->GetGreen()));
+    col[2] = (UChar_t)(255*(f1*t1->GetBlue()  + f2*t2->GetBlue())); 
+    if (alpha) col[3] = 255;
+  }
+}
+
+Color_t* FindColorVar(TObject* obj, const Text_t* varname)
+{
+  static const Exc_t eH("Reve::FindColorVar");
+
+  Int_t off = obj->IsA()->GetDataMemberOffset(varname);
+  if(off == 0)
+    throw(eH + "could not find member '" + varname + "' in class " + obj->IsA()->GetName() + ".");
+  return (Color_t*) (((char*)obj) + off);
+}
+
+/**************************************************************************/
+// RGBAPalette
+/**************************************************************************/
+
+RGBAPalette::RGBAPalette() :
+  TObject(),
+  Reve::ReferenceCount(),
+  fInterpolate (kFALSE),
+  fWrap        (kFALSE),
+  fColorArray  (0)
+{
+  SetMinMax(0, 100);
+}
+
+RGBAPalette::RGBAPalette(Int_t min, Int_t max) :
+  TObject(),
+  Reve::ReferenceCount(),
+  fInterpolate (kFALSE),
+  fWrap        (kFALSE),
+  fColorArray  (0)
+{
+  SetMinMax(min, max);
+}
+
+RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t wrap) :
+  TObject(),
+  Reve::ReferenceCount(),
+  fInterpolate (interp),
+  fWrap        (wrap),
+  fColorArray  (0)
+{
+  SetMinMax(min, max);
+}
+
+RGBAPalette::~RGBAPalette()
+{
+  delete [] fColorArray;
+}
+
+/**************************************************************************/
+
+void RGBAPalette::SetupColor(Int_t val, UChar_t* pixel) const
+{
+  using namespace TMath;
+  Float_t div  = Max(1, fMaxVal - fMinVal);
+  Int_t   nCol = gStyle->GetNumberOfColors();
+
+  Float_t f;
+  if      (val <= fMinVal) f = 0;
+  else if (val >= fMaxVal) f = nCol - 1;
+  else                     f = (val - fMinVal)/div*(nCol - 1);
+
+  if (fInterpolate) {
+    Int_t  bin = (Int_t) f;
+    Float_t f1 = f - bin, f2 = 1.0f - f1;
+    ColorFromIdx(f1, gStyle->GetColorPalette(bin),
+		 f2, gStyle->GetColorPalette(Min(bin + 1, nCol - 1)),
+		 pixel);
+  } else {
+    ColorFromIdx(gStyle->GetColorPalette((Int_t) Nint(f)), pixel);    
+  }
+}
+
+void RGBAPalette::SetupColorArray() const
+{
+  if(fColorArray)
+    return;
+
+  fColorArray = new UChar_t [4 * fNBins];
+  UChar_t* p = fColorArray;
+  for(Int_t v=fMinVal; v<=fMaxVal; ++v, p+=4)
+    SetupColor(v, p);
+}
+
+void RGBAPalette::ClearColorArray()
+{
+  if(fColorArray) {
+    delete [] fColorArray;
+    fColorArray = 0;
+  }
+}
+
+/**************************************************************************/
+
+void RGBAPalette::SetMinMax(Int_t min, Int_t max)
+{
+  fMinVal = min;
+  fMaxVal = max;
+  fNBins  = max - min + 1;
+  ClearColorArray();
+}
+
+void RGBAPalette::SetInterpolate(Bool_t b)
+{
+  fInterpolate = b;
+  ClearColorArray();
+}
+
+void RGBAPalette::SetWrap(Bool_t b)
+{
+  fWrap = b;
+}
+
+/**************************************************************************/
+} // end namespace Reve
+/**************************************************************************/
+/**************************************************************************/

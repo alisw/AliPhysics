@@ -10,7 +10,6 @@
 //================================
 
 // Reve
-#pragma link C++ function Reve::ColorFromIdx;
 #pragma link C++ function Reve::SetupEnvironment;
 
 #pragma link C++ function Reve::CheckMacro;
@@ -24,6 +23,9 @@
 #pragma link C++ class Reve::PadHolder+;
 #pragma link C++ class Reve::GeoManagerHolder+;
 #pragma link C++ class Reve::ReferenceCount+;
+
+#pragma link C++ function Reve::ColorFromIdx;
+#pragma link C++ class Reve::RGBAPalette;
 
 // PODs
 #pragma link C++ class Reve::Vector+;
