@@ -40,7 +40,8 @@ ClassImp(AliMpSlatSegmentation)
 //_____________________________________________________________________________
 AliMpSlatSegmentation::AliMpSlatSegmentation() 
 : AliMpVSegmentation(),
-fkSlat(0)
+  fkSlat(0),
+  fIsOwner(false)
 {
   //
   // Default ctor. Not to be used really.
@@ -49,9 +50,10 @@ fkSlat(0)
 }
 
 //_____________________________________________________________________________
-AliMpSlatSegmentation::AliMpSlatSegmentation(const AliMpSlat* slat) 
+AliMpSlatSegmentation::AliMpSlatSegmentation(const AliMpSlat* slat, Bool_t own) 
 : AliMpVSegmentation(), 
-fkSlat(slat)
+  fkSlat(slat),
+  fIsOwner(own)
 {
   //
   // Normal ctor.
@@ -65,6 +67,9 @@ AliMpSlatSegmentation::~AliMpSlatSegmentation()
   //
   // Dtor (empty).
   //
+ 
+  if ( fIsOwner ) delete fkSlat;
+ 
   // Int_t i(0);//just to be able to put a breakpoint in gdb
   AliDebug(1,Form("this=%p",this));			
 }

@@ -38,7 +38,7 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
 {
  public:
   AliMpSlatSegmentation();
-  AliMpSlatSegmentation(const AliMpSlat* slat);
+  AliMpSlatSegmentation(const AliMpSlat* slat, Bool_t own = false);
   virtual ~AliMpSlatSegmentation();
 
   virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const;
@@ -74,9 +74,10 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   AliMpSlatSegmentation(const AliMpSlatSegmentation& right);
   AliMpSlatSegmentation&  operator = (const AliMpSlatSegmentation& right);
 
-  const AliMpSlat* fkSlat; ///< Slat
+  const AliMpSlat* fkSlat;  ///< Slat
+  Bool_t           fIsOwner;///< Slat ownership     
 
-  ClassDef(AliMpSlatSegmentation,1) // A slat for stations 3,4,5
+  ClassDef(AliMpSlatSegmentation,2) // A slat for stations 3,4,5
 };
 
 #endif
