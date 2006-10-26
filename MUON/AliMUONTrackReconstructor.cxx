@@ -677,7 +677,7 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
   AliDebug(1, "Enter MakeTriggerTracks");
     
     Int_t nTRentries;
-    Long_t gloTrigPat;
+    UChar_t gloTrigPat;
     TClonesArray *localTrigger;
     TClonesArray *globalTrigger;
     AliMUONLocalTrigger *locTrg;
@@ -703,7 +703,7 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
  
     if (gloTrg)
-      gloTrigPat = gloTrg->GetGlobalPattern();
+      gloTrigPat = gloTrg->GetGlobalResponse();
   
 
     // local trigger for tracking 

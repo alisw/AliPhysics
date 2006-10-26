@@ -36,8 +36,8 @@ class AliMUONTriggerTrack : public TObject
     void SetThetax(Float_t tx) {fthetax = tx;}
     void SetThetay(Float_t ty) {fthetay = ty;}    
 
-    void SetGTPattern(Long_t pat) {fGTPattern = pat;}    
-    Long_t GetGTPattern() const {return fGTPattern;}    
+    void SetGTPattern(UChar_t pat) {fGTPattern = pat;}    
+    UChar_t GetGTPattern() const {return fGTPattern;}    
     
 protected:
   private:
@@ -45,7 +45,7 @@ protected:
   Float_t fy11;    ///< y position of fired X strip in MC11
   Float_t fthetax; ///< track theta angle in X   
   Float_t fthetay; ///< track theta angle in Y
-  Long_t fGTPattern; ///< Global trigger pattern  (do not work with static statement) 
+  UChar_t fGTPattern; ///< Global trigger pattern  (do not work with static statement) 
 
   ClassDef(AliMUONTriggerTrack, 3) // Reconstructed trigger track in ALICE dimuon spectrometer
     };

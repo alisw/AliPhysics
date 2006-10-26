@@ -114,14 +114,6 @@ void AliMUONGlobalTrigger::SetFromGlobalResponse(UShort_t globalResponse)
   fPairLikeHpt = (globalResponse >> 3)  & 0x1;
   
 }
-//-----------------------------------------------------------
-Int_t AliMUONGlobalTrigger::GetGlobalPattern() const
-{
-  /// Global trigger pattern calculation
-  /// from class member values
-
-    return (Int_t)GetGlobalResponse();
-}
 
 //-----------------------------------------------------------
 UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const

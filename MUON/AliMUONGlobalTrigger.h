@@ -35,8 +35,6 @@ class AliMUONGlobalTrigger : public TObject {
   Int_t PairLikeHpt()    const {return fPairLikeHpt ;}     
   
   void  SetFromGlobalResponse(UShort_t globalResponse);
-
-  Int_t GetGlobalPattern() const;
   UChar_t GetGlobalResponse() const;
 
   virtual void Print(Option_t* opt="") const;
