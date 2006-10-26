@@ -18,13 +18,14 @@
 #include "AliMUONBlockHeader.h"
 #include "AliMUONDspHeader.h"
 
-/// 
+/// \class AliMUONBlockHeader
 /// Block structure for tracker raw data
 /// each DDL contains two blocks,
 /// each block contains at most 5 dsp structure.
 /// Beside the total length and length of the below data
 /// the header of the block contains the front end DSP id, trigger words and paddind word
 ///
+/// \author Christian Finck
 
 /// \cond CLASSIMP
 ClassImp(AliMUONBlockHeader)
@@ -46,18 +47,18 @@ AliMUONBlockHeader::AliMUONBlockHeader()
      fDspHeaderArray(new TClonesArray("AliMUONDspHeader", 5))
 
 {
-  //
-  // ctor
-  //
+  ///
+  /// ctor
+  ///
 
 }
 
 //___________________________________________
 AliMUONBlockHeader::~AliMUONBlockHeader()
 {
-  // 
-  // dtor
-  //
+  /// 
+  /// dtor
+  ///
   fDspHeaderArray->Delete();
   delete fDspHeaderArray;
 }
@@ -75,9 +76,9 @@ AliMUONBlockHeader::AliMUONBlockHeader(const AliMUONBlockHeader& event)
      fEventId2(event.fEventId2),
      fDspHeaderArray(new TClonesArray("AliMUONDspHeader", 5))
 {
-  //
-  // copy ctor
-  //
+  ///
+  /// copy ctor
+  ///
 
   for (Int_t index = 0; index < (event.fDspHeaderArray)->GetEntriesFast(); index++) {
     {new ((*fDspHeaderArray)[fDspHeaderArray->GetEntriesFast()]) 
@@ -90,9 +91,9 @@ AliMUONBlockHeader::AliMUONBlockHeader(const AliMUONBlockHeader& event)
 AliMUONBlockHeader&
 AliMUONBlockHeader::operator=(const AliMUONBlockHeader &event)
 {
-  // 
-  // assignment operator
-  //
+  /// 
+  /// assignment operator
+  ///
   if (this == &event) return *this;
 
   fTotalLength = event.fTotalLength;
@@ -116,10 +117,10 @@ AliMUONBlockHeader::operator=(const AliMUONBlockHeader &event)
 //___________________________________________
 void AliMUONBlockHeader::AddDspHeader(const AliMUONDspHeader& dspHeader)
 { 
-  // 
-  // adding the dsp structure
-  // into the TClonesArray
-  //
+  /// 
+  /// adding the dsp structure
+  /// into the TClonesArray
+  ///
   TClonesArray &dspArray = *fDspHeaderArray;
   new(dspArray[dspArray.GetEntriesFast()]) AliMUONDspHeader(dspHeader);
 
@@ -127,9 +128,9 @@ void AliMUONBlockHeader::AddDspHeader(const AliMUONDspHeader& dspHeader)
 //___________________________________________
 void AliMUONBlockHeader::Clear(Option_t* )
 {
-  // Clear TClones arrays
-  // instead of deleting
-  //
+  /// Clear TClones arrays
+  /// instead of deleting
+  ///
   fDspHeaderArray->Clear("C");
  
 }

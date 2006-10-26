@@ -40,7 +40,6 @@
 
 #include "AliMUONRawWriter.h"
 
-#include "AliMUON.h"
 #include "AliMUONBlockHeader.h"
 #include "AliMUONBusStruct.h"
 #include "AliMUONConstants.h"
@@ -59,9 +58,7 @@
 #include "AliMpBusPatch.h"
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
-#include "AliMpIntPair.h"
 #include "AliMpConstants.h"
-#include "AliMpPad.h"
 #include "AliMpPlaneType.h"
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"

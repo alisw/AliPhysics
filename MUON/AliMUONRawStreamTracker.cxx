@@ -37,7 +37,9 @@
 
 #include "AliMpBusPatch.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONRawStreamTracker)
+/// \endcond
 
 AliMUONRawStreamTracker::AliMUONRawStreamTracker()
   : TObject(),
@@ -50,10 +52,10 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker()
     fMaxDDL(20),
     fPayload(new AliMUONPayloadTracker())
 {
-  //
-  // create an object to read MUON raw digits
-  // Default ctor for monitoring purposes
-  //
+  ///
+  /// create an object to read MUON raw digits
+  /// Default ctor for monitoring purposes
+  ///
 
 
 }
@@ -71,10 +73,10 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
     fPayload(new AliMUONPayloadTracker())
 
 {
-  //
-  // ctor with AliRawReader as argument
-  // for reconstruction purpose
-  //
+  ///
+  /// ctor with AliRawReader as argument
+  /// for reconstruction purpose
+  ///
 
 
 }
@@ -82,9 +84,9 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
 //___________________________________
 AliMUONRawStreamTracker::~AliMUONRawStreamTracker()
 {
-  //
-  // clean up
-  //
+  ///
+  /// clean up
+  ///
   delete fPayload;
 
 }
@@ -92,10 +94,10 @@ AliMUONRawStreamTracker::~AliMUONRawStreamTracker()
 //_____________________________________________________________
 Bool_t AliMUONRawStreamTracker::Next()
 {
-  //
-  // read the next raw digit (buspatch structure)
-  // returns kFALSE if there is no digit left
-  // (under development)
+  ///
+  /// read the next raw digit (buspatch structure)
+  /// returns kFALSE if there is no digit left
+  /// (under development)
 
 //      AliMUONDDLTracker*       ddlTracker = 0x0;
 //      AliMUONBlockHeader*      blkHeader  = 0x0;
@@ -161,7 +163,7 @@ Bool_t AliMUONRawStreamTracker::Next()
 //______________________________________________________
 Bool_t AliMUONRawStreamTracker::NextDDL()
 {
-  // reading tracker DDL
+  /// reading tracker DDL
 
   fPayload->ResetDDL();
 
@@ -195,7 +197,7 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
 //______________________________________________________
 void AliMUONRawStreamTracker::SetMaxDDL(Int_t ddl) 
 {
-  // set DDL number
+  /// set DDL number
   if (ddl > 20) ddl = 20;
   fMaxDDL = ddl;
 
@@ -204,6 +206,6 @@ void AliMUONRawStreamTracker::SetMaxDDL(Int_t ddl)
 //______________________________________________________
 void AliMUONRawStreamTracker::SetMaxBlock(Int_t blk) 
 {
-  // set regional card number
+  /// set regional card number
   fPayload->SetMaxBlock(blk);
 }

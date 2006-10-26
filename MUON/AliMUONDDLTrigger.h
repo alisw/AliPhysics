@@ -9,10 +9,9 @@
 /// \class AliMUONDDLTrigger
 /// \brief MUON DDL Trigger
 ///
-//  Author Christian Finck
+/// \author Christian Finck
 
 #include <TObject.h>
-#include <TClonesArray.h>
 
 class AliMUONLocalStruct;
 class AliMUONRegHeader;

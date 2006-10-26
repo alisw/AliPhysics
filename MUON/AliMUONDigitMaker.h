@@ -13,7 +13,7 @@
 
 #include <TObject.h>
 #include "TStopwatch.h"
-
+class AliRawReader;
 class AliMpBusPatch;
 class AliMUONData;
 class AliMUONDigit;
@@ -85,7 +85,7 @@ class AliMUONDigitMaker : public TObject
   AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
   AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
 
-  void GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg);
+  void GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg) const;
 
   ClassDef(AliMUONDigitMaker,1) // MUON digit maker from rawdata
 };

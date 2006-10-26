@@ -35,8 +35,9 @@
 #include "AliDAQ.h"
 #include "AliLog.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliMUONRawStreamTrigger)
+/// \endcond
 
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
   : TObject(),
@@ -47,10 +48,10 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
     fNextDDL(kTRUE),
     fMaxDDL(2)
 {
-  //
-  // create an object to read MUON raw digits
-  // Default ctor for monitoring purposes
-  //
+  ///
+  /// create an object to read MUON raw digits
+  /// Default ctor for monitoring purposes
+  ///
 
 
 }
@@ -66,27 +67,27 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
     fMaxDDL(2)
 
 {
-  //
-  // ctor with AliRawReader as argument
-  // for reconstruction purpose
-  //
+  ///
+  /// ctor with AliRawReader as argument
+  /// for reconstruction purpose
+  ///
 
 }
 
 //___________________________________
 AliMUONRawStreamTrigger::~AliMUONRawStreamTrigger()
 {
-  //
-  // clean up
-  //
+  ///
+  /// clean up
+  ///
   delete fPayload;
 }
 
 //_____________________________________________________________
 Bool_t AliMUONRawStreamTrigger::Next()
 {
-// read the next raw digit (buspatch structure)
-// returns kFALSE if there is no digit left
+/// read the next raw digit (buspatch structure)
+/// returns kFALSE if there is no digit left
 
 //   if (fNextDDL){
 //     if(!NextDDL()) return kFALSE;
@@ -111,9 +112,9 @@ Bool_t AliMUONRawStreamTrigger::Next()
 //______________________________________________________
 Bool_t AliMUONRawStreamTrigger::NextDDL()
 {
-  // reading tracker DDL
-  // store buspatch info into Array
-  // store only non-empty structures (buspatch info with datalength !=0)
+  /// reading tracker DDL
+  /// store buspatch info into Array
+  /// store only non-empty structures (buspatch info with datalength !=0)
 
   // reset TClones
   fPayload->ResetDDL();
@@ -148,7 +149,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 //______________________________________________________
 void AliMUONRawStreamTrigger::SetMaxDDL(Int_t ddl) 
 {
-  // set DDL number
+  /// set DDL number
   if (ddl > 2) ddl = 2;
   fMaxDDL = ddl;
 }
@@ -156,13 +157,13 @@ void AliMUONRawStreamTrigger::SetMaxDDL(Int_t ddl)
 //______________________________________________________
 void AliMUONRawStreamTrigger::SetMaxReg(Int_t reg) 
 {
-  // set regional card number
+  /// set regional card number
   fPayload->SetMaxReg(reg);
 }
 
 //______________________________________________________
 void AliMUONRawStreamTrigger::SetMaxLoc(Int_t loc) 
 {
-  // set local card number
+  /// set local card number
   fPayload->SetMaxLoc(loc);
 }

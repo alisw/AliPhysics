@@ -15,6 +15,8 @@
 
 /* $Id$ */
  
+#include <TClonesArray.h>
+
 #include "AliMUONDDLTrigger.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONRegHeader.h"
@@ -37,17 +39,15 @@ AliMUONDDLTrigger::AliMUONDDLTrigger()
   :  TObject(),
      fDarcHeader(new AliMUONDarcHeader())
 {
-  //
-  //ctor
-  //
+ 
+  ///ctor
+ 
 }
 
 //___________________________________________
 AliMUONDDLTrigger::~AliMUONDDLTrigger()
 {
-  //
-  //dtor
-  //
+  ///dtor
   delete fDarcHeader;
 
 }
@@ -55,9 +55,9 @@ AliMUONDDLTrigger::~AliMUONDDLTrigger()
 //___________________________________________
 void AliMUONDDLTrigger::AddRegHeader(const AliMUONRegHeader& regHeader)
 {
-  // adding regional header informations 
-  // in the given TClonesArray
-  //
+  /// adding regional header informations 
+  /// in the given TClonesArray
+  ///
   TClonesArray* regHeaderArray = (TClonesArray*)fDarcHeader->GetRegHeaderArray();
 
   TClonesArray &eventArray = *regHeaderArray;
@@ -67,9 +67,9 @@ void AliMUONDDLTrigger::AddRegHeader(const AliMUONRegHeader& regHeader)
 //___________________________________________
 void AliMUONDDLTrigger::AddLocStruct(const AliMUONLocalStruct& loc, Int_t iReg)
 {
-  // adding local card informations 
-  // for a given regional structure
-  // using TClonesArrays
+  /// adding local card informations 
+  /// for a given regional structure
+  /// using TClonesArrays
 
   AliMUONRegHeader* regHeader = (AliMUONRegHeader*)fDarcHeader->GetRegHeaderEntry(iReg);
 

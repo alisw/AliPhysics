@@ -37,7 +37,6 @@
 /// and for trigger. Create trigger inverse mapping.
 /// (Ch. Finck, oct 06) 
 
-#include "AliMUON.h"
 #include "AliMUONDigitMaker.h"
 #include "AliMUONDigit.h"
 
@@ -74,11 +73,8 @@
 #include "AliLog.h"
 #include "AliRun.h"
 
-#include <TClonesArray.h>
 #include <TList.h>
 
-#include <fstream>
-#include <string>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
@@ -519,7 +515,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard,
   return kTRUE;
 } 
 //____________________________________________________________________
-void  AliMUONDigitMaker::GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg)
+void  AliMUONDigitMaker::GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg) const
 {
   /// set crate name from DDL & reg number
   /// method same as in RawWriter, not so nice

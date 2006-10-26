@@ -14,15 +14,14 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-///
+/// \class AliMUONPayloadTrigger
 /// Class Payload
 ///
 /// Decodes rawdata from buffer and stores in TClonesArray.
 /// 
 /// First version implement for Trigger
 ///
-///////////////////////////////////////////////////////////////////////////////
+/// \author Christian Finck
 
 #include "AliMUONPayloadTrigger.h"
 
@@ -38,7 +37,9 @@
 #include "AliMUONLocalStruct.h"
 #include "AliMUONDDLTrigger.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONPayloadTrigger)
+/// \endcond
 
 AliMUONPayloadTrigger::AliMUONPayloadTrigger()
   : TObject(),
@@ -48,19 +49,19 @@ AliMUONPayloadTrigger::AliMUONPayloadTrigger()
     fRegHeader(new AliMUONRegHeader()), 
     fLocalStruct(new AliMUONLocalStruct())
 {
-  //
-  // create an object to read MUON raw digits
-  // Default ctor for monitoring purposes
-  //
+  ///
+  /// create an object to read MUON raw digits
+  /// Default ctor for monitoring purposes
+  ///
 
 }
 
 //___________________________________
 AliMUONPayloadTrigger::~AliMUONPayloadTrigger()
 {
-  //
-  // clean up
-  //
+  ///
+  /// clean up
+  ///
   delete fDDLTrigger;
   delete fLocalStruct;
   delete fRegHeader;
@@ -70,8 +71,8 @@ AliMUONPayloadTrigger::~AliMUONPayloadTrigger()
 //______________________________________________________
 Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 {
-  // decode trigger DDL
-  // store only non-empty structures (TrigY ==0)
+  /// decode trigger DDL
+  /// store only non-empty structures (TrigY ==0)
 
  // reading DDL for trigger
 
@@ -178,9 +179,9 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 //______________________________________________________
 void AliMUONPayloadTrigger::ResetDDL()
 {
-  // reseting TClonesArray
-  // after each DDL
-  //
+  /// reseting TClonesArray
+  /// after each DDL
+  ///
   AliMUONDarcHeader* darcHeader = fDDLTrigger->GetDarcHeader();
   darcHeader->GetRegHeaderArray()->Delete();
 }
@@ -188,7 +189,7 @@ void AliMUONPayloadTrigger::ResetDDL()
 //______________________________________________________
 void AliMUONPayloadTrigger::SetMaxReg(Int_t reg) 
 {
-  // set regional card number
+  /// set regional card number
   if (reg > 8) reg = 8;
   fMaxReg = reg;
 }
@@ -196,7 +197,7 @@ void AliMUONPayloadTrigger::SetMaxReg(Int_t reg)
 //______________________________________________________
 void AliMUONPayloadTrigger::SetMaxLoc(Int_t loc) 
 {
-  // set local card number
+  /// set local card number
   if (loc > 16) loc = 16;
   fMaxLoc = loc;
 }

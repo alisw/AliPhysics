@@ -18,7 +18,7 @@
 #include "AliMUONDarcHeader.h"
 #include "AliMUONRegHeader.h"
 
-/// 
+/// \class AliMUONDarcHeader
 /// Darc structure for trigger raw data.
 /// Each DDL contains one Darc structure
 /// The structure includes the information of the Darc boards
@@ -26,6 +26,7 @@
 /// The structure containes the information of the 8 (at most) 
 /// regional structures.
 ///
+/// \author Christian Finck
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDarcHeader)
@@ -62,9 +63,8 @@ AliMUONDarcHeader::AliMUONDarcHeader()
   
 
 {
-  //
-  // ctor
-  //
+  /// ctor
+  
   for (Int_t i = 0; i < 4; i++)
     fGlobalInput[i] = 0;
 
@@ -94,9 +94,9 @@ AliMUONDarcHeader::AliMUONDarcHeader(const AliMUONDarcHeader& event)
      fRegHeaderArray(new TClonesArray("AliMUONRegHeader", 8))
 
 {
-  //
-  // copy ctor
-  //
+  ///
+  /// copy ctor
+  ///
  
  for (Int_t i = 0; i < 4; i++)
     fGlobalInput[i] = event.fGlobalInput[i];
@@ -113,9 +113,9 @@ AliMUONDarcHeader::AliMUONDarcHeader(const AliMUONDarcHeader& event)
 //___________________________________________
 AliMUONDarcHeader& AliMUONDarcHeader::operator=(const AliMUONDarcHeader& event)
 {
-  // 
-  // assignment operator
-  //
+  /// 
+  /// assignment operator
+  ///
   if (this == &event) return *this;
 
   fWord         = event.fWord;
@@ -152,9 +152,9 @@ AliMUONDarcHeader& AliMUONDarcHeader::operator=(const AliMUONDarcHeader& event)
 //___________________________________________
 AliMUONDarcHeader::~AliMUONDarcHeader()
 {
-  // 
-  // dtor
-  //
+  /// 
+  /// dtor
+  ///
   fRegHeaderArray->Delete();
   delete fRegHeaderArray;
 }
@@ -162,9 +162,9 @@ AliMUONDarcHeader::~AliMUONDarcHeader()
 //___________________________________________
 void AliMUONDarcHeader::SetScalersNumbers()
 {
-  // set numbers for scaler events for Darc header
-  // since this is provided by the experiment
-  // put dummy numbers to check the monitoring
+  /// set numbers for scaler events for Darc header
+  /// since this is provided by the experiment
+  /// put dummy numbers to check the monitoring
   
   fGlobalL0    = 1000;
   fGlobalClk   = 10000;
@@ -188,9 +188,9 @@ void AliMUONDarcHeader::SetScalersNumbers()
 //___________________________________________
 void AliMUONDarcHeader::Clear(Option_t* )
 {
-  // Clear TClones arrays
-  // instead of deleting
-  //
+  /// Clear TClones arrays
+  /// instead of deleting
+  ///
   fRegHeaderArray->Clear("C");
  
 }

@@ -36,18 +36,18 @@ AliMUONDDLTracker::AliMUONDDLTracker()
   :  TObject(),
      fBlkHeaderArray(new TClonesArray("AliMUONBlockHeader", 2))
 {
-  //
-  //ctor
-  //
+  ///
+  ///ctor
+  ///
 
 }
 
 //___________________________________________
 AliMUONDDLTracker::~AliMUONDDLTracker()
 {
-  //
-  //dtor
-  //
+  ///
+  ///dtor
+  ///
   fBlkHeaderArray->Delete();
   delete fBlkHeaderArray;
 
@@ -56,9 +56,9 @@ AliMUONDDLTracker::~AliMUONDDLTracker()
 //___________________________________________
 void AliMUONDDLTracker::AddBusPatch(const AliMUONBusStruct& busPatch, Int_t iBlock, Int_t iDsp )
 {
-  // adding bus patch informations
-  // for a given block & Dsp structure
-  // using TClonesArrays
+  /// adding bus patch informations
+  /// for a given block & Dsp structure
+  /// using TClonesArrays
 
   AliMUONBlockHeader* blockHeader = (AliMUONBlockHeader*)fBlkHeaderArray->At(iBlock);
   AliMUONDspHeader* dspHeader     = (AliMUONDspHeader*)blockHeader->GetDspHeaderEntry(iDsp);
@@ -72,9 +72,9 @@ void AliMUONDDLTracker::AddBusPatch(const AliMUONBusStruct& busPatch, Int_t iBlo
 //___________________________________________
 void AliMUONDDLTracker::AddDspHeader(const AliMUONDspHeader& dspHeader, Int_t iBlock)
 {
-  // adding DspHeader informations
-  // for a given block structure
-  // using TClonesArrays
+  /// adding DspHeader informations
+  /// for a given block structure
+  /// using TClonesArrays
 
   AliMUONBlockHeader* blockHeader = (AliMUONBlockHeader*)fBlkHeaderArray->At(iBlock);
 
@@ -87,6 +87,10 @@ void AliMUONDDLTracker::AddDspHeader(const AliMUONDspHeader& dspHeader, Int_t iB
 //___________________________________________
 void AliMUONDDLTracker::AddBlkHeader(const AliMUONBlockHeader& blkHeader)
 {
+  /// adding Block header informations
+  /// for a given block structure
+  /// using TClonesArrays
+
   TClonesArray &blkArray = *fBlkHeaderArray;
   new(blkArray[blkArray.GetEntriesFast()]) AliMUONBlockHeader(blkHeader);
 }
@@ -94,9 +98,9 @@ void AliMUONDDLTracker::AddBlkHeader(const AliMUONBlockHeader& blkHeader)
 //___________________________________________
 void AliMUONDDLTracker::Clear(Option_t* )
 {
-  // Clear TClones arrays
-  // instead of deleting
-  //
+  /// Clear TClones arrays
+  /// instead of deleting
+  ///
   fBlkHeaderArray->Clear("C");
 
 }

@@ -14,15 +14,12 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
 ///
-/// Class Payload
-///
+/// \class AliMUONPayloadTracker
 /// Decodes rawdata from buffer and stores in TClonesArray.
-/// 
 /// First version implement for Tracker
 ///
-///////////////////////////////////////////////////////////////////////////////
+/// \author Christian Finck
 
 #include "AliMUONPayloadTracker.h"
 
@@ -38,7 +35,9 @@
 #include "AliMUONBusStruct.h"
 #include "AliMUONDDLTracker.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONPayloadTracker)
+/// \endcond
 
 AliMUONPayloadTracker::AliMUONPayloadTracker()
   : TObject(),

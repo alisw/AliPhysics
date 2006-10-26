@@ -18,7 +18,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TClonesArray.h>
 
 class AliMUONDDLTrigger;
 class AliMUONLocalStruct;

@@ -18,7 +18,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TClonesArray.h>
 #include "AliMUONPayloadTracker.h"
 
 class AliRawReader;

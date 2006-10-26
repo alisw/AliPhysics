@@ -17,13 +17,14 @@
 
 #include "AliMUONLocalStruct.h"
 
-/// 
+/// \class AliMUONLocalStruct
 /// Local structure for trigger raw data.
 /// The structure includes the information
 ///  about the x,y position of the 4 detection planes,
 /// the trigger word (address, local decision, y trigger, y position, x deviation,
 /// x position)
 ///
+/// \author Christian Finck
 
 /// \cond CLASSIMP
 ClassImp(AliMUONLocalStruct)
@@ -50,9 +51,9 @@ AliMUONLocalStruct::AliMUONLocalStruct()
      fEOS(0),         
      fReset(0)       
 {
-  //
-  // ctor
-  //
+  ///
+  /// ctor
+  ///
   for (Int_t i = 0; i < 5; i++)
     fData[i] = 0;
 
@@ -79,9 +80,9 @@ AliMUONLocalStruct::AliMUONLocalStruct(const AliMUONLocalStruct& event)
      fEOS(event.fEOS),
      fReset(event.fReset)
 {
-  //
-  // copy ctor
-  //
+  ///
+  /// copy ctor
+  ///
   for (Int_t i = 0; i < 5; i++)
     fData[i] = event.fData[i];
 
@@ -94,9 +95,9 @@ AliMUONLocalStruct::AliMUONLocalStruct(const AliMUONLocalStruct& event)
 AliMUONLocalStruct& 
 AliMUONLocalStruct::operator=(const AliMUONLocalStruct& event)
 {
-  // 
-  // assignment operator
-  //
+  /// 
+  /// assignment operator
+  ///
 
   if (this == &event) return *this;
 
@@ -126,9 +127,9 @@ AliMUONLocalStruct::operator=(const AliMUONLocalStruct& event)
 //___________________________________________
 void AliMUONLocalStruct::SetScalersNumbers()
 {
-  // set numbers for scaler events for local structure
-  // crasy numbers for scaler words, while no beam is coming
-  //
+  /// set numbers for scaler events for local structure
+  /// crasy numbers for scaler words, while no beam is coming
+  ///
 
   fL0       = 1000;   
   fHold     = 100; 

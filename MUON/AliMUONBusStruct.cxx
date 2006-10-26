@@ -19,7 +19,7 @@
 #include "AliLog.h"
 
 
-/// 
+/// \class AliMUONBusStruct
 /// Bus patch structure for tracker raw data
 /// each Dsp contains at most 5 bus patch structure
 /// Beside the total length and length of the below data
@@ -27,6 +27,7 @@
 /// and data structure itself (11bits for manu id, 6 bits for channel id and
 /// 12 bits for charge)
 ///
+/// \author Christian Finck
 
 /// \cond CLASSIMP
 ClassImp(AliMUONBusStruct)
@@ -49,27 +50,27 @@ AliMUONBusStruct::AliMUONBusStruct()
      fDspId(0),
      fBlkId(0)
 {
-  //
-  // ctor
-  // 
+  ///
+  /// ctor
+  /// 
 
 }
 //___________________________________________
 AliMUONBusStruct::~AliMUONBusStruct()
 {
-  //
-  // dtor
-  //
+  ///
+  /// dtor
+  ///
   delete[] fData;
 }
 
 //___________________________________________
 void AliMUONBusStruct::SetAlloc(Int_t size)
 {
-  //
-  // Allocate size 
-  // return if size < fBufSize 
-  //
+  ///
+  /// Allocate size 
+  /// return if size < fBufSize 
+  ///
   if (size < fBufSize) 
     return;
   else 
@@ -78,9 +79,9 @@ void AliMUONBusStruct::SetAlloc(Int_t size)
 //___________________________________________
 void AliMUONBusStruct::AddData(UInt_t data)
 {
-  // could have used class from ROOT
-  // but the structure must be as simple as possible
-  // to be written on disc blockwise, not so sure ?
+  /// could have used class from ROOT
+  /// but the structure must be as simple as possible
+  /// to be written on disc blockwise, not so sure ?
   if (fLength == fBufSize) 
     ResizeData();
   fData[fLength++] = data;
@@ -90,9 +91,9 @@ void AliMUONBusStruct::AddData(UInt_t data)
 //___________________________________________
 void AliMUONBusStruct::ResizeData(Int_t size)
 {
-  // In case of resizing the vector
-  // the most simplest way to do it
-  //
+  /// In case of resizing the vector
+  /// the most simplest way to do it
+  ///
   AliInfo("reallocating");
   if (size == 0)
     fBufSize *= 2;
@@ -117,9 +118,9 @@ AliMUONBusStruct(const AliMUONBusStruct& event)
     fDspId(event.fDspId),
     fBlkId(event.fBlkId)
 {
-  //
-  // copy ctor
-  //
+  ///
+  /// copy ctor
+  ///
 
   for (int i = 0; i < event.fBufSize; i++)
     fData[i] = event.fData[i];
@@ -128,9 +129,9 @@ AliMUONBusStruct(const AliMUONBusStruct& event)
 AliMUONBusStruct&
 AliMUONBusStruct::operator=(const AliMUONBusStruct& event)
 {
-  //
-  // assignment operator
-  //
+  ///
+  /// assignment operator
+  ///
   if (this == &event) return *this;
   fDataKey     = event.fDataKey;
   fTotalLength = event.fTotalLength;
@@ -151,10 +152,10 @@ AliMUONBusStruct::operator=(const AliMUONBusStruct& event)
 //___________________________________________
 Int_t AliMUONBusStruct::Compare(const TObject *obj) const
 {
-  // 
-  // sort bus patch by bus patch number
-  // important for AliMUONRawWriter
-  //
+  /// 
+  /// sort bus patch by bus patch number
+  /// important for AliMUONRawWriter
+  ///
   AliMUONBusStruct* event = (AliMUONBusStruct*) obj;
   return (fBusPatchId > event->GetBusPatchId()) ? 1 : -1;
 }
@@ -162,18 +163,18 @@ Int_t AliMUONBusStruct::Compare(const TObject *obj) const
 //___________________________________________
 void AliMUONBusStruct::Clear(Option_t *)
 {
-  // clear
-  // delete the allocated memory 
-  //
+  /// clear
+  /// delete the allocated memory 
+  ///
   AliInfo("here");
   delete[] fData;
 }
 //___________________________________________
 UInt_t AliMUONBusStruct::GetData(Int_t n) const 
 {
-  //
-  // get data
-  //
+  ///
+  /// get data
+  ///
   if ( n>=0 && n<fLength ) return fData[n];
 
   AliError("Index outside limits."); 
@@ -183,9 +184,9 @@ UInt_t AliMUONBusStruct::GetData(Int_t n) const
 //___________________________________________
 Char_t AliMUONBusStruct::GetParity(Int_t n) const   
 {
-  //
-  // get parity
-  //
+  ///
+  /// get parity
+  ///
   if ( n>=0 && n<fLength ) return (Char_t)(fData[n] >> 31) &  0x1;
 
   AliError("Index outside limits."); 
@@ -195,9 +196,9 @@ Char_t AliMUONBusStruct::GetParity(Int_t n) const
 //___________________________________________
 UShort_t AliMUONBusStruct::GetManuId(Int_t n) const     
 {
-  //
-  // get manu Id
-  //
+  ///
+  /// get manu Id
+  ///
   if ( n>=0 && n<fLength ) return (UShort_t)(fData[n] >> 18) &  0x7FF;
 
   AliError("Index outside limits."); 
@@ -207,9 +208,9 @@ UShort_t AliMUONBusStruct::GetManuId(Int_t n) const
 //___________________________________________
 Char_t AliMUONBusStruct::GetChannelId(Int_t n) const  
 {
-  // 
-  // get channel Id
-  //
+  /// 
+  /// get channel Id
+  ///
   if ( n>=0 && n<fLength ) return (Char_t)(fData[n] >> 12) & 0x3F;
 
   AliError("Index outside limits."); 
@@ -219,9 +220,9 @@ Char_t AliMUONBusStruct::GetChannelId(Int_t n) const
 //___________________________________________
 UShort_t AliMUONBusStruct::GetCharge(Int_t n) const     
 {
-  //
-  // get charge (in ADC)
-  //
+  ///
+  /// get charge (in ADC)
+  ///
   if ( n>=0 && n<fLength ) return (UShort_t)(fData[n] & 0xFFF);
 
   AliError("Index outside limits."); 

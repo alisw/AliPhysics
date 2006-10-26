@@ -18,13 +18,14 @@
 #include "AliMUONDspHeader.h"
 #include "AliMUONBusStruct.h"
 
-/// 
+/// \class AliMUONDspHeader
 /// DSP structure for tracker raw data.
 /// Each block contains at most 5 Dsp structures.
 /// Beside the total length and length of the below data
 /// the header of the Dsp contains the front end DSP id, trigger words
 /// and event word (1 for nb of word is odd and 0 if not 
 ///
+/// \author Christian Finck
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDspHeader)
@@ -49,18 +50,18 @@ AliMUONDspHeader::AliMUONDspHeader()
      fErrorWord(0),
      fBusPatchArray(new TClonesArray("AliMUONBusStruct",5))
 {
-  //
-  //ctor
-  //
+  ///
+  ///ctor
+  ///
 
 }
 
 //___________________________________________
 AliMUONDspHeader::~AliMUONDspHeader()
 {
-  //
-  // dtr
-  //
+  ///
+  /// dtr
+  ///
   fBusPatchArray->Delete();
   delete fBusPatchArray;
 }
@@ -80,9 +81,9 @@ AliMUONDspHeader::AliMUONDspHeader(const AliMUONDspHeader& event)
      fErrorWord(event.fErrorWord),
      fBusPatchArray(new TClonesArray("AliMUONBusStruct", 5))
 {
-  // 
-  // copy constructor
-  //
+  /// 
+  /// copy constructor
+  ///
 
   for (Int_t index = 0; index < (event.fBusPatchArray)->GetEntriesFast(); index++) {
     {new ((*fBusPatchArray)[fBusPatchArray->GetEntriesFast()]) 
@@ -95,9 +96,9 @@ AliMUONDspHeader::AliMUONDspHeader(const AliMUONDspHeader& event)
 //___________________________________________
 AliMUONDspHeader& AliMUONDspHeader::operator=(const AliMUONDspHeader& event)
 {
-  //
-  // assignemnt constructor
-  //
+  ///
+  /// assignemnt constructor
+  ///
   if (this == &event) return *this;
 
   fDataKey       = event.fDataKey;
@@ -122,19 +123,19 @@ AliMUONDspHeader& AliMUONDspHeader::operator=(const AliMUONDspHeader& event)
 //___________________________________________
 void AliMUONDspHeader::AddBusPatch(const AliMUONBusStruct& busPatch)
 {
-  // 
-  // adding buspatch info
-  // into TClonesArray
-  //
+  /// 
+  /// adding buspatch info
+  /// into TClonesArray
+  ///
   TClonesArray &eventArray = *fBusPatchArray;
   new(eventArray[eventArray.GetEntriesFast()]) AliMUONBusStruct(busPatch);
 }
 //___________________________________________
 void AliMUONDspHeader::Clear(Option_t* )
 {
-  // Clear TClones arrays
-  // instead of deleting
-  //
+  /// Clear TClones arrays
+  /// instead of deleting
+  ///
   fBusPatchArray->Clear("C");
  
 }

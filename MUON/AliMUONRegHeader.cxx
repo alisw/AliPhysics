@@ -14,16 +14,18 @@
  **************************************************************************/
 
 /* $Id$ */
+#include <TClonesArray.h>
 
 #include "AliMUONRegHeader.h"
 #include "AliMUONLocalStruct.h"
 
-/// 
+/// \class AliMUONRegHeader
 /// Regional structure for trigger raw data.
 /// Each Reg structure contains 16 (at most) local card structure.
 /// The structure includes the information of the Reg. boards and
 /// regional inputs
 /// 
+/// \author Christian Finck
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRegHeader)
@@ -44,9 +46,8 @@ AliMUONRegHeader::AliMUONRegHeader()
      fHold(0),
      fLocalArray(new TClonesArray("AliMUONLocalStruct",16))
 {
-  //
-  // ctor
-  //
+  /// ctor
+ 
   fInput[0] = fInput[1] = 0;
 
   for (Int_t i = 0; i < 8; i++)
@@ -57,9 +58,8 @@ AliMUONRegHeader::AliMUONRegHeader()
 //___________________________________________
 AliMUONRegHeader::~AliMUONRegHeader()
 {
-  // 
-  // dtor
-  //
+  /// dtor
+ 
   fLocalArray->Delete();
   delete fLocalArray;
 }
@@ -75,9 +75,9 @@ AliMUONRegHeader::AliMUONRegHeader(const AliMUONRegHeader& event)
      fHold(event.fHold),
      fLocalArray(new TClonesArray("AliMUONLocalStruct", 16))
 {
-  //
-  // copy ctor
-  //
+  ///
+  /// copy ctor
+  ///
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];
@@ -94,9 +94,9 @@ AliMUONRegHeader::AliMUONRegHeader(const AliMUONRegHeader& event)
 //___________________________________________
 AliMUONRegHeader& AliMUONRegHeader::operator=(const AliMUONRegHeader& event)
 {
-  // 
-  // assignment operator
-  //
+  /// 
+  /// assignment operator
+  ///
 
   if (this == &event) return *this;
 
@@ -125,9 +125,9 @@ AliMUONRegHeader& AliMUONRegHeader::operator=(const AliMUONRegHeader& event)
 //___________________________________________
 void AliMUONRegHeader::SetScalersNumbers()
 {
-  // set numbers for scaler events for Regional header
-  // since this is provided by the experiment
-  // put dummy numbers to check the monitoring
+  /// set numbers for scaler events for Regional header
+  /// since this is provided by the experiment
+  /// put dummy numbers to check the monitoring
   
   fClk  = 10000;
   fHold = 100; 
@@ -139,9 +139,9 @@ void AliMUONRegHeader::SetScalersNumbers()
 //___________________________________________
 void AliMUONRegHeader::Clear(Option_t* )
 {
-  // Clear TClones arrays
-  // instead of deleting
-  //
+  /// Clear TClones arrays
+  /// instead of deleting
+  ///
   fLocalArray->Clear("C");
  
 }
