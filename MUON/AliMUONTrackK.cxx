@@ -29,8 +29,9 @@
 
 #include "AliMUONTrackK.h"
 #include "AliMUON.h"
+#include "AliMUONConstants.h"
 
-#include "AliMUONTrackReconstructor.h"
+#include "AliMUONTrackReconstructorK.h"
 #include "AliMagF.h"
 #include "AliMUONSegment.h"
 #include "AliMUONHitForRec.h"
@@ -51,7 +52,7 @@ void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail); // from 
 
   Int_t AliMUONTrackK::fgDebug = -1; //-1;
 Int_t AliMUONTrackK::fgNOfPoints = 0; 
-AliMUONTrackReconstructor* AliMUONTrackK::fgTrackReconstructor = NULL; 
+AliMUONTrackReconstructorK* AliMUONTrackK::fgTrackReconstructor = NULL; 
 TClonesArray* AliMUONTrackK::fgHitForRec = NULL; 
 AliMUONEventRecoCombi *AliMUONTrackK::fgCombi = NULL;
 
@@ -95,7 +96,7 @@ AliMUONTrackK::AliMUONTrackK()
 }
 
   //__________________________________________________________________________
-AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClonesArray *hitForRec)
+AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructorK *TrackReconstructor, TClonesArray *hitForRec)
   : AliMUONTrack(),
     fStartSegment(0x0),
     fPosition(0.),

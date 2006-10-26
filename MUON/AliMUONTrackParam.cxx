@@ -49,10 +49,10 @@ AliMUONTrackParam::AliMUONTrackParam()
     fkField(0x0),
     fHitForRecPtr(0x0)
 {
-// Constructor
+/// Constructor
   // get field from outside
   fkField = AliTracker::GetFieldMap();
-  if (!fkField) AliWarning("No field available");
+  if (!fkField) AliFatal("No field available");
 }
 
   //_________________________________________________________________________
@@ -67,14 +67,13 @@ AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
     fkField(theMUONTrackParam.fkField),
     fHitForRecPtr(theMUONTrackParam.fHitForRecPtr)
 {
-  // Copy constructor
-
+  /// Copy constructor
 }
 
   //_________________________________________________________________________
 AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
 {
-  // Asignment operator
+  /// Asignment operator
   if (this == &theMUONTrackParam)
     return *this;
 
@@ -137,7 +136,7 @@ Int_t AliMUONTrackParam::Compare(const TObject* TrackParam) const
   //_________________________________________________________________________
 void AliMUONTrackParam::GetParamFrom(const AliESDMuonTrack& esdMuonTrack)
 {
-  // assigned value form ESD track.
+  /// assigned value form ESD track.
   fInverseBendingMomentum =  esdMuonTrack.GetInverseBendingMomentum();
   fBendingSlope           =  TMath::Tan(esdMuonTrack.GetThetaY());
   fNonBendingSlope        =  TMath::Tan(esdMuonTrack.GetThetaX());
@@ -149,7 +148,7 @@ void AliMUONTrackParam::GetParamFrom(const AliESDMuonTrack& esdMuonTrack)
   //_________________________________________________________________________
 void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack)
 {
-  // assigned value form ESD track.
+  /// assigned value form ESD track.
   esdMuonTrack.SetInverseBendingMomentum(fInverseBendingMomentum);
   esdMuonTrack.SetThetaX(TMath::ATan(fNonBendingSlope));
   esdMuonTrack.SetThetaY(TMath::ATan(fBendingSlope));
@@ -161,9 +160,9 @@ void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack)
   //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapToZ(Double_t Z)
 {
-  // Track parameter extrapolation to the plane at "Z".
-  // On return, the track parameters resulting from the extrapolation
-  // replace the current track parameters.
+  /// Track parameter extrapolation to the plane at "Z".
+  /// On return, the track parameters resulting from the extrapolation
+  /// replace the current track parameters.
   if (this->fZ == Z) return; // nothing to be done if same Z
   Double_t forwardBackward; // +1 if forward, -1 if backward
   if (Z < this->fZ) forwardBackward = 1.0; // spectro. z<0 
@@ -226,10 +225,10 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   //__________________________________________________________________________
 void AliMUONTrackParam::SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardBackward)
 {
-  // Set vector of Geant3 parameters pointed to by "VGeant3"
-  // from track parameters in current AliMUONTrackParam.
-  // Since AliMUONTrackParam is only geometry, one uses "ForwardBackward"
-  // to know whether the particle is going forward (+1) or backward (-1).
+  /// Set vector of Geant3 parameters pointed to by "VGeant3"
+  /// from track parameters in current AliMUONTrackParam.
+  /// Since AliMUONTrackParam is only geometry, one uses "ForwardBackward"
+  /// to know whether the particle is going forward (+1) or backward (-1).
   VGeant3[0] = this->fNonBendingCoor; // X
   VGeant3[1] = this->fBendingCoor; // Y
   VGeant3[2] = this->fZ; // Z
@@ -247,10 +246,10 @@ void AliMUONTrackParam::SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardB
   //__________________________________________________________________________
 void AliMUONTrackParam::GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge)
 {
-  // Get track parameters in current AliMUONTrackParam
-  // from Geant3 parameters pointed to by "VGeant3",
-  // assumed to be calculated for forward motion in Z.
-  // "InverseBendingMomentum" is signed with "Charge".
+  /// Get track parameters in current AliMUONTrackParam
+  /// from Geant3 parameters pointed to by "VGeant3",
+  /// assumed to be calculated for forward motion in Z.
+  /// "InverseBendingMomentum" is signed with "Charge".
   this->fNonBendingCoor = VGeant3[0]; // X
   this->fBendingCoor = VGeant3[1]; // Y
   this->fZ = VGeant3[2]; // Z
@@ -263,10 +262,10 @@ void AliMUONTrackParam::GetFromGeant3Parameters(Double_t *VGeant3, Double_t Char
   //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam)
 {
-  // Track parameters extrapolated from current track parameters ("this")
-  // to both chambers of the station(0..) "Station"
-  // are returned in the array (dimension 2) of track parameters
-  // pointed to by "TrackParam" (index 0 and 1 for first and second chambers).
+  /// Track parameters extrapolated from current track parameters ("this")
+  /// to both chambers of the station(0..) "Station"
+  /// are returned in the array (dimension 2) of track parameters
+  /// pointed to by "TrackParam" (index 0 and 1 for first and second chambers).
   Double_t extZ[2], z1, z2;
   Int_t i1 = -1, i2 = -1; // = -1 to avoid compilation warnings
   // range of Station to be checked ????
@@ -296,10 +295,9 @@ void AliMUONTrackParam::ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackP
   //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapToVertex(Double_t xVtx, Double_t yVtx, Double_t zVtx)
 {
-  // Extrapolation to the vertex.
-  // Returns the track parameters resulting from the extrapolation,
-  // in the current TrackParam.
-  // Changes parameters according to Branson correction through the absorber 
+  /// Extrapolation to the vertex.
+  /// Returns the track parameters resulting from the extrapolation in the current TrackParam.
+  /// Changes parameters according to Branson correction through the absorber 
   
   Double_t zAbsorber = -503.0; // to be coherent with the Geant absorber geometry !!!!
                                // spectro. (z<0) 
@@ -421,7 +419,7 @@ void AliMUONTrackParam::ExtrapToVertex(Double_t xVtx, Double_t yVtx, Double_t zV
 
 void AliMUONTrackParam::BransonCorrection(Double_t xVtx,Double_t yVtx,Double_t zVtx)
 {
-  // Branson correction of track parameters
+  /// Branson correction of track parameters
   // the entry parameters have to be calculated at the end of the absorber
   // simplified version: the z positions of Branson's planes are no longer calculated
   // but are given as inputs. One can use the macros MUONTestAbso.C and DrawTestAbso.C
@@ -429,7 +427,7 @@ void AliMUONTrackParam::BransonCorrection(Double_t xVtx,Double_t yVtx,Double_t z
   // Would it be possible to calculate all that from Geant configuration ????
   // and to get the Branson parameters from a function in ABSO module ????
   // with an eventual contribution from other detectors like START ????
-  //change to take into account the vertex postition (real, reconstruct,....)
+  // change to take into account the vertex postition (real, reconstruct,....)
 
   Double_t  zBP, xBP, yBP;
   Double_t  pYZ, pX, pY, pZ, pTotal, xEndAbsorber, yEndAbsorber, radiusEndAbsorber2, pT, theta;
@@ -501,7 +499,7 @@ void AliMUONTrackParam::BransonCorrection(Double_t xVtx,Double_t yVtx,Double_t z
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta)
 {
-  // Returns the total momentum corrected from energy loss in the front absorber
+  /// Returns the total momentum corrected from energy loss in the front absorber
   // One can use the macros MUONTestAbso.C and DrawTestAbso.C
   // to test this correction. 
   // Momentum energy loss behaviour evaluated with the simulation of single muons (april 2002)
@@ -532,10 +530,8 @@ Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t thetaLimit, Double_
   //__________________________________________________________________________
 void AliMUONTrackParam::FieldCorrection(Double_t Z)
 {
-  // 
-  // Correction of the effect of the magnetic field in the absorber
+  /// Correction of the effect of the magnetic field in the absorber
   // Assume a constant field along Z axis.
-
   Float_t b[3],x[3]; 
   Double_t bZ;
   Double_t pYZ,pX,pY,pZ,pT;
@@ -575,7 +571,7 @@ void AliMUONTrackParam::FieldCorrection(Double_t Z)
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Px() const
 {
-  // return px from track paramaters
+  /// return px from track paramaters
   Double_t pYZ, pZ, pX;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )
@@ -587,7 +583,7 @@ Double_t AliMUONTrackParam::Px() const
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Py() const
 {
-  // return px from track paramaters
+  /// return px from track paramaters
   Double_t pYZ, pZ, pY;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )
@@ -599,7 +595,7 @@ Double_t AliMUONTrackParam::Py() const
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Pz() const
 {
-  // return px from track paramaters
+  /// return px from track paramaters
   Double_t pYZ, pZ;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )
@@ -610,7 +606,7 @@ Double_t AliMUONTrackParam::Pz() const
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::P() const
 {
-  // return p from track paramaters
+  /// return p from track paramaters
   Double_t  pYZ, pZ, p;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )
@@ -625,26 +621,25 @@ Double_t AliMUONTrackParam::P() const
 void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step, 
 					 Double_t *vect, Double_t *vout) const
 {
-//    ******************************************************************
-//    *                                                                *
-//    *  Performs the tracking of one step in a magnetic field         *
-//    *  The trajectory is assumed to be a helix in a constant field   *
-//    *  taken at the mid point of the step.                           *
-//    *  Parameters:                                                   *
-//    *   input                                                        *
-//    *     STEP =arc length of the step asked                         *
-//    *     VECT =input vector (position,direction cos and momentum)   *
-//    *     CHARGE=  electric charge of the particle                   *
-//    *   output                                                       *
-//    *     VOUT = same as VECT after completion of the step           *
-//    *                                                                *
-//    *    ==>Called by : <USER>, GUSWIM                               *
-//    *       Author    m.hansroul  *********                          *
-//    *       modified  s.egli, s.v.levonian                           *
-//    *       modified  v.perevoztchikov
-//    *                                                                *
-//    ******************************************************************
-//
+///    ******************************************************************
+///    *                                                                *
+///    *  Performs the tracking of one step in a magnetic field         *
+///    *  The trajectory is assumed to be a helix in a constant field   *
+///    *  taken at the mid point of the step.                           *
+///    *  Parameters:                                                   *
+///    *   input                                                        *
+///    *     STEP =arc length of the step asked                         *
+///    *     VECT =input vector (position,direction cos and momentum)   *
+///    *     CHARGE=  electric charge of the particle                   *
+///    *   output                                                       *
+///    *     VOUT = same as VECT after completion of the step           *
+///    *                                                                *
+///    *    ==>Called by : <USER>, GUSWIM                               *
+///    *       Author    m.hansroul  *********                          *
+///    *       modified  s.egli, s.v.levonian                           *
+///    *       modified  v.perevoztchikov
+///    *                                                                *
+///    ******************************************************************
 
 // modif: everything in double precision
 
@@ -744,20 +739,18 @@ void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step,
 void AliMUONTrackParam::ExtrapOneStepHelix3(Double_t field, Double_t step, 
 					       Double_t *vect, Double_t *vout) const
 {
-// 
-//     ******************************************************************
-//     *                                                                *
-//     *       Tracking routine in a constant field oriented            *
-//     *       along axis 3                                             *
-//     *       Tracking is performed with a conventional                *
-//     *       helix step method                                        *
-//     *                                                                *
-//     *    ==>Called by : <USER>, GUSWIM                               *
-//     *       Authors    R.Brun, M.Hansroul  *********                 *
-//     *       Rewritten  V.Perevoztchikov
-//     *                                                                *
-//     ******************************************************************
-// 
+///	******************************************************************
+///	*								 *
+///	*	Tracking routine in a constant field oriented		 *
+///	*	along axis 3						 *
+///	*	Tracking is performed with a conventional		 *
+///	*	helix step method					 *
+///	*								 *
+///	*    ==>Called by : <USER>, GUSWIM				 *
+///	*	Authors    R.Brun, M.Hansroul  *********		 *
+///	*	Rewritten  V.Perevoztchikov
+///	*								 *
+///	******************************************************************
 
     Double_t hxp[3];
     Double_t h4, hp, rho, tet;
@@ -822,29 +815,27 @@ void AliMUONTrackParam::ExtrapOneStepHelix3(Double_t field, Double_t step,
 void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
 						     Double_t* vect, Double_t* vout) const
 {
-// 
-//     ******************************************************************
-//     *                                                                *
-//     *  Runge-Kutta method for tracking a particle through a magnetic *
-//     *  field. Uses Nystroem algorithm (See Handbook Nat. Bur. of     *
-//     *  Standards, procedure 25.5.20)                                 *
-//     *                                                                *
-//     *  Input parameters                                              *
-//     *       CHARGE    Particle charge                                *
-//     *       STEP      Step size                                      *
-//     *       VECT      Initial co-ords,direction cosines,momentum     *
-//     *  Output parameters                                             *
-//     *       VOUT      Output co-ords,direction cosines,momentum      *
-//     *  User routine called                                           *
-//     *       CALL GUFLD(X,F)                                          *
-//     *                                                                *
-//     *    ==>Called by : <USER>, GUSWIM                               *
-//     *       Authors    R.Brun, M.Hansroul  *********                 *
-//     *                  V.Perevoztchikov (CUT STEP implementation)    *
-//     *                                                                *
-//     *                                                                *
-//     ******************************************************************
-// 
+///	******************************************************************
+///	*								 *
+///	*  Runge-Kutta method for tracking a particle through a magnetic *
+///	*  field. Uses Nystroem algorithm (See Handbook Nat. Bur. of	 *
+///	*  Standards, procedure 25.5.20)				 *
+///	*								 *
+///	*  Input parameters						 *
+///	*	CHARGE    Particle charge				 *
+///	*	STEP	  Step size					 *
+///	*	VECT	  Initial co-ords,direction cosines,momentum	 *
+///	*  Output parameters						 *
+///	*	VOUT	  Output co-ords,direction cosines,momentum	 *
+///	*  User routine called  					 *
+///	*	CALL GUFLD(X,F) 					 *
+///	*								 *
+///	*    ==>Called by : <USER>, GUSWIM				 *
+///	*	Authors    R.Brun, M.Hansroul  *********		 *
+///	*		   V.Perevoztchikov (CUT STEP implementation)	 *
+///	*								 *
+///	*								 *
+///	******************************************************************
 
     Double_t h2, h4, f[4];
     Double_t xyzt[3], a, b, c, ph,ph2;
@@ -1067,8 +1058,7 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 //___________________________________________________________
  void  AliMUONTrackParam::GetField(Double_t *Position, Double_t *Field) const
 {
-    // interface for arguments in double precision (Why ? ChF)
-
+    /// interface for arguments in double precision (Why ? ChF)
     Float_t x[3], b[3];
 
     x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
@@ -1081,10 +1071,8 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 //_____________________________________________-
 void AliMUONTrackParam::Print(Option_t* opt) const
 {
-//
-  // Printing TrackParam information 
-  // "full" option for printing all the information about the TrackParam
-  //
+  /// Printing TrackParam information 
+  /// "full" option for printing all the information about the TrackParam
   TString sopt(opt);
   sopt.ToUpper();
  

@@ -21,7 +21,7 @@ class TObjArray;
 class AliMUONEventRecoCombi;
 class AliMUONHitForRec;
 class AliMUONSegment;
-class AliMUONTrackReconstructor;
+class AliMUONTrackReconstructorK;
 #include "AliMUONTrack.h" 
 
 class AliMUONTrackK : public AliMUONTrack {
@@ -31,7 +31,7 @@ class AliMUONTrackK : public AliMUONTrack {
   AliMUONTrackK(); // Default constructor
   virtual ~AliMUONTrackK(); // Destructor
 
-  AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClonesArray *hitForRec); // Constructor
+  AliMUONTrackK(AliMUONTrackReconstructorK *TrackReconstructor, TClonesArray *hitForRec); // Constructor
   AliMUONTrackK(AliMUONSegment *segment); // Constructor from a segment
 
   // Pointer to hits on track
@@ -82,7 +82,7 @@ class AliMUONTrackK : public AliMUONTrack {
   static Int_t fgDebug; ///< debug level
   static Int_t fgNOfPoints; ///< number of points in event
   //static AliMUON *fgMUON; ///< pointer to MUON module  
-  static AliMUONTrackReconstructor *fgTrackReconstructor; ///< pointer to event reconstructor
+  static AliMUONTrackReconstructorK *fgTrackReconstructor; ///< pointer to event reconstructor
   static TClonesArray *fgHitForRec; ///< pointer to hits
   static AliMUONEventRecoCombi *fgCombi; ///< pointer to combined cluster/track finder
 

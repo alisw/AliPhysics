@@ -15,7 +15,7 @@
 
 class AliMUONData;
 class AliMUONDetElement;
-class AliMUONTrackReconstructor;
+class AliMUONTrackReconstructorK;
 class AliMUONClusterFinderAZ;
 class AliMUONHitForRec;
 class AliLoader;
@@ -26,7 +26,7 @@ class AliMUONEventRecoCombi : public TObject
     virtual ~AliMUONEventRecoCombi();
     static AliMUONEventRecoCombi* Instance();
     void FillEvent(AliMUONData *data, AliMUONClusterFinderAZ *recModel); // fill event info
-    void FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructor *recoTrack) const; // fill used rec. points from det. elems
+    void FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructorK *recoTrack) const; // fill used rec. points from det. elems
 
     Int_t Nz() const { return fNZ; } // number of DE different Z-positions
     Double_t Z(Int_t iz) const { return (*fZ)[iz]; } // Z of DE

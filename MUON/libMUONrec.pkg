@@ -7,7 +7,9 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONPixel.cxx \
        AliMUONClusterInput.cxx \
        AliMUONReconstructor.cxx \
+       AliMUONVTrackReconstructor.cxx \
        AliMUONTrackReconstructor.cxx \
+       AliMUONTrackReconstructorK.cxx \
        AliMUONTrack.cxx \
        AliMUONTrackK.cxx \
        AliMUONTrackParam.cxx \

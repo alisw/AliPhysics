@@ -7,224 +7,61 @@
 
 /// \ingroup rec
 /// \class AliMUONTrackReconstructor
-/// \brief Class for the MUON track reconstruction
+/// \brief Standard class for the MUON track reconstruction
 ///
-/////////////////////////////////////
-/// MUON track reconstructor in ALICE
-/////////////////////////////////////
+//////////////////////////////////////////////
+/// Standard MUON track reconstructor in ALICE
+//////////////////////////////////////////////
 
 #include <TObject.h>
-#include "AliMUONConstants.h"
+#include "AliMUONVTrackReconstructor.h"
 
-class AliMUONHitForRec;
 class AliMUONSegment;
-class TClonesArray;
-class TFile;
-class TTree;
-class AliMUONData;
-class AliRunLoader;
-class AliMUONTriggerTrack;
 class AliMUONTrack;
 class TVirtualFitter;
 
-class AliMUONTrackReconstructor : public TObject {
+class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor {
 
  public:
   AliMUONTrackReconstructor(AliMUONData* data); // default Constructor
   virtual ~AliMUONTrackReconstructor(); // Destructor
 
-  // Parameters for track reconstruction: public methods
-  // Get and Set, Set to defaults
-
-           /// Return minimum value (GeV/c) of momentum in bending plane
-  Double_t GetMinBendingMomentum(void) const {return fMinBendingMomentum;}
-           /// Set minimum value (GeV/c) of momentum in bending plane
-  void SetMinBendingMomentum(Double_t MinBendingMomentum) {fMinBendingMomentum = MinBendingMomentum;}
-
-           /// Return maximum value (GeV/c) of momentum in bending plane
-  Double_t GetMaxBendingMomentum(void) const {return fMaxBendingMomentum;}
-           /// Set maximum value (GeV/c) of momentum in bending plane
-  void SetMaxBendingMomentum(Double_t MaxBendingMomentum) {fMaxBendingMomentum = MaxBendingMomentum;}
-
-           /// Return maximum Chi2 per degree of Freedom
-  Double_t GetMaxChi2(void) const {return fMaxChi2;}
-           /// Set maximum Chi2 per degree of Freedom
-  void SetMaxChi2(Double_t MaxChi2) {fMaxChi2 = MaxChi2;}
-
-           /// Return maximum square distance in units of the variance (maximum chi2)
-  Double_t GetMaxSigma2Distance(void) const {return fMaxSigma2Distance;}
-           /// Set maximum square distance in units of the variance (maximum chi2)
-  void SetMaxSigma2Distance(Double_t MaxSigma2Distance) {fMaxSigma2Distance = MaxSigma2Distance;}
-
-           /// Return chamber resolution (cm) in bending plane
-  Double_t GetBendingResolution(void) const {return fBendingResolution;}
-           /// Set chamber resolution (cm) in bending plane
-  void SetBendingResolution(Double_t BendingResolution) {fBendingResolution = BendingResolution;}
-
-           /// Return chamber resolution (cm) in non-bending plane
-  Double_t GetNonBendingResolution(void) const {return fNonBendingResolution;}
-           /// set chamber resolution (cm) in non-bending plane
-  void SetNonBendingResolution(Double_t NonBendingResolution) {fNonBendingResolution = NonBendingResolution;}
-
-           /// Return chamber thickness in number of radiation lengths
-  Double_t GetChamberThicknessInX0(void) const {return fChamberThicknessInX0;}
-           /// Set chamber thickness in number of radiation lengths
-  void SetChamberThicknessInX0(Double_t ChamberThicknessInX0) {fChamberThicknessInX0 = ChamberThicknessInX0;}
-
-           /// Return simple magnetic field: value (kG)
-  Double_t GetSimpleBValue(void) const {return fSimpleBValue;}
-           /// Set simple magnetic field: value (kG)
-  void SetSimpleBValue(Double_t SimpleBValue) {fSimpleBValue = SimpleBValue;}
-
-           /// Return simple magnetic field: length (cm)
-  Double_t GetSimpleBLength(void) const {return fSimpleBLength;}
-           /// Set simple magnetic field: length (cm)
-  void SetSimpleBLength(Double_t SimpleBLength) {fSimpleBLength = SimpleBLength;}
-
-           /// Return simple magnetic field: Z central position (cm)
-  Double_t GetSimpleBPosition(void) const {return fSimpleBPosition;}
-           /// Set simple magnetic field: Z central position (cm)
-  void SetSimpleBPosition(Double_t SimpleBPosition) {fSimpleBPosition = SimpleBPosition;}
-
-           /// Return chamber efficiency (used for track ref. hits only
-  Double_t GetEfficiency(void) const {return fEfficiency;}
-           /// Set chamber efficiency (used for track ref. hits only
-  void SetEfficiency(Double_t Efficiency) {fEfficiency = Efficiency;}
-
-  void SetReconstructionParametersToDefaults(void);
-
            /// Return track fitter
   static TVirtualFitter* Fitter(void) {return fgFitter;}
+  
+  virtual void EventDump(void);  // dump reconstructed event
 
-           /// Return number of hits for reconstruction
-  Int_t GetNHitsForRec(void) const {return fNHitsForRec;} // Number
 
-           /// Return number of reconstructed tracks
-  Int_t GetNRecTracks() const {return fNRecTracks;} // Number
-           /// Set number of reconstructed tracks
-  void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
+ protected:
 
-           /// Return array of reconstructed tracks
-  TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
- 
   // Functions
-  Double_t GetImpactParamFromBendingMomentum(Double_t BendingMomentum) const;
-  Double_t GetBendingMomentumFromImpactParam(Double_t ImpactParam) const;
-  void EventReconstruct(void);
-  void EventReconstructTrigger(void);
-  void EventDump(void);  // dump reconstructed event
-  void EventDumpTrigger(void);  // dump reconstructed trigger event
-  //PH  void FillEvent();      // fill and write tree of reconstructed events
-  void SetTrackMethod(Int_t iTrackMethod); //AZ
-          /// Return track method
-  Int_t GetTrackMethod(void) const {return fTrackMethod;}   
-  void FillMUONTrack(void); // set track parameters at hits for Kalman track
-  //Int_t fMuons; // AZ - number of muons within acceptance - just for tests
-
-          /// Return MUON data
-  AliMUONData*  GetMUONData() {return fMUONData;}
-
-          /// Set trigger circuit
-  void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}
-
+  virtual void AddHitsForRecFromRawClusters();
+  virtual void MakeSegments(void);
+  virtual void MakeTracks(void);
+  virtual void MakeTrackCandidates(void);
+  virtual void FollowTracks(void);
+  virtual void RemoveDoubleTracks(void);
+  
 
  private:
-
+  
   // Defaults parameters for reconstruction
-  static const Double_t fgkDefaultMinBendingMomentum; ///< default min. bending momentum for reconstruction
-  static const Double_t fgkDefaultMaxBendingMomentum; ///< default max. bending momentum for reconstruction
   static const Double_t fgkDefaultMaxChi2; ///< default max. track chi2 for reconstruction
-  static const Double_t fgkDefaultMaxSigma2Distance; ///< default square of max. distance for window size 
-  static const Double_t fgkDefaultBendingResolution; ///< default bending coordinate resolution for reconstruction 
-  static const Double_t fgkDefaultNonBendingResolution; ///< default non bending coordinate resolution for reconstruction
-  // Simple magnetic field:
-  // Value taken from macro MUONtracking.C: 0.7 T, hence 7 kG
-  // Length and Position from reco_muon.F, with opposite sign:
-  // Length = ZMAGEND-ZCOIL
-  // Position = (ZMAGEND+ZCOIL)/2
-  // to be ajusted differently from real magnetic field ????
-  static const Double_t fgkDefaultSimpleBValue; ///< default value of magnetic field (dipole)
-  static const Double_t fgkDefaultSimpleBLength; ///< default length of magnetic field (dipole)
-  static const Double_t fgkDefaultSimpleBPosition; ///< default position of magnetic field (dipole)
-  static const Double_t fgkDefaultEfficiency; ///< default chamber efficiency for track ref. hits recontruction
 
   static TVirtualFitter* fgFitter; //!< Pointer to track fitter
 
-  Int_t fTrackMethod; ///< AZ - tracking method
-
   // Parameters for track reconstruction
-  Double_t fMinBendingMomentum; ///< minimum value (GeV/c) of momentum in bending plane
-  // Parameters for track reconstruction
-  Double_t fMaxBendingMomentum; ///< maximum value (GeV/c) of momentum in bending plane
   Double_t fMaxChi2; ///< maximum Chi2 per degree of Freedom
-  Double_t fMaxSigma2Distance; ///< maximum square distance in units of the variance (maximum chi2)
-  Double_t* fRMin; ///< minimum radius (cm)
-  Double_t* fRMax; ///< maximum radius (cm)
-  Double_t* fSegmentMaxDistBending; ///< maximum distance (cm) for segments in bending plane
-  Double_t* fSegmentMaxDistNonBending; ///< maximum distance (cm) for segments in non bending plane
-  Double_t fBendingResolution; ///< chamber resolution (cm) in bending plane
-  Double_t fNonBendingResolution; ///< chamber resolution (cm) in non bending plane
-  Double_t fChamberThicknessInX0; ///< chamber thickness in number of radiation lengths
-                                  // how to take it from simulation ????
-  Double_t fSimpleBValue; ///< simple magnetic field: value (kG)
-  Double_t fSimpleBLength; ///< simple magnetic field: length (cm)
-  Double_t fSimpleBPosition; ///< simple magnetic field: Z central position (cm)
-  Double_t fEfficiency; ///< chamber efficiency (used for track ref. hits only)
   
-  // Hits for reconstruction (should be in AliMUON ????)
-  TClonesArray* fHitsForRecPtr; ///< pointer to the array of hits for reconstruction
-  Int_t fNHitsForRec; ///< number of hits for reconstruction
-  // Information per chamber (should be in AliMUONChamber ????)
-  Int_t* fNHitsForRecPerChamber; ///< number of HitsForRec
-  Int_t* fIndexOfFirstHitForRecPerChamber; ///< index (0...) of first HitForRec
-
-  // Segments inside a station
-  TClonesArray** fSegmentsPtr; ///< array of pointers to the segments for each station
-  Int_t* fNSegments; ///< number of segments for each station
-
-  // Reconstructed tracks
-  TClonesArray *fRecTracksPtr; ///< pointer to array of reconstructed tracks
-  Int_t fNRecTracks; ///< number of reconstructed tracks
-
-  // data container
-  AliMUONData* fMUONData; ///< Data container for MUON subsystem 
-
-  Int_t fMuons; ///< AZ - number of muons within acceptance - just for tests
-
-  AliMUONTriggerTrack* fTriggerTrack; ///< Trigger track structure
-
-  TClonesArray* fTriggerCircuit;      //!< trigger circuit array
-
   // Functions
-  AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); // copy constructor
-  AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs); // assignment operator
-  void ResetHitsForRec(void);
-  void MakeEventToBeReconstructed(void);
-  void AddHitsForRecFromRawClusters(TTree* TR);
-  void SortHitsForRecWithIncreasingChamber();
-  void MakeSegments(void);
-  void ResetSegments(void);
-  void MakeSegmentsPerStation(Int_t Station);
-  void MakeTracks(void);
-  Bool_t MakeTriggerTracks(void);
-  void ResetTracks(void);
-  void MakeTrackCandidates(void);
+  AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); ///< copy constructor
+  AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs); ///< assignment operator
+  
   Int_t MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment);
   Int_t MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment);
-  void CalcTrackParamAtVertex(AliMUONTrack *Track);
-  void FollowTracks(void);
+  void CalcTrackParamAtVertex(AliMUONTrack *Track) const;
   void Fit(AliMUONTrack *Track, Int_t FitStart, Int_t FitMCS);
-  void RemoveDoubleTracks(void);
   void UpdateHitForRecAtHit(void);
-  void ValidateTracksWithTrigger(void);
-
-
-  //AZ - for Kalman Filter
-  void MakeTrackCandidatesK(void);
-  void FollowTracksK(void);
-  void RemoveDoubleTracksK(void);
-  void GoToVertex(void);
-  Bool_t CheckCandidateK(Int_t icand, Int_t nSeeds) const;
 
 
   ClassDef(AliMUONTrackReconstructor, 0) // MUON track reconstructor in ALICE

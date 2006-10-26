@@ -11,7 +11,9 @@
 #pragma link C++ class AliMUONPixel+; 
 #pragma link C++ class AliMUONClusterInput+; 
 #pragma link C++ class AliMUONReconstructor+;
+#pragma link C++ class AliMUONVTrackReconstructor+; 
 #pragma link C++ class AliMUONTrackReconstructor+; 
+#pragma link C++ class AliMUONTrackReconstructorK+; 
 #pragma link C++ class AliMUONTrack+; 
 #pragma link C++ class AliMUONTrackK+; 
 #pragma link C++ class AliMUONTrackParam+; 

@@ -29,7 +29,7 @@
 #include "AliMUONHitForRec.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrackK.h"
-#include "AliMUONTrackReconstructor.h"
+#include "AliMUONTrackReconstructorK.h"
 #include "AliMUONConstants.h"
 
 #include "AliLoader.h"
@@ -170,7 +170,7 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
 }
 
 //_________________________________________________________________________
-void AliMUONEventRecoCombi::FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructor *recoTrack) const
+void AliMUONEventRecoCombi::FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructorK *recoTrack) const
 {
   // Fill rec. points used for tracking from det. elems
 

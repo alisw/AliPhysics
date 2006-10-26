@@ -25,22 +25,19 @@
 //
 ///////////////////////////////////////////////////
 
+#include <stdlib.h> // for exit()
+#include <Riostream.h>
+
 #include "AliMUONTrack.h"
 
 #include "AliMUONTrackParam.h" 
 #include "AliMUONHitForRec.h" 
 #include "AliMUONSegment.h" 
-#include "AliMUONTriggerTrack.h"
 #include "AliMUONConstants.h"
 
 #include "AliLog.h"
 
-#include <Riostream.h> // for cout
 #include <TMath.h>
-#include <TMatrixD.h>
-#include <TObjArray.h>
-
-#include <stdlib.h> // for exit()
 
 ClassImp(AliMUONTrack) // Class implementation in ROOT context
 
@@ -56,7 +53,7 @@ AliMUONTrack::AliMUONTrack()
     fChi2MatchTrigger(0.),
     fTrackID(0)
 {
-  // Default constructor
+  /// Default constructor
 }
 
   //__________________________________________________________________________
@@ -71,7 +68,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
     fChi2MatchTrigger(0.),
     fTrackID(0)
 {
-  // Constructor from two Segment's
+  /// Constructor from two Segment's
 
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
@@ -97,7 +94,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec)
     fChi2MatchTrigger(0.),
     fTrackID(0)
 {
-  // Constructor from one Segment and one HitForRec
+  /// Constructor from one Segment and one HitForRec
 
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
@@ -111,7 +108,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec)
   //__________________________________________________________________________
 AliMUONTrack::~AliMUONTrack()
 {
-  // Destructor
+  /// Destructor
   if (fTrackParamAtHit) {
     // delete the TClonesArray of pointers to TrackParam
     delete fTrackParamAtHit;
@@ -137,7 +134,7 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
     fChi2MatchTrigger(theMUONTrack.fChi2MatchTrigger),
     fTrackID(theMUONTrack.fTrackID)
 {
-  
+  ///copy constructor
   Int_t maxIndex = 0;
   
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
@@ -163,7 +160,7 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
   //__________________________________________________________________________
 AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
 {
-
+  /// Asignment operator
   // check assignement to self
   if (this == &theMUONTrack)
     return *this;
@@ -209,22 +206,23 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   //__________________________________________________________________________
 void AliMUONTrack::AddTrackParamAtHit(AliMUONTrackParam *trackParam, AliMUONHitForRec *hitForRec) 
 {
-  // Add TrackParamAtHit if "trackParam" != NULL else create empty TrackParamAtHit
-  // Update link to HitForRec if "hitForRec" != NULL
+  /// Add TrackParamAtHit if "trackParam" != NULL else create empty TrackParamAtHit
+  /// Update link to HitForRec if "hitForRec" != NULL
   if (!fTrackParamAtHit) {
     fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);  
     fNTrackHits = 0;
   }
-  AliMUONTrackParam* TrackParamAtHit;
-  if (trackParam) TrackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam(*trackParam);
-  else TrackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam();
-  if (hitForRec) TrackParamAtHit->SetHitForRecPtr(hitForRec);
+  AliMUONTrackParam* trackParamAtHit;
+  if (trackParam) trackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam(*trackParam);
+  else trackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam();
+  if (hitForRec) trackParamAtHit->SetHitForRecPtr(hitForRec);
   fNTrackHits++;
 }
 
   //__________________________________________________________________________
 void AliMUONTrack::AddHitForRecAtHit(const AliMUONHitForRec *hitForRec) 
 {
+  /// Add hitForRec to the array of hitForRec at hit
   if (!fHitForRecAtHit)
     fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10); 
   
@@ -237,7 +235,7 @@ void AliMUONTrack::AddHitForRecAtHit(const AliMUONHitForRec *hitForRec)
   //__________________________________________________________________________
 Bool_t* AliMUONTrack::CompatibleTrack(AliMUONTrack * Track, Double_t Sigma2Cut) const
 {
-  // Return kTRUE/kFALSE for each chamber if hit is compatible or not 
+  /// Return kTRUE/kFALSE for each chamber if hit is compatible or not 
   TClonesArray *hitArray, *thisHitArray;
   AliMUONHitForRec *hit, *thisHit;
   Int_t chamberNumber;
@@ -276,9 +274,8 @@ Bool_t* AliMUONTrack::CompatibleTrack(AliMUONTrack * Track, Double_t Sigma2Cut) 
   //__________________________________________________________________________
 Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* Track) const
 {
-  // Returns the number of hits in common
-  // between the current track ("this")
-  // and the track pointed to by "Track".
+  /// Returns the number of hits in common between the current track ("this")
+  /// and the track pointed to by "Track".
   Int_t hitsInCommon = 0;
   AliMUONTrackParam *trackParamAtHit1, *trackParamAtHit2;
   // Loop over hits of first track
@@ -299,7 +296,7 @@ Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* Track) const
   //__________________________________________________________________________
 void AliMUONTrack::RecursiveDump(void) const
 {
-  // Recursive dump of AliMUONTrack, i.e. with dump of TrackParamAtHit's and attached HitForRec's
+  /// Recursive dump of AliMUONTrack, i.e. with dump of TrackParamAtHit's and attached HitForRec's
   AliMUONTrackParam *trackParamAtHit;
   AliMUONHitForRec *hitForRec;
   cout << "Recursive dump of Track: " << this << endl;
@@ -321,10 +318,8 @@ void AliMUONTrack::RecursiveDump(void) const
 //_____________________________________________-
 void AliMUONTrack::Print(Option_t* opt) const
 {
-//
-  // Printing Track information 
-  // "full" option for printing all the information about the track
-  //
+  /// Printing Track information 
+  /// "full" option for printing all the information about the track
   TString sopt(opt);
   sopt.ToUpper();
  

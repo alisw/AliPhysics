@@ -34,20 +34,33 @@ class AliMUONTrackParam : public TObject
 
 
   // Get and Set methods for data
+	/// return inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
   Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
+	/// set inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
   void     SetInverseBendingMomentum(Double_t InverseBendingMomentum) {fInverseBendingMomentum = InverseBendingMomentum;}
+	/// return bending slope (cm ** -1)
   Double_t GetBendingSlope(void) const {return fBendingSlope;}
+	/// set bending slope (cm ** -1)
   void     SetBendingSlope(Double_t BendingSlope) {fBendingSlope = BendingSlope;}
+	/// return non bending slope (cm ** -1)
   Double_t GetNonBendingSlope(void) const {return fNonBendingSlope;}
+	/// set non bending slope (cm ** -1)
   void     SetNonBendingSlope(Double_t NonBendingSlope) {fNonBendingSlope = NonBendingSlope;}
+	/// return Z coordinate (cm)
   Double_t GetZ(void) const {return fZ;}
+	/// set Z coordinate (cm)
   void     SetZ(Double_t Z) {fZ = Z;}
+	/// return bending coordinate (cm)
   Double_t GetBendingCoor(void) const {return fBendingCoor;}
+	/// set bending coordinate (cm)
   void     SetBendingCoor(Double_t BendingCoor) {fBendingCoor = BendingCoor;}
+	/// return non bending coordinate (cm)
   Double_t GetNonBendingCoor(void) const {return fNonBendingCoor;}
+	/// set non bending coordinate (cm)
   void     SetNonBendingCoor(Double_t NonBendingCoor) {fNonBendingCoor = NonBendingCoor;}
   void              SetTrackParam(AliMUONTrackParam& TrackParam);
   AliMUONHitForRec* GetHitForRecPtr(void) const;
+	/// set pointeur to associated HitForRec if any
   void              SetHitForRecPtr(AliMUONHitForRec* HitForRec) {fHitForRecPtr = HitForRec;}
   
   Double_t Px() const;  // return px
@@ -55,8 +68,10 @@ class AliMUONTrackParam : public TObject
   Double_t Pz() const;  // return pz
   Double_t P()  const;  // return total momentum
 
-  Bool_t IsSortable () const {return kTRUE;} // necessary for sorting TClonesArray of TrackHit's
-  Int_t Compare(const TObject* TrackParam) const; // "Compare" function for sorting
+	/// necessary for sorting TClonesArray of TrackHit's
+  Bool_t IsSortable () const {return kTRUE;}
+	/// "Compare" function for sorting
+  Int_t Compare(const TObject* TrackParam) const;
 
   void ExtrapToZ(Double_t Z);
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);
@@ -76,6 +91,7 @@ class AliMUONTrackParam : public TObject
   
   virtual void Print(Option_t* opt="") const;
  
+	/// set field map
   void SetField(const AliMagF* magField) {fkField = magField;}
 
 
