@@ -55,6 +55,8 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
 {
 /// Standard constructor
 
+  AliDebugStream(1) << "this = " << this << endl;
+
   fMotifMap = new AliMpMotifMap(true);
   //fMotifMap = new AliMpMotifMap();
 
@@ -89,12 +91,16 @@ AliMpSector::AliMpSector()
     fNofPads(0)
 {
 /// Default constructor
+
+  AliDebugStream(1) << "this = " << this << endl;
 }
 
 //_____________________________________________________________________________
 AliMpSector::~AliMpSector() 
 {
 /// Destructor 
+
+  AliDebugStream(1) << "this = " << this << endl;
 
   // deletes 
   for (Int_t izone = 0; izone<GetNofZones(); izone++) 
