@@ -41,13 +41,13 @@ Exc_t::Exc_t(const std::string& s) : TString(s.c_str()) {}
 // Exc + ops
 
 Exc_t operator+(const Exc_t &s1, const std::string &s2)
-{ return Exc_t((std::string&)s1 + s2); }
+{ return Exc_t((TString&)s1 + s2.c_str()); }
 
 Exc_t operator+(const Exc_t &s1, const TString &s2)
-{ return Exc_t((std::string&)s1 + s2.Data()); }
+{ return Exc_t((TString&)s1 + s2); }
 
 Exc_t operator+(const Exc_t &s1,  const char *s2)
-{ return Exc_t((std::string&)s1 + s2); }
+{ return Exc_t((TString&)s1 + s2); }
 
 // ----------------------------------------------------------------
 
