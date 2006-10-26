@@ -81,7 +81,7 @@ void AliTPCmapper::Init()
 //______________________________________________________________
 Int_t AliTPCmapper::ReadMapping()
 {
-    FILE *f_in;
+    FILE *fin;
     char line[255];
 
     int pad = -1, row = -1;
@@ -89,22 +89,22 @@ Int_t AliTPCmapper::ReadMapping()
     int padsec = 0;
 
 
-    f_in = fopen(fMapfileName,"r");
-    if (!f_in){
+    fin = fopen(fMapfileName,"r");
+    if (!fin){
 	fprintf(stderr, "cannot open file '%s'!\n",fMapfileName);
 	return 1;
     }
 
-    fgets(line,256,f_in);
+    fgets(line,256,fin);
     while (sscanf(line,"%d %d %d %d %d %d %d %d",
 		  &padsec, &row, &pad,
 		  &rcu, &bra, &fec, &alt, &chn
 		 )!=8){
-        fgets(line, 256, f_in);
+        fgets(line, 256, fin);
 	fprintf(stderr,"%s",line);
     }
 
-    while (!feof(f_in)){
+    while (!feof(fin)){
         sscanf(line,"%d %d %d %d %d %d %d %d",
 	       &padsec, &row, &pad,
 	       &rcu, &bra, &fec, &alt, &chn
@@ -124,10 +124,10 @@ Int_t AliTPCmapper::ReadMapping()
 
 
 
-	fgets(line, 256, f_in);
+	fgets(line, 256, fin);
     }
 
-    fclose(f_in);
+    fclose(fin);
 
     return 0;
 }
@@ -143,7 +143,10 @@ void AliTPCmapper::PrintRBFACinfo(Int_t row, Int_t pad)
 }
 
 //______________________________________________________________
-Int_t AliTPCmapper::GetPadsInRowS(Int_t row){
+Int_t AliTPCmapper::GetPadsInRowS(Int_t row) const{
+  //
+  //GetPadsInRowS
+  //
     if ( row == 0 )
 	return 68;
 
@@ -161,7 +164,10 @@ Int_t AliTPCmapper::GetPadsInRowS(Int_t row){
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadXlocalS(Int_t row, Int_t pad){
+Double_t AliTPCmapper::GetPadXlocalS(Int_t row, Int_t pad) const {
+  //
+  //GetPadXlocalS
+  //
     if ( row < 63 ) //IROC
 	return (852.25 + 7.5 * (Double_t)row)*1.e-1; //divide by 10 to get cm
 
@@ -176,14 +182,20 @@ Double_t AliTPCmapper::GetPadXlocalS(Int_t row, Int_t pad){
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadXlocalS(Int_t padsector){
+Double_t AliTPCmapper::GetPadXlocalS(Int_t padsector) const{
+  //
+  //GetPadXlocalS
+  //
     Int_t row=GetRowFromPadSector(padsector);
     Int_t pad=GetPadFromPadSector(padsector);
     return GetPadXlocalS(row,pad);
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadYlocalS(Int_t row, Int_t pad){
+Double_t AliTPCmapper::GetPadYlocalS(Int_t row, Int_t pad) const{
+  //
+  //:GetPadYlocalS
+  //
     Int_t padsInRow = GetPadsInRowS(row);
 
     if ( row < 63 ) //IROC
@@ -194,44 +206,63 @@ Double_t AliTPCmapper::GetPadYlocalS(Int_t row, Int_t pad){
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadYlocalS(Int_t padsector){
+Double_t AliTPCmapper::GetPadYlocalS(Int_t padsector) const{
+  //
+  //:GetPadYlocalS
+  //
     Int_t row = GetRowFromPadSector(padsector);
     Int_t pad = GetPadFromPadSector(padsector);
     return GetPadYlocalS(row,pad);
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadXglobalS(Int_t row, Int_t pad,Int_t sector){
+Double_t AliTPCmapper::GetPadXglobalS(Int_t row, Int_t pad,Int_t sector) const{
+  //
+  // GetPadXglobalS
+  //
     Double_t angle = (Double_t)(( sector * 20. ) +10. ) * TMath::DegToRad();
     return GetPadXlocalS(row,pad)*TMath::Cos(angle) -
 	GetPadYlocalS(row,pad)*TMath::Sin(angle);
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadYglobalS(Int_t row, Int_t pad,Int_t sector){
+Double_t AliTPCmapper::GetPadYglobalS(Int_t row, Int_t pad,Int_t sector) const{
+  //
+  // GetPadYglobalS
+  //
     Double_t angle = (Double_t)(( sector * 20. ) + 10. ) * TMath::DegToRad();
     return GetPadXlocalS(row,pad)*TMath::Sin(angle) +
 	GetPadYlocalS(row,pad)*TMath::Cos(angle);
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadWidthS(Int_t row)
+Double_t AliTPCmapper::GetPadWidthS(Int_t row) const
 {
+  //
+  // :GetPadWidthS
+  //
     if (row < 63 ) return .4;
     return .6;
 }
 
 //______________________________________________________________
-Double_t AliTPCmapper::GetPadLengthS(Int_t row)
+Double_t AliTPCmapper::GetPadLengthS(Int_t row) const
 {
+  //
+  // GetPadLengthS
+  //
+
     if ( row < 63  ) return  .75;
     if ( row < 127 ) return 1.;
     return 1.5;
 }
 
 //______________________________________________________________
-Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t row,const Int_t pad)
+Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t row,const Int_t pad) const
 {
+  //
+  // :GetAltroAddrwPatch
+  //
     return GetChannelS(row,pad)+
 	(GetAltroS (row,pad) <<4)+
 	(GetFECs   (row,pad) <<7)+
@@ -240,14 +271,20 @@ Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t row,const Int_t pad)
 }
 
 //______________________________________________________________
-Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t padsector)
+Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t padsector) const
 {
+  //
+  // GetAltroAddrwPatch
+  //
     return GetAltroAddrwPatch(GetRowFromPadSector(padsector),GetPadFromPadSector(padsector));
 }
 
 //______________________________________________________________
-Int_t AliTPCmapper::GetRow(Int_t altroaddr)
+Int_t AliTPCmapper::GetRow(Int_t altroaddr) const
 {
+  //
+  // GetRow
+  //
     Int_t rcu = (altroaddr>>12)&0x07;
     Int_t bra = (altroaddr>>11)&0x01;
     Int_t fec = (altroaddr>>7)&0x0F;
@@ -257,8 +294,11 @@ Int_t AliTPCmapper::GetRow(Int_t altroaddr)
 }
 
 //______________________________________________________________
-Int_t AliTPCmapper::GetPad(Int_t altroaddr)
+Int_t AliTPCmapper::GetPad(Int_t altroaddr) const
 {
+  //
+  // GetPad
+  //
     Int_t rcu = (altroaddr>>12)&0x07;
     Int_t bra = (altroaddr>>11)&0x01;
     Int_t fec = (altroaddr>>7)&0x0F;
@@ -270,6 +310,9 @@ Int_t AliTPCmapper::GetPad(Int_t altroaddr)
 //______________________________________________________________
 void AliTPCmapper::PrintAddressArray(Int_t row, Int_t pad)
 {
+  //
+  // PrintAddressArray
+  //
     Bool_t a[kNaddrSize];
 
     Int_t addr = GetAltroAddrwPatch(row,pad);
