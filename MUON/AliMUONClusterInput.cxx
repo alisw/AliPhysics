@@ -38,14 +38,17 @@
 #include <TMinuit.h>
 #include <TGeoManager.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMUONClusterInput)
+/// \endcond
+
 AliMUONClusterInput*        AliMUONClusterInput::fgClusterInput = 0; 
 TMinuit*                    AliMUONClusterInput::fgMinuit = 0; 
 AliMUONMathieson*           AliMUONClusterInput::fgMathieson = 0; 
 AliMUONGeometryTransformer* AliMUONClusterInput::fgTransformer = 0; 
 AliMUONSegmentation*        AliMUONClusterInput::fgSegmentation = 0; 
 
-ClassImp(AliMUONClusterInput)
-
+//______________________________________________________________________________
 AliMUONClusterInput::AliMUONClusterInput()
   : TObject(),
     fNseg(0),
@@ -56,7 +59,7 @@ AliMUONClusterInput::AliMUONClusterInput()
     fDetElemId(0)
   
 {
-// Default constructor
+/// Default constructor
 
   fDigits[0]=0;
   fDigits[1]=0;
@@ -64,9 +67,10 @@ AliMUONClusterInput::AliMUONClusterInput()
   fSegmentation2[1]=0;
 }
 
+//______________________________________________________________________________
 AliMUONClusterInput* AliMUONClusterInput::Instance()
 {
-// return pointer to the singleton instance
+/// return pointer to the singleton instance
     if (fgClusterInput == 0) {
 	fgClusterInput = new AliMUONClusterInput();
 	fgMinuit = new TMinuit(8);
@@ -85,9 +89,10 @@ AliMUONClusterInput* AliMUONClusterInput::Instance()
     return fgClusterInput;
 }
 
+//______________________________________________________________________________
 AliMUONClusterInput::~AliMUONClusterInput()
 {
-// Destructor
+/// Destructor
     delete fgMinuit;
     delete fgMathieson;
     delete fgTransformer;
@@ -96,9 +101,10 @@ AliMUONClusterInput::~AliMUONClusterInput()
     fgMathieson = 0;
 }
 
+//______________________________________________________________________________
 void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig1, TClonesArray* dig2)
 {
-  // Set pointer to digits with corresponding segmentations and responses (two cathode planes)
+  /// Set pointer to digits with corresponding segmentations and responses (two cathode planes)
     fChamber = chamber;
     fDetElemId = idDE;
     fDigits[0]  = dig1;
@@ -128,9 +134,10 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     }
 }
 
+//______________________________________________________________________________
 void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig)
 {
-// Set pointer to digits with corresponding segmentations and responses (one cathode plane)
+/// Set pointer to digits with corresponding segmentations and responses (one cathode plane)
 
     fChamber = chamber;
     fDetElemId = idDE;
@@ -140,9 +147,10 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     fNseg=1;
 }
 
+//______________________________________________________________________________
 void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 {
-// Set the current cluster
+/// Set the current cluster
   //PH printf("\n %p \n", cluster);
   fCluster=cluster;
   Float_t qtot;
@@ -179,18 +187,19 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
     }  // loop over cathodes
 }
 
-
-
+//______________________________________________________________________________
 Float_t AliMUONClusterInput::DiscrChargeS1(Int_t i,Double_t *par) 
 {
-// Compute the charge on first cathod only.
+/// Compute the charge on first cathod only.
 return DiscrChargeCombiS1(i,par,0);
 }
 
+//______________________________________________________________________________
 Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cath) 
 {
-// par[0]    x-position of cluster
-// par[1]    y-position of cluster
+/// \todo add comment
+/// - par[0]    x-position of cluster
+/// - param par[1]    y-position of cluster
 
    Float_t q1;
    fSegmentation2[cath]-> SetPad(fDetElemId, fix[i][cath], fiy[i][cath]);
@@ -203,14 +212,16 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cat
 }
 
 
+//______________________________________________________________________________
 Float_t AliMUONClusterInput::DiscrChargeS2(Int_t i,Double_t *par) 
 {
-// par[0]    x-position of first  cluster
-// par[1]    y-position of first  cluster
-// par[2]    x-position of second cluster
-// par[3]    y-position of second cluster
-// par[4]    charge fraction of first  cluster
-// 1-par[4]  charge fraction of second cluster
+/// \todo add comment
+/// - par[0]    x-position of first  cluster
+/// - par[1]    y-position of first  cluster
+/// - par[2]    x-position of second cluster
+/// - par[3]    y-position of second cluster
+/// - par[4]    charge fraction of first  cluster
+/// - 1-par[4]  charge fraction of second cluster
 
   Float_t q1, q2;
   
@@ -227,15 +238,17 @@ Float_t AliMUONClusterInput::DiscrChargeS2(Int_t i,Double_t *par)
   return value;
 }
 
+//______________________________________________________________________________
 Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cath) 
 {
-// par[0]    x-position of first  cluster
-// par[1]    y-position of first  cluster
-// par[2]    x-position of second cluster
-// par[3]    y-position of second cluster
-// par[4]    charge fraction of first  cluster - first cathode
-// 1-par[4]  charge fraction of second cluster 
-// par[5]    charge fraction of first  cluster - second cathode
+/// \todo add comment
+/// - par[0]    x-position of first  cluster
+/// - par[1]    y-position of first  cluster
+/// - par[2]    x-position of second cluster
+/// - par[3]    y-position of second cluster
+/// - par[4]    charge fraction of first  cluster - first cathode
+/// - 1-par[4]  charge fraction of second cluster 
+/// - par[5]    charge fraction of first  cluster - second cathode
 
   Float_t q1, q2;
 
@@ -255,16 +268,4 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
     value = fQtot[1]*(par[5]*q1+(1.-par[5])*q2);
   }
   return value;
-}
-
-AliMUONClusterInput& AliMUONClusterInput
-::operator = (const AliMUONClusterInput& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }

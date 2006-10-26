@@ -58,9 +58,10 @@ class AliMUONClusterInput : public TObject
 // 
  protected:
     AliMUONClusterInput();
+ private:
     AliMUONClusterInput(const AliMUONClusterInput& clusterInput);
     AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
- private:
+
     static AliMUONClusterInput*  fgClusterInput;  //!< singleton instance
     static AliMUONMathieson*     fgMathieson;     //!< Mathieson
     static AliMUONGeometryTransformer*  fgTransformer;  //!< Geometry transformer
