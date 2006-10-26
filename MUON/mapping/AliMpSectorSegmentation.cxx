@@ -58,15 +58,19 @@ const Double_t AliMpSectorSegmentation::fgkS2 = 1000.;
 #endif
 
 //______________________________________________________________________________
-AliMpSectorSegmentation::AliMpSectorSegmentation(const AliMpSector* sector) 
+AliMpSectorSegmentation::AliMpSectorSegmentation(
+                            const AliMpSector* sector, Bool_t own) 
   : AliMpVSegmentation(),
     fkSector(sector),
+    fIsOwner(own),
     fPadBuffer(0),
     fPadDimensionsMap(),
     fMaxIndexInX(0),
     fMaxIndexInY(0)
 {
 /// Standard constructor
+
+  AliDebugStream(1) << "this = " << this << endl;
 
   fPadBuffer = new AliMpPad(AliMpPad::Invalid());
   
@@ -77,12 +81,15 @@ AliMpSectorSegmentation::AliMpSectorSegmentation(const AliMpSector* sector)
 AliMpSectorSegmentation::AliMpSectorSegmentation() 
   : AliMpVSegmentation(),
     fkSector(0),
+    fIsOwner(false),
     fPadBuffer(0),
     fPadDimensionsMap(),      
     fMaxIndexInX(0),
     fMaxIndexInY(0)
 {
 /// Default constructor
+
+  AliDebugStream(1) << "this = " << this << endl;
 }
 
 //______________________________________________________________________________
@@ -90,7 +97,12 @@ AliMpSectorSegmentation::~AliMpSectorSegmentation()
 {
 /// Destructor 
 
+  AliDebugStream(1) << "this = " << this << endl;
+
+  if ( fIsOwner ) delete fkSector;
+
   delete fPadBuffer;
+  
 }
 
 //
@@ -139,9 +151,11 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
       fPadDimensionsMap[zoneID*10] = zone->GetPadDimensions();
 #endif
 #ifdef WITH_ROOT
-     AliDebug(1,Form("Filling fPadDimensions[%d]=(%e,%e)",
-                     zoneID*10,zone->GetPadDimensions().X(),
-                     zone->GetPadDimensions().Y()));
+     AliDebugStream(3)
+       << "Filling fPadDimensions[" << zoneID*10 << "] = ("
+       << zone->GetPadDimensions().X() << ", "
+       << zone->GetPadDimensions().Y() << ")" << endl;
+
      fPadDimensionsMap.Add((Long_t)(zoneID*10), 
                             GetIndex(zone->GetPadDimensions()));
 #endif
@@ -159,12 +173,12 @@ void AliMpSectorSegmentation::FillPadDimensionsMap()
           fPadDimensionsMap[index] = motif->GetPadDimensions(k);
 #endif
 #ifdef WITH_ROOT
-          AliDebug(1,Form("Filling fPadDimensions[%d]=(%e,%e) motif %s-%d",
-                          index,
-                          motif->GetPadDimensions(k).X(),
-                          motif->GetPadDimensions(k).Y(),
-                          motif->GetID().Data(),k));
-          
+          AliDebugStream(3)
+            << "Filling fPadDimensions[" << index << "] = ("
+            << motif->GetPadDimensions(k).X() << ", "
+            << motif->GetPadDimensions(k).Y() << ") motif "
+	    << motif->GetID().Data() << "-" << k << endl;
+
           fPadDimensionsMap.Add((Long_t)(index), 
                             GetIndex(motif->GetPadDimensions(k)));
 #endif
