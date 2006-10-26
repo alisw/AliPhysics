@@ -24,15 +24,18 @@ ClassImp(Event)
 
 Event* Alieve::gEvent = 0;
 
-Bool_t Alieve::Event::fgUseRunLoader = true;
-Bool_t Alieve::Event::fgUseESDTree   = true;
+Bool_t Alieve::Event::fgUseRunLoader   = kTRUE;
+Bool_t Alieve::Event::fgUseESDTree     = kTRUE;
+Bool_t Alieve::Event::fgAvoidExcOnOpen = kTRUE;
 
-void Event::Initialize(Bool_t use_runloader, Bool_t use_esd)
+void Event::Initialize(Bool_t use_runloader, Bool_t use_esd,
+		       Bool_t avoid_exc_on_open)
 {
   static const Exc_t eH("Event::Initialize ");
 
-  fgUseRunLoader = use_runloader;
-  fgUseESDTree   = use_esd;
+  fgUseRunLoader   = use_runloader;
+  fgUseESDTree     = use_esd;
+  fgAvoidExcOnOpen = avoid_exc_on_open;
 
   /*
   if(fgUseRunLoader == false && fgUseESDTree == false)
@@ -81,8 +84,14 @@ void Event::Open()
 
   if(fgUseRunLoader) {
     TString ga_path(Form("%s/galice.root", fPath.Data()));
-    if(gSystem->AccessPathName(ga_path, kReadPermission))
-      throw(eH + "can not read '" + ga_path + "'.");
+    if(gSystem->AccessPathName(ga_path, kReadPermission)) {
+      if (fgAvoidExcOnOpen) {
+	Warning(eH, "RunLoader not initialized.");
+	goto end_run_loader;
+      } else {
+	throw(eH + "can not read '" + ga_path + "'.");
+      }
+    }
     fRunLoader = AliRunLoader::Open(ga_path);
     if(!fRunLoader)
       throw(eH + "failed opening ALICE run loader from '" + ga_path + "'.");
@@ -98,11 +107,18 @@ void Event::Open()
     if(fRunLoader->GetEvent(fEventId) != 0)
       throw(eH + "failed getting required event.");
   }
+end_run_loader:
 
   if(fgUseESDTree) {
     TString p(Form("%s/AliESDs.root", fPath.Data()));
-    if(gSystem->AccessPathName(p, kReadPermission))
-      throw(eH + "can not read '" + p + "'.");
+    if(gSystem->AccessPathName(p, kReadPermission)) {
+      if (fgAvoidExcOnOpen) {
+	Warning(eH, "ESD not initialized.");
+	goto end_esd_loader;
+      } else { 
+	throw(eH + "can not read '" + p + "'.");
+      }
+    }
     fESDFile = new TFile(p);
     if(fESDFile->IsZombie()) {
       delete fESDFile; fESDFile = 0;
@@ -135,6 +151,7 @@ void Event::Open()
       fESD->SetESDfriend(fESDfriend);
     }
   }
+end_esd_loader:
 
   SetName(Form("Event %d", fEventId));
   SetTitle(fPath);
@@ -144,17 +161,13 @@ void Event::GotoEvent(Int_t event)
 {
   static const Exc_t eH("Event::GotoEvent ");
 
-  if(fgUseRunLoader && fRunLoader == 0)
-    throw(eH + "RunLoader not initialized.");
-
-  if(fgUseESDTree && fESDTree == 0)
-    throw(eH + "ESDTree not initialized.");
-
   Int_t maxEvent = 0;
-  if(fgUseRunLoader)
+  if(fRunLoader)
     maxEvent = fRunLoader->GetNumberOfEvents() - 1;
-  else if(fgUseESDTree)
+  else if(fESDTree)
     maxEvent = fESDTree->GetEntries() - 1;
+  else
+    throw(eH + "neither RunLoader nor ESD loaded.");
 
   if(event < 0 || event > maxEvent)
     throw(eH + Form("event %d not present, available range [%d, %d].",
@@ -165,12 +178,12 @@ void Event::GotoEvent(Int_t event)
   SetName(Form("Event %d", fEventId));
   UpdateItems();
 
-  if(fgUseRunLoader) {
+  if(fRunLoader) {
     if(fRunLoader->GetEvent(fEventId) != 0)
       throw(eH + "failed getting required event.");
   }
 
-  if(fgUseESDTree) {
+  if(fESDTree) {
     if(fESDTree->GetEntry(fEventId) <= 0)
       throw(eH + "failed getting required event from ESD.");
 

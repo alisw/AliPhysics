@@ -35,9 +35,11 @@ protected:
 
   static Bool_t fgUseRunLoader;
   static Bool_t fgUseESDTree;
+  static Bool_t fgAvoidExcOnOpen;
 
 public:
-  static void Initialize(Bool_t use_runloader=true, Bool_t use_esd=true);
+  static void Initialize(Bool_t use_runloader=kTRUE, Bool_t use_esd=kTRUE,
+			 Bool_t avoid_exc_on_open=kTRUE);
 
   Event();
   Event(TString path, Int_t ev=0);
