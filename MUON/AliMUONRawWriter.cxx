@@ -15,37 +15,31 @@
 
 /* $Id$ */
 
-////////////////////////////////////
-//
-// MUON Raw Data generaton in ALICE-MUON
-// This class version 3 (further details could be found in Alice-note)
-//
-// Implemented non-constant buspatch numbers for tracking
-// with correct DDL id (first guess)
-// (Ch. Finck, dec 2005)
-//
-// Digits2Raw:
-// Generates raw data for MUON tracker and finally for trigger
-// Using real mapping (inverse) for tracker
-// For trigger there is no mapping (mapping could be found in AliMUONTriggerCircuit)
-// Ch. Finck, July 04
-// Use memcpy instead of assignment elt by elt
-// Introducing variable DSP numbers, real manu numbers per buspatch for st12
-// Implemented scaler event for Trigger
-// Ch. Finck, Jan. 06
-// Using bus itr in DDL instead of simple incrementation
-// treat correctly the DDL & buspatch for station 3.
-// Using informations from AliMUONTriggerCrateStore for 
-// empty slots and non-notified cards in trigger crates.
-// Ch. Finck, August 06.
-// 
-////////////////////////////////////
+/// \class AliMUONRawWriter
+/// MUON Raw Data generaton in ALICE-MUON
+/// This class version 3 (further details could be found in Alice-note)
+///
+/// Implemented non-constant buspatch numbers for tracking
+/// with correct DDL id (first guess)
+/// (Ch. Finck, dec 2005)
+///
+/// Digits2Raw:
+/// Generates raw data for MUON tracker and finally for trigger
+/// Using real mapping (inverse) for tracker
+/// For trigger there is no mapping (mapping could be found in AliMUONTriggerCircuit)
+/// Ch. Finck, July 04
+/// Use memcpy instead of assignment elt by elt
+/// Introducing variable DSP numbers, real manu numbers per buspatch for st12
+/// Implemented scaler event for Trigger
+/// Ch. Finck, Jan. 06
+/// Using bus itr in DDL instead of simple incrementation
+/// treat correctly the DDL & buspatch for station 3.
+/// Using informations from AliMUONTriggerCrateStore for 
+/// empty slots and non-notified cards in trigger crates.
+/// Ch. Finck, August 06.
 
 #include "AliMUONRawWriter.h"
 
-#include "AliBitPacking.h" 
-#include "AliDAQ.h"
-#include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONBlockHeader.h"
 #include "AliMUONBusStruct.h"
@@ -61,22 +55,30 @@
 #include "AliMUONRegHeader.h"
 #include "AliMUONTriggerCrate.h"
 #include "AliMUONTriggerCrateStore.h"
+
 #include "AliMpBusPatch.h"
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
-#include "TList.h"
 #include "AliMpPad.h"
 #include "AliMpPlaneType.h"
-#include "AliMpSegFactory.h"
+#include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
+
 #include "AliRawReader.h"
+#include "AliBitPacking.h" 
+#include "AliDAQ.h"
+#include "AliLog.h"
+
+#include "TList.h"
 #include "TObjArray.h"
 #include "TStopwatch.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONRawWriter) // Class implementation in ROOT context
+/// \endcond
 
 Int_t AliMUONRawWriter::fgManuPerBusSwp1B[12]  = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 224, 232};
 Int_t AliMUONRawWriter::fgManuPerBusSwp1NB[12] = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 225, 233};
@@ -102,13 +104,11 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
     fCrateManager(new AliMUONTriggerCrateStore()),
     fScalerEvent(kFALSE),
     fHeader(),
-    fTimers(new TStopwatch[kLast]),
-    fSegFactory(new AliMpSegFactory())
+    fTimers(new TStopwatch[kLast])
 
 {
-  //
-  // Standard Constructor
-  //
+  /// Standard Constructor
+
   AliDebug(1,"Standard ctor");
   fFile[0] = fFile[1] = 0x0;  
   fFile[2] = fFile[3] = 0x0;  
@@ -145,12 +145,10 @@ AliMUONRawWriter::AliMUONRawWriter()
     fCrateManager(0x0),
     fScalerEvent(kFALSE),
     fHeader(),
-    fTimers(0),
-    fSegFactory(0x0)
+    fTimers(0)
 {
-  //
-  // Default Constructor
-  //
+  /// Default Constructor
+
   AliDebug(1,"Default ctor");   
   fFile[0] = fFile[1] = 0x0;  
   fFile[2] = fFile[3] = 0x0;  
@@ -160,9 +158,8 @@ AliMUONRawWriter::AliMUONRawWriter()
 //__________________________________________________________________________
 AliMUONRawWriter::~AliMUONRawWriter(void)
 {
-  //
-  // Destructor
-  //
+  /// Destructor
+
   AliDebug(1,"dtor");
   
   delete fBlockHeader;
@@ -174,8 +171,6 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
   delete fBusPatchManager;
   delete fCrateManager;
 
-  delete fSegFactory;
-  
   for ( Int_t i = 0; i < kLast; ++i )
   {
     AliDebug(1, Form("Execution time (timer %d) : R:%7.2fs C:%7.2fs",i,
@@ -225,9 +220,8 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
 //____________________________________________________________________
 Int_t AliMUONRawWriter::Digits2Raw()
 {
-  //
-  // convert digits of the current event to raw data
-  //
+  /// convert digits of the current event to raw data
+
   Int_t idDDL;
   Char_t name[255];
 
@@ -308,9 +302,9 @@ Int_t AliMUONRawWriter::Digits2Raw()
 //____________________________________________________________________
 Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 {
-  // writing DDL for tracker
-  // used inverse mapping
-  //
+  /// writing DDL for tracker
+  /// used inverse mapping
+
   fTimers[kWriteTracker].Start(kFALSE);
   
   static const Int_t kMAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
@@ -559,9 +553,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 //____________________________________________________________________
 Int_t AliMUONRawWriter::GetBusPatch(Int_t detElemId, Int_t manuId) const
 {
-  //
-  // Determine the BusPatch this digit belongs to.
-  //
+  /// Determine the BusPatch this digit belongs to.
   
   Int_t* ptr = 0;
     
@@ -643,18 +635,16 @@ Int_t AliMUONRawWriter::GetBusPatch(Int_t detElemId, Int_t manuId) const
 //____________________________________________________________________
 Int_t AliMUONRawWriter::GetBusPatch(const AliMUONDigit& digit) const
 {
-  //
-  // Determine the BusPatch this digit belongs to.
-  //
+  /// Determine the BusPatch this digit belongs to.
+
   return GetBusPatch(digit.DetElemId(),digit.ManuId());
 }
 
 //____________________________________________________________________
 Int_t AliMUONRawWriter::WriteTriggerDDL()
 {
-  //
-  // Write trigger DDL
-  //
+  /// Write trigger DDL
+
   fTimers[kWriteTrigger].Start(kFALSE);
   
  // DDL event one per half chamber
@@ -944,9 +934,9 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 //____________________________________________________________________
 void AliMUONRawWriter::SetScalersNumbers()
 {
-  // set numbers for scaler events for trigger headers
-  // since this is provided by the experiment
-  // put dummy numbers to check the monitoring
+  /// set numbers for scaler events for trigger headers
+  /// since this is provided by the experiment
+  /// put dummy numbers to check the monitoring
 
   fDarcHeader->SetScalersNumbers();
   fRegHeader->SetScalersNumbers();

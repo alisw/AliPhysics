@@ -23,7 +23,6 @@ class AliMUONTriggerCrateStore;
 class AliMUONLocalTriggerBoard;
 class AliMUONLocalStruct;
 
-class AliMpSegFactory;
 class AliMUONRawStreamTracker;
 class AliMUONRawStreamTrigger;
 
@@ -38,8 +37,10 @@ class AliMUONDigitMaker : public TObject
 
   Int_t  ReadTrackerDDL(AliRawReader* rawReader);
   Int_t  ReadTriggerDDL(AliRawReader* rawReader);
-
+ 
+         /// Return MUON data
   AliMUONData*   GetMUONData() const {return fMUONData;}
+        /// Set MUON data
   void SetMUONData(AliMUONData* data) {fMUONData = data;}
  
   Int_t GetMapping(Int_t buspatchId, UShort_t manuId, 
@@ -51,18 +52,16 @@ class AliMUONDigitMaker : public TObject
   void GetTriggerChamber(AliMUONLocalStruct* localStruct, 
 			 Int_t& xyPattern, Int_t& iChamber, Int_t& iCath, Int_t iCase );
 
+        /// Set flag to generates scaler event
   void  SetScalerEvent() {fScalerEvent = kTRUE;}
 
+        /// Set Crate array
   void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
-
-  void  SetSegFactory(AliMpSegFactory* segFactory) {fSegFactory = segFactory;}
 
  private:
 
   AliMUONData*     fMUONData;          //!< Data container for MUON subsystem 
   
-  AliMpSegFactory* fSegFactory;        //!< Mapping segmentation factory
-
   AliMpBusPatch*   fBusPatchManager;   //!< buspatch versus DE's & DDL
 
   Bool_t           fScalerEvent;       //!< flag to generates scaler event

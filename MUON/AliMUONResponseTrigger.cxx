@@ -15,24 +15,34 @@
 
 /* $Id$ */
 
+// -------------------------------
+// Class AliMUONResponseTrigger
+// -------------------------------
+// Implementation 
+// of RPC response
+
 
 #include "AliMUONResponseTrigger.h"
-
-#include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
 #include "AliMUONSegmentation.h"
-#include "AliMpPad.h"
-#include "AliMpPlaneType.h"
-#include "AliMpVSegmentation.h"
-#include "AliRun.h"
-#include "TList.h"
 #include "AliMUONTriggerSegmentationV2.h"
 #include "AliMUONConstants.h"
 
+#include "AliMpPad.h"
+#include "AliMpPlaneType.h"
+#include "AliMpSegmentation.h"
+#include "AliMpVSegmentation.h"
+
+#include "AliRun.h"
+#include "AliLog.h"
+#include "TList.h"
+
+/// \cond CLASSIMP
 ClassImp(AliMUONResponseTrigger)
+/// \endcond
 
 namespace
 {
@@ -65,17 +75,21 @@ namespace
 AliMUONResponseTrigger::AliMUONResponseTrigger()
   : AliMUONResponse()
 {
-// Default constructor
+/// Default constructor
+}
+
+//------------------------------------------------------------------   
+AliMUONResponseTrigger::~AliMUONResponseTrigger()
+{
+/// Destructor
 }
 
 //_____________________________________________________________________________
 void 
 AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
 {
-  //
-  // Generate 2 digits (one on each cathode) from 1 hit, i.e. no cluster-size
-  // generation (simplest response case).
-  //
+  /// Generate 2 digits (one on each cathode) from 1 hit, i.e. no cluster-size
+  /// generation (simplest response case).
   
   digits.Clear();
   
@@ -96,7 +110,8 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
   
   for ( Int_t cath = 0; cath < 2; ++cath )
   {
-    const AliMpVSegmentation* seg = Segmentation()->GetMpSegmentation(detElemId,cath);
+    const AliMpVSegmentation* seg 
+      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cath);
     
     AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
     Int_t ix = pad.GetIndices().GetFirst();

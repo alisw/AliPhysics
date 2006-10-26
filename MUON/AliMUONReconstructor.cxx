@@ -14,11 +14,11 @@
  **************************************************************************/
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// class for MUON reconstruction                                             //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+//-----------------------------    
+// Class AliMUONReconstructor                                                                      //
+//-----------------------------                                                                           //
+// Class for the 
+// MUON track reconstruction
 
 #include "AliMUONReconstructor.h"
 
@@ -40,7 +40,8 @@
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTriggerCircuitNew.h"
 #include "AliMUONTriggerCrateStore.h"
-#include "AliMpSegFactory.h"
+
+#include "AliMpSegmentation.h"
 
 #include "AliRawReader.h"
 #include "AliRun.h"
@@ -48,7 +49,9 @@
 #include "TTask.h"
 #include "TStopwatch.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONReconstructor)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor()
@@ -58,7 +61,6 @@ AliMUONReconstructor::AliMUONReconstructor()
     fCalibrationData(0x0),
     fCrateManager(new AliMUONTriggerCrateStore()),
     fTriggerCircuit(new TClonesArray("AliMUONTriggerCircuitNew", 234)),
-    fSegFactory(new AliMpSegFactory()),
     fTransformer(new AliMUONGeometryTransformer(kTRUE))
 
 {
@@ -71,16 +73,12 @@ AliMUONReconstructor::AliMUONReconstructor()
     // set to digit maker
     fDigitMaker->SetCrateManager(fCrateManager);
 
-    // set segmentation
-    fDigitMaker->SetSegFactory(fSegFactory);
-
     // transformater
     fTransformer->ReadGeometryData("volpath.dat", "geometry.root");
 
     // trigger circuit
     for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
       AliMUONTriggerCircuitNew* c = new AliMUONTriggerCircuitNew();
-      c->SetSegFactory(fSegFactory);
       c->SetTransformer(fTransformer);
       c->Init(i,*fCrateManager);
       TClonesArray& circuit = *fTriggerCircuit;
@@ -101,7 +99,6 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fDigitMaker;
   delete fCrateManager;
   delete fTriggerCircuit;
-  delete fSegFactory;
   delete fTransformer;
 }
 

@@ -15,30 +15,31 @@
 
 /* $Id$ */
 
-// --------------------
-// Class AliMUONTriggerCircuitNew
-// --------------------
-// Contains as data members the Y positions of the X declusturized strips and 
-// the X positions of the (doubled or not) Y strips.
-// This is used to associate the global positions to the fired strips of the 
-// local trigger output (see AliMUONTrackReconstructor::MakeTriggerTrack)
+/// \class AliMUONTriggerCircuitNew
+/// Contains as data members the Y positions of the X declusturized strips and 
+/// the X positions of the (doubled or not) Y strips.
+/// This is used to associate the global positions to the fired strips of the 
+/// local trigger output (see AliMUONTrackReconstructor::MakeTriggerTrack)
 
-#include <TMath.h>
 #include "AliMUONTriggerCircuitNew.h"
-#include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
-#include "AliLog.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerCrate.h"
+#include "AliMUONGeometryTransformer.h"
+
 #include "AliMpTriggerSegmentation.h"
 #include "AliMpTrigger.h"
 #include "AliMpSlat.h"
 #include "AliMpPCB.h"
+#include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
-#include "AliMUONGeometryTransformer.h"
-#include "AliMpSegFactory.h"
+
+#include "AliRun.h"
+#include "AliLog.h"
+
+#include <TMath.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerCircuitNew)
@@ -48,7 +49,6 @@ ClassImp(AliMUONTriggerCircuitNew)
 AliMUONTriggerCircuitNew::AliMUONTriggerCircuitNew()
 : TObject(),
   fILocalBoard(0),
-  fSegFactory(0x0),
   fTransformer(0x0)
 {
 /// Constructor
@@ -144,7 +144,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
   DecodeBoardName(localBoard->GetName(),side,iline,icol);
   
   Int_t detElemId = DetElemId(ichamber,side,iline);
-  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
 
   Int_t iFirstStrip = FirstStrip(localBoard->GetName());
   Int_t iLastStrip = iFirstStrip + 16;    
@@ -156,7 +156,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
   ichamber = 12;
   
   detElemId = DetElemId(ichamber,side,iline);
-  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
 
   // second plane middle part
   Int_t iFirstStripMiddle = FirstStrip(localBoard->GetName());
@@ -178,7 +178,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
       //	    icolUp = icol;
     } else {             // upper strips in another detElemId
       detElemId = DetElemId(ichamber,side,iline+1); // get detElemId
-      seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
 
       iFirstStripUp = 0;
       iLastStripUp = iFirstStripUp + 8;
@@ -196,7 +196,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
   
   // restore current detElemId & segmentation
   detElemId = DetElemId(ichamber,side,iline); 
-  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
 
   // second plane lower part
   if (zeroDown == 0) { // something down
@@ -212,7 +212,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
       //	    icolDo = icol;
     } else {             // lower strips in another detElemId 
       detElemId = DetElemId(ichamber,side,iline-1); // get detElemId
-      seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
 
       // get iFirstStrip in this module 
       const AliMpTriggerSegmentation* trig = (AliMpTriggerSegmentation*)(seg);
@@ -272,7 +272,7 @@ void AliMUONTriggerCircuitNew::LoadXPos(const AliMUONTriggerCrateStore& crates)
   DecodeBoardName(localBoard->GetName(),side,iline,icol);
   
   Int_t detElemId=DetElemId(ichamber,side,iline); // get detElemId
-  seg = fSegFactory->CreateMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
 
   // check if one needs a strip doubling or not
   if ( (x2u == 1 || x2m == 1 || x2d == 1) && x2m == 1) doubling = kTRUE;

@@ -16,16 +16,16 @@ class AliMUONResponseTrigger : public AliMUONResponse
 {
  public:
   AliMUONResponseTrigger();
-  virtual ~AliMUONResponseTrigger(){} 
+  virtual ~AliMUONResponseTrigger(); 
 
-  // Set the GenerCluster parameter       
+  /// Set the GenerCluster parameter       
   virtual Int_t SetGenerCluster(){return 0;}
 
   virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
   
  private:
 
-  ClassDef(AliMUONResponseTrigger,1) ///< Implementation of RPC response
+  ClassDef(AliMUONResponseTrigger,1) // Implementation of RPC response
     
 };
 #endif

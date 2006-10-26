@@ -21,21 +21,26 @@
 // Trigger chamber response 
 // with cluster size activated
 
-#include <TMath.h>
-#include <TRandom.h>
-
 #include "AliMUONResponseTriggerV1.h"
 #include "AliMUONGeometrySegmentation.h"
-#include "AliMpPad.h"
 #include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMpVSegmentation.h"
-#include "AliRun.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONConstants.h"
 
+#include "AliMpPad.h"
+#include "AliMpSegmentation.h"
+#include "AliMpVSegmentation.h"
+
+#include "AliRun.h"
+
+#include <TMath.h>
+#include <TRandom.h>
+
+/// \cond CLASSIMP
 ClassImp(AliMUONResponseTriggerV1)
+/// \endcond
 
 namespace
 {
@@ -72,7 +77,7 @@ AliMUONResponseTriggerV1::AliMUONResponseTriggerV1()
       fB(0),       
       fC(0)
 {
-// default constructor 
+/// default constructor 
   Float_t hv=9.2;
   SetParameters(hv);
 }
@@ -85,22 +90,30 @@ AliMUONResponseTriggerV1::AliMUONResponseTriggerV1(Float_t hv)
       fB(0),       
       fC(0)
 {
-// Constructor 
+/// Constructor 
   SetParameters(hv);
 }
 
 //------------------------------------------------------------------   
-void AliMUONResponseTriggerV1::SetParameters(Float_t hv){
-// initialize parameters accoring to HV
-// (see V.Barret B.Espagnon and P.Rosnet Alice/note xxx)
+AliMUONResponseTriggerV1::~AliMUONResponseTriggerV1()
+{
+/// destructor 
+}
+
+//------------------------------------------------------------------   
+void AliMUONResponseTriggerV1::SetParameters(Float_t hv)
+{
+/// initialize parameters accoring to HV
+/// (see V.Barret B.Espagnon and P.Rosnet Alice/note xxx)
   fA = 6.089 * hv - 52.70;
   fB = 2.966;
   fC = 4.3e-4 * hv - 3.5e-3;
 }
 
 //------------------------------------------------------------------   
-Int_t AliMUONResponseTriggerV1::SetGenerCluster(){
-// Set the GenerCluster parameter and return 1
+Int_t AliMUONResponseTriggerV1::SetGenerCluster()
+{
+/// Set the GenerCluster parameter and return 1
   fGenerCluster = gRandom->Rndm();
   return 1;
 }
@@ -121,10 +134,8 @@ const
 //------------------------------------------------------------------  
 void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits)
 {
-  //
-  // Generate digits (on each cathode) from 1 hit, with cluster-size
-  // generation.
-  //
+  /// Generate digits (on each cathode) from 1 hit, with cluster-size
+  /// generation.
   
   digits.Clear();
   
@@ -145,7 +156,8 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 
   for ( Int_t cath = 0; cath < 2; ++cath )
   {
-    const AliMpVSegmentation* seg = Segmentation()->GetMpSegmentation(detElemId,cath);
+    const AliMpVSegmentation* seg 
+      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cath);
 
     AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
     Int_t ix = pad.GetIndices().GetFirst();
@@ -222,26 +234,25 @@ void AliMUONResponseTriggerV1::Neighbours(const Int_t cath,
 					  const Int_t ix, const Int_t iy, 
 					  Int_t Xlist[10], Int_t Ylist[10]) 
 {
-
-    //-----------------BENDING-----------------------------------------
-    // Returns list of 10 next neighbours for given X strip (ix, iy)  
-    // neighbour number 4 in the list -                     
-    // neighbour number 3 in the list  |                    
-    // neighbour number 2 in the list  |_ Upper part             
-    // neighbour number 1 in the list  |            
-    // neighbour number 0 in the list -           
-    //      X strip (ix, iy) 
-    // neighbour number 5 in the list -       
-    // neighbour number 6 in the list  | _ Lower part
-    // neighbour number 7 in the list  |
-    // neighbour number 8 in the list  | 
-    // neighbour number 9 in the list -
-    
-    //-----------------NON-BENDING-------------------------------------
-    // Returns list of 10 next neighbours for given Y strip (ix, iy)  
-    // neighbour number 9 8 7 6 5 (Y strip (ix, iy)) 0 1 2 3 4 in the list
-    //                  \_______/                    \_______/
-    //                    left                         right
+    ///-----------------BENDING-----------------------------------------      /n
+    /// Returns list of 10 next neighbours for given X strip (ix, iy)         /n
+    /// neighbour number 4 in the list -                                      /n    
+    /// neighbour number 3 in the list  |                                     /n   
+    /// neighbour number 2 in the list  |_ Upper part                         /n         
+    /// neighbour number 1 in the list  |                                     /n    
+    /// neighbour number 0 in the list -                                      /n   
+    ///      X strip (ix, iy)                                                 /n
+    /// neighbour number 5 in the list -                                      /n
+    /// neighbour number 6 in the list  | _ Lower part                        /n
+    /// neighbour number 7 in the list  |                                     /n
+    /// neighbour number 8 in the list  |                                     /n
+    /// neighbour number 9 in the list -                                      /n
+    ///                                                                       /n
+    ///-----------------NON-BENDING-------------------------------------      /n
+    /// Returns list of 10 next neighbours for given Y strip (ix, iy)         /n 
+    /// neighbour number 9 8 7 6 5 (Y strip (ix, iy)) 0 1 2 3 4 in the list   /n 
+    ///                  \_______/                    \_______/               /n 
+    ///                    left                         right                 /n
     
     for (Int_t i=0; i<10; i++) {
 	Xlist[i]=-1;

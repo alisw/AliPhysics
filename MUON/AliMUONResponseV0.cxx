@@ -18,12 +18,10 @@
 // --------------------------
 // Class AliMUONResponseV0
 // --------------------------
-// Implementation of Mathieson response
-// ...
+// Implementation of 
+// Mathieson response
 
 #include "AliMUONResponseV0.h"
-
-#include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
@@ -31,17 +29,24 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
 #include "AliMUONSegmentation.h"
+
 #include "AliMpArea.h"
 #include "AliMpDEManager.h"
 #include "AliMpVPadIterator.h"
+#include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
+
 #include "AliRun.h"
+#include "AliLog.h"
+
 #include "Riostream.h"
 #include "TVector2.h"
 #include <TMath.h>
 #include <TRandom.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONResponseV0)
+/// \endcond
 	
 AliMUON* muon()
 {
@@ -51,11 +56,11 @@ AliMUON* muon()
 void Global2Local(Int_t detElemId, Double_t xg, Double_t yg, Double_t zg,
                   Double_t& xl, Double_t& yl, Double_t& zl)
 {  
-  // ideally should be : 
-  // Double_t x,y,z;
-  // AliMUONGeometry::Global2Local(detElemId,xg,yg,zg,x,y,z);
-  // but while waiting for this geometry singleton, let's go through
-  // AliMUON still.
+  /// ideally should be : 
+  /// Double_t x,y,z;
+  /// AliMUONGeometry::Global2Local(detElemId,xg,yg,zg,x,y,z);
+  /// but while waiting for this geometry singleton, let's go through
+  /// AliMUON still.
   
   const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
   transformer->Global2Local(detElemId,xg,yg,zg,xl,yl,zl);
@@ -81,13 +86,15 @@ AliMUONResponseV0::AliMUONResponseV0()
   fMathieson(new AliMUONMathieson),
   fChargeThreshold(1e-4)
 {
-    // Normal constructor
+    /// Normal constructor
     AliDebug(1,Form("Default ctor"));
 }
 
 //__________________________________________________________________________
 AliMUONResponseV0::~AliMUONResponseV0()
 {
+/// Destructor
+
   AliDebug(1,"");
   delete fMathieson;
 }
@@ -96,7 +103,7 @@ AliMUONResponseV0::~AliMUONResponseV0()
 void
 AliMUONResponseV0::Print(Option_t*) const
 {
-// Printing
+/// Printing
 
   cout << " ChargeSlope=" << fChargeSlope
     << " ChargeSpreadX,Y=" << fChargeSpreadX
@@ -108,26 +115,26 @@ AliMUONResponseV0::Print(Option_t*) const
   //__________________________________________________________________________
 void AliMUONResponseV0::SetSqrtKx3AndDeriveKx2Kx4(Float_t SqrtKx3)
 {
-  // Set to "SqrtKx3" the Mathieson parameter K3 ("fSqrtKx3")
-  // in the X direction, perpendicular to the wires,
-  // and derive the Mathieson parameters K2 ("fKx2") and K4 ("fKx4")
-  // in the same direction
+  /// Set to "SqrtKx3" the Mathieson parameter K3 ("fSqrtKx3")
+  /// in the X direction, perpendicular to the wires,
+  /// and derive the Mathieson parameters K2 ("fKx2") and K4 ("fKx4")
+  /// in the same direction
   fMathieson->SetSqrtKx3AndDeriveKx2Kx4(SqrtKx3);
 }
 	
   //__________________________________________________________________________
 void AliMUONResponseV0::SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3)
 {
-  // Set to "SqrtKy3" the Mathieson parameter K3 ("fSqrtKy3")
-  // in the Y direction, along the wires,
-  // and derive the Mathieson parameters K2 ("fKy2") and K4 ("fKy4")
-  // in the same direction
+  /// Set to "SqrtKy3" the Mathieson parameter K3 ("fSqrtKy3")
+  /// in the Y direction, along the wires,
+  /// and derive the Mathieson parameters K2 ("fKy2") and K4 ("fKy4")
+  /// in the same direction
   fMathieson->SetSqrtKy3AndDeriveKy2Ky4(SqrtKy3);
 }
   //__________________________________________________________________________
 Float_t AliMUONResponseV0::IntPH(Float_t eloss) const
 {
-  // Calculate charge from given ionization energy loss
+  /// Calculate charge from given ionization energy loss
   Int_t nel;
   nel= Int_t(eloss*1.e9/27.4);
   Float_t charge=0;
@@ -145,7 +152,7 @@ Float_t AliMUONResponseV0::IntXY(Int_t idDE,
 				 AliMUONGeometrySegmentation* segmentation) 
 const
 {
- // Calculate charge on current pad according to Mathieson distribution
+ /// Calculate charge on current pad according to Mathieson distribution
 
   return fMathieson->IntXY(idDE, segmentation);
 }
@@ -155,9 +162,8 @@ const
 Float_t
 AliMUONResponseV0::GetAnod(Float_t x) const
 {
-  //
-  // Return wire coordinate closest to x.
-  //
+  /// Return wire coordinate closest to x.
+
   Int_t n = Int_t(x/Pitch());
   Float_t wire = (x>0) ? n+0.5 : n-0.5;
   return Pitch()*wire;
@@ -167,12 +173,10 @@ AliMUONResponseV0::GetAnod(Float_t x) const
 void 
 AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
 {
-  //
-  // Go from 1 hit to a list of digits.
-  // The energy deposition of that hit is first converted into charge
-  // (in IntPH() method), and then this charge is dispatched on several
-  // pads, according to the Mathieson distribution.
-  //
+  /// Go from 1 hit to a list of digits.
+  /// The energy deposition of that hit is first converted into charge
+  /// (in IntPH() method), and then this charge is dispatched on several
+  /// pads, according to the Mathieson distribution.
   
   digits.Clear();
   
@@ -202,7 +206,7 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
     
     // Get an iterator to loop over pads, within the given area.
     const AliMpVSegmentation* seg = 
-        Segmentation()->GetMpSegmentation(detElemId,cath);
+        AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cath);
       
     AliMpVPadIterator* it = seg->CreateIterator(area);
       

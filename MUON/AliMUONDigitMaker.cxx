@@ -13,8 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////
-///
+/// \class AliMUONDigitMaker
 /// MUON Digit maker from rawdata.
 ///
 /// Raw2Digits:
@@ -37,20 +36,7 @@
 /// Add (S)Digit maker tracker (for free)
 /// and for trigger. Create trigger inverse mapping.
 /// (Ch. Finck, oct 06) 
-////////////////////////////////////
 
-#include <fstream>
-#include <string>
-
-#include <TClonesArray.h>
-#include <TList.h>
-
-#include "AliRawReader.h"
-#include "AliRawDataHeader.h"
-#include "AliLog.h"
-#include "AliRun.h"
-
-#include "AliMpBusPatch.h"
 #include "AliMUON.h"
 #include "AliMUONDigitMaker.h"
 #include "AliMUONDigit.h"
@@ -76,17 +62,32 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONTriggerCircuitNew.h"
-#include "AliMpSegFactory.h"
+
+#include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
 #include "AliMpDEManager.h"
+#include "AliMpBusPatch.h"
 
+#include "AliRawReader.h"
+#include "AliRawDataHeader.h"
+#include "AliLog.h"
+#include "AliRun.h"
+
+#include <TClonesArray.h>
+#include <TList.h>
+
+#include <fstream>
+#include <string>
+
+/// \cond CLASSIMP
 ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
+/// \endcond
+
 //__________________________________________________________________________
 AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
   : TObject(),
     fMUONData(0x0),
-    fSegFactory(0x0),
     fBusPatchManager(new AliMpBusPatch()),
     fScalerEvent(kFALSE),
     fDigitFlag(flag),
@@ -100,10 +101,8 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
     fTriggerTimer(),
     fMappingTimer()
 {
-  //
-  // ctor with AliMUONData as argument
-  // for reconstruction
-  //
+  /// ctor with AliMUONData as argument
+  /// for reconstruction
 
   AliDebug(1,"");
 
@@ -122,10 +121,9 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
 //__________________________________________________________________________
 AliMUONDigitMaker::~AliMUONDigitMaker()
 {
-  //
-  // clean up
-  // and time processing measure
-  //
+  /// clean up
+  /// and time processing measure
+
   delete fRawStreamTracker;
   delete fRawStreamTrigger;
 
@@ -149,9 +147,9 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
 //____________________________________________________________________
 Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader)
 {
-  // Main method to creates digit
-  // for tracker 
-  // and trigger
+  /// Main method to creates digit
+  /// for tracker 
+  /// and trigger
 
   // generate digits
   ReadTrackerDDL(rawReader);
@@ -167,9 +165,9 @@ Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader)
 Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 {
 
-  // reading tracker DDL
-  // filling the TClonesArray in MUONData
-  //
+  /// reading tracker DDL
+  /// filling the TClonesArray in MUONData
+
   fTrackerTimer.Start(kFALSE);
 
   // elex info
@@ -269,16 +267,16 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 Int_t AliMUONDigitMaker::GetMapping(Int_t busPatchId, UShort_t manuId, 
 					 UChar_t channelId, AliMUONDigit* digit )
 {
-  //
-  // mapping  for tracker
-  //
+  /// mapping  for tracker
+
   fMappingTimer.Start(kFALSE);
   
   // getting DE from buspatch
   Int_t detElemId = fBusPatchManager->GetDEfromBus(busPatchId);
   AliDebug(3,Form("detElemId: %d busPatchId %d\n", detElemId, busPatchId));
 
-  AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentationByElectronics(detElemId, manuId);  
+  const AliMpVSegmentation* seg 
+    = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId, manuId);  
   AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,channelId),kTRUE);
 
   if (!pad.IsValid())
@@ -312,9 +310,8 @@ Int_t AliMUONDigitMaker::GetMapping(Int_t busPatchId, UShort_t manuId,
 //____________________________________________________________________
 Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 {
-  // reading tracker DDL
-  // filling the TClonesArray in MUONData
-  //
+  /// reading tracker DDL
+  /// filling the TClonesArray in MUONData
 
   AliMUONDDLTrigger*       ddlTrigger      = 0x0;
   AliMUONDarcHeader*       darcHeader      = 0x0;
@@ -412,8 +409,8 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 void AliMUONDigitMaker::GetTriggerChamber(AliMUONLocalStruct* localStruct, Int_t& xyPattern, 
 					  Int_t& iChamber, Int_t& iCath, Int_t icase)
 {
+  /// get chamber & cathode number, (chamber starts at 0 !)
 
-  // get chamber & cathode number, (chamber starts at 0 !)
     switch(icase) {
     case 0: 
       xyPattern =  localStruct->GetX1();
@@ -462,8 +459,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard,
 				       AliMUONLocalStruct* localStruct,
 				       TList& digitList)
 {
-  //
-  // make (S)Digit for trigger
+  /// make (S)Digit for trigger
 
   Int_t detElemId;
   Int_t nBoard;
@@ -484,7 +480,8 @@ Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard,
     detElemId = triggerCircuit.DetElemId(iChamber, localBoard->GetName());
     nBoard    = localBoard->GetNumber();
 
-    AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentation(detElemId, iCath);  
+    const AliMpVSegmentation* seg 
+      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, iCath);  
 
     // loop over the 16 bits of pattern
     for (Int_t ibitxy = 0; ibitxy < 16; ibitxy++) {
@@ -524,9 +521,9 @@ Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard,
 //____________________________________________________________________
 void  AliMUONDigitMaker::GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg)
 {
-  // set crate name from DDL & reg number
-  // method same as in RawWriter, not so nice
-  // should be put in AliMUONTriggerCrateStore
+  /// set crate name from DDL & reg number
+  /// method same as in RawWriter, not so nice
+  /// should be put in AliMUONTriggerCrateStore
 
       switch(iReg) {
       case 0:
