@@ -131,6 +131,10 @@ void TriangleSet::Paint(Option_t* )
 TriangleSet* TriangleSet::ReadTrivialFile(const char* file)
 {
   FILE* f = fopen(file, "r");
+  if (f == 0) {
+    ::Error("TriangleSet::ReadTrivialFile", Form("file '%s' not found.", file));
+    return 0;
+  }
 
   Int_t nv, nt;
   fscanf(f, "%d %d", &nv, &nt);
