@@ -32,10 +32,10 @@ public:
       @param maxRing Number of rings (2)
       @param maxSec  Number of sectors (40)
       @param maxStr  Number of strips (20) */
-  AliFMDUShortMap(size_t maxDet = kMaxDetectors, 
-		  size_t maxRing= kMaxRings, 
-		  size_t maxSec = kMaxSectors, 
-		  size_t maxStr = kMaxStrips);
+  AliFMDUShortMap(UShort_t maxDet = kMaxDetectors, 
+		  UShort_t maxRing= kMaxRings, 
+		  UShort_t maxSec = kMaxSectors, 
+		  UShort_t maxStr = kMaxStrips);
   /** Destructor */
   virtual ~AliFMDUShortMap() { delete [] fData; }
   /** Assignment operator 
@@ -66,7 +66,7 @@ public:
 				     UShort_t sector, 
 				     UShort_t strip) const;
  protected:
-  size_t    fTotal; // Total number of entries 
+  UShort_t    fTotal; // Total number of entries 
   UShort_t* fData;  // [fTotal] The data 
   ClassDef(AliFMDUShortMap, 2) // Cache of edep,hit information per strip
 };

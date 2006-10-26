@@ -41,6 +41,7 @@
 #include "AliLog.h"		   // ALILOG_H
 #include "AliFMDAlignFaker.h"      // ALIFMDALIGNFAKER_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
+#include <AliCDBStorage.h>         // ALICDBSTORAGE_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
 // #include <AliAlignObj.h>
 #include <AliAlignObjAngles.h>
@@ -76,7 +77,7 @@ AliFMDAlignFaker::AliFMDAlignFaker(Int_t mask, const char* geo,
     fHalfRotMin(0,0,0),
     fHalfRotMax(0,0,0),
     fRunMin(0),
-    fRunMax(10), 
+    fRunMax(9999999), 
     fArray(0),
     fComment("")
 {
@@ -263,6 +264,7 @@ AliFMDAlignFaker::WriteToCDB()
 {
   // Make the objects. 
   AliCDBManager*     cdb  = AliCDBManager::Instance();
+  AliCDBStorage*  storage = cdb->GetStorage(GetTitle());
   AliCDBMetaData*    meta = new AliCDBMetaData; 
   meta->SetResponsible(gSystem->GetUserInfo()->fRealName.Data()); 
   meta->SetAliRootVersion(gROOT->GetVersion()); 
@@ -270,8 +272,7 @@ AliFMDAlignFaker::WriteToCDB()
   meta->SetComment(fComment.Data());
 
   AliCDBId id("FMD/Align/Data", fRunMin, fRunMax);
-  cdb->Put(fArray, id, meta);
-  cdb->Destroy();
+  storage->Put(fArray, id, meta);
 }
 
 //__________________________________________________________________

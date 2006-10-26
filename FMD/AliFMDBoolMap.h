@@ -37,10 +37,10 @@ public:
       @param maxRing Number of rings (2)
       @param maxSec  Number of sectors (40)
       @param maxStr  Number of strips (20) */
-  AliFMDBoolMap(size_t maxDet  = kMaxDetectors,
-		size_t maxRing = kMaxRings,
-		size_t maxSec  = kMaxSectors,
-		size_t maxStr  = kMaxStrips);
+  AliFMDBoolMap(UShort_t maxDet  = kMaxDetectors,
+		UShort_t maxRing = kMaxRings,
+		UShort_t maxSec  = kMaxSectors,
+		UShort_t maxStr  = kMaxStrips);
   /** Destructor */
   virtual ~AliFMDBoolMap() { delete [] fData; }
   /** Assignment operator 
@@ -71,7 +71,7 @@ public:
 				   UShort_t sec,
 				   UShort_t str) const;
 protected:
-  size_t  fTotal; // Total number of entries 
+  UShort_t  fTotal; // Total number of entries 
   Bool_t* fData;  // [fTotal] The Data
   ClassDef(AliFMDBoolMap,2) // Map of Bool_t data per strip
 };

@@ -45,7 +45,7 @@ public:
   virtual ~AliFMDDigit() {}
   /** @param i # of sample to get 
       @return sample # @a i */
-  Int_t Count(size_t i=0) const;
+  Int_t Count(UShort_t i=0) const;
   /** @return ADC count (first sample) */
   UShort_t Count1()                const { return fCount1;   }
   /** @return ADC count (second sample, or -1 if not used) */
@@ -75,7 +75,7 @@ AliFMDDigit::Counts() const
 }
 
 inline Int_t
-AliFMDDigit::Count(size_t i) const 
+AliFMDDigit::Count(UShort_t i) const 
 {
   switch (i) {
   case 0: return fCount1;

@@ -46,16 +46,16 @@ AliFMDEdepMap::AliFMDEdepMap(const AliFMDEdepMap& other)
   // Copy constructor 
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
   fData  = new AliFMDEdepHitPair[fTotal];
-  for (size_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  for (UShort_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
 }
 
   
 
 //____________________________________________________________________
-AliFMDEdepMap::AliFMDEdepMap(size_t maxDet, 
-			     size_t maxRing, 
-			     size_t maxSec, 
-			     size_t maxStr)
+AliFMDEdepMap::AliFMDEdepMap(UShort_t maxDet, 
+			     UShort_t maxRing, 
+			     UShort_t maxSec, 
+			     UShort_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr), 
     fTotal(0),
     fData(0)
@@ -83,7 +83,7 @@ AliFMDEdepMap::operator=(const AliFMDEdepMap& other)
   if (fData) delete [] fData;
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
   fData  = new AliFMDEdepHitPair[fTotal];
-  for (size_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  for (UShort_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;
 }
 
@@ -92,7 +92,7 @@ void
 AliFMDEdepMap::Reset() 
 {
   // Reset to zero
-  for (size_t i = 0; i < fTotal; i++) { 
+  for (UShort_t i = 0; i < fTotal; i++) { 
     fData[i].fEdep = 0; 
     fData[i].fN = 0; 
   };
@@ -103,7 +103,7 @@ void
 AliFMDEdepMap::Reset(const AliFMDEdepHitPair& val) 
 {
   // Reset to val
-  for (size_t i = 0; i < fTotal; i++) { 
+  for (UShort_t i = 0; i < fTotal; i++) { 
     fData[i].fEdep = val.fEdep; 
     fData[i].fN = val.fN; 
   };

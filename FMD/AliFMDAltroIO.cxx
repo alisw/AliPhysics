@@ -68,7 +68,7 @@ AliFMDAltroIO::ErrorString(Int_t err)  const
 
 //____________________________________________________________________
 AliFMDAltroIO::W40_t
-AliFMDAltroIO::ConcatW40(size_t n, const W10_t& w) const
+AliFMDAltroIO::ConcatW40(UShort_t n, const W10_t& w) const
 {
   if (n > 3) return -kBadBits;
   return W40_t(w & 0x3ff) << (10 * n);
@@ -76,7 +76,7 @@ AliFMDAltroIO::ConcatW40(size_t n, const W10_t& w) const
 
 //____________________________________________________________________
 AliFMDAltroIO::W10_t
-AliFMDAltroIO::ExtractW10(size_t n, const W40_t w) const
+AliFMDAltroIO::ExtractW10(UShort_t n, const W40_t w) const
 {
   if (n > 3) return -kBadBits;
   return (w >> (10 * n)) & 0x3ff;
@@ -103,7 +103,7 @@ AliFMDAltroReader::AliFMDAltroReader(std::istream& stream)
   if (fInput.bad()) throw -kBadTell;
 #if 0
   fInput.seekg(fBegin);
-  size_t i = 0;
+  UShort_t i = 0;
   do {
     W40_t w = 0;
     fInput.read((char*)&w, 5);
@@ -196,9 +196,9 @@ Int_t
 AliFMDAltroReader::ExtractFillWords(UShort_t last) 
 {
   // Number of fill words 
-  size_t nFill = (last % 4 == 0 ? 0 : 4 - last % 4);
+  UShort_t nFill = (last % 4 == 0 ? 0 : 4 - last % 4);
   // Read the fill words 
-  for (size_t i = 3; i >= 4 - nFill; i--) {
+  for (UShort_t i = 3; i >= 4 - nFill; i--) {
     W10_t f = GetNextW10();
     if (f != 0x2aa) return -kBadFill;
   }
@@ -324,7 +324,7 @@ AliFMDAltroWriter::Flush()
   if (fIBuffer == 0) return 0;
   fOutput.write((char*)&fBuffer, 5 * sizeof(char));
   if (fOutput.bad()) return -kBadWrite;
-  // for (size_t i = 0; i < 4; i++) 
+  // for (UShort_t i = 0; i < 4; i++) 
   //   std::cout << "\t" << PRETTY_HEX(3, ExtractW10(i, fBuffer));
   // std::cout << "\t" << PRETTY_HEX(10, fBuffer) << std::endl;
   fTotal   += 5;
@@ -343,7 +343,7 @@ AliFMDAltroWriter::Close()
   fOutput.seekp(fHeader, std::ios_base::beg);
   if (fOutput.bad()) return -kBadSeek;
   AliRawDataHeader header;
-  header.fSize = (size_t(end) - fHeader);
+  header.fSize = (UShort_t(end) - fHeader);
   AliDebug(15, Form("Size set to %d (%d)", header.fSize, fTotal));
   header.SetAttribute(0);
   fOutput.write((char*)(&header), sizeof(header));

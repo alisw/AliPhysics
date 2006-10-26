@@ -67,13 +67,13 @@ protected:
       @param w 10 bit word
       @return @a w at offset @a n in a 40 bit word on success, a
       negative error code on failure. */
-  virtual W40_t ConcatW40(size_t n, const W10_t& w) const;
+  virtual W40_t ConcatW40(UShort_t n, const W10_t& w) const;
   /** Extract a 10 bit word from a 40 bit word
       @param n The number 10bit word to extract (0-3)
       @param w 40 bit word to extract from. 
       @return The 10 bit word at @a n of @a w on success, or a
       negative error code otherwise. */
-  virtual W10_t ExtractW10(size_t n, const W40_t w) const;
+  virtual W10_t ExtractW10(UShort_t n, const W40_t w) const;
 
   ClassDef(AliFMDAltroIO,0);
 };
@@ -153,9 +153,9 @@ protected:
   std::istream& fInput;
   /** Current position in file */
   // std::istream::pos_type 
-  size_t fCurrent;
+  UShort_t fCurrent;
   /** High water mark */
-  size_t fBegin;
+  UShort_t fBegin;
   
   /** Read a 40 bit word from the input. 
       @return negative error code on failure, current position otherwise. */
@@ -237,9 +237,9 @@ protected:
   /** Last meaning-full data */
   UShort_t fLast;
   /** High-water mark (begining of file) */
-  size_t fBegin;
+  UShort_t fBegin;
   /** High-water mark (begining of file) */
-  size_t fHeader;
+  UShort_t fHeader;
   /** Total number of bytes written */
   Long_t fTotal;
   /** output stream */
