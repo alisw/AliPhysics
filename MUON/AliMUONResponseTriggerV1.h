@@ -19,7 +19,7 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     // default constructor
     AliMUONResponseTriggerV1();
     AliMUONResponseTriggerV1(Float_t hv);
-    virtual ~AliMUONResponseTriggerV1(){} 
+    virtual ~AliMUONResponseTriggerV1();
 
     // Set the GenerCluster parameter       
     virtual Int_t SetGenerCluster();
@@ -27,10 +27,10 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
 
   protected:
-    Float_t fGenerCluster;   // Random number  
-    Float_t fA;              // first parameter  of the cluster-size param
-    Float_t fB;              // second parameter of the cluster-size param
-    Float_t fC;              // third parameter  of the cluster-size param
+    Float_t fGenerCluster;   ///< Random number  
+    Float_t fA;              ///< first parameter  of the cluster-size param
+    Float_t fB;              ///< second parameter of the cluster-size param
+    Float_t fC;              ///< third parameter  of the cluster-size param
 
   private:
     // initialize parameters

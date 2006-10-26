@@ -35,37 +35,76 @@ class AliMUONTrackReconstructor : public TObject {
 
   // Parameters for track reconstruction: public methods
   // Get and Set, Set to defaults
+
+           /// Return minimum value (GeV/c) of momentum in bending plane
   Double_t GetMinBendingMomentum(void) const {return fMinBendingMomentum;}
+           /// Set minimum value (GeV/c) of momentum in bending plane
   void SetMinBendingMomentum(Double_t MinBendingMomentum) {fMinBendingMomentum = MinBendingMomentum;}
+
+           /// Return maximum value (GeV/c) of momentum in bending plane
   Double_t GetMaxBendingMomentum(void) const {return fMaxBendingMomentum;}
+           /// Set maximum value (GeV/c) of momentum in bending plane
   void SetMaxBendingMomentum(Double_t MaxBendingMomentum) {fMaxBendingMomentum = MaxBendingMomentum;}
+
+           /// Return maximum Chi2 per degree of Freedom
   Double_t GetMaxChi2(void) const {return fMaxChi2;}
+           /// Set maximum Chi2 per degree of Freedom
   void SetMaxChi2(Double_t MaxChi2) {fMaxChi2 = MaxChi2;}
+
+           /// Return maximum square distance in units of the variance (maximum chi2)
   Double_t GetMaxSigma2Distance(void) const {return fMaxSigma2Distance;}
+           /// Set maximum square distance in units of the variance (maximum chi2)
   void SetMaxSigma2Distance(Double_t MaxSigma2Distance) {fMaxSigma2Distance = MaxSigma2Distance;}
+
+           /// Return chamber resolution (cm) in bending plane
   Double_t GetBendingResolution(void) const {return fBendingResolution;}
+           /// Set chamber resolution (cm) in bending plane
   void SetBendingResolution(Double_t BendingResolution) {fBendingResolution = BendingResolution;}
+
+           /// Return chamber resolution (cm) in non-bending plane
   Double_t GetNonBendingResolution(void) const {return fNonBendingResolution;}
+           /// set chamber resolution (cm) in non-bending plane
   void SetNonBendingResolution(Double_t NonBendingResolution) {fNonBendingResolution = NonBendingResolution;}
+
+           /// Return chamber thickness in number of radiation lengths
   Double_t GetChamberThicknessInX0(void) const {return fChamberThicknessInX0;}
+           /// Set chamber thickness in number of radiation lengths
   void SetChamberThicknessInX0(Double_t ChamberThicknessInX0) {fChamberThicknessInX0 = ChamberThicknessInX0;}
+
+           /// Return simple magnetic field: value (kG)
   Double_t GetSimpleBValue(void) const {return fSimpleBValue;}
+           /// Set simple magnetic field: value (kG)
   void SetSimpleBValue(Double_t SimpleBValue) {fSimpleBValue = SimpleBValue;}
+
+           /// Return simple magnetic field: length (cm)
   Double_t GetSimpleBLength(void) const {return fSimpleBLength;}
+           /// Set simple magnetic field: length (cm)
   void SetSimpleBLength(Double_t SimpleBLength) {fSimpleBLength = SimpleBLength;}
+
+           /// Return simple magnetic field: Z central position (cm)
   Double_t GetSimpleBPosition(void) const {return fSimpleBPosition;}
+           /// Set simple magnetic field: Z central position (cm)
   void SetSimpleBPosition(Double_t SimpleBPosition) {fSimpleBPosition = SimpleBPosition;}
+
+           /// Return chamber efficiency (used for track ref. hits only
   Double_t GetEfficiency(void) const {return fEfficiency;}
+           /// Set chamber efficiency (used for track ref. hits only
   void SetEfficiency(Double_t Efficiency) {fEfficiency = Efficiency;}
+
   void SetReconstructionParametersToDefaults(void);
+
+           /// Return track fitter
   static TVirtualFitter* Fitter(void) {return fgFitter;}
 
-  // Hits for reconstruction
+           /// Return number of hits for reconstruction
   Int_t GetNHitsForRec(void) const {return fNHitsForRec;} // Number
 
-  // Reconstructed tracks
+           /// Return number of reconstructed tracks
   Int_t GetNRecTracks() const {return fNRecTracks;} // Number
+           /// Set number of reconstructed tracks
   void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
+
+           /// Return array of reconstructed tracks
   TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
  
   // Functions
@@ -77,12 +116,15 @@ class AliMUONTrackReconstructor : public TObject {
   void EventDumpTrigger(void);  // dump reconstructed trigger event
   //PH  void FillEvent();      // fill and write tree of reconstructed events
   void SetTrackMethod(Int_t iTrackMethod); //AZ
-  Int_t GetTrackMethod(void) const {return fTrackMethod;} 
+          /// Return track method
+  Int_t GetTrackMethod(void) const {return fTrackMethod;}   
   void FillMUONTrack(void); // set track parameters at hits for Kalman track
   //Int_t fMuons; // AZ - number of muons within acceptance - just for tests
 
+          /// Return MUON data
   AliMUONData*  GetMUONData() {return fMUONData;}
 
+          /// Set trigger circuit
   void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}
 
 

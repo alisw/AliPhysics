@@ -42,7 +42,7 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void Exec(Option_t*);
       
-//    CRATE CONFIG FROM ASCII FILE
+      /// Set Crate config from ascii file
       virtual void SetDataSource(TString SourceFile = 
                                  "$ALICE_ROOT/MUON/mapping/data/stationTrigger/crate.dat") 
       {fSourceFileName = SourceFile;}
