@@ -35,7 +35,7 @@ ClassImp(AliMpStringObjMap)
 /// \endcond
 
 //______________________________________________________________________________
-AliMpStringObjMap::AliMpStringObjMap()
+AliMpStringObjMap::AliMpStringObjMap(Bool_t isOwner)
  : TObject(),
    fNofItems(0),
    fFirstArray(),
@@ -44,6 +44,7 @@ AliMpStringObjMap::AliMpStringObjMap()
 /// Standard constructor
 
   fFirstArray.SetOwner(true);
+  fSecondArray.SetOwner(isOwner);
 }
 
 //______________________________________________________________________________

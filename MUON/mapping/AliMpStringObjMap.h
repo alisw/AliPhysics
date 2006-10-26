@@ -19,7 +19,7 @@
 class AliMpStringObjMap : public TObject
 {
   public:
-    AliMpStringObjMap();
+    AliMpStringObjMap(Bool_t isOwner = false);
     virtual ~AliMpStringObjMap();
     
     // methods
