@@ -1,7 +1,8 @@
 // $Header$
 
 void alieve_init(const Text_t* path=".", Int_t event=0,
-		 Bool_t use_runloader=true, Bool_t use_esd=true)
+		 Bool_t use_runloader=kTRUE, Bool_t use_esd=kTRUE,
+		 Bool_t avoid_exceptions_on_open=kTRUE)
 {
 
   // Set-up environment, load libraries.
@@ -40,7 +41,7 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
 
   // Open event
   if(path != 0) {
-    Alieve::Event::Initialize(use_runloader, use_esd);
+    Alieve::Event::Initialize(use_runloader, use_esd, avoid_exceptions_on_open);
 
     printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
     Alieve::gEvent = new Alieve::Event(path, event);
