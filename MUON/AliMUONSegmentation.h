@@ -7,13 +7,13 @@
 /// \class AliMUONSegmentation
 /// \brief Container class for modules segmentations
 ///
-/// It provides access to segmentations on all levels:
-/// - mapping segmentation
+/// It provides access to DE segmentations based on the
+/// old AliSegmentation interface:
 /// - DE segmentation (operating in local DE reference frame)
 /// - module segmentation (operating in global reference frame)
 ///
 /// As some detection elements are sharing the same objects
-/// (AliMpVSegmentation, AliMUONVGeometryDESegmentation),
+/// (AliMUONVGeometryDESegmentation),
 /// all segmentations objects have to be always deleted
 /// altogether via deleting this container object. 
 /// 
@@ -40,7 +40,6 @@ class AliMUONSegmentation : public TObject
     virtual  ~AliMUONSegmentation();
     
     // methods
-    void  AddMpSegmentation(AliMpVSegmentation* segmentation);
     void  AddDESegmentation(AliMUONVGeometryDESegmentation* segmentation);
 
     void  AddModuleSegmentation(Int_t moduleId, Int_t cathod,
@@ -65,13 +64,6 @@ class AliMUONSegmentation : public TObject
     const AliMUONVGeometryDESegmentation* GetDESegmentation(
                      Int_t detElemId, Int_t cathod, Bool_t warn = true) const;
 
-    /** Mapping segmentations access by cathode number.
-      cathod can be 0 or 1. Note that there's no trivial relationship
-      between the cathod number and whether the corresponding plane
-      is a Bending or NonBending one.
-      **/
-    const AliMpVSegmentation* GetMpSegmentation(
-                     Int_t detElemId, Int_t cathod, Bool_t warn = true) const;
 		         
     // DE properties
     //
@@ -87,7 +79,6 @@ class AliMUONSegmentation : public TObject
                      Int_t moduleId, Int_t cathod, Bool_t warn = true) const;
 
     // data members
-    TObjArray*  fMpSegmentations;        ///< array of mapping segmentations
     TObjArray*  fDESegmentations;        ///< array of DE segmentations
     TObjArray*  fModuleSegmentations[2]; ///< \brief array of module segmentations
                                          /// for two cathods         
