@@ -17,6 +17,7 @@
 // $MpId: AliMpTrigger.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
 #include "AliMpTrigger.h"
+#include "AliMpSlatSegmentation.h"
 
 #include "AliLog.h"
 #include "AliMpSlat.h"
@@ -67,11 +68,14 @@ AliMpTrigger::AliMpTrigger()
   fId(""), 
   fPlaneType(kNonBendingPlane), 
   fSlats(0),
+  fSlatSegmentations(0),
   fMaxNofPadsY(0),
   fDX(0), 
   fDY(0)
 {
   // default ctor
+
+  AliDebugStream(1) << "this = " << this << endl;
 }
 
 //_____________________________________________________________________________
@@ -80,20 +84,24 @@ AliMpTrigger::AliMpTrigger(const char* slatType, AliMpPlaneType bendingOrNot)
        fId(slatType), 
        fPlaneType(bendingOrNot), 
        fSlats(0),
+       fSlatSegmentations(0),
        fMaxNofPadsY(0), 
        fDX(0), 
        fDY(0)
 {
   // normal ctor
+
+  AliDebugStream(1) << "this = " << this << endl;
 }
 
 //_____________________________________________________________________________
 AliMpTrigger::~AliMpTrigger()
 {
   // dtor
-  AliDebug(1,Form("this=%p before fSlats.Delete()",this));			
+  AliDebugStream(1) << "this = " << this << endl;
+
   fSlats.Delete();
-  AliDebug(1,Form("this=%p after fSlats.Delete()",this));			
+  fSlatSegmentations.Delete();
 }
 
 //_____________________________________________________________________________
@@ -103,7 +111,7 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
   // Adopt (i.e. we become owner of that pointer) a slat, as 
   // a layer of this trigger slat.
 
-  AliDebug(1,Form("%s is adopting %s :\n",
+  AliDebug(2,Form("%s is adopting %s ",
                   GetID(),slat->GetID()));
 
   // Check that we keep our size constant.
@@ -121,6 +129,7 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
     return kFALSE;
   }
   fSlats.Add(slat);
+  fSlatSegmentations.Add(new AliMpSlatSegmentation(slat));
   fMaxNofPadsY = std::max(slat->GetMaxNofPadsY(),fMaxNofPadsY);
   fDX = std::max(fDX,slat->DX());
   fDY = std::max(fDY,slat->DY());
@@ -215,6 +224,18 @@ AliMpTrigger::GetLayer(int layer) const
   if ( IsLayerValid(layer) )
   {
     return (AliMpSlat*)fSlats.At(layer);
+  }
+  return 0;
+}
+
+//_____________________________________________________________________________
+AliMpVSegmentation*
+AliMpTrigger::GetLayerSegmentation(int layer) const
+{
+  // Returns a given layer
+  if ( IsLayerValid(layer) )
+  {
+    return (AliMpSlatSegmentation*)fSlatSegmentations.At(layer);
   }
   return 0;
 }

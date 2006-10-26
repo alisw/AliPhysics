@@ -35,6 +35,7 @@
 
 class AliMpPCB;
 class AliMpSlat;
+class AliMpVSegmentation;
 class TArrayI;
 
 class AliMpTrigger : public TObject
@@ -58,6 +59,7 @@ public:
   TVector2 Position() const;
   
   AliMpSlat* GetLayer(int layer) const;
+  AliMpVSegmentation* GetLayerSegmentation(int layer) const;
   
   Int_t GetNofPadsX() const;
   
@@ -79,11 +81,12 @@ private:
   TString fId; ///< name of that slat
   AliMpPlaneType fPlaneType; ///< bending or non-bending
   TObjArray fSlats; ///< virtual slat composing this trigger slat
+  TObjArray fSlatSegmentations; ///< segmentations for virtual slats
   Int_t fMaxNofPadsY; ///< max number of pads in y direction
   Double_t fDX; ///< half-size in x (cm)
   Double_t fDY; ///< half-size in y (cm)
   
-  ClassDef(AliMpTrigger,3) // Slat for trigger
+  ClassDef(AliMpTrigger,4) // Slat for trigger
 };
 
 #endif
