@@ -13,12 +13,12 @@
 #include "AliRunLoader.h"
 
 #include "AliMUON.h"
+#include "AliMpSegmentation.h"
 #include "AliMpDEIterator.h"
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONSegmentation.h"
-#include "AliMUONSegFactory.h"
 #include "AliMpStationType.h"
 #include "AliMpDEManager.h"
 #include "AliMUONConstants.h"
@@ -191,7 +191,6 @@ void MUONModule::LoadQuadsChambers(Int_t chamber1, Int_t chamber2, Int_t id, Int
 
   const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
   AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
-  AliMpSegFactory segFactory;
 
   Float_t xg1, xg2, yg1, yg2, zg1, zg2;
 
@@ -208,7 +207,8 @@ void MUONModule::LoadQuadsChambers(Int_t chamber1, Int_t chamber2, Int_t id, Int
       
     //printf("Detector element ID for chamber %d (tracking): %d \n",fChamber,detElemId);
     
-    AliMpSectorSegmentation * seg = (AliMpSectorSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+    AliMpSectorSegmentation * seg 
+      = (AliMpSectorSegmentation *) AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, 0);
     const AliMpSector * sector = seg->GetSector();
     
     // get sector measurements
@@ -309,11 +309,12 @@ void MUONModule::LoadQuadsChambers(Int_t chamber1, Int_t chamber2, Int_t id, Int
     //printf("Detector element ID for chamber %d (trigger, stationType %s): %d \n",fChamber,StationTypeName(stationType).Data(),detElemId);
     
     if (  segmentation->HasDE(detElemId) ) {
-      const AliMpVSegmentation* seg1 = segmentation->GetMpSegmentation(detElemId, 0);
+      const AliMpVSegmentation* seg1 
+        = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, 0);
       if (!seg1) { 
 	// Create mapping segmentation if old trigger segmentation
 	// (not using mapping)
-	seg1 = segFactory.CreateMpSegmentation(detElemId, 0);
+	seg1 = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, 0);
       }	  
       if (seg1) {  
 	
@@ -356,7 +357,8 @@ void MUONModule::LoadQuadsChambers(Int_t chamber1, Int_t chamber2, Int_t id, Int
 
 	  if (ic != cat) continue;
 
-	  const AliMpVSegmentation* seg3 = segmentation->GetMpSegmentation(detElemId, ic-1);
+	  const AliMpVSegmentation* seg3 
+	    = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, ic-1);
 	  Int_t maxX = seg3->MaxPadIndexX();
 	  Int_t maxY = seg3->MaxPadIndexY();
 	  //printf("detElemId %d ic %d maxX %d maxY %d \n",detElemId,ic,maxX,maxY);
@@ -463,7 +465,8 @@ void MUONModule::LoadQuadsDigits()
 
     if (detElemId != fID) continue;
       
-    const AliMpVSegmentation* seg2 = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,fCathode-1);
+    const AliMpVSegmentation* seg2 
+      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,fCathode-1);
 
     AliMpPad pad = seg2->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
 
