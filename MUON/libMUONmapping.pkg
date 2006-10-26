@@ -80,8 +80,8 @@ SRCS +=  \
 	 mapping/AliMpBusPatch.cxx  \
 	 mapping/AliMpDEIterator.cxx  \
 	 mapping/AliMpDEManager.cxx  \
-	 mapping/AliMpSegFactory.cxx  \
-
+	 mapping/AliMpSegmentation.cxx
+	 
 # Category graphics
 #
 SRCS +=  \
