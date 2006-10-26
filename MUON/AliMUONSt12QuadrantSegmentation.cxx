@@ -141,8 +141,6 @@ AliMUONSt12QuadrantSegmentation::~AliMUONSt12QuadrantSegmentation()
 
   AliDebug(1, Form("dtor this = %p", this));
 
-  delete fSector;
-  delete fSectorSegmentation;  
   delete fSectorIterator;  
 } 
 
