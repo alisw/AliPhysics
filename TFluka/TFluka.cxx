@@ -1568,14 +1568,22 @@ Double_t TFluka::Edep() const
   // If coming from usdraw we just signal particle production - no edep
   // If just first time after resuming, no edep for the primary
   FlukaCallerCode_t caller = GetCaller();
+    
   if (caller == kBXExiting || caller == kBXEntering || 
       caller == kUSDRAW    || caller == kMGResumedTrack) return 0.0;
   Double_t sum = 0;
   Int_t i = -1;
   
+  // Material with primary ionisation activated but number of primary electrons nprim = 0
+  if (fPrimaryElectronIndex == -2) return 0.0;
+  // nprim > 0
   if ((i = fPrimaryElectronIndex) > -1) {
       // Primary ionisation
-      return GetPrimaryElectronKineticEnergy(i);
+      sum = GetPrimaryElectronKineticEnergy(i);
+      if (sum > 100.) {
+	  printf("edep > 100. %d %d %f \n", i, ALLDLT.nalldl, sum);
+      }
+      return sum;
   } else {
       // Normal ionisation
       if (TRACKR.mtrack > 1) printf("Edep: %6d\n", TRACKR.mtrack);
