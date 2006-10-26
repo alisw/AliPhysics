@@ -26,7 +26,6 @@ class AliMUONBusStruct;
 class AliMUONGlobalTrigger;
 class AliMpBusPatch;
 class AliMUONTriggerCrateStore;
-class AliMpSegFactory;
 class TStopwatch;
 
 class AliMUONRawWriter : public TObject 
@@ -82,8 +81,6 @@ private:
   static Int_t fgManuPerBusSwp2NB[12];  //!< array containing the first manuId for each buspatch st2, NBending
   
   TStopwatch* fTimers;             //!< time watchers
-  
-  AliMpSegFactory* fSegFactory;         //!< mapping segmentation factory
   
   AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
   AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs); // assignment operator

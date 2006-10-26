@@ -19,7 +19,7 @@
 
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
-#include "AliMpSegFactory.h"
+#include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
 #include "TArrayI.h"
@@ -36,15 +36,6 @@
 /// \cond CLASSIMP
 ClassImp(AliMpManuList)
 /// \endcond
-
-//_____________________________________________________________________________
-AliMpSegFactory* segFactory()
-{
-  // FIXME: how to get this from elsewhere to insure we're not creating 
-  // a ton of them...
-  static AliMpSegFactory* sf = new AliMpSegFactory();
-  return sf;
-}
 
 //_____________________________________________________________________________
 AliMpManuList::AliMpManuList()
@@ -64,8 +55,9 @@ AliMpManuList::DoesChannelExist(Int_t detElemId, Int_t manuID, Int_t manuChannel
 {
   /// Whether a given (detElemId,manuID,manuChannel) combination is a valid one
   
-  AliMpVSegmentation* seg = 
-    segFactory()->CreateMpSegmentationByElectronics(detElemId,manuID);
+  const AliMpVSegmentation* seg = 
+    AliMpSegmentation::Instance()
+      ->GetMpSegmentationByElectronics(detElemId,manuID);
   if (!seg) return kFALSE;
   
   if ( seg->PadByLocation(AliMpIntPair(manuID,manuChannel),kFALSE).IsValid() )
@@ -101,7 +93,8 @@ AliMpManuList::ManuList()
     {
       for ( Int_t cath = 0; cath <=1 ; ++cath )
       {
-        AliMpVSegmentation* seg = segFactory()->CreateMpSegmentation(detElemId,cath);
+        const AliMpVSegmentation* seg 
+	  = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cath);
         
         TArrayI manus;
         
@@ -125,8 +118,9 @@ AliMpManuList::NumberOfChannels(Int_t detElemId, Int_t manuId)
   /// Returns the number of channels in that manuID. Answer should be <=64
   /// whatever happens.
   
-  AliMpVSegmentation* seg = 
-    segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
+  const AliMpVSegmentation* seg = 
+    AliMpSegmentation::Instance()
+      ->GetMpSegmentationByElectronics(detElemId,manuId);
   Int_t n(0);
   for ( Int_t i = 0; i < 64; ++i )
   {
@@ -144,7 +138,8 @@ AliMpManuList::NumberOfManus(Int_t detElemId)
   Int_t n(0);
   for ( Int_t i = 0; i < 2; ++i )
   {
-    AliMpVSegmentation* seg = segFactory()->CreateMpSegmentation(detElemId,i);
+    const AliMpVSegmentation* seg 
+      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,i);
     TArrayI manus;
     seg->GetAllElectronicCardIDs(manus);
     n += manus.GetSize();

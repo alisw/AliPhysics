@@ -81,7 +81,7 @@
 #include "AliMUONTriggerSegmentationV2.h"
 
 #include "AliMpDEIterator.h"
-#include "AliMpSegFactory.h"
+#include "AliMpSegmentation.h"
 #include "AliMpSlatSegmentation.h"
 #include "AliMpSlat.h"
 #include "AliMpSectorSegmentation.h"
@@ -800,9 +800,6 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     = pMUON->GetGeometryTransformer();
   
   AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
-  AliMpSegFactory segFactory;
-  // Mapping segmentation factory will be used only to create mapping
-	// segmentations if not present in the DE segmentations
   
   // Display MUON Chamber Geometry
   char nodeName[7];
@@ -815,7 +812,7 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       
       Int_t detElemId = it.CurrentDE();
       AliMpSectorSegmentation * seg =   
-        (AliMpSectorSegmentation *) segmentation->GetMpSegmentation(detElemId, 0);
+        (AliMpSectorSegmentation *) AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, 0);
       const AliMpSector * sector = seg->GetSector();
       
       // get sector measurements
@@ -858,12 +855,8 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 
       if (  segmentation->HasDE(detElemId) ) 
       {
-        const AliMpVSegmentation* seg = segmentation->GetMpSegmentation(detElemId, 0);
-        if (!seg) { 
-          // Create mapping segmentation if old trigger segmentation
-          // (not using mapping)
-          seg = segFactory.CreateMpSegmentation(detElemId, 0);
-        }	  
+        const AliMpVSegmentation* seg 
+	  = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, 0);
         if (seg) 
         {  
           Float_t deltax = seg->Dimensions().X();
@@ -910,9 +903,6 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
       }
     }
   }
-  
-//   // Delete mapping segmentations created with factory
-//  segFactory.DeleteSegmentations();
   
   //add clusters to the pad
   DrawClusters();
@@ -1087,7 +1077,9 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 // check if trigger is using new or old segmentation
     Bool_t old = true;
     AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
-    if ( segmentation->GetMpSegmentation(1100, cathode-1) ) old = false;
+    const AliMUONVGeometryDESegmentation* kdeSegmentation 
+      = segmentation->GetDESegmentation(1100, cathode-1);
+    if ( dynamic_cast<const AliMUONTriggerSegmentationV2*>(kdeSegmentation) ) old = false;
 
     if ( old  && chamber > 10) {
 	if (chamber > 10) printf(">>> old segmentation for trigger \n");
@@ -1183,7 +1175,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    if (color > 282) color = 282;
 	    
 	    const AliMpVSegmentation* seg = 
-		pMUON->GetSegmentation()->GetMpSegmentation(detElemId,cathode-1);
+		AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode-1);
 	    
 	    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
 	    

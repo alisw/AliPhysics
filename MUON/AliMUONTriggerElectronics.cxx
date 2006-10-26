@@ -38,6 +38,7 @@
 #include "AliMUONCalibrationData.h"
 #include "AliMUONVCalibParam.h"
 
+#include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 
 #include "AliLog.h"
@@ -152,7 +153,7 @@ void AliMUONTriggerElectronics::FeedM()
 	      Int_t cathode    = mdig->Cathode();
 
 	      const AliMpVSegmentation *seg = 
-		((AliMUON*)gAlice->GetDetector("MUON"))->GetSegmentation()->GetMpSegmentation(detElemId,cathode);
+		AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode);
 
 	      Int_t ix = mdig->PadX(), iy = mdig->PadY();
 				

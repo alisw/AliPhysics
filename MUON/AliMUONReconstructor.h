@@ -18,7 +18,6 @@ class TTask;
 class AliMUONDigitMaker;
 class AliMUONTriggerCrateStore;
 class TClonesArray;
-class AliMpSegFactory;
 class AliMUONGeometryTransformer;
 
 class AliMUONReconstructor: public AliReconstructor 
@@ -63,8 +62,6 @@ private:
 
     TClonesArray* fTriggerCircuit;   //!< trigger circuit
  
-    AliMpSegFactory* fSegFactory;        //!< Mapping segmentation factory
-
     AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
 
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction

@@ -20,7 +20,6 @@
 
 class TObjArray;
 class AliMUONTriggerCrateStore;
-class AliMpSegFactory;
 class AliMUONGeometryTransformer;
 
 class AliMUONTriggerCircuitNew : public TObject 
@@ -50,7 +49,6 @@ public:
   //  void dump(const char* what, const Float_t* array, Int_t size);
   //  void dump(const char* what, const Int_t* array, Int_t size);
   
-  void  SetSegFactory(AliMpSegFactory* segFactory) {fSegFactory = segFactory;}
   void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fTransformer = transformer;}
 
 private:
@@ -78,8 +76,6 @@ private:
   Float_t fXpos11[16];         ///< X position of Y strips in MC11
   Float_t fYpos11[31];         ///< Y position of X strips in MC11
   Float_t fYpos21[63];         ///< Y position of X strips in MC21
-
-  AliMpSegFactory* fSegFactory; //!< Mapping segmentation factory
 
   const AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
 
