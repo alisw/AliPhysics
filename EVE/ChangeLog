@@ -1,5 +1,14 @@
 2006-10-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* macros/alieve_init.C:
+	Added option to avoid exceptions during event open as an
+	argument and enabled it by default.
+
+	* test-macros/tpc_gui.C:
+	Added short usgae notice.
+
+2006-10-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* test-macros/broken_torus.tring:
 	* test-macros/triangleset.C:
 	New files demonstrating use of TriangleSet and ZTrans classes. 

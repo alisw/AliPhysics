@@ -1,3 +1,14 @@
+2006-10-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Added option to respond to missing galice.root or AliESD.root
+	files in Open() with less violence (do not throw an exception,
+	just print a warning). This is a default now.
+
+	* MUONModule.cxx:
+	From Ivana: update following changes in MUON.
+
 2006-10-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCSectorViz.cxx:
