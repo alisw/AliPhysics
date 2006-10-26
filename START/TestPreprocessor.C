@@ -1,8 +1,8 @@
-
-
 void TestPreprocessor()
 {
-  gSystem->Load("libTestShuttle.so");
+  gSystem->Load("libSTARTshuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+
 
   AliCDBManager::Instance()->SetDefaultStorage("local://./TestCDB");
 
