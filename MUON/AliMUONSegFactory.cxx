@@ -39,6 +39,7 @@
 
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
+#include "AliMpSegmentation.h"
 
 #include "AliLog.h"
 
@@ -54,7 +55,6 @@ ClassImp(AliMUONSegFactory)
 //______________________________________________________________________________
 AliMUONSegFactory::AliMUONSegFactory(const AliMUONGeometryTransformer* geometry)
     : TObject(),
-      fMpSegFactory(),
       fDESegmentations(),
       fSegmentation(0),
       fkTransformer(geometry)
@@ -67,7 +67,6 @@ AliMUONSegFactory::AliMUONSegFactory(const AliMUONGeometryTransformer* geometry)
 AliMUONSegFactory::AliMUONSegFactory(const TString& volPathsFileName,
                                      const TString& transformsFileName)
     : TObject(),
-      fMpSegFactory(),
       fDESegmentations(),
       fSegmentation(0),
       fkTransformer(0)
@@ -83,7 +82,6 @@ AliMUONSegFactory::AliMUONSegFactory(const TString& volPathsFileName,
 //______________________________________________________________________________
   AliMUONSegFactory::AliMUONSegFactory()
     : TObject(),      
-      fMpSegFactory(),
       fDESegmentations(),
       fSegmentation(0),
       fkTransformer(0)
@@ -139,21 +137,6 @@ AliMUONSegmentation* AliMUONSegFactory::Segmentation()
 //
 
 //______________________________________________________________________________
-AliMpVSegmentation* 
-AliMUONSegFactory::CreateMpSegmentation(Int_t detElemId, Int_t cath)
-{
-/// Create mapping segmentation for given detElemId and cath
-/// using mapping manager
-
-  AliMpVSegmentation* mpSegmentation 
-    = fMpSegFactory.CreateMpSegmentation(detElemId, cath);
-
-  Segmentation()->AddMpSegmentation(mpSegmentation);
-  
-  return mpSegmentation;
-} 
-    
-//______________________________________________________________________________
 AliMUONVGeometryDESegmentation*  
 AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
 { 
@@ -198,10 +181,14 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
     
   if ( !deSegmentation ) {
 
+    
+
     // Get/Create mapping segmentation via mapping manager
+    const AliMpVSegmentation* kmpSegmentation 
+      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, cath);
     AliMpVSegmentation* mpSegmentation 
-      = CreateMpSegmentation(detElemId, cath);
- 
+      = const_cast<AliMpVSegmentation*>(kmpSegmentation);
+
     AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
     AliMpPlaneType planeType = AliMpDEManager::GetPlaneType(detElemId, cath);
     

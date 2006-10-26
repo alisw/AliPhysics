@@ -35,7 +35,6 @@
 #ifndef ALI_MUON_SEG_FACTORY_H
 #define ALI_MUON_SEG_FACTORY_H
 
-#include "AliMpSegFactory.h"
 #include "AliMpStringObjMap.h"
 
 #include <TObject.h>
@@ -59,10 +58,6 @@ class AliMUONSegFactory : public  TObject {
     // Build methods
     //
     
-    AliMpVSegmentation*              
-      CreateMpSegmentation(Int_t detElemId, Int_t cath);
-              // Create mapping segmentation only 
-
     AliMUONSegmentation*  
       CreateSegmentation(const TString& option = "default"); 
               // Create segmentations on all levels and return their container.
@@ -93,7 +88,6 @@ class AliMUONSegFactory : public  TObject {
     AliMUONSegmentation* Segmentation();
     
     // data members	
-    AliMpSegFactory       fMpSegFactory;   ///< Mapping segmentation factory
     AliMpStringObjMap     fDESegmentations;///< Map of DE segmentations to DE names
     AliMUONSegmentation*  fSegmentation;   ///< Segmentation container 
     const AliMUONGeometryTransformer* fkTransformer; ///< Geometry transformer
