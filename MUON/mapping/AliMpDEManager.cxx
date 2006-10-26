@@ -207,7 +207,7 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
       
       if ( ! fgDENamesMap.GetValue(detElemId) ) 
       {
-        AliDebugClassStream(1)  
+        AliDebugClassStream(3)  
         << "Adding  "  << detElemId << "  " << name1 << "  " << name2 << endl;
         fgDENamesMap.Add(detElemId, 
                          new TPair(new TObjString(name1), new TObjString(name2)));
@@ -229,7 +229,7 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
 void AliMpDEManager::FillDENames()
 {
 /// Fill DE names from files
-  AliDebugClass(1,"");
+  AliDebugClass(2,"");
   Bool_t result1 = ReadDENames(kStation1);
   Bool_t result2 = ReadDENames(kStation2);
   Bool_t result3 = ReadDENames(kStation345);

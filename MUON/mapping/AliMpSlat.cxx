@@ -79,7 +79,7 @@ AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
     //
     // Normal ctor
     //
-	AliDebug(1,Form("this=%p id=%s",this,id));			
+  AliDebug(1,Form("this=%p id=%s",this,id));			
 }
 
 //_____________________________________________________________________________
@@ -88,7 +88,7 @@ AliMpSlat::~AliMpSlat()
   //
   // Dtor.
   //
-		AliDebug(1,Form("this=%p fId=%s",this,fId.Data()));			
+  AliDebug(1,Form("this=%p fId=%s",this,fId.Data()));			
 }
 
 //_____________________________________________________________________________

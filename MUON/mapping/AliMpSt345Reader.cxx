@@ -86,12 +86,12 @@ AliMpSt345Reader::PCB(const char* pcbType)
   TPair* pair = (TPair*)fgPCBMap.FindObject(pcbType);
   if ( pair )
   {
-    AliDebugClass(1,Form("Getting pcb %s from internal map",pcbType));
+    AliDebugClass(2,Form("Getting pcb %s from internal map",pcbType));
     return (AliMpPCB*)pair->Value();
   }
   else
   {
-    AliDebugClass(1,Form("Reading pcb %s from file",pcbType));
+    AliDebugClass(2,Form("Reading pcb %s from file",pcbType));
     return ReadPCB(pcbType);
   }
 }

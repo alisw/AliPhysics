@@ -114,7 +114,7 @@ void  AliMpSectorReader::ReadSectorData(ifstream& in)
   TString keyword;
   in >> keyword;
   
-  AliDebugStream(1) << keyword << endl;
+  AliDebugStream(2) << keyword << endl;
 
   if (keyword != fgkSectorKeyword) {
      Fatal("ReadSectorData", "Wrong file format.");
@@ -133,7 +133,7 @@ void  AliMpSectorReader::ReadSectorData(ifstream& in)
   AliMpDirection direction;
   direction = (directionStr == "Y") ? kY  :  kX;
 
-  AliDebugStream(1) << nofZones << " " <<  nofRows << endl;
+  AliDebugStream(2) << nofZones << " " <<  nofRows << endl;
 
   fSector = new AliMpSector("Not defined", nofZones, nofRows,direction,
                             TVector2(offsetX, offsetY));
@@ -160,7 +160,7 @@ void AliMpSectorReader::ReadZoneData(ifstream& in)
   in >> zoneID;    
   in >> sizex;
   in >> sizey;
-  AliDebugStream(1)
+  AliDebugStream(2)
      << fgkZoneKeyword << " " <<  zoneID << "  " 
      << sizex << " " << sizey << endl;
   
@@ -184,7 +184,7 @@ void AliMpSectorReader::ReadSubZoneData(ifstream& in, AliMpZone* zone)
 /// Read subzone input data;
 /// create subzone and its to the specified zone.
 
-  AliDebugStream(1) << fgkSubZoneKeyword << endl;
+  AliDebugStream(2) << fgkSubZoneKeyword << endl;
 
   AliMpVMotif* motif = ReadMotifData(in, zone);
   AliMpSubZone* subZone = new AliMpSubZone(motif); 
@@ -211,7 +211,7 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(ifstream& in, AliMpZone* zone)
   in >> motifID;
   in >> motifTypeID;
 
-  AliDebugStream(1) << motifID << " " << motifTypeID << endl;
+  AliDebugStream(2) << motifID << " " << motifTypeID << endl;
   
   AliMpMotifMap* motifMap = fSector->GetMotifMap();
 
@@ -261,7 +261,7 @@ void AliMpSectorReader::ReadRowSegmentsData(ifstream& in,
     
     firstMotifPositionId |= AliMpConstants::ManuMask(fPlaneType);
     
-    AliDebugStream(1)
+    AliDebugStream(2)
       << fgkRowKeyword << " " 
       << offX << " " << offY << " " << inRow << " " << nofMotifs << " " 
       << firstMotifPositionId << " " << firstMotifPositionDId
@@ -307,7 +307,7 @@ void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection dire
   TString keyword;
   in >> keyword;
 
-  AliDebugStream(1) << keyword << endl;
+  AliDebugStream(2) << keyword << endl;
 
   if (keyword != fgkSectorSpecialKeyword) {
      Fatal("ReadSectorSpecialData", "Wrong file format.");
@@ -317,7 +317,7 @@ void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection dire
   TString nextKeyword;
   in >> nextKeyword;
 
-  AliDebugStream(1) << keyword << endl;
+  AliDebugStream(2) << keyword << endl;
     
   if (nextKeyword != fgkMotifKeyword) {
     Fatal("ReadSectorSpecialData", "Wrong file format.");
@@ -333,7 +333,7 @@ void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
 {
 /// Read the special (irregular) motifs input data.
 
-  AliDebugStream(1) << fgkMotifKeyword << endl;
+  AliDebugStream(2) << fgkMotifKeyword << endl;
 
   TString nextKeyword;
   do {
@@ -345,7 +345,7 @@ void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
   
     in >> nextKeyword;
 
-    AliDebugStream(1) << nextKeyword << endl;      
+    AliDebugStream(2) << nextKeyword << endl;      
   }
   while (nextKeyword == fgkMotifKeyword);
     
@@ -364,7 +364,7 @@ void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection directi
   Int_t id;
   in >> id;
 
-  AliDebugStream(1) << id << endl;      
+  AliDebugStream(2) << id << endl;      
   
   // Get the row and its border
   AliMpRow* row = fSector->GetRow(id);
@@ -391,7 +391,7 @@ void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection directi
   TString nextKeyword;
   in >> nextKeyword;
   
-  AliDebugStream(1) << nextKeyword << endl;
+  AliDebugStream(2) << nextKeyword << endl;
     
   if (nextKeyword != fgkPadRowsKeyword) {
      Fatal("ReadRowSpecialData", "Wrong file format.");
@@ -427,12 +427,12 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in,
   Int_t nofPadRows;
   in >> nofPadRows;
   
-  AliDebugStream(1) << nofPadRows << endl;
+  AliDebugStream(2) << nofPadRows << endl;
   
   TString keyword;
   in >> keyword;
 
-  AliDebugStream(1) << keyword << endl;
+  AliDebugStream(2) << keyword << endl;
     
   if (keyword != fgkPadRowSegmentKeyword) {
      Fatal("ReadRowSegmentSpecialData", "Wrong file format.");
@@ -472,12 +472,12 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in,
   
     motifPositionId |= AliMpConstants::ManuMask(fPlaneType);
 
-    AliDebugStream(1)
+    AliDebugStream(2)
       << nofPadsInRow << " " << motifId << " " << motifPositionId << endl;
 
     in >> nextKeyword;
 
-    AliDebugStream(1) << nextKeyword << endl;
+    AliDebugStream(2) << nextKeyword << endl;
 
     //
     // Process data

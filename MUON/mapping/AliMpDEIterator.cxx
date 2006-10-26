@@ -78,7 +78,7 @@ Bool_t AliMpDEIterator::ReadDEIds(AliMpStationType station)
     else {  
       detElemId = word.Atoi();
       in.getline(line, 80);
-      AliDebugClassStream(1) 
+      AliDebugClassStream(3) 
         << "Adding  " << fgNofDetElemIds << "  "  << detElemId << endl;
       fgDetElemIds.AddAt(detElemId, fgNofDetElemIds++);
     } 
@@ -96,6 +96,8 @@ void AliMpDEIterator::ReadData()
 {
 /// Fill DE Ids array from DE names files
 /// Return true if all data were read ok
+
+  AliDebugClass(2,"");
 
   Bool_t result1 = ReadDEIds(kStation1);
   Bool_t result2 = ReadDEIds(kStation2);

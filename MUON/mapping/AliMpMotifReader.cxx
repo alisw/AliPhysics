@@ -90,7 +90,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   TString padPosFileName(AliMpFiles::PadPosFilePath(fStationType, 
                                                     fPlaneType, motifTypeId));
   ifstream padPos(padPosFileName);
-  AliDebugStream(1) << "Opening file " << padPosFileName << endl;
+  AliDebugStream(2) << "Opening file " << padPosFileName << endl;
 
   PadMapType positions;
 
@@ -126,7 +126,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
   TString bergToGCFileName
     = AliMpFiles::BergToGCFilePath(fStationType);
-  AliDebugStream(1) << "Opening file " << bergToGCFileName << endl;
+  AliDebugStream(2) << "Opening file " << bergToGCFileName << endl;
 
   ifstream bergToGCFile(bergToGCFileName);
   const Int_t knbergpins = 
@@ -151,7 +151,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   TString motifTypeFileName(AliMpFiles::MotifFilePath(fStationType, 
                                                       fPlaneType, motifTypeId));
   ifstream motif(motifTypeFileName);
-  AliDebugStream(1) << "Opening file " << motifTypeFileName << endl;
+  AliDebugStream(2) << "Opening file " << motifTypeFileName << endl;
 
   Int_t nofPadsX=0;
   Int_t nofPadsY=0;

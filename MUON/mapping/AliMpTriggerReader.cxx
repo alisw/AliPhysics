@@ -445,12 +445,12 @@ AliMpTriggerReader::PCB(const char* pcbType)
   TPair* pair = (TPair*)fgPCBMap.FindObject(pcbType);
   if ( pair )
   {
-    AliDebugClass(1,Form("Getting pcb %s from internal map",pcbType));
+    AliDebugClass(2,Form("Getting pcb %s from internal map",pcbType));
     return (AliMpPCB*)pair->Value();
   }
   else
   {
-    AliDebugClass(1,Form("Reading pcb %s from file",pcbType));
+    AliDebugClass(2,Form("Reading pcb %s from file",pcbType));
     return ReadPCB(pcbType);
   }
 }
@@ -469,7 +469,7 @@ AliMpTriggerReader::ReadLines(const char* slatType,
   // Returns the list of lines (lines), together with some global
   // information as the scale, whether to flip the lines, etc...
   //
-  AliDebugClass(1,Form("SlatType %s Scale %e FlipX %d FlipY %d srcLine %d"
+  AliDebugClass(2,Form("SlatType %s Scale %e FlipX %d FlipY %d srcLine %d"
                        " destLine %d\n",slatType,scale,flipX,flipY,
                        srcLine,destLine));
   
@@ -552,7 +552,7 @@ AliMpTriggerReader::ReadLocalBoardMapping()
 
   TString filename(AliMpFiles::LocalTriggerBoardMapping());
   
-  AliDebugClass(1,Form("Reading from %s\n",filename.Data()));
+  AliDebugClass(2,Form("Reading from %s\n",filename.Data()));
 
   fgLocalBoardMap.Delete();
   
@@ -594,7 +594,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
   // Create a new AliMpPCB object, by reading it from file.
   //
   
-  AliDebugClass(1,Form("pcbType=%s\n",pcbType));
+  AliDebugClass(2,Form("pcbType=%s\n",pcbType));
   
   TString pcbName(pcbType);
   
