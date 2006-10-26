@@ -25,7 +25,6 @@
 #include "AliMpMotifType.h"
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
-#include "AliMpSlatSegmentation.h"
 #include "AliMpTrigger.h"
 
 /// 
@@ -44,8 +43,9 @@ ClassImp(AliMpTriggerSegmentation)
 //_____________________________________________________________________________
 AliMpTriggerSegmentation::AliMpTriggerSegmentation() 
 : AliMpVSegmentation(),
-fkSlat(0),
-fNofStrips(0)
+  fkSlat(0),
+  fIsOwner(false),
+  fNofStrips(0)
 {
   //
   // Default ctor. Not to be used really.
@@ -54,9 +54,11 @@ fNofStrips(0)
 }
 
 //_____________________________________________________________________________
-AliMpTriggerSegmentation::AliMpTriggerSegmentation(const AliMpTrigger* slat) 
+AliMpTriggerSegmentation::AliMpTriggerSegmentation(
+                               const AliMpTrigger* slat, Bool_t own) 
 : AliMpVSegmentation(), 
   fkSlat(slat),
+  fIsOwner(own),
   fNofStrips(0)
 {
   //
@@ -88,6 +90,9 @@ AliMpTriggerSegmentation::~AliMpTriggerSegmentation()
   //
   // Dtor (empty).
   //
+
+  if ( fIsOwner ) delete fkSlat;
+
   AliDebug(1,Form("this=%p",this));			
 }
 
@@ -182,9 +187,8 @@ AliMpTriggerSegmentation::PadByLocation(const AliMpIntPair& location,
   
   for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
   {
-    const AliMpSlat* slat = fkSlat->GetLayer(i);
-    AliMpSlatSegmentation seg(slat);
-    AliMpPad pi = seg.PadByLocation(location,kFALSE);
+    AliMpVSegmentation* seg = fkSlat->GetLayerSegmentation(i);
+    AliMpPad pi = seg->PadByLocation(location,kFALSE);
     if ( pi.IsValid() ) 
     {
       if ( !pad.IsValid() )
@@ -225,9 +229,8 @@ AliMpTriggerSegmentation::PadByIndices(const AliMpIntPair& indices,
   
   for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
   {
-    const AliMpSlat* slat = fkSlat->GetLayer(i);
-    AliMpSlatSegmentation seg(slat);
-    AliMpPad pi = seg.PadByIndices(indices,kFALSE);
+    AliMpVSegmentation* seg = fkSlat->GetLayerSegmentation(i);
+    AliMpPad pi = seg->PadByIndices(indices,kFALSE);
     if ( pi.IsValid() ) 
     {      
       if ( !pad.IsValid() )
@@ -267,9 +270,8 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
   
   for ( Int_t i = 0; i < fkSlat->GetSize(); ++i )
   {
-    const AliMpSlat* slat = fkSlat->GetLayer(i);
-    AliMpSlatSegmentation seg(slat);
-    AliMpPad pi = seg.PadByPosition(position,kFALSE);
+    AliMpVSegmentation* seg = fkSlat->GetLayerSegmentation(i);
+    AliMpPad pi = seg->PadByPosition(position,kFALSE);
     if ( pi.IsValid() ) 
     {
       if ( !pad.IsValid() )

@@ -33,7 +33,7 @@ class AliMpTriggerSegmentation : public AliMpVSegmentation
 {
 public:
   AliMpTriggerSegmentation();
-  AliMpTriggerSegmentation(const AliMpTrigger* slat);
+  AliMpTriggerSegmentation(const AliMpTrigger* slat, Bool_t own = false);
   virtual ~AliMpTriggerSegmentation();
   
   virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const;
@@ -67,10 +67,11 @@ private:
   AliMpTriggerSegmentation(const AliMpTriggerSegmentation& right);
   AliMpTriggerSegmentation&  operator = (const AliMpTriggerSegmentation& right);
 
-  const AliMpTrigger* fkSlat; ///< Slat
+  const AliMpTrigger* fkSlat;  ///< Slat
+  Bool_t              fIsOwner;///< Trigger slat ownership     
   Int_t fNofStrips; ///< Number of strips in this slat
 
-  ClassDef(AliMpTriggerSegmentation,2) // Segmentation for slat trigger stations
+  ClassDef(AliMpTriggerSegmentation,3) // Segmentation for slat trigger stations
 };
 
 #endif
