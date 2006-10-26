@@ -39,7 +39,9 @@
 
 #include <TMath.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTrack) // Class implementation in ROOT context
+/// \endcond
 
 //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack()

@@ -37,7 +37,9 @@
 #include "AliRun.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONDetElement) // Class implementation in ROOT context
+/// \endcond
 
 //_________________________________________________________________________
 AliMUONDetElement::AliMUONDetElement()

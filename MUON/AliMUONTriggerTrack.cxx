@@ -40,7 +40,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
     fGTPattern(0)
 
 {
-  // default ctr
+  /// default ctr
 }
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Long_t theGTPattern)
@@ -51,13 +51,13 @@ AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t theta
       fthetay(thetay),
       fGTPattern(theGTPattern)
 {
-// ctor from local trigger output
+/// ctor from local trigger output
 }
 
 //__________________________________________________________________________
 AliMUONTriggerTrack::~AliMUONTriggerTrack()
 {
-  // Destructor
+  /// Destructor
     ;
     
 }
@@ -71,20 +71,22 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTrig
       fthetay(theMUONTriggerTrack.fthetay),
       fGTPattern(theMUONTriggerTrack.fGTPattern)    
 {
-//
-// copy ctor
-//
+///
+/// copy ctor
+///
 }
       
 //__________________________________________________________________________
 AliMUONTriggerTrack & AliMUONTriggerTrack::operator=(const AliMUONTriggerTrack&
 theMUONTriggerTrack)
 {
+/// Assignment operator
+
     // check assignement to self
     if (this == &theMUONTriggerTrack)
 	return *this;
     
-    // base class assignement
+    /// base class assignement
     TObject::operator=(theMUONTriggerTrack);
 
     fx11 = theMUONTriggerTrack.fx11;

@@ -29,7 +29,9 @@
 #include <TObjArray.h>
 #include <TMath.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONDigitMapA1)
+/// \endcond
 
 AliMUONDigitMapA1::AliMUONDigitMapA1() 
   : fIdDE(0),

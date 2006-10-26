@@ -24,7 +24,9 @@
 
 #include "AliMUONPixel.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONPixel) // Class implementation in ROOT context
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONPixel::AliMUONPixel()

@@ -40,9 +40,11 @@
 #include <TArrayD.h>
 #include "AliLog.h"
 
-AliMUONEventRecoCombi* AliMUONEventRecoCombi::fgRecoCombi = 0; 
-
+/// \cond CLASSIMP
 ClassImp(AliMUONEventRecoCombi)
+/// \endcond
+
+AliMUONEventRecoCombi* AliMUONEventRecoCombi::fgRecoCombi = 0; 
 
 //_________________________________________________________________________
   AliMUONEventRecoCombi::AliMUONEventRecoCombi() 
@@ -52,7 +54,7 @@ ClassImp(AliMUONEventRecoCombi)
       fNZ(0),
       fDEvsZ(0x0)
 {
-  // Ctor
+  /// Ctor
 
   fDetElems = new TClonesArray("AliMUONDetElement", 20);
   fZ = new TArrayD(20);
@@ -61,7 +63,7 @@ ClassImp(AliMUONEventRecoCombi)
 //_________________________________________________________________________
 AliMUONEventRecoCombi* AliMUONEventRecoCombi::Instance()
 {
-// return pointer to the singleton instance
+/// return pointer to the singleton instance
 
   if (fgRecoCombi == 0) {
     fgRecoCombi = new AliMUONEventRecoCombi();
@@ -75,7 +77,7 @@ AliMUONEventRecoCombi* AliMUONEventRecoCombi::Instance()
 //_________________________________________________________________________
 AliMUONEventRecoCombi::~AliMUONEventRecoCombi()
 {
-  // Destructor
+  /// Destructor
   delete fDetElems;
   delete fZ;
   delete [] fDEvsZ;
@@ -84,7 +86,7 @@ AliMUONEventRecoCombi::~AliMUONEventRecoCombi()
 //_________________________________________________________________________
 void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ *recModel)
 {
-  // Fill event information
+  /// Fill event information
 
   // Clear previous event
   fDetElems->Delete();
@@ -172,7 +174,7 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
 //_________________________________________________________________________
 void AliMUONEventRecoCombi::FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructorK *recoTrack) const
 {
-  // Fill rec. points used for tracking from det. elems
+  /// Fill rec. points used for tracking from det. elems
 
   TClonesArray *tracks = recoTrack->GetRecTracksPtr();
   for (Int_t i = 0; i < recoTrack->GetNRecTracks(); i++) {
@@ -220,7 +222,7 @@ void AliMUONEventRecoCombi::FillRecP(AliMUONData *dataCluster, AliMUONTrackRecon
 //_________________________________________________________________________
 Int_t AliMUONEventRecoCombi::IZfromHit(AliMUONHitForRec *hit) const
 {
-  // Get Iz of det. elem. from the hit
+  /// Get Iz of det. elem. from the hit
 
   Int_t index = -hit->GetHitNumber() / 100000 - 1, iz0 = -1;
   for (Int_t iz = 0; iz < fNZ; iz++) {

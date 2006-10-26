@@ -35,7 +35,9 @@
 #include "AliTracker.h"
 #include "AliMUONHitForRec.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
+/// \endcond
 
   //_________________________________________________________________________
 AliMUONTrackParam::AliMUONTrackParam()

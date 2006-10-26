@@ -25,7 +25,7 @@
 #include "AliMUONVCalibParam.h"
 #include "TClonesArray.h"
 
-///
+/// \class AliMUONDigitCalibrator
 /// Class used to calibrate digits (either real or simulated ones).
 ///
 /// The calibration consists of subtracting the pedestal
@@ -40,8 +40,12 @@
 /// information correctly (e.g. to set a quality for the cluster if it contains
 /// bad digits).
 ///
+/// \author Laurent Aphecetche
 
+
+/// \cond CLASSIMP
 ClassImp(AliMUONDigitCalibrator)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
@@ -50,31 +54,26 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
   fData(muonData),
   fCalibrationData(calib)
 {
-    //
-    // ctor. This class need the muonData to get access to the digit,
-    // and the calibrationData to get access to calibration parameters.
-    //
+    /// ctor. This class need the muonData to get access to the digit,
+    /// and the calibrationData to get access to calibration parameters.
 }
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
-  //
-  // empty dtor.
-  //
+  /// empty dtor.
 }
 
 //_____________________________________________________________________________
 void
 AliMUONDigitCalibrator::Exec(Option_t*)
 {
-  //
-  // Main method.
-  // We loop on tracking chambers (i.e. we do nothing for trigger)
-  // and for each digit in that chamber, we calibrate it :
-  // a) if the corresponding channel is known to be bad, we set the signal to 0
-  //    (so that digit can be suppressed later on)
-  // b) we then apply pedestal and gain corrections.
+  /// Main method.
+  /// We loop on tracking chambers (i.e. we do nothing for trigger)
+  /// and for each digit in that chamber, we calibrate it :
+  /// a) if the corresponding channel is known to be bad, we set the signal to 0
+  ///    (so that digit can be suppressed later on)
+  /// b) we then apply pedestal and gain corrections.
   
   for ( Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ++ch )
   {

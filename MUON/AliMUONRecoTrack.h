@@ -10,18 +10,10 @@
 /// \class AliMUONRecoTrack
 /// \brief A reconstructed muon track
 ///
-/// Authors : M.Gheata, A.Gheata 09/10/00
+/// \author M.Gheata, A.Gheata 09/10/00
 
 #include <TObject.h>
 #include <TMath.h>
-
-////////////////////////////////////////////////////////////////////
-//                                                                //
-// AliMUONRecoTrack                                               //
-//                                                                //
-// This class represents a reconstructed muon track.              //
-//                                                                //
-////////////////////////////////////////////////////////////////////
 
 class AliMUONRecoTrack : public TObject 
 {

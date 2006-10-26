@@ -38,7 +38,9 @@
 
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
+/// \endcond
  
 //__________________________________________________________________________
 AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONData* data)

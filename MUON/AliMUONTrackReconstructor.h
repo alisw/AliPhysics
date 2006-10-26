@@ -8,10 +8,6 @@
 /// \ingroup rec
 /// \class AliMUONTrackReconstructor
 /// \brief Standard class for the MUON track reconstruction
-///
-//////////////////////////////////////////////
-/// Standard MUON track reconstructor in ALICE
-//////////////////////////////////////////////
 
 #include <TObject.h>
 #include "AliMUONVTrackReconstructor.h"

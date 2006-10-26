@@ -42,6 +42,10 @@
 #include "AliRun.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
+ClassImp(AliMUONTrackK) // Class implementation in ROOT context
+/// \endcond
+
 const Int_t AliMUONTrackK::fgkSize = 5;
 const Int_t AliMUONTrackK::fgkNSigma = 12; 
 const Double_t AliMUONTrackK::fgkChi2max = 100; 
@@ -50,13 +54,11 @@ const Double_t AliMUONTrackK::fgkEpsilon = 0.002;
 
 void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail); // from AliMUONTrack
 
-  Int_t AliMUONTrackK::fgDebug = -1; //-1;
+Int_t AliMUONTrackK::fgDebug = -1; //-1;
 Int_t AliMUONTrackK::fgNOfPoints = 0; 
 AliMUONTrackReconstructorK* AliMUONTrackK::fgTrackReconstructor = NULL; 
 TClonesArray* AliMUONTrackK::fgHitForRec = NULL; 
 AliMUONEventRecoCombi *AliMUONTrackK::fgCombi = NULL;
-
-ClassImp(AliMUONTrackK) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK()

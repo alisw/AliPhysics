@@ -44,7 +44,9 @@ void fcnS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnCombiS1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
+/// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderVS)
+/// \endcond
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS()
   : TObject(),

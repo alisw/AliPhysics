@@ -9,10 +9,6 @@
 /// \ingroup rec
 /// \class AliMUONSegment
 /// \brief Segment for reconstruction in ALICE dimuon spectrometer
-///
-////////////////////////////////////////////////////////////
-/// Segment for reconstruction in ALICE dimuon  spectrometer
-////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 

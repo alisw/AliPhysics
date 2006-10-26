@@ -15,17 +15,15 @@
 
 /* $Id$ */
 
-////////////////////////////////////
-//
-// MUON track reconstructor using the original method
-//
-// This class contains as data:
-// * the parameters for the track reconstruction
-//
-// It contains as methods, among others:
-// * MakeTracks to build the tracks
-//
-////////////////////////////////////
+/// \class AliMUONTrackReconstructor
+/// MUON track reconstructor using the original method
+///
+/// This class contains as data:
+/// - the parameters for the track reconstruction
+///
+/// It contains as methods, among others:
+/// - MakeTracks to build the tracks
+///
 
 #include <stdlib.h>
 #include <Riostream.h>
@@ -50,7 +48,9 @@ void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
 
 Double_t MultipleScatteringAngle2(AliMUONTrackParam *param);
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTrackReconstructor) // Class implementation in ROOT context
+/// \endcond
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONTrackReconstructor::fgkDefaultMaxChi2 = 100.0;

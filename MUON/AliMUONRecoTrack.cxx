@@ -15,21 +15,20 @@
 
 /* $Id$ */
 
-//Authors: Mihaela Gheata, Andrei Gheata 09/10/00
-////////////////////////////////////////////////////////////////////
-//                                                                //
-// AliMUONRecoTrack                                               //
-//                                                                //
-// This class represents a reconstructed muon track               //
-// in the tree of reconstructed events.                           //
-//                                                                //
-////////////////////////////////////////////////////////////////////
+// ----------------------                                                               
+// Class AliMUONRecoTrack 
+// ----------------------                                                               
+// This class represents a reconstructed muon track
+// in the tree of reconstructed events.            
+// Authors: Mihaela Gheata, Andrei Gheata 09/10/00
 
 #include <Riostream.h>
 
 #include "AliMUONRecoTrack.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONRecoTrack)
+/// \endcond
 
 //-------------------------------------------------------------------
 AliMUONRecoTrack::AliMUONRecoTrack() 
@@ -39,7 +38,7 @@ AliMUONRecoTrack::AliMUONRecoTrack()
     fZvr(0.), 
     fChi2r(0.) 
 { 
-//Default constructor
+/// Default constructor
 }
 
 //-------------------------------------------------------------------
@@ -50,7 +49,7 @@ AliMUONRecoTrack::AliMUONRecoTrack(Bool_t active)
     fZvr(0.),
     fChi2r(0.)
 {
-//Constructor of AliMUONRecoTrack
+/// Constructor of AliMUONRecoTrack
    if (active) {
    	for (Int_t axis=0; axis<3; axis++) {
       	fPr[axis] = 0.0;
@@ -66,21 +65,21 @@ AliMUONRecoTrack::AliMUONRecoTrack(Bool_t active)
 //-------------------------------------------------------------------
 Double_t AliMUONRecoTrack::Phi() const
 {
-// Return trach phi angle
+/// Return trach phi angle
 	return TMath::ATan2(fPr[2], fPr[1]);
 }
 
 //-------------------------------------------------------------------
 Double_t AliMUONRecoTrack::Theta() const
 {
-// Return trach theta angle
+/// Return trach theta angle
    return TMath::ACos(fPr[2] / P());
 }
 
 //-------------------------------------------------------------------
 void AliMUONRecoTrack::SetMomReconstr(Double_t px, Double_t py, Double_t pz)
 {
-// Set the track reconstructed momentum 
+/// Set the track reconstructed momentum 
    fPr[0] = px;
    fPr[1] = py;
    fPr[2] = pz;            
@@ -89,7 +88,7 @@ void AliMUONRecoTrack::SetMomReconstr(Double_t px, Double_t py, Double_t pz)
 //-------------------------------------------------------------------		
 void AliMUONRecoTrack::SetHitPosition(Int_t chamber, Double_t x, Double_t y, Double_t z)
 {
-// Set hit coordinates in chamber[0..9]
+/// Set hit coordinates in chamber[0..9]
    fPosX[chamber] = x;
    fPosY[chamber] = y;
    fPosZ[chamber] = z;
@@ -98,7 +97,7 @@ void AliMUONRecoTrack::SetHitPosition(Int_t chamber, Double_t x, Double_t y, Dou
 //-------------------------------------------------------------------		
 void AliMUONRecoTrack::TrackInfo() const
 {
-// Prints momentum info for this track
+/// Prints momentum info for this track
    cout << "Px=" << GetMomReconstr(0) << " Py=" << GetMomReconstr(1) <<
           " Pz=" << GetMomReconstr(2) << " P=" << P() << endl;
 }

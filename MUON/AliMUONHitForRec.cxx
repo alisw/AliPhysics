@@ -29,7 +29,9 @@
 #include "AliLog.h"
 #include "Riostream.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONHitForRec) // Class implementation in ROOT context
+/// \endcond
 
   //__________________________________________________________________________
 AliMUONHitForRec::AliMUONHitForRec()

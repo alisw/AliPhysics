@@ -33,7 +33,9 @@
 #include "AliRun.h" // for gAlice
 #include "AliLog.h" 
 
+/// \cond CLASSIMP
 ClassImp(AliMUONSegment) // Class implementation in ROOT context
+/// \endcond
 
   //__________________________________________________________________________
 AliMUONSegment::AliMUONSegment()
@@ -55,7 +57,7 @@ AliMUONSegment::AliMUONSegment()
     fZ(0.),
     fInTrack(kFALSE)
 {
-  // Default constructor
+  /// Default constructor
 
 }
 
@@ -79,14 +81,15 @@ AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
     fZ(Hit1->GetZ()),
     fInTrack(kFALSE)
 {
-  // Constructor for AliMUONSegment from two HitForRec's,
-  // one, in the first chamber of the station, pointed to by "Hit1",
-  // the other one, in the second chamber of the station, pointed to by "Hit1".
-  // Fills the pointers to both hits,
-  // the slope, the covariance for (coordinate in first chamber, slope),
-  // and the impact parameter at vertex (Z=0),
-  // in bending and non bending planes.
-  // Puts the "fInTrack" flag to "kFALSE".
+  /// Constructor for AliMUONSegment from two HitForRec's,
+  /// one, in the first chamber of the station, pointed to by "Hit1",
+  /// the other one, in the second chamber of the station, pointed to by "Hit1".
+  /// Fills the pointers to both hits,
+  /// the slope, the covariance for (coordinate in first chamber, slope),
+  /// and the impact parameter at vertex (Z=0),
+  /// in bending and non bending planes.
+  /// Puts the "fInTrack" flag to "kFALSE".
+
   Double_t dz;
   dz = Hit1->GetZ() - Hit2->GetZ();
 
@@ -108,10 +111,11 @@ AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
   //__________________________________________________________________________
 Int_t AliMUONSegment::Compare(const TObject* Segment) const
 {
-  // "Compare" function to sort with increasing absolute value
-  // of the "impact parameter" in bending plane.
-  // Returns -1 (0, +1) if |impact parameter| of current Segment
-  // is smaller than (equal to, larger than) |impact parameter| of Segment
+  /// "Compare" function to sort with increasing absolute value
+  /// of the "impact parameter" in bending plane.
+  /// Returns -1 (0, +1) if |impact parameter| of current Segment
+  /// is smaller than (equal to, larger than) |impact parameter| of Segment
+
   if (TMath::Abs(((AliMUONSegment*)this)->fBendingImpact)
       < TMath::Abs(((AliMUONSegment*)Segment)->fBendingImpact))
     return(-1);
@@ -122,15 +126,16 @@ Int_t AliMUONSegment::Compare(const TObject* Segment) const
   //__________________________________________________________________________
 Double_t AliMUONSegment::NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut) const
 {
-  // Calculate the normalized Chi2 between the current Segment (this)
-  // and the Segment pointed to by "Segment",
-  // i.e. the square deviations between the coordinates and the slopes,
-  // in both the bending and the non bending plane,
-  // divided by the variance of the same quantities and by "Sigma2Cut".
-  // Returns 5 if none of the 4 quantities is OK,
-  // something smaller than or equal to 4 otherwise.
-  // Would it be more correct to use a real chi square
-  // including the non diagonal term ????
+  /// Calculate the normalized Chi2 between the current Segment (this)
+  /// and the Segment pointed to by "Segment",
+  /// i.e. the square deviations between the coordinates and the slopes,
+  /// in both the bending and the non bending plane,
+  /// divided by the variance of the same quantities and by "Sigma2Cut".
+  /// Returns 5 if none of the 4 quantities is OK,
+  /// something smaller than or equal to 4 otherwise.
+  /// Would it be more correct to use a real chi square
+  /// including the non diagonal term ????
+
   Double_t chi2, chi2Max, diff, normDiff;
   chi2 = 0.0;
   chi2Max = 5.0;
@@ -164,15 +169,16 @@ Double_t AliMUONSegment::NormalizedChi2WithSegment(AliMUONSegment* Segment, Doub
   //__________________________________________________________________________
 AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation ( Double_t z, Double_t MCSfactor) const
 {
-  // Extrapolates linearly the current Segment (this) to station (0..) "Station".
-  // Multiple Coulomb scattering calculated from "MCSfactor"
-  // corresponding to one chamber,
-  // with one chamber for the coordinate, two chambers for the angle,
-  // due to the arrangement in stations.
-  // Valid from station(1..) 4 to 5 or vice versa.
-  // Returns the pointer to the created AliMUONSegment object
-  // corresponding to this extrapolation.
-  // The caller has the responsibility to delete this object.
+  /// Extrapolates linearly the current Segment (this) to station (0..) "Station".
+  /// Multiple Coulomb scattering calculated from "MCSfactor"
+  /// corresponding to one chamber,
+  /// with one chamber for the coordinate, two chambers for the angle,
+  /// due to the arrangement in stations.
+  /// Valid from station(1..) 4 to 5 or vice versa.
+  /// Returns the pointer to the created AliMUONSegment object
+  /// corresponding to this extrapolation.
+  /// The caller has the responsibility to delete this object.
+
   AliMUONSegment* extrapSegment = new AliMUONSegment(); // creates empty new segment
   // dZ from first hit of current Segment to first chamber of station "Station"
   Double_t dZ =  z - this->GetZ();
@@ -207,13 +213,14 @@ AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation ( Double_
   //__________________________________________________________________________
 AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber ( Double_t z, Double_t MCSfactor) const
 {
-  // Extrapolates linearly the current Segment (this) to chamber(0..) "Chamber".
-  // Multiple Coulomb scattering calculated from "MCSfactor"
-  // corresponding to one chamber.
-  // Valid from station(1..) 4 to 5 or vice versa.
-  // Returns the pointer to the created AliMUONHitForRec object
-  // corresponding to this extrapolation.
-  // The caller has the responsibility to delete this object.
+  /// Extrapolates linearly the current Segment (this) to chamber(0..) "Chamber".
+  /// Multiple Coulomb scattering calculated from "MCSfactor"
+  /// corresponding to one chamber.
+  /// Valid from station(1..) 4 to 5 or vice versa.
+  /// Returns the pointer to the created AliMUONHitForRec object
+  /// corresponding to this extrapolation.
+  /// The caller has the responsibility to delete this object.
+
   AliMUONHitForRec* extrapHitForRec = new AliMUONHitForRec(); // creates empty new HitForRec
   // dZ from first hit of current Segment to chamber
   Double_t dZ = z - this->GetZ();
@@ -238,24 +245,25 @@ AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber ( Dou
   //__________________________________________________________________________
 void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t /*MCSfactor*/, Double_t /*Dz1*/, Double_t /*Dz2*/, Double_t /*Dz3*/, Int_t Station, Double_t InverseMomentum)
 {
-  // Fill data members with values calculated from the array of track parameters
-  // pointed to by "TrackParam" (index = 0 and 1 for first and second chambers
-  // of the station, respectively).
-  // Multiple Coulomb scattering is taking into account with "MCSfactor"
-  // corresponding to one chamber,
-  // with one chamber for the coordinate, two chambers for the angle,
-  // due to the arrangement in stations.
-  // Resolution coming from:
-  // coordinate in closest station at "Dz1" from current "Station",
-  // slope between closest stations, with "Dz2" interval between them,
-  // interval "Dz3" between chambers of closest station,
-  // extrapolation over "Dz1" from closest station,
-  // "InverseMomentum".
-  // When called, "fBendingCoorReso2" and "fNonBendingCoorReso2"
-  // are assumed to be filled
-  // with the variance on bending and non bending coordinates.
-  // The "road" is parametrized from the old reco_muon.F
-  // with 8 cm between stations.
+  /// Fill data members with values calculated from the array of track parameters
+  /// pointed to by "TrackParam" (index = 0 and 1 for first and second chambers
+  /// of the station, respectively).
+  /// Multiple Coulomb scattering is taking into account with "MCSfactor"
+  /// corresponding to one chamber,
+  /// with one chamber for the coordinate, two chambers for the angle,
+  /// due to the arrangement in stations.
+  /// Resolution coming from:
+  /// coordinate in closest station at "Dz1" from current "Station",
+  /// slope between closest stations, with "Dz2" interval between them,
+  /// interval "Dz3" between chambers of closest station,
+  /// extrapolation over "Dz1" from closest station,
+  /// "InverseMomentum".
+  /// When called, "fBendingCoorReso2" and "fNonBendingCoorReso2"
+  /// are assumed to be filled
+  /// with the variance on bending and non bending coordinates.
+  /// The "road" is parametrized from the old reco_muon.F
+  /// with 8 cm between stations.
+
   AliMUONTrackParam *param0;
 //   Double_t cReso2, sReso2;
   // parameters to define the widths of the searching roads in station 0,1,2
@@ -367,7 +375,7 @@ void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, 
 void
 AliMUONSegment::Print(Option_t*) const
 {
-  // Printing
+  /// Printing
 
   cout.precision(5);
   cout.width(5);
