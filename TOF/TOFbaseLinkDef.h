@@ -14,6 +14,7 @@
 #pragma link C++ class  AliTOFdigit+;
 #pragma link C++ class  AliTOFRawStream+;
 #pragma link C++ class  AliTOFChannel+;
+#pragma link C++ class  AliTOFChannelOnline+;
 #pragma link C++ class  AliTOFChSim+;
 #pragma link C++ class  AliTOFcalibESD+;
 #pragma link C++ class  AliTOFcalib+;
@@ -24,6 +25,10 @@
 #pragma link C++ class  AliTOFCalPlateC+;
 #pragma link C++ class  AliTOFCalSector+;
 #pragma link C++ class  AliTOFCal+;
+#pragma link C++ class  AliTOFCalOnline+;
 #pragma link C++ class  AliTOFAlignment+;
+#pragma link C++ class  AliTOFPreprocessor+;
+#pragma link C++ class  AliTOFDataDCS+;
+#pragma link C++ class  AliTOFFormatDCS+;
 
 #endif
