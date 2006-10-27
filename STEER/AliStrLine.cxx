@@ -57,6 +57,31 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
   }
 }
 
+//________________________________________________________
+AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
+  TObject(),
+  fTpar(0),
+  fDebug(0)
+{
+  // Standard constructor - with float arguments
+  // if twopoints is true:  point and cd are the 3D coordinates of
+  //                        two points defininig the straight line
+  // if twopoint is false: point represents the 3D coordinates of a point
+  //                       belonging to the straight line and cd is the
+  //                       direction in space
+  Double_t point[3];
+  Double_t cd[3];
+  for(Int_t i=0;i<3;i++){
+    point[i] = pointf[i];
+    cd[i] = cdf[i];
+  }
+  if(twopoints){
+    InitTwoPoints(point,cd);
+  }
+  else {
+    InitDirection(point,cd);
+  }
+}
 
 //________________________________________________________
 void AliStrLine::InitDirection(Double_t *point, Double_t *cd){
@@ -186,7 +211,7 @@ Int_t AliStrLine::Cross(AliStrLine *line, Double_t *point){
 }
 
 //___________________________________________________________
-Double_t AliStrLine::GetDCA(AliStrLine *line){
+Double_t AliStrLine::GetDCA(AliStrLine *line) const{
   //Returns the distance of closest approach between two lines
   Double_t p2[3];
   Double_t cd2[3];
@@ -226,4 +251,11 @@ Double_t AliStrLine::GetDCA(AliStrLine *line){
 void AliStrLine::GetCurrentPoint(Double_t *point) const {
   // Fills the array point with the current value on the line
   for(Int_t i=0;i<3;i++)point[i]=fP0[i]+fCd[i]*fTpar;
+}
+
+//________________________________________________________
+Double_t AliStrLine::GetDistFromPoint(Double_t *point) const {
+  // computes distance from point 
+  AliStrLine tmp(point,(Double_t *)fCd,kFALSE);
+  return this->GetDCA(&tmp);
 }
