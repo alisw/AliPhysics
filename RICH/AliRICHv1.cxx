@@ -75,7 +75,7 @@ void AliRICHv1::CreateMaterials()
 
   const Int_t kNbins=30;       //number of photon energy points
   Float_t aEckov [kNbins]; 
-  Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins], aAbsMet[kNbins],               ;
+  Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins], aAbsMet[kNbins];
   Float_t aIdxRad[kNbins], aIdxWin[kNbins], aIdxGap[kNbins], aIdxMet[kNbins], aIdxPc[kNbins]; 
   Float_t                                                    aQeAll [kNbins], aQePc [kNbins];
                             
