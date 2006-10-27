@@ -16,14 +16,17 @@
 ClassImp(AliITSBeamTestDigSSD)
 
 //_____________________________________________________________
-AliITSBeamTestDigSSD::AliITSBeamTestDigSSD(): AliITSBeamTestDig() {
+AliITSBeamTestDigSSD::AliITSBeamTestDigSSD(): AliITSBeamTestDig(),
+fFlagHeader(0) 
+{
   //
   // Constructor
   //  
 }
 
 //_____________________________________________________________
-AliITSBeamTestDigSSD::AliITSBeamTestDigSSD(const Text_t* name, const Text_t* title): AliITSBeamTestDig(name,title) {
+AliITSBeamTestDigSSD::AliITSBeamTestDigSSD(const Text_t* name, const Text_t* title): AliITSBeamTestDig(name,title),
+fFlagHeader(0){
   //
   // Constructor
   //

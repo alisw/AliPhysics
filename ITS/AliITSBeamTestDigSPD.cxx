@@ -21,23 +21,19 @@ ClassImp(AliITSBeamTestDigSPD)
 
 
 //_____________________________________________________________
-  AliITSBeamTestDigSPD::AliITSBeamTestDigSPD(): AliITSBeamTestDig()
-{
+  AliITSBeamTestDigSPD::AliITSBeamTestDigSPD(): AliITSBeamTestDig(),
+fFlagHeader(0){
   //
   // Constructor
   //
-
-  
 }
 
 //_____________________________________________________________
-  AliITSBeamTestDigSPD::AliITSBeamTestDigSPD(const Text_t* name, const Text_t* title): AliITSBeamTestDig(name,title)
-{
+AliITSBeamTestDigSPD::AliITSBeamTestDigSPD(const Text_t* name, const Text_t* title): AliITSBeamTestDig(name,title),
+fFlagHeader(0){
   //
   // Constructor
   //
-
- 
 }
 
 //__________________________________________________________________

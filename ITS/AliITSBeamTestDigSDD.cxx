@@ -20,27 +20,30 @@
 ClassImp(AliITSBeamTestDigSDD)
 
 //_____________________________________________________________
-  AliITSBeamTestDigSDD::AliITSBeamTestDigSDD(): AliITSBeamTestDig()
-{
+  AliITSBeamTestDigSDD::AliITSBeamTestDigSDD(): AliITSBeamTestDig(),
+fSDDEvType(0),
+fSubEventAttributes(0),
+fBtPer(),
+fThreshold(0),
+fStreamer(0){
   //
   // Constructor
   //
   SetBtPeriod();
-  fSubEventAttributes=0;
-  fThreshold=0;
-  fStreamer=0;
 }
 
 //_____________________________________________________________
-AliITSBeamTestDigSDD::AliITSBeamTestDigSDD(const Text_t* name, const Text_t* title): AliITSBeamTestDig(name,title)
+AliITSBeamTestDigSDD::AliITSBeamTestDigSDD(const Text_t* name, const Text_t* title): AliITSBeamTestDig(name,title),
+fSDDEvType(0),
+fSubEventAttributes(0),
+fBtPer(),
+fThreshold(0),
+fStreamer(0)
 {
   //
   // Constructor
   //
   SetBtPeriod();
-  fSubEventAttributes=0;
-  fThreshold=0;
-  fStreamer=0;
 }
 
 //__________________________________________________________________
@@ -184,24 +187,21 @@ Int_t AliITSBeamTestDigSDD::GetEventType(){
 }
 
 //______________________________________________________________________
-AliITSBeamTestDigSDD::AliITSBeamTestDigSDD(const AliITSBeamTestDigSDD &bt):AliITSBeamTestDig(bt){
+AliITSBeamTestDigSDD::AliITSBeamTestDigSDD(const AliITSBeamTestDigSDD &bt):AliITSBeamTestDig(bt),
+fSDDEvType(bt.fSDDEvType),
+fSubEventAttributes(bt.fSubEventAttributes),
+fBtPer(bt.fBtPer),
+fThreshold(bt.fThreshold),
+fStreamer(bt.fStreamer){
     // Copy constructor. 
 
-  fSDDEvType = bt.fSDDEvType;
-  fSubEventAttributes = bt.fSubEventAttributes;
-  fBtPer = bt.fBtPer;
-  fThreshold = bt.fThreshold;
-  fStreamer = bt.fStreamer;
 }
 //______________________________________________________________________
 AliITSBeamTestDigSDD& AliITSBeamTestDigSDD::operator=(const AliITSBeamTestDigSDD &source){
-    // Assignment operator. This is a function which is not allowed to be
-    // done to the ITS beam test dig. It exits with an error.
-    // Inputs:
-    if(this==&source) return *this;
-    Error("operator=","You are not allowed to make a copy of the AliITSBeamTestDig");
-    exit(1);
-    return *this; //fake return
+    // Assignment operator. 
+  this->~AliITSBeamTestDigSDD();
+  new(this) AliITSBeamTestDigSDD(source);
+  return *this;
 }
 
 

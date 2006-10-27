@@ -25,12 +25,22 @@
 ClassImp(AliITSRawClusterSPD)
 
 //______________________________________________________________________
-AliITSRawClusterSPD::AliITSRawClusterSPD(){
+AliITSRawClusterSPD::AliITSRawClusterSPD():
+fX(0.0),
+fZ(0.0),
+fQ(0.0),
+fNClZ(0),
+fNClX(0),
+fXStart(0),
+fXStop(0),
+fZStart(0.0),
+fZStop(0.0),
+fZend(0),
+fNTracks(0),
+fModule(0)
+{
   // Default constructor
-  fX=fZ=fQ=0.0;
-  fZStart=fZStop=0.0;
-  fNClZ=fNClX=fXStart=fXStop=fZend=fNTracks=0;
-  fTracks[0]=fTracks[1]=fTracks[2]=-3,fModule=0;
+  fTracks[0]=fTracks[1]=fTracks[2]=-3;
 }
 
 //______________________________________________________________________
@@ -39,20 +49,21 @@ AliITSRawClusterSPD::AliITSRawClusterSPD(Float_t clz,Float_t clx,
 					 Int_t ClusterSizeX,Int_t xstart,
 					 Int_t xstop,
 					 Float_t zstart,Float_t zstop,
-					 Int_t zend,Int_t module) {
+					 Int_t zend,Int_t module):
+fX(clx),
+fZ(clz),
+fQ(Charge),
+fNClZ(ClusterSizeZ),
+fNClX(ClusterSizeX),
+fXStart(xstart),
+fXStop(xstop),
+fZStart(zstart),
+fZStop(zstop),
+fZend(zend),
+fNTracks(0),
+fModule(module) {
     // constructor
 
-    fZ       = clz;
-    fX       = clx;
-    fQ       = Charge;
-    fNClZ    = ClusterSizeZ;
-    fNClX    = ClusterSizeX;
-    fXStart  = xstart;
-    fXStop   = xstop;
-    fZStart  = zstart;
-    fZStop   = zstop;
-    fZend    = zend;
-    fModule  = module;
 }
 //______________________________________________________________________
 void AliITSRawClusterSPD::Add(AliITSRawClusterSPD* clJ) {

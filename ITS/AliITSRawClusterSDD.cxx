@@ -25,16 +25,28 @@
 
 ClassImp(AliITSRawClusterSDD)
 //______________________________________________________________________
-AliITSRawClusterSDD::AliITSRawClusterSDD(){
+AliITSRawClusterSDD::AliITSRawClusterSDD():
+fX(0),
+fZ(0),
+fQ(0),
+fWing(0),
+fAnode(0),
+fTime(0),
+fAsigma(0),
+fTsigma(0),
+fPeakAmplitude(0),
+fSumAmplitude(0),
+fPeakPosition(-1),
+fNanodes(1),
+fTstart(0),
+fTstop(0),
+fTstartf(0),
+fTstopf(0),
+fAstart(0),
+fAstop(0)
+{
 	// default constructor
-	fX=fZ=fQ=0;
-	fWing=0;
-	fNanodes=1;
-	fAnode=fTime=fPeakAmplitude=0;
-	fPeakPosition=-1;
-	fMultiplicity=0;
-	fTstart=fTstop=fTstartf=fTstopf=0;
-	fAstart=fAstop=0;
+  fMultiplicity = 0;
 }
 
 //______________________________________________________________________
@@ -48,57 +60,57 @@ AliITSRawClusterSDD::AliITSRawClusterSDD(Int_t wing,
 					 Int_t Samples,Int_t Tstart,
 					 Int_t Tstop,Int_t Tstartf,
 					 Int_t Tstopf,Int_t Anodes, 
-					 Int_t Astart, Int_t Astop){
+					 Int_t Astart, Int_t Astop):
+fX(0),
+fZ(0),
+fQ(Charge),
+fWing(wing),
+fAnode(Anode),
+fTime(Time),
+fAsigma(Asigma),
+fTsigma(Tsigma),
+fPeakAmplitude(PeakAmplitude),
+fSumAmplitude(0),
+fPeakPosition(PeakPosition),
+fNanodes(Anodes),
+fTstart(Tstart),
+fTstop(Tstop),
+fTstartf(Tstartf),
+fTstopf(Tstopf),
+fAstart(Astart),
+fAstop(Astop){
     // constructor
-
-    fWing          = wing;
-    fAnode         = Anode;
-    fTime          = Time;
-    fQ             = Charge;
-    fPeakAmplitude = PeakAmplitude;
-    fPeakPosition  = PeakPosition;
-    fAsigma        = Asigma;
-    fTsigma        = Tsigma;
-    fNanodes       = Anodes;
-    fTstart        = Tstart;
-    fTstop         = Tstop;
-    fTstartf       = Tstartf;
-    fTstopf        = Tstopf;
-    fAstart        = Astart;
-    fAstop         = Astop;
-    fMultiplicity  = Samples;
-    fSumAmplitude  = 0;
 
     Int_t sign = 1;
     for(Int_t i=0;i<fWing; i++) sign *= (-1);
     fX = DriftPath*sign/10000.;
     fZ = AnodeOffset/10000.;
+    fMultiplicity = Samples;
 }
 //______________________________________________________________________
 AliITSRawClusterSDD::AliITSRawClusterSDD(const AliITSRawClusterSDD & source):
-    AliITSRawCluster(source){
+    AliITSRawCluster(source),
+fX(source.fX),
+fZ(source.fZ),
+fQ(source.fQ),
+fWing(source.fWing),
+fAnode(source.fAnode),
+fTime(source.fTime),
+fAsigma(source.fAsigma),
+fTsigma(source.fTsigma),
+fPeakAmplitude(source.fPeakAmplitude),
+fSumAmplitude(source.fSumAmplitude),
+fPeakPosition(source.fPeakPosition),
+fNanodes(source.fNanodes),
+fTstart(source.fTstart),
+fTstop(source.fTstop),
+fTstartf(source.fTstartf),
+fTstopf(source.fTstopf),
+fAstart(source.fAstart),
+fAstop(source.fAstop){
     // copy constructor
 
-    fWing          = source.fWing;
-    fAnode         = source.fAnode;
-    fTime          = source.fTime;
-    fQ             = source.fQ;
-    fPeakAmplitude = source.fPeakAmplitude;
-    fPeakPosition  = source.fPeakPosition;
-    fAsigma        = source.fAsigma;
-    fTsigma        = source.fTsigma;
-    fNanodes       = source.fNanodes;
-    fTstart        = source.fTstart;
-    fTstop         = source.fTstop;
-    fTstartf       = source.fTstartf;
-    fTstopf        = source.fTstopf;
-    fAstart        = source.fAstart;
-    fAstop         = source.fAstop;
-
     fMultiplicity  = source.fMultiplicity;
-    fSumAmplitude  = source.fSumAmplitude;
-    fX             = source.fX;
-    fZ             = source.fZ;
 }
 //______________________________________________________________________
 void AliITSRawClusterSDD::Add(AliITSRawClusterSDD* clJ) {

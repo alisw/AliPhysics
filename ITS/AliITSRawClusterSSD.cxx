@@ -24,21 +24,27 @@
 ClassImp(AliITSRawClusterSSD)
 
 //______________________________________________________________________
-AliITSRawClusterSSD::AliITSRawClusterSSD(){
+AliITSRawClusterSSD::AliITSRawClusterSSD():
+fMultiplicityN(0),
+fQErr(0),
+fSignalP(0),
+fSignalN(0),
+fStatus(-1),
+fNtracks(0)
+{
   // Default constructor
-  fMultiplicityN=0;
-  fQErr=0; 
-  fSignalP=0;
-  fSignalN=0;
-  fStatus=-1;
-  fNtracks=0;
 }
 //______________________________________________________________________
-AliITSRawClusterSSD::AliITSRawClusterSSD(Float_t Prob,Int_t Sp,Int_t Sn) {  
+AliITSRawClusterSSD::AliITSRawClusterSSD(Float_t Prob,Int_t Sp,Int_t Sn):
+fMultiplicityN(Sn),
+fQErr(0),
+fSignalP(0),
+fSignalN(0),
+fStatus(-1),
+fNtracks(0) {  
     // constructor
 
     Prob = 0.0; // added to remove unused variable warning.
     //fProbability   = Prob;
     fMultiplicity  = Sp;
-    fMultiplicityN = Sn;
 }
