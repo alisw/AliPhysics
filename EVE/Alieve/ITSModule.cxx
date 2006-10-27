@@ -86,26 +86,93 @@ void ITSModule::SetID(Int_t id)
 void ITSModule::InitModule()
 {
   fInfo->fGeom->GetModuleId(fID,fLayer,fLadder,fDet);
-  SetName(Form("ITSModule %d", fID));
-
+  TString strLadder = "Ladder";
+  TString strSensor = "Sensor";
+  TString symname;
+  Int_t id, nsector, nstave, nladder, rest;
+  
   if (fID <= fInfo->fGeom->GetLastSPD()) {
-    fDetID = 0;
-    fDx = fInfo->fSegSPD->Dx()*0.00005;
-    fDz = 3.48; 
-    fDy = fInfo->fSegSPD->Dy()*0.00005;
+    symname+=strLadder;
+    if (fID<80) {
+      nsector = fID/8;
+      rest=fID-nsector*8;
+      nstave=1;
+      if (rest<4) nstave=0;
+      rest-=nstave*4;
+      symname+=rest;
+      SetName(symname.Data());
+      fDetID = 0;
+      fDx = fInfo->fSegSPD->Dx()*0.00005;
+      fDz = 3.48; 
+      fDy = fInfo->fSegSPD->Dy()*0.00005;
+    } else {
+      id=fID-80;
+      nsector = id/8;
+      rest=id-nsector*8;
+      nstave=1;
+      if (rest<4) nstave=0;
+      rest-=nstave*4;
+      symname+=rest;
+      SetName(symname.Data());
+      fDetID = 0;
+      fDx = fInfo->fSegSPD->Dx()*0.00005;
+      fDz = 3.48; 
+      fDy = fInfo->fSegSPD->Dy()*0.00005;
+      fDetID = 0;
+      fDx = fInfo->fSegSPD->Dx()*0.00005;
+      fDz = 3.48; 
+      fDy = fInfo->fSegSPD->Dy()*0.00005;
+    }
   }
   else if (fID <= fInfo->fGeom->GetLastSDD()) {
-    fDetID = 1;
-    fDx = fInfo->fSegSDD->Dx()*0.0001;
-    fDz = fInfo->fSegSDD->Dz()*0.00005;
-    fDy = fInfo->fSegSDD->Dy()*0.00005;
+    symname+=strSensor;
+    if (fID<324) {
+      id = fID-240;
+      nladder = id/6;
+      rest=id-nladder*6;
+      symname+=rest;
+      SetName(symname.Data());
+      fDetID = 1;
+      fDx = fInfo->fSegSDD->Dx()*0.0001;
+      fDz = fInfo->fSegSDD->Dz()*0.00005;
+      fDy = fInfo->fSegSDD->Dy()*0.00005;
+    } else {
+      id = fID-324;
+      nladder = id/8;
+      rest=id-nladder*8;
+      symname+=rest;
+      SetName(symname.Data());
+      fDetID = 1;
+      fDx = fInfo->fSegSDD->Dx()*0.0001;
+      fDz = fInfo->fSegSDD->Dz()*0.00005;
+      fDy = fInfo->fSegSDD->Dy()*0.00005;
+    }
   }
   else {
-    fDetID = 2;
-    fInfo->fSegSSD->SetLayer(fLayer);  
-    fDx = fInfo->fSegSSD->Dx()*0.00005;
-    fDz = fInfo->fSegSSD->Dz()*0.00005;
-    fDy = fInfo->fSegSSD->Dy()*0.00005;
+    symname+=strSensor;
+    if (fID<1248) {
+      id = fID-500;
+      nladder = id/22;
+      rest=id-nladder*22;
+      symname+=rest;
+      SetName(symname.Data());
+      fDetID = 2;
+      fInfo->fSegSSD->SetLayer(fLayer);  
+      fDx = fInfo->fSegSSD->Dx()*0.00005;
+      fDz = fInfo->fSegSSD->Dz()*0.00005;
+      fDy = fInfo->fSegSSD->Dy()*0.00005;
+    } else {
+      id = fID-1248;
+      nladder = id/25;
+      rest=id-nladder*25;
+      symname+=rest;
+      SetName(symname.Data());
+      fDetID = 2;
+      fInfo->fSegSSD->SetLayer(fLayer);  
+      fDx = fInfo->fSegSSD->Dx()*0.00005;
+      fDz = fInfo->fSegSSD->Dz()*0.00005;
+      fDy = fInfo->fSegSSD->Dy()*0.00005;
+    }
   }
 
   LoadQuads();  
