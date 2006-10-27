@@ -10,6 +10,8 @@ namespace Reve {
 class BoxSetGL : public TGLObject
 {
 protected:
+  BoxSet* fM;
+
   virtual void DirectDraw(const TGLDrawFlags & flags) const;
 
 public:
