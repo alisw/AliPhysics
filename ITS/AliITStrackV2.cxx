@@ -151,7 +151,7 @@ Bool_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
  if (!AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass())) return kFALSE;
 
-  Double_t x=GetX(), y=GetZ(), z=GetZ();
+  Double_t x=GetX(), y=GetY(), z=GetZ();
   if (IsStartedTimeIntegral() && x>oldX) {
     Double_t l2 = (x-oldX)*(x-oldX) + (y-oldY)*(y-oldY) + (z-oldZ)*(z-oldZ);
     AddTimeStep(TMath::Sqrt(l2));
