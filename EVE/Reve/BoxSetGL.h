@@ -7,6 +7,8 @@
 
 namespace Reve {
 
+class BoxSet;
+
 class BoxSetGL : public TGLObject
 {
 protected:
