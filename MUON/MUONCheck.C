@@ -50,6 +50,7 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
 
@@ -630,11 +631,13 @@ void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
     AliMUONTrack* recTrack = 0;
     AliMUONTrackParam* trackParam = 0;
 
+    // set the magnetic field for track extrapolations
+    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
     for (Int_t iRecTracks = 0; iRecTracks <  nrectracks;  iRecTracks++) {
    //  // reading info from tracks
        recTrack = (AliMUONTrack*) RecTracks->At(iRecTracks);
        trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
-       trackParam->ExtrapToZ(0.0);
+       AliMUONTrackExtrap::ExtrapToZ(trackParam,0.);
       recTrack->Print("full");
     } // end loop tracks
 

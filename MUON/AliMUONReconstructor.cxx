@@ -14,9 +14,9 @@
  **************************************************************************/
 /* $Id$ */
 
-//-----------------------------    
-// Class AliMUONReconstructor                                                                      //
-//-----------------------------                                                                           //
+//-----------------------------
+// Class AliMUONReconstructor  
+//-----------------------------
 // Class for the 
 // MUON track reconstruction
 
@@ -36,6 +36,7 @@
 #include "AliMUONDigitMaker.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliMUONVTrackReconstructor.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
@@ -483,7 +484,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
    
     if (esdVert->GetNContributors())
-      trackParam->ExtrapToVertex(vertex[0],vertex[1],vertex[2]);
+      AliMUONTrackExtrap::ExtrapToVertex(trackParam, vertex[0],vertex[1],vertex[2]);
 
     bendingSlope            = trackParam->GetBendingSlope();
     nonBendingSlope         = trackParam->GetNonBendingSlope();

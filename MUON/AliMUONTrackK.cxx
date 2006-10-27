@@ -37,6 +37,7 @@
 #include "AliMUONHitForRec.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliMUONEventRecoCombi.h"
 #include "AliMUONDetElement.h"
 #include "AliRun.h"
@@ -696,7 +697,7 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   do {
     step = TMath::Abs(step);
     // Propagate parameters
-    trackParam.ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
+    AliMUONTrackExtrap::ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
     //extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
     distance = zEnd - vGeant3New[2];
     step *= dZ/(vGeant3New[2]-fPositionNew);
@@ -716,7 +717,7 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
     do {
       // binary search
       // Propagate parameters
-      trackParam.ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
+      AliMUONTrackExtrap::ExtrapOneStepRungekutta(charge,step,vGeant3,vGeant3New);
       //extrap_onestep_rungekutta(charge,step,vGeant3,vGeant3New);
       distance = zEnd - vGeant3New[2];
       step /= 2;
@@ -1291,7 +1292,7 @@ void AliMUONTrackK::FillMUONTrack(void)
   for (Int_t i = fNmbTrackHits-1; i>=0; i--) {
     if ((*fChi2Smooth)[i] < 0) {
       // Propagate through last chambers
-      trackParam.ExtrapToZ(((AliMUONHitForRec*)((*fTrackHits)[i]))->GetZ());
+      AliMUONTrackExtrap::ExtrapToZ(&trackParam, ((AliMUONHitForRec*)((*fTrackHits)[i]))->GetZ());
     } else {
       // Take saved info
       SetTrackParam(&trackParam, (TMatrixD*)fParSmooth->UncheckedAt(i), ((AliMUONHitForRec*)((*fTrackHits)[i]))->GetZ());
@@ -1333,8 +1334,7 @@ void AliMUONTrackK::Branson(void)
   */
   SetTrackParam(&trackParam, fTrackPar, fPosition);
 
-  trackParam.ExtrapToVertex(Double_t(0.), Double_t(0.), Double_t(0.));
-  //trackParam.ExtrapToVertex();
+  AliMUONTrackExtrap::ExtrapToVertex(&trackParam, Double_t(0.), Double_t(0.), Double_t(0.));
 
   (*fTrackPar)(0,0) = trackParam.GetBendingCoor();
   (*fTrackPar)(1,0) = trackParam.GetNonBendingCoor();

@@ -37,6 +37,8 @@
 #include "AliMUONHitForRec.h"
 #include "AliMUONSegment.h"
 #include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliLog.h"
 #include <TVirtualFitter.h>
 
@@ -408,7 +410,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       // Track parameters at first track hit (smallest Z)
       trackParam1 = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
       // extrapolation to station
-      trackParam1->ExtrapToStation(station, trackParam);
+      AliMUONTrackExtrap::ExtrapToStation(trackParam1, station, trackParam);
       extrapSegment = new AliMUONSegment(); //  empty segment
       // multiple scattering factor corresponding to one chamber
       // and momentum in bending plane (not total)
@@ -443,8 +445,8 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	segment = (AliMUONSegment*) ((*fSegmentsPtr[station])[iSegment]);
 	// correction of corrected segment (fBendingCoor and fNonBendingCoor)
 	// according to real Z value of "segment" and slopes of "extrapSegment"
-	trackParam[0].ExtrapToZ(segment->GetZ());
-	trackParam[1].ExtrapToZ(segment->GetZ()); // now same as trackParam[0] !?!?!?!?!?!
+	AliMUONTrackExtrap::ExtrapToZ(&(trackParam[0]), segment->GetZ());
+	AliMUONTrackExtrap::ExtrapToZ(&(trackParam[1]), segment->GetZ()); // now same as trackParam[0] !?!?!?!?!?!
 	extrapSegment->SetBendingCoor((&(trackParam[0]))->GetBendingCoor());
 	extrapSegment->SetNonBendingCoor((&(trackParam[0]))->GetNonBendingCoor());
 	extrapSegment->SetBendingSlope((&(trackParam[0]))->GetBendingSlope());
@@ -458,9 +460,9 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       }
       if (bestSegment) {
 	// best segment found: add it to track candidate
-	trackParam[0].ExtrapToZ(bestSegment->GetZ());
+	AliMUONTrackExtrap::ExtrapToZ(&(trackParam[0]), bestSegment->GetZ());
 	track->AddTrackParamAtHit(&(trackParam[0]),bestSegment->GetHitForRec1());
-	trackParam[1].ExtrapToZ(bestSegment->GetZ()); // now same as trackParam[0] !?!?!?!?!?!
+	AliMUONTrackExtrap::ExtrapToZ(&(trackParam[1]), bestSegment->GetZ()); // now same as trackParam[0] !?!?!?!?!?!
 	track->AddTrackParamAtHit(&(trackParam[1]),bestSegment->GetHitForRec2());
 	AliDebug(3, Form("FollowTracks: track candidate(0..): %d  Added segment in station(0..): %d", trackIndex, station));
 	if (AliLog::GetGlobalDebugLevel()>2) track->RecursiveDump();
@@ -481,7 +483,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	  for (iHit = fIndexOfFirstHitForRecPerChamber[ch]; iHit < fIndexOfFirstHitForRecPerChamber[ch]+fNHitsForRecPerChamber[ch]; iHit++) {
 	    hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[iHit]);
 	    // coordinates of extrapolated hit
-	    trackParam[chInStation].ExtrapToZ(hit->GetZ());
+	    AliMUONTrackExtrap::ExtrapToZ(&(trackParam[chInStation]), hit->GetZ());
 	    extrapHit->SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor());
 	    extrapHit->SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor());
 	    // resolutions from "extrapSegment"
@@ -500,7 +502,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	}
 	if (bestHit) {
 	  // best hit found: add it to track candidate
-	  trackParam[chBestHit].ExtrapToZ(bestHit->GetZ());
+	  AliMUONTrackExtrap::ExtrapToZ(&(trackParam[chBestHit]), bestHit->GetZ());
 	  track->AddTrackParamAtHit(&(trackParam[chBestHit]),bestHit);
 	  if (AliLog::GetGlobalDebugLevel() > 2) {
 	    cout << "FollowTracks: track candidate(0..): " << trackIndex
@@ -562,7 +564,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       // after going through the first station
       if (station == 0) {
 	trackParamVertex = *((AliMUONTrackParam*) (track->GetTrackParamAtHit()->First()));
-	(&trackParamVertex)->ExtrapToVertex(0.,0.,0.);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParamVertex, 0., 0., 0.);
 	track->SetTrackParamAtVertex(&trackParamVertex);
 	if (AliLog::GetGlobalDebugLevel() > 0) {
 	  cout << "FollowTracks: track candidate(0..): " << trackIndex
@@ -699,7 +701,7 @@ void TrackChi2(Int_t &NParam, Double_t * /*Gradient*/, Double_t &Chi2, Double_t 
   while (trackParamAtHit) {
     hitForRec = trackParamAtHit->GetHitForRecPtr();
     // extrapolation to the plane of the hitForRec attached to the current trackParamAtHit
-    param1.ExtrapToZ(hitForRec->GetZ());
+    AliMUONTrackExtrap::ExtrapToZ(&param1, hitForRec->GetZ());
     // update track parameters of the current hit
     trackParamAtHit->SetTrackParam(param1);
     // Increment Chi2
@@ -757,7 +759,7 @@ void TrackChi2MCS(Int_t &NParam, Double_t * /*Gradient*/, Double_t &Chi2, Double
     trackParamAtHit = (AliMUONTrackParam*) (trackBeingFitted->GetTrackParamAtHit()->UncheckedAt(hitNumber));
     hitForRec = trackParamAtHit->GetHitForRecPtr();
     // extrapolation to the plane of the hitForRec attached to the current trackParamAtHit
-    param1.ExtrapToZ(hitForRec->GetZ());
+    AliMUONTrackExtrap::ExtrapToZ(&param1, hitForRec->GetZ());
     // update track parameters of the current hit
     trackParamAtHit->SetTrackParam(param1);
     // square of multiple scattering angle at current hit, with one chamber

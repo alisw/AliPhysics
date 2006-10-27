@@ -44,6 +44,8 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONSegment.h"
 #include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliMagF.h"
 #include "AliLog.h"
 #include "AliTracker.h"
@@ -124,6 +126,9 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONData* data)
   fSimpleBPosition = TMath::Sign(fSimpleBPosition,(Double_t) x[2]);
   // See how to get fSimple(BValue, BLength, BPosition)
   // automatically calculated from the actual magnetic field ????
+  
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField(kField);
 }
 
   //__________________________________________________________________________
@@ -417,7 +422,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
     chi2MatchTrigger = 0.;
     
     trackParam = *((AliMUONTrackParam*) (track->GetTrackParamAtHit()->Last()));
-    trackParam.ExtrapToZ(AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
+    AliMUONTrackExtrap::ExtrapToZ(&trackParam, AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
     
     xTrack = trackParam.GetNonBendingCoor();
     yTrack = trackParam.GetBendingCoor();

@@ -24,6 +24,7 @@
 
 // MUON includes
 #include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliESDMuonTrack.h"
 #endif
 //
@@ -196,6 +197,8 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
     //    printf("\n Nb of events analysed: %d\r",iEvent);
     //      cout << " number of tracks: " << nTracks  <<endl;
   
+    // set the magnetic field for track extrapolations
+    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
     // loop over all reconstructed tracks (also first track of combination)
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
 
@@ -204,7 +207,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
       if (!Vertex->GetNContributors()) {
 	//re-extrapolate to vertex, if not kown before.
 	trackParam.GetParamFrom(*muonTrack);
-	trackParam.ExtrapToVertex(fXVertex, fYVertex, fZVertex);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
 	trackParam.SetParamFor(*muonTrack);
       }
       thetaX = muonTrack->GetThetaX();
@@ -259,7 +262,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 
 	  if (!Vertex->GetNContributors()) {
 	    trackParam.GetParamFrom(*muonTrack);
-	    trackParam.ExtrapToVertex(fXVertex, fYVertex, fZVertex);
+	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
 	    trackParam.SetParamFor(*muonTrack);
 	  }
 

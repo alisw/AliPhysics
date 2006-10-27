@@ -18,7 +18,6 @@
 #include "AliMUONHitForRec.h"
 
 class AliESDMuonTrack;
-class AliMagF;
 
 class AliMUONTrackParam : public TObject 
 {
@@ -31,7 +30,6 @@ class AliMUONTrackParam : public TObject
 
   void GetParamFrom(const AliESDMuonTrack& esdMuonTrack);
   void SetParamFor(AliESDMuonTrack& esdMuonTrack);
-
 
   // Get and Set methods for data
 	/// return inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
@@ -73,29 +71,9 @@ class AliMUONTrackParam : public TObject
 	/// "Compare" function for sorting
   Int_t Compare(const TObject* TrackParam) const;
 
-  void ExtrapToZ(Double_t Z);
-  void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);
-  void ExtrapToVertex(Double_t xVtx, Double_t yVtx, Double_t zVtx);  // extrapolation to vertex through the absorber (with true vertex) 
-   void BransonCorrection(Double_t xVtx, Double_t yVtx, Double_t zVtx); // makes Branson correction with true vertex  
-   // returns total momentum after energy loss correction in the absorber
-  Double_t TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta);
-  void FieldCorrection(Double_t Z); // makes simple magnetic field correction through the absorber 
-
-  void ExtrapOneStepHelix(Double_t charge, Double_t step, 
-			  Double_t *vect, Double_t *vout) const;
-  void ExtrapOneStepHelix3(Double_t field, Double_t step, 
-			   Double_t *vect, Double_t *vout) const;
-
-  void ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
-			       Double_t* vect, Double_t* vout) const;
-  
   virtual void Print(Option_t* opt="") const;
  
-	/// set field map
-  void SetField(const AliMagF* magField) {fkField = magField;}
 
-
- protected:
  private:
   Double_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
   Double_t fBendingSlope; ///< Bending slope (cm ** -1)
@@ -104,16 +82,9 @@ class AliMUONTrackParam : public TObject
   Double_t fBendingCoor; ///< bending coordinate (cm)
   Double_t fNonBendingCoor; ///< non bending coordinate (cm)
 
-  const AliMagF* fkField;     //!< field map
-
-  void SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardBackward);
-  void GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge);
-
-  void GetField(Double_t *Position, Double_t *Field) const;
-  
   AliMUONHitForRec *fHitForRecPtr; //!< Pointer to associated HitForRec if any
   
   ClassDef(AliMUONTrackParam, 2) // Track parameters in ALICE dimuon spectrometer
-    };
+};
 	
 #endif
