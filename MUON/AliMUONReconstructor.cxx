@@ -40,7 +40,7 @@
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTriggerTrack.h"
-#include "AliMUONTriggerCircuitNew.h"
+#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
 
 #include "AliMpSegmentation.h"
@@ -62,7 +62,7 @@ AliMUONReconstructor::AliMUONReconstructor()
     fDigitMaker(new AliMUONDigitMaker()), 
     fCalibrationData(0x0),
     fCrateManager(new AliMUONTriggerCrateStore()),
-    fTriggerCircuit(new TClonesArray("AliMUONTriggerCircuitNew", 234)),
+    fTriggerCircuit(new TClonesArray("AliMUONTriggerCircuit", 234)),
     fTransformer(new AliMUONGeometryTransformer(kTRUE))
 
 {
@@ -80,11 +80,11 @@ AliMUONReconstructor::AliMUONReconstructor()
 
     // trigger circuit
     for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
-      AliMUONTriggerCircuitNew* c = new AliMUONTriggerCircuitNew();
+      AliMUONTriggerCircuit* c = new AliMUONTriggerCircuit();
       c->SetTransformer(fTransformer);
       c->Init(i,*fCrateManager);
       TClonesArray& circuit = *fTriggerCircuit;
-      new(circuit[circuit.GetEntriesFast()])AliMUONTriggerCircuitNew(*c);
+      new(circuit[circuit.GetEntriesFast()])AliMUONTriggerCircuit(*c);
       delete c;
     }
 

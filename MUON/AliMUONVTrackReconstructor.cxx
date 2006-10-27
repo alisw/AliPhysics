@@ -39,7 +39,7 @@
 #include "AliMUONConstants.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTriggerTrack.h"
-#include "AliMUONTriggerCircuitNew.h"
+#include "AliMUONTriggerCircuit.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONSegment.h"
@@ -509,8 +509,8 @@ Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
 
       AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
-      AliMUONTriggerCircuitNew* circuit = 
-	(AliMUONTriggerCircuitNew*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
+      AliMUONTriggerCircuit* circuit = 
+	(AliMUONTriggerCircuit*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
 
       y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
       stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;

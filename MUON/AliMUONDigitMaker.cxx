@@ -60,7 +60,7 @@
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONTriggerCircuitNew.h"
+#include "AliMUONTriggerCircuit.h"
 
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
@@ -472,7 +472,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard,
     if (!xyPattern) continue;
 
     // get detElemId
-    AliMUONTriggerCircuitNew triggerCircuit;
+    AliMUONTriggerCircuit triggerCircuit;
     detElemId = triggerCircuit.DetElemId(iChamber, localBoard->GetName());
     nBoard    = localBoard->GetNumber();
 

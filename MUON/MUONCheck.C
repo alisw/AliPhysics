@@ -50,7 +50,7 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONTriggerCircuitNew.h"
+#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
 
 #include "AliMpVSegmentation.h"
@@ -461,15 +461,15 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   AliMUONGeometryTransformer* transformer = new AliMUONGeometryTransformer(kFALSE);
   transformer->ReadGeometryData("volpath.dat", "geometry.root");
 
-  TClonesArray*  triggerCircuit = new TClonesArray("AliMUONTriggerCircuitNew", 234);
+  TClonesArray*  triggerCircuit = new TClonesArray("AliMUONTriggerCircuit", 234);
 
   for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
-      AliMUONTriggerCircuitNew* c = new AliMUONTriggerCircuitNew();
+      AliMUONTriggerCircuit* c = new AliMUONTriggerCircuit();
       c->SetSegFactory(segFactory);
       c->SetTransformer(transformer);
       c->Init(i,*crateManager);
       TClonesArray& circuit = *triggerCircuit;
-      new(circuit[circuit.GetEntriesFast()])AliMUONTriggerCircuitNew(*c);
+      new(circuit[circuit.GetEntriesFast()])AliMUONTriggerCircuit(*c);
       delete c;
   }
   
@@ -534,7 +534,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
       if (PRINTOUT) locTrg->Print("full");
       
-      AliMUONTriggerCircuitNew* circuit = (AliMUONTriggerCircuitNew*)triggerCircuit->At(locTrg->LoCircuit()-1); 
+      AliMUONTriggerCircuit* circuit = (AliMUONTriggerCircuit*)triggerCircuit->At(locTrg->LoCircuit()-1); 
       
       TgtupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
     } // end of loop on Local Trigger
