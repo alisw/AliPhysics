@@ -1,3 +1,11 @@
+2006-10-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* BoxSetGL.cxx:
+	* BoxSetGL.h:
+	In Line render-mode really render boxes as lines to allow
+	selection to proceed through the box walls; removed pre-processor
+	ifs for old root version.
+
 2006-10-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Reve.cxx:

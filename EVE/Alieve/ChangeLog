@@ -1,3 +1,22 @@
+2006-10-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ITSModule.cxx:
+	From Raffaele: implemented naming scheme used for alignable
+	volumes.
+
+	* LinkDef.h:
+	List new classes for TRD visualization.
+
+	* TRDData.cxx:
+	* TRDData.h:
+	* TRDLoader.cxx:
+	* TRDLoader.h:
+	* TRDModule.cxx:
+	* TRDModule.h:
+	* TRDModuleImp.cxx:
+	* TRDModuleImp.h:
+	New files from Alexandru: TRD visualization.
+
 2006-10-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:
