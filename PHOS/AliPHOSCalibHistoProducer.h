@@ -28,6 +28,7 @@ public:
   void Run();
   void UpdateHistoFile();
   void SetUpdatingRate(const Int_t rate) {fUpdatingRate = rate;}
+  void SetOldRCUFormat(Bool_t isOldRCUFormat) { fIsOldRCUFormat = isOldRCUFormat; }
 
 protected:
 
@@ -35,6 +36,7 @@ protected:
   AliRawReader* fRawReader;   // raw data reader.
   TFile* fHistoFile;          // root file to store histograms in
   Int_t fUpdatingRate;        // update rate
+  Bool_t fIsOldRCUFormat;     // Old RCU format flag.
 
   ClassDef(AliPHOSCalibHistoProducer,1)
 

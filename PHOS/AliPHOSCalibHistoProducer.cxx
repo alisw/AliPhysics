@@ -36,7 +36,7 @@ ClassImp(AliPHOSCalibHistoProducer)
 
 //-----------------------------------------------------------------------------
 AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(AliRawReader* rawReader) : 
-  fRawReader(rawReader),fHistoFile(0),fUpdatingRate(100)
+  fRawReader(rawReader),fHistoFile(0),fUpdatingRate(100),fIsOldRCUFormat(kFALSE)
 {
   // Constructor: initializes input data stream supplied by rawReader
   // Checks existence of histograms which might have been left
@@ -61,7 +61,7 @@ AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(AliRawReader* rawReader) :
 
 //-----------------------------------------------------------------------------
 AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer() :
-  fRawReader(0),fHistoFile(0),fUpdatingRate(0)
+  fRawReader(0),fHistoFile(0),fUpdatingRate(0),fIsOldRCUFormat(kFALSE)
 {
   // Default constructor
 }
@@ -86,7 +86,8 @@ void AliPHOSCalibHistoProducer::Run()
   Int_t runNum = 0;
 
   AliPHOSRawStream in(fRawReader);
-  in.SetOldRCUFormat(kTRUE);
+  if(fIsOldRCUFormat)
+    in.SetOldRCUFormat(kTRUE);
 
   // Read raw data event by event
 
@@ -97,11 +98,22 @@ void AliPHOSCalibHistoProducer::Run()
        
       if(!gHighGain) gHighGain = new TH1F("gHighGain","High gain",
 					  in.GetTimeLength(),0,in.GetTimeLength());
+      else
+	if(gHighGain->GetNbinsX() != in.GetTimeLength()) {
+	  delete gHighGain;
+	  gHighGain = new TH1F("gHighGain","High gain",in.GetTimeLength(),0,in.GetTimeLength());
+	}
+
       if(!gLowGain)  gLowGain = new TH1F("gLowGain","Low gain",
 					 in.GetTimeLength(),0,in.GetTimeLength());
+      else
+	if(gLowGain->GetNbinsX() != in.GetTimeLength()) {
+	  delete gLowGain;
+	  gLowGain = new TH1F("gLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
+	}
 
       Bool_t lowGainFlag = in.IsLowGain();
-    
+      
       if(lowGainFlag) 
 	gLowGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
       else {
