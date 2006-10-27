@@ -1,3 +1,22 @@
+2006-10-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_V0_points.C:
+	New file: creates a point-set from reconstructed V0 positions.
+
+	* alice-macros/esd_tracks.C:
+	In esd_tracks_vertex_cut() introduced two categories for tracks
+	with failed ITS extrapolation: below / above 5 sigma.
+
+	* alice-macros/its_digits.C:
+	From Raffaele: introduce new GUI levels for all ITS layers (sectors,
+	ladders, staves).
+
+	* alice-macros/init_trd.C:
+	New script from Alexandru: initialize TRD visualization.
+
+	* libAlieve.pkg:
+	Added TRD to EINCLUDE.
+
 2006-10-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* macros/alieve_init.C:
