@@ -14,15 +14,17 @@
 
 #pragma link C++ class Alieve::VSDCreator+;
 
+//================================
+// detectors/
+//================================
+
 // ITS
 #pragma link C++ class Alieve::ITSDigitsInfo+;
 #pragma link C++ class Alieve::ITSModule+;
 
-
 // MUON
 #pragma link C++ class Alieve::MUONDigitsInfo+;
 #pragma link C++ class Alieve::MUONModule+;
-
 
 // TPC
 #pragma link C++ class Alieve::TPCData+;
@@ -47,3 +49,12 @@
 #pragma link C++ class Alieve::TPCLoader+;
 #pragma link C++ class Alieve::TPCLoaderEditor+;
 
+// TRD
+#pragma link C++ class Alieve::TRDLoader+;
+#pragma link C++ class Alieve::TRDLoaderEditor+;
+#pragma link C++ class Alieve::TRDModule+;
+#pragma link C++ class Alieve::TRDChamber+;
+#pragma link C++ class Alieve::TRDNode+;
+#pragma link C++ class Alieve::TRDModuleEditor+;
+#pragma link C++ class Alieve::TRDDigits+;
+#pragma link C++ class Alieve::TRDHits+;
