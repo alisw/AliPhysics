@@ -5,5 +5,6 @@
 #pragma link C++ class  AliRICHReconstructor+;
 #pragma link C++ class  AliRICHTracker+;
 #pragma link C++ class  AliRICHRecon+;
+#pragma link C++ class  AliRICHReconOld+;
 #pragma link C++ class  AliRICHPreprocessor+;
 #endif

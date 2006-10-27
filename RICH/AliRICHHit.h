@@ -3,49 +3,33 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <AliHit.h>
-#include <TVector3.h>
+#include <AliHit.h>           //base class
+#include <TVector3.h>         //ctor
 
-//RICH hit container
-class AliRICHHit : public AliHit
+class AliRICHHit : public AliHit //   TObject-AliHit-AliRICHHit
 {
 public:
-  AliRICHHit():AliHit(),
-      fCham(-1) ,
-      fE(-1),
-      fPid(-1 ),
-      fInX3(TVector3(0,0,0)),
-      fOutX3(TVector3(0,0,0)) {}
-  AliRICHHit(Int_t c,Int_t tid,TVector3 in,TVector3 out,Double_t e,Int_t pid):AliHit(0,tid),
-      fCham(c ),
-      fE(e),
-      fPid(pid),
-      fInX3(in),
-      fOutX3(out)              {fX=out.X();fY=out.Y();fZ=out.Z();}
-  AliRICHHit(Int_t tid,Double_t e,Int_t pad,Double_t x,Double_t y,Double_t z,Int_t pid):AliHit(0,tid),
-      fCham(pad),
-      fE(e),
-      fPid(pid),
-      fInX3(TVector3(x,y,z)),
-      fOutX3(TVector3(x,y,z))  {fX=x;fY=y;fZ=z;}
-           
-  virtual ~AliRICHHit()                                                                                            {}
+  AliRICHHit(                                                                             ):AliHit(     ),fCh(-1),fPid(-1 ),fE(-1),fLorsX(-1),fLorsY(-1) {} //default ctor
+  AliRICHHit(Int_t c,Float_t e,Int_t pid,Int_t tid,Float_t xl,Float_t yl,const TVector3 &p):AliHit(0,tid),fCh(c ),fPid(pid),fE(e ),fLorsX(xl),fLorsY(yl) {fX=p.X();fY=p.Y();fZ=p.Z();}           
+  AliRICHHit(Int_t c,Float_t e,Int_t pid,Int_t tid,Float_t xl,Float_t yl                  ):              fCh(c ),fPid(pid),fE(e ),fLorsX(xl),fLorsY(yl) {fTrack=tid;}           
+  virtual ~AliRICHHit()                                                                                                {}
 //framework part
-  void     Print(Option_t *option="")const;                               //from TObject to print current status
+  void     Print(Option_t *option="")const;                                    //from TObject to print current status
 //private part  
-  Int_t    C      ()const{return fCham;}                //chamber number 
-  Int_t    Chamber()const{return fCham;}                //chamber number 
-  Int_t    Pad    ()const{return fCham;}                //absolute pad number, definition in AliRICHParam
-  Float_t  Eloss  ()const{return fE;   }                //Eloss for MIP hit or Etot for photon hit
-  TVector3 InX3   ()const{return fInX3;}                //track position at the faceplane of the gap 
-  TVector3 OutX3  ()const{return fOutX3;}               //track position at the backplane of the gap 
-  Double_t Length ()const{return (fOutX3-fInX3).Mag();} //track length inside the amplification gap
-protected:
-  Int_t     fCham;                         //chamber number or in future absolute pad number
-  Double_t  fE;                            //Eloss for MIP or Etot for photon [GeV]
-  Int_t     fPid;                          //PID of particle created this hit
-  TVector3  fInX3;                         //position at the entrance of the GAP   
-  TVector3  fOutX3;                        //position at the exit of the GAP
-  ClassDef(AliRICHHit,3)                   //RICH hit class
+  Int_t   Ch    ()const{return fCh;                                    }       //Chamber
+  Float_t E     ()const{return fE;                                     }       //Eloss for MIP hit or Etot for photon hit, [GeV]
+  Float_t LorsX ()const{return fLorsX;                                 }       //hit X position in LORS, [cm]
+  Float_t LorsY ()const{return fLorsY;                                 }       //hit Y position in LORS, [cm]
+  Int_t   Pid   ()const{return fPid;                                   }       //PID
+  Int_t   Tid   ()const{return fTrack;                                 }       //TID
+         
+protected:                                                                     //AliHit has fTid,fX,fY,fZ 
+  Int_t    fCh;                                                                //Chamber
+  Int_t    fPid;                                                               //PID
+  Float_t  fE;                                                                 //Eloss for MIP or Etot for photon [GeV]
+  Float_t  fLorsX;                                                             //hit X position in chamber LORS, [cm]
+  Float_t  fLorsY;                                                             //hit Y position in chamber LORS, [cm]
+  ClassDef(AliRICHHit,4)                                                       //RICH hit class 
 };//class AliRICHhit
+    
 #endif

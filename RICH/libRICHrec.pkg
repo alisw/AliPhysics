@@ -1,4 +1,4 @@
-SRCS:=  AliRICHReconstructor.cxx AliRICHTracker.cxx AliRICHRecon.cxx AliRICHPreprocessor.cxx
+SRCS:=  AliRICHReconstructor.cxx AliRICHTracker.cxx AliRICHRecon.cxx AliRICHReconOld.cxx AliRICHPreprocessor.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= RICHrecLinkDef.h

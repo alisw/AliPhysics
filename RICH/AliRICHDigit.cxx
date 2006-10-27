@@ -13,8 +13,15 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 
-#include "AliRICHDigit.h"//class header
-
+#include "AliRICHDigit.h" //class header
+#include "AliRICHHit.h"   //Hit2Sdi() 
+#include <TClonesArray.h> //Hit2Sdi() 
+#include <TCanvas.h>      //TestSeg()
+#include <TLine.h>        //TestSeg()
+#include <TLatex.h>       //TestSeg()
+#include <TPolyLine.h>    //DrawPc() 
+#include <TGStatusBar.h>  //Zoom()
+#include <TRootCanvas.h>  //Zoom() 
 ClassImp(AliRICHDigit)
 
 /*
@@ -28,7 +35,7 @@ For RICH the detector ID is 6 (reffered in the code as kRichRawId) while DDL ind
 
 Common header might be followed by the private one although  RICH has no any private header, just uses the common one.
 
-Single RICH D-RORC serves one half of a chamber i.e. 3 photocathodes aka sectors,  even LDC for left part( sectors 1-3-5) and odd LDC for right part(2-4-6) 
+Single RICH D-RORC serves one half of a chamber i.e. 3 photocathodes even LDC for left part( PCs 0-2-4) and odd LDC for right part(1-3-5) 
 as it's seen from electronics side.
 
 So the LDC -chamber-ddl map is:
@@ -41,50 +48,151 @@ DDL index 10 -> ch 6 left -> DDL ID 0x60a          DDL index 11 -> ch 6 right ->
 DDL index 12 -> ch 7 left -> DDL ID 0x60c          DDL index 13 -> ch 7 right -> DDL ID 0x60d 
 
 RICH FEE as seen by single D-RORC is composed from a number of DILOGIC chips organized in vertical stack of rows. 
-Each DILOGIC chip serves 48 channels for the 8x6 pads (reffered in the code as kDiloX,kDiloY). Channels counted from 0 to 47.
+Each DILOGIC chip serves 48 channels for the 8x6 pads (reffered in the code as kDilX,kDilY). Channels counted from 0 to 47.
 
-??????? Currently the exact mapping of DILOGIC addresses to pads is not known. So we invented horizontal zig-zag ???????  
+The mapping inside DILOGIC chip has the following structure (see from electronics side):
 
-10 DILOGIC chips composes so called "row" in horizontal direction (reffered in the code as kNdilo), so the row is 80x6 pads structure. 
+5  04 10 16 22 28 34 40 46
+4  02 08 14 20 26 32 38 44
+3  00 06 12 18 24 30 36 42
+2  01 07 13 19 25 31 37 43
+1  03 09 15 21 27 33 39 45
+0  05 11 17 23 29 35 41 47
+    
+    0  1  2  3  4  5  6  7  padx
+
+10 DILOGIC chips composes so called "row" in horizontal direction (reffered in the code as kNdil), so the row is 80x6 pads structure. 
 DILOGIC chips in the row are counted from right to left as seen from electronics side, from 1 to 10.
-24 rows are piled up forming the whole FEE served by single D-RORC, so one DDL sees 80x144 pads separated in 3 photocathodes aka sectors.
-Rows are counted from 1 to 24 from top    to bottom for right  half of the chamber (sectors 2-4-6) as seen from electronics side, meaning even LDC number
-                          and from bottom to top    for left   half of the chamber (sectors 1-3-5) as seen from electronics side, meaning odd LDC number.
+24 rows are piled up forming the whole FEE served by single D-RORC, so one DDL sees 80x144 pads separated in 3 photocathodes.
+Rows are counted from 1 to 24 from top    to bottom for right  half of the chamber (PCs 1-3-5) as seen from electronics side, meaning even LDC number
+                          and from bottom to top    for left   half of the chamber (PCs 0-2-4) as seen from electronics side, meaning odd LDC number.
 
 RICH raw word is 32 bits with the structure:   
    00000             rrrrr                      dddd                               aaaaaa                          qqqqqqqqqqqq 
  5 bits zero  5 bits row number (1..24)  4 bits DILOGIC chip number (1..10) 6 bits DILOGIC address (0..47)  12 bits QDC value (0..4095)
 */
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Float_t AliRICHDigit::Hit2Sdi(AliRICHHit *pHit,TClonesArray *pSdiLst)
+{
+// Creates a list of sdigits out of provided hit
+// Arguments: pHit- hit
+//   Returns: none
+  
+  Float_t  x=(pHit->LorsX() > SizePcX())? pHit->LorsX()-SizePcX()-SizeDead():pHit->LorsX();          //sagita is for PC (0-64) and not for chamber   
+  Float_t  qdcEle=34.06311+0.2337070*x+5.807476e-3*x*x-2.956471e-04*x*x*x+2.310001e-06*x*x*x*x;      //reparametrised from DiMauro
+  
+  Int_t iNele=Int_t(pHit->E()/26e-9);  if(iNele<1) iNele=1;                                          //number of electrons created by hit
+  Float_t qdcTot=0; for(Int_t i=1;i<=iNele;i++) qdcTot-=qdcEle*TMath::Log(gRandom->Rndm()+1e-6);     //total qdc fro hit, 1e-6 is a protection against 0 from rndm
+  
+  AliRICHDigit dd(1,1,1,pHit->LorsX(),pHit->LorsY());                                                //tmp digit to shift hit y to the nearest anod wire  
+  Float_t y=  (pHit->LorsY() > dd.LorsY()) ? dd.LorsY()+0.21 :  dd.LorsY()-0.21;
+  
+  Int_t iSdiCnt=pSdiLst->GetEntries();
+  for(Int_t i=0;i<9;i++){                                      //affected pads loop
+    AliRICHDigit dig(pHit->Ch(),qdcTot,pHit->Tid(),pHit->LorsX(),y,i); //c,q,tid,x,y   create tmp sdigit for pad i around hit position
+    if(dig.PadX()==-1) continue;
+    new((*pSdiLst)[iSdiCnt++]) AliRICHDigit(dig);
+  }
+  return qdcTot;
+}//Hit2Sdi()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHDigit::Print(Option_t*)const
 {
-//Print current digit  
-//Arguments: option string not used
-//  Returns: none    
-  Printf("pad=(%2i,%2i,%3i,%3i), QDC=%8.3f, cfm=%9i, TID=(%5i,%5i,%5i) raw r=%2i d=%2i a=%2i",
-               C(),Pad2Sec(PadX(),PadY()),PadX(),PadY() ,  Qdc(),    Cfm()  , fTracks[0],fTracks[1],fTracks[2], R(), D(), A());
+// Print current digit  
+// Arguments: option string not used
+//   Returns: none    
+  Printf("pad=(%2i,%2i,%3i,%3i),pos=(%7.2f,%7.2f) QDC=%8.3f, TID=(%5i,%5i,%5i) raw r=%2i d=%2i a=%2i",
+               Ch(),Pc(),PadX(),PadY(),LorsX(),LorsY(), Q(),  fTracks[0],fTracks[1],fTracks[2], Row(), Dilogic(), Addr());
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliRICHDigit::Test()
+void AliRICHDigit::PrintSize()
 {
-  Printf("Test of Pad2Sec:");
-  Int_t x1=kFirstPad, x2=kPadsSecX, x3=kPadsSecX+1, x4=kPadsChamX;//all possible padx for corners
-  Int_t y;
-  
-  y=kPadsChamY;
-  Printf("Sector5:(%3i,%3i)->%i (%3i,%3i)->%i  Sector6:(%3i,%3i)->%i (%3i,%3i)->%i",x1,y,Pad2Sec(x1,y),x2,y,Pad2Sec(x2,y),x3,y,Pad2Sec(x3,y),x4,y,Pad2Sec(x4,y));
-  y=2*kPadsSecY+1;
-  Printf("Sector5:(%3i,%3i)->%i (%3i,%3i)->%i  Sector6:(%3i,%3i)->%i (%3i,%3i)->%i",x1,y,Pad2Sec(x1,y),x2,y,Pad2Sec(x2,y),x3,y,Pad2Sec(x3,y),x4,y,Pad2Sec(x4,y));
-  Printf("");
-  y=2*kPadsSecY;
-  Printf("Sector3:(%3i,%3i)->%i (%3i,%3i)->%i  Sector4:(%3i,%3i)->%i (%3i,%3i)->%i",x1,y,Pad2Sec(x1,y),x2,y,Pad2Sec(x2,y),x3,y,Pad2Sec(x3,y),x4,y,Pad2Sec(x4,y));
-  y=kPadsSecY+1;
-  Printf("Sector3:(%3i,%3i)->%i (%3i,%3i)->%i  Sector4:(%3i,%3i)->%i (%3i,%3i)->%i",x1,y,Pad2Sec(x1,y),x2,y,Pad2Sec(x2,y),x3,y,Pad2Sec(x3,y),x4,y,Pad2Sec(x4,y));
-  Printf("");
-  y=kPadsSecY;
-  Printf("Sector1:(%3i,%3i)->%i (%3i,%3i)->%i  Sector2:(%3i,%3i)->%i (%3i,%3i)->%i",x1,y,Pad2Sec(x1,y),x2,y,Pad2Sec(x2,y),x3,y,Pad2Sec(x3,y),x4,y,Pad2Sec(x4,y));
-  y=kFirstPad;
-  Printf("Sector1:(%3i,%3i)->%i (%3i,%3i)->%i  Sector2:(%3i,%3i)->%i (%3i,%3i)->%i",x1,y,Pad2Sec(x1,y),x2,y,Pad2Sec(x2,y),x3,y,Pad2Sec(x3,y),x4,y,Pad2Sec(x4,y));
+// Print all segmentaion related sizes
+// Arguments: none
+//   Returns: none    
+  Printf("-->pad    =(%6.2f,%6.2f) cm dead zone %.2f cm\n"
+         "-->PC     =(%6.2f,%6.2f) cm\n"
+         "-->all PCs=(%6.2f,%6.2f) cm",
+               SizePadX(),SizePadY(),SizeDead(),SizePcX(),SizePcY(),SizeAllX(),SizeAllY());
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHDigit::TestSeg()
+{
+// Draws the picture of segmentation   
+// Arguments: none
+//   Returns: none     
+  TCanvas *pC=new TCanvas("pads","View from electronics side, IP is behind the picture.");pC->ToggleEventStatus();
+  gPad->AddExec("test","AliRICHDigit::Zoom()");
+  DrawPc();  
+}//TestSeg()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHDigit::Zoom()
+{
+// Show info about current cursur position in status bar of the canvas
+// Arguments: none
+//   Returns: none     
+  TCanvas *pC=(TCanvas*)gPad; 
+  TRootCanvas *pRC= (TRootCanvas*)pC->GetCanvasImp();
+  TGStatusBar *pBar=pRC->GetStatusBar();
+  pBar->SetParts(5);
+  Float_t x=gPad->AbsPixeltoX(gPad->GetEventX());
+  Float_t y=gPad->AbsPixeltoY(gPad->GetEventY());
+  AliRICHDigit dig(1,100,1,x,y);  
+  if(IsInDead(x,y))
+    pBar->SetText("Out of sensitive area",4);    
+  else
+    pBar->SetText(Form("p%i x%i y%i r%i d%i a%i (%.2f,%.2f)",dig.Pc(),dig.PadX(),dig.PadY(),dig.Row(),dig.Dilogic(),dig.Addr(),dig.LorsX(),dig.LorsY()),4);
+  if(gPad->GetEvent()==1){
+    new TCanvas("zoom",Form("Row %i DILOGIC %i",dig.Row(),dig.Dilogic()));  
+  }
+}//Zoom()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHDigit::DrawPc(Bool_t isFill) 
+{ 
+// Utility methode draws RICH chamber PCs on event display.
+// Arguments: none
+//   Returns: none      
+//  y6  ----------  ----------
+//      |        |  |        |
+//      |    4   |  |    5   |
+//  y5  ----------  ----------
+//
+//  y4  ----------  ----------
+//      |        |  |        |
+//      |    2   |  |    3   |   view from electronics side
+//  y3  ----------  ----------
+//          
+//  y2  ----------  ----------
+//      |        |  |        |
+//      |    0   |  |    1   |
+//  y1  ----------  ----------
+//      x1      x2  x3       x4
+  gPad->Range(-5,-5,SizeAllX()+5,SizeAllY()+5); 
+  Float_t x1=0,x2=SizePcX(),x3=SizePcX()+SizeDead(),                                                  x4=SizeAllX();
+  Float_t y1=0,y2=SizePcY(),y3=SizePcY()+SizeDead(),y4=2*SizePcY()+SizeDead(),y5=SizeAllY()-SizePcY(),y6=SizeAllY();
+
+  Float_t xL[5]={x1,x1,x2,x2,x1}; //clockwise
+  Float_t xR[5]={x3,x3,x4,x4,x3};  
+  Float_t yD[5]={y1,y2,y2,y1,y1};
+  Float_t yC[5]={y3,y4,y4,y3,y3};  
+  Float_t yU[5]={y5,y6,y6,y5,y5};
+    
+  TLatex t; t.SetTextSize(0.01); t.SetTextAlign(22);
+  Int_t iColLeft=29,iColRight=41;
+  TPolyLine *pc=0;  TLine *pL; Float_t x0=0,y0=0,wRow=kDilY*SizePadY(),wDil=kDilX*SizePadX();
+  for(Int_t iPc=0;iPc<kPcAll;iPc++){
+    if(iPc==4) {pc=new TPolyLine(5,xL,yU);t.DrawText(x1-3.5,y6-20,"PC4");x0=x1;y0=y5;} if(iPc==5) {pc=new TPolyLine(5,xR,yU);t.DrawText(x4+3.5,y6-20,"PC5");x0=x3;y0=y5;}
+    if(iPc==2) {pc=new TPolyLine(5,xL,yC);t.DrawText(x1-3.5,y4-20,"PC2");x0=x1;y0=y3;} if(iPc==3) {pc=new TPolyLine(5,xR,yC);t.DrawText(x4+3.5,y4-20,"PC3");x0=x3;y0=y3;}
+    if(iPc==0) {pc=new TPolyLine(5,xL,yD);t.DrawText(x1-3.5,y2-20,"PC0");x0=x1;y0=y1;} if(iPc==1) {pc=new TPolyLine(5,xR,yD);t.DrawText(x4+3.5,y2-20,"PC1");x0=x3;y0=y1;}    
+    (iPc%2)? pc->SetFillColor(iColLeft): pc->SetFillColor(iColRight);
+    if(isFill) pc->Draw("f"); else pc->Draw();
+    for(Int_t i=1;i<=8 ;i++){//draw row lines (horizontal)
+      Float_t y=y0+i*wRow;
+      Int_t row=i+iPc/2*8; if(iPc%2!=0) row=25-row; t.DrawText(x0-1,y -3,Form("r%i",row)); 
+      if(i==8) break;                                      //do not draw the last line of PC
+      pL=new TLine(x0,y,x0+SizePcX(),y);   pL->Draw(); 
+    }    
+    for(Int_t iDil=1;iDil<=10;iDil++){Float_t x=x0+iDil*wDil;t.DrawText(x -3,y0-1,Form("d%i",11-iDil));   if(iDil==10) break;    pL=new TLine(x,y0,x,y0+SizePcY());  pL->Draw();}  
+  }      
+}//DrawPc()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

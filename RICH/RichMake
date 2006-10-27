@@ -40,11 +40,11 @@ DepFile	      := $(DirOut)/$(Module).depend
 
 ifeq ($(RootTarget),linuxicc)
  Compiler    :=icc
- CompilerOpt :=-O0 -fpstkchk -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ CompilerOpt :=-fpstkchk -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
  LibOpt      :=-g -shared -Wl
 else
  Compiler    :=g++
- CompilerOpt :=-O -g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ CompilerOpt :=-g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
  LibOpt      :=-g -shared -Wl
 endif
 

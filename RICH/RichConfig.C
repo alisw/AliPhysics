@@ -12,7 +12,7 @@ public:
   
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
-  enum EBatchFlags{kPrim=555,kTransport,kAll,kOnly,kRawDdl,kRawDate,kRawRoot,kVertex,kTrack,kHlt,kEsd};
+  enum EBatchFlags{kPrim=555,kTransport,kAll,kOnly,kRawDdl,kRawDate,kRawRoot,kVertex,kTrack,kHlt,kEsd,kAlign};
   enum EMagField  {kFld0,kFld2,kFld4,kFld5,kFld_2,kFld_4,kFld_5};
   
   Float_t Eta2Theta      (Float_t arg)  const{return (180./TMath::Pi())*2.*TMath::ATan(TMath::Exp(-arg));}
@@ -470,6 +470,7 @@ void RichConfig::GuiBatch(TGHorizontalFrame *pMainF)
     new TGRadioButton(fClusBG,  "Clusters RICH"   ,kOnly     ));   fClusBG->SetButton(kOnly);
     
   pRecF->AddFrame(fRecoBG=new TGButtonGroup(pRecF,""   ));                       fRecoBG->Connect("Pressed(Int_t)","RichConfig",this,"SlotBatch(Int_t)");
+    new TGCheckButton(fRecoBG,  "Load Align data" ,kAlign    ));  
     new TGCheckButton(fRecoBG,  "Find ESD tracks" ,kTrack    ));  
     new TGCheckButton(fRecoBG,  "Find vertex"     ,kVertex   ));  
     new TGCheckButton(fRecoBG,  "Fill ESD"        ,kEsd      ));
@@ -491,18 +492,20 @@ void RichConfig::WriteBatch()
 {//creates Batch.C file
   char *sBatchName="RichBatch";
   FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateBatch","Cannot open output file: %s.C",sBatchName);return;}
-//header and debug   
+  
                                                        fprintf(fp,"void %s(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFileName)\n{\n",sBatchName);
-                                                       fprintf(fp,"  gSystem->Exec(\"rm -rf *.root hlt hough fort* raw* ZZZ*\");\n");
+                                                       
+  if(fSimBG->GetButton(kPrim)->GetState())             fprintf(fp,"  gSystem->Exec(\"rm -rf *.root hlt hough fort* raw* ZZZ*\");\n");
+  else                                                 fprintf(fp,"  gSystem->Exec(\"rm -rf  hlt hough raw* ZZZ*\");\n");
+  
                                                        fprintf(fp,"  if(isDebug)   AliLog::SetGlobalDebugLevel(AliLog::kDebug);\n");
                                                        fprintf(fp,"  gBenchmark->Start(\"ALICE\");\n  TDatime time;\n\n");
 //simulation section  
+  if(fSimBG->GetButton(kPrim)->GetState()){
                                                        fprintf(fp,"  AliSimulation     *pSim=new AliSimulation(sConfigFileName);\n");
-//generate initial kinematics  
-  if(fSimBG->GetButton(kPrim)->GetState()) 
-                                                       fprintf(fp,"  pSim->SetRunGeneration(kTRUE);           //initial kinematics generated\n");
-  else
-                                                       fprintf(fp,"  pSim->SetRunGeneration(kFALSE);          //no initial kinematics generated\n");
+                                                       
+  if(fSimBG->GetButton(kPrim)->GetState())             fprintf(fp,"  pSim->SetRunGeneration(kTRUE);           //initial kinematics generated\n");
+  else                                                 fprintf(fp,"  pSim->SetRunGeneration(kFALSE);          //no initial kinematics generated\n");
 //transport and hit creations  
   if(fSimBG->GetButton(kTransport)->GetState()) 
                                                        fprintf(fp,"  pSim->SetRunSimulation(kTRUE);                  //transport and hits creation\n");
@@ -522,11 +525,14 @@ void RichConfig::WriteBatch()
   else if(fRawBG->GetButton(kRawRoot)->GetState())     fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\",\".root\");//raw data in ROOT format for these detectors\n");
   
                                                        fprintf(fp,"  pSim->Run(iNevents);\n  delete pSim;\n\n");
-
+  }                                                     
 
 
 //reconstraction section - cluster finder
                                                        fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
+  if(fRecoBG->GetButton(kAlign)->GetState())           fprintf(fp,"  pRec->SetLoadAlignData(\"ITS TPC TRD TOF RICH\");          //Misalign data for these detectors\n");     
+  else                                                 fprintf(fp,"  pRec->SetLoadAlignData(\"\");                              //Misalign data not loaded\n");     
+  
     if     (fClusBG->GetButton(kAll)   ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\"); //clusters created for these detectors\n");
     else if(fClusBG->GetButton(kOnly)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"RICH\");                 //clusters created for RICH only\n");
     else if(fClusBG->GetButton(kNo)    ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"\");                     //clusters are not created\n");

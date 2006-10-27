@@ -15,28 +15,29 @@
 
 #include "AliRICHHit.h" //class header
 #include <TPDGCode.h>   //Print() 
+#include <TString.h>
  
 ClassImp(AliRICHHit)
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHHit::Print(Option_t*)const
 {
 //Print hit
-  char *sPart=Form("pid=%i",fPid);
-  switch(fPid){
+  char *sPart=Form("pid=%i",Pid());
+  switch(Pid()){
     case kProton:      sPart="p+  ";break;
-    case kProtonBar:   sPart="a-  ";break;
+    case kProtonBar:   sPart="p-  ";break;
     case kKPlus:       sPart="K+  ";break;
     case kKMinus:      sPart="K-  ";break;
-    case kPiPlus:      sPart="pi+ ";break;
-    case kPiMinus:     sPart="pi- ";break;
-    case kMuonPlus:    sPart="mu+ ";break;
-    case kMuonMinus:   sPart="mu- ";break;
+    case kPiPlus:      sPart="Pi+ ";break;
+    case kPiMinus:     sPart="Pi- ";break;
+    case kMuonPlus:    sPart="Mu+ ";break;
+    case kMuonMinus:   sPart="Mu- ";break;
     case kElectron:    sPart="e-  ";break;
     case kPositron:    sPart="e+  ";break;
     case 50000050:     sPart="ckov";break;
     case 50000051:     sPart="feed";break;
   }
 
-  Printf("%s TID=%6i,Ch=(%2i),E=%9.3f eV, pos=(%7.2f,%7.2f,%7.2f)cm",sPart,Track(),C(),fE*1e9,fX,fY,fZ);
+  Printf("%s Ch:%i TID:%6i,E:%9.3f eV, LORS:(%7.2f,%7.2f) MARS:(%7.2f,%7.2f,%7.2f)cm",sPart,Ch(),Tid(),E()*1e9,LorsX(),LorsY(),X(),Y(),Z());
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

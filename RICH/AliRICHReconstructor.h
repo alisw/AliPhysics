@@ -31,11 +31,8 @@ public:
   //private part  
   static        void          Dig2Clu (TClonesArray*pDigLst,TClonesArray *pCluLst,Bool_t isTryUnfold=kTRUE            );//digits list -> clusters list
   static        void          CluQA   (AliRunLoader* pAL                                                              );//QA for clusters
-  static        void          CheckPR (                                                                               );//utility-> run staff for stack
   static        void          FormClu (AliRICHCluster *pClu,AliRICHDigit *pDig,TClonesArray *pDigLst,TMatrixF *pDigMap);//cluster formation recursive algorithm
   static inline AliRICHDigit* UseDig  (Int_t padX,Int_t padY,TClonesArray *pDigList,TMatrixF *pDigMap                 );//use this pad's digit to form a cluster
-  static        void          Test    (Bool_t isTryUnfold=kTRUE                                                       );//test digits->clusters  conversion
-  static        void          Test    (TClonesArray *pDigLst,Bool_t isTryUnfold=kTRUE                                 );//test digits->clusters  conversion
 
   protected:
   ClassDef(AliRICHReconstructor, 0)   //class for the RICH reconstruction

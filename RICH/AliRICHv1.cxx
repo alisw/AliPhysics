@@ -15,7 +15,10 @@
 
 
 #include "AliRICHv1.h"     //class header
-#include "AliRICHParam.h"
+#include "AliRICHParam.h"  //CreateMaterials()
+#include "AliRICHHit.h"    //Hits2SDigs(),StepManager()
+#include "AliRICHDigit.h"  //CreateMaterials()
+#include "AliRawReader.h"  //Raw2SDigits()
 #include <TParticle.h>     //Hits2SDigits()
 #include <TRandom.h> 
 #include <TVirtualMC.h>    //StepManager() for gMC
@@ -40,7 +43,15 @@
 #include <AliCDBEntry.h>      //CreateMaterials()
  
 ClassImp(AliRICHv1)    
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHv1::AddAlignableVolumes()const
+{
+// Associates the symbolic volume name with the corresponding volume path. Interface methode from AliModule ivoked from AliMC
+// Arguments: none
+//   Returns: none   
+  for(Int_t i=0;i<7;i++)
+    gGeoManager->SetAlignableEntry(Form("/RICH/CH%i",i),Form("ALIC_1/RICH_%i",i));
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::CreateMaterials()
 {
@@ -49,50 +60,34 @@ void AliRICHv1::CreateMaterials()
 //   Returns: none    
   AliDebug(1,"Start v1 RICH.");
   
+  Float_t emin=5.5,emax=8.5;         //Photon energy range,[eV]
+
+  TF2 *pRaIF=new TF2("RidxRad","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5796)-0.0005*(y-20))"                                       ,emin,emax,0,50); //DiMauro mail temp 0-50 degrees C
+  TF1 *pWiIF=new TF1("RidxWin","sqrt(1+46.411/(10.666*10.666-x*x)+228.71/(18.125*18.125-x*x))"                                        ,emin,emax);      //SiO2 idx TDR p.35
+  TF1 *pGaIF=new TF1("RidxGap","1+0.12489e-6/(2.62e-4 - x*x/1239.84/1239.84)"                                                         ,emin,emax);      //?????? from where  
+
+  TF1 *pRaAF=new TF1("RabsRad","(x<7.8)*(gaus+gaus(3))+(x>=7.8)*0.0001"                                                               ,emin,emax);  //fit from DiMauro data 28.10.03 
+  pRaAF->SetParameters(3.20491e16,-0.00917890,0.742402,3035.37,4.81171,0.626309);
+  TF1 *pWiAF=new TF1("RabsWin","(x<8.2)*(818.8638-301.0436*x+36.89642*x*x-1.507555*x*x*x)+(x>=8.2)*0.0001"                            ,emin,emax);  //fit from DiMauro data 28.10.03 
+  TF1 *pGaAF=new TF1("RabsGap","(x<7.75)*6512.399+(x>=7.75)*3.90743e-2/(-1.655279e-1+6.307392e-2*x-8.011441e-3*x*x+3.392126e-4*x*x*x)",emin,emax);  //????? from where  
+  
+  TF1 *pQeF =new TF1("Qe"    ,"0+(x>6.07267)*0.344811*(1-exp(-1.29730*(x-6.07267)))"                                                  ,emin,emax);  //fit from DiMauro data 28.10.03  
+
   const Int_t kNbins=30;       //number of photon energy points
-  
-  Float_t aAbsC6F14[kNbins]={//New values from A.DiMauro 28.10.03 total 30
-    32701.4219, 17996.1141, 10039.7281, 1799.1230, 1799.1231, 1799.1231, 1241.4091, 179.0987, 179.0986, 179.0987,
-      179.0987,   118.9800,    39.5058,   23.7244,   11.1283,    7.1573,    3.6249,   2.1236,   0.7362,   0.5348,
-        0.3387,     0.3074,     0.3050,    0.0001,    0.0001,    0.0001,    0.0001,   0.0001,   0.0001,   0.0001};    
-    
-  Float_t aAbsSiO2[kNbins]={//New values from A.DiMauro 28.10.03 total 30
-       34.4338, 30.5424, 30.2584, 31.4928, 31.7868, 17.8397, 9.3410, 6.4492, 6.1128, 5.8128,
-        5.5589,  5.2877,  5.0162,  4.7999,  4.5734,  4.2135, 3.7471, 2.6033, 1.5223, 0.9658,
-        0.4242,  0.2500,  0.1426,  0.0863,  0.0793,  0.0724, 0.0655, 0.0587, 0.0001, 0.0001};
-    
-  Float_t aQeCsI[kNbins] = {//New values from A.DiMauro 28.10.03 total 31 the last one cut to provide 30
-                            0.0002, 0.0006, 0.0007, 0.0010, 0.0049, 0.0073, 0.0104, 0.0519, 0.0936, 0.1299,
-                            0.1560, 0.1768, 0.1872, 0.1976, 0.2142, 0.2288, 0.2434, 0.2599, 0.2673, 0.2808,
-                            0.2859, 0.2954, 0.3016, 0.3120, 0.3172, 0.3224, 0.3266, 0.3328, 0.3359, 0.3390}; //0.3431};
-                              
-  Float_t aQeCsIold[kNbins]={//previous values 26 in total added 0.0001 to the 30
-    0.0002, 0.0006, 0.0007, 0.0050, 0.0075, 0.0101, 0.0243, 0.0405, 0.0689, 0.1053, 
-    0.1215, 0.1417, 0.1579, 0.1620, 0.1661, 0.1677, 0.1743, 0.1768, 0.1793, 0.1826,
-    0.1859, 0.1876, 0.1892, 0.1909, 0.2075, 0.2158, 0.0001, 0.0001, 0.0001, 0.0001 };      
+  Float_t aEckov [kNbins]; 
+  Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins], aAbsMet[kNbins],               ;
+  Float_t aIdxRad[kNbins], aIdxWin[kNbins], aIdxGap[kNbins], aIdxMet[kNbins], aIdxPc[kNbins]; 
+  Float_t                                                    aQeAll [kNbins], aQePc [kNbins];
                             
-//         radiator            window             gas               metal 
-  Float_t aIdxC6F14[kNbins] , aIdxSiO2[kNbins] , aIdxCH4[kNbins] , aIdx0[kNbins]   , aIdx1[kNbins] ; 
-  Float_t                                        aAbsCH4[kNbins] , aAbsMet[kNbins]                 ;
-  Float_t                                                                            aQe1[kNbins]  ;    //QE for all but PC
-  Float_t aEckov[kNbins];  //Ckov energy in GeV
-                            
-  
-  Double_t eCkovMin=5.5e-9,eCkovMax=8.5e-9; //in GeV
-  TF2 idxC6F14("RidxC4F14","sqrt(1+0.554*(1239.84e-9/x)^2/((1239.84e-9/x)^2-5796)-0.0005*(y-20))"   ,eCkovMin,eCkovMax,0,50); //DiMauro mail temp 0-50 degrees C
-  TF1 idxSiO2( "RidxSiO2" ,"sqrt(1+46.411/(10.666*10.666-x*x*1e18)+228.71/(18.125*18.125-x*x*1e18))",eCkovMin,eCkovMax);  //TDR p.35
-  
-  
   for(Int_t i=0;i<kNbins;i++){
-    aEckov     [i] =eCkovMin+0.1e-9*i;//Ckov energy in GeV
-    
-    aIdxC6F14  [i] =idxC6F14.Eval(aEckov[i],20);      //Simulation for 20 degress C       
-    aIdxSiO2   [i] =idxSiO2 .Eval(aEckov[i]);
-    aIdxCH4    [i] =AliRICHParam::IdxCH4   (aEckov[i]); aAbsCH4 [i]  =AliRICHParam::AbsCH4     (aEckov[i]); 
-    aAbsMet    [i] =0.0001;                              //metal has absorption probability
-    aIdx0      [i] =0;                                   //metal ref idx must be 0 in order to reflect photon
-    aIdx1      [i] =1;                                   //metal ref idx must be 1 in order to apply photon to QE conversion 
-    aQe1       [i] =1;                                   //QE for all other materials except for PC must be 1.
+    Float_t eV=emin+0.1*i;  //Ckov energy in eV
+    aEckov [i] =1e-9*eV;    //Ckov energy in GeV
+    aAbsRad[i]=pRaAF->Eval(eV); aIdxRad[i]=1.292;//pRaIF->Eval(eV,20);      //Simulation for 20 degress C       
+    aAbsWin[i]=pWiAF->Eval(eV); aIdxWin[i]=1.5787;//pWiIF->Eval(eV);
+    aAbsGap[i]=pGaAF->Eval(eV); aIdxGap[i]=1.0005;//pGaIF->Eval(eV);    aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
+    aAbsMet[i] =0.0001;                aIdxMet[i]=0;                                             //metal ref idx must be 0 in order to reflect photon
+                                       aIdxPc [i]=1;           aQePc [i]=pQeF->Eval(eV);         //PC ref idx must be 1 in order to apply photon to QE conversion 
+                                       
   }
   
 //data from PDG booklet 2002     density [gr/cm^3] rad len [cm] abs len [cm]    
@@ -105,93 +100,82 @@ void AliRICHv1::CreateMaterials()
   Float_t       aCu= 63.55 ,                 zCu= 29 ,                                dCu=  8.96 ,   radCu=  1.43 ,   absCu= 134.9/dCu  ;
   Float_t        aW=183.84 ,                  zW= 74 ,                                 dW= 19.30 ,    radW=  0.35 ,    absW= 185.0/dW   ;
   Float_t       aAl= 26.98 ,                 zAl= 13 ,                                dAl=  2.70 ,   radAl=  8.90 ,   absAl= 106.4/dAl  ;
-    
-  Int_t   matId=0;                           //tmp material id number
-  Int_t   unsens =  0, sens=1;               //sensitive or unsensitive medium
-  Int_t   itgfld = gAlice->Field()->Integ(); //type of field intergration 0 no field -1 user in guswim 1 Runge Kutta 2 helix 3 const field along z
-  Float_t maxfld = gAlice->Field()->Max();   //max field value
-  Float_t tmaxfd = -10.0;                    //max deflection angle due to magnetic field in one step
-  Float_t deemax = - 0.2;                    //max fractional energy loss in one step   
-  Float_t stemax = - 0.1;                    //mas step allowed [cm]
-  Float_t epsil  =   0.001;                  //abs tracking precision [cm]   
-  Float_t stmin  = - 0.001;                  //min step size [cm] in continius process transport, negative value: choose it automatically
-  AliMixture(++matId,"Air"  ,aAir  ,zAir  ,dAir  ,nAir  ,wAir  ); AliMedium(kAir  ,"Air"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMixture(++matId,"C6F14",aC6F14,zC6F14,dC6F14,nC6F14,wC6F14); AliMedium(kC6F14,"C6F14",matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);      
-  AliMixture(++matId,"SiO2" ,aSiO2 ,zSiO2 ,dSiO2 ,nSiO2 ,wSiO2 ); AliMedium(kSiO2 ,"SiO2" ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);    
-  AliMixture(++matId,"CH4"  ,aCH4  ,zCH4  ,dCH4  ,nCH4  ,wCH4  ); AliMedium(kCH4  ,"CH4"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);  
-  AliMixture(++matId,"CsI"  ,aCsI  ,zCsI  ,dCsI  ,nCsI  ,wCsI  ); AliMedium(kCsI  ,"CsI"  ,matId,   sens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);//sensitive
   
-  AliMaterial(++matId,"Roha",aRoha,zRoha,dRoha,radRoha,absRoha);  AliMedium(kRoha,"Roha", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMaterial(++matId,"Cu"  ,aCu  ,zCu  ,dCu  ,radCu  ,absCu  );  AliMedium(kCu  ,"Cu"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMaterial(++matId,"W"   ,aW   ,zW   ,dW   ,radW   ,absW   );  AliMedium(kW   ,"W"   , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+    Int_t   matId=0;                           //tmp material id number
+    Int_t   unsens =  0, sens=1;               //sensitive or unsensitive medium
+    Int_t   itgfld = gAlice->Field()->Integ(); //type of field intergration 0 no field -1 user in guswim 1 Runge Kutta 2 helix 3 const field along z
+    Float_t maxfld = gAlice->Field()->Max();   //max field value
+    Float_t tmaxfd = -10.0;                    //max deflection angle due to magnetic field in one step
+    Float_t deemax = - 0.2;                    //max fractional energy loss in one step   
+    Float_t stemax = - 0.1;                    //mas step allowed [cm]
+    Float_t epsil  =   0.001;                  //abs tracking precision [cm]   
+    Float_t stmin  = - 0.001;                  //min step size [cm] in continius process transport, negative value: choose it automatically
+    AliMixture(++matId,"Air"  ,aAir  ,zAir  ,dAir  ,nAir  ,wAir  ); AliMedium(kAir  ,"Air"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMixture(++matId,"C6F14",aC6F14,zC6F14,dC6F14,nC6F14,wC6F14); AliMedium(kC6F14,"C6F14",matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);      
+    AliMixture(++matId,"SiO2" ,aSiO2 ,zSiO2 ,dSiO2 ,nSiO2 ,wSiO2 ); AliMedium(kSiO2 ,"SiO2" ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);    
+    AliMixture(++matId,"CH4"  ,aCH4  ,zCH4  ,dCH4  ,nCH4  ,wCH4  ); AliMedium(kCH4  ,"CH4"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);  
+    AliMixture(++matId,"CsI"  ,aCsI  ,zCsI  ,dCsI  ,nCsI  ,wCsI  ); AliMedium(kCsI  ,"CsI"  ,matId,   sens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);//sensitive
   
-  gMC->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsC6F14  , aQe1  , aIdxC6F14 );    
-  gMC->SetCerenkov((*fIdtmed)[kSiO2]     , kNbins, aEckov, aAbsSiO2   , aQe1  , aIdxSiO2  );    
-  gMC->SetCerenkov((*fIdtmed)[kCH4]      , kNbins, aEckov, aAbsCH4    , aQe1  , aIdxCH4   );    
-  gMC->SetCerenkov((*fIdtmed)[kCu]       , kNbins, aEckov, aAbsMet    , aQe1  , aIdx0     );    
-  gMC->SetCerenkov((*fIdtmed)[kW]        , kNbins, aEckov, aAbsMet    , aQe1  , aIdx0     ); //n=0 means reflect photons       
-  gMC->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet    , aQeCsI, aIdx1     ); //n=1 means convert photons    
-  gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet    , aQe1  , aIdx0     );    
+    AliMaterial(++matId,"Roha",aRoha,zRoha,dRoha,radRoha,absRoha);  AliMedium(kRoha,"Roha", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMaterial(++matId,"Cu"  ,aCu  ,zCu  ,dCu  ,radCu  ,absCu  );  AliMedium(kCu  ,"Cu"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMaterial(++matId,"W"   ,aW   ,zW   ,dW   ,radW   ,absW   );  AliMedium(kW   ,"W"   , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+    AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliDebug(1,"Stop v1 RICH.");
-  TString ttl=GetTitle();
-  if(!ttl.Contains("ShowOptics")) return; //do not plot optical curves
-  {
+    gMC->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsRad  , aQeAll , aIdxRad );    
+    gMC->SetCerenkov((*fIdtmed)[kSiO2]     , kNbins, aEckov, aAbsWin  , aQeAll , aIdxWin );    
+    gMC->SetCerenkov((*fIdtmed)[kCH4]      , kNbins, aEckov, aAbsGap  , aQeAll , aIdxGap );    
+    gMC->SetCerenkov((*fIdtmed)[kCu]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
+    gMC->SetCerenkov((*fIdtmed)[kW]        , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet ); //n=0 means reflect photons       
+    gMC->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet  , aQePc  , aIdxPc  ); //n=1 means convert photons    
+    gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
+  
+  delete pRaAF;delete pWiAF;delete pGaAF; delete pRaIF; delete pWiIF; delete pGaIF; delete pQeF;
+    AliDebug(1,"Stop v1 RICH.");
+
+  TString ttl=GetTitle(); if(!ttl.Contains("ShowOptics")) return;              //user didn't aks to plot optical curves
+  
   const Double_t kWidth=0.25,kHeight=0.2;  
-  const Int_t kC6F14Marker=24 , kC6F14Color=kRed;  
-  const Int_t kCH4Marker  =25 , kCH4Color  =kGreen;  
-  const Int_t kSiO2M      =26 , kSiO2Color =kBlue;  
-  const Int_t kCsIMarker  = 2 , kCsIColor  =kMagenta;  
+  const Int_t kRadM=24 , kRadC=kRed;  
+  const Int_t kWinM=26 , kWinC=kBlue;  
+  const Int_t kGapM=25 , kGapC=kGreen;  
+  const Int_t kPcM = 2 , kPcC =kMagenta;  
   
-//Ref index           
-  TGraph *pIdxC6F14=new TGraph(kNbins,aEckov,aIdxC6F14);pIdxC6F14->SetMarkerStyle(kC6F14Marker);pIdxC6F14->SetMarkerColor(kC6F14Color);
-  TGraph *pIdxSiO2 =new TGraph(kNbins,aEckov,aIdxSiO2); pIdxSiO2 ->SetMarkerStyle(kSiO2M)      ;pIdxSiO2 ->SetMarkerColor(kSiO2Color);  
-  TGraph *pIdxCH4  =new TGraph(kNbins,aEckov,aIdxCH4);  pIdxCH4  ->SetMarkerStyle(kCH4Marker)  ;pIdxCH4  ->SetMarkerColor(kCH4Color);
-  TMultiGraph *pIdxMG=new TMultiGraph("refidx","Ref index;E_{#check{C}} [GeV]");  TLegend *pIdxLe=new TLegend(0.5,0.21,0.5+kWidth,0.21+kHeight);
-  pIdxMG->Add(pIdxC6F14); pIdxLe->AddEntry(pIdxC6F14,"C6F14"  ,"p");            
-  pIdxMG->Add(pIdxSiO2) ; pIdxLe->AddEntry(pIdxSiO2 ,"SiO2"   ,"p");          
-  pIdxMG->Add(pIdxCH4)  ; pIdxLe->AddEntry(pIdxCH4  ,"CH4"    ,"p");          
-//Absorbtion
-  TGraph *pAbsC6F14=new TGraph(kNbins,aEckov,aAbsC6F14);pAbsC6F14->SetMarkerStyle(kC6F14Marker); pAbsC6F14->SetMarkerColor(kC6F14Color);
-  TGraph *pAbsSiO2 =new TGraph(kNbins,aEckov,aAbsSiO2) ;pAbsSiO2 ->SetMarkerStyle(kSiO2M)      ; pAbsSiO2 ->SetMarkerColor(kSiO2Color);
-  TGraph *pAbsCH4  =new TGraph(kNbins,aEckov,aAbsCH4)  ;pAbsCH4  ->SetMarkerStyle(kCH4Marker)  ; pAbsCH4  ->SetMarkerColor(kCH4Color);
-  
-  TMultiGraph *pAbsMG=new TMultiGraph("abs","Absorption [cm];E_{#check{C}} [GeV]");  TLegend *pAbsLe=new TLegend(0.2,0.15,0.2+kWidth,0.15+kHeight);
-  pAbsMG->Add(pAbsC6F14);      pAbsLe->AddEntry(pAbsC6F14,  "C6F14"    ,"p"); 
-  pAbsMG->Add(pAbsSiO2);       pAbsLe->AddEntry(pAbsSiO2 ,  "SiO2"     ,"p"); 
-  pAbsMG->Add(pAbsCH4);        pAbsLe->AddEntry(pAbsCH4  ,  "CH4"      ,"p"); 
-//QE new and old
-  TGraph *pQeCsI   =new TGraph(kNbins,aEckov,aQeCsI);    pQeCsI   ->SetMarkerStyle(kCsIMarker);  pQeCsI   ->SetMarkerColor(kCsIColor);
-  TGraph *pQeCsIold=new TGraph(kNbins,aEckov,aQeCsIold); pQeCsIold->SetMarkerStyle(kC6F14Marker);pQeCsIold->SetMarkerColor(kC6F14Color);    
-  TMultiGraph *pCompMG=new TMultiGraph("qe","QE;E_{#check{C}} [GeV]");  TLegend *pCompLe=new TLegend(0.2,0.6,0.2+kWidth,0.6+kHeight);
-  pCompMG->Add(pQeCsI);       pCompLe->AddEntry(pQeCsI,    "QE new 30.10.03", "p");  
-  pCompMG->Add(pQeCsIold);    pCompLe->AddEntry(pQeCsIold, "QE old 01.01.02", "p");
-//transmission  
-  Float_t aTrC6F14[kNbins],aTrSiO2[kNbins],aTrCH4[kNbins],aTrTotal[kNbins];
+  Float_t aTraRad[kNbins],aTraWin[kNbins],aTraGap[kNbins],aTraTot[kNbins];
   for(Int_t i=0;i<kNbins;i++){//calculate probability for photon to survive during transversing a volume of material with absorption length  
-    aTrC6F14[i] =TMath::Exp(-AliRICHParam::RadThick() / (aAbsC6F14[i]+0.0001)); //radiator
-    aTrSiO2[i]  =TMath::Exp(-AliRICHParam::WinThick() / (aAbsSiO2[i] +0.0001)); //window
-    aTrCH4[i]   =TMath::Exp(-AliRICHParam::Pc2Win()   / (aAbsCH4[i]  +0.0001)); //from window to PC   
-    aTrTotal[i] =aTrC6F14[i]*aTrSiO2[i]*aTrCH4[i]*aQeCsI[i];
+    aTraRad[i]=TMath::Exp(-AliRICHDigit::SizeRad()/ (aAbsRad[i]+0.0001)); //radiator
+    aTraWin[i]=TMath::Exp(-AliRICHDigit::SizeWin()/ (aAbsWin[i] +0.0001)); //window
+    aTraGap[i]=TMath::Exp(-AliRICHDigit::SizeGap()/ (aAbsGap[i]  +0.0001)); //from window to PC   
+    aTraTot[i]=aTraRad[i]*aTraWin[i]*aTraGap[i]*aQePc[i];
   }
-  TGraph *pTrC6F14=new TGraph(kNbins,aEckov,aTrC6F14)  ;pTrC6F14->SetMarkerStyle(kC6F14Marker);pTrC6F14->SetMarkerColor(kC6F14Color);  
-  TGraph *pTrSiO2 =new TGraph(kNbins,aEckov,aTrSiO2)   ;pTrSiO2 ->SetMarkerStyle(kSiO2M)      ;pTrSiO2 ->SetMarkerColor(kSiO2Color);  
-  TGraph *pTrCH4  =new TGraph(kNbins,aEckov,aTrCH4)    ;pTrCH4  ->SetMarkerStyle(kCH4Marker)  ;pTrCH4  ->SetMarkerColor(kCH4Color);   
-  TGraph *pTrTotal=new TGraph(kNbins,aEckov,aTrTotal)  ;pTrTotal->SetMarkerStyle(30)          ;pTrTotal->SetMarkerColor(kYellow);  
-  TMultiGraph *pTrMG=new TMultiGraph("trans","Transmission;E_{#check{C}} [GeV]");  TLegend *pTrLe=new TLegend(0.2,0.4,0.2+kWidth,0.4+kHeight);
-  pTrMG->Add(pQeCsI);       pTrLe->AddEntry(pQeCsI,   "CsI QE", "p");  
-  pTrMG->Add(pTrC6F14);     pTrLe->AddEntry(pTrC6F14, "C6F14" , "p");  
-  pTrMG->Add(pTrSiO2);      pTrLe->AddEntry(pTrSiO2,  "SiO2"  , "p");          
-  pTrMG->Add(pTrCH4);       pTrLe->AddEntry(pTrCH4,   "CH4"   , "p");          
-  pTrMG->Add(pTrTotal);     pTrLe->AddEntry(pTrTotal, "total" , "p");          
   
+  TGraph *pRaAG=new TGraph(kNbins,aEckov,aAbsRad);pRaAG->SetMarkerStyle(kRadM);pRaAG->SetMarkerColor(kRadC);
+  TGraph *pRaIG=new TGraph(kNbins,aEckov,aIdxRad);pRaIG->SetMarkerStyle(kRadM);pRaIG->SetMarkerColor(kRadC);
+  TGraph *pRaTG=new TGraph(kNbins,aEckov,aTraRad);pRaTG->SetMarkerStyle(kRadM);pRaTG->SetMarkerColor(kRadC);  
+  
+  TGraph *pWiAG=new TGraph(kNbins,aEckov,aAbsWin);pWiAG->SetMarkerStyle(kWinM);pWiAG->SetMarkerColor(kWinC);
+  TGraph *pWiIG=new TGraph(kNbins,aEckov,aIdxWin);pWiIG->SetMarkerStyle(kWinM);pWiIG->SetMarkerColor(kWinC);  
+  TGraph *pWiTG=new TGraph(kNbins,aEckov,aTraWin);pWiTG->SetMarkerStyle(kWinM);pWiTG->SetMarkerColor(kWinC);  
+  
+  TGraph *pGaAG=new TGraph(kNbins,aEckov,aAbsGap);pGaAG->SetMarkerStyle(kGapM);pGaAG->SetMarkerColor(kGapC);
+  TGraph *pGaIG=new TGraph(kNbins,aEckov,aIdxGap);pGaIG->SetMarkerStyle(kGapM);pGaIG->SetMarkerColor(kGapC);
+  TGraph *pGaTG=new TGraph(kNbins,aEckov,aTraGap);pGaTG->SetMarkerStyle(kGapM);pGaTG->SetMarkerColor(kGapC);   
+  
+  TGraph *pQeG =new TGraph(kNbins,aEckov,aQePc);  pQeG  ->SetMarkerStyle(kPcM );pQeG->SetMarkerColor(kPcC);
+  TGraph *pToG =new TGraph(kNbins,aEckov,aTraTot);pToG  ->SetMarkerStyle(30)   ;pToG->SetMarkerColor(kYellow);  
+  
+  TMultiGraph *pIdxMG=new TMultiGraph("idx","Ref index;E_{#check{C}} [GeV]");       
+  TMultiGraph *pAbsMG=new TMultiGraph("abs","Absorption [cm];E_{#check{C}} [GeV]"); 
+  TMultiGraph *pTraMG=new TMultiGraph("tra","Transmission;E_{#check{C}} [GeV]");    TLegend *pTraLe=new TLegend(0.2,0.4,0.2+kWidth,0.4+kHeight);
+  pAbsMG->Add(pRaAG);  pIdxMG->Add(pRaIG);     pTraMG->Add(pRaTG);     pTraLe->AddEntry(pRaTG, "Rad", "p");           
+  pAbsMG->Add(pWiAG);  pIdxMG->Add(pWiIG);     pTraMG->Add(pWiTG);     pTraLe->AddEntry(pWiTG, "Win", "p");               
+  pAbsMG->Add(pGaAG);  pIdxMG->Add(pGaIG);     pTraMG->Add(pGaTG);     pTraLe->AddEntry(pGaTG, "Gap", "p");               
+                                               pTraMG->Add(pToG);      pTraLe->AddEntry(pToG,  "Tot", "p");          
+                                               pTraMG->Add(pQeG);      pTraLe->AddEntry(pQeG,   "QE" , "p");  
   TCanvas *pC=new TCanvas("c1","RICH optics to check",1100,900);  pC->Divide(2,2);           
-  pC->cd(1);                    pIdxMG ->Draw("AP");  pIdxLe ->Draw();      //ref idx       
-  pC->cd(2);  gPad->SetLogy();  pAbsMG ->Draw("AP");  pAbsLe ->Draw();      //absorption
-  pC->cd(3);                    pCompMG->Draw("AP");  pCompLe->Draw();      //QE      
-  pC->cd(4);                    pTrMG  ->Draw("AP");  pTrLe  ->Draw();      //transmission
-  }
+  pC->cd(1);                    pIdxMG->Draw("AP"); 
+  pC->cd(2);  gPad->SetLogy();  pAbsMG->Draw("AP"); 
+  pC->cd(3);                    pTraLe->Draw();    
+  pC->cd(4);                    pTraMG->Draw("AP");
 }//void AliRICH::CreateMaterials()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::CreateGeometry()
@@ -209,18 +193,18 @@ void AliRICHv1::CreateGeometry()
   const Double_t kAngVer=20;   //  vertical angle between chambers    20   grad     
   const Double_t kAngCom=30;   //  common RICH rotation with respect to x axis  30   grad     
   const Double_t trans[3]={490,0,0}; //center of the chamber is on window-gap surface
-  for(Int_t iCh=1;iCh<=7;iCh++){//place 7 chambers
+  for(Int_t iCh=0;iCh<7;iCh++){//place 7 chambers
     TGeoHMatrix *pMatrix=new TGeoHMatrix;
     pMatrix->RotateY(90);           //rotate around y since initial position is in XY plane -> now in YZ plane
     pMatrix->SetTranslation(trans); //now plane in YZ is shifted along x 
     switch(iCh){
-      case 1:                pMatrix->RotateY(kAngHor);  pMatrix->RotateZ(-kAngVer);  break; //right and down 
-      case 2:                                            pMatrix->RotateZ(-kAngVer);  break; //down              
-      case 3:                pMatrix->RotateY(kAngHor);                               break; //right 
-      case 4:                                                                         break; //no rotation
-      case 5:                pMatrix->RotateY(-kAngHor);                              break; //left   
-      case 6:                                            pMatrix->RotateZ(kAngVer);   break; //up
-      case 7:                pMatrix->RotateY(-kAngHor); pMatrix->RotateZ(kAngVer);   break; //left and up 
+      case 0:                pMatrix->RotateY(kAngHor);  pMatrix->RotateZ(-kAngVer);  break; //right and down 
+      case 1:                                            pMatrix->RotateZ(-kAngVer);  break; //down              
+      case 2:                pMatrix->RotateY(kAngHor);                               break; //right 
+      case 3:                                                                         break; //no rotation
+      case 4:                pMatrix->RotateY(-kAngHor);                              break; //left   
+      case 5:                                            pMatrix->RotateZ(kAngVer);   break; //up
+      case 6:                pMatrix->RotateY(-kAngHor); pMatrix->RotateZ(kAngVer);   break; //left and up 
     }
     pMatrix->RotateZ(kAngCom);     //apply common rotation  in XY plane    
     gGeoManager->GetVolume("ALIC")->AddNode(pRich,iCh,pMatrix);
@@ -234,12 +218,12 @@ void AliRICHv1::CreateGeometry()
   par[0]=114*mm/2;par[1]=89.25*mm/2;par[2]=38.3*mm/2;gMC->Gsvolu("RppfSmall","BOX ",(*fIdtmed)[kAir] ,par,3);//small whole
   par[0]=644*mm/2;par[1]=  407*mm/2;par[2]= 1.7*mm/2;gMC->Gsvolu("Rpc"      ,"BOX ",(*fIdtmed)[kCsI] ,par,3);//by 0.2 mm more then actual size (PCB 2006P1)
   
-  gMC->Gspos("Rppf",1,"RICH",    -335*mm,      -433*mm,  8*cm+20*mm,  0,"ONLY");//F1 2040P1 z p.84 TDR
-  gMC->Gspos("Rppf",2,"RICH",    +335*mm,      -433*mm,  8*cm+20*mm,  0,"ONLY");
-  gMC->Gspos("Rppf",3,"RICH",    -335*mm,         0*mm,  8*cm+20*mm,  0,"ONLY");
-  gMC->Gspos("Rppf",4,"RICH",    +335*mm,         0*mm,  8*cm+20*mm,  0,"ONLY");
-  gMC->Gspos("Rppf",5,"RICH",    -335*mm,      +433*mm,  8*cm+20*mm,  0,"ONLY");
-  gMC->Gspos("Rppf",6,"RICH",    +335*mm,      +433*mm,  8*cm+20*mm,  0,"ONLY");  
+  gMC->Gspos("Rppf",0,"RICH",    -335*mm,      -433*mm,  8*cm+20*mm,  0,"ONLY");//F1 2040P1 z p.84 TDR
+  gMC->Gspos("Rppf",1,"RICH",    +335*mm,      -433*mm,  8*cm+20*mm,  0,"ONLY");
+  gMC->Gspos("Rppf",2,"RICH",    -335*mm,         0*mm,  8*cm+20*mm,  0,"ONLY");
+  gMC->Gspos("Rppf",3,"RICH",    +335*mm,         0*mm,  8*cm+20*mm,  0,"ONLY");
+  gMC->Gspos("Rppf",4,"RICH",    -335*mm,      +433*mm,  8*cm+20*mm,  0,"ONLY");
+  gMC->Gspos("Rppf",5,"RICH",    +335*mm,      +433*mm,  8*cm+20*mm,  0,"ONLY");  
     gMC->Gspos("Rpc"      ,1,"Rppf",       0*mm,         0*mm,   -19.15*mm,  0,"ONLY");//PPF 2001P2 
     gMC->Gspos("RppfLarge",1,"Rppf",  -224.5*mm,  -151.875*mm,     0.85*mm,  0,"ONLY");
     gMC->Gspos("RppfLarge",2,"Rppf",  -224.5*mm,  - 50.625*mm,     0.85*mm,  0,"ONLY");
@@ -262,12 +246,12 @@ void AliRICHv1::CreateGeometry()
   par[0]=  0*mm  ;par[1]=  20*mkm/2 ;par[2]= 648*mm/2;gMC->Gsvolu("Rano","TUBE",(*fIdtmed)[kW]   ,par,3);//WP 2099P1 z = gap x PPF 2001P2
   AliMatrix(matrixIdReturn,180,0, 90,90, 90,0); //wires along x
   
-  gMC->Gspos("Rgap",1,"RICH",    -335*mm,      -433*mm,8*cm-2.225*mm, 0,"ONLY"); //F1 2040P1 z WP 2099P1
-  gMC->Gspos("Rgap",2,"RICH",    +335*mm,      -433*mm,8*cm-2.225*mm, 0,"ONLY"); 
-  gMC->Gspos("Rgap",3,"RICH",    -335*mm,         0*mm,8*cm-2.225*mm, 0,"ONLY"); 
-  gMC->Gspos("Rgap",4,"RICH",    +335*mm,         0*mm,8*cm-2.225*mm, 0,"ONLY"); 
-  gMC->Gspos("Rgap",5,"RICH",    -335*mm,      +433*mm,8*cm-2.225*mm, 0,"ONLY"); 
-  gMC->Gspos("Rgap",6,"RICH",    +335*mm,      +433*mm,8*cm-2.225*mm, 0,"ONLY"); 
+  gMC->Gspos("Rgap",0,"RICH",    -335*mm,      -433*mm,8*cm-2.225*mm, 0,"ONLY"); //F1 2040P1 z WP 2099P1
+  gMC->Gspos("Rgap",1,"RICH",    +335*mm,      -433*mm,8*cm-2.225*mm, 0,"ONLY"); 
+  gMC->Gspos("Rgap",2,"RICH",    -335*mm,         0*mm,8*cm-2.225*mm, 0,"ONLY"); 
+  gMC->Gspos("Rgap",3,"RICH",    +335*mm,         0*mm,8*cm-2.225*mm, 0,"ONLY"); 
+  gMC->Gspos("Rgap",4,"RICH",    -335*mm,      +433*mm,8*cm-2.225*mm, 0,"ONLY"); 
+  gMC->Gspos("Rgap",5,"RICH",    +335*mm,      +433*mm,8*cm-2.225*mm, 0,"ONLY"); 
   for(int i=1;i<=96;i++)
     gMC->Gspos("Rano",i,"Rgap",     0*mm, -411/2*mm+i*4*mm, 0.185*mm, matrixIdReturn,"ONLY"); //WP 2099P1  
 //Defines radiators geometry  
@@ -334,18 +318,13 @@ Bool_t AliRICHv1::IsLostByFresnel()
     return kFALSE;
 }//IsLostByFresnel()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliRICHv1::GenFee(Int_t iChamber,Float_t eloss)
+void AliRICHv1::GenFee(Int_t iCh,Float_t eloss)
 {
 // Generate FeedBack photons for the current particle. To be invoked from StepManager().
 // eloss=0 means photon so only pulse height distribution is to be analysed. This one is done in AliRICHParam::TotQdc()
-  
   TLorentzVector x4;
-  gMC->TrackPosition(x4);  
-  TVector2 x2=AliRICHParam::Instance()->Mars2Lors(iChamber,x4.Vect(),AliRICHParam::kPc);//hit position on photocathode plane
-  TVector2 xspe=x2;
-  Int_t sector=AliRICHParam::Loc2Sec(xspe);  if(sector==-1) return; //hit in dead zone, nothing to produce
-  Int_t iTotQdc=AliRICHParam::TotQdc(x2,eloss);
-  Int_t iNphotons=gMC->GetRandom()->Poisson(AliRICHParam::AlphaFeedback(iChamber,sector)*iTotQdc);    
+  gMC->TrackPosition(x4); 
+  Int_t iNphotons=gMC->GetRandom()->Poisson(0.02*200); eloss++; iCh++;   //??????????????????????
   AliDebug(1,Form("N photons=%i",iNphotons));
   Int_t j;
   Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
@@ -413,57 +392,50 @@ void AliRICHv1::GenFee(Int_t iChamber,Float_t eloss)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::Hits2SDigits()
 {
-// Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
+// Interface methode ivoked from AliSimulation to create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
+// Arguments: none
+//   Returns: none   
   AliDebug(1,"Start.");
-  for(Int_t iEventN=0;iEventN<GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEventN++){//events loop
-    GetLoader()->GetRunLoader()->GetEvent(iEventN);//get next event
+  for(Int_t iEvt=0;iEvt < GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvt++){                //events loop
+    GetLoader()->GetRunLoader()->GetEvent(iEvt);                          //get next event
   
-    if(!GetLoader()->TreeH()) GetLoader()->LoadHits();    GetLoader()->GetRunLoader()->LoadHeader(); 
-    if(!GetLoader()->GetRunLoader()->TreeK())             GetLoader()->GetRunLoader()->LoadKinematics();//from
-    if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S"); MakeBranch("S");//to
+    if(!GetLoader()->TreeH()) {GetLoader()->LoadHits();                    }
+    if(!GetLoader()->TreeS()) {GetLoader()->MakeTree("S"); MakeBranch("S");}//to
           
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
       GetLoader()->TreeH()->GetEntry(iPrimN);
-      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
-        AliRICHHit *pHit=(AliRICHHit*)Hits()->At(iHitN);//get current hit                
-        TVector2 x2 = AliRICHParam::Instance()->Mars2Lors(pHit->C(),0.5*(pHit->InX3()+pHit->OutX3()),AliRICHParam::kAnod);//hit position in the anod plane
-        Int_t iTotQdc=AliRICHParam::TotQdc(x2,pHit->Eloss());//total charge produced by hit, 0 if hit in dead zone
-        if(iTotQdc==0) continue;
-        //
-        //need to quantize the anod....
-        TVector padHit=AliRICHParam::Loc2Pad(x2);
-        TVector2 padHitXY=AliRICHParam::Pad2Loc(padHit);
-        TVector2 anod;
-        if((x2.Y()-padHitXY.Y())>0) anod.Set(x2.X(),padHitXY.Y()+AliRICHParam::AnodPitch()/2);
-        else anod.Set(x2.X(),padHitXY.Y()-AliRICHParam::AnodPitch()/2);
-        //end to quantize anod
-        //
-        TVector area=AliRICHParam::Loc2Area(anod);//determine affected pads, dead zones analysed inside
-        AliDebug(1,Form("hitanod(%6.2f,%6.2f)->area(%3.0f,%3.0f)-(%3.0f,%3.0f) QDC=%4i",anod.X(),anod.Y(),area[0],area[1],area[2],area[3],iTotQdc));
-        TVector pad(2);
-        for(pad[1]=area[1];pad[1]<=area[3];pad[1]++)//affected pads loop
-          for(pad[0]=area[0];pad[0]<=area[2];pad[0]++){                    
-            Double_t padQdc=iTotQdc*AliRICHParam::FracQdc(anod,pad);
-            AliDebug(1,Form("current pad(%3.0f,%3.0f) with QDC  =%6.2f",pad[0],pad[1],padQdc));
-            if(padQdc>0.1) SDigAdd(pHit->C(),pad,padQdc,GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
-          }//affected pads loop 
-      }//hits loop
+      Hit2Sdi(Hits(),SdiLst());
     }//prims loop
     GetLoader()->TreeS()->Fill();
     GetLoader()->WriteSDigits("OVERWRITE");
-    SDigReset();
+    SdiReset();
   }//events loop  
-  GetLoader()->UnloadHits(); GetLoader()->GetRunLoader()->UnloadHeader(); GetLoader()->GetRunLoader()->UnloadKinematics();
+  GetLoader()->UnloadHits();
   GetLoader()->UnloadSDigits();  
   AliDebug(1,"Stop.");
 }//Hits2SDigits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHv1::Hit2Sdi(TClonesArray *pHitLst,TClonesArray *pSdiLst)
+{
+// Converts list of hits to list of sdigits.  For each hit in a loop the following steps are done:
+// - calcultion of the total charge induced by the hit
+// - determination of the pad contaning the hit and shifting hit y position to the nearest anod wire y
+// - defining a set of pads affected (up to 9 including the hitted pad)    
+// - calculating charge induced to all those pads using integrated Mathieson distribution and creating sdigit  
+// Arguments: pHitLst  - list of hits provided not empty
+//            pSDigLst - list of sdigits where to store the results
+//   Returns: none         
+  for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){         //hits loop
+    AliRICHHit *pHit=(AliRICHHit*)pHitLst->At(iHit);           //get pointer to current hit   
+    AliRICHDigit::Hit2Sdi(pHit,pSdiLst);                       //convert this hit to list of sdigits     
+  }//hits loop loop
+}//Hits2SDigs() for TVector2
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::Digits2Raw()
 {
-//Creates raw data files in DDL format. Invoked by AliSimulation
-//loop over events is done outside in AliSimulation
-//Arguments: none
-//  Returns: none    
+// Creates raw data files in DDL format. Invoked by AliSimulation where loop over events is done
+// Arguments: none
+//   Returns: none    
   AliDebug(1,"Start.");
   GetLoader()->LoadDigits();
   GetLoader()->TreeD()->GetEntry(0);
@@ -473,22 +445,22 @@ void AliRICHv1::Digits2Raw()
   AliRawDataHeader header; //empty DDL header
   UInt_t w32=0;            //32 bits data word 
   
-  for(Int_t i=0;i<AliRICHDigit::kNddls;i++){//open all 14 DDL in parallel
-    file[i].open(AliDAQ::DdlFileName("RICH",i));
-    file[i].write((char*)&header,sizeof(header));                //write dummy header as place holder, actual will be written later when total size of DDL is known
-    cnt[i]=0; //reset counters
+  for(Int_t i=0;i<AliRICHDigit::kNddls;i++){        
+    file[i].open(AliDAQ::DdlFileName(GetName(),i)); //open all 14 DDL in parallel
+    file[i].write((char*)&header,sizeof(header));   //write dummy header as place holder, actual will be written later when total size of DDL is known
+    cnt[i]=0;                                       //reset counters
   }
   
-  for(Int_t iCh=0;iCh<fNcham;iCh++){ //digits are stored on chamber by chamber basis   
-    TClonesArray *pDigs=(TClonesArray*)fDig->UncheckedAt(iCh);
-    for(Int_t iDig=0;iDig<pDigs->GetEntriesFast();iDig++){//digits loop for a given chamber
-      AliRICHDigit *pDig=(AliRICHDigit*)pDigs->At(iDig);
-      Int_t ddl=pDig->Dig2Raw(w32);  //ddl is 0..13 
+  for(Int_t iCh=0;iCh<7;iCh++)
+    for(Int_t iDig=0;iDig<DigLst(iCh)->GetEntriesFast();iDig++){//digits loop for a given chamber
+      AliRICHDigit *pDig=(AliRICHDigit*)DigLst(iCh)->At(iDig);
+      Int_t ddl=pDig->Raw(w32);                             //ddl is 0..13 
       file[ddl].write((char*)&w32,sizeof(w32));  cnt[ddl]++;//write formated digit to the propriate file (as decided in Dig2Raw) and increment corresponding counter
-    }//digits loop for a given chamber
-  }//chambers loop    
+    }//digits 
+    
+    
   for(Int_t i=0;i<AliRICHDigit::kNddls;i++){
-    header.fSize=sizeof(header)+cnt[i]*sizeof(w32); //now calculate total number of bytes for each DDL file  
+    header.fSize=sizeof(header)+cnt[i]*sizeof(w32);                //now calculate total number of bytes for each DDL file  
     header.SetAttribute(0); 
     file[i].seekp(0); file[i].write((char*)&header,sizeof(header));//rewrite DDL header with fSize field properly set
     file[i].close();                                               //close DDL file
@@ -559,28 +531,33 @@ void AliRICHv1::Print(Option_t *option)const
 {
 // Debug printout
   TObject::Print(option);
-  Printf("Total number of MIP reached radiator        %9i",fCounters(kMipEnterRad));
-  Printf("Total number of Ckov created                %9i",fCounters(kCkovNew));
-  Printf("number of Ckov created in radiator          %9i",fCounters(kCkovNewRad));
-  Printf("number of Ckov created in window            %9i",fCounters(kCkovNewWin));
-  Printf("number of Ckov created in proximity gap     %9i",fCounters(kCkovNewProxGap));
-  Printf("number of Ckov created in amplification gap %9i",fCounters(kCkovNewAmpGap));
-  Printf("number of Ckov reached PC                   %9i",fCounters(kCkovEnterPc));
-  Printf("number of photelectrons                     %9i",fCounters(kPhotoEle));
 }//void AliRICH::Print(Option_t *option)const
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliRICHv1::Raw2SDigits(AliRawReader *pRR)
+{
+// Interface methode ivoked from AliSimulation to create a list of sdigits from raw digits. Events loop is done in AliSimulation
+// Arguments: pRR- raw reader 
+//   Returns: kTRUE on success (currently ignored in AliSimulation::ConvertRaw2SDigits())      
+  AliRICHDigit sdi; //tmp sdigit, raw digit will be converted to it
+  
+  if(!GetLoader()->TreeS()) {MakeTree("S");  MakeBranch("S");}
+    
+  TClonesArray *pSdiLst=SdiLst(); Int_t iSdiCnt=0; //tmp list of sdigits for all chambers
+  pRR->Select("RICH",0,13);//select all RICH DDL files
+  UInt_t w32=0;
+  while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
+    UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
+    sdi.ReadRaw(ddl,w32);  
+    new((*pSdiLst)[iSdiCnt++]) AliRICHDigit(sdi); //add this digit to the tmp list
+  }//raw records loop
+  GetLoader()->TreeS()->Fill(); GetLoader()->WriteSDigits("OVERWRITE");//write out sdigits
+  SdiReset();
+  return kTRUE;
+}//Raw2SDigits
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::StepCount()
 {
 // Count number of ckovs created  
-  Int_t copy;
-  if(gMC->TrackCharge()        &&gMC->CurrentVolID(copy)==fIdRad    &&gMC->IsTrackEntering()                ) fCounters(kMipEnterRad)++;  
-  if(gMC->TrackPid()==kCerenkov                                     &&gMC->IsNewTrack()                     ) fCounters(kCkovNew)++;      
-  if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdRad    &&gMC->IsNewTrack()                     ) fCounters(kCkovNewRad)++;   
-  if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdWin    &&gMC->IsNewTrack()                     ) fCounters(kCkovNewWin)++;   
-  if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdProxGap&&gMC->IsNewTrack()                     ) fCounters(kCkovNewProxGap)++;
-  if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdAmpGap &&gMC->IsNewTrack()                     ) fCounters(kCkovNewAmpGap)++;
-  if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdPc     &&gMC->IsTrackEntering()                ) fCounters(kCkovEnterPc)++;  
-  if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdPc     &&gMC->IsTrackEntering() &&gMC->Edep()>0) fCounters(kPhotoEle)++;       
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::StepHistory()
@@ -634,34 +611,42 @@ void AliRICHv1::StepManager()
 //  StepHistory(); return; //uncomment to print tracks history
 //  StepCount(); return;     //uncomment to count photons
   
-  Int_t          copy; //volume copy aka node
-  static Int_t   iCham;
+  Int_t   copy; //volume copy aka node
+  
 //Treat photons    
-  static TLorentzVector cerX4;
-  if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==fIdPc){//photon in PC
-    if(gMC->Edep()>0){//photon survided QE test i.e. produces electron
-      if(IsLostByFresnel()){ gMC->StopTrack(); return;} //photon lost due to fersnel reflection        
-      gMC->TrackPosition(cerX4); gMC->CurrentVolOffID(2,iCham);//RICH-Rppf-Rpc
-      HitAdd(iCham,gMC->GetStack()->GetCurrentTrackNumber(),gMC->TrackPid(),cerX4.Vect(),cerX4.Vect());//HIT for PHOTON in conditions CF+CSI+DE
-      GenFee(iCham);
-    }//photon in PC and DE >0 
-  }//photon in PC
+  if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==fIdPc){  //photon (Ckov or feedback) hit PC (fIdPc)
+    if(gMC->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
+      if(IsLostByFresnel()){ gMC->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC       
+                       gMC->CurrentVolOffID(2,copy);                                             //current chamber since geomtry tree is RICH-Rppf-Rpc
+      Int_t   tid=     gMC->GetStack()->GetCurrentTrackNumber();                                 //take TID
+      Int_t   pid=     gMC->TrackPid();                                                          //take PID
+      Float_t etot=    gMC->Etot();                                                              //total hpoton energy, [GeV] 
+      Double_t x[3];   gMC->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
+      Float_t xl,yl;   AliRICHParam::Instance()->Mars2Lors(copy,x,xl,yl);                        //take LORS position
+      new((*fHits)[fNhits++])AliRICHHit(copy,etot,pid,tid,xl,yl,x);                              //HIT for photon, position at PC
+      GenFee(copy);                                                                              //generate feedback photons
+    }//photon hit PC and DE >0 
+  }//photon hit PC
   
 //Treat charged particles  
-  static Float_t eloss;
-  static TLorentzVector mipInX4,mipOutX4;
-  if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==fIdAmpGap){//MIP in amplification gap
-    gMC->CurrentVolOffID(1,iCham);//RICH-Rgap
-    if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {//MIP in GAP entering or newly created
-      eloss=0;                                                           
-      gMC->TrackPosition(mipInX4);
-    }else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){//MIP in GAP exiting or disappeared
-      eloss+=gMC->Edep();//take into account last step dEdX
-      gMC->TrackPosition(mipOutX4);  
-      HitAdd(iCham,gMC->GetStack()->GetCurrentTrackNumber(),gMC->TrackPid(),mipInX4.Vect(),mipOutX4.Vect(),eloss);//HIT for MIP: MIP in GAP Exiting
-      GenFee(iCham,eloss);//MIP+GAP+Exit
-    }else//MIP in GAP going inside
-      eloss   += gMC->Edep();
+  static Double_t dEdX;                                                                           //need to store mip parameters between different steps    
+  static Double_t in[3];
+  if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==fIdAmpGap){                                   //charged particle in amplification gap (fIdAmpGap)
+    if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {                                               //entering or newly created
+      dEdX=0;                                                                                     //reset dEdX collector                         
+      gMC->TrackPosition(in[0],in[1],in[2]);                                                      //take position at the entrance
+    }else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){               //exiting or disappeared
+      dEdX              +=gMC->Edep();                                                            //take into account last step dEdX
+                          gMC->CurrentVolOffID(1,copy);                                           //take current chamber since geometry tree is RICH-Rgap
+      Int_t tid=          gMC->GetStack()->GetCurrentTrackNumber();                               //take TID
+      Int_t pid=          gMC->TrackPid();                                                        //take PID
+      Double_t out[3];    gMC->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
+      out[0]=0.5*(out[0]+in[0]); out[1]=0.5*(out[1]+in[1]); out[1]=0.5*(out[1]+in[1]);            //take hit position at the anod plane
+      Float_t xl,yl;AliRICHParam::Instance()->Mars2Lors(copy,out,xl,yl);                          //take LORS position
+      new((*fHits)[fNhits++])AliRICHHit(copy,dEdX,pid,tid,xl,yl,out);                             //HIT for MIP, position near anod plane 
+      GenFee(copy,dEdX);                                                                          //generate feedback photons
+    }else                                                                                         //just going inside
+      dEdX          += gMC->Edep();                                                               //collect this step dEdX 
   }//MIP in GAP
 }//StepManager()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

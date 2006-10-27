@@ -15,6 +15,7 @@
 
 #include "AliRICHDigitizer.h"
 #include "AliRICH.h"
+#include "AliRICHDigit.h"
 #include <AliRun.h>
 #include <AliRunLoader.h>
 #include "AliRunDigitizer.h"
@@ -24,17 +25,16 @@
 
 ClassImp(AliRICHDigitizer)
 
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHDigitizer::Exec(Option_t*)
 {
-//This methode is responsible for merging sdigits to a list of digits
-//Disintegration leeds to the fact that one hit affected several neighbouring pads, which means that the same pad might be
-//affected by few hits.     
+// This methode is responsible for merging sdigits to a list of digits
+//Disintegration leeds to the fact that one hit affects several neighbouring pads, which means that the same pad might be affected by few hits.     
   AliDebug(1,Form("Start with %i input(s) for event %i",fManager->GetNinputs(),fManager->GetOutputEventNr()));
 //First we read all sdigits from all inputs  
   AliRunLoader *pInRunLoader=0;//in and out Run loaders
   AliLoader    *pInRichLoader=0;//in and out RICH loaders  
-  TClonesArray tmpCA("AliRICHDigit");//tmp storage for sdigits sum up from all input files
+  TClonesArray sdigs("AliRICHDigit");//tmp storage for sdigits sum up from all input files
   Int_t total=0;
   for(Int_t inFileN=0;inFileN<fManager->GetNinputs();inFileN++){//files loop
     pInRunLoader  = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN));          //get run loader from current input 
@@ -42,41 +42,63 @@ void AliRICHDigitizer::Exec(Option_t*)
     if (!pInRunLoader->GetAliRun()) pInRunLoader->LoadgAlice();
     AliRICH* pInRich=(AliRICH*)pInRunLoader->GetAliRun()->GetDetector("RICH");                  //take RICH from current input
     pInRichLoader->LoadSDigits(); pInRichLoader->TreeS()->GetEntry(0);                          //take list of RICH sdigits from current input 
-    AliDebug(1,Form("input %i has %i sdigits",inFileN,pInRich->SDigs()->GetEntries()));
-    for(Int_t i=0;i<pInRich->SDigs()->GetEntries();i++){//collect sdigits from current input to tmpCA
-      new(tmpCA[total++]) AliRICHDigit(*(AliRICHDigit*)pInRich->SDigs()->At(i)); 
-      ((AliRICHDigit*)tmpCA[total-1])->AddTidOffset(fManager->GetMask(inFileN));//apply TID shift since all inputs count tracks independently starting from 0
+    AliDebug(1,Form("input %i has %i sdigits",inFileN,pInRich->SdiLst()->GetEntries()));
+    for(Int_t i=0;i<pInRich->SdiLst()->GetEntries();i++){                                        //collect sdigits from current input
+      AliRICHDigit *pSDig=(AliRICHDigit*)pInRich->SdiLst()->At(i);
+      pSDig->AddTidOffset(fManager->GetMask(inFileN));                                          //apply TID shift since all inputs count tracks independently starting from 0
+      new(sdigs[total++]) AliRICHDigit(*pSDig);       
     }
-    pInRichLoader->UnloadSDigits();   pInRich->SDigReset(); //close current input and reset 
+    pInRichLoader->UnloadSDigits();   pInRich->SdiReset(); //close current input and reset 
   }//files loop
-  
-  tmpCA.Sort();                     //at this point we have a list of all sdigits from all inputs, now sort them according to fPad field
+
+  if(sdigs.GetEntries()==0) return;                                                              //no sdigits collected, nothing to convert  
   
   AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    //open output stream (only 1 possible)
   AliLoader    *pOutRichLoader = pOutRunLoader->GetLoader("RICHLoader");                         //take output RICH loader
   AliRICH      *pOutRich       = (AliRICH*)pOutRunLoader->GetAliRun()->GetDetector("RICH");      //take output RICH
   pOutRichLoader->MakeTree("D");   pOutRich->MakeBranch("D");                                    //create TreeD in output stream
-  
-  TVector pad(2); pad[0]=0; pad[1]=0; Int_t iChamber=0,iCfm=0,aTids[3]={0,0,0},iId=-1; Double_t dQdc=0;//current pad info   
-  Int_t iNdigsPerPad=0;                   //how many sdigits for a given pad
-  for(Int_t i=0;i<tmpCA.GetEntries();i++){//sdigits loop (sorted)
-    AliRICHDigit *pSdig=(AliRICHDigit*)tmpCA.At(i);//get new sdigit
-    if(pSdig->PadAbs()==iId){//still the same pad
-      iNdigsPerPad++;         dQdc+=pSdig->Qdc();      iCfm+=pSdig->Cfm();//sum up charge and cfm
-      if(pSdig->Cfm()==1) aTids[0] = pSdig->GetTrack(0); // force the first tid to be mip's tid if it exists in the current pad
-      if(iNdigsPerPad<=3)        aTids[iNdigsPerPad-1]=pSdig->GetTrack(0);
-      else                         AliDebug(1,Form("More then 3 sdigits in (%d,%d,%f,%f) with Q= %f",pSdig->Chamber(),-1,pSdig->Pad()(0),pSdig->Pad()(1),pSdig->Qdc()));
-    }else{//new pad, add the pevious one
-        if(iId!=-1 && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids); //add newly created dig
-        iChamber=pSdig->Chamber(); pad=pSdig->Pad(); iCfm=pSdig->Cfm(); dQdc=pSdig->Qdc();  iId=pSdig->PadAbs();                    //init all values by current sdig
-        iNdigsPerPad=1; aTids[0]=pSdig->GetTrack(0); aTids[1]=aTids[2]=-1;
-      }
-  }//sdigits loop (sorted)
-  if(tmpCA.GetEntries() && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids);//add the last dig
+
+  Sdi2Dig(&sdigs,pOutRich->DigLst());
   
   pOutRichLoader->TreeD()->Fill();              //fill the output tree with the list of digits
   pOutRichLoader->WriteDigits("OVERWRITE");     //serialize them to file
   
-  tmpCA.Clear();                      //remove all tmp sdigits
+  sdigs.Clear();                      //remove all tmp sdigits
   pOutRichLoader->UnloadDigits();   pOutRich->DigReset();
 }//Exec()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
+{
+// Converts list of sdigits to 7 lists of digits, one per each chamber
+// Arguments: pSDigLst - list of all sdigits
+//            pDigLst  - list of 7 lists of digits        
+//   Returns: none  
+  
+  TClonesArray *pLst[7]; Int_t iCnt[7];
+  
+  for(Int_t i=0;i<7;i++){
+    pLst[i]=(TClonesArray*)(*pDigLst)[i];
+    iCnt[i]=pLst[i]->GetEntries();         //in principle those lists should be empty                                                                       
+  }
+  
+  pSdiLst->Sort();  
+                     
+  Int_t iPad=-1,iCh=-1,iNdigPad=-1,aTids[3]={-1,-1,-1}; Float_t q=-1;
+  for(Int_t i=0;i<pSdiLst->GetEntries();i++){                                                                  //sdigits loop (sorted)
+    AliRICHDigit *pSdig=(AliRICHDigit*)pSdiLst->At(i);                                                         //take current sdigit
+    if(pSdig->Pad()==iPad){                                                                                    //if the same pad 
+      q+=pSdig->Q();                                                                                           //sum up charge
+      iNdigPad++; if(iNdigPad<=3) aTids[iNdigPad-1]=pSdig->GetTrack(0);                                        //collect TID 
+      continue;
+    }
+    if(i!=0 && AliRICHDigit::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliRICHDigit(iPad,(Int_t)q,aTids);   //do not create digit for the very first sdigit 
+    iPad=pSdig->Pad(); iCh=AliRICHDigit::A2C(iPad);                                                            //new sdigit comes, reset collectors
+    iNdigPad=1;
+    aTids[0]=pSdig->GetTrack(0);aTids[1]=aTids[2]=-1; 
+    q=pSdig->Q();    
+  }//sdigits loop (sorted)
+  
+  if(AliRICHDigit::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliRICHDigit(iPad,(Int_t)q,aTids);             //add the last one, in case of empty sdigits list q=-1
+                                                                                                               //so digit is not created    
+}//Sdi2Dig()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
