@@ -148,7 +148,6 @@ void AliMUONTriggerElectronics::FeedM()
 	  {
 	      //   				mdig->Print();
 
-	      Int_t digitindex = digit;
 	      Int_t detElemId  = mdig->DetElemId();
 	      Int_t cathode    = mdig->Cathode();
 
@@ -177,7 +176,6 @@ void AliMUONTriggerElectronics::FeedM()
 						
 		      b->SetbitM(ibitxy,cathode,ichamber-10);
 						
-		      DigitFiredCircuit(b->GetI(), cathode, ichamber, digitindex);
 		  }
 		  else
 		  {
@@ -544,7 +542,6 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 {
   /// Main method to go from digits to trigger decision
   AliMUONRegionalTrigger *pRegTrig = new AliMUONRegionalTrigger();
-  ClearDigitNumbers();
   fMUONData->ResetTrigger(); 
   // RUN THE FULL BEE CHAIN
   Trigger();
@@ -611,8 +608,6 @@ void AliMUONTriggerElectronics::Digits2Trigger()
           fLocalTrigger->SetY3Pattern(board->GetXY(1,2));
           fLocalTrigger->SetY4Pattern(board->GetXY(1,3));
           
-	  fLocalTrigger->SetDigits(fDigitNumbers[icirc]);
-
           //             ADD A NEW LOCAL TRIGGER          
           fMUONData->AddLocalTrigger(*fLocalTrigger);  
 	  
@@ -639,25 +634,5 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 
   // NOW RESET ELECTRONICS
   Reset();
-}
-
-//_______________________________________________________________________
-void AliMUONTriggerElectronics::ClearDigitNumbers()
-{
-// RESET fDigitNumbers
-	for (Int_t i=0; i<AliMUONConstants::NTriggerCircuit(); i++) fDigitNumbers[i].Set(0);
-}
-
-//_______________________________________________________________________
-void AliMUONTriggerElectronics::DigitFiredCircuit(Int_t circuit, Int_t cathode,
-                                                  Int_t chamber, Int_t digit)
-{
-// REGISTERS THAT THE SPECIFIED DIGIT FIRED THE SPECIFIED CIRCUIT
-// THIS DIGIT GETS ADDED TO AN ARRAY WHICH WILL BE COPIED TO
-// AliMUONLocalTrigger WHEN SUCH AN OBJECT IS CREATED FOR EACH CIRCUIT
-	Int_t digitnumber = AliMUONLocalTrigger::EncodeDigitNumber(chamber, cathode, digit);
-	Int_t last = fDigitNumbers[circuit].GetSize();
-	fDigitNumbers[circuit].Set(last + 1);
-	fDigitNumbers[circuit][last] = digitnumber;
 }
 

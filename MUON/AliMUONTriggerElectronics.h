@@ -65,8 +65,6 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void Digits2Trigger();
       virtual void Trigger();
-      virtual void ClearDigitNumbers();
-      virtual void DigitFiredCircuit(Int_t circuit, Int_t cathode, Int_t chamber, Int_t digit);
 
    private:
       AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right);
@@ -76,9 +74,7 @@ class AliMUONTriggerElectronics : public TTask
       TString                    fSourceFileName;     ///< Source file
       AliMUONTriggerCrateStore  *fCrates;             ///< Crate array
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
-      AliMUONData               *fMUONData;           //!< Data container for MUON subsystem 
-      TArrayI                    fDigitNumbers[235];  //!< The digit number that fired a circuit.
-
+      AliMUONData               *fMUONData;           //!< Data container for MUON subsystem
       AliMUONLocalTrigger*       fLocalTrigger;       //!< pointer for local trigger container
       AliMUONGlobalTrigger*      fGlobalTrigger;      //!< pointer for global trigger container
 
