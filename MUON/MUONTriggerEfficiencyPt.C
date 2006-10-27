@@ -112,7 +112,6 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
     //TGaxis::SetMaxDigits(3);
     
 // beginning of macro    
-    TH1F *ptapt    = new TH1F("ptapt","",50,0.15,5.); 
     TH1F *ptlpt    = new TH1F("ptlpt","",50,0.15,5.); 
     TH1F *pthpt    = new TH1F("pthpt","",50,0.15,5.);
     TH1F *ptcoinc  = new TH1F("ptcoinc","",50,0.15,5.);  
@@ -121,10 +120,9 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
     AliStack* stack; 
     
     Double_t coincmuon=0;
-    Double_t aptmuon=0;
     Double_t lptmuon=0;
     Double_t hptmuon=0;
-    Double_t ptmu;
+    Double_t ptmu=0;
 
 // output file
     char digitdat[100];
@@ -184,15 +182,11 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
         for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
 	    gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
 	    
-	    if (gloTrg->SinglePlusApt()>=1 || gloTrg->SingleMinusApt()>=1 || gloTrg->SingleUndefApt()) {
-		aptmuon++;
-		ptapt->Fill(ptmu);
-	    }
-	    if (gloTrg->SinglePlusLpt()>=1 || gloTrg->SingleMinusLpt()>=1 || gloTrg->SingleUndefLpt()) {
+	    if (gloTrg->SingleLpt()>=1 ) {
 		lptmuon++;
 		ptlpt->Fill(ptmu);
 	    }       
-	    if (gloTrg->SinglePlusHpt()>=1 || gloTrg->SingleMinusHpt()>=1 || gloTrg->SingleUndefHpt()) {
+	    if (gloTrg->SingleHpt()>=1 ) {
 		hptmuon++;
 		pthpt->Fill(ptmu);
 	    }
@@ -205,7 +199,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
         
         Int_t itrack, ntracks, NbHits[4];
         Int_t SumNbHits;
-    
+
         for (Int_t j=0; j<4; j++) NbHits[j]=0;
  
         ntracks = (Int_t) data_hits.GetNtracks();      
@@ -216,33 +210,33 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
          Int_t ihit, nhits;
          nhits = (Int_t) data_hits.Hits()->GetEntriesFast();   
          AliMUONHit* mHit;
+
     
           for (ihit=0; ihit<nhits; ihit++) {
             mHit = static_cast<AliMUONHit*>(data_hits.Hits()->At(ihit));
             Int_t Nch        = mHit->Chamber(); 
             Int_t hittrack   = mHit->Track();
-            Int_t IdPart     = mHit->Particle();
-                                        
+            Int_t IdPart     = mHit->Particle();	    
+
             for (Int_t j=0;j<4;j++) {
               Int_t kch=11+j;
-              if (hittrack==0) {
+	      if (hittrack==0) {
                 if (Nch==kch && (IdPart==-13 || IdPart==13) && NbHits[j]==0) NbHits[j]++; 
-              }               
+		}               
             }    
           }
           data_hits.ResetHits();
-        } // end track loop     
-
+        } // end track loop
         
 // 3/4 coincidence 
         SumNbHits=NbHits[0]+NbHits[1]+NbHits[2]+NbHits[3];
-        
+
         if (SumNbHits==3 || SumNbHits==4) {
             coincmuon++;
             ptcoinc->Fill(ptmu);
         }            
                 
-      } // end loop on event  
+      } // end loop on event
       
       MUONLoader->UnloadHits();
       MUONLoader->UnloadDigits();
@@ -255,17 +249,12 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
       fprintf(fdat,"\n");
       fprintf(fdat," Number of events = %d \n",nevents);  
       fprintf(fdat," Number of events with 3/4 coinc = %d \n",(Int_t)coincmuon);
-      fprintf(fdat," Number of dimuons with 3/4 coinc Apt cut = %d \n",(Int_t)aptmuon);
       fprintf(fdat," Nomber of dimuons with 3/4 coinc Lpt cut = %d \n",(Int_t)lptmuon); 
       fprintf(fdat," Number of dimuons with 3/4 coinc Hpt cut = %d \n",(Int_t)hptmuon);  
       fprintf(fdat,"\n"); 
       
-      Double_t efficiency,error;  
-      
-      efficiency=aptmuon/coincmuon;
-      error=efficiency*TMath::Sqrt((aptmuon+coincmuon)/(aptmuon*coincmuon));
-      fprintf(fdat," Efficiency Apt cut = %4.4f +/- %4.4f\n",efficiency,error);
-      
+      Double_t efficiency,error;
+
       efficiency=lptmuon/coincmuon;  
       error=efficiency*TMath::Sqrt((lptmuon+coincmuon)/(lptmuon*coincmuon));  
       fprintf(fdat," Efficiency Lpt cut = %4.4f +/- %4.4f\n",efficiency,error);
@@ -280,17 +269,6 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
       
       for (Int_t i=0;i<50;i++) {
 	  x1=ptcoinc->GetBinContent(i+1);
-	  
-	  x2=ptapt->GetBinContent(i+1);
-	  if (x1!=0 && x2!=0) {
-	      xval=x2/x1;
-	      xerr=xval*TMath::Sqrt((x1+x2)/x1*x2);   
-	      ptapt->SetBinContent(i+1,xval);
-	      ptapt->SetBinError(i+1,0);
-	  } else {
-	      ptapt->SetBinContent(i+1,0.);
-	      ptapt->SetBinError(i+1,0.);     
-	  }
 	  
 	  x2=ptlpt->GetBinContent(i+1);
 	  if (x1!=0 && x2!=0) {
@@ -316,36 +294,13 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
       }
       
       
-      TF1 *fitapt = new TF1("fitapt",fitArch,0.,5.,4);     
       TF1 *fitlpt = new TF1("fitlpt",fitArc,0.,5.,4); 
       TF1 *fithpt = new TF1("fithpt",fitArc,0.,5.,4);      
       
       TCanvas *c1 = new TCanvas("c1","Trigger efficiency vs pt and y for single muon",200,0,900,400); 
-      c1->Divide(3,1);      
+      c1->Divide(2,1);      
       
       c1->cd(1);
-      ptapt->SetMinimum(0.);
-      ptapt->SetMaximum(1.05);   
-      ptapt->SetTitle("");
-      ptapt->GetXaxis()->SetTitle("P_{T} (GeV/c)"); 
-      ptapt->GetYaxis()->SetTitle("Efficiency");     
-      //ptapt->GetXaxis()->SetRange(3);
-      ptapt->Draw("");
-      fitapt->SetParameters(1.853,1.57,-0.0203,-0.178);   
-      fitapt->SetLineColor(2);
-      fitapt->SetLineWidth(2);
-      fitapt->Draw("SAME");    
-      TLegend * leg = new TLegend(0.5,0.38,0.85,0.53); 
-      leg->SetBorderSize(0);
-      leg->SetFillColor(0);
-      leg->SetTextSize(0.05);
-      leg->SetTextFont(22);
-      leg->SetHeader("Apt trigger pt cut");
-      leg->AddEntry(fitapt,"Ref.","l");
-      leg->AddEntry(ptapt,"New","l");                 
-      leg->Draw("SAME");     
-      
-      c1->cd(2);
       ptlpt->SetMinimum(0.);
       ptlpt->SetMaximum(1.05);   
       ptlpt->SetTitle("");
@@ -357,6 +312,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
       fitlpt->SetLineColor(2);
       fitlpt->SetLineWidth(2);
       fitlpt->Draw("SAME");    
+      TLegend * leg = new TLegend(0.5,0.38,0.85,0.53); 
       leg = new TLegend(0.5,0.38,0.85,0.53); 
       leg->SetBorderSize(0);
       leg->SetFillColor(0);
@@ -367,7 +323,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
       leg->AddEntry(ptlpt,"New","l");                 
       leg->Draw("SAME");
       
-      c1->cd(3);
+      c1->cd(2);
       pthpt->SetMinimum(0.);
       pthpt->SetMaximum(1.05);   
       pthpt->SetTitle("");
