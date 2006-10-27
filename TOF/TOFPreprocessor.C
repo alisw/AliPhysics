@@ -27,8 +27,8 @@ void TOFPreprocessor()
   shuttle->SetDCSInput(dcsAliasMap);
 
   // processing files. for the time being, the files are local.
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/TestShuttle/Total.root");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/TestShuttle/Partial.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
 
   // instantiation of the preprocessor
   AliPreprocessor* pp = new AliTOFPreprocessor("TOF", shuttle);
