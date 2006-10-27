@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2006/10/26 09:09:29  arcelli
+prototype for the TOF Shuttle preprocessor (C.Zampolli)
+
 */  
 
 #include "AliTOFPreprocessor.h"
@@ -79,7 +82,7 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(endTime).AsString()));
 
 	fData = new AliTOFDataDCS(fRun, fStartTime, fEndTime);
-	fArray = new TObjArray();
+	fArray = 0x0;
 	fTOFGeometry = new AliTOFGeometryV5();
 	fCal = new AliTOFCalOnline(fTOFGeometry);
 	fCal->CreateArray();
@@ -164,10 +167,9 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	    Int_t nentries=(Int_t)fArray->GetEntries();
 	    AliInfo(Form(" il numero di entries e' = %i ", nentries)); 
 	    Int_t npads = fCal->NPads();
-	    TH1F *h1 = new TH1F();
 	    for (Int_t i=0 ; i<nentries; i++){
 	      Bool_t found=kFALSE; 
-	      h1 = (TH1F*)fArray->At(i);
+	      TH1F * h1 = (TH1F*)fArray->At(i);
 	      Float_t minContent=h1->Integral()*0.01; //for the time being 
 	      //we use integral() since we simulate landau distribution
 	      //Float_t minContent=h1->GetEntries()*0.01;
@@ -204,8 +206,6 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 		ch->SetDelay(mean);
 	      }
 	    }
-	    delete h1;
-	    h1=0;
 	  }
 	  daqFile->Close();
 	  delete daqFile;
