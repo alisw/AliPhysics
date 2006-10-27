@@ -41,10 +41,10 @@ public:
 	      UShort_t sector, UShort_t strip, 
 	      Float_t mult);
 
-  size_t MaxDetectors() const { return fMultiplicity.MaxDetectors(); }
-  size_t MaxRings()     const { return fMultiplicity.MaxRings(); }
-  size_t MaxSectors()   const { return fMultiplicity.MaxSectors(); }
-  size_t MaxStrips()    const { return fMultiplicity.MaxStrips(); }
+  UShort_t MaxDetectors() const { return fMultiplicity.MaxDetectors(); }
+  UShort_t MaxRings()     const { return fMultiplicity.MaxRings(); }
+  UShort_t MaxSectors()   const { return fMultiplicity.MaxSectors(); }
+  UShort_t MaxStrips()    const { return fMultiplicity.MaxStrips(); }
   void Print(Option_t* option="") const;
   enum {
     kInvalidMult = 1000
@@ -56,7 +56,7 @@ protected:
   AliFMDFloatMap fMultiplicity; // Psuedo multplicity per strip
   AliFMDFloatMap fEta;          // Psuedo-rapidity per strip
   
-  ClassDef(AliESDFMD,1)  // ESD info from FMD
+  ClassDef(AliESDFMD,2)  // ESD info from FMD
 };
 #endif
 //____________________________________________________________________

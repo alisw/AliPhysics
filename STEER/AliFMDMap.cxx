@@ -33,10 +33,10 @@ ClassImp(AliFMDMap)
 #endif
 
 //____________________________________________________________________
-AliFMDMap::AliFMDMap(size_t maxDet, 
-		     size_t maxRing, 
-		     size_t maxSec, 
-		     size_t maxStr)
+AliFMDMap::AliFMDMap(UShort_t maxDet, 
+		     UShort_t maxRing, 
+		     UShort_t maxSec, 
+		     UShort_t maxStr)
   : fMaxDetectors(maxDet), 
     fMaxRings(maxRing), 
     fMaxSectors(maxSec), 
@@ -53,13 +53,13 @@ AliFMDMap::AliFMDMap(size_t maxDet,
 
 //____________________________________________________________________
 Int_t 
-AliFMDMap::CheckIndex(size_t det, Char_t ring, size_t sec, size_t str) const
+AliFMDMap::CheckIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) const
 {
   // Check that the index supplied is OK.   Returns true index, or -1
   // on error. 
   if (det < 1) return -1;
-  size_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
-  size_t idx = 
+  UShort_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
+  UShort_t idx = 
     (str + fMaxStrips * (sec + fMaxSectors * (ringi + fMaxRings * (det-1))));
   if (idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) return -1;
   return idx;
@@ -67,8 +67,8 @@ AliFMDMap::CheckIndex(size_t det, Char_t ring, size_t sec, size_t str) const
 
     
 //____________________________________________________________________
-size_t 
-AliFMDMap::CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const
+UShort_t 
+AliFMDMap::CalcIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) const
 {
   // Calculate index into storage from arguments. 
   // 
@@ -82,7 +82,7 @@ AliFMDMap::CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const
   //
   Int_t idx = CheckIndex(det, ring, sec, str);
   if (idx < 0) {
-    size_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
+    UShort_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
     AliFatal(Form("Index (%d,'%c',%d,%d) out of bounds, "
 		  "in particular the %s index ", 
 		  det, ring, sec, str, 
@@ -91,7 +91,7 @@ AliFMDMap::CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const
 		    (sec >= fMaxSectors ? "Sector" : "Strip")))));
     return 0;
   }
-  return size_t(idx);
+  return UShort_t(idx);
 }
 
 

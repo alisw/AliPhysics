@@ -23,23 +23,25 @@ public:
     kMaxSectors   = 40, 
     kMaxStrips    = 512
   };
-  AliFMDMap(size_t maxDet = kMaxDetectors, 
-	    size_t maxRing= kMaxRings, 
-	    size_t maxSec = kMaxSectors, 
-	    size_t maxStr = kMaxStrips);
+  AliFMDMap(UShort_t maxDet = kMaxDetectors, 
+	    UShort_t maxRing= kMaxRings, 
+	    UShort_t maxSec = kMaxSectors, 
+	    UShort_t maxStr = kMaxStrips);
   virtual ~AliFMDMap() {}
-  size_t MaxDetectors() const { return fMaxDetectors; }
-  size_t MaxRings()     const { return fMaxRings; }
-  size_t MaxSectors()   const { return fMaxSectors; }
-  size_t MaxStrips()    const { return fMaxStrips; }
-  Int_t  CheckIndex(size_t det, Char_t ring, size_t sec, size_t str) const;
+  UShort_t MaxDetectors() const { return fMaxDetectors; }
+  UShort_t MaxRings()     const { return fMaxRings; }
+  UShort_t MaxSectors()   const { return fMaxSectors; }
+  UShort_t MaxStrips()    const { return fMaxStrips; }
+  Int_t  CheckIndex(UShort_t det, Char_t ring, 
+		    UShort_t sec, UShort_t str) const;
 protected:
-  size_t CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const;
-  size_t fMaxDetectors;             // Maximum # of detectors
-  size_t fMaxRings;                 // Maximum # of rings
-  size_t fMaxSectors;               // Maximum # of sectors
-  size_t fMaxStrips;                // Maximum # of strips
-  ClassDef(AliFMDMap, 1) // Cache of per strip information
+  UShort_t CalcIndex(UShort_t det, Char_t ring, 
+		     UShort_t sec, UShort_t str) const;
+  UShort_t fMaxDetectors;             // Maximum # of detectors
+  UShort_t fMaxRings;                 // Maximum # of rings
+  UShort_t fMaxSectors;               // Maximum # of sectors
+  UShort_t fMaxStrips;                // Maximum # of strips
+  ClassDef(AliFMDMap, 2) // Cache of per strip information
 };
 
 #ifdef  MAY_USE_TEMPLATES
@@ -51,10 +53,10 @@ protected:
 // Class template for classes that cache per strip information.  
 // Access to the data goes via 
 //
-//   Type& AliFMDMap<Type>::operator()(size_t detector,
+//   Type& AliFMDMap<Type>::operator()(UShort_t detector,
 //                                     Char_t ring, 
-//                                     size_t sector,
-//                                     size_t strip);
+//                                     UShort_t sector,
+//                                     UShort_t strip);
 // 
 // (as well as a const version of this member function). 
 // The elements can be reset to the default value by calling 
@@ -64,21 +66,23 @@ template <typename Type>
 class AliFMDMap : public TObject 
 {
 public:
-  AliFMDMap(size_t maxDet=3, size_t maxRing=2, size_t maxSec=40, 
-	    size_t maxStr=512);
+  AliFMDMap(UShort_t maxDet=3, UShort_t maxRing=2, UShort_t maxSec=40, 
+	    UShort_t maxStr=512);
   virtual ~AliFMDMap() {}
   void Clear(const Type& val=Type());
-  Type& operator()(size_t det, Char_t ring, size_t sec, size_t str);
-  const Type& operator()(size_t det, Char_t ring, size_t sec, size_t str)const;
+  Type& operator()(UShort_t det, Char_t ring, UShort_t sec, UShort_t str);
+  const Type& operator()(UShort_t det, Char_t ring, 
+			 UShort_t sec, UShort_t str)const;
 private:
   typedef std::vector<Type> ValueVector; // Type of container
   ValueVector fValues;                   // Contained values
-  size_t      fMaxDetectors;             // Maximum # of detectors
-  size_t      fMaxRings;                 // Maximum # of rings
-  size_t      fMaxSectors;               // Maximum # of sectors
-  size_t      fMaxStrips;                // Maximum # of strips
+  UShort_t      fMaxDetectors;             // Maximum # of detectors
+  UShort_t      fMaxRings;                 // Maximum # of rings
+  UShort_t      fMaxSectors;               // Maximum # of sectors
+  UShort_t      fMaxStrips;                // Maximum # of strips
   
-  size_t CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const;
+  UShort_t CalcIndex(UShort_t det, Char_t ring, 
+		     UShort_t sec, UShort_t str) const;
   ClassDef(AliFMDMap, 0); // Map of FMD index's to values 
 };
 
@@ -86,10 +90,10 @@ private:
 //____________________________________________________________________
 template <typename Type>
 inline 
-AliFMDMap<Type>::AliFMDMap(size_t maxDet, 
-			   size_t maxRing, 
-			   size_t maxSec, 
-			   size_t maxStr)
+AliFMDMap<Type>::AliFMDMap(UShort_t maxDet, 
+			   UShort_t maxRing, 
+			   UShort_t maxSec, 
+			   UShort_t maxStr)
   : fValues(maxDet * maxRing * maxSec * maxStr), 
     fMaxDetectors(maxDet), 
     fMaxRings(maxRing), 
@@ -108,8 +112,9 @@ AliFMDMap<Type>::AliFMDMap(size_t maxDet,
 
 //____________________________________________________________________
 template <typename Type>
-inline size_t 
-AliFMDMap<Type>::CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const
+inline UShort_t 
+AliFMDMap<Type>::CalcIndex(UShort_t det, Char_t ring, 
+			   UShort_t sec, UShort_t str) const
 {
   // Calculate index into storage from arguments. 
   // 
@@ -121,8 +126,8 @@ AliFMDMap<Type>::CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) cons
   //
   // Returns appropriate index into storage 
   //
-  size_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
-  size_t idx = 
+  UShort_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
+  UShort_t idx = 
     (det + fMaxDetectors * (ringi + fMaxRings * (sec + fMaxSectors * str)));
   if (idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) {
     Fatal("CalcIndex", "Index (%d,'%c',%d,%d) out of bounds, "
@@ -142,13 +147,14 @@ inline void
 AliFMDMap<Type>::Clear(const Type& val) 
 {
   // Resets stored values to the default value for that type 
-  for (size_t i = 0; i < fValues.size(); ++i) fValues[i] = val;
+  for (UShort_t i = 0; i < fValues.size(); ++i) fValues[i] = val;
 }
 
 //____________________________________________________________________
 template <typename Type>
 inline Type& 
-AliFMDMap<Type>::operator()(size_t det, Char_t ring, size_t sec, size_t str)
+AliFMDMap<Type>::operator()(UShort_t det, Char_t ring, 
+			    UShort_t sec, UShort_t str)
 {
   // Parameters: 
   //     det       Detector #
@@ -163,10 +169,10 @@ AliFMDMap<Type>::operator()(size_t det, Char_t ring, size_t sec, size_t str)
 //____________________________________________________________________
 template <typename Type>
 inline const Type& 
-AliFMDMap<Type>::operator()(size_t det, 
+AliFMDMap<Type>::operator()(UShort_t det, 
 			    Char_t ring, 
-			    size_t sec, 
-			    size_t str) const
+			    UShort_t sec, 
+			    UShort_t str) const
 {
   // Parameters: 
   //     det       Detector #

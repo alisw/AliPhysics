@@ -136,13 +136,13 @@ AliESDFMD::Print(Option_t* /* option*/) const
 {
   // Print all information to standard output. 
   std::cout << "AliESDFMD:" << std::endl;
-  for (size_t det = 1; det <= fMultiplicity.MaxDetectors(); det++) {
-    for (size_t ir = 0; ir < fMultiplicity.MaxRings(); ir++) {
+  for (UShort_t det = 1; det <= fMultiplicity.MaxDetectors(); det++) {
+    for (UShort_t ir = 0; ir < fMultiplicity.MaxRings(); ir++) {
       Char_t ring = (ir == 0 ? 'I' : 'O');
       std::cout << "FMD" << det << ring << ":" << std::endl;
-      for  (size_t sec = 0; sec < fMultiplicity.MaxSectors(); sec++) {
+      for  (UShort_t sec = 0; sec < fMultiplicity.MaxSectors(); sec++) {
 	std::cout << " Sector # " << sec << ":" << std::flush;
-	for (size_t str = 0; str < fMultiplicity.MaxStrips(); str++) {
+	for (UShort_t str = 0; str < fMultiplicity.MaxStrips(); str++) {
 	  if (str % 6 == 0) std::cout << "\n  " << std::flush;
 	  Float_t m = fMultiplicity(det, ring, sec, str);
 	  Float_t e = fEta(det, ring, 0, str);
