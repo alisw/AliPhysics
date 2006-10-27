@@ -185,15 +185,15 @@ Float_t get_sigma_to_vertex(AliESDtrack* esdTrack)
 
 Reve::RenderElementList* esd_tracks_vertex_cut()
 {
-  // Import ESD tracks, separate them into three containers according to
-  // primary-vertex cut.
+  // Import ESD tracks, separate them into five containers according to
+  // primary-vertex cut and ITS refit status.
 
   AliESD* esd = Alieve::Event::AssertESD();
 
   Reve::RenderElementList* cont = new Reve::RenderElementList("ESD Tracks", 0, kTRUE);
   gReve->AddRenderElement(cont);
-  Reve::TrackList *tl[4];
-  Int_t            tc[4];
+  Reve::TrackList *tl[5];
+  Int_t            tc[5];
   Int_t            count = 0;
 
   tl[0] = new Reve::TrackList("Sigma < 3");
@@ -215,11 +215,17 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
   tl[2]->SetMainColor(Color_t(46));
   gReve->AddRenderElement(cont, tl[2]);
 
-  tl[3] = new Reve::TrackList("ITS refit failed");
+  tl[3] = new Reve::TrackList("ITS refit failed; Sigma < 5");
   tc[3] = 0;
   tl[3]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[3]->SetMainColor(Color_t(41));
   gReve->AddRenderElement(cont, tl[3]);
+
+  tl[4] = new Reve::TrackList("ITS refit failed; Sigma > 5");
+  tc[4] = 0;
+  tl[4]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
+  tl[4]->SetMainColor(Color_t(48));
+  gReve->AddRenderElement(cont, tl[4]);
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++) {
     AliESDtrack* at = esd->GetTrack(n);
@@ -231,13 +237,13 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     else             ti = 2;
 
     AliExternalTrackParam* tp = at;
-    // If ITS refit failed, take track parameters at inner TPC radius and
-    // put track in a special container.
+    // If ITS refit failed, optionally take track parameters at inner
+    // TPC radius and put track in a special container.
     // This ignores state of gkFixFailedITSExtr (used in esd_tracks()).
     // Use BOTH functions to compare results.
     if (!at->IsOn(AliESDtrack::kITSrefit)) {
-      tp = at->GetInnerParam();
-      ti = 3;
+      // tp = at->GetInnerParam();
+      ti = (ti == 2) ? 4 : 3;
     }
 
     Reve::TrackList* tlist = tl[ti];
@@ -249,7 +255,7 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     gReve->AddRenderElement(tlist, track);
   }
 
-  for (Int_t ti=0; ti<4; ++ti) {
+  for (Int_t ti=0; ti<5; ++ti) {
     Reve::TrackList* tlist = tl[ti];
     const Text_t* tooltip = Form("N tracks=%d", tc[ti]);
     tlist->SetTitle(tooltip); // Not broadcasted automatically ...
