@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.101  2006/10/13 06:47:29  kharlov
+ * Simulation of RAW data applies real mapping (B.Polichtchouk)
+ *
  * Revision 1.100  2006/08/11 12:36:26  cvetan
  * Update of the PHOS code needed in order to read and reconstruct the beam test raw data (i.e. without an existing galice.root)
  *
@@ -450,6 +453,14 @@ void AliPHOS::Digits2Raw()
   Int_t adcValuesLow[fkTimeBins];
   Int_t adcValuesHigh[fkTimeBins];
 
+
+  //!!!!for debug!!!
+  Int_t modMax=-111;
+  Int_t colMax=-111;
+  Int_t rowMax=-111;
+  Float_t eMax=-333;
+  //!!!for debug!!!
+
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
     AliPHOSDigit* digit = dynamic_cast<AliPHOSDigit *>(digits->At(iDigit)) ;
@@ -512,7 +523,7 @@ void AliPHOS::Digits2Raw()
 
     // out of time range signal (?)
     if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
-      printf("Signal is out of time range.\n");
+      AliInfo("Signal is out of time range.\n");
       buffer->FillBuffer((Int_t)digit->GetEnergy());
       buffer->FillBuffer(GetRawFormatTimeBins() );  // time bin
       buffer->FillBuffer(3);          // bunch length      
@@ -524,6 +535,8 @@ void AliPHOS::Digits2Raw()
       Int_t   module = relId[0];
       if ( digit->GetId() <= geom->GetNModules() *  geom->GetNCristalsInModule()) {
 	energy=digit->GetEnergy();
+	AliDebug(2,Form("digit energy: %f\n",digit->GetEnergy()));
+	if(energy>eMax) {eMax=energy; modMax=module; colMax=col; rowMax=row;}
       }
       else {
 // 	energy = digit->GetAmp()*digitizer->GetCPVchannel()+digitizer->GetCPVpedestal();
@@ -548,6 +561,9 @@ void AliPHOS::Digits2Raw()
     delete buffer;
   }
   
+  AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n",
+	 modMax,colMax,rowMax,eMax));
+
   loader->UnloadDigits();
 }
 
@@ -629,6 +645,7 @@ Bool_t AliPHOS::RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, 
       lowGain = kTRUE ; 
     }
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
+    AliDebug(4,Form("iTime: %d Energy: %f HG signal: %f adcH: %d ",iTime,damp,signal,adcH[iTime]));
 
     signalF.SetParameter(0, GetRawFormatLowCharge() ) ;     
     signalF.SetParameter(1, GetRawFormatLowGain() ) ; 
@@ -636,6 +653,7 @@ Bool_t AliPHOS::RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, 
     if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow)  // larger than 10 bits 
       signal = kRawSignalOverflow ;
     adcL[iTime] = static_cast<Int_t>(0.5 + signal ) ; 
+    AliDebug(4,Form("..LG: %f adcL: %d\n",signal,adcL[iTime]));
 
   }
   return lowGain ; 

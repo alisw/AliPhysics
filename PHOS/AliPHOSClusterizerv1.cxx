@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.97  2006/08/29 11:41:19  kharlov
+ * Missing implementation of ctors and = operator are added
+ *
  * Revision 1.96  2006/08/25 16:56:30  kharlov
  * Compliance with Effective C++
  *
@@ -283,6 +286,11 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;
     
     MakeClusters() ;
+    
+    AliDebug(2,Form(" ---- Printing clusters (%d) of event %d.\n",
+	   gime->EmcRecPoints()->GetEntries(),ievent));
+    if(AliLog::GetGlobalDebugLevel()>1)
+      gime->EmcRecPoints()->Print();
 
     if(fToUnfold)             
       MakeUnfolding() ;
