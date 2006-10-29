@@ -141,7 +141,7 @@ Bool_t AliPHOSCalibData::WriteEmc(Int_t firstRun, Int_t lastRun, AliCDBMetaData 
 
   if(!fCalibDataEmc) return kFALSE;
 
-  AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("PHOS");
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("PHOS/*");
   if(!storage)
     storage = AliCDBManager::Instance()->GetDefaultStorage();
 
@@ -162,7 +162,7 @@ Bool_t AliPHOSCalibData::WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData 
 
   if(!fCalibDataCpv) return kFALSE;
   
-  AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("PHOS");
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("PHOS/*");
   if(!storage)
     storage = AliCDBManager::Instance()->GetDefaultStorage();
 
