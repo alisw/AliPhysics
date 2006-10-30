@@ -195,37 +195,33 @@ public:
   Int_t   GetTOFcluster() const {return fTOFindex;}
   void    SetTOFcluster(Int_t index) {fTOFindex=index;}
   void    SetTOFCalChannel(Int_t index) {fTOFCalChannel=index;}
-  
-  void    SetRICHsignal(Double_t beta) {fRICHsignal=beta;}
+
+// RICH methodes +++++++++++++++++++++++++++++++++ (kir)
+  void    SetRICHsignal(Double_t theta) {fRICHsignal=theta;}
   Float_t GetRICHsignal() const {return fRICHsignal;}
   void    SetRICHpid(const Double_t *p);
-  void    GetRICHpid(Double_t *p) const;
+  void    GetRICHpid(Double_t *p) const;  
   void    SetRICHchi2(Double_t chi2) {fRICHchi2=chi2;}
   Float_t GetRICHchi2() const {return fRICHchi2;}
-  void    SetRICHcluster(Int_t index) {fRICHindex=index;}
-  Int_t   GetRICHcluster() const {return fRICHindex;}
-  void    SetRICHnclusters(Int_t n) {fRICHncls=n;}
-  Int_t   GetRICHnclusters() const {return fRICHncls;}
-  void    SetRICHthetaPhi(Float_t theta, Float_t phi) {
-    fRICHtheta=theta; fRICHphi=phi;
+  void    SetRICHcluster(Int_t index) {fRICHcluIdx=index;}
+  Int_t   GetRICHcluster() const {return fRICHcluIdx;}
+  void    SetRICHcluIdx(Int_t ch,Int_t idx) {fRICHcluIdx=ch*1000000+idx;}
+  Int_t   GetRICHcluIdx() const {return fRICHcluIdx;}
+  void    SetRICHtrk(Float_t  x, Float_t  y, Float_t  th, Float_t  ph) {
+     fRICHtrkX=x; fRICHtrkY=y; fRICHtrkTheta=th; fRICHtrkPhi=ph;
   }
-  void    GetRICHthetaPhi(Float_t &theta, Float_t &phi) const {
-    theta=fRICHtheta; phi=fRICHphi;
+  void    GetRICHtrk(Float_t &x, Float_t &y, Float_t &th, Float_t &ph) const {
+     x=fRICHtrkX; y=fRICHtrkY; th=fRICHtrkTheta; ph=fRICHtrkPhi;
   }
-  void    SetRICHdxdy(Float_t dx, Float_t dy) {
-    fRICHdx=dx;  fRICHdy=dy;
+  void    SetRICHmip(Float_t  x, Float_t  y, Int_t q, Int_t nph=0) {
+     fRICHmipX=x; fRICHmipY=y; fRICHqn=100000*q+nph;
   }
-  void    GetRICHdxdy(Float_t &dx, Float_t &dy) const {
-    dx=fRICHdx;  dy=fRICHdy;
+  void    GetRICHmip(Float_t &x,Float_t &y,Int_t &q,Int_t &nph) const {
+     x=fRICHmipX; y=fRICHmipY; q=fRICHqn/1000000; nph=fRICHqn%1000000;
   }
-  void    SetRICHmipXY(Float_t x, Float_t y) {
-    fRICHmipX=x; fRICHmipY=y;
-  } 
-  void    GetRICHmipXY(Float_t &x, Float_t &y) const {
-    x=fRICHmipX; y=fRICHmipY;
-  }
-  Bool_t IsRICH()  const {return fFlags&kRICHpid;}
-  
+  Bool_t  IsRICH() const {return fFlags&kRICHpid;}
+
+
   Int_t GetEMCALcluster() {return fEMCALindex;}
   void SetEMCALcluster(Int_t index) {fEMCALindex=index;}
   Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
@@ -329,16 +325,16 @@ protected:
   Int_t   fTOFLabel[3];    // TOF label 
   Float_t fTOFInfo[10];    //! TOF informations
 
-  // HMPID related track information
+  // HMPID related track information                 (kir)
   Float_t fRICHchi2;       // chi2 in the RICH
-  Int_t   fRICHncls;       // number of photon clusters
-  Int_t   fRICHindex;      // index of the assigned MIP cluster
-  Float_t fRICHsignal;     // RICH PID signal
+  Int_t   fRICHqn;         // 1000000*QDC + number of photon clusters
+  Int_t   fRICHcluIdx;     // 1000000*chamber id + cluster idx of the assigned MIP cluster
+  Float_t fRICHsignal;     // RICH PID signal (Theta ckov, rad)
   Float_t fRICHr[AliPID::kSPECIES];// "detector response probabilities" (for the PID)
-  Float_t fRICHtheta;      // theta of the track extrapolated to the RICH
-  Float_t fRICHphi;        // phi of the track extrapolated to the RICH
-  Float_t fRICHdx;         // x of the track impact minus x of the MIP
-  Float_t fRICHdy;         // y of the track impact minus y of the MIP
+  Float_t fRICHtrkTheta;   // theta of the track extrapolated to the RICH, LORS
+  Float_t fRICHtrkPhi;     // phi of the track extrapolated to the RICH, LORS
+  Float_t fRICHtrkX;       // x of the track impact, LORS 
+  Float_t fRICHtrkY;       // y of the track impact, LORS 
   Float_t fRICHmipX;       // x of the MIP in LORS
   Float_t fRICHmipY;       // y of the MIP in LORS
   
@@ -353,7 +349,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,31)  //ESDtrack 
+  ClassDef(AliESDtrack,32)  //ESDtrack 
 };
 
 #endif 

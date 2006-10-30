@@ -96,13 +96,13 @@ AliESDtrack::AliESDtrack() :
   fTOFsignal(-1),
   fTOFsignalToT(0),
   fRICHchi2(1e10),
-  fRICHncls(0),
-  fRICHindex(0),
+  fRICHqn(-1),
+  fRICHcluIdx(-1),
   fRICHsignal(-1),
-  fRICHtheta(-1),
-  fRICHphi(-1),
-  fRICHdx(-1),
-  fRICHdy(-1),
+  fRICHtrkTheta(-1),
+  fRICHtrkPhi(-1),
+  fRICHtrkX(-1),
+  fRICHtrkY(-1),
   fRICHmipX(-1),
   fRICHmipY(-1),
   fEMCALindex(kEMCALNoMatch),
@@ -175,13 +175,13 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTOFsignal(track.fTOFsignal),
   fTOFsignalToT(track.fTOFsignalToT),
   fRICHchi2(track.fRICHchi2),
-  fRICHncls(track.fRICHncls),
-  fRICHindex(track.fRICHindex),
+  fRICHqn(track.fRICHqn),
+  fRICHcluIdx(track.fRICHcluIdx),
   fRICHsignal(track.fRICHsignal),
-  fRICHtheta(track.fRICHtheta),
-  fRICHphi(track.fRICHphi),
-  fRICHdx(track.fRICHdx),
-  fRICHdy(track.fRICHdy),
+  fRICHtrkTheta(track.fRICHtrkTheta),
+  fRICHtrkPhi(track.fRICHtrkPhi),
+  fRICHtrkX(track.fRICHtrkX),
+  fRICHtrkY(track.fRICHtrkY),
   fRICHmipX(track.fRICHmipX),
   fRICHmipY(track.fRICHmipY),
   fEMCALindex(track.fEMCALindex),
@@ -325,16 +325,16 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // Reset RICH related track information
   fRICHchi2 = 0;     
-  fRICHncls = 0;     
-  fRICHindex = 0;     
+  fRICHqn = -1;     
+  fRICHcluIdx = -1;     
   fRICHsignal = 0;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i] = 0;
-  fRICHtheta = 0;     
-  fRICHphi = 0;      
-  fRICHdx = 0;     
-  fRICHdy = 0;      
-  fRICHmipX = 0;
-  fRICHmipY = 0;
+  fRICHtrkTheta = -1;     
+  fRICHtrkPhi = -1;      
+  fRICHtrkX = -1;     
+  fRICHtrkY = -1;      
+  fRICHmipX = -1;
+  fRICHmipY = -1;
   fEMCALindex = kEMCALNoMatch;
 
   delete fFriendTrack; fFriendTrack = 0;
@@ -873,7 +873,7 @@ Bool_t AliESDtrack::RelateToVertex
   alpha=GetAlpha(); sn=TMath::Sin(alpha); cs=TMath::Cos(alpha);
   Double_t s2ylocvtx = cov[0]*sn*sn + cov[2]*cs*cs - 2.*cov[1]*cs*sn;
   fCdd = GetCovariance()[0] + s2ylocvtx;   // neglecting correlations
-  fCdz = GetCovariance()[1];               // between (x,y) and z    
+  fCdz = GetCovariance()[1];               // between (x,y) and z
   fCzz = GetCovariance()[2] + cov[5];      // in vertex's covariance matrix
   //*****
 
