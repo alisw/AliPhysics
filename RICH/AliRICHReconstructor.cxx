@@ -172,9 +172,9 @@ void AliRICHReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)const
     pAL->GetEvent(iEvtN++);
     pRL->MakeTree("R");  pRich->MakeBranch("R");
     
-    for(Int_t iChN=1;iChN<=7;iChN++){//chambers loop
+    for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
       TClonesArray *pDigLst=new TClonesArray("AliRICHDigit"); Int_t iDigCnt=0; //tmp list of digits for single chamber
-      pRR->Select("RICH",2*iChN-2,2*iChN-1);//select only DDL files for the current chamber      
+      pRR->Select("RICH",2*iCh,2*iCh+1);//select only DDL files for the current chamber      
       UInt_t w32=0;
       while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13

@@ -38,7 +38,7 @@ public:
          Int_t   Ch          (                               )const{return A2C(fPad);                               }                  //chamber number
          Int_t   Dilogic     (                               )const{return 10-PadX()/kDilX;                         }                  //raw d=1..10
   static void    DrawPc      (Bool_t isFill=kTRUE            );                                                                        //draw PCs
-         Int_t   Ddl         (                               )const{return (PadX()<kPadPcX) ? 2*Ch()-2 : 2*Ch()-1;}                    //DDL number 0..13
+         Int_t   Ddl         (                               )const{return (PadX()<kPadPcX) ? 2*Ch() : 2*Ch()+1;    }                  //DDL number 0..13
   static Float_t Hit2Sdi     (AliRICHHit *pHit,TClonesArray *);                                                                        //hit -> 9 sdigits, returns total QDC   
   static Bool_t  IsOverTh    (Float_t q                      )     {return q > 6;                                                  }   //is digit over threshold????
   static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();                   }   //is point inside pc boundary?
