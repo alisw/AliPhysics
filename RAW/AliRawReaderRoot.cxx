@@ -186,6 +186,13 @@ AliRawReaderRoot::~AliRawReaderRoot()
   }
 }
 
+const AliRawEventHeaderBase* AliRawReaderRoot::GetEventHeader() const
+{
+  // Get the even header
+  // Return NULL in case of failure
+  if (!fEvent) return NULL;
+  return fEvent->GetHeader();
+}
 
 UInt_t AliRawReaderRoot::GetType() const
 {

@@ -15,6 +15,7 @@
 #include <TArrayI.h>
 #include "AliRawDataHeader.h"
 
+class AliRawEventHeaderBase;
 
 class AliRawReader: public TObject {
   public :
@@ -35,6 +36,8 @@ class AliRawReader: public TObject {
     void             SelectEvents(Int_t type);
     virtual void     RequireHeader(Bool_t required)
       {fRequireHeader = required;};
+
+    virtual const AliRawEventHeaderBase* GetEventHeader() const {return NULL;};
 
     virtual UInt_t   GetType() const = 0;
     virtual UInt_t   GetRunNumber() const = 0;

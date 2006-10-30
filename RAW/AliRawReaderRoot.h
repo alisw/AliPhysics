@@ -28,6 +28,8 @@ class AliRawReaderRoot: public AliRawReader {
     AliRawReaderRoot& operator = (const AliRawReaderRoot& rawReader);
     virtual ~AliRawReaderRoot();
 
+    virtual const AliRawEventHeaderBase* GetEventHeader() const;
+
     virtual UInt_t   GetType() const;
     virtual UInt_t   GetRunNumber() const;
     virtual const UInt_t* GetEventId() const;
