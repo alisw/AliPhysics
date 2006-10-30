@@ -106,7 +106,7 @@ void AliSTARTv1::CreateGeometry()
 		       1.25 , 5.1, 10., //-76.5+8.05+69.7 
 		       6.8 , 5.1, 10.};  //-62.9+0.00+69.7
   
-  Float_t pstart[3]={4.29, 12.5,6.8};
+  Float_t pstart[3]={4., 12.5,6.8};
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
   Float_t ptop[3]={0.,1.,1.0};
@@ -205,12 +205,12 @@ void AliSTARTv1::CreateGeometry()
 
 
 
-    gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
+    gMC->Gsvolu("0SUP", "PCON", idtmed[kAl], ppcon,42);
     //    gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,38);
-    z=-zdetC;
+    z = -zdetC;
     gMC->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
-
- //-------------------------------------------------------------------
+   
+//-------------------------------------------------------------------
  //  START volume 
  //-------------------------------------------------------------------
   
@@ -232,6 +232,41 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gsvolu("0SU6","TUBE",idtmed[kC],psupport5,3);// stakanchik dlai feu  C
     gMC->Gsvolu("0SU7","TUBE",idtmed[kAl],psupport6,3);//kryshechka stakanchika  Al
     gMC->Gsvolu("0SU8","TUBE",idtmed[kAl],psupport7,3);//kolechko snaruzhu stakanchika Al
+   
+ 
+
+   //non-absorber side support  !!!!!!!!
+    
+   Float_t ppconA[20];
+    ppconA[0]  =   0;
+    ppconA[1]  = 360;
+    ppconA[2]  =  4;
+//  1: 
+    ppconA[3]  =  0; // 12.55/2;
+    ppconA[4]  =   4.1;
+    ppconA[5]  =   5.5;
+
+//  2: 
+    ppconA[6]  =   ppconA[3] + 10.5; 
+    ppconA[7]  =   4.1;
+    ppconA[8]  =   5.5;
+   
+//  3: 
+    ppconA[9]  =   ppconA[3] + 10.5; 
+    ppconA[10]  =   4.1;
+    ppconA[11]  =   4.9;
+   
+ //  4: 
+    ppconA[12]  =   ppconA[9] + 2.; 
+    ppconA[13]  =   4.1;
+    ppconA[14]  =   4.9;
+
+    gMC->Gsvolu("0SUA", "PCON", idtmed[kAir], ppconA,15);
+
+     z =  - pstart[2];
+    gMC->Gspos("0SUA",1,"0STL",0.,0.,z,0,"MANY");
+    //!!!!!!!!!!!!!!!!!!!!
+
              
 // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetC);
@@ -255,8 +290,8 @@ void AliSTARTv1::CreateGeometry()
 		   theta,       phi[2]);  
 	z=-pstart[2]+pinstart[2]+0.2;
 	gMC->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
-	gMC->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "ONLY");
-      }	
+	gMC->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "MANY"); //!!!!!!
+   }	
    
       
    x=0;
@@ -358,7 +393,9 @@ void AliSTARTv1::CreateGeometry()
     par[2]=0.01;
     gMC->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
     gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"ONLY"); 
-         
+ 
+   
+
  
 }    
 //------------------------------------------------------------------------
@@ -381,9 +418,9 @@ void AliSTARTv1::AddAlignableVolumes() const
   for (Int_t imod=0; imod<24; imod++)
     {
       if (imod < 12) 
-	{volPath  = vpC; sn="START/C/PMT";}
+	{volPath  = vpC; sn="T0/C/PMT";}
       else  
-	{volPath  = vpA; sn="START/A/PMT";}
+	{volPath  = vpA; sn="T0/A/PMT";}
       volPath += imod+1;
       volPath += vpInside;
       
