@@ -50,7 +50,7 @@ void AliRICHv1::AddAlignableVolumes()const
 // Arguments: none
 //   Returns: none   
   for(Int_t i=0;i<7;i++)
-    gGeoManager->SetAlignableEntry(Form("/RICH/CH%i",i),Form("ALIC_1/RICH_%i",i));
+    gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/RICH_%i",i));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::CreateMaterials()
