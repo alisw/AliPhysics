@@ -337,61 +337,71 @@ void aaa()
 
 
 
-void ed(Int_t e1=-1,Int_t e2=-1) 
-{r->Display(e1,e2);                   }
-void AliRICH::Display(Int_t iEvtFrom,Int_t iEvtTo)const
+void ed(Int_t iEvtFrom=-1,Int_t iEvtTo=-1) 
 {
 // Display digits, reconstructed tracks intersections and RICH rings if available 
-  TH2F *pDigH[7];
-
-  GetLoader()->LoadDigits();
   
-
   
-  for(Int_t iCh=0;iCh<7;iCh++) {
-    pDigH[iCh]=new TH2F(Form("RichDigH_%i",iCh),Form("Cham %i;cm;cm",iCh),165,0,AliRICHDigit::SizeAllX(),144,0,AliRICHDigit::SizeAllY());
-    pDigH[iCh]->SetMarkerColor(kGreen); 
-    pDigH[iCh]->SetMarkerStyle(29); 
-    pDigH[iCh]->SetMarkerSize(0.4);
-    pDigH[iCh]->SetStats(kFALSE);
-    pDigH[iCh]->SetMaximum(300);
-  }
-  
-  Int_t iNevt=GetLoader()->GetRunLoader()->GetNumberOfEvents();
+  Int_t iNevt=al->GetNumberOfEvents();
   if(iEvtFrom< 0    ){iEvtFrom=0;iEvtTo=iNevt-1;}
   if(iEvtTo  >=iNevt){           iEvtTo=iNevt-1;}
+  
+  rl->LoadDigits();
+  
+  TFile *pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pFile->IsOpen()) return;//open AliESDs.root                                                                    
+  TTree *pEsdTr=(TTree*) pFile->Get("esdTree");  if(!pEsdTr)                     return;//get ESD tree
+                                                                 
+  AliESD *pEsd=new AliESD;  pTree->SetBranchAddress("ESD", &pEsd);
+  
+  
+  
+  
+  TPolyMarker  *pDigMap[7]; //digits map
+  TPolyMarker  *pTrkMap[7]; //TRKxPC intersection map
+  
+  for(Int_t i=0;i<7;i++){
+    pDigMap[i]=new TPolyMarker();       pDigMap[i]->SetMarkerStyle(25);   pDigMap[i]->SetMarkerSize(0.5); pDigMap[i]->SetMarkerColor(kGreen); 
+    pTrkMap[i]=new TPolyMarker();       pTrkMap[i]->SetMarkerStyle(4);    pTrkMap[i]->SetMarkerSize(0.5); pTrkMap[i]->SetMarkerColor(kRed); 
+  }
 
-  TLatex t;  t.SetTextSize(0.1);
-  TCanvas *pC = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);  pC->Divide(3,3);  pC->cd(9); t.DrawText(0.2,0.4,"View to IP");  
-  gStyle->SetPalette(1);
+  TLatex t;
+  TCanvas *pC = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);  pC->Divide(3,3);
   
   for(Int_t iEvt=iEvtFrom;iEvt<=iEvtTo;iEvt++) {                //events loop
     pC->cd(3);  t.DrawText(0.2,0.4,Form("Event %i",iEvt));        //print current event number
-    for(Int_t iCh=0;iCh<7;iCh++)  pDigH[iCh]->Reset();        //reset all histograms
+        
+    pEsdTr->GetEntry(iEvt);                              //get ESD for this event   
+    for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//ESD tracks loop
+      AliESDtrack *pTrk = pEsd->GetTrack(iTrk);             //
+      Float_t th,ph,x,y;
+      pTrk->GetRICHtrk(th,ph,x,y);
+      
+    }//ESD tracks loop
     
-    GetLoader()->GetRunLoader()->GetEvent(iEvt);                  //switch to event directory
-    GetLoader()->TreeD()->GetEntry(0);                            //load digits list
+    al->GetEvent(iEvt);   rl->TreeD()->GetEntry(0); //get digits list
     for(Int_t iCh=0;iCh<7;iCh++) {//chambers loop
-      for(Int_t iDig=0;iDig < DigLst(iCh)->GetEntries();iDig++) {      //digits loop
-        AliRICHDigit *pDig = (AliRICHDigit*)DigLst(iCh)->At(iDig);     
-        pDigH[pDig->Ch()]->Fill(pDig->LorsX(),pDig->LorsY(),pDig->Q());
+      for(Int_t iDig=0;iDig < r->DigLst(iCh)->GetEntries();iDig++) {      //digits loop
+        AliRICHDigit *pDig = (AliRICHDigit*)r->DigLst(iCh)->At(iDig);     
+        pDigMap[iCh]->SetPoint(iDig,pDig->LorsX(),pDig->LorsY());
       }                                                             //digits loop
 
-      if(iCh==0) pC->cd(9);
-      if(iCh==1) pC->cd(8);
-      if(iCh==2) pC->cd(6);
-      if(iCh==3) pC->cd(5);
-      if(iCh==4) pC->cd(4);
-      if(iCh==5) pC->cd(2);
-      if(iCh==6) pC->cd(1);
-      pDigH[iCh]->Draw("col");
-     // AliRICHDigit::DrawPc();
+      
+      if(iCh==6) pC->cd(1); if(iCh==5) pC->cd(2);
+      if(iCh==4) pC->cd(4); if(iCh==3) pC->cd(5); if(iCh==2) pC->cd(6);
+                            if(iCh==1) pC->cd(8); if(iCh==0) pC->cd(9);
+      
+      AliRICHDigit::DrawPc();  pDigMap[iCh]->Draw();
     }//chambers loop
     pC->Update();
     pC->Modified();
 
     if(iEvt<iEvtTo) {gPad->WaitPrimitive();pC->Clear();}
+    
+    
+    
   }//events loop
+  delete pEsf;  pEsdFl->Close();//close AliESDs.root
+  rl->UnloadDigits();
 }//Display()
 
 

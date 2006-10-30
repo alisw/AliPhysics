@@ -1,26 +1,12 @@
 #include "AliRICHTracker.h" //class header
-#include "AliRICH.h"
-#include "AliRICHRecon.h"
-#include "AliRICHParam.h"
-#include "AliRICHCluster.h"
-#include <AliESD.h>
-#include <TGeoManager.h>     //EsdQA()
-#include <TVector3.h>
-#include <TTree.h>          //EsdQA() 
-#include <TFile.h>          //EsdQA()  
-#include <TProfile.h>   //EsdQA() 
-#include "AliRICHHelix.h"
-#include <AliMagF.h>
-#include <AliStack.h>
-#include <TParticle.h>
-#include <TMath.h>
-#include <AliRun.h>
-#include <TNtupleD.h>            //RecWithStack();
+#include "AliRICH.h"             //GetTrackPoint(),PropagateBack()   
+#include "AliRICHCluster.h"      //GetTrackPoint(),PropagateBack() 
+#include "AliRICHParam.h"        //GetTrackPoint(),PropagateBack()
+#include "AliRICHRecon.h"        //PropagateBack()
+#include <AliESD.h>              //PropagateBack()  
+#include <AliRun.h>              //GetTrackPoint(),PropagateBack()  
 #include <AliTrackPointArray.h>  //GetTrackPoint()
 #include <AliAlignObj.h>         //GetTrackPoint()
-#include <TH1F.h>                //EsdQA()  
-#include <TH2F.h>                //EsdQA()  
-#include <TCanvas.h>             //EsdQA()  
 ClassImp(AliRICHTracker)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliRICHTracker::AliRICHTracker():AliTracker()
@@ -43,8 +29,9 @@ Bool_t AliRICHTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
   point.SetVolumeID(AliAlignObj::LayerToVolUID(AliAlignObj::kRICH,iCham-1));//layer and chamber number
   AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));  
   AliRICHCluster *pClu=(AliRICHCluster*)pRich->CluLst(iCham)->UncheckedAt(iClu);//get pointer to cluster
-  TVector3 mars=AliRICHParam::Instance()->Lors2Mars(iCham,pClu->X(),pClu->Y());
-  point.SetXYZ(mars.X(),mars.Y(),mars.Z());
+  Double_t mars[3];
+  AliRICHParam::Instance()->Lors2Mars(iCham,pClu->X(),pClu->Y(),mars);
+  point.SetXYZ(mars[0],mars[1],mars[2]);
   return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -98,25 +85,25 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
       AliRICHCluster *pClu=(AliRICHCluster*)pCluLst->At(iClu);                             //get pointer to current cluster
       if(pClu->Q()<100) continue;                                                          //QDC is incompartible with mip, go after another one
       
-      Float_t dX=xPc-pClu->X();                                                         //distance between current cluster and intersection point
+      Float_t dX=xPc-pClu->X();                                                            //distance between current cluster and intersection point
       Float_t dY=yPc-pClu->Y();
       Float_t d =TMath::Sqrt(dX*dX+dY*dY);
       
       if( d < dMin) {iMip=iClu; dMin=d;}                                                   //current cluster is closer, overwrite data for min cluster
     }//clusters loop for intersected chamber    
     
-//                   pTrk->SetRICHtrk      (xPc,yPc,th,ph);                                  //store track info
-//    if(iMip==-1)  {pTrk->SetRICHsignal   (kMipQdcCut);  continue;}                         //no clusters with QDC more the threshold at all
+                   pTrk->SetRICHtrk      (xPc,yPc,th,ph);                                  //store track info
+    if(iMip==-1)  {pTrk->SetRICHsignal   (kMipQdcCut);  continue;}                         //no clusters with QDC more the threshold at all
     
-//    AliRICHCluster *pMipClu=(AliRICHCluster*)pCluLst->At(iMip);                                             //take mip cluster 
+    AliRICHCluster *pMipClu=(AliRICHCluster*)pCluLst->At(iMip);                            //take mip cluster 
     
-//                   pTrk->SetRICHmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q());          //store mip info 
-    if(dMin>1)    {pTrk->SetRICHsignal   (kMipDistCut); continue;}                            //closest cluster with enough charge is still too far 
-//                   pTrk->SetRICHcluIdx   (iCh,iMip);                                        //set mip cluster index
-  recon.SetTrack(th,ph,xRa,yRa); Int_t iNphot=0;                                              //initialize track parameters  
-                   pTrk->SetRICHsignal   (recon.CkovAngle(pCluLst,iNphot));                   //search for Cerenkov angle for this track
-                   pTrk->SetRICHchi2     (recon.CkovSigma2());                                //error squared 
-//                   pTrk->SetRICHmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q(),iMip);     //info on mip cluster + n. phot.
+                   pTrk->SetRICHmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q());          //store mip info 
+    if(dMin>1)    {pTrk->SetRICHsignal   (kMipDistCut); continue;}                          //closest cluster with enough charge is still too far 
+                   pTrk->SetRICHcluIdx   (iCh,iMip);                                        //set mip cluster index
+  recon.SetTrack(th,ph,xRa,yRa); Int_t iNphot=0;                                            //initialize track parameters  
+                   pTrk->SetRICHsignal   (recon.CkovAngle(pCluLst,iNphot));                 //search for Cerenkov angle for this track
+                   pTrk->SetRICHchi2     (recon.CkovSigma2());                              //error squared 
+                   pTrk->SetRICHmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q(),iMip);     //info on mip cluster + n. phot.
     Printf("Ch=%i MIP-TRK=%5.2f cm Th=%f+-%f", iCh, dMin,pTrk->GetRICHsignal(),pTrk->GetRICHchi2());
  }//ESD tracks loop
   AliDebug(1,"Stop pattern recognition");
