@@ -179,10 +179,10 @@ void AliRICHReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)const
       while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
         dig.ReadRaw(ddl,w32);  
-        AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iChN,ddl,w32,dig.Ch(),dig.Pc(),dig.PadX(),dig.PadY(),dig.Q()));
+        AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadX(),dig.PadY(),dig.Q()));
         new((*pDigLst)[iDigCnt++]) AliRICHDigit(dig); //add this digit to the tmp list
       }//raw records loop
-      if(iDigCnt) Dig2Clu(pDigLst,pRich->CluLst(iChN));//cluster finder for the current chamber if any digits present
+      if(iDigCnt) Dig2Clu(pDigLst,pRich->CluLst(iCh));//cluster finder for the current chamber if any digits present
       pRR->Reset();        
       pDigLst->Delete();  iDigCnt=0;//clean up list of digits for the current chamber
     }//chambers loop
