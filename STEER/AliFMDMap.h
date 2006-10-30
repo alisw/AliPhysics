@@ -35,8 +35,8 @@ public:
   Int_t  CheckIndex(UShort_t det, Char_t ring, 
 		    UShort_t sec, UShort_t str) const;
 protected:
-  UShort_t CalcIndex(UShort_t det, Char_t ring, 
-		     UShort_t sec, UShort_t str) const;
+  Int_t CalcIndex(UShort_t det, Char_t ring, 
+		   UShort_t sec, UShort_t str) const;
   UShort_t fMaxDetectors;             // Maximum # of detectors
   UShort_t fMaxRings;                 // Maximum # of rings
   UShort_t fMaxSectors;               // Maximum # of sectors

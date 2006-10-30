@@ -67,7 +67,7 @@ AliFMDMap::CheckIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) con
 
     
 //____________________________________________________________________
-UShort_t 
+Int_t 
 AliFMDMap::CalcIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) const
 {
   // Calculate index into storage from arguments. 
@@ -91,7 +91,7 @@ AliFMDMap::CalcIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) cons
 		    (sec >= fMaxSectors ? "Sector" : "Strip")))));
     return 0;
   }
-  return UShort_t(idx);
+  return idx;
 }
 
 
