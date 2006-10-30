@@ -45,7 +45,7 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t GetBinWidthFine() const {return fStepFine;}
   void SetTolerance(Float_t tol = 20./10000.){fTolerance = tol;}
   Float_t GetTolerance() const {return fTolerance;}
-  virtual void MakeTracklet(Double_t * /* pA */, Double_t * /*pB */, Int_t & /* nolines */) {} // implemented in a derived class
+  //  virtual void MakeTracklet(Double_t * /* pA */, Double_t * /*pB */, Int_t & /* nolines */) {} // implemented in a derived class
 
  protected:
   AliITSVertexerZ(const AliITSVertexerZ& vtxr);

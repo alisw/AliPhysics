@@ -20,7 +20,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSVertexer.cxx \
 		AliITSVertexerIons.cxx \
 		AliITSVertexerPPZ.cxx \
-		AliITSVertexerTracks.cxx \
+		AliITSVertexer3D.cxx \
 		AliITSVertexerZ.cxx \
 		AliITSVertexerFast.cxx \
 		AliITSPid.cxx \
@@ -63,5 +63,5 @@ DHDR=ITSrecLinkDef.h
 
 EINCLUDE:=TPC RAW
 
-EXPORT:=AliITStrackV2.h AliITSVertexerTracks.h \
+EXPORT:=AliITStrackV2.h                \
         AliITSVertexer.h AliITSrecoV2.h

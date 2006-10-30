@@ -300,7 +300,7 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
     detTypeRec.ResetRecPoints();
   }
  
-  Int_t nolines=0;
+  // Int_t nolines=0;
   for(Int_t i=0;i<nrpL1;i++){ // loop on L1 RP
     Float_t r1=TMath::Sqrt(xc1[i]*xc1[i]+yc1[i]*yc1[i]); // radius L1 RP
     for(Int_t j=0;j<nrpL2;j++){ // loop on L2 RP
@@ -320,7 +320,7 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
 	pB[0]=xc2[j];
 	pB[1]=yc2[j];
 	pB[2]=zc2[j];
-	MakeTracklet(pA,pB,nolines);
+	//	MakeTracklet(pA,pB,nolines);
       }
     }
   }
