@@ -71,9 +71,9 @@ public:
 				   UShort_t sec,
 				   UShort_t str) const;
 protected:
-  UShort_t  fTotal; // Total number of entries 
+  Int_t  fTotal; // Total number of entries 
   Bool_t* fData;  // [fTotal] The Data
-  ClassDef(AliFMDBoolMap,2) // Map of Bool_t data per strip
+  ClassDef(AliFMDBoolMap,3) // Map of Bool_t data per strip
 };
 
 #endif

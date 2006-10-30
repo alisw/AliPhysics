@@ -75,9 +75,9 @@ public:
 					      UShort_t sector, 
 					      UShort_t strip) const;
 protected:
-  UShort_t             fTotal; //  Total number of entries
+  Int_t             fTotal; //  Total number of entries
   AliFMDEdepHitPair* fData;  //[fTotal] The data 
-  ClassDef(AliFMDEdepMap, 2) // Cache of edep,hit information per strip
+  ClassDef(AliFMDEdepMap, 3) // Cache of edep,hit information per strip
 };
 
 #endif 

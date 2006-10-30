@@ -44,7 +44,7 @@ AliFMDUShortMap::AliFMDUShortMap(const AliFMDUShortMap& other)
   // CTOR
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
   fData  = new UShort_t[fTotal];
-  for (UShort_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
 }
 
   
@@ -81,7 +81,7 @@ AliFMDUShortMap::operator=(const AliFMDUShortMap& other)
   if (fData) delete [] fData;
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
   fData  = new UShort_t[fTotal];
-  for (UShort_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;
 }
 
@@ -90,7 +90,7 @@ void
 AliFMDUShortMap::Reset(const UShort_t& val) 
 {
   // Reset to val
-  for (UShort_t i = 0; i < fTotal; i++) fData[i] = val;
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = val;
 }
 
 //____________________________________________________________________

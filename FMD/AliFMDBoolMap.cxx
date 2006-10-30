@@ -46,7 +46,7 @@ AliFMDBoolMap::AliFMDBoolMap(const AliFMDBoolMap& other)
   // Copy constructor
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
   fData  = new Bool_t[fTotal];
-  for (UShort_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
 }
 
 //__________________________________________________________
@@ -81,7 +81,7 @@ AliFMDBoolMap::operator=(const AliFMDBoolMap& other)
   if (fData) delete [] fData;
   fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
   fData  = new Bool_t[fTotal];
-  for (UShort_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;
 }
 
@@ -90,7 +90,7 @@ void
 AliFMDBoolMap::Reset(const Bool_t& val)
 {
   // Reset map to val
-  for (UShort_t i = 0; i < fTotal; i++) fData[i] = val;
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = val;
 }
 
 //__________________________________________________________
