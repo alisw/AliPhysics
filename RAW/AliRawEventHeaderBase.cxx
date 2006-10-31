@@ -277,7 +277,7 @@ Int_t AliRawEventHeaderBase::ReadHeader(char*& data)
 }
 
 //______________________________________________________________________________
-UInt_t AliRawEventHeaderBase::Get(const char *datamember)
+UInt_t AliRawEventHeaderBase::Get(const char *datamember) const
 {
   // The method to get a data member from the header object
   // Except for the data members of the base class, all the
@@ -310,7 +310,7 @@ UInt_t AliRawEventHeaderBase::Get(const char *datamember)
 }
 
 //______________________________________________________________________________
-const UInt_t* AliRawEventHeaderBase::GetP(const char *datamember)
+const UInt_t* AliRawEventHeaderBase::GetP(const char *datamember) const
 {
   // The method to get a data member from the header object
   // Except for the data members of the base class, all the

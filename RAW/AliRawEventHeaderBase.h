@@ -46,8 +46,8 @@ public:
    const char *  GetTypeName();
    static AliRawEventHeaderBase* Create(char*& data);
    Int_t         ReadHeader(char*& data);
-   UInt_t        Get(const char *datamember);
-   const UInt_t* GetP(const char *datamember);
+   UInt_t        Get(const char *datamember) const;
+   const UInt_t* GetP(const char *datamember) const;
 
    // The following enumeration can be used once the kEventTypeMask has been
    // applied to the raw event type
