@@ -51,8 +51,7 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
     fY3Pattern(0),
     fY4Pattern(0),
     
-    fLoDecision(0),
-    fDigits(0)
+    fLoDecision(0)
 {
 /// Default constructor
 }
@@ -76,8 +75,7 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
       fY3Pattern(theMUONLocalTrig.fY3Pattern),
       fY4Pattern(theMUONLocalTrig.fY4Pattern),
       
-      fLoDecision(theMUONLocalTrig.fLoDecision),
-      fDigits(theMUONLocalTrig.fDigits)
+      fLoDecision(theMUONLocalTrig.fLoDecision)
 {
 /// Copy constructor (useful for TClonesArray)
 
@@ -113,35 +111,9 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
 
   fLoDecision =  theMUONLocalTrig.fLoDecision;
 
-  fDigits = theMUONLocalTrig.fDigits;
-
   return *this;
 }
 
-//----------------------------------------------------------------------
-AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& digits) :
-    fLoCircuit(localtr[0]),
-    fLoStripX(localtr[1]),      
-    fLoDev(localtr[2]),      
-    fLoStripY(localtr[3]),          
-    fLoLpt(localtr[4]),
-    fLoHpt(localtr[5]),
-     // keep on with this way
-    fX1Pattern((UShort_t)localtr[7]),
-    fX2Pattern((UShort_t)localtr[8]),
-    fX3Pattern((UShort_t)localtr[9]),
-    fX4Pattern((UShort_t)localtr[10]),
-    
-    fY1Pattern((UShort_t)localtr[11]),
-    fY2Pattern((UShort_t)localtr[12]),
-    fY3Pattern((UShort_t)localtr[13]),
-    fY4Pattern((UShort_t)localtr[14]),
-    
-    fLoDecision(0),
-    fDigits(digits)
-{
-/// Add a local trigger object
-}
 
 //----------------------------------------------------------------------
 Char_t AliMUONLocalTrigger::GetLoDecision()
@@ -156,53 +128,6 @@ Char_t AliMUONLocalTrigger::GetLoDecision()
   return fLoDecision;
 }
 
-//----------------------------------------------------------------------
-void AliMUONLocalTrigger::GetDigit(
-		Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const
-{
-/// Returns the i'th digit that fired this circuit.
-/// The number of digits can be found with NumberOfDigits(), that is 
-/// i is valid in the range [ 0 , NumberOfDigits() - 1 ]
-
-	Int_t digitnumber = fDigits[i];
-	DecodeDigitNumber(digitnumber, chamber, cathode, digit);
-}
-
-//----------------------------------------------------------------------
-Int_t AliMUONLocalTrigger::EncodeDigitNumber(Int_t chamber, Int_t cathode, 
-					     Int_t digit)
-{
-/// Encodes a 32-bit digit number from digit information to be stored
-/// in internal integer arrays. Note that the value of the digit parameter
-/// can not be larger than 0x07FFFFFF.
-
-	assert( 0 <= cathode && cathode <= 1 );
-	assert( 0 <= chamber && chamber <= 13 );
-
-	if ((digit & 0xF8000000) != 0)
-	{
-		AliErrorGeneral("AliMUONLocalTrigger", Form(
-			"Digit index value is to large: 0x%8.8X. Maximum supported value is 0x07FFFFFF.",
-			cathode, chamber, digit
-		));
-		return -1;
-	};
-
-	return ((cathode & 0x1) << 31) | ((chamber & 0xF) << 27) | digit;
-}
-
-//----------------------------------------------------------------------
-void AliMUONLocalTrigger::DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, 
-					    Int_t& cathode, Int_t& digit)
-{
-/// Decodes a digit number into information about the digit.
-/// One can subsequently fetch the digit with
-/// AliMUONDataInterface::Digit(chamber, cathode, digit)
-
-	cathode = (digitnumber >> 31) & 0x1;
-	chamber = (digitnumber >> 27) & 0xF;
-	digit = digitnumber & 0x7FFFFFF;
-}
 
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& localStruct)

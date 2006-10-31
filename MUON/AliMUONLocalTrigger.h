@@ -13,7 +13,6 @@
 //  Author Ph. Crochet
 
 #include <TObject.h>
-#include <TArrayI.h>
 
 class AliMUONLocalStruct;
 
@@ -21,7 +20,6 @@ class AliMUONLocalTrigger : public TObject {
  public:
   AliMUONLocalTrigger();
   AliMUONLocalTrigger(const AliMUONLocalTrigger& rhs); // copy constructor !
-  AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& digits);
   virtual ~AliMUONLocalTrigger(){;}
   AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& rhs); 
 
@@ -95,18 +93,6 @@ class AliMUONLocalTrigger : public TObject {
 
   void SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& localStruct);
 
-  // data link
-  //
-           /// Return number of digits in the list
-  Int_t NumberOfDigits() const { return fDigits.GetSize(); }
-           /// Return \a i th digit number in the list
-  Int_t GetDigitNumber(Int_t i) const { return fDigits[i]; }
-  void  GetDigit(Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;
-
-  static Int_t EncodeDigitNumber(Int_t chamber, Int_t cathode, Int_t digit);
-  static void  DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
-
-  void SetDigits(const TArrayI& digits) {fDigits = digits;}
 
   virtual void Print(Option_t* opt="") const;
   
@@ -131,9 +117,7 @@ private:
 
   Char_t fLoDecision; ///< Local decision word (4 bits)
 
-  TArrayI fDigits;    ///< List of digit numbers from which this object was created.
-
-  ClassDef(AliMUONLocalTrigger,2)  // reconstructed Local Trigger object
+  ClassDef(AliMUONLocalTrigger,3)  // reconstructed Local Trigger object
 };
 #endif
 
