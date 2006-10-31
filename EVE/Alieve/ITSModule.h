@@ -9,7 +9,7 @@
 namespace Alieve {
 
 class ITSModule : public Reve::RenderElement,
-                  public Reve::QuadSet
+                  public Reve::OldQuadSet
 {
   ITSModule(const ITSModule&);            // Not implemented
   ITSModule& operator=(const ITSModule&); // Not implemented

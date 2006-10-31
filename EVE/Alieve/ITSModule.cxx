@@ -21,7 +21,7 @@ ClassImp(ITSModule)
 
 ITSModule::ITSModule(const Text_t* n, const Text_t* t, Color_t col) :
   Reve::RenderElement(fFrameColor),
-  QuadSet(n, t),
+  OldQuadSet(n, t),
   fInfo(0),
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
@@ -31,7 +31,7 @@ ITSModule::ITSModule(const Text_t* n, const Text_t* t, Color_t col) :
 
 ITSModule::ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col) :
   Reve::RenderElement(fFrameColor),
-  QuadSet(Form("ITS module %d", id)),
+  OldQuadSet(Form("ITS module %d", id)),
   fInfo  (0),
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
@@ -114,10 +114,6 @@ void ITSModule::InitModule()
       rest-=nstave*4;
       symname+=rest;
       SetName(symname.Data());
-      fDetID = 0;
-      fDx = fInfo->fSegSPD->Dx()*0.00005;
-      fDz = 3.48; 
-      fDy = fInfo->fSegSPD->Dy()*0.00005;
       fDetID = 0;
       fDx = fInfo->fSegSPD->Dx()*0.00005;
       fDz = 3.48; 
