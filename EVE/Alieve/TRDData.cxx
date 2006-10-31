@@ -17,7 +17,7 @@ ClassImp(TRDHits)
 ///////////////////////////////////////////////////////////
 
 //________________________________________________________
-TRDDigits::TRDDigits(TRDChamber *p): QuadSet("digits", ""), RenderElement()
+TRDDigits::TRDDigits(TRDChamber *p): OldQuadSet("digits", ""), RenderElement()
 {
 	fChamber = p;
 	
@@ -130,7 +130,7 @@ void	TRDDigits::ComputeRepresentation()
 void TRDDigits::Paint(Option_t *option)
 {
 	if(kBox) fBoxes.Paint(option);
-	else QuadSet::Paint(option);
+	else OldQuadSet::Paint(option);
 }
 
 //________________________________________________________

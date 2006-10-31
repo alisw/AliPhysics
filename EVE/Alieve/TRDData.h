@@ -38,7 +38,7 @@ namespace Alieve {
 	};
 
 		
-	class TRDDigits : public Reve::QuadSet, public Reve::RenderElement
+	class TRDDigits : public Reve::OldQuadSet, public Reve::RenderElement
 	{
 	public:
 		TRDDigits(TRDChamber *p);
