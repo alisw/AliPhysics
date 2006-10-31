@@ -1,3 +1,33 @@
+2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/geom_rich.C:
+	Put all modules in common container.
+
+	* alice-macros/geom_fmd.C:
+	* alice-macros/geom_vzero.C:
+	New files: import geometry of FMD and VZERO.
+
+	* alice-macros/fmd_hits.C:
+	* alice-macros/pmd_hits.C:
+	* alice-macros/vzero_hits.C:
+	New files: import hits from FPD, PMD and VZERO.
+
+	* alice-macros/MUON_digits.C:
+	* alice-macros/MUON_geom.C:
+	* alice-macros/MUON_geomAll.C:
+	* alice-macros/README_MUON:
+	From Bogdan: new files / new implementation of the MUON
+	visualization.
+	
+	* alice-macros/muon_all.C:
+	* alice-macros/muon_chambers.C:
+	* alice-macros/muon_clusters.C:
+	* alice-macros/muon_cpads.C:
+	* alice-macros/muon_digits.C:
+	* alice-macros/muon_hits.C:
+	* alice-macros/muon_tracks.C:
+	From Bogdan: removed files.
+
 2006-10-27  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/esd_V0_points.C:
