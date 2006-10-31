@@ -21,10 +21,11 @@
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
 #include <TBRIK.h>
+#include <TVirtualMC.h>
+#include <TGeoMatrix.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
 #include "AliITShit.h"
 #include "AliITS.h"
@@ -480,8 +481,6 @@ void AliITSvSSD03::CreateMaterials2003(){
 }
 //______________________________________________________________________
 void AliITSvSSD03::InitAliITSgeom(){
-  //     Based on the geometry tree defined in Geant 3.21, this
-  // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
   // sturture.
   // Inputs:
   //    none.
@@ -489,104 +488,23 @@ void AliITSvSSD03::InitAliITSgeom(){
   //    none.
   // Return:
   //    none.
+    const Int_t knlayers=1;
+    const TString kname="ALIC_1/ITSV_1/IGAR_1/IAIR_1/ITST_1";
+    const Int_t knlad[knlayers]={knlayers*1},kndet[knlayers]={knlayers*1};
+    Int_t npar;
+    Float_t par[20];
+    Double_t trans[3]={3*0.0},rot[10]={10*0.0};
+    TGeoHMatrix materix;
 
-  //const Int_t kltypess = 2;   // was 2 for SPD beamtest 
-  const Int_t kltypess = 1;
-  //const Int_t knlayers = 5; // was 5 for the SPD telescope
-  const Int_t knlayers = 1;   // for one SSD module
-  const Int_t kndeep = 5;    
-  
-  Int_t itsGeomTreeNames[kltypess][kndeep],lnam[20],lnum[20];
-  
-  Int_t nlad[knlayers],ndet[knlayers];
-  Double_t t[3],r[10];
-  Float_t  par[20],att[20];
-  Int_t    npar,natt,idshape,imat,imed;
-  AliITSGeant3Geometry *ig=0;
-  Int_t mod=0,typ=0,lay=0,lad=0,det=0,cpy=0,i=0,j=0,k=0;
-  
-  if(gMC==0) {// No MonteCarlo to init. Default set fITSgeom by hand
-    if(GetITSgeom()!=0) SetITSgeom(0x0);
-    
-    //nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
-    //ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
-    nlad[0]=1;
-    ndet[0]=1;
-    
-    AliITSgeom* geom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
+    AliITSgeom* geom = new AliITSgeom(0,knlayers,knlad,kndet,1);
     SetITSgeom(geom);
-    
-    r[0] = 1.0; r[1] =  0.0; r[2] = 0.0;
-    r[3] = 0.0; r[4] =  0.0; r[5] = 1.0;
-    r[6] = 0.0; r[7] = -1.0; r[8] = 0.0; r[9] = 1.0; // not Unit.
-    
-    Double_t tt[1][3]={{0.0,0.0,0.0}};
-    
-    // for(mod=0;mod<5;mod++){
-    for(mod=0;mod<1;mod++){
-      lay = 1;
-      lad = 1;
-      det = mod+1;
-      t[0] = tt[mod][0]; t[1] = tt[mod][1]; t[2] = tt[mod][2];
-      GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
-      
-      npar=3;par[0]=3.5;par[1]=0.5*300.0E-4;par[2]=2.0;
-      
-      GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD275and75(npar,par));
-    } // end for det
-    return;
-  } // end if gMC==0
-  
-  if(strcmp(gMC->GetName(),"TGeant3")) {
-    Error("InitAliITSgeom",
-	  "Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
-    return;
-  } // end if
-  
-  cout << "Reading Geometry transformation directly from Geant 3." << endl;
-  ig = new AliITSGeant3Geometry();
-  Char_t names[kltypess][kndeep][4];
-  Int_t itsGeomTreeCopys[kltypess][kndeep];
-  const char *namesA[kltypess][kndeep] = 
-    {{"ALIC","ITSV","IGAR","IAIR","ITST"}}; // Test SSD
-  Int_t itsGeomTreeCopysA[kltypess][kndeep]= {{1,1,1,1,1}};// TestSSD
-  for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++){
-    for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
-    itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
-  } // end for i,j
-  
-  cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
-  for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-  for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++) 
-    strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4);
-  //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
-  mod = 1;   // was 5
-  if(GetITSgeom()!=0) SetITSgeom(0x0);
-
-  nlad[0]=1;
-  ndet[0]=1;
-  AliITSgeom* geom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
-  SetITSgeom(geom);
-  for(typ=1;typ<=kltypess;typ++){
-    for(j=0;j<kndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
-    for(j=0;j<kndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
-    lad = 1;
-    det = 1;
-    for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
-      lnum[2] = cpy;
-      lay = cpy;
-      if(cpy>2 && typ==1) lay = cpy +1;
-      if(typ==2) lay = 3;
-      mod = lay-1;
-      ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
-		      imat,imed);
-      GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
-      //cout<<mod<<" "<<lay<<" "<<lad<<" "<<det<<endl;
-      //cout<<npar<<" "<<par[0]<<" "<<par[1]<<" "<<par[2]<<endl;
-      if(!(GetITSgeom()->IsShapeDefined((Int_t)kSSD)))
-	GetITSgeom()->ReSetShape(kSSD, new AliITSgeomSSD275and75(npar,par));
-	} // end for cpy
-    } // end for typ
+    npar=3;par[0]=3.5;par[1]=0.5*300.0E-4;par[2]=2.0;
+    geom->ReSetShape(kSSD,new AliITSgeomSSD275and75(npar,par));
+    gMC->GetTransformation(kname.Data(),materix);
+    geom->CreateMatrix(0,1,1,1,kSSD,trans,rot);
+    geom->SetTrans(0,materix.GetTranslation());
+    geom->SetRotMatrix(0,materix.GetRotationMatrix());
+    geom->GetGeomMatrix(0)->SetPath(kname.Data());
     return;
 }
 //______________________________________________________________________
@@ -796,7 +714,7 @@ void AliITSvSSD03::StepManager(){
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-    Int_t         copy, id;
+    Int_t         copy=0, id;
     TLorentzVector position, momentum;
     static TLorentzVector position0;
     static Int_t stat0=0;

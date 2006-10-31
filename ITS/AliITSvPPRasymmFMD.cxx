@@ -44,7 +44,6 @@
 
 #include "AliITS.h"
 #include "AliITSDetTypeSim.h"
-//#include "AliITSGeant3Geometry.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSPD.h"

@@ -29,13 +29,13 @@
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include<TLorentzVector.h>
+#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TGeoMatrix.h>
 
 #include "AliRun.h"
-#include "AliITSGeant3Geometry.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSPD.h"
@@ -178,118 +178,124 @@ void AliITSvtest::CreateGeometry(){
 }
 //______________________________________________________________________
 void AliITSvtest::InitAliITSgeom(){
-//     Based on the geometry tree defined in Geant 3.21, this
-// routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
-// sturture.
-//    if(gMC->IsA()!=TGeant3::Class()) {
-  if(strcmp(gMC->GetName(),"TGeant3")) {
-	Error("InitAliITSgeom",
-		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
-	return;
-    } // end if
-    cout << "Reading Geometry transformation directly from Geant 3." << endl;
-    const Int_t kNlayers = 6;
-    const Int_t kndeep = 9;
-    Int_t itsGeomTreeNames[kNlayers][kndeep],lnam[20],lnum[20];
-    Int_t nlad[kNlayers],ndet[kNlayers];
-    Double_t t[3],r[10];
-    Float_t  par[20],att[20];
-    Int_t    npar,natt,idshape,imat,imed;
-    AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
-    Int_t mod,lay,lad,det,i,j,k;
-    const char *names[kNlayers][kndeep] = {
-     {"ALIC","ITSV","ITSD","IT12","I12B","I10B","I107","I101","ITS1"}, // lay=1
-     {"ALIC","ITSV","ITSD","IT12","I12B","I20B","I1D7","I1D1","ITS2"}, // lay=2
-     {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3
-     {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4","    ","    "}, // lay=4
-     {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5","    ","    "}, // lay=5
-     {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6","    ","    "}};// lay=6
-    Int_t itsGeomTreeCopys[kNlayers][kndeep] = {{1,1,1,1,10, 2, 4, 1, 1},// lay=1
-					      {1,1,1,1,10, 4, 4, 1, 1},// lay=2
-					      {1,1,1,1,14, 6, 1, 0, 0},// lay=3
-					      {1,1,1,1,22, 8, 1, 0, 0},// lay=4
-					      {1,1,1,1,34,22, 1, 0, 0},// lay=5
-					      {1,1,1,1,38,25, 1, 0, 0}};//lay=6
+    //     Based on the geometry tree defined in Geant 3.21, this
+    // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
+    // sturture.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    const Int_t knlayers = 6;
+    const Int_t kndeep = 3;
+    const AliITSDetector idet[knlayers]={kSPD,kSPD,kSDD,kSDD,kSSD,kSSDp};
+    const TString names[2][knlayers] = {
+     {"/ALIC_1/ITSV_1/ITSD_1/IT12_1/I12A_%d/I10A_%d/I103_%d/I101_1/ITS1_1", // lay=1
+      "/ALIC_1/ITSV_1/ITSD_1/IT12_1/I12A_%d/I20A_%d/I1D3_%d/I1D1_1/ITS2_1", // lay=2
+      "/ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_%d/I302_%d/ITS3_%d", // lay=3
+      "/ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_%d/I402_%d/ITS4_%d", // lay=4
+      "/ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
+      "/ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_%d/I566_%d/ITS6_%d"},// lay=6
+     {"/ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
+      "/ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
+      "/ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_%d/I302_%d/ITS3_%d", // lay=3
+      "/ALIC_1/ITSV_1/ITSD_1/IT34_1/I005_%d/I402_%d/ITS4_%d", // lay=4
+      "/ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
+      "/ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_%d/I566_%d/ITS6_%d"}
+    };
+    const Int_t itsGeomTreeCopys[knlayers][kndeep]= {{10, 2, 4},// lay=1
+                                                     {10, 4, 4},// lay=2
+                                                     {14, 6, 1},// lay=3
+                                                     {22, 8, 1},// lay=4
+                                                     {34,22, 1},// lay=5
+                                                     {38,25, 1}};//lay=6
+    Int_t       nlad[knlayers],ndet[knlayers];
+    Int_t       mod,lay,lad=0,det=0,i,j,k,cp0,cp1,cp2;
+    TString path,shapeName;
+    TGeoHMatrix matrix;
+    Double_t trans[3]={3*0.0},rot[10]={9*0.0,1.0};
+    TArrayD shapePar;
+    TArrayF shapeParF;
+    Bool_t shapeDefined[4]={kFALSE,kFALSE,kFALSE,kFALSE};
 
-    // Sorry, but this is not very pritty code. It should be replaced
-    // at some point with a version that can search through the geometry
-    // tree its self.
-    cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
-    for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-    for(i=0;i<kNlayers;i++)for(j=0;j<kndeep;j++)
-        strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4); 
-    //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
+    AliDebug(1,"Reading Geometry transformation directly from Modler.");
     mod = 0;
-    for(i=0;i<kNlayers;i++){
-	k = 1;
-	for(j=0;j<kndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
-	    k *= TMath::Abs(itsGeomTreeCopys[i][j]);
-	mod += k;
+    for(i=0;i<knlayers;i++){
+        k = 1;
+        for(j=0;j<kndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
+            k *= TMath::Abs(itsGeomTreeCopys[i][j]);
+        mod += k;
     } // end for i
 
-    if(GetITSgeom()!=0) SetITSgeom(0x0);
+    SetITSgeom(0);
     nlad[0]=20;nlad[1]=40;nlad[2]=14;nlad[3]=22;nlad[4]=34;nlad[5]=38;
-    ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=22;ndet[5]=25;
-    SetITSgeom(new AliITSgeom(0,6,nlad,ndet,mod));
-    mod = -1;
-    for(lay=1;lay<=kNlayers;lay++){
-	for(j=0;j<kndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
-	for(j=0;j<kndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
-	switch (lay){
-	case 1: case 2: // layers 1 and 2 are a bit special
-	    lad = 0;
-	    for(j=1;j<=itsGeomTreeCopys[lay-1][4];j++){
-		lnum[4] = j;
-		for(k=1;k<=itsGeomTreeCopys[lay-1][5];k++){
-		    lad++;
-		    lnum[5] = k;
-		    for(det=1;det<=itsGeomTreeCopys[lay-1][6];det++){
-			lnum[6] = det;
-			mod++;
-			ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,
-					par,att,imat,imed);
-			GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSPD,t,r);
-			if(!(GetITSgeom()->IsShapeDefined((Int_t)kSPD)))
-			    if(fMinorVersion==1){
-                             GetITSgeom()->ReSetShape(kSPD,
-						  new AliITSgeomSPD425Short());
-			    } else if(fMinorVersion==2)
-                             GetITSgeom()->ReSetShape(kSPD,
-						  new AliITSgeomSPD425Short());
-		    } // end for det
-		} // end for k
-            } // end for j
-	    break;
-	case 3: case 4: case 5: case 6: // layers 3-6
-	    lnum[6] = 1;
-	    for(lad=1;lad<=itsGeomTreeCopys[lay-1][4];lad++){
-		lnum[4] = lad;
-		for(det=1;det<=itsGeomTreeCopys[lay-1][5];det++){
-		    lnum[5] = det;
-		    mod++;
-		    ig->GetGeometry(7,lnam,lnum,t,r,idshape,npar,natt,
-				    par,att,imat,imed);
-		    switch (lay){
-		    case 3: case 4:
-			GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSDD,t,r);
-			if(!(GetITSgeom()->IsShapeDefined(kSDD))) 
-			    GetITSgeom()->ReSetShape(kSDD,new AliITSgeomSDD256());
-			    break;
-			case 5:
-			    GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
-			    if(!(GetITSgeom()->IsShapeDefined(kSSD))) 
-				GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD275and75());
-			    break;
-			case 6:
-			    GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
-			    if(!(GetITSgeom()->IsShapeDefined(kSSD))) 
-				GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD75and275());
-			    break;
-			} // end switch
-		} // end for det
-	    } // end for lad
-	    break;
-	} // end switch
+    ndet[0]= 4;ndet[1]= 4;ndet[2]= 6;ndet[3]= 8;ndet[4]=22;ndet[5]=25;
+    AliITSgeom* geom = new AliITSgeom(0,6,nlad,ndet,mod);
+    SetITSgeom(geom);
+    mod = 0;
+    for(lay=1;lay<=knlayers;lay++){
+        for(cp0=1;cp0<=itsGeomTreeCopys[lay-1][0];cp0++){
+            for(cp1=1;cp1<=itsGeomTreeCopys[lay-1][1];cp1++){
+                for(cp2=1;cp2<=itsGeomTreeCopys[lay-1][2];cp2++){
+                    path.Form(names[fMinorVersion-1][lay-1].Data(),
+                              cp0,cp1,cp2);
+                    switch (lay){
+                    case 1:{
+                        det = cp2;
+                        lad = cp1+2*(cp0-1);
+                    }break;
+                    case 2:{
+                        det = cp2;
+                        lad = cp1+4*(cp0-1);
+                    } break;
+                    case 3: case 4: case 5: case 6:{
+                        det = cp1;
+                        lad = cp0;
+                    } break;
+                    } // end switch
+                         //AliInfo(Form("path=%s lay=%d lad=%d det=%d",
+                         //             path.Data(),lay,lad,det));
+                    gMC->GetTransformation(path.Data(),matrix);
+                    gMC->GetShape(path.Data(),shapeName,shapePar);
+                    shapeParF.Set(shapePar.GetSize());
+                    for(i=0;i<shapePar.GetSize();i++) shapeParF[i]=shapePar[i];
+                    geom->CreateMatrix(mod,lay,lad,det,idet[lay-1],trans,rot);
+                    geom->SetTrans(mod,matrix.GetTranslation());
+                    geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
+		    geom->GetGeomMatrix(mod)->SetPath(path.Data());
+                    switch (lay){
+                    case 1: case 2:
+			if(!shapeDefined[kSPD]){
+                        geom->ReSetShape(kSPD,new AliITSgeomSPD425Short(
+                                shapeParF.GetSize(),shapeParF.GetArray()));
+			shapeDefined[kSPD] = kTRUE;
+                    }break;
+                    case 3: case 4:
+			if(!shapeDefined[kSDD]){
+                        geom->ReSetShape(kSDD,new AliITSgeomSDD256(
+                                shapeParF.GetSize(),shapeParF.GetArray()));
+			shapeDefined[kSDD] = kTRUE;
+                    }break;
+                    case 5:
+			if(!shapeDefined[kSSD]){
+                        geom->ReSetShape(kSSD,new AliITSgeomSSD75and275(
+                                shapeParF.GetSize(),shapeParF.GetArray()));
+			shapeDefined[kSSD] = kTRUE;
+                    }break;
+                    case 6:
+			if(!shapeDefined[kSSDp]){
+                        geom->ReSetShape(kSSDp,new AliITSgeomSSD275and75(
+                                shapeParF.GetSize(),shapeParF.GetArray()));
+			shapeDefined[kSSDp] = kTRUE;
+                    }break;
+                    default:{
+                    }break;
+                    } // end switch
+                    mod++;
+                } /// end for cp2
+            } // end for cp1
+        } // end for cp0
     } // end for lay
     return;
 }

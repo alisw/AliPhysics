@@ -20,11 +20,13 @@
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
 #include <TBRIK.h>
+#include <TGeoMatrix.h>
+#include <TVirtualMC.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
+
 #include "AliITShit.h"
 #include "AliITS.h"
 #include "AliITSvSPD02.h"
@@ -553,6 +555,30 @@ void AliITSvSPD02::CreateMaterials2002(){
               epsilSi,stminSi);
 }
 //______________________________________________________________________
+Int_t AliITSvSPD02::DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,Int_t &lad,
+    Int_t &det)const{
+    //     Based on the geometry tree defined in Geant 3.21, this
+    // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
+    // sturture.
+    // Inputs:
+    //    Int_t id   Detector volume id
+    //    Int_t cpy  Detector copy number
+    // Outputs:
+    //    Int_t lay  layer number
+    //    Int_t lad  ladder number
+    //    Int_t det  detector number
+    // Return:
+    //    The module number
+    Int_t mod;
+
+    lad = det = 1;
+    lay = cpy;
+    if(cpy>2 && id==fIdSens[0]) lay = cpy + 1;
+    if(id==fIdSens[1]) lay = 3;
+    mod = lay - 1;
+    return mod;
+}
+//______________________________________________________________________
 void AliITSvSPD02::InitAliITSgeom(){
     //     Based on the geometry tree defined in Geant 3.21, this
     // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
@@ -563,93 +589,39 @@ void AliITSvSPD02::InitAliITSgeom(){
     //    none.
     // Return:
     //    none.
-    const Int_t kltypess = 2;
-    const Int_t knlayers = 5;
-    const Int_t kndeep = 5;
-    Int_t itsGeomTreeNames[kltypess][kndeep],lnam[20],lnum[20];
-    Int_t nlad[knlayers],ndet[knlayers];
-    Double_t t[3],r[10];
-    Float_t  par[20],att[20];
-    Int_t    npar,natt,idshape,imat,imed;
-    AliITSGeant3Geometry *ig=0;
-    Int_t mod=0,typ=0,lay=0,lad=0,det=0,cpy=0,i=0,j=0,k=0;
+    const Int_t kltypess=2;
+    const Int_t knlayers=5;
+    const TString knames[kltypess]=
+        {"ALIC_1/ITSV_1/ITEL_%d/IMB0_1/IMBS_1",//lay=1,2,4,5
+         "ALIC_1/ITSV_1/IDET_%d/ITS0_1/ITST_1"};// lay=3
+    const Int_t kitsGeomTreeCopys[2]={4,1};
+    const Int_t knlad[knlayers]={knlayers*1},kndet[knlayers]={knlayers*1};
+    TString path,shapeName;
+    TGeoHMatrix matrix;
+    TArrayD shapePar;
+    TArrayF shapeParF;
+    Double_t trans[3]={3*0.0},rot[10]={10*0.0};
+    Int_t npar=3,mod,i,j,lay,lad,det,cpy;
+    Float_t par[20];
 
-    if(gMC==0) {// No Monti Carlo to init. Default set fITSgeom by hand
-      if(GetITSgeom()!=0) SetITSgeom(0x0);
-        nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
-        ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
-	AliITSgeom* geom = new AliITSgeom(0,knlayers,nlad,ndet,mod); 
-        SetITSgeom(geom);
-        r[0] = 1.0; r[1] =  0.0; r[2] = 0.0;
-        r[3] = 0.0; r[4] =  0.0; r[5] = 1.0;
-        r[6] = 0.0; r[7] = -1.0; r[8] = 0.0; r[9] = 1.0; // not Unit.
-        Double_t tt[5][3]={{0.0,0.0,-37.9625}, // 0,0,P00Z+.5*chipMiniBusY
-                           {0.0,0.0,-35.9625}, // 0,0,P00Z+2+.5*chipMiniBusY
-                           {0.0,0.0,  2.0150}, // 0,0,P01Z+38+SPDchipY
-                           {0.0,0.0, 36.5375}, //0,0,PdetZ+34.5+.5*chipMiniBusY
-                           {0.0,0.0, 38.5375}};// 0,0,P00Z+2+.5*chipMiniBusY
-        for(mod=0;mod<5;mod++){
-            lay = 1;
-            lad = 1;
-            det = mod+1;
-            t[0] = tt[mod][0]; t[1] = tt[mod][1]; t[2] = tt[mod][2];
-            GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSPD,t,r);
-            npar=3;par[0]=0.64;par[1]=0.5*300.0E-4;par[2]=3.48;
-            GetITSgeom()->ReSetShape(kSPD,new AliITSgeomSPD425Short(npar,par));
-        } // end for det
-        return;
-    } // end if gMC==0
-    if(strcmp(gMC->GetName(),"TGeant3")) {
-        Error("InitAliITSgeom",
-              "Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
-        return;
-    } // end if
-    cout << "Reading Geometry transformation directly from Geant 3." << endl;
-    ig = new AliITSGeant3Geometry();
-    Char_t names[kltypess][kndeep][4];
-    Int_t itsGeomTreeCopys[kltypess][kndeep];
-    const char *namesA[kltypess][kndeep] = {
-        {"ALIC","ITSV","ITEL","IMB0","IMBS"}, // lay=1
-        {"ALIC","ITSV","IDET","ITS0","ITST"}};// Test SPD
-    Int_t itsGeomTreeCopysA[kltypess][kndeep]= {{1,1,4,1,1},// lay=1
-                                                {1,1,1,1,1}};//lay=2 TestSPD
-    for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++){
-        for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
-        itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
-    } // end for i,j
-    // Sorry, but this is not very pritty code. It should be replaced
-    // at some point with a version that can search through the geometry
-    // tree its self.
-    cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
-    for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-    for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++) 
-        strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4);
-    //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
-    mod = 5;
-    if(GetITSgeom()!=0) SetITSgeom(0x0);
-    nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
-    ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
-    AliITSgeom* geom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
+    par[0]=0.64;par[1]=0.5*300.0E-4;par[2]=3.48;
+    mod=5;
+    AliITSgeom* geom = new AliITSgeom(0,knlayers,knlad,kndet,mod);
     SetITSgeom(geom);
-    for(typ=1;typ<=kltypess;typ++){
-        for(j=0;j<kndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
-        for(j=0;j<kndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
-        lad = 1;
-        det = 1;
-        for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
-            lnum[2] = cpy;
-            lay = cpy;
-            if(cpy>2 && typ==1) lay = cpy +1;
-            if(typ==2) lay = 3;
-            mod = lay-1;
-            ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
-                            imat,imed);
-            GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSPD,t,r);
-            if(!(GetITSgeom()->IsShapeDefined((Int_t)kSPD)))
-                GetITSgeom()->ReSetShape(kSPD,
-                                     new AliITSgeomSPD425Short(npar,par));
-        } // end for cpy
-    } // end for typ
+    for(i=0;i<kltypess;i++)for(cpy=1;cpy<=kitsGeomTreeCopys[i];cpy++){
+        path.Form(knames[i].Data(),cpy);
+        gMC->GetTransformation(path.Data(),matrix);
+        gMC->GetShape(path.Data(),shapeName,shapePar);
+        shapeParF.Set(shapePar.GetSize());
+        for(j=0;j<shapePar.GetSize();j++) shapeParF[j]=shapePar[j];
+        mod = DecodeDetector(fIdSens[i],cpy,lay,lad,det);
+        geom->CreateMatrix(mod,lay,lad,det,kSPD,trans,rot);
+        geom->SetTrans(mod,matrix.GetTranslation());
+        geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
+        geom->GetGeomMatrix(mod)->SetPath(path.Data());
+        if(!(geom->IsShapeDefined((Int_t)kSPD)))
+            geom->ReSetShape(kSPD,new AliITSgeomSPD425Short(npar,par));
+    } // end for i,cpy/
     return;
 }
 //______________________________________________________________________
@@ -861,7 +833,7 @@ void AliITSvSPD02::StepManager(){
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-    Int_t         copy, id;
+    Int_t         copy=0, id;
     TLorentzVector position, momentum;
     static TLorentzVector position0;
     static Int_t stat0=0;

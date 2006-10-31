@@ -27,11 +27,11 @@
 #include <TBRIK.h>
 #include <TLorentzVector.h>
 #include <TVirtualMC.h>
+#include <TGeoMatrix.h>
 
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
 #include "AliITShit.h"
 #include "AliITS.h"
@@ -40,7 +40,6 @@
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSSD.h"
 #include "AliITSDetTypeSim.h"
-#include "AliITSresponseSDD.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSCalibrationSSD.h"
@@ -709,96 +708,65 @@ void AliITSvSDD03::InitAliITSgeom(){
     //    none.
     // Return:
     //    none.
+    const Int_t knlayers=12;
+    //   const Int_t kndeep=6;
+    const Int_t kltypess=2;
+    const AliITSDetector kidet[knlayers]={kSSD,kSDD};
+    const TString knames[kltypess]={
+        "/ALIC_1/ITSV_1/ITEL_%d/ITAI_1/IMB0_1/IMBS_1",
+        "/ALIC_1/ITSV_1/IDET_%d/IDAI_1/ITS0_1/ITST_1"};
+    const Int_t kitsGeomTreeCopys[kltypess]={10,2};
+    const Int_t knp=384;
+    const Float_t kpitch=50.E-4;/*cm*/
+    Float_t box[3]={0.5*kpitch*(Float_t)knp,150.E-4,1.0},p[knp+1],n[knp+1];
+    Int_t nlad[knlayers]={knlayers*1};
+    Int_t ndet[knlayers]={knlayers*1};
+    Int_t mod=knlayers,lay=0,lad=0,det=0,i,j,cp0;
+    TString path,shapeName;
+    TGeoHMatrix matrix;
+    Double_t trans[3]={3*0.0},rot[10]={10*0.0};
+    TArrayD shapePar;
+    TArrayF shapeParF;
+    Bool_t isShapeDefined[kltypess]={kltypess*kFALSE};
+    AliITSgeom *geom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
+    if(GetITSgeom()!=0) SetITSgeom(0x0);// delet existing if there.
+    SetITSgeom(geom);
 
-  
-  if(strcmp(gMC->GetName(),"TGeant3")) {
-    Error("InitAliITSgeom",
-	  "Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
+    p[0]=-box[0];
+    n[0]=box[0];
+    // Fill in anode and cathode strip locations (lower edge)
+    for(i=1;i<knp;i++){
+        p[i] =p[i-1]+kpitch;
+        n[i] =n[i-1]-kpitch;
+    } // end for i
+    p[knp]=box[0];
+    n[knp]=-box[0];
+    for(i=0;i<kltypess;i++)for(cp0=1;cp0<=kitsGeomTreeCopys[i];cp0++){
+        mod = DecodeDetector(fIdSens[i],cp0,lay,lad,det);
+        path.Form(knames[i].Data(),cp0);
+        gMC->GetTransformation(path.Data(),matrix);
+        gMC->GetShape(path.Data(),shapeName,shapePar);
+        shapeParF.Set(shapePar.GetSize());
+        for(j=0;j<shapePar.GetSize();j++)shapeParF[j]=shapePar[j];
+        geom->CreateMatrix(mod,lay,lad,det,kidet[i],trans,rot);
+        geom->SetTrans(mod,matrix.GetTranslation());
+        geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
+        geom->GetGeomMatrix(mod)->SetPath(path.Data());
+        switch (kidet[i]){
+        case kSDD: if(!(GetITSgeom()->IsShapeDefined((Int_t)kSDD))){
+            geom->ReSetShape(kSDD,new AliITSgeomSDD256(shapeParF.GetSize(),
+                                                       shapeParF.GetArray()));
+            isShapeDefined[i]=kTRUE;
+        } break;
+        case kSSD:if(!(GetITSgeom()->IsShapeDefined((Int_t)kSSD))){
+            geom->ReSetShape(kSSD,new AliITSgeomSSD(box,0.0,0.0,
+                                                    knp+1,p,knp+1,n));
+            isShapeDefined[i]=kTRUE;
+        } break;
+        default:{} break;
+        } // end switch
+    } // end for i,cp0
     return;
-  } // end if
-  Info("InitAliITSgeom","Reading geometry transformation directly from Geant 3");
-  const Int_t knp=384;
-  const Float_t kpitch=50.E-4;/*cm*/
-  Float_t box[3]={0.5*kpitch*(Float_t)knp,150.E-4,1.0},p[knp+1],n[knp+1];
-  const Int_t kltypess = 2;
-  const Int_t knlayers = 12;
-  const Int_t kndeep = 6;
-  Int_t itsGeomTreeNames[kltypess][kndeep],lnam[20],lnum[20];
-  Int_t nlad[knlayers],ndet[knlayers];
-  Double_t t[3],r[10];
-  Float_t  par[20],att[20];
-  Int_t    npar,natt,idshape,imat,imed,id;
-  AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
-  Int_t mod,typ,lay,lad,det,cpy,i,j,k;
-  Char_t names[kltypess][kndeep][4];
-  Int_t itsGeomTreeCopys[kltypess][kndeep];
-  Char_t *namesA[kltypess][kndeep] = {
-    {"ALIC","ITSV","ITEL","ITAI","IMB0","IMBS"}, 
-    {"ALIC","ITSV","IDET","IDAI","ITS0","ITST"}};
-  Int_t itsGeomTreeCopysA[kltypess][kndeep]= {{1,1,10,1,1,1},
-					    {1,1,2,1,1,1}};
-  for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++){
-    for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
-    itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
-  } // end for i,j
-  p[0]=-box[0];
-  n[0]=box[0];
-  for(i=1;i<knp;i++){// Fill in anode and cathode strip locations (lower edge)
-    p[i] =p[i-1]+kpitch;
-    n[i] =n[i-1]-kpitch;
-  } // end for i
-  p[knp]=box[0];
-  n[knp]=-box[0];
-
-  for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-  for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++) 
-    strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4);
-  //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
-  mod = knlayers;
-  if(GetITSgeom()!=0) SetITSgeom(0x0);
-  for(Int_t iMod=0; iMod<knlayers; iMod++){
-    nlad[iMod]=1; ndet[iMod]=1;
-  }
-  
-  AliITSgeom* geom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
-  SetITSgeom(geom);
-  fIdSens[0] = 0; fIdSens[1] = 1; // Properly reset in Init later.
-  for(typ=1;typ<=kltypess;typ++){
-    for(j=0;j<kndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
-    for(j=0;j<kndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
-    if(typ == 1) id = fIdSens[0];
-    else id = fIdSens[1];
-    lad = 1;
-    det = 1;
-    for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
-      mod = DecodeDetector(id,cpy,lay,lad,det);
-      //lunm[2] is the copy number, from 1 to 10 for SSD
-      // 1,2 for SDD, depending on the module number
-      if(mod<=3) lnum[2]=mod+1;
-      if(mod>=6) lnum[2]=mod-1;
-      if(mod==4) lnum[2]=1;
-      if(mod==5) lnum[2]=2;
-      ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
-		      imat,imed);
-
-      switch (typ){
-      case 2:
-	GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSDD,t,r);
-	if(!(GetITSgeom()->IsShapeDefined((Int_t)kSDD))){
-	  GetITSgeom()->ReSetShape(kSDD,new AliITSgeomSDD256(npar,par));
-	} // end if
-	break;
-      case 1:
-	GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
-	if(!(GetITSgeom()->IsShapeDefined((Int_t)kSSD))){
-	  GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD(box,0.0,0.0,
-						      knp+1,p,knp+1,n));
-	} // end if
-	break;
-      } // end switch
-    } // end for cpy
-  } // end for typ
-  return;
 }
 //______________________________________________________________________
 void AliITSvSDD03::Init(){

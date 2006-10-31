@@ -1,7 +1,11 @@
 SRCS = 	AliITS.cxx \
+		AliITSvSPD02.cxx \
+		AliITSvSDD03.cxx \
 		AliITSvPPRcoarseasymm.cxx \
 		AliITSvPPRasymmFMD.cxx \
 		AliITSvBeamTestITS04.cxx \
+		AliITSvtest.cxx \
+		AliITSvSSD03.cxx \
 		AliITShit.cxx \
 		AliITSDetTypeSim.cxx \
 		AliITSmodule.cxx \

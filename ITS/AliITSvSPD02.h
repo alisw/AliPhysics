@@ -28,6 +28,8 @@ class AliITSvSPD02 : public AliITS{
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
+    virtual Int_t  DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,Int_t &lad,
+				  Int_t &det)const;
     virtual Int_t  IsVersion() const {// returns the ITS version number 
                                       return 1;} 
     virtual void   Init();
