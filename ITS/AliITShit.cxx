@@ -189,7 +189,21 @@ ClassImp(AliITShit)
 //
 ////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
-AliITShit::AliITShit():AliHit(){
+AliITShit::AliITShit():AliHit(),
+fStatus(0),
+fLayer(0),
+fLadder(0),
+fDet(0),
+fPx(0.0),
+fPy(0.0),
+fPz(0.0),
+fDestep(0.0),
+fTof(0.0),
+fStatus0(0),
+fx0(0.0),
+fy0(0.0),
+fz0(0.0),
+ft0(0.0){
     // Default Constructor
     // Zero data member just to be safe.
     // Intputs:
@@ -199,24 +213,24 @@ AliITShit::AliITShit():AliHit(){
     // Return:
     //    A default created AliITShit class.
 
-    fStatus = 0; // Track Status
-    fLayer  = 0;  // Layer number
-    fLadder = 0; // Ladder number
-    fDet    = 0;    // Detector number  
-    fPx     = 0.0;     // PX of particle at the point of the hit
-    fPy     = 0.0;     // PY of particle at the point of the hit
-    fPz     = 0.0;     // PZ of particle at the point of the hit
-    fDestep = 0.0; // Energy deposited in the current step
-    fTof    = 0.0;    // Time of flight at the point of the hit
-    fStatus0 = 0; // zero status bit by default.
-    fx0     = 0.0;     // Starting point of this step
-    fy0     = 0.0;     // Starting point of this step
-    fz0     = 0.0;     // Starting point of this step
-    ft0     = 0.0;     // Starting point of this step
 }
 AliITShit::AliITShit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,
 		     Float_t tof,TLorentzVector &x,TLorentzVector &x0,
-		     TLorentzVector &p) : AliHit(shunt, track){
+		     TLorentzVector &p) : AliHit(shunt, track),
+fStatus(vol[3]),
+fLayer(vol[0]),
+fLadder(vol[2]),
+fDet(vol[1]),
+fPx(p.Px()),
+fPy(p.Py()),
+fPz(p.Pz()),
+fDestep(edep),
+fTof(tof),
+fStatus0(vol[4]),
+fx0(x0.X()),
+fy0(x0.Y()),
+fz0(x0.Z()),
+ft0(x0.T()){
 ////////////////////////////////////////////////////////////////////////
 // Create ITS hit
 //     The creator of the AliITShit class. The variables shunt and
@@ -237,27 +251,29 @@ AliITShit::AliITShit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,
     // Return:
     //    A default created AliITShit class.
 
-    fLayer      = vol[0];  // Layer number
-    fLadder     = vol[2];  // Ladder number
-    fDet        = vol[1];  // Detector number
-    fStatus     = vol[3];  // Track status flags
-    fStatus0    = vol[4];  // Track status flag for start position.
+
+
     fX          = x.X();   // Track X global position
     fY          = x.Y();   // Track Y global position
     fZ          = x.Z();   // Track Z global position
-    fPx         = p.Px();  // Track X Momentum
-    fPy         = p.Py();  // Track Y Momentum
-    fPz         = p.Pz();  // Track Z Momentum
-    fDestep     = edep;    // Track dE/dx for this step
-    fTof        = tof   ;  // Track Time of Flight for this step
-    fx0         = x0.X();  // Track X global position
-    fy0         = x0.Y();  // Track Y global position
-    fz0         = x0.Z();  // Track Z global position
-    ft0         = x0.T();     // Starting point of this step
 }
 //______________________________________________________________________
 AliITShit::AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-    AliHit(shunt, track){
+    AliHit(shunt, track),
+fStatus(vol[3]),
+fLayer(vol[0]),
+fLadder(vol[2]),
+fDet(vol[1]),
+fPx(hits[3]),
+fPy(hits[4]),
+fPz(hits[5]),
+fDestep(hits[6]),
+fTof(hits[7]),
+fStatus0(0),
+fx0(0.0),
+fy0(0.0),
+fz0(0.0),
+ft0(0.0){
 ////////////////////////////////////////////////////////////////////////
 // Create ITS hit
 //     The creator of the AliITShit class. The variables shunt and
@@ -289,23 +305,9 @@ AliITShit::AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
     //    none.
     // Return:
     //    A standard created AliITShit class.
-  fLayer      = vol[0];   // Layer number
-  fLadder     = vol[2];   // Ladder number
-  fDet        = vol[1];   // Detector number
-  fStatus     = vol[3];   // Track status flags
   fX          = hits[0];  // Track X global position
   fY          = hits[1];  // Track Y global position
   fZ          = hits[2];  // Track Z global position
-  fPx         = hits[3];  // Track X Momentum
-  fPy         = hits[4];  // Track Y Momentum
-  fPz         = hits[5];  // Track Z Momentum
-  fDestep     = hits[6];  // Track dE/dx for this step
-  fTof        = hits[7];  // Track Time of Flight for this step
-  fStatus0 = 0;// Track Status of Starting point
-  fx0 = 0.0;     // Starting point of this step
-  fy0 = 0.0;     // Starting point of this step
-  fz0 = 0.0;     // Starting point of this step
-  ft0 = 0.0;     // Starting point of this step
 }
 //______________________________________________________________________
 void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z){

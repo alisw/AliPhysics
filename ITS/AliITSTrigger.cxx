@@ -30,29 +30,32 @@
 //______________________________________________________________________
 ClassImp(AliITSTrigger)
 ////////////////////////////////////////////////////////////////////////
-//
-// Version 1
-// Modified by D. Elia, C. Jorgensen
-// March 2006
-//
-// Version 0
-// Written by J. Conrad, E. Lopez Torres 
-// October 2005
-//
-// AliITSTrigger: implementation of the SPD Fast-OR based triggers.
-//
+//                                                                    //
+// Version 1                                                          //
+// Modified by D. Elia, C. Jorgensen                                  //
+// March 2006                                                         //
+//                                                                    //
+// Version 0                                                          //
+// Written by J. Conrad, E. Lopez Torres                              //
+// October 2005                                                       //
+//                                                                    //
+// AliITSTrigger: implementation of the SPD Fast-OR based triggers.   //
+//                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
 AliITSTrigger::AliITSTrigger()
-  : AliTriggerDetector()
-{
-   SetName("ITS");
-   CreateInputs();
+  : AliTriggerDetector(),
+fGlobalFOThreshold(1),
+fHighMultFOThreshold(150){
 
-   // set parameters to define trigger condition thresholds
-   fGlobalFOThreshold = 1;
-   fHighMultFOThreshold = 150; 
+  //standard constructor
+  SetName("ITS");
+  CreateInputs();
+
+  // set parameters to define trigger condition thresholds
+  //fGlobalFOThreshold = 1;
+  //fHighMultFOThreshold = 150; 
 }
 
 //______________________________________________________________________

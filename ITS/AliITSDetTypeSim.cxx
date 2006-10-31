@@ -158,23 +158,35 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     fDigits=0;
 }
 //----------------------------------------------------------------------
-AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &source) : TObject(source){
+AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &source) : TObject(source),
+fSimulation(source.fSimulation),   // [NDet]
+fSegmentation(source.fSegmentation), // [NDet]
+fCalibration(source.fCalibration),     // [NMod]
+fPreProcess(source.fPreProcess),   // [] e.g. Fill fHitModule with hits
+fPostProcess(source.fPostProcess),  // [] e.g. Wright Raw data
+fNSDigits(source.fNSDigits),    //! number of SDigits
+fSDigits(source.fSDigits),      //! [NMod][NSDigits]
+fNDigits(source.fNDigits),     //! number of Digits
+fRunNumber(source.fRunNumber),   //! Run number (to access DB)
+fDigits(source.fDigits),       //! [NMod][NDigits]
+fHitClassName(source.fHitClassName), // String with Hit class name.
+fSDigClassName(source.fSDigClassName),// String with SDigit class name.
+fDigClassName(), // String with digit class name.
+fLoader(source.fLoader),      // local pointer to loader
+fFirstcall(source.fFirstcall)
+{
     // Copy Constructor for object AliITSDetTypeSim not allowed
-
-    if(this==&source) return;
-    Error("Copy constructor",
-	  "You are not allowed to make a copy of the AliITSDetTypeSim");
-    exit(1);
+  for(Int_t i=0;i<fgkNdettypes;i++){
+    fDigClassName[i] = source.fDigClassName[i];
+  }
 }
 //----------------------------------------------------------------------
 AliITSDetTypeSim& AliITSDetTypeSim::operator=(const AliITSDetTypeSim &source){
     // The = operator for object AliITSDetTypeSim
  
-    if(&source==this) return *this;
-    Error("operator=",
-	  "You are not allowed to make a copy of the AliITSDetTypeSIm");
-    exit(1);
-    return *this;
+  this->~AliITSDetTypeSim();
+  new(this) AliITSDetTypeSim(source);
+  return *this;
 }
 
 //______________________________________________________________________

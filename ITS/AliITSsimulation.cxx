@@ -27,6 +27,7 @@ ClassImp(AliITSsimulation)
 
 //______________________________________________________________________
 AliITSsimulation::AliITSsimulation(): TObject(),
+fDetType(0),
 fpList(0),
 fModule(0),
 fEvent(0),
@@ -38,10 +39,10 @@ fDebug(0){
     //    none.
     // Return:
     //    a default constructed AliITSsimulation class
-  fDetType = 0;
 }
 //______________________________________________________________________
 AliITSsimulation::AliITSsimulation(AliITSDetTypeSim *dettyp): TObject(),
+fDetType(dettyp),
 fpList(0),
 fModule(0),
 fEvent(0),
@@ -53,7 +54,6 @@ fDebug(0){
     //    none.
     // Return:
     //    a default constructed AliITSsimulation class
-  fDetType = dettyp;
 }
 //__________________________________________________________________________
 AliITSsimulation::~AliITSsimulation(){
@@ -71,7 +71,12 @@ AliITSsimulation::~AliITSsimulation(){
     }
    }
 //__________________________________________________________________________
-AliITSsimulation::AliITSsimulation(const AliITSsimulation &s) : TObject(s){
+AliITSsimulation::AliITSsimulation(const AliITSsimulation &s) : TObject(s),
+fDetType(s.fDetType),
+fpList(s.fpList),
+fModule(s.fModule),
+fEvent(s.fEvent),
+fDebug(s.fDebug){
     //     Copy Constructor
     // Inputs:
     //    const AliITSsimulation &s  simulation class to copy from
@@ -81,8 +86,6 @@ AliITSsimulation::AliITSsimulation(const AliITSsimulation &s) : TObject(s){
     //    a standard constructed AliITSsimulation class with values the same
     //    as that of s.
  
-    *this = s;
-    return;
 }
 
 //_________________________________________________________________________

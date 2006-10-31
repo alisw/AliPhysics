@@ -34,7 +34,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     //Standard Constructor
     AliITSsimulationSDD(AliITSDetTypeSim* dettyp);
     // Copy operator
-    AliITSsimulationSDD(AliITSsimulationSDD &source);
+    AliITSsimulationSDD(const AliITSsimulationSDD &source);
     virtual ~AliITSsimulationSDD(); // Destructor
     // = operator
     AliITSsimulationSDD& operator=(const AliITSsimulationSDD &source);

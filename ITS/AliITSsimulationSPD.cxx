@@ -142,7 +142,10 @@ AliITSsimulationSPD::~AliITSsimulationSPD(){
 //______________________________________________________________________
 AliITSsimulationSPD::AliITSsimulationSPD(const 
 						   AliITSsimulationSPD 
-						   &s) : AliITSsimulation(s){
+						   &s) : AliITSsimulation(s),
+fHis(s.fHis),
+fSPDname(s.fSPDname),
+fCoupling(s.fCoupling){
     //     Copy Constructor
     // Inputs:
     //    AliITSsimulationSPD &s The original class for which
@@ -151,8 +154,6 @@ AliITSsimulationSPD::AliITSsimulationSPD(const
     //    none.
     // Return:
 
-    *this = s;
-    return;
 }
 //______________________________________________________________________
 AliITSsimulationSPD&  AliITSsimulationSPD::operator=(const 

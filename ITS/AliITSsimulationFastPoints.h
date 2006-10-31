@@ -14,8 +14,9 @@ class AliITSsimulationFastPoints : public AliITSsimulation
 {
 
 public:
-  AliITSsimulationFastPoints(); // default constructor
+  AliITSsimulationFastPoints(); // default constructor  
   virtual ~AliITSsimulationFastPoints() {;} 
+  virtual AliITSsimulation& operator=(const AliITSsimulation&){return *this;}
   void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm, 
 			   TClonesArray* recp);
   void CreateFastRecPoints(Int_t module,TClonesArray* recp);

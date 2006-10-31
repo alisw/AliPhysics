@@ -57,7 +57,7 @@ public:
 
 protected:
   AliITSMultReconstructor(const AliITSMultReconstructor& mr);
-  AliITSMultReconstructor& operator=(const AliITSMultReconstructor& /* mr */);
+  AliITSMultReconstructor& operator=(const AliITSMultReconstructor& mr);
 
   AliITSgeom*   fGeometry;            // ITS geometry
   

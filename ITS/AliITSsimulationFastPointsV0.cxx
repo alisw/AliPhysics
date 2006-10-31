@@ -29,31 +29,34 @@
 
 ClassImp(AliITSsimulationFastPointsV0)
 
-AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0()
-{
+AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0():
+fNrecp(0),
+fSx(0),
+fSz(0){
   // default constructor
-  fSx = 0;
-  fSz = 0;
 }
-AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const char *dataType){
+AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const char *dataType):
+fNrecp(0),
+fSx(0),
+fSz(0){
   //constructor
   Info("AliITSsimulationFastPointsV0","Standard constructor %s",dataType);
   fSx = new AliITSstatistics(2);
   fSz = new AliITSstatistics(2);
 }
 //______________________________________________________________________
-AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 &/*rec*/):AliITSsimulation(/*rec*/){
+AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 & rec):AliITSsimulation(rec),
+fNrecp(rec.fNrecp),
+fSx(rec.fSx),
+fSz(rec.fSz){
     // Copy constructor. 
 
-  Error("Copy constructor","Copy constructor not allowed");
-  
 }
 //______________________________________________________________________
-AliITSsimulationFastPointsV0& AliITSsimulationFastPointsV0::operator=(const AliITSsimulationFastPointsV0& /*source*/){
-    // Assignment operator. This is a function which is not allowed to be
-    // done.
-    Error("operator=","Assignment operator not allowed\n");
-    return *this; 
+AliITSsimulationFastPointsV0& AliITSsimulationFastPointsV0::operator=(const AliITSsimulationFastPointsV0&  /*source*/){
+    // Assignment operator
+  Error("operator=","Assignment operator not allowed");
+  return *this;
 }
 
 //----------------------------------------------------------

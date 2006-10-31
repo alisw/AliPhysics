@@ -51,7 +51,11 @@
 ClassImp(AliITSvPPRcoarseasymm)
  
 //_____________________________________________________________________________
-AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm() {
+AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm():
+fMajorVersion(9),
+fMinorVersion(0),
+fRails(0),
+fSuppMat(0) {
 ////////////////////////////////////////////////////////////////////////
 //    Standard default constructor for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
@@ -59,11 +63,13 @@ AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm() {
     fIdN = 0;
     fIdName = 0;
     fIdSens    = 0;
-    fMajorVersion = 9;
-    fMinorVersion = 0;
 }
 //_____________________________________________________________________________
-AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const char *name, const char *title) : AliITS(name, title){
+AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const char *name, const char *title) : AliITS(name, title),
+fMajorVersion(9),
+fMinorVersion(0),
+fRails(0),
+fSuppMat(0) {
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
@@ -78,18 +84,17 @@ AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const char *name, const char *title
     fIdName[5] = "ITS6";
     fIdSens    = new Int_t[fIdN];
     for (Int_t i=0;i<fIdN;i++) fIdSens[i]=0;
-    fMajorVersion = 9;
-    fMinorVersion = 0;
 }
 //____________________________________________________________________________
 AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const AliITSvPPRcoarseasymm &s) :
- AliITS(s){
+ AliITS(s),
+fMajorVersion(s.fMajorVersion),
+fMinorVersion(s.fMinorVersion),
+fRails(s.fRails),
+fSuppMat(s.fSuppMat){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor for ITS version 6.
 ////////////////////////////////////////////////////////////////////////
-    if(&s == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSvPPRcoarseasymm");
-    return;
 }
 //_____________________________________________________________________________
 AliITSvPPRcoarseasymm& AliITSvPPRcoarseasymm::operator=(const AliITSvPPRcoarseasymm &source){

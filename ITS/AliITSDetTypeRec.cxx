@@ -142,23 +142,39 @@ fFirstcall(kTRUE){
   SelectVertexer(" "); 
   SetRunNumber();
 }
-/*
+
 //______________________________________________________________________
-AliITSDetTypeRec::AliITSDetTypeRec(const AliITSDetTypeRec & rec):TObject(rec)
+AliITSDetTypeRec::AliITSDetTypeRec(const AliITSDetTypeRec & rec):TObject(rec),
+fNMod(rec.fNMod),
+fReconstruction(rec.fReconstruction),
+fSegmentation(rec.fSegmentation),
+fCalibration(rec.fCalibration),
+fPreProcess(rec.fPreProcess),
+fPostProcess(rec.fPostProcess),
+fDigits(rec.fDigits),
+fNdtype(rec.fNdtype),
+fCtype(rec.fCtype),
+fNctype(rec.fNctype),
+fRecPoints(rec.fRecPoints),
+fNRecPoints(rec.fNRecPoints),
+fSelectedVertexer(rec.fSelectedVertexer),
+fLoader(rec.fLoader),
+fRunNumber(rec.fRunNumber),
+fFirstcall(rec.fFirstcall)
 {
 
   // Copy constructor. 
-  Error("Copy constructor","Copy constructor not allowed");
+
 }
 //______________________________________________________________________
 AliITSDetTypeRec& AliITSDetTypeRec::operator=(const AliITSDetTypeRec& source){
-    // Assignment operator. This is a function which is not allowed to be
-    // done.
-    Error("operator=","Assignment operator not allowed\n");
-    return *this; 
+    // Assignment operator. 
+    this->~AliITSDetTypeRec();
+    new(this) AliITSDetTypeRec(source);
+    return *this;
 
 }
-*/
+
 //_____________________________________________________________________
 AliITSDetTypeRec::~AliITSDetTypeRec(){
   //Destructor

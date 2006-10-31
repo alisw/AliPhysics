@@ -18,29 +18,30 @@
 
 ClassImp(AliITSTableSSD)
 ////////////////////////////////////////////////////////////////////////
-// Version: 0
-// Origin: Massimo Masera
-// March 2002
-//
+// Version: 0                                                         //
+// Origin: Massimo Masera                                             //
+// March 2002                                                         //
+//                                                                    //
 // AliITSTableSSD is used by AliITSsimulationSSD class to fill the AliITSpList
 // object starting from the map with energy depositions
-
+////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------
-AliITSTableSSD::AliITSTableSSD() : TObject(){
+AliITSTableSSD::AliITSTableSSD() : TObject(),
+fDim(0),
+fArray(0){
   // Default Constructor
-  fDim=0;
-  fArray=0;
   for(Int_t i=0;i<2;i++){
     fCurrUse[i]=0;
     fCurrFil[i]=0;
   }
 }
 //----------------------------------------------------------------------
-AliITSTableSSD::AliITSTableSSD(const AliITSTableSSD & source):TObject(source){
+AliITSTableSSD::AliITSTableSSD(const AliITSTableSSD & source):TObject(source),
+fDim(source.fDim),
+fArray(source.fArray){
   // Copy constructor
 
     if(this == &source) return;
-    fDim=source.fDim;
     fArray = new Int_t [fDim];
     fCurrUse[0]=(source.fCurrUse)[0];
     fCurrUse[1]=(source.fCurrUse)[1];
@@ -63,7 +64,9 @@ AliITSTableSSD& AliITSTableSSD::operator=(const AliITSTableSSD & source){
     return *this;
 }
 //----------------------------------------------------------------------
-AliITSTableSSD::AliITSTableSSD(Int_t noelem) : TObject(){
+AliITSTableSSD::AliITSTableSSD(Int_t noelem) : TObject(),
+fDim(0),
+fArray(0){
   // Standard constructor
   fDim=noelem*2;
   fArray = new Int_t [fDim];
@@ -102,6 +105,7 @@ void AliITSTableSSD::Add(Int_t side,Int_t strip){
 }
 //----------------------------------------------------------------------
 void AliITSTableSSD::Clear(){
+  //clear arrays
   fCurrUse[0]= 0;
   fCurrUse[1] = 0;
   fCurrFil[0]= 0;

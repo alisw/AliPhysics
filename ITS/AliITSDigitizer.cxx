@@ -42,7 +42,13 @@
 ClassImp(AliITSDigitizer)
 
 //______________________________________________________________________
-AliITSDigitizer::AliITSDigitizer() : AliDigitizer(){
+AliITSDigitizer::AliITSDigitizer() : AliDigitizer(),
+fITS(0),
+fModActive(0),
+fInit(kFALSE),
+fRoif(-1),
+fRoiifile(0),
+fFlagFirstEv(kTRUE){
     // Default constructor. Assign fITS since it is never written out from
     // here. 
     // Inputs:
@@ -52,15 +58,15 @@ AliITSDigitizer::AliITSDigitizer() : AliDigitizer(){
     // Return:
     //      A blank AliITSDigitizer class.
 
-    fITS      = 0;
-    fModActive   = 0;
-    fRoif     = -1;
-    fRoiifile = 0;
-    fInit     = kFALSE;
-    fFlagFirstEv =kTRUE;
 }
 //______________________________________________________________________
-AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
+AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr),
+fITS(0),
+fModActive(0),
+fInit(kFALSE),
+fRoif(-1),
+fRoiifile(0),
+fFlagFirstEv(kTRUE){
     // Standard constructor. Assign fITS since it is never written out from
     // here. 
     // Inputs:
@@ -70,21 +76,15 @@ AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
     // Return:
     //      An AliItSDigitizer class.
 
-    fITS      = 0;
-    fModActive   = 0;
-    fRoif     = -1;
-    fRoiifile = 0;
-    fInit     = kFALSE;
-    fFlagFirstEv =kTRUE;
 }
 
 //______________________________________________________________________
-AliITSDigitizer::AliITSDigitizer(const AliITSDigitizer &/*rec*/):AliDigitizer(/*rec*/){
+//AliITSDigitizer::AliITSDigitizer(const AliITSDigitizer &/*rec*/):AliDigitizer(/*rec*/){
     // Copy constructor. 
 
-  Error("Copy constructor","Copy constructor not allowed");
+//  Error("Copy constructor","Copy constructor not allowed");
   
-}
+//}
 //______________________________________________________________________
 AliITSDigitizer& AliITSDigitizer::operator=(const AliITSDigitizer& /*source*/){
     // Assignment operator. This is a function which is not allowed to be

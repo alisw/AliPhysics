@@ -26,36 +26,46 @@ ClassImp(AliITSBeamTestDigitizer)
 
 
 //_____________________________________________________________
-AliITSBeamTestDigitizer::AliITSBeamTestDigitizer():TTask() 
-{  
+AliITSBeamTestDigitizer::AliITSBeamTestDigitizer():TTask(), 
+fEvIn(0),
+fEvFin(0),
+fRunNumber(-1),
+fDATEEvType(7),
+fFlagHeader(kTRUE),
+fFlagInit(kFALSE),
+fOptDate(kFALSE),
+fDigitsFileName(0),
+fRawdataFileName(0),
+fPeriod(kNov04),
+fRunLoader(0),
+fLoader(0),
+fHeader(0){  
   //
   // Default constructor
   //
-  fRunLoader = 0;
-  fLoader =0;
-  fEvIn=0;
-  fEvFin=0;
-  fFlagHeader=kTRUE;
-  fDATEEvType=7;
-  fRunNumber=-1;
   SetFlagInit();
   SetOptDate();
-  fPeriod=kNov04;
 } 
 
 //_____________________________________________________________
-  AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Char_t* opt,const char* filename):TTask(name,title) 
+AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Char_t* opt,const char* filename):TTask(name,title),
+fEvIn(0),
+fEvFin(0),
+fRunNumber(-1),
+fDATEEvType(7),
+fFlagHeader(kTRUE),
+fFlagInit(kFALSE),
+fOptDate(kFALSE),
+fDigitsFileName(0),
+fRawdataFileName(0),
+fPeriod(kNov04),
+fRunLoader(0),
+fLoader(0),
+fHeader(0) 
 {  
   //
   // Standard constructor 
   //
-  fRunLoader=0;
-  fLoader=0;
-  fEvIn=0;
-  fEvFin=0;
-  fDATEEvType=7;
-  fFlagHeader=kTRUE;
-  fRunNumber=-1;
   SetOptDate();
 
   TString choice(opt);
@@ -67,19 +77,23 @@ AliITSBeamTestDigitizer::AliITSBeamTestDigitizer():TTask()
  } 
 
 //_____________________________________________________________
-  AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Int_t run, Char_t* opt,const char* filename):TTask(name,title) 
-
-{  
+AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const Text_t* name, const Text_t* title, Int_t run, Char_t* opt,const char* filename):TTask(name,title), 
+fEvIn(0),
+fEvFin(0),
+fRunNumber(run),
+fDATEEvType(7),
+fFlagHeader(kTRUE),
+fFlagInit(kFALSE),
+fOptDate(kFALSE),
+fDigitsFileName(0),
+fRawdataFileName(0),
+fPeriod(kNov04),
+fRunLoader(0),
+fLoader(0),
+fHeader(0){  
   //
   // Constructor 
   //
-  fRunLoader=0;
-  fLoader=0;
-  fEvIn=0;
-  fEvFin=0;
-  fDATEEvType=7;
-  fFlagHeader=kTRUE;
-  fRunNumber=run;
   SetOptDate();
   TString choice(opt);
   Bool_t aug04 = choice.Contains("Aug04");
@@ -125,24 +139,28 @@ void AliITSBeamTestDigitizer::Init(const char* filename){
 
 
 //______________________________________________________________________
-AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const AliITSBeamTestDigitizer &bt):TTask(bt){
+AliITSBeamTestDigitizer::AliITSBeamTestDigitizer(const AliITSBeamTestDigitizer &bt):TTask(bt),
+fEvIn(bt.fEvIn),
+fEvFin(bt.fEvFin),
+fRunNumber(bt.fRunNumber),
+fDATEEvType(bt.fDATEEvType),
+fFlagHeader(bt.fFlagHeader),
+fFlagInit(bt.fFlagInit),
+fOptDate(bt.fOptDate),
+fDigitsFileName(bt.fDigitsFileName),
+fRawdataFileName(bt.fRawdataFileName),
+fPeriod(bt.fPeriod),
+fRunLoader(bt.fRunLoader),
+fLoader(bt.fLoader),
+fHeader(bt.fHeader){
   // Copy constructor. 
-  //not allowed
-  if(this==&bt) return;
-  Error("Copy constructor",
-	"You are not allowed to make a copy of the AliITSBeamTestDigitizer");
-  exit(1);
-
 }
 //______________________________________________________________________
 AliITSBeamTestDigitizer& AliITSBeamTestDigitizer::operator=(const AliITSBeamTestDigitizer &source){
-    // Assignment operator. This is a function which is not allowed to be
-    // done to the ITS beam test digitizer. It exits with an error.
-    // Inputs:
-    if(this==&source) return *this;
-    Error("operator=","You are not allowed to make a copy of the AliITSBeamTestDigitizer");
-    exit(1);
-    return *this; //fake return
+    // Assignment operator. 
+  this->~AliITSBeamTestDigitizer();
+  new(this) AliITSBeamTestDigitizer(source);
+  return *this;
 }
 
 

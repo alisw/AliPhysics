@@ -33,10 +33,10 @@ class AliITSvPPRcoarseasymm : public AliITS {
     virtual void   SetSupportMaterial(Int_t v=0){ 
 	 // Set material of the services supports
 	 fSuppMat = v;}	 		     
-    virtual Int_t GetRails(){ 
+    virtual Int_t GetRails() const { 
 	 // Get flag for rails
 	 return fRails;}
-    virtual Int_t GetSupportMaterial(){ 
+    virtual Int_t GetSupportMaterial() const{ 
 	 // Get material of the services supports 
 	 return fSuppMat;}	 	  
     virtual Int_t GetMajorVersion() const {// return Major Version Number

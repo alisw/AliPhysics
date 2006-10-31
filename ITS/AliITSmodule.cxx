@@ -40,20 +40,24 @@ ClassImp(AliITSmodule)
 // Constructors and deconstructor
 //________________________________________________________________________
 //
-AliITSmodule::AliITSmodule() {
+AliITSmodule::AliITSmodule():
+fITS(0),
+fIndex(0),
+fHitsM(0),
+fTrackIndex(0),
+fHitIndex(0) {
     // constructor
-
-    fHitsM       = 0;
-    fTrackIndex  = 0;
-    fHitIndex    = 0;
-    fITS         = 0;
 
 }
 //_________________________________________________________________________
-AliITSmodule::AliITSmodule(Int_t index) {
+AliITSmodule::AliITSmodule(Int_t index):
+fITS(0),
+fIndex(index),
+fHitsM(0),
+fTrackIndex(0),
+fHitIndex(0) {
   // constructor
 
-    fIndex      = index;
     fHitsM      = new TObjArray();
     fTrackIndex = new TArrayI(16);
     fHitIndex   = new TArrayI(16);
@@ -74,22 +78,25 @@ AliITSmodule::~AliITSmodule() {
     fITS = 0; // We don't delete this pointer since it is just a copy.
 }
 //____________________________________________________________________________
-AliITSmodule::AliITSmodule(const AliITSmodule &source):TObject(source){
+AliITSmodule::AliITSmodule(const AliITSmodule &source):TObject(source),
+fITS(source.fITS),
+fIndex(source.fIndex),
+fHitsM(source.fHitsM),
+fTrackIndex(source.fTrackIndex),
+fHitIndex(source.fHitIndex){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor 
 ////////////////////////////////////////////////////////////////////////
-  Error("AliITSmodule","AliITSmodule class has not to be copied! Exit.");
-  exit(1);
+
 }
 //_____________________________________________________________________________
 AliITSmodule& AliITSmodule::operator=(const AliITSmodule &source){
 ////////////////////////////////////////////////////////////////////////
 //    Assignment operator 
 ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return *this;
-    Error("AliITSmodule","AliITSmodule class has not to be copied! Exit.");
-    exit(1);
-    return *this; // fake return neded on Sun
+  this->~AliITSmodule();
+  new(this) AliITSmodule(source);
+  return *this;
 }
 //_________________________________________________________________________
 // 

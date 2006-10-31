@@ -1,5 +1,7 @@
 /////////////////////////////////////////
 // Class for SDD digits preprocessing  //
+//                                     //
+//                                     //
 ////////////////////////////////////////
 
 #include "AliITSPreprocessorSDD.h"
@@ -13,9 +15,8 @@
 
 const Int_t AliITSPreprocessorSDD::fgkNumberOfSDD = 260;
 const Int_t AliITSPreprocessorSDD::fgkNumberOfChannels = 512;
-const char* AliITSPreprocessorSDD::fgkNameHistoPedestals ="hpedestal";
-const char* AliITSPreprocessorSDD::fgkNameHistoNoise="hnoise";
-
+const TString AliITSPreprocessorSDD::fgkNameHistoPedestals = "hpedestal";
+const TString AliITSPreprocessorSDD::fgkNameHistoNoise = "hnoise";
 ClassImp(AliITSPreprocessorSDD)
 
 
@@ -74,8 +75,8 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
     for(Int_t ich=0;ich<numOfBadChannels[imod];ich++){
       cal->SetBadChannel(ich,badCh[imod][ich]);
     }
-    sprintf(namehisto,"%s_%d",fgkNameHistoPedestals,imod);
-    sprintf(namehisto2,"%s_%d",fgkNameHistoNoise,imod);
+    sprintf(namehisto,"%s_%d",fgkNameHistoPedestals.Data(),imod);
+    sprintf(namehisto2,"%s_%d",fgkNameHistoNoise.Data(),imod);
     TH1F* hbas = (TH1F*)f1->Get(namehisto);
     TH1F* hnoi = (TH1F*)f2->Get(namehisto2);
     for(Int_t ien=0;ien<fgkNumberOfChannels;ien++){

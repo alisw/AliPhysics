@@ -16,8 +16,8 @@ class AliITSstatistics : public TObject {
  public:
   AliITSstatistics();
   AliITSstatistics(Int_t order);
-  AliITSstatistics(AliITSstatistics &source); // copy  constructor
-  AliITSstatistics& operator=(AliITSstatistics &source); // operator=
+  AliITSstatistics(const AliITSstatistics &source); // copy  constructor
+  AliITSstatistics& operator=(const AliITSstatistics &source); // operator=
   virtual ~AliITSstatistics();
   void Reset();
   void AddValue(Double_t x,Double_t w);
@@ -27,16 +27,16 @@ class AliITSstatistics : public TObject {
   Double_t GetNth(Int_t order);
   Double_t GetMean() {// returns the mean
     return GetNth(1);};
-  Int_t GetN(){// returns the number of entries
+  Int_t GetN() const{// returns the number of entries
     return fN;
   };
-  Int_t GetOrder(){// returns the order of the moment of the distribution
+  Int_t GetOrder() const {// returns the order of the moment of the distribution
     return fOrder;
   };
-  Double_t GetXN(Int_t order){// returns X^N
+  Double_t GetXN(Int_t order) const{// returns X^N
     return fX[order-1];
   };
-  Double_t GetWN(Int_t order){// returns W^N
+  Double_t GetWN(Int_t order)const {// returns W^N
     return fW[order-1];
   };
   Double_t GetRMS();

@@ -131,8 +131,10 @@ fAnodeFire(0),
 fHis(0),
 fD(),
 fT1(),
+fT2(),
 fTol(),
 fTreeB(0),
+fParam(0),
 fFileName(),
 fFlag(kFALSE),
 fCheckNoise(kFALSE),
@@ -149,14 +151,36 @@ fScaleSize(0){
     SetCheckNoise();
 }
 //______________________________________________________________________
-AliITSsimulationSDD::AliITSsimulationSDD(AliITSsimulationSDD &source) :
-    AliITSsimulation(source){
+AliITSsimulationSDD::AliITSsimulationSDD(const AliITSsimulationSDD &source) :
+    AliITSsimulation(source),
+fITS(source.fITS),
+fHitMap2(source.fHitMap2),
+fHitSigMap2(source.fHitSigMap2),
+fHitNoiMap2(source.fHitNoiMap2),
+fStream(source.fStream),
+fElectronics(source.fElectronics),
+fInZR(source.fInZR),
+fInZI(source.fInZI),
+fOutZR(source.fOutZR),
+fOutZI(source.fOutZI),
+fAnodeFire(source.fAnodeFire),
+fHis(source.fHis),
+fD(source.fD),
+fT1(source.fT1),
+fT2(source.fT2),
+fTol(source.fTol),
+fTreeB(source.fTreeB),
+fParam(source.fParam),
+fFileName(source.fFileName),
+fFlag(source.fFlag),
+fCheckNoise(source.fCheckNoise),
+fCrosstalkFlag(source.fCrosstalkFlag),
+fDoFFT(source.fDoFFT),
+fNofMaps(source.fNofMaps),
+fMaxNofSamples(source.fMaxNofSamples),
+fScaleSize(source.fScaleSize){
     // Copy constructor to satify Coding roules only.
 
-    if(this==&source) return;
-    Error("AliITSsimulationSDD","Not allowed to make a copy of "
-          "AliITSsimulationSDD Using default creater instead");
-    AliITSsimulationSDD();
 }
 //______________________________________________________________________
 AliITSsimulationSDD& AliITSsimulationSDD::operator=(const AliITSsimulationSDD &src){

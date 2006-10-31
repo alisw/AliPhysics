@@ -16,7 +16,7 @@ class AliITSsimulationFastPointsV0 : public AliITSsimulation
 public:
   AliITSsimulationFastPointsV0(); // default constructor
   AliITSsimulationFastPointsV0(const char *dataType); // standard constructor
-  AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 &);
+  AliITSsimulationFastPointsV0(const AliITSsimulationFastPointsV0 &rec);
   AliITSsimulationFastPointsV0 & operator=(const AliITSsimulationFastPointsV0 &);  
   virtual AliITSsimulation& operator=(const AliITSsimulation &)
     {return *this;};

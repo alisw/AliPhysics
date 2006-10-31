@@ -39,25 +39,41 @@ Int_t ppower(Int_t b, Int_t e) {
   return power;
 }
 
-AliITSetfSDD::AliITSetfSDD() {
+AliITSetfSDD::AliITSetfSDD():
+fTimeDelay(0),
+fSamplingTime(0),
+fT0(0),
+fDf(0.),
+fA0(0.) ,
+fZeroM(0),
+fZeroR(0),
+fZeroI(0),
+fPoleM(0),
+fPoleR(0),
+fPoleI(0),
+fTfR(0),
+fTfI(0),
+fWR(0),
+fWI(0){
   // Default constructor
-  fTimeDelay = 0.;
-  fSamplingTime = 0.;
-  fT0 = 0.;
-  fDf = 0.;
-  fA0 = 0.;
-  fZeroM = 0;
-  fZeroR = 0;
-  fPoleM = 0;
-  fPoleR = 0;
-  fPoleI = 0;
-  fTfR = 0;
-  fTfI = 0;
-  fWR = 0;
-  fWI = 0;
 }
 
-AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif)
+AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif):
+fTimeDelay(0),
+fSamplingTime(0),
+fT0(0),
+fDf(0.),
+fA0(0.) ,
+fZeroM(0),
+fZeroR(0),
+fZeroI(0),
+fPoleM(0),
+fPoleR(0),
+fPoleI(0),
+fTfR(0),
+fTfI(0),
+fWR(0),
+fWI(0)
 {
   // Standard constructor. sampling time in ns
 
@@ -190,20 +206,6 @@ AliITSetfSDD::AliITSetfSDD(Double_t timestep, Int_t amplif)
 
 }
 
-//______________________________________________________________________
-AliITSetfSDD::AliITSetfSDD(const AliITSetfSDD &obj) : TObject(obj) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSetfSDD","Copy constructor not allowed\n");
-}
-
-//______________________________________________________________________
-AliITSetfSDD& AliITSetfSDD::operator=(const AliITSetfSDD& /* obj */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
-}
 
 AliITSetfSDD::~AliITSetfSDD(){
   // Destructor

@@ -29,10 +29,20 @@
 #include "AliITS.h"
 #include "AliITSsDigitize.h"
 #include "AliITSgeom.h"
- 
+
+/////////////////////////////////////////////////////////
+//                                                     //
+//                                                     //
+//                                                     //
+///////////////////////////////////////////////////////// 
 ClassImp(AliITSsDigitize)
 //______________________________________________________________________
-AliITSsDigitize::AliITSsDigitize(){
+AliITSsDigitize::AliITSsDigitize():
+fInit(kFALSE),
+fEnt(0),
+fEnt0(0),
+fITS(0),
+fRunLoader(0x0){
     // Default constructor.
     // Inputs:
     //  none.
@@ -41,13 +51,15 @@ AliITSsDigitize::AliITSsDigitize(){
     // Return:
     //    A zero-ed constructed AliITSsDigitize class.
  
-    fRunLoader = 0x0;
-    fITS      = 0;
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
-    fInit     = kFALSE;
 }
 //______________________________________________________________________
-AliITSsDigitize::AliITSsDigitize(const char* filename){
+AliITSsDigitize::AliITSsDigitize(const char* filename):
+fInit(),
+fEnt(0),
+fEnt0(0),
+fITS(0),
+fRunLoader(0x0){
     // Standard constructor.
     // Inputs:
     //  const char* filename    filename containing the digits to be
@@ -130,7 +142,7 @@ Bool_t AliITSsDigitize::Init(){
     return fInit;
 }
 //______________________________________________________________________
-Bool_t AliITSsDigitize::InitSDig(){
+Bool_t AliITSsDigitize::InitSDig() const {
     // Sets up SDigitization part of AliITSDetType..
     // Inputs:
     //      none.

@@ -90,15 +90,20 @@ const Double_t AliITSvBeamTestITS04::fgkSSD1y = 80.6;
 ClassImp(AliITSvBeamTestITS04)
     
 //_____________________________________________________________
-AliITSvBeamTestITS04::AliITSvBeamTestITS04() : AliITS()
-{
+  AliITSvBeamTestITS04::AliITSvBeamTestITS04() : AliITS(),
+fITSmotherVolume(0),
+fNspd(fgkNumberOfSPD),
+fNsdd(fgkNumberOfSDD),
+fNssd(fgkNumberOfSSD),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE){
     //
     // Constructor
     //
     
-    SetNumberOfSPD(fgkNumberOfSPD);
-    SetNumberOfSDD(fgkNumberOfSDD);
-    SetNumberOfSSD(fgkNumberOfSSD);
+  // SetNumberOfSPD(fgkNumberOfSPD);
+  //  SetNumberOfSDD(fgkNumberOfSDD);
+  //  SetNumberOfSSD(fgkNumberOfSSD);
     
     fIdN = 3;         
     fIdName    = new TString[fIdN];
@@ -109,25 +114,31 @@ AliITSvBeamTestITS04::AliITSvBeamTestITS04() : AliITS()
     for(Int_t i=0; i<fIdN; i++) fIdSens[i] = 0;
     
     //for writing out geometry
-    fGeomDetOut   = kFALSE; 
+    //fGeomDetOut   = kFALSE; 
 
     // for reading in geometry (JC)
-    fGeomDetIn = kFALSE;
+    //fGeomDetIn = kFALSE;
 
     for(Int_t a=0;a<60;a++) fWrite[a] = '\0';
 }
 
 //_____________________________________________________________
 AliITSvBeamTestITS04::AliITSvBeamTestITS04(const char* name,const char *title)
-    : AliITS(name,title)
+  : AliITS(name,title),
+fITSmotherVolume(0),
+fNspd(fgkNumberOfSPD),
+fNsdd(fgkNumberOfSDD),
+fNssd(fgkNumberOfSSD),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE)
 {
     //
     // Constructor
     //
     
-    SetNumberOfSPD(fgkNumberOfSPD);
-    SetNumberOfSDD(fgkNumberOfSDD);
-    SetNumberOfSSD(fgkNumberOfSSD);
+    //SetNumberOfSPD(fgkNumberOfSPD);
+    //SetNumberOfSDD(fgkNumberOfSDD);
+    //SetNumberOfSSD(fgkNumberOfSSD);
     
     fIdN = 3;         
     fIdName    = new TString[fIdN];
@@ -138,20 +149,24 @@ AliITSvBeamTestITS04::AliITSvBeamTestITS04(const char* name,const char *title)
     for(Int_t i=0; i<fIdN; i++) fIdSens[i] = 0;
     
     //for writing out geometry
-    fGeomDetOut   = kFALSE; // Don't write .det file
+    //fGeomDetOut   = kFALSE; // Don't write .det file
 
     // for reading in geometry (JC)
-    fGeomDetIn = kFALSE;
+    //fGeomDetIn = kFALSE;
 
     for(Int_t a=0;a<60;a++) fWrite[a] = '\0';    
 }
 
 //______________________________________________________________________
-AliITSvBeamTestITS04::AliITSvBeamTestITS04(const AliITSvBeamTestITS04 &source) :  AliITS(source){
-  //Copy constructor (dummy)
-    if(&source == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSvSDD03");
-    return;
+AliITSvBeamTestITS04::AliITSvBeamTestITS04(const AliITSvBeamTestITS04 &source) :  AliITS(source),
+fITSmotherVolume(source.fITSmotherVolume),
+fNspd(source.fNspd),
+fNsdd(source.fNsdd),
+fNssd(source.fNssd),
+fGeomDetOut(source.fGeomDetOut),
+fGeomDetIn(source.fGeomDetIn){
+  //Copy constructor 
+
 }
 //______________________________________________________________________
 AliITSvBeamTestITS04& AliITSvBeamTestITS04::operator=(const AliITSvBeamTestITS04 &source){

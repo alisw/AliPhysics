@@ -39,7 +39,33 @@ ClassImp(AliITSMultReconstructor)
 
 
 //____________________________________________________________________
-AliITSMultReconstructor::AliITSMultReconstructor() {
+AliITSMultReconstructor::AliITSMultReconstructor():
+fGeometry(0),
+fClustersLay1(0),
+fClustersLay2(0),
+fTracklets(0),
+fAssociationFlag(0),
+fNClustersLay1(0),
+fNClustersLay2(0),
+fNTracklets(0),
+fPhiWindow(0),
+fZetaWindow(0),
+fOnlyOneTrackletPerC2(0),
+fHistOn(0),
+fhClustersDPhiAcc(0),
+fhClustersDThetaAcc(0),
+fhClustersDZetaAcc(0),
+fhClustersDPhiAll(0),
+fhClustersDThetaAll(0),
+fhClustersDZetaAll(0),
+fhDPhiVsDThetaAll(0),
+fhDPhiVsDThetaAcc(0),
+fhDPhiVsDZetaAll(0),
+fhDPhiVsDZetaAcc(0),
+fhetaTracklets(0),
+fhphiTracklets(0),
+fhetaClustersLay1(0),
+fhphiClustersLay1(0){
   // Method to reconstruct the charged particles multiplicity with the 
   // SPD (tracklets).
 
@@ -95,17 +121,42 @@ AliITSMultReconstructor::AliITSMultReconstructor() {
 }
 
 //______________________________________________________________________
-AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : TObject(mr) {
+AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : TObject(mr),
+fGeometry(mr.fGeometry),
+fClustersLay1(mr.fClustersLay1),
+fClustersLay2(mr.fClustersLay2),
+fTracklets(mr.fTracklets),
+fAssociationFlag(mr.fAssociationFlag),
+fNClustersLay1(mr.fNClustersLay1),
+fNClustersLay2(mr.fNClustersLay2),
+fNTracklets(mr.fNTracklets),
+fPhiWindow(mr.fPhiWindow),
+fZetaWindow(mr.fZetaWindow),
+fOnlyOneTrackletPerC2(mr.fOnlyOneTrackletPerC2),
+fHistOn(mr.fHistOn),
+fhClustersDPhiAcc(mr.fhClustersDPhiAcc),
+fhClustersDThetaAcc(mr.fhClustersDThetaAcc),
+fhClustersDZetaAcc(mr.fhClustersDZetaAcc),
+fhClustersDPhiAll(mr.fhClustersDPhiAll),
+fhClustersDThetaAll(mr.fhClustersDThetaAll),
+fhClustersDZetaAll(mr.fhClustersDZetaAll),
+fhDPhiVsDThetaAll(mr.fhDPhiVsDThetaAll),
+fhDPhiVsDThetaAcc(mr.fhDPhiVsDThetaAcc),
+fhDPhiVsDZetaAll(mr.fhDPhiVsDZetaAll),
+fhDPhiVsDZetaAcc(mr.fhDPhiVsDZetaAcc),
+fhetaTracklets(mr.fhetaTracklets),
+fhphiTracklets(mr.fhphiTracklets),
+fhetaClustersLay1(mr.fhetaClustersLay1),
+fhphiClustersLay1(mr.fhphiClustersLay1) {
   // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSMultReconstructor","Copy constructor not allowed\n");
+
 }
 
 //______________________________________________________________________
-AliITSMultReconstructor& AliITSMultReconstructor::operator=(const AliITSMultReconstructor& /* mr */){
+AliITSMultReconstructor& AliITSMultReconstructor::operator=(const AliITSMultReconstructor& mr){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
+  this->~AliITSMultReconstructor();
+  new(this) AliITSMultReconstructor(mr);
   return *this;
 }
 

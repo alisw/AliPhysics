@@ -18,21 +18,22 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
  public:
  
   AliITSPreprocessorSDD(const char* detector, AliShuttleInterface* shuttle):
-    AliPreprocessor(detector,shuttle){;}
+    AliPreprocessor(detector,shuttle){SetName("SDD");}
   virtual ~AliITSPreprocessorSDD(){;}
 
 
 
  protected:      
+
+
   
   virtual UInt_t Process(TMap* dcsAliasMap);
 
   static const Int_t fgkNumberOfSDD;       // number of SDD modules 
   static const Int_t fgkNumberOfChannels;  // number of channels per module
-  static const char* fgkNameHistoPedestals; // name of pedestal histogram
-  static const char* fgkNameHistoNoise;     // name of noise histogram
-
-  ClassDef(AliITSPreprocessorSDD,1)  // Alice ITS-SDD preprocessor.
+  static const TString fgkNameHistoPedestals; //name of ped. histo
+  static const TString fgkNameHistoNoise;  //name of noise histo
+  ClassDef(AliITSPreprocessorSDD,2)  // Alice ITS-SDD preprocessor.
 
  };
 

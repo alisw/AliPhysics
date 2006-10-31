@@ -3,6 +3,12 @@
 /* Copyright(c) 2002-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
+///////////////////////////////////////////////////////////
+// AliITSTableSSD is used by AliITSsimulationSSD class to// 
+//fill the AliITSpList  object starting from the map with// 
+//energy depositions                                     //
+///////////////////////////////////////////////////////////
+
 #include "Rtypes.h"
 #include <TObject.h>
 
@@ -21,7 +27,7 @@ class AliITSTableSSD : public TObject{
     virtual void Clear(Option_t*)  {TObject::Clear();}
 
  private:
-    Int_t SearchValue(Int_t *arr, Int_t refer, Int_t max){
+    Int_t SearchValue(Int_t *arr, Int_t refer, Int_t max) const{
 	for(Int_t i=0;i<max;i++)if(arr[i]==refer)return i;
 	return -1;}
  private:

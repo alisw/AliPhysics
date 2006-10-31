@@ -26,14 +26,30 @@ ClassImp(AliITSdcsSSD)
 
 // Constructor and Destructor
 //______________________________________________________________________
-AliITSdcsSSD::AliITSdcsSSD(){
+  AliITSdcsSSD::AliITSdcsSSD():
+fCouplingPR(0),
+fCouplingPL(0),
+fCouplingNR(0),
+fCouplingNL(0),
+fNstrips(0),
+fNInvalid(0),
+fISigma(0),
+fInvalidP(0),
+fInvalidN(0){
     // Default Constructor
 
-    fInvalidP = 0;
-    fInvalidN = 0;
 }
 //______________________________________________________________________
-AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSCalibration *resp){
+AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSCalibration *resp):
+fCouplingPR(0),
+fCouplingPL(0),
+fCouplingNR(0),
+fCouplingNL(0),
+fNstrips(0),
+fNInvalid(0),
+fISigma(0),
+fInvalidP(0),
+fInvalidN(0){
     // Standard constructor
 
     fNstrips =(Float_t) (((AliITSsegmentationSSD*)seg)->Npx());
@@ -72,22 +88,18 @@ AliITSdcsSSD::~AliITSdcsSSD() {
     delete fInvalidN;
 }
 //______________________________________________________________________
-AliITSdcsSSD::AliITSdcsSSD(const AliITSdcsSSD &source) : TObject(source){
+AliITSdcsSSD::AliITSdcsSSD(const AliITSdcsSSD &source) : TObject(source),
+fCouplingPR(source.fCouplingPR),
+fCouplingPL(source.fCouplingPL),
+fCouplingNR(source.fCouplingNR),
+fCouplingNL(source.fCouplingNL),
+fNstrips(source.fNstrips),
+fNInvalid(source.fNInvalid),
+fISigma(source.fISigma),
+fInvalidP(source.fInvalidP),
+fInvalidN(source.fInvalidN){
     //     Copy Constructor 
 
-    if(&source == this) return;
-
-    this->fCouplingPR = source.fCouplingPR;
-    this->fCouplingPL = source.fCouplingPL;
-    this->fCouplingNR = source.fCouplingNR;
-    this->fCouplingNL = source.fCouplingNL;
-    this->fNstrips = source.fNstrips;
-    this->fNInvalid = source.fNInvalid;
-    this->fISigma = source.fISigma;
-    this->fInvalidP = source.fInvalidP;
-    this->fInvalidN = source.fInvalidN;
-
-    return;
 }
 //_________________________________________________________________________
 AliITSdcsSSD& AliITSdcsSSD::operator=(const AliITSdcsSSD &source) {

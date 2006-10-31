@@ -36,26 +36,26 @@
 ClassImp(AliITSFDigitizer)
 
 //______________________________________________________________________
-AliITSFDigitizer::AliITSFDigitizer() : AliDigitizer(){
+AliITSFDigitizer::AliITSFDigitizer() : AliDigitizer(),
+fITS(0),
+fInit(kFALSE){
 //
 // Default constructor.
 //
-    fITS      = 0;
-    fInit     = kFALSE;
 }
 //______________________________________________________________________
-AliITSFDigitizer::AliITSFDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
+AliITSFDigitizer::AliITSFDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr),
+fITS(0),
+fInit(kFALSE){
 //
 // Standard constructor.
 //
-    fITS      = 0;
-    fInit     = kFALSE;
 }
 //______________________________________________________________________
-AliITSFDigitizer::AliITSFDigitizer(const AliITSFDigitizer &/*rec*/):AliDigitizer(/*rec*/){
+AliITSFDigitizer::AliITSFDigitizer(const AliITSFDigitizer &rec):AliDigitizer(rec),
+fITS(rec.fITS),
+fInit(rec.fInit){
     // Copy constructor. 
-
-  Error("Copy constructor","Copy constructor not allowed");
   
 }
 //______________________________________________________________________

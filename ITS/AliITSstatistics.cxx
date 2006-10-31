@@ -15,27 +15,28 @@
 ClassImp(AliITSstatistics)
 
 //
-AliITSstatistics::AliITSstatistics() : TObject(){
+AliITSstatistics::AliITSstatistics() : TObject(),
+fN(0),
+fOrder(0),
+fX(0),
+fW(0){
 //
 // default contructor
 //
-    fX = 0;
-    fW = 0;
-    fN = 0;
-    fOrder = 0;
-    return;
 }
 
 
-AliITSstatistics::AliITSstatistics(Int_t order) : TObject(){
+AliITSstatistics::AliITSstatistics(Int_t order) : TObject(),
+fN(0),
+fOrder(order),
+fX(0),
+fW(0){
 //
 // contructor to a specific order in the moments
 //
-    fOrder = order;
     fX = new Double_t[order];
     fW = new Double_t[order];
     for(Int_t i=0;i<order;i++) {fX[i] = 0.0; fW[i] = 0.0;}
-    fN = 0;
     return;
 }
 
@@ -51,7 +52,7 @@ AliITSstatistics::~AliITSstatistics(){
     fOrder = 0;
 }
 //_______________________________________________________________
-AliITSstatistics& AliITSstatistics::operator=(AliITSstatistics &source){
+AliITSstatistics& AliITSstatistics::operator=(const AliITSstatistics &source){
 // operator =
 
      if(this==&source) return *this;
@@ -73,7 +74,11 @@ AliITSstatistics& AliITSstatistics::operator=(AliITSstatistics &source){
 	  return *this;
 }
 //_______________________________________________________________
-AliITSstatistics::AliITSstatistics(AliITSstatistics &source) : TObject(source){
+AliITSstatistics::AliITSstatistics(const AliITSstatistics &source) : TObject(source),
+fN(0),
+fOrder(0),
+fX(0),
+fW(0){
 // Copy constructor
 
      if(this==&source) return;

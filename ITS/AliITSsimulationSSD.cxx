@@ -124,10 +124,16 @@ AliITSsimulation& AliITSsimulationSSD::operator=(
 }
 //______________________________________________________________________
 AliITSsimulationSSD::AliITSsimulationSSD(const AliITSsimulationSSD &source):
-    AliITSsimulation(source){
+    AliITSsimulation(source),
+fMapA2(source.fMapA2),
+fIonE(source.fIonE),
+fDifConst(),
+fDriftVel(){
   // copy constructor
-
-  *this = source;
+  fDifConst[0] = source.fDifConst[0];
+  fDifConst[1] = source.fDifConst[1];
+  fDriftVel[0] = source.fDriftVel[0];
+  fDriftVel[1] = source.fDriftVel[1];
 }
 //______________________________________________________________________
 AliITSsimulationSSD::~AliITSsimulationSSD() {
