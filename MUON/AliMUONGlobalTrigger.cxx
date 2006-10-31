@@ -147,15 +147,15 @@ void AliMUONGlobalTrigger::Print(Option_t* opt) const
 
       printf("=============================================\n");
       printf(" Global Trigger output       Low pt  High pt\n");
-      printf(" number of Single           :\t");
+      printf(" Single                    :\t");
       printf("%i\t%i\t",SingleLpt(),SingleHpt());
       printf("\n");
       
-      printf(" number of UnlikeSign pair  :\t"); 
+      printf(" UnlikeSign pair           :\t"); 
       printf("%i\t%i\t",PairUnlikeLpt(),PairUnlikeHpt());
       printf("\n");
       
-      printf(" number of LikeSign pair    :\t");  
+      printf(" LikeSign pair             :\t");  
       printf("%i\t%i\t",PairLikeLpt(),PairLikeHpt());
       printf("\n");
       
