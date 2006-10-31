@@ -1,3 +1,36 @@
+2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ITSModule.cxx:
+	* ITSModule.h:
+	Replace QuadSet with OldQuadSet; from Raffale: remove a couple of
+	duplicate lines.
+
+	* TRDData.cxx:
+	* TRDData.h:
+	Replace QuadSet with OldQuadSet.
+
+	* MUONChamber.cxx:
+	* MUONChamber.h:
+	* MUONChamberData.cxx:
+	* MUONChamberData.h:
+	* MUONChamberEditor.cxx:
+	* MUONChamberEditor.h:
+	* MUONChamberGL.cxx:
+	* MUONChamberGL.h:
+	* MUONData.cxx:
+	* MUONData.h:
+	From Bogdan: new files / new implementation of the MUON
+	visualization.
+
+	* MUONDigitsInfo.cxx:
+	* MUONDigitsInfo.h:
+	* MUONModule.cxx:
+	* MUONModule.h:
+	From Bogdan: removed files.
+
+	* LinkDef.h:
+	Add/remove classes according to changes in MUON.
+
 2006-10-27  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* ITSModule.cxx:

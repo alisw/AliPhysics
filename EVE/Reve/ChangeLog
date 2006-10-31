@@ -1,3 +1,14 @@
+2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* LinkDef.h:
+	* QuadSet.cxx:
+	* QuadSet.h:
+	* QuadSetGL.cxx:
+	* QuadSetGL.h:
+	Started to work on reimplementation of the quad-set, renamed the
+	old one to OldQuadSet; i'm checking this in because another change is
+	needed for the new muon code and i already changed several things.
+
 2006-10-27  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* BoxSetGL.cxx:
