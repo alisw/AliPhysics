@@ -86,7 +86,7 @@ fPath(){     // Path in geometry to this module
 
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &source) : 
-    TObject(source),
+TObject(source),
 fDetectorIndex(source.fDetectorIndex),
 fCylR(source.fCylR),
 fCylPhi(source.fCylPhi),
@@ -357,15 +357,16 @@ fPath(){
     if(fCylPhi<0.0) fCylPhi += TMath::Pi();
     this->MatrixFromSixAngles(rotd);
 }
+
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::AngleFromMatrix(){
     // Computes the angles from the rotation matrix up to a phase of 
     // 180 degrees. The matrix used in AliITSgeomMatrix::MatrixFromAngle()
     // and  its inverse AliITSgeomMatrix::AngleFromMatrix() are defined in 
     // the following ways, R = Rz*Ry*Rx (M=R*L+T) where
-    //     1   0   0       Cy  0 -Sy       Cz -Sz  0
-    // Rx= 0   Cx -Sx  Ry=  0  1   0   Rz= Sz  Cz  0
-    //     0   Sx  Cx      Sy  0  Cy        0   0  1
+    //     1   0   0       Cy  0 +Sy       Cz -Sz  0
+    // Rx= 0   Cx -Sx  Ry=  0  1   0   Rz=+Sz  Cz  0
+    //     0  +Sx  Cx     -Sy  0  Cy        0   0  1
     // The choice of the since of S, comes from the choice between 
     // the rotation of the object or the coordinate system (view). I think
     // that this choice is the first, the rotation of the object.
@@ -379,22 +380,23 @@ void AliITSgeomMatrix::AngleFromMatrix(){
     // get angles from matrix up to a phase of 180 degrees.
 
     rx = TMath::ATan2(fm[2][1],fm[2][2]);if(rx<0.0) rx += 2.0*TMath::Pi();
-    ry = TMath::ASin(fm[0][2]);          if(ry<0.0) ry += 2.0*TMath::Pi();
+    ry = TMath::ASin(-fm[0][2]);         if(ry<0.0) ry += 2.0*TMath::Pi();
     rz = TMath::ATan2(fm[1][0],fm[0][0]);if(rz<0.0) rz += 2.0*TMath::Pi();
     frot[0] = rx;
     frot[1] = ry;
     frot[2] = rz;
     return;
 }
+
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::MatrixFromAngle(){
     // Computes the Rotation matrix from the angles [radians] kept in this
     // class. The matrix used in AliITSgeomMatrix::MatrixFromAngle() and 
     // its inverse AliITSgeomMatrix::AngleFromMatrix() are defined in 
     // the following ways, R = Rz*Ry*Rx (M=R*L+T) where
-    //     1   0   0       Cy  0 -Sy       Cz -Sz  0
-    // Rx= 0   Cx -Sx  Ry=  0  1   0   Rz= Sz  Cz  0
-    //     0   Sx  Cx      Sy  0  Cy        0   0  1
+    //     1   0   0       Cy  0 +Sy       Cz -Sz  0
+    // Rx= 0   Cx -Sx  Ry=  0  1   0   Rz=+Sz  Cz  0
+    //     0  +Sx  Cx     -Sy  0  Cy        0   0  1
     // The choice of the since of S, comes from the choice between 
     // the rotation of the object or the coordinate system (view). I think
     // that this choice is the first, the rotation of the object.
@@ -409,17 +411,18 @@ void AliITSgeomMatrix::MatrixFromAngle(){
    sx = TMath::Sin(frot[0]); cx = TMath::Cos(frot[0]);
    sy = TMath::Sin(frot[1]); cy = TMath::Cos(frot[1]);
    sz = TMath::Sin(frot[2]); cz = TMath::Cos(frot[2]);
-   fm[0][0] =  cz*cy;             // fr[0]
-   fm[0][1] = -cz*sy*sx - sz*cx;  // fr[1]
-   fm[0][2] = -cz*sy*cx + sz*sx;  // fr[2]
-   fm[1][0] =  sz*cy;             // fr[3]
-   fm[1][1] = -sz*sy*sx + cz*cx;  // fr[4]
-   fm[1][2] = -sz*sy*cx - cz*sx;  // fr[5]
-   fm[2][0] =  sy;                // fr[6]
-   fm[2][1] =  cy*sx;             // fr[7]
-   fm[2][2] =  cy*cx;             // fr[8]
+   fm[0][0] = +cz*cy;             // fr[0]
+   fm[0][1] = +cz*sy*sx - sz*cx;  // fr[1]
+   fm[0][2] = +cz*sy*cx + sz*sx;  // fr[2]
+   fm[1][0] = +sz*cy;             // fr[3]
+   fm[1][1] = +sz*sy*sx + cz*cx;  // fr[4]
+   fm[1][2] = +sz*sy*cx - cz*sx;  // fr[5]
+   fm[2][0] = -sy;                // fr[6]
+   fm[2][1] = +cy*sx;             // fr[7]
+   fm[2][2] = +cy*cx;             // fr[8]
 
 }
+
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLPosition(const Double_t g0[3],Double_t l[3]) const {
     // Returns the local coordinates given the global coordinates [cm].
