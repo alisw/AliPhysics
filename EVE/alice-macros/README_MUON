@@ -1,0 +1,71 @@
+
+How to run the MUON display
+---------------------------
+
+1. Launch 'alieve' executable
+
+   alieve
+
+2. Load the following macros (.L ...)
+
+   alieve_init.C
+   event_next.C
+   event_prev.C
+   MUON_digits.C
+   MUON_geom.C
+   MUON_geomAll.C
+
+3. Initialize
+
+   alieve_init("directory_to_data",event_number)
+
+4. Display simulation digits
+
+   MUON_digits(0,0)   - without tracks
+   MUON_digits(0,1)   - with tracks
+
+5. Display raw data
+
+   MUON_digits(1,0)
+   MUON_digits(1,1)
+
+6. Display all geometry defined in Config.C
+
+   MUON_geomAll()
+
+7. Display only the MUON detector
+
+   MUON_geom()
+
+8. Navigate in the event list
+
+   event_next()
+   event_prev()
+
+9. Use mouse buttons or keys:
+
+   Move camera with
+
+   +/J,j  - increase
+   -/K,k  - decrease
+   up/down/left/right arrows
+
+   T,t/W,w  - toggle between filled areas and wired areas
+
+   'Home' key  - reset the position of the camera
+
+Files:
+
+MUON*.cxx , MUON*.h   in $ALICE_ROOT/EVE/Alieve
+MUON*.C               in $ALICE_ROOT/EVE/alice-macros
+
+See also the $ALICE_ROOT/EVE/README file.
+
+
+
+
+
+Bogdan Vulpescu, 30 Oct 2006
+LPC Clermont-Ferrand
+
+
