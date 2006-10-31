@@ -917,12 +917,12 @@ void AliAlignObj::InitSymNames()
 
   /*********************      RICH layer   ***********************/
   {
-    TString str = "ALIC_1/RICH_";
+    TString str = "/HMPID/Chamber";
     TString symname;
 
     for (modnum=0; modnum < 7; modnum++) {
       symname = str;
-      symname += (modnum+1);
+      symname += modnum;
       fgVolPath[kRICH-kFirstLayer][modnum] = symname.Data();
     }
   }
