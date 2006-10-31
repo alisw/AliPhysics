@@ -36,6 +36,9 @@ namespace Alieve {
 		TRDModule(const char *typ="XXX", const Int_t id=0);
 		virtual ~TRDModule() {}
 	
+		virtual Bool_t GetDigitsBox(){return fDigitsBox;}
+		virtual Bool_t GetDigitsLog(){return fDigitsLog;}
+		virtual UShort_t GetDigitsThreshold(){return fDigitsThreshold;}
 		virtual Int_t	GetID(){return fDet;}
 		virtual void	Paint(Option_t* option="")=0;
 		virtual void	Reset()=0;

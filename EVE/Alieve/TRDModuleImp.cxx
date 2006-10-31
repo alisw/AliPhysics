@@ -55,13 +55,13 @@ void	TRDNode::Reset()
 }
 
 //________________________________________________________
-void TRDNode::Colapse()
+void TRDNode::Collapse()
 {
 	TGListTree *list = gReve->GetListTree();
 	TRDNode *node = 0x0;
 	lpRE_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
-		if((node = dynamic_cast<TRDNode*>(*iter))) node->Colapse();
+		if((node = dynamic_cast<TRDNode*>(*iter))) node->Collapse();
 		list->CloseItem(FindListTreeItem(list));
 		iter++;
 	}
@@ -204,42 +204,26 @@ void TRDNode::UpdateNode()
 
 //________________________________________________________
 TRDChamber::TRDChamber(const Int_t det) :
-  Reve::RenderElement(), TRDModule("Chmb", det)
+  Reve::RenderElement(), TRDModule("Chmb", det), rowMax(-1), colMax(-1), timeMax(22), fX0(0.), fPla(-1)
 {
   //
   // Constructor
   //
+	
 	fDigits    = 0x0;
 	fHits      = 0x0;
 	fRecPoints = 0x0;
 	fTracklets = 0x0;
 	
-	fPadPlane = 0x0;
-	fGeo      = 0x0;	
-}
-
-//________________________________________________________
-void TRDChamber::Init()
-{
-	if(!gAlice) return;
-
-	AliTRDv1 *trd = (AliTRDv1*)gAlice->GetDetector("TRD");
-  fGeo = trd->GetGeometry();
-	fPla = fGeo->GetPlane(fDet);
-	timeMax = 22;
-	fX0 = fGeo->GetTime0(fPla);
-	
-	AliTRDCommonParam *parcom = AliTRDCommonParam::Instance();
-	fPadPlane = parcom->GetPadPlane(fPla,fGeo->GetChamber(fDet));
-	rowMax = fPadPlane->GetNrows();
-	colMax = fPadPlane->GetNcols();
-	
 	AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
 	samplingFrequency = calibration->GetSamplingFrequency();
+	
+	fGeo      = 0x0;
+	fPadPlane = 0x0;
 }
 
 //________________________________________________________
-TRDChamber::TRDChamber(const TRDChamber &mod) :
+TRDChamber::TRDChamber(const TRDChamber &mod):
   Reve::RenderElement(), TRDModule("Chmb", mod.fDet)
 {
   //
@@ -275,13 +259,17 @@ void TRDChamber::LoadClusters(TObjArray *clusters)
   // Draw clusters
   //
 	
+	if(!fGeo){
+		Error("LoadClusters()", Form("Geometry not set for chamber %d. Please call first TRDChamber::SetGeometry().", fDet));
+		return;
+	}
+//	Info("LoadClusters()", Form("clusters = 0x%x", clusters));
 	if(!fRecPoints){
 		fRecPoints = new TRDHits("clusters");
 		fRecPoints->SetMarkerSize(1.);
 		fRecPoints->SetMarkerStyle(24);
 		fRecPoints->SetMarkerColor(6);
-	}
-	if(!fGeo) Init();
+	} else fRecPoints->Reset();
 
 	Float_t q, z0;
   Double_t cloc[3], cglo[3];
@@ -302,13 +290,17 @@ void TRDChamber::LoadClusters(TObjArray *clusters)
 }
 
 //________________________________________________________
-void TRDChamber::LoadDigits(AliTRDdataArrayI *digits)
+void TRDChamber::LoadDigits(AliTRDdigitsManager *digits)
 {
   //
   // Draw digits
   //
-
-	if(!fPadPlane) Init();
+	if(!fGeo){
+		Error("LoadDigits()", Form("Geometry not set for chamber %d. Please call first TRDChamber::SetGeometry().", fDet));
+		return;
+	}
+//	Info("LoadDigits()", Form("digits =0x%x", digits));
+	
 	if(!fDigits) fDigits = new TRDDigits(this);
 	else fDigits->Reset();
 	
@@ -322,11 +314,14 @@ void TRDChamber::AddHit(AliTRDhit *hit)
   //
   // Draw hits
   //
+//	Info("AddHit()", Form("%s", GetName()));
+
 	if(!fHits){
 		fHits = new TRDHits("hits");
 		fHits->SetMarkerSize(.1);
 		fHits->SetMarkerColor(2);
 	}
+	
 	fHits->SetNextPoint(hit->X(), hit->Y(), hit->Z());
 	fHits->SetPointId(this);
 	fLoadHits = kTRUE;
@@ -338,11 +333,16 @@ void TRDChamber::LoadTracklets(TObjArray *tracks)
   //
   // Draw tracks
   //
+	if(!fGeo){
+		Error("LoadTracklets()", Form("Geometry not set for chamber %d. Please call first TRDChamber::SetGeometry().", fDet));
+		return;
+	}
+//	Info("LoadTracklets()", Form("tracks = 0x%x", tracks));
+	
 	if(!fTracklets){
 		fTracklets = new std::vector<Reve::Track*>;
-	}
+	} else fTracklets->clear();
 	
-	if(!fGeo) Init();
 	
 	AliTRDmcmTracklet *trk = 0x0;
 	Double_t cloc[3], cglo[3];
@@ -373,8 +373,6 @@ void	TRDChamber::Paint(Option_t* option)
 	if(!fRnrElement) return;
 	if(fDigits && fRnrDigits){
 		if(kDigitsNeedRecompute){
-			fDigits->SetShow(fDigitsLog, fDigitsBox);
-			fDigits->SetThreshold(fDigitsThreshold);
 			fDigits->ComputeRepresentation();
 			kDigitsNeedRecompute = kFALSE;
 		}
@@ -406,5 +404,19 @@ void	TRDChamber::Reset()
 		fTracklets->clear();
 		fLoadTracklets = kFALSE;
 	}
+}
+
+//________________________________________________________
+void TRDChamber::SetGeometry(AliTRDgeometry *geo)
+{
+	fGeo = geo;
+		
+	fPla = fGeo->GetPlane(fDet);
+	fX0 = fGeo->GetTime0(fPla);
+	
+	AliTRDCommonParam *parcom = AliTRDCommonParam::Instance();
+	fPadPlane = parcom->GetPadPlane(fPla,fGeo->GetChamber(fDet));
+	rowMax = fPadPlane->GetNrows();
+	colMax = fPadPlane->GetNcols();
 }
 

@@ -22,6 +22,7 @@ class AliTRDpadPlane;
 class AliTRDgeometry;
 class AliTRDhit;
 class AliTRDdataArrayI;
+class AliTRDdigitsManager;
 class TObjArray;
 
 namespace Reve {
@@ -41,14 +42,14 @@ namespace Alieve {
 	
 		TRDChamber(const TRDChamber&);
 		TRDChamber& operator=(const TRDChamber&);
-		void	Init();
 		
 		void	AddHit(AliTRDhit *hit);
 		void	LoadClusters(TObjArray *cs);
-		void	LoadDigits(AliTRDdataArrayI *digits);
+		void	LoadDigits(AliTRDdigitsManager *digits);
 		void	LoadTracklets(TObjArray *ts);
 		void	Paint(Option_t* option="");
 		void	Reset();
+		void	SetGeometry(AliTRDgeometry *geo);
 		
 	protected:
 		TRDDigits	*fDigits;   // digits representation
@@ -77,7 +78,7 @@ namespace Alieve {
 		void	Paint(Option_t* option="");
 		void	Reset();
 
-		void	Colapse(); // *MENU*
+		void	Collapse(); // *MENU*
 		void	Expand(); // *MENU*
 		void	EnableListElements(); // *MENU*
 		void	DisableListElements(); // *MENU*

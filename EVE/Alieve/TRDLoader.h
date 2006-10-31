@@ -18,18 +18,18 @@
 #include <TNamed.h>
 #endif
 
+#ifndef ROOT_TString
+#include <TString.h>
+#endif
+
 #ifndef ROOT_TGedFrame
 #include <TGedFrame.h>
 #endif
 
-//#include <map>
-
 class AliRunLoader;
-class AliLoader;
-class AliTRDhit;
 class AliTRDv1;
+class AliTRDgeometry;
 
-class TGTextButton;
 class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
@@ -54,24 +54,28 @@ namespace Alieve {
 		~TRDLoader();
 
 	protected:
-		virtual void	AddChambers(const int sm=-1, const int stk=-1, const int ly=-1);
-
-		TRDChamber*	GetChamber(const int d);
-		Bool_t			GoToEvent(const int ev);
-		Bool_t			LoadClusters(TTree *tC);
-		Bool_t			LoadDigits(TTree *tD);
-		Bool_t			LoadHits(TTree *tH);
-		Bool_t			LoadTracklets(TTree *tT);
-		Bool_t			Open(const char *filename);
-		virtual void Paint(Option_t *option="");
-		void				Unload();
+		virtual void		AddChambers(const int sm=-1, const int stk=-1, const int ly=-1);
+		virtual TRDChamber*	GetChamber(const int d);
+		virtual Bool_t	GoToEvent(const int ev);
+		virtual Bool_t	LoadClusters(TTree *tC);
+		virtual Bool_t	LoadDigits(TTree *tD);
+		virtual Bool_t	LoadHits(TTree *tH);
+		virtual Bool_t	LoadTracklets(TTree *tT);
+		virtual Bool_t	Open(const char *file, const char *dir = ".");
+		virtual void 		Paint(Option_t *option="");
+		virtual void		Unload();
 		
 	protected:
-		Bool_t kLoadHits, kLoadDigits, kLoadClusters, kLoadTracks;
-	
+		Bool_t	kLoadHits, kLoadDigits, kLoadClusters, kLoadTracks;
+		Int_t		fSM, fStack, fLy; // supermodule, stack, layer
+		TString	fFilename; // name of data file 
+		TString	fDir; // data directory
+		Int_t		fEvent; // current event to be displayed
+			
 	private:
-		AliRunLoader	*fRunLoader;
-		AliTRDv1			*fTRD;
+		AliTRDv1				*fTRD; // the TRD detector
+		AliTRDgeometry	*fGeo; // the TRD geometry
+		AliRunLoader		*fRunLoader; // Run Loader
 		
 		ClassDef(TRDLoader, 1) // Alieve Loader class for the TRD detector
 	};
@@ -93,11 +97,10 @@ namespace Alieve {
 	protected:
 		TRDLoader* fM;
   	TGTextEntry *fFile;
-		TGTextButton *fOpenFile;
 		Reve::RGValuator *fEvent;
 
-		TGNumberEntry *fSMNumber, *fStackNumber, *fPlaneNumber;
-		TGCheckButton *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadESDs;
+		Reve::RGValuator *fSMNumber, *fStackNumber, *fPlaneNumber;
+		TGCheckButton *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadTracks;
 		
 		ClassDef(TRDLoaderEditor,1) // Editor for TRDLoader
 	};

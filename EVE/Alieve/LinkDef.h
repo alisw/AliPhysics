@@ -54,6 +54,7 @@
 
 // TRD
 #pragma link C++ class Alieve::TRDLoader+;
+#pragma link C++ class Alieve::TRDLoaderSingle+;
 #pragma link C++ class Alieve::TRDLoaderEditor+;
 #pragma link C++ class Alieve::TRDModule+;
 #pragma link C++ class Alieve::TRDChamber+;

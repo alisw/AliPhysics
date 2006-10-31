@@ -39,7 +39,7 @@ TRDModule::TRDModule(const char *typ, const Int_t det) :
 
 	kDigitsNeedRecompute = kTRUE;
 
-	fDigitsThreshold = 10;
+	fDigitsThreshold = 15;
 }
 
 
@@ -160,23 +160,25 @@ void TRDModuleEditor::SetModel(TObject* obj)
 // Takes care to update UI state according to model state
 
 	fM = dynamic_cast<TRDModule*>(obj);
-	if(dynamic_cast<TRDNode*>(fM)) dynamic_cast<TRDNode*>(fM)->UpdateNode();
+	if(TRDNode *node = dynamic_cast<TRDNode*>(fM)) node->UpdateNode();
 	
-	if(fM->fLoadHits) fDisplayHits->SetState(fM->fRnrHits ? kButtonDown : kButtonUp);
-	else fDisplayHits->SetEnabled(kFALSE);
+	fDisplayHits->SetEnabled(fM->fLoadHits);
+	if(fM->fLoadHits) fDisplayHits->SetState( fM->fRnrHits ? kButtonDown : kButtonUp);
 		
+	fDisplayDigits->SetEnabled(fM->fLoadDigits);
+	fToggleLog->SetEnabled(fM->fLoadDigits);
+	fToggleBox->SetEnabled(fM->fLoadDigits);
+	fThreshold->SetEnabled(fM->fLoadDigits);
+	fThresValue->GetNumberEntry()->SetEnabled(fM->fLoadDigits);
+	fThresValue->GetButtonDown()->SetEnabled(fM->fLoadDigits);
+	fThresValue->GetButtonUp()->SetEnabled(fM->fLoadDigits);
+	fThresValue->SetIntNumber(fM->fDigitsThreshold);
 	if(fM->fLoadDigits){
 		fDisplayDigits->SetState(fM->fRnrDigits ? kButtonDown : kButtonUp);
 		fToggleLog->SetState(fM->fDigitsLog ? kButtonDown : kButtonUp);
 		fToggleBox->SetState(fM->fDigitsBox ? kButtonDown : kButtonUp);
-		fThresValue->SetIntNumber(fM->fDigitsThreshold);
-	} else {
-		fDisplayDigits->SetEnabled(kFALSE);
-		fToggleLog->SetEnabled(kFALSE);
-		fToggleBox->SetEnabled(kFALSE);
+		fThreshold->SetState(fM->kDigitsNeedRecompute ? kButtonDown : kButtonUp);
 	}
-	fThreshold->SetEnabled(fM->fLoadDigits);
-
 	
 	if(fM->fLoadRecPoints) fDisplayClusters->SetState(fM->fRnrRecPoints ? kButtonDown : kButtonUp);
 	else fDisplayClusters->SetEnabled(kFALSE);
@@ -196,10 +198,9 @@ void TRDModuleEditor::ModifyDigitsView()
 void TRDModuleEditor::SetThreshold(Long_t tres)
 {
 	if(!fM->fLoadDigits) return;
-	tres = (tres == 0) ? (int)fThresValue->GetNumber():tres;
 	
-	fM->fDigitsThreshold = tres;
-	if(fThreshold->IsDown()) fM->kDigitsNeedRecompute = kTRUE;
+	fM->fDigitsThreshold = (tres == 0) ? (int)fThresValue->GetNumber():tres;
+	fM->kDigitsNeedRecompute = fThreshold->IsDown();
 	UpdateChamber();
 }
 

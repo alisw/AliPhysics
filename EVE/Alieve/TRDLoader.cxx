@@ -41,16 +41,17 @@ ClassImp(Alieve::TRDLoaderEditor)
 
 
 //________________________________________________________
-TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElementListBase(), TNamed(n,t)
-{
-//	fChambers = 0x0;
-	fRunLoader = 0x0;
-//	fTRDLoader = 0x0;
-	
+TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElementListBase(), TNamed(n,t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
+{	
 	kLoadHits = kFALSE;
 	kLoadDigits = kFALSE;
 	kLoadClusters = kFALSE;
 	kLoadTracks = kFALSE;
+	fFilename = "";
+	fDir = ".";
+	
+	fRunLoader = 0x0;
+	fGeo = new AliTRDgeometry();
 	
 	AliCDBManager *fCDBManager=AliCDBManager::Instance();
 	fCDBManager->SetDefaultStorage("local://$ALICE_ROOT");
@@ -113,11 +114,12 @@ void	TRDLoader::AddChambers(const int sm, const int stk, const int ly)
 				STK->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("SM %2d Stack %1d", ism, istk));
 			}
 			for(int ily=ily_start; ily<ily_stop; ily++){
-				det = AliTRDgeometry::GetDetector(ily, istk, ism);
+				det = fGeo->GetDetector(ily, istk, ism);
 				ichmb = find_if(STK->begin(), STK->end(), ID<RenderElement*>(det));
 				if(ichmb != STK->end()) (*ichmb)->SetRnrElement(kTRUE);
 				else{
 					gReve->AddRenderElement(STK, CHMB = new TRDChamber(det));
+					CHMB->SetGeometry(fGeo);
 					CHMB->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("SM %2d Stack %1d Layer %1d", ism, istk, ily));
 				}
 			}
@@ -130,11 +132,10 @@ void	TRDLoader::AddChambers(const int sm, const int stk, const int ly)
 TRDChamber*	TRDLoader::GetChamber(const int d)
 {
 	lpRE_i ism, istack, ichmb;
-	AliTRDgeometry *geo = fTRD->GetGeometry();
 	
-	ism = find_if(fChildren.begin(), fChildren.end(), ID<RenderElement*>(geo->GetSector(d)));
+	ism = find_if(fChildren.begin(), fChildren.end(), ID<RenderElement*>(fGeo->GetSector(d)));
 	if(ism == fChildren.end()) return 0x0;
-	istack = find_if(((TRDNode*)(*ism))->begin(), ((TRDNode*)(*ism))->end(), ID<RenderElement*>(geo->GetChamber(d)));
+	istack = find_if(((TRDNode*)(*ism))->begin(), ((TRDNode*)(*ism))->end(), ID<RenderElement*>(fGeo->GetChamber(d)));
 	if(istack == ((TRDNode*)(*ism))->end()) return 0x0;
 	ichmb = find_if(((TRDNode*)(*istack))->begin(), ((TRDNode*)(*istack))->end(), ID<RenderElement*>(d));
 	if(ichmb == ((TRDNode*)(*istack))->end()) return 0x0;
@@ -145,6 +146,8 @@ TRDChamber*	TRDLoader::GetChamber(const int d)
 Bool_t	TRDLoader::GoToEvent(const int ev)
 {
 	Info("GoToEvent", Form("Event = %d", ev));
+	fEvent = ev;
+
 	if(!fRunLoader) return kFALSE;
 	fRunLoader->UnloadAll("TRD");
 	Unload();
@@ -210,14 +213,14 @@ Bool_t	TRDLoader::LoadDigits(TTree *tD)
 	if(!fChildren.size()) return kTRUE;
 	
 	TRDChamber *chmb;
-	AliTRDdataArrayI *digits;
 	AliTRDdigitsManager dm;
 	dm.ReadDigits(tD);
 	for(int idet=0; idet<540; idet++){
 		if(!(chmb=GetChamber(idet))) continue;
-		digits = dm.GetDigits(idet);
-		if(!digits) continue;
-		chmb->LoadDigits(digits);
+//		digits = dm.GetDigits(idet);
+//		if(!digits) continue;
+//		chmb->LoadDigits(digits);
+		chmb->LoadDigits(&dm);
 	}
 	return kTRUE;
 }
@@ -230,7 +233,7 @@ Bool_t	TRDLoader::LoadHits(TTree *tH)
 	if(!fChildren.size()) return kTRUE;
 	
 	TRDChamber *chmb = 0x0;
-	AliTRDhit *hit;
+	AliTRDhit *hit = 0x0;
 	Int_t d;
 	for(int iTrack=0; iTrack<tH->GetEntries(); iTrack++){
 		gAlice->ResetHits();
@@ -272,15 +275,21 @@ Bool_t	TRDLoader::LoadTracklets(TTree *tT)
 }
 	
 //________________________________________________________
-Bool_t	TRDLoader::Open(const char *filename)
+Bool_t	TRDLoader::Open(const char *filename, const char *dir)
 {
- 	fRunLoader = AliRunLoader::GetRunLoader();
+	fFilename = filename;
+	fDir = dir;
+	fDir += "/";
+	
+	fRunLoader = AliRunLoader::GetRunLoader();
 	if(!fRunLoader) fRunLoader = AliRunLoader::Open(filename,
 				AliConfig::GetDefaultEventFolderName(),"read");
 	if(!fRunLoader){
 		Error("Open()", "Couldn't find run loader");
 		return kFALSE;
 	}
+	fRunLoader->SetDirName(fDir);
+	
 	gAlice = fRunLoader->GetAliRun();
   if(!gAlice) fRunLoader->LoadgAlice();
 	if(!gAlice){
@@ -292,7 +301,7 @@ Bool_t	TRDLoader::Open(const char *filename)
 		Error("Open()", "Couldn't find TRD");
 		return kFALSE;
 	}
-
+	
 	return kTRUE;
 }
 
@@ -326,7 +335,7 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
 	MakeTitle("TRDLoader");
 	
   fFile = 0x0;
-	fOpenFile = 0x0;
+	TGTextButton *fOpenFile = 0x0;
 	Int_t labelW = 42;
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
@@ -365,46 +374,42 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
 
 	// "Chamber(s) selector" group frame
 	TGGroupFrame *fGroupFrame1974 = new TGGroupFrame(this,"Chamber(s) selector");
+	TGVerticalFrame *fVerticalFrame1974 = new TGVerticalFrame(fGroupFrame1974, 150, 50,kVerticalFrame);
+  
+	fSMNumber = new RGValuator(fVerticalFrame1974, "SM:", 0, 0);
+  fSMNumber->SetShowSlider(kFALSE);
+  fSMNumber->SetLabelWidth(labelW);
+  fSMNumber->SetNELength(6);
+  fSMNumber->Build();
+  fSMNumber->SetLimits(-1, 17);
+  fSMNumber->SetToolTip("Supermodule id [-1 for all]");
+	fVerticalFrame1974->AddFrame(fSMNumber, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterX | kLHintsExpandY,2,2,2,2));
+
+	fStackNumber = new RGValuator(fVerticalFrame1974, "Stack:", 0, 0);
+  fStackNumber->SetShowSlider(kFALSE);
+  fStackNumber->SetLabelWidth(labelW);
+  fStackNumber->SetNELength(6);
+  fStackNumber->Build();
+  fStackNumber->SetLimits(-1, 4);
+  fStackNumber->SetToolTip("Stack id [-1 for all in this SM]");
+	fVerticalFrame1974->AddFrame(fStackNumber, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterX | kLHintsExpandY,2,2,2,2));
+
+	fPlaneNumber = new RGValuator(fVerticalFrame1974, "Plane:", 0, 0);
+  fPlaneNumber->SetShowSlider(kFALSE);
+  fPlaneNumber->SetLabelWidth(labelW);
+  fPlaneNumber->SetNELength(6);
+  fPlaneNumber->Build();
+  fPlaneNumber->SetLimits(-1, 5);
+  fPlaneNumber->SetToolTip("Plane id [-1 for all in this stack]");
+
+	fVerticalFrame1974->AddFrame(fPlaneNumber, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterX | kLHintsExpandY,2,2,2,2));
 	
-	TGVerticalFrame *fVerticalFrame1974 = new TGVerticalFrame(fGroupFrame1974,128,26,kVerticalFrame);
-
-	// horizontal frame
-	TGHorizontalFrame *fHorizontalFrame2020 = new TGHorizontalFrame(fVerticalFrame1974,128,26,kHorizontalFrame);
-	TGLabel *fLabel2170 = new TGLabel(fHorizontalFrame2020,"SM   ");
-	fLabel2170->SetTextJustify(kTextLeft | kTextCenterY);
-	fHorizontalFrame2020->AddFrame(fLabel2170, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-
-	fSMNumber = new TGNumberEntry(fHorizontalFrame2020, (Int_t) -1, 5, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -1, 17);
-	fHorizontalFrame2020->AddFrame(fSMNumber, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
-
-	fVerticalFrame1974->AddFrame(fHorizontalFrame2020, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-
-	// horizontal frame
-	TGHorizontalFrame *fHorizontalFrame2025 = new TGHorizontalFrame(fVerticalFrame1974,128,28,kHorizontalFrame);
-	TGLabel *fLabel2186 = new TGLabel(fHorizontalFrame2025,"Stack");
-	fLabel2186->SetTextJustify(kTextLeft | kTextCenterY);
-	fHorizontalFrame2025->AddFrame(fLabel2186, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	fStackNumber = new TGNumberEntry(fHorizontalFrame2025, (Int_t) -1, 5, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -1, 4);
-	fHorizontalFrame2025->AddFrame(fStackNumber, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
-
-	fVerticalFrame1974->AddFrame(fHorizontalFrame2025, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-
-	// horizontal frame
-	TGHorizontalFrame *fHorizontalFrame2030 = new TGHorizontalFrame(fVerticalFrame1974,128,26,kHorizontalFrame);
-	TGLabel *fLabel2208 = new TGLabel(fHorizontalFrame2030,"Plane");
-	fLabel2208->SetTextJustify(kTextLeft | kTextCenterY);
-	fHorizontalFrame2030->AddFrame(fLabel2208, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	fPlaneNumber = new TGNumberEntry(fHorizontalFrame2030, (Int_t) -1, 5, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -1, 5);
-	fHorizontalFrame2030->AddFrame(fPlaneNumber, new TGLayoutHints(kLHintsLeft | kLHintsCenterX | kLHintsTop | kLHintsCenterY,2,2,2,2));
-
-	fVerticalFrame1974->AddFrame(fHorizontalFrame2030, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	
-	fGroupFrame1974->AddFrame(fVerticalFrame1974, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandY | kLHintsExpandX,2,2,2,2));
+	fGroupFrame1974->AddFrame(fVerticalFrame1974, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandY | kLHintsCenterX,2,2,2,2));
 
 	TGTextButton *fTextButton2037 = new TGTextButton(fGroupFrame1974,"Select");
 	fTextButton2037->SetTextJustify(36);
-	fTextButton2037->Resize(128,22);
-	fGroupFrame1974->AddFrame(fTextButton2037, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterX | kLHintsExpandY,2,2,2,2));
+//	fTextButton2037->Resize(128,22);
+	fGroupFrame1974->AddFrame(fTextButton2037, new TGLayoutHints(kLHintsExpandY | kLHintsCenterX,2,2,2,2));
 	fTextButton2037->Connect("Clicked()",
 					"Alieve::TRDLoaderEditor", this, "AddChambers()");
 
@@ -421,8 +426,8 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
 	fGroupFrame1987->AddFrame(fLoadDigits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 	fLoadClusters = new TGCheckButton(fGroupFrame1987,"  Clusters");
 	fGroupFrame1987->AddFrame(fLoadClusters, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	fLoadESDs = new TGCheckButton(fGroupFrame1987,"  Tracklets ");
-	fGroupFrame1987->AddFrame(fLoadESDs, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
+	fLoadTracks = new TGCheckButton(fGroupFrame1987,"  Tracklets ");
+	fGroupFrame1987->AddFrame(fLoadTracks, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
 	fGroupFrame1987->SetLayoutManager(new TGVerticalLayout(fGroupFrame1987));
 //	fGroupFrame1987->Resize(164,116);
@@ -445,31 +450,57 @@ TRDLoaderEditor::~TRDLoaderEditor()
 void TRDLoaderEditor::SetModel(TObject* obj)
 {
 	fM = dynamic_cast<TRDLoader*>(obj);
+
+	fFile->SetText(gSystem->BaseName(fM->fFilename.Data()));
+
+	Bool_t kFile = kTRUE;
+	if(fM->fFilename.CompareTo("") == 0) kFile = kFALSE;
+
+	fEvent->SetEnabled(kFile);
+	if(kFile) fEvent->GetEntry()->SetIntNumber(fM->fEvent);
+	
+	fSMNumber->SetEnabled(kFile);
+	if(kFile) fSMNumber->GetEntry()->SetIntNumber(fM->fSM);
+	fStackNumber->SetEnabled(kFile);
+	if(kFile) fStackNumber->GetEntry()->SetIntNumber(fM->fStack);
+	fPlaneNumber->SetEnabled(kFile);
+	if(kFile) fPlaneNumber->GetEntry()->SetIntNumber(fM->fLy);
+	
+	fLoadHits->SetEnabled(kFile);
+	if(kFile) fLoadHits->SetState(fM->kLoadHits ? kButtonDown : kButtonUp);
+	fLoadDigits->SetEnabled(kFile);
+	if(kFile) fLoadDigits->SetState(fM->kLoadDigits ? kButtonDown : kButtonUp);
+	fLoadClusters->SetEnabled(kFile);
+	if(kFile) fLoadClusters->SetState(fM->kLoadClusters ? kButtonDown : kButtonUp);
+	fLoadTracks->SetEnabled(kFile);
+	if(kFile) fLoadTracks->SetState(fM->kLoadTracks ? kButtonDown : kButtonUp);
 }
 
 //________________________________________________________
 void TRDLoaderEditor::AddChambers()
 {
-	fM->AddChambers((int)fSMNumber->GetNumber(),
-		(int)fStackNumber->GetNumber(),
-		(int)fPlaneNumber->GetNumber());
+	fM->fSM    = (int)fSMNumber->GetEntry()->GetNumber();
+	fM->fStack = (int)fStackNumber->GetEntry()->GetNumber();
+	fM->fLy    = (int)fPlaneNumber->GetEntry()->GetNumber();
+	fM->AddChambers(fM->fSM, fM->fStack, fM->fLy);
 }
 
 //________________________________________________________
 void TRDLoaderEditor::FileOpen()
 {
   TGFileInfo fi;
-/*  fi.fIniDir    = StrDup(gSystem->DirName (fM->fFile));
-  fi.fFilename  = StrDup(gSystem->BaseName(fM->fFile));
-  fi.fFileTypes = tpcfiletypes;
-*/
+  fi.fIniDir    = StrDup(gSystem->DirName (fM->fFilename.Data()));
+  fi.fFilename  = StrDup(gSystem->BaseName(fM->fFilename.Data()));
+//  fi.fFileTypes = tpcfiletypes;
+
   new TGFileDialog(fClient->GetRoot(), gReve, kFDOpen, &fi);
   if (!fi.fFilename) return;
 
   fFile->SetToolTipText(gSystem->DirName (fi.fFilename));
   fFile->SetText       (gSystem->BaseName(fi.fFilename));
 
-	fM->Open(gSystem->BaseName(fi.fFilename));
+	fM->Open(gSystem->BaseName(fi.fFilename), gSystem->DirName (fi.fFilename));
+	SetModel(fM);
 }
 
 //________________________________________________________
@@ -482,7 +513,7 @@ void TRDLoaderEditor::Load()
 	if(fLoadHits->IsDown()) fM->kLoadHits = kTRUE;
 	if(fLoadDigits->IsDown()) fM->kLoadDigits = kTRUE;
 	if(fLoadClusters->IsDown()) fM->kLoadClusters = kTRUE;
-	if(fLoadESDs->IsDown()) fM->kLoadTracks = kTRUE;
+	if(fLoadTracks->IsDown()) fM->kLoadTracks = kTRUE;
 	
 	fM->GoToEvent((int)fEvent->GetEntry()->GetNumber());
 }

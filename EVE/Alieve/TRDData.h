@@ -25,6 +25,7 @@
 
 #include "AliTRDdataArrayI.h"
 
+class AliTRDdigitsManager;
 namespace Alieve {
 	class TRDChamber;
 	class TRDHits : public Reve::PointSet
@@ -46,16 +47,12 @@ namespace Alieve {
 		void			ComputeRepresentation();
 		void			Paint(Option_t *opt="");
 		void			Reset();
-		void			SetShow(Bool_t log=kFALSE, Bool_t box=kFALSE){kLog = log; kBox=box;}
-		void			SetData(AliTRDdataArrayI *digits);
-		void			SetThreshold(Int_t t){fThreshold = t;}
+		void			SetData(AliTRDdigitsManager *digits);
 
 	protected:
 		TRDChamber *fChamber;
 	
 	private:
-		Bool_t						kLog, kBox;
-		UShort_t					fThreshold;
 		Reve::BoxSet			fBoxes;
 		AliTRDdataArrayI	fData;
 		

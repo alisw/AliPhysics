@@ -4,6 +4,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDdigitsManager.h"
 
 using namespace Reve;
 using namespace Alieve;
@@ -20,23 +21,19 @@ ClassImp(TRDHits)
 TRDDigits::TRDDigits(TRDChamber *p): OldQuadSet("digits", ""), RenderElement()
 {
 	fChamber = p;
-	
-	kLog = kFALSE;
-	kBox  = kFALSE;
-	fThreshold = 10;
 }
 
 //________________________________________________________
-void	TRDDigits::SetData(AliTRDdataArrayI *digits)
+void	TRDDigits::SetData(AliTRDdigitsManager *digits)
 {
 	
 	fData.Allocate(fChamber->rowMax, fChamber->colMax, fChamber->timeMax);
-	digits->Expand();
+//	digits->Expand();
 	for (Int_t  row = 0;  row <  fChamber->rowMax;  row++)
 		for (Int_t  col = 0;  col <  fChamber->colMax;  col++)
 			for (Int_t time = 0; time < fChamber->timeMax; time++) {
-//		if(digits->GetDataUnchecked(row, col, time) > 20) printf("%d %d %d %d\n", row, col, time, digits->GetDataUnchecked(row, col, time));
-		fData.SetDataUnchecked(row, col, time, digits->GetDataUnchecked(row, col, time));
+				if(digits->GetDigitAmp(row, col, time, fChamber->GetID()) < 0) continue;
+				fData.SetDataUnchecked(row, col, time, digits->GetDigitAmp(row, col, time, fChamber->GetID()));
 	}
 }
 
@@ -75,10 +72,10 @@ void	TRDDigits::ComputeRepresentation()
 			
 			for (Int_t time = 0; time < fChamber->timeMax; time++) {
 				charge = fData.GetDataUnchecked(row, col, time);
-	  		if (charge < fThreshold) continue;
+	  		if (charge < fChamber->GetDigitsThreshold()) continue;
 				
 				x = fChamber->fX0 - (time+0.5-t0)*timeBinSize;
-				scale = kLog ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
+				scale = fChamber->GetDigitsLog() ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
 				color  = 50+int(scale*50.);
 				
 				cloc[0][2] = z - rowSize * scale;
@@ -98,7 +95,7 @@ void	TRDDigits::ComputeRepresentation()
 				cloc[3][0] = x;
 	
 				Float_t* p;
-				if(kBox){
+				if( fChamber->GetDigitsBox()){
 					fBoxes.fBoxes.push_back(Reve::Box());
 					fBoxes.fBoxes.back().color[0] = (UChar_t)color;
 					fBoxes.fBoxes.back().color[1] = (UChar_t)color;
@@ -129,7 +126,7 @@ void	TRDDigits::ComputeRepresentation()
 //________________________________________________________
 void TRDDigits::Paint(Option_t *option)
 {
-	if(kBox) fBoxes.Paint(option);
+	if(fChamber->GetDigitsBox()) fBoxes.Paint(option);
 	else OldQuadSet::Paint(option);
 }
 
