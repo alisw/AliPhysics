@@ -23,8 +23,11 @@
 #pragma link C++ class Alieve::ITSModule+;
 
 // MUON
-#pragma link C++ class Alieve::MUONDigitsInfo+;
-#pragma link C++ class Alieve::MUONModule+;
+#pragma link C++ class Alieve::MUONData+;
+#pragma link C++ class Alieve::MUONChamber+;
+#pragma link C++ class Alieve::MUONChamberData+;
+#pragma link C++ class Alieve::MUONChamberEditor+;
+#pragma link C++ class Alieve::MUONChamberGL+;
 
 // TPC
 #pragma link C++ class Alieve::TPCData+;
