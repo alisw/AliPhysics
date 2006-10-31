@@ -302,7 +302,6 @@ AliTRDCalibra::AliTRDCalibra()
   for (Int_t i = 0; i < 2; i++) {
     fPhd[i] = 0.0;
   }
-  fPhd[3] = 0.0;
 
   // Init
   Init();
@@ -7563,7 +7562,7 @@ void AliTRDCalibra::FitPH(TH1* projPH, Int_t idect)
 
     // Put the default value 
     if ((fDebug <= 1) || 
-        (fDebug  = 4)) {
+        (fDebug == 4)) {
       fCoefVdrift[0]->SetBinContent(idect+1,fVdriftCoef[2]);
       fCoefT0[0]->SetBinContent(idect+1,fT0Coef[2]);
     }
