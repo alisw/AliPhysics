@@ -95,7 +95,8 @@ MUONData::~MUONData()
 
 //______________________________________________________________________
 MUONData::MUONData(const MUONData &mdata) :
-  TObject(mdata)
+  TObject(mdata),
+  Reve::ReferenceCount()
 {
   //
   // Copy constructor
