@@ -11,50 +11,40 @@
 using namespace Reve;
 
 //______________________________________________________________________
-// QuadSetGL
+// OldQuadSetGL
 //
 
-ClassImp(QuadSetGL)
+ClassImp(OldQuadSetGL)
 
 /**************************************************************************/
 
-QuadSetGL::QuadSetGL() : TGLObject()
+OldQuadSetGL::OldQuadSetGL() : TGLObject()
 {
   // fCached = false; // Disable DL.
 }
 
-QuadSetGL::~QuadSetGL()
+OldQuadSetGL::~OldQuadSetGL()
 {}
 
 /**************************************************************************/
 
-Bool_t QuadSetGL::SetModel(TObject* obj)
+Bool_t OldQuadSetGL::SetModel(TObject* obj)
 {
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  return set_model(obj, "Reve::QuadSet");
-#elif ROOT_VERSION_CODE <= ROOT_VERSION(5,13,0)
-  return SetModelCheckClass(obj, "Reve::QuadSet");
-#else
-  return SetModelCheckClass(obj, Reve::QuadSet::Class());
-#endif
+  return SetModelCheckClass(obj, Reve::OldQuadSet::Class());
 }
 
-void QuadSetGL::SetBBox()
+void OldQuadSetGL::SetBBox()
 {
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  set_axis_aligned_bbox(((QuadSet*)fExternalObj)->AssertBBox());
-#else
-  SetAxisAlignedBBox(((QuadSet*)fExternalObj)->AssertBBox());
-#endif
+  SetAxisAlignedBBox(((OldQuadSet*)fExternalObj)->AssertBBox());
 }
 
 /**************************************************************************/
 
-void QuadSetGL::DirectDraw(const TGLDrawFlags & ) const
+void OldQuadSetGL::DirectDraw(const TGLDrawFlags & ) const
 {
-  // printf("QuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
+  // printf("OldQuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
 
-  QuadSet& Q = * (QuadSet*) fExternalObj;
+  OldQuadSet& Q = * (OldQuadSet*) fExternalObj;
 
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 

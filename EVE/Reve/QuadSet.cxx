@@ -47,18 +47,18 @@ Quad::Quad(TRandom& rnd, Float_t origin, Float_t size) : color(0)
 }
 
 /**************************************************************************/
-// QuadSet
+// OldQuadSet
 /**************************************************************************/
-ClassImp(Reve::QuadSet)
+ClassImp(Reve::OldQuadSet)
 
 
-QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
+OldQuadSet::OldQuadSet(const Text_t* n, const Text_t* t) :
   TNamed(n, t),
   fQuads(),
   fTrans(false)
 {}
 
-void QuadSet::Test(Int_t nquads)
+void OldQuadSet::Test(Int_t nquads)
 {
   TRandom rnd(0);
   fQuads.resize(nquads);
@@ -67,7 +67,7 @@ void QuadSet::Test(Int_t nquads)
   }
 }
 
-void QuadSet::Paint(Option_t* )
+void OldQuadSet::Paint(Option_t* )
 {
   TBuffer3D buffer(TBuffer3DTypes::kGeneric);
 
@@ -83,7 +83,7 @@ void QuadSet::Paint(Option_t* )
   // We fill kCore on first pass and try with viewer
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
   if (reqSections == TBuffer3D::kNone) {
-    // printf("QuadSet::Paint viewer was happy with Core buff3d.\n");
+    // printf("OldQuadSet::Paint viewer was happy with Core buff3d.\n");
     return;
   }
    
@@ -139,29 +139,17 @@ void QuadSet::Paint(Option_t* )
 
 /**************************************************************************/
 
-void QuadSet::ComputeBBox()
+void OldQuadSet::ComputeBBox()
 {
   if(fQuads.empty()) {
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-    bbox_zero();
-#else
     BBoxZero();
-#endif
     return;
   }
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  bbox_init();
-#else
   BBoxInit();
-#endif
   for(std::vector<Quad>::iterator q=fQuads.begin(); q!=fQuads.end(); ++q) {
     Float_t* p = q->vertices;
     for(int i=0; i<4; ++i, p+=3)
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-      bbox_check_point(p);
-#else
       BBoxCheckPoint(p);
-#endif
   }
 
   // printf("%s BBox is x(%f,%f), y(%f,%f), z(%f,%f)\n", GetName(),

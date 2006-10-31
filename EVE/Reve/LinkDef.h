@@ -101,6 +101,7 @@
 
 // QuadSet
 #pragma link C++ class Reve::Quad+;
+#pragma link C++ class Reve::OldQuadSet+;
 #pragma link C++ class Reve::QuadSet+;
 
 // BoxSet
@@ -135,6 +136,6 @@
 //================================
 
 // ReveGLRenderers
-#pragma link C++ class Reve::QuadSetGL+;
+#pragma link C++ class Reve::OldQuadSetGL+;
 #pragma link C++ class Reve::BoxSetGL+;
 #pragma link C++ class Reve::TriangleSetGL;

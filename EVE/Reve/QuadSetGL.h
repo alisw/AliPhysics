@@ -7,19 +7,19 @@
 
 namespace Reve {
 
-class QuadSetGL : public TGLObject
+class OldQuadSetGL : public TGLObject
 {
 protected:
   virtual void DirectDraw(const TGLDrawFlags & flags) const;
 
 public:
-  QuadSetGL();
-  virtual ~QuadSetGL();
+  OldQuadSetGL();
+  virtual ~OldQuadSetGL();
 
   virtual Bool_t SetModel(TObject* obj);
   virtual void   SetBBox();
 
-  ClassDef(QuadSetGL, 0);
+  ClassDef(OldQuadSetGL, 0);
 };
 
 }
