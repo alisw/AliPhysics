@@ -111,6 +111,7 @@ private:
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
   Bool_t         FillTriggerESD(AliESD*& esd);
+  Bool_t         FillRawEventHeaderESD(AliESD*& esd);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
   Bool_t         InitRunLoader();

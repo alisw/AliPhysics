@@ -42,6 +42,8 @@ public:
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}
+  void SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
+  void SetEventType(UInt_t eventType){fEventType = eventType;}
   void SetTriggerMask(ULong64_t n) {fTriggerMask=n;}
   void SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
   void SetMagneticField(Float_t mf){fMagneticField = mf;}
@@ -135,6 +137,8 @@ public:
 
   Int_t  GetEventNumber() const {return fEventNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
+  UInt_t    GetTimeStamp()  const { return fTimeStamp;}
+  UInt_t    GetEventType()  const { return fEventType;}
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
   UChar_t  GetTriggerCluster() const {return fTriggerCluster;}
   
@@ -202,6 +206,8 @@ protected:
   // Event Identification
   Int_t        fEventNumber;     // Event Number
   Int_t        fRunNumber;       // Run Number
+  UInt_t       fTimeStamp;       // Time stamp
+  UInt_t       fEventType;       // Type of Event
   ULong64_t    fTriggerMask;     // Trigger Type (mask)
   UChar_t      fTriggerCluster;  // Trigger cluster (mask)
   Int_t        fRecoVersion;     // Version of reconstruction 
@@ -241,7 +247,7 @@ protected:
  
   AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
 
-  ClassDef(AliESD,14)  //ESD class 
+  ClassDef(AliESD,15)  //ESD class 
 };
 #endif 
 

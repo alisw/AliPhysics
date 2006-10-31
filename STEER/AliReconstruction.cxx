@@ -122,6 +122,7 @@
 #include "AliRawReaderFile.h"
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliESD.h"
 #include "AliESDfriend.h"
 #include "AliESDVertex.h"
@@ -733,6 +734,8 @@ Bool_t AliReconstruction::Run(const char* input,
 	if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
       }
     }
+    // fill Event header information from the RawEventHeader
+    if (fRawReader){FillRawEventHeaderESD(esd);}
 
     // combined PID
     AliESDpid::MakePID(esd);
@@ -1254,6 +1257,30 @@ Bool_t AliReconstruction::FillTriggerESD(AliESD*& esd)
 
   return kTRUE;
 }
+
+
+
+
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::FillRawEventHeaderESD(AliESD*& esd)
+{
+  // 
+  // Filling information from RawReader Header
+  // 
+
+  AliInfo("Filling information from RawReader Header");
+  esd->SetTimeStamp(0);
+  esd->SetEventType(0);
+  const AliRawEventHeaderBase * eventHeader = fRawReader->GetEventHeader();
+  if (eventHeader){
+    esd->SetTimeStamp((eventHeader->Get("Timestamp")));  
+    esd->SetEventType((eventHeader->Get("Type")));  
+  }
+
+  return kTRUE;
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliReconstruction::IsSelected(TString detName, TString& detectors) const

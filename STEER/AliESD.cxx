@@ -31,6 +31,8 @@ ClassImp(AliESD)
 AliESD::AliESD():
   fEventNumber(0),
   fRunNumber(0),
+  fTimeStamp(0),
+  fEventType(0),
   fTriggerMask(0),
   fTriggerCluster(0),
   fRecoVersion(0),
@@ -72,6 +74,8 @@ AliESD::AliESD(const AliESD& esd):
   TObject(esd),
   fEventNumber(esd.fEventNumber),
   fRunNumber(esd.fRunNumber),
+  fTimeStamp(esd.fTimeStamp),
+  fEventType(esd.fEventType),
   fTriggerMask(esd.fTriggerMask),
   fTriggerCluster(esd.fTriggerCluster),
   fRecoVersion(esd.fRecoVersion),
@@ -118,6 +122,8 @@ AliESD & AliESD::operator=(const AliESD& source) {
 
   fEventNumber = source.fEventNumber;
   fRunNumber = source.fRunNumber;
+  fTimeStamp   = source.fTimeStamp;
+  fEventType   = source.fEventType;
   fTriggerMask = source.fTriggerMask;
   fTriggerCluster = source.fTriggerCluster;
   fRecoVersion = source.fRecoVersion;
@@ -183,6 +189,8 @@ void AliESD::Reset()
 {
   fEventNumber=0;
   fRunNumber=0;
+  fTimeStamp = 0;
+  fEventType = 0;
   fTriggerMask=0;
   fTriggerCluster=0;
   fRecoVersion=0;
