@@ -1,5 +1,20 @@
 2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* TRDLoaderSingle.cxx:
+	* TRDLoaderSingle.h:
+	* LinkDef.h:
+	* TRDData.cxx:
+	* TRDData.h:
+	* TRDLoader.cxx:
+	* TRDLoader.h:
+	* TRDModule.cxx:
+	* TRDModule.h:
+	* TRDModuleImp.cxx:
+	* TRDModuleImp.h:
+	From Alexandru: changes in TRD visualization.
+
+2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* ITSModule.cxx:
 	* ITSModule.h:
 	Replace QuadSet with OldQuadSet; from Raffale: remove a couple of

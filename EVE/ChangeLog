@@ -1,5 +1,10 @@
 2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* alice-macros/init_trd.C:
+	From Alexandru: changes in TRD visualization.
+
+2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* alice-macros/geom_rich.C:
 	Put all modules in common container.
 
