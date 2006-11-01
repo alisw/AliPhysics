@@ -253,19 +253,25 @@ C...Local arrays and character variables (NOT USED here DB)
       data first/.TRUE./
       save first
  
+      INTEGER LNROOT
+      CHARACTER*1000 CHROOT
+      CHROOT=' '
+
       if(first .AND. (LHAPARM(20).NE.'LHAPATH')) then
 c...overide the default PDFsets path
-c ... check first if the environmental variable LHAPATH is set ... of not the
-*     Use the lhapdf-config script to get the path to the PDF sets
-      call getenv('LHAPATH',lhapath)
-      if(lhapath.eq.'') then
-      call system("lhapdf-config --pdfsets-path > /tmp/lhapdf-pdfsets-pa
-     $th")
-      open(unit=8, file="/tmp/lhapdf-pdfsets-path", status="old", iostat
-     $=ierror)
-      read (8,'(A)') LHAPATH
-      close(8)
-      endif
+c ... check first if the environmental variable LHAPATH is set
+         call getenv('LHAPATH',lhapath)
+         if(lhapath.eq.'') then
+C     The environment variable LHAPATH is not set.
+C     Take the data from $ALICE_ROOT/LHAPDF/PDFsets
+            CALL GETENV('ALICE_ROOT',CHROOT)
+            LNROOT = LNBLNK(CHROOT)
+            IF(LNROOT.LE.0) THEN
+               LHAPATH='PDFsets' ! Default value
+            ELSE
+               LHAPATH=CHROOT(1:LNROOT)//'/LHAPDF/PDFsets'
+            ENDIF
+         endif
       first=.FALSE.
       endif
 c
@@ -1205,6 +1211,9 @@ C...Interface to LHAPDFLIB.
 * $Id$
 *
 * $Log$
+* Revision 1.1  2006/08/07 09:09:40  morsch
+* LHAPDF 5.2.2 source code.
+*
 * Revision 1.7  2005/12/02 14:50:54  whalley
 * Changes for new CTEQ code/AB sets
 *

@@ -14,7 +14,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet \
         STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
-        pythia6 AliPythia6 pdf THijing \
+        pythia6 AliPythia6 lhapdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
@@ -25,7 +25,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
 ifeq (macosx,$(ALICE_TARGET))
 
 ELIBSCPP:=$(filter-out microcern,$(ELIBS))
-ELIBSCPP:=$(filter-out pdf,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out lhapdf,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out mevsim,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
@@ -101,5 +101,5 @@ ARLIBS:= \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatarec.o $(LIBPATH)/libRAWDatarec.a \
    RAW/tgt_$(ALICE_TARGET)/G__MDC.o $(LIBPATH)/libMDC.a
 
-SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
+SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
 

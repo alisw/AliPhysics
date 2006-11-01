@@ -20,7 +20,7 @@ MICROCERN/module.mk:	 MICROCERN/libmicrocern.pkg
 MONITOR/module.mk:       MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg MONITOR/binmonitorCheck.pkg
 MUON/module.mk:		 MUON/libMUONrec.pkg MUON/libMUONsim.pkg MUON/libMUONbase.pkg MUON/libMUONraw.pkg MUON/libMUONmapping.pkg
 LHC/module.mk:		 LHC/libLHC.pkg
-PDF/module.mk:		 PDF/libpdf.pkg
+LHAPDF/module.mk:	 LHAPDF/liblhapdf.pkg
 PHOS/module.mk:		 PHOS/libPHOSbase.pkg PHOS/libPHOSsim.pkg PHOS/libPHOSrec.pkg
 PMD/module.mk:		 PMD/libPMDbase.pkg PMD/libPMDsim.pkg PMD/libPMDrec.pkg
 PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg

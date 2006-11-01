@@ -13,7 +13,7 @@ ELIBS    := Reve Alieve \
   ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
   EMCALbase EMCALsim EMCALrec EMCALjet \
   STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
-  pythia6 AliPythia6 pdf THijing \
+  pythia6 AliPythia6 lhapdf THijing \
   hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
@@ -31,7 +31,7 @@ ELIBS+=GL
 ELIBSDIR+=/usr/X11R6/lib/
 
 ELIBSCPP:=$(filter-out microcern,$(ELIBS))
-ELIBSCPP:=$(filter-out pdf,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out lhapdf,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out mevsim,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))

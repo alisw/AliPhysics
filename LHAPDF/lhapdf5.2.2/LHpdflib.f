@@ -31,17 +31,22 @@ c     --------------------------------------------------------
 c      integer :: ierror
       integer n, dirpathlength, setnamelength
       character*512 dirpath, setpath
+
+      INTEGER LNROOT
+      CHARACTER*1000 CHROOT
+      CHROOT=' '
+
 c check enviromental variable LHAPATH
       call getenv('LHAPATH',dirpath)
       if (dirpath.eq.'') then
-c      Use the lhapdf-config script to get the path to the PDF sets
-       call system
-     + ("lhapdf-config --pdfsets-path > /tmp/lhapdf-pdfsets-path")
-       open(unit=8, file="/tmp/lhapdf-pdfsets-path", status="old")
-c      open(unit=8, file="/tmp/lhapdf-pdfsets-path", status="old", iostat
-c      $=ierror)
-       read (8,'(A)') dirpath
-       close(8)
+C     Take the data from $ALICE_ROOT/LHAPDF/PDFsets
+         CALL GETENV('ALICE_ROOT',CHROOT)
+         LNROOT = LNBLNK(CHROOT)
+         IF(LNROOT.LE.0) THEN
+            dirpath='PDFsets'   ! Default value
+         ELSE
+            dirpath=CHROOT(1:LNROOT)//'/LHAPDF/PDFsets'
+         ENDIF
       endif
 
 c     Now do some mangling to get the right path length from the 
