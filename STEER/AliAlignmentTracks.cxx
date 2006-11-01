@@ -153,6 +153,9 @@ void AliAlignmentTracks::ProcessESD()
 
   AliESD *esd = 0;
   fESDChain->SetBranchAddress("ESD",&esd);
+  AliESDfriend *esdf = 0; 
+  fESDChain->SetBranchStatus("ESDfriend*",1);
+  fESDChain->SetBranchAddress("ESDfriend.",&esdf);
 
   // Open the output file
   if (fPointsFilename.Data() == "") {
@@ -172,6 +175,9 @@ void AliAlignmentTracks::ProcessESD()
   Int_t ievent = 0;
   while (fESDChain->GetEntry(ievent++)) {
     if (!esd) break;
+
+    esd->SetESDfriend(esdf); //Attach the friend to the ESD
+
     Int_t ntracks = esd->GetNumberOfTracks();
     for (Int_t itrack=0; itrack < ntracks; itrack++) {
       AliESDtrack * track = esd->GetTrack(itrack);

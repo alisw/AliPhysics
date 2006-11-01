@@ -106,7 +106,6 @@ AliESDtrack::AliESDtrack() :
   fRICHmipX(-1),
   fRICHmipY(-1),
   fEMCALindex(kEMCALNoMatch),
-  fPoints(0),
   fFriendTrack(new AliESDfriendTrack())
 {
   //
@@ -185,7 +184,6 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fRICHmipX(track.fRICHmipX),
   fRICHmipY(track.fRICHmipY),
   fEMCALindex(track.fEMCALindex),
-  fPoints(0),
   fFriendTrack(0)
 {
   //
@@ -217,7 +215,6 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
 
-  if (track.fPoints) fPoints=new AliTrackPointArray(*(track.fPoints));
   if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
 }
 
@@ -231,7 +228,6 @@ AliESDtrack::~AliESDtrack(){
   delete fOp;
   delete fCp; 
   delete fFriendTrack;
-  delete fPoints;
 }
 
 void AliESDtrack::AddCalibObject(TObject * object){
@@ -338,7 +334,6 @@ void AliESDtrack::MakeMiniESDtrack(){
   fEMCALindex = kEMCALNoMatch;
 
   delete fFriendTrack; fFriendTrack = 0;
-  delete fPoints; fPoints = 0;
 } 
 //_______________________________________________________________________
 Double_t AliESDtrack::GetMass() const {
@@ -892,15 +887,6 @@ Bool_t AliESDtrack::RelateToVertex
   }
 
   return kTRUE;
-}
-
-void AliESDtrack::SetTrackPointArray(AliTrackPointArray *points) { 
-    fPoints=points;
-    //fFriendTrack->SetTrackPointArray(points); 
-}
-const AliTrackPointArray *AliESDtrack::GetTrackPointArray() const { 
-    return fPoints;
-  //return fFriendTrack->GetTrackPointArray(); 
 }
 
 //_______________________________________________________________________

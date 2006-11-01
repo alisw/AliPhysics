@@ -226,9 +226,12 @@ public:
   void SetEMCALcluster(Int_t index) {fEMCALindex=index;}
   Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
 
-  void   SetTrackPointArray(AliTrackPointArray *points);
-  const AliTrackPointArray *GetTrackPointArray() const; 
-
+  void SetTrackPointArray(AliTrackPointArray *points) {
+    fFriendTrack->SetTrackPointArray(points);
+  }
+  const AliTrackPointArray *GetTrackPointArray() const {
+    return fFriendTrack->GetTrackPointArray(); 
+  }
   Bool_t RelateToVertex(const AliESDVertex *vtx, Double_t b, Double_t maxd);
   void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
@@ -339,9 +342,7 @@ protected:
   Float_t fRICHmipY;       // y of the MIP in LORS
   
   // EMCAL related track information
-  Int_t fEMCALindex;       // index of associated EMCAL cluster (AliESDCaloCluster)
-
-  AliTrackPointArray *fPoints;// Array of track space points in the global frame
+  Int_t fEMCALindex;   // index of associated EMCAL cluster (AliESDCaloCluster)
 
   AliESDfriendTrack *fFriendTrack; //! All the complementary information
 
@@ -349,7 +350,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,32)  //ESDtrack 
+  ClassDef(AliESDtrack,33)  //ESDtrack 
 };
 
 #endif 
