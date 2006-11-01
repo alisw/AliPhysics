@@ -78,20 +78,6 @@ fFlagFirstEv(kTRUE){
 
 }
 
-//______________________________________________________________________
-//AliITSDigitizer::AliITSDigitizer(const AliITSDigitizer &/*rec*/):AliDigitizer(/*rec*/){
-    // Copy constructor. 
-
-//  Error("Copy constructor","Copy constructor not allowed");
-  
-//}
-//______________________________________________________________________
-AliITSDigitizer& AliITSDigitizer::operator=(const AliITSDigitizer& /*source*/){
-    // Assignment operator. This is a function which is not allowed to be
-    // done.
-    Error("operator=","Assignment operator not allowed\n");
-    return *this; 
-}
 
 //______________________________________________________________________
 AliITSDigitizer::~AliITSDigitizer(){

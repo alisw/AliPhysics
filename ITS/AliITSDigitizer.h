@@ -22,8 +22,6 @@ class AliITSDigitizer : public AliDigitizer{
  public:
     AliITSDigitizer();
     AliITSDigitizer(AliRunDigitizer *manager);
-    AliITSDigitizer(const AliITSDigitizer& dig);
-    AliITSDigitizer& operator=(const AliITSDigitizer &source);
 
     virtual ~AliITSDigitizer();
     // Standard routines.
@@ -47,6 +45,8 @@ class AliITSDigitizer : public AliDigitizer{
     // Region of interest cut will not be made.
     virtual void ClearByRegionOfInterestFlag(){fRoif = 0;};
  private:
+    AliITSDigitizer(const AliITSDigitizer& dig);
+    AliITSDigitizer& operator=(const AliITSDigitizer &source);
     // Routines used internaly
     // Returns a pointer to the TObjecArray of Modules.
     TObjArray* GetModules(){return fITS->GetModules();}
