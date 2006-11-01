@@ -39,6 +39,7 @@
 #include "AliTPCRecoParam.h"
 #include "AliRawReader.h"
 #include "AliTPCRawStream.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "Riostream.h"
@@ -70,6 +71,9 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fZWidth(0),
   fPedSubtraction(kFALSE),
   fIsOldRCUFormat(kFALSE),
+  fEventHeader(0),
+  fTimeStamp(0),
+  fEventType(0),
   fInput(0),
   fOutput(0),
   fRowCl(0),
@@ -626,6 +630,12 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   AliTPCROC * roc = AliTPCROC::Instance();
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCRawStream input(rawReader);
+  fEventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
+  if (fEventHeader){
+    fTimeStamp = fEventHeader->Get("Timestamp");  
+    fEventType = fEventHeader->Get("Type");  
+  }
+
 
   Int_t nclusters  = 0;
   
@@ -745,7 +755,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	  Float_t *p = &allBins[iRow][iPad*fMaxTime+3];
 	  //Float_t pedestal = TMath::Median(fMaxTime, p);	
 	  Int_t id[3] = {fSector, iRow, iPad-3};
-	  Float_t pedestal = ProcesSignal(p, fMaxTime, id);
+	  Double_t rms=0;
+	  Float_t pedestal = ProcesSignal(p, fMaxTime, id, rms);
 	  for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
 	    allBins[iRow][iPad*fMaxTime+iTimeBin] -= pedestal;
 	    if (iTimeBin < AliTPCReconstructor::GetRecoParam()->GetFirstBin())  
@@ -754,6 +765,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
 	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
 	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
+	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < 3.0*rms)   // 3 sigma cut on RMS
+	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;	    
 	  }
 	}
       }
@@ -866,7 +879,7 @@ void AliTPCclustererMI::FindClusters()
 }
 
 
-Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t id[3]){
+Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t id[3], Double_t &rmsOut){
   //
   // process signal on given pad - + streaming of additional information in special mode
   //
@@ -942,6 +955,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   rms    = TMath::Sqrt(TMath::Abs(rms/count10-mean*mean));
   rms06    = TMath::Sqrt(TMath::Abs(rms06/count06-mean06*mean06));
   rms09    = TMath::Sqrt(TMath::Abs(rms09/count09-mean09*mean09));
+  rmsOut = rms09;
   //
   if (AliLog::GetDebugLevel("","AliTPCclustererMI")==0) return median;
   //
@@ -950,6 +964,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   // Dump mean signal info
   //
   (*fDebugStreamer)<<"Signal"<<
+    "TimeStamp="<<fTimeStamp<<
+    "EventType="<<fEventType<<
     "Sector="<<uid[0]<<
     "Row="<<uid[1]<<
     "Pad="<<uid[2]<<
@@ -1015,6 +1031,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     graph =new TGraph(nchannels, dtime, dsignal);
     if (rms06>2.*fParam->GetZeroSup() || random)
       (*fDebugStreamer)<<"SignalN"<<    //noise pads - or random sample of pads
+	"TimeStamp="<<fTimeStamp<<
+	"EventType="<<fEventType<<
 	"Sector="<<uid[0]<<
 	"Row="<<uid[1]<<
 	"Pad="<<uid[2]<<
@@ -1032,6 +1050,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	"\n";
     if (max-median>kMin &&maxPos>AliTPCReconstructor::GetRecoParam()->GetFirstBin()) 
       (*fDebugStreamer)<<"SignalB"<<     // pads with signal
+	"TimeStamp="<<fTimeStamp<<
+	"EventType="<<fEventType<<
 	"Sector="<<uid[0]<<
 	"Row="<<uid[1]<<
 	"Pad="<<uid[2]<<
@@ -1091,6 +1111,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     if (ceQmax&&ceQsum>ceSumThreshold) {
       ceTime/=ceQsum;
       (*fDebugStreamer)<<"Signalce"<<
+	"TimeStamp="<<fTimeStamp<<
+	"EventType="<<fEventType<<
 	"Sector="<<uid[0]<<
 	"Row="<<uid[1]<<
 	"Pad="<<uid[2]<<
@@ -1134,6 +1156,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       if (ggQmax&&ggQsum>ggSumThreshold) {
 	  ggTime/=ggQsum;
 	  (*fDebugStreamer)<<"Signalgg"<<
+	    "TimeStamp="<<fTimeStamp<<
+	    "EventType="<<fEventType<<
 	      "Sector="<<uid[0]<<
 	      "Row="<<uid[1]<<
 	      "Pad="<<uid[2]<<
@@ -1188,6 +1212,8 @@ void AliTPCclustererMI::DumpHistos(){
       Int_t rpad = pad - (AliTPCROC::Instance()->GetNPads(isector,row))/2;
       //
       (*fDebugStreamer)<<"Fit"<<
+	"TimeStamp="<<fTimeStamp<<
+	"EventType="<<fEventType<<
 	"Sector="<<isector<<
 	"Row="<<row<<
 	"Pad="<<pad<<

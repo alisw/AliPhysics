@@ -26,6 +26,7 @@ class AliRawReader;
 class AliSimDigits;
 class TTree;
 class TTreeSRedirector;
+class  AliRawEventHeaderBase;
 
 class AliTPCclustererMI : public TObject{
 public:
@@ -50,7 +51,7 @@ private:
   void UnfoldCluster(Float_t * matrix[7], Float_t recmatrix[5][5], 
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
   void FindClusters();
-  Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3]);
+  Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms);
   void DumpHistos();
 
 
@@ -70,7 +71,9 @@ private:
 
   Bool_t  fPedSubtraction; // perform pedestal subtraction or not
   Bool_t  fIsOldRCUFormat; // assume old RCU raw data format
-
+  AliRawEventHeaderBase *fEventHeader; //! event header information
+  UInt_t  fTimeStamp;   // Time Stamp
+  UInt_t  fEventType;   // Event Type
   TTree * fInput;   //!input  tree with digits - object not owner
   TTree * fOutput;   //!output tree with digits - object not owner
   AliTPCClustersRow * fRowCl;  //! current cluster row
