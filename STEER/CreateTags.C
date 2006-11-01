@@ -51,7 +51,7 @@ void CreateTags() {
   //___________________________________//
   //XML collection
   //TAlienCollection *collection = TAlienCollection::Open("pp.xml");
-  //TGridResult* result = collection->GetGridResult("",1);
+  //TGridResult* result = collection->GetGridResult("");
   //Read the TGridResult, create the tags and store them
   //t->ReadGridCollection(result);
 
