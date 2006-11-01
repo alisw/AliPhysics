@@ -40,7 +40,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fBCalcPedestal(kFALSE),
   fBDoUnfold(kTRUE),
   fDumpAmplitudeMin(100),
-  fMaxNoise(3.),
+  fMaxNoise(2.),
   fMaxC(0.3),
   fBSpecialSeeding(kFALSE),
   fBKinkFinder(kTRUE)
