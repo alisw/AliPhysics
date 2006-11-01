@@ -51,7 +51,7 @@ void AliRICHDigitizer::Exec(Option_t*)
     pInRichLoader->UnloadSDigits();   pInRich->SdiReset(); //close current input and reset 
   }//files loop
 
-  if(sdigs.GetEntries()==0) return;                                                              //no sdigits collected, nothing to convert  
+  //PH  if(sdigs.GetEntries()==0) return;                                                              //no sdigits collected, nothing to convert  
   
   AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    //open output stream (only 1 possible)
   AliLoader    *pOutRichLoader = pOutRunLoader->GetLoader("RICHLoader");                         //take output RICH loader
