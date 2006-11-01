@@ -191,7 +191,7 @@ void AliTPCcalibDB::Update(){
   if (entry){
     //if (fPadNoise) delete fPadNoise;
     entry->SetOwner(kTRUE);
-    fParam = (AliTPCParam*)entry->GetObject();
+    fParam = (AliTPCParam*)(entry->GetObject()->Clone());
   }
 
 
