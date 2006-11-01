@@ -66,6 +66,7 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 #include "TFitter.h"
 #include  "TMatrixD.h"
 #include  "TRobustEstimator.h"
+#include  "TTimeStamp.h"
 
 #include  "AliLog.h"
 #include  "AliMagF.h"
@@ -164,7 +165,7 @@ void AnalyzeESDtracks(Int_t run){
   TTreeSRedirector * pcestream = new  TTreeSRedirector("TimeRoot.root");
   TTree * treece = (TTree*)fs.Get("Signalce");
   if (tree) {
-    LaserCalib(*pcestream, treece, 900,1000, 0.7);
+    LaserCalib(*pcestream, treece, 800,1000, 0.7);
     delete pcestream;
   }
   FitSignals(treeB,"Max-Median>150&&RMS06<1.0&&RMS09<1.5&&abs(Median-Mean09)<0.2&&abs(Mean06-Mean09)<0.2",1000);
@@ -311,6 +312,7 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
   TBranch * brsector  = treece->GetBranch("Sector");
   TBranch * brpad     = treece->GetBranch("Pad");
   TBranch * brrow     = treece->GetBranch("Row");
+  TBranch * brTimeStamp = treece->GetBranch("TimeStamp");
   //
   TBranch * brtime    = treece->GetBranch("Time");
   TBranch * brrms     = treece->GetBranch("RMS06");
@@ -319,9 +321,11 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
 
   Int_t sector, pad, row=0;
   Double_t time=0, rms=0, qMax=0, qSum=0;
+  UInt_t  timeStamp=0;
   brsector->SetAddress(&sector);
   brrow->SetAddress(&row);
   brpad->SetAddress(&pad);
+  brTimeStamp->SetAddress(&timeStamp);
   
   brtime->SetAddress(&time);
   brrms->SetAddress(&rms);
@@ -358,6 +362,8 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
     if (sector!=lastSector && sector==firstSector){
       //if (sector!=lastSector){
       lentry = ientry;
+      TTimeStamp stamp(timeStamp);
+      stamp.Print();
       printf("\nEvent\t%d\tFirst\t%d\tLast\t%d\t%d\n",count, fentry, lentry, lentry-fentry);
       //
       //
@@ -408,6 +414,7 @@ void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t
 	Int_t npadS = lastS[sector]-firstS[sector];
 	cstream<<"Time"<<
 	  "Event="<<count<<
+	  "TimeStamp="<<timeStamp<<
 	  "CBin="<<cbin<<
 	  "x="<<x<<
 	  "y="<<y<<
