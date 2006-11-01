@@ -438,7 +438,12 @@ void AliRICHv1::Digits2Raw()
 //   Returns: none    
   AliDebug(1,"Start.");
   GetLoader()->LoadDigits();
-  GetLoader()->TreeD()->GetEntry(0);
+  TTree * treeD = GetLoader()->TreeD();
+  if(!treeD) {
+    AliError("No digits tree!");
+    return;
+  }
+  treeD->GetEntry(0);
   
   ofstream file[AliRICHDigit::kNddls];   //output streams
   Int_t    cnt[AliRICHDigit::kNddls];        //data words counters for DDLs
