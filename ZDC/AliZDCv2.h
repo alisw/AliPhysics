@@ -22,6 +22,7 @@ public:
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 1;}
   virtual void  DrawModule() const;
+  virtual void  AddAlignableVolumes() const;
   virtual void  Init();
   virtual void  InitTables();
   virtual void  StepManager();

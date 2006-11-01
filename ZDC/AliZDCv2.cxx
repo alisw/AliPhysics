@@ -36,6 +36,7 @@
 #include <TSystem.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
 
 // --- AliRoot classes
 #include "AliConst.h"
@@ -1113,6 +1114,28 @@ void AliZDCv2::CreateMaterials()
   fMedSensPI  = idtmed[7];  // Sensitive volume: beam pipes
   fMedSensGR  = idtmed[12]; // Sensitive volume: air into the grooves
 } 
+
+//_____________________________________________________________________________
+void AliZDCv2::AddAlignableVolumes() const
+{
+ //
+ // Create entries for alignable volumes associating the symbolic volume
+ // name with the corresponding volume path. Needs to be syncronized with
+ // eventual changes in the geometry.
+ //
+ Int_t modnum = 0;
+ TString volpath1 = "ALIC_1/ZDC_1/ZNEU_1";
+ TString volpath2 = "ALIC_1/ZDC_1/ZPRO_1";
+
+ TString symname1="ZDC/NeutronZDC";
+ TString symname2="ZDC/ProtonZDC";
+
+ if(!gGeoManager->SetAlignableEntry(symname1.Data(),volpath1.Data()))
+     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname1.Data(),volpath1.Data()));
+
+ if(!gGeoManager->SetAlignableEntry(symname2.Data(),volpath2.Data()))
+     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname2.Data(),volpath2.Data()));
+}
 
 //_____________________________________________________________________________
 void AliZDCv2::Init()
