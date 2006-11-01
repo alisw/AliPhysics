@@ -636,18 +636,12 @@ Bool_t AliReconstruction::Run(const char* input,
   delete esd; delete hltesd;
   esd = NULL; hltesd = NULL;
 
-  // create the file and tree with ESD additions
-  TFile *filef=0; TTree *treef=0; AliESDfriend *esdf=0;
+  // create the branch with ESD additions
+  AliESDfriend *esdf=0;
   if (fWriteESDfriend) {
-     filef = TFile::Open("AliESDfriends.root", "RECREATE");
-     if (!filef->IsOpen()) {
-        AliError("opening AliESDfriends.root failed");
-     }
-     treef = new TTree("esdFriendTree", "Tree with ESD friends");
-     treef->Branch("ESDfriend", "AliESDfriend", &esdf);
+     TBranch *br=tree->Branch("ESDfriend.", "AliESDfriend", &esdf);
+     br->SetFile("AliESDfriends.root");
   }
-
-  gROOT->cd();
 
   AliVertexerTracks tVertexer;
   if(fDiamondProfile) tVertexer.SetVtxStart(fDiamondProfile);
@@ -753,34 +747,28 @@ Bool_t AliReconstruction::Run(const char* input,
     esd->SetPrimaryVertex(tVertexer.FindPrimaryVertex(esd));
 
     // write ESD
-    tree->Fill();
-    // write HLT ESD
-    hlttree->Fill();
-
-    // write ESD friend
     if (fWriteESDfriend) {
        esdf=new AliESDfriend();
        esd->GetESDfriend(esdf);
-       treef->Fill();  
     }
+    tree->Fill();
+
+    // write HLT ESD
+    hlttree->Fill();
 
     if (fCheckPointLevel > 0)  WriteESD(esd, "final"); 
  
-    delete esd; delete hltesd;
-    esd = NULL; hltesd = NULL;
+    delete esd; delete esdf; delete hltesd;
+    esd = NULL; esdf=NULL; hltesd = NULL;
   }
 
   AliInfo(Form("Execution time for filling ESD : R:%.2fs C:%.2fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   file->cd();
+  tree->SetBranchStatus("ESDfriend*",0);
   tree->Write();
   hlttree->Write();
-
-  if (fWriteESDfriend) {
-     filef->cd();
-     treef->Write(); delete treef; filef->Close(); delete filef; 
-  }
 
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
