@@ -1,8 +1,0 @@
-INCLUDES=	 expdp.inc impdp.inc pilot.h \ @@\
-	w50510.inc w50511.inc w505110.inc w50511a.inc \ @@\
-	w50511c.inc w50512.inc w505120.inc 505121.inc w505122.inc \ @@\
-	ww50513.inc w50514.inc w50514w.inc 50515.inc w50516.inc \ @@\
-	ww50517.inc w50518.inc w50518a.inc w50519.inc w505190.inc \ @@\
-	w5051p0.inc w5051p1.inc w5051p2.inc w5051p3.inc w5051p7.inc
-
-InstallIncludes($(INCLUDES),$(CERN_INCLUDEDIR),pdf804)
