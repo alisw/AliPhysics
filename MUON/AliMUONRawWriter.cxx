@@ -833,7 +833,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
 	    localMask |= (0x1 << iLoc); // local mask
 	    if (isFired[iLocCard]) { // if card has triggered
-	      locTrg  = (AliMUONLocalTrigger*)localTrigger->At(iEntries);
+	      locTrg  = (AliMUONLocalTrigger*)localTrigger->At(iEntries++);
 	      locCard = locTrg->LoCircuit();
 	      locDec  = locTrg->GetLoDecision();
 	      trigY = 0;
@@ -875,8 +875,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 	      buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
 	      buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
 	      buffer[index++] = (Int_t)word; // data word
-	      if (iEntries < nEntries-1)
-		iEntries++;
+
 	    } else {
 	      buffer[index++] = 0; // 4 words for x1, x2, y1, y2
 	      buffer[index++] = 0; 

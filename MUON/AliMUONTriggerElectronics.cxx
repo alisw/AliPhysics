@@ -548,79 +548,84 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 //    DumpOS();
 	
   AliMUONTriggerCrate* cr;
-  fCrates->FirstCrate();
+ 
+  // stored in right order
+  // do not used iterator order
 
-  while ( ( cr = fCrates->NextCrate() ) )
+  for (Int_t iSide = 0; iSide < 2; iSide++) // right & left side
   {            
-    TObjArray *boards = cr->Boards();
+    for (Int_t iReg = 0; iReg < 8; iReg++) // 8 crates/regional boards for each side.
+    {
+      cr = fCrates->Crate(iSide, iReg);     
+      TObjArray *boards = cr->Boards();
 
-    UInt_t regInpLpt = 0;
-    UInt_t regInpHpt = 0;
-    UShort_t localMask = 0x0;
+      UInt_t regInpLpt = 0;
+      UInt_t regInpHpt = 0;
+      UShort_t localMask = 0x0;
 
-    AliMUONRegionalTriggerBoard *regBoard = (AliMUONRegionalTriggerBoard*)boards->At(0);
+      AliMUONRegionalTriggerBoard *regBoard = (AliMUONRegionalTriggerBoard*)boards->At(0);
 
-    for (Int_t j = 1; j < boards->GetEntries(); j++)
-    {     
-      TObject *o = boards->At(j);
+      for (Int_t j = 1; j < boards->GetEntries(); j++)
+      {     
+	TObject *o = boards->At(j);
       
-      if (!o) break;
+	if (!o) break;
       
-      AliMUONLocalTriggerBoard *board = (AliMUONLocalTriggerBoard*)o;
+	AliMUONLocalTriggerBoard *board = (AliMUONLocalTriggerBoard*)o;
       
-      if (board) 
-      {
-        //          L0 TRIGGER
-        if (board->Triggered())
-        {
+	if (board) 
+	{
+	  //          L0 TRIGGER
+	  if (board->Triggered())
+	  {
           
-          Int_t icirc = board->GetNumber();
+	    Int_t icirc = board->GetNumber();
 
-          fLocalTrigger->SetLoCircuit(icirc);
-          fLocalTrigger->SetLoStripX(board->GetStripX11());
-          fLocalTrigger->SetLoDev(board->GetDev());
-          fLocalTrigger->SetLoStripY(board->GetStripY11());
+	    fLocalTrigger->SetLoCircuit(icirc);
+	    fLocalTrigger->SetLoStripX(board->GetStripX11());
+	    fLocalTrigger->SetLoDev(board->GetDev());
+	    fLocalTrigger->SetLoStripY(board->GetStripY11());
           
-          //             SAVE LUT OUTPUT 
-          UShort_t response = board->GetResponse();
-          fLocalTrigger->SetLoHpt((response & 12) >> 2);
-	  fLocalTrigger->SetLoLpt(response &  3);
+	    //             SAVE LUT OUTPUT 
+	    UShort_t response = board->GetResponse();
+	    fLocalTrigger->SetLoHpt((response & 12) >> 2);
+	    fLocalTrigger->SetLoLpt(response &  3);
 
-	  // calculates regional inputs from local for the moment
-	  UInt_t hPt = (response >> 4) & 0x3;
-	  UInt_t lPt = (response >> 2) & 0x3;
+	    // calculates regional inputs from local for the moment
+	    UInt_t hPt = (response >> 4) & 0x3;
+	    UInt_t lPt = (response >> 2) & 0x3;
 	    
-	  regInpHpt |= hPt << (30 - (j-1)*2);
-	  regInpLpt |= lPt << (30 - (j-1)*2);
-	  localMask |= (0x1 << (j-1)); // local mask
+	    regInpHpt |= hPt << (30 - (j-1)*2);
+	    regInpLpt |= lPt << (30 - (j-1)*2);
+	    localMask |= (0x1 << (j-1)); // local mask
 
-          TBits rrr;
-          rrr.Set(6,&response);	  
+	    TBits rrr;
+	    rrr.Set(6,&response);	  
           
-          //             SAVE BIT PATTERN
-          fLocalTrigger->SetX1Pattern(board->GetXY(0,0));
-          fLocalTrigger->SetX2Pattern(board->GetXY(0,1));
-          fLocalTrigger->SetX3Pattern(board->GetXY(0,2));
-          fLocalTrigger->SetX4Pattern(board->GetXY(0,3));
+	    //             SAVE BIT PATTERN
+	    fLocalTrigger->SetX1Pattern(board->GetXY(0,0));
+	    fLocalTrigger->SetX2Pattern(board->GetXY(0,1));
+	    fLocalTrigger->SetX3Pattern(board->GetXY(0,2));
+	    fLocalTrigger->SetX4Pattern(board->GetXY(0,3));
           
-          fLocalTrigger->SetY1Pattern(board->GetXY(1,0));
-          fLocalTrigger->SetY2Pattern(board->GetXY(1,1));
-          fLocalTrigger->SetY3Pattern(board->GetXY(1,2));
-          fLocalTrigger->SetY4Pattern(board->GetXY(1,3));
+	    fLocalTrigger->SetY1Pattern(board->GetXY(1,0));
+	    fLocalTrigger->SetY2Pattern(board->GetXY(1,1));
+	    fLocalTrigger->SetY3Pattern(board->GetXY(1,2));
+	    fLocalTrigger->SetY4Pattern(board->GetXY(1,3));
           
-          //             ADD A NEW LOCAL TRIGGER          
-          fMUONData->AddLocalTrigger(*fLocalTrigger);  
+	    //             ADD A NEW LOCAL TRIGGER          
+	    fMUONData->AddLocalTrigger(*fLocalTrigger);  
 	  
-        }
+	  }
+	}
       }
-    }
-    pRegTrig->SetLocalOutput(regInpLpt, 0);
-    pRegTrig->SetLocalOutput(regInpHpt, 1);
-    pRegTrig->SetLocalMask(localMask);
-    pRegTrig->SetOutput((regBoard->GetResponse() >> 4) & 0xF); // to be uniformized (oct06 ?)
+      pRegTrig->SetLocalOutput(regInpLpt, 0);
+      pRegTrig->SetLocalOutput(regInpHpt, 1);
+      pRegTrig->SetLocalMask(localMask);
+      pRegTrig->SetOutput((regBoard->GetResponse() >> 4) & 0xF); // to be uniformized (oct06 ?)
 
-    fMUONData->AddRegionalTrigger(*pRegTrig);  
-    
+      fMUONData->AddRegionalTrigger(*pRegTrig);  
+    }
   }
   delete pRegTrig;
   
