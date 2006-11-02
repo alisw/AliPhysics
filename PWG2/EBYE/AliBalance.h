@@ -12,18 +12,18 @@
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
-#include <TNamed.h>
+#include <TObject.h>
 
 #define MAXIMUM_NUMBER_OF_STEPS	1024
 
 class TLorentzVector;
 class TGraphErrors;
 
-class AliBalance : public TNamed
+class AliBalance : public TObject
 {
  public:
-  AliBalance(const char* name, const char* title);
-  AliBalance(const char* name, const char* title, Double_t p2Start, Double_t p2Stop, Int_t p2Steps);
+  AliBalance();
+  AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Steps);
   AliBalance(const AliBalance& balance);
   ~AliBalance();
   
