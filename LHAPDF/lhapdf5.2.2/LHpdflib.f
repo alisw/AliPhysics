@@ -26,6 +26,7 @@ c     --------------------------------------------------------
       
       subroutine InitPDFsetByNameM(nset,setname)
       implicit none
+      INTEGER LNBLNK
       character setname*(*)
       integer nset
 c      integer :: ierror
