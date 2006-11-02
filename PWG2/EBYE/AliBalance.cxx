@@ -31,7 +31,7 @@
 ClassImp(AliBalance)
 
 //____________________________________________________________________//
-AliBalance::AliBalance(const char* name, const char* title) :TNamed(name,title) {
+  AliBalance::AliBalance() :TObject() {
   // Default constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
@@ -52,7 +52,7 @@ AliBalance::AliBalance(const char* name, const char* title) :TNamed(name,title) 
 }
 
 //____________________________________________________________________//
-AliBalance::AliBalance(const char* name, const char* title, Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :TNamed(name,title) {
+AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :TObject() {
   // Constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
@@ -75,7 +75,7 @@ AliBalance::AliBalance(const char* name, const char* title, Double_t p2Start, Do
 
 //____________________________________________________________________//
 AliBalance::AliBalance(const AliBalance& balance):
-  TNamed(balance),
+  TObject(balance),
   fNtrack(balance.fNtrack),
   fNumberOfBins(balance.fNumberOfBins),
   fAnalysisType(balance.fAnalysisType),
