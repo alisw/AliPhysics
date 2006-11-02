@@ -220,6 +220,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *RunT
   TEventList *fEventList = new TEventList();
   TString guid = 0x0;
   TString turl = 0x0;
+  TString lfn = 0x0;
   
   //Defining tag objects
   AliRunTag *tag = new AliRunTag;
@@ -235,9 +236,10 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *RunT
 	evTag = (AliEventTag *) tagList->At(i);
 	guid = evTag->GetGUID(); 
 	turl = evTag->GetTURL(); 
+	lfn = turl(8,turl.Length());
 	if(EvTagCuts->IsAccepted(evTag)) fEventList->Enter(i);
       }//event loop
-      collection->WriteBody(iTagFiles+1,guid,turl,fEventList);
+      collection->WriteBody(iTagFiles+1,guid,lfn,turl,fEventList);
       fEventList->Clear();
     }//run tag cuts
   }//tag file loop
@@ -261,6 +263,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, const char *fRunCut
   TEventList *fEventList = new TEventList();
   TString guid = 0x0;
   TString turl = 0x0;
+  TString lfn = 0x0;
   
   //Defining tag objects
   AliRunTag *tag = new AliRunTag;
@@ -285,9 +288,10 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, const char *fRunCut
 	evTag = (AliEventTag *) tagList->At(i);
 	guid = evTag->GetGUID(); 
 	turl = evTag->GetTURL(); 
+	lfn = turl(8,turl.Length());
 	if(fEventFormula->EvalInstance(i) == 1) fEventList->Enter(i);
       }//event loop
-      collection->WriteBody(iTagFiles+1,guid,turl,fEventList);
+      collection->WriteBody(iTagFiles+1,guid,lfn,turl,fEventList);
       fEventList->Clear();
     }//run tag cuts
   }//tag file loop

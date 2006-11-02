@@ -60,14 +60,14 @@ Bool_t AliXMLCollection::WriteHeader() {
   // Open the output stream
   fout.open(xmlName);
   fout<<"<?xml version=\"1.0\"?>\n";
-  fout<<"<tags>\n";
+  fout<<"<alien>\n";
   fout<<"  "<<collectionHeader<<"\n";  
 
   return kTRUE;
 }
 
 //___________________________________________________________________________
-Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* turl, TEventList *list) {
+Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* lfn, const char* turl, TEventList *list) {
   //Writes the body of the xml collection
   TString listline;
   for(Int_t i = 0; i < list->GetN(); i++) {
@@ -83,6 +83,9 @@ Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* 
   TString line1 = "<file name=\"AliESDs.root\" ";
   line1 += "guid=\"";
   line1 += guid;
+  line1 += "\" ";
+  line1 += "lfn=\"";
+  line1 += lfn;
   line1 += "\" ";
   line1 += "turl=\"";
   line1 += turl;
@@ -103,7 +106,7 @@ Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* 
 Bool_t AliXMLCollection::Export() {
   //Closes the stream
   fout<<"  "<<"</collection>\n";
-  fout<<"</tags>\n";
+  fout<<"</alien>\n";
 
   fout.close();
 
