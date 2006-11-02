@@ -135,36 +135,6 @@ C...interface to LHAPDF library
 
 C*********************************************************************
 
-      BLOCK DATA LHAPDFSET
-c... additions for multiset use
-      include 'parmsetup.inc'
-      include 'pathsetup.inc'
-c      character*172 LHANAMES(nmxset)
-      integer LHASET, LHAMEMB
-      common/LHAPDF/LHANAME, LHASET, LHAMEMB
-      integer LHAMEMBERS(nmxset),LHANUMBERS(nmxset)
-      common/LHASETS/LHANAMES,LHANUMBERS,LHAMEMBERS,nsets
-      data nsets/0/
-c...
-c      CHARACTER*132 LHAPATH
-      COMMON/LHAPDFC/LHAPATH
-      SAVE /LHAPDFC/
-      DATA LHAPATH/'PDFsets'/ ! Default = PDFsets (below current dir)
-      CHARACTER*20 LHAPARM(20)
-      DOUBLE PRECISION LHAVALUE(20)
-      COMMON/LHACONTROL/LHAPARM,LHAVALUE
-      SAVE/LHACONTROL/
-      DATA LHAPARM /20*' '/
-      DATA LHAVALUE /20*0.0D0/
-      DOUBLE PRECISION XMINNUM,XMAXNUM,Q2MINNUM,Q2MAXNUM,TOTNUM,
-     >                 XMINNUP,XMAXNUP,Q2MINNUP,Q2MAXNUP,TOTNUP
-      COMMON/LHAGLSTA/ XMINNUM,XMAXNUM,Q2MINNUM,Q2MAXNUM,TOTNUM,
-     >                 XMINNUP,XMAXNUP,Q2MINNUP,Q2MAXNUP,TOTNUP
-      SAVE/LHAGLSTA/
-      DATA XMINNUM,XMAXNUM,Q2MINNUM,Q2MAXNUM,TOTNUM/5*0.D0/
-      DATA XMINNUP,XMAXNUP,Q2MINNUP,Q2MAXNUP,TOTNUP/5*0.D0/
-      END
-
 C...PDFSET
 C...Initialization for use of parton distributions
 C... according to the LHAPDF interface.
@@ -247,15 +217,15 @@ C...Local arrays and character variables (NOT USED here DB)
       INTEGER LHAFIVE
       SAVE LHAONCE
       SAVE LHAFIVE
-      DATA LHAONCE/0/
-      DATA LHAFIVE/0/
       logical first
-      data first/.TRUE./
       save first
  
       INTEGER LNROOT
       CHARACTER*1000 CHROOT
       CHROOT=' '
+      DATA LHAONCE/0/
+      DATA LHAFIVE/0/
+      data first/.TRUE./
 
       if(first .AND. (LHAPARM(20).NE.'LHAPATH')) then
 c...overide the default PDFsets path
@@ -1211,6 +1181,9 @@ C...Interface to LHAPDFLIB.
 * $Id$
 *
 * $Log$
+* Revision 1.2  2006/11/01 12:25:47  hristov
+* Using LHAPDF instead of PDF
+*
 * Revision 1.1  2006/08/07 09:09:40  morsch
 * LHAPDF 5.2.2 source code.
 *

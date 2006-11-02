@@ -1,6 +1,9 @@
 SRCS:=AliStructFuncType.cxx
+
 HDRS= $(SRCS:.cxx=.h) 
 DHDR:=LHAPDFLinkDef.h
+
+EINCLUDE:= LHAPDF/lhapdf5.2.2
 
 FSRCS:= \
 lhapdf5.2.2/alphas.f \
@@ -10,7 +13,6 @@ lhapdf5.2.2/eksarp.f \
 lhapdf5.2.2/EVLCTEQ.f \
 lhapdf5.2.2/evolution.f \
 lhapdf5.2.2/inputPDF.f \
-lhapdf5.2.2/lhaglue.f \
 lhapdf5.2.2/LHpdflib.f \
 lhapdf5.2.2/parameter.f \
 lhapdf5.2.2/QCDNUM.f \
@@ -42,6 +44,36 @@ lhapdf5.2.2/wrapQCDNUM.f \
 lhapdf5.2.2/wrapsasg.f \
 lhapdf5.2.2/wrapsmrspi.f \
 lhapdf5.2.2/wrapwhitg.f \
-lhapdf5.2.2/wrapzeus.f
+lhapdf5.2.2/wrapzeus.f \
+lhapdf5.2.2/commons.f
+
+
+
 EXPORT:=AliStructFuncType.h
-EINCLUDE:= LHAPDF/lhapdf
+
+
+ifeq (,$(findstring macosx,$(ALICE_TARGET)))
+
+FSRCS += lhapdf5.2.2/lhaglue.f
+
+else
+
+
+TCSRCS=ctmp/lhapdf5.2.2/lhaglue.c
+
+CSRCS+=$(TCSRCS)
+
+.SECONDARY: $(TCSRCS)
+
+PACKCFLAGS:=$(CFLAGS) -w
+
+LHAPDF/ctmp/%.c: LHAPDF/%.f
+	[ -d $(dir $@) ] || mkdir -p $(dir $@)
+ifeq (macosx,$(ALICE_TARGET))
+	$(F77) -E $(lhapdfINC) $(lhapdfFFLAGS) $< | f2c -E | sed -e 's/___/__/g' > $@
+endif
+ifeq (macosxgcc4,$(ALICE_TARGET))
+	$(F77) -E $(lhapdfINC) $(lhapdfFFLAGS) $< | f2c -E | sed -e 's/\___/__/g' > $@
+endif
+
+endif
