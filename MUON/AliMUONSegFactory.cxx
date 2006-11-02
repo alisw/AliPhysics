@@ -34,7 +34,6 @@
 #include "AliMUONSt12QuadrantSegmentation.h"
 #include "AliMUONSt345SlatSegmentation.h"
 #include "AliMUONSt345SlatSegmentationV2.h"
-#include "AliMUONTriggerSegmentation.h"
 #include "AliMUONTriggerSegmentationV2.h"
 
 #include "AliMpDEManager.h"
