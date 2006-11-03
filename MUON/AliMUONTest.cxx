@@ -116,7 +116,7 @@ void AliMUONTest::BuildWithoutMUON(const TString& option)
 /// Fill geometry from transform*.dat files and build segmentation via 
 /// SegFactory
 
-  AliMUONSegFactory segFactory("volpaths.dat", "transform.dat");
+  AliMUONSegFactory segFactory("volpath.dat", "transform.dat");
   fSegmentation = segFactory.CreateSegmentation(option);
 }  
 
