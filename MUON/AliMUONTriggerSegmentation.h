@@ -132,7 +132,7 @@ private:
     Float_t fYhit;        //!< y-position of hit
     Int_t fLineNumber;    ///< Line number of that detection element (from 1 to 9)
     
-    ClassDef(AliMUONTriggerSegmentation,1) // Trigger segmentation
+    ClassDef(AliMUONTriggerSegmentation,2) // Trigger segmentation
 };
 #endif
 
