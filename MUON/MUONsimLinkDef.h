@@ -20,7 +20,6 @@
 #pragma link C++ class AliMUONHitMapA1+; 
 #pragma link C++ class AliMUONDigitizerV3+; 
 #pragma link C++ class AliMUONSDigitizerV2+;  
-#pragma link C++ class AliMUONTest+; 
 
 // response
 #pragma link C++ class AliMUONResponse+; 

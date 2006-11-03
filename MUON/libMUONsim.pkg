@@ -10,7 +10,6 @@ SRCS:= AliMUONCommonGeometryBuilder.cxx \
        AliMUONTriggerGeometryBuilder.cxx \
        AliMUONResponseFactory.cxx \
        AliMUONHitMapA1.cxx \
-       AliMUONTest.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \
        AliMUONResponseTrigger.cxx \
