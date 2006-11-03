@@ -1,5 +1,6 @@
 #ifndef ALIMUONST345SLATSEGMENTATION_H
 #define ALIMUONST345SLATSEGMENTATION_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -9,136 +10,133 @@
 /// \class AliMUONSt345SlatSegmentation
 /// \brief Segmentation for slat modules
 
-#include  "AliMUONVGeometryDESegmentation.h"
-
-class TArrayF;
-class TArrayI;
-
-
-class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation 
-{
- public:
-    AliMUONSt345SlatSegmentation();
-    AliMUONSt345SlatSegmentation(Bool_t bending);
-    virtual ~AliMUONSt345SlatSegmentation();
-      
-    virtual Float_t  Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y, Int_t * dummy);  // Distance between 1 pad and a position
-    virtual Float_t  Dpx() const {return fDpx;}  ///< Pad size in x   
-    virtual Float_t  Dpy() const {return fDpy;}  ///< Pad size in y   
-    virtual Float_t  Dpx(Int_t isec) const;       // Pad size in x by Sector
-    virtual Float_t  Dpy(Int_t isec) const;       // Pad size in y by Sector
-    virtual void     Draw(const char */*opt*/ = "") {}  ///< Not implemented
-    virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);  // Initialisation for pad iteration
-    virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy);
-
-    virtual Bool_t   HasPad(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/) { return true; }  ///< Not implemented
-    virtual Bool_t   HasPad(Int_t ix, Int_t iy);
-    virtual AliMUONGeometryDirection  GetDirection() { return kDirUndefined; } ///< Not implemented
-    virtual const AliMpVSegmentation* GetMpSegmentation() const { return 0; }  ///< Not implemented		       
-
-    virtual Float_t  GetAnod(Float_t xhit) const;  // Anod wire coordinate closest to xhit
-    virtual void     GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);  // Transform from pad to real coordinates
-    virtual void     GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
-    virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
-                     /// Returns real coordinates (x,y,z) for given pad coordinates (ix,iy)
-    virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
-
-    virtual void     IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2); //Current integration limits
-    virtual Int_t    ISector()  {return fSector;} ///< Current Pad during Integration (current sector)
-    virtual Int_t    Ix() {return fIx;} ///< x-coordinate
-    virtual Int_t    Iy() {return fIy;} ///< y-coordinate
-  
-    virtual Int_t    MorePads();  // Condition
- 
-    virtual void     Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);  // Get next neighbours
-    virtual void     NextPad(); // Stepper
-    virtual Int_t    Npx() const {return fNpx;} ///< Maximum number of Pads in x
-    virtual Int_t    Npy() const {return fNpy;} ///< Maximum number of Pads in y
-
-    virtual void     SetDAnod(Float_t D) {fWireD = D;};  ///< Anod pitch
-    virtual Int_t    Sector(Int_t ix, Int_t iy);         //   Calculate sector from pad coordinates
-    virtual void     SetHit(Float_t xhit, Float_t yhit); //   Set hit position
-    virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit);
-    virtual void     SetId(Int_t id) {fId=id;}  ///< Setting detection element
-    virtual void     SetPad(Int_t ix, Int_t iy);         // Set pad position
-    virtual void     SetPadDivision(Int_t ndiv[4]);      // Set Slat Segmentation Parameters
-    virtual void     SetPadSize(Float_t p1, Float_t p2); // Pad size Dx*Dy 
-    virtual void     SetPcbBoards(Int_t n[4]);           // Set Segmentation Zones (PCB Boards)
- 
-    // The following function could be obsolet for this class, but they are pure virtual in AliSegmentation
-    virtual void     GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t */*Nparallel*/, Int_t */*Offset*/) {}; ///< Not implemented
-    virtual Int_t    SigGenCond(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/){return 0;} ;  ///< Signal Generation Condition during Stepping
-    virtual void     SigGenInit(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/){};  ///< Initialise signal gneration at coord (x,y,z)
-    virtual void     GiveTestPoints(Int_t &/*n*/, Float_t * /*x*/, Float_t */*y*/) const{};   ///< Test points for auto calibration
-    virtual void     SetCorrFunc(Int_t /*dum*/, TF1* /*func*/){}; ///< Function for systematic corrections, Set the correction function
-    virtual TF1*     CorrFunc(Int_t) const {return 0x0;} ///< Get the correction Function
-    virtual Int_t    Sector(Float_t /*x*/, Float_t /*y*/) {return 1;} ///< Current sector
-
-    virtual void     Init(Int_t detectionElementId); // Initialisation
-    // Current integration limits
-
- protected:
-
-    AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs);
-    AliMUONSt345SlatSegmentation& operator=(const AliMUONSt345SlatSegmentation& rhs);
-
- private:
-    //  Internal geometry of the slat 
-    Bool_t      fBending;        ///< 0: Bending or 1:Non Bending segmentation
-    Int_t       fId;             ///< Identifier of detection element
-    Int_t       fNsec;           ///< Number of density sectors (should be 4, if not not warranty about the output
-    TArrayI*    fNDiv;           ///< Densities (d1, d2, d3, d4). It should be (4, 4, 2, 1) which goes from beam to out-beam
-    TArrayF*    fDpxD;           ///< x pad width per density sector
-    TArrayF*    fDpyD;           ///< x pad width per density sector
-    Float_t     fDpx;            ///< x pad base width  
-    Float_t     fDpy;            ///< y pad base width
-    Int_t       fNpx;            ///< Number of pads in x
-    Int_t       fNpy;            ///< Number of pads in y
-    Float_t     fWireD;          ///< Wire pitch
-    Int_t       fRtype;          ///< Type of the slat: rounded R=1,2,3, rounded short R=-1,-2,-3, short R=4, normal R=0
-    // 
-    Int_t       fSector;         ///< Current density sector
-    Float_t     fDxPCB;          ///< x-size of PCB board
-    Float_t     fDyPCB;          ///< y-size of PCB board
-    Int_t       fPcbBoards[4];   ///< Number of PCB boards per density sector n1,n2,n3,n4 
-    // n1 PcbBoard with density d1, n2 PcbBoards with density d2, etc ....
-   
-    // Segmentation map
-    Int_t       fNpxS[10];       ///< Number of pads per sector in x
-    Int_t       fNpyS[10];       ///< Number of pads per sector in y    
-    Float_t     fCx[10];         ///< Pad-sector contour x vs y      
-    Float_t     fCy;             ///< y offset      
-
-    // Current pad and wire during tracking (cursor at hit centre)
-    Float_t     fXhit;  //!< x-position of hit
-    Float_t     fYhit;  //!< y-position of hit
-
-    // Current pad and wire during tracking (cursor at hit centre)
-    Int_t       fIx;   //!< Pad coord.  x 
-    Int_t       fIy;   //!< Pad coord.  y 
-    Float_t     fX;    //!< Real coord. x
-    Float_t     fY;    //!< Real ccord. y
-    
-    // Chamber region consideres during disintegration   
-    Int_t       fIxmin; //!< Lower left  x
-    Int_t       fIxmax; //!< Lower left  y
-    Int_t       fIymin; //!< Upper right x
-    Int_t       fIymax; //!< Upper right y 
-
-    // Chamber region consideres during disintegration  (lower left and upper right corner)
-    Float_t     fXmin;  ///< Lower left  x
-    Float_t     fXmax;  ///< Lower left  y
-    Float_t     fYmin;  ///< Upper right x
-    Float_t     fYmax;  ///< Upper right y 
-
-    Bool_t      fInitDone; ///< Flag for initialization
-
-    ClassDef(AliMUONSt345SlatSegmentation,3) // St345 segmentation
-};
+#ifndef ALIMUONVGEOMETRYDESEGMENTATION_H
+#include "AliMUONVGeometryDESegmentation.h"
 #endif
 
+#ifndef ALI_MP_PLANE_TYPE_H
+#include "AliMpPlaneType.h"
+#endif
+
+#ifndef ALI_MP_PAD_H
+#include "AliMpPad.h"
+#endif
+
+class AliMpSlat;
+class AliMpSlatSegmentation;
+class AliMpVPadIterator;
+
+class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
+{
+ public:
+
+  AliMUONSt345SlatSegmentation();
+  AliMUONSt345SlatSegmentation(AliMpVSegmentation* segmentation,
+                                 Int_t detElemId,
+				 AliMpPlaneType bendingOrNonBending);
+  virtual ~AliMUONSt345SlatSegmentation();
+
+  void FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, 
+		Float_t dx, Float_t dy);
+
+  void  NextPad();
+
+  Int_t MorePads();
+
+  Int_t  Ix();
+  Int_t  Iy();
+  Int_t  ISector();
+
+  Float_t Distance2AndOffset(Int_t ix, Int_t iy, 
+			     Float_t X, Float_t Y, 
+			     Int_t* dummy);
+
+  void GetNParallelAndOffset(Int_t iX, Int_t iY,
+			     Int_t* Nparallel, Int_t* Offset);
+
+  void Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, 
+		  Int_t Xlist[10], Int_t Ylist[10]);
+
+  Int_t  Sector(Int_t ix, Int_t iy);
+  Int_t  Sector(Float_t x, Float_t y);
+
+  void  IntegrationLimits(Float_t& x1, Float_t& x2, 
+			  Float_t& y1, Float_t& y2);
+
+  void GiveTestPoints(Int_t& n, Float_t* x, Float_t* y) const;
+
+  Int_t SigGenCond(Float_t x, Float_t y, Float_t z);
+  void SigGenInit(Float_t x, Float_t y, Float_t z);
+
+  void SetCorrFunc(Int_t isec,  TF1* func);
+
+  TF1* CorrFunc(Int_t isec) const;
+
+  void SetPadSize(float x,float y);
+
+  void SetDAnod(float d);
+
+  void Init(int /*chamber*/) {}  ///< Not implemented
+  void Draw(Option_t* opt = "");
+
+  Float_t Dpx() const;
+  Float_t Dpy() const;
+  
+  Float_t Dpx(int ipcb) const;
+  Float_t Dpy(int ipcb) const;
+  
+  Float_t GetAnod(Float_t xhit) const;
+
+  Int_t Npx() const;
+  Int_t Npy() const;
+
+  /// Sets the current pad.
+  void SetPad(Int_t ix,Int_t iy);
+  
+  /// Sets the current hit.
+  void SetHit(Float_t x, Float_t y, Float_t zIsNotUsed);
+ 
+  AliMUONGeometryDirection GetDirection();// { return kDirUndefined; }
+
+  const AliMpVSegmentation* GetMpSegmentation() const;
+
+  /// \deprecated. Use the one below w/o z instead.
+  void GetPadC(Int_t ix, Int_t iy, Float_t& x, Float_t& y, Float_t& z);
+
+  /// From pad indices to coordinates (cm).
+  void GetPadC(Int_t ix, Int_t iy, Float_t& x, Float_t& y);
+
+  // Transform from pad to real coordinates
+  void GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);
+
+  // to be deprecated. Use the one above w/o z instead.
+  void GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
 
 
+  /// Whether a pad exists at a given position.
+  Bool_t HasPad(Float_t x, Float_t y, Float_t z);
 
+  /// Whether a pad exists, given its indices.
+  Bool_t HasPad(Int_t ix, Int_t iy);
+  
+  /// Print.
+  void Print(Option_t* opt = "") const;
 
+ protected:
+  AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& right);
+  AliMUONSt345SlatSegmentation&  operator = (const AliMUONSt345SlatSegmentation& right);
+     
+ private:
 
+  Int_t fDetElemId;                ///< det element Id
+	AliMpPlaneType fPlaneType; ///< plane type
+  const AliMpSlat* fSlat;          ///< slat
+  AliMpSlatSegmentation* fSlatSegmentation; ///< slat segmentation
+  AliMpVPadIterator* fPadIterator; //!< pad iterator
+  AliMpPad fCurrentPad; //!< FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
+  Float_t fXhit;        //!<  x-position of hit
+  Float_t fYhit;        //!<  y-position of hit
+  ClassDef(AliMUONSt345SlatSegmentation,4) // St345 segmentation
+};
+
+#endif
