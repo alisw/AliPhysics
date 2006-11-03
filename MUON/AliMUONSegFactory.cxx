@@ -33,7 +33,6 @@
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONSt12QuadrantSegmentation.h"
 #include "AliMUONSt345SlatSegmentation.h"
-#include "AliMUONSt345SlatSegmentationV2.h"
 #include "AliMUONTriggerSegmentation.h"
 
 #include "AliMpDEManager.h"
@@ -205,7 +204,7 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
         break;
         
       case kStation345:  	          
-        deSegmentation = new AliMUONSt345SlatSegmentationV2(
+        deSegmentation = new AliMUONSt345SlatSegmentation(
 	                         mpSegmentation, detElemId, planeType); 
         //cout << "   new AliMUONSt345SlatSegmentationV2 "			  
 	//     << StationTypeName(stationType) << "  "  
@@ -254,27 +253,9 @@ AliMUONSegFactory::CreateModuleSegmentations(Int_t chamberId, Int_t cath)
     
 //______________________________________________________________________________
 AliMUONSegmentation*  
-AliMUONSegFactory::CreateSegmentation(const TString& option)
+AliMUONSegFactory::CreateSegmentation()
 {
 /// Create segmentations on all levels and return their container.
-
-  // Check options
-  if ( option != "default"   && 
-       option != "FactoryV2" && 
-       option != "FactoryV3" &&
-       option != "FactoryV4" &&
-       option != "new") {
-
-    AliErrorStream() << "Option " << option << " not defined." << endl;
-    return 0;
-  }         
- 
-  if ( option == "FactoryV2" || option == "FactoryV3" ) { 
-
-    AliErrorStream() 
-      << "Option " << option << " not supported anymore." << endl;
-    return 0;
-  }         
 
   for (Int_t chamberId = 0; chamberId<AliMUONConstants::NCh(); chamberId++)
     for (Int_t cath = 0; cath < 2; cath++) {

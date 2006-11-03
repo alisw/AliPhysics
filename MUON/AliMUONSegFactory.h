@@ -58,8 +58,7 @@ class AliMUONSegFactory : public  TObject {
     // Build methods
     //
     
-    AliMUONSegmentation*  
-      CreateSegmentation(const TString& option = "default"); 
+    AliMUONSegmentation* CreateSegmentation(); 
               // Create segmentations on all levels and return their container.
     
     //
