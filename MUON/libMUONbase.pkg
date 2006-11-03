@@ -24,7 +24,6 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONTriggerLut.cxx \
         AliMUONSt12QuadrantSegmentation.cxx \
         AliMUONSt345SlatSegmentation.cxx \
-        AliMUONSt345SlatSegmentationV2.cxx \
         AliMUONTriggerSegmentation.cxx \
         AliMUONSegFactory.cxx \
         AliMUONV2DStore.cxx \
