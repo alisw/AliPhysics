@@ -217,5 +217,25 @@ COMMON_BLOCK_DEF(DtglcpCommon,DTGLCP);
 /* NWTAAC = total number of interacting nucleons in proj. */
 /* NWTBAC = total number of interacting nucleons in target*/
 /*========================================================*/
+/*========================================================*/
+/* COMMON /POPRCS/IPROCE,IDNODF,IDIFR1,IDIFR2,IDDPOM,     */
+/*		  IPRON(15,4)   		  	          */
+/*--------------------------------------------------------*/
+typedef struct {
+   Int_t	iproce;  
+   Int_t        idnodf;
+   Int_t        idifr1;
+   Int_t        idifr2;
+   Int_t        iddpom;
+   Int_t        ipron[15][4];
+} PoprcsCommon;
+
+#define POPRCS COMMON_BLOCK(POPRCS,poprcs)
+COMMON_BLOCK_DEF(PoprcsCommon,POPRCS);
+
+
+/**********************************************************/
+/*	     D E S C R I P T I O N :			  */
+/*--------------------------------------------------------*/
 
 #endif

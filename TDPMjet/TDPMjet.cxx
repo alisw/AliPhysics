@@ -465,7 +465,11 @@ Int_t TDPMjet::GetTargSpectators() const
 {
 	return DTGLCP.nwtbac;
 }
-
+//______________________________________________________________________________
+Int_t TDPMjet::GetProcessCode() const
+{
+		return POPRCS.iproce;
+}
 //______________________________________________________________________________
 void TDPMjet::Dt_Rndm(int idummy)
 {

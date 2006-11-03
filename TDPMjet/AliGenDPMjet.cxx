@@ -28,12 +28,14 @@
 #include <TParticleClassPDG.h>
 #include <TPDGCode.h>
 #include <TLorentzVector.h>
-
+#include "AliRunLoader.h"
 #include "AliGenDPMjet.h"
 #include "AliGenDPMjetEventHeader.h"
-#include "AliPythia.h"
 #include "AliRun.h"
 #include "AliDpmJetRndm.h"
+#include "AliHeader.h"
+#include "AliStack.h"
+#include "AliMC.h"
 
 ClassImp(AliGenDPMjet)
 
@@ -93,8 +95,6 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
     SetTarget();
     SetProjectile();
     fVertex.Set(3);
-    // Instance AliPythia
-    AliPythia::Instance(); 
     AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
@@ -402,14 +402,24 @@ void AliGenDPMjet::MakeHeader()
     ((AliGenDPMjetEventHeader*) header)->SetTotalEnergy(fDPMjet->GetTotEnergy());
     ((AliGenDPMjetEventHeader*) header)->SetParticipants(fDPMjet->GetfIp(), 
     							 fDPMjet->GetfIt());
-
+ ((AliGenDPMjetEventHeader*) header)->SetProcessType(fDPMjet->GetProcessCode());
 // Bookkeeping for kinematic bias
     ((AliGenDPMjetEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
     header->SetPrimaryVertex(fVertex);
     gAlice->SetGenEventHeader(header);    
+ AddHeader(header);
 }
 
+void AliGenDPMjet::AddHeader(AliGenEventHeader* header)
+{
+    // Add header to container or runloader
+    if (fContainer) {
+        fContainer->AddHeader(header);
+    } else {
+        AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
+    }
+}
 
 
 //______________________________________________________________________________

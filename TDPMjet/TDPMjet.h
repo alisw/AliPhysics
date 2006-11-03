@@ -96,8 +96,8 @@ public:
    virtual Int_t GetTargWounded() const;
    virtual Int_t GetProjSpectators() const;
    virtual Int_t GetTargSpectators() const;
-   
-  
+   virtual Int_t    GetProcessCode() const;
+
    // Access to DPMJET routines:
    virtual void Dt_Dtuini(int nevts, double epn, int npmass, int npchar, 
    			  int ntmass, int ntchar, int idp, int iemu);

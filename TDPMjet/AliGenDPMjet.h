@@ -16,6 +16,12 @@ class TArrayI;
 class TParticle;
 class TClonesArray;
 class TGraph;
+class AliGenEventHeader;
+class AliStack;
+class AliRunLoader;
+class AliGenDPMjetEventHeader;
+
+
 
 class AliGenDPMjet : public AliGenMC
 {
@@ -28,7 +34,7 @@ class AliGenDPMjet : public AliGenMC
     virtual void    Generate();
     virtual void    Init();
     virtual void    SetEnergyCMS(Float_t energy = 14000.) {fEnergyCMS = energy; fBeamEn = energy / 2.;}
-    virtual void    SetImpactParameterRange(Float_t bmin=0., Float_t bmax=16.)
+    virtual void    SetImpactParameterRange(Float_t bmin=0., Float_t bmax=1.)
 			{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
     virtual void    SetProcess(DpmProcess_t iproc) {fProcess = iproc;}
     virtual void    SetCentral(Int_t icentr=-2) {fICentr = icentr;}
@@ -52,6 +58,7 @@ class AliGenDPMjet : public AliGenMC
     virtual Float_t GetGenImpPar() {return fGenImpPar;}
     
     AliGenDPMjet &  operator=(const AliGenDPMjet & rhs);
+    void     AddHeader(AliGenEventHeader* header);
 
  protected:
     Bool_t SelectFlavor(Int_t pid);
