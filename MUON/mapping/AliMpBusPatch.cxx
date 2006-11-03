@@ -30,7 +30,6 @@
 #include "AliMpBusPatch.h"
 #include "AliMpFiles.h"
 #include "AliMpHelper.h"
-#include "AliDAQ.h"
 #include "AliLog.h"
 
 #include "TArrayI.h"
@@ -142,8 +141,9 @@ void AliMpBusPatch::ReadBusPatchFile()
       Int_t iDDL = atoi(sDDL.Data());
 
       // always working local DDL number... for the moment.
-      if (iDDL >= AliDAQ::DdlIDOffset("MUONTRK"))
-	iDDL -= AliDAQ::DdlIDOffset("MUONTRK");
+      // not really needed remove for stand alone purpose (Ch.F)
+//      if (iDDL >= AliDAQ::DdlIDOffset("MUONTRK"))
+// 	iDDL -= AliDAQ::DdlIDOffset("MUONTRK");
 
       TString busPatch(tmp(blankPos + 1,blankPos1-blankPos-1));
       AliDebug(3,Form("idDE %d buspatch %s iDDL %d\n", idDE, busPatch.Data(), iDDL));
@@ -204,7 +204,11 @@ void AliMpBusPatch::Sort()
 {
 /// sort bus patch number for all DDL
 
-  for (Int_t j = 0; j < AliDAQ:: NumberOfDdls("MUONTRK"); j++) {
+  // put it hardware wise
+  // this method is not used for the moment.
+  Int_t numberOfDdls = 20;
+
+  for (Int_t j = 0; j < numberOfDdls; j++) {
     Sort(fBusInDDL[j], 0, fBusInDDL[j].GetSize() - 1);
 
     if (AliLog::GetGlobalDebugLevel() == 1) {
