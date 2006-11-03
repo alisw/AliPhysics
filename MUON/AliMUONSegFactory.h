@@ -17,7 +17,7 @@
 ///
 /// Construction:
 /// - AliMUONSegFactory  factory(kTransformer);
-/// - AliMUONSegFactory  factory("volpaths.dat", "transform.dat");
+/// - AliMUONSegFactory  factory("volpath.dat", "transform.dat");
 /// - AliMUONSegFactory  factory(0);                                          \n
 ///
 /// All created objects are registered in the AliMUONSegmentation
