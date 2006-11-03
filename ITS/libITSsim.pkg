@@ -24,8 +24,13 @@ SRCS = 	AliITS.cxx \
 		AliITSsDigitize.cxx \
 		AliITSDigitizer.cxx \
 		AliITSFDigitizer.cxx \
-      AliITSTrigger.cxx
-
+      		AliITSTrigger.cxx \
+		AliITSv11.cxx \
+		AliITSv11Geometry.cxx \
+		AliITSv11GeomCable.cxx \
+		AliITSv11GeomCableFlat.cxx \
+		AliITSv11GeomCableRound.cxx \
+		AliITSv11GeometrySDD.cxx
 
 HDRS:=  $(SRCS:.cxx=.h)
 

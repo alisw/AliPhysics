@@ -21,18 +21,15 @@
 #pragma link C++ class  AliITSvSDD03+;
 #pragma link C++ class  AliITSvtest+;
 #pragma link C++ class  AliITSvSSD03+;
-//#pragma link C++ class  AliITSv11+;
-//#pragma link C++ class  AliITSv11GeomCable+;
-//#pragma link C++ class  AliITSv11GeomCableFlat+;
-//#pragma link C++ class  AliITSv11GeomCableRound+;
-//#pragma link C++ class  AliITSv11Geometry+;
+#pragma link C++ class  AliITSv11+;
+#pragma link C++ class  AliITSv11GeomCable+;
+#pragma link C++ class  AliITSv11GeomCableFlat+;
+#pragma link C++ class  AliITSv11GeomCableRound+;
+#pragma link C++ class  AliITSv11Geometry+;
 //#pragma link C++ class  AliITSv11GeometrySupport+;
 //#pragma link C++ class  AliITSv11GeometrySPD+;
-//#pragma link C++ class  AliITSv11GeometrySDD+;
+#pragma link C++ class  AliITSv11GeometrySDD+;
 //#pragma link C++ class  AliITSv11GeometrySSD+;
-//#pragma link C++ class  AliITSv11GeomCable+;
-//#pragma link C++ class  AliITSv11GeomcableFlat+;
-//#pragma link C++ class  AliITSv11GeomcableRound+;
 #pragma link C++ class  AliITShit+;
 // Standard ITS detector class initilizers
 #pragma link C++ class  AliITSmodule+;

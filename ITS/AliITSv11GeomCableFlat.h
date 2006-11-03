@@ -28,15 +28,18 @@ class AliITSv11GeomCableFlat : public AliITSv11GeomCable {
   AliITSv11GeomCableFlat& operator=(const AliITSv11GeomCableFlat &source);
   virtual ~AliITSv11GeomCableFlat() {};
 
-  void     SetNLayers(Int_t nLayers);
-  Int_t    SetLayer(Int_t nLayer,Double_t thick,TGeoMedium *medium,Int_t color=0);
-  void     AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
-			Double_t *coord, Double_t *orthVect);
-  Int_t    CreateAndInsertCableSegment(Int_t p2, Double_t rotation=0);
-  void     SetWidth(Double_t width) { fWidth = width;};
-  void     SetThickness(Double_t thick) {fThick = thick;};
-  Double_t GetWidth() const {return fWidth;};
-  Double_t GetThickness() const {return fThick;};
+  void        SetNLayers(Int_t nLayers);
+  Int_t       SetLayer(Int_t nLayer,Double_t thick,TGeoMedium *medium,Int_t color=0);
+  void        AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
+			     Double_t *coord, Double_t *orthVect);
+  TGeoVolume* CreateAndInsertCableSegment(Int_t p2, Double_t rotation=0);
+  TGeoVolume* CreateAndInsertBoxCableSegment(Int_t p2, Double_t rotation=0);
+  TGeoVolume* CreateAndInsertCableCylSegment(Int_t p2, Double_t rotation=0);
+
+  void        SetWidth(Double_t width) { fWidth = width;};
+  void        SetThickness(Double_t thick) {fThick = thick;};
+  Double_t    GetWidth() const {return fWidth;};
+  Double_t    GetThickness() const {return fThick;};
 
   virtual void  PrintCheckPoints() const;
   virtual Int_t GetPoint(Int_t iCheckPt, Double_t *coord) const;
@@ -45,6 +48,10 @@ class AliITSv11GeomCableFlat : public AliITSv11GeomCable {
  protected:
   TGeoVolume *CreateSegment( Double_t *coord1,Double_t *coord2,
 			     Double_t *localVect1, Double_t *localVect2 );
+
+  TGeoVolume *CreateBoxSegment( Double_t *coord1,Double_t *coord2);
+
+  TGeoVolume *CreateCylSegment( Double_t &phi, Double_t &r);
 
   Double_t  fWidth;                                 // width
   Double_t  fThick;                                 // total thickness

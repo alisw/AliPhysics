@@ -31,6 +31,7 @@
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoArb8.h>
+#include <TGeoTube.h>
 #include <TGeoMatrix.h>
 #include <TGeoNode.h>
 
@@ -184,7 +185,7 @@ void AliITSv11GeomCableFlat::PrintCheckPoints() const {
 }
 
 //________________________________________________________________________
-Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
+TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
 							  Double_t rotation)
 {
 //    Creates a cable segment between points p1 and p2.
@@ -201,7 +202,7 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   TGeoNode *mainNode;
   if (fInitialNode==0) {
     TObjArray *nodes = gGeoManager->GetListOfNodes();
-    if (nodes->GetEntriesFast()==0) return kFALSE;
+    if (nodes->GetEntriesFast()==0) return 0;
     mainNode = (TGeoNode *) nodes->UncheckedAt(0);
   } else {
     mainNode = fInitialNode;
@@ -215,7 +216,7 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   fCurrentVol = p1Vol;
   if (! CheckDaughter(mainNode)) {
     printf("Error::volume containing point is not visible in node tree!\n");
-    return kFALSE;
+    return 0;
   };
 
   Double_t coord1[3], coord2[3], vect1[3], vect2[3];
@@ -233,7 +234,7 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
     fCurrentVol = p2Vol;
     if (! CheckDaughter(mainNode)) {
       printf("Error::volume containing point is not visible in node tree!\n");
-      return kFALSE;
+      return 0;
     };
     Int_t p2nodeInd[fgkCableMaxNodeLevel];
     for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p2nodeInd[i]=fNodeInd[i];
@@ -247,9 +248,9 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
 
     // Get coord and vect of p1 in the common mother reference system
     if (! GetCheckPoint(p1, 0, p1volLevel-commonMotherLevel, coord1) )
-      return kFALSE;
+      return 0;
     if (! GetCheckVect( p1, 0, p1volLevel-commonMotherLevel, vect1) )
-      return kFALSE;
+      return 0;
 
     // Translate them in the reference system of the volume containing p2    
     TGeoNode *pathNode[fgkCableMaxNodeLevel];
@@ -267,14 +268,14 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
       CopyFrom(globalVect1, vect1);
     };
   } else {
-    if (! GetCheckPoint(p1, 0, 0, coord1) ) return kFALSE;
-    if (! GetCheckVect(p1, 0, 0, vect1) ) return kFALSE;
+    if (! GetCheckPoint(p1, 0, 0, coord1) ) return 0;
+    if (! GetCheckVect(p1, 0, 0, vect1) ) return 0;
   };
   
   //=================================================
   // Get p2 position in the systeme of p2
-  if (! GetCheckPoint(p2, 0, 0, coord2) ) return kFALSE;
-  if (! GetCheckVect(p2, 0, 0, vect2) ) return kFALSE;
+  if (! GetCheckPoint(p2, 0, 0, coord2) ) return 0;
+  if (! GetCheckVect(p2, 0, 0, vect2) ) return 0;
 
   Double_t cx = (coord1[0]+coord2[0])/2;
   Double_t cy = (coord1[1]+coord2[1])/2;
@@ -349,6 +350,7 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   // Create the segment and add it to the mother volume
   TGeoVolume *vCableSegB = CreateSegment(coord1, coord2,
 					 localVect1, localVect2);
+//   TGeoVolume *vCableSegB = CreateBoxSegment(coord1, coord2);
 
   TGeoRotation rotArbSeg("", 0, 90, 0);
   rotArbSeg.MultiplyBy(&rot, kFALSE);
@@ -376,14 +378,369 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
 //   p2Vol->AddNode(vSphere, p2*3-1, tr1);
 //   p2Vol->AddNode(vSphere, p2*3  , tr2);
 
-  return kTRUE;
+  return vCableSegB;
 }
 
 //________________________________________________________________________
+TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertBoxCableSegment(Int_t p2,
+							  Double_t rotation)
+{
+  // This function is to be use only when the segment has the shape
+  // of a simple box, i.e. the normal vector to its end is perpendicular
+  // to the segment own axis
+//    Creates a cable segment between points p1 and p2.
+//    Rotation is the eventual rotation of the flat cable
+//    along its length axis
+//
+// The segment volume is created inside the volume containing point2
+// Therefore this segment should be defined in this volume only.
+// I mean here that, if the previous point is in another volume,
+// it should be just at the border between the 2 volumes. Also the
+// orientation vector of the previous point should be orthogonal to
+// the surface between the 2 volumes.
+
+  TGeoNode *mainNode;
+  if (fInitialNode==0) {
+    TObjArray *nodes = gGeoManager->GetListOfNodes();
+    if (nodes->GetEntriesFast()==0) return 0;
+    mainNode = (TGeoNode *) nodes->UncheckedAt(0);
+  } else {
+    mainNode = fInitialNode;
+  };
+
+  Int_t p1 = p2 - 1;
+  TGeoVolume *p2Vol = GetVolume(p2);
+  TGeoVolume *p1Vol = GetVolume(p1);
+
+  ResetCheckDaughter();
+  fCurrentVol = p1Vol;
+  if (! CheckDaughter(mainNode)) {
+    printf("Error::volume containing point is not visible in node tree!\n");
+    return 0;
+  };
+
+  Double_t coord1[3], coord2[3], vect1[3], vect2[3];
+  //=================================================
+  // Get p1 position in the systeme of p2
+  if (p1Vol!=p2Vol) {
+
+    Int_t p1nodeInd[fgkCableMaxNodeLevel]; 
+    for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p1nodeInd[i]=fNodeInd[i];
+    Int_t p1volLevel = 0;
+    while (p1nodeInd[p1volLevel]!=-1) p1volLevel++;
+    p1volLevel--;
+
+    ResetCheckDaughter();
+    fCurrentVol = p2Vol;
+    if (! CheckDaughter(mainNode)) {
+      printf("Error::volume containing point is not visible in node tree!\n");
+      return 0;
+    };
+    Int_t p2nodeInd[fgkCableMaxNodeLevel];
+    for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p2nodeInd[i]=fNodeInd[i];
+    Int_t commonMotherLevel = 0;
+    while (p1nodeInd[commonMotherLevel]==fNodeInd[commonMotherLevel])
+      commonMotherLevel++;
+    commonMotherLevel--;
+    Int_t p2volLevel = 0;
+    while (fNodeInd[p2volLevel]!=-1) p2volLevel++;
+    p2volLevel--;
+
+    // Get coord and vect of p1 in the common mother reference system
+    if (! GetCheckPoint(p1, 0, p1volLevel-commonMotherLevel, coord1) )
+      return 0;
+    if (! GetCheckVect( p1, 0, p1volLevel-commonMotherLevel, vect1) )
+      return 0;
+
+    // Translate them in the reference system of the volume containing p2    
+    TGeoNode *pathNode[fgkCableMaxNodeLevel];
+    pathNode[0] = mainNode;
+    for (Int_t i=0; i<=p2volLevel; i++) {
+      pathNode[i+1] = pathNode[i]->GetDaughter(p2nodeInd[i]);
+    };
+    Double_t globalCoord1[3] = {coord1[0], coord1[1], coord1[2]}; 
+    Double_t globalVect1[3]  = {vect1[0], vect1[1], vect1[2]};
+
+    for (Int_t i = commonMotherLevel+1; i <= p2volLevel; i++) {
+      pathNode[i+1]->GetMatrix()->MasterToLocal(globalCoord1, coord1);
+      pathNode[i+1]->GetMatrix()->MasterToLocalVect(globalVect1, vect1);
+      CopyFrom(globalCoord1, coord1);
+      CopyFrom(globalVect1, vect1);
+    };
+  } else {
+    if (! GetCheckPoint(p1, 0, 0, coord1) ) return 0;
+    if (! GetCheckVect(p1, 0, 0, vect1) ) return 0;
+  };
+  
+  //=================================================
+  // Get p2 position in the systeme of p2
+  if (! GetCheckPoint(p2, 0, 0, coord2) ) return 0;
+  if (! GetCheckVect(p2, 0, 0, vect2) ) return 0;
+
+  Double_t cx = (coord1[0]+coord2[0])/2;
+  Double_t cy = (coord1[1]+coord2[1])/2;
+  Double_t cz = (coord1[2]+coord2[2])/2;
+  Double_t dx = coord2[0]-coord1[0];
+  Double_t dy = coord2[1]-coord1[1];
+  Double_t dz = coord2[2]-coord1[2];
+
+  //=================================================
+  // Positionning of the segment between the 2 points
+  if (TMath::Abs(dy)<1e-231) dy = 1e-231;
+  if (TMath::Abs(dz)<1e-231) dz = 1e-231;
+  //Double_t angleRot1 = -TMath::ATan(dx/dy);
+  //Double_t planDiagL = -TMath::Sqrt(dy*dy+dx*dx);
+  //if (dy<0) planDiagL = -planDiagL;
+  //Double_t angleRotDiag = TMath::ATan(planDiagL/dz);
+
+  Double_t angleRot1    = -TMath::ATan2(dx,dy);
+  Double_t planDiagL    =  TMath::Sqrt(dy*dy+dx*dx);
+  Double_t angleRotDiag = -TMath::ATan2(planDiagL,dz);
+  //--- (Calculate rotation of segment on the Z axis)
+  //-- Here I'm trying to calculate the rotation to be applied in
+  //-- order to match as closer as possible this segment and the 
+  //-- previous one. 
+  //-- It seems that some times it doesn't work ...
+  Double_t angleRotZ = 0;
+  TGeoRotation rotTemp("",angleRot1*TMath::RadToDeg(),
+		       angleRotDiag*TMath::RadToDeg(), rotation);
+  Double_t localX[3] = {0,1,0};
+  Double_t globalX[3];
+  rotTemp.LocalToMasterVect(localX, globalX);
+  CopyFrom(localX, globalX);
+  GetCheckVect(localX, p2Vol, 0, fgkCableMaxNodeLevel+1, globalX);
+  Double_t orthVect[3];
+  GetCheckVect(vect1, p2Vol, 0, fgkCableMaxNodeLevel+1, orthVect);
+  if (p2>1) {
+    Double_t orthVectNorm2 = ScalProd(orthVect,orthVect);
+    Double_t alpha1 = ScalProd(fPreviousX,orthVect)/orthVectNorm2;
+    Double_t alpha2 = ScalProd(globalX,orthVect)/orthVectNorm2;
+    Double_t globalX1p[3], globalX2p[3];
+    globalX1p[0] = fPreviousX[0] - alpha1*orthVect[0];
+    globalX1p[1] = fPreviousX[1] - alpha1*orthVect[1];
+    globalX1p[2] = fPreviousX[2] - alpha1*orthVect[2];
+    globalX2p[0] = globalX[0] - alpha2*orthVect[0];
+    globalX2p[1] = globalX[1] - alpha2*orthVect[1];
+    globalX2p[2] = globalX[2] - alpha2*orthVect[2];
+    //-- now I'm searching the 3th vect which makes an orthogonal base
+    //-- with orthVect and globalX1p ...
+    Double_t nulVect[3] = {0,0,0};
+    Double_t axis3[3];
+    TMath::Normal2Plane(nulVect, orthVect, globalX1p, axis3);
+    Double_t globalX1pNorm2 = ScalProd(globalX1p, globalX1p);
+    Double_t beta = ScalProd(globalX2p, globalX1p)/globalX1pNorm2;
+    Double_t gamma = ScalProd(globalX2p, axis3);
+    angleRotZ = (TMath::ATan2(1,0) - TMath::ATan2(beta, gamma))
+                *TMath::RadToDeg();
+  };
+  //   cout << "!!!!!!!!!!!!!!!!!!!  angle = " <<angleRotZ << endl;
+  CopyFrom(fPreviousX, globalX);
+  //---
+  Double_t localVect1[3], localVect2[3];
+  TGeoRotation rot("",angleRot1*TMath::RadToDeg(),
+		   angleRotDiag*TMath::RadToDeg(),
+		   rotation);
+// 		   rotation-angleRotZ);
+// since angleRotZ doesn't always work, I won't use it ...
+
+  rot.MasterToLocalVect(vect1, localVect1);
+  rot.MasterToLocalVect(vect2, localVect2);
+
+  //=================================================
+  // Create the segment and add it to the mother volume
+  TGeoVolume *vCableSegB = CreateBoxSegment(coord1, coord2);
+
+  TGeoRotation rotArbSeg("", 0, 90, 0);
+  rotArbSeg.MultiplyBy(&rot, kFALSE);
+  TGeoTranslation trans("",cx, cy, cz);
+  TGeoCombiTrans  *combiB = new TGeoCombiTrans(trans, rotArbSeg);
+  p2Vol->AddNode(vCableSegB, p2, combiB);
+  //=================================================;
+
+  if (fDebug) {
+    printf("---\n  Cable segment points : ");
+    printf("%f, %f, %f\n",coord1[0], coord1[1], coord1[2]);
+    printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
+  };
+
+  return vCableSegB;
+}
+
+//________________________________________________________________________
+TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableCylSegment(Int_t p2,
+							  Double_t rotation)
+{
+  // Create a flat cable segment with a curvature between points p1 and p2.
+  // The radius and position of the curve is defined by the
+  // perpendicular vector of point p2 (the orientation of this vector
+  // and the position of the 2 check points are enough to completely
+  // define the curve)
+  //    Rotation is the eventual rotation of the flat cable
+  //    along its length axis
+  //
+
+  TGeoNode *mainNode;
+  if (fInitialNode==0) {
+    TObjArray *nodes = gGeoManager->GetListOfNodes();
+    if (nodes->GetEntriesFast()==0) return 0;
+    mainNode = (TGeoNode *) nodes->UncheckedAt(0);
+  } else {
+    mainNode = fInitialNode;
+  };
+
+  Int_t p1 = p2 - 1;
+  TGeoVolume *p1Vol = GetVolume(p1);
+  TGeoVolume *p2Vol = GetVolume(p2);
+
+  ResetCheckDaughter();
+  fCurrentVol = p1Vol;
+  if (! CheckDaughter(mainNode)) {
+    printf("Error::volume containing point is not visible in node tree!\n");
+    return 0;
+  };
+
+  Double_t coord1[3], coord2[3], vect1[3], vect2[3];
+  //=================================================
+  // Get p1 position in the systeme of p2
+  if (p1Vol!=p2Vol) {
+
+    Int_t p1nodeInd[fgkCableMaxNodeLevel]; 
+    for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p1nodeInd[i]=fNodeInd[i];
+    Int_t p1volLevel = 0;
+    while (p1nodeInd[p1volLevel]!=-1) p1volLevel++;
+    p1volLevel--;
+
+    ResetCheckDaughter();
+    fCurrentVol = p2Vol;
+    if (! CheckDaughter(mainNode)) {
+      printf("Error::volume containing point is not visible in node tree!\n");
+      return 0;
+    };
+    Int_t p2nodeInd[fgkCableMaxNodeLevel];
+    for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p2nodeInd[i]=fNodeInd[i];
+    Int_t commonMotherLevel = 0;
+    while (p1nodeInd[commonMotherLevel]==fNodeInd[commonMotherLevel])
+      commonMotherLevel++;
+    commonMotherLevel--;
+    Int_t p2volLevel = 0;
+    while (fNodeInd[p2volLevel]!=-1) p2volLevel++;
+    p2volLevel--;
+
+    // Get coord and vect of p1 in the common mother reference system
+    GetCheckPoint(p1, 0, p1volLevel-commonMotherLevel, coord1);
+    GetCheckVect( p1, 0, p1volLevel-commonMotherLevel, vect1);
+    // Translate them in the reference system of the volume containing p2    
+    TGeoNode *pathNode[fgkCableMaxNodeLevel];
+    pathNode[0] = mainNode;
+    for (Int_t i=0; i<=p2volLevel; i++) {
+      pathNode[i+1] = pathNode[i]->GetDaughter(p2nodeInd[i]);
+    };
+    Double_t globalCoord1[3] = {coord1[0], coord1[1], coord1[2]}; 
+    Double_t globalVect1[3]  = {vect1[0], vect1[1], vect1[2]};
+
+    for (Int_t i = commonMotherLevel+1; i<=p2volLevel; i++) {
+      pathNode[i+1]->GetMatrix()->MasterToLocal(globalCoord1, coord1);
+      pathNode[i+1]->GetMatrix()->MasterToLocalVect(globalVect1, vect1);
+      CopyFrom(globalCoord1, coord1);
+      CopyFrom(globalVect1, vect1);
+    };
+  } else {
+    GetCheckPoint(p1, 0, 0, coord1);
+    GetCheckVect(p1, 0, 0, vect1);
+  };
+  
+  //=================================================
+  // Get p2 position in the systeme of p2
+  GetCheckPoint(p2, 0, 0, coord2);
+  GetCheckVect(p2, 0, 0, vect2);
+
+  Double_t cx = (coord1[0]+coord2[0])/2;
+  Double_t cy = (coord1[1]+coord2[1])/2;
+  Double_t cz = (coord1[2]+coord2[2])/2;
+  Double_t dx = coord2[0]-coord1[0];
+  Double_t dy = coord2[1]-coord1[1];
+  Double_t dz = coord2[2]-coord1[2];
+  Double_t length = TMath::Sqrt(dx*dx+dy*dy+dz*dz);
+
+  //=================================================
+  // Positionning of the segment between the 2 points
+  if ((dy<1e-31)&&(dy>0)) dy = 1e-31;
+  if ((dz<1e-31)&&(dz>0)) dz = 1e-31;
+  if ((dy>-1e-31)&&(dy<0)) dy = -1e-31;
+  if ((dz>-1e-31)&&(dz<0)) dz = -1e-31;
+
+  Double_t angleRot1 = -TMath::ATan2(dx,dy);
+  Double_t planDiagL = TMath::Sqrt(dy*dy+dx*dx);
+  Double_t angleRotDiag = -TMath::ATan2(planDiagL,dz);
+
+  TGeoRotation rotTorusTemp("",angleRot1*TMath::RadToDeg(),
+			    angleRotDiag*TMath::RadToDeg(),0);
+  TGeoRotation rotTorusToZ("",0,90,0);
+  rotTorusTemp.MultiplyBy(&rotTorusToZ, kTRUE);
+  Double_t localVect2[3];
+  rotTorusTemp.MasterToLocalVect(vect2, localVect2);
+  if (localVect2[1]<0) {
+    localVect2[0] = -localVect2[0];
+    localVect2[1] = -localVect2[1];
+    localVect2[2] = -localVect2[2];
+  };
+  Double_t normVect2 = TMath::Sqrt(localVect2[0]*localVect2[0]+
+				   localVect2[1]*localVect2[1]+
+				   localVect2[2]*localVect2[2]);
+  Double_t axisX[3] = {1,0,0};
+  Double_t cosangleTorusSeg = (localVect2[0]*axisX[0]+
+			       localVect2[1]*axisX[1]+
+			       localVect2[2]*axisX[2])/normVect2;
+  Double_t angleTorusSeg = TMath::ACos(cosangleTorusSeg)*TMath::RadToDeg();
+  TGeoRotation rotTorus("",angleRot1*TMath::RadToDeg(),
+			angleRotDiag*TMath::RadToDeg(),
+			45-angleTorusSeg+rotation);
+			//180-angleTorusSeg+rotation);
+  rotTorus.MultiplyBy(&rotTorusToZ, kTRUE);
+  rotTorus.MasterToLocalVect(vect2, localVect2);
+  if (localVect2[1]<0) {
+    localVect2[0] = -localVect2[0];
+    localVect2[1] = -localVect2[1];
+    localVect2[2] = -localVect2[2];
+  };
+  normVect2 = TMath::Sqrt(localVect2[0]*localVect2[0]+
+			  localVect2[1]*localVect2[1]+
+			  localVect2[2]*localVect2[2]);
+  Double_t axisY[3] = {0,1,0};
+  Double_t cosPhi = (localVect2[0]*axisY[0]+localVect2[1]*axisY[1]+
+		     localVect2[2]*axisY[2])/normVect2;
+  Double_t torusPhi1 = TMath::ACos(cosPhi);
+  Double_t torusR = (length/2)/TMath::Sin(torusPhi1);
+  torusPhi1 = torusPhi1*TMath::RadToDeg();
+  Double_t perpLength = TMath::Sqrt(torusR*torusR-length*length/4);
+  Double_t localTransT[3] = {-perpLength,0,0};
+  Double_t globalTransT[3];
+  rotTorus.LocalToMasterVect(localTransT, globalTransT);
+  TGeoTranslation transTorus("",cx+globalTransT[0],cy+globalTransT[1],
+			     cz+globalTransT[2]);
+
+  TGeoCombiTrans  *combiTorus = new TGeoCombiTrans(transTorus, rotTorus);
+
+  //=================================================
+  // Create the segment and add it to the mother volume
+  TGeoVolume *vCableSegT = CreateCylSegment(torusPhi1, torusR);
+  p2Vol->AddNode(vCableSegT, p2, combiTorus);
+
+  if (fDebug) {
+    printf("---\n  Cable segment points : ");
+    printf("%f, %f, %f\n",coord1[0], coord1[1], coord1[2]);
+    printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
+  };
+
+  return vCableSegT;
+}
+
+
+//________________________________________________________________________
 TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
-						      Double_t *coord2,
-						      Double_t *localVect1,
-						      Double_t *localVect2 )
+						   Double_t *coord2,
+						   Double_t *localVect1,
+						   Double_t *localVect2 )
 {
 
   //=================================================
@@ -465,10 +822,89 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
     vCableSeg->AddNode(vLay, iLay+1, fTranslation[iLay]);
   };
 
-  //vCableSeg->SetVisibility(kFALSE);
+  vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
 }
 
+
+//________________________________________________________________________
+TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
+						     Double_t &r)
+{
+
+  Double_t phi1 = 360-phi;
+  Double_t phi2 = 360+phi;
+
+  Double_t rMin = r-fThick/2;
+  Double_t rMax = r+fThick/2;
+  //=================================================
+  // Create the segment
+
+  TGeoTubeSeg *cableSeg = new TGeoTubeSeg(rMin, rMax, fWidth/2,
+					  phi1, phi2);
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
+
+  // add all cable layers
+  for (Int_t iLay=0; iLay<fNlayer; iLay++) {
+ 
+    Double_t ztr = -fThick/2;
+    for (Int_t i=0;i<iLay; i++) ztr+= fLayThickness[i];
+
+    rMin = r  + ztr;
+    rMax = r  + ztr + fLayThickness[iLay];
+    TGeoTubeSeg *lay = new TGeoTubeSeg(rMin, rMax, fWidth/2,
+				       phi1, phi2);
+
+    TGeoVolume *vLay = new TGeoVolume("vCableSegLay", lay, fLayMedia[iLay]);
+    vLay->SetLineColor(fLayColor[iLay]);
+    
+    vCableSeg->AddNode(vLay, iLay+1, 0);
+  };
+
+  vCableSeg->SetVisibility(kFALSE);
+  return vCableSeg;
+}
+
+
+//________________________________________________________________________
+TGeoVolume *AliITSv11GeomCableFlat::CreateBoxSegment( Double_t *coord1,
+						      Double_t *coord2)
+{
+
+  //=================================================
+  // Create a segment for the case it is a simple box
+  Double_t dx = coord2[0]-coord1[0];
+  Double_t dy = coord2[1]-coord1[1];
+  Double_t dz = coord2[2]-coord1[2];
+  Double_t length = TMath::Sqrt(dx*dx+dy*dy+dz*dz);
+
+  TGeoBBox *cableSeg = new  TGeoBBox(fWidth/2, length/2, fThick/2);
+
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
+
+  // add all cable layers
+  for (Int_t iLay=0; iLay<fNlayer; iLay++) {
+ 
+    Double_t ztr = -fThick/2;
+    for (Int_t i=0;i<iLay; i++) ztr+= fLayThickness[i];
+    ztr+= fLayThickness[iLay]/2;
+
+    TGeoBBox *lay = new  TGeoBBox(fWidth/2, length/2, fLayThickness[iLay]/2);
+
+
+    TGeoVolume *vLay = new TGeoVolume("vCableSegLay", lay, fLayMedia[iLay]);
+    vLay->SetLineColor(fLayColor[iLay]);
+    
+    if (fTranslation[iLay]==0)
+      fTranslation[iLay] = new TGeoTranslation(0, 0, ztr);
+    vCableSeg->AddNode(vLay, iLay+1, fTranslation[iLay]);
+  };
+
+  vCableSeg->SetVisibility(kFALSE);
+  return vCableSeg;
+}
 
 //________________________________________________________________________
 void AliITSv11GeomCableFlat::SetNLayers(Int_t nLayers) {

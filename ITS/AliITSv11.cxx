@@ -28,6 +28,8 @@
 
 #include "AliITS.h"
 #include "AliITSDetTypeSim.h"
+#include <TVirtualMC.h>
+
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSPD.h"

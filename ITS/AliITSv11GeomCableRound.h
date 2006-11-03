@@ -41,8 +41,8 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
 
  protected:
   TGeoVolume*   CreateSegment( Double_t *coord1,Double_t *coord2,
-			       Double_t *localVect1, Double_t *localVect2 );
-  TGeoVolume*   CreateTorus(  Double_t &phi, Double_t &r );
+			       Double_t *localVect1, Double_t *localVect2, Int_t p);
+  TGeoVolume*   CreateTorus(  Double_t &phi, Double_t &r, Int_t p);
 
   Double_t   fRadius;                         // total radius
   Int_t      fNlayer;                         // number of layers

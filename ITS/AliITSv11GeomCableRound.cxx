@@ -397,7 +397,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
   //=================================================
   // Create the segment and add it to the mother volume
   TGeoVolume *vCableSeg = CreateSegment(coord1, coord2,
-					localVect1, localVect2);
+					localVect1, localVect2, p2);
 
   TGeoCombiTrans  *combi = new TGeoCombiTrans(*trans, *rot);
   p2Vol->AddNode(vCableSeg, p2, combi);
@@ -579,7 +579,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t ro
 
   //=================================================
   // Create the segment and add it to the mother volume
-  TGeoVolume *vCableSegT = CreateTorus(torusPhi1, torusR);
+  TGeoVolume *vCableSegT = CreateTorus(torusPhi1, torusR, p2);
   p2Vol->AddNode(vCableSegT, p2, combiTorus);
 
   if (fDebug) {
@@ -595,7 +595,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t ro
 TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 						      Double_t *coord2,
 						      Double_t *localVect1,
-						      Double_t *localVect2 )
+						      Double_t *localVect2, Int_t p)
 {
   // Create one cylindrical segment and its layers
 
@@ -624,7 +624,9 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 				    localVect2[0],localVect2[1],localVect2[2]);
 
   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
-  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
+  char name[100];
+  sprintf(name, "%s_%i",GetName(),p);
+  TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, airSDD);
 
   // add all cable layers
   Double_t layThickness[100+1];                        // 100 layers max !!!
@@ -649,19 +651,23 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 
 //________________________________________________________________________
 TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
-						  Double_t &r)
+						  Double_t &r, Int_t p)
 {
   // Create one torus segment and its layers
 
   Double_t torusR = r;
-  Double_t torusPhi1 = phi;
-  Double_t torusDPhi = -2*torusPhi1;
+//   Double_t torusPhi1 = phi;
+//   Double_t torusDPhi = -2*torusPhi1;  // bug in root ...
+  Double_t torusPhi1 = 360-phi;
+  Double_t torusDPhi = 2*phi;
 
   //=================================================
   // Create the segment
-  TGeoTorus *cableSeg = new TGeoTorus(torusR, 0,fRadius,torusPhi1,torusDPhi);
+  TGeoTorus *cableSeg = new TGeoTorus(torusR, 0, fRadius, torusPhi1, torusDPhi);
   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
-  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
+  char name[100];
+  sprintf(name, "%s_%i",GetName(),p);
+  TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, airSDD);
 
   // add all cable layers
   Double_t layThickness[100+1];                        // 100 layers max !!!
