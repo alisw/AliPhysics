@@ -78,7 +78,7 @@
 #include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONConstants.h"
-#include "AliMUONTriggerSegmentationV2.h"
+#include "AliMUONTriggerSegmentation.h"
 
 #include "AliMpDEIterator.h"
 #include "AliMpSegmentation.h"
@@ -1079,7 +1079,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     AliMUONSegmentation* segmentation = pMUON->GetSegmentation();
     const AliMUONVGeometryDESegmentation* kdeSegmentation 
       = segmentation->GetDESegmentation(1100, cathode-1);
-    if ( dynamic_cast<const AliMUONTriggerSegmentationV2*>(kdeSegmentation) ) old = false;
+    if ( dynamic_cast<const AliMUONTriggerSegmentation*>(kdeSegmentation) ) old = false;
 
     if ( old  && chamber > 10) {
 	if (chamber > 10) printf(">>> old segmentation for trigger \n");

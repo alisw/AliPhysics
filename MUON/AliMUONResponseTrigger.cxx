@@ -28,7 +28,7 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
 #include "AliMUONSegmentation.h"
-#include "AliMUONTriggerSegmentationV2.h"
+#include "AliMUONTriggerSegmentation.h"
 #include "AliMUONConstants.h"
 
 #include "AliMpPad.h"

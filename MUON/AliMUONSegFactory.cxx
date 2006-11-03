@@ -34,7 +34,7 @@
 #include "AliMUONSt12QuadrantSegmentation.h"
 #include "AliMUONSt345SlatSegmentation.h"
 #include "AliMUONSt345SlatSegmentationV2.h"
-#include "AliMUONTriggerSegmentationV2.h"
+#include "AliMUONTriggerSegmentation.h"
 
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
@@ -214,9 +214,9 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
         break;
     
       case kStationTrigger:  	          
-        deSegmentation = new AliMUONTriggerSegmentationV2(
+        deSegmentation = new AliMUONTriggerSegmentation(
 	                         mpSegmentation, detElemId, planeType); 
-        //cout << "   new AliMUONTriggerSegmentationV2 "			  
+        //cout << "   new AliMUONTriggerSegmentation "			  
 	//     << StationTypeName(stationType) << "  "  
 	//     << PlaneTypeName(planeType) << "  "			  
 	//     << deName << endl;				  
