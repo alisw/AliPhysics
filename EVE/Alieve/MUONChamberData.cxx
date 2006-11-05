@@ -55,7 +55,7 @@ MUONChamberData::MUONChamberData(Int_t chamber)
 
   if (fgSegmentation == 0) {
     AliMUONSegFactory segFactory("volpath.dat","transform.dat");
-    fgSegmentation = segFactory.CreateSegmentation("FactoryV4");
+    fgSegmentation = segFactory.CreateSegmentation();
     fgTransformer = new AliMUONGeometryTransformer(true);
     fgTransformer->ReadGeometryData("volpaths.dat","transform.dat");
   }
