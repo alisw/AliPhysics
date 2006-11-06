@@ -31,7 +31,6 @@
 #include "AliMpFiles.h"
 #include "AliMpHelper.h"
 #include "AliLog.h"
-
 #include "TArrayI.h"
 #include "Riostream.h"
 
@@ -141,12 +140,15 @@ void AliMpBusPatch::ReadBusPatchFile()
       Int_t iDDL = atoi(sDDL.Data());
 
       // always working local DDL number... for the moment.
+
       // not really needed remove for stand alone purpose (Ch.F)
-//      if (iDDL >= AliDAQ::DdlIDOffset("MUONTRK"))
-// 	iDDL -= AliDAQ::DdlIDOffset("MUONTRK");
+      //      if (iDDL >= AliDAQ::DdlIDOffset("MUONTRK"))
+      // 	iDDL -= AliDAQ::DdlIDOffset("MUONTRK");
+
 
       TString busPatch(tmp(blankPos + 1,blankPos1-blankPos-1));
       AliDebug(3,Form("idDE %d buspatch %s iDDL %d\n", idDE, busPatch.Data(), iDDL));
+      AddDetElem(iDDL, idDE);
 
       TArrayI busPatchList;
       // decoding range of buspatch
@@ -178,7 +180,15 @@ void AliMpBusPatch::AddBus(Int_t iDDL, Int_t busPatch)
 
 }
 
+//____________________________________________________________________
+void AliMpBusPatch::AddDetElem(Int_t iDDL, Int_t detElem)
+{
+/// add DE per DDL
 
+  fDeInDDL[iDDL].Set(fDeInDDL[iDDL].GetSize() + 1);
+  fDeInDDL[iDDL].AddAt(detElem, fDeInDDL[iDDL].GetSize() - 1);
+
+}
 //____________________________________________________________________
 Int_t AliMpBusPatch::NextBusInDDL(Int_t iDDL)
 {
@@ -190,6 +200,7 @@ Int_t AliMpBusPatch::NextBusInDDL(Int_t iDDL)
   return fBusInDDL[iDDL].At(fBusItr[iDDL]++);
 
 }
+
 
 //____________________________________________________________________
 void AliMpBusPatch::ResetBusItr(Int_t iDDL)

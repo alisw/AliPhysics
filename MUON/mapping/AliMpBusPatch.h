@@ -20,6 +20,8 @@
 #include <TExMap.h>
 #include <TArrayI.h>
 
+class TExMapIter;
+
 class AliMpBusPatch : public TObject
 {
 
@@ -36,10 +38,13 @@ class AliMpBusPatch : public TObject
   TArrayI* GetBusfromDE(Int_t idDE);
   Int_t    GetDDLfromBus(Int_t busPatchId);
   void     AddBus(Int_t nDDL, Int_t busPatch);
+  void     AddDetElem(Int_t nDDL, Int_t detElem);
   void     Sort();
   TArrayI  GetBusInDDL(Int_t nDDL) {return fBusInDDL[nDDL];}
+  TArrayI  GetDeInDDL(Int_t nDDL) {return fDeInDDL[nDDL];}
   Int_t    NextBusInDDL(Int_t iDDL);
   void     ResetBusItr(Int_t iDDL);
+  TExMapIter   GetBusItr() {return TExMapIter(&fBusPatchToDDL);}
 
  private:
   AliMpBusPatch(const AliMpBusPatch& src);
@@ -50,10 +55,11 @@ class AliMpBusPatch : public TObject
   TExMap fBusPatchToDDL;             //!< Map from BusPatch to iDDL
 
   TArrayI fBusInDDL[20];             //!< buspatch array per DDL
-  Int_t fBusItr[20];                 //!< buspatch in DDL iterator
+  Int_t   fBusItr[20];               //!< buspatch in DDL iterator
+  TArrayI fDeInDDL[20];              //!< detElem array per DDL
+
 
   void Sort(TArrayI& arr, Int_t start, Int_t end);
-
 
   ClassDef(AliMpBusPatch,1) //utility class for the motif type
 };
