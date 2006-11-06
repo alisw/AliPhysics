@@ -7,7 +7,7 @@
 #include "../CreateESDChain.C"
 #include "../PWG0Helper.C"
 
-TChain* runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
+void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
 {
   if (aProof)
     connectProof("proof01@lxb6046");

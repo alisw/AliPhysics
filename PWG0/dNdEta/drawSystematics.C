@@ -23,6 +23,8 @@ void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", c
 
 #endif
 
+Int_t markers[] = {20,20,21,22,23,28,29};
+Int_t colors[]  = {1,2,3,4,6,8,102};
 
 void SetRanges(TAxis* axis)
 {
@@ -257,6 +259,60 @@ TH1** DrawRatios(const char* fileName = "systematics.root")
   return ptDists;
 }
 
+void DrawpiKpAndCombinedZOnly(Float_t upperPtLimit=0.99)
+{
+  gROOT->ProcessLine(".L drawPlots.C");
+  gSystem->Load("libPWG0base");
+
+  const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "correction_map.root" };
+  const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "dndeta_correction" };
+  const char* legendNames[] = { "#pi", "K", "p", "standard" };
+  Int_t folderCount = 3;
+
+  /*const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "systematics.root", "correction_map.root" };
+  const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "correction_3", "dndeta_correction" };
+  const char* legendNames[] = { "#pi", "K", "p", "others", "standard" };
+  Int_t folderCount = 5;*/
+
+  TString canvasName;
+  canvasName.Form("Track2Particle1DComposition");
+  TCanvas* canvas = new TCanvas(canvasName, canvasName, 700, 500);
+  canvas->SetGridx();
+  canvas->SetGridy();
+  canvas->SetBottomMargin(0.12);
+  //InitPad();
+
+  TLegend* legend = new TLegend(0.8, 0.7, 0.95, 0.95);
+  legend->SetFillColor(0);
+
+  Int_t mycolors[] = {1, 2, 4};
+
+  for (Int_t i=0; i<folderCount; ++i)
+  {
+    Track2Particle1DCreatePlots(fileNames[i], folderNames[i], upperPtLimit);
+
+    TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_z_div_meas_%s_nTrackToNPart_z", folderNames[i], folderNames[i])));
+
+    Prepare1DPlot(corrZ);
+
+    corrZ->SetTitle("");
+    corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
+    corrZ->GetYaxis()->SetRangeUser(0.51, 6);
+    corrZ->SetMarkerColor(mycolors[i]);
+    corrZ->SetLineColor(mycolors[i]);
+    corrZ->SetMarkerStyle(markers[i+1]);
+    corrZ->GetYaxis()->SetTitle("correction factor");
+
+    corrZ->DrawCopy(((i>0) ? "SAMEP" : "P"));
+
+    legend->AddEntry(corrZ, legendNames[i]);
+  }
+
+  legend->Draw();
+
+  canvas->SaveAs("ptcutoff_species.eps");
+}
+
 void DrawCompareToReal()
 {
   gROOT->ProcessLine(".L drawPlots.C");
@@ -273,6 +329,16 @@ void DrawDifferentSpecies()
 
   const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "systematics.root" };
   const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "correction_3" };
+
+  Track2Particle1DComposition(fileNames, 4, folderNames);
+}
+
+void DrawpiKpAndCombined()
+{
+  gROOT->ProcessLine(".L drawPlots.C");
+
+  const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "correction_map.root" };
+  const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "dndeta_correction" };
 
   Track2Particle1DComposition(fileNames, 4, folderNames);
 }
@@ -798,8 +864,9 @@ void DrawdNdEtaDifferences()
       Prepare1DPlot(hists[i], kFALSE);
       hists[i]->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
       hists[i]->GetYaxis()->SetRangeUser(6, 7);
-      hists[i]->SetLineColor(i+1);
-      hists[i]->SetMarkerColor(i+1);
+      hists[i]->SetLineColor(colors[i]);
+      hists[i]->SetMarkerColor(colors[i]);
+      hists[i]->SetMarkerStyle(markers[i]);
       hists[i]->GetXaxis()->SetLabelOffset(0.015);
       hists[i]->GetYaxis()->SetTitleOffset(1.5);
       gPad->SetLeftMargin(0.12);
@@ -825,6 +892,8 @@ void DrawdNdEtaDifferences()
 
       hists[i]->Divide(hists[0]);
       hists[i]->SetTitle("b)");
+      hists[i]->SetLineColor(colors[i-1]);
+      hists[i]->SetMarkerColor(colors[i-1]);
       hists[i]->GetYaxis()->SetRangeUser(0.95, 1.05);
       hists[i]->GetYaxis()->SetTitle("Ratio to standard composition");
       hists[i]->GetYaxis()->SetTitleOffset(1.8);
@@ -834,11 +903,27 @@ void DrawdNdEtaDifferences()
 
   legend2->Draw();
 
-  canvas->SaveAs("particlecomposition_result.eps");
-  canvas->SaveAs("particlecomposition_result.gif");
+  canvas->SaveAs("particlecomposition_result_detail.gif");
+
+  TCanvas* canvas2 = new TCanvas("DrawdNdEtaDifferences2", "DrawdNdEtaDifferences2", 700, 500);
+
+  for (Int_t i=1; i<5; ++i)
+  {
+    if (hists[i])
+    {
+      hists[i]->SetTitle("");
+      hists[i]->GetYaxis()->SetTitleOffset(1.1);
+      hists[i]->DrawCopy(((i > 1) ? "SAME" : ""));
+    }
+  }
+
+  legend2->Draw();
+
+  canvas2->SaveAs("particlecomposition_result.gif");
+  canvas2->SaveAs("particlecomposition_result.eps");
 }
 
-mergeCorrections4SystematicStudies(Char_t* standardCorrectionFileName="correction_map.root",
+mergeCorrectionsWithDifferentCrosssections(Char_t* standardCorrectionFileName="correction_map.root",
 					     Char_t* systematicCorrectionFileName="systematics.root",
 					     Char_t* outputFileName="systematics_vtxtrigger_compositions.root") {
   //
@@ -1076,7 +1161,7 @@ DrawVertexRecoSyst() {
   null->SetYTitle("dN/d#eta / dN/d#eta_{pythia}");
   null->GetYaxis()->CenterTitle(kTRUE);
   null->Draw();
-  
+
   for (Int_t i=1; i<7; i++) 
     ratios[i]->Draw("same");
 
@@ -1248,11 +1333,11 @@ DrawSpectraPID(Char_t* fileName) {
 
 void changePtSpectrum()
 {
-  TFile* file = TFile::Open("pt.root");
+  TFile* file = TFile::Open("analysis_mc.root");
   TH1F* hist = dynamic_cast<TH1F*> (file->Get("dndeta_check_pt"));
 
-  hist->Rebin(3);
-  hist->Scale(1.0/3);
+  //hist->Rebin(3);
+  //hist->Scale(1.0/3);
 
   TH1F* clone1 = dynamic_cast<TH1F*> (hist->Clone("clone1"));
   TH1F* clone2 = dynamic_cast<TH1F*> (hist->Clone("clone2"));
@@ -1277,9 +1362,12 @@ void changePtSpectrum()
       // 110% at pt = 0, ...
       scale2->SetBinContent(i, 1 + (ptCutOff - hist->GetBinCenter(i)) / ptCutOff * 0.3);
     }
+    scale1->SetBinError(i, 0);
+    scale2->SetBinError(i, 0);
   }
 
   new TCanvas;
+
   scale1->Draw();
   scale2->SetLineColor(kRed);
   scale2->Draw("SAME");
@@ -1291,17 +1379,23 @@ void changePtSpectrum()
   Prepare1DPlot(clone1);
   Prepare1DPlot(clone2);
 
+  /*hist->SetMarkerStyle(markers[0]);
+  clone1->SetMarkerStyle(markers[0]);
+  clone2->SetMarkerStyle(markers[0]);*/
+
   hist->SetTitle(";p_{T} in GeV/c;dN/dp_{T} in c/GeV");
   hist->GetXaxis()->SetRangeUser(0, 0.7);
-  hist->GetYaxis()->SetRangeUser(0, clone2->GetMaximum() * 1.1);
+  hist->GetYaxis()->SetRangeUser(0.01, clone2->GetMaximum() * 1.1);
   hist->GetYaxis()->SetTitleOffset(1);
 
   TCanvas* canvas = new TCanvas;
-  hist->Draw();
+  gPad->SetBottomMargin(0.12);
+  hist->Draw("H");
   clone1->SetLineColor(kRed);
-  clone1->Draw("SAME");
+  clone1->Draw("HSAME");
   clone2->SetLineColor(kBlue);
-  clone2->Draw("SAME");
+  clone2->Draw("HSAME");
+  hist->Draw("HSAME");
 
   Float_t fraction =  hist->Integral(hist->GetXaxis()->FindBin(ptCutOff), hist->GetNbinsX()) / hist->Integral(1, hist->GetNbinsX());
   Float_t fraction1 = clone1->Integral(clone1->GetXaxis()->FindBin(ptCutOff), clone1->GetNbinsX()) / clone1->Integral(1, clone1->GetNbinsX());
@@ -1311,6 +1405,7 @@ void changePtSpectrum()
   printf("Rel. %f %f\n", fraction1 / fraction, fraction2 / fraction);
 
   canvas->SaveAs("changePtSpectrum.gif");
+  canvas->SaveAs("changePtSpectrum.eps");
 }
 
 void FractionBelowPt()
@@ -1353,4 +1448,246 @@ void FractionBelowPt()
   printf("Generated ratios are:     %f pi, %f K, %f p, %f others\n", geneCount[0] / geneCount[4], geneCount[1] / geneCount[4], geneCount[2] / geneCount[4], geneCount[3] / geneCount[4]);
 
   printf("Reconstructed ratios are: %f pi, %f K, %f p, %f others\n", measCount[0] / measCount[4], measCount[1] / measCount[4], measCount[2] / measCount[4], measCount[3] / measCount[4]);
+}
+
+
+mergeCorrectionsMisalignment(Char_t* alignedFile = "correction_map_aligned.root",
+					     Char_t* misalignedFile = "correction_map_misaligned.root",
+					     Char_t* outputFileName="correction_map_misaligned_single.root")
+{
+  //
+  // from the aligned and misaligned corrections, 3 new corrections are created
+  // in these new corrections only one of the corrections (track2particle, vertex, trigger)
+  // is taken from the misaligned input to allow study of the effect on the different
+  // corrections
+
+  gSystem->Load("libPWG0base");
+
+  const Char_t* typeName[] = { "track2particle", "vertex", "trigger" };
+
+  AlidNdEtaCorrection* corrections[3];
+  for (Int_t j=0; j<3; j++) { // j = 0 (track2particle), j = 1 (vertex), j = 2 (trigger)
+    AlidNdEtaCorrection* alignedCorrection = new AlidNdEtaCorrection("dndeta_correction","dndeta_correction");
+    alignedCorrection->LoadHistograms(alignedFile);
+
+    AlidNdEtaCorrection* misalignedCorrection = new AlidNdEtaCorrection("dndeta_correction","dndeta_correction");
+    misalignedCorrection->LoadHistograms(misalignedFile);
+
+    TString name;
+    name.Form("dndeta_correction_alignment_%s", typeName[j]);
+    AlidNdEtaCorrection* current = new AlidNdEtaCorrection(name, name);
+
+    switch (j)
+    {
+      case 0:
+        alignedCorrection->GetTrack2ParticleCorrection()->Reset();
+        misalignedCorrection->GetTriggerBiasCorrectionNSD()->Reset();
+        misalignedCorrection->GetTriggerBiasCorrectionND()->Reset();
+        misalignedCorrection->GetTriggerBiasCorrectionINEL()->Reset();
+        misalignedCorrection->GetVertexRecoCorrection()->Reset();
+        break;
+
+      case 1:
+        misalignedCorrection->GetTrack2ParticleCorrection()->Reset();
+        misalignedCorrection->GetTriggerBiasCorrectionNSD()->Reset();
+        misalignedCorrection->GetTriggerBiasCorrectionND()->Reset();
+        misalignedCorrection->GetTriggerBiasCorrectionINEL()->Reset();
+        alignedCorrection->GetVertexRecoCorrection()->Reset();
+        break;
+
+      case 2:
+        misalignedCorrection->GetTrack2ParticleCorrection()->Reset();
+        alignedCorrection->GetTriggerBiasCorrectionNSD()->Reset();
+        alignedCorrection->GetTriggerBiasCorrectionND()->Reset();
+        alignedCorrection->GetTriggerBiasCorrectionINEL()->Reset();
+        misalignedCorrection->GetVertexRecoCorrection()->Reset();
+        break;
+
+      default:
+        return;
+    }
+
+    TList collection;
+    collection.Add(misalignedCorrection);
+    collection.Add(alignedCorrection);
+
+    current->Merge(&collection);
+    current->Finish();
+
+    corrections[j] = current;
+  }
+
+  TFile* fout = new TFile(outputFileName, "RECREATE");
+
+  for (Int_t i=0; i<3; i++)
+    corrections[i]->SaveHistograms();
+
+  fout->Write();
+  fout->Close();
+}
+
+
+void DrawdNdEtaDifferencesAlignment()
+{
+  TH1* hists[5];
+
+  TLegend* legend = new TLegend(0.3, 0.73, 0.70, 0.98);
+  legend->SetFillColor(0);
+
+  TCanvas* canvas = new TCanvas("DrawdNdEtaDifferences", "DrawdNdEtaDifferences", 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+
+  for (Int_t i=0; i<5; ++i)
+  {
+    hists[i] = 0;
+    TFile* file = 0;
+    TString title;
+
+    switch(i)
+    {
+      case 0 : file = TFile::Open("systematics_misalignment_aligned.root"); title = "aligned"; break;
+      case 1 : file = TFile::Open("systematics_misalignment_misaligned.root"); title = "fully misaligned"; break;
+      case 2 : file = TFile::Open("systematics_misalignment_track2particle.root"); title = "only track2particle"; break;
+      case 3 : file = TFile::Open("systematics_misalignment_vertex.root"); title = "only vertex rec."; break;
+      case 4 : file = TFile::Open("systematics_misalignment_trigger.root"); title = "only trigger bias"; break;
+      default: return;
+    }
+
+    if (file)
+    {
+      hists[i] = (TH1*) file->Get("dndeta/dndeta_dNdEta_corrected_2");
+      hists[i]->SetTitle("");
+
+      Prepare1DPlot(hists[i], kFALSE);
+      hists[i]->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
+      hists[i]->GetYaxis()->SetRangeUser(6, 7);
+      hists[i]->SetLineWidth(1);
+      hists[i]->SetLineColor(colors[i]);
+      hists[i]->SetMarkerColor(colors[i]);
+      hists[i]->SetMarkerStyle(markers[i]);
+      hists[i]->GetXaxis()->SetLabelOffset(0.015);
+      hists[i]->GetYaxis()->SetTitleOffset(1.5);
+      gPad->SetLeftMargin(0.12);
+      hists[i]->DrawCopy(((i > 0) ? "SAME" : ""));
+
+      legend->AddEntry(hists[i], title);
+      hists[i]->SetTitle(title);
+    }
+  }
+  legend->Draw();
+
+  canvas->cd(2);
+  gPad->SetLeftMargin(0.14);
+
+  TLegend* legend2 = new TLegend(0.63, 0.73, 0.98, 0.98);
+  legend2->SetFillColor(0);
+
+  for (Int_t i=1; i<5; ++i)
+  {
+    if (hists[i])
+    {
+      legend2->AddEntry(hists[i]);
+
+      hists[i]->Divide(hists[0]);
+      hists[i]->SetTitle("b)");
+      hists[i]->GetYaxis()->SetRangeUser(0.9, 1.1);
+      hists[i]->GetYaxis()->SetTitle("Ratio to standard composition");
+      hists[i]->GetYaxis()->SetTitleOffset(1.8);
+      hists[i]->DrawCopy(((i > 1) ? "SAME" : ""));
+    }
+  }
+
+  legend2->Draw();
+
+  canvas->SaveAs("misalignment_result.eps");
+  canvas->SaveAs("misalignment_result.gif");
+}
+
+void EvaluateMultiplicityEffect()
+{
+  gSystem->Load("libPWG0base");
+
+  AlidNdEtaCorrection* fdNdEtaCorrectionLow[4];
+  AlidNdEtaCorrection* fdNdEtaCorrectionHigh[4];
+
+  TFile::Open("systematics-low-multiplicity.root");
+
+  for (Int_t i=0; i<4; ++i)
+  {
+    TString name;
+    name.Form("correction_%d", i);
+    fdNdEtaCorrectionLow[i] = new AlidNdEtaCorrection(name, name);
+    fdNdEtaCorrectionLow[i]->LoadHistograms("systematics-low-multiplicity.root", name);
+  }
+
+  TList list;
+  for (Int_t i=1; i<4; ++i)
+    list.Add(fdNdEtaCorrectionLow[i]);
+
+  fdNdEtaCorrectionLow[0]->Merge(&list);
+  fdNdEtaCorrectionLow[0]->Finish();
+
+  TFile::Open("systematics-high-multiplicity.root");
+
+  for (Int_t i=0; i<4; ++i)
+  {
+    TString name;
+    name.Form("correction_%d", i);
+    fdNdEtaCorrectionHigh[i] = new AlidNdEtaCorrection(name, name);
+    fdNdEtaCorrectionHigh[i]->LoadHistograms("systematics-high-multiplicity.root", name);
+  }
+
+  TList list2;
+  for (Int_t i=1; i<4; ++i)
+    list2.Add(fdNdEtaCorrectionHigh[i]);
+
+  fdNdEtaCorrectionHigh[0]->Merge(&list2);
+  fdNdEtaCorrectionHigh[0]->Finish();
+
+  TH1F* outputLow = new TH1F("Track2ParticleLow", "Track2Particle at low multiplicity", 200, 0, 2);
+  TH1F* outputHigh = new TH1F("Track2ParticleHigh", "Track2Particle at high multiplicity", 200, 0, 2);
+
+  TH3F* hist = fdNdEtaCorrectionLow[0]->GetTrack2ParticleCorrection()->GetCorrectionHistogram();
+  TH3F* hist2 = fdNdEtaCorrectionHigh[0]->GetTrack2ParticleCorrection()->GetCorrectionHistogram();
+  for (Int_t x=hist->GetXaxis()->FindBin(-10); x<=hist->GetXaxis()->FindBin(10); ++x)
+    for (Int_t y=hist->GetYaxis()->FindBin(-0.8); y<=hist->GetYaxis()->FindBin(0.8); ++y)
+      for (Int_t z=hist->GetZaxis()->FindBin(0.3); z<=hist->GetZaxis()->FindBin(9.9); ++z)
+      //for (Int_t z=1; z<=hist->GetNbinsZ(); ++z)
+      {
+        if (hist->GetBinContent(x, y, z) > 0)
+          outputLow->Fill(hist->GetBinContent(x, y, z));
+        //if (hist->GetBinContent(x, y, z) == 1)
+        //  printf("z = %f, eta = %f, pt = %f: %f %f %f\n", hist->GetXaxis()->GetBinCenter(x), hist->GetYaxis()->GetBinCenter(y), hist->GetZaxis()->GetBinCenter(z), hist->GetBinContent(x, y, z), fdNdEtaCorrectionLow[0]->GetTrack2ParticleCorrection()->GetGeneratedHistogram()->GetBinContent(x, y, z), fdNdEtaCorrectionLow[0]->GetTrack2ParticleCorrection()->GetMeasuredHistogram()->GetBinContent(x, y, z));
+
+        if (hist2->GetBinContent(x, y, z) > 0)
+          outputHigh->Fill(hist2->GetBinContent(x, y, z));
+      }
+
+  TCanvas* canvas = new TCanvas("EvaluateMultiplicityEffect", "EvaluateMultiplicityEffect", 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  outputLow->Draw();
+  outputLow->Fit("gaus", "0");
+  outputLow->GetFunction("gaus")->SetLineColor(2);
+  outputLow->GetFunction("gaus")->DrawCopy("SAME");
+
+  canvas->cd(2);
+  outputHigh->Draw();
+  outputHigh->Fit("gaus", "0");
+  outputHigh->GetFunction("gaus")->DrawCopy("SAME");
+
+  canvas->SaveAs(Form("%s.gif", canvas->GetName()));
+}
+
+void PlotErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax, const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction")
+{
+    gSystem->Load("libPWG0base");
+	
+	AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
+    dNdEtaCorrection->LoadHistograms(correctionMapFile, correctionMapFolder);
+    
+    dNdEtaCorrection->GetTrack2ParticleCorrection()->PlotBinErrors(xmin, xmax, ymin, ymax, zmin, zmax)->Draw();
 }
