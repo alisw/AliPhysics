@@ -54,10 +54,10 @@
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
 
+#include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpIntPair.h"
 #include "AliMpDEManager.h"
-#include "AliMpSegFactory.h"
 #endif
 
 void MUONkine(Int_t event2Check=0, char * filename="galice.root")
@@ -242,8 +242,8 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
   AliMUONDigit * mDigit =0x0;
-  AliMpVSegmentation * segbend = 0x0;
-  AliMpVSegmentation * segnonbend = 0x0;
+  const AliMpVSegmentation * segbend = 0x0;
+  const AliMpVSegmentation * segnonbend = 0x0;
   AliMpIntPair pad(0,0);
 
   Int_t dEoccupancy_bending[14][26];
@@ -263,8 +263,6 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
   Int_t ichamber, nchambers,idetele, detele, ix, iy;
   nchambers = AliMUONConstants::NCh(); ;
 
-  AliMpSegFactory factory;
-
   for (ichamber=0; ichamber<nchambers; ichamber++) {
     cHchannels_bending[ichamber]=0;
     cHchannels_nonbending[ichamber]=0;
@@ -276,10 +274,10 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
       dEoccupancy_nonbending[ichamber][idetele]=0;
       if ( AliMpDEManager::IsValidDetElemId(detele) ) {
 	
-	segbend    =  factory.CreateMpSegmentation(detele, 0);
-	segnonbend =  factory.CreateMpSegmentation(detele, 1);
+	segbend    = AliMpSegmentation::Instance()->GetMpSegmentation(detele, 0);
+	segnonbend = AliMpSegmentation::Instance()->GetMpSegmentation(detele, 1);
         if (AliMpDEManager::GetPlaneType(detele, 0) != kBendingPlane ) {
-	  AliMpVSegmentation* tmp = segbend;
+	  const AliMpVSegmentation* tmp = segbend;
 	  segbend    =  segnonbend;
 	  segnonbend =  tmp;
 	}  
@@ -315,8 +313,6 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
   }
   printf(">>Spectrometer has  %7d channels in bending and %7d channels in nonbending \n",
 	 totalchannels_bending, totalchannels_nonbending);
-
-  factory.DeleteSegmentations();
 
   ievent=event2Check;
   printf(">>> Event %d \n",ievent);
@@ -457,8 +453,6 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();   
   crateManager->ReadFromFile();
 
-  AliMpSegFactory* segFactory = new AliMpSegFactory();
-    
   AliMUONGeometryTransformer* transformer = new AliMUONGeometryTransformer(kFALSE);
   transformer->ReadGeometryData("volpath.dat", "geometry.root");
 
@@ -466,7 +460,6 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
 
   for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
       AliMUONTriggerCircuit* c = new AliMUONTriggerCircuit();
-      c->SetSegFactory(segFactory);
       c->SetTransformer(transformer);
       c->Init(i,*crateManager);
       TClonesArray& circuit = *triggerCircuit;
@@ -580,7 +573,6 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
   MUONLoader->UnloadRecPoints();
 
   delete crateManager;
-  delete segFactory;
   delete transformer;
   delete triggerCircuit;
   

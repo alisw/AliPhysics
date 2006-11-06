@@ -37,9 +37,9 @@
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpManuList.h"
-#include "AliMpSegFactory.h"
-#include "AliMpStationType.h"
+#include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpStationType.h"
 #include "Riostream.h"
 #include "TH1F.h"
 #include "TList.h"
@@ -49,7 +49,7 @@
 #endif
 
 //_____________________________________________________________________________
-Int_t countChannels(AliMpVSegmentation& seg)
+Int_t countChannels(const AliMpVSegmentation& seg)
 {
   Int_t n(0);
   
@@ -61,13 +61,6 @@ Int_t countChannels(AliMpVSegmentation& seg)
     }
   }
   return n;
-}
-
-//_____________________________________________________________________________
-AliMpSegFactory* segFactory()
-{
-  static AliMpSegFactory* sf = new AliMpSegFactory();
-  return sf;
 }
 
 //_____________________________________________________________________________
@@ -87,7 +80,8 @@ void countChannels()
       Int_t de = it.CurrentDE();
       for ( Int_t cathode = 0; cathode < 2; ++cathode )
       {
-        AliMpVSegmentation* seg = segFactory()->CreateMpSegmentation(de,cathode);
+        const AliMpVSegmentation* seg 
+	  = AliMpSegmentation::Instance()->GetMpSegmentation(de,cathode);
         n += countChannels(*seg);
       }
       it.Next();
@@ -275,8 +269,8 @@ void getBoundaries(const AliMUONV2DStore& store,
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
         
-    AliMpVSegmentation* seg = 
-      segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
           
     AliMUONVCalibParam* value = 
       dynamic_cast<AliMUONVCalibParam*>(store.Get(detElemId,manuId));
@@ -348,8 +342,8 @@ void plot(const AliMUONV2DStore& store, const char* name, Int_t nbins)
     Int_t manuId = p->GetSecond();
     Int_t station = AliMpDEManager::GetChamberId(detElemId);
     
-    AliMpVSegmentation* seg = 
-      segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
     
     AliMUONVCalibParam* value = 
       dynamic_cast<AliMUONVCalibParam*>(store.Get(detElemId,manuId));
@@ -446,8 +440,8 @@ Int_t makePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValues)
         
     Int_t manuId = p->GetSecond();
     
-    AliMpVSegmentation* seg = 
-      segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
     
     for ( Int_t manuChannel = 0; manuChannel < nChannels; ++manuChannel )
     {
@@ -521,8 +515,8 @@ Int_t makeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues)
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
 
-    AliMpVSegmentation* seg = 
-      segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
 
     for ( Int_t manuChannel = 0; manuChannel < nChannels; ++manuChannel )
     {
@@ -587,8 +581,8 @@ Int_t makeDeadStore(AliMUONV2DStore& deadStore, Bool_t defaultValues)
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
     
-    AliMpVSegmentation* seg = 
-      segFactory()->CreateMpSegmentationByElectronics(detElemId,manuId);
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
     
     for ( Int_t manuChannel = 0; manuChannel < nChannels; ++manuChannel )
     {
