@@ -149,12 +149,10 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
   return chain;
 }
 
-void LookupWrite(TChain* chain, const char* target)
+void ChainToTextFile(TChain* chain, const char* target)
 {
-  // looks up the chain and writes the remaining files to the text file target
-
-  chain->Lookup();
-
+  // write a text list of the files in the chain
+  
   TObjArray* list = chain->GetListOfFiles();
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
@@ -168,4 +166,13 @@ void LookupWrite(TChain* chain, const char* target)
   outfile.close();
 
   delete iter;
+} 
+
+void LookupWrite(TChain* chain, const char* target)
+{
+  // looks up the chain and writes the remaining files to the text file target
+
+  chain->Lookup();
+
+  ChainToTextFile(chain, target);
 }
