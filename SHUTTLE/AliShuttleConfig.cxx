@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.10  2006/10/20 15:22:59  jgrosseo
+o) Adding time out to the execution of the preprocessors: The Shuttle forks and the parent process monitors the child
+o) Merging Collect, CollectAll, CollectNew function
+o) Removing implementation of empty copy constructors (declaration still there!)
+
 Revision 1.9  2006/10/02 16:38:39  jgrosseo
 update (alberto):
 fixed memory leaks
@@ -326,11 +331,11 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	// FES configuration (FES logbook and hosts)
 
 	for(int iSys=0;iSys<3;iSys++){
-		queryFilter = Form("(system=%s)", AliShuttleInterface::fkSystemNames[iSys]);
+		queryFilter = Form("(system=%s)", AliShuttleInterface::GetSystemName(iSys));
 		aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL, queryFilter.Data());
 		if (!aResult) {
 			AliError(Form("Can't find configuration for system: %s",
-					AliShuttleInterface::fkSystemNames[iSys]));
+					AliShuttleInterface::GetSystemName(iSys)));
 			return;
 		}
 
@@ -345,7 +350,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		anAttribute = anEntry->GetAttribute("LogbookHost");
 		if (!anAttribute) {
 			AliError(Form ("Can't find LogbookHost attribute for %s!!",
-						AliShuttleInterface::fkSystemNames[iSys]));
+						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
@@ -354,7 +359,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		anAttribute = anEntry->GetAttribute("LogbookUser");
 		if (!anAttribute) {
 			AliError(Form ("Can't find LogbookUser attribute for %s!!",
-						AliShuttleInterface::fkSystemNames[iSys]));
+						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
@@ -363,7 +368,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		anAttribute = anEntry->GetAttribute("LogbookPassword");
 		if (!anAttribute) {
 			AliError(Form ("Can't find LogbookPassword attribute for %s!!",
-						AliShuttleInterface::fkSystemNames[iSys]));
+						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
@@ -372,7 +377,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		anAttribute = anEntry->GetAttribute("FSHost");
 		if (!anAttribute) {
 			AliError(Form ("Can't find FSHost attribute for %s!!",
-						AliShuttleInterface::fkSystemNames[iSys]));
+						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
@@ -381,7 +386,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		anAttribute = anEntry->GetAttribute("FSUser");
 		if (!anAttribute) {
 			AliError(Form ("Can't find FSUser attribute for %s!!",
-						AliShuttleInterface::fkSystemNames[iSys]));
+						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
@@ -525,7 +530,7 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 	result += "\n\n";
 
 	for(int iSys=0;iSys<3;iSys++){
-		result += Form("FES Configuration for %s system\n", AliShuttleInterface::fkSystemNames[iSys]);
+		result += Form("FES Configuration for %s system\n", AliShuttleInterface::GetSystemName(iSys));
 		result += Form("\tLogbook host: \t%s - \tUser: %s\n",
 						fFESlbHost[iSys].Data(), fFESlbUser[iSys].Data());
 		// result += Form("Logbook Password:",fFESlbPass[iSys].Data());

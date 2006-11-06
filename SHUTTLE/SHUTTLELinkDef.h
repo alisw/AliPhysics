@@ -12,8 +12,8 @@
 #pragma link C++ global gMC;
  
 // AliDCSClient classes ...
-#pragma link C++ class AliDCSMessage;
-#pragma link C++ class AliDCSClient;
+#pragma link C++ class AliDCSClient+;
+#pragma link C++ class AliDCSMessage+;
 
 // Shuttle classes ...
 #pragma link C++ class  AliShuttleConfig;

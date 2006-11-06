@@ -21,6 +21,15 @@ class TMap;
 class AliDCSClient: public TObject {
 public:
 
+	enum {
+		fgkBadState=-1, 	     // Bad state
+		fgkInvalidParameter = -2,    // Invalid parameter
+		fgkTimeout = -3,	     // Timeout
+		fgkBadMessage = -4,	     // Bad message
+		fgkCommError = -5,	     // Communication error
+		fgkServerError = -6	     // Server error
+	};
+	
 	friend class AliShuttle;
 
 	AliDCSClient(const char* host, Int_t port, UInt_t timeout = 5000,
@@ -53,14 +62,6 @@ public:
         static const char* GetErrorString(Int_t code);
 
 private:
-
-	static const Int_t fgkBadState = -1;		// Bad state
-	static const Int_t fgkInvalidParameter = -2;	// Invalid parameter
-	static const Int_t fgkTimeout = -3;		// Timeout
-	static const Int_t fgkBadMessage = -4;		// Bad message
-	static const Int_t fgkCommError = -5;		// Communication error
-	static const Int_t fgkServerError = -6;		// Server error
-
 	static const char* fgkBadStateString;		// Bad state string
 	static const char* fgkInvalidParameterString;	// Invalid parameter string
 	static const char* fgkTimeoutString;    	// Timeout string

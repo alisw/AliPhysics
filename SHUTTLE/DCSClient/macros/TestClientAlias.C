@@ -19,14 +19,19 @@ void GetValues(const char* host, Int_t port, const char* request,
 	sw.Start();
 
 	if (requests->GetEntries() > 1) {
-		
+
 		TIter iter(requests);
 		TObjString* aString;
+		TObjArray* valueSet;
 		while ((aString = (TObjString*) iter.Next())) {
-			values.Add(new TObjString(aString->String()), NULL);
-		}	
-		
-		result = client.GetAliasValues(startTime, endTime, values);
+			cout<<"  Querying: "<<aString->GetName()<<endl;
+			valueSet = new TObjArray();
+			valueSet->SetOwner(1);
+
+			result = client.GetDPValues(aString->GetName(), startTime,
+				endTime, valueSet);
+			values.Add(aString->Clone(), valueSet);
+		}
 
 	} else {
 		TObjArray* valueSet = new TObjArray();
@@ -75,7 +80,7 @@ void GetValues(const char* host, Int_t port, const char* request,
 /*
 	TFile file("dump.root", "UPDATE");
 	file.cd();
-	valueSet->Write();
+	values.Write("DCSAliasMap", TObject::kSingleKey);
 	file.Close(); 
 */
 
@@ -90,7 +95,7 @@ void GetValues(const char* host, Int_t port, const char* request,
 void TestClientAlias(const char* host, Int_t port, const char* request,
 	UInt_t startShift, UInt_t endShift) {
 
-	gSystem->Load("libSHUTTLE");
+	gSystem->Load("AliDCSClient");
 
 //	AliLog::EnableDebug(kFALSE);
 //	AliLog::SetGlobalDebugLevel(3);

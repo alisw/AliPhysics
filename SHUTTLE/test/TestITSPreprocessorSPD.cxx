@@ -17,76 +17,58 @@
 // Example of a Shuttle Preprocessor
 //
 
-#include "TestTPCPreprocessor.h"
+#include "TestITSPreprocessorSPD.h"
 
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
 #include <TTimeStamp.h>
-#include <TObjString.h>
-#include <TH2F.h>
 
-ClassImp(TestTPCPreprocessor)
+ClassImp(TestITSPreprocessorSPD)
 
 //________________________________________________________________________________________
-TestTPCPreprocessor::TestTPCPreprocessor():
-	AliPreprocessor("TPC",0)
+TestITSPreprocessorSPD::TestITSPreprocessorSPD():
+	AliPreprocessor("SPD",0)
 {
 // default constructor - Don't use this!
 
- 	fData = 0;
 }
 
 //________________________________________________________________________________________
-TestTPCPreprocessor::TestTPCPreprocessor(AliShuttleInterface* shuttle):
-	AliPreprocessor("TPC", shuttle)
+TestITSPreprocessorSPD::TestITSPreprocessorSPD(const char* detector, AliShuttleInterface* shuttle):
+	AliPreprocessor(detector,shuttle)
 {
 // constructor - shuttle must be instantiated!
 
-	fData = 0;
-
 }
 
 //________________________________________________________________________________________
-TestTPCPreprocessor::~TestTPCPreprocessor()
-{
-// destructor
-
-	delete fData;
-	fData = 0;
-
-}
-
-//________________________________________________________________________________________
-void TestTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
+void TestITSPreprocessorSPD::Initialize(Int_t run, UInt_t startTime,
 	UInt_t endTime)
 {
 // Initialize preprocessor
 
-	fRun=run;
-	fStartTime = startTime;
-	fEndTime = endTime;
-	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
+	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run, 
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
-
-	fData = new AliTPCDataDCS(fRun, fStartTime, fEndTime);
 }
 
 //________________________________________________________________________________________
-UInt_t TestTPCPreprocessor::Process(TMap* aliasMap)
+UInt_t TestITSPreprocessorSPD::Process(TMap* valueMap)
 {
-// Process data
+// process data retrieved by the Shuttle
 
-	fData->ProcessData(*aliasMap);
+	AliInfo(Form("You're in AliITSPreprocessor::Process!"));
+
+	TIter iter(valueMap);
+	TPair* aPair;
+	while ((aPair = (TPair*) iter.Next())) {
+		aPair->Print();
+	}
 	AliCDBMetaData metaData;
-	metaData.SetBeamPeriod(0);
-	metaData.SetResponsible("Alberto Colla");
-	metaData.SetComment("This preprocessor fills an AliTPCDataDCS object.");
+	metaData.SetComment("This is a test!");
 
-	return Store("Calib", "TPCData", fData, &metaData);
-	delete fData;
-	fData = 0;
+	return Store("Calib", "ITSDataSPD", valueMap, &metaData);
 }
 

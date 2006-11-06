@@ -38,9 +38,10 @@ Bool_t Shuttle(const char* param = "listen") {
 	AliShuttle* shuttle = trigger.GetShuttle();
 
 	// Add here detectors preprocessor ...
-	TestTPCPreprocessor *tpcPrep = new TestTPCPreprocessor("TPC",shuttle);
-	TestITSPreprocessor *itsPrep = new TestITSPreprocessor("ITS",shuttle);
-	TestRICHPreprocessor *richPrep = new TestRICHPreprocessor("RICH",shuttle);
+	TestTPCPreprocessor *tpcPrep = new TestTPCPreprocessor(shuttle);
+	TestITSPreprocessorSPD *spdPrep = new TestITSPreprocessorSPD("SPD",shuttle);
+	TestRICHPreprocessor *richPrep = new TestRICHPreprocessor("HMP",shuttle);
+	TestZDCPreprocessor *zdcPrep = new TestZDCPreprocessor("ZDC",shuttle);
 
 	TString paramStr(param);
 	

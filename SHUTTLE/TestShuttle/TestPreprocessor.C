@@ -13,8 +13,13 @@ void TestPreprocessor()
   // load library
   gSystem->Load("libTestShuttle.so");
 
-  // initialize location of CDB
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  // TODO if needed, change location of OCDB and Reference test folders
+  // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
+  // AliTestShuttle::SetOCDBStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  // AliTestShuttle::SetReferenceStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+
+  printf("Test OCDB storage Uri: %s\n", AliTestShuttle::GetOCDBStorage().Data());
+  printf("Test Reference storage Uri: %s\n", AliTestShuttle::GetReferenceStorage().Data());
 
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
@@ -58,19 +63,31 @@ void TestPreprocessor()
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC2", "file2b.root");
 
   // TODO(3)
+  //
+  // The shuttle can read run parameters stored in the DAQ run logbook.
+  // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
+  // using GetRunParameter function.
+  // In real life the parameters will be retrieved automatically from the run logbook;
+  shuttle->AddInputRunParameter("totalEvents", "30000");
+  shuttle->AddInputRunParameter("NumberOfGDCs", "15");
+
+  // TODO(4)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
-  AliPreprocessor* pp = new AliTestPreprocessor("DET", shuttle);
+//  AliPreprocessor* pp = new AliTestPreprocessor("DET", shuttle);
+//  AliPreprocessor* start = new AliSTARTPreprocessor("T00", shuttle);
+  AliPreprocessor* test = new AliTestPreprocessor("DET", shuttle);
 
   // Test the preprocessor
   shuttle->Process();
 
-  // TODO(4)
+  // TODO(5)
   // In the preprocessor AliShuttleInterface::Store should be called to put the final
   // data to the CDB. To check if all went fine have a look at the files produced in
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("DET/SHUTTLE/Data", 7);
+  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetOCDBStorage())
+  			->Get("DET/SHUTTLE/Data", 7);
   if (!entry)
   {
     printf("The file is not there. Something went wrong.\n");

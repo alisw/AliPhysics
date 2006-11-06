@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.18  2006/10/20 15:22:59  jgrosseo
+o) Adding time out to the execution of the preprocessors: The Shuttle forks and the parent process monitors the child
+o) Merging Collect, CollectAll, CollectNew function
+o) Removing implementation of empty copy constructors (declaration still there!)
+
 Revision 1.17  2006/10/05 16:20:55  jgrosseo
 adapting to new CDB classes
 
@@ -125,7 +130,7 @@ some docs added
 #include "AliCDBPath.h"
 #include "AliCDBEntry.h"
 #include "AliShuttleConfig.h"
-#include "AliDCSClient.h"
+#include "DCSClient/AliDCSClient.h"
 #include "AliLog.h"
 #include "AliPreprocessor.h"
 #include "AliShuttleStatus.h"
@@ -155,15 +160,8 @@ TString AliShuttle::fgkLocalRefStorage("local://LocalReferenceStorage");
 
 Bool_t AliShuttle::fgkProcessDCS(kTRUE); 
 
-
 const char* AliShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/temp");
 const char* AliShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/log");
-
-const char* AliShuttle::fgkDetectorName[AliShuttle::kNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
-	"PHOS", "CPV", "RICH", "EMCAL", "MUON_TRK", "MUON_TRG", "FMD", "ZDC", "PMD", "START", "VZERO"};
-
-const char* AliShuttle::fgkDetectorCode[AliShuttle::kNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
-	"PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00"};
 
 //______________________________________________________________________________________________
 AliShuttle::AliShuttle(const AliShuttleConfig* config,
@@ -172,11 +170,12 @@ fConfig(config),
 fTimeout(timeout), fRetries(retries),
 fPreprocessorMap(),
 fLogbookEntry(0),
-fCurrentDetector(""),
+fCurrentDetector(),
 fStatusEntry(0),
 fGridError(kFALSE),
 fMonitoringMutex(0),
-fLastActionTime(0)
+fLastActionTime(0),
+fLastAction()
 {
 	//
 	// config: AliShuttleConfig used
@@ -204,7 +203,7 @@ AliShuttle::~AliShuttle()
 		if(fServer[iSys]) {
 			fServer[iSys]->Close();
 			delete fServer[iSys];
-      fServer[iSys] = 0;
+		        fServer[iSys] = 0;
 		}
 
 	if (fStatusEntry){
@@ -229,13 +228,16 @@ void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
 	// with the same identificator (GetName()).
 	//
 
-	if (fPreprocessorMap.GetValue(preprocessor->GetName())) {
-		AliWarning(Form("AliPreprocessor %s is already registered!",
-			preprocessor->GetName()));
+	const char* detName = preprocessor->GetName();
+	if(GetDetPos(detName) < 0)
+		AliFatal(Form("********** !!!!! Invalid detector name: %s !!!!! **********", detName));
+
+	if (fPreprocessorMap.GetValue(detName)) {
+		AliWarning(Form("AliPreprocessor %s is already registered!", detName));
 		return;
 	}
 
-	fPreprocessorMap.Add(new TObjString(preprocessor->GetName()), preprocessor);
+	fPreprocessorMap.Add(new TObjString(detName), preprocessor);
 }
 //______________________________________________________________________________________________
 UInt_t AliShuttle::Store(const AliCDBPath& path, TObject* object,
@@ -407,9 +409,10 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
 		return;
 	}
 
-	TString actionStr;
-	actionStr.Form("UpdateShuttleStatus - %s: Changing state from %s to %s", fCurrentDetector.Data(),
-				status->GetStatusName(), status->GetStatusName(newStatus));
+	TString actionStr = Form("UpdateShuttleStatus - %s: Changing state from %s to %s", 
+				fCurrentDetector.Data(),
+				status->GetStatusName(), 
+				status->GetStatusName(newStatus));
 	Log("SHUTTLE", actionStr);
 	SetLastAction(actionStr);
 
@@ -425,17 +428,11 @@ Bool_t AliShuttle::ContinueProcessing()
 // checks if the processing should be continued
 // if yes it returns kTRUE and updates the AliShuttleStatus with nextStatus
 
-	if(!GetDetCode(fCurrentDetector)) {
-		Log("SHUTTLE", Form("ContinueProcessing - %s: unknown detector",
-				fCurrentDetector.Data()));
-		return kFALSE;
-	}
-
 	AliShuttleLogbookEntry::Status entryStatus =
-		fLogbookEntry->GetDetectorStatus(GetDetCode(fCurrentDetector));
+		fLogbookEntry->GetDetectorStatus(fCurrentDetector);
 
 	if(entryStatus != AliShuttleLogbookEntry::kUnprocessed) {
-		Log("SHUTTLE", Form("ContinueProcessing - %s is already %s",
+		Log("SHUTTLE", Form("ContinueProcessing - %s is %s",
 				fCurrentDetector.Data(),
 				fLogbookEntry->GetDetectorStatusName(entryStatus)));
 		return kFALSE;
@@ -482,7 +479,6 @@ Bool_t AliShuttle::ContinueProcessing()
 	// if we get here, there is a restart
 
 	// abort conditions
-	// TODO we should add two counters, one for PP and one for DCS!
 	if (status->GetCount() >= fConfig->GetMaxRetries()) {
 		Log("SHUTTLE",
 			Form("ContinueProcessing - %s failed %d times in status %s - Updating Shuttle Logbook",
@@ -492,7 +488,7 @@ Bool_t AliShuttle::ContinueProcessing()
 		return kFALSE;
 	}
 
-	Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. Got stuck before in %s. Retry number %d.",
+	Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. Aborted before with %s. Retry number %d.",
   			fCurrentDetector.Data(),
 			status->GetStatusName(), status->GetCount()));
 
@@ -526,7 +522,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	AliInfo(Form("\n\n \t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^* \n",
 					GetCurrentRun()));
 
-	fLogbookEntry->Print("");
+	fLogbookEntry->Print("all");
 
 	// Initialization
 	Bool_t hasError = kFALSE;
@@ -549,7 +545,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 		AliPreprocessor* aPreprocessor =
 			dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
 		if(!aPreprocessor){
-			Log("SHUTTLE",Form("Process: no preprocessor registered. Skipping %s", fCurrentDetector.Data()));
+			Log("SHUTTLE",Form("Process - %s: no preprocessor registered. Skipping", 
+							fCurrentDetector.Data()));
 			continue;
 		}
 
@@ -802,30 +799,15 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 		TString runString(aRow->GetField(0), aRow->GetFieldLength(0));
 		Int_t run = runString.Atoi();
 
-		UInt_t startTime, endTime;
-		if(!QueryRunParameters(run, startTime, endTime)) continue;
-
-		const UInt_t nDet = AliShuttle::kNDetectors;
-		AliShuttleLogbookEntry::Status detStatus[nDet];
+		AliShuttleLogbookEntry *entry = QueryRunParameters(run);
+		if (!entry)
+			continue;
 
 		// loop on detectors
-		for(UInt_t ii = 0; ii < nCols; ii++){
-			TString detCode(aResult->GetFieldName(ii));
-			Int_t detPos = AliShuttle::GetDetPos(detCode.Data());
-			if(detPos < 0) continue;
-			TString statusString(aRow->GetField(ii), aRow->GetFieldLength(ii));
-			if(statusString == "UNPROCESSED"){
-				detStatus[detPos] = AliShuttleLogbookEntry::kUnprocessed;
-			} else if (statusString == "INACTIVE") {
-				detStatus[detPos] = AliShuttleLogbookEntry::kInactive;
-			} else if (statusString == "FAILED") {
-				detStatus[detPos] = AliShuttleLogbookEntry::kFailed;
-			} else if (statusString == "DONE") {
-				detStatus[detPos] = AliShuttleLogbookEntry::kDone;
-			}
-		}
+		for(UInt_t ii = 0; ii < nCols; ii++)
+			entry->SetDetectorStatus(aResult->GetFieldName(ii), aRow->GetField(ii));
 
-		entries.AddLast(new AliShuttleLogbookEntry(run, startTime, endTime, detStatus));
+		entries.AddLast(entry);
 		delete aRow;
 	}
 
@@ -837,58 +819,67 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::QueryRunParameters(Int_t& run, UInt_t& startTime, UInt_t& endTime)
+AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 {
-// Retrieve start time and end time for run in the DAQ logbook
+	//
+	// Retrieve run parameters written in the DAQ logbook and sets them into AliShuttleLogbookEntry object
+	//
 
 	// check connection, in case connect
-	if(!Connect(kDAQ)) return kFALSE;
+	if (!Connect(kDAQ))
+		return 0;
 
 	TString sqlQuery;
-	sqlQuery = Form("select time_start, time_end from logbook where run=%d", run);
+	sqlQuery.Form("select * from logbook where run=%d", run);
 
 	TSQLResult* aResult = fServer[kDAQ]->Query(sqlQuery);
 	if (!aResult) {
 		AliError(Form("Can't execute query <%s>!", sqlQuery.Data()));
-		return kFALSE;
+		return 0;
 	}
 
-	if(aResult->GetRowCount() == 0) {
+	if (aResult->GetRowCount() == 0) {
 		Log("SHUTTLE", Form("QueryRunParameters - No entry in DAQ Logbook for run %d. Skipping", run));
 		delete aResult;
-		return kFALSE;
+		return 0;
 	}
 
-	if(aResult->GetRowCount() > 1) {
+	if (aResult->GetRowCount() > 1) {
 		AliError(Form("More than one entry in DAQ Logbook for run %d. Skipping", run));
 		delete aResult;
-		return kFALSE;
+		return 0;
 	}
 
-	TSQLRow* aRow;
-	while ((aRow = aResult->Next())) {
+	TSQLRow* aRow = aResult->Next();
+	if (!aRow)
+	{
+		AliError(Form("Could not retrieve row for run %d. Skipping", run));
+		delete aResult;
+		return 0;
+	}
 
-		TString startTimeString(aRow->GetField(0),
-				aRow->GetFieldLength(0));
-		startTime = startTimeString.Atoi();
-		TString endTimeString(aRow->GetField(1),
-				aRow->GetFieldLength(1));
-		endTime = endTimeString.Atoi();
+	AliShuttleLogbookEntry* entry = new AliShuttleLogbookEntry(run);
 
-		if (!startTime || !endTime || startTime > endTime) {
-			Log("SHUTTLE",
-				Form("QueryRunParameters - Invalid parameters for Run %d: startTime = %d, endTime = %d",
-					run, startTime, endTime));
-			delete aRow;
-			delete aResult;
-			return kFALSE;
-		}
+	for (Int_t ii = 0; ii < aResult->GetFieldCount(); ii++)
+		entry->SetRunParameter(aResult->GetFieldName(ii), aRow->GetField(ii));
 
+	UInt_t startTime = entry->GetStartTime();
+	UInt_t endTime = entry->GetEndTime();
+
+	if (!startTime || !endTime || startTime > endTime) {
+		Log("SHUTTLE",
+			Form("QueryRunParameters - Invalid parameters for Run %d: startTime = %d, endTime = %d",
+				run, startTime, endTime));
+		delete entry;
 		delete aRow;
+		delete aResult;
+		return 0;
 	}
 
+	delete aRow;
 	delete aResult;
-	return kTRUE;
+
+	return entry;
 }
 
 //______________________________________________________________________________________________
@@ -942,7 +933,7 @@ Bool_t AliShuttle::TryToStoreAgain(TString& gridURI)
 
 	// get objects previously stored in local CDB
 	AliCDBStorage *backupSto = man->GetStorage(backupURI);
-	AliCDBPath aPath(fCurrentDetector,"*","*");
+	AliCDBPath aPath(GetOfflineDetName(fCurrentDetector.Data()),"*","*");
 	// Local objects were stored with current run as Grid version!
 	TList* localEntries = backupSto->GetAll(aPath.GetPath(), GetCurrentRun(), GetCurrentRun());
 	localEntries->SetOwner(1);
@@ -1107,7 +1098,8 @@ Bool_t AliShuttle::Connect(Int_t system)
 			fConfig->GetFESlbUser(system),
 			fConfig->GetFESlbPass(system));
 	if (!fServer[system] || !fServer[system]->IsConnected()) {
-		AliError(Form("Can't establish connection to FES logbook for %s",fkSystemNames[system]));
+		AliError(Form("Can't establish connection to FES logbook for %s",
+					AliShuttleInterface::GetSystemName(system)));
 		if(fServer[system]) delete fServer[system];
 		return kFALSE;
 	}
@@ -1140,12 +1132,13 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 // First queris the DAQ logbook_fs for the DAQ file name, using the run, detector, id and source info
 // then calls RetrieveDAQFile(DAQfilename) for actual copy to local disk
 // run: current run being processed (given by Logbook entry fLogbookEntry)
-// detector: comes from the Preprocessor name (must be converted into detector code with GetDetCode)
+// detector: the Preprocessor name
 // id: provided as a parameter by the Preprocessor
 // source: provided by the Preprocessor through GetFileSources function
 
 	// check connection, in case connect
-	if(!Connect(kDAQ)){
+	if (!Connect(kDAQ))
+	{
 		Log(detector, "GetDAQFileName - Couldn't connect to DAQ Logbook");
 		return 0;
 	}
@@ -1153,7 +1146,7 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 	// Query preparation
 	TString sqlQueryStart = "select filePath from logbook_fs where";
 	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\"",
-				GetCurrentRun(), GetDetCode(detector), id, source);
+				GetCurrentRun(), detector, id, source);
 	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
 
 	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
@@ -1167,7 +1160,8 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 		return 0;
 	}
 
-	if (aResult->GetRowCount() == 0) {
+	if(aResult->GetRowCount() == 0)
+	{
 		Log(detector,
 			Form("GetDAQFileName - No entry in FES table for: id = %s, source = %s",
 				id, source));
@@ -1175,7 +1169,7 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 		return 0;
 	}
 
-	if (aResult->GetRowCount() >1) {
+	if (aResult->GetRowCount() > 1) {
 		Log(detector,
 			Form("GetDAQFileName - More than one entry in FES table for: id = %s, source = %s",
 				id, source));
@@ -1185,7 +1179,7 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 
 	TSQLRow* aRow = dynamic_cast<TSQLRow*> (aResult->Next());
 
-	if(!aRow){
+	if (!aRow){
 		Log(detector, Form("GetDAQFileName - Empty set result from query: id = %s, source = %s",
 				id, source));
 		delete aResult;
@@ -1279,7 +1273,7 @@ TList* AliShuttle::GetDAQFileSources(const char* detector, const char* id)
 	// Query preparation
 	TString sqlQueryStart = "select DAQsource from logbook_fs where";
 	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
-				GetCurrentRun(), GetDetCode(detector), id);
+				GetCurrentRun(), detector, id);
 	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
 
 	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
@@ -1376,7 +1370,7 @@ Bool_t AliShuttle::UpdateDAQTable()
 		const char* fileId = ((TObjString*) aFESarray->At(0))->GetName();
 		const char* daqSource = ((TObjString*) aFESarray->At(1))->GetName();
 		TString whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\";",
-			GetCurrentRun(), GetDetCode(fCurrentDetector), fileId, daqSource);
+			GetCurrentRun(), fCurrentDetector.Data(), fileId, daqSource);
 
 		delete aFESarray;
 
@@ -1415,15 +1409,10 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 	if(detName == "shuttle_done") {
 		setClause = "set shuttle_done=1";
 	} else {
-		TString detCode = GetDetCode(detector);
-		if(detCode.IsNull()) {
-			Log("SHUTTLE", Form("UpdateShuttleLogbook - Unknown detector %s", detector));
-			return kFALSE;
-		}
 		TString statusStr(status);
 		if(statusStr.Contains("done", TString::kIgnoreCase) ||
 		   statusStr.Contains("failed", TString::kIgnoreCase)){
-			setClause = Form("set %s=\"%s\"", detCode.Data(), status);
+			setClause = Form("set %s=\"%s\"", detector, status);
 		} else {
 			Log("SHUTTLE",
 				Form("UpdateShuttleLogbook - Invalid status <%s> for detector %s",
@@ -1476,39 +1465,6 @@ UInt_t AliShuttle::GetCurrentEndTime() const
 }
 
 //______________________________________________________________________________________________
-const char* AliShuttle::GetDetCode(const char* detector){
-// Return detector code
-
-	for(UInt_t iDet=0; iDet < kNDetectors; iDet++){
-		if(!strcmp(fgkDetectorName[iDet], detector)) return fgkDetectorCode[iDet];
-	}
-
-	AliErrorClass(Form("Unknown detector: %s",detector));
-	return 0;
-}
-
-//______________________________________________________________________________________________
-const char* AliShuttle::GetDetCode(UInt_t detPos){
-// Return detector code
-
-	if( detPos >= kNDetectors) {
-		AliErrorClass(Form("Invalid parameter: %d", detPos));
-		return 0;
-	}
-	return fgkDetectorCode[detPos];
-}
-
-//______________________________________________________________________________________________
-const Int_t AliShuttle::GetDetPos(const char* detCode){
-// Return detector position in the detector code array
-
-	for(UInt_t iDet=0; iDet < kNDetectors; iDet++){
-		if(!strcmp(fgkDetectorCode[iDet], detCode)) return iDet;
-	}
-	return -1;
-}
-
-//______________________________________________________________________________________________
 void AliShuttle::Log(const char* detector, const char* message)
 {
 // Fill log string with a message
@@ -1550,23 +1506,23 @@ void AliShuttle::Log(const char* detector, const char* message)
 //______________________________________________________________________________________________
 Bool_t AliShuttle::Collect(Int_t run)
 {
-	//
-	// Collects conditions data for all UNPROCESSED run written to DAQ LogBook in case of run = -1 (default)
-  // If a dedicated run is given this run is processed
-  //
-	// In operational mode, this is the Shuttle function triggered by the EOR signal.
-	//
+//
+// Collects conditions data for all UNPROCESSED run written to DAQ LogBook in case of run = -1 (default)
+// If a dedicated run is given this run is processed
+//
+// In operational mode, this is the Shuttle function triggered by the EOR signal.
+//
 
-  if (run == -1)
-  	Log("SHUTTLE","Collect - Shuttle called. Collecting conditions data for unprocessed runs");
-  else
-  	Log("SHUTTLE", Form("Collect - Shuttle called. Collecting conditions data for run %d", run));
+	if (run == -1)
+		Log("SHUTTLE","Collect - Shuttle called. Collecting conditions data for unprocessed runs");
+	else
+		Log("SHUTTLE", Form("Collect - Shuttle called. Collecting conditions data for run %d", run));
 
 	SetLastAction("Starting");
 
 	TString whereClause("where shuttle_done=0");
-  if (run != -1)
-    whereClause += Form(" and run=%d", run);
+	if (run != -1)
+		whereClause += Form(" and run=%d", run);
 
 	TObjArray shuttleLogbookEntries;
 	if (!QueryShuttleLogbook(whereClause, shuttleLogbookEntries)) {
@@ -1579,7 +1535,7 @@ Bool_t AliShuttle::Collect(Int_t run)
 		return kFALSE;
 	}
 
-  return kTRUE;
+	return kTRUE;
 }
 
 //______________________________________________________________________________________________
@@ -1642,4 +1598,17 @@ void AliShuttle::SetLastAction(const char* action)
 	fLastActionTime = time(0);
 	
 	fMonitoringMutex->UnLock();
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetRunParameter(const char* param)
+{
+// returns run parameter read from DAQ logbook
+
+	if(!fLogbookEntry) {
+		AliError("No logbook entry!");
+		return 0;
+	}
+
+	return fLogbookEntry->GetRunParameter(param);
 }

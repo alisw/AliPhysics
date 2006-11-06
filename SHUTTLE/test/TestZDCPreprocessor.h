@@ -1,5 +1,5 @@
-#ifndef TEST_ITS_PRE_PROCESSOR_H
-#define TEST_ITS_PRE_PRECESSOR_H
+#ifndef TEST_ZDC_PRE_PROCESSOR_SPD_H
+#define TEST_ZDC_PRE_PRECESSOR_SPD_H
 
 #include "AliPreprocessor.h"
 
@@ -7,10 +7,10 @@
 // Example of a Shuttle Preprocessor
 //
 
-class TestITSPreprocessor: public AliPreprocessor {
+class TestZDCPreprocessor: public AliPreprocessor {
 public:
-	TestITSPreprocessor();
-	TestITSPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+	TestZDCPreprocessor();
+	TestZDCPreprocessor(const char* detector, AliShuttleInterface* shuttle);
 
 protected:
 
@@ -19,7 +19,7 @@ protected:
 
         virtual UInt_t Process(TMap* valueSet);
 
-	ClassDef(TestITSPreprocessor, 0);
+	ClassDef(TestZDCPreprocessor, 0);
 };
 
 #endif

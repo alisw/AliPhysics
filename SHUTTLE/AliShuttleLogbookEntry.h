@@ -12,11 +12,12 @@
 //
 
 #include <TObject.h>
-#include "AliShuttle.h"
+#include <TString.h>
+#include <TMap.h>
 
-class TSQLServer;
+#include "AliShuttleInterface.h"
 
-class AliShuttleLogbookEntry: public TObject {
+class AliShuttleLogbookEntry : public TObject {
 
 public:
 	enum Status {
@@ -27,7 +28,7 @@ public:
 	};
 
 	AliShuttleLogbookEntry();
-	AliShuttleLogbookEntry(Int_t run, UInt_t startTime, UInt_t endTime, Status* status=0);
+	AliShuttleLogbookEntry(Int_t run, Status* status=0);
 	~AliShuttleLogbookEntry();
 
 	AliShuttleLogbookEntry& operator=(const AliShuttleLogbookEntry& c);
@@ -35,12 +36,13 @@ public:
 	virtual void Copy(TObject& c) const;
 
 	Int_t GetRun() const {return fRun;}
-	UInt_t GetStartTime() const  {return fStartTime;}
-	UInt_t GetEndTime() const {return fEndTime;}
+	UInt_t GetStartTime() const  {TString tmp(GetRunParameter("time_start")); return tmp.Atoi();}
+	UInt_t GetEndTime() const {TString tmp(GetRunParameter("time_end")); return tmp.Atoi();}
 
-	void SetRun(Int_t run) {fRun=run;}
-	void SetStartTime(UInt_t startTime) {fStartTime=startTime;}
-	void SetEndTime(UInt_t endTime) {fEndTime=endTime;}
+//	void SetRun(Int_t run) {fRun=run;}
+
+	void SetRunParameter(const char* key, const char* value);
+	const char* GetRunParameter(const char* key) const;
 
 	Status GetDetectorStatus(const char* detCode) const;
 	Status GetDetectorStatus(Int_t detPos) const;
@@ -49,29 +51,19 @@ public:
 	void SetDetectorStatus(const char* detCode, Status status);
 	void SetDetectorStatus(Status* status);
 	void SetDetectorStatus(UInt_t detPos, Status status);
+	void SetDetectorStatus(const char* detCode, const char* statusName);
+	void SetDetectorStatus(UInt_t detPos, const char* statusName);
 
 	Bool_t IsDone() const;
 
 	static const char* GetDetectorStatusName(Status status);
         void Print(Option_t *option) const;
 
-	// TODO Test only, remove later!
-	Bool_t Connect();
-	Bool_t QueryShuttleLogbook(Int_t runNumber=-1);
-	Bool_t UpdateShuttleLogbook();
-	Bool_t UpdateShuttleLogbook(const char* detCode, Status status);
-	Bool_t InsertNewRun(Int_t runNumber=-1);
-
-
 private:
 
 	Int_t fRun;   			// Run number
-	UInt_t fStartTime; 		// Run start time
-	UInt_t fEndTime; 		// Run end time
-	Status fDetectorStatus[AliShuttle::kNDetectors]; 	// Detector status array
-
-	// TODO Test only, remove later!
-	TSQLServer* fServer;	  	// pointer to the MySQLServer which handles the DAQ logbook
+	TMap fRunParameters;		// run parameters written in DAQ logbook
+	Status fDetectorStatus[AliShuttleInterface::kNDetectors]; 	// Detector status array
 
 	ClassDef(AliShuttleLogbookEntry, 0)
 };

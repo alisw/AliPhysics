@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7  2006/10/02 16:38:39  jgrosseo
+update (alberto):
+fixed memory leaks
+storing of objects that failed to be stored to the grid before
+interfacing of shuttle status table in daq system
+
 Revision 1.6  2006/08/15 10:50:00  jgrosseo
 effc++ corrections (alberto)
 
@@ -93,10 +99,10 @@ ClassImp(AliDCSMessage)
 
 //______________________________________________________________________
 AliDCSMessage::AliDCSMessage():
-	fMessage(NULL), fMessageSize(0), fType(kInvalid),
-	fStartTime(0), fEndTime(0),
+	TObject(), fMessage(NULL), fMessageSize(0), fType(kInvalid),
+	fRequestType(kNoneType), fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid),
+	fValueType(AliDCSValue::kInvalid), fValues(),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
@@ -108,10 +114,10 @@ AliDCSMessage::AliDCSMessage():
 
 //______________________________________________________________________
 AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
-        fMessageSize(size), fType(kInvalid),
-	fStartTime(0), fEndTime(0),
+        TObject(), fMessage(NULL), fMessageSize(size), fType(kInvalid),
+	fRequestType(kNoneType), fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid),
+	fValueType(AliDCSValue::kInvalid), fValues(),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
@@ -127,9 +133,9 @@ AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
 //______________________________________________________________________
 AliDCSMessage::AliDCSMessage(const AliDCSMessage& /*other*/):
 	TObject(), fMessage(NULL), fMessageSize(0), fType(kInvalid),
-	fStartTime(0), fEndTime(0),
+	fRequestType(kNoneType), fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid),
+	fValueType(AliDCSValue::kInvalid), fValues(),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {

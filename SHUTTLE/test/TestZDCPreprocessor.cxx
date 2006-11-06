@@ -14,29 +14,32 @@
  **************************************************************************/
 
 //
-// Example of a Shuttle Preprocessor
+// Prototype of ZDC Preprocessor
 //
 
-#include "TestITSPreprocessor.h"
+#include "TestZDCPreprocessor.h"
 
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
+#include "AliShuttleInterface.h"
 
 #include <TTimeStamp.h>
+#include <TObjString.h>
+#include <TSystem.h>
 
-ClassImp(TestITSPreprocessor)
+ClassImp(TestZDCPreprocessor)
 
 //________________________________________________________________________________________
-TestITSPreprocessor::TestITSPreprocessor():
-	AliPreprocessor("ITS",0)
+TestZDCPreprocessor::TestZDCPreprocessor():
+	AliPreprocessor("ZDC",0)
 {
 // default constructor - Don't use this!
 
 }
 
 //________________________________________________________________________________________
-TestITSPreprocessor::TestITSPreprocessor(const char* detector, AliShuttleInterface* shuttle):
+TestZDCPreprocessor::TestZDCPreprocessor(const char* detector, AliShuttleInterface* shuttle):
 	AliPreprocessor(detector,shuttle)
 {
 // constructor - shuttle must be instantiated!
@@ -44,31 +47,35 @@ TestITSPreprocessor::TestITSPreprocessor(const char* detector, AliShuttleInterfa
 }
 
 //________________________________________________________________________________________
-void TestITSPreprocessor::Initialize(Int_t run, UInt_t startTime,
-	UInt_t endTime) 
+void TestZDCPreprocessor::Initialize(Int_t run, UInt_t startTime,
+	UInt_t endTime)
 {
 // Initialize preprocessor
 
-	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run, 
+	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
+
+	fRun = run;
+	fStartTime = startTime;
+	fEndTime = endTime;
+	AliInfo("This preprocessor is to test the GetRunParameter function.");
 }
 
 //________________________________________________________________________________________
-UInt_t TestITSPreprocessor::Process(TMap* valueMap)
+UInt_t TestZDCPreprocessor::Process(TMap* /*valueMap*/)
 {
 // process data retrieved by the Shuttle
 
-	AliInfo(Form("You're in AliITSPreprocessor::Process!"));
+	Int_t result=0;
 
-	TIter iter(valueMap);
-	TPair* aPair;
-	while ((aPair = (TPair*) iter.Next())) {
-		aPair->Print();
+	const char* dataRate = GetRunParameter("averageDataRate");
+	if (dataRate) {
+		Log(Form("Average data rate for run %d: %s",fRun, dataRate));
+	} else {
+		Log(Form("Average data rate not put in logbook!"));
 	}
-	AliCDBMetaData metaData;
-	metaData.SetComment("This is a test!");
 
-	return Store("Calib", "ITSData", valueMap, &metaData);
+	return dataRate !=0;
 }
 

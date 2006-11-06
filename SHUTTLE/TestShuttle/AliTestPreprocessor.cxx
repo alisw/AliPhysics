@@ -69,6 +69,19 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   }
   //TODO here the files could be opened, some values extracted and  written to e.g. fData
 
+  // Example of how to retrieve a run parameter using GetRunParameter function
+  // TODO Here the parameter must be set manually with SetInputRunParameter function,
+  // in reality it will be read from the run logbook!
+
+  // note that the parameters are returned as character strings!
+  const char* nEvents = GetRunParameter("totalEvents");
+  if (nEvents) {
+  	Log(Form("Number of events for run %d: %s",fRun, nEvents));
+  } else {
+	Log(Form("Number of events not put in logbook!"));
+  }
+
+
   //Now we have to store the final CDB file
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);

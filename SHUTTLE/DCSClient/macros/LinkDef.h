@@ -8,10 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class TestITSPreprocessorSPD;
-#pragma link C++ class TestTPCPreprocessor;
-#pragma link C++ class TestRICHPreprocessor;
-#pragma link C++ class TestZDCPreprocessor;
-#pragma link C++ class AliTPCDataDCS;
+#pragma link C++ class TestServer;
 
 #endif

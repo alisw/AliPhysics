@@ -12,7 +12,7 @@ class TestTPCPreprocessor: public AliPreprocessor {
 public:
 
 	TestTPCPreprocessor();
-	TestTPCPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+	TestTPCPreprocessor(AliShuttleInterface* shuttle);
 	~TestTPCPreprocessor();
 
 protected:

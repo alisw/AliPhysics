@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/10/02 12:58:52  jgrosseo
+Small interface change in StoreReferenceData
+
 Revision 1.4  2006/08/08 14:19:07  jgrosseo
 Update to shuttle classes (Alberto)
 
@@ -73,10 +76,12 @@ some docs added
 
 #include <TMap.h>
 #include <TList.h>
-#include <TString.h>
 #include <TObjString.h>
 
 ClassImp(AliTestShuttle)
+
+TString AliTestShuttle::fgkOCDBUri("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+TString AliTestShuttle::fgkRefUri("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
 //______________________________________________________________________________________________
 AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
@@ -84,12 +89,14 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fStartTime(startTime),
   fEndTime(endTime),
   fInputFiles(0),
+  fRunParameters(0),
   fPreprocessors(0),
   fDcsAliasMap(0)
 {
   // constructor
 
   fInputFiles = new TMap;
+  fRunParameters = new TMap;
   fPreprocessors = new TObjArray;
 }
 
@@ -100,6 +107,9 @@ AliTestShuttle::~AliTestShuttle()
 
   delete fInputFiles;
   fInputFiles = 0;
+
+  delete fRunParameters;
+  fRunParameters = 0;
 
   delete fPreprocessors;
   fPreprocessors = 0;
@@ -133,7 +143,7 @@ UInt_t AliTestShuttle::Store(const AliCDBPath& path, TObject* object, AliCDBMeta
 
   AliCDBId id(path, startRun, endRun);
 
-  return AliCDBManager::Instance()->Put(object, id, metaData);
+  return AliCDBManager::Instance()->GetStorage(fgkOCDBUri)->Put(object, id, metaData);
 }
 
 //______________________________________________________________________________________________
@@ -147,7 +157,7 @@ UInt_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* objec
 
   AliCDBId id(path, fRun, fRun);
 
-  return AliCDBManager::Instance()->GetStorage("local://ReferenceStorage")->Put(object, id, metaData);
+  return AliCDBManager::Instance()->GetStorage(fgkRefUri)->Put(object, id, metaData);
 }
 
 //______________________________________________________________________________________________
@@ -270,5 +280,38 @@ void AliTestShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
 {
   // registers a preprocessor
 
-  fPreprocessors->Add(preprocessor);
+	const char* detName = preprocessor->GetName();
+	if(strcmp("DET", detName) != 0) {
+		if(GetDetPos(detName) < 0)
+			AliFatal(Form("********** !!!!! Invalid detector name: %s !!!!! **********", detName));
+		}
+
+  	fPreprocessors->Add(preprocessor);
+}
+
+//______________________________________________________________________________________________
+void AliTestShuttle::AddInputRunParameter(const char* key, const char* value){
+// set a run parameter (in reality it will be read from the DAQ logbook)
+
+	TObjString* keyObj = new TObjString(key);
+	if (fRunParameters->Contains(key)) {
+		AliWarning(Form("Parameter %s already existing and it will be replaced.", key));
+		delete fRunParameters->Remove(keyObj);
+
+	}
+	fRunParameters->Add(keyObj, new TObjString(value));
+	AliDebug(2, Form("Number of parameters: %d", fRunParameters->
+	GetEntries()));
+}
+
+//______________________________________________________________________________________________
+const char* AliTestShuttle::GetRunParameter(const char* key){
+// get a run parameter
+
+	TObjString* value = dynamic_cast<TObjString*> (fRunParameters->GetValue(key));
+	if(!value) {
+		AliError(Form("No such parameter: %s", key));
+		return 0;
+	}
+	return value->GetName();
 }

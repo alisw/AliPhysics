@@ -32,7 +32,7 @@ ClassImp(TestRICHPreprocessor)
 
 //________________________________________________________________________________________
 TestRICHPreprocessor::TestRICHPreprocessor():
-	AliPreprocessor("RICH",0)
+	AliPreprocessor("HMP",0)
 {
 // default constructor - Don't use this!
 

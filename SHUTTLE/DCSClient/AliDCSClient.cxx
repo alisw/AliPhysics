@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2006/10/02 16:38:39  jgrosseo
+update (alberto):
+fixed memory leaks
+storing of objects that failed to be stored to the grid before
+interfacing of shuttle status table in daq system
+
 Revision 1.5  2006/08/15 10:50:00  jgrosseo
 effc++ corrections (alberto)
 
@@ -71,13 +77,6 @@ some more descriptions added
 #include <TSystem.h>
 
 ClassImp(AliDCSClient)
-
-const Int_t AliDCSClient::fgkBadState;
-const Int_t AliDCSClient::fgkInvalidParameter;
-const Int_t AliDCSClient::fgkTimeout;
-const Int_t AliDCSClient::fgkBadMessage;
-const Int_t AliDCSClient::fgkCommError;
-const Int_t AliDCSClient::fgkServerError;
 
 const char* AliDCSClient::fgkBadStateString = "BadState";
 const char* AliDCSClient::fgkInvalidParameterString = "InvalidParameter";

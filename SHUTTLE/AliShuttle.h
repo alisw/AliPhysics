@@ -33,8 +33,6 @@ class TMutex;
 
 class AliShuttle: public AliShuttleInterface {
 public:
-	enum { kNDetectors=17 }; // number of subdetectors in ALICE
-
 	AliShuttle(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	virtual ~AliShuttle();
 
@@ -58,6 +56,7 @@ public:
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
+	virtual const char* GetRunParameter(const char* lbEntry);
 	virtual void Log(const char* detector, const char* message);
 
 	static TString GetMainCDB () {return fgkMainCDB;}
@@ -72,11 +71,8 @@ public:
 
 	//TODO Test only, remove later !
 	void SetProcessDCS(Bool_t process) {fgkProcessDCS = process;}
+	void SetLogbookEntry(AliShuttleLogbookEntry* entry) {fLogbookEntry=entry;}
 
-	static const char* GetDetCode(const char* detector);
-	static const char* GetDetCode(UInt_t detPos);
-	static const Int_t GetDetPos(const char* detCode);
-	static const UInt_t NDetectors() {return kNDetectors;}
 	static const char* GetShuttleTempDir() {return fgkShuttleTempDir;}
 
 	Bool_t Connect(Int_t system);
@@ -87,7 +83,7 @@ private:
 
 	UInt_t ProcessCurrentDetector();
 
-	Bool_t QueryRunParameters(Int_t& run, UInt_t& startTime, UInt_t& endTime);
+	AliShuttleLogbookEntry* QueryRunParameters(Int_t run);
 	Bool_t QueryShuttleLogbook(const char* whereClause, TObjArray& entries);
 	Bool_t RetrieveConditionsData(const TObjArray& shuttleLogbookEntries);
 
@@ -123,9 +119,6 @@ private:
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
 
-//	static const UInt_t fgkNDetectors = 17;		   	//! number of detectors
-	static const char*  fgkDetectorName[kNDetectors]; 	//! names of detectors
-	static const char*  fgkDetectorCode[kNDetectors]; 	//! codes of detectors
 	static TString 	    fgkMainCDB;		// URI of the main (Grid) CDB storage
 	static TString 	    fgkLocalCDB;		//! URI of the local backup CDB storage
 	static TString 	    fgkMainRefStorage;	// URI of the main (Grid) REFERENCE storage

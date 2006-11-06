@@ -1,13 +1,14 @@
-Int_t GetValues(const char* host, Int_t port, const char* request,
+void GetValues(const char* host, Int_t port, const char* request,
 	Long_t startTime, Long_t endTime) 
 {
 
-	AliDCSClient client(host, port, 1000, 5);
+	AliDCSClient client(host, port, 10000, 5);
 
 	Int_t result;
 
 	TTimeStamp currentTime;
 	TMap values;
+	values.SetOwner(1);
 
 	TString rString(request);
 
@@ -23,20 +24,24 @@ Int_t GetValues(const char* host, Int_t port, const char* request,
 		TIter iter(requests);
 		TObjString* aString;
 		while ((aString = (TObjString*) iter.Next())) {
-			values.Add(new TObjString(aString->String()), NULL);
-		}	
-		
-		result = client.GetDPValues(startTime, endTime, values);
+			TObjArray* valueSet = new TObjArray();
+			valueSet->SetOwner(1);
+
+			result = client.GetDPValues(request, startTime,
+				endTime, valueSet);
+			values.Add(new TObjString(request), valueSet);
+		}
+
 
 	} else {
 		TObjArray* valueSet = new TObjArray();
 		valueSet->SetOwner(1);
 
-		values.Add(new TObjString(request), valueSet);
 
-		result = client.GetAliasValues(request, startTime,
-				endTime, *valueSet);
-		}
+		result = client.GetDPValues(request, startTime,
+				endTime, valueSet);
+		values.Add(new TObjString(request), valueSet);
+	}
 
 	if (result < 0) {
 		cout<<"Communication failure: "<<
@@ -56,8 +61,6 @@ Int_t GetValues(const char* host, Int_t port, const char* request,
 	}
 	cout<<"Received values: "<<result<<endl;
 
-
-/* 
 	TIter iter(&values);
 	TObjString* aRequest;
 	while ((aRequest = (TObjString*) iter.Next())) {
@@ -74,10 +77,13 @@ Int_t GetValues(const char* host, Int_t port, const char* request,
 		} 
 	}
 
- */
-/*	TFile file("dump.root", "UPDATE");
-	file.WriteTObject(values, "values");
-	file.Close(); */
+
+
+	TFile file("DCSMap.root", "UPDATE");
+	file.cd();
+	values.Write("DCSMap",TObject::kSingleKey);
+	file.Close(); 
+
 
 	values.DeleteAll();
 	delete requests;
@@ -85,33 +91,21 @@ Int_t GetValues(const char* host, Int_t port, const char* request,
 	cout<<"All values returned in runrange:  "<<endl;
 	cout<<"StartTime: "<<TTimeStamp(startTime).AsString()<<endl;
 	cout<<"EndTime: "<<TTimeStamp(endTime).AsString()<<endl;
-	
-	return result;
 }
 
-void TestClientAlbe(const char* host, Int_t port, const char* request,
+void TestClientDP(const char* host, Int_t port, const char* request,
 	UInt_t startShift, UInt_t endShift) {
 
-	gSystem->Load("libSHUTTLE");
+	gSystem->Load("AliDCSClient");
 
 //	AliLog::EnableDebug(kFALSE);
 //	AliLog::SetGlobalDebugLevel(3);
 
-	TH1F *histo=new TH1F("h","h",36,-6,25);
-	Int_t result=-1;
-	for(int i=0;i<100;i++){
+	TTimeStamp currentTime;
 
-		TTimeStamp currentTime;
-
-		result=GetValues(host, port, request,
-			currentTime.GetSec() - startShift, 
-			currentTime.GetSec() - endShift);
-			if(result != 22) printf("\n\n\n NO 22!!!!!!!! %d\n\n",result);
-		histo->Fill((Float_t)result);
-		if(i != 99)gSystem->Sleep(10000);
-	}
+	GetValues(host, port, request,
+		currentTime.GetSec() - startShift, 
+		currentTime.GetSec() - endShift);
 
 	cout<<"Client done"<<endl;
-	histo->Draw();
 }
-
