@@ -8,6 +8,7 @@
 //
 
 #include <TH3F.h>
+#include <TH1F.h>
 
 #include <AliLog.h>
 
@@ -162,3 +163,51 @@ void AliCorrectionMatrix3D::SaveHistograms()
   if (GetGeneratedHistogram() && GetMeasuredHistogram())
     AliPWG0Helper::CreateDividedProjections(GetGeneratedHistogram(), GetMeasuredHistogram());
 }
+
+//____________________________________________________________________
+Int_t AliCorrectionMatrix3D::CheckEmptyBins(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax, Bool_t quiet)
+{
+  //
+  // counts the number of empty Bins in a given region
+  //
+
+  TH3F* hist = GetGeneratedHistogram();
+  if (!hist)
+    return -1;
+
+  Int_t emptyBins = 0;
+  for (Int_t x=hist->GetXaxis()->FindBin(xmin); x<=hist->GetXaxis()->FindBin(xmax); ++x)
+    for (Int_t y=hist->GetYaxis()->FindBin(ymin); y<=hist->GetYaxis()->FindBin(ymax); ++y)
+      for (Int_t z=hist->GetZaxis()->FindBin(zmin); z<=hist->GetZaxis()->FindBin(zmax); ++z)
+        if (hist->GetBinContent(x, y, z) == 0)
+        {
+          if (!quiet)
+            printf("Empty bin in %s at vtx = %f, eta = %f, pt = %f\n", GetName(), hist->GetXaxis()->GetBinCenter(x), hist->GetYaxis()->GetBinCenter(y), hist->GetZaxis()->GetBinCenter(z));
+          ++emptyBins;
+        }
+
+  return emptyBins;
+}
+
+//____________________________________________________________________
+TH1F* AliCorrectionMatrix3D::PlotBinErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax)
+{
+  //
+  // makes a 1d plots of the relative bin errors
+  //
+
+  TH3F* hist = GetCorrectionHistogram();
+  if (!hist)
+    return 0;
+    
+  TH1F* target = new TH1F("relerrors", "relerrors", 100, 0, 10);
+
+  for (Int_t x=hist->GetXaxis()->FindBin(xmin); x<=hist->GetXaxis()->FindBin(xmax); ++x)
+    for (Int_t y=hist->GetYaxis()->FindBin(ymin); y<=hist->GetYaxis()->FindBin(ymax); ++y)
+      for (Int_t z=hist->GetZaxis()->FindBin(zmin); z<=hist->GetZaxis()->FindBin(zmax); ++z)
+        if (hist->GetBinContent(x, y, z) != 0)
+          target->Fill(100 * hist->GetBinError(x, y, z) / hist->GetBinContent(x, y, z));
+
+  return target;
+}
+
