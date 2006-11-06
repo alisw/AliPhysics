@@ -25,10 +25,27 @@
 
 
 ClassImp(AliTPCdigit)
- 
+  //_____________________________________________________________________
+  AliTPCdigit::AliTPCdigit()
+              :AliDigit(),
+	       fSector(0),
+               fPadRow(0),
+               fPad(0),
+               fTime(0),
+               fSignal(0)
+{
+  //
+  //   default constructor
+  //
+} 
 //_____________________________________________________________________________
-AliTPCdigit::AliTPCdigit(Int_t *tracks, Int_t *digits):
-  AliDigit(tracks)
+AliTPCdigit::AliTPCdigit(Int_t *tracks, Int_t *digits)
+            :AliDigit(tracks),
+	       fSector(0),
+               fPadRow(0),
+               fPad(0),
+	       fTime(0),
+               fSignal(0)
 {
   //
   // Creates a TPC digit object

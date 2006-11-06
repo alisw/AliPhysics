@@ -30,8 +30,26 @@ ClassImp(AliTPCPid)
 // pid class by B. Batyunya
 // stupid corrections by M.K.
 //
+//_______________________________________________________
 //________________________________________________________
-  AliTPCPid::AliTPCPid( const AliTPCPid& r):TObject(r)
+AliTPCPid::AliTPCPid( const AliTPCPid& r):TObject(r),
+		  fCutKa(0),
+		  fCutPr(0),
+		  fCutKaTune(0.),
+		  fCutPrTune(0.),
+		  fSigmin(0.),
+		  fSilent(0),
+		  fmxtrs(0),
+		  trs(0),
+		  fqtot(0.),
+		  fWpi(0.),
+		  fWk(0.),
+		  fWp(0.),
+		  fRpik(0.),
+		  fRppi(0.),
+		  fRpka(0.),
+		  fRp(0.),
+		  fPcode(0)
 {
   // dummy copy constructor
 }
@@ -45,6 +63,15 @@ Float_t AliTPCPid::Qcorr(Float_t xc)
   fcorr=( 0.766 +0.9692*xc -1.267*xc*xc )*( 1.-TMath::Exp(-xc*64.75) );
   if(fcorr<=0.1)fcorr=0.1;
 return fqtot/fcorr;
+}
+//__________________________________________________________
+AliTPCPid & AliTPCPid::operator =(const AliTPCPid & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fSigmin=param.fSigmin;
+  return (*this);
 }
 //-----------------------------------------------------------
 Float_t AliTPCPid::Qtrm(Int_t track) const
@@ -435,12 +462,29 @@ void AliTPCPid::Reset(void)
   }
 }
 //-----------------------------------------------------------
-AliTPCPid::AliTPCPid(Int_t ntrack)
+AliTPCPid::AliTPCPid(Int_t ntrack):TObject(),
+		  fCutKa(0),
+		  fCutPr(0),
+		  fCutKaTune(0.),
+		  fCutPrTune(0.),
+		  fSigmin(0.),
+		  fSilent(0),
+		  fmxtrs(0),
+		  trs(0),
+		  fqtot(0.),
+		  fWpi(0.),
+		  fWk(0.),
+		  fWp(0.),
+		  fRpik(0.),
+		  fRppi(0.),
+		  fRpka(0.),
+		  fRp(0.),
+		  fPcode(0)
 {
     trs = new TClonesArray("TVector",ntrack);
     TClonesArray &arr=*trs;
     for(Int_t i=0;i<ntrack;i++)new(arr[i])TVector(0,11);
-    fmxtrs=0;
+
 
     //fCutKa = new TF1("fkaons","[0]/x/x+[1]",0.1,1.2);
     //fCutPr = new TF1("fprotons","[0]/x/x +[1]",0.2,1.2);

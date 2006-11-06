@@ -44,6 +44,10 @@
 ClassImp(AliTPCDigitsArray) 
 
 AliTPCDigitsArray::AliTPCDigitsArray(Bool_t sim)
+                  :AliDigitsArray(),
+		   fBSim(kFALSE),
+		   fCompression(0),
+		   fTrackLevel(0)
 {
   //
   //default constructor

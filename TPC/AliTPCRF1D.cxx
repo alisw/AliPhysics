@@ -76,6 +76,19 @@ ClassImp(AliTPCRF1D)
 
 
 AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
+           :TObject(),
+	    fNRF(0),
+            fDSTEPM1(0.),
+            fcharge(0),
+            forigsigma(0.),
+            fpadWidth(3.5),
+            fkNorm(0.5),
+            fInteg(0.),
+            fGRF(0),
+            fSigma(0.),
+            fOffset(0.),
+            fDirect(kFALSE),
+            fPadDistance(0.)
 {
   //default constructor for response function object
   fDirect=direct;
@@ -84,15 +97,22 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
   fcharge = new Float_t[fNRF];
   if (step>0) fDSTEPM1=1./step;
   else fDSTEPM1 = 1./fgRFDSTEP;
-  fSigma = 0;
-  fGRF = 0;
-  fkNorm = 0.5;
-  fpadWidth = 3.5;
-  forigsigma=0.;
-  fOffset = 0.;
 }
 
-AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf):TObject(prf)
+AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
+           :TObject(prf),
+	    fNRF(0),
+            fDSTEPM1(0.),
+            fcharge(0),
+            forigsigma(0.),
+            fpadWidth(3.5),
+            fkNorm(0.5),
+            fInteg(0.),
+            fGRF(0),
+            fSigma(0.),
+            fOffset(0.),
+            fDirect(kFALSE),
+            fPadDistance(0.)
 {
   
   //

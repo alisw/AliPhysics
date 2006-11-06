@@ -19,9 +19,9 @@ class AliSimDigits;
 //class TFile;
 class AliTPCBuffer:public TObject{
 public:
-  AliTPCBuffer(){
-    //default constructor
-  }
+  AliTPCBuffer();
+ 
+  //
   AliTPCBuffer(const char* fileName);//constructor
   virtual ~AliTPCBuffer();//destructor
   AliTPCBuffer(const AliTPCBuffer &source); // copy constructor
@@ -32,10 +32,11 @@ public:
   void    SetVerbose(Int_t val){fVerbose=val;}
 private:
   Int_t fVerbose; //Verbosity level: 0-silent, 1:cout msg, 2: txt files for checking
-  fstream f;      //The IO file name
+
   //TFile *fout;
   //TTree *tree;
   UInt_t  fNumberOfDigits; //Number of TPC digits
+  fstream f;      //The IO file name
   ClassDef(AliTPCBuffer,1)
 };
 

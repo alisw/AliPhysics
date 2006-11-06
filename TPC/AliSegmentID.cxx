@@ -25,8 +25,6 @@
 
 
 #include "AliSegmentID.h"
-AliSegmentID::AliSegmentID()
-{
-}
+
 
 ClassImp(AliSegmentID)

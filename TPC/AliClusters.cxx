@@ -40,16 +40,37 @@ ClassImp(AliClusters)
 //*****************************************************************************
 //
 //_____________________________________________________________________________
-AliClusters::AliClusters() 
+AliClusters::AliClusters()
+            :AliSegmentID(), 
+	     fClusters(0),
+             fNclusters(0),
+             fClass(0)
 {  
   //
   //default constructor
   //
-  fNclusters=0;
-  fClusters =0;
-  fClass =0;
-}
 
+}
+//________________________________________________________________________
+AliClusters::AliClusters(const AliClusters &param)
+            :AliSegmentID(), 
+	     fClusters(0),
+             fNclusters(0),
+             fClass(0)
+{
+  //
+  //  copy constructor - dummy
+  //
+  fNclusters = param.fNclusters;
+}
+AliClusters & AliClusters::operator =(const AliClusters & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fNclusters=param.fNclusters;
+  return (*this);
+}
 //________________________________________________________________________
 AliClusters::~AliClusters()
 {

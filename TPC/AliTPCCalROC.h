@@ -22,6 +22,7 @@ class AliTPCCalROC : public TObject {
   AliTPCCalROC();
   AliTPCCalROC(UInt_t sector);
   AliTPCCalROC(const AliTPCCalROC &c);
+ AliTPCCalROC &operator = (const AliTPCCalROC & param);
   virtual           ~AliTPCCalROC();  
   UInt_t        GetNrows() const               { return fNRows;};
   UInt_t        GetNchannels()       const     { return fNChannels;};

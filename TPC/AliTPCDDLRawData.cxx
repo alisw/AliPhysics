@@ -37,7 +37,8 @@ ClassImp(AliTPCDDLRawData)
 ////////////////////////////////////////////////////////////////////////////////////////
 
 AliTPCDDLRawData::AliTPCDDLRawData(const AliTPCDDLRawData &source):
-  TObject(source)
+  TObject(source),
+  fVerbose(0)
 {
   // Copy Constructor
   fVerbose=source.fVerbose;

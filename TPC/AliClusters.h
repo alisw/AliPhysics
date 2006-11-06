@@ -18,7 +18,9 @@ class TObjArray;
 
 class AliClusters : public AliSegmentID{
 public:
-  AliClusters(); 
+  AliClusters();
+  AliClusters(const AliClusters &param); // copy constructor
+  AliClusters &operator = (const AliClusters & param); 
   ~AliClusters();
   virtual TObject* InsertCluster(const TObject* c ); //insert copy of cluster  
   const TObject* operator[](Int_t i); 

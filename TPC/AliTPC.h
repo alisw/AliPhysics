@@ -31,6 +31,7 @@ public:
   AliTPC(); 
   AliTPC(const char *name, const char *title);
   AliTPC(const AliTPC& t);
+  AliTPC &operator = (const AliTPC & param);
   
   virtual AliLoader* MakeLoader(const char* topfoldername);
   
@@ -149,7 +150,7 @@ public:
    Float_t   fTime;       //hit time
  
 public:
-   AliTPChit() {fTime = 0.;}
+   AliTPChit();
    AliTPChit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
    virtual ~AliTPChit() {}
    void SetX(Float_t x){fX = x;}

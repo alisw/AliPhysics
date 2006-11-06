@@ -26,6 +26,27 @@ ClassImp(AliTPCpolyTrack)
 
 
 AliTPCpolyTrack::AliTPCpolyTrack()
+  :TObject(),
+   fA(0), 
+   fB(0), 
+   fC(0), 
+   fD(0), 
+   fE(0), 
+   fF(0), 
+   fMaxX(0), 
+   fMinX(0), 
+   fSumW(0),    
+   fSumX(0),    
+   fSumX2(0),   
+   fSumX3(0),    
+   fSumX4(0),   
+   fSumY(0),    
+   fSumYX(0),   
+   fSumYX2(0),  
+   fSumZ(0),     
+   fSumZX(0),   
+   fSumZX2(0), 
+   fNPoints(0)
 {
   Reset();
 }

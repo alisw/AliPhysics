@@ -30,7 +30,22 @@
 
 ClassImp(AliTPCBuffer)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-AliTPCBuffer::AliTPCBuffer(const char* fileName){
+//___________________________________________________________
+  AliTPCBuffer::AliTPCBuffer():TObject(),
+    fVerbose(0),
+    fNumberOfDigits(0),
+    f()
+{
+  //
+  // default
+  //
+}
+//____________________________________________________________
+  AliTPCBuffer::AliTPCBuffer(const char* fileName):TObject(),
+    fVerbose(0),
+    fNumberOfDigits(0),
+    f()
+{
   // Constructor
 #ifndef __DECCXX
   f.open(fileName,ios::binary|ios::out);
@@ -39,8 +54,7 @@ AliTPCBuffer::AliTPCBuffer(const char* fileName){
 #endif
   // fout=new TFile(fileName,"recreate");
   // tree=new TTree("tree","Values");
-  fNumberOfDigits=0;
-  fVerbose=0;
+
   remove("TPCdigits.txt");
 }
 
@@ -52,7 +66,11 @@ AliTPCBuffer::~AliTPCBuffer(){
   //delete fout;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-AliTPCBuffer::AliTPCBuffer(const AliTPCBuffer &source):TObject(source){
+AliTPCBuffer::AliTPCBuffer(const AliTPCBuffer &source):TObject(source),
+    fVerbose(0),
+    fNumberOfDigits(0),
+    f()
+{
   // Copy Constructor
   this->fVerbose=source.fVerbose;
   return;

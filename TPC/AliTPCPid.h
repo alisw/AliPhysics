@@ -22,9 +22,10 @@ class  AliTPCPid :
   public TObject {
 
 public:
-		AliTPCPid(Int_t ntrs=1000);
+                AliTPCPid(Int_t ntrs=1000);
 		virtual ~AliTPCPid(){}
                 AliTPCPid( const AliTPCPid& r);
+                AliTPCPid &operator = (const AliTPCPid & param); //assignment
 	void	SetEdep(Int_t track,Float_t Edep);
 	void	SetPmom(Int_t track,Float_t Pmom);
 	void	SetPcod(Int_t track,Int_t Pcod);

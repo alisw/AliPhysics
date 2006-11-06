@@ -21,6 +21,8 @@ class AliTPCcalibDB : public TObject
  public: 
   static AliTPCcalibDB* Instance();
   AliTPCcalibDB();
+  AliTPCcalibDB(const AliTPCcalibDB &param); // copy constructor
+  AliTPCcalibDB &operator = (const AliTPCcalibDB & param);
   virtual ~AliTPCcalibDB();
   static void Terminate();
   void   SetRun(Long64_t run);   

@@ -61,7 +61,8 @@ ClassImp(AliTPCv1)
 
 //_____________________________________________________________________________
 
-  AliTPCv1::AliTPCv1(){
+  AliTPCv1::AliTPCv1():AliTPC(),fIdSens(0)
+{
 
   fHitType = 1;
 
@@ -69,11 +70,11 @@ ClassImp(AliTPCv1)
  
 //_____________________________________________________________________________
 AliTPCv1::AliTPCv1(const char *name, const char *title) 
-  :AliTPC(name, title) {
+  :AliTPC(name, title),fIdSens(0)
+ {
   //
   // Standard constructor for Time Projection Chamber
   //
-  fIdSens=0;
 
 
   if (fTPCParam)

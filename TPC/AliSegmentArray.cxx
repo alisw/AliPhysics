@@ -41,21 +41,31 @@
 //_____________________________________________________________________________
 ClassImp(AliSegmentArray)
   
-AliSegmentArray::AliSegmentArray()
+  AliSegmentArray::AliSegmentArray()
+                  :TNamed(),
+                   fSegment(0),
+                   fTreeIndex(0),
+                   fNSegment(0),
+                   fTree(0),
+                   fTreeOwner(kFALSE),
+                   fBranch(0),
+                   fClass(0)                                      
 {
   //
+  // constructor
   //
-  //
-  fNSegment=0;
-  fSegment =0; 
-  fTreeIndex = 0;
-  fTree  = 0;
-  fClass = 0;
-  fBranch = 0;
-  fTreeOwner = kFALSE;
+
 }
 
 AliSegmentArray::AliSegmentArray(const char *classname, Int_t n)
+                :TNamed("SegmentArray","SegmentArray"),
+                 fSegment(0),
+                 fTreeIndex(0),
+                 fNSegment(0),
+                 fTree(0),
+                 fTreeOwner(kFALSE),
+                 fBranch(0),
+                 fClass(0) 
 {
   //
   //constructor which 
@@ -63,14 +73,7 @@ AliSegmentArray::AliSegmentArray(const char *classname, Int_t n)
   //  Create an array of objects of classname. The class must inherit from
   //  AliSegmentID .  The second argument adjust number of entries in 
   //  the array.
-  fTreeOwner = kFALSE;
-  fNSegment=0;
-  fSegment =0; 
-  fTreeIndex = 0;
-  fTree  = 0;
-  fClass = 0;
-  SetName("SegmentArray");
-  SetTitle("SegmentArray");
+ 
 
   SetClass(classname);
   if (MakeArray(n)==kFALSE){
@@ -79,8 +82,16 @@ AliSegmentArray::AliSegmentArray(const char *classname, Int_t n)
    }
 }
 
-AliSegmentArray::AliSegmentArray(const AliSegmentArray &segment):
-  TNamed(segment)
+AliSegmentArray::AliSegmentArray(const AliSegmentArray &segment)
+                :TNamed(segment),
+                 fSegment(0),
+                 fTreeIndex(0),
+                 fNSegment(0),
+                 fTree(0),
+                 fTreeOwner(kFALSE),
+                 fBranch(0),
+                 fClass(0)                                      
+               
 {
   //
   //copy constructor

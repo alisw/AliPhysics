@@ -46,18 +46,47 @@ static const Float_t kFacSigmaTime=3.;
 
 
 AliTPCParamSR::AliTPCParamSR()
+              :AliTPCParam(),
+	       fInnerPRF(0),
+	       fOuter1PRF(0),
+	       fOuter2PRF(0),
+	       fTimeRF(0),
+	       fFacSigmaPadRow(0),
+	       fFacSigmaPad(0),
+	       fFacSigmaTime(0)
 {   
   //
   //constructor set the default parameters
-  fInnerPRF=0;
-  fOuter1PRF=0;
-  fOuter2PRF=0;
-  fTimeRF = 0;
+  //
+
   fFacSigmaPadRow = Float_t(kFacSigmaPadRow);
   fFacSigmaPad = Float_t(kFacSigmaPad);
   fFacSigmaTime = Float_t(kFacSigmaTime);
   SetDefault();
   Update();
+}
+AliTPCParamSR::AliTPCParamSR(const AliTPCParamSR &param)
+              :AliTPCParam(),
+	       fInnerPRF(0),
+	       fOuter1PRF(0),
+	       fOuter2PRF(0),
+	       fTimeRF(0),
+	       fFacSigmaPadRow(0),
+	       fFacSigmaPad(0),
+	       fFacSigmaTime(0)
+{
+  //
+  //  copy constructor - dummy
+  //
+  fFacSigmaPadRow = param.fFacSigmaPadRow;
+}
+AliTPCParamSR & AliTPCParamSR::operator =(const AliTPCParamSR & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fZLength=param.fZLength;
+  return (*this);
 }
 
 AliTPCParamSR::~AliTPCParamSR()

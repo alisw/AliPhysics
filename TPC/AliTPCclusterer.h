@@ -18,7 +18,10 @@ class AliTPCcluster;
 
 class AliTPCclusterer : public TObject {
 public:
-  AliTPCclusterer(const AliTPCParam *par);
+  AliTPCclusterer():TObject(),fPar(0){};
+  AliTPCclusterer(const AliTPCParam *par):TObject(), fPar(par){};
+  AliTPCclusterer(const AliTPCclusterer &param); // copy constructor
+  AliTPCclusterer &operator = (const AliTPCclusterer & param);
   Int_t Digits2Clusters(TTree *dig, TTree *clu);
 
 private:

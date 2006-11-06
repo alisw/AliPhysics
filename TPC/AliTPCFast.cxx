@@ -37,7 +37,24 @@
 #include "AliLog.h"
 
 ClassImp(AliTPCFast)
+  //____________________________________________________________________
+AliTPCFast::AliTPCFast(const AliTPCFast &param)
+              :TObject(param),fParam(0)
 
+{
+  //
+  //  copy constructor - dummy
+  //
+  fParam = param.fParam;
+}
+AliTPCFast & AliTPCFast::operator =(const AliTPCFast & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fParam=param.fParam;
+  return (*this);
+}
 
 //_____________________________________________________________________________
 void AliTPCFast::Hits2Clusters(AliRunLoader* runLoader) const

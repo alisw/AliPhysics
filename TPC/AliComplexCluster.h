@@ -18,10 +18,7 @@
 class AliComplexCluster : public TObject {
 public:
 
-  AliComplexCluster() {
-    fTracks[0]=fTracks[1]=fTracks[2]=0; 
-    fX=fY=fQ=fSigmaX2=fSigmaY2=fSigmaXY=fArea=fMax=0.;
-  }
+  AliComplexCluster();
   virtual ~AliComplexCluster() {;}
   Bool_t    IsSortable() const;
   Int_t Compare(const TObject *o) const;
@@ -110,7 +107,14 @@ class AliTPCTrackerPoint  {
 
 class AliTPCClusterPoint  {
  public:
-  AliTPCClusterPoint(){fCZ=fCY=fSigmaZ=fSigmaY=fQ=fMax=fCType=0;}
+  AliTPCClusterPoint():
+                      fCZ(0),
+                      fCY(0), 
+                      fSigmaZ(0),
+                      fSigmaY(0),
+                      fQ(0),
+                      fMax(0),
+                      fCType(0){}
   virtual ~AliTPCClusterPoint(){}
   Float_t  GetZ() const    {return (fCZ*0.01);}
   Float_t  GetY() const   {return (fCY*0.01);}
@@ -144,7 +148,17 @@ class AliTPCClusterPoint  {
 
 class AliTPCExactPoint : public TObject{
  public:
-  AliTPCExactPoint(){fEZ=fEY=fEAngleZ=fEAngleY=fEAmp=fEPrim=fTrackID=0;}
+  AliTPCExactPoint():TObject(),
+    fEZ(0.),
+    fEY(0.),
+    fEX(0.),
+    fEAngleZ(0.),
+    fEAngleY(0.),
+    fEAmp(0.),
+    fEPrim(0.),
+    fTrackID(0),
+    fRow(0),
+    fSec(0){}
  private:
   Float_t fEZ;       // current "exact" position according simulation
   Float_t fEY;       // current "exact" position according simulation
@@ -162,7 +176,10 @@ class AliTPCExactPoint : public TObject{
 
 class AliTPCTrackPoint: public TObject{
  public:
-  AliTPCTrackPoint(){}
+  AliTPCTrackPoint():TObject(),
+    fTPoint(),
+    fCPoint(){}
+
   // AliTPCClusterPoint & GetCPoint(){return fCPoint;}
   AliTPCTrackerPoint & GetTPoint(){return fTPoint;}
   AliTPCclusterMI & GetCPoint(){return fCPoint;}  
@@ -176,7 +193,20 @@ class AliTPCTrackPoint: public TObject{
 
 class AliTPCTrackPoint2: public AliTPCTrackPoint{
  public:
-  AliTPCTrackPoint2(){}
+  AliTPCTrackPoint2():AliTPCTrackPoint(),
+    fGX(0.),
+    fGY(0.),
+    fGZ(0.),
+    fDY(0.),
+    fDZ(0.),
+    fDYU(0.),
+    fDYD(0),
+    fDZU(0.),
+    fDZD(0.),
+    fDDY(0),
+    fDDZ(0.),
+    fID(0),
+    fLab(0){}
  private: 
   Float_t fGX;    //global poition of the point
   Float_t fGY;    //global poition of the point

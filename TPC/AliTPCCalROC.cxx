@@ -31,19 +31,28 @@ ClassImp(AliTPCCalROC)
 
 
 //_____________________________________________________________________________
-AliTPCCalROC::AliTPCCalROC():TObject()
+AliTPCCalROC::AliTPCCalROC()
+             :TObject(),
+	      fSector(0),
+	      fNChannels(0),
+	      fNRows(0),
+	      fIndexes(0),
+	      fData(0)
 {
   //
   // Default constructor
   //
-  fSector       =  0;
-  fNChannels    =  0;
-  fNRows        =  0;
-  fData         =  0;
+
 }
 
 //_____________________________________________________________________________
-AliTPCCalROC::AliTPCCalROC(UInt_t  sector):TObject()
+AliTPCCalROC::AliTPCCalROC(UInt_t  sector)
+             :TObject(),
+	      fSector(0),
+	      fNChannels(0),
+	      fNRows(0),
+	      fIndexes(0),
+	      fData(0)
 {
   //
   // Constructor that initializes a given sector
@@ -57,7 +66,13 @@ AliTPCCalROC::AliTPCCalROC(UInt_t  sector):TObject()
 }
 
 //_____________________________________________________________________________
-AliTPCCalROC::AliTPCCalROC(const AliTPCCalROC &c):TObject(c)
+AliTPCCalROC::AliTPCCalROC(const AliTPCCalROC &c)
+             :TObject(c),
+	      fSector(0),
+	      fNChannels(0),
+	      fNRows(0),
+	      fIndexes(0),
+	      fData(0)
 {
   //
   // AliTPCCalROC copy constructor
@@ -70,6 +85,16 @@ AliTPCCalROC::AliTPCCalROC(const AliTPCCalROC &c):TObject(c)
   fData   = new Float_t[fNChannels];
   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = c.fData[idata];
 }
+//____________________________________________________________________________
+AliTPCCalROC & AliTPCCalROC::operator =(const AliTPCCalROC & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fData=param.fData;
+  return (*this);
+}
+
 
 //_____________________________________________________________________________
 AliTPCCalROC::~AliTPCCalROC()

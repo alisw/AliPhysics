@@ -120,15 +120,53 @@ ClassImp(AliTPCtrackerParam)
 
 //-----------------------------------------------------------------------------
 AliTPCtrackerParam::AliTPCtrackerParam(Int_t kcoll, Double_t kBz,
-				       const char* evfoldname):
-  fEvFolderName(evfoldname) {
+				       const char* evfoldname):TObject(),
+    fEvFolderName(evfoldname),
+    fBz(kBz),
+    fColl(kcoll),
+    fSelAndSmear(kTRUE),
+    fDBfileName(""),
+    fTrack(),
+    fCovTree(0),
+    fDBgrid(0),
+    fDBgridPi(),
+    fDBgridKa(),
+    fDBgridPr(),
+    fDBgridEl(),
+    fDBgridMu(),
+    fEff(0),
+    fEffPi(),
+    fEffKa(),
+    fEffPr(),
+    fEffEl(),
+    fEffMu(),
+    fPulls(0),
+    fRegPar(0),
+    fRegParPi(),
+    fRegParKa(),
+    fRegParPr(),
+    fRegParEl(),
+    fRegParMu(),
+    fdEdxMean(0),
+    fdEdxMeanPi(),
+    fdEdxMeanKa(),
+    fdEdxMeanPr(),
+    fdEdxMeanEl(),
+    fdEdxMeanMu(),
+    fdEdxRMS(0),
+    fdEdxRMSPi(),
+    fdEdxRMSKa(),
+    fdEdxRMSPr(),
+    fdEdxRMSEl(),
+    fdEdxRMSMu() 
+{
 //-----------------------------------------------------------------------------
 // This is the class conctructor 
 //-----------------------------------------------------------------------------
 
-  fBz = kBz;             // value of the z component of L3 field (Tesla)
-  fColl = kcoll;         // collision code (0: PbPb6000; 1: pp)
-  fSelAndSmear = kTRUE; // by default selection and smearing are done
+  // fBz = kBz;             // value of the z component of L3 field (Tesla)
+  //  fColl = kcoll;         // collision code (0: PbPb6000; 1: pp)
+  //  fSelAndSmear = kTRUE; // by default selection and smearing are done
 
   if(fBz!=0.4 && fBz!=0.5) {
     Fatal("AliTPCtrackerParam","AliTPCtrackerParam::AliTPCtrackerParam:  Invalid field!\n      Available:  0.4 or 0.5");
@@ -149,7 +187,46 @@ AliTPCtrackerParam::AliTPCtrackerParam(Int_t kcoll, Double_t kBz,
 //-----------------------------------------------------------------------------
 AliTPCtrackerParam::~AliTPCtrackerParam() {}
 //____________________________________________________________________________
-AliTPCtrackerParam::AliTPCtrackerParam( const AliTPCtrackerParam& p):TObject(p)
+AliTPCtrackerParam::AliTPCtrackerParam( const AliTPCtrackerParam& p)
+    :TObject(p),
+    fEvFolderName(""),
+    fBz(0.),
+    fColl(0),
+    fSelAndSmear(0),
+    fDBfileName(""),
+    fTrack(),
+    fCovTree(0),
+    fDBgrid(0),
+    fDBgridPi(),
+    fDBgridKa(),
+    fDBgridPr(),
+    fDBgridEl(),
+    fDBgridMu(),
+    fEff(0),
+    fEffPi(),
+    fEffKa(),
+    fEffPr(),
+    fEffEl(),
+    fEffMu(),
+    fPulls(0),
+    fRegPar(0),
+    fRegParPi(),
+    fRegParKa(),
+    fRegParPr(),
+    fRegParEl(),
+    fRegParMu(),
+    fdEdxMean(0),
+    fdEdxMeanPi(),
+    fdEdxMeanKa(),
+    fdEdxMeanPr(),
+    fdEdxMeanEl(),
+    fdEdxMeanMu(),
+    fdEdxRMS(0),
+    fdEdxRMSPi(),
+    fdEdxRMSKa(),
+    fdEdxRMSPr(),
+    fdEdxRMSEl(),
+    fdEdxRMSMu() 
 {
   // dummy copy constructor
 }
@@ -157,17 +234,23 @@ AliTPCtrackerParam::AliTPCtrackerParam( const AliTPCtrackerParam& p):TObject(p)
 AliTPCtrackerParam::AliTPCseedGeant::AliTPCseedGeant(
 		    Double_t x,Double_t y,Double_t z,
 		    Double_t px,Double_t py,Double_t pz,
-		    Int_t lab) {
+		    Int_t lab)
+                    :TObject(),
+      fXg(x),
+      fYg(y),
+      fZg(z),
+      fPx(px),
+      fPy(py),
+      fPz(pz),
+      fAlpha(0.),
+      fLabel(lab),
+      fSector(0)
+ 
+{
 //----------------------------------------------------------------------------
 // Constructor of the geant seeds
 //----------------------------------------------------------------------------
-      fXg = x;
-      fYg = y;
-      fZg = z;
-      fPx = px;
-      fPy = py;
-      fPz = pz;
-      fLabel = lab;
+
       Double_t a = TMath::ATan2(y,x)*180./TMath::Pi();
       if(a<0) a += 360.;
       fSector = (Int_t)(a/20.);

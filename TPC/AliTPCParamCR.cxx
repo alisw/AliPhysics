@@ -42,18 +42,41 @@ static const  Int_t kMaxRows=600;
 static const  Float_t  kEdgeSectorSpace = 2.5;
 
 AliTPCParamCR::AliTPCParamCR()
+              :AliTPCParam(),
+	       fInnerPRF(0),
+	       fOuter1PRF(0),
+	       fOuter2PRF(0),
+               fTimeRF(0),
+	       fFacSigma(0.)
 {   
   //
   //constructor set the default parameters
-  fInnerPRF=0;
-  fOuter1PRF=0;
-  fOuter2PRF=0;
-  fTimeRF = 0;
+
   fFacSigma = Float_t(2.);
   SetDefault();
   Update();
 }
-
+AliTPCParamCR::AliTPCParamCR(const AliTPCParamCR &param)
+              :AliTPCParam(),
+	       fInnerPRF(0),
+	       fOuter1PRF(0),
+	       fOuter2PRF(0),
+               fTimeRF(0),
+	       fFacSigma(0.)
+{
+  //
+  // copy constructor - dummy
+  //
+  fFacSigma= param.fFacSigma;
+}
+AliTPCParamCR & AliTPCParamCR::operator =(const AliTPCParamCR & param)
+{
+  //
+  // assignment operator - dummy
+  //
+   fFacSigma= param.fFacSigma;
+  return (*this); 
+}
 AliTPCParamCR::~AliTPCParamCR()
 {
   //

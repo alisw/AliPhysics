@@ -44,12 +44,30 @@
 ClassImp(AliSimDigits)
 
 AliSimDigits::AliSimDigits()
+             :AliDigits(),
+	      fTracks(0),
+	      fTrIndex(0),
+	      fNlevel(0),
+	      fTrBufType(0)  
 {
   //  AliDigits::Invalite();
-  fTracks = 0;
-  fTrIndex = 0;  
+ 
   InvalidateTrack();
 }
+//
+AliSimDigits::AliSimDigits(const AliSimDigits &param)
+             :AliDigits(),
+	      fTracks(0),
+	      fTrIndex(0),
+	      fNlevel(0),
+	      fTrBufType(0) 
+{
+  //
+  // dummy
+  //
+  fTrIndex = param.fTrIndex;
+}
+//
 AliSimDigits::~AliSimDigits()
 {
 
@@ -61,7 +79,16 @@ AliSimDigits::~AliSimDigits()
   } 
 
 }
+AliSimDigits & AliSimDigits::operator =(const AliSimDigits & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fTrIndex=param.fTrIndex;
+  return (*this);
+}
 
+//__________________________________________________________________
 void AliSimDigits::InvalidateTrack() 
 { 
   //

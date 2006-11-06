@@ -37,24 +37,33 @@
 ClassImp(AliTPCkineGrid)
 
 //------------------------------------------------------------------------
-AliTPCkineGrid::AliTPCkineGrid() {
+  AliTPCkineGrid::AliTPCkineGrid()
+    :TNamed(),
+     fNpt(0),
+     fNeta(0),
+     fPt(0),
+     fEta(0),
+     fParams(0) 
+{
 //------------------------------------------------------------------------
 // Default constructor
 //------------------------------------------------------------------------
-  fNpt = 0;
-  fNeta = 0;
-  fPt = 0;
-  fEta = 0;
-  fParams = 0;
+
 }
 //------------------------------------------------------------------------
 AliTPCkineGrid::AliTPCkineGrid(Int_t npt,Int_t neta,
-			       Double_t* pt,Double_t* eta) {
+			       Double_t* pt,Double_t* eta)
+  :TNamed(),
+    fNpt(npt),
+    fNeta(neta),
+    fPt(0),
+    fEta(0),
+    fParams(0) 
+{
 //------------------------------------------------------------------------
 // Standard constructor
 //------------------------------------------------------------------------
-  fNpt  = npt;
-  fNeta = neta;
+
 
   fPt   = new TArrayD(fNpt);
   fEta  = new TArrayD(fNeta);
@@ -65,7 +74,13 @@ AliTPCkineGrid::AliTPCkineGrid(Int_t npt,Int_t neta,
   fParams = new TMatrixD(fNpt,fNeta);
 }
 //-------------------------------------------------------------------------
-AliTPCkineGrid::AliTPCkineGrid(const AliTPCkineGrid& grid):TNamed(grid) {
+AliTPCkineGrid::AliTPCkineGrid(const AliTPCkineGrid& grid):TNamed(grid),
+     fNpt(0),
+     fNeta(0),
+     fPt(0),
+     fEta(0),
+     fParams(0) 
+{
 //-------------------------------------------------------------------------
 // Copy constructor
 //-------------------------------------------------------------------------
@@ -89,6 +104,15 @@ AliTPCkineGrid::~AliTPCkineGrid() {
   delete fPt;
   delete fEta;
   delete fParams;
+}
+//__________________________________________________________________________
+AliTPCkineGrid & AliTPCkineGrid::operator =(const AliTPCkineGrid & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fNpt=param.fNpt;
+  return (*this);
 }
 //--------------------------------------------------------------------------
 void AliTPCkineGrid::GetArrayEta(Double_t* eta) const {

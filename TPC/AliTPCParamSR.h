@@ -16,6 +16,8 @@ class AliTPCPRF2D;
 class AliTPCParamSR : public AliTPCParam {
 public:
   AliTPCParamSR();
+  AliTPCParamSR(const AliTPCParamSR &param); // copy constructor
+  AliTPCParamSR &operator = (const AliTPCParamSR & param); //assignment operator
   virtual ~AliTPCParamSR();
 
   Int_t  CalcResponse(Float_t* x, Int_t * index, Int_t row);

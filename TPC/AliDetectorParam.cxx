@@ -26,7 +26,16 @@
 #include "AliDetectorParam.h"
 
 
-
+AliDetectorParam::AliDetectorParam()
+                   :TNamed(),
+                    fBField(0.),
+                    fNPrimLoss(0.),
+                    fNTotalLoss(0.)
+{
+  //
+  //  default constructor
+  //
+}
 
 Float_t * AliDetectorParam::GetAnglesAccMomentum(Float_t *x, Int_t * /*index*/, Float_t *momentum, Float_t *angle)
 {

@@ -27,7 +27,28 @@
 ClassImp(AliTPCtrackPid)
 
 AliTPCtrackPid::AliTPCtrackPid()
+  :TObject(),
+     fWpi(0.),     
+     fWk(0.),      
+     fWp(0.),      
+     fSignal(0.),  
+     fMom(0.),     
+     fPhi(0.),     
+     fLam(0.),     
+     fPcode(0),   
+     fLabel(0),
+     fGSignal(0.), 
+     fGMom(0.),    
+     fGpx(0.),     
+     fGpy(0.),     
+     fGpz(0.),     
+     fGx(0.),      
+     fGy(0.),      
+     fGz(0.),      
+     fGcode(0),   
+     fGlab(0)       
 {
-    fWpi=fWk=fWp=0.;
-    fPcode=0; fMom=0.; fSignal=0;
+  //
+  // default costructor
+  //
 }

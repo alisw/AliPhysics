@@ -11,7 +11,8 @@
 
 class AliTPCDDLRawData:public TObject{
  public:
-  AliTPCDDLRawData(){fVerbose=0;}//default constructor
+  AliTPCDDLRawData():TObject(),
+    fVerbose(0){}//default constructor
   virtual ~AliTPCDDLRawData(){;}//destructor
   AliTPCDDLRawData(const AliTPCDDLRawData &source); // copy constructor
   AliTPCDDLRawData& operator=(const AliTPCDDLRawData &source); // ass. op.

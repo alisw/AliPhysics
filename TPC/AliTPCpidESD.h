@@ -14,6 +14,7 @@ class AliESD;
 
 class AliTPCpidESD {
 public:
+  AliTPCpidESD():fMIP(0.),fRes(0.),fRange(0.){}
   AliTPCpidESD(Double_t *param);
   virtual ~AliTPCpidESD() {}
   Int_t MakePID(AliESD *event);

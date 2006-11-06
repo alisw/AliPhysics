@@ -130,6 +130,20 @@ protected:
 
 
 AliTPCTempHitInfoV2::AliTPCTempHitInfoV2()
+  :fSumDr(0.),
+   fSumDr2(0.),
+   fSumDr3(0.),
+   fSumDr4(0.),
+   fSumDFi(0.),
+   fSumDFiDr(0.),
+   fSumDFiDr2(0.),
+   fSumDZ(0.),
+   fSumDZDr(0.),
+   fSumDZDr2(0.),
+   fOldR(0.),
+   fStackIndex(0),
+   fParamIndex(0),
+   fParam(0)
 {
   //
   // Standard constructor
@@ -290,17 +304,26 @@ void   AliTPCTempHitInfoV2::Fit(AliTrackHitsParamV2 * param)
   
 }
 
-AliTrackHitsParamV2::AliTrackHitsParamV2()
+AliTrackHitsParamV2::AliTrackHitsParamV2():TObject(),
+   fTrackID(0), 
+   fVolumeID(0),
+   fR(0.),  
+   fZ(0.),  
+   fFi(0.), 
+   fAn(0.), 
+   fAd(0.), 
+   fTheta(0.), 
+   fThetaD(0.), 
+   fNHits(0), 
+   fHitDistance(0), 
+   fCharge(0),
+   fTime(0)
 {
   //
   // default constructor
   //
   fgCounter1++;
   fgCounter2++;
-  fHitDistance=0;
-  fCharge=0;
-  fTime=0;
-  fNHits=0;
 }
 
 AliTrackHitsParamV2::~AliTrackHitsParamV2()
@@ -332,7 +355,17 @@ Float_t AliTrackHitsParamV2::Eta() const
 }
 
 
-AliTPCTrackHitsV2::AliTPCTrackHitsV2()
+AliTPCTrackHitsV2::AliTPCTrackHitsV2():TObject(),
+  fArray(0),  
+  fSize(0),           
+  fPrecision(0.),  
+  fStep(0.),       
+  fMaxDistance(0),   
+  fNVolumes(0),        
+  fVolumes(0),   
+  fTempInfo(0), 
+  fCurrentHit(0),  
+  fHit(0)  
 {
   //
   //default constructor
@@ -344,16 +377,12 @@ AliTPCTrackHitsV2::AliTPCTrackHitsV2()
   fPrecision=kHitPrecision; //precision in cm
   fStep = kStep; //step size
   fMaxDistance = kMaxDistance; //maximum distance
-  fTempInfo =0;
-  fSize=0;
+
   //fTrackHitsInfo = new AliObjectArray("AliTrackHitsInfo"); 
   //fTrackHitsParam = new AliObjectArray("AliTrackHitsParamV2");
   //fHitsPosAndQ = new TArrayOfArrayVStack("AliHitInfo");
   fArray  = new TClonesArray("AliTrackHitsParamV2");
   fCurrentHit = new AliTPCCurrentHitV2;
-  fVolumes =0;
-  fNVolumes =0;
-  fHit =0;
   fgCounter1++;
   fgCounter2++;
 

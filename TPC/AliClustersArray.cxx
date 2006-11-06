@@ -39,14 +39,15 @@
 ClassImp(AliClustersArray)
 //
 
-AliClustersArray::AliClustersArray()
+  AliClustersArray::AliClustersArray():AliSegmentArray(),
+				       fParam(0),
+				       fClFinder(0),
+				       fClusterType(0)
 {
   //
   //Default constructor
   //
-  fParam = 0;
-  fClusterType = 0;
-  fClFinder = 0;
+
 }
 
 Bool_t  AliClustersArray::SetClusterType(const char * classname) 

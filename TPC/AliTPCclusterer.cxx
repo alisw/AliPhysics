@@ -33,13 +33,27 @@
 
 ClassImp(AliTPCclusterer)
 
-AliTPCclusterer::AliTPCclusterer(const AliTPCParam *par) { 
-//-------------------------------------------------------
-//  The main constructor
-//-------------------------------------------------------
-  fPar=par;
-}
 
+//____________________________________________________
+AliTPCclusterer::AliTPCclusterer(const AliTPCclusterer &param)
+                :TObject(),
+                 fPar(0)
+{
+  //
+  // dummy
+  //
+  fPar = param.fPar;
+}
+//-----------------------------------------------------
+AliTPCclusterer & AliTPCclusterer::operator =(const AliTPCclusterer & param)
+{
+  //
+  // assignment operator - dummy
+  //
+    fPar = param.fPar;
+  return (*this);
+}
+//____________________________________________________
 void AliTPCclusterer::FindPeaks(Int_t k,Int_t max,
 AliBin *b,Int_t *idx,UInt_t *msk,Int_t& n) {
   //find local maxima

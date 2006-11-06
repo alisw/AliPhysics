@@ -14,8 +14,8 @@
 
 class AliSegmentID: public TObject{
 public:
-  AliSegmentID();
-  AliSegmentID(Int_t index){fSegmentID = index;}
+  AliSegmentID() : fSegmentID(0) {}
+  AliSegmentID(Int_t index) : fSegmentID(index) {}
   Int_t GetID() {return fSegmentID;}
   void  SetID(Int_t index){fSegmentID = index;} 
 protected:

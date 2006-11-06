@@ -40,18 +40,21 @@
 ClassImp(AliTPCDigitizer)
 
 //___________________________________________
-AliTPCDigitizer::AliTPCDigitizer() :AliDigitizer()
+  AliTPCDigitizer::AliTPCDigitizer() :AliDigitizer(),fDebug(0)
 {
+  //
 // Default ctor - don't use it
-  fDebug =0;
+//
+  
 }
 
 //___________________________________________
 AliTPCDigitizer::AliTPCDigitizer(AliRunDigitizer* manager) 
-    :AliDigitizer(manager)
+  :AliDigitizer(manager),fDebug(0)
 {
+  //
 // ctor which should be used
-  fDebug =0;
+//  
   AliDebug(2,"(AliRunDigitizer* manager) was processed");
 }
 

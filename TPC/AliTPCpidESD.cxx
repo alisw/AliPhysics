@@ -26,7 +26,10 @@
 ClassImp(AliTPCpidESD)
 
 //_________________________________________________________________________
-AliTPCpidESD::AliTPCpidESD(Double_t *param)
+  AliTPCpidESD::AliTPCpidESD(Double_t *param):
+    fMIP(0.),
+    fRes(0.),
+    fRange(0.)
 {
   //
   //  The main constructor

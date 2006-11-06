@@ -37,9 +37,9 @@ class AliTPC;
 
 class AliTPCtrackerParam:
   public TObject
-{
-   
+{   
  public:
+  
   AliTPCtrackerParam(Int_t coll=0, Double_t Bz=0.4,
 		     const char* evfoldname = AliConfig::GetDefaultEventFolderName());
   virtual ~AliTPCtrackerParam();
@@ -85,6 +85,17 @@ class AliTPCtrackerParam:
   //********* Internal class definition *******
   class AliTPCseedGeant : public TObject {
   public:
+    AliTPCseedGeant():TObject(),
+      fXg(0.),
+      fYg(0.),
+      fZg(0.),
+      fPx(0.),
+      fPy(0.),
+      fPz(0.),
+      fAlpha(0.),
+      fLabel(0),
+      fSector(0){}
+
     AliTPCseedGeant(Double_t x=0.,Double_t y=0.,Double_t z=0.,
 		    Double_t px=0.,Double_t py=0.,Double_t pz=0.,
 		    Int_t lab=0);

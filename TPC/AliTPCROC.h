@@ -19,6 +19,7 @@ class AliTPCROC : public TObject {
   static AliTPCROC* Instance();
   AliTPCROC();
   AliTPCROC(const AliTPCROC &roc);
+  AliTPCROC &operator = (const AliTPCROC & roc); //assignment operator
   void Init(); 
   virtual           ~AliTPCROC();
 

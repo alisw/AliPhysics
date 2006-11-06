@@ -49,21 +49,41 @@
 ClassImp(AliDigits)
 
 
-AliDigits::AliDigits()
+ AliDigits::AliDigits()
+           :AliSegmentID(),
+            fNrows(0),
+            fNcols(0),
+	    fElements(0),
+            fIndex(0),
+            fBufType(0),
+            fThreshold(0),
+            fNelems(0),
+            fCurrentRow(0),
+            fCurrentCol(0),
+            fCurrentIndex(0) 
 {
   // 
   //default constructor
-  fIndex = 0;
-  fElements = 0;
-  fThreshold =0;
+  //
   Invalidate();
 }
 
-AliDigits::AliDigits(const AliDigits& digits):
-  AliSegmentID(digits)
+AliDigits::AliDigits(const AliDigits& digits)
+          :AliSegmentID(digits),
+            fNrows(0),
+            fNcols(0),
+	    fElements(0),
+            fIndex(0),
+            fBufType(0),
+            fThreshold(0),
+            fNelems(0),
+            fCurrentRow(0),
+            fCurrentCol(0),
+            fCurrentIndex(0)
 {
   //
   //copy constructor
+  //
   fNrows = digits.fNrows;
   fNcols = digits.fNcols;
   fElements = new TArrayS(*(digits.fElements));

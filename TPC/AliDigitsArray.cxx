@@ -39,10 +39,32 @@ ClassImp(AliDigitsArray)
 //
 
 AliDigitsArray::AliDigitsArray()
+               :AliSegmentArray(),
+		fParam(0)
 {
-  fParam = 0;
+  //
+  // default constructor
+  //
 }
-
+AliDigitsArray::AliDigitsArray(const AliDigitsArray &param)
+             :AliSegmentArray(),
+	      fParam(0)
+{
+  //
+  // dummy
+  //
+  fParam = param.fParam;
+}
+//
+AliDigitsArray & AliDigitsArray::operator =(const AliDigitsArray & param)
+{
+  //
+  // dummy
+  //
+ fParam = param.fParam;
+ return (*this);
+}
+//
 AliDigitsArray::~AliDigitsArray()
 {
   // if (fParam != 0) delete fParam;

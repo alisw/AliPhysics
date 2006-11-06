@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2004/03/30 14:09:22  kowal2
+Changes due to the coding conventions
+
 Revision 1.7  2003/11/24 09:48:28  kowal2
 Changes to obey the coding conventions
 
@@ -61,6 +64,23 @@ New class replacing AliCluster
 
 
 ClassImp(AliComplexCluster)
+  //__________________________________________________________________
+  AliComplexCluster::AliComplexCluster()
+                    :TObject(),
+		     fX(0.),
+		     fY(0.),
+                     fQ(0.),
+		     fSigmaX2(0.),
+		     fSigmaY2(0.),
+		     fSigmaXY(0.),
+		     fArea(0.),
+		     fMax(0.)
+{
+  //
+  // default constructor
+  //
+   fTracks[0]=fTracks[1]=fTracks[2]=0;
+}
 //_____________________________________________________________________________
 Int_t AliComplexCluster::Compare(const TObject * o) const
 {
@@ -85,5 +105,5 @@ ClassImp(AliTPCTrackerPoint)
 ClassImp(AliTPCTrackPoint)
 ClassImp(AliTPCTrackPoint2)
 ClassImp(AliTPCTrackPointRef)
-
+  //_______________________________________________________________
 

@@ -81,34 +81,53 @@
 
 ClassImp(AliTPC) 
 //_____________________________________________________________________________
-AliTPC::AliTPC()
+  AliTPC::AliTPC():AliDetector(),
+		   fDefaults(0),
+		   fSens(0),
+		   fNsectors(0),
+		   fDigitsArray(0),
+		   fTPCParam(0),
+		   fTrackHits(0),
+		   fHitType(0),
+		   fDigitsSwitch(0),
+		   fSide(0),
+		   fNoiseDepth(0),
+		   fNoiseTable(0),
+		   fCurrentNoise(0),
+		   fActiveSectors(0)
+
 {
   //
   // Default constructor
   //
   fIshunt   = 0;
-  fHits     = 0;
-  fDigits   = 0;
-  fNsectors = 0;
-  fDigitsArray = 0;
-  fDefaults = 0;
-  fTrackHits = 0; 
+ 
   //  fTrackHitsOld = 0;   
 #if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,1)
   fHitType = 4; // ROOT containers
 #else
   fHitType = 2; //default CONTAINERS - based on ROOT structure
 #endif 
-  fTPCParam = 0;    
-  fNoiseTable = 0;
-  fActiveSectors =0;
-  fSens = 0;
+
 
 }
  
 //_____________________________________________________________________________
 AliTPC::AliTPC(const char *name, const char *title)
-      : AliDetector(name,title)
+  : AliDetector(name,title),
+                   fDefaults(0),
+		   fSens(0),
+		   fNsectors(0),
+		   fDigitsArray(0),
+		   fTPCParam(0),
+		   fTrackHits(0),
+		   fHitType(0),
+		   fDigitsSwitch(0),
+		   fSide(0),
+		   fNoiseDepth(0),
+		   fNoiseTable(0),
+		   fCurrentNoise(0),
+		   fActiveSectors(0)
 {
   //
   // Standard constructor
@@ -118,8 +137,6 @@ AliTPC::AliTPC(const char *name, const char *title)
   // Initialise arrays of hits and digits 
   fHits     = new TClonesArray("AliTPChit",  176);
   gAlice->GetMCApp()->AddHitList(fHits); 
-  fDigitsArray = 0;
-  fDefaults = 0;
   //
   fTrackHits = new AliTPCTrackHitsV2;  
   fTrackHits->SetHitPrecision(0.002);
@@ -131,17 +148,14 @@ AliTPC::AliTPC(const char *name, const char *title)
   //fTrackHitsOld->SetStepPrecision(0.003);  
   //fTrackHitsOld->SetMaxDistance(100); 
 
-  fNoiseTable =0;
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,1)
   fHitType = 4; // ROOT containers
 #else
   fHitType = 2;
 #endif
-  fActiveSectors = 0;
-  //
-  // Initialise counters
-  fNsectors = 0;
+
+
 
   //
   fIshunt     =  0;
@@ -160,16 +174,41 @@ AliTPC::AliTPC(const char *name, const char *title)
     AliWarning("In Config.C you must set non-default parameters.");
     fTPCParam=0;
   }
-  fSens = 0;
+
 
 }
 
 //_____________________________________________________________________________
-AliTPC::AliTPC(const AliTPC& t):AliDetector(t){
+AliTPC::AliTPC(const AliTPC& t):AliDetector(t),
+                  fDefaults(0),
+		   fSens(0),
+		   fNsectors(0),
+		   fDigitsArray(0),
+		   fTPCParam(0),
+		   fTrackHits(0),
+		   fHitType(0),
+		   fDigitsSwitch(0),
+		   fSide(0),
+		   fNoiseDepth(0),
+		   fNoiseTable(0),
+		   fCurrentNoise(0),
+		   fActiveSectors(0)
+{
   //
   // dummy copy constructor
   //
 }
+//
+AliTPC & AliTPC::operator =(const AliTPC & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fDefaults=param.fDefaults;
+  return (*this);
+}
+
+//
 AliTPC::~AliTPC()
 {
   //
@@ -2052,10 +2091,26 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
 }
   
 ClassImp(AliTPChit)
- 
+  //______________________________________________________________________
+  AliTPChit::AliTPChit()
+            :AliHit(),
+	     fSector(0),
+	     fPadRow(0),
+	     fQ(0),
+	     fTime(0)
+{
+  //
+  // default
+  //
+
+}
 //_____________________________________________________________________________
-AliTPChit::AliTPChit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-AliHit(shunt,track)
+AliTPChit::AliTPChit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
+          :AliHit(shunt,track),
+	     fSector(0),
+	     fPadRow(0),
+	     fQ(0),
+	     fTime(0)
 {
   //
   // Creates a TPC hit object

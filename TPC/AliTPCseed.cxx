@@ -223,7 +223,16 @@ AliTPCseed::~AliTPCseed(){
     }
   }
 }
-
+//_________________________________________________
+AliTPCseed & AliTPCseed::operator =(const AliTPCseed & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fRow=param.fRow;
+  return (*this);
+}
+//____________________________________________________
 AliTPCTrackerPoint * AliTPCseed::GetTrackPoint(Int_t i)
 {
   //

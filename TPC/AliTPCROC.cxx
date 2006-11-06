@@ -203,7 +203,49 @@ void AliTPCROC::SetGeometry()
 
 
 //_____________________________________________________________________________
-AliTPCROC::AliTPCROC():TObject(), fNSectorsAll(0)
+AliTPCROC::AliTPCROC()
+          :TObject(), 
+           fNSectorsAll(0),
+	   fInnerRadiusLow(0.),
+	   fInnerRadiusUp(0.),
+	   fOuterRadiusUp(0.),
+	   fOuterRadiusLow(0.),
+	   fInnerFrameSpace(0.),
+	   fOuterFrameSpace(0.),
+	   fInnerWireMount(0.),
+	   fOuterWireMount(0.),
+	   fZLength(0.),
+	   fInnerAngle(0.),
+	   fOuterAngle(0.),
+	   fNInnerWiresPerPad(0),
+	   fInnerWWPitch(0.),
+	   fInnerDummyWire(0),
+	   fInnerOffWire(0.),
+	   fRInnerFirstWire(0.),
+	   fRInnerLastWire(0.),
+	   fLastWireUp1(0.),
+	   fNOuter1WiresPerPad(0),
+	   fNOuter2WiresPerPad(0),
+	   fOuterWWPitch(0.),
+	   fOuterDummyWire(0),
+	   fOuterOffWire(0),
+	   fROuterFirstWire(0.),
+	   fROuterLastWire(0),
+	   fInnerPadPitchLength(0.),
+	   fInnerPadPitchWidth(0.),
+	   fInnerPadLength(0.),
+	   fInnerPadWidth(0.),
+	   fOuter1PadPitchLength(0.),
+	   fOuter2PadPitchLength(0),
+	   fOuterPadPitchWidth(0),
+	   fOuter1PadLength(0.),
+	   fOuter2PadLength(0),
+	   fOuterPadWidth(0),
+	   fNRowLow(0),
+	   fNRowUp1(0),
+	   fNRowUp2(0),
+	   fNRowUp(0),
+	   fNtRows(0)
 {
   //
   // Default constructor
@@ -218,7 +260,50 @@ AliTPCROC::AliTPCROC():TObject(), fNSectorsAll(0)
 
 
 //_____________________________________________________________________________
-AliTPCROC::AliTPCROC(const AliTPCROC &roc):TObject(roc)
+AliTPCROC::AliTPCROC(const AliTPCROC &roc)
+          :TObject(roc),
+           fNSectorsAll(0),
+	   fInnerRadiusLow(0.),
+	   fInnerRadiusUp(0.),
+	   fOuterRadiusUp(0.),
+	   fOuterRadiusLow(0.),
+	   fInnerFrameSpace(0.),
+	   fOuterFrameSpace(0.),
+	   fInnerWireMount(0.),
+	   fOuterWireMount(0.),
+	   fZLength(0.),
+	   fInnerAngle(0.),
+	   fOuterAngle(0.),
+	   fNInnerWiresPerPad(0),
+	   fInnerWWPitch(0.),
+	   fInnerDummyWire(0),
+	   fInnerOffWire(0.),
+	   fRInnerFirstWire(0.),
+	   fRInnerLastWire(0.),
+	   fLastWireUp1(0.),
+	   fNOuter1WiresPerPad(0),
+	   fNOuter2WiresPerPad(0),
+	   fOuterWWPitch(0.),
+	   fOuterDummyWire(0),
+	   fOuterOffWire(0),
+	   fROuterFirstWire(0.),
+	   fROuterLastWire(0),
+	   fInnerPadPitchLength(0.),
+	   fInnerPadPitchWidth(0.),
+	   fInnerPadLength(0.),
+	   fInnerPadWidth(0.),
+	   fOuter1PadPitchLength(0.),
+	   fOuter2PadPitchLength(0),
+	   fOuterPadPitchWidth(0),
+	   fOuter1PadLength(0.),
+	   fOuter2PadLength(0),
+	   fOuterPadWidth(0),
+	   fNRowLow(0),
+	   fNRowUp1(0),
+	   fNRowUp2(0),
+	   fNRowUp(0),
+	   fNtRows(0)
+
 {
   //
   // AliTPCROC copy constructor
@@ -249,7 +334,15 @@ AliTPCROC::AliTPCROC(const AliTPCROC &roc):TObject(roc)
     fRowPosIndex[1][irow] = roc.fRowPosIndex[1][irow];
   }
 }
-
+//____________________________________________________________________________
+AliTPCROC & AliTPCROC::operator =(const AliTPCROC & roc)
+{
+  //
+  // assignment operator - dummy
+  //
+  fZLength = roc.fZLength;
+  return (*this);
+}
 //_____________________________________________________________________________
 AliTPCROC::~AliTPCROC()
 {

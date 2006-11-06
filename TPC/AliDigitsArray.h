@@ -15,6 +15,8 @@ class AliDetectorParam;
 class AliDigitsArray : public AliSegmentArray {
 public:
   AliDigitsArray();
+  AliDigitsArray(const AliDigitsArray &param); // copy constructor
+ AliDigitsArray &operator = (const AliDigitsArray & param);
   virtual ~AliDigitsArray();  
   virtual   Bool_t Setup(AliDetectorParam *param);  //setup array according parameters
   const AliDetectorParam *  GetParam() {return fParam;} 

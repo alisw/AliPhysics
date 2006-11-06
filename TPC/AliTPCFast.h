@@ -19,6 +19,9 @@ class AliTPCParam;
 class AliTPCFast : public TObject {
 
 public:
+  AliTPCFast():TObject(),fParam(0){}
+  AliTPCFast(const AliTPCFast &param); // copy constructor
+  AliTPCFast &operator = (const AliTPCFast & param); //assignment
   void Hits2Clusters(AliRunLoader* runLoader) const;
   void Hits2ExactClusters(AliRunLoader* runLoader) const;
   void Hits2ExactClustersSector(AliRunLoader* runLoader,

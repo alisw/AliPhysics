@@ -59,7 +59,8 @@
 ClassImp(AliTPCv3)
 //_____________________________________________________________________________
 
-  AliTPCv3::AliTPCv3(){
+  AliTPCv3::AliTPCv3():AliTPC(),fIdSens(0)
+{
 
   fHitType = 1;
 
@@ -67,15 +68,13 @@ ClassImp(AliTPCv3)
 
 //_____________________________________________________________________________
 AliTPCv3::AliTPCv3(const char *name, const char *title) :
-  AliTPC(name, title) 
+  AliTPC(name, title), fIdSens(0)
 {
   //
   // Standard constructor for Time Projection Chamber version 3
   //
 
   SetBufferSize(128000);
-  fIdSens=0;
-
 
   if (fTPCParam)
      fTPCParam->Write(fTPCParam->GetTitle());

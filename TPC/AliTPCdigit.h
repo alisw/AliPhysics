@@ -20,7 +20,7 @@ public:
    Int_t     fSignal;     //Signal amplitude
  
 public:
-   AliTPCdigit() {}
+   AliTPCdigit();
    AliTPCdigit(Int_t *tracks, Int_t *digits);
    virtual ~AliTPCdigit() {}
  

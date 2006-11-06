@@ -19,9 +19,24 @@ class AliHit;
 
 class AliTrackHitsParamV2 : public TObject {
 
+
 public:
   AliTrackHitsParamV2();
-  AliTrackHitsParamV2(const AliTrackHitsParamV2 &hit):  TObject(hit)
+
+   AliTrackHitsParamV2(const AliTrackHitsParamV2 &hit):  TObject(hit),
+   fTrackID(0), 
+   fVolumeID(0),
+   fR(0.),  
+   fZ(0.),  
+   fFi(0.), 
+   fAn(0.), 
+   fAd(0.), 
+   fTheta(0.), 
+   fThetaD(0.), 
+   fNHits(0), 
+   fHitDistance(0), 
+   fCharge(0),
+   fTime(0) 
     {hit.Copy(*this);}
   AliTrackHitsParamV2& operator = (const AliTrackHitsParamV2 &hit)
      {hit.Copy(*this); return (*this);}
@@ -113,9 +128,19 @@ public:
 class AliTPCTrackHitsV2 : public TObject {
 
 public:
-  AliTPCTrackHitsV2(); 
+  AliTPCTrackHitsV2();
   ~AliTPCTrackHitsV2();
-  AliTPCTrackHitsV2(const AliTPCTrackHitsV2 &hit):  TObject(hit)
+  AliTPCTrackHitsV2(const AliTPCTrackHitsV2 &hit):  TObject(hit),
+  fArray(0),  
+  fSize(0),           
+  fPrecision(0.),  
+  fStep(0.),       
+  fMaxDistance(0),   
+  fNVolumes(0),        
+  fVolumes(0),   
+  fTempInfo(0), 
+  fCurrentHit(0),  
+  fHit(0) 
     {hit.Copy(*this);}
   AliTPCTrackHitsV2& operator = (const AliTPCTrackHitsV2 &hit)
      {hit.Copy(*this); return (*this);}

@@ -24,7 +24,17 @@
 #include "AliTPCcluster.h"
 
 ClassImp(AliTPCcluster)
-
+//
+AliTPCcluster:: AliTPCcluster(Int_t *lab, Float_t *hit)
+              :AliCluster(lab,hit),
+               fQ(0.)
+{
+  //
+  // constructor
+  //
+  fQ=hit[4];
+}
+ 
 //____________________________________________________________________________
 Double_t AliTPCcluster::SigmaY2(Double_t r, Double_t tgl, Double_t pt)
 {

@@ -96,23 +96,45 @@ static Double_t funGati2D(Double_t *x, Double_t * par)
 ClassImp(AliTPCPRF2D)
 
 AliTPCPRF2D::AliTPCPRF2D()
+            :TObject(),
+             fcharge(0),
+             fY1(0.),
+             fY2(0.),
+             fNYdiv(0),
+             fNChargeArray(0),
+             fChargeArray(0),
+             fHeightFull(0.),
+             fHeightS(0.),
+             fShiftY(0.),
+             fWidth(0.),
+             fK(0.),
+             fNPRF(0),
+             fNdiv(5),
+             fDStep(0.),
+             fKNorm(1.),
+             fInteg(0.),
+             fGRF(0),
+             fK3X(0.),
+             fK3Y(0.),
+             fPadDistance(0.),
+             fOrigSigmaX(0.),
+             fOrigSigmaY(0.),
+             fChargeAngle(0.),
+             fPadAngle(0.),
+             fSigmaX(0.),
+             fSigmaY(0.),
+             fMeanX(0.),
+             fMeanY(0.),
+             fInterX(0),
+             fInterY(0),
+             fCurrentY(0.),
+             fDYtoWire(0.),
+             fDStepM1(0.)             
 {
   //default constructor for response function object
-  fcharge = 0;
-  fNChargeArray = 0;
-  fChargeArray = 0;
-  fNPRF =fgkNPRF ;
-  fSigmaX = 0;
-  fSigmaY = 0;
 
-  fGRF = 0;
-  fKNorm = 1;
-  fOrigSigmaY=0;
-  fOrigSigmaX=0;
-  fNdiv = 5;
-  //set daault angels
-  fChargeAngle = 0;
-  fPadAngle = 0;
+  fNPRF =fgkNPRF ;
+
   //chewron default values   
   SetPad(0.8,0.8);
   SetChevron(0.2,0.0,1.0);

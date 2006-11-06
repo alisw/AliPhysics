@@ -20,6 +20,8 @@ class AliH2F;
 class AliSimDigits : public AliDigits{
 public: 
   AliSimDigits();
+  AliSimDigits(const AliSimDigits &param);
+  AliSimDigits &operator = (const AliSimDigits & digits); 
   virtual ~AliSimDigits();
   void AllocateTrack(Int_t length);  //construct empty buffer fTracks with size rows x column x length (number of tracks for one digit)
   Int_t *GetTracks(){return fTracks->GetArray();}

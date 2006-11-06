@@ -26,6 +26,7 @@ class AliTPCkineGrid : public TNamed {
   AliTPCkineGrid();
   AliTPCkineGrid(Int_t npt,Int_t neta,Double_t* pt,Double_t* eta);
   AliTPCkineGrid(const AliTPCkineGrid& grid);
+  AliTPCkineGrid &operator = (const AliTPCkineGrid & param);
   virtual ~AliTPCkineGrid();
   void     GetArrayEta(Double_t* eta) const;
   void     GetArrayPt(Double_t* pt) const;
