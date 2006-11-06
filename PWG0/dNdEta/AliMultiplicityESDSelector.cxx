@@ -16,9 +16,6 @@
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 
-// uncomment this to enable mona lisa monitoring
-//#define ALISELECTOR_USEMONALISA
-
 #ifdef ALISELECTOR_USEMONALISA
   #include <TMonaLisaWriter.h>
 #endif
@@ -28,8 +25,10 @@ ClassImp(AliMultiplicityESDSelector)
 AliMultiplicityESDSelector::AliMultiplicityESDSelector() :
   AliSelector(),
   fMultiplicity(0),
-  fEsdTrackCuts(0),
-  fMonaLisaWriter(0)
+  fEsdTrackCuts(0)
+#ifdef ALISELECTOR_USEMONALISA
+  ,fMonaLisaWriter(0)
+#endif
 {
   //
   // Constructor. Initialization of pointers

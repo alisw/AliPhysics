@@ -5,10 +5,15 @@
 
 #include "AliSelector.h"
 
+// uncomment this to enable mona lisa monitoring
+//#define ALISELECTOR_USEMONALISA
+
 class AliESDtrackCuts;
 class TH1F;
 
-class TMonaLisaWriter;
+#ifdef ALISELECTOR_USEMONALISA
+  class TMonaLisaWriter;
+#endif
 
 class AliMultiplicityESDSelector : public AliSelector {
   public:
@@ -32,7 +37,9 @@ class AliMultiplicityESDSelector : public AliSelector {
     AliMultiplicityESDSelector(const AliMultiplicityESDSelector&);
     AliMultiplicityESDSelector& operator=(const AliMultiplicityESDSelector&);
 
+#ifdef ALISELECTOR_USEMONALISA
     TMonaLisaWriter* fMonaLisaWriter; //! ML instance for monitoring
+#endif
 
   ClassDef(AliMultiplicityESDSelector, 0);
 };
