@@ -24,6 +24,7 @@ class AliShuttleInterface;
 class AliPreprocessor : public TNamed
 {
   public:
+
     enum { kDAQ, kDCS, kHLT };
 
     AliPreprocessor(const char* detector, AliShuttleInterface* shuttle);
@@ -39,6 +40,7 @@ class AliPreprocessor : public TNamed
     		AliCDBMetaData* metaData);
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id);
+    const char* GetRunParameter(const char* param);
     void Log(const char* message);
 
     Int_t fRun;         // current run

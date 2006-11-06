@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/10/02 12:57:48  jgrosseo
+Small interface change of function StoreReferenceData in Shuttle
+
 Revision 1.5  2006/09/04 17:42:34  hristov
 Changes required by Effective C++
 
@@ -141,7 +144,7 @@ UInt_t AliPreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TO
   //
   // The parameters are
   //   1, 2) the 2nd and 3rd level of the object's path. The first level is the detector name which is provided
-  //         by the Preprocessor. Thus the object's path is "DET/level2/level3"
+  //         by the Preprocessor and converted to the Offline name. Thus the object's path is "DET/level2/level3"
   //   3) the object to be stored
   //   4) the metaData to be associated with the object
   //   5) the validity start run number w.r.t. the current run,
@@ -151,7 +154,10 @@ UInt_t AliPreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TO
   //
   // The call is delegated to AliShuttleInterface
 
-  return fShuttle->Store(AliCDBPath(GetName(), pathLevel2, pathLevel3), object,
+  const char* offlineDetName = AliShuttleInterface::GetOfflineDetName(GetName());
+  if(!offlineDetName) return 0;
+
+  return fShuttle->Store(AliCDBPath(offlineDetName, pathLevel2, pathLevel3), object,
   		metaData, validityStart, validityInfinite);
 }
 
@@ -166,13 +172,16 @@ UInt_t AliPreprocessor::StoreReferenceData(const char* pathLevel2, const char* p
   //
   // The parameters are
   //   1, 2) the 2nd and 3rd level of the object's path. The first level is the detector name which is provided
-  //         by the Preprocessor. Thus the object's path is "DET/level2/level3"
+  //         by the Preprocessor and converted to the Offline name. Thus the object's path is "DET/level2/level3"
   //   3) the object to be stored
   //   4) the metaData to be associated with the object
   //
   // The call is delegated to AliShuttleInterface
 
-  return fShuttle->StoreReferenceData(AliCDBPath(GetName(), pathLevel2, pathLevel3), object,
+  const char* offlineDetName = AliShuttleInterface::GetOfflineDetName(GetName());
+  if(!offlineDetName) return 0;
+
+  return fShuttle->StoreReferenceData(AliCDBPath(offlineDetName, pathLevel2, pathLevel3), object,
   		metaData);
 }
 
@@ -206,4 +215,14 @@ void AliPreprocessor::Log(const char* message)
   // The call is delegated to AliShuttleInterface
 
   fShuttle->Log(GetName(), message);
+}
+
+//______________________________________________________________________________________________
+const char* AliPreprocessor::GetRunParameter(const char* param)
+{
+  // Return run parameter read from run logbook
+  //
+  // The call is delegated to AliShuttleInterface
+
+  return fShuttle->GetRunParameter(param);
 }
