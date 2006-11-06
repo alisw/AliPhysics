@@ -7,6 +7,7 @@
 
 class AliESDtrackCuts;
 class AlidNdEtaCorrection;
+class TParticlePDG;
 
 class TH2F;
 class TH1F;
@@ -23,6 +24,8 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
     virtual void    Terminate();
 
  protected:
+    Bool_t SignOK(TParticlePDG* particle);
+
     void ReadUserObjects(TTree* tree);
 
     void FillCorrectionMaps(TObjArray* listOfTracks);
@@ -44,6 +47,8 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
 
     AlidNdEtaCorrection* fdNdEtaCorrectionTriggerBias[3]; // correction for trigger bias
 
+    Int_t fSignMode; // 1 = only positive particles are counted, -1 = only negative, 0 = both (default)
+    Int_t fMultiplicityMode; // 1 = only events with low multiplicity, 2 = high multiplicity, 0 = all (default)
 
  private:
     AlidNdEtaSystematicsSelector(const AlidNdEtaSystematicsSelector&);

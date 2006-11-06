@@ -11,6 +11,7 @@
 #include <TH2F.h>
 #include <TH1F.h>
 #include <TParticle.h>
+#include <TParticlePDG.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -33,7 +34,9 @@ AlidNdEtaSystematicsSelector::AlidNdEtaSystematicsSelector() :
   fSigmaVertex(0),
   fEsdTrackCuts(0),
   fPIDParticles(0),
-  fPIDTracks(0)
+  fPIDTracks(0),
+  fSignMode(0),
+  fMultiplicityMode(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -133,9 +136,30 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
     fdNdEtaCorrectionTriggerBias[2] = new AlidNdEtaCorrection("triggerBiasDD", "triggerBiasDD");
   }
 
-
   fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
   fPIDTracks = new TH1F("pid_tracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
+
+  if (option.Contains("only-positive"))
+  {
+    AliInfo("Processing only positive particles.");
+    fSignMode = 1;
+  }
+  else if (option.Contains("only-negative"))
+  {
+    AliInfo("Processing only negative particles.");
+    fSignMode = -1;
+  }
+
+  if (option.Contains("low-multiplicity"))
+  {
+    AliInfo("Processing only events with low multiplicity.");
+    fMultiplicityMode = 1;
+  }
+  else if (option.Contains("high-multiplicity"))
+  {
+    AliInfo("Processing only events with high multiplicity.");
+    fMultiplicityMode = 2;
+  }
 }
 
 Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
@@ -182,6 +206,14 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
   }
 
   TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+
+  if (fMultiplicityMode == 1 && list->GetEntries() > 20 ||
+      fMultiplicityMode == 2 && list->GetEntries() < 40)
+  {
+    delete list;
+    list = 0;
+    return kTRUE;
+  }
 
   if (fdNdEtaCorrectionSpecies[0])
     FillCorrectionMaps(list);
@@ -277,6 +309,8 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
 {
   // fills the correction maps for different particle species
 
+  // TODO fix the use of the FillParticle* functions
+
   AliStack* stack = GetStack();
   AliHeader* header = GetHeader();
 
@@ -305,6 +339,9 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
+    if (SignOK(particle->GetPDG()) == kFALSE)
+      continue;
+
     Float_t eta = particle->Eta();
     Float_t pt = particle->Pt();
 
@@ -329,9 +366,9 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
       default: id = 3; break;
     }
 
-    if (vertexReconstructed)
+    if (vertexReconstructed && eventTriggered)
     {
-      fdNdEtaCorrectionSpecies[id]->FillParticle(vtxMC[2], eta, pt);
+      fdNdEtaCorrectionSpecies[id]->FillParticleVertex(vtxMC[2], eta, pt);
       //if (pt < 0.1)
         fPIDParticles->Fill(particle->GetPdgCode());
     }
@@ -385,6 +422,9 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
     if (!mother)
       continue;
 
+    if (SignOK(mother->GetPDG()) == kFALSE)
+      continue;
+
     //printf("We continue with particle %d (pdg %d)\n", label, mother->GetPdgCode());
 
     Int_t id = -1;
@@ -396,9 +436,9 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
       default:   id = 3; break;
     }
 
-    if (vertexReconstructed)
+    if (vertexReconstructed && eventTriggered)
     {
-      fdNdEtaCorrectionSpecies[id]->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
+      fdNdEtaCorrectionSpecies[id]->FillParticleTracked(vtxMC[2], particle->Eta(), particle->Pt());
       //if (particle->Pt() < 0.1)
         fPIDTracks->Fill(particle->GetPdgCode());
     }
@@ -673,4 +713,33 @@ void AlidNdEtaSystematicsSelector::Terminate()
     new TCanvas;
     fSigmaVertex->Draw();
   }
+}
+
+Bool_t AlidNdEtaSystematicsSelector::SignOK(TParticlePDG* particle)
+{
+  // returns if a particle with this sign should be counted
+  // this is determined by the value of fSignMode, which should have the same sign
+  // as the charge
+  // if fSignMode is 0 all particles are counted
+
+  if (fSignMode == 0)
+    return kTRUE;
+
+  if (!particle)
+  {
+    printf("WARNING: not counting a particle that does not have a pdg particle\n");
+    return kFALSE;
+  }
+
+  Double_t charge = particle->Charge();
+
+  if (fSignMode > 0)
+    if (charge < 0)
+      return kFALSE;
+
+  if (fSignMode < 0)
+    if (charge > 0)
+      return kFALSE;
+
+  return kTRUE;
 }
