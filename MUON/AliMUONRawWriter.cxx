@@ -560,7 +560,7 @@ Int_t AliMUONRawWriter::GetBusPatch(Int_t detElemId, Int_t manuId) const
   
   AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
   
-  if ( stationType == kStation1 || stationType == kStation2 )
+  if ( stationType == kStation1)
   {
     if (plane == kBendingPlane) 
     {
@@ -571,7 +571,7 @@ Int_t AliMUONRawWriter::GetBusPatch(Int_t detElemId, Int_t manuId) const
       ptr = &fgManuPerBusSwp1NB[0];
     }
   }
-  else
+  else if ( stationType == kStation2)
   {
     if (plane == kBendingPlane)
     {
