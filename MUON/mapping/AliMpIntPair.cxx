@@ -28,6 +28,8 @@
 
 #include "AliMpIntPair.h"
 
+#include "AliLog.h"
+
 #include <Riostream.h>
 
 /// \cond CLASSIMP
@@ -149,7 +151,19 @@ AliMpIntPair& AliMpIntPair::operator=(const AliMpIntPair& src)
   
   return *this;
 }
+//_____________________________________________________________________________
+Int_t AliMpIntPair::Compare(const TObject* obj) const
+{
+/// Compare using operator <
 
+  const AliMpIntPair* pair = dynamic_cast<const AliMpIntPair*>(obj);
+  if ( !pair ) {
+    AliErrorStream() << "Wrong object type." << endl;
+    return -1;
+  }  
+
+  return ( *this < *pair ) ? -1 : 1;
+}
 //_____________________________________________________________________________
 void AliMpIntPair::operator += (const AliMpIntPair& op)
 {
