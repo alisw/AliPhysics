@@ -27,10 +27,10 @@ ClassImp(AlidNdEtaAnalysisMCSelector)
 AlidNdEtaAnalysisMCSelector::AlidNdEtaAnalysisMCSelector() :
   AliSelectorRL(),
   fdNdEtaAnalysis(0),
+  fdNdEtaAnalysisTr(0),
+  fdNdEtaAnalysisTrVtx(0),
   fVertex(0),
-  fPartEta(0),
-  fPartPt(0),
-  fEvents(0)
+  fPartPt(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -53,10 +53,16 @@ void AlidNdEtaAnalysisMCSelector::SlaveBegin(TTree * tree)
   AliSelectorRL::SlaveBegin(tree);
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fdNdEtaAnalysisTr = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
+  fdNdEtaAnalysisTrVtx = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fVertex = new TH3F("vertex_check", "vertex_check", 50, -50, 50, 50, -50, 50, 50, -50, 50);
-  fPartEta = new TH1F("dndeta_check", "dndeta_check", 120, -6, 6);
+  for (Int_t i=0; i<3; ++i)
+  {
+    fPartEta[i] = new TH1F(Form("dndeta_check_%d", i), Form("dndeta_check_%d", i), 120, -6, 6);
+    fPartEta[i]->Sumw2();
+  }
   fPartPt =  new TH1F("dndeta_check_pt", "dndeta_check_pt", 1000, 0, 10);
-  fPartEta->Sumw2();
+  fPartPt->Sumw2();
 }
 
 void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
@@ -64,6 +70,8 @@ void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
   AliSelectorRL::Init(tree);
 
   tree->SetBranchStatus("*", 0);
+  tree->SetBranchStatus("fTriggerMask", 1);
+  tree->SetBranchStatus("fSPDVertex*", 1);
 }
 
 Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
@@ -72,6 +80,13 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
 
   if (AliSelectorRL::Process(entry) == kFALSE)
     return kFALSE;
+
+  // Check prerequisites
+  if (!fESD)
+  {
+    AliDebug(AliLog::kError, "ESD branch not available");
+    return kFALSE;
+  }
 
   AliStack* stack = GetStack();
   if (!stack)
@@ -86,6 +101,9 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
     AliDebug(AliLog::kError, "Header not available");
     return kFALSE;
   }
+
+  Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
 
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
@@ -111,14 +129,33 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
     fdNdEtaAnalysis->FillTrack(vtxMC[2], particle->Eta(), particle->Pt(), 1);
     fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
 
-    fPartEta->Fill(particle->Eta());
+    if (eventTriggered)
+    {
+      fdNdEtaAnalysisTr->FillTrack(vtxMC[2], particle->Eta(), particle->Pt(), 1);
+      if (vertexReconstructed)
+        fdNdEtaAnalysisTrVtx->FillTrack(vtxMC[2], particle->Eta(), particle->Pt(), 1);
+    }
+
+    if (TMath::Abs(vtxMC[2]) < 10)
+    {
+      fPartEta[0]->Fill(particle->Eta());
+
+      if (vtxMC[2] < 0)
+        fPartEta[1]->Fill(particle->Eta());
+      else
+        fPartEta[2]->Fill(particle->Eta());
+    }
 
     if (TMath::Abs(particle->Eta()) < 0.8)
       fPartPt->Fill(particle->Pt());
   }
   fdNdEtaAnalysis->FillEvent(vtxMC[2], 1);
-
-  ++fEvents;
+  if (eventTriggered)
+  {
+    fdNdEtaAnalysisTr->FillEvent(vtxMC[2], 1);
+    if (vertexReconstructed)
+      fdNdEtaAnalysisTrVtx->FillEvent(vtxMC[2], 1);
+  }
 
   return kTRUE;
 }
@@ -139,7 +176,11 @@ void AlidNdEtaAnalysisMCSelector::SlaveTerminate()
   }
 
   fOutput->Add(fdNdEtaAnalysis);
+  fOutput->Add(fdNdEtaAnalysisTr);
+  fOutput->Add(fdNdEtaAnalysisTrVtx);
   fOutput->Add(fPartPt);
+  for (Int_t i=0; i<3; ++i)
+    fOutput->Add(fPartEta[i]);
 }
 
 void AlidNdEtaAnalysisMCSelector::Terminate()
@@ -149,44 +190,60 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
   AliSelectorRL::Terminate();
 
   fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+  fdNdEtaAnalysisTr = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTr"));
+  fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
   fPartPt = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_pt"));
+  for (Int_t i=0; i<3; ++i)
+    fPartEta[i] = dynamic_cast<TH1F*> (fOutput->FindObject(Form("dndeta_check_%d", i)));
 
-  if (!fdNdEtaAnalysis || !fPartPt)
+  if (!fdNdEtaAnalysis || !fdNdEtaAnalysisTr || !fdNdEtaAnalysisTrVtx || !fPartPt)
   {
     AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p", (void*) fdNdEtaAnalysis, (void*) fPartPt));
     return;
   }
 
   fdNdEtaAnalysis->Finish(0, -1);
+  fdNdEtaAnalysisTr->Finish(0, -1);
+  fdNdEtaAnalysisTrVtx->Finish(0, -1);
+
+  Int_t events = (Int_t) fdNdEtaAnalysis->GetVtxHistogram()->Integral();
+  fPartPt->Scale(1.0/events);
+  fPartPt->Scale(1.0/fPartPt->GetBinWidth(1));
+
+  if (fPartEta[0])
+  {
+    TH1* vtxHist = fdNdEtaAnalysis->GetVtxHistogram();
+    Int_t events1 = (Int_t) vtxHist->Integral(vtxHist->GetXaxis()->FindBin(-9.9), vtxHist->GetXaxis()->FindBin(-0.1));
+    Int_t events2 = (Int_t) vtxHist->Integral(vtxHist->GetXaxis()->FindBin(0.1), vtxHist->GetXaxis()->FindBin(9.9));
+
+    fPartEta[0]->Scale(1.0 / (events1 + events2));
+    fPartEta[1]->Scale(1.0 / events1);
+    fPartEta[2]->Scale(1.0 / events2);
+
+    for (Int_t i=0; i<3; ++i)
+      fPartEta[i]->Scale(1.0 / fPartEta[i]->GetBinWidth(1));
+
+    new TCanvas("control", "control", 500, 500);
+    for (Int_t i=0; i<3; ++i)
+    {
+      fPartEta[i]->SetLineColor(i+1);
+      fPartEta[i]->Draw((i==0) ? "" : "SAME");
+    }
+  }
 
   TFile* fout = new TFile("analysis_mc.root","RECREATE");
 
   fdNdEtaAnalysis->SaveHistograms();
+  fdNdEtaAnalysisTr->SaveHistograms();
+  fdNdEtaAnalysisTrVtx->SaveHistograms();
+  fPartPt->Write();
 
   fout->Write();
   fout->Close();
 
-  if (fPartEta)
-  {
-    fPartEta->Scale(1.0/fEvents);
-    fPartEta->Scale(1.0/fPartEta->GetBinWidth(1));
-
-    TCanvas* canvas = new TCanvas("control", "control", 900, 450);
-    canvas->Divide(2, 1);
-
-    canvas->cd(1);
-    fVertex->Draw();
-
-    canvas->cd(2);
-    fPartEta->Draw();
-  }
-
   if (fPartPt)
   {
-    fPartPt->Scale(1.0/fEvents);
-    fPartPt->Scale(1.0/fPartPt->GetBinWidth(1));
-
     new TCanvas("control2", "control2", 500, 500);
-    fPartPt->Draw();
+    fPartPt->DrawCopy();
   }
 }
