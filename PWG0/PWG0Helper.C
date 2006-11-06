@@ -21,7 +21,7 @@ TVirtualProof* connectProof(const char* proofServer)
   return proof;
 }
 
-Bool_t prepareQuery(TString libraries, TString packages, Bool_t useAliRoot)
+Bool_t prepareQuery(TString libraries, TString packages, Int_t useAliRoot)
 {
   // if not proof load libraries
   if (!gProof)
@@ -46,8 +46,8 @@ Bool_t prepareQuery(TString libraries, TString packages, Bool_t useAliRoot)
   }
   else
   {
-    if (useAliRoot)
-      ProofEnableAliRoot();
+    if (useAliRoot > 0)
+      ProofEnableAliRoot(useAliRoot);
 
     TObjArray* packagesList = packages.Tokenize(";");
     for (Int_t i=0; i<packagesList->GetEntries(); ++i)
@@ -59,6 +59,12 @@ Bool_t prepareQuery(TString libraries, TString packages, Bool_t useAliRoot)
       if (!EnablePackageLocal(str->String()))
       {
         printf("Loading of package %s locally failed\n", str->String().Data());
+        return kFALSE;
+      }
+
+      if (gProof->UploadPackage(Form("%s.par", str->String().Data())))
+      {
+        printf("Uploading of package %s failed\n", str->String().Data());
         return kFALSE;
       }
 
@@ -102,7 +108,7 @@ Int_t executeQuery(TChain* chain, TList* inputList, TString selectorName, const 
   return result;
 }
 
-void ProofEnableAliRoot()
+void ProofEnableAliRoot(Int_t aliroot)
 {
   // enables a locally deployed AliRoot in a PROOF cluster
 
@@ -114,7 +120,14 @@ void ProofEnableAliRoot()
      gROOT->Macro("$ALICE_ROOT/macros/loadlibs.C");
   */
 
-  const char* location = "/home/alicecaf/ALICE/aliroot-head";
+  const char* location = 0;
+  
+  switch (aliroot)
+  {
+    case 1: location = "/home/alicecaf/ALICE/aliroot-v4-04-Release"; break;
+    case 2: location = "/home/alicecaf/ALICE/aliroot-head"; break;
+    default: return;
+  }
 
   gProof->Exec(Form("gSystem->Setenv(\"ALICE_ROOT\", \"%s\")", location), kTRUE);
   gProof->AddIncludePath(Form("%s/include", location));

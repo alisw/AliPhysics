@@ -12,6 +12,7 @@
 #include <AliCorrectionMatrix.h>
 
 class TH3F;
+class TH1F;
 
 class AliCorrectionMatrix3D : public AliCorrectionMatrix
 {
@@ -44,6 +45,10 @@ public:
   void RemoveEdges(Float_t cut=2, Int_t nBinsXedge = 0, Int_t nBinsYedge = 0, Int_t nBinsZedge = 0);
 
   virtual void SaveHistograms();
+
+  Int_t CheckEmptyBins(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax, Bool_t quiet = kFALSE);
+  TH1F* PlotBinErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t zmin, Float_t zmax);
+
 
 protected:
   ClassDef(AliCorrectionMatrix3D,1)
