@@ -69,7 +69,7 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONC
 ///
   if (!fMUONData)
   {  
-    AliFatal("NO MUON TRIGGER DATA");
+    AliWarning("NO MUON TRIGGER DATA");
   }
     
   SetDataSource();
