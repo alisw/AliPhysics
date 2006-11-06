@@ -15,5 +15,6 @@
 #pragma link C++ class AliMultiplicityMCSelector+;
 #pragma link C++ class AlidNdEtaSystematicsSelector+;
 #pragma link C++ class AliTestESDtrackCutsSelector+;
+#pragma link C++ class AliROCESDAnalysisSelector+;
 
 #endif
