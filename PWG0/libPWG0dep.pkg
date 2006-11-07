@@ -2,7 +2,8 @@
 
 # this library contains classed that depend on STEER
 
-HDRS = AliPWG0depHelper.h
+HDRS = AliPWG0depHelper.h \
+       TPC/AliTPCClusterHistograms.h
 
 SRCS = $(HDRS:.h=.cxx)
 
