@@ -44,7 +44,6 @@
 #include "AliHeader.h"
 #include "AliESDtrack.h"
 #include "AliRunLoader.h"
-#include "AliGenPythiaEventHeader.h"
 
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
@@ -65,18 +64,13 @@ AliRsnReader::AliRsnReader()
 	fPIDMethod = kESDPID;
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = 1.0;
-	fPtLimit4PID = 4.0;
+	fPtLimit4PID = 4.0;    
 	fProbThreshold = 0.0;
 	fMaxRadius = 3.0;      // the beam pipe
 
+	fUseKineInfo = kFALSE;
+
 	fEvents = 0;
-	for (i = AliPID::kElectron; i <= AliPID::kProton; i++) {
-		fEffPos[i] = 0;
-		fEffNeg[i] = 0;
-	}
-	fResPt = 0;
-	fResLambda = 0;
-	fResPhi = 0;
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnReader::AliRsnReader(const AliRsnReader &copy) : TObject(copy)
@@ -92,16 +86,10 @@ AliRsnReader::AliRsnReader(const AliRsnReader &copy) : TObject(copy)
 	fPtLimit4PID = copy.fPtLimit4PID;
 	fProbThreshold = copy.fProbThreshold;
 	fMaxRadius = copy.fMaxRadius;
+	
+	fUseKineInfo = copy.fUseKineInfo;
 
 	fEvents = 0;
-	for (i = AliPID::kElectron; i <= AliPID::kProton; i++) {
-		fEffPos[i] = copy.fEffPos[i];
-		fEffNeg[i] = copy.fEffNeg[i];
-	}
-	
-	fResPt = copy.fResPt;
-	fResLambda = copy.fResLambda;
-	fResPhi = copy.fResPhi;
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnReader& AliRsnReader::operator=(const AliRsnReader &copy)
@@ -117,16 +105,10 @@ AliRsnReader& AliRsnReader::operator=(const AliRsnReader &copy)
 	fPtLimit4PID = copy.fPtLimit4PID;
 	fProbThreshold = copy.fProbThreshold;
 	fMaxRadius = copy.fMaxRadius;
+	
+	fUseKineInfo = copy.fUseKineInfo;
 
 	fEvents = 0;
-	for (i = AliPID::kElectron; i <= AliPID::kProton; i++) {
-		fEffPos[i] = copy.fEffPos[i];
-		fEffNeg[i] = copy.fEffNeg[i];
-	}
-	
-	fResPt = copy.fResPt;
-	fResLambda = copy.fResLambda;
-	fResPhi = copy.fResPhi;
 	
 	return (*this);
 }
@@ -147,51 +129,6 @@ void AliRsnReader::Clear(Option_t *option)
 			fEvents = 0;
 		}
 	}
-	
-	Int_t i;
-	for (i = AliPID::kElectron; i <= AliPID::kProton; i++) {
-		fEffPos[i] = 0;
-		fEffNeg[i] = 0;
-	}
-	fResPt = 0;
-	fResLambda = 0;
-	fResPhi = 0;
-}
-//--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnReader::EffSim(Int_t pdg, Double_t pt, Double_t eta, Double_t z)
-{
-//
-// If efficiency histogram are present, they are used to simulate efficiency.
-// Pt, Eta and Z are used to find reconstruction efficiency value to be used
-// and PDG is used to select efficiency histogram for a given particle.
-// An extraction is done, and it is supposed that particle must be accepted
-// only when this function retunrs kTRUE (= successful extraction).
-//
-	// find particle sign from PDG code
-	Int_t sign;
-	if (TMath::Abs(pdg) >= 211) {
-		if (pdg > 0) sign = 1; else sign = -1;
-	}
-	else {
-		if (pdg > 0) sign = -1; else sign = 1;
-	}
-	
-	// convert PDG code into one value in AliPID::kSPECIES
-	// (if returned value is not a charged particle, procedure is skipped)
-	Int_t index = FindType(pdg);
-	TH3D *eff = 0;
-	if (index >= AliPID::kElectron && index <= AliPID::kProton) {
-		if (sign > 0) eff = fEffPos[index]; else eff = fEffNeg[index];
-	}
-	
-	// if no efficiency histogram is defined, method returns a 'fail' result
-	if (!eff) return kFALSE;
-	
-	// otherwise, a random extraction is made
-	Int_t ibin = eff->FindBin(z, eta, pt);
-	Double_t ref = (Double_t)eff->GetBinContent(ibin);
-	Double_t ran = gRandom->Rndm();
-	return (ran <= ref);
 }
 //--------------------------------------------------------------------------------------------------------
 Double_t* AliRsnReader::GetPIDprobabilities(AliRsnDaughter track) const
@@ -261,138 +198,6 @@ void AliRsnReader::Identify(AliRsnDaughter &track)
 	}
 }
 //--------------------------------------------------------------------------------------------------------
-TTree* AliRsnReader::ReadParticles(const char *path, Option_t *option)
-{
-//
-// Opens the file "galice.root" and kinematics in the path specified,
-// loads Kinematics informations and fills and AliRsnEvent object
-// with data coming from simulation.
-// If required, an efficiency simulation can be done which cuts off some tracks
-// depending on a MonteCarlo extraction weighted on the efficiency histograms
-// passed to the class. 
-// Moreover, a smearing can be done if requested, using the resolution histograms
-// passed to the class.
-// Allowed options:
-// - "E" --> do efficiency simulation
-// - "P" --> do momentum smearing
-//
-	fPIDMethod = kPerfectPID;
-
-	TTree *events = new TTree("selection", "AliRsnEvents");
-	TTree::SetBranchStyle(1);
-	AliRsnEvent *event = new AliRsnEvent;
-	TBranch *branch = events->Branch("events", "AliRsnEvent", &event, 32000, 1);
-	branch->SetAutoDelete(kFALSE);
-	
-	// get path
-	TString strPath(path);
-	if (strPath.Length() < 1) return 0;
-	strPath += '/';
-	
-	// evaluate options
-	TString opt(option);
-	opt.ToUpper();
-	Bool_t doEffSim = (opt.Contains("E"));
-	Bool_t doSmearing = (opt.Contains("P"));
-	
-	// initialize run loader
-	AliRunLoader *runLoader = OpenRunLoader(path);
-	if (!runLoader) return 0;
-	Int_t nEvents = runLoader->GetNumberOfEvents();
-	TArrayF vertex(3);
-	
-	// loop on events
-	Int_t i, iev, index = 0, imum, nParticles, nStoredParticles = 0;
-	Double_t vtot, px, py, pz, arg, eta;
-	TParticle *particle = 0, *mum = 0;
-	for (iev = 0; iev < nEvents; iev++) {
-		
-		// load given event
-		cout << "\rEvent " << iev << " of " << nEvents << flush;
-		runLoader->GetEvent(iev);
-		
-		// primary vertex
-		runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vertex);
-		//cout << "Process type: " << ((AliGenPythiaEventHeader*)runLoader->GetHeader()->GenEventHeader())->ProcessType() << endl;
-		
-		// kinematics
-		AliStack *stack = runLoader->Stack();
-		if (!stack) continue;
-		
-		// get number of particles to collect
-		nParticles = stack->GetNtrack();
-		if (!nParticles) return 0;
-				
-		// create new AliRsnEvent object
-		event->Clear("DELETE");
-		event->SetESD(kFALSE);
-		event->SetPath(strPath);
-		event->Init();
-		
-		// loop on tracks
-		index = 0;
-		for (i = 0; i < nParticles; i++) {
-			
-			// get particle
-			particle = stack->Particle(i);
-			if (!particle) continue;
-			
-			// check against maximum allowed distance from primary vertex
-			vtot  = (particle->Vx() - vertex[0])*(particle->Vx() - vertex[0]);
-			vtot += (particle->Vy() - vertex[1])*(particle->Vy() - vertex[1]);
-			vtot += (particle->Vz() - vertex[2])*(particle->Vz() - vertex[2]);
-			vtot  = TMath::Sqrt(vtot);
-			if (vtot > fMaxRadius) continue;
-			
-			// efficiency selection
-			if (doEffSim) {
-				arg = 0.5 * TMath::ATan2(particle->Pz(), particle->Pt());
-				if (arg > 0.) eta = -TMath::Log(arg); else continue;
-				Bool_t result = EffSim(particle->GetPdgCode(), (Double_t)vertex[2], eta, (Double_t)particle->Pt());
-				if (result == kFALSE) continue;
-			}
-			
-			// smear kinematic parameters (if requested)
-			px = particle->Px();
-			py = particle->Py();
-			pz = particle->Pz();
-			if (doSmearing) SmearMomentum(px, py, pz);
-									
-			// add to collection of tracks
-			nStoredParticles++;
-			AliRsnDaughter *track = new AliRsnDaughter;
-			if (!track->Adopt(particle)) {
-				delete track;
-				continue;
-			}
-			track->SetIndex(index);
-			track->SetLabel(i);
-			track->SetPxPyPz(px, py, pz);
-			imum = particle->GetFirstMother();
-			if (imum >= 0) {
-				mum = stack->Particle(imum);
-				track->SetMotherPDG( (Short_t)mum->GetPdgCode() );
-			}
-			Identify(*track);
-			
-			event->AddTrack(*track);
-			delete track;
-			
-		} // end of loop over tracks
-		
-		// compute total multiplicity
-		event->GetMultiplicity();
-
-		// link to events tree and fill
-		events->Fill();
-	}
-	
-	runLoader->UnloadKinematics();
-	delete runLoader;
-	
-	return events;
-}
-//--------------------------------------------------------------------------------------------------------
 TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
 {
 //
@@ -438,7 +243,7 @@ TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
 	for (i = 0; i < nev; i++) {
 	
 		// message
-		cout << "\rEvent " << i << flush;
+//		cout << "\rEvent " << i << flush;
 		treeESD->GetEntry(i);
 		
 		// primary vertex
@@ -449,8 +254,6 @@ TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
 		// create new AliRsnEvent object
 		event->Clear("DELETE");
 		event->Init();
-		event->SetPath(strPath);
-		event->SetESD();
 				
 		// get number of tracks
 		Int_t ntracks = esd->GetNumberOfTracks();
@@ -494,7 +297,7 @@ TTree* AliRsnReader::ReadTracks(const char *path, Option_t *option)
 		}
 		
 		// compute total multiplicity
-		event->GetMultiplicity();
+		event->ComputeMultiplicity();
 	
 		// link to events tree and fill
 		events->Fill();
@@ -556,21 +359,21 @@ TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
 	}
 	
 	// loop on events
-	Int_t i, procType, ntracks, nSelTracks = 0; 
+	Int_t i /*, procType*/, ntracks, nSelTracks = 0; 
 	Double_t vertex[3];
 	for (i = 0; i < nevRec; i++) {
 	
 		// get event
-		cout << "\rEvent " << i << " " << flush;
+//		cout << "\rEvent " << i << " " << flush;
 		treeESD->GetEntry(i);
 		runLoader->GetEvent(i);
 				
 		// reject event if it is diffractive
-		procType = ((AliGenPythiaEventHeader*)runLoader->GetHeader()->GenEventHeader())->ProcessType();
-		if (procType == 92 || procType == 93 || procType == 94) {
-			cout << "Skipping diffractive event" << endl;
-			continue;
-		}
+		//procType = ((AliGenPythiaEventHeader*)runLoader->GetHeader()->GenEventHeader())->ProcessType();
+		//if (procType == 92 || procType == 93 || procType == 94) {
+		//	cout << "Skipping diffractive event" << endl;
+		//	continue;
+		//}
 		
 		// get particle stack
 		AliStack *stack = runLoader->Stack();
@@ -590,8 +393,6 @@ TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
 		// create new AliRsnEvent object
 		event->Clear("DELETE");
 		event->Init();
-		event->SetPath(strPath);
-		event->SetESD();
 				
 		// store tracks from ESD
 		Int_t index, label;
@@ -635,12 +436,13 @@ TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
 			Identify(track);
 			
 			// store in TClonesArray
+//			track.Print();
 			event->AddTrack(track);
 			nSelTracks++;
 		}
 		
 		// compute total multiplicity
-		event->GetMultiplicity();
+		event->ComputeMultiplicity();
 	
 		// link to events tree and fill
 		events->Fill();
@@ -651,18 +453,6 @@ TTree* AliRsnReader::ReadTracksAndParticles(const char *path, Option_t *option)
 	fileESD->Close();
 	
 	return events;
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnReader::SetEfficiencyHistogram(AliPID::EParticleType type, TH3D *h, Bool_t pos)
-{
-//
-// Sets efficiency histogram for a given particle species.
-// If third argument is "true", histo is assigned to positive particles,
-// otherwise it is assigned to negative particles.
-//
-	if (type >= AliPID::kElectron && type < AliPID::kPhoton) {
-		if (pos) fEffPos[type] = h; else fEffNeg[type] = h;
-	}
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnReader::SetPriorProbabilities(Double_t *prior)
@@ -682,39 +472,6 @@ void AliRsnReader::SetPriorProbability(AliPID::EParticleType type, Double_t valu
 // Sets prior probability referred to a single particle species.
 //
 	if (type >= AliPID::kElectron && type < AliPID::kPhoton) fPrior[type] = value;
-}
-//--------------------------------------------------------------------------------------------------------
-void AliRsnReader::SmearMomentum(Double_t &px, Double_t &py, Double_t &pz) 
-{
-//
-// Use resolution histograms to do smearing of momentum
-// (to introduce reconstruction effects)
-//
-	Double_t pt = TMath::Sqrt(px*px + py*py);
-	Double_t lambda = TMath::ATan2(pz, pt);
-	Double_t phi = TMath::ATan2(py, px);
-	
-	Int_t ibin;
-	Double_t ref;
-	if (fResPt) {
-		ibin = fResPt->FindBin(pt);
-		ref = (Double_t)fResPt->GetBinContent(ibin);
-		pt *= 1.0 + ref;
-	}
-	if (fResLambda) {
-		ibin = fResLambda->FindBin(pt);
-		ref = (Double_t)fResLambda->GetBinContent(ibin);
-		lambda *= 1.0 + ref;
-	}
-	if (fResPhi) {
-		ibin = fResPhi->FindBin(pt);
-		ref = (Double_t)fResPhi->GetBinContent(ibin);
-		phi *= 1.0 + ref;
-	}
-	
-	px = pt * TMath::Cos(phi);
-	py = pt * TMath::Sin(phi);
-	pz = pt * TMath::Tan(lambda);
 }
 //--------------------------------------------------------------------------------------------------------
 AliPID::EParticleType AliRsnReader::FindType(Int_t pdg)
