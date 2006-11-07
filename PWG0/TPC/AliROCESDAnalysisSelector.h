@@ -5,8 +5,10 @@
 
 #include "AliSelector.h"
 
+//#include "TPC/AliTPCClusterHistograms.h"
+
+class AliTPCClusterHistograms;
 class AliESDfriend;
-class TH2F;
 
 // this is an empty selector that can be used to create an analysis
 
@@ -23,8 +25,8 @@ class AliROCESDAnalysisSelector : public AliSelector {
 
  protected:
     AliESDfriend* fESDfriend;
-    
-    TH2F* fhQmaxVsRow;
+
+    AliTPCClusterHistograms* fClusterHistograms;
 
  private:
     AliROCESDAnalysisSelector(const AliROCESDAnalysisSelector&);

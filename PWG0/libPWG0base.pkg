@@ -3,6 +3,7 @@
 HDRS = dNdEta/dNdEtaAnalysis.h \
       dNdEta/AlidNdEtaCorrection.h \
       esdTrackCuts/AliESDtrackCuts.h \
+      TPC/AliTPCClusterHistograms.h \
       AliCorrectionMatrix.h \
       AliCorrectionMatrix2D.h \
       AliCorrectionMatrix3D.h \

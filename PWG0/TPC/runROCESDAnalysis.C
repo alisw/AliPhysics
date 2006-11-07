@@ -13,7 +13,7 @@ void runROCESDAnalysis(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDeb
   if (aProof)
     connectProof(proofServer);
 
-  TString libraries("libEG;libGeom;libESD");
+  TString libraries("libEG;libGeom;libESD;libPWG0base");
   TString packages;
 
   if (!prepareQuery(libraries, packages, 2))

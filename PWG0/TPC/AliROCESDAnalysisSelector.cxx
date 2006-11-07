@@ -44,18 +44,18 @@
 #include <../TPC/AliTPCclusterMI.h>
 #include <../TPC/AliTPCseed.h>
 
-#include <TH2F.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TCanvas.h>
-#include <TProfile.h>
+
+#include "TPC/AliTPCClusterHistograms.h"
 
 ClassImp(AliROCESDAnalysisSelector)
 
 AliROCESDAnalysisSelector::AliROCESDAnalysisSelector() :
   AliSelector(),
   fESDfriend(0),
-  fhQmaxVsRow(0)
+  fClusterHistograms(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -67,6 +67,12 @@ AliROCESDAnalysisSelector::~AliROCESDAnalysisSelector()
   //
   // Destructor
   //
+
+  if (fClusterHistograms) {
+    delete fClusterHistograms;
+    fClusterHistograms = 0;    
+  }
+
 }
 
 void AliROCESDAnalysisSelector::SlaveBegin(TTree* tree)
@@ -74,8 +80,9 @@ void AliROCESDAnalysisSelector::SlaveBegin(TTree* tree)
   //
   
   AliSelector::SlaveBegin(tree);
-  
-  fhQmaxVsRow = new TH2F("QmaxVsRow", "Qmax vs. pad row;Pad row;Qmax", 91, -0.5, 90, 201, -0.5, 200.5);
+
+  fClusterHistograms = new AliTPCClusterHistograms("test","test");
+
 } 
 
 void AliROCESDAnalysisSelector::Init(TTree *tree)
@@ -163,7 +170,7 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
       if (cluster->GetDetector() != 5)
         continue;
       
-      fhQmaxVsRow->Fill(cluster->GetRow(), cluster->GetMax());
+      fClusterHistograms->FillCluster(cluster);
     }
   }
    
@@ -174,26 +181,15 @@ void AliROCESDAnalysisSelector::SlaveTerminate()
 {
   //
   
-  fOutput->Add(fhQmaxVsRow);
+  fOutput->Add(fClusterHistograms);
 } 
 
 void AliROCESDAnalysisSelector::Terminate()
 {
   //
-  
-  fhQmaxVsRow = dynamic_cast<TH2F*> (fOutput->FindObject("QmaxVsRow"));
-  if (!fhQmaxVsRow)
-    return;
-
-  new TCanvas;
-  fhQmaxVsRow->DrawCopy("COLZ");
-    
-  new TCanvas;
-  TProfile* profile = fhQmaxVsRow->ProfileX("fhQmaxVsRowProfile");
-  profile->DrawCopy();
     
   TFile* file = TFile::Open("rocESD.root", "RECREATE");
-  fhQmaxVsRow->Write();
-  profile->Write();
+  
+  fClusterHistograms->SaveHistograms();
   file->Close();
 } 
