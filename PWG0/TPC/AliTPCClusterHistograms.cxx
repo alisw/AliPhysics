@@ -44,16 +44,18 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(const Char_t* name, const Char_
 {
   // constructor initializing tnamed
 
+  #define BINNING_Y 100, -50, 50
+
   fhQmaxVsRow  = new TH2F("QmaxVsPadRow", "Qmax vs. pad row;Pad row;Qmax", 91, -0.5, 90.5, 301, -0.5, 300.5);
   fhQtotVsRow  = new TH2F("QtotVsPadRow", "Qtot vs. pad row;Pad row;Qtot", 91, -0.5, 90.5, 100,  0,  1000);
   
   fhSigmaYVsRow = new TH2F("SigmaYVsPadRow", "Sigma Y vs. pad row;Pad row;#sigma_{Y}", 91, -0.5, 90.5, 100,  0,  0.5);
   fhSigmaZVsRow = new TH2F("SigmaZVsPadRow", "Sigma Z vs. pad row;Pad row;#sigma_{Z}", 91, -0.5, 90.5, 100,  0,  0.5);
   
-  fhQmaxProfileYVsRow = new TProfile2D("QmaxMeanYVsPadRow","Mean Qmax, y vs pad row;Pad row;y",91,-0.5,90.5,100,-30,30);
-  fhQtotProfileYVsRow = new TProfile2D("QtotMeanYVsPadRow","Mean Qtot, y vs pad row;Pad row;y",91,-0.5,90.5,100,-30,30);
-  fhSigmaYProfileYVsRow = new TProfile2D("SigmaYMeanYVsPadRow","Mean Sigma y, x vs pad row;Pad row;y",91,-0.5,90.5,100,-30,30);
-  fhSigmaZProfileYVsRow = new TProfile2D("SigmaZMeanYVsPadRow","Mean Sigma y, x vs pad row;Pad row;y",91,-0.5,90.5,100,-30,30);
+  fhQmaxProfileYVsRow = new TProfile2D("QmaxMeanYVsPadRow","Mean Qmax, y vs pad row;Pad row;y",91,-0.5,90.5, BINNING_Y);
+  fhQtotProfileYVsRow = new TProfile2D("QtotMeanYVsPadRow","Mean Qtot, y vs pad row;Pad row;y",91,-0.5,90.5, BINNING_Y);
+  fhSigmaYProfileYVsRow = new TProfile2D("SigmaYMeanYVsPadRow","Mean Sigma y, x vs pad row;Pad row;y",91,-0.5,90.5, BINNING_Y);
+  fhSigmaZProfileYVsRow = new TProfile2D("SigmaZMeanYVsPadRow","Mean Sigma y, x vs pad row;Pad row;y",91,-0.5,90.5, BINNING_Y);
 
 }
 

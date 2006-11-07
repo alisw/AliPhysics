@@ -5,15 +5,17 @@
 
 #include "AliSelector.h"
 
-//#include "TPC/AliTPCClusterHistograms.h"
-
 class AliTPCClusterHistograms;
 class AliESDfriend;
 
-// this is an empty selector that can be used to create an analysis
+// 
+// TODO explain this
+//
 
 class AliROCESDAnalysisSelector : public AliSelector {
   public:
+    enum { kTPCSectors = 72 };
+  
     AliROCESDAnalysisSelector();
     virtual ~AliROCESDAnalysisSelector();
 
@@ -26,7 +28,7 @@ class AliROCESDAnalysisSelector : public AliSelector {
  protected:
     AliESDfriend* fESDfriend;
 
-    AliTPCClusterHistograms* fClusterHistograms;
+    AliTPCClusterHistograms* fClusterHistograms[kTPCSectors];
 
  private:
     AliROCESDAnalysisSelector(const AliROCESDAnalysisSelector&);
