@@ -54,12 +54,14 @@ ClassImp(AliROCESDAnalysisSelector)
 
 AliROCESDAnalysisSelector::AliROCESDAnalysisSelector() :
   AliSelector(),
-  fESDfriend(0),
-  fClusterHistograms(0)
+  fESDfriend(0)
 {
   //
   // Constructor. Initialization of pointers
   //
+  
+  for (Int_t i=0; i<kTPCSectors; i++)
+    fClusterHistograms[i] = 0;
 }
 
 AliROCESDAnalysisSelector::~AliROCESDAnalysisSelector()
@@ -67,12 +69,6 @@ AliROCESDAnalysisSelector::~AliROCESDAnalysisSelector()
   //
   // Destructor
   //
-
-  if (fClusterHistograms) {
-    delete fClusterHistograms;
-    fClusterHistograms = 0;    
-  }
-
 }
 
 void AliROCESDAnalysisSelector::SlaveBegin(TTree* tree)
@@ -80,9 +76,6 @@ void AliROCESDAnalysisSelector::SlaveBegin(TTree* tree)
   //
   
   AliSelector::SlaveBegin(tree);
-
-  fClusterHistograms = new AliTPCClusterHistograms("test","test");
-
 } 
 
 void AliROCESDAnalysisSelector::Init(TTree *tree)
@@ -132,6 +125,8 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
 
   Int_t nTracks = fESD->GetNumberOfTracks();
   
+  Int_t nSkippedSeeds = 0;
+  
   // loop over esd tracks
   for (Int_t t=0; t<nTracks; t++)
   {
@@ -152,7 +147,8 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
     const AliTPCseed* seed = dynamic_cast<const AliTPCseed*> (friendtrack->GetCalibObject(0));
     if (!seed)
     {
-      AliDebug(AliLog::kError, Form("ERROR: Could not retrieve seed of track %d.", t));
+      AliDebug(AliLog::kDebug, Form("ERROR: Could not retrieve seed of track %d.", t));
+      nSkippedSeeds++;
       continue;
     }
     
@@ -167,12 +163,28 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
       
       //AliDebug(AliLog::kDebug, Form("We found a cluster from sector %d", cluster->GetDetector()));
 
-      if (cluster->GetDetector() != 5)
-        continue;
+      Int_t detector = cluster->GetDetector();
       
-      fClusterHistograms->FillCluster(cluster);
+      if (detector < 0 || detector >= kTPCSectors)
+      {
+        AliDebug(AliLog::kDebug, Form("We found a cluster from invalid sector %d", detector));
+        continue;
+      }
+      
+      if (!fClusterHistograms[detector])
+      {
+        TString title;
+        title.Form("sector_%d", detector); 
+        // TODO claus will put a nice title here
+        fClusterHistograms[detector] = new AliTPCClusterHistograms(Form("sector_%d", detector), title);
+      }
+      
+      fClusterHistograms[detector]->FillCluster(cluster);
     }
   }
+  
+  if (nSkippedSeeds > 0)
+    printf("WARNING: The seed was not found for %d out of %d tracks.\n", nSkippedSeeds, nTracks);
    
   return kTRUE;
 }
@@ -181,15 +193,20 @@ void AliROCESDAnalysisSelector::SlaveTerminate()
 {
   //
   
-  fOutput->Add(fClusterHistograms);
+  for (Int_t i=0; i<kTPCSectors; i++)
+    if (fClusterHistograms[i])
+        fOutput->Add(fClusterHistograms[i]);
 } 
 
 void AliROCESDAnalysisSelector::Terminate()
 {
-  //
+  // TODO read from output list for PROOF
     
   TFile* file = TFile::Open("rocESD.root", "RECREATE");
   
-  fClusterHistograms->SaveHistograms();
+  for (Int_t i=0; i<kTPCSectors; i++)
+    if (fClusterHistograms[i])
+      fClusterHistograms[i]->SaveHistograms();
+
   file->Close();
 } 
