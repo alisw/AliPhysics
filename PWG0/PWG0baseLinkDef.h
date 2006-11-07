@@ -11,6 +11,8 @@
 #pragma link C++ class dNdEtaAnalysis+;
 #pragma link C++ class AlidNdEtaCorrection+;
 
+#pragma link C++ class AliTPCClusterHistograms+;
+
 #pragma link C++ class AliESDtrackCuts+;
 
 #pragma link C++ class AliCorrectionMatrix+;
@@ -18,5 +20,7 @@
 #pragma link C++ class AliCorrectionMatrix3D+;
 
 #pragma link C++ class AliPWG0Helper+;
+
+
 
 #endif
