@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
  
 //---------------------------------------------------------------------
 // UA1 Cone Algorithm Jet finder
@@ -36,12 +37,12 @@ ClassImp(AliUA1JetFinderV1)
 
 ////////////////////////////////////////////////////////////////////////
 
-AliUA1JetFinderV1::AliUA1JetFinderV1():
-  fHeader(0x0),
-  fLego(0x0)
-{
-  // Default constructor
+AliUA1JetFinderV1::AliUA1JetFinderV1()
 
+{
+  // Constructor
+  fHeader = 0x0;
+  fLego   = 0x0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -126,7 +127,7 @@ void AliUA1JetFinderV1::FindJets()
      nJets = 0;
      nj = 0;
      // reset particles-jet array in memory
-     memset(injet,0,sizeof(Int_t)*nIn);
+     memset(injet,-1,sizeof(Int_t)*nIn);
      //run cone algorithm finder
      RunAlgoritm(etbgTotal,dEtTotal,nJets,etJet,etaJet,phiJet,etallJet,ncellsJet);
      //run background subtraction
@@ -156,7 +157,9 @@ void AliUA1JetFinderV1::FindJets()
   Int_t* idxjets = new Int_t[nj];
   Int_t nselectj = 0;
   for(Int_t kj=0; kj<nj; kj++){
-     if(etJet[kj] > fHeader->GetMinJetEt()){ // check if et jets > et min
+     if ((etaJet[kj] > (fHeader->GetJetEtaMax())) ||
+          (etaJet[kj] < (fHeader->GetJetEtaMin())) ||
+          (etJet[kj] < fHeader->GetMinJetEt())) continue; // acceptance eta range and etmin
       Float_t px, py,pz,en; // convert to 4-vector
       px = etJet[kj] * TMath::Cos(phiJet[kj]);
       py = etJet[kj] * TMath::Sin(phiJet[kj]);
@@ -165,18 +168,29 @@ void AliUA1JetFinderV1::FindJets()
       fJets->AddJet(px, py, pz, en);
       idxjets[nselectj] = kj;
       nselectj++;
-     }
   }
   //add signal percentage and total signal  in AliJets for analysis tool
   Float_t* percentage  = new Float_t[nselectj];
   Int_t* ncells      = new Int_t[nselectj];
   Int_t* mult        = new Int_t[nselectj];
-
   for(Int_t i = 0; i< nselectj; i++){
      percentage[i] = etsigJet[idxjets[i]]/etJet[idxjets[i]];
      ncells[i] = ncellsJet[idxjets[i]];
      mult[i] = multJet[idxjets[i]];
   }
+   //add particle-injet relationship ///
+   for(Int_t bj = 0; bj < nIn; bj++){
+       if(injet[bj] == -1) continue; //background particle
+       Int_t bflag = 0;
+       for(Int_t ci = 0; ci< nselectj; ci++){
+           if(injet[bj] == idxjets[ci]){
+              injet[bj]= ci;
+              bflag++;
+              break;
+           }
+       }
+       if(bflag == 0) injet[bj] = -1; // set as background particle
+   }
   fJets->SetNCells(ncells);
   fJets->SetPtFromSignal(percentage);
   fJets->SetMultiplicities(mult);
@@ -376,10 +390,7 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
             }
         }
         //store tmp jet info !!!
-        // reject tmp outside acceptable eta range
-       if ((eta < (fHeader->GetJetEtaMax())) &&
-           (eta > (fHeader->GetJetEtaMin())) &&
-           (etbmax < etcmin) ){
+       if(etbmax < etcmin) {
              etaAlgoJet[nJets] = eta;
              phiAlgoJet[nJets] = phi;
              etAlgoJet[nJets] = etCone;
@@ -421,7 +432,7 @@ void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
   Float_t etIn[30];
   Float_t etOut = 0;
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
-     if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
+     // if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
      for(Int_t ijet=0; ijet<nJ; ijet++){
          Float_t deta = etaT[jpart] - etaJet[ijet];
 	      Float_t dphi = phiT[jpart] - phiJet[ijet];
@@ -429,14 +440,17 @@ void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
 	      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
 	      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
          if(dr <= rc){ // particles inside this cone
-             etIn[ijet] += ptT[jpart];
-             if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet]+= ptT[jpart];
              multJet[ijet]++;
              injet[jpart] = ijet;
+             if((fReader->GetCutFlag(jpart)) == 1){ // pt cut
+                etIn[ijet] += ptT[jpart];
+                if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet]+= ptT[jpart];
+             }
              break;
          }
      }// end jets loop
-     if(injet[jpart] == 0) etOut += ptT[jpart]; // particle outside cones
+     if(injet[jpart] == -1 && fReader->GetSignalFlag(jpart) == 1)
+        etOut += ptT[jpart]; // particle outside cones and pt cut
   } //end particle loop
 
   //estimate jets and background areas
@@ -487,7 +501,7 @@ void AliUA1JetFinderV1::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotal
   Float_t etIn[30];
 
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
-     if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
+     //if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
      for(Int_t ijet=0; ijet<nJ; ijet++){
          Float_t deta = etaT[jpart] - etaJet[ijet];
 	      Float_t dphi = phiT[jpart] - phiJet[ijet];
@@ -495,10 +509,12 @@ void AliUA1JetFinderV1::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotal
 	      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
 	      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
          if(dr <= rc){ // particles inside this cone
-             etIn[ijet]+= ptT[jpart];
-             if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
              multJet[ijet]++;
              injet[jpart] = ijet;
+             if((fReader->GetCutFlag(jpart)) == 1){ // pt cut
+                etIn[ijet]+= ptT[jpart];
+                if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
+             }
              break;
          }
      }// end jets loop
@@ -562,22 +578,24 @@ void AliUA1JetFinderV1::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTota
 
    //fill energies
    for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
-     if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
      for(Int_t ijet=0; ijet<nJ; ijet++){  // loop for all jets
          Float_t deta = etaT[jpart] - etaJet[ijet];
-	      Float_t dphi = phiT[jpart] - phiJet[ijet];
+	 Float_t dphi = phiT[jpart] - phiJet[ijet];
          if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
-	      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
-	      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+	 if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+	 Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
          if(dr <= rc){ // particles inside this cone
-             hEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone
-             multJet[ijet]++;
-             if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
              injet[jpart] = ijet;
+             multJet[ijet]++;
+             if((fReader->GetCutFlag(jpart)) == 1){// pt cut
+                hEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone
+                if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
+             }
              break;
          }
      }// end jets loop
-     if(injet[jpart] == 0) hEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
+     if(injet[jpart] == -1  && fReader->GetSignalFlag(jpart) == 1)
+        hEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
   } //end particle loop
 
    //calc areas
@@ -679,7 +697,7 @@ void AliUA1JetFinderV1::SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& etbgTot
 
    //fill energies
    for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
-     if((fReader->GetCutFlag(jpart)) != 1) continue;
+     //if((fReader->GetCutFlag(jpart)) != 1) continue;
      for(Int_t ijet=0; ijet<nJ; ijet++){  // loop for all jets
          Float_t deta = etaT[jpart] - etaJet[ijet];
 	      Float_t dphi = phiT[jpart] - phiJet[ijet];
@@ -687,14 +705,16 @@ void AliUA1JetFinderV1::SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& etbgTot
 	      if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
 	      Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
          if(dr <= rc){ // particles inside this cone
-            hEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone and pt cut
-            if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
             multJet[ijet]++;
             injet[jpart] = ijet;
+            if((fReader->GetCutFlag(jpart)) == 1){ //pt cut
+               hEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone and pt cut
+               if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
+            }
             break;
          }
      }// end jets loop
-     if(injet[jpart] == 0) hEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
+     if(injet[jpart] == -1) hEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
   } //end particle loop
 
    //calc areas
