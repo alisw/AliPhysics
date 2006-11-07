@@ -402,13 +402,9 @@ void AliPHOSGetter::Event(AliRawReader *rawReader, const char* opt, Bool_t isOld
   // Reads the raw event from rawReader
   // isOldRCUFormat defines whenever to assume
   // the old RCU format or not
-
-  AliRunLoader * rl = AliRunLoader::GetRunLoader(PhosLoader()->GetTitle());
   
   if( strstr(opt,"W")  ){
-    rawReader->NextEvent(); 
-    Int_t iEvent = rl->GetEventNumber();
-    rl->GetEvent(iEvent);
+    rawReader->NextEvent();
     ReadRaw(rawReader,isOldRCUFormat) ;
   }    
  

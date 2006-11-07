@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.98  2006/10/27 17:14:27  kharlov
+ * Introduce AliDebug and AliLog (B.Polichtchouk)
+ *
  * Revision 1.97  2006/08/29 11:41:19  kharlov
  * Missing implementation of ctors and = operator are added
  *
@@ -116,6 +119,7 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
+#include "AliRunLoader.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSClusterizerv1.h"
@@ -281,6 +285,8 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     if (fRawReader == 0)
       gime->Event(ievent    ,"D"); // Read digits from simulated data
     else {
+      AliRunLoader * rl = AliRunLoader::GetRunLoader(gime->PhosLoader()->GetTitle());
+      rl->GetEvent(ievent);
       gime->Event(fRawReader,"W",fIsOldRCUFormat); // Read digits from raw data
     }
     fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;
