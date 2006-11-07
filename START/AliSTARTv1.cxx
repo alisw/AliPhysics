@@ -38,6 +38,9 @@
 #include <TTUBE.h>
 #include <TVirtualMC.h>
 #include "TGeoManager.h"
+#include "TGeoPgon.h"
+#include "TGeoTube.h"
+#include "TGeoCompositeShape.h"
 
 #include "AliLog.h"
 #include "AliMagF.h"
@@ -218,7 +221,7 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
     gMC->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
     gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetC+pstartR[3],idrotm[901],"ONLY");
-    gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetA+pstart[2],0,"ONLY");
+    // gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetA+pstart[2],0,"ONLY");
 
 //START interior
    gMC->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
@@ -235,44 +238,48 @@ void AliSTARTv1::CreateGeometry()
    
  
 
-   //non-absorber side support  !!!!!!!!
+   //non-absorber side support  and T0A !!!!!!!!
     
-   Float_t ppconA[20];
-    ppconA[0]  =   0;
-    ppconA[1]  = 360;
-    ppconA[2]  =  4;
-//  1: 
-    ppconA[3]  =  0; // 12.55/2;
-    ppconA[4]  =   4.1;
-    ppconA[5]  =   5.5;
+    TGeoPgon * supPgon = new TGeoPgon("supPgon",0.,360.,360,4);
+    supPgon->DefineSection(0, 0, 4.1, 5.5);
+    supPgon->DefineSection(1, 10.5 , 4.1, 5.5);
+    supPgon->DefineSection(2, 10.5 , 4.1, 4.9);
+    supPgon->DefineSection(3, 12.5 , 4.1, 4.9);
+    TGeoTranslation *trPgon = new TGeoTranslation("trPgon",0,0,0);
+    trPgon->RegisterYourself();
+ 
+    TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("OSTL");//empty segment
+    TGeoVolume *ins = gGeoManager->GetVolume("0INS");
 
-//  2: 
-    ppconA[6]  =   ppconA[3] + 10.5; 
-    ppconA[7]  =   4.1;
-    ppconA[8]  =   5.5;
-   
-//  3: 
-    ppconA[9]  =   ppconA[3] + 10.5; 
-    ppconA[10]  =   4.1;
-    ppconA[11]  =   4.9;
-   
- //  4: 
-    ppconA[12]  =   ppconA[9] + 2.; 
-    ppconA[13]  =   4.1;
-    ppconA[14]  =   4.9;
+    Double_t phimin = TMath::ACos((16-4.8)/16.) * (180 / TMath::Pi()) ;
+    //  TGeoTubeSeg *hole = new TGeoTubeSeg("hole", 0, 1.6, 0, -phimin+90, phimin+90);
+    TGeoTube*hole = new TGeoTube("hole", 0, 1.61, 6.5);
+    TGeoTranslation *tr [12];
+    Float_t angle  = 2 * TMath::Pi() / 12;
+    Char_t nameTr[4];
+    for (Int_t itr=0; itr<12; itr++) {
+      sprintf (nameTr,"tr%i",itr+1);
+      x = 6.5 * TMath::Sin(itr * angle);
+      y = 6.5 * TMath::Cos(itr * angle);
+      tr[itr] = new TGeoTranslation(nameTr,x,y,6.5);
+      tr[itr]->RegisterYourself();
+       stlin->AddNode(ins,itr+13,tr[itr]);
+    }
+    TGeoCompositeShape *supsh = new TGeoCompositeShape("supsh","supPgon:trPgon-(hole:tr1+hole:tr2+hole:tr3+hole:tr4+hole:tr5+hole:tr6+hole:tr7+hole:tr8+hole:tr9+hole:tr10+hole:tr11+hole:tr12)");
+  
+    TGeoMedium *medal = gGeoManager->GetMedium("START_Aluminium$");
+    TGeoVolume *supA = new TGeoVolume("0SUA",supsh,medal);
+    stlin->AddNode(supA,1,new TGeoTranslation(0,0,0));
+ 
+    TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
+    alice->AddNode(stlin,1,new TGeoTranslation(0,0, zdetA ));
+            
+    // T0A finished
 
-    gMC->Gsvolu("0SUA", "PCON", idtmed[kAir], ppconA,15);
-
-     z =  - pstart[2];
-    gMC->Gspos("0SUA",1,"0STL",0.,0.,z,0,"MANY");
-    //!!!!!!!!!!!!!!!!!!!!
-
-             
+    //T0C 
 // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetC);
-  Float_t angle  = 2 * TMath::Pi() / 12;
   Float_t phi[3];
-    
    for (is=0; is<12; is++)
       {  
 
@@ -290,10 +297,8 @@ void AliSTARTv1::CreateGeometry()
 		   theta,       phi[2]);  
 	z=-pstart[2]+pinstart[2]+0.2;
 	gMC->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
-	gMC->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "MANY"); //!!!!!!
-   }	
-   
-      
+  }	
+     
    x=0;
    y=0;
     z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
@@ -328,7 +333,7 @@ void AliSTARTv1::CreateGeometry()
    z +=psteel[2]+pcer[2];
    gMC->Gspos("0STE",1,"0PMT",0,0,z,0,"ONLY");
     
-   //Support  left side
+   //Support absorber (C) side
    z=-pstart[2]+psupport1[2]+0.1;
    gMC->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
    gMC->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
@@ -418,9 +423,9 @@ void AliSTARTv1::AddAlignableVolumes() const
   for (Int_t imod=0; imod<24; imod++)
     {
       if (imod < 12) 
-	{volPath  = vpC; sn="T0/C/PMT";}
+	{volPath  = vpC; sn="START/C/PMT";}
       else  
-	{volPath  = vpA; sn="T0/A/PMT";}
+	{volPath  = vpA; sn="START/A/PMT";}
       volPath += imod+1;
       volPath += vpInside;
       
@@ -432,10 +437,10 @@ void AliSTARTv1::AddAlignableVolumes() const
       AliDebug(2,Form("volPath=%s\n",volPath.Data()));
       AliDebug(2,Form("symName=%s\n",symName.Data()));
       AliDebug(2,"--------------------------------------------");
-      //  gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
-      if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data()))
-	AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", 
-		      symName.Data(),volPath.Data()));
+      gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+      // if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data()))
+      //	AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", 
+      //	      symName.Data(),volPath.Data()));
       
     }
 }   
