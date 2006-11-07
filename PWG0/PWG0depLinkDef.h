@@ -10,4 +10,6 @@
 
 #pragma link C++ class AliPWG0depHelper+;
 
+#pragma link C++ class AliTPCClusterHistograms+;
+
 #endif
