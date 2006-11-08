@@ -160,8 +160,14 @@ void ChainToTextFile(TChain* chain, const char* target)
   ofstream outfile;
   outfile.open(target);
 
-  while ((obj = iter->Next()))
-    outfile << obj->GetTitle() << endl;
+  while ((obj = iter->Next())) {
+    TString fileName(obj->GetTitle());
+    
+    fileName.Remove(fileName.Length()-13);
+
+    cout << fileName.Data() << endl;
+    outfile << fileName.Data() << endl;
+  }
 
   outfile.close();
 
@@ -175,4 +181,46 @@ void LookupWrite(TChain* chain, const char* target)
   chain->Lookup();
 
   ChainToTextFile(chain, target);
+}
+
+
+
+TChain* CreateRawChain(const char* aDataDir, Int_t aRuns = 20) {
+
+  TChain* chain = new TChain("RAW");
+  
+  // ########################################################
+  // get the data dir  
+  Char_t execDir[256];
+  sprintf(execDir,gSystem->pwd());
+  TSystemDirectory* baseDir = new TSystemDirectory(".",aDataDir);
+  TList* fileList           = baseDir->GetListOfFiles();
+  Int_t nFiles              = fileList->GetEntries();
+  // go back to the dir where this script is executed
+  gSystem->cd(execDir);
+
+  // ########################################################
+  // loop over files 
+  Int_t counter = 0;
+  for (Int_t r=0; r<nFiles; r++) {
+    
+    if (counter>aRuns)
+      break;
+    
+    TSystemFile* presentFile = (TSystemFile*)fileList->At(r);
+    if (!presentFile || presentFile->IsDirectory())
+      continue;
+    
+    if (!(TString(presentFile->GetName()).Contains(".root")))
+      continue;
+    
+    counter++;
+    
+    //cout << Form("%s/%s",aDataDir,presentFile->GetName()) << endl;
+    
+    chain->AddFile(Form("%s/%s",aDataDir,presentFile->GetName()));
+  }
+
+
+
 }
