@@ -10,7 +10,8 @@ HDRS = dNdEta/AlidNdEtaCorrectionSelector.h \
        dNdEta/AliMultiplicityMCSelector.h \
        dNdEta/AlidNdEtaSystematicsSelector.h \
        esdTrackCuts/AliTestESDtrackCutsSelector.h \
-       TPC/AliROCESDAnalysisSelector.h
+       TPC/AliROCESDAnalysisSelector.h \
+       TPC/AliROCRawAnalysisSelector.h
 
 SRCS = $(HDRS:.h=.cxx)
 

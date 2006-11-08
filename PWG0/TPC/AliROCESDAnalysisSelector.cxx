@@ -167,19 +167,18 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
 
       Int_t detector = cluster->GetDetector();
       
-      if (detector < 0 || detector >= kTPCSectors)
-      {
-        AliDebug(AliLog::kDebug, Form("We found a cluster from invalid sector %d", detector));
-        continue;
+      if (detector < 0 || detector >= kTPCSectors) {
+	AliDebug(AliLog::kDebug, Form("We found a cluster from invalid sector %d", detector));
+	continue;
       }
-
+      
       // TODO: find a clever way to handle the time      
       //      if (fESD->GetTimeStamp()<1160000000)
       //	continue;
 
       if (!fClusterHistograms[detector])
       {
-        fClusterHistograms[detector] = new AliTPCClusterHistograms(detector),"",fESD->GetTimeStamp(),fESD->GetTimeStamp()+7*60*60);
+        fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",fESD->GetTimeStamp(),fESD->GetTimeStamp()+7*60*60);
       }
       
       fClusterHistograms[detector]->FillCluster(cluster, fESD->GetTimeStamp());
