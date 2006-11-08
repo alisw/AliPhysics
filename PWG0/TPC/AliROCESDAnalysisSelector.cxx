@@ -121,6 +121,8 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
+  //  printf(Form(" event number: %d  ... time stamp: %d \n", fESD->GetEventNumber(), fESD->GetTimeStamp()));
+
   fESD->SetESDfriend(fESDfriend);
 
   Int_t nTracks = fESD->GetNumberOfTracks();
@@ -170,16 +172,17 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
         AliDebug(AliLog::kDebug, Form("We found a cluster from invalid sector %d", detector));
         continue;
       }
-      
+
+      // TODO: find a clever way to handle the time      
+      //      if (fESD->GetTimeStamp()<1160000000)
+      //	continue;
+
       if (!fClusterHistograms[detector])
       {
-        TString title;
-        title.Form("sector_%d", detector); 
-        // TODO claus will put a nice title here
-        fClusterHistograms[detector] = new AliTPCClusterHistograms(Form("sector_%d", detector), title);
+        fClusterHistograms[detector] = new AliTPCClusterHistograms(detector),"",fESD->GetTimeStamp(),fESD->GetTimeStamp()+7*60*60);
       }
       
-      fClusterHistograms[detector]->FillCluster(cluster);
+      fClusterHistograms[detector]->FillCluster(cluster, fESD->GetTimeStamp());
     }
   }
   
@@ -205,8 +208,11 @@ void AliROCESDAnalysisSelector::Terminate()
   TFile* file = TFile::Open("rocESD.root", "RECREATE");
   
   for (Int_t i=0; i<kTPCSectors; i++)
-    if (fClusterHistograms[i])
+    if (fClusterHistograms[i]) {
       fClusterHistograms[i]->SaveHistograms();
-
+      TCanvas* c = fClusterHistograms[i]->DrawHistograms();
+      c->SaveAs(Form("%s.eps",c->GetName()));
+      c->SaveAs(Form("%s.gif",c->GetName()));
+    }
   file->Close();
 } 
