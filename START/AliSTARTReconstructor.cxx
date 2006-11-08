@@ -46,11 +46,10 @@ ClassImp(AliSTARTReconstructor)
   //START raw data-> digits conversion
  // reconstruct time information from raw data
   AliSTARTRawReader myrawreader(rawReader,digitsTree);
-  // myrawreader.NextThing();
-   myrawreader.Next();
-   cout<<" AliSTARTReconstructor::ConvertDigits "<< myrawreader.Next()<<endl;
+  if (!myrawreader.Next())
+    AliDebug(1,Form(" no raw data found!! %i", myrawreader.Next()));
 }
-  void AliSTARTReconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
+void AliSTARTReconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 {
 // START digits reconstruction
 // STARTRecPoint writing 
@@ -142,11 +141,11 @@ ClassImp(AliSTARTReconstructor)
   }
   if(besttimeright !=999999)  frecpoints->SetTimeBestRight(Int_t(besttimeright));
   if( besttimeleft != 999999 ) frecpoints->SetTimeBestLeft(Int_t(besttimeleft));
-  AliDebug(1,Form(" besttimeright %f ps,  besttimeleft %f ps",besttimeright, besttimeleft));
+  AliDebug(1,Form(" besttimeA %f ps,  besttimeC %f ps",besttimeright, besttimeleft));
   Float_t c = 0.0299792; // cm/ps
   Float_t vertex = 0;
   if(besttimeright !=999999 && besttimeleft != 999999 ){
-    timeDiff = besttimeright - besttimeleft;
+    timeDiff = besttimeleft - besttimeright;
     meanTime = (besttimeright + besttimeleft)/2.;
     vertex = c*(timeDiff)/2.; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
@@ -208,6 +207,7 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
     pESD->SetT0(timeStart);        // interaction time 
     pESD->SetT0time(time);         // best TOF on each PMT 
     pESD->SetT0amplitude(amp);     // number of particles(MIPs) on each PMT
+    cout<<" ESD >> "<<Zposition<<" "<<timeStart<<endl;
 
     pStartLoader->UnloadRecPoints();
    
