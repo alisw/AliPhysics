@@ -32,9 +32,7 @@ class AliTrackPoint;
 
 class AliTPCtrackerMI : public AliTracker {
 public:
-  AliTPCtrackerMI():AliTracker(),fkNIS(0),fkNOS(0) {
-    fInnerSec=fOuterSec=0; fSeeds=0; 
-  }
+  AliTPCtrackerMI();
   AliTPCtrackerMI(const AliTPCParam *par); 
   virtual ~AliTPCtrackerMI();
   //
@@ -161,7 +159,15 @@ private:
 //**************** Internal tracker class ********************** 
    class AliTPCSector {
    public:
-     AliTPCSector() { fN=0; fRow = 0; }
+     AliTPCSector():
+       fN(0),
+       fRow(0),
+       fAlpha(0.),
+       fAlphaShift(0.),
+       fPadPitchWidth(0.),
+       fPadPitchLength(0.),
+       f1PadPitchLength(0.),
+       f2PadPitchLength(0.){}
     ~AliTPCSector() { delete[] fRow; }
     AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
     Int_t GetNRows() const { return fN; }

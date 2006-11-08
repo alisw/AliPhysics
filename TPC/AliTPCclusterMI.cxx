@@ -49,6 +49,7 @@ AliTPCclusterMI::AliTPCclusterMI():
 AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) : 
   AliCluster(lab,hit),
   fX(0),
+  fQ(0),
   fType(0),
   fMax(0),
   fUsed(0),

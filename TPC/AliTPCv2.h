@@ -24,7 +24,10 @@
 class AliTPCv2 : public AliTPC {
 
 public:
-  AliTPCv2() {}
+  AliTPCv2():AliTPC(),
+  fIdSens(0),
+  fIDrift(0),
+  fSecOld(0){}
   AliTPCv2(const char *name, const char *title);
   virtual      ~AliTPCv2() {}
   virtual void  CreateGeometry();

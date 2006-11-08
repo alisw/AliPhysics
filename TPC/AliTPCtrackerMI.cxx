@@ -88,7 +88,33 @@ Double_t AliTPCFastMath::FastAsin(Double_t x){
   Int_t index = int(x*10000);
   return -(fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1]);
 }
-
+//__________________________________________________________________
+AliTPCtrackerMI::AliTPCtrackerMI()
+                :AliTracker(),
+		 fkNIS(0),
+		 fInnerSec(0),
+		 fkNOS(0),
+		 fOuterSec(0),
+		 fN(0),
+		 fSectors(0),
+		 fInput(0),
+		 fOutput(0),
+		 fSeedTree(0),
+		 fTreeDebug(0),
+		 fEvent(0),
+		 fDebug(0),
+		 fNewIO(kFALSE),
+		 fNtracks(0),
+		 fSeeds(0),
+		 fIteration(0),
+		 fParam(0),
+		 fDebugStreamer(0)
+{
+  //
+  // default constructor
+  //
+}
+//_____________________________________________________________________
 
 
 
@@ -214,7 +240,25 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
 
 //_____________________________________________________________________________
 AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCParam *par): 
-AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
+AliTracker(), 
+		 fkNIS(par->GetNInnerSector()/2),
+		 fInnerSec(0),
+		 fkNOS(par->GetNOuterSector()/2),
+		 fOuterSec(0),
+		 fN(0),
+		 fSectors(0),
+		 fInput(0),
+		 fOutput(0),
+		 fSeedTree(0),
+		 fTreeDebug(0),
+		 fEvent(0),
+		 fDebug(0),
+		 fNewIO(0),
+		 fNtracks(0),
+		 fSeeds(0),
+		 fIteration(0),
+		 fParam(0),
+		 fDebugStreamer(0)
 {
   //---------------------------------------------------------------------
   // The main TPC tracker constructor
@@ -226,10 +270,6 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
   for (i=0; i<fkNIS; i++) fInnerSec[i].Setup(par,0);
   for (i=0; i<fkNOS; i++) fOuterSec[i].Setup(par,1);
 
-  fN=0;  fSectors=0;
-
-  fSeeds=0;
-  fNtracks = 0;
   fParam = par;  
   Int_t nrowlow = par->GetNRowLow();
   Int_t nrowup = par->GetNRowUp();
@@ -247,26 +287,35 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
     fPadLength[i+nrowlow] = par->GetPadPitchLength(60,i);
     fYMax[i+nrowlow]      = fXRow[i+nrowlow]*TMath::Tan(0.5*par->GetOuterAngle());
   }
-  fSeeds=0;
-  //
-  fInput    = 0;
-  fOutput   = 0;
-  fSeedTree = 0;
-  fTreeDebug =0;
-  fNewIO     =0;
-  fDebug     =0;
-  fEvent     =0;
+
   fDebugStreamer = new TTreeSRedirector("TPCdebug.root");
 }
 //________________________________________________________________________
 AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):
   AliTracker(t),
-  fkNIS(t.fkNIS),
-  fkNOS(t.fkNOS)
+		 fkNIS(t.fkNIS),
+		 fInnerSec(0),
+		 fkNOS(t.fkNOS),
+		 fOuterSec(0),
+		 fN(0),
+		 fSectors(0),
+		 fInput(0),
+		 fOutput(0),
+		 fSeedTree(0),
+		 fTreeDebug(0),
+		 fEvent(0),
+		 fDebug(0),
+		 fNewIO(kFALSE),
+		 fNtracks(0),
+		 fSeeds(0),
+		 fIteration(0),
+		 fParam(0),
+		 fDebugStreamer(0)
 {
   //------------------------------------
   // dummy copy constructor
   //------------------------------------------------------------------
+  fOutput=t.fOutput;
 }
 AliTPCtrackerMI & AliTPCtrackerMI::operator=(const AliTPCtrackerMI& /*r*/){
   //------------------------------
@@ -6422,14 +6471,18 @@ void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
   } 
 }
 
-AliTPCtrackerMI::AliTPCRow::AliTPCRow() {
+AliTPCtrackerMI::AliTPCRow::AliTPCRow():
+  fDeadZone(0.),
+  fClusters1(0),
+  fN1(0),
+  fClusters2(0),
+  fN2(0),
+  fN(0),
+  fX(0.)
+{
   //
   // default constructor
-  fN=0;
-  fN1=0;
-  fN2=0;
-  fClusters1=0;
-  fClusters2=0;
+  //
 }
 
 AliTPCtrackerMI::AliTPCRow::~AliTPCRow(){

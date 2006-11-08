@@ -103,7 +103,52 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
   fAmplitudeHisto = 0;
 }
-
+//______________________________________________________________
+AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
+              :TObject(param),
+  fBins(0),
+  fResBins(0),
+  fLoop(0),
+  fMaxBin(0),
+  fMaxTime(0),
+  fMaxPad(0),
+  fSector(-1),
+  fRow(-1),
+  fSign(0),
+  fRx(0),
+  fPadWidth(0),
+  fPadLength(0),
+  fZWidth(0),
+  fPedSubtraction(kFALSE),
+  fIsOldRCUFormat(kFALSE),
+  fEventHeader(0),
+  fTimeStamp(0),
+  fEventType(0),
+  fInput(0),
+  fOutput(0),
+  fRowCl(0),
+  fRowDig(0),
+  fParam(0),
+  fNcluster(0),
+  fAmplitudeHisto(0),
+  fDebugStreamer(0),
+  fRecoParam(0)
+{
+  //
+  // dummy
+  //
+  fMaxBin = param.fMaxBin;
+}
+//______________________________________________________________
+AliTPCclustererMI & AliTPCclustererMI::operator =(const AliTPCclustererMI & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fMaxBin=param.fMaxBin;
+  return (*this);
+}
+//______________________________________________________________
 AliTPCclustererMI::~AliTPCclustererMI(){
   DumpHistos();
   if (fAmplitudeHisto) delete fAmplitudeHisto;

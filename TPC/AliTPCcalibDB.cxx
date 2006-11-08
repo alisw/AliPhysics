@@ -78,21 +78,19 @@ void AliTPCcalibDB::Terminate()
 
 //_____________________________________________________________________________
 AliTPCcalibDB::AliTPCcalibDB()
+              :TObject(),
+	       fRun(-1),
+	       fPadGainFactor(0),
+	       fPadTime0(0),
+	       fPadPRFWidth(0),
+	       fPadNoise(0),
+	       fPedestals(0),
+	       fParam(0)
 {
   //
   // constructor
   //  
-  fRun = -1;
-      
-  //
-  //
-  //
-  fPadGainFactor = 0;
-  fPadTime0      = 0;
-  fPadPRFWidth   = 0;
-  fPadNoise      = 0;
-  fPedestals     = 0;
-  fParam         =0;
+
   Update();    // temporary
 }
 

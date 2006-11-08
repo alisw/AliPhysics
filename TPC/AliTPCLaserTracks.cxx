@@ -65,17 +65,18 @@
 
 ClassImp(AliTPCLaserTracks)
 
-AliTPCLaserTracks::AliTPCLaserTracks():
+  AliTPCLaserTracks::AliTPCLaserTracks():TObject(),
     fId(-1),
     fSide(-1),
     fRod(-1),
     fBundle(-1),
     fBeam(-1),
-    fX(0),
-    fY(0),
-    fZ(0),
-    fPhi(0),
-    fTheta(0),
+    fX(0.),
+    fY(0.),
+    fZ(0.),
+    fTime(0.),
+    fPhi(0.),
+    fTheta(0.),
     fMaxSize(0),
     fNpoints(0),
     fXarr(0x0),
@@ -89,17 +90,18 @@ AliTPCLaserTracks::AliTPCLaserTracks():
 }
 
 //_______________________________________________________________________
-AliTPCLaserTracks::AliTPCLaserTracks(Int_t npoints):
+AliTPCLaserTracks::AliTPCLaserTracks(Int_t npoints):TObject(),
     fId(-1),
     fSide(-1),
     fRod(-1),
     fBundle(-1),
     fBeam(-1),
-    fX(0),
-    fY(0),
-    fZ(0),
-    fPhi(0),
-    fTheta(0),
+    fX(0.),
+    fY(0.),
+    fZ(0.),
+    fTime(0.),
+    fPhi(0.),
+    fTheta(0.),
     fMaxSize(0),
     fNpoints(0),
     fXarr(0x0),
@@ -112,6 +114,39 @@ AliTPCLaserTracks::AliTPCLaserTracks(Int_t npoints):
     //
     fNpoints = npoints;
     InitPoints();
+}
+//______________________________________________________________________
+AliTPCLaserTracks::AliTPCLaserTracks(const AliTPCLaserTracks &param):TObject(),
+    fId(-1),
+    fSide(-1),
+    fRod(-1),
+    fBundle(-1),
+    fBeam(-1),
+    fX(0.),
+    fY(0.),
+    fZ(0.),
+    fTime(0.),
+    fPhi(0.),
+    fTheta(0.),
+    fMaxSize(0),
+    fNpoints(0),
+    fXarr(0x0),
+    fYarr(0x0),
+    fZarr(0x0)
+{
+  //
+  // dummy
+  //
+  fPhi=param.fPhi;
+}
+//______________________________________________________________________
+AliTPCLaserTracks & AliTPCLaserTracks::operator=(const AliTPCLaserTracks & param)
+{
+  //
+  // assignment operator - dummy
+  //
+  fPhi=param.fPhi;
+  return (*this);
 }
 
 //_______________________________________________________________________

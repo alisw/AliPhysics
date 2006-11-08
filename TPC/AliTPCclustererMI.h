@@ -31,6 +31,8 @@ class  AliRawEventHeaderBase;
 class AliTPCclustererMI : public TObject{
 public:
   AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam = 0);
+  AliTPCclustererMI(const AliTPCclustererMI &param); // copy constructor
+  AliTPCclustererMI &operator = (const AliTPCclustererMI & param); //assignment
   virtual ~AliTPCclustererMI();
   virtual void Digits2Clusters();
   virtual void Digits2Clusters(AliRawReader* rawReader);

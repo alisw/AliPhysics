@@ -49,7 +49,10 @@ ClassImp(AliTPCv2)
  
 //_____________________________________________________________________________
 AliTPCv2::AliTPCv2(const char *name, const char *title) :
-  AliTPC(name, title) 
+  AliTPC(name, title),
+  fIdSens(0),
+  fIDrift(0),
+  fSecOld(0) 
 {
   //
   // Standard constructor for Time Projection Chamber version 2

@@ -24,6 +24,8 @@ public:
     AliTPCLaserTracks();
     AliTPCLaserTracks(Int_t npoints);
     virtual ~AliTPCLaserTracks();
+    AliTPCLaserTracks(const AliTPCLaserTracks &param); // copy constructor
+    AliTPCLaserTracks &operator = (const AliTPCLaserTracks & param);
 
     Int_t GetId()    {return fId;     }
     Int_t GetSide()  {return fSide;   }
