@@ -12,15 +12,15 @@ void MakeZDCFullMisAlignment(){
   Double_t dx=0., dy=2., dz=0.;
   Double_t dpsi=0., dtheta=0., dphi=0.;
 
-  const char *ZDC_N="ALIC_1/ZDC_1/ZNEU_1";
-  const char *ZDC_P="ALIC_1/ZDC_1/ZPRO_1";
+  const char *ZDCn="ZDC/NeutronZDC";
+  const char *ZDCp="ZDC/ProtonZDC";
 
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
 
-  new(alobj[0]) AliAlignObjAngles(ZDC_N, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[1]) AliAlignObjAngles(ZDC_P, volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
+  new(alobj[0]) AliAlignObjAngles(ZDCn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[1]) AliAlignObjAngles(ZDCp, volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
 
   if(!gSystem->Getenv("$TOCDB")){
     // save in file
