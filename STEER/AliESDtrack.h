@@ -279,10 +279,10 @@ protected:
   Double_t fCchi2; // chi2 at the primary vertex
 
 
-  AliExternalTrackParam *fIp; // Track parameters at the inner wall of the TPC
+  AliExternalTrackParam *fIp; // Track parameters at the first measured point (TPC)
 
 
-  AliExternalTrackParam *fOp; // Track parameters at the inner wall of the TRD 
+  AliExternalTrackParam *fOp; // Track parameters at the last measured point (TPC or TRD) 
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
