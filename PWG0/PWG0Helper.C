@@ -56,11 +56,11 @@ Bool_t prepareQuery(TString libraries, TString packages, Int_t useAliRoot)
       if (!str)
         continue;
 
-      if (!EnablePackageLocal(str->String()))
+      /*if (!EnablePackageLocal(str->String()))
       {
         printf("Loading of package %s locally failed\n", str->String().Data());
         return kFALSE;
-      }
+      }*/
 
       if (gProof->UploadPackage(Form("%s.par", str->String().Data())))
       {
@@ -121,17 +121,19 @@ void ProofEnableAliRoot(Int_t aliroot)
   */
 
   const char* location = 0;
+	const char* target = "tgt_linux";
   
   switch (aliroot)
   {
     case 1: location = "/home/alicecaf/ALICE/aliroot-v4-04-Release"; break;
     case 2: location = "/home/alicecaf/ALICE/aliroot-head"; break;
+		case 11: location = "/data1/qfiete/aliroot-head"; target = "tgt_linuxx8664gcc"; break;
     default: return;
   }
 
   gProof->Exec(Form("gSystem->Setenv(\"ALICE_ROOT\", \"%s\")", location), kTRUE);
   gProof->AddIncludePath(Form("%s/include", location));
-  gProof->AddDynamicPath(Form("%s/lib/tgt_linux", location));
+  gProof->AddDynamicPath(Form("%s/lib/%s", location, target));
 
   // load all libraries
   gProof->Exec("gSystem->Load(\"libMinuit\")");
