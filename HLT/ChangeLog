@@ -1,3 +1,28 @@
+2006-11-08
+	- configure adapted to the new directory structure of the HOMER module in
+	  PubSub
+	- TPCLib
+	  - AliHLTTPCPad: occupancy calculation added
+	  - AliHLTTPCClusterFinder bugfix in order to avoid empty cluster data structure and
+	    component dead lock
+	  - AliHLTTPCClusterFinder adapted to use occupancy level for suppression of 
+	    noisy pads
+	  - AliHLTTPCClusterFinderComponent: new parameter 'occupancy-limit' which is effectice
+	    when pp-run option is set
+	  - AliHLTTPCDigitReaderRaw
+	    2 more rawreader modes ( 4, 5) are added by Timm.
+            In Simulated data the RCU trailer word seems to have 2 32 bit words ( but its not
+	    defined like this)
+	    -> mode 4: 2 32 bit words, sorted
+	    -> mode 5: 2 32 bit words, unsorted
+	  - AliHLTTPCSliceTrackerComponent bugfix variable initialisation (by Timm?)
+	  - AliHLTTPCTransform changed N TimeBins to 1024 according to raw TPC data
+	    added automatic calculation of timebin width out of N TimeBins
+	  - OnlineDisplay: intermediate version
+	    - eventID added
+	    - range, all, and one TimeBin selectable
+	    - Front view shows maximum, average, and sum of selected timebins
+	    - zerosupression of raw data added to PadRow, Pad, Front, 3D
 2006-10-12 added the PHOS library to the package
 2006-10-05 extensions in AliHLTTPCDisplay
 	- handling of new include directory structure of the HOMER header files

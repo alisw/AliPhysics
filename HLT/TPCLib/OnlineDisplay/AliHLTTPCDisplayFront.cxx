@@ -32,15 +32,15 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCDigitReaderPacked.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 
 #include "AliHLTTPCDisplayMain.h"
 #include "AliHLTTPCDisplayFront.h"
-
+#include "AliHLTTPCDisplayPad.h"
 #if __GNUC__ >= 3
 using namespace std;
 #endif
+
+#define TESTCODE 0
 
 ClassImp(AliHLTTPCDisplayFront)
 
@@ -49,15 +49,31 @@ AliHLTTPCDisplayFront::AliHLTTPCDisplayFront(AliHLTTPCDisplayMain* display) {
     // constructor
     fDisplay = display;
 
-    fNTimes = AliHLTTPCTransform::GetNTimeBins();
-
+    fNTimes = display->GetNTimeBins();
+    
     fBinY[0] = 0;
     fBinY[1] = AliHLTTPCTransform::GetNRows() - 1;
+#if TESTCODE    
+    fBinX[0] = (-4) * AliHLTTPCTransform::GetNPads(fBinY[1]);      
+    fBinX[1] = (4) * AliHLTTPCTransform::GetNPads(fBinY[1]);
+    Int_t Bins =  (8 * AliHLTTPCTransform::GetNPads(fBinY[1]) ) + 1;
+#else
     fBinX[0] = 0;      
     fBinX[1] = AliHLTTPCTransform::GetNPads(fBinY[1]);
+#endif    
     fTmpEvent = 0;    
+    
+    Int_t fBinningFaktor = 4 ;
+    
 
+
+
+ 
+#if TESTCODE
+    fHistfront = new TH2F("fHistfront","FrontView of selected slice;Pad #;Padrow #",Bins,fBinX[0],fBinX[1],fBinY[1]+1,fBinY[0],fBinY[1]);
+#else
     fHistfront = new TH2F("fHistfront","FrontView of selected slice;Pad #;Padrow #",fBinX[1]+1,fBinX[0],fBinX[1],fBinY[1]+1,fBinY[0],fBinY[1]);
+#endif
 
     fHistfront->SetOption("COLZ");  
     fHistfront->SetTitleSize(0.03);
@@ -88,60 +104,163 @@ void AliHLTTPCDisplayFront::Save(){
 
 //____________________________________________________________________________________________________
 void AliHLTTPCDisplayFront::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
-    // Fill Pad Histogram
+  // Fill Pad Histogram
 
-#if defined(HAVE_TPC_MAPPING)
-    AliHLTTPCDigitReaderRaw digitReader(0);
+  Int_t timeSwitch = fDisplay->GetFrontDataSwitch();
 
-    bool readValue = true;
-    Int_t rowOffset = 0;
+  // --- TEST CODE beginn
+  Int_t fBinning = 8; // == 1/0.125
+  Int_t fBinningFaktor = 4; // binning / 2 because of width half
+
+#if TESTCODE
+    // use sum
+    if (timeSwitch == 0) {
+      for (Int_t row=0; row < AliHLTTPCTransform::GetNRows(); row++){
+
+	Int_t width_half = AliHLTTPCTransform::GetNPads(row) * AliHLTTPCTransform::GetPadLength(row) * fBinningFaktor;
+	Int_t pad_corrected_loop = (Int_t) ( AliHLTTPCTransform::GetPadLength(row) *fBinning );
+
+ 	for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(row); pad++){
+
+	  Int_t pad_corrected = ( pad * AliHLTTPCTransform::GetPadLength(row) * fBinning ) - width_half;
+
+	  UInt_t timeSum = 0;
+	  for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	    timeSum += fDisplay->fRawData[row][pad][timeBin];
+	  } // end time
+	  for (Int_t ii=0;ii < pad_corrected_loop; ii++){
+	    pad_corrected++;
+	    fHistfront->Fill(pad_corrected,row,(Int_t) timeSum);
+	  }
+	} // end pad
+      }  // end row
+    } // end use sum
+
+    return;
+    // --- TEST CODE end
+#endif
+
+  // !!
+  // !!  DO unrolling because of cache effects (avoid cache trashing) !!
+  // !!
+  
+  if ( fDisplay->GetZeroSuppression() ){
+    // use sum
+    if (timeSwitch == 0) {
+      for (Int_t row=0; row < AliHLTTPCTransform::GetNRows(); row++){
+	for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(row); pad++){
+	  UInt_t timeSum = 0;
+	  for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	    timeSum += fDisplay->fRawDataZeroSuppressed[row][pad][timeBin];
+	  } // end time
+	  
+	  fHistfront->Fill(pad,row,(Int_t) timeSum);
+	} // end pad
+      }  // end row
+    } // end use sum
     
-    Int_t timebin = fDisplay->GetTimebin();
-    Bool_t allTimebins = fDisplay->GetAllTimebins();
-    Int_t slice = fDisplay->GetSlicePadRow();
-
-    // Initialize RAW DATA
-    Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
-    Int_t lastRow = AliHLTTPCTransform::GetLastRow(patch);
-
-    // Outer sector, patches 2, 3, 4, 5 -  start counting in patch 2 with row 0
-    if ( patch >= 2 ) rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
-
-    // Initialize block for reading packed data
-    void* tmpdataBlock = (void*) dataBlock;
-    digitReader.InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,slice);
-
-    readValue = digitReader.Next();
-
-    if (!readValue){	
-	LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayFrontRow::Fill","Read first value") << "No value in data block" << ENDLOG;
-	return;
-    }
-
-    // -- Fill Raw Data
-    while ( readValue ){ 
-
-	UShort_t time = digitReader.GetTime();
-
-	// check if all timebins or just one
-	if (allTimebins || time == timebin ) 
-	    fHistfront->Fill(digitReader.GetPad(),(digitReader.GetRow() + rowOffset),digitReader.GetSignal());
+    // use average
+    else if (timeSwitch == 1){
+      for (Int_t row=0; row < AliHLTTPCTransform::GetNRows(); row++){
+	for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(row); pad++){
+	  UInt_t timeSum = 0;
+	  Int_t NTimeBins = 0;
+	  Float_t timeAverage = 0.;
+	  for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	    timeSum += fDisplay->fRawDataZeroSuppressed[row][pad][timeBin];
+	    NTimeBins++;
+	  } // end time
+	  
+	  if (NTimeBins <= 0) 
+	    HLTFatal("Division by Zero - NTimeBins == 0");
+	  else
+	    timeAverage = ((Float_t) timeSum) / ((Float_t) NTimeBins);
+	  
+	  fHistfront->Fill(pad,row, timeAverage);
+	} // end pad
+      }  // end row
+    }// end use average
+    
+    // use maximum
+    else if (timeSwitch == 2){
+      for (Int_t row=0; row < AliHLTTPCTransform::GetNRows(); row++){
+	for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(row); pad++){
+	  UInt_t timeMax = 0;
+	  for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	    UInt_t tmp = fDisplay->fRawDataZeroSuppressed[row][pad][timeBin];
+	    if (tmp > timeMax) timeMax = tmp;
+	  } // end time
 	
-	// read next value
-	readValue = digitReader.Next();
-      
-	//Check where to stop:
-	if(!readValue) break; //No more value
-    } 
-#else //! defined(HAVE_TPC_MAPPING)
-      HLTFatal("DigitReaderRaw not available - check your build");
-#endif //defined(HAVE_TPC_MAPPING)
+	  fHistfront->Fill(pad,row,(Int_t) timeMax);
+	} // end pad
+      }  // end row
+    }// end use maximum
+  }  // end - if ( fDisplay->GetZeroSuppression() ){
+
+  else {
+    // use sum
+    if (timeSwitch == 0) {
+      for (Int_t row=0; row < AliHLTTPCTransform::GetNRows(); row++){
+	for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(row); pad++){
+	  UInt_t timeSum = 0;
+	  for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	    timeSum += fDisplay->fRawData[row][pad][timeBin];
+	  } // end time
+	  
+	  fHistfront->Fill(pad,row,(Int_t) timeSum);
+	} // end pad
+      }  // end row
+    } // end use sum
+    
+    // use average
+    else if (timeSwitch == 1){
+      for (Int_t row=0; row < AliHLTTPCTransform::GetNRows(); row++){
+	for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(row); pad++){
+	  UInt_t timeSum = 0;
+	  Int_t NTimeBins = 0;
+	  Float_t timeAverage = 0.;
+	  for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	    timeSum += fDisplay->fRawData[row][pad][timeBin];
+	    NTimeBins++;
+	  } // end time
+	  
+	  if (NTimeBins <= 0) 
+	    HLTFatal("Division by Zero - NTimeBins == 0");
+	  else
+	    timeAverage = ((Float_t) timeSum) / ((Float_t) NTimeBins);
+	  
+	  fHistfront->Fill(pad,row, timeAverage);
+	} // end pad
+      }  // end row
+    }// end use average
+    
+    // use maximum
+    else if (timeSwitch == 2){
+      for (Int_t row=0; row < AliHLTTPCTransform::GetNRows(); row++){
+	for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(row); pad++){
+	  UInt_t timeMax = 0;
+	  for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	    UInt_t tmp = fDisplay->fRawData[row][pad][timeBin];
+	    if (tmp > timeMax) timeMax = tmp;
+	  } // end time
+	
+	  fHistfront->Fill(pad,row,(Int_t) timeMax);
+	} // end pad
+      }  // end row
+    }// end use maximum
+  } // end - else of  if ( fDisplay->GetZeroSuppression() ){
+
 }
 
 //____________________________________________________________________________________________________
 void AliHLTTPCDisplayFront::Draw(){
     fDisplay->GetCanvasFront()->cd();
     fDisplay->GetCanvasFront()->Clear();
+
+    if (fDisplay->GetSplitFront()){
+      fDisplay->GetCanvasFront()->Divide(1,2);
+      fDisplay->GetCanvasFront()->cd(1);
+    }
 
     Char_t title[256];
     sprintf(title,"FrontView of selected slice%d",fDisplay->GetSlicePadRow());
@@ -161,12 +280,16 @@ void AliHLTTPCDisplayFront::Draw(){
     fHistfront->SetStats(kFALSE);
     fHistfront->Draw("COLZ");
 
+    if (fDisplay->GetSplitFront()){
+      fDisplay->GetCanvasFront()->cd(2);
+      fDisplay->GetPadPointer()->fHistpad2->Draw();
+    }
+
     fDisplay->GetCanvasFront()->Modified();
     fDisplay->GetCanvasFront()->Update();
 
     // Select Pad
-    // fCanvas->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","AliHLTTPCDisplayFront",(void*) fDisplay,"ExecPadEvent(Int_t,Int_t,Int_t,TObject*)");
-
+    fDisplay->GetCanvasFront()->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","AliHLTTPCDisplayMain",(void*) fDisplay,"ExecPadEvent(Int_t,Int_t,Int_t,TObject*)");
     // Keep Zoom
     fDisplay->GetCanvasFront()->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","AliHLTTPCDisplayFront",(void*) this,"ExecEvent(Int_t,Int_t,Int_t,TObject*)");
 }

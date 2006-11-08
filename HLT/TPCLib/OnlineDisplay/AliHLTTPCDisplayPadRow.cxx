@@ -140,6 +140,27 @@ void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	return;
     }
 
+    if ( fDisplay->GetZeroSuppression() ){
+      for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(padRow); pad++){
+	//	for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+
+	  fHistraw->Fill(pad,timeBin,fDisplay->fRawDataZeroSuppressed[padRow][pad][timeBin]);
+	} // end time
+      }  // end pad
+      
+    }  // end - if ( fDisplay->GetZeroSuppression() ){
+
+    else {
+      for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(padRow); pad++){
+	//	for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
+	for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+	  fHistraw->Fill(pad,timeBin,fDisplay->fRawData[padRow][pad][timeBin]);
+	} // end time
+      }  // end pad
+    }  // end - else of if ( fDisplay->GetZeroSuppression() ){
+
+
     // FILL PADROW 3D --- Initialize the colorbins
     if ( fDisplay->Get3DSwitchPadRow() ){
 	for (UInt_t ii=0;ii < 20;ii++){
@@ -191,7 +212,7 @@ void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	    UShort_t time = digitReader.GetTime();
 	    UInt_t charge = digitReader.GetSignal();
 	    Float_t xyz[3];
-	    fHistraw->Fill(pad,time,charge);
+	    //fHistraw->Fill(pad,time,charge);
 
 	    if ( fDisplay->Get3DSwitchPadRow() ) {
 		// Transform raw coordinates to local coordinates
@@ -275,7 +296,7 @@ void AliHLTTPCDisplayPadRow::Draw(){
     fHistraw->Draw("COLZ");
     
     if ( fDisplay->ExistsClusterData() ){
-	cout << "XX" <<  endl;
+      //cout << "XX" <<  endl;
 	fHistrawcl->SetAxisRange(fBinX[0],fBinX[1]);
 	fHistrawcl->SetAxisRange(fBinY[0],fBinY[1],"Y");
 	fHistrawcl->SetStats(kFALSE);

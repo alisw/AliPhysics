@@ -127,6 +127,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
     Int_t rawreadermode =  -1;
     Int_t sigthresh = -1;
+    Float_t occulimit = 1.0;
 
     // Data Format version numbers:
     // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
@@ -192,6 +193,17 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	continue;
       }
 
+      // -- pad occupancy limit
+      if ( !strcmp( argv[i], "occupancy-threshold" ) ) {
+	occulimit = strtof( argv[i+1], &cpErr);
+	if ( *cpErr ) {
+	  HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
+	  return EINVAL;
+	}
+	i+=2;
+	continue;
+      }
+
       Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
       return EINVAL;
 
@@ -222,8 +234,16 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       fReader = new AliHLTTPCDigitReaderUnpacked();
       fClusterFinder->SetReader(fReader);
     }
+
+    // if pp-run use occupancy limit else set to 1. ==> use all 
+    if ( !fClusterDeconv )
+      fClusterFinder->SetOccupancyLimit(occulimit);
+    else 
+      fClusterFinder->SetOccupancyLimit(1.0);
       
     // Variables to setup the Clusterfinder
+    // TODO: this sounds strange and has to be verified; is the cluster finder not working when
+    // fClusterDeconv = false ?
     fClusterDeconv = true;
     fXYClusterError = -1;
     fZClusterError = -1;

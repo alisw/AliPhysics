@@ -14,6 +14,7 @@
 #define TRACKHELIX 0       // use THelix for tracks
 #define TRACKPOLYMARKER 0  // use TPolymarker3D for tracks
 #define FIRSTLASTPOINT 0   // show first / last point of tracks
+#define DEBUG 1
 
 #define DRAWSTEP 0.2
 
@@ -22,6 +23,10 @@
 #define TRACKCOLOR 4
 #define TRACKPOLYMARKERCOLOR 5
 #define TRACKHELIXCOLOR 6
+
+#if defined(HAVE_HOMERREADER) 
+#include "HOMERReader.h"
+#endif // defined(HAVE_HOMERREADER) 
 
 #include "AliHLTTPCDisplay3D.h"
 #include "AliHLTTPCDisplayPadRow.h"
@@ -60,6 +65,7 @@
 
 
 #include "AliHLTTPCDigitReader.h"
+#include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLT_C_Component_WrapperInterface.h"
 
 #include "AliHLTTPCDisplayMain.h"
@@ -474,8 +480,134 @@ void AliHLTTPCDisplay3D::Draw(){
     //--------------------------------------------------------------------------------------------
     // DRAW 3D PadRow
     //--------------------------------------------------------------------------------------------
-    if (fDisplay->Get3DSwitchPadRow() && fDisplay->GetDisplaySlice(fDisplay->GetSlicePadRow())){
-	fDisplay->GetPadRowPointer()->Draw3D();
+    if (fDisplay->ExistsRawData() &&  fDisplay->Get3DSwitchPadRow() && fDisplay->GetDisplaySlice(fDisplay->GetSlicePadRow())){
+
+      // -- only one padrow
+      if ( fDisplay->Get3DSwitchRaw() == 0 ) {
+
+      	fDisplay->GetPadRowPointer()->Draw3D();
+      }
+      // show all padrows 
+      else {
+
+#if defined(HAVE_HOMERREADER) 
+	HOMERReader* reader = (HOMERReader*)fDisplay->fReader;
+
+	char* rawID = "KPWR_LDD";
+	ULong_t blk;
+	blk = reader->FindBlockNdx( rawID, " CPT",0xFFFFFFFF );
+
+	Int_t NRawPoints = 0;
+	TPolyMarker3D* pm = new  TPolyMarker3D( );
+	pm->SetBit(kCanDelete);
+	pm->SetMarkerColor(51); 
+    
+	while ( blk != ~(ULong_t)0 ) {
+	  
+#if DEBUG
+	  printf( "Found raw data block %lu\n", blk );
+#endif
+	  // Check for corrupt data
+	  AliHLTUInt64_t corruptFlag = reader->GetBlockStatusFlags( blk );
+	  if (corruptFlag & 0x00000001) {
+	    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayMain::ReadData","Block status flags") << "Data block is corrupt"<<ENDLOG; 
+	    continue;
+	  }
+
+	  unsigned long rawDataBlock = (unsigned long) reader->GetBlockData( blk );
+	  unsigned long rawDataLen = reader->GetBlockDataLength( blk );
+
+	  ULong_t spec = reader->GetBlockDataSpec( blk );
+	  Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr( spec );
+	  Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );
+#if DEBUG
+	  printf( "Raw data found for slice %u - patch %u\n", slice, patch );
+#endif	
+
+	  // slice should(not) be displayed
+	  if (!fDisplay->GetDisplaySlice(slice)) continue;
+	  
+
+#if defined(HAVE_TPC_MAPPING)
+	  AliHLTTPCDigitReaderRaw digitReader(0);
+
+	  bool readValue = true;
+	  Int_t rowOffset = 0;
+    
+	  // Initialize RAW DATA
+	  Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
+	  Int_t lastRow = AliHLTTPCTransform::GetLastRow(patch);
+	  
+	  // Outer sector, patches 2, 3, 4, 5 -  start counting in patch 2 with row 0
+	  if ( patch >= 2 ) rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
+
+	  // Initialize block for reading packed data
+	  void* tmpDataBlock = (void*) rawDataBlock;
+	  digitReader.InitBlock(tmpDataBlock,rawDataLen,firstRow,lastRow,patch,slice);
+
+	  readValue = digitReader.Next();
+
+	  if (!readValue){	
+	    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayPadRow::Fill","Read first value") << "No value in data block" << ENDLOG;
+	    continue;
+	  }
+
+
+	  //	  blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+	  //	  continue;
+
+	  // Fill 3D Raw Data
+	  while ( readValue ){ 
+	    
+	    Int_t row = digitReader.GetRow() + rowOffset;
+
+	    UChar_t pad = digitReader.GetPad();
+	    UShort_t time = digitReader.GetTime();
+	    UInt_t charge = digitReader.GetSignal();
+	    if ( charge < 50 ) {
+	      // read next value
+	      readValue = digitReader.Next();
+      
+	      if(!readValue) break; //No more value
+	      continue;
+	    }
+	    Float_t xyz[3];
+
+	    // Transform raw coordinates to local coordinates
+	    AliHLTTPCTransform::RawHLT2Global(xyz, slice, row, pad, time);
+
+	    NRawPoints++;
+	    pm->SetNextPoint((Double_t)xyz[0],(Double_t)xyz[1],(Double_t)xyz[2]);
+
+	    //  printf("%u points\n",NRawPoints);
+
+	    // read next value
+	    readValue = digitReader.Next();
+      
+	    if(!readValue) break; //No more value
+	  } // end  while ( readValue ){ 
+
+
+#else //! defined(HAVE_TPC_MAPPING)
+	  HLTFatal("DigitReaderRaw not available - check your build");
+#endif //defined(HAVE_TPC_MAPPING)
+	  
+	  blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+
+	} // end while ( blk != ~(ULong_t)0 ) {
+	pm->Draw(); 
+#else
+    HLTFatal("HOMER reader not available");
+#endif // defined(HAVE_HOMERREADER) 
+
+
+	//////////////////////////////
+
+
+
+
+      } // end show all padrows
+
     }
 
     //--------------------------------------------------------------------------------------------

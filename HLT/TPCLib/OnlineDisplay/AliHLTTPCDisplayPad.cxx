@@ -32,8 +32,6 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCDigitReaderPacked.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 
 #include "AliHLTTPCDisplayMain.h"
 #include "AliHLTTPCDisplayPad.h"
@@ -111,62 +109,46 @@ void AliHLTTPCDisplayPad::Save(){
 
 //____________________________________________________________________________________________________
 void AliHLTTPCDisplayPad::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
-    // Fill Pad Histogram
+  // Fill Pad Histogram
 
-#if defined(HAVE_TPC_MAPPING)    
-    AliHLTTPCDigitReaderRaw digitReader(0);
+  Int_t padRow = fDisplay->GetPadRow();
+  Int_t pad = fDisplay->GetPad();
+  Int_t nextPad = pad + 1;
+  Int_t prevPad = pad - 1;
+  
+  // !!
+  // !!  DO unrolling because of cache effects (avoid cache trashing) !!
+  // !!
 
-    bool readValue = true;
-    Int_t rowOffset = 0;
+  if ( fDisplay->GetZeroSuppression() ){
+    for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+	fHistpad1->Fill( timeBin, fDisplay->fRawDataZeroSuppressed[padRow][prevPad][timeBin] );
+    } // end time
     
-    Int_t slice = fDisplay->GetSlicePadRow();
-    Int_t padRow = fDisplay->GetPadRow();
-    Int_t pad = fDisplay->GetPad();
-
-    // Initialize RAW DATA
-    Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
-    Int_t lastRow = AliHLTTPCTransform::GetLastRow(patch);
-
-    // Outer sector, patches 2, 3, 4, 5 -  start counting in patch 2 with row 0
-    if ( patch >= 2 ) rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
-
-    // Initialize block for reading packed data
-    void* tmpdataBlock = (void*) dataBlock;
-    digitReader.InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,slice);
-
-    readValue = digitReader.Next();
-
-    if (!readValue){	
-	LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayPadRow::Fill","Read first value") << "No value in data block" << ENDLOG;
-	return;
-    }
-
-    // -- Fill Raw Data
-    while ( readValue ){ 
-
-	Int_t row = digitReader.GetRow() + rowOffset;
-
-	// select padrow to fill in histogramm
-	if (row == padRow){    
-	    UChar_t tmppad = digitReader.GetPad();
-	    UShort_t time = digitReader.GetTime();
-	    UInt_t charge = digitReader.GetSignal();
-
-	    if (tmppad == (pad-1) ) fHistpad1->Fill(time,charge);
-	    if (tmppad == pad) fHistpad2->Fill(time,charge);
-	    if (tmppad == (pad+1) ) fHistpad3->Fill(time,charge);
-	}
-	
-	// read next value
-	readValue = digitReader.Next();
-      
-	//Check where to stop:
-	if(!readValue) break; //No more value
-    } 
-#else //! defined(HAVE_TPC_MAPPING)
-      HLTFatal("DigitReaderRaw not available - check your build");
-#endif //defined(HAVE_TPC_MAPPING)
-
+    for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+      fHistpad2->Fill( timeBin, fDisplay->fRawDataZeroSuppressed[padRow][pad][timeBin] );
+    } // end time
+    
+    for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+      fHistpad3->Fill( timeBin, fDisplay->fRawDataZeroSuppressed[padRow][nextPad][timeBin] );
+    } // end time
+    
+  }  // end - if ( fDisplay->GetZeroSuppression() ){
+  
+  else {
+    for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+	fHistpad1->Fill( timeBin, fDisplay->fRawData[padRow][prevPad][timeBin] );
+    } // end time
+    
+    for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+      fHistpad2->Fill( timeBin, fDisplay->fRawData[padRow][pad][timeBin] );
+      } // end time
+    
+    for (Int_t timeBin=0; timeBin <= fDisplay->GetNTimeBins(); timeBin++){
+      fHistpad3->Fill( timeBin, fDisplay->fRawData[padRow][nextPad][timeBin] );
+    } // end time
+    
+  }  // end - else of if ( fDisplay->GetZeroSuppression() ){
 }
 
 //____________________________________________________________________________________________________

@@ -53,6 +53,9 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t fMaxNClusters;   //max. number of clusters
   Float_t fXYErr;        //fixed error in XY
   Float_t fZErr;         //fixed error in Z
+  
+  Float_t fOccupancyLimit; // Occupancy Limit
+
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
@@ -81,6 +84,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetZError(Float_t f) {fZErr=f;}
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
   void SetThreshold(UInt_t i) {fThreshold=i;}
+  void SetOccupancyLimit(Float_t f) {fOccupancyLimit=f;}
   void SetSignalThreshold(Int_t i) {fSignalThreshold=i;}
   void SetMatchWidth(UInt_t i) {fMatch=i;}
   void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  

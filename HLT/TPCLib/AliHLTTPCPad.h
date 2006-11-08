@@ -203,6 +203,22 @@ class AliHLTTPCPad : public AliHLTLogging {
   AliHLTTPCSignal_t GetAverage() const;
 
   /**
+   * Get the occupancy for the pad in fractions of 1
+   * The occupancy is calculated from the number of time bins with non zero data
+   * after zero suppression.
+   * @return occupancy in percent
+   */
+  Float_t GetOccupancy() const;
+
+  /**
+   * Get the occupancy average for the pad in fractions of 1
+   * The occupancy is calculated from the number of time bins with non zero data
+   * after zero suppression and averaged over all events.
+   * @return occupancy in percent
+   */
+  Float_t GetAveragedOccupancy() const;
+
+  /**
    * Get the size (number of time bins) of the pad
    * @return number of bins 
    */

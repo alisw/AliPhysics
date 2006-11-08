@@ -323,8 +323,27 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetRawData(Int_t bin) const
 AliHLTTPCSignal_t AliHLTTPCPad::GetCorrectedData(Int_t bin) const
 {
   AliHLTTPCSignal_t data=GetRawData(bin)-GetBaseLine(bin);
-  if (fThreshold>0) data-=fThreshold;
+  AliHLTTPCSignal_t prev=0;
+  if (bin>1) prev=GetRawData(bin-1)-GetBaseLine(bin-1);
+  AliHLTTPCSignal_t succ=0;
+  if (bin+1<GetSize()) succ=GetRawData(bin+1)-GetBaseLine(bin+1);
+  if (fThreshold>0) {
+    data-=fThreshold;
+    prev-=fThreshold;
+    succ-=fThreshold;
+  }
+ 
+  // case 1:
+  // the signal is below the base-line and threshold
   if (data<0) data=0;
+
+  //case 2:
+  // the neighboring bins are both below base-line/threshold
+  // a real signal is always more than one bin wide because of the shaper 
+  if (prev<=0 && succ<=0) data=0;
+ 
+  // case 3:
+  // the bin is inside the range of ignored bins
   if (bin<fFirstBLBin) data=0;
   //HLTDebug("fReadPos=%d data=%d threshold=%d raw data=%d base line=%d", fReadPos, data, fThreshold, GetRawData(bin), GetBaseLine(bin));
   return data;
@@ -338,8 +357,10 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetBaseLine(Int_t bin) const
     // the average to much
     const AliHLTTPCSignal_t kMaxDifference=15;
     val=fAverage;
+#ifdef KEEP_NOISE
     if ((fAverage-fBLMin)<=kMaxDifference) val=fBLMin;
     else val>kMaxDifference?val-=kMaxDifference:0;
+#endif
   }
   if (val<0) {
     // here we should never get
@@ -354,3 +375,21 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetAverage() const
   return fAverage>0?fAverage:0;
 }
 
+Float_t AliHLTTPCPad::GetOccupancy() const
+{
+  Float_t occupancy=0;
+  if (fpRawData && fNofBins>0) {
+    for (Int_t i=fFirstBLBin; i<fNofBins; i++) {
+      if (GetCorrectedData(i)>0) occupancy+=1;
+    }
+    if (fNofBins-fFirstBLBin>0)
+      occupancy/=fNofBins-fFirstBLBin;
+  }
+  return occupancy;
+}
+
+Float_t AliHLTTPCPad::GetAveragedOccupancy() const
+{
+  // history is not yet implemented
+  return GetOccupancy();
+}

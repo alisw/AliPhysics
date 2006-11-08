@@ -57,7 +57,7 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
   fNTimeBins(0),
   fData(NULL)
 {
-    if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+    if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
       {
 	
 	// get max number of rows
@@ -73,8 +73,8 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
 	// get max number of bins
 	fNTimeBins = AliHLTTPCTransform::GetNTimeBins();
 	
-	HLTDebug("Array Borders ||| MAXPAD=%d ||| MAXROW=%d ||| MAXBIN=%d ||| MAXMUL=%d", 
-		 fNMaxPads, fNMaxRows, fNTimeBins, fNTimeBins*fNMaxRows*fNMaxPads);
+	//	HLTDebug("Array Borders ||| MAXPAD=%d ||| MAXROW=%d ||| MAXBIN=%d ||| MAXMUL=%d", 
+	//	 fNMaxPads, fNMaxRows, fNTimeBins, fNTimeBins*fNMaxRows*fNMaxPads);
 	
 	// init Data array
 	fData = new Int_t[ fNMaxRows*fNMaxPads*fNTimeBins ];
@@ -128,7 +128,7 @@ AliHLTTPCDigitReaderRaw& AliHLTTPCDigitReaderRaw::operator=(const AliHLTTPCDigit
 }
 
 AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw(){
-  if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+  if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       if ( fData )
 	delete [] fData;
@@ -166,7 +166,7 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
     Int_t firstrow=AliHLTTPCTransform::GetFirstRow(patch);
     Int_t lastrow=AliHLTTPCTransform::GetLastRow(patch);
 
-    if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+    if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
       {
 	fCurrentRow = 0;
 	fCurrentPad = 0;
@@ -238,7 +238,7 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
 }
 
 bool AliHLTTPCDigitReaderRaw::Next(){
-  if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+  if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       Bool_t readvalue = kTRUE;
       while (1) {
@@ -273,7 +273,7 @@ bool AliHLTTPCDigitReaderRaw::Next(){
 }
 
 int AliHLTTPCDigitReaderRaw::GetRow(){
-  if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+  if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return (fCurrentRow + fRowOffset);
     }
@@ -281,7 +281,7 @@ int AliHLTTPCDigitReaderRaw::GetRow(){
     return GetRealRow();
 }
 int AliHLTTPCDigitReaderRaw::GetPad(){
-  if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+  if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return fCurrentPad;
     }
@@ -289,7 +289,7 @@ int AliHLTTPCDigitReaderRaw::GetPad(){
     return GetRealPad();
 }
 int AliHLTTPCDigitReaderRaw::GetSignal(){
-  if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+  if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return fData[ fCurrentRow*fNMaxPads*fNTimeBins+ fCurrentPad*fNTimeBins + fCurrentBin ];
     }
@@ -297,7 +297,7 @@ int AliHLTTPCDigitReaderRaw::GetSignal(){
     return GetRealSignal();
 }
 int AliHLTTPCDigitReaderRaw::GetTime(){
-  if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
+  if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return fCurrentBin;
     }
@@ -339,19 +339,22 @@ int AliHLTTPCDigitReaderRaw::GetRealTime(){
     return fBunchTimebinStart-(fWordInBunch-2);
 }
 
-AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetRCUTrailer(){
+AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetRCUTrailer( unsigned offset ){
   if (fBufferSize<=0) return 0;
   unsigned rcuDataBlockLen = GetRCUDataBlockLength(); 
-  return *((AliHLTUInt32_t*)(fBuffer+fBufferSize-rcuDataBlockLen));
+  if ( offset >= rcuDataBlockLen ) return 0;
+  return ((AliHLTUInt32_t*)(fBuffer+fBufferSize-rcuDataBlockLen))[offset];
 }
 
 bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
     {
     if (fBufferSize<=0) return 0;
+    bool first = false;
     if ( !fAltroBlockLengthBytes )
 	{
 	// First block in back linked list (last block in memory)
 	fAltroBlockPositionBytes = fBufferSize-GetRCUDataBlockLength();
+	first = true;
 	}
     else
 	{
@@ -365,7 +368,19 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
 	}
 
       AliHLTUInt64_t altroTrailerWord = GetAltroBlock40BitWord( 0 );
+      // Undefined hack from experience to match fill words appearing in simulated data
+      // Seem to be between 0 and 3 fill words, most likely to bring the number of 40bit words
+      // to a multiple of four / to bring the total number of bytes to a common multiple of 4 and 5.
+      // (RCU sends 40 bit (5 byte) words, DDL uses 32 bit (4 bytes) words.
+      unsigned short tmpCnt=0;
+      //HLTDebug( "Altro trailer word 0: 0x%016LX\n", altroTrailerWord );
+      while ( first && altroTrailerWord==0x000000AAAAAAAAAAULL && tmpCnt++<4 ) // Allow up to 4 fill values
+	{
+	  altroTrailerWord = GetAltroBlock40BitWord( tmpCnt );
+	  //HLTDebug( "Altro trailer word %hu: 0x%016LX\n", tmpCnt, altroTrailerWord );
+	}
 
+      fAltroBlockPositionBytes -= 5*tmpCnt;
       if ( fVerify && ((altroTrailerWord & 0xFFFC000000ULL)!=0xAAA8000000ULL) )
 	{
 	  HLTFatal("Data inconsistency in Altro Block at byte position %#x (%d): Expected 0x2AAA in high 14 bits of altro trailer word; Found %#llx (%#llx)",
@@ -503,6 +518,10 @@ unsigned AliHLTTPCDigitReaderRaw::GetRCUDataBlockLength() const
 	case 2:
 	case 3:
 	    return 12;
+	    break;
+	case 4:
+	case 5:
+	    return 8;
 	    break;
 	default:
 	    return fBufferSize;

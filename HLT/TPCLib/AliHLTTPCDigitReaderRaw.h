@@ -30,6 +30,8 @@
  *  - 1: As 0, but pads/padrows are delivered "as is", without sorting
  *  - 2: As 0, but RCU trailer is 3 32 bit words.
  *  - 3: As 1, but RCU trailer is 3 32 bit words.
+ *  - 4: As 0, but RCU trailer is 2 32 bit words.
+ *  - 5: As 1, but RCU trailer is 2 32 bit words.
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCDigitReaderRaw : public AliHLTTPCDigitReader  {
@@ -104,7 +106,7 @@ public:
     int GetRealTime();
 
   // Low level methods for accessing the data
-    AliHLTUInt32_t GetRCUTrailer();
+    AliHLTUInt32_t GetRCUTrailer( unsigned offset=0 );
     bool NextAltroBlock();
     AliHLTUInt32_t GetAltroBlockHWaddr();
     unsigned GetAltroBlock10BitWordCnt();

@@ -415,6 +415,11 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
     {
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "DoEvent()" );
+    if ( evtData.fBlockCnt<=0 )
+      {
+	Logging( kHLTLogWarning, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "no blocks in event" );
+	return 0;
+      }
     const AliHLTComponent_BlockData* iter = NULL;
     unsigned long ndx;
     AliHLTTPCClusterData* inPtrSP;
@@ -425,14 +430,14 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
     AliHLTUInt32_t vSize = 0;
     UInt_t offset=0, mysize, tSize = 0;
     outBPtr = outputPtr;
-    Int_t slice, patch, row[2];
+    Int_t slice=-1, patch=-1, row[2];
     Int_t minPatch=INT_MAX, maxPatch = 0;
     offset = 0;
     std::vector<Int_t> slices;
     std::vector<Int_t>::iterator slIter, slEnd;
     std::vector<unsigned> sliceCnts;
     std::vector<unsigned>::iterator slCntIter;
-    Int_t vertexSlice=0;
+    Int_t vertexSlice=-1;
 
     // Find min/max rows used in total and find and read out vertex if it is present
     // also determine correct slice number, if multiple slice numbers are present in event
@@ -516,8 +521,14 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	Logging( kHLTLogError, "HLT::TPCSliceTracker::DoEvent", "Multiple slices found in event",
 		 "Using slice %lu.", slice );
 	}
-    else
+    else if ( slices.size()>0 )
+      {
 	slice = *(slices.begin());
+      }
+    else
+      {
+	slice = -1;
+      }
     
     if ( vertexSlice != slice )
 	{

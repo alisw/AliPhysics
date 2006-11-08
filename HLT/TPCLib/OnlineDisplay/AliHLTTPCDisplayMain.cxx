@@ -33,6 +33,8 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDigitReader.h"
+#include "AliHLTTPCDigitReaderRaw.h"
+#include "AliHLTTPCPad.h"
 #include "AliHLT_C_Component_WrapperInterface.h"
 #include "AliHLTTPCLogging.h"
 
@@ -57,102 +59,106 @@ ClassImp(AliHLTTPCDisplayMain)
 
 //____________________________________________________________________________________________________
 AliHLTTPCDisplayMain::AliHLTTPCDisplayMain(void* pt2GUI, void (*pt2Function)(void*, Int_t)) {
-    //constructor
+  //constructor
 
-    // Set B-Field
-    AliHLTTPCTransform::SetBField( 0.8 );
+  // set N of TimeBins
+  fgNTimeBins = 1024;   //  446 or 1024
 
-    //callback handler
-    fPt2Gui = pt2GUI;
-    fPadCallback = pt2Function;
+  //callback handler
+  fPt2Gui = pt2GUI;
+  fPadCallback = pt2Function;
 	
-    fReader = NULL;
-
-    fDisplayCharge = NULL; 
-    fDisplayPadRow = NULL;
-    fDisplayPad = NULL;
-    fDisplay3D = NULL;
-    fDisplayResiduals = NULL;
-    fDisplayFront = NULL;
-
-    fCanvasCharge = NULL;
-    fCanvasPadRow = NULL;
-    fCanvasPad = NULL;
-    fCanvas3D = NULL;
-    fCanvasResiduals = NULL;
-    fCanvasFront = NULL;
-    fCanvasHits_S = NULL;
-    fCanvasQ_Track = NULL;
-    fCanvasQ_S = NULL;
-
-    fConnect = kFALSE;
-
-    fExistsRawData = kFALSE;
-    fExistsClusterData = kFALSE;
-    fExistsTrackData = kFALSE;
-
-    AliHLTTPCTransform::SetBField(0.4);
-
-    memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
-    memset(fNcl, 0, 36*6*sizeof(UInt_t)); 
-
-    fTracks = NULL;
-
-    fTheta = 90.;
-    fPhi = 0.;
-
-    fSwitch3DCluster = kFALSE;
-    fSwitch3DTracks = kFALSE;
-    fSwitch3DPadRow = kFALSE;
-    fSwitch3DGeometry = kTRUE;
+  fReader = NULL;
+  
+  fConnect = kFALSE;
+  fEventID = 0;
 
 
-    // fMinHits = 0;
-    // fPtThreshold = 0.;
+  fDisplayCharge = NULL; 
+  fDisplayPadRow = NULL;
+  fDisplayPad = NULL;
+  fDisplay3D = NULL;
+  fDisplayResiduals = NULL;
+  fDisplayFront = NULL;
 
-    fCutHits = 0;
-    fCutPt = 0.;
-    fCutPsi = 0.;
-    fCutLambda = 0.;
-    fCut_S = 0.;
-    fCutPadrow = 159;
+  fCanvasCharge = NULL;
+  fCanvasPadRow = NULL;
+  fCanvasPad = NULL;
+  fCanvas3D = NULL;
+  fCanvasResiduals = NULL;
+  fCanvasFront = NULL;
+  fCanvasHits_S = NULL;
+  fCanvasQ_Track = NULL;
+  fCanvasQ_S = NULL;
+  fCanvasPadRow_Pad = NULL;
 
-    fNPads = AliHLTTPCTransform::GetNPads(0);
-    fPad = -1;
-    fPadRow = 0;
-    fTimebin = 0;
 
-    fAllTimebins = kTRUE;
-    fSplitPadRow = kFALSE;
+  fExistsRawData = kFALSE;
+  fExistsClusterData = kFALSE;
+  fExistsTrackData = kFALSE;
+
+  memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
+  memset(fNcl, 0, 36*6*sizeof(UInt_t)); 
+
+  fTracks = NULL;
+
+  fZeroSuppression = kTRUE;
+  fNPads = AliHLTTPCTransform::GetNPads(0);
+  fPad = -1;
+  fPadRow = 0;
+  fSlicePadRow = 0; 
+  fSplitPadRow = kFALSE;
+  
+  fFrontDataSwitch = 2;
+  fTimeBinMin = 0;
+  fTimeBinMax = GetNTimeBins() -1;
+  fSplitFront = kFALSE;
     
-    fSlicePadRow = 0; 
-    fSelectTrack = -1;
-    fSelectTrackSlice = 0;
-    fSelectTrackSwitch = kFALSE;
-    fSelectCluster = 0;
+  fSelectTrack = -1;
+  fSelectTrackSlice = 0;
+  fSelectTrackSwitch = kFALSE;
+  
+  fSelectCluster = 0;
 
-    fMinSlice = 0;
-    fMaxSlice = 35;
-    fSlicePair = kFALSE;
+  fMinSlice = 0;
+  fMaxSlice = 35;
+  fSlicePair = kFALSE;
 
-    SetSliceArray();
+  SetSliceArray();
+  
+  fTheta = 90.;
+  fPhi = 0.;
 
-    fBackColor = 1;
-    fLineColor = 0;
-    fKeepView = kTRUE;
+  fBackColor = 1;
+  fLineColor = 0;
+  fKeepView = kTRUE;
 
-    fTrackParam.kappa = 0.;
-    fTrackParam.nHits = 0;
-    fTrackParam.charge = 0;
-    fTrackParam.radius = 0.;
-    fTrackParam.slice = 0;
-    fTrackParam.phi0 = 0.;
-    fTrackParam.psi = 0.;
-    fTrackParam.lambda = 0.;
-    fTrackParam.pt = 0.;
-    fTrackParam.id = 0;
-    fTrackParam.bfield = 0.;
-    fTrackParam.s = 0.;
+  fSwitch3DCluster = kFALSE;
+  fSwitch3DTracks = kFALSE;
+  fSwitch3DPadRow = kFALSE;
+  fSwitch3DGeometry = kTRUE;
+  fSwitch3DRaw = 0;
+
+  fCutHits = 0;
+  fCutPt = 0.;
+  fCutPsi = 0.;
+  fCutLambda = 0.;
+  fCut_S = 0.;
+  fCutPadrow = 159;
+  
+
+  fTrackParam.kappa = 0.;
+  fTrackParam.nHits = 0;
+  fTrackParam.charge = 0;
+  fTrackParam.radius = 0.;
+  fTrackParam.slice = 0;
+  fTrackParam.phi0 = 0.;
+  fTrackParam.psi = 0.;
+  fTrackParam.lambda = 0.;
+  fTrackParam.pt = 0.;
+  fTrackParam.id = 0;
+  fTrackParam.bfield = 0.;
+  fTrackParam.s = 0.;
 }
 
 //____________________________________________________________________________________________________
@@ -197,241 +203,241 @@ AliHLTTPCDisplayMain::~AliHLTTPCDisplayMain() {
 //____________________________________________________________________________________________________
 Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, unsigned short* ports, Char_t *gfile){
 
-    Char_t* defaultGeometry=NULL;
-#if defined(DEFAULT_GEOMETRY)
-    defaultGeometry=DEFAULT_GEOMETRY;
-#endif
-    if (gfile!=NULL) {
-      HLTDebug("probing geometry file %s", gfile);
-      ifstream test(gfile);
-      if (test.fail()) {
-	HLTWarning("unable to find geometry file %s, using default file", gfile);
-	gfile=defaultGeometry;
-      }
-      test.close();
-    } else {
-      HLTDebug("using default geometry file %s", gfile, defaultGeometry);
-      gfile=defaultGeometry;
-    }
-    if (gfile==NULL) {
-      HLTError("geometry file missing");
-      return -EINVAL;
-    }
 #if defined(HAVE_HOMERREADER) 
-    // -- input datatypes , reverse
-    Char_t* spptID="SRETSULC";
-    Char_t* trkID = "SGESKART";
-    Char_t* padrowID = "KPWR_LDD";
-     
-    Int_t ret;
-    Int_t tries = 0;
+  // -- input datatypes , reverse
+  Char_t* spptID="SRETSULC";       // CLUSTERS
+  Char_t* trkID = "SGESKART";      // TRAKSEGS
+  Char_t* padrowID = "KPWR_LDD";   // DDL_RWPK
+  
+  Int_t ret;
+  
+  while(1) {
+
+    // -- CONNECT to TCPDumpSubscriber via HOMER
+    // ---------------------------------------------
+    HOMERReader* reader = new HOMERReader( cnt, (const char**) hostnames, ports );
+    ret=reader->GetConnectionStatus();
     
-    while(1) {
-	HOMERReader* reader = new HOMERReader( cnt, (const char**) hostnames, ports );
+    if ( ret ) {	
+      Int_t ndx = reader->GetErrorConnectionNdx();
+      if ( ndx < (Int_t) cnt) HLTError("Error establishing connection to TCP source %s:%hu: %s (%d)\n", hostnames[ndx], ports[ndx], strerror(ret), ret );
+      else HLTError("Error establishing connection to unknown source with index %d: %s (%d)\n",ndx, strerror(ret), ret );
+      
+      delete reader;
+      reader = NULL;
+      return -1;
+    }
 
-	ret=reader->GetConnectionStatus();
-
-	if ( ret ) {	
-	    Int_t ndx = reader->GetErrorConnectionNdx();
-	    if ( ndx < (Int_t) cnt) printf( "Error establishing connection to TCP source %s:%hu: %s (%d)\n", hostnames[ndx], ports[ndx], strerror(ret), ret );
-	    else printf( "Error establishing connection to unknown source with index %d: %s (%d)\n",ndx, strerror(ret), ret );
-
-	    delete reader;
-	    reader = NULL;
-	    return -1;
-	}
-
-	//cout << "TRY = " << tries << " || " ;
-	tries++;
-
-	Int_t  ret1 = reader->ReadNextEvent();
-	if ( ret1 ) {
-	    Int_t ndx = reader->GetErrorConnectionNdx();
-	    printf( "Error reading event from source %d: %s (%d)\n", ndx, strerror(ret1), ret1 );
-	    delete reader;
-	    reader = NULL;
-	    continue;
-	}
-
-	unsigned long blockCnt = reader->GetBlockCnt();  // ####
-#if DEBUG
-	printf( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)reader->GetEventID(), (ULong64_t)reader->GetEventID(), blockCnt );
-#endif
-	if (blockCnt == 0){
-	    delete reader;
-	    reader = NULL;
-	    continue;
-	}
+    // -- ERROR HANDLING for HOMER (error codes and empty blocks)
+    // --------------------------------------------------------------
+    Int_t  ret1 = reader->ReadNextEvent(3000000); // timeout in microseconds (3s)
+    if ( ret1 ) {	  
+      Int_t ndx = reader->GetErrorConnectionNdx();
+      
+      if ( ret1 == 111 || ret1 == 32 || ret1 == 6 ) {
+	HLTError( "Error, No Connection to source %d: %s (%d)\n", ndx, strerror(ret1), ret1 );
 	
-	fReader = (void*) reader;
-
-	// Switch on the Display parts according what data types are present
-	for ( unsigned long i = 0; i < blockCnt; i++ ) {
-	    char tmp1[9];
-	    memset( tmp1, 0, 9 );
-	    void *tmp11 = tmp1;
-	    ULong64_t* tmp12 = (ULong64_t*)tmp11;
-	    *tmp12 = reader->GetBlockDataType( i );
-	    if (!strcmp(tmp1,padrowID)) fExistsRawData = kTRUE;
-	    if (!strcmp(tmp1,spptID)) fExistsClusterData = kTRUE;
-	    if (!strcmp(tmp1,trkID)) fExistsTrackData = kTRUE;   	  
-	}
-
-	break;
-    }
-    fConnect = kTRUE;  
-
-    // INITIALIZE TPC DISPLAY Classes  -- IMPORTANT... don't change the order of them
-    fDisplay3D = new AliHLTTPCDisplay3D(this, gfile);
- 
-    if (ExistsRawData()){
-	fDisplayPadRow = new AliHLTTPCDisplayPadRow(this);
-	fDisplayPad = new AliHLTTPCDisplayPad(this);
-	fDisplayFront = new AliHLTTPCDisplayFront(this);
-    }
-
-    if (ExistsClusterData()){
-	fDisplayCharge = new AliHLTTPCDisplayCharge(this);
-    }
-
-    if (ExistsTrackData() && ExistsClusterData() ){
-	fDisplayResiduals = new AliHLTTPCDisplayResiduals(this);
+	delete reader;
+	reader = NULL;
+	
+	return -1; 
+      }
+      else if (ret1 == 110){
+	HLTError( "Timout occured, reading event from source %d: %s (%d)\n", ndx, strerror(ret1), ret1 );
+	
+	delete reader;
+	reader = NULL;
+	
+	return -2;
+      }
+      else if ( ret1 == 56) {
+	HLTError( "Error reading event from source %d: %s (%d) -- RETRY\n", ndx, strerror(ret1), ret1 );
+	
+	delete reader;
+	reader = NULL;
+	
+	continue; 
+      }
+      else {
+	HLTError( "General Error reading event from source %d: %s (%d)\n", ndx, strerror(ret1), ret1 );
+	
+	delete reader;
+	reader = NULL;
+	
+	return -3;
+      }
     }
 
-    return 0;
+    unsigned long blockCnt = reader->GetBlockCnt();  
+
+    HLTDebug( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)reader->GetEventID(), (ULong64_t)reader->GetEventID(), blockCnt );
+
+    if (blockCnt == 0){
+      delete reader;
+      reader = NULL;
+      continue;
+    }
+    
+    // SWITCH on the Display parts according what DATATAYPES are present
+    // ---------------------------------------------------------------------
+    for ( unsigned long i = 0; i < blockCnt; i++ ) {
+      char tmp1[9];
+      memset( tmp1, 0, 9 );
+      void *tmp11 = tmp1;
+      ULong64_t* tmp12 = (ULong64_t*)tmp11;
+      *tmp12 = reader->GetBlockDataType( i );
+      cout << "XXX=" << tmp1 << endl;
+      if (!strcmp(tmp1,padrowID)) fExistsRawData = kTRUE;
+      else if (!strcmp(tmp1,spptID)) fExistsClusterData = kTRUE;
+      else if (!strcmp(tmp1,trkID)) fExistsTrackData = kTRUE;   	  
+    }
+  
+    // -- Set reader and eventID
+    // -------------------------------
+    fEventID = (ULong64_t)reader->GetEventID();
+    fReader = (void*) reader;
+    fConnect = kTRUE; 
+
+    break; // leave while(1), if connected to source
+  }
+
+  
+  // -- Initialize TPC Display Classes  -- IMPORTANT... don't change the order of them
+  //    Check if necessary data types are present
+  // ------------------------------------------------------------------------------------
+  fDisplay3D = new AliHLTTPCDisplay3D(this, gfile);
+  
+  if (ExistsRawData()){
+    fDisplayPadRow = new AliHLTTPCDisplayPadRow(this);
+    fDisplayPad = new AliHLTTPCDisplayPad(this);
+    fDisplayFront = new AliHLTTPCDisplayFront(this);
+  }
+  
+  if (ExistsClusterData()){
+    fDisplayCharge = new AliHLTTPCDisplayCharge(this);
+  }
+  
+  if (ExistsTrackData() && ExistsClusterData() ){
+    fDisplayResiduals = new AliHLTTPCDisplayResiduals(this);
+  }
+
+  return 0;
+
 #else
-    HLTFatal("HOMER raeder not available during package configuration, libAliHLTTPCDisplay compiled without HOMER support");
-    return -EFAULT;
+    HLTFatal("HOMER reader not available");
 #endif // defined(HAVE_HOMERREADER) 
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayMain::ReadData(Bool_t nextSwitch){
+Int_t AliHLTTPCDisplayMain::Disconnect(){
 #if defined(HAVE_HOMERREADER) 
     // READ CLUSTER and TRACK data
     HOMERReader* reader = (HOMERReader*)fReader;
 
-    for(Int_t ii=0;ii<36;ii++) fTracksPerSlice[ii] = 0;
+    if (reader)
+      delete reader;
+    fReader = NULL;
 
-    // -- input datatypes , reverse
-    Char_t* spptID="SRETSULC";
-    Char_t* trkID = "SGESKART";
-    Int_t ret;
-    ULong_t blk;
-
-    if (nextSwitch) {
-	while(1){
-	    ret = reader->ReadNextEvent();
-	    
-	    if ( ret ) {
-		Int_t ndx = reader->GetErrorConnectionNdx();
-		printf( "------------ TRY AGAIN --------------->Error reading event from source %d: %s (%d)\n", ndx, strerror(ret), ret );
-		continue; 
-	    }
-	    break;
-	}
-    }
-
-    ULong_t blockCnt = reader->GetBlockCnt();
-#if DEBUG
-    printf( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)reader->GetEventID(), (ULong64_t)reader->GetEventID(), blockCnt );
-#endif    
-    for ( ULong_t i = 0; i < blockCnt; i++ ) {
-	Char_t tmp1[9], tmp2[5];
-	memset( tmp1, 0, 9 );
-	memset( tmp2, 0, 5 );
-	void *tmp11 = tmp1;
-	ULong64_t* tmp12 = (ULong64_t*)tmp11;
-	*tmp12 = reader->GetBlockDataType( i );
-	void *tmp21 = tmp2;
-	ULong_t* tmp22 = (ULong_t*)tmp21;
-	*tmp22 = reader->GetBlockDataOrigin( i );
-#if DEBUG
-	printf( "Block %lu length: %lu - type: %s - origin: %s\n",i, reader->GetBlockDataLength( i ), tmp1, tmp2 );
-#endif
-    }
-    
-    //--------------------------------------------------------------------------------------------
-    // READ CLUSTER DATA
-    //-------------------------------------------------------------------------------------------- 
-    blk = reader->FindBlockNdx( spptID, " CPT",0xFFFFFFFF );
-    
-    while ( blk != ~(ULong_t)0 ) {	    
-#if DEBUG
-	printf( "Found clusters block %lu\n", blk );
-#endif
-	const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*)reader->GetBlockData( blk );
-	if ( !clusterData ) {
-#if DEBUG
-	    printf( "No track data for block %lu\n", blk );
-#endif
-	    continue;
-	}
-	
-	ULong_t spec = reader->GetBlockDataSpec( blk );
-	Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr( spec );
-	Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );
-#if DEBUG
-	printf( "%lu Clusters found for slice %u - patch %u\n", clusterData->fSpacePointCnt, slice, patch );
-#endif	
-	void* tmp30 = (void*)clusterData;
-	Byte_t* tmp31 = (Byte_t*)tmp30;
-	ULong_t offset;
-	offset = sizeof(clusterData->fSpacePointCnt);
-	if ( offset <= reader->GetBlockTypeAlignment( blk, 1 ) ) offset = reader->GetBlockTypeAlignment( blk, 1 );
-	tmp31 += offset;
-	tmp30 = tmp31;
-	AliHLTTPCSpacePointData* tmp32 = (AliHLTTPCSpacePointData*)tmp30;
-	
-	SetupCluster( slice, patch, clusterData->fSpacePointCnt, tmp32 );
-	
-	blk = reader->FindBlockNdx( spptID, " CPT", 0xFFFFFFFF, blk+1 );
-    }
-
-    //--------------------------------------------------------------------------------------------
-    // READ TRACKS
-    //-------------------------------------------------------------------------------------------- 
-    if ( fTracks ) delete fTracks; 
-    fTracks = new AliHLTTPCTrackArray;
-    
-    blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF );
-	
-    while ( blk != ~(ULong_t)0 ) {
-#if DEBUG
-	printf( "Found tracks in block %lu\n", blk );
-#endif
-	const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*)reader->GetBlockData( blk );
-	if ( !trackData ) {
-#if DEBUG
-	    printf( "No track data for block %lu\n", blk );
-#endif
-	    continue;
-	}
-	
-	ULong_t spec = reader->GetBlockDataSpec( blk );	
-	Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );  
-#if DEBUG
-	Int_t patchmin = AliHLTTPCDefinitions::GetMinPatchNr( spec );
-	Int_t patchmax = AliHLTTPCDefinitions::GetMaxPatchNr( spec );
-
-	printf( "%lu tracks found for slice %u - patch %u-%u\n", trackData->fTrackletCnt, slice, patchmin, patchmax );
-#endif	
-	fTracksPerSlice[slice] = trackData->fTrackletCnt; // Fill number if tracks per slice
-	
-	AliHLTTPCTrackSegmentData* tmp42 = (AliHLTTPCTrackSegmentData*) &(trackData->fTracklets[0]);
-	fTracks->FillTracks( trackData->fTrackletCnt, tmp42, slice );
-	
-	blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF, blk+1 );	
-    }
-    
-    SetupTracks();  
 #else
-    HLTFatal("HOMER raeder not available during package configuration, libAliHLTTPCDisplay compiled without HOMER support");
+    HLTFatal("HOMER raeder not available");
 #endif // defined(HAVE_HOMERREADER) 
+
+    return 0;
+}
+
+
+//____________________________________________________________________________________________________
+Int_t AliHLTTPCDisplayMain::ReadData(Bool_t nextSwitch){
+// READ CLUSTER and TRACK data
+
+#if defined(HAVE_HOMERREADER) 
+  HOMERReader* reader = (HOMERReader*)fReader;
+  Char_t* spptID="SRETSULC";       // CLUSTERS
+  Char_t* trkID = "SGESKART";      // TRAKSEGS
+
+  // -- reset TracksPerSlice Array
+  for(Int_t ii=0;ii<36;ii++) fTracksPerSlice[ii] = 0;
+
+  Int_t ret;
+  ULong_t blk;
+
+  // -- READ next event data and ERROR HANDLING for HOMER (error codes and empty blocks)
+  // ---------------------------------------------------------------------------------------
+  if (nextSwitch) {
+    
+    while(1){
+      ret = reader->ReadNextEvent();
+      
+      if ( ret == 111 || ret == 32 || ret == 6 ) {
+	Int_t ndx = reader->GetErrorConnectionNdx();
+	HLTError( "Error, No Connection to source %d: %s (%d)\n", ndx, strerror(ret), ret );
+	return -1; 
+      }
+      else if ( ret == 110 ) {
+	Int_t ndx = reader->GetErrorConnectionNdx();
+	HLTError( "Timout occured, reading event from source %d: %s (%d)\n", ndx, strerror(ret), ret );
+	return -2; 
+      }
+      else if ( ret == 56) {
+	Int_t ndx = reader->GetErrorConnectionNdx();
+	HLTError( "Error reading event from source %d: %s (%d) -- RETRY\n", ndx, strerror(ret), ret );
+	continue; 
+      }
+      else if ( ret ) {
+	Int_t ndx = reader->GetErrorConnectionNdx();
+	HLTError( "General Error reading event from source %d: %s (%d)\n", ndx, strerror(ret), ret );
+	return -3;
+      }
+      else {
+	break;
+      }
+    }
+  } // end if (nextSwitch)
+
+  // -- Set blockCnt and eventID
+  // -------------------------------
+  ULong_t blockCnt = reader->GetBlockCnt();
+  fEventID = (ULong64_t)reader->GetEventID();
+
+  HLTDebug( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)reader->GetEventID(), (ULong64_t)reader->GetEventID(), blockCnt );
+
+  // Loop for Debug only
+  for ( ULong_t i = 0; i < blockCnt; i++ ) {
+    Char_t tmp1[9], tmp2[5];
+    memset( tmp1, 0, 9 );
+    memset( tmp2, 0, 5 );
+    void *tmp11 = tmp1;
+    ULong64_t* tmp12 = (ULong64_t*)tmp11;
+    *tmp12 = reader->GetBlockDataType( i );
+    void *tmp21 = tmp2;
+    ULong_t* tmp22 = (ULong_t*)tmp21;
+    *tmp22 = reader->GetBlockDataOrigin( i );
+
+    HLTDebug( "Block %lu length: %lu - type: %s - origin: %s\n",i, reader->GetBlockDataLength( i ), tmp1, tmp2 );
+  } // end for ( ULong_t i = 0; i < blockCnt; i++ ) {
+
+
+  // -- READ RAW DATA
+  //---------------------
+  ReadRawData();
+  
+  // -- READ CLUSTER DATA
+  //-------------------------
+  ReadClusterData();
+
+  // -- READ TRACKS
+  //-------------------
+  ReadTrackData();
+
+#else
+  HLTFatal("HOMER raeder not available");
+#endif // defined(HAVE_HOMERREADER) 
+
+  return 0;
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayMain::DisplayEvent(){
+void AliHLTTPCDisplayMain::DisplayEvent(Bool_t newRawSlice){
 #if defined(HAVE_HOMERREADER) 
     HOMERReader* reader = (HOMERReader*)fReader;
 
@@ -446,6 +452,12 @@ void AliHLTTPCDisplayMain::DisplayEvent(){
 	char* rawID = "KPWR_LDD";
 	Int_t padrowpatch =  AliHLTTPCTransform::GetPatch(fPadRow);
 	Int_t maxpadrowpatch =  padrowpatch;
+
+
+	if (newRawSlice) {
+	  printf("=!=!=!=!=!= READ NEW ARRAY!\n");
+	  ReadRawData();
+	}
 	
 	if (fPadRow == 30 || fPadRow == 90 || fPadRow == 139) maxpadrowpatch++;
 
@@ -457,6 +469,14 @@ void AliHLTTPCDisplayMain::DisplayEvent(){
 	    blk = reader->FindBlockNdx( rawID, " CPT", rawSpec );	
 
 	    if ( ~(unsigned long)0 != blk ){
+
+	      // Check for corrupt data
+	      AliHLTUInt64_t corruptFlag = reader->GetBlockStatusFlags( blk );
+	      if (corruptFlag & 0x00000001) {
+		LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayMain::ReadData","Block status flags") << "Data block is corrupt"<<ENDLOG; 
+		continue;
+	      }
+
 #if DEBUG
 		printf( "Raw Data found for slice %u/patch %u\n", fSlicePadRow, patch );
 #endif
@@ -471,6 +491,98 @@ void AliHLTTPCDisplayMain::DisplayEvent(){
 		}
 	    }
 	}
+
+#if 0
+	// -- READ raw data of one sector into 3D arrays fRawData and fRawDataZeroSuppressed
+	// -------------------------------------------------------------------------------------
+	
+	// -- reset arrays
+	memset(fRawData, 0, 159*140*1024*sizeof(UInt_t));
+	memset(fRawDataZeroSuppressed, 0, 159*140*1024*sizeof(UInt_t));
+
+	// -- read raw data blocks
+	// -----------------------
+	ULong_t blk;
+	blk = reader->FindBlockNdx( rawID, " CPT",0xFFFFFFFF );
+
+	while ( blk != ~(ULong_t)0 ) {
+	  
+	  HLTDebug( "Found raw data block %lu\n", blk );
+
+	  // -- Check for corrupt data
+	  AliHLTUInt64_t corruptFlag = reader->GetBlockStatusFlags( blk );
+	  if (corruptFlag & 0x00000001) {
+	    HLTError( "Data block %lu is corrupt\n",blk );
+	    blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+	    continue;
+	  }
+
+	  void* rawDataBlock = (void*) reader->GetBlockData( blk );
+	  unsigned long rawDataLen = reader->GetBlockDataLength( blk );
+
+	  ULong_t spec = reader->GetBlockDataSpec( blk );
+	  Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr( spec );
+	  Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );
+
+	  HLTDebug( "Raw data found for slice %u - patch %u\n", slice, patch );
+
+	  // -- Wrong slice for raw data 
+	  if ( GetSlicePadRow() != slice) {
+	    blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+	    continue;
+	  } 
+
+#if defined(HAVE_TPC_MAPPING)
+
+	  // -- Read data out of block
+	  AliHLTTPCDigitReaderRaw digitReader(0);
+
+    	  // Initialize RAW DATA
+	  Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
+	  Int_t lastRow = AliHLTTPCTransform::GetLastRow(patch);
+	  
+	  // Outer sector, patches 2, 3, 4, 5 -  start counting in patch 2 with row 0
+	  Int_t rowOffset = 0;
+	  if ( patch >= 2 ) rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
+
+	  // Initialize block for reading packed data
+	  digitReader.InitBlock(rawDataBlock,rawDataLen,firstRow,lastRow,patch,slice);
+
+	  Bool_t readValue = digitReader.Next();
+
+	  if (!readValue){	
+	    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayPadRow::Fill","Read first value") << "No value in data block" << ENDLOG;
+	    blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+	    continue;
+	  }
+
+	  // LOOP over raw data and fill arrays
+	  while ( readValue ){ 
+	    
+	    Int_t row = digitReader.GetRow() + rowOffset;
+	    Int_t pad = (Int_t) digitReader.GetPad();
+	    Int_t time = (Int_t) digitReader.GetTime();
+	    UInt_t signal = (UInt_t) digitReader.GetSignal();
+
+	    fRawData[row][pad][time] = signal;
+	    fRawDataZeroSuppressed[row][pad][time] = signal;
+	    
+	    // -- read next value
+	    readValue = digitReader.Next();
+      
+	    // -- No more value
+	    if(!readValue) break; 
+	  } // end  while ( readValue ){ 
+
+
+#else //! defined(HAVE_TPC_MAPPING)
+	  HLTFatal("DigitReaderRaw not available - check your build");
+#endif //defined(HAVE_TPC_MAPPING)
+	  
+	  blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+
+	} // end while ( blk != ~(ULong_t)0 ) {
+#endif
 
 	fDisplayPad->Draw();
 	fDisplayPadRow->Draw();
@@ -502,7 +614,7 @@ void AliHLTTPCDisplayMain::DisplayEvent(){
     // TAKE CARE !!! EXISTSxxxData() HANDLING of 3D will be done IN this class !!!
     fDisplay3D->Draw(); 
 #else
-    HLTFatal("HOMER raeder not available during package configuration, libAliHLTTPCDisplay compiled without HOMER support");
+    HLTFatal("HOMER raeder not available");
 #endif // defined(HAVE_HOMERREADER) 
 
 }
@@ -615,6 +727,333 @@ void AliHLTTPCDisplayMain::SetSliceArray() {
     }
 }
 
+//____________________________________________________________________________________________________
+void AliHLTTPCDisplayMain::ReadRawData(){
+  // -- READ raw data of one sector into 3D arrays fRawData and fRawDataZeroSuppressed
+
+  // -- reset arrays
+  memset(fRawData, 0, 159*140*1024*sizeof(UInt_t));
+  memset(fRawDataZeroSuppressed, 0, 159*140*1024*sizeof(UInt_t));
+
+#if defined(HAVE_HOMERREADER) 
+  HOMERReader* reader = (HOMERReader*)fReader;
+  
+  // -- read raw data blocks
+  // ---------------------------
+  ULong_t blk;
+  Char_t* rawID = "KPWR_LDD";    
+  blk = reader->FindBlockNdx( rawID, " CPT",0xFFFFFFFF );
+  
+  while ( blk != ~(ULong_t)0 ) {
+    HLTDebug( "Found raw data block %lu\n", blk );
+
+    // -- Check for corrupt data
+    AliHLTUInt64_t corruptFlag = reader->GetBlockStatusFlags( blk );
+    if (corruptFlag & 0x00000001) {
+      HLTError( "Data block %lu is corrupt\n",blk );
+      blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+      continue;
+    }
+
+    void* rawDataBlock = (void*) reader->GetBlockData( blk );
+    unsigned long rawDataLen = reader->GetBlockDataLength( blk );
+    
+    ULong_t spec = reader->GetBlockDataSpec( blk );
+    Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr( spec );
+    Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );
+    
+    HLTDebug( "Raw data found for slice %u - patch %u\n", slice, patch );
+
+    // -- Wrong slice for raw data 
+    if ( GetSlicePadRow() != slice) {
+      blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+      continue;
+    } 
+    
+#if defined(HAVE_TPC_MAPPING)
+
+    // -- Read data out of block
+    AliHLTTPCDigitReaderRaw digitReader(0);
+    
+    // Initialize RAW DATA
+    Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
+    Int_t lastRow = AliHLTTPCTransform::GetLastRow(patch);
+    
+    // Outer sector, patches 2, 3, 4, 5 -  start counting in patch 2 with row 0
+    Int_t rowOffset = 0;
+    if ( patch >= 2 ) rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
+    
+    // Initialize block for reading packed data
+    digitReader.InitBlock(rawDataBlock,rawDataLen,firstRow,lastRow,patch,slice);
+    
+    Bool_t readValue = digitReader.Next();
+
+    if (!readValue){	
+      HLTError ( "No value in data block %lu \n", blk);
+      blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+      continue;
+    }
+
+    // -- Fill Zero Suppressed Array
+    // ---------------------------------
+
+    Int_t newRow = 0;    
+    UShort_t time=0,newTime=0;
+    UInt_t pad=0,newPad=0;
+    Int_t signal=0;
+
+    Int_t gatingGridOffset=50;
+    Int_t signalThreshold = 10;
+    AliHLTTPCPad baseline(gatingGridOffset, GetNTimeBins() );
+
+    // just to make later conversion to a list of objects easier
+    AliHLTTPCPad* pCurrentPad=NULL;
+    if ( signalThreshold >= 0) {
+      pCurrentPad=&baseline;
+      baseline.SetThreshold(signalThreshold);
+    }
+
+    while ( readValue ) { // Reads through all digits in block
+     
+      while(1){ //Loop over time bins of current pad
+	// read all the values for one pad at once to calculate the base line
+	if (pCurrentPad) {
+	  
+	  if (!pCurrentPad->IsStarted()) {
+	    
+	    HLTDebug("reading data for pad %d, padrow %d", digitReader.GetPad(), digitReader.GetRow()+rowOffset);
+	    
+	    pCurrentPad->SetID(digitReader.GetRow()+rowOffset,digitReader.GetPad());
+	    
+	    if ( (pCurrentPad->StartEvent()) >= 0) {
+	      // loop over data of one pad and read it into AliHLTTPCPad class
+	      do {
+		if ( (digitReader.GetRow()+rowOffset) != pCurrentPad->GetRowNumber() ) break;
+		if ( digitReader.GetPad() != pCurrentPad->GetPadNumber() ) break;
+		pCurrentPad->SetRawData( digitReader.GetTime(), digitReader.GetSignal() );
+		
+		HLTDebug("set raw data to pad: bin %d charge %d", digitReader.GetTime(), digitReader.GetSignal());
+		
+	      } while ( (readValue = digitReader.Next()) != 0 );
+	    }
+
+	    // calculate baseline of pad
+	    pCurrentPad->CalculateBaseLine( GetNTimeBins() / 2);
+	    
+	    if ( pCurrentPad->Next(kTRUE/*do zero suppression*/) == 0 ) {
+	      HLTDebug("no data available after zero suppression");
+	      
+	      pCurrentPad->StopEvent();
+	      pCurrentPad->ResetHistory();
+	      break;
+	    }
+
+	    Int_t time = pCurrentPad->GetCurrentPosition();
+	    if ( time > pCurrentPad->GetSize() ) {
+	      HLTError("invalid time bin for pad");
+	      break;
+	    }	  
+	  } // end - if (!pCurrentPad->IsStarted()) {
+	} // end - if (pCurrentPad) {
+	
+	if (pCurrentPad) {
+	  Float_t occupancy=pCurrentPad->GetOccupancy();
+	  if ( occupancy < 0.01 ) {
+	    signal = pCurrentPad->GetCorrectedData();
+	  } 
+	  else {
+	    signal = 0;
+	    HLTInfo("ignoring pad %d with occupancy level %f %%", pCurrentPad->GetPadNumber(), occupancy);
+	  }
+	  //	  signal = pCurrentPad->GetCorrectedData();
+	} else {
+	  signal = digitReader.GetSignal();
+	}
+
+	fRawDataZeroSuppressed[ pCurrentPad->GetRowNumber() ][ pCurrentPad->GetPadNumber() ][ pCurrentPad->GetCurrentPosition() ] = (UInt_t)signal;
+
+	
+	HLTDebug("get next charge value: position %d charge %d", time, signal);
+	
+	if( time >= AliHLTTPCTransform::GetNTimeBins() ){
+	  HLTWarning("Timebin (%d) out of range (%d)", time, AliHLTTPCTransform::GetNTimeBins());
+	  break;
+	}
+ 	  
+	if (pCurrentPad) {
+	
+	  if( (pCurrentPad->Next(kTRUE/*do zero suppression*/)) == 0 ) {
+	    pCurrentPad->StopEvent();
+	    pCurrentPad->ResetHistory();
+
+	    if(readValue) {
+	      newPad = digitReader.GetPad();
+	      newTime = digitReader.GetTime();
+	      newRow = digitReader.GetRow() + rowOffset;
+	    }
+	    break;
+	  }
+	  
+	  newPad=pCurrentPad->GetPadNumber();
+	  newTime=pCurrentPad->GetCurrentPosition();
+	  newRow=pCurrentPad->GetRowNumber();
+	} 
+	else {
+	  
+	  readValue = digitReader.Next();
+	  
+	  //Check where to stop:
+	  if(!readValue) break; //No more value
+	  
+	  newPad = digitReader.GetPad();
+	  newTime = digitReader.GetTime();
+	  newRow = digitReader.GetRow() + rowOffset;
+	}
+	
+	if(newPad != pad) break; //new pad
+	if(newTime != time+1) break; //end of sequence
+	
+	time = newTime;
+	
+      } // end - while(1){ // Loop over time bins of current pad
+
+      if ( !readValue ) break;
+
+    } // end  while ( readValue ) {
+
+    // -- END ZERO SUPPRESSION
+
+    // Rewind block for reading packed data
+    digitReader.InitBlock(rawDataBlock,rawDataLen,firstRow,lastRow,patch,slice);
+
+    // -- Fill Raw Array
+    // ---------------------
+    readValue = digitReader.Next();
+    
+    // LOOP over raw data and fill arrays
+    while ( readValue ){ 
+	    
+      Int_t row = digitReader.GetRow() + rowOffset;
+      Int_t pad = (Int_t) digitReader.GetPad();
+      Int_t time = (Int_t) digitReader.GetTime();
+      UInt_t signal = (UInt_t) digitReader.GetSignal();
+
+      fRawData[row][pad][time] = signal;
+	    
+      // -- read next value
+      readValue = digitReader.Next();
+      
+      // -- No more value
+      if(!readValue) break; 
+
+    } // end  while ( readValue ){ 
+
+#else //! defined(HAVE_TPC_MAPPING)
+    HLTFatal("DigitReaderRaw not available - check your build");
+#endif //defined(HAVE_TPC_MAPPING)
+	  
+    blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
+    
+  } // end while ( blk != ~(ULong_t)0 ) {
+  
+#else
+  HLTFatal("HOMER raeder not available");
+#endif // defined(HAVE_HOMERREADER) 
+  
+}
+
+//____________________________________________________________________________________________________
+void AliHLTTPCDisplayMain::ReadClusterData(){
+ // -- READ cluster data 
+#if defined(HAVE_HOMERREADER) 
+  HOMERReader* reader = (HOMERReader*)fReader;
+
+  ULong_t blk;
+  Char_t* spptID="SRETSULC";       // CLUSTERS
+  blk = reader->FindBlockNdx( spptID, " CPT",0xFFFFFFFF );
+   
+  while ( blk != ~(ULong_t)0 ) {	    
+    HLTDebug( "Found clusters block %lu\n", blk );
+    
+    const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*)reader->GetBlockData( blk );
+    if ( !clusterData ) {
+      HLTError( "No track data for block %lu\n", blk );
+      blk = reader->FindBlockNdx( spptID, " CPT", 0xFFFFFFFF, blk+1 );
+      continue;
+    }
+	
+    ULong_t spec = reader->GetBlockDataSpec( blk );
+    Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr( spec );
+    Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );
+
+    HLTDebug( "%lu Clusters found for slice %u - patch %u\n", clusterData->fSpacePointCnt, slice, patch );
+
+    void* tmp30 = (void*)clusterData;
+    Byte_t* tmp31 = (Byte_t*)tmp30;
+    ULong_t offset;
+    offset = sizeof(clusterData->fSpacePointCnt);
+    if ( offset <= reader->GetBlockTypeAlignment( blk, 1 ) ) offset = reader->GetBlockTypeAlignment( blk, 1 );
+    tmp31 += offset;
+    tmp30 = tmp31;
+    AliHLTTPCSpacePointData* tmp32 = (AliHLTTPCSpacePointData*)tmp30;
+	
+    SetupCluster( slice, patch, clusterData->fSpacePointCnt, tmp32 );
+    
+    blk = reader->FindBlockNdx( spptID, " CPT", 0xFFFFFFFF, blk+1 );
+  }
+  
+#else
+  HLTFatal("HOMER raeder not available");
+#endif // defined(HAVE_HOMERREADER) 
+}
+//____________________________________________________________________________________________________
+void AliHLTTPCDisplayMain::ReadTrackData(){
+  // -- READ track data
+  
+  if ( fTracks ) delete fTracks; 
+  fTracks = new AliHLTTPCTrackArray;
+  
+#if defined(HAVE_HOMERREADER) 
+  HOMERReader* reader = (HOMERReader*)fReader;
+  
+  ULong_t blk;
+  Char_t* trkID = "SGESKART";      // TRAKSEGS
+  blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF );
+  
+  while ( blk != ~(ULong_t)0 ) {
+
+    HLTDebug( "Found tracks in block %lu\n", blk );
+
+    const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*)reader->GetBlockData( blk );
+
+    if ( !trackData ) {
+      HLTError( "No track data for block %lu\n", blk );
+      blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF, blk+1 );
+      continue;
+    }
+    
+    ULong_t spec = reader->GetBlockDataSpec( blk );	
+    Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );  
+    Int_t patchmin = AliHLTTPCDefinitions::GetMinPatchNr( spec );
+    Int_t patchmax = AliHLTTPCDefinitions::GetMaxPatchNr( spec );
+    
+    HLTDebug( "%lu tracks found for slice %u - patch %u-%u\n", trackData->fTrackletCnt, slice, patchmin, patchmax );
+
+    fTracksPerSlice[slice] = trackData->fTrackletCnt; // Fill number if tracks per slice
+	
+    AliHLTTPCTrackSegmentData* tmp42 = (AliHLTTPCTrackSegmentData*) &(trackData->fTracklets[0]);
+    fTracks->FillTracks( trackData->fTrackletCnt, tmp42, slice );
+    
+    blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF, blk+1 );	
+  }
+    
+  SetupTracks(); 
+
+#else
+  HLTFatal("HOMER raeder not available");
+#endif // defined(HAVE_HOMERREADER) 
+}
+
 //----------------------------------------------------------------------------------------------------
 //                 GETTER
 //____________________________________________________________________________________________________
@@ -666,3 +1105,5 @@ void AliHLTTPCDisplayMain::ExecPadEvent(Int_t event, Int_t px, Int_t py, TObject
         fPadCallback(fPt2Gui, binx);
   }
 }
+
+

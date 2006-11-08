@@ -252,8 +252,16 @@ if test "x$with_pubsub" != "xno" ; then
   # currently the different versions of the HLT PubSub framework have a different
   # directory layout
   if test -d ${with_pubsub}/include/HOMER ; then
+    # the 'early' location of the include files with separated HOMER sub dirs
     HOMER_CPPFLAGS="-I${with_pubsub}/include/HOMER -I${with_pubsub}/include/HOMER/reader"
+  elif test -d ${with_pubsub}/include/Util/HOMER ; then
+    # location for HLT Framework versions after Sep 2006
+    HOMER_CPPFLAGS="-I${with_pubsub}/include/Util/HOMER"
+  elif test -d ${with_pubsub}/src/Util/HOMER/include ; then
+    # fall back if include files were not installed (versions after Sep 06)
+    HOMER_CPPFLAGS="-I${with_pubsub}/src/Util/HOMER/include"
   else
+    # fall back if include files were not installed (versions before Sep 06)
     HOMER_CPPFLAGS="-I${with_pubsub}/src/Util/HOMER/reader/include -I${with_pubsub}/src/Util/HOMER/data/include"
   fi
   HOMER_LDFLAGS="-L${with_pubsub}/lib/`uname -s`-`uname -m`"

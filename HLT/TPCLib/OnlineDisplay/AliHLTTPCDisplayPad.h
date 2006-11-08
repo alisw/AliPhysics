@@ -19,9 +19,11 @@
 #include <TH2F.h>
 #include <AliHLTTPCDisplayMain.h>
 #include <AliHLTTPCDisplayPadRow.h>
+#include <AliHLTTPCDisplayFront.h>
 
 class AliHLTTPCDisplayPad : public AliHLTLogging {  
   friend void AliHLTTPCDisplayPadRow::Draw();
+  friend void AliHLTTPCDisplayFront::Draw();
 
  public:
     AliHLTTPCDisplayPad(AliHLTTPCDisplayMain* display) ;

@@ -100,6 +100,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fMatch(1),
   fThreshold(10),
   fSignalThreshold(-1),
+  fOccupancyLimit(1.0),
   fXYErr(0.2),
   fZErr(0.3),
   fDeconvPad(kTRUE),
@@ -119,6 +120,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder& src
   fMatch(src.fMatch),
   fThreshold(src.fThreshold),
   fSignalThreshold(src.fSignalThreshold),
+  fOccupancyLimit(src.fOccupancyLimit),
   fXYErr(src.fXYErr),
   fZErr(src.fZErr),
   fDeconvPad(src.fDeconvPad),
@@ -137,6 +139,7 @@ AliHLTTPCClusterFinder& AliHLTTPCClusterFinder::operator=(const AliHLTTPCCluster
   fMatch=src.fMatch;
   fThreshold=src.fThreshold;
   fSignalThreshold=src.fSignalThreshold;
+  fOccupancyLimit=src.fOccupancyLimit;
   fXYErr=src.fXYErr;
   fZErr=src.fZErr;
   fDeconvPad=src.fDeconvPad;
@@ -204,7 +207,10 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
   readValue = fDigitReader->Next();
 
-  if (!readValue)return;
+  // Matthias 08.11.2006 the following return would cause termination without writing the
+  // ClusterData and thus would block the component. I just wnt to have the commented line
+  // here for information
+  //if (!readValue)return;
 
   pad = fDigitReader->GetPad();
   time = fDigitReader->GetTime();
@@ -315,9 +321,16 @@ void AliHLTTPCClusterFinder::ProcessDigits()
       }
 
       if (pCurrentPad) {
-	charge = pCurrentPad->GetCorrectedData();
+	Float_t occupancy=pCurrentPad->GetOccupancy();
+	//HLTDebug("pad %d occupancy level: %f", pCurrentPad->GetPadNumber(), occupancy);
+	if ( occupancy < fOccupancyLimit ) {
+	  charge = pCurrentPad->GetCorrectedData();
+	} else {
+	  charge = 0;
+	  //HLTDebug("ignoring pad %d with occupancy level %f", pCurrentPad->GetPadNumber(), occupancy);
+	}
       } else {
-      charge = fDigitReader->GetSignal();
+	charge = fDigitReader->GetSignal();
       }
       //HLTDebug("get next charge value: position %d charge %d", time, charge);
 
