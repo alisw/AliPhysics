@@ -28,8 +28,8 @@ public:
 	
 	void           AddTrack(AliRsnDaughter track);
 	void           Clear(Option_t *option = "");
-	Int_t          GetMultiplicity(Bool_t recalc = kFALSE);
-	const char*    GetOriginFileName() const;
+	void           ComputeMultiplicity();
+	Int_t          GetMultiplicity() const {return fMultiplicity;}
 	Double_t       GetPrimaryVertexX() const {return fPVx;}
 	Double_t       GetPrimaryVertexY() const {return fPVy;}
 	Double_t       GetPrimaryVertexZ() const {return fPVz;}
@@ -38,15 +38,10 @@ public:
 	void           Init();
 	Int_t          PDG2Enum(Int_t pdgcode);
 	void           PrintTracks();
-	void           SetESD(Bool_t yesno = kTRUE) {fIsESD=yesno;}
-	void           SetPath(TString path) {fPath=path;}
 	void           SetPrimaryVertex(Double_t x, Double_t y, Double_t z) {fPVx=x;fPVy=y;fPVz=z;}
 
 private:
 
-	Bool_t         fIsESD;                    // if true, it is ESD event, otherwise it comes from Kine
-	TString        fPath;                     // complete path where input event file is stored
-	
 	Double_t       fPVx;  			          // position of
 	Double_t       fPVy;  			          // primary
 	Double_t       fPVz;  			          // vertex
@@ -55,6 +50,8 @@ private:
 
 	TClonesArray  *fPos[AliPID::kSPECIES];    // collections of positive particles
 	TClonesArray  *fNeg[AliPID::kSPECIES];    // collections of negative particles
+	TClonesArray  *fPosNoPID;                 // collection of unidentified positive particles
+	TClonesArray  *fNegNoPID;                 // collection of unidentified positive particles
 	
 	ClassDef(AliRsnEvent,1);
 };

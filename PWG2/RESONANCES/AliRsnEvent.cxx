@@ -37,8 +37,6 @@ ClassImp(AliRsnEvent)
 
 //--------------------------------------------------------------------------------------------------------
 AliRsnEvent::AliRsnEvent() :
- fIsESD(kTRUE),
- fPath(""),
  fPVx(0.0),
  fPVy(0.0),
  fPVz(0.0),
@@ -52,12 +50,12 @@ AliRsnEvent::AliRsnEvent() :
 		fPos[i] = NULL;
 		fNeg[i] = NULL;
 	}
+	fPosNoPID = NULL;
+	fNegNoPID = NULL;
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
  TObject((TObject)event),
- fIsESD(event.fIsESD),
- fPath(event.fPath),
  fPVx(event.fPVx), 
  fPVy(event.fPVy), 
  fPVz(event.fPVz),
@@ -75,15 +73,16 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
 		if (event.fPos[i]) fPos[i] = (TClonesArray*)event.fPos[i]->Clone();
 		if (event.fNeg[i]) fNeg[i] = (TClonesArray*)event.fNeg[i]->Clone();
 	}
+	fPosNoPID = (TClonesArray*)event.fPosNoPID->Clone();
+	fNegNoPID = (TClonesArray*)event.fNegNoPID->Clone();
 }
+//--------------------------------------------------------------------------------------------------------
 AliRsnEvent& AliRsnEvent::operator=(const AliRsnEvent &event)
 {
 //
 // Assignment operator.
 // Creates new instances of all collections to store a copy of all objects.
 //
-	fIsESD = event.fIsESD;
-	fPath = event.fPath;
 	fPVx = event.fPVx; 
 	fPVy = event.fPVy; 
 	fPVz = event.fPVz;
@@ -97,6 +96,8 @@ AliRsnEvent& AliRsnEvent::operator=(const AliRsnEvent &event)
 		if (event.fPos[i]) fPos[i] = (TClonesArray*)event.fPos[i]->Clone();
 		if (event.fNeg[i]) fNeg[i] = (TClonesArray*)event.fNeg[i]->Clone();
 	}
+	fPosNoPID = (TClonesArray*)event.fPosNoPID->Clone();
+	fNegNoPID = (TClonesArray*)event.fNegNoPID->Clone();
 	
 	return (*this);
 }
@@ -106,38 +107,24 @@ void AliRsnEvent::AddTrack(AliRsnDaughter track)
 //
 // Stores a track into the correct array
 //
-	Int_t pdg, sign, ifirst, ilast;
-	
 	// if sign is zero, track is not stored
-	sign = (Int_t)track.GetSign();
+	Int_t sign = (Int_t)track.GetSign();
 	if (!sign) return;
 	
 	// if PDG code is assigned, track is stored in the corresponding collection
-	// otherwise, a copy of track is is stored in each collection (undefined track)
-	pdg = track.GetPDG();
+	// otherwise, it is stored in the array of unidentified particles with that sign
+	Int_t index, iarray, pdg = track.GetPDG();
 	if (pdg != 0) {
-		ifirst = PDG2Enum(pdg);
-		ilast = ifirst;
-		if (ifirst < AliPID::kElectron || ifirst > AliPID::kProton) return;
+		iarray = PDG2Enum(pdg);
+		if (iarray < AliPID::kElectron || iarray > AliPID::kProton) return;
+		TClonesArray &array = (sign > 0) ? *fPos[iarray] : *fNeg[iarray];
+		index = array.GetEntries();
+		new(array[index]) AliRsnDaughter(track);
 	}
 	else {
-		ifirst = AliPID::kElectron;
-		ilast = AliPID::kProton;
-	}
-	
-	// track is stored
-	Int_t i, index;
-	for (i = ifirst; i <= ilast; i++) {
-		if (sign > 0) {
-			index = fPos[i]->GetEntries();
-			TClonesArray &array = *fPos[i];
-			new(array[index]) AliRsnDaughter(track);
-		}
-		else {
-			index = fNeg[i]->GetEntries();
-			TClonesArray &array = *fNeg[i];
-			new(array[index]) AliRsnDaughter(track);
-		}
+		TClonesArray &array = (sign > 0) ? *fPosNoPID : *fNegNoPID;
+		index = array.GetEntries();
+		new(array[index]) AliRsnDaughter(track);
 	}
 }
 //--------------------------------------------------------------------------------------------------------
@@ -163,42 +150,29 @@ void AliRsnEvent::Clear(Option_t *option)
 			fNeg[i] = 0;
 		}
 	}
+	if (fPosNoPID) fPosNoPID->Delete();
+	if (fNegNoPID) fNegNoPID->Delete();
+	if (deleteCollections) {
+		delete fPosNoPID;
+		delete fNegNoPID;
+		fPosNoPID = 0;
+		fNegNoPID = 0;
+	}
 }
 //--------------------------------------------------------------------------------------------------------
-Int_t AliRsnEvent::GetMultiplicity(Bool_t recalc)
+void AliRsnEvent::ComputeMultiplicity()
 {
 //
 // Computes multiplicity.
-// If it is already computed (fMultiplicity > -1), it returns that value,
-// unless one sets the argument to kTRUE.
 //
-	if (fMultiplicity < 0) recalc = kTRUE;
-	if (recalc) {
-		fMultiplicity = 0;
-		Int_t i;
-		for (i = 0; i < AliPID::kSPECIES; i++) {
-			fMultiplicity += (Int_t)fPos[i]->GetEntries();
-			fMultiplicity += (Int_t)fNeg[i]->GetEntries();
-		}
+	fMultiplicity = 0;
+	Int_t i;
+	for (i = 0; i < AliPID::kSPECIES; i++) {
+		fMultiplicity += (Int_t)fPos[i]->GetEntries();
+		fMultiplicity += (Int_t)fNeg[i]->GetEntries();
 	}
-	
-	return fMultiplicity;
-}
-//--------------------------------------------------------------------------------------------------------
-const char * AliRsnEvent::GetOriginFileName() const
-{
-//
-// Returns the path where input file was stored
-//
-	TString str(fPath);
-	if (fIsESD) {
-		str.Append("/AliESDs.root");
-	}
-	else {
-		str.Append("/galice.root");
-	}
-	
-	return str.Data();
+	if (fPosNoPID) fMultiplicity += fPosNoPID->GetEntries();
+	if (fNegNoPID) fMultiplicity += fNegNoPID->GetEntries();
 }
 //--------------------------------------------------------------------------------------------------------
 TClonesArray* AliRsnEvent::GetTracks(Char_t sign, AliPID::EParticleType type)
@@ -228,6 +202,10 @@ void AliRsnEvent::Init()
 		fPos[i]->BypassStreamer(kFALSE);
 		fNeg[i]->BypassStreamer(kFALSE);
 	}
+	fPosNoPID = new TClonesArray("AliRsnDaughter", 0);
+	fNegNoPID = new TClonesArray("AliRsnDaughter", 0);
+	fPosNoPID->BypassStreamer(kFALSE);
+	fNegNoPID->BypassStreamer(kFALSE);
 }
 //--------------------------------------------------------------------------------------------------------
 Int_t AliRsnEvent::PDG2Enum(Int_t pdgcode)
