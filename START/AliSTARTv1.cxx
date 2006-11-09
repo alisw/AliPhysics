@@ -41,6 +41,7 @@
 #include "TGeoPgon.h"
 #include "TGeoTube.h"
 #include "TGeoCompositeShape.h"
+#include <TGraph.h>
 
 #include "AliLog.h"
 #include "AliMagF.h"
@@ -67,6 +68,11 @@ AliSTARTv1::AliSTARTv1(const char *name, const char *title):
   // Standart constructor for START Detector version 0
   //
   fIshunt = 2;
+  AliSTARTParameters* param = AliSTARTParameters::Instance();
+  for (Int_t i=0; i<24; i++){
+    TGraph* grEff = param ->GetPMTeff(i);
+    fEffPMT.AddAtAndExpand(grEff,i);
+  }
 }
 //_____________________________________________________________________________
 
@@ -133,83 +139,71 @@ void AliSTARTv1::CreateGeometry()
     ppcon[1]  = 360;
     ppcon[2]  =  13;
 //  1: 
-    ppcon[3]  =  7.2; // 14.1/2;
+    ppcon[3]  =  7.2;
     ppcon[4]  =   4.4;
     ppcon[5]  =   4.5;
 //  2
-    ppcon[6]  = ppcon[3]+1.;
-    ppcon[7]  =   4.4;
-    ppcon[8]  =   4.5;
+    ppcon[6]  = 8.2;
+    ppcon[7]  = 4.4;
+    ppcon[8]  = 4.5;
 //  3
-    ppcon[9]  = ppcon[6];
-    ppcon[10] =   4.4;
-    ppcon[11] =   5.1;
+    ppcon[9]  = 8.2;
+    ppcon[10] = 4.4;
+    ppcon[11] = 5.1;
 
 //  4
 
-    ppcon[12]  = ppcon[9]+0.1;
-    ppcon[13] =   4.4;
-    ppcon[14] =   5.1;
+    ppcon[12] = 8.3; 
+    ppcon[13] = 4.4;
+    ppcon[14] = 5.1;
 //  5
 
-    ppcon[15]  = ppcon[12];
-    ppcon[16] =   4.9;
-    ppcon[17] =   5.1;
+    ppcon[15] = 8.3;
+    ppcon[16] = 4.9;
+    ppcon[17] = 5.1;
     
 //  6
-//    ppcon[18]  = ppcon[15]+6.9;
-    ppcon[18]  = ppcon[15]+6.7;
-    ppcon[19] =   4.9;
-    ppcon[20] =   5.1;
+    ppcon[18] = 15.; 
+    ppcon[19] = 4.9;
+    ppcon[20] = 5.1;
     
 //  7
-    ppcon[21]  = ppcon[18];
-    ppcon[22] =   4.9;
-    ppcon[23] =   5.1;
+    ppcon[21] = 15.; 
+    ppcon[22] = 3.15  ;
+    ppcon[23] = 5.1;
 
 /// 8
-    ppcon[24]  = ppcon[21]+0.01;
-    ppcon[25] =   3.15;
-    ppcon[26] =   3.25;
-    //   ppcon[25] =   2.25;
-    // ppcon[26] =   2.33;
+    ppcon[24] = 15.01; 
+    ppcon[25] = 3.15;
+    ppcon[26] = 5.1;
+
+/// 9
+    ppcon[27] = 15.01; 
+    ppcon[28] = 3.15;
+    ppcon[29] = 3.25;
+
     
 /// 9
-    ppcon[27]  = ppcon[24];
-    ppcon[28] =   ppcon[25];
-    ppcon[29] =  ppcon[26] ;
-    
+     ppcon[30] = 19.71;
+     ppcon[31] = 3.15;
+     ppcon[32] = 3.25; 
 //  10
-//    ppcon[30]  = ppcon[27]+4.5;
-    ppcon[30]  = ppcon[27]+4.7;
-    ppcon[31] =   2.3;
-    ppcon[32] =  ppcon[26] ;
+    ppcon[33] = 19.8; 
+    ppcon[34] = 3.15;
+    ppcon[35] = 3.25;
+    //  11
+    ppcon[36] = 19.8;
+    ppcon[37] = 3.15;
+    ppcon[38] = 7.6;
+        
+   //  14
 
-//  11
-    ppcon[33] = ppcon[30];
-    //    ppcon[34] =   3.15;
-    ppcon[34] =   2.3;
-    ppcon[35] =  ppcon[26] ;
-    
-//  12
-    ppcon[36]  = ppcon[33];
-    ppcon[37] =   ppcon[34] ;
-    ppcon[38] =   7.6;
-    
-    //  13
-    ppcon[39]  = ppcon[33]+0.2;
-    ppcon[40] =   ppcon[34] ;
-    ppcon[41] =   7.6;
-    
-//  14
-//    ppcon[39]  = ppcon[36];
-//    ppcon[40] =   3.15;
-//    ppcon[41] =   7.6;
+    ppcon[39] =  19.91;
+    ppcon[40] =  3.15;
+    ppcon[41] =  7.6;
 
 
-
-    gMC->Gsvolu("0SUP", "PCON", idtmed[kAl], ppcon,42);
-    //    gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,38);
+    gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
     z = -zdetC;
     gMC->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
    
@@ -378,11 +372,13 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
     
     z += par[2];
+    cout<<" z 0SA1 "<<z<<endl;
     gMC->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
     par[0]=3.15;
     par[1]=3.16;
     par[2]=4.7/2;
+    cout<<" z 0SA2 "<<z<<endl;
     gMC->Gsvolu("0SA2","TUBE",idtmed[kAl],par,3);
     z += par[2];
     gMC->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
@@ -390,12 +386,14 @@ void AliSTARTv1::CreateGeometry()
     par[0]=3.16; // eta chast' prikruchena k absorberu
     par[1]=7.5;
     par[2]=0.1;
+    cout<<" z 0SA23"<<z<<endl;
     gMC->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
     z += par[2];
     gMC->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
     par[0]=3.16; // gvozdi eta chast' prikruchena k absorberu
     par[1]=7.5;
     par[2]=0.01;
+    cout<<" z 0SN2 "<<z<<endl;
     gMC->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
     gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"ONLY"); 
  
@@ -669,27 +667,30 @@ void AliSTARTv1::StepManager()
       // Check the sensetive volume
       if(id==fIdSens1 ) { 
 	if(gMC->IsTrackEntering()) {
-	  gMC->CurrentVolOffID(2,copy);
-	  vol[1]=copy;
-	  gMC->CurrentVolOffID(3,copy1);
-	  vol[0]=copy1;
-	  gMC->TrackPosition(pos);
-	  hits[0] = pos[0];
-	  hits[1] = pos[1];
-	  hits[2] = pos[2];
-	  if(pos[2]<0) vol[0]=2;
-	  if(pos[2]>=0) vol[0]=1; 
-	  
-	  Float_t etot=gMC->Etot();
-	  hits[3]=etot;
-	  Int_t iPart= gMC->TrackPid();
-	  Int_t partID=gMC->IdFromPDG(iPart);
-	  hits[4]=partID;
-	  Float_t ttime=gMC->TrackTime();
-	  hits[5]=ttime*1e12;
-	  AddHit(fIshunt,vol,hits);
+	    gMC->CurrentVolOffID(2,copy);
+	    vol[1]=copy;
+	    gMC->CurrentVolOffID(3,copy1);
+	    vol[0]=copy1;
+	    gMC->TrackPosition(pos);
+	    hits[0] = pos[0];
+	    hits[1] = pos[1];
+	    hits[2] = pos[2];
+	    if(pos[2]<0) vol[0]=2;
+	    if(pos[2]>=0) vol[0]=1; 
+	    
+	    Float_t etot=gMC->Etot();
+	    hits[3]=etot;
+	    Int_t iPart= gMC->TrackPid();
+	    Int_t partID=gMC->IdFromPDG(iPart);
+	    hits[4]=partID;
+	    Float_t ttime=gMC->TrackTime();
+	    hits[5]=ttime*1e12;
+	    if(RegisterPhotoE(vol[1]-1,hits[3])) 
+	      AddHit(fIshunt,vol,hits);
+	    
+	  }
 	  //  cout<< gAlice->GetMCApp()->GetCurrentTrackNumber()<<" hit added "<<endl;
-	}
+	
 	/*		
 		printf("track(%i) alive(%i) disap(%i) enter(%i) exit(%i) inside(%i) out(%i) stop(%i) new(%i) \n",
 		       gAlice->GetMCApp()->GetCurrentTrackNumber(),
@@ -707,6 +708,25 @@ void AliSTARTv1::StepManager()
 }
 
 
+
+//------------------------------------------------------------------------
+Bool_t AliSTARTv1::RegisterPhotoE(Int_t ipmt,Double_t energy)
+{
+
+  
+  //  Float_t hc=197.326960*1.e6; //mev*nm
+  Double_t hc=1.973*1.e-6; //gev*nm
+  Float_t lambda=hc/energy;
+  Float_t eff = ((TGraph*) fEffPMT.At(ipmt))->Eval(lambda);
+  Double_t  p = gRandom->Rndm();
+
+  if (p > eff)
+    return kFALSE;
+  
+  return kTRUE;
+}
+
+//----------------------------------------------------------------------------
 
 
 
