@@ -1,5 +1,15 @@
 /* $Id$ */
 
+// This class contains a number of histograms for diagnostics of a TPC
+// read out chamber from the reconstructed clusters.
+//
+// TODO:
+//  
+//
+//
+
+#include "AliTPCClusterHistograms.h"
+
 #include <TStyle.h>
 #include <TFile.h>
 #include <TCanvas.h>
@@ -7,12 +17,9 @@
 #include <TProfile2D.h>
 #include <TLatex.h>
 
-
 #include <../TPC/AliTPCclusterMI.h>
-
 #include <AliLog.h>
 
-#include "AliTPCClusterHistograms.h"
 
 //____________________________________________________________________
 ClassImp(AliTPCClusterHistograms)
@@ -58,9 +65,8 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   fhQmaxVsTime(0)
 {
   // constructor 
-
+  
   // make name and title
-
   if (detector < 0 || detector >= 72) {
     AliDebug(AliLog::kError, Form("Detector %d does not exist", detector));
     return;
@@ -101,6 +107,7 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   // 1 bin for each 0.5 cm
   Int_t nBinsY = Int_t(4*yRange);
 
+  //defining histograms and profile plots
   fhQmaxVsRow  = new TH2F("QmaxVsPadRow", "Qmax vs. pad row;Pad row;Qmax", nPadRows+2, -1.5, nPadRows+0.5, 301, -0.5, 300.5);
   fhQtotVsRow  = new TH2F("QtotVsPadRow", "Qtot vs. pad row;Pad row;Qtot", nPadRows+2, -1.5, nPadRows+0.5, 400,  0,  4000);
   
@@ -315,7 +322,7 @@ Long64_t AliTPCClusterHistograms::Merge(TCollection* list)
 //____________________________________________________________________
 void AliTPCClusterHistograms::FillCluster(AliTPCclusterMI* cluster, Int_t time) {
   //
-  //
+  // Fills the different histograms with the information from the cluster.
   //
 
   Int_t padRow =   cluster->GetRow(); 
@@ -390,6 +397,9 @@ void AliTPCClusterHistograms::SaveHistograms()
 
 //____________________________________________________________________
 TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* opt) {
+  //
+  // Draws some histograms and save the canvas as eps and gif file.
+  //  
 
   TCanvas* c = new TCanvas(Form("plots_%s",fName.Data()), fName.Data(), 1200, 1000);
 
