@@ -39,11 +39,19 @@ void readRec()
   TH1F *hRealVertex = new TH1F("hRealVertex","Real Vertex",100,-15,15);
   
   TH1F *hVertex = new TH1F("hVertex","Z position of vertex",   100,-15,15);
+ 
+  TH1F *hAmp = new TH1F("hAmp"," amplitude",   100, 10,1000);
+  TH1F *hTime = new TH1F("hTime"," time",   100,12000.,20000);
+
+  TArrayI *amp = new TArrayI(24);  
+  TArrayI *time = new TArrayI(24);  
+
   AliSTARTRecPoint *fRec   ; // digits
   fRec = new AliSTARTRecPoint();
 
  // Event ------------------------- LOOP  
   for (Int_t ievent=0; ievent<iNevents; ievent++){
+    // for (Int_t ievent=0; ievent<990; ievent++){
     rl->GetEvent(ievent);
 
     AliHeader *header = gAlice->GetHeader();
@@ -71,10 +79,17 @@ void readRec()
     hBestTimeC->Fill(0.001 * besttimeright);
     hBestTimeA->Fill(0.001 * besttimeleft );
     Float_t vertex= fRec->GetVertex();
+    if(vertex<99){
     cout<<ievent<<" "<<mean<<" real vertex "<< zRealVertex<<" vertex "<<vertex<<
       " a "<< besttimeleft<<" c "<< besttimeright<<endl;
-    hAcc->Fill(zRealVertex-vertex/2.);
-    hVertex->Fill(vertex/2.);
+    hAcc->Fill(zRealVertex-vertex);
+    hVertex->Fill(vertex);
+     for (Int_t i=0; i<24; i++){ 
+      hAmp->Fill(fRec->GetAmp(i));
+      hTime->Fill(fRec->GetTime(i));
+      //  cout<<"time "<<fRec->GetTime(i)<<" amp "<<fRec->GetAmp(i)<<endl;
+    } 
+    }
   }
   Hfile = new TFile("FigRec.root","RECREATE","Histograms for START 
 digits");
@@ -89,7 +104,9 @@ digits");
   hVertex->Write();
   hRealVertex->Write();
   hAcc->Write();  
- hMean->Write();
+  hMean->Write();
+  hAmp->Write();
+  hTime->Write();
 } // end of macro
 
 

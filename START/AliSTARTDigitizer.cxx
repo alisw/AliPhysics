@@ -135,7 +135,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Float_t gain[24],timeDelayCFD[24], timeDelayLED[24];
   Int_t threshold =50; //photoelectrons
   Float_t zdetA, zdetC;
-   Int_t sumMultCoeff = 25;
+   Int_t sumMultCoeff = 100;
   TObjArray slewingLED;
   TObjArray slewingRec;
   AliSTARTParameters* param = AliSTARTParameters::Instance();
@@ -219,10 +219,11 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  }
 	  pmt=startHit->Pmt();
 	  Int_t numpmt=pmt-1;
-	  	  Double_t e=startHit->Etot();
+	  Double_t e=startHit->Etot();
 	  volume = startHit->Volume();
 	  
-	  if(e>0 && RegisterPhotoE(numpmt,e)) {
+	  //	  if(e>0 && RegisterPhotoE(numpmt,e)) {
+	  if(e>0 ) {
 	    countE[numpmt]++;
 	    besttime[numpmt] = startHit->Time();
 	    if(besttime[numpmt]<time[numpmt])
