@@ -27,6 +27,7 @@
 #include <Riostream.h>
 
 #include <TParticle.h>
+#include <TString.h>
 
 #include "AliESDtrack.h"
 #include "AliRsnDaughter.h"
@@ -175,6 +176,57 @@ Bool_t AliRsnDaughter::Adopt(TParticle* particle)
 	fMotherPDG = 0;
 	
 	return kTRUE;
+}
+//--------------------------------------------------------------------------------------------------------
+void AliRsnDaughter::Print(Option_t *option) const
+{
+// 
+// Print informations about track.
+// All options are used to add some specifical information as required:
+// "S" --> charge sign
+// "L" --> track label
+// "I" --> assigned PID (PDG code)
+// "T" --> true PDG code
+// "V" --> coordinates of track vertex
+// "P" --> coordinates of track momentum
+// "M" --> mother label
+// "N" --> mother PDG code
+// "W" --> ESD PID weights
+//
+
+	TString output("Track info: ");
+	TString opt(option);
+	opt.ToUpper();
+	
+	if (opt.Contains("S")) {
+		output.Append(Form("sign = %d -- ", (Int_t)fSign));
+	}
+	if (opt.Contains("L")) {
+		output.Append(Form("label = %d -- ", fLabel));
+	}
+	if (opt.Contains("I")) {
+		output.Append(Form("PDG = %d -- ", fPDG));
+	}
+	if (opt.Contains("T")) {
+		output.Append(Form("true PDG = %d -- ", fTruePDG));
+	}
+	if (opt.Contains("V")) {
+		output.Append(Form("v = %f, %f, %f -- ", fV[0], fV[1], fV[2]));
+	}
+	if (opt.Contains("P")) {
+		output.Append(Form("p = %f, %f, %f -- ", fP[0], fP[1], fP[2]));
+	}
+	if (opt.Contains("M")) {
+		output.Append(Form("mum = %d -- ", fMother));
+	}
+	if (opt.Contains("N")) {
+		output.Append(Form("mum PDG = %d -- ", fMotherPDG));
+	}
+	if (opt.Contains("W")) {
+		output.Append(Form("PID wgts (e, mu, pi, K, p) = %f, %f, %f, %f, %f", fPIDwgt[0], fPIDwgt[1], fPIDwgt[2], fPIDwgt[3], fPIDwgt[4]));
+	}
+	
+	cout << output.Data() << endl;
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnDaughter AliRsnDaughter::Sum(AliRsnDaughter t1, AliRsnDaughter t2)
