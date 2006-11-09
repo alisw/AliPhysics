@@ -253,7 +253,7 @@ void rec()
   Double_t  y=gRandom->Rndm()*2*AliRICHDigit::SizePcY();//38.06;
   
   
-  Double_t ckovMax=TMath::ACos(1./AliRICHRecon::fkRadIdx),ckovSim;
+  Double_t ckovMax=0.75,ckovSim;
   Int_t nSim=0;
   while(nSim<3){
     ckovSim=gRandom->Rndm()*ckovMax;//0.6468;
@@ -284,7 +284,7 @@ void rec()
   
   TVector2 pos;
   for(int i=0;i<nSim;i++){
-    rec.TracePhoton(ckovSim,gRandom->Rndm()*2*TMath::Pi(),pos);                                   //add photons 
+    rec.TracePhot(ckovSim,gRandom->Rndm()*2*TMath::Pi(),pos);                                   //add photons 
     if(AliRICHDigit::IsInDead(pos.X(),pos.Y())) continue; 
     pPhoMap->SetPoint(iCluCnt,pos.X(),pos.Y());    new((*pCluLst)[iCluCnt++]) AliRICHCluster(1,pos.X(),pos.Y(),35); 
   }  
@@ -301,8 +301,8 @@ void rec()
   Printf("---------------- Now reconstructed --------------------");
   
   
-  for(int j=0;j<100;j++){rec.TracePhoton(ckovRec,j*0.0628,pos); pRing->SetPoint(j,pos.X(),pos.Y());}  
-  for(int j=0;j<100;j++){rec.TracePhoton(ckovOld,j*0.0628,pos); pOld->SetPoint(j,pos.X(),pos.Y());}  
+  for(int j=0;j<100;j++){rec.TracePhot(ckovRec,j*0.0628,pos); pRing->SetPoint(j,pos.X(),pos.Y());}  
+  for(int j=0;j<100;j++){rec.TracePhot(ckovOld,j*0.0628,pos); pOld->SetPoint(j,pos.X(),pos.Y());}  
     
   new TCanvas;  AliRICHDigit::DrawPc();  pMipMap->Draw(); pPhoMap->Draw(); pBkgMap->Draw(); pRing->Draw();  pOld->Draw(); 
   
@@ -326,7 +326,7 @@ void aaa()
   rec.SetTrack(10*TMath::DegToRad(),1,30,60); old.SetTrack(10*TMath::DegToRad(),1,30,60);
   TVector2 pos;
   Double_t ckovSim=0.6234;
-  rec.TracePhoton(ckovSim,1,pos);
+  rec.TracePhot(ckovSim,1,pos);
   Printf("ckovSim %f",ckovSim);
   double ckovRec=rec.FindPhotCkov(pos.X(),pos.Y());
   double ckovOld=old.FindPhotCkov(pos.X(),pos.Y());
@@ -337,72 +337,6 @@ void aaa()
 
 
 
-void ed(Int_t iEvtFrom=-1,Int_t iEvtTo=-1) 
-{
-// Display digits, reconstructed tracks intersections and RICH rings if available 
-  
-  
-  Int_t iNevt=al->GetNumberOfEvents();
-  if(iEvtFrom< 0    ){iEvtFrom=0;iEvtTo=iNevt-1;}
-  if(iEvtTo  >=iNevt){           iEvtTo=iNevt-1;}
-  
-  rl->LoadDigits();
-  
-  TFile *pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pFile->IsOpen()) return;//open AliESDs.root                                                                    
-  TTree *pEsdTr=(TTree*) pFile->Get("esdTree");  if(!pEsdTr)                     return;//get ESD tree
-                                                                 
-  AliESD *pEsd=new AliESD;  pTree->SetBranchAddress("ESD", &pEsd);
-  
-  
-  
-  
-  TPolyMarker  *pDigMap[7]; //digits map
-  TPolyMarker  *pTrkMap[7]; //TRKxPC intersection map
-  
-  for(Int_t i=0;i<7;i++){
-    pDigMap[i]=new TPolyMarker();       pDigMap[i]->SetMarkerStyle(25);   pDigMap[i]->SetMarkerSize(0.5); pDigMap[i]->SetMarkerColor(kGreen); 
-    pTrkMap[i]=new TPolyMarker();       pTrkMap[i]->SetMarkerStyle(4);    pTrkMap[i]->SetMarkerSize(0.5); pTrkMap[i]->SetMarkerColor(kRed); 
-  }
-
-  TLatex t;
-  TCanvas *pC = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);  pC->Divide(3,3);
-  
-  for(Int_t iEvt=iEvtFrom;iEvt<=iEvtTo;iEvt++) {                //events loop
-    pC->cd(3);  t.DrawText(0.2,0.4,Form("Event %i",iEvt));        //print current event number
-        
-    pEsdTr->GetEntry(iEvt);                              //get ESD for this event   
-    for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//ESD tracks loop
-      AliESDtrack *pTrk = pEsd->GetTrack(iTrk);             //
-      Float_t th,ph,x,y;
-      pTrk->GetRICHtrk(th,ph,x,y);
-      
-    }//ESD tracks loop
-    
-    al->GetEvent(iEvt);   rl->TreeD()->GetEntry(0); //get digits list
-    for(Int_t iCh=0;iCh<7;iCh++) {//chambers loop
-      for(Int_t iDig=0;iDig < r->DigLst(iCh)->GetEntries();iDig++) {      //digits loop
-        AliRICHDigit *pDig = (AliRICHDigit*)r->DigLst(iCh)->At(iDig);     
-        pDigMap[iCh]->SetPoint(iDig,pDig->LorsX(),pDig->LorsY());
-      }                                                             //digits loop
-
-      
-      if(iCh==6) pC->cd(1); if(iCh==5) pC->cd(2);
-      if(iCh==4) pC->cd(4); if(iCh==3) pC->cd(5); if(iCh==2) pC->cd(6);
-                            if(iCh==1) pC->cd(8); if(iCh==0) pC->cd(9);
-      
-      AliRICHDigit::DrawPc();  pDigMap[iCh]->Draw();
-    }//chambers loop
-    pC->Update();
-    pC->Modified();
-
-    if(iEvt<iEvtTo) {gPad->WaitPrimitive();pC->Clear();}
-    
-    
-    
-  }//events loop
-  delete pEsf;  pEsdFl->Close();//close AliESDs.root
-  rl->UnloadDigits();
-}//Display()
 
 
 void AliRICH::HitQA(Double_t cut,Double_t cutele,Double_t cutR)
