@@ -7,7 +7,7 @@
 #include "../CreateESDChain.C"
 #include "../PWG0Helper.C"
 
-void runROCESDAnalysis(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, 
+void runROCRawAnalysis(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, 
     const char* option = "", const char* proofServer = "jgrosseo@lxb6046")
 {
   if (aProof)
@@ -21,9 +21,11 @@ void runROCESDAnalysis(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t a
 
   TChain* chain = CreateRawChain(dataDir, nRuns);
   
+  cout << "Entries in chain " << chain->GetEntries() << endl;
+
   TList inputList;
   
-  TString selectorName = "AliROCESDAnalysisSelector";
+  TString selectorName = "AliROCRawAnalysisSelector";
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
   if (aDebug != kFALSE)
