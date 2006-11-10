@@ -89,9 +89,12 @@ void AliROCESDAnalysisSelector::Init(TTree *tree)
   AliSelector::Init(tree);
 
   // Set branch address
-  if (tree)
+  if (tree) {
+    tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("fTracks.*", 1);
+    tree->SetBranchStatus("fTimeStamp", 1);
     tree->SetBranchAddress("ESDfriend", &fESDfriend);
-    
+  }
   if (fESDfriend != 0)
     AliDebug(AliLog::kInfo, "INFO: Found ESDfriend branch in chain.");
 }
@@ -103,6 +106,9 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   // if (AliSelector::Process(entry) == kFALSE)
   //   return kFALSE;
   //
+
+  //  AliDebug(AliLog::kInfo, Form("Processing event %d \n", entry));
+
 
   if (AliSelector::Process(entry) == kFALSE)
     return kFALSE;
@@ -132,6 +138,7 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   // loop over esd tracks
   for (Int_t t=0; t<nTracks; t++)
   {
+
     AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (fESD->GetTrack(t));
     if (!esdTrack)
     {
@@ -198,20 +205,29 @@ void AliROCESDAnalysisSelector::SlaveTerminate()
   for (Int_t i=0; i<kTPCSectors; i++)
     if (fClusterHistograms[i])
         fOutput->Add(fClusterHistograms[i]);
+
 } 
 
 void AliROCESDAnalysisSelector::Terminate()
 {
   // TODO read from output list for PROOF
     
-  TFile* file = TFile::Open("rocESD.root", "RECREATE");
+  TNamed* comment = dynamic_cast<TNamed*>(fTree->GetUserInfo()->FindObject("comment"));
+
+  if (comment)
+    AliDebug(AliLog::kInfo, Form("INFO: Found comment in input list: %s \n", comment->GetTitle()));
+
+  TFile* file = TFile::Open(Form("rocESD_%s.root",comment->GetTitle()), "RECREATE");
   
   for (Int_t i=0; i<kTPCSectors; i++)
     if (fClusterHistograms[i]) {
       fClusterHistograms[i]->SaveHistograms();
       TCanvas* c = fClusterHistograms[i]->DrawHistograms();
-      c->SaveAs(Form("%s.eps",c->GetName()));
-      c->SaveAs(Form("%s.gif",c->GetName()));
+      c->SaveAs(Form("plots_%s_%s.eps",comment->GetTitle(),c->GetName()));
+      c->SaveAs(Form("plots_%s_%s.gif",comment->GetTitle(),c->GetName()));
+
+      c->Close();
+      delete c;
     }
   file->Close();
 } 
