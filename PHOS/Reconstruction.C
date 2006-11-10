@@ -28,12 +28,25 @@
 #include "AliReconstruction.h"
 #include "TString.h"
 #include "Riostream.h"
-#include "AliPHOSGetter.h"
-#include "AliEMCALGetter.h"
+#include "TStopwatch.h"
+#include "AliTPCReconstructor.h"
 
-void reco(TString opt="TVRE", TString name="all", Bool_t debug="kFALSE") 
+void reco(TString opt="TVRE", TString name="all", TString cdb="") 
 {
   AliReconstruction rec ; 
+  rec.SetUniformFieldTracking(kFALSE);
+  rec.SetWriteESDfriend();
+  rec.SetWriteAlignmentData();
+  if ( name.Contains("TPC") ) {
+   AliTPCReconstructor::SetCtgRange(2.); // for pp events
+   AliTPCReconstructor::SetStreamLevel(1);
+  }
+  if ( !cdb.IsNull() ) 
+    rec.SetDefaultStorage(cdb.Data() ) ; 
+
+  if ( opt.Contains("W") )
+    rec.SetInput("raw.root");
+
   if ( !opt.Contains("T") ) 
     rec.SetRunTracking("") ;
   else
@@ -52,5 +65,9 @@ void reco(TString opt="TVRE", TString name="all", Bool_t debug="kFALSE")
   else 
     rec.SetFillESD(name.Data()) ; 
 
+  TStopwatch timer;
+  timer.Start();
   rec.Run() ;
+  timer.Stop();
+  timer.Print();
 }   
