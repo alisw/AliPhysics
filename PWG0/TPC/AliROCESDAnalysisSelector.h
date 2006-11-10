@@ -31,6 +31,7 @@ class AliROCESDAnalysisSelector : public AliSelector {
     AliTPCClusterHistograms* fClusterHistograms[kTPCSectors];
 
  private:
+
     AliROCESDAnalysisSelector(const AliROCESDAnalysisSelector&);
     AliROCESDAnalysisSelector& operator=(const AliROCESDAnalysisSelector&);
 

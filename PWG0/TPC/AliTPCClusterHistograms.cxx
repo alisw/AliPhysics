@@ -401,12 +401,12 @@ TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* opt) {
   // Draws some histograms and save the canvas as eps and gif file.
   //  
 
-  TCanvas* c = new TCanvas(Form("plots_%s",fName.Data()), fName.Data(), 1200, 1000);
+  TCanvas* c = new TCanvas(Form("%s",fName.Data()), fName.Data(), 1200, 1000);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
 
-  gStyle->SetPadLeftMargin(0.05);
+  gStyle->SetPadLeftMargin(0.1);
 
   c->Divide(3,3);
 
