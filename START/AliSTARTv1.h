@@ -26,11 +26,13 @@ public:
   virtual void   DrawDetector();
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
+  Bool_t RegisterPhotoE(Int_t impt, Double_t energy);
   virtual void   StepManager();
 
 
 protected:
   Int_t fIdSens1; // Sensetive volume  in START
+  TObjArray fEffPMT; //pmt registration effeicincy
  
   ClassDef(AliSTARTv1,2)  //Class for START version 1
 };
