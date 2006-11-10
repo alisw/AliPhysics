@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------
 
 #include <TMath.h>
+#include <TParticle.h>
 
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
@@ -216,6 +217,174 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
 
   if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
+}
+
+//_______________________________________________________________________
+AliESDtrack::AliESDtrack(TParticle * part) : 
+  AliExternalTrackParam(),
+  fFlags(0),
+  fLabel(0),
+  fID(0),
+  fTrackLength(0),
+  fD(0),fZ(0),
+  fCdd(0),fCdz(0),fCzz(0),
+  fStopVertex(0),
+  fCp(0),
+  fCchi2(1e10),
+  fIp(0),
+  fOp(0),
+  fITSchi2(0),
+  fITSncls(0),
+  fITSsignal(0),
+  fITSLabel(0),
+  fTPCchi2(0),
+  fTPCncls(0),
+  fTPCnclsF(0),
+  fTPCClusterMap(159),//number of padrows
+  fTPCsignal(0),
+  fTPCsignalN(0),
+  fTPCsignalS(0),
+  fTPCLabel(0),
+  fTRDchi2(0),
+  fTRDncls(0),
+  fTRDncls0(0),
+  fTRDsignal(0),
+  fTRDLabel(0),
+  fTRDQuality(0),
+  fTRDBudget(0),
+  fTOFchi2(0),
+  fTOFindex(0),
+  fTOFCalChannel(-1),
+  fTOFsignal(-1),
+  fTOFsignalToT(0),
+  fRICHchi2(1e10),
+  fRICHqn(-1),
+  fRICHcluIdx(-1),
+  fRICHsignal(-1),
+  fRICHtrkTheta(-1),
+  fRICHtrkPhi(-1),
+  fRICHtrkX(-1),
+  fRICHtrkY(-1),
+  fRICHmipX(-1),
+  fRICHmipY(-1),
+  fEMCALindex(kEMCALNoMatch),
+  fFriendTrack(0)
+{
+  //
+  // ESD track from TParticle
+  //
+
+  // Reset all the arrays
+  Int_t i, j;
+  for (i=0; i<AliPID::kSPECIES; i++) {
+    fTrackTime[i]=0.;
+    fR[i]=0.;
+    fITSr[i]=0.;
+    fTPCr[i]=0.;
+    fTRDr[i]=0.;
+    fTOFr[i]=0.;
+    fRICHr[i]=0.;
+  }
+  
+  for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
+  for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
+  for (i=0;i<kNPlane;i++) {
+    for (j=0;j<kNSlice;j++) {
+      fTRDsignals[i][j]=0.; 
+    }
+    fTRDTimBin[i]=-1;
+  }
+  for (i=0;i<4;i++) {fTPCPoints[i]=-1;}
+  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
+  for (i=0;i<10;i++) {fTOFInfo[i]=-1;}
+
+  // Calculate the AliExternalTrackParam content
+
+  Double_t xref;
+  Double_t alpha;
+  Double_t param[5];
+  Double_t covar[15];
+
+  // Calculate alpha: the rotation angle of the corresponding local system (TPC sector)
+  alpha = part->Phi()*180./TMath::Pi();
+  if (alpha<0) alpha+= 360.;
+  if (alpha>360) alpha -= 360.;
+
+  Int_t sector = (Int_t)(alpha/20.);
+  alpha = 10. + 20.*sector;
+  alpha /= 180;
+  alpha *= TMath::Pi();
+
+  // Covariance matrix: no errors, the parameters are exact
+  for (Int_t i=0; i<15; i++) covar[i]=0.;
+
+  // Get the vertex of origin and the momentum
+  TVector3 ver(part->Vx(),part->Vy(),part->Vz());
+  TVector3 mom(part->Px(),part->Py(),part->Pz());
+
+  // Rotate to the local coordinate system (TPC sector)
+  ver.RotateZ(-alpha);
+  mom.RotateZ(-alpha);
+
+  // X of the referense plane
+  xref = ver.X();
+
+  Int_t pdgCode = part->GetPdgCode();
+
+  Double_t charge = 
+    TDatabasePDG::Instance()->GetParticle(pdgCode)->Charge();
+
+  param[0] = ver.Y();
+  param[1] = ver.Z();
+  param[2] = TMath::Sin(mom.Phi());
+  param[3] = mom.Pz()/mom.Pt();
+  param[4] = TMath::Sign(1/mom.Pt(),charge);
+
+  // Set AliExternalTrackParam
+  Set(xref, alpha, param, covar);
+
+  // Set the PID
+  Int_t indexPID = 99;
+
+  switch (TMath::Abs(pdgCode)) {
+
+  case  11: // electron
+    indexPID = 0;
+    break;
+
+  case 13: // muon
+    indexPID = 1;
+    break;
+
+  case 211: // pion
+    indexPID = 2;
+    break;
+
+  case 321: // kaon
+    indexPID = 3;
+    break;
+
+  case 2212: // proton
+    indexPID = 4;
+    break;
+
+  default:
+    break;
+  }
+
+  // If the particle is not e,mu,pi,K or p the PID probabilities are set to 0
+  if (indexPID < AliPID::kSPECIES) {
+    fR[indexPID]=1.;
+    fITSr[indexPID]=1.;
+    fTPCr[indexPID]=1.;
+    fTRDr[indexPID]=1.;
+    fTOFr[indexPID]=1.;
+    fRICHr[indexPID]=1.;
+
+  }
+  // AliESD track label
+  SetLabel(part->GetUniqueID());
+
 }
 
 //_______________________________________________________________________

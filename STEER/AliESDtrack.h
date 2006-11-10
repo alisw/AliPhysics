@@ -27,6 +27,7 @@
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
 
+class TParticle;
 class AliESDVertex;
 class AliKalmanTrack;
 class AliTrackPointArray;
@@ -35,6 +36,7 @@ class AliESDtrack : public AliExternalTrackParam {
 public:
   AliESDtrack();
   AliESDtrack(const AliESDtrack& track);
+  AliESDtrack(TParticle * part);
   virtual ~AliESDtrack();
   const AliESDfriendTrack *GetFriendTrack() const {return fFriendTrack;}
   void SetFriendTrack(const AliESDfriendTrack *t) {
