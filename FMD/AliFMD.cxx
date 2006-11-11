@@ -95,6 +95,7 @@
 #include <TBrowser.h>		// ROOT_TBrowser
 // #include <TVirtualMC.h>	// ROOT_TVirtualMC
 #include <TVector2.h>           // ROOT_TVector2 
+#include <TGeoManager.h>        // ROOT_TGeoManager
 
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliLoader.h>		// ALILOADER_H
@@ -1098,6 +1099,50 @@ AliFMD::Browse(TBrowser* b)
   b->Add(AliFMDGeometry::Instance());
 }
 
+//____________________________________________________________________	
+void
+AliFMD::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  // 
+  // This code was made by Raffaele Grosso <rgrosso@mail.cern.ch>.  I
+  // (cholm) will probably want to change it.   For one, I think it
+  // should be the job of the geometry manager to deal with this. 
+  for(size_t f = 1; f <= 3; f++){ // Detector 1,2,3
+    for(size_t tb =  0; tb <2 ; tb++){ // Top/Bottom 
+      char     stb = tb == 0 ? 'T' : 'B';
+      unsigned min = tb == 0 ? 0   : 5;
+
+      TString halfVol(Form("/ALIC/F%dM%c_%d", f, stb, f));
+      TString halfSym(halfVol);
+      if(!gGeoManager->SetAlignableEntry(halfSym.Data(),halfVol.Data()))
+	AliFatal(Form("Alignable entry %s not created. "
+		      "Volume path %s not valid", 
+		      halfSym.Data(),halfVol.Data()));
+      for(size_t io = 0; io < 2; io++){ // inner, outer 
+	if (f==1 && io==1) continue; // Only one ring in FMD1 
+	min          = (tb == 1 ? 10 : min);
+	char     sio = (io == 0 ? 'I' : '0');
+	unsigned nio = (io == 0 ? 3   : 9);
+	unsigned max = (io == 0 ? 5   : 10) + min;
+	
+	for(size_t i = min; i < max; i++) { // Modules
+	  TString modVol(Form("%s/F%c%cV_7%d/F%cSE_%d", halfVol.Data(), 
+			      sio, stb, nio, sio, i));
+	  TString modSym(modVol);
+	  if(!gGeoManager->SetAlignableEntry(modSym.Data(),modVol.Data()))
+	    AliFatal(Form("Alignable entry %s not created. "
+			  "Volume path %s not valid", 
+			  modSym.Data(), modVol.Data()));
+	}
+      }
+    }
+  }
+
+}
 //___________________________________________________________________
 //
 // EOF

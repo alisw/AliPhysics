@@ -307,6 +307,10 @@ public:
       AliFMDGeometry to construct the geometry.  This in turn calls
       AliFMDGeometryBuilder.   */
   virtual void   CreateGeometry();
+  /** Create entries for alignable volumes associating the symbolic volume
+      name with the corresponding volume path. Needs to be syncronized with
+      eventual changes in the geometry.   */
+  virtual void  AddAlignableVolumes() const;
   /** Create the tracking mediums used by the FMD.  This associates
       the tracking mediums defined with the FMD in the
       TVirtualMCApplication (AliMC). 
