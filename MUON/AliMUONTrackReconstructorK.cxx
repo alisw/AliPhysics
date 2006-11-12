@@ -76,20 +76,28 @@ AliMUONTrackReconstructorK::~AliMUONTrackReconstructorK(void)
 void AliMUONTrackReconstructorK::AddHitsForRecFromRawClusters()
 {
   /// To add to the list of hits for reconstruction all the raw clusters
-  TTree *TR = fMUONData->TreeR();
+  TTree *treeR;
   AliMUONHitForRec *hitForRec;
   AliMUONRawCluster *clus;
   Int_t iclus, nclus, nTRentries;
   TClonesArray *rawclusters;
   AliDebug(1,"Enter AddHitsForRecFromRawClusters");
 
+  treeR = fMUONData->TreeR();
+  if (!treeR) {
+    AliError("TreeR must be loaded");
+    exit(0);
+  }
+  
   if (fTrackMethod != 3) { //AZ
-    fMUONData->SetTreeAddress("RC"); //AZ
-    nTRentries = Int_t(TR->GetEntries());
-    if (nTRentries != 1) {
-      AliError(Form("nTRentries = %d not equal to 1 ",nTRentries));
+    nTRentries = Int_t(treeR->GetEntries());
+    
+    if (!(fMUONData->IsRawClusterBranchesInTree())) {
+      AliError(Form("RawCluster information is not avalaible, nTRentries = %d not equal to 1",nTRentries));
       exit(0);
     }
+
+    fMUONData->SetTreeAddress("RC"); //AZ
     fMUONData->GetRawClusters(); // only one entry  
   }
 

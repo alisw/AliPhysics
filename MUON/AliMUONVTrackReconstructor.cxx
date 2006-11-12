@@ -467,76 +467,82 @@ Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
 {
     // To make the trigger tracks from Local Trigger
   AliDebug(1, "Enter MakeTriggerTracks");
-    
-    Int_t nTRentries;
-    UChar_t gloTrigPat;
-    TClonesArray *localTrigger;
-    TClonesArray *globalTrigger;
-    AliMUONLocalTrigger *locTrg;
-    AliMUONGlobalTrigger *gloTrg;
-
-    TTree* treeR = fMUONData->TreeR();
-   
-    nTRentries = Int_t(treeR->GetEntries());
-     
-    treeR->GetEvent(0); // only one entry  
-
-    if (!(fMUONData->IsTriggerBranchesInTree())) {
-      AliWarning(Form("Trigger information is not avalaible, nTRentries = %d not equal to 1",nTRentries));
-      return kFALSE;
-    }
-
-    fMUONData->SetTreeAddress("TC");
-    fMUONData->GetTrigger();
-
-    // global trigger for trigger pattern
-    gloTrigPat = 0;
-    globalTrigger = fMUONData->GlobalTrigger(); 
-    gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
- 
-    if (gloTrg)
-      gloTrigPat = gloTrg->GetGlobalResponse();
   
+  TTree* treeR;
+  Int_t nTRentries;
+  UChar_t gloTrigPat;
+  TClonesArray *localTrigger;
+  TClonesArray *globalTrigger;
+  AliMUONLocalTrigger *locTrg;
+  AliMUONGlobalTrigger *gloTrg;
 
-    // local trigger for tracking 
-    localTrigger = fMUONData->LocalTrigger();    
-    Int_t nlocals = (Int_t) (localTrigger->GetEntries());
+  treeR = fMUONData->TreeR();
+  if (!treeR) {
+    AliWarning("TreeR is not loaded");
+    return kFALSE;
+  }
+  
+  nTRentries = Int_t(treeR->GetEntries());
+   
+  treeR->GetEvent(0); // only one entry  
 
-    Float_t z11 = AliMUONConstants::DefaultChamberZ(10);
-    Float_t z21 = AliMUONConstants::DefaultChamberZ(12);
+  if (!(fMUONData->IsTriggerBranchesInTree())) {
+    AliWarning(Form("Trigger information is not avalaible, nTRentries = %d not equal to 1",nTRentries));
+    return kFALSE;
+  }
 
-    Float_t y11 = 0.;
-    Int_t stripX21 = 0;
-    Float_t y21 = 0.;
-    Float_t x11 = 0.;
+  fMUONData->SetTreeAddress("TC");
+  fMUONData->GetTrigger();
 
-    for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
-      locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
+  // global trigger for trigger pattern
+  gloTrigPat = 0;
+  globalTrigger = fMUONData->GlobalTrigger(); 
+  gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
+ 
+  if (gloTrg)
+    gloTrigPat = gloTrg->GetGlobalResponse();
+ 
 
-      AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
-      AliMUONTriggerCircuit* circuit = 
-	(AliMUONTriggerCircuit*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
+  // local trigger for tracking 
+  localTrigger = fMUONData->LocalTrigger();    
+  Int_t nlocals = (Int_t) (localTrigger->GetEntries());
 
-      y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-      stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-      y21 = circuit->GetY21Pos(stripX21);	
-      x11 = circuit->GetX11Pos(locTrg->LoStripY());
-      
-      AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),
-		       locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
-      
-      Float_t thetax = TMath::ATan2( x11 , z11 );
-      Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
-      
-      fTriggerTrack->SetX11(x11);
-      fTriggerTrack->SetY11(y11);
-      fTriggerTrack->SetThetax(thetax);
-      fTriggerTrack->SetThetay(thetay);
-      fTriggerTrack->SetGTPattern(gloTrigPat);
-            
-      fMUONData->AddRecTriggerTrack(*fTriggerTrack);
-    } // end of loop on Local Trigger
-    return kTRUE;    
+  Float_t z11 = AliMUONConstants::DefaultChamberZ(10);
+  Float_t z21 = AliMUONConstants::DefaultChamberZ(12);
+
+  Float_t y11 = 0.;
+  Int_t stripX21 = 0;
+  Float_t y21 = 0.;
+  Float_t x11 = 0.;
+
+  for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
+    locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);      
+
+    AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
+    AliMUONTriggerCircuit* circuit = 
+      (AliMUONTriggerCircuit*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
+
+    y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+    stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+    y21 = circuit->GetY21Pos(stripX21);       
+    x11 = circuit->GetX11Pos(locTrg->LoStripY());
+    
+    AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),
+        	     locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
+    
+    Float_t thetax = TMath::ATan2( x11 , z11 );
+    Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
+    
+    fTriggerTrack->SetX11(x11);
+    fTriggerTrack->SetY11(y11);
+    fTriggerTrack->SetThetax(thetax);
+    fTriggerTrack->SetThetay(thetay);
+    fTriggerTrack->SetGTPattern(gloTrigPat);
+ 	  
+    fMUONData->AddRecTriggerTrack(*fTriggerTrack);
+  } // end of loop on Local Trigger
+  
+  return kTRUE;    
 }
 
 //__________________________________________________________________________
