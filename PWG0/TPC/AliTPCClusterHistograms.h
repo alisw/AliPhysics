@@ -8,7 +8,7 @@
 // read out chamber from the reconstructed clusters.
 //
 
-#include "TNamed.h"
+#include <TNamed.h>
 
 class TH3;
 class TH2F;
@@ -24,7 +24,7 @@ class AliTPCClusterHistograms : public TNamed
 public:
 
   AliTPCClusterHistograms();
-  AliTPCClusterHistograms(Int_t detector, const Char_t* comment="", Int_t timeStart=-1, Int_t timeStop=-1);
+  AliTPCClusterHistograms(Int_t detector, const Char_t* comment="", Int_t timeStart=-1, Int_t timeStop=-1, Bool_t edgeSuppression = kFALSE);
   
   AliTPCClusterHistograms(const AliTPCClusterHistograms& c);
   virtual ~AliTPCClusterHistograms();
@@ -38,6 +38,8 @@ public:
   //  void FillCluster(AliTPCclusterMI* clusterMI, Int_t time=-1, Float_t trackangle);
 
   TCanvas* DrawHistograms(const Char_t* opt="");
+
+  static const char* FormDetectorName(Int_t detector, Bool_t edgeSuppression = kFALSE, const char* comment = 0);
 
 protected:
 
@@ -61,6 +63,9 @@ protected:
 
   TProfile*   fhQtotVsTime;             //
   TProfile*   fhQmaxVsTime;             //
+  
+  Bool_t      fIsIROC;                  // true = IROC, false = OROC
+  Bool_t      fEdgeSuppression;         // if set edges are not taken into account for histograms
 
   ClassDef(AliTPCClusterHistograms,1)
 };

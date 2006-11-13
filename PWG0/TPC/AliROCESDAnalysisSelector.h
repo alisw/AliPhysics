@@ -14,7 +14,7 @@ class AliESDfriend;
 
 class AliROCESDAnalysisSelector : public AliSelector {
   public:
-    enum { kTPCSectors = 72 };
+    enum { kTPCSectors = 72, kTPCHists = kTPCSectors * 2 };
   
     AliROCESDAnalysisSelector();
     virtual ~AliROCESDAnalysisSelector();
@@ -26,9 +26,9 @@ class AliROCESDAnalysisSelector : public AliSelector {
     virtual void    Terminate();
 
  protected:
-    AliESDfriend* fESDfriend;
+    AliESDfriend* fESDfriend;  // ESD friend pointer
 
-    AliTPCClusterHistograms* fClusterHistograms[kTPCSectors];
+    AliTPCClusterHistograms* fClusterHistograms[kTPCHists]; // 0..71 histograms created with all clusters, 72..143 without edges
 
  private:
 

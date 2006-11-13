@@ -15,26 +15,11 @@
 
 /* $Id$ */
 
-// The ESD is available as member fESD
+// 
+//  This class analyses TPC cosmics data from the ESD and the ESDfriend
 //
-// The Process function is nearly empty. Implement your analysis there and look at the other listed below functions you
-// might need.
+//  Authors: Jan.Fiete.Grosse-Oetringhaus@cern.ch, Claus.Jorgensen@cern.ch
 //
-// The following methods can be overrriden. Please do not forgot to call the base class function.
-//
-//    Begin():        called everytime a loop on the tree starts,
-//                    a convenient place to create your histograms.
-//    SlaveBegin():   called after Begin(), when on PROOF called only on the
-//                    slave servers.
-//    Init():         called for each new tree. Enable/Disable branches here.
-//    Process():      called for each event, in this function you decide what
-//                    to read and fill your histograms.
-//    SlaveTerminate: called at the end of the loop on the tree, when on PROOF
-//                    called only on the slave servers.
-//    Terminate():    called at the end of the loop on the tree,
-//                    a convenient place to draw/fit your histograms.
-//
-//  Author: Jan.Fiete.Grosse-Oetringhaus@cern.ch
 
 #include "AliROCESDAnalysisSelector.h"
 
@@ -60,7 +45,7 @@ AliROCESDAnalysisSelector::AliROCESDAnalysisSelector() :
   // Constructor. Initialization of pointers
   //
   
-  for (Int_t i=0; i<kTPCSectors; i++)
+  for (Int_t i=0; i<kTPCHists; i++)
     fClusterHistograms[i] = 0;
 }
 
@@ -87,14 +72,20 @@ void AliROCESDAnalysisSelector::Init(TTree *tree)
   // Init() will be called many times when running with PROOF.
 
   AliSelector::Init(tree);
+  
+  printf("Init called %p\n", (void*) fESDfriend);
 
   // Set branch address
-  if (tree) {
+  if (tree) 
+  {
+    tree->SetBranchAddress("ESDfriend", &fESDfriend);
+  
     tree->SetBranchStatus("*", 0);
     tree->SetBranchStatus("fTracks.*", 1);
     tree->SetBranchStatus("fTimeStamp", 1);
-    tree->SetBranchAddress("ESDfriend", &fESDfriend);
+    //tree->SetBranchStatus("fTracks.fCalibContainer", 0);
   }
+
   if (fESDfriend != 0)
     AliDebug(AliLog::kInfo, "INFO: Found ESDfriend branch in chain.");
 }
@@ -106,9 +97,6 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   // if (AliSelector::Process(entry) == kFALSE)
   //   return kFALSE;
   //
-
-  //  AliDebug(AliLog::kInfo, Form("Processing event %d \n", entry));
-
 
   if (AliSelector::Process(entry) == kFALSE)
     return kFALSE;
@@ -126,9 +114,7 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
     AliDebug(AliLog::kError, "ESDfriend branch not available");
     return kFALSE;
   }
-
-  //  printf(Form(" event number: %d  ... time stamp: %d \n", fESD->GetEventNumber(), fESD->GetTimeStamp()));
-
+  
   fESD->SetESDfriend(fESDfriend);
 
   Int_t nTracks = fESD->GetNumberOfTracks();
@@ -184,16 +170,27 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
       //	continue;
 
       if (!fClusterHistograms[detector])
-      {
         fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",fESD->GetTimeStamp(),fESD->GetTimeStamp()+7*60*60);
-      }
       
+      if (!fClusterHistograms[detector+kTPCSectors])
+        fClusterHistograms[detector+kTPCSectors] = new AliTPCClusterHistograms(detector,"",fESD->GetTimeStamp(),fESD->GetTimeStamp()+7*60*60, kTRUE);
+
       fClusterHistograms[detector]->FillCluster(cluster, fESD->GetTimeStamp());
+      fClusterHistograms[detector+kTPCSectors]->FillCluster(cluster, fESD->GetTimeStamp());
     }
   }
   
   if (nSkippedSeeds > 0)
     printf("WARNING: The seed was not found for %d out of %d tracks.\n", nSkippedSeeds, nTracks);
+
+  // TODO This should not be needed, the TTree::GetEntry() should take care of this, maybe because it has a reference member, to be analyzed
+  // if the ESDfriend is not deleted we get a major memory leak
+  // here the esdfriend seems to be also deleted, very weird behaviour....
+  delete fESD;
+  fESD = 0;    
+  
+  //delete fESDfriend;
+  //fESDfriend = 0;
    
   return kTRUE;
 }
@@ -202,24 +199,47 @@ void AliROCESDAnalysisSelector::SlaveTerminate()
 {
   //
   
-  for (Int_t i=0; i<kTPCSectors; i++)
-    if (fClusterHistograms[i])
+  if (fOutput)
+  {
+    for (Int_t i=0; i<kTPCHists; i++)
+      if (fClusterHistograms[i])
         fOutput->Add(fClusterHistograms[i]);
-
+  }
 } 
 
 void AliROCESDAnalysisSelector::Terminate()
 {
-  // TODO read from output list for PROOF
-    
-  TNamed* comment = dynamic_cast<TNamed*>(fTree->GetUserInfo()->FindObject("comment"));
+  // 
+  // read the objects from the output list and write them to a file
+  // the filename is modified by the object comment passed in the tree info or input list
+  //
+
+  if (fOutput)
+  {  
+    fOutput->Print();
+        
+    for (Int_t i=0; i<kTPCSectors; i++)
+      fClusterHistograms[i] = dynamic_cast<AliTPCClusterHistograms*> (fOutput->FindObject(AliTPCClusterHistograms::FormDetectorName(i, kFALSE)));
+    for (Int_t i=0; i<kTPCSectors; i++)
+      fClusterHistograms[kTPCSectors+i] = dynamic_cast<AliTPCClusterHistograms*> (fOutput->FindObject(AliTPCClusterHistograms::FormDetectorName(i, kTRUE)));
+  }
+  
+  TNamed* comment = 0;
+  if (fTree && fTree->GetUserInfo())
+    comment = dynamic_cast<TNamed*>(fTree->GetUserInfo()->FindObject("comment"));
+  if (!comment && fInput)
+    comment = dynamic_cast<TNamed*>(fInput->FindObject("comment"));
 
   if (comment)
+  {
     AliDebug(AliLog::kInfo, Form("INFO: Found comment in input list: %s \n", comment->GetTitle()));
+  }
+  else
+    return;
 
   TFile* file = TFile::Open(Form("rocESD_%s.root",comment->GetTitle()), "RECREATE");
   
-  for (Int_t i=0; i<kTPCSectors; i++)
+  for (Int_t i=0; i<kTPCHists; i++)
     if (fClusterHistograms[i]) {
       fClusterHistograms[i]->SaveHistograms();
       TCanvas* c = fClusterHistograms[i]->DrawHistograms();
