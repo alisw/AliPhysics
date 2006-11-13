@@ -105,7 +105,7 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   TH1::AddDirectory(kFALSE);
 
   //defining histograms and profile plots
-  fhQmaxVsRow  = new TH2F("QmaxVsPadRow", "Qmax vs. pad row;Pad row;Qmax", nPadRows+2, -1.5, nPadRows+0.5, 301, -0.5, 300.5);
+  fhQmaxVsRow  = new TH2F("QmaxVsPadRow", "Qmax vs. pad row;Pad row;Qmax", nPadRows+2, -1.5, nPadRows+0.5, 500,  0,  500);
   fhQtotVsRow  = new TH2F("QtotVsPadRow", "Qtot vs. pad row;Pad row;Qtot", nPadRows+2, -1.5, nPadRows+0.5, 400,  0,  4000);
   
   fhSigmaYVsRow = new TH2F("SigmaYVsPadRow", "Sigma Y vs. pad row;Pad row;#sigma_{Y}", nPadRows+2, -1.5, nPadRows+0.5, 100,  0,  0.5);
@@ -113,13 +113,13 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   
   fhQmaxProfileYVsRow = new TProfile2D("MeanQmaxYVsPadRow","Mean Qmax, y vs pad row;Pad row;y",nPadRows+2, -1.5, nPadRows+0.5, nBinsY, -yRange, yRange);
   fhQtotProfileYVsRow = new TProfile2D("MeanQtotYVsPadRow","Mean Qtot, y vs pad row;Pad row;y",nPadRows+2, -1.5, nPadRows+0.5, nBinsY, -yRange, yRange);
-  fhSigmaYProfileYVsRow = new TProfile2D("MeanSigmaYVsPadRow","Mean Sigma y, y vs pad row;Pad row;y",nPadRows+2, -1.5, nPadRows+0.5, nBinsY, -yRange, yRange);
-  fhSigmaZProfileYVsRow = new TProfile2D("MeanSigmaYVsPadRow","Mean Sigma y, y vs pad row;Pad row;y",nPadRows+2, -1.5, nPadRows+0.5, nBinsY, -yRange, yRange);
+  fhSigmaYProfileYVsRow = new TProfile2D("MeanSigmaYYVsPadRow","Mean Sigma y, y vs pad row;Pad row;y",nPadRows+2, -1.5, nPadRows+0.5, nBinsY, -yRange, yRange);
+  fhSigmaZProfileYVsRow = new TProfile2D("MeanSigmaZYVsPadRow","Mean Sigma z, y vs pad row;Pad row;y",nPadRows+2, -1.5, nPadRows+0.5, nBinsY, -yRange, yRange);
 
   fhQmaxProfileZVsRow = new TProfile2D("MeanQmaxZVsPadRow","Mean Qmax, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
   fhQtotProfileZVsRow = new TProfile2D("MeanQtotZVsPadRow","Mean Qtot, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
-  fhSigmaYProfileZVsRow = new TProfile2D("MeanSigmaZVsPadRow","Mean Sigma y, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
-  fhSigmaZProfileZVsRow = new TProfile2D("MeanSigmaZVsPadRow","Mean Sigma y, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
+  fhSigmaYProfileZVsRow = new TProfile2D("MeanSigmaYZVsPadRow","Mean Sigma y, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
+  fhSigmaZProfileZVsRow = new TProfile2D("MeanSigmaZZVsPadRow","Mean Sigma z, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
 
   Int_t nTimeBins  = 100;
   
@@ -362,6 +362,15 @@ void AliTPCClusterHistograms::FillCluster(AliTPCclusterMI* cluster, Int_t time) 
   Float_t sigmaZ = cluster->GetSigmaZ2();
   Float_t y      = cluster->GetY();
   Float_t z      = cluster->GetZ();
+
+  if (qMax<=0) {
+    printf(Form("\n WARNING: Hi Marian! How can we have Qmax = %f ??? \n \n", qMax));
+    return;
+  }
+  if (qTot<=0) {
+    printf(Form("\n WARNING: Hi Marian! How can we have Qtot = %f ??? \n \n ", qTot));
+    return;
+  } 
   
   if (fEdgeSuppression)
   {
@@ -428,6 +437,15 @@ void AliTPCClusterHistograms::SaveHistograms()
   fhQtotProfileZVsRow   ->Write();
   fhSigmaYProfileZVsRow ->Write();
   fhSigmaZProfileZVsRow ->Write();
+
+  TProfile* profileQmaxVsRow = fhQmaxVsRow->ProfileX("MeanQmaxVsRow");
+  TProfile* profileQtotVsRow = fhQtotVsRow->ProfileX("MeanQtotVsRow");
+
+  profileQmaxVsRow->SetTitle("Mean Qmax vs. pad row; Pad row; Mean Qmax");
+  profileQtotVsRow->SetTitle("Mean Qtot vs. pad row; Pad row; Mean Qmax");
+
+  profileQmaxVsRow->Write();
+  profileQtotVsRow->Write();
 
   if (fhQtotVsTime->GetEntries()>0)
     fhQtotVsTime->Write();

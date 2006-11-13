@@ -7,6 +7,7 @@
 
 class AliTPCClusterHistograms;
 class AliESDfriend;
+class AliTPCseed;
 
 // 
 // TODO explain this
@@ -24,6 +25,8 @@ class AliROCESDAnalysisSelector : public AliSelector {
     virtual Bool_t  Process(Long64_t entry);
     virtual void    SlaveTerminate();
     virtual void    Terminate();
+
+    Bool_t          AcceptTrack(const AliTPCseed* track);
 
  protected:
     AliESDfriend* fESDfriend;  // ESD friend pointer

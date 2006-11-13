@@ -147,6 +147,9 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
       continue;
     }
     
+    if (!AcceptTrack(seed)) 
+      continue;
+
     for (Int_t clusterID = 0; clusterID < 160; clusterID++)
     {
       AliTPCclusterMI* cluster = seed->GetClusterPointer(clusterID);
@@ -166,17 +169,19 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
       }
       
       // TODO: find a clever way to handle the time      
-      //      if (fESD->GetTimeStamp()<1160000000)
-      //	continue;
+      Int_t time = 0;
+
+      if (fESD->GetTimeStamp()>1160000000)
+	time = fESD->GetTimeStamp();      
 
       if (!fClusterHistograms[detector])
-        fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",fESD->GetTimeStamp(),fESD->GetTimeStamp()+7*60*60);
+        fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",time,time+7*60*60);
       
       if (!fClusterHistograms[detector+kTPCSectors])
-        fClusterHistograms[detector+kTPCSectors] = new AliTPCClusterHistograms(detector,"",fESD->GetTimeStamp(),fESD->GetTimeStamp()+7*60*60, kTRUE);
+        fClusterHistograms[detector+kTPCSectors] = new AliTPCClusterHistograms(detector,"",time,time+7*60*60, kTRUE);
 
-      fClusterHistograms[detector]->FillCluster(cluster, fESD->GetTimeStamp());
-      fClusterHistograms[detector+kTPCSectors]->FillCluster(cluster, fESD->GetTimeStamp());
+      fClusterHistograms[detector]->FillCluster(cluster, time);
+      fClusterHistograms[detector+kTPCSectors]->FillCluster(cluster, time);
     }
   }
   
@@ -192,6 +197,32 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   //delete fESDfriend;
   //fESDfriend = 0;
    
+  return kTRUE;
+}
+
+
+Bool_t AliROCESDAnalysisSelector::AcceptTrack(const AliTPCseed* track) {
+  //
+  //
+  //
+
+  // TODO : implement min number of rows to accept track
+
+  const Int_t   kMinClusters = 20;
+  const Float_t kMinRatio    = 0.75;
+  const Float_t kMax1pt      = 0.5;
+
+
+  if (track->GetNumberOfClusters()<kMinClusters) return kFALSE;
+  Float_t ratio = track->GetNumberOfClusters()/(track->GetNFoundable()+1.);
+  if (ratio<kMinRatio) return kFALSE;
+  Float_t mpt = track->Get1Pt();
+  if (TMath::Abs(mpt)>kMax1pt) return kFALSE;
+
+  //if (TMath::Abs(track->GetZ())>240.) return kFALSE;
+  //if (TMath::Abs(track->GetZ())<10.) return kFALSE;
+  //if (TMath::Abs(track->GetTgl())>0.03) return kFALSE;
+  
   return kTRUE;
 }
 
