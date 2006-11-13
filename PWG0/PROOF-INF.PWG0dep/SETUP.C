@@ -12,7 +12,8 @@ void SETUP()
    CheckLoadLibrary("libEVGEN");
    CheckLoadLibrary("libFASTSIM");
    CheckLoadLibrary("libmicrocern");
-   CheckLoadLibrary("libpdf");
+   CheckLoadLibrary("libpdf");    // both are needed because old aliroot needs pdf, new one lhapdf
+   CheckLoadLibrary("liblhapdf"); // 
    CheckLoadLibrary("libpythia6");
    CheckLoadLibrary("libEGPythia6");
    CheckLoadLibrary("libAliPythia6");
