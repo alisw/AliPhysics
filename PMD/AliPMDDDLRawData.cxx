@@ -535,25 +535,25 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 				Int_t *endRowBus, Int_t *endColBus,
 				Int_t & busno, UInt_t &mcmno, UInt_t &chno)
 {
-  // This part will be modified once the final track layout on the PCB is
-  // designed. This will only change the coordinate of the individual cell
+  // This converts row col to hardware channel number
+  // This is the final version of mapping supplied by Mriganka
 
-  static const UInt_t kCh[16][4] = { {12, 13, 18, 19},
-				     {11, 15, 17, 21},
-				     {10, 14, 16, 22},
-				     {8, 9, 20, 23},
-				     {7, 4, 25, 24},
-				     {6, 0, 30, 26},
-				     {5, 1, 31, 27},
-				     {3, 2, 29, 28},
-				     {44, 45, 50, 51},
-				     {43, 47, 49, 53},
-				     {42, 46, 48, 54},
-				     {40, 41, 52, 55},
-				     {39, 36, 57, 56},
-				     {38, 32, 62, 58},
-				     {37, 33, 63, 59},
-				     {35, 34, 61, 60} };
+  static const UInt_t kCh[16][4] = { {56, 58, 59, 57},
+				     {54, 62, 61, 53},
+				     {52, 60, 63, 51},
+				     {48, 50, 55, 49},
+				     {46, 40, 45, 47},
+				     {44, 32, 35, 43},
+				     {42, 34, 33, 41},
+				     {38, 36, 37, 39},
+				     {24, 26, 27, 25},
+				     {22, 30, 29, 21},
+				     {20, 28, 31, 19},
+				     {16, 18, 23, 17},
+				     {14, 8, 13, 15},
+				     {12, 0, 3, 11},
+				     {10, 2, 1, 9},
+				     {6, 4, 5, 7} };
   
   Int_t irownew = row%16;
   Int_t icolnew = col%4;

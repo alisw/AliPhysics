@@ -81,19 +81,25 @@ AliPMDRawStream::~AliPMDRawStream()
 
 //_____________________________________________________________________________
 
-void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
+Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
 
   AliPMDddldata *pmdddldata;
 
-  //  Int_t indexDDL = 0;
-  //  fRawReader->Select(12, indexDDL, indexDDL);
   fRawReader->ReadHeader();
   Int_t  iddl  = fRawReader->GetDDLID();
   Int_t dataSize = fRawReader->GetDataSize();
   Int_t totaldataword = dataSize/4;
+  Int_t equipId = fRawReader->GetEquipmentId();
+
+  if (dataSize <= 0) return kFALSE;
+  if (indexDDL != iddl)
+    {
+      AliError("Mismatch in the DDL index");
+      return kFALSE;
+    }
 
   UInt_t *buffer;
   buffer = new UInt_t[totaldataword];
@@ -105,7 +111,6 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
     }
 
   // --- Open the mapping file
-
 
   TString fileName(gSystem->Getenv("ALICE_ROOT"));
   if(iddl == 0)
@@ -171,7 +176,7 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
     {
       infile >> modno;
       infile >> totPatchBus >> bPatchBus >> ePatchBus;
-
+      
       for(Int_t i=0; i<totPatchBus; i++)
 	{
 	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
@@ -184,6 +189,8 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 	  endColBus[ibus]    = cole;
 	}
     }
+
+
 
   infile.close();
 
@@ -207,16 +214,26 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
   Int_t ilowLimit = 0;
   Int_t iuppLimit = 0;
+
+  Int_t blRawDataLength = 0;
+  Int_t iwordcount = 0;
+
+
   for (Int_t iblock = 0; iblock < 2; iblock++)
     {
       ilowLimit = iuppLimit;
       iuppLimit = ilowLimit + kblHLen;
 
+
       for (Int_t i = ilowLimit; i < iuppLimit; i++)
 	{
 	  blHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
 	}
+
       blockHeader.SetHeader(blHeaderWord);
+
+      blRawDataLength = blockHeader.GetRawDataLength();
+
       for (Int_t idsp = 0; idsp < 5; idsp++)
 	{
 	  ilowLimit = iuppLimit;
@@ -224,6 +241,7 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
 	  for (Int_t i = ilowLimit; i < iuppLimit; i++)
 	    {
+	      iwordcount++;
 	      dspHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
 	    }
 	  dspHeader.SetHeader(dspHeaderWord);
@@ -236,6 +254,7 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
 	      for (Int_t i = ilowLimit; i < iuppLimit; i++)
 		{
+		  iwordcount++;
 		  pbusHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
 		}
 	      pbusHeader.SetHeader(pbusHeaderWord);
@@ -250,6 +269,7 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
 	      for (Int_t iword = ilowLimit; iword < iuppLimit; iword++)
 		{
+		  iwordcount++;
 		  data = buffer[iword];
 
 		  Int_t isig =  data & 0x0FFF;
@@ -281,17 +301,23 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 		  pmdddlcont->Add(pmdddldata);
 		  
 		} // data word loop
+
+	      if (iwordcount == blRawDataLength) break;
+
 	    } // patch bus loop
 
 	  if (dspHeader.GetPaddingWord() == 1) iuppLimit++;
+	  if (iwordcount == blRawDataLength) break;
 
 	} // end of DSP
+      if (iwordcount == blRawDataLength) break;
 
     } // end of BLOCK
 
   
   delete [] buffer;
 
+  return kTRUE;
 }
 //_____________________________________________________________________________
 void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
@@ -303,14 +329,15 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
 // decode: ddlno, patchbusid, mcmno, chno -> um, row, col
 
 
-  static const UInt_t kCh[64] = { 21, 25, 29, 28, 17, 24, 20, 16,
-				  12, 13, 8, 4, 0, 1, 9, 5,
-				  10, 6, 2, 3, 14, 7, 11, 15,
-				  19, 18, 23, 27, 31, 30, 22, 26,
-				  53, 57, 61, 60, 49, 56, 52, 48,
-				  44, 45, 40, 36, 32, 33, 41, 37,
-				  42, 38, 34, 35, 46, 39, 43, 47,
-				  51, 50, 55, 59, 63, 62, 54, 58 };
+  static const UInt_t kCh[64] = { 53, 58, 57, 54, 61, 62, 60, 63,
+				  49, 59, 56, 55, 52, 50, 48, 51,
+				  44, 47, 45, 43, 40, 39, 36, 46,
+				  32, 35, 33, 34, 41, 38, 37, 42,
+				  21, 26, 25, 22, 29, 30, 28, 31,
+				  17, 27, 24, 23, 20, 18, 16, 19,
+				  12, 15, 13, 11,  8,  7,  4, 14,
+				  0,   3,  1,  2,  9,  6,  5, 10 };
+
 
   Int_t rowcol  = kCh[chno];
   Int_t irownew = rowcol/4;
