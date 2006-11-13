@@ -5,8 +5,6 @@
 
 #include <TObject.h>
 
-#include <AliHeader.h>
-
 // static helper functions
 
 class AliESD;
