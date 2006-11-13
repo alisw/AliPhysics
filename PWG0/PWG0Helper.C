@@ -79,7 +79,7 @@ Bool_t prepareQuery(TString libraries, TString packages, Int_t useAliRoot)
  return kTRUE;
 }
 
-Int_t executeQuery(TChain* chain, TList* inputList, TString selectorName, const char* option = "")
+Int_t executeQuery(TChain* chain, TList* inputList, TString selectorName, const char* option = "", Long64_t entries = TChain::kBigNumber)
 {
   if (!gProof)
     chain->GetUserInfo()->AddAll(inputList);
@@ -95,9 +95,9 @@ Int_t executeQuery(TChain* chain, TList* inputList, TString selectorName, const 
   Long64_t result = -1;
 
   if (gProof)
-    result = chain->MakeTDSet()->Process(selectorName, option);
+    result = chain->MakeTDSet()->Process(selectorName, option, entries);
   else
-    result = chain->Process(selectorName, option);
+    result = chain->Process(selectorName, option, entries);
 
   if (result < 0)
     printf("ERROR: Executing process failed with %d.\n", result);
