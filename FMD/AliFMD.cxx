@@ -1116,7 +1116,7 @@ AliFMD::AddAlignableVolumes() const
       char     stb = tb == 0 ? 'T' : 'B';
       unsigned min = tb == 0 ? 0   : 5;
 
-      TString halfVol(Form("/ALIC/F%dM%c_%d", f, stb, f));
+      TString halfVol(Form("/ALIC_1/F%dM%c_%d", f, stb, f));
       TString halfSym(halfVol);
       if(!gGeoManager->SetAlignableEntry(halfSym.Data(),halfVol.Data()))
 	AliFatal(Form("Alignable entry %s not created. "
@@ -1124,8 +1124,8 @@ AliFMD::AddAlignableVolumes() const
 		      halfSym.Data(),halfVol.Data()));
       for(size_t io = 0; io < 2; io++){ // inner, outer 
 	if (f==1 && io==1) continue; // Only one ring in FMD1 
-	min          = (tb == 1 ? 10 : min);
-	char     sio = (io == 0 ? 'I' : '0');
+	if(tb == 1 && io==1) min=10;
+	char     sio = (io == 0 ? 'I' : 'O');
 	unsigned nio = (io == 0 ? 3   : 9);
 	unsigned max = (io == 0 ? 5   : 10) + min;
 	
