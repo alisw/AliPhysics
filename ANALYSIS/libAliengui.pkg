@@ -1,0 +1,7 @@
+ORGSRCS  := $(wildcard ANALYSIS/Aliengui/*.cxx)
+SRCS     := $(patsubst ANALYSIS/%, %, ${ORGSRCS})
+HDRS     := $(SRCS:.cxx=.h)
+
+DHDR:=Aliengui/AlienGUILinkDef.h
+
+EINCLUDE:= STEER
