@@ -31,20 +31,25 @@
 #include <TCanvas.h>
 #include <TTimeStamp.h>
 
+#include <TPC/AliTPCRawHistograms.h>
+
 
 ClassImp(AliROCRawAnalysisSelector)
 
 AliROCRawAnalysisSelector::AliROCRawAnalysisSelector() :
   TSelector(),
   fRawEvent(0),
-  fTree(0)
+  fTree(0),
+  fParam(0)  
 {
-  
   //
   // Constructor. Initialization of pointers
   //
-  
-  AliDebug(AliLog::kInfo, "Constructor....");
+
+  for (Int_t i=0; i<kTPCSectors; i++)
+    fHistograms[i] = 0;
+
+  fParam = new AliTPCParamSR;
 }
 
 AliROCRawAnalysisSelector::~AliROCRawAnalysisSelector()
@@ -57,10 +62,6 @@ AliROCRawAnalysisSelector::~AliROCRawAnalysisSelector()
 void AliROCRawAnalysisSelector::SlaveBegin(TTree* tree)
 {
   //
-  
-  AliDebug(AliLog::kInfo, "SlaveBegin....");
-
-  TSelector::SlaveBegin(tree);
 
   if (tree != 0)
     Init(tree);
@@ -76,126 +77,100 @@ void AliROCRawAnalysisSelector::Init(TTree* tree)
 
   fTree = tree;
 
-  TSelector::Init(tree);
-
   // Set branch address
-  if (tree) {
+  if (tree) 
+  {
     AliDebug(AliLog::kInfo, "INFO: Tree found");
 
     tree->SetBranchAddress("rawevent", &fRawEvent);
   }
-
 }
 
 Bool_t AliROCRawAnalysisSelector::Process(Long64_t entry)
 {
   //
-  // Implement your analysis here. Do not forget to call the parent class Process by
-  // if (TSelector::Process(entry) == kFALSE)
-  //   return kFALSE;
+  //
   //
 
   fTree->GetTree()->GetEntry(entry);
   
-  AliRawReaderRoot* rawReader        = new AliRawReaderRoot(fRawEvent);
-  AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
+  AliDebug(AliLog::kInfo, Form("Processing event %lld", entry));
+  
+  if (!fRawEvent)
+  {
+    AliDebug(AliLog::kError, "fRawEvent empty");
+    return kFALSE;
+  }
+  
+  AliRawReaderRoot* rawReader = new AliRawReaderRoot(fRawEvent);
 
-
-  if (eventHeader) {
+  const AliRawEventHeaderBase* eventHeader = dynamic_cast<const AliRawEventHeaderBase*> (rawReader->GetEventHeader());
+  if (eventHeader) 
+  {
     eventHeader->Print();
     
     UInt_t timeStamp = eventHeader->Get("Timestamp");
     UInt_t eventType = eventHeader->Get("Type");
     
-    printf("Time stamp: %s, event type %d\n", TTimeStamp(timeStamp).AsString(), eventType);
+    AliDebug(AliLog::kInfo, Form("Time stamp: %s, event type %d", TTimeStamp(timeStamp).AsString(), eventType));
   }           
   
   AliTPCRawStream* tpcRawStream = new AliTPCRawStream(rawReader);
-     
-  AliTPCParamSR* fParam = new AliTPCParamSR;
      
   const Int_t kNIS = fParam->GetNInnerSector();
   const Int_t kNOS = fParam->GetNOuterSector();
   const Int_t kNS = kNIS + kNOS;
   
-  Float_t fSign;
-    
-  // kNS
-  for(Int_t fSector = 0; fSector < kNS; fSector++) {
-    printf("*** Looking at sector %d ***\n", fSector);
+  for (Int_t sector = 0; sector < kNS; sector++) 
+  {
+    AliDebug(AliLog::kInfo, Form("*** Looking at sector %d ***", sector));
             
     Int_t nRows = 0;
     Int_t nDDLs = 0, indexDDL = 0;
     
-    if (fSector < kNIS) {
+    if (sector < kNIS) 
+    {
       nRows = fParam->GetNRowLow();
-      fSign = (fSector < kNIS/2) ? 1 : -1;
       nDDLs = 2;
-      indexDDL = fSector * 2;
+      indexDDL = sector * 2;
     }
-    else {
+    else 
+    {
       nRows = fParam->GetNRowUp();
-      fSign = ((fSector-kNIS) < kNOS/2) ? 1 : -1;
       nDDLs = 4;
-      indexDDL = (fSector-kNIS) * 4 + kNIS * 2;
+      indexDDL = (sector-kNIS) * 4 + kNIS * 2;
     }
     
     // Loas the raw data for corresponding DDLs
     rawReader->Reset();
     tpcRawStream->SetOldRCUFormat(kTRUE);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
-    Int_t digCounter=0;
-    // Begin loop over altro data
     
-    printf("Selected DDLs %d ... %d\n", indexDDL,indexDDL+nDDLs-1);
+    AliDebug(AliLog::kDebug, Form("Selected DDLs %d ... %d", indexDDL, indexDDL+nDDLs-1));
     
-//     Int_t count = 0;
+    Int_t count = 0;
     
-//     // hist for this sector
-//     TString title;
-//     title.Form("sector_%d", fSector);
-//     gROOT->cd();
-//     TH3F* hist = dynamic_cast<TH3F*> (gROOT->FindObject(title)); 
-//     if (!hist)
-//       hist = new TH3F(title, Form("%s;row;pad;time", title.Data()), 90, -0.5, 89.5, 120, -0.5, 119.5, 100, 0, 1200);
-    
-//     title.Form("sector_%d_signal", fSector);
-//     TH1F* signal = dynamic_cast<TH1F*> (gROOT->FindObject(title)); 
-//     if (!signal)
-//       signal = new TH1F(title, title, 200, 0, 2000);
-//     //TProfile3D* hist = new TProfile3D(title, title, 90, -0.5, 89.5, 200, -0.5, 199.5, 100, 0, 1500); 
-    
-//     while (tpcRawStream->Next())
-//       {
-// 	if (tpcRawStream->GetSector() != fSector)
-// 	  {
-// 	    printf("Sector index mismatch ! Expected (%d), but got (%d) !\n",fSector,tpcRawStream->GetSector());
-// 	    return;
-// 	  }
-	
-	
-// 	if ((count++ % 100000) == 0)
-// 	  printf("Found %d. digit in sector %d: row %d, pad %d, time %d, signal %d\n", count, tpcRawStream->GetSector(), tpcRawStream->GetRow(), tpcRawStream->GetPad(), tpcRawStream->GetTime(), tpcRawStream->GetSignal());
-	
-// 	if (tpcRawStream->GetSignal() > 200)
-// 	  hist->Fill(tpcRawStream->GetRow(), tpcRawStream->GetPad(), tpcRawStream->GetTime(), tpcRawStream->GetSignal());
-// 	signal->Fill(tpcRawStream->GetSignal());
-// 	//if (++count == 2)
-// 	//    break;
-//       }
-    
-//     if (count > 0 && event == Nevents-1)
-//       {
-// 	TCanvas* canvas = new TCanvas(hist->GetName(), hist->GetName(), 900, 450);
-// 	canvas->Divide(2, 1);
-// 	canvas->cd(1);
-// 	hist->Draw();
-// 	canvas->cd(2);
-// 	signal->Draw();
-//       }    
-//     //else
-//     //    delete hist;
-    
+    while (tpcRawStream->Next())
+    {
+   	  if (tpcRawStream->GetSector() != sector)
+      {
+ 	    AliDebug(AliLog::kError, Form("Sector index mismatch ! Expected (%d), but got (%d) !",sector,tpcRawStream->GetSector()));
+ 	    return kFALSE;
+      }
+      
+      if ((count++ % 100000) == 0)
+ 	    AliDebug(AliLog::kDebug, Form("Found %d. digit in sector %d: row %d, pad %d, time %d, signal %d", count, 
+            tpcRawStream->GetSector(), tpcRawStream->GetRow(), tpcRawStream->GetPad(), tpcRawStream->GetTime(), tpcRawStream->GetSignal()));
+
+      if (!fHistograms[sector])
+      {
+        // not sure if this is still needed, should prevent creation of the histogram in the opened root file
+        gROOT->cd();
+        fHistograms[sector] = new AliTPCRawHistograms(sector);
+      }
+      
+      fHistograms[sector]->FillDigit(tpcRawStream);
+    }
   }
    
   return kTRUE;
@@ -204,11 +179,9 @@ Bool_t AliROCRawAnalysisSelector::Process(Long64_t entry)
 void AliROCRawAnalysisSelector::SlaveTerminate()
 {
   //
-  AliDebug(AliLog::kInfo, "SlaveTerminate....");
-  
-  //for (Int_t i=0; i<kTPCSectors; i++)
-  // if (fClusterHistograms[i])
-  //    fOutput->Add(fClusterHistograms[i]);
+  for (Int_t i=0; i<kTPCSectors; i++)
+   if (fHistograms[i])
+     fOutput->Add(fHistograms[i]);
 } 
 
 void AliROCRawAnalysisSelector::Terminate()
@@ -219,9 +192,13 @@ void AliROCRawAnalysisSelector::Terminate()
     
   TFile* file = TFile::Open("rocRaw.root", "RECREATE");
   
-  //  for (Int_t i=0; i<kTPCSectors; i++)
-  //  if (fClusterHistograms[i])
-  //    fClusterHistograms[i]->SaveHistograms();
+  for (Int_t i=0; i<kTPCSectors; i++)
+    if (fHistograms[i])
+      fHistograms[i]->SaveHistograms();
 
   file->Close();
+
+  for (Int_t i=0; i<kTPCSectors; i++)
+    if (fHistograms[i])
+      fHistograms[i]->DrawHistograms();
 } 

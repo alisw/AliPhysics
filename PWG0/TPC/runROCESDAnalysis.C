@@ -14,7 +14,7 @@ void runROCESDAnalysis(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDeb
     connectProof(proofServer);
 
   TString libraries("libEG;libGeom;libESD;libPWG0base;libPWG0dep");
-  TString packages;
+  TString packages("PWG0base;PWG0dep");
 
   if (!prepareQuery(libraries, packages, 2))
     return;
@@ -33,7 +33,7 @@ void runROCESDAnalysis(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDeb
   if (aDebug != kFALSE)
   {
     AliLog::SetClassDebugLevel(selectorName, AliLog::kDebug);
-    selectorName += ".cxx+g";
+    selectorName += ".cxx++g";
   }
   else
     selectorName += ".cxx+";

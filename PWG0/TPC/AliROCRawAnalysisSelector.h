@@ -11,9 +11,12 @@
 
 class AliRawEvent;
 class TTree;
+class AliTPCParamSR;
+class AliTPCRawHistograms;
 
 class AliROCRawAnalysisSelector : public TSelector {
   public:
+    enum { kTPCSectors = 72 };
   
     AliROCRawAnalysisSelector();
     virtual ~AliROCRawAnalysisSelector();
@@ -26,9 +29,12 @@ class AliROCRawAnalysisSelector : public TSelector {
     virtual void    Terminate();
 
  protected:
-    
     AliRawEvent* fRawEvent;
     TTree*       fTree;
+
+    AliTPCParamSR* fParam;  // TPC hardware params
+
+    AliTPCRawHistograms* fHistograms[kTPCSectors];
 
  private:
     AliROCRawAnalysisSelector(const AliROCRawAnalysisSelector&);

@@ -40,14 +40,15 @@ AliTPCClusterHistograms::AliTPCClusterHistograms()
   fhSigmaYProfileZVsRow(0),
   fhSigmaZProfileZVsRow(0),
   fhQtotVsTime(0),  
-  fhQmaxVsTime(0)
+  fhQmaxVsTime(0),
+  fIsIROC(kFALSE),
+  fEdgeSuppression(kFALSE)
 {
   // default constructor
 }
 
 //____________________________________________________________________
-//AliTPCClusterHistograms::AliTPCClusterHistograms(const Char_t* name, const Char_t* title) 
-AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* comment, Int_t timeStart, Int_t timeStop)
+AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* comment, Int_t timeStart, Int_t timeStop, Bool_t edgeSuppression)
   : TNamed(),
   fhQmaxVsRow(0),          
   fhQtotVsRow(0),          
@@ -62,7 +63,9 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   fhSigmaYProfileZVsRow(0),
   fhSigmaZProfileZVsRow(0),
   fhQtotVsTime(0),  
-  fhQmaxVsTime(0)
+  fhQmaxVsTime(0),
+  fIsIROC(kFALSE),
+  fEdgeSuppression(edgeSuppression)
 {
   // constructor 
   
@@ -72,21 +75,10 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
     return;
   }
       
-  Int_t sector = detector%18;
-  TString side;
-  TString inout;
-  if (detector<18 || ( detector>=36 && detector<54))
-    side.Form("A");
-  else 
-    side.Form("B");
-  
-  if (detector<36)
-    inout.Form("IROC");
-  else 
-    inout.Form("OROC");
+  TString name(FormDetectorName(detector, edgeSuppression, comment));
 
-  TString name;
-  name.Form("sector_%s%d_%s", side.Data(), sector, inout.Data());
+  if (detector < 36)
+    fIsIROC = kTRUE; 
   
   SetName(name);
   SetTitle(Form("%s (detector %d)",name.Data(), detector));
@@ -99,13 +91,18 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   Float_t yRange   = 45;
   Int_t nPadRows   = 96;
   
-  if (TString(name).Contains("IROC")) {
+  if (fIsIROC)
+  {
     yRange = 25;
     nPadRows = 63;
   }
   
   // 1 bin for each 0.5 cm
   Int_t nBinsY = Int_t(4*yRange);
+
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
 
   //defining histograms and profile plots
   fhQmaxVsRow  = new TH2F("QmaxVsPadRow", "Qmax vs. pad row;Pad row;Qmax", nPadRows+2, -1.5, nPadRows+0.5, 301, -0.5, 300.5);
@@ -129,6 +126,7 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   fhQtotVsTime = new TProfile("MeanQtotVsTime", "Mean Qtot vs. event time stamp; time; Qtot",nTimeBins, fTimeStart, fTimeStop);
   fhQmaxVsTime = new TProfile("MeanQmaxVsTime", "Mean Qmax vs. event time stamp; time; Qmax",nTimeBins, fTimeStart, fTimeStop);
   
+  TH1::AddDirectory(oldStatus);
 }
 
 //____________________________________________________________________
@@ -215,6 +213,38 @@ AliTPCClusterHistograms &AliTPCClusterHistograms::operator=(const AliTPCClusterH
   return *this;
 }
 
+//____________________________________________________________________
+const char* AliTPCClusterHistograms::FormDetectorName(Int_t detector, Bool_t edgeSuppression, const char* comment)
+{
+  //
+  // creates a readable name from the detector number
+  //   
+  
+  Int_t sector = detector%18;
+  TString side;
+  TString inout;
+  
+  if (detector<18 || ( detector>=36 && detector<54))
+    side.Form("A");
+  else 
+    side.Form("B");
+  
+  if (detector<36)
+    inout.Form("IROC");
+  else 
+    inout.Form("OROC");
+
+  TString name;
+  name.Form("sector_%s%d_%s", side.Data(), sector, inout.Data());
+
+  if (edgeSuppression)
+    name += "_noedge";
+  
+  if (comment)
+    name += comment;
+
+  return name; 
+}
 
 //____________________________________________________________________
 Long64_t AliTPCClusterHistograms::Merge(TCollection* list)
@@ -332,6 +362,20 @@ void AliTPCClusterHistograms::FillCluster(AliTPCclusterMI* cluster, Int_t time) 
   Float_t sigmaZ = cluster->GetSigmaZ2();
   Float_t y      = cluster->GetY();
   Float_t z      = cluster->GetZ();
+  
+  if (fEdgeSuppression)
+  {
+    Float_t limit = 0;
+    if (fIsIROC)
+    {
+      limit = 12 + padRow * (20.0 - 12.0) / 63; 
+    }
+    else
+      limit = 16 + padRow * (36.0 - 16.0) / 96;
+      
+    if (TMath::Abs(y) > limit)
+      return;  
+  }
 
   fhQmaxVsRow           ->Fill(padRow, qMax);
   fhQtotVsRow           ->Fill(padRow, qTot);
@@ -396,12 +440,12 @@ void AliTPCClusterHistograms::SaveHistograms()
 }
 
 //____________________________________________________________________
-TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* opt) {
+TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* /*opt*/) {
   //
   // Draws some histograms and save the canvas as eps and gif file.
   //  
 
-  TCanvas* c = new TCanvas(Form("%s",fName.Data()), fName.Data(), 1200, 1000);
+  TCanvas* c = new TCanvas(fName.Data(), fName.Data(), 1200, 1000);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
