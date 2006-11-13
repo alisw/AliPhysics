@@ -37,7 +37,6 @@
 void testManuListSt345(Char_t* fileNamePre = "BusPatchToManu")
 {
    
-  Int_t offset = 50;
   Int_t planeOffset = 1024;
   Int_t nBusPatch = 0;
   Int_t nManu = 0;
@@ -103,8 +102,9 @@ void testManuListSt345(Char_t* fileNamePre = "BusPatchToManu")
 	    fprintf(fp,"%d;\n", manuIdPrev);
 
 	  }
-	  printf("%d %d %d-", deArray[detElemId], busArray->At(pos) - (iDDL+1)*offset, manuId);
-	  fprintf(fp,"%d %d-", busArray->At(pos) - (iDDL+1)*offset, manuId);
+	  printf("%d %d %d-", deArray[detElemId], 
+		 AliMpBusPatch::GetLocalBusID(busArray->At(pos),iDDL), manuId);
+	  fprintf(fp,"%d %d-", AliMpBusPatch::GetLocalBusID(busArray->At(pos),iDDL), manuId);
 	  nBusPatch++;
 
 	} else if ( manuId != manuIdPrev+1) {

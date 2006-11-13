@@ -25,6 +25,7 @@ void MUONGenerateBusPatch()
   // (Nov. 05,  added DDL)
   // (June 06, correction for St123)
 
+
   TString dirPath2 = gSystem->Getenv("ALICE_ROOT");
   dirPath2 += "/MUON/mapping/data/"; 
 
@@ -59,7 +60,6 @@ void MUONGenerateBusPatch()
   Int_t idSt45swp2 = 20;
 
   Int_t iDDL = 0;
-  const Int_t kFactor = 50; 
   // station 1 & 2
   nbBusPatch = 24;
   cout << "#DE BusPatch DDL SlatName" << endl;
@@ -70,17 +70,17 @@ void MUONGenerateBusPatch()
     idDE = idSt12[j];
     if (idDE % 100 == 0) {
       iDDL++;
-      begin[cursor] = iDDL * kFactor;
+      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
       cout << "# Chamber " << idDE/100 << endl;
       out  << "# Chamber " << idDE/100 << endl;
     }
     if (idDE % 100 == 1) { 
       iDDL++;
-      begin[cursor] = iDDL * kFactor;
+      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
     }
     if (idDE % 100 == 3) {
       iDDL--;
-      begin[cursor] = iDDL * kFactor + nbBusPatch;
+      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1) + nbBusPatch;
     }
     end[cursor]     = begin[cursor] + nbBusPatch - 1;
     begin[++cursor] = end[cursor] + 1;
@@ -155,7 +155,7 @@ void MUONGenerateBusPatch()
 
       if (idDE == 500) {
 	iDDL++;
-	begin[cursor] = iDDL * kFactor;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
       	nbBusSt3Tot1 = 0; 
 
       }
@@ -169,7 +169,7 @@ void MUONGenerateBusPatch()
       // second 1/4 for chamber 5
       if (idDE == 500+idSt3swp1) {
 	iDDLSt3Swap1 =  iDDL++;
-	begin[cursor] = iDDL * kFactor;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
 	nbBusSt3Swap1 = nbBusSt3Tot1 - nbBusPatch;
 	nbBusSt3Tot1 = 0;
 	nbBusSt3Tot2 = 0;
@@ -178,13 +178,13 @@ void MUONGenerateBusPatch()
       // first 1/4 chamber 6
       if (idDE == 600) {
 	iDDL = iDDLSt3Swap1;
-	begin[cursor] = iDDL * kFactor + nbBusSt3Swap1;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap1, iDDL-1);
       }
       // third 1/4 for chamber 5
       if (idDE == 500+idSt3swp2) {
 	iDDL = iDDLSt3Swap1+1;
 	iDDLSt3Swap2 =  iDDL++;
-	begin[cursor] = iDDL * kFactor;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
 	nbBusSt3Swap2 = nbBusSt3Tot2;
 	nbBusSt3Tot2 = 0;
 	nbBusSt3Tot3 = 0;
@@ -194,14 +194,14 @@ void MUONGenerateBusPatch()
       // second 1/4 chamber 6
      if (idDE == 600 +idSt3swp1) {
 	iDDL = iDDLSt3Swap2;
-	begin[cursor] = iDDL * kFactor + nbBusSt3Swap2;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap2, iDDL-1);
       }
     
      // fourth 1/4 chamber 5
      if (idDE == 500+idSt3swp3) {
 	iDDL = iDDLSt3Swap2+1;
 	iDDLSt3Swap3 =  iDDL++;
-	begin[cursor] = iDDL * kFactor;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
 	nbBusSt3Swap3 = nbBusSt3Tot3;
 	nbBusSt3Tot2 = 0;
 	nbBusSt3Tot3 = 0;
@@ -215,7 +215,7 @@ void MUONGenerateBusPatch()
 
      if (idDE == 600 +idSt3swp2) {
 	iDDL = iDDLSt3Swap3;
-	begin[cursor] = iDDL * kFactor + nbBusSt3Swap3;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap3, iDDL-1);
 	nbBusSt3Tot4 +=  nbBusPatch;
       }
       nbBusSt3Tot4 +=  nbBusPatch;
@@ -223,7 +223,7 @@ void MUONGenerateBusPatch()
      // fourth 1/4 chamber 6
     if (idDE == 600 +idSt3swp3) {
 	iDDL = iDDLSt3Swap3+1;
-	begin[cursor] = iDDL * kFactor + nbBusSt3Swap4;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap4, iDDL-1);
       }
 
       end[cursor]     = begin[cursor] + nbBusPatch - 1;
@@ -246,7 +246,7 @@ void MUONGenerateBusPatch()
       iDDL++;
       if (idDE >=800)
 	iDDL++;
-      begin[cursor] = iDDL * kFactor;
+      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
       cout << "# Chamber " << idDE/100 << endl;
       out  << "# Chamber " << idDE/100 << endl;
     }
@@ -255,13 +255,13 @@ void MUONGenerateBusPatch()
 
       if (idDE == 700+idSt45swp1 || idDE == 800+idSt45swp1 || idDE == 900+idSt45swp1 || idDE == 1000+idSt45swp1 ) {
 	iDDL++;
-	begin[cursor] = iDDL * kFactor;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
 	nbBusSt45Swap = nbBusSt45Tot - nbBusPatch;
 	nbBusSt45Tot = 0;
       }
       if (idDE == 700+idSt45swp2 || idDE == 800+idSt45swp2 || idDE == 900+idSt45swp2 || idDE == 1000+idSt45swp2 ) {
 	iDDL--;
-	begin[cursor] = iDDL * kFactor + nbBusSt45Swap;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt45Swap, iDDL-1);
       }
       end[cursor]     = begin[cursor] + nbBusPatch - 1;
       begin[++cursor] = end[cursor] + 1;
