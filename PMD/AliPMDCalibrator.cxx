@@ -229,7 +229,7 @@ void AliPMDCalibrator::CalculateIsoCell()
       for (Int_t iddl = 0; iddl < kDDL; iddl++)
 	{
 	  reader.Select("PMD", iddl, iddl);
-	  stream.DdlData(&pmdddlcont);
+	  stream.DdlData(iddl,&pmdddlcont);
 	  
 	  Int_t ientries = pmdddlcont.GetEntries();
 	  for (Int_t ient = 0; ient < ientries; ient++)

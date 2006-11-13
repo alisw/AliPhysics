@@ -71,7 +71,21 @@ AliPMDtracker::AliPMDtracker():
 }
 //--------------------------------------------------------------------//
 AliPMDtracker:: AliPMDtracker(const AliPMDtracker & /* tracker */):
-  TObject(/* tracker */)
+  TObject(/* tracker */),
+  fTreeR(0),
+  fRecpoints(NULL),
+  fPMDcontin(NULL),
+  fPMDcontout(NULL),
+  fPMDutil(NULL),
+  fPMDrecpoint(0),
+  fPMDclin(0),
+  fPMDclout(0),
+  fXvertex(0.),
+  fYvertex(0.),
+  fZvertex(0.),
+  fSigmaX(0.),
+  fSigmaY(0.),
+  fSigmaZ(0.)
 {
   // copy constructor
   AliError("Copy constructor not allowed");

@@ -63,13 +63,14 @@ AliPMDDigitizer::AliPMDDigitizer() :
   fPMDHit(0),
   fPMD(0),
   fPMDLoader(0),
+  fCalibData(GetCalibData()),
   fSDigits(0),
   fDigits(0),
   fCell(0),
   fNsdigit(0),
   fNdigit(0),
   fDetNo(0),
-  fZPos(361.5)// in units of cm, This is the default position of PMD
+  fZPos(361.5)   // in units of cm, default position of PMD
 {
   // Default Constructor
   //
@@ -87,12 +88,24 @@ AliPMDDigitizer::AliPMDDigitizer() :
 	    }
 	}
     }
-  fCalibData = GetCalibData();
+
 
 }
 //____________________________________________________________________________
-AliPMDDigitizer::AliPMDDigitizer(const AliPMDDigitizer& /*digitizer*/):
-  AliDigitizer(/* digitizer */)
+AliPMDDigitizer::AliPMDDigitizer(const AliPMDDigitizer& digitizer):
+  AliDigitizer(digitizer),
+  fRunLoader(0),
+  fPMDHit(0),
+  fPMD(0),
+  fPMDLoader(0),
+  fCalibData(GetCalibData()),
+  fSDigits(0),
+  fDigits(0),
+  fCell(0),
+  fNsdigit(0),
+  fNdigit(0),
+  fDetNo(0),
+  fZPos(361.5)   // in units of cm, default position of PMD
 {
   // copy constructor
   AliError("Copy constructor not allowed ");
@@ -108,12 +121,13 @@ AliPMDDigitizer & AliPMDDigitizer::operator=(const AliPMDDigitizer& /*digitizer*
   return *this;
 }
 //____________________________________________________________________________
-AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager) 
-  :AliDigitizer(manager),
+AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager):
+  AliDigitizer(manager),
   fRunLoader(0),
   fPMDHit(0),
   fPMD(0),
   fPMDLoader(0),
+  fCalibData(GetCalibData()),
   fSDigits(new TClonesArray("AliPMDsdigit", 1000)),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fCell(0),
@@ -124,7 +138,6 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager)
 {
   // ctor which should be used
 
-  fCalibData = GetCalibData();
 
   for (Int_t i = 0; i < fgkTotUM; i++)
     {
@@ -141,6 +154,7 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager)
 	}
     }
 }
+
 //____________________________________________________________________________
 AliPMDDigitizer::~AliPMDDigitizer()
 {

@@ -43,6 +43,7 @@
 #include "AliPMDCalibData.h"
 #include "AliPMDddldata.h"
 
+#include "AliDAQ.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 
@@ -88,8 +89,20 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
 //
 }
 // ------------------------------------------------------------------------- //
-AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & /*finder*/):
-  TObject(/*finder*/)
+AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & finder):
+  TObject(finder),
+  fRunLoader(0),
+  fPMDLoader(0),
+  fCalibData(GetCalibData()),
+  fTreeD(0),
+  fTreeR(0),
+  fDigits(NULL),
+  fRecpoints(NULL),
+  fRechits(NULL),
+  fNpoint(0),
+  fNhit(0),
+  fDetNo(0),
+  fEcut(0.)
 {
   // copy constructor
   AliError("Copy constructor not allowed");
@@ -131,6 +144,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   // Converts digits to recpoints after running clustering
   // algorithm on CPV plane and PREshower plane
   //
+
   Int_t    det = 0,smn = 0;
   Int_t    xpos,ypos;
   Float_t  adc;
@@ -188,10 +202,9 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  
 	  // CALIBRATION
 	  Float_t gain = fCalibData->GetGainFact(det,smn,xpos,ypos);
-	 // printf("adc = %d gain = %f\n",adc,gain);
+	  // printf("adc = %d gain = %f\n",adc,gain);
 	  
 	  adc = adc*gain;
-
 
 	  //Int_t trno   = pmddigit->GetTrackNumber();
 	  fCellADC[xpos][ypos] = (Double_t) adc;
@@ -253,6 +266,8 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   // Converts RAW data to recpoints after running clustering
   // algorithm on CPV and PREshower plane
   //
+  // This method is called at the time of reconstruction
+
 
   Float_t  clusdata[6];
   TObjArray pmdddlcont;
@@ -269,12 +284,13 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   TBranch * branch2 = clustersTree->Branch("PMDRechit", &fRechits, bufsize); 
 
-  const Int_t kDDL = 6;
+  const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
   const Int_t kRow = 48;
   const Int_t kCol = 96;
 
   Int_t idet = 0;
   Int_t iSMN = 0;
+
   
   for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
     {
@@ -306,8 +322,11 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       ResetCellADC();
       rawReader->Reset();
       AliPMDRawStream pmdinput(rawReader);
+
       rawReader->Select("PMD", indexDDL, indexDDL);
-      pmdinput.DdlData(&pmdddlcont);
+
+      pmdinput.DdlData(indexDDL,&pmdddlcont);
+
       Int_t indexsmn = 0;
       Int_t ientries = pmdddlcont.GetEntries();
       for (Int_t ient = 0; ient < ientries; ient++)
@@ -495,7 +514,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   TBranch *branch1 = fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
   TBranch *branch2 = fTreeR->Branch("PMDRechit", &fRechits, bufsize); 
 
-  const Int_t kDDL = 6;
+  const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
   const Int_t kRow = 48;
   const Int_t kCol = 96;
 
@@ -531,10 +550,10 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	}
       ResetCellADC();
       rawReader->Reset();
-      AliPMDRawStream pmdinput(rawReader);
       rawReader->Select("PMD", indexDDL, indexDDL);
-      
-      pmdinput.DdlData(&pmdddlcont);
+
+      AliPMDRawStream pmdinput(rawReader);
+      pmdinput.DdlData(indexDDL,&pmdddlcont);
     
       Int_t indexsmn = 0;
       Int_t ientries = pmdddlcont.GetEntries();
@@ -552,7 +571,9 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
 	  Float_t sig1 = (Float_t) sig;
 	  // CALIBRATION
-	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
+	  //Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
+	  Float_t gain = 1.0;
+
 	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
 
