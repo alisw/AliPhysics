@@ -378,10 +378,6 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
       fTimers[kGetBusPatch].Stop();
       if (busPatchId<0) continue;
       
-      fTimers[kTest].Start(kFALSE);
-      busPatchId = GetBusPatch(*digit);
-      fTimers[kTest].Stop();
-      
       if ( digit->ManuId() > 0x7FF || digit->ManuId() < 0 ||
            digit->ManuChannel() > 0x3F || digit->ManuChannel() < 0 )
       {
