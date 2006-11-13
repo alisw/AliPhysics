@@ -1,0 +1,24 @@
+SRCS  := Aliengui/aliengui_main/aliengui_main.cxx
+CSRCS :=
+
+EINCLUDE :=
+ELIBSDIR :=
+ELIBS    := Aliengui MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
+  TPCbase TPCsim TPCrec TPCfast \
+  ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
+  TRDsim TRDrec TRDfast \
+  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec CRT \
+  RICHbase RICHrec RICHsim \
+  ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
+  EMCALbase EMCALsim EMCALrec EMCALjet \
+  STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
+  pythia6 AliPythia6 lhapdf THijing \
+  hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
+  FASTSIM microcern \
+  RAWDatabase RAWDatarec RAWDatasim \
+  AliL3Src AliL3Comp AliL3Misc AliL3MUON \
+  AliL3Hough AliL3ITS
+
+PACKBLIBS := -L. -L$(ROOTSYS)/lib $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -lMinuit -pthread -lm -ldl -rdynamic -lEG -lGeom 
+
+
