@@ -63,6 +63,7 @@ extern "C" {
   TFluka* fluka =  (TFluka*) gMC;
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
+  
   fluka->SetTrackIsNew(kTRUE);
 //  TVirtualMC* fluka = TFluka::GetMC();
 // Get the stack produced from the generator
@@ -76,16 +77,15 @@ extern "C" {
 //  npprmr > 0, the secondary being loaded is actually still the interacting
 //  particle (it can happen in some biasing situations)
 
-  if (numsec > npprmr || npprmr > 0) {
+  if (numsec > npprmr) {
 // Now call the PushTrack(...)
     Int_t done = 0;
 
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
     Int_t kpart  = GENSTK.kpart[numsec-1];
     if (kpart < -6) return; // -7 to -12 = "heavy" fragment
-
-    Int_t pdg = fluka->PDGFromId(kpart);
-
+    Int_t  pdg  = fluka->PDGFromId(kpart);
+     
     Double_t px = GENSTK.plr[numsec-1] * GENSTK.cxr[numsec-1];
     Double_t py = GENSTK.plr[numsec-1] * GENSTK.cyr[numsec-1];
     Double_t pz = GENSTK.plr[numsec-1] * GENSTK.czr[numsec-1];
@@ -99,10 +99,9 @@ extern "C" {
     Double_t polx = GENSTK.cxrpol[numsec-1];
     Double_t poly = GENSTK.cyrpol[numsec-1];
     Double_t polz = GENSTK.czrpol[numsec-1];
-
+    
 
     TMCProcess mech = kPHadronic;
-
     if (EVTFLG.ldecay == 1) {
         mech = kPDecay;
         if (debug) cout << endl << "Decay" << endl;
@@ -122,8 +121,9 @@ extern "C" {
            poly = FLKSTK.typol[FLKSTK.npflka];
            polz = FLKSTK.tzpol[FLKSTK.npflka];
            if (debug) cout << endl << "Delta Ray from KASHEA...." << " pdg from FLKSTK=" << pdg << endl;
-        } else
-           if (debug) cout << endl << "Delta Ray" << endl;
+        } else {
+	    if (debug) cout << endl << "Delta Ray" << endl;
+	}
     } else if (EVTFLG.lpairp == 1) {
         mech = kPPair;
         if (debug) cout << endl << "Pair Production" << endl;
@@ -138,15 +138,16 @@ extern "C" {
     // 
     // Save particle in VMC stack
     cppstack->PushTrack(done, parent, pdg,
-                       px, py, pz, e,
-                       vx, vy, vz, tof,
-                       polx, poly, polz,
-                       mech, ntr, weight, is);
+			px, py, pz, e,
+			vx, vy, vz, tof,
+			polx, poly, polz,
+			mech, ntr, weight, is);
     if (debug)
-       cout << endl << " !!! stuprf: ntr=" << ntr << " pdg " << pdg << " parent=" << parent
-             << " parent_pdg="<< fluka->PDGFromId(TRACKR.jtrack) << " numsec "
-             << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode() << endl
-             << endl;
+	cout << endl << " !!! stuprf: ntr=" << ntr << " pdg " << pdg << " parent=" << parent
+	     << " parent_pdg="<< fluka->PDGFromId(TRACKR.jtrack) << " numsec "
+	     << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode() << endl
+	     << endl;
+	
 
 //
 //  Save current track number
