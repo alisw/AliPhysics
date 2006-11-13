@@ -170,7 +170,6 @@ void TFlukaConfigOption::WriteFlukaInputCards()
        // Check if sensitive
        if (medium->GetParam(0) != 0.) mediumIsSensitive = kTRUE;
 
-
        fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d %s\n", fMedium, fCMaterial->GetName());
        fCMatMin = fMedium;
        fCMatMax = fMedium;
@@ -505,8 +504,11 @@ void TFlukaConfigOption::ProcessHADR()
     if (fProcessFlag[kHADR] > 0) {
        fprintf(fgFile,"*\n*Hadronic interaction is ON by default in FLUKA\n");
     } else {
-       if (fMedium != -1) printf("Hadronic interactions cannot be switched off material by material !\n");
-       fprintf(fgFile,"THRESHOL  %10.1f%10.1f%10.1f%10.1e%10.1f\n",0., 0., 0., 1.e10, 0.);
+       if (fMedium != -1) {
+	   printf("Hadronic interactions cannot be switched off material by material !\n");
+       } else {
+	   fprintf(fgFile,"THRESHOL  %10.1f%10.1f%10.1f%10.1e%10.1f\n",0., 0., 0., 1.e10, 0.);
+       }
     }
 }
 
@@ -823,8 +825,8 @@ void  TFlukaConfigOption::ProcessSensitiveMedium()
     fprintf(fgFile,"*\n*Options for sensitive medium \n");
     //
     // EMFFIX
-    fprintf(fgFile,"EMFFIX    %10.1f%10.3f%10.1f%10.1f%10.1f%10.1f\n", fCMatMin, 0.05, 0., 0., 0., 0.);
+    fprintf(fgFile,"EMFFIX    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", fCMatMin, 0.05, 0., 0., 0., 0.);
     //
     // FLUKAFIX
-    fprintf(fgFile,"FLUKAFIX  %10.3f                    %10.3f\n", 0.05, fCMatMin);
+    fprintf(fgFile,"FLUKAFIX  %10.3g                    %10.3f\n", 0.05, fCMatMin);
 }
