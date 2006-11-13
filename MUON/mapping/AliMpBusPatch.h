@@ -29,6 +29,11 @@ class AliMpBusPatch : public TObject
 
   AliMpBusPatch();
   virtual ~AliMpBusPatch();
+  
+  // static methods
+  static Int_t GetGlobalBusID(Int_t localID, Int_t ddlID);
+  static Int_t GetLocalBusID(Int_t globalID, Int_t ddlID);
+ 
 
   // methods
   void ReadBusPatchFile();
@@ -49,6 +54,8 @@ class AliMpBusPatch : public TObject
  private:
   AliMpBusPatch(const AliMpBusPatch& src);
   AliMpBusPatch& operator = (const AliMpBusPatch& src) ;
+
+  static const Int_t  fgkOffset;     //< Offset for conversion global/local ID  
 
   TExMap fDetElemIdToBusPatch;       //!< Map from idDE to BusPatch   
   TExMap fBusPatchToDetElem;         //!< Map from BusPatch to idDE

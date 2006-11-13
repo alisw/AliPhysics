@@ -38,6 +38,8 @@
 ClassImp(AliMpBusPatch)
 /// \endcond
 
+const Int_t  AliMpBusPatch::fgkOffset = 100;
+
 //_____________________________________________________________________________
 AliMpBusPatch::AliMpBusPatch()
   : TObject(),
@@ -58,7 +60,22 @@ AliMpBusPatch::~AliMpBusPatch()
   fBusPatchToDDL.Delete();
 
 }
+//____________________________________________________________________
+Int_t AliMpBusPatch::GetGlobalBusID(Int_t localID, Int_t ddlID)
+{
+  /// return global bus id from local bus and ddl id
 
+  return ddlID*fgkOffset + localID;
+
+}
+//____________________________________________________________________
+Int_t AliMpBusPatch::GetLocalBusID(Int_t globalID, Int_t ddlID)
+{
+  /// return local bus id from local bus id
+
+  return globalID - ddlID*fgkOffset;
+
+}
 //____________________________________________________________________
 Int_t AliMpBusPatch::GetDEfromBus(Int_t busPatchId)
 {
