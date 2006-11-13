@@ -21,7 +21,7 @@
 //
 // Author: Jan.Fiete.Grosse-Oetringhaus@cern.ch
 
-TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0, Bool_t addFileName = kFALSE, Bool_t addFriend = kFALSE, Bool_t check = kFALSE)
+TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0, Bool_t addFileName = kFALSE, Bool_t addFriend = kFALSE, const char* check = 0)
 {
   // creates chain of files in a given directory or file containing a list.
   // In case of directory the structure is expected as:
@@ -31,6 +31,7 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
   //
   // if addFileName is true the list only needs to contain the directories that contain the AliESDs.root files
   // if addFriend is true a file AliESDfriends.root is expected in the same directory and added to the chain as friend
+  // if check is != 0 the files that work are written back into the textfile with the name check
 
   if (!aDataDir)
     return 0;
@@ -86,6 +87,10 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
     ifstream in;
     in.open(aDataDir);
 
+    ofstream outfile;
+    if (check)
+      outfile.open(check);
+
     Int_t count = 0;
 
     // Read the input list of files and add them to the chain
@@ -129,6 +134,7 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
           file->Close();
         }
         
+        outfile << line.Data() << endl;
         printf("%s\n", line.Data());
       }        
         
@@ -141,6 +147,9 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
     }
 
     in.close();
+    
+    if (check)
+      outFile.close();
   }
   
   if (chainFriend)
@@ -165,7 +174,6 @@ void ChainToTextFile(TChain* chain, const char* target)
     
     fileName.Remove(fileName.Length()-13);
 
-    cout << fileName.Data() << endl;
     outfile << fileName.Data() << endl;
   }
 
@@ -183,44 +191,43 @@ void LookupWrite(TChain* chain, const char* target)
   ChainToTextFile(chain, target);
 }
 
+TChain* CreateChain(const char* treeName, const char* aDataDir, Int_t aRuns, Int_t offset = 0)
+{
+  // creates chain of files in a given directory or file containing a list.
 
+  if (!treeName || !aDataDir)
+    return 0;
 
-TChain* CreateRawChain(const char* aDataDir, Int_t aRuns = 20) {
-
-  TChain* chain = new TChain("RAW");
+  TChain* chain = new TChain(treeName);
   
-  // ########################################################
-  // get the data dir  
-  Char_t execDir[256];
-  sprintf(execDir,gSystem->pwd());
-  TSystemDirectory* baseDir = new TSystemDirectory(".",aDataDir);
-  TList* fileList           = baseDir->GetListOfFiles();
-  Int_t nFiles              = fileList->GetEntries();
-  // go back to the dir where this script is executed
-  gSystem->cd(execDir);
+  // Open the input stream
+  ifstream in;
+  in.open(aDataDir);
 
-  // ########################################################
-  // loop over files 
-  Int_t counter = 0;
-  for (Int_t r=0; r<nFiles; r++) {
+  Int_t count = 0;
+
+  // Read the input list of files and add them to the chain
+  TString line;
+  while(in.good()) 
+  {
+    in >> line;
+      
+    if (line.Length() == 0)
+      continue;      
     
-    if (counter>aRuns)
+    if (offset > 0)
+    {
+      --offset;
+      continue;
+    }
+
+    if (count++ == aRuns)
       break;
-    
-    TSystemFile* presentFile = (TSystemFile*)fileList->At(r);
-    if (!presentFile || presentFile->IsDirectory())
-      continue;
-    
-    if (!(TString(presentFile->GetName()).Contains(".root")))
-      continue;
-    
-    counter++;
-    
-    //cout << Form("%s/%s",aDataDir,presentFile->GetName()) << endl;
-    
-    chain->AddFile(Form("%s/%s",aDataDir,presentFile->GetName()));
+
+    chain->Add(line);
   }
 
+  in.close();
 
-
+  return chain;
 }
