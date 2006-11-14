@@ -3,7 +3,7 @@
 #ifndef ALIEVE_ITSDigitsInfo_H
 #define ALIEVE_ITSDigitsInfo_H
 
-#include <Reve/VSD.h>
+#include <Reve/Reve.h>
 
 #include <map>
 
@@ -17,11 +17,10 @@
 #include <AliITSsegmentationSDD.h>
 #include <AliITSsegmentationSSD.h>
 
-static const int NSCALE = 5;
 
 namespace Alieve {
 
-class ITSDigitsInfo : public TObject
+class ITSDigitsInfo : public TObject, public Reve::ReferenceCount
 {
   ITSDigitsInfo(const ITSDigitsInfo&);            // Not implemented
   ITSDigitsInfo& operator=(const ITSDigitsInfo&); // Not implemented
@@ -30,8 +29,6 @@ private:
   Float_t fSPDZCoord[192];
 
 protected:
-  Int_t                      fRefCount;
-
   map<Int_t,  TClonesArray*> fSPDmap;
   map<Int_t,  TClonesArray*> fSDDmap;
   map<Int_t,  TClonesArray*> fSSDmap;
@@ -45,11 +42,11 @@ public:
   AliITSsegmentationSDD*   fSegSDD;
   AliITSsegmentationSSD*   fSegSSD;
 
-  Int_t        fSPDScaleX[NSCALE];
-  Int_t        fSPDScaleZ[NSCALE];
-  Int_t        fSDDScaleX[NSCALE];
-  Int_t        fSDDScaleZ[NSCALE];
-  Int_t        fSSDScale[NSCALE];
+  Int_t        fSPDScaleX[5];
+  Int_t        fSPDScaleZ[5];
+  Int_t        fSDDScaleX[5];
+  Int_t        fSDDScaleZ[5];
+  Int_t        fSSDScale [5];
     
   ITSDigitsInfo();
   virtual ~ITSDigitsInfo();
@@ -59,9 +56,6 @@ public:
   TClonesArray* GetDigits(Int_t moduleID, Int_t detector);
 
   void GetSPDLocalZ(Int_t j, Float_t& z);
-
-  void IncRefCount() { ++fRefCount; }
-  void DecRefCount() { --fRefCount; if(fRefCount <= 0) delete this; }
 
   virtual void Print(Option_t* opt="") const;
 

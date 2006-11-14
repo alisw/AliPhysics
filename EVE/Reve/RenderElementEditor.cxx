@@ -37,7 +37,6 @@ RenderElementEditor::RenderElementEditor(const TGWindow *p,
 
   fMainColor = new TGColorSelect(fHFrame, 0, -1);
   fHFrame->AddFrame(fMainColor, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-  fMainColor->Associate(fHFrame);
   fMainColor->Connect
     ("ColorSelected(Pixel_t)",
      "Reve::RenderElementEditor", this, "DoMainColor(Pixel_t)");
@@ -82,15 +81,12 @@ void RenderElementEditor::SetModel(TObject* obj)
 
 void RenderElementEditor::DoRnrElement()
 {
-  Bool_t fd = fRnrElement->IsOn();
-  fRE->SetRnrElement(fd);
+  fRE->SetRnrElement(fRnrElement->IsOn());
   Update();
 }
 
 void RenderElementEditor::DoMainColor(Pixel_t color)
 {
-  // Slot connected to the axis color.
-   
   fRE->SetMainColor(color);
   Update();
 }

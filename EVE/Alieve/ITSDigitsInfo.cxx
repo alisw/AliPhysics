@@ -23,7 +23,7 @@ ClassImp(ITSDigitsInfo)
 
 ITSDigitsInfo::ITSDigitsInfo() :
   TObject(),
-  fRefCount(0),
+  ReferenceCount(),
   fSPDmap(), fSDDmap(), fSSDmap(),
   fTree (0),
   fGeom (0),
@@ -34,15 +34,14 @@ ITSDigitsInfo::ITSDigitsInfo() :
 
 ITSDigitsInfo:: ~ITSDigitsInfo() 
 {
-  for(map<Int_t, TClonesArray*>::iterator j=fSPDmap.begin(); j!=fSPDmap.end(); ++j) {
+  map<Int_t, TClonesArray*>::iterator j;
+  for(j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
     delete j->second;
-  }
-  for(map<Int_t, TClonesArray*>::iterator j=fSDDmap.begin(); j!=fSDDmap.end(); ++j) {
+  for(j = fSDDmap.begin(); j != fSDDmap.end(); ++j)
     delete j->second;
-  }
-  for(map<Int_t, TClonesArray*>::iterator j=fSSDmap.begin(); j!=fSSDmap.end(); ++j) {
+  for(j = fSSDmap.begin(); j != fSSDmap.end(); ++j)
     delete j->second;
-  }
+
   delete fSegSPD; delete fSegSDD; delete fSegSSD; 
   delete fGeom;
   delete fTree;
@@ -66,13 +65,13 @@ void ITSDigitsInfo::SetTree(TTree* tree)
   SetITSSegmentation();
   
   // create tables for scaling
-  // lowest scale factor refers unscaled ITS module
-  fSPDScaleX[0]=1;
-  fSPDScaleZ[0]=1;
-  fSDDScaleX[0]=1;
-  fSDDScaleZ[0]=1;
-  fSSDScale[0]=1;
-  // spd lows rsolution is in the level of 8x2 redaut chips
+  // lowest scale factor refers to unscaled ITS module
+  fSPDScaleX[0] = 1;
+  fSPDScaleZ[0] = 1;
+  fSDDScaleX[0] = 1;
+  fSDDScaleZ[0] = 1;
+  fSSDScale [0] = 1;
+  // spd lows resolution is in the level of 8x2 readout chips
   Int_t nx = 8; // fSegSPD->Npx()/8; // 32
   Int_t nz = 6; // fSegSPD->Npz()/2; // 128
 
@@ -102,11 +101,11 @@ void ITSDigitsInfo::SetTree(TTree* tree)
 
   
   // lowest scale factor refers unscaled ITS module
-  fSPDScaleX[0]=1;
-  fSPDScaleZ[0]=1;
-  fSDDScaleX[0]=1;
-  fSDDScaleZ[0]=1;
-  fSSDScale[0]=1;
+  fSPDScaleX[0] = 1;
+  fSPDScaleZ[0] = 1;
+  fSDDScaleX[0] = 1;
+  fSDDScaleZ[0] = 1;
+  fSSDScale [0] = 1;
 }
 
 /**************************************************************************/
@@ -167,8 +166,7 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       fTree->GetEntry(mod);
       fSPDmap[mod] = digitsSPD;
       return digitsSPD;
-    } 
-    else{
+    } else {
       return i->second;
     }
     break;
@@ -181,8 +179,7 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       fTree->GetEntry(mod);
       fSDDmap[mod] = digitsSDD;
       return digitsSDD;
-    } 
-    else{
+    } else {
       return i->second;
     }
     break;
@@ -195,8 +192,7 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       fTree->GetEntry(mod);
       fSSDmap[mod] = digitsSSD;
       return digitsSSD;
-    } 
-    else{
+    } else {
       return i->second;
     }
     break;

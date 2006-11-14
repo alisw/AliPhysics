@@ -1,6 +1,7 @@
 // $Header$
 
 #include "TriangleSet.h"
+#include "RGBAPalette.h"
 
 #include <TVector3.h>
 #include <TRandom3.h>
@@ -78,7 +79,7 @@ void TriangleSet::GenerateZNormalColors(Float_t fac, Int_t min, Int_t max,
   if (fTringCols  == 0)  fTringCols = new UChar_t[3*fNTrings];
   if (fTringNorms == 0)  GenerateTriangleNormals();
 
-  Reve::RGBAPalette pal(min, max, interp, wrap);
+  RGBAPalette pal(min, max, interp, wrap);
   UChar_t *C = fTringCols;
   Float_t *N = fTringNorms;
   for(Int_t t=0; t<fNTrings; ++t, C+=3, N+=3)
