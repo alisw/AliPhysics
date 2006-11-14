@@ -4,6 +4,7 @@ SRCS:= \
 AliMUONPreprocessor.cxx \
 AliMUONVSubprocessor.cxx \
 AliMUONPedestalSubprocessor.cxx \
+AliMUONGMSSubprocessor.cxx \
 AliMUON2DStoreValidator.cxx \
 AliMUONPedestalEventGenerator.cxx \
 AliMUONCheckItem.cxx \
