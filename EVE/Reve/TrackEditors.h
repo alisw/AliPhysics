@@ -25,8 +25,8 @@ class TrackListEditor : public TGedFrame
 protected:
   TrackList* fTC; // fModel dynamic-casted to TrackListEditor
 
-  TGNumberEntry*     fMaxR;
-  TGNumberEntry*     fMaxZ;
+  Reve::RGValuator*  fMaxR;
+  Reve::RGValuator*  fMaxZ;
   TGNumberEntry*     fMaxOrbits;
   TGNumberEntry*     fMinAng;
   TGNumberEntry*     fDelta;

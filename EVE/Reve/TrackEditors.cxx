@@ -23,58 +23,49 @@ using namespace Reve;
 
 ClassImp(TrackListEditor)
 
-TrackListEditor::TrackListEditor(const TGWindow *p,
-                                 Int_t width, Int_t height,
-                                 UInt_t options, Pixel_t back) :
-  TGedFrame(p, width, height, options | kVerticalFrame, back),
+  TrackListEditor::TrackListEditor(const TGWindow *p,
+				   Int_t width, Int_t height,
+				   UInt_t options, Pixel_t back) :
+    TGedFrame(p, width, height, options | kVerticalFrame, back),
 
-  fTC (0),
+    fTC (0),
 
-  fMaxR(0),
-  fMaxZ(0),
-  fMaxOrbits(0),
-  fMinAng(0),
-  fDelta(0),
+    fMaxR(0),
+    fMaxZ(0),
+    fMaxOrbits(0),
+    fMinAng(0),
+    fDelta(0),
 
-  fRnrTracks(0),
-  fRnrMarkers(0),
+    fRnrTracks(0),
+    fRnrMarkers(0),
 
-  fFitDaughters(0),
-  fFitDecay(0),
+    fFitDaughters(0),
+    fFitDecay(0),
 
-  fPtRange(0)
+    fPtRange(0)
 {
   MakeTitle("TrackList");
+  Int_t labelW = 67;
 
-    // --- Limits
+  // --- Limits
 
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "Max R:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 25, 2, 1, 1));
-    fMaxR = new TGNumberEntry(f, 0., 6, -1, 
-			      TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
-			      TGNumberFormat::kNELLimitMinMax, 0.1, 2000.0);
-    fMaxR->GetNumberEntry()->SetToolTipText("Maximum radius to which the tracks will be drawn.");
-    f->AddFrame(fMaxR, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fMaxR->Associate(f);
-    fMaxR->Connect("ValueSet(Long_t)", "Reve::TrackListEditor", this, "DoMaxR()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
+  fMaxR = new RGValuator(this, "Max R:", 110, 0);
+  fMaxR->SetLabelWidth(labelW);
+  fMaxR->SetNELength(6);
+  fMaxR->Build();
+  fMaxR->SetLimits(0.1, 1000, 100, TGNumberFormat::kNESRealOne);
+  fMaxR->SetToolTip("Maximum radius to which the tracks will be drawn.");
+  fMaxR->Connect("ValueSet(Double_t)", "Reve::TrackListEditor", this, "DoMaxR()");
+  AddFrame(fMaxR, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "Max Z:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 24, 2, 1, 1));
-    fMaxZ = new TGNumberEntry(f, 0., 6, -1, 
-			      TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
-			      TGNumberFormat::kNELLimitMinMax, 0.1, 2000.0);
-    fMaxZ->GetNumberEntry()->SetToolTipText("Maximum z-coordinate to which the tracks will be drawn.");
-    f->AddFrame(fMaxZ, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fMaxZ->Associate(f);
-    fMaxZ->Connect("ValueSet(Long_t)", "Reve::TrackListEditor", this, "DoMaxZ()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
+  fMaxZ = new RGValuator(this, "Max Z:", 110, 0);
+  fMaxZ->SetLabelWidth(labelW);
+  fMaxZ->SetNELength(6);
+  fMaxZ->Build();
+  fMaxZ->SetLimits(0.1, 2000, 100, TGNumberFormat::kNESRealOne);
+  fMaxZ->SetToolTip("Maximum z-coordinate to which the tracks will be drawn.");
+  fMaxZ->Connect("ValueSet(Double_t)", "Reve::TrackListEditor", this, "DoMaxZ()");
+  AddFrame(fMaxZ, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
@@ -109,8 +100,8 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
     TGLabel *l = new TGLabel(f, "Delta:");
     f->AddFrame(l, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 32, 2, 1, 1));
     fDelta = new TGNumberEntry(f, 0., 6, -1, 
-				   TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
-				   TGNumberFormat::kNELLimitMinMax, 0.001, 100.0);
+			       TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
+			       TGNumberFormat::kNELLimitMinMax, 0.001, 100.0);
     fDelta->GetNumberEntry()->SetToolTipText("Maximal error at the mid-point of the line connecting to helix points.");
     f->AddFrame(fDelta, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
     fDelta->Associate(f);
@@ -172,8 +163,8 @@ void TrackListEditor::SetModel(TObject* obj)
 {
   fTC = dynamic_cast<TrackList*>(obj);
 
-  fMaxR->SetNumber(fTC->GetMaxR());
-  fMaxZ->SetNumber(fTC->GetMaxZ());
+  fMaxR->SetValue(fTC->GetMaxR());
+  fMaxZ->SetValue(fTC->GetMaxZ());
   fMaxOrbits->SetNumber(fTC->GetMaxOrbs());
   fMinAng->SetNumber(fTC->GetMinAng());
   fDelta->SetNumber(fTC->GetDelta());
@@ -193,14 +184,13 @@ void TrackListEditor::SetModel(TObject* obj)
 
 void TrackListEditor::DoMaxR()
 {
-  Double_t maxr = fMaxR->GetNumber();
-  fTC->SetMaxR(maxr);
+  fTC->SetMaxR(fMaxR->GetValue());
   Update();
 }
 
 void TrackListEditor::DoMaxZ()
 {
-  fTC->SetMaxZ(fMaxZ->GetNumber());
+  fTC->SetMaxZ(fMaxZ->GetValue());
   Update();
 }
 
