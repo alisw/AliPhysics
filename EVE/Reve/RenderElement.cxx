@@ -8,6 +8,8 @@
 #include <TGListTree.h>
 #include <THashList.h>
 
+#include <algorithm>
+
 using namespace Reve;
 
 //______________________________________________________________________
@@ -467,5 +469,32 @@ RenderElementList::RenderElementList(const Text_t* n, const Text_t* t, Bool_t do
 {
   if(fDoColor) {
     SetMainColorPtr(&fColor);
+  }
+}
+
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+
+ClassImp(ReferenceBackPtr)
+
+void ReferenceBackPtr::IncRefCount(RenderElement* re)
+{
+  ReferenceCount::IncRefCount();
+  fBackRefs.push_back(re);
+}
+
+void ReferenceBackPtr::DecRefCount(RenderElement* re)
+{
+  static const Exc_t eH("ReferenceBackPtr::DecRefCount ");
+
+  std::list<RenderElement*>::iterator i =
+    std::find(fBackRefs.begin(), fBackRefs.end(), re);
+  if (i != fBackRefs.end()) {
+    fBackRefs.erase(i);
+    ReferenceCount::DecRefCount();
+  } else {
+    Warning(eH, Form("render element '%s' not found in back-refs.",
+		     re->GetObject()->GetName()));
   }
 }

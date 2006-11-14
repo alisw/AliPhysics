@@ -8,9 +8,6 @@
 #include <TNamed.h>
 #include <TRef.h>
 
-#include <Gtypes.h>
-#include <GuiTypes.h>
-
 #include <list>
 #include <set>
 
@@ -206,6 +203,29 @@ public:
   virtual void Paint(Option_t* option = "") { PaintElements(option); }
 
   ClassDef(RenderElementList, 1);
+};
+
+
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+
+class ReferenceBackPtr : public ReferenceCount
+{
+protected:
+  std::list<RenderElement*> fBackRefs;
+
+public:
+  ReferenceBackPtr() : ReferenceCount() {}
+  virtual ~ReferenceBackPtr() {}
+
+  ReferenceBackPtr(const ReferenceBackPtr&) : ReferenceCount() {}
+  ReferenceBackPtr& operator=(const ReferenceBackPtr&) { return *this; }
+
+  void IncRefCount(RenderElement* re);
+  void DecRefCount(RenderElement* re);
+
+  ClassDef(ReferenceBackPtr, 0);
 };
 
 }
