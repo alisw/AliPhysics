@@ -39,6 +39,7 @@ public:
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
+  virtual void   AddAlignableVolumes() const {}
   virtual Int_t  DistanceToPrimitive(Int_t px, Int_t py);
   virtual Int_t  IsVersion() const = 0;
   virtual void   Init();

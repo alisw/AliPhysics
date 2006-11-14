@@ -592,6 +592,27 @@ void AliVZEROv7::CreateGeometry()
     vZERO->AddNode(v0LE,1,new TGeoTranslation(0, 0, +340));
     top->AddNode(vZERO,1);
 }
+
+//_____________________________________________________________________________
+void AliVZEROv7::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  // 
+  TString vpC = "/ALIC_1/VZERO_1/V0RI_1";
+  TString vpA = "/ALIC_1/VZERO_1/V0LE_1";
+  TString snC = "VZERO/V0C";
+  TString snA = "VZERO/V0A";
+  
+  if(!gGeoManager->SetAlignableEntry(snC.Data(),vpC.Data()))
+    AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", snC.Data(),vpC.Data()));
+  if(!gGeoManager->SetAlignableEntry(snA.Data(),vpA.Data()))
+    AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", snA.Data(),vpA.Data()));
+
+} 
+
 //_____________________________________________________________________________
 void AliVZEROv7::CreateMaterials()
 {
