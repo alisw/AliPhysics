@@ -63,6 +63,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   TObjArray *digits = new TObjArray;
   for (Int_t i=0;i<smaxall; i++){
     AliITSdigitSSD *d=(AliITSdigitSSD*)alldigits->UncheckedAt(i);
+    Float_t q=d->GetSignal()/4.29;// temp. fix (for PID purposed - normalis. to be checked)
+    d->SetSignal(Int_t(q));
     if (d->GetSignal()<3) continue;
     digits->AddLast(d);
   }
