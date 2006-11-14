@@ -9,12 +9,14 @@
 #include <TString.h>
 #include <TError.h>
 #include <Gtypes.h>
+#include <GuiTypes.h>
 
 class TVirtualPad;
 class TGeoManager;
 
 namespace Reve {
 
+class RenderElement;
 
 /**************************************************************************/
 // Exceptions, string functions
@@ -107,6 +109,9 @@ public:
   ReferenceCount() : fRefCount(0) {}
   virtual ~ReferenceCount() {}
 
+  ReferenceCount(const ReferenceCount&) : fRefCount(0) {}
+  ReferenceCount& operator=(const ReferenceCount&) { return *this; }
+
   void IncRefCount() { ++fRefCount; }
   void DecRefCount() { if(--fRefCount <= 0) OnZeroRefCount(); }
 
@@ -117,71 +122,13 @@ public:
 
 
 /**************************************************************************/
-// Color, palette management
+// Color management
 /**************************************************************************/
 
 void     ColorFromIdx(Color_t ci, UChar_t* col, Bool_t alpha=kTRUE);
 void     ColorFromIdx(Float_t f1, Color_t c1, Float_t f2, Color_t c2,
 		      UChar_t* col, Bool_t alpha=kTRUE);
 Color_t* FindColorVar(TObject* obj, const Text_t* varname);
-
-class RGBAPalette : public TObject, public ReferenceCount
-{
-  RGBAPalette(const RGBAPalette&);            // Not implemented
-  RGBAPalette& operator=(const RGBAPalette&); // Not implemented
-
-protected:
-  Int_t     fMinVal;
-  Int_t     fMaxVal;
-  Int_t     fNBins;
-  Bool_t    fInterpolate;
-  Bool_t    fWrap;
-
-  mutable UChar_t* fColorArray; //!
-
-  void SetupColor(Int_t val, UChar_t* pix) const;
-  
-public:
-  RGBAPalette();
-  RGBAPalette(Int_t min, Int_t max);
-  RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t wrap);
-  virtual ~RGBAPalette();
-
-  void SetupColorArray() const;
-  void ClearColorArray();
-
-  UChar_t* ColorFromArray(Int_t val) const;
-  void     ColorFromArray(Int_t val, UChar_t* pix, Bool_t alpha=kTRUE) const;
-
-  Int_t  GetMinVal() const        { return fMinVal; }
-  Int_t  GetMaxVal() const        { return fMaxVal; }
-  Bool_t GetInterpolate() const   { return fInterpolate; }
-  Bool_t GetWrap() const          { return fWrap; }
-
-  void   SetMinMax(Int_t min, Int_t max);
-  void   SetInterpolate(Bool_t b);
-  void   SetWrap(Bool_t b);
-
-  ClassDef(RGBAPalette, 1)
-};
-
-
-inline UChar_t* RGBAPalette::ColorFromArray(Int_t val) const
-{
-  if(!fColorArray)  SetupColorArray();
-  if(val < fMinVal) val = fWrap ? ((val+1-fMinVal)%fNBins + fMaxVal) : fMinVal;
-  if(val > fMaxVal) val = fWrap ? ((val-1-fMaxVal)%fNBins + fMinVal) : fMaxVal;
-  return fColorArray + 4 * (val - fMinVal);
-}
-
-inline void RGBAPalette::ColorFromArray(Int_t val, UChar_t* pix, Bool_t alpha) const
-{
-  UChar_t* c = ColorFromArray(val);
-  pix[0] = c[0]; pix[1] = c[1]; pix[2] = c[2];
-  if (alpha) pix[3] = c[3];
-}
-
-/**************************************************************************/
 
 }
 
