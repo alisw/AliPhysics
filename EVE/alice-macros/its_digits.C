@@ -16,9 +16,12 @@ void its_digits(Int_t mode=63)
   Alieve::ITSDigitsInfo* di = new Alieve::ITSDigitsInfo();
   di->SetTree(dt);
   di->Dump();
+  // Could initialize ITSModule statics (?)
+
   AliITSgeom* g = di->fGeom;
 
   gStyle->SetPalette(1, 0);
+  // Initialize palettes (?)
 
   gReve->DisableRedraw();
 
@@ -50,7 +53,7 @@ void its_digits(Int_t mode=63)
 	relStave->SetMainColor((Color_t)2);
 	gReve->AddRenderElement(relSector, relStave);
 	for(nMod=0; nMod<4; nMod++) {
-	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di, (Color_t)2);
+	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
 	  gReve->AddRenderElement(relStave, m);
 	}
       }
@@ -76,7 +79,7 @@ void its_digits(Int_t mode=63)
 	relStave->SetMainColor((Color_t)2);
 	gReve->AddRenderElement(relSector, relStave);
 	for(nMod=0; nMod<4; nMod++) {
-	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di, (Color_t)2);
+	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
 	  gReve->AddRenderElement(relStave, m);
 	}
       }
@@ -96,7 +99,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)3);
       gReve->AddRenderElement(l, relLadder);
       for(nMod=0; nMod<6; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di, (Color_t)3);
+	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
 	gReve->AddRenderElement(relLadder, m);
       }
     }
@@ -114,7 +117,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)3);
       gReve->AddRenderElement(l, relLadder);
       for(nMod=0; nMod<8; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di, (Color_t)3);
+	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
 	gReve->AddRenderElement(relLadder, m);
       }
     }
@@ -132,7 +135,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)4);
       gReve->AddRenderElement(l, relLadder);
       for(nMod=0; nMod<22; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di, (Color_t)4);
+	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
 	gReve->AddRenderElement(relLadder, m);
       }
     }
@@ -150,7 +153,7 @@ void its_digits(Int_t mode=63)
       relLadder->SetMainColor((Color_t)4);
       gReve->AddRenderElement(l, relLadder);
       for(nMod=0; nMod<25; nMod++) {
-	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di, (Color_t)4);
+	Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
 	gReve->AddRenderElement(relLadder, m);
       }
     }
