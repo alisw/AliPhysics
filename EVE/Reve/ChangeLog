@@ -1,5 +1,27 @@
 2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* BoxSet.cxx:
+	* BoxSetGL.h:
+	* QuadSet.cxx:
+	* QuadSet.h:
+	* QuadSetGL.h:
+	* RGBAPalette.cxx:
+	* RGBAPaletteEditor.cxx:
+	* RGEditor.cxx:
+	* RGEditor.h:
+	* RGValuators.h:
+	* RenderElement.cxx:
+	* RenderElement.h:
+	* TriangleSet.cxx:
+	* TriangleSet.h:
+	* ZTrans.cxx:
+	* ZTrans.h:
+	* ZTransEditor.cxx:
+	* ZTransEditor.h:
+	Fix effc++ warnings.
+
+2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* RGValuators.h:
 	Added getters for limits of the RGValuator.
 

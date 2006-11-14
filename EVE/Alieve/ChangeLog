@@ -1,5 +1,10 @@
 2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* TPCSectorData.h:
+	Fix effc++ warnings.
+	
+2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* ITSDigitsInfo.cxx:
 	* ITSDigitsInfo.h:
 	Formatting changes.
