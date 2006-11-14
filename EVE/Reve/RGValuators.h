@@ -80,6 +80,9 @@ public:
 
   void SetSliderNewLine(Bool_t nl) { fSliderNewLine = nl; }
 
+  void GetLimits(Float_t& min, Float_t& max) const { min = fMin; max = fMax; }
+  Float_t GetLimitMin() const { return fMin; }
+  Float_t GetLimitMax() const { return fMax; }
   void SetLimits(Int_t min, Int_t max);
   void SetLimits(Float_t min, Float_t max, Int_t npos,
 		 TGNumberFormat::EStyle nef=TGNumberFormat::kNESRealTwo);
