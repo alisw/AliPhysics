@@ -114,38 +114,6 @@ AliITSvSSD03::AliITSvSSD03(const char *title,Int_t gn) : AliITS("ITS", title){
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
-AliITSvSSD03::AliITSvSSD03(const AliITSvSSD03 &source) : AliITS(source){
-    ////////////////////////////////////////////////////////////////////////
-    //     Copy Constructor for ITS SSD test beam 2003 version 1.
-    // This class is not to be copied. Function only dummy.
-    // Inputs:
-    //    const AliITSvSSD03 &source   The class to be copied
-    // Outputs:
-    //    none.
-    // Return:
-    //    A warning message.
-    ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSvSSD03");
-    return;
-}
-//______________________________________________________________________
-AliITSvSSD03& AliITSvSSD03::operator=(const AliITSvSSD03 &source){
-    ////////////////////////////////////////////////////////////////////////
-    //    Assignment operator for the ITS SSD test beam 2003 version 1.
-    // This class is not to be copied. Function only dummy.
-    // Inputs:
-    //    const AliITSvSSD03 &source   The class to be copied
-    // Outputs:
-    //    none.
-    // Return:
-    //    A Warning message
-    ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return *this;
-    Warning("= operator","Not allowed to copy AliITSvSSD03");
-    return *this;
-}
-//______________________________________________________________________
 AliITSvSSD03::~AliITSvSSD03() {
     ////////////////////////////////////////////////////////////////////////
     //    Standard destructor for the ITS SSD test beam 2003 version 1.

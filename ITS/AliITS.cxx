@@ -117,7 +117,7 @@ fITSmodules(0)
   // is also called.
   
 //    SetDetectors(); // default to fOpt="All". This variable not written out.
-    SetMarkerColor(kRed);
+//PH    SetMarkerColor(kRed);
 }
 //______________________________________________________________________
 AliITS::AliITS(const char *name, const char *title):AliDetector(name,title),
@@ -147,7 +147,7 @@ fITSmodules(0)
     
   fDetTypeSim   = new AliITSDetTypeSim();
   
-  SetMarkerColor(kRed);
+  //PH  SetMarkerColor(kRed);
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
 
@@ -183,46 +183,6 @@ AliITS::~AliITS(){
       delete fDetTypeSim;
       fDetTypeSim = 0;
     }
-}
-//______________________________________________________________________
-AliITS::AliITS(const AliITS &source) : AliDetector(source),
-fDetTypeSim(0),
-fEuclidOut(0),
-fOpt("All"),
-fIdN(0),
-fIdSens(0),
-fIdName(0),
-fITSmodules(0)
-{
-    // Copy constructor. This is a function which is not allowed to be
-    // done to the ITS. It exits with an error.
-    // Inputs:
-    //      AliITS &source  An AliITS class.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
-
-    if(this==&source) return;
-    Error("Copy constructor",
-          "You are not allowed to make a copy of the AliITS");
-    exit(1);
-}
-//______________________________________________________________________
-AliITS& AliITS::operator=(const AliITS &source){
-    // Assignment operator. This is a function which is not allowed to be
-    // done to the ITS. It exits with an error.
-    // Inputs:
-    //      AliITS &source  An AliITS class.
-    // Outputs:
-    //      none.
-    // Return:
-    //      none.
-
-    if(this==&source) return *this;
-    Error("operator=","You are not allowed to make a copy of the AliITS");
-    exit(1);
-    return *this; //fake return
 }
 //______________________________________________________________________
 AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager)const{

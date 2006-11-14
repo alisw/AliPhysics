@@ -81,19 +81,9 @@ AliCRTv0::AliCRTv0(const char *name, const char *title)
     <img src="picts/AliCRTv0.gif">
   */
   //End_Html
-  SetMarkerColor(kRed);
-  SetMarkerStyle(kRed);
-  SetMarkerSize(0.4);
-}
-
-//_____________________________________________________________________________
-AliCRTv0::AliCRTv0(const AliCRTv0& crt)
-  : AliCRT(crt)
-{
-  //
-  // Copy constructor
-  //
-  crt.Copy(*this);
+  //PH  SetMarkerColor(kRed);
+  //PH  SetMarkerStyle(kRed);
+  //PH  SetMarkerSize(0.4);
 }
 
 //_____________________________________________________________________________
@@ -102,16 +92,6 @@ AliCRTv0::~AliCRTv0()
   //
   // Default destructor
   //
-}
-
-//_____________________________________________________________________________
-AliCRTv0& AliCRTv0::operator=(const AliCRTv0& crt)
-{
-  //
-  // Asingment operator.
-  //
-  crt.Copy(*this);
-  return *this;
 }
 
 //_____________________________________________________________________________

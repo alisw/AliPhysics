@@ -58,9 +58,9 @@ AliDIPO::AliDIPO(const char *name, const char *title)
   //
   // Standard constructor for the Magnetic Dipole
   //
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
+  //PH  SetMarkerColor(7);
+  //PH  SetMarkerStyle(2);
+  //PH  SetMarkerSize(0.4);
 }
  
 //_____________________________________________________________________________

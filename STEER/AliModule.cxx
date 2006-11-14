@@ -114,40 +114,13 @@ AliModule::AliModule(const char* name,const char *title):
 
   gAlice->AddModule(this);
 
-  SetMarkerColor(3);
+  //PH  SetMarkerColor(3);
   //
   // Clear space for tracking media and material indexes
 
   for(Int_t i=0;i<100;i++) (*fIdmate)[i]=(*fIdtmed)[i]=0;
 }
  
-//_______________________________________________________________________
-AliModule::AliModule(const AliModule &mod):
-  TNamed(mod),
-  TAttLine(mod),
-  TAttMarker(mod),
-  AliRndm(mod),
-  fEuclidMaterial(""),
-  fEuclidGeometry(""),
-  fIdtmed(0),
-  fIdmate(0),
-  fLoMedium(0),
-  fHiMedium(0),
-  fActive(0),
-  fHistograms(0),
-  fNodes(0),
-  fEnable(0),
-  fTrackReferences(0),
-  fMaxIterTrackRef(0),
-  fCurrentIterTrackRef(0),
-  fRunLoader(0)
-{
-  //
-  // Copy constructor
-  //
-  mod.Copy(*this);
-}
-
 //_______________________________________________________________________
 AliModule::~AliModule()
 {
@@ -184,15 +157,6 @@ AliModule::~AliModule()
 
 }
  
-//_______________________________________________________________________
-void AliModule::Copy(TObject & /* mod */) const
-{
-  //
-  // Copy *this onto mod, not implemented for AliModule
-  //
-  AliFatal("Not implemented!");
-}
-
 //_______________________________________________________________________
 void AliModule::Disable()
 {

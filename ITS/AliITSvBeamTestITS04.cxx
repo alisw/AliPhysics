@@ -157,27 +157,6 @@ fGeomDetIn(kFALSE)
     for(Int_t a=0;a<60;a++) fWrite[a] = '\0';    
 }
 
-//______________________________________________________________________
-AliITSvBeamTestITS04::AliITSvBeamTestITS04(const AliITSvBeamTestITS04 &source) :  AliITS(source),
-fITSmotherVolume(source.fITSmotherVolume),
-fNspd(source.fNspd),
-fNsdd(source.fNsdd),
-fNssd(source.fNssd),
-fGeomDetOut(source.fGeomDetOut),
-fGeomDetIn(source.fGeomDetIn){
-  //Copy constructor 
-
-}
-//______________________________________________________________________
-AliITSvBeamTestITS04& AliITSvBeamTestITS04::operator=(const AliITSvBeamTestITS04 &source){
-
-
-    // This class is not to be copied. Function only dummy.
-    if(&source == this) return *this;
-    Warning("= operator","Not allowed to copy AliITSvSDD03");
-    return *this;
-}
-
 //__________________________________________________________________
 AliITSvBeamTestITS04::~AliITSvBeamTestITS04()
 {

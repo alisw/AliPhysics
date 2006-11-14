@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.82  2006/09/27 19:55:57  kharlov
+ * Alignment object with symbolic volume names are introduced
+ *
  * Revision 1.81  2006/03/04 20:25:56  kharlov
  * Set geom parameters from CDB
  *
@@ -71,13 +74,6 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
 {
   // ctor : title is used to identify the layout
   GetGeometry() ; 
-}
-
-//____________________________________________________________________________
-void AliPHOSv0::Copy(TObject & phos) const
-{
-  TObject::Copy(phos) ; 
-  AliPHOS::Copy(phos) ; 
 }
 
 //____________________________________________________________________________

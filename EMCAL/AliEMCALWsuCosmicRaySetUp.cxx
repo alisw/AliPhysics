@@ -60,9 +60,9 @@ AliEMCALWsuCosmicRaySetUp::AliEMCALWsuCosmicRaySetUp(const char *name, const cha
   //
   // Standard constructor of the  Wsu Cosmic Ray SetUp external volume
   //
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
+  //PH  SetMarkerColor(7);
+  //PH  SetMarkerStyle(2);
+  //PH  SetMarkerSize(0.4);
 }
  
 //_____________________________________________________________________________

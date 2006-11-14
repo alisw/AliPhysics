@@ -95,22 +95,6 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title)
 }
 
 //______________________________________________________________________
-AliEMCALv0::AliEMCALv0(const AliEMCALv0 & emcal)
-  : AliEMCAL(emcal),
-    fShishKebabModules(emcal.fShishKebabModules),
-    fEnvelop1(emcal.fEnvelop1),
-    fIdRotm(emcal.fIdRotm),
-    fIdTmedArr(emcal.fIdTmedArr),
-    fSampleWidth(emcal.fSampleWidth),
-    fSmodPar0(emcal.fSmodPar0),
-    fSmodPar1(emcal.fSmodPar1),
-    fSmodPar2(emcal.fSmodPar2)
-{
-  //copy ctor
-  for(Int_t i = 0; i < 5; i++) fParEMOD[i] = emcal.fParEMOD[i];
-
-}
-//______________________________________________________________________
 void AliEMCALv0::BuildGeometry()
 {
     // Display Geometry for display.C

@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.44  2006/09/27 19:55:57  kharlov
+ * Alignment object with symbolic volume names are introduced
+ *
  * Revision 1.43  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -33,13 +36,9 @@ class AliPHOSv0 : public AliPHOS {
 
   AliPHOSv0() {}
   AliPHOSv0(const char *name, const char *title="") ;
-  AliPHOSv0(AliPHOSv0 & phos) : AliPHOS(phos) {
-    phos.Copy(*this) ; 
-  } 
   virtual ~AliPHOSv0(void){
     // dtor
   } 
-  virtual void Copy(TObject &phos) const; 
 
 //    virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
   //this function is not a final-overrider for AliPHOS::AddHit, to
@@ -73,14 +72,10 @@ class AliPHOSv0 : public AliPHOS {
     return TString("v0") ; 
   }
   
-  AliPHOSv0 & operator = (const AliPHOSv0 & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;
-    return *this ; 
-  }
   
- protected:
-  
+ private:
+  AliPHOSv0(AliPHOSv0 & phos);
+  AliPHOSv0 & operator = (const AliPHOSv0 & /*rvalue*/);
 
   ClassDef(AliPHOSv0,1)  // Implementation of PHOS manager class for layout EMC+PPSD
     

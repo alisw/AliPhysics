@@ -23,6 +23,7 @@
 
 // --- ROOT system ---
 #include <TTree.h>
+#include <TRandom.h>
 
 // --- AliRoot header files ---
 #include "AliVZEROConst.h"

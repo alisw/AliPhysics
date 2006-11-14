@@ -15,9 +15,7 @@ public:
 //ctor & dtor    
             AliRICH(const char *nm,const char *ttl);                                              //named ctor
             AliRICH(                              ):AliDetector(    ),fSdi(0),fDig(0),fClu(0) {}  //default ctor          
-            AliRICH(const AliRICH &rich           ):AliDetector(rich),fSdi(0),fDig(0),fClu(0) {}  //copy ctor not implemented
   virtual  ~AliRICH();                                            
-  AliRICH&  operator=(const AliRICH&)                 {return *this;}                             //not implemented
 //framework part  
           void  BuildGeometry   (                ) {}          //from AliModule invoked from AliMC::InitGeometry() to build geometry for old event display
   virtual void  CreateMaterials (                )=0;          //from AliModule invoked from AliMC::ConstructGeometry() to define detector materials
@@ -55,6 +53,10 @@ protected:
   TObjArray            *fDig;                     //! each chamber holds it's one list of digits
   TObjArray            *fClu;                     //! each chamber holds it's one list of clusters 
   
+ private:
+  AliRICH(const AliRICH &rich           );
+  AliRICH&  operator=(const AliRICH&);
+
   ClassDef(AliRICH,11)                            //Main RICH class 
 };//class AliRICH  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

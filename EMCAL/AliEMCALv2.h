@@ -33,14 +33,6 @@ public:
   AliEMCALv2(const char *name, const char *title="") ;
   virtual ~AliEMCALv2(void) ;
 
-  AliEMCALv2(const AliEMCALv2 & emcal);
-
-  AliEMCALv2 & operator = (const AliEMCALv2  & /*rvalue*/) {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented");
-    return *this; 
-  }
- 
   using AliEMCALv1::AddHit;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
 			Int_t id, Float_t *hits, Float_t *p);
@@ -68,6 +60,10 @@ public:
   TH1F*             fHDe;      //!
   TH1F*             fHNhits;      //!
 
+ private:
+  AliEMCALv2(const AliEMCALv2 & emcal);
+  AliEMCALv2 & operator = (const AliEMCALv2  & /*rvalue*/);
+ 
   ClassDef(AliEMCALv2,1)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
     
 };

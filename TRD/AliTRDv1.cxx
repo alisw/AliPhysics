@@ -82,28 +82,6 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDv1::AliTRDv1(const AliTRDv1 &trd)
-  :AliTRD(trd)
-  ,fTRon(trd.fTRon)
-  ,fTR(NULL)
-  ,fTypeOfStepManager(trd.fTypeOfStepManager)
-  ,fStepSize(trd.fStepSize)
-  ,fDeltaE(NULL)
-  ,fDeltaG(NULL)
-  ,fTrackLength0(trd.fTrackLength0)
-  ,fPrimaryTrackPid(trd.fPrimaryTrackPid)
-{
-  //
-  // Copy constructor
-  //
-
-  fDeltaE->Copy(*((AliTRDv1 &) trd).fDeltaE);
-  fDeltaG->Copy(*((AliTRDv1 &) trd).fDeltaG);
-  fTR->Copy(*((AliTRDv1 &) trd).fTR);
-
-}
-
-//_____________________________________________________________________________
 AliTRDv1::~AliTRDv1()
 {
   //
@@ -127,38 +105,6 @@ AliTRDv1::~AliTRDv1()
 
 }
  
-//_____________________________________________________________________________
-AliTRDv1 &AliTRDv1::operator=(const AliTRDv1 &trd)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &trd) ((AliTRDv1 &) trd).Copy(*this);
-
-  return *this;
-
-}
- 
-//_____________________________________________________________________________
-void AliTRDv1::Copy(TObject &trd) const
-{
-  //
-  // Copy function
-  //
-
-  ((AliTRDv1 &) trd).fTypeOfStepManager = fTypeOfStepManager;
-  ((AliTRDv1 &) trd).fStepSize          = fStepSize;
-  ((AliTRDv1 &) trd).fTRon              = fTRon;
-  ((AliTRDv1 &) trd).fTrackLength0      = fTrackLength0;
-  ((AliTRDv1 &) trd).fPrimaryTrackPid   = fPrimaryTrackPid;
-
-  fDeltaE->Copy(*((AliTRDv1 &) trd).fDeltaE);
-  fDeltaG->Copy(*((AliTRDv1 &) trd).fDeltaG);
-  fTR->Copy(*((AliTRDv1 &) trd).fTR);
-
-}
-
 //_____________________________________________________________________________
 void AliTRDv1::AddAlignableVolumes() const
 {

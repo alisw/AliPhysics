@@ -17,10 +17,8 @@ class AliCRT : public AliDetector {
 public:
   AliCRT();
   AliCRT(const char* name, const char* title);
-  AliCRT(const AliCRT& crt);
   virtual ~AliCRT();
 
-  AliCRT& operator=(const AliCRT& crt);
   virtual void CreateMaterials();
 
   virtual Int_t IsVersion() const { return -1; }
@@ -35,6 +33,9 @@ public:
 protected:
   AliCRTModule* fModule;
 private:
+  AliCRT(const AliCRT& crt);
+  AliCRT& operator=(const AliCRT& crt);
+
   ClassDef(AliCRT, 1) // Cosmic Ray Trigger (ACORDE) base class
 };
 #endif // ALICRT_H

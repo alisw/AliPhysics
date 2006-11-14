@@ -139,38 +139,6 @@ fYear(2003){
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
-AliITSvSDD03::AliITSvSDD03(const AliITSvSDD03 &source) :  AliITS(source){
-    ////////////////////////////////////////////////////////////////////////
-    //     Copy Constructor for ITS SDD test beam 2002 version 1.
-    // This class is not to be copied. Function only dummy.
-    // Inputs:
-    //    const AliITSvSDD03 &source   The class to be copied
-    // Outputs:
-    //    none.
-    // Return:
-    //    A warning message.
-    ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSvSDD03");
-    return;
-}
-//______________________________________________________________________
-AliITSvSDD03& AliITSvSDD03::operator=(const AliITSvSDD03 &source){
-    ////////////////////////////////////////////////////////////////////////
-    //    Assignment operator for the ITS SDD test beam 2002 version 1.
-    // This class is not to be copied. Function only dummy.
-    // Inputs:
-    //    const AliITSvSDD03 &source   The class to be copied
-    // Outputs:
-    //    none.
-    // Return:
-    //    A Warning message
-    ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return *this;
-    Warning("= operator","Not allowed to copy AliITSvSDD03");
-    return *this;
-}
-//______________________________________________________________________
 AliITSvSDD03::~AliITSvSDD03() {
     ////////////////////////////////////////////////////////////////////////
     //    Standard destructor for the ITS SDD test beam 2002 version 1.

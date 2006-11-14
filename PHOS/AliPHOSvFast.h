@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.26  2006/09/13 07:31:01  kharlov
+ * Effective C++ corrections (T.Pocheptsov)
+ *
  * Revision 1.25  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -40,11 +43,9 @@ public:
 
   AliPHOSvFast() ;
   AliPHOSvFast(const char *name, const char *title="") ;
-  AliPHOSvFast(AliPHOSvFast & fast);
   
   virtual ~AliPHOSvFast(void) ;
 
-  virtual void Copy(TObject &fast) const; 
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT
@@ -74,11 +75,9 @@ public:
     return TString("vFast") ; 
   }
 
-  AliPHOSvFast & operator = (const AliPHOSvFast & )  {
-    Fatal("operator =", "not implemented") ; return *this ; 
-  }
-  
 private:
+  AliPHOSvFast(AliPHOSvFast & fast);
+  AliPHOSvFast & operator = (const AliPHOSvFast & );
   
   Float_t fBigBoxX ;                         // main box containing all PHOS (EMC+PPSD)
   Float_t fBigBoxY ;                         // main box containing all PHOS (EMC+PPSD)

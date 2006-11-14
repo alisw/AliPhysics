@@ -47,8 +47,8 @@ AliPIPE::AliPIPE(const char *name, const char *title)
   //
   // Standard constructor for beam pipe
   //
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
+  //PH  SetMarkerColor(7);
+  //PH  SetMarkerStyle(2);
+  //PH  SetMarkerSize(0.4);
 }
  

@@ -13,11 +13,8 @@
 //
 
 #include <Riostream.h>
-#include <TAttLine.h>
-#include <TAttMarker.h>
 #include <TNamed.h>
 
-#include "AliRndm.h"
 #include "AliTriggerDetector.h"
 
 class TClonesArray;
@@ -36,14 +33,12 @@ class AliRunLoader;
 class AliRawReader;
 
 
-class AliModule : public TNamed , public TAttLine, public TAttMarker,
-                  public AliRndm {
+class AliModule : public TNamed {
 public:
 
   // Creators - distructors
   AliModule(const char* name, const char *title);
   AliModule();
-  AliModule(const AliModule &mod);
   virtual ~AliModule();
 
   // Inline functions
@@ -102,7 +97,7 @@ public:
   virtual void        Digits2Raw();
   virtual void        Raw2Digits()  {}
   virtual Bool_t      Raw2SDigits(AliRawReader*) {return kFALSE;}
-  virtual void        Browse(TBrowser *) {}
+  virtual void        Browse(TBrowser *) {} //PH Do we need it?
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
   virtual void        AddAlignableVolumes() const;
@@ -126,7 +121,7 @@ public:
   virtual AliLoader*  GetLoader() const {return 0x0;} //skowron
   
 
-  virtual void        Paint(Option_t *) {}
+  virtual void        Paint(Option_t *) {} //PH Do we need it?
   virtual void        ResetDigits() {}
   virtual void        ResetSDigits() {}
   virtual void        ResetHits() {}
@@ -158,11 +153,8 @@ public:
     {fRunLoader = runLoader;}
   
 //
-  AliModule& operator=(const AliModule &mod)
-    {mod.Copy(*this); return (*this);}
  
 protected:      
-  void Copy(TObject &mod) const;
 
   // Data members
   
@@ -183,6 +175,10 @@ protected:
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
 
   AliRunLoader* fRunLoader;   //!local pointer to run loader
+
+ private:
+  AliModule(const AliModule &mod);
+  AliModule& operator=(const AliModule &mod);
 
   ClassDef(AliModule,7)  //Base class for ALICE Modules
 };

@@ -19,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.23  2006/09/13 07:31:01  kharlov
+ * Effective C++ corrections (T.Pocheptsov)
+ *
  * Revision 1.22  2005/06/17 07:39:07  hristov
  * Removing GetDebug and SetDebug from AliRun and AliModule. Using AliLog for the messages
  *
@@ -104,16 +107,6 @@ AliPHOSvImpacts::AliPHOSvImpacts(const char *name, const char *title):
 }
 
 //____________________________________________________________________________
-AliPHOSvImpacts::AliPHOSvImpacts(AliPHOSvImpacts & phos):
-  AliPHOSv1(phos),
-  fEMCImpacts(0),
-  fCPVImpacts(0),
-  fPPSDImpacts(0)
-{
-  phos.Copy(*this);
-}
-
-//____________________________________________________________________________
 AliPHOSvImpacts::~AliPHOSvImpacts()
 {
   // dtor
@@ -137,14 +130,6 @@ AliPHOSvImpacts::~AliPHOSvImpacts()
     fCPVImpacts = 0 ; 
   }
 }
-
-//____________________________________________________________________________
-void AliPHOSvImpacts::Copy(TObject & phos) const
-{
-  TObject::Copy(phos) ; 
-  AliPHOS::Copy(phos) ; 
-}
-
 
 //____________________________________________________________________________
 void AliPHOSvImpacts::AddImpact(const char* det, Int_t shunt, Int_t primary, Int_t track, Int_t module,

@@ -22,8 +22,6 @@ class AliITSvSPD02 : public AliITS{
  public:
     AliITSvSPD02(); // default constructor
     AliITSvSPD02(const char *title,Int_t geomnum=2002); // standard constructor
-    AliITSvSPD02(const AliITSvSPD02 &source); // Copy constructor
-    AliITSvSPD02& operator=(const AliITSvSPD02 &source); // = operator
     virtual ~AliITSvSPD02(); // destructor
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
@@ -69,6 +67,8 @@ class AliITSvSPD02 : public AliITS{
     void CreateMaterials2002();
 
  private:  
+    AliITSvSPD02(const AliITSvSPD02 &source); // Copy constructor
+    AliITSvSPD02& operator=(const AliITSvSPD02 &source); // = operator
     void InitAliITSgeom();
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.

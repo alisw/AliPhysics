@@ -17,8 +17,6 @@ class AliITSvBeamTestITS04 : public AliITS {
 
   AliITSvBeamTestITS04();
   AliITSvBeamTestITS04(const char* name,const char *title);
-  AliITSvBeamTestITS04(const AliITSvBeamTestITS04 &source); // Copy constructor
-  AliITSvBeamTestITS04& operator=(const AliITSvBeamTestITS04 &source); // = operator
   virtual ~AliITSvBeamTestITS04();
 
   virtual void SetNumberOfSPD(Int_t nSPD) {fNspd=nSPD;}
@@ -100,6 +98,10 @@ class AliITSvBeamTestITS04 : public AliITS {
    char   fWrite[60];        //! file name to write .det file 
    char   fRead[60];         // file name to read .det file (JC)
    
+ private:
+   AliITSvBeamTestITS04(const AliITSvBeamTestITS04 &source); // Copy constructor
+   AliITSvBeamTestITS04& operator=(const AliITSvBeamTestITS04 &source); // = operator
+
    ClassDef(AliITSvBeamTestITS04,2) 
 
  };

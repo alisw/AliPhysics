@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.24  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -60,13 +63,6 @@ AliPHOSv1(name,title)
 AliPHOSv2::~AliPHOSv2()
 {
   // dtor
-}
-
-//____________________________________________________________________________
-void AliPHOSv2::Copy(TObject & phos)const
-{
-  TObject::Copy(phos) ; 
-  AliPHOSv1::Copy(phos) ;   
 }
 
 //____________________________________________________________________________

@@ -16,8 +16,6 @@ class AliITSvPPRcoarseasymm : public AliITS {
  public:
     AliITSvPPRcoarseasymm();
     AliITSvPPRcoarseasymm(const char *name, const char *title);
-    AliITSvPPRcoarseasymm(const AliITSvPPRcoarseasymm &source); // copy constructor
-    AliITSvPPRcoarseasymm& operator=(const AliITSvPPRcoarseasymm &source); // assignment operator
     virtual       ~AliITSvPPRcoarseasymm() ;
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
@@ -46,6 +44,9 @@ class AliITSvPPRcoarseasymm : public AliITS {
 
 
  private:
+    AliITSvPPRcoarseasymm(const AliITSvPPRcoarseasymm &source); // copy constructor
+    AliITSvPPRcoarseasymm& operator=(const AliITSvPPRcoarseasymm &source); // assignment operator
+
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number
     Int_t  fRails;            // flag to switch rails on (=1) and off (=0)

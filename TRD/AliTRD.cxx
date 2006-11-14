@@ -116,22 +116,7 @@ AliTRD::AliTRD(const char *name, const char *title)
   fHits = new TClonesArray("AliTRDhit",405);
   gAlice->GetMCApp()->AddHitList(fHits);
 
-  SetMarkerColor(kWhite);   
-
-}
-
-//_____________________________________________________________________________
-AliTRD::AliTRD(const AliTRD &trd)
-  :AliDetector(trd)
-  ,fGeometry(trd.fGeometry)
-  ,fGasDensity(trd.fGasDensity)
-  ,fFoilDensity(trd.fFoilDensity)
-  ,fDrawTR(trd.fDrawTR)
-  ,fDisplayType(trd.fDisplayType)
-{
-  //
-  // Copy constructor
-  //
+  //PH SetMarkerColor(kWhite);   
 
 }
 
@@ -433,21 +418,6 @@ void AliTRD::BuildGeometry()
 
 }
  
-//_____________________________________________________________________________
-void AliTRD::Copy(TObject &trd) const
-{
-  //
-  // Copy function
-  //
-
-  ((AliTRD &) trd).fGeometry    = fGeometry;       
-  ((AliTRD &) trd).fGasDensity  = fGasDensity;
-  ((AliTRD &) trd).fFoilDensity = fFoilDensity;
-  ((AliTRD &) trd).fDrawTR      = fDrawTR;
-  ((AliTRD &) trd).fDisplayType = fDisplayType;
-
-}
-
 //_____________________________________________________________________________
 void AliTRD::CreateGeometry()
 {
@@ -844,9 +814,9 @@ void AliTRD::LoadPoints(Int_t )
 
       // Set the dEdx points
       if (ntrkE[trk]) {
-        points->SetMarkerColor(GetMarkerColor());
-        points->SetMarkerSize(GetMarkerSize());
-        points->SetPolyMarker(ntrkE[trk],coorE[trk],GetMarkerStyle());
+        points->SetMarkerColor(kWhite); //PH This is the default color in TRD
+        points->SetMarkerSize(1); //PH Default size=1
+        points->SetPolyMarker(ntrkE[trk],coorE[trk],1); //PH Default style=1
         delete [] coorE[trk];
         coorE[trk] = 0;
       }

@@ -91,19 +91,9 @@ AliCRTv1::AliCRTv1(const char *name, const char *title)
   fHits =  new TClonesArray("AliCRThit",400);
   gAlice->GetMCApp()->AddHitList(fHits);
 
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
-}
-
-//_____________________________________________________________________________
-AliCRTv1::AliCRTv1(const AliCRTv1& crt)
-  : AliCRT(crt)
-{
-  //
-  // Copy ctor.
-  //
-  crt.Copy(*this);
+  //PH  SetMarkerColor(7);
+  //PH  SetMarkerStyle(2);
+  //PH  SetMarkerSize(0.4);
 }
 
 //_____________________________________________________________________________
@@ -112,16 +102,6 @@ AliCRTv1::~AliCRTv1()
   //
   // Default destructor
   //
-}
-
-//_____________________________________________________________________________
-AliCRTv1& AliCRTv1::operator=(const AliCRTv1& crt)
-{
-  //
-  // Asingment operator
-  //
-  crt.Copy(*this);
-  return *this;
 }
 
 //_____________________________________________________________________________

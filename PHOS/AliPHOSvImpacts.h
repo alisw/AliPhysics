@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.9  2006/09/13 07:31:01  kharlov
+ * Effective C++ corrections (T.Pocheptsov)
+ *
  * Revision 1.8  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -37,10 +40,8 @@ public:
 
   AliPHOSvImpacts(void) ;
   AliPHOSvImpacts(const char *name, const char *title="") ;
-  AliPHOSvImpacts(AliPHOSvImpacts & phos);
   virtual ~AliPHOSvImpacts(void) ;
 
-  virtual void   Copy(TObject & phos) const; 
   virtual void   AddImpact(const char* detector, Int_t shunt, Int_t primary, Int_t track,
 			   Int_t module, Int_t pid, TLorentzVector p, Float_t *xyz) ;
   virtual void   MakeBranch(Option_t *opt=" ");
@@ -55,12 +56,6 @@ public:
     return TString("vImpacts") ; 
   }
 
-  AliPHOSvImpacts & operator = (const AliPHOSvImpacts & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;
-    return *this ; 
-  }
-
 protected:
 
   TList * fEMCImpacts;         // Array of impacts in EMC modules
@@ -71,6 +66,9 @@ protected:
   Int_t  fNCPVImpacts[5];      // Number of CPV impacts per module
   Int_t  fNPPSDImpacts[5];     // Number of PPSD impacts per module
 
+ private:
+  AliPHOSvImpacts(AliPHOSvImpacts & phos);
+  AliPHOSvImpacts & operator = (const AliPHOSvImpacts & /*rvalue*/);
 
   ClassDef(AliPHOSvImpacts,1)  // Implementation of PHOS manager class for layout EMC+PPSD
 

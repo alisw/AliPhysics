@@ -76,6 +76,7 @@
 #include <TStyle.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include <TRandom.h>
 //------ AliRoot headers ------
 #include "AliGausCorr.h"
 #include "AliTracker.h"

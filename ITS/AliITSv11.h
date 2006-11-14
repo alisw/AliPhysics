@@ -16,8 +16,6 @@ class AliITSv11 : public AliITS {
     AliITSv11(const char *name, const char *title);
     AliITSv11(Int_t debugITS, Int_t debugSPD = 0, Int_t debugSDD = 0,
 	     Int_t debugSSD = 0, Int_t debugSUP = 0);
-    AliITSv11(const AliITSv11 &source);            // copy constructor
-    AliITSv11& operator=(const AliITSv11 &source); // assignment operator
     virtual       ~AliITSv11() ;
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
@@ -69,6 +67,8 @@ class AliITSv11 : public AliITS {
 
 
  private:
+    AliITSv11(const AliITSv11 &source);            // copy constructor
+    AliITSv11& operator=(const AliITSv11 &source); // assignment operator
     void InitAliITSgeom();
 
     Bool_t   fGeomDetOut;       // Flag to write .det file out

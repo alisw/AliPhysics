@@ -33,14 +33,6 @@ class AliEMCALv0 : public AliEMCAL {
   AliEMCALv0(const char *name, const char *title="") ;
   virtual ~AliEMCALv0(){} 
 
-  AliEMCALv0(const AliEMCALv0 & emcal);
-
-  AliEMCALv0 & operator = (const AliEMCALv0  & /*rvalue*/) {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented");
-    return *this; 
-  }
- 
   using AliEMCAL::AddHit;
 
   virtual void  AddAlignableVolumes() const;
@@ -89,6 +81,9 @@ class AliEMCALv0 : public AliEMCAL {
   Double_t fSmodPar2;          //! z size of super module  
   Double_t fParEMOD[5];        //! parameters of EMCAL module (TRD1,2)
 
+  AliEMCALv0(const AliEMCALv0 & emcal);
+  AliEMCALv0 & operator = (const AliEMCALv0  & /*rvalue*/);
+ 
   ClassDef(AliEMCALv0,3) // Implementation of EMCAL manager class for midrapidity barrel layout between 80 and 180(190) degrees 
     
     };

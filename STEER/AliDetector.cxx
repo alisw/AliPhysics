@@ -68,24 +68,6 @@ AliDetector::AliDetector():
   //
 }
  
-//_______________________________________________________________________
-AliDetector::AliDetector(const AliDetector &det):
-  AliModule(det),
-  fTimeGate(200.e-9),
-  fIshunt(0),
-  fNhits(0),
-  fNdigits(0),
-  fBufferSize(1600),
-  fMaxIterHit(0),
-  fCurIterHit(0),
-  fHits(0),
-  fDigits(0),
-  fPoints(0),
-  fLoader(0x0)
-{
-  det.Copy(*this);
-}
-
 //_____________________________________________________________________________
 AliDetector::AliDetector(const char* name,const char *title):
   AliModule(name,title),
@@ -220,15 +202,6 @@ void AliDetector::Browse(TBrowser *b)
 }
 
 //_______________________________________________________________________
-void AliDetector::Copy(TObject &) const
-{
-  //
-  // Copy *this onto det -- not implemented
-  //
-  AliFatal("Not implemented");
-}
-
-//_______________________________________________________________________
 void AliDetector::FinishRun()
 {
   //
@@ -344,11 +317,11 @@ void AliDetector::LoadPoints(Int_t)
   for(trk=0; trk<tracks; ++trk) {
     if(ntrk[trk]) {
       points = new AliPoints();
-      points->SetMarkerColor(GetMarkerColor());
-      points->SetMarkerSize(GetMarkerSize());
+      points->SetMarkerColor(3); //PH color=3 was set in AliModule
+      points->SetMarkerSize(1);  //PH size-1 is the default value
       points->SetDetector(this);
       points->SetParticle(trk);
-      points->SetPolyMarker(ntrk[trk],coor[trk],GetMarkerStyle());
+      points->SetPolyMarker(ntrk[trk],coor[trk],1);//PH style=1 is the default value
       fPoints->AddAt(points,trk);
       delete [] coor[trk];
       coor[trk]=0;

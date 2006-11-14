@@ -51,9 +51,6 @@ AliSHILvF::AliSHILvF(const char *name, const char *title)
   //
   // Standard constructor for muon shield
   //
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
   // Pb  cone not yet compatible with muon chamber inner radii
   // Switched off by default
 }

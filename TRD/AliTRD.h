@@ -34,12 +34,8 @@ class AliTRD : public AliDetector {
 
   AliTRD();
   AliTRD(const char *name, const char *title);
-  AliTRD(const AliTRD &trd);
   virtual         ~AliTRD();
 
-          AliTRD  &operator=(const AliTRD &trd);
-
-  virtual void     Copy(TObject &trd) const;
   virtual void     Init();
   virtual Int_t    IsVersion() const          = 0;
   virtual void     ResetDigits();     
@@ -89,6 +85,10 @@ class AliTRD : public AliDetector {
 
           Int_t    fDrawTR;             //  Switches marking the TR photons in the display
           Int_t    fDisplayType;        //  Display type (0: normal, 1: detailed) 
+
+ private:
+  AliTRD(const AliTRD &trd);
+  AliTRD  &operator=(const AliTRD &trd);
 
   ClassDef(AliTRD,9)                    //  Transition Radiation Detector base class
 

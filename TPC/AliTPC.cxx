@@ -161,7 +161,7 @@ AliTPC::AliTPC(const char *name, const char *title)
   fIshunt     =  0;
   //
   // Initialise color attributes
-  SetMarkerColor(kYellow);
+  //PH SetMarkerColor(kYellow);
 
   //
   //  Set TPC parameters
@@ -179,36 +179,6 @@ AliTPC::AliTPC(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTPC::AliTPC(const AliTPC& t):AliDetector(t),
-                  fDefaults(0),
-		   fSens(0),
-		   fNsectors(0),
-		   fDigitsArray(0),
-		   fTPCParam(0),
-		   fTrackHits(0),
-		   fHitType(0),
-		   fDigitsSwitch(0),
-		   fSide(0),
-		   fNoiseDepth(0),
-		   fNoiseTable(0),
-		   fCurrentNoise(0),
-		   fActiveSectors(0)
-{
-  //
-  // dummy copy constructor
-  //
-}
-//
-AliTPC & AliTPC::operator =(const AliTPC & param)
-{
-  //
-  // assignment operator - dummy
-  //
-  fDefaults=param.fDefaults;
-  return (*this);
-}
-
-//
 AliTPC::~AliTPC()
 {
   //
@@ -2448,11 +2418,11 @@ void AliTPC::LoadPoints2(Int_t)
   for(trk=0; trk<tracks; ++trk) {
     if(ntrk[trk]) {
       points = new AliPoints();
-      points->SetMarkerColor(GetMarkerColor());
-      points->SetMarkerSize(GetMarkerSize());
+      points->SetMarkerColor(kYellow); //PH kYellow it the default in TPC
+      points->SetMarkerSize(1);//PH Default size=1
       points->SetDetector(this);
       points->SetParticle(trk);
-      points->SetPolyMarker(ntrk[trk],coor[trk],GetMarkerStyle());
+      points->SetPolyMarker(ntrk[trk],coor[trk],1); // Default style=1
       fPoints->AddAt(points,trk);
       delete [] coor[trk];
       coor[trk]=0;
@@ -2531,7 +2501,7 @@ void AliTPC::LoadPoints3(Int_t)
   for(trk=0; trk<tracks; ++trk) {
     if(ntrk[trk]) {
       points = new AliPoints();
-      points->SetMarkerColor(GetMarkerColor()+1);
+      points->SetMarkerColor(kMagenta); //PH kYellow + 1 is kMagenta
       points->SetMarkerStyle(5);
       points->SetMarkerSize(0.2);
       points->SetDetector(this);

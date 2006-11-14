@@ -123,38 +123,6 @@ fChip2(300.0){
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
-AliITSvSPD02::AliITSvSPD02(const AliITSvSPD02 &source) : AliITS(source){
-    ////////////////////////////////////////////////////////////////////////
-    //     Copy Constructor for ITS SPD test beam 2002 version 1.
-    // This class is not to be copied. Function only dummy.
-    // Inputs:
-    //    const AliITSvSPD02 &source   The class to be copied
-    // Outputs:
-    //    none.
-    // Return:
-    //    A warning message.
-    ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSvSPD02");
-    return;
-}
-//______________________________________________________________________
-AliITSvSPD02& AliITSvSPD02::operator=(const AliITSvSPD02 &source){
-    ////////////////////////////////////////////////////////////////////////
-    //    Assignment operator for the ITS SPD test beam 2002 version 1.
-    // This class is not to be copied. Function only dummy.
-    // Inputs:
-    //    const AliITSvSPD02 &source   The class to be copied
-    // Outputs:
-    //    none.
-    // Return:
-    //    A Warning message
-    ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return *this;
-    Warning("= operator","Not allowed to copy AliITSvSPD02");
-    return *this;
-}
-//______________________________________________________________________
 AliITSvSPD02::~AliITSvSPD02() {
     ////////////////////////////////////////////////////////////////////////
     //    Standard destructor for the ITS SPD test beam 2002 version 1.

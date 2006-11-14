@@ -159,7 +159,7 @@ AliMUON::AliMUON(const char *name, const char* title)
   AliDebug(1,Form("ctor this=%p",this));
   fIshunt =  0;
 
-  SetMarkerColor(kRed);//
+  //PH SetMarkerColor(kRed);//
     
   // Geometry builder
   fGeometryBuilder = new AliMUONGeometryBuilder(this);

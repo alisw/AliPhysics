@@ -168,43 +168,6 @@ AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
 
 
 //______________________________________________________________________
-AliITSv11::AliITSv11(const AliITSv11 &source) :
-  AliITS(source),
-  fGeomDetOut(kFALSE), // Don't write .det file
-  fGeomDetIn(kTRUE),   // Read .det file
-  fByThick(kTRUE),
-  fMajorVersion(0),
-  fMinorVersion(0),
-  fSDDgeom(0)
-{
-    //     Copy Constructor for ITS version 11. This function is not to be
-    // used. If any other instance of this function, other than "this" is
-    // passed, an error message is returned.
-    // Inputs:
-    //   const AliITSv11 &source This class
-
-    if(&source == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSv11");
-    return;
-}
-
-
-//______________________________________________________________________
-AliITSv11& AliITSv11::operator=(const AliITSv11 
-						  &source){
-    //     Assignment operator for the ITS version 11. This function is not 
-    // to be used. If any other instance of this function, other than "this" 
-    // is passed, an error message is returned.
-    // Inputs:
-    //   const AliITSv11 &source This class
-
-    if(&source == this) return *this;
-    Warning("= operator","Not allowed to copy AliITSv11");
-    return *this;
-}
-
-
-//______________________________________________________________________
 AliITSv11::~AliITSv11() {
   delete fSDDgeom;
 }

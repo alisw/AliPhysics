@@ -79,16 +79,17 @@
 //
 //_________________________________________________________________________
 
-#include "TCanvas.h"
-#include "TClonesArray.h"
-#include "TFile.h"
-#include "TFolder.h"
-#include "TFrame.h"
-#include "TH1.h"
-#include "TParticle.h"
-#include "TBenchmark.h"
-#include "TTask.h"
-#include "TTree.h"
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TFrame.h>
+#include <TH1.h>
+#include <TParticle.h>
+#include <TBenchmark.h>
+#include <TTask.h>
+#include <TTree.h>
+#include <TRandom.h>
 
 #include "AliMC.h"
 #include "AliRun.h"
@@ -96,14 +97,6 @@
 #include "AliTOFhitT0.h"
 #include "AliTOFT0.h"
 #include "AliTOF.h"
-
-extern TBenchmark *gBenchmark;
-extern TSystem *gSystem;
-extern TRandom *gRandom;
-extern TROOT *gROOT;
-
-extern AliRun *gAlice;
-
 
 ClassImp(AliTOFT0)
 

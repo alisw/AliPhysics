@@ -53,9 +53,6 @@ AliSHILv3::AliSHILv3(const char *name, const char *title)
   //
   // Standard constructor for muon shield
   //
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
 }
  
 //_____________________________________________________________________________

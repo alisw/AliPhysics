@@ -30,11 +30,8 @@ class AliTRDv1 : public AliTRD {
 
   AliTRDv1();
   AliTRDv1(const char *name, const char *title);
-  AliTRDv1(const AliTRDv1 &trd);
   virtual ~AliTRDv1();
-  AliTRDv1 &operator=(const AliTRDv1 &trd);
 
-  virtual void     Copy(TObject &trd) const;
   virtual void     Init();
   virtual Int_t    IsVersion() const          { return 1;      }
 
@@ -66,6 +63,8 @@ class AliTRDv1 : public AliTRD {
           Double_t fStepSize;           //  Used for the fixed step size
 
  private:
+  AliTRDv1(const AliTRDv1 &trd);
+  AliTRDv1 &operator=(const AliTRDv1 &trd);
 
           Double_t BetheBloch(Double_t bg);
           Double_t BetheBlochGeant(Double_t bg);

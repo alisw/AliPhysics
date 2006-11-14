@@ -97,7 +97,7 @@ AliSTART::AliSTART(const char *name, const char *title)
   //  fRecPoints = new AliSTARTRecPoint();
   fIshunt     =  1;
   //  fIdSens   =  0;
-  SetMarkerColor(kRed);
+  //PH  SetMarkerColor(kRed);
 }
 
 //_____________________________________________________________________________
@@ -121,29 +121,6 @@ AliSTART::~AliSTART() {
   */ 
 }
 
-//______________________________________________________________________________
-AliSTART::AliSTART(const AliSTART &source):
-  AliDetector(source)
-{
-  // Copy constructor
-  // not implemented
-  AliWarning("Copy constructor not implemented!");
-}
-
-//______________________________________________________________________________
-AliSTART& AliSTART::operator= (const AliSTART& source)
-{
-  // Asignment operator
-  // not implemented
-  if(this==&source) return *this;
-
-  AliWarning("Asignment operator not implemented!");
-
-  ((TObject *)this)->operator=(source);
-
-  return *this;
-}
- 
 //_____________________________________________________________________________
 void AliSTART::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {

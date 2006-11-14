@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.40  2006/09/13 07:31:01  kharlov
+ * Effective C++ corrections (T.Pocheptsov)
+ *
  * Revision 1.39  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -33,10 +36,7 @@ public:
 
   AliPHOSv1(void) ;
   AliPHOSv1(const char *name, const char *title="") ;
-  AliPHOSv1(AliPHOSv1 & phos);
   virtual ~AliPHOSv1(void) ;
-
-  virtual void   Copy(TObject &phos) const; 
 
   using AliPHOSv0::AddHit;
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t id, Float_t *hits) ; 
@@ -49,12 +49,6 @@ public:
 
   virtual void   StepManager(void) ;                              
   virtual const TString Version(void)const { return TString("v1") ;  }
-
-  AliPHOSv1 & operator = (const AliPHOSv1 & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;
-    return *this ; 
-  }
 
   void       CPVDigitize (TLorentzVector p, Float_t *xy, TClonesArray *digits) ;
   Float_t    CPVPadResponseFunction(Float_t qhit, Float_t zg, Float_t xg) ;
@@ -90,6 +84,10 @@ protected:
   Float_t fAPDGain ;                // APD Gain
   Float_t fLightFactor ;            //! a calculated factor
   Float_t fAPDFactor ;              //! a calculated factor
+
+ private:
+  AliPHOSv1(AliPHOSv1 & phos);
+  AliPHOSv1 & operator = (const AliPHOSv1 & /*rvalue*/);
 
   ClassDef(AliPHOSv1,2)  // Implementation of PHOS manager class for layout EMC+PPSD
 

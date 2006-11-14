@@ -33,15 +33,11 @@ class AliEMCAL : public AliDetector {
   
   AliEMCAL(); 
   AliEMCAL(const char* name, const char* title="");
-  AliEMCAL(const AliEMCAL& emcal);
 
   virtual ~AliEMCAL() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
-  virtual void  Copy(TObject & emcal) const 
-    { Copy(dynamic_cast<AliEMCAL&>(emcal)); }
-  virtual void  Copy(AliEMCAL & emcal) const; 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;   
   //  virtual void  
@@ -79,8 +75,6 @@ class AliEMCAL : public AliDetector {
   //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual const TString Version() const {return TString(" ") ; }   
-  AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
-    Fatal("operator =", "not implemented") ;  return *this ; }
 
 protected:
   
@@ -105,6 +99,10 @@ protected:
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
   static Int_t fgThreshold;             // threshold
   static Int_t fgChannelsPerDDL;        // number of channels per DDL
+
+ private:
+  AliEMCAL(const AliEMCAL& emcal);
+  AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);
 
   ClassDef(AliEMCAL,9) // Electromagnetic calorimeter (base class)
     

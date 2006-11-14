@@ -70,9 +70,6 @@ AliABSOv0::AliABSOv0(const char *name, const char *title)
   //
   // Standard constructor
   //
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
 }
  
 //_____________________________________________________________________________

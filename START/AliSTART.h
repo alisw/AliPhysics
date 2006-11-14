@@ -61,6 +61,7 @@ protected:
    AliSTARTdigit *fDigits;
    AliSTARTRecPoint *fRecPoints;
 
+ private:
    AliSTART(const AliSTART&);
    AliSTART& operator=(const AliSTART&);
  

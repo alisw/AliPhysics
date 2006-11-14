@@ -74,33 +74,12 @@ AliCRT::AliCRT(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliCRT::AliCRT(const AliCRT& crt)
-  : AliDetector(crt),
-    fModule(crt.fModule)
-{
-  //
-  // Copy constructor
-  //
-  crt.Copy(*this);
-}
-
-//_____________________________________________________________________________
 AliCRT::~AliCRT()
 {
   //
   // Default destructor
   //
   if ( fModule ) { delete fModule; fModule = 0; }
-}
-
-//_____________________________________________________________________________
-AliCRT& AliCRT::operator=(const AliCRT& crt)
-{
-  //
-  // Asingment operator.
-  //
-  crt.Copy(*this);
-  return *this;
 }
 
 //_____________________________________________________________________________

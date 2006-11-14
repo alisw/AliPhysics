@@ -85,26 +85,6 @@ fSuppMat(0) {
     fIdSens    = new Int_t[fIdN];
     for (Int_t i=0;i<fIdN;i++) fIdSens[i]=0;
 }
-//____________________________________________________________________________
-AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const AliITSvPPRcoarseasymm &s) :
- AliITS(s),
-fMajorVersion(s.fMajorVersion),
-fMinorVersion(s.fMinorVersion),
-fRails(s.fRails),
-fSuppMat(s.fSuppMat){
-////////////////////////////////////////////////////////////////////////
-//     Copy Constructor for ITS version 6.
-////////////////////////////////////////////////////////////////////////
-}
-//_____________________________________________________________________________
-AliITSvPPRcoarseasymm& AliITSvPPRcoarseasymm::operator=(const AliITSvPPRcoarseasymm &source){
-////////////////////////////////////////////////////////////////////////
-//    Assignment operator for the ITS version 6.
-////////////////////////////////////////////////////////////////////////
-  if(&source == this) return *this;
-    Warning("= operator","Not allowed to copy AliITSvPPRcoarseasymm");
-  return *this;
-}
 //_____________________________________________________________________________
 AliITSvPPRcoarseasymm::~AliITSvPPRcoarseasymm() {
 ////////////////////////////////////////////////////////////////////////

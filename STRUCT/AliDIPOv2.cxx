@@ -57,9 +57,6 @@ AliDIPOv2::AliDIPOv2(const char *name, const char *title)
 {
   //
   // Standard constructor for the magnetic dipole version 2    
-   SetMarkerColor(7);
-   SetMarkerStyle(2);
-   SetMarkerSize(0.4);
 }
 
 void AliDIPOv2::CreateGeometry()

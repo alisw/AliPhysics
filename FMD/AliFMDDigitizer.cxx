@@ -197,7 +197,7 @@
 //
 
 #include <TTree.h>		// ROOT_TTree
-//#include <TRandom.h>		// ROOT_TRandom
+#include <TRandom.h>		// ROOT_TRandom
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H

@@ -14,10 +14,7 @@ class AliCRTv0 : public AliCRT {
 public:
   AliCRTv0();
   AliCRTv0(const char *name, const char *title);
-  AliCRTv0(const AliCRTv0& crt);
   virtual ~AliCRTv0();
-
-  AliCRTv0& operator=(const AliCRTv0& crt);
 
   virtual void CreateGeometry();
   virtual void BuildGeometry();
@@ -28,6 +25,9 @@ protected:
   virtual void CreateShafts() {}
 
 private: 
+  AliCRTv0(const AliCRTv0& crt);
+  AliCRTv0& operator=(const AliCRTv0& crt);
+
   ClassDef(AliCRTv0,1) // Cosmic Ray Trigger (ACORDE).
 };
 #endif // ALICRTV0_H

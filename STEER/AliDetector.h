@@ -26,11 +26,9 @@ public:
   // Creators - distructors
   AliDetector(const char* name, const char *title);
   AliDetector();
-  AliDetector(const AliDetector &det);
   virtual ~AliDetector();
 
   // Inline functions
-  void  Copy(TObject &det) const;
   virtual int   GetNdigits() const {return fNdigits;}
   virtual int   GetNhits()   const {return fNhits;}
   TClonesArray *Digits() const {return fDigits;}
@@ -39,8 +37,6 @@ public:
   TObjArray    *Points() const {return fPoints;}
   Int_t         GetIshunt() const {return fIshunt;}
   void          SetIshunt(Int_t ishunt) {fIshunt=ishunt;}
-  AliDetector &operator=(const AliDetector &det) 
-  {det.Copy(*this); return (*this);}
   
   // Other methods
   virtual void        Publish(const char *dir, void *c, const char *name=0) const;
@@ -86,6 +82,10 @@ protected:
   TObjArray    *fPoints;      //!Array of points for each track (all tracks in memory)
 
   AliLoader*  fLoader;//! pointer to getter for this module skowron
+
+ private:
+  AliDetector(const AliDetector &det);
+  AliDetector &operator=(const AliDetector &det);
 
   ClassDef(AliDetector,5)  //Base class for ALICE detectors
 };

@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.68  2006/08/11 12:36:25  cvetan
+ * Update of the PHOS code needed in order to read and reconstruct the beam test raw data (i.e. without an existing galice.root)
+ *
  * Revision 1.67  2006/04/07 08:42:00  hristov
  * Follow AliAlignObj framework and remove AliPHOSAlignData (Yu.Kharlov)
  *
@@ -56,10 +59,6 @@ public:
 
   AliPHOS() ;
   AliPHOS(const char* name, const char* title="") ;  
-  AliPHOS(AliPHOS & phos) : AliDetector(phos) {
-    //Copy(*this) ; 
-    phos.Copy(*this);
-  }
   virtual ~AliPHOS() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     // do not use this definition but the one below
@@ -68,7 +67,6 @@ public:
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;   
-  virtual void Copy(TObject &phos)const; 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;            
   virtual void  Digits2Raw();
@@ -101,8 +99,6 @@ public:
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void    SetTreeAddress();   
   virtual const TString Version() const {return TString(" ") ; } 
-  AliPHOS & operator = (const AliPHOS & /*rvalue*/)  {
-    Fatal("operator =", "not implemented") ; return *this ; }
 
 
 protected:
@@ -119,7 +115,11 @@ protected:
   static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
-                                        
+
+ private:                                        
+  AliPHOS(AliPHOS & phos);
+  AliPHOS & operator = (const AliPHOS & /*rvalue*/);
+
   ClassDef(AliPHOS,6) // Photon Spectrometer Detector (base class)
 } ;
 

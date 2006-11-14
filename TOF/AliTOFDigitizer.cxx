@@ -25,11 +25,12 @@
 //                                                                         //
 //_________________________________________________________________________//
 
-#include "Riostream.h"
+#include <Riostream.h>
 
-#include "TFile.h"
-#include "TH1F.h"
-#include "TTree.h"
+#include <TFile.h>
+#include <TH1F.h>
+#include <TTree.h>
+#include <TRandom.h>
 
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -46,13 +47,6 @@
 #include "AliTOFGeometryV5.h"
 #include "AliTOFSDigit.h"
 #include "AliTOF.h"
-
-extern TDirectory *gDirectory;
-extern TFile *gFile;
-extern TRandom *gRandom;
-
-extern AliRun *gAlice;
-
 
 ClassImp(AliTOFDigitizer)
 

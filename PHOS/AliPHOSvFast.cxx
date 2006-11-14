@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.30  2006/09/13 07:31:01  kharlov
+ * Effective C++ corrections (T.Pocheptsov)
+ *
  * Revision 1.29  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -97,29 +100,6 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
 }
 
 //____________________________________________________________________________
-AliPHOSvFast::AliPHOSvFast(AliPHOSvFast & fast) :
-  AliPHOS(fast),
-  fBigBoxX(0.),
-  fBigBoxY(0.),
-  fBigBoxZ(0.),
-  fFastRecParticles(0),
-  fNRecParticles(0),
-  fRan(0),
-  fResPara1(0.),
-  fResPara2(0.),
-  fResPara3(0.),
-  fPosParaA0(0.),
-  fPosParaA1(0.),
-  fPosParaB0(0.),
-  fPosParaB1(0.),
-  fPosParaB2(0.)    
-{
-  //Copy ctor.
-  fast.Copy(*this) ; 
-}
-
-
-//____________________________________________________________________________
 AliPHOSvFast::~AliPHOSvFast()
 {
   // dtor
@@ -128,30 +108,6 @@ AliPHOSvFast::~AliPHOSvFast()
   delete fFastRecParticles ;
   fFastRecParticles = 0 ; 
 
-}
-
-//____________________________________________________________________________
-void AliPHOSvFast::Copy(TObject & base)const
-{
-  TObject::Copy(base) ; 
-  AliPHOS::Copy(base) ; 
-  AliPHOSvFast &fast = static_cast<AliPHOSvFast &>(base);
-  fast.fBigBoxX = fBigBoxX ; 
-  fast.fBigBoxY = fBigBoxY ; 
-  fast.fBigBoxZ = fBigBoxZ ;
-  fast.fNRecParticles = fNRecParticles ;
-  fast.fRan = fRan ; 
-  fast.fResPara1 = fResPara1 ; 
-  fast.fResPara2 = fResPara2 ; 
-  fast.fResPara3 = fResPara3 ;
-  fast.fPosParaA0 = fPosParaA0 ;
-  fast.fPosParaA1 = fPosParaA1 ; 
-  fast.fPosParaB0 = fPosParaB0 ;
-  fast.fPosParaB1 = fPosParaB1 ;
-  fast.fFastRecParticles = new TClonesArray(fFastRecParticles->GetClass()->GetName(), 100) ; 
-  Int_t index ; 
-  for (index = 0 ; index < fFastRecParticles->GetEntries(); index++) 
-    (fast.fFastRecParticles)->AddAt(fFastRecParticles->At(index), index) ;
 }
 
 //____________________________________________________________________________

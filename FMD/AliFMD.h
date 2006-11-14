@@ -288,15 +288,8 @@ public:
       @param name  Name of object.
       @param title Title of object. */
   AliFMD(const char *name, const char *title);
-  /** Copy constructor 
-      @param other Object to copy from */
-  AliFMD(const AliFMD& other);
   /** Destructor */
   virtual ~AliFMD(); 
-  /** Assignment operator 
-      @param other Object to assign from
-      @return Reference to this object  */
-  AliFMD& operator=(const AliFMD& other);
   /** Wheter to make a detailed geometry
       @param use If true, make detailed geometry  */
   void UseDetailed(Bool_t use=kTRUE) { fDetailed = use; }
@@ -541,7 +534,16 @@ protected:
   };  
 
   TObjArray*         fBad;                  //! debugging - bad hits 
-  
+
+private:  
+  /** Copy constructor 
+      @param other Object to copy from */
+  AliFMD(const AliFMD& other);
+  /** Assignment operator 
+      @param other Object to assign from
+      @return Reference to this object  */
+  AliFMD& operator=(const AliFMD& other);
+
   ClassDef(AliFMD,11)     // Base class FMD entry point
 };
 

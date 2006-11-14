@@ -30,8 +30,6 @@ class AliTPC : public AliDetector {
 public:
   AliTPC(); 
   AliTPC(const char *name, const char *title);
-  AliTPC(const AliTPC& t);
-  AliTPC &operator = (const AliTPC & param);
   
   virtual AliLoader* MakeLoader(const char* topfoldername);
   
@@ -118,6 +116,8 @@ protected:
   Float_t        fSide;  // selects left(-1), right(+1), or both(0) sides of the TPC
    
  private:
+  AliTPC(const AliTPC& t);
+  AliTPC &operator = (const AliTPC & param);
   //
   void SetDefaults();
   void DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet);

@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.19  2005/07/01 20:01:36  kharlov
+ * Warning fix on AddHit in gcc 3.4.2
+ *
  * Revision 1.18  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -31,12 +34,8 @@ public:
 
   AliPHOSv2(void) ;
   AliPHOSv2(const char *name, const char *title="") ;
-  AliPHOSv2(AliPHOSv2 & phos) : AliPHOSv1(phos){
-    phos.Copy(*this) ; 
-  }
   virtual ~AliPHOSv2(void) ;
 
-  virtual void    Copy(TObject &phos) const; 
   using AliPHOSv1::AddHit;
   virtual void    AddHit( Int_t shunt, Int_t primary, Int_t id, Float_t *hits); 
   virtual Int_t   IsVersion(void) const { 
@@ -48,7 +47,9 @@ public:
     return TString("v2") ; 
   }
 
-protected:
+private:
+
+  AliPHOSv2(AliPHOSv2 & phos);
 
   ClassDef(AliPHOSv2,1)  // Class AliPHOSv0 which allows to write ond disk al the information of the hits. 
 

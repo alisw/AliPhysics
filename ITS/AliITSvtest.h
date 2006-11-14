@@ -19,8 +19,6 @@ public:
      AliITSvtest();
      AliITSvtest(const char *fileeuc,const char *filetme,
 	         const char *name, const char *title);
-     AliITSvtest(const AliITSvtest &source); // copy constructor
-     AliITSvtest& operator=(const AliITSvtest &source); // assignment operator
      virtual       ~AliITSvtest() ;
      virtual void  CreateGeometry();
      virtual void  CreateMaterials();
@@ -60,6 +58,8 @@ public:
 	return fMinorVersion;}
 
  private:
+    AliITSvtest(const AliITSvtest &source); // copy constructor
+    AliITSvtest& operator=(const AliITSvtest &source); // assignment operator
     void InitAliITSgeom();
 
     // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.

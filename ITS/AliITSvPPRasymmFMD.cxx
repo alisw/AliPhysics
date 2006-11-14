@@ -145,52 +145,6 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
     strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
 }
 //______________________________________________________________________
-AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source) :
- AliITS(source),
- fGeomDetOut(kFALSE),
- fGeomDetIn(kFALSE),
- fByThick(kTRUE),
- fMajorVersion(IsVersion()),
- fMinorVersion(2),
- fDet1(0),
- fDet2(0),
- fChip1(0),
- fChip2(0),
- fRails(0),
- fFluid(0),
- fIDMother(0) {
-    //     Copy Constructor for ITS version 10. This function is not to be
-    // used. If any other instance of this function, other than "this" is
-    // passed, an error message is returned.
-    // Inputs:
-    //   const AliITSvPPRasymmFMD &source This class
-    // Outputs:
-    //   none.
-    // Return:
-    //   an error message
-
-    if(&source == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSvPPRasymmFMD");
-    return;
-}
-//______________________________________________________________________
-AliITSvPPRasymmFMD& AliITSvPPRasymmFMD::operator=(const AliITSvPPRasymmFMD 
-						  &source){
-    //    Assignment operator for the ITS version 10. This function is not 
-    // to be used. If any other instance of this function, other than "this" 
-    // is passed, an error message is returned.
-    // Inputs:
-    //   const AliITSvPPRasymmFMD &source This class
-    // Outputs:
-    //   none.
-    // Return:
-    //   an error message
-
-    if(&source == this) return *this;
-    Warning("= operator","Not allowed to copy AliITSvPPRasymmFMD");
-    return *this;
-}
-//______________________________________________________________________
 AliITSvPPRasymmFMD::~AliITSvPPRasymmFMD() {
     //    Standard destructor for the ITS version 10.
     // Inputs:

@@ -145,9 +145,9 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   //
   // (Transfer Functions to be inserted here)
   //
-  SetMarkerColor(7);
-  SetMarkerStyle(2);
-  SetMarkerSize(0.4);
+  //PH  SetMarkerColor(7);
+  //PH  SetMarkerStyle(2);
+  //PH  SetMarkerSize(0.4);
 
 // Strip Parameters
   //fGapA    =   4.; //cm  Gap beetween tilted strip in A-type plate

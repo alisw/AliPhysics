@@ -143,19 +143,6 @@ AliFMD::AliFMD()
 }
 
 //____________________________________________________________________
-AliFMD::AliFMD(const AliFMD& other)
-  : AliDetector(other),
-    fSDigits(other.fSDigits), 
-    fNsdigits(other.fNsdigits),
-    fDetailed(other.fDetailed),
-    fUseOld(other.fUseOld),
-    fUseAssembly(other.fUseAssembly),
-    fBad(other.fBad)
-{
-  // Copy constructor 
-}
-
-//____________________________________________________________________
 AliFMD::AliFMD(const char *name, const char *title)
   : AliDetector (name, title),
     fSDigits(0),
@@ -181,8 +168,8 @@ AliFMD::AliFMD(const char *name, const char *title)
   
   // CHC: What is this?
   fIshunt = 0;
-  SetMarkerColor(kRed);
-  SetLineColor(kYellow);
+  //PH  SetMarkerColor(kRed);
+  //PH  SetLineColor(kYellow);
 }
 
 //____________________________________________________________________
@@ -211,18 +198,6 @@ AliFMD::~AliFMD ()
   }
 }
 
-//____________________________________________________________________
-AliFMD&
-AliFMD::operator=(const AliFMD& other)
-{
-  // Assignment operator
-  AliDetector::operator=(other);
-  fSDigits		= other.fSDigits; 
-  fNsdigits		= other.fNsdigits;
-  fDetailed		= other.fDetailed;
-  fBad                  = other.fBad;
-  return *this;
-}
 
 //====================================================================
 //
@@ -510,7 +485,7 @@ AliFMD::BuildGeometry()
       }
       shape->DefineSection(0, -siThick / 2, 1, 0, 0);
       shape->DefineSection(1, +siThick / 2, 1, 0, 0);
-      shape->SetLineColor(GetLineColor());
+      shape->SetLineColor(kYellow); //PH kYellow is the default line color in FMD
       
       TObjArray* rots = new TObjArray(nmod);
       for (Int_t j = 0; j < nmod; j++) {
@@ -585,7 +560,7 @@ AliFMD::BuildGeometry()
 	TNode* mnod = new TNode(name.Data(), title.Data(), rshape, 
 				0, 0, rz - siThick / 2 
 				+ TMath::Sign(offz,z), rot);
-	mnod->SetLineColor(GetLineColor());
+	mnod->SetLineColor(kYellow); //PH kYellow is the default line color in FMD
 	fNodes->Add(mnod);
       } // for (Int_t k = 0 ; ...)
     } // for (Int_t j = 0 ; ...)
@@ -635,7 +610,7 @@ AliFMD::LoadPoints(Int_t /* track */)
     // than 1 keV - a MIP is 100 eV. 
     if (edep > absQ * absQ && poverm > 1) bad = kTRUE;
 
-    AliFMDPoints* p1 = new AliFMDPoints(hit, GetMarkerColor());
+    AliFMDPoints* p1 = new AliFMDPoints(hit, kRed); //PH kRed is the default marker color in FMD
     // AliPoints* p1 = new AliPoints();
     // p1->SetMarkerColor(GetMarkerColor());
     // p1->SetMarkerSize(GetMarkerSize());

@@ -14,10 +14,7 @@ class AliCRTv1 : public AliCRT {
 public:
   AliCRTv1();
   AliCRTv1(const char *name, const char *title);
-  AliCRTv1(const AliCRTv1& crt);
   virtual ~AliCRTv1();
-
-  AliCRTv1& operator=(const AliCRTv1& crt);
 
   virtual TString Version() { return TString("v1"); }
   virtual Int_t IsVersion() const { return 1; }
@@ -39,6 +36,9 @@ protected:
   virtual void CreateShafts();
 
 private: 
+  AliCRTv1(const AliCRTv1& crt);
+  AliCRTv1& operator=(const AliCRTv1& crt);
+
   ClassDef(AliCRTv1, 1)  //Class for CRT, version 1, Shafts outside of AliHALL
 };
 

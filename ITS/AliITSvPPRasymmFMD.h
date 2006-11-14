@@ -16,8 +16,6 @@ class AliITSvPPRasymmFMD : public AliITS {
  public:
     AliITSvPPRasymmFMD();
     AliITSvPPRasymmFMD(const char *name, const char *title);
-    AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source); // copy constructor
-    AliITSvPPRasymmFMD& operator=(const AliITSvPPRasymmFMD &source); // assignment operator
     virtual       ~AliITSvPPRasymmFMD() ;
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
@@ -99,6 +97,8 @@ class AliITSvPPRasymmFMD : public AliITS {
 	 return fFluid;}
 
  private:
+    AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source); // copy constructor
+    AliITSvPPRasymmFMD& operator=(const AliITSvPPRasymmFMD &source); // assignment operator
     void InitAliITSgeom();
 
     // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.

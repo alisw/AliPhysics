@@ -80,7 +80,7 @@ AliVZERO::AliVZERO(const char *name, const char *title)
   fMaxDestepQua =  -1.0;
   fMaxDestepAlu =  -1.0;
   
-  SetMarkerColor(kRed);
+  //PH  SetMarkerColor(kRed);
 }
 
 //_____________________________________________________________________________

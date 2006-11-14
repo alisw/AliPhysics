@@ -64,24 +64,6 @@ AliITSvtest::AliITSvtest() {
     for(i=0;i<60;i++) fWrite[i] = '\0';
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
-//____________________________________________________________________________
-AliITSvtest::AliITSvtest(const AliITSvtest &source) : AliITS(source){
-////////////////////////////////////////////////////////////////////////
-//     Copy Constructor for ITS test version.
-////////////////////////////////////////////////////////////////////////
-    if(&source == this) return;
-    Warning("Copy Constructor","Not allowed to copy AliITSvtest");
-    return;
-}
-//_____________________________________________________________________________
-AliITSvtest& AliITSvtest::operator=(const AliITSvtest &source){
-////////////////////////////////////////////////////////////////////////
-//    Assignment operator for the ITS version 1.
-////////////////////////////////////////////////////////////////////////
-	if(&source == this) return *this;
-	Warning("= operator","Not allowed to copy AliITSvtest");
-	return *this;
-}
 //_____________________________________________________________________________
 AliITSvtest::~AliITSvtest() {
     // Standard destructor for the ITS

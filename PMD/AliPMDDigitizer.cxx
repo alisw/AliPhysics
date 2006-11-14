@@ -30,6 +30,7 @@
 #include <TFile.h>
 #include <TNtuple.h>
 #include <TParticle.h>
+#include <TRandom.h>
 
 #include "AliLog.h"
 #include "AliRun.h"

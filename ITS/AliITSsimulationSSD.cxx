@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <Riostream.h>
 #include <TObjArray.h>
+#include <TRandom.h>
+
 #include "AliITSmodule.h"
 #include "AliITSMapA2.h"
 #include "AliITSpList.h"

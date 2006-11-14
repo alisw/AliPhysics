@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.102  2006/10/27 17:14:27  kharlov
+ * Introduce AliDebug and AliLog (B.Polichtchouk)
+ *
  * Revision 1.101  2006/10/13 06:47:29  kharlov
  * Simulation of RAW data applies real mapping (B.Polichtchouk)
  *
@@ -126,13 +129,6 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 //____________________________________________________________________________
 AliPHOS::~AliPHOS() 
 {  
-}
-
-//____________________________________________________________________________
-void AliPHOS::Copy(TObject &obj)const
-{
-  // copy method to be used by the cpy ctor
-  TObject::Copy(obj);
 }
 
 //____________________________________________________________________________

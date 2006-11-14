@@ -28,14 +28,6 @@ public:
   AliEMCALv1(const char *name, const char *title="") ;
   virtual ~AliEMCALv1(void) ;
 
-  AliEMCALv1(const AliEMCALv1 & emcal);
-
-  AliEMCALv1 & operator = (const AliEMCALv1  & /*rvalue*/) {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented");
-    return *this; 
-  }
-
   using AliEMCALv0::AddHit;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
 			Int_t id, Float_t *hits, Float_t *p);
@@ -53,6 +45,10 @@ protected:
   Int_t fCurParent;   // Current parent 
   Int_t fCurTrack;    // Current track
   Float_t fTimeCut;   // Cut to remove the background from the ALICE system
+
+ private:
+  AliEMCALv1(const AliEMCALv1 & emcal);
+  AliEMCALv1 & operator = (const AliEMCALv1  & /*rvalue*/);
 
   ClassDef(AliEMCALv1,9) // Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
     
