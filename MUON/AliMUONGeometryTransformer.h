@@ -42,7 +42,8 @@ class AliMUONGeometryTransformer : public TObject
     void  AddMisAlignDetElement(Int_t detElemId, const TGeoHMatrix& matrix);
 
     void  AddAlignableVolumes() const; 
-    TClonesArray* CreateZeroAlignmentData() const;			       
+    TClonesArray* CreateZeroAlignmentData() const;
+    void  ClearMisAlignmentData();			       
 
     // IO
     //
@@ -136,7 +137,7 @@ class AliMUONGeometryTransformer : public TObject
     TString GetDESymName(Int_t detElemId) const;
 
     // data members
-    TString        fDetectorName;       /// < Detector name
+    TString        fDetectorName;       ///< Detector name
     TObjArray*     fModuleTransformers; ///< array of module transformers
     TClonesArray*  fMisAlignArray;      ///< array of misalignment data
 

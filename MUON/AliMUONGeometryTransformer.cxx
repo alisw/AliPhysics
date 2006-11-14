@@ -957,6 +957,16 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
 }       
 
 //_____________________________________________________________________________
+void AliMUONGeometryTransformer::ClearMisAlignmentData()
+{
+/// Clear the array of misalignment data
+
+  if ( ! fMisAlignArray ) return;
+  
+  fMisAlignArray->Delete();
+}  
+  			       
+//_____________________________________________________________________________
 void AliMUONGeometryTransformer::Global2Local(Int_t detElemId,
                  Float_t xg, Float_t yg, Float_t zg, 
                  Float_t& xl, Float_t& yl, Float_t& zl) const
