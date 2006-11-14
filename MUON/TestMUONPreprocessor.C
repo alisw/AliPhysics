@@ -51,6 +51,7 @@ void TestMUONPreprocessor()
 {
   // load library
   gSystem->Load("../SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("libMUONshuttle.so");
   
   // initialize location of CDB
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
@@ -96,15 +97,17 @@ void TestMUONPreprocessor()
 //  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC1", "file2b.root");
 //  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC2", "file2b.root");
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MUON","PEDESTALS","LDC0","$ALICE_ROOT/MUON/data/LDC0.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MUON","PEDESTALS","LDC1","$ALICE_ROOT/MUON/data/LDC1.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MUON","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MUON","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC0","$ALICE_ROOT/MUON/data/LDC0.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1","$ALICE_ROOT/MUON/data/LDC1.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
   
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
+
   // TODO(3)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
 //  AliPreprocessor* pp = new AliTestPreprocessor("DET", shuttle);
-  new AliMUONPreprocessor("MUON",shuttle);
+  new AliMUONPreprocessor("MCH", shuttle);
 
   shuttle->Print();
   
