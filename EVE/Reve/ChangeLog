@@ -1,5 +1,10 @@
 2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* RGValuators.h:
+	Added getters for limits of the RGValuator.
+
+2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* BoxSet.cxx:
 	Removed support for old ROOT versions.
 
