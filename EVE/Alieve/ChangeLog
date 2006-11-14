@@ -1,3 +1,15 @@
+2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ITSDigitsInfo.cxx:
+	* ITSDigitsInfo.h:
+	Formatting changes.
+
+	* ITSModule.cxx:
+	* ITSModule.h:
+	Subclass from the new QuadSet implementation; introduced static
+	data members to hold pointers to default FrameBoxes and
+	RGBAPalettes for each detector type.
+
 2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TRDLoaderSingle.cxx:

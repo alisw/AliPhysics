@@ -1,3 +1,70 @@
+2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* BoxSet.cxx:
+	Removed support for old ROOT versions.
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added base-interface ReferenceBackPtr (reference-counted object
+	with back references to render elements); to be used for shared
+	markup classes (color-palettes, frames) that need to update their
+	consumers once their state is changed.
+
+	* Reve.cxx:
+	* Reve.h:
+	Removed code for RGBAPalette; now in its own file.
+
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Cleaned-up by using RGValuators instead of raw ROOT GUI (partial).
+	
+	* QuadSet.cxx:
+	* QuadSet.h:
+	* QuadSetGL.cxx:
+	* QuadSetGL.h:
+	Very optimized in sense of speed / memory usage as it supports
+	several orientations of rectangles and all possible variants of
+	default sizes / third coordinate; also added pointers to
+	color-palette and frame-box/rectangle so that these elements can
+	be shared among instances of the same type (eg. silicon strip
+	detectors). Means more code in this class ... but hopefully much
+	less code elsewhere.
+
+	* LinkDef.h:
+	Register new classes FrameBox, Plex, RGBAPalette and V0 stuff.
+
+	* FrameBox.cxx:
+	* FrameBox.h:
+	* FrameBoxGL.cxx:
+	* FrameBoxGL.h:
+	New files: provide a surrounding box/rectangle with a given
+	size/color; can be shared among many instances of render-elements
+	(eg. silicon strip detectors).
+
+	* Plex.cxx:
+	* Plex.h:
+	New files: container with chunked memory allocation (to avoid
+	frequent re-allocation on creation time) and ability to refit
+	itself into a contiguous array.
+
+	* RGBAPalette.cxx:
+	* RGBAPalette.h:
+	* RGBAPaletteEditor.cxx:
+	* RGBAPaletteEditor.h:
+	New files: a generic color palette with value to color mapping; to
+	be used by most digit/raw-data classes; can be shared among many
+	instances of render-elements (eg. silicon strip detectors).
+
+	* V0.cxx:
+	* V0.h:
+	* V0Editors.cxx:
+	* V0Editors.h:
+	From Ludovic: new files for visualization of V0s.
+
+	* RenderElementEditor.cxx:
+	* TriangleSet.cxx:
+	Formatting changes.
+
 2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* LinkDef.h:

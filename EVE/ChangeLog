@@ -1,3 +1,13 @@
+2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_V0.C:
+	From Ludovic, new file: macro to display and interact with
+	reconstructed V0s.
+
+	* alice-macros/its_digits.C:
+	Removed frame-color from ctors, now part of shared frame-box
+	properties.
+
 2006-10-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/init_trd.C:
