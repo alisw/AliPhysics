@@ -4,6 +4,7 @@
 #define REVE_QuadSetGL_H
 
 #include <TGLObject.h>
+#include <Reve/QuadSet.h>
 
 namespace Reve {
 
@@ -20,6 +21,31 @@ public:
   virtual void   SetBBox();
 
   ClassDef(OldQuadSetGL, 0);
+};
+
+/**************************************************************************/
+/**************************************************************************/
+
+class QuadSetGL : public TGLObject
+{
+protected:
+  QuadSet* fM;
+
+  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+
+  Bool_t SetupColor(const QuadSet::QuadBase& q) const;
+
+  void   RenderQuads(const TGLDrawFlags & flags) const;
+  void   RenderLines(const TGLDrawFlags & flags) const;
+
+public:
+  QuadSetGL();
+  virtual ~QuadSetGL();
+
+  virtual Bool_t SetModel(TObject* obj);
+  virtual void   SetBBox();
+
+  ClassDef(QuadSetGL, 0);
 };
 
 }
