@@ -25,7 +25,7 @@
 #pragma link C++ class Reve::ReferenceCount+;
 
 #pragma link C++ function Reve::ColorFromIdx;
-#pragma link C++ class Reve::RGBAPalette;
+#pragma link C++ function Reve::FindColorVar;
 
 // PODs
 #pragma link C++ class Reve::Vector+;
@@ -41,6 +41,14 @@
 
 // ZTrans
 #pragma link C++ class Reve::ZTrans-;
+
+// RGBAPalette
+#pragma link C++ class Reve::RGBAPalette+;
+#pragma link C++ class Reve::RGBAPaletteEditor+;
+#pragma link C++ class Reve::RGBAPaletteSubEditor+;
+
+// Plexes
+#pragma link C++ class Reve::VoidCPlex+;
 
 // EventBase, VSDEvent, VSD
 #pragma link C++ class Reve::EventBase+;
@@ -61,6 +69,8 @@
 #pragma link C++ class Reve::RenderElementObjPtr+;
 #pragma link C++ class Reve::RenderElementListBase+;
 #pragma link C++ class Reve::RenderElementList+;
+
+#pragma link C++ class Reve::ReferenceBackPtr;
 
 // Pad
 #pragma link C++ class Reve::Pad+;
@@ -95,14 +105,25 @@
 #pragma link C++ class Reve::TrackList+;
 #pragma link C++ class Reve::TrackRnrStyle+;
 
+// V0
+#pragma link C++ class Reve::V0+;
+#pragma link C++ class Reve::V0List+;
+
 // PointSet
 #pragma link C++ class Reve::PointSet+;
 #pragma link C++ class Reve::PointSetArray+;
+
+// FrameBox
+#pragma link C++ class Reve::FrameBox+;
+#pragma link C++ class Reve::FrameBoxGL+;
 
 // QuadSet
 #pragma link C++ class Reve::Quad+;
 #pragma link C++ class Reve::OldQuadSet+;
 #pragma link C++ class Reve::QuadSet+;
+
+#pragma link C++ class Reve::OldQuadSetGL+;
+#pragma link C++ class Reve::QuadSetGL+;
 
 // BoxSet
 #pragma link C++ class Reve::Box+;
@@ -124,6 +145,7 @@
 
 #pragma link C++ class Reve::RenderElementEditor+;
 #pragma link C++ class Reve::TrackListEditor+;
+#pragma link C++ class Reve::V0ListEditor+;
 #pragma link C++ class Reve::GeoNodeRnrElEditor+;
 #pragma link C++ class Reve::GeoTopNodeRnrElEditor+;
 
@@ -136,6 +158,5 @@
 //================================
 
 // ReveGLRenderers
-#pragma link C++ class Reve::OldQuadSetGL+;
 #pragma link C++ class Reve::BoxSetGL+;
 #pragma link C++ class Reve::TriangleSetGL;
