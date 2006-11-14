@@ -2,14 +2,12 @@
 #define ALIEVE_ITSModule_H
 
 #include <Reve/QuadSet.h>
-#include <Reve/RenderElement.h>
 
 #include <Alieve/ITSDigitsInfo.h>
 
 namespace Alieve {
 
-class ITSModule : public Reve::RenderElement,
-                  public Reve::OldQuadSet
+class ITSModule : public Reve::QuadSet
 {
   ITSModule(const ITSModule&);            // Not implemented
   ITSModule& operator=(const ITSModule&); // Not implemented
@@ -23,8 +21,8 @@ protected:
 
   ITSDigitsInfo* fInfo; 
 
-  Int_t       fID;
-  Int_t       fDetID;
+  Int_t       fID;    // Module   id
+  Int_t       fDetID; // Detector id (0~SPD, 1~SDD, 2~SSD)
 
   Int_t       fLayer;
   Int_t       fLadder;
@@ -34,27 +32,33 @@ protected:
   Float_t     fDz;
   Float_t     fDy;
 
-  Color_t     fFrameColor;
-
 public:
-  ITSModule(const Text_t* n="ITSModule", const Text_t* t=0, Color_t col=2);
-  ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col=2);
+  ITSModule(const Text_t* n="ITSModule", const Text_t* t=0);
+  ITSModule(Int_t id, ITSDigitsInfo* info);
   virtual ~ITSModule();
 
-  virtual Bool_t CanEditMainColor()  { return true; }
-  virtual void SetMainColor(Color_t col);
+  ITSDigitsInfo* GetDigitsInfo() const { return fInfo; }
+  void SetDigitsInfo(ITSDigitsInfo* info);
 
-  virtual void SetDigitsInfo(ITSDigitsInfo* info);
-  virtual void SetID(Int_t id);
+  Int_t GetID() const { return fID; }
+  void  SetID(Int_t id);
+
   virtual void Print(Option_t* opt="") const;
 
-  static Short_t   fgSDDThreshold;
-  static Short_t   fgSDDMaxVal;
+  static Bool_t    fgStaticInitDone;
+  static void      InitStatics(ITSDigitsInfo* info);
 
-  static Short_t   fgSSDThreshold;
-  static Short_t   fgSSDMaxVal;
+  static Reve::FrameBox* fgSPDFrameBox;
+  static Reve::FrameBox* fgSDDFrameBox;
+  static Reve::FrameBox* fgSSDFrameBox;
+
+  static Reve::RGBAPalette* fgSPDPalette;
+  static Reve::RGBAPalette* fgSDDPalette;
+  static Reve::RGBAPalette* fgSSDPalette;
 
   ClassDef(ITSModule, 1);
-}; 
+};
+
 }
+
 #endif

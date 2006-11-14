@@ -8,35 +8,47 @@
 
 using namespace Reve;
 using namespace Alieve;
-using namespace std;
 
+/*
 Short_t ITSModule::fgSDDThreshold  = 5;
 Short_t ITSModule::fgSDDMaxVal     = 80;
 Short_t ITSModule::fgSSDThreshold  = 2;
 Short_t ITSModule::fgSSDMaxVal     = 100;
+*/
+
+Bool_t       ITSModule::fgStaticInitDone = kFALSE;
+
+FrameBox*    ITSModule::fgSPDFrameBox = 0;
+FrameBox*    ITSModule::fgSDDFrameBox = 0;
+FrameBox*    ITSModule::fgSSDFrameBox = 0;
+
+RGBAPalette* ITSModule::fgSPDPalette  = 0;
+RGBAPalette* ITSModule::fgSDDPalette  = 0;
+RGBAPalette* ITSModule::fgSSDPalette  = 0;
+
+//__________________________________________________________________________
+// ITSModule
+//
+//
 
 ClassImp(ITSModule)
 
 /**************************************************************************/
 
-ITSModule::ITSModule(const Text_t* n, const Text_t* t, Color_t col) :
-  Reve::RenderElement(fFrameColor),
-  OldQuadSet(n, t),
+ITSModule::ITSModule(const Text_t* n, const Text_t* t) :
+  QuadSet(n, t),
   fInfo(0),
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
-  fDx(0), fDz(0), fDy(0),
-  fFrameColor(col)
+  fDx(0), fDz(0), fDy(0)
 {}
 
-ITSModule::ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col) :
-  Reve::RenderElement(fFrameColor),
-  OldQuadSet(Form("ITS module %d", id)),
+ITSModule::ITSModule(Int_t id, ITSDigitsInfo* info) :
+  QuadSet(Form("ITS module %d", id)),
   fInfo  (0),
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
-  fDx(0), fDz(0), fDy(0),
-  fFrameColor(col)
+  fDx(0), fDz(0), fDy(0)
 {
   SetDigitsInfo(info);
   SetID(id);
@@ -45,16 +57,6 @@ ITSModule::ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col) :
 ITSModule::~ITSModule()
 {
   if(fInfo) fInfo->DecRefCount();
-}
-
-/**************************************************************************/
-
-void ITSModule::SetMainColor(Color_t col)
-{
-  Reve::RenderElement::SetMainColor(col);
-  if(!fQuads.empty()) {
-    fQuads.front().ColorFromIdx(col);
-  }
 }
 
 /**************************************************************************/
@@ -83,92 +85,132 @@ void ITSModule::SetID(Int_t id)
 
 /**************************************************************************/
 
+void ITSModule::InitStatics(ITSDigitsInfo* info)
+{
+  if (fgStaticInitDone) return;
+
+  {
+    Float_t dx = info->fSegSPD->Dx()*0.00005;
+    Float_t dz = 3.48; 
+
+    fgSPDFrameBox = new FrameBox();
+    fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
+    fgSPDFrameBox->SetFrameColor((Color_t) 31);
+    fgSPDPalette  = new RGBAPalette(0, 1, kFALSE, kFALSE);
+  }
+
+  {
+    Float_t dx = info->fSegSDD->Dx()*0.0001;
+    Float_t dz = info->fSegSDD->Dz()*0.00005;
+
+    fgSDDFrameBox = new FrameBox();
+    fgSDDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
+    fgSDDFrameBox->SetFrameColor((Color_t) 32);
+    fgSDDPalette  = new RGBAPalette(5, 80, kTRUE, kFALSE);
+  }
+
+  {
+    Float_t dx = info->fSegSSD->Dx()*0.00005;
+    Float_t dz = info->fSegSSD->Dz()*0.00005;
+
+    fgSSDFrameBox = new FrameBox();
+    fgSSDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
+    fgSSDFrameBox->SetFrameColor((Color_t) 33);
+    fgSSDPalette  = new RGBAPalette(2, 100, kTRUE, kFALSE);
+  }
+
+}
+
+/**************************************************************************/
+
 void ITSModule::InitModule()
 {
+  if (!fgStaticInitDone)  InitStatics(fInfo);
+
   fInfo->fGeom->GetModuleId(fID,fLayer,fLadder,fDet);
   TString strLadder = "Ladder";
   TString strSensor = "Sensor";
   TString symname;
   Int_t id, nsector, nstave, nladder, rest;
   
-  if (fID <= fInfo->fGeom->GetLastSPD()) {
-    symname+=strLadder;
-    if (fID<80) {
+  if (fID <= fInfo->fGeom->GetLastSPD())
+  {
+    // SPD
+
+    symname += strLadder;
+    if (fID < 80)
+    {
       nsector = fID/8;
-      rest=fID-nsector*8;
-      nstave=1;
-      if (rest<4) nstave=0;
-      rest-=nstave*4;
-      symname+=rest;
-      SetName(symname.Data());
-      fDetID = 0;
-      fDx = fInfo->fSegSPD->Dx()*0.00005;
-      fDz = 3.48; 
-      fDy = fInfo->fSegSPD->Dy()*0.00005;
-    } else {
-      id=fID-80;
+      rest    = fID - 8*nsector;
+      nstave  = 1;
+    }
+    else
+    {
+      id      = fID - 80;
       nsector = id/8;
-      rest=id-nsector*8;
-      nstave=1;
-      if (rest<4) nstave=0;
-      rest-=nstave*4;
-      symname+=rest;
-      SetName(symname.Data());
-      fDetID = 0;
-      fDx = fInfo->fSegSPD->Dx()*0.00005;
-      fDz = 3.48; 
-      fDy = fInfo->fSegSPD->Dy()*0.00005;
+      rest    = id - 8*nsector;
+      nstave  = 1;
     }
+    if (rest < 4) nstave = 0;
+    rest    -= 4*nstave;
+    symname += rest;
+    SetName(symname);
+    fDetID = 0;
+    fDx = fInfo->fSegSPD->Dx()*0.00005;
+    fDz = 3.48; 
+    fDy = fInfo->fSegSPD->Dy()*0.00005;
+
   }
-  else if (fID <= fInfo->fGeom->GetLastSDD()) {
-    symname+=strSensor;
-    if (fID<324) {
-      id = fID-240;
+  else if (fID <= fInfo->fGeom->GetLastSDD())
+  {
+    // SDD
+
+    symname += strSensor;
+    if (fID < 324)
+    {
+      id      = fID - 240;
       nladder = id/6;
-      rest=id-nladder*6;
-      symname+=rest;
-      SetName(symname.Data());
-      fDetID = 1;
-      fDx = fInfo->fSegSDD->Dx()*0.0001;
-      fDz = fInfo->fSegSDD->Dz()*0.00005;
-      fDy = fInfo->fSegSDD->Dy()*0.00005;
-    } else {
-      id = fID-324;
+      rest    = id - 6*nladder;
+    }
+    else
+    {
+      id      = fID - 324;
       nladder = id/8;
-      rest=id-nladder*8;
-      symname+=rest;
-      SetName(symname.Data());
-      fDetID = 1;
-      fDx = fInfo->fSegSDD->Dx()*0.0001;
-      fDz = fInfo->fSegSDD->Dz()*0.00005;
-      fDy = fInfo->fSegSDD->Dy()*0.00005;
+      rest    = id - 8*nladder;
     }
+    symname += rest;
+    SetName(symname);
+    fDetID = 1;
+    fDx = fInfo->fSegSDD->Dx()*0.0001;
+    fDz = fInfo->fSegSDD->Dz()*0.00005;
+    fDy = fInfo->fSegSDD->Dy()*0.00005;
+
   }
-  else {
-    symname+=strSensor;
-    if (fID<1248) {
-      id = fID-500;
+  else
+  {
+    // SSD
+
+    symname += strSensor;
+    if (fID < 1248)
+    {
+      id      = fID - 500;
       nladder = id/22;
-      rest=id-nladder*22;
-      symname+=rest;
-      SetName(symname.Data());
-      fDetID = 2;
-      fInfo->fSegSSD->SetLayer(fLayer);  
-      fDx = fInfo->fSegSSD->Dx()*0.00005;
-      fDz = fInfo->fSegSSD->Dz()*0.00005;
-      fDy = fInfo->fSegSSD->Dy()*0.00005;
-    } else {
-      id = fID-1248;
-      nladder = id/25;
-      rest=id-nladder*25;
-      symname+=rest;
-      SetName(symname.Data());
-      fDetID = 2;
-      fInfo->fSegSSD->SetLayer(fLayer);  
-      fDx = fInfo->fSegSSD->Dx()*0.00005;
-      fDz = fInfo->fSegSSD->Dz()*0.00005;
-      fDy = fInfo->fSegSSD->Dy()*0.00005;
+      rest    = id - nladder*22;
     }
+    else
+    {
+      id      = fID - 1248;
+      nladder = id/25;
+      rest    = id - nladder*25;
+    }
+    symname += rest;
+    SetName(symname);
+    fDetID = 2;
+    fInfo->fSegSSD->SetLayer(fLayer);  
+    fDx = fInfo->fSegSSD->Dx()*0.00005;
+    fDz = fInfo->fSegSSD->Dz()*0.00005;
+    fDy = fInfo->fSegSSD->Dy()*0.00005;
+
   }
 
   LoadQuads();  
@@ -178,147 +220,123 @@ void ITSModule::InitModule()
 
 void ITSModule::LoadQuads()
 {
+  // Here we still use 'z' for the name of axial coordinates.
+  // The transforamtion matrix aplied rotates y -> z.
+  // We need this as QuadSet offers optimized treatment for
+  // quads in the x-y plane.
+
   // printf("its module load quads \n");
-  Float_t x = fDx;
-  Float_t z = fDz;
-  Bool_t aboveThreshold = false;
 
-  // Module frame in xy plane
-  fQuads.push_back(Reve::Quad(fFrameColor));
-  Float_t dy = -0.;
-  Float_t* p = fQuads.back().vertices;
-  p[0] = -x;  p[1] =  dy; p[2]  = -z;
-  p[3] = -x;  p[4] =  dy; p[5]  =  z;
-  p[6] =  x;  p[7] =  dy; p[8]  =  z;
-  p[9] =  x;  p[10] = dy; p[11] = -z;
-
-  // Digits
   TClonesArray *digits;
-  Int_t ndigits;
-  Float_t dpx,dpz; 
-  Int_t i,j;
-  digits  = fInfo->GetDigits(fID, fDetID );
+  Float_t       x, z, dpx, dpz; 
+  Int_t         i, j, ndigits;
+  digits  = fInfo->GetDigits(fID, fDetID);
   ndigits = digits->GetEntriesFast(); 
-  Int_t n_col = gStyle->GetNumberOfColors();
 
-  switch(fDetID) {
+  switch(fDetID)
+  {
 
-  case 0: { // SPD
-    aboveThreshold = true;
-    AliITSsegmentationSPD* seg =  fInfo->fSegSPD; 
-    AliITSdigitSPD *d=0;
+    case 0: { // SPD
+      AliITSsegmentationSPD* seg =  fInfo->fSegSPD; 
 
-    for (Int_t k=0; k<ndigits; k++) {
-      d=(AliITSdigitSPD*)digits->UncheckedAt(k);
-      j = d->GetCoord1();
-      i = d->GetCoord2();
-      x  = -seg->Dx()/2 + seg->Dpx(0) *i;
-      x *=  0.0001;
-      fInfo->GetSPDLocalZ(j,z);
-      dpx = seg->Dpx(i)*0.0001;
-      dpz = seg->Dpz(j)*0.0001;
+      Reset(QT_AxisAlignedFixedY, kFALSE, 32);
+      fFrame   = fgSPDFrameBox;
+      fPalette = fgSPDPalette;
 
-      fQuads.push_back(Reve::Quad(7));
-      Float_t* p = fQuads.back().vertices;
-      p[0] = x;        p[1] = 0.; p[2]  = z;
-      p[3] = x;        p[4] = 0.; p[5]  = z + dpz;
-      p[6] = x + dpx;  p[7] = 0.; p[8]  = z + dpz;
-      p[9] = x + dpx;  p[10] =0.; p[11] = z;
-    }
-    break;
-  }
-
-  case 1: { // SDD
-    AliITSsegmentationSDD* seg =  fInfo->fSegSDD; 
-    AliITSdigitSDD *d=0;
-    x = 2*fDx;
-    z = 2*fDz;
-    for (Int_t k=0; k<ndigits; k++) {
-      d=(AliITSdigitSDD*)digits->UncheckedAt(k);
-
-      if (d->GetSignal() > fgSDDThreshold) {
+      for (Int_t k=0; k<ndigits; ++k)
+      {
+	AliITSdigitSPD *d = (AliITSdigitSPD*) digits->UncheckedAt(k);
 	j = d->GetCoord1();
 	i = d->GetCoord2();
-	aboveThreshold = true;
-	seg->DetToLocal(i,j,x,z);
+	x  = -0.5*seg->Dx() + i*seg->Dpx(0);
+	x *=  0.0001;
+	fInfo->GetSPDLocalZ(j, z);
 	dpx = seg->Dpx(i)*0.0001;
 	dpz = seg->Dpz(j)*0.0001;
 
-	Int_t ci = gStyle->GetColorPalette
-	  (TMath::Min(n_col - 1,
-		      (n_col*(d->GetSignal() - fgSDDThreshold))/(fgSDDMaxVal - fgSDDThreshold)));
-	fQuads.push_back(Reve::Quad(ci, p));
-	Float_t* p = fQuads.back().vertices;
-	p[0] = x;        p[1] = 0.; p[2]  = z;
-	p[3] = x;        p[4] = 0.; p[5]  = z + dpz;
-	p[6] = x + dpx;  p[7] = 0.; p[8]  = z + dpz;
-	p[9] = x + dpx;  p[10] =0.; p[11] = z;
+	AddQuad(x, z, dpx, dpz);
+	QuadValue(1); // In principle could have color based on number of neigbours
       }
+      break;
     }
-    break;
-  }
 
-  case 2: { // SSD
-    AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
-    AliITSdigitSSD *d=0;
-    Float_t ap,an,a;
-    seg->Angles(ap,an);
-    for (Int_t k=0; k<ndigits; k++) {
-      d=(AliITSdigitSSD*)digits->UncheckedAt(k);
-      if(d->GetSignal() > fgSSDThreshold){
-	aboveThreshold = true;
-	j = d->GetCoord1();
-	i = d->GetCoord2();
-	seg->DetToLocal(i,j,x,z);
+    case 1: { // SDD
+      AliITSsegmentationSDD *seg =  fInfo->fSegSDD; 
 
-	if( d->GetCoord1() == 1) {
-	  a = ap;
+      Reset(QT_AxisAlignedFixedY, kFALSE, 32);
+      fFrame   = fgSDDFrameBox;
+      fPalette = fgSDDPalette;
+
+      for (Int_t k=0; k<ndigits; ++k)
+      {
+	AliITSdigitSDD* d = (AliITSdigitSDD*) digits->UncheckedAt(k);
+
+	// if (d->GetSignal() > fgSDDThreshold)
+	{
+	  j = d->GetCoord1();
+	  i = d->GetCoord2();
+	  seg->DetToLocal(i, j, x, z);
+	  dpx = seg->Dpx(i)*0.0001;
+	  dpz = seg->Dpz(j)*0.0001;
+
+	  AddQuad(x, z, dpx, dpz);
+	  QuadValue(d->GetSignal());
 	}
-	else {
-	  a = -an;
-	}
-     	fQuads.push_back(Reve::Quad());
-	Int_t ci = gStyle->GetColorPalette
-	  (TMath::Min(n_col - 1,
-		      (n_col*(d->GetSignal() - fgSSDThreshold))/(fgSSDMaxVal - fgSSDThreshold)));
-
-	fQuads.back().ColorFromIdx(ci);
-	Float_t* p = fQuads.back().vertices;
-        
-	p[0] = x-TMath::Tan(a)*fDz;  p[1] =  0; p[2]  = -fDz;
-	p[3] = x+TMath::Tan(a)*fDz;  p[4] =  0; p[5]  = fDz ;
-	p[6] = x+TMath::Tan(a)*fDz;  p[7] =  0; p[8]  = fDz  ;
-	p[9] = x-TMath::Tan(a)*fDz;  p[10] = 0; p[11] = -fDz;
-	//	printf("%3d -> %3d -> %8x\n", d->GetSignal(), ci, fQuads.back().color);
       }
+      break;
     }
-    break;
-  }
 
-  }
+    case 2: { // SSD
+      AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
+
+      Reset(QT_LineFixedY, kFALSE, 32);
+      fFrame   = fgSSDFrameBox;
+      fPalette = fgSSDPalette;
+
+      Float_t ap, an; // positive/negative angles -> offsets
+      seg->Angles(ap, an);
+      ap =   TMath::Tan(ap) * fDz;
+      an = - TMath::Tan(an) * fDz;
+
+      for (Int_t k=0; k<ndigits; ++k)
+      {
+	AliITSdigitSSD *d = (AliITSdigitSSD*) digits->UncheckedAt(k);
+	// if(d->GetSignal() > fgSSDThreshold)
+	{
+	  j = d->GetCoord1();
+	  i = d->GetCoord2();
+	  seg->DetToLocal(i,j,x,z);
+
+	  Float_t a = ( d->GetCoord1() == 1) ? ap : an;
+
+	  AddQuad(x-a, -fDz, 2*a, 2*fDz);
+	  QuadValue(d->GetSignal());
+	  // printf("%3d -> %3d -> %8x\n", d->GetSignal(), ci, fQuads.back().color);
+	}
+      }
+      break;
+    }
+
+  } // end switch
+
+  RefitPlex();
 }
 
 /**************************************************************************/
 
 void ITSModule::SetTrans()
 {
-  Double_t pos[3];
-  Double_t rot[9];
-  fInfo->fGeom->GetTrans(fID,pos);
-  fInfo->fGeom->GetRotMatrix(fID,rot);
-  Double_t *s, *d;
+  Double_t x[9];
+  fHMTrans.UnitTrans();
 
-  // column major ii
-  s = &rot[0]; d = &fMatrix[0];
-  d[0] = s[0]; d[1] = s[3]; d[2] = s[6]; d[3] = 0;
-  s = &rot[1]; d = &fMatrix[4];
-  d[0] = s[0]; d[1] = s[3]; d[2] = s[6]; d[3] = 0;
-  s = &rot[2]; d = &fMatrix[8];
-  d[0] = s[0]; d[1] = s[3]; d[2] = s[6]; d[3] = 0;
-  s = &pos[0]; d = &fMatrix[12];
-  d[0] = s[0]; d[1] = s[1]; d[2] = s[2]; d[3] = 1;
-
-  fTrans = true;
+   // column major
+  fInfo->fGeom->GetRotMatrix(fID, x);
+  fHMTrans.SetBaseVec(1, x[0], x[3], x[6]);
+  fHMTrans.SetBaseVec(2, x[1], x[4], x[7]);
+  fHMTrans.SetBaseVec(3, x[2], x[5], x[8]);
+  // translation
+  fInfo->fGeom->GetTrans(fID, x);  
+  fHMTrans.SetBaseVec(4, x);
 }
 
 /**************************************************************************/
