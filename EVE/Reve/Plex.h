@@ -85,7 +85,7 @@ public:
 
   void Reset(Int_t chunk_size) { Reset(sizeof(T), chunk_size); }
 
-  T* At(Int_t idx)  { return reinterpret_cast<T*>(Atom(ids)); }
+  T* At(Int_t idx)  { return reinterpret_cast<T*>(Atom(idx)); }
   T& Ref(Int_t idx) { return *At(idx); }
 
   ClassDef(CPlex, 1)
