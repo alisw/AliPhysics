@@ -88,6 +88,7 @@ void AliPIPEv3::CreateGeometry()
     const TGeoMedium* kMedBe     =  gGeoManager->GetMedium("PIPE_BE");       
     const TGeoMedium* kMedCu     =  gGeoManager->GetMedium("PIPE_CU");        
     const TGeoMedium* kMedKapton =  gGeoManager->GetMedium("PIPE_KAPTON");        
+    const TGeoMedium* kMedAco    =  gGeoManager->GetMedium("PIPE_ANTICORODAL");        
 // Top volume
     TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
 //
@@ -207,6 +208,8 @@ void AliPIPEv3::CreateGeometry()
     dz = kCP1Length / 2. -  kCP1BeStAdaptorLength / 2.;
     voCp1Mo->AddNode(voCp1At,    1, new TGeoTranslation(0., 0., -dz));
     voCp1Mo->AddNode(voCp1At,    2, new TGeoCombiTrans(0., 0.,  dz, rot180));
+    TGeoVolumeAssembly* voCp1 = new TGeoVolumeAssembly("Cp1");
+    voCp1->AddNode(voCp1Mo, 1, gGeoIdentity);
     
 //
 ///////////////////
@@ -352,6 +355,13 @@ void AliPIPEv3::CreateGeometry()
     dz = (kCP2FixedFlangeRecessLengths[0] + kCP2FixedFlangeRecessLengths[1]) / 2.;
     voCp2Mo->AddNode(voCp2Pi, 1, new TGeoTranslation(0., 0., dz));
 
+//
+//  Central beam pipe support collars
+//  LHCVC2C_0019
+//  Position at z = -46., 40., 150.
+    TGeoVolume* voCpSupC = new TGeoVolume("CpSupC", new TGeoTube(3.0, 4.0, 0.35), kMedAco);
+    voCp1->AddNode(voCpSupC, 1, new TGeoTranslation(0., 0.,  kCP1Length / 2. - 81.5));
+    voCp1->AddNode(voCpSupC, 2, new TGeoTranslation(0., 0.,  kCP1Length / 2.- 191.5));
 //  Beam Pipe Protection Tube
 //
 //  ALIFWDA_0025
@@ -368,12 +378,12 @@ void AliPIPEv3::CreateGeometry()
     TGeoTube* shFwdaBPPTY = new TGeoTube(0., 8.5, 3.2);
     shFwdaBPPTY->SetName("FwdaBPPTY");
     TGeoCompositeShape*  shFwdaBPPTPC = new TGeoCompositeShape("shFwdaBPPTPC", "FwdaBPPTX-FwdaBPPTY");
-    TGeoVolume* voFwdaBPPTPC =  new TGeoVolume("FwdaBPPTPC", shFwdaBPPTPC, kMedSteel);
+    TGeoVolume* voFwdaBPPTPC =  new TGeoVolume("FwdaBPPTPC", shFwdaBPPTPC, kMedAco);
 //    
 //  Tube  ALIFWDA_0020  
 //    const Float_t kFwdaBPPTTL = 48.;
     const Float_t kFwdaBPPTTL = 35.;
-    TGeoVolume* voFwdaBPPTT =  new TGeoVolume("FwdaBPPTT", new TGeoTube(8.85, 9.0, kFwdaBPPTTL/2.), kMedSteel);
+    TGeoVolume* voFwdaBPPTT =  new TGeoVolume("FwdaBPPTT", new TGeoTube(8.85, 9.0, kFwdaBPPTTL/2.), kMedAco);
     TGeoVolumeAssembly* voFwdaBPPT = new TGeoVolumeAssembly("FwdaBPPT");
     voFwdaBPPT->AddNode(voFwdaBPPTPC, 1, gGeoIdentity);
     voFwdaBPPT->AddNode(voFwdaBPPTT,  1, new TGeoTranslation(0., 0., kFwdaBPPTTL/2. + kFwdaBPPTXL));
@@ -401,7 +411,7 @@ void AliPIPEv3::CreateGeometry()
     shFwdaBPSPY->DefineSection(5,  5.00, 0., 5.5);    
     shFwdaBPSPY->SetName("FwdaBPSPY");
     TGeoCompositeShape*  shFwdaBPSP = new TGeoCompositeShape("shFwdaBPSP", "FwdaBPSPX-FwdaBPSPY");
-    TGeoVolume* voFwdaBPSP =  new TGeoVolume("FwdaBPSP", shFwdaBPSP, kMedSteel);
+    TGeoVolume* voFwdaBPSP =  new TGeoVolume("FwdaBPSP", shFwdaBPSP, kMedAco);
 //    
 //  Flasque  ALIFWDA_00027
 
@@ -426,7 +436,7 @@ void AliPIPEv3::CreateGeometry()
     z += 1.2;
     shFwdaBPSFL->DefineSection(7, z, kFwdaBPSTTRi, kFwdaBPSTTRo2);
 
-    TGeoVolume* voFwdaBPSFL =  new TGeoVolume("FwdaBPSFL", shFwdaBPSFL, kMedSteel);
+    TGeoVolume* voFwdaBPSFL =  new TGeoVolume("FwdaBPSFL", shFwdaBPSFL, kMedAco);
 
     
     //
@@ -444,7 +454,7 @@ void AliPIPEv3::CreateGeometry()
     tFwdaBPSCSc->SetName("tFwdaBPSCSc");
     tFwdaBPSCSc->RegisterYourself();
     TGeoCompositeShape* shFwdaBPSCS = new TGeoCompositeShape("shFwdaBPSCS", "(FwdaBPSCSa-FwdaBPSCSb:tFwdaBPSCSb)+FwdaBPSCSc:tFwdaBPSCSc");
-    TGeoVolume* voFwdaBPSCS = new TGeoVolume("FwdaBPSCS", shFwdaBPSCS, kMedSteel);
+    TGeoVolume* voFwdaBPSCS = new TGeoVolume("FwdaBPSCS", shFwdaBPSCS, kMedAco);
     
     
     // Assembling the beam pipe support	
@@ -555,6 +565,9 @@ void AliPIPEv3::CreateGeometry()
 //
     TGeoVolume* voCp3Mo = new TGeoVolume("CP3MO", shCp3Mo, kMedAir);
     voCp3Mo->SetVisibility(0);
+    TGeoVolumeAssembly* voCp3 = new TGeoVolumeAssembly("Cp3");
+    voCp3->AddNode(voCp3Mo,  1, gGeoIdentity);
+    voCp3->AddNode(voCpSupC, 3, new TGeoTranslation(0., 0., - kCP3Length / 2. + 4.5));
     dz = kCP3pos;
 
 //////////////////////////////////////////////
@@ -772,9 +785,9 @@ void AliPIPEv3::CreateGeometry()
     z = 0.;
     asCP->AddNode(voCp2,   1, gGeoIdentity);
     z +=  kCP2Length / 2. + kCP1Length / 2.;
-    asCP->AddNode(voCp1Mo, 1, new TGeoTranslation(0., 0., z));
+    asCP->AddNode(voCp1, 1, new TGeoTranslation(0., 0., z));
     z +=  kCP1Length / 2.  + kCP3Length / 2.;
-    asCP->AddNode(voCp3Mo, 1, new TGeoTranslation(0., 0., z));
+    asCP->AddNode(voCp3, 1, new TGeoTranslation(0., 0., z));
     top->AddNode(asCP, 1,  new TGeoCombiTrans(0., 0., 400. -  kCP2Length / 2, rot180));
 
 
@@ -2611,7 +2624,15 @@ void AliPIPEv3::CreateMaterials()
   Float_t ains[4] ={28.0855, 15.9994, 47.867,  26.982};
   Float_t zins[4] ={14.,      8.    , 22.   ,  13.   };
   Float_t wins[4] ={ 0.3019,  0.4887,  0.1914,  0.018};
-
+  //
+  //
+  // Anticorodal
+  //
+  // Al Si7 Mg 0.6
+  //
+  Float_t aaco[3] ={26.982, 28.0855, 24.035};
+  Float_t zaco[3] ={13.,    14.    , 12.   };
+  Float_t waco[3] ={ 0.924,  0.07,  0.006};
   // Kapton
   //
   Float_t aKapton[4]={1.00794,12.0107, 14.010,15.9994};
@@ -2652,6 +2673,8 @@ void AliPIPEv3::CreateMaterials()
   //
   //     Kapton
   AliMixture(23, "KAPTON", aKapton, zKapton, dKapton, 4, wKapton);
+  // Anticorodal 
+  AliMixture(24, "ANTICORODAL", aaco, zaco, 2.66, 3, waco);
 
   //
   //     Insulation powder 
@@ -2697,7 +2720,8 @@ void AliPIPEv3::CreateMaterials()
   //
   //   Polyamid
   AliMedium(22, "PA"  ,   22, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  //
+  //   Antocorodal
+  AliMedium(24, "ANTICORODAL",   24, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //    Insulation Powder 
   AliMedium(14, "INS_C0          ", 14, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(34, "INS_C1          ", 34, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
