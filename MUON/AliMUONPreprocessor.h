@@ -22,7 +22,7 @@ class TObjArray;
 class AliMUONPreprocessor : public AliPreprocessor
 {
 public:
-  AliMUONPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+  AliMUONPreprocessor(const TString& detName, AliShuttleInterface* shuttle);
   virtual ~AliMUONPreprocessor();
   
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
@@ -46,7 +46,7 @@ public:
   }  
   
 private:
-  enum ESubprocessors { kPedestal=0, kLast };
+  // enum ESubprocessors { kPedestal=0, kGMS=1, kLast };
   
   AliMUONPreprocessor(const AliMUONPreprocessor& rhs);
   AliMUONPreprocessor& operator=(const AliMUONPreprocessor& rhs);
@@ -54,6 +54,9 @@ private:
   AliMUONVSubprocessor* Subprocessor(Int_t i) const;
   
 private:
+  static const TString  fgkTrackerDetName;
+  static const TString  fgkTriggerDetName;
+
   TObjArray* fSubprocessors; ///!< sub processors to execute
   
   ClassDef(AliMUONPreprocessor,1) // MUON Shuttle preprocessor

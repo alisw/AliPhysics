@@ -16,9 +16,13 @@
 // $Id$
 
 #include "AliMUONPreprocessor.h"
-#include "TObjArray.h"
 #include "AliMUONPedestalSubprocessor.h"
+#include "AliMUONGMSSubprocessor.h"
+
+#include "AliLog.h"
+
 #include "Riostream.h"
+#include "TObjArray.h"
 
 /// \class AliMUONPreprocessor
 ///
@@ -33,26 +37,40 @@
 ClassImp(AliMUONPreprocessor)
 /// \endcond
 
+const TString  AliMUONPreprocessor::fgkTrackerDetName = "MCH";
+const TString  AliMUONPreprocessor::fgkTriggerDetName = "MTR";
+
 //_____________________________________________________________________________
-AliMUONPreprocessor::AliMUONPreprocessor(const char* detector, 
+AliMUONPreprocessor::AliMUONPreprocessor(const TString& detName, 
                                          AliShuttleInterface* shuttle) 
-: AliPreprocessor(detector,shuttle), fSubprocessors(new TObjArray[kLast])
+: AliPreprocessor(detName.Data(),shuttle), 
+//  fSubprocessors(new TObjArray[kLast])
+  fSubprocessors(new TObjArray())
 {
   /// ctor. Builds the list of subtasks
-  ///
-  /// \todo FIXME: should test detector wrt to tracker or trigger to 
+  /// Tests detector wrt to tracker or trigger to 
   /// instantiate the correct list of subtasks, which should be : 
   /// Tracker : 
-  /// pedestals
-  /// gains
-  /// deadchannels
-  /// gms
+  /// - pedestals
+  /// - gains
+  /// - deadchannels
+  /// - gms
   ///
   /// Trigger : 
-  /// masks
-  /// lut
-  ///
-  fSubprocessors->AddAt(new AliMUONPedestalSubprocessor(this),kPedestal);
+  /// - masks
+  /// - lut
+  
+  if ( detName == fgkTrackerDetName ) { 
+    fSubprocessors->Add(new AliMUONPedestalSubprocessor(this));
+    fSubprocessors->Add(new AliMUONGMSSubprocessor(this));
+  }
+  else if ( detName == fgkTriggerDetName ) {
+    AliWarningStream() << "Trigger subprocessors not yet implemented." << endl;
+  }  
+  else { 
+    // Wrong detector name
+    AliErrorStream() << "Wrong detector name." << endl;
+  }  
 }
 
 //_____________________________________________________________________________
