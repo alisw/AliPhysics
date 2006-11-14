@@ -205,7 +205,7 @@ void Config()
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
                                                                                 
-                                                                                
+
     if (iMAG)
     {
         //=================== MAG parameters ============================
@@ -213,58 +213,53 @@ void Config()
         // --- on the selected Magnet dimensions ---
         AliMAG *MAG = new AliMAG("MAG", "Magnet");
     }
-                                                                                
-                                                                                
+
+
     if (iABSO)
     {
         //=================== ABSO parameters ============================
         AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
     }
-                                                                                
+
     if (iDIPO)
     {
         //=================== DIPO parameters ============================
-                                                                                
+
         AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
     }
-                                                                                
+
     if (iHALL)
     {
         //=================== HALL parameters ============================
-                                                                                
+
         AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
     }
-                                                                                
-                                                                                
+
+
     if (iFRAME)
     {
         //=================== FRAME parameters ============================
-                                                                                
+
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-        if (sgeo == kHoles) {
-            FRAME->SetHoles(1);
-        } else {
-            FRAME->SetHoles(0);
-        }
     }
-                                                                                
+
     if (iSHIL)
     {
         //=================== SHIL parameters ============================
-                                                                                
+
         AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
     }
-                                                                                
-                                                                                
+
+
     if (iPIPE)
     {
         //=================== PIPE parameters ============================
-                                                                                
+
         AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
     }
-                                                                                
+ 
     if(iITS) {
-                                                                                
+
     //=================== ITS parameters ============================
     //
     // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
@@ -276,27 +271,27 @@ void Config()
     // comparisons and you know what you are doing. In this case just uncomment the
     // ITS geometry you want to use and run Aliroot.
     //
-    // Detailed geometries:
+    // Detailed geometries:         
     //
     //
     //AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
     //
     //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-        AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
-        ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
-        ITS->SetReadDet(kTRUE);   // don't touch this parameter if you're not an ITS developer
+	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
+	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
+	ITS->SetReadDet(kFALSE);	  // don't touch this parameter if you're not an ITS developer
     //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-        ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-        ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-        ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-        ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-        ITS->SetRails(0);            // 1 --> rails in ; 0 --> rails out
-        ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
-                                                                                
-    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful
+	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+	ITS->SetThicknessChip1(150.);  // chip thickness on layer 1 must be in the range [150,300]
+	ITS->SetThicknessChip2(150.);  // chip thickness on layer 2 must be in the range [150,300]
+	ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
+	ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
+
+    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
     // for reconstruction !):
-    //
+    //                                                     
     //
     //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
     //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
@@ -305,7 +300,7 @@ void Config()
     //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
     //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
     //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    //
+    //                      
     //
     //
     // Geant3 <-> EUCLID conversion
@@ -316,106 +311,113 @@ void Config()
     // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
     // The default (=0) means that you dont want to use this facility.
     //
-        ITS->SetEUCLID(0);
+	ITS->SetEUCLID(0);  
     }
-                                                                                
+
     if (iTPC)
     {
-        //============================ TPC parameters ================================
+      //============================ TPC parameters =====================
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
     }
-                                                                                
-                                                                                
+
+
     if (iTOF) {
         //=================== TOF parameters ============================
-        AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
+	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
+	// Partial geometry: modules at 2,3,4,6,7,11,12,14,15,16
+	// starting at 6h in positive direction
+	//	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0};
+	// Partial geometry: modules at 1,2,6,7,9,10,11,12,15,16,17
+	// (ALICE numbering convention)
+       	Int_t TOFSectors[18]={-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0,-1,-1,0,0,0};
+	TOF->SetTOFSectors(TOFSectors);
     }
-                                                                                
-                                                                                
+
+
     if (iRICH)
     {
         //=================== RICH parameters ===========================
         AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
-                                                                                
+
     }
-                                                                                
-                                                                                
+
+
     if (iZDC)
     {
         //=================== ZDC parameters ============================
-                                                                                
+
         AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
     }
-                                                                                
+
     if (iTRD)
     {
         //=================== TRD parameters ============================
-                                                                                
+
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-                                                                                
-        // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
-        TRD->SetGasMix(1);
-        if (sgeo == kHoles) {
-            // With hole in front of PHOS
-            TRD->SetPHOShole();
-            // With hole in front of RICH
-            TRD->SetRICHhole();
-        }
-            // Switch on TR
-            AliTRDsim *TRDsim = TRD->CreateTR();
+        AliTRDgeometry *geoTRD = TRD->GetGeometry();
+	// Partial geometry: modules at 2,3,4,6,11,12,14,15
+	// starting at 6h in positive direction
+	geoTRD->SetSMstatus(0,0);
+        geoTRD->SetSMstatus(1,0);
+        geoTRD->SetSMstatus(5,0);
+        geoTRD->SetSMstatus(7,0);
+        geoTRD->SetSMstatus(8,0);
+        geoTRD->SetSMstatus(9,0);
+        geoTRD->SetSMstatus(10,0);
+        geoTRD->SetSMstatus(13,0);
+        geoTRD->SetSMstatus(16,0);
+        geoTRD->SetSMstatus(17,0);
     }
-                                                                                
+
     if (iFMD)
     {
         //=================== FMD parameters ============================
-        AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
    }
-                                                                                
+
     if (iMUON)
     {
         //=================== MUON parameters ===========================
-                                                                                
+        // New MUONv1 version (geometry defined via builders)
         AliMUON *MUON = new AliMUONv1("MUON", "default");
     }
     //=================== PHOS parameters ===========================
-                                                                                
+
     if (iPHOS)
     {
         AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
     }
-                                                                                
-                                                                                
+
+
     if (iPMD)
     {
         //=================== PMD parameters ============================
         AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
     }
-                                                                                
+
     if (iSTART)
     {
         //=================== START parameters ============================
         AliSTART *START = new AliSTARTv1("START", "START Detector");
     }
-                                                                                
+
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH");
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
     }
-                                                                                
+
      if (iCRT)
     {
         //=================== CRT parameters ============================
         AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
     }
-                                                                                
+
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
-    }
-                                                                                
-                                                                                
+        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
+    }                                                                                
 }
                                                                                 
 Float_t EtaToTheta(Float_t arg){
