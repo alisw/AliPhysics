@@ -69,7 +69,10 @@ ClassImp(BoxSet)
 BoxSet::BoxSet(const Text_t* n, const Text_t* t) :
   RenderElement(fDefaultColor),
   TNamed(n, t),
-  fRenderMode (RM_AsIs)
+  fDefaultColor(0),
+  fRenderMode(RM_AsIs),
+  fHMTrans(),
+  fBoxes()
 {}
 
 /**************************************************************************/

@@ -16,7 +16,9 @@ using namespace Reve;
 
 ClassImp(RGEditor)
 
-RGEditor::RGEditor(TCanvas* canvas) : TGedEditor(canvas)
+RGEditor::RGEditor(TCanvas* canvas) :
+  TGedEditor(canvas),
+  fRnrElement(0)
 {}
 
 void RGEditor::DisplayRenderElement(RenderElement* re)

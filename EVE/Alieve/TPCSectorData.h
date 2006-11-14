@@ -29,6 +29,10 @@ public:
   public:
     PadData(Short_t* d=0, Short_t l=0) : fData(d), fLength(l) {}
 
+    PadData(const PadData& p) : fData(p.fData), fLength(p.fLength) {}
+    PadData& operator=(const PadData& p)
+    { fData = p.fData; fLength = p.fLength; return *this; }
+
     Short_t* Data()   const { return fData; }
     Short_t  Length() const { return fLength; }
 

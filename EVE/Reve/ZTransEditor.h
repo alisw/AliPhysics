@@ -15,6 +15,9 @@ class RGTriVecValuator;
 
 class ZTransSubEditor : public TGVerticalFrame
 {
+  ZTransSubEditor(const ZTransSubEditor&);            // Not implemented
+  ZTransSubEditor& operator=(const ZTransSubEditor&); // Not implemented
+
 protected:
   ZTrans            *fTrans;
 
@@ -30,7 +33,7 @@ protected:
   RGTriVecValuator  *fScale;
 
   TGCheckButton     *fAutoUpdate;
-  TGTextButton      *fUpdate;
+  TGTextButton      *fUpdate;          
 
 public:
   ZTransSubEditor(TGWindow* p);

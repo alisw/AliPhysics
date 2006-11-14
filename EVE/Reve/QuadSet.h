@@ -81,6 +81,9 @@ class QuadSet : public RenderElement,
 {
   friend class QuadSetGL;
 
+  QuadSet(const QuadSet&);            // Not implemented
+  QuadSet& operator=(const QuadSet&); // Not implemented
+
 public:
   enum QuadType_e
   { 

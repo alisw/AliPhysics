@@ -18,9 +18,10 @@ ClassImp(TriangleSet)
 TriangleSet::TriangleSet(Int_t nv, Int_t nt, Bool_t norms, Bool_t cols) :
   RenderElement(fColor),
   TNamed("TriangleSet", 0),
-  fNVerts  (nv),
-  fNTrings (nt),
-  fColor   (2)
+  fNVerts  (nv), fVerts(0),
+  fNTrings (nt), fTrings(0), fTringNorms(0), fTringCols(0),
+  fColor   (2),
+  fHMTrans ()
 {
   fVerts  = new Float_t[3*fNVerts];
   fTrings = new Int_t  [3*fNTrings];

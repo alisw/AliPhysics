@@ -47,14 +47,14 @@ protected:
 
 public:
   ZTrans();
-  ZTrans(const ZTrans& z);
+  ZTrans(const ZTrans& t);
   virtual ~ZTrans() {}
 
   // General operations
 
   void     UnitTrans();
   void     UnitRot();
-  void     SetTrans(const ZTrans& t);
+  void     SetTrans(const ZTrans& t, Bool_t copyAngles=kTRUE);
   ZTrans&  operator=(const ZTrans& t) { SetTrans(t); return *this; }
   void     SetupRotation(Int_t i, Int_t j, Double_t f);
 

@@ -216,11 +216,11 @@ protected:
   std::list<RenderElement*> fBackRefs;
 
 public:
-  ReferenceBackPtr() : ReferenceCount() {}
-  virtual ~ReferenceBackPtr() {}
+  ReferenceBackPtr();
+  virtual ~ReferenceBackPtr();
 
-  ReferenceBackPtr(const ReferenceBackPtr&) : ReferenceCount() {}
-  ReferenceBackPtr& operator=(const ReferenceBackPtr&) { return *this; }
+  ReferenceBackPtr(const ReferenceBackPtr&);
+  ReferenceBackPtr& operator=(const ReferenceBackPtr&);
 
   void IncRefCount(RenderElement* re);
   void DecRefCount(RenderElement* re);

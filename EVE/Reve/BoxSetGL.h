@@ -11,6 +11,9 @@ class BoxSet;
 
 class BoxSetGL : public TGLObject
 {
+  BoxSetGL(const BoxSetGL&);            // Not implemented
+  BoxSetGL& operator=(const BoxSetGL&); // Not implemented
+
 protected:
   BoxSet* fM;
 

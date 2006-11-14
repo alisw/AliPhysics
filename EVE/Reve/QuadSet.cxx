@@ -189,7 +189,9 @@ QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
   fDefWidth(1), fDefHeight(1), fDefCoord(0),
 
   fFrame  (0),
-  fPalette(0)
+  fPalette(0),
+  fRenderMode(RM_AsIs),
+  fHMTrans()
 {}
 
 QuadSet::QuadSet(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize,
@@ -206,7 +208,9 @@ QuadSet::QuadSet(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize,
   fDefWidth(1), fDefHeight(1), fDefCoord(0),
 
   fFrame  (0),
-  fPalette(0)
+  fPalette(0),
+  fRenderMode(RM_AsIs),
+  fHMTrans()
 {}
 
 QuadSet::~QuadSet()

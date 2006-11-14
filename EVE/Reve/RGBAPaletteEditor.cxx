@@ -18,7 +18,14 @@ using namespace Reve;
 
 
 RGBAPaletteSubEditor::RGBAPaletteSubEditor(const TGWindow* p) :
-  TGVerticalFrame(p)
+  TGVerticalFrame(p),
+
+  fM(0),
+  fMinVal(0),
+  fMaxVal(0),
+  fInterpolate(0),
+  fWrap(0), 
+  fDefaultColor(0)
 {
   // Create weeds.
 

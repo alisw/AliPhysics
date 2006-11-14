@@ -16,10 +16,14 @@ ClassImp(RGBAPalette)
 RGBAPalette::RGBAPalette() :
   TObject(),
   Reve::ReferenceCount(),
+
+  fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
+
   fCutLow      (kTRUE),
   fCutHigh     (kFALSE),
   fInterpolate (kFALSE),
   fWrap        (kFALSE),
+  fDefaultColor(0),
   fColorArray  (0)
 {
   SetLimits(0, 1000);
@@ -29,10 +33,14 @@ RGBAPalette::RGBAPalette() :
 RGBAPalette::RGBAPalette(Int_t min, Int_t max) :
   TObject(),
   Reve::ReferenceCount(),
+
+  fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
+
   fCutLow      (kTRUE),
   fCutHigh     (kFALSE),
   fInterpolate (kFALSE),
   fWrap        (kFALSE),
+  fDefaultColor(0),
   fColorArray  (0)
 {
   SetLimits(0, 1000);
@@ -42,8 +50,14 @@ RGBAPalette::RGBAPalette(Int_t min, Int_t max) :
 RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t wrap) :
   TObject(),
   Reve::ReferenceCount(),
+
+  fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
+
+  fCutLow      (kTRUE),
+  fCutHigh     (kFALSE),
   fInterpolate (interp),
   fWrap        (wrap),
+  fDefaultColor(0),
   fColorArray  (0)
 {
   SetLimits(0, 1023);

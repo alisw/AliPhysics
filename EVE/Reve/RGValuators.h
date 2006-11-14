@@ -135,6 +135,9 @@ public:
 
 class RGTriVecValuator : public TGCompositeFrame
 {
+  RGTriVecValuator(const RGTriVecValuator&);            // Not implemented
+  RGTriVecValuator& operator=(const RGTriVecValuator&); // Not implemented
+
 protected:
   RGValuator* fVal[3];
 

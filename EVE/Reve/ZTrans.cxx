@@ -62,9 +62,23 @@ ClassImp(ZTrans)
 
 /**************************************************************************/
 
-ZTrans::ZTrans() { UnitTrans(); fUseTrans = kTRUE; fEditTrans = kFALSE; }
+ZTrans::ZTrans() :
+  TObject(),
+  mA1(0), mA2(0), mA3(0), bAsOK(kFALSE),
+  fUseTrans (kTRUE),
+  fEditTrans(kFALSE)
+{
+  UnitTrans();
+}
 
-ZTrans::ZTrans(const ZTrans& z) : TObject() { *this = z; }
+ZTrans::ZTrans(const ZTrans& t) :
+  TObject(),
+  mA1(t.mA1), mA2(t.mA2), mA3(t.mA3), bAsOK(t.bAsOK),
+  fUseTrans (t.fUseTrans),
+  fEditTrans(t.fEditTrans)
+{
+  SetTrans(t, kFALSE);
+}
 
 /**************************************************************************/
 
@@ -75,7 +89,7 @@ void ZTrans::UnitTrans()
   memset(M, 0, 16*sizeof(Double_t));
   M[F00] = M[F11] = M[F22] = M[F33] = 1;
   mA1 = mA2 = mA3 = 0;
-  bAsOK = true;
+  bAsOK = kTRUE;
 }
 
 void ZTrans::UnitRot()
@@ -85,15 +99,19 @@ void ZTrans::UnitRot()
   memset(M, 0, 12*sizeof(Double_t));
   M[F00] = M[F11] = M[F22] = 1;
   mA1 = mA2 = mA3 = 0;
-  bAsOK = true;
+  bAsOK = kTRUE;
 }
 
-void ZTrans::SetTrans(const ZTrans& t)
+void ZTrans::SetTrans(const ZTrans& t, Bool_t copyAngles)
 {
   memcpy(M, t.M, sizeof(M));
-  bAsOK = false;
+  if (copyAngles && t.bAsOK) {
+    bAsOK = kTRUE;
+    mA1 = t.mA1; mA2 = t.mA2; mA3 = t.mA3; 
+  } else {
+    bAsOK = kFALSE;
+  }
 }
-
 
 void ZTrans::SetupRotation(Int_t i, Int_t j, Double_t f)
 {
@@ -107,7 +125,7 @@ void ZTrans::SetupRotation(Int_t i, Int_t j, Double_t f)
   M(i,i) = M(j,j) = TMath::Cos(f);
   Double_t s = TMath::Sin(f);
   M(i,j) = -s; M(j,i) = s;
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 /**************************************************************************/
@@ -126,7 +144,7 @@ void ZTrans::MultLeft(const ZTrans& t)
       B[r] = T[0]*C[0] + T[4]*C[1] + T[8]*C[2] + T[12]*C[3];
     C[0] = B[0]; C[1] = B[1]; C[2] = B[2]; C[3] = B[3];
   }
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 void ZTrans::MultRight(const ZTrans& t)
@@ -139,7 +157,7 @@ void ZTrans::MultRight(const ZTrans& t)
       B[c] = C[0]*T[0] + C[4]*T[1] + C[8]*T[2] + C[12]*T[3];
     C[0] = B[0]; C[4] = B[1]; C[8] = B[2]; C[12] = B[3];
   }
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 ZTrans ZTrans::operator*(const ZTrans& t)
@@ -182,7 +200,7 @@ void ZTrans::RotateLF(Int_t i1, Int_t i2, Double_t amount)
     b2 = cos*C[i2] - sin*C[i1];
     C[i1] = b1; C[i2] = b2;
   }
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 /**************************************************************************/
@@ -216,7 +234,7 @@ void ZTrans::RotatePF(Int_t i1, Int_t i2, Double_t amount)
     b2 = cos*C[i2] + sin*C[i1];
     C[i1] = b1; C[i2] = b2;
   }
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 /**************************************************************************/
@@ -245,7 +263,7 @@ void ZTrans::Rotate(const ZTrans& a, Int_t i1, Int_t i2, Double_t amount)
   MultLeft(X);
   RotatePF(i1, i2, amount);
   MultLeft(a);
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 /**************************************************************************/
@@ -256,14 +274,14 @@ void ZTrans::SetBaseVec(Int_t b, Double_t x, Double_t y, Double_t z)
 {
   Double_t* C = M + 4*--b;
   C[0] = x; C[1] = y; C[2] = z;
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 void ZTrans::SetBaseVec(Int_t b, const TVector3& v)
 {
   Double_t* C = M + 4*--b;
   v.GetXYZ(C);
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 TVector3 ZTrans::GetBaseVec(Int_t b) const
@@ -357,7 +375,7 @@ void ZTrans::SetRotByAnyAngles(Float_t a1, Float_t a2, Float_t a3,
     case 'z': case 'Z': RotateLF(1, 2, a[i]); break;
     }
   }
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 void ZTrans::GetRotAngles(Float_t* x) const
@@ -559,7 +577,7 @@ Double_t ZTrans::Invert()
   M[F32] = det3_013_012 * mn1OverDet;
   M[F33] = det3_012_012 * oneOverDet;
 
-  bAsOK = false;
+  bAsOK = kFALSE;
   return det;
 }
 
@@ -571,7 +589,7 @@ void ZTrans::Streamer(TBuffer &R__b)
 
    if (R__b.IsReading()) {
       ZTrans::Class()->ReadBuffer(R__b, this);
-      bAsOK = false;
+      bAsOK = kFALSE;
    } else {
       ZTrans::Class()->WriteBuffer(R__b, this);
    }
@@ -609,7 +627,7 @@ void ZTrans::SetFrom(Double_t* carr)
 {
   fUseTrans = kTRUE;
   memcpy(M, carr, 16*sizeof(Double_t));
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 void ZTrans::SetFrom(const TGeoMatrix& mat)
@@ -623,7 +641,7 @@ void ZTrans::SetFrom(const TGeoMatrix& mat)
   m[0] = r[1]*s[1]; m[1] = r[4]*s[1]; m[2] = r[7]*s[1]; m[3] = 0; m += 4;
   m[0] = r[2]*s[2]; m[1] = r[5]*s[2]; m[2] = r[8]*s[2]; m[3] = 0; m += 4;
   m[0] = t[0];      m[1] = t[1];      m[2] = t[2];      m[3] = 1;
-  bAsOK = false;
+  bAsOK = kFALSE;
 }
 
 void ZTrans::SetBuffer3D(TBuffer3D& buff)

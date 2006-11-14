@@ -28,6 +28,9 @@ public:
 
 class QuadSetGL : public TGLObject
 {
+  QuadSetGL(const QuadSetGL&);            // Not implemented
+  QuadSetGL& operator=(const QuadSetGL&); // Not implemented
+
 protected:
   QuadSet* fM;
 

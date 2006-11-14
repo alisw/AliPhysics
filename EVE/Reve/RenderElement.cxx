@@ -478,6 +478,28 @@ RenderElementList::RenderElementList(const Text_t* n, const Text_t* t, Bool_t do
 
 ClassImp(ReferenceBackPtr)
 
+ReferenceBackPtr::ReferenceBackPtr() :
+  ReferenceCount(),
+  fBackRefs()
+{}
+
+ReferenceBackPtr::~ReferenceBackPtr()
+{
+  // !!!! Complain if list not empty.
+}
+
+ReferenceBackPtr::ReferenceBackPtr(const ReferenceBackPtr&) :
+  ReferenceCount(),
+  fBackRefs()
+{}
+
+ReferenceBackPtr& ReferenceBackPtr::operator=(const ReferenceBackPtr&)
+{
+  return *this;
+}
+
+/**************************************************************************/
+
 void ReferenceBackPtr::IncRefCount(RenderElement* re)
 {
   ReferenceCount::IncRefCount();

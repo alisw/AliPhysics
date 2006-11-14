@@ -22,6 +22,9 @@ class TriangleSet : public RenderElement,
   friend class TriangleSetEditor;
   friend class TriangleSetGL;
 
+  TriangleSet(const TriangleSet&);            // Not implemented
+  TriangleSet& operator=(const TriangleSet&); // Not implemented
+
 protected:
 
   // Vertex data

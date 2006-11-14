@@ -11,6 +11,9 @@ class RenderElement;
 
 class RGEditor : public TGedEditor
 {
+  RGEditor(const RGEditor&);            // Not implemented
+  RGEditor& operator=(const RGEditor&); // Not implemented
+
 protected:
   RenderElement* fRnrElement;
 
