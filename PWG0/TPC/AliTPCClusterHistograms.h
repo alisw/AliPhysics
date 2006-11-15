@@ -12,12 +12,15 @@
 
 class TH3;
 class TH2F;
+class TH1F;
 class TCanvas;
 class TProfile;
 class TProfile2D;
+class TObjArray;
 class TString;
 
 class AliTPCclusterMI;
+class AliTPCseed;
 
 class AliTPCClusterHistograms : public TNamed
 {
@@ -34,8 +37,10 @@ public:
 
   virtual void SaveHistograms();
 
+  void FillTrack(const AliTPCseed* seed);
   void FillCluster(AliTPCclusterMI* clusterMI, Int_t time=-1);
-  //  void FillCluster(AliTPCclusterMI* clusterMI, Int_t time=-1, Float_t trackangle);
+
+  Bool_t IsClusterOnEdge(AliTPCclusterMI* clusterMI);
 
   TCanvas* DrawHistograms(const Char_t* opt="");
 
@@ -46,24 +51,41 @@ protected:
   Int_t       fTimeStart;               // begin time of run(s)
   Int_t       fTimeStop;                // end time of runs(s)
 
-  TH2F*       fhQmaxVsRow;              //
-  TH2F*       fhQtotVsRow;              //
-  TH2F*       fhSigmaYVsRow;            //
-  TH2F*       fhSigmaZVsRow;            //
+  TH2F*       fhQmaxVsRow;              //        QmaxVsRow
+  TH2F*       fhQtotVsRow;              //	  QtotVsRow
+						  					    
+  TProfile*   fhQtotProfileVsRow;       //	  QtotProfileVsRow
+  TProfile*   fhQmaxProfileVsRow;       //	  QmaxProfileVsRow
 
-  TProfile2D* fhQmaxProfileYVsRow;      //
-  TProfile2D* fhQtotProfileYVsRow;      // 
-  TProfile2D* fhSigmaYProfileYVsRow;    //
-  TProfile2D* fhSigmaZProfileYVsRow;    //
+  TH2F*       fhNClustersYVsRow;        // 
+  TH2F*       fhNClustersZVsRow;        // 
+						  					    
+  TH2F*       fhSigmaYVsRow;            //	  SigmaYVsRow
+  TH2F*       fhSigmaZVsRow;            //	  SigmaZVsRow
+						  					    
+  TProfile2D* fhQmaxProfileYVsRow;      //	  QmaxProfileYVsRow
+  TProfile2D* fhQtotProfileYVsRow;      // 	  QtotProfileYVsRow
+  TProfile2D* fhSigmaYProfileYVsRow;    //	  SigmaYProfileYVsRow
+  TProfile2D* fhSigmaZProfileYVsRow;    //	  SigmaZProfileYVsRow
+						  					    
+  TProfile2D* fhQmaxProfileZVsRow;      //	  QmaxProfileZVsRow
+  TProfile2D* fhQtotProfileZVsRow;      //	  QtotProfileZVsRow
+  TProfile2D* fhSigmaYProfileZVsRow;    //	  SigmaYProfileZVsRow
+  TProfile2D* fhSigmaZProfileZVsRow;    //	  SigmaZProfileZVsRow
+						  					    
+  TProfile*   fhQtotVsTime;             //	  QtotVsTime
+  TProfile*   fhQmaxVsTime;             //	  QmaxVsTime
+						  					    
+  TH1F*       fhTrackQtotPerCluster;    //	  TrackQtotPerCluster
+						  					    
+  TH2F*       fhTrackQtotPerClusterVsSnp; //	  TrackQtotPerClusterVsSnp
+  TH2F*       fhTrackQtotPerClusterVsTgl; //	  TrackQtotPerClusterVsTgl
+						  					    
+  TProfile*   fhTrackMeanQtotPerClusterVsSnp; //  TrackMeanQtotPerClusterVsSnp
+  TProfile*   fhTrackMeanQtotPerClusterVsTgl; //  TrackMeanQtotPerClusterVsTgl
+ 
 
-  TProfile2D* fhQmaxProfileZVsRow;      //
-  TProfile2D* fhQtotProfileZVsRow;      //
-  TProfile2D* fhSigmaYProfileZVsRow;    //
-  TProfile2D* fhSigmaZProfileZVsRow;    //
-
-  TProfile*   fhQtotVsTime;             //
-  TProfile*   fhQmaxVsTime;             //
-  
+  Int_t       fDetector;                // number of detector
   Bool_t      fIsIROC;                  // true = IROC, false = OROC
   Bool_t      fEdgeSuppression;         // if set edges are not taken into account for histograms
 
