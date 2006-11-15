@@ -55,6 +55,8 @@ private:
    Int_t      fStepsForward;     //!Counts steps backward
    Int_t      fErrorCondition;   //!Error condition flag
    Int_t      fDebug;            // Debug Flag
+   Bool_t     fStopped;          //!Scoring has been stopped 
+   
   ClassDef(AliLego,1) //Utility class to compute and draw Radiation Length Map
 
 };
