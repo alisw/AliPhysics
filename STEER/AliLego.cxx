@@ -76,7 +76,8 @@ AliLego::AliLego():
   fStepsBackward(0),
   fStepsForward(0),
   fErrorCondition(0),
-  fDebug(0)
+  fDebug(0),
+  fStopped(0)
 {
   //
   // Default constructor
@@ -100,7 +101,8 @@ AliLego::AliLego(const AliLego &lego):
   fStepsBackward(0),
   fStepsForward(0),
   fErrorCondition(0),
-  fDebug(0)
+  fDebug(0),
+  fStopped(0)
 {
   //
   // Copy constructor
@@ -128,7 +130,8 @@ AliLego::AliLego(const char *title, Int_t ntheta, Float_t thetamin,
   fStepsBackward(0),
   fStepsForward(0),
   fErrorCondition(0),
-  fDebug(0)
+  fDebug(0),
+  fStopped(0)
 {
   //
   // specify the angular limits and the size of the rectangular box
@@ -164,7 +167,8 @@ AliLego::AliLego(const char *title, AliLegoGenerator* generator):
   fStepsBackward(0),
   fStepsForward(0),
   fErrorCondition(0),
-  fDebug(0)
+  fDebug(0),
+  fStopped(0)
 {
   //
   // specify the angular limits and the size of the rectangular box
@@ -214,7 +218,8 @@ void AliLego::BeginEvent()
   fTotRadl = 0;
   fTotAbso = 0;
   fTotGcm2 = 0;
-
+  fStopped = 0;
+  
   if (fDebug) {
     if (fErrorCondition) ToAliDebug(1, DumpVolumes());
     fVolumesFwd->Delete();
@@ -324,6 +329,7 @@ void AliLego::StepManager()
 	// Get current material properties
 	
 	gMC->CurrentMaterial(a,z,dens,radl,absl);
+
 	
 	if (z < 1) return;
 	
@@ -332,9 +338,15 @@ void AliLego::StepManager()
 	    pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
 	    if (!gMC->IsNewTrack()) {
 		// Not the first step, add past contribution
-		if (absl) fTotAbso += t/absl;
-		if (radl) fTotRadl += t/radl;
-		fTotGcm2 += t*dens;
+		if (!fStopped) {
+		    if (absl) fTotAbso += t/absl;
+		    if (radl) fTotRadl += t/radl;
+		    fTotGcm2 += t*dens;
+		}
+		
+//		printf("We will stop now %5d %13.3f !\n", fStopped, t);
+//		printf("%13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %s %13.3f\n",
+//		       pos[2], TMath::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]), step, a, z, radl, absl, gMC->CurrentVolName(), fTotRadl);
 		if (fDebug) {
 		    //
 		    //  generate "mirror" particle flying back
@@ -358,6 +370,7 @@ void AliLego::StepManager()
 	    } // not a new track !
 	    
 	    if (fDebug) fStepBack = 1;
+	    fStopped = kTRUE;
 	    gMC->StopTrack();
 	    return;
 	} // outside scoring region ?
@@ -375,8 +388,10 @@ void AliLego::StepManager()
 	    if (absl) fTotAbso += step/absl;
 	    if (radl) fTotRadl += step/radl;
 	    fTotGcm2 += step*dens;
+//	     printf("%13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %s %13.3f\n",
+//	     pos[2],  TMath::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]), step, a, z, radl, absl, gMC->CurrentVolName(), fTotRadl);
 	}
-	
+
     } else {
 	if (fDebug) {
 	    //
