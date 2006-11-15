@@ -105,11 +105,9 @@ void AliABSO::CreateMaterials()
 //
 // Concrete
 //
-  Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,
-			28.086,39.1,40.08,55.85 };
+  Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,28.086,39.1,40.08,55.85 };
   Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };
-  Float_t wconc[10] = { .01,.001,.529107,.016,.002,.033872,
-			.337021,.013,.044,.014 };
+  Float_t wconc[10] = { .01,.001,.529107,.016,.002,.033872, .337021,.013,.044,.014 };
 //
 // Steel
 //  
@@ -117,11 +115,12 @@ void AliABSO::CreateMaterials()
   Float_t zsteel[4] = { 26.,24.,28.,14. };
   Float_t wsteel[4] = { .715,.18,.1,.005 };
 //
-//
 // Ni-Cu-W alloy
+//
   Float_t aniwcu[3] ={58.6934, 183.84, 63.546};
   Float_t zniwcu[3] ={28., 74., 29};
   Float_t wniwcu[3] ={0.015,0.95,0.035};
+//
 // Poly Concrete
 //                      H     Li     F       C      Al     Si      Ca      Pb     O
   Float_t aPolyCc[9] = {1. ,  6.941, 18.998, 12.01, 26.98, 28.086, 40.078, 207.2, 15.999};
@@ -147,6 +146,9 @@ void AliABSO::CreateMaterials()
   AliMaterial( 6, "CARBON0$   ", 12.01, 6., 1.75, 24.4, 49.9);
   AliMaterial(26, "CARBON1$   ", 12.01, 6., 1.75, 24.4, 49.9);
   AliMaterial(46, "CARBON2$   ", 12.01, 6., 1.75, 24.4, 49.9);
+  //
+  //     Magnesium
+  AliMaterial( 7, "MAGNESIUM$ ", 24.31, 12., 1.74, 25.3, 46.0);
   //
   //     Aluminum 
   AliMaterial(9,  "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);
@@ -239,6 +241,9 @@ void AliABSO::CreateMaterials()
   AliMedium(29, "ALU_C1          ", 29, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(49, "ALU_C2          ", 49, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
+  //    Magnesium
+  AliMedium(7,  "MG_C0           ",  7, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //
   //    Iron 
   AliMedium(10, "FE_C0           ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(30, "FE_C1           ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
@@ -253,6 +258,7 @@ void AliABSO::CreateMaterials()
   AliMedium(12, "W_C0            ", 12, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(32, "W_C1            ", 32, 0, isxfld, sxmgmx, tmaxfd, -stemax, deemax, epsil, stmin);
   AliMedium(52, "W_C2            ", 52, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //  
   //    Ni/Tungsten 
   AliMedium(21, "Ni/W0           ", 21, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(41, "Ni/W1           ", 41, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);

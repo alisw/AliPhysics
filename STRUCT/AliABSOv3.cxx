@@ -80,21 +80,25 @@ void AliABSOv3::CreateGeometry()
 //
     TGeoMedium* kMedNiW     = gGeoManager->GetMedium("ABSO_Ni/W0");
     TGeoMedium* kMedNiWsh   = gGeoManager->GetMedium("ABSO_Ni/W3");
+//
     TGeoMedium* kMedSteel   = gGeoManager->GetMedium("ABSO_ST_C0");
     TGeoMedium* kMedSteelSh = gGeoManager->GetMedium("ABSO_ST_C3");
+//
     TGeoMedium* kMedAir     = gGeoManager->GetMedium("ABSO_AIR_C0");
-
+//
     TGeoMedium* kMedPb      = gGeoManager->GetMedium("ABSO_PB_C0");
     TGeoMedium* kMedPbSh    = gGeoManager->GetMedium("ABSO_PB_C2");
-
-    TGeoMedium* kMedConc    = gGeoManager->GetMedium("ABSO_CC_C0");
-
-    TGeoMedium* kMedCH2     = gGeoManager->GetMedium("ABSO_CH2_C0");    
-
+//
+    TGeoMedium* kMedConcSh  = gGeoManager->GetMedium("ABSO_CC_C2");
+//
+    TGeoMedium* kMedCH2Sh   = gGeoManager->GetMedium("ABSO_CH2_C2");    
+//
     TGeoMedium* kMedC       = gGeoManager->GetMedium("ABSO_C_C0");    
     TGeoMedium* kMedCsh     = gGeoManager->GetMedium("ABSO_C_C2");    
-
+//
     TGeoMedium* kMedAlu     = gGeoManager->GetMedium("ABSO_ALU_C0");    
+//
+    TGeoMedium* kMedMg      = gGeoManager->GetMedium("ABSO_MG_C0");    
 //
     const Float_t kDegRad = TMath::Pi() / 180.;
     
@@ -313,7 +317,7 @@ void AliABSOv3::CreateGeometry()
 
       TGeoVolume* voFaWPlateA = new TGeoVolume("AFaWPlateA", shFaWPlateA, kMedNiW);
       // Inner region with higher transport cuts
-      TGeoPcon* shFaWPlateAI = new TGeoPcon(0., 360., 6);
+      TGeoPcon* shFaWPlateAI = new TGeoPcon(0., 360., 5);
       z = 3.;
       shFaWPlateAI->DefineSection(0, z, rInFaQPlateF + z * angle10, rOuFaQPlateC1 + (z - dzFaWPlateF) * angle24);
       for (Int_t i = 1; i < 5; i++) {
@@ -472,7 +476,7 @@ void AliABSOv3::CreateGeometry()
       TGeoVolume* voFaGraphiteCone = new TGeoVolume("AFaGraphiteCone", shFaGraphiteCone, kMedCsh);
       //
       // Outer region with lower transport cuts
-      dz = 40.;
+      dz = 50.;
       TGeoCone* shFaGraphiteConeO = new TGeoCone(dz/2.,
 						 rInFaGraphiteCone1, rOuFaGraphiteCone1, 
 						 rInFaGraphiteCone1, rOuFaGraphiteCone1 + dz * angle10);
@@ -532,7 +536,7 @@ void AliABSOv3::CreateGeometry()
 						    new TGeoCone(dzFaConcreteCone/2., 
 								 rInFaConcreteCone1, rOuFaConcreteCone1, 
 								 rInFaConcreteCone2, rOuFaConcreteCone2), 
-						    kMedConc);  
+						    kMedConcSh);  
 
 // Pos 14
 ///////////////////////////////////
@@ -548,7 +552,7 @@ void AliABSOv3::CreateGeometry()
 					       new TGeoCone(dzFaCH2Cone/2., 
 							    rInFaCH2Cone1, rInFaCH2Cone1 + dFaCH2Cone, 	    
 							    rInFaCH2Cone2, rInFaCH2Cone2 + dFaCH2Cone), 	    
-							    kMedCH2);
+					       kMedCH2Sh);
       
       
 // Pos 15
@@ -584,13 +588,13 @@ void AliABSOv3::CreateGeometry()
 								rInFaSteelCone31A, rOuFaSteelCone31A, 	    
 								rInFaSteelCone31B, rOuFaSteelCone31B),
 						   kMedSteelSh);
-      // Inner Region with higher transport cuts
+      // Outer Rregion with higher transport cuts
       dz = 5.;
       TGeoVolume* voFaSteelCone31I = new TGeoVolume("AFaSteelCone31I", 
-						   new TGeoCone(dz/2., 
-								rInFaSteelCone31B - dz * angle03, 
-								rOuFaSteelCone31B - dz * angle10, 
-								rInFaSteelCone31B, rOuFaSteelCone31B),
+						    new TGeoCone(dz/2., 
+								 rInFaSteelCone31B - dz * angle03, 
+								 rOuFaSteelCone31B - dz * angle10, 
+								 rInFaSteelCone31B, rOuFaSteelCone31B),
 						    kMedSteel);
       
       voFaSteelCone31->AddNode(voFaSteelCone31I, 1,  new TGeoTranslation(0., 0., dzFaSteelCone31/2. - dz/2.));
@@ -653,8 +657,7 @@ void AliABSOv3::CreateGeometry()
       shFaMgRing->DefineSection(6, z,  rInFaMgRingO, rInFaCompRing2);
       z += dzFaMgRingO;
       shFaMgRing->DefineSection(7, z,  rInFaMgRingO, rInFaCompRing2);
-
-      TGeoVolume* voFaMgRing = new TGeoVolume("AFaMgRing", shFaMgRing, kMedNiW);
+      TGeoVolume* voFaMgRing = new TGeoVolume("AFaMgRing", shFaMgRing, kMedMg);
 
 
 //
