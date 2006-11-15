@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.8  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -27,7 +30,7 @@ class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
 class AliPHOSSDigitizer ;
 class AliESD ;
-class AliRawReaderFile ; 
+class AliRawReader; 
 
 // --- Standard library ---
 
@@ -50,6 +53,7 @@ public:
   AliTracker *CreateTracker(AliRunLoader* runLoader) const;
   using AliReconstructor::FillESD;
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
+  virtual void FillESD(AliRunLoader* runLoader,AliRawReader* rawReader,AliESD* esd) const;
   using AliReconstructor::Reconstruct;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;

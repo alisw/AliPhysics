@@ -117,7 +117,9 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   Int_t nOfRecParticles = recParticles->GetEntries();
 
   esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
-  esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ; 
+  esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
+  
+  AliDebug(2,Form("%d digits and %d rec. particles in event %d, option %s",gime->Digits()->GetEntries(),nOfRecParticles,eventNumber,GetOption()));
 
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
@@ -132,7 +134,9 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     Float_t xyz[3];
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
       xyz[ixyz] = rp->GetPos()[ixyz];
-
+    
+    AliDebug(2,Form("Global position xyz=(%f,%f,%f)",xyz[0],xyz[1],xyz[2]));
+    
     Int_t  digitMult  = emcRP->GetDigitsMultiplicity();
     Int_t *digitsList = emcRP->GetDigitsList();
     UShort_t *amplList  = new UShort_t[digitMult];
@@ -164,8 +168,93 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
     // add the track to the esd object
     esd->AddCaloCluster(ec);
-    delete ec;
+    delete ec;    
+  }  
+}
+
+void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
+				   AliRawReader* rawReader, AliESD* esd) const
+{
+  //This function creates AliESDtracks from AliPHOSRecParticles 
+  //and writes them to the ESD in the case of raw data reconstruction.
+
+  Int_t eventNumber = runLoader->GetEventNumber() ;
+
+  if(eventNumber==0) {
+    rawReader->RewindEvents();
+    rawReader->NextEvent();
   }
+
+  AliPHOSGetter *gime = AliPHOSGetter::Instance();
+
+  Bool_t isOldRCUFormat = kFALSE;
+  TString opt = GetOption();
+  if(opt.Contains("OldRCUFormat"))
+    isOldRCUFormat = kTRUE;
+
+  gime->ReadRaw(rawReader,isOldRCUFormat) ;
+
+  TClonesArray *recParticles  = gime->RecParticles();
+  Int_t nOfRecParticles = recParticles->GetEntries();
+
+  esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
+  esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
+  
+  AliDebug(2,Form("%d digits and %d rec. particles in event %d, option %s",gime->Digits()->GetEntries(),nOfRecParticles,eventNumber,GetOption()));
+
+  for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
+    AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
+
+    if(rp) {
+    Float_t xyz[3];
+    for (Int_t ixyz=0; ixyz<3; ixyz++) 
+      xyz[ixyz] = rp->GetPos()[ixyz];
+
+    AliDebug(2,Form("Global position xyz=(%f,%f,%f)",xyz[0],xyz[1],xyz[2]));
+    
+    AliPHOSTrackSegment *ts    = gime->TrackSegment(rp->GetPHOSTSIndex());
+    AliPHOSEmcRecPoint  *emcRP = gime->EmcRecPoint(ts->GetEmcIndex());
+    AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
+
+    Int_t  digitMult  = emcRP->GetDigitsMultiplicity();
+    Int_t *digitsList = emcRP->GetDigitsList();
+    UShort_t *amplList  = new UShort_t[digitMult];
+    UShort_t *digiList  = new UShort_t[digitMult];
+
+    // Convert Float_t* and Int_t* to UShort_t* to save memory
+    for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
+      AliPHOSDigit *digit = gime->Digit(digitsList[iDigit]);
+      if(!digit) {
+	AliFatal(Form("Digit not found at the expected position %d!",iDigit));
+      }
+      else {
+	amplList[iDigit] = (UShort_t)(digit->GetEnergy()*500); // Energy in units of GeV/500
+	digiList[iDigit] = (UShort_t)(digit->GetId());
+      }
+    }
+
+    ec->SetGlobalPosition(xyz);                 //rec.point position in MARS
+    ec->SetClusterEnergy(rp->Energy());         //total particle energy
+    ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
+    ec->SetPid          (rp->GetPID()) ;        //array of particle identification
+    ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
+    ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
+    ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
+    ec->SetNumberOfDigits(digitMult);           //digit multiplicity
+    ec->SetDigitAmplitude(amplList);            //energies in 1/500 of GeV
+    ec->SetDigitIndex(digiList);                //abs id of the cell
+    ec->SetEmcCpvDistance(-1);                  //not yet implemented
+    ec->SetClusterChi2(-1);                     //not yet implemented
+    ec->SetM11(-1) ;                            //not yet implemented
+
+    // add the track to the esd object
+    esd->AddCaloCluster(ec);
+    delete ec;    
+
+    }
+  }
+
+
 }
 
 AliTracker* AliPHOSReconstructor::CreateTracker(AliRunLoader* runLoader) const
