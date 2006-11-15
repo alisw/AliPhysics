@@ -1,11 +1,7 @@
 GLOBAL        10000.
 DEFAULTS                                                              NEW-DEFA
-OPEN             97.                                                  UNKNOWN
-ran_abs.new
 OPEN             15.                                                  UNKNOWN
 FlukaVmc.err
-OPEN              2.                                                  UNKNOWN
-ran.new                                                      
 OPEN              1.                                                  OLD
 random.dat
 GEOBEGIN                                                              COMBINAT
