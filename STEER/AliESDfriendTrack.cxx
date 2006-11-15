@@ -58,7 +58,14 @@ fTRDtrack(0)
   for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=t.fTPCindex[i];
   for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=t.fTRDindex[i];
   if (t.fPoints) fPoints=new AliTrackPointArray(*t.fPoints);
-  if (t.fCalibContainer) fCalibContainer = new TObjArray(*(t.fCalibContainer));
+  if (t.fCalibContainer) {
+     fCalibContainer = new TObjArray(5);
+     Int_t no=t.fCalibContainer->GetEntriesFast();
+     for (Int_t i=0; i<no; i++) {
+       TObject *o=t.fCalibContainer->At(i);
+       fCalibContainer->AddLast(o->Clone());
+     }  
+  }
 }
 
 AliESDfriendTrack::~AliESDfriendTrack() {
@@ -66,6 +73,7 @@ AliESDfriendTrack::~AliESDfriendTrack() {
   // Simple destructor
   //
    delete fPoints;
+   if (fCalibContainer) fCalibContainer->Delete();
    delete fCalibContainer;
    delete fITStrack;
    delete fTRDtrack;
