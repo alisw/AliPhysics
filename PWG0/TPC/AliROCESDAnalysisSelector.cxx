@@ -30,8 +30,10 @@
 #include <../TPC/AliTPCseed.h>
 
 #include <TFile.h>
+#include <TMath.h>
 #include <TTree.h>
 #include <TCanvas.h>
+#include <TObjArray.h>
 
 #include "TPC/AliTPCClusterHistograms.h"
 
@@ -39,11 +41,15 @@ ClassImp(AliROCESDAnalysisSelector)
 
 AliROCESDAnalysisSelector::AliROCESDAnalysisSelector() :
   AliSelector(),
-  fESDfriend(0)
+  fESDfriend(0),
+  fObjectsToSave(0)
 {
   //
   // Constructor. Initialization of pointers
   //
+  fMinNumberOfRowsIsTrack = 5;
+
+  fObjectsToSave = new TObjArray();
   
   for (Int_t i=0; i<kTPCHists; i++)
     fClusterHistograms[i] = 0;
@@ -117,14 +123,60 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   
   fESD->SetESDfriend(fESDfriend);
 
+  Int_t flag = ProcessEvent(kFALSE);
+  if (flag==1)
+    ProcessEvent(kTRUE, Form("flash_entry%d",entry));
+
+  // TODO This should not be needed, the TTree::GetEntry() should take care of this, maybe because it has a reference member, to be analyzed
+  // if the ESDfriend is not deleted we get a major memory leak
+  // here the esdfriend seems to be also deleted, very weird behaviour....
+
+  delete fESD;
+  fESD = 0;    
+  
+  //delete fESDfriend;
+  //fESDfriend = 0;
+
+
+  return kTRUE;
+}
+
+Int_t AliROCESDAnalysisSelector::ProcessEvent(Bool_t detailedHistogram, const Char_t* label)
+{
+  //
+  // Looping over tracks and clusters in event and filling histograms 
+  //
+  // - if detailedHistogram = kTRUE special histograms are saved (in fObjectsToSave)
+  // - the method returns 
+  //   1 : if a "flash" is detected something special in this event
+  //   
+
+  // save maximum 100 objects
+  if (detailedHistogram) 
+    if (fObjectsToSave->GetSize()>10) 
+      return 0;
+
+  // for saving single events
+  AliTPCClusterHistograms* clusterHistograms[kTPCSectors];
+  for (Int_t i=0; i<kTPCSectors; i++) 
+    clusterHistograms[i] = 0;  
+
+  Bool_t intToReturn = 0;
+
   Int_t nTracks = fESD->GetNumberOfTracks();
   
   Int_t nSkippedSeeds = 0;
+  Int_t nSkippedTracks = 0;
+
+  // for "flash" detection
+  Int_t nClusters = 0;
+  Float_t clusterQtotSumVsTime[250];  
+  for (Int_t z=0; z<250; z++)
+    clusterQtotSumVsTime[z] = 0;
   
   // loop over esd tracks
   for (Int_t t=0; t<nTracks; t++)
   {
-
     AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (fESD->GetTrack(t));
     if (!esdTrack)
     {
@@ -147,72 +199,138 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
       continue;
     }
     
-    if (!AcceptTrack(seed)) 
+    if (!AcceptTrack(seed, fMinNumberOfRowsIsTrack)) 
+    {
+      AliDebug(AliLog::kDebug, Form("INFO: Rejected track %d.", t));
+      nSkippedTracks++;
       continue;
-
+    }
+    
     for (Int_t clusterID = 0; clusterID < 160; clusterID++)
     {
       AliTPCclusterMI* cluster = seed->GetClusterPointer(clusterID);
-      if (!cluster)
-      {
-        //AliDebug(AliLog::kError, Form("ERROR: Could not retrieve cluster %d of track %d.", clusterID, t));
+      if (!cluster) 
         continue;
-      }
       
-      //AliDebug(AliLog::kDebug, Form("We found a cluster from sector %d", cluster->GetDetector()));
-
       Int_t detector = cluster->GetDetector();
       
       if (detector < 0 || detector >= kTPCSectors) {
 	AliDebug(AliLog::kDebug, Form("We found a cluster from invalid sector %d", detector));
 	continue;
       }
+
+      if (!detailedHistogram) {
+    
+	// TODO: find a clever way to handle the time      
+	Int_t time = 0;
+	
+	if (fESD->GetTimeStamp()>1160000000)
+	  time = fESD->GetTimeStamp();      
+	
+	if (!fClusterHistograms[detector])
+	  fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",time,time+5*60*60);
+	
+	if (!fClusterHistograms[detector+kTPCSectors])
+	  fClusterHistograms[detector+kTPCSectors] = new AliTPCClusterHistograms(detector,"",time,time+5*60*60, kTRUE);
+	
+	fClusterHistograms[detector]->FillCluster(cluster, time);
+	fClusterHistograms[detector+kTPCSectors]->FillCluster(cluster, time);
+	
+	Int_t z = Int_t(cluster->GetZ()); 
+	if (z>=0 && z<250) {
+	  nClusters++;
+	  clusterQtotSumVsTime[z] += cluster->GetQ();
+	}
+      } // end of if !detailedHistograms
+      else {
+	// if we need the detailed histograms for this event
+	if (!clusterHistograms[detector])
+	  clusterHistograms[detector] = new AliTPCClusterHistograms(detector,label);
+	
+	clusterHistograms[detector]->FillCluster(cluster);
+      }
       
-      // TODO: find a clever way to handle the time      
-      Int_t time = 0;
-
-      if (fESD->GetTimeStamp()>1160000000)
-	time = fESD->GetTimeStamp();      
-
-      if (!fClusterHistograms[detector])
-        fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",time,time+7*60*60);
-      
-      if (!fClusterHistograms[detector+kTPCSectors])
-        fClusterHistograms[detector+kTPCSectors] = new AliTPCClusterHistograms(detector,"",time,time+7*60*60, kTRUE);
-
-      fClusterHistograms[detector]->FillCluster(cluster, time);
-      fClusterHistograms[detector+kTPCSectors]->FillCluster(cluster, time);
     }
+    
+    for (Int_t i=0; i<kTPCHists; i++) 
+      if (fClusterHistograms[i]) 
+	fClusterHistograms[i]->FillTrack(seed);
+    
   }
   
-  if (nSkippedSeeds > 0)
-    printf("WARNING: The seed was not found for %d out of %d tracks.\n", nSkippedSeeds, nTracks);
+  // check if there's a very large q deposit ("flash")
+  if (!detailedHistogram) {
+    for (Int_t z=0; z<250; z++) {
+      if (clusterQtotSumVsTime[z] > 150000) {
+	printf(Form("  \n   -> sum of clusters at time %d  %f \n \n", z, clusterQtotSumVsTime[z]));
+	intToReturn = 1;
+      }
+    }
+  }
+  else {
+    for (Int_t i=0; i< kTPCSectors; i++) {
+      if (clusterHistograms[i]) {
+	if (fObjectsToSave->GetSize()<100) {
+	  fObjectsToSave->Expand(fObjectsToSave->GetSize()+1);
+	  fObjectsToSave->AddAt(clusterHistograms[i], fObjectsToSave->GetSize()-1);
+	}
+      }
+    }    
+  }
 
-  // TODO This should not be needed, the TTree::GetEntry() should take care of this, maybe because it has a reference member, to be analyzed
-  // if the ESDfriend is not deleted we get a major memory leak
-  // here the esdfriend seems to be also deleted, very weird behaviour....
-  delete fESD;
-  fESD = 0;    
-  
-  //delete fESDfriend;
-  //fESDfriend = 0;
+
+//   if (nSkippedSeeds > 0)
+//     printf("WARNING: The seed was not found for %d out of %d tracks.\n", nSkippedSeeds, nTracks);
+//   if (nSkippedTracks > 0)
+//     printf("INFO: Rejected %d out of %d tracks.\n", nSkippedTracks, nTracks);
    
-  return kTRUE;
+  return intToReturn;
 }
 
-
-Bool_t AliROCESDAnalysisSelector::AcceptTrack(const AliTPCseed* track) {
+Bool_t AliROCESDAnalysisSelector::AcceptTrack(const AliTPCseed* track, Int_t minRowsIncluded) {
   //
+  // check if the track should be accepted.
   //
-  //
-
-  // TODO : implement min number of rows to accept track
-
-  const Int_t   kMinClusters = 20;
+  const Int_t   kMinClusters = 5;
   const Float_t kMinRatio    = 0.75;
   const Float_t kMax1pt      = 0.5;
 
+  Int_t  nRowsUsedByTracks = 0;
+  Bool_t rowIncluded[96];
+  
+  Float_t totalQtot = 0;
+  Int_t   nClusters = 0;
 
+  for(Int_t r=0; r<96; r++) 
+    rowIncluded[r] = kFALSE;
+  
+  for (Int_t clusterID = 0; clusterID < 160; clusterID++) {
+    AliTPCclusterMI* cluster = track->GetClusterPointer(clusterID);
+    
+    if (!cluster) 
+      continue;
+    
+    Float_t qTot =   cluster->GetQ();    
+    
+    nClusters++;
+    totalQtot += qTot;
+
+    if (!rowIncluded[cluster->GetRow()]) {
+      nRowsUsedByTracks++;
+      rowIncluded[cluster->GetRow()] = kTRUE;
+    }
+  }
+
+  Float_t meanQtot = totalQtot/nClusters;
+
+  if (meanQtot<70)
+    return kFALSE;
+
+  if (nRowsUsedByTracks < minRowsIncluded)
+    return kFALSE;
+  
+  //  printf(Form("    TRACK: n clusters = %d,  n pad rows = %d \n",track->GetNumberOfClusters(), nRowsUsedByTracks));
+  
   if (track->GetNumberOfClusters()<kMinClusters) return kFALSE;
   Float_t ratio = track->GetNumberOfClusters()/(track->GetNFoundable()+1.);
   if (ratio<kMinRatio) return kFALSE;
@@ -280,5 +398,22 @@ void AliROCESDAnalysisSelector::Terminate()
       c->Close();
       delete c;
     }
+
+  gDirectory->mkdir("saved_objects");
+  gDirectory->cd("saved_objects");
+
+  for (Int_t i=0; i<fObjectsToSave->GetSize(); i++) {
+    if (fObjectsToSave->At(i)) {
+      AliTPCClusterHistograms* clusterHistograms = dynamic_cast<AliTPCClusterHistograms*> (fObjectsToSave->At(i));
+      if (clusterHistograms)
+	clusterHistograms->SaveHistograms();
+      else
+	fObjectsToSave->At(i)->Write();
+    }
+  }
+
+  gDirectory->cd("../");
+
+
   file->Close();
 } 
