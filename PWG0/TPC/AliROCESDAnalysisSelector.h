@@ -29,7 +29,7 @@ class AliROCESDAnalysisSelector : public AliSelector {
     virtual void    SlaveTerminate();
     virtual void    Terminate();
 
-    Int_t           ProcessEvent(Bool_t detailedHistogram=kFALSE, const Char_t* label="");
+    Int_t           ProcessEvent(Long64_t entry, Bool_t detailedHistogram=kFALSE);
 
     Bool_t          AcceptTrack(const AliTPCseed* track, Int_t minRowsIncluded=0);
 

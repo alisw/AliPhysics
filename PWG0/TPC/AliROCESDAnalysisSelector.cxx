@@ -26,16 +26,20 @@
 #include <AliLog.h>
 #include <AliESD.h>
 #include <AliESDfriend.h>
-#include <../TPC/AliTPCclusterMI.h>
-#include <../TPC/AliTPCseed.h>
+#include <AliTPCclusterMI.h>
+#include <AliTPCseed.h>
 
 #include <TFile.h>
 #include <TMath.h>
 #include <TTree.h>
 #include <TCanvas.h>
+#include <TSystem.h>
 #include <TObjArray.h>
+#include <TTimeStamp.h>
 
 #include "TPC/AliTPCClusterHistograms.h"
+
+extern TSystem* gSystem;
 
 ClassImp(AliROCESDAnalysisSelector)
 
@@ -123,9 +127,9 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   
   fESD->SetESDfriend(fESDfriend);
 
-  Int_t flag = ProcessEvent(kFALSE);
-  if (flag==1)
-    ProcessEvent(kTRUE, Form("flash_entry%d",entry));
+  Int_t flag = ProcessEvent(entry, kFALSE);
+  if (flag == 1)
+    ProcessEvent(entry, kTRUE);
 
   // TODO This should not be needed, the TTree::GetEntry() should take care of this, maybe because it has a reference member, to be analyzed
   // if the ESDfriend is not deleted we get a major memory leak
@@ -141,7 +145,7 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   return kTRUE;
 }
 
-Int_t AliROCESDAnalysisSelector::ProcessEvent(Bool_t detailedHistogram, const Char_t* label)
+Int_t AliROCESDAnalysisSelector::ProcessEvent(Long64_t entry, Bool_t detailedHistogram)
 {
   //
   // Looping over tracks and clusters in event and filling histograms 
@@ -151,11 +155,11 @@ Int_t AliROCESDAnalysisSelector::ProcessEvent(Bool_t detailedHistogram, const Ch
   //   1 : if a "flash" is detected something special in this event
   //   
 
-  // save maximum 100 objects
+  // save maximum 50 objects
   if (detailedHistogram) 
-    if (fObjectsToSave->GetSize()>10) 
+    if (fObjectsToSave->GetEntries() > 50) 
       return 0;
-
+      
   // for saving single events
   AliTPCClusterHistograms* clusterHistograms[kTPCSectors];
   for (Int_t i=0; i<kTPCSectors; i++) 
@@ -214,70 +218,65 @@ Int_t AliROCESDAnalysisSelector::ProcessEvent(Bool_t detailedHistogram, const Ch
       
       Int_t detector = cluster->GetDetector();
       
-      if (detector < 0 || detector >= kTPCSectors) {
-	AliDebug(AliLog::kDebug, Form("We found a cluster from invalid sector %d", detector));
-	continue;
+      if (detector < 0 || detector >= kTPCSectors) 
+      {
+        AliDebug(AliLog::kDebug, Form("We found a cluster from invalid sector %d", detector));
+        continue;
       }
 
       if (!detailedHistogram) {
-    
-	// TODO: find a clever way to handle the time      
-	Int_t time = 0;
-	
-	if (fESD->GetTimeStamp()>1160000000)
-	  time = fESD->GetTimeStamp();      
-	
-	if (!fClusterHistograms[detector])
-	  fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",time,time+5*60*60);
-	
-	if (!fClusterHistograms[detector+kTPCSectors])
-	  fClusterHistograms[detector+kTPCSectors] = new AliTPCClusterHistograms(detector,"",time,time+5*60*60, kTRUE);
-	
-	fClusterHistograms[detector]->FillCluster(cluster, time);
-	fClusterHistograms[detector+kTPCSectors]->FillCluster(cluster, time);
-	
-	Int_t z = Int_t(cluster->GetZ()); 
-	if (z>=0 && z<250) {
-	  nClusters++;
-	  clusterQtotSumVsTime[z] += cluster->GetQ();
-	}
+        // TODO: find a clever way to handle the time      
+    	Int_t time = 0;
+    	
+    	if (fESD->GetTimeStamp()>1160000000)
+    	  time = fESD->GetTimeStamp();      
+    	
+    	if (!fClusterHistograms[detector])
+    	  fClusterHistograms[detector] = new AliTPCClusterHistograms(detector,"",time,time+5*60*60);
+    	
+    	if (!fClusterHistograms[detector+kTPCSectors])
+    	  fClusterHistograms[detector+kTPCSectors] = new AliTPCClusterHistograms(detector,"",time,time+5*60*60, kTRUE);
+    	
+    	fClusterHistograms[detector]->FillCluster(cluster, time);
+    	fClusterHistograms[detector+kTPCSectors]->FillCluster(cluster, time);
+    	
+    	Int_t z = Int_t(cluster->GetZ()); 
+    	if (z>=0 && z<250) {
+    	  nClusters++;
+    	  clusterQtotSumVsTime[z] += cluster->GetQ();
+    	}
       } // end of if !detailedHistograms
       else {
-	// if we need the detailed histograms for this event
-	if (!clusterHistograms[detector])
-	  clusterHistograms[detector] = new AliTPCClusterHistograms(detector,label);
-	
-	clusterHistograms[detector]->FillCluster(cluster);
+    	// if we need the detailed histograms for this event
+    	if (!clusterHistograms[detector])
+    	  clusterHistograms[detector] = new AliTPCClusterHistograms(detector, Form("flash_entry%d", entry));
+    	
+    	clusterHistograms[detector]->FillCluster(cluster);
       }
-      
     }
     
     for (Int_t i=0; i<kTPCHists; i++) 
       if (fClusterHistograms[i]) 
-	fClusterHistograms[i]->FillTrack(seed);
-    
+        fClusterHistograms[i]->FillTrack(seed);
+
   }
   
   // check if there's a very large q deposit ("flash")
   if (!detailedHistogram) {
     for (Int_t z=0; z<250; z++) {
       if (clusterQtotSumVsTime[z] > 150000) {
-	printf(Form("  \n   -> sum of clusters at time %d  %f \n \n", z, clusterQtotSumVsTime[z]));
-	intToReturn = 1;
+      	printf(Form("  \n   -> Entry %lld sum of clusters at time %d is %f, ESD timestamp: %s (%d) \n \n", entry, z, clusterQtotSumVsTime[z], TTimeStamp(fESD->GetTimeStamp()).AsString(), fESD->GetTimeStamp()));
+       	intToReturn = 1;
       }
     }
   }
   else {
     for (Int_t i=0; i< kTPCSectors; i++) {
       if (clusterHistograms[i]) {
-	if (fObjectsToSave->GetSize()<100) {
-	  fObjectsToSave->Expand(fObjectsToSave->GetSize()+1);
-	  fObjectsToSave->AddAt(clusterHistograms[i], fObjectsToSave->GetSize()-1);
-	}
+        fObjectsToSave->Add(clusterHistograms[i]);
       }
     }    
   }
-
 
 //   if (nSkippedSeeds > 0)
 //     printf("WARNING: The seed was not found for %d out of %d tracks.\n", nSkippedSeeds, nTracks);
@@ -381,19 +380,22 @@ void AliROCESDAnalysisSelector::Terminate()
 
   if (comment)
   {
-    AliDebug(AliLog::kInfo, Form("INFO: Found comment in input list: %s \n", comment->GetTitle()));
+    AliDebug(AliLog::kInfo, Form("INFO: Found comment in input list: %s", comment->GetTitle()));
   }
   else
     return;
 
   TFile* file = TFile::Open(Form("rocESD_%s.root",comment->GetTitle()), "RECREATE");
-  
+
   for (Int_t i=0; i<kTPCHists; i++)
     if (fClusterHistograms[i]) {
       fClusterHistograms[i]->SaveHistograms();
       TCanvas* c = fClusterHistograms[i]->DrawHistograms();
-      c->SaveAs(Form("plots_%s_%s.eps",comment->GetTitle(),c->GetName()));
-      c->SaveAs(Form("plots_%s_%s.gif",comment->GetTitle(),c->GetName()));
+			TString dir;
+			dir.Form("WWW/%s/%s", comment->GetTitle(), c->GetName());
+			gSystem->mkdir(dir, kTRUE);
+      c->SaveAs(Form("%s/plots_%s_%s.eps",dir.Data(),comment->GetTitle(),c->GetName()));
+      c->SaveAs(Form("%s/plots_%s_%s.gif",dir.Data(),comment->GetTitle(),c->GetName()));
 
       c->Close();
       delete c;
@@ -416,4 +418,4 @@ void AliROCESDAnalysisSelector::Terminate()
 
 
   file->Close();
-} 
+}
