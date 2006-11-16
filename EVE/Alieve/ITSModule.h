@@ -12,12 +12,9 @@ class ITSModule : public Reve::QuadSet
   ITSModule(const ITSModule&);            // Not implemented
   ITSModule& operator=(const ITSModule&); // Not implemented
 
-private:
-  void LoadQuads();
-
 protected:
-  virtual void InitModule();
-  virtual void SetTrans();
+  void LoadQuads();
+  void SetTrans();
 
   ITSDigitsInfo* fInfo; 
 
@@ -32,21 +29,22 @@ protected:
   Float_t     fDz;
   Float_t     fDy;
 
+  static Bool_t fgStaticInitDone;
+
 public:
   ITSModule(const Text_t* n="ITSModule", const Text_t* t=0);
-  ITSModule(Int_t id, ITSDigitsInfo* info);
+  ITSModule(Int_t gid, ITSDigitsInfo* info);
   virtual ~ITSModule();
+
+  static void InitStatics(ITSDigitsInfo* info);
 
   ITSDigitsInfo* GetDigitsInfo() const { return fInfo; }
   void SetDigitsInfo(ITSDigitsInfo* info);
 
   Int_t GetID() const { return fID; }
-  void  SetID(Int_t id);
+  void  SetID(Int_t gid);
 
   virtual void Print(Option_t* opt="") const;
-
-  static Bool_t    fgStaticInitDone;
-  static void      InitStatics(ITSDigitsInfo* info);
 
   static Reve::FrameBox* fgSPDFrameBox;
   static Reve::FrameBox* fgSDDFrameBox;

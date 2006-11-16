@@ -9,12 +9,6 @@
 using namespace Reve;
 using namespace Alieve;
 
-/*
-Short_t ITSModule::fgSDDThreshold  = 5;
-Short_t ITSModule::fgSDDMaxVal     = 80;
-Short_t ITSModule::fgSSDThreshold  = 2;
-Short_t ITSModule::fgSSDMaxVal     = 100;
-*/
 
 Bool_t       ITSModule::fgStaticInitDone = kFALSE;
 
@@ -43,15 +37,15 @@ ITSModule::ITSModule(const Text_t* n, const Text_t* t) :
   fDx(0), fDz(0), fDy(0)
 {}
 
-ITSModule::ITSModule(Int_t id, ITSDigitsInfo* info) :
-  QuadSet(Form("ITS module %d", id)),
+ITSModule::ITSModule(Int_t gid, ITSDigitsInfo* info) :
+  QuadSet(Form("ITS module %d", gid)),
   fInfo  (0),
   fID(-1), fDetID(-1),
   fLayer(-1), fLadder(-1), fDet(-1),
   fDx(0), fDz(0), fDy(0)
 {
   SetDigitsInfo(info);
-  SetID(id);
+  SetID(gid);
 }
 
 ITSModule::~ITSModule()
@@ -61,33 +55,10 @@ ITSModule::~ITSModule()
 
 /**************************************************************************/
 
-void ITSModule::SetDigitsInfo(ITSDigitsInfo* info)
-{
-  if(fInfo) fInfo->DecRefCount();
-  fInfo = info;
-  if(fInfo) fInfo->IncRefCount();
-}
-
-void ITSModule::SetID(Int_t id)
-{
-  static const Exc_t eH("ITSModule::SetID ");
-
-  if(fInfo == 0)
-    throw(eH + "ITSDigitsInfo not set.");
-
-  if (id < fInfo->fGeom->GetStartSPD() || id > fInfo->fGeom->GetLastSSD())
-    throw(eH + Form("%d is not valid. ID range from %d to %d", id,
-		     fInfo->fGeom->GetStartSPD(), fInfo->fGeom->GetLastSSD()));
-
-  fID = id;
-  InitModule();
-}
-
-/**************************************************************************/
-
 void ITSModule::InitStatics(ITSDigitsInfo* info)
 {
   if (fgStaticInitDone) return;
+  fgStaticInitDone = kTRUE;
 
   {
     Float_t dx = info->fSegSPD->Dx()*0.00005;
@@ -96,7 +67,7 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSPDFrameBox = new FrameBox();
     fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSPDFrameBox->SetFrameColor((Color_t) 31);
-    fgSPDPalette  = new RGBAPalette(0, 1, kFALSE, kFALSE);
+    fgSPDPalette  = new RGBAPalette(0, 1, kFALSE);
   }
 
   {
@@ -106,7 +77,7 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSDDFrameBox = new FrameBox();
     fgSDDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSDDFrameBox->SetFrameColor((Color_t) 32);
-    fgSDDPalette  = new RGBAPalette(5, 80, kTRUE, kFALSE);
+    fgSDDPalette  = new RGBAPalette(5, 80, kTRUE);
   }
 
   {
@@ -116,27 +87,51 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSSDFrameBox = new FrameBox();
     fgSSDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSSDFrameBox->SetFrameColor((Color_t) 33);
-    fgSSDPalette  = new RGBAPalette(2, 100, kTRUE, kFALSE);
+    fgSSDPalette  = new RGBAPalette(2, 100, kTRUE);
   }
 
 }
 
 /**************************************************************************/
 
-void ITSModule::InitModule()
+void ITSModule::SetDigitsInfo(ITSDigitsInfo* info)
 {
-  if (!fgStaticInitDone)  InitStatics(fInfo);
+  if (fInfo == info) return;
+  if (fInfo) fInfo->DecRefCount();
+  fInfo = info;
+  if (fInfo) fInfo->IncRefCount();
+}
 
-  fInfo->fGeom->GetModuleId(fID,fLayer,fLadder,fDet);
+/**************************************************************************/
+
+void ITSModule::SetID(Int_t gid)
+{
+  static const Exc_t eH("ITSModule::SetID ");
+
+  if(fInfo == 0)
+    throw(eH + "ITSDigitsInfo not set.");
+
+  if (gid < fInfo->fGeom->GetStartSPD() || gid > fInfo->fGeom->GetLastSSD())
+    throw(eH + Form("%d is not valid. ID range from %d to %d", gid,
+		     fInfo->fGeom->GetStartSPD(), fInfo->fGeom->GetLastSSD()));
+
+  fID = gid;
+
+  if (!fgStaticInitDone) InitStatics(fInfo);
+
+  fInfo->fGeom->GetModuleId(fID, fLayer, fLadder, fDet);
   TString strLadder = "Ladder";
   TString strSensor = "Sensor";
   TString symname;
-  Int_t id, nsector, nstave, nladder, rest;
+  Int_t   id, nsector, nstave, nladder, rest;
   
   if (fID <= fInfo->fGeom->GetLastSPD())
   {
     // SPD
 
+    SetFrame(fgSPDFrameBox);
+    SetPalette(fgSPDPalette);
+ 
     symname += strLadder;
     if (fID < 80)
     {
@@ -165,6 +160,9 @@ void ITSModule::InitModule()
   {
     // SDD
 
+    SetFrame(fgSDDFrameBox);
+    SetPalette(fgSDDPalette);
+ 
     symname += strSensor;
     if (fID < 324)
     {
@@ -189,6 +187,9 @@ void ITSModule::InitModule()
   else
   {
     // SSD
+
+    SetFrame(fgSSDFrameBox);
+    SetPalette(fgSSDPalette);
 
     symname += strSensor;
     if (fID < 1248)
@@ -240,8 +241,6 @@ void ITSModule::LoadQuads()
       AliITSsegmentationSPD* seg =  fInfo->fSegSPD; 
 
       Reset(QT_AxisAlignedFixedY, kFALSE, 32);
-      fFrame   = fgSPDFrameBox;
-      fPalette = fgSPDPalette;
 
       for (Int_t k=0; k<ndigits; ++k)
       {
@@ -264,8 +263,6 @@ void ITSModule::LoadQuads()
       AliITSsegmentationSDD *seg =  fInfo->fSegSDD; 
 
       Reset(QT_AxisAlignedFixedY, kFALSE, 32);
-      fFrame   = fgSDDFrameBox;
-      fPalette = fgSDDPalette;
 
       for (Int_t k=0; k<ndigits; ++k)
       {
@@ -290,8 +287,6 @@ void ITSModule::LoadQuads()
       AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
 
       Reset(QT_LineFixedY, kFALSE, 32);
-      fFrame   = fgSSDFrameBox;
-      fPalette = fgSSDPalette;
 
       Float_t ap, an; // positive/negative angles -> offsets
       seg->Angles(ap, an);
