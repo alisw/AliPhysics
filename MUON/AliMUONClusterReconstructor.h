@@ -15,11 +15,16 @@
 class AliMUONClusterFinderVS;
 class AliMUONData;
 class TClonesArray;
+class AliMUONVClusterFinder;
+class AliMUONGeometryTransformer;
 
 class AliMUONClusterReconstructor : public TObject 
 {
  public:
-  AliMUONClusterReconstructor(AliMUONData* data = 0x0); // Constructor
+  AliMUONClusterReconstructor(AliMUONData* data = 0x0,
+                              AliMUONVClusterFinder* finder = 0x0,
+                              const AliMUONGeometryTransformer* transformer = 0x0
+                              ); 
   virtual ~AliMUONClusterReconstructor(void); // Destructor
 
  
@@ -27,26 +32,29 @@ class AliMUONClusterReconstructor : public TObject
   virtual void   Digits2Clusters(Int_t chBeg = 0);
   virtual void   Trigger2Trigger() ;
 
-//  // pointer to data container
-//  AliMUONData*   GetMUONData() {return fMUONData;}
   // Reco Model
   AliMUONClusterFinderVS* GetRecoModel() {return fRecModel;}
 
   void SetRecoModel(AliMUONClusterFinderVS* rec);
 
  protected:
-  void ClusterizeOneDE(Int_t detElemId);
-  
- private:
+
   AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
   AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
+  void ClusterizeOneDE(Int_t detElemId);
+  void ClusterizeOneDEV2(Int_t detElemId);
+  
+private:
+  AliMUONVClusterFinder* fClusterFinder; //!< the object doing the real job (not owner)  
   AliMUONData*            fMUONData;           //!< Data container for MUON subsystem 
   AliMUONClusterFinderVS* fRecModel;           //!< cluster recontruction model
 
   TClonesArray* fDigitsCath0; //!< digits for cathode 0 of the current DE
   TClonesArray* fDigitsCath1; //!< digits for cathode 1 of the current DE
   
+  const AliMUONGeometryTransformer* fTransformer; //!< to go from local to global (not owner)
+    
   ClassDef(AliMUONClusterReconstructor,0) // MUON cluster reconstructor in ALICE
 };
 	

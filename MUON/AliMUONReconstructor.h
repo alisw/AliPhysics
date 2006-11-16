@@ -19,6 +19,7 @@ class AliMUONDigitMaker;
 class AliMUONTriggerCrateStore;
 class TClonesArray;
 class AliMUONGeometryTransformer;
+class AliMUONClusterReconstructor;
 
 class AliMUONReconstructor: public AliReconstructor 
 {
@@ -49,6 +50,8 @@ class AliMUONReconstructor: public AliReconstructor
 private:
 
     TTask* GetCalibrationTask(AliMUONData* data) const;
+    AliMUONClusterReconstructor* CreateClusterReconstructor(AliMUONData*) const;
+    
     AliMUONReconstructor(const AliMUONReconstructor& right);
     AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
 

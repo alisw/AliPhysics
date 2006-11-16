@@ -46,6 +46,11 @@
 
 #include "AliMpSegmentation.h"
 
+#include "AliMUONPreClusterFinder.h"
+#include "AliMUONClusterFinderCOG.h"
+#include "AliMUONClusterFinderSimpleFit.h"
+#include "AliMUONClusterFinderMLEM.h"
+  
 #include "AliRawReader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -140,6 +145,46 @@ AliMUONReconstructor::Init(AliRunLoader* runLoader)
 }
 
 //_____________________________________________________________________________
+AliMUONClusterReconstructor*
+AliMUONReconstructor::CreateClusterReconstructor(AliMUONData* data) const
+{
+  AliMUONVClusterFinder* clusterFinder(0x0);
+  
+  TString opt(GetOption());
+  opt.ToUpper();
+  
+  if ( strstr(opt,"PRECLUSTER") )
+  {
+    clusterFinder = new AliMUONPreClusterFinder;
+  }  
+  else if ( strstr(opt,"COG") )
+  {
+    clusterFinder = new AliMUONClusterFinderCOG;
+  }  
+  else if ( strstr(opt,"SIMPLEFIT") )
+  {
+    clusterFinder = new AliMUONClusterFinderSimpleFit;
+  }
+  else if ( strstr(opt,"MLEM:DRAW") )
+  {
+    clusterFinder = new AliMUONClusterFinderMLEM(kTRUE);
+  }
+  else if ( strstr(opt,"MLEM") )
+  {
+    clusterFinder = new AliMUONClusterFinderMLEM(kFALSE);
+  } 
+  
+  if ( clusterFinder) 
+  {
+    AliInfo(Form("Will use %s for clusterizing",clusterFinder->ClassName()));
+  }
+  
+  AliMUONClusterReconstructor* clusterReco = 
+    new AliMUONClusterReconstructor(data,clusterFinder,fTransformer);
+  return clusterReco;
+}
+
+//_____________________________________________________________________________
 void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 /// Reconstruct
@@ -158,7 +203,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   
   recoEvent->SetTriggerCircuit(fTriggerCircuit);
 
-  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(data);
+  AliMUONClusterReconstructor* recoCluster = CreateClusterReconstructor(data);
   
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
 
@@ -268,7 +313,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 }
 
 //_____________________________________________________________________________
-void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const
+void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, 
+                                       AliRawReader* rawReader) const
 {
 /// Recontruct
 /// \todo add more
@@ -280,20 +326,21 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   // passing loader as argument.
   fDigitMaker->SetMUONData(&data);
 
-  AliMUONClusterReconstructor recoCluster(&data);
+  AliMUONClusterReconstructor* recoCluster = CreateClusterReconstructor(&data);
 
   AliMUONVTrackReconstructor *recoEvent;
   if (strstr(GetOption(),"Original")) recoEvent = new AliMUONTrackReconstructor(&data);
   else if (strstr(GetOption(),"Combi")) recoEvent = new AliMUONTrackReconstructorK(&data,"Combi");
   else recoEvent = new AliMUONTrackReconstructorK(&data,"Kalman");
-  
+
   recoEvent->SetTriggerCircuit(fTriggerCircuit);
 
-  AliMUONClusterFinderVS *recModel = recoCluster.GetRecoModel();
+  AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
+
   if (!strstr(GetOption(),"VS")) 
   {
     recModel = (AliMUONClusterFinderVS*) new AliMUONClusterFinderAZ();
-    recoCluster.SetRecoModel(recModel);
+    recoCluster->SetRecoModel(recModel);
   }
   recModel->SetGhostChi2Cut(10);
 
@@ -352,13 +399,13 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     // tracking branch
     data.MakeBranch("RC");
     data.SetTreeAddress("RC");
-    recoCluster.Digits2Clusters(); 
+    recoCluster->Digits2Clusters(); 
     data.Fill("RC"); 
 
     // trigger branch
     data.MakeBranch("TC");
     data.SetTreeAddress("TC");
-    recoCluster.Trigger2Trigger();
+    recoCluster->Trigger2Trigger();
     data.Fill("TC");
     
     loader->WriteRecPoints("OVERWRITE");
@@ -401,6 +448,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   
   delete recoEvent;
 
+  delete recoCluster;
+  
   AliInfo(Form("Execution time for converting RAW data to digits in MUON : R:%.2fs C:%.2fs",
                rawTimer.RealTime(),rawTimer.CpuTime()));
   AliInfo(Form("Execution time for calibrating MUON : R:%.2fs C:%.2fs",

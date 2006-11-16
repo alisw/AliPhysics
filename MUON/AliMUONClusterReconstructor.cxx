@@ -33,9 +33,11 @@
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONRawCluster.h"
-
+#include "AliMUONVClusterFinder.h"
+#include "AliMUONCluster.h"
 #include "AliMpDEManager.h"
-
+#include "AliMpSegmentation.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -43,17 +45,26 @@ ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 /// \endcond
  
 //__________________________________________________________________________
-AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONData* data)
+AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONData* data,
+                                                         AliMUONVClusterFinder* clusterFinder,
+                                                         const AliMUONGeometryTransformer* transformer)
 : TObject(),
+  fClusterFinder(clusterFinder),
   fMUONData(data),
   fRecModel(new AliMUONClusterFinderVS()),
   fDigitsCath0(new TClonesArray("AliMUONDigit",1000)),
-  fDigitsCath1(new TClonesArray("AliMUONDigit",1000))
+  fDigitsCath1(new TClonesArray("AliMUONDigit",1000)),
+  fTransformer(transformer)
 {
 /// Standard Constructor
 
   fDigitsCath0->SetOwner(kTRUE); 
   fDigitsCath1->SetOwner(kTRUE);
+  if (!transformer && clusterFinder)
+  {
+    AliFatal("I require a geometry transformer, otherwise I cannot compute "
+             "global coordinates of the clusters !");    
+  }
 }
 
 //__________________________________________________________________________
@@ -68,6 +79,66 @@ AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 
 //______________________________________________________________________________
 void
+AliMUONClusterReconstructor::ClusterizeOneDEV2(Int_t detElemId)
+{
+  AliDebug(1,Form("DE %d",detElemId));
+  const AliMpVSegmentation* seg[2] = 
+  { AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,0),
+    AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,1)
+  };
+  
+  
+  TClonesArray* digits[2] = { fDigitsCath0, fDigitsCath1 };
+  
+  Bool_t ok = fClusterFinder->Prepare(seg,digits);
+  if ( !ok )
+  {
+    AliWarning(Form("No hit pad for DE %d ?",detElemId));
+  }
+  
+  AliMUONCluster* cluster;
+  
+  Int_t chamber = detElemId/100 - 1;
+  
+  while ( ( cluster = fClusterFinder->NextCluster() ) )
+  {
+    StdoutToAliDebug(1,cout << "From AliMUONClusterReconstructor::ClusterizeOneDEV2 : cluster->Print():" << endl;
+                     cluster->Print(););
+    
+    // Converts cluster objects into ones suitable for output
+    //
+    AliMUONRawCluster rawCluster;
+    
+    rawCluster.SetDetElemId(detElemId);
+    
+    for ( Int_t cathode = 0; cathode < 2; ++cathode )
+    {
+      rawCluster.SetMultiplicity(cathode,cluster->Multiplicity(cathode));
+      rawCluster.SetCharge(cathode,cluster->Charge()); // both cathode get the total cluster charge
+      Double_t xg, yg, zg;
+      
+      fTransformer->Local2Global(detElemId, 
+                                 cluster->Position().X(), cluster->Position().Y(), 
+                                 0, xg, yg, zg);
+      
+      if ( cathode == 0 )
+      {
+        AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e)",
+                        detElemId,cluster->Multiplicity(),cluster->Charge(),
+                        cluster->Position().X(),cluster->Position().Y(),0.0,
+                        xg,yg,zg));
+      }
+      rawCluster.SetX(cathode,xg);
+      rawCluster.SetY(cathode,yg);
+      rawCluster.SetZ(cathode,zg);      
+    }
+    fMUONData->AddRawCluster(chamber,rawCluster);
+    delete cluster;
+  }
+}
+
+//______________________________________________________________________________
+void
 AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
 {
 /// Clusterize one detection element, and let fMUONData know about
@@ -75,24 +146,30 @@ AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
   
   if ( fDigitsCath0->GetEntriesFast() || fDigitsCath1->GetEntriesFast() )
   {
-    Int_t iChamber = AliMpDEManager::GetChamberId(detElemId);
-    AliMUONClusterInput::Instance()->SetDigits(iChamber, detElemId,
-                                               fDigitsCath0,fDigitsCath1);
-    AliDebug(3,Form("ClusterizeOneDE iChamber=%d DE=%d",iChamber,detElemId));
-    StdoutToAliDebug(3,cout << "DigitsCath0=" << endl;
-                     fDigitsCath0->Print();
-                     cout << "DigitsCath1=" << endl;
-                     fDigitsCath1->Print(););
-    fRecModel->FindRawClusters();
-    
-    // copy results into the output container
-    TClonesArray* tmp = fRecModel->GetRawClusters();
-    for (Int_t id = 0; id < tmp->GetEntriesFast(); ++id) 
+    if ( fClusterFinder )
     {
-      AliMUONRawCluster* pClus = (AliMUONRawCluster*) tmp->At(id);
-      fMUONData->AddRawCluster(iChamber, *pClus);
-    }        
-    
+      ClusterizeOneDEV2(detElemId);
+    }
+    else
+    {
+      Int_t iChamber = AliMpDEManager::GetChamberId(detElemId);
+      AliMUONClusterInput::Instance()->SetDigits(iChamber, detElemId,
+                                                 fDigitsCath0,fDigitsCath1);
+      AliDebug(3,Form("ClusterizeOneDE iChamber=%d DE=%d",iChamber,detElemId));
+      StdoutToAliDebug(3,cout << "DigitsCath0=" << endl;
+                       fDigitsCath0->Print();
+                       cout << "DigitsCath1=" << endl;
+                       fDigitsCath1->Print(););
+      fRecModel->FindRawClusters();
+      
+      // copy results into the output container
+      TClonesArray* tmp = fRecModel->GetRawClusters();
+      for (Int_t id = 0; id < tmp->GetEntriesFast(); ++id) 
+      {
+        AliMUONRawCluster* pClus = (AliMUONRawCluster*) tmp->At(id);
+        fMUONData->AddRawCluster(iChamber, *pClus);
+      }        
+    }
     // Reset the arrays
     fDigitsCath0->Clear("C");
     fDigitsCath1->Clear("C");
@@ -110,7 +187,7 @@ void AliMUONClusterReconstructor::Digits2Clusters(Int_t chBeg)
 /// of that detection element have been stored), we clusterize this DE, and
 /// move to the next one.
   
-  if (!fRecModel)
+  if (!fRecModel && !fClusterFinder)
   {
     AliWarning("No reco model defined. Nothing to do...");
     return;
