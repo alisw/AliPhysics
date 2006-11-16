@@ -292,434 +292,504 @@ void AliEventTagCuts::Reset() {
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetPrimaryVertexXRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetPrimaryVertexXRange(Float_t low, Float_t high) {
   //Sets the primary vertex x range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fVxMin = r1;
-  fVxMax = r2; 
+  fVxMin = low;
+  fVxMax = high; 
   fVxFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetPrimaryVertexYRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetPrimaryVertexYRange(Float_t low, Float_t high) {
   //Sets the primary vertex y range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fVyMin = r1;
-  fVyMax = r2; 
+  fVyMin = low;
+  fVyMax = high; 
   fVyFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetPrimaryVertexZRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetPrimaryVertexZRange(Float_t low, Float_t high) {
   //Sets the primary vertex z range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fVzMin = r1;
-  fVzMax = r2; 
+  fVzMin = low;
+  fVzMax = high; 
   fVzFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetMultiplicityRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetPrimaryVertexZErrorRange(Float_t low, Float_t high) {
+  //Sets the primary vertex z error range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fPrimaryVertexZErrorMin = low;
+  fPrimaryVertexZErrorMax = high; 
+  fPVzErrorFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetTriggerMask(ULong64_t trmask) {
+  //Sets the trigger mask 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fTriggerMask = trmask;
+  fTriggerMaskFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetTriggerCluster(UChar_t trcluster) {
+  //Sets the trigger cluster 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fTriggerCluster = trcluster;
+  fTriggerClusterFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetMultiplicityRange(Int_t low, Int_t high) {
   //Sets the primary multiplicity range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fMultMin = n1;
-  fMultMax = n2;
+  fMultMin = low;
+  fMultMax = high;
   fMultFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetParticipantsRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNParticipantsRange(Int_t low, Int_t high) {
   //Sets the number of participants range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fParticipantsMin = i1;
-  fParticipantMax = i2;
+  fParticipantsMin = low;
+  fParticipantMax = high;
   fParticipantsFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetImpactParamRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetImpactParamRange(Float_t low, Float_t high) {
   //Sets the impact parameter range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fImpactParamMin = r1;
-  fImpactParamMax = r2;
+  fImpactParamMin = low;
+  fImpactParamMax = high;
   fImpactParamFlag = kTRUE;
 }
  
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetPrimaryVertexFlag(Int_t i) {
+void AliEventTagCuts::SetPrimaryVertexFlag(Int_t flag) {
   //Sets the primary vertex flag cut 
   //and the corresponding flag to kTRUE if the cut is used.
-  fPrimaryVertexFlag = i;
+  fPrimaryVertexFlag = flag;
   fPVFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetZDCNeutr1Range(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetZDCNeutron1Range(Float_t low, Float_t high) {
   //Sets the ZDC's neutron energy range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fZDCNeutron1EnergyMin = r1;
-  fZDCNeutron1EnergyMax = r2;
+  fZDCNeutron1EnergyMin = low;
+  fZDCNeutron1EnergyMax = high;
   fZDCNeutron1EnergyFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetZDCProt1Range(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetZDCProton1Range(Float_t low, Float_t high) {
   //Sets the ZDC's proton energy range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fZDCProton1EnergyMin = r1;
-  fZDCProton1EnergyMax = r2;
+  fZDCProton1EnergyMin = low;
+  fZDCProton1EnergyMax = high;
   fZDCProton1EnergyFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetZDCNeutr2Range(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetZDCNeutron2Range(Float_t low, Float_t high) {
   //Sets the ZDC's neutron energy range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fZDCNeutron2EnergyMin = r1;
-  fZDCNeutron2EnergyMax = r2;
+  fZDCNeutron2EnergyMin = low;
+  fZDCNeutron2EnergyMax = high;
   fZDCNeutron2EnergyFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetZDCProt2Range(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetZDCProton2Range(Float_t low, Float_t high) {
   //Sets the ZDC's proton energy range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fZDCProton2EnergyMin = r1;
-  fZDCProton2EnergyMax = r2;
+  fZDCProton2EnergyMin = low;
+  fZDCProton2EnergyMax = high;
   fZDCProton2EnergyFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetZDCEMRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetZDCEMRange(Float_t low, Float_t high) {
   //Sets the ZDC's e/m energy range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fZDCEMEnergyMin = r1;
-  fZDCEMEnergyMax = r2;
+  fZDCEMEnergyMin = low;
+  fZDCEMEnergyMax = high;
   fZDCEMEnergyFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetT0VertexZRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetT0VertexZRange(Float_t low, Float_t high) {
   //Sets the T0's Vz range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fT0VertexZMin = r1;
-  fT0VertexZMax = r2;
+  fT0VertexZMin = low;
+  fT0VertexZMax = high;
   fT0VertexZFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetPosMultiplicityRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetPosMultiplicityRange(Int_t low, Int_t high) {
   //Sets the positive multiplicity range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fMultPosMin = n1;
-  fMultPosMax = n2;
+  fMultPosMin = low;
+  fMultPosMax = high;
   fMultPosFlag = kTRUE;
 }
 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNegMultiplicityRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNegMultiplicityRange(Int_t low, Int_t high) {
   //Sets the negative multiplicity range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fMultNegMin = n1;
-  fMultNegMax = n2;
+  fMultNegMin = low;
+  fMultNegMax = high;
   fMultNegFlag = kTRUE;
 }
 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNeutrMultiplicityRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNeutrMultiplicityRange(Int_t low, Int_t high) {
   //Sets the neutral particle multiplicity range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fMultNeutrMin = n1;
-  fMultNeutrMax = n2;
+  fMultNeutrMin = low;
+  fMultNeutrMax = high;
   fMultNeutrFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetV0sRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNV0sRange(Int_t low, Int_t high) {
   //Sets the v0s multiplicity range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fV0sMin = n1;
-  fV0sMax = n2;
+  fV0sMin = low;
+  fV0sMax = high;
   fV0sFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetCascadesRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNCascadesRange(Int_t low, Int_t high) {
   //Sets the cascades multiplicity range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fCascadesMin = n1;
-  fCascadesMax = n2;
+  fCascadesMin = low;
+  fCascadesMax = high;
   fCascadesFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetKinksRange(Int_t n1, Int_t n2) {
-  //Sets the kinks multipliicity range 
+void AliEventTagCuts::SetNKinksRange(Int_t low, Int_t high) {
+  //Sets the kinks multiplicity range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fkinksMin = n1;
-  fkinksMax = n2;
+  fkinksMin = low;
+  fkinksMax = high;
   fkinksFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetMaxJetEnergy(Float_t r1) {
+void AliEventTagCuts::SetNPMDTracksRange(Int_t low, Int_t high) {
+  //Sets the number of PMD tracks range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fPMDTracksMin = low;
+  fPMDTracksMax = high;
+  fPMDTracksFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetNFMDTracksRange(Int_t low, Int_t high) {
+  //Sets the number of FMD tracks range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fFMDTracksMin = low;
+  fFMDTracksMax = high;
+  fFMDTracksFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetNPHOSClustersRange(Int_t low, Int_t high) {
+  //Sets the number of PHOS clusters range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fPHOSClustersMin = low;
+  fPHOSClustersMax = high;
+  fPHOSClustersFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetNEMCALClustersRange(Int_t low, Int_t high) {
+  //Sets the number of EMCAL clusters range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fEMCALClustersMin = low;
+  fEMCALClustersMax = high;
+  fEMCALClustersFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetNJetCandidatesRange(Int_t low, Int_t high) {
+  //Sets the number of jet candidates range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fJetCandidatesMin = low;
+  fJetCandidatesMax = high;
+  fJetCandidatesFlag = kTRUE;
+}
+
+//___________________________________________________________________________
+void AliEventTagCuts::SetTopJetEnergyMin(Float_t low) {
   //Sets the lower limit of the maximum jet energy
   //and the corresponding flag to kTRUE if the cut is used.
-  fMaxJetEnergy = r1; 
+  fMaxJetEnergy = low; 
   fMaxJetEnergyFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetMaxNeutralEnergy(Float_t r1) {
+void AliEventTagCuts::SetTopNeutralEnergyMin(Float_t low) {
   //Sets the lower limit of the maximum neutral jet energy
   //and the corresponding flag to kTRUE if the cut is used.
-  fMaxNeutralEnergy = r1; 
+  fMaxNeutralEnergy = low; 
   fMaxNeutralFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetHardPhotonsRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNHardPhotonsRange(Int_t low, Int_t high) {
   //Sets the hard photons multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fNHardPhotonsCandidatesMin = i1;
-  fNHardPhotonsCandidatesMax = i2;
+  fNHardPhotonsCandidatesMin = low;
+  fNHardPhotonsCandidatesMax = high;
   fNHardPhotonsCandidatesFlag = kTRUE;
 } 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNChargedAbove1GeVRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNChargedAbove1GeVRange(Int_t low, Int_t high) {
   //Sets the number of charged above 1GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fChargedAbove1GeVMin = i1;
-  fChargedAbove1GeVMax = i2;
+  fChargedAbove1GeVMin = low;
+  fChargedAbove1GeVMax = high;
   fChargedAbove1GeVFlag = kTRUE;
 }
 
 //___________________________________________________________________________
- void AliEventTagCuts::SetNChargedAbove3GeVRange(Int_t i1, Int_t i2) {
+ void AliEventTagCuts::SetNChargedAbove3GeVRange(Int_t low, Int_t high) {
   //Sets the number of charged above 3GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fChargedAbove3GeVMin = i1;
-  fChargedAbove3GeVMax = i2;
+  fChargedAbove3GeVMin = low;
+  fChargedAbove3GeVMax = high;
   fChargedAbove3GeVFlag = kTRUE;
 }
 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNChargedAbove10GeVRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNChargedAbove10GeVRange(Int_t low, Int_t high) {
   //Sets the number of charged above 10GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fChargedAbove10GeVMin = i1;
-  fChargedAbove10GeVMax = i2;
+  fChargedAbove10GeVMin = low;
+  fChargedAbove10GeVMax = high;
   fChargedAbove10GeVFlag = kTRUE;
 }
 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNMuonsAbove1GeVRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNMuonsAbove1GeVRange(Int_t low, Int_t high) {
   //Sets the number of muons above 1GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fMuonsAbove1GeVMin = i1;
-  fMuonsAbove1GeVMax = i2;
+  fMuonsAbove1GeVMin = low;
+  fMuonsAbove1GeVMax = high;
   fMuonsAbove1GeVFlag = kTRUE;
 }
 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNMuonsAbove3GeVRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNMuonsAbove3GeVRange(Int_t low, Int_t high) {
   //Sets the number of muons above 3GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fMuonsAbove3GeVMin = i1;
-  fMuonsAbove3GeVMax = i2;
+  fMuonsAbove3GeVMin = low;
+  fMuonsAbove3GeVMax = high;
   fMuonsAbove3GeVFlag = kTRUE;
 } 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNMuonsAbove10GeVRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNMuonsAbove10GeVRange(Int_t low, Int_t high) {
   //Sets the number of muons above 10GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fMuonsAbove10GeVMin = i1;
-  fMuonsAbove10GeVMax = i2; 
+  fMuonsAbove10GeVMin = low;
+  fMuonsAbove10GeVMax = high; 
   fMuonsAbove10GeVFlag = kTRUE;
 }
 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNElectronsAbove1GeVRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNElectronsAbove1GeVRange(Int_t low, Int_t high) {
   //Sets the number of electrons above 1GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fElectronsAbove1GeVMin = i1;
-  fElectronsAbove1GeVMax = i2;
+  fElectronsAbove1GeVMin = low;
+  fElectronsAbove1GeVMax = high;
   fElectronsAbove1GeVFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNElectronsAbove3GeVRange(Int_t i1, Int_t i2) {
+void AliEventTagCuts::SetNElectronsAbove3GeVRange(Int_t low, Int_t high) {
   //Sets the number of electrons above 3GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fElectronsAbove3GeVMin = i1;
-  fElectronsAbove3GeVMax = i2;
+  fElectronsAbove3GeVMin = low;
+  fElectronsAbove3GeVMax = high;
   fElectronsAbove3GeVFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNElectronsAbove10GeVRange(Int_t i1, Int_t i2) {  
+void AliEventTagCuts::SetNElectronsAbove10GeVRange(Int_t low, Int_t high) {  
   //Sets the number of electrons above 10GeV range
   //and the corresponding flag to kTRUE if the cut is used.
-  fElectronsAbove10GeVMin = i1;
-  fElectronsAbove10GeVMax = i2;
+  fElectronsAbove10GeVMin = low;
+  fElectronsAbove10GeVMax = high;
   fElectronsAbove10GeVFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetNElectronRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNElectronRange(Int_t low, Int_t high) {
   //Sets the electron multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fElectronsMin = n1;
-  fElectronsMax = n2;
+  fElectronsMin = low;
+  fElectronsMax = high;
   fElectronsFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetNMuonRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNMuonRange(Int_t low, Int_t high) {
   //Sets the muon multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fMuonsMin = n1;
-  fMuonsMax = n2;
+  fMuonsMin = low;
+  fMuonsMax = high;
   fMuonsFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNPionRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNPionRange(Int_t low, Int_t high) {
   //Sets the pion multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fPionsMin = n1;
-  fPionsMax = n2;
+  fPionsMin = low;
+  fPionsMax = high;
   fPionsFlag = kTRUE;
 } 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNKaonRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNKaonRange(Int_t low, Int_t high) {
   //Sets the kaon multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fKaonsMin = n1;
-  fKaonsMax = n2;
+  fKaonsMin = low;
+  fKaonsMax = high;
   fKaonsFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNProtonRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNProtonRange(Int_t low, Int_t high) {
   //Sets the proton multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fProtonsMin = n1;
-  fProtonsMax = n2;
+  fProtonsMin = low;
+  fProtonsMax = high;
   fProtonsFlag = kTRUE;
 } 
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNLambdaRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNLambdaRange(Int_t low, Int_t high) {
   //Sets the lambda multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fLambdasMin = n1;
-  fLambdasMax = n2;
+  fLambdasMin = low;
+  fLambdasMax = high;
   fLambdasFlag = kTRUE;
 } 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNPhotonRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNPhotonRange(Int_t low, Int_t high) {
   //Sets the photon multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fPhotonsMin = n1;
-  fPhotonsMax = n2;
+  fPhotonsMin = low;
+  fPhotonsMax = high;
   fPhotonFlag = kTRUE;
 } 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNPi0Range(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNPi0Range(Int_t low, Int_t high) {
   //Sets the pi0 multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fPi0sMin = n1;
-  fPi0sMax = n2; 
+  fPi0sMin = low;
+  fPi0sMax = high; 
   fPi0sFlag = kTRUE;
 }  
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNNeutronRange(Int_t n1, Int_t n2) {
+void AliEventTagCuts::SetNNeutronRange(Int_t low, Int_t high) {
   //Sets the neutron multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fNeutronsMin = n1;
-  fNeutronsMax = n2; 
+  fNeutronsMin = low;
+  fNeutronsMax = high; 
   fNeutronsFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetNKaon0Range(Int_t n1, Int_t n2) {  
+void AliEventTagCuts::SetNKaon0Range(Int_t low, Int_t high) {  
   //Sets the K0s multiplicity range
   //and the corresponding flag to kTRUE if the cut is used.
-  fKaon0sMin = n1;
-  fKaon0sMax = n2; 
+  fKaon0sMin = low;
+  fKaon0sMax = high; 
   fKaon0sFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetTotalPRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetTotalPRange(Float_t low, Float_t high) {
   //Sets the total momentum range
   //and the corresponding flag to kTRUE if the cut is used.
-  fTotalPMin = r1;
-  fTotalPMax = r2;
+  fTotalPMin = low;
+  fTotalPMax = high;
   fTotalPFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetMeanPtRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetMeanPtRange(Float_t low, Float_t high) {
   //Sets the mean Pt range
   //and the corresponding flag to kTRUE if the cut is used.
-  fMeanPtMin = r1;
-  fMeanPtMax = r2;
+  fMeanPtMin = low;
+  fMeanPtMax = high;
   fMeanPtFlag = kTRUE;
 }  
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetMaxPt(Float_t r1) {
+void AliEventTagCuts::SetTopPtMin(Float_t low) {
   //Sets the lower limit of the max Pt value
   //and the corresponding flag to kTRUE if the cut is used.
-  fMaxPt = r1; 
+  fMaxPt = low; 
   fMaxPtFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetTotalNeutralPRange(Float_t r1, Float_t r2) {  
+void AliEventTagCuts::SetTotalNeutralPRange(Float_t low, Float_t high) {  
   //Sets the total momentum of neutral particles range
   //and the corresponding flag to kTRUE if the cut is used.
-  fTotalNeutralPMin =r1 ;
-  fTotalNeutralPMax = r2;  
+  fTotalNeutralPMin =low ;
+  fTotalNeutralPMax = high;  
   fTotalNeutralPFlag = kTRUE;
 }
 //___________________________________________________________________________
-void AliEventTagCuts::SetMeanNeutralPtPRange(Float_t r1, Float_t r2) {  
+void AliEventTagCuts::SetMeanNeutralPtPRange(Float_t low, Float_t high) {  
   //Sets the mean Pt of neutral particles range
   //and the corresponding flag to kTRUE if the cut is used.
-  fMeanNeutralPtMin = r1;
-  fMeanNeutralPtMax = r2; 
+  fMeanNeutralPtMin = low;
+  fMeanNeutralPtMax = high; 
   fMeanNeutralPtFlag = kTRUE;
 } 
 //___________________________________________________________________________
-void AliEventTagCuts::SetMaxNeutralPt(Float_t r1) {  
+void AliEventTagCuts::SetTopNeutralPtMin(Float_t low) {  
   //Sets the lower limit of the maximum Pt of neutral particles
   //and the corresponding flag to kTRUE if the cut is used.
-  fMaxNeutralPt = r1; 
+  fMaxNeutralPt = low; 
   fMaxNeutralPtFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetEvPlaneAngleRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetEvPlaneAngleRange(Float_t low, Float_t high) {
   //Sets the event plane range
   //and the corresponding flag to kTRUE if the cut is used.
-  fEventPlaneAngleMin = r1;
-  fEventPlaneAngleMax = r2; 
+  fEventPlaneAngleMin = low;
+  fEventPlaneAngleMax = high; 
   fEventPlaneAngleFlag = kTRUE;
 }
 
 //___________________________________________________________________________
-void AliEventTagCuts::SetHBTRadiiRange(Float_t r1, Float_t r2) {
+void AliEventTagCuts::SetHBTRadiiRange(Float_t low, Float_t high) {
   //Sets the HBT radii range
   //and the corresponding flag to kTRUE if the cut is used.
-  fHBTRadiiMin = r1;
-  fHBTRadiiMax = r2; 
+  fHBTRadiiMin = low;
+  fHBTRadiiMax = high; 
   fHBTRadiiFlag = kTRUE;
 }
 

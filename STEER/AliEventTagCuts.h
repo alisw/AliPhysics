@@ -24,67 +24,69 @@ class AliEventTagCuts : public TObject {
   void Reset();
   
  //____________________________________________________//
-  void SetParticipantsRange(Int_t i1, Int_t i2);
-  void SetImpactParamRange(Float_t r1, Float_t r2);
-  void SetPrimaryVertexXRange(Float_t r1, Float_t r2);
-  void SetPrimaryVertexYRange(Float_t r1, Float_t r2);
-  void SetPrimaryVertexZRange(Float_t r1, Float_t r2);
-  void SetPrimaryVertexFlag(Int_t i);
+  void SetNParticipantsRange(Int_t low, Int_t high);
+  void SetImpactParamRange(Float_t low, Float_t high);
 
-  void SetPrimaryVertexZErrorRange(Float_t r1, Float_t r2) {fPrimaryVertexZErrorMin = r1; fPrimaryVertexZErrorMax = r2; fPVzErrorFlag = kTRUE;}
-  void SetTriggerMask(ULong64_t trmask) {fTriggerMask = trmask; fTriggerMaskFlag = kTRUE;}
-  void SetTriggerCluster(UChar_t trcluster) {fTriggerCluster = trcluster;fTriggerClusterFlag = kTRUE;}
+  void SetPrimaryVertexXRange(Float_t low, Float_t high);
+  void SetPrimaryVertexYRange(Float_t low, Float_t high);
+  void SetPrimaryVertexZRange(Float_t low, Float_t high);
+  void SetPrimaryVertexFlag(Int_t flag);
+  void SetPrimaryVertexZErrorRange(Float_t low, Float_t high);
 
-  void SetZDCNeutr1Range(Float_t r1, Float_t r2);
-  void SetZDCProt1Range(Float_t r1, Float_t r2);
-  void SetZDCEMRange(Float_t r1, Float_t r2);
-  void SetZDCNeutr2Range(Float_t r1, Float_t r2);
-  void SetZDCProt2Range(Float_t r1, Float_t r2);
-  void SetT0VertexZRange(Float_t r1, Float_t r2);
-  void SetMultiplicityRange(Int_t n1, Int_t n2);
-  void SetPosMultiplicityRange(Int_t n1, Int_t n2);
-  void SetNegMultiplicityRange(Int_t n1, Int_t n2);
-  void SetNeutrMultiplicityRange(Int_t n1, Int_t n2);
-  void SetV0sRange(Int_t n1, Int_t n2);
-  void SetCascadesRange(Int_t n1, Int_t n2);
-  void SetKinksRange(Int_t n1, Int_t n2);
+  void SetTriggerMask(ULong64_t trmask);
+  void SetTriggerCluster(UChar_t trcluster);
+
+  void SetZDCNeutron1Range(Float_t low, Float_t high);
+  void SetZDCProton1Range(Float_t low, Float_t high);
+  void SetZDCEMRange(Float_t low, Float_t high);
+  void SetZDCNeutron2Range(Float_t low, Float_t high);
+  void SetZDCProton2Range(Float_t low, Float_t high);
+  void SetT0VertexZRange(Float_t low, Float_t high);
+
+  void SetMultiplicityRange(Int_t low, Int_t high);
+  void SetPosMultiplicityRange(Int_t low, Int_t high);
+  void SetNegMultiplicityRange(Int_t low, Int_t high);
+  void SetNeutrMultiplicityRange(Int_t low, Int_t high);
+  void SetNV0sRange(Int_t low, Int_t high);
+  void SetNCascadesRange(Int_t low, Int_t high);
+  void SetNKinksRange(Int_t low, Int_t high);
  
-  void SetNumOfPMDTracksRange(Int_t n1, Int_t n2) {fPMDTracksMin = n1; fPMDTracksMax = n2; fPMDTracksFlag = kTRUE;}
-  void SetNumOfFMDTracksRange(Int_t n1, Int_t n2) {fFMDTracksMin = n1; fFMDTracksMax = n2; fFMDTracksFlag = kTRUE;}
-  void SetNumOfPHOSClustersRange(Int_t n1, Int_t n2) {fPHOSClustersMin = n1; fPHOSClustersMax = n2; fPHOSClustersFlag = kTRUE;}
-  void SetNumOfEMCALClustersRange(Int_t n1, Int_t n2) {fEMCALClustersMin = n1; fEMCALClustersMax = n2; fEMCALClustersFlag = kTRUE;}
-  void SetNumOfJetCandidatesRange(Int_t n1, Int_t n2) {fJetCandidatesMin = n1; fJetCandidatesMax = n2; fJetCandidatesFlag = kTRUE;}
+  void SetNPMDTracksRange(Int_t low, Int_t high);
+  void SetNFMDTracksRange(Int_t low, Int_t high);
+  void SetNPHOSClustersRange(Int_t low, Int_t high);
+  void SetNEMCALClustersRange(Int_t low, Int_t high);
+  void SetNJetCandidatesRange(Int_t low, Int_t high);
 
-  void SetMaxJetEnergy(Float_t r1);
-  void SetMaxNeutralEnergy(Float_t r1);
-  void SetHardPhotonsRange(Int_t i1, Int_t i2);
-  void SetNChargedAbove1GeVRange(Int_t i1, Int_t i2);
-  void SetNChargedAbove3GeVRange(Int_t i1, Int_t i2);
-  void SetNChargedAbove10GeVRange(Int_t i1, Int_t i2);
-  void SetNMuonsAbove1GeVRange(Int_t i1, Int_t i2);
-  void SetNMuonsAbove3GeVRange(Int_t i1, Int_t i2);
-  void SetNMuonsAbove10GeVRange(Int_t i1, Int_t i2);
-  void SetNElectronsAbove1GeVRange(Int_t i1, Int_t i2);
-  void SetNElectronsAbove3GeVRange(Int_t i1, Int_t i2);
-  void SetNElectronsAbove10GeVRange(Int_t i1, Int_t i2);
-  void SetNElectronRange(Int_t n1, Int_t n2);
-  void SetNMuonRange(Int_t n1, Int_t n2);
-  void SetNPionRange(Int_t n1, Int_t n2);
-  void SetNKaonRange(Int_t n1, Int_t n2);
-  void SetNProtonRange(Int_t n1, Int_t n2);
-  void SetNLambdaRange(Int_t n1, Int_t n2);
-  void SetNPhotonRange(Int_t n1, Int_t n2);
-  void SetNPi0Range(Int_t n1, Int_t n2);
-  void SetNNeutronRange(Int_t n1, Int_t n2);
-  void SetNKaon0Range(Int_t n1, Int_t n2); 
-  void SetTotalPRange(Float_t r1, Float_t r2);
-  void SetMeanPtRange(Float_t r1, Float_t r2);
-  void SetMaxPt(Float_t r1);
-  void SetTotalNeutralPRange(Float_t r1, Float_t r2);
-  void SetMeanNeutralPtPRange(Float_t r1, Float_t r2);
-  void SetMaxNeutralPt(Float_t r1);
-  void SetEvPlaneAngleRange(Float_t r1, Float_t r2);
-  void SetHBTRadiiRange(Float_t r1, Float_t r2);
+  void SetTopJetEnergyMin(Float_t low);
+  void SetTopNeutralEnergyMin(Float_t low);
+  void SetNHardPhotonsRange(Int_t low, Int_t high);
+  void SetNChargedAbove1GeVRange(Int_t low, Int_t high);
+  void SetNChargedAbove3GeVRange(Int_t low, Int_t high);
+  void SetNChargedAbove10GeVRange(Int_t low, Int_t high);
+  void SetNMuonsAbove1GeVRange(Int_t low, Int_t high);
+  void SetNMuonsAbove3GeVRange(Int_t low, Int_t high);
+  void SetNMuonsAbove10GeVRange(Int_t low, Int_t high);
+  void SetNElectronsAbove1GeVRange(Int_t low, Int_t high);
+  void SetNElectronsAbove3GeVRange(Int_t low, Int_t high);
+  void SetNElectronsAbove10GeVRange(Int_t low, Int_t high);
+  void SetNElectronRange(Int_t low, Int_t high);
+  void SetNMuonRange(Int_t low, Int_t high);
+  void SetNPionRange(Int_t low, Int_t high);
+  void SetNKaonRange(Int_t low, Int_t high);
+  void SetNProtonRange(Int_t low, Int_t high);
+  void SetNLambdaRange(Int_t low, Int_t high);
+  void SetNPhotonRange(Int_t low, Int_t high);
+  void SetNPi0Range(Int_t low, Int_t high);
+  void SetNNeutronRange(Int_t low, Int_t high);
+  void SetNKaon0Range(Int_t low, Int_t high); 
+  void SetTotalPRange(Float_t low, Float_t high);
+  void SetMeanPtRange(Float_t low, Float_t high);
+  void SetTopPtMin(Float_t low);
+  void SetTotalNeutralPRange(Float_t low, Float_t high);
+  void SetMeanNeutralPtPRange(Float_t low, Float_t high);
+  void SetTopNeutralPtMin(Float_t low);
+  void SetEvPlaneAngleRange(Float_t low, Float_t high);
+  void SetHBTRadiiRange(Float_t low, Float_t high);
  
   Bool_t IsAccepted(AliEventTag *EvTag) const;
 
