@@ -138,7 +138,6 @@ void AliMUONTriggerElectronics::FeedM()
 
 	  //       CHECKME ! The TrackCharge is not ok with new digitizerV3 !
 	  //			for (Int_t ichg=0; ichg<10; ichg++) schg += mdig->TrackCharge(ichg);
-	  //       assert(schg==mdig->Signal());
 	  Int_t schg = (Int_t)(mdig->Signal() + 0.5);
          
 	  //       APPLY CONDITION ON SOFT BACKGROUND	

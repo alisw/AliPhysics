@@ -112,9 +112,6 @@ fMakeDDL(kTRUE)
   runLoader->CdGAFile();
   runLoader->Write(0, TObject::kOverwrite);  
 
-  assert(runLoader->GetNumberOfEvents()==nevents);
-  assert(runLoader->GetHeader()->GetRun()==runNumber);
-  
   delete runLoader;
 }
 

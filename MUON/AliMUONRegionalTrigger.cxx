@@ -17,7 +17,6 @@
 
 
 #include "AliMUONRegionalTrigger.h"
-#include <assert.h>
 #include "AliLog.h"
 
 // -----------------------------

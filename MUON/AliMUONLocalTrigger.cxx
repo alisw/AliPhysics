@@ -17,7 +17,6 @@
 
 
 #include "AliMUONLocalTrigger.h"
-#include <assert.h>
 #include "AliLog.h"
 #include "AliMUONLocalStruct.h"
 
