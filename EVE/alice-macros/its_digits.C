@@ -41,13 +41,13 @@ void its_digits(Int_t mode=63)
     l->SetMainColor((Color_t)2);
     gReve->AddRenderElement(l);
     for(nsec=0; nsec<10; nsec++) {
-      sSector=bsSector;
-      sSector+=nsec;
+      sSector  = bsSector;
+      sSector += nsec;
       Reve::RenderElementList* relSector = new Reve::RenderElementList(sSector.Data());
       relSector->SetMainColor((Color_t)2);
       gReve->AddRenderElement(l, relSector);
       for(nstave=0; nstave<2; nstave++){
-	sStave=bsStave;
+	sStave  = bsStave;
 	sStave += nstave;
 	Reve::RenderElementList* relStave = new Reve::RenderElementList(sStave.Data());
 	relStave->SetMainColor((Color_t)2);
@@ -58,6 +58,8 @@ void its_digits(Int_t mode=63)
 	}
       }
     }
+  } else {
+    i += 10*2*4;
   }
 
   if (mode & 2) {
@@ -67,13 +69,13 @@ void its_digits(Int_t mode=63)
     gReve->AddRenderElement(l);
 
     for(nsec=0; nsec<10; nsec++) {
-      sSector=bsSector;
-      sSector+=nsec;
+      sSector  = bsSector;
+      sSector += nsec;
       Reve::RenderElementList* relSector = new Reve::RenderElementList(sSector.Data());
       relSector->SetMainColor((Color_t)2);
       gReve->AddRenderElement(l, relSector);
       for(nstave=0; nstave<4; nstave++){
-	sStave=bsStave;
+	sStave  = bsStave;
 	sStave += nstave;
 	Reve::RenderElementList* relStave = new Reve::RenderElementList(sStave.Data());
 	relStave->SetMainColor((Color_t)2);
@@ -84,6 +86,8 @@ void its_digits(Int_t mode=63)
 	}
       }
     }
+  } else {
+    i += 10*4*4;
   }
 
   if (mode & 4) {
@@ -93,8 +97,8 @@ void its_digits(Int_t mode=63)
     gReve->AddRenderElement(l);
 
     for(nlad=0; nlad<14; nlad++) {
-      sLadder=bsLadder;
-      sLadder+=nlad;
+      sLadder  = bsLadder;
+      sLadder += nlad;
       Reve::RenderElementList* relLadder = new Reve::RenderElementList(sLadder.Data());
       relLadder->SetMainColor((Color_t)3);
       gReve->AddRenderElement(l, relLadder);
@@ -103,6 +107,8 @@ void its_digits(Int_t mode=63)
 	gReve->AddRenderElement(relLadder, m);
       }
     }
+  } else {
+    i += 14*6;
   }
 
   if (mode & 8) {
@@ -111,8 +117,8 @@ void its_digits(Int_t mode=63)
     l->SetMainColor((Color_t)3);
     gReve->AddRenderElement(l);
     for(nlad=0; nlad<22; nlad++) {
-      sLadder=bsLadder;
-      sLadder+=nlad;
+      sLadder  = bsLadder;
+      sLadder += nlad;
       Reve::RenderElementList* relLadder = new Reve::RenderElementList(sLadder.Data());
       relLadder->SetMainColor((Color_t)3);
       gReve->AddRenderElement(l, relLadder);
@@ -121,6 +127,8 @@ void its_digits(Int_t mode=63)
 	gReve->AddRenderElement(relLadder, m);
       }
     }
+  } else {
+    i += 22*8;
   }
 
   if (mode & 16) {
@@ -129,8 +137,8 @@ void its_digits(Int_t mode=63)
     l->SetMainColor((Color_t)4);
     gReve->AddRenderElement(l);
     for(nlad=0; nlad<34; nlad++) {
-      sLadder=bsLadder;
-      sLadder+=nlad;
+      sLadder  = bsLadder;
+      sLadder += nlad;
       Reve::RenderElementList* relLadder = new Reve::RenderElementList(sLadder.Data());
       relLadder->SetMainColor((Color_t)4);
       gReve->AddRenderElement(l, relLadder);
@@ -139,6 +147,8 @@ void its_digits(Int_t mode=63)
 	gReve->AddRenderElement(relLadder, m);
       }
     }
+  } else {
+    i += 34*22;
   }
 
   if (mode & 32) {
@@ -147,8 +157,8 @@ void its_digits(Int_t mode=63)
     l->SetMainColor((Color_t)4);
     gReve->AddRenderElement(l);
     for(nlad=0; nlad<38; nlad++) {
-      sLadder=bsLadder;
-      sLadder+=nlad;
+      sLadder  = bsLadder;
+      sLadder += nlad;
       Reve::RenderElementList* relLadder = new Reve::RenderElementList(sLadder.Data());
       relLadder->SetMainColor((Color_t)4);
       gReve->AddRenderElement(l, relLadder);
@@ -157,6 +167,8 @@ void its_digits(Int_t mode=63)
 	gReve->AddRenderElement(relLadder, m);
       }
     }
+  } else {
+    i += 38*25;
   }
 
   gReve->EnableRedraw();
