@@ -73,7 +73,7 @@ namespace
       AliMUONPad* pad = cluster->Pad(i);
       // skip pads w/ saturation or other problem(s)
       if ( pad->Status() ) continue; 
-      TVector2 lowerLeft(TVector2(par[0],par[1])-pad->Position()-pad->Dimensions());
+      TVector2 lowerLeft = TVector2(par[0],par[1]) - pad->Position() - pad->Dimensions();
       TVector2 upperRight(lowerLeft + pad->Dimensions()*2.0);
       Float_t estimatedCharge = 
         qTot*mathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
