@@ -16,7 +16,7 @@ class AliPHOSPreprocessor : public AliPreprocessor {
 public:
 
   AliPHOSPreprocessor();
-  AliPHOSPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+  AliPHOSPreprocessor(AliShuttleInterface* shuttle);
 
 protected:
 

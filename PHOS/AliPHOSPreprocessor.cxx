@@ -36,14 +36,14 @@ ClassImp(AliPHOSPreprocessor)
 
 //_______________________________________________________________________________________
 AliPHOSPreprocessor::AliPHOSPreprocessor() :
-AliPreprocessor("PHOS",0)
+AliPreprocessor("PHS",0)
 {
   //default constructor
 }
 
 //_______________________________________________________________________________________
-AliPHOSPreprocessor::AliPHOSPreprocessor(const char* detector, AliShuttleInterface* shuttle):
-AliPreprocessor(detector,shuttle)
+AliPHOSPreprocessor::AliPHOSPreprocessor(AliShuttleInterface* shuttle):
+AliPreprocessor("PHS",shuttle)
 {
   // Constructor
 }
@@ -114,7 +114,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   }
 
   AliCDBMetaData metaData;
-  Int_t result = Store("Calib", "Data", &calibData, &metaData);
+  Int_t result = Store("Calib", "EmcData", &calibData, &metaData);
 
   f.Close();
   return result;
