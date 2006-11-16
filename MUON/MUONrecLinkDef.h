@@ -27,6 +27,14 @@
 #pragma link C++ class AliMUONEventRecoCombi+; 
 #pragma link C++ class AliMillepede+;
 #pragma link C++ class AliMUONAlignment+;
+#pragma link C++ class AliMUONVClusterFinder+;
+#pragma link C++ class AliMUONPad+;
+#pragma link C++ class AliMUONCluster+;
+#pragma link C++ class AliMUONPreClusterFinder+;
+#pragma link C++ class AliMUONClusterFinderSimpleFit+;
+#pragma link C++ class AliMUONClusterFinderCOG+;
+#pragma link C++ class AliMUONClusterFinderMLEM+;
+#pragma link C++ class AliMUONClusterSplitterMLEM+;
 
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
