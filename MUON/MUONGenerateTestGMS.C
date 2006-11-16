@@ -38,6 +38,6 @@ MUONGenerateTestGMS()
     m->RotateX(i*0.01);
   }
   
-  gFile->WriteObject(array,"GMSarray");
+  f.WriteObject(array,"GMSarray");
   f.Close();
 }  
