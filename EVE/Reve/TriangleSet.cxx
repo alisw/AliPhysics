@@ -12,6 +12,15 @@
 
 using namespace Reve;
 
+//______________________________________________________________________
+// TriangleSet
+//
+// Made from a list of vertices and a list of triangles (triplets of
+// vertex indices).
+//
+// If input is composed from triangles with direct vertex coordinates
+// one should consider finding all occurences of the same vertex
+// and specifying it only once.
 
 ClassImp(TriangleSet)
 
@@ -86,7 +95,7 @@ void TriangleSet::GenerateZNormalColors(Float_t fac, Int_t min, Int_t max,
   for(Int_t t=0; t<fNTrings; ++t, C+=3, N+=3)
     {
       Int_t v = TMath::Nint(fac * N[2]);
-      pal.ColorFromArray(v, C, kFALSE);
+      pal.ColorFromValue(v, C, kFALSE);
     }
   gPad->Modified(); gPad->Update();
 }

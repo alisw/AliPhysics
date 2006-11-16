@@ -10,8 +10,15 @@ using namespace Reve;
 // A group of containers with chunked memory allocation.
 //
 
+
 //______________________________________________________________________
 // VoidCPlex
+//
+// Non-structured (Void) Complete Plex.
+// Allocation chunk can accommodate fN atoms of byte-size fS each.
+// The chunks themselves are TArrayCs and are stored in a std::vector<TArrayC*>.
+// Holes in the structure are not supported, neither is removal of atoms.
+// The structure can be Refit() to occupy a single contiguous array.
 //
 
 void VoidCPlex::ReleaseChunks()
