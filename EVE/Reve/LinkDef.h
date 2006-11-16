@@ -41,6 +41,8 @@
 
 // ZTrans
 #pragma link C++ class Reve::ZTrans-;
+#pragma link C++ class Reve::ZTransSubEditor+;
+#pragma link C++ class Reve::ZTransEditor+;
 
 // RGBAPalette
 #pragma link C++ class Reve::RGBAPalette+;
@@ -69,6 +71,7 @@
 #pragma link C++ class Reve::RenderElementObjPtr+;
 #pragma link C++ class Reve::RenderElementListBase+;
 #pragma link C++ class Reve::RenderElementList+;
+#pragma link C++ class Reve::RenderElementEditor+;
 
 #pragma link C++ class Reve::ReferenceBackPtr;
 
@@ -96,22 +99,30 @@
 #pragma link C++ class Reve::RGDoubleValuator+;
 #pragma link C++ class Reve::RGTriVecValuator+;
 
-//================================
-// g3d/
-//================================
+//=====================================
+// Graphical elements (with renderers)
+//=====================================
 
 // Track
 #pragma link C++ class Reve::Track+;
 #pragma link C++ class Reve::TrackList+;
 #pragma link C++ class Reve::TrackRnrStyle+;
+#pragma link C++ class Reve::TrackListEditor+;
+
+// Cascade
+#pragma link C++ class Reve::Cascade+;
+#pragma link C++ class Reve::CascadeList+;
+#pragma link C++ class Reve::CascadeListEditor+;
 
 // V0
 #pragma link C++ class Reve::V0+;
 #pragma link C++ class Reve::V0List+;
+#pragma link C++ class Reve::V0ListEditor+;
 
 // PointSet
 #pragma link C++ class Reve::PointSet+;
 #pragma link C++ class Reve::PointSetArray+;
+#pragma link C++ class Reve::PointSetArrayEditor+;
 
 // FrameBox
 #pragma link C++ class Reve::FrameBox+;
@@ -120,43 +131,23 @@
 // QuadSet
 #pragma link C++ class Reve::Quad+;
 #pragma link C++ class Reve::OldQuadSet+;
-#pragma link C++ class Reve::QuadSet+;
-
 #pragma link C++ class Reve::OldQuadSetGL+;
+#pragma link C++ class Reve::QuadSet+;
+#pragma link C++ class Reve::QuadSetEditor+;
 #pragma link C++ class Reve::QuadSetGL+;
 
 // BoxSet
 #pragma link C++ class Reve::Box+;
 #pragma link C++ class Reve::BoxSet+;
+#pragma link C++ class Reve::BoxSetGL+;
 
 // GeoNode
 #pragma link C++ class Reve::GeoNodeRnrEl+;
 #pragma link C++ class Reve::GeoTopNodeRnrEl+;
-
-// TrianlgeSet
-#pragma link C++ class Reve::TriangleSet;
-
-//================================
-// ged/
-//================================
-
-#pragma link C++ class Reve::ZTransSubEditor+;
-#pragma link C++ class Reve::ZTransEditor+;
-
-#pragma link C++ class Reve::RenderElementEditor+;
-#pragma link C++ class Reve::TrackListEditor+;
-#pragma link C++ class Reve::V0ListEditor+;
 #pragma link C++ class Reve::GeoNodeRnrElEditor+;
 #pragma link C++ class Reve::GeoTopNodeRnrElEditor+;
 
-#pragma link C++ class Reve::PointSetArrayEditor+;
-
+// TrianlgeSet
+#pragma link C++ class Reve::TriangleSet;
 #pragma link C++ class Reve::TriangleSetEditor;
-
-//================================
-// gl/
-//================================
-
-// ReveGLRenderers
-#pragma link C++ class Reve::BoxSetGL+;
 #pragma link C++ class Reve::TriangleSetGL;
