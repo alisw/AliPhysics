@@ -45,6 +45,10 @@ MuonRec.SetLoadAlignData("MUON");
 // Uncoment following line to run reconstruction with the orginal tracking method
 // instead of the kalman one (default)
 // MuonRec.SetOption("MUON","Original");
+// Use the following to change clustering method
+//MuonRec.SetOption("MUON","MLEM"); // new scheme AZ's clustering
+//MuonRec.SetOption("MUON","SIMPLEFIT"); // new scheme simple fitting
+//MuonRec.SetOption("MUON","COG"); // new scheme basic center-of-gravity only
 MuonRec.Run();
 .q
 EOF
