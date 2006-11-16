@@ -1,3 +1,50 @@
+2006-11-16  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Cascade.cxx:
+	* Cascade.h:
+	* CascadeEditors.cxx:
+	* CascadeEditors.h:
+	From Ludovic, new files for visualization of cascades.
+
+	* LinkDef.h:
+	From Ludovic: register new classes. Reorganize some entries so
+	that a class, editor and gl-renderer are listed together.
+
+	* V0.cxx:
+	* V0Editors.cxx:
+	* V0Editors.h:
+	From Ludovic: updates for V0 visualization.
+
+	* QuadSet.cxx:
+	* QuadSet.h:
+	Main color now set from frame-box (instead of default palette
+	color).
+
+	* QuadSetGL.cxx:
+	Use new color-query function from RGBAPalette; validity of digit
+	value was not honoured in line-drawing modes.
+
+	* RGBAPalette.cxx:
+	* RGBAPalette.h:
+	* RGBAPaletteEditor.cxx:
+	* RGBAPaletteEditor.h:
+	Reimplementation of over/undershoot handling with separate modes
+	for both ends (cut, mark, clip and wrap); this works marvelously.
+
+	* QuadSetEditor.cxx:
+	* QuadSetEditor.h:
+	New files, editor for QuadSet gluing together translation and
+	palette sub-editors.
+
+	* RGValuators.cxx:
+	* RGValuators.h:
+	Added int version of SetLimits for RGDoubleValuator; added 
+	getters for value limits (Ludovic).
+
+	* Plex.cxx:
+	* TriangleSet.cxx:
+	Added some comments.
+
 2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* BoxSet.cxx:

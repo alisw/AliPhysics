@@ -1,3 +1,16 @@
+2006-11-16  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_Cascade.C:
+	From Ludovic, new file: macro to display and interact with
+	reconstructed cascades.
+
+	* alice-macros/esd_V0.C:
+	From Ludovic: updates for V0 visualization.
+
+	* alice-macros/its_digits.C:
+	Raffele forgot to increase global module counter when some layers
+	were turned off; alignment of assignemt statements.
+
 2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/esd_V0.C:

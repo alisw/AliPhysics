@@ -1,3 +1,10 @@
+2006-11-16  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ITSModule.cxx:
+	* ITSModule.h:
+	Set palette and frame-box via setters to allow proper
+	reference-count management; cleanup.
+
 2006-11-14  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCSectorData.h:
