@@ -1471,7 +1471,7 @@ void AliPIPEv3::CreateGeometry()
 // Connection tube length
     const Float_t kRB24VMABBEConTubeL1         =  0.9;
     const Float_t kRB24VMABBEConTubeL2         =  2.6;
-    const Float_t RB24VMABBEBellowL            =  kRB24VMABBEConTubeL1 + kRB24VMABBEConTubeL2 + kRB24B1BellowUndL;
+//  const Float_t RB24VMABBEBellowL            =  kRB24VMABBEConTubeL1 + kRB24VMABBEConTubeL2 + kRB24B1BellowUndL;
     
 // Mother volume
     TGeoPcon* shRB24VMABBEBellowM = new TGeoPcon(0., 360., 6);
@@ -2257,12 +2257,12 @@ void AliPIPEv3::CreateGeometry()
       shRB26s45Tube->DefineSection( 2,   1.20, 30.00/2., 30.80/2.);
       shRB26s45Tube->DefineSection( 3,  25.10, 30.00/2., 30.80/2.);      
       // Section 2: 0.932 deg opening cone
-      shRB26s45Tube->DefineSection( 4, 512.10, 45.00/2., 45.80/2.);      
+      shRB26s45Tube->DefineSection( 4, 486.10, 45.00/2., 45.80/2.);      
       // Section 3: straight section 4 mm 
-      shRB26s45Tube->DefineSection( 5, 538.10, 45.00/2., 45.80/2.);
+      shRB26s45Tube->DefineSection( 5, 512.10, 45.00/2., 45.80/2.);
       // Section 4: straight section 3 mm
-      shRB26s45Tube->DefineSection( 6, 538.10, 45.00/2., 45.60/2.);
-      shRB26s45Tube->DefineSection( 7, 553.70, 45.00/2., 45.60/2.);
+      shRB26s45Tube->DefineSection( 6, 512.10, 45.00/2., 45.60/2.);
+      shRB26s45Tube->DefineSection( 7, 527.70, 45.00/2., 45.60/2.);
       // Section 4: closing cone 
       shRB26s45Tube->DefineSection( 8, 591.30, 10.00/2., 10.60/2.);      
       shRB26s45Tube->DefineSection( 9, 591.89, 10.00/2., 10.30/2.);      
@@ -2738,17 +2738,16 @@ TGeoPcon* AliPIPEv3::MakeMotherFromTemplate(TGeoPcon* shape, Int_t imin, Int_t i
 //  Create a mother shape from a template setting some min radii to 0
 //
     Int_t nz0 = shape->GetNz();
+    // if nz > -1 the number of planes is given by nz
     if (nz != -1) nz0 = nz;
-    
     TGeoPcon* mother = new TGeoPcon(0., 360., nz0);
-    nz--;
-    
+
     if (imin == -1 || imax == -1) {
 	imin = 0;
 	imax = shape->GetNz();
-    } else if (imax > nz) {
-	imax = nz;
-	printf("Warning: imax reset to nz \n");
+    } else if (imax >= nz0) {
+	imax = nz0 - 1;
+	printf("Warning: imax reset to nz-1 %5d %5d %5d %5d\n", imin, imax, nz, nz0);
     }
     
 
@@ -2798,7 +2797,6 @@ TGeoVolume* AliPIPEv3::MakeBellow(char* ext, Int_t nc, Float_t rMin, Float_t rMa
     const TGeoMedium* kMedSteel  =  gGeoManager->GetMedium("PIPE_INOX");   
 
     char name[64], nameA[64], nameB[64], bools[64];
-    sprintf(name, "%sBellow", ext);
     TGeoVolume* voBellow = new TGeoVolume(name, new TGeoTube(rMin, rMax, dU/2.), kMedVac);
 //      
 //  Upper part of the undulation
@@ -2836,20 +2834,14 @@ TGeoVolume* AliPIPEv3::MakeBellow(char* ext, Int_t nc, Float_t rMin, Float_t rMa
 // One wiggle
     Float_t dz = rPlie -  dPlie / 2.;
     Float_t z0 = -  dPlie / 2.;
-    printf("Bellow %f %f %f %f\n", dz, z0, rPlie, dPlie/2.);
-    
     sprintf(name, "%sWiggle", ext);
     TGeoVolumeAssembly* asWiggle = new TGeoVolumeAssembly(name);
-    printf("z0 %f\n", z0);
     asWiggle->AddNode(voWiggleC1,  1 , new TGeoTranslation(0., 0., z0));
     z0 += dz;
-    printf("z0 %f\n", z0);
     asWiggle->AddNode(voWiggleU,   1 , new TGeoTranslation(0., 0., z0));
     z0 += dz;
-    printf("z0 %f\n", z0);
     asWiggle->AddNode(voWiggleC1,  2 , new TGeoTranslation(0., 0., z0));
     z0 += dz;
-    printf("z0 %f\n", z0);
     asWiggle->AddNode(voWiggleL ,  1 , new TGeoTranslation(0., 0., z0));
 // Positioning of the volumes
     z0   = - dU / 2.+ rPlie;
@@ -2860,7 +2852,6 @@ TGeoVolume* AliPIPEv3::MakeBellow(char* ext, Int_t nc, Float_t rMin, Float_t rMa
 	Float_t zpos =  z0 + iw * zsh;	
 	voBellow->AddNode(asWiggle,  iw + 1, new TGeoTranslation(0., 0., zpos - dPlie));	
     }
-    printf("Bellow end\n");
     return voBellow;
 }
 
