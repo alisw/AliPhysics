@@ -243,6 +243,8 @@ if test -z $with_pubsub || ! test -d $with_pubsub ; then
   with_pubsub=no
 fi
 AC_MSG_RESULT([$with_pubsub])
+HOMER_VERSION=1
+HOMER_LIBS=
 
 AH_TEMPLATE([HAVE_HOMERREADER],[the HLT PubSub Homer Reader interface])
 if test "x$with_pubsub" != "xno" ; then
@@ -271,12 +273,33 @@ if test "x$with_pubsub" != "xno" ; then
   with_homer=no
   AC_LANG_PUSH(C++)
   AC_CHECK_HEADER([HOMERReader.h],
-    [ AC_CHECK_LIB([HOMERReader],[_init],[with_homer=yes])])
+    [ AC_CHECK_LIB([HOMER],[_init],
+      [with_homer=yes
+       HOMER_LIBS="-lHOMER"],
+      [ AC_CHECK_LIB([HOMERReader],[_init],
+                     [with_homer=yes
+		      HOMER_LIBS="-lHOMERReader"])])
+      LIBS="$LIBS $HOMER_LIBS"
+      AC_MSG_CHECKING([for HOMER version])
+      dnl The Homer library has no versioning, so we do our own
+      dnl version           description
+      dnl ----------------------------------------------------------------------
+      dnl   1          inintial version
+      dnl   2          GetBlockStatusFlags added to the interface
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <HOMERReader.h>],
+                                      [HOMERReader reader("dummy", 0);
+ 				       reader.GetBlockStatusFlags(0);])],
+                                      [if test $HOMER_VERSION -lt 2 ; then HOMER_VERSION=2; fi],
+ 				      [])
+      AC_MSG_RESULT([$HOMER_VERSION])
+  ]) #AC_CHECK_HEADER([HOMERReader.h])
   AC_LANG_POP(C++)
   if test "x$with_homer" = "xno" ; then
     HOMER_CPPFLAGS=
     HOMER_LDFLAGS=
+    HOMER_LIBS=
   else
+    HOMER_CPPFLAGS="$HOMER_CPPFLAGS -DHOMER_VERSION=$HOMER_VERSION"
     AC_DEFINE(HAVE_HOMERREADER)
   fi
   CPPFLAGS="$save_CPPFLAGS"
@@ -285,6 +308,7 @@ if test "x$with_pubsub" != "xno" ; then
 fi
 AC_SUBST([HOMER_CPPFLAGS])
 AC_SUBST([HOMER_LDFLAGS])
+AC_SUBST([HOMER_LIBS])
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to impose strict coding conventions])

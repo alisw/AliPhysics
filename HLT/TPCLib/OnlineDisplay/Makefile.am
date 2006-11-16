@@ -47,6 +47,7 @@ libAliHLTTPCDisplay_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
 				  @HOMER_LDFLAGS@ \
+				  @HOMER_LIBS@ \
 				  -version-info 1:1:0
 
 # automatic generation of data and time of library build

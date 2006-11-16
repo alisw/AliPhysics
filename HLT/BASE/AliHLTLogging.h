@@ -13,9 +13,8 @@
 
 #include "AliHLTDataTypes.h"
 #include <TObject.h>
-#include <stdio.h>
+#include "AliHLTStdIncludes.h"
 
-#define LOG_BUFFER_SIZE 100 // global logging buffer
 //#define LOG_PREFIX ""       // logging prefix, for later extensions
 
 
@@ -100,8 +99,6 @@ protected:
 private:
   static  AliHLTComponent_LogSeverity fGlobalLogFilter;
   AliHLTComponent_LogSeverity fLocalLogFilter;
-  static char fLogBuffer[LOG_BUFFER_SIZE];
-  static char fOriginBuffer[LOG_BUFFER_SIZE];
   static AliHLTfctLogging fLoggingFunc;
   const char* fpDefaultKeyword;
   const char* fpCurrentKeyword;

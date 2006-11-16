@@ -29,6 +29,11 @@ using namespace std;
 #include "AliHLTStdIncludes.h"
 #include "AliHLTLogging.h"
 
+// global logging buffer
+#define LOG_BUFFER_SIZE 100
+char gAliHLTLoggingBuffer[LOG_BUFFER_SIZE]="";
+char gAliHLTLoggingOriginBuffer[LOG_BUFFER_SIZE]="";
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTLogging)
 
@@ -56,8 +61,6 @@ AliHLTLogging& AliHLTLogging::operator=(const AliHLTLogging&)
   return *this;
 }
 
-char AliHLTLogging::fLogBuffer[LOG_BUFFER_SIZE]="";
-char AliHLTLogging::fOriginBuffer[LOG_BUFFER_SIZE]="";
 AliHLTComponent_LogSeverity AliHLTLogging::fGlobalLogFilter=kHLTLogAll;
 AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
 
@@ -109,7 +112,7 @@ int AliHLTLogging::Message(void *param, AliHLTComponent_LogSeverity severity, co
 const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) {
   int tgtLen=0;
   int iBufferSize=LOG_BUFFER_SIZE;
-  char* tgtBuffer=fLogBuffer;
+  char* tgtBuffer=gAliHLTLoggingBuffer;
   tgtBuffer[tgtLen]=0;
 
 #if (defined LOG_PREFIX)
@@ -126,7 +129,7 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) {
       *tgtBuffer=0; // terminate the buffer
     }
   }
-  return fLogBuffer;
+  return gAliHLTLoggingBuffer;
 }
 
 int AliHLTLogging::Logging(AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) {
@@ -150,19 +153,19 @@ int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const c
     int iMaxSize=LOG_BUFFER_SIZE-1;
     int iPos=0;
     const char* separator="";
-    fOriginBuffer[iPos]=0;
+    gAliHLTLoggingOriginBuffer[iPos]=0;
     if (origin_class) {
       if ((int)strlen(origin_class)<iMaxSize-iPos) {
-	strcpy(&fOriginBuffer[iPos], origin_class);
+	strcpy(&gAliHLTLoggingOriginBuffer[iPos], origin_class);
 	iPos+=strlen(origin_class);
 	separator="::";
       }
     }
     if (origin_func) {
       if ((int)strlen(origin_func)+(int)strlen(separator)<iMaxSize-iPos) {
-	strcpy(&fOriginBuffer[iPos], separator);
+	strcpy(&gAliHLTLoggingOriginBuffer[iPos], separator);
 	iPos+=strlen(separator);
-	strcpy(&fOriginBuffer[iPos], origin_func);
+	strcpy(&gAliHLTLoggingOriginBuffer[iPos], origin_func);
 	iPos+=strlen(origin_func);
       }
     }
@@ -176,9 +179,9 @@ int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const c
       message=AliHLTLogging::BuildLogString(format, args);
     }
     if (fLoggingFunc) {
-      iResult=(*fLoggingFunc)(NULL/*fParam*/, severity, fOriginBuffer, GetKeyword(), message);
+      iResult=(*fLoggingFunc)(NULL/*fParam*/, severity, gAliHLTLoggingOriginBuffer, GetKeyword(), message);
     } else {
-      iResult=Message(NULL/*fParam*/, severity, fOriginBuffer, GetKeyword(), message);
+      iResult=Message(NULL/*fParam*/, severity, gAliHLTLoggingOriginBuffer, GetKeyword(), message);
     }
     va_end(args);
   }

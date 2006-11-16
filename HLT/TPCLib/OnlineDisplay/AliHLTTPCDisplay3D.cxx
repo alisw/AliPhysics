@@ -508,11 +508,13 @@ void AliHLTTPCDisplay3D::Draw(){
 	  printf( "Found raw data block %lu\n", blk );
 #endif
 	  // Check for corrupt data
+#if HOMER_VERSION >= 2
 	  AliHLTUInt64_t corruptFlag = reader->GetBlockStatusFlags( blk );
 	  if (corruptFlag & 0x00000001) {
 	    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayMain::ReadData","Block status flags") << "Data block is corrupt"<<ENDLOG; 
 	    continue;
 	  }
+#endif
 
 	  unsigned long rawDataBlock = (unsigned long) reader->GetBlockData( blk );
 	  unsigned long rawDataLen = reader->GetBlockDataLength( blk );
