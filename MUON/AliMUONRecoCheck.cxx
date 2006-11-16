@@ -42,6 +42,45 @@ ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
+  AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
+  : TObject(),
+  fRunLoader(0x0),
+  fMUONData(0x0),
+  fMuonTrackRef(0x0),
+  fTrackReco(0x0),
+  fReconstructibleTracks(0),
+  fRecoTracks(0),
+  fIsLoadConstructor(kTRUE)
+{
+/// Constructor using "galice.root",
+/// takes care of loading/unloading Kinematics, TrackRefs and Tracks
+
+  fMuonTrackRef = new TClonesArray("AliMUONTrack", 10);
+
+  // run loader
+  fRunLoader = AliRunLoader::Open(chLoader);
+  if (!fRunLoader) {
+    AliError(Form("no run loader found " ));
+    return;
+  }
+
+ // initialize loader 	 
+  AliLoader *loader = fRunLoader->GetLoader("MUONLoader");
+
+  // container
+  fMUONData  = new AliMUONData(loader,"MUON","MUON");
+  if (!fMUONData) {
+    AliError(Form("no MUONData found " ));
+    return;
+  }
+
+  fRunLoader->LoadKinematics("READ"); 	 
+  fRunLoader->LoadTrackRefs("READ"); 	 
+  loader->LoadTracks("READ");
+
+}
+
+//_____________________________________________________________________________
   AliMUONRecoCheck::AliMUONRecoCheck(AliRunLoader *runloader, AliMUONData *muondata)
   : TObject(),
   fRunLoader(0x0),
@@ -49,9 +88,12 @@ ClassImp(AliMUONRecoCheck)
   fMuonTrackRef(0x0),
   fTrackReco(0x0),
   fReconstructibleTracks(0),
-  fRecoTracks(0)
+  fRecoTracks(0),
+  fIsLoadConstructor(kFALSE)
 {
-/// Constructor
+/// Constructor from AliRunLoader and AliMUONData,
+/// does not load/unload Kinematics, TrackRefs and Tracks internally
+/// it should be done in the execution program (e.g. see MUONRecoCheck.C)
 
   fMuonTrackRef = new TClonesArray("AliMUONTrack", 10);
 
@@ -77,8 +119,15 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
 {
 /// Destructor
 
-  fMuonTrackRef->Delete();
   delete fMuonTrackRef;
+
+  if(fIsLoadConstructor){
+    fRunLoader->UnloadKinematics();
+    fRunLoader->UnloadTrackRefs();
+    fRunLoader->UnloadTracks();
+    delete fMUONData;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -115,7 +164,6 @@ void AliMUONRecoCheck::MakeTrackRef()
 
   trackParam = new AliMUONTrackParam();
   hitForRec = new AliMUONHitForRec();
-  muonTrack = new AliMUONTrack();
 
   Int_t max = fRunLoader->GetHeader()->Stack()->GetNtrack();
   for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; iTrackRef++) {
@@ -128,6 +176,9 @@ void AliMUONRecoCheck::MakeTrackRef()
     if (!trackRefs->GetEntries()) continue; 
 
     while (isNewTrack) {
+
+      muonTrack = new AliMUONTrack();
+      
       for (Int_t iHit = iHitMin; iHit < trackRefs->GetEntries(); iHit++) {
       
 	trackReference = (AliTrackReference*)trackRefs->At(iHit);
@@ -179,7 +230,7 @@ void AliMUONRecoCheck::MakeTrackRef()
 	else iChamber = AliMUONConstants::ChamberNumber(z);
 	hitForRec->SetChamberNumber(iChamber);
 
-	muonTrack->AddTrackParamAtHit(trackParam,hitForRec);
+	muonTrack->AddTrackParamAtHit(trackParam,0);
 	muonTrack->AddHitForRecAtHit(hitForRec);
 	muonTrack->SetTrackID(track);
 
@@ -216,8 +267,8 @@ void AliMUONRecoCheck::MakeTrackRef()
       }
 
       AddMuonTrackReference(muonTrack);
-      muonTrack->ResetTrackParamAtHit();
-      muonTrack->ResetHitForRecAtHit();
+      delete muonTrack;
+      muonTrack = NULL;
       
     } // end while isNewTrack
   }
@@ -226,7 +277,6 @@ void AliMUONRecoCheck::MakeTrackRef()
   
   ReconstructibleTracks();
 
-  delete muonTrack;
   delete trackParam;
   delete hitForRec;
 
@@ -308,7 +358,6 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
 
   hitForRec = new AliMUONHitForRec();
   trackParam = new AliMUONTrackParam();
-  trackNew = new AliMUONTrack();
 
   Int_t nTrackRef = fMuonTrackRef->GetEntriesFast();
   for (Int_t index = 0; index < nTrackRef; index++) {
@@ -317,6 +366,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
     trackParamAtHit = track->GetTrackParamAtHit();
     trackParamAtVertex = track->GetTrackParamAtVertex();
     nTrackHits = hitForRecAtHit->GetEntriesFast();
+    trackNew = new AliMUONTrack();
     iHit1 = 0;
     while (iHit1 < nTrackHits) {
       hitForRec1 = (AliMUONHitForRec*) hitForRecAtHit->At(iHit1); 
@@ -386,16 +436,16 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
 	trackParam->SetInverseBendingMomentum(1./bendingMomentum);
 
       trackNew->AddHitForRecAtHit(hitForRec);
-      trackNew->AddTrackParamAtHit(trackParam,hitForRec);
+      trackNew->AddTrackParamAtHit(trackParam,0);
       
       iHit1++;
     } // end iHit1
 
     trackNew->SetTrackID(track->GetTrackID());
     trackNew->SetTrackParamAtVertex(trackParamAtVertex);
-    {new ((*newMuonTrackRef)[newMuonTrackRef->GetEntriesFast()]) AliMUONTrack(*trackNew);}    
-    trackNew->ResetHitForRecAtHit();
-    trackNew->ResetTrackParamAtHit();
+    {new ((*newMuonTrackRef)[newMuonTrackRef->GetEntriesFast()]) AliMUONTrack(*trackNew);}   
+    delete trackNew;
+    trackNew = NULL;
     
   } // end trackRef
 
@@ -406,8 +456,6 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
     AddMuonTrackReference(track);
   }
   
-
-  delete trackNew;
   delete hitForRec;
   delete trackParam;
   newMuonTrackRef->Delete();

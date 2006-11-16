@@ -21,8 +21,14 @@ class AliRunLoader;
 class AliMUONRecoCheck : public TObject 
 {
 public:
+  AliMUONRecoCheck(Char_t *chLoader);
   AliMUONRecoCheck(AliRunLoader *runloader, AliMUONData *muondata);
   virtual          ~AliMUONRecoCheck();
+
+  /// Return MUON data 	 
+  AliMUONData*  GetMUONData() {return fMUONData;}
+  /// Return run loader 	 
+  AliRunLoader* GetRunLoader() {return fRunLoader;}
 
   void MakeTrackRef();
                 /// Add track reference
@@ -49,6 +55,9 @@ private:
   TClonesArray* fTrackReco;     ///< reconstructed muon tracks
   Int_t fReconstructibleTracks; ///< number of reconstructible tracks 
   Int_t fRecoTracks;            ///< number of reconstructed tracks 
+  Bool_t fIsLoadConstructor;    //!< \brief boolean to tag the constructor, 
+                                /// to decide if the class should or not deal with the loaders
+
 
   AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
   AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
