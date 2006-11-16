@@ -81,12 +81,16 @@ void AliSHILv3::CreateGeometry()
 //
     TGeoMedium* kMedNiW     = gGeoManager->GetMedium("SHIL_Ni/W0");
     TGeoMedium* kMedNiWsh   = gGeoManager->GetMedium("SHIL_Ni/W3");
+//
     TGeoMedium* kMedSteel   = gGeoManager->GetMedium("SHIL_ST_C0");
     TGeoMedium* kMedSteelSh = gGeoManager->GetMedium("SHIL_ST_C3");
+//
     TGeoMedium* kMedAir     = gGeoManager->GetMedium("SHIL_AIR_C0");
     TGeoMedium* kMedAirMu   = gGeoManager->GetMedium("SHIL_AIR_MUON");
+//
     TGeoMedium* kMedPb      = gGeoManager->GetMedium("SHIL_PB_C0");
     TGeoMedium* kMedPbSh    = gGeoManager->GetMedium("SHIL_PB_C2");
+//
     TGeoMedium* kMedConc    = gGeoManager->GetMedium("SHIL_CC_C0");
 //
     const Float_t kDegRad = TMath::Pi() / 180.;
@@ -655,7 +659,8 @@ void AliSHILv3::CreateGeometry()
       }
 
       TGeoVolume* voSaa1M  =  new TGeoVolume("YSAA1M", shSaa1M, kMedAir);
-
+      voSaa1M->SetVisibility(0);
+      
 
 ///////////////////////////////////
 //                               //
@@ -1006,7 +1011,7 @@ void AliSHILv3::CreateGeometry()
       z += dzSaa2PbCompE5;
       shSaa2PbComp->DefineSection( 15,  z, rInSaa2PbCompE3, rOuSaa2PbCompE4);
 
-      TGeoVolume* voSaa2PbComp  =  new TGeoVolume("YSAA2_PbComp", shSaa2PbComp, kMedPb);
+      TGeoVolume* voSaa2PbComp  =  new TGeoVolume("YSAA2_PbComp", shSaa2PbComp, kMedPbSh);
 
 
 ///////////////////////////////////
@@ -1035,7 +1040,7 @@ void AliSHILv3::CreateGeometry()
       shSaa2InnerTube->DefineSection( 2, z, kSaa2InnerTubeRmax - kSaa2InnerTubeD, kSaa2InnerTubeRmax);
       z =  kSaa2InnerTubeL;
       shSaa2InnerTube->DefineSection( 3, z, kSaa2InnerTubeRmax - kSaa2InnerTubeD, kSaa2InnerTubeRmax);
-      TGeoVolume* voSaa2InnerTube = new TGeoVolume("YSAA2_InnerTube", shSaa2InnerTube, kMedSteel);
+      TGeoVolume* voSaa2InnerTube = new TGeoVolume("YSAA2_InnerTube", shSaa2InnerTube, kMedSteelSh);
       
 ///////////////////////////////////
 //    SAA2 Steel Ring            //
@@ -1085,6 +1090,7 @@ void AliSHILv3::CreateGeometry()
       shSaa2->DefineSection(15, z, rInSaa2PbCompE3, rOuSaa2PbCompE4);
 
       TGeoVolume* voSaa2  =  new TGeoVolume("YSAA2", shSaa2, kMedAir);
+      voSaa2->SetVisibility(0);
 // Inner 1.89/2 deg line
       Double_t zref   = dzSaa2PbCompA1 + dzSaa2PbCompA2 + dzSaa2PbCompA3;
       for (Int_t i  = 4; i < 10; i++) {
@@ -1191,7 +1197,7 @@ void AliSHILv3::CreateGeometry()
       shSaa3InnerTube->DefineSection( 3,  20.0, 50.6/2., 51.0/2.);
       shSaa3InnerTube->DefineSection( 4,  80.5, 16.8/2., 17.2/2.);
       shSaa3InnerTube->DefineSection( 5, 100.0, 16.8/2., 17.2/2.);
-      TGeoVolume* voSaa3InnerTube  =  new TGeoVolume("YSAA2_InnerTube", shSaa3InnerTube, kMedSteel);
+      TGeoVolume* voSaa3InnerTube  =  new TGeoVolume("YSAA2_InnerTube", shSaa3InnerTube, kMedSteelSh);
       voSaa3SteelBlock->AddNode(voSaa3InnerTube, 1, new TGeoTranslation(0., 0., -50.));
 
 ///////////////////////////////////
@@ -1203,13 +1209,23 @@ void AliSHILv3::CreateGeometry()
       
       TGeoBBox*   shMuonFilterO  = new TGeoBBox(550./2., 620./2., dzMuonFilter);
       shMuonFilterO->SetName("FilterO");
-      TGeoTube*   shMuonFilterI  = new TGeoTube(0., 50., dzMuonFilter);
+      TGeoTube*   shMuonFilterI  = new TGeoTube(0., 50., dzMuonFilter + 5.);
       shMuonFilterI->SetName("FilterI");
       TGeoCompositeShape* shMuonFilter = new TGeoCompositeShape("MuonFilter", "FilterO-FilterI");
       //
       // !!!!! Needs to be inclined
       TGeoVolume* voMuonFilter = new TGeoVolume("YMuonFilter", shMuonFilter, kMedSteel);
 
+      // Inner part with higher transport cuts
+      Float_t dzMuonFilterH = 50.;
+      TGeoBBox*   shMuonFilterOH  = new TGeoBBox(550./2., 620./2., dzMuonFilterH);
+      shMuonFilterOH->SetName("FilterOH");
+      TGeoTube*   shMuonFilterIH  = new TGeoTube(0., 50., dzMuonFilterH + 5.);
+      shMuonFilterIH->SetName("FilterIH");
+      TGeoCompositeShape* shMuonFilterH = new TGeoCompositeShape("MuonFilterH", "FilterOH-FilterIH");
+      TGeoVolume* voMuonFilterH = new TGeoVolume("YMuonFilterH", shMuonFilterH, kMedSteelSh);
+      voMuonFilter->AddNode(voMuonFilterH, 1, gGeoIdentity);
+      
 //  
       TGeoVolumeAssembly* voSaa  = new TGeoVolumeAssembly("YSAA");
 //
@@ -1255,7 +1271,7 @@ void AliSHILv3::CreateGeometry()
       voSaa->AddNode(voSaa1Saa2,   1, new TGeoTranslation(0., 0., ziSaa1Saa2));
       voSaa->AddNode(voSaa2 ,      1, new TGeoTranslation(0., 0., ziSaa2));
       voSaa->AddNode(voSaa3,       1, new TGeoTranslation(0., 0., zcSaa3));
-      voSaa->AddNode(voMuonFilter, 1, new TGeoTranslation(0., 0., zcFilter));      
+      
 
       TGeoRotation* rotxz  = new TGeoRotation("rotxz",   90.,   0., 90.,  90., 180., 0.);
       top->AddNode(voSaa, 1, new TGeoCombiTrans(0., 0., 0., rotxz));
@@ -1284,13 +1300,14 @@ void AliSHILv3::CreateGeometry()
       for (Int_t iz = 17; iz < 24; iz++) 
 	  shYOUT1->DefineSection(iz, z + shSaa1M->GetZ(iz-13), shSaa1M->GetRmax(iz-13) + eps, 150.); 
       // Distance between dipole and start of SAA1 2deg opening cone
-      dz   = zSaa1StEnv[0] - dSt + zSaa1StEnvS + ziSaa1 - ziDipole;
+      dz   = ziDipole - (zSaa1StEnv[0] - dSt + zSaa1StEnvS + ziSaa1);
       rOut = rOuSaa1StEnv2 + dz * TMath::Tan(2. * kDegRad);
       
       shYOUT1->DefineSection(24, ziDipole, rOut + eps, 150.);
 
       InvertPcon(shYOUT1);
       TGeoVolume* voYOUT1 = new TGeoVolume("YOUT1", shYOUT1, kMedAirMu);
+      voYOUT1->SetVisibility(0);
 
       voYOUT1->AddNode(asSaa1ExtraShield, 1, new TGeoCombiTrans(0., 0., - (100.7 + 62.2 + saa1ExtraShieldL / 2. + ziFaWTail), rotxz));
       voYOUT1->AddNode(asFaExtraShield,   1, new TGeoCombiTrans(0., 0., - (16.41 + kFaWring2HWidth + ziFaWTail), rotxz));
@@ -1331,6 +1348,8 @@ void AliSHILv3::CreateGeometry()
       
       InvertPcon(shYOUT2);
       TGeoVolume* voYOUT2 = new TGeoVolume("YOUT2", shYOUT2, kMedAirMu);
+      voYOUT2->SetVisibility(0);
+      voYOUT2->AddNode(voMuonFilter, 1, new TGeoTranslation(0., 0., -zcFilter));            
       top->AddNode(voYOUT2, 1, vec0);
 }
 
