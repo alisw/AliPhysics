@@ -90,7 +90,7 @@ class AliMUONClusterFinderVS : public TObject
     Float_t                 fZ[100][2];          ///< current list of z-coord.
     Int_t                   fIndLocal[100][2];   ///< indices of local maxima
     Int_t                   fNLocal[2];          ///< Number of local maxima
-    Int_t                   fQ[100][2];          ///< current list of charges
+    Float_t                   fQ[100][2];          ///< current list of charges
     Float_t                 fZPlane;             ///< currenz z-plane position
     Int_t                   fSector;             ///< current sector
     
@@ -113,7 +113,7 @@ class AliMUONClusterFinderVS : public TObject
 //  Assignment operator
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
 
-    ClassDef(AliMUONClusterFinderVS,2) //Class for clustering and reconstruction of space points
+    ClassDef(AliMUONClusterFinderVS,3) //Class for clustering and reconstruction of space points
       };
 #endif
 
