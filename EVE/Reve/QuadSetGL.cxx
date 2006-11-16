@@ -116,25 +116,16 @@ inline Bool_t QuadSetGL::SetupColor(const QuadSet::QuadBase& q) const
   if (fM->fValueIsColor)
   {
     glColor4ubv((UChar_t*) & q.fValue);
+    return kTRUE;
   }
   else
   {
-    const RGBAPalette& pal = *fM->fPalette;
-
-    if (q.fValue == fM->fDefaultValue)
-    {
-      glColor4ubv(pal.GetDefaultRGBA());
-    }
-    else if ( pal.WithinVisibleRange(q.fValue) == kFALSE )
-    {
-      return kFALSE;
-    }
-    else
-    {
-      glColor4ubv(pal.ColorFromArray(q.fValue));
-    }
+    UChar_t c[4];
+    Bool_t visible = fM->fPalette->ColorFromValue(q.fValue, fM->fDefaultValue, c);
+    if (visible)
+      glColor4ubv(c);
+    return visible;
   }
-  return kTRUE;
 }
 
 /**************************************************************************/
@@ -508,7 +499,7 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &) const
 	glBegin(GL_LINES);
 	while (n--) {
 	  QuadSet::LineFixedZ& q = * qp;
-	  SetupColor(q);
+	  if (SetupColor(q) == kFALSE) continue;
 	  glVertex3f(q.fX,         q.fY,         z);
 	  glVertex3f(q.fX + q.fDx, q.fY + q.fDy, z);
 	  ++qp;
@@ -524,7 +515,7 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &) const
 	glBegin(GL_LINES);
 	while (n--) {
 	  QuadSet::LineFixedZ& q = * qp;
-	  SetupColor(q);
+	  if (SetupColor(q) == kFALSE) continue;
 	  glVertex3f(q.fX,         z, q.fY);
 	  glVertex3f(q.fX + q.fDx, z, q.fY + q.fDy);
 	  ++qp;
