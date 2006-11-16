@@ -7,11 +7,14 @@
 
 class TGCheckButton;
 class TGColorSelect;
+class TGComboBox;
+
 
 namespace Reve {
 
 class RGBAPalette;
 class RGValuator;
+class RGDoubleValuator;
 
 class RGBAPaletteSubEditor : public TGVerticalFrame
 {
@@ -22,12 +25,15 @@ private:
 protected:
   RGBAPalette*      fM;
 
-  Reve::RGValuator* fMinVal;
-  Reve::RGValuator* fMaxVal;
+  TGComboBox*       fUndershootAction;
+  TGColorSelect*    fUnderColor;
+  TGComboBox*       fOvershootAction;
+  TGColorSelect*    fOverColor;
+
+  RGDoubleValuator* fMinMax;
 
   TGCheckButton*    fInterpolate;
-  TGCheckButton*    fWrap;
-
+  TGCheckButton*    fShowDefValue;
   TGColorSelect*    fDefaultColor;
 
 public:
@@ -38,11 +44,15 @@ public:
 
   void Changed(); //*SIGNAL*
 
-  void DoMinVal();
-  void DoMaxVal();
+  void DoMinMax();
+
   void DoInterpolate();
-  void DoWrap();
-  void DoDefaultColor(Pixel_t);
+  void DoShowDefValue();
+  void DoDefaultColor(Pixel_t color);
+  void DoUnderColor(Pixel_t color);
+  void DoOverColor(Pixel_t color);
+  void DoUndershootAction(Int_t mode);
+  void DoOvershootAction(Int_t mode);
 
   ClassDef(RGBAPaletteSubEditor, 1); // SubEditor for RGBAPalette
 }; // endclass RGBAPaletteSubEditor

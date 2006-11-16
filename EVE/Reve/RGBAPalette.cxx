@@ -19,11 +19,14 @@ RGBAPalette::RGBAPalette() :
 
   fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
 
-  fCutLow      (kTRUE),
-  fCutHigh     (kFALSE),
-  fInterpolate (kFALSE),
-  fWrap        (kFALSE),
+  fInterpolate      (kFALSE),
+  fShowDefValue     (kTRUE),
+  fUndershootAction (LA_Cut),
+  fOvershootAction  (LA_Clip),
+
   fDefaultColor(0),
+  fUnderColor  (1),
+  fOverColor   (2),
   fColorArray  (0)
 {
   SetLimits(0, 1000);
@@ -35,29 +38,35 @@ RGBAPalette::RGBAPalette(Int_t min, Int_t max) :
   Reve::ReferenceCount(),
 
   fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
+  
+  fInterpolate      (kFALSE),
+  fShowDefValue     (kTRUE),
+  fUndershootAction (LA_Cut),
+  fOvershootAction  (LA_Clip),
 
-  fCutLow      (kTRUE),
-  fCutHigh     (kFALSE),
-  fInterpolate (kFALSE),
-  fWrap        (kFALSE),
   fDefaultColor(0),
+  fUnderColor  (1),
+  fOverColor   (2),
   fColorArray  (0)
 {
   SetLimits(0, 1000);
   SetMinMax(min, max);
 }
 
-RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t wrap) :
+RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t showdef) :
   TObject(),
   Reve::ReferenceCount(),
 
   fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
 
-  fCutLow      (kTRUE),
-  fCutHigh     (kFALSE),
-  fInterpolate (interp),
-  fWrap        (wrap),
+  fInterpolate      (interp),
+  fShowDefValue     (showdef),
+  fUndershootAction (LA_Cut),
+  fOvershootAction  (LA_Clip),
+
   fDefaultColor(0),
+  fUnderColor  (1),
+  fOverColor   (2),
   fColorArray  (0)
 {
   SetLimits(0, 1023);
@@ -120,11 +129,13 @@ void RGBAPalette::SetLimits(Int_t low, Int_t high)
 {
   fLowLimit  = low;
   fHighLimit = high;
-  if (fMaxVal < fLowLimit)  SetMax(fLowLimit);
-  if (fMinVal < fLowLimit)  SetMin(fLowLimit);
-  if (fMinVal > fHighLimit) SetMin(fHighLimit);
-  if (fMaxVal > fHighLimit) SetMax(fHighLimit);
-    
+  Bool_t changed = kFALSE;
+  if (fMaxVal < fLowLimit)  { SetMax(fLowLimit);  changed = kTRUE; }
+  if (fMinVal < fLowLimit)  { SetMin(fLowLimit);  changed = kTRUE; }
+  if (fMinVal > fHighLimit) { SetMin(fHighLimit); changed = kTRUE; }
+  if (fMaxVal > fHighLimit) { SetMax(fHighLimit); changed = kTRUE; }
+  if (changed)
+    ClearColorArray();
 }
 
 void RGBAPalette::SetMin(Int_t min)
@@ -149,17 +160,16 @@ void RGBAPalette::SetMinMax(Int_t min, Int_t max)
   ClearColorArray();
 }
 
+/**************************************************************************/
+/**************************************************************************/
+
 void RGBAPalette::SetInterpolate(Bool_t b)
 {
   fInterpolate = b;
   ClearColorArray();
 }
 
-void RGBAPalette::SetWrap(Bool_t b)
-{
-  fWrap = b;
-}
-
+/**************************************************************************/
 /**************************************************************************/
 
 void RGBAPalette::SetDefaultColor(Color_t ci)
@@ -181,3 +191,50 @@ void RGBAPalette::SetDefaultColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a)
   fDefaultRGBA[2] = b;
   fDefaultRGBA[3] = a;
 }
+
+/**************************************************************************/
+
+void RGBAPalette::SetUnderColor(Color_t ci)
+{
+  fUnderColor = ci;
+  ColorFromIdx(ci, fUnderRGBA, kTRUE);
+}
+
+void RGBAPalette::SetUnderColor(Pixel_t pix)
+{
+  SetUnderColor(Color_t(TColor::GetColor(pix)));
+}
+
+void RGBAPalette::SetUnderColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a)
+{
+  fUnderColor = Color_t(TColor::GetColor(r, g, b));
+  fUnderRGBA[0] = r;
+  fUnderRGBA[1] = g;
+  fUnderRGBA[2] = b;
+  fUnderRGBA[3] = a;
+}
+
+/**************************************************************************/
+
+void RGBAPalette::SetOverColor(Color_t ci)
+{
+  fOverColor = ci;
+  ColorFromIdx(ci, fOverRGBA, kTRUE);
+}
+
+void RGBAPalette::SetOverColor(Pixel_t pix)
+{
+  SetOverColor(Color_t(TColor::GetColor(pix)));
+}
+
+void RGBAPalette::SetOverColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a)
+{
+  fOverColor = Color_t(TColor::GetColor(r, g, b));
+  fOverRGBA[0] = r;
+  fOverRGBA[1] = g;
+  fOverRGBA[2] = b;
+  fOverRGBA[3] = a;
+}
+
+/**************************************************************************/
+/**************************************************************************/
