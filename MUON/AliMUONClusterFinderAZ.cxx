@@ -257,7 +257,7 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
 
   AliMUONDigit *mdig = fInput->Digit(cath,digit); 
 
-  Int_t charge = mdig->Signal();
+  Float_t charge = mdig->Signal();
   // get the center of the pad
   Float_t xpad, ypad, zpad0;
   //if (!fSegmentation[cath]->GetPadC(fInput->DetElemId(),mdig->PadX(),mdig->PadY(),xpad,ypad,zpad0)) {	  // Handle "non-existing" pads
@@ -280,7 +280,9 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
   fPadIJ[2][nPads] = mdig->PadX();
   fPadIJ[3][nPads] = mdig->PadY();
   fUsed[cath][digit] = kTRUE;
-  if (fDebug) printf(" bbb %d %d %f %f %f %f %f %4d %3d %3d \n", nPads, cath, xpad, ypad, zpad0, fXyq[3][nPads]*2, fXyq[4][nPads]*2, charge, mdig->PadX(), mdig->PadY());
+  if (fDebug) printf(" bbb %d %d %f %f %f %f %f %f %3d %3d \n", nPads, cath, 
+                     xpad, ypad, zpad0, fXyq[3][nPads]*2, fXyq[4][nPads]*2, 
+                     charge, mdig->PadX(), mdig->PadY());
   fnPads[cath]++;
 
   // Check neighbours
@@ -2293,7 +2295,7 @@ void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t qTot
     if (fPadIJ[1][j] == -9) nover[cath]++;
     if (fPadIJ[1][j] != 1 && fPadIJ[1][j] != -9) continue;
     cnew.SetMultiplicity(cath,cnew.GetMultiplicity(cath)+1);
-    if (fXyq[2][j] > cnew.GetPeakSignal(cath)) cnew.SetPeakSignal(cath,TMath::Nint (fXyq[2][j]));
+    if (fXyq[2][j] > cnew.GetPeakSignal(cath)) cnew.SetPeakSignal(cath,fXyq[2][j]);
     //cnew.SetCharge(cath,cnew.GetCharge(cath) + TMath::Nint (fXyq[2][j]));
     cnew.SetContrib(npads[cath],cath,fXyq[2][j]);
     cnew.SetIndex(npads[cath],cath,TMath::Nint (fXyq[5][j]));

@@ -215,7 +215,7 @@ void AliMUONRawCluster::DumpIndex(void)
     }
 }
 //____________________________________________________
-Int_t AliMUONRawCluster::AddCharge(Int_t i, Int_t Q)
+Int_t AliMUONRawCluster::AddCharge(Int_t i, Float_t Q)
 {
 /// Adding Q to the fQ value
   if (i==0 || i==1) {
@@ -255,7 +255,7 @@ Int_t AliMUONRawCluster::AddZ(Int_t i, Float_t Z)
   else return 0;
 }
 //____________________________________________________
-Int_t AliMUONRawCluster::GetCharge(Int_t i) const
+Float_t AliMUONRawCluster::GetCharge(Int_t i) const
 {
 /// Getting the charge of the cluster
   if (i==0 || i==1) return fQ[i];
@@ -290,7 +290,7 @@ Int_t AliMUONRawCluster::GetTrack(Int_t i) const
   else  return 99999;
 }
 //____________________________________________________
-Int_t AliMUONRawCluster::GetPeakSignal(Int_t i) const 
+Float_t AliMUONRawCluster::GetPeakSignal(Int_t i) const 
 {
 /// Getting cluster peaksignal
   if (i==0 || i==1 ) return fPeakSignal[i];
@@ -330,7 +330,7 @@ Float_t AliMUONRawCluster::GetChi2(Int_t i) const
   else  return 99999.;
 }
 //____________________________________________________
-Int_t AliMUONRawCluster::SetCharge(Int_t i, Int_t Q)
+Int_t AliMUONRawCluster::SetCharge(Int_t i, Float_t Q)
 {
 /// Setting Charge of the cluster
   if (i==0 || i==1) {
@@ -380,7 +380,7 @@ Int_t AliMUONRawCluster::SetTrack(Int_t i, Int_t track)
   else return 0;
 }
 //____________________________________________________
-Int_t AliMUONRawCluster::SetPeakSignal(Int_t i, Int_t peaksignal)
+Int_t AliMUONRawCluster::SetPeakSignal(Int_t i, Float_t peaksignal)
 {
 /// Setting PeakSignal of the cluster
   if (i==0 || i==1 ) {

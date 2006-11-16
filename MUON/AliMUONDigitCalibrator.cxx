@@ -118,17 +118,16 @@ AliMUONDigitCalibrator::Exec(Option_t*)
       }
       
       Int_t manuChannel = digit->ManuChannel();
-      Int_t adc = digit->Signal();
+      Float_t adc = digit->Signal();
       Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
       if ( padc < 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
       {
         padc = 0.0;
       }
       Float_t charge = padc*gain->ValueAsFloat(manuChannel,0);
-      Int_t signal = TMath::Nint(charge);
-      digit->SetSignal(signal);
+      digit->SetSignal(charge);
       Int_t saturation = gain->ValueAsInt(manuChannel,1);
-      if ( signal >= saturation )
+      if ( charge >= saturation )
       {
         digit->Saturated(kTRUE);
       }

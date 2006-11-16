@@ -1189,8 +1189,8 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
       dig= fInput->Digit(cath,c->GetIndex(i,cath));
       ix=dig->PadX()+c->GetOffset(i,cath);
       iy=dig->PadY();
-      Int_t q=dig->Signal();
-      if (!flag) q=Int_t(q*c->GetContrib(i,cath));
+      Float_t q=dig->Signal();
+      if (!flag) q *= c->GetContrib(i,cath);
       //	fprintf(stderr,"q %d c->fPeakSignal[ %d ] %d\n",q,cath,c->fPeakSignal[cath]);
       if (dig->Physics() >= dig->Signal()) {
 	c->SetPhysics(i,2);
@@ -1277,7 +1277,7 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
       if (dr < dr0) {
 	dr0 = dr;
 	AliDebug(1,Form(" dr %f\n",dr));
-	Int_t q=dig->Signal();
+	Float_t q=dig->Signal();
 	if (dig->Physics() >= dig->Signal()) {
 	  c->SetPhysics(i,2);
 	} else if (dig->Physics() == 0) {
@@ -1306,7 +1306,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     
     Int_t idx = fDigitMap[cath]->GetHitIndex(i,j);
     AliMUONDigit* dig = (AliMUONDigit*) fDigitMap[cath]->GetHit(i,j);
-    Int_t q=dig->Signal();
+    Float_t q=dig->Signal();
     Int_t theX=dig->PadX();
     Int_t theY=dig->PadY(); 
    
@@ -1333,7 +1333,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     if (mu > 0) {
 	for (Int_t ind = mu-1; ind >= 0; ind--) {
 	    Int_t ist=c.GetIndex(ind,cath);
-	    Int_t ql=fInput->Digit(cath, ist)->Signal();
+	    Float_t ql=fInput->Digit(cath, ist)->Signal();
 	    Int_t ix=fInput->Digit(cath, ist)->PadX();
 	    Int_t iy=fInput->Digit(cath, ist)->PadY();
 	    

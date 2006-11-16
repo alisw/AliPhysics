@@ -1092,7 +1092,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    //
 	    // First get all needed parameters
 	    //
-	    Int_t charge = mdig->Signal();
+	    Float_t charge = mdig->Signal();
 	    Int_t index  = Int_t(TMath::Log(charge)/(TMath::Log(adcmax)/22));
 	    Int_t color  = 261+index;
 	    Int_t colorTrigger = 2;   
@@ -1100,11 +1100,11 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    
 	    if (chamber > 10) { // trigger chamber 
 		
-		Int_t sumCharge = 0;
+		Float_t sumCharge = 0;
 		for (Int_t icharge = 0; icharge < 10; icharge++) {
 		    sumCharge = sumCharge+mdig->TrackCharge(icharge);
 		}
-		Int_t testCharge = sumCharge-(Int_t(sumCharge/10))*10;
+		Float_t testCharge = sumCharge-(Int_t(sumCharge/10))*10;
 		if(sumCharge <= 10 || testCharge > 0) {
 		    colorTrigger = color; 
 		} else {
@@ -1168,7 +1168,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    Int_t ix=mdig->PadX();
 	    Int_t iy=mdig->PadY();
 	    Int_t detElemId=mdig->DetElemId();      
-	    Int_t charge = mdig->Signal();
+	    Float_t charge = mdig->Signal();
 	    Int_t index  = Int_t(TMath::Log(charge)/(TMath::Log(adcmax)/22));
 	    Int_t color  = 261+index;
 	    Int_t colorTrigger = 2;   
@@ -1180,13 +1180,12 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
 	    
 	    if (chamber > 10) { // trigger chamber
-		Int_t sumCharge = 0;
+		Float_t sumCharge = 0;
     Int_t n = mdig->Ntracks();
 		for (Int_t icharge = 0; icharge < n; icharge++) {
 		    sumCharge = sumCharge+mdig->TrackCharge(icharge);
 		}
-    assert(sumCharge==mdig->Signal());
-		Int_t testCharge = sumCharge-(Int_t(sumCharge/n))*n;
+		Float_t testCharge = sumCharge-(Int_t(sumCharge/n))*n;
 		if(sumCharge <= n || testCharge > 0) {
 		    colorTrigger = color; 
 		} else {
