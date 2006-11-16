@@ -72,10 +72,6 @@ void AliABSOv3::CreateGeometry()
     TGeoVolume* top = gGeoManager->GetVolume("ALIC");
     
 //
-// Translation
-//
-    TGeoTranslation* vec0 = new TGeoTranslation(0., 0., 0.);
-//
 // Media
 //
     TGeoMedium* kMedNiW     = gGeoManager->GetMedium("ABSO_Ni/W0");
@@ -327,7 +323,7 @@ void AliABSOv3::CreateGeometry()
 	  shFaWPlateAI->DefineSection(i, z, rmin, rmax);
       }
       TGeoVolume* voFaWPlateAI = new TGeoVolume("AFaWPlateAI", shFaWPlateAI, kMedNiWsh);
-      voFaWPlateA->AddNode(voFaWPlateAI, 1, vec0);
+      voFaWPlateA->AddNode(voFaWPlateAI, 1, gGeoIdentity);
       
 //
 // Inner Tungsten Shield
@@ -518,7 +514,7 @@ void AliABSOv3::CreateGeometry()
       // Inner region with higher transport cuts
       TGeoPcon*   shFaPbConeI = MakeShapeFromTemplate(shFaPbCone, 0., -3.);
       TGeoVolume* voFaPbConeI  = new TGeoVolume("AFaPbConeI", shFaPbConeI, kMedPbSh);
-      voFaPbCone->AddNode(voFaPbConeI, 1, vec0);
+      voFaPbCone->AddNode(voFaPbConeI, 1, gGeoIdentity);
       
       
 // Pos 13
@@ -711,7 +707,8 @@ void AliABSOv3::CreateGeometry()
       shFaM->DefineSection(15, z,  rInFaCH2Cone2,                    rOuSteelEnvelopeR2);
 
       TGeoVolume* voFaM = new TGeoVolume("AFaM", shFaM, kMedAir);
-
+      voFaM->SetVisibility(0);
+      
 
 //
 //    Assemble volumes inside acceptance
@@ -732,7 +729,7 @@ void AliABSOv3::CreateGeometry()
       TGeoVolume* voFaAccM = new TGeoVolume("AFaAcc", shFaAccM, kMedAir);
       
       z = 0;
-      voFaAccM->AddNode(voFaGraphiteCone, 1, vec0);
+      voFaAccM->AddNode(voFaGraphiteCone, 1, gGeoIdentity);
       z += dzFaGraphiteCone;
       voFaAccM->AddNode(voFaConcreteCone, 1, new TGeoTranslation(0., 0., z + dzFaConcreteCone / 2.));
       z += dzFaConcreteCone;
@@ -743,7 +740,7 @@ void AliABSOv3::CreateGeometry()
 //
 // Inner shield
       TGeoVolumeAssembly* voFaInnerShield = new TGeoVolumeAssembly("AFaInnerShield");
-      voFaInnerShield->AddNode(voFaWTube1, 1, vec0);
+      voFaInnerShield->AddNode(voFaWTube1, 1, gGeoIdentity);
       z = dzFaWTube1 - 0.6;
       voFaInnerShield->AddNode(voFaWTube2, 1, new TGeoTranslation(0., 0., z) );
       z += dzFaWTube2;
@@ -758,16 +755,16 @@ void AliABSOv3::CreateGeometry()
 //    Adding volumes to mother volume
 //
       z = 0.;
-      voFaM->AddNode(voFaWPlateA,       1, vec0);
+      voFaM->AddNode(voFaWPlateA,       1, gGeoIdentity);
       z += dzFaWPlate;
       voFaM->AddNode(voFaSteelEnvelope, 1, new TGeoTranslation(0., 0., z));
       z += dzSteelEnvelopeFC;
       voFaM->AddNode(voFaPbCone,        1, new TGeoTranslation(0., 0., z));
       z += (dzFaPbCone + dzFaCH2Cone / 2.);
       voFaM->AddNode(voFaCH2Cone,       1, new TGeoTranslation(0., 0., z));
-      voFaM->AddNode(voFaFlange,   1, vec0);
-      voFaM->AddNode(voFaMgRing,   1, vec0);
-      voFaM->AddNode(voFaCompRing, 1, vec0);
+      voFaM->AddNode(voFaFlange,   1, gGeoIdentity);
+      voFaM->AddNode(voFaMgRing,   1, gGeoIdentity);
+      voFaM->AddNode(voFaCompRing, 1, gGeoIdentity);
       voFaM->AddNode(voFaAccM, 1, new TGeoTranslation(0., 0., dzFaFlange));
 
 ////////////////////////////////////////////////////
@@ -863,7 +860,7 @@ void AliABSOv3::CreateGeometry()
 	  new TGeoCompositeShape("shFassCentral", "FassCone-(FassWindow:tFassWindow+FassApperture)");
       
       TGeoVolume* voFassCentral = new TGeoVolume("AFassCentral", shFassCentral, kMedSteel);
-      voFass->AddNode(voFassCentral, 1, vec0);
+      voFass->AddNode(voFassCentral, 1, gGeoIdentity);
       
 //
 // Aluminum ring
@@ -890,7 +887,7 @@ void AliABSOv3::CreateGeometry()
 //
 // Absorber and Support
       TGeoVolumeAssembly* voFA = new TGeoVolumeAssembly("AFA");
-      voFA->AddNode(voFaM,        1, vec0);
+      voFA->AddNode(voFaM,        1, gGeoIdentity);
       voFA->AddNode(voFaEndPlate, 1, new TGeoTranslation(0., 0., dzFa + dzEndPlate/2.));
       voFA->AddNode(voFass, 1, new TGeoTranslation(0., 0., 388.45));
       voFA->AddNode(voFassAlRing, 1, new TGeoTranslation(0., 0., 382. - 0.55));
