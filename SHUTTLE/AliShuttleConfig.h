@@ -49,6 +49,7 @@ public:
 	const char* GetDCSHost(const char* detector) const;
 	Int_t GetDCSPort(const char* detector) const;
 	const TObjArray* GetDCSAliases(const char* detector) const;
+	Bool_t StrictRunOrder(const char* detector) const;
 
 	void SetProcessAll(Bool_t flag=kTRUE) {fProcessAll=flag;}
 	Bool_t ProcessAll() const {return fProcessAll;}
@@ -71,6 +72,7 @@ private:
 
 		Bool_t IsValid() const {return fIsValid;}
 		Bool_t SkipDCSQuery() const {return fSkipDCSQuery;}
+		Bool_t StrictRunOrder() const {return fStrictRunOrder;}
 
 	private:
 		TString fDetector;  	// Detector name
@@ -79,6 +81,7 @@ private:
 		TObjArray* fDCSAliases; // List of DCS aliases to be retrieved
 		Bool_t fIsValid;  	// flag for the validity of the configuration
 		Bool_t fSkipDCSQuery; 	// flag - if TRUE (-> DCS config empty) skip DCS archive data query
+		Bool_t fStrictRunOrder; // flag - if TRUE connect data in a strict run ordering
 
 
 		ClassDef(AliShuttleConfigHolder, 0);
@@ -103,7 +106,7 @@ private:
 
 	Int_t fPPTimeOut;         // timeout until a preprocessor is canceled
 
-  TMap fDetectorMap; 		//! Map of the detector-by-detector configuration
+	TMap fDetectorMap; 		//! Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	//! List of detectors with valid configuration
 
 	TString fShuttleInstanceHost; 	//! Instance of the SHUTTLE

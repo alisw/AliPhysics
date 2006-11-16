@@ -6,13 +6,14 @@ attributetype ( DETECTOR_CONFIG:1 NAME 'det'         DESC 'Detector name'       
 attributetype ( DETECTOR_CONFIG:2 NAME 'DCSHost'     DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( DETECTOR_CONFIG:3 NAME 'DCSPort'     DESC ''                                                  SUP ipServicePort )
 attributetype ( DETECTOR_CONFIG:4 NAME 'DCSalias'    DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DETECTOR_CONFIG:5 NAME 'StrictRunOrder' DESC 'Strict run ordering flag' EQUALITY caseIgnoreMatch SUP name )
 
 objectclass ( DETECTOR_CONFIG
         NAME 'AliShuttleDetector'
         DESC 'ALICE: Shuttle configuration object.'
         SUP top
         MUST (det)
-        MAY  (DCSHost $ DCSPort $ DCSalias) )
+        MAY  (DCSHost $ DCSPort $ DCSalias $ StrictRunOrder) )
 
 
 objectidentifier SYS_CONFIG SHUTTLE_BASE:2

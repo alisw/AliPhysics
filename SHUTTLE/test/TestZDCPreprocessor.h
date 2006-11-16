@@ -10,7 +10,7 @@
 class TestZDCPreprocessor: public AliPreprocessor {
 public:
 	TestZDCPreprocessor();
-	TestZDCPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+	TestZDCPreprocessor(AliShuttleInterface* shuttle);
 
 protected:
 

@@ -39,8 +39,8 @@ TestRICHPreprocessor::TestRICHPreprocessor():
 }
 
 //________________________________________________________________________________________
-TestRICHPreprocessor::TestRICHPreprocessor(const char* detector, AliShuttleInterface* shuttle):
-	AliPreprocessor(detector,shuttle)
+TestRICHPreprocessor::TestRICHPreprocessor(AliShuttleInterface* shuttle):
+	AliPreprocessor("HMP", shuttle)
 {
 // constructor - shuttle must be instantiated!
 
@@ -94,8 +94,8 @@ UInt_t TestRICHPreprocessor::Process(TMap* /*valueMap*/)
 		printf("\n\n Getting file #%d\n",++i);
 		//if(i==1) continue;
 		TString filename = GetFile(AliShuttleInterface::kDAQ, "thresholds.txt", source->GetName());
-		if(!filename.Data()) {
-			AliError(Form("Error retrieving file from source %d failed!", source->GetName()));
+		if(!filename.Length()) {
+			AliError(Form("Error: retrieval of file from source %s failed!", source->GetName()));
 			delete filesources;
 			return 0;
 		}

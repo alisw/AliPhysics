@@ -10,7 +10,7 @@
 class TestRICHPreprocessor: public AliPreprocessor {
 public:
 	TestRICHPreprocessor();
-	TestRICHPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+	TestRICHPreprocessor(AliShuttleInterface* shuttle);
 
 protected:
 

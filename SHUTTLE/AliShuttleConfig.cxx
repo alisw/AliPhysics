@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.11  2006/11/06 14:23:04  jgrosseo
+major update (Alberto)
+o) reading of run parameters from the logbook
+o) online offline naming conversion
+o) standalone DCSclient package
+
 Revision 1.10  2006/10/20 15:22:59  jgrosseo
 o) Adding time out to the execution of the preprocessors: The Shuttle forks and the parent process monitors the child
 o) Merging Collect, CollectAll, CollectNew function
@@ -103,7 +109,8 @@ fDetector(""),
 fDCSHost(""),
 fDCSPort(0),
 fIsValid(kFALSE),
-fSkipDCSQuery(kFALSE)
+fSkipDCSQuery(kFALSE),
+fStrictRunOrder(kFALSE)
 {
 // constructor of the shuttle configuration holder
 
@@ -113,6 +120,21 @@ fSkipDCSQuery(kFALSE)
 
 	anAttribute = entry->GetAttribute("det"); // MUST
 	fDetector = anAttribute->GetValue();
+
+	anAttribute = entry->GetAttribute("StrictRunOrder"); // MAY
+        if (!anAttribute)
+	{
+		AliWarning(Form("%s did not set StrictRunOrder flag - the default is FALSE",
+				fDetector.Data()));
+        } else {
+		TString strictRunStr = anAttribute->GetValue();
+		if (!(strictRunStr == "0" || strictRunStr == "1"))
+		{
+			AliError("Invalid configuration! StrictRunOrder flag must be 0 or 1!");
+			return;
+		}
+		fStrictRunOrder = (Bool_t) strictRunStr.Atoi();
+	}
 
 	anAttribute = entry->GetAttribute("DCSHost"); // MAY
 	if (!anAttribute) {
@@ -499,6 +521,22 @@ Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 }
 
 //______________________________________________________________________________________________
+Bool_t AliShuttleConfig::StrictRunOrder(const char* detector) const
+{
+	// return TRUE if detector wants strict run ordering of stored data
+
+	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+        if (!aHolder)
+	{
+                AliError(Form("There isn't configuration for detector: %s",
+                        detector));
+                return kTRUE;
+        }
+
+	return aHolder->StrictRunOrder();
+}
+
+//______________________________________________________________________________________________
 void AliShuttleConfig::Print(Option_t* /*option*/) const
 {
 // print configuration
@@ -542,8 +580,13 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 	TPair* aPair;
 	while ((aPair = (TPair*) iter.Next())) {
 		AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) aPair->Value();
-		if(aHolder->SkipDCSQuery()) continue;
-		result += Form("DCS archive DB configuration for *** %s *** \n", aHolder->GetDetector());
+		result += Form("Detector-specific configuration: *** %s *** \n", aHolder->GetDetector());
+		result += Form("\tStrict run ordering flag: %s \n", aHolder->StrictRunOrder() ? "TRUE" : "FALSE");
+		if(aHolder->SkipDCSQuery())
+		{
+			result += "\n\n";
+			continue;
+		}
 		result += Form("\tAmanda server: %s:%d \n", aHolder->GetDCSHost(), aHolder->GetDCSPort());
 
 		result += "\tDCS Aliases: ";

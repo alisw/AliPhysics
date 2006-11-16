@@ -10,7 +10,7 @@
 class TestITSPreprocessorSPD: public AliPreprocessor {
 public:
 	TestITSPreprocessorSPD();
-	TestITSPreprocessorSPD(const char* detector, AliShuttleInterface* shuttle);
+	TestITSPreprocessorSPD(AliShuttleInterface* shuttle);
 
 protected:
 

@@ -279,15 +279,21 @@ Bool_t DeleteEntries(Int_t runNumber=-1)
 void TestShuttleLogbook(){
 
 	gSystem->Load("libSHUTTLE.so");
+	
+	DeleteEntries();
 
 	AliShuttleLogbookEntry::Status y[17]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-	AliShuttleLogbookEntry lb(21242,0,0,y);
+	AliShuttleLogbookEntry lb(21242, y);
 	lb.SetDetectorStatus("HMP","Unprocessed"); // RICH
-	lb.SetDetectorStatus("ZDC","Done"); // ZDC
+	lb.SetDetectorStatus("ZDC","Unprocessed"); // ZDC
 	lb.SetDetectorStatus("TPC","Unprocessed"); // TPC
+	lb.SetDetectorStatus("SPD","Unprocessed"); // SPD
 	lb.Print();
 
 	InsertNewRun(lb);
+	InsertNewRun(lb,21243);
 	InsertNewRun(lb,21244);
+	InsertNewRun(lb,21245);
+	InsertNewRun(lb,21246);
 
 }

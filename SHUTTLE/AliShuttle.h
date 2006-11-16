@@ -134,16 +134,18 @@ private:
 	AliShuttleLogbookEntry* fLogbookEntry;   //! current Shuttle logbook entry
 	TString fCurrentDetector; // current detector
 
-	TSQLServer *fServer[3]; 	// pointer to the three FS logbook servers
+	TSQLServer *fServer[4]; 	// pointer to the three FES + Run & Shuttle logbook servers
 	Bool_t fFESCalled[3];		// FES call status
 	TList  fFESlist[3];		// List of files retrieved from each FES
 
 	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved
 	Bool_t fGridError; 	   // Grid storage error flag
-	
+
 	TMutex* fMonitoringMutex;   // mutex to lock the monitoring class members
 	UInt_t fLastActionTime;    // time of last action for monitoring
 	TString fLastAction;       // string description for last action
+
+	Bool_t fFirstUnprocessed[AliShuttleInterface::kNDetectors];       // array of flags for first unprocessed dets
 
 	//TODO Test only, remove later !
 	static Bool_t fgkProcessDCS; // flag to enable DCS archive data processing

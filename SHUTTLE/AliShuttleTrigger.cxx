@@ -15,6 +15,11 @@
 
 /*
  $Log$
+ Revision 1.12  2006/10/20 15:22:59  jgrosseo
+ o) Adding time out to the execution of the preprocessors: The Shuttle forks and the parent process monitors the child
+ o) Merging Collect, CollectAll, CollectNew function
+ o) Removing implementation of empty copy constructors (declaration still there!)
+
  Revision 1.11  2006/10/02 16:38:39  jgrosseo
  update (alberto):
  fixed memory leaks
@@ -120,8 +125,8 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 
 	fShuttle = new AliShuttle(config, timeout, retries);
 
-  TerminateSignalHandler* fQuitSignalHandler = new TerminateSignalHandler(this, kSigQuit);
-  TerminateSignalHandler* fInterruptSignalHandler = new TerminateSignalHandler(this, kSigInterrupt);
+	TerminateSignalHandler* fQuitSignalHandler = new TerminateSignalHandler(this, kSigQuit);
+	TerminateSignalHandler* fInterruptSignalHandler = new TerminateSignalHandler(this, kSigInterrupt);
 
 	gSystem->AddSignalHandler(fQuitSignalHandler);
 	gSystem->AddSignalHandler(fInterruptSignalHandler);

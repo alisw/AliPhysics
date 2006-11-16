@@ -39,13 +39,13 @@ Bool_t Shuttle(const char* param = "listen") {
 
 	// Add here detectors preprocessor ...
 	TestTPCPreprocessor *tpcPrep = new TestTPCPreprocessor(shuttle);
-	TestITSPreprocessorSPD *spdPrep = new TestITSPreprocessorSPD("SPD",shuttle);
-	TestRICHPreprocessor *richPrep = new TestRICHPreprocessor("HMP",shuttle);
-	TestZDCPreprocessor *zdcPrep = new TestZDCPreprocessor("ZDC",shuttle);
+	TestITSPreprocessorSPD *spdPrep = new TestITSPreprocessorSPD(shuttle);
+	TestRICHPreprocessor *richPrep = new TestRICHPreprocessor(shuttle);
+	TestZDCPreprocessor *zdcPrep = new TestZDCPreprocessor(shuttle);
 
 	TString paramStr(param);
 	
-	if (paramStr.IsDigit()) {
+	if (paramStr.IsDigit() || paramStr == "-1") {
 		Int_t run = paramStr.Atoi();
 		trigger.Collect(run);
 	} else if (paramStr == "new") {

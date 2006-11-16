@@ -39,8 +39,8 @@ TestZDCPreprocessor::TestZDCPreprocessor():
 }
 
 //________________________________________________________________________________________
-TestZDCPreprocessor::TestZDCPreprocessor(const char* detector, AliShuttleInterface* shuttle):
-	AliPreprocessor(detector,shuttle)
+TestZDCPreprocessor::TestZDCPreprocessor(AliShuttleInterface* shuttle):
+	AliPreprocessor("ZDC",shuttle)
 {
 // constructor - shuttle must be instantiated!
 

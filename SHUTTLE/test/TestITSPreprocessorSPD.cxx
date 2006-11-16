@@ -36,8 +36,8 @@ TestITSPreprocessorSPD::TestITSPreprocessorSPD():
 }
 
 //________________________________________________________________________________________
-TestITSPreprocessorSPD::TestITSPreprocessorSPD(const char* detector, AliShuttleInterface* shuttle):
-	AliPreprocessor(detector,shuttle)
+TestITSPreprocessorSPD::TestITSPreprocessorSPD(AliShuttleInterface* shuttle):
+	AliPreprocessor("SPD", shuttle)
 {
 // constructor - shuttle must be instantiated!
 
@@ -69,6 +69,6 @@ UInt_t TestITSPreprocessorSPD::Process(TMap* valueMap)
 	AliCDBMetaData metaData;
 	metaData.SetComment("This is a test!");
 
-	return Store("Calib", "ITSDataSPD", valueMap, &metaData);
+	return Store("Calib", "ITSDataSPD", valueMap, &metaData, 0, kTRUE);
 }
 
