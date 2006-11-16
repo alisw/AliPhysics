@@ -125,10 +125,10 @@ void OldQuadSet::Paint(Option_t* )
     for (Int_t q = 0; q < (Int_t)fQuads.size(); ++q) {
       buffer.fPols[6*q] = fQuads[q].color;   
       buffer.fPols[6*q +1] = 4;
-      buffer.fPols[6*q +2] = 4*q +0;
-      buffer.fPols[6*q +3] = 4*q +1;
-      buffer.fPols[6*q +4] = 4*q +2;
-      buffer.fPols[6*q +5] = 4*q +3;
+      buffer.fPols[6*q +2] = 4*q + 0;
+      buffer.fPols[6*q +3] = 4*q + 1;
+      buffer.fPols[6*q +4] = 4*q + 2;
+      buffer.fPols[6*q +5] = 4*q + 3;
     }
 
     buffer.SetSectionsValid(TBuffer3D::kRaw);
@@ -299,12 +299,7 @@ void QuadSet::SetPalette(RGBAPalette* p)
   if (fPalette == p) return;
   if (fPalette) fPalette->DecRefCount();
   fPalette = p;
-  if (fPalette) {
-    fPalette->IncRefCount();
-    SetMainColorPtr(fPalette->PtrDefaultColor());
-  } else {
-    SetMainColorPtr(0);
-  }
+  if (fPalette) fPalette->IncRefCount();
 }
 
 /**************************************************************************/

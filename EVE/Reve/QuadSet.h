@@ -71,7 +71,7 @@ public:
 };
 
 /**************************************************************************/
-// To become new implementation of QuadSet ... not finished yet.
+// To become new implementation of QuadSet ... somewhat finished.
 /**************************************************************************/
 
 class QuadSet : public RenderElement,
@@ -79,6 +79,7 @@ class QuadSet : public RenderElement,
 		public TAtt3D,
 		public TAttBBox
 {
+  friend class QuadSetEditor;
   friend class QuadSetGL;
 
   QuadSet(const QuadSet&);            // Not implemented
