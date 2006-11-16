@@ -39,28 +39,33 @@ void ReadESDfriend(Bool_t readFriend=kTRUE) {
        cout<<endl<<"Event number: "<<i<<endl;
        Int_t n=ev->GetNumberOfTracks();
        cout<<"Number of tracks: "<<n<<endl;
-       if (n==0) continue;
 
        ev->SetESDfriend(evf); //Attach the friend to the ESD
 
     // Now the attached information can be accessed via pointer to ESD.
     // Example: indices of the TPC clusters associated with the track number 0.
-       const AliESDtrack *t=ev->GetTrack(0);
-       Int_t idx[AliESDfriendTrack::kMaxTPCcluster]; 
-       n=t->GetTPCclusters(idx);
-       cout<<"Track number 0"<<endl;
-       cout<<"   Number of TPC clusters: "<<n<<endl;
-       cout<<"   Index of the 7th TPC cluster: "<<idx[7]<<endl;
+       if (n > 0) {
+          const AliESDtrack *t=ev->GetTrack(0);
+          Int_t idx[AliESDfriendTrack::kMaxTPCcluster]; 
+          n=t->GetTPCclusters(idx);
+          cout<<"Track number 0"<<endl;
+          cout<<"   Number of TPC clusters: "<<n<<endl;
+          cout<<"   Index of the 7th TPC cluster: "<<idx[7]<<endl;
 
     // Example: track points associated with the track number 0.
-       const AliTrackPointArray *pa=t->GetTrackPointArray();
-       if (pa==0) continue;
-       n=pa->GetNPoints();
-       const Float_t *x=pa->GetX();
-       cout<<"   Number of track points: "<<n<<endl;
-       if (n>7)
-       cout<<"   X coordinate of the 7th track point: "<<x[7]<<endl;
-       
+          const AliTrackPointArray *pa=t->GetTrackPointArray();
+          if (pa != 0) {
+             n=pa->GetNPoints();
+             const Float_t *x=pa->GetX();
+             cout<<"   Number of track points: "<<n<<endl;
+             if (n>7)
+             cout<<"   X coordinate of the 7th track point: "<<x[7]<<endl;
+          }
+       }
+
+       delete ev;  ev=0;
+       delete evf; evf=0;
+
    }
 
    delete esdTree;
