@@ -33,17 +33,17 @@ public:
    static void  SortMin(Int_t *idx,Float_t *xdarray, Float_t *xarray, Float_t *yarray, Float_t *qarray,Int_t ntr);
    void         DumpIndex();
 
-   Int_t        AddCharge(Int_t i, Int_t Q);
+   Int_t        AddCharge(Int_t i, Float_t Q);
    Int_t        AddX(Int_t i, Float_t X);
    Int_t        AddY(Int_t i, Float_t Y);
    Int_t        AddZ(Int_t i, Float_t Z);
 
-   Int_t        GetCharge(Int_t i=0) const;
+   Float_t        GetCharge(Int_t i=0) const;
    Float_t      GetX(Int_t i=0) const;
    Float_t      GetY(Int_t i=0) const;
    Float_t      GetZ(Int_t i=0) const;
    Int_t        GetTrack(Int_t i=0) const;
-   Int_t        GetPeakSignal(Int_t i=0) const;
+   Float_t        GetPeakSignal(Int_t i=0) const;
    Int_t        GetMultiplicity(Int_t i=0) const;
    Int_t        GetClusterType() const;
    Int_t        GetGhost() const;
@@ -58,13 +58,13 @@ public:
    Float_t      GetErrX() const;
    Float_t      GetErrY() const;
 
-   Int_t        SetCharge(Int_t i,Int_t Q);
+   Int_t        SetCharge(Int_t i, Float_t Q);
    Int_t        SetX(Int_t i, Float_t X);
    Int_t        SetY(Int_t i, Float_t Y);
    Int_t        SetZ(Int_t i, Float_t Z);
    void         SetDetElemId(Int_t Id); 
    Int_t        SetTrack(Int_t i, Int_t track);
-   Int_t        SetPeakSignal(Int_t i, Int_t peaksignal);
+   Int_t        SetPeakSignal(Int_t i, Float_t peaksignal);
    Int_t        SetMultiplicity(Int_t i, Int_t mul);
    Int_t        SetClusterType(Int_t type);
    Int_t        SetGhost(Int_t ghost);
@@ -82,14 +82,14 @@ private:
    Int_t       fIndexMap[50][2];  ///< Indices of digits
    Int_t       fOffsetMap[50][2]; ///< Emmanuel special
    Float_t     fContMap[50][2];   ///< Contribution from digit
-   Int_t       fPhysicsMap[50];   ///< Distinguish signal and background contr.
+   Int_t     fPhysicsMap[50];   ///< Distinguish signal and background contr.
   
-   Int_t       fQ[2]  ;           ///< Q of cluster (in ADC counts)     
+   Float_t     fQ[2]  ;           ///< Q of cluster (in ADC counts)     
    Float_t     fX[2]  ;           ///< X of cluster
    Float_t     fY[2]  ;           ///< Y of cluster
    Float_t     fZ[2]  ;           ///< Z of cluster
    Int_t       fTracks[3];        ///< Labels of overlapped tracks
-   Int_t       fPeakSignal[2];    ///< Peak signal 
+   Float_t     fPeakSignal[2];    ///< Peak signal 
    Int_t       fMultiplicity[2];  ///< Cluster multiplicity
    Int_t       fClusterType;      ///< Cluster type
    Int_t       fGhost;            ///< Ghost info
@@ -102,7 +102,7 @@ private:
    Float_t     fChi2[2];          ///< Chi**2 of fit
    Int_t       fDetElemId;        ///< ID number of the detection element (slat) on which the cluster is found. 
    Float_t     fErrXY[2];         ///< coordinate errors
-   ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
+   ClassDef(AliMUONRawCluster,2)  //Cluster class for MUON
 };
 
 // inline functions
