@@ -527,6 +527,7 @@ void V0List::MakeMarkers() {
 //_________________________________________________________________________
 void V0List::AdjustHist(Int_t iHist) {
 
+  if ((iHist<0)||(iHist>=fgkNcutVar)) return;
   if (! fHist[iHist]) return;
   
   TString name = fHist[iHist]->GetName();

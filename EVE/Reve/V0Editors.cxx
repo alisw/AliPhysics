@@ -90,7 +90,7 @@ V0ListEditor::V0ListEditor(const TGWindow *p,
   AddSelectTab();
   AddSeeTab();
 
-  TGTextButton* resetCutsButton = new TGTextButton(this, "Reset index cut", 40);
+  TGTextButton* resetCutsButton = new TGTextButton(this, "Reset all cuts", 40);
   resetCutsButton->Connect("Clicked()", "Reve::V0ListEditor", this, "ResetCuts()");
   AddFrame(resetCutsButton, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
 }
@@ -305,19 +305,34 @@ void V0ListEditor::ResetCuts() {
 
   if (! fMList) return;
 
+  Float_t min,max;
+
+  for (Int_t i=0; i<fgkNRange;i++) {
+    
+    if (i==12) continue;
+    min = fRange[i]->GetLimitMin();
+    max = fRange[i]->GetLimitMax();
+    fMList->SetMin(i, min);
+    fMList->SetMax(i, max);
+    fRange[i]->SetValues(min, max);
+    fMList->AdjustHist(i);
+  }
+
+  // for the Index we scan its actual range
   Int_t imin, imax;
   fMList->GetV0IndexRange(imin, imax);
   if (imin<imax) {
-    Int_t minH = imin-(imax-imin)/20;
-    Int_t maxH = imax+(imax-imin)/20;
+    Int_t minH = imin - (imax-imin)/20;
+    Int_t maxH = imax + (imax-imin)/20;
     fMList->SetMin(12, minH);
     fMList->SetMax(12, maxH);
     fRange[12]->SetLimits(minH, maxH, TGNumberFormat::kNESInteger);
     fRange[12]->SetValues(minH, maxH);
-    AdjustHist(12);
+    fMList->AdjustHist(12);
 
   }
   FillCanvas();
+  Update();
 }
 
 
@@ -553,6 +568,6 @@ void V0ListEditor::PtRange()
 //_________________________________________________________________________
   void V0ListEditor::PosEtaRange() {
   fMList->PosEtaFilter(fRange[11]->GetMin(), fRange[11]->GetMax());
-  UpdateAll(12);
+  UpdateAll(13);
 }
 

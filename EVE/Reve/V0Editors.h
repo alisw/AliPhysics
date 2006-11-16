@@ -97,6 +97,6 @@ public:
   ClassDef(V0ListEditor, 1); // Editor for V0List
 }; // endclass V0ListEditor
 
-}
+} // end namespace Reve
 
 #endif

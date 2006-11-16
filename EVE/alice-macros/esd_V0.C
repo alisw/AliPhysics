@@ -13,10 +13,10 @@
 // using namespace Alieve;
 
 
-Reve::V0*
-esd_make_V0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
-	    AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
-{
+Reve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
+		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i) {
+
+
   if (! v0->GetOnFlyStatus()) { // v0 on fly do not have the momentum vector filled...
   Reve::RecTrack  rcPos;
   Reve::RecTrack  rcNeg;
@@ -60,11 +60,7 @@ esd_make_V0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
   Double_t primx = primVtx->GetXv(),
     primy = primVtx->GetYv(),
     primz = primVtx->GetZv();
-  myV0->SetCosPointingAngle(v0->GetV0CosineOfPointingAngle(primx,primy,primz ));
-
-//   myV0->SetCosPointingAngle(v0->GetV0CosineOfPointingAngle(primVtx->GetXv(),
-// 			    primVtx->GetYv(),primVtx->GetZv() ));
-
+  myV0->SetCosPointingAngle(v0->GetV0CosineOfPointingAngle(primx,primy,primz));
 
   myV0->SetDecayLength(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
 
@@ -76,8 +72,7 @@ esd_make_V0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
 }
 
 
-Reve::V0List*
-esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
+Reve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
 {
 
   AliESD* esd = Alieve::Event::AssertESD();
@@ -102,7 +97,7 @@ esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
     AliESDtrack* negTr = esd->GetTrack(negInd);
     AliESDtrack* posTr = esd->GetTrack(posInd);
     
-    Reve::V0* myV0 = esd_make_V0(rnrStyle, primVertex, negTr,posTr, v0, n);
+    Reve::V0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
     if (myV0) {
       gReve->AddRenderElement(cont, myV0);
       count++;
