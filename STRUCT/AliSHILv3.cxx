@@ -66,11 +66,6 @@ void AliSHILv3::CreateGeometry()
 // The top volume
 //
     TGeoVolume* top = gGeoManager->GetVolume("ALIC");
-    
-//
-// Translations
-//
-    TGeoTranslation* vec0 = new TGeoTranslation(0., 0., 0.);
 //  Rotations
     TGeoRotation* rot000 = new TGeoRotation("rot000",  90.,   0., 90.,  90., 0., 0.);
     TGeoRotation* rot090 = new TGeoRotation("rot090",  90.,  90., 90., 180., 0., 0.);
@@ -91,7 +86,8 @@ void AliSHILv3::CreateGeometry()
     TGeoMedium* kMedPb      = gGeoManager->GetMedium("SHIL_PB_C0");
     TGeoMedium* kMedPbSh    = gGeoManager->GetMedium("SHIL_PB_C2");
 //
-    TGeoMedium* kMedConc    = gGeoManager->GetMedium("SHIL_CC_C0");
+//  TGeoMedium* kMedConc    = gGeoManager->GetMedium("SHIL_CC_C0");
+    TGeoMedium* kMedConcSh  = gGeoManager->GetMedium("SHIL_CC_C2");
 //
     const Float_t kDegRad = TMath::Pi() / 180.;
     const Float_t kAngle02   = TMath::Tan( 2.00   * kDegRad);   
@@ -178,7 +174,7 @@ void AliSHILv3::CreateGeometry()
       z = dzFaWTail;
       shFaWTailI->DefineSection(3, z, rInFaWTailS,  rInFaWTailS + dr);
       TGeoVolume* voFaWTailI = new TGeoVolume("YFaWTailI", shFaWTailI, kMedNiWsh);
-      voFaWTail->AddNode(voFaWTailI, 1, vec0);
+      voFaWTail->AddNode(voFaWTailI, 1, gGeoIdentity);
       
 ///////////////////////////////////
 //                               //
@@ -539,7 +535,7 @@ void AliSHILv3::CreateGeometry()
 // Inner region with higher transport cuts
       TGeoPcon*   shSaa1PbCompI = MakeShapeFromTemplate(shSaa1PbComp, 0., -3.);
       TGeoVolume* voSaa1PbCompI =  new TGeoVolume("YSAA1_PbCompI", shSaa1PbCompI, kMedPbSh);
-      voSaa1PbComp->AddNode(voSaa1PbCompI, 1, vec0);
+      voSaa1PbComp->AddNode(voSaa1PbCompI, 1, gGeoIdentity);
       
 ///////////////////////////////////
 //    SAA1 W-Cone                //
@@ -774,14 +770,14 @@ void AliSHILv3::CreateGeometry()
       const Float_t saa1ExtraShieldL = 48;
 //
 // Assemble SAA1
-      voSaa1M->AddNode(voSaa1StEnv,     1, vec0);
-      voSaa1M->AddNode(voSaa1WPipe,     1, vec0);
-      voSaa1M->AddNode(voSaa1PbComp,    1, vec0);
-      voSaa1M->AddNode(voSaa1WCone,     1, vec0);
-      voSaa1M->AddNode(voSaa1StRing,    1, vec0);
+      voSaa1M->AddNode(voSaa1StEnv,     1, gGeoIdentity);
+      voSaa1M->AddNode(voSaa1WPipe,     1, gGeoIdentity);
+      voSaa1M->AddNode(voSaa1PbComp,    1, gGeoIdentity);
+      voSaa1M->AddNode(voSaa1WCone,     1, gGeoIdentity);
+      voSaa1M->AddNode(voSaa1StRing,    1, gGeoIdentity);
       voSaa1M->AddNode(voSaa1InnerTube, 1, new TGeoTranslation(0., 0., dzSaa1InnerTube + 0.9));		      
       TGeoVolumeAssembly* voSaa1 = new TGeoVolumeAssembly("YSAA1");
-      voSaa1->AddNode(voSaa1M, 1, vec0);
+      voSaa1->AddNode(voSaa1M, 1, gGeoIdentity);
       
 ///////////////////////////////////////
 //          SAA1/SAA2  Pb Joint      //
@@ -833,13 +829,13 @@ void AliSHILv3::CreateGeometry()
       
       TGeoPcon* shSaa1Saa2 = MakeShapeFromTemplate(shSaa1Saa2Pb, 0., rOuSaa1Saa2Steel-rOuSaa1Saa2);
       TGeoVolume* voSaa1Saa2 = new TGeoVolume("YSAA1SAA2", shSaa1Saa2, kMedSteel);
-      voSaa1Saa2->AddNode(voSaa1Saa2Pb, 1, vec0);
+      voSaa1Saa2->AddNode(voSaa1Saa2Pb, 1, gGeoIdentity);
 //
 //    Inner region with higher transport cuts
 //
       TGeoPcon*   shSaa1Saa2I = MakeShapeFromTemplate(shSaa1Saa2Pb, 0., -3.);
       TGeoVolume* voSaa1Saa2I = new TGeoVolume("YSAA1_SAA2I", shSaa1Saa2I, kMedPbSh);
-      voSaa1Saa2Pb->AddNode(voSaa1Saa2I, 1, vec0);
+      voSaa1Saa2Pb->AddNode(voSaa1Saa2I, 1, gGeoIdentity);
       
 
 
@@ -1102,9 +1098,9 @@ void AliSHILv3::CreateGeometry()
 
 //
 //    Assemble SAA2
-      voSaa2->AddNode(voSaa2StEnv,     1, vec0);
-      voSaa2->AddNode(voSaa2PbRing,    1, vec0);
-      voSaa2->AddNode(voSaa2PbComp,    1, vec0);
+      voSaa2->AddNode(voSaa2StEnv,     1, gGeoIdentity);
+      voSaa2->AddNode(voSaa2PbRing,    1, gGeoIdentity);
+      voSaa2->AddNode(voSaa2PbComp,    1, gGeoIdentity);
       voSaa2->AddNode(voSaa2InnerTube, 1, new TGeoTranslation(0., 0., dzSaa2PbCompA1));
       z = (dzSaa2PbComp - dzSaa2PbCompE4 - dzSaa2PbCompE5) + dzSaa2SteelRing;
       voSaa2->AddNode(voSaa2SteelRing, 1, new TGeoTranslation(0., 0., z));
@@ -1130,75 +1126,48 @@ void AliSHILv3::CreateGeometry()
 //    Drawing ALIP2A__0xxx       //
 ///////////////////////////////////
 //    Block
-      TGeoBBox* shSaa3SteelBlockO   = new TGeoBBox(220./2., 80./2., 100./2.);
-      shSaa3SteelBlockO->SetName("Saa3SteelBlockO");
+      TGeoBBox* shSaa3CCBlockO   = new TGeoBBox(80./2., 80./2., 100./2.);
+      shSaa3CCBlockO->SetName("Saa3CCBlockO");
 
       TGeoPcon* shSaa3InnerRegion  = new TGeoPcon(0., 360., 6);
-      shSaa3InnerRegion->DefineSection( 0, -52.0, 0., 56.6/2.);
+      shSaa3InnerRegion->DefineSection( 0, -60.0, 0., 56.6/2.);
       shSaa3InnerRegion->DefineSection( 1, -45.0, 0., 56.6/2.);
       shSaa3InnerRegion->DefineSection( 2, -42.0, 0., 50.6/2.);
       shSaa3InnerRegion->DefineSection( 3, -30.0, 0., 50.6/2.);
       shSaa3InnerRegion->DefineSection( 4,  30.5, 0., 16.8/2.);
-      shSaa3InnerRegion->DefineSection( 5,  52.0, 0., 16.8/2.);
+      shSaa3InnerRegion->DefineSection( 5,  60.0, 0., 16.8/2.);
       shSaa3InnerRegion->SetName("Saa3InnerRegion");
 
-      TGeoCompositeShape* shSaa3SteelBlock = new TGeoCompositeShape("Saa3SteelBlock", "Saa3SteelBlockO-Saa3InnerRegion");
-      TGeoVolume* voSaa3SteelBlock         = new TGeoVolume("YSAA3SteelBlock", shSaa3SteelBlock, kMedSteel);     
+      TGeoCompositeShape* shSaa3CCBlock = new TGeoCompositeShape("Saa3CCBlock", "Saa3CCBlockO-Saa3InnerRegion");
+      TGeoVolume* voSaa3CCBlock         = new TGeoVolume("YSAA3CCBlock", shSaa3CCBlock, kMedConcSh);     
 
 
-      voSaa3->AddNode(voSaa3SteelBlock, 1, vec0);
-//    Plate 1: 220 cm x 100 cm x 10 cm (x 1)
-      TGeoBBox* shSaa3SteelPlate1   = new TGeoBBox(220./2., 10./2., 100./2.);
-      TGeoVolume* voSaa3SteelPlate1  =  new TGeoVolume("YSAA3SteelPlate1", shSaa3SteelPlate1, kMedSteel);
-      voSaa3->AddNode(voSaa3SteelPlate1, 1, new TGeoTranslation(0., -80./2. - 10./2., 0.));
-//    Plate 2: 200 cm x 100 cm x 10 cm (x 6)
-      TGeoBBox* shSaa3SteelPlate2   = new TGeoBBox(200./2., 60./2., 100./2.);
-      TGeoVolume* voSaa3SteelPlate2  =  new TGeoVolume("YSAA3SteelPlate2", shSaa3SteelPlate2, kMedSteel);
-      voSaa3->AddNode(voSaa3SteelPlate2, 1, new TGeoTranslation(0., -80./2. - 10. - 60./2., 0.));
-//    Plate 3: 200 cm x 100 cm x 10 cm (x 4)
-      TGeoBBox* shSaa3SteelPlate3   = new TGeoBBox(200./2., 40./2., 100./2.);
-      TGeoVolume* voSaa3SteelPlate3  =  new TGeoVolume("YSAA3SteelPlate3", shSaa3SteelPlate3, kMedSteel);
-      voSaa3->AddNode(voSaa3SteelPlate3, 1, new TGeoTranslation(0., +80./2. + 40/2., 0.));
-//    Plate 4: 180 cm x 100 cm x 10 cm (x 1)
-      TGeoBBox* shSaa3SteelPlate4   = new TGeoBBox(180./2., 10./2., 100./2.);
-      TGeoVolume* voSaa3SteelPlate4  =  new TGeoVolume("YSAA3SteelPlate4", shSaa3SteelPlate4, kMedSteel);
-      voSaa3->AddNode(voSaa3SteelPlate4, 1, new TGeoTranslation(0., +80./2. + 40. + 10/2., 0.));
-//    Plate 5: 150 cm x 100 cm x 10 cm (x 1)
-      TGeoBBox* shSaa3SteelPlate5   = new TGeoBBox(150./2., 10./2., 100./2.);
-      TGeoVolume* voSaa3SteelPlate5  =  new TGeoVolume("YSAA3SteelPlate5", shSaa3SteelPlate5, kMedSteel);
-      voSaa3->AddNode(voSaa3SteelPlate5, 1, new TGeoTranslation(0., +80./2. + 50. + 10/2., 0.));
-//    Plate 6: 100 cm x 100 cm x 10 cm (x 1)
-      TGeoBBox* shSaa3SteelPlate6   = new TGeoBBox(100./2., 10./2., 100./2.);
-      TGeoVolume* voSaa3SteelPlate6  =  new TGeoVolume("YSAA3SteelPlate6", shSaa3SteelPlate6, kMedSteel);
-      voSaa3->AddNode(voSaa3SteelPlate6, 1, new TGeoTranslation(0., +80./2. + 60. + 10/2., 0.));
+      voSaa3->AddNode(voSaa3CCBlock, 1, gGeoIdentity);
+      
+//    Plate 1: 240 cm x 80 cm x 100 cm (x 2)
+      TGeoVolume* voSaa3SteelPlate1  =  new TGeoVolume("YSAA3SteelPlate1", 
+						       new TGeoBBox(240./2., 80./2., 100./2.),
+						       kMedSteelSh);
+      TGeoVolume* voSaa3SteelPlate11 =  new TGeoVolume("YSAA3SteelPlate11", 
+						       new TGeoBBox(240./2., 80./2., 10./2.),
+						       kMedSteel);
+      voSaa3SteelPlate1->AddNode(voSaa3SteelPlate11, 1, new TGeoTranslation(0., 0., -45.));
+      voSaa3->AddNode(voSaa3SteelPlate1, 1, new TGeoTranslation(0., +80., 0.));
+      voSaa3->AddNode(voSaa3SteelPlate1, 2, new TGeoTranslation(0., -80., 0.));
 
-///////////////////////////////////
-//    SAA3 Concrete Piece        //
-//    Drawing ALIP2A__0xxx       //
-///////////////////////////////////
-      TGeoPcon* shSaa3ConcPiece  = new TGeoPcon(0., 360., 6);
-      shSaa3ConcPiece->DefineSection( 0,   0.0, 57.4/2., 62./2.);
-      shSaa3ConcPiece->DefineSection( 1,   5.0, 57.4/2., 62./2.);
-      shSaa3ConcPiece->DefineSection( 2,   8.0, 51.4/2., 62./2.);
-      shSaa3ConcPiece->DefineSection( 3,  20.0, 51.4/2., 62./2.);
-      shSaa3ConcPiece->DefineSection( 4,  80.5, 17.6/2., 62./2.);
-      shSaa3ConcPiece->DefineSection( 5, 100.0, 17.6/2., 62./2.);
-      TGeoVolume* voSaa3ConcPiece  =  new TGeoVolume("YSAA2_ConcPiece", shSaa3ConcPiece, kMedConc);
-      voSaa3SteelBlock->AddNode(voSaa3ConcPiece, 1, new TGeoTranslation(0., 0., -50.));
 
-///////////////////////////////////
-//    SAA3 InnerTube             //
-//    Drawing ALIP2A__0xxx       //
-///////////////////////////////////
-      TGeoPcon* shSaa3InnerTube  = new TGeoPcon(0., 360., 6);
-      shSaa3InnerTube->DefineSection( 0,   0.0, 56.6/2., 57.0/2.);
-      shSaa3InnerTube->DefineSection( 1,   5.0, 56.6/2., 57.0/2.);
-      shSaa3InnerTube->DefineSection( 2,   8.0, 50.6/2., 51.0/2.);
-      shSaa3InnerTube->DefineSection( 3,  20.0, 50.6/2., 51.0/2.);
-      shSaa3InnerTube->DefineSection( 4,  80.5, 16.8/2., 17.2/2.);
-      shSaa3InnerTube->DefineSection( 5, 100.0, 16.8/2., 17.2/2.);
-      TGeoVolume* voSaa3InnerTube  =  new TGeoVolume("YSAA2_InnerTube", shSaa3InnerTube, kMedSteelSh);
-      voSaa3SteelBlock->AddNode(voSaa3InnerTube, 1, new TGeoTranslation(0., 0., -50.));
+//    Plate 2:  80 cm x 80 cm x 100 cm (x 2)
+      TGeoVolume* voSaa3SteelPlate2  =  new TGeoVolume("YSAA3SteelPlate2", 
+						       new TGeoBBox( 80./2., 80./2., 100./2.),
+						       kMedSteelSh);
+      TGeoVolume* voSaa3SteelPlate21 =  new TGeoVolume("YSAA3SteelPlate21", 
+						       new TGeoBBox( 80./2., 80./2., 10./2.),
+						       kMedSteel);
+      voSaa3SteelPlate2->AddNode(voSaa3SteelPlate21, 1, new TGeoTranslation(0., 0., -45.));
+
+      voSaa3->AddNode(voSaa3SteelPlate2, 1, new TGeoTranslation(+80, 0., 0.));
+      voSaa3->AddNode(voSaa3SteelPlate2, 2, new TGeoTranslation(-80, 0., 0.));
+
 
 ///////////////////////////////////
 //    Muon Filter                //
@@ -1260,11 +1229,6 @@ void AliSHILv3::CreateGeometry()
 //    Position of the Muon Filter
       Float_t zcFilter    = 1465.9 + dzMuonFilter;
 
-      printf("FaSaa1    %f %f \n", ziFaSaa1, zoFaSaa1);
-      printf("Saa1      %f %f \n", ziSaa1, zoSaa1);
-      printf("Saa1/Saa2 %f %f \n", ziSaa1Saa2, zoSaa1Saa2);
-      printf("Saa2      %f %f \n", ziSaa2, zoSaa2);
-      
       voSaa->AddNode(voFaWTail,    1, new TGeoTranslation(0., 0., ziFaWTail));
       voSaa->AddNode(voFaSaa1,     1, new TGeoTranslation(0., 0., ziFaSaa1));
       voSaa->AddNode(voSaa1 ,      1, new TGeoTranslation(0., 0., ziSaa1));
@@ -1311,7 +1275,7 @@ void AliSHILv3::CreateGeometry()
 
       voYOUT1->AddNode(asSaa1ExtraShield, 1, new TGeoCombiTrans(0., 0., - (100.7 + 62.2 + saa1ExtraShieldL / 2. + ziFaWTail), rotxz));
       voYOUT1->AddNode(asFaExtraShield,   1, new TGeoCombiTrans(0., 0., - (16.41 + kFaWring2HWidth + ziFaWTail), rotxz));
-      top->AddNode(voYOUT1, 1, vec0);
+      top->AddNode(voYOUT1, 1, gGeoIdentity);
 //
 //  Mother volume for muon stations 4+5 and trigger stations.
 //
@@ -1350,7 +1314,7 @@ void AliSHILv3::CreateGeometry()
       TGeoVolume* voYOUT2 = new TGeoVolume("YOUT2", shYOUT2, kMedAirMu);
       voYOUT2->SetVisibility(0);
       voYOUT2->AddNode(voMuonFilter, 1, new TGeoTranslation(0., 0., -zcFilter));            
-      top->AddNode(voYOUT2, 1, vec0);
+      top->AddNode(voYOUT2, 1, gGeoIdentity);
 }
 
 void AliSHILv3::Init()
@@ -1363,7 +1327,7 @@ void AliSHILv3::Init()
   if(AliLog::GetGlobalDebugLevel()>0) {
     printf("\n%s: ",ClassName());
     for(i=0;i<35;i++) printf("*");
-    printf(" SHILvTGeo_INIT ");
+    printf(" SHILv3_INIT ");
     for(i=0;i<35;i++) printf("*");
     printf("\n%s: ",ClassName());
     //
