@@ -18,8 +18,9 @@
 #include <TObjArray.h>
 #include <TLatex.h>
 
-#include <../TPC/AliTPCclusterMI.h>
-#include <../TPC/AliTPCseed.h>
+#include <AliTPCclusterMI.h>
+#include <AliTPCseed.h>
+
 #include <AliLog.h>
 
 

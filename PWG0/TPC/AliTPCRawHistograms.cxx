@@ -79,14 +79,16 @@ AliTPCRawHistograms::AliTPCRawHistograms(Int_t detector, const Char_t* /* commen
     nPadRows = 63;
   }
   
-  // 1 bin for each 0.5 cm
-  Int_t nBinsY = Int_t(4*yRange);
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
 
-  // TODO do NOT attach to the directory!
-  fhDigits = new TH3F("fhDigits", Form("signal distribution;row;pad;time", name.Data()), nPadRows, -0.5, -0.5 + nPadRows, 120, -0.5, 119.5, 100, 0, 1200);
+  fhDigits = new TH3F("fhDigits", Form("signal distribution;row;pad;time", name.Data()), nPadRows, -0.5, -0.5 + nPadRows, 150, -0.5, 149.5, 100, 0, 1200);
   fhSignal = new TH1F("fhSignal", "fhSignal", 200, 0, 2000);
   
   fDigitTree = new TNtuple("fDigitTree", "fDigitTree", "row:pad:time:signal");
+
+  TH1::AddDirectory(oldStatus);
 }
 
 //____________________________________________________________________
@@ -224,7 +226,7 @@ Long64_t AliTPCRawHistograms::Merge(TCollection* list)
 }
 
 //____________________________________________________________________
-void AliTPCRawHistograms::FillDigit(AliTPCRawStream* rawStream, Int_t time) 
+void AliTPCRawHistograms::FillDigit(AliTPCRawStream* rawStream, Int_t /*time*/) 
 {
   //
   // Fills the different histograms with the information from a raw digit
@@ -240,7 +242,7 @@ void AliTPCRawHistograms::FillDigit(AliTPCRawStream* rawStream, Int_t time)
     
   fhSignal->Fill(signal);
   
-  //fDigitTree->Fill(row, pad, timeBin, signal);
+  fDigitTree->Fill(row, pad, timeBin, signal);
 }
 
 //____________________________________________________________________
@@ -261,7 +263,7 @@ void AliTPCRawHistograms::SaveHistograms()
 }
 
 //____________________________________________________________________
-TCanvas* AliTPCRawHistograms::DrawHistograms(const Char_t* opt) {
+TCanvas* AliTPCRawHistograms::DrawHistograms(const Char_t* /*opt*/) {
   //
   // Draws some histograms and save the canvas as eps and gif file.
   //  
