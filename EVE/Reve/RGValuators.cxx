@@ -272,6 +272,18 @@ void RGDoubleValuator::Build(Bool_t connect)
   }
 }
 
+void RGDoubleValuator::SetLimits(Int_t min, Int_t max) 
+{
+  fMinEntry->SetLimits(TGNumberFormat::kNELLimitMinMax, min, max);
+  fMinEntry->SetFormat(TGNumberFormat::kNESInteger);
+  fMaxEntry->SetLimits(TGNumberFormat::kNELLimitMinMax, min, max);
+  fMaxEntry->SetFormat(TGNumberFormat::kNESInteger);
+
+  if(fSlider) {
+    fSlider->SetRange(min, max);
+  }
+}
+
 void RGDoubleValuator::SetLimits(Float_t min, Float_t max,
 				 TGNumberFormat::EStyle nef) 
 {

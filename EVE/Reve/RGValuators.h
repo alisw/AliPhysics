@@ -120,6 +120,7 @@ public:
   TGNumberEntry*   GetMinEntry() { return fMinEntry; }
   TGNumberEntry*   GetMaxEntry() { return fMaxEntry; }
 
+  void SetLimits(Int_t min, Int_t max);
   void SetLimits(Float_t min, Float_t max, TGNumberFormat::EStyle nef=TGNumberFormat::kNESRealTwo);
   void SetValues(Float_t min, Float_t max, Bool_t emit=kFALSE);
 
@@ -127,6 +128,8 @@ public:
   { min = fMinEntry->GetNumber(); max = fMaxEntry->GetNumber(); }
   Float_t GetMin() const { return fMinEntry->GetNumber(); }
   Float_t GetMax() const { return fMaxEntry->GetNumber(); }
+  Float_t GetLimitMin() const { return fMinEntry->GetNumMin(); }
+  Float_t GetLimitMax() const { return fMaxEntry->GetNumMax(); }
 
   ClassDef(RGDoubleValuator, 0);
 }; // endclass RGDoubleValuator
