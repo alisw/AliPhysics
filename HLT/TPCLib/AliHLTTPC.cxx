@@ -59,8 +59,6 @@
 
 ClassImp(AliHLTTPC)
 
-Bool_t AliHLTTPC::fgDoVertexFit = kTRUE;//Include the vertex in the final track fit
-
 AliHLTTPC::AliHLTTPC()
 {
   //Default constructor. Should also be used when input is from binary files.
@@ -113,6 +111,8 @@ AliHLTTPC::AliHLTTPC(AliRunLoader *rl)
   fRunLoader = rl;
 }
 #endif
+
+Bool_t AliHLTTPC::fgDoVertexFit = kTRUE;//Include the vertex in the final track fit
 
 void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
 {

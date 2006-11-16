@@ -13,6 +13,7 @@
 class AliHLTTPCTransform {
 
  public:
+    AliHLTTPCTransform();
   enum VersionType { kVdefault=0, kVdeprecated=1, kValiroot=10, kVcosmics=100};
 
  private:

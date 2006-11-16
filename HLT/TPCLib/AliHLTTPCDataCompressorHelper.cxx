@@ -24,6 +24,13 @@ using namespace std;
 
 ClassImp(AliHLTTPCDataCompressorHelper)
 
+AliHLTTPCDataCompressorHelper::AliHLTTPCDataCompressorHelper() 
+{
+}
+
+AliHLTTPCDataCompressorHelper::~AliHLTTPCDataCompressorHelper() 
+{
+}
 
 Int_t AliHLTTPCDataCompressorHelper::fgNumTimeBits = 12;
 Int_t AliHLTTPCDataCompressorHelper::fgNumPadBits = 12;

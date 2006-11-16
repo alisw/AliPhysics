@@ -17,13 +17,14 @@ class TClonesArray;
 #include <TObject.h>
 #include <TFile.h>
 #include <TTree.h>
+#include "AliHLTLogging.h"
 
 class AliHLTTPCSpacePointData;
 class AliHLTTPCDigitRowData;
 class AliHLTTPCTrackSegmentData;
 class AliHLTTPCTrackArray;
 
-class AliHLTTPCFileHandler:public AliHLTTPCMemHandler{
+class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
 
  protected:
 #ifdef use_newio
@@ -51,7 +52,13 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler{
   Bool_t CreateIndex();  //create the index
 
  public:
+  /** standard constructor */
   AliHLTTPCFileHandler(Bool_t b=kFALSE);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCFileHandler(const AliHLTTPCFileHandler&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCFileHandler& operator=(const AliHLTTPCFileHandler&);
+  /** destructor */
   ~AliHLTTPCFileHandler();
 
   void FreeDigitsTree();

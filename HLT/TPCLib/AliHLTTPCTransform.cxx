@@ -76,6 +76,10 @@ using namespace std;
 
 ClassImp(AliHLTTPCTransform)
 
+AliHLTTPCTransform::AliHLTTPCTransform()
+{
+}
+
 const Double_t AliHLTTPCTransform::fgkAnodeWireSpacing = 0.25; //Taken from the TDR
 const Double_t AliHLTTPCTransform::fgkBFACT = 0.0029980;       //Conversion Factor
 const Double_t AliHLTTPCTransform::fgkPi  =   3.141592653589793;

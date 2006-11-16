@@ -71,6 +71,58 @@ using namespace std;
 
 ClassImp(AliHLTTPCFileHandler)
 
+AliHLTTPCFileHandler::AliHLTTPCFileHandler(Bool_t b)
+  :
+  fInAli(NULL),
+#ifdef use_newio
+  fUseRunLoader(kFALSE),
+#endif
+  fParam(NULL),
+  fMC(NULL),
+  fDigits(NULL),
+  fDigitsTree(NULL),
+  fIndexCreated(kFALSE),
+  fUseStaticIndex(b)
+{
+  //Default constructor
+
+  for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++)
+    for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++) 
+      fIndex[i][j]=-1;
+
+  if(fUseStaticIndex&&!fgStaticIndexCreated) CleanStaticIndex();
+}
+
+AliHLTTPCFileHandler::AliHLTTPCFileHandler(const AliHLTTPCFileHandler& ref)
+  :
+  fInAli(NULL),
+#ifdef use_newio
+  fUseRunLoader(kFALSE),
+#endif
+  fParam(NULL),
+  fMC(NULL),
+  fDigits(NULL),
+  fDigitsTree(NULL),
+  fIndexCreated(kFALSE),
+  fUseStaticIndex(ref.fUseStaticIndex)
+{
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCFileHandler& AliHLTTPCFileHandler::operator=(const AliHLTTPCFileHandler&)
+{ 
+  HLTFatal("assignment operator untested");
+  return *this;
+}
+
+AliHLTTPCFileHandler::~AliHLTTPCFileHandler()
+{
+  //Destructor
+  if(fMC) CloseMCOutput();
+  FreeDigitsTree();
+  if(fInAli) CloseAliInput();
+}
+
 // of course on start up the index is not created
 Bool_t AliHLTTPCFileHandler::fgStaticIndexCreated=kFALSE;
 Int_t  AliHLTTPCFileHandler::fgStaticIndex[36][159]; 
@@ -135,35 +187,6 @@ Int_t AliHLTTPCFileHandler::LoadStaticIndex(Char_t *prefix,Int_t event)
 
   fgStaticIndexCreated=kTRUE;
   return 0;
-}
-
-AliHLTTPCFileHandler::AliHLTTPCFileHandler(Bool_t b)
-{
-  //Default constructor
-  fInAli = 0;
-#ifdef use_newio
-  fUseRunLoader = kFALSE;
-#endif
-  fParam = 0;
-  fMC =0;
-  fDigits=0;
-  fDigitsTree=0;
-  fIndexCreated=kFALSE;
-  fUseStaticIndex=b;
-
-  for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++)
-    for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++) 
-      fIndex[i][j]=-1;
-
-  if(fUseStaticIndex&&!fgStaticIndexCreated) CleanStaticIndex();
-}
-
-AliHLTTPCFileHandler::~AliHLTTPCFileHandler()
-{
-  //Destructor
-  if(fMC) CloseMCOutput();
-  FreeDigitsTree();
-  if(fInAli) CloseAliInput();
 }
 
 void AliHLTTPCFileHandler::FreeDigitsTree()

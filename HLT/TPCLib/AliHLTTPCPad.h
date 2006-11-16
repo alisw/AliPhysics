@@ -192,7 +192,7 @@ class AliHLTTPCPad : public AliHLTLogging {
   /**
    * Get the base line value of a certain channel.
    * @param bin      Channel number
-   * @param base line value at bin
+   * @return base line value at bin
    */
   AliHLTTPCSignal_t GetBaseLine(Int_t bin) const;
 

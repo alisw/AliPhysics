@@ -97,15 +97,17 @@ use a separate build directory.
   make install
 
 You should redirect the output of the make into a file.
-The default install directories are set to the current directory ($PWD).
-
-To override the default prefix use
---prefix=<dir>           
+The default install directory is set to the current directory ($PWD). To
+override the default directory use the option --prefix=<dir>           
+All binary libraries will be installed under <prefix>/lib. If the directory
+id eaual to $ALICE_ROOT, the libraries will be installed under 
+<prefix>/lib/tgt_<arch> as used for AliRoot.
 
 Some important options:
 --enable-logging  # Enable/Disable logging (default enabled)
 --enable-sample   # Compile the sample library
 --enable-tpc      # Compile the TPC library
+--enable-phos      # Compile the PHOS library
 
 Note: You can have several build directories with different configure options,
 but using the same source code. 
@@ -141,12 +143,17 @@ Please include the following information into your request:
 9. Committing to the AliRoot CVS
 ================================
 For development of HLT analysis code check out a HEAD version from the 
-repository and implement your code. For committing do:
-1. cvs update
-2. correct merging conflicts
-3. compile and test your code again
-4. send the whole HLT module except the build sub-directories to
+repository and implement your code. 
+
+For committing do:
+1. make sure that the code changes are correct
+   cvs diff | less
+   remember to restore all temporary changes you made (e.g. log level default)
+2. cvs update
+3. correct merging conflicts
+4. compile and test your code again
+5. send the whole HLT module except the build sub-directories to
    Matthias.Richter@ift.uib.no
-5. you will get a notification when the code is committed, right after that you
+6. you will get a notification when the code is committed, right after that you
    must either do another cvs update or check out the complete module again in
    order to have the right CVS information

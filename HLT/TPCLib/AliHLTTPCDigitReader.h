@@ -7,7 +7,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTTPCDigitReaderRaw.h
+/** @file   AliHLTTPCDigitReader.h
     @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
     @date   
     @brief  An abstract reader class for TPC data.
@@ -34,7 +34,7 @@ public:
   /**
    * Init the reader with a data block.
    * The function fetches the first and last row for the readout partition
-   * from @ref AliHLTTransform. The method is pure virtual and must be implemented
+   * from @ref AliHLTTPCTransform. The method is pure virtual and must be implemented
    * by the child class.
    * @param ptr     pointer to data buffer
    * @param size    size of the data buffer
