@@ -85,132 +85,134 @@ class AliEventTagCuts : public TObject {
   void SetTotalNeutralPRange(Float_t low, Float_t high);
   void SetMeanNeutralPtPRange(Float_t low, Float_t high);
   void SetTopNeutralPtMin(Float_t low);
-  void SetEvPlaneAngleRange(Float_t low, Float_t high);
+  void SetEventPlaneAngleRange(Float_t low, Float_t high);
   void SetHBTRadiiRange(Float_t low, Float_t high);
  
   Bool_t IsAccepted(AliEventTag *EvTag) const;
 
   //____________________________________________________//
  private:
-  Float_t fVxMin, fVxMax;  //Definition of the range of the Vx
-  Bool_t fVxFlag;          //Shows whether this cut is used or not
-  Float_t fVyMin, fVyMax;  //Definition of the range of the Vy
-  Bool_t fVyFlag;          //Shows whether this cut is used or not
-  Float_t fVzMin, fVzMax;  //Definition of the range of the Vz
-  Bool_t fVzFlag;          //Shows whether this cut is used or not
-  Int_t fParticipantsMin, fParticipantMax; //# participants range
-  Bool_t fParticipantsFlag;//Shows whether this cut is used or not
-  Float_t fImpactParamMin, fImpactParamMax; //Impact parameter range
-  Bool_t fImpactParamFlag; //Shows whether this cut is used or not
-  Int_t fPrimaryVertexFlag; //Primary vertex flag: 0->not found, 1->found
-  Bool_t fPVFlag;          //Shows whether this cut is used or not
+  Int_t fNParticipantsMin, fNParticipantsMax;                 // # participants range
+  Bool_t fNParticipantsFlag;                                  // Shows whether this cut is used or not
+  Float_t fImpactParamMin, fImpactParamMax;                   // Impact parameter range
+  Bool_t fImpactParamFlag;                                    // Shows whether this cut is used or not
 
-  Float_t fPrimaryVertexZErrorMin, fPrimaryVertexZErrorMax; //Range of the primary vertex z error
-  Bool_t fPVzErrorFlag;          //Shows whether this cut is used or not
-  ULong64_t fTriggerMask;  //trigger mask definition
-  Bool_t fTriggerMaskFlag; //Shows whether this cut is used or not
-  UChar_t fTriggerCluster;  //trigger cluster definition
-  Bool_t fTriggerClusterFlag; //Shows whether this cut is used or not
-  
-  Float_t fZDCNeutron1EnergyMin, fZDCNeutron1EnergyMax; //ZDC min,max - neutron
-  Bool_t fZDCNeutron1EnergyFlag;//Shows whether this cut is used or not
-  Float_t fZDCProton1EnergyMin, fZDCProton1EnergyMax; //ZDC min,max - proton
-  Bool_t fZDCProton1EnergyFlag;//Shows whether this cut is used or not
-  Float_t fZDCNeutron2EnergyMin, fZDCNeutron2EnergyMax; //ZDC min,max - neutron
-  Bool_t fZDCNeutron2EnergyFlag;//Shows whether this cut is used or not
-  Float_t fZDCProton2EnergyMin, fZDCProton2EnergyMax; //ZDC min,max - proton
-  Bool_t fZDCProton2EnergyFlag;//Shows whether this cut is used or not
-  Float_t fZDCEMEnergyMin, fZDCEMEnergyMax; //ZDC min,max - em
-  Bool_t fZDCEMEnergyFlag;//Shows whether this cut is used or not
-  Float_t fT0VertexZMin, fT0VertexZMax; //T0 min, max
-  Bool_t fT0VertexZFlag;//Shows whether this cut is used or not  
-  Int_t fMultMin, fMultMax;  //Definition of the range of the multiplicity
-  Bool_t fMultFlag;//Shows whether this cut is used or not
-  Int_t fMultPosMin, fMultPosMax; //Positive tracks multiplicity range
-  Bool_t fMultPosFlag;//Shows whether this cut is used or not
-  Int_t fMultNegMin, fMultNegMax; //Negative tracks multiplicity range
-  Bool_t fMultNegFlag;//Shows whether this cut is used or not
-  Int_t fMultNeutrMin, fMultNeutrMax; //Neutral tracks multiplicity range
-  Bool_t fMultNeutrFlag;//Shows whether this cut is used or not
-  Int_t fV0sMin, fV0sMax; //Range of V0s
-  Bool_t fV0sFlag;//Shows whether this cut is used or not
-  Int_t fCascadesMin, fCascadesMax; //Range of cascades
-  Bool_t fCascadesFlag;//Shows whether this cut is used or not
-  Int_t fkinksMin, fkinksMax; //Range of kinks
-  Bool_t fkinksFlag;//Shows whether this cut is used or not
-  
-  Int_t fPMDTracksMin, fPMDTracksMax; //Range of PMD tracks
-  Bool_t fPMDTracksFlag;//Shows whether this cut is used or not
-  Int_t fFMDTracksMin, fFMDTracksMax; //Range of FMD tracks
-  Bool_t fFMDTracksFlag;//Shows whether this cut is used or not
-  Int_t fPHOSClustersMin, fPHOSClustersMax; //Range of PHOS clusters
-  Bool_t fPHOSClustersFlag;//Shows whether this cut is used or not
-  Int_t fEMCALClustersMin, fEMCALClustersMax; //Range of EMCAL clusters
-  Bool_t fEMCALClustersFlag;//Shows whether this cut is used or not
-  Int_t fJetCandidatesMin, fJetCandidatesMax; //Range of jet candidates
-  Bool_t fJetCandidatesFlag;//Shows whether this cut is used or not
+  Float_t fVxMin, fVxMax;                                     // Definition of the range of the Vx
+  Bool_t fVxFlag;                                             // Shows whether this cut is used or not
+  Float_t fVyMin, fVyMax;                                     // Definition of the range of the Vy
+  Bool_t fVyFlag;                                             // Shows whether this cut is used or not
+  Float_t fVzMin, fVzMax;                                     // Definition of the range of the Vz
+  Bool_t fVzFlag;                                             // Shows whether this cut is used or not
+  Int_t fPrimaryVertexFlag;                                   // Primary vertex flag: 0->not found, 1->found
+  Bool_t fPVFlag;                                             // Shows whether this cut is used or not
+  Float_t fPrimaryVertexZErrorMin, fPrimaryVertexZErrorMax;   // Range of the primary vertex z error
+  Bool_t fPVzErrorFlag;                                       // Shows whether this cut is used or not
 
-  Float_t fMaxJetEnergy; //max jet energy info
-  Bool_t fMaxJetEnergyFlag;//Shows whether this cut is used or not
+  ULong64_t fTriggerMask;                                     // trigger mask definition
+  Bool_t fTriggerMaskFlag;                                    // Shows whether this cut is used or not
+  UChar_t fTriggerCluster;                                    // trigger cluster definition
+  Bool_t fTriggerClusterFlag;                                 // Shows whether this cut is used or not
   
-  Int_t fNHardPhotonsCandidatesMin, fNHardPhotonsCandidatesMax; //Hard photons candidates
-  Bool_t fNHardPhotonsCandidatesFlag;//Shows whether this cut is used or not
-  Float_t fMaxNeutralEnergy; //max neutral energy info
-  Bool_t fMaxNeutralFlag;//Shows whether this cut is used or not  
-  Int_t fChargedAbove1GeVMin, fChargedAbove1GeVMax;//Definition of the range of the number of charged above 1GeV
-  Bool_t fChargedAbove1GeVFlag;//Shows whether this cut is used or not
-  Int_t fChargedAbove3GeVMin, fChargedAbove3GeVMax;//Definition of the range of the number of charged above 3GeV
-  Bool_t fChargedAbove3GeVFlag;//Shows whether this cut is used or not
-  Int_t fChargedAbove10GeVMin, fChargedAbove10GeVMax;//Definition of the range of the number of charged above 10GeV
-  Bool_t fChargedAbove10GeVFlag;//Shows whether this cut is used or not
-  Int_t fMuonsAbove1GeVMin, fMuonsAbove1GeVMax;//Definition of the range of the number of muons above 1GeV
-  Bool_t fMuonsAbove1GeVFlag;//Shows whether this cut is used or not
-  Int_t fMuonsAbove3GeVMin, fMuonsAbove3GeVMax;//Definition of the range of the number of muons above 3GeV
-  Bool_t fMuonsAbove3GeVFlag;//Shows whether this cut is used or not
-  Int_t fMuonsAbove10GeVMin, fMuonsAbove10GeVMax; //Definition of the range of the number of muons above 10GeV
-  Bool_t fMuonsAbove10GeVFlag;//Shows whether this cut is used or not
-  Int_t fElectronsAbove1GeVMin, fElectronsAbove1GeVMax;//Definition of the range of the number of electorns above 1GeV
-  Bool_t fElectronsAbove1GeVFlag;//Shows whether this cut is used or not
-  Int_t fElectronsAbove3GeVMin, fElectronsAbove3GeVMax;//Definition of the range of the number of electorns above 3GeV
-  Bool_t fElectronsAbove3GeVFlag;//Shows whether this cut is used or not
-  Int_t fElectronsAbove10GeVMin,fElectronsAbove10GeVMax;//Definition of the range of the number of electorns above 10GeV
-  Bool_t fElectronsAbove10GeVFlag;//Shows whether this cut is used or not  
-  Int_t fElectronsMin, fElectronsMax; //Number of electrons range
-  Bool_t fElectronsFlag;//Shows whether this cut is used or not
-  Int_t fMuonsMin, fMuonsMax;  //Number of muons range
-  Bool_t fMuonsFlag;//Shows whether this cut is used or not
-  Int_t fPionsMin, fPionsMax; //Number of pions range
-  Bool_t fPionsFlag;//Shows whether this cut is used or not
-  Int_t fKaonsMin, fKaonsMax; //Number of kaons range
-  Bool_t fKaonsFlag;//Shows whether this cut is used or not
-  Int_t fProtonsMin, fProtonsMax; //Number of protons range
-  Bool_t fProtonsFlag;//Shows whether this cut is used or not
-  Int_t fLambdasMin, fLambdasMax; //Number of lambdas range
-  Bool_t fLambdasFlag;//Shows whether this cut is used or not
-  Int_t fPhotonsMin, fPhotonsMax; //Number of photons range
-  Bool_t fPhotonFlag;//Shows whether this cut is used or not
-  Int_t fPi0sMin, fPi0sMax; //Number of Pi0s range
-  Bool_t fPi0sFlag;//Shows whether this cut is used or not
-  Int_t fNeutronsMin, fNeutronsMax; //Number of neutrons range
-  Bool_t fNeutronsFlag;//Shows whether this cut is used or not
-  Int_t fKaon0sMin, fKaon0sMax; //Number of K0s range
-  Bool_t fKaon0sFlag;//Shows whether this cut is used or not  
-  Float_t fTotalPMin, fTotalPMax; //Range of the sum of the momentum per event
-  Bool_t fTotalPFlag;//Shows whether this cut is used or not
-  Float_t fMeanPtMin, fMeanPtMax; //Range of mean Pt per event
-  Bool_t fMeanPtFlag;//Shows whether this cut is used or not
-  Float_t fMaxPt; //Max Pt for each event
-  Bool_t fMaxPtFlag;//Shows whether this cut is used or not
-  Float_t fTotalNeutralPMin, fTotalNeutralPMax; //Sum of the momentum per event for neutral
-  Bool_t fTotalNeutralPFlag;//Shows whether this cut is used or not
-  Float_t fMeanNeutralPtMin, fMeanNeutralPtMax; //Mean Pt per event for neutral
-  Bool_t fMeanNeutralPtFlag;//Shows whether this cut is used or not
-  Float_t fMaxNeutralPt; //Max Pt for each event for neutral
-  Bool_t fMaxNeutralPtFlag;//Shows whether this cut is used or not
-  Float_t fEventPlaneAngleMin, fEventPlaneAngleMax; //event plane info
-  Bool_t fEventPlaneAngleFlag;//Shows whether this cut is used or not
-  Float_t fHBTRadiiMin, fHBTRadiiMax; //HBT info
-  Bool_t fHBTRadiiFlag;//Shows whether this cut is used or not
+  Float_t fZDCNeutron1EnergyMin, fZDCNeutron1EnergyMax;       // ZDC min,max - neutron
+  Bool_t fZDCNeutron1EnergyFlag;                              // Shows whether this cut is used or not
+  Float_t fZDCProton1EnergyMin, fZDCProton1EnergyMax;         // ZDC min,max - proton
+  Bool_t fZDCProton1EnergyFlag;                               // Shows whether this cut is used or not
+  Float_t fZDCNeutron2EnergyMin, fZDCNeutron2EnergyMax;       // ZDC min,max - neutron
+  Bool_t fZDCNeutron2EnergyFlag;                              // Shows whether this cut is used or not
+  Float_t fZDCProton2EnergyMin, fZDCProton2EnergyMax;         // ZDC min,max - proton
+  Bool_t fZDCProton2EnergyFlag;                               // Shows whether this cut is used or not
+  Float_t fZDCEMEnergyMin, fZDCEMEnergyMax;                   // ZDC min,max - em
+  Bool_t fZDCEMEnergyFlag;                                    // Shows whether this cut is used or not
+  Float_t fT0VertexZMin, fT0VertexZMax;                       // T0 min, max
+  Bool_t fT0VertexZFlag;                                      // Shows whether this cut is used or not  
+
+  Int_t fMultMin, fMultMax;                                   // Definition of the range of the multiplicity
+  Bool_t fMultFlag;                                           // Shows whether this cut is used or not
+  Int_t fPosMultMin, fPosMultMax;                             // Positive tracks multiplicity range
+  Bool_t fPosMultFlag;                                        // Shows whether this cut is used or not
+  Int_t fNegMultMin, fNegMultMax;                             // Negative tracks multiplicity range
+  Bool_t fNegMultFlag;                                        // Shows whether this cut is used or not
+  Int_t fNeutrMultMin, fNeutrMultMax;                         // Neutral tracks multiplicity range
+  Bool_t fNeutrMultFlag;                                      // Shows whether this cut is used or not
+  Int_t fNV0sMin, fNV0sMax;                                   // Range of # of V0s
+  Bool_t fNV0sFlag;                                           // Shows whether this cut is used or not
+  Int_t fNCascadesMin, fNCascadesMax;                         // Range of # of cascades
+  Bool_t fNCascadesFlag;                                      // Shows whether this cut is used or not
+  Int_t fNKinksMin, fNKinksMax;                               // Range of # of kinks
+  Bool_t fNKinksFlag;                                         // Shows whether this cut is used or not
+  
+  Int_t fNPMDTracksMin, fNPMDTracksMax;                       // Range of # of PMD tracks
+  Bool_t fNPMDTracksFlag;                                     // Shows whether this cut is used or not
+  Int_t fNFMDTracksMin, fNFMDTracksMax;                       // Range of # of FMD tracks
+  Bool_t fNFMDTracksFlag;                                     // Shows whether this cut is used or not
+  Int_t fNPHOSClustersMin, fNPHOSClustersMax;                 // Range of # of PHOS clusters
+  Bool_t fNPHOSClustersFlag;                                  // Shows whether this cut is used or not
+  Int_t fNEMCALClustersMin, fNEMCALClustersMax;               // Range of # of EMCAL clusters
+  Bool_t fNEMCALClustersFlag;                                 // Shows whether this cut is used or not
+  Int_t fNJetCandidatesMin, fNJetCandidatesMax;               // Range of # of jet candidates
+  Bool_t fNJetCandidatesFlag;                                 // Shows whether this cut is used or not
+
+  Float_t fTopJetEnergyMin;                                   // top jet energy minimum value
+  Bool_t fTopJetEnergyMinFlag;                                // Shows whether this cut is used or not
+  Float_t fTopNeutralEnergyMin;                               // top neutral energy minimum value
+  Bool_t fTopNeutralEnergyMinFlag;                            // Shows whether this cut is used or not  
+  
+  Int_t fNHardPhotonCandidatesMin, fNHardPhotonCandidatesMax; // # of hard photons candidates
+  Bool_t fNHardPhotonCandidatesFlag;                          // Shows whether this cut is used or not
+  Int_t fNChargedAbove1GeVMin, fNChargedAbove1GeVMax;         // Definition of the range of the # of charged above 1GeV
+  Bool_t fNChargedAbove1GeVFlag;                              // Shows whether this cut is used or not
+  Int_t fNChargedAbove3GeVMin, fNChargedAbove3GeVMax;         // Definition of the range of the # of charged above 3GeV
+  Bool_t fNChargedAbove3GeVFlag;                              // Shows whether this cut is used or not
+  Int_t fNChargedAbove10GeVMin, fNChargedAbove10GeVMax;       // Definition of the range of the # of charged above 10GeV
+  Bool_t fNChargedAbove10GeVFlag;                             // Shows whether this cut is used or not
+  Int_t fNMuonsAbove1GeVMin, fNMuonsAbove1GeVMax;             // Definition of the range of the # of muons above 1GeV
+  Bool_t fNMuonsAbove1GeVFlag;                                // Shows whether this cut is used or not
+  Int_t fNMuonsAbove3GeVMin, fNMuonsAbove3GeVMax;             // Definition of the range of the # of muons above 3GeV
+  Bool_t fNMuonsAbove3GeVFlag;                                // Shows whether this cut is used or not
+  Int_t fNMuonsAbove10GeVMin, fNMuonsAbove10GeVMax;           // Definition of the range of the # of muons above 10GeV
+  Bool_t fNMuonsAbove10GeVFlag;                               // Shows whether this cut is used or not
+  Int_t fNElectronsAbove1GeVMin, fNElectronsAbove1GeVMax;     // Definition of the range of the # of electorns above 1GeV
+  Bool_t fNElectronsAbove1GeVFlag;                            // Shows whether this cut is used or not
+  Int_t fNElectronsAbove3GeVMin, fNElectronsAbove3GeVMax;     // Definition of the range of the # of electorns above 3GeV
+  Bool_t fNElectronsAbove3GeVFlag;                            // Shows whether this cut is used or not
+  Int_t fNElectronsAbove10GeVMin,fNElectronsAbove10GeVMax;    // Definition of the range of the # of electorns above 10GeV
+  Bool_t fNElectronsAbove10GeVFlag;                           // Shows whether this cut is used or not  
+  Int_t fNElectronsMin, fNElectronsMax;                       // # of electrons range
+  Bool_t fNElectronsFlag;                                     // Shows whether this cut is used or not
+  Int_t fNMuonsMin, fNMuonsMax;                               // # of muons range
+  Bool_t fNMuonsFlag;                                         // Shows whether this cut is used or not
+  Int_t fNPionsMin, fNPionsMax;                               // # of pions range
+  Bool_t fNPionsFlag;                                         // Shows whether this cut is used or not
+  Int_t fNKaonsMin, fNKaonsMax;                               // # of kaons range
+  Bool_t fNKaonsFlag;                                         // Shows whether this cut is used or not
+  Int_t fNProtonsMin, fNProtonsMax;                           // # of protons range
+  Bool_t fNProtonsFlag;                                       // Shows whether this cut is used or not
+  Int_t fNLambdasMin, fNLambdasMax;                           // # of lambdas range
+  Bool_t fNLambdasFlag;                                       // Shows whether this cut is used or not
+  Int_t fNPhotonsMin, fNPhotonsMax;                           // # of photons range
+  Bool_t fNPhotonFlag;                                        // Shows whether this cut is used or not
+  Int_t fNPi0sMin, fNPi0sMax;                                 // # of Pi0s range
+  Bool_t fNPi0sFlag;                                          // Shows whether this cut is used or not
+  Int_t fNNeutronsMin, fNNeutronsMax;                         // # of neutrons range
+  Bool_t fNNeutronsFlag;                                      // Shows whether this cut is used or not
+  Int_t fNKaon0sMin, fNKaon0sMax;                             // # of K0s range
+  Bool_t fNKaon0sFlag;                                        // Shows whether this cut is used or not  
+  Float_t fTotalPMin, fTotalPMax;                             // Range of the sum of the momentum per event
+  Bool_t fTotalPFlag;                                         // Shows whether this cut is used or not
+  Float_t fMeanPtMin, fMeanPtMax;                             // Range of mean Pt per event
+  Bool_t fMeanPtFlag;                                         // Shows whether this cut is used or not
+  Float_t fTopPtMin;                                          // Max Pt for each event
+  Bool_t fTopPtMinFlag;                                       // Shows whether this cut is used or not
+  Float_t fTotalNeutralPMin, fTotalNeutralPMax;               // Sum of the momentum per event for neutral
+  Bool_t fTotalNeutralPFlag;                                  // Shows whether this cut is used or not
+  Float_t fMeanNeutralPtMin, fMeanNeutralPtMax;               // Mean Pt per event for neutral
+  Bool_t fMeanNeutralPtFlag;                                  // Shows whether this cut is used or not
+  Float_t fTopNeutralPtMin;                                   // Minimum value for highest Pt for the event for neutral
+  Bool_t fTopNeutralPtMinFlag;                                // Shows whether this cut is used or not
+  Float_t fEventPlaneAngleMin, fEventPlaneAngleMax;           // event plane info
+  Bool_t fEventPlaneAngleFlag;                                // Shows whether this cut is used or not
+  Float_t fHBTRadiiMin, fHBTRadiiMax;                         // HBT info
+  Bool_t fHBTRadiiFlag;                                       // Shows whether this cut is used or not
 
   ClassDef(AliEventTagCuts, 2)
 };
