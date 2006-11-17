@@ -202,16 +202,18 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  QuadSet::FreeQuad* qp = (QuadSet::FreeQuad*) qbp;
 	  Float_t e1[3], e2[3], normal[3];
 	  while (n--) {
-	    if (SetupColor(*qp) == kFALSE) continue;
-	    Float_t* p = qp->fVertices;
-	    e1[0] = p[3] - p[0]; e1[1] = p[4] - p[1]; e1[2] = p[5] - p[2];
-	    e2[0] = p[6] - p[0]; e2[1] = p[7] - p[1]; e2[2] = p[8] - p[2];
-	    TMath::Cross(e1, e2, normal);
-	    glNormal3fv(normal);
-	    glVertex3fv(p);
-	    glVertex3fv(p + 3);
-	    glVertex3fv(p + 6);
-	    glVertex3fv(p + 9);
+	    if (SetupColor(*qp))
+	    {
+	      Float_t* p = qp->fVertices;
+	      e1[0] = p[3] - p[0]; e1[1] = p[4] - p[1]; e1[2] = p[5] - p[2];
+	      e2[0] = p[6] - p[0]; e2[1] = p[7] - p[1]; e2[2] = p[8] - p[2];
+	      TMath::Cross(e1, e2, normal);
+	      glNormal3fv(normal);
+	      glVertex3fv(p);
+	      glVertex3fv(p + 3);
+	      glVertex3fv(p + 6);
+	      glVertex3fv(p + 9);
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -222,11 +224,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  QuadSet::AAQuad* qp = (QuadSet::AAQuad*) qbp;
 	  while (n--) {
 	    QuadSet::AAQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glVertex3f(q.fX,        q.fY,        q.fZ);
-	    glVertex3f(q.fX + q.fW, q.fY,        q.fZ);
-	    glVertex3f(q.fX + q.fW, q.fY + q.fH, q.fZ);
-	    glVertex3f(q.fX,        q.fY + q.fH, q.fZ);
+	    if (SetupColor(q))
+	    {
+	      glVertex3f(q.fX,        q.fY,        q.fZ);
+	      glVertex3f(q.fX + q.fW, q.fY,        q.fZ);
+	      glVertex3f(q.fX + q.fW, q.fY + q.fH, q.fZ);
+	      glVertex3f(q.fX,        q.fY + q.fH, q.fZ);
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -239,11 +243,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
 	    QuadSet::AAFixDimQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glVertex3f(q.fX,     q.fY,     q.fZ);
-	    glVertex3f(q.fX + w, q.fY,     q.fZ);
-	    glVertex3f(q.fX + w, q.fY + h, q.fZ);
-	    glVertex3f(q.fX,     q.fY + h, q.fZ);
+	    if (SetupColor(q))
+	    {
+	      glVertex3f(q.fX,     q.fY,     q.fZ);
+	      glVertex3f(q.fX + w, q.fY,     q.fZ);
+	      glVertex3f(q.fX + w, q.fY + h, q.fZ);
+	      glVertex3f(q.fX,     q.fY + h, q.fZ);
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -255,11 +261,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
 	    QuadSet::AAFixZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glVertex3f(q.fX,        q.fY,        z);
-	    glVertex3f(q.fX + q.fW, q.fY,        z);
-	    glVertex3f(q.fX + q.fW, q.fY + q.fH, z);
-	    glVertex3f(q.fX,        q.fY + q.fH, z);
+	    if (SetupColor(q))
+	    {
+	      glVertex3f(q.fX,        q.fY,        z);
+	      glVertex3f(q.fX + q.fW, q.fY,        z);
+	      glVertex3f(q.fX + q.fW, q.fY + q.fH, z);
+	      glVertex3f(q.fX,        q.fY + q.fH, z);
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -271,11 +279,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
 	    QuadSet::AAFixZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glVertex3f(q.fX,        z, q.fY);
-	    glVertex3f(q.fX + q.fW, z, q.fY);
-	    glVertex3f(q.fX + q.fW, z, q.fY + q.fH);
-	    glVertex3f(q.fX,        z, q.fY + q.fH);
+	    if (SetupColor(q))
+	    {
+	      glVertex3f(q.fX,        z, q.fY);
+	      glVertex3f(q.fX + q.fW, z, q.fY);
+	      glVertex3f(q.fX + q.fW, z, q.fY + q.fH);
+	      glVertex3f(q.fX,        z, q.fY + q.fH);
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -289,11 +299,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
 	    QuadSet::AAFixDimZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glVertex3f(q.fX,     q.fY,     z);
-	    glVertex3f(q.fX + w, q.fY,     z);
-	    glVertex3f(q.fX + w, q.fY + h, z);
-	    glVertex3f(q.fX,     q.fY + h, z);
+	    if (SetupColor(q))
+	    {
+	      glVertex3f(q.fX,     q.fY,     z);
+	      glVertex3f(q.fX + w, q.fY,     z);
+	      glVertex3f(q.fX + w, q.fY + h, z);
+	      glVertex3f(q.fX,     q.fY + h, z);
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -307,11 +319,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
 	    QuadSet::AAFixDimZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glVertex3f(q.fX,     z, q.fY);
-	    glVertex3f(q.fX + w, z, q.fY);
-	    glVertex3f(q.fX + w, z, q.fY + h);
-	    glVertex3f(q.fX,     z, q.fY + h);
+	    if (SetupColor(q))
+	    {
+	      glVertex3f(q.fX,     z, q.fY);
+	      glVertex3f(q.fX + w, z, q.fY);
+	      glVertex3f(q.fX + w, z, q.fY + h);
+	      glVertex3f(q.fX,     z, q.fY + h);
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -341,15 +355,17 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	{
 	  QuadSet::FreeQuad* qp = (QuadSet::FreeQuad*) qbp;
 	  while (n--) {
-	    if (SetupColor(*qp) == kFALSE) continue;
-	    SetupColor(*qp);
-	    Float_t* p = qp->fVertices;
-	    glBegin(GL_LINE_LOOP);
-	    glVertex3fv(p);
-	    glVertex3fv(p + 3);
-	    glVertex3fv(p + 6);
-	    glVertex3fv(p + 9);
-	    glEnd();
+	    if (SetupColor(*qp))
+	    {
+	      SetupColor(*qp);
+	      Float_t* p = qp->fVertices;
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3fv(p);
+	      glVertex3fv(p + 3);
+	      glVertex3fv(p + 6);
+	      glVertex3fv(p + 9);
+	      glEnd();
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -360,13 +376,15 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  QuadSet::AAQuad* qp = (QuadSet::AAQuad*) qbp;
 	  while (n--) {
 	    QuadSet::AAQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glBegin(GL_LINE_LOOP);
-	    glVertex3f(q.fX,        q.fY,        q.fZ);
-	    glVertex3f(q.fX + q.fW, q.fY,        q.fZ);
-	    glVertex3f(q.fX + q.fW, q.fY + q.fH, q.fZ);
-	    glVertex3f(q.fX,        q.fY + q.fH, q.fZ);
-	    glEnd();
+	    if (SetupColor(q))
+	    {
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f(q.fX,        q.fY,        q.fZ);
+	      glVertex3f(q.fX + q.fW, q.fY,        q.fZ);
+	      glVertex3f(q.fX + q.fW, q.fY + q.fH, q.fZ);
+	      glVertex3f(q.fX,        q.fY + q.fH, q.fZ);
+	      glEnd();
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -379,13 +397,15 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
 	    QuadSet::AAFixDimQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glBegin(GL_LINE_LOOP);
-	    glVertex3f(q.fX,     q.fY,     q.fZ);
-	    glVertex3f(q.fX + w, q.fY,     q.fZ);
-	    glVertex3f(q.fX + w, q.fY + h, q.fZ);
-	    glVertex3f(q.fX,     q.fY + h, q.fZ);
-	    glEnd();
+	    if (SetupColor(q))
+	    {
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f(q.fX,     q.fY,     q.fZ);
+	      glVertex3f(q.fX + w, q.fY,     q.fZ);
+	      glVertex3f(q.fX + w, q.fY + h, q.fZ);
+	      glVertex3f(q.fX,     q.fY + h, q.fZ);
+	      glEnd();
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -397,13 +417,15 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
 	    QuadSet::AAFixZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glBegin(GL_LINE_LOOP);
-	    glVertex3f(q.fX,        q.fY,        z);
-	    glVertex3f(q.fX + q.fW, q.fY,        z);
-	    glVertex3f(q.fX + q.fW, q.fY + q.fH, z);
-	    glVertex3f(q.fX,        q.fY + q.fH, z);
-	    glEnd();
+	    if (SetupColor(q))
+	    {
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f(q.fX,        q.fY,        z);
+	      glVertex3f(q.fX + q.fW, q.fY,        z);
+	      glVertex3f(q.fX + q.fW, q.fY + q.fH, z);
+	      glVertex3f(q.fX,        q.fY + q.fH, z);
+	      glEnd();
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -415,13 +437,15 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
 	    QuadSet::AAFixZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glBegin(GL_LINE_LOOP);
-	    glVertex3f(q.fX,        z, q.fY);
-	    glVertex3f(q.fX + q.fW, z, q.fY);
-	    glVertex3f(q.fX + q.fW, z, q.fY + q.fH);
-	    glVertex3f(q.fX,        z, q.fY + q.fH);
-	    glEnd();
+	    if (SetupColor(q))
+	    {
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f(q.fX,        z, q.fY);
+	      glVertex3f(q.fX + q.fW, z, q.fY);
+	      glVertex3f(q.fX + q.fW, z, q.fY + q.fH);
+	      glVertex3f(q.fX,        z, q.fY + q.fH);
+	      glEnd();
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -435,13 +459,15 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
 	    QuadSet::AAFixDimZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glBegin(GL_LINE_LOOP);
-	    glVertex3f(q.fX,     q.fY,     z);
-	    glVertex3f(q.fX + w, q.fY,     z);
-	    glVertex3f(q.fX + w, q.fY + h, z);
-	    glVertex3f(q.fX,     q.fY + h, z);
-	    glEnd();
+	    if (SetupColor(q))
+	    {
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f(q.fX,     q.fY,     z);
+	      glVertex3f(q.fX + w, q.fY,     z);
+	      glVertex3f(q.fX + w, q.fY + h, z);
+	      glVertex3f(q.fX,     q.fY + h, z);
+	      glEnd();
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -455,13 +481,15 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
 	    QuadSet::AAFixDimZQuad& q = * qp;
-	    if (SetupColor(q) == kFALSE) continue;
-	    glBegin(GL_LINE_LOOP);
-	    glVertex3f(q.fX,     z, q.fY);
-	    glVertex3f(q.fX + w, z, q.fY);
-	    glVertex3f(q.fX + w, z, q.fY + h);
-	    glVertex3f(q.fX,     z, q.fY + h);
-	    glEnd();
+	    if (SetupColor(q))
+	    {
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f(q.fX,     z, q.fY);
+	      glVertex3f(q.fX + w, z, q.fY);
+	      glVertex3f(q.fX + w, z, q.fY + h);
+	      glVertex3f(q.fX,     z, q.fY + h);
+	      glEnd();
+	    }
 	    ++qp;
 	  }
 	  break;
@@ -499,9 +527,11 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &) const
 	glBegin(GL_LINES);
 	while (n--) {
 	  QuadSet::LineFixedZ& q = * qp;
-	  if (SetupColor(q) == kFALSE) continue;
-	  glVertex3f(q.fX,         q.fY,         z);
-	  glVertex3f(q.fX + q.fDx, q.fY + q.fDy, z);
+	  if (SetupColor(q))
+	  {
+	    glVertex3f(q.fX,         q.fY,         z);
+	    glVertex3f(q.fX + q.fDx, q.fY + q.fDy, z);
+	  }
 	  ++qp;
 	}
 	glEnd();
@@ -515,9 +545,11 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &) const
 	glBegin(GL_LINES);
 	while (n--) {
 	  QuadSet::LineFixedZ& q = * qp;
-	  if (SetupColor(q) == kFALSE) continue;
-	  glVertex3f(q.fX,         z, q.fY);
-	  glVertex3f(q.fX + q.fDx, z, q.fY + q.fDy);
+	  if (SetupColor(q))
+	  {
+	    glVertex3f(q.fX,         z, q.fY);
+	    glVertex3f(q.fX + q.fDx, z, q.fY + q.fDy);
+	  }
 	  ++qp;
 	}
 	glEnd();
