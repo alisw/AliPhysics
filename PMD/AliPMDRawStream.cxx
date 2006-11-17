@@ -88,7 +88,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 
   AliPMDddldata *pmdddldata;
 
-  fRawReader->ReadHeader();
+  if (!fRawReader->ReadHeader()) return kFALSE;
   Int_t  iddl  = fRawReader->GetDDLID();
   Int_t dataSize = fRawReader->GetDataSize();
   Int_t totaldataword = dataSize/4;
