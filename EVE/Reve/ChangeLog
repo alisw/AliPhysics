@@ -1,3 +1,17 @@
+2006-11-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* QuadSetGL.cxx:
+	Bugfix: loop variable was not increased in case of a continue
+	statement.
+
+	* RGBAPalette.cxx:
+	* RGBAPalette.h:
+	Rename over/undershoot to over/underflow.
+
+	* RGBAPaletteEditor.cxx:
+	* RGBAPaletteEditor.h:
+	Beautify editor; rename over/undershoot to over/underflow.
+
 2006-11-16  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Cascade.cxx:
