@@ -2797,6 +2797,7 @@ TGeoVolume* AliPIPEv3::MakeBellow(char* ext, Int_t nc, Float_t rMin, Float_t rMa
     const TGeoMedium* kMedSteel  =  gGeoManager->GetMedium("PIPE_INOX");   
 
     char name[64], nameA[64], nameB[64], bools[64];
+    sprintf(name, "%sBellowUS", ext);
     TGeoVolume* voBellow = new TGeoVolume(name, new TGeoTube(rMin, rMax, dU/2.), kMedVac);
 //      
 //  Upper part of the undulation

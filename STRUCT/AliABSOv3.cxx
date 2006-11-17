@@ -890,7 +890,7 @@ void AliABSOv3::CreateGeometry()
       voFA->AddNode(voFaM,        1, gGeoIdentity);
       voFA->AddNode(voFaEndPlate, 1, new TGeoTranslation(0., 0., dzFa + dzEndPlate/2.));
       voFA->AddNode(voFass, 1, new TGeoTranslation(0., 0., 388.45));
-      voFA->AddNode(voFassAlRing, 1, new TGeoTranslation(0., 0., 382. - 0.55));
+      voFA->AddNode(voFassAlRing, 1, new TGeoTranslation(0., 0., 382. - 3.5));
       top->AddNode(voFA, 1, new TGeoCombiTrans(0., 0., -90., rotxz));
 }
 

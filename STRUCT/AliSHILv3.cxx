@@ -853,7 +853,7 @@ void AliSHILv3::CreateGeometry()
       Float_t dzSaa2StEnv1  = 163.15;
       Float_t rInSaa2StEnv1 = 65.8/2.;
       // Length of the second section
-      Float_t dzSaa2StEnv2  = 340.35;
+      Float_t dzSaa2StEnv2  = 340.35 - 4.;
       Float_t rInSaa2StEnv2 = 87.2/2.;
       // Rel. starting position 
       Float_t zSaa2StEnv = 3.;
