@@ -19,10 +19,10 @@ RGBAPalette::RGBAPalette() :
 
   fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
 
-  fInterpolate      (kFALSE),
-  fShowDefValue     (kTRUE),
-  fUndershootAction (LA_Cut),
-  fOvershootAction  (LA_Clip),
+  fInterpolate     (kFALSE),
+  fShowDefValue    (kTRUE),
+  fUnderflowAction (LA_Cut),
+  fOverflowAction  (LA_Clip),
 
   fDefaultColor(0),
   fUnderColor  (1),
@@ -39,10 +39,10 @@ RGBAPalette::RGBAPalette(Int_t min, Int_t max) :
 
   fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
   
-  fInterpolate      (kFALSE),
-  fShowDefValue     (kTRUE),
-  fUndershootAction (LA_Cut),
-  fOvershootAction  (LA_Clip),
+  fInterpolate     (kFALSE),
+  fShowDefValue    (kTRUE),
+  fUnderflowAction (LA_Cut),
+  fOverflowAction  (LA_Clip),
 
   fDefaultColor(0),
   fUnderColor  (1),
@@ -59,10 +59,10 @@ RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t showdef) :
 
   fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
 
-  fInterpolate      (interp),
-  fShowDefValue     (showdef),
-  fUndershootAction (LA_Cut),
-  fOvershootAction  (LA_Clip),
+  fInterpolate     (interp),
+  fShowDefValue    (showdef),
+  fUnderflowAction (LA_Cut),
+  fOverflowAction  (LA_Clip),
 
   fDefaultColor(0),
   fUnderColor  (1),

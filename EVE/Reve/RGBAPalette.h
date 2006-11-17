@@ -28,16 +28,16 @@ protected:
   Int_t     fMaxVal;
   Int_t     fNBins;
 
-  Bool_t        fInterpolate;
-  Bool_t        fShowDefValue;
-  Int_t fUndershootAction;
-  Int_t fOvershootAction;
+  Bool_t    fInterpolate;
+  Bool_t    fShowDefValue;
+  Int_t     fUnderflowAction;
+  Int_t     fOverflowAction;
 
   Color_t   fDefaultColor;   // Color for when value is not specified
   UChar_t   fDefaultRGBA[4];
-  Color_t   fUnderColor;     // Undershoot color
+  Color_t   fUnderColor;     // Underflow color
   UChar_t   fUnderRGBA[4];
-  Color_t   fOverColor;      // Overshoot color
+  Color_t   fOverColor;      // Overflow color
   UChar_t   fOverRGBA[4];
 
   mutable UChar_t* fColorArray; //[4*fNBins]
@@ -76,10 +76,10 @@ public:
   Bool_t GetShowDefValue() const { return fShowDefValue; }
   void   SetShowDefValue(Bool_t v) { fShowDefValue = v; }
 
-  Int_t GetUndershootAction() const  { return fUndershootAction; }
-  Int_t GetOvershootAction()  const  { return fOvershootAction;  }
-  void  SetUndershootAction(Int_t a) { fUndershootAction = a;    }
-  void  SetOvershootAction(Int_t a)  { fOvershootAction  = a;    }
+  Int_t GetUnderflowAction() const  { return fUnderflowAction; }
+  Int_t GetOverflowAction()  const  { return fOverflowAction;  }
+  void  SetUnderflowAction(Int_t a) { fUnderflowAction = a;    }
+  void  SetOverflowAction(Int_t a)  { fOverflowAction  = a;    }
 
   // ================================================================
 
@@ -129,8 +129,8 @@ public:
 
 inline Bool_t RGBAPalette::WithinVisibleRange(Int_t val) const
 {
-  if ((val < fMinVal && fUndershootAction == LA_Cut) ||
-      (val > fMaxVal && fOvershootAction  == LA_Cut))
+  if ((val < fMinVal && fUnderflowAction == LA_Cut) ||
+      (val > fMaxVal && fOverflowAction  == LA_Cut))
     return kFALSE;
   else
     return kTRUE;
@@ -143,17 +143,17 @@ inline const UChar_t* RGBAPalette::ColorFromValue(Int_t val) const
 
   if (!fColorArray)  SetupColorArray();
   if (val < fMinVal) {
-    if (fUndershootAction == LA_Wrap)
+    if (fUnderflowAction == LA_Wrap)
       val = (val+1-fMinVal)%fNBins + fMaxVal;
-    else if (fUndershootAction == LA_Clip)
+    else if (fUnderflowAction == LA_Clip)
       val = fMinVal;
     else
       return fUnderRGBA;
   }
   else if(val > fMaxVal) {
-    if (fOvershootAction == LA_Wrap)
+    if (fOverflowAction == LA_Wrap)
       val = (val-1-fMaxVal)%fNBins + fMinVal;
-    else if (fOvershootAction == LA_Clip)
+    else if (fOverflowAction == LA_Clip)
       val = fMaxVal;
     else
       return fOverRGBA;
