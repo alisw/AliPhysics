@@ -25,9 +25,9 @@ private:
 protected:
   RGBAPalette*      fM;
 
-  TGComboBox*       fUndershootAction;
+  TGComboBox*       fUnderflowAction;
   TGColorSelect*    fUnderColor;
-  TGComboBox*       fOvershootAction;
+  TGComboBox*       fOverflowAction;
   TGColorSelect*    fOverColor;
 
   RGDoubleValuator* fMinMax;
@@ -51,8 +51,8 @@ public:
   void DoDefaultColor(Pixel_t color);
   void DoUnderColor(Pixel_t color);
   void DoOverColor(Pixel_t color);
-  void DoUndershootAction(Int_t mode);
-  void DoOvershootAction(Int_t mode);
+  void DoUnderflowAction(Int_t mode);
+  void DoOverflowAction(Int_t mode);
 
   ClassDef(RGBAPaletteSubEditor, 1); // SubEditor for RGBAPalette
 }; // endclass RGBAPaletteSubEditor

@@ -22,10 +22,10 @@ RGBAPaletteSubEditor::RGBAPaletteSubEditor(const TGWindow* p) :
 
   fM(0),
 
-  fUndershootAction (0),
-  fUnderColor       (0), 
-  fOvershootAction  (0),
-  fOverColor        (0),
+  fUnderflowAction (0),
+  fUnderColor      (0), 
+  fOverflowAction  (0),
+  fOverColor       (0),
 
   fMinMax(0),
 
@@ -38,81 +38,87 @@ RGBAPaletteSubEditor::RGBAPaletteSubEditor(const TGWindow* p) :
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
 
-    fDefaultColor = new TGColorSelect(f, 0, -1);
-    f->AddFrame(fDefaultColor, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fDefaultColor->Connect("ColorSelected(Pixel_t)",
-			   "Reve::RGBAPaletteSubEditor", this, "DoDefaultColor(Pixel_t)");
-
     fInterpolate = new TGCheckButton(f, "Interpolate");
-    f->AddFrame(fInterpolate, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
+    f->AddFrame(fInterpolate, new TGLayoutHints(kLHintsLeft, 3, 1, 1, 0));
     fInterpolate->Connect("Toggled(Bool_t)",
 			  "Reve::RGBAPaletteSubEditor", this, "DoInterpolate()");
 
-    fShowDefValue = new TGCheckButton(f, "ShowDefValue");
-    f->AddFrame(fShowDefValue, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
+    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 0));
+  }
+
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+
+    fShowDefValue = new TGCheckButton(f, "Show default value");
+    f->AddFrame(fShowDefValue, new TGLayoutHints(kLHintsLeft, 3, 1, 1, 0));
     fShowDefValue->Connect("Toggled(Bool_t)",
 		   "Reve::RGBAPaletteSubEditor", this, "DoShowDefValue()");
 
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+    fDefaultColor = new TGColorSelect(f, 0, -1);
+    f->AddFrame(fDefaultColor, new TGLayoutHints(kLHintsLeft|kLHintsTop, 3, 1, 0, 2));
+    fDefaultColor->Connect("ColorSelected(Pixel_t)",
+			   "Reve::RGBAPaletteSubEditor", this, "DoDefaultColor(Pixel_t)");
+
+    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 0));
   }
 
-  { // Undershoot
+  { // Underflow
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel* lab = new TGLabel(f, "Under-mode");
-    f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 10, 1, 2));
-    fUndershootAction = new TGComboBox(f);
-    fUndershootAction->AddEntry("Cut", 0);
-    fUndershootAction->AddEntry("Mark", 1);
-    fUndershootAction->AddEntry("Clip", 2);
-    fUndershootAction->AddEntry("Wrap", 3);
-    TGListBox* lb = fUndershootAction->GetListBox();
+    TGLabel* lab = new TGLabel(f, "Underflow:");
+    f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 15, 1, 2));
+    fUnderflowAction = new TGComboBox(f);
+    fUnderflowAction->AddEntry("Cut", 0);
+    fUnderflowAction->AddEntry("Mark", 1);
+    fUnderflowAction->AddEntry("Clip", 2);
+    fUnderflowAction->AddEntry("Wrap", 3);
+    TGListBox* lb = fUnderflowAction->GetListBox();
     lb->Resize(lb->GetWidth(), 4*16);
-    fUndershootAction->Resize(80, 20);
-    fUndershootAction->Connect("Selected(Int_t)", "Reve::RGBAPaletteSubEditor", this,
-		       "DoUndershootAction(Int_t)");
-    f->AddFrame(fUndershootAction, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
+    fUnderflowAction->Resize(59, 20);
+    fUnderflowAction->Connect("Selected(Int_t)", "Reve::RGBAPaletteSubEditor", this,
+			      "DoUnderflowAction(Int_t)");
+    f->AddFrame(fUnderflowAction, new TGLayoutHints(kLHintsLeft, 1, 2, 1, 1));
 
     fUnderColor = new TGColorSelect(f, 0, -1);
-    f->AddFrame(fUnderColor, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
+    f->AddFrame(fUnderColor, new TGLayoutHints(kLHintsLeft|kLHintsTop, 1, 1, 0, 2));
     fUnderColor->Connect("ColorSelected(Pixel_t)",
-			   "Reve::RGBAPaletteSubEditor", this, "DoUnderColor(Pixel_t)");
+			 "Reve::RGBAPaletteSubEditor", this, "DoUnderColor(Pixel_t)");
   
     AddFrame(f);
   }
 
-  { // Overshoot
+  { // Overflow
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel* lab = new TGLabel(f, "Over-mode");
-    f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 10, 1, 2));
-    fOvershootAction = new TGComboBox(f);
-    fOvershootAction->AddEntry("Cut", 0);
-    fOvershootAction->AddEntry("Mark", 1);
-    fOvershootAction->AddEntry("Clip", 2);
-    fOvershootAction->AddEntry("Wrap", 3);
-    TGListBox* lb = fOvershootAction->GetListBox();
+    TGLabel* lab = new TGLabel(f, "Overflow:");
+    f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 20, 1, 2));
+    fOverflowAction = new TGComboBox(f);
+    fOverflowAction->AddEntry("Cut", 0);
+    fOverflowAction->AddEntry("Mark", 1);
+    fOverflowAction->AddEntry("Clip", 2);
+    fOverflowAction->AddEntry("Wrap", 3);
+    TGListBox* lb = fOverflowAction->GetListBox();
     lb->Resize(lb->GetWidth(), 4*16);
-    fOvershootAction->Resize(80, 20);
-    fOvershootAction->Connect("Selected(Int_t)", "Reve::RGBAPaletteSubEditor", this,
-		       "DoOvershootAction(Int_t)");
-    f->AddFrame(fOvershootAction, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
+    fOverflowAction->Resize(59, 20);
+    fOverflowAction->Connect("Selected(Int_t)", "Reve::RGBAPaletteSubEditor", this,
+			     "DoOverflowAction(Int_t)");
+    f->AddFrame(fOverflowAction, new TGLayoutHints(kLHintsLeft, 1, 2, 1, 1));
 
     fOverColor = new TGColorSelect(f, 0, -1);
-    f->AddFrame(fOverColor, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
+    f->AddFrame(fOverColor, new TGLayoutHints(kLHintsLeft|kLHintsTop, 1, 1, 0, 2));
     fOverColor->Connect("ColorSelected(Pixel_t)",
-			   "Reve::RGBAPaletteSubEditor", this, "DoOverColor(Pixel_t)");
+			"Reve::RGBAPaletteSubEditor", this, "DoOverColor(Pixel_t)");
   
     AddFrame(f);
   }
 
-  fMinMax = new RGDoubleValuator(this,"Min / Max", 200, 0);
-  fMinMax->SetNELength(4);
-  fMinMax->SetLabelWidth(64);
+  fMinMax = new RGDoubleValuator(this,"Main range:", 200, 0);
+  fMinMax->SetNELength(5);
+  fMinMax->SetLabelWidth(74);
   fMinMax->Build();
   fMinMax->GetSlider()->SetWidth(224);
   fMinMax->SetLimits(0, 1023, TGNumberFormat::kNESInteger);
   fMinMax->Connect("ValueSet()",
 		   "Reve::RGBAPaletteSubEditor", this, "DoMinMax()");
-  AddFrame(fMinMax, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+  AddFrame(fMinMax, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
 }
 
@@ -132,8 +138,8 @@ void RGBAPaletteSubEditor::SetModel(RGBAPalette* p)
   fUnderColor->SetColor(TColor::Number2Pixel(fM->GetUnderColor()), kFALSE);
   fOverColor->SetColor(TColor::Number2Pixel(fM->GetOverColor()), kFALSE);
 
-  fUndershootAction->Select(fM->fUndershootAction, kFALSE);
-  fOvershootAction->Select(fM->fOvershootAction, kFALSE);
+  fUnderflowAction->Select(fM->fUnderflowAction, kFALSE);
+  fOverflowAction->Select(fM->fOverflowAction, kFALSE);
 }
 
 /**************************************************************************/
@@ -183,15 +189,15 @@ void RGBAPaletteSubEditor::DoOverColor(Pixel_t color)
   Changed();
 }
 
-void RGBAPaletteSubEditor::DoUndershootAction(Int_t mode)
+void RGBAPaletteSubEditor::DoUnderflowAction(Int_t mode)
 {
-  fM->SetUndershootAction(mode);
+  fM->SetUnderflowAction(mode);
   Changed();
 }
 
-void RGBAPaletteSubEditor::DoOvershootAction(Int_t mode)
+void RGBAPaletteSubEditor::DoOverflowAction(Int_t mode)
 {
-  fM->SetOvershootAction(mode);
+  fM->SetOverflowAction(mode);
   Changed();
 }
 
