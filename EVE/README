@@ -7,8 +7,7 @@ EVE is composed of:
 3. CINT scripts that extract data, fill graphics classes and register
    them to the application.
 
-This is an early release ... expect problems and be sure that what you
-need is not supported.
+The framework is still evolving ... some things might not work as expected.
 
 
 Usage
@@ -58,3 +57,22 @@ test-macros/      -- macros for tests of specific features; usually one needs
 
 bin/, Makefile and make_base.inc are used for stand-alone build of the
 packages.
+
+
+Notes
+=====
+
+1. Problems with macro-execution
+--------------------------------
+
+A failed macro-execution can leave CINT in a poorly defined state that
+prevents further execution of macros. For example:
+
+  Exception Reve::Exc_t: Event::Open failed opening ALICE ESDfriend from
+  '/alice-data/coctail_10k/AliESDfriends.root'.
+
+  root [1] Error: Function MUON_geom() is not defined in current scope  :0:
+  *** Interpreter error recovered ***
+  Error: G__unloadfile() File "/tmp/MUON_geom.C" not loaded  :0:
+
+'gROOT->Reset()' helps in most of the cases.
