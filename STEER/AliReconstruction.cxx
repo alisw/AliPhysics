@@ -766,7 +766,8 @@ Bool_t AliReconstruction::Run(const char* input,
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   file->cd();
-  tree->SetBranchStatus("ESDfriend*",0);
+  if (fWriteESDfriend)
+    tree->SetBranchStatus("ESDfriend*",0);
   tree->Write();
   hlttree->Write();
 
