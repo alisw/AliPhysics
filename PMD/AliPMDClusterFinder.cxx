@@ -571,8 +571,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
 	  Float_t sig1 = (Float_t) sig;
 	  // CALIBRATION
-	  //Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
-	  Float_t gain = 1.0;
+	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
 
 	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
