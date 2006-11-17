@@ -48,8 +48,7 @@ protected:
 
 public:
   RGBAPalette();
-  RGBAPalette(Int_t min, Int_t max);
-  RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t showdef=kTRUE);
+  RGBAPalette(Int_t min, Int_t max, Bool_t interp=kFALSE, Bool_t showdef=kTRUE);
   virtual ~RGBAPalette();
 
   void SetupColorArray() const;

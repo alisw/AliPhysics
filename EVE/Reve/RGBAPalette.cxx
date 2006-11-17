@@ -29,28 +29,8 @@ RGBAPalette::RGBAPalette() :
   fOverColor   (2),
   fColorArray  (0)
 {
-  SetLimits(0, 1000);
+  SetLimits(0, 1024);
   SetMinMax(0, 100);
-}
-
-RGBAPalette::RGBAPalette(Int_t min, Int_t max) :
-  TObject(),
-  Reve::ReferenceCount(),
-
-  fLowLimit(0), fHighLimit(0), fMinVal(0), fMaxVal(0), fNBins(0),
-  
-  fInterpolate     (kFALSE),
-  fShowDefValue    (kTRUE),
-  fUnderflowAction (LA_Cut),
-  fOverflowAction  (LA_Clip),
-
-  fDefaultColor(0),
-  fUnderColor  (1),
-  fOverColor   (2),
-  fColorArray  (0)
-{
-  SetLimits(0, 1000);
-  SetMinMax(min, max);
 }
 
 RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t showdef) :
@@ -69,7 +49,7 @@ RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t showdef) :
   fOverColor   (2),
   fColorArray  (0)
 {
-  SetLimits(0, 1023);
+  SetLimits(0, 1024);
   SetMinMax(min, max);
 }
 
