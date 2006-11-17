@@ -1,5 +1,11 @@
 2006-11-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* RGBAPalette.cxx:
+	* RGBAPalette.h:
+	Removed unnecessary constructor.
+
+2006-11-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* QuadSetGL.cxx:
 	Bugfix: loop variable was not increased in case of a continue
 	statement.

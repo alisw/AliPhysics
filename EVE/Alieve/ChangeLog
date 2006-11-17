@@ -1,3 +1,8 @@
+2006-11-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ITSModule.cxx:
+	Do not interpolate color palette by default.
+
 2006-11-16  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* ITSModule.cxx:
