@@ -613,12 +613,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
   
   AliMatrix(idrotm[1811], 270., 0., 90., 90., 180., 0.);
   gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 0., idrotm[1811], "ONLY");
-
   gMC->Gsatt("DDIP", "SEEN", 0);
-//  gMC->Gsatt("DC21", "SEEN", 0);
-//  gMC->Gsatt("DC22", "SEEN", 0);
-//  gMC->Gsatt("DC3 ", "SEEN", 0);
-//  gMC->Gsatt("DC4 ", "SEEN", 0);
 }
 
 
@@ -634,7 +629,8 @@ void AliDIPOv2::CreateCompensatorDipole()
     
 //  Mother volumes
     gMC->Gsvolu("DCM0", "BOX", idtmed[1814], pbox, 3);
-
+    gMC->Gsatt("DCM0", "SEEN", 0);
+    
 //
 //  Mother volume containing lower coil
     pbox[0] = 58.5/2.;
@@ -751,7 +747,7 @@ void AliDIPOv2::CreateCompensatorDipole()
 
     gMC->Gspos("DCBA", 1, "DCM0",  0., -47.5 , 17.5, 0, "ONLY");
     AliMatrix(idrotm[1816], 270., 0., 90., 90.,  180., 0.);  
-    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75,  975., idrotm[1816], "ONLY");
+    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75,  1080., idrotm[1816], "ONLY");
 
 
 }
