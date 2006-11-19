@@ -15,12 +15,16 @@ ClassImp(AliVZEROTrigger)
 
 //______________________________________________________________________
 AliVZEROTrigger::AliVZEROTrigger()
-  : AliTriggerDetector()
+  :AliTriggerDetector(),
+   fAdcThresHold(0.0),
+   fTimeWindowWidth(50.0)
+   
 {
    SetName("VZERO");
    CreateInputs();
 
    SetAdcThreshold();
+   SetTimeWindowWidth();
 }
 
 //______________________________________________________________________
@@ -61,9 +65,13 @@ void AliVZEROTrigger::Trigger()
   Int_t nRightDig = 0;
   
   // first time 
-  Float_t firstTimeLeft = 9999;
-  Float_t firstTimeRight = 9999;
-
+  Float_t firstTimeLeft  = 9999.0;
+  Float_t firstTimeRight = 9999.0;
+  Float_t TimeHalfWidth  = fTimeWindowWidth/2.0;
+  
+  printf(" Window V0C = %f %f \n", 30.0-TimeHalfWidth,  30.0+TimeHalfWidth );
+  printf(" Window V0A = %f %f \n", 114.0-TimeHalfWidth, 114.0+TimeHalfWidth);
+  
   // loop over vzero entries
   Int_t nEntries = (Int_t)vzeroDigitsTree->GetEntries();
   for (Int_t e=0; e<nEntries; e++) {
@@ -80,13 +88,18 @@ void AliVZEROTrigger::Trigger()
       Float_t tdc        = digit->Time(); // in 100 of picoseconds
       
       if (PMNumber<=31 && adc>fAdcThresHold) {
-	nLeftDig++;
+        printf(" Time  V0C = %f \n", tdc );
+	if (tdc>(30.0-TimeHalfWidth) && tdc<(30.0+TimeHalfWidth)) nRightDig++;
+//        nRightDig++;
+	if (tdc<firstTimeRight) firstTimeRight = tdc;
+      }      
+      if (PMNumber>=32 && adc>fAdcThresHold) {
+        printf(" Time  V0A = %f \n", tdc );
+	if (tdc>(114.0-TimeHalfWidth) && tdc<(114.0+TimeHalfWidth)) nLeftDig++;
+//        nLeftDig++;
 	if (tdc<firstTimeLeft) firstTimeLeft = tdc;
       }	
-      if (PMNumber>=32 && adc>fAdcThresHold) {
-	nRightDig++;
-	if (tdc<firstTimeRight) firstTimeRight = tdc;
-      }
+      
     } // end of loop over digits
   } // end of loop over events in digits tree
   
@@ -100,20 +113,21 @@ void AliVZEROTrigger::Trigger()
     SetInput( "VZERO_BEAMGAS" );
 
   if (nLeftDig > 0)
-    SetInput( "VZERO_LEFT" );
+      SetInput( "VZERO_LEFT" );
 
   if (nRightDig > 0)
-    SetInput( "VZERO_RIGHT" );
+      SetInput( "VZERO_RIGHT" );
   
   if (nLeftDig>0 || nRightDig>0) {
-    SetInput( "VZERO_OR" );
+      SetInput( "VZERO_OR" );
 
     if (nLeftDig>0 && nRightDig>0) {
-    SetInput( "VZERO_AND" );   
+        SetInput( "VZERO_AND" );   
     }
   }
   
-  AliDebug(1,Form("VZERO PMs fired: %d (left) %d (right)", nLeftDig, nRightDig));
+//  AliDebug(1,Form("VZERO PMs fired: %d (left) %d (right)", nLeftDig, nRightDig));
+  printf("%d %d \n", nLeftDig, nRightDig);
 
   return;
 }

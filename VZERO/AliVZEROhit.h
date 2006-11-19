@@ -18,7 +18,7 @@
 class AliVZEROhit : public AliHit {
  
 public:
-  AliVZEROhit() {}
+  AliVZEROhit();
   AliVZEROhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   virtual ~AliVZEROhit() {};
   

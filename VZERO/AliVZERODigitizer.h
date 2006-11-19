@@ -43,11 +43,9 @@ class AliVZERODigitizer: public AliDigitizer {
  
  private:
  
-   AliVZERODigitizer(const AliVZERODigitizer& digitizer): 
-      AliDigitizer(digitizer)
-      {Fatal("AliVZERODigitizer", "copy constructor not implemented");}
-   AliVZERODigitizer& operator = (const AliVZERODigitizer& /*digitizer*/) 
-      {Fatal("operator=", "assignment operator not implemented"); return *this;}
+   AliVZERODigitizer(const AliVZERODigitizer& /*digitizer*/); 
+      
+   AliVZERODigitizer& operator = (const AliVZERODigitizer& /*digitizer*/); 
   
    Float_t fPhotoCathodeEfficiency; // Photocathode efficiency
    Float_t fPMVoltage ;             // Photomultiplier voltage

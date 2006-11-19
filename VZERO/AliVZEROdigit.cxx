@@ -18,29 +18,45 @@
 ClassImp(AliVZEROdigit)
 
 AliVZEROdigit::AliVZEROdigit()
+   :AliDigit(),
+    fTrack(0),
+    fEvent(0),
+    fPMNumber(0),
+    fADC(0),
+    fTime(0)
+
 {
-  fPMNumber   = 0;
-  fADC        = 0;
-  fTime       = 0;
+  // Standard default constructor 
 }
 
 AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
-  AliDigit(tracks){
+   AliDigit(tracks),
+   fTrack(0),
+   fEvent(0),
+   fPMNumber(0),
+   fADC(0),
+   fTime(0)
   
-  //
+{
+  
   // Creates VZERO digits  
   // Fills the AliVZEROdigit data members from the array digits. 
-  //
-  
+    
   fTrack      =  tracks[0];
   fEvent      =  digits[0];  
 }
 
 AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time)
+   :AliDigit(),
+   fTrack(0),
+   fEvent(0),
+   fPMNumber(0),
+   fADC(0),
+   fTime(0)
 {  
-  fPMNumber   = PMnumber;
-  fADC        = adc;
-  fTime       = time;
+   fPMNumber   = PMnumber;
+   fADC        = adc;
+   fTime       = time;
 }
 
 

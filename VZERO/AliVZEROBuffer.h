@@ -17,9 +17,7 @@ class fstream;
 class AliVZEROBuffer:public TObject{
 
 public:
-  AliVZEROBuffer(){
-    //default constructor
-  }
+  AliVZEROBuffer();
   AliVZEROBuffer(const char* fileName); //constructor
   virtual ~AliVZEROBuffer(); //destructor
   AliVZEROBuffer(const AliVZEROBuffer &source); // copy constructor

@@ -59,72 +59,179 @@
 ClassImp(AliVZEROv7)
 
 //_____________________________________________________________________________
-AliVZEROv7:: AliVZEROv7():AliVZERO()
+AliVZEROv7:: AliVZEROv7():AliVZERO(),
+   fCellId(0),
+   fTrackPosition(),
+   fTrackMomentum(), 
+   fV0CHeight1(2.5), 
+   fV0CHeight2(4.4), 
+   fV0CHeight3(7.4), 
+   fV0CHeight4(12.5),
+   fV0CRMin(4.6), 
+   fV0CRBox(38.0),
+   fV0CLidThickness(0.30),
+   fV0CCellThickness(2.00),
+   fV0CBoxThickness(4.70),
+   fV0COffsetFibers(1.0),
+   fV0CLightYield(93.75),
+   fV0CLightAttenuation(0.05),
+   fV0CnMeters(15.0),
+   fV0CFibToPhot(0.3),
+   fV0AR0(4.2), 
+   fV0AR1(7.6), 
+   fV0AR2(13.8), 
+   fV0AR3(22.7),
+   fV0AR4(41.3), 
+   fV0AR5(43.3), 
+   fV0AR6(68.0),
+   fV0ASciWd(2.5), 
+   fV0APlaWd(0.5), 
+   fV0APlaAl(0.06), 
+   fV0AOctWd(0.75), 
+   fV0AFraWd(0.2),
+   fV0AOctH1(1.0), 
+   fV0AOctH2(2.0), 
+   fV0ABasHt(2.0),
+   fV0AFibRd(0.1),
+   fV0APlaEx(4.4),
+   fV0APMBWd(24.6), 
+   fV0APMBHt(22.0), 
+   fV0APMBTh(7.1), 
+   fV0APMBWdW(0.3), 
+   fV0APMBHtW(1.0),
+   fV0APMBAng(30.0), 
+   fV0APMBThW(0.3), 
+   fV0APMTR1(2.44), 
+   fV0APMTR2(2.54), 
+   fV0APMTR3(2.54),
+   fV0APMTR4(2.70), 
+   fV0APMTH(10.0), 
+   fV0APMTB(1.0),
+   fV0AnMeters(fV0AR6*0.01),
+   fV0ALightYield(93.75),
+   fV0ALightAttenuation(0.05),
+   fV0AFibToPhot(0.3),
+   fVersion(7)
 {
 // Standard default constructor 
 }
 
 //_____________________________________________________________________________
-AliVZEROv7::AliVZEROv7(const char *name, const char *title):AliVZERO(name,title)
+AliVZEROv7::AliVZEROv7(const char *name, const char *title):AliVZERO(name,title),
+   fCellId(0),
+   fTrackPosition(),
+   fTrackMomentum(), 
+   fV0CHeight1(2.5), 
+   fV0CHeight2(4.4), 
+   fV0CHeight3(7.4), 
+   fV0CHeight4(12.5),
+   fV0CRMin(4.6), 
+   fV0CRBox(38.0),
+   fV0CLidThickness(0.30),
+   fV0CCellThickness(2.00),
+   fV0CBoxThickness(4.70),
+   fV0COffsetFibers(1.0),
+   fV0CLightYield(93.75),
+   fV0CLightAttenuation(0.05),
+   fV0CnMeters(15.0),
+   fV0CFibToPhot(0.3),
+   fV0AR0(4.2), 
+   fV0AR1(7.6), 
+   fV0AR2(13.8), 
+   fV0AR3(22.7),
+   fV0AR4(41.3), 
+   fV0AR5(43.3), 
+   fV0AR6(68.0),
+   fV0ASciWd(2.5), 
+   fV0APlaWd(0.5), 
+   fV0APlaAl(0.06), 
+   fV0AOctWd(0.75), 
+   fV0AFraWd(0.2),
+   fV0AOctH1(1.0), 
+   fV0AOctH2(2.0), 
+   fV0ABasHt(2.0),
+   fV0AFibRd(0.1),
+   fV0APlaEx(4.4),
+   fV0APMBWd(24.6), 
+   fV0APMBHt(22.0), 
+   fV0APMBTh(7.1), 
+   fV0APMBWdW(0.3), 
+   fV0APMBHtW(1.0),
+   fV0APMBAng(30.0), 
+   fV0APMBThW(0.3), 
+   fV0APMTR1(2.44), 
+   fV0APMTR2(2.54), 
+   fV0APMTR3(2.54),
+   fV0APMTR4(2.70), 
+   fV0APMTH(10.0), 
+   fV0APMTB(1.0),
+   fV0AnMeters(fV0AR6*0.01),
+   fV0ALightYield(93.75),
+   fV0ALightAttenuation(0.05),
+   fV0AFibToPhot(0.3),
+   fVersion(7)
+
+
 {
 // Standard constructor for V-zero Detector  version 7
 
   AliDebug(2,"Create VZERO object ");
-  fVersion            =     7;  // version number
 
-  // V0C Parameters related to geometry: All in cm
-  fV0CHeight1         =    2.5; // height of cell 1
-  fV0CHeight2         =    4.4; // height of cell 2
-  fV0CHeight3         =    7.4; // height of cell 3
-  fV0CHeight4         =   12.5; // height of cell 4
-  fV0CRMin            =    4.6; // inner radius of box
-  fV0CRBox            =   38.0; // outer radius of box
-  fV0CLidThickness    =   0.30; // thickness of Carbon lid
-  fV0CCellThickness   =   2.00; // thickness of elementary cell
-  fV0CBoxThickness    =   4.70; // thickness of V0C Box
-  fV0COffsetFibers    =    1.0; // offset to output fibers
-  // V0C Parameters related to light output
-  fV0CLightYield         =  93.75; // Light yield in BC408 (93.75 eV per photon)
-  fV0CLightAttenuation   =   0.05; // Light attenuation in fiber (0.05 per meter)
-  fV0CnMeters            =   15.0; // Number of meters of clear fibers to PM
-  fV0CFibToPhot          =    0.3; // Attenuation at fiber-photocathode interface
+//  fVersion            =     7;  // version number
 
-  // V0A Parameters related to geometry: All in cm
-  fV0AR0     =  4.2;  // Radius of hole
-  fV0AR1     =  7.6;  // Maximun radius of 1st cell
-  fV0AR2     = 13.8; // Maximun radius of 2nd cell
-  fV0AR3     = 22.7; // Maximun radius of 3rd cell
-  fV0AR4     = 41.3; // Maximun radius of 4th cell
-  fV0AR5     = 43.3; // Radius circunscrite to innermost octagon
-  fV0AR6     = 68.0; // Radius circunscrite to outtermost octagon
-  fV0ASciWd  =  2.5;  // Scintillator thickness 
-  fV0APlaWd  =  0.5;  // Plates thinckness
-  fV0APlaAl  = 0.06; // Plates AlMg3 thinckness
-  fV0AOctWd  = 0.75; // Innermost octagon thickness
-  fV0AOctH1  =  1.0;  // Height of innermost octagon
-  fV0AOctH2  =  2.0;  // Height of outtermost octagon
-  fV0AFibRd  =  0.1;  // Radius of Fiber
-  fV0AFraWd  =  0.2;  // Support Frame thickness
-  fV0APMBWd  = 24.6;  // Width of PM Box
-  fV0APMBHt  = 22.0;  // Height of PM Box
-  fV0APMBTh  =  7.1;  // Thickness of PM Box
-  fV0APMBWdW =  0.3;  // Thickness of PM Box Side1 Wall
-  fV0APMBHtW =  1.0;  // Thickness of PM Box Side2 Wall
-  fV0APMBThW =  0.3;  // Thickness of PM Box Top Wall
-  fV0APMBAng = 30.0;  // Angle between PM Box and Support
-  fV0APMTR1  = 2.44;  // PMT Glass
-  fV0APMTR2  = 2.54;  // PMT Glass
-  fV0APMTR3  = 2.54;  // PMT Cover
-  fV0APMTR4  = 2.70;  // PMT Cover
-  fV0APMTH   = 10.0;  // PMT Height
-  fV0APMTB   =  1.0;  // PMT Basis
-  fV0APlaEx  =  4.4;  // Plates Extension height
-  fV0ABasHt  =  2.0;  // Basis Height
-  // V0A Parameters related to light output
-  fV0ALightYield         =  93.75;      // Light yield in BC404
-  fV0ALightAttenuation   =   0.05;      // Light attenuation in WLS fiber, per meter
-  fV0AnMeters            = fV0AR6*0.01; // Tentative value, in meters
-  fV0AFibToPhot          =    0.3;      // Attenuation at fiber-photocathode interface
+//   // V0C Parameters related to geometry: All in cm
+//   fV0CHeight1         =    2.5; // height of cell 1
+//   fV0CHeight2         =    4.4; // height of cell 2
+//   fV0CHeight3         =    7.4; // height of cell 3
+//   fV0CHeight4         =   12.5; // height of cell 4
+//   fV0CRMin            =    4.6; // inner radius of box
+//   fV0CRBox            =   38.0; // outer radius of box
+//   fV0CLidThickness    =   0.30; // thickness of Carbon lid
+//   fV0CCellThickness   =   2.00; // thickness of elementary cell
+//   fV0CBoxThickness    =   4.70; // thickness of V0C Box
+//   fV0COffsetFibers    =    1.0; // offset to output fibers
+//   // V0C Parameters related to light output
+//   fV0CLightYield         =  93.75; // Light yield in BC408 (93.75 eV per photon)
+//   fV0CLightAttenuation   =   0.05; // Light attenuation in fiber (0.05 per meter)
+//   fV0CnMeters            =   15.0; // Number of meters of clear fibers to PM
+//   fV0CFibToPhot          =    0.3; // Attenuation at fiber-photocathode interface
+// 
+//   // V0A Parameters related to geometry: All in cm
+//   fV0AR0     =  4.2;  // Radius of hole
+//   fV0AR1     =  7.6;  // Maximun radius of 1st cell
+//   fV0AR2     = 13.8; // Maximun radius of 2nd cell
+//   fV0AR3     = 22.7; // Maximun radius of 3rd cell
+//   fV0AR4     = 41.3; // Maximun radius of 4th cell
+//   fV0AR5     = 43.3; // Radius circunscrite to innermost octagon
+//   fV0AR6     = 68.0; // Radius circunscrite to outtermost octagon
+//   fV0ASciWd  =  2.5;  // Scintillator thickness 
+//   fV0APlaWd  =  0.5;  // Plates thinckness
+//   fV0APlaAl  = 0.06; // Plates AlMg3 thinckness
+//   fV0AOctWd  = 0.75; // Innermost octagon thickness
+//   fV0AOctH1  =  1.0;  // Height of innermost octagon
+//   fV0AOctH2  =  2.0;  // Height of outtermost octagon
+//   fV0AFibRd  =  0.1;  // Radius of Fiber
+//   fV0AFraWd  =  0.2;  // Support Frame thickness
+//   fV0APMBWd  = 24.6;  // Width of PM Box
+//   fV0APMBHt  = 22.0;  // Height of PM Box
+//   fV0APMBTh  =  7.1;  // Thickness of PM Box
+//   fV0APMBWdW =  0.3;  // Thickness of PM Box Side1 Wall
+//   fV0APMBHtW =  1.0;  // Thickness of PM Box Side2 Wall
+//   fV0APMBThW =  0.3;  // Thickness of PM Box Top Wall
+//   fV0APMBAng = 30.0;  // Angle between PM Box and Support
+//   fV0APMTR1  = 2.44;  // PMT Glass
+//   fV0APMTR2  = 2.54;  // PMT Glass
+//   fV0APMTR3  = 2.54;  // PMT Cover
+//   fV0APMTR4  = 2.70;  // PMT Cover
+//   fV0APMTH   = 10.0;  // PMT Height
+//   fV0APMTB   =  1.0;  // PMT Basis
+//   fV0APlaEx  =  4.4;  // Plates Extension height
+//   fV0ABasHt  =  2.0;  // Basis Height
+//   // V0A Parameters related to light output
+//   fV0ALightYield         =  93.75;      // Light yield in BC404
+//   fV0ALightAttenuation   =   0.05;      // Light attenuation in WLS fiber, per meter
+//   fV0AnMeters            = fV0AR6*0.01; // Tentative value, in meters
+//   fV0AFibToPhot          =    0.3;      // Attenuation at fiber-photocathode interface
 }
 //_____________________________________________________________________________
 

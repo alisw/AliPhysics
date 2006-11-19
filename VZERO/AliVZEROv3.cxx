@@ -63,24 +63,38 @@
 ClassImp(AliVZEROv3)
 
 //_____________________________________________________________________________
-AliVZEROv3:: AliVZEROv3():AliVZERO()
+AliVZEROv3:: AliVZEROv3():AliVZERO(),
+   fCellId(0),
+   fTrackPosition(),
+   fTrackMomentum(), 
+   fLightYield(93.75),
+   fLightAttenuation(0.05),
+   fnMeters(15.0),
+   fFibToPhot(0.3)
 {
 // Standard default constructor 
 }
 
 //_____________________________________________________________________________
 AliVZEROv3::AliVZEROv3(const char *name, const char *title):
- AliVZERO(name,title)
+   AliVZERO(name,title),
+   fCellId(0),
+   fTrackPosition(),
+   fTrackMomentum(),
+   fLightYield(93.75),
+   fLightAttenuation(0.05),
+   fnMeters(15.0),
+   fFibToPhot(0.3)
 {
 
 // Standard constructor for V-zero Detector  version 2
 
   AliDebug(2,"Create VZERO object");
       
-  fLightYield              =  93.75;
-  fLightAttenuation        =   0.05; 
-  fnMeters                 =   15.0;  
-  fFibToPhot               =    0.3;
+//   fLightYield              =  93.75;
+//   fLightAttenuation        =   0.05; 
+//   fnMeters                 =   15.0;  
+//   fFibToPhot               =    0.3;
  
 }
 

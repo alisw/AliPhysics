@@ -32,14 +32,62 @@
 ClassImp(AliVZEROv6)
 
 //_____________________________________________________________________________
-AliVZEROv6:: AliVZEROv6():AliVZERO()
+AliVZEROv6:: AliVZEROv6():AliVZERO(),
+   fCellId(0),
+   fTrackPosition(),
+   fTrackMomentum(), 
+   fV0CHeight1(2.5), 
+   fV0CHeight2(4.4), 
+   fV0CHeight3(7.4), 
+   fV0CHeight4(12.5),
+   fV0CRMin(4.6), 
+   fV0CRBox(38.0),
+   fV0CLidThickness(0.30),
+   fV0CCellThickness(2.00),
+   fV0CBoxThickness(4.70),
+   fV0COffsetFibers(1.0),
+   fV0AHeight1(3.3), 
+   fV0AHeight2(6.2), 
+   fV0AHeight3(8.9), 
+   fV0AHeight4(20.9),
+   fV0ARMin(4.30),
+   fV0ACellThickness(2.00),
+   fLightYield(93.75),
+   fLightAttenuation(0.05),
+   fnMeters(15.0),
+   fFibToPhot(0.3),
+   fVersion(6)
 {
 // Standard default constructor 
 }
 
 //_____________________________________________________________________________
 AliVZEROv6::AliVZEROv6(const char *name, const char *title):
- AliVZERO(name,title)
+   AliVZERO(name,title),
+   fCellId(0),
+   fTrackPosition(),
+   fTrackMomentum(), 
+   fV0CHeight1(2.5), 
+   fV0CHeight2(4.4), 
+   fV0CHeight3(7.4), 
+   fV0CHeight4(12.5),
+   fV0CRMin(4.6), 
+   fV0CRBox(38.0),
+   fV0CLidThickness(0.30),
+   fV0CCellThickness(2.00),
+   fV0CBoxThickness(4.70),
+   fV0COffsetFibers(1.0),
+   fV0AHeight1(3.3), 
+   fV0AHeight2(6.2), 
+   fV0AHeight3(8.9), 
+   fV0AHeight4(20.9),
+   fV0ARMin(4.30),
+   fV0ACellThickness(2.00),
+   fLightYield(93.75),
+   fLightAttenuation(0.05),
+   fnMeters(15.0),
+   fFibToPhot(0.3),
+   fVersion(6)
 {
 
 // Standard constructor for V-zero Detector  version 6
@@ -51,32 +99,32 @@ AliVZEROv6::AliVZEROv6(const char *name, const char *title):
 // Parameters related to geometry :
 // V0 part in front of muon arm absorber 
 
-  fV0CHeight1         =    2.5; // height of cell 1, in cm
-  fV0CHeight2         =    4.4; // height of cell 2, in cm
-  fV0CHeight3         =    7.4; // height of cell 3, in cm
-  fV0CHeight4         =   12.5; // height of cell 4, in cm
-  fV0CRMin            =    4.6; 
-  fV0CRBox            =   38.0; // outer radius of box, in cm
-  fV0CLidThickness    =   0.30; // thickness of Carbon lid
-  fV0CCellThickness   =   2.00; // thickness of elementary cell
-  fV0CBoxThickness    =   4.70; // thickness of V0C Box
-  fV0COffsetFibers    =    1.0; // offset to output fibers, in cm
+//   fV0CHeight1         =    2.5; // height of cell 1, in cm
+//   fV0CHeight2         =    4.4; // height of cell 2, in cm
+//   fV0CHeight3         =    7.4; // height of cell 3, in cm
+//   fV0CHeight4         =   12.5; // height of cell 4, in cm
+//   fV0CRMin            =    4.6; 
+//   fV0CRBox            =   38.0; // outer radius of box, in cm
+//   fV0CLidThickness    =   0.30; // thickness of Carbon lid
+//   fV0CCellThickness   =   2.00; // thickness of elementary cell
+//   fV0CBoxThickness    =   4.70; // thickness of V0C Box
+//   fV0COffsetFibers    =    1.0; // offset to output fibers, in cm
 
 // V0 part on the other side with respect to Interaction Point
 
-  fV0AHeight1         =    3.3; // height of cell 1, in cm
-  fV0AHeight2         =    6.2; // height of cell 2, in cm
-  fV0AHeight3         =    8.9; // height of cell 3, in cm
-  fV0AHeight4         =   20.9; // height of cell 4, in cm
-  fV0ARMin            =   4.30; 
-  fV0ACellThickness   =   2.00; // thickness of elementary cell  
-  
+//   fV0AHeight1         =    3.3; // height of cell 1, in cm
+//   fV0AHeight2         =    6.2; // height of cell 2, in cm
+//   fV0AHeight3         =    8.9; // height of cell 3, in cm
+//   fV0AHeight4         =   20.9; // height of cell 4, in cm
+//   fV0ARMin            =   4.30; 
+//   fV0ACellThickness   =   2.00; // thickness of elementary cell  
+//   
 // Parameters related to light output :
          
-  fLightYield         =  93.75; // Light yield in BC408 (93.75 eV per photon)
-  fLightAttenuation   =   0.05; // Light attenuation in fiber (0.05 per meter)
-  fnMeters            =   15.0; // Number of meters of clear fibers to PM
-  fFibToPhot          =    0.3; // Attenuation at fiber-photocathode interface
+//   fLightYield         =  93.75; // Light yield in BC408 (93.75 eV per photon)
+//   fLightAttenuation   =   0.05; // Light attenuation in fiber (0.05 per meter)
+//   fnMeters            =   15.0; // Number of meters of clear fibers to PM
+//   fFibToPhot          =    0.3; // Attenuation at fiber-photocathode interface
 }
      
 //_____________________________________________________________________________

@@ -44,34 +44,48 @@
 ClassImp(AliVZERODigitizer)
 
  AliVZERODigitizer::AliVZERODigitizer()
+   :AliDigitizer(),
+    fCalibData(GetCalibData()),
+    fPhotoCathodeEfficiency(0.18),
+    fPMVoltage(768.0),
+    fPMGain(TMath::Power((fPMVoltage / 112.5) ,7.04277)),
+    fNdigits(0),
+    fDigits(0)
+   
 {
   // default constructor
 
-   fNdigits = 0;
-   fDigits  = 0;
-  
-   fPhotoCathodeEfficiency =   0.18;
-   fPMVoltage              =  768.0;
-   fPMGain = TMath::Power((fPMVoltage / 112.5) ,7.04277); 
+//    fNdigits = 0;
+//    fDigits  = 0;
+//   
+//    fPhotoCathodeEfficiency =   0.18;
+//    fPMVoltage              =  768.0;
+//    fPMGain = TMath::Power((fPMVoltage / 112.5) ,7.04277); 
    
-   fCalibData = GetCalibData();
+//   fCalibData = GetCalibData();
 }
 
 //____________________________________________________________________________ 
   AliVZERODigitizer::AliVZERODigitizer(AliRunDigitizer* manager)
-                    :AliDigitizer(manager)
-                    
+                    :AliDigitizer(manager),
+		     fCalibData(GetCalibData()),
+                     fPhotoCathodeEfficiency(0.18),
+                     fPMVoltage(768.0),
+                     fPMGain(TMath::Power((fPMVoltage / 112.5) ,7.04277)),
+		     fNdigits(0),
+                     fDigits(0)
+		                        
 {
   // constructor
   
-  fNdigits = 0;
-  fDigits  = 0;
+//   fNdigits = 0;
+//   fDigits  = 0;
+//   
+//   fPhotoCathodeEfficiency =   0.18;
+//   fPMVoltage              =  768.0;
+//   fPMGain = TMath::Power( (fPMVoltage / 112.5) ,7.04277 );
   
-  fPhotoCathodeEfficiency =   0.18;
-  fPMVoltage              =  768.0;
-  fPMGain = TMath::Power( (fPMVoltage / 112.5) ,7.04277 );
-  
-  fCalibData = GetCalibData();
+//  fCalibData = GetCalibData();
   
 }
            

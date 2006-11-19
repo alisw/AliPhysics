@@ -29,8 +29,23 @@
 //#include "TTree.h"
 
 ClassImp(AliVZEROBuffer)
+
 //_____________________________________________________________________________
-AliVZEROBuffer::AliVZEROBuffer(const char* fileName){
+AliVZEROBuffer::AliVZEROBuffer():TObject(),
+    fVerbose(0),
+    f(),
+    fNumberOfDigits(0)
+{
+  //
+  // default constructor
+  //
+}
+//_____________________________________________________________________________
+AliVZEROBuffer::AliVZEROBuffer(const char* fileName):TObject(),
+    fVerbose(0),
+    f(),
+    fNumberOfDigits(0)
+{
   // Constructor
 #ifndef __DECCXX
   f.open(fileName,ios::binary|ios::out);
@@ -41,8 +56,7 @@ AliVZEROBuffer::AliVZEROBuffer(const char* fileName){
   // tree=new TTree("tree","Values");
   AliRawDataHeader header;
   f.write((char*)(&header), sizeof(header));
-  fNumberOfDigits=0;
-  fVerbose=0;
+
 }
 
 //_____________________________________________________________________________
@@ -59,14 +73,21 @@ AliVZEROBuffer::~AliVZEROBuffer(){
 }
 
 //_____________________________________________________________________________
-AliVZEROBuffer::AliVZEROBuffer(const AliVZEROBuffer &source):TObject(source){
+AliVZEROBuffer::AliVZEROBuffer(const AliVZEROBuffer &source):TObject(source),
+   fVerbose(0),
+   f(),
+   fNumberOfDigits(0)
+
+{
   // Copy Constructor
   this->fVerbose=source.fVerbose;
   return;
 }
 
 //_____________________________________________________________________________
-AliVZEROBuffer& AliVZEROBuffer::operator=(const AliVZEROBuffer &source){
+AliVZEROBuffer& AliVZEROBuffer::operator=(const AliVZEROBuffer &source)
+
+{
   //Assigment operator
   this->fVerbose=source.fVerbose;
   return *this;

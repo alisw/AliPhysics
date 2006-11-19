@@ -31,7 +31,7 @@ class AliVZERO : public AliDetector {
  
 public:
 
-  AliVZERO() {}
+  AliVZERO();
   AliVZERO(const char *name, const char *title);
   virtual       ~AliVZERO();
 //  virtual void   AddHit(Int_t track , Int_t *vol, Float_t *hits)=0; 

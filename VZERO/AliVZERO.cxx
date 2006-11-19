@@ -55,14 +55,36 @@
 #include "AliDAQ.h"
 
 ClassImp(AliVZERO)
- 
+ //__________________________________________________________________
+AliVZERO::AliVZERO(): AliDetector(),
+          fIdSens1(0),
+          fThickness(0.),
+	  fThickness1(0.),
+	  fMaxStepQua(0.),
+	  fMaxStepAlu(0.),
+	  fMaxDestepQua(0.),
+	  fMaxDestepAlu(0.)
+{
+/// Default Constructor
+    
+    AliDebug(1,Form("default (empty) ctor this=%p",this));
+    fIshunt          = 0;	  
+}
 //_____________________________________________________________________________
 AliVZERO::AliVZERO(const char *name, const char *title)
-       : AliDetector(name,title)
+       : AliDetector(name,title),
+         fIdSens1(0),
+         fThickness(4.4),
+	 fThickness1(2.0),
+	 fMaxStepQua(0.05),
+	 fMaxStepAlu(0.01),
+	 fMaxDestepQua(-1.0),
+	 fMaxDestepAlu(-1.0)
 {
-  //
+  
   // Standard constructor for VZERO Detector
-  //
+  
+  AliDebug(1,Form("ctor this=%p",this));
   
   //  fIshunt       =  1;  // All hits are associated with primary particles  
    
@@ -71,16 +93,16 @@ AliVZERO::AliVZERO(const char *name, const char *title)
    
   gAlice->GetMCApp()->AddHitList(fHits);
 
-  fThickness    =  4.4;   // total thickness of the V0R box in cm
-  fThickness1   =  2.0;   // thickness of scintillating cells in cm
+//   fThickness    =  4.4;   // total thickness of the V0R box in cm
+//   fThickness1   =  2.0;   // thickness of scintillating cells in cm
+//   
+//   fMaxStepQua   =  0.05; 
+//   fMaxStepAlu   =  0.01; 
+//   
+//   fMaxDestepQua =  -1.0;
+//   fMaxDestepAlu =  -1.0;
   
-  fMaxStepQua   =  0.05; 
-  fMaxStepAlu   =  0.01; 
   
-  fMaxDestepQua =  -1.0;
-  fMaxDestepAlu =  -1.0;
-  
-  //PH  SetMarkerColor(kRed);
 }
 
 //_____________________________________________________________________________
