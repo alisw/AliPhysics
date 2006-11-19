@@ -101,9 +101,11 @@ if test ! "x$have_aliroot" = "xno" ; then
   # - the ROOT libs libGeom libMinuit libVMC libEG
   # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
   # - ROOT libCint needs also libdl
+  # - from Nov 1 2006 TTreeFormula is needed by AliTagAnalysis and requires
+  #   libTreePlayer.so
   ALIROOT_CPPFLAGS="-I${ALIROOTINCDIR} -I${ALICE_ROOT}/RAW"
   ALIROOT_LDFLAGS="-L${ALIROOTLIBDIR}"
-  ALIROOT_LIBS="-lESD -lGeom -lMinuit -lVMC -lEG -ldl"
+  ALIROOT_LIBS="-lESD -lGeom -lMinuit -lVMC -lEG -ldl -lTreePlayer"
   save_CPPFLAGS=$CPPFLAGS
   save_LDFLAGS=$LDFLAGS
   save_LIBS=$LIBS
