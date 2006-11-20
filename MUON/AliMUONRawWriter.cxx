@@ -51,6 +51,7 @@
 #include "AliMUONLocalStruct.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONLocalTriggerBoard.h"
+#include "AliMUONRegionalTrigger.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONTriggerCrate.h"
 #include "AliMUONTriggerCrateStore.h"
@@ -652,8 +653,11 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
   TClonesArray* localTrigger;
   TClonesArray* globalTrigger;
+  TClonesArray* regionalTrigger;
+
   AliMUONGlobalTrigger* gloTrg;
   AliMUONLocalTrigger* locTrg = 0x0;
+  AliMUONRegionalTrigger* regTrg = 0x0;
 
   // global trigger for trigger pattern
   globalTrigger = fMUONData->GlobalTrigger(); 
@@ -667,7 +671,12 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   Int_t gloTrigResp = gloTrg->GetGlobalResponse();
 
   // local trigger 
-  localTrigger = fMUONData->LocalTrigger();    
+  localTrigger = fMUONData->LocalTrigger();   
+
+
+  // regional trigger
+  regionalTrigger = fMUONData->RegionalTrigger();   
+
 
   UInt_t word;
   Int_t* buffer = 0;
@@ -781,21 +790,30 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
       if (!crate) 
 	AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, iDDL));
 
+      // regional info tree, make sure that no reg card missing
+      for (Int_t i = 0; i < 16; ++i) {
+	regTrg  = (AliMUONRegionalTrigger*)regionalTrigger->At(i);
+	if (regTrg)
+	  if (regTrg->GetId() == (iReg + iDDL*8)) break;
+      }
+
       // Regional card header
       word = 0;
 
       // set darc status word
       fRegHeader->SetDarcWord(word);
 
-      regOut    = 0;
-      regInpHpt = regInpLpt = 0;
+      regOut    = regTrg->GetOutput();
+      regInpHpt = regTrg->GetLocalOutput(0);
+      regInpLpt = regTrg->GetLocalOutput(1);
+
       // fill darc word, not darc status for the moment (empty)
       //see  AliMUONRegHeader.h for details
       AliBitPacking::PackWord((UInt_t)eventPhys,word,31,31); 
       AliBitPacking::PackWord((UInt_t)serialNb,word,19,24); 
       AliBitPacking::PackWord((UInt_t)version,word,16,23);
       AliBitPacking::PackWord((UInt_t)iReg,word,15,18);
-      AliBitPacking::PackWord((UInt_t)regOut,word,0,7); // waiting realistic output of AliMUONGlobalTrigger (oct 06 ?)
+      AliBitPacking::PackWord((UInt_t)regOut,word,0,7); 
       fRegHeader->SetWord(word);
 
 
@@ -816,7 +834,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
 
       // 16 local card per regional board
-      UShort_t localMask = 0x0;
+      //      UShort_t localMask = 0x0;
 
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
 
@@ -827,7 +845,6 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
 	  if ((iLocCard = localBoard->GetNumber()) != 0) {// if notified board
 
-	    localMask |= (0x1 << iLoc); // local mask
 	    if (isFired[iLocCard]) { // if card has triggered
 	      locTrg  = (AliMUONLocalTrigger*)localTrigger->At(iEntries++);
 	      locCard = locTrg->LoCircuit();
@@ -848,12 +865,6 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 	      // set local card id to -1
 	      locCard = -1; 
 	    }
-	    // calculate regional input High and low Pt
-	    UInt_t tmp1 = (locDec >> 2) & 0x3;
-	    UInt_t tmp2 =  locDec & 0x3;
-	    
-	    regInpHpt |= tmp1 << (30 - iLoc*2);
-	    regInpLpt |= tmp2 << (30 - iLoc*2);
 	   
 	    //packing word
 	    word = 0;
@@ -902,9 +913,8 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
       } // local card 
       // fill regional header with local output
-      fRegHeader->SetInput(regInpLpt, 0);
+      fRegHeader->SetInput(regInpHpt, 0);
       fRegHeader->SetInput(regInpHpt, 1);
-      fRegHeader->SetMask(localMask);
       memcpy(&buffer[indexReg],fRegHeader->GetHeader(),kRegHeaderLength*4);
 
     } // Regional card

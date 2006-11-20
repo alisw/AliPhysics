@@ -560,7 +560,6 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 
       UInt_t regInpLpt = 0;
       UInt_t regInpHpt = 0;
-      UShort_t localMask = 0x0;
 
       AliMUONRegionalTriggerBoard *regBoard = (AliMUONRegionalTriggerBoard*)boards->At(0);
 
@@ -591,12 +590,11 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 	    fLocalTrigger->SetLoLpt(response &  3);
 
 	    // calculates regional inputs from local for the moment
-	    UInt_t hPt = (response >> 4) & 0x3;
-	    UInt_t lPt = (response >> 2) & 0x3;
+	    UInt_t hPt = (response >> 2) & 0x3;
+	    UInt_t lPt =  response       & 0x3;
 	    
 	    regInpHpt |= hPt << (30 - (j-1)*2);
 	    regInpLpt |= lPt << (30 - (j-1)*2);
-	    localMask |= (0x1 << (j-1)); // local mask
 
 	    TBits rrr;
 	    rrr.Set(6,&response);	  
@@ -618,10 +616,10 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 	  }
 	}
       }
+      pRegTrig->SetId(iReg + 8*iSide);
       pRegTrig->SetLocalOutput(regInpLpt, 0);
       pRegTrig->SetLocalOutput(regInpHpt, 1);
-      pRegTrig->SetLocalMask(localMask);
-      pRegTrig->SetOutput((regBoard->GetResponse() >> 4) & 0xF); // to be uniformized (oct06 ?)
+      pRegTrig->SetOutput(regBoard->GetResponse());
 
       fMUONData->AddRegionalTrigger(*pRegTrig);  
     }
