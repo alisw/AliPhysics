@@ -68,10 +68,7 @@ void AliVZEROTrigger::Trigger()
   Float_t firstTimeLeft  = 9999.0;
   Float_t firstTimeRight = 9999.0;
   Float_t TimeHalfWidth  = fTimeWindowWidth/2.0;
-  
-  printf(" Window V0C = %f %f \n", 30.0-TimeHalfWidth,  30.0+TimeHalfWidth );
-  printf(" Window V0A = %f %f \n", 114.0-TimeHalfWidth, 114.0+TimeHalfWidth);
-  
+ 
   // loop over vzero entries
   Int_t nEntries = (Int_t)vzeroDigitsTree->GetEntries();
   for (Int_t e=0; e<nEntries; e++) {
@@ -88,15 +85,11 @@ void AliVZEROTrigger::Trigger()
       Float_t tdc        = digit->Time(); // in 100 of picoseconds
       
       if (PMNumber<=31 && adc>fAdcThresHold) {
-        printf(" Time  V0C = %f \n", tdc );
 	if (tdc>(30.0-TimeHalfWidth) && tdc<(30.0+TimeHalfWidth)) nRightDig++;
-//        nRightDig++;
 	if (tdc<firstTimeRight) firstTimeRight = tdc;
       }      
       if (PMNumber>=32 && adc>fAdcThresHold) {
-        printf(" Time  V0A = %f \n", tdc );
-	if (tdc>(114.0-TimeHalfWidth) && tdc<(114.0+TimeHalfWidth)) nLeftDig++;
-//        nLeftDig++;
+ 	if (tdc>(114.0-TimeHalfWidth) && tdc<(114.0+TimeHalfWidth)) nLeftDig++;
 	if (tdc<firstTimeLeft) firstTimeLeft = tdc;
       }	
       
@@ -126,9 +119,8 @@ void AliVZEROTrigger::Trigger()
     }
   }
   
-//  AliDebug(1,Form("VZERO PMs fired: %d (left) %d (right)", nLeftDig, nRightDig));
-  printf("%d %d \n", nLeftDig, nRightDig);
-
+  AliDebug(1,Form("VZERO PMs fired: %d (left) %d (right)", nLeftDig, nRightDig));
+ 
   return;
 }
 
