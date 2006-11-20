@@ -8,5 +8,5 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:=VZEROrecLinkDef.h
 
-EINCLUDE:= $(ALICE)/geant3/TGeant3 STRUCT STEER RAW
+EINCLUDE:= STRUCT STEER RAW
 
