@@ -87,7 +87,7 @@ class AliMUONSegFactory : public  TObject {
     AliMUONSegmentation* Segmentation();
     
     // data members	
-    AliMpStringObjMap     fDESegmentations;///< Map of DE segmentations to DE names
+    AliMpStringObjMap     fDESegmentations;///< Map of DE segmentations to DE seg names
     AliMUONSegmentation*  fSegmentation;   ///< Segmentation container 
     const AliMUONGeometryTransformer* fkTransformer; ///< Geometry transformer
 

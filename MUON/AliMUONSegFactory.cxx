@@ -172,7 +172,7 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
   // Get DE segmentation for this DE type, create it if it does not exist 
   // 
   AliMUONVGeometryDESegmentation* deSegmentation = 0;
-  TString deName = AliMpDEManager::GetDEName(detElemId, cath);
+  TString deName = AliMpDEManager::GetDESegName(detElemId, cath);
   TObject* objSegmentation = fDESegmentations.Get(deName);
   if ( objSegmentation ) 
     deSegmentation = (AliMUONVGeometryDESegmentation*)objSegmentation;  

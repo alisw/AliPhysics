@@ -69,7 +69,7 @@ class AliMpSegmentation : public  TObject {
     static AliMpSegmentation* fgInstance; ///< Singleton instance
 
     // data members
-    AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE names
+    AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE seg names
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations
       
     

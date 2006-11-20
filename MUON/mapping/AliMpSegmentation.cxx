@@ -142,7 +142,7 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, Int_t cath)
 
   // If segmentation is already built, just return it
   //
-  TString deName = AliMpDEManager::GetDEName(detElemId, cath);
+  TString deName = AliMpDEManager::GetDESegName(detElemId, cath);
   TObject* object = fMpSegmentations.Get(deName);
   if ( object ) return (AliMpVSegmentation*)object;
 
@@ -238,7 +238,7 @@ AliMpSegmentation::GetMpSegmentation(
     return 0;
   }  
 
-  TString deName = AliMpDEManager::GetDEName(detElemId, cath);
+  TString deName = AliMpDEManager::GetDESegName(detElemId, cath);
   TObject* object = fMpSegmentations.Get(deName);
   if ( ! object ) {
     // Should never happen
