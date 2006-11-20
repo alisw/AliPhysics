@@ -19,6 +19,6 @@ ELIBS    := Aliengui MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
   AliL3Src AliL3Comp AliL3Misc AliL3MUON \
   AliL3Hough AliL3ITS
 
-PACKBLIBS := -L. -L$(ROOTSYS)/lib $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -lMinuit -pthread -lm -ldl -rdynamic -lEG -lGeom 
+PACKBLIBS := -L$(ROOTSYS)/lib $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
 
 
