@@ -49,7 +49,7 @@ AliITSv11GeomCable::AliITSv11GeomCable(): TNamed(),
 { 
   // constructor
   fPointArray.SetOwner();
-};
+}
 
 //________________________________________________________________________
 AliITSv11GeomCable::AliITSv11GeomCable(const char* name): TNamed(name,""),
