@@ -78,6 +78,7 @@ SRCS +=  \
 #
 SRCS +=  \
 	 mapping/AliMpBusPatch.cxx  \
+         mapping/AliMpManuGeo.cxx  \
 	 mapping/AliMpDEIterator.cxx  \
 	 mapping/AliMpDEManager.cxx  \
 	 mapping/AliMpSegmentation.cxx

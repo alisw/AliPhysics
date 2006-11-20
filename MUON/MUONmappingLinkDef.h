@@ -98,6 +98,7 @@
 // $MpId: managementLinkDefIn.h,v 1.1 2006/01/11 10:24:20 ivana Exp $ 
 
 #pragma link C++ class  AliMpBusPatch+;
+#pragma link C++ class  AliMpManuGeo+;
 #pragma link C++ class  AliMpDEIterator+;
 #pragma link C++ class  AliMpDEManager+;
 #pragma link C++ class  AliMpSegmentation+;
