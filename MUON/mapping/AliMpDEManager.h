@@ -41,7 +41,8 @@ class AliMpDEManager : public  TObject {
     static Bool_t IsValidChamberId(Int_t chamberId, Bool_t warn = false);
     static Bool_t IsValidGeomModuleId(Int_t moduleId, Bool_t warn = false);
 
-    static TString GetDEName(Int_t detElemId, Int_t cath, Bool_t warn = true);
+    static TString GetDEName(Int_t detElemId, Bool_t warn = true);
+    static TString GetDESegName(Int_t detElemId, Int_t cath, Bool_t warn = true);
     static TString GetDETypeName(Int_t detElemId, Int_t cath, Bool_t warn = true);
     static Int_t   GetChamberId(Int_t detElemId, Bool_t warn = true);    
     static Int_t   GetGeomModuleId(Int_t detElemId, Bool_t warn = true);    
@@ -69,11 +70,12 @@ class AliMpDEManager : public  TObject {
     static const Int_t fgkCoefficient;   ///< Coefficient used in DE Id <-> station
 
     // data members	
-    static  AliMpExMap fgDENamesMap;  ///< \brief Map between DE Ids and 
-                                      /// a pair of DE names for 2 cathods
-    static  AliMpExMap fgDECathBNBMap;///< \brief  Map between DE Is and a pair
-                                      /// of planeTypes for cathodes (0,1)
-    static  TArrayI fgNofDEPerChamber;///< number of detElemId per chamber
+    static  AliMpExMap fgDENamesMap;   ///< \brief Map between DE Ids and names
+    static  AliMpExMap fgDESegNamesMap;///< \brief Map between DE Ids and 
+                                       /// a pair of DE seg names for 2 cathods
+    static  AliMpExMap fgDECathBNBMap; ///< \brief  Map between DE Is and a pair
+                                       /// of planeTypes for cathodes (0,1)
+    static  TArrayI fgNofDEPerChamber; ///< number of detElemId per chamber
       
   ClassDef(AliMpDEManager,0)  // The manager class for definition of detection element types
 };

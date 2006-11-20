@@ -43,6 +43,7 @@ const char  AliMpDEManager::fgkNameSeparator = '_';
 const char  AliMpDEManager::fgkCommentPrefix = '#'; 
 const Int_t AliMpDEManager::fgkCoefficient = 100;
 AliMpExMap  AliMpDEManager::fgDENamesMap(true);
+AliMpExMap  AliMpDEManager::fgDESegNamesMap(true);
 AliMpExMap  AliMpDEManager::fgDECathBNBMap(true);
 TArrayI     AliMpDEManager::fgNofDEPerChamber(AliMpConstants::NofChambers());
 
@@ -147,7 +148,7 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
   // Read DE names
   //
   Int_t detElemId;
-  TString name1, name2;
+  TString name, name1, name2;
   AliMpPlaneType planeForCathode[2];
   
   while ( ! in.eof() ) 
@@ -159,6 +160,7 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
     else 
     {  
       detElemId = word.Atoi();
+      in >> name;
       in >> name1;
       // warning : important to check non bending first (=nbp),
       // as bp is contained within nbp...
@@ -208,13 +210,31 @@ AliMpDEManager::ReadDENames(AliMpStationType station)
       if ( ! fgDENamesMap.GetValue(detElemId) ) 
       {
         AliDebugClassStream(3)  
-        << "Adding  "  << detElemId << "  " << name1 << "  " << name2 << endl;
-        fgDENamesMap.Add(detElemId, 
+          << "Adding DE name "  << detElemId << "  " << name << endl;
+        fgDENamesMap.Add(detElemId, new TObjString(name)); 
+      } 
+      else 
+      {
+        AliWarningClassStream()
+          << "DE name "  << detElemId << "  " << name << " already defined." << endl;
+      }	  
+
+      if ( ! fgDESegNamesMap.GetValue(detElemId) ) 
+      {
+        AliDebugClassStream(3)  
+        << "Adding DE seg. names  "  << detElemId << "  " << name1 << "  " << name2 << endl;
+        fgDESegNamesMap.Add(detElemId, 
                          new TPair(new TObjString(name1), new TObjString(name2)));
         fgDECathBNBMap.Add(detElemId,
                            new AliMpIntPair(planeForCathode[0],planeForCathode[1]));
         fgNofDEPerChamber[GetChamberId(detElemId)]++;
       } 
+      else 
+      {
+        AliWarningClassStream()
+          << "DE seg. names "  << detElemId << "  " << name1 << "  " << name2 
+	  << " already defined." << endl;
+      }	  
     } 
     in >> word;
   }
@@ -330,13 +350,25 @@ AliMpDEManager::GetCathod(Int_t detElemId, AliMpPlaneType planeType)
 }
 
 //______________________________________________________________________________
-TString AliMpDEManager::GetDEName(Int_t detElemId, Int_t cath, Bool_t warn)
+TString AliMpDEManager::GetDEName(Int_t detElemId, Bool_t warn)
 {
-/// Return det element type name
+/// Return det element name 
+
+  if ( !IsValidDetElemId(detElemId, warn) ) return "undefined";
+
+  TObjString* name = (TObjString*)fgDENamesMap.GetValue(detElemId);
+
+  return name->GetString();
+}    
+
+//______________________________________________________________________________
+TString AliMpDEManager::GetDESegName(Int_t detElemId, Int_t cath, Bool_t warn)
+{
+/// Return det element segmentation name (segmentation type + plane type)
 
   if ( ! IsValid(detElemId, cath, warn) ) return "undefined";
 
-  TPair* namePair = (TPair*)fgDENamesMap.GetValue(detElemId);
+  TPair* namePair = (TPair*)fgDESegNamesMap.GetValue(detElemId);
 
   if (cath == 0) return ((TObjString*)namePair->Key())->GetString();
   if (cath == 1) return ((TObjString*)namePair->Value())->GetString();
@@ -347,9 +379,9 @@ TString AliMpDEManager::GetDEName(Int_t detElemId, Int_t cath, Bool_t warn)
 //______________________________________________________________________________
 TString AliMpDEManager::GetDETypeName(Int_t detElemId, Int_t cath, Bool_t warn) 
 {
-/// Return det element type name
+/// Return det element segmentation type
 
-  TString fullName = GetDEName(detElemId, cath, warn);  
+  TString fullName = GetDESegName(detElemId, cath, warn);  
   
   // cut plane type extension
   Ssiz_t pos = fullName.First(fgkNameSeparator);
@@ -417,7 +449,7 @@ AliMpPlaneType  AliMpDEManager::GetPlaneType(Int_t detElemId, Int_t cath)
     return kBendingPlane;
   }  
 
-  TPair* namePair = (TPair*)fgDENamesMap.GetValue(detElemId);
+  TPair* namePair = (TPair*)fgDESegNamesMap.GetValue(detElemId);
 
   TString fullName;  
   if (cath == 0) fullName = ((TObjString*)namePair->Key())->GetString();
