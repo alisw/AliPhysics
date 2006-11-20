@@ -95,9 +95,10 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
   if(fVert3D){
     if(fLines) fLines->Delete();
     nolines = FindTracklets(evnumber,1);
-    if(nolines<2)return fCurrentVertex;
-    rc=Prepare3DVertex();
-    if(rc==0)Find3DVertex();
+    if(nolines>=2){
+      rc=Prepare3DVertex();
+      if(rc==0)Find3DVertex();
+    }
   }
   
   if(fVert3D){
@@ -406,26 +407,10 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(){
   if (fDebug) cout<<"Number of tracklets (after compress) "<<fLines->GetEntriesFast()<<endl;
   delete [] validate;
 
-
-  // finds region of origin"
-  Int_t nobi = 0;
-  Float_t cont = 0.;
-  Float_t cont2 = 0.;
+  // Finds peak in 3D histogram
   TAxis *xax = h3d->GetXaxis();  
   TAxis *yax = h3d->GetYaxis();
   TAxis *zax = h3d->GetZaxis();
-  for(Int_t i=xax->GetFirst();i<=xax->GetLast();i++){
-    for(Int_t j=yax->GetFirst();j<=yax->GetLast();j++){
-      for(Int_t k=zax->GetFirst();k<=zax->GetLast();k++){
-	nobi++;
-	cont+=h3d->GetBinContent(i,j,k);
-	cont2+=h3d->GetBinContent(i,j,k)*h3d->GetBinContent(i,j,k);
-      }
-    }
-  }
-  cont/=nobi;
-  cont2/=nobi;
-  cont2 = TMath::Sqrt((cont2 - cont*cont)/(nobi-1));
   Double_t peak[3]={0.,0.,0.};
   Float_t contref = 0.;
   for(Int_t i=xax->GetFirst();i<=xax->GetLast();i++){

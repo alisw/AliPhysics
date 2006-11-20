@@ -280,8 +280,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
     if ( y > (seg->Dy()/2+10)*1.0E-4 ) {
       // check if particle is within the detector
       Warning("HitToDigit",
-	      "hit out of detector y0=%e,y=%e,dey=%e,j =%e module=%d",
-	      y0,y,dey,j,module);
+	      "hit out of detector y0=%e,y=%e,dey=%e,j =%d module=%d,  exceed=%e",
+	      y0,y,dey,j,module, y-(seg->Dy()/2+10)*1.0E-4);
       return;
     } // end if
     z = z0 + (j+0.5)*dez;

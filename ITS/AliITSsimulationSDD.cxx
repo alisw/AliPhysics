@@ -457,22 +457,22 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Int_t      nhits    = hits->GetEntriesFast();
 
     //    Int_t      arg[6]   = {0,0,0,0,0,0};
-    Int_t    dummy      = 0;
-    Int_t    nofAnodes  = fNofMaps/2;
-    Float_t  sddLength  = seg->Dx();
-    Float_t  sddWidth   = seg->Dz();
-    Float_t  anodePitch = seg->Dpz(dummy);
-    Float_t  timeStep   = seg->Dpx(dummy);
-    Float_t  driftSpeed = res->GetDriftSpeed();
-    Float_t  maxadc     = res->GetMaxAdc();    
-    Float_t  topValue   = res->GetDynamicRange();
-    Float_t  cHloss     = res->GetChargeLoss();
-    Float_t  norm       = maxadc/topValue;
-    Float_t dfCoeff, s1; res->DiffCoeff(dfCoeff,s1); // Signal 2d Shape
-    Double_t eVpairs    = res->GetGeVToCharge()*1.0E9; // 3.6 eV by def.
-    Float_t  nsigma     = res->GetNSigmaIntegration(); //
-    Int_t    nlookups   = res->GetGausNLookUp();       //
-    Float_t  jitter     = res->GetJitterError(); // 
+    Int_t     dummy      = 0;
+    Int_t     nofAnodes  = fNofMaps/2;
+    Double_t  sddLength  = seg->Dx();
+    Double_t  sddWidth   = seg->Dz();
+    Double_t  anodePitch = seg->Dpz(dummy);
+    Double_t  timeStep   = seg->Dpx(dummy);
+    Double_t  driftSpeed = res->GetDriftSpeed();
+    //Float_t   maxadc     = res->GetMaxAdc();    
+    //Float_t   topValue   = res->GetDynamicRange();
+    Double_t  norm       = res->GetMaxAdc()/res->GetDynamicRange(); //   maxadc/topValue;
+    Double_t  cHloss     = res->GetChargeLoss();
+    Float_t   dfCoeff, s1; res->DiffCoeff(dfCoeff,s1); // Signal 2d Shape
+    Double_t  eVpairs    = res->GetGeVToCharge()*1.0E9; // 3.6 eV by def.
+    Double_t  nsigma     = res->GetNSigmaIntegration(); //
+    Int_t     nlookups   = res->GetGausNLookUp();       //
+    Float_t   jitter     = res->GetJitterError(); // 
 
     // Piergiorgio's part (apart for few variables which I made float
     // when i thought that can be done
@@ -480,44 +480,44 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     // loop over hits in the module
 
     const Float_t kconv = 1.0e+6;  // GeV->KeV
-    Int_t    itrack      = 0;
-    Int_t    hitDetector; // detector number (lay,lad,hitDetector)
-    Int_t    iWing;       // which detector wing/side.
-    Int_t    detector;    // 2*(detector-1)+iWing
-    Int_t    ii,kk,ka,kt; // loop indexs
-    Int_t    ia,it,index; // sub-pixel integration indexies
-    Int_t    iAnode;      // anode number.
-    Int_t    timeSample;  // time buckett.
-    Int_t    anodeWindow; // anode direction charge integration width
-    Int_t    timeWindow;  // time direction charge integration width
-    Int_t    jamin,jamax; // anode charge integration window
-    Int_t    jtmin,jtmax; // time charge integration window
-    Int_t    ndiv;        // Anode window division factor.
-    Int_t    nsplit;      // the number of splits in anode and time windows==1.
-    Int_t    nOfSplits;   // number of times track length is split into
-    Float_t  nOfSplitsF;  // Floating point version of nOfSplits.
-    Float_t  kkF;         // Floating point version of loop index kk.
-    Float_t  pathInSDD; // Track length in SDD.
-    Float_t  drPath; // average position of track in detector. in microns
-    Float_t  drTime; // Drift time
-    Float_t  nmul;   // drift time window multiplication factor.
-    Float_t  avDrft;  // x position of path length segment in cm.
-    Float_t  avAnode; // Anode for path length segment in Anode number (float)
-    Float_t  xAnode;  // Floating point anode number.
-    Float_t  driftPath; // avDrft in microns.
-    Float_t  width;     // width of signal at anodes.
+    Int_t     itrack      = 0;
+    Int_t     hitDetector; // detector number (lay,lad,hitDetector)
+    Int_t     iWing;       // which detector wing/side.
+    Int_t     detector;    // 2*(detector-1)+iWing
+    Int_t     ii,kk,ka,kt; // loop indexs
+    Int_t     ia,it,index; // sub-pixel integration indexies
+    Int_t     iAnode;      // anode number.
+    Int_t     timeSample;  // time buckett.
+    Int_t     anodeWindow; // anode direction charge integration width
+    Int_t     timeWindow;  // time direction charge integration width
+    Int_t     jamin,jamax; // anode charge integration window
+    Int_t     jtmin,jtmax; // time charge integration window
+    Int_t     ndiv;        // Anode window division factor.
+    Int_t     nsplit;      // the number of splits in anode and time windows==1.
+    Int_t     nOfSplits;   // number of times track length is split into
+    Float_t   nOfSplitsF;  // Floating point version of nOfSplits.
+    Float_t   kkF;         // Floating point version of loop index kk.
+    Double_t  pathInSDD; // Track length in SDD.
+    Double_t  drPath; // average position of track in detector. in microns
+    Double_t  drTime; // Drift time
+    Double_t  nmul;   // drift time window multiplication factor.
+    Double_t  avDrft;  // x position of path length segment in cm.
+    Double_t  avAnode; // Anode for path length segment in Anode number (float)
+    Double_t  xAnode;  // Floating point anode number.
+    Double_t  driftPath; // avDrft in microns.
+    Double_t  width;     // width of signal at anodes.
     Double_t  depEnergy; // Energy deposited in this GEANT step.
     Double_t  xL[3],dxL[3]; // local hit coordinates and diff.
-    Double_t sigA; // sigma of signal at anode.
-    Double_t sigT; // sigma in time/drift direction for track segment
-    Double_t aStep,aConst; // sub-pixel size and offset anode
-    Double_t tStep,tConst; // sub-pixel size and offset time
-    Double_t amplitude; // signal amplitude for track segment in nanoAmpere
-    Double_t chargeloss; // charge loss for track segment.
-    Double_t anodeAmplitude; // signal amplitude in anode direction
-    Double_t aExpo;          // exponent of Gaussian anode direction
-    Double_t timeAmplitude;  // signal amplitude in time direction
-    Double_t tExpo;          // exponent of Gaussian time direction
+    Double_t  sigA; // sigma of signal at anode.
+    Double_t  sigT; // sigma in time/drift direction for track segment
+    Double_t  aStep,aConst; // sub-pixel size and offset anode
+    Double_t  tStep,tConst; // sub-pixel size and offset time
+    Double_t  amplitude; // signal amplitude for track segment in nanoAmpere
+    Double_t  chargeloss; // charge loss for track segment.
+    Double_t  anodeAmplitude; // signal amplitude in anode direction
+    Double_t  aExpo;          // exponent of Gaussian anode direction
+    Double_t  timeAmplitude;  // signal amplitude in time direction
+    Double_t  tExpo;          // exponent of Gaussian time direction
     //  Double_t tof;            // Time of flight in ns of this step.    
 
     for(ii=0; ii<nhits; ii++) {
@@ -603,8 +603,8 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
                         sddWidth,xAnode*anodePitch);
             iAnode = (Int_t) (1.+xAnode); // xAnode?
             if(iAnode < 1 || iAnode > nofAnodes) {
-                Warning("HitToAnalogDigits","Wrong iAnode: 1<%d>%d",
-                        iAnode,nofAnodes);
+                Warning("HitToAnalogDigits","Wrong iAnode: 1<%d>%d  (xanode=%e)",
+                        iAnode,nofAnodes, xAnode);
                 continue;
             } // end if iAnode < 1 || iAnode > nofAnodes
 
