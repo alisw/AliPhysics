@@ -10,7 +10,7 @@
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-#include <AliLoader.h>
+#include "AliLoader.h"
 
 class AliVZEROLoader: public AliLoader
  {
@@ -18,13 +18,16 @@ class AliVZEROLoader: public AliLoader
     AliVZEROLoader();
     AliVZEROLoader(const Char_t *name,const Char_t *topfoldername);
     AliVZEROLoader(const Char_t *name,TFolder *topfolder);    
-    virtual ~AliVZEROLoader();
-
+    virtual ~AliVZEROLoader() {};
+    
+    AliVZEROLoader & operator = (const AliVZEROLoader & ) {return *this;}
+    
    private:
     static const TString fgkDefaultHitsFileName;  // Default Name for hit file
     static const TString fgkDefaultDigitsFileName;// Default Name for digit file
 
    ClassDef(AliVZEROLoader,1)
+      
  };
  
 #endif

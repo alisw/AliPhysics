@@ -35,9 +35,3 @@ AliVZEROLoader::AliVZEROLoader(const Char_t *name,TFolder *topfolder)
  :AliLoader(name,topfolder)
  {
  }
-
-//_______________________________________________________________________________
-AliVZEROLoader::~AliVZEROLoader()
-{
- // Destructor 
-}

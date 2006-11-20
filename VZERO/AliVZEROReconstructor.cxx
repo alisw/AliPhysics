@@ -27,13 +27,13 @@
 ClassImp(AliVZEROReconstructor)
 
 //_____________________________________________________________________________
-AliVZEROReconstructor:: AliVZEROReconstructor()
+AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
+   fCalibData(GetCalibData())
 {
   // Default constructor  
-  
   // Get calibration data
   
-  fCalibData = GetCalibData(); 
+//  fCalibData = GetCalibData(); 
 }
 
 
