@@ -311,8 +311,8 @@ class TFluka : public TVirtualMC {
   // FLUKA Scoring specific methods
   // ------------------------------
   //
-  virtual void SetUserScoring(const char* option, Int_t npr,char* outfile, Float_t* what);
-  virtual void SetUserScoring(const char* option, Int_t npr,char* outfile, Float_t* what,
+  virtual void SetUserScoring(const char* option, const char* sdum, Int_t npr,char* outfile, Float_t* what);
+  virtual void SetUserScoring(const char* option, const char* sdum, Int_t npr,char* outfile, Float_t* what,
 			      const char* det1, const char* det2, const char* det3);
   //
   // New Getter and Setters

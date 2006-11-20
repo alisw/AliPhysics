@@ -1118,21 +1118,22 @@ Bool_t TFluka::SetCut(const char* cutName, Double_t cutValue)
 }
 
 
-void TFluka::SetUserScoring(const char* option, Int_t npr, char* outfile, Float_t* what)
+void TFluka::SetUserScoring(const char* option, const char* sdum, Int_t npr, char* outfile, Float_t* what)
 {
 //
 // Adds a user scoring option to the list
 //
-    TFlukaScoringOption* opt = new TFlukaScoringOption(option, "User Scoring", npr,outfile,what);
+    TFlukaScoringOption* opt = new TFlukaScoringOption(option, sdum, npr,outfile,what);
     fUserScore->Add(opt);
 }
 //______________________________________________________________________________
-void TFluka::SetUserScoring(const char* option, Int_t npr, char* outfile, Float_t* what, const char* det1, const char* det2, const char* det3)
+void TFluka::SetUserScoring(const char* option, const char* sdum, Int_t npr, char* outfile, Float_t* what, 
+			    const char* det1, const char* det2, const char* det3)
 {
 //
 // Adds a user scoring option to the list
 //
-    TFlukaScoringOption* opt = new TFlukaScoringOption(option, "User Scoring", npr, outfile, what, det1, det2, det3);
+    TFlukaScoringOption* opt = new TFlukaScoringOption(option, sdum, npr, outfile, what, det1, det2, det3);
     fUserScore->Add(opt);
 }
 

@@ -108,18 +108,18 @@ void TFlukaScoringOption::WriteFlukaInputCards()
 //
     if(strncmp(GetName(), "USRBIN", 6) == 0){
         if (Par() == 0) {
-            fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
-                    What(1), What(2), GetLun(), What(4), What(5), What(6));
+            fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f%s\n",
+                    What(1), What(2), GetLun(), What(4), What(5), What(6), GetTitle());
         } else if (Par() == 1) {
-            fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
-                    What(1), What(2), GetLun(), What(4), What(5),  What(6));
+            fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f%s\n",
+                    What(1), What(2), GetLun(), What(4), What(5),  What(6), GetTitle());
             fprintf(fgFile, "USRBIN    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",
                     What(7), What(8), What(9), What(10), What(11), What(12), cont_line);
         } else if (Par() == 2) {
             if(What(1) == 2.0 || What(1) == 12){
-                fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f%s\n",
                         What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))),
-                        Float_t(GetRegionByName(GetRegName(2))), Float_t(GetRegionByName(GetRegName(3))));
+                        Float_t(GetRegionByName(GetRegName(2))), Float_t(GetRegionByName(GetRegName(3))), GetTitle());
                 fprintf(fgFile, "USRBIN    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",
                         Float_t(GetRegionByName(GetRegName(1))), Float_t(GetRegionByName(GetRegName(2))),
                         Float_t(GetRegionByName(GetRegName(3))), 1., 1., 1., cont_line);
