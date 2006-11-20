@@ -56,6 +56,7 @@ const TString AliMpFiles::fgkSectorSpecial = "zones_special";
 const TString AliMpFiles::fgkSectorSpecial2 = "zones_special_outer";
 const TString AliMpFiles::fgkMotifPrefix   = "motif";  
 const TString AliMpFiles::fgkMotifSpecialPrefix ="motifSpecial";
+const TString AliMpFiles::fgkManuToSerial ="_manu";
 const TString AliMpFiles::fgkPadPosPrefix  = "padPos"; 
 const TString AliMpFiles::fgkDataExt = ".dat";      
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
@@ -273,6 +274,16 @@ TString AliMpFiles::BergToGCFilePath(AliMpStationType station)
   return GetTop() + fgkDataDir + StationDataDir(station)
               + fgkBergToGCFileName + fgkDataExt;
 }
+
+//______________________________________________________________________________ 
+TString AliMpFiles::ManuToSerialPath(const TString& deName, AliMpStationType station)
+{
+/// Returns the path of the file for the manu id to their serial number
+
+  return  GetTop() + fgkDataDir + StationDataDir(station) 
+              + deName + fgkManuToSerial + fgkDataExt; 
+}
+
 
 //______________________________________________________________________________ 
 void 

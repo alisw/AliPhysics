@@ -73,6 +73,9 @@ class AliMpFiles : public TObject
     static TString PadPosFilePath(AliMpStationType station, 
                                  AliMpPlaneType plane, const TString& motifTypeID);
     static TString BergToGCFilePath(AliMpStationType station);
+
+    static TString ManuToSerialPath(const TString& deName, AliMpStationType station);
+
   
     // set methods
     static void SetTopPath(const TString& topPath);
@@ -99,12 +102,12 @@ class AliMpFiles : public TObject
     static const TString fgkSectorSpecial2;///< sector special data file name
     static const TString fgkMotifPrefix;   ///< motif data file name
     static const TString fgkMotifSpecialPrefix; ///< special motif data file name 
+    static const TString fgkManuToSerial;  ///< manu to serial file name suffix
     static const TString fgkPadPosPrefix;  ///< pad position data file name
     static const TString fgkDataExt;       ///< file extension
     static const TString fgkBergToGCFileName;  ///< BergToGC mapping file name
     static const TString fgkTriggerLocalBoards;///<  local board name to id mapping
     static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
-    
 
   ClassDef(AliMpFiles, 0) //File names and paths 
 };  
