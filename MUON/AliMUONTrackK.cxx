@@ -823,7 +823,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 {
 /// Picks up point within a window for the chamber No ichamb 
 /// Split the track if there are more than 1 hit
-  Int_t ihit, nRecTracks;
+  Int_t ihit, nRecTracks = fgTrackReconstructor->GetNRecTracks();
   Double_t windowB, windowNonB, dChi2Tmp=0, dChi2, y, x, savePosition=0;
   TClonesArray *trackPtr;
   AliMUONHitForRec *hit, *hitLoop;
@@ -963,7 +963,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  ok = kTRUE;
 	  nHitsOK++;
 	  //if (nHitsOK > -1) {
-	  if (nHitsOK == 1) {
+	  if (nHitsOK == 1 || nRecTracks > 10000) {
 	    // Save current members
 	    saveWeight = *fWeight;
 	    savePosition = fPosition;
