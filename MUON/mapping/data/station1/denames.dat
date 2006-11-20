@@ -4,16 +4,16 @@ undefined  undefined
 
 # Station 1 - Chamber 1 
 
-100  st1q_bp   st1q_nbp
-101  st1q_nbp  st1q_bp
-102  st1q_bp   st1q_nbp
-103  st1q_nbp  st1q_bp 
+100  st1_quadrant1  st1q_bp   st1q_nbp
+101  st1_quadrant2  st1q_nbp  st1q_bp
+102  st1_quadrant3  st1q_bp   st1q_nbp
+103  st1_quadrant4  st1q_nbp  st1q_bp 
 
 # Station 1 - Chamber 2 
 
-200  st1q_bp   st1q_nbp
-201  st1q_nbp  st1q_bp
-202  st1q_bp   st1q_nbp
-203  st1q_nbp  st1q_bp 
+200  st1_quadrant5  st1q_bp   st1q_nbp
+201  st1_quadrant6  st1q_nbp  st1q_bp
+202  st1_quadrant7  st1q_bp   st1q_nbp
+203  st1_quadrant8  st1q_nbp  st1q_bp 
 
 

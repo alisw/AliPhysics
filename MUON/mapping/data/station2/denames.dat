@@ -4,16 +4,16 @@ undefined  undefined
 
 # Station 2 - Chamber 1 
 
-300  st2_bp   st2_nbp
-301  st2_nbp  st2_bp
-302  st2_bp   st2_nbp
-303  st2_nbp  st2_bp 
+300  st2_quadrant1  st2_bp   st2_nbp
+301  st2_quadrant2  st2_nbp  st2_bp
+302  st2_quadrant3  st2_bp   st2_nbp
+303  st2_quadrant4  st2_nbp  st2_bp 
 
 # Station 2 - Chamber 2 
 
-400  st2_bp   st2_nbp
-401  st2_nbp  st2_bp
-402  st2_bp   st2_nbp
-403  st2_nbp  st2_bp 
+400  st2_quadrant5  st2_bp   st2_nbp
+401  st2_quadrant6  st2_nbp  st2_bp
+402  st2_quadrant7  st2_bp   st2_nbp
+403  st2_quadrant8  st2_nbp  st2_bp 
 
 
