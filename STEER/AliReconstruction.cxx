@@ -1649,17 +1649,18 @@ void AliReconstruction::CreateTag(TFile* file)
     delete file;
     return ;
   }  
-  Int_t firstEvent = 0,lastEvent = 0;
+  Int_t lastEvent = 0;
   TTree *t = (TTree*) file->Get("esdTree");
   TBranch * b = t->GetBranch("ESD");
   AliESD *esd = 0;
   b->SetAddress(&esd);
 
-  b->GetEntry(0);
+  b->GetEntry(fFirstEvent);
   Int_t iInitRunNumber = esd->GetRunNumber();
   
   Int_t iNumberOfEvents = b->GetEntries();
-  for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
+  if(fLastEvent != -1) iNumberOfEvents = fLastEvent + 1;
+  for (Int_t iEventNumber = fFirstEvent; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
     nPos = 0;
     nNeg = 0;
@@ -1863,14 +1864,15 @@ void AliReconstruction::CreateTag(TFile* file)
     tag->SetRunId(iInitRunNumber);
     tag->AddEventTag(*evTag);
   }
-  lastEvent = iNumberOfEvents;
+  if(fLastEvent == -1) lastEvent = b->GetEntries();
+  else lastEvent = fLastEvent;
 	
   ttag.Fill();
   tag->Clear();
 
   char fileName[256];
   sprintf(fileName, "Run%d.Event%d_%d.ESD.tag.root", 
-	  tag->GetRunId(),firstEvent,lastEvent );
+	  tag->GetRunId(),fFirstEvent,lastEvent );
   AliInfo(Form("writing tags to file %s", fileName));
   AliDebug(1, Form("writing tags to file %s", fileName));
  
