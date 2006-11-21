@@ -22,8 +22,7 @@ using namespace Reve;
 ClassImp(Reve::Track)
 
 Track::Track() :
-  RenderElement(),
-  TPolyLine3D(),
+  Line(),
 
   fV(),
   fP(),
@@ -32,15 +31,11 @@ Track::Track() :
   fLabel(0),
   fPathMarks(),
 
-  fRnrStyle(0),
-
-  fName(),
-  fTitle()
+  fRnrStyle(0)
 {}
 
 Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
-  RenderElement(),
-  TPolyLine3D(),
+  Line(),
 
   fV(t->Vx(), t->Vy(), t->Vz()),
   fP(t->Px(), t->Py(), t->Pz()),
@@ -49,10 +44,7 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   fLabel(label),
   fPathMarks(),
 
-  fRnrStyle(rs),
-
-  fName(t->GetName()),
-  fTitle()
+  fRnrStyle(rs)
 {
   fLineColor = fRnrStyle->GetColor();
   fMainColorPtr = &fLineColor;
@@ -60,11 +52,12 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   TParticlePDG* pdgp = t->GetPDG();
   if (pdgp)
     fCharge = (Int_t) TMath::Nint(pdgp->Charge()/3);
+
+  SetName(t->GetName());
 }
 
 Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
-  RenderElement(),
-  TPolyLine3D(),
+  Line(),
 
   fV(t->Vx(), t->Vy(), t->Vz()),
   fP(t->Px(), t->Py(), t->Pz()),
@@ -73,10 +66,7 @@ Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
   fLabel(t->label),
   fPathMarks(),
 
-  fRnrStyle(rs),
-
-  fName(t->GetName()),
-  fTitle()
+  fRnrStyle(rs)
 {
   fLineColor = fRnrStyle->GetColor();
   fMainColorPtr = &fLineColor;
@@ -86,11 +76,12 @@ Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
     t->ResetPdgCode(); pdgp = t->GetPDG();
   }
   fCharge = (Int_t) TMath::Nint(pdgp->Charge()/3);
+
+  SetName(t->GetName());
 }
 
 Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
-  RenderElement(),
-  TPolyLine3D(),
+  Line(),
 
   fV(t->V),
   fP(t->P),
@@ -99,13 +90,12 @@ Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
   fLabel(t->label),
   fPathMarks(),
 
-  fRnrStyle(rs),
-
-  fName(t->GetName()),
-  fTitle()
+  fRnrStyle(rs)
 {
   fLineColor = fRnrStyle->GetColor();
   fMainColorPtr = &fLineColor;
+
+  SetName(t->GetName());
 }
 
 Track::~Track()
@@ -114,6 +104,7 @@ Track::~Track()
     delete *i;
 }
 
+/*
 void Track::Reset(Int_t n_points)
 {
   delete [] TPolyLine3D::fP; TPolyLine3D::fP = 0;
@@ -122,6 +113,7 @@ void Track::Reset(Int_t n_points)
   memset(TPolyLine3D::fP, 0, 3*fN*sizeof(Float_t));
   fLastPoint = -1;
 }
+*/
 
 /**************************************************************************/
 

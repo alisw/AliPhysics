@@ -5,17 +5,17 @@
 
 #include <Reve/PODs.h>
 #include <Reve/RenderElement.h>
+#include <Reve/Line.h>
 
 #include <TPolyMarker3D.h>
-#include <TPolyLine3D.h>
+// #include <TPolyLine3D.h>
 
 namespace Reve {
 
 class TrackRnrStyle;
 class TrackList;
 
-class Track : public RenderElement,
-	      public TPolyLine3D
+class Track : public Line
 {
   friend class TrackList;
 
@@ -34,9 +34,6 @@ protected:
   vpPathMark_t      fPathMarks;
 
   TrackRnrStyle*    fRnrStyle;
-    
-  TString           fName;
-  TString           fTitle;
 
 public: 
   Track();
@@ -45,24 +42,10 @@ public:
   Track(Reve::RecTrack* t, TrackRnrStyle* rs);
   virtual ~Track();
 
-  void Reset(Int_t n_points=0);
-
-  virtual void SetLineColor(Color_t col)
-  { SetMainColor(col); }
-
-  virtual void Paint(Option_t* option="")
-  { if(fRnrElement) TPolyLine3D::Paint(option); }
-
   void MakeTrack();
 
   TrackRnrStyle* GetRnrStyle() const  { return fRnrStyle; }
   void SetRnrStyle(TrackRnrStyle* rs) { fRnrStyle = rs; }
-
-  virtual const Text_t* GetName() const    { return fName; }
-  virtual void SetName(const Text_t* name) { fName = name; }
-
-  virtual const Text_t* GetTitle() const     { return fTitle; }
-  virtual void SetTitle(const Text_t* title) { fTitle = title; }
 
   Int_t GetLabel() const { return fLabel; }
   void  AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
