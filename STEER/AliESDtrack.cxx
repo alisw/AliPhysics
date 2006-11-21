@@ -74,6 +74,7 @@ AliESDtrack::AliESDtrack() :
   fOp(0),
   fITSchi2(0),
   fITSncls(0),
+  fITSClusterMap(0),
   fITSsignal(0),
   fITSLabel(0),
   fTPCchi2(0),
@@ -152,6 +153,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fOp(0),
   fITSchi2(track.fITSchi2),
   fITSncls(track.fITSncls),
+  fITSClusterMap(track.fITSClusterMap),
   fITSsignal(track.fITSsignal),
   fITSLabel(track.fITSLabel),
   fTPCchi2(track.fTPCchi2),
@@ -235,6 +237,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fOp(0),
   fITSchi2(0),
   fITSncls(0),
+  fITSClusterMap(0),
   fITSsignal(0),
   fITSLabel(0),
   fTPCchi2(0),
@@ -444,6 +447,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   // Reset ITS track related information
   fITSchi2 = 0;
   fITSncls = 0;       
+  fITSClusterMap=0;
   fITSsignal = 0;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       
@@ -550,10 +554,15 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   switch (flags) {
     
   case kITSin: case kITSout: case kITSrefit:
-    index=fFriendTrack->GetITSindices(); 
-    for (Int_t i=0;i<AliESDfriendTrack::kMaxITScluster;i++) 
-         index[i]=t->GetClusterIndex(i);
     fITSncls=t->GetNumberOfClusters();
+    index=fFriendTrack->GetITSindices(); 
+    for (Int_t i=0;i<AliESDfriendTrack::kMaxITScluster;i++) {
+        index[i]=t->GetClusterIndex(i);
+	if (i<fITSncls) {
+           Int_t l=(index[i] & 0xf0000000) >> 28;
+           SETBIT(fITSClusterMap,l);                 
+        }
+    }
     fITSchi2=t->GetChi2();
     fITSsignal=t->GetPIDsignal();
     fITSLabel = t->GetLabel();

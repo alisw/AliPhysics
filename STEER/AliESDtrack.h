@@ -117,6 +117,7 @@ public:
   Float_t GetITSsignal() const {return fITSsignal;}
   Float_t GetITSchi2() const {return fITSchi2;}
   Int_t   GetITSclusters(Int_t *idx) const;
+  UChar_t GetITSClusterMap() const {return fITSClusterMap;}
   Int_t   GetITSLabel() const {return fITSLabel;}
   void    SetITStrack(AliKalmanTrack * track){
      fFriendTrack->SetITStrack(track);
@@ -289,6 +290,7 @@ protected:
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
   Int_t   fITSncls;        // number of clusters assigned in the ITS
+  UChar_t fITSClusterMap;  // map of clusters, one bit per a layer 
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
@@ -352,7 +354,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,33)  //ESDtrack 
+  ClassDef(AliESDtrack,34)  //ESDtrack 
 };
 
 #endif 

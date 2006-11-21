@@ -51,6 +51,10 @@ void ReadESDfriend(Bool_t readFriend=kTRUE) {
           cout<<"Track number 0"<<endl;
           cout<<"   Number of TPC clusters: "<<n<<endl;
           cout<<"   Index of the 7th TPC cluster: "<<idx[7]<<endl;
+          UChar_t map=t->GetITSClusterMap();
+          cout<<"   ITS cluster map (from SPDs to SSDs): ";
+          for (Int_t i=0; i<6; i++) cout<<TESTBIT(map,i)<<' ';
+          cout<<endl;
 
     // Example: track points associated with the track number 0.
           const AliTrackPointArray *pa=t->GetTrackPointArray();
