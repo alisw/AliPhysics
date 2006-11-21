@@ -1,5 +1,11 @@
 2006-11-21  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Fix handling of AliESDfriends.root.
+
+2006-11-21  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* ITSModule.cxx:
 	Use new naming conventions from QuadSet; increase x-width of SDD
 	digits.
