@@ -7,10 +7,10 @@ Reve::QuadSet* reve_quad_test(Float_t x=0, Float_t y=0, Float_t z=0)
   gStyle->SetPalette(1, 0);
 
   Reve::QuadSet* q = new Reve::QuadSet("Pepe");
-  q->Reset(Reve::QuadSet::QT_AxisAligned, kFALSE, 32);
-  for (Int_t i=0; i<10; ++i) {
+  q->Reset(Reve::QuadSet::QT_RectangleXY, kFALSE, 32);
+  for (Int_t i=0; i<100; ++i) {
     q->AddQuad(r.Uniform(-10, 10), r.Uniform(-10, 10), r.Uniform(-10, 10),
-	       r.Uniform(-1, 1), r.Uniform(-1, 1));
+	       r.Uniform(0.2, 1), r.Uniform(0.2, 1));
     q->QuadValue(r.Uniform(0, 130));
   }
   q->RefitPlex();
@@ -31,7 +31,7 @@ Reve::QuadSet* reve_quad_test_circ()
   gStyle->SetPalette(1, 0);
 
   Reve::QuadSet* q = new Reve::QuadSet("Pepe");
-  q->Reset(Reve::QuadSet::QT_AxisAligned, kFALSE, 32);
+  q->Reset(Reve::QuadSet::QT_RectangleXY, kFALSE, 32);
 
   Float_t R = 10, dW = 1, dH = .5;
   for (Int_t i=0; i<12; ++i) {
