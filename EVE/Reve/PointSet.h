@@ -43,7 +43,7 @@ public:
   virtual void TakeAction(TSelectorDraw*);
 
   ClassDef(PointSet, 1);
-}; // endclass GuiPointSet
+}; // endclass PointSet
 
 /**************************************************************************/
 

@@ -53,7 +53,7 @@ public:
   enum TreeVarType_e { TVT_XYZ, TVT_RPhiZ };
 
 protected:
-  TreeVarType_e fSourceCS;
+  TreeVarType_e fSourceCS; // Coordinate-System of the source tree variables
 
 public:
   TPointSelectorConsumer(TreeVarType_e cs=TVT_XYZ) :fSourceCS(cs) {}
