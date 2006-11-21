@@ -141,9 +141,7 @@ void QuadSetGL::DirectDraw(const TGLDrawFlags & flags) const
     return;
   if ( ! mQ.fValueIsColor && mQ.fPalette == 0)
   {
-    Int_t min, max;
-    mQ.ScanMinMaxValues(min, max);
-    mQ.fPalette = new RGBAPalette(min, max, kTRUE, kFALSE);
+    mQ.AssertPalette();
   }
 
   if (mQ.fFrame != 0)
@@ -155,19 +153,18 @@ void QuadSetGL::DirectDraw(const TGLDrawFlags & flags) const
   glDisable(GL_CULL_FACE);
 
   if (mQ.fRenderMode == QuadSet::RM_Fill)
-  {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  }
   else if (mQ.fRenderMode == QuadSet::RM_Line)
-  {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDisable(GL_LIGHTING);
-  }
 
-  if (mQ.fQuadType < QuadSet::QT_LineFixedZ)
+  if (mQ.fDisableLigting)  glDisable(GL_LIGHTING);
+
+
+  if (mQ.fQuadType < QuadSet::QT_LineXYFixedZ)
     RenderQuads(flags);
   else
     RenderLines(flags);
+
 
   glPopAttrib();
 
@@ -199,7 +196,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 
 	case QuadSet::QT_FreeQuad:
 	{
-	  QuadSet::FreeQuad* qp = (QuadSet::FreeQuad*) qbp;
+	  QuadSet::QFreeQuad* qp = (QuadSet::QFreeQuad*) qbp;
 	  Float_t e1[3], e2[3], normal[3];
 	  while (n--) {
 	    if (SetupColor(*qp))
@@ -219,11 +216,11 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAligned:
+	case QuadSet::QT_RectangleXY:
 	{
-	  QuadSet::AAQuad* qp = (QuadSet::AAQuad*) qbp;
+	  QuadSet::QRect* qp = (QuadSet::QRect*) qbp;
 	  while (n--) {
-	    QuadSet::AAQuad& q = * qp;
+	    QuadSet::QRect& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glVertex3f(q.fX,        q.fY,        q.fZ);
@@ -236,13 +233,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedDim:
+	case QuadSet::QT_RectangleXYFixedDim:
 	{
-	  QuadSet::AAFixDimQuad* qp = (QuadSet::AAFixDimQuad*) qbp;
+	  QuadSet::QRectFixDim* qp = (QuadSet::QRectFixDim*) qbp;
 	  const Float_t& w = mQ.fDefWidth;
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
-	    QuadSet::AAFixDimQuad& q = * qp;
+	    QuadSet::QRectFixDim& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glVertex3f(q.fX,     q.fY,     q.fZ);
@@ -255,12 +252,12 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedZ:
+	case QuadSet::QT_RectangleXYFixedZ:
 	{
-	  QuadSet::AAFixZQuad* qp = (QuadSet::AAFixZQuad*) qbp;
+	  QuadSet::QRectFixC* qp = (QuadSet::QRectFixC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
-	    QuadSet::AAFixZQuad& q = * qp;
+	    QuadSet::QRectFixC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glVertex3f(q.fX,        q.fY,        z);
@@ -273,12 +270,12 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedY:
+	case QuadSet::QT_RectangleXZFixedY:
 	{
-	  QuadSet::AAFixZQuad* qp = (QuadSet::AAFixZQuad*) qbp;
+	  QuadSet::QRectFixC* qp = (QuadSet::QRectFixC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
-	    QuadSet::AAFixZQuad& q = * qp;
+	    QuadSet::QRectFixC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glVertex3f(q.fX,        z, q.fY);
@@ -291,14 +288,14 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedDimZ:
+	case QuadSet::QT_RectangleXYFixedDimZ:
 	{
-	  QuadSet::AAFixDimZQuad* qp = (QuadSet::AAFixDimZQuad*) qbp;
+	  QuadSet::QRectFixDimC* qp = (QuadSet::QRectFixDimC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  const Float_t& w = mQ.fDefWidth;
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
-	    QuadSet::AAFixDimZQuad& q = * qp;
+	    QuadSet::QRectFixDimC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glVertex3f(q.fX,     q.fY,     z);
@@ -311,14 +308,14 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedDimY:
+	case QuadSet::QT_RectangleXZFixedDimY:
 	{
-	  QuadSet::AAFixDimZQuad* qp = (QuadSet::AAFixDimZQuad*) qbp;
+	  QuadSet::QRectFixDimC* qp = (QuadSet::QRectFixDimC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  const Float_t& w = mQ.fDefWidth;
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
-	    QuadSet::AAFixDimZQuad& q = * qp;
+	    QuadSet::QRectFixDimC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glVertex3f(q.fX,     z, q.fY);
@@ -353,7 +350,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 
 	case QuadSet::QT_FreeQuad:
 	{
-	  QuadSet::FreeQuad* qp = (QuadSet::FreeQuad*) qbp;
+	  QuadSet::QFreeQuad* qp = (QuadSet::QFreeQuad*) qbp;
 	  while (n--) {
 	    if (SetupColor(*qp))
 	    {
@@ -371,11 +368,11 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAligned:
+	case QuadSet::QT_RectangleXY:
 	{
-	  QuadSet::AAQuad* qp = (QuadSet::AAQuad*) qbp;
+	  QuadSet::QRect* qp = (QuadSet::QRect*) qbp;
 	  while (n--) {
-	    QuadSet::AAQuad& q = * qp;
+	    QuadSet::QRect& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glBegin(GL_LINE_LOOP);
@@ -390,13 +387,13 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedDim:
+	case QuadSet::QT_RectangleXYFixedDim:
 	{
-	  QuadSet::AAFixDimQuad* qp = (QuadSet::AAFixDimQuad*) qbp;
+	  QuadSet::QRectFixDim* qp = (QuadSet::QRectFixDim*) qbp;
 	  const Float_t& w = mQ.fDefWidth;
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
-	    QuadSet::AAFixDimQuad& q = * qp;
+	    QuadSet::QRectFixDim& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glBegin(GL_LINE_LOOP);
@@ -411,12 +408,12 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedZ:
+	case QuadSet::QT_RectangleXYFixedZ:
 	{
-	  QuadSet::AAFixZQuad* qp = (QuadSet::AAFixZQuad*) qbp;
+	  QuadSet::QRectFixC* qp = (QuadSet::QRectFixC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
-	    QuadSet::AAFixZQuad& q = * qp;
+	    QuadSet::QRectFixC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glBegin(GL_LINE_LOOP);
@@ -431,12 +428,12 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedY:
+	case QuadSet::QT_RectangleXZFixedY:
 	{
-	  QuadSet::AAFixZQuad* qp = (QuadSet::AAFixZQuad*) qbp;
+	  QuadSet::QRectFixC* qp = (QuadSet::QRectFixC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  while (n--) {
-	    QuadSet::AAFixZQuad& q = * qp;
+	    QuadSet::QRectFixC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glBegin(GL_LINE_LOOP);
@@ -451,14 +448,14 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedDimZ:
+	case QuadSet::QT_RectangleXYFixedDimZ:
 	{
-	  QuadSet::AAFixDimZQuad* qp = (QuadSet::AAFixDimZQuad*) qbp;
+	  QuadSet::QRectFixDimC* qp = (QuadSet::QRectFixDimC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  const Float_t& w = mQ.fDefWidth;
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
-	    QuadSet::AAFixDimZQuad& q = * qp;
+	    QuadSet::QRectFixDimC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glBegin(GL_LINE_LOOP);
@@ -473,14 +470,14 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &) const
 	  break;
 	}
 
-	case QuadSet::QT_AxisAlignedFixedDimY:
+	case QuadSet::QT_RectangleXZFixedDimY:
 	{
-	  QuadSet::AAFixDimZQuad* qp = (QuadSet::AAFixDimZQuad*) qbp;
+	  QuadSet::QRectFixDimC* qp = (QuadSet::QRectFixDimC*) qbp;
 	  const Float_t& z = mQ.fDefCoord;
 	  const Float_t& w = mQ.fDefWidth;
 	  const Float_t& h = mQ.fDefHeight;
 	  while (n--) {
-	    QuadSet::AAFixDimZQuad& q = * qp;
+	    QuadSet::QRectFixDimC& q = * qp;
 	    if (SetupColor(q))
 	    {
 	      glBegin(GL_LINE_LOOP);
@@ -520,13 +517,13 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &) const
     switch (mQ.fQuadType)
     {
 
-      case QuadSet::QT_LineFixedZ:
+      case QuadSet::QT_LineXYFixedZ:
       {
-	QuadSet::LineFixedZ* qp = (QuadSet::LineFixedZ*) qbp;
+	QuadSet::QLineFixC* qp = (QuadSet::QLineFixC*) qbp;
 	const Float_t& z = mQ.fDefCoord;
 	glBegin(GL_LINES);
 	while (n--) {
-	  QuadSet::LineFixedZ& q = * qp;
+	  QuadSet::QLineFixC& q = * qp;
 	  if (SetupColor(q))
 	  {
 	    glVertex3f(q.fX,         q.fY,         z);
@@ -538,13 +535,13 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &) const
 	break;
       }
 
-      case QuadSet::QT_LineFixedY:
+      case QuadSet::QT_LineXZFixedY:
       {
-	QuadSet::LineFixedZ* qp = (QuadSet::LineFixedZ*) qbp;
+	QuadSet::QLineFixC* qp = (QuadSet::QLineFixC*) qbp;
 	const Float_t& z = mQ.fDefCoord;
 	glBegin(GL_LINES);
 	while (n--) {
-	  QuadSet::LineFixedZ& q = * qp;
+	  QuadSet::QLineFixC& q = * qp;
 	  if (SetupColor(q))
 	  {
 	    glVertex3f(q.fX,         z, q.fY);

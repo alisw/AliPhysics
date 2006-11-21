@@ -48,6 +48,8 @@ public:
   virtual Bool_t SetModel(TObject* obj);
   virtual void   SetBBox();
 
+  virtual Bool_t IgnoreSizeForOfInterest() const { return kTRUE; }
+
   ClassDef(QuadSetGL, 0);
 };
 

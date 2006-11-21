@@ -88,17 +88,21 @@ class QuadSet : public RenderElement,
 public:
   enum QuadType_e
   { 
-    QT_Undef,
-    QT_FreeQuad,
-    QT_AxisAligned,
-    QT_AxisAlignedFixedDim,
-    QT_AxisAlignedFixedZ,
-    QT_AxisAlignedFixedY,
-    QT_AxisAlignedFixedDimZ,
-    QT_AxisAlignedFixedDimY,
+    QT_Undef,                // unknown-ignored
+    QT_FreeQuad,             // arbitrary quad: specify 4*(x,y,z) quad corners
+    QT_RectangleXY,          // rectangle in x-y plane: specify x, y, z, w, h
+    QT_RectangleXYFixedDim,  // rectangle in x-y plane: specify x, y, z; w, h taken from fDefWidth/Height
+    QT_RectangleXYFixedZ,    // rectangle in x-y plane: specify x, y, w, h; z taken from fDefCoord
+    QT_RectangleXZFixedY,    // rectangle in x-z plane: specify x, z, w, h; y taken from fDefCoord
+    QT_RectangleXYFixedDimZ, // rectangle in x-y plane: specify x, y; w, h, z taken from fDefWidth/Height/Coord
+    QT_RectangleXZFixedDimY, // rectangle in x-z plane: specify x, z; w, h, y taken from fDefWidth/Height/Coord
     // line modes (needed for uniform handling of silicon-strip digits)
-    QT_LineFixedZ,
-    QT_LineFixedY
+    QT_LineXYFixedZ,           // line in x-y plane: specify x, y, w(dx), h(dy); z taken from fDefCoord
+    QT_LineXZFixedY            // line in x-z plane: specify x, z, w(dx), h(dz); y taken from fDefCoord
+    // circle modes:
+    // QT_CircleXY,          // specify r, z
+    // QT_CircleXYFixedZ,    // specify r
+    // QT_CircleXYFixedR,    // specify z
   };
 
   enum RenderMode_e { RM_AsIs, RM_Line, RM_Fill };
@@ -112,35 +116,19 @@ protected:
     QuadBase(Int_t v=0) : fValue(v) {}
   };
 
-  struct FreeQuad : public QuadBase
-  {
-    Float_t fVertices[12];
-  };
+  struct QFreeQuad     : public QuadBase      { Float_t fVertices[12]; };
 
-  struct AAFixDimZQuad : public QuadBase
-  {
-    Float_t fX, fY;
-  };
+  struct QOrigin       : public QuadBase      { Float_t fX, fY; };
 
-  struct AAFixDimQuad : public AAFixDimZQuad
-  {
-    Float_t fZ;
-  };
+  struct QRectFixDimC  : public QOrigin       { };
 
-  struct AAFixZQuad : public AAFixDimZQuad
-  {
-    Float_t fW, fH;
-  };
+  struct QRectFixDim   : public QRectFixDimC  { Float_t fZ; };
 
-  struct AAQuad : public AAFixDimQuad
-  {
-    Float_t fW, fH;
-  };
+  struct QRectFixC     : public QRectFixDimC  { Float_t fW, fH; };
 
-  struct LineFixedZ : public AAFixDimZQuad
-  {
-    Float_t fDx, fDy;
-  };
+  struct QRect         : public QRectFixDim   { Float_t fW, fH; };
+
+  struct QLineFixC     : public QOrigin       { Float_t fDx, fDy; };
 
 protected:
   QuadType_e        fQuadType;
@@ -156,6 +144,7 @@ protected:
   FrameBox*         fFrame;
   RGBAPalette*      fPalette;
   RenderMode_e      fRenderMode;
+  Bool_t            fDisableLigting;
   ZTrans            fHMTrans;
 
   static Int_t SizeofAtom(QuadType_e qt);
@@ -189,6 +178,7 @@ public:
 
   RGBAPalette* GetPalette() const { return fPalette; }
   void SetPalette(RGBAPalette* p);
+  RGBAPalette* AssertPalette();
 
   RenderMode_e  GetRenderMode() const { return fRenderMode; }
   void SetRenderMode(RenderMode_e rm) { fRenderMode = rm; }
@@ -200,10 +190,13 @@ public:
   // --------------------------------
 
   void AddQuad(Float_t* verts);
+
   void AddQuad(Float_t x, Float_t y);
   void AddQuad(Float_t x, Float_t y, Float_t z);
   void AddQuad(Float_t x, Float_t y, Float_t w, Float_t h);
   void AddQuad(Float_t x, Float_t y, Float_t z, Float_t w, Float_t h);
+
+  void AddLine(Float_t x, Float_t y, Float_t w, Float_t h);
 
   void QuadValue(Int_t value);
   void QuadColor(Color_t ci);

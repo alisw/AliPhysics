@@ -64,7 +64,12 @@ void QuadSetEditor::SetModel(TObject* obj)
 
   fHMTrans->SetDataFromTrans(&fM->fHMTrans);
 
-  fPalette->SetModel(fM->fPalette);
+  if (fM->fValueIsColor || fM->fPalette == 0) {
+    fPalette->UnmapWindow();
+  } else {
+    fPalette->SetModel(fM->fPalette);
+    fPalette->MapWindow();
+  }
 
   // Set values of widgets
   // fXYZZ->SetValue(fM->GetXYZZ());

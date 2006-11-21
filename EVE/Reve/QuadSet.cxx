@@ -190,7 +190,8 @@ QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
 
   fFrame  (0),
   fPalette(0),
-  fRenderMode(RM_AsIs),
+  fRenderMode(RM_Fill),
+  fDisableLigting(kTRUE),
   fHMTrans()
 {}
 
@@ -209,7 +210,8 @@ QuadSet::QuadSet(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize,
 
   fFrame  (0),
   fPalette(0),
-  fRenderMode(RM_AsIs),
+  fRenderMode(RM_Fill),
+  fDisableLigting(kTRUE),
   fHMTrans()
 {}
 
@@ -225,15 +227,15 @@ Int_t QuadSet::SizeofAtom(QuadSet::QuadType_e qt)
 {
   switch (qt) {
     case QT_Undef:                return 0;
-    case QT_FreeQuad:             return sizeof(FreeQuad);
-    case QT_AxisAligned:          return sizeof(AAQuad);
-    case QT_AxisAlignedFixedDim:  return sizeof(AAFixDimQuad);
-    case QT_AxisAlignedFixedY:
-    case QT_AxisAlignedFixedZ:    return sizeof(AAFixZQuad);
-    case QT_AxisAlignedFixedDimY:
-    case QT_AxisAlignedFixedDimZ: return sizeof(AAFixDimZQuad);
-    case QT_LineFixedY:
-    case QT_LineFixedZ:           return sizeof(LineFixedZ);
+    case QT_FreeQuad:             return sizeof(QFreeQuad);
+    case QT_RectangleXY:          return sizeof(QRect);
+    case QT_RectangleXYFixedDim:  return sizeof(QRectFixDim);
+    case QT_RectangleXZFixedY:
+    case QT_RectangleXYFixedZ:    return sizeof(QRectFixC);
+    case QT_RectangleXZFixedDimY:
+    case QT_RectangleXYFixedDimZ: return sizeof(QRectFixDimC);
+    case QT_LineXZFixedY:
+    case QT_LineXYFixedZ:         return sizeof(QLineFixC);
   }
   return 0;
 }
@@ -302,6 +304,20 @@ void QuadSet::SetPalette(RGBAPalette* p)
   if (fPalette) fPalette->IncRefCount();
 }
 
+RGBAPalette* QuadSet::AssertPalette()
+{
+  if (fPalette == 0) {
+    fPalette = new RGBAPalette;
+    if (!fValueIsColor) {
+      Int_t min, max;
+      ScanMinMaxValues(min, max);
+      fPalette->SetLimits(min, max);
+      fPalette->SetMinMax(min, max);
+    }
+  }
+  return fPalette;
+}
+
 /**************************************************************************/
 
 QuadSet::QuadBase* QuadSet::NewQuad()
@@ -313,10 +329,11 @@ QuadSet::QuadBase* QuadSet::NewQuad()
 void QuadSet::AddQuad(Float_t* verts)
 {
   static const Exc_t eH("QuadSet::AddQuad ");
+
   if (fQuadType != QT_FreeQuad)
     throw(eH + "expect free quad-type.");
 
-  FreeQuad* fq = (FreeQuad*) NewQuad();
+  QFreeQuad* fq = (QFreeQuad*) NewQuad();
   memcpy(fq->fVertices, verts, sizeof(fq->fVertices));
 }
 
@@ -339,38 +356,57 @@ void QuadSet::AddQuad(Float_t x, Float_t y, Float_t z, Float_t w, Float_t h)
 {
   static const Exc_t eH("QuadSet::AddAAQuad ");
 
-  AAFixDimZQuad& fq = * (AAFixDimZQuad*) NewQuad();
+  QOrigin& fq = * (QOrigin*) NewQuad();
   fq.fX = x; fq.fY = y;
   switch (fQuadType)
   {
-    case QT_AxisAligned: {
-      AAQuad& q = (AAQuad&) fq;
+    case QT_RectangleXY: {
+      QRect& q = (QRect&) fq;
       q.fZ = z; q.fW = w; q.fH = h;
       break;
     }
-    case QT_AxisAlignedFixedDim: {
-      AAFixDimQuad& q =  (AAFixDimQuad&) fq;
+    case QT_RectangleXYFixedDim: {
+      QRectFixDim& q =  (QRectFixDim&) fq;
       q.fZ = z;
       break;
     }
-    case QT_AxisAlignedFixedY:
-    case QT_AxisAlignedFixedZ: {
-      AAFixZQuad& q = (AAFixZQuad&) fq;
+    case QT_RectangleXZFixedY:
+    case QT_RectangleXYFixedZ: {
+      QRectFixC& q = (QRectFixC&) fq;
       q.fW = w; q.fH = h;
       break;
     }
-    case QT_AxisAlignedFixedDimY:
-    case QT_AxisAlignedFixedDimZ: {
+    case QT_RectangleXZFixedDimY:
+    case QT_RectangleXYFixedDimZ: {
       break;
     }
-    case QT_LineFixedY:
-    case QT_LineFixedZ: {
-      LineFixedZ& q = (LineFixedZ&) fq;
+    case QT_LineXZFixedY:
+    case QT_LineXYFixedZ: {
+      QLineFixC& q = (QLineFixC&) fq;
       q.fDx = w; q.fDy = h;
       break;
     }
     default:
       throw(eH + "expect axis-aligned quad-type.");
+  }
+}
+
+void QuadSet::AddLine(Float_t x, Float_t y, Float_t w, Float_t h)
+{
+  static const Exc_t eH("QuadSet::AddLine ");
+
+  QOrigin& fq = * (QOrigin*) NewQuad();
+  fq.fX = x; fq.fY = y;
+  switch (fQuadType)
+  {
+    case QT_LineXZFixedY:
+    case QT_LineXYFixedZ: {
+      QLineFixC& q = (QLineFixC&) fq;
+      q.fDx = w; q.fDy = h;
+      break;
+    }
+    default:
+      throw(eH + "expect line quad-type.");
   }
 }
 
@@ -408,14 +444,14 @@ void QuadSet::ComputeBBox()
   }
 
   BBoxInit();
-  if (fQuadType == QT_AxisAlignedFixedZ    ||
-      fQuadType == QT_AxisAlignedFixedDimZ)
+  if (fQuadType == QT_RectangleXYFixedZ    ||
+      fQuadType == QT_RectangleXYFixedDimZ)
   {
     fBBox[4] = fDefCoord;
     fBBox[5] = fDefCoord;
   }
-  else if (fQuadType == QT_AxisAlignedFixedY    ||
-	   fQuadType == QT_AxisAlignedFixedDimY)
+  else if (fQuadType == QT_RectangleXZFixedY    ||
+	   fQuadType == QT_RectangleXZFixedDimY)
   {
     fBBox[2] = fDefCoord;
     fBBox[3] = fDefCoord;
@@ -431,7 +467,7 @@ void QuadSet::ComputeBBox()
 
       case QT_FreeQuad:
       {
-	FreeQuad* qp = (FreeQuad*) qbp;
+	QFreeQuad* qp = (QFreeQuad*) qbp;
 	while (n--) {
 	  Float_t* p = qp->fVertices;
 	  BBoxCheckPoint(p); p += 3;
@@ -443,11 +479,11 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_AxisAligned:
+      case QT_RectangleXY:
       {
-	AAQuad* qp = (AAQuad*) qbp;
+	QRect* qp = (QRect*) qbp;
 	while (n--) {
-	  AAQuad& q = * qp;
+	  QRect& q = * qp;
 	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
 	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
 	  if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
@@ -459,13 +495,13 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_AxisAlignedFixedDim:
+      case QT_RectangleXYFixedDim:
       {
-	AAFixDimQuad* qp =  (AAFixDimQuad*) qbp;
+	QRectFixDim* qp =  (QRectFixDim*) qbp;
 	const Float_t& w = fDefWidth;
 	const Float_t& h = fDefHeight;
 	while (n--) {
-	  AAFixDimQuad& q = * qp;
+	  QRectFixDim& q = * qp;
 	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
 	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
 	  if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
@@ -477,11 +513,11 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_AxisAlignedFixedZ:
+      case QT_RectangleXYFixedZ:
       {
-	AAFixZQuad* qp = (AAFixZQuad*) qbp;
+	QRectFixC* qp = (QRectFixC*) qbp;
 	while (n--) {
-	  AAFixZQuad& q = * qp;
+	  QRectFixC& q = * qp;
 	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
 	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
 	  if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
@@ -491,11 +527,11 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_AxisAlignedFixedY:
+      case QT_RectangleXZFixedY:
       {
-	AAFixZQuad* qp = (AAFixZQuad*) qbp;
+	QRectFixC* qp = (QRectFixC*) qbp;
 	while (n--) {
-	  AAFixZQuad& q = * qp;
+	  QRectFixC& q = * qp;
 	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
 	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
 	  if(q.fY        < fBBox[4]) fBBox[4] = q.fY;
@@ -505,13 +541,13 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_AxisAlignedFixedDimZ:
+      case QT_RectangleXYFixedDimZ:
       {
-	AAFixDimZQuad* qp =  (AAFixDimZQuad*) qbp;
+	QRectFixDimC* qp =  (QRectFixDimC*) qbp;
 	const Float_t& w = fDefWidth;
 	const Float_t& h = fDefHeight;
 	while (n--) {
-	  AAFixDimZQuad& q = * qp;
+	  QRectFixDimC& q = * qp;
 	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
 	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
 	  if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
@@ -521,13 +557,13 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_AxisAlignedFixedDimY:
+      case QT_RectangleXZFixedDimY:
       {
-	AAFixDimZQuad* qp =  (AAFixDimZQuad*) qbp;
+	QRectFixDimC* qp =  (QRectFixDimC*) qbp;
 	const Float_t& w = fDefWidth;
 	const Float_t& h = fDefHeight;
 	while (n--) {
-	  AAFixDimZQuad& q = * qp;
+	  QRectFixDimC& q = * qp;
 	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
 	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
 	  if(q.fY     < fBBox[4]) fBBox[4] = q.fY;
@@ -537,11 +573,11 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_LineFixedZ:
+      case QT_LineXYFixedZ:
       {
-	LineFixedZ* qp =  (LineFixedZ*) qbp;
+	QLineFixC* qp =  (QLineFixC*) qbp;
 	while (n--) {
-	  LineFixedZ& q = * qp;
+	  QLineFixC& q = * qp;
 	  BBoxCheckPoint(q.fX,         q.fY,         fDefCoord);
 	  BBoxCheckPoint(q.fX + q.fDx, q.fY + q.fDy, fDefCoord);
 	  ++qp;
@@ -549,11 +585,11 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      case QT_LineFixedY:
+      case QT_LineXZFixedY:
       {
-	LineFixedZ* qp =  (LineFixedZ*) qbp;
+	QLineFixC* qp =  (QLineFixC*) qbp;
 	while (n--) {
-	  LineFixedZ& q = * qp;
+	  QLineFixC& q = * qp;
 	  BBoxCheckPoint(q.fX,         fDefCoord, q.fY);
 	  BBoxCheckPoint(q.fX + q.fDx, fDefCoord, q.fY + q.fDy);
 	  ++qp;
@@ -569,6 +605,18 @@ void QuadSet::ComputeBBox()
 
   } // end for chunk
 
+  { // Resize bounding box so that it does not have 0 volume.
+    // This should be done in TAttBBox (via method AssertMinExtents(epsilon)).
+    // Or handled more gracefully in TGLViewer.
+    static const Float_t eps = 1e-3;
+    for (Int_t i=0; i<6; i+=2) {
+      if (fBBox[i+1] - fBBox[i] < eps) {
+	Float_t b = 0.5*(fBBox[i] + fBBox[i+1]);
+	fBBox[i]   = b - 0.5*eps;
+	fBBox[i+1] = b + 0.5*eps;
+      }
+    }
+  }
 }
 
 /**************************************************************************/
