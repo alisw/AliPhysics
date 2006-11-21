@@ -105,6 +105,7 @@
 
 // Track
 #pragma link C++ class Reve::Track+;
+#pragma link C++ class Reve::TrackGL+;
 #pragma link C++ class Reve::TrackList+;
 #pragma link C++ class Reve::TrackRnrStyle+;
 #pragma link C++ class Reve::TrackListEditor+;
@@ -123,6 +124,11 @@
 #pragma link C++ class Reve::PointSet+;
 #pragma link C++ class Reve::PointSetArray+;
 #pragma link C++ class Reve::PointSetArrayEditor+;
+
+// Line
+#pragma link C++ class Reve::Line+;
+#pragma link C++ class Reve::LineEditor+;
+#pragma link C++ class Reve::LineGL+;
 
 // FrameBox
 #pragma link C++ class Reve::FrameBox+;
