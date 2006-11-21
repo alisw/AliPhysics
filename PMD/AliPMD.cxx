@@ -54,6 +54,7 @@
 #include "AliPMDDigitizer.h"
 #include "AliPMDhit.h"
 #include "AliPMDDDLRawData.h"
+#include "AliPMDRawToSDigits.h"
   
 ClassImp(AliPMD)
  
@@ -319,9 +320,16 @@ void AliPMD::Digits2Raw()
 
   fLoader->UnloadDigits();
 }
-Bool_t AliPMD::Raw2SDigits()
+
+Bool_t AliPMD::Raw2SDigits(AliRawReader *rawReader)
 {
+  // converts raw to sdigits
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+  //runLoader->GetEvent(ievt);
+
+  AliPMDRawToSDigits pmdr2sd;
+  pmdr2sd.Raw2SDigits(runLoader, rawReader);
+  fLoader->UnloadSDigits();
   return kTRUE;
 }
-
 
