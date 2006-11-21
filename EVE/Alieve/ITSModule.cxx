@@ -242,7 +242,7 @@ void ITSModule::LoadQuads()
     case 0: { // SPD
       AliITSsegmentationSPD* seg =  fInfo->fSegSPD; 
 
-      Reset(QT_AxisAlignedFixedY, kFALSE, 32);
+      Reset(QT_RectangleXZFixedY, kFALSE, 32);
 
       for (Int_t k=0; k<ndigits; ++k)
       {
@@ -264,7 +264,7 @@ void ITSModule::LoadQuads()
     case 1: { // SDD
       AliITSsegmentationSDD *seg =  fInfo->fSegSDD; 
 
-      Reset(QT_AxisAlignedFixedY, kFALSE, 32);
+      Reset(QT_RectangleXZFixedY, kFALSE, 32);
 
       for (Int_t k=0; k<ndigits; ++k)
       {
@@ -278,7 +278,7 @@ void ITSModule::LoadQuads()
 	  dpx = seg->Dpx(i)*0.0001;
 	  dpz = seg->Dpz(j)*0.0001;
 
-	  AddQuad(x, z, dpx, dpz);
+	  AddQuad(x-2*dpx, z, 4*dpx, dpz);
 	  QuadValue(d->GetSignal());
 	}
       }
@@ -288,7 +288,7 @@ void ITSModule::LoadQuads()
     case 2: { // SSD
       AliITSsegmentationSSD* seg = fInfo->fSegSSD; 
 
-      Reset(QT_LineFixedY, kFALSE, 32);
+      Reset(QT_LineXZFixedY, kFALSE, 32);
 
       Float_t ap, an; // positive/negative angles -> offsets
       seg->Angles(ap, an);
