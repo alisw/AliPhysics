@@ -58,7 +58,8 @@ Event::Event() :
   fPath (), fEventId   (0),
   fRunLoader (0),
   fESDFile       (0), fESDTree       (0), fESD       (0),
-  fESDfriendFile (0), fESDfriendTree (0), fESDfriend (0)
+  /* fESDfriendFile (0), fESDfriendTree (0), */
+  fESDfriend (0), fESDfriendExists(kFALSE)
 {}
 
 Event::Event(TString path, Int_t ev) :
@@ -67,7 +68,8 @@ Event::Event(TString path, Int_t ev) :
   fPath (path), fEventId(ev),
   fRunLoader (0),
   fESDFile       (0), fESDTree       (0), fESD       (0),
-  fESDfriendFile (0), fESDfriendTree (0), fESDfriend (0)
+  /* fESDfriendFile (0), fESDfriendTree (0), */
+  fESDfriend (0), fESDfriendExists(kFALSE)
 {
   Open();
 }
@@ -135,20 +137,24 @@ end_run_loader:
     // Check if ESDfriends exists and load it
     p = Form("%s/AliESDfriends.root", fPath.Data());
     if(gSystem->AccessPathName(p, kReadPermission) == kFALSE) {
-      fESDfriendFile = new TFile(p);
-      if(fESDfriendFile->IsZombie()) {
-	delete fESDfriendFile; fESDfriendFile = 0;
-	throw(eH + "failed opening ALICE ESDfriend from '" + p + "'.");
-      }
+      //fESDfriendFile = new TFile(p);
+      //if(fESDfriendFile->IsZombie()) {
+      //delete fESDfriendFile; fESDfriendFile = 0;
+      //throw(eH + "failed opening ALICE ESDfriend from '" + p + "'.");
+      //}
 
-      fESDfriendTree = (TTree*) fESDfriendFile->Get("esdFriendTree");
-      if(fESDfriendTree == 0)
-	throw(eH + "failed getting the esdFriendTree.");
-      fESDfriendTree->SetBranchAddress("ESDfriend", &fESDfriend);
-      if(fESDfriendTree->GetEntry(fEventId) <= 0)
-	throw(eH + "failed getting required event from ESDfriend.");
+      //fESDfriendTree = (TTree*) fESDfriendFile->Get("esdFriendTree");
+      //if(fESDfriendTree == 0)
+      //  throw(eH + "failed getting the esdFriendTree.");
+      //fESDfriendTree->SetBranchAddress("ESDfriend", &fESDfriend);
+      //if(fESDfriendTree->GetEntry(fEventId) <= 0)
+      //throw(eH + "failed getting required event from ESDfriend.");
 
-      fESD->SetESDfriend(fESDfriend);
+      //fESD->SetESDfriend(fESDfriend);
+
+      fESDfriendExists = kTRUE;
+      fESDTree->SetBranchStatus ("ESDfriend*", 1);
+      fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
     }
   }
 end_esd_loader:
@@ -184,21 +190,30 @@ void Event::GotoEvent(Int_t event)
   }
 
   if(fESDTree) {
+    delete fESD;       fESD       = 0;
+    delete fESDfriend; fESDfriend = 0;
+
     if(fESDTree->GetEntry(fEventId) <= 0)
       throw(eH + "failed getting required event from ESD.");
 
-    if(fESDfriendTree != 0) {
-      if(fESDfriendTree->GetEntry(fEventId) <= 0)
-	throw(eH + "failed getting required event from ESDfriend.");
+    //if(fESDfriendTree != 0) {
+    //  if(fESDfriendTree->GetEntry(fEventId) <= 0)
+    //	throw(eH + "failed getting required event from ESDfriend.");
 
+    if (fESDfriendExists)
       fESD->SetESDfriend(fESDfriend);
-    }
   }
 }
 
 void Event::Close()
 {
-  
+  if (fESDTree) {
+    delete fESD;       fESD       = 0;
+    delete fESDfriend; fESDfriend = 0;
+
+    delete fESDTree; fESDTree = 0;
+    delete fESDFile; fESDFile = 0;
+  }
 }
 
 /**************************************************************************/

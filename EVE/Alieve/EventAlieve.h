@@ -29,9 +29,10 @@ protected:
   TFile*        fESDFile;
   TTree*        fESDTree;
   AliESD*       fESD;
-  TFile*        fESDfriendFile;
-  TTree*        fESDfriendTree;
+  //TFile*        fESDfriendFile;
+  //TTree*        fESDfriendTree;
   AliESDfriend* fESDfriend;
+  Bool_t        fESDfriendExists;
 
   static Bool_t fgUseRunLoader;
   static Bool_t fgUseESDTree;
@@ -54,10 +55,10 @@ public:
   AliRunLoader* GetRunLoader() const { return fRunLoader; }
   TTree*        GetESDTree()   const { return fESDTree; }
   AliESD*       GetESD()       const { return fESD; }
-  TTree*        GetESDfriendTree() const { return fESDfriendTree; }
-  AliESDfriend* GetESDfriend()     const { return fESDfriend; }
-
-  virtual const Text_t* GetTitle() const { return fPath.Data(); }
+  // TTree*        GetESDfriendTree() const { return fESDfriendTree; }
+  AliESDfriend* GetESDfriend()       const { return fESDfriend; }
+  Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
+  virtual const Text_t* GetTitle()   const { return fPath.Data(); }
 
   static AliRunLoader* AssertRunLoader();
   static AliESD*       AssertESD();
