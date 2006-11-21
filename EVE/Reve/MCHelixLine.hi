@@ -125,7 +125,7 @@ struct MCHelix : public MCStruct
 
 
   Bool_t LoopToVertex(Float_t &px, Float_t &py, Float_t &pz, 
-                      Float_t ex, Float_t ey, Float_t ez)
+                      Float_t  ex, Float_t  ey, Float_t  ez)
   {
     Float_t p0x = px, p0y = py;
     Float_t zs = fLam*TMath::Abs(fR*fPhiStep);
@@ -135,7 +135,6 @@ struct MCHelix : public MCStruct
     Float_t cosf = TMath::Cos(fnsteps*fPhiStep);
 
     { 
-      fPoints->push_back(fV); 
       if(nsteps > 0){
         Float_t xf  = fV.x + (px*sinf - py*(1 - cosf))/fA;  
         Float_t yf =  fV.y + (py*sinf + px*(1 - cosf))/fA;
@@ -183,7 +182,6 @@ struct MCHelix : public MCStruct
     SetBounds();
     if(NMax > 0){
       // printf("NMAx MC helix  loop_to_bounds\n");
-      fPoints->push_back(fV);
       Float_t xforw,yforw,zforw;
       while(fN < NMax){
         xforw = fV.x + (px*sin - py*(1 - cos))/fA + x_off;
@@ -222,7 +220,6 @@ struct MCLine : public MCStruct
 
   void GotoVertex(Float_t  x1, Float_t  y1, Float_t  z1)
   {
-    fPoints->push_back(fV);
     fV.t += TMath::Sqrt((fV.x-x1)*(fV.x-x1)+(fV.y-y1)*(fV.y-y1)+(fV.z-z1)*(fV.z-z1))/fVelocity;
     fV.x=x1; fV.y=y1; fV.z=z1;
     fPoints->push_back(fV);
