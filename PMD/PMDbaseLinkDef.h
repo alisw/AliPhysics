@@ -17,4 +17,6 @@
 #pragma link C++ class  AliPMDRawStream+;
 #pragma link C++ class  AliPMDCalibData+;
 #pragma link C++ class  AliPMDCalibrator+;
+#pragma link C++ class  AliPMDPreprocessor+;
+#pragma link C++ class  AliPMDRawToSDigits+;
 #endif
