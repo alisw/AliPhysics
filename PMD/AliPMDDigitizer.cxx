@@ -193,32 +193,37 @@ void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
    {
      AliError(Form("Can not open session for file %s.",file));
    }
-  
-  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
-  if (!fRunLoader->TreeE()) fRunLoader->LoadHeader();
-  if (!fRunLoader->TreeK()) fRunLoader->LoadKinematics();
 
-  gAlice = fRunLoader->GetAliRun();
+  const char *cHS = strstr(option,"HS");
+  const char *cHD = strstr(option,"HD");
+  const char *cSD = strstr(option,"SD");
   
-  if (gAlice)
+  if(cHS || cHD)
     {
-      AliDebug(1,"Alirun object found");
-    }
-  else
-    {
-      AliError("Could not found Alirun object");
-    }
+      if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
+      if (!fRunLoader->TreeE()) fRunLoader->LoadHeader();
+      if (!fRunLoader->TreeK()) fRunLoader->LoadKinematics();
   
-  fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
+      gAlice = fRunLoader->GetAliRun();
+  
+      if (gAlice)
+	{
+	  AliDebug(1,"Alirun object found");
+	}
+      else
+	{
+	  AliError("Could not found Alirun object");
+	}
+  
+      fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
+    }
+
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
   if (fPMDLoader == 0x0)
     {
       AliError("Can not find PMDLoader");
     }
 
-  const char *cHS = strstr(option,"HS");
-  const char *cHD = strstr(option,"HD");
-  const char *cSD = strstr(option,"SD");
 
   if (cHS)
     {
