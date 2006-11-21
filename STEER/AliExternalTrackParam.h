@@ -125,12 +125,12 @@ protected:
   Double_t &Cov(Int_t i) {return fC[i];}
 
 private:
-  Double_t             fX;     // X coordinate for the point of parametrisation
-  Double_t             fAlpha; // Local <-->global coor.system rotation angle
-  Double_t             fP[5];  // The track parameters
-  Double_t             fC[15]; // The track parameter covariance matrix
+  Double32_t           fX;     // X coordinate for the point of parametrisation
+  Double32_t           fAlpha; // Local <-->global coor.system rotation angle
+  Double32_t           fP[5];  // The track parameters
+  Double32_t           fC[15]; // The track parameter covariance matrix
 
-  ClassDef(AliExternalTrackParam, 4)
+  ClassDef(AliExternalTrackParam, 5)
 };
 
 #endif
