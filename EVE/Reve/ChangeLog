@@ -1,3 +1,41 @@
+2006-11-21  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Line.cxx:
+	* Line.h:
+	* LineEditor.cxx:
+	* LineEditor.h:
+	* LineGL.cxx:
+	* LineGL.h:
+	New files: line representation with per-point selection.
+
+	* TrackGL.cxx:
+	* TrackGL.h:
+	New files: allow interaction with the track, more configurability
+	(render as line, points or both).
+
+	* Track.cxx:
+	* Track.h:
+	Derive Track from Line (before was TPolyLine3D, RenderElement);
+	this allowed me to remove a lot of code actually shared with
+	PointSet.
+
+	* LinkDef.h:
+	Register new classes.
+
+	* MCHelixLine.hi:
+	Some points were duplicated during track construction.
+
+	* QuadSet.cxx:
+	* QuadSet.h:
+	* QuadSetEditor.cxx:
+	* QuadSetGL.cxx:
+	* QuadSetGL.h:
+	Use better names for QuadTypes (enum and internal structs).
+
+	* PointSet.h:
+	* TTreeTools.h:
+	Style/comment changes.
+
 2006-11-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RGBAPalette.cxx:
