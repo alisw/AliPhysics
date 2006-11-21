@@ -85,6 +85,8 @@ public:
  
   TList* BookHists();
   void   SaveHists(const char *fn="reco.root");  //*MENU*
+  void   PrintRecoInfo();                        //*MENU*
+  void   DrawLambdasHists();                     //*MENU*
 protected:
 
   void           WriteRecPoints() ;
@@ -100,9 +102,9 @@ protected:
    TH1F* fPointMult; //histogram of point multiplicity
    TH1F* fDigitAmp;  //histogram of digit ADC Amplitude
    TH1F* fMaxE;      //histogram of maximum point energy
-   TH1F* fMaxL1;     //histogram of maximum point L1
-   TH1F* fMaxL2;     //histogram of maximum point L2
-   TH1F* fMaxDis;    //histogram of maximum point dispersion
+   TH1F* fMaxL1;     //histogram of largest (first) of eigenvalue of covariance matrix
+   TH1F* fMaxL2;     //histogram of smalest (second) of eigenvalue of covariace matrix
+   TH1F* fMaxDis;    //histogram of point dispersion
 ///////////////////////
 
 
@@ -140,7 +142,7 @@ private:
   Float_t fECAClusteringThreshold ;  // minimum energy to seed a EC digit in a cluster
   Float_t fECALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
   Float_t fECAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
-  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
+  Int_t   fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
 

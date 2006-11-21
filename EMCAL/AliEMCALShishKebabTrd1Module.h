@@ -20,6 +20,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   AliEMCALShishKebabTrd1Module(Double_t theta=0.0, AliEMCALGeometry *g=0);
   AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor);
   void Init(Double_t A, Double_t B);
+  void DefineAllStaff();
   AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod);
 
   AliEMCALShishKebabTrd1Module & operator = (const AliEMCALShishKebabTrd1Module& /*rvalue*/)  {
@@ -40,16 +41,24 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t  GetPosXfromR() const {return fOK.Y() - fgr;}
   Double_t  GetA() const {return fA;}
   Double_t  GetB() const {return fB;}
+  Double_t  GetRadius() const {return fgr;}
   //  Additional offline staff 
   //  ieta=0 or 1 - Jun 02, 2006
   TVector2& GetCenterOfCellInLocalCoordinateofSM(Int_t ieta)
   { if(ieta<=0) return fOK2;
     else        return fOK1;}
-  void GetCenterOfCellInLocalCoordinateofSM(Int_t ieta, Double_t &xr, Double_t &zr)
+  void GetCenterOfCellInLocalCoordinateofSM(Int_t ieta, Double_t &xr, Double_t &zr) const
   { 
     if(ieta<=0) {xr = fOK2.Y(); zr = fOK2.X();
     } else      {xr = fOK1.Y(); zr = fOK1.X();
     }
+  }
+  void GetCenterOfCellInLocalCoordinateofSM_3X3(Int_t ieta, Double_t &xr, Double_t &zr) const
+  { // 3X3 case - Nov 9,2006
+    ieta = ieta<0? ieta=0 : ieta; // check index
+    ieta = ieta>2? ieta=2 : ieta;
+    xr   = fOK3X3[2-ieta].Y();
+    zr   = fOK3X3[2-ieta].X();
   }
   // 15-may-06
   TVector2& GetCenterOfModuleFace() {return fOB;}  
@@ -62,8 +71,11 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t Getb()        const {return fgb;}
   // service methods
   void PrintShish(Int_t pri=1) const;  // *MENU*
-  Double_t GetThetaInDegree() const;
+  Double_t  GetThetaInDegree() const;
   Double_t  GetEtaOfCenterOfModule() const;
+  Double_t  GetMaxEtaOfModule(int pri=0) const;
+  static Double_t ThetaToEta(Double_t theta) 
+  {return -TMath::Log(TMath::Tan(theta/2.));}
 
  protected:
   // geometry info
@@ -79,7 +91,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t fA;      // parameters of right line : y = A*z + B
   Double_t fB;      // system where zero point is IP.
   Double_t fThetaA; // angle coresponding fA - for convinience
-  Double_t fTheta;  // theta angle of perependicular to SK module
+  Double_t fTheta;  // theta angle of perpendicular to SK module
   // position of towers(cells) with differents ieta (1 or 2) in local coordinate of SM
   // Nov 04,2004; Feb 19,2006 
   TVector2 fOK1; // ieta=1
@@ -88,9 +100,10 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   TVector2 fOB;  // module
   TVector2 fOB1; // ieta=1
   TVector2 fOB2; // ieta=0
-
+  // 3X3 case - Nov 9,2006
+  TVector2 fOK3X3[3];
   // public:
-  ClassDef(AliEMCALShishKebabTrd1Module,0) // TRD1 Shish-Kebab module 
+  ClassDef(AliEMCALShishKebabTrd1Module,1) // TRD1 Shish-Kebab module 
 };
 
 #endif

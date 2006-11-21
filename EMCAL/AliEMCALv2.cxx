@@ -77,7 +77,7 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title)
     //    if (gDebug>0){
     if (1){
       TH1::AddDirectory(0);
-      fHDe = new TH1F("fHDe","De in EMCAL", 1000, 0., 1.);
+      fHDe    = new TH1F("fHDe","De in EMCAL", 1000, 0., 10.);
       fHNhits = new TH1F("fHNhits","#hits in EMCAL", 2001, -0.5, 2000.5);
       fHistograms->Add(fHDe);
       fHistograms->Add(fHNhits);
@@ -143,7 +143,6 @@ void AliEMCALv2::StepManager(void){
   static int supModuleNumber, moduleNumber, yNumber, xNumber, absid;
   static int keyGeom=1;
   static char *vn = "SCMX"; // Apr 13, 2006 - only TRD1 case now
-  //  static char *vn = "SX"; // 15-mar-05
   static int nSMOP[7]={1,3,5,7,9,11}; // 30-mar-05
   static int nSMON[7]={2,4,6,8,10,12};
   static Float_t depositedEnergy=0.0; 
@@ -161,7 +160,7 @@ void AliEMCALv2::StepManager(void){
   Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
 
   curVolName = gMC->CurrentVolName();
-  if(curVolName.Contains(vn)) { // We are in a scintillator layer
+  if(curVolName.Contains(vn) || curVolName.Contains("SCX")) { // We are in a scintillator layer; SCX for 3X3
     //    printf(" keyGeom %i : Sensetive volume %s (%s) \n", keyGeom, curVolName.Data(), vn); 
     
     if( ((depositedEnergy = gMC->Edep()) > 0.)  && (gMC->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy
@@ -221,6 +220,14 @@ void AliEMCALv2::StepManager(void){
         gMC->CurrentVolOffID(1, yNumber);
         gMC->CurrentVolOffID(0, xNumber); // really x number now
         if(strcmp(gMC->CurrentVolOffName(4),"SM10")==0) supModuleNumber += 10; // 13-oct-05
+	// Nov 10,2006
+        xNumber == 0;
+        if     (strcmp(gMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
+        else if(strcmp(gMC->CurrentVolOffName(0),"SCX2")==0) xNumber=2;
+        else if(strcmp(gMC->CurrentVolOffName(0),"SCX3")==0) xNumber=3;
+        if(xNumber==0) {
+          Fatal("StepManager()", "Wrong name SCX : %s ", gMC->CurrentVolOffName(0)) ;
+	}
       } else {
         gMC->CurrentVolOffID(5, supModuleNumber);
         gMC->CurrentVolOffID(4, moduleNumber);
@@ -232,7 +239,11 @@ void AliEMCALv2::StepManager(void){
       }
       absid = fGeometry->GetAbsCellId(supModuleNumber-1, moduleNumber-1, yNumber-1, xNumber-1);
     
-      if (absid < 0) Fatal("StepManager()", "Wrong id ") ;
+      if (absid < 0) {
+        printf(" supModuleNumber %i : moduleNumber %i : yNumber %i : xNumber %i \n",
+        supModuleNumber, moduleNumber, yNumber, xNumber); 
+	Fatal("StepManager()", "Wrong id : %i ", absid) ; 
+      }
 
       Float_t lightYield =  depositedEnergy ;
       // Apply Birk's law (copied from G3BIRK)

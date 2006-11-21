@@ -406,28 +406,53 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
 void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
 {
   // Calculates the dispersion of the shower at the origin of the RecPoint
+  // in cell units - Nov 16,2006
 
-  Double_t d = 0., wtot = 0., w = 0., xyzi[3], diff=0.;
+  Double_t d = 0., wtot = 0., w = 0.;
   Int_t iDigit=0, nstat=0, i=0;
   AliEMCALDigit * digit ;
-
-  // Calculates the centre of gravity in the local EMCAL-module coordinates   
-  if (!fLocPos.Mag()) 
-    EvalLocalPosition(logWeight, digits) ;
   
-  // Calculates the dispersion in coordinates 
+  // Calculates the dispersion in cell units 
+  Double_t etai, phii, etaMean=0.0, phiMean=0.0; 
+  int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+  int iphi=0, ieta=0;
+  // Calculate mean values
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
 
-    fGeomPtr->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
-    w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
+      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+      etai=(Double_t)ieta;
+      phii=(Double_t)iphi;
+      w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
 
-    if(w>0.0) {
-      wtot += w;
-      nstat++;
-      for(i=0; i<3; i++ ) {
-        diff = xyzi[i] - double(fLocPos[i]);
-        d   += w * diff*diff;
+      if(w>0.0) {
+        phiMean += phii*w;
+        etaMean += etai*w;
+        wtot    += w;
+      }
+    }
+  }
+  if (wtot>0) {
+    phiMean /= wtot ;
+    etaMean /= wtot ;
+  } else AliError(Form("Wrong weight %f\n", wtot));
+
+  // Calculate dispersion
+  for(iDigit=0; iDigit < fMulDigit; iDigit++) {
+    digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
+
+    if (fAmp>0 && fEnergyList[iDigit]>0) {
+      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
+      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+      etai=(Double_t)ieta;
+      phii=(Double_t)iphi;
+      w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+
+      if(w>0.0) {
+        nstat++;
+        d += w*((etai-etaMean)*(etai-etaMean)+(phii-phiMean)*(phii-phiMean));
       }
     }
   }
@@ -505,9 +530,10 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
   // i.e. within a radius rad = fCoreEnergy around the center. Beyond this radius
   // in accordance with shower profile the energy deposition 
   // should be less than 2%
+  // Unfinished - Nov 15,2006
+  // Distance is calculate in (phi,eta) units
 
   AliEMCALDigit * digit ;
-  const Float_t kDeg2Rad = TMath::DegToRad() ;
 
   Int_t iDigit;
 
@@ -515,16 +541,16 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
     EvalLocalPosition(logWeight, digits);
   }
   
+  Double_t phiPoint = fLocPos.Phi(), etaPoint = fLocPos.Eta();
+  Double_t eta, phi, distance;
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) ( digits->At(fDigitsList[iDigit]) ) ;
     
-    Float_t ieta = 0.0;
-    Float_t iphi = 0.0;
-    //fGeomPtr->PosInAlice(digit->GetId(), ieta, iphi);
-    fGeomPtr->EtaPhiFromIndex(digit->GetId(),ieta, iphi) ;
-    iphi = iphi * kDeg2Rad;
+    eta = phi = 0.0;
+    fGeomPtr->EtaPhiFromIndex(digit->GetId(),eta, phi) ;
+    phi = phi * TMath::DegToRad();
   
-    Float_t distance = TMath::Sqrt((ieta-fLocPos.X())*(ieta-fLocPos.X())+(iphi-fLocPos.Y())*(iphi-fLocPos.Y())) ;
+    distance = TMath::Sqrt((eta-etaPoint)*(eta-etaPoint)+(phi-phiPoint)*(phi-phiPoint));
     if(distance < fCoreRadius)
       fCoreEnergy += fEnergyList[iDigit] ;
   }
@@ -534,40 +560,44 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
 void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 {
   // Calculates the axis of the shower ellipsoid in eta and phi
+  // in cell units
 
-  Double_t wtot = 0. ;
+  static TString gn(fGeomPtr->GetName());
+
+  Double_t wtot = 0.;
   Double_t x    = 0.;
   Double_t z    = 0.;
   Double_t dxx  = 0.;
   Double_t dzz  = 0.;
   Double_t dxz  = 0.;
 
-  const Float_t kDeg2Rad = TMath::DegToRad();
-  AliEMCALDigit * digit ;
+  AliEMCALDigit * digit = 0;
 
-  TString gn(fGeomPtr->GetName());
-
-  Int_t iDigit;
-  
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+  Double_t etai , phii, w; 
+  int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+  int iphi=0, ieta=0;
+  for(Int_t iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
-    Float_t etai = 0. ;
-    Float_t phii = 0. ; 
-    if(gn.Contains("SHISH")) { // have to be change - Feb 28, 2006
-    //copied for shish-kebab geometry, ieta,iphi is cast as float as eta,phi conversion
-    // for this geometry does not exist
-      int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
-      int iphi=0, ieta=0;
+    etai = phii = 0.; 
+    if(gn.Contains("SHISH")) { 
+    // Nov 15,2006 - use cell numbers as coordinates
+    // Copied for shish-kebab geometry, ieta,iphi is cast as double as eta,phi
+    // We can use the eta,phi(or coordinates) of cell
+      nSupMod = nTower = nIphi = nIeta = iphi = ieta = 0;
+
       fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
       fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
-      etai=(Float_t)ieta;
-      phii=(Float_t)iphi;
-    } else {
+      etai=(Double_t)ieta;
+      phii=(Double_t)iphi;
+    } else { // 
       fGeomPtr->EtaPhiFromIndex(digit->GetId(), etai, phii);
-      phii = phii * kDeg2Rad;
+      phii = phii * TMath::DegToRad();
     }
 
-    Double_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    // fAmp summed amplitude of digits, i.e. energy of recpoint 
+    // Gives smaller value of lambda than log weight  
+    // w = fEnergyList[iDigit] / fAmp; // Nov 16, 2006 - try just energy
 
     dxx  += w * etai * etai ;
     x    += w * etai ;
@@ -966,4 +996,12 @@ void AliEMCALRecPoint::Print(Option_t *) const
   message += "       Number of primaries %d" ; 
   message += "       Stored at position %d" ; 
   Info("Print", message.Data(), fClusterType, fMulDigit, fAmp, fCoreEnergy, fCoreRadius, fMulTrack, GetIndexInList() ) ;  
+}
+
+Double_t  AliEMCALRecPoint::GetPointEnergy() const
+{
+  static double e;
+  e=0.0;
+  for(int ic=0; ic<GetMultiplicity(); ic++) e += double(fEnergyList[ic]);
+  return e;
 }

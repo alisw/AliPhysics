@@ -59,6 +59,7 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual void    GetElipsAxis(Float_t * lambda)const {lambda[0] = fLambda[0]; lambda[1] = fLambda[1];};
   
   Float_t *   GetEnergiesList() const {return fEnergyList ;}       // gets the list of energies making this recpoint
+  Double_t    GetPointEnergy() const;                              // gets point energy (sum of energy list)
   Float_t *   GetTimeList() const {return fTimeList ;}       // gets the list of digit times in this recpoint
   Float_t     GetMaximalEnergy(void) const ;                       // get the highest energy in the cluster
   Int_t       GetMaximumMultiplicity() const {return fMaxDigit ;}  // gets the maximum number of digits allowed

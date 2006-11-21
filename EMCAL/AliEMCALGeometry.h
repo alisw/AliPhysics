@@ -41,7 +41,11 @@ public:
     Fatal("operator =", "not implemented");
     return *this;
   };
-  
+  void PrintGeometry();                                           //*MENU*  
+  void PrintCellIndexes(Int_t absId=0, int pri=0, char *tit="");  //*MENU*
+  virtual void Browse(TBrowser* b);
+  virtual Bool_t  IsFolder() const;
+
   void FillTRU(const TClonesArray * digits, TClonesArray * amptru, TClonesArray * timeRtru)  ; //Fills Trigger Unit matrices with digit amplitudes and time
   void GetCellPhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module
   
@@ -50,8 +54,15 @@ public:
   void GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind) const;
   void GetGlobal(Int_t absId, Double_t glob[3]) const;
   void GetGlobal(Int_t absId, TVector3 &vglob) const;
-  // for a given tower index it returns eta and phi of center of that tower.
-  void EtaPhiFromIndex(Int_t absId,Float_t &eta,Float_t &phi) const;
+  // for a given tower index absId returns eta and phi of gravity center of tower.
+  void EtaPhiFromIndex(Int_t absId, Double_t &eta, Double_t &phi) const;
+  void EtaPhiFromIndex(Int_t absId, Float_t &eta, Float_t &phi) const;
+  // 
+  Bool_t GetPhiBoundariesOfSM   (Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const;
+  Bool_t GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
+  Bool_t SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi, Int_t &nSupMod) const;
+
+  Bool_t GetAbsCellIdFromEtaPhi(Double_t eta,Double_t phi, Int_t &absId) const;
 
   //  virtual void GetGlobal(const AliEMCALRecPoint *rp, TVector3 &vglob) const;
 
@@ -143,7 +154,17 @@ public:
   void    GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t &iphim, Int_t &ietam) const;
   void    GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta,
                                       Int_t &iphi, Int_t &ieta) const ;
-  Int_t   GetSuperModuleNumber(Int_t absId)  const; 
+  Int_t   GetSuperModuleNumber(Int_t absId)  const;
+  Int_t   GetNumberOfModuleInPhiDirection(Int_t nSupMod)  const
+  {
+    // inline function
+    if(fKey110DEG == 1 && nSupMod>=10) return fNPhi/2;
+    else                               return fNPhi;
+  }
+  // From cell indexes to abs cell id
+  void    GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, Int_t iphi, Int_t ieta, 
+	  Int_t &iphim, Int_t &ietam, Int_t &nTower) const;
+  Int_t   GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const;
   // Methods for AliEMCALRecPoint - Feb 19, 2006
   Bool_t   RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr) const;
   Bool_t   RelPosCellInSModule(Int_t absId, Double_t loc[3]) const;
@@ -166,7 +187,8 @@ public:
   void SetSampling(Float_t samp) { fSampling = samp; printf("SetSampling: Sampling factor set to %f", fSampling) ; }
 
   Int_t GetNCellsInSupMod() const {return fNCellsInSupMod;}
-  Int_t GetNCellsInTower() const {return fNCellsInTower; }
+  Int_t GetNCellsInTower()  const {return fNCellsInTower; }
+  Int_t GetKey110DEG()      const {return fKey110DEG;}
 
   AliEMCALGeometry(); // default ctor only for internal usage (singleton)
 
@@ -232,6 +254,9 @@ private:
   Float_t f2Trd1Dx2;                     // 2*dx2 for TRD1
   Float_t fPhiGapForSM;                  // Gap betweeen supermodules in phi direction
   Int_t   fKey110DEG;                    // for calculation abs cell id; 19-oct-05 
+  TArrayD fPhiBoundariesOfSM;            // phi boundaries of SM in rad; size is fNumberOfSuperModules;
+  TArrayD fPhiCentersOfSM;                // phi of centers of SMl size is fNumberOfSuperModules/2
+  Float_t fEtaMaxOfTRD1;                 // max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
   // TRD2 options - 27-jan-07
   Float_t fTrd2AngleY;                   // angle in y-z plane (in degree) 
   Float_t f2Trd2Dy2;                     // 2*dy2 for TRD2
@@ -240,9 +265,12 @@ private:
   Float_t fTubsR;                        // radius of tubs 
   Float_t fTubsTurnAngle;                // turn angle of tubs in degree
   // Local Coordinates of SM
-  TArrayD  fEtaCentersOfCells;           // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM)
-  TArrayD  fXCentersOfCells;             // size fNEta*fNETAdiv (for TRD1 only) (       x in SM)
-  TArrayD  fPhiCentersOfCells;           // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM)
+  TArrayD  fCentersOfCellsEtaDir;        // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
+  TArrayD  fCentersOfCellsXDir;          // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
+  TArrayD  fCentersOfCellsPhiDir;        // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
+  //
+  TArrayD  fEtaCentersOfCells;           // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
+  TArrayD  fPhiCentersOfCells;           // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
   // Move from AliEMCALv0 - Feb 19, 2006
   TList *fShishKebabTrd1Modules; //! list of modules
   // Local coordinates of SM for TRD1
@@ -252,7 +280,7 @@ private:
   char *fAdditionalOpts[4];  //! some additional options for the geometry type and name
   int  fNAdditionalOpts;  //! size of additional options parameter
 
-  ClassDef(AliEMCALGeometry, 10) // EMCAL geometry class 
+  ClassDef(AliEMCALGeometry, 11) // EMCAL geometry class 
   };
 
 #endif // AliEMCALGEOMETRY_H

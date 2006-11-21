@@ -18,9 +18,10 @@
 //_________________________________________________________________________
 // Main class for TRD1 geometry of Shish-Kebab case.
 // Author: Aleksei Pavlinov(WSU).
-// Sep 20004.
+// Sep 20004 - Nov 2006
 // See web page with description of Shish-Kebab geometries:
 // http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/shishkebabALICE.html
+// Nov 9,2006 - added cas of 3X3
 //_________________________________________________________________________
 
 #include "AliLog.h"
@@ -53,7 +54,8 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     fOK2(),
     fOB(),
     fOB1(),
-    fOB2()
+    fOB2(),
+    fOK3X3()
 { 
   // theta in radians ; first object shold be with theta=pi/2.
   if(fgGeometry==0) {
@@ -79,11 +81,14 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
     fOK2(),
     fOB(),
     fOB1(),
-    fOB2()
+    fOB2(),
+    fOK3X3()
 { 
   //  printf("** Left Neighbor : %s **\n", leftNeighbor.GetName());
-  TObject::SetUniqueID(leftNeighbor.GetUniqueID()+1);
   fTheta  = leftNeighbor.GetTheta() - fgangle; 
+
+  TObject::SetUniqueID(leftNeighbor.GetUniqueID()+1);
+
   Init(leftNeighbor.GetA(),leftNeighbor.GetB());
 }
 
@@ -99,7 +104,8 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKe
     fOK2(mod.fOK2),
     fOB(mod.fOB),
     fOB1(mod.fOB1),
-    fOB2(mod.fOB2)
+    fOB2(mod.fOB2),
+    fOK3X3(mod.fOK3X3)
 {
   //copy ctor
 }
@@ -130,8 +136,13 @@ void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
   fA = TMath::Tan(fThetaA); // !!
   fB = yA - fA*xA;
 
+  DefineAllStaff();
+}
+
+void AliEMCALShishKebabTrd1Module::DefineAllStaff()
+{
   DefineName(fTheta);
-  // Centers of module
+  // Centers of module - 2X2 case
   Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
 
   Double_t xk1 = fOK.X() - kk1*TMath::Sin(fTheta);
@@ -142,10 +153,24 @@ void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
   Double_t yk2 = fOK.Y() - kk1*TMath::Cos(fTheta) - fgr;
   fOK2.Set(xk2,yk2);
 
+  // Centers of module - 3X3 case; Nov 9,2006
+  fOK3X3[1].Set(fOK.X(), fOK.Y()-fgr); // coincide with module center
+
+  kk1 = ((fga+fga2)/4. + fga/6.)/2.; 
+
+  xk1 = fOK.X() - kk1*TMath::Sin(fTheta);
+  yk1 = fOK.Y() + kk1*TMath::Cos(fTheta) - fgr;
+  fOK3X3[0].Set(xk1,yk1);
+
+  xk2 = fOK.X() + kk1*TMath::Sin(fTheta);
+  yk2 = fOK.Y() - kk1*TMath::Cos(fTheta) - fgr;
+  fOK3X3[2].Set(xk2,yk2);
+
   // May 15, 2006; position of cell face of cells 
   fOB.Set(fOK.X()-fgb/2.*TMath::Cos(fTheta),  fOK.Y()-fgb/2.*TMath::Sin(fTheta)-fgr);
   fOB1.Set(fOB.X()-fga/4.*TMath::Sin(fTheta), fOB.Y()+fga/4.*TMath::Cos(fTheta));
   fOB2.Set(fOB.X()+fga/4.*TMath::Sin(fTheta), fOB.Y()-fga/4.*TMath::Cos(fTheta));
+
 }
 
 //_____________________________________________________________________________
@@ -160,15 +185,9 @@ void AliEMCALShishKebabTrd1Module::DefineFirstModule()
   Double_t xA = fga/2. + fga2/2., yA = fgr;
   fB = yA - fA*xA;
 
-  Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
-  fOK1.Set(fOK.X() - kk1, fOK.Y()-fgr);
-  fOK2.Set(fOK.X() + kk1, fOK.Y()-fgr);
-
-  fOB.Set(fOK.X(),fOK.Y()-fgb/2.-fgr);
-  fOB1.Set(fOB.X()-fga/4., fOB.Y());
-  fOB2.Set(fOB.X()+fga/4., fOB.Y());
-
   TObject::SetUniqueID(1); //
+
+  DefineAllStaff();
 }
 
 //_____________________________________________________________________________
@@ -195,7 +214,9 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
   fgangle    = Double_t(fgGeometry->GetTrd1Angle())*TMath::DegToRad();
   fgtanBetta = TMath::Tan(fgangle/2.);
   fgr        = (Double_t)fgGeometry->GetIPDistance();
+
   if(!sn.Contains("TRD2")) fgr += fgGeometry->GetSteelFrontThickness();
+
   fga2       = Double_t(fgGeometry->Get2Trd1Dx2());
   //PH  PrintShish(0);
   return kTRUE;
@@ -215,13 +236,19 @@ void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
       printf(" %i |%s| theta %f :  fOK.Phi = %f(%5.2f)\n", 
       GetUniqueID(), GetName(), fTheta, fOK.Phi(),fOK.Phi()*TMath::RadToDeg());
       printf(" A %f B %f | fThetaA %7.6f(%5.2f)\n", fA,fB, fThetaA,fThetaA*TMath::RadToDeg());
-      printf(" fOK  : X %9.4f: Y %9.4f \n",  fOK.X(), fOK.Y());
-      printf(" fOK1 : X %9.4f: Y %9.4f (local, ieta=2)\n", fOK1.X(), fOK1.Y());
-      printf(" fOK2 : X %9.4f: Y %9.4f (local, ieta=1)\n\n", fOK2.X(), fOK2.Y());
+      printf(" fOK  : X %9.4f: Y %9.4f : eta  %5.3f\n",  fOK.X(), fOK.Y(), GetEtaOfCenterOfModule());
+      printf(" fOK1 : X %9.4f: Y %9.4f :   (local, ieta=2)\n", fOK1.X(), fOK1.Y());
+      printf(" fOK2 : X %9.4f: Y %9.4f :   (local, ieta=1)\n\n", fOK2.X(), fOK2.Y());
       printf(" fOB  : X %9.4f: Y %9.4f \n", fOB.X(), fOB.Y());
       printf(" fOB1 : X %9.4f: Y %9.4f (local, ieta=2)\n", fOB1.X(), fOB1.Y());
       printf(" fOB2 : X %9.4f: Y %9.4f (local, ieta=1)\n", fOB2.X(), fOB2.Y());
+      // 3X3 
+      printf(" 3X3 \n");
+      for(int ieta=0; ieta<3; ieta++) {
+        printf(" fOK3X3[%i] : X %9.4f: Y %9.4f (local) \n", ieta, fOK3X3[ieta].X(), fOK3X3[ieta].Y());
+      }
       //      fOK.Dump();
+      GetMaxEtaOfModule(pri);
     }
   }
 }
@@ -236,4 +263,27 @@ Double_t  AliEMCALShishKebabTrd1Module::GetThetaInDegree() const
 Double_t  AliEMCALShishKebabTrd1Module::GetEtaOfCenterOfModule() const 
 { 
   return -TMath::Log(TMath::Tan(fOK.Phi()/2.));
+}
+
+//_____________________________________________________________________________
+Double_t  AliEMCALShishKebabTrd1Module::GetMaxEtaOfModule(int pri) const 
+{ 
+  // Right bottom point of module
+  Double_t xBottom     = (fgr - fB) / fA;
+  Double_t thetaBottom = TMath::ATan2(fgr, xBottom);
+  Double_t etaBottom   = ThetaToEta(thetaBottom);
+  // Right top point of module
+  Double_t l = fgb / TMath::Cos(fgangle/2.); // length of lateral module side
+  Double_t xTop = xBottom + l*TMath::Cos(TMath::ATan(fA));
+  Double_t yTop = fA*xTop + fB;
+  Double_t thetaTop = TMath::ATan2(yTop, xTop);
+  Double_t etaTop   = ThetaToEta(thetaTop);
+
+  if(pri) { 
+    printf(" Right bottom point of module : eta %5.4f : theta %6.4f (%6.2f) \n", 
+    etaBottom, thetaBottom, thetaBottom * TMath::RadToDeg());
+    printf(" Right    top point of module : eta %5.4f : theta %6.4f (%6.2f) \n", 
+    etaTop, thetaTop, thetaTop * TMath::RadToDeg());
+  }
+  return etaBottom>etaTop ? etaBottom : etaTop;
 }
