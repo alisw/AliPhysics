@@ -119,7 +119,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
      
   Int_t       map[80];    // 48 values on V0C + 32 on V0A
   Int_t       adc[64];    // 32 PMs on V0C + 32 PMs on V0A
-  Float_t    time[80], time2[64], adc_gain[80];    
+  Float_t    time[80], time_ref[80], time2[64];
+  Float_t    adc_gain[80];    
   fNdigits     =    0;  
   Float_t cPM  = fPhotoCathodeEfficiency * fPMGain;
 
@@ -158,7 +159,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   TTree* treeD  = outLoader->TreeD();
   Int_t bufsize = 16000;
   treeD->Branch("VZERODigit", &fDigits, bufsize); 
-
+  
   for (Int_t iInput = 0; iInput < fManager->GetNinputs(); iInput++) {
     AliRunLoader* runLoader = 
       AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
@@ -179,9 +180,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
     if (!treeH) {
       Error("Exec", "Cannot get TreeH for input %d", iInput);
       continue; }
-    
-    Float_t timeV0 = 1e12;      
-    for(Int_t i=0; i<80; i++) { map[i]  = 0; time[i] = 0.0; }
+       
+    for(Int_t i=0; i<80; i++) {map[i] = 0; time[i] = 0.0;}
 	      
     TClonesArray* hits = vzero->Hits();
              
@@ -189,6 +189,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
          
     Int_t nTracks = (Int_t) treeH->GetEntries();
     for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+      for (Int_t i=0; i<80; i++) {time_ref[i] = 999999.0;}   
       vzero->ResetHits();
       treeH->GetEvent(iTrack);
       Int_t nHits = hits->GetEntriesFast();
@@ -198,9 +199,12 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	Int_t cell  = hit->Cell();                                    
 	map[cell] += nPhot;
 	Float_t dt_scintillator = gRandom->Gaus(0,0.7);
-	time[cell] = dt_scintillator + 1e9*hit->Tof();
-	if(time[cell] < timeV0) timeV0 = time[cell];
-      }           // hit   loop
+	Float_t t = dt_scintillator + 1e9*hit->Tof();
+	if (t > 0.0) {
+	   if(t < time_ref[cell]) time_ref[cell] = t;
+	   time[cell] = TMath::Min(t,time_ref[cell]);
+	}
+      }           // hit   loop      
     }             // track loop
 
     loader->UnloadHits();
@@ -216,8 +220,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
         + noise*1e-3;
        map[i] = Int_t( pmResponse * adc_gain[i]);
      }
-     
- 
+      
 // Now transforms 80 cell responses into 64 photomultiplier responses 
 	
    for (Int_t j=0; j<32; j++){
@@ -229,21 +232,26 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	time2[j-16]= time[j];}
 	
    for (Int_t j=0; j<16; j++){
-	adc[16+j] = map [16 + 2*j]+ map [16 + 2*j + 1];
-	time2[16+j] = TMath::Min(time [16 + 2*j], time [16 + 2*j + 1]);}
-	
+	adc[16+j] = map [16+2*j]+ map [16+2*j+1];
+	Float_t min_time = TMath::Min(time [16+2*j],time [16+2*j+1]);
+	time2[16+j] = min_time;
+	if(min_time==0.0) {
+	   time2[16+j] = TMath::Max(time[16+2*j],time[16+2*j+1]);
+	}
+   }
+   	
+
 // Now add digits to the digit Tree 
         
    for (Int_t i=0; i<64; i++) {      
       if(adc[i] > 0) {
-//    printf(" Event, cell, adc, tof = %d %d %d %f\n", 
-//                  outRunLoader->GetEventNumber(),i, map[i], time[i]*100.0);
+//      printf(" Event, cell, adc, tof = %d %d %d %f\n", 
+//                 outRunLoader->GetEventNumber(),i, map[i], time2[i]*10.0);
 //   multiply by 10 to have 100 ps per channel :
       AddDigit(i, adc[i], Int_t(time2[i]*10.0) );
      } 
    }
-
-  
+    
   treeD->Fill();
   outLoader->WriteDigits("OVERWRITE");  
   outLoader->UnloadDigits();     

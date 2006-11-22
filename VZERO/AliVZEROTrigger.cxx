@@ -85,11 +85,11 @@ void AliVZEROTrigger::Trigger()
       Float_t tdc        = digit->Time(); // in 100 of picoseconds
       
       if (PMNumber<=31 && adc>fAdcThresHold) {
-	if (tdc>(30.0-TimeHalfWidth) && tdc<(30.0+TimeHalfWidth)) nRightDig++;
+	if (tdc>(29.0-TimeHalfWidth) && tdc<(29.0+TimeHalfWidth)) nRightDig++;
 	if (tdc<firstTimeRight) firstTimeRight = tdc;
       }      
       if (PMNumber>=32 && adc>fAdcThresHold) {
- 	if (tdc>(114.0-TimeHalfWidth) && tdc<(114.0+TimeHalfWidth)) nLeftDig++;
+ 	if (tdc>(112.0-TimeHalfWidth) && tdc<(112.0+TimeHalfWidth)) nLeftDig++;
 	if (tdc<firstTimeLeft) firstTimeLeft = tdc;
       }	
       
