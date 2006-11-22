@@ -1,0 +1,61 @@
+# -*- mode: makefile -*-
+# Makefile to build AliRoot for Linux on alpha
+
+# System dependent commands
+
+XARGS = xargs -r
+
+# The compilers
+CXX           = g++ 
+F77	      = g77
+CC	      = gcc
+CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
+CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
+
+# Global optimisation
+OPT           = -O -g -mieee -mno-soft-float
+NOOPT         = -g -mieee -mno-soft-float
+
+CXXOPT        = $(OPT)
+CXXNOOPT      = $(NOOPT)
+COPT	      = $(OPT)
+FOPT	      = $(OPT)
+
+# CERNLIB defines
+CLIBDEFS      = -DCERNLIB_UNIX -DCERNLIB_DECS -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = $(CLIBDEFS)
+
+# Compiler flags
+
+CXXFLAGS       = $(OPT) -Wall -fPIC -pipe
+CXXFLAGSNO     = $(NOOPT) -Wall -fPIC -pipe
+CFLAGS	       = $(OPT) -Wall -fPIC -pipe -ansi
+FFLAGS         = $(CLIBFOPT) $(FOPT) -Wall -fPIC -pipe -fno-second-underscore
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS   = $(FFLAGS)
+
+# rootcint flags
+CINTFLAGS     = 
+
+LD            = g++
+LDFLAGS       = $(OPT) 
+
+SHLD	      = $(LD)
+SOFLAGS       = $(OPT) -Wall -fPIC -pipe -shared -Wl
+SHLIB         = -lg2c
+SOEXT 	      = so
+
+ALLD	      = ar
+ALFLAGS       = cr
+ALLIB         = 
+AEXT 	      = a
+
+#System libraries
+SYSLIBS      := -ldl -lg2c -lcrypt -L/usr/X11R6/lib -lX11
+
+
+
+
+
