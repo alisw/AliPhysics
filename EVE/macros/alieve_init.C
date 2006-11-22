@@ -25,7 +25,13 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
     while((filename = gSystem->GetDirEntry(dirhandle)) != 0) {
       if(re.Match(filename)) {
 	printf("Adding macro '%s'\n", filename);
-	f->Add(new Reve::RMacro(Form("%s/%s", macdir.Data(), filename)));
+	//PH The line below is replaced waiting for a fix in Root
+	//PH which permits to use variable siza arguments in CINT
+	//PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+	// f->Add(new Reve::RMacro(Form("%s/%s", macdir.Data(), filename)));
+	char fullName[1000];
+	sprintf(fullName,"%s/%s", macdir.Data(), filename);
+	f->Add(new Reve::RMacro(fullName));
       }
     }
   }
