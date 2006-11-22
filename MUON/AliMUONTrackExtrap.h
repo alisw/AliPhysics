@@ -44,8 +44,8 @@ class AliMUONTrackExtrap : public TObject
   AliMUONTrackExtrap(const AliMUONTrackExtrap& trackExtrap);
   AliMUONTrackExtrap& operator=(const AliMUONTrackExtrap& trackExtrap);
 
-  static void SetGeant3ParametersFromTrackParam(AliMUONTrackParam* trackParam, Double_t *vGeant3, Double_t forwardBackward);
-  static void SetTrackParamFromGeant3Parameters(Double_t *vGeant3, Double_t Charge, AliMUONTrackParam* trackParam);
+  static void ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t *v3, Double_t forwardBackward);
+  static void RecoverTrackParam(Double_t *v3, Double_t Charge, AliMUONTrackParam* trackParam);
   
   static void BransonCorrection(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
   static Double_t TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta);
