@@ -104,10 +104,10 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKe
     fOK2(mod.fOK2),
     fOB(mod.fOB),
     fOB1(mod.fOB1),
-    fOB2(mod.fOB2),
-    fOK3X3(mod.fOK3X3)
+    fOB2(mod.fOB2)
 {
   //copy ctor
+  for (Int_t i=0; i<3; i++) fOK3X3[i] = mod.fOK3X3[i];
 }
 
 //________________________________________________________________
