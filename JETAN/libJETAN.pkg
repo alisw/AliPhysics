@@ -1,19 +1,16 @@
 #-*-Mode: Makefile-*-
 
-SRCS = 	AliJet.cxx AliJetHeader.cxx AliPxconeJetHeader.cxx \
-	AliJetFinder.cxx AliPxconeJetFinder.cxx AliJetReaderHeader.cxx \
+SRCS = 	AliJet.cxx AliJetHeader.cxx \
+	AliJetFinder.cxx AliJetReaderHeader.cxx \
 	AliJetESDReaderHeader.cxx AliJetReader.cxx AliJetESDReader.cxx \
-	AliJetESDmcReader.cxx AliJetControlPlots.cxx AliUA1JetHeader.cxx \
-	AliUA1JetFinder.cxx AliLeading.cxx \
-	AliJetKineReader.cxx AliJetKineReaderHeader.cxx \
+	AliJetControlPlots.cxx AliUA1JetHeader.cxx \
+	AliLeading.cxx \
 	AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx \
 	AliJetAnalysis.cxx AliJetDistributions.cxx \
-	AliUA1JetFinderV1.cxx AliUA1JetHeaderV1.cxx 
+	AliUA1JetFinderV1.cxx AliUA1JetHeaderV1.cxx
 
-FSRCS = pxcone.F ua1_jet_finder.F
 
 HDRS:= $(SRCS:.cxx=.h)
 
-DHDR= JetAnalysisLinkDef.h
+DHDR= JETANLinkDef.h
 
-EINCLUDE:= STEER PYTHIA6
