@@ -15,7 +15,7 @@ class AliJetMCReader : public AliJetESDReader
  public: 
     AliJetMCReader();
     virtual ~AliJetMCReader();
-    void FillMomentumArray(Int_t event);
+    Bool_t FillMomentumArray(Int_t event);
     
  protected:
     Float_t fPdgC;   // Pdg code

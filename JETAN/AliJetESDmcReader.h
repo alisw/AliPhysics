@@ -10,6 +10,8 @@
 
 #include "AliJetReader.h"
 class AliJetESDReaderHeader;
+class AliHeader;
+
 
 
 class AliJetESDmcReader : public AliJetReader
@@ -23,12 +25,13 @@ class AliJetESDmcReader : public AliJetReader
   Int_t   GetTrackSign() const {return fSign;}  // returns sign of the track
 
   // Setters
-  void FillMomentumArray(Int_t event); 
-  void OpenInputFiles();
+  Bool_t FillMomentumArray(Int_t event); 
+  void   OpenInputFiles();
    
  protected:
-  Float_t fMass;    // Particle mass
-  Int_t   fSign;    // Particle sign
+  AliHeader* fAliHeader; //! Event header
+  Float_t    fMass;      //! Particle mass
+  Int_t      fSign;      //! Particle sign
 
   ClassDef(AliJetESDmcReader,1)
 };

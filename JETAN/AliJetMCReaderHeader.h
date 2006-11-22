@@ -16,21 +16,7 @@ class AliJetMCReaderHeader : public AliJetReaderHeader
  public:
   AliJetMCReaderHeader();
   virtual ~AliJetMCReaderHeader();
-  
-  // Getters
-  Double_t GetPtCut() const {return fPtCut;}
-  Float_t GetDCA() const {return fDCA;} // not working so far..(always 0)
-  
-  // Setters
-  virtual void SetPtCut(Double_t par=2.0) {fPtCut = par;}
-  virtual void SetDCA(Float_t dca = 3.0) {fDCA = dca;} // this is for the track!!! (recommended by P.H.)
-  
  protected:
-  //parameters set by user
-  Double_t fPtCut;
-  Float_t fDCA;
-
-
   ClassDef(AliJetMCReaderHeader,1);
 };
  

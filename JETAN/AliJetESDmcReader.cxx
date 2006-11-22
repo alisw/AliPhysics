@@ -29,12 +29,14 @@
 #include "AliJetESDReaderHeader.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
+#include "AliHeader.h"
 
 ClassImp(AliJetESDmcReader)
 
 AliJetESDmcReader::AliJetESDmcReader():
-  fMass(0),
-  fSign(0)
+    fAliHeader(0),
+    fMass(0),
+    fSign(0)
 {
   // Constructor    
   fReaderHeader = 0x0;
@@ -97,7 +99,7 @@ void AliJetESDmcReader::OpenInputFiles()
 
 //____________________________________________________________________________
 
-void AliJetESDmcReader::FillMomentumArray(Int_t event)
+Bool_t AliJetESDmcReader::FillMomentumArray(Int_t event)
 {
   // Fill momentum array
 
@@ -166,7 +168,8 @@ void AliJetESDmcReader::FillMomentumArray(Int_t event)
   // set the signal flags
   fSignalFlag.Set(goodTrack,sflag);
   fCutFlag.Set(goodTrack,cflag);
-
+  return kTRUE;
+  
 }
 
 

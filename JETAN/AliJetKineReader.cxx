@@ -30,15 +30,19 @@
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 // From AliRoot ...
+#include "AliJet.h"
 #include "AliJetKineReaderHeader.h"
 #include "AliJetKineReader.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
+#include "AliHeader.h"
+#include "AliGenPythiaEventHeader.h"
 
 ClassImp(AliJetKineReader)
 
 AliJetKineReader::AliJetKineReader():
   fRunLoader(0x0),
+  fAliHeader(0x0),
   fMass(0),
   fPdgC(0)
 {
@@ -52,6 +56,7 @@ AliJetKineReader::~AliJetKineReader()
 {
   // Destructor
   delete fReaderHeader;
+  delete fAliHeader;
 }
 
 //____________________________________________________________________________
@@ -81,7 +86,7 @@ void AliJetKineReader::OpenInputFiles()
 
 //____________________________________________________________________________
 
-void AliJetKineReader::FillMomentumArray(Int_t event)
+Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
 {
   // Fill momentum array for event
  
@@ -175,7 +180,7 @@ void AliJetKineReader::FillMomentumArray(Int_t event)
   fSignalFlag.Set(goodTrack,sflag);
   fCutFlag.Set(goodTrack,cflag);
   printf("\nIn event %d, number of good tracks %d \n", event, goodTrack);
-
+  return kTRUE;
 }
 
 
@@ -235,3 +240,25 @@ Bool_t AliJetKineReader::Efficiency(Float_t p, Float_t /*eta*/, Float_t phi)
 
 }
 
+Bool_t AliJetKineReader::GetGenJets(AliJet* genJets)
+{
+    // Get generated jets from mc header
+    AliHeader* alih = GetAliHeader(); 
+    if (alih == 0) return kFALSE;
+    AliGenEventHeader * genh = alih->GenEventHeader();
+    if (genh == 0) return kFALSE;
+    Int_t nj =((AliGenPythiaEventHeader*)genh)->NTriggerJets(); 
+    Int_t* m = new Int_t[nj];
+    Int_t* k = new Int_t[nj];
+    for (Int_t i=0; i< nj; i++) {
+	Float_t p[4];
+	((AliGenPythiaEventHeader*)genh)->TriggerJet(i,p);
+	genJets->AddJet(p[0],p[1],p[2],p[3]);
+	m[i]=1;
+	k[i]=i;
+    }
+    genJets->SetNinput(nj);
+    genJets->SetMultiplicities(m);
+    genJets->SetInJet(k);
+    return kTRUE;
+}

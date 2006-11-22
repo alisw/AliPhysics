@@ -28,7 +28,7 @@ AliJetMCReaderHeader::AliJetMCReaderHeader():
  AliJetReaderHeader("AliJetMCReaderHeader") 
 {
   // Constructor
-  SetPtCut();
+  fDCA = 3.;
 }
 
 //____________________________________________________________________________

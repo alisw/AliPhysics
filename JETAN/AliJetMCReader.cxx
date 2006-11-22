@@ -52,7 +52,7 @@ AliJetMCReader::~AliJetMCReader()
 //____________________________________________________________________________
 
 
-void AliJetMCReader::FillMomentumArray(Int_t event)
+Bool_t AliJetMCReader::FillMomentumArray(Int_t event)
 {
 // Fill momentum array
   TClonesArray &arrayMC = *fArrayMC;
@@ -92,6 +92,7 @@ void AliJetMCReader::FillMomentumArray(Int_t event)
     goodTrack++;
   }
   printf("\nNumber of good tracks %d \n", goodTrack);
+  return kTRUE;
 }
 
 
