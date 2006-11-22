@@ -11,11 +11,11 @@
 #include <TObject.h>
 #include <TChain.h>
 #include <TArrayI.h>
-
+class TTree;
 class TClonesArray;
 class AliJetReaderHeader;
 class AliESD;
-class AliHeader;
+class AliJet;
 
 class AliJetReader : public TObject 
 {
@@ -27,17 +27,19 @@ class AliJetReader : public TObject
   virtual TClonesArray *GetMomentumArray() {return fMomentumArray;}
   virtual Int_t GetChainEntries() {return fChain->GetEntries();} 
   virtual AliJetReaderHeader* GetReaderHeader() { return fReaderHeader;}
-  virtual AliHeader* GetAliHeader() {return fAliHeader;}
   virtual Int_t GetSignalFlag(Int_t i) const {return fSignalFlag[i];}
   virtual Int_t GetCutFlag(Int_t i) const {return fCutFlag[i];}
-
+  
   // Setters
-  virtual void FillMomentumArray(Int_t) {}
-  virtual void SetReaderHeader(AliJetReaderHeader* header) 
+  virtual Bool_t FillMomentumArray(Int_t) {return kTRUE;}
+  virtual void   SetReaderHeader(AliJetReaderHeader* header) 
     {fReaderHeader = header;}
 	  
-  // others
-  virtual void OpenInputFiles() {}
+  // Others
+  virtual void   OpenInputFiles() {}
+  virtual void   ConnectTree(TTree* /*tree*/) {}
+  virtual Bool_t GetGenJets(AliJet* /*genJets*/) {return kFALSE;}
+  
   void ClearArray();
  
  protected:
@@ -50,7 +52,6 @@ class AliJetReader : public TObject
   TClonesArray            *fArrayMC;       // array of mc particles
   AliESD                  *fESD;           // pointer to esd
   AliJetReaderHeader      *fReaderHeader;  // pointer to header
-  AliHeader               *fAliHeader;     // pointer to event header
   TArrayI fSignalFlag;   // to flag if a particle comes from pythia or 
                          // from the underlying event
   TArrayI fCutFlag;      // to flag if a particle passed the pt cut or not

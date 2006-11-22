@@ -38,7 +38,6 @@ AliJetReader::AliJetReader():
   fArrayMC(0),
   fESD(0),
   fReaderHeader(0),
-  fAliHeader(0),
   fSignalFlag(0),
   fCutFlag(0)
     
@@ -57,7 +56,6 @@ AliJetReader::~AliJetReader()
   delete fChain;
   delete fChainMC;
   delete fESD;
-  delete fAliHeader;
   if (fMomentumArray) {
       fMomentumArray->Delete();
       delete fMomentumArray;

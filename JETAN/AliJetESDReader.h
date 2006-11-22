@@ -25,9 +25,10 @@ class AliJetESDReader : public AliJetReader
   Int_t   GetTrackSign() const {return fSign;}  // returns sign of the track
 
   // Setters
-  void FillMomentumArray(Int_t event); 
-  void OpenInputFiles();
-   
+  Bool_t FillMomentumArray(Int_t event); 
+  void   OpenInputFiles();
+  void   ConnectTree(TTree* tree);
+  
  protected:
   Float_t fMass;    // Particle mass
   Int_t   fSign;    // Particle sign

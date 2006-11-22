@@ -7,12 +7,15 @@
 //---------------------------------------------------------------------
 // Jet finder base class
 // manages the search for jets 
-// Author: jgcn@mda.cinvestav.mx
+// Authors: jgcn@mda.cinvestav.mx
+//          andreas.morsch@cern.ch
 //---------------------------------------------------------------------
 
 #include <TObject.h>
+#include <AliJetHeader.h>
 
 class TFile;
+class TTree;
 class AliJet;
 class AliJetReader;
 class AliJetControlPlots;
@@ -21,7 +24,6 @@ class AliLeading;
 class AliJetFinder : public TObject 
 {
  public:
-
   AliJetFinder();
   virtual ~AliJetFinder();
 
@@ -33,18 +35,23 @@ class AliJetFinder : public TObject
   virtual void SetPlotMode(Bool_t b);
   virtual void SetOutputFile(const char *name="jets.root");
   virtual void SetJetReader(AliJetReader* r) {fReader=r;}
+  virtual void SetJetHeader(AliJetHeader* h) {fHeader=h;}
 
   // others
-  virtual void PrintJets();
-  virtual void Run();
-  virtual void WriteJetsToFile(Int_t i);
-  virtual void WriteRHeaderToFile();
+  virtual void   PrintJets();
+  virtual void   Run();
+  virtual void   WriteJetsToFile(Int_t i);
+  virtual void   WriteRHeaderToFile();  
   // the following have to be implemented for each specific finder
-  virtual void Init() { }
+  virtual void Init() {}
   virtual void Reset() { }
   virtual void FindJets() { }
   virtual void WriteJHeaderToFile() { }
-  virtual void GetGenJets();
+  // some methods to allow steering from the outside
+  virtual Bool_t ProcessEvent(Long64_t entry);
+  virtual void   FinishRun();
+  virtual void   ConnectTree(TTree* tree);
+  virtual void   WriteHeaders();
 
  protected:
   AliJetFinder(const AliJetFinder& rJetFinder);
@@ -53,12 +60,12 @@ class AliJetFinder : public TObject
   Bool_t fPlotMode;              // do you want control plots?
   AliJet* fJets;                 // pointer to jet class
   AliJet* fGenJets;              // pointer to generated jets
-  AliLeading* fLeading;          // pointer to leading particle data 
+  AliLeading*   fLeading;        // pointer to leading particle data 
   AliJetReader* fReader;         // pointer to reader
+  AliJetHeader* fHeader;         // pointer to header
   AliJetControlPlots* fPlots;    // pointer to control plots
   TFile* fOut;                   // output file
-
-  ClassDef(AliJetFinder,1)
+  ClassDef(AliJetFinder,2)
 };
 
 #endif

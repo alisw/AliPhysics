@@ -219,7 +219,6 @@ void AliJet::SetInJet(Int_t* j)
   // a jet, if n,positive, it was assiged to jet n
   // if n, negative, it is within cone of jet n, but
   // it did not passed the user cuts. filled in by AliJetFinder
-
   if (fNInput>0) fInJet.Set(fNInput, j);
 }
 

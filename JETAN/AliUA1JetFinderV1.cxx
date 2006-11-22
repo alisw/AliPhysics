@@ -70,6 +70,8 @@ void AliUA1JetFinderV1::FindJets()
   //5) fill AliJet list
 
   // transform input to pt,eta,phi plus lego
+    
+  AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   TClonesArray *lvArray = fReader->GetMomentumArray();
   Int_t nIn =  lvArray->GetEntries();
   if (nIn == 0) return;
@@ -113,7 +115,7 @@ void AliUA1JetFinderV1::FindJets()
   Int_t* multJet  = new Int_t[30];
   Int_t nJets; // to hold number of jets found by algorithm
   Int_t nj;    // number of jets accepted
-  Float_t prec  = fHeader->GetPrecBg();
+  Float_t prec  = header->GetPrecBg();
   Float_t bgprec = 1;
   while(bgprec > prec){
      //reset jet arrays in memory
@@ -131,19 +133,19 @@ void AliUA1JetFinderV1::FindJets()
      //run cone algorithm finder
      RunAlgoritm(etbgTotal,dEtTotal,nJets,etJet,etaJet,phiJet,etallJet,ncellsJet);
      //run background subtraction
-     if(nJets > fHeader->GetNAcceptJets()) // limited number of accepted jets per event
-       nj = fHeader->GetNAcceptJets();
+     if(nJets > header->GetNAcceptJets()) // limited number of accepted jets per event
+       nj = header->GetNAcceptJets();
      else
        nj = nJets;
      //subtract background
      Float_t etbgTotalN = 0.0; //new background
-     if(fHeader->GetBackgMode() == 1) // standar
+     if(header->GetBackgMode() == 1) // standar
         SubtractBackg(nIn,nj,etbgTotalN,ptT,etaT,phiT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
-     if(fHeader->GetBackgMode() == 2) //cone
+     if(header->GetBackgMode() == 2) //cone
         SubtractBackgCone(nIn,nj,etbgTotalN,ptT,etaT,phiT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
-     if(fHeader->GetBackgMode() == 3) //ratio
+     if(header->GetBackgMode() == 3) //ratio
         SubtractBackgRatio(nIn,nj,etbgTotalN,ptT,etaT,phiT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
-     if(fHeader->GetBackgMode() == 4) //statistic
+     if(header->GetBackgMode() == 4) //statistic
         SubtractBackgStat(nIn,nj,etbgTotalN,ptT,etaT,phiT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
      //calc precision
      if(etbgTotalN != 0.0)
@@ -157,9 +159,9 @@ void AliUA1JetFinderV1::FindJets()
   Int_t* idxjets = new Int_t[nj];
   Int_t nselectj = 0;
   for(Int_t kj=0; kj<nj; kj++){
-     if ((etaJet[kj] > (fHeader->GetJetEtaMax())) ||
-          (etaJet[kj] < (fHeader->GetJetEtaMin())) ||
-          (etJet[kj] < fHeader->GetMinJetEt())) continue; // acceptance eta range and etmin
+     if ((etaJet[kj] > (header->GetJetEtaMax())) ||
+          (etaJet[kj] < (header->GetJetEtaMin())) ||
+          (etJet[kj] < header->GetMinJetEt())) continue; // acceptance eta range and etmin
       Float_t px, py,pz,en; // convert to 4-vector
       px = etJet[kj] * TMath::Cos(phiJet[kj]);
       py = etJet[kj] * TMath::Sin(phiJet[kj]);
@@ -198,7 +200,7 @@ void AliUA1JetFinderV1::FindJets()
   fJets->SetEtaIn(etaT);
   fJets->SetPhiIn(phiT);
   fJets->SetPtIn(ptT);
-  fJets->SetEtAvg(etbgTotal/(4*(fHeader->GetLegoEtaMax())*TMath::Pi()));
+  fJets->SetEtAvg(etbgTotal/(4*(header->GetLegoEtaMax())*TMath::Pi()));
 
 
   //delete
@@ -231,6 +233,7 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
 
    //dump lego
   // check enough space! *to be done*
+  AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   Float_t etCell[60000];   //! Cell Energy
   Float_t etaCell[60000];  //! Cell eta
   Float_t phiCell[60000];  //! Cell phi
@@ -240,8 +243,8 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
   TAxis* xaxis = fLego->GetXaxis();
   TAxis* yaxis = fLego->GetYaxis();
   Float_t e = 0.0;
-  for (Int_t i = 1; i <= fHeader->GetLegoNbinEta(); i++) {
-      for (Int_t j = 1; j <= fHeader->GetLegoNbinPhi(); j++) {
+  for (Int_t i = 1; i <= header->GetLegoNbinEta(); i++) {
+      for (Int_t j = 1; j <= header->GetLegoNbinPhi(); j++) {
 	       e = fLego->GetBinContent(i,j);
 	       if (e < 0.0) continue; // don't include this cells
 	       Float_t eta  = xaxis->GetBinCenter(i);
@@ -255,11 +258,11 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
   }
 
   // Parameters from header
-  Float_t minmove = fHeader->GetMinMove();
-  Float_t maxmove = fHeader->GetMaxMove();
-  Float_t rc      = fHeader->GetRadius();
-  Float_t etseed  = fHeader->GetEtSeed();
-  //Float_t etmin   = fHeader->GetMinJetEt();
+  Float_t minmove = header->GetMinMove();
+  Float_t maxmove = header->GetMaxMove();
+  Float_t rc      = header->GetRadius();
+  Float_t etseed  = header->GetEtSeed();
+  //Float_t etmin   = header->GetMinJetEt();
 
 
 
@@ -357,7 +360,7 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
         //flag cells in Rc, estimate total energy in cone
         Float_t etCone = 0.0;
         Int_t   nCellIn = 0;
-        rc = fHeader->GetRadius();
+        rc = header->GetRadius();
         for(Int_t ncell =0; ncell < nCell; ncell++){
             if(flagCell[ncell] != 0) continue; // cell used before
            //calculate dr
@@ -428,7 +431,8 @@ void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
   //background subtraction using cone method but without correction in dE/deta distribution
 
   //calculate energy inside and outside cones
-  Float_t rc= fHeader->GetRadius();
+  AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
+  Float_t rc= header->GetRadius();
   Float_t etIn[30];
   Float_t etOut = 0;
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
@@ -455,17 +459,17 @@ void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
 
   //estimate jets and background areas
   Float_t areaJet[30];
-  Float_t areaOut = 4*(fHeader->GetLegoEtaMax())*TMath::Pi();
+  Float_t areaOut = 4*(header->GetLegoEtaMax())*TMath::Pi();
   for(Int_t k=0; k<nJ; k++){
       Float_t detamax = etaJet[k] + rc;
       Float_t detamin = etaJet[k] - rc;
       Float_t accmax = 0.0; Float_t accmin = 0.0;
-      if(detamax > fHeader->GetLegoEtaMax()){ // sector outside etamax
-         Float_t h = fHeader->GetLegoEtaMax() - etaJet[k];
+      if(detamax > header->GetLegoEtaMax()){ // sector outside etamax
+         Float_t h = header->GetLegoEtaMax() - etaJet[k];
          accmax = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
       }
-      if(detamin < fHeader->GetLegoEtaMin()){ // sector outside etamin
-         Float_t h = fHeader->GetLegoEtaMax() + etaJet[k];
+      if(detamin < header->GetLegoEtaMin()){ // sector outside etamin
+         Float_t h = header->GetLegoEtaMax() + etaJet[k];
          accmin = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
       }
       areaJet[k] = rc*rc*TMath::Pi() - accmax - accmin;
@@ -478,7 +482,7 @@ void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
   }
 
   // estimate new total background
-  Float_t areaT = 4*(fHeader->GetLegoEtaMax())*TMath::Pi();
+  Float_t areaT = 4*(header->GetLegoEtaMax())*TMath::Pi();
   etbgTotalN = etOut*areaT/areaOut;
 
 
@@ -493,11 +497,11 @@ void AliUA1JetFinderV1::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotal
 {
 
   //background subtraction using statistical method
-
-  Float_t etbgStat = fHeader->GetBackgStat(); // pre-calculated background
+  AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
+  Float_t etbgStat = header->GetBackgStat(); // pre-calculated background
 
   //calculate energy inside
-  Float_t rc= fHeader->GetRadius();
+  Float_t rc= header->GetRadius();
   Float_t etIn[30];
 
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
@@ -522,17 +526,17 @@ void AliUA1JetFinderV1::SubtractBackgStat(Int_t& nIn, Int_t&nJ,Float_t&etbgTotal
 
   //calc jets areas
   Float_t areaJet[30];
-  Float_t areaOut = 4*(fHeader->GetLegoEtaMax())*TMath::Pi();
+  Float_t areaOut = 4*(header->GetLegoEtaMax())*TMath::Pi();
   for(Int_t k=0; k<nJ; k++){
       Float_t detamax = etaJet[k] + rc;
       Float_t detamin = etaJet[k] - rc;
       Float_t accmax = 0.0; Float_t accmin = 0.0;
-      if(detamax > fHeader->GetLegoEtaMax()){ // sector outside etamax
-         Float_t h = fHeader->GetLegoEtaMax() - etaJet[k];
+      if(detamax > header->GetLegoEtaMax()){ // sector outside etamax
+         Float_t h = header->GetLegoEtaMax() - etaJet[k];
          accmax = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
       }
-      if(detamin < fHeader->GetLegoEtaMin()){ // sector outside etamin
-         Float_t h = fHeader->GetLegoEtaMax() + etaJet[k];
+      if(detamin < header->GetLegoEtaMin()){ // sector outside etamin
+         Float_t h = header->GetLegoEtaMax() + etaJet[k];
          accmin = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
       }
       areaJet[k] = rc*rc*TMath::Pi() - accmax - accmin;
@@ -556,11 +560,11 @@ void AliUA1JetFinderV1::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTota
                       Int_t* multJet, Int_t* injet)
 {
    // Cone background subtraction method taking into acount dEt/deta distribution
-
+    AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
    //general
-   Float_t rc= fHeader->GetRadius();
-   Float_t etamax = fHeader->GetLegoEtaMax();
-   Float_t etamin = fHeader->GetLegoEtaMin();
+   Float_t rc= header->GetRadius();
+   Float_t etamax = header->GetLegoEtaMax();
+   Float_t etamin = header->GetLegoEtaMin();
    Int_t ndiv = 100;
 
    // jet energy and area arrays
@@ -649,7 +653,7 @@ void AliUA1JetFinderV1::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTota
    // calc background total
    Double_t etOut = hEtBackg->Integral();
    Double_t areaOut = hAreaBackg->Integral();
-   Float_t areaT = 4*(fHeader->GetLegoEtaMax())*TMath::Pi();
+   Float_t areaT = 4*(header->GetLegoEtaMax())*TMath::Pi();
    etbgTotalN = etOut*areaT/areaOut;
 
    //delete
@@ -671,15 +675,15 @@ void AliUA1JetFinderV1::SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& etbgTot
                        Int_t* multJet, Int_t* injet)
 {
    // Ratio background subtraction method taking into acount dEt/deta distribution
-
+    AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
    //factor F calc before
-    Float_t bgRatioCut = fHeader->GetBackgCutRatio();
+    Float_t bgRatioCut = header->GetBackgCutRatio();
 
 
    //general
-   Float_t rc= fHeader->GetRadius();
-   Float_t etamax = fHeader->GetLegoEtaMax();
-   Float_t etamin = fHeader->GetLegoEtaMin();
+   Float_t rc= header->GetRadius();
+   Float_t etamax = header->GetLegoEtaMax();
+   Float_t etamin = header->GetLegoEtaMin();
    Int_t ndiv = 100;
 
    // jet energy and area arrays
@@ -768,7 +772,7 @@ void AliUA1JetFinderV1::SubtractBackgRatio(Int_t& nIn, Int_t&nJ,Float_t& etbgTot
    // calc background total
    Double_t etOut = hEtBackg->Integral();
    Double_t areaOut = hAreaBackg->Integral();
-   Float_t areaT = 4*(fHeader->GetLegoEtaMax())*TMath::Pi();
+   Float_t areaT = 4*(header->GetLegoEtaMax())*TMath::Pi();
    etbgTotalN = etOut*areaT/areaOut;
 
    //delete
@@ -794,8 +798,9 @@ void AliUA1JetFinderV1::Reset()
 
 void AliUA1JetFinderV1::WriteJHeaderToFile()
 {
+  AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   fOut->cd();
-  fHeader->Write();
+  header->Write();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -803,12 +808,12 @@ void AliUA1JetFinderV1::WriteJHeaderToFile()
 void AliUA1JetFinderV1::Init()
 {
   // initializes some variables
-
+  AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
    // book lego
   fLego = new
     TH2F("legoH","eta-phi",
-	 fHeader->GetLegoNbinEta(), fHeader->GetLegoEtaMin(),
-	 fHeader->GetLegoEtaMax(),  fHeader->GetLegoNbinPhi(),
-	 fHeader->GetLegoPhiMin(), fHeader->GetLegoPhiMax());
+	 header->GetLegoNbinEta(), header->GetLegoEtaMin(),
+	 header->GetLegoEtaMax(),  header->GetLegoNbinPhi(),
+	 header->GetLegoPhiMin(),  header->GetLegoPhiMax());
 
 }

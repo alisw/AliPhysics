@@ -16,41 +16,35 @@
 //---------------------------------------------------------------------
 // Jet finder base class
 // manages the search for jets 
-// Author: jgcn@mda.cinvestav.mx
+// Authors: jgcn@mda.cinvestav.mx
+//          andreas.morsch@cern.ch
 //---------------------------------------------------------------------
 
 #include <Riostream.h>
 #include <TFile.h>
-#include "AliGenPythiaEventHeader.h"
 #include "AliJetFinder.h"
 #include "AliJet.h"
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
 #include "AliJetControlPlots.h"
 #include "AliLeading.h"
-#include "AliHeader.h"
 
 ClassImp(AliJetFinder)
 
-
 AliJetFinder::AliJetFinder():
-  fPlotMode(kFALSE),
-  fJets(0),
-  fGenJets(0),
-  fLeading(0),
-  fReader(0x0),
-  fPlots(0x0),
-  fOut(0x0)
-
+    fPlotMode(kFALSE),
+    fJets(0),
+    fGenJets(0),
+    fLeading(0),
+    fReader(0x0),
+    fPlots(0x0),
+    fOut(0x0)
+    
 {
   // Constructor
-  //fOut     = 0x0;
   fJets    = new AliJet();
   fGenJets = new AliJet();
   fLeading = new AliLeading();
-  //fReader  = 0x0;
-  //fPlots   = 0x0;
-  //SetPlotMode(kFALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -130,44 +124,16 @@ void AliJetFinder::WriteRHeaderToFile()
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliJetFinder::GetGenJets()
-{
-  // Get the generated jet information from mc header
-  AliHeader* alih = fReader->GetAliHeader(); 
-  if (alih == 0) return;
-  AliGenEventHeader * genh = alih->GenEventHeader();
-  if (genh == 0) return;
-  Int_t nj =((AliGenPythiaEventHeader*)genh)->NTriggerJets(); 
-  Int_t* m = new Int_t[nj];
-  Int_t* k = new Int_t[nj];
-  for (Int_t i=0; i< nj; i++) {
-    Float_t p[4];
-    ((AliGenPythiaEventHeader*)genh)->TriggerJet(i,p);
-    fGenJets->AddJet(p[0],p[1],p[2],p[3]);
-    m[i]=1;
-    k[i]=i;
-  }
-  fGenJets->SetNinput(nj);
-  fGenJets->SetMultiplicities(m);
-  fGenJets->SetInJet(k);
-}
-
-////////////////////////////////////////////////////////////////////////
 
 void AliJetFinder::Run()
 {
-  // do some initialization
+  // Do some initialization
   Init();
-
   // connect files
   fReader->OpenInputFiles();
 
   // write headers
-  if (fOut) {
-      fOut->cd();
-      WriteRHeaderToFile();
-      WriteJHeaderToFile();
-  }
+  WriteHeaders();
   // loop over events
   Int_t nFirst,nLast;
   nFirst = fReader->GetReaderHeader()->GetFirstEvent();
@@ -176,7 +142,7 @@ void AliJetFinder::Run()
   for (Int_t i=nFirst;i<nLast;i++) {
       fReader->FillMomentumArray(i);
       fLeading->FindLeading(fReader);
-      GetGenJets();
+      fReader->GetGenJets(fGenJets);
       FindJets();
       if (fOut) WriteJetsToFile(i);
       if (fPlots) fPlots->FillHistos(fJets);
@@ -195,3 +161,58 @@ void AliJetFinder::Run()
       fOut->Close();
   }
 }
+
+
+//
+// The following methods have been added to allow for event steering from the outside
+//
+
+void AliJetFinder::ConnectTree(TTree* tree)
+{
+    // Connect the input file
+    fReader->ConnectTree(tree);
+}
+
+void AliJetFinder::WriteHeaders()
+{
+    // Write the Headers
+    if (fOut) {
+	fOut->cd();
+	WriteRHeaderToFile();
+	WriteJHeaderToFile();
+    }
+}
+
+
+Bool_t AliJetFinder::ProcessEvent(Long64_t entry)
+{
+//
+// Process one event
+//
+    printf("<<<<< Processing Event %5d >>>>> \n", (Int_t) entry);
+    Bool_t ok = fReader->FillMomentumArray(entry);
+    if (!ok) return kFALSE;
+    fLeading->FindLeading(fReader);
+    FindJets();
+    if (fOut)   WriteJetsToFile(entry);
+    if (fPlots) fPlots->FillHistos(fJets);
+    fLeading->Reset();
+    fGenJets->ClearJets();
+    Reset();  
+    return kTRUE;
+}
+
+void AliJetFinder::FinishRun()
+{
+    // Finish a run
+  if (fPlots) {
+      fPlots->Normalize();
+      fPlots->PlotHistos();
+  }
+  if (fOut) {
+      fOut->cd();
+      fPlots->Write();
+      fOut->Close();
+  }   
+}
+

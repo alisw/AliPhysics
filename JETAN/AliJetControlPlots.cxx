@@ -244,7 +244,7 @@ void AliJetControlPlots::SetProperties(TH1* h,const char* x, const char* y) cons
   h->SetMarkerColor(2);
   h->SetXTitle(x);
   h->SetYTitle(y);
-  h->Sumw2();
+  // h->Sumw2();
 }
 
 
