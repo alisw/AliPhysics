@@ -29,7 +29,13 @@ void clusters_from_label(Int_t label=0)
   clusters->SetMarkerStyle(2);
   clusters->SetMarkerSize(0.5);
   clusters->SetMarkerColor(4);
-  clusters->SetName(Form("Clusters lab=%d", label));
+  //PH The line below is replaced waiting for a fix in Root
+  //PH which permits to use variable siza arguments in CINT
+  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+  //PH  clusters->SetName(Form("Clusters lab=%d", label));
+  char form[1000];
+  sprintf(form,"Clusters lab=%d", label);
+  clusters->SetName(form);
 
   using namespace Reve;
   gReve->AddRenderElement(clusters);

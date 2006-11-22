@@ -14,7 +14,13 @@ esd_V0_points()
     points->SetPointId(av);
   }
 
-  points->SetTitle(Form("N=%d", points->Size()));
+  //PH The line below is replaced waiting for a fix in Root
+  //PH which permits to use variable siza arguments in CINT
+  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+  //PH  points->SetTitle(Form("N=%d", points->Size()));
+  char form[1000];
+  sprintf(form,"N=%d", points->Size());
+  points->SetTitle(form);
   points->SetMarkerStyle(4);
   points->SetMarkerSize(1);
   points->SetMarkerColor((Color_t)30);

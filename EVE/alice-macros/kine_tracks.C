@@ -29,11 +29,19 @@ Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100)
 
     ++count;
     Reve::Track* track = new Reve::Track(p, i, rnrStyle);
-    track->SetName(Form("%s [%d]", p->GetName(), i));
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    //PH    track->SetName(Form("%s [%d]", p->GetName(), i));
+    char form[1000];
+    sprintf(form,"%s [%d]", p->GetName(), i);
+    track->SetName(form);
     gReve->AddRenderElement(cont, track);
   }
   
-  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
+  //PH  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
+  char tooltip[1000];
+  sprintf(tooltip,"pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
   cont->UpdateItems();
 

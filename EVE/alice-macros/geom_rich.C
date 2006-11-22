@@ -10,7 +10,13 @@ void geom_rich()
   gReve->AddGlobalRenderElement(list);
 
   for(Int_t i=1; i<=7; ++i) {
-    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(Form("RICH_%d", i));
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    //PH TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(Form("RICH_%d", i));
+    char form[1000];
+    sprintf(form,"RICH_%d", i);
+    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);
 
     Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
     re->SetUseNodeTrans(kTRUE);

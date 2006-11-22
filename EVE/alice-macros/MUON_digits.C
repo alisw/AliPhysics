@@ -144,11 +144,19 @@ void MUON_tracks() {
 
     Reve::Track* track = new Reve::Track(&rt, lt->GetRnrStyle());
 
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    char form[1000];
     if (mt->GetMatchTrigger()) {
-      track->SetName(Form("MUONTrack %2d (MT)", rt.label));
+      //PH      track->SetName(Form("MUONTrack %2d (MT)", rt.label));
+      sprintf(form,"MUONTrack %2d (MT)", rt.label);
+      track->SetName(form);
       track->SetLineColor(7);
     } else {
-      track->SetName(Form("MUONTrack %2d     ", rt.label));
+      //PH      track->SetName(Form("MUONTrack %2d     ", rt.label));
+      sprintf(form,"MUONTrack %2d     ", rt.label);
+      track->SetName(form);
       track->SetLineColor(6);
     }
 

@@ -21,10 +21,20 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle* rnrStyle,
   rt.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
  
   Reve::Track* track = new Reve::Track(&rt, rnrStyle);
-  track->SetName(Form("ESDTrack %d", rt.label));
-  track->SetTitle(Form("pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
-		       rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
-		       rt.V.x, rt.V.y, rt.V.z));
+  //PH The line below is replaced waiting for a fix in Root
+  //PH which permits to use variable siza arguments in CINT
+  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+  //PH  track->SetName(Form("ESDTrack %d", rt.label));
+  //PH  track->SetTitle(Form("pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
+  //PH		       rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
+  //PH		       rt.V.x, rt.V.y, rt.V.z));
+  char form[1000];
+  sprintf(form,"ESDTrack %d", rt.label);
+  track->SetName(form);
+  sprintf(form,"pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
+	  rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
+	  rt.V.x, rt.V.y, rt.V.z);
+  track->SetTitle(form);
   return track;
 }
 
@@ -69,7 +79,12 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
     gReve->AddRenderElement(cont, track);
   }
 
-  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
+  //PH The line below is replaced waiting for a fix in Root
+  //PH which permits to use variable siza arguments in CINT
+  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+  //PH  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
+  char tooltip[1000];
+  sprintf(tooltip,"pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
   cont->UpdateItems();
 
@@ -115,7 +130,12 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESD* esd=0)
     gReve->AddRenderElement(cont, track);
   }
 
-  const Text_t* tooltip = Form("N=%d", count);
+  //PH The line below is replaced waiting for a fix in Root
+  //PH which permits to use variable siza arguments in CINT
+  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+  //PH  const Text_t* tooltip = Form("N=%d", count);
+  const tooltip[1000];
+  sprintf(tooltip,"N=%d", count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
   cont->UpdateItems();
 
@@ -251,20 +271,37 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     ++count;
 
     Reve::Track* track = esd_make_track(tlist->GetRnrStyle(), at, tp);
-    track->SetName(Form("track %d, sigma=%5.3f", at->GetLabel(), s));
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    //PH    track->SetName(Form("track %d, sigma=%5.3f", at->GetLabel(), s));
+    char form[1000];
+    sprintf(form,"track %d, sigma=%5.3f", at->GetLabel(), s);
+    track->SetName(form);
     gReve->AddRenderElement(tlist, track);
   }
 
   for (Int_t ti=0; ti<5; ++ti) {
     Reve::TrackList* tlist = tl[ti];
-    const Text_t* tooltip = Form("N tracks=%d", tc[ti]);
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    //PH    const Text_t* tooltip = Form("N tracks=%d", tc[ti]);
+    char tooltip[1000];
+    sprintf(tooltip,"N tracks=%d", tc[ti]);
     tlist->SetTitle(tooltip); // Not broadcasted automatically ...
     tlist->UpdateItems();
 
     tlist->MakeTracks();
     tlist->MakeMarkers();
   }
-  cont->SetTitle(Form("N all tracks = %d", count));
+  //PH The line below is replaced waiting for a fix in Root
+  //PH which permits to use variable siza arguments in CINT
+  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+  //PH  cont->SetTitle(Form("N all tracks = %d", count));
+  char form[1000];
+  sprintf(form,"N all tracks = %d", count);
+  cont->SetTitle(form);
   cont->UpdateItems();
   gReve->Redraw3D();
 

@@ -13,12 +13,19 @@ void geom_fmd()
     TGeoNode* node;
     Reve::GeoTopNodeRnrEl* re;
 
-    node = gGeoManager->GetTopVolume()->FindNode(Form("F%dMT_%d", i, i));
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    //PH node = gGeoManager->GetTopVolume()->FindNode(Form("F%dMT_%d", i, i));
+    char form[1000];
+    sprintf(form,"F%dMT_%d", i, i);
+    node = gGeoManager->GetTopVolume()->FindNode(form);
     re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
     re->SetUseNodeTrans(kTRUE);
     gReve->AddGlobalRenderElement(list, re);
 
-    node = gGeoManager->GetTopVolume()->FindNode(Form("F%dMB_%d", i, i));
+    sprintf(form,"F%dMB_%d", i, i);
+    node = gGeoManager->GetTopVolume()->FindNode(form);
     re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
     re->SetUseNodeTrans(kTRUE);
     gReve->AddGlobalRenderElement(list, re);
