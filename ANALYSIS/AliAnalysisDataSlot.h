@@ -34,6 +34,8 @@ public:
    // Connect some container to the slot
    Bool_t                    ConnectContainer(AliAnalysisDataContainer *cont);
    // Getters
+   void                     *GetBranchAddress(const char *branch) const;
+   Bool_t                    SetBranchAddress(const char *branch, void *address);
    TClass                   *GetType() const      {return fType;}
    AliAnalysisTask          *GetParent() const    {return fParent;}
    AliAnalysisDataContainer *GetContainer() const {return fContainer;}

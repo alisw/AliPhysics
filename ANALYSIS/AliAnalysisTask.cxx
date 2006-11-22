@@ -45,6 +45,27 @@
 //                                    AliAnalysisDataContainer *cont)
 // To connect a slot to a data container, the data types declared by both must
 // match.
+//
+// The method Init will be called once per session at the moment when the data is
+// available at all input slots. 
+// The method Init() has to be overloaded by the derived class in order to:
+// 1. Define objects that should be created only once per session (e.g. output
+//    histograms)
+// 2. Set the branch address or connect to a branch address in case the input
+//    slots are connected to trees.
+//
+// Example:
+// MyAnalysisTask::Init(Option_t *)
+// {
+//    if (!fHist1) fHist1 = new TH1F("h1", ....);
+//    if (!fHist2) fHist2 = new TH1F("h2", ....);
+//    fESD = GetBranchAddress(islot=0, "ESD");
+//    if (!fESD) SetBranchAddress(islot=0, "ESD", &fESD);
+// }
+//
+// The method Terminate() will be called by the framework once at the end of
+// data processing. Overload this if needed.
+//
 //==============================================================================
 
 #include "TClass.h"
@@ -59,6 +80,7 @@ ClassImp(AliAnalysisTask)
 //______________________________________________________________________________
 AliAnalysisTask::AliAnalysisTask()
                 :fReady(kFALSE),
+                 fInitialized(kFALSE),
                  fNinputs(0),
                  fNoutputs(0),
                  fOutputReady(NULL),
@@ -73,6 +95,7 @@ AliAnalysisTask::AliAnalysisTask()
 AliAnalysisTask::AliAnalysisTask(const char *name, const char *title)
                 :TTask(name,title),
                  fReady(kFALSE),
+                 fInitialized(kFALSE),
                  fNinputs(0),
                  fNoutputs(0),
                  fOutputReady(NULL),
@@ -89,6 +112,7 @@ AliAnalysisTask::AliAnalysisTask(const char *name, const char *title)
 AliAnalysisTask::AliAnalysisTask(const AliAnalysisTask &task)
                 :TTask(task),
                  fReady(task.fReady),
+                 fInitialized(task.fInitialized),
                  fNinputs(task.fNinputs),
                  fNoutputs(task.fNoutputs),                 
                  fOutputReady(NULL),
@@ -124,6 +148,7 @@ AliAnalysisTask& AliAnalysisTask::operator=(const AliAnalysisTask& task)
    if (&task == this) return *this;
    TTask::operator=(task);
    fReady       = task.IsReady();
+   fInitialized = task.IsInitialized();
    fNinputs     = task.GetNinputs();
    fNoutputs    = task.GetNoutputs();
    fInputs      = new TObjArray((fNinputs)?fNinputs:2);
@@ -168,11 +193,12 @@ Bool_t AliAnalysisTask::AreSlotsConnected()
 }
 
 //______________________________________________________________________________
-void AliAnalysisTask::CheckNotify()
+void AliAnalysisTask::CheckNotify(Bool_t init)
 {
 // Check if data is available from all inputs. Change the status of the task
 // accordingly. This method is called automatically for all tasks connected
 // to a container where the data was published.
+   if (init) fInitialized = kFALSE;
    for (Int_t islot=0; islot<fNinputs; islot++) {
       if (!GetInputData(islot)) {
          SetActive(kFALSE);
@@ -180,6 +206,11 @@ void AliAnalysisTask::CheckNotify()
       }   
    }   
    SetActive(kTRUE);
+   if (fInitialized) return;
+   TDirectory *cursav = gDirectory;
+   Init();
+   if (cursav) cursav->cd();
+   fInitialized = kTRUE;
 }
 
 //______________________________________________________________________________
@@ -291,6 +322,41 @@ TObject *AliAnalysisTask::GetInputData(Int_t islot) const
    }
    return (input->GetData()); 
 }
+
+//______________________________________________________________________________
+char *AliAnalysisTask::GetBranchAddress(Int_t islot, const char *branch) const
+{
+// Check if a branch with a given name from the specified input is connected
+// to some address. Call this in Init() before trying to call SetBranchAddress()
+// since the adress may be set by other task.
+   return (char *)GetInputSlot(islot)->GetBranchAddress(branch);
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTask::SetBranchAddress(Int_t islot, const char *branch, void *address) const
+{
+// Connect an object address to a branch of the specified input.
+   return GetInputSlot(islot)->SetBranchAddress(branch, address);
+}   
+
+//______________________________________________________________________________
+void AliAnalysisTask::Init(Option_t *)
+{
+// Branch address initialization.
+}
+
+//______________________________________________________________________________
+void AliAnalysisTask::Terminate(Option_t *)
+{
+// Method called by the framework at the end of data processing.
+}
+
+//______________________________________________________________________________
+void AliAnalysisTask::OpenFile(Int_t iout, const char *name, Option_t *option) const
+{
+// Set data at output iout to be written in the specified file.
+   GetOutputSlot(iout)->GetContainer()->OpenFile(name, option);
+}   
 
 //______________________________________________________________________________
 Bool_t AliAnalysisTask::PostData(Int_t iout, TObject *data, Option_t *option)

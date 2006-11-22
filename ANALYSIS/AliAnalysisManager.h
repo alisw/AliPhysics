@@ -36,12 +36,16 @@ enum EAliAnalysisContType {
    // Selector-specific methods
    virtual void        Init(TTree *tree);   
    virtual void        Begin(TTree *tree);
+   virtual Bool_t      Notify();
    virtual void        SlaveBegin(TTree *tree);
+   virtual Bool_t      ProcessCut(Long64_t entry) {return Process(entry);}
    virtual Bool_t      Process(Long64_t entry);
+   virtual Int_t       GetEntry(Long64_t entry, Int_t getall = 0);
    virtual void        SlaveTerminate();
    virtual void        Terminate();
 
    // Getters
+   TTree              *GetTree() const       {return fTree;}
    TObjArray          *GetContainers() const {return fContainers;}
    TObjArray          *GetInputs() const     {return fInputs;}
    TObjArray          *GetOutputs() const    {return fOutputs;}
@@ -75,6 +79,7 @@ enum EAliAnalysisContType {
    void                 PrintStatus(Option_t *option="all") const;
 
 protected:
+   TTree               *fTree;         // Input tree in case of TSelector model
    Bool_t               fInitOK;       // Initialisation done
    TObjArray           *fContainers;   //-> List of all containers
    TObjArray           *fInputs;       //-> List of containers with input data

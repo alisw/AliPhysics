@@ -1,4 +1,4 @@
-SRCS= AliAnalysisDataContainer.cxx AliAnalysisRLContainer.cxx \
+SRCS= AliAnalysisDataContainer.cxx \
       AliAnalysisTask.cxx AliAnalysisDataSlot.cxx AliAnalysisManager.cxx
 
 HDRS= $(SRCS:.cxx=.h) 

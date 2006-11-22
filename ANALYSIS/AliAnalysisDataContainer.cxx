@@ -57,7 +57,7 @@ ClassImp(AliAnalysisDataContainer)
 AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
                           fDataReady(kFALSE),
                           fOwnedData(kFALSE),
-                          fFileName(),
+                          fFile(NULL),
                           fData(NULL),
                           fType(NULL),
                           fProducer(NULL),
@@ -71,7 +71,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
                          :TNamed(name,""),
                           fDataReady(kFALSE),
                           fOwnedData(kTRUE),
-                          fFileName(),
+                          fFile(NULL),
                           fData(NULL),
                           fType(type),
                           fProducer(NULL),
@@ -85,7 +85,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const AliAnalysisDataContaine
                          :TNamed(cont),
                           fDataReady(cont.fDataReady),
                           fOwnedData(kFALSE),
-                          fFileName(cont.fFileName),
+                          fFile(cont.fFile),
                           fData(cont.fData),
                           fType(cont.fType),
                           fProducer(cont.fProducer),
@@ -105,6 +105,10 @@ AliAnalysisDataContainer::~AliAnalysisDataContainer()
 // Destructor. Deletes data ! (What happens if data is a container ???)
    if (fData && fOwnedData) delete fData;
    if (fConsumers) delete fConsumers;
+   if (fFile) {
+      fFile->Close();
+      delete fFile;
+   }   
 }
 
 //______________________________________________________________________________
@@ -115,7 +119,7 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
       TNamed::operator=(cont);
       fDataReady = cont.fDataReady;
       fOwnedData = kFALSE;  // !!! Data owned by cont.
-      fFileName = cont.fFileName;
+      fFile = cont.fFile;
       fData = cont.fData;
       fType = cont.fType;
       fProducer = cont.fProducer;
@@ -129,22 +133,22 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
 }      
 
 //______________________________________________________________________________
-Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *option)
+Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
 {
 // Set the data as READY only if it was published by the producer.
-// If option is not empty the data will be saved in the file fFileName and option
-// describes the method to opent the file: NEW/CREATE, RECREATE, UPDATE
    // If there is no producer declared, this is a top level container.
    AliAnalysisTask *task;
+   Bool_t init = kFALSE;
    Int_t i, nc;
    if (!fProducer) {
+      if (data != fData) init = kTRUE;
       fData = data;
       fDataReady = kTRUE;
       if (fConsumers) {
          nc = fConsumers->GetEntriesFast();
          for (i=0; i<nc; i++) {
             task = (AliAnalysisTask*)fConsumers->At(i);
-            task->CheckNotify();
+            task->CheckNotify(init);
          }
       }      
       return kTRUE;
@@ -153,17 +157,6 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *option)
    if (fProducer->GetPublishedData()==data) {
       fData = data;
       fDataReady = kTRUE;
-      if (strlen(option)) {
-         if (!fFileName.Length()) {
-            AliWarning(Form("Cannot write data since file name for container %s was not set", GetName()));
-            return kFALSE;
-         }
-         TFile *f = new TFile(fFileName.Data(), option);
-         if (!f->IsZombie()) {
-            fData->Write();
-            f->Write();
-         }   
-      }
       if (fConsumers) {
          nc = fConsumers->GetEntriesFast();
          for (i=0; i<nc; i++) {
@@ -180,12 +173,33 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *option)
 }
 
 //______________________________________________________________________________
-void AliAnalysisDataContainer::SetFileName(const char *name)
+void AliAnalysisDataContainer::OpenFile(const char *name, Option_t *option)
 {
-// Data will be written to this file if it is set using SetData(data, option)
+// Data will be written to this file at the end of processing.
 // Option represent the way the file is accessed: NEW, APPEND, ...
-   fFileName = name;
+   if (fFile) {
+      fFile->Close();
+      delete fFile;
+   }
+   fFile =  new TFile(name, option);
+   if (fFile->IsZombie()) {
+      AliError(Form("Cannot open file %s with option %s",name,option));
+      fFile = 0;
+   }   
 }   
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::WriteData()
+{
+// Write data to the file.
+   if (fFile) {
+      TDirectory *cursav = gDirectory;
+      fFile->cd();
+      fData->Write();
+//      fFile->Write();
+      if (cursav) cursav->cd();
+   }   
+}
 
 //______________________________________________________________________________
 void AliAnalysisDataContainer::GetEntry(Long64_t ientry)
@@ -193,14 +207,14 @@ void AliAnalysisDataContainer::GetEntry(Long64_t ientry)
 // If data is ready and derives from TTree or from TBranch, this will get the
 // requested entry in memory if not already loaded.
    if (!fDataReady) return;
-   Bool_t is_tree = fType->InheritsFrom(TTree::Class());
-   if (is_tree) {
+   Bool_t istree = fType->InheritsFrom(TTree::Class());
+   if (istree) {
       TTree *tree = (TTree*)fData;
       if (tree->GetReadEntry() != ientry) tree->GetEntry(ientry);
       return;
    }   
-   Bool_t is_branch = fType->InheritsFrom(TBranch::Class());
-   if (is_branch) {
+   Bool_t isbranch = fType->InheritsFrom(TBranch::Class());
+   if (isbranch) {
       TBranch *branch = (TBranch*)fData;
       if (branch->GetReadEntry() != ientry) branch->GetEntry(ientry);
       return;

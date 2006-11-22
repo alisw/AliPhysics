@@ -26,6 +26,8 @@
 //==============================================================================
 
 #include "TClass.h"
+#include "TFile.h"
+#include "TTree.h"
 #include "AliLog.h"
 
 #include "AliAnalysisManager.h"
@@ -37,6 +39,7 @@ ClassImp(AliAnalysisManager)
 
 //______________________________________________________________________________
 AliAnalysisManager::AliAnalysisManager() : TSelector(),
+                    fTree(NULL),
                     fInitOK(kFALSE),
                     fContainers(NULL),
                     fInputs(NULL),
@@ -61,6 +64,7 @@ AliAnalysisManager::AliAnalysisManager() : TSelector(),
 //______________________________________________________________________________
 AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                    :TSelector(other),
+                    fTree(NULL),
                     fInitOK(kFALSE),
                     fContainers(NULL),
                     fInputs(NULL),
@@ -86,6 +90,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
 // Assignment
    if (&other != this) {
       TSelector::operator=(other);
+      fTree       = other.fTree;
       fInitOK     = other.fInitOK;
       fContainers = new TObjArray(*other.fContainers);
       fInputs     = new TObjArray(*other.fInputs);
@@ -110,35 +115,69 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fTopTasks) delete fTopTasks;
    if (fZombies) delete fZombies;
 }
-
 //______________________________________________________________________________
-void AliAnalysisManager::Init(TTree */*tree*/)
+Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
+{
+// Read one entry of the tree or a whole branch.
+   return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
+}
+   
+//______________________________________________________________________________
+void AliAnalysisManager::Init(TTree *tree)
 {
   // The Init() function is called when the selector needs to initialize
   // a new tree or chain. Typically here the branch addresses of the tree
   // will be set. It is normaly not necessary to make changes to the
   // generated code, but the routine can be extended by the user if needed.
   // Init() will be called many times when running with PROOF.
+   printf("AliAnalysisManager::Init(%s)\n", tree->GetName());
+   if (!fInitOK) {
+      AliError("You have to call InitAnalysis first");
+      return;
+   }   
+   if (!tree) return;
+   fTree = tree;
+   AliAnalysisDataContainer *top = (AliAnalysisDataContainer*)fInputs->At(0);
+   top->SetData(tree);
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::Begin(TTree */*tree*/)
+void AliAnalysisManager::Begin(TTree *tree)
 {
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
+   printf("AliAnalysisManager::Begin(%s)\n", tree->GetName());
+   Init(tree);
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::SlaveBegin(TTree */*tree*/)
+void AliAnalysisManager::SlaveBegin(TTree *tree)
 {
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
+   printf("AliAnalysisManager::SlaveBegin(%s)\n", tree->GetName());
+   Init(tree);
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisManager::Process(Long64_t /*entry*/)
+Bool_t AliAnalysisManager::Notify()
+{
+   // The Notify() function is called when a new file is opened. This
+   // can be either for a new TTree in a TChain or when when a new TTree
+   // is started when using PROOF. It is normaly not necessary to make changes
+   // to the generated code, but the routine can be extended by the
+   // user if needed. The return value is currently not used.
+   if (fTree) {
+      TFile *curfile = fTree->GetCurrentFile();
+      if (curfile) printf("AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
+   }
+   return kTRUE;
+}    
+
+//______________________________________________________________________________
+Bool_t AliAnalysisManager::Process(Long64_t entry)
 {
   // The Process() function is called for each entry in the tree (or possibly
   // keyed object in the case of PROOF) to be processed. The entry argument
@@ -157,7 +196,11 @@ Bool_t AliAnalysisManager::Process(Long64_t /*entry*/)
   //  The entry is always the local entry number in the current tree.
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
-  return kFALSE;
+  
+//   printf("AliAnalysisManager::Process(%lld)\n", entry);
+   GetEntry(entry);
+   ExecAnalysis();
+   return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -166,6 +209,19 @@ void AliAnalysisManager::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
+
+   printf("AliAnalysisManager::SlaveTerminate()\n");
+   if (!fOutput)
+   {
+     AliError("ERROR: Output list not initialized.");
+     return;
+   }
+   TIter next(fOutputs);
+   AliAnalysisDataContainer *output;
+   while ((output=(AliAnalysisDataContainer *)next())) {
+      output->SetDataOwned(kFALSE);
+      fOutput->Add(output->GetData());
+   }   
 }
 
 //______________________________________________________________________________
@@ -174,6 +230,14 @@ void AliAnalysisManager::Terminate()
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
+   printf("AliAnalysisManager::Terminate()\n");
+   AliAnalysisDataContainer *output;
+   AliAnalysisTask *task;
+   TIter next(fOutputs);
+   while ((output=(AliAnalysisDataContainer *)next())) output->WriteData();
+   TIter next1(fTasks);
+   // Call Terminate() for tasks
+   while ((task=(AliAnalysisTask*)next1())) task->Terminate();
 }
 
 //______________________________________________________________________________
@@ -261,14 +325,14 @@ Bool_t AliAnalysisManager::InitAnalysis()
 // and data containers are properly connected
    // Check for input/output containers
    fInitOK = kFALSE;
-   if (!fInputs->GetEntriesFast()) {
-      AliError("No input container defined. At least one container should store input data");
-      return kFALSE;
-   }   
-   if (!fOutputs->GetEntriesFast()) {
-      AliError("No output container defined. At least one container should store output data");
-      return kFALSE;
-   }   
+//   if (!fInputs->GetEntriesFast()) {
+//      AliError("No input container defined. At least one container should store input data");
+//      return kFALSE;
+//   }   
+//   if (!fOutputs->GetEntriesFast()) {
+//      AliError("No output container defined. At least one container should store output data");
+//      return kFALSE;
+//   }   
    // Check for top tasks (depending only on input data containers)
    if (!fTasks->First()) {
       AliError("Analysis have no tasks !");
@@ -279,38 +343,38 @@ Bool_t AliAnalysisManager::InitAnalysis()
    AliAnalysisDataContainer *cont;
    Int_t ntop = 0;
    Int_t nzombies = 0;
-   Bool_t is_zombie = kFALSE;
-   Bool_t is_top = kTRUE;
+   Bool_t iszombie = kFALSE;
+   Bool_t istop = kTRUE;
    Int_t i;
    while ((task=(AliAnalysisTask*)next())) {
-      is_top = kTRUE;
-      is_zombie = kFALSE;
+      istop = kTRUE;
+      iszombie = kFALSE;
       Int_t ninputs = task->GetNinputs();
-      if (!ninputs) {
-         task->SetZombie();
-         fZombies->Add(task);
-         nzombies++;
-         AliWarning(Form("Task %s has no input slots defined ! Declared zombie...",task->GetName()));
-         continue;
-      }
+//      if (!ninputs) {
+//         task->SetZombie();
+//         fZombies->Add(task);
+//         nzombies++;
+//         AliWarning(Form("Task %s has no input slots defined ! Declared zombie...",task->GetName()));
+//         continue;
+//      }
       for (i=0; i<ninputs; i++) {
          cont = task->GetInputSlot(i)->GetContainer();
          if (!cont) {
-            if (!is_zombie) {
+            if (!iszombie) {
                task->SetZombie();
                fZombies->Add(task);
                nzombies++;
-               is_zombie = kTRUE;
+               iszombie = kTRUE;
             }   
             AliWarning(Form("Input slot %i of task %s has no container connected ! Declared zombie...",
                        i,task->GetName()));
          }
-         if (is_zombie) continue;
+         if (iszombie) continue;
          // Check if cont is an input container
-         if (is_top && !fInputs->FindObject(cont)) is_top=kFALSE;
+         if (istop && !fInputs->FindObject(cont)) istop=kFALSE;
          // Connect to parent task
       }
-      if (is_top) {
+      if (istop) {
          ntop++;
          fTopTasks->Add(task);
       }
@@ -342,6 +406,7 @@ Bool_t AliAnalysisManager::InitAnalysis()
          return kFALSE;
       }   
    }
+   fInitOK = kTRUE;
    return kTRUE;
 }   
 
@@ -366,10 +431,36 @@ void AliAnalysisManager::ResetAnalysis()
 void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
 // Execute analysis.
-   TIter next(fTopTasks);
+   if (!fInitOK) {
+      AliError("Analysis manager was not initialized !");
+      return;
+   }   
    AliAnalysisTask *task;
-   while ((task=(AliAnalysisTask*)next()))
+   // Check if the top tree is active.
+   if (fTree) {
+      TIter next(fTasks);
+   // De-activate all tasks
+      while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
+      AliAnalysisDataContainer *cont = (AliAnalysisDataContainer*)fInputs->At(0);
+      if (!cont) {
+         AliError("Cannot execute analysis in TSelector mode without at least one top container");
+         return;
+      }   
+      cont->SetData(fTree); // This will notify all consumers
+      TIter next1(cont->GetConsumers());
+      while ((task=(AliAnalysisTask*)next1())) {
+//         task->SetActive(kTRUE);
+         task->ExecuteTask(option);
+      }
+      return;
+   }   
+   // The event loop is not controlled by TSelector   
+   TIter next2(fTopTasks);
+   while ((task=(AliAnalysisTask*)next2())) {
+      task->SetActive(kTRUE);
+      printf("executing %s\n", task->GetName());
       task->ExecuteTask(option);
+   }   
 }
 
 //______________________________________________________________________________

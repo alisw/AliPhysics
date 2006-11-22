@@ -20,7 +20,7 @@
 #endif
 
 class TClass;
-class TString;
+class TFile;
 class TObjArray;
 class AliAnalysisTask;
 class AliESD;
@@ -47,9 +47,10 @@ enum ENotifyMessage {
    TObjArray                *GetConsumers() const {return fConsumers;}
    virtual void              GetEntry(Long64_t ientry);
    // Setters
+   void                      ResetDataReady()     {fDataReady = kFALSE;}
    virtual Bool_t            SetData(TObject *data, Option_t *option="");
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
-   void                      SetFileName(const char *name);
+   void                      OpenFile(const char *name, Option_t *option="RECREATE");
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
    void                      DeleteData();
@@ -63,11 +64,12 @@ enum ENotifyMessage {
    virtual void              NotifyChange(ENotifyMessage /*type*/) {;}
    // Print connected tasks/status
    void                      PrintContainer(Option_t *option="all", Int_t indent=0) const;
+   void                      WriteData();
    
 protected:
    Bool_t                    fDataReady;  // Flag that data is ready
    Bool_t                    fOwnedData;  // Flag data ownership
-   TString                   fFileName;   // Name of the file that will store the data if requested
+   TFile                    *fFile;       // File storing the data
    TObject                  *fData;       // Contained data
    TClass                   *fType;       // Type of contained data
    AliAnalysisTask          *fProducer;   // Analysis task to which the slot belongs

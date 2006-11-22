@@ -1,0 +1,7 @@
+SRCS= AliAnalysisRLContainer.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=AnalysisExtraLinkDef.h
+
+EXPORT:=$(HDRS)

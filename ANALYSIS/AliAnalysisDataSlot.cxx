@@ -40,6 +40,7 @@
 //==============================================================================
 
 #include "TClass.h"
+#include "TTree.h"
 #include "AliLog.h"
 
 #include "AliAnalysisDataSlot.h"
@@ -76,6 +77,45 @@ Bool_t AliAnalysisDataSlot::ConnectContainer(AliAnalysisDataContainer *cont)
    return kTRUE;
 }   
 
+//______________________________________________________________________________
+void *AliAnalysisDataSlot::GetBranchAddress(const char *branchname) const
+{
+// Retrieve the address for a given branch. One should always test this before
+// using SetBranchAddress because the address gets set by the first caller.
+// Call this in MyTask::Init()
+   if (!fType->InheritsFrom(TTree::Class())) {
+      AliFatal(Form("Cannot call GetBranchAddress() for data slot of task %s not pointing to tree-type data", fParent->GetName()));
+      return NULL;
+   }
+   if (!IsDataReady()) {
+      AliFatal(Form("Cannot call GetBranchAddress() for data slot of task %s while data is not ready", fParent->GetName()));
+      return NULL;
+   }
+   TTree *tree = (TTree*)GetData();
+   TBranch *br = tree->GetBranch(branchname);
+   if (!br) {   
+      AliFatal(Form("Branch %s not found in tree %s as input of task %s...", 
+               branchname, tree->GetName(), fParent->GetName()));
+      return NULL;
+   }
+   return br->GetAddress();
+}   
+
+//______________________________________________________________________________
+Bool_t AliAnalysisDataSlot::SetBranchAddress(const char *branchname, void *address)
+{
+// Set a branch address for input tree. To be called during MyTask::Init()
+// only if GetBranchAddress() returns a NULL pointer for a tree-type slot.
+   if (GetBranchAddress(branchname)) {
+      AliError(Form("Branch address for %s already set by other task. Call first GetBranchAddress() in %s::Init()",
+               branchname, fParent->GetName()));
+      return kFALSE;
+   }
+   TTree *tree = (TTree*)GetData();
+   tree->SetBranchAddress(branchname, address);
+   return kTRUE;
+}   
+      
 //______________________________________________________________________________
 TObject *AliAnalysisDataSlot::GetData() const
 {
