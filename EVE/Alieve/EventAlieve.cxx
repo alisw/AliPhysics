@@ -131,10 +131,8 @@ end_run_loader:
     if(fESDTree == 0)
       throw(eH + "failed getting the esdTree.");
     fESDTree->SetBranchAddress("ESD", &fESD);
-    if(fESDTree->GetEntry(fEventId) <= 0)
-      throw(eH + "failed getting required event from ESD.");
 
-    // Check if ESDfriends exists and load it
+    // Check if ESDfriends exists and attach the branch
     p = Form("%s/AliESDfriends.root", fPath.Data());
     if(gSystem->AccessPathName(p, kReadPermission) == kFALSE) {
       //fESDfriendFile = new TFile(p);
@@ -150,12 +148,17 @@ end_run_loader:
       //if(fESDfriendTree->GetEntry(fEventId) <= 0)
       //throw(eH + "failed getting required event from ESDfriend.");
 
-      //fESD->SetESDfriend(fESDfriend);
-
       fESDfriendExists = kTRUE;
       fESDTree->SetBranchStatus ("ESDfriend*", 1);
       fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
+
     }
+
+    if(fESDTree->GetEntry(fEventId) <= 0)
+      throw(eH + "failed getting required event from ESD.");
+
+    if (fESDfriendExists)
+      fESD->SetESDfriend(fESDfriend);
   }
 end_esd_loader:
 
