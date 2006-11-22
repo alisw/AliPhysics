@@ -50,12 +50,12 @@ void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
   Double_t forwardBackward; // +1 if forward, -1 if backward
   if (zEnd < trackParam->GetZ()) forwardBackward = 1.0; // spectro. z<0 
   else forwardBackward = -1.0;
-  Double_t vGeant3[7], vGeant3New[7]; // 7 in parameter ????
-  Int_t iGeant3, stepNumber;
+  Double_t v3[7], v3New[7]; // 7 in parameter ????
+  Int_t i3, stepNumber;
   Int_t maxStepNumber = 5000; // in parameter ????
   // For safety: return kTRUE or kFALSE ????
   // Parameter vector for calling EXTRAP_ONESTEP
-  SetGeant3ParametersFromTrackParam(trackParam, vGeant3, forwardBackward);
+  ConvertTrackParamForExtrap(trackParam, v3, forwardBackward);
   // sign of charge (sign of fInverseBendingMomentum if forward motion)
   // must be changed if backward extrapolation
   Double_t chargeExtrap = forwardBackward *
@@ -63,76 +63,76 @@ void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
   Double_t stepLength = 6.0; // in parameter ????
   // Extrapolation loop
   stepNumber = 0;
-  while (((-forwardBackward * (vGeant3[2] - zEnd)) <= 0.0) &&  // spectro. z<0
+  while (((-forwardBackward * (v3[2] - zEnd)) <= 0.0) &&  // spectro. z<0
 	 (stepNumber < maxStepNumber)) {
     stepNumber++;
     // Option for switching between helix and Runge-Kutta ???? 
-    //ExtrapOneStepRungekutta(chargeExtrap, stepLength, vGeant3, vGeant3New);
-    ExtrapOneStepHelix(chargeExtrap, stepLength, vGeant3, vGeant3New);
-    if ((-forwardBackward * (vGeant3New[2] - zEnd)) > 0.0) break; // one is beyond Z spectro. z<0
+    //ExtrapOneStepRungekutta(chargeExtrap, stepLength, v3, v3New);
+    ExtrapOneStepHelix(chargeExtrap, stepLength, v3, v3New);
+    if ((-forwardBackward * (v3New[2] - zEnd)) > 0.0) break; // one is beyond Z spectro. z<0
     // better use TArray ????
-    for (iGeant3 = 0; iGeant3 < 7; iGeant3++)
-      {vGeant3[iGeant3] = vGeant3New[iGeant3];}
+    for (i3 = 0; i3 < 7; i3++)
+      {v3[i3] = v3New[i3];}
   }
   // check maxStepNumber ????
   // Interpolation back to exact Z (2nd order)
   // should be in function ???? using TArray ????
-  Double_t dZ12 = vGeant3New[2] - vGeant3[2]; // 1->2
+  Double_t dZ12 = v3New[2] - v3[2]; // 1->2
   if (TMath::Abs(dZ12) > 0) {
-    Double_t dZ1i = zEnd - vGeant3[2]; // 1-i
-    Double_t dZi2 = vGeant3New[2] - zEnd; // i->2
-    Double_t xPrime = (vGeant3New[0] - vGeant3[0]) / dZ12;
-    Double_t xSecond = ((vGeant3New[3] / vGeant3New[5]) - (vGeant3[3] / vGeant3[5])) / dZ12;
-    Double_t yPrime = (vGeant3New[1] - vGeant3[1]) / dZ12;
-    Double_t ySecond = ((vGeant3New[4] / vGeant3New[5]) - (vGeant3[4] / vGeant3[5])) / dZ12;
-    vGeant3[0] = vGeant3[0] + xPrime * dZ1i - 0.5 * xSecond * dZ1i * dZi2; // X
-    vGeant3[1] = vGeant3[1] + yPrime * dZ1i - 0.5 * ySecond * dZ1i * dZi2; // Y
-    vGeant3[2] = zEnd; // Z
+    Double_t dZ1i = zEnd - v3[2]; // 1-i
+    Double_t dZi2 = v3New[2] - zEnd; // i->2
+    Double_t xPrime = (v3New[0] - v3[0]) / dZ12;
+    Double_t xSecond = ((v3New[3] / v3New[5]) - (v3[3] / v3[5])) / dZ12;
+    Double_t yPrime = (v3New[1] - v3[1]) / dZ12;
+    Double_t ySecond = ((v3New[4] / v3New[5]) - (v3[4] / v3[5])) / dZ12;
+    v3[0] = v3[0] + xPrime * dZ1i - 0.5 * xSecond * dZ1i * dZi2; // X
+    v3[1] = v3[1] + yPrime * dZ1i - 0.5 * ySecond * dZ1i * dZi2; // Y
+    v3[2] = zEnd; // Z
     Double_t xPrimeI = xPrime - 0.5 * xSecond * (dZi2 - dZ1i);
     Double_t yPrimeI = yPrime - 0.5 * ySecond * (dZi2 - dZ1i);
     // (PX, PY, PZ)/PTOT assuming forward motion
-    vGeant3[5] =
+    v3[5] =
       1.0 / TMath::Sqrt(1.0 + xPrimeI * xPrimeI + yPrimeI * yPrimeI); // PZ/PTOT
-    vGeant3[3] = xPrimeI * vGeant3[5]; // PX/PTOT
-    vGeant3[4] = yPrimeI * vGeant3[5]; // PY/PTOT
+    v3[3] = xPrimeI * v3[5]; // PX/PTOT
+    v3[4] = yPrimeI * v3[5]; // PY/PTOT
   } else {
     cout<<"W-AliMUONTrackExtrap::ExtrapToZ: Extrap. to Z not reached, Z = "<<zEnd<<endl;
   }
-  // Track parameters from Geant3 parameters,
+  // Track parameters from 3 parameters,
   // with charge back for forward motion
-  SetTrackParamFromGeant3Parameters(vGeant3, chargeExtrap * forwardBackward, trackParam);
+  RecoverTrackParam(v3, chargeExtrap * forwardBackward, trackParam);
 }
 
   //__________________________________________________________________________
-void AliMUONTrackExtrap::SetGeant3ParametersFromTrackParam(AliMUONTrackParam* trackParam, Double_t *vGeant3, Double_t forwardBackward)
+void AliMUONTrackExtrap::ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t *v3, Double_t forwardBackward)
 {
-  /// Set vector of Geant3 parameters pointed to by "vGeant3" from track parameters in trackParam.
+  /// Set vector of Geant3 parameters pointed to by "v3" from track parameters in trackParam.
   /// Since AliMUONTrackParam is only geometry, one uses "forwardBackward"
   /// to know whether the particle is going forward (+1) or backward (-1).
-  vGeant3[0] = trackParam->GetNonBendingCoor(); // X
-  vGeant3[1] = trackParam->GetBendingCoor(); // Y
-  vGeant3[2] = trackParam->GetZ(); // Z
+  v3[0] = trackParam->GetNonBendingCoor(); // X
+  v3[1] = trackParam->GetBendingCoor(); // Y
+  v3[2] = trackParam->GetZ(); // Z
   Double_t pYZ = TMath::Abs(1.0 / trackParam->GetInverseBendingMomentum());
   Double_t pZ = pYZ / TMath::Sqrt(1.0 + trackParam->GetBendingSlope() * trackParam->GetBendingSlope());
-  vGeant3[6] = TMath::Sqrt(pYZ * pYZ + pZ * pZ * trackParam->GetNonBendingSlope() * trackParam->GetNonBendingSlope()); // PTOT
-  vGeant3[5] = -forwardBackward * pZ / vGeant3[6]; // PZ/PTOT spectro. z<0
-  vGeant3[3] = trackParam->GetNonBendingSlope() * vGeant3[5]; // PX/PTOT
-  vGeant3[4] = trackParam->GetBendingSlope() * vGeant3[5]; // PY/PTOT
+  v3[6] = TMath::Sqrt(pYZ * pYZ + pZ * pZ * trackParam->GetNonBendingSlope() * trackParam->GetNonBendingSlope()); // PTOT
+  v3[5] = -forwardBackward * pZ / v3[6]; // PZ/PTOT spectro. z<0
+  v3[3] = trackParam->GetNonBendingSlope() * v3[5]; // PX/PTOT
+  v3[4] = trackParam->GetBendingSlope() * v3[5]; // PY/PTOT
 }
 
   //__________________________________________________________________________
-void AliMUONTrackExtrap::SetTrackParamFromGeant3Parameters(Double_t *vGeant3, Double_t charge, AliMUONTrackParam* trackParam)
+void AliMUONTrackExtrap::RecoverTrackParam(Double_t *v3, Double_t charge, AliMUONTrackParam* trackParam)
 {
-  /// Set track parameters in trackParam from Geant3 parameters pointed to by "vGeant3",
+  /// Set track parameters in trackParam from Geant3 parameters pointed to by "v3",
   /// assumed to be calculated for forward motion in Z.
   /// "InverseBendingMomentum" is signed with "charge".
-  trackParam->SetNonBendingCoor(vGeant3[0]); // X
-  trackParam->SetBendingCoor(vGeant3[1]); // Y
-  trackParam->SetZ(vGeant3[2]); // Z
-  Double_t pYZ = vGeant3[6] * TMath::Sqrt(1.0 - vGeant3[3] * vGeant3[3]);
+  trackParam->SetNonBendingCoor(v3[0]); // X
+  trackParam->SetBendingCoor(v3[1]); // Y
+  trackParam->SetZ(v3[2]); // Z
+  Double_t pYZ = v3[6] * TMath::Sqrt(1.0 - v3[3] * v3[3]);
   trackParam->SetInverseBendingMomentum(charge/pYZ);
-  trackParam->SetBendingSlope(vGeant3[4]/vGeant3[5]);
-  trackParam->SetNonBendingSlope(vGeant3[3]/vGeant3[5]);
+  trackParam->SetBendingSlope(v3[4]/v3[5]);
+  trackParam->SetNonBendingSlope(v3[3]/v3[5]);
 }
 
   //__________________________________________________________________________
