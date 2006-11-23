@@ -6,7 +6,7 @@ SRCS          =  AliPHOS.cxx \
                  AliPHOSLoader.cxx AliPHOSGetter.cxx \
                  AliPHOSGetterLight.cxx \
                  AliPHOSHit.cxx AliPHOSTrackSegmentMaker.cxx  AliPHOSPID.cxx \
-		 AliPHOSAltroMapping.cxx AliPHOSRawStream.cxx AliPHOSClusterizer.cxx \
+		 AliPHOSClusterizer.cxx \
 		 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx \
 		 AliPHOSSDigitizer.cxx AliPHOSDigit.cxx \
 		 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx \

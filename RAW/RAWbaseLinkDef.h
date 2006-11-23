@@ -12,6 +12,7 @@
 #pragma link C++ class AliRawData;
 #pragma link C++ class AliStats;
 #pragma link C++ class AliAltroMapping+;
+#pragma link C++ class AliCaloAltroMapping+;
 #pragma link C++ class AliDAQ+;
 
 #endif

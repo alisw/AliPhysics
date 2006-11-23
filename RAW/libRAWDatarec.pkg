@@ -5,7 +5,7 @@ SRCS:=  AliFilter.cxx \
 	AliRawReaderDate.cxx AliRawReaderDateV3.cxx \
 	AliRawReaderMemory.cxx \
 	AliAltroRawStream.cxx \
-	AliAltroRawStreamOld.cxx \
+	AliAltroRawStreamOld.cxx AliCaloRawStream.cxx \
 	AliVMERawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

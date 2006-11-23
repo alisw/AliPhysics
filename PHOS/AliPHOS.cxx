@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.103  2006/11/14 17:11:15  hristov
+ * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
+ *
  * Revision 1.102  2006/10/27 17:14:27  kharlov
  * Introduce AliDebug and AliLog (B.Polichtchouk)
  *
@@ -92,7 +95,7 @@ class TFile;
 #include "AliPHOSDigit.h"
 #include "AliAltroBuffer.h"
 #include "AliAltroMapping.h"
-#include "AliPHOSAltroMapping.h"
+#include "AliCaloAltroMapping.h"
 #include "AliLog.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -510,7 +513,7 @@ void AliPHOS::Digits2Raw()
       path += iRCU;
       path += ".data";
 
-      AliAltroMapping* mapping = new AliPHOSAltroMapping(path.Data());
+      AliAltroMapping* mapping = new AliCaloAltroMapping(path.Data());
       buffer = new AliAltroBuffer(fileName.Data(),mapping);
       buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
 

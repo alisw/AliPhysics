@@ -62,7 +62,7 @@
 #include "AliPHOSLoader.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
-#include "AliPHOSRawStream.h"
+#include "AliCaloRawStream.h"
 #include "AliRawReaderFile.h"
 #include "AliLog.h"
 #include "AliCDBLocal.h"
@@ -733,8 +733,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   // Reimplemented by Boris Polichtchouk (Jul 2006)
   // to make it working with the Jul-Aug 2006 beam test data.
  
-
-  AliPHOSRawStream in(rawReader);
+  AliCaloRawStream in(rawReader,"PHOS");
   in.SetOldRCUFormat(isOldRCUFormat);
  
   TF1 * signalF = new TF1("signal", AliPHOS::RawResponseFunction, 0, PHOS()->GetRawFormatTimeMax(), 4);

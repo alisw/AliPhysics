@@ -3,7 +3,7 @@
 SRCS:=  AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx \
 	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
 	AliStats.cxx \
-	AliAltroMapping.cxx \
+	AliAltroMapping.cxx AliCaloAltroMapping.cxx \
 	AliDAQ.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

@@ -30,7 +30,7 @@
 #include "TH1.h"
 #include "TFile.h"
 #include "AliRawReader.h"
-#include "AliPHOSRawStream.h"
+#include "AliCaloRawStream.h"
 
 ClassImp(AliPHOSCalibHistoProducer)
 
@@ -85,7 +85,7 @@ void AliPHOSCalibHistoProducer::Run()
   Int_t iEvent = 0;
   Int_t runNum = 0;
 
-  AliPHOSRawStream in(fRawReader);
+  AliCaloRawStream in(fRawReader,"PHOS");
   if(fIsOldRCUFormat)
     in.SetOldRCUFormat(kTRUE);
 
