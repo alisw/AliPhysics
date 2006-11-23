@@ -541,8 +541,7 @@ void AliReconstruction::SetOption(const char* detector, const char* option)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::Run(const char* input,
-			      Int_t firstEvent, Int_t lastEvent)
+Bool_t AliReconstruction::Run(const char* input)
 {
 // run the reconstruction
 
@@ -651,7 +650,7 @@ Bool_t AliReconstruction::Run(const char* input,
   
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
     if (fRawReader) fRawReader->NextEvent();
-    if ((iEvent < firstEvent) || ((lastEvent >= 0) && (iEvent > lastEvent))) {
+    if ((iEvent < fFirstEvent) || ((fLastEvent >= 0) && (iEvent > fLastEvent))) {
       // copy old ESD to the new one
       if (treeOld) {
 	treeOld->SetBranchAddress("ESD", &esd);

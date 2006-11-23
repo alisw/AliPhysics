@@ -95,12 +95,7 @@ public:
 		   fLoadAlignFromCDB = kFALSE;}
   Bool_t         ApplyAlignObjsToGeom(TObjArray* alObjArray);
 
-  virtual Bool_t Run(const char* input, 
-		     Int_t firstEvent, Int_t lastEvent = -1);
-  Bool_t         Run(const char* input = NULL)
-    {return Run(input, fFirstEvent, fLastEvent);};
-  Bool_t         Run(Int_t firstEvent, Int_t lastEvent = -1)
-    {return Run(NULL, firstEvent, lastEvent);};
+  virtual Bool_t Run(const char* input = NULL);
 
 
 private:
