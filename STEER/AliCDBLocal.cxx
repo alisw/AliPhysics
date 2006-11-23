@@ -411,8 +411,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 
 	anEntry-> SetLastStorage("local");
  
- 	if(!((entryId.GetAliCDBRunRange()).IsEqual(& dataId.GetAliCDBRunRange())) || 
-    		(entryId.GetVersion() != dataId.GetVersion()) || (entryId.GetSubVersion() != dataId.GetSubVersion())){
+ 	if(!entryId.IsEqual(&dataId)){
 		AliWarning(Form("Mismatch between file name and object's Id!"));
 		AliWarning(Form("File name: %s", dataId.ToString().Data()));
 		AliWarning(Form("Object's Id: %s", entryId.ToString().Data()));

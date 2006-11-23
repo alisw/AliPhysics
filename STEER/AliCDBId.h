@@ -60,7 +60,7 @@ public:
 	Int_t 	GetSubVersion() const {return fSubVersion;};
 	void 	SetVersion(Int_t version) {fVersion = version;};	
 	void 	SetSubVersion(Int_t subVersion) {fSubVersion = subVersion;};
-	
+
 	const TString& 	GetLastStorage() const {return fLastStorage;};
 	void 		SetLastStorage(TString& lastStorage){fLastStorage = lastStorage;};
 
@@ -70,10 +70,12 @@ public:
 	Bool_t HasVersion() const {return fVersion >= 0;};
 	Bool_t HasSubVersion() const {return fSubVersion >= 0;};
 
-	Bool_t Comprises(const AliCDBId& other) const 
-		{return fPath.Comprises(other.fPath) 
+	Bool_t Comprises(const AliCDBId& other) const
+		{return fPath.Comprises(other.fPath)
 		         && fRunRange.Comprises(other.fRunRange);};
-	
+
+	virtual Bool_t IsEqual(const TObject *obj) const;
+
 	TString ToString() const;
 
 private:

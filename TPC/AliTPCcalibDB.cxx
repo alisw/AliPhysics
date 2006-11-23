@@ -32,6 +32,7 @@
 
 #include "AliTPCcalibDB.h"
 
+#include "AliTPCParam.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalDet.h"
@@ -106,6 +107,7 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //if (fPadTime0) delete fPadTime0;
   //if (fPadPRFWidth) delete fPadPRFWidth;
   //if (fPadNoise) delete fPadNoise;
+  if (fParam) {delete fParam; fParam = 0;}
 }
 
 
@@ -187,7 +189,7 @@ void AliTPCcalibDB::Update(){
 
   entry          = GetCDBEntry("TPC/Calib/Parameters");
   if (entry){
-    //if (fPadNoise) delete fPadNoise;
+    if (fParam) {delete fParam; fParam = 0;}
     entry->SetOwner(kTRUE);
     fParam = (AliTPCParam*)(entry->GetObject()->Clone());
   }

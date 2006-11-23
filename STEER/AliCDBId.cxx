@@ -85,13 +85,29 @@ AliCDBId::~AliCDBId() {
 //_____________________________________________________________________________
 Bool_t AliCDBId::IsValid() const {
 // validity check
-	
+
 	if (!(fPath.IsValid() && fRunRange.IsValid())) {
 		return kFALSE;
 	}
 	
 	// FALSE if doesn't have version but has subVersion
 	return !(!HasVersion() && HasSubVersion());
+}
+
+//___________________________________________________________________________
+Bool_t AliCDBId::IsEqual(const TObject* obj) const {
+// check if this id is equal to other id (compares path, run range, versions)
+
+        if (this == obj) {
+                return kTRUE;
+        }
+
+        if (AliCDBId::Class() != obj->IsA()) {
+                return kFALSE;
+        }
+        AliCDBId* other = (AliCDBId*) obj;
+	return fPath.GetPath() == other->GetPath() && fRunRange.IsEqual(&other->GetAliCDBRunRange()) &&
+		fVersion == other->GetVersion() && fSubVersion == other->GetSubVersion();
 }
 
 //_____________________________________________________________________________

@@ -318,7 +318,7 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 	if(fSpecificStorages.Contains(objCalibType)){
 		AliWarning(Form("Storage \"%s\" already activated! It will be replaced by the new one",
 					calibType));
-		fSpecificStorages.Remove(objCalibType);
+		delete fSpecificStorages.Remove(objCalibType);
 	}
 	GetStorage(param);
 	fSpecificStorages.Add(objCalibType, param->CloneParam());
@@ -413,9 +413,9 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 	if(fCache && query.GetFirstRun() != fRun)
 		AliWarning("Run number explicitly set in query: CDB cache temporarily disabled!");
 
-	
+
   	AliCDBEntry *entry=0;
-	
+
   	// first look into map of cached objects
   	if(fCache && query.GetFirstRun() == fRun)
 		entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
@@ -446,7 +446,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 		AliDebug(2,Form("Caching entry %s !",query.GetPath().Data()));
 		CacheEntry(query.GetPath(), entry);
 	}
-  
+
   	return entry;
 		
 }
@@ -470,7 +470,7 @@ TList* AliCDBManager::GetAll(const AliCDBPath& path, Int_t runNumber,
 }
 
 //_____________________________________________________________________________
-TList* AliCDBManager::GetAll(const AliCDBPath& path, 
+TList* AliCDBManager::GetAll(const AliCDBPath& path,
 	const AliCDBRunRange& runRange, Int_t version, Int_t subVersion) {
 // get multiple AliCDBEntry objects from the database
 
@@ -482,6 +482,8 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 // get multiple AliCDBEntry objects from the database
 // Warning: this method works correctly only for queries of the type "Detector/*"
 // 		and not for more specific queries e.g. "Detector/Calib/*" !
+// Warning #2: Entries are cached, but GetAll will keep on retrieving objects from OCDB!
+// 		To get an object from cache use Get() function
 
 	if(!fDefaultStorage) {
 		AliError("No storage set!");
@@ -496,33 +498,46 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 	if((fSpecificStorages.GetEntries()>0) && query.GetPath().BeginsWith('*')){
                 // if specific storages are active a query with "*" is ambiguous
 		AliError("Query too generic in this context!");
-                return NULL;		
+                return NULL;
 	}
 
 	if (query.IsAnyRange()) {
 		AliError(Form("Unspecified run or runrange: %s",
-				query.ToString().Data())); 	
+				query.ToString().Data()));
 		return NULL;
-	}	
-        
+	}
+
 	TObjString objStrLev0(query.GetLevel0());
 	//AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
 
-	AliCDBStorage *aStorage;	
+	AliCDBStorage *aStorage;
 	if(aPar) {
 		aStorage=GetStorage(aPar);
 		TString str = aPar->GetURI();
 		AliDebug(2,Form("Looking into storage: %s",str.Data()));
-		
+
 	} else {
 		aStorage=GetDefaultStorage();
-		AliDebug(2,"Looking into default storage");	
+		AliDebug(2,"Looking into default storage");
 	}
 
 	TList *result = aStorage->GetAll(query);
+	if(!result) return 0;
 
-        return result;
+	// caching entries
+ 	if(fCache && (query.GetFirstRun() == fRun)){
+
+		TIter iter(result);
+		AliCDBEntry* entry=0;
+		while((entry = dynamic_cast<AliCDBEntry*> (iter.Next()))){
+			const AliCDBId& anId = entry->GetId();
+			AliDebug(2,Form("Caching entry %s !", anId.GetPath().Data()));
+			CacheEntry(anId.GetPath(), entry);
+		}
+	}
+
+	return result;
 }
 
 //_____________________________________________________________________________

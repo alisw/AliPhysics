@@ -99,6 +99,8 @@ class AliCDBManager: public TObject {
 	static void Destroy();
 	~AliCDBManager();
 
+  	void ClearCache();
+
 	static AliCDBManager* Instance(); 
 
  private:
@@ -117,9 +119,8 @@ class AliCDBManager: public TObject {
 	AliCDBStorage* GetActiveStorage(const AliCDBParam* param);
 	void PutActiveStorage(AliCDBParam* param, AliCDBStorage* storage);
 
-  	void ClearCache();
   	void CacheEntry(const char* path, AliCDBEntry* entry);
-	
+
 	AliCDBParam* SelectSpecificStorage(const TString& path);
 	
 

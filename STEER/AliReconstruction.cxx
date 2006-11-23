@@ -518,6 +518,7 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
     }
   }
 
+  delete fAlignObjArray; fAlignObjArray=0;
   return kTRUE;
 }
 
@@ -576,6 +577,8 @@ Bool_t AliReconstruction::Run(const char* input)
     TGeoManager::Import(geom.Data());
     if (!gGeoManager) if (fStopOnError) return kFALSE;
   }
+
+  AliCDBManager* man = AliCDBManager::Instance();
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
 
   // local reconstruction
@@ -787,6 +790,9 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
   TStopwatch stopwatch;
   stopwatch.Start();
 
+  AliCDBManager* man = AliCDBManager::Instance();
+  Bool_t origCache = man->GetCacheFlag();
+
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
@@ -797,6 +803,13 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     TStopwatch stopwatchDet;
     stopwatchDet.Start();
+
+    AliInfo(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
+
+    man->SetCacheFlag(kTRUE);
+    TString calibPath = Form("%s/Calib/*", fgkDetectorName[iDet]);
+    man->GetAll(calibPath); // entries are cached!
+
     if (fRawReader) {
       fRawReader->RewindEvents();
       reconstructor->Reconstruct(fRunLoader, fRawReader);
@@ -806,7 +819,12 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
 		 fgkDetectorName[iDet],
 		 stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
+
+    // unload calibration data
+    man->ClearCache();
   }
+
+  man->SetCacheFlag(origCache);
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
     AliError(Form("the following detectors were not found: %s",

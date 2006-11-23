@@ -183,10 +183,12 @@ void AliCDBPath::InitPath() {
 	
 	if (!fIsValid) {
 		AliInfo(Form("Invalid AliCDBPath <%s>!", fPath.Data()));
+	} else {	
+		fPath = Form("%s/%s/%s", fLevel0.Data(), fLevel1.Data(), fLevel2.Data());
 	}
 	
 	delete anArray;
-
+	
 	Init();
 }
 
