@@ -32,16 +32,17 @@ ClassImp(AliEventTagCuts)
 AliEventTagCuts::AliEventTagCuts() :
   TObject(),
   
+  fNParticipantsMin(-1), fNParticipantsMax(10000),
+  fNParticipantsFlag(kFALSE),
+  fImpactParamMin(-1.0), fImpactParamMax(1000.0),
+  fImpactParamFlag(kFALSE),
+
   fVxMin(-1000.0), fVxMax(1000.0), 
   fVxFlag(kFALSE),
   fVyMin(-1000.0), fVyMax(1000.0),  
   fVyFlag(kFALSE),
   fVzMin(-1000.0), fVzMax(1000.0),
   fVzFlag(kFALSE),
-  fNParticipantsMin(-1), fNParticipantsMax(10000),
-  fNParticipantsFlag(kFALSE),
-  fImpactParamMin(-1.0), fImpactParamMax(1000.0),
-  fImpactParamFlag(kFALSE),
   fPrimaryVertexFlag(1),
   fPVFlag(kFALSE),
 
@@ -92,10 +93,10 @@ AliEventTagCuts::AliEventTagCuts() :
 
   fTopJetEnergyMin(-1.0), 
   fTopJetEnergyMinFlag(kFALSE),
-  fNHardPhotonCandidatesMin(-1), fNHardPhotonCandidatesMax(100000),
-  fNHardPhotonCandidatesFlag(kFALSE),
   fTopNeutralEnergyMin(-1.0), 
   fTopNeutralEnergyMinFlag(kFALSE),
+  fNHardPhotonCandidatesMin(-1), fNHardPhotonCandidatesMax(100000),
+  fNHardPhotonCandidatesFlag(kFALSE),
   fNChargedAbove1GeVMin(-1), fNChargedAbove1GeVMax(100000),
   fNChargedAbove1GeVFlag(kFALSE),
   fNChargedAbove3GeVMin(-1), fNChargedAbove3GeVMax(100000),
