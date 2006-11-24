@@ -655,7 +655,8 @@ void AliModule::ReadEuclidMedia(const char* filnam)
 void AliModule::AddAlignableVolumes() const
 {
   // 
-  AliWarning(Form(" %s still has to implement the AddAlignableVolumes method!",GetName()));
+  if (IsActive())
+    AliWarning(Form(" %s still has to implement the AddAlignableVolumes method!",GetName()));
 }
 
 //_______________________________________________________________________
