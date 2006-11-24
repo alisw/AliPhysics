@@ -61,8 +61,8 @@ ClassImp(AliCaloRawStream)
   fNRCU = 4;
   if(calo == "EMCAL")  fNRCU = 2;
 
-  TString path = gSystem->Getenv("ALICE_ROOT/");
-  path += calo+"/mapping/RCU";
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/"+calo+"/mapping/RCU";
   TString path2;
   for(Int_t i = 0; i < fNRCU; i++) {
     path2 = path;
