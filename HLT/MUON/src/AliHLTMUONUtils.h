@@ -56,11 +56,12 @@
 
 #	ifdef __ROOT__
 #		include <TError.h>
-#	else
+#	endif // __ROOT__
+#       ifndef Assert
 #		include <cassert>
 		// Define assert with a capital first letter to maintain coding style. 
 #		define Assert(statement) assert(statement);
-#	endif // __ROOT__
+#       endif
 
 	// Any code that should be compiled in only when the DEBUG macro is specified
 	// can be enclosed with this DebugCode macro.
@@ -70,9 +71,10 @@
 
 #	ifdef __ROOT__
 #		include <TError.h>
-#	else
-#		define Assert(statement)
 #	endif // __ROOT__
+#       ifndef Assert
+#		define Assert(statement)
+#       endif
 
 #	define DebugCode(code)
 
