@@ -25,10 +25,12 @@
 //
 //==============================================================================
 
+#include "Riostream.h"
+
 #include "TClass.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "AliLog.h"
+//#include "AliLog.h"
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
@@ -132,7 +134,8 @@ void AliAnalysisManager::Init(TTree *tree)
   // Init() will be called many times when running with PROOF.
    printf("AliAnalysisManager::Init(%s)\n", tree->GetName());
    if (!fInitOK) {
-      AliError("You have to call InitAnalysis first");
+     cout<<"You have to call InitAnalysis first"<<endl;
+     //AliError("You have to call InitAnalysis first");
       return;
    }   
    if (!tree) return;
@@ -213,7 +216,8 @@ void AliAnalysisManager::SlaveTerminate()
    printf("AliAnalysisManager::SlaveTerminate()\n");
    if (!fOutput)
    {
-     AliError("ERROR: Output list not initialized.");
+     cout<<"ERROR: Output list not initialized."<<endl;
+     //AliError("ERROR: Output list not initialized.");
      return;
    }
    TIter next(fOutputs);
@@ -286,7 +290,8 @@ Bool_t AliAnalysisManager::ConnectInput(AliAnalysisTask *task, Int_t islot,
 // Connect input of an existing task to a data container.
    if (!fTasks->FindObject(task)) {
       AddTask(task);
-      AliInfo(Form("Task %s not registered. Now owned by analysis manager", task->GetName()));
+      cout<<"Task "<<task->GetName()<<" not registered. Now owned by analysis manager"<<endl;
+      //AliInfo(Form("Task %s not registered. Now owned by analysis manager", task->GetName()));
    } 
    Bool_t connected = task->ConnectInput(islot, cont);
    return connected;
@@ -299,7 +304,8 @@ Bool_t AliAnalysisManager::ConnectOutput(AliAnalysisTask *task, Int_t islot,
 // Connect output of an existing task to a data container.
    if (!fTasks->FindObject(task)) {
       AddTask(task);
-      AliInfo(Form("Task %s not registered. Now owned by analysis manager", task->GetName()));
+      cout<<"Task "<<task->GetName()<<"not registered. Now owned by analysis manager"<<endl;
+      //AliInfo(Form("Task %s not registered. Now owned by analysis manager", task->GetName()));
    } 
    Bool_t connected = task->ConnectOutput(islot, cont);
    return connected;
@@ -335,7 +341,8 @@ Bool_t AliAnalysisManager::InitAnalysis()
 //   }   
    // Check for top tasks (depending only on input data containers)
    if (!fTasks->First()) {
-      AliError("Analysis have no tasks !");
+     cout<<"Analysis has no tasks !"<<endl;
+     //AliError("Analysis have no tasks !");
       return kFALSE;
    }   
    TIter next(fTasks);
@@ -366,8 +373,8 @@ Bool_t AliAnalysisManager::InitAnalysis()
                nzombies++;
                iszombie = kTRUE;
             }   
-            AliWarning(Form("Input slot %i of task %s has no container connected ! Declared zombie...",
-                       i,task->GetName()));
+            cout<<"Input slot "<<i<<" of task "<<task->GetName()<<" has no container connected ! Declared zombie..."<<endl;
+	    //AliWarning(Form("Input slot %i of task %s has no container connected ! Declared zombie...",i,task->GetName()));
          }
          if (iszombie) continue;
          // Check if cont is an input container
@@ -380,7 +387,8 @@ Bool_t AliAnalysisManager::InitAnalysis()
       }
    }
    if (!ntop) {
-      AliError("No top task defined. At least one task should be connected only to input containers");
+     cout<<"No top task defined. At least one task should be connected only to input containers"<<endl;
+     //AliError("No top task defined. At least one task should be connected only to input containers");
       return kFALSE;
    }                        
    // Check now if there are orphan tasks
@@ -393,7 +401,8 @@ Bool_t AliAnalysisManager::InitAnalysis()
    while ((task=(AliAnalysisTask*)next())) {
       if (!task->IsUsed()) {
          norphans++;
-         AliWarning(Form("Task %s is orphan",task->GetName()));
+         cout<<"Task "<<task->GetName()<<" is orphan"<<endl;
+	 //AliWarning(Form("Task %s is orphan",task->GetName()));
       }   
    }          
    // Check the task hierarchy (no parent task should depend on data provided
@@ -401,7 +410,8 @@ Bool_t AliAnalysisManager::InitAnalysis()
    for (i=0; i<ntop; i++) {
       task = (AliAnalysisTask*)fTopTasks->At(i);
       if (task->CheckCircularDeps()) {
-         AliError("Found illegal circular dependencies between following tasks:");
+	cout<<"Found illegal circular dependencies between following tasks:"<<endl;
+	//AliError("Found illegal circular dependencies between following tasks:");
          PrintStatus("dep");
          return kFALSE;
       }   
@@ -432,7 +442,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
 // Execute analysis.
    if (!fInitOK) {
-      AliError("Analysis manager was not initialized !");
+     cout<<"Analysis manager was not initialized !"<<endl;
+     //AliError("Analysis manager was not initialized !");
       return;
    }   
    AliAnalysisTask *task;
@@ -443,7 +454,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
       AliAnalysisDataContainer *cont = (AliAnalysisDataContainer*)fInputs->At(0);
       if (!cont) {
-         AliError("Cannot execute analysis in TSelector mode without at least one top container");
+	cout<<"Cannot execute analysis in TSelector mode without at least one top container"<<endl;
+	//AliError("Cannot execute analysis in TSelector mode without at least one top container");
          return;
       }   
       cont->SetData(fTree); // This will notify all consumers

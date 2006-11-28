@@ -42,10 +42,12 @@
 //
 //==============================================================================
 
+#include "Riostream.h"
+
 #include "TClass.h"
 #include "TTree.h"
 #include "TFile.h"
-#include "AliLog.h"
+//#include "AliLog.h"
 
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
@@ -166,9 +168,9 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
       }      
       return kTRUE;   
    } else {
-      AliWarning(Form("Data for container %s can be published only by producer task %s", 
-                 GetName(), fProducer->GetName()));   
-      return kFALSE;           
+     cout<<"Data for container "<<GetName()<<" can be published only by producer task "<<fProducer->GetName()<<endl;
+     //AliWarning(Form("Data for container %s can be published only by producer task %s", GetName(), fProducer->GetName()));   
+     return kFALSE;           
    }              
 }
 
@@ -183,7 +185,8 @@ void AliAnalysisDataContainer::OpenFile(const char *name, Option_t *option)
    }
    fFile =  new TFile(name, option);
    if (fFile->IsZombie()) {
-      AliError(Form("Cannot open file %s with option %s",name,option));
+     cout<<"Cannot open file "<<name<<" with option "<<option<<endl;
+     //AliError(Form("Cannot open file %s with option %s",name,option));
       fFile = 0;
    }   
 }   
@@ -226,21 +229,23 @@ void AliAnalysisDataContainer::SetProducer(AliAnalysisTask *prod, Int_t islot)
 {
 // Set the producer of data. The slot number is required for data type checking.
    if (fProducer) {
-      AliWarning(Form("Data container %s already has a producer: %s",
-                 GetName(),fProducer->GetName()));
+     cout<<"Data container "<<GetName()<<" already has a producer: "<<fProducer->GetName()<<endl;
+     //AliWarning(Form("Data container %s already has a producer: %s",GetName(),fProducer->GetName()));
    } 
    if (fDataReady) {
-      AliError(Form("%s container contains data - cannot change producer!", GetName()));
+     cout<<GetName()<<" container contains data - cannot change producer!"<<endl;
+     //AliError(Form("%s container contains data - cannot change producer!", GetName()));
       return;
    }   
    AliAnalysisDataSlot *slot = prod->GetOutputSlot(islot);
    if (!slot) {
-      AliError(Form("Producer task %s does not have an output #%i", prod->GetName(),islot));
+     cout<<"Producer task "<<prod->GetName()<<" does not have an output #"<<islot<<endl;
+     //AliError(Form("Producer task %s does not have an output #%i", prod->GetName(),islot));
       return;
    }   
    if (!slot->GetType()->InheritsFrom(fType)) {
-      AliError(Form("Data type %s for output slot %i of task %s does not match container type %s", 
-                     slot->GetType()->GetName(),islot,prod->GetName(),fType->GetName()));
+     cout<<"Data type "<<slot->GetType()->GetName()<<"for output slot "<<islot<<" of task "<<prod->GetName()<<" does not match container type "<<fType->GetName()<<endl;
+     //AliError(Form("Data type %s for output slot %i of task %s does not match container type %s", slot->GetType()->GetName(),islot,prod->GetName(),fType->GetName()));
       return;
    }   
    
@@ -259,12 +264,13 @@ void AliAnalysisDataContainer::AddConsumer(AliAnalysisTask *consumer, Int_t islo
 // Add a consumer for contained data;
    AliAnalysisDataSlot *slot = consumer->GetInputSlot(islot);
    if (!slot) {
-      AliError(Form("Consumer task %s does not have an input #%i", consumer->GetName(),islot));
+     cout<<"Consumer task "<< consumer->GetName()<<" does not have an input #"<<islot<<endl;
+     //AliError(Form("Consumer task %s does not have an input #%i", consumer->GetName(),islot));
       return;
    }   
    if (!slot->GetType()->InheritsFrom(fType)) {
-      AliError(Form("Data type %s for input slot %i of task %s does not match container type %s", 
-                     slot->GetType()->GetName(),islot,consumer->GetName(),fType->GetName()));
+     cout<<"Data type "<<slot->GetType()->GetName()<<" for input slot "<<islot<<" of task "<<consumer->GetName()<<" does not match container type "<<fType->GetName()<<endl;  
+     //AliError(Form("Data type %s for input slot %i of task %s does not match container type %s", slot->GetType()->GetName(),islot,consumer->GetName(),fType->GetName()));
       return;
    }   
 
@@ -292,11 +298,13 @@ void AliAnalysisDataContainer::DeleteData()
 {
 // Delete data if not needed anymore.
    if (!fDataReady || !ClientsExecuted()) {
-      AliWarning(Form("Data not ready or not all clients of container %s executed. Data not deleted.", GetName()));
+     cout<<"Data not ready or not all clients of container "<<GetName()<<" executed. Data not deleted."<<endl;
+     //AliWarning(Form("Data not ready or not all clients of container %s executed. Data not deleted.", GetName()));
       return;
    }
    if (!fOwnedData) {
-      AliWarning(Form("Data not owned by container %s. Not deleted.", GetName()));
+     cout<<"Data not owned by container "<<GetName()<<". Not deleted."<<endl;
+     //AliWarning(Form("Data not owned by container %s. Not deleted.", GetName()));
       return;
    }
    delete fData;
