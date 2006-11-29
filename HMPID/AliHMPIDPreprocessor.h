@@ -16,4 +16,6 @@ protected:
   ClassDef(AliHMPIDPreprocessor, 0);
 };
 
+typedef AliHMPIDPreprocessor AliRICHPreprocessor; // for backward compatibility
+
 #endif

@@ -44,6 +44,9 @@ protected:
   TObjArray    *fDigs;        //! list of digits forming this cluster
   ClassDef(AliHMPIDCluster,5)  //HMPID cluster class       
 };//class AliHMPIDCluster
+
+typedef AliHMPIDCluster AliRICHCluster; // for backward compatibility
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::DigAdd(AliHMPIDDigit *pDig)
 {

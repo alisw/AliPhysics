@@ -21,4 +21,7 @@ public:
 protected:
   ClassDef(AliHMPIDDigitizer,0)
 };    
+
+typedef AliHMPIDDigitizer AliRICHDigitizer;  // for backward compatibility
+
 #endif

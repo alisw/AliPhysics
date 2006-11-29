@@ -41,6 +41,9 @@ protected:
   Float_t fY;                        //y shift of LORS with respect to rotated MARS   
   ClassDef(AliHMPIDParam,0)           //HMPID main parameters class
 };
+
+typedef AliHMPIDParam AliRICHParam; // for backward compatibility
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDParam* AliHMPIDParam::Instance()
 {

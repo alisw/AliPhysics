@@ -76,6 +76,9 @@ protected:                  //AliDigit has fTracks[3]
   Float_t fQ;               //QDC value, fractions are permitted for summable procedure  
   ClassDef(AliHMPIDDigit,4) //HMPID digit class       
 };//class AliHMPIDDigitN
+
+typedef AliHMPIDDigit AliRICHDigit; // for backward compatibility
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDDigit::AliHMPIDDigit(Int_t c,Float_t q,Int_t t,Float_t x,Float_t y,Int_t flag):AliDigit(),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  
 {

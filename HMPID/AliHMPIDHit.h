@@ -31,5 +31,7 @@ protected:                                                                     /
   Float_t  fLorsY;                                                             //hit Y position in chamber LORS, [cm]
   ClassDef(AliHMPIDHit,4)                                                       //HMPID hit class 
 };//class AliHMPIDhit
+
+typedef AliHMPIDHit AliRICHHit; // for backward compatibility
     
 #endif

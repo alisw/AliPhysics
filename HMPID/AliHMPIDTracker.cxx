@@ -104,7 +104,6 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pESD)
                    pTrk->SetHMPIDsignal   (recon.CkovAngle(pCluLst,iNphot));                 //search for Cerenkov angle for this track
                    pTrk->SetHMPIDchi2     (recon.CkovSigma2());                              //error squared 
                    pTrk->SetHMPIDmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q(),iMip);     //info on mip cluster + n. phot.
-    Printf("Ch=%i MIP-TRK=%5.2f cm Th=%f+-%f", iCh, dMin,pTrk->GetHMPIDsignal(),pTrk->GetHMPIDchi2());
  }//ESD tracks loop
   AliDebug(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;

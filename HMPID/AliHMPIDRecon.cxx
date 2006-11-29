@@ -93,7 +93,6 @@ Double_t AliHMPIDRecon::FindPhotCkov(Double_t cluX,Double_t cluY)
 //   Returns: Cerenkov angle 
 
   TVector2 pos(cluX,cluY); Double_t cluR=(pos-fTrkPos).Mod();  Double_t phi=FindPhotPhi(cluX,cluY);      
-  Printf("new dist %f phi %f",cluR,phi);
   Double_t ckov1=0,ckov2=0.75;
   const Double_t kTol=0.05; 
   Int_t iIterCnt = 0;
@@ -101,7 +100,6 @@ Double_t AliHMPIDRecon::FindPhotCkov(Double_t cluX,Double_t cluY)
     if(iIterCnt>=50) return -1;
     Double_t ckov=0.5*(ckov1+ckov2);
     Double_t dist=cluR-TracePhot(ckov,phi,pos); iIterCnt++;   //get distance between trial point and cluster position
-    Printf("New: phi %f ckov %f dist %f",phi,ckov,dist);
     if     (dist> kTol) ckov1=ckov;                           //cluster @ larger ckov 
     else if(dist<-kTol) ckov2=ckov;                           //cluster @ smaller ckov
     else                return ckov;                          //precision achived         
@@ -412,7 +410,7 @@ void AliHMPIDRecon::Display()
     for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//ESD tracks loop
       AliESDtrack *pTrk = pEsd->GetTrack(iTrk);             //
       Float_t th,ph,x,y; pTrk->GetHMPIDtrk(x,y,th,ph); if(x<0) continue;
-      Int_t ch=pTrk->GetHMPIDcluIdx()/1000000; Printf("ch=%i",ch);
+      Int_t ch=pTrk->GetHMPIDcluIdx()/1000000;
       pTrkMap[ch]->SetPoint(aTrkCnt[ch]++,x,y);
     }//ESD tracks loop
     

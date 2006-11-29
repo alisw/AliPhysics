@@ -57,7 +57,7 @@ Int_t AliHMPIDParam::Stack(Int_t evt,Int_t tid)
   if(pAL->LoadKinematics()) return -1;
   
   Int_t mtid=-1;
-  Int_t iNevt=pAL->GetNumberOfEvents();     Printf("This session contains %i event(s)",iNevt);
+  Int_t iNevt=pAL->GetNumberOfEvents();
   
   for(Int_t iEvt=0;iEvt<iNevt;iEvt++){//events loop
     if(evt!=-1 && evt!=iEvt) continue; //in case one needs to print the requested event, ignore all others
@@ -74,7 +74,6 @@ Int_t AliHMPIDParam::Stack(Int_t evt,Int_t tid)
         pTrack=pStack->Particle(tid);
         str+=" from ";str+=pTrack->GetName();
       } 
-      Printf("%s",str.Data());       
     }//if(tid==-1)      
   }//events loop
   pAL->UnloadHeader();  pAL->UnloadKinematics();

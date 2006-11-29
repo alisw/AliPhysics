@@ -66,6 +66,8 @@ protected:
   TVector2 fTrkPos;                           //track positon in LORS at the middle of radiator
   ClassDef(AliHMPIDRecon,0)
 };
+
+typedef AliHMPIDRecon AliRICHRecon; // for backward compatibility
     
 #endif // #ifdef AliHMPIDRecon_cxx
 

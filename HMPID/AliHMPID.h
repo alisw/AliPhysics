@@ -59,5 +59,8 @@ protected:
 
   ClassDef(AliHMPID,11)                            //Main HMPID class 
 };//class AliHMPID  
+
+typedef AliHMPID AliRICH; // for backward compatibility
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif

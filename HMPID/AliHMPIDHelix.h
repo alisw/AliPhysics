@@ -25,6 +25,9 @@ protected:
   Float_t  fBz;            //magnetic field along z, [kGaus] 
   ClassDef(AliHMPIDHelix,0) //General helix
 };//class AliHMPIDHelix
+
+typedef AliHMPIDHelix AliRICHHelix; // for backward compatibility
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDHelix::Propagate(Float_t len,TVector3 &x,TVector3 &p)
 {

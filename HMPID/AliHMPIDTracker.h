@@ -25,4 +25,6 @@ protected:
   ClassDef(AliHMPIDTracker,0)
 };//class AliHMPIDTracker
 
+typedef AliHMPIDTracker AliRICHTracker; // for backward compatibility
+
 #endif//AliHMPIDTracker_h
