@@ -333,7 +333,7 @@ void AliJetParticlesReaderESD::PrintESDtrack(const AliESDtrack *kesdtrack) const
   if((status & AliESDtrack::kTOFpid) == AliESDtrack::kTOFpid) cout << "TOFpid ";
 
   if((status & AliESDtrack::kPHOSpid) == AliESDtrack::kPHOSpid) cout << "PHOSpid ";
-  if((status & AliESDtrack::kRICHpid) == AliESDtrack::kRICHpid) cout << "RICHpid ";
+  if((status & AliESDtrack::kHMPIDpid) == AliESDtrack::kHMPIDpid) cout << "HMPIDpid ";
   if((status & AliESDtrack::kEMCALpid) == AliESDtrack::kEMCALpid) cout << "EMCALpid ";
   if((status & AliESDtrack::kESDpid) == AliESDtrack::kESDpid) cout << "ESDpid ";
   if((status & AliESDtrack::kTIME) == AliESDtrack::kTIME) cout << "TIME ";
