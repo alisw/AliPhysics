@@ -14,7 +14,7 @@
 
 #ifdef DEBUG
 #include <iostream>
-#include "Debug/print.hpp"
+#include "DDL/print.hpp"
 using std::endl;
 using std::cout;
 #endif // DEBUG
