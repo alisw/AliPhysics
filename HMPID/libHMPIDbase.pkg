@@ -1,0 +1,4 @@
+SRCS:=  AliHMPIDHelix.cxx AliHMPIDHit.cxx AliHMPIDDigit.cxx  AliHMPIDCluster.cxx AliHMPIDParam.cxx AliHMPID.cxx  
+
+HDRS:= $(SRCS:.cxx=.h)
+DHDR:= HMPIDbaseLinkDef.h

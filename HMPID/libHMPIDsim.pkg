@@ -1,0 +1,4 @@
+SRCS:= AliHMPIDv0.cxx AliHMPIDv1.cxx AliHMPIDDigitizer.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+DHDR:= HMPIDsimLinkDef.h
