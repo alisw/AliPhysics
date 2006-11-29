@@ -62,6 +62,8 @@ private:
   ClassDef(AliACORDEModule, 1)// ACORDE module geometry manager
 };
 
+typedef AliACORDEModule AliCRTModule; // for backward compatibility
+
 inline void AliACORDEModule::SetScintillatorThickness(Float_t thick)
 { fScintillatorThickness = thick; }
 

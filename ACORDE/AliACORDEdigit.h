@@ -39,4 +39,7 @@ protected:
 private:
     ClassDef(AliACORDEdigit,1)  //Digit (Header) object for set : ACORDE (ACORDE)
 };
+
+typedef AliACORDEdigit AliCRTdigit; // for backward compatibility
+
 #endif // ALIACORDEDIGIT_H

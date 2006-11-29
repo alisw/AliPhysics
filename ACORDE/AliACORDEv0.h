@@ -30,4 +30,7 @@ private:
 
   ClassDef(AliACORDEv0,1) // Cosmic Ray Trigger (ACORDE).
 };
+
+typedef AliACORDEv0 AliCRTv0; // for backward compatibility
+
 #endif // ALIACORDEV0_H

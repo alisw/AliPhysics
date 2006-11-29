@@ -83,4 +83,7 @@ class AliGenACORDE : public AliGenerator {
 
   ClassDef(AliGenACORDE, 1) // Generator for AliACORDE class
 };
+
+typedef AliGenACORDE AliGenCRT; // for backward compatibility
+
 #endif // ALIGENACORDE_H

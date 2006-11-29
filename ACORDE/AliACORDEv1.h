@@ -42,4 +42,6 @@ private:
   ClassDef(AliACORDEv1, 1)  //Class for ACORDE, version 1, Shafts outside of AliHALL
 };
 
+typedef AliACORDEv1 AliCRTv1; // for backward compatibility
+
 #endif // ALIACORDEV1_H

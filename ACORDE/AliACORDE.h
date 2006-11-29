@@ -38,4 +38,7 @@ private:
 
   ClassDef(AliACORDE, 1) // Cosmic Ray Trigger (ACORDE) base class
 };
+
+typedef AliACORDE AliCRT; // for backward compatibility
+
 #endif // ALIACORDE_H

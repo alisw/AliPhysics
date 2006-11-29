@@ -48,4 +48,7 @@ protected:
 private:
   ClassDef(AliACORDEhit,1)  // Hit for ACORDE (ACORDE)
 };
+
+typedef AliACORDEhit AliCRThit; // for backward compatibility
+
 #endif /* ALIACORDEHIT_H */

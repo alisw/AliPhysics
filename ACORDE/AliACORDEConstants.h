@@ -83,4 +83,7 @@ protected:
  private:
   ClassDef(AliACORDEConstants, 0)   // ACORDE(ACORDE) global constants
 };
+
+typedef AliACORDEConstants AliCRTConstants; // for backward compatibility
+
 #endif // ALIACORDECONSTANTS_H
