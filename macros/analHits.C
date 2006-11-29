@@ -50,7 +50,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     AliMUONHit   *muonHit;
     AliPHOSHit   *phosHit;
     AliPMDhit    *pmdHit;
-    AliRICHHit   *richHit;
+    AliHMPIDHit   *richHit;
     AliSTARThit  *startHit;
     AliTOFhit    *tofHit;
     AliTPChit    *tpcHit;
@@ -66,7 +66,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     AliMUON   *MUON   = (AliMUON*)   gAlice->GetDetector("MUON");
     AliPHOS   *PHOS   = (AliPHOS*)   gAlice->GetDetector("PHOS");
     AliPMD    *PMD    = (AliPMD*)    gAlice->GetDetector("PMD");
-    AliRICH   *RICH   = (AliRICH*)   gAlice->GetDetector("RICH");
+    AliHMPID   *HMPID   = (AliHMPID*)   gAlice->GetDetector("HMPID");
     AliSTART  *START  = (AliSTART*)  gAlice->GetDetector("START");
     AliTOF    *TOF    = (AliTOF*)    gAlice->GetDetector("TOF");
     AliTPC    *TPC    = (AliTPC*)    gAlice->GetDetector("TPC");
@@ -86,7 +86,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     if(MUON)  TH1F *hMUON  = new TH1F("hMUON"  ,"Hit Radius",100,0.,500.);
     if(PHOS)   TH1F *hPHOS  = new TH1F("hPHOS"  ,"Energy Dep.",100,0.,0.5);
     if(PMD)     TH1F *hPMD   = new TH1F("hPMD"   ,"Energy Dep.",100,0.,1.e+5);
-    if(RICH)  TH1F *hRICH  = new TH1F("hRICH"  ,"Energy loss",100,0.,1.e-5);
+    if(HMPID)  TH1F *hHMPID  = new TH1F("hHMPID"  ,"Energy loss",100,0.,1.e-5);
     if(START) TH1F *hSTART = new TH1F("hSTART" ,"Time of Flight",100,0.,10.);
     if(TOF)   TH1F *hTOF   = new TH1F("hTOF"   ,"Time of Flight",100,0.,1.e-5);
     if(TPC)   TH1F *hTPC   = new TH1F("hTPC"   ,"Charge",100,0.,70.2);
@@ -133,12 +133,12 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 		hPMD->Fill(pmdHit->GetEnergy());
 	    } // end for pmdHit
 	} // end if PMD
-	if(RICH){
-	    for(richHit=(AliRICHHit*)RICH->FirstHit(-1);richHit;
-		richHit=(AliRICHHit*)RICH->NextHit()){
-		hRICH->Fill(richHit->fEloss);
+	if(HMPID){
+	    for(richHit=(AliHMPIDHit*)HMPID->FirstHit(-1);richHit;
+		richHit=(AliHMPIDHit*)HMPID->NextHit()){
+		hHMPID->Fill(richHit->fEloss);
 	    } // end for richHit
-	} // end if RICH
+	} // end if HMPID
 	if(START){
 	    for(startHit=(AliSTARThit*)START->FirstHit(-1);startHit;
 		startHit=(AliSTARThit*)START->NextHit()){
@@ -213,11 +213,11 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 	hPMD->Draw();
 	c0->SaveAs("analHitsPMD.ps");
     } // end if PMD
-    if(RICH){
-	hRICH->SetFillColor(42);
-	hRICH->Draw();
-	c0->SaveAs("analHitsRICH.ps");
-    } // end if RICH
+    if(HMPID){
+	hHMPID->SetFillColor(42);
+	hHMPID->Draw();
+	c0->SaveAs("analHitsHMPID.ps");
+    } // end if HMPID
     if(START){
 	hSTART->SetFillColor(42);
 	hSTART->Draw();
@@ -261,7 +261,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     if(MUON)   delete hMUON;
     if(PHOS)   delete hPHOS;
     if(PMD)    delete hPMD;
-    if(RICH)   delete hRICH;
+    if(HMPID)   delete hHMPID;
     if(START)  delete hSTART;
     if(TOF)    delete hTOF;
     if(TPC)    delete hTPC;

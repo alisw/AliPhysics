@@ -1,5 +1,5 @@
-#ifndef ALIGENRICHLIB_H
-#define ALIGENRICHLIB_H
+#ifndef ALIGENHMPIDLIB_H
+#define ALIGENHMPIDLIB_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -16,7 +16,7 @@
 
 class TRandom;
 
-class AliGenRICHlib :public AliGenLib {
+class AliGenHMPIDlib :public AliGenLib {
 
  public:
   enum EPartId {kPhi=333};
@@ -88,7 +88,7 @@ class AliGenRICHlib :public AliGenLib {
   static Double_t PtLambdaBarExp (Double_t *px, Double_t *dummy);
   static Double_t YLambdaBarFlat (Double_t *py, Double_t *dummy);
 
-  ClassDef(AliGenRICHlib,0)
+  ClassDef(AliGenHMPIDlib,0)
 };
 
 #endif

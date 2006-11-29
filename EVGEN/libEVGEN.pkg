@@ -1,7 +1,7 @@
 SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenCocktail.cxx AliGenCocktailAfterBurner.cxx AliGenFLUKAsource.cxx \
                 AliGenLib.cxx \
-                AliGenMUONlib.cxx AliGenRICHlib.cxx AliGenParam.cxx\
+                AliGenMUONlib.cxx AliGenHMPIDlib.cxx AliGenParam.cxx\
                 AliDimuCombinator.cxx AliGenHalo.cxx \
                 AliGenHaloProtvino.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \

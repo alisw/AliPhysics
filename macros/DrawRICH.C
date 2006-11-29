@@ -1,9 +1,9 @@
-void DrawRICH()
+void DrawHMPID()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->LoadMacro("ViewRICH.C");
-   gInterpreter->ProcessLine("ViewRICH()");
+   gROOT->LoadMacro("ViewHMPID.C");
+   gInterpreter->ProcessLine("ViewHMPID()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

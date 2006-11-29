@@ -25,8 +25,8 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/Full"){
     TGeoManager::Import("geometry.root");
   }
 
-  TString dets = "EMCAL,FMD,ITS,MUON,PHOS,PMD,RICH,START,TOF,TPC,TRD,VZERO,ZDC";
-//   TString dets = "ABSO,DIPO,FMD,FRAME,HALL,ITS,MAG,MUON,PHOS,PIPE,PMD,RICH,SHIL,START,TOF,TPC,TRD,ZDC,EMCAL,CRT,VZERO";
+  TString dets = "EMCAL,FMD,ITS,MUON,PHOS,PMD,HMPID,START,TOF,TPC,TRD,VZERO,ZDC";
+//   TString dets = "ABSO,DIPO,FMD,FRAME,HALL,ITS,MAG,MUON,PHOS,PIPE,PMD,HMPID,SHIL,START,TOF,TPC,TRD,ZDC,EMCAL,CRT,VZERO";
   TObjArray *detArray = dets.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;

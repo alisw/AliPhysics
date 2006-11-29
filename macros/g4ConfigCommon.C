@@ -128,7 +128,7 @@ void ConfigCommon(Bool_t interactiveSetup)
   Int_t iPHOS  = 1;
   Int_t iPIPE  = 1;
   Int_t iPMD   = 1;
-  Int_t iRICH  = 1;
+  Int_t iHMPID  = 1;
   Int_t iSHIL  = 1;
   Int_t iSTART = 1;
   Int_t iTOF   = 1;
@@ -271,10 +271,10 @@ void ConfigCommon(Bool_t interactiveSetup)
 	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
     }
 
-    if (iRICH)
+    if (iHMPID)
     {
-        //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
+        //=================== HMPID parameters ===========================
+        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
     }
 
 

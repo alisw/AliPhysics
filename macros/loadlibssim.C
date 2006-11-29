@@ -49,8 +49,8 @@ void loadlibssim ()
   gSystem->Load("libFMDsim");
   gSystem->Load("libPMDbase");
   gSystem->Load("libPMDsim");
-  gSystem->Load("libRICHbase");
-  gSystem->Load("libRICHsim");
+  gSystem->Load("libHMPIDbase");
+  gSystem->Load("libHMPIDsim");
   gSystem->Load("libSTARTbase");
   gSystem->Load("libSTARTsim");
   gSystem->Load("libSTARTrec");

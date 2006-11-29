@@ -16,8 +16,8 @@ void html() {
    html.Convert("display.C","Macro to start the event display");
    gROOT->LoadMacro("ecut.C");
    html.Convert("ecut.C","Macro to animate the rapidity cut slider");
-   gROOT->LoadMacro("RICH.C");
-   html.Convert("RICH.C","Macro to read RICH events");
+   gROOT->LoadMacro("HMPID.C");
+   html.Convert("HMPID.C","Macro to read HMPID events");
    gROOT->LoadMacro("TPCHits2Digits.C");
    html.Convert("TPCHits2Digits.C","Macro to convert TPC hits to Digits");
    gROOT->LoadMacro("TPCHits2Clusters.C");

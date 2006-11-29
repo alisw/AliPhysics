@@ -39,9 +39,9 @@ void loadlibsrec ()
   gSystem->Load("libPMDbase");
   gSystem->Load("libPMDsim");
   gSystem->Load("libPMDrec");
-  gSystem->Load("libRICHbase");
-  gSystem->Load("libRICHsim");
-  gSystem->Load("libRICHrec");
+  gSystem->Load("libHMPIDbase");
+  gSystem->Load("libHMPIDsim");
+  gSystem->Load("libHMPIDrec");
   gSystem->Load("libSTARTbase");
   gSystem->Load("libSTARTsim");
   gSystem->Load("libSTARTrec");

@@ -136,7 +136,7 @@ private:
   Int_t   fMUON;
   Int_t   fPHOS;
   Int_t   fPMD;
-  Int_t   fRICH;
+  Int_t   fHMPID;
   Int_t   fSTART;
   Int_t   fTOF;
   Int_t   fTPC;
@@ -190,7 +190,7 @@ AliMergeSteer::AliMergeSteer(const Text_t *name, const Text_t* title) : TTask(na
   fMUON = 0;
   fPHOS = 0;
   fPMD = 0;
-  fRICH = 0;
+  fHMPID = 0;
   fSTART = 0;
   fTOF = 0;
   fTPC = 0;
@@ -262,8 +262,8 @@ Int_t AliMergeSteer::GetDetectorFlag(Option_t* option)
     return fPHOS;
   } else if (strstr(option,"PMD")) {
     return fPMD;
-  } else if (strstr(option,"RICH")) {
-    return fRICH;
+  } else if (strstr(option,"HMPID")) {
+    return fHMPID;
   } else if (strstr(option,"START")) {
     return fSTART;
   } else if (strstr(option,"TOF")) {
@@ -297,8 +297,8 @@ Bool_t AliMergeSteer::SetDetectorFlag(Option_t* option, Int_t flag)
     fPHOS = flag;
   } else if (strstr(option,"PMD")) {
     fPMD = flag;
-  } else if (strstr(option,"RICH")) {
-    fRICH = flag;
+  } else if (strstr(option,"HMPID")) {
+    fHMPID = flag;
   } else if (strstr(option,"START")) {
     fSTART = flag;
   } else if (strstr(option,"TOF")) {
@@ -447,7 +447,7 @@ Bool_t AliMergeSteer::Merge()
 	  "Merge(\"%s\",\"%s\",\"%s\",%d,%d,%d,%d,%d,%d,%d,%d);",
 	  fFileNameDigitsMerged.Data(),fFileNameSDigits.Data(),
 	  fFileNameBgrSDigits.Data(),
-	  fNEvents,fITS,fTPC,fTRD,fPHOS,fMUON,fRICH,0);
+	  fNEvents,fITS,fTPC,fTRD,fPHOS,fMUON,fHMPID,0);
   cerr<<"I'll do: "<<funcName<<endl;
   gROOT->LoadMacro(macroName);
   if (fDEBUG) cerr<<"I'll do: "<<funcName<<endl;
@@ -470,7 +470,7 @@ Bool_t AliMergeSteer::NoMerge()
   sprintf(funcName,
 	  "AliSDigits2Digits(\"%s\",\"%s\",%d,%d,%d,%d,%d,%d,%d,%d);",
 	  fFileNameDigitsSignalOnly.Data(),fFileNameSDigits.Data(),
-	  fNEvents,fITS,fTPC,fTRD,fPHOS,fMUON,fRICH,0);
+	  fNEvents,fITS,fTPC,fTRD,fPHOS,fMUON,fHMPID,0);
   if (fDEBUG) cerr<<"I'll do: "<<funcName<<endl;
   gROOT->LoadMacro(macroName);
   gInterpreter->ProcessLine(funcName);  

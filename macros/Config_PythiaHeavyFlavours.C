@@ -35,7 +35,7 @@
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv5T0.h"
-#include "RICH/AliRICHv1.h"
+#include "HMPID/AliHMPIDv1.h"
 #include "ZDC/AliZDCv1.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv0.h"
@@ -316,7 +316,7 @@ void Config()
   Int_t iPHOS=0;
   Int_t iPIPE=0;
   Int_t iPMD=0;
-  Int_t iRICH=0;
+  Int_t iHMPID=0;
   Int_t iSHIL=0;
   Int_t iSTART=0;
   Int_t iTOF=0;
@@ -442,9 +442,9 @@ void Config()
     AliTOF *TOF  = new AliTOFv5T0("TOF","normal TOF");
   }
 
-  if(iRICH) {
-    //=================== RICH parameters ===========================
-    AliRICH *RICH  = new AliRICHv1("RICH","normal RICH");    
+  if(iHMPID) {
+    //=================== HMPID parameters ===========================
+    AliHMPID *HMPID  = new AliHMPIDv1("HMPID","normal HMPID");    
 
   }
 

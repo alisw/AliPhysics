@@ -6,6 +6,9 @@
 # modification history
 #
 # $Log$
+# Revision 1.7  2001/05/21 17:22:52  buncic
+# Fixed problem with missing AliConfig while reading galice.root
+#
 # Revision 1.6  2001/05/16 14:57:30  alibrary
 # New files for folders and Stack
 #
@@ -53,7 +56,7 @@
 #     - Reco ................ reconstruction
 #
 # -d <TPC+ITS+..> | -d all | -all 
-#    Selects detector for which <command> will be run. If none of these options was specified, an internal loop in AliRoot over all active detectors is assumed.  Otherwise, for each detector, input file(s) are re-opened in update mode, command (or macro) is executed and the file is closed. Option -all is equivalent to MUON+RICH+TOF+ITS+TPC+PHOS+PMD+CASTOR+TRD. Detectors are processed in order as they appear on the command line.   
+#    Selects detector for which <command> will be run. If none of these options was specified, an internal loop in AliRoot over all active detectors is assumed.  Otherwise, for each detector, input file(s) are re-opened in update mode, command (or macro) is executed and the file is closed. Option -all is equivalent to MUON+HMPID+TOF+ITS+TPC+PHOS+PMD+CASTOR+TRD. Detectors are processed in order as they appear on the command line.   
 #
 # -f <file>
 #    Name of the top level Root file where Root trees will be stored (branches may reside in the same file or be diverted to separate files (see -split option). By default, file is named galice.root.
@@ -132,9 +135,9 @@
 #    
 #    alirun -o /tmp/event.2 -f test.root -split -p 100 -c Hits
 #
-#   Use output from first step and create TOF and RICH digits. Output is in the same direcory and in file test.root
+#   Use output from first step and create TOF and HMPID digits. Output is in the same direcory and in file test.root
 #
-#    alirun -d TOF+RICH -o /tmp/event.1 -c Digits
+#    alirun -d TOF+HMPID -o /tmp/event.1 -c Digits
 #
 #   Use output from second step and create digits for all detectors. Output is in the same direcory and branches are diverted to separate files:
 #
@@ -491,7 +494,7 @@ AliRunReco()
 
 ###########################################################################
 
-ALL="MUON RICH TOF ITS TPC PHOS PMD CASTOR ZDC TRD"; 
+ALL="MUON HMPID TOF ITS TPC PHOS PMD CASTOR ZDC TRD"; 
 DETECTORS="";                                        
 FILE="galice.root";  
 

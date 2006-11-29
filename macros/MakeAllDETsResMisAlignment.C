@@ -25,7 +25,7 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
     TGeoManager::Import("geometry.root");
   }
 
-  TString dets="EMCAL,FMD,ITS,MUON,PHOS,PMD,RICH,START,TOF,TPC,TRD,VZERO,ZDC";
+  TString dets="EMCAL,FMD,ITS,MUON,PHOS,PMD,HMPID,START,TOF,TPC,TRD,VZERO,ZDC";
   TObjArray *detArray = dets.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;

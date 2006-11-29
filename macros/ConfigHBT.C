@@ -30,7 +30,7 @@
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv5T0.h"
-#include "RICH/AliRICHv1.h"
+#include "HMPID/AliHMPIDv1.h"
 #include "ZDC/AliZDCv1.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
@@ -237,7 +237,7 @@ void Config()
     Int_t   iPHOS = 0;
     Int_t   iPIPE = 1;
     Int_t   iPMD = 0;
-    Int_t   iRICH = 0;
+    Int_t   iHMPID = 0;
     Int_t   iSHIL = 1;
     Int_t   iSTART = 0;
     Int_t   iTOF = 0;
@@ -373,10 +373,10 @@ void Config()
         AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
     }
 
-    if (iRICH)
+    if (iHMPID)
     {
-        //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
+        //=================== HMPID parameters ===========================
+        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
 
     }
 
@@ -435,7 +435,7 @@ void Config()
         PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
 
     }
-    if (iEMCAL && !iRICH)
+    if (iEMCAL && !iHMPID)
     {
         //=================== EMCAL parameters ============================
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");

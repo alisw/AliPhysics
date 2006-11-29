@@ -1,6 +1,6 @@
-void ViewRICH()
+void ViewHMPID()
 {
-   gMC->Gsatt("RICH","seen",0);
+   gMC->Gsatt("HMPID","seen",0);
    gMC->Gsatt("SRIC","seen",0);
    gMC->Gsatt("HONE","seen",1);
    gMC->Gsatt("ALUM","seen",1);
