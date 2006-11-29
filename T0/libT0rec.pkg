@@ -1,0 +1,10 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS= AliT0RecPoint.cxx AliT0Reconstructor.cxx AliT0RawReader.cxx 
+
+HDRS= $(SRCS:.cxx=.h)
+
+
+DHDR:= T0recLinkDef.h
+

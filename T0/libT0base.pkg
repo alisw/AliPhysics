@@ -1,0 +1,11 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS= AliT0digit.cxx AliT0Loader.cxx AliT0Trigger.cxx \
+      AliT0CalibData.cxx AliT0Parameters.cxx
+
+HDRS= $(SRCS:.cxx=.h)
+
+
+DHDR:= T0baseLinkDef.h
+

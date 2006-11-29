@@ -1,0 +1,9 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS = AliT0Calc.cxx AliT0Preprocessor.cxx AliT0Dqclass.cxx
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR= T0shuttleLinkDef.h
+
+EINCLUDE:=RAW
