@@ -137,22 +137,22 @@ TPC 13 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
 TPC 14 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
 TPC 15 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
 
-* RICH
+* HMPID
 * ====
 *
 *       GAM   ELEC  NHAD   CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL
 * Quarz Window        (>1000 keV delta-electrons)
-RICH  3  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+HMPID  3  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * Freon Radiator      (>  500 keV delta-electrons)
-RICH  4  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    5.e-4 5.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+HMPID  4  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    5.e-4 5.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * Methane Gap         (>  100 keV delta-electrons)
-RICH  5  5.e-5 1.e-5 1.e-4 -1.   1.e-4 -1.   -1.     1.e-4 1.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+HMPID  5  5.e-5 1.e-5 1.e-4 -1.   1.e-4 -1.   -1.     1.e-4 1.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * Sensitive Volume    (>  50 keV delta-electrons)
-RICH  9  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+HMPID  9  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * CSI    (>  50 keV delta-electrons)
-RICH  6  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+HMPID  6  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * PCB backplane   (>  50 keV delta-electrons)
-RICH 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+HMPID 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 
 * Front Absorber ABSO
 * ===================

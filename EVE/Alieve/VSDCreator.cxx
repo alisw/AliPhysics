@@ -321,7 +321,7 @@ namespace {
     { "TPC",  "AliTPCTrackHitsV2", 1 },
     { "TRD",  "AliTRDhit",         2 },
     { "TOF",  "AliTOFhit",         3 }
-    // { "RICH", "AliRICHhit",        4 },
+    // { "HMPID", "AliHMPIDhit",        4 },
   };
 
 }

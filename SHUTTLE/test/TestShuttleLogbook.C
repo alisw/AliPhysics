@@ -284,7 +284,7 @@ void TestShuttleLogbook(){
 
 	AliShuttleLogbookEntry::Status y[17]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 	AliShuttleLogbookEntry lb(21242, y);
-	lb.SetDetectorStatus("HMP","Unprocessed"); // RICH
+	lb.SetDetectorStatus("HMP","Unprocessed"); // HMPID
 	lb.SetDetectorStatus("ZDC","Unprocessed"); // ZDC
 	lb.SetDetectorStatus("TPC","Unprocessed"); // TPC
 	lb.SetDetectorStatus("SPD","Unprocessed"); // SPD

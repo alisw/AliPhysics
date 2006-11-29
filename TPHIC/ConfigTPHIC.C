@@ -102,7 +102,7 @@ void Config()
     Int_t   iPHOS  =  0;
     Int_t   iPIPE  =  0;
     Int_t   iPMD   =  0;
-    Int_t   iRICH  =  0;
+    Int_t   iHMPID  =  0;
     Int_t   iSHIL  =  0;
     Int_t   iSTART =  0;
     Int_t   iTOF   =  0;
@@ -280,10 +280,10 @@ void Config()
     }
 
 
-    if (iRICH)
+    if (iHMPID)
     {
-        //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv3("RICH", "normal RICH");
+        //=================== HMPID parameters ===========================
+        AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
 
     }
 
@@ -306,8 +306,8 @@ void Config()
 	if (geo == kHoles) {
 	    // With hole in front of PHOS
 	    TRD->SetPHOShole();
-	    // With hole in front of RICH
-	    TRD->SetRICHhole();
+	    // With hole in front of HMPID
+	    TRD->SetHMPIDhole();
 	}
 	    // Switch on TR
 	    AliTRDsim *TRDsim = TRD->CreateTR();

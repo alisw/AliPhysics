@@ -37,7 +37,7 @@ Int_t AliAlignObj::fgLayerSize[kLastLayer - kFirstLayer] = {
   90, 90, 90, 90, 90, 90,  // 6 TRD chambers' layers
   1638,     // TOF
   1, 1,     // PHOS ??
-  7,        // RICH ??
+  7,        // HMPID ??
   1         // MUON ??
 };
 
@@ -50,7 +50,7 @@ const char* AliAlignObj::fgLayerName[kLastLayer - kFirstLayer] = {
   "TRD chambers layer 4", "TRD chambers layer 5", "TRD chambers layer 6",
   "TOF layer",
   "?","?",
-  "RICH layer",
+  "HMPID layer",
   "?"
 };
 
@@ -329,7 +329,7 @@ void AliAlignObj::Print(Option_t *) const
 Int_t AliAlignObj::LayerSize(Int_t layerId)
 {
   // Get the layer size for layer corresponding to layerId.
-  // Implemented only for ITS,TPC,TRD,TOF and RICH
+  // Implemented only for ITS,TPC,TRD,TOF and HMPID
   //
   if (layerId < kFirstLayer || layerId >= kLastLayer) {
     AliErrorClass(Form("Invalid layer index %d ! Layer range is (%d -> %d) !",layerId,kFirstLayer,kLastLayer));
@@ -344,7 +344,7 @@ Int_t AliAlignObj::LayerSize(Int_t layerId)
 const char* AliAlignObj::LayerName(Int_t layerId)
 {
   // Get the layer name corresponding to layerId.
-  // Implemented only for ITS,TPC,TRD,TOF and RICH
+  // Implemented only for ITS,TPC,TRD,TOF and HMPID
   //
   if (layerId < kFirstLayer || layerId >= kLastLayer) {
     AliErrorClass(Form("Invalid layer index %d ! Layer range is (%d -> %d) !",layerId,kFirstLayer,kLastLayer));
@@ -915,7 +915,7 @@ void AliAlignObj::InitSymNames()
     }
   } 
 
-  /*********************      RICH layer   ***********************/
+  /*********************      HMPID layer   ***********************/
   {
     TString str = "/HMPID/Chamber";
     TString symname;
@@ -923,7 +923,7 @@ void AliAlignObj::InitSymNames()
     for (modnum=0; modnum < 7; modnum++) {
       symname = str;
       symname += modnum;
-      fgVolPath[kRICH-kFirstLayer][modnum] = symname.Data();
+      fgVolPath[kHMPID-kFirstLayer][modnum] = symname.Data();
     }
   }
 

@@ -97,16 +97,16 @@ AliESDtrack::AliESDtrack() :
   fTOFCalChannel(-1),
   fTOFsignal(-1),
   fTOFsignalToT(0),
-  fRICHchi2(1e10),
-  fRICHqn(-1),
-  fRICHcluIdx(-1),
-  fRICHsignal(-1),
-  fRICHtrkTheta(-1),
-  fRICHtrkPhi(-1),
-  fRICHtrkX(-1),
-  fRICHtrkY(-1),
-  fRICHmipX(-1),
-  fRICHmipY(-1),
+  fHMPIDchi2(1e10),
+  fHMPIDqn(-1),
+  fHMPIDcluIdx(-1),
+  fHMPIDsignal(-1),
+  fHMPIDtrkTheta(-1),
+  fHMPIDtrkPhi(-1),
+  fHMPIDtrkX(-1),
+  fHMPIDtrkY(-1),
+  fHMPIDmipX(-1),
+  fHMPIDmipY(-1),
   fEMCALindex(kEMCALNoMatch),
   fFriendTrack(new AliESDfriendTrack())
 {
@@ -121,7 +121,7 @@ AliESDtrack::AliESDtrack() :
     fTPCr[i]=1.;
     fTRDr[i]=1.;
     fTOFr[i]=1.;
-    fRICHr[i]=1.;
+    fHMPIDr[i]=1.;
   }
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
@@ -176,16 +176,16 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTOFCalChannel(track.fTOFCalChannel),
   fTOFsignal(track.fTOFsignal),
   fTOFsignalToT(track.fTOFsignalToT),
-  fRICHchi2(track.fRICHchi2),
-  fRICHqn(track.fRICHqn),
-  fRICHcluIdx(track.fRICHcluIdx),
-  fRICHsignal(track.fRICHsignal),
-  fRICHtrkTheta(track.fRICHtrkTheta),
-  fRICHtrkPhi(track.fRICHtrkPhi),
-  fRICHtrkX(track.fRICHtrkX),
-  fRICHtrkY(track.fRICHtrkY),
-  fRICHmipX(track.fRICHmipX),
-  fRICHmipY(track.fRICHmipY),
+  fHMPIDchi2(track.fHMPIDchi2),
+  fHMPIDqn(track.fHMPIDqn),
+  fHMPIDcluIdx(track.fHMPIDcluIdx),
+  fHMPIDsignal(track.fHMPIDsignal),
+  fHMPIDtrkTheta(track.fHMPIDtrkTheta),
+  fHMPIDtrkPhi(track.fHMPIDtrkPhi),
+  fHMPIDtrkX(track.fHMPIDtrkX),
+  fHMPIDtrkY(track.fHMPIDtrkY),
+  fHMPIDmipX(track.fHMPIDmipX),
+  fHMPIDmipY(track.fHMPIDmipY),
   fEMCALindex(track.fEMCALindex),
   fFriendTrack(0)
 {
@@ -212,7 +212,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
   for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i]=track.fHMPIDr[i];
 
   if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
   if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
@@ -260,16 +260,16 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTOFCalChannel(-1),
   fTOFsignal(-1),
   fTOFsignalToT(0),
-  fRICHchi2(1e10),
-  fRICHqn(-1),
-  fRICHcluIdx(-1),
-  fRICHsignal(-1),
-  fRICHtrkTheta(-1),
-  fRICHtrkPhi(-1),
-  fRICHtrkX(-1),
-  fRICHtrkY(-1),
-  fRICHmipX(-1),
-  fRICHmipY(-1),
+  fHMPIDchi2(1e10),
+  fHMPIDqn(-1),
+  fHMPIDcluIdx(-1),
+  fHMPIDsignal(-1),
+  fHMPIDtrkTheta(-1),
+  fHMPIDtrkPhi(-1),
+  fHMPIDtrkX(-1),
+  fHMPIDtrkY(-1),
+  fHMPIDmipX(-1),
+  fHMPIDmipY(-1),
   fEMCALindex(kEMCALNoMatch),
   fFriendTrack(0)
 {
@@ -286,7 +286,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
     fTPCr[i]=0.;
     fTRDr[i]=0.;
     fTOFr[i]=0.;
-    fRICHr[i]=0.;
+    fHMPIDr[i]=0.;
   }
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
@@ -382,7 +382,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
     fTPCr[indexPID]=1.;
     fTRDr[indexPID]=1.;
     fTOFr[indexPID]=1.;
-    fRICHr[indexPID]=1.;
+    fHMPIDr[indexPID]=1.;
 
   }
   // AliESD track label
@@ -492,18 +492,18 @@ void AliESDtrack::MakeMiniESDtrack(){
   for (Int_t i=0;i<3;i++) fTOFLabel[i] = 0;
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
 
-  // Reset RICH related track information
-  fRICHchi2 = 0;     
-  fRICHqn = -1;     
-  fRICHcluIdx = -1;     
-  fRICHsignal = 0;     
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i] = 0;
-  fRICHtrkTheta = -1;     
-  fRICHtrkPhi = -1;      
-  fRICHtrkX = -1;     
-  fRICHtrkY = -1;      
-  fRICHmipX = -1;
-  fRICHmipY = -1;
+  // Reset HMPID related track information
+  fHMPIDchi2 = 0;     
+  fHMPIDqn = -1;     
+  fHMPIDcluIdx = -1;     
+  fHMPIDsignal = 0;     
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
+  fHMPIDtrkTheta = -1;     
+  fHMPIDtrkPhi = -1;      
+  fHMPIDtrkX = -1;     
+  fHMPIDtrkY = -1;      
+  fHMPIDmipX = -1;
+  fHMPIDmipY = -1;
   fEMCALindex = kEMCALNoMatch;
 
   delete fFriendTrack; fFriendTrack = 0;
@@ -967,16 +967,16 @@ void AliESDtrack::SetTOFInfo(Float_t*info) {
 
 
 //_______________________________________________________________________
-void AliESDtrack::SetRICHpid(const Double_t *p) {  
-  // Sets the probability of each particle type (in RICH)
-  SetPIDValues(fRICHr,p,AliPID::kSPECIES);
-  SetStatus(AliESDtrack::kRICHpid);
+void AliESDtrack::SetHMPIDpid(const Double_t *p) {  
+  // Sets the probability of each particle type (in HMPID)
+  SetPIDValues(fHMPIDr,p,AliPID::kSPECIES);
+  SetStatus(AliESDtrack::kHMPIDpid);
 }
 
 //_______________________________________________________________________
-void AliESDtrack::GetRICHpid(Double_t *p) const {
-  // Gets probabilities of each particle type (in RICH)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fRICHr[i];
+void AliESDtrack::GetHMPIDpid(Double_t *p) const {
+  // Gets probabilities of each particle type (in HMPID)
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fHMPIDr[i];
 }
 
 
@@ -1102,12 +1102,12 @@ void AliESDtrack::Print(Option_t *) const {
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetTOFsignal()) ;
   }
-  if( IsOn(kRICHpid) ){
-    printf("From RICH: ") ; 
-    GetRICHpid(p) ; 
+  if( IsOn(kHMPIDpid) ){
+    printf("From HMPID: ") ; 
+    GetHMPIDpid(p) ; 
     for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
-    printf("\n           signal = %f\n", GetRICHsignal()) ;
+    printf("\n           signal = %f\n", GetHMPIDsignal()) ;
   }
 } 
 

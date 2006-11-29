@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2006/11/06 14:24:21  jgrosseo
+reading of run parameters from the logbook
+online offline naming conversion
+
 Revision 1.1  2006/06/02 14:14:36  hristov
 Separate library for CDB (Jan)
 
@@ -58,7 +62,7 @@ const char* AliShuttleInterface::fgkDetName[kNDetectors] = {"SPD", "SDD", "SSD",
 
 // names of the detectors in OCDB
 const char* AliShuttleInterface::fgkOfflineDetName[kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF",
-       "PHOS", "PHOS", "RICH", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO"};
+       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO"};
 
 //______________________________________________________________________________________________
 const char* AliShuttleInterface::GetOfflineDetName(const char* detName){

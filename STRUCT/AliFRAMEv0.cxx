@@ -121,7 +121,7 @@ void AliFRAMEv0::Init()
 	 " FRAME "
 	 "**************************************\n");
   printf("\n     Version 0 of FRAME initialised, "
-	 "with openings for PHOS and RICH\n\n");
+	 "with openings for PHOS and HMPID\n\n");
   printf("**************************************"
 	 " FRAME "
 	 "**************************************\n");

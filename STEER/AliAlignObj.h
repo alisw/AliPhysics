@@ -31,7 +31,7 @@ class AliAlignObj : public TObject {
 		kTRD1=9, kTRD2=10, kTRD3=11, kTRD4=12, kTRD5=13, kTRD6=14,
 		kTOF=15,
 		kPHOS1=16, kPHOS2=17,
-		kRICH=18,
+		kHMPID=18,
 		kMUON=19,
 		kLastLayer=20};
   AliAlignObj();

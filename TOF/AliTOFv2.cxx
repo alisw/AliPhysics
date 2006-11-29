@@ -22,7 +22,7 @@
 //                                                                           //
 //  VERSION WITH 5 MODULES AND TILTED STRIPS                                 //
 //                                                                           //
-//  HOLES FOR PHOS AND RICH DETECTOR                                         //
+//  HOLES FOR PHOS AND HMPID DETECTOR                                         //
 //                                                                           //
 //   Authors:                                                                //
 //                                                                           //
@@ -171,7 +171,7 @@ void AliTOFv2::BuildGeometry()
 	node = new TNode(nodeName3,nodeName3,"S_TOF_B",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),-zOffsetB,rotMatNum);
 	node->SetLineColor(kColorTOF);
 	fNodes->Add(node); 
-      } // Holes for RICH detector
+      } // Holes for HMPID detector
     
     if ((nodeNum<7 || nodeNum>11) && nodeNum !=1 && nodeNum!=17 && nodeNum !=18)
       { 
@@ -179,7 +179,7 @@ void AliTOFv2::BuildGeometry()
 	node = new TNode(nodeName4,nodeName4,"S_TOF_A",krTof*TMath::Cos(ang),krTof*TMath::Sin(ang),zOffsetA,rotMatNum);
 	node->SetLineColor(kColorTOF);
 	fNodes->Add(node); 
-      } // Holes for PHOS detector (+ Holes for RICH detector, central part)
+      } // Holes for PHOS detector (+ Holes for HMPID detector, central part)
   } // end loop on nodeNum
 }
 
@@ -1037,7 +1037,7 @@ void AliTOFv2::Init()
            "  TOF  "
            "**************************************\n",ClassName());
     printf("\n%s:   Version 2 of TOF initialing, "
-           "TOF with holes for PHOS and RICH \n",ClassName());
+           "TOF with holes for PHOS and HMPID \n",ClassName());
   }  
 
   AliTOF::Init();

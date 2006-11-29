@@ -26,7 +26,7 @@ PMD/module.mk:		 PMD/libPMDbase.pkg PMD/libPMDsim.pkg PMD/libPMDrec.pkg
 PYTHIA6/module.mk:	 PYTHIA6/libpythia6.pkg
 RALICE/module.mk:	 RALICE/libRALICE.pkg
 RAW/module.mk:           RAW/libRAWDatabase.pkg RAW/libRAWDatasim.pkg RAW/libRAWDatarec.pkg RAW/binalimdc.pkg RAW/bindateStream.pkg
-RICH/module.mk:		 RICH/libRICHbase.pkg RICH/libRICHrec.pkg RICH/libRICHsim.pkg
+HMPID/module.mk:		 HMPID/libHMPIDbase.pkg HMPID/libHMPIDrec.pkg HMPID/libHMPIDsim.pkg
 SHUTTLE/module.mk:	 SHUTTLE/libSHUTTLE.pkg
 START/module.mk:	 START/libSTARTbase.pkg START/libSTARTsim.pkg START/libSTARTrec.pkg
 STEER/module.mk:	 STEER/libESD.pkg STEER/libCDB.pkg STEER/libSTEER.pkg

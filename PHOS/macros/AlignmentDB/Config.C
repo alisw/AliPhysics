@@ -28,7 +28,7 @@
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv4T0.h"
-#include "RICH/AliRICHv1.h"
+#include "HMPID/AliHMPIDv1.h"
 #include "ZDC/AliZDCv2.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
@@ -172,7 +172,7 @@ void Config()
     Int_t   iPHOS  =  1;
     Int_t   iPIPE  =  1;
     Int_t   iPMD   =  0;
-    Int_t   iRICH  =  0;
+    Int_t   iHMPID  =  0;
     Int_t   iSHIL  =  0;
     Int_t   iSTART =  0;
     Int_t   iTOF   =  0;
@@ -311,10 +311,10 @@ void Config()
     }
 
 
-    if (iRICH)
+    if (iHMPID)
     {
-        //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
+        //=================== HMPID parameters ===========================
+        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
 
     }
 
@@ -337,8 +337,8 @@ void Config()
 	if (geo == kHoles) {
 	    // With hole in front of PHOS
 	    TRD->SetPHOShole();
-	    // With hole in front of RICH
-	    TRD->SetRICHhole();
+	    // With hole in front of HMPID
+	    TRD->SetHMPIDhole();
 	}
 	    // Switch on TR
 	    AliTRDsim *TRDsim = TRD->CreateTR();

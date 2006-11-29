@@ -23,7 +23,7 @@
     class  AliGenDoubleScan {};
     class  AliGenLib {};
     class  AliGenMUONlib {};
-    class  AliGenRICHlib {};
+    class  AliGenHMPIDlib {};
     class  AliGenFLUKAsource {};
     class  AliGenHalo {};
     class  AliGenHaloProtvino {};

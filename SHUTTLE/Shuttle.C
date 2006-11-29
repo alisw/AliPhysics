@@ -40,7 +40,7 @@ Bool_t Shuttle(const char* param = "listen") {
 	// Add here detectors preprocessor ...
 	TestTPCPreprocessor *tpcPrep = new TestTPCPreprocessor(shuttle);
 	TestITSPreprocessorSPD *spdPrep = new TestITSPreprocessorSPD(shuttle);
-	TestRICHPreprocessor *richPrep = new TestRICHPreprocessor(shuttle);
+	TestHMPIDPreprocessor *richPrep = new TestHMPIDPreprocessor(shuttle);
 	TestZDCPreprocessor *zdcPrep = new TestZDCPreprocessor(shuttle);
 
 	TString paramStr(param);

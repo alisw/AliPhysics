@@ -1,16 +1,16 @@
-#ifndef TEST_RICH_PRE_PROCESSOR_H
-#define TEST_RICH_PRE_PRECESSOR_H
+#ifndef TEST_HMPID_PRE_PROCESSOR_H
+#define TEST_HMPID_PRE_PRECESSOR_H
 
 #include "AliPreprocessor.h"
 
 //
-// Prototype of RICH Preprocessor
+// Prototype of HMPID Preprocessor
 //
 
-class TestRICHPreprocessor: public AliPreprocessor {
+class TestHMPIDPreprocessor: public AliPreprocessor {
 public:
-	TestRICHPreprocessor();
-	TestRICHPreprocessor(AliShuttleInterface* shuttle);
+	TestHMPIDPreprocessor();
+	TestHMPIDPreprocessor(AliShuttleInterface* shuttle);
 
 protected:
 
@@ -19,7 +19,7 @@ protected:
 
         virtual UInt_t Process(TMap* valueSet);
 
-	ClassDef(TestRICHPreprocessor, 0);
+	ClassDef(TestHMPIDPreprocessor, 0);
 };
 
 #endif

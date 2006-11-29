@@ -163,10 +163,10 @@ void Config()
                                                                                 
     if (sgeo == kHoles)
     {
-        comment = comment.Append(" | Holes for PHOS/RICH");
+        comment = comment.Append(" | Holes for PHOS/HMPID");
                                                                                 
     } else {
-        comment = comment.Append(" | No holes for PHOS/RICH");
+        comment = comment.Append(" | No holes for PHOS/HMPID");
     }
                                                                                 
     printf("\n \n Comment: %s \n \n", comment.Data());
@@ -190,7 +190,7 @@ void Config()
   Int_t   iPHOS  = 1; 
   Int_t   iPIPE  = 1; 
   Int_t   iPMD   = 1; 
-  Int_t   iRICH  = 1; 
+  Int_t   iHMPID  = 1; 
   Int_t   iSHIL  = 1; 
   Int_t   iSTART = 1; 
   Int_t   iTOF   = 1; 
@@ -334,10 +334,10 @@ void Config()
     }
 
 
-    if (iRICH)
+    if (iHMPID)
     {
-        //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
+        //=================== HMPID parameters ===========================
+        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
 
     }
 

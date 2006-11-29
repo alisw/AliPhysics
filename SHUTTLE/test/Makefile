@@ -2,7 +2,7 @@
 include ../../build/Makefile.$(ALICE_TARGET)
 
 
-CLASSES = TestITSPreprocessorSPD.cxx TestTPCPreprocessor.cxx TestRICHPreprocessor.cxx AliTPCDataDCS.cxx \
+CLASSES = TestITSPreprocessorSPD.cxx TestTPCPreprocessor.cxx TestHMPIDPreprocessor.cxx AliTPCDataDCS.cxx \
 	  TestZDCPreprocessor.cxx
 DICT = DictTest.cxx
 

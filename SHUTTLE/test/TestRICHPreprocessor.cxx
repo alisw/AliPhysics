@@ -14,10 +14,10 @@
  **************************************************************************/
 
 //
-// Prototype of RICH Preprocessor
+// Prototype of HMPID Preprocessor
 //
 
-#include "TestRICHPreprocessor.h"
+#include "TestHMPIDPreprocessor.h"
 
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
@@ -28,10 +28,10 @@
 #include <TObjString.h>
 #include <TSystem.h>
 
-ClassImp(TestRICHPreprocessor)
+ClassImp(TestHMPIDPreprocessor)
 
 //________________________________________________________________________________________
-TestRICHPreprocessor::TestRICHPreprocessor():
+TestHMPIDPreprocessor::TestHMPIDPreprocessor():
 	AliPreprocessor("HMP",0)
 {
 // default constructor - Don't use this!
@@ -39,7 +39,7 @@ TestRICHPreprocessor::TestRICHPreprocessor():
 }
 
 //________________________________________________________________________________________
-TestRICHPreprocessor::TestRICHPreprocessor(AliShuttleInterface* shuttle):
+TestHMPIDPreprocessor::TestHMPIDPreprocessor(AliShuttleInterface* shuttle):
 	AliPreprocessor("HMP", shuttle)
 {
 // constructor - shuttle must be instantiated!
@@ -47,7 +47,7 @@ TestRICHPreprocessor::TestRICHPreprocessor(AliShuttleInterface* shuttle):
 }
 
 //________________________________________________________________________________________
-void TestRICHPreprocessor::Initialize(Int_t run, UInt_t startTime,
+void TestHMPIDPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	UInt_t endTime) 
 {
 // Initialize preprocessor
@@ -62,7 +62,7 @@ void TestRICHPreprocessor::Initialize(Int_t run, UInt_t startTime,
 }
 
 //________________________________________________________________________________________
-UInt_t TestRICHPreprocessor::Process(TMap* /*valueMap*/)
+UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 {
 // process data retrieved by the Shuttle
 

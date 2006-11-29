@@ -10,7 +10,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
 	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec CRT \
-        RICHbase RICHrec RICHsim \
+        HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet \
         STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
@@ -50,9 +50,9 @@ ARLIBS:= \
    FMD/tgt_$(ALICE_TARGET)/G__FMDsim.o $(LIBPATH)/libFMDsim.a \
    FMD/tgt_$(ALICE_TARGET)/G__FMDrec.o $(LIBPATH)/libFMDrec.a \
    CRT/tgt_$(ALICE_TARGET)/G__CRT.o $(LIBPATH)/libCRT.a \
-   RICH/tgt_$(ALICE_TARGET)/G__RICHbase.o $(LIBPATH)/libRICHbase.a \
-   RICH/tgt_$(ALICE_TARGET)/G__RICHsim.o $(LIBPATH)/libRICHsim.a \
-   RICH/tgt_$(ALICE_TARGET)/G__RICHrec.o $(LIBPATH)/libRICHrec.a \
+   HMPID/tgt_$(ALICE_TARGET)/G__HMPIDbase.o $(LIBPATH)/libHMPIDbase.a \
+   HMPID/tgt_$(ALICE_TARGET)/G__HMPIDsim.o $(LIBPATH)/libHMPIDsim.a \
+   HMPID/tgt_$(ALICE_TARGET)/G__HMPIDrec.o $(LIBPATH)/libHMPIDrec.a \
    ZDC/tgt_$(ALICE_TARGET)/G__ZDCbase.o $(LIBPATH)/libZDCbase.a \
    ZDC/tgt_$(ALICE_TARGET)/G__ZDCsim.o $(LIBPATH)/libZDCsim.a \
    ZDC/tgt_$(ALICE_TARGET)/G__ZDCrec.o $(LIBPATH)/libZDCrec.a \

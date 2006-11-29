@@ -81,9 +81,9 @@ Int_t AliESDpid::MakePID(AliESD *event)
       for (j=0; j<ns; j++) p[j]*=d[j];
     }
 
-    if ((t->GetStatus()&AliESDtrack::kRICHpid )!=0) {
+    if ((t->GetStatus()&AliESDtrack::kHMPIDpid )!=0) {
       Double_t d[10];
-      t->GetRICHpid(d);
+      t->GetHMPIDpid(d);
       Int_t j, ok=0;
       for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
       if (ok) 

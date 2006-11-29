@@ -146,17 +146,17 @@ public :
    Float_t         fTracks_fTOFsignalToT[kMaxfTracks];   //[fTracks_]
    Float_t         fTracks_fTOFr[kMaxfTracks][5];   //[fTracks_]
    Int_t           fTracks_fTOFLabel[kMaxfTracks][3];   //[fTracks_]
-   Float_t         fTracks_fRICHchi2[kMaxfTracks];   //[fTracks_]
-   Int_t           fTracks_fRICHncls[kMaxfTracks];   //[fTracks_]
-   Int_t           fTracks_fRICHindex[kMaxfTracks];   //[fTracks_]
-   Float_t         fTracks_fRICHsignal[kMaxfTracks];   //[fTracks_]
-   Float_t         fTracks_fRICHr[kMaxfTracks][5];   //[fTracks_]
-   Float_t         fTracks_fRICHtheta[kMaxfTracks];   //[fTracks_]
-   Float_t         fTracks_fRICHphi[kMaxfTracks];   //[fTracks_]
-   Float_t         fTracks_fRICHdx[kMaxfTracks];   //[fTracks_]
-   Float_t         fTracks_fRICHdy[kMaxfTracks];   //[fTracks_]
-   Float_t         fTracks_fRICHmipX[kMaxfTracks];   //[fTracks_]
-   Float_t         fTracks_fRICHmipY[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDchi2[kMaxfTracks];   //[fTracks_]
+   Int_t           fTracks_fHMPIDncls[kMaxfTracks];   //[fTracks_]
+   Int_t           fTracks_fHMPIDindex[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDsignal[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDr[kMaxfTracks][5];   //[fTracks_]
+   Float_t         fTracks_fHMPIDtheta[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDphi[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDdx[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDdy[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDmipX[kMaxfTracks];   //[fTracks_]
+   Float_t         fTracks_fHMPIDmipY[kMaxfTracks];   //[fTracks_]
    Int_t           fHLTConfMapTracks_;
    UInt_t          fHLTConfMapTracks_fUniqueID[kMaxfHLTConfMapTracks];   //[fHLTConfMapTracks_]
    UInt_t          fHLTConfMapTracks_fBits[kMaxfHLTConfMapTracks];   //[fHLTConfMapTracks_]
@@ -499,17 +499,17 @@ public :
    TBranch        *b_fTracks_fTOFsignalToT;   //!
    TBranch        *b_fTracks_fTOFr;   //!
    TBranch        *b_fTracks_fTOFLabel;   //!
-   TBranch        *b_fTracks_fRICHchi2;   //!
-   TBranch        *b_fTracks_fRICHncls;   //!
-   TBranch        *b_fTracks_fRICHindex;   //!
-   TBranch        *b_fTracks_fRICHsignal;   //!
-   TBranch        *b_fTracks_fRICHr;   //!
-   TBranch        *b_fTracks_fRICHtheta;   //!
-   TBranch        *b_fTracks_fRICHphi;   //!
-   TBranch        *b_fTracks_fRICHdx;   //!
-   TBranch        *b_fTracks_fRICHdy;   //!
-   TBranch        *b_fTracks_fRICHmipX;   //!
-   TBranch        *b_fTracks_fRICHmipY;   //!
+   TBranch        *b_fTracks_fHMPIDchi2;   //!
+   TBranch        *b_fTracks_fHMPIDncls;   //!
+   TBranch        *b_fTracks_fHMPIDindex;   //!
+   TBranch        *b_fTracks_fHMPIDsignal;   //!
+   TBranch        *b_fTracks_fHMPIDr;   //!
+   TBranch        *b_fTracks_fHMPIDtheta;   //!
+   TBranch        *b_fTracks_fHMPIDphi;   //!
+   TBranch        *b_fTracks_fHMPIDdx;   //!
+   TBranch        *b_fTracks_fHMPIDdy;   //!
+   TBranch        *b_fTracks_fHMPIDmipX;   //!
+   TBranch        *b_fTracks_fHMPIDmipY;   //!
    TBranch        *b_ESD_fHLTConfMapTracks_;   //!
    TBranch        *b_fHLTConfMapTracks_fUniqueID;   //!
    TBranch        *b_fHLTConfMapTracks_fBits;   //!
@@ -889,17 +889,17 @@ void esdAna::Init(TTree *tree)
    fChain->SetBranchAddress("fTracks.fTOFsignalToT",fTracks_fTOFsignalToT);
    fChain->SetBranchAddress("fTracks.fTOFr[5]",fTracks_fTOFr);
    fChain->SetBranchAddress("fTracks.fTOFLabel[3]",fTracks_fTOFLabel);
-   fChain->SetBranchAddress("fTracks.fRICHchi2",fTracks_fRICHchi2);
-   fChain->SetBranchAddress("fTracks.fRICHncls",fTracks_fRICHncls);
-   fChain->SetBranchAddress("fTracks.fRICHindex",fTracks_fRICHindex);
-   fChain->SetBranchAddress("fTracks.fRICHsignal",fTracks_fRICHsignal);
-   fChain->SetBranchAddress("fTracks.fRICHr[5]",fTracks_fRICHr);
-   fChain->SetBranchAddress("fTracks.fRICHtheta",fTracks_fRICHtheta);
-   fChain->SetBranchAddress("fTracks.fRICHphi",fTracks_fRICHphi);
-   fChain->SetBranchAddress("fTracks.fRICHdx",fTracks_fRICHdx);
-   fChain->SetBranchAddress("fTracks.fRICHdy",fTracks_fRICHdy);
-   fChain->SetBranchAddress("fTracks.fRICHmipX",fTracks_fRICHmipX);
-   fChain->SetBranchAddress("fTracks.fRICHmipY",fTracks_fRICHmipY);
+   fChain->SetBranchAddress("fTracks.fHMPIDchi2",fTracks_fHMPIDchi2);
+   fChain->SetBranchAddress("fTracks.fHMPIDncls",fTracks_fHMPIDncls);
+   fChain->SetBranchAddress("fTracks.fHMPIDindex",fTracks_fHMPIDindex);
+   fChain->SetBranchAddress("fTracks.fHMPIDsignal",fTracks_fHMPIDsignal);
+   fChain->SetBranchAddress("fTracks.fHMPIDr[5]",fTracks_fHMPIDr);
+   fChain->SetBranchAddress("fTracks.fHMPIDtheta",fTracks_fHMPIDtheta);
+   fChain->SetBranchAddress("fTracks.fHMPIDphi",fTracks_fHMPIDphi);
+   fChain->SetBranchAddress("fTracks.fHMPIDdx",fTracks_fHMPIDdx);
+   fChain->SetBranchAddress("fTracks.fHMPIDdy",fTracks_fHMPIDdy);
+   fChain->SetBranchAddress("fTracks.fHMPIDmipX",fTracks_fHMPIDmipX);
+   fChain->SetBranchAddress("fTracks.fHMPIDmipY",fTracks_fHMPIDmipY);
    fChain->SetBranchAddress("fHLTConfMapTracks",&fHLTConfMapTracks_);
    fChain->SetBranchAddress("fHLTConfMapTracks.fUniqueID",fHLTConfMapTracks_fUniqueID);
    fChain->SetBranchAddress("fHLTConfMapTracks.fBits",fHLTConfMapTracks_fBits);
@@ -1259,17 +1259,17 @@ Bool_t esdAna::Notify()
    b_fTracks_fTOFsignalToT = fChain->GetBranch("fTracks.fTOFsignalToT");
    b_fTracks_fTOFr = fChain->GetBranch("fTracks.fTOFr[5]");
    b_fTracks_fTOFLabel = fChain->GetBranch("fTracks.fTOFLabel[3]");
-   b_fTracks_fRICHchi2 = fChain->GetBranch("fTracks.fRICHchi2");
-   b_fTracks_fRICHncls = fChain->GetBranch("fTracks.fRICHncls");
-   b_fTracks_fRICHindex = fChain->GetBranch("fTracks.fRICHindex");
-   b_fTracks_fRICHsignal = fChain->GetBranch("fTracks.fRICHsignal");
-   b_fTracks_fRICHr = fChain->GetBranch("fTracks.fRICHr[5]");
-   b_fTracks_fRICHtheta = fChain->GetBranch("fTracks.fRICHtheta");
-   b_fTracks_fRICHphi = fChain->GetBranch("fTracks.fRICHphi");
-   b_fTracks_fRICHdx = fChain->GetBranch("fTracks.fRICHdx");
-   b_fTracks_fRICHdy = fChain->GetBranch("fTracks.fRICHdy");
-   b_fTracks_fRICHmipX = fChain->GetBranch("fTracks.fRICHmipX");
-   b_fTracks_fRICHmipY = fChain->GetBranch("fTracks.fRICHmipY");
+   b_fTracks_fHMPIDchi2 = fChain->GetBranch("fTracks.fHMPIDchi2");
+   b_fTracks_fHMPIDncls = fChain->GetBranch("fTracks.fHMPIDncls");
+   b_fTracks_fHMPIDindex = fChain->GetBranch("fTracks.fHMPIDindex");
+   b_fTracks_fHMPIDsignal = fChain->GetBranch("fTracks.fHMPIDsignal");
+   b_fTracks_fHMPIDr = fChain->GetBranch("fTracks.fHMPIDr[5]");
+   b_fTracks_fHMPIDtheta = fChain->GetBranch("fTracks.fHMPIDtheta");
+   b_fTracks_fHMPIDphi = fChain->GetBranch("fTracks.fHMPIDphi");
+   b_fTracks_fHMPIDdx = fChain->GetBranch("fTracks.fHMPIDdx");
+   b_fTracks_fHMPIDdy = fChain->GetBranch("fTracks.fHMPIDdy");
+   b_fTracks_fHMPIDmipX = fChain->GetBranch("fTracks.fHMPIDmipX");
+   b_fTracks_fHMPIDmipY = fChain->GetBranch("fTracks.fHMPIDmipY");
    b_ESD_fHLTConfMapTracks_ = fChain->GetBranch("fHLTConfMapTracks");
    b_fHLTConfMapTracks_fUniqueID = fChain->GetBranch("fHLTConfMapTracks.fUniqueID");
    b_fHLTConfMapTracks_fBits = fChain->GetBranch("fHLTConfMapTracks.fBits");

@@ -113,7 +113,7 @@ Int_t iMAG=1;
 Int_t iITS=0;
 Int_t iTPC=0;
 Int_t iTOF=0;
-Int_t iRICH=0;
+Int_t iHMPID=0;
 Int_t iZDC=0;
 Int_t iCASTOR=0;
 Int_t iTRD=0;
@@ -251,40 +251,40 @@ if(iTOF) {
 AliTOF *TOF  = new AliTOFv1("TOF","normal TOF");
 }
 
-if(iRICH) {
-//=================== RICH parameters ===========================
+if(iHMPID) {
+//=================== HMPID parameters ===========================
 
-  AliRICH *RICH  = new AliRICHv0("RICH","normal RICH");
+  AliHMPID *HMPID  = new AliHMPIDv0("HMPID","normal HMPID");
 
-  RICH->SetSMAXAR(0.03);
-  RICH->SetSMAXAL(-1);
+  HMPID->SetSMAXAR(0.03);
+  HMPID->SetSMAXAL(-1);
 //
 // Version 0
 // Default Segmentation
-  AliRICHsegmentationV0* RsegV0 = new AliRICHsegmentationV0;
+  AliHMPIDsegmentationV0* RsegV0 = new AliHMPIDsegmentationV0;
   RsegV0->SetPADSIZ(.8, .8);
   RsegV0->SetDAnod(0.8/3);
 // Default response
-  AliRICHresponseV0* Rresponse0 = new AliRICHresponseV0;
-  AliRICHresponseCkv* RresponseCkv = new AliRICHresponseCkv;
+  AliHMPIDresponseV0* Rresponse0 = new AliHMPIDresponseV0;
+  AliHMPIDresponseCkv* RresponseCkv = new AliHMPIDresponseCkv;
 
 //------------------------Chambers 0-6 ----------------------------
   for (Int_t i=0; i<7; i++) {
-    RICH->SetSegmentationModel(i, 1, RsegV0);
-    RICH->SetResponseModel(i, mip     , Rresponse0);
-    RICH->SetResponseModel(i, cerenkov, RresponseCkv);
-    RICH->Chamber(i).SetRSIGM(5.);
-    RICH->Chamber(i).SetMUCHSP(43.);
-    RICH->Chamber(i).SetMUSIGM(0.18, 0.18);
-    RICH->Chamber(i).SetMAXADC( 1024);
-    RICH->Chamber(i).SetSqrtKx3(0.77459667);
-    RICH->Chamber(i).SetKx2(0.962);
-    RICH->Chamber(i).SetKx4(0.379);
-    RICH->Chamber(i).SetSqrtKy3(0.77459667);
-    RICH->Chamber(i).SetKy2(0.962);
-    RICH->Chamber(i).SetKy4(0.379);
-    RICH->Chamber(i).SetPitch(0.25);
-    RICH->SetNsec(i,1);
+    HMPID->SetSegmentationModel(i, 1, RsegV0);
+    HMPID->SetResponseModel(i, mip     , Rresponse0);
+    HMPID->SetResponseModel(i, cerenkov, RresponseCkv);
+    HMPID->Chamber(i).SetRSIGM(5.);
+    HMPID->Chamber(i).SetMUCHSP(43.);
+    HMPID->Chamber(i).SetMUSIGM(0.18, 0.18);
+    HMPID->Chamber(i).SetMAXADC( 1024);
+    HMPID->Chamber(i).SetSqrtKx3(0.77459667);
+    HMPID->Chamber(i).SetKx2(0.962);
+    HMPID->Chamber(i).SetKx4(0.379);
+    HMPID->Chamber(i).SetSqrtKy3(0.77459667);
+    HMPID->Chamber(i).SetKy2(0.962);
+    HMPID->Chamber(i).SetKy4(0.379);
+    HMPID->Chamber(i).SetPitch(0.25);
+    HMPID->SetNsec(i,1);
   }
 }
 

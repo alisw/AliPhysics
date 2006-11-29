@@ -199,30 +199,30 @@ public:
   void    SetTOFcluster(Int_t index) {fTOFindex=index;}
   void    SetTOFCalChannel(Int_t index) {fTOFCalChannel=index;}
 
-// RICH methodes +++++++++++++++++++++++++++++++++ (kir)
-  void    SetRICHsignal(Double_t theta) {fRICHsignal=theta;}
-  Float_t GetRICHsignal() const {return fRICHsignal;}
-  void    SetRICHpid(const Double_t *p);
-  void    GetRICHpid(Double_t *p) const;  
-  void    SetRICHchi2(Double_t chi2) {fRICHchi2=chi2;}
-  Float_t GetRICHchi2() const {return fRICHchi2;}
-  void    SetRICHcluster(Int_t index) {fRICHcluIdx=index;}
-  Int_t   GetRICHcluster() const {return fRICHcluIdx;}
-  void    SetRICHcluIdx(Int_t ch,Int_t idx) {fRICHcluIdx=ch*1000000+idx;}
-  Int_t   GetRICHcluIdx() const {return fRICHcluIdx;}
-  void    SetRICHtrk(Float_t  x, Float_t  y, Float_t  th, Float_t  ph) {
-     fRICHtrkX=x; fRICHtrkY=y; fRICHtrkTheta=th; fRICHtrkPhi=ph;
+// HMPID methodes +++++++++++++++++++++++++++++++++ (kir)
+  void    SetHMPIDsignal(Double_t theta) {fHMPIDsignal=theta;}
+  Float_t GetHMPIDsignal() const {return fHMPIDsignal;}
+  void    SetHMPIDpid(const Double_t *p);
+  void    GetHMPIDpid(Double_t *p) const;  
+  void    SetHMPIDchi2(Double_t chi2) {fHMPIDchi2=chi2;}
+  Float_t GetHMPIDchi2() const {return fHMPIDchi2;}
+  void    SetHMPIDcluster(Int_t index) {fHMPIDcluIdx=index;}
+  Int_t   GetHMPIDcluster() const {return fHMPIDcluIdx;}
+  void    SetHMPIDcluIdx(Int_t ch,Int_t idx) {fHMPIDcluIdx=ch*1000000+idx;}
+  Int_t   GetHMPIDcluIdx() const {return fHMPIDcluIdx;}
+  void    SetHMPIDtrk(Float_t  x, Float_t  y, Float_t  th, Float_t  ph) {
+     fHMPIDtrkX=x; fHMPIDtrkY=y; fHMPIDtrkTheta=th; fHMPIDtrkPhi=ph;
   }
-  void    GetRICHtrk(Float_t &x, Float_t &y, Float_t &th, Float_t &ph) const {
-     x=fRICHtrkX; y=fRICHtrkY; th=fRICHtrkTheta; ph=fRICHtrkPhi;
+  void    GetHMPIDtrk(Float_t &x, Float_t &y, Float_t &th, Float_t &ph) const {
+     x=fHMPIDtrkX; y=fHMPIDtrkY; th=fHMPIDtrkTheta; ph=fHMPIDtrkPhi;
   }
-  void    SetRICHmip(Float_t  x, Float_t  y, Int_t q, Int_t nph=0) {
-     fRICHmipX=x; fRICHmipY=y; fRICHqn=100000*q+nph;
+  void    SetHMPIDmip(Float_t  x, Float_t  y, Int_t q, Int_t nph=0) {
+     fHMPIDmipX=x; fHMPIDmipY=y; fHMPIDqn=100000*q+nph;
   }
-  void    GetRICHmip(Float_t &x,Float_t &y,Int_t &q,Int_t &nph) const {
-     x=fRICHmipX; y=fRICHmipY; q=fRICHqn/1000000; nph=fRICHqn%1000000;
+  void    GetHMPIDmip(Float_t &x,Float_t &y,Int_t &q,Int_t &nph) const {
+     x=fHMPIDmipX; y=fHMPIDmipY; q=fHMPIDqn/1000000; nph=fHMPIDqn%1000000;
   }
-  Bool_t  IsRICH() const {return fFlags&kRICHpid;}
+  Bool_t  IsHMPID() const {return fFlags&kHMPIDpid;}
 
 
   Int_t GetEMCALcluster() {return fEMCALindex;}
@@ -251,7 +251,7 @@ public:
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
     kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
     kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kRICHpid=0x20000,
+    kHMPIDpid=0x20000,
     kEMCALmatch=0x40000,
     kTRDbackup=0x80000,
     kTRDStop=0x20000000,
@@ -333,17 +333,17 @@ protected:
   Float_t fTOFInfo[10];    //! TOF informations
 
   // HMPID related track information                 (kir)
-  Float_t fRICHchi2;       // chi2 in the RICH
-  Int_t   fRICHqn;         // 1000000*QDC + number of photon clusters
-  Int_t   fRICHcluIdx;     // 1000000*chamber id + cluster idx of the assigned MIP cluster
-  Float_t fRICHsignal;     // RICH PID signal (Theta ckov, rad)
-  Float_t fRICHr[AliPID::kSPECIES];// "detector response probabilities" (for the PID)
-  Float_t fRICHtrkTheta;   // theta of the track extrapolated to the RICH, LORS
-  Float_t fRICHtrkPhi;     // phi of the track extrapolated to the RICH, LORS
-  Float_t fRICHtrkX;       // x of the track impact, LORS 
-  Float_t fRICHtrkY;       // y of the track impact, LORS 
-  Float_t fRICHmipX;       // x of the MIP in LORS
-  Float_t fRICHmipY;       // y of the MIP in LORS
+  Float_t fHMPIDchi2;       // chi2 in the HMPID
+  Int_t   fHMPIDqn;         // 1000000*QDC + number of photon clusters
+  Int_t   fHMPIDcluIdx;     // 1000000*chamber id + cluster idx of the assigned MIP cluster
+  Float_t fHMPIDsignal;     // HMPID PID signal (Theta ckov, rad)
+  Float_t fHMPIDr[AliPID::kSPECIES];// "detector response probabilities" (for the PID)
+  Float_t fHMPIDtrkTheta;   // theta of the track extrapolated to the HMPID, LORS
+  Float_t fHMPIDtrkPhi;     // phi of the track extrapolated to the HMPID, LORS
+  Float_t fHMPIDtrkX;       // x of the track impact, LORS 
+  Float_t fHMPIDtrkY;       // y of the track impact, LORS 
+  Float_t fHMPIDmipX;       // x of the MIP in LORS
+  Float_t fHMPIDmipY;       // y of the MIP in LORS
   
   // EMCAL related track information
   Int_t fEMCALindex;   // index of associated EMCAL cluster (AliESDCaloCluster)
