@@ -1,4 +1,0 @@
-SRCS:= AliRICHv0.cxx AliRICHv1.cxx AliRICHDigitizer.cxx
-
-HDRS:= $(SRCS:.cxx=.h)
-DHDR:= RICHsimLinkDef.h
