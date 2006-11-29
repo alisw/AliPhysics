@@ -129,7 +129,7 @@ void Config()
     Int_t   iTRD   =  0;
     Int_t   iZDC   =  0;
     Int_t   iEMCAL =  0;
-    Int_t   iCRT   =  0;
+    Int_t   iACORDE   =  0;
     Int_t   iVZERO =  0;
     rl->CdGAFile();
     //=================== Alice BODY parameters =============================
@@ -373,15 +373,15 @@ void Config()
         AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
     }
 
-     if (iCRT)
+     if (iACORDE)
     {
-        //=================== CRT parameters ============================
-        AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+        //=================== ACORDE parameters ============================
+        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)
     {
-        //=================== CRT parameters ============================
+        //=================== ACORDE parameters ============================
         AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
     }
 

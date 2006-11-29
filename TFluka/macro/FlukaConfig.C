@@ -179,7 +179,7 @@ void Config()
     gAlice->SetField(field);
  
   Int_t   iABSO  = 1; 
-  Int_t   iCRT   = 1; 
+  Int_t   iACORDE   = 1; 
   Int_t   iDIPO  = 1; 
   Int_t   iFMD   = 1; 
   Int_t   iFRAME = 1; 
@@ -407,15 +407,15 @@ void Config()
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
     }
 
-     if (iCRT)
+     if (iACORDE)
     {
-        //=================== CRT parameters ============================
-        AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+        //=================== ACORDE parameters ============================
+        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)
     {
-        //=================== CRT parameters ============================
+        //=================== ACORDE parameters ============================
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }                                                                                
 }

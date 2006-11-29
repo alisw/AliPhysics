@@ -58,7 +58,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv1.h"
-#include "CRT/AliCRTv0.h"
+#include "ACORDE/AliACORDEv0.h"
 #include "VZERO/AliVZEROv2.h"
 #endif
 
@@ -452,7 +452,7 @@ Config()
   // Used detectors 
   // 
   Bool_t useABSO  = kFALSE; 
-  Bool_t useCRT   = kFALSE; 
+  Bool_t useACORDE   = kFALSE; 
   Bool_t useDIPO  = kFALSE; 
   Bool_t useFMD   = kTRUE; 
   Bool_t useFRAME = kFALSE; 
@@ -694,9 +694,9 @@ Config()
     AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
   }
 
-  if (useCRT) {
-    // =================== CRT parameters ============================
-    AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+  if (useACORDE) {
+    // =================== ACORDE parameters ============================
+    AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
   }
 
   if (useVZERO) {

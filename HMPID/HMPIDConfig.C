@@ -10,7 +10,7 @@ public:
   enum EVersOpts  {kNo=101,kVer0,kVer1,kVer2,kTest, kDeclust=301,kSagita,kFeedback,kSecRad,kQe0=400,kQeNorm,kOptics};
   enum EGenTypes  {kGunZ=1,kGun1,kGun7,kBox,kHijing,kHijingPara,kPythia,kRichLib,kNotUsed=999};
   
-  enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kT0,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
+  enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kACORDE,kHALL,kPHOS,kT0,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
   enum EBatchFlags{kPrim=555,kTransport,kAll,kOnly,kRawDdl,kRawDate,kRawRoot,kVertex,kTrack,kHlt,kEsd,kAlign};
   enum EMagField  {kFld0,kFld2,kFld4,kFld5,kFld_2,kFld_4,kFld_5};
@@ -387,7 +387,7 @@ void RichConfig::GuiDet(TGHorizontalFrame *pMainHF)
   fDetBG->Connect("Released(Int_t)","RichConfig",this,"DetRemSlot(Int_t)");
     new TGCheckButton(fDetBG,"PIPE"  ,kPIPE));     new TGCheckButton(fDetBG,"ITS"   ,kITS));   new TGCheckButton(fDetBG,"TPC"   ,kTPC));
     new TGCheckButton(fDetBG,"TRD"   ,kTRD));      new TGCheckButton(fDetBG,"TOF"   ,kTOF));   new TGCheckButton(fDetBG,"FRAME" ,kFRAME));         
-    new TGCheckButton(fDetBG,"MAG"   ,kMAG));      new TGCheckButton(fDetBG,"CRT"   ,kCRT));   new TGCheckButton(fDetBG,"HALL"  ,kHALL));         
+    new TGCheckButton(fDetBG,"MAG"   ,kMAG));      new TGCheckButton(fDetBG,"ACORDE"   ,kACORDE));   new TGCheckButton(fDetBG,"HALL"  ,kHALL));         
     new TGCheckButton(fDetBG,"PHOS"  ,kPHOS));     new TGCheckButton(fDetBG,"T0" ,kT0)); new TGCheckButton(fDetBG,"FMD"   ,kFMD));         
     new TGCheckButton(fDetBG,"ABSO"  ,kABSO));     new TGCheckButton(fDetBG,"PMD"   ,kPMD));   new TGCheckButton(fDetBG,"DIPO"  ,kDIPO));         
     new TGCheckButton(fDetBG,"EMCAL" ,kEMCAL));    new TGCheckButton(fDetBG,"VZERO" ,kVZERO)); new TGCheckButton(fDetBG,"MUON"  ,kMUON));         
@@ -440,7 +440,7 @@ void RichConfig::WriteDet(FILE *pF)
 //different phase space detectors  
   if(fDetBG->GetButton(kPHOS )->GetState()) fprintf(pF,"\n  new AliPHOSv1(\"PHOS\",\"IHEP\");\n");
   if(fDetBG->GetButton(kEMCAL)->GetState()) fprintf(pF,"\n  new AliEMCALv1(\"EMCAL\",\"G56_2_55_19_104_14\");\n");
-  if(fDetBG->GetButton(kCRT  )->GetState()) fprintf(pF,"\n  new AliCRTv0(\"CRT\",\"normal ACORDE\");\n");
+  if(fDetBG->GetButton(kACORDE  )->GetState()) fprintf(pF,"\n  new AliACORDEv0(\"ACORDE\",\"normal ACORDE\");\n");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GuiBatch(TGHorizontalFrame *pMainF)

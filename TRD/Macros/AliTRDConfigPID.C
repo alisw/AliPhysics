@@ -49,7 +49,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
-#include "CRT/AliCRTv0.h"
+#include "ACORDE/AliACORDEv0.h"
 #include "VZERO/AliVZEROv6.h"
 #endif
 
@@ -370,7 +370,7 @@ void Config()
   gAlice->SetField(field);    
 
   Int_t iABSO  = 1;
-  Int_t iCRT   = 0;
+  Int_t iACORDE   = 0;
   Int_t iDIPO  = 0;
   Int_t iEMCAL = 0;
   Int_t iFMD   = 0;
@@ -580,15 +580,15 @@ void Config()
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH");
     }
 
-     if (iCRT)
+     if (iACORDE)
     {
-        //=================== CRT parameters ============================
-        AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+        //=================== ACORDE parameters ============================
+        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)
     {
-        //=================== CRT parameters ============================
+        //=================== ACORDE parameters ============================
         AliVZERO *VZERO = new AliVZEROv6("VZERO", "normal VZERO");
     }
 }

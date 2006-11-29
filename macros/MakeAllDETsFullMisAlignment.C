@@ -26,7 +26,7 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/Full"){
   }
 
   TString dets = "EMCAL,FMD,ITS,MUON,PHOS,PMD,HMPID,T0,TOF,TPC,TRD,VZERO,ZDC";
-//   TString dets = "ABSO,DIPO,FMD,FRAME,HALL,ITS,MAG,MUON,PHOS,PIPE,PMD,HMPID,SHIL,T0,TOF,TPC,TRD,ZDC,EMCAL,CRT,VZERO";
+//   TString dets = "ABSO,DIPO,FMD,FRAME,HALL,ITS,MAG,MUON,PHOS,PIPE,PMD,HMPID,SHIL,T0,TOF,TPC,TRD,ZDC,EMCAL,ACORDE,VZERO";
   TObjArray *detArray = dets.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;

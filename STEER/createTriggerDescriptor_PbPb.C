@@ -7,7 +7,7 @@ createTriggerDescriptor_PbPb()
 
    // Define a Cluster Detector
    //descrip.AddDetectorCluster( "ALL" );
-   descrip.AddDetectorCluster( "ITS TRD PHOS EMCAL MUON ZDC T0 VZERO" ); // no CRT yet
+   descrip.AddDetectorCluster( "ITS TRD PHOS EMCAL MUON ZDC T0 VZERO" ); // no ACORDE yet
 
    // Define the trigger conditions form Table 4.2 TDR DAQ, Trigger pag 59
 
@@ -162,12 +162,12 @@ createTriggerDescriptor_PbPb()
                          "EMCALJetLPt_SC",        "EMCAL Jet Low Pt Semi Central",
                          (ULong64_t)0x1 << 32 );
    // 34
-   descrip.AddCondition( "ZDC_EMD_L1", // CRT_L0
+   descrip.AddCondition( "ZDC_EMD_L1", // ACORDE_L0
                          "ZDC_diss",              "ZDC EMD Event",
                          (ULong64_t)0x1 << 33 ); 
    // 35
-//   descrip.AddCondition( "CRT_cosmic_L0",
-//                         "CRT_cosmic",            "CRT cosmic telescope",
+//   descrip.AddCondition( "ACORDE_cosmic_L0",
+//                         "ACORDE_cosmic",            "ACORDE cosmic telescope",
 //                         (ULong64_t)0x1 << 34 );
 
    // 36

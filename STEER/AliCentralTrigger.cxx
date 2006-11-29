@@ -212,7 +212,7 @@ UChar_t AliCentralTrigger::GetClusterMask()
    Int_t ndet = det->GetEntriesFast();
 
    UInt_t idmask = 0;
-   if( ndet >= 8 ) {  // All detectors, should be 9 but CRT is not implemented yet
+   if( ndet >= 8 ) {  // All detectors, should be 9 but ACORDE is not implemented yet
       idmask = 1;
       return idmask;
    }

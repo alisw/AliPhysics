@@ -7,7 +7,7 @@ createTriggerDescriptor_pp()
 
    // Define a Cluster Detector
    //descrip.AddDetectorCluster( "ALL" );
-   descrip.AddDetectorCluster( "ITS T0 VZERO MUON TOF" ); // no CRT yet
+   descrip.AddDetectorCluster( "ITS T0 VZERO MUON TOF" ); // no ACORDE yet
 
    // standalong V0 inputs
    descrip.AddCondition( "VZERO_LEFT",      "VZERO_LEFT",      "VZERO A (Left)",            (ULong64_t)0x1  );

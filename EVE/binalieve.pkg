@@ -8,7 +8,7 @@ ELIBS    := Reve Alieve \
   TPCbase TPCsim TPCrec TPCfast \
   ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
   TRDsim TRDrec TRDfast \
-  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec CRT \
+  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec ACORDE \
   HMPIDbase HMPIDrec HMPIDsim \
   ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
   EMCALbase EMCALsim EMCALrec EMCALjet \

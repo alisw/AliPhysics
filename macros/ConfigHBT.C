@@ -39,7 +39,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
-#include "CRT/AliCRTv1.h"
+#include "ACORDE/AliACORDEv1.h"
 #endif
 
 void Config()
@@ -226,7 +226,7 @@ void Config()
      //Last number indicates the scale factor 
 
     Int_t   iABSO = 1;
-    Int_t   iCRT = 0;
+    Int_t   iACORDE = 0;
     Int_t   iDIPO = 1;
     Int_t   iFMD = 0;
     Int_t   iFRAME = 1;
@@ -388,11 +388,11 @@ void Config()
         AliZDC *ZDC = new AliZDCv1("ZDC", "normal ZDC");
     }
 
-    if (iCRT)
+    if (iACORDE)
     {
-        //=================== CRT parameters ============================
+        //=================== ACORDE parameters ============================
 
-        AliCRT *CRT = new AliCRTv1("CRT", "normal CRT");
+        AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
     }
 
     if (iTRD)

@@ -136,13 +136,13 @@ void ConfigCommon(Bool_t interactiveSetup)
   Int_t iTRD   = 1;
   Int_t iZDC   = 1;
   Int_t iEMCAL = 1;
-  Int_t iCRT   = 0;  
+  Int_t iACORDE   = 0;  
   Int_t iVZERO = 1;
 
   // ONLY FOR GEANT4
 
   // Exclude detectors with temporary problem
-  iCRT = 0;
+  iACORDE = 0;
   iEMCAL = 0;
  
   // END OF ONLY FOR GEANT4
@@ -336,16 +336,16 @@ void ConfigCommon(Bool_t interactiveSetup)
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
     }
 
-    if (iCRT)
+    if (iACORDE)
     {
-        //=================== CRT parameters ============================
+        //=================== ACORDE parameters ============================
 
-        AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
     }
 
     if (iVZERO)
     {
-        //=================== CRT parameters ============================
+        //=================== ACORDE parameters ============================
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
 

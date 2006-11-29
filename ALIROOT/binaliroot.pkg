@@ -9,7 +9,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         TPCbase TPCsim TPCrec TPCfast \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
-	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec CRT \
+	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec ACORDE \
         HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet \
@@ -49,7 +49,7 @@ ARLIBS:= \
    FMD/tgt_$(ALICE_TARGET)/G__FMDbase.o $(LIBPATH)/libFMDbase.a \
    FMD/tgt_$(ALICE_TARGET)/G__FMDsim.o $(LIBPATH)/libFMDsim.a \
    FMD/tgt_$(ALICE_TARGET)/G__FMDrec.o $(LIBPATH)/libFMDrec.a \
-   CRT/tgt_$(ALICE_TARGET)/G__CRT.o $(LIBPATH)/libCRT.a \
+   ACORDE/tgt_$(ALICE_TARGET)/G__ACORDE.o $(LIBPATH)/libACORDE.a \
    HMPID/tgt_$(ALICE_TARGET)/G__HMPIDbase.o $(LIBPATH)/libHMPIDbase.a \
    HMPID/tgt_$(ALICE_TARGET)/G__HMPIDsim.o $(LIBPATH)/libHMPIDsim.a \
    HMPID/tgt_$(ALICE_TARGET)/G__HMPIDrec.o $(LIBPATH)/libHMPIDrec.a \

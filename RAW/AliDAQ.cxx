@@ -60,7 +60,7 @@ const char* AliDAQ::fgkDetectorName[AliDAQ::kNDetectors] = {
   "T0",
   "VZERO", // Name to be changed to V0 ?
   "ZDC",
-  "CRT",   // Name to be changed to ACCORDE
+  "ACORDE",
   "TRG",
   "EMCAL",
   "HLT"

@@ -67,7 +67,7 @@ void alieve_loadlibs ()
   gSystem->Load("libZDCbase");
   gSystem->Load("libZDCsim");
   gSystem->Load("libZDCrec");
-  gSystem->Load("libCRT");
+  gSystem->Load("libACORDE");
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROsim");
   gSystem->Load("libVZEROrec");

@@ -30,7 +30,7 @@
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
-#include "CRT/AliCRTv1.h"
+#include "ACORDE/AliACORDEv1.h"
 #endif
 
 void Config()
@@ -161,7 +161,7 @@ void Config()
   gAlice->SetField(field);    
 
   Int_t iABSO=0;
-  Int_t iCRT=0;
+  Int_t iACORDE=0;
   Int_t iDIPO=0;
   Int_t iFMD=0;
   Int_t iFRAME=0;
@@ -311,10 +311,10 @@ void Config()
     AliZDC *ZDC  = new AliZDCv1("ZDC","normal ZDC");
   }
 
-  if(iCRT) {
-    //=================== CRT parameters ============================
+  if(iACORDE) {
+    //=================== ACORDE parameters ============================
 
-    AliCRT *CRT  = new AliCRTv1("CRT","normal CRT");
+    AliACORDE *ACORDE  = new AliACORDEv1("ACORDE","normal ACORDE");
   }
 
   if(iTRD) {

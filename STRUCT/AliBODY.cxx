@@ -114,7 +114,7 @@ void AliBODY::CreateGeometry()
     dALIC[8]=0;
     dALIC[9]=2000;
     gMC->Gsvolu("ALIC","PGON",idtmed[1],dALIC,10);
-  } else if ( gAlice->GetModule("CRT")) {
+  } else if ( gAlice->GetModule("ACORDE")) {
     //
     // If the Cosmic Ray Trigger  is present we need a large box
     // 
@@ -126,7 +126,7 @@ void AliBODY::CreateGeometry()
       
   } else {
     //
-    // If the ZDC and CRT are not present make just a BOX
+    // If the ZDC and ACORDE are not present make just a BOX
     //
     dALIC[0]=2000;
     dALIC[1]=2000;

@@ -36,7 +36,7 @@
 #include "PMD/AliPMDv1.h"
 #include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv1.h"
-#include "CRT/AliCRTv0.h"
+#include "ACORDE/AliACORDEv0.h"
 #include "VZERO/AliVZEROv3.h"
 #endif
 
@@ -225,7 +225,7 @@ void Config()
     Int_t   iZDC    = 0;
     Int_t   iEMCAL  = 0;
     Int_t   iVZERO  = 0;
-    Int_t   iCRT    = 0;
+    Int_t   iACORDE    = 0;
 
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -450,15 +450,15 @@ void Config()
         AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19");
     }
 
-     if (iCRT)
+     if (iACORDE)
     {
-        //=================== CRT parameters ============================
-        AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+        //=================== ACORDE parameters ============================
+        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
     }
 
      if (iVZERO)
     {
-        //=================== CRT parameters ============================
+        //=================== ACORDE parameters ============================
         AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
     }
  
