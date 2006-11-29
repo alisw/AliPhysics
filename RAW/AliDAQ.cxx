@@ -50,14 +50,14 @@ const char* AliDAQ::fgkDetectorName[AliDAQ::kNDetectors] = {
   "TPC",
   "TRD",
   "TOF",
-  "HMPID",  // Name to be changed to HMPID
+  "HMPID",
   "PHOS",
   "CPV",
   "PMD",
   "MUONTRK",
   "MUONTRG",
   "FMD",
-  "START", // Name to be changed to T0
+  "T0",
   "VZERO", // Name to be changed to V0 ?
   "ZDC",
   "CRT",   // Name to be changed to ACCORDE

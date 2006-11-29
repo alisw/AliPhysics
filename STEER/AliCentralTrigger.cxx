@@ -222,7 +222,7 @@ UChar_t AliCentralTrigger::GetClusterMask()
       return idmask;
    }
 
-   if( detStr.Contains("MUON") && detStr.Contains("START") ) {  // MUON arm
+   if( detStr.Contains("MUON") && detStr.Contains("T0") ) {  // MUON arm
       idmask = 4;
       return idmask;
    }

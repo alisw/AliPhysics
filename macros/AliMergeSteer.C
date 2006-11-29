@@ -137,7 +137,7 @@ private:
   Int_t   fPHOS;
   Int_t   fPMD;
   Int_t   fHMPID;
-  Int_t   fSTART;
+  Int_t   fT0;
   Int_t   fTOF;
   Int_t   fTPC;
   Int_t   fTRD;
@@ -191,7 +191,7 @@ AliMergeSteer::AliMergeSteer(const Text_t *name, const Text_t* title) : TTask(na
   fPHOS = 0;
   fPMD = 0;
   fHMPID = 0;
-  fSTART = 0;
+  fT0 = 0;
   fTOF = 0;
   fTPC = 0;
   fTRD = 0;
@@ -264,8 +264,8 @@ Int_t AliMergeSteer::GetDetectorFlag(Option_t* option)
     return fPMD;
   } else if (strstr(option,"HMPID")) {
     return fHMPID;
-  } else if (strstr(option,"START")) {
-    return fSTART;
+  } else if (strstr(option,"T0")) {
+    return fT0;
   } else if (strstr(option,"TOF")) {
     return fTOF;
   } else if (strstr(option,"TPC")) {
@@ -299,8 +299,8 @@ Bool_t AliMergeSteer::SetDetectorFlag(Option_t* option, Int_t flag)
     fPMD = flag;
   } else if (strstr(option,"HMPID")) {
     fHMPID = flag;
-  } else if (strstr(option,"START")) {
-    fSTART = flag;
+  } else if (strstr(option,"T0")) {
+    fT0 = flag;
   } else if (strstr(option,"TOF")) {
     fTOF = flag;
   } else if (strstr(option,"TPC")) {

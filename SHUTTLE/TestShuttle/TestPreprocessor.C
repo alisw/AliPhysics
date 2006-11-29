@@ -74,7 +74,7 @@ void TestPreprocessor()
   // TODO(4)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
 //  AliPreprocessor* pp = new AliTestPreprocessor("DET", shuttle);
-//  AliPreprocessor* start = new AliSTARTPreprocessor("T00", shuttle);
+//  AliPreprocessor* start = new AliT0Preprocessor("T00", shuttle);
   AliPreprocessor* test = new AliTestPreprocessor("DET", shuttle);
 
   // Test the preprocessor

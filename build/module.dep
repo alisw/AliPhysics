@@ -28,7 +28,7 @@ RALICE/module.mk:	 RALICE/libRALICE.pkg
 RAW/module.mk:           RAW/libRAWDatabase.pkg RAW/libRAWDatasim.pkg RAW/libRAWDatarec.pkg RAW/binalimdc.pkg RAW/bindateStream.pkg
 HMPID/module.mk:		 HMPID/libHMPIDbase.pkg HMPID/libHMPIDrec.pkg HMPID/libHMPIDsim.pkg
 SHUTTLE/module.mk:	 SHUTTLE/libSHUTTLE.pkg
-START/module.mk:	 START/libSTARTbase.pkg START/libSTARTsim.pkg START/libSTARTrec.pkg
+T0/module.mk:	 T0/libT0base.pkg T0/libT0sim.pkg T0/libT0rec.pkg
 STEER/module.mk:	 STEER/libESD.pkg STEER/libCDB.pkg STEER/libSTEER.pkg
 STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg

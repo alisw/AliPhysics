@@ -127,7 +127,7 @@ Int_t iFMD=0;
 Int_t iMUON=0;
 Int_t iPHOS=1;
 Int_t iPMD=0;
-Int_t iSTART=0;
+Int_t iT0=0;
 
 
   //=================== Alice BODY parameters =============================
@@ -652,9 +652,9 @@ PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
 
 }
 
-if(iSTART) {
-//=================== START parameters ============================
-AliSTART *START  = new AliSTARTv0("START","START Detector");
+if(iT0) {
+//=================== T0 parameters ============================
+AliT0 *T0  = new AliT0v0("T0","T0 Detector");
 }
 
 }

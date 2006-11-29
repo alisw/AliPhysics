@@ -220,14 +220,14 @@ protected:
   Float_t      fZDCEMEnergy;     // reconstructed energy in the electromagnetic ZDC
   Int_t        fZDCParticipants; // number of participants estimated by the ZDC
 
-  Float_t      fT0zVertex;       // vertex z position estimated by the START
+  Float_t      fT0zVertex;       // vertex z position estimated by the T0
   AliESDVertex fSPDVertex;       // Primary vertex estimated by the SPD
   AliESDVertex fPrimaryVertex;   // Primary vertex estimated using ESD tracks
   AliMultiplicity fSPDMult;      // SPD tracklet multiplicity
 
-  Float_t      fT0timeStart;     // interaction time estimated by the START
-  Float_t      fT0time[24];      // best TOF on each START PMT
-  Float_t      fT0amplitude[24]; // number of particles(MIPs) on each START PMT
+  Float_t      fT0timeStart;     // interaction time estimated by the T0
+  Float_t      fT0time[24];      // best TOF on each T0 PMT
+  Float_t      fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
 
   TClonesArray fTracks;          // ESD tracks
   TClonesArray fHLTConfMapTracks;// HLT ESD tracks from Conformal Mapper method

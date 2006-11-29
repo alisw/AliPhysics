@@ -37,7 +37,7 @@
 #include "MUON/AliMUONv1.h"
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
-#include "START/AliSTARTv1.h"
+#include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv2.h"
 #include "CRT/AliCRTv1.h"
 #endif
@@ -239,7 +239,7 @@ void Config()
     Int_t   iPMD = 0;
     Int_t   iHMPID = 0;
     Int_t   iSHIL = 1;
-    Int_t   iSTART = 0;
+    Int_t   iT0 = 0;
     Int_t   iTOF = 0;
     Int_t   iTPC = 1;
     Int_t   iTRD = 0;
@@ -441,10 +441,10 @@ void Config()
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
     }
 
-    if (iSTART)
+    if (iT0)
     {
-        //=================== START parameters ============================
-        AliSTART *START = new AliSTARTv1("START", "START Detector");
+        //=================== T0 parameters ============================
+        AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
     }
 
 

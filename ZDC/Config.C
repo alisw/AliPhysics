@@ -93,7 +93,7 @@ gener->Init();
  Int_t iPMD=0;
  Int_t iHMPID=0;
  Int_t iSHIL=0;
- Int_t iSTART=0;
+ Int_t iT0=0;
  Int_t iTOF=0;
  Int_t iTPC=0;
  Int_t iTRD=0;
@@ -580,9 +580,9 @@ gener->Init();
 
  }
 
- if(iSTART) {
- //=================== START parameters ============================
-   AliSTART *START  = new AliSTARTv1("START","START Detector");
+ if(iT0) {
+ //=================== T0 parameters ============================
+   AliT0 *T0  = new AliT0v1("T0","T0 Detector");
  }
 
 

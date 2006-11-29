@@ -56,7 +56,7 @@
 #include "MUON/AliMUONTriggerGeometryBuilder.h"
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
-#include "START/AliSTARTv1.h"
+#include "T0/AliT0v1.h"
 #include "EMCAL/AliEMCALv1.h"
 #include "CRT/AliCRTv0.h"
 #include "VZERO/AliVZEROv2.h"
@@ -465,7 +465,7 @@ Config()
   Bool_t usePMD   = kFALSE; 
   Bool_t useHMPID  = kFALSE; 
   Bool_t useSHIL  = kFALSE; 
-  Bool_t useSTART = kFALSE; 
+  Bool_t useT0 = kFALSE; 
   Bool_t useTOF   = kFALSE; 
   Bool_t useTPC   = kFALSE;
   Bool_t useTRD   = kFALSE; 
@@ -684,9 +684,9 @@ Config()
     AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
   }
 
-  if (useSTART) {
-    // =================== START parameters ==========================
-    AliSTART *START = new AliSTARTv1("START", "START Detector");
+  if (useT0) {
+    // =================== T0 parameters ==========================
+    AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
   }
 
   if (useEMCAL) {

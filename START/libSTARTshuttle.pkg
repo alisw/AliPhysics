@@ -1,9 +1,0 @@
-#-*- Mode: Makefile -*-
-# $Id$
-
-SRCS = AliSTARTCalc.cxx AliSTARTPreprocessor.cxx AliSTARTDqclass.cxx
-HDRS:= $(SRCS:.cxx=.h)
-
-DHDR= STARTshuttleLinkDef.h
-
-EINCLUDE:=RAW

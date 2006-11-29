@@ -42,7 +42,7 @@
 #include "MUON/AliMUONv1.h"
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
-#include "START/AliSTARTv1.h"
+#include "T0/AliT0v1.h"
 #include "CRT/AliCRTv1.h"
 #endif
 
@@ -318,7 +318,7 @@ void Config()
   Int_t iPMD=0;
   Int_t iHMPID=0;
   Int_t iSHIL=0;
-  Int_t iSTART=0;
+  Int_t iT0=0;
   Int_t iTOF=0;
   Int_t iTPC=0;
   Int_t iTRD=0;
@@ -503,9 +503,9 @@ void Config()
 
   }
 
-  if(iSTART) {
-    //=================== START parameters ============================
-    AliSTART *START  = new AliSTARTv1("START","START Detector");
+  if(iT0) {
+    //=================== T0 parameters ============================
+    AliT0 *T0  = new AliT0v1("T0","T0 Detector");
   }
 
          

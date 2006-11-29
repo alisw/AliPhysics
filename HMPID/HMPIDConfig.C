@@ -10,7 +10,7 @@ public:
   enum EVersOpts  {kNo=101,kVer0,kVer1,kVer2,kTest, kDeclust=301,kSagita,kFeedback,kSecRad,kQe0=400,kQeNorm,kOptics};
   enum EGenTypes  {kGunZ=1,kGun1,kGun7,kBox,kHijing,kHijingPara,kPythia,kRichLib,kNotUsed=999};
   
-  enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
+  enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kT0,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
   enum EBatchFlags{kPrim=555,kTransport,kAll,kOnly,kRawDdl,kRawDate,kRawRoot,kVertex,kTrack,kHlt,kEsd,kAlign};
   enum EMagField  {kFld0,kFld2,kFld4,kFld5,kFld_2,kFld_4,kFld_5};
@@ -388,7 +388,7 @@ void RichConfig::GuiDet(TGHorizontalFrame *pMainHF)
     new TGCheckButton(fDetBG,"PIPE"  ,kPIPE));     new TGCheckButton(fDetBG,"ITS"   ,kITS));   new TGCheckButton(fDetBG,"TPC"   ,kTPC));
     new TGCheckButton(fDetBG,"TRD"   ,kTRD));      new TGCheckButton(fDetBG,"TOF"   ,kTOF));   new TGCheckButton(fDetBG,"FRAME" ,kFRAME));         
     new TGCheckButton(fDetBG,"MAG"   ,kMAG));      new TGCheckButton(fDetBG,"CRT"   ,kCRT));   new TGCheckButton(fDetBG,"HALL"  ,kHALL));         
-    new TGCheckButton(fDetBG,"PHOS"  ,kPHOS));     new TGCheckButton(fDetBG,"START" ,kSTART)); new TGCheckButton(fDetBG,"FMD"   ,kFMD));         
+    new TGCheckButton(fDetBG,"PHOS"  ,kPHOS));     new TGCheckButton(fDetBG,"T0" ,kT0)); new TGCheckButton(fDetBG,"FMD"   ,kFMD));         
     new TGCheckButton(fDetBG,"ABSO"  ,kABSO));     new TGCheckButton(fDetBG,"PMD"   ,kPMD));   new TGCheckButton(fDetBG,"DIPO"  ,kDIPO));         
     new TGCheckButton(fDetBG,"EMCAL" ,kEMCAL));    new TGCheckButton(fDetBG,"VZERO" ,kVZERO)); new TGCheckButton(fDetBG,"MUON"  ,kMUON));         
     new TGCheckButton(fDetBG,"ZDC"   ,kZDC));      new TGCheckButton(fDetBG,"SHILD" ,kSHILD));         
@@ -434,7 +434,7 @@ void RichConfig::WriteDet(FILE *pF)
   if(fDetBG->GetButton(kDIPO )->GetState()) fprintf(pF,"\n  new AliDIPOv2(\"DIPO\",\"Dipole version 2\");\n");
   if(fDetBG->GetButton(kMUON )->GetState()) fprintf(pF,"\n  new AliMUONv1(\"MUON\",\"default\");\n");
   if(fDetBG->GetButton(kPMD  )->GetState()) fprintf(pF,"\n  new AliPMDv1(\"PMD\",\"normal PMD\");\n");
-  if(fDetBG->GetButton(kSTART)->GetState()) fprintf(pF,"\n  new AliSTARTv1(\"START\",\"START Detector\");\n");
+  if(fDetBG->GetButton(kT0)->GetState()) fprintf(pF,"\n  new AliT0v1(\"T0\",\"T0 Detector\");\n");
   if(fDetBG->GetButton(kVZERO)->GetState()) fprintf(pF,"\n  new AliVZEROv2(\"VZERO\",\"normal VZERO\");\n");
   if(fDetBG->GetButton(kZDC  )->GetState()) fprintf(pF,"\n  new AliZDCv2(\"ZDC\",\"normal ZDC\");\n");
 //different phase space detectors  

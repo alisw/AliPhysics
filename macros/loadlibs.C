@@ -57,9 +57,9 @@ void loadlibs ()
   gSystem->Load("libHMPIDbase");
   gSystem->Load("libHMPIDsim");
   gSystem->Load("libHMPIDrec");
-  gSystem->Load("libSTARTbase");
-  gSystem->Load("libSTARTsim");
-  gSystem->Load("libSTARTrec");
+  gSystem->Load("libT0base");
+  gSystem->Load("libT0sim");
+  gSystem->Load("libT0rec");
   gSystem->Load("libZDCbase");
   gSystem->Load("libZDCsim");
   gSystem->Load("libZDCrec");

@@ -119,7 +119,7 @@ private:
   TFile*     fOutput;
 public:
   //__________________________________________________________________
-  GetMedia(const char* modlist="FMD:ITS:BODY:ABSO:START:PIPE", 
+  GetMedia(const char* modlist="FMD:ITS:BODY:ABSO:T0:PIPE", 
 	   const char* output="media.root") 
     :  fModList(modlist)
   { 

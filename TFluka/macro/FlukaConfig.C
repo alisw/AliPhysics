@@ -192,7 +192,7 @@ void Config()
   Int_t   iPMD   = 1; 
   Int_t   iHMPID  = 1; 
   Int_t   iSHIL  = 1; 
-  Int_t   iSTART = 1; 
+  Int_t   iT0 = 1; 
   Int_t   iTOF   = 1; 
   Int_t   iTPC   = 1;
   Int_t   iTRD   = 1; 
@@ -395,10 +395,10 @@ void Config()
         AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
     }
 
-    if (iSTART)
+    if (iT0)
     {
-        //=================== START parameters ============================
-        AliSTART *START = new AliSTARTv1("START", "START Detector");
+        //=================== T0 parameters ============================
+        AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
     }
 
     if (iEMCAL)

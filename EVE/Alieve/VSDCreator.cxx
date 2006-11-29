@@ -251,7 +251,7 @@ void VSDCreator::ConvertKinematics()
 
     Int_t nPrimaries = (Int_t) mTreeTR->GetEntries();
     for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++) {
-      // printf("START mTreeTR->GetEntry(%d) \n",iPrimPart);
+      // printf("T0 mTreeTR->GetEntry(%d) \n",iPrimPart);
       mTreeTR->GetEntry(iPrimPart);
       // printf("END mTreeTR->GetEntry(%d) \n",iPrimPart);
     

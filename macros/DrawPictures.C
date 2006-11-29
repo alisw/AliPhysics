@@ -16,7 +16,7 @@ void DrawPictures()
    menu->AddButton("PMD shaded",   ".x DrawPMD.C","Draw a shaded view of PMD");
    menu->AddButton("HMPID shaded",  ".x DrawHMPID.C","Draw a shaded view of HMPID");
    menu->AddButton("SHIL shaded",  ".x DrawSHIL.C","Draw a shaded view of SHIL");
-   menu->AddButton("START shaded", ".x DrawSTART.C","Draw a shaded view of START");
+   menu->AddButton("T0 shaded", ".x DrawT0.C","Draw a shaded view of T0");
    menu->AddButton("TOF shaded",   ".x DrawTOF.C","Draw a shaded view of TOF");
    menu->AddButton("TRD shaded",   ".x DrawTRD.C","Draw a shaded view of TRD");
    menu->AddButton("ZDC shaded",   ".x DrawZDC.C","Draw a shaded view of ZDC");

@@ -152,7 +152,7 @@ ClassImp(AliReconstruction)
 
 
 //_____________________________________________________________________________
-const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT", "HLT"};
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "CRT", "HLT"};
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdbUri,

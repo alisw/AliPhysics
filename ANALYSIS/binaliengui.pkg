@@ -11,7 +11,7 @@ ELIBS    := Aliengui MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
   HMPIDbase HMPIDrec HMPIDsim \
   ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
   EMCALbase EMCALsim EMCALrec EMCALjet \
-  STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
+  STRUCT T0base T0sim T0rec EVGEN ESD CDB STEER \
   pythia6 AliPythia6 lhapdf THijing \
   hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
   FASTSIM microcern \

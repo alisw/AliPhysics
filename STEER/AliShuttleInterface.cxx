@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/11/29 09:53:27  hristov
+RICH becomes HMPID
+
 Revision 1.2  2006/11/06 14:24:21  jgrosseo
 reading of run parameters from the logbook
 online offline naming conversion
@@ -62,7 +65,7 @@ const char* AliShuttleInterface::fgkDetName[kNDetectors] = {"SPD", "SDD", "SSD",
 
 // names of the detectors in OCDB
 const char* AliShuttleInterface::fgkOfflineDetName[kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF",
-       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO"};
+       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO"};
 
 //______________________________________________________________________________________________
 const char* AliShuttleInterface::GetOfflineDetName(const char* detName){

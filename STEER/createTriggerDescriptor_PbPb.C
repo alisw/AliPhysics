@@ -7,7 +7,7 @@ createTriggerDescriptor_PbPb()
 
    // Define a Cluster Detector
    //descrip.AddDetectorCluster( "ALL" );
-   descrip.AddDetectorCluster( "ITS TRD PHOS EMCAL MUON ZDC START VZERO" ); // no CRT yet
+   descrip.AddDetectorCluster( "ITS TRD PHOS EMCAL MUON ZDC T0 VZERO" ); // no CRT yet
 
    // Define the trigger conditions form Table 4.2 TDR DAQ, Trigger pag 59
 

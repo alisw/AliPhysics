@@ -15,7 +15,7 @@ void DrawALICE()
    gROOT->LoadMacro("ViewPMD.C");gInterpreter->ProcessLine("ViewPMD()");
    gROOT->LoadMacro("ViewHMPID.C");gInterpreter->ProcessLine("ViewHMPID()");
    gROOT->LoadMacro("ViewSHIL.C");gInterpreter->ProcessLine("ViewSHIL()");
-   gROOT->LoadMacro("ViewSTART.C");gInterpreter->ProcessLine("ViewSTART()");
+   gROOT->LoadMacro("ViewT0.C");gInterpreter->ProcessLine("ViewT0()");
    gROOT->LoadMacro("ViewTOF.C");gInterpreter->ProcessLine("ViewTOF()");
    gROOT->LoadMacro("ViewTPC.C");gInterpreter->ProcessLine("ViewTPC()");
    gROOT->LoadMacro("ViewTRD.C");gInterpreter->ProcessLine("ViewTRD()");

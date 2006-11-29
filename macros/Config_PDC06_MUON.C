@@ -129,7 +129,7 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   Int_t   iFMD = 1;
   Int_t   iPHOS = 1;
   Int_t   iPMD = 1;
-  Int_t   iSTART = 1;
+  Int_t   iT0 = 1;
   Int_t   iVZERO = 1;
 
   rl->CdGAFile();
@@ -168,9 +168,9 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   if(iPMD) {
       AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
   }
- //=================== START parameters =============================  
-  if (iSTART) {
-      AliSTART *START = new AliSTARTv1("START", "START Detector");
+ //=================== T0 parameters =============================  
+  if (iT0) {
+      AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
   }
  //=================== VZERO parameters =============================
   if (iVZERO) {

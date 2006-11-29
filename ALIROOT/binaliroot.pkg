@@ -13,7 +13,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet \
-        STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
+        STRUCT T0base T0sim T0rec EVGEN ESD CDB STEER \
         pythia6 AliPythia6 lhapdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern \
@@ -63,9 +63,9 @@ ARLIBS:= \
    EMCAL/tgt_$(ALICE_TARGET)/G__EMCALsim.o $(LIBPATH)/libEMCALsim.a \
    EMCAL/tgt_$(ALICE_TARGET)/G__EMCALrec.o $(LIBPATH)/libEMCALrec.a \
    EMCAL/tgt_$(ALICE_TARGET)/G__EMCALjet.o $(LIBPATH)/libEMCALjet.a \
-   START/tgt_$(ALICE_TARGET)/G__STARTbase.o $(LIBPATH)/libSTARTbase.a \
-   START/tgt_$(ALICE_TARGET)/G__STARTsim.o $(LIBPATH)/libSTARTsim.a \
-   START/tgt_$(ALICE_TARGET)/G__STARTrec.o $(LIBPATH)/libSTARTrec.a \
+   T0/tgt_$(ALICE_TARGET)/G__T0base.o $(LIBPATH)/libT0base.a \
+   T0/tgt_$(ALICE_TARGET)/G__T0sim.o $(LIBPATH)/libT0sim.a \
+   T0/tgt_$(ALICE_TARGET)/G__T0rec.o $(LIBPATH)/libT0rec.a \
    TOF/tgt_$(ALICE_TARGET)/G__TOFbase.o $(LIBPATH)/libTOFbase.a \
    TOF/tgt_$(ALICE_TARGET)/G__TOFsim.o $(LIBPATH)/libTOFsim.a \
    TOF/tgt_$(ALICE_TARGET)/G__TOFrec.o $(LIBPATH)/libTOFrec.a \
