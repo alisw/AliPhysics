@@ -8,7 +8,7 @@
   Int_t saveErrIgLevel=gErrorIgnoreLevel;
   gErrorIgnoreLevel=kFatal;
 
-  gSystem->Load("libAliL3ITS.so");
+  gSystem->Load("libAliHLTITS.so");
 
   gSystem->Load("libTkJetFinder.so");
   gSystem->Load("libJetFinder.so");

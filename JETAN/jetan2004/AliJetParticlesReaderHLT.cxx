@@ -17,8 +17,8 @@
 #include <AliESD.h>
 #include <AliESDtrack.h>
 #include <AliESDHLTtrack.h>
-#include <AliL3Track.h>
-#include <AliL3Vertex.h>
+#include <AliHLTTrack.h>
+#include <AliHLTVertex.h>
 #include <AliKalmanTrack.h>
 #include <AliJetEventParticles.h>
 #include "AliJetParticlesReaderHLT.h"
@@ -111,7 +111,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
 
   fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
   //cout << vertexpos[0] << " " << vertexpos[1] << " " << vertexpos[2] << endl;
-  AliL3Vertex v;
+  AliHLTVertex v;
   v.SetX(vertexpos[0]);
   v.SetY(vertexpos[1]);
   v.SetZ(vertexpos[2]);
@@ -154,7 +154,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
 	py=mom[1];
 	pz=mom[2];
 #else
-      AliL3Track l3;
+      AliHLTTrack l3;
       //if(!kesdtrack->ComesFromMainVertex()) continue;
       //cout << "Pos: " << kesdtrack->GetFirstPointX() << " " << kesdtrack->GetFirstPointY() << " " << kesdtrack->GetFirstPointZ() << endl;      
       l3.SetFirstPoint(kesdtrack->GetFirstPointX(),kesdtrack->GetFirstPointY(),kesdtrack->GetFirstPointZ());
