@@ -31,14 +31,11 @@ class AliITSDDLRawData:public TObject{
   //This method formats and stores in buf all the digits of a SDD module
   void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SSD module
-  void  WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &BaseWord);
+  void  WriteChipHeader(Int_t ChipAddr,Int_t halfStave,UInt_t &BaseWord);
   void  WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &BaseWord);
   void  WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t &BaseWord);
   //The three previous  methods are used to store the data according to the 
   //Silicon pixel detector data format
-  void  ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,UInt_t BaseWord);
-  void  ReadChipTrailer(Int_t &ChipHitCount,UInt_t BaseWord);
-  //Methods used for reading and dubugging SPD data files
   Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Int_t fIndex;             //number of 32 words to be stored into the output file
   Int_t fHalfStaveModule;     //first or second half of an Half Stave module
