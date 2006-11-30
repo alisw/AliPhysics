@@ -20,6 +20,7 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     virtual ~AliITSRawStreamSPD() {};
 
     virtual Bool_t   Next();
+    virtual void     SkipCalibHeader();
 
     Int_t            GetRow() const {return fCoord2;};
     Int_t            GetColumn() const {return fCoord1;};
@@ -36,9 +37,12 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UShort_t         fData;         // data read for file
     Int_t            fDDLNumber;    // current DDL number
     Int_t            fEventNumber;  // event trigger number
-    Int_t            fModuleNumber; // sequential module number
     UInt_t           fOffset;       // offset for cell column
     UInt_t           fHitCount;     // counter of hits
+
+    UChar_t          fDataChar1, fDataChar2, fDataChar3, fDataChar4; // temps part of a 32bit word
+    Bool_t           fFirstWord;      // keeps track of which of the two 16bit words out of the 32bit word to read
+    Bool_t           ReadNextShort();
 
     ClassDef(AliITSRawStreamSPD, 0) // class for reading ITS SPD raw digits
 };
