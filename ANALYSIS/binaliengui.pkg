@@ -16,8 +16,8 @@ ELIBS    := Aliengui MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
   hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
-  AliL3Src AliL3Comp AliL3Misc AliL3MUON \
-  AliL3Hough AliL3ITS
+  AliHLTSrc AliHLTComp AliHLTMisc AliHLTMUON \
+  AliHLTHough AliHLTITS
 
 PACKBLIBS := -L$(ROOTSYS)/lib $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
 

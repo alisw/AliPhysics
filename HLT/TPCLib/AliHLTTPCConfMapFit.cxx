@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ConfMapFit.cxx,v 1.14 2005/06/14 10:55:21 cvetan 
+// Original: AliHLTConfMapFit.cxx,v 1.14 2005/06/14 10:55:21 cvetan 
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group

@@ -3,24 +3,24 @@
 // Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de
 //*-- Copyright &copy ALICE HLT Group
 
-#include <AliL3StandardIncludes.h>
+#include <AliHLTStandardIncludes.h>
 
-#include <AliL3RootTypes.h>
-#include <AliL3Logging.h>
-#include <AliL3Logger.h>
-#include <AliL3Transform.h>
-#include <AliL3Track.h>
-#include <AliL3TrackArray.h>
-#include <AliL3HoughTrack.h>
-#include <AliL3ClustFinderNew.h>
-#include <AliL3MemHandler.h>
-#include <AliL3SpacePointData.h>
-#include <AliL3HoughBaseTransformer.h>
-#include <AliL3HoughTransformer.h>
-#include <AliL3HoughTransformerLUT.h>
-#include <AliL3HoughTransformerVhdl.h>
-#include <AliL3HoughMaxFinder.h>
-#include <AliL3Hough.h>
+#include <AliHLTRootTypes.h>
+#include <AliHLTLogging.h>
+#include <AliHLTLogger.h>
+#include <AliHLTTransform.h>
+#include <AliHLTTrack.h>
+#include <AliHLTTrackArray.h>
+#include <AliHLTHoughTrack.h>
+#include <AliHLTClustFinderNew.h>
+#include <AliHLTMemHandler.h>
+#include <AliHLTSpacePointData.h>
+#include <AliHLTHoughBaseTransformer.h>
+#include <AliHLTHoughTransformer.h>
+#include <AliHLTHoughTransformerLUT.h>
+#include <AliHLTHoughTransformerVhdl.h>
+#include <AliHLTHoughMaxFinder.h>
+#include <AliHLTHough.h>
 
 #ifndef no_root
 #include <TROOT.h>
@@ -41,8 +41,8 @@ int main(Int_t argc,Char_t **argv)
   Int_t sh=0;
   Int_t segs=100;
 
-  AliL3Logger l;
-  l.Set(AliL3Logger::kAll);
+  AliHLTLogger l;
+  l.Set(AliHLTLogger::kAll);
   l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
@@ -63,15 +63,15 @@ int main(Int_t argc,Char_t **argv)
     segs=atoi(argv[4]);
   }
 
-  //AliL3FFloat::SetParams(10000);
-  AliL3Transform::Init(path);
+  //AliHLTFFloat::SetParams(10000);
+  AliHLTTransform::Init(path);
 
 #if 0
   runhough(sl,sh,path,segs);
 #else //do some comparison tests
 
-  AliL3HoughBaseTransformer *fh1 = new AliL3HoughTransformerVhdl(0,0,segs);
-  AliL3HoughBaseTransformer *fh2 = new AliL3HoughTransformerLUT(0,0,segs);
+  AliHLTHoughBaseTransformer *fh1 = new AliHLTHoughTransformerVhdl(0,0,segs);
+  AliHLTHoughBaseTransformer *fh2 = new AliHLTHoughTransformerLUT(0,0,segs);
 
   fh1->CreateHistograms(64,0.1,64,-30.,30.);
   fh2->CreateHistograms(64,0.1,64,-30.,30.);
@@ -80,7 +80,7 @@ int main(Int_t argc,Char_t **argv)
 
 #endif
 
-  //AliL3FFloat::PrintStat();
+  //AliHLTFFloat::PrintStat();
   exit(0);
 }
 
@@ -98,7 +98,7 @@ void runhough(Int_t sl,Int_t sh,Char_t *path,Int_t n_eta_segments, Int_t show_se
   Int_t tv=1;
   Int_t th=14000;
 
-  AliL3Hough *hough = new AliL3Hough();
+  AliHLTHough *hough = new AliHLTHough();
   hough->Init(path,binary,n_eta_segments,bit8,tv);
   hough->GetMaxFinder()->SetThreshold(th);
   Int_t ntracks=0;
@@ -110,11 +110,11 @@ void runhough(Int_t sl,Int_t sh,Char_t *path,Int_t n_eta_segments, Int_t show_se
     hough->FindTrackCandidates();
     //hough->Evaluate(5);
 
-    AliL3TrackArray *tracks = (AliL3TrackArray*)hough->GetTracks(0);
+    AliHLTTrackArray *tracks = (AliHLTTrackArray*)hough->GetTracks(0);
     ntracks=tracks->GetNTracks();
     for(int i=0; i<ntracks; i++)
       {
-	AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
+	AliHLTHoughTrack *track = (AliHLTHoughTrack*)tracks->GetCheckedTrack(i);
 	if(!track) continue;
 	if(sl==sh) cout<<"pt "<<track->GetPt()<<" psi "<<track->GetPsi()<<" eta "<<track->GetEta()<<" etaindex "<<track->GetEtaIndex()<<" weight "<<track->GetWeight()<<endl;
 	if(show_seg<0) show_seg=track->GetEtaIndex();
@@ -129,21 +129,21 @@ void runhough(Int_t sl,Int_t sh,Char_t *path,Int_t n_eta_segments, Int_t show_se
 #endif
 
 #if 0
-void display(AliL3Hough *hough,Int_t eta_index)
+void display(AliHLTHough *hough,Int_t eta_index)
 {
   //Display the data/tracks in eta_index
   
   hough->InitEvaluate();
-  AliL3Histogram *digitd = new AliL3Histogram("Digits display","",250,0,250,250,-125,125);
-  AliL3Histogram *trackd = new AliL3Histogram("Found tracks display","",250,0,250,250,-125,125);
+  AliHLTHistogram *digitd = new AliHLTHistogram("Digits display","",250,0,250,250,-125,125);
+  AliHLTHistogram *trackd = new AliHLTHistogram("Found tracks display","",250,0,250,250,-125,125);
   for(int i=0; i<6; i++)
     hough->GetEval(i)->DisplayEtaSlice(eta_index,digitd);
   
   float xyz[3];
-  tracks = (AliL3TrackArray*)hough->GetTracks(0);
+  tracks = (AliHLTTrackArray*)hough->GetTracks(0);
   for(int i=0; i<tracks->GetNTracks(); i++)
     {
-      AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
+      AliHLTHoughTrack *track = (AliHLTHoughTrack*)tracks->GetCheckedTrack(i);
       if(!track) continue;
       if(track->GetEtaIndex() != eta_index) continue;
 
@@ -193,6 +193,6 @@ void geteff(char *fname)
     counter++;
   
   char filename[100];
-  file = new AliL3MemHandler();
+  file = new AliHLTMemHandler();
 }
 #endif

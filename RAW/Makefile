@@ -50,7 +50,7 @@ endif
 ifneq ($(findstring hlt,$(MAKECMDGOALS)),)
 include ../HLT/hlt.conf
 CXXFLAGS += -DUSE_HLT ${HLTDEFS} -I${ALICE_ROOT}/include -I../HLT/src -I../HLT/hough -I../HLT/comp
-LIBS     += -lEG -lVMC -lGeom -lThread -L../lib/tgt_linuxDEBUG -lSTEER -lRAWData -lTPCbase -lTPCsim -lTPCrec -lCONTAINERS -lAliL3Src -lAliL3Misc -lAliL3Hough -lAliL3Comp
+LIBS     += -lEG -lVMC -lGeom -lThread -L../lib/tgt_linuxDEBUG -lSTEER -lRAWData -lTPCbase -lTPCsim -lTPCrec -lCONTAINERS -lAliHLTSrc -lAliHLTMisc -lAliHLTHough -lAliHLTComp
 endif
 
 ##### DATE #####

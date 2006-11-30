@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3Display.cxx,v 1.26 2005/06/14 10:55:21 cvetan 
+// Original: AliHLTDisplay.cxx,v 1.26 2005/06/14 10:55:21 cvetan 
 
 /** \class AliHLTTPCDisplay
 <pre>

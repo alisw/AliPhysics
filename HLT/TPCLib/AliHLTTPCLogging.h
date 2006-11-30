@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3Logging.h,v 1.11 2004/10/09 11:28:31 loizides 
+// Original: AliHLTLogging.h,v 1.11 2004/10/09 11:28:31 loizides 
 
 #ifndef ALIHLTTPCLOGGING_H
 #define ALIHLTTPCLOGGING_H

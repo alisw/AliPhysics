@@ -33,16 +33,16 @@
   #include "AliMagF.h"
   #include "AliGenEventHeader.h"
 
-  #include "AliL3ITStrack.h"
-  #include "AliL3ITStracker.h"
-  #include "AliL3ITSVertexerZ.h"
+  #include "AliHLTITStrack.h"
+  #include "AliHLTITStracker.h"
+  #include "AliHLTITSVertexerZ.h"
 #endif
 
 //extern TSystem *gSystem;
 
 Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
 
-  //  gSystem->Load("libAliL3ITS.so");
+  //  gSystem->Load("libAliHLTITS.so");
 
   TStopwatch timer;
   timer.Start();
@@ -91,7 +91,7 @@ Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
    geom->ReadNewFile("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det");
 
    //An instance of the HLT ITS tracker
-   AliL3ITStracker itsTracker(geom);
+   AliHLTITStracker itsTracker(geom);
 
    TFile *ef=TFile::Open("AliESDs.root");
    if (!ef || !ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
@@ -120,7 +120,7 @@ Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
      Double_t cvtx[3]={0.005,0.005,0.010};
      cout<<"MC vertex position: "<<v[2]<<endl;
 
-     AliL3ITSVertexerZ vertexer("null");
+     AliHLTITSVertexerZ vertexer("null");
      AliESDVertex* vertex = NULL;
      TStopwatch timer2;
      timer2.Start();

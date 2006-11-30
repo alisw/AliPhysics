@@ -34,21 +34,21 @@
 #include "AliRawReaderDate.h"
 #include "event.h"
 #include "monitor.h"
-#include <AliL3StandardIncludes.h>
-#include <AliL3Transform.h>
-#include <AliL3MemHandler.h>
-#include <AliL3TrackArray.h>
-#include <AliL3HoughMaxFinder.h>
-#include <AliL3HoughBaseTransformer.h>
-#include <AliL3Hough.h>
-#include <AliL3Benchmark.h>
+#include <AliHLTStandardIncludes.h>
+#include <AliHLTTransform.h>
+#include <AliHLTMemHandler.h>
+#include <AliHLTTrackArray.h>
+#include <AliHLTHoughMaxFinder.h>
+#include <AliHLTHoughBaseTransformer.h>
+#include <AliHLTHough.h>
+#include <AliHLTBenchmark.h>
 #include <AliKalmanTrack.h>
 #include "AliITSgeom.h"
 #include "AliMagF.h"
 #include "AliMagFMaps.h"
-#include <AliL3ITSclusterer.h>
-#include <AliL3ITSVertexerZ.h>
-#include <AliL3ITStracker.h>
+#include <AliHLTITSclusterer.h>
+#include <AliHLTITSVertexerZ.h>
+#include <AliHLTITStracker.h>
 #endif
 
 //_____________________________________________________________________________
@@ -100,18 +100,18 @@ int main(int argc, char** argv)
   if (status) ::Fatal("monitorDeclareMp", monitorDecodeError(status));
 
   // initialize HLT transformations
-  if (!AliL3Transform::Init("./", kFALSE)) {
-    ::Fatal("AliL3Transform::Init", "HLT initialization failed");
+  if (!AliHLTTransform::Init("./", kFALSE)) {
+    ::Fatal("AliHLTTransform::Init", "HLT initialization failed");
   }
   AliESD *esd = new AliESD;
   //  AliKalmanTrack::SetConvConst(
-  //     1000/0.299792458/AliL3Transform::GetSolenoidField()
+  //     1000/0.299792458/AliHLTTransform::GetSolenoidField()
   //  );
   AliITSgeom *geom = new AliITSgeom();
   geom->ReadNewFile("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det");
   if (!geom) return 1;
   Int_t sfield = 0;
-  switch ((Int_t)(AliL3Transform::GetSolenoidField()+0.5)) {
+  switch ((Int_t)(AliHLTTransform::GetSolenoidField()+0.5)) {
   case 2:
     sfield = AliMagFMaps::k2kG;
     break;
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
     sfield = AliMagFMaps::k5kG;
     break;
   default:
-    ::Fatal("AliL3Transform::GetSolenoidField", "Incorrect magnetic field");
+    ::Fatal("AliHLTTransform::GetSolenoidField", "Incorrect magnetic field");
   }
   AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., sfield);
   AliTracker::SetFieldMap(field,kTRUE);
@@ -164,18 +164,18 @@ int main(int argc, char** argv)
 
       } else {
 
-	AliL3Benchmark *fBenchmark = new AliL3Benchmark();
+	AliHLTBenchmark *fBenchmark = new AliHLTBenchmark();
 	fBenchmark->Start("Overall timing");
 
 	// ITS clusterer and vertexer
 	fBenchmark->Start("ITS Clusterer");
-	AliL3ITSclusterer clusterer(geom);
+	AliHLTITSclusterer clusterer(geom);
 	AliRawReader *itsrawreader=new AliRawReaderDate(ptr);
 	TTree* treeClusters = new TTree("TreeL3ITSclusters"," "); //make a tree
 	clusterer.Digits2Clusters(itsrawreader,treeClusters);
 	fBenchmark->Stop("ITS Clusterer");
 	
-	AliL3ITSVertexerZ vertexer;
+	AliHLTITSVertexerZ vertexer;
 	AliESDVertex *vertex = vertexer.FindVertexForCurrentEvent(geom,treeClusters);
 	Double_t vtxPos[3];
 	Double_t vtxErr[3]={0.005,0.005,0.010};
@@ -184,12 +184,12 @@ int main(int argc, char** argv)
 	esd->SetVertex(vertex);
 
 	// TPC Hough reconstruction
-	Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
+	Float_t ptmin = 0.1*AliHLTTransform::GetSolenoidField();
 	Float_t zvertex = vtxPos[2];
 
 	// Run the Hough Transformer
 	fBenchmark->Start("Init");
-	AliL3Hough *hough1 = new AliL3Hough();
+	AliHLTHough *hough1 = new AliHLTHough();
 
 	hough1->SetThreshold(4);
 	hough1->CalcTransformerParams(ptmin);
@@ -200,7 +200,7 @@ int main(int argc, char** argv)
 	fBenchmark->Stop("Init");
 
 	fBenchmark->Start("Init");
-	AliL3Hough *hough2 = new AliL3Hough();
+	AliHLTHough *hough2 = new AliHLTHough();
 
 	hough2->SetThreshold(4);
 	hough2->CalcTransformerParams(ptmin);
@@ -217,9 +217,9 @@ int main(int argc, char** argv)
 
 	//	gSystem->Sleep(20000);
 	if(hough1->WaitForThreadFinish())
-	  ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+	  ::Fatal("AliHLTHough::WaitForThreadFinish"," Can not join the required thread! ");
 	if(hough2->WaitForThreadFinish())
-	  ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+	  ::Fatal("AliHLTHough::WaitForThreadFinish"," Can not join the required thread! ");
 
 	gSystem->MakeDirectory("hough1");
 	hough1->WriteTracks("./hough1");
@@ -242,7 +242,7 @@ int main(int argc, char** argv)
 	  hough1->AddTracks();
 	  fBenchmark->Stop("AddTracks");
 
-	  //	  AliL3TrackArray* tracks = (AliL3TrackArray*)hough1->GetTracks(0);
+	  //	  AliHLTTrackArray* tracks = (AliHLTTrackArray*)hough1->GetTracks(0);
 	  //	  nglobaltracks += tracks->GetNTracks();
 	}
 	for(int slice=18; slice<=35; slice++)
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
 	  hough2->AddTracks();
 	  fBenchmark->Stop("AddTracks");
 
-	  //	  AliL3TrackArray* tracks = (AliL3TrackArray*)hough2->GetTracks(0);
+	  //	  AliHLTTrackArray* tracks = (AliHLTTrackArray*)hough2->GetTracks(0);
 	  //	  nglobaltracks += tracks->GetNTracks();
 	}
 
@@ -268,7 +268,7 @@ int main(int argc, char** argv)
 	nglobaltracks += hough2->FillESD(esd);
 
 	// ITS tracker
-	AliL3ITStracker itsTracker(geom);
+	AliHLTITStracker itsTracker(geom);
 	itsTracker.SetVertex(vtxPos,vtxErr);
 
 	itsTracker.LoadClusters(treeClusters);

@@ -28,11 +28,11 @@
 #include "AliLog.h"
 #include <TFolder.h>
 #include <stdlib.h>
-#include <AliL3MemHandler.h>
-#include <AliL3TrackArray.h>
-#include <AliL3SpacePointData.h>
-#include <AliL3HoughTrack.h>
-#include <AliL3Transform.h>
+#include <AliHLTMemHandler.h>
+#include <AliHLTTrackArray.h>
+#include <AliHLTSpacePointData.h>
+#include <AliHLTHoughTrack.h>
+#include <AliHLTTransform.h>
 
 //_____________________________________________________________________________
 AliMonitorHLTHough::AliMonitorHLTHough(AliTPCParam* param):
@@ -130,8 +130,8 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
 {
 // fill the HLT Hough transform monitor histograms
 
-  AliL3MemHandler clusterHandler[36][6];
-  AliL3SpacePointData *clusters[36][6];
+  AliHLTMemHandler clusterHandler[36][6];
+  AliHLTSpacePointData *clusters[36][6];
   for (Int_t iSector = 0; iSector < fParam->GetNInnerSector(); iSector++) {
     for (Int_t iPatch = 0; iPatch < 6; iPatch++) {
       char fileName[256];
@@ -140,12 +140,12 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
 	AliWarning(Form("could not open file %s", fileName));
 	continue;
       }
-      clusters[iSector][iPatch] = (AliL3SpacePointData*) clusterHandler[iSector][iPatch].Allocate();
+      clusters[iSector][iPatch] = (AliHLTSpacePointData*) clusterHandler[iSector][iPatch].Allocate();
       UInt_t nClusters = 0;
       clusterHandler[iSector][iPatch].Binary2Memory(nClusters, clusters[iSector][iPatch]);
 
       for (UInt_t iCluster = 0; iCluster < nClusters; iCluster++) {
-	AliL3SpacePointData& cluster = clusters[iSector][iPatch][iCluster];
+	AliHLTSpacePointData& cluster = clusters[iSector][iPatch][iCluster];
 	fClustersCharge->Fill(cluster.fCharge);
 	fNClustersVsRow->Fill(cluster.fPadRow);
 	fNClustersVsSector->Fill(iSector);
@@ -158,7 +158,7 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
   fNClustersVsSector->ScaleErrorBy(10.);
 
 
-  AliL3MemHandler memHandler;
+  AliHLTMemHandler memHandler;
   Int_t nHoughTracks = 0;
 
   char fileName[256];
@@ -167,12 +167,12 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
     AliWarning("could not open file hlt/fitter/tracks.raw");
     return;
   }
-  AliL3TrackArray* tracks = new AliL3TrackArray;
+  AliHLTTrackArray* tracks = new AliHLTTrackArray;
   memHandler.Binary2TrackArray(tracks);
 
   nHoughTracks += tracks->GetNTracks();
   for (Int_t iTrack = 0; iTrack < tracks->GetNTracks(); iTrack++) {
-    AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(iTrack);
+    AliHLTHoughTrack *track = (AliHLTHoughTrack*)tracks->GetCheckedTrack(iTrack);
     if(!track) continue;
 
     track->CalculateHelix();
@@ -197,9 +197,9 @@ void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/,
       Int_t iPatch = (hitID>>22) & 0x7;
       UInt_t position = hitID&0x3fffff;
       UChar_t padrow = clusters[iSector][iPatch][position].fPadRow;
-      Float_t pWidth = AliL3Transform::GetPadPitchWidthLow();
+      Float_t pWidth = AliHLTTransform::GetPadPitchWidthLow();
       if (padrow>63)
-	pWidth = AliL3Transform::GetPadPitchWidthUp(); 
+	pWidth = AliHLTTransform::GetPadPitchWidthUp(); 
       Float_t corr=1.; if (padrow>63) corr=0.67;
       sampleDEdx[iHit] = clusters[iSector][iPatch][position].fCharge/pWidth*corr;
       Double_t crossingangle = track->GetCrossingAngle(padrow,iSector);

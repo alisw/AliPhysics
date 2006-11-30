@@ -24,7 +24,7 @@ class AliRawReader;
 class AliRunLoader;
 class AliTPCParam;
 class AliLevel3;
-class AliL3Hough;
+class AliHLTHough;
 
 
 class AliMonitorProcess : public TObject {
@@ -102,7 +102,7 @@ private:
   TString          fLogicalFileName;    // logical AliEn file name
   TString          fFileName;           // physical file name
   AliLevel3*       fHLT;                // the HLT tracker
-  AliL3Hough*      fHLTHough;           // the HLT hough transformer
+  AliHLTHough*      fHLTHough;           // the HLT hough transformer
 
   UInt_t           fRunNumber;          // current run number
   UInt_t           fSubRunNumber;       // current part (=resets per run)

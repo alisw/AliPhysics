@@ -12,27 +12,27 @@
 class AliRunLoader;
 #endif
 
-#include "AliL3DigitData.h"
-#include "AliL3RootTypes.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTRootTypes.h"
 
-class AliL3SpacePointData;
-class AliL3DigitRowData;
-class AliL3TrackSegmentData;
-class AliL3DigitData;
-class AliL3ConfMapper;
-class AliL3Vertex;
-class AliL3VertexFinder;
-class AliL3TrackMerger;
-class AliL3GlobalMerger;
+class AliHLTSpacePointData;
+class AliHLTDigitRowData;
+class AliHLTTrackSegmentData;
+class AliHLTDigitData;
+class AliHLTConfMapper;
+class AliHLTVertex;
+class AliHLTVertexFinder;
+class AliHLTTrackMerger;
+class AliHLTGlobalMerger;
 #ifndef no_root
 class TDirectory;
 #endif
-class AliL3ClustFinderNew;
-class AliL3Merger;
-class AliL3InterMerger;
-class AliL3FileHandler;
-class AliL3MemHandler;
-class AliL3Benchmark;
+class AliHLTClustFinderNew;
+class AliHLTMerger;
+class AliHLTInterMerger;
+class AliHLTFileHandler;
+class AliHLTMemHandler;
+class AliHLTBenchmark;
 
 #ifdef no_root
 class AliLevel3 {
@@ -42,16 +42,16 @@ class AliLevel3 : public TObject {
 
  private:
   UInt_t fNTrackData; //count data
-  AliL3TrackSegmentData* fTrackData; //!
-  AliL3ConfMapper *fTracker; //!
-  AliL3Vertex *fVertex; //! 
-  AliL3VertexFinder *fVertexFinder; //!
-  AliL3TrackMerger *fTrackMerger; //!
-  AliL3GlobalMerger *fGlobalMerger; //!
-  AliL3InterMerger *fInterMerger; //!
-  AliL3ClustFinderNew *fClusterFinder; //! 
-  AliL3MemHandler *fFileHandler; //!
-  AliL3Benchmark *fBenchmark;//!
+  AliHLTTrackSegmentData* fTrackData; //!
+  AliHLTConfMapper *fTracker; //!
+  AliHLTVertex *fVertex; //! 
+  AliHLTVertexFinder *fVertexFinder; //!
+  AliHLTTrackMerger *fTrackMerger; //!
+  AliHLTGlobalMerger *fGlobalMerger; //!
+  AliHLTInterMerger *fInterMerger; //!
+  AliHLTClustFinderNew *fClusterFinder; //! 
+  AliHLTMemHandler *fFileHandler; //!
+  AliHLTBenchmark *fBenchmark;//!
 
   Int_t fEvent;    //event number
   Int_t fNPatch;   //number of patches
@@ -80,9 +80,9 @@ class AliLevel3 : public TObject {
   Float_t fXYClusterError; //Cluster error
   Float_t fZClusterError; //Cluster error
 
-  void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
+  void WriteSpacePoints(UInt_t npoints,AliHLTSpacePointData *points,
                         Int_t slice,Int_t patch) const;
-  Int_t WriteTracks(char *filename,AliL3Merger *merger,char opt='o') const;  
+  Int_t WriteTracks(char *filename,AliHLTMerger *merger,char opt='o') const;  
   void WriteResults();
   void FitGlobalTracks();
   void SetPath(char *p){sprintf(fPath,"%s",p);}

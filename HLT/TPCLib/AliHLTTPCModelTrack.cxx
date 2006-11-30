@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ModelTrack.cxx,v 1.18 2005/02/14 11:50:11 hristov 
+// Original: AliHLTModelTrack.cxx,v 1.18 2005/02/14 11:50:11 hristov 
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 //_____________________________________________________________

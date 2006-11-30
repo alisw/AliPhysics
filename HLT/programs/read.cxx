@@ -4,15 +4,15 @@
 //*-- Copyright &copy ALICE HLT Group
 
 
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStandardIncludes.h"
 
-#include "AliL3RootTypes.h"
-#include "AliL3Logging.h"
-#include "AliL3Logger.h"
-#include "AliL3MemHandler.h"
-#include "AliL3AltroMemHandler.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
+#include "AliHLTRootTypes.h"
+#include "AliHLTLogging.h"
+#include "AliHLTLogger.h"
+#include "AliHLTMemHandler.h"
+#include "AliHLTAltroMemHandler.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTransform.h"
 
 #if __GNUC__ == 3
 using namespace std;
@@ -36,8 +36,8 @@ int main(Int_t argc,Char_t **argv)
   Bool_t altroout=kFALSE;
   FILE *afile=0;
   
-  AliL3Logger l;
-  l.Set(AliL3Logger::kAll);
+  AliHLTLogger l;
+  l.Set(AliHLTLogger::kAll);
   //l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
@@ -61,11 +61,11 @@ int main(Int_t argc,Char_t **argv)
   //Loading all specific aliroot version quantities, needed.
   Char_t fname[1024];
   strcpy(fname,argv[1]);
-  AliL3Transform::Init(dirname(fname));
+  AliHLTTransform::Init(dirname(fname));
   strcpy(fname,argv[1]);
 
   //Filehandler object:
-  AliL3MemHandler file;
+  AliHLTMemHandler file;
 
   //Give slice and patch information (see filename convention)
   if((patch>=0)&&(patch<6)) file.Init(slice,patch);
@@ -83,14 +83,14 @@ int main(Int_t argc,Char_t **argv)
     }
 
   //Create an RowData object to access the data
-  AliL3DigitRowData *digits=0;
+  AliHLTDigitRowData *digits=0;
   UInt_t nrows=0;
   
   //Read the file, and store the data in memory. Return value is a pointer to the data.
   digits = file.CompBinary2Memory(nrows);
 
   //Create an ALtroMemHandler object
-  AliL3AltroMemHandler altromem;
+  AliHLTAltroMemHandler altromem;
   if(altroout) altroout=altromem.SetASCIIOutput(afile);
 
   UShort_t time,charge;
@@ -100,7 +100,7 @@ int main(Int_t argc,Char_t **argv)
   for(UInt_t r=0; r<nrows; r++) //Loop over padrows
     {
       //Get the data on this padrow:
-      AliL3DigitData *dataPt = (AliL3DigitData*)digits->fDigitData;
+      AliHLTDigitData *dataPt = (AliHLTDigitData*)digits->fDigitData;
       row++;
       if(lrow+1==row) crows++;
       

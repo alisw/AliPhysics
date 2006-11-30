@@ -28,12 +28,12 @@
 #include "AliLog.h"
 #include <TFolder.h>
 #include <stdlib.h>
-#include "AliL3MemHandler.h"
-#include "AliL3SpacePointData.h"
-#include "AliL3TrackArray.h"
-#include "AliL3Track.h"
-#include "AliL3Transform.h"
-#include "AliL3Vertex.h"
+#include "AliHLTMemHandler.h"
+#include "AliHLTSpacePointData.h"
+#include "AliHLTTrackArray.h"
+#include "AliHLTTrack.h"
+#include "AliHLTTransform.h"
+#include "AliHLTVertex.h"
 
 //_____________________________________________________________________________
 AliMonitorHLT::AliMonitorHLT(AliTPCParam* param):
@@ -152,8 +152,8 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
 {
 // fill the HLT monitor histogrms
 
-  AliL3MemHandler clusterHandler[36];
-  AliL3SpacePointData *clusters[36];
+  AliHLTMemHandler clusterHandler[36];
+  AliHLTSpacePointData *clusters[36];
   for (Int_t iSector = 0; iSector < fParam->GetNInnerSector(); iSector++) {
     char fileName[256];
     sprintf(fileName, "hlt/points_%d_-1.raw", iSector);
@@ -161,12 +161,12 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
       AliWarning(Form("could not open file %s", fileName));
       continue;
     }
-    clusters[iSector] = (AliL3SpacePointData*) clusterHandler[iSector].Allocate();
+    clusters[iSector] = (AliHLTSpacePointData*) clusterHandler[iSector].Allocate();
     UInt_t nClusters = 0;
     clusterHandler[iSector].Binary2Memory(nClusters, clusters[iSector]);
 
     for (UInt_t iCluster = 0; iCluster < nClusters; iCluster++) {
-      AliL3SpacePointData& cluster = clusters[iSector][iCluster];
+      AliHLTSpacePointData& cluster = clusters[iSector][iCluster];
       fClustersCharge->Fill(cluster.fCharge);
       fNClustersVsRow->Fill(cluster.fPadRow);
       fNClustersVsSector->Fill(iSector);
@@ -177,19 +177,19 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
 
   fNClustersVsSector->ScaleErrorBy(10.);
 
-  AliL3MemHandler memHandler;
+  AliHLTMemHandler memHandler;
   if (!memHandler.SetBinaryInput("hlt/tracks.raw")) {
     AliWarning("could not open file hlt/tracks.raw");
     return;
   }
-  AliL3TrackArray* tracks = new AliL3TrackArray;
+  AliHLTTrackArray* tracks = new AliHLTTrackArray;
   memHandler.Binary2TrackArray(tracks);
   Double_t xc,yc,zc;
-  AliL3Vertex vertex;
+  AliHLTVertex vertex;
 
   fNTracks->Fill(tracks->GetNTracks());
   for (Int_t iTrack = 0; iTrack < tracks->GetNTracks(); iTrack++) {
-    AliL3Track* track = tracks->GetCheckedTrack(iTrack);
+    AliHLTTrack* track = tracks->GetCheckedTrack(iTrack);
     if(!track) continue;
     track->CalculateHelix();
     track->GetClosestPoint(&vertex,xc,yc,zc);
@@ -216,9 +216,9 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
       Int_t iSector = (hitID>>25) & 0x7f;
       UInt_t position = hitID&0x3fffff;
       UChar_t padrow = clusters[iSector][position].fPadRow;
-      Float_t pWidth = AliL3Transform::GetPadPitchWidthLow();
+      Float_t pWidth = AliHLTTransform::GetPadPitchWidthLow();
       if (padrow>63)
-	pWidth = AliL3Transform::GetPadPitchWidthUp(); 
+	pWidth = AliHLTTransform::GetPadPitchWidthUp(); 
       Float_t corr=1.; if (padrow>63) corr=0.67;
       sampleDEdx[iHit] = clusters[iSector][position].fCharge/pWidth*corr;
       Double_t crossingangle = track->GetCrossingAngle(padrow,iSector);

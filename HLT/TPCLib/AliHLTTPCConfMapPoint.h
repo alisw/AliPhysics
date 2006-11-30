@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ConfMapPoint.h,v 1.8 2005/06/23 17:46:55 hristov 
+// Original: AliHLTConfMapPoint.h,v 1.8 2005/06/23 17:46:55 hristov 
 
 #ifndef ALIHLTTPCConfMapPointH
 #define ALIHLTTPCConfMapPointH

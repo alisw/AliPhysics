@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3VertexArray.h,v 1.4 2004/06/11 16:06:33 loizides 
+// Original: AliHLTVertexArray.h,v 1.4 2004/06/11 16:06:33 loizides 
 
 #ifndef AliHLTTPCVERTEXARRAY_H
 #define AliHLTTPCVERTEXARRAY_H

@@ -71,10 +71,10 @@ void loadlibsrec ()
   gSystem->Load("libTOFsim");
   gSystem->Load("libTOFrec");
 
-  gSystem->Load("libAliL3ITS");
-  gSystem->Load("libAliL3Src");
-  gSystem->Load("libAliL3Misc");
-  gSystem->Load("libAliL3Comp");
+  gSystem->Load("libAliHLTITS");
+  gSystem->Load("libAliHLTSrc");
+  gSystem->Load("libAliHLTMisc");
+  gSystem->Load("libAliHLTComp");
   gSystem->Load("libThread");
-  gSystem->Load("libAliL3Hough");
+  gSystem->Load("libAliHLTHough");
 }

@@ -7,10 +7,10 @@ void client()
 {
   // load libraries
   if (!gROOT->GetClass("AliLevel3")) {
-    gSystem->Load("libAliL3Src.so");
-    gSystem->Load("libAliL3Misc.so");
-    gSystem->Load("libAliL3Hough.so");
-    gSystem->Load("libAliL3Comp.so");
+    gSystem->Load("libAliHLTSrc.so");
+    gSystem->Load("libAliHLTMisc.so");
+    gSystem->Load("libAliHLTHough.so");
+    gSystem->Load("libAliHLTComp.so");
   }
   if (!gROOT->GetClass("AliMonitorClient")) {
     gSystem->Load("libMONITOR.so");

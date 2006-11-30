@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ClustFinderNew.h,v 1.13 2004/06/18 10:55:26 loizides 
+// Original: AliHLTClustFinderNew.h,v 1.13 2004/06/18 10:55:26 loizides 
 #ifndef AliHLTTPC_ClustFinderNew
 #define AliHLTTPC_ClustFinderNew
 

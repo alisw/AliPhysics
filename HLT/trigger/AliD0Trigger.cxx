@@ -1,7 +1,7 @@
 #include "AliD0Trigger.h"
 #include <TMath.h>
 #include "AliITStrackV2.h"
-#include "AliL3Transform.h"
+#include "AliHLTTransform.h"
 #include <TVector3.h>
 #include <iostream.h>
 
@@ -108,8 +108,8 @@ bool AliD0Trigger::FindV0(){
   Gxneg=negTrack->GetX()*cos(negTrack->GetAlpha())-negTrack->GetY()*sin(negTrack->GetAlpha());
   Gyneg=negTrack->GetX()*sin(negTrack->GetAlpha())+negTrack->GetY()*cos(negTrack->GetAlpha());
     
-  r1=fabs(1/(AliL3Transform::GetBFact()*Bfield*posTrack->Get1Pt()));
-  r2=fabs(1/(AliL3Transform::GetBFact()*Bfield*negTrack->Get1Pt()));
+  r1=fabs(1/(AliHLTTransform::GetBFact()*Bfield*posTrack->Get1Pt()));
+  r2=fabs(1/(AliHLTTransform::GetBFact()*Bfield*negTrack->Get1Pt()));
   
   a1=Gxpos-(r1*cos(posTrack->GetAlpha()+asin(posTrack->GetSnp())+TMath::PiOver2()));
   a2=Gxneg-(r2*cos(negTrack->GetAlpha()+asin(negTrack->GetSnp())-TMath::PiOver2()));
@@ -184,8 +184,8 @@ void AliD0Trigger::FindMomentaAtVertex(){
 
   //This method moves the momenta to the secondary vertex
 
-  double r1=fabs(1/(AliL3Transform::GetBFact()*Bfield*posTrack->Get1Pt()));
-  double r2=fabs(1/(AliL3Transform::GetBFact()*Bfield*negTrack->Get1Pt()));
+  double r1=fabs(1/(AliHLTTransform::GetBFact()*Bfield*posTrack->Get1Pt()));
+  double r2=fabs(1/(AliHLTTransform::GetBFact()*Bfield*negTrack->Get1Pt()));
   
   double Gx1=posTrack->GetX()*cos(posTrack->GetAlpha())-posTrack->GetY()*sin(posTrack->GetAlpha());
   double Gy1=posTrack->GetX()*sin(posTrack->GetAlpha())+posTrack->GetY()*cos(posTrack->GetAlpha());

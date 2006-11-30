@@ -1,18 +1,18 @@
 // $Id$
 
 #ifndef __CINT__
-#include "AliL3Logger.h"
-#include "AliL3FileHandler.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
-#include "AliL3Hough.h"
-#include "AliL3TrackArray.h"
-#include "AliL3Track.h"
-#include "AliL3HoughTrack.h"
-#include "AliL3Fitter.h"
-#include "AliL3ClusterFitter.h"
-#include "AliL3Vertex.h"
-#include "AliL3Benchmark.h"
+#include "AliHLTLogger.h"
+#include "AliHLTFileHandler.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTransform.h"
+#include "AliHLTHough.h"
+#include "AliHLTTrackArray.h"
+#include "AliHLTTrack.h"
+#include "AliHLTHoughTrack.h"
+#include "AliHLTFitter.h"
+#include "AliHLTClusterFitter.h"
+#include "AliHLTVertex.h"
+#include "AliHLTBenchmark.h"
 #include <AliRunLoader.h>
 #include <AliStack.h>
 #include <TParticle.h>
@@ -28,12 +28,12 @@
 
 Int_t runrowhough(Char_t *path="./",Char_t *outpath="./fitter",int s1=0,int s2=35,int nevent=1,Bool_t skip=kTRUE)
 {
-  Bool_t isinit=AliL3Transform::Init(path,kTRUE);
+  Bool_t isinit=AliHLTTransform::Init(path,kTRUE);
   if(!isinit){
     cerr << "Could not create transform settings, please check log for error messages!" << endl;
     return 1;
   }
-  Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
+  Float_t ptmin = 0.1*AliHLTTransform::GetSolenoidField();
   Float_t zvertex;
 
   {
@@ -55,8 +55,8 @@ Int_t runrowhough(Char_t *path="./",Char_t *outpath="./fitter",int s1=0,int s2=3
 
   cout<<" Hough Tranform will run with ptmin="<<ptmin<<" and zvertex="<<zvertex<<endl;
   
-  AliL3Benchmark *fBenchmark = new AliL3Benchmark();
-  AliL3Hough *hough = new AliL3Hough();
+  AliHLTBenchmark *fBenchmark = new AliHLTBenchmark();
+  AliHLTHough *hough = new AliHLTHough();
   hough->SetThreshold(4);
   hough->SetTransformerParams(140,76,ptmin,-1);
   hough->SetPeakThreshold(50,-1);
@@ -81,7 +81,7 @@ Int_t runrowhough(Char_t *path="./",Char_t *outpath="./fitter",int s1=0,int s2=3
 
       if(!skip) {
 	// Run cluster fitter
-	AliL3ClusterFitter *fitter = new AliL3ClusterFitter(path);
+	AliHLTClusterFitter *fitter = new AliHLTClusterFitter(path);
 
 	// Set debug flag for the cluster fitter
 	//  fitter->Debug();
@@ -94,7 +94,7 @@ Int_t runrowhough(Char_t *path="./",Char_t *outpath="./fitter",int s1=0,int s2=3
 	//  fitter->SetChiSqMax(5,kFALSE); //isolated clusters
 	fitter->SetChiSqMax(5,kTRUE);  //overlapping clusters
 
-	Int_t rowrange[2] = {0,AliL3Transform::GetNRows()-1};
+	Int_t rowrange[2] = {0,AliHLTTransform::GetNRows()-1};
 
 	// Takes input from global hough tracks produced by HT
 	fitter->LoadSeeds(rowrange,kFALSE,ev,zvertex);
@@ -103,12 +103,12 @@ Int_t runrowhough(Char_t *path="./",Char_t *outpath="./fitter",int s1=0,int s2=3
 
 	for(int slice=s1; slice<=s2; slice++)
 	  {
-	    for(Int_t ipatch = 0; ipatch < AliL3Transform::GetNPatches(); ipatch++)
+	    for(Int_t ipatch = 0; ipatch < AliHLTTransform::GetNPatches(); ipatch++)
 	      {
 		// Read digits
 		hough->GetMemHandler(ipatch)->Free();
 		hough->GetMemHandler(ipatch)->Init(slice,ipatch);
-		AliL3DigitRowData *digits = (AliL3DigitRowData *)hough->GetMemHandler(ipatch)->AliAltroDigits2Memory(ndigits,ev);
+		AliHLTDigitRowData *digits = (AliHLTDigitRowData *)hough->GetMemHandler(ipatch)->AliAltroDigits2Memory(ndigits,ev);
 
 		fBenchmark->Start("Fitter Init");
 		fitter->Init(slice,ipatch);
@@ -122,16 +122,16 @@ Int_t runrowhough(Char_t *path="./",Char_t *outpath="./fitter",int s1=0,int s2=3
 	  }
 
 	// Refit of the clusters
-	AliL3Vertex vertex;
+	AliHLTVertex vertex;
 	//The seeds are the input tracks from circle HT
-	AliL3TrackArray *tracks = fitter->GetSeeds();
-	AliL3Fitter *ft = new AliL3Fitter(&vertex,1);
+	AliHLTTrackArray *tracks = fitter->GetSeeds();
+	AliHLTFitter *ft = new AliHLTFitter(&vertex,1);
 
 	ft->LoadClusters("./fitter/",ev,kFALSE);
 	fBenchmark->Start("Track fitter");
 	for(Int_t i=0; i<tracks->GetNTracks(); i++)
 	  {
-	    AliL3Track *track = tracks->GetCheckedTrack(i);
+	    AliHLTTrack *track = tracks->GetCheckedTrack(i);
 	    if(!track) continue;
 	    if(track->GetNHits() < 20) continue;
 	    ft->SortTrackClusters(track);

@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3DataCompressorHelper.h,v 1.4 2004/06/15 10:26:57 hristov Exp $
+// Original: AliHLTDataCompressorHelper.h,v 1.4 2004/06/15 10:26:57 hristov Exp $
 
 #ifndef AliHLTTPC_DataCompressorHelper
 #define AliHLTTPC_DataCompressorHelper

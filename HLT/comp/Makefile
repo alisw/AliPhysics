@@ -6,7 +6,7 @@
 #         Constantin Loizides  #
 ################################
 
-MODNAME = AliL3Comp
+MODNAME = AliHLTComp
 
 ifndef ALIHLT_TOPDIR
 ALIHLT_TOPDIR = $(shell pwd)/..
@@ -14,15 +14,15 @@ endif
 
 include $(ALIHLT_TOPDIR)/Makefile.conf
 
-SRCS =  AliL3Modeller.cxx AliL3ClusterFitter.cxx \
-        AliL3Compress.cxx  AliL3DataCompressor.cxx AliL3CompressAC.cxx
+SRCS =  AliHLTModeller.cxx AliHLTClusterFitter.cxx \
+        AliHLTCompress.cxx  AliHLTDataCompressor.cxx AliHLTCompressAC.cxx
 
 ifneq ($(ARCH),macosx)
 ## for macosx put into src as symbolic link
-SRCS += AliL3DataCompressorHelper.cxx AliL3ModelTrack.cxx
+SRCS += AliHLTDataCompressorHelper.cxx AliHLTModelTrack.cxx
 endif
 
-ADD_C_OBJS = $(OBJDIR)/bitio.o $(OBJDIR)/errhand.o $(OBJDIR)/AliL3FitUtilities.o
+ADD_C_OBJS = $(OBJDIR)/bitio.o $(OBJDIR)/errhand.o $(OBJDIR)/AliHLTFitUtilities.o
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
@@ -30,7 +30,7 @@ OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(ADD_C_OBJS) $(DICTO)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
-SRCS += AliL3OfflineDataCompressor.cxx
+SRCS += AliHLTOfflineDataCompressor.cxx
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(ADD_C_OBJS) $(DICTO)
 endif
@@ -48,8 +48,8 @@ $(OBJDIR)/bitio.o: bitio.c
 $(OBJDIR)/errhand.o: errhand.c
 	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/errhand.o errhand.c
 
-$(OBJDIR)/AliL3FitUtilities.o: AliL3FitUtilities.c
-	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/AliL3FitUtilities.o AliL3FitUtilities.c
+$(OBJDIR)/AliHLTFitUtilities.o: AliHLTFitUtilities.c
+	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/AliHLTFitUtilities.o AliHLTFitUtilities.c
 
 $(OBJDIR)/bitio.sto: bitio.c
 	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) -c -o $(OBJDIR)/bitio.sto bitio.c
@@ -57,5 +57,5 @@ $(OBJDIR)/bitio.sto: bitio.c
 $(OBJDIR)/errhand.sto: errhand.c
 	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) -c -o $(OBJDIR)/errhand.sto errhand.c
 
-$(OBJDIR)/AliL3FitUtilities.sto: AliL3FitUtilities.c
-	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) -c -o $(OBJDIR)/AliL3FitUtilities.sto AliL3FitUtilities.c
+$(OBJDIR)/AliHLTFitUtilities.sto: AliHLTFitUtilities.c
+	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) -c -o $(OBJDIR)/AliHLTFitUtilities.sto AliHLTFitUtilities.c

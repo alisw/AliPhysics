@@ -1,14 +1,14 @@
 // $Id$
 
-#include "AliL3StandardIncludes.h"
-#include "AliL3RootTypes.h"
+#include "AliHLTStandardIncludes.h"
+#include "AliHLTRootTypes.h"
 #include "AliLevel3.h"
-#include "AliL3Transform.h"
-#include "AliL3RawDataFileHandler.h"
-#include "AliL3SpacePointData.h"
-#include "AliL3ClustFinderNew.h"
-#include "AliL3ConfMapper.h"
-#include "AliL3Vertex.h"
+#include "AliHLTTransform.h"
+#include "AliHLTRawDataFileHandler.h"
+#include "AliHLTSpacePointData.h"
+#include "AliHLTClustFinderNew.h"
+#include "AliHLTConfMapper.h"
+#include "AliHLTVertex.h"
 
 #if __GNUC__== 3
 using namespace std;
@@ -41,9 +41,9 @@ int main(Int_t argc,Char_t **argv)
     sprintf(path,"%s",argv[2]);
   }
 
-  AliL3Transform::Init("./l3-cosmics-transform.config");
-  AliL3Transform::SetZeroSup(5);
-  AliL3RawDataFileHandler *f=new AliL3RawDataFileHandler();
+  AliHLTTransform::Init("./l3-cosmics-transform.config");
+  AliHLTTransform::SetZeroSup(5);
+  AliHLTRawDataFileHandler *f=new AliHLTRawDataFileHandler();
 
   f->Init(slice,patch);
   
@@ -73,23 +73,23 @@ int main(Int_t argc,Char_t **argv)
 #endif
 
   UInt_t nrows;
-  AliL3DigitRowData *data=(AliL3DigitRowData*)f->RawData2Memory(nrows);
+  AliHLTDigitRowData *data=(AliHLTDigitRowData*)f->RawData2Memory(nrows);
 
-  AliL3MemHandler *out = new AliL3MemHandler();
+  AliHLTMemHandler *out = new AliHLTMemHandler();
   sprintf(fname,"./%s-digits_%d_%d.raw",cfile,slice,patch);
   out->SetBinaryOutput(fname);
   out->Memory2Binary(nrows,data);
   out->CloseBinaryOutput();
   out->Free();
 
-  AliL3MemHandler *mem=new AliL3MemHandler();
+  AliHLTMemHandler *mem=new AliHLTMemHandler();
 
   UInt_t maxclusters=100000;
-  UInt_t pointsize = maxclusters*sizeof(AliL3SpacePointData);
-  AliL3SpacePointData *points = (AliL3SpacePointData*)mem->Allocate(pointsize);
+  UInt_t pointsize = maxclusters*sizeof(AliHLTSpacePointData);
+  AliHLTSpacePointData *points = (AliHLTSpacePointData*)mem->Allocate(pointsize);
 
   Bool_t rawsp=kTRUE;
-  AliL3ClustFinderNew *cf = new AliL3ClustFinderNew();
+  AliHLTClustFinderNew *cf = new AliHLTClustFinderNew();
   cf->InitSlice(slice,patch,maxclusters);
   cf->SetMatchWidth(10);
   cf->SetSTDOutput(kTRUE);

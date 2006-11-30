@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3VertexFinder.h,v 1.7 2004/06/18 10:55:26 loizides 
+// Original: AliHLTVertexFinder.h,v 1.7 2004/06/18 10:55:26 loizides 
 
 #ifndef AliHLTTPCVERTEXFINDER_H
 #define AliHLTTPCVERTEXFINDER_H

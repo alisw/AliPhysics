@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3MemHandler.cxx,v 1.52 2005/06/14 10:55:21 cvetan 
+// Original: AliHLTMemHandler.cxx,v 1.52 2005/06/14 10:55:21 cvetan 
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group 

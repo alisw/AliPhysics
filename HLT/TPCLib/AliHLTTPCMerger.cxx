@@ -1,5 +1,5 @@
 //$Id$
-// Original: AliL3Merger.cxx,v 1.16 2005/06/14 10:55:21 cvetan 
+// Original: AliHLTMerger.cxx,v 1.16 2005/06/14 10:55:21 cvetan 
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy Uli 

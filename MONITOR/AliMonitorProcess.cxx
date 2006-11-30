@@ -52,17 +52,17 @@
 #include "AliTPCtrackerMI.h"
 #include "AliV0vertexer.h"
 
-#include <AliL3StandardIncludes.h>
-#include <AliL3MemHandler.h>
-#include <AliL3ClusterFitter.h>
-#include <AliL3Fitter.h>
-#include <AliL3Hough.h>
-#include <AliL3HoughBaseTransformer.h>
-#include <AliL3StandardIncludes.h>
-#include <AliL3Track.h>
-#include <AliL3TrackArray.h>
-#include <AliL3Transform.h>
-#include <AliL3Vertex.h>
+#include <AliHLTStandardIncludes.h>
+#include <AliHLTMemHandler.h>
+#include <AliHLTClusterFitter.h>
+#include <AliHLTFitter.h>
+#include <AliHLTHough.h>
+#include <AliHLTHoughBaseTransformer.h>
+#include <AliHLTStandardIncludes.h>
+#include <AliHLTTrack.h>
+#include <AliHLTTrackArray.h>
+#include <AliHLTTransform.h>
+#include <AliHLTVertex.h>
 #include <AliLevel3.h>
 
 ClassImp(AliMonitorProcess)
@@ -144,7 +144,7 @@ AliMonitorProcess::AliMonitorProcess(
   if (!fITSgeom) AliFatal("could not load ITS geometry");
 
   // Init TPC parameters for HLT
-  Bool_t isinit=AliL3Transform::Init(const_cast<char*>(fileNameGalice),kTRUE);
+  Bool_t isinit=AliHLTTransform::Init(const_cast<char*>(fileNameGalice),kTRUE);
   if(!isinit){
     AliFatal("Could not create transform settings, please check log for error messages!");
   }
@@ -729,7 +729,7 @@ void AliMonitorProcess::CreateHLTHough(const char* fileName)
   char name[256];
   strcpy(name, fileName);
 
-  fHLTHough = new AliL3Hough();
+  fHLTHough = new AliHLTHough();
   fHLTHough->SetThreshold(4);
   fHLTHough->SetTransformerParams(140,150,0.5,-1);
   fHLTHough->SetPeakThreshold(9000,-1);// or 6000
@@ -792,7 +792,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
   fHLTHough->WriteTracks("./hlt/hough");
 
   // Run cluster fitter
-  AliL3ClusterFitter *fitter = new AliL3ClusterFitter("./hlt");
+  AliHLTClusterFitter *fitter = new AliHLTClusterFitter("./hlt");
 
   // Set debug flag for the cluster fitter
   //  fitter->Debug();
@@ -805,7 +805,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
   //fitter->SetChiSqMax(5,kFALSE); //isolated clusters
   fitter->SetChiSqMax(5,kTRUE);  //overlapping clusters
 
-  Int_t rowrange[2] = {0,AliL3Transform::GetNRows()-1};
+  Int_t rowrange[2] = {0,AliHLTTransform::GetNRows()-1};
 
   // Takes input from global hough tracks produced by HT
   fitter->LoadSeeds(rowrange,kFALSE,iEvent);
@@ -814,12 +814,12 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
 
   for(Int_t islice = 0; islice <= 35; islice++)
     {
-      for(Int_t ipatch = 0; ipatch < AliL3Transform::GetNPatches(); ipatch++)
+      for(Int_t ipatch = 0; ipatch < AliHLTTransform::GetNPatches(); ipatch++)
 	{
 	  // Read digits
 	  fHLTHough->GetMemHandler(ipatch)->Free();
 	  fHLTHough->GetMemHandler(ipatch)->Init(islice,ipatch);
-	  AliL3DigitRowData *digits = (AliL3DigitRowData *)fHLTHough->GetMemHandler(ipatch)->AliAltroDigits2Memory(ndigits,iEvent);
+	  AliHLTDigitRowData *digits = (AliHLTDigitRowData *)fHLTHough->GetMemHandler(ipatch)->AliAltroDigits2Memory(ndigits,iEvent);
 
 	  fitter->Init(islice,ipatch);
 	  fitter->SetInputData(digits);
@@ -829,15 +829,15 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
     }
 
   // Refit of the clusters
-  AliL3Vertex vertex;
+  AliHLTVertex vertex;
   //The seeds are the input tracks from circle HT
-  AliL3TrackArray *tracks = fitter->GetSeeds();
-  AliL3Fitter *ft = new AliL3Fitter(&vertex,1);
+  AliHLTTrackArray *tracks = fitter->GetSeeds();
+  AliHLTFitter *ft = new AliHLTFitter(&vertex,1);
 
   ft->LoadClusters("./hlt/fitter/",iEvent,kFALSE);
   for(Int_t i=0; i<tracks->GetNTracks(); i++)
     {
-      AliL3Track *track = tracks->GetCheckedTrack(i);
+      AliHLTTrack *track = tracks->GetCheckedTrack(i);
       if(!track) continue;
       if(track->GetNHits() < 20) continue;
       ft->SortTrackClusters(track);

@@ -1,6 +1,6 @@
 //$Id$
 
-void SetHoughParameters(AliL3Hough *hough,Char_t *path,Int_t tversion=1)
+void SetHoughParameters(AliHLTHough *hough,Char_t *path,Int_t tversion=1)
 {
   bool binary = kTRUE;    //binary files input
   int n_eta_segments=100;

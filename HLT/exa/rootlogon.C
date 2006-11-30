@@ -28,10 +28,10 @@
 
   if(1)
     {
-      gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Src");
-      gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Misc");
-      gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Hough");
-      gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Comp");
+      gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTSrc");
+      gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTMisc");
+      gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTHough");
+      gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTComp");
       cout<<"HLT libraries loaded"<<endl;
     }
 

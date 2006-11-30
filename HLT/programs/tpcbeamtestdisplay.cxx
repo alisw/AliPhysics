@@ -1,18 +1,18 @@
 // $Id$
 
-#include "AliL3StandardIncludes.h"
-#include "AliL3RootTypes.h"
+#include "AliHLTStandardIncludes.h"
+#include "AliHLTRootTypes.h"
 #include "AliLevel3.h"
-#include "AliL3Transform.h"
-#include "AliL3RawDataFileHandler.h"
-#include "AliL3SpacePointData.h"
-#include "AliL3ClustFinderNew.h"
-#include "AliL3ConfMapper.h"
-#include "AliL3Vertex.h"
-#include "AliL3MemHandler.h"
-#include "AliL3Logging.h"
-#include "AliL3TrackArray.h"
-#include "AliL3Track.h"
+#include "AliHLTTransform.h"
+#include "AliHLTRawDataFileHandler.h"
+#include "AliHLTSpacePointData.h"
+#include "AliHLTClustFinderNew.h"
+#include "AliHLTConfMapper.h"
+#include "AliHLTVertex.h"
+#include "AliHLTMemHandler.h"
+#include "AliHLTLogging.h"
+#include "AliHLTTrackArray.h"
+#include "AliHLTTrack.h"
 #include <TCanvas.h>
 #include <TH2.h>
 #include <TView.h>
@@ -52,20 +52,20 @@ int main(Int_t argc,Char_t **argv){
 
   //displaying the tracks:
   UInt_t fNcl;
-  AliL3MemHandler *clusterfile = new AliL3MemHandler();
+  AliHLTMemHandler *clusterfile = new AliHLTMemHandler();
   sprintf(fname,"%s/%s-points_0_-1.raw",path,cfile);
   cout<<"file: "<<fname<<endl;
   if(!clusterfile->SetBinaryInput(fname)){
     cout<<"file: "<<fname<<" can not be set as binary input!"<<endl;
-    LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
+    LOG(AliHLTLog::kError,"AliHLTEvaluation::Setup","File Open")
       <<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
     delete clusterfile;
     clusterfile = 0; 
   }
   clusterfile->SetBinaryInput(fname);
-  AliL3SpacePointData *fClusters = new AliL3SpacePointData();
-  memset(fClusters,0,sizeof(AliL3SpacePointData*));
-  fClusters = (AliL3SpacePointData*)clusterfile->Allocate();
+  AliHLTSpacePointData *fClusters = new AliHLTSpacePointData();
+  memset(fClusters,0,sizeof(AliHLTSpacePointData*));
+  fClusters = (AliHLTSpacePointData*)clusterfile->Allocate();
   clusterfile->Binary2Memory(fNcl,fClusters);
   clusterfile->CloseBinaryInput();
   TApplication theApp("App", &argc, argv);
@@ -75,7 +75,7 @@ int main(Int_t argc,Char_t **argv){
   c1->Clear();
   c1->SetFillColor(1);
   
-  AliL3SpacePointData *points = fClusters;
+  AliHLTSpacePointData *points = fClusters;
   TH2F *clusters = new TH2F("clusters","",65,-1,64,77,17,94);
   if(!points)
     cout<<"no points"<<endl;
@@ -130,10 +130,10 @@ int main(Int_t argc,Char_t **argv){
 
   TF1 *line = new TF1("line","[0]+[1]*x",0,63);
   line->SetParameters(xyParamA,xyParamB);
-  TLine *leftline= new TLine(0,(0-AliL3Transform::GetNPads(0)/2+55),0,AliL3Transform::GetNPads(0)-(AliL3Transform::GetNPads(0)/2)+55);
-  TLine *rightline=new TLine(63,(0-AliL3Transform::GetNPads(63)/2+55),63,AliL3Transform::GetNPads(63)-(AliL3Transform::GetNPads(63)/2)+55);
-  TLine *upperline=new TLine(0,(AliL3Transform::GetNPads(0)-AliL3Transform::GetNPads(0)/2+55),63,AliL3Transform::GetNPads(63)-(AliL3Transform::GetNPads(63)/2)+55);
-  TLine *underline=new TLine(0,(0-AliL3Transform::GetNPads(0)/2+55),63,0-(AliL3Transform::GetNPads(63)/2)+55);
+  TLine *leftline= new TLine(0,(0-AliHLTTransform::GetNPads(0)/2+55),0,AliHLTTransform::GetNPads(0)-(AliHLTTransform::GetNPads(0)/2)+55);
+  TLine *rightline=new TLine(63,(0-AliHLTTransform::GetNPads(63)/2+55),63,AliHLTTransform::GetNPads(63)-(AliHLTTransform::GetNPads(63)/2)+55);
+  TLine *upperline=new TLine(0,(AliHLTTransform::GetNPads(0)-AliHLTTransform::GetNPads(0)/2+55),63,AliHLTTransform::GetNPads(63)-(AliHLTTransform::GetNPads(63)/2)+55);
+  TLine *underline=new TLine(0,(0-AliHLTTransform::GetNPads(0)/2+55),63,0-(AliHLTTransform::GetNPads(63)/2)+55);
   
   nothing->Draw("colz");
   nothing->SetXTitle("Padrows");

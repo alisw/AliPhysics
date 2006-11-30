@@ -7,19 +7,19 @@
 
 void runcf(Char_t *path)
 {
-  AliL3Transform::Init(path,kTRUE);
+  AliHLTTransform::Init(path,kTRUE);
   
   Char_t fname[1024];
   Char_t digitfile[1024];
   sprintf(digitfile,"%s/digitfile.root",path);
   
   
-  AliL3MemHandler *memory = new AliL3MemHandler();
-  AliL3MemHandler *out = new AliL3MemHandler();
+  AliHLTMemHandler *memory = new AliHLTMemHandler();
+  AliHLTMemHandler *out = new AliHLTMemHandler();
 
   for(Int_t event=0; event<1; event++)
     {
-      AliL3FileHandler *file = new AliL3FileHandler();
+      AliHLTFileHandler *file = new AliHLTFileHandler();
       file->SetAliInput(digitfile);
       for(Int_t slice=0; slice<=35; slice++)
 	{
@@ -29,13 +29,13 @@ void runcf(Char_t *path)
 	      file->Init(slice,patch);
 	      UInt_t ndigits=0;
 	      UInt_t maxclusters=100000;
-	      UInt_t pointsize = maxclusters*sizeof(AliL3SpacePointData);
+	      UInt_t pointsize = maxclusters*sizeof(AliHLTSpacePointData);
 	      
-	      AliL3SpacePointData *points = (AliL3SpacePointData*)memory->Allocate(pointsize);
-	      AliL3DigitRowData *digits = (AliL3DigitRowData*)file->AliAltroDigits2Memory(ndigits,event);
-	      AliL3ClustFinderNew *cf = new AliL3ClustFinderNew();
+	      AliHLTSpacePointData *points = (AliHLTSpacePointData*)memory->Allocate(pointsize);
+	      AliHLTDigitRowData *digits = (AliHLTDigitRowData*)file->AliAltroDigits2Memory(ndigits,event);
+	      AliHLTClustFinderNew *cf = new AliHLTClustFinderNew();
 	      //cf->SetMatchWidth(2);
-	      cf->InitSlice(slice,patch,AliL3Transform::GetFirstRow(patch),AliL3Transform::GetLastRow(patch),maxclusters);
+	      cf->InitSlice(slice,patch,AliHLTTransform::GetFirstRow(patch),AliHLTTransform::GetLastRow(patch),maxclusters);
 	      cf->SetSTDOutput(kTRUE);
 	      cf->SetThreshold(5);
 	      cf->SetDeconv(kTRUE);

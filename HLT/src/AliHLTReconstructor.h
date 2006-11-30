@@ -61,4 +61,6 @@ private:
 };
 #endif
 
+typedef AliHLTReconstructor AliL3Reconstructor; // for backward compatibility
+
 #endif

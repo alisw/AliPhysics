@@ -440,8 +440,8 @@ void trigger_pp(char *outfile="results.root")
       //sprintf(fname,"aliruntfile.root");
 
       //Get the tracks:
-      /*AliL3TrackArray *tracks = new AliL3TrackArray();
-      AliL3FileHandler *file = new AliL3FileHandler();
+      /*AliHLTTrackArray *tracks = new AliHLTTrackArray();
+      AliHLTFileHandler *file = new AliHLTFileHandler();
       file->SetBinaryInput(fname);
       file->Binary2TrackArray(tracks);
       file->CloseBinaryInput();
@@ -449,11 +449,11 @@ void trigger_pp(char *outfile="results.root")
 
       sprintf(fname,"/data1/AliRoot/pp/pileup/");
 	
-      AliL3Evaluate *eval=new AliL3Evaluate(fname,63,63);
+      AliHLTEvaluate *eval=new AliHLTEvaluate(fname,63,63);
       eval->LoadData(event,-1);
       eval->AssignIDs();
       
-      AliL3TrackArray *tracks=eval->GetTracks();
+      AliHLTTrackArray *tracks=eval->GetTracks();
 
       sprintf(fname,"/data1/AliRoot/pp/pileup/");
       //sprintf(fname,"/prog/alice/data/Rawdata/1_patch/pp/recon_%d/",event);
@@ -461,15 +461,15 @@ void trigger_pp(char *outfile="results.root")
       Int_t ntracks=0;
       Double_t xc,yc,zc;
       Double_t impact;
-      AliL3Vertex vertex;
+      AliHLTVertex vertex;
 
       Int_t mcid = 0;
 
-      AliL3TrackArray *ftracks = new AliL3TrackArray();
+      AliHLTTrackArray *ftracks = new AliHLTTrackArray();
       
       for(int i=0; i<tracks->GetNTracks(); i++)
 	{
-	  track = (AliL3Track*)tracks->GetCheckedTrack(i);
+	  track = (AliHLTTrack*)tracks->GetCheckedTrack(i);
 	  if(!track) continue;
 	  
 	  //Assign MCid
@@ -527,10 +527,10 @@ void trigger_pp(char *outfile="results.root")
   delete ntuppel;
 }
 
-void display(AliL3TrackArray *tracks,char *path)
+void display(AliHLTTrackArray *tracks,char *path)
 {
   int slice[2]={0,35};
-  d = new AliL3Display(slice);
+  d = new AliHLTDisplay(slice);
   d->Setup("tracks_0.raw",path);
   d->SetTracks(tracks);
   //d->DisplayClusters();

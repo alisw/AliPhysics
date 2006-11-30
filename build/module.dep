@@ -12,7 +12,7 @@ HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
 HBTP/module.mk:		 HBTP/libHBTP.pkg
 HERWIG/module.mk:        HERWIG/libherwig.pkg
 HIJING/module.mk:	 HIJING/libhijing.pkg
-HLT/module.mk:           HLT/libAliL3Src.pkg  HLT/libAliL3Hough.pkg  HLT/libAliL3Misc.pkg  HLT/libAliL3Comp.pkg HLT/libAliL3ITS.pkg HLT/libAliL3MUON.pkg
+HLT/module.mk:           HLT/libAliHLTSrc.pkg  HLT/libAliHLTHough.pkg  HLT/libAliHLTMisc.pkg  HLT/libAliHLTComp.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTMUON.pkg
 ITS/module.mk:		 ITS/libITSbase.pkg ITS/libITSsim.pkg ITS/libITSrec.pkg
 JETAN/module.mk:	 JETAN/libJETAN.pkg
 MEVSIM/module.mk:	 MEVSIM/libmevsim.pkg

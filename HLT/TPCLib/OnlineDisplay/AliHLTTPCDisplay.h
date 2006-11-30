@@ -1,6 +1,6 @@
 // XEmacs -*-C++-*-
 // @(#) $Id$
-// Original: AliL3Display.h,v 1.14 2004/06/30 08:30:14 loizides 
+// Original: AliHLTDisplay.h,v 1.14 2004/06/30 08:30:14 loizides 
 
 #ifndef ALIHLTTPCDISPLAY_H
 #define ALIHLTTPCDISPLAY_H

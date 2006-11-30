@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3VertexFinder.cxx,v 1.9 2005/06/14 10:55:21 cvetan 
+// Original: AliHLTVertexFinder.cxx,v 1.9 2005/06/14 10:55:21 cvetan 
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group

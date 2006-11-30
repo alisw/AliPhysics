@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3DataCompressorHelper.cxx,v 1.5 2004/06/15 10:26:57 hristov Exp $
+// Original: AliHLTDataCompressorHelper.cxx,v 1.5 2004/06/15 10:26:57 hristov Exp $
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group

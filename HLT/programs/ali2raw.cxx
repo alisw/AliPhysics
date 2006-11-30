@@ -7,13 +7,13 @@
 BOMB THE COMPILE: USEPACKAGE=ALIROOT
 #endif
 
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStandardIncludes.h"
 
-#include "AliL3RootTypes.h"
-#include "AliL3MemHandler.h"
-#include "AliL3FileHandler.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
+#include "AliHLTRootTypes.h"
+#include "AliHLTMemHandler.h"
+#include "AliHLTFileHandler.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTransform.h"
 
 #if __GNUC__ == 3
 using namespace std;
@@ -49,9 +49,9 @@ int main (Int_t argc, Char_t** argv)
 
 
   /*
-  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
+  AliHLTFileHandler *fFileHandler = new AliHLTFileHandler(); 
   fFileHandler->SetAliInput(in);
-  AliL3Transform *fTransformer = new AliL3Transform(path);
+  AliHLTTransform *fTransformer = new AliHLTTransform(path);
 
 
   fFileHandler->Init(fTransformer);
@@ -102,7 +102,7 @@ int Make_Init(char *file, char *tofile=NULL){
   } else strcpy(tofilename,file);
 
   FILE *f = fopen(tofilename,"w");
-  fprintf(f,"void AliL3Transform::Init(){\n");
+  fprintf(f,"void AliHLTTransform::Init(){\n");
 
   fprintf(f,"  //sector:\n");
   fprintf(f,"  fNTimeBins = %d ;\n",fNTimeBins);
@@ -152,17 +152,17 @@ int Make_Init(char *file, char *tofile=NULL){
 #if 0
 void singlepatch(Char_t* in,Int_t first, Int_t last,Char_t *path="",Int_t event=0)
 {
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
+  AliHLTLogger l;
+  //l.UnSet(AliHLTLogger::kDebug);
+  //l.UnSet(AliHLTLogger::kAll);
+  //l.Set(AliHLTLogger::kInformational);
   //l.UseStdout();
   l.UseStream();
   
   Char_t fname[100];
   sprintf(fname,"%sevent_%d/",path,event);
   Char_t name[256];
-  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
+  AliHLTFileHandler *fFileHandler = new AliHLTFileHandler(); 
   fFileHandler->SetAliInput(in);
   Int_t srow[2] = {0,175};
   Int_t patch=0;

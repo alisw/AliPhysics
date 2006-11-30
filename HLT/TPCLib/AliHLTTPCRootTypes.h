@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3RootTypes.h,v 1.12 2004/06/15 14:02:38 loizides 
+// Original: AliHLTRootTypes.h,v 1.12 2004/06/15 14:02:38 loizides 
 #ifndef ALIHLTTPCROOTTYPES_H
 #define ALIHLTTPCROOTTYPES_H
 

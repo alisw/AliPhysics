@@ -4,15 +4,15 @@
 //*-- Copyright &copy ALICE HLT Group
 
 
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStandardIncludes.h"
 
-#include "AliL3RootTypes.h"
-#include "AliL3Logging.h"
-#include "AliL3Logger.h"
-#include "AliL3MemHandler.h"
-#include "AliL3Transform.h"
-#include "AliL3VHDLClusterFinder.h"
-#include "AliL3AltroMemHandler.h"
+#include "AliHLTRootTypes.h"
+#include "AliHLTLogging.h"
+#include "AliHLTLogger.h"
+#include "AliHLTMemHandler.h"
+#include "AliHLTTransform.h"
+#include "AliHLTVHDLClusterFinder.h"
+#include "AliHLTAltroMemHandler.h"
 
 
 #if __GNUC__ == 3
@@ -36,8 +36,8 @@ int main(Int_t argc,Char_t **argv)
   Int_t th=10;
   Bool_t de=kFALSE;
 
-  AliL3Logger l;
-  l.Set(AliL3Logger::kAll);
+  AliHLTLogger l;
+  l.Set(AliHLTLogger::kAll);
   l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
@@ -66,7 +66,7 @@ int main(Int_t argc,Char_t **argv)
   //reading transformer config file
   Char_t fname[1024];
   strcpy(fname,argv[1]);
-  AliL3Transform::Init(dirname(fname)); 
+  AliHLTTransform::Init(dirname(fname)); 
   strcpy(fname,argv[1]);
   */
 
@@ -76,7 +76,7 @@ int main(Int_t argc,Char_t **argv)
     exit(1);
   }
 
-  AliL3VHDLClusterFinder cf;
+  AliHLTVHDLClusterFinder cf;
   cf.SetASCIIInput(afile);
 
   //set cluster finder parameters

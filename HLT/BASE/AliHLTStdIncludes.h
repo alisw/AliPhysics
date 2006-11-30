@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original file : src/AliL3StandardIncludes.h,v 1.5
+// Original file : src/AliHLTStandardIncludes.h,v 1.5
 
 #ifndef ALIHLTSTDINCLUDESH
 #define ALIHLTSTDINCLUDESH

@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3SpacePointData.h,v 1.4 2003/07/27 21:02:09 loizides 
+// Original: AliHLTSpacePointData.h,v 1.4 2003/07/27 21:02:09 loizides 
 
 #ifndef SPACEPOINTDATA_H
 #define SPACEPOINTDATA_H

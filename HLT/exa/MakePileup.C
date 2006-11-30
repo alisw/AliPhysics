@@ -16,10 +16,10 @@
 */
 
 #ifndef __CINT__
-#include "AliL3Logger.h"
-#include "AliL3FileHandler.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
+#include "AliHLTLogger.h"
+#include "AliHLTFileHandler.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTransform.h"
 #include <TNtuple.h>
 #include <TRandom.h>
 #include <TSystem.h>
@@ -139,10 +139,10 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
   Int_t patch = -1; //All of slice.
 
   Int_t NEvents = npiles; //for compatibility with old version
-  AliL3FileHandler **hand=new AliL3FileHandler*[NEvents];
-  AliL3DigitRowData **data=new AliL3DigitRowData*[NEvents];
-  AliL3DigitData **rowData=new AliL3DigitData*[NEvents];
-  AliL3DigitData *test;
+  AliHLTFileHandler **hand=new AliHLTFileHandler*[NEvents];
+  AliHLTDigitRowData **data=new AliHLTDigitRowData*[NEvents];
+  AliHLTDigitData **rowData=new AliHLTDigitData*[NEvents];
+  AliHLTDigitData *test;
   Char_t Carry[1024];
   Int_t DigitsTot = 0;
   Int_t tot_dig=0;
@@ -151,14 +151,14 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
   Byte_t *NData;
 
   const Int_t maxdigits=50000;
-  AliL3DigitData *temp[maxdigits];
-  AliL3DigitData *temp2[maxdigits];
+  AliHLTDigitData *temp[maxdigits];
+  AliHLTDigitData *temp2[maxdigits];
   
   //Create 1 filehander per event:
   sprintf(Carry,"%s/digitfile.root",path);
   for(Int_t event=0; event<NEvents; event++)
     {
-      hand[event] = new AliL3FileHandler();
+      hand[event] = new AliHLTFileHandler();
       if(!hand[event]->SetAliInput(Carry))
 	cerr<<" Error opening file :"<<Carry<<endl;
     }
@@ -177,13 +177,13 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
     //Find out how many digits to allocate per patch
     DigitsTot=0;
     Int_t sign = slice < 18 ? -1 : 1;
-    for(Int_t row = 0 ; row < AliL3Transform::GetNRows(patch) ; row++){
+    for(Int_t row = 0 ; row < AliHLTTransform::GetNRows(patch) ; row++){
       for(Int_t event = 0; event < NEvents ; event++){
-	rowData[event] = (AliL3DigitData *)data[event]->fDigitData;
+	rowData[event] = (AliHLTDigitData *)data[event]->fDigitData;
 	for(UInt_t dig=0; dig<data[event]->fNDigit; dig++)
 	  {
 	    Int_t time = rowData[event][dig].fTime + sign*Offset[event];
-	    if(time < AliL3Transform::GetNTimeBins() && time >= 0)
+	    if(time < AliHLTTransform::GetNTimeBins() && time >= 0)
 	      DigitsTot++;
 	  }
 
@@ -192,26 +192,26 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
     }
 
     //cout << "Try to allocate : " << DigitsTot << endl;
-    Int_t AllDigitsSize = sizeof(AliL3DigitData) * DigitsTot + sizeof(AliL3DigitRowData) * AliL3Transform::GetNRows(patch);
+    Int_t AllDigitsSize = sizeof(AliHLTDigitData) * DigitsTot + sizeof(AliHLTDigitRowData) * AliHLTTransform::GetNRows(patch);
     NData = new Byte_t[AllDigitsSize];
     memset(NData,0,AllDigitsSize);
-    AliL3DigitRowData *AllRowData = (AliL3DigitRowData*)NData;
+    AliHLTDigitRowData *AllRowData = (AliHLTDigitRowData*)NData;
     //cout << "Allocated " << endl;
     
     //Reset the data pointers, because they changed when doing UpdateRowPointer.
     for(Int_t event=0; event<NEvents; event++)
-      data[event] = (AliL3DigitRowData*)hand[event]->GetDataPointer(size);
+      data[event] = (AliHLTDigitRowData*)hand[event]->GetDataPointer(size);
 
     //Pileup the event    
     tot_dig=0;
-    for(Int_t row = 0 ; row < AliL3Transform::GetNRows(patch) ; row++){
+    for(Int_t row = 0 ; row < AliHLTTransform::GetNRows(patch) ; row++){
       DigitsPerRow = 0;
       for(Int_t event = 0; event < NEvents ; event++){
-      	rowData[event] = (AliL3DigitData *)data[event]->fDigitData;
+      	rowData[event] = (AliHLTDigitData *)data[event]->fDigitData;
 	for(UInt_t dig=0; dig<data[event]->fNDigit; dig++)
 	  {
 	    Int_t time = rowData[event][dig].fTime + sign*Offset[event];
-	    if(time < AliL3Transform::GetNTimeBins() && time >= 0)
+	    if(time < AliHLTTransform::GetNTimeBins() && time >= 0)
 	      DigitsPerRow++;
 	  }
       }
@@ -221,11 +221,11 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
       //because we have to sort them before storing them :
       MeVDigit = 0;
       for(Int_t event = 0; event < NEvents ; event++){
-	rowData[event] = (AliL3DigitData *)data[event]->fDigitData;
+	rowData[event] = (AliHLTDigitData *)data[event]->fDigitData;
 	for(UInt_t digit = 0; digit < data[event]->fNDigit ; digit++){
 
 	  Int_t time = rowData[event][digit].fTime + sign*Offset[event];
-	  if(time >= AliL3Transform::GetNTimeBins() || time < 0)
+	  if(time >= AliHLTTransform::GetNTimeBins() || time < 0)
 	    continue;
 	  
 	  temp[MeVDigit] = &rowData[event][digit];
@@ -270,7 +270,7 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
       tot_dig+=final_count;
       AllRowData->fRow = row;
       AllRowData->fNDigit = final_count;
-      test = (AliL3DigitData *) AllRowData->fDigitData;
+      test = (AliHLTDigitData *) AllRowData->fDigitData;
 
       //and copy them to the new event:
       for(Int_t c=0; c<final_count; c++)
@@ -307,9 +307,9 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
 	cerr<<"Error; final_count "<<final_count<<" MeVDigit "<<MeVDigit<<endl;
 
       Byte_t *tmp = (Byte_t *)AllRowData;
-      Int_t UpdateSize = sizeof(AliL3DigitRowData) + sizeof(AliL3DigitData)*final_count;
+      Int_t UpdateSize = sizeof(AliHLTDigitRowData) + sizeof(AliHLTDigitData)*final_count;
       tmp += UpdateSize;
-      AllRowData = (AliL3DigitRowData *) tmp; 
+      AllRowData = (AliHLTDigitRowData *) tmp; 
     }//end looping over row
 
     if(tot_dig>DigitsTot)
@@ -323,8 +323,8 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
 	hand[event]->FreeDigitsTree();
       }
     
-    AliL3FileHandler *Out = new AliL3FileHandler();
-    AllRowData = (AliL3DigitRowData*)NData;
+    AliHLTFileHandler *Out = new AliHLTFileHandler();
+    AllRowData = (AliHLTDigitRowData*)NData;
     if(slice==0){
       if(pileupdir[0]=='/')
 	sprintf(Carry,"mkdir -p %s/",pileupdir);
@@ -344,7 +344,7 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
 	return;
       }
     cout << "Writing to file: " << Carry <<endl;
-    Out->Memory2Binary(AliL3Transform::GetNRows(patch),AllRowData);
+    Out->Memory2Binary(AliHLTTransform::GetNRows(patch),AllRowData);
     Out->CloseBinaryOutput();
     delete Out;
     delete [] NData;
@@ -361,9 +361,9 @@ void MakePileup(Char_t *path,Int_t startev,Int_t endev,Char_t *pileupdir="pileup
 void QSort(void **dPt,Int_t first,Int_t last)
 {
   //General sorting routine. only sorting the pointers.
-  AliL3DigitData **a = (AliL3DigitData**)dPt;
+  AliHLTDigitData **a = (AliHLTDigitData**)dPt;
   
-  AliL3DigitData *tmp;
+  AliHLTDigitData *tmp;
   int i; 
   int j;
   
@@ -401,8 +401,8 @@ void QSort(void **dPt,Int_t first,Int_t last)
 
 Int_t CompareDigits(void *dPt1,void *dPt2)
 {
-  AliL3DigitData *a = (AliL3DigitData*)dPt1;
-  AliL3DigitData *b = (AliL3DigitData*)dPt2;
+  AliHLTDigitData *a = (AliHLTDigitData*)dPt1;
+  AliHLTDigitData *b = (AliHLTDigitData*)dPt2;
   if(a->fPad==b->fPad && a->fTime == b->fTime) return 0;
   
   if(a->fPad<b->fPad) return -1;

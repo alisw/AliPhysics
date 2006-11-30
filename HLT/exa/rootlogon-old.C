@@ -32,27 +32,27 @@
     {
       if(getenv("ALIHLT_MLUCDIR")) {
         if(strcmp("false",getenv("ALIHLT_NOLOGGING"))==0) gSystem->Load("$(ALIHLT_MLUCDIR/lib/libMLUC");
-        gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Src");
-        gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Misc");
-        gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Hough");
-        gSystem->Load("$(ALIHLT_LIBDIR)/libAliL3Comp");
+        gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTSrc");
+        gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTMisc");
+        gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTHough");
+        gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTComp");
       } else {
         if(strcmp("false",getenv("ALIHLT_NOLOGGING"))==0) gSystem->Load("$(ALIHLT_BASEDIR)/kip/MLUC/lib/linux-i386/libMLUC.so");
-        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliL3Src");
-        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliL3Misc");
-        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliL3Hough");
-        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliL3Comp");
+        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliHLTSrc");
+        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliHLTMisc");
+        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliHLTHough");
+        gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliHLTComp");
       }
       cout<<"HLT libraries loaded"<<endl;
 
       if(strcmp("false",getenv("ALIHLT_NOLOGGING"))==0){
-	AliL3Logger gLogger;
+	AliHLTLogger gLogger;
 	gLogger.UseStream();
       }
 
       if(getenv("ALIHLT_TRANSFORMFILE")){
 	cout << "Loading config \"" << getenv("ALIHLT_TRANSFORMFILE") << "\": " << flush;
-	if(AliL3Transform::Init(getenv("ALIHLT_TRANSFORMFILE")))
+	if(AliHLTTransform::Init(getenv("ALIHLT_TRANSFORMFILE")))
 	  cout << "Ok!" << endl;
 	else cout << "Failed!" << endl;
       }

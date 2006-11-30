@@ -1,6 +1,6 @@
 //$Id$
 
-void SetFitParameters(AliL3ClusterFitter *fitter)
+void SetFitParameters(AliHLTClusterFitter *fitter)
 {
   fitter->SetInnerWidthFactor(1,1);
   fitter->SetOuterWidthFactor(1,1);

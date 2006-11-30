@@ -15,9 +15,9 @@
   if(1)
     {
       gSystem->Load("$(LEVEL3)/kip/MLUC/lib/linux-i386/libMLUC.so");
-      gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3");
-      gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3Hough");
-      gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3Comp");
+      gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliHLT");
+      gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliHLTHough");
+      gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliHLTComp");
       cout<<"HLT libraries loaded"<<endl;
     }
   gROOT->LoadMacro("$(HOME)/alirootcode/XFunct.C");

@@ -3,9 +3,9 @@
 // Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStandardIncludes.h"
 
-#include "AliL3RootTypes.h"
+#include "AliHLTRootTypes.h"
 #include "AliLevel3.h"
 
 //Standalone program to run the track follower for benchmark tests.

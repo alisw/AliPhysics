@@ -23,14 +23,14 @@
 
 #include <TStopwatch.h>
 
-#include "AliL3StandardIncludes.h"
-#include "AliL3Logging.h"
-#include "AliL3Transform.h"
-#include "AliL3Hough.h"
+#include "AliHLTStandardIncludes.h"
+#include "AliHLTLogging.h"
+#include "AliHLTTransform.h"
+#include "AliHLTHough.h"
 #include "AliLog.h"
-#include <AliL3ITSclusterer.h>
-#include <AliL3ITSVertexerZ.h>
-#include <AliL3ITStracker.h>
+#include <AliHLTITSclusterer.h>
+#include <AliHLTITSVertexerZ.h>
+#include <AliHLTITStracker.h>
 
 #include "AliHoughFilter.h"
 
@@ -50,23 +50,23 @@ fITSgeom(NULL)
 // default constructor
 
   // Init debug level
-  AliL3Log::fgLevel = AliL3Log::kError;
-  if (AliDebugLevel() > 0) AliL3Log::fgLevel = AliL3Log::kWarning;
-  if (AliDebugLevel() > 1) AliL3Log::fgLevel = AliL3Log::kInformational;
-  if (AliDebugLevel() > 2) AliL3Log::fgLevel = AliL3Log::kDebug;
+  AliHLTLog::fgLevel = AliHLTLog::kError;
+  if (AliDebugLevel() > 0) AliHLTLog::fgLevel = AliHLTLog::kWarning;
+  if (AliDebugLevel() > 1) AliHLTLog::fgLevel = AliHLTLog::kInformational;
+  if (AliDebugLevel() > 2) AliHLTLog::fgLevel = AliHLTLog::kDebug;
 
   // Init TPC HLT geometry
   const char *path = gSystem->Getenv("ALICE_ROOT");
   Char_t pathname[1024];
   strcpy(pathname,path);
   strcat(pathname,"/HLT/src");
-  if (!AliL3Transform::Init(pathname, kFALSE))
+  if (!AliHLTTransform::Init(pathname, kFALSE))
     AliError("HLT initialization failed!");
 
   // Init magnetic field
   AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field,kTRUE);
-  fPtmin = 0.1*AliL3Transform::GetSolenoidField();
+  fPtmin = 0.1*AliHLTTransform::GetSolenoidField();
 
   // Init ITS geometry
   fITSgeom = new AliITSgeom();
@@ -115,7 +115,7 @@ void AliHoughFilter::RunITSclusterer(AliRawEvent* event, TTree *treeClusters)
 
   if(!fITSgeom)
     AliError("ITS geometry not created!");
-  AliL3ITSclusterer clusterer(fITSgeom);
+  AliHLTITSclusterer clusterer(fITSgeom);
   AliRawReader *itsrawreader=new AliRawReaderRoot(event);
   clusterer.Digits2Clusters(itsrawreader,treeClusters);
   delete itsrawreader;
@@ -133,7 +133,7 @@ void AliHoughFilter::RunITSvertexer(AliESD* esd, TTree *treeClusters)
   TStopwatch timer;
   timer.Start();
 
-  AliL3ITSVertexerZ vertexer;
+  AliHLTITSVertexerZ vertexer;
   AliESDVertex *vertex = vertexer.FindVertexForCurrentEvent(fITSgeom,treeClusters);
   esd->SetVertex(vertex);
   AliInfo(Form("ITS vertexer has finished in %f seconds\n",timer.RealTime()));
@@ -152,7 +152,7 @@ void AliHoughFilter::RunTPCtracking(AliRawEvent* event, AliESD* esd)
   const AliESDVertex *vertex = esd->GetVertex();
   Float_t zvertex = vertex->GetZv();
 
-  AliL3Hough *hough1 = new AliL3Hough();
+  AliHLTHough *hough1 = new AliHLTHough();
     
   hough1->SetThreshold(4);
   hough1->CalcTransformerParams(fPtmin);
@@ -160,7 +160,7 @@ void AliHoughFilter::RunTPCtracking(AliRawEvent* event, AliESD* esd)
   hough1->Init(100,4,event,zvertex);
   hough1->SetAddHistograms();
 
-  AliL3Hough *hough2 = new AliL3Hough();
+  AliHLTHough *hough2 = new AliHLTHough();
   
   hough2->SetThreshold(4);
   hough2->CalcTransformerParams(fPtmin);
@@ -174,9 +174,9 @@ void AliHoughFilter::RunTPCtracking(AliRawEvent* event, AliESD* esd)
   hough2->StartProcessInThread(18,35);
 
   if(hough1->WaitForThreadFinish())
-    ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+    ::Fatal("AliHLTHough::WaitForThreadFinish"," Can not join the required thread! ");
   if(hough2->WaitForThreadFinish())
-    ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+    ::Fatal("AliHLTHough::WaitForThreadFinish"," Can not join the required thread! ");
 
     /* In case we run HLT code in the main thread
     for(Int_t slice=0; slice<=17; slice++)
@@ -228,7 +228,7 @@ void AliHoughFilter::RunITStracking(AliESD* esd, TTree *treeClusters)
   const AliESDVertex *vertex = esd->GetVertex();
   vertex->GetXYZ(vtxPos);
 
-  AliL3ITStracker itsTracker(fITSgeom);
+  AliHLTITStracker itsTracker(fITSgeom);
   itsTracker.SetVertex(vtxPos,vtxErr);
 
   itsTracker.LoadClusters(treeClusters);

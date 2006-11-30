@@ -9,13 +9,13 @@
    vhdl implementation of the Hough transform. 
 */
 
-#include <AliL3StandardIncludes.h>
-#include <AliL3RootTypes.h>
-#include <AliL3Transform.h>
-#include <AliL3Logging.h>
-#include <AliL3Logger.h>
-#include <AliL3MemHandler.h>
-#include <AliL3HoughTransformerVhdl.h>
+#include <AliHLTStandardIncludes.h>
+#include <AliHLTRootTypes.h>
+#include <AliHLTTransform.h>
+#include <AliHLTLogging.h>
+#include <AliHLTLogger.h>
+#include <AliHLTMemHandler.h>
+#include <AliHLTHoughTransformerVhdl.h>
 
 #if __GNUC__ == 3
 using namespace std;
@@ -27,8 +27,8 @@ int main(Int_t argc,Char_t **argv)
   Int_t slice=0;
   Char_t path[1000];
 
-  AliL3Logger l;
-  l.Set(AliL3Logger::kAll);
+  AliHLTLogger l;
+  l.Set(AliHLTLogger::kAll);
   l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
@@ -47,10 +47,10 @@ int main(Int_t argc,Char_t **argv)
     exit(1);
   }
 
-  AliL3Transform::Init(path);
-  cerr << "Transform version: " << AliL3Transform::GetVersion() << endl;
+  AliHLTTransform::Init(path);
+  cerr << "Transform version: " << AliHLTTransform::GetVersion() << endl;
 
-  AliL3HoughTransformerVhdl vtest(slice,patch,100,10);
+  AliHLTHoughTransformerVhdl vtest(slice,patch,100,10);
   vtest.CreateHistograms(64,0.1,64,-30,30);
   vtest.PrintVhdl();
   exit(0);

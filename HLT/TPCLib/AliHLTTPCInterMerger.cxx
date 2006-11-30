@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3InterMerger.cxx,v 1.8 2005/06/14 10:55:21 cvetan
+// Original: AliHLTInterMerger.cxx,v 1.8 2005/06/14 10:55:21 cvetan
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group

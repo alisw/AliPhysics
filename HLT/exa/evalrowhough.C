@@ -53,14 +53,14 @@ void evalrowhough(Char_t *path="./fitter",Char_t *offlinepath="./",Int_t ievent=
 
   Char_t fname[1024];
   sprintf(fname,"%s/tracks_%d.raw",path,ievent);
-  AliL3FileHandler *tfile = new AliL3FileHandler();
+  AliHLTFileHandler *tfile = new AliHLTFileHandler();
   if(!tfile->SetBinaryInput(fname)){
-    LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
+    LOG(AliHLTLog::kError,"AliHLTEvaluation::Setup","File Open")
       <<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
     return;
   }
 
-  AliL3TrackArray *fTracks = new AliL3TrackArray("AliL3HoughTrack");
+  AliHLTTrackArray *fTracks = new AliHLTTrackArray("AliHLTHoughTrack");
   tfile->Binary2TrackArray(fTracks);
   //fTracks->QSort();
   tfile->CloseBinaryInput();
@@ -68,7 +68,7 @@ void evalrowhough(Char_t *path="./fitter",Char_t *offlinepath="./",Int_t ievent=
 
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
-      AliL3HoughTrack *track = fTracks->GetCheckedTrack(i);
+      AliHLTHoughTrack *track = fTracks->GetCheckedTrack(i);
       if(!track) continue; 
       
       track->SetEta(fTracks->GetCheckedTrack(i)->GetPseudoRapidity());
@@ -83,7 +83,7 @@ void evalrowhough(Char_t *path="./fitter",Char_t *offlinepath="./",Int_t ievent=
   ifstream in(filename);
   if(!in)
     {
-      cerr<<"AliL3Evaluate::GetGoodParticles : Problems opening file :"<<filename<<endl;
+      cerr<<"AliHLTEvaluate::GetGoodParticles : Problems opening file :"<<filename<<endl;
       return;
     }
 
@@ -100,7 +100,7 @@ void evalrowhough(Char_t *path="./fitter",Char_t *offlinepath="./",Int_t ievent=
       fGoodGen++;
       if (fGoodGen==MaxTracks) 
 	{
-	  cerr<<"AliL3Evaluate::GetGoodParticles : Too many good tracks !\n";
+	  cerr<<"AliHLTEvaluate::GetGoodParticles : Too many good tracks !\n";
 	  break;
 	}
     }
@@ -113,7 +113,7 @@ void evalrowhough(Char_t *path="./fitter",Char_t *offlinepath="./",Int_t ievent=
 
   if(!fGoodTracks)
     {
-      cerr<<"AliL3Evaluate::FillEffHistos : No good tracks"<<endl;
+      cerr<<"AliHLTEvaluate::FillEffHistos : No good tracks"<<endl;
       return;
     }
   cout<<"Comparing "<<fGoodGen<<" good tracks ..."<<endl;
@@ -144,7 +144,7 @@ void evalrowhough(Char_t *path="./fitter",Char_t *offlinepath="./",Int_t ievent=
       Int_t org_slice;
       for(Int_t k=0; k<fTracks->GetNTracks(); k++)
 	{
-	  AliL3HoughTrack *track = (AliL3HoughTrack *)fTracks->GetCheckedTrack(k);
+	  AliHLTHoughTrack *track = (AliHLTHoughTrack *)fTracks->GetCheckedTrack(k);
 	  if(!track) continue;
 	  //	  Int_t nHits = track->GetNumberOfPoints();
 	  //	  if(nHits < fMinPointsOnTrack) break;

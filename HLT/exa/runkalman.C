@@ -7,9 +7,9 @@ void runkalman(Char_t *path = "/tmp/tvik")
                                                              //with mult. and BField
   //for aliroot the path should point to a file 
   //containing the tpc geometry called alirunfile.root
-  Bool_t isinit=AliL3Transform::Init("./",!binary);
+  Bool_t isinit=AliHLTTransform::Init("./",!binary);
 
-  AliL3Kalman *k = new AliL3Kalman(path,0,0);
+  AliHLTKalman *k = new AliHLTKalman(path,0,0);
   k->Init();
   //k->DoMakeSeed();
   k->LoadTracks(0,kTRUE);

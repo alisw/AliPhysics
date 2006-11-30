@@ -12,7 +12,7 @@ void SetTrackingParameters(AliLevel3 *tracker)
   rowscopetracklet = 2;
   rowscopetrack = 10;
   min_pt_fit = 0;
-  maxangle = 0.1745; //AliL3Transform::Deg2Rad(10);
+  maxangle = 0.1745; //AliHLTTransform::Deg2Rad(10);
   goodDist = 5;
   maxphi = 0.1;
   maxeta = 0.1;

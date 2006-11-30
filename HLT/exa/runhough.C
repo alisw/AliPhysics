@@ -2,7 +2,7 @@
 
 /**
    Run this macro for Hough track candidate finder
-   (see steering class AliL3Hough).
+   (see steering class AliHLTHough).
    In argument path, you have to provide the path to 
    the directory where the data files should be located. 
    In case of reading from a rootfile, you have to
@@ -20,14 +20,14 @@
 */
 
 #ifndef __CINT__
-#include "AliL3Logger.h"
-#include "AliL3FileHandler.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
-#include "AliL3Hough.h"
-#include "AliL3TrackArray.h"
-#include "AliL3Track.h"
-#include "AliL3HoughTrack.h"
+#include "AliHLTLogger.h"
+#include "AliHLTFileHandler.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTransform.h"
+#include "AliHLTHough.h"
+#include "AliHLTTrackArray.h"
+#include "AliHLTTrack.h"
+#include "AliHLTHoughTrack.h"
 #include <TNtuple.h>
 #include <TRandom.h>
 #include <TSystem.h>
@@ -40,7 +40,7 @@
 void runhough(Char_t *path,Char_t *outpath,Int_t s1=0,Int_t s2=35,Int_t nevent=1)
 {
 
-  Bool_t isinit=AliL3Transform::Init(path,kTRUE);
+  Bool_t isinit=AliHLTTransform::Init(path,kTRUE);
   if(!isinit){
     cerr << "Could not create transform settings, please check log for error messages!" << endl;
     return;
@@ -49,7 +49,7 @@ void runhough(Char_t *path,Char_t *outpath,Int_t s1=0,Int_t s2=35,Int_t nevent=1
   Int_t tversion=1; //0 = normal transformer
                     //1 = LUT transformer
 
-  AliL3Hough *hough = new AliL3Hough();
+  AliHLTHough *hough = new AliHLTHough();
 #ifdef __CINT__
   Char_t macroname[1024];
   sprintf(macroname,"SetHoughParameters.C");
@@ -78,7 +78,7 @@ void runhough(Char_t *path,Char_t *outpath,Int_t s1=0,Int_t s2=35,Int_t nevent=1
 
   for(Int_t ev=0; ev<nevent; ev++)
     {
-      AliL3FileHandler::LoadStaticIndex(0,ev);
+      AliHLTFileHandler::LoadStaticIndex(0,ev);
       for(Int_t slice=s1; slice<=s2; slice++)
 	{
 	  cout<<"Processing slice "<<slice<<endl;
@@ -90,18 +90,18 @@ void runhough(Char_t *path,Char_t *outpath,Int_t s1=0,Int_t s2=35,Int_t nevent=1
 	  hough->AddTracks();
 	  tfinder.Stop();
 #if 0 /*print track list */
-	  AliL3TrackArray *tracks = (AliL3TrackArray*)hough->GetTracks(0);
+	  AliHLTTrackArray *tracks = (AliHLTTrackArray*)hough->GetTracks(0);
 	  tracks->QSort();
 	  for(int i=0; i<tracks->GetNTracks(); i++)
 	    {
-	      AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
+	      AliHLTHoughTrack *track = (AliHLTHoughTrack*)tracks->GetCheckedTrack(i);
 	      if(!track) continue;
 	      cout<<"pt "<<track->GetPt()<<" psi "<<track->GetPsi()<<" eta "<<track->GetEta()<<" etaindex "<<track->GetEtaIndex()<<" weight "<<track->GetWeight()<<endl;
 	    }
 #endif
 	}
       hough->WriteTracks(outpath);
-      AliL3FileHandler::SaveStaticIndex(0,ev);
+      AliHLTFileHandler::SaveStaticIndex(0,ev);
     }
 
   cout << " --- Timing values --- " << endl;

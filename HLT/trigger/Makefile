@@ -6,7 +6,7 @@
 #         Constantin Loizides    #
 ##################################
 
-MODNAME = AliL3Trigger
+MODNAME = AliHLTTrigger
 
 ifndef ALIHLT_TOPDIR
 TOPDIR = $(shell pwd)/..

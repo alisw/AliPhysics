@@ -11,15 +11,15 @@
 */
 
 
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStandardIncludes.h"
 
-#include "AliL3Logging.h"
-#include "AliL3Logger.h"
-#include "AliL3RootTypes.h"
-#include "AliL3Transform.h"
-#include "AliL3ClustFinderNew.h"
-#include "AliL3MemHandler.h"
-#include "AliL3SpacePointData.h"
+#include "AliHLTLogging.h"
+#include "AliHLTLogger.h"
+#include "AliHLTRootTypes.h"
+#include "AliHLTTransform.h"
+#include "AliHLTClustFinderNew.h"
+#include "AliHLTMemHandler.h"
+#include "AliHLTSpacePointData.h"
 
 #if __GNUC__ == 3
 using namespace std;
@@ -39,8 +39,8 @@ int main(Int_t argc,Char_t **argv)
   Int_t th=10;
   Bool_t de=kFALSE;
 
-  AliL3Logger l;
-  l.Set(AliL3Logger::kAll);
+  AliHLTLogger l;
+  l.Set(AliHLTLogger::kAll);
   l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
@@ -65,22 +65,22 @@ int main(Int_t argc,Char_t **argv)
     de=kTRUE;
   }
 
-  AliL3DigitRowData *digits = 0;
+  AliHLTDigitRowData *digits = 0;
   unsigned int nrows=0;
   
   //reading transformer init file
   Char_t fname[1024];
   strcpy(fname,argv[1]);
-  AliL3Transform::Init(dirname(fname)); 
+  AliHLTTransform::Init(dirname(fname)); 
   strcpy(fname,argv[1]);
 
   //Does all the file/data handling  
-  AliL3MemHandler file; 
+  AliHLTMemHandler file; 
 
   //Give slice and patch information (see filename convention)
   if((patch>=0)&&(patch<6)) file.Init(slice,patch);
   else {
-    Int_t srows[2]={0,AliL3Transform::GetLastRow(5)};
+    Int_t srows[2]={0,AliHLTTransform::GetLastRow(5)};
     patch=0;
     file.Init(slice,patch,srows);
   }
@@ -97,7 +97,7 @@ int main(Int_t argc,Char_t **argv)
   file.CloseBinaryInput();
 
   //The cluster finder itself.
-  AliL3ClustFinderNew cf; 
+  AliHLTClustFinderNew cf; 
 
   //Init cluster finder
   cf.InitSlice(slice,patch,0,nrows-1,MAXCLUSTER);
@@ -110,8 +110,8 @@ int main(Int_t argc,Char_t **argv)
   cf.SetDeconv(de); //standard is false
 
   //Allocate memory to store found spacepoints 
-  AliL3MemHandler fpoints;
-  AliL3SpacePointData *points=(AliL3SpacePointData*)fpoints.Allocate(MAXCLUSTER*sizeof(AliL3SpacePointData));
+  AliHLTMemHandler fpoints;
+  AliHLTSpacePointData *points=(AliHLTSpacePointData*)fpoints.Allocate(MAXCLUSTER*sizeof(AliHLTSpacePointData));
   cf.SetOutputArray(points);
 
   //Give the data pointer to the cluster finder

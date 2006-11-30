@@ -10,16 +10,16 @@ int main(int arg,char **arc){
   int n = 0;
   if(arg!=2) {cerr<<"usage: speedtest #loops \n";return -1;}  
   n = atoi(arc[1]);
-//  cerr<<"allocate: "<<n*sizeof(AliL3ConfMapPoint)<<" Bytes"<<endl;
-//  AliL3ConfMapPoint *array = new AliL3ConfMapPoint[n];
+//  cerr<<"allocate: "<<n*sizeof(AliHLTConfMapPoint)<<" Bytes"<<endl;
+//  AliHLTConfMapPoint *array = new AliHLTConfMapPoint[n];
   cerr<<"allocate: "<<n*sizeof(double)<<" Bytes"<<endl;
   double *array = new double[n];
 //  cerr<<"allocate: "<<n*sizeof(int)<<" Bytes"<<endl;
 //  int *array = new int[n];
-//  cerr<<"allocate: "<<n*sizeof(AliL3SpacePointData)<<" Bytes"<<endl;
-//  AliL3SpacePointData *array = new AliL3SpacePointData[n];
+//  cerr<<"allocate: "<<n*sizeof(AliHLTSpacePointData)<<" Bytes"<<endl;
+//  AliHLTSpacePointData *array = new AliHLTSpacePointData[n];
 
-  AliL3SpacePointData hit;
+  AliHLTSpacePointData hit;
   hit.fX=103.55;
   hit.fY=22.33;
   hit.fZ=95.312;

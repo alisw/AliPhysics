@@ -13,7 +13,7 @@ EINCLUDE+= TPC ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
-ELIBS:=ESD RAWDatabase RAWDatarec RAWDatasim MDC MDCFilter CDB STEER TPCbase TPCsim TPCrec AliL3Src AliL3Misc AliL3Hough AliL3Comp AliL3ITS AliL3MUON ITSbase ITSsim ITSrec MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONmapping
+ELIBS:=ESD RAWDatabase RAWDatarec RAWDatasim MDC MDCFilter CDB STEER TPCbase TPCsim TPCrec AliHLTSrc AliHLTMisc AliHLTHough AliHLTComp AliHLTITS AliHLTMUON ITSbase ITSsim ITSrec MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONmapping
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)

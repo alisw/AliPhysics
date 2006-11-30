@@ -14,7 +14,7 @@
 
 ddl2binary(Char_t* inpath,Char_t *outpath,Int_t first=0,Int_t last=35,Bool_t sp=kTRUE,Int_t event=-1){
 
-  AliL3Transform::Init(inpath); //expect l3transform.config in "inpath"
+  AliHLTTransform::Init(inpath); //expect l3transform.config in "inpath"
 
   Int_t patchfrom = 0;
   Int_t patchend = 6;
@@ -27,7 +27,7 @@ ddl2binary(Char_t* inpath,Char_t *outpath,Int_t first=0,Int_t last=35,Bool_t sp=
   sprintf(name,"%s/Ev0TPCslice",inpath);
 
   //create the file handler
-  AliL3DDLDataFileHandler *fFileHandler = new AliL3DDLDataFileHandler(); 
+  AliHLTDDLDataFileHandler *fFileHandler = new AliHLTDDLDataFileHandler(); 
   fFileHandler->SetReaderInput(name);
 
   for(Int_t slice=first; slice<=last; slice++){

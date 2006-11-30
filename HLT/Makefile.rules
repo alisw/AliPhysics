@@ -106,7 +106,7 @@ $(ALIHLT_STATIC): $(STATICOBJS)
 $(DICT): $(HDRS)
 	@echo "Generating dictionary..."
 	rootcint -f $(DICT) -c $(CINTCXXFLAGS) $(INCLUDES) \
-                    $(DEFSTR) -include AliL3StandardIncludes.h $(HDRS)
+                    $(DEFSTR) -include AliHLTStandardIncludes.h $(HDRS)
 
 $(OBJDIR)/%.o: %.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<

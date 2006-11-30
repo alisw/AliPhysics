@@ -3,7 +3,7 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStandardIncludes.h"
 
 #ifndef no_root
 #include <TFile.h>
@@ -17,31 +17,31 @@
 #include <AliRunLoader.h>
 #endif
 
-#include "AliL3Logging.h"
+#include "AliHLTLogging.h"
 #include "AliLevel3.h"
-#include "AliL3ConfMapper.h"
-#include "AliL3Vertex.h"
-#include "AliL3VertexFinder.h"
-#include "AliL3TrackMerger.h"
-#include "AliL3GlobalMerger.h"
-#include "AliL3InterMerger.h"
-#include "AliL3ConfMapPoint.h"
-#include "AliL3ConfMapTrack.h"
-#include "AliL3Transform.h"
-#include "AliL3ClustFinderNew.h"
-#include "AliL3DigitData.h"
-#include "AliL3TrackArray.h"
-#include "AliL3MemHandler.h"
-#include "AliL3Fitter.h"
+#include "AliHLTConfMapper.h"
+#include "AliHLTVertex.h"
+#include "AliHLTVertexFinder.h"
+#include "AliHLTTrackMerger.h"
+#include "AliHLTGlobalMerger.h"
+#include "AliHLTInterMerger.h"
+#include "AliHLTConfMapPoint.h"
+#include "AliHLTConfMapTrack.h"
+#include "AliHLTTransform.h"
+#include "AliHLTClustFinderNew.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTrackArray.h"
+#include "AliHLTMemHandler.h"
+#include "AliHLTFitter.h"
 #ifdef use_aliroot
-#include "AliL3FileHandler.h"
+#include "AliHLTFileHandler.h"
 #endif
-#include "AliL3Benchmark.h"
-#include "AliL3DigitData.h"
-#include "AliL3TrackSegmentData.h"
-#include "AliL3SpacePointData.h"
-#include "AliL3VertexData.h"
-#include "AliL3DDLDataFileHandler.h"
+#include "AliHLTBenchmark.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTrackSegmentData.h"
+#include "AliHLTSpacePointData.h"
+#include "AliHLTVertexData.h"
+#include "AliHLTDDLDataFileHandler.h"
 
 /** \class AliLevel3
 <pre>
@@ -120,7 +120,7 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
   //Init the whole standard tracker chain
 #ifndef use_newio
   if (filetype==kRunLoader){
-    LOG(AliL3Log::kError,"AliLevel3::Init","Files")
+    LOG(AliHLTLog::kError,"AliLevel3::Init","Files")
 	<<"You have not supplied the input rootfile; if you want "
 	<<"to run with RunLoader use -Duse_newio for compiling!"<<ENDLOG;
   }
@@ -129,14 +129,14 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
   if((filetype!=kBinary) && (filetype!=kDate) 
        && (filetype!=kRunLoader)&& !fInputFile)
     {
-      LOG(AliL3Log::kError,"AliLevel3::Init","Files")
+      LOG(AliHLTLog::kError,"AliLevel3::Init","Files")
 	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
       return;
     }
 #if use_newio
   if((filetype==kRunLoader) && !fRunLoader)
     {
-      LOG(AliL3Log::kError,"AliLevel3::Init","Files")
+      LOG(AliHLTLog::kError,"AliLevel3::Init","Files")
 	<<"You have not supplied the input runloader; use the appropriate ctor!"<<ENDLOG;
       return;
     }
@@ -158,79 +158,79 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
 
   fEvent=0;
 #ifdef use_aliroot /*just to be sure*/
-  AliL3FileHandler::CleanStaticIndex();
+  AliHLTFileHandler::CleanStaticIndex();
 #endif
 
   switch(npatches){
   case 0:
     fNPatch = 1;
-    fRow[0][0] = AliL3Transform::GetFirstRow(3);
-    fRow[0][1] = AliL3Transform::GetLastRow(5);
+    fRow[0][0] = AliHLTTransform::GetFirstRow(3);
+    fRow[0][1] = AliHLTTransform::GetLastRow(5);
     break;
   case 1:
     fNPatch = 1;        //number of patches change row in process
     fRow[0][0] = 0;
-    fRow[0][1] = AliL3Transform::GetLastRow(-1);
+    fRow[0][1] = AliHLTTransform::GetLastRow(-1);
     break;
   case 2:
     fNPatch = 2;        //number of patches change row in process
     fRow[0][0] = 0;     // first row
-    fRow[0][1] = AliL3Transform::GetLastRow(1);
-    fRow[1][0] = AliL3Transform::GetFirstRow(2);
-    fRow[1][1] = AliL3Transform::GetLastRow(5);
+    fRow[0][1] = AliHLTTransform::GetLastRow(1);
+    fRow[1][0] = AliHLTTransform::GetFirstRow(2);
+    fRow[1][1] = AliHLTTransform::GetLastRow(5);
     break;
   default: 
     fNPatch = 6;        
-    fRow[0][0] = AliL3Transform::GetFirstRow(0);
-    fRow[0][1] = AliL3Transform::GetLastRow(0);
-    fRow[1][0] = AliL3Transform::GetFirstRow(1);
-    fRow[1][1] = AliL3Transform::GetLastRow(1);
-    fRow[2][0] = AliL3Transform::GetFirstRow(2);
-    fRow[2][1] = AliL3Transform::GetLastRow(2);
-    fRow[3][0] = AliL3Transform::GetFirstRow(3);
-    fRow[3][1] = AliL3Transform::GetLastRow(3);
-    fRow[4][0] = AliL3Transform::GetFirstRow(4);
-    fRow[4][1] = AliL3Transform::GetLastRow(4);
-    fRow[5][0] = AliL3Transform::GetFirstRow(5);
-    fRow[5][1] = AliL3Transform::GetLastRow(5);
+    fRow[0][0] = AliHLTTransform::GetFirstRow(0);
+    fRow[0][1] = AliHLTTransform::GetLastRow(0);
+    fRow[1][0] = AliHLTTransform::GetFirstRow(1);
+    fRow[1][1] = AliHLTTransform::GetLastRow(1);
+    fRow[2][0] = AliHLTTransform::GetFirstRow(2);
+    fRow[2][1] = AliHLTTransform::GetLastRow(2);
+    fRow[3][0] = AliHLTTransform::GetFirstRow(3);
+    fRow[3][1] = AliHLTTransform::GetLastRow(3);
+    fRow[4][0] = AliHLTTransform::GetFirstRow(4);
+    fRow[4][1] = AliHLTTransform::GetLastRow(4);
+    fRow[5][0] = AliHLTTransform::GetFirstRow(5);
+    fRow[5][1] = AliHLTTransform::GetLastRow(5);
   }
 
-  fVertexFinder = new AliL3VertexFinder();
-  fVertex = new AliL3Vertex();
-  fTracker = new AliL3ConfMapper();
-  fTrackMerger = new AliL3TrackMerger(fNPatch);
-  fInterMerger = new AliL3InterMerger();
-  fGlobalMerger = new AliL3GlobalMerger();
+  fVertexFinder = new AliHLTVertexFinder();
+  fVertex = new AliHLTVertex();
+  fTracker = new AliHLTConfMapper();
+  fTrackMerger = new AliHLTTrackMerger(fNPatch);
+  fInterMerger = new AliHLTInterMerger();
+  fGlobalMerger = new AliHLTGlobalMerger();
   SetMergerParameters();//Set default merger parameters
 #ifdef use_aliroot
   if(filetype==kRoot){
-    fFileHandler = new AliL3FileHandler(kTRUE); //static version
+    fFileHandler = new AliHLTFileHandler(kTRUE); //static version
     fFileHandler->SetAliInput(fInputFile);
   }else if(filetype==kRaw){
-    fFileHandler = new AliL3DDLDataFileHandler();
+    fFileHandler = new AliHLTDDLDataFileHandler();
     fFileHandler->SetReaderInput(fInputFile);
   }else if(filetype==kDate){
-    fFileHandler = new AliL3DDLDataFileHandler();
+    fFileHandler = new AliHLTDDLDataFileHandler();
     fFileHandler->SetReaderInput(fInputFile,-1);
   }
 #if use_newio
   else if(filetype==kRunLoader){
-    fFileHandler = new AliL3FileHandler(kTRUE); //static version
+    fFileHandler = new AliHLTFileHandler(kTRUE); //static version
     fFileHandler->SetAliInput(fRunLoader);
   }
 #endif
   else{
-    fFileHandler = new AliL3MemHandler();
+    fFileHandler = new AliHLTMemHandler();
   }
 #else
   if(filetype==kRaw){
-    fFileHandler = new AliL3DDLDataFileHandler();
+    fFileHandler = new AliHLTDDLDataFileHandler();
     fFileHandler->SetReaderInput(fInputFile);
   }else{
-    fFileHandler = new AliL3MemHandler();
+    fFileHandler = new AliHLTMemHandler();
   }
 #endif
-  fBenchmark = new AliL3Benchmark();
+  fBenchmark = new AliHLTBenchmark();
 }
 
 void AliLevel3::DoBench(char* name)
@@ -238,7 +238,7 @@ void AliLevel3::DoBench(char* name)
   //dobench
   fBenchmark->Analyze(name);
   delete fBenchmark;
-  fBenchmark = new AliL3Benchmark();
+  fBenchmark = new AliHLTBenchmark();
 }
 
 void AliLevel3::DoMc(char* file)
@@ -308,7 +308,7 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event)
 
   fGlobalMerger->Setup(first,last);
 #ifdef use_aliroot
-  if(fEvent!=event) AliL3FileHandler::CleanStaticIndex();
+  if(fEvent!=event) AliHLTFileHandler::CleanStaticIndex();
 #endif
   fEvent=event;
   for(Int_t i=first; i<=last; i++){
@@ -346,8 +346,8 @@ void AliLevel3::ProcessSlice(Int_t slice)
     UseCF = kFALSE;
 
   const Int_t kmaxpoints=120000;
-  const Int_t kpointsize = kmaxpoints * sizeof(AliL3SpacePointData);
-  AliL3MemHandler *memory = new AliL3MemHandler();
+  const Int_t kpointsize = kmaxpoints * sizeof(AliHLTSpacePointData);
+  AliHLTMemHandler *memory = new AliHLTMemHandler();
 
   fTrackMerger->Reset();
   fTrackMerger->SetRows(fRow[0]);
@@ -355,9 +355,9 @@ void AliLevel3::ProcessSlice(Int_t slice)
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
     fFileHandler->Init(slice,patch,&fRow[patch][0]);
     UInt_t npoints=0;
-    AliL3SpacePointData *points =0;
+    AliHLTSpacePointData *points =0;
     UInt_t ndigits=0;
-    AliL3DigitRowData *digits =0;
+    AliHLTDigitRowData *digits =0;
     if(UseCF){
       if(fUseBinary){
         if(!fDoRoi){ 
@@ -370,11 +370,11 @@ void AliLevel3::ProcessSlice(Int_t slice)
 	    if(!fFileHandler->SetBinaryInput(name)) return;
 	    if(fPileUp)
 	      { //Read binary files which are not RLE
-		digits = (AliL3DigitRowData*)fFileHandler->Allocate();
+		digits = (AliHLTDigitRowData*)fFileHandler->Allocate();
 		fFileHandler->Binary2Memory(ndigits,digits); 
 	      }
 	    else //Read RLE binary files
-	      digits= (AliL3DigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
+	      digits= (AliHLTDigitRowData *)fFileHandler->CompBinary2Memory(ndigits);
 
 	    fFileHandler->CloseBinaryInput(); 
           }
@@ -391,7 +391,7 @@ void AliLevel3::ProcessSlice(Int_t slice)
             memory->CompBinary2CompMemory(ndigits,comp);
             memory->CloseBinaryInput();
             UInt_t datasize=memory->GetMemorySize(ndigits,comp);
-            digits=(AliL3DigitRowData *)fFileHandler->Allocate(datasize);
+            digits=(AliHLTDigitRowData *)fFileHandler->Allocate(datasize);
             fBenchmark->Start("Unpacker"); 
             fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
             fBenchmark->Stop("Unpacker");
@@ -414,7 +414,7 @@ void AliLevel3::ProcessSlice(Int_t slice)
             memory->CloseBinaryInput();
             UInt_t dsize=memory->GetMemorySize(ndigits,comp);
             UInt_t rsize=fFileHandler->GetRandomSize();       
-            digits=(AliL3DigitRowData*)fFileHandler->Allocate(dsize+rsize);
+            digits=(AliHLTDigitRowData*)fFileHandler->Allocate(dsize+rsize);
             fBenchmark->Start("Unpacker");
             fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
             fBenchmark->Stop("Unpacker");
@@ -436,7 +436,7 @@ void AliLevel3::ProcessSlice(Int_t slice)
           memory->CompBinary2CompMemory(ndigits,comp);
           memory->CloseBinaryInput();
           UInt_t datasize=memory->GetMemorySize(ndigits,comp);
-          digits=(AliL3DigitRowData *)fFileHandler->Allocate(datasize);
+          digits=(AliHLTDigitRowData *)fFileHandler->Allocate(datasize);
           fBenchmark->Start("Unpacker"); 
           datasize = fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
           fBenchmark->Stop("Unpacker"); 
@@ -459,7 +459,7 @@ void AliLevel3::ProcessSlice(Int_t slice)
         }
   
         if(1){   //Ali to Memory
-          digits=(AliL3DigitRowData *)fFileHandler->AliAltroDigits2Memory(ndigits,fEvent);
+          digits=(AliHLTDigitRowData *)fFileHandler->AliAltroDigits2Memory(ndigits,fEvent);
           if(0){ //Memory to Binary
             fFileHandler->SetBinaryOutput(name);
             fFileHandler->Memory2CompBinary(ndigits,digits);
@@ -469,8 +469,8 @@ void AliLevel3::ProcessSlice(Int_t slice)
 #endif
       }//end else UseBinary
 
-      points = (AliL3SpacePointData *) memory->Allocate(kpointsize);
-      fClusterFinder = new AliL3ClustFinderNew();
+      points = (AliHLTSpacePointData *) memory->Allocate(kpointsize);
+      fClusterFinder = new AliHLTClustFinderNew();
       fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1],kmaxpoints);
       fClusterFinder->SetDeconv(fClusterDeconv);
       fClusterFinder->SetXYError(fXYClusterError);
@@ -486,8 +486,8 @@ void AliLevel3::ProcessSlice(Int_t slice)
       delete fClusterFinder;
       fClusterFinder = 0;
       fFileHandler->Free();
-      LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
-        <<AliL3Log::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;
+      LOG(AliHLTLog::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
+        <<AliHLTLog::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;
     }//end UseCF
     else{// if not use Clusterfinder
       if(fUseBinary){//Binary to Memory
@@ -497,11 +497,11 @@ void AliLevel3::ProcessSlice(Int_t slice)
 	else
 	  sprintf(name,"%s/points_%d_%d_%d.raw",fPath,fEvent,slice,patch);
         if(!memory->SetBinaryInput(name)) return;
-        points = (AliL3SpacePointData *) memory->Allocate();
+        points = (AliHLTSpacePointData *) memory->Allocate();
         memory->Binary2Memory(npoints,points);
         memory->CloseBinaryInput();
-        LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Read Cluster")
-        <<AliL3Log::kDec<<"Found "<<npoints<<" Points in File"<<ENDLOG;
+        LOG(AliHLTLog::kInformational,"AliLevel3::ProcessSlice","Read Cluster")
+        <<AliHLTLog::kDec<<"Found "<<npoints<<" Points in File"<<ENDLOG;
       }
 #ifdef use_aliroot
       else{
@@ -525,7 +525,7 @@ void AliLevel3::ProcessSlice(Int_t slice)
         fBenchmark->Stop("Vertex Finder Read"); 
         fBenchmark->Start("Vertex Finder");
         fVertexFinder->Analyze();
-        AliL3VertexData vertex[1];
+        AliHLTVertexData vertex[1];
         fVertexFinder->Write(vertex);
         fVertex->Read(vertex);
         fBenchmark->Stop("Vertex Finder"); 
@@ -562,8 +562,8 @@ void AliLevel3::ProcessSlice(Int_t slice)
       fFileHandler->Free();
 
     UInt_t ntracks0 =0;
-    AliL3TrackSegmentData *trackdata0  = 
-         (AliL3TrackSegmentData *) memory->Allocate(fTracker->GetTracks());
+    AliHLTTrackSegmentData *trackdata0  = 
+         (AliHLTTrackSegmentData *) memory->Allocate(fTracker->GetTracks());
     memory->TrackArray2Memory(ntracks0,trackdata0,fTracker->GetTracks());
 
     //write tracks
@@ -597,8 +597,8 @@ void AliLevel3::ProcessSlice(Int_t slice)
     memory->Free();
     
     UInt_t ntracks1 =0;
-    AliL3TrackSegmentData *trackdata1 =
-      (AliL3TrackSegmentData *) memory->Allocate(fInterMerger->GetInTracks(0));
+    AliHLTTrackSegmentData *trackdata1 =
+      (AliHLTTrackSegmentData *) memory->Allocate(fInterMerger->GetInTracks(0));
     memory->TrackArray2Memory(ntracks1,trackdata1,fInterMerger->GetInTracks(0));
 
     fTrackMerger->InitSector(slice,patch);
@@ -618,7 +618,7 @@ void AliLevel3::ProcessSlice(Int_t slice)
     WriteTracks(name,fTrackMerger,'o'); //write output of trackmerger
   }
   */
-  fTrackData = (AliL3TrackSegmentData *) 
+  fTrackData = (AliHLTTrackSegmentData *) 
                          fFileHandler->Allocate(fTrackMerger->GetOutTracks());
 
   fFileHandler->TrackArray2Memory(fNTrackData,fTrackData,
@@ -630,17 +630,17 @@ void AliLevel3::ProcessSlice(Int_t slice)
 void AliLevel3::FitGlobalTracks()
 { 
   //fit global tracks
-  AliL3Fitter *fitter = new AliL3Fitter(fVertex,AliLevel3::DoVertexFit());
+  AliHLTFitter *fitter = new AliHLTFitter(fVertex,AliLevel3::DoVertexFit());
   if(fNPatch==1)
     fitter->LoadClusters(fWriteOutPath,fEvent,kTRUE);
   else
     fitter->LoadClusters(fWriteOutPath,fEvent,kFALSE);
   
   fBenchmark->Start("Global track fitter");
-  AliL3TrackArray *tracks = fGlobalMerger->GetOutTracks();
+  AliHLTTrackArray *tracks = fGlobalMerger->GetOutTracks();
   for(Int_t i=0; i<tracks->GetNTracks(); i++)
     {
-      AliL3Track *tr = tracks->GetCheckedTrack(i);
+      AliHLTTrack *tr = tracks->GetCheckedTrack(i);
       if(!tr) continue;
       fitter->FitHelix(tr);
       tr->UpdateToFirstPoint();
@@ -649,7 +649,7 @@ void AliLevel3::FitGlobalTracks()
   delete fitter;
 }
 
-void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
+void AliLevel3::WriteSpacePoints(UInt_t npoints,AliHLTSpacePointData *points,
 				 Int_t slice,Int_t patch) const
 { 
   //write space points
@@ -658,7 +658,7 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
     sprintf(name,"%s/points_%d_%d_%d.raw",fWriteOutPath,fEvent,slice,-1);
   else
     sprintf(name,"%s/points_%d_%d_%d.raw",fWriteOutPath,fEvent,slice,patch);
-  AliL3MemHandler * memory = new AliL3MemHandler();
+  AliHLTMemHandler * memory = new AliHLTMemHandler();
   memory->SetBinaryOutput(name);
   memory->Transform(npoints,points,slice);
   memory->Memory2Binary(npoints,points);
@@ -666,20 +666,20 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
   delete  memory;
 }
 
-Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt) const
+Int_t AliLevel3::WriteTracks(char *filename,AliHLTMerger *merger,char opt) const
 { 
   //write tracks
-  AliL3MemHandler *memory = new AliL3MemHandler();
+  AliHLTMemHandler *memory = new AliHLTMemHandler();
   memory->SetBinaryOutput(filename);
   if(opt=='a'||opt=='i'){  //add intracks
     for(Int_t i=0;i<merger->GetNIn();i++){
-      AliL3TrackArray *tr=merger->GetInTracks(i);
+      AliHLTTrackArray *tr=merger->GetInTracks(i);
       memory->TrackArray2Binary(tr);
     }
   }
 
   if(opt=='o'||opt=='a'){
-    AliL3TrackArray *tr=merger->GetOutTracks();
+    AliHLTTrackArray *tr=merger->GetOutTracks();
     memory->TrackArray2Binary(tr);
   }
 

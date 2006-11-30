@@ -20,23 +20,23 @@
 #include <AliESD.h>
 #include <AliESDHLTtrack.h>
 
-#include "AliL3StandardIncludes.h"
-#include "AliL3Logging.h"
+#include "AliHLTStandardIncludes.h"
+#include "AliHLTLogging.h"
 #include "AliLevel3.h"
-#include "AliL3Evaluate.h"
+#include "AliHLTEvaluate.h"
 #include "AliHLTReconstructor.h"
-#include "AliL3Transform.h"
-#include "AliL3Hough.h"
-#include "AliL3FileHandler.h"
-#include "AliL3Track.h"
-#include "AliL3HoughTrack.h"
-#include "AliL3TrackArray.h"
+#include "AliHLTTransform.h"
+#include "AliHLTHough.h"
+#include "AliHLTFileHandler.h"
+#include "AliHLTTrack.h"
+#include "AliHLTHoughTrack.h"
+#include "AliHLTTrackArray.h"
 
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITSgeom.h"
-#include "AliL3ITStracker.h"
-#include "AliL3TPCtracker.h"
+#include "AliHLTITStracker.h"
+#include "AliHLTTPCtracker.h"
 #include "MUON/src/AliRoot/AliHLTMUONTracker.h"
 
 #if __GNUC__== 3
@@ -50,7 +50,7 @@ AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor()
 { 
   //constructor
 #ifndef use_logging
-  AliL3Log::fgLevel=AliL3Log::kWarning;
+  AliHLTLog::fgLevel=AliHLTLog::kWarning;
 #endif
   fDoTracker=1;
   fDoHough=0;
@@ -62,7 +62,7 @@ AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough): AliR
 { 
   //constructor
 #ifndef use_logging
-  AliL3Log::fgLevel=AliL3Log::kWarning;
+  AliHLTLog::fgLevel=AliHLTLog::kWarning;
 #endif
   fDoTracker=doTracker;
   fDoHough=doHough;
@@ -88,7 +88,7 @@ void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
   // do the standard and hough reconstruction chain
   if(!runLoader) {
-    LOG(AliL3Log::kFatal,"AliHLTReconstructor::Reconstruct","RunLoader")
+    LOG(AliHLTLog::kFatal,"AliHLTReconstructor::Reconstruct","RunLoader")
       <<" Missing RunLoader! 0x0"<<ENDLOG;
     return;
   }
@@ -97,9 +97,9 @@ void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
   gSystem->Exec("rm -rf hough");
   gSystem->MakeDirectory("hough");
 
-  Bool_t isinit=AliL3Transform::Init(runLoader);
+  Bool_t isinit=AliHLTTransform::Init(runLoader);
   if(!isinit){
-    LOG(AliL3Log::kError,"AliHLTReconstructor::Reconstruct","Transformer")
+    LOG(AliHLTLog::kError,"AliHLTReconstructor::Reconstruct","Transformer")
      << "Could not create transform settings, please check log for error messages!" << ENDLOG;
     return;
   }
@@ -167,7 +167,7 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
   //reconstruct with hough
   //not used anymore, Hough tracking is moved out of the local
   //reconstruction chain
-  Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
+  Float_t ptmin = 0.1*AliHLTTransform::GetSolenoidField();
 
   Float_t zvertex = 0;
   TArrayF mcVertex(3); 
@@ -178,10 +178,10 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
   }
   zvertex = mcVertex[2];
 
-  LOG(AliL3Log::kInformational,"AliHLTReconstructor::Reconstruct","HoughTransform")
+  LOG(AliHLTLog::kInformational,"AliHLTReconstructor::Reconstruct","HoughTransform")
     <<" Hough Transform will run with ptmin="<<ptmin<<" and zvertex="<<zvertex<<ENDLOG;
 
-  AliL3Hough *hough = new AliL3Hough();
+  AliHLTHough *hough = new AliHLTHough();
     
   hough->SetThreshold(4);
   hough->CalcTransformerParams(ptmin);
@@ -224,26 +224,26 @@ void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) c
 {
   //fill esd with tracks from conformal mapping
   Int_t slicerange[2]={0,35};
-  Int_t good = (int)(0.4*AliL3Transform::GetNRows());
-  Int_t nclusters = (int)(0.4*AliL3Transform::GetNRows());
-  Int_t nminpointsontracks = (int)(0.3*AliL3Transform::GetNRows());
+  Int_t good = (int)(0.4*AliHLTTransform::GetNRows());
+  Int_t nclusters = (int)(0.4*AliHLTTransform::GetNRows());
+  Int_t nminpointsontracks = (int)(0.3*AliHLTTransform::GetNRows());
   Float_t ptmin = 0.;
   Float_t ptmax = 0.;
   Float_t maxfalseratio = 0.1;
   
-  AliL3Evaluate *fHLTEval = new AliL3Evaluate("./hlt",nclusters,good,ptmin,ptmax,slicerange);
+  AliHLTEvaluate *fHLTEval = new AliHLTEvaluate("./hlt",nclusters,good,ptmin,ptmax,slicerange);
   fHLTEval->SetMaxFalseClusters(maxfalseratio);
   fHLTEval->LoadData(iEvent,kTRUE);
   fHLTEval->AssignPIDs();
   fHLTEval->AssignIDs();
-  AliL3TrackArray *fTracks = fHLTEval->GetTracks();
+  AliHLTTrackArray *fTracks = fHLTEval->GetTracks();
   if(!fTracks){
     delete fHLTEval;
     return;
   }
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
-      AliL3Track *tpt = (AliL3Track *)fTracks->GetCheckedTrack(i);
+      AliHLTTrack *tpt = (AliHLTTrack *)fTracks->GetCheckedTrack(i);
       if(!tpt) continue; 
       if(tpt->GetNumberOfPoints() < nminpointsontracks) continue;
       
@@ -274,21 +274,21 @@ void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) con
   char filename[256];
   sprintf(filename,"./hough/tracks_%d.raw",iEvent);
   
-  AliL3FileHandler *tfile = new AliL3FileHandler();
+  AliHLTFileHandler *tfile = new AliHLTFileHandler();
   if(!tfile->SetBinaryInput(filename)){
-    LOG(AliL3Log::kError,"AliHLTReconstructor::FillESDforHoughTransform","Input file")
+    LOG(AliHLTLog::kError,"AliHLTReconstructor::FillESDforHoughTransform","Input file")
       <<" Missing file "<<filename<<ENDLOG;
     return;
   }
   
-  AliL3TrackArray *fTracks = new AliL3TrackArray("AliL3HoughTrack");
+  AliHLTTrackArray *fTracks = new AliHLTTrackArray("AliHLTHoughTrack");
   tfile->Binary2TrackArray(fTracks);
   tfile->CloseBinaryInput();
   delete tfile;
   if(!fTracks) return; 
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
-      AliL3HoughTrack *tpt = (AliL3HoughTrack *)fTracks->GetCheckedTrack(i);
+      AliHLTHoughTrack *tpt = (AliHLTHoughTrack *)fTracks->GetCheckedTrack(i);
       if(!tpt) continue; 
       
       AliESDHLTtrack *esdtrack = new AliESDHLTtrack() ; 
@@ -322,13 +322,13 @@ AliTracker* AliHLTReconstructor::CreateTracker(AliRunLoader* runLoader) const
   TString opt = GetOption();
   if(!opt.CompareTo("TPC")) {
     // Create Hough tracker for TPC
-    return new AliL3TPCtracker(runLoader);
+    return new AliHLTTPCtracker(runLoader);
   }
   if(!opt.CompareTo("ITS")) {
     // Create ITS tracker
     AliITSgeom* geom = GetITSgeom(runLoader);
     if (!geom) return NULL;
-    return new AliL3ITStracker(geom);
+    return new AliHLTITStracker(geom);
   }
   if(!opt.CompareTo("MUON")) {
     return new AliHLTMUONTracker(runLoader);

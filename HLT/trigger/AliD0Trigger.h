@@ -1,7 +1,7 @@
 #ifndef AliD0_Trigger
 #define AliD0_Trigger
 
-#include "AliL3RootTypes.h"
+#include "AliHLTRootTypes.h"
 #include <math.h>
 #include <TObject.h>
 #include <TObjArray.h>

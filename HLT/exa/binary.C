@@ -12,7 +12,7 @@
 
 binary(Char_t* inpath,Char_t *outpath,Int_t first,Int_t last,Int_t event,Bool_t sp=kFALSE,Bool_t altro=kTRUE){
 
-  AliL3Transform::Init(inpath,kTRUE);
+  AliHLTTransform::Init(inpath,kTRUE);
 
   if(sp) {
     singlepatch(inpath,outpath,first,last,event,altro);
@@ -23,7 +23,7 @@ binary(Char_t* inpath,Char_t *outpath,Int_t first,Int_t last,Int_t event,Bool_t 
   const Int_t npatch = 6;
 
   sprintf(name,"%s/digitfile.root",inpath);
-  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
+  AliHLTFileHandler *fFileHandler = new AliHLTFileHandler(); 
   fFileHandler->SetAliInput(name);
 
   for(Int_t slice=first; slice<=last; slice++){
@@ -45,7 +45,7 @@ void singlepatch(Char_t* inpath,Char_t *outpath,Int_t first=0, Int_t last=0,Int_
 {
    
   Char_t name[256];
-  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
+  AliHLTFileHandler *fFileHandler = new AliHLTFileHandler(); 
   sprintf(name,"%s/digitfile.root",inpath);
   fFileHandler->SetAliInput(name);
   
@@ -69,7 +69,7 @@ void write2rootfile(Char_t *in,Int_t first,Int_t last,Char_t *path)
 {
   //Write new rootfile, using data from the binary files. 
 
-  AliL3Transform::Init(path);
+  AliHLTTransform::Init(path);
   char filename[1024];
   sprintf(filename,"%s/digitfile.root",path);
   file = TFile::Open(filename,"READ");
@@ -82,7 +82,7 @@ void write2rootfile(Char_t *in,Int_t first,Int_t last,Char_t *path)
     {
       for(Int_t patch=0; patch<=5; patch++)
 	{
-	  c = new AliL3Compress(slice,patch,path);
+	  c = new AliHLTCompress(slice,patch,path);
 	  c->WriteRootFile(filename,in);
 	  delete c;
 	}
@@ -91,5 +91,5 @@ void write2rootfile(Char_t *in,Int_t first,Int_t last,Char_t *path)
 }
 
 void make_init_file(Char_t *f,Char_t *path="./"){
-  AliL3Transform::MakeInitFile(f,path);
+  AliHLTTransform::MakeInitFile(f,path);
 }

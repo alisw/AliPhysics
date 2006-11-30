@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3Merger.h,v 1.8 2004/06/11 16:06:33 loizides 
+// Original: AliHLTMerger.h,v 1.8 2004/06/11 16:06:33 loizides 
 #ifndef ALIHLTTPCMERGER_H
 #define ALIHLTTPCMERGER_H
 //#define PI 3.14159265358979312

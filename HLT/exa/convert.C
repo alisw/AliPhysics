@@ -7,10 +7,10 @@
 void convert(Int_t sl=0,Int_t sh=35,Char_t *path1="./", Char_t *path2="./")
 {
   char fname[250];
-  AliL3Logger l;
-  //l.UnSet(AliL3Logger::kDebug);
-  //l.UnSet(AliL3Logger::kAll);
-  //l.Set(AliL3Logger::kInformational);
+  AliHLTLogger l;
+  //l.UnSet(AliHLTLogger::kDebug);
+  //l.UnSet(AliHLTLogger::kAll);
+  //l.Set(AliHLTLogger::kInformational);
   l.UseStdout();
   //l.UseStream();
 
@@ -18,7 +18,7 @@ void convert(Int_t sl=0,Int_t sh=35,Char_t *path1="./", Char_t *path2="./")
     {
       for(int patch=0; patch<6; patch++)
 	{
-	  file = new AliL3DataHandler();
+	  file = new AliHLTDataHandler();
 	  file->Init(slice,patch);
 	  sprintf(fname,"%s/digits_%d_%d.raw",path1,slice,patch);
 	  file->SetBinaryInput(fname);
@@ -36,15 +36,15 @@ void convert(Int_t sl=0,Int_t sh=35,Char_t *path1="./", Char_t *path2="./")
 #if 0
 void read()
 {
-  AliL3MemHandler *file = new AliL3DataHandler();
+  AliHLTMemHandler *file = new AliHLTDataHandler();
   file->SetBinaryInput("/prog/alice/data/new/fixed-slice0/rawdata_8bit/1part/digits_c8_0_5.raw");
   //file->SetBinaryInput("test.raw");
   UInt_t ndigits;
-  AliL3DigitRowData *data = (AliL3DigitRowData*)file->CompBinary2Memory(ndigits);
+  AliHLTDigitRowData *data = (AliHLTDigitRowData*)file->CompBinary2Memory(ndigits);
   
   cout<<"Number of rows: "<<ndigits<<endl;
   
-  AliL3DigitData *digPt=0;
+  AliHLTDigitData *digPt=0;
   for(int i=0; i<32; i++)
     {
       //cout<<(int)data->fRow<<endl;

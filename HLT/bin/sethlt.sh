@@ -5,9 +5,9 @@
 export CVS_RSH=ssh
 export CVSROOT=$USER@kjekspc1.fi.uib.no:/cvs/hltcvs
 #export CVSIGNORE="lib src hough comp exa programs misc trigger sim 
-#AliL3CompCint.h AliL3CompCint.cxx AliL3HoughCint.h 
-#AliL3HoughCint.cxx AliL3Cint.cxx AliL3Cint.h lib_ROOT lib_ALIROOT
-#AliL3MiscCint.cxx AliL3MiscCint.h"
+#AliHLTCompCint.h AliHLTCompCint.cxx AliHLTHoughCint.h 
+#AliHLTHoughCint.cxx AliHLTCint.cxx AliHLTCint.h lib_ROOT lib_ALIROOT
+#AliHLTMiscCint.cxx AliHLTMiscCint.h"
 
 export ALIHLT_USEPACKAGE=ALIROOT
 #export ALIHLT_USEPACKAGE=ROOT

@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3TrackArray.h,v 1.7 2004/06/11 16:06:33 loizides 
+// Original: AliHLTTrackArray.h,v 1.7 2004/06/11 16:06:33 loizides 
 #ifndef ALIHLTTPCTRACKARRAY_H
 #define ALIHLTTPCTRACKARRAY_H
 

@@ -5,10 +5,10 @@
 
 
 #ifndef __CINT__
-#include "AliL3FileHandler.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
-#include "AliL3Logger.h"
+#include "AliHLTFileHandler.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTransform.h"
+#include "AliHLTLogger.h"
 #include <stdio.h>
 #include <iostream.h>
 #endif
@@ -16,13 +16,13 @@
 
 void read(Char_t *path="./",Int_t min=0,Int_t max=35)
 {
-  AliL3Transform::Init(path);
+  AliHLTTransform::Init(path);
 
   for(Int_t slice=0; slice<35; slice++)
     {
       Char_t fname[256];
       sprintf(fname,"%s/digits_%d_0.raw",path,slice);
-      AliL3FileHandler *file = new AliL3FileHandler();
+      AliHLTFileHandler *file = new AliHLTFileHandler();
       if(!file->SetBinaryInput(fname))
 	{
 	  cerr<<"Error opening file "<<fname<<endl;
@@ -33,12 +33,12 @@ void read(Char_t *path="./",Int_t min=0,Int_t max=35)
       file->Init(slice,0,row);
 
       UInt_t size;
-      AliL3DigitRowData *data = file->CompBinary2Memory(size);
+      AliHLTDigitRowData *data = file->CompBinary2Memory(size);
       
       for(Int_t r=0; r<175; r++)
 	{
 	  UInt_t padrow=data->fRow;
-	  AliL3DigitData *dPt = (AliL3DigitData*)data->fDigitData;
+	  AliHLTDigitData *dPt = (AliHLTDigitData*)data->fDigitData;
 	  cout<<"padrow "<<padrow<<" ndigits "<<data->fNDigit<<endl;
 	  
 	  for(Int_t d=0; d<(Int_t)data->fNDigit; d++)
@@ -59,12 +59,12 @@ void read(Char_t *path="./",Int_t min=0,Int_t max=35)
 void read_ali(Char_t *fname, Int_t sl=0, Int_t sh=35)
 {
   //need galice file or alirunfile.root link
-  if(AliL3Transform::Init(fname,kTRUE))
+  if(AliHLTTransform::Init(fname,kTRUE))
   {
     cout << "created temp init file!" << endl;
   }
 
-  AliL3FileHandler *fileHandler = new AliL3FileHandler();
+  AliHLTFileHandler *fileHandler = new AliHLTFileHandler();
 
   if(!fileHandler->SetAliInput(fname))
     {
@@ -76,13 +76,13 @@ void read_ali(Char_t *fname, Int_t sl=0, Int_t sh=35)
   UInt_t nrow=0;
 
   for(Int_t slice=sl; slice<=sl; slice++){
-    for(Int_t patch=0;patch<AliL3Transform::GetNPatches();patch++){
+    for(Int_t patch=0;patch<AliHLTTransform::GetNPatches();patch++){
 
       cerr<<"reading slice: "<<slice<<" patch: "<<patch<<endl;
 
       fileHandler->Free();
       fileHandler->Init(slice,patch);      
-      AliL3DigitRowData *data=fileHandler->AliDigits2Memory(nrow,event);
+      AliHLTDigitRowData *data=fileHandler->AliDigits2Memory(nrow,event);
       if(!data) cerr << "Obscure error while reading data." << endl;
       cerr<<" found "<< nrow << " rows" <<endl;
     }      
@@ -92,13 +92,13 @@ void read_ali(Char_t *fname, Int_t sl=0, Int_t sh=35)
 
 void read_pp(Char_t *path="./",Int_t min=0,Int_t max=35,Int_t ev=0)
 {
-  AliL3Transform::Init(path);
+  AliHLTTransform::Init(path);
 
   for(Int_t slice=min; slice<max; slice++)
     {
       Char_t fname[256];
       sprintf(fname,"%s/digits_%d_%d_-1.raw",path,ev,slice);
-      AliL3FileHandler *file = new AliL3FileHandler();
+      AliHLTFileHandler *file = new AliHLTFileHandler();
       if(!file->SetBinaryInput(fname))
 	{
 	  cerr<<"Error opening file "<<fname<<endl;
@@ -108,15 +108,15 @@ void read_pp(Char_t *path="./",Int_t min=0,Int_t max=35,Int_t ev=0)
       file->Init(slice,-1);
 
       UInt_t size;
-      AliL3DigitRowData *data;
-      data=(AliL3DigitRowData*)file->Allocate(); //size from binary input
+      AliHLTDigitRowData *data;
+      data=(AliHLTDigitRowData*)file->Allocate(); //size from binary input
       file->Binary2Memory(size,data);
 
-      for(Int_t r=AliL3Transform::GetFirstRow(-1); r<AliL3Transform::GetLastRow(-1); r++)
+      for(Int_t r=AliHLTTransform::GetFirstRow(-1); r<AliHLTTransform::GetLastRow(-1); r++)
 	{
 
 	  UInt_t padrow=data->fRow;
-	  AliL3DigitData *dPt = (AliL3DigitData*)data->fDigitData;
+	  AliHLTDigitData *dPt = (AliHLTDigitData*)data->fDigitData;
 	  cout<<r<<" "<<"padrow "<<padrow<<" ndigits "<<data->fNDigit<<endl;
 	  
 	  for(Int_t d=0; d<(Int_t)data->fNDigit; d++)
@@ -136,7 +136,7 @@ void read_pp(Char_t *path="./",Int_t min=0,Int_t max=35,Int_t ev=0)
 
 void read_event_tree(Char_t *rootfile,Int_t startev=0)
 {
-  AliL3FileHandler *handler = new AliL3FileHandler();
+  AliHLTFileHandler *handler = new AliHLTFileHandler();
   if(!handler->SetAliInput(rootfile)){
     cerr<<" Error opening file: "<<rootfile<<endl;
     return;

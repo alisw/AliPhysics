@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3GlobalMerger.h,v 1.6 2004/02/02 15:00:34 loizides 
+// Original: AliHLTGlobalMerger.h,v 1.6 2004/02/02 15:00:34 loizides 
 
 #ifndef ALIHLTTPC_GLOBALMERGER_H
 #define ALIHLTTPC_GLOBALMERGER_H

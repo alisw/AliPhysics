@@ -7,8 +7,8 @@
  Program to convert big <-> little endian cosmics data of 02/2003.
 */
 
-#include "AliL3StandardIncludes.h"
-#include "AliL3RootTypes.h"
+#include "AliHLTStandardIncludes.h"
+#include "AliHLTRootTypes.h"
 
 #if __GNUC__ == 3
 using namespace std;

@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ConfMapper.cxx,v 1.26 2005/06/14 10:55:21 cvetan Exp $
+// Original: AliHLTConfMapper.cxx,v 1.26 2005/06/14 10:55:21 cvetan Exp $
 
 /** \class AliHLTTPCConfMapper
 <pre>

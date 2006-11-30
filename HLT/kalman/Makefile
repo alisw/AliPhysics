@@ -6,7 +6,7 @@
 #         Constantin Loizides  #
 ################################
 
-MODNAME = AliL3Kalman
+MODNAME = AliHLTKalman
 
 ifndef ALIHLT_TOPDIR
 ALIHLT_TOPDIR = $(shell pwd)/..
@@ -14,7 +14,7 @@ endif
 
 include $(ALIHLT_TOPDIR)/Makefile.conf
 
-SRCS = AliL3Kalman.cxx AliL3KalmanTrack.cxx 
+SRCS = AliHLTKalman.cxx AliHLTKalmanTrack.cxx 
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h

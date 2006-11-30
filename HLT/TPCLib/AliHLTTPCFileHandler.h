@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3FileHandler.h,v 1.19 2004/06/11 16:06:33 loizides 
+// Original: AliHLTFileHandler.h,v 1.19 2004/06/11 16:06:33 loizides 
 
 #ifndef ALIHLTTPCFILEHANDLER_H
 #define ALIHLTTPCFILEHANDLER_H

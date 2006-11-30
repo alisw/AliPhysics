@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3FileHandler.cxx,v 1.49 2005/06/23 17:46:55 hristov 
+// Original: AliHLTFileHandler.cxx,v 1.49 2005/06/23 17:46:55 hristov 
 
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, C. Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group 

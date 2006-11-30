@@ -6,7 +6,7 @@
 #         Constantin Loizides  #
 ################################
 
-MODNAME = AliL3Hough
+MODNAME = AliHLTHough
 
 ifndef ALIHLT_TOPDIR
 ALIHLT_TOPDIR = $(shell pwd)/..
@@ -14,25 +14,25 @@ endif
 
 include $(ALIHLT_TOPDIR)/Makefile.conf
 
-SRCS = AliL3HoughTransformer.cxx AliL3HoughClusterTransformer.cxx \
-       AliL3HoughEval.cxx AliL3HoughMerger.cxx AliL3HoughBaseTransformer.cxx \
-       AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx AliL3HoughTransformerVhdl.cxx \
-       AliL3Histogram.cxx AliL3Histogram1D.cxx AliL3HoughMaxFinder.cxx AliL3Hough.cxx \
-       AliL3HoughTransformerLUT.cxx AliL3HoughTransformerRow.cxx AliL3HistogramAdaptive.cxx 
+SRCS = AliHLTHoughTransformer.cxx AliHLTHoughClusterTransformer.cxx \
+       AliHLTHoughEval.cxx AliHLTHoughMerger.cxx AliHLTHoughBaseTransformer.cxx \
+       AliHLTHoughIntMerger.cxx AliHLTHoughGlobalMerger.cxx AliHLTHoughTransformerVhdl.cxx \
+       AliHLTHistogram.cxx AliHLTHistogram1D.cxx AliHLTHoughMaxFinder.cxx AliHLTHough.cxx \
+       AliHLTHoughTransformerLUT.cxx AliHLTHoughTransformerRow.cxx AliHLTHistogramAdaptive.cxx 
 
 ifneq ($(ARCH),macosx)
 ## for macosx put into src as symbolic link
-SRCS +=  AliL3HoughTrack.cxx 
+SRCS +=  AliHLTHoughTrack.cxx 
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
-SRCS += AliL3HoughDisplay.cxx AliL3HoughTest.cxx AliL3HoughTransformerNew.cxx AliL3HoughTransformerGlobal.cxx
+SRCS += AliHLTHoughDisplay.cxx AliHLTHoughTest.cxx AliHLTHoughTransformerNew.cxx AliHLTHoughTransformerGlobal.cxx
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
-SRCS += AliL3HoughDisplay.cxx AliL3HoughTest.cxx AliL3HoughTransformerNew.cxx AliL3HoughTransformerGlobal.cxx
+SRCS += AliHLTHoughDisplay.cxx AliHLTHoughTest.cxx AliHLTHoughTransformerNew.cxx AliHLTHoughTransformerGlobal.cxx
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif

@@ -15,8 +15,8 @@ include $(ALIHLT_TOPDIR)/Makefile.conf
 DEFSTR = -Dno_root
 INCLUDES = -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman
 
-LIBS = -L$(ALIHLT_LIBDIR) -lAliL3Src -lAliL3Hough -lAliL3Comp -lAliL3Misc 
-STATICLIBS = $(ALIHLT_LIBDIR)/libAliL3Src.a  $(ALIHLT_LIBDIR)/libAliL3Hough.a  $(ALIHLT_LIBDIR)/libAliL3Comp.a  $(ALIHLT_LIBDIR)/libAliL3Misc.a 
+LIBS = -L$(ALIHLT_LIBDIR) -lAliHLTSrc -lAliHLTHough -lAliHLTComp -lAliHLTMisc 
+STATICLIBS = $(ALIHLT_LIBDIR)/libAliHLTSrc.a  $(ALIHLT_LIBDIR)/libAliHLTHough.a  $(ALIHLT_LIBDIR)/libAliHLTComp.a  $(ALIHLT_LIBDIR)/libAliHLTMisc.a 
 
 ifneq ($(ALIHLT_USEPACKAGE),STANDALONE)
 ROOTCFLAGS := $(shell root-config --cflags)

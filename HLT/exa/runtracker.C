@@ -14,10 +14,10 @@
 */
 
 #ifndef __CINT__
-#include "AliL3Logger.h"
-#include "AliL3FileHandler.h"
-#include "AliL3DigitData.h"
-#include "AliL3Transform.h"
+#include "AliHLTLogger.h"
+#include "AliHLTFileHandler.h"
+#include "AliHLTDigitData.h"
+#include "AliHLTTransform.h"
 #include "AliLevel3.h"
 #include <TNtuple.h>
 #include <TRandom.h>
@@ -41,7 +41,7 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
   
   //for aliroot the path should point to a file 
   //containing the tpc geometry called alirunfile.root
-  Bool_t isinit=AliL3Transform::Init(path,(filetype!=AliLevel3::kBinary));
+  Bool_t isinit=AliHLTTransform::Init(path,(filetype!=AliLevel3::kBinary));
   if(!isinit){
     cerr << "Could not create transform settings, please check log for error messages!" << endl;
     return;
@@ -80,7 +80,7 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
       rowscopetracklet = 2; //search range of rows for a tracklet
       rowscopetrack = 10;   //search range of rows for a track
       min_pt_fit = 0;      
-      maxangle = 0.1745;   //AliL3Transform::Deg2Rad(10);
+      maxangle = 0.1745;   //AliHLTTransform::Deg2Rad(10);
                            //maximum angle for the three point look ahead
       goodDist = 5;        //threshold distance between two hits when building tracklets
       maxphi=0.1;          //maximum phi difference for neighboring hits

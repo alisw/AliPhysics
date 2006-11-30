@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ConfMapTrack.cxx,v 1.16 2005/06/14 10:55:21 cvetan 
+// Original: AliHLTConfMapTrack.cxx,v 1.16 2005/06/14 10:55:21 cvetan 
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group 

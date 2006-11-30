@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3Benchmark.h,v 1.6 2004/06/26 11:39:40 loizides 
+// Original: AliHLTBenchmark.h,v 1.6 2004/06/26 11:39:40 loizides 
 
 #ifndef AliHLTTPCBenchmarkH
 #define AliHLTTPCBenchmarkH

@@ -17,8 +17,8 @@ ELIBS    := Reve Alieve \
   hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
-  AliL3Src AliL3Comp AliL3Misc AliL3MUON \
-  AliL3Hough AliL3ITS \
+  AliHLTSrc AliHLTComp AliHLTMisc AliHLTMUON \
+  AliHLTHough AliHLTITS \
 # THerwig herwig TPHIC
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL $(SYSLIBS)

@@ -7,8 +7,8 @@
 
 void runtracker_pp(Int_t trigev,Char_t* path=0,Char_t *rootfile=0,Char_t *wpath="./")
 {
-  AliL3Logger l;
-  l.Set(AliL3Logger::kAll);
+  AliHLTLogger l;
+  l.Set(AliHLTLogger::kAll);
   l.UseStdout();
   //l.UseStream();
 
@@ -20,8 +20,8 @@ void runtracker_pp(Int_t trigev,Char_t* path=0,Char_t *rootfile=0,Char_t *wpath=
   } else strcpy(path_to_use,path);
   
   if(getenv("TRANSFORMCONFIGPATH")){
-    AliL3Transform::Init(getenv("TRANSFORMCONFIGPATH"));
-  } else AliL3Transform::Init(path_to_use);  
+    AliHLTTransform::Init(getenv("TRANSFORMCONFIGPATH"));
+  } else AliHLTTransform::Init(path_to_use);  
 
   Int_t phi_segments,eta_segments,trackletlength,tracklength;
   Int_t rowscopetracklet,rowscopetrack;

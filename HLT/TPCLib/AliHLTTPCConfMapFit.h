@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ConfMapFit.h,v 1.5 2004/07/05 09:03:11 loizides 
+// Original: AliHLTConfMapFit.h,v 1.5 2004/07/05 09:03:11 loizides 
 
 #ifndef ALIHLTTPC_ConfMapFit
 #define ALIHLTTPC_ConfMapFit

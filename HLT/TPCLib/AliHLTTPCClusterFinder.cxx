@@ -1,5 +1,5 @@
 // @(#) $Id$
-// Original: AliL3ClustFinderNew.cxx,v 1.29 2005/06/14 10:55:21 cvetan Exp 
+// Original: AliHLTClustFinderNew.cxx,v 1.29 2005/06/14 10:55:21 cvetan Exp 
 
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
