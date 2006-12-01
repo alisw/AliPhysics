@@ -1078,7 +1078,7 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
 {
 //* L0 trigger after LUT
 //*
-   Int_t deviation=0, iStripY=0;
+    Int_t deviation=0, iStripY=0, iStripX=0;
 
    for (Int_t i=0; i<4; i++) deviation += static_cast<int>( fMinDev[i] << i );
    for (Int_t i=0; i<4; i++) iStripY   += static_cast<int>( fCoordY[i] << i );
@@ -1093,11 +1093,11 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
   
    if (fOutput) 
    { 
-      for (Int_t i=0; i<5; i++) fStripX11 += static_cast<int>( fMinDevStrip[i] << i );
+      for (Int_t i=0; i<5; i++) iStripX += static_cast<int>( fMinDevStrip[i] << i );
 
       fDev      = deviation;
-
       fStripY11 = iStripY;
+      fStripX11 = iStripX;
 
       Int_t sign = 0;
 
