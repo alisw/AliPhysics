@@ -268,7 +268,7 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
     sigma2p += Cov(0)/r2*(1.- dy*dy/r2)*(1.- dy*dy/r2);
     sigma2p += ers[1]*ers[1]/r2;
     sigma2p += 0.25*Cov(14)*cnv*cnv*GetX()*GetX();
-    Double_t eps2p=sigma2p/(Cov(2) + sigma2p);
+    Double_t eps2p=sigma2p/(Cov(5) + sigma2p);
     Par(0) += Cov(3)/(Cov(5) + sigma2p)*(parp - GetSnp());
     Par(2)  = eps2p*GetSnp() + (1 - eps2p)*parp;
     Cov(5) *= eps2p;
@@ -284,7 +284,7 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
     Par(4) += Cov(13)/(Cov(9) + sigma2l)*(parl - Par(3));
     Par(3)  = eps2l*Par(3) + (1-eps2l)*parl;
     Cov(9) *= eps2l; 
-    Cov(13)*= (eps2l/cnv/cnv); 
+    Cov(13)*= eps2l; 
     Cov(7) *= eps2l; 
   }
   if (!Invariant()) return kFALSE;
