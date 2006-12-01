@@ -282,21 +282,27 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     return;
   }
 
+  const Float_t vertexRange = 4.99;
+
   for (Int_t iEta=1; iEta<=vtxVsEta->GetNbinsY(); iEta++)
   {
     // do we have several histograms for different vertex positions?
-    Int_t vertexBinWidth = vertexHist->GetNbinsX() / (kVertexBinning-1);
+    Int_t vertexBinGlobalBegin = vertexHist->GetXaxis()->FindBin(-vertexRange);
+    Int_t vertexBinWidth = (vertexHist->GetXaxis()->FindBin(vertexRange) - vertexBinGlobalBegin + 1) / (kVertexBinning-1);
+    //printf("vertexBinGlobalBegin = %d, vertexBinWidth = %d\n", vertexBinGlobalBegin, vertexBinWidth);
     for (Int_t vertexPos=0; vertexPos<kVertexBinning; ++vertexPos)
     {
-      Int_t vertexBinBegin = 1;
-      Int_t vertexBinEnd = vertexHist->GetNbinsX() + 1;
+      Int_t vertexBinBegin = vertexBinGlobalBegin;
+      Int_t vertexBinEnd = vertexBinGlobalBegin + vertexBinWidth * (kVertexBinning-1);
 
       // the first histogram is always for the whole vertex range
       if (vertexPos > 0)
       {
-        vertexBinBegin = 1 + vertexBinWidth * (vertexPos-1);
+        vertexBinBegin = vertexBinGlobalBegin + vertexBinWidth * (vertexPos-1);
         vertexBinEnd = vertexBinBegin + vertexBinWidth;
       }
+
+      //printf("vertexBinBegin = %d, vertexBinEnd = %d\n", vertexBinBegin, vertexBinEnd);
 
       Float_t totalEvents = vertexHist->Integral(vertexBinBegin, vertexBinEnd - 1);
       if (totalEvents == 0)

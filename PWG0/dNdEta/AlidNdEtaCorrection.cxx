@@ -301,15 +301,15 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
     etaEnd = etaBegin;
   }
 
-  Int_t vertexBegin = generated->GetXaxis()->FindBin(-19.99);
-  Int_t vertexEnd = generated->GetXaxis()->FindBin(19.99);
+  Int_t vertexBegin = generated->GetXaxis()->FindBin(-4.99);
+  Int_t vertexEnd = generated->GetXaxis()->FindBin(4.99);
 
   TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", generated->GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
-  printf("GetMeasuredFraction: bin range %d %d %d %d\n", vertexBegin, vertexEnd, etaBegin, etaEnd);
+  //printf("GetMeasuredFraction: bin range %d %d %d %d\n", vertexBegin, vertexEnd, etaBegin, etaEnd);
   ptProj->GetXaxis()->SetTitle(generated->GetZaxis()->GetTitle());
 
   Int_t ptBin = ptProj->FindBin(ptCutOff);
-  printf("GetMeasuredFraction: bin range %d %d\n", ptBin, ptProj->GetNbinsX());
+  //printf("GetMeasuredFraction: bin range %d %d\n", ptBin, ptProj->GetNbinsX());
   Float_t abovePtCut = ptProj->Integral(ptBin, ptProj->GetNbinsX());
   Float_t all = ptProj->Integral();
 
@@ -318,7 +318,7 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
 
   Float_t fraction = abovePtCut / all;
 
-  printf("GetMeasuredFraction: all %f above %f fraction %f\n", all, abovePtCut, fraction);
+  //printf("GetMeasuredFraction: all %f above %f fraction %f\n", all, abovePtCut, fraction);
 
   if (debug)
   {

@@ -214,9 +214,9 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
     return;
   }
 
-  fdNdEtaAnalysis->Finish(0, -1);
-  fdNdEtaAnalysisTr->Finish(0, -1);
-  fdNdEtaAnalysisTrVtx->Finish(0, -1);
+  fdNdEtaAnalysis->Finish(0, -1, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysisTr->Finish(0, -1, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysisTrVtx->Finish(0, -1, AlidNdEtaCorrection::kNone);
 
   Int_t events = (Int_t) fdNdEtaAnalysis->GetData()->GetEventCorrection()->GetMeasuredHistogram()->Integral();
   fPartPt->Scale(1.0/events);
