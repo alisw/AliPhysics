@@ -490,7 +490,7 @@ void RichConfig::SlotBatch(Int_t id)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::WriteBatch()
 {//creates Batch.C file
-  char *sBatchName="RichBatch";
+  char *sBatchName="HMPID Batch";
   FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateBatch","Cannot open output file: %s.C",sBatchName);return;}
   
                                                        fprintf(fp,"void %s(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFileName)\n{\n",sBatchName);
@@ -614,7 +614,7 @@ void RichConfig::WriteConfig()
   fclose(pF);  
 }//WriteConfig()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void RichConfig()
+void HMPIDConfig()
 {
    new RichConfig("Config.C");
 }   

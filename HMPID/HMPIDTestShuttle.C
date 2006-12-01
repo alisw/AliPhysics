@@ -1,4 +1,4 @@
-void RichTestShuttle()
+void HMPIDTestShuttle()
 {
 // this macro is to simulate the functionality of SHUTTLE.
 // Here the list of DCS aliases is created and packed in TMap of structure "alias name" - TObjArray of AliDCSValue    
@@ -15,7 +15,8 @@ void RichTestShuttle()
         pValLst->Add(pVal);                                                                            //add it to the list
         pGr[3*iCh+iRad]->SetPoint(iPoint++,time,pVal->GetFloat());                                     //and also to the graph  
       }
-      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)),pValLst); //add new list to the map
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)),pValLst); 
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)),pValLst);
     }//radiators loop
   }//chambers loop
   
