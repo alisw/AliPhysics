@@ -188,7 +188,7 @@ Stat_t AliRsnAnalysis::EventMix(Int_t nmix, Int_t multDiffMax, Double_t vzDiffMa
 		// if total multiplicities must be used
 		// it is computed here
 		if (compareTotMult) {
-			mult1 = event1->GetMultiplicity(kTRUE);
+			mult1 = event1->GetMultiplicity();
 		}
 		else {
 			mult1 = 0;
@@ -234,7 +234,7 @@ Stat_t AliRsnAnalysis::EventMix(Int_t nmix, Int_t multDiffMax, Double_t vzDiffMa
 				// get event stats related to event 2
 				vz2 = event2->GetPrimaryVertexZ();
 				if (compareTotMult) {
-					mult2 = event2->GetMultiplicity(kTRUE);
+					mult2 = event2->GetMultiplicity();
 				}
 				else {
 					mult2 = event2->GetTracks(pd->GetSign2(), pd->GetParticle2())->GetEntries();
