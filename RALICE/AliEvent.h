@@ -72,14 +72,6 @@ class AliEvent : public AliVertex,public AliTimestamp
  protected:
   Int_t fRun;                           // The run number
   Int_t fEvent;                         // The event number
-  Int_t fAproj;                         // The projectile A value
-  Int_t fZproj;                         // The projectile Z value
-  Double_t fPnucProj;                   // The projectile momentum per nucleon
-  Int_t fIdProj;                        // User defined projectile particle ID
-  Int_t fAtarg;                         // The target A value
-  Int_t fZtarg;                         // The target Z value
-  Double_t fPnucTarg;                   // The target momentum per nucleon
-  Int_t fIdTarg;                        // User defined target particle ID
   TObjArray* fDevices;                  // Array to hold the pointers to the various devices
   Int_t fDevCopy;                       // Flag to denote creation of private copies of the devices
   void LoadHits(const char* classname); // Load references to the hits registered to the specified device class
@@ -88,6 +80,6 @@ class AliEvent : public AliVertex,public AliTimestamp
   TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
   TObjArray* fDevs;                     //! Temp. array to hold references to user selected devices
 
- ClassDef(AliEvent,22) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,23) // Creation and investigation of an Alice physics event.
 };
 #endif

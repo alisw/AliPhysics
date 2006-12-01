@@ -241,7 +241,12 @@
 //        ... // code to create tracks etc... 
 //        ...
 //
-// Note : All quantities are in GeV, GeV/c or GeV/c**2
+// Note : By default all quantities are in meter, GeV, GeV/c or GeV/c**2
+//        but the user can indicate the usage of a different scale for
+//        the metric and/or energy-momentum units via the SetUnitScale()
+//        and SetEscale() memberfunctions, respectively.
+//        The actual metric and energy-momentum unit scales in use can be
+//        obtained via the GetUnitScale() and GetEscale() memberfunctions.
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
 //- Modified: NvE $Date: 2004/10/20 10:49:44 $ UU-SAP Utrecht
@@ -258,14 +263,6 @@ AliEvent::AliEvent() : AliVertex(),AliTimestamp()
 // All variables initialised to default values.
  fRun=0;
  fEvent=0;
- fAproj=0;
- fZproj=0;
- fPnucProj=0;
- fIdProj=0;
- fAtarg=0;
- fZtarg=0;
- fPnucTarg=0;
- fIdTarg=0;
  fDevices=0;
  fDevCopy=0;
  fHits=0;
@@ -284,14 +281,6 @@ AliEvent::AliEvent(Int_t n) : AliVertex(n),AliTimestamp()
  }
  fRun=0;
  fEvent=0;
- fAproj=0;
- fZproj=0;
- fPnucProj=0;
- fIdProj=0;
- fAtarg=0;
- fZtarg=0;
- fPnucTarg=0;
- fIdTarg=0;
  fDevices=0;
  fDevCopy=0;
  fHits=0;
@@ -335,14 +324,6 @@ AliEvent::AliEvent(const AliEvent& evt) : AliVertex(evt),AliTimestamp(evt)
 // Copy constructor.
  fRun=evt.fRun;
  fEvent=evt.fEvent;
- fAproj=evt.fAproj;
- fZproj=evt.fZproj;
- fPnucProj=evt.fPnucProj;
- fIdProj=evt.fIdProj;
- fAtarg=evt.fAtarg;
- fZtarg=evt.fZtarg;
- fPnucTarg=evt.fPnucTarg;
- fIdTarg=evt.fIdTarg;
  fDevCopy=evt.fDevCopy;
 
  fHits=0;
@@ -386,14 +367,6 @@ void AliEvent::Reset()
  Set();
  fRun=0;
  fEvent=0;
- fAproj=0;
- fZproj=0;
- fPnucProj=0;
- fIdProj=0;
- fAtarg=0;
- fZtarg=0;
- fPnucTarg=0;
- fIdTarg=0;
 
  if (fDevices)
  {
@@ -522,69 +495,161 @@ Int_t AliEvent::GetEventNumber() const
 void AliEvent::SetProjectile(Int_t a,Int_t z,Double_t pnuc,Int_t id)
 {
 // Set the projectile A, Z, momentum per nucleon and user defined particle ID.
-// By default the particle ID is set to zero.
- fAproj=a;
- fZproj=z;
- fPnucProj=pnuc;
- fIdProj=id;
+// If not explicitly specified by the user, the projectile particle ID is set
+// to zero by default and will not be stored in the event structure.
+// The projectile specifications will be stored in a device named "Beam"
+// which is an instance of AliSignal.
+// As such these data are easily retrievable from the event structure.
+// However, for backward compatibility reasons the beam data can also be
+// retrieved via memberfunctions like GetProjectileA() etc...
+
+ Int_t newdev=0;
+ 
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ 
+ if (!beam)
+ {
+  beam=new AliSignal();
+  beam->SetNameTitle("Beam","Beam and target specifications");
+  newdev=1;
+ }
+
+ if (a || z)
+ {
+  beam->AddNamedSlot("Aproj");
+  beam->SetSignal(a,"Aproj");
+  beam->AddNamedSlot("Zproj");
+  beam->SetSignal(z,"Zproj");
+ }
+ beam->AddNamedSlot("Pnucproj");
+ beam->SetSignal(pnuc,"Pnucproj");
+ if (id)
+ {
+  beam->AddNamedSlot("Idproj");
+  beam->SetSignal(id,"Idproj");
+ }
+
+ if (newdev)
+ {
+  AddDevice(beam);
+  if (fDevCopy) delete beam;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetProjectileA() const
 {
 // Provide the projectile A value.
- return fAproj;
+ Int_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=int(beam->GetSignal("Aproj"));
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetProjectileZ() const
 {
 // Provide the projectile Z value.
- return fZproj;
+ Int_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=int(beam->GetSignal("Zproj"));
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliEvent::GetProjectilePnuc() const
 {
 // Provide the projectile momentum value per nucleon.
- return fPnucProj;
+ Double_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=beam->GetSignal("Pnucproj");
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetProjectileId() const
 {
 // Provide the user defined particle ID of the projectile.
- return fIdProj;
+ Int_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=int(beam->GetSignal("Idproj"));
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetTarget(Int_t a,Int_t z,Double_t pnuc,Int_t id)
 {
 // Set the target A, Z, momentum per nucleon and user defined particle ID.
-// By default the particle ID is set to zero.
- fAtarg=a;
- fZtarg=z;
- fPnucTarg=pnuc;
- fIdTarg=id;
+// If not explicitly specified by the user, the target particle ID is set
+// to zero by default and will not be stored in the event structure.
+// The target specifications will be stored in a device named "Beam"
+// which is an instance of AliSignal.
+// As such these data are easily retrievable from the event structure.
+// However, for backward compatibility reasons the beam data can also be
+// retrieved via memberfunctions like GetTargetA() etc...
+
+ Int_t newdev=0;
+ 
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ 
+ if (!beam)
+ {
+  beam=new AliSignal();
+  beam->SetNameTitle("Beam","Beam and target specifications");
+  newdev=1;
+ }
+
+ if (a || z)
+ {
+  beam->AddNamedSlot("Atarg");
+  beam->SetSignal(a,"Atarg");
+  beam->AddNamedSlot("Ztarg");
+  beam->SetSignal(z,"Ztarg");
+ }
+ beam->AddNamedSlot("Pnuctarg");
+ beam->SetSignal(pnuc,"Pnuctarg");
+ if (id)
+ {
+  beam->AddNamedSlot("Idtarg");
+  beam->SetSignal(id,"Idtarg");
+ }
+
+ if (newdev)
+ {
+  AddDevice(beam);
+  if (fDevCopy) delete beam;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetTargetA() const
 {
 // Provide the target A value.
- return fAtarg;
+ Int_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=int(beam->GetSignal("Atarg"));
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetTargetZ() const
 {
 // Provide the target Z value.
- return fZtarg;
+ Int_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=int(beam->GetSignal("Ztarg"));
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliEvent::GetTargetPnuc() const
 {
 // Provide the target momentum value per nucleon.
- return fPnucTarg;
+ Double_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=beam->GetSignal("Pnuctarg");
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetTargetId() const
 {
 // Provide the user defined particle ID of the target.
- return fIdTarg;
+ Int_t val=0;
+ AliSignal* beam=(AliSignal*)GetDevice("Beam");
+ if (beam) val=int(beam->GetSignal("Idtarg"));
+ return val;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::HeaderData()

@@ -16,10 +16,15 @@
 // $Id$
 
 ///////////////////////////////////////////////////////////////////////////
-// Class IceDwalk
-// TTask derived class to perform direct walk track reconstruction.
-// The procedure is based on the method described in the Amanda publication
-// in Nuclear Instruments and Methods A524 (2004) 179-180.
+// Class IceDwalkx
+// TTask derived class to perform (Amanda-like) direct walk track reconstruction.
+// This class is kept to provide a procedure that can closely match the
+// performance of the original Amanda direct walk-II algorithm as implemented
+// in the Sieglinde reconstruction framework.
+// For a more sophisticated direct walk reconstruction procedure, please refer
+// to the class IceDwalk. 
+// The IceDwalkx procedure is based on the method described in the Amanda
+// publication in Nuclear Instruments and Methods A524 (2004) 179-180.
 // However, the Amanda method has been extended with the intention to
 // take also multiple (muon) tracks within 1 event into account.
 // This will not only provide a means to reconstruct muon bundles and
@@ -40,27 +45,28 @@
 // This allows selection of events for processing with a certain maximum and/or
 // minimum number of good Amanda OMs firing.
 // By default the minimum and maximum are set to 0 and 999, respectively,
-// in the constructor, which implies no multiplicity selection. 
+// in the constructor, which implies no multiplicity selection.
 // The maximum number of good hits per Amanda OM to be used for the reconstruction
 // can be specified via the memberfunction SetMaxHitsA().
-// By default only the first good hit of each Amanda OM is used.
+// By default only the first good hit of each Amanda OM is used to be consistent
+// with the original Sieglinde direct walk procedure of the above NIM article.
 // Note that when all the good hits of an OM are used, this may lead to large
 // processing time in case many noise and/or afterpulse signals are not
 // recognised by the hit cleaning procedure.
 //
 // Information about the actual parameter settings can be found in the event
-// structure itself via the device named "IceDwalk".
+// structure itself via the device named "IceDwalkx".
 //
 // The various reconstruction steps are summarised as follows :
 //
 // 1) Construction of track elements (TE's).
 //    A track element is a straight line connecting two hits that
 //    appeared at some minimum distance d and within some maximum
-//    time difference dt, according to eq. (20) of the NIM article.
-//    The default value for d is 75 meter, but this can be modified
-//    via the memberfunction SetDmin().
-//    By default dt=(hit distance)/c but an additional time margin
-//    may be specified via the memberfunction SetDtmarg().    
+//    time difference dt.
+//    The default values for d and dt are given in eq. (20) of the
+//    NIM article, but can be modified by the appropriate Set functions.
+//    For dt a default margin of 30 ns is used (according to eq. (20)),
+//    but also this margin may be modified via the appropriate Set function.    
 //    The reference point r0 of the TE is taken as the center between
 //    the two hit positions and the TE timestamp t0 at the position r0
 //    is taken as the IceEvent timestamp increased by the average of the
@@ -74,128 +80,63 @@
 //    A hit is associated to a TE when it fulfills both the conditions
 //
 //      -30 < tres < 300 ns
-//      dhit/lambda < F
+//      dhit < 25*(tres+30)^(1/4) meter
 //
-//    tres   : time residual
-//             Difference between the observed hit time and the time expected
-//             for a direct photon hit.     
-//    dhit   : Distance between the hit and the TE
-//    lambda : Photon scattering length in ice
-//
-//    By default F is set to 2, but this can be modified via the memberfunction
-//    SetMaxDhit(). 
+//    tres : time residual
+//           Difference between the observed hit time and the time expected
+//           for a direct photon hit.     
+//    dhit : Distance between the hit and the TE
 //
 // 3) Construction of track candidates (TC's).
-//    These are TE's that fulfill both the conditions
+//    These are TE's that fulfill both the conditions (see eq. (21) in the NIM article)
 //
-//     nah >= 1
-//     qtc >= 0.8*qtcmax
+//     sigmal >= 20 meter
+//     qtc >= 0.7*qtcmax
 //
-//    where we have defined :
+//     qtc=min(nah,0.3*sigmal+7)
+//     qtcmax=max(qtc) of all TE's with sigmal>=20 meter
 //
-//    nah    : Number of associated hits for the specific TE.
-//    qtc    : The track quality number (see hereafter).
-//    qtcmax : Maximum quality number encountered for the TE's.
+//    where we have used the observables :
 //
-//    The track quality number qtc is defined as follows :
+//    nah    : Number of associated hits.
+//    sigmal : rms variance of the distances between r0 and the projection
+//             points on the track of the various associated hit positions. 
 //
-//     qtc=nah*(term1+term2)-term3-term4-term5
+//    Note : The following additional quality selection as indicated
+//           in the NIM article is not used anymore. 
 //
-//    here we have defined :
-//
-//    term1=2*spread/span
-//    term2=2*spreadL/spanL
-//    term3=|spread-expspread|/spread
-//    term4=|spreadL-expspreadL|/spreadL
-//    term5=|medianT|/spreadT
-//
-//    The central observables here are the projected positions X on the track
-//    of the various associated hits w.r.t. the track reference point r0.
-//    Note that X can be negative as well as positive.
-//    Therefore we also introduce XL=|X|. 
-//
-//    span       : max(X)-min(X)
-//    spanL      : max(XL)-min(XL)
-//    Xmedian    : median of X
-//    XmedianL   : median of XL
-//    spread     : < |X-Xmedian| >
-//    spreadL    : < |XL-XmedianL| >
-//    expspread  : expected spread in X for a flat distribution of nah hits over span
-//    expspreadL : expected spread in XL for a flat distribution of nah hits over spanL
-//    medianT    : median of tres
-//    spreadT    : < |tres-medianT| >
-//
-//    However, if |Xmedian| > span/2 we set qtc=0 in order to always require
-//    projected hits to appear on both sides of r0 on the track.
-//
-//    Note : The qtc quality number is used to define the norm of the momentum
-//           of the track candidate. As such it serves as a weight for the jet
-//           momentum (direction) after clustering of the TC's and lateron
-//           merging of the jets (see hereafter).
+//      nah >= 10
 //
 // 4) The remaining track candidates are clustered into jets when their directions
 //    are within a certain maximum opening angle.
-//    In addition a track candidate must within a certain maximum distance
-//    of the jet starting TC in order to get clustered. 
+//    In addition the distance between their r0's must be below a certain maximum
+//    or the relative r0 direction must fall within a certain maximum opening angle
+//    w.r.t. the jet-starting track candidate.
 //    The latter criterion prevents clustering of (nearly) parallel track candidates
 //    crossing the detector a very different locations (e.g. muon bundles).
 //    The default maximum track opening angle is 15 degrees, but can be modified
 //    via the SetTangmax memberfunction.
-//    The default maximum track distance is 20 meters, but can be modified
-//    via the SetTdistmax memberfunction. This memberfunction also allows to
-//    specify whether the distance is determined within the detector volume or not.
+//    The remaining parameters related to the r0 criteria can be modified via
+//    the SetRtdmax and SetRtangmax memberfunctions.
+//    See the corresponding docs for defaults etc...
 //
 //    The average of all the r0 and t0 values of the constituent TC's
 //    of the jet will provide the r0 and t0 (i.e. reference point) of the jet.
 //
-//    The jet total momentum consists of the vector sum of the momenta of the
-//    constituent TC's. This implies that the qtc quality numbers of the various
-//    TC's define a weight for each track in the construction of the jet direction.
-//    In addition it means that the total jet momentum represents the sum of the
-//    qtc quality numbers of the constituent TC's weighted by the opening angles
-//    between the various TC's.  
-//    As such each jet is given an absolute quality number defined as :
-//
-//      qtcjet=|jet momentum|/ntracks 
-//
-//    This jet quality number is refined on basis of the number of hits
-//    associated to the jet as :
-//
-//      qtcjet=qtcjet+0.2*(nah-nahmax)
-//
-//    where we have defined :
-//
-//    nah    : Number of associated hits for the specific jet.
-//    nahmax : Maximum number of associated hits encountered for the jets.
-//
-//    This qtcjet value is then used to order the various jets w.r.t.
-//    decreasing qtcjet quality number.
-//
-//    Note : The qtcjet value is stored as "energy" of the jet, such that
-//           it is always available for each jet and can also be used for
-//           ordering the jets according to this value using the generic
-//           AliEvent::SortJets() facility. 
-//
-// 5) The jets (after having been ordered w.r.t. decreasing qtcjet value)
-//    are merged when their directions are within a certain maximum opening angle.
-//    In addition a jet must within a certain maximum distance of the starting jet
-//    in order to get merged. 
+// 5) The jets are merged when their directions are within a certain maximum
+//    opening angle. Before the merging, all jets are ordered w.r.t. decreasing
+//    number of associated hits. This guarantees that the jet with the largest
+//    number of associated hits is the starting jet in the merging process.
+//    In addition the distance between their r0's must be below a certain maximum
+//    or the relative r0 direction must fall within a certain maximum opening angle
+//    w.r.t. the starting jet.
 //    The latter criterion prevents merging of (nearly) parallel tracks/jets
 //    crossing the detector a very different locations (e.g. muon bundles).
-//    The jet ordering before the merging process is essential, since the starting jet
-//    will "eat up" the jets that will be merged into it. 
-//    The jet ordering ensures that the jet with the highest quality number will
-//    always initiate the merging process.
 //    The default maximum opening angle is half the TC maximum opening angle,
-//    but can be modified via the SetJangmax memberfunction. This memberfunction
-//    also allows to specify whether jet merging will be performed iteratively or not.
-//    In case iteration has been activated, the jet ordering is performed after each
-//    iteration step. This has to be done because since the quality numbers of the
-//    resulting merged jets have been automatically updated in the merging process.
-//    
-//    The default maximum jet distance is 30 meters, but can be modified
-//    via the SetJdistmax memberfunction. This memberfunction also allows to
-//    specify whether the distance is determined within the detector volume or not.
+//    but can be modified via the SetJangmax memberfunction.
+//    The remaining parameters related to the r0 criteria can be modified via
+//    the SetRjdmax and SetRjangmax memberfunctions.
+//    See the corresponding docs for defaults etc...
 //
 //    Note : Setting the maximum jet opening angle to <=0 will prevent
 //           the merging of jets.
@@ -203,10 +144,7 @@
 //    The average of all the r0 and t0 values of the merged jets will provide
 //    the r0 and t0 (i.e. reference point) of the final jet.
 //
-// 6) The remaining (merged) jets are ordered w.r.t. decreasing jet quality number.
-//    As such the jet with the highest quality number will be the first one
-//    in the list, which will result in the fact that the final tracks are also
-//    ordered w.r.t. decreasing quality number, as outlined hereafter.
+// 6) The remaining jets are ordered w.r.t. decreasing number of associated hits.
 //    Each remaining jet will provide the parameters (e.g. direction)
 //    for a reconstructed track.
 //    The track 3-momentum is set to the total jet 3-momentum, normalised
@@ -215,7 +153,7 @@
 //    (i.e. reference point) of the track.
 //
 //    All these tracks will be stored in the IceEvent structure with as
-//    default "IceDwalk" as the name of the track.
+//    default "IceDwalkx" as the name of the track.
 //    This track name identifier can be modified by the user via the
 //    SetTrackName() memberfunction. This will allow unique identification
 //    of tracks which are produced when re-processing existing data with
@@ -229,8 +167,8 @@
 //    (see the class AliHelix for further details).  
 //
 //    Note : In case the maximum jet opening angle was specified <0,
-//           only the jet with the highest quality number will appear
-//           as a reconstructed track in the IceEvent structure.
+//           only the jet with the maximum number of associated hits will
+//           appear as a reconstructed track in the IceEvent structure.
 //           This will allow comparison with the standard Sieglinde
 //           single track direct walk reconstruction results. 
 //    
@@ -244,12 +182,12 @@
 //- Modified: NvE $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
  
-#include "IceDwalk.h"
+#include "IceDwalkx.h"
 #include "Riostream.h"
 
-ClassImp(IceDwalk) // Class implementation to enable ROOT I/O
+ClassImp(IceDwalkx) // Class implementation to enable ROOT I/O
 
-IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
+IceDwalkx::IceDwalkx(const char* name,const char* title) : TTask(name,title)
 {
 // Default constructor.
 // The various reconstruction parameters are initialised to the values
@@ -257,51 +195,44 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
 // The newly introduced angular separation parameter for jet merging
 // is initialised as half the value of the angular separation parameter
 // for track candidate clustering.    
- fDmin=75;
- fDtmarg=0;
- fMaxdhit=2;
+ fDmin=50;
+ fDtmarg=30;
  fTangmax=15;
- fTdistmax=20;
- fTinvol=1;
+ fRtangmax=fTangmax;
+ fRtdmax=0;
  fJangmax=fTangmax/2.;
- fJiterate=1;
- fJdistmax=30;
- fJinvol=1;
+ fRjangmax=fRtangmax;
+ fRjdmax=fDmin;
  fMaxmodA=999;
  fMinmodA=0;
  fMaxhitsA=1;
  fVgroup=1;
- fTrackname="IceDwalk";
+ fTrackname="IceDwalkx";
  fCharge=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-IceDwalk::~IceDwalk()
+IceDwalkx::~IceDwalkx()
 {
 // Default destructor.
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetDmin(Float_t d)
+void IceDwalkx::SetDmin(Float_t d)
 {
 // Set minimum hit distance (in m) to form a track element.
-// In the constructor the default has been set to 75 meter.
+// In the constructor the default has been set to 50 meter, in accordance
+// to eq.(20) of NIM A524 (2004) 179.
  fDmin=d;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetDtmarg(Int_t dt)
+void IceDwalkx::SetDtmarg(Int_t dt)
 {
 // Set maximum hit time difference margin (in ns) for track elements.
-// In the constructor the default has been set to 0 ns.
+// In the constructor the default has been set to 30 ns, in accordance
+// to eq.(20) of NIM A524 (2004) 179.
  fDtmarg=dt;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMaxDhit(Float_t d)
-{
-// Set maximum distance (in scattering length) for a hit to get associated.
-// In the constructor the default has been set to 2 lambda_scat.
- fMaxdhit=d;
-}
-///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetTangmax(Float_t ang)
+void IceDwalkx::SetTangmax(Float_t ang)
 {
 // Set maximum angular separation (in deg) for track candidate clustering
 // into jets.
@@ -317,37 +248,48 @@ void IceDwalk::SetTangmax(Float_t ang)
  fJangmax=ang/2.;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetTdistmax(Float_t d,Int_t invol)
+void IceDwalkx::SetRtangmax(Float_t ang)
 {
-// Set maximum distance (in m) of the two track candidates in the track
-// clustering process.
-// The distance between the two tracks can be determined restricted to the
-// detector volume (invol=1) or in the overall space (invol=0).  
-// The former will prevent clustering of (nearly) parallel tracks which cross
-// the detector volume at very different locations, whereas the latter will
-// enable clustering of tracks with a common location of origin (e.g. muon
-// bundles from an air shower) even if they cross the detector volume at
-// very different locations. 
-// At invokation of this memberfunction the default is invol=1.
-// In the constructor the default has been set to 20 meter with invol=1.
+// Set maximum angular separation (in deg) for the relative direction of the
+// two r0's of two track candidates (w.r.t. the direction of the starting
+// track candidate) in the track clustering process.
+// In the constructor the default has been set to 15 deg, corresponding
+// to the default max. angular separation for track candidate clustering.
+//
+// Note : This function also sets automatically the value of the maximum
+//        angular separation for the relative direction of the two r0's
+//        of two jets (w.r.t. the direction of the starting jet)
+//        in the jet merging process.
+//        In order to specify a different value related to jet merging,
+//        one has to invoke the memberfunction SetRjangmax afterwards.
  
- fTdistmax=d;
- fTinvol=invol;
+ fRtangmax=ang;
+ fRjangmax=ang;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetJangmax(Float_t ang,Int_t iter)
+void IceDwalkx::SetRtdmax(Float_t d)
+{
+// Set maximum distance (in m) of the two r0's of two track candidates
+// in the track clustering process.
+// This will allow clustering of tracks with very close r0's, of which
+// their relative direction may point in any direction.
+// In the constructor the default has been set 0 until further tuning
+// of this parameter has been achieved.
+//
+// Note : In case the distance between the two r0's exceeds the maximum,
+//        the track candidates will still be clustered if the relative
+//        direction of the two r0's falls within the maximum separation
+//        angle w.r.t. the starting track direction.
+ 
+ fRtdmax=d;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalkx::SetJangmax(Float_t ang)
 {
 // Set angular separation (in deg) within which jets are merged into 1
 // single track.
-// The merging process is a dynamic procedure and can be carried out by
-// iteration (iter=1) until no further merging of the various jets occurs anymore.
-// However, by specification of iter=0 the user can also select to go only
-// once through all the jet combinations to check for mergers.
-// For large events the latter will in general result in more track candidates.  
-// At invokation of this memberfunction the default is iter=1.
-// In the constructor the default angle has been set 7.5 deg, being half
-// of the value of the default track candidate clustering separation angle.
-// The iteration flag was set to 1 in the constructor.
+// In the constructor the default has been set 7.5 deg, being half of the
+// value of the default track candidate clustering separation angle. 
 //
 // Notes :
 // -------
@@ -361,27 +303,37 @@ void IceDwalk::SetJangmax(Float_t ang,Int_t iter)
 //     and as such can be used to perform comparison studies.
 
  fJangmax=ang;
- fJiterate=iter;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetJdistmax(Float_t d,Int_t invol)
+void IceDwalkx::SetRjangmax(Float_t ang)
 {
-// Set maximum distance (in m) of the two jets in the jet merging process.
-// The distance between the two jets can be determined restricted to the
-// detector volume (invol=1) or in the overall space (invol=0).  
-// The former will prevent clustering of (nearly) parallel tracks which cross
-// the detector volume at very different locations, whereas the latter will
-// enable clustering of tracks with a common location of origin (e.g. muon
-// bundles from an air shower) even if they cross the detector volume at
-// very different locations. 
-// At invokation of this memberfunction the default is invol=1.
-// In the constructor the default has been set to 30 meter with invol=1.
+// Set maximum angular separation (in deg) for the relative direction of the
+// two r0's of two jets (w.r.t. the direction of the starting jet)
+// in the jet merging process.
+// In the constructor the default has been set to the corresponding value
+// of the same parameter related to the track clustering.
  
- fJdistmax=d;
- fJinvol=invol;
+ fRjangmax=ang;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMaxModA(Int_t nmax)
+void IceDwalkx::SetRjdmax(Float_t d)
+{
+// Set maximum distance (in m) of the two r0's of two jets in the
+// jet merging process.
+// This will allow merging of jets with rather close r0's, of which
+// their relative direction may point in any direction.
+// In the constructor the default has been set to 50 meter, corresponding
+// to the value of the minimum hit distance to form a track element.
+//
+// Note : In case the distance between the two r0's exceeds the maximum,
+//        the jets will still be merged if the relative direction of the
+//        two r0's falls within the maximum separation angle w.r.t. the
+//        starting jet direction.
+ 
+ fRjdmax=d;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalkx::SetMaxModA(Int_t nmax)
 {
 // Set the maximum number of good Amanda modules that may have fired
 // in order to process this event.
@@ -395,7 +347,7 @@ void IceDwalk::SetMaxModA(Int_t nmax)
  fMaxmodA=nmax;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMinModA(Int_t nmin)
+void IceDwalkx::SetMinModA(Int_t nmin)
 {
 // Set the minimum number of good Amanda modules that must have fired
 // in order to process this event.
@@ -406,23 +358,24 @@ void IceDwalk::SetMinModA(Int_t nmin)
  fMinmodA=nmin;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMaxHitsA(Int_t nmax)
+void IceDwalkx::SetMaxHitsA(Int_t nmax)
 {
 // Set the maximum number of good hits per Amanda module to be processed.
 //
 // Special values :
-// nmax = 0 : No maximum limit set; all good hits will be processed
+// nmax = 0 : No maximum limit set; all available good hits will be processed
 //      < 0 : No hits will be processed
 //
 // In case the user selects a maximum number of good hits per module, all the
 // hits of each module will be ordered w.r.t. increasing hit time (LE).
-// This allows selection of processing e.g. only the first hits etc...
-// By default the maximum number of hits per Amanda modules is set to 1 in the ctor,
-// which implies processing only the first good hit of each Amanda OM.
+// This allows selection of processing e.g. only the first good hits etc...
+// By default the maximum number of good hits per Amanda modules is set to 1
+// in the ctor, which implies just processing only the first good hit of
+// each Amanda OM.
  fMaxhitsA=nmax;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetVgroupUsage(Int_t flag)
+void IceDwalkx::SetVgroupUsage(Int_t flag)
 {
 // (De)activate the distinction between v_phase and v_group of the Cherenkov light.
 //
@@ -434,17 +387,17 @@ void IceDwalk::SetVgroupUsage(Int_t flag)
  fVgroup=flag;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetTrackName(TString s)
+void IceDwalkx::SetTrackName(TString s)
 {
 // Set (alternative) name identifier for the produced first guess tracks.
 // This allows unique identification of (newly) produced direct walk tracks
 // in case of re-processing of existing data with different criteria.
-// By default the produced first guess tracks have the name "IceDwalk"
+// By default the produced first guess tracks have the name "IceDwalkx"
 // which is set in the constructor of this class.
  fTrackname=s;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetCharge(Float_t charge)
+void IceDwalkx::SetCharge(Float_t charge)
 {
 // Set user defined charge for the produced first guess tracks.
 // This allows identification of these tracks on color displays.
@@ -453,7 +406,7 @@ void IceDwalk::SetCharge(Float_t charge)
  fCharge=charge;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::Exec(Option_t* opt)
+void IceDwalkx::Exec(Option_t* opt)
 {
 // Implementation of the direct walk track reconstruction.
 
@@ -467,36 +420,32 @@ void IceDwalk::Exec(Option_t* opt)
 
  // Enter the reco parameters as a device in the event
  AliSignal params;
- params.SetNameTitle("IceDwalk","IceDwalk reco parameters");
+ params.SetNameTitle("IceDwalkx","IceDwalkx reco parameters");
  params.SetSlotName("Dmin",1);
  params.SetSlotName("Dtmarg",2);
- params.SetSlotName("Maxdhit",3);
- params.SetSlotName("Tangmax",4);
- params.SetSlotName("Tdistmax",5);
- params.SetSlotName("Tinvol",6);
- params.SetSlotName("Jangmax",7);
- params.SetSlotName("Jiterate",8);
- params.SetSlotName("Jdistmax",9);
- params.SetSlotName("Jinvol",10);
- params.SetSlotName("MaxmodA",11);
- params.SetSlotName("MinmodA",12);
- params.SetSlotName("MaxhitsA",13);
- params.SetSlotName("Vgroup",14);
+ params.SetSlotName("Tangmax",3);
+ params.SetSlotName("Rtangmax",4);
+ params.SetSlotName("Rtdmax",5);
+ params.SetSlotName("Jangmax",6);
+ params.SetSlotName("Rjangmax",7);
+ params.SetSlotName("Rjdmax",8);
+ params.SetSlotName("MaxmodA",9);
+ params.SetSlotName("MinmodA",10);
+ params.SetSlotName("MaxhitsA",11);
+ params.SetSlotName("Vgroup",12);
 
  params.SetSignal(fDmin,1);
  params.SetSignal(fDtmarg,2);
- params.SetSignal(fMaxdhit,3);
- params.SetSignal(fTangmax,4);
- params.SetSignal(fTdistmax,5);
- params.SetSignal(fTinvol,6);
- params.SetSignal(fJangmax,7);
- params.SetSignal(fJiterate,8);
- params.SetSignal(fJdistmax,9);
- params.SetSignal(fJinvol,10);
- params.SetSignal(fMaxmodA,11);
- params.SetSignal(fMinmodA,12);
- params.SetSignal(fMaxhitsA,13);
- params.SetSignal(fVgroup,14);
+ params.SetSignal(fTangmax,3);
+ params.SetSignal(fRtangmax,4);
+ params.SetSignal(fRtdmax,5);
+ params.SetSignal(fJangmax,6);
+ params.SetSignal(fRjangmax,7);
+ params.SetSignal(fRjdmax,8);
+ params.SetSignal(fMaxmodA,9);
+ params.SetSignal(fMinmodA,10);
+ params.SetSignal(fMaxhitsA,11);
+ params.SetSignal(fVgroup,12);
 
  evt->AddDevice(params);
 
@@ -522,7 +471,6 @@ void IceDwalk::Exec(Option_t* opt)
  const Float_t c=0.299792458;         // Light speed in vacuum in meters per ns
  const Float_t npice=1.31768387;      // Phase refractive index (c/v_phase) of ice
  const Float_t ngice=1.35075806;      // Group refractive index (c/v_group) of ice
- const Float_t lambda=33.3;           // Light scattering length in ice
  const Float_t thetac=acos(1./npice); // Cherenkov angle (in radians)
 
  // Angular reduction of complement of thetac due to v_phase and v_group difference
@@ -543,7 +491,7 @@ void IceDwalk::Exec(Option_t* opt)
  Int_t nh1,nh2;
  AliSignal* sx1=0;
  AliSignal* sx2=0;
- Float_t dist=0,dist2=0;
+ Float_t dist=0;
  Float_t t1,t2,dt,t0;
  Float_t dtmax;
  TObjArray hits;
@@ -662,47 +610,23 @@ void IceDwalk::Exec(Option_t* opt)
   } // end of loop over the second OM of the pair
  } // end of loop over first OM of the pair
 
- // Association of hits to the various track elements.
+ // Association of hits to the various track elements
+ // For the time being all track elements will be treated,
+ // but in a later stage one could select only the TE's of a certain
+ // 3 ns margin slot in the TE map to save CPU time.
  Int_t nte=tes.GetEntries();
  Int_t nh=hits.GetEntries();
  Float_t d=0;
  Ali3Vector p;
  Float_t tgeo,tres;
- AliSample levers;      // Statistics of the assoc. hit lever arms
- levers.SetStoreMode(1);// Enable median calculation
- AliSample hprojs;      // Statistics of the assoc. hit position projections on the track w.r.t. r0
- hprojs.SetStoreMode(1);// Enable median calculation
- AliSample times;       // Statistics of the time residuals of the associated hits
- times.SetStoreMode(1); // Enable median calculation
- AliSignal fit;         // Storage of Q value etc... for each track candidate
- fit.AddNamedSlot("QTC");
- fit.AddNamedSlot("SpanL");
- fit.AddNamedSlot("MedianL");
- fit.AddNamedSlot("MeanL");
- fit.AddNamedSlot("SigmaL");
- fit.AddNamedSlot("SpreadL");
- fit.AddNamedSlot("ExpSpreadL");
- fit.AddNamedSlot("Span");
- fit.AddNamedSlot("Median");
- fit.AddNamedSlot("Mean");
- fit.AddNamedSlot("Sigma");
- fit.AddNamedSlot("Spread");
- fit.AddNamedSlot("ExpSpread");
- fit.AddNamedSlot("MedianT");
- fit.AddNamedSlot("MeanT");
- fit.AddNamedSlot("SigmaT");
- fit.AddNamedSlot("SpreadT");
- fit.AddNamedSlot("term1");
- fit.AddNamedSlot("term2");
- fit.AddNamedSlot("term3");
- fit.AddNamedSlot("term4");
- fit.AddNamedSlot("term5");
+ AliSample levers;  // Statistics of the assoc. hit lever arms
+ AliSignal fit;     // Storage of Q value etc... for each track candidate
+ fit.SetSlotName("QTC",1);
+ fit.SetSlotName("SIGMAL",2);
  Float_t qtc=0,qmax=0;
- Int_t nah,nahmax=0; // Number of associated hits for a certain TE
- Float_t lmin,lmax,spanl,medianl,meanl,sigmal,spreadl,expspreadl;
- Float_t hproj,hprojmin,hprojmax,span,median,mean,sigma,spread,expspread;
- Float_t mediant,meant,sigmat,spreadt;
- Float_t term1,term2,term3,term4,term5;
+ Int_t nah;      // Number of associated hits for a certain TE
+ Float_t sigmal; // The mean lever arm of the various associated hits
+ Float_t hproj;  // Projected hit position on the track w.r.t. r0
  for (Int_t jte=0; jte<nte; jte++)
  {
   te=(AliTrack*)tes.At(jte);
@@ -712,8 +636,6 @@ void IceDwalk::Exec(Option_t* opt)
   t0=evt->GetDifference(tt0,"ns");
   p=te->Get3Momentum();
   levers.Reset();
-  hprojs.Reset();
-  times.Reset();
   for (Int_t jh=0; jh<nh; jh++)
   {
    sx1=(AliSignal*)hits.At(jh);
@@ -729,84 +651,22 @@ void IceDwalk::Exec(Option_t* opt)
    t1=sx1->GetSignal("LE",7);
    tres=t1-tgeo;
 
-   if (tres<-30 || tres>300 || d>fMaxdhit*lambda) continue;
+   if (tres<-30 || tres>300 || d>25.*pow(tres+30.,0.25)) continue;
 
    // Associate this hit to the TE
    te->AddSignal(*sx1);
    levers.Enter(fabs(hproj));
-   hprojs.Enter(hproj);
-   times.Enter(tres);
   }
 
   // Determine the Q quality of the various TE's.
   // Good quality TE's will be called track candidates (TC's)
   nah=te->GetNsignals();
-  if (nah>nahmax) nahmax=nah;
-  lmin=levers.GetMinimum(1);
-  lmax=levers.GetMaximum(1);
-  spanl=lmax-lmin;
-  medianl=levers.GetMedian(1);
-  meanl=levers.GetMean(1);
   sigmal=levers.GetSigma(1);
-  spreadl=levers.GetSpread(1);
-  // Expected spread for a flat distribution
-  expspreadl=0;
-  if (spanl>0) expspreadl=(0.5*pow(lmin,2)+0.5*pow(lmax,2)+pow(medianl,2)-medianl*(lmin+lmax))/spanl;
-  hprojmin=hprojs.GetMinimum(1);
-  hprojmax=hprojs.GetMaximum(1);
-  span=hprojmax-hprojmin;
-  median=hprojs.GetMedian(1);
-  mean=hprojs.GetMean(1);
-  sigma=hprojs.GetSigma(1);
-  spread=hprojs.GetSpread(1);
-  // Expected spread for a flat distribution
-  expspread=0;
-  if (span>0) expspread=(0.5*pow(hprojmin,2)+0.5*pow(hprojmax,2)+pow(median,2)-median*(hprojmin+hprojmax))/span;
-  mediant=times.GetMedian(1);
-  meant=times.GetMean(1);
-  sigmat=times.GetSigma(1);
-  spreadt=times.GetSpread(1);
-
-  term1=0;
-  if (span>0) term1=2.*spread/span;
-
-  term2=0;
-  if (spanl>0) term2=2.*spreadl/spanl;
-
-  term3=0;
-  if (spread>0) term3=fabs(spread-expspread)/spread;
-
-  term4=0;
-  if (spreadl>0) term4=fabs(spreadl-expspreadl)/spreadl;
-
-  term5=0;
-  if (spreadt>0) term5=fabs(mediant)/spreadt;
-
-  qtc=float(nah)*(term1+term2)-term3-term4-term5;
-  if (fabs(median)>span/2.) qtc=0; // Require projected hits on both sides of r0
-
+  qtc=0.3*sigmal+7.;
+  if (qtc>nah) qtc=nah;
+  if (sigmal<20) qtc=-1; // Reject TE's with sigmal<20 meter
   fit.SetSignal(qtc,"QTC");
-  fit.SetSignal(spanl,"SpanL");
-  fit.SetSignal(medianl,"MedianL");
-  fit.SetSignal(meanl,"MeanL");
-  fit.SetSignal(sigmal,"SigmaL");
-  fit.SetSignal(spreadl,"SpreadL");
-  fit.SetSignal(expspreadl,"ExpSpreadL");
-  fit.SetSignal(span,"Span");
-  fit.SetSignal(median,"Median");
-  fit.SetSignal(mean,"Mean");
-  fit.SetSignal(sigma,"Sigma");
-  fit.SetSignal(spread,"Spread");
-  fit.SetSignal(expspread,"ExpSpread");
-  fit.SetSignal(mediant,"MedianT");
-  fit.SetSignal(meant,"MeanT");
-  fit.SetSignal(sigmat,"SigmaT");
-  fit.SetSignal(spreadt,"SpreadT");
-  fit.SetSignal(term1,"term1");
-  fit.SetSignal(term2,"term2");
-  fit.SetSignal(term3,"term3");
-  fit.SetSignal(term4,"term4");
-  fit.SetSignal(term5,"term5");
+  fit.SetSignal(sigmal,"SIGMAL");
   te->SetFitDetails(fit);
   if (qtc>qmax) qmax=qtc;
  }
@@ -819,20 +679,16 @@ void IceDwalk::Exec(Option_t* opt)
   nah=te->GetNsignals();
   sx1=(AliSignal*)te->GetFitDetails();
   qtc=-1;
-  if (sx1) qtc=sx1->GetSignal("QTC");
-  if (!nah || qtc<0.8*qmax)
+  sigmal=0;
+  if (sx1)
+  {
+   qtc=sx1->GetSignal("QTC");
+   sigmal=sx1->GetSignal("SIGMAL");
+  }
+  if (qtc<0.7*qmax)
   {
    tes.RemoveAt(jtc);
    delete te;
-  }
-  else // Set Q value as momentum to provide a weight for jet clustering
-  {
-   if (qtc>0)
-   {
-    p=te->Get3Momentum();
-    p*=qtc;
-    te->Set3Momentum(p);
-   }
   }
  } 
  tes.Compress();
@@ -841,8 +697,9 @@ void IceDwalk::Exec(Option_t* opt)
  if (!nte) return;
 
  // Cluster track candidates within a certain opening angle into jets.
- // Also the track should be within a certain maximum distance of the
- // starting track in order to get clustered.
+ // Also the relative direction of the both r0's of the track candidates
+ // should be within a certain opening angle w.r.t. the starting track direction,
+ // unless the distance between the two r0's is below a certain maximum.
  // The latter prevents clustering of (nearly) parallel track candidates
  // crossing the detector a very different locations (e.g. muon bundles).
  // The average r0 and t0 of the constituent tracks will be taken as the
@@ -854,7 +711,6 @@ void IceDwalk::Exec(Option_t* opt)
  AliSample pos;
  AliSample time;
  Float_t vec[3],err[3];
- nahmax=0; // Determine the max. number of associated hits for the jets
  for (Int_t jtc1=0; jtc1<nte; jtc1++)
  {
   te=(AliTrack*)tes.At(jtc1);
@@ -883,23 +739,21 @@ void IceDwalk::Exec(Option_t* opt)
     if (!x2) continue;
     AliTimestamp* ts2=x2->GetTimestamp();
     if (!ts2) continue;
-    if (!fTinvol)
+    dist=x1->GetDistance(x2);
+    dt=ts1->GetDifference(ts2,"ns");
+    if (dist>0)
     {
-     dist=te->GetDistance(te2);
-    }
-    else
-    {
-     dist=te->GetDistance(x2);
-     dist2=te2->GetDistance(x1);
-     if (dist2<dist) dist=dist2;
-    }
-    if (dist<=fTdistmax)
-    {
-     x2->GetPosition(vec,"car");
-     pos.Enter(vec[0],vec[1],vec[2]);
-     t0=evt->GetDifference(ts2,"ns");
-     time.Enter(t0);
-     jx->AddTrack(te2);
+     r12=(*x2)-(*x1);
+     if (dt<0) r12*=-1.;
+     ang=te->GetOpeningAngle(r12,"deg");
+     if (ang<=fRtangmax || dist<fRtdmax)
+     {
+      x2->GetPosition(vec,"car");
+      pos.Enter(vec[0],vec[1],vec[2]);
+      t0=evt->GetDifference(ts2,"ns");
+      time.Enter(t0);
+      jx->AddTrack(te2);
+     }
     }
    }
   }
@@ -919,11 +773,9 @@ void IceDwalk::Exec(Option_t* opt)
   jx->SetReferencePoint(r0);
 
   // Store this jet for further processing if ntracks>1
-  if (jx->GetNtracks() > 1 || fTangmax<=0)
+  if (jx->GetNtracks() > 1 || fTangmax<=0 || fRtangmax<=0)
   {
    jets.Add(jx);
-   nah=jx->GetNsignals();
-   if (nah>nahmax) nahmax=nah;
   }
   else // Only keep single-track jets which have qtc=qmax 
   {
@@ -933,8 +785,6 @@ void IceDwalk::Exec(Option_t* opt)
    if (qtc>=(qmax-1.e-10))
    {
     jets.Add(jx);
-    nah=jx->GetNsignals();
-    if (nah>nahmax) nahmax=nah;
    }
    else
    {
@@ -946,137 +796,84 @@ void IceDwalk::Exec(Option_t* opt)
 
  if (!njets) return;
 
- // The sum of 0.15*(nah-nahmax) and average qtc value per track for this jet
- // will be stored as the jet energy to enable sorting on this value lateron
- Float_t sortval=0;
- Int_t ntk=0;
- for (Int_t ijet=0; ijet<njets; ijet++)
- {
-  AliJet* jx=(AliJet*)jets.At(ijet);
-  if (!jx) continue;
-  nah=jx->GetNsignals();
-  ntk=jx->GetNtracks();
-  sortval=0.15*float(nah-nahmax);
-  if (ntk) sortval+=jx->GetMomentum()/float(ntk);
-  jx->SetScalar(sortval);
- }
-
- // Order the jets w.r.t. decreasing value of the above sortval
- ordered=evt->SortJets(-2,&jets);
+ // Order the jets w.r.t. decreasing number of associated hits
+ ordered=evt->SortJets(-12,&jets);
  TObjArray jets2(*ordered);
 
  // Merge jets within a certain opening to provide the final track(s).
- // Also the jet should be within a certain maximum distance of the
- // starting jet in order to get merged.
- // The latter prevents merging of (nearly) parallel jets/tracks
- // crossing the detector a very different locations (e.g. muon bundles).
- // The average r0 and t0 of the constituent jets will be taken as the
- // final reference point. 
  AliJet* jx1=0;
  AliJet* jx2=0;
- Int_t merged=1;
+ Float_t edist=0;
  if (fJangmax>=0)
  {
-  while (merged)
+  for (Int_t jet1=0; jet1<njets; jet1++)
   {
-   merged=0;
-   nahmax=0;
-   for (Int_t jet1=0; jet1<njets; jet1++)
+   jx1=(AliJet*)jets2.At(jet1);
+   if (!jx1) continue;
+   AliPosition* x1=jx1->GetReferencePoint();
+   if (!x1) continue;
+   AliTimestamp* ts1=x1->GetTimestamp();
+   if (!ts1) continue;
+   pos.Reset();
+   time.Reset();
+   x1->GetPosition(vec,"car");
+   pos.Enter(vec[0],vec[1],vec[2]);
+   t0=evt->GetDifference(ts1,"ns");
+   time.Enter(t0);
+   for (Int_t jet2=jet1+1; jet2<njets; jet2++)
    {
-    jx1=(AliJet*)jets2.At(jet1);
-    if (!jx1) continue;
-    AliPosition* x1=jx1->GetReferencePoint();
-    if (!x1) continue;
-    AliTimestamp* ts1=x1->GetTimestamp();
-    if (!ts1) continue;
-    pos.Reset();
-    time.Reset();
-    x1->GetPosition(vec,"car");
-    pos.Enter(vec[0],vec[1],vec[2]);
-    t0=evt->GetDifference(ts1,"ns");
-    time.Enter(t0);
-    for (Int_t jet2=0; jet2<njets; jet2++)
+    jx2=(AliJet*)jets2.At(jet2);
+    if (!jx2) continue;
+    AliPosition* x2=jx2->GetReferencePoint();
+    if (!x2) continue;
+    AliTimestamp* ts2=x2->GetTimestamp();
+    if (!ts2) continue;
+    ang=jx1->GetOpeningAngle(*jx2,"deg");
+    if (ang<=fJangmax)
     {
-     jx2=(AliJet*)jets2.At(jet2);
-     if (!jx2 || jet2==jet1) continue;
-     AliPosition* x2=jx2->GetReferencePoint();
-     if (!x2) continue;
-     AliTimestamp* ts2=x2->GetTimestamp();
-     if (!ts2) continue;
-     ang=jx1->GetOpeningAngle(*jx2,"deg");
-     if (ang<=fJangmax)
+     dist=x1->GetDistance(x2);
+     edist=x1->GetResultError();
+     dt=ts1->GetDifference(ts2,"ns");
+     r12=(*x2)-(*x1);
+     if (dt<0) r12*=-1.;
+     ang=jx1->GetOpeningAngle(r12,"deg");
+     if (ang<=fRjangmax || dist<=(fRjdmax+edist))
      {
-      if (!fJinvol)
+      x2->GetPosition(vec,"car");
+      pos.Enter(vec[0],vec[1],vec[2]);
+      t0=evt->GetDifference(ts2,"ns");
+      time.Enter(t0);
+      for (Int_t jtk=1; jtk<=jx2->GetNtracks(); jtk++)
       {
-       dist=jx1->GetDistance(jx2);
+       te=jx2->GetTrack(jtk);
+       if (!te) continue;
+       jx1->AddTrack(te);
       }
-      else
-      {
-       dist=jx1->GetDistance(x2);
-       dist2=jx2->GetDistance(x1);
-       if (dist2<dist) dist=dist2;
-      }
-      if (dist<=fJdistmax)
-      {
-       x2->GetPosition(vec,"car");
-       pos.Enter(vec[0],vec[1],vec[2]);
-       t0=evt->GetDifference(ts2,"ns");
-       time.Enter(t0);
-       for (Int_t jtk=1; jtk<=jx2->GetNtracks(); jtk++)
-       {
-        te=jx2->GetTrack(jtk);
-        if (!te) continue;
-        jx1->AddTrack(te);
-       }
-       jets2.RemoveAt(jet2);
-       if (fJiterate) merged=1;
-      }
+      jets2.RemoveAt(jet2);
      }
-    } // End of jet2 loop
-
-    // Set the reference point data for this jet
-    for (Int_t k=1; k<=3; k++)
-    {
-     vec[k-1]=pos.GetMean(k);
-     err[k-1]=pos.GetSigma(k);
     }
-    r0.SetPosition(vec,"car");
-    r0.SetPositionErrors(err,"car");
-    r0.SetTimestamp((AliTimestamp&)*evt);
-    AliTimestamp* jt0=r0.GetTimestamp();
-    t0=time.GetMean(1);
-    jt0->Add(0,0,(int)t0);
-    jx1->SetReferencePoint(r0);
-
-    nah=jx1->GetNsignals();
-    if (nah>nahmax) nahmax=nah;
-   } // End of jet1 loop
-
-   jets2.Compress();
-
-   // The sum of 0.15*(nah-nahmax) and average qtc value per track for this jet
-   // will be stored as the jet energy to enable sorting on this value lateron
-   for (Int_t jjet=0; jjet<njets; jjet++)
-   {
-    AliJet* jx=(AliJet*)jets2.At(jjet);
-    if (!jx) continue;
-    nah=jx->GetNsignals();
-    ntk=jx->GetNtracks();
-    sortval=0.15*float(nah-nahmax);
-    if (ntk) sortval+=jx->GetMomentum()/float(ntk);
-    jx->SetScalar(sortval);
    }
-
-   // Order the jets w.r.t. decreasing value of the above sortval
-   ordered=evt->SortJets(-2,&jets2);
-   njets=ordered->GetEntries();
-   jets2.Clear();
-   for (Int_t icopy=0; icopy<njets; icopy++)
+   // Set the reference point data for this jet
+   for (Int_t k=1; k<=3; k++)
    {
-    jets2.Add(ordered->At(icopy));
+    vec[k-1]=pos.GetMean(k);
+    err[k-1]=pos.GetSigma(k);
    }
-  } // End of iterative while loop
+   r0.SetPosition(vec,"car");
+   r0.SetPositionErrors(err,"car");
+   r0.SetTimestamp((AliTimestamp&)*evt);
+   AliTimestamp* jt0=r0.GetTimestamp();
+   t0=time.GetMean(1);
+   jt0->Add(0,0,(int)t0);
+   jx1->SetReferencePoint(r0);
+  }
+  jets2.Compress();
+  njets=jets2.GetEntries();
  }
+
+ // Order the merged jets w.r.t. decreasing number of associated hits
+ ordered=evt->SortJets(-12,&jets2);
+ TObjArray jets3(*ordered);
 
  // Store every jet as a reconstructed track in the event structure.
  // The jet 3-momentum (normalised to 1) and reference point
@@ -1089,11 +886,11 @@ void IceDwalk::Exec(Option_t* opt)
  // will be used to form a track. This will allow comparison with
  // the standard Sieglinde processing.
  AliTrack t; 
- t.SetNameTitle(fTrackname.Data(),"IceDwalk direct walk track");
+ t.SetNameTitle(fTrackname.Data(),"IceDwalkx direct walk track");
  t.SetCharge(fCharge);
  for (Int_t jet=0; jet<njets; jet++)
  {
-  AliJet* jx=(AliJet*)jets2.At(jet);
+  AliJet* jx=(AliJet*)jets3.At(jet);
   if (!jx) continue;
   AliPosition* ref=jx->GetReferencePoint();
   if (!ref) continue;
@@ -1118,7 +915,7 @@ void IceDwalk::Exec(Option_t* opt)
    }
   }
 
-  // Only take the jet with the highest quality number
+  // Only take the jet with the maximum number of associated hits
   // (i.e. the first jet in the list) when the user had selected
   // this reconstruction mode.
   if (fJangmax<0) break;

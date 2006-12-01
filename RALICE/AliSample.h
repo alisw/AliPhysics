@@ -31,6 +31,7 @@ class AliSample
   Float_t GetCov(Int_t i, Int_t j) const;       // Covariance for i-th and j-th variable
   Float_t GetCor(Int_t i, Int_t j) const;       // Correlation for i-th and j-th variable
   Float_t GetMedian(Int_t i);                   // Provide median for i-th variable
+  Float_t GetSpread(Int_t i);                   // Provide spread w.r.t. the median for i-th variable
   Float_t GetMinimum(Int_t i) const;            // Provide the minimum value for i-th variable
   Float_t GetMaximum(Int_t i) const;            // Provide the maximum value for i-th variable
   void Data();                                  // Stat. info for the complete sample
@@ -52,6 +53,9 @@ class AliSample
   Float_t fSigma[fMaxdim];         // Standard deviation for each variable
   Float_t fCov[fMaxdim][fMaxdim];  // Covariances of pairs of variables
   Float_t fCor[fMaxdim][fMaxdim];  // Correlations of pairs of variables
+  Float_t fMin[fMaxdim];           // Minimum value for each variable
+  Float_t fMax[fMaxdim];           // Maximum value for each variable
+  Int_t fRemove;                   // Flag to indicate that some entry has been removed
   Int_t fStore;                    // Flag to denote storage of all entered data 
   TArrayF* fX;                     // Storage array for the 1st variable (e.g. X)
   TArrayF* fY;                     // Storage array for the 2nd variable (e.g. Y)

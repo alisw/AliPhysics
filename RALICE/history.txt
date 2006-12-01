@@ -707,3 +707,43 @@
                 actual array contents. 
 19-sep-2006 NvE Accuracy problem solved in Ali3Vector::GetOpeningAngle.
 20-sep-2006 NvE AliSample::GetMedian corrected for empty or single value arrays.
+25-sep-2006 NvE AliSample extended with memberfunction GetSpread() and also
+                support for providing minimum and maximum values introduced. 
+12-oct-2006 NvE New memberfunction GetNsignals introduced in AliJet and jet
+                ordering w.r.t. number of signals added in AliVertex.
+19-oct-2006 NvE AliJet::GetNsignals modified to prevent double counting of
+                multiple occurrences of the same signal.
+24-oct-2006 NvE AliJet and AliVertex extended with ordering w.r.t. charge.
+26-oct-2006 NvE Energy/Momentum scale indicator introduced in AliTrack and AliJet
+                and support for chi2 and ndf datamembers removed from AliTrack.
+                The latter can be achieved in a more flexible way via the fit
+                details facility of AliTrack.
+07-nov-2006 NvE Default unit scale changed from cm to meter in AliPosition
+                and support introduced for user selectable unit scale
+                in retrieval of position coordinates, errors and distances. 
+08-nov-2006 NvE User selectable unit scale introduced for retrieval of
+                physics parameters and distances in AliTrack and AliJet.
+                Also the track and jet sorting memberfunctions of AliJet
+                and AliVertex have been updated to use this new feature.
+                Also AliHelix has been updated to use this new feature and the
+                default meter metric scale. 
+09-nov-2006 NvE AliCollider updated to use new standard 1 meter metric units
+                and generator parameters stored in a device named "AliCollider".
+                Also beam/target datamembers removed from AliEvent and storage
+                of these beam/target parameters performed via a device named "Beam". 
+10-nov-2006 NvE Bug fixed in AliHelix.cxx such that the original reference point
+                of the track itself is not modified when the user had specified
+                a different scale. Also GetLastPoint() used in AliHelix to obtain
+                the index of the last point instead of relying on the dimension
+                of the points array as obtained with GetN(). This increases the
+                accuracy of extrapolation (and drawing) resuls since no undefined
+                points are now used anymore.
+01-dec-2006 NvE AliTimestamp::Add() updated to allow specification of large time differences
+                also by giving e.g. only a certain number of seconds instead of explicitly
+                giving the time difference in elapsed days, remaining elapsed seconds etc...
+                This is very convenient by time manipulations based on GPS data.
+                The extension has been realised by just replacing the relevant if()
+                statements by while() loops in determining the remaining fractional counts.
+                Furthermore, some modulo operations have been introduced to prevent
+                integer overflows.
+

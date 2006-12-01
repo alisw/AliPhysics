@@ -57,12 +57,23 @@
 // This allows investigation/tuning of the sensitivity to hits with
 // extreme distance and/or time residual values.
 //
+// A separate treatment of the phase and group velocities is introduced
+// which will provide more accurate time residuals due to the different
+// velocities of the Cerenkov wave front (v_phase) and the actually detected
+// photons (v_group).
+// This distinction between v_phase and v_group can be (de)activated via the
+// memberfunction SetVgroupUsage(). By default the distinction between v_phase
+// and v_group is activated in the constructor of this class.
+//
 // Use the UseTracks memberfunction to specify the first guess tracks
 // to be processed by the minimiser.
 // By default only the first encountered IceDwalk track will be processed.
 //
 // Use the SelectHits memberfunction to specify the hits to be used.
 // By default only the hits associated to the first guess track are used.
+//
+// Information about the actual parameter settings can be found in the event
+// structure itself via the device named "IcePandel".
 //
 // The fit processor printlevel can be selected via the memberfunction SetPrintLevel.
 // By default all printout is suppressed (i.e. level=-2).
@@ -151,6 +162,7 @@ IcePandel::IcePandel(const char* name,const char* title) : TTask(name,title)
  fFirst=1;
  fPrint=-2;
  fSelhits=1;
+ fVgroup=1;
  fEvt=0;
  fUseNames=0;
  fUseNtk=0;
@@ -212,6 +224,19 @@ void IcePandel::Exec(Option_t* opt)
 
  fEvt=(IceEvent*)parent->GetObject("IceEvent");
  if (!fEvt) return;
+
+ // Storage of the used parameters in the IcePandel device
+ AliSignal params;
+ params.SetNameTitle("IcePandel","IcePandel processor parameters");
+ params.SetSlotName("Selhits",1);
+ params.SetSlotName("Penalty",2);
+ params.SetSlotName("Vgroup",3);
+
+ params.SetSignal(fSelhits,1);
+ params.SetSignal(fPenalty,2);
+ params.SetSignal(fVgroup,3);
+
+ fEvt->AddDevice(params);
 
  if (!fUseNames) UseTracks("IceDwalk",1);
 
@@ -293,8 +318,9 @@ void IcePandel::Exec(Option_t* opt)
   fFitstats->SetSlotName("IERERR",5);
   fFitstats->SetSlotName("PsiSum",6);
   fFitstats->SetSlotName("PsiMedian",7);
-  fFitstats->SetSlotName("PsiMean",8);
-  fFitstats->SetSlotName("PsiSigma",9);
+  fFitstats->SetSlotName("PsiSpread",8);
+  fFitstats->SetSlotName("PsiMean",9);
+  fFitstats->SetSlotName("PsiSigma",10);
  }
  Float_t x,y,z,theta,phi,t0;
  Double_t amin,edm,errdef; // Minimisation stats
@@ -393,8 +419,9 @@ void IcePandel::Exec(Option_t* opt)
 
    fFitstats->SetSignal(fPsistats.GetSum(1),6);
    fFitstats->SetSignal(fPsistats.GetMedian(1),7);
-   fFitstats->SetSignal(fPsistats.GetMean(1),8);
-   fFitstats->SetSignal(fPsistats.GetSigma(1),9);
+   fFitstats->SetSignal(fPsistats.GetSpread(1),8);
+   fFitstats->SetSignal(fPsistats.GetMean(1),9);
+   fFitstats->SetSignal(fPsistats.GetSigma(1),10);
 
    iererr=fFitter->ExecuteCommand("HESSE",arglist,0);
    fFitstats->SetSignal(iererr,5);
@@ -519,6 +546,18 @@ void IcePandel::SelectHits(Int_t mode)
  if (mode==0 || mode==1) fSelhits=mode;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IcePandel::SetVgroupUsage(Int_t flag)
+{
+// (De)activate the distinction between v_phase and v_group of the Cherenkov light.
+//
+// flag = 0 : No distinction between v_phase and v_group
+//      = 1 : Separate treatment of v_phase and v_group
+//
+// By default the distinction between v_phase and v_group is activated
+// in the constructor of this class.
+ fVgroup=flag;
+}
+///////////////////////////////////////////////////////////////////////////
 void IcePandel::SetTrackName(TString s)
 {
 // Set (alternative) name identifier for the produced tracks.
@@ -555,15 +594,20 @@ void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
 // This implies psi=-10*log10(L) where L=p(D|HI) being the likelihood of
 // the data D under the hypothesis H and prior information I.
 
- const Float_t c=0.299792;           // Light speed in vacuum in meters per ns
- const Float_t nice=1.35634;         // Refractive index of ice
- const Float_t thetac=acos(1./nice); // Cherenkov angle (in radians)
+ const Float_t c=0.299792458;        // Light speed in vacuum in meters per ns
+ const Float_t npice=1.31768387;     // Phase refractive index (c/v_phase) of ice
+ const Float_t ngice=1.35075806;     // Group refractive index (c/v_group) of ice
+ const Float_t thetac=acos(1./npice);// Cherenkov angle (in radians)
  const Float_t lambda=33.3;          // Light scattering length in ice
  const Float_t labs=98;              // Light absorbtion length in ice
- const Float_t cice=c/nice;          // Light speed in ice in meters per ns
+ const Float_t cice=c/ngice;         // Light speed in ice in meters per ns
  const Float_t tau=557;
  const Double_t rho=((1./tau)+(cice/labs));
  const Double_t pi=acos(-1.);
+
+ // Angular reduction of complement of thetac due to v_phase and v_group difference
+ Float_t alphac=0;
+ if (fVgroup) alphac=atan((1.-npice/ngice)/sqrt(npice*npice-1.));
 
  // Assumed PMT timing jitter in ns
  const Double_t sigma=10;
@@ -602,7 +646,8 @@ void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
  Int_t ier;
  Double_t psihit=0;
  fPsistats.Reset();
- for (Int_t i=1; i<=nhits; i++)
+//@@@ for (Int_t i=1; i<=nhits; i++)
+ for (Int_t i=0; i<nhits; i++)
  {
   AliSignal* sx=(AliSignal*)fHits->At(i);
   if (!sx) continue;
@@ -612,7 +657,7 @@ void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
   d=fTkfit->GetDistance(rhit);
   ksi=d/lambda;
   r12=rhit-r0;
-  dist=p.Dot(r12)+d*tan(thetac);
+  dist=p.Dot(r12)+d/tan(pi/2.-thetac-alphac);
   tgeo=t0+dist/c;
   thit=sx->GetSignal("LE",7);
   tres=thit-tgeo;

@@ -76,5 +76,7 @@
                 Also for TWR data the values stored in the histos are (baseline-amp),
                 so that all pulses appear as positive instead of negative and the
                 resulting histos are baseline corrected.
+25-oct-2006 NvE IceF2k updated to include an IceF2k device into the event structure
+                containing the processor parameters.
 
 

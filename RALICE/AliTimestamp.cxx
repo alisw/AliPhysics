@@ -865,11 +865,20 @@ void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
 // Add (or subtract) a certain time difference to the current timestamp.
 // Subtraction can be achieved by entering negative values as input arguments.
 //
-// The time difference is entered via the following output arguments :
+// The time difference is entered via the following input arguments :
+//
 // d  : elapsed number of days
-// s  : remaining elapsed number of seconds
-// ns : remaining elapsed number of nanoseconds
-// ps : remaining elapsed number of picoseconds
+// s  : (remaining) elapsed number of seconds
+// ns : (remaining) elapsed number of nanoseconds
+// ps : (remaining) elapsed number of picoseconds
+//
+// The specified d, s, ns and ps values will be used in an additive
+// way to determine the time difference.
+// So, specification of d=1, s=100, ns=0, ps=0 will result in the
+// same time difference addition as d=0, s=24*3600+100, ns=0, ps=0.
+// However, by making use of the latter the user should take care
+// of possible integer overflow problems in the input arguments,
+// which obviously will provide incorrect results. 
 //
 // Note : ps=0 is the default value.
 
@@ -880,37 +889,40 @@ void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
  GetMJD(days,secs,nsec);
  Int_t psec=GetPs();
 
- psec+=ps;
- if (psec<0)
+ psec+=ps%1000;
+ nsec+=ps/1000;
+ while (psec<0)
  {
   nsec-=1;
   psec+=1000;
  }
- if (psec>999)
+ while (psec>999)
  {
   nsec+=1;
   psec-=1000;
  }
 
- nsec+=ns;
- if (nsec<0)
+ nsec+=ns%1000000000;
+ secs+=ns/1000000000;
+ while (nsec<0)
  {
   secs-=1;
   nsec+=1000000000;
  }
- if (nsec>999999999)
+ while (nsec>999999999)
  {
   secs+=1;
   nsec-=1000000000;
  }
 
- secs+=s;
- if (secs<0)
+ secs+=s%(24*3600);
+ days+=s/(24*3600);
+ while (secs<0)
  {
   days-=1;
   secs+=24*3600;
  }
- if (secs>=24*3600)
+ while (secs>=24*3600)
  {
   days+=1;
   secs-=24*3600;

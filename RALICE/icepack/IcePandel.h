@@ -27,6 +27,7 @@ class IcePandel : public TTask
   void SetPrintLevel(Int_t level);                     // Set the fitter (Minuit) printlevel
   void UseTracks(TString classname,Int_t n=-1);        // Specify first guess tracks to be used
   void SelectHits(Int_t mode=1);                       // Specify which hits to be used
+  void SetVgroupUsage(Int_t flag); // (De)activate usage of distinct phase and group velocities
   void SetTrackName(TString s);  // Set (alternative) name for the produced tracks
   void SetCharge(Float_t charge);// Set user defined charge for the produced tracks
   void SetPenalty(Float_t val);  // Set psi penalty value in dB for extreme distance and/or time values
@@ -36,6 +37,7 @@ class IcePandel : public TTask
   Int_t fFirst;         // Flag to denote first invokation of the processor
   Int_t fPrint;         // Flag to denote the fitter (Minuit) printlevel
   Int_t fSelhits;       // Flag to denote which hits to be used
+  Int_t fVgroup;        // Flag to indicate usage of distinct phase and group velocities
   IceEvent* fEvt;       // Pointer to the current event structure
   TObjArray* fUseNames; // The first guess classnames to be used 
   TArrayI* fUseNtk;     // The max. numbers of the various first guess tracks to be used
@@ -48,6 +50,6 @@ class IcePandel : public TTask
   AliSignal* fFitstats; // The fit details of the produced fitted track
   AliSample fPsistats;  // Statistics of the Bayesian psi value for the best fitted track
 
- ClassDef(IcePandel,5) // TTask derived class to perform Convoluted Pandel fitting
+ ClassDef(IcePandel,6) // TTask derived class to perform Convoluted Pandel fitting
 };
 #endif

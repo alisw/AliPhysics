@@ -83,7 +83,11 @@
 // trec.SetBeginPoint(begin);
 // trec.SetEndPoint(end);
 // 
-// Note : All quantities are in GeV, GeV/c or GeV/c**2
+// Note : By default all quantities are in GeV, GeV/c or GeV/c**2
+//        but the user can indicate the usage of a different scale
+//        for the energy-momentum units via the SetEscale() memberfunction.
+//        The actual energy-momentum unit scale can be obtained via the
+//        GetEscale() memberfunction.
 //
 //--- Author: Nick van Eijndhoven 10-jul-1997 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -118,6 +122,7 @@ void AliTrack::Init()
  fParent=0;
  fFit=0;
  fTstamp=0;
+ fEscale=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::~AliTrack()
@@ -211,8 +216,7 @@ AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
  if (t.fFit) fFit=t.fFit->Clone();
  if (t.fTstamp) fTstamp=new AliTimestamp(*(t.fTstamp));
  fUserId=t.fUserId;
- fChi2=t.fChi2;
- fNdf=t.fNdf;
+ fEscale=t.fEscale;
  fCode=t.fCode;
  fParent=t.fParent;
 
@@ -255,9 +259,8 @@ AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
 void AliTrack::Reset()
 {
 // Reset all variables to 0 and delete all auto-generated decay tracks.
+// Note : The scale for the energy/momentum units will not be changed.
  fQ=0;
- fChi2=0;
- fNdf=0;
  fUserId=0;
  fCode=0;
  fProb=0;
@@ -385,7 +388,7 @@ void AliTrack::Data(TString f,TString u)
       << " m : " << m << " dm : " << dm << " Charge : " << fQ
       << " p : " << GetMomentum() << endl;
  cout << " Nhypotheses : " << GetNhypotheses() << " Ndecay-tracks : " << GetNdecay()
-      << " Nsignals : " << GetNsignals() << endl;
+      << " Nsignals : " << GetNsignals() << " Energy scale : " << fEscale << " GeV" << endl;
  if (fParent)
  {
   cout << " Parent track Id : " << fParent->GetId() << " Code : " << fParent->GetParticleCode()
@@ -539,27 +542,53 @@ void AliTrack::Dumps(AliTrack* t,Int_t n,TString f,TString u)
  }
 } 
 //////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetMomentum()
+Double_t AliTrack::GetMomentum(Float_t scale)
 {
 // Provide the value of the track 3-momentum.
+// By default the momentum is returned in the units as it was stored in the track
+// structure. However, the user can select a different momentum unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the momentum in MeV/c.
 // The error can be obtained by invoking GetResultError() after
 // invokation of GetMomentum().
+
  Double_t norm=fV.GetNorm();
  fDresult=fV.GetResultError();
+ if (scale>0)
+ {
+  norm*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
  return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3Vector AliTrack::Get3Momentum() const
+Ali3Vector AliTrack::Get3Momentum(Float_t scale) const
 {
-// Provide the track 3-momentum
- return (Ali3Vector)Get3Vector();
+// Provide the track 3-momentum.
+// By default the components of the 3-momentum are returned in the units
+// as they were stored in the track structure.
+// However, the user can select a different momentum unit scale for the
+// components by specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the 3-momentum in MeV/c.
+
+ Ali3Vector p=Get3Vector();
+ if (scale>0) p*=fEscale/scale;
+ return p;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetMass()
+Double_t AliTrack::GetMass(Float_t scale)
 {
 // Provide the particle mass.
+// By default the mass is returned in the units as it was stored in the track
+// structure. However, the user can select a different mass unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c**2, so specification
+// of scale=0.001 will provide the mass in MeV/c**2.
 // The error can be obtained by invoking GetResultError() after
 // invokation of GetMass().
+
  Double_t inv=GetInvariant();
  Double_t dinv=GetResultError();
  Double_t dm=0;
@@ -567,6 +596,11 @@ Double_t AliTrack::GetMass()
  {
  Double_t m=sqrt(inv);
  if (m) dm=dinv/(2.*m);
+ if (scale>0)
+ {
+  m*=fEscale/scale;
+  dm*=fEscale/scale;
+ }
  fDresult=dm;
  return m;
  }
@@ -585,14 +619,24 @@ Float_t AliTrack::GetCharge() const
  return fQ;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetEnergy()
+Double_t AliTrack::GetEnergy(Float_t scale)
 {
 // Provide the particle's energy.
+// By default the energy is returned in the units as it was stored in the track
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the energy in MeV.
 // The error can be obtained by invoking GetResultError() after
 // invokation of GetEnergy().
  Double_t E=GetScalar();
  if (E>0)
  {
+  if (scale>0)
+  {
+   E*=fEscale/scale;
+   fDresult*=fEscale/scale;
+  }
   return E;
  }
  else
@@ -992,25 +1036,41 @@ void AliTrack::SetMass()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetPt()
+Double_t AliTrack::GetPt(Float_t scale)
 {
-// Provide trans. momentum value w.r.t. z-axis.
+// Provide the transverse momentum value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the track
+// structure. However, the user can select a different momentum unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the transverse momentum in MeV/c.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetPt().
  Ali3Vector v;
  v=GetVecTrans();
  Double_t norm=v.GetNorm();
  fDresult=v.GetResultError();
+ if (scale>0)
+ {
+  norm*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetPl()
+Double_t AliTrack::GetPl(Float_t scale)
 {
-// Provide long. momentum value w.r.t. z-axis.
+// Provide the longitudinal momentum value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the track
+// structure. However, the user can select a different momentum unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the longitudinal momentum in MeV/c.
 // Note : the returned value can also be negative.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetPl().
+
  Ali3Vector v;
  v=GetVecLong();
 
@@ -1020,34 +1080,66 @@ Double_t AliTrack::GetPl()
  Double_t a[3];
  v.GetVector(a,"sph");
  if (cos(a[1])<0) pl=-pl;
+ if (scale>0)
+ {
+  pl*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return pl;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetEt()
+Double_t AliTrack::GetEt(Float_t scale)
 {
-// Provide trans. energy value w.r.t. z-axis.
+// Provide transverse energy value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the track
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the transverse energy in MeV.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetEt().
+
  Double_t et=GetScaTrans();
+ if (scale>0)
+ {
+  et*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return et;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetEl()
+Double_t AliTrack::GetEl(Float_t scale)
 {
-// Provide long. energy value w.r.t. z-axis.
+// Provide longitudinal energy value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the track
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the longitudinal energy in MeV.
 // Note : the returned value can also be negative.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetEl().
+
  Double_t el=GetScaLong();
+ if (scale>0)
+ {
+  el*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return el;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetMt()
+Double_t AliTrack::GetMt(Float_t scale)
 {
 // Provide transverse mass value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the track
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the transverse mass in MeV.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetMt().
  Double_t pt=GetPt();
@@ -1060,6 +1152,11 @@ Double_t AliTrack::GetMt()
  if (mt) dmt2=(pow((pt*dpt),2)+pow((m*dm),2))/(mt*mt);
 
  fDresult=sqrt(dmt2);
+ if (scale>0)
+ {
+  mt*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
  return mt;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -1175,42 +1272,34 @@ AliPosition* AliTrack::GetClosestPoint()
  return fClosest;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetChi2(Float_t chi2)
+void AliTrack::SetEscale(Float_t scale)
 {
-// Set the chi-squared value of the track fit.
- if (chi2<0)
+// Indicate the energy/momentum scale as used by the user.
+// The convention is that scale=1 indicates values in units
+// of GeV, GeV/c or GeV/c**2.
+// So, in case one decides to store values in units of MeV, MeV/c or MeV/c**2
+// the scale indicator should be set to scale=0.001.
+//
+// By default scale=1 is set in the constructor.
+
+ if (scale>0)
  {
-  cout << " *AliTrack::SetChi2* Invalid chi2 value : " << chi2 << endl;
+  fEscale=scale;
  }
  else
  {
-  fChi2=chi2;
+  cout << " *AliTrack::SetEscale* Invalid scale value : " << scale << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetNdf(Int_t ndf)
+Float_t AliTrack::GetEscale() const
 {
-// Set the number of degrees of freedom for the track fit.
- if (ndf<0)
- {
-  cout << " *AliTrack::SetNdf* Invalid ndf value : " << ndf << endl;
- }
- else
- {
-  fNdf=ndf;
- }
-}
-///////////////////////////////////////////////////////////////////////////
-Float_t AliTrack::GetChi2() const
-{
-// Provide the chi-squared value of the track fit.
- return fChi2;
-}
-///////////////////////////////////////////////////////////////////////////
-Int_t AliTrack::GetNdf() const
-{
-// Provide the number of degrees of freedom for the track fit.
- return fNdf;
+// Provide the energy/momentum scale as used by the user.
+// The convention is that scale=1 indicates values in units
+// of GeV, GeV/c or GeV/c**2.
+// So, a value of scale=0.001 indicates that energy/momentum values are
+// stored in units of MeV, MeV/c or MeV/c**2.
+ return fEscale;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::SetParticleCode(Int_t code)
@@ -1314,13 +1403,18 @@ void AliTrack::RemoveTimestamp()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetDistance(AliPosition* p)
+Double_t AliTrack::GetDistance(AliPosition* p,Float_t scale)
 {
 // Provide distance of the current track to the position p.
 // The error on the result can be obtained as usual by invoking
 // GetResultError() afterwards. 
 //
-// The distance will be provided in the unit scale of the AliPosition p.
+// By default the distance will be provided in the metric unit scale of
+// the AliPosition p.
+// However, the user can select a different metric unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the distance in cm.
 // As such it is possible to obtain a correctly computed distance even in case
 // the track parameters have a different unit scale.
 // However, it is recommended to work always with one single unit scale.
@@ -1365,20 +1459,30 @@ Double_t AliTrack::GetDistance(AliPosition* p)
  Ali3Vector d=r.Cross(p1);
  dist=d.GetNorm();
  fDresult=d.GetResultError();
+ if (scale>0)
+ {
+  dist*=pscale/scale;
+  fDresult*=pscale/scale;
+ }
  return dist;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTrack::GetDistance(AliTrack* t)
+Double_t AliTrack::GetDistance(AliTrack* t,Float_t scale)
 {
 // Provide distance of the current track to the track t.
 // The error on the result can be obtained as usual by invoking
 // GetResultError() afterwards. 
 //
-// The distance will be provided in the unit scale of the current track.
+// By default the distance will be provided in the metric unit scale of
+// the current track.
+// This implies that the results of t1.GetDistance(t2) and t2.GetDistance(t1)
+// may be numerically different in case t1 and t2 have different metric units.
+// However, the user can specify a required metric unit scale by specification
+// of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the distance in cm.
 // As such it is possible to obtain a correctly computed distance even in case
 // the track parameters have a different unit scale.
-// This implies that in such cases the results of t1.GetDistance(t2) and
-// t2.GetDistance(t1) will be numerically different.
 // However, it is recommended to work always with one single unit scale.
 //
 // Note : In case of incomplete information, a distance value of -1 is
@@ -1411,6 +1515,9 @@ Double_t AliTrack::GetDistance(AliTrack* t)
  // The vector normal to both track directions
  Ali3Vector n=p1.Cross(p2);
 
+ Float_t scalex=rx->GetUnitScale();
+ Float_t scaley=ry->GetUnitScale();
+
  if (n.GetNorm() > 1.e-10)
  {
   // Normalise n to a unit vector
@@ -1425,9 +1532,7 @@ Double_t AliTrack::GetDistance(AliTrack* t)
   Ali3Vector r1=(Ali3Vector)(*rx);
   Ali3Vector r2=(Ali3Vector)(*ry);
   // Correct components of r2 in case of different unit scales
-  Float_t scale=rx->GetUnitScale();
-  Float_t tscale=ry->GetUnitScale();
-  if ((tscale/scale > 1.1) || (scale/tscale > 1.1)) r2=r2*(tscale/scale);
+  if ((scaley/scalex > 1.1) || (scalex/scaley > 1.1)) r2=r2*(scaley/scalex);
   Ali3Vector r=r1-r2;
   dist=fabs(r.Dot(n));
   fDresult=r.GetResultError();
@@ -1436,6 +1541,12 @@ Double_t AliTrack::GetDistance(AliTrack* t)
  {
   dist=t->GetDistance(rx);
   fDresult=t->GetResultError();
+ }
+
+ if (scale>0)
+ {
+  dist*=scalex/scale;
+  fDresult*=scalex/scale;
  }
  return dist;
 }

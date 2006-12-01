@@ -1,5 +1,5 @@
-#ifndef ALICOLLIDER_H
-#define ALICOLLIDER_H
+#ifndef ALICOLLIDER2_H
+#define ALICOLLIDER2_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -22,8 +22,8 @@ class AliCollider : public TPythia6
   void SetOutputFile(TString name);                     // Initialise the ROOT output data file
   void SetVertexMode(Int_t mode);                       // Select mode for (sec.) vertex structure creation
   Int_t GetVertexMode() const;                          // Provide vertex structure creation mode
-  void SetResolution(Double_t res);                     // Set resolution (in cm) for resolving (sec.) vertices
-  Double_t GetResolution() const;                       // Provide (sec.) vertex resolving resolution (in cm)
+  void SetResolution(Double_t res);                     // Set resolution (in meter) for resolving (sec.) vertices
+  Double_t GetResolution() const;                       // Provide (sec.) vertex resolving resolution (in meter)
   void SetRunNumber(Int_t run);                         // Set user defined run number
   Int_t GetRunNumber() const;                           // Provide the user defined run number
   void SetPrintFreq(Int_t n);                           // Set print frequency for every 'n' events
@@ -45,7 +45,7 @@ class AliCollider : public TPythia6
 
  protected:
   Int_t fVertexmode;    // The vertex structure creation mode
-  Double_t fResolution; // The resolution (in cm) for resolving (sec.) vertices 
+  Double_t fResolution; // The resolution (in meter) for resolving (sec.) vertices 
   Int_t fRunnum;        // The user defined run number
   Int_t fEventnum;      // The automatically updated event number
   Int_t fPrintfreq;     // The user selected print frequency

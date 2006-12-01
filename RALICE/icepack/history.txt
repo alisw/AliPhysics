@@ -79,4 +79,19 @@
                 to allow comparison with Sieglinde (which only uses the first OM hit).
                 Also IceDwalk now introduces a device into the event named "IceDwalk"
                 which contains the values of all the used reconstruction parameters.
+25-oct-2006 NvE Spread of Psi median included in track fit statistics of IceChi2
+                and IcePandel.
+                Processing parameters of IceCalibrate, IceXtalk, IceCleanHits, IceChi2
+                and IcePandel included as the corresponding devices in the event structure. 
+15-nov-2006 NvE Separate treatment of v_phase and v_group introduced in IceDwalk, IceChi2
+                and IcePandel to improve time residuals (thanks to George Japaridze).
+                Also IceLinefit extended for specification of maximum number of hits per OM
+                and automatic introduction of a device into the event named "IceLinefit"
+                which contains the values of all the used reconstruction parameters and
+                the beta value (v/c) of the reconstructed track.
+16-nov-2006 NvE Class IceDwalk renamed to IceDwalkx to provide a Sieglinde-like direct
+                walk-II approach. The remaining class IceDwalk will provide a more
+                sophisticated approach with more physics driven selection criteria.
+23-nov-2006 NvE Improved version of IceDwalk installed. Note that the old algorithm is
+                still available as IceDwalkx.
                  

@@ -388,6 +388,13 @@ void IceF2k::Exec(Option_t* opt)
  fPdg->AddParticle("z_primary","z_primary",0,1,0,0,"none",10003000,0,0);
  fPdg->AddParticle("a_primary","a_primary",0,1,0,0,"none",10003500,0,0);
 
+ // Storage of the used parameters in the IceF2k device
+ AliSignal params;
+ params.SetNameTitle("IceF2k","IceF2k processor parameters");
+ params.SetSlotName("Toffset",1);
+ params.SetSlotName("Mctoffset",2);
+ params.SetSlotName("Mctracks",3);
+
  // Initialise the job working environment
  SetMainObject(evt);
  if (fOutfile)
@@ -475,6 +482,12 @@ void IceF2k::Exec(Option_t* opt)
    PutRecoTracks();
 
    PutHits();
+
+   // Enter the IceF2k processor parameters into the event structure 
+   params.SetSignal(fToffset,1);
+   params.SetSignal(fMctoffset,2);
+   params.SetSignal(fMctracks,3);
+   evt->AddDevice(params);
 
    // Invoke all available sub-tasks (if any)
    CleanTasks();

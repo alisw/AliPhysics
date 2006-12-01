@@ -22,15 +22,17 @@ class IceLinefit : public TTask
   virtual void Exec(Option_t* opt);                     // Linefit reconstruction
   void SetMaxModA(Int_t nmax);   // Set max. number of good fired Amanda modules for events to be processed
   void SetMinModA(Int_t nmin);   // Set min. number of good fired Amanda modules for events to be processed
+  void SetMaxHitsA(Int_t nmax);  // Set max. number of good hits per Amanda module to be processed
   void SetTrackName(TString s);  // Set (alternative) name for the produced first guess tracks
   void SetCharge(Float_t charge);// Set user defined charge for the produced first guess tracks
 
  protected :
   Int_t fMaxmodA;    // The max. number of good fired Amanda modules for events to be processed
   Int_t fMinmodA;    // The min. number of good fired Amanda modules for events to be processed
+  Int_t fMaxhitsA;   // The maximum number of good hits per Amanda module to be processed
   TString fTrackname;// The name identifier for the produced first guess tracks
   Float_t fCharge;   // User defined charge of the produced first guess tracks
 
- ClassDef(IceLinefit,2) // TTask derived class to perform linefit reconstruction
+ ClassDef(IceLinefit,3) // TTask derived class to perform linefit reconstruction
 };
 #endif

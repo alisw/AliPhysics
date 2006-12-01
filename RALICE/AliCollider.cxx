@@ -42,7 +42,7 @@
 //
 //  gen->SetOutputFile("test.root");
 //  gen->SetVertexMode(3);    
-//  gen->SetResolution(1e-4); // 1 micron vertex resolution
+//  gen->SetResolution(1e-6); // 1 micron vertex resolution
 //
 //  gen->SetRunNumber(1);
 //
@@ -133,7 +133,7 @@ AliCollider::AliCollider() : TPythia6()
 // By default these processes are not included.
 
  fVertexmode=0;    // No vertex structure creation
- fResolution=1e-5; // Standard resolution is 0.1 micron
+ fResolution=1e-7; // Standard resolution is 0.1 micron
  fRunnum=0;
  fEventnum=0;
  fPrintfreq=1;
@@ -280,7 +280,7 @@ Int_t AliCollider::GetVertexMode() const
 ///////////////////////////////////////////////////////////////////////////
 void AliCollider::SetResolution(Double_t res)
 {
-// Set the resolution (in cm) for resolving (sec.) vertices.
+// Set the resolution (in meter) for resolving (sec.) vertices.
 // By default this resolution is set to 0.1 micron.
 // Note : In case no vertex creation has been selected, the value of
 //        the resolution is totally irrelevant.
@@ -289,7 +289,7 @@ void AliCollider::SetResolution(Double_t res)
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliCollider::GetResolution() const
 {
-// Provide the current resolution (in cm) for resolving (sec.) vertices.
+// Provide the current resolution (in meter) for resolving (sec.) vertices.
  return fResolution;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -362,7 +362,7 @@ void AliCollider::Init(char* frame,char* beam,char* target,Float_t win)
 // more suitable running conditions for soft processes in view of
 // astrophysical processes.
 // The optimisations consist of : 
-// * Usage of real photons for photon beams of targets
+// * Usage of real photons for photon beams or targets
 // * Minimum CMS energy of 3 GeV for the event
 // * Activation of the default K factor values
 //   with separate settings for ordinary and color annihilation graphs.
@@ -703,8 +703,24 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
    select=IsSelected();
    if (select) fSelect=1;
 
-   if (first) // Store projectile and target information in the event structure
+   if (first) // Store generator parameter information in the event structure
    {
+    // Enter generator parameters as a device in the event
+    AliSignal params;
+    params.SetNameTitle("AliCollider","AliCollider generator parameters");
+    params.SetSlotName("Medit",1);
+    params.SetSlotName("Vertexmode",2);
+    params.SetSlotName("Resolution",3);
+    params.SetSlotName("Userctrl",4);
+    params.SetSlotName("Elastic",5);
+
+    params.SetSignal(medit,1);
+    params.SetSignal(fVertexmode,2);
+    params.SetSignal(fResolution,3);
+    params.SetSignal(fUserctrl,4);
+    params.SetSignal(fElastic,5);
+
+    // Store projectile and target information in the event structure
     if (fNucl)
     {
      v[0]=GetP(1,1);
@@ -719,6 +735,22 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
      ptarg.SetVector(v,"car");
      pnucl=ptarg.GetNorm();
      fEvent->SetTarget(fAtarg,fZtarg,pnucl);
+
+     params.AddNamedSlot("specmode");
+     params.AddNamedSlot("Specpmin");
+     params.AddNamedSlot("npart");
+     params.AddNamedSlot("ncolpp");
+     params.AddNamedSlot("ncolnp");
+     params.AddNamedSlot("ncolpn");
+     params.AddNamedSlot("ncolnn");
+
+     params.SetSignal(specmode,"specmode");
+     params.SetSignal(fSpecpmin,"Specpmin");
+     params.SetSignal(npt,"npart");
+     params.SetSignal(ncols[0],"ncolpp");
+     params.SetSignal(ncols[1],"ncolnp");
+     params.SetSignal(ncols[2],"ncolpn");
+     params.SetSignal(ncols[3],"ncolnn");
     }
     else
     {
@@ -735,6 +767,9 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
      kf=GetK(2,2);
      fEvent->SetTarget(0,0,pnucl,kf);
     }
+
+    fEvent->AddDevice(params);
+
     first=0;
    }
 
@@ -760,10 +795,10 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
     v[2]=GetP(jpart,3);
     p.SetVector(v,"car");
 
-    // Production location in cm.
-    v[0]=GetV(jpart,1)/10;
-    v[1]=GetV(jpart,2)/10;
-    v[2]=GetV(jpart,3)/10;
+    // Production location in meter.
+    v[0]=GetV(jpart,1)/1000.;
+    v[1]=GetV(jpart,2)/1000.;
+    v[2]=GetV(jpart,3)/1000.;
     r.SetPosition(v,"car");
 
     ntk++;

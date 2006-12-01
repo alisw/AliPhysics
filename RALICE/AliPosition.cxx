@@ -48,8 +48,11 @@
 // via the SetUnitScale() memberfunction.
 // This enables standardised expressions using numerical values of
 // physical constants by means of the GetUnitScale() memberfunction.
-// By default the unit scale is set to cm, corresponding to invokation
-// of SetUnitScale(0.01).
+// By default the unit scale is set to meter, corresponding to invokation
+// of SetUnitScale(1).
+// The user can specify a certain required metric unit scale in retreiving
+// position components and/or distances.
+// Please refer to the corresponding member functions for further details.
 //   
 //
 // Example :
@@ -77,7 +80,7 @@ AliPosition::AliPosition()
 {
 // Creation of an AliPosition object and initialisation of parameters.
 // The unit scale for position coordinates is initialised to cm.
- fScale=0.01;
+ fScale=1;
  fTstamp=0;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -113,7 +116,7 @@ void AliPosition::SetPosition(Double_t* r,TString f,TString u)
  SetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPosition(Double_t* r,TString f,TString u) const
+void AliPosition::GetPosition(Double_t* r,TString f,TString u,Float_t scale) const
 {
 // Provide position according to reference frame f
 //
@@ -123,8 +126,17 @@ void AliPosition::GetPosition(Double_t* r,TString f,TString u) const
 //     "deg" : angles provided in degrees
 //
 // The default is u="rad".
+//
+// By default the coordinates will be provided in the metric unit scale as
+// stored in the AliPosition object.
+// However, the user can select a different metric unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the position coordinates in cm.
 
- GetVector(r,f,u);
+ Ali3Vector v=(Ali3Vector)(*this);
+ if (scale>0) v*=fScale/scale;
+ v.GetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPosition::SetPosition(Float_t* r,TString f,TString u)
@@ -141,7 +153,7 @@ void AliPosition::SetPosition(Float_t* r,TString f,TString u)
  SetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPosition(Float_t* r,TString f,TString u) const
+void AliPosition::GetPosition(Float_t* r,TString f,TString u,Float_t scale) const
 {
 // Provide position according to reference frame f
 //
@@ -151,8 +163,17 @@ void AliPosition::GetPosition(Float_t* r,TString f,TString u) const
 //     "deg" : angles provided in degrees
 //
 // The default is u="rad".
+//
+// By default the coordinates will be provided in the metric unit scale as
+// stored in the AliPosition object.
+// However, the user can select a different metric unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the position coordinates in cm.
 
- GetVector(r,f,u);
+ Ali3Vector v=(Ali3Vector)(*this);
+ if (scale>0) v*=fScale/scale;
+ v.GetVector(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPosition& AliPosition::GetPosition()
@@ -185,7 +206,7 @@ void AliPosition::SetPositionErrors(Double_t* r,TString f,TString u)
  SetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPositionErrors(Double_t* r,TString f,TString u) const
+void AliPosition::GetPositionErrors(Double_t* r,TString f,TString u,Float_t scale) const
 {
 // Provide position errors according to reference frame f
 //
@@ -195,8 +216,17 @@ void AliPosition::GetPositionErrors(Double_t* r,TString f,TString u) const
 //     "deg" : angles provided in degrees
 //
 // The default is u="rad".
+//
+// By default the coordinate errors will be provided in the metric unit scale as
+// stored in the AliPosition object.
+// However, the user can select a different metric unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the position coordinate errors in cm.
 
- GetErrors(r,f,u);
+ Ali3Vector v=(Ali3Vector)(*this);
+ if (scale>0) v*=fScale/scale;
+ v.GetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPosition::SetPositionErrors(Float_t* r,TString f,TString u)
@@ -213,7 +243,7 @@ void AliPosition::SetPositionErrors(Float_t* r,TString f,TString u)
  SetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPosition::GetPositionErrors(Float_t* r,TString f,TString u) const
+void AliPosition::GetPositionErrors(Float_t* r,TString f,TString u,Float_t scale) const
 {
 // Provide position errors according to reference frame f
 //
@@ -223,8 +253,17 @@ void AliPosition::GetPositionErrors(Float_t* r,TString f,TString u) const
 //     "deg" : angles provided in degrees
 //
 // The default is u="rad".
+//
+// By default the coordinate errors will be provided in the metric unit scale as
+// stored in the AliPosition object.
+// However, the user can select a different metric unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the position coordinate errors in cm.
 
- GetErrors(r,f,u);
+ Ali3Vector v=(Ali3Vector)(*this);
+ if (scale>0) v*=fScale/scale;
+ v.GetErrors(r,f,u);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPosition::ResetPosition()
@@ -235,18 +274,22 @@ void AliPosition::ResetPosition()
  SetErrors(r,"car");
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliPosition::GetDistance(AliPosition& p)
+Double_t AliPosition::GetDistance(AliPosition& p,Float_t scale)
 {
 // Provide distance of the current AliPosition to position p.
 // The error on the result can be obtained as usual by invoking
 // GetResultError() afterwards. 
 //
-// In the case of two positions with different unit scales, the distance
-// will be provided in the unit scale of the current AliPosition.
-// This implies that in such cases the results of r.GetDistance(q) and
-// q.GetDistance(r) will be numerically different.
-// As such it is possible to obtain a correctly computed distance between
-// positions which have different unit scales.
+// By default the distance will be provided in the metric unit scale of
+// the current AliPosition.
+// This implies that the results of r1.GetDistance(r2) and r2.GetDistance(r1)
+// may be numerically different in case r1 and r2 have different metric units.
+// However, the user can specify a required metric unit scale by specification
+// of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the distance in cm.
+// As such it is possible to obtain a correctly computed distance even in case
+// the position coordinates have a different unit scale.
 // However, it is recommended to work always with one single unit scale.
 //
  Ali3Vector d=(Ali3Vector)p;
@@ -256,6 +299,12 @@ Double_t AliPosition::GetDistance(AliPosition& p)
  d=d-q;
  Double_t dist=d.GetNorm();
  fDresult=d.GetResultError();
+
+ if (scale>0)
+ {
+  dist*=fScale/scale;
+  fDresult*=fScale/scale;
+ }
  return dist;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -264,7 +313,7 @@ void AliPosition::SetUnitScale(Float_t s)
 // Set the unit scale for the position coordinates.
 // The scale is normalised w.r.t. the meter, so setting the unit scale
 // to 0.01 means that all position coordinates are in cm.
-// By default the unit scale is set to cm in the AliPosition constructor.
+// By default the unit scale is set to meter in the AliPosition constructor.
 // It is recommended to use one single unit scale throughout a complete
 // analysis and/or simulation project.
 //
@@ -325,6 +374,7 @@ void AliPosition::Data(TString f,TString u) const
 // The defaults are f="car" and u="rad".
 
  Ali3Vector::Data(f,u);
+ cout << "   Metric unit : " << fScale << " meter" << endl;
  if (fTstamp) fTstamp->Date(1);
 } 
 ///////////////////////////////////////////////////////////////////////////

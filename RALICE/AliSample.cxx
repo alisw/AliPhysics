@@ -56,6 +56,7 @@ AliSample::AliSample()
  fNames[1]='Y';
  fNames[2]='Z';
  fN=0;
+ fRemove=0;
  fStore=0;
  fX=0;
  fY=0;
@@ -94,12 +95,15 @@ void AliSample::Reset()
 // Resetting the statistics values for a certain Sample object
 // Dimension and storage flag are NOT changed
  fN=0;
+ fRemove=0;
  for (Int_t i=0; i<fDim; i++)
  {
   fSum[i]=0.;
   fMean[i]=0.;
   fVar[i]=0.;
   fSigma[i]=0.;
+  fMin[i]=0;
+  fMax[i]=0;
   for (Int_t j=0; j<fDim; j++)
   {
    fSum2[i][j]=0.;
@@ -135,6 +139,17 @@ void AliSample::Enter(Float_t x)
   fSum[0]+=x;
   fSum2[0][0]+=x*x;
 
+  if (fN==1)
+  {
+   fMin[0]=x;
+   fMax[0]=x;
+  }
+  else
+  {
+   if (x<fMin[0]) fMin[0]=x;
+   if (x>fMax[0]) fMax[0]=x;
+  }
+
   // Store all entered data when storage mode has been selected 
   if (fStore)
   {
@@ -160,6 +175,7 @@ void AliSample::Remove(Float_t x)
  }
  else
  {
+  fRemove=1;
   fN-=1;
   fSum[0]-=x;
   fSum2[0][0]-=x*x;
@@ -211,6 +227,21 @@ void AliSample::Enter(Float_t x,Float_t y)
   fSum2[1][0]+=y*x;
   fSum2[1][1]+=y*y;
 
+  if (fN==1)
+  {
+   fMin[0]=x;
+   fMax[0]=x;
+   fMin[1]=y;
+   fMax[1]=y;
+  }
+  else
+  {
+   if (x<fMin[0]) fMin[0]=x;
+   if (x>fMax[0]) fMax[0]=x;
+   if (y<fMin[1]) fMin[1]=y;
+   if (y>fMax[1]) fMax[1]=y;
+  }
+
   // Store all entered data when storage mode has been selected 
   if (fStore)
   {
@@ -239,6 +270,7 @@ void AliSample::Remove(Float_t x,Float_t y)
  }
  else
  {
+  fRemove=1;
   fN-=1;
   fSum[0]-=x;
   fSum[1]-=y;
@@ -304,6 +336,25 @@ void AliSample::Enter(Float_t x,Float_t y,Float_t z)
   fSum2[2][1]+=z*y;
   fSum2[2][2]+=z*z;
 
+  if (fN==1)
+  {
+   fMin[0]=x;
+   fMax[0]=x;
+   fMin[1]=y;
+   fMax[1]=y;
+   fMin[2]=z;
+   fMax[2]=z;
+  }
+  else
+  {
+   if (x<fMin[0]) fMin[0]=x;
+   if (x>fMax[0]) fMax[0]=x;
+   if (y<fMin[1]) fMin[1]=y;
+   if (y>fMax[1]) fMax[1]=y;
+   if (z<fMin[2]) fMin[2]=z;
+   if (z>fMax[2]) fMax[2]=z;
+  }
+
   // Store all entered data when storage mode has been selected 
   if (fStore)
   {
@@ -335,6 +386,7 @@ void AliSample::Remove(Float_t x,Float_t y,Float_t z)
  }
  else
  {
+  fRemove=1;
   fN-=1;
   fSum[0]-=x;
   fSum[1]-=y;
@@ -684,16 +736,52 @@ Float_t AliSample::GetMedian(Int_t i)
  return median;
 }
 ///////////////////////////////////////////////////////////////////////////
+Float_t AliSample::GetSpread(Int_t i)
+{
+// Provide the spread w.r.t. the median of a certain variable.
+// The spread is defined as the average of |median-val(i)|.
+// For this functionality the storage mode has to be activated.
+
+ if (fDim < i)
+ {
+  cout << " *AliSample::GetSpread* Error : Dimension less than " << i << endl;
+  return 0;
+ }
+
+ if (!fStore)
+ {
+  cout << " *AliSample::GetSpread* Error : Storage of data entries was not activated." << endl;
+  return 0;
+ }
+
+ if (fN<=1) return 0;
+
+ Float_t median=GetMedian(i);
+
+ Float_t spread=0;
+ for (Int_t j=0; j<fN; j++)
+ {
+  spread+=fabs(median-(fArr->At(j)));
+ }
+
+ spread=spread/float(fN);
+
+ return spread;
+}
+///////////////////////////////////////////////////////////////////////////
 Float_t AliSample::GetMinimum(Int_t i) const
 {
 // Provide the minimum value of a certain variable.
-// For this functionality the storage mode has to be activated.
+// In case entries have been removed from the sample, a correct value can
+// only be obtained if the storage mode has been activated.
 
  if (fDim < i)
  {
   cout << " *AliSample::GetMinimum* Error : Dimension less than " << i << endl;
   return 0;
  }
+
+ if (!fRemove) return fMin[i-1];
 
  if (!fStore)
  {
@@ -722,13 +810,16 @@ Float_t AliSample::GetMinimum(Int_t i) const
 Float_t AliSample::GetMaximum(Int_t i) const
 {
 // Provide the maxmum value of a certain variable.
-// For this functionality the storage mode has to be activated.
+// In case entries have been removed from the sample, a correct value can
+// only be obtained if the storage mode has been activated.
 
  if (fDim < i)
  {
   cout << " *AliSample::GetMaximum* Error : Dimension less than " << i << endl;
   return 0;
  }
+
+ if (!fRemove) return fMax[i-1];
 
  if (!fStore)
  {

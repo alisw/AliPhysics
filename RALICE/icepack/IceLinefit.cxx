@@ -27,6 +27,15 @@
 // and/or minimum number of good Amanda OMs firing.
 // By default the minimum and maximum are set to 0 and 999, respectively,
 // in the constructor, which implies no multiplicity selection. 
+// The maximum number of good hits per Amanda OM to be used for the reconstruction
+// can be specified via the memberfunction SetMaxHitsA().
+// By default all good hits of each Amanda OM are used but the user may want
+// to restrict this number to the first n hits of each Amanda OM to account
+// for possible noise and/or afterpulse signals that are not recognised by the
+// hit cleaning procedure.
+//
+// Information about the actual parameter settings can be found in the event
+// structure itself via the device named "IceLinefit".
 //
 // The reconstructed track is stored in the IceEvent structure with as
 // default "IceLinefit" as the name of the track.
@@ -44,7 +53,9 @@
 // of the memberfunction SetCharge().
 // This facility may be used to distinguish tracks produced by the
 // various reconstruction algorithms in a (3D) colour display
-// (see the class AliHelix for further details).  
+// (see the class AliHelix for further details).
+// The value of beta=v/c for the reconstructed velocity is available
+// from the fitdetails as stored for the reconstructed track. 
 //
 // For further details the user is referred to NIM A524 (2004) 169.
 //
@@ -66,6 +77,7 @@ IceLinefit::IceLinefit(const char* name,const char* title) : TTask(name,title)
 // Default constructor.
  fMaxmodA=999;
  fMinmodA=0;
+ fMaxhitsA=0;
  fTrackname="IceLinefit";
  fCharge=0;
 }
@@ -100,6 +112,22 @@ void IceLinefit::SetMinModA(Int_t nmin)
  fMinmodA=nmin;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IceLinefit::SetMaxHitsA(Int_t nmax)
+{
+// Set the maximum number of good hits per Amanda module to be processed.
+//
+// Special values :
+// nmax = 0 : No maximum limit set; all good hits will be processed
+//      < 0 : No hits will be processed
+//
+// In case the user selects a maximum number of good hits per module, all the
+// hits of each module will be ordered w.r.t. increasing hit time (LE).
+// This allows selection of processing e.g. only the first good hits etc...
+// By default the maximum number of hits per Amanda modules is set to 0 in the ctor,
+// which implies just processing all good hits without any maximum limit.
+ fMaxhitsA=nmax;
+}
+///////////////////////////////////////////////////////////////////////////
 void IceLinefit::SetTrackName(TString s)
 {
 // Set (alternative) name identifier for the produced first guess tracks.
@@ -131,6 +159,21 @@ void IceLinefit::Exec(Option_t* opt)
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
 
+ // Enter the reco parameters as a device in the event
+ AliSignal params;
+ params.SetNameTitle("IceLinefit","IceLinefit reco parameters");
+ params.SetSlotName("MaxmodA",1);
+ params.SetSlotName("MinmodA",2);
+ params.SetSlotName("MaxhitsA",3);
+
+ params.SetSignal(fMaxmodA,1);
+ params.SetSignal(fMinmodA,2);
+ params.SetSignal(fMaxhitsA,3);
+
+ evt->AddDevice(params);
+
+ if (fMaxhitsA<0) return;
+
  // Fetch all fired Amanda OMs for this event
  TObjArray* aoms=evt->GetDevices("IceAOM");
  Int_t naoms=aoms->GetEntries();
@@ -147,12 +190,16 @@ void IceLinefit::Exec(Option_t* opt)
  } 
  if (ngood<fMinmodA || ngood>fMaxmodA) return;
 
+ const Float_t c=0.299792; // Light speed in vacuum in meters per ns
+
  AliSignal* sx=0;
  Ali3Vector rom,sumr;
  Ali3Vector rt,sumrt;
  Float_t thit;
  Float_t sumt=0,sumt2=0;
  TObjArray hits;
+ TObjArray* ordered;
+ Int_t nh;
 
  // Loop over all OMs and hits to determine the linefit parameters.
  // Also all the used hits are recorded for association with the track.
@@ -162,10 +209,21 @@ void IceLinefit::Exec(Option_t* opt)
   if (!omx) continue;
   if (omx->GetDeadValue("LE")) continue;
   rom=(Ali3Vector)omx->GetPosition();
-  // Use all the good hits of this OM
+  // Use the specified good hits of this OM
+  ordered=0;
+  if (fMaxhitsA>0 && omx->GetNhits()>fMaxhitsA) ordered=omx->SortHits("LE",1,0,7);
+  nh=0;
   for (Int_t ih=1; ih<=omx->GetNhits(); ih++)
   {
-   sx=omx->GetHit(ih);
+   if (ordered)
+   {
+    if (nh>=fMaxhitsA) break;
+    sx=(AliSignal*)ordered->At(ih-1);
+   }
+   else
+   {
+    sx=omx->GetHit(ih);
+   }
    if (!sx) continue;
    if (sx->GetDeadValue("ADC") || sx->GetDeadValue("LE") || sx->GetDeadValue("TOT")) continue;
 
@@ -178,6 +236,7 @@ void IceLinefit::Exec(Option_t* opt)
 
    // Record this hit for association with the track
    hits.Add(sx);
+   nh++;
   }
  }
 
@@ -195,6 +254,12 @@ void IceLinefit::Exec(Option_t* opt)
  v=sumrt-temp;
  Float_t dum=sumt2-(sumt*sumt);
  if (dum) v/=dum;
+
+ Float_t beta=v.GetNorm()/c;
+ AliSignal fitstats;
+ fitstats.SetNameTitle("Fitstats","Fit stats for IceLinefit");
+ fitstats.SetSlotName("Beta",1);
+ fitstats.SetSignal(beta,1);
 
  Ali3Vector r;
  temp=v*sumt;
@@ -224,6 +289,7 @@ void IceLinefit::Exec(Option_t* opt)
  trk->Set3Momentum(p);
  trk->SetReferencePoint(r0);
  trk->SetTimestamp(*t0);
+ trk->SetFitDetails(fitstats);
 
  // Link the used hits to the track (and vice versa)
  for (Int_t i=0; i<nused; i++)

@@ -33,11 +33,11 @@ class AliTrack : public TNamed,public Ali4Vector
   virtual void Data(TString f="car",TString u="rad"); // Print track information for frame f and ang units u
   virtual void List(TString f="car",TString u="rad"); // Track and decay level 1 info for frame f and ang units u
   virtual void ListAll(TString f="car",TString u="rad");// Track and all decay level info for frame f and ang units u
-  Ali3Vector Get3Momentum() const;        // Provide track 3-momentum
-  Double_t GetMomentum();                 // Provide value of track 3-momentum
-  Double_t GetMass();                     // Provide particle mass
+  Ali3Vector Get3Momentum(Float_t scale=-1) const; // Provide track 3-momentum
+  Double_t GetMomentum(Float_t scale=-1); // Provide value of track 3-momentum
+  Double_t GetMass(Float_t scale=-1);     // Provide particle mass
   Float_t GetCharge() const;              // Provide particle charge
-  Double_t GetEnergy();                   // Provide particle total energy
+  Double_t GetEnergy(Float_t scale=-1);   // Provide particle total energy
   void Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms); // Perform 2-body decay
   Int_t GetNdecay() const;                // Provide number of decay products
   AliTrack* GetDecayTrack(Int_t j) const; // Access to decay produced track number j
@@ -59,11 +59,11 @@ class AliTrack : public TNamed,public Ali4Vector
   AliTrack* GetTrackHypothesis(Int_t j=0) const; // Provide the j-th track hypothesis 
   void RemoveTrackHypothesis(AliTrack& t);// Remove the specified track hypothesis 
   void RemoveTrackHypotheses();           // Remove all track hypotheses 
-  Double_t GetPt();                       // Provide trans. momentum w.r.t. z-axis
-  Double_t GetPl();                       // Provide long. momentum w.r.t. z-axis
-  Double_t GetEt();                       // Provide trans. energy w.r.t. z-axis
-  Double_t GetEl();                       // Provide long. energy w.r.t. z-axis
-  Double_t GetMt();                       // Provide trans. mass w.r.t. z-axis
+  Double_t GetPt(Float_t scale=-1);       // Provide trans. momentum w.r.t. z-axis
+  Double_t GetPl(Float_t scale=-1);       // Provide long. momentum w.r.t. z-axis
+  Double_t GetEt(Float_t scale=-1);       // Provide trans. energy w.r.t. z-axis
+  Double_t GetEl(Float_t scale=-1);       // Provide long. energy w.r.t. z-axis
+  Double_t GetMt(Float_t scale=-1);       // Provide trans. mass w.r.t. z-axis
   Double_t GetRapidity();                 // Provide rapidity value w.r.t. z-axis
   void SetImpactPoint(AliPosition& p,TString q); // Set the impact-point in plane "q=0"
   AliPosition* GetImpactPoint(TString q);        // Provide the impact-point in plane "q=0"
@@ -71,10 +71,6 @@ class AliTrack : public TNamed,public Ali4Vector
   Int_t GetId() const;                    // Provide the user defined unique track identifier
   void SetClosestPoint(AliPosition& p);   // Set position p as point of closest approach w.r.t. some reference
   AliPosition* GetClosestPoint();         // Provide point of closest approach w.r.t. some reference
-  void SetChi2(Float_t chi2);             // Set the chi-squared value of the track fit
-  void SetNdf(Int_t ndf);                 // Set the number of degrees of freedom for the track fit
-  Float_t GetChi2() const;                // Provide the chi-squared value of the track fit
-  Int_t GetNdf() const;                   // Provide the number of degrees of freedom for the track fit
   void SetParticleCode(Int_t code);       // Set the user defined particle id code (e.g. the PDF convention)
   Int_t GetParticleCode() const;          // Provide the user defined particle id code
   void SetParentTrack(AliTrack* t);       // Set pointer to the parent track
@@ -87,10 +83,12 @@ class AliTrack : public TNamed,public Ali4Vector
   void SetTimestamp(AliTimestamp& t);     // Set the track timestamp
   AliTimestamp* GetTimestamp();           // Provide the track timestamp
   void RemoveTimestamp();                 // Remove timestamp from this track
-  Double_t GetDistance(AliPosition* p);   // Provide distance to position p
-  Double_t GetDistance(AliPosition& p) { return GetDistance(&p); }
-  Double_t GetDistance(AliTrack* t);      // Provide distance to track t
-  Double_t GetDistance(AliTrack& t) { return GetDistance(&t); }
+  Double_t GetDistance(AliPosition* p,Float_t scale=-1);   // Provide distance to position p
+  Double_t GetDistance(AliPosition& p,Float_t scale=-1) { return GetDistance(&p,scale); }
+  Double_t GetDistance(AliTrack* t,Float_t scale=-1);      // Provide distance to track t
+  Double_t GetDistance(AliTrack& t,Float_t scale=-1) { return GetDistance(&t,scale); }
+  void SetEscale(Float_t scale);          // Set the scale of the energy-momentum units of the track
+  Float_t GetEscale() const;              // Provide the scale of the energy-momentum units of the track
  
  protected:
   void Init();               // Initialisation of pointers etc...
@@ -106,17 +104,16 @@ class AliTrack : public TNamed,public Ali4Vector
   AliPositionObj* fImpactYZ; // The (extrapolated) impact-point in the plane x=0
   Int_t fUserId;             // The user defined identifier
   AliPositionObj* fClosest;  // The (extrapolated) point of closest approach w.r.t some reference
-  Float_t fChi2;             // The Chi-squared of the track fit
-  Int_t fNdf;                // The number of degrees of freedom of the track fit
   Int_t fCode;               // The user defined particle id code
   AliTrack* fParent;         // Pointer to the parent track
   Float_t fProb;             // Probability for this track as a hypothesis
   TObject* fFit;             // Object containing details of the fit
   AliTimestamp* fTstamp;     // The track timestamp
+  Float_t fEscale;           // The scale of the energy-momentum units of the track
 
  private:
   void Dumps(AliTrack* t,Int_t n,TString f,TString u); // Recursively print all decay levels
  
- ClassDef(AliTrack,18) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,20) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

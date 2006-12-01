@@ -21,4 +21,5 @@
 #include "IcePandel.h"
 #include "IceLinefit.h"
 #include "IceChi2.h"
+#include "IceDwalkx.h"
 

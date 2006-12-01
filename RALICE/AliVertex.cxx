@@ -137,7 +137,12 @@
 //        Float_t pos[3]={7,9,4};
 //        v1.SetPosition(pos,"car");
 //
-// Note : All quantities are in GeV, GeV/c or GeV/c**2
+// Note : By default all quantities are in meter, GeV, GeV/c or GeV/c**2
+//        but the user can indicate the usage of a different scale for
+//        the metric and/or energy-momentum units via the SetUnitScale()
+//        and SetEscale() memberfunctions, respectively.
+//        The actual metric and energy-momentum unit scales in use can be
+//        obtained via the GetUnitScale() and GetEscale() memberfunctions.
 //
 //--- Author: Nick van Eijndhoven 04-apr-1998 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -575,8 +580,9 @@ void AliVertex::Data(TString f,TString u)
  cout << endl;
  cout << " Id : " << fUserId << " Invmass : " << GetInvmass()
       << " Charge : " << GetCharge() << " Momentum : " << GetMomentum()
-      << " Ntracks : " << GetNtracks() << " Nvertices : " << fNvtx 
-      << " Njets : " << fNjets << endl;
+      << " Ntracks : " << GetNtracks() << endl;
+ cout << " Nvertices : " << fNvtx << " Njets : " << fNjets
+      << " Energy scale : " << fEscale << " GeV" << endl;
  cout << " ";
  Ali4Vector::Data(f,u);
  cout << "  Position";
@@ -1037,6 +1043,8 @@ TObjArray* AliVertex::SortJets(Int_t mode,TObjArray* jets)
 //        9 ==> Transverse mass of the jet
 //       10 ==> Jet rapidity
 //       11 ==> Pseudo-rapidity of the jet
+//       12 ==> Number of associated signals
+//       13 ==> Total charge of the jet
 //
 // The default is mode=-1.
 //
@@ -1056,7 +1064,7 @@ TObjArray* AliVertex::SortJets(Int_t mode,TObjArray* jets)
 
  if (!jets) jets=fJets;
  
- if (abs(mode)>11 || !jets) return fSelected;
+ if (!mode || abs(mode)>13 || !jets) return fSelected;
 
  Int_t njets=jets->GetEntries();
  if (!njets)
@@ -1103,36 +1111,36 @@ TObjArray* AliVertex::SortJets(Int_t mode,TObjArray* jets)
      val2=((AliJet*)fSelected->At(j))->GetNtracks();
      break;
     case 2:
-     val1=jx->GetEnergy();
-     val2=((AliJet*)fSelected->At(j))->GetEnergy();
+     val1=jx->GetEnergy(1);
+     val2=((AliJet*)fSelected->At(j))->GetEnergy(1);
      break;
     case 3:
-     val1=jx->GetMomentum();
-     val2=((AliJet*)fSelected->At(j))->GetMomentum();
+     val1=jx->GetMomentum(1);
+     val2=((AliJet*)fSelected->At(j))->GetMomentum(1);
      break;
     case 4:
-     val1=jx->GetInvmass();
-     val2=((AliJet*)fSelected->At(j))->GetInvmass();
+     val1=jx->GetInvmass(1);
+     val2=((AliJet*)fSelected->At(j))->GetInvmass(1);
      break;
     case 5:
-     val1=jx->GetPt();
-     val2=((AliJet*)fSelected->At(j))->GetPt();
+     val1=jx->GetPt(1);
+     val2=((AliJet*)fSelected->At(j))->GetPt(1);
      break;
     case 6:
-     val1=jx->GetPl();
-     val2=((AliJet*)fSelected->At(j))->GetPl();
+     val1=jx->GetPl(1);
+     val2=((AliJet*)fSelected->At(j))->GetPl(1);
      break;
     case 7:
-     val1=jx->GetEt();
-     val2=((AliJet*)fSelected->At(j))->GetEt();
+     val1=jx->GetEt(1);
+     val2=((AliJet*)fSelected->At(j))->GetEt(1);
      break;
     case 8:
-     val1=jx->GetEl();
-     val2=((AliJet*)fSelected->At(j))->GetEl();
+     val1=jx->GetEl(1);
+     val2=((AliJet*)fSelected->At(j))->GetEl(1);
      break;
     case 9:
-     val1=jx->GetMt();
-     val2=((AliJet*)fSelected->At(j))->GetMt();
+     val1=jx->GetMt(1);
+     val2=((AliJet*)fSelected->At(j))->GetMt(1);
      break;
     case 10:
      val1=jx->GetRapidity();
@@ -1141,6 +1149,14 @@ TObjArray* AliVertex::SortJets(Int_t mode,TObjArray* jets)
     case 11:
      val1=jx->GetPseudoRapidity();
      val2=((AliJet*)fSelected->At(j))->GetPseudoRapidity();
+     break;
+    case 12:
+     val1=jx->GetNsignals();
+     val2=((AliJet*)fSelected->At(j))->GetNsignals();
+     break;
+    case 13:
+     val1=jx->GetCharge();
+     val2=((AliJet*)fSelected->At(j))->GetCharge();
      break;
    }
 

@@ -84,7 +84,11 @@
 //
 // delete tx;
 //
-// Note : All quantities are in GeV, GeV/c or GeV/c**2
+// Note : By default all quantities are in GeV, GeV/c or GeV/c**2
+//        but the user can indicate the usage of a different scale
+//        for the energy-momentum units via the SetEscale() memberfunction.
+//        The actual energy-momentum unit scale can be obtained via the
+//        GetEscale() memberfunction.
 //
 //--- Author: Nick van Eijndhoven 10-jul-1997 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -113,6 +117,7 @@ void AliJet::Init()
  fTrackCopy=0;
  fRef=0;
  fSelected=0;
+ fEscale=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliJet::AliJet(Int_t n) : TNamed(),Ali4Vector()
@@ -188,6 +193,7 @@ AliJet::AliJet(const AliJet& j) : TNamed(j),Ali4Vector(j)
  fNtinit=j.fNtinit;
  fNtmax=j.fNtmax;
  fQ=j.fQ;
+ fEscale=j.fEscale;
  fNtrk=j.fNtrk;
  fTrackCopy=j.fTrackCopy;
  fUserId=j.fUserId;
@@ -238,6 +244,7 @@ void AliJet::Reset()
 {
 // Reset all variables to 0
 // The max. number of tracks is set to the initial value again
+// Note : The scale for the energy/momentum units will not be changed.
  fNtrk=0;
  fQ=0;
  fUserId=0;
@@ -324,8 +331,12 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
   fTracks->Add(&t);
  }
 
- (*this)+=(Ali4Vector&)t;
  fQ+=t.GetCharge();
+
+ Ali4Vector p4=(Ali4Vector)t;
+ Float_t tscale=t.GetEscale();
+ if ((tscale/fEscale > 1.1) || (fEscale/tscale > 1.1)) p4=p4*(tscale/fEscale);
+ (*this)+=p4;
 
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -348,7 +359,7 @@ void AliJet::Data(TString f,TString u)
  if (strlen(title)) cout << " Title : " << GetTitle();
  cout << endl;
  cout << " Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
-      << " Momentum : " << GetMomentum() << endl;
+      << " Momentum : " << GetMomentum() << " Energy scale : " << fEscale << " GeV" << endl;
 
  ShowTracks(0);
 
@@ -449,39 +460,97 @@ Int_t AliJet::GetNtracks(Int_t idmode,Int_t chmode,Int_t pcode)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetEnergy()
+Double_t AliJet::GetEnergy(Float_t scale)
 {
-// Return the total energy of the jet
- return GetScalar();
-}
-///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetMomentum()
-{
-// Return the value of the total jet 3-momentum
+// Return the total energy of the jet.
+// By default the energy is returned in the units as it was stored in the jet
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the energy in MeV.
 // The error can be obtained by invoking GetResultError() after
-// invokation of GetMomentum().
- Double_t norm=fV.GetNorm();
- fDresult=fV.GetResultError();
- return norm;
-}
-///////////////////////////////////////////////////////////////////////////
-Ali3Vector AliJet::Get3Momentum() const
-{
-// Return the the total jet 3-momentum
- Ali3Vector p=Get3Vector();
- return p;
-}
-///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetInvmass()
-{
-// Return the invariant mass of the jet
- Double_t m2=Dot(*this);
- if (m2>0)
+// invokation of GetEnergy().
+ Double_t E=GetScalar();
+ if (E>0)
  {
-  return sqrt(m2);
+  if (scale>0)
+  {
+   E*=fEscale/scale;
+   fDresult*=fEscale/scale;
+  }
+  return E;
  }
  else
  {
+  return 0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetMomentum(Float_t scale)
+{
+// Return the value of the total jet 3-momentum
+// By default the momentum is returned in the units as it was stored in the jet
+// structure. However, the user can select a different momentum unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the momentum in MeV/c.
+// The error can be obtained by invoking GetResultError() after
+// invokation of GetMomentum().
+
+ Double_t norm=fV.GetNorm();
+ fDresult=fV.GetResultError();
+ if (scale>0)
+ {
+  norm*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
+ return norm;
+}
+///////////////////////////////////////////////////////////////////////////
+Ali3Vector AliJet::Get3Momentum(Float_t scale) const
+{
+// Return the the total jet 3-momentum
+// By default the components of the 3-momentum are returned in the units
+// as they were stored in the jet structure.
+// However, the user can select a different momentum unit scale for the
+// components by specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the 3-momentum in MeV/c.
+
+ Ali3Vector p=Get3Vector();
+ if (scale>0) p*=fEscale/scale;
+ return p;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetInvmass(Float_t scale)
+{
+// Return the invariant mass of the jet.
+// By default the mass is returned in the units as it was stored in the jet
+// structure. However, the user can select a different mass unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c**2, so specification
+// of scale=0.001 will provide the invariant mass in MeV/c**2.
+// The error can be obtained by invoking GetResultError() after
+// invokation of GetInvmass().
+
+ Double_t inv=Dot(*this);
+ Double_t dinv=GetResultError();
+ Double_t dm=0;
+ if (inv >= 0)
+ {
+ Double_t m=sqrt(inv);
+ if (m) dm=dinv/(2.*m);
+ if (scale>0)
+ {
+  m*=fEscale/scale;
+  dm*=fEscale/scale;
+ }
+ fDresult=dm;
+ return m;
+ }
+ else
+ {
+  fDresult=dm;
   return 0;
  }
 }
@@ -753,25 +822,41 @@ void AliJet::ShowTracks(Int_t mode)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetPt()
+Double_t AliJet::GetPt(Float_t scale)
 {
-// Provide trans. momentum value w.r.t. z-axis.
+// Provide the transverse momentum value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the jet
+// structure. However, the user can select a different momentum unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the transverse momentum in MeV/c.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetPt().
  Ali3Vector v;
  v=GetVecTrans();
  Double_t norm=v.GetNorm();
  fDresult=v.GetResultError();
+ if (scale>0)
+ {
+  norm*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return norm;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetPl()
+Double_t AliJet::GetPl(Float_t scale)
 {
-// Provide long. momentum value w.r.t. z-axis.
+// Provide the longitudinal momentum value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the jet
+// structure. However, the user can select a different momentum unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV/c, so specification
+// of scale=0.001 will provide the longitudinal momentum in MeV/c.
 // Note : the returned value can also be negative.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetPl().
+
  Ali3Vector v;
  v=GetVecLong();
 
@@ -781,34 +866,66 @@ Double_t AliJet::GetPl()
  Double_t a[3];
  v.GetVector(a,"sph");
  if (cos(a[1])<0) pl=-pl;
+ if (scale>0)
+ {
+  pl*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return pl;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetEt()
+Double_t AliJet::GetEt(Float_t scale)
 {
-// Provide trans. energy value w.r.t. z-axis.
+// Provide transverse energy value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the jet
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the transverse energy in MeV.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetEt().
+
  Double_t et=GetScaTrans();
+ if (scale>0)
+ {
+  et*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return et;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetEl()
+Double_t AliJet::GetEl(Float_t scale)
 {
-// Provide long. energy value w.r.t. z-axis.
+// Provide longitudinal energy value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the jet
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the longitudinal energy in MeV.
 // Note : the returned value can also be negative.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetEl().
+
  Double_t el=GetScaLong();
+ if (scale>0)
+ {
+  el*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
 
  return el;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetMt()
+Double_t AliJet::GetMt(Float_t scale)
 {
 // Provide transverse mass value w.r.t. z-axis.
+// By default the value is returned in the units as it was stored in the jet
+// structure. However, the user can select a different energy unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to GeV, so specification
+// of scale=0.001 will provide the transverse mass in MeV.
 // The error on the value can be obtained by GetResultError()
 // after invokation of GetMt().
  Double_t pt=GetPt();
@@ -821,6 +938,11 @@ Double_t AliJet::GetMt()
  if (mt) dmt2=(pow((pt*dpt),2)+pow((m*dm),2))/(mt*mt);
 
  fDresult=sqrt(dmt2);
+ if (scale>0)
+ {
+  mt*=fEscale/scale;
+  fDresult*=fEscale/scale;
+ }
  return mt;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -947,6 +1069,8 @@ TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
 //        9 ==> Transverse mass of the track
 //       10 ==> Track rapidity
 //       11 ==> Pseudo-rapidity of the track
+//       12 ==> Charge of the track
+//       13 ==> Probability of the track hypothesis
 //
 // The default is mode=-1.
 //
@@ -966,7 +1090,7 @@ TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
 
  if (!tracks) tracks=fTracks;
  
- if (abs(mode)>11 || !tracks) return fSelected;
+ if (!mode || abs(mode)>13 || !tracks) return fSelected;
 
  Int_t ntracks=tracks->GetEntries();
  if (!ntracks)
@@ -1013,36 +1137,36 @@ TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
      val2=((AliTrack*)fSelected->At(j))->GetNsignals();
      break;
     case 2:
-     val1=tx->GetEnergy();
-     val2=((AliTrack*)fSelected->At(j))->GetEnergy();
+     val1=tx->GetEnergy(1);
+     val2=((AliTrack*)fSelected->At(j))->GetEnergy(1);
      break;
     case 3:
-     val1=tx->GetMomentum();
-     val2=((AliTrack*)fSelected->At(j))->GetMomentum();
+     val1=tx->GetMomentum(1);
+     val2=((AliTrack*)fSelected->At(j))->GetMomentum(1);
      break;
     case 4:
-     val1=tx->GetMass();
-     val2=((AliTrack*)fSelected->At(j))->GetMass();
+     val1=tx->GetMass(1);
+     val2=((AliTrack*)fSelected->At(j))->GetMass(1);
      break;
     case 5:
-     val1=tx->GetPt();
-     val2=((AliTrack*)fSelected->At(j))->GetPt();
+     val1=tx->GetPt(1);
+     val2=((AliTrack*)fSelected->At(j))->GetPt(1);
      break;
     case 6:
-     val1=tx->GetPl();
-     val2=((AliTrack*)fSelected->At(j))->GetPl();
+     val1=tx->GetPl(1);
+     val2=((AliTrack*)fSelected->At(j))->GetPl(1);
      break;
     case 7:
-     val1=tx->GetEt();
-     val2=((AliTrack*)fSelected->At(j))->GetEt();
+     val1=tx->GetEt(1);
+     val2=((AliTrack*)fSelected->At(j))->GetEt(1);
      break;
     case 8:
-     val1=tx->GetEl();
-     val2=((AliTrack*)fSelected->At(j))->GetEl();
+     val1=tx->GetEl(1);
+     val2=((AliTrack*)fSelected->At(j))->GetEl(1);
      break;
     case 9:
-     val1=tx->GetMt();
-     val2=((AliTrack*)fSelected->At(j))->GetMt();
+     val1=tx->GetMt(1);
+     val2=((AliTrack*)fSelected->At(j))->GetMt(1);
      break;
     case 10:
      val1=tx->GetRapidity();
@@ -1051,6 +1175,14 @@ TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
     case 11:
      val1=tx->GetPseudoRapidity();
      val2=((AliTrack*)fSelected->At(j))->GetPseudoRapidity();
+     break;
+    case 12:
+     val1=tx->GetCharge();
+     val2=((AliTrack*)fSelected->At(j))->GetCharge();
+     break;
+    case 13:
+     val1=tx->GetProb();
+     val2=((AliTrack*)fSelected->At(j))->GetProb();
      break;
    }
 
@@ -1069,13 +1201,18 @@ TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
  return fSelected;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetDistance(AliPosition* p)
+Double_t AliJet::GetDistance(AliPosition* p,Float_t scale)
 {
 // Provide distance of the current jet to the position p.
 // The error on the result can be obtained as usual by invoking
 // GetResultError() afterwards. 
 //
-// The distance will be provided in the unit scale of the AliPosition p.
+// By default the distance will be provided in the metric unit scale of
+// the AliPosition p.
+// However, the user can select a different metric unit scale by
+// specification of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the distance in cm.
 // As such it is possible to obtain a correctly computed distance even in case
 // the jet parameters have a different unit scale.
 // However, it is recommended to work always with one single unit scale.
@@ -1100,18 +1237,23 @@ Double_t AliJet::GetDistance(AliPosition* p)
  AliTrack tj;
  tj.Set3Momentum(pj);
  tj.SetReferencePoint(*rx);
- dist=tj.GetDistance(p);
+ dist=tj.GetDistance(p,scale);
  fDresult=tj.GetResultError();
  return dist;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetDistance(AliTrack* t)
+Double_t AliJet::GetDistance(AliTrack* t,Float_t scale)
 {
 // Provide distance of the current jet to the track t.
 // The error on the result can be obtained as usual by invoking
 // GetResultError() afterwards. 
 //
-// The distance will be provided in the unit scale of the current jet.
+// By default the distance will be provided in the metric unit scale of
+// the current jet.
+// However, the user can specify a required metric unit scale by specification
+// of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the distance in cm.
 // As such it is possible to obtain a correctly computed distance even in case
 // the jet and track parameters have a different unit scale.
 // However, it is recommended to work always with one single unit scale.
@@ -1136,22 +1278,27 @@ Double_t AliJet::GetDistance(AliTrack* t)
  AliTrack tj;
  tj.Set3Momentum(pj);
  tj.SetReferencePoint(*rx);
- dist=tj.GetDistance(t);
+ dist=tj.GetDistance(t,scale);
  fDresult=tj.GetResultError();
  return dist;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliJet::GetDistance(AliJet* j)
+Double_t AliJet::GetDistance(AliJet* j,Float_t scale)
 {
 // Provide distance of the current jet to the jet j.
 // The error on the result can be obtained as usual by invoking
 // GetResultError() afterwards. 
 //
-// The distance will be provided in the unit scale of the current jet.
+// By default the distance will be provided in the metric unit scale of
+// the current jet.
+// This implies that the results of j1.GetDistance(j2) and j2.GetDistance(j1)
+// may be numerically different in case j1 and j2 have different metric units.
+// However, the user can specify a required metric unit scale by specification
+// of the scale parameter.
+// The convention is that scale=1 corresponds to meter, so specification
+// of scale=0.01 will provide the distance in cm.
 // As such it is possible to obtain a correctly computed distance even in case
-// the jet and track parameters have a different unit scale.
-// This implies that in such cases the results of j1.GetDistance(j2) and
-// j2.GetDistance(j1) will be numerically different.
+// the jet parameters have a different unit scale.
 // However, it is recommended to work always with one single unit scale.
 //
 // Note : In case of incomplete information, a distance value of -1 is
@@ -1174,8 +1321,73 @@ Double_t AliJet::GetDistance(AliJet* j)
  AliTrack tj;
  tj.Set3Momentum(pj);
  tj.SetReferencePoint(*rx);
- dist=GetDistance(tj);
+ dist=GetDistance(tj,scale);
  return dist;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliJet::GetNsignals() const
+{
+// Provide the number of signals associated to the jet tracks.
+// Note : Multiple occurrences of the same signal are only counted once. 
+
+ if (fNtrk<1) return 0;
+
+ TObjArray arr;
+
+ Int_t n=0;
+ AliTrack* tx=0;
+ Int_t exists=0;
+ for (Int_t i=1; i<=fNtrk; i++)
+ {
+  tx=GetTrack(i);
+  for (Int_t j=1; j<=tx->GetNsignals(); j++)
+  {
+   AliSignal* sx=tx->GetSignal(j);
+   if (!sx) continue;
+   exists=0;
+   for (Int_t k=0; k<arr.GetEntries(); k++)
+   {
+    if (sx==(AliSignal*)arr.At(k))
+    {
+     exists=1;
+     break;
+    } 
+   }
+   if (!exists) arr.Add(sx);
+  } 
+ }
+ n=arr.GetEntries();
+ return n;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::SetEscale(Float_t scale)
+{
+// Indicate the energy/momentum scale as used by the user.
+// The convention is that scale=1 indicates values in units
+// of GeV, GeV/c or GeV/c**2.
+// So, in case one decides to store values in units of MeV, MeV/c or MeV/c**2
+// the scale indicator should be set to scale=0.001.
+//
+// By default scale=1 is set in the constructor.
+
+ if (scale>0)
+ {
+  fEscale=scale;
+ }
+ else
+ {
+  cout << " *AliJet::SetEscale* Invalid scale value : " << scale << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliJet::GetEscale() const
+{
+// Provide the energy/momentum scale as used by the user.
+// The convention is that scale=1 indicates values in units
+// of GeV, GeV/c or GeV/c**2.
+// So, a value of scale=0.001 indicates that energy/momentum values are
+// stored in units of MeV, MeV/c or MeV/c**2.
+ return fEscale;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliJet::Clone(const char* name) const

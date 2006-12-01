@@ -271,12 +271,12 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 // In case one wants to display or extrapolate an AliTrack it is preferable
 // to use the Display() or Extrapolate() memberfunctions.
 // It is assumed that the track charge is stored in elementary units
-// (i.e. charge=1 for a proton) and that the track energy is stored in GeV.
+// (i.e. charge=1 for a proton).
 // The input argument "scale" specifies the unit scale for the various
 // locations where scale=0.01 indicates unit scales in cm etc...
 // In case scale<=0, the unit scale for locations is determined from the
 // begin, reference or endpoint of the track. If neither of these
-// positions is present, all locations are assumed to be given in cm.
+// positions is present, all locations are assumed to be given in meter.
 // The lower and upper bounds for the range are specified by range[0] and
 // range[1] and the argument "iaxis" indicates along which axis this range
 // is specified.
@@ -305,7 +305,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 
  if (!t || (range && !iaxis)) return;
 
- Double_t energy=t->GetEnergy();
+ Double_t energy=t->GetEnergy(1); // Track energy in GeV
  Double_t betanorm=t->GetBeta();
 
  if (energy<=0 || betanorm<=0) return;
@@ -322,7 +322,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
  // The unit scale for locations if not specified by the user
  if (scale<=0)
  {
-  scale=0.01; // Set default to cm
+  scale=1; // Set default to meter
   if (rbeg)
   {
    scale=rbeg->GetUnitScale();
@@ -365,29 +365,26 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 
  // The LAB location in which the velocity of the particle is defined
  Double_t loc[3]={0,0,0};
- Ali3Vector* rx=0;
- Double_t scalex=0;
+ Ali3Vector rx;
+ Double_t scalex=-1;
  if (rref)
  {
-  rx=(Ali3Vector*)rref;
+  rx=(Ali3Vector)(*rref);
   scalex=rref->GetUnitScale();
  }
  else if (rbeg)
  {
-  rx=(Ali3Vector*)rbeg;
+  rx=(Ali3Vector)(*rbeg);
   scalex=rbeg->GetUnitScale();
  }
  else if (rend)
  {
-  rx=(Ali3Vector*)rend;
+  rx=(Ali3Vector)(*rend);
   scalex=rend->GetUnitScale();
  }
 
- if (rx)
- {
-  if (scalex/scale>1.1 || scale/scalex>1.1) (*rx)*=scalex/scale;
-  rx->GetVector(loc,"car");
- }
+ if (scalex>0 && (scalex/scale>1.1 || scale/scalex>1.1)) rx*=scalex/scale;
+ rx.GetVector(loc,"car");
 
  // Initialisation of Helix kinematics
  SetHelix(loc,vel,w,0,kUnchanged,bvec);
@@ -408,8 +405,8 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
  Double_t vec2[3]={0,0,0};
  Ali3Vector r1;
  Ali3Vector r2;
- Double_t scale1=0.01;
- Double_t scale2=0.01;
+ Double_t scale1=1;
+ Double_t scale2=1;
 
  if (!bend)
  {
@@ -445,7 +442,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
    // generated in view of accuracy in the case of extrapolations.
    tof=tmax-tmin;
    v=beta*c;
-   if (rx) r1=(*rx);
+   r1=rx;
    r=v*tmin;
    r1=r1+r;
    r1.GetVector(vec1,"car");
@@ -468,7 +465,7 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
    tmin=0;
    if (fabs(fVz)>0) tmin=-fZ0/fVz;
    v=beta*c;
-   if (rx) r1=(*rx);
+   r1=rx;
    r=v*tmin;
    r1=r1+r;
 
@@ -526,8 +523,8 @@ void AliHelix::MakeCurve(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 
   if (!range) // Automatic range determination
   {
-   scale1=0.01;
-   scale2=0.01;
+   scale1=1;
+   scale2=1;
    if (rbeg)
    {
     r1=rbeg->GetPrimed(fRotMat);
@@ -640,12 +637,12 @@ void AliHelix::Display(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 // Various curves can be displayed together or individually; please refer to
 // the memberfunction Refresh() for further details.
 // It is assumed that the track charge is stored in elementary units
-// (i.e. charge=1 for a proton) and that the track energy is stored in GeV.
+// (i.e. charge=1 for a proton).
 // The input argument "scale" specifies the unit scale for the various
 // locations where scale=0.01 indicates unit scales in cm etc...
 // In case scale<=0, the unit scale for locations is determined from the
 // begin, reference or endpoint of the track. If neither of these
-// positions is present, all locations are assumed to be given in cm.
+// positions is present, all locations are assumed to be given in meter.
 // The lower and upper bounds for the range are specified by range[0] and
 // range[1] and the argument "iaxis" indicates along which axis this range
 // is specified.
@@ -679,6 +676,9 @@ void AliHelix::Display(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 // TView* view=new TView(1);
 // view->SetRange(-1000,-1000,-1000,1000,1000,1000);
 // view->ShowAxis();
+//
+// The user can also use the 3D viewing facilities from the TCanvas menu
+// to open an appropriate view. 
 
  if (!t || (range && !iaxis)) return;
 
@@ -686,7 +686,7 @@ void AliHelix::Display(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
 
  if (fRefresh>0) Refresh(fRefresh);
 
- Int_t np=GetN();
+ Int_t np=GetLastPoint()+1;
  if (!np) return;
 
  Float_t* points=GetP();
@@ -763,6 +763,9 @@ void AliHelix::Display(AliEvent* evt,Double_t* range,Int_t iaxis,Double_t scale)
 // TView* view=new TView(1);
 // view->SetRange(-1000,-1000,-1000,1000,1000,1000);
 // view->ShowAxis();
+//
+// The user can also use the 3D viewing facilities from the TCanvas menu
+// to open an appropriate view. 
 
  if (!evt) return;
 
@@ -797,6 +800,9 @@ void AliHelix::Display(TObjArray* arr,Double_t* range,Int_t iaxis,Double_t scale
 // TView* view=new TView(1);
 // view->SetRange(-1000,-1000,-1000,1000,1000,1000);
 // view->ShowAxis();
+//
+// The user can also use the 3D viewing facilities from the TCanvas menu
+// to open an appropriate view. 
 
  if (!arr) return;
 
@@ -820,12 +826,12 @@ AliPosition* AliHelix::Extrapolate(AliTrack* t,Double_t* pars,Double_t scale)
 // Detailed information of all the helix points used in the extrapolation
 // can be obtained via the GetN() and GetP() memberfunctions of TPolyLine3D.
 // It is assumed that the track charge is stored in elementary units
-// (i.e. charge=1 for a proton) and that the track energy is stored in GeV.
+// (i.e. charge=1 for a proton).
 // The input argument "scale" specifies the unit scale for the various
 // locations where scale=0.01 indicates unit scales in cm etc...
 // In case scale<=0, the unit scale for locations is determined from the
 // begin, reference or endpoint of the track. If neither of these
-// positions is present, all locations are assumed to be given in cm.
+// positions is present, all locations are assumed to be given in meter.
 // The extrapolation parameters for the impact plane and required accuracy
 // are specified by pars[0], pars[1] and pars[2], respectively.
 // pars[0] = coordinate value of the plane for the impact point
@@ -866,7 +872,7 @@ AliPosition* AliHelix::Extrapolate(AliTrack* t,Double_t* pars,Double_t scale)
  // The unit scale for locations if not specified by the user
  if (scale<=0)
  {
-  scale=0.01; // Set default to cm
+  scale=1; // Set default to meter
   if (rbeg)
   {
    scale=rbeg->GetUnitScale();
@@ -889,7 +895,7 @@ AliPosition* AliHelix::Extrapolate(AliTrack* t,Double_t* pars,Double_t scale)
 
  MakeCurve(t,range,iaxis,scale);
 
- Int_t np=GetN();
+ Int_t np=GetLastPoint()+1;
  if (!np) return fExt;
 
  Float_t* points=GetP();
@@ -899,7 +905,7 @@ AliPosition* AliHelix::Extrapolate(AliTrack* t,Double_t* pars,Double_t scale)
  Float_t first[3]={points[3*ip],points[3*ip+1],points[3*ip+2]};
 
  // Last point of the curve around the impact
- ip=np-1;
+ ip=GetLastPoint();
  Float_t last[3]={points[3*ip],points[3*ip+1],points[3*ip+2]};
 
  // The accuracy on the impact point 

@@ -34,6 +34,9 @@
 // The defaults of the various parameters can be changed by the corresponding
 // Set memberfunctions.
 //
+// Information about the actual parameter settings can be found in the event
+// structure itself via the device named "IceCleanHits".
+//
 // Concerning the trigger time :
 // -----------------------------
 // By default the trigger time is obtained automatically from the IceEvent structure
@@ -154,6 +157,33 @@ void IceCleanHits::Exec(Option_t* opt)
 
  fEvt=(IceEvent*)parent->GetObject("IceEvent");
  if (!fEvt) return;
+
+ // Storage of the used parameters in the IceCleanHits device
+ AliSignal params;
+ params.SetNameTitle("IceCleanHits","IceCleanHits processor parameters");
+ params.SetSlotName("AdcminA",1);
+ params.SetSlotName("AdcmaxA",2);
+ params.SetSlotName("TotminAE",3);
+ params.SetSlotName("TotmaxAE",4);
+ params.SetSlotName("TotminAO",5);
+ params.SetSlotName("TotmaxAO",6);
+ params.SetSlotName("RmaxA",7);
+ params.SetSlotName("DtmaxA",8);
+ params.SetSlotName("TwinA",9);
+ params.SetSlotName("TtimA",10);
+
+ params.SetSignal(fAdcminA,1);
+ params.SetSignal(fAdcmaxA,2);
+ params.SetSignal(fTotminAE,3);
+ params.SetSignal(fTotmaxAE,4);
+ params.SetSignal(fTotminAO,5);
+ params.SetSignal(fTotmaxAO,6);
+ params.SetSignal(fRmaxA,7);
+ params.SetSignal(fDtmaxA,8);
+ params.SetSignal(fTwinA,9);
+ params.SetSignal(fTtimA,10);
+
+ fEvt->AddDevice(params);
 
  Amanda();
  InIce();

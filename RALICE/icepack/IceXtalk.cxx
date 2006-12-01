@@ -55,6 +55,9 @@
 // SetMinProb() and SetXtalkPE() memberfunctions.
 // The default values are pmin=0.5 and pe=1.
 //
+// Information about the actual parameter settings can be found in the event
+// structure itself via the device named "IceXtalk".
+//
 // In case this processor is followed by an ADC threshold hit cleaning
 // procedure, hits which only contained cross talk can be efficiently
 // skipped or removed from the event.
@@ -138,6 +141,17 @@ void IceXtalk::Exec(Option_t* opt)
 
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
+
+ // Storage of the used parameters in the IceXtalk device
+ AliSignal params;
+ params.SetNameTitle("IceXtalk","IceXtalk processor parameters");
+ params.SetSlotName("Pmin",1);
+ params.SetSlotName("Pe",2);
+
+ params.SetSignal(fPmin,1);
+ params.SetSignal(fPe,2);
+
+ evt->AddDevice(params);
 
  // All Amanda OMs with a signal
  TObjArray* mods=evt->GetDevices("IceAOM");

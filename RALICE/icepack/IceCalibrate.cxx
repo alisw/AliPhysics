@@ -43,6 +43,9 @@
 // In case an OM slot was flagged as bad in the OM database, this flag
 // will be copied into the event data for the corresponding OM.
 //
+// Information about the actual parameter settings can be found in the event
+// structure itself via the device named "IceCalibrate".
+//
 //--- Author: Nick van Eijndhoven 18-sep-2005 Utrecht University
 //- Modified: NvE $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
@@ -98,6 +101,15 @@ void IceCalibrate::Exec(Option_t* opt)
 
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
+
+ // Storage of the used parameters in the IceCalibrate device
+ AliSignal params;
+ params.SetNameTitle("IceCalibrate","IceCalibrate processor parameters");
+ params.SetSlotName("Omdb",1);
+
+ if (fOmdb) params.SetSignal(1,1);
+
+ evt->AddDevice(params);
 
  // All OMs with a signal
  TObjArray* mods=evt->GetDevices("IceGOM");
