@@ -17,6 +17,8 @@
 #include <TProfile2D.h>
 #include <TObjArray.h>
 #include <TLatex.h>
+#include <TTimeStamp.h>
+#include <TRandom.h>
 
 #include <AliTPCclusterMI.h>
 #include <AliTPCseed.h>
@@ -46,13 +48,17 @@ AliTPCClusterHistograms::AliTPCClusterHistograms()
   fhQtotProfileZVsRow(0),
   fhSigmaYProfileZVsRow(0),
   fhSigmaZProfileZVsRow(0),
-  fhQtotVsTime(0),  
-  fhQmaxVsTime(0),
+  fhMeanQtotVsTime(0),  
+  fhQtotVsTime(0),
+  fhMeanNClustersVsTime(0),    
+  fhNClustersVsTime(0),        
   fhTrackQtotPerCluster(0),
-  fhTrackQtotPerClusterVsSnp(0),
-  fhTrackQtotPerClusterVsTgl(0),
-  fhTrackMeanQtotPerClusterVsSnp(0),
-  fhTrackMeanQtotPerClusterVsTgl(0),
+  fhTrackQtotPerClusterVsPhi(0),
+  fhTrackQtotPerClusterVsTheta(0),
+  fhTrackMeanQtotPerClusterVsPhi(0),
+  fhTrackMeanQtotPerClusterVsTheta(0),
+  fhMeanNTracksVsTime(),
+  fhNEventsVsTime(),
   fIsIROC(kFALSE),
   fEdgeSuppression(kFALSE)
 {
@@ -78,13 +84,17 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   fhQtotProfileZVsRow(0),
   fhSigmaYProfileZVsRow(0),
   fhSigmaZProfileZVsRow(0),
-  fhQtotVsTime(0),  
-  fhQmaxVsTime(0),
+  fhMeanQtotVsTime(0),  
+  fhQtotVsTime(0),
+  fhMeanNClustersVsTime(0),    
+  fhNClustersVsTime(0),        
   fhTrackQtotPerCluster(0),
-  fhTrackQtotPerClusterVsSnp(0),
-  fhTrackQtotPerClusterVsTgl(0),
-  fhTrackMeanQtotPerClusterVsSnp(0),
-  fhTrackMeanQtotPerClusterVsTgl(0),
+  fhTrackQtotPerClusterVsPhi(0),
+  fhTrackQtotPerClusterVsTheta(0),
+  fhTrackMeanQtotPerClusterVsPhi(0),
+  fhTrackMeanQtotPerClusterVsTheta(0),
+  fhMeanNTracksVsTime(0),
+  fhNEventsVsTime(0),
   fIsIROC(kFALSE),
   fEdgeSuppression(edgeSuppression)
 {
@@ -98,6 +108,13 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
       
   TString name(FormDetectorName(detector, edgeSuppression, comment));
 
+  fNClustersInEvent = 0;
+  fQtotInEvent      = 0;
+  fMaxQtotInEvent   = 0;
+
+  fKeepEvent = kFALSE;
+  fWhyKeepEvent = TString("hi");
+
   fDetector = detector;
   if (detector < 36)
     fIsIROC = kTRUE; 
@@ -105,10 +122,10 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   SetName(name);
   SetTitle(Form("%s (detector %d)",name.Data(), detector));
 
-  // rounding down to the closest 30 min
-  fTimeStart = 1800*Int_t(timeStart/1800);
-  // rounding up to the closest 30 min
-  fTimeStop  = 1800*Int_t((1800 + timeStop)/1800);
+  // rounding down to the closest hour and starting 10 hours before
+  fTimeStart = 3600*UInt_t(timeStart/3600) - 36000;
+  // rounding up to the closest hour
+  fTimeStop  = 3600*UInt_t((3600 + timeStop)/3600);
   // each time bin covers 5 min
   Int_t nTimeBins = (fTimeStop-fTimeStart)/300;
   
@@ -154,31 +171,41 @@ AliTPCClusterHistograms::AliTPCClusterHistograms(Int_t detector, const Char_t* c
   fhQtotProfileZVsRow = new TProfile2D("MeanQtotZVsPadRow","Mean Qtot, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
   fhSigmaYProfileZVsRow = new TProfile2D("MeanSigmaYZVsPadRow","Mean Sigma y, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
   fhSigmaZProfileZVsRow = new TProfile2D("MeanSigmaZZVsPadRow","Mean Sigma z, z vs pad row;Pad row;z",nPadRows+2, -1.5, nPadRows+0.5, BINNING_Z);
+
+
+  TString start(TTimeStamp(fTimeStart).AsString());
+  //  TString stop(TTimeStamp(fTimeStart).AsString());
+  start.Remove(26);
   
-  
-  fhQtotVsTime = new TProfile("MeanQtotVsTime", "Mean Qtot vs. time (5 min bins); time; Qtot",nTimeBins, fTimeStart, fTimeStop);
-  fhQmaxVsTime = new TProfile("MeanQmaxVsTime", "Mean Qmax vs. time (5 min bins); time; Qmax",nTimeBins, fTimeStart, fTimeStop);
+  fhMeanQtotVsTime = new TProfile("MeanQtotVsTime",Form("Mean Qtot vs. time (start %s , 1 min bins); time; Qtot",start.Data()),5*nTimeBins, fTimeStart, fTimeStop);
+  fhQtotVsTime     = new TH2F("QtotVsTime",Form("Qtot vs. time (start %s , 1 min bins); time; Qtot",start.Data()),5*nTimeBins, fTimeStart, fTimeStop,400,0,2000);
+
+  fhMeanNClustersVsTime = new TProfile("MeanNClustersVsTime",Form("Mean N Cluster vs. time (start %s , 5 min bins); time; NClusters",start.Data()),nTimeBins, fTimeStart, fTimeStop);
+  fhNClustersVsTime = new TH2F("NClustersVsTime",Form("N Clusters vs. time (start %s , 5 min bins); time; NClusters",start.Data()),nTimeBins, fTimeStart, fTimeStop,400,-0.5,3999.5);
 
   fhQmaxProfileVsRow->SetLineWidth(2);
   fhQtotProfileVsRow->SetLineWidth(2);
 
-  fhQtotVsTime->SetLineWidth(2);
-  fhQmaxVsTime->SetLineWidth(2);
+  fhMeanQtotVsTime->SetLineWidth(2);
 
   // histograms related to tracks
 
-  fhTrackQtotPerCluster = new TH1F("QtotPerCluster","Qtot per cluster; (Sum Qtot)/clusters",400,0,2000);
+  fhTrackQtotPerCluster = new TH1F("QtotPerCluster","Qtot per cluster; (Sum Qtot)/clusters",200,0,2000);
   fhTrackQtotPerCluster->SetMarkerStyle(22);
   fhTrackQtotPerCluster->SetMarkerSize(1);
 
-  fhTrackQtotPerClusterVsSnp = new TH2F("QtotPerClusterVsSnp","QtotPerCluster vs Snp; Snp; (Sum Qtot)/clusters",100,-TMath::Pi(),TMath::Pi(),200,0,2000);
-  fhTrackQtotPerClusterVsTgl = new TH2F("QtotPerClusterVsTgl","QtotPerCluster vs Tgl; Tgl; (Sum Qtot)/clusters",100,-TMath::Pi(),TMath::Pi(),200,0,2000);
+  fhTrackQtotPerClusterVsPhi = new TH2F("QtotPerClusterVsPhi","QtotPerCluster vs Phi; Phi; (Sum Qtot)/clusters",40,-2,2,200,0,2000);
+  fhTrackQtotPerClusterVsTheta = new TH2F("QtotPerClusterVsTheta","QtotPerCluster vs Theta; Theta; (Sum Qtot)/clusters",40,-2,2,200,0,2000);
 
-  fhTrackMeanQtotPerClusterVsSnp = new TProfile("MeanQtotPerClusterVsSnp", "QtotPerCluster vs Snp; Snp; Mean (Sum Qtot)/clusters",100,-TMath::Pi(),TMath::Pi());
-  fhTrackMeanQtotPerClusterVsTgl = new TProfile("MeanQtotPerClusterVsTgl", "QtotPerCluster vs Tgl; Tgl; Mean (Sum Qtot)/clusters",100,-TMath::Pi(),TMath::Pi());
+  fhTrackMeanQtotPerClusterVsPhi = new TProfile("MeanQtotPerClusterVsPhi", "QtotPerCluster vs Phi; Phi; Mean (Sum Qtot)/clusters",40,-2,2);
+  fhTrackMeanQtotPerClusterVsTheta = new TProfile("MeanQtotPerClusterVsTheta", "QtotPerCluster vs Theta; Theta; Mean (Sum Qtot)/clusters",40,-2,2);
 
-  fhTrackMeanQtotPerClusterVsSnp->SetLineWidth(2);
-  fhTrackMeanQtotPerClusterVsTgl->SetLineWidth(2);
+  fhTrackMeanQtotPerClusterVsPhi->SetLineWidth(2);
+  fhTrackMeanQtotPerClusterVsTheta->SetLineWidth(2);
+
+  fhMeanNTracksVsTime = new TProfile("MeanNTracksVsTime",Form("Mean n tracks vs. time (start %s , 5 min bins); time; N tracks",start.Data()),nTimeBins, fTimeStart, fTimeStop);
+
+  fhNEventsVsTime = new TH1F("NEventsVsTime",Form("N events vs. time (start %s , 5 min bins); time; N events",start.Data()),nTimeBins, fTimeStart, fTimeStop);
 
   TH1::AddDirectory(oldStatus);
 }
@@ -261,35 +288,50 @@ AliTPCClusterHistograms::~AliTPCClusterHistograms()
     delete fhSigmaZProfileZVsRow;
     fhSigmaZProfileZVsRow = 0;
   }
-
+  if (fhMeanQtotVsTime) {
+    delete fhMeanQtotVsTime;
+    fhMeanQtotVsTime = 0;
+  }
   if (fhQtotVsTime) {
     delete fhQtotVsTime;
     fhQtotVsTime = 0;
   }
-  if (fhQmaxVsTime) {
-    delete fhQmaxVsTime;
-    fhQmaxVsTime = 0;
+  if (fhMeanNClustersVsTime) {
+    delete fhMeanNClustersVsTime;
+    fhMeanNClustersVsTime = 0;
+  }
+  if (fhNClustersVsTime) {
+    delete fhNClustersVsTime;
+    fhNClustersVsTime = 0;
   }
   if (fhTrackQtotPerCluster) {
     delete fhTrackQtotPerCluster;
     fhTrackQtotPerCluster = 0;
   }
-  if (fhTrackQtotPerClusterVsSnp) {
-    delete fhTrackQtotPerClusterVsSnp;
-    fhTrackQtotPerClusterVsSnp = 0;
+  if (fhTrackQtotPerClusterVsPhi) {
+    delete fhTrackQtotPerClusterVsPhi;
+    fhTrackQtotPerClusterVsPhi = 0;
   }
-  if (fhTrackQtotPerClusterVsTgl) {
-    delete fhTrackQtotPerClusterVsTgl;
-    fhTrackQtotPerClusterVsTgl = 0;
+  if (fhTrackQtotPerClusterVsTheta) {
+    delete fhTrackQtotPerClusterVsTheta;
+    fhTrackQtotPerClusterVsTheta = 0;
   }
-  if (fhTrackMeanQtotPerClusterVsSnp) {
-    delete fhTrackMeanQtotPerClusterVsSnp;
-    fhTrackMeanQtotPerClusterVsSnp = 0;
+  if (fhTrackMeanQtotPerClusterVsPhi) {
+    delete fhTrackMeanQtotPerClusterVsPhi;
+    fhTrackMeanQtotPerClusterVsPhi = 0;
   }
-  if (fhTrackMeanQtotPerClusterVsTgl) {
-    delete fhTrackMeanQtotPerClusterVsTgl;
-    fhTrackMeanQtotPerClusterVsTgl = 0;
+  if (fhTrackMeanQtotPerClusterVsTheta) {
+    delete fhTrackMeanQtotPerClusterVsTheta;
+    fhTrackMeanQtotPerClusterVsTheta = 0;
   }
+  if (fhMeanNTracksVsTime) {
+    delete fhMeanNTracksVsTime;
+    fhMeanNTracksVsTime = 0;
+  }  
+  if (fhNEventsVsTime) {
+    delete fhNEventsVsTime;
+    fhNEventsVsTime = 0;
+  }  
 }
 
 //____________________________________________________________________
@@ -375,126 +417,149 @@ Long64_t AliTPCClusterHistograms::Merge(TCollection* list)
   TList* collectionSigmaYProfileZVsRow  = new TList;
   TList* collectionSigmaZProfileZVsRow  = new TList;
 
-  TList* collectionQtotVsTime  = new TList;
-  TList* collectionQmaxVsTime  = new TList;
+  TList* collectionMeanQtotVsTime  = new TList;
+  TList* collectionQtotVsTime      = new TList;
+
+  TList* collectionMeanNClustersVsTime = new TList; 
+  TList* collectionNClustersVsTime     = new TList;
 
   TList* collectionTrackQtotPerCluster = new TList;
 
-  TList* collectionTrackQtotPerClusterVsSnp = new TList;
-  TList* collectionTrackQtotPerClusterVsTgl = new TList;
+  TList* collectionTrackQtotPerClusterVsPhi = new TList;
+  TList* collectionTrackQtotPerClusterVsTheta = new TList;
 
-  TList* collectionTrackMeanQtotPerClusterVsSnp = new TList;
-  TList* collectionTrackMeanQtotPerClusterVsTgl = new TList;
+  TList* collectionTrackMeanQtotPerClusterVsPhi = new TList;
+  TList* collectionTrackMeanQtotPerClusterVsTheta = new TList;
 
+  TList* collectionMeanNTracksVsTime = new TList;
+  TList* collectionNEventsVsTime = new TList;
 
-   Int_t count = 0;
-   while ((obj = iter->Next())) {
+  Int_t count = 0;
+  while ((obj = iter->Next())) {
     
-     AliTPCClusterHistograms* entry = dynamic_cast<AliTPCClusterHistograms*> (obj);
-     if (entry == 0) 
-       continue;
+    AliTPCClusterHistograms* entry = dynamic_cast<AliTPCClusterHistograms*> (obj);
+    if (entry == 0) 
+      continue;
+    
+    collectionQmaxVsRow          ->Add(entry->fhQmaxVsRow	   );
+    collectionQtotVsRow	  ->Add(entry->fhQtotVsRow	   );
+    
+    collectionQmaxProfileVsRow   ->Add(entry->fhQmaxProfileVsRow  );
+    collectionQtotProfileVsRow	  ->Add(entry->fhQtotProfileVsRow  );
+    
+    collectionNClustersYVsRow    ->Add(entry->fhNClustersYVsRow);
+    collectionNClustersZVsRow    ->Add(entry->fhNClustersZVsRow);
+    
+    collectionSigmaYVsRow	  ->Add(entry->fhSigmaYVsRow	   );
+    collectionSigmaZVsRow	  ->Add(entry->fhSigmaZVsRow	   );
+    
+    collectionQmaxProfileYVsRow  ->Add(entry->fhQmaxProfileYVsRow );
+    collectionQtotProfileYVsRow  ->Add(entry->fhQtotProfileYVsRow );
+    collectionSigmaYProfileYVsRow->Add(entry->fhSigmaYProfileYVsRow);
+    collectionSigmaZProfileYVsRow->Add(entry->fhSigmaZProfileYVsRow);
+    
+    collectionQmaxProfileZVsRow  ->Add(entry->fhQmaxProfileZVsRow );
+    collectionQtotProfileZVsRow  ->Add(entry->fhQtotProfileZVsRow );
+    collectionSigmaYProfileZVsRow->Add(entry->fhSigmaYProfileZVsRow);
+    collectionSigmaZProfileZVsRow->Add(entry->fhSigmaZProfileZVsRow);
+    
+    collectionMeanQtotVsTime     ->Add(entry->fhMeanQtotVsTime);
+    collectionQtotVsTime         ->Add(entry->fhQtotVsTime);
 
-     collectionQmaxVsRow          ->Add(entry->fhQmaxVsRow	   );
-     collectionQtotVsRow	  ->Add(entry->fhQtotVsRow	   );
+    collectionMeanNClustersVsTime->Add(entry->fhMeanNClustersVsTime);  
+    collectionNClustersVsTime    ->Add(entry->fhNClustersVsTime);
+    
+    collectionTrackQtotPerCluster->Add(entry->fhTrackQtotPerCluster);
+    
+    collectionTrackQtotPerClusterVsPhi->Add(entry->fhTrackQtotPerClusterVsPhi);
+    collectionTrackQtotPerClusterVsTheta->Add(entry->fhTrackQtotPerClusterVsTheta);
+    
+    collectionTrackMeanQtotPerClusterVsPhi->Add(entry->fhTrackMeanQtotPerClusterVsPhi);
+    collectionTrackMeanQtotPerClusterVsTheta->Add(entry->fhTrackMeanQtotPerClusterVsTheta);
+    
+    collectionMeanNTracksVsTime->Add(entry->fhMeanNTracksVsTime);
+    collectionNEventsVsTime->Add(entry->fhNEventsVsTime);
+    
+    count++;
+  }
+  
+  fhQmaxVsRow          ->Merge(collectionQmaxVsRow       );	   
+  fhQtotVsRow          ->Merge(collectionQtotVsRow	  );	   
+  
+  fhQmaxProfileVsRow   ->Merge(collectionQtotProfileVsRow);
+  fhQtotProfileVsRow   ->Merge(collectionQtotProfileVsRow);
+  
+  fhNClustersYVsRow    ->Merge(collectionNClustersYVsRow);
+  fhNClustersZVsRow    ->Merge(collectionNClustersZVsRow);
+  
+  fhSigmaYVsRow        ->Merge(collectionSigmaYVsRow	  );	   
+  fhSigmaZVsRow        ->Merge(collectionSigmaZVsRow	  );	   
+  
+  fhQmaxProfileYVsRow  ->Merge(collectionQmaxProfileYVsRow  ); 
+  fhQtotProfileYVsRow  ->Merge(collectionQtotProfileYVsRow  );
+  fhSigmaYProfileYVsRow->Merge(collectionSigmaYProfileYVsRow);
+  fhSigmaZProfileYVsRow->Merge(collectionSigmaZProfileYVsRow);
+  
+  fhQmaxProfileZVsRow  ->Merge(collectionQmaxProfileZVsRow  ); 
+  fhQtotProfileZVsRow  ->Merge(collectionQtotProfileZVsRow  );
+  fhSigmaYProfileZVsRow->Merge(collectionSigmaYProfileZVsRow);
+  fhSigmaZProfileZVsRow->Merge(collectionSigmaZProfileZVsRow);
+  
+  fhMeanQtotVsTime     ->Merge(collectionMeanQtotVsTime);
+  fhQtotVsTime         ->Merge(collectionQtotVsTime);
 
-     collectionQmaxProfileVsRow   ->Add(entry->fhQmaxProfileVsRow  );
-     collectionQtotProfileVsRow	  ->Add(entry->fhQtotProfileVsRow  );
+  fhMeanNClustersVsTime->Merge(collectionMeanNClustersVsTime );
+  fhNClustersVsTime    ->Merge(collectionNClustersVsTime);
+  
+  fhTrackQtotPerCluster->Merge(collectionTrackQtotPerCluster);
+  
+  fhTrackQtotPerClusterVsPhi->Merge(collectionTrackQtotPerClusterVsPhi);
+  fhTrackQtotPerClusterVsTheta->Merge(collectionTrackQtotPerClusterVsTheta);
+  
+  fhTrackMeanQtotPerClusterVsPhi->Merge(collectionTrackMeanQtotPerClusterVsPhi);
+  fhTrackMeanQtotPerClusterVsTheta->Merge(collectionTrackMeanQtotPerClusterVsTheta);
+  
+  fhMeanNTracksVsTime->Merge(collectionMeanNTracksVsTime);
+  fhNEventsVsTime->Merge(collectionNEventsVsTime);
+  
+  delete collectionQmaxVsRow;          
+  delete collectionQtotVsRow;  
+  
+  delete collectionQmaxProfileVsRow;
+  delete collectionQtotProfileVsRow;
+  
+  delete collectionNClustersYVsRow;
+  delete collectionNClustersZVsRow;
+  
+  delete collectionSigmaYVsRow;	  
+  delete collectionSigmaZVsRow;	  
+  
+  delete collectionQmaxProfileYVsRow;  
+  delete collectionQtotProfileYVsRow;  
+  delete collectionSigmaYProfileYVsRow;
+  delete collectionSigmaZProfileYVsRow;
+  
+  delete collectionQmaxProfileZVsRow;  
+  delete collectionQtotProfileZVsRow;  
+  delete collectionSigmaYProfileZVsRow;
+  delete collectionSigmaZProfileZVsRow;
+  
+  delete collectionMeanQtotVsTime;
+  delete collectionQtotVsTime;
 
-     collectionNClustersYVsRow    ->Add(entry->fhNClustersYVsRow);
-     collectionNClustersZVsRow    ->Add(entry->fhNClustersZVsRow);
-
-     collectionSigmaYVsRow	  ->Add(entry->fhSigmaYVsRow	   );
-     collectionSigmaZVsRow	  ->Add(entry->fhSigmaZVsRow	   );
-	       		      		       				   
-     collectionQmaxProfileYVsRow  ->Add(entry->fhQmaxProfileYVsRow );
-     collectionQtotProfileYVsRow  ->Add(entry->fhQtotProfileYVsRow );
-     collectionSigmaYProfileYVsRow->Add(entry->fhSigmaYProfileYVsRow);
-     collectionSigmaZProfileYVsRow->Add(entry->fhSigmaZProfileYVsRow);
-
-     collectionQmaxProfileZVsRow  ->Add(entry->fhQmaxProfileZVsRow );
-     collectionQtotProfileZVsRow  ->Add(entry->fhQtotProfileZVsRow );
-     collectionSigmaYProfileZVsRow->Add(entry->fhSigmaYProfileZVsRow);
-     collectionSigmaZProfileZVsRow->Add(entry->fhSigmaZProfileZVsRow);
-
-     collectionQtotVsTime->Add(entry->fhQtotVsTime);
-     collectionQmaxVsTime->Add(entry->fhQmaxVsTime);
-
-     collectionTrackQtotPerCluster->Add(entry->fhTrackQtotPerCluster);
-
-     collectionTrackQtotPerClusterVsSnp->Add(entry->fhTrackQtotPerClusterVsSnp);
-     collectionTrackQtotPerClusterVsTgl->Add(entry->fhTrackQtotPerClusterVsTgl);
-
-     collectionTrackMeanQtotPerClusterVsSnp->Add(entry->fhTrackMeanQtotPerClusterVsSnp);
-     collectionTrackMeanQtotPerClusterVsTgl->Add(entry->fhTrackMeanQtotPerClusterVsTgl);
-
-     count++;
-   }
-
-   fhQmaxVsRow          ->Merge(collectionQmaxVsRow       );	   
-   fhQtotVsRow          ->Merge(collectionQtotVsRow	  );	   
-
-   fhQmaxProfileVsRow   ->Merge(collectionQmaxProfileVsRow);
-   fhQtotProfileVsRow   ->Merge(collectionQtotProfileVsRow);
-
-   fhNClustersYVsRow    ->Merge(collectionNClustersYVsRow);
-   fhNClustersZVsRow    ->Merge(collectionNClustersZVsRow);
-
-   fhSigmaYVsRow        ->Merge(collectionSigmaYVsRow	  );	   
-   fhSigmaZVsRow        ->Merge(collectionSigmaZVsRow	  );	   
-   					       		      	     
-   fhQmaxProfileYVsRow  ->Merge(collectionQmaxProfileYVsRow  ); 
-   fhQtotProfileYVsRow  ->Merge(collectionQtotProfileYVsRow  );
-   fhSigmaYProfileYVsRow->Merge(collectionSigmaYProfileYVsRow);
-   fhSigmaZProfileYVsRow->Merge(collectionSigmaZProfileYVsRow);
-
-   fhQmaxProfileZVsRow  ->Merge(collectionQmaxProfileZVsRow  ); 
-   fhQtotProfileZVsRow  ->Merge(collectionQtotProfileZVsRow  );
-   fhSigmaYProfileZVsRow->Merge(collectionSigmaYProfileZVsRow);
-   fhSigmaZProfileZVsRow->Merge(collectionSigmaZProfileZVsRow);
-
-   fhQtotVsTime->Merge(collectionQtotVsTime);
-   fhQmaxVsTime->Merge(collectionQmaxVsTime);
-
-   fhTrackQtotPerCluster->Merge(collectionTrackQtotPerCluster);
-
-   fhTrackQtotPerClusterVsSnp->Merge(collectionTrackQtotPerClusterVsSnp);
-   fhTrackQtotPerClusterVsTgl->Merge(collectionTrackQtotPerClusterVsTgl);
-
-   fhTrackMeanQtotPerClusterVsSnp->Merge(collectionTrackMeanQtotPerClusterVsSnp);
-   fhTrackMeanQtotPerClusterVsTgl->Merge(collectionTrackMeanQtotPerClusterVsTgl);
-
-   delete collectionQmaxVsRow;          
-   delete collectionQtotVsRow;  
-
-   delete collectionQmaxProfileVsRow;
-   delete collectionQtotProfileVsRow;
-
-   delete collectionNClustersYVsRow;
-   delete collectionNClustersZVsRow;
-
-   delete collectionSigmaYVsRow;	  
-   delete collectionSigmaZVsRow;	  
-   	       		      	  
-   delete collectionQmaxProfileYVsRow;  
-   delete collectionQtotProfileYVsRow;  
-   delete collectionSigmaYProfileYVsRow;
-   delete collectionSigmaZProfileYVsRow;
-
-   delete collectionQmaxProfileZVsRow;  
-   delete collectionQtotProfileZVsRow;  
-   delete collectionSigmaYProfileZVsRow;
-   delete collectionSigmaZProfileZVsRow;
-
-   delete collectionQtotVsTime;
-   delete collectionQmaxVsTime;
-
-   delete collectionTrackQtotPerCluster;
-
-   delete collectionTrackQtotPerClusterVsSnp; 
-   delete collectionTrackQtotPerClusterVsTgl;
-
-   delete collectionTrackMeanQtotPerClusterVsSnp; 
-   delete collectionTrackMeanQtotPerClusterVsTgl;
+  delete collectionMeanNClustersVsTime; 
+  delete collectionNClustersVsTime;     
+  
+  delete collectionTrackQtotPerCluster;
+  
+  delete collectionTrackQtotPerClusterVsPhi; 
+  delete collectionTrackQtotPerClusterVsTheta;
+  
+  delete collectionTrackMeanQtotPerClusterVsPhi; 
+  delete collectionTrackMeanQtotPerClusterVsTheta;
+  
+  delete collectionMeanNTracksVsTime;
+  delete collectionNEventsVsTime;
 
   return count+1;
 }
@@ -519,18 +584,20 @@ void AliTPCClusterHistograms::FillCluster(AliTPCclusterMI* cluster, Int_t time) 
 
   if (qMax<=0) {
     printf(Form("\n WARNING: Hi Marian! How can we have Qmax = %f ??? \n \n", qMax));
-    return;
   }
   if (qTot<=0) {
     printf(Form("\n WARNING: Hi Marian! How can we have Qtot = %f ??? \n \n ", qTot));
-    return;
-  } 
-  
+  }   
   
   // check if the cluster is accepted
   if (fEdgeSuppression)
     if (IsClusterOnEdge(cluster))
       return;
+
+  fNClustersInEvent++;
+  fQtotInEvent = fQtotInEvent + qTot;
+  if (qTot > fMaxQtotInEvent)
+    fMaxQtotInEvent = qTot;
 
   fhQmaxVsRow           ->Fill(padRow, qMax);
   fhQtotVsRow           ->Fill(padRow, qTot);
@@ -557,8 +624,8 @@ void AliTPCClusterHistograms::FillCluster(AliTPCclusterMI* cluster, Int_t time) 
   if (time>0 & fTimeStart>0 & fTimeStop>0 & time>fTimeStart) {
     //Float_t timeFraction = (time - fTimeStart)/(fTimeStop-fTimeStart); 
 
+    fhMeanQtotVsTime->Fill(time,qTot);
     fhQtotVsTime->Fill(time,qTot);
-    fhQmaxVsTime->Fill(time,qMax);
   }
 }
 
@@ -597,18 +664,31 @@ void AliTPCClusterHistograms::FillTrack(const AliTPCseed* seed) {
   
   Float_t meanQtot = totalQtot/nClusters;
   
-  Float_t snp  =  TMath::ASin(seed->GetSnp());
-  Float_t tgl  =  TMath::ATan(seed->GetTgl());
+  // azimuthal angle 
+  Float_t phi    =  TMath::ASin(seed->GetSnp() + seed->GetAlpha());
+  // angle with respect to the central membrane
+  Float_t theta  =  TMath::ATan(seed->GetTgl());
 
   fhTrackQtotPerCluster->Fill(meanQtot);
 
-  fhTrackMeanQtotPerClusterVsSnp->Fill(snp, meanQtot);
-  fhTrackMeanQtotPerClusterVsTgl->Fill(tgl, meanQtot);
+  fhTrackMeanQtotPerClusterVsPhi->Fill(phi,   meanQtot);
+  fhTrackMeanQtotPerClusterVsTheta->Fill(theta, meanQtot);
 
-  fhTrackQtotPerClusterVsSnp->Fill(snp, meanQtot);
-  fhTrackQtotPerClusterVsTgl->Fill(tgl, meanQtot);
-
+  fhTrackQtotPerClusterVsPhi->Fill(phi, meanQtot);
+  fhTrackQtotPerClusterVsTheta->Fill(theta, meanQtot);
 }
+
+//____________________________________________________________________
+void AliTPCClusterHistograms::FillEvent(Int_t time, Int_t nTracks) {
+  //
+  // fill event
+  //
+
+  fhMeanNTracksVsTime->Fill(time, nTracks);
+
+  //  fhNEventsVsTime->Fill(time);
+}
+
 
 //____________________________________________________________________
 Bool_t AliTPCClusterHistograms::IsClusterOnEdge(AliTPCclusterMI* clusterMI) {
@@ -633,6 +713,102 @@ Bool_t AliTPCClusterHistograms::IsClusterOnEdge(AliTPCclusterMI* clusterMI) {
   return kFALSE;
 }
 
+//____________________________________________________________________
+Float_t AliTPCClusterHistograms::DistanceToEdge(AliTPCclusterMI* clusterMI) {
+  //
+  // get the y-distance to closest edge 
+  //
+  
+  Int_t detector = clusterMI->GetDetector();
+  Int_t padRow   = clusterMI->GetRow(); 
+  Float_t y      = clusterMI->GetY();
+  
+  Float_t yEdge = -9999;
+  Float_t d     = 0;
+  
+  // IROC
+  if (detector < 36) {    
+    yEdge = 14 + padRow * 0.1333;
+    
+  }    
+  else { // OROC
+    if (padRow<64) // small pads
+      yEdge = 22.5 + padRow * 0.1746;
+    else           // large pads
+      yEdge = 34.0 + (padRow-64) * 0.2581;      
+  }
+  if (y<=0) yEdge = -yEdge;
+  
+  d = yEdge - y;
+  
+  return d;
+}
+
+
+//____________________________________________________________________
+Bool_t AliTPCClusterHistograms::KeepThisEvent(TString& why) {
+  //
+  // is this event interesting? 
+  //
+  // the criteria are ...
+  // 
+  
+  if (fKeepEvent) {
+    why = TString(fWhyKeepEvent);
+    return kTRUE;
+  }
+
+  if (fNClustersInEvent>20000) {
+    why.Append("_moreThan20000clusters");
+    fWhyKeepEvent = TString(why);
+    fKeepEvent = kTRUE;
+    return kTRUE;
+  }
+  
+  if (fMaxQtotInEvent>10000) {
+    why.Append("_clusterWithQtot20000plus");
+    fWhyKeepEvent = TString(why);
+    fKeepEvent = kTRUE;
+    return kTRUE;
+  }
+
+  if (gRandom->Uniform()<0.001) {
+    why.Append("_random");
+    fWhyKeepEvent = TString(why);
+    fKeepEvent = kTRUE;
+    return kTRUE;
+  }
+
+  return kFALSE;
+}
+
+//____________________________________________________________________
+void AliTPCClusterHistograms::StartEvent() {
+  //
+  // reset counters 
+  // 
+ 
+  fNClustersInEvent  = 0; 
+  fQtotInEvent       = 0; 
+  fMaxQtotInEvent    = 0; 
+  fKeepEvent         = kFALSE; 
+  fWhyKeepEvent      = TString("");
+ 
+}
+
+
+//____________________________________________________________________
+void AliTPCClusterHistograms::FinishEvent(Int_t timeStamp) {
+  //
+  // fill histograms related to the event
+  //
+ 
+  fhMeanNClustersVsTime->Fill(timeStamp, fNClustersInEvent); 
+  fhNClustersVsTime    ->Fill(timeStamp, fNClustersInEvent); 
+
+  fhNEventsVsTime->Fill(timeStamp);
+ 
+}
 
 
 //____________________________________________________________________
@@ -644,9 +820,6 @@ void AliTPCClusterHistograms::SaveHistograms()
 
   gDirectory->mkdir(fName.Data());
   gDirectory->cd(fName.Data());
-
-  //TTimeStamp* t = new TTimeStamp(timeStart);
-  //TNamed* time = new TNamed("timeStart", Form("%d",t->GetDate())
 
   fhQmaxVsRow           ->Write();
   fhQtotVsRow           ->Write();
@@ -670,29 +843,43 @@ void AliTPCClusterHistograms::SaveHistograms()
   fhSigmaYProfileZVsRow ->Write();
   fhSigmaZProfileZVsRow ->Write();
 
+  TNamed* comment = new TNamed("comment", fCommentToHistograms.Data());
+  comment->Write();
+
+  if (fhMeanQtotVsTime->GetEntries()>0)
+    fhMeanQtotVsTime->Write();
+
   if (fhQtotVsTime->GetEntries()>0)
     fhQtotVsTime->Write();
 
-  if (fhQmaxVsTime->GetEntries()>0)
-    fhQmaxVsTime->Write();
+  if (fhMeanNClustersVsTime->GetEntries()>0)
+    fhMeanNClustersVsTime->Write();
 
+  if (fhNClustersVsTime->GetEntries()>0)
+    fhNClustersVsTime->Write();
+
+  if (fhNEventsVsTime->GetEntries()>0)
+    fhNEventsVsTime->Write();
 
   gDirectory->mkdir("track_hists");
   gDirectory->cd("track_hists");
 
   fhTrackQtotPerCluster->Write();
 
-  fhTrackQtotPerClusterVsSnp->Write();
-  fhTrackQtotPerClusterVsTgl->Write();
+  fhTrackQtotPerClusterVsPhi->Write();
+  fhTrackQtotPerClusterVsTheta->Write();
 
-  fhTrackMeanQtotPerClusterVsSnp->Write();
-  fhTrackMeanQtotPerClusterVsTgl->Write();
+  fhTrackMeanQtotPerClusterVsPhi->Write();
+  fhTrackMeanQtotPerClusterVsTheta->Write();
+
+  fhMeanNTracksVsTime->Write();
 
   gDirectory->cd("../");
 
   gDirectory->cd("../");
 
 }
+
 
 //____________________________________________________________________
 TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* /*opt*/) {
@@ -728,38 +915,34 @@ TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* /*opt*/) {
   
   tEdge->SetTextSize(0.015);
   tEdge->DrawClone();
+  
+
 
   c->cd(2);
+  fhNClustersYVsRow->Draw("colz");
+
+  c->cd(3);
+  fhNClustersZVsRow->Draw("colz");
+
+  c->cd(4);
   fhQmaxVsRow->Draw("colz");
   fhQmaxProfileVsRow->Draw("same");
 
-  c->cd(3);
+  c->cd(5);
   fhQtotVsRow->Draw("colz"); 
   fhQtotProfileVsRow->Draw("same");       
   			
-  c->cd(4);
-  fhQmaxProfileYVsRow   ->Draw("colz");
-
-  c->cd(5);
-  fhQtotProfileYVsRow   ->Draw("colz");
-
   c->cd(6);
-  fhQmaxProfileZVsRow   ->Draw("colz");
+  fhQtotProfileYVsRow   ->Draw("colz");
 
   c->cd(7);
   fhQtotProfileZVsRow   ->Draw("colz");
 
   c->cd(8);
-    
-  fhSigmaYVsRow         ->Draw("colz");
+  fhQmaxProfileYVsRow   ->Draw("colz");
 
   c->cd(9);
-  fhSigmaZVsRow         ->Draw("colz");
+  fhQmaxProfileZVsRow   ->Draw("colz");    
   			
-  //fhSigmaYProfileYVsRow ->Draw("colz");
-  //fhSigmaZProfileYVsRow ->Draw("colz");
-
-  //fhSigmaYProfileZVsRow ->Draw("colz");
-  //fhSigmaZProfileZVsRow ->Draw("colz");
   return c;
 }
