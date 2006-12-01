@@ -10,6 +10,9 @@ void AliPHOSCalibHistoProducer(const char* file="2006run2211.root")
   //
   // Author: Boris Polichtchouk, 4 October 2006
 
+  // Load PHOS shuttle library as it is not linked to aliroot
+  gSystem->Load("libPHOSshuttle");
+
   AliRawReaderRoot* rf = new AliRawReaderRoot(file);
   AliPHOSCalibHistoProducer hp(rf);
   hp.Run();
