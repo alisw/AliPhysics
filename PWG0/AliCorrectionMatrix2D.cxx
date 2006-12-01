@@ -52,9 +52,15 @@ AliCorrectionMatrix2D::AliCorrectionMatrix2D(const Char_t* name, const Char_t* t
   // constructor
   //
 
-  fhMeas  = new TH2F(Form("meas_%s",name), Form("meas_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
-  fhGene  = new TH2F(Form("gene_%s",name), Form("gene_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
-  fhCorr  = new TH2F(Form("corr_%s",name), Form("corr_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  fhMeas  = new TH2F("measured",   Form("%s measured",title),   nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhGene  = new TH2F("generated",  Form("%s generated",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhCorr  = new TH2F("correction", Form("%s correction",title), nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+
+  TH1::AddDirectory(oldStatus);
 
   fhMeas->Sumw2();
   fhGene->Sumw2();
@@ -70,11 +76,17 @@ AliCorrectionMatrix2D::AliCorrectionMatrix2D(const Char_t* name, const Char_t* t
   // constructor
   //
 
-  fhMeas  = new TH2F(Form("meas_%s",name), Form("meas_%s",title),  nBinX, X, nBinY, Y);
-  fhGene  = new TH2F(Form("gene_%s",name), Form("gene_%s",title),  nBinX, X, nBinY, Y);
-  fhCorr  = new TH2F(Form("corr_%s",name), Form("corr_%s",title),  nBinX, X, nBinY, Y);
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
 
-  fhMeas->Sumw2();
+	fhMeas  = new TH2F("measured",   Form("%s measured",title),   nBinX, X, nBinY, Y);
+  fhGene  = new TH2F("generated",  Form("%s generated",title),  nBinX, X, nBinY, Y);
+  fhCorr  = new TH2F("correction", Form("%s correction",title), nBinX, X, nBinY, Y);
+
+  TH1::AddDirectory(oldStatus);
+
+	fhMeas->Sumw2();
   fhGene->Sumw2();
   fhCorr->Sumw2();
 }

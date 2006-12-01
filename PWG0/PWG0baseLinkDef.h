@@ -19,6 +19,8 @@
 
 #pragma link C++ class AliPWG0Helper+;
 
+#pragma link C++ class AliCorrection+;
+
 
 
 #endif

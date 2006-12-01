@@ -18,8 +18,8 @@ class AliPWG0Helper : public TObject
     static Bool_t IsVertexReconstructed(AliESD* aEsd);
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
 
-    static void CreateProjections(TH3* hist);
-    static void CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis = 0, Bool_t putErrors = kFALSE);
+    static void CreateProjections(TH3* hist, Bool_t save = kFALSE);
+    static void CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis = 0, Bool_t putErrors = kFALSE, Bool_t save = kFALSE);
     static const char* GetAxisTitle(TH3* hist, const char axis);
     
   protected:
