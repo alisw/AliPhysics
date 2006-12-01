@@ -9,6 +9,7 @@ class AliESDtrackCuts;
 class AlidNdEtaCorrection;
 class TH1F;
 class TParticlePDG;
+class dNdEtaAnalysis;
 
 class AlidNdEtaCorrectionSelector : public AliSelectorRL {
   public:
@@ -29,6 +30,9 @@ class AlidNdEtaCorrectionSelector : public AliSelectorRL {
     AliESDtrackCuts*  fEsdTrackCuts;          // Object containing the parameters of the esd track cuts
 
     AlidNdEtaCorrection* fdNdEtaCorrection;      // contains the intermediate histograms (on each slave)
+
+    dNdEtaAnalysis* fdNdEtaAnalysisMC; // analysis from MC (only triggered, vertex events)
+    dNdEtaAnalysis* fdNdEtaAnalysisESD; // analysis from ESD (not yet corrected!)
 
     TH1F* fPIDParticles; // pid of primary particles
     TH1F* fPIDTracks; // pid of reconstructed tracks

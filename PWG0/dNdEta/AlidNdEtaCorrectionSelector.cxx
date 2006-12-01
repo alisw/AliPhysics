@@ -31,12 +31,16 @@
 #include "AliPWG0Helper.h"
 #include "AliPWG0depHelper.h"
 
+#include "dNdEta/dNdEtaAnalysis.h"
+
 ClassImp(AlidNdEtaCorrectionSelector)
 
 AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector() :
   AliSelectorRL(),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0),
+  fdNdEtaAnalysisMC(0),
+  fdNdEtaAnalysisESD(0),
   fPIDParticles(0),
   fPIDTracks(0),
   fClustersITSPos(0),
@@ -148,6 +152,9 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 
   fClustersITSNeg = new TH1F("clusters_its_neg", "clusters_its_neg", 7, -0.5, 6.5);
   fClustersTPCNeg = new TH1F("clusters_tpc_neg", "clusters_tpc_neg", 160, -0.5, 159.5);
+
+  fdNdEtaAnalysisMC = new dNdEtaAnalysis("dndetaMC", "dndetaMC");
+  fdNdEtaAnalysisESD = new dNdEtaAnalysis("dndetaESD", "dndetaESD");
 }
 
 void AlidNdEtaCorrectionSelector::Init(TTree* tree)
@@ -230,8 +237,16 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
 
+  // primary vertex (from MC)
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
+
+  // get process type
+  Int_t processType = AliPWG0depHelper::GetPythiaEventProcessType(header);
+  AliDebug(AliLog::kDebug+1, Form("Found pythia procces type %d", processType));
+
+  if (processType<0)
+    AliDebug(AliLog::kError, Form("Unknown Pythia process type %d.", processType));
 
   // loop over mc particles
   Int_t nPrim  = stack->GetNprimary();
@@ -257,13 +272,16 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     Float_t eta = particle->Eta();
     Float_t pt = particle->Pt();
 
-    if (vertexReconstructed) {
-      fdNdEtaCorrection->FillParticle(vtxMC[2], eta, pt);
+    fdNdEtaCorrection->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, processType);
 
-      if (pt > 0.1 && pt < 0.2)
-	fPIDParticles->Fill(particle->GetPdgCode());
+    if (eventTriggered)
+    {
+      if (vertexReconstructed)
+      {
+        fdNdEtaAnalysisMC->FillTrack(vtxMC[2], eta, pt);
+      }
     }
-  }// end of mc particle
+  } // end of mc particle
 
   // ########################################################
   // loop over esd tracks
@@ -301,12 +319,13 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     if (SignOK(particle->GetPDG()) == kFALSE)
         continue;
 
-    if (vertexReconstructed)
+    if (eventTriggered && vertexReconstructed)
     {
-      fdNdEtaCorrection->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
+      fdNdEtaCorrection->FillTrackedParticle(vtxMC[2], particle->Eta(), particle->Pt());
+      fdNdEtaAnalysisESD->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
       if (particle->Pt() > 0.1 && particle->Pt() < 0.2)
-	{
-	  fPIDTracks->Fill(particle->GetPdgCode());
+      {
+        fPIDTracks->Fill(particle->GetPdgCode());
         if (particle->GetPDG()->Charge() > 0)
         {
           fClustersITSPos->Fill(esdTrack->GetITSclusters(0));
@@ -321,27 +340,22 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     }
   } // end of track loop
 
+  // get the ESD vertex
+  const AliESDVertex* vtxESD = fESD->GetVertex();
+  // FAKE test!
+  //nGoodTracks = vtxESD->GetNContributors();
+
+  if (eventTriggered && vertexReconstructed)
+    fdNdEtaAnalysisMC->FillEvent(vtxMC[2], nGoodTracks);
+
   // stuff regarding the vertex reco correction and trigger bias correction
+  fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, processType);
   if (eventTriggered) {
-    fdNdEtaCorrection->FillEventWithTrigger(vtxMC[2], nGoodTracks);
     if (vertexReconstructed)
-      fdNdEtaCorrection->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+    {
+      fdNdEtaAnalysisESD->FillEvent(vtxMC[2], nGoodTracks);
+    }
   }
-
-  // getting process information
-  Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
-  AliDebug(AliLog::kDebug+1,Form(" Found pythia procces type %d", processtype));
-
-  if (processtype<0)
-    AliDebug(AliLog::kError, Form("Unkown Pythia process type %d.", processtype));
-  
-  fdNdEtaCorrection->FillEventAll(vtxMC[2], nGoodTracks, "INEL");
-  
-  if (processtype!=92 && processtype!=93)
-    fdNdEtaCorrection->FillEventAll(vtxMC[2], nGoodTracks, "NSD");
-  
-  if (processtype!=92 && processtype!=93 && processtype!=94)
-    fdNdEtaCorrection->FillEventAll(vtxMC[2], nGoodTracks, "ND");
 
   return kTRUE;
 }
@@ -362,6 +376,8 @@ void AlidNdEtaCorrectionSelector::SlaveTerminate()
   }
 
   fOutput->Add(fdNdEtaCorrection);
+  fOutput->Add(fdNdEtaAnalysisMC);
+  fOutput->Add(fdNdEtaAnalysisESD);
 }
 
 void AlidNdEtaCorrectionSelector::Terminate()
@@ -373,7 +389,9 @@ void AlidNdEtaCorrectionSelector::Terminate()
   AliSelectorRL::Terminate();
 
   fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("dndeta_correction"));
-  if (!fdNdEtaCorrection)
+  fdNdEtaAnalysisMC = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaMC"));
+  fdNdEtaAnalysisESD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaESD"));
+  if (!fdNdEtaCorrection || !fdNdEtaAnalysisMC || !fdNdEtaAnalysisESD)
   {
     AliDebug(AliLog::kError, "Could not read object from output list");
     return;
@@ -386,6 +404,8 @@ void AlidNdEtaCorrectionSelector::Terminate()
   if (fEsdTrackCuts)
     fEsdTrackCuts->SaveHistograms("esd_track_cuts");
   fdNdEtaCorrection->SaveHistograms();
+  fdNdEtaAnalysisMC->SaveHistograms();
+  fdNdEtaAnalysisESD->SaveHistograms();
 
   fout->Write();
   fout->Close();
