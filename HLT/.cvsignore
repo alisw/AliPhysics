@@ -1,3 +1,4 @@
 *.sh 
-lib* 
+lib*.so
+lib*.dylib
 *~ 
