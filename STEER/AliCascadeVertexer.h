@@ -20,17 +20,31 @@ class AliExternalTrackParam;
 class AliCascadeVertexer : public TObject {
 public:
   AliCascadeVertexer();
-  AliCascadeVertexer(const Double_t cuts[8]);
   void SetCuts(const Double_t cuts[8]);
-  void SetVertex(Double_t *vtx) { fX=vtx[0]; fY=vtx[1]; fZ=vtx[2]; }
+  static void SetDefaultCuts(const Double_t cuts[8]);
 
   Int_t V0sTracks2CascadeVertices(AliESD *event);
   Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
 
   void GetCuts(Double_t cuts[8]) const;
-  void GetVertex(Double_t *vtx) const { vtx[0]=fX; vtx[1]=fY; vtx[2]=fZ; }
+  static void GetDefaultCuts(Double_t cuts[8]);
 
 private:
+  static
+  Double_t fgChi2max;   // maximal allowed chi2 
+  static
+  Double_t fgDV0min;    // min. allowed V0 impact parameter
+  static
+  Double_t fgMassWin;   // window around the Lambda mass
+  static
+  Double_t fgDBachMin;  // min. allowed bachelor impact parameter
+  static
+  Double_t fgDCAmax;    // maximal allowed DCA between the V0 and the track 
+  static
+  Double_t fgCPAmax;    // maximal allowed cosine of the cascade pointing angle
+  static
+  Double_t fgRmin, fgRmax;// max & min radii of the fiducial volume
+  
   Double_t fChi2max;    // maximal allowed chi2 
   Double_t fDV0min;     // min. allowed V0 impact parameter
   Double_t fMassWin;    // window around the Lambda mass
@@ -39,42 +53,19 @@ private:
   Double_t fCPAmax;     // maximal allowed cosine of the cascade pointing angle
   Double_t fRmin, fRmax;// max & min radii of the fiducial volume
   
-  Double_t fX;            // X-coordinate of the primary vertex
-  Double_t fY;            // Y-coordinate of the primary vertex
-  Double_t fZ;            // Z-coordinate of the primary vertex
-
-  ClassDef(AliCascadeVertexer,1)  // cascade verterxer 
+  ClassDef(AliCascadeVertexer,2)  // cascade verterxer 
 };
 
 inline AliCascadeVertexer::AliCascadeVertexer() :
   TObject(),
-  fChi2max(33.), 
-  fDV0min(0.015),
-  fMassWin(0.05),
-  fDBachMin(0.015),
-  fDCAmax(0.01),
-  fCPAmax(0.025), 
-  fRmin(0.5),
-  fRmax(2.5), 
-  fX(0),
-  fY(0),
-  fZ(0)
-{
-}
-
-inline AliCascadeVertexer::AliCascadeVertexer(const Double_t cuts[8]) :
-  TObject(),
-  fChi2max(cuts[0]), 
-  fDV0min(cuts[1]),
-  fMassWin(cuts[2]),
-  fDBachMin(cuts[3]),
-  fDCAmax(cuts[4]),
-  fCPAmax(cuts[5]),
-  fRmin(cuts[6]),
-  fRmax(cuts[7]), 
-  fX(0),
-  fY(0),
-  fZ(0)
+  fChi2max(fgChi2max), 
+  fDV0min(fgDV0min),
+  fMassWin(fgMassWin),
+  fDBachMin(fgDBachMin),
+  fDCAmax(fgDCAmax),
+  fCPAmax(fgCPAmax), 
+  fRmin(fgRmin),
+  fRmax(fgRmax)
 {
 }
 
@@ -85,11 +76,25 @@ inline void AliCascadeVertexer::SetCuts(const Double_t cuts[8]) {
   fRmin=cuts[6];     fRmax=cuts[7]; 
 }
 
+inline void AliCascadeVertexer::SetDefaultCuts(const Double_t cuts[8]) {
+  fgChi2max=cuts[0]; 
+  fgDV0min=cuts[1];   fgMassWin=cuts[2]; fgDBachMin=cuts[3];
+  fgDCAmax=cuts[4];   fgCPAmax=cuts[5];
+  fgRmin=cuts[6];     fgRmax=cuts[7]; 
+}
+
 inline void AliCascadeVertexer::GetCuts(Double_t cuts[8]) const {
   cuts[0]=fChi2max; 
   cuts[1]=fDV0min;   cuts[2]=fMassWin;  cuts[3]=fDBachMin;
   cuts[4]=fDCAmax;   cuts[5]=fCPAmax;
   cuts[6]=fRmin;     cuts[7]=fRmax; 
+}
+
+inline void AliCascadeVertexer::GetDefaultCuts(Double_t cuts[8]) {
+  cuts[0]=fgChi2max; 
+  cuts[1]=fgDV0min;   cuts[2]=fgMassWin;  cuts[3]=fgDBachMin;
+  cuts[4]=fgDCAmax;   cuts[5]=fgCPAmax;
+  cuts[6]=fgRmin;     cuts[7]=fgRmax; 
 }
 
 #endif

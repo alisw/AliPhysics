@@ -22,6 +22,7 @@
 
 //modified by R. Vernet 30/6/2006 : daughter label
 //modified by R. Vernet  3/7/2006 : causality
+//modified by I. Belikov 24/11/2006 : static setter for the default cuts
 
 
 #include <TObjArray.h>
@@ -34,11 +35,33 @@
 
 ClassImp(AliCascadeVertexer)
 
+//A set of loose cuts
+Double_t 
+  AliCascadeVertexer::fgChi2max=33.; //maximal allowed chi2 
+Double_t 
+  AliCascadeVertexer::fgDV0min=0.05;  //min. V0 impact parameter
+Double_t 
+  AliCascadeVertexer::fgMassWin=0.008; //window around the Lambda mass
+Double_t 
+  AliCascadeVertexer::fgDBachMin=0.035;//min. bachelor impact parameter
+Double_t 
+  AliCascadeVertexer::fgDCAmax=0.1;  //max. DCA between the V0 and the track 
+Double_t 
+  AliCascadeVertexer::fgCPAmax=0.9985;//max. cosine of the cascade pointing angle
+Double_t 
+  AliCascadeVertexer::fgRmin=0.9;    //min radius of the fiducial volume
+Double_t 
+  AliCascadeVertexer::fgRmax=2.9;    //max radius of the fiducial volume
+  
+
 Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
   //--------------------------------------------------------------------
   // This function reconstructs cascade vertices
   //      Adapted to the ESD by I.Belikov (Jouri.Belikov@cern.ch)
   //--------------------------------------------------------------------
+   const AliESDVertex *vtx=event->GetVertex();
+   Double_t xv=vtx->GetXv(), yv=vtx->GetYv(), zv=vtx->GetZv();
+
    Double_t b=event->GetMagneticField();
    Int_t nV0=(Int_t)event->GetNumberOfV0s();
 
@@ -48,7 +71,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
    for (i=0; i<nV0; i++) {
        AliESDv0 *v=event->GetV0(i);
        if (v->GetOnFlyStatus()) continue;
-       if (v->GetD(fX,fY,fZ)<fDV0min) continue;
+       if (v->GetD(xv,yv,zv)<fDV0min) continue;
        vtcs.AddLast(v);
    }
    nV0=vtcs.GetEntriesFast();
@@ -65,7 +88,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
        if ((status&AliESDtrack::kITSrefit)==0)
           if (flags!=status) continue;
 
-       if (TMath::Abs(esdtr->GetD(fX,fY,b))<fDBachMin) continue;
+       if (TMath::Abs(esdtr->GetD(xv,yv,b))<fDBachMin) continue;
 
        trk[ntr++]=i;
    }   
@@ -108,7 +131,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
          Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
 
-  	 if (cascade.GetCascadeCosineOfPointingAngle(fX,fY,fZ) <fCPAmax) continue; //condition on the cascade pointing angle 
+  	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) <fCPAmax) continue; //condition on the cascade pointing angle 
 	 
 	 event->AddCascade(&cascade);
          ncasc++;
@@ -150,7 +173,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
          if (r2 > (x1*x1+y1*y1)) continue;
          if (z*z > z1*z1) continue;
 
-	 if (cascade.GetCascadeCosineOfPointingAngle(fX,fY,fZ) < fCPAmax) continue; //condition on the cascade pointing angle 
+	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) < fCPAmax) continue; //condition on the cascade pointing angle 
 	 event->AddCascade(&cascade);
          ncasc++;
 

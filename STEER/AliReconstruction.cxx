@@ -130,6 +130,8 @@
 #include "AliTracker.h"
 #include "AliVertexer.h"
 #include "AliVertexerTracks.h"
+#include "AliV0vertexer.h"
+#include "AliCascadeVertexer.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
@@ -748,6 +750,16 @@ Bool_t AliReconstruction::Run(const char* input)
 
     esd->SetPrimaryVertex(tVertexer.FindPrimaryVertex(esd));
 
+    {
+    // V0 finding
+    AliV0vertexer vtxer;
+    vtxer.Tracks2V0vertices(esd);
+
+    // Cascade finding
+    AliCascadeVertexer cvtxer;
+    cvtxer.V0sTracks2CascadeVertices(esd);
+    }
+ 
     // write ESD
     if (fWriteESDfriend) {
        esdf=new AliESDfriend();

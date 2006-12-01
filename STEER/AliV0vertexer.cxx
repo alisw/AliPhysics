@@ -31,10 +31,22 @@
 
 ClassImp(AliV0vertexer)
 
+
+//A set of very loose cuts 
+Double_t AliV0vertexer::fgChi2max=33.;//max. chi2
+Double_t AliV0vertexer::fgDNmin=0.16; //min. negative daughter's imp parameter 
+Double_t AliV0vertexer::fgDPmin=0.05; //min. positive daughter's imp parameter
+Double_t AliV0vertexer::fgDCAmax=0.08; //max. DCA between the daughter tracks
+Double_t AliV0vertexer::fgCPAmax=0.99;//max. cosine of V0's pointing angle
+Double_t AliV0vertexer::fgRmin=0.9;   //min. radius of the fiducial volume
+Double_t AliV0vertexer::fgRmax=2.9;   //max. radius of the fiducial volume
+
 Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
   //--------------------------------------------------------------------
   //This function reconstructs V0 vertices
   //--------------------------------------------------------------------
+   const AliESDVertex *vtx=event->GetVertex();
+   Double_t xv=vtx->GetXv(), yv=vtx->GetYv(), zv=vtx->GetZv();
 
    Int_t nentr=event->GetNumberOfTracks();
    Double_t b=event->GetMagneticField();
@@ -56,7 +68,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
      if ((status&AliESDtrack::kITSrefit)==0)
         if (flags!=status) continue;
 
-     Double_t d=esdTrack->GetD(fX,fY,b);
+     Double_t d=esdTrack->GetD(xv,yv,b);
      if (TMath::Abs(d)<fDPmin) continue;
      if (TMath::Abs(d)>fRmax) continue;
 
@@ -73,8 +85,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
          Int_t pidx=pos[k];
 	 AliESDtrack *ptrk=event->GetTrack(pidx);
 
-         if (TMath::Abs(ntrk->GetD(fX,fY,b))<fDNmin)
-	   if (TMath::Abs(ptrk->GetD(fX,fY,b))<fDNmin) continue;
+         if (TMath::Abs(ntrk->GetD(xv,yv,b))<fDNmin)
+	   if (TMath::Abs(ptrk->GetD(xv,yv,b))<fDNmin) continue;
 
          Double_t xn, xp, dca=ntrk->GetDCA(ptrk,b,xn,xp);
          if (dca > fDCAmax) continue;
@@ -103,7 +115,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
          AliESDv0 vertex(nt,nidx,pt,pidx);
          if (vertex.GetChi2V0() > fChi2max) continue;
 	 
-	 if (vertex.GetV0CosineOfPointingAngle(fX,fY,fZ) < fCPAmax) continue;
+	 if (vertex.GetV0CosineOfPointingAngle(xv,yv,zv) < fCPAmax) continue;
 	 vertex.SetDcaV0Daughters(dca);
 
          event->AddV0(&vertex);

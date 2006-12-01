@@ -672,9 +672,6 @@ Bool_t AliMonitorProcess::ReconstructV0s(AliESD* esd)
   // V0 finder
   AliDebug(1, "reconstructing V0s...");
   AliV0vertexer vertexer;
-  Double_t vtx[3];
-  esd->GetVertex()->GetXYZ(vtx);
-  vertexer.SetVertex(vtx);
   vertexer.Tracks2V0vertices(esd);
 
   return kTRUE;
