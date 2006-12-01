@@ -33,7 +33,7 @@ public:
   TH2F* GetGeneratedHistogram() const;
   TH2F* GetMeasuredHistogram() const;
 
-  TH2F* GetCorrectionHistrogram() {return (TH2F*)fhCorr;}
+  TH2F* GetCorrectionHistogram() {return (TH2F*)fhCorr;}
   TH1F* Get1DCorrection(Char_t* opt="x", Float_t min=0, Float_t max=0);
 
   void FillMeas(Float_t ax, Float_t ay);

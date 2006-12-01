@@ -149,7 +149,7 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
     in.close();
     
     if (check)
-      outFile.close();
+      outfile.close();
   }
   
   if (chainFriend)

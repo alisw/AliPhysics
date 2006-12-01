@@ -55,9 +55,15 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   // constructor
   //
 
-  fhMeas  = new TH3F(Form("meas_%s",name), Form("meas_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
-  fhGene  = new TH3F(Form("gene_%s",name), Form("gene_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
-  fhCorr  = new TH3F(Form("corr_%s",name), Form("corr_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  fhMeas  = new TH3F("measured",   Form("%s measured",title),   nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
+  fhGene  = new TH3F("generated",  Form("%s generated",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
+  fhCorr  = new TH3F("correction", Form("%s correction",title), nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
+
+  TH1::AddDirectory(oldStatus);
 
   fhMeas->Sumw2();
   fhGene->Sumw2();
@@ -80,9 +86,15 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   for (Int_t i=0; i<=nBinY; ++i)
     binLimitsY[i] = Ymin + (Ymax - Ymin) / nBinY * i;
 
-  fhMeas  = new TH3F(Form("meas_%s",name), Form("meas_%s",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
-  fhGene  = new TH3F(Form("gene_%s",name), Form("gene_%s",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
-  fhCorr  = new TH3F(Form("corr_%s",name), Form("corr_%s",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
+  fhMeas  = new TH3F("measured",   Form("%s measured",title),   nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+  fhGene  = new TH3F("generated",  Form("%s generated",title),  nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+  fhCorr  = new TH3F("correction", Form("%s correction",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+
+  TH1::AddDirectory(oldStatus);
 
   delete[] binLimitsX;
   delete[] binLimitsY;
@@ -161,7 +173,13 @@ void AliCorrectionMatrix3D::SaveHistograms()
   AliCorrectionMatrix::SaveHistograms();
 
   if (GetGeneratedHistogram() && GetMeasuredHistogram())
-    AliPWG0Helper::CreateDividedProjections(GetGeneratedHistogram(), GetMeasuredHistogram());
+  {
+    gDirectory->cd(GetName());
+    
+    AliPWG0Helper::CreateDividedProjections(GetGeneratedHistogram(), GetMeasuredHistogram(), 0, kFALSE, kTRUE);
+    
+    gDirectory->cd("..");
+  }
 }
 
 //____________________________________________________________________

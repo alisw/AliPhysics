@@ -33,18 +33,22 @@ public:
 
   TH1* GetGeneratedHistogram() { return fhGene; }
   TH1* GetMeasuredHistogram()  { return fhMeas; }
+  TH1* GetCorrectionHistogram() { return fhCorr; }
 
   void SetGeneratedHistogram(TH1* agene) { fhGene = agene; }
   void SetMeasuredHistogram(TH1* ameas)  { fhMeas = ameas; }
+  void SetCorrectionHistogram(TH1* acorr) { fhCorr = acorr; }
 
   void Divide();
+  void Multiply();
+  void SetCorrectionToUnity();
 
   void SetAxisTitles(const Char_t* titleX="", const Char_t* titleY="", const Char_t* titleZ="");
 
-  virtual Bool_t LoadHistograms(const Char_t* fileName, const Char_t* dir = ".");
+  virtual Bool_t LoadHistograms(const Char_t* dir = 0);
   virtual void SaveHistograms();
 
-  virtual void DrawHistograms();
+  virtual void DrawHistograms(const Char_t* canvasName = 0);
 
   virtual void ReduceInformation();
 

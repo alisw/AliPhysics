@@ -114,7 +114,7 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
 }
 
 //____________________________________________________________________
-void AliPWG0Helper::CreateProjections(TH3* hist)
+void AliPWG0Helper::CreateProjections(TH3* hist, Bool_t save)
 {
   // create projections of 3d hists to all 2d combinations
   // the histograms are not returned, just use them from memory or use this to create them in a file
@@ -122,18 +122,24 @@ void AliPWG0Helper::CreateProjections(TH3* hist)
   TH1* proj = hist->Project3D("yx");
   proj->SetXTitle(hist->GetXaxis()->GetTitle());
   proj->SetYTitle(hist->GetYaxis()->GetTitle());
+  if (save)
+    proj->Write();
 
   proj = hist->Project3D("zx");
   proj->SetXTitle(hist->GetXaxis()->GetTitle());
   proj->SetYTitle(hist->GetZaxis()->GetTitle());
+  if (save)
+    proj->Write();
 
   proj = hist->Project3D("zy");
   proj->SetXTitle(hist->GetYaxis()->GetTitle());
   proj->SetYTitle(hist->GetZaxis()->GetTitle());
+  if (save)
+    proj->Write();
 }
 
 //____________________________________________________________________
-void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis, Bool_t putErrors)
+void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis, Bool_t putErrors, Bool_t save)
 {
   // create projections of the 3d hists divides them
   // axis decides to which plane, if axis is 0 to all planes
@@ -141,9 +147,9 @@ void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* 
 
   if (axis == 0)
   {
-    CreateDividedProjections(hist, hist2, "yx", putErrors);
-    CreateDividedProjections(hist, hist2, "zx", putErrors);
-    CreateDividedProjections(hist, hist2, "zy", putErrors);
+    CreateDividedProjections(hist, hist2, "yx", putErrors, save);
+    CreateDividedProjections(hist, hist2, "zx", putErrors, save);
+    CreateDividedProjections(hist, hist2, "zy", putErrors, save);
 
     return;
   }
@@ -168,7 +174,10 @@ void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* 
     proj2->SetXTitle(GetAxisTitle(hist2, axis[0]));
 
   TH1* division = dynamic_cast<TH1*> (proj->Clone(Form("%s_div_%s", proj->GetName(), proj2->GetName())));
+  //printf("doing axis: %s, x axis has %d %d bins, min %f %f max %f %f\n", axis, division->GetNbinsX(), proj2->GetNbinsX(), division->GetXaxis()->GetBinLowEdge(1), proj2->GetXaxis()->GetBinLowEdge(1), division->GetXaxis()->GetBinUpEdge(division->GetNbinsX()), proj2->GetXaxis()->GetBinUpEdge(proj2->GetNbinsX()));
+  //printf("doing axis: %s, y axis has %d %d bins, min %f %f max %f %f\n", axis, division->GetNbinsY(), proj2->GetNbinsY(), division->GetYaxis()->GetBinLowEdge(1), proj2->GetYaxis()->GetBinLowEdge(1), division->GetYaxis()->GetBinUpEdge(division->GetNbinsY()), proj2->GetYaxis()->GetBinUpEdge(proj2->GetNbinsY()));
   division->Divide(proj2);
+  division->SetTitle(Form("%s divided %s", proj->GetTitle(), proj2->GetTitle()));
 
   if (putErrors)
   {
@@ -176,7 +185,7 @@ void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* 
     if (division->GetDimension() == 1)
     {
       Int_t nBins = division->GetNbinsX();
-      for (Int_t i = 0; i <= nBins; ++i)
+      for (Int_t i = 1; i <= nBins; ++i)
         if (proj2->GetBinContent(i) != 0)
           division->SetBinError(i, TMath::Sqrt(proj->GetBinContent(i)) / proj2->GetBinContent(i));
     }
@@ -184,11 +193,18 @@ void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* 
     {
       Int_t nBinsX = division->GetNbinsX();
       Int_t nBinsY = division->GetNbinsY();
-      for (Int_t i = 0; i <= nBinsX; ++i)
-        for (Int_t j = 0; j <= nBinsY; ++j)
+      for (Int_t i = 1; i <= nBinsX; ++i)
+        for (Int_t j = 1; j <= nBinsY; ++j)
           if (proj2->GetBinContent(i, j) != 0)
             division->SetBinError(i, j, TMath::Sqrt(proj->GetBinContent(i, j)) / proj2->GetBinContent(i, j));
     }
+  }
+
+  if (save)
+  {
+    proj->Write();
+    proj2->Write();
+    division->Write();
   }
 }
 
