@@ -136,9 +136,9 @@ void AliEMCALv2::StepManager(void){
   // position wrt MRS and energy deposited
   static Float_t        xyzte[5]={0.,0.,0.,0.,0.};// position wrt MRS, time and energy deposited
   static Float_t        pmom[4]={0.,0.,0.,0.};
-  static TLorentzVector pos; // Lorentz vector of the track current position.
-  static TLorentzVector mom; // Lorentz vector of the track current momentum.
-  static Float_t ienergy = 0;
+  static TLorentzVector pos;  // Lorentz vector of the track current position.
+  static TLorentzVector mom;  // Lorentz vector of the track current momentum.
+  static Float_t ienergy = 0; // part->Energy();
   static TString curVolName;
   static int supModuleNumber, moduleNumber, yNumber, xNumber, absid;
   static int keyGeom=1;
@@ -161,7 +161,6 @@ void AliEMCALv2::StepManager(void){
 
   curVolName = gMC->CurrentVolName();
   if(curVolName.Contains(vn) || curVolName.Contains("SCX")) { // We are in a scintillator layer; SCX for 3X3
-    //    printf(" keyGeom %i : Sensetive volume %s (%s) \n", keyGeom, curVolName.Data(), vn); 
     
     if( ((depositedEnergy = gMC->Edep()) > 0.)  && (gMC->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy
       //       Info("StepManager "," entry %i DE %f",++ientry, depositedEnergy); // for testing
@@ -214,19 +213,18 @@ void AliEMCALv2::StepManager(void){
       
       //      if(ientry%200 > 0) return; // testing
       supModuleNumber = moduleNumber = yNumber = xNumber = absid = 0;
-      if(keyGeom >= 1) { // old style
+      if(keyGeom >= 1) { // TRD1 case now
         gMC->CurrentVolOffID(4, supModuleNumber);
         gMC->CurrentVolOffID(3, moduleNumber);
         gMC->CurrentVolOffID(1, yNumber);
         gMC->CurrentVolOffID(0, xNumber); // really x number now
         if(strcmp(gMC->CurrentVolOffName(4),"SM10")==0) supModuleNumber += 10; // 13-oct-05
 	// Nov 10,2006
-        xNumber == 0;
-        if     (strcmp(gMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
-        else if(strcmp(gMC->CurrentVolOffName(0),"SCX2")==0) xNumber=2;
-        else if(strcmp(gMC->CurrentVolOffName(0),"SCX3")==0) xNumber=3;
-        if(xNumber==0) {
-          Fatal("StepManager()", "Wrong name SCX : %s ", gMC->CurrentVolOffName(0)) ;
+        if(strcmp(gMC->CurrentVolOffName(0),vn) != 0) { // 3X3 case
+          if     (strcmp(gMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
+          else if(strcmp(gMC->CurrentVolOffName(0),"SCX2")==0) xNumber=2;
+          else if(strcmp(gMC->CurrentVolOffName(0),"SCX3")==0) xNumber=3;
+          else Fatal("StepManager()", "Wrong name of sensetive volume in 3X3 case : %s ", gMC->CurrentVolOffName(0));
 	}
       } else {
         gMC->CurrentVolOffID(5, supModuleNumber);

@@ -60,6 +60,12 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
     xr   = fOK3X3[2-ieta].Y();
     zr   = fOK3X3[2-ieta].X();
   }
+  void GetCenterOfCellInLocalCoordinateofSM_1X1(Double_t &xr, Double_t &zr) const
+  { // 1X1 case - Nov 27,2006
+    // Center of cell is center of module
+    xr   = fOK.Y() - fgr;
+    zr   = fOK.X();
+  }
   // 15-may-06
   TVector2& GetCenterOfModuleFace() {return fOB;}  
   TVector2& GetCenterOfModuleFace(Int_t ieta) {

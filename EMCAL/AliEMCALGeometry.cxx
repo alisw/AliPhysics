@@ -302,6 +302,8 @@ void AliEMCALGeometry::Init(void){
         fNPHIdiv = fNETAdiv  = 3;
       } else if(fGeoName.Contains("4X4")) {
         fNPHIdiv = fNETAdiv  = 4;
+      } else if(fGeoName.Contains("1X1")) {
+        fNPHIdiv = fNETAdiv  = 1;
       }
     }
     if(fGeoName.Contains("25")){
@@ -884,8 +886,10 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   // for a recpoint.
   // Alice numbering scheme - Jun 08, 2006
 
+  // Shift index taking into account the difference between standard SM 
+  // and SM of half size in phi direction
+  const Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
   static Int_t nSupMod, nTower, nIphi, nIeta, iphi, ieta;
-  static Int_t phiIndexShift=6;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
   GetCellIndex(absId, nSupMod, nTower, nIphi, nIeta);
@@ -899,8 +903,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   } else {
     yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
   }
-  if(absId==1104 || absId==1105) 
-  AliDebug(2,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
+  AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
 
   return kTRUE;
 }
@@ -968,7 +971,7 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
   // 
   AliDebug(2,Form(" Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize()));
   Int_t ind=0; // this is phi index
-  Int_t iphi=0, ieta=0, nTower=0;
+  Int_t iphi=0, ieta=0, nTower=0, iphiTemp;
   Double_t xr, zr, theta, phi, eta, r, x,y;
   TVector3 vglob;
   Double_t ytCenterModule, ytCenterCell;
@@ -984,6 +987,8 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
         ytCenterCell = ytCenterModule + fPhiTileSize *(2*ic-1)/2.;
       } else if(fNPHIdiv==3){
         ytCenterCell = ytCenterModule + fPhiTileSize *(ic-1);
+      } else if(fNPHIdiv==1){
+        ytCenterCell = ytCenterModule;
       }
       fCentersOfCellsPhiDir.AddAt(ytCenterCell,ind);
       // Define grid on phi direction
@@ -1006,16 +1011,17 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
     nTower = fNPhi*it;
     for(Int_t ic=0; ic<fNETAdiv; ic++) {
       if(fNPHIdiv==2) {
-        trd1->GetCenterOfCellInLocalCoordinateofSM(ic, xr, zr);    // case of 2X2
-        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphi, ieta); // don't depend from phi - ieta in action
-        fCentersOfCellsXDir.AddAt(float(xr) - fParSM[0],ieta);
-        fCentersOfCellsEtaDir.AddAt(float(zr) - fParSM[2],ieta);
+        trd1->GetCenterOfCellInLocalCoordinateofSM(ic, xr, zr);      // case of 2X2
+        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphiTemp, ieta); 
       } if(fNPHIdiv==3) {
         trd1->GetCenterOfCellInLocalCoordinateofSM_3X3(ic, xr, zr);  // case of 3X3
-        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphi, ieta);   // don't depend from phi - ieta in action
-        fCentersOfCellsXDir.AddAt(float(xr) - fParSM[0],ieta);
-        fCentersOfCellsEtaDir.AddAt(float(zr) - fParSM[2],ieta);
+        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphiTemp, ieta); 
+      } if(fNPHIdiv==1) {
+        trd1->GetCenterOfCellInLocalCoordinateofSM_1X1(xr, zr);      // case of 1X1
+        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphiTemp, ieta); 
       }
+      fCentersOfCellsXDir.AddAt(float(xr) - fParSM[0],ieta);
+      fCentersOfCellsEtaDir.AddAt(float(zr) - fParSM[2],ieta);
       // Define grid on eta direction for each bin in phi
       for(int iphi=0; iphi<fCentersOfCellsPhiDir.GetSize(); iphi++) {
         x = xr + trd1->GetRadius();
@@ -1199,12 +1205,10 @@ Bool_t AliEMCALGeometry::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi,
     if(phi>=fPhiBoundariesOfSM[2*i] && phi<=fPhiBoundariesOfSM[2*i+1]) {
       nSupMod = 2*i;
       if(eta < 0.0) nSupMod++;
-      //      Info("SuperModuleNumberFromEtaPhi", Form(" nSupMod %i : eta %5.3f : phi %5.3f(%5.1f) ", 
-      //		       nSupMod, eta, phi, phi*TMath::RadToDeg()));
+      AliDebug(1,Form("eta %f phi %f(%5.2f) : nSupMod %i : #bound %i", eta,phi,phi*TMath::RadToDeg(), nSupMod,i));
       return kTRUE;
     }
   }
-  AliDebug(1,Form("eta %f phi %f(%5.2f) : nSupMod %i : #bound %i", eta,phi,phi*TMath::RadToDeg(), nSupMod,i));
   return kFALSE;
 }
 

@@ -81,7 +81,8 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title)
     fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0)
 {
   // ctor : title is used to identify the layout
-    // Apr 25, 2006
+  // Apr 25, 2006
+  // Nov 22, 2006 - case of 1X1  
   TString ntmp(GetTitle());
   ntmp.ToUpper();
   if(ntmp == "TRD1") { // TRD1 is alias for SHISH_77_TRD1_2X2_FINAL_110DEG NL=69
@@ -506,7 +507,10 @@ void AliEMCALv0::CreateShishKebabGeometry()
       printf(" before AliEMCALv0::Trd1Tower3X3() : parSCM0");
       for(int i=0; i<4; i++) printf(" %7.4f ", parSCM0[i]);
       printf("\n"); 
-      Trd1Tower3X3(parSCM0); // Stay here
+      Trd1Tower3X3(parSCM0);
+    } else if(g->GetNPHIdiv()==1 && g->GetNETAdiv()==1) {
+      // no division in SCM0
+      Trd1Tower1X1(parSCM0);
     } else if(g->GetNPHIdiv()==4 && g->GetNETAdiv()==4) {
       Trd1Tower4X4();
     }
@@ -869,9 +873,9 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
   AliDebug(2,Form(" Number of modules in Super Module(%s) %i \n", mother, nr));
 }
 
-// 8-dec-04 by PAI
-void AliEMCALv0::Trd1Tower3X3(const double parSCM0[4])
+void AliEMCALv0::Trd1Tower3X3(const double *parSCM0)
 {
+  // Started Dec 8,2004 by PAI
   // Fixed Nov 13,2006
   printf(" AliEMCALv0::Trd1Tower3X3() : parSCM0");
   for(int i=0; i<4; i++) printf(" %7.4f ", parSCM0[i]);
@@ -967,6 +971,59 @@ void AliEMCALv0::Trd1Tower4X4()
 {
  // Not ready yet
 }
+
+void AliEMCALv0::Trd1Tower1X1(double *parSCM0)
+{
+  // Started Nov 22,2006 by PAI
+  AliDebug(1," AliEMCALv0::Trd1Tower1X1() : parSCM0");
+  for(int i=0; i<4; i++) printf(" %7.4f ", parSCM0[i]);
+  printf("\n"); 
+
+  // No division - keeping the same volume logic 
+  // and as consequence the same abs is scheme
+  AliDebug(2,"Trd1Tower1X1() : Create SCMX(SCMY) as SCM0");
+
+  gMC->Gsvolu("SCMY", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
+  gMC->Gspos("SCMY", 1, "SCM0", 0.0, 0.0, 0.0, 0, "ONLY");
+  gMC->Gsvolu("SCMX", "TRD1", fIdTmedArr[kIdSC], parSCM0, 4);
+  gMC->Gspos("SCMX", 1, "SCMY", 0.0, 0.0, 0.0, 0, "ONLY");
+
+  // should be defined once
+  double *dummy=0;
+  gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
+
+  PbInTrd1(parSCM0, "SCMX");
+
+  AliDebug(1,"Trd1Tower1X1() : Ver. 0.1 : was tested.");
+}
+
+void AliEMCALv0::PbInTrd1(double *parTrd1, TString n)
+{
+ // see PbInTrap(const double parTrd1[11], TString n)
+  static int nr=0, ndeb=2;
+  AliDebug(ndeb,Form(" Pb tiles : nrstart %i\n", nr));
+  AliEMCALGeometry * g = GetGeometry(); 
+
+  double par[3];
+  //  double fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
+  double xpos = 0.0, ypos = 0.0;
+  double zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
+  double coef = (parTrd1[1] -  parTrd1[0]) / (2.*parTrd1[3]);
+
+  par[1] = parTrd1[2];              // y 
+  par[2] = g->GetECPbRadThick()/2.; // z
+
+  for(int iz=0; iz<g->GetNECLayers(); iz++){
+    par[0] = parTrd1[0] + coef*fSampleWidth*iz;
+    gMC->Gsposp("PBTI", ++nr, n.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
+    AliDebug(2,Form(" %i xpos %9.3f zpos %9.3f par[0] %9.3f |", iz+1, xpos, zpos, par[0]));
+    zpos += fSampleWidth;
+    if(iz%2>0) printf("\n");
+  } 
+  AliDebug(ndeb,Form(" Number of Pb tiles in SCMX %i coef %9.7f ", nr, coef));
+  AliDebug(ndeb,Form(" PbInTrd1 Ver. 0.1 : was tested."));
+}
+
 // 3-feb-05
 void AliEMCALv0::Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parSCM0[5])
 {

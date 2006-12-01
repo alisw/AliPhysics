@@ -262,6 +262,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   AliEMCALGeometry * geom = emcal->GetGeometry();
 
   if(isTrd1Geom < 0) { 
+    AliInfo(Form(" get Geometry %s : %s ", geom->GetName(),geom->GetTitle()));
     TString ng(geom->GetName());
     isTrd1Geom = 0;
     if(ng.Contains("SHISH") &&  ng.Contains("TRD1")) isTrd1Geom = 1;
@@ -329,12 +330,12 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
 
   //Put Noise contribution
-  for(absID = 1; absID <= nEMC; absID++){
+  for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
     Float_t amp = 0 ;
     // amplitude set to zero, noise will be added later
-    new((*digits)[absID-1]) AliEMCALDigit( -1, -1, absID, 0, TimeOfNoise() ) ;
+    new((*digits)[absID]) AliEMCALDigit( -1, -1, absID, 0, TimeOfNoise() ); // absID-1->absID
     //look if we have to add signal?
-    digit = dynamic_cast<AliEMCALDigit *>(digits->At(absID-1)) ;
+    digit = dynamic_cast<AliEMCALDigit *>(digits->At(absID)); // absID-1->absID
     
     if(absID==nextSig){
       //Add SDigits from all inputs    
@@ -435,6 +436,11 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     AliEMCALHistoUtilities::FillH1(fHists, 2, double(digit->GetAmp()));
     AliEMCALHistoUtilities::FillH1(fHists, 3, double(energy));
     AliEMCALHistoUtilities::FillH1(fHists, 4, double(digit->GetId()));
+    //    if(digit->GetId() == nEMC) {
+    //  printf(" i %i \n", i );
+    //  digit->Dump();
+    //  assert(0);
+    //}
   }
   AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
 }
@@ -455,7 +461,7 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
   AliEMCALGeometry * geom = emcal->GetGeometry();
 
   if (geom==0)
-    AliFatal("Did not get geometry from EMCALLoader") ;
+    AliFatal("Did not get geometry from EMCALLoader");
 
   Int_t iSupMod = -1;
   Int_t nTower  = -1;
@@ -467,7 +473,7 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
 
   Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nTower, nIphi, nIeta) ;
   if(!bCell)
-    Error("DigitizeEnergy","Wrong cell id number") ;
+    Error("DigitizeEnergy","Wrong cell id number : AbsId %i ", AbsId) ;
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
   
   if(emcalLoader->CalibData()) {
