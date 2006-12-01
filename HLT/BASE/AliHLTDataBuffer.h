@@ -83,7 +83,7 @@ struct AliHLTRawBuffer {
  *
  * @ingroup alihlt_system
  */
-class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
+class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
  private:
   AliHLTComponent* fpConsumer;
   vector<AliHLTDataSegment> fSegments;
@@ -163,7 +163,7 @@ class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
  *
  * @ingroup alihlt_system
  */
-class AliHLTDataBuffer : public AliHLTLogging, public TObject {
+class AliHLTDataBuffer : public TObject, public AliHLTLogging {
  public:
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // condtructors and destructors

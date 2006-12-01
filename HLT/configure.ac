@@ -33,6 +33,7 @@ dnl Check for ROOT
 dnl
 ROOT_PATH(, [have_root=1], [AC_ERROR([Stop! The HLT package needs ROOT.])])
 AM_CONDITIONAL(HAVE_ROOT, test "x$have_root" = "x1" )
+AC_SUBST([ROOTSYS])
 
 dnl ------------------------------------------------------------------
 # TODO: make this configurable through arguments
@@ -225,15 +226,12 @@ if test ! "x$have_aliroot" = "xno" ; then
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
   LIBS=$save_LIBS
-  if test ! "x$have_aliroot" = "xno" ; then
-    CPPFLAGS="$CPPFLAGS -DALIROOTVERSION=\\\"Unknown\\\""
-  fi
 fi
 AC_LANG_POP(C++)
 AC_SUBST([ALIROOT_CPPFLAGS])
 AC_SUBST([ALIROOT_LDFLAGS])
+AC_SUBST([ALIROOTLIBDIR])
 AC_SUBST([ALIROOT_LIBS])
-CPPFLAGS="$CPPFLAGS -DROOTVERSION=\\\"`${ROOTCONF} --version`\\\""
 
 dnl ------------------------------------------------------------------
 dnl check for the HLT PubSub Framework
@@ -268,7 +266,9 @@ if test "x$with_pubsub" != "xno" ; then
     # fall back if include files were not installed (versions before Sep 06)
     HOMER_CPPFLAGS="-I${with_pubsub}/src/Util/HOMER/reader/include -I${with_pubsub}/src/Util/HOMER/data/include"
   fi
-  HOMER_LDFLAGS="-L${with_pubsub}/lib/`uname -s`-`uname -m`"
+  HOMER_BINDIR="${with_pubsub}/bin/`uname -s`-`uname -m`"
+  HOMER_LIBDIR="${with_pubsub}/lib/`uname -s`-`uname -m`"
+  HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
   CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS"
   LIBS="$save_LIBS "
@@ -310,6 +310,8 @@ if test "x$with_pubsub" != "xno" ; then
 fi
 AC_SUBST([HOMER_CPPFLAGS])
 AC_SUBST([HOMER_LDFLAGS])
+AC_SUBST([HOMER_LIBDIR])
+AC_SUBST([HOMER_BINDIR])
 AC_SUBST([HOMER_LIBS])
 
 dnl ------------------------------------------------------------------
@@ -420,6 +422,18 @@ fi
 AC_MSG_RESULT([$enable_rowhough])
 
 dnl ------------------------------------------------------------------
+dnl The ROOTVERSION and ALIROOTVERSION defines were used by the old
+dnl stand-alone build system. This is most likely something old we can
+dnl get rid off later, or do something more reasonable. Since the define
+dnl needs the quotes they have to be  escaped. This works well for the
+dnl Makefile but not for the configure script. So we have to add the
+dnl defines after all the other checks.
+CPPFLAGS="$CPPFLAGS -DROOTVERSION=\\\"`${ROOTCONF} --version`\\\""
+if test ! "x$have_aliroot" = "xno" ; then
+  CPPFLAGS="$CPPFLAGS -DALIROOTVERSION=\\\"Unknown\\\""
+fi
+
+dnl ------------------------------------------------------------------
 dnl
 dnl Documentation
 dnl
@@ -447,6 +461,8 @@ fi
 dnl ------------------------------------------------------------------
 AC_CONFIG_FILES([Makefile 
 		 BASE/Makefile
+		 BASE/setenv.sh
+		 BASE/setenv.csh
 		 SampleLib/Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx

@@ -35,8 +35,8 @@ ClassImp(AliHLTComponent)
 
 AliHLTComponent::AliHLTComponent()
   :
-  fCurrentEvent(0),
-  fEnvironment()
+  fEnvironment(),
+  fCurrentEvent(0)
 { 
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   if (fpComponentHandler)
@@ -79,6 +79,19 @@ int AliHLTComponent::Deinit()
   int iResult=0;
   iResult=DoDeinit();
   return iResult;
+}
+
+int AliHLTComponent::DoInit( int argc, const char** argv )
+{
+  if (argc==0 && argv==NULL) {
+    // this is currently just to get rid of the warning "unused parameter"
+  }
+  return 0;
+}
+
+int AliHLTComponent::DoDeinit()
+{
+  return 0;
 }
 
 void AliHLTComponent::DataType2Text( const AliHLTComponent_DataType& type, char output[14] ) {

@@ -47,6 +47,13 @@ int AliHLTDataSink::ProcessEvent( const AliHLTComponent_EventData& evtData,
 				    AliHLTComponent_EventDoneData*& edd )
 {
   int iResult=0;
+  if (outputPtr==NULL
+      && size==0 
+      && outputBlockCnt==0 
+      && outputBlocks==NULL
+      && edd==NULL) {
+    // this is currently just to get rid of the warning "unused parameter"
+  }
   vector<AliHLTComponent_BlockData> blockData;
   iResult=DumpEvent(evtData, blocks, trigData);
   return iResult;

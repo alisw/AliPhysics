@@ -15,6 +15,8 @@
 #pragma link C++ class AliHLTTask;
 #pragma link C++ class AliHLTLogging;
 #pragma link C++ class AliHLTDataBuffer;
+#pragma link C++ class AliHLTDataSource;
+#pragma link C++ class AliHLTDataSink;
 
 #endif
 

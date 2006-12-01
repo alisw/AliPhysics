@@ -62,6 +62,7 @@ AliHLTSystem::AliHLTSystem()
 
 AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
   :
+  AliHLTLogging(),
   fpComponentHandler(NULL),
   fpConfigurationHandler(NULL),
   fTaskList()
@@ -92,18 +93,33 @@ AliHLTSystem::~AliHLTSystem()
 int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
 {
   int iResult=0;
+  if (pConf) {
+  } else {
+    iResult=-EINVAL;
+  }
   return iResult;
 }
 
 int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec)
 {
   int iResult=0;
+  if (pConf) {
+    if (pPrec) {
+      // find the position
+    }
+  } else {
+    iResult=-EINVAL;
+  }
   return iResult;
 }
 
 int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
 {
   int iResult=0;
+  if (pConf) {
+  } else {
+    iResult=-EINVAL;
+  }
   return iResult;
 }
 
@@ -122,7 +138,7 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 	HLTError("configuration \"%s\" has unresolved sources, aborting ...", pConf->GetName());
 	iResult=-ENOLINK;
     } else {
-      pTask=new AliHLTTask(pConf, NULL);
+      pTask=new AliHLTTask(pConf);
       if (pTask==NULL) {
 	iResult=-ENOMEM;
       }
@@ -244,10 +260,67 @@ void AliHLTSystem::PrintTaskList()
   }
 }
 
-int AliHLTSystem::Run() 
+int AliHLTSystem::Run(Int_t iNofEvents) 
 {
   int iResult=0;
-  HLTError("function not yet implemented");
-  iResult=-ENOSYS;
+  if ((iResult=StartTasks())>=0) {
+    for (int i=0; i<iNofEvents && iResult>=0; i++) {
+      iResult=ProcessTasks(i);
+    }
+    StopTasks();
+  } else {
+    HLTError("can not start task list");
+  }
+  return iResult;
+}
+
+int AliHLTSystem::StartTasks()
+{
+  int iResult=0;
+  TObjLink *lnk=fTaskList.FirstLink();
+  while (lnk && iResult>=0) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      iResult=pTask->StartRun();
+    } else {
+    }
+    lnk = lnk->Next();
+  }
+  if (iResult<0) {
+  }
+  return iResult;
+}
+
+int AliHLTSystem::ProcessTasks(Int_t eventNo)
+{
+  int iResult=0;
+  HLTDebug("processing event no %d", eventNo);
+  TObjLink *lnk=fTaskList.FirstLink();
+  while (lnk && iResult>=0) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      iResult=pTask->ProcessTask();
+    } else {
+    }
+    lnk = lnk->Next();
+  }
+  return iResult;
+}
+
+int AliHLTSystem::StopTasks()
+{
+  int iResult=0;
+  TObjLink *lnk=fTaskList.FirstLink();
+  while (lnk && iResult>=0) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      iResult=pTask->EndRun();
+    } else {
+    }
+    lnk = lnk->Next();
+  }
   return iResult;
 }

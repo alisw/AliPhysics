@@ -210,17 +210,13 @@ class AliHLTComponent : public AliHLTLogging {
    * Default method for the internal initialization.
    * The method is called by @ref Init
    */
-  virtual int DoInit( int argc, const char** argv ){
-    return 0;
-  }
+  virtual int DoInit( int argc, const char** argv );
 
   /**
    * Default method for the internal clean-up.
    * The method is called by @ref Deinit
    */
-  virtual int DoDeinit(){
-    return 0;
-  }
+  virtual int DoDeinit();
 
   /**
    * General memory allocation method.

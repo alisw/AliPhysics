@@ -24,8 +24,13 @@
 #if __GNUC__>= 3
 using namespace std;
 #endif
-
+//#undef HAVE_DLFCN_H
+#ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
+#else
+//#include <Riostream.h>
+#include <TSystem.h>
+#endif //HAVE_DLFCN_H
 #include "AliHLTStdIncludes.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
@@ -89,7 +94,12 @@ Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
 
 int AliHLTComponentHandler::DeregisterComponent( const char* componentID )
 {
-  return 0;
+  int iResult=0;
+  if (componentID) {
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
 }
 
 Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
@@ -191,7 +201,17 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
   int iResult=0;
   if (libraryPath) {
     AliHLTComponent::SetGlobalComponentHandler(this);
-    AliHLTLibHandle hLib=dlopen(libraryPath, RTLD_NOW);
+    AliHLTLibHandle hLib=NULL;
+#ifdef HAVE_DLFCN_H
+    // use interface to the dynamic linking loader
+    hLib=dlopen(libraryPath, RTLD_NOW);
+#else
+    // use ROOT dynamic loader
+    if (gSystem->Load(libraryPath)==0) {
+      // create TString object to store library path and use pointer as handle 
+      hLib=reinterpret_cast<AliHLTLibHandle>(new TString(libraryPath));
+    }
+#endif //HAVE_DLFCN_H
     if (hLib) {
       HLTInfo("library %s loaded", libraryPath);
       fLibraryList.push_back(hLib);
@@ -206,7 +226,9 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
       }
     } else {
       HLTError("can not load library %s", libraryPath);
+#ifdef HAVE_DLFCN_H
       HLTError("dlopen error: %s", dlerror());
+#endif //HAVE_DLFCN_H
       iResult=-ELIBACC;
     }
     AliHLTComponent::UnsetGlobalComponentHandler();
@@ -219,6 +241,10 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
 int AliHLTComponentHandler::UnloadLibrary( const char* libraryPath )
 {
   int iResult=0;
+  if (libraryPath) {
+  } else {
+    iResult=-EINVAL;
+  }
   return iResult;
 }
 
@@ -227,7 +253,13 @@ int AliHLTComponentHandler::UnloadLibraries()
   int iResult=0;
   vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
   while (element!=fLibraryList.end()) {
+#ifdef HAVE_DLFCN_H
     dlclose(*element);
+#else
+    TString* libraryPath=reinterpret_cast<TString*>(*element);
+    gSystem->Unload(libraryPath->Data());
+    delete libraryPath;
+#endif //HAVE_DLFCN_H
     element++;
   }
   return iResult;

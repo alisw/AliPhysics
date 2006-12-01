@@ -1,3 +1,9 @@
+2006-11-30 intermediate version
+	- setup scripts for running environment added
+	- ComponentHandler takes ROOT dynamic library loader as fallback if
+	  dlopen is not available
+	- minor changes to avoid effC++ and other warnings
+	- work on the Task chain processing
 2006-11-08
 	- configure adapted to the new directory structure of the HOMER module in
 	  PubSub

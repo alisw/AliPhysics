@@ -114,9 +114,36 @@ class AliHLTSystem : public AliHLTLogging {
    */
   void PrintTaskList();
 
-  /* run the task list
+  /**
+   * Run the task list.
+   * All tasks of the list will be subsequently processed for each event.
+   * @param iNofEvents number of events
+   * @return neg error code if failed
    */
-  int Run();
+  int Run(Int_t iNofEvents=1);
+
+  /**
+   * Start task list.
+   * The @ref AliHLTTask::StartRun method is called for each task, the components
+   * will be prepared for event processing.
+   * @return neg error code if failed
+   */
+  int StartTasks();
+
+  /**
+   * Process task list.
+   * The @ref AliHLTTask::ProcessTask method is called for each task.
+   * @return neg error code if failed
+   */
+  int ProcessTasks(Int_t eventNo);
+
+  /**
+   * Stop task list.
+   * The @ref AliHLTTask::EndRun method is called for each task, the components
+   * will be cleaned after event processing.
+   * @return neg error code if failed
+   */
+  int StopTasks();
 
  protected:
   int ProcessTask();
@@ -131,7 +158,7 @@ class AliHLTSystem : public AliHLTLogging {
   TList fTaskList;
 
  private:
-  ClassDef(AliHLTSystem, 0);
+  ClassDef(AliHLTSystem, 1);
 };
 #endif
 

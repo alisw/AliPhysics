@@ -48,6 +48,8 @@ AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(AliHLTComponent* pConsumer)
 
 AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor& desc)
   :
+  TObject(),
+  AliHLTLogging(),
   fpConsumer(desc.fpConsumer),
   fSegments()
 {
@@ -141,6 +143,8 @@ AliHLTDataBuffer::AliHLTDataBuffer()
 
 AliHLTDataBuffer::AliHLTDataBuffer(const AliHLTDataBuffer&)
   :
+  TObject(),
+  AliHLTLogging(),
   fSegments(),
   fConsumers(),
   fActiveConsumers(),

@@ -1,0 +1,27 @@
+#!/bin/csh
+# setup script for the alice-hlt package
+# the LD_LIBRARY_PATH variable is set according to the package configuration
+
+set prefix=@prefix@
+set exec_prefix=@exec_prefix@
+set bindir=@bindir@
+set libdir=@libdir@
+
+setenv ROOTSYS @ROOTSYS@
+set ADD_LIBDIR=
+set ADD_LIBDIR="$ADD_LIBDIR @ROOTLIBDIR@"
+set ADD_LIBDIR="$ADD_LIBDIR @ALIROOTLIBDIR@"
+set ADD_LIBDIR="$ADD_LIBDIR ${libdir}"
+set ADD_LIBDIR="$ADD_LIBDIR @HOMER_LIBDIR@"
+if ( $?LD_LIBRARY_PATH == 0 ) setenv LD_LIBRARY_PATH ""
+foreach i ($ADD_LIBDIR)
+  setenv LD_LIBRARY_PATH "${i}:$LD_LIBRARY_PATH"
+end
+
+set ADD_BINDIR=
+set ADD_BINDIR="$ADD_BINDIR $bindir"
+set ADD_BINDIR="$ADD_BINDIR @HOMER_BINDIR@"
+if ( $?PATH == 0 ) setenv PATH ""
+foreach i ($ADD_BINDIR)
+  setenv PATH "${i}:$PATH"
+end

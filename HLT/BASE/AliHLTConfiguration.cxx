@@ -43,11 +43,11 @@ AliHLTConfiguration::AliHLTConfiguration()
   fComponent(NULL),
   fStringSources(NULL),
   fNofSources(-1),
+  fListSources(),
+  fListSrcElement(),
   fArguments(NULL),
   fArgc(-1),
-  fArgv(NULL),
-  fListSources(),
-  fListSrcElement()
+  fArgv(NULL)
 { 
   fListSrcElement=fListSources.begin();
 }
@@ -58,11 +58,11 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
   fComponent(component),
   fStringSources(sources),
   fNofSources(-1),
+  fListSources(),
+  fListSrcElement(),
   fArguments(arguments),
   fArgc(-1),
-  fArgv(NULL),
-  fListSources(),
-  fListSrcElement()
+  fArgv(NULL)
 {
   fListSrcElement=fListSources.begin();
   if (id && component) {
@@ -76,15 +76,17 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
 
 AliHLTConfiguration::AliHLTConfiguration(const AliHLTConfiguration&)
   :
+  TObject(),
+  AliHLTLogging(),
   fID(NULL),
   fComponent(NULL),
   fStringSources(NULL),
   fNofSources(-1),
+  fListSources(),
+  fListSrcElement(),
   fArguments(NULL),
   fArgc(-1),
-  fArgv(NULL),
-  fListSources(),
-  fListSrcElement()
+  fArgv(NULL)
 { 
   fListSrcElement=fListSources.begin();
   HLTFatal("copy constructor untested");
@@ -366,36 +368,37 @@ AliHLTTask::AliHLTTask()
   :
   fpConfiguration(NULL),
   fpComponent(NULL),
-  fpBlockDataArray(NULL),
-  fBlockDataArraySize(0),
   fpDataBuffer(NULL),
   fListTargets(),
-  fListDependencies()
+  fListDependencies(),
+  fpBlockDataArray(NULL),
+  fBlockDataArraySize(0)
 {
 }
 
-AliHLTTask::AliHLTTask(AliHLTConfiguration* fConf, AliHLTComponentHandler* pCH)
+AliHLTTask::AliHLTTask(AliHLTConfiguration* pConf)
   :
-  fpConfiguration(NULL),
+  fpConfiguration(pConf),
   fpComponent(NULL),
-  fpBlockDataArray(NULL),
-  fBlockDataArraySize(0),
   fpDataBuffer(NULL),
   fListTargets(),
-  fListDependencies()
+  fListDependencies(),
+  fpBlockDataArray(NULL),
+  fBlockDataArraySize(0)
 {
-  Init(fConf, pCH);
 }
 
 AliHLTTask::AliHLTTask(const AliHLTTask&)
   :
+  TObject(),
+  AliHLTLogging(),
   fpConfiguration(NULL),
   fpComponent(NULL),
-  fpBlockDataArray(NULL),
-  fBlockDataArraySize(0),
   fpDataBuffer(NULL),
   fListTargets(),
-  fListDependencies()
+  fListDependencies(),
+  fpBlockDataArray(NULL),
+  fBlockDataArraySize(0)
 {
   HLTFatal("copy constructor untested");
 }
@@ -414,27 +417,40 @@ AliHLTTask::~AliHLTTask()
   fpBlockDataArray=NULL;
 }
 
-int AliHLTTask::Init(AliHLTConfiguration* fConf, AliHLTComponentHandler* pCH)
+int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 {
   int iResult=0;
-  if (fConf) {
-    fpConfiguration=fConf;
+  if (fpConfiguration!=NULL && fpConfiguration!=pConf) {
+    HLTWarning("overriding previous reference to configuration object %p (%s) by %p",
+	       fpConfiguration, GetName(), pConf);
+  }
+  if (pConf!=NULL) fpConfiguration=pConf;
+  if (fpConfiguration) {
     if (pCH) {
       int argc=0;
       const char** argv=NULL;
-      if ((iResult=fConf->GetArguments(&argv))>=0) {
+      if ((iResult=fpConfiguration->GetArguments(&argv))>=0) {
 	argc=iResult; // just to make it clear
-	iResult=pCH->CreateComponent(fConf->GetComponentID(), NULL, argc, argv, fpComponent);
+	iResult=pCH->CreateComponent(fpConfiguration->GetComponentID(), NULL, argc, argv, fpComponent);
 	if (fpComponent) {
 	} else {
-	  HLTError("can not find component \"%s\"", fConf->GetComponentID());
+	  HLTError("can not find component \"%s\"", fpConfiguration->GetComponentID());
 	}
       }
+    } else {
+      HLTError("component handler instance needed for task initialization");
+      iResult=-EINVAL;
     }
   } else {
+    HLTError("configuration object instance needed for task initialization");
     iResult=-EINVAL;
   }
   return iResult;
+}
+
+int AliHLTTask::Deinit()
+{
+  return 0;
 }
 
 const char *AliHLTTask::GetName() const

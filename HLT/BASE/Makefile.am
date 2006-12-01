@@ -5,6 +5,8 @@ MODULE				= HLTbase
 
 AM_CPPFLAGS			= -DMODULE=$(MODULE)
 
+bin_SCRIPTS			= setenv.sh setenv.csh
+
 # library definition
 lib_LTLIBRARIES			=  libHLTbase.la
 
@@ -36,9 +38,8 @@ CLASS_HDRS			=  AliHLTComponent.h \
 pkginclude_HEADERS		=  $(CLASS_HDRS) \
 				   AliHLTDataTypes.h \
 				   AliHLT_C_Component_WrapperInterface.h \
-				   AliHLTDefinitions.h
-
-noinst_HEADERS			=  AliHLTStdIncludes.h
+				   AliHLTDefinitions.h \
+				   AliHLTStdIncludes.h
 
 # version info for the library
 libHLTbase_la_LDFLAGS		=  -version-info 1:1:0

@@ -47,6 +47,9 @@ int AliHLTDataSource::ProcessEvent( const AliHLTComponent_EventData& evtData,
 				    AliHLTComponent_EventDoneData*& edd )
 {
   int iResult=0;
+  if (blocks) {
+    // this is currently just to get rid of the warning "unused parameter"
+  }
   vector<AliHLTComponent_BlockData> blockData;
   if (evtData.fBlockCnt > 0) {
     HLTWarning("Data source component skips imput data blocks");

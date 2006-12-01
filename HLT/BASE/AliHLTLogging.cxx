@@ -39,18 +39,18 @@ ClassImp(AliHLTLogging)
 
 AliHLTLogging::AliHLTLogging()
   :
-  fpDefaultKeyword(NULL),
-  fpCurrentKeyword(NULL),
   //fLocalLogFilter(kHLTLogDefault),
-  fLocalLogFilter(kHLTLogAll)
+  fLocalLogFilter(kHLTLogAll),
+  fpDefaultKeyword(NULL),
+  fpCurrentKeyword(NULL)
 {
 }
 
 AliHLTLogging::AliHLTLogging(const AliHLTLogging&)
   :
+  fLocalLogFilter(kHLTLogAll),
   fpDefaultKeyword(NULL),
-  fpCurrentKeyword(NULL),
-  fLocalLogFilter(kHLTLogAll)
+  fpCurrentKeyword(NULL)
 {
   HLTFatal("copy constructor untested");
 }
@@ -79,6 +79,9 @@ int AliHLTLogging::Init(AliHLTfctLogging pFun)
 
 int AliHLTLogging::Message(void *param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message) {
   int iResult=0;
+  if (param==NULL) {
+    // this is currently just to get rid of the warning "unused parameter"
+  }
   const char* strSeverity="";
   switch (severity) {
   case kHLTLogBenchmark: 

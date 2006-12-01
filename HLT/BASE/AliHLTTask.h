@@ -29,11 +29,15 @@ class AliHLTComponentHandler;
  * A task collects all the information which is necessary to process a certain
  * step in the HLT data processing chain.
  * - the instance of the component
+ *   the task object creates and deletes the component object
  * - the data buffer which receives the result of the component and provides
  *   the data to other tasks/components
  * - a list of all dependencies
  * - a list of consumers
- * - the task object holds the configuration object 
+ * - the task object holds an external pointer to the configuration object; 
+ *   \b Note: the configuration object must exist through the existence of the
+ *   task object!!!
+ *  
  *
  * @note This class is only used for the @ref alihlt_system.
  *
@@ -45,9 +49,8 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   AliHLTTask();
   /** constructor 
       @param pConf pointer to configuration descriptor
-      @param pCH   the HLT component handler
    */
-  AliHLTTask(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH);
+  AliHLTTask(AliHLTConfiguration* pConf);
   /** not a valid copy constructor, defined according to effective C++ style */
   AliHLTTask(const AliHLTTask&);
   /** not a valid assignment op, but defined according to effective C++ style */
@@ -59,10 +62,17 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * Initialize the task.
    * The task is initialized with a configuration descriptor. It needs a
    * component handler instance to create the analysis component.
-   * @param pConf pointer to configuration descriptor
+   * @param pConf pointer to configuration descriptor, can be NULL if it
+   *              was already provided to the constructor
    * @param pCH   the HLT component handler
    */
   int Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH);
+
+  /**
+   * De-Initialize the task.
+   * Final cleanup after the run. The analysis component is deleted.
+   */
+  int Deinit();
 
   /**
    * Get the name of the object.
@@ -269,9 +279,9 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   int GetNofSources() {return fListDependencies.GetSize();}
 
  private:
-  /** the configuration descriptor */
+  /** the configuration descriptor (external pointer) */
   AliHLTConfiguration* fpConfiguration;
-  /** the component described by this task */
+  /** the component described by this task (created and deleted by the task object) */
   AliHLTComponent* fpComponent;
   /** the data buffer for the component processing */
   AliHLTDataBuffer* fpDataBuffer;
@@ -289,7 +299,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   /** size of the block data array */
   int fBlockDataArraySize;
 
-  ClassDef(AliHLTTask, 0);
+  ClassDef(AliHLTTask, 1);
 };
 
 #endif
