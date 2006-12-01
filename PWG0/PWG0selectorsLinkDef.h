@@ -17,5 +17,6 @@
 #pragma link C++ class AliTestESDtrackCutsSelector+;
 #pragma link C++ class AliROCESDAnalysisSelector+;
 #pragma link C++ class AliROCRawAnalysisSelector+;
+#pragma link C++ class AliROCClusterAnalysisSelector+;
 
 #endif
