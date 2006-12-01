@@ -16,8 +16,8 @@ void loadlibs ()
   // Waiting for a better solution
   //  gSystem->Load("libg2c_sh");
   gSystem->Load("libmicrocern");
-  gSystem->Load("libpythia6");
   gSystem->Load("liblhapdf");
+  gSystem->Load("libpythia6");
 
   gSystem->Load("libEG");
   gSystem->Load("libGeom");
