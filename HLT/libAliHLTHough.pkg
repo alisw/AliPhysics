@@ -1,0 +1,38 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include HLT/hlt.conf
+
+SRCS:= hough/AliHLTHistogram.cxx \
+hough/AliHLTHistogram1D.cxx \
+hough/AliHLTHistogramAdaptive.cxx \
+hough/AliHLTHough.cxx \
+hough/AliHLTHoughBaseTransformer.cxx \
+hough/AliHLTHoughClusterTransformer.cxx \
+hough/AliHLTHoughDisplay.cxx \
+hough/AliHLTHoughEval.cxx \
+hough/AliHLTHoughGlobalMerger.cxx \
+hough/AliHLTHoughIntMerger.cxx \
+hough/AliHLTHoughMaxFinder.cxx \
+hough/AliHLTHoughMerger.cxx \
+hough/AliHLTHoughTest.cxx \
+hough/AliHLTHoughTrack.cxx \
+hough/AliHLTHoughKalmanTrack.cxx \
+hough/AliHLTHoughTransformer.cxx \
+hough/AliHLTHoughTransformerGlobal.cxx \
+hough/AliHLTHoughTransformerLUT.cxx \
+hough/AliHLTHoughTransformerNew.cxx \
+hough/AliHLTHoughTransformerRow.cxx \
+hough/AliHLTHoughTransformerVhdl.cxx
+
+
+HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+
+DHDR:= hough/AliHLTHoughLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE+= HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW

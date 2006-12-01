@@ -1,0 +1,28 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include HLT/hlt.conf
+
+SRCS:= comp/AliHLTClusterFitter.cxx \
+comp/AliHLTCompress.cxx \
+comp/AliHLTDataCompressor.cxx \
+comp/AliHLTDataCompressorHelper.cxx \
+comp/AliHLTModelTrack.cxx \
+comp/AliHLTModeller.cxx \
+comp/AliHLTOfflineDataCompressor.cxx \
+comp/AliHLTCompressAC.cxx
+
+CSRCS:= comp/AliHLTFitUtilities.c comp/bitio.c comp/errhand.c
+
+HDRS:= $(SRCS:.cxx=.h)
+
+CHDRS:= $(CSRCS:.c=.h)
+
+DHDR:= comp/AliHLTCompLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE+= HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW

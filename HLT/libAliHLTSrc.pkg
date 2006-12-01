@@ -1,0 +1,44 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include HLT/hlt.conf
+
+SRCS:= src/AliHLTBenchmark.cxx \
+src/AliHLTClustFinderNew.cxx \
+src/AliHLTConfMapFit.cxx \
+src/AliHLTConfMapPoint.cxx \
+src/AliHLTConfMapTrack.cxx \
+src/AliHLTConfMapper.cxx \
+src/AliHLTDisplay.cxx \
+src/AliHLTEvaluate.cxx \
+src/AliHLTFileHandler.cxx \
+src/AliHLTFitter.cxx \
+src/AliHLTMerger.cxx \
+src/AliHLTGlobalMerger.cxx \
+src/AliHLTInterMerger.cxx \
+src/AliHLTLogger.cxx \
+src/AliHLTMemHandler.cxx \
+src/AliHLTRawDataFileHandler.cxx \
+src/AliHLTTrack.cxx \
+src/AliHLTTrackArray.cxx \
+src/AliHLTTrackMerger.cxx \
+src/AliHLTTransform.cxx \
+src/AliHLTVertex.cxx \
+src/AliHLTVertexArray.cxx \
+src/AliHLTVertexFinder.cxx \
+src/AliLevel3.cxx \
+src/AliHLTReconstructor.cxx \
+src/AliHLTTPCtracker.cxx \
+src/AliHLTLog.cxx \
+src/AliHLTTPCBeamTestMemHandler.cxx
+
+HDRS:= $(SRCS:.cxx=.h) src/AliHLTSpacePointData.h 
+
+DHDR:= src/AliHLTSrcLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE += HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW

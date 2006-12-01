@@ -1,0 +1,27 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include HLT/hlt.conf
+
+SRCS:= misc/AliHLTAltroMemHandler.cxx \
+misc/AliHLTDDLDataFileHandler.cxx \
+misc/AliHLTDDLRawReader.cxx \
+misc/AliHLTDDLRawReaderFile.cxx \
+misc/AliHLTDDLTPCRawStream.cxx \
+misc/AliHLTDataHandler.cxx \
+misc/AliHLTFFloat.cxx \
+misc/AliHLTStopwatch.cxx \
+misc/AliHLTTPCMapping.cxx \
+misc/AliHLTTransBit.cxx \
+misc/AliHLTVHDLClusterFinder.cxx
+
+HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+
+DHDR:= misc/AliHLTMiscLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE+= HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW

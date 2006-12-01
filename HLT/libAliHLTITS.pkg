@@ -1,0 +1,16 @@
+#-*- Mode: Makefile -*-
+
+include HLT/hlt.conf
+
+SRCS:= ITS/AliHLTITStrack.cxx ITS/AliHLTITStracker.cxx ITS/AliHLTITSVertexerZ.cxx ITS/AliHLTITSclusterer.cxx
+
+HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
+
+DHDR:= ITS/AliHLTITSLinkDef.h
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE += HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
