@@ -42,7 +42,7 @@ class AliVertexerTracks : public TObject {
   AliVertex* VertexForSelectedTracks(TTree *trkTree);
   AliVertex* VertexForSelectedTracks(TObjArray *trkArray);
   AliESDVertex* FindPrimaryVertex(const AliESD *esdEvent);
-  void  SetMinTracks(Int_t n=2) { fMinTracks = n; return; }
+  void  SetMinTracks(Int_t n=1) { fMinTracks = n; return; }
   void  SetITSNotRequired() { fITSrefit=kFALSE;fITSin=kFALSE; return; }
   void  SetITSrefitNotRequired() { fITSrefit=kFALSE; return; }
   void  SetMinITSClusters(Int_t n=5) { fMinITSClusters = n; return; }
@@ -69,6 +69,7 @@ class AliVertexerTracks : public TObject {
       AliFatal("Field map not set; use AliTracker::SetFieldMap()!");
     return AliTracker::GetBz(); } 
   Int_t    PrepareTracks(TTree &trkTree,Int_t OptImpParCut);
+  void     OneTrackVertFinder();
   void     VertexFinder(Int_t optUseWeights=0);
   void     HelixVertexFinder();
   void     StrLinVertexFinderMinDist(Int_t OptUseWeights=0);

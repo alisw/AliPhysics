@@ -42,7 +42,7 @@ AliVertexerTracks::AliVertexerTracks():
 TObject(),
 fVert(),
 fCurrentVertex(0),
-fMinTracks(2),
+fMinTracks(1),
 fMinITSClusters(5),
 fTrkArray(),
 fTrksToSkip(0),
@@ -68,7 +68,7 @@ AliVertexerTracks::AliVertexerTracks(Double_t xStart, Double_t yStart):
 TObject(),
 fVert(),
 fCurrentVertex(0),
-fMinTracks(2),
+fMinTracks(1),
 fMinITSClusters(5),
 fTrkArray(),
 fTrksToSkip(0),
@@ -153,14 +153,19 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     return fCurrentVertex; 
   }
 
+  if(nTrksPrep==1){
+    if(fDebug) printf("Just one track\n");
+    OneTrackVertFinder();
+  }else{
   // vertex finder
-  switch (fAlgo) {
+    switch (fAlgo) {
     case 1: StrLinVertexFinderMinDist(1); break;
     case 2: StrLinVertexFinderMinDist(0); break;
     case 3: HelixVertexFinder();          break;
     case 4: VertexFinder(1);              break;
     case 5: VertexFinder(0);              break;
     default: printf("Wrong algorithm\n"); break;  
+    }
   }
   if(fDebug) printf(" vertex finding completed\n");
 
@@ -184,13 +189,18 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
   }
 
   // vertex finder
-  switch (fAlgo) {
+  if(nTrksPrep==1){
+    if(fDebug) printf("Just one track\n");
+    OneTrackVertFinder();
+  }else{
+    switch (fAlgo) {
     case 1: StrLinVertexFinderMinDist(1); break;
     case 2: StrLinVertexFinderMinDist(0); break;
     case 3: HelixVertexFinder();          break;
     case 4: VertexFinder(1);              break;
     case 5: VertexFinder(0);              break;
     default: printf("Wrong algorithm\n"); break;  
+    }
   }
   if(fDebug) printf(" vertex finding completed\n");
 
@@ -324,6 +334,36 @@ Double_t AliVertexerTracks::GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t 
   Double_t y10=p0[1]-x0[1];
   Double_t z10=p0[2]-x0[2];
   return ((x10*x10+y10*y10+z10*z10)*(x12*x12+y12*y12+z12*z12)-(x10*x12+y10*y12+z10*z12)*(x10*x12+y10*y12+z10*z12))/(x12*x12+y12*y12+z12*z12);
+}
+//---------------------------------------------------------------------------
+void AliVertexerTracks::OneTrackVertFinder() {
+  // find vertex for events with 1 track, using DCA to nominal beam axis
+  if(fDebug) printf("Number of prepared tracks =%d - Call OneTrackVertFinder",fTrkArray.GetEntries());
+  AliESDtrack *track1;
+  track1 = (AliESDtrack*)fTrkArray.At(0);
+  Double_t field=GetField();
+  Double_t alpha=track1->GetAlpha();
+  Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
+  Double_t pos[3],dir[3]; 
+  track1->GetXYZAt(mindist,field,pos);
+  track1->GetPxPyPzAt(mindist,field,dir);
+  AliStrLine *line1 = new AliStrLine(pos,dir);
+  Double_t p1[3]={fNominalPos[0],fNominalPos[1],0.}; 
+  Double_t p2[3]={fNominalPos[0],fNominalPos[1],10.}; 
+  AliStrLine *zeta=new AliStrLine(p1,p2,kTRUE);
+  Double_t crosspoint[3]={0.,0.,0.};
+  Double_t sigma=999.;
+  Int_t nContrib=-1;
+  Int_t retcode = zeta->Cross(line1,crosspoint);
+  if(retcode>=0){
+    sigma=line1->GetDistFromPoint(crosspoint);
+    nContrib=1;
+  }
+  delete zeta;
+  delete line1;
+  fVert.SetXYZ(crosspoint);
+  fVert.SetDispersion(sigma);
+  fVert.SetNContributors(nContrib);  
 }
 //---------------------------------------------------------------------------
 void AliVertexerTracks::HelixVertexFinder() {
@@ -905,7 +945,7 @@ AliVertex* AliVertexerTracks::VertexForSelectedTracks(TTree *trkTree) {
 
   // get tracks and propagate them to initial vertex position
   Int_t nTrksPrep = PrepareTracks(*trkTree,1);
-  if(nTrksPrep < fMinTracks) {
+  if(nTrksPrep <  TMath::Max(2,fMinTracks) ) {
     if(fDebug) printf("TooFewTracks\n");
     Double_t vtx[3]={0,0,0};
     fVert.SetXYZ(vtx);
@@ -947,7 +987,7 @@ AliVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray) {
 
   // get tracks and propagate them to initial vertex position
   Int_t nTrks = trkArray->GetEntriesFast();
-  if(nTrks < fMinTracks) {
+  if(nTrks < TMath::Max(2,fMinTracks) ) {
     if(fDebug) printf("TooFewTracks\n");
     Double_t vtx[3]={0,0,0};
     fVert.SetXYZ(vtx);
