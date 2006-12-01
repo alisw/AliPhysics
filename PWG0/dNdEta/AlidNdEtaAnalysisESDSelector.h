@@ -3,13 +3,13 @@
 #ifndef ALIDNDETAANALYSISESDSELECTOR_H
 #define ALIDNDETAANALYSISESDSELECTOR_H
 
-#include "AliSelector.h"
+#include "AliSelectorRL.h"
 
 class AliESDtrackCuts;
 class dNdEtaAnalysis;
 class AlidNdEtaCorrection;
 
-class AlidNdEtaAnalysisESDSelector : public AliSelector {
+class AlidNdEtaAnalysisESDSelector : public AliSelectorRL {
   public:
     AlidNdEtaAnalysisESDSelector();
     virtual ~AlidNdEtaAnalysisESDSelector();
@@ -24,13 +24,9 @@ class AlidNdEtaAnalysisESDSelector : public AliSelector {
  protected:
     void ReadUserObjects(TTree* tree);
 
-    dNdEtaAnalysis* fdNdEtaAnalysisMBVtx;   // contains the histograms for the triggered events with vertex
-    dNdEtaAnalysis* fdNdEtaAnalysisMB;      // contains the histograms corrected with vtx recon eff
-    dNdEtaAnalysis* fdNdEtaAnalysis;        // contains the histograms corrected with vtx recon eff and trigger bias eff
+    dNdEtaAnalysis* fdNdEtaAnalysis;        // contains the uncorrected histograms
 
     AliESDtrackCuts*  fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
-
-    AlidNdEtaCorrection* fdNdEtaCorrection; // correction maps
 
  private:
     AlidNdEtaAnalysisESDSelector(const AlidNdEtaAnalysisESDSelector&);

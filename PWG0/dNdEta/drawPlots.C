@@ -205,29 +205,46 @@ void CompareTrack2ParticleWithAnalysisData(const char* correctionMapFile = "corr
 void dNdEta(Bool_t onlyESD = kFALSE)
 {
   TFile* file = TFile::Open("analysis_esd.root");
-  TH1* histESD = (TH1*) file->Get("dndeta/dndeta_dNdEta_corrected_2");
-  TH1* histESDNoPt = (TH1*) file->Get("dndeta/dndeta_dNdEta_2");
-  TH1* histESDMB = (TH1*) file->Get("dndeta_mb/dndeta_mb_dNdEta_corrected_2");
-  TH1* histESDMBVtx = (TH1*) file->Get("dndeta_mbvtx/dndeta_mbvtx_dNdEta_corrected_2");
+  TH1* histESD = (TH1*) file->Get("dndeta/dNdEta_corrected");
+  TH1* histESDNoPt = (TH1*) file->Get("dndeta/dNdEta");
+  TH1* histESDMB = (TH1*) file->Get("dndetaTr/dNdEta_corrected");
+  TH1* histESDMBNoPt = (TH1*) file->Get("dndetaTr/dNdEta");
+  TH1* histESDMBVtx = (TH1*) file->Get("dndetaTrVtx/dNdEta_corrected");
+  TH1* histESDMBVtxNoPt = (TH1*) file->Get("dndetaTrVtx/dNdEta");
 
   TCanvas* canvas = new TCanvas("dNdEta1", "dNdEta1", 500, 500);
 
   Prepare1DPlot(histESD);
-  Prepare1DPlot(histESDNoPt);
   Prepare1DPlot(histESDMB);
   Prepare1DPlot(histESDMBVtx);
 
-  histESD->SetLineColor(0);
-  histESDMB->SetLineColor(0);
-  histESDMBVtx->SetLineColor(0);
+  Prepare1DPlot(histESDNoPt);
+  Prepare1DPlot(histESDMBNoPt);
+  Prepare1DPlot(histESDMBVtxNoPt);
+
+  histESD->SetLineWidth(0);
+  histESDMB->SetLineWidth(0);
+  histESDMBVtx->SetLineWidth(0);
+
+  histESDNoPt->SetLineWidth(0);
+  histESDMBNoPt->SetLineWidth(0);
+  histESDMBVtxNoPt->SetLineWidth(0);
 
   histESD->SetMarkerColor(kRed);
   histESDMB->SetMarkerColor(kBlue);
   histESDMBVtx->SetMarkerColor(103);
 
+  histESDNoPt->SetMarkerColor(kRed);
+  histESDMBNoPt->SetMarkerColor(kBlue);
+  histESDMBVtxNoPt->SetMarkerColor(103);
+
   histESD->SetMarkerStyle(20);
   histESDMB->SetMarkerStyle(21);
   histESDMBVtx->SetMarkerStyle(22);
+
+  histESDNoPt->SetMarkerStyle(20);
+  histESDMBNoPt->SetMarkerStyle(21);
+  histESDMBVtxNoPt->SetMarkerStyle(22);
 
   TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0.1, histESDMBVtx->GetMaximum() * 1.1);
   Prepare1DPlot(dummy);
@@ -241,7 +258,10 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMBVtx->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMB->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESD->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+
   histESDNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histESDMBNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histESDMBVtxNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
 
   dummy->DrawCopy();
   histESDMBVtx->Draw("SAME");
@@ -254,34 +274,63 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   if (onlyESD)
     return;
 
-  TFile* file2 = TFile::Open("analysis_mc.root");
-  TH1* histMC = (TH1*) file2->Get("dndeta/dndeta_dNdEta_corrected_2")->Clone("cloned");
-
   gSystem->Load("libPWG0base");
+
+  TFile* file2 = TFile::Open("analysis_mc.root");
+  TH1* histMC = (TH1*) file2->Get("dndeta/dNdEta_corrected")->Clone("cloned");
+  TH1* histMCTr = (TH1*) file2->Get("dndetaTr/dNdEta_corrected")->Clone("cloned2");
+  TH1* histMCTrVtx = (TH1*) file2->Get("dndetaTrVtx/dNdEta_corrected")->Clone("cloned3");
+
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->Finish(0, 0.3);
-  TH1* histMCPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(2);
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  TH1* histMCPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
+
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
+  fdNdEtaAnalysis->LoadHistograms();
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  TH1* histMCTrPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
+
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
+  fdNdEtaAnalysis->LoadHistograms();
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  TH1* histMCTrVtxPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
   TCanvas* canvas2 = new TCanvas("dNdEta2", "dNdEta2", 500, 500);
 
   Prepare1DPlot(histMC);
+  Prepare1DPlot(histMCTr);
+  Prepare1DPlot(histMCTrVtx);
+
   Prepare1DPlot(histMCPtCut);
+  Prepare1DPlot(histMCTrPtCut);
+  Prepare1DPlot(histMCTrVtxPtCut);
 
   histMC->SetLineColor(kBlue);
-  histMCPtCut->SetLineColor(104);
-  histESDNoPt->SetLineColor(102);
+  histMCTr->SetLineColor(kBlue);
+  histMCTrVtx->SetLineColor(kBlue);
+
+  histMCPtCut->SetLineColor(kBlue);
+  histMCTrPtCut->SetLineColor(kBlue);
+  histMCTrVtxPtCut->SetLineColor(kBlue);
 
   TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
   Prepare1DPlot(dummy2);
-  dummy2->GetYaxis()->SetRangeUser(0, histESD->GetMaximum() * 1.1);
+  dummy2->GetYaxis()->SetRangeUser(0, histESDMBVtx->GetMaximum() * 1.1);
 
   dummy2->DrawCopy();
   histMC->Draw("SAME");
-//  histMC->Draw();
+  histMCTr->Draw("SAME");
+  histMCTrVtx->Draw("SAME");
   histESD->Draw("SAME");
+  histESDMB->Draw("SAME");
+  histESDMBVtx->Draw("SAME");
   histESDNoPt->Draw("SAME");
+  histESDMBNoPt->Draw("SAME");
+  histESDMBVtxNoPt->Draw("SAME");
   histMCPtCut->Draw("SAME");
+  histMCTrPtCut->Draw("SAME");
+  histMCTrVtxPtCut->Draw("SAME");
 
   canvas2->SaveAs("dNdEta2.gif");
   canvas2->SaveAs("dNdEta2.eps");

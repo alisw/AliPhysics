@@ -4,17 +4,21 @@
 
 #include <TFile.h>
 #include <TH3F.h>
-#include <TH2D.h>
-#include <TH1D.h>
+#include <TH2F.h>
+#include <TH1F.h>
 #include <TMath.h>
 #include <TCanvas.h>
 #include <TCollection.h>
 #include <TIterator.h>
 #include <TList.h>
 #include <TLegend.h>
+#include <TLine.h>
 
 #include "AlidNdEtaCorrection.h"
-#include "AliPWG0Helper.h"
+#include <AliCorrection.h>
+#include <AliPWG0Helper.h>
+#include <AliCorrectionMatrix2D.h>
+#include <AliCorrectionMatrix3D.h>
 
 //____________________________________________________________________
 ClassImp(dNdEtaAnalysis)
@@ -23,8 +27,6 @@ ClassImp(dNdEtaAnalysis)
 dNdEtaAnalysis::dNdEtaAnalysis() :
   TNamed(),
   fData(0),
-  fDataUncorrected(0),
-  fVtx(0),
   fPtDist(0)
 {
   // default constructor
@@ -40,45 +42,31 @@ dNdEtaAnalysis::dNdEtaAnalysis() :
 dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
   TNamed(name, title),
   fData(0),
-  fDataUncorrected(0),
-  fVtx(0),
   fPtDist(0)
 {
   // constructor
 
-  fData  = new TH3F(Form("%s_analysis", name),"Input data",80,-20,20,40,-2,2,100, 0, 10);
-  fData->SetXTitle("vtx z [cm]");
-  fData->SetYTitle("#eta");
-  fData->SetZTitle("p_{T}");
-  fData->Sumw2();
+  Float_t binLimitsPt[] = {0.0, 0.05, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3, 0.325, 0.35, 0.375, 0.4, 0.425, 0.45, 0.475, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
 
-  fDataUncorrected = dynamic_cast<TH3F*> (fData->Clone(Form("%s_analysis_uncorrected", name)));
-  fDataUncorrected->SetTitle(Form("%s uncorrected", fData->GetTitle()));
-  fVtx       = dynamic_cast<TH1D*> (fData->Project3D("x"));
-  fVtx->SetName(Form("%s_vtx", name));
-  fVtx->SetTitle("Vertex distribution");
-  fVtx->GetXaxis()->SetTitle(fData->GetXaxis()->GetTitle());
-  //fVtx->Sumw2();
+  fData = new AliCorrection("Analysis", Form("%s Analysis", title));
 
-  fdNdEta[0] = dynamic_cast<TH1D*> (fData->Project3D("y"));
-  fdNdEta[0]->SetName(Form("%s_dNdEta", name));
-  fdNdEta[0]->SetTitle("dN_{ch}/d#eta");
-  fdNdEta[0]->GetXaxis()->SetTitle(fData->GetYaxis()->GetTitle());
-  fdNdEta[0]->SetYTitle("dN_{ch}/d#eta");
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
 
-  fdNdEtaPtCutOffCorrected[0] = dynamic_cast<TH1D*> (fdNdEta[0]->Clone(Form("%s_corrected", fdNdEta[0]->GetName())));
+  fdNdEta[0] = new TH1F("dNdEta", "dN_{ch}/d#eta;#eta;dN_{ch}/d#eta", 20, -2, 2);
+
+  fdNdEtaPtCutOffCorrected[0] = dynamic_cast<TH1F*> (fdNdEta[0]->Clone(Form("%s_corrected", fdNdEta[0]->GetName())));
 
   for (Int_t i=1; i<kVertexBinning; ++i)
   {
-    fdNdEta[i]    = dynamic_cast<TH1D*> (fdNdEta[0]->Clone(Form("%s_%d", fdNdEta[0]->GetName(), i)));
-    fdNdEtaPtCutOffCorrected[i]    = dynamic_cast<TH1D*> (fdNdEtaPtCutOffCorrected[0]->Clone(Form("%s_%d", fdNdEtaPtCutOffCorrected[0]->GetName(), i)));
+    fdNdEta[i]    = dynamic_cast<TH1F*> (fdNdEta[0]->Clone(Form("%s_%d", fdNdEta[0]->GetName(), i)));
+    fdNdEtaPtCutOffCorrected[i]    = dynamic_cast<TH1F*> (fdNdEtaPtCutOffCorrected[0]->Clone(Form("%s_%d", fdNdEtaPtCutOffCorrected[0]->GetName(), i)));
   }
 
-  fPtDist = dynamic_cast<TH1D*> (fData->Project3D("z"));
-  fPtDist->SetName(Form("%s_pt", name));
-  fPtDist->SetTitle("p_{T} [GeV/c]");
-  fPtDist->GetXaxis()->SetTitle(fData->GetZaxis()->GetTitle());
-  fPtDist->SetYTitle("#frac{dN}{d#eta dp_{T}} [c/GeV]");
+  fPtDist = new TH1F("Pt", "p_{T} distribution;p_{T} [GeV/c];#frac{dN}{d#eta dp_{T}} [c/GeV]", 28, binLimitsPt);
+
+  TH1::AddDirectory(oldStatus);
 }
 
 //____________________________________________________________________
@@ -90,18 +78,6 @@ dNdEtaAnalysis::~dNdEtaAnalysis()
   {
     delete fData;
     fData = 0;
-  }
-
-  if (fDataUncorrected)
-  {
-    delete fDataUncorrected;
-    fDataUncorrected = 0;
-  }
-
-  if (fVtx)
-  {
-    delete fVtx;
-    fVtx = 0;
   }
 
   for (Int_t i=0; i<kVertexBinning; ++i)
@@ -129,8 +105,6 @@ dNdEtaAnalysis::~dNdEtaAnalysis()
 dNdEtaAnalysis::dNdEtaAnalysis(const dNdEtaAnalysis &c) :
   TNamed(c),
   fData(0),
-  fDataUncorrected(0),
-  fVtx(0),
   fPtDist(0)
 {
   //
@@ -160,92 +134,147 @@ void dNdEtaAnalysis::Copy(TObject &c) const
 
   dNdEtaAnalysis& target = (dNdEtaAnalysis &) c;
 
-  target.fData = dynamic_cast<TH3F*> (fData->Clone());
-  target.fDataUncorrected = dynamic_cast<TH3F*> (fDataUncorrected->Clone());
-  target.fVtx = dynamic_cast<TH1D*> (fVtx->Clone());
+  target.fData = dynamic_cast<AliCorrection*> (fData->Clone());
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
-    target.fdNdEta[i] = dynamic_cast<TH1D*> (fdNdEta[i]->Clone());
-    target.fdNdEtaPtCutOffCorrected[i] = dynamic_cast<TH1D*> (fdNdEtaPtCutOffCorrected[i]->Clone());
+    target.fdNdEta[i] = dynamic_cast<TH1F*> (fdNdEta[i]->Clone());
+    target.fdNdEtaPtCutOffCorrected[i] = dynamic_cast<TH1F*> (fdNdEtaPtCutOffCorrected[i]->Clone());
   }
 
-  target.fPtDist = dynamic_cast<TH1D*> (fPtDist->Clone());
+  target.fPtDist = dynamic_cast<TH1F*> (fPtDist->Clone());
 
   TNamed::Copy((TNamed &) c);
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::FillTrack(Float_t vtx, Float_t eta, Float_t pt, Float_t weight)
+void dNdEtaAnalysis::FillTrack(Float_t vtx, Float_t eta, Float_t pt)
 {
   // fills a track into the histograms
 
-  fDataUncorrected->Fill(vtx, eta, pt);
-  fData->Fill(vtx, eta, pt, weight);
+  fData->GetTrackCorrection()->FillMeas(vtx, eta, pt);
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::FillEvent(Float_t vtx, Float_t weight)
+void dNdEtaAnalysis::FillEvent(Float_t vtx, Float_t n)
 {
   // fills an event into the histograms
 
-  fVtx->Fill(vtx, weight);
+  fData->GetEventCorrection()->FillMeas(vtx, n);
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut)
+void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType)
 {
-  // correct with correction values if available
+  //
+  // correct with the given correction values and calculate dNdEta and pT distribution
+  // the corrections that are applied can be steered by the flag correctionType
+  //
 
-  // TODO what do we do with the error?
-  if (!correction)
+  // TODO put tag somewhere which corrections have been applied
+
+  // set corrections to 1
+  fData->SetCorrectionToUnity();
+
+  if (correction && correctionType != AlidNdEtaCorrection::kNone)
+  {
+    TH3F* trackCorr = fData->GetTrackCorrection()->GetCorrectionHistogram();
+    TH2F* eventCorr = fData->GetEventCorrection()->GetCorrectionHistogram();
+
+    if (correctionType >= AlidNdEtaCorrection::kTrack2Particle)
+      trackCorr->Multiply(correction->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
+
+    if (correctionType >= AlidNdEtaCorrection::kVertexReco)
+    {
+      trackCorr->Multiply(correction->GetVertexRecoCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
+      eventCorr->Multiply(correction->GetVertexRecoCorrection()->GetEventCorrection()->GetCorrectionHistogram());
+    }
+
+    switch (correctionType)
+    {
+      case AlidNdEtaCorrection::kINEL :
+      {
+        trackCorr->Multiply(correction->GetTriggerBiasCorrectionINEL()->GetTrackCorrection()->GetCorrectionHistogram());
+        eventCorr->Multiply(correction->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetCorrectionHistogram());
+        break;
+      }
+      case AlidNdEtaCorrection::kNSD :
+      {
+        trackCorr->Multiply(correction->GetTriggerBiasCorrectionNSD()->GetTrackCorrection()->GetCorrectionHistogram());
+        eventCorr->Multiply(correction->GetTriggerBiasCorrectionNSD()->GetEventCorrection()->GetCorrectionHistogram());
+        break;
+      }
+      case AlidNdEtaCorrection::kND :
+      {
+        trackCorr->Multiply(correction->GetTriggerBiasCorrectionND()->GetTrackCorrection()->GetCorrectionHistogram());
+        eventCorr->Multiply(correction->GetTriggerBiasCorrectionND()->GetEventCorrection()->GetCorrectionHistogram());
+        break;
+      }
+      default : break;
+    }
+  }
+  else
     printf("INFO: No correction applied\n");
 
-  // In fData we have the track2particle and vertex reconstruction efficiency correction already applied
+  fData->Multiply();
+
+  TH3F* dataHist = fData->GetTrackCorrection()->GetGeneratedHistogram();
+
+  // integrate multiplicity axis out (include under/overflow bins!!!)
+  TH2F* tmp = fData->GetEventCorrection()->GetGeneratedHistogram();
+  TH1D* vertexHist = tmp->ProjectionX("_px", 0, tmp->GetNbinsY() + 1, "e");
 
   // create pt hist
   {
     // reset all ranges
-    fData->GetXaxis()->SetRange(0, 0);
-    fData->GetYaxis()->SetRange(0, 0);
-    fData->GetZaxis()->SetRange(0, 0);
+    dataHist->GetXaxis()->SetRange(0, 0);
+    dataHist->GetYaxis()->SetRange(0, 0);
+    dataHist->GetZaxis()->SetRange(0, 0);
 
     // vtx cut
-    Int_t vertexBinBegin = fData->GetXaxis()->FindBin(-5);
-    Int_t vertexBinEnd = fData->GetXaxis()->FindBin(5);
-    fData->GetXaxis()->SetRange(vertexBinBegin, vertexBinEnd);
-    Float_t nEvents = fVtx->Integral(vertexBinBegin, vertexBinEnd);
+    Int_t vertexBinBegin = dataHist->GetXaxis()->FindBin(-5);
+    Int_t vertexBinEnd = dataHist->GetXaxis()->FindBin(5);
+    dataHist->GetXaxis()->SetRange(vertexBinBegin, vertexBinEnd);
+    Float_t nEvents = vertexHist->Integral(vertexBinBegin, vertexBinEnd);
 
-    // eta cut
-    fData->GetYaxis()->SetRange(fData->GetYaxis()->FindBin(-0.8), fData->GetYaxis()->FindBin(0.8));
-    Float_t etaWidth = 1.6;
-
-    TH1D* ptHist = dynamic_cast<TH1D*> (fData->Project3D("ze"));
-
-    for (Int_t i=1; i<=fPtDist->GetNbinsX(); ++i)
+    if (nEvents > 0)
     {
-      Float_t binSize = fPtDist->GetBinWidth(i);
-      fPtDist->SetBinContent(i, ptHist->GetBinContent(i) / binSize / nEvents / etaWidth);
-      fPtDist->SetBinError(i, ptHist->GetBinError(i) / binSize / nEvents / etaWidth);
-    }
+      // eta cut
+      dataHist->GetYaxis()->SetRange(dataHist->GetYaxis()->FindBin(-0.8), dataHist->GetYaxis()->FindBin(0.8));
+      Float_t etaWidth = 1.6;
 
-    delete ptHist;
+      TH1D* ptHist = dynamic_cast<TH1D*> (dataHist->Project3D("ze"));
+
+      for (Int_t i=1; i<=fPtDist->GetNbinsX(); ++i)
+      {
+        Float_t binSize = fPtDist->GetBinWidth(i);
+        fPtDist->SetBinContent(i, ptHist->GetBinContent(i) / binSize / nEvents / etaWidth);
+        fPtDist->SetBinError(i, ptHist->GetBinError(i) / binSize / nEvents / etaWidth);
+      }
+
+      delete ptHist;
+    }
+    else
+      printf("ERROR: nEvents is 0!\n");
   }
 
   // reset all ranges
-  fData->GetXaxis()->SetRange(0, 0);
-  fData->GetYaxis()->SetRange(0, 0);
-  fData->GetZaxis()->SetRange(0, 0);
+  dataHist->GetXaxis()->SetRange(0, 0);
+  dataHist->GetYaxis()->SetRange(0, 0);
+  dataHist->GetZaxis()->SetRange(0, 0);
 
   // integrate over pt (with pt cut)
   Int_t ptLowBin = 1;
   if (ptCut > 0)
-    ptLowBin = fData->GetZaxis()->FindBin(ptCut);
+    ptLowBin = dataHist->GetZaxis()->FindBin(ptCut);
 
-  fData->GetZaxis()->SetRange(ptLowBin, fData->GetZaxis()->GetNbins());
-  TH2D* vtxVsEta = dynamic_cast<TH2D*> (fData->Project3D("yx2e"));
-  vtxVsEta->GetXaxis()->SetTitle(fData->GetXaxis()->GetTitle());
-  vtxVsEta->GetYaxis()->SetTitle(fData->GetYaxis()->GetTitle());
+  dataHist->GetZaxis()->SetRange(ptLowBin, dataHist->GetZaxis()->GetNbins());
+  printf("range %d %d\n", ptLowBin, dataHist->GetZaxis()->GetNbins());
+  TH2D* vtxVsEta = dynamic_cast<TH2D*> (dataHist->Project3D("yx2e"));
+
+  dataHist->GetZaxis()->SetRange(0, 0);
+  vtxVsEta->GetXaxis()->SetTitle(dataHist->GetXaxis()->GetTitle());
+  vtxVsEta->GetYaxis()->SetTitle(dataHist->GetYaxis()->GetTitle());
 
   if (vtxVsEta == 0)
   {
@@ -253,17 +282,14 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut)
     return;
   }
 
-  //new TCanvas;
-  //vtxVsEta->Draw("COLZ");
-
-  for (Int_t iEta=0; iEta<=vtxVsEta->GetNbinsY(); iEta++)
+  for (Int_t iEta=1; iEta<=vtxVsEta->GetNbinsY(); iEta++)
   {
     // do we have several histograms for different vertex positions?
-    Int_t vertexBinWidth = fVtx->GetNbinsX() / (kVertexBinning-1);
+    Int_t vertexBinWidth = vertexHist->GetNbinsX() / (kVertexBinning-1);
     for (Int_t vertexPos=0; vertexPos<kVertexBinning; ++vertexPos)
     {
       Int_t vertexBinBegin = 1;
-      Int_t vertexBinEnd = fVtx->GetNbinsX() + 1;
+      Int_t vertexBinEnd = vertexHist->GetNbinsX() + 1;
 
       // the first histogram is always for the whole vertex range
       if (vertexPos > 0)
@@ -272,7 +298,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut)
         vertexBinEnd = vertexBinBegin + vertexBinWidth;
       }
 
-      Float_t totalEvents = fVtx->Integral(vertexBinBegin, vertexBinEnd - 1);
+      Float_t totalEvents = vertexHist->Integral(vertexBinBegin, vertexBinEnd - 1);
       if (totalEvents == 0)
       {
         printf("WARNING: No events for hist %d %d %d\n", vertexPos, vertexBinBegin, vertexBinEnd);
@@ -291,14 +317,16 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut)
       }
 
       Float_t ptCutOffCorrection = 1;
-      if (correction)
-        ptCutOffCorrection = correction->GetMeasuredFraction(ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta));
+      if (correction && ptCut > 0)
+        ptCutOffCorrection = correction->GetMeasuredFraction(correctionType, ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta));
 
       if (ptCutOffCorrection <= 0)
       {
         printf("UNEXPECTED: ptCutOffCorrection is %f for hist %d %d %d\n", ptCutOffCorrection, vertexPos, vertexBinBegin, vertexBinEnd);
         continue;
       }
+
+      printf("Eta: %d Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f\n", iEta, vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
 
       Float_t dndeta = sum / totalEvents;
       Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
@@ -328,24 +356,10 @@ void dNdEtaAnalysis::SaveHistograms()
 
   if (fData)
   {
-    fData->Write();
-    AliPWG0Helper::CreateProjections(fData);
+    fData->SaveHistograms();
   }
   else
     printf("dNdEtaAnalysis::SaveHistograms: UNEXPECTED: fData is 0\n");
-
-  if (fDataUncorrected)
-  {
-    fDataUncorrected->Write();
-    AliPWG0Helper::CreateProjections(fDataUncorrected);
-  }
-  else
-    printf("dNdEtaAnalysis::SaveHistograms: UNEXPECTED: fDataUncorrected is 0\n");
-
-  if (fVtx)
-    fVtx       ->Write();
-  else
-    printf("dNdEtaAnalysis::SaveHistograms: UNEXPECTED: fVtx is 0\n");
 
   if (fPtDist)
     fPtDist       ->Write();
@@ -368,87 +382,123 @@ void dNdEtaAnalysis::SaveHistograms()
   gDirectory->cd("../");
 }
 
-void dNdEtaAnalysis::LoadHistograms()
+void dNdEtaAnalysis::LoadHistograms(const Char_t* dir)
 {
   // loads the histograms from a directory with the name of this class (retrieved from TNamed)
 
-  gDirectory->cd(GetName());
+  if (!dir)
+    dir = GetName();
 
-  fData = dynamic_cast<TH3F*> (gDirectory->Get(fData->GetName()));
-  fDataUncorrected = dynamic_cast<TH3F*> (gDirectory->Get(fDataUncorrected->GetName()));
+  gDirectory->cd(dir);
 
-  fVtx = dynamic_cast<TH1D*> (gDirectory->Get(fVtx->GetName()));
+  fData->LoadHistograms();
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
-    fdNdEta[i] = dynamic_cast<TH1D*> (gDirectory->Get(fdNdEta[i]->GetName()));
-    fdNdEtaPtCutOffCorrected[i] = dynamic_cast<TH1D*> (gDirectory->Get(fdNdEtaPtCutOffCorrected[i]->GetName()));
+    fdNdEta[i] = dynamic_cast<TH1F*> (gDirectory->Get(fdNdEta[i]->GetName()));
+    fdNdEtaPtCutOffCorrected[i] = dynamic_cast<TH1F*> (gDirectory->Get(fdNdEtaPtCutOffCorrected[i]->GetName()));
   }
 
-  fPtDist = dynamic_cast<TH1D*> (gDirectory->Get(fPtDist->GetName()));
+  fPtDist = dynamic_cast<TH1F*> (gDirectory->Get(fPtDist->GetName()));
 
   gDirectory->cd("../");
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::DrawHistograms()
+void dNdEtaAnalysis::DrawHistograms(Bool_t simple)
 {
   // draws the histograms
-
-  TCanvas* canvas = new TCanvas("dNdEtaAnalysis", "dNdEtaAnalysis", 800, 800);
-  canvas->Divide(2, 2);
-
-  canvas->cd(1);
-  if (fData)
-    fData->Draw("COLZ");
-
-  /*canvas->cd(2);
-  if (fDataUncorrected)
-    fDataUncorrected->Draw("COLZ");*/
-
-  canvas->cd(2);
-  if (fVtx)
-    fVtx->Draw();
-
-  canvas->cd(3);
-  if (fdNdEtaPtCutOffCorrected[0])
-    fdNdEtaPtCutOffCorrected[0]->Draw();
-
-  if (fdNdEta[0])
+  
+  if (!simple)
   {
-    fdNdEta[0]->SetLineColor(kRed);
-    fdNdEta[0]->Draw("SAME");
-  }
+    if (fData)
+      fData->DrawHistograms(GetName());
 
-  canvas->cd(4);
-  if (fPtDist)
-    fPtDist->Draw();
+    TCanvas* canvas = new TCanvas(Form("%s_dNdEtaAnalysis", GetName()), Form("%s_dNdEtaAnalysis", GetName()), 800, 400);
+    canvas->Divide(2, 1);
+
+    canvas->cd(1);
+    if (fdNdEtaPtCutOffCorrected[0])
+      fdNdEtaPtCutOffCorrected[0]->Draw();
+
+    if (fdNdEta[0])
+    {
+      fdNdEta[0]->SetLineColor(kRed);
+      fdNdEta[0]->Draw("SAME");
+    }
+
+    canvas->cd(2);
+    if (fPtDist)
+      fPtDist->Draw();
+  }
 
     // histograms for different vertices?
   if (kVertexBinning > 0)
   {
       // doesnt work, but i dont get it, giving up...
-    /*TCanvas* canvas2 =*/ new TCanvas("dNdEtaAnalysisVtx", "dNdEtaAnalysisVtx", 450, 450);
+    TCanvas* canvas2 = new TCanvas(Form("%s_dNdEtaAnalysisVtx", GetName()), Form("%s_dNdEtaAnalysisVtx", GetName()), 450, 450);
+    TCanvas* canvas3 = 0;
+    if (!simple)
+      canvas3 = new TCanvas(Form("%s_dNdEtaAnalysisVtx_noptcutoff", GetName()), Form("%s_dNdEtaAnalysisVtx_noptcutoff", GetName()), 450, 450);
+
     //Int_t yPads = (Int_t) TMath::Ceil(((Double_t) kVertexBinning - 1) / 2);
     //printf("%d\n", yPads);
     //canvas2->Divide(2, yPads);
 
-    TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+    TLegend* legend = new TLegend(0.4, 0.7, 0.6, 0.9);
 
     for (Int_t i=0; i<kVertexBinning; ++i)
     {
-      //canvas2->cd(i-1);
-      //printf("%d\n", i);
       if (fdNdEtaPtCutOffCorrected[i])
       {
+        canvas2->cd();
+
         fdNdEtaPtCutOffCorrected[i]->SetLineColor(i+1);
         fdNdEtaPtCutOffCorrected[i]->Draw((i == 0) ? "" : "SAME");
         legend->AddEntry(fdNdEtaPtCutOffCorrected[i], (i == 0) ? "Vtx All" : Form("Vtx Bin %d", i-1));
       }
+      if (canvas3 && fdNdEta[i])
+      {
+        canvas3->cd();
+
+        fdNdEta[i]->SetLineColor(i+1);
+        fdNdEta[i]->Draw((i == 0) ? "" : "SAME");
+      }
     }
 
+    canvas2->cd();
     legend->Draw();
+    canvas2->SaveAs(Form("%s_%s.gif", canvas2->GetName(), GetName()));
+
+    if (canvas3)
+    {
+      canvas3->cd();
+      legend->Draw();
+    }
   }
+  
+  if (kVertexBinning == 3)
+  {
+     TH1* clone = dynamic_cast<TH1*> (fdNdEtaPtCutOffCorrected[1]->Clone("clone"));
+     TH1* clone2 = dynamic_cast<TH1*> (fdNdEtaPtCutOffCorrected[2]->Clone("clone2"));
+     
+     if (clone && clone2)
+     {
+        TCanvas* canvas4 = new TCanvas(Form("%s_dNdEtaAnalysisVtxRatios", GetName()), Form("%s_dNdEtaAnalysisVtxRatios", GetName()), 450, 450);
+    
+        clone->Divide(fdNdEtaPtCutOffCorrected[0]);
+        clone->GetYaxis()->SetRangeUser(0.95, 1.05);
+        clone->Draw();
+        
+        clone2->Divide(fdNdEtaPtCutOffCorrected[0]);
+        clone2->Draw("SAME");
+
+        TLine* line = new TLine(-1, 1, 1, 1);
+        line->Draw();
+
+        canvas4->SaveAs(Form("%s_%s.gif", canvas4->GetName(), GetName()));
+     }
+   }
 }
 
 Long64_t dNdEtaAnalysis::Merge(TCollection* list)
@@ -467,7 +517,7 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // sub collections
-  const Int_t nCollections = 2 * kVertexBinning + 4; // 4 standalone hists, two arrays of size kVertexBinning
+  const Int_t nCollections = 2 * kVertexBinning + 2; // 2 standalone hists, two arrays of size kVertexBinning
   TList* collections[nCollections];
   for (Int_t i=0; i<nCollections; ++i)
     collections[i] = new TList;
@@ -480,29 +530,23 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
       continue;
 
     collections[0]->Add(entry->fData);
-    if (fDataUncorrected)
-      collections[1]->Add(entry->fDataUncorrected);
-    collections[2]->Add(entry->fVtx);
-    collections[3]->Add(entry->fPtDist);
+    collections[1]->Add(entry->fPtDist);
 
     for (Int_t i=0; i<kVertexBinning; ++i)
     {
-      collections[4+i]->Add(entry->fdNdEta[i]);
-      collections[4+kVertexBinning+i]->Add(entry->fdNdEtaPtCutOffCorrected[i]);
+      collections[2+i]->Add(entry->fdNdEta[i]);
+      collections[2+kVertexBinning+i]->Add(entry->fdNdEtaPtCutOffCorrected[i]);
     }
 
     ++count;
   }
 
   fData->Merge(collections[0]);
-  if (fDataUncorrected)
-    fDataUncorrected->Merge(collections[1]);
-  fVtx->Merge(collections[2]);
-  fPtDist->Merge(collections[3]);
+  fPtDist->Merge(collections[1]);
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
-    fdNdEta[i]->Merge(collections[4+i]);
-    fdNdEta[i]->Merge(collections[4+kVertexBinning+i]);
+    fdNdEta[i]->Merge(collections[2+i]);
+    fdNdEta[i]->Merge(collections[2+kVertexBinning+i]);
   }
 
   for (Int_t i=0; i<nCollections; ++i)

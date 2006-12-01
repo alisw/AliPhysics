@@ -18,16 +18,18 @@
 // - add functionality to make dn/deta for different mult classes?
 
 #include <TNamed.h>
+#include "AlidNdEtaCorrection.h"
 
-class TH3F;
-class TH1D;
+class TH1F;
 class TCollection;
+
 class AlidNdEtaCorrection;
+class AliCorrection;
 
 class dNdEtaAnalysis : public TNamed
 {
 public:
-  enum { kVertexBinning = 1+3 }; // the first is for the whole vertex range, the others divide the vertex range
+  enum { kVertexBinning = 1+2 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis();
   dNdEtaAnalysis(Char_t* name, Char_t* title);
@@ -37,34 +39,31 @@ public:
   dNdEtaAnalysis &operator=(const dNdEtaAnalysis &c);
   virtual void Copy(TObject &c) const;
 
-  void FillTrack(Float_t vtx, Float_t eta, Float_t pt, Float_t weight);
-  void FillEvent(Float_t vtx, Float_t weight);
+  void FillTrack(Float_t vtx, Float_t eta, Float_t pt);
+  void FillEvent(Float_t vtx, Float_t n);
 
-  void Finish(AlidNdEtaCorrection* correction, Float_t ptCut);
+  void Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType);
 
-  void DrawHistograms();
-  void LoadHistograms();
+  void DrawHistograms(Bool_t simple = kFALSE);
+  void LoadHistograms(const Char_t* dir = 0);
   void SaveHistograms();
 
   virtual Long64_t Merge(TCollection* list);
 
-  TH3F* GetHistogram() { return fData; }
-  TH3F* GetUncorrectedHistogram() { return fDataUncorrected; }
-  TH1D* GetVtxHistogram() { return fVtx; }
-  TH1D* GetPtHistogram() { return fPtDist; }
-  TH1D* GetdNdEtaHistogram(Int_t i = 0) { return fdNdEta[i]; }
-  TH1D* GetdNdEtaPtCutOffCorrectedHistogram(Int_t i = 0) { return fdNdEtaPtCutOffCorrected[i]; }
+  AliCorrection* GetData() { return fData; }
+
+  TH1F* GetPtHistogram() { return fPtDist; }
+
+  TH1F* GetdNdEtaHistogram(Int_t i = 0) { return fdNdEta[i]; }
+  TH1F* GetdNdEtaPtCutOffCorrectedHistogram(Int_t i = 0) { return fdNdEtaPtCutOffCorrected[i]; }
 
 protected:
-  TH3F* fData;              // histogram Eta vs vtx (track count)
-  TH3F* fDataUncorrected;   // uncorrected histograms Eta vs vtx (track count)
+  AliCorrection* fData;     // we store the data in an AliCorrection
 
-  TH1D* fVtx;                   // vtx histogram (event count)
+  TH1F* fPtDist; // pt distribution
 
-  TH1D* fPtDist; // pt distribution
-
-  TH1D* fdNdEta[kVertexBinning]; // dndeta results for different vertex bins (0 = full range)
-  TH1D* fdNdEtaPtCutOffCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range), pt cut off corrected
+  TH1F* fdNdEta[kVertexBinning]; // dndeta results for different vertex bins (0 = full range)
+  TH1F* fdNdEtaPtCutOffCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range), pt cut off corrected
 
   ClassDef(dNdEtaAnalysis, 1)
 };
