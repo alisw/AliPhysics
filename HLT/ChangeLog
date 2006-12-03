@@ -1,5 +1,11 @@
+2006-12-03 
+	- integration of libHLTbase into AliRoot prepared
+	- SampleLib as stand-alone package
+	- library development tutorial
 2006-11-30 intermediate version
 	- setup scripts for running environment added
+	- bugfix in configure which caused the check for PubSub components
+	  to fail on some architectures
 	- ComponentHandler takes ROOT dynamic library loader as fallback if
 	  dlopen is not available
 	- minor changes to avoid effC++ and other warnings

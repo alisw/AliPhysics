@@ -98,10 +98,12 @@ use a separate build directory.
 
 You should redirect the output of the make into a file.
 The default install directory is set to the current directory ($PWD). To
-override the default directory use the option --prefix=<dir>           
-All binary libraries will be installed under <prefix>/lib. If the directory
-id eaual to $ALICE_ROOT, the libraries will be installed under 
-<prefix>/lib/tgt_<arch> as used for AliRoot.
+override the default directory use the option --prefix=<dir>. More information
+can be obtained from the configure script by running it with option --help.
+All binary libraries will be installed under <prefix>/lib. 
+If the directory is equal to $ALICE_ROOT, the libraries will be installed under 
+<prefix>/lib/tgt_<arch> as used for AliRoot. This is a custom extension in
+order to adapt to the specific AliRoot installation directories.
 
 Some important options:
 --enable-logging  # Enable/Disable logging (default enabled)

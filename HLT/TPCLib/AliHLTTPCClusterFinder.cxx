@@ -226,7 +226,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   readValue = fDigitReader->Next();
 
   // Matthias 08.11.2006 the following return would cause termination without writing the
-  // ClusterData and thus would block the component. I just wnt to have the commented line
+  // ClusterData and thus would block the component. I just want to have the commented line
   // here for information
   //if (!readValue)return;
 

@@ -10,7 +10,13 @@ bin_SCRIPTS			= setenv.sh setenv.csh
 # library definition
 lib_LTLIBRARIES			=  libHLTbase.la
 
+MODDIR				= $(top_srcdir)
+PKGDEF				= $(MODDIR)/libHLTbase.pkg
+#include $(top_srcdir)/libHLTbase.pkg
+
 # library sources
+# temporary until lib*.pkg file is commited to AliRoot
+#libHLTbase_la_SOURCES		= $(MODULE_SRCS)
 libHLTbase_la_SOURCES		=  AliHLTComponent.cxx \
 				   AliHLTComponentHandler.cxx \
 				   AliHLTSystem.cxx \
@@ -35,6 +41,9 @@ CLASS_HDRS			=  AliHLTComponent.h \
 				   AliHLTDataBuffer.h \
 				   AliHLTDataSource.h \
 				   AliHLTDataSink.h
+
+# temporary until lib*.pkg file is commited to AliRoot
+#pkginclude_HEADERS		=  $(MODULE_HDRS)
 pkginclude_HEADERS		=  $(CLASS_HDRS) \
 				   AliHLTDataTypes.h \
 				   AliHLT_C_Component_WrapperInterface.h \

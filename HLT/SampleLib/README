@@ -1,0 +1,232 @@
+This README describes the procedure to create a customized component 
+library for the ALICE HLT.
+
+Please send corrections/suggestions/bugreports to
+Matthias.Richter@ift.uib.no
+
+Part A describes a library embedded into the ALICE HLT build system
+Part B gives a  recipe for using this package stand-alone
+
+Note: You can not mix the two alternatives since this would confuse aototools. 
+Our suggestions: If you are developing anyway with the AliRoot HLT module 
+choose alternative A. If you don't use the HLT module explicitly choose 
+alternative B.
+
+If you have downloaded the 'alice-hlt-sample' package and want to build and 
+modify it, go directly to Part B.
+
+===============================================================================
+=====                                                                     =====
+=====                Part A: The embedded case                            =====
+=====                                                                     =====
+===============================================================================
+
+This describes how to create a new component library embedded into the
+ALICE HLT build system. We asume that you have a version of the AliRoot
+HLT module installed. The top level directory of the package is referred
+as 'topdir' from now on.
+
+1. Choose a name for your library and the sub-folder: 
+   e.g. 'libAliHLTTest' in folder 'Test'
+2. Go to the topdir:
+> cd <topdir>
+
+3. Copy the SampleLib folder as new 'Test' folder
+> cp -a SampleLib Test
+
+4. Change dir to the new folder
+> cd Test
+
+5. Rename libAliHLTSample.pkg to libAliHLTTest.pkg
+> mv libAliHLTSample.pkg libAliHLTTest.pkg
+
+6. Open 'Makefile.am' with an editor
+   This is the Makefile template for the autotools build system. In particular
+   one defines the library to be built to the lib_LTLIBRARIES variable. 
+   Furthermore, source and header files have to be specified, but in our case
+   this is done in the 'lib***.pkg file. By using such a file the library can
+   later easily be added to AliRoot.
+6.1. replace all strings 'AliHLTSample' with 'AliHLTTest'
+
+7. Now, you can think about implementing a new component. The packge contains
+   three example components:
+   - AliHLTDummyComponent: a real component which copies data from the input
+     to the output
+   - AliHLTSampleComponent1/2: two dummy components which just demonstrate 
+     how several components can be implemented in one library
+   Each of the components has a header file '<component>.h' and a source code
+   file '<component>.cxx
+7.1 Take the DummyComponent, copy the two files (to your component name):
+> cp AliHLTDummyComponent.h MyTestComponent.h
+> cp AliHLTDummyComponent.cxx MyTestComponent.cxx
+7.2 Implement the required methods. A tutorial will be added to this package
+   soon. A comprehensive online tutorial is available at
+   http://www.kip.uni-heidelberg.de/wiki/HLT
+
+8. Once you are finnished with the first code development, you have to add
+   the new component files to the build system. Open 'libAliHLTTest.pkg' 
+8.1. Add all your source files to the SRCS variable, remove the files from
+     the libAliHLTSample
+8.2. Add all header files of classes which should be added to the ROOT
+     dictionary to the CLASS_HDRS variable, remove the files from the
+     libAliHLTSample
+8.3. All other header files must be added to the HDRS variable, including the
+     content of the CLASS_HEADERS
+
+9. Now we just have to add our new library to the build system. 
+9.1 Open Makefile.am in the topdir and add 'Test' to the list of SUBDIRS
+9.2 Open configure.ac in the topdir and add 'Test/Makefile' to the list of
+    files to be created: AC_CONFIG_FILES at the end of configure.ac
+
+10.Make sure that all files are saved. Now follow the instruction from the
+   README in the topdir. In principle its enough to go to your build directory
+   and simply type
+> make
+> make install
+
+
+
+===============================================================================
+=====                                                                     =====
+=====                Part B: Stand-alone package                          =====
+=====                                                                     =====
+===============================================================================
+
+TOC
+===
+1. Overview
+2. Requirements
+3. Setting up a version retrieved from CVS
+4. Modifying a distributed package
+5. Installation
+6. Code development
+7. Documentation
+8. Reporting bugs/Asking for support
+9. Committing to the AliRoot CVS
+
+1. Overview
+===========
+This package provides a compilation of shared libraries of the ALICE
+HLT project and is intended for stand-alone compilation, i.e. not as part 
+of the AliRoot compilation. 
+
+
+2. Requirements
+===============
+The package needs both ROOT and AliRoot. Both must be set up in the
+usual way (ROOTSYS, ALICE_ROOT, library locations evtl. specified in
+LD_LIBRARY_PATH, ...). The package also needs the ALICE HLT component
+framework. This is part of AliRoot from version v4-05-Release on. You can
+also download the package from
+http://www.kip.uni-heidelberg.de/wiki/HLT
+
+To set up a version retrieved from CVS, autoconf 2.57, automake 1.6
+,and libtool 1.4 or higher versions are required. Thats the versions
+which come with the Scientific Linux CERN 3. The same applies if
+you want to change the Makefiles.
+
+If your GNU build tools are too old, ask the maintainers for a distributed
+package.  
+
+3. Setting up a version retrieved from CVS
+==========================================
+Skip this section if you have started from the tar ball.
+
+A version checked out from CVS requires a few steps to set up the Makefiles.
+Go to the directory and run
+autoreconf -i -f
+
+Then continue with the package configuration described in the 'Installation'
+section.
+
+4. Modifying a distributed package
+==================================
+If you are going the modify a distributed package you might need to re-make 
+the GNU build system by running
+ autoreconf -f -i
+
+Please notify the authors about bug fixes/corrections/extensions you made if
+you consider them worth to be merged into the project.
+
+Then continue with the package configuration described in the 'Installation'
+section.
+
+5. Installation
+===============
+Package build relies on the GNU triplet configure, make and make install.
+In order to keep the development directory clean, it is recommended to
+use a separate build directory. 
+
+  mkdir build
+  cd build
+  ../configure
+  make
+  make install
+
+You should redirect the output of the make into a file.
+The default install directory is set to the current directory ($PWD). To
+override the default directory use the option --prefix=<dir>. More information
+can be obtained from the configure script by running it with option --help.
+All binary libraries will be installed under <prefix>/lib. 
+If the directory is equal to $ALICE_ROOT, the libraries will be installed under 
+<prefix>/lib/tgt_<arch> as used for AliRoot. This is a custom extension in
+order to adapt to the specific AliRoot installation directories.
+
+You might need to specify the installation path of the ALICE HLT component
+framework during packge configuration. This can be done by the option
+--with-hltbase.
+Please follow correctly the installation procedure of the framework package.
+
+Note: You can have several build directories with different configure options,
+(e.g. AliRoot versions) but using the same source code. 
+
+If you need further information on the GNU build system, execute from the 
+top directory:
+./configure --help | less
+
+6. Code Development
+===================
+Once you are finnished with the build of the package, you can think about
+changing the code. The packge contains three example components:
+- AliHLTDummyComponent: a real component which copies data from the input
+  to the output
+- AliHLTSampleComponent1/2: two dummy components which just demonstrate 
+  how several components can be implemented in one library
+Each of the components has aheader file '<component>.h' and a source code
+file '<component>.cxx
+
+Leave your build directory and go back to the top directory where you can find 
+the source code as well as the Makefile template Makefile.am. Choose a new 
+name of your library (the tutorial uses AliHLTTest) and follow the instructions 
+5 to 8 of Part A (embedded case).
+
+When you are done with this, you can build the library by typing 'make' in your
+build directory, and install it by make install.
+
+7. Documentation
+================
+NOTE: DOXYGEN GENERATED DOCUMENTATION WILL BE ADDED SOON !!!
+Documentation is generated from the source code at compile time if 
+doxygen is installed on the machine. From the build directory, open
+doc/html/index.html with a web browser.
+
+A wiki with detailed information is set up at
+http://www.kip.uni-heidelberg.de/wiki/HLT
+
+8. Reporting bugs/Asking for support
+====================================
+Please include the following information into your request:
+- config.log from your build directory
+- output of the make process. Note: Redirect BOTH the stdout and stderr
+  channel to a log file. Redirection depends on the shell you are using:
+    bash: make 2>&1 | tee make.log 
+    csh: make |& tee make.log
+  The 'tee' command just duplicates the output.
+- history of the commands you are using for compilation
+  history > history.log
+
+9. Committing to the AliRoot CVS
+================================
+At some point you might want to add the library to the AliRoot HLT module.
+Please contact Matthias.Richter@ift.uib.no and send a stable version as a
+tar archive.

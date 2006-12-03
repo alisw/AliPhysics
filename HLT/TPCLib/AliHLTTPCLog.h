@@ -5,7 +5,7 @@
 #define ALIHLTTPCLOG_H
 
 #ifndef __CINT__
-#include <bits/ios_base.h>
+#include <ios>
 #endif
 
 class AliHLTTPCLog {

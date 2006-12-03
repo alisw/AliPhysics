@@ -233,6 +233,11 @@ AC_SUBST([ALIROOT_LDFLAGS])
 AC_SUBST([ALIROOTLIBDIR])
 AC_SUBST([ALIROOT_LIBS])
 
+HLTBASE_CPPFLAGS='-I${top_srcdir}/BASE'
+HLTBASE_LDFLAGS=
+AC_SUBST([HLTBASE_CPPFLAGS])
+AC_SUBST([HLTBASE_LDFLAGS])
+
 dnl ------------------------------------------------------------------
 dnl check for the HLT PubSub Framework
 AC_MSG_CHECKING([for HLT PubSub Framework])
