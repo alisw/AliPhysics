@@ -26,8 +26,8 @@
 #include <AliLog.h>
 #include <AliESD.h>
 #include <AliESDfriend.h>
-#include <AliTPCclusterMI.h>
-#include <AliTPCseed.h>
+#include <../TPC/AliTPCclusterMI.h>
+#include <../TPC/AliTPCseed.h>
 
 #include <TFile.h>
 #include <TMath.h>
@@ -124,7 +124,13 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
     AliDebug(AliLog::kError, "ESDfriend branch not available");
     return kFALSE;
   }
-  
+
+  if (fESD->GetNumberOfTracks() != fESDfriend->GetNumberOfTracks())
+  {
+    AliDebug(AliLog::kError, Form("Event %lld: Number of tracks differ between ESD (%d) and ESDfriend (%d)! Skipping event!\n", entry, fESD->GetNumberOfTracks(), fESDfriend->GetNumberOfTracks()))
+    return kFALSE;
+  }  
+
   fESD->SetESDfriend(fESDfriend);
 
   Int_t flag = ProcessEvent(entry, kFALSE);
@@ -136,11 +142,10 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
   // here the esdfriend seems to be also deleted, very weird behaviour....
 
   delete fESD;
-  fESD = 0;    
+  fESD = 0;
   
   //delete fESDfriend;
   //fESDfriend = 0;
-
 
   return kTRUE;
 }
@@ -203,7 +208,7 @@ Int_t AliROCESDAnalysisSelector::ProcessEvent(Long64_t entry, Bool_t detailedHis
       continue;
     }
     
-    if (!AcceptTrack(seed, fMinNumberOfRowsIsTrack)) 
+    if (!AcceptTrack(seed, fMinNumberOfRowsIsTrack))
     {
       AliDebug(AliLog::kDebug, Form("INFO: Rejected track %d.", t));
       nSkippedTracks++;

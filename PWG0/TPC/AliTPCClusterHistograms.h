@@ -9,6 +9,7 @@
 //
 
 #include <TNamed.h>
+#include <TString.h>
 
 class TH3;
 class TH2F;
@@ -17,7 +18,6 @@ class TCanvas;
 class TProfile;
 class TProfile2D;
 class TObjArray;
-class TString;
 
 class AliTPCclusterMI;
 class AliTPCseed;
@@ -57,7 +57,7 @@ public:
  
   TCanvas* DrawHistograms(const Char_t* opt="");
 
-  static const char* FormDetectorName(Int_t detector, Bool_t edgeSuppression = kFALSE, const char* comment = 0);
+  static TString FormDetectorName(Int_t detector, Bool_t edgeSuppression = kFALSE, const char* comment = 0);
 
 protected:
 

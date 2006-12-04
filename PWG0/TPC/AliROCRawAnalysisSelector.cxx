@@ -92,10 +92,10 @@ Bool_t AliROCRawAnalysisSelector::Process(Long64_t entry)
   //
   //
 
-  fTree->GetTree()->GetEntry(entry);
-  
   AliDebug(AliLog::kInfo, Form("Processing event %lld", entry));
   
+  fTree->GetTree()->GetEntry(entry);
+
   if (!fRawEvent)
   {
     AliDebug(AliLog::kError, "fRawEvent empty");
@@ -172,6 +172,9 @@ Bool_t AliROCRawAnalysisSelector::Process(Long64_t entry)
       fHistograms[sector]->FillDigit(tpcRawStream);
     }
   }
+  
+  delete fRawEvent;
+  fRawEvent = 0;
    
   return kTRUE;
 }
