@@ -1,3 +1,19 @@
+2006-12-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Added mechanism for registration/execution of user-commands that
+	are to be run after a new event has been successfully loaded.
+
+	* TRDLoader.cxx:
+	* TRDModuleImp.cxx:
+	* TRDModuleImp.h:
+	Renamed typedef lpRE_t/i to List_t/i.
+
+	* VSDCreator.cxx:
+	A consistent way of getting the MC labels of the V0 daughters
+	(I.Belikov).
+
 2006-11-22  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:

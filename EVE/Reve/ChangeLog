@@ -1,3 +1,40 @@
+2006-12-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Renamed typedef lpRE_t/i to List_t/i.
+	Added method groups Begin/End/GetN-Parents/Children().
+
+	* Cascade.cxx:
+	* GeoNode.cxx:
+	* PointSet.cxx:
+	* V0.cxx:
+	Renamed typedef lpRE_t/i to List_t/i.
+
+	* LinkDef.h:
+	New class TrackCounter[Editor]; added RenderElement typedefs.
+
+	* QuadSetGL.cxx:
+	Render frame before checking if QuadSet is empty and exiting.
+
+	* RMacro.cxx:
+	* RMacro.h:
+	Added a hack that restores CINT state if macro execution ends with
+	an exception.
+
+	* Track.cxx:
+	* Track.h:
+	Added class TrackCounter;
+	Track now inherits from TQObject and emits a Clicked() signal;
+	Renamed typedef lpRE_t/i to List_t/i.
+
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Added class TrackCounterEditor.
+
+	* TrackGL.cxx:
+	In TrackGL::ProcessSelection(): make model-track emit Clicked signal.
+
 2006-11-21  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Line.cxx:
