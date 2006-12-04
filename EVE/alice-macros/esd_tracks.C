@@ -217,7 +217,6 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
   Int_t            count = 0;
 
   tl[0] = new Reve::TrackList("Sigma < 3");
-  printf("%p %s\n", tl[0], tl[0]->IsA()->GetName());
   tc[0] = 0;
   tl[0]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[0]->SetMainColor(Color_t(3));
@@ -235,13 +234,13 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
   tl[2]->SetMainColor(Color_t(46));
   gReve->AddRenderElement(cont, tl[2]);
 
-  tl[3] = new Reve::TrackList("ITS refit failed; Sigma < 5");
+  tl[3] = new Reve::TrackList("no ITS refit; Sigma < 5");
   tc[3] = 0;
   tl[3]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[3]->SetMainColor(Color_t(41));
   gReve->AddRenderElement(cont, tl[3]);
 
-  tl[4] = new Reve::TrackList("ITS refit failed; Sigma > 5");
+  tl[4] = new Reve::TrackList("no ITS refit; Sigma > 5");
   tc[4] = 0;
   tl[4]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[4]->SetMainColor(Color_t(48));
@@ -287,9 +286,12 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     //PH which permits to use variable siza arguments in CINT
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     //PH    const Text_t* tooltip = Form("N tracks=%d", tc[ti]);
-    char tooltip[1000];
-    sprintf(tooltip,"N tracks=%d", tc[ti]);
-    tlist->SetTitle(tooltip); // Not broadcasted automatically ...
+    //MT Modified somewhat.
+    char buff[1000];
+    sprintf(buff, "%s [%d]", tlist->GetName(), tlist->GetNChildren());
+    tlist->SetName(buff);
+    sprintf(buff, "N tracks=%d", tc[ti]);
+    tlist->SetTitle(buff); // Not broadcasted automatically ...
     tlist->UpdateItems();
 
     tlist->MakeTracks();
