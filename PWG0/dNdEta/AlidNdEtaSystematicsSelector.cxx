@@ -205,131 +205,78 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
-  TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
-
-  if (fMultiplicityMode == 1 && list->GetEntries() > 20 ||
-      fMultiplicityMode == 2 && list->GetEntries() < 40)
-  {
-    delete list;
-    list = 0;
-    return kTRUE;
-  }
-
-  if (fdNdEtaCorrectionSpecies[0])
-    FillCorrectionMaps(list);
-
-  if (fSecondaries)
-    FillSecondaries();
-
-  if (fSigmaVertex)
-    FillSigmaVertex();
-
+  // --------------------------------------------------------------
+  // related to events:
+  //
   // stuff for vertex reconstruction correction systematics
   Bool_t vertexRecoStudy  = kFALSE;
   Bool_t triggerBiasStudy = kFALSE;
-  if (fdNdEtaCorrectionVertexReco[0]) vertexRecoStudy = kTRUE;
+  if (fdNdEtaCorrectionVertexReco[0])  vertexRecoStudy = kTRUE;
   if (fdNdEtaCorrectionTriggerBias[0]) triggerBiasStudy = kTRUE;
 
-  if (vertexRecoStudy || triggerBiasStudy) {
-    AliHeader* header = GetHeader();
-    if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
-      return kFALSE;
-    }
-
-    // getting process information
-    Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
-
-    AliDebug(AliLog::kInfo, Form("Pythia process type %d.",processtype));
-
-    // can only read pythia headers, either directly or from cocktalil header
-    AliGenEventHeader* genHeader = (AliGenEventHeader*)(header->GenEventHeader());
+  AliHeader* header = GetHeader();
+  if (!header) {
+    AliDebug(AliLog::kError, "Header not available");
+    return kFALSE;
+  }
+  
+  // getting process information NB: this only works for Pythia !!!
+  Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
     
-    if (!genHeader) {
-      AliDebug(AliLog::kError, "Gen header not available");
-      return kFALSE;
-    }
+  // can only read pythia headers, either directly or from cocktalil header
+  AliGenEventHeader* genHeader = (AliGenEventHeader*)(header->GenEventHeader());
+  
+  if (!genHeader) {
+    AliDebug(AliLog::kError, "Gen header not available");
+    return kFALSE;
+  }
+  
+  // get the MC vertex
+  TArrayF vtxMC(3);
+  genHeader->PrimaryVertex(vtxMC);
+  
+  TObjArray* listOfTracks    = fEsdTrackCuts->GetAcceptedTracks(fESD);
+  Int_t nGoodTracks          = listOfTracks->GetEntries();
+  
+  Bool_t eventTriggered      = AliPWG0Helper::IsEventTriggered(fESD);
+  Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
+  
+  // non diffractive
+  if (processtype!=92 && processtype!=93 && processtype!=94) { 
+    // NB: passing the wrong process type here (1), since the process type is defined by the index in the array (here non-diffractive)
+    if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);      
+    if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
+  }
+  
+  // single diffractive
+  if (processtype==92 || processtype==93) { 
+    if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);     
+    if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
+  }
+  
+  // double diffractive
+  if (processtype==94) { 
+    if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);     
+    if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
+  }
 
-    // get the MC vertex
-    TArrayF vtxMC(3);
-    genHeader->PrimaryVertex(vtxMC);
-
-    Int_t nGoodTracks = list->GetEntries();
-
-    Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
-    Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
-
-    // non diffractive
-    if (processtype!=92 && processtype!=93 && processtype!=94) { 
-      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEventAll(vtxMC[2], nGoodTracks);
-
-      if (eventTriggered) {
-        if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-        if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-
-        if (vertexReconstructed)
-          if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
-      }
-    }
-
-    // single diffractive
-    if (processtype==92 || processtype==93) { 
-      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEventAll(vtxMC[2], nGoodTracks);
-
-      if (eventTriggered) {
-        if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-        if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-
-        if (vertexReconstructed)
-          if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
-      }
-    }
-
-    // double diffractive
-    if (processtype==94) { 
-      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEventAll(vtxMC[2], nGoodTracks);
-
-      if (eventTriggered) {
-        if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-        if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-
-        if (vertexReconstructed)
-          if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
-      }
+  if (eventTriggered & vertexReconstructed) {
+    for (Int_t i=0; i<4; ++i) {
+      if (fdNdEtaCorrectionSpecies[i])
+	fdNdEtaCorrectionSpecies[i]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
     }
   }
 
-  delete list;
-  list = 0;
+  // --------------------------------------------------------------
+  // MC particle loop
+  //
 
-  return kTRUE;
-}
-
-void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
-{
-  // fills the correction maps for different particle species
-
-  // TODO fix the use of the FillParticle* functions
-
-  AliStack* stack = GetStack();
-  AliHeader* header = GetHeader();
-
-  Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
-  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
-
-  // get the MC vertex
-  AliGenEventHeader* genHeader = header->GenEventHeader();
-
-  TArrayF vtxMC(3);
-  genHeader->PrimaryVertex(vtxMC);
-
-  // loop over mc particles
   Int_t nPrim  = stack->GetNprimary();
 
   for (Int_t iMc = 0; iMc < nPrim; ++iMc)
   {
     TParticle* particle = stack->Particle(iMc);
-
+    
     if (!particle)
     {
       AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (mc loop).", iMc));
@@ -338,16 +285,16 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
 
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
-
+    
     if (SignOK(particle->GetPDG()) == kFALSE)
       continue;
-
+    
     Float_t eta = particle->Eta();
     Float_t pt = particle->Pt();
-
+    
     Int_t id = -1;
     switch (TMath::Abs(particle->GetPdgCode()))
-    {
+      {
       case 211: id = 0; break;
       case 321: id = 1; break;
       case 2212: id = 2; break;
@@ -366,17 +313,44 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
       default: id = 3; break;
     }
 
-    if (vertexReconstructed && eventTriggered)
-    {
-      fdNdEtaCorrectionSpecies[id]->FillParticleVertex(vtxMC[2], eta, pt);
+    if (eventTriggered & vertexReconstructed) {
+      if (fdNdEtaCorrectionSpecies[id])
+	fdNdEtaCorrectionSpecies[id]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
       //if (pt < 0.1)
-        fPIDParticles->Fill(particle->GetPdgCode());
+      if (fPIDParticles)
+	fPIDParticles->Fill(particle->GetPdgCode());
+    }
+    
+    // non diffractive
+    if (processtype!=92 && processtype!=93 && processtype!=94) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
+    }
+    // single diffractive
+    if (processtype==92 || processtype==93) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
+    }
+    // double diffractive
+    if (processtype==94) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillMCParticle(vtxMC[2], eta, pt, eventTriggered, vertexReconstructed, 1);
     }
 
-    //fdNdEtaCorrectionSpecies[id]->FillParticleAllEvents(eta, pt);
-    //if (eventTriggered)
-    // fdNdEtaCorrectionSpecies[id]->FillParticleWhenEventTriggered(eta, pt);
   }// end of mc particle
+
+
+  // --------------------------------------------------------------
+  // ESD track loop
+  //
+
+  if (fMultiplicityMode == 1 && listOfTracks->GetEntries() > 20 ||
+      fMultiplicityMode == 2 && listOfTracks->GetEntries() < 40)
+  {
+    delete listOfTracks;
+    listOfTracks = 0;
+    return kTRUE;
+  }
 
   // loop over esd tracks
   TIterator* iter = listOfTracks->MakeIterator();
@@ -435,36 +409,58 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
       case 2212: id = 2; break;
       default:   id = 3; break;
     }
+    Float_t eta = particle->Eta();
+    Float_t pt  = particle->Pt();
 
-    if (vertexReconstructed && eventTriggered)
-    {
-      fdNdEtaCorrectionSpecies[id]->FillParticleTracked(vtxMC[2], particle->Eta(), particle->Pt());
-      //if (particle->Pt() < 0.1)
-        fPIDTracks->Fill(particle->GetPdgCode());
+    if (vertexReconstructed && eventTriggered) {
+      if (fdNdEtaCorrectionSpecies[id])
+	fdNdEtaCorrectionSpecies[id]->FillTrackedParticle(vtxMC[2], eta, pt);
+      //if (pt < 0.1)
+      if (fPIDTracks)
+	fPIDTracks->Fill(particle->GetPdgCode());
     }
+
+    // non diffractive
+    if (processtype!=92 && processtype!=93 && processtype!=94) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillTrackedParticle(vtxMC[2], eta, pt);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillTrackedParticle(vtxMC[2], eta, pt);
+    }
+    
+    // single diffractive
+    if (processtype==92 || processtype==93) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillTrackedParticle(vtxMC[2], eta, pt);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillTrackedParticle(vtxMC[2], eta, pt);
+    }
+
+    // double diffractive
+    if (processtype==94) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillTrackedParticle(vtxMC[2], eta, pt);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillTrackedParticle(vtxMC[2], eta, pt);
+    }
+
   } // end of track loop
 
-  Int_t nGoodTracks = listOfTracks->GetEntries();
-
-  for (Int_t i=0; i<4; ++i)
-  {
-    fdNdEtaCorrectionSpecies[i]->FillEventAll(vtxMC[2], nGoodTracks);
-    if (eventTriggered)
-    {
-      fdNdEtaCorrectionSpecies[i]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-      if (vertexReconstructed)
-        fdNdEtaCorrectionSpecies[i]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
-    }
-  }
-
+  
   delete iter;
   iter = 0;
+
+  if (fSecondaries)
+    FillSecondaries();
+
+  if (fSigmaVertex)
+    FillSigmaVertex();
+
+
+  delete listOfTracks;
+  listOfTracks = 0;
+
+  return kTRUE;
 }
 
 void AlidNdEtaSystematicsSelector::FillSecondaries()
 {
   // fills the secondary histograms
-
+  
   AliStack* stack = GetStack();
 
   Int_t particlesPrimaries = 0;
