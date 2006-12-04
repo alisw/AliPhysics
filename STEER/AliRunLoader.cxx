@@ -615,7 +615,7 @@ void AliRunLoader::MakeTree(Option_t *option)
 //Creates trees
   const char *oK  = strstr(option,"K");  //Kine
   const char *oE  = strstr(option,"E");  //Header
-  const char *oCT = strstr(option,"CT"); //Central Trigger
+  const char *oGG = strstr(option,"GG"); //Central TriGGer
 
   if(oK && !TreeK())
    { 
@@ -641,7 +641,7 @@ void AliRunLoader::MakeTree(Option_t *option)
      WriteHeader("OVERWRITE");
    }
   
-   if(oCT && !TreeCT())
+   if(oGG && !TreeCT())
    {
       // create the CTP Trigger output file and tree
       TFile* file = gROOT->GetFile( fgkDefaultTriggerFileName );

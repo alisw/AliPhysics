@@ -710,7 +710,7 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
      }
    }
 
-   runLoader->MakeTree( "CT" );
+   runLoader->MakeTree( "GG" );
    AliCentralTrigger* aCTP = runLoader->GetTrigger();
   // Load Descriptors
    aCTP->LoadDescriptor( des );
