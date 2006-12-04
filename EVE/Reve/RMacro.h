@@ -21,6 +21,8 @@ public:
 
   virtual void Exec(const char* params = "0");
 
+  void ResetRoot();
+
   ClassDef(RMacro, 1);
 }; // endclass RMacro
 

@@ -38,6 +38,8 @@ RMacro::RMacro(const char* name) :
 
 /**************************************************************************/
 
+#include <TTimer.h>
+
 void RMacro::Exec(const char* params)
 {
   if(Reve::CheckMacro(fTitle.Data()))
@@ -60,7 +62,8 @@ void RMacro::Exec(const char* params)
     if (p == "") p = fParams;
     if (p != "")
       exec += "(" + p + ")";
-    gROOT->ProcessLine(exec);
+    Int_t exit;
+    gROOT->ProcessLine(exec, &exit);
     //enable gROOT->Reset
     gROOT->SetExecutingMacro(kFALSE);
     //delete the temporary file
@@ -68,4 +71,17 @@ void RMacro::Exec(const char* params)
   }
 
   G__unloadfile(fname);
+
+  // In case an exception was thrown (which i do not know how to detect
+  // the execution of next macros does not succeed.
+  // However strange this might seem, this solves the problem.
+  TTimer::SingleShot(100, "Reve::RMacro", this, "ResetRoot()");
+}
+
+#include <TApplication.h>
+
+void RMacro::ResetRoot()
+{
+  // printf ("RMacro::ResetRoot doing 'gROOT->Reset()'.\n");
+  gROOT->GetApplication()->ProcessLine("gROOT->Reset()");
 }
