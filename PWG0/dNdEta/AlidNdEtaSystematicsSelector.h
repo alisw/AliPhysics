@@ -28,7 +28,6 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
 
     void ReadUserObjects(TTree* tree);
 
-    void FillCorrectionMaps(TObjArray* listOfTracks);
     void FillSecondaries();
     void FillSigmaVertex();
 
