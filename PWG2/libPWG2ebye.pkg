@@ -1,0 +1,10 @@
+SRCS=  EBYE/AliBalance.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2ebyeLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= 
+

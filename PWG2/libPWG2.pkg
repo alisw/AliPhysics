@@ -1,7 +1,4 @@
-SRCS= RESONANCES/AliRsnDaughter.cxx RESONANCES/AliRsnDaughterCut.cxx \
-      RESONANCES/AliRsnEvent.cxx \
-      RESONANCES/AliRsnReader.cxx RESONANCES/AliRsnAnalysis.cxx \
-      EBYE/AliBalance.cxx
+SRCS=
 
 HDRS= $(SRCS:.cxx=.h) 
 
@@ -10,3 +7,5 @@ DHDR:=PWG2LinkDef.h
 EXPORT:=
 
 EINCLUDE:= PYTHIA6
+
+all-PWG2: all-PWG2ebye all-PWG2resonances
