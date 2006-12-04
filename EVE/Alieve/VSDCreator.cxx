@@ -691,8 +691,12 @@ void VSDCreator::ConvertV0()
   tree->SetBranchAddress("ESD", &fEvent);
   tree->GetEntry(mEvent); 
 
-  for (Int_t n =0; n< fEvent->GetNumberOfV0s(); n++) {
-    AliESDv0* av = fEvent->GetV0(n);
+  for (Int_t n =0; n< fEvent->GetNumberOfV0s(); n++)
+  {
+    AliESDv0    *av     = fEvent->GetV0(n);
+    AliESDtrack *trackN = fEvent->GetTrack(av->GetNindex()); // negative daughter
+    AliESDtrack *trackP = fEvent->GetTrack(av->GetPindex()); // positive daughter
+
     Double_t pos[3];
 
     mV0.status = av->GetStatus();
@@ -718,17 +722,18 @@ void VSDCreator::ConvertV0()
 
     mV0.label = 0; // !!!! mother label unknown
     mV0.pdg   = av->GetPdgCode();
+
     // daughter indices
-    mV0.d_label[0] = av->GetLab(0);
-    mV0.d_label[1] = av->GetLab(1);
+    mV0.d_label[0] = TMath::Abs(trackN->GetLabel());
+    mV0.d_label[1] = TMath::Abs(trackP->GetLabel());
 
     // printf("V0 convert labels(%d,%d) index(%d,%d)\n", 
-    //	   av->GetLab(0), av->GetLab(1),
-    //	   av->GetIndex(0), av->GetIndex(1));
+    //	   mV0.d_label[0],  mV0.d_label[1],
+    //	   av->GetNIndex(), av->GetPIndex());
 
     mTreeV0->Fill();
   }
-  // if(fEvent->GetNumberOfV0MIs()) mTreeV0->BuildIndex("label");
+  // if(fEvent->GetNumberOfV0s()) mTreeV0->BuildIndex("label");
 }
 
 /**************************************************************************/
