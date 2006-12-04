@@ -8,6 +8,7 @@
 class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
+class TGComboBox;
 class TGLineWidthComboBox;
 
 namespace Reve {
@@ -16,6 +17,10 @@ class RGValuator;
 class RGDoubleValuator;
 
 class TrackList;
+
+/**************************************************************************/
+// TrackListEditor
+/**************************************************************************/
 
 class TrackListEditor : public TGedFrame
 {
@@ -66,6 +71,46 @@ public:
 
   ClassDef(TrackListEditor, 1); // Editor for TrackList
 }; // endclass TrackListEditor
+
+
+
+/**************************************************************************/
+// 
+/**************************************************************************/
+
+class TrackCounter;
+
+class TrackCounterEditor : public TGedFrame
+{
+private:
+  TrackCounterEditor(const TrackCounterEditor&);            // Not implemented
+  TrackCounterEditor& operator=(const TrackCounterEditor&); // Not implemented
+
+protected:
+  TrackCounter* fM; // fModel dynamic-casted to TrackCounter
+
+  // Declare widgets
+  TGComboBox*   fClickAction;
+  TGLabel*      fInfoLabel;
+
+public:
+  TrackCounterEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+		     UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  virtual ~TrackCounterEditor();
+
+  virtual void SetModel(TObject* obj);
+
+  void DoOrtoXY();
+  void DoOrtoZY();
+  void DoPersp();
+
+  void DoPrev();
+  void DoNext();
+
+  void DoClickAction(Int_t);
+
+  ClassDef(TrackCounterEditor, 1); // Editor for TrackCounter
+}; // endclass TrackCounterEditor
 
 }
 

@@ -23,26 +23,26 @@ using namespace Reve;
 
 ClassImp(TrackListEditor)
 
-  TrackListEditor::TrackListEditor(const TGWindow *p,
-				   Int_t width, Int_t height,
-				   UInt_t options, Pixel_t back) :
-    TGedFrame(p, width, height, options | kVerticalFrame, back),
+TrackListEditor::TrackListEditor(const TGWindow *p,
+				 Int_t width, Int_t height,
+				 UInt_t options, Pixel_t back) :
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
 
-    fTC (0),
+  fTC (0),
 
-    fMaxR(0),
-    fMaxZ(0),
-    fMaxOrbits(0),
-    fMinAng(0),
-    fDelta(0),
+  fMaxR(0),
+  fMaxZ(0),
+  fMaxOrbits(0),
+  fMinAng(0),
+  fDelta(0),
 
-    fRnrTracks(0),
-    fRnrMarkers(0),
+  fRnrTracks(0),
+  fRnrMarkers(0),
 
-    fFitDaughters(0),
-    fFitDecay(0),
+  fFitDaughters(0),
+  fFitDecay(0),
 
-    fPtRange(0)
+  fPtRange(0)
 {
   MakeTitle("TrackList");
   Int_t labelW = 67;
@@ -254,4 +254,165 @@ void TrackListEditor::DoPtRange()
 {
   fTC->SelectByPt(fPtRange->GetMin(), fPtRange->GetMax());
   Update();
+}
+
+
+
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+
+#include <TCanvas.h>
+#include <TGLViewer.h>
+#include <Reve/RGTopFrame.h>
+
+//______________________________________________________________________
+// TrackCounterEditor
+//
+
+ClassImp(TrackCounterEditor)
+
+TrackCounterEditor::TrackCounterEditor(const TGWindow *p, Int_t width, Int_t height,
+				       UInt_t options, Pixel_t back) :
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
+  fM(0),
+  fClickAction (0),
+  fInfoLabel   (0)
+{
+  MakeTitle("TrackCounter");
+
+  Int_t labelW = 42;
+
+  { // ClickAction
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    TGLabel* lab = new TGLabel(f, "Click:");
+    f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 10, 1, 2));
+    fClickAction = new TGComboBox(f);
+    fClickAction->AddEntry("Print", 0);
+    fClickAction->AddEntry("Toggle", 1);
+    TGListBox* lb = fClickAction->GetListBox();
+    lb->Resize(lb->GetWidth(), 2*16);
+    fClickAction->Resize(70, 20);
+    fClickAction->Connect("Selected(Int_t)", "Reve::TrackCounterEditor", this,
+			  "DoClickAction(Int_t)");
+    f->AddFrame(fClickAction, new TGLayoutHints(kLHintsLeft, 1, 2, 1, 1));
+  
+    AddFrame(f);
+  }
+
+  { // Status
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    TGLabel* lab = new TGLabel(f, "Status:");
+    f->AddFrame(lab, new TGLayoutHints(kLHintsLeft, 1, 5, 1, 2));
+
+    fInfoLabel = new TGLabel(f);
+    f->AddFrame(fInfoLabel, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 9, 1, 2));
+
+    AddFrame(f);
+  }
+
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
+
+    TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
+    TGLabel* l = new TGLabel(g, "View: ");
+    g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
+    f->AddFrame(g);
+
+    TGTextButton* b;
+
+    b = new TGTextButton(f, "Orto XY");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoOrtoXY()");
+
+    b = new TGTextButton(f, "Orto ZY");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoOrtoZY()");
+
+    b = new TGTextButton(f, "Persp");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoPersp()");
+
+    AddFrame(f);
+  }
+
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
+
+    TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
+    TGLabel* l = new TGLabel(g, "Event: ");
+    g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
+    f->AddFrame(g);
+
+    TGTextButton* b;
+
+    b = new TGTextButton(f, "Prev");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoPrev()");
+
+    b = new TGTextButton(f, "Next");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoNext()");
+
+    AddFrame(f);
+  }
+
+}
+
+TrackCounterEditor::~TrackCounterEditor()
+{}
+
+/**************************************************************************/
+
+void TrackCounterEditor::SetModel(TObject* obj)
+{
+  fM = dynamic_cast<TrackCounter*>(obj);
+
+  fClickAction->Select(fM->fClickAction, kFALSE);
+  fInfoLabel->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracks, fM->fGoodTracks));
+}
+
+/**************************************************************************/
+
+// glv->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom);
+
+void TrackCounterEditor::DoOrtoXY()
+{
+  TGLViewer* glv = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
+  glv->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
+}
+
+void TrackCounterEditor::DoOrtoZY()
+{
+  TGLViewer* glv = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
+  glv->SetCurrentCamera(TGLViewer::kCameraOrthoZOY) ;
+}
+
+void TrackCounterEditor::DoPersp()
+{
+  TGLViewer* glv = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
+  glv->SetCurrentCamera(TGLViewer::kCameraPerspXOZ) ;
+}
+
+/**************************************************************************/
+
+void TrackCounterEditor::DoPrev()
+{
+  Reve::Macro("event_prev.C");
+  gReve->EditRenderElement(fM);
+
+}
+
+void TrackCounterEditor::DoNext()
+{
+  Reve::Macro("event_next.C");
+  gReve->EditRenderElement(fM);
+
+}
+
+/**************************************************************************/
+
+void TrackCounterEditor::DoClickAction(Int_t mode)
+{
+  fM->SetClickAction(mode);
 }
