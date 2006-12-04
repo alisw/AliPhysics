@@ -1,0 +1,12 @@
+SRCS= RESONANCES/AliRsnDaughter.cxx RESONANCES/AliRsnDaughterCut.cxx \
+      RESONANCES/AliRsnEvent.cxx \
+      RESONANCES/AliRsnReader.cxx RESONANCES/AliRsnAnalysis.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2resonancesLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= PYTHIA6
+
