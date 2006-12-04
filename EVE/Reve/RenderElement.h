@@ -48,8 +48,8 @@ public:
   typedef std::set<ListTreeInfo>               sLTI_t;
   typedef std::set<ListTreeInfo>::iterator     sLTI_i;
 
-  typedef std::list<RenderElement*>            lpRE_t;
-  typedef std::list<RenderElement*>::iterator  lpRE_i;
+  typedef std::list<RenderElement*>            List_t;
+  typedef std::list<RenderElement*>::iterator  List_i;
 
 protected:
   // TRef     fSource;
@@ -58,7 +58,7 @@ protected:
   Color_t* fMainColorPtr;
 
   sLTI_t fItems;
-  lpRE_t fParents;
+  List_t fParents;
 
   Bool_t fDestroyOnZeroRefCnt;
   Bool_t fDenyDestroy;
@@ -70,6 +70,11 @@ public:
 
   virtual void AddParent(RenderElement* re);
   virtual void RemoveParent(RenderElement* re);
+
+  List_i BeginParents() { return fParents.begin(); }
+  List_i EndParents()   { return fParents.end();   }
+  Int_t  GetNParents() const { return fParents.size(); }
+
 
   Bool_t GetDestroyOnZeroRefCnt() const   { return fDestroyOnZeroRefCnt; }
   void   SetDestroyOnZeroRefCnt(Bool_t d) { fDestroyOnZeroRefCnt = d; }
@@ -156,7 +161,7 @@ public:
 class RenderElementListBase : public RenderElement
 {
 protected:
-  lpRE_t fChildren;
+  List_t fChildren;
 
   void PaintElements(Option_t* option="");
 
@@ -171,6 +176,10 @@ public:
   virtual void RemoveElements();
 
   virtual void DestroyElements();
+
+  List_i BeginChildren() { return fChildren.begin(); }
+  List_i EndChildren()   { return fChildren.end();   }
+  Int_t  GetNChildren() const { return fChildren.size(); }
 
   virtual Int_t ExpandIntoListTree(TGListTree* ltree, TGListTreeItem* parent);
   virtual Int_t DestroyListSubTree(TGListTree* ltree, TGListTreeItem* parent);

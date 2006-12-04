@@ -85,7 +85,7 @@ void	TRDLoader::AddChambers(const int sm, const int stk, const int ly)
 	Int_t ily_start = (ly == -1) ?  0 : ly;
 	Int_t ily_stop  = (ly == -1) ?  6 : ly+1;
 
-	lpRE_i ichmb;
+	List_i ichmb;
 	ichmb = fChildren.begin();
 	while(ichmb != fChildren.end()){
 		(*ichmb)->SetRnrElement(kFALSE);
@@ -131,7 +131,7 @@ void	TRDLoader::AddChambers(const int sm, const int stk, const int ly)
 //________________________________________________________
 TRDChamber*	TRDLoader::GetChamber(const int d)
 {
-	lpRE_i ism, istack, ichmb;
+	List_i ism, istack, ichmb;
 	
 	ism = find_if(fChildren.begin(), fChildren.end(), ID<RenderElement*>(fGeo->GetSector(d)));
 	if(ism == fChildren.end()) return 0x0;
@@ -308,7 +308,7 @@ Bool_t	TRDLoader::Open(const char *filename, const char *dir)
 //________________________________________________________
 void TRDLoader::Paint(Option_t *option)
 {
-	lpRE_i ichmb = fChildren.begin();
+	List_i ichmb = fChildren.begin();
 	while(ichmb != fChildren.end()){
 		(dynamic_cast<TRDModule*>(*ichmb))->Paint(option);
 		ichmb++;
@@ -318,7 +318,7 @@ void TRDLoader::Paint(Option_t *option)
 //________________________________________________________
 void TRDLoader::Unload()
 {
-	lpRE_i ichmb = fChildren.begin();
+	List_i ichmb = fChildren.begin();
 	while(ichmb != fChildren.end()){
 		(dynamic_cast<TRDModule*>(*ichmb))->Reset();
 		ichmb++;

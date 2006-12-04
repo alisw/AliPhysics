@@ -498,7 +498,7 @@ void CascadeList::Paint(Option_t* option) {
   if(fRnrElement) {
 
     if(fRnrBach) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((Cascade*)(*i))->PaintBachelor(option);
 	}
@@ -506,7 +506,7 @@ void CascadeList::Paint(Option_t* option) {
     }
 
     if(fRnrV0Daughters) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((Cascade*)(*i))->PaintV0Daughters(option);
 	}
@@ -514,7 +514,7 @@ void CascadeList::Paint(Option_t* option) {
     }
 
     if(fRnrV0path) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((Cascade*)(*i))->PaintV0Path(option);
 	}
@@ -522,7 +522,7 @@ void CascadeList::Paint(Option_t* option) {
     }
 
     if(fRnrCasVtx) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((Cascade*)(*i))->Paint(option);
 	}
@@ -530,7 +530,7 @@ void CascadeList::Paint(Option_t* option) {
     }
 
     if(fRnrCasPath) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((Cascade*)(*i))->PaintCasPath(option);
 	}
@@ -595,7 +595,7 @@ void CascadeList::SetRnrBachelor(Bool_t rnr)
 
 void CascadeList::MakeCascades()
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Cascade*)(*i))->MakeCascade();
   }
   gReve->Redraw3D();
@@ -748,7 +748,7 @@ void CascadeList::FilterAll() {
     fHist2D[i]->Reset();
   
   Cascade* myCas;
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     Filter(myCas);
@@ -761,7 +761,7 @@ void CascadeList::GetCasIndexRange(Int_t &imin, Int_t &imax) {
 
   Int_t index;
   Cascade* myCas;
-  lpRE_i i = fChildren.begin();
+  List_i i = fChildren.begin();
   myCas = (Cascade*)(*i);
   index = myCas->GetESDIndex();
   imin = index;
@@ -787,7 +787,7 @@ void CascadeList::XiMassFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetXiMass();
@@ -816,7 +816,7 @@ void CascadeList::OmegaMassFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetOmegaMass();
@@ -845,7 +845,7 @@ void CascadeList::IndexFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetESDIndex();
@@ -874,7 +874,7 @@ void CascadeList::CosPointingFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetCasCosPointingAngle();
@@ -904,7 +904,7 @@ void CascadeList::BachV0DCAFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetDCA_v0_Bach();
@@ -934,7 +934,7 @@ void CascadeList::RadiusFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetRadius();
@@ -964,7 +964,7 @@ void CascadeList::PtFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPt();
@@ -994,7 +994,7 @@ void CascadeList::PseudoRapFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPseudoRapidity();
@@ -1024,7 +1024,7 @@ void CascadeList::NegPtFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetNegPt();
@@ -1054,7 +1054,7 @@ void CascadeList::NegEtaFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetNegPseudoRapidity();
@@ -1084,7 +1084,7 @@ void CascadeList::PosPtFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPosPt();
@@ -1113,7 +1113,7 @@ void CascadeList::PosEtaFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPosPseudoRapidity();
@@ -1143,7 +1143,7 @@ void CascadeList::BachPtFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetBachPt();
@@ -1172,7 +1172,7 @@ void CascadeList::BachEtaFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   Cascade* myCas;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetBachPseudoRapidity();

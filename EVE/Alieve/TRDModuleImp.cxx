@@ -37,7 +37,7 @@ TRDNode::TRDNode(const char *typ, const Int_t det) :
 //________________________________________________________
 void	TRDNode::Paint(Option_t* option)
 {
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		(dynamic_cast<TRDModule*>(*iter))->Paint(option);
 		iter++;
@@ -47,7 +47,7 @@ void	TRDNode::Paint(Option_t* option)
 //________________________________________________________
 void	TRDNode::Reset()
 {
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		(dynamic_cast<TRDModule*>(*iter))->Reset();
 		iter++;
@@ -59,7 +59,7 @@ void TRDNode::Collapse()
 {
 	TGListTree *list = gReve->GetListTree();
 	TRDNode *node = 0x0;
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<TRDNode*>(*iter))) node->Collapse();
 		list->CloseItem(FindListTreeItem(list));
@@ -72,7 +72,7 @@ void TRDNode::Expand()
 {
 	TGListTree *list = gReve->GetListTree();
 	TRDNode *node = 0x0;
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<TRDNode*>(*iter))) node->Expand();
 		list->OpenItem(FindListTreeItem(list));
@@ -86,7 +86,7 @@ void TRDNode::EnableListElements()
 	SetRnrElement(kTRUE);
 	TRDNode *node = 0x0;
 	TRDChamber *chmb = 0x0;	
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<TRDNode*>(*iter))){
 			node->SetRnrElement(kTRUE);
@@ -104,7 +104,7 @@ void TRDNode::DisableListElements()
 	SetRnrElement(kFALSE);
 	TRDNode *node = 0x0;
 	TRDChamber *chmb = 0x0;	
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<TRDNode*>(*iter))){
 			node->SetRnrElement(kFALSE);
@@ -120,7 +120,7 @@ void TRDNode::DisableListElements()
 void TRDNode::UpdateLeaves()
 {
 	TRDModule *module;
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		module = dynamic_cast<TRDModule*>(*iter);
 		if(!module) continue;
@@ -150,7 +150,7 @@ void TRDNode::UpdateNode()
 {
 //	Info("UpdateNode()", Form("%s", GetName()));
 	TRDNode *node = 0x0;
-	lpRE_i iter = fChildren.begin();
+	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<TRDNode*>(*iter))) node->UpdateNode();
 		iter++;

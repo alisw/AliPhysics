@@ -85,8 +85,8 @@ namespace Alieve {
 		void	UpdateLeaves();
 		void	UpdateNode();
 		
-		lpRE_i begin(){return fChildren.begin();}
-		lpRE_i end(){return fChildren.end();}
+		List_i begin(){return fChildren.begin();}
+		List_i end(){return fChildren.end();}
 	
 	ClassDef(TRDNode, 1)
 	};

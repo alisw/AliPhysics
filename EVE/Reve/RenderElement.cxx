@@ -41,7 +41,7 @@ RenderElement::~RenderElement()
 {
   static const Exc_t _eh("RenderElement::RenderElement ");
 
-  for(lpRE_i p=fParents.begin(); p!=fParents.end(); ++p) {
+  for(List_i p=fParents.begin(); p!=fParents.end(); ++p) {
     RenderElementListBase* l = dynamic_cast<RenderElementListBase*>(*p);
     if(l)
       l->RemoveElementLocal(this);
@@ -350,7 +350,7 @@ void RenderElementListBase::RemoveElementLocal(RenderElement* el)
 
 void RenderElementListBase::RemoveElements()
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     (*i)->RemoveParent(this);
   }
   fChildren.clear();
@@ -391,7 +391,7 @@ Int_t RenderElementListBase::ExpandIntoListTree(TGListTree* ltree,
   if(parent->GetFirstChild() != 0)
     return 0;
   Int_t n = 0;
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     (*i)->AddIntoListTree(ltree, parent);
     ++n;
   }
@@ -416,13 +416,13 @@ Int_t RenderElementListBase::DestroyListSubTree(TGListTree* ltree,
 
 void RenderElementListBase::EnableListElements()
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i)
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
     (*i)->SetRnrElement(kTRUE);
 }
 
 void RenderElementListBase::DisableListElements()
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i)
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
     (*i)->SetRnrElement(kFALSE);
 }
 
@@ -431,7 +431,7 @@ void RenderElementListBase::DisableListElements()
 void RenderElementListBase::SetMainColor(Color_t col)
 {
   Color_t oldcol = GetMainColor();
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     if((*i)->GetMainColor() == oldcol) (*i)->SetMainColor(col);
   }
   RenderElement::SetMainColor(col);
@@ -449,7 +449,7 @@ void RenderElementListBase::SetMainColor(Pixel_t pixel)
 void RenderElementListBase::PaintElements(Option_t* option)
 {
   if(fRnrElement) {
-    for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
       if((*i)->GetRnrElement())
 	(*i)->GetObject()->Paint(option);
     }

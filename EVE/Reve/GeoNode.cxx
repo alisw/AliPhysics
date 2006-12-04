@@ -102,7 +102,7 @@ void GeoNodeRnrEl::UpdateNode(TGeoNode* node)
   if(fNode == node)
     UpdateItems();
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((GeoNodeRnrEl*)(*i))->UpdateNode(node);
   }
 
@@ -124,7 +124,7 @@ void GeoNodeRnrEl::UpdateVolume(TGeoVolume* volume)
   if(fNode->GetVolume() == volume)
     UpdateItems();
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((GeoNodeRnrEl*)(*i))->UpdateVolume(volume);
   }
 }

@@ -178,7 +178,7 @@ void PointSetArray::RemoveElements()
 
 void PointSetArray::SetMarkerColor(Color_t tcolor)
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     TAttMarker* m = dynamic_cast<TAttMarker*>((*i)->GetObject());
     if(m && m->GetMarkerColor() == fMarkerColor)
       m->SetMarkerColor(tcolor);
@@ -188,7 +188,7 @@ void PointSetArray::SetMarkerColor(Color_t tcolor)
 
 void PointSetArray::SetMarkerStyle(Style_t mstyle)
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     TAttMarker* m = dynamic_cast<TAttMarker*>((*i)->GetObject());
     if(m && m->GetMarkerStyle() == fMarkerStyle)
       m->SetMarkerStyle(mstyle);
@@ -198,7 +198,7 @@ void PointSetArray::SetMarkerStyle(Style_t mstyle)
 
 void PointSetArray::SetMarkerSize(Size_t msize)
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     TAttMarker* m = dynamic_cast<TAttMarker*>((*i)->GetObject());
     if(m && m->GetMarkerSize() == fMarkerSize)
       m->SetMarkerSize(msize);

@@ -455,7 +455,7 @@ void V0List::Paint(Option_t* option) {
   if(fRnrElement) {
 
     if(fRnrV0vtx) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((V0*)(*i))->Paint(option);
 	}
@@ -463,7 +463,7 @@ void V0List::Paint(Option_t* option) {
     }
 
     if(fRnrDaughters) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((V0*)(*i))->PaintDaughters(option);
 	}
@@ -471,7 +471,7 @@ void V0List::Paint(Option_t* option) {
     }
 
     if(fRnrV0path) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement()) {
 	  ((V0*)(*i))->PaintPath(option);
 	}
@@ -512,7 +512,7 @@ void V0List::SetRnrDaughters(Bool_t rnr) {
 //______________________________________________________________________
 
 void V0List::MakeV0s() {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((V0*)(*i))->MakeV0();
   }
   gReve->Redraw3D();
@@ -668,7 +668,7 @@ void V0List::FilterAll() {
     fHist2D[i]->Reset();
   
   V0* myV0;
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     Filter(myV0);
@@ -681,7 +681,7 @@ void V0List::GetV0IndexRange(Int_t &imin, Int_t &imax) {
 
   Int_t index;
   V0* myV0;
-  lpRE_i i=fChildren.begin();
+  List_i i=fChildren.begin();
   myV0 = (V0*)(*i);
   index = myV0->GetESDIndex();
   imin = index;
@@ -708,7 +708,7 @@ void V0List::PtFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPt();
@@ -738,7 +738,7 @@ void V0List::K0sMFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetK0mass();
@@ -767,7 +767,7 @@ void V0List::LamMFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetLamMass();
@@ -798,7 +798,7 @@ void V0List::ALamMFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetAntiLamMass();
@@ -827,7 +827,7 @@ void V0List::CosPointingFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetCosPointingAngle();
@@ -856,7 +856,7 @@ void V0List::DaughterDCAFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetDaughterDCA();
@@ -885,7 +885,7 @@ void V0List::RadiusFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetRadius();
@@ -914,7 +914,7 @@ void V0List::EtaFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPseudoRapidity();
@@ -943,7 +943,7 @@ void V0List::NegPtFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetNegPt();
@@ -972,7 +972,7 @@ void V0List::NegEtaFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetNegPseudoRapidity();
@@ -1001,7 +1001,7 @@ void V0List::PosPtFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPosPt();
@@ -1030,7 +1030,7 @@ void V0List::PosEtaFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPosPseudoRapidity();
@@ -1059,7 +1059,7 @@ void V0List::IndexFilter(Float_t min, Float_t max) {
   Bool_t isSelected;
   V0* myV0;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetESDIndex();
