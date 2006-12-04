@@ -4,7 +4,7 @@
 // read out chamber from the reconstructed clusters.
 //
 // TODO:
-//  
+//
 //
 //
 
@@ -25,6 +25,8 @@
 
 #include <AliLog.h>
 
+// uncomment if working with version after release that has new cluster scheme
+//#define NEWALIROOT
 
 //____________________________________________________________________
 ClassImp(AliTPCClusterHistograms)
@@ -346,7 +348,7 @@ AliTPCClusterHistograms &AliTPCClusterHistograms::operator=(const AliTPCClusterH
 }
 
 //____________________________________________________________________
-const char* AliTPCClusterHistograms::FormDetectorName(Int_t detector, Bool_t edgeSuppression, const char* comment)
+TString AliTPCClusterHistograms::FormDetectorName(Int_t detector, Bool_t edgeSuppression, const char* comment)
 {
   //
   // creates a readable name from the detector number
@@ -638,7 +640,10 @@ void AliTPCClusterHistograms::FillTrack(const AliTPCseed* seed) {
   Float_t totalQtot = 0;
   Int_t   nClusters = 0;
   for (Int_t clusterID = 0; clusterID < 160; clusterID++) {
-    AliTPCclusterMI* cluster = seed->GetClusterPointer(clusterID);
+    AliTPCclusterMI* cluster = 0;
+#ifdef NEWALIROOT
+    cluster = seed->GetClusterPointer(clusterID);
+#endif
     if (!cluster)
       continue;
     
