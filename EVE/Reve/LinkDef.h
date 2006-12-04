@@ -75,6 +75,11 @@
 
 #pragma link C++ class Reve::ReferenceBackPtr;
 
+#pragma link C++ class std::list<Reve::RenderElement*>;
+#pragma link C++ class std::list<Reve::RenderElement*>::iterator;
+#pragma link C++ typedef Reve::RenderElement::List_t;
+#pragma link C++ typedef Reve::RenderElement::List_i;
+
 // Pad
 #pragma link C++ class Reve::Pad+;
 
@@ -106,9 +111,11 @@
 // Track
 #pragma link C++ class Reve::Track+;
 #pragma link C++ class Reve::TrackGL+;
-#pragma link C++ class Reve::TrackList+;
 #pragma link C++ class Reve::TrackRnrStyle+;
+#pragma link C++ class Reve::TrackList+;
 #pragma link C++ class Reve::TrackListEditor+;
+#pragma link C++ class Reve::TrackCounter+;
+#pragma link C++ class Reve::TrackCounterEditor+;
 
 // Cascade
 #pragma link C++ class Reve::Cascade+;
