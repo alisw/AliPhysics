@@ -29,10 +29,10 @@ protected:
   TFile*        fESDFile;
   TTree*        fESDTree;
   AliESD*       fESD;
-  //TFile*        fESDfriendFile;
-  //TTree*        fESDfriendTree;
   AliESDfriend* fESDfriend;
   Bool_t        fESDfriendExists;
+
+  TList         fNewEventCommands;
 
   static Bool_t fgUseRunLoader;
   static Bool_t fgUseESDTree;
@@ -51,11 +51,15 @@ public:
   void PrevEvent() { GotoEvent(fEventId - 1); }
   void Close();
 
+  virtual void  AfterNewEventLoaded();
+
+  TList& GetNewEventCommands() { return fNewEventCommands; }
+  void   AddNewEventCommand(const Text_t* cmd);
+
   Int_t         GetEventId()   const { return fEventId; }
   AliRunLoader* GetRunLoader() const { return fRunLoader; }
   TTree*        GetESDTree()   const { return fESDTree; }
   AliESD*       GetESD()       const { return fESD; }
-  // TTree*        GetESDfriendTree() const { return fESDfriendTree; }
   AliESDfriend* GetESDfriend()       const { return fESDfriend; }
   Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }

@@ -9,9 +9,11 @@
 
 #include <TFile.h>
 #include <TTree.h>
+#include <TObjString.h>
 
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TCint.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -57,21 +59,20 @@ Event::Event() :
 
   fPath (), fEventId   (0),
   fRunLoader (0),
-  fESDFile       (0), fESDTree       (0), fESD       (0),
-  /* fESDfriendFile (0), fESDfriendTree (0), */
+  fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE)
 {}
 
 Event::Event(TString path, Int_t ev) :
   EventBase("AliEVE Event"),
 
-  fPath (path), fEventId(ev),
+  fPath (path), fEventId(-1),
   fRunLoader (0),
-  fESDFile       (0), fESDTree       (0), fESD       (0),
-  /* fESDfriendFile (0), fESDfriendTree (0), */
+  fESDFile   (0), fESDTree (0), fESD (0),
   fESDfriend (0), fESDfriendExists(kFALSE)
 {
   Open();
+  if (ev >= 0) GotoEvent(ev);
 }
 
 /**************************************************************************/
@@ -84,9 +85,11 @@ void Event::Open()
   if(fPath[0] != '/')
     fPath = Form("%s/%s", gSystem->WorkingDirectory(), fPath.Data());
 
-  if(fgUseRunLoader) {
+  if(fgUseRunLoader)
+  {
     TString ga_path(Form("%s/galice.root", fPath.Data()));
-    if(gSystem->AccessPathName(ga_path, kReadPermission)) {
+    if(gSystem->AccessPathName(ga_path, kReadPermission))
+    {
       if (fgAvoidExcOnOpen) {
 	Warning(eH, "RunLoader not initialized.");
 	goto end_run_loader;
@@ -105,15 +108,14 @@ void Event::Open()
       throw(eH + "failed loading gAlice.");
     if(fRunLoader->LoadHeader() != 0)
       throw(eH + "failed loading header.");
-
-    if(fRunLoader->GetEvent(fEventId) != 0)
-      throw(eH + "failed getting required event.");
   }
 end_run_loader:
 
-  if(fgUseESDTree) {
+  if(fgUseESDTree)
+  {
     TString p(Form("%s/AliESDs.root", fPath.Data()));
-    if(gSystem->AccessPathName(p, kReadPermission)) {
+    if(gSystem->AccessPathName(p, kReadPermission))
+    {
       if (fgAvoidExcOnOpen) {
 	Warning(eH, "ESD not initialized.");
 	goto end_esd_loader;
@@ -134,34 +136,15 @@ end_run_loader:
 
     // Check if ESDfriends exists and attach the branch
     p = Form("%s/AliESDfriends.root", fPath.Data());
-    if(gSystem->AccessPathName(p, kReadPermission) == kFALSE) {
-      //fESDfriendFile = new TFile(p);
-      //if(fESDfriendFile->IsZombie()) {
-      //delete fESDfriendFile; fESDfriendFile = 0;
-      //throw(eH + "failed opening ALICE ESDfriend from '" + p + "'.");
-      //}
-
-      //fESDfriendTree = (TTree*) fESDfriendFile->Get("esdFriendTree");
-      //if(fESDfriendTree == 0)
-      //  throw(eH + "failed getting the esdFriendTree.");
-      //fESDfriendTree->SetBranchAddress("ESDfriend", &fESDfriend);
-      //if(fESDfriendTree->GetEntry(fEventId) <= 0)
-      //throw(eH + "failed getting required event from ESDfriend.");
-
+    if(gSystem->AccessPathName(p, kReadPermission) == kFALSE)
+    {
       fESDfriendExists = kTRUE;
       fESDTree->SetBranchStatus ("ESDfriend*", 1);
       fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
-
     }
-
-    if(fESDTree->GetEntry(fEventId) <= 0)
-      throw(eH + "failed getting required event from ESD.");
-
-    if (fESDfriendExists)
-      fESD->SetESDfriend(fESDfriend);
   }
-end_esd_loader:
 
+end_esd_loader:
   SetName(Form("Event %d", fEventId));
   SetTitle(fPath);
 }
@@ -199,13 +182,11 @@ void Event::GotoEvent(Int_t event)
     if(fESDTree->GetEntry(fEventId) <= 0)
       throw(eH + "failed getting required event from ESD.");
 
-    //if(fESDfriendTree != 0) {
-    //  if(fESDfriendTree->GetEntry(fEventId) <= 0)
-    //	throw(eH + "failed getting required event from ESDfriend.");
-
     if (fESDfriendExists)
       fESD->SetESDfriend(fESDfriend);
   }
+
+  AfterNewEventLoaded();
 }
 
 void Event::Close()
@@ -217,6 +198,24 @@ void Event::Close()
     delete fESDTree; fESDTree = 0;
     delete fESDFile; fESDFile = 0;
   }
+}
+
+/**************************************************************************/
+
+void Event::AfterNewEventLoaded()
+{
+  TIter next(&fNewEventCommands);
+  TObject* o;
+  while ((o = next())) {
+    TObjString* s = dynamic_cast<TObjString*>(o);
+    if (s)
+      gInterpreter->ProcessLine(s->String());
+  }
+}
+
+void Event::AddNewEventCommand(const Text_t* cmd)
+{
+  fNewEventCommands.Add(new TObjString(cmd));
 }
 
 /**************************************************************************/
