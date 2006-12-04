@@ -1,3 +1,14 @@
+2006-12-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_tracks.C:
+	Change text of track labels.
+
+	* alice-macros/primary_vertex.C:
+	Fix print-out alignment.
+
+	* macros/trackcount_init.C:
+	New file: bootstrap track-counting user interface.
+
 2006-11-16  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/esd_Cascade.C:
