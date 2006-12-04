@@ -137,15 +137,16 @@ void QuadSetGL::DirectDraw(const TGLDrawFlags & flags) const
   // printf("QuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
 
   QuadSet& mQ = * fM;
+
+  if (mQ.fFrame != 0)
+    FrameBoxGL::Render(mQ.fFrame);
+
   if (mQ.fPlex.Size() == 0)
     return;
   if ( ! mQ.fValueIsColor && mQ.fPalette == 0)
   {
     mQ.AssertPalette();
   }
-
-  if (mQ.fFrame != 0)
-    FrameBoxGL::Render(mQ.fFrame);
 
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
   glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
