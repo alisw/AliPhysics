@@ -1,4 +1,4 @@
-void h()
+void Hlib()
 {
   gSystem->Load("libMinuit.so");
   gSystem->Load("libVMC.so");
@@ -6,6 +6,8 @@ void h()
   gSystem->Load("libSTEER.so");
   gSystem->Load("libCDB.so");
 
+  gSystem->Load("libRAWDatasim.so");
+  
   gSystem->Load("libHMPIDbase.so");
   gSystem->Load("libHMPIDsim.so");
   gSystem->Load("libHMPIDrec.so");

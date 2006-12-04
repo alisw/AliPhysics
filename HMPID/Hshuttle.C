@@ -20,7 +20,7 @@ void Hshuttle()
     }//radiators loop
   }//chambers loop
   
-  
+  AliTestShuttle::SetOCDBStorage("local://$HOME/tstCDB");  
   AliCDBManager::Instance()->SetDefaultStorage("local://$HOME/tstCDB"); // initialize location of CDB
       
   gSystem->Load("libTestShuttle.so"); 
@@ -60,4 +60,4 @@ void Hshuttle()
     pRad1=(TF1*)pIdxLst->At(iCh*3+1); pRad1->Draw("same");
     pRad2=(TF1*)pIdxLst->At(iCh*3+2); pRad2->Draw("same");
   }    
-}//Test()
+}//Hshuttle()

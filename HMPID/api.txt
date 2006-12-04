@@ -23,13 +23,11 @@ How to get event of interest:
 How to deal with the stack of particles?
         - first of all, the stack includes primary as well as secondary particles
 	- pointer to the stack is taken:
-         	AliRun::Stack() (global gAlice of type AliRun - deprecated way to do)
           	AliRunLoader::Stack() but before one needs to load event header by AliRunLoader::LoadHeader() otherwise both methods return 0.
           	Moreover loading header gives the information about number of particles only. 
           	To retrieve the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
 	- total amount of particles in stack for a given event:        
          	AliStack::GetNtrack() 
-                AliRun::GetEvent() (after LoadHeader())
 	- total amount of primary particles in stack for a given event (after LoadHeader()): 
         	AliStack::GetNprimary() 
 How to retrieve hits:
@@ -37,7 +35,7 @@ How to retrieve hits:
    	To retrieve all hits one needs to do:
      	-initialize the root tree and containers:   pRich->GetLoader()->LoadHits();  (AliLoader::LoadHits() returns 0 on success)
      	-read number of entries in TreeH:           pRich->GetLoader()->TreeH()->GetEntries()
-     	-then for each entry:                       pRich->GetLoader()->TreeH()->GetEntry(i)
+     	-then for each entry:                       pRich->GetLoader()->TreeH()->GetEntry(i)	
 How to retrieve sdigits? 
 	Sdigits stored in tree S with the branch of TClonesArray, all sdigits in a single TClonesArray
 	So the tree has only one entry.
@@ -114,7 +112,9 @@ clusters+tracks->theta cerenkov
 	
 	
 	
-
+How to get correct magnetic field:
+	mag field is needed for simulation as well as reconstruction
+        
 
 
 
