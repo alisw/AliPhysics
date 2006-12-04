@@ -27,6 +27,7 @@ class TH2F;
 class TF1;
 
 class AliLog;
+
 class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
@@ -99,55 +100,55 @@ class AliTRDCalibra : public TObject {
 
   // Choice to fill or not the 2D
           void     SetMITracking(Bool_t mitracking = kTRUE)                  { fMITracking      = mitracking;  }
-          void     SetMcmTracking(Bool_t mcmtracking = kTRUE)                { fMcmTracking     = mcmtracking;  }
-          void     SetMcmCorrectAngle()                                      { fMcmCorrectAngle = kTRUE; }
-          void     SetPH2dOn()                                               { fPH2dOn          = kTRUE; }
-          void     SetCH2dOn()                                               { fCH2dOn          = kTRUE; }
-          void     SetPRF2dOn()                                              { fPRF2dOn         = kTRUE; }
-          void     SetHisto2d()                                              { fHisto2d         = kTRUE; }
-          void     SetVector2d()                                             { fVector2d        = kTRUE; }
+          void     SetMcmTracking(Bool_t mcmtracking = kTRUE)                { fMcmTracking     = mcmtracking; }
+          void     SetMcmCorrectAngle()                                      { fMcmCorrectAngle = kTRUE;       }
+          void     SetPH2dOn()                                               { fPH2dOn          = kTRUE;       }
+          void     SetCH2dOn()                                               { fCH2dOn          = kTRUE;       }
+          void     SetPRF2dOn()                                              { fPRF2dOn         = kTRUE;       }
+          void     SetHisto2d()                                              { fHisto2d         = kTRUE;       }
+          void     SetVector2d()                                             { fVector2d        = kTRUE;       }
   
-          Bool_t   GetMITracking() const                                     { return fMITracking;       }
-          Bool_t   GetMcmTracking() const                                    { return fMcmTracking;      }
-          Bool_t   GetMcmCorrectAngle() const                                { return fMcmCorrectAngle;  }
-          Bool_t   GetPH2dOn() const                                         { return fPH2dOn;           }
-          Bool_t   GetCH2dOn() const                                         { return fCH2dOn;           }
-          Bool_t   GetPRF2dOn() const                                        { return fPRF2dOn;          }
-          Bool_t   GetHisto2d() const                                        { return fHisto2d;          }
-          Bool_t   GetVector2d() const                                       { return fVector2d;         }
-  TH2I            *GetCH2d() const                                           { return fCH2d;             }
-  TProfile2D      *GetPH2d() const                                           { return fPH2d;             }
-  TProfile2D      *GetPRF2d() const                                          { return fPRF2d;            }
+          Bool_t   GetMITracking() const                                     { return fMITracking;             }
+          Bool_t   GetMcmTracking() const                                    { return fMcmTracking;            }
+          Bool_t   GetMcmCorrectAngle() const                                { return fMcmCorrectAngle;        }
+          Bool_t   GetPH2dOn() const                                         { return fPH2dOn;                 }
+          Bool_t   GetCH2dOn() const                                         { return fCH2dOn;                 }
+          Bool_t   GetPRF2dOn() const                                        { return fPRF2dOn;                }
+          Bool_t   GetHisto2d() const                                        { return fHisto2d;                }
+          Bool_t   GetVector2d() const                                       { return fVector2d;               }
+  TH2I            *GetCH2d() const                                           { return fCH2d;                   }
+  TProfile2D      *GetPH2d() const                                           { return fPH2d;                   }
+  TProfile2D      *GetPRF2d() const                                          { return fPRF2d;                  }
   
   // How to fill the 2D
-          void     SetRelativeScaleAuto()                                    { fRelativeScaleAuto    = kTRUE;                      }
+          void     SetRelativeScaleAuto()                                    { fRelativeScaleAuto    = kTRUE;                }
           void     SetRelativeScale(Float_t relativeScale);                      
-          void     SetThresholdDigit(Int_t digitthreshold)                   { fThresholdDigit       = digitthreshold;             }
-          void     SetThresholdClusterPRF1(Float_t thresholdClusterPRF1)     { fThresholdClusterPRF1 = thresholdClusterPRF1;       }
-          void     SetThresholdClusterPRF2(Float_t thresholdClusterPRF2)     { fThresholdClusterPRF2 = thresholdClusterPRF2;       }
-          void     SetCenterOfflineCluster()                                 { fCenterOfflineCluster = kTRUE;                      }
-          void     SetTraMaxPad()                                            { fTraMaxPad            = kTRUE;                      }
+          void     SetThresholdDigit(Int_t digitthreshold)                   { fThresholdDigit       = digitthreshold;       }
+          void     SetThresholdClusterPRF1(Float_t thresholdClusterPRF1)     { fThresholdClusterPRF1 = thresholdClusterPRF1; }
+          void     SetThresholdClusterPRF2(Float_t thresholdClusterPRF2)     { fThresholdClusterPRF2 = thresholdClusterPRF2; }
+          void     SetCenterOfflineCluster()                                 { fCenterOfflineCluster = kTRUE;                }
+          void     SetTraMaxPad()                                            { fTraMaxPad            = kTRUE;                }
           void     SetNz(Int_t i, Short_t nz);
           void     SetNrphi(Int_t i, Short_t nrphi);
-          void     SetProcent(Float_t procent)                               { fProcent              = procent;                    }
-          void     SetDifference(Short_t difference)                         { fDifference           = difference;                 }
-          void     SetNumberClusters(Short_t numberClusters)                 { fNumberClusters       = numberClusters;             }
-          void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;            }
-          void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;               }
+          void     SetProcent(Float_t procent)                               { fProcent              = procent;              }
+          void     SetDifference(Short_t difference)                         { fDifference           = difference;           }
+          void     SetNumberClusters(Short_t numberClusters)                 { fNumberClusters       = numberClusters;       }
+          void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
+          void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
   
-          Float_t  GetRelativeScale() const                                  { return fRelativeScale;        }
-          Bool_t   GetRelativeScaleAuto() const                              { return fRelativeScaleAuto;    }
-          Int_t    GetThresholdDigit() const                                 { return fThresholdDigit;       }
-          Float_t  GetThresholdClusterPRF1() const                           { return fThresholdClusterPRF1; }
-          Float_t  GetThresholdClusterPRF2() const                           { return fThresholdClusterPRF2; }
-          Bool_t   GetTraMaxPad()const                                       { return fTraMaxPad;            }
-          Short_t  GetNz(Int_t i) const                                      { return fNz[i];                }
-          Short_t  GetNrphi(Int_t i) const                                   { return fNrphi[i];             }
-          Float_t  GetProcent() const                                        { return fProcent;              }
-          Short_t  GetDifference() const                                     { return fDifference;           }
-          Short_t  GetNumberClusters() const                                 { return fNumberClusters;       }
-          Short_t  GetNumberBinCharge() const                                { return fNumberBinCharge;      }
-          Short_t  GetNumberBinPRF() const                                   { return fNumberBinPRF;         }
+          Float_t  GetRelativeScale() const                                  { return fRelativeScale;          }
+          Bool_t   GetRelativeScaleAuto() const                              { return fRelativeScaleAuto;      }
+          Int_t    GetThresholdDigit() const                                 { return fThresholdDigit;         }
+          Float_t  GetThresholdClusterPRF1() const                           { return fThresholdClusterPRF1;   }
+          Float_t  GetThresholdClusterPRF2() const                           { return fThresholdClusterPRF2;   }
+          Bool_t   GetTraMaxPad()const                                       { return fTraMaxPad;              }
+          Short_t  GetNz(Int_t i) const                                      { return fNz[i];                  }
+          Short_t  GetNrphi(Int_t i) const                                   { return fNrphi[i];               }
+          Float_t  GetProcent() const                                        { return fProcent;                }
+          Short_t  GetDifference() const                                     { return fDifference;             }
+          Short_t  GetNumberClusters() const                                 { return fNumberClusters;         }
+          Short_t  GetNumberBinCharge() const                                { return fNumberBinCharge;        }
+          Short_t  GetNumberBinPRF() const                                   { return fNumberBinPRF;           }
   
   // Write
           void     SetWriteCoef(Int_t i)                                     { fWriteCoef[i]  = kTRUE;         }
@@ -161,59 +162,60 @@ class AliTRDCalibra : public TObject {
           TString  GetWriteName() const                                      { return fWriteName;              }
   
   // Fit
-          void     SetFitPHOn()                                              { fFitPHOn        = kTRUE;}
+          void     SetFitPHOn()                                              { fFitPHOn        = kTRUE;        }
           void     SetPeriodeFitPH(Int_t periodeFitPH);   
           void     SetBeginFitCharge(Float_t beginFitCharge);     
           void     SetT0Shift(Float_t t0Shift); 
           void     SetRangeFitPRF(Float_t rangeFitPRF);       
-          void     SetMeanChargeOn()                                         { fMeanChargeOn   = kTRUE;      }
-          void     SetAccCDB()                                               { fAccCDB         = kTRUE;      }
-          void     SetFitChargeBisOn()                                       { fFitChargeBisOn = kTRUE;      }
-          void     SetMinEntries(Int_t minEntries)                           { fMinEntries     = minEntries; }
+          void     SetMeanChargeOn()                                         { fMeanChargeOn   = kTRUE;        }
+          void     SetAccCDB()                                               { fAccCDB         = kTRUE;        }
+          void     SetFitChargeBisOn()                                       { fFitChargeBisOn = kTRUE;        }
+          void     SetMinEntries(Int_t minEntries)                           { fMinEntries     = minEntries;   }
   
-          Bool_t   GetFitPHOn() const                                        { return fFitPHOn;        }
-          Int_t    GetPeriodeFitPH() const                                   { return fFitPHPeriode;   }
-          Float_t  GetBeginFitCharge() const                                 { return fBeginFitCharge; }
-          Float_t  GetT0Shift() const                                        { return fT0Shift;        }
-          Float_t  GetRangeFitPRF() const                                    { return fRangeFitPRF;    }
-          Bool_t   GetMeanChargeOn() const                                   { return fMeanChargeOn;   }
-          Bool_t   GetAccCDB() const                                         { return fAccCDB;         }
-          Bool_t   GetFitChargeBisOn() const                                 { return fFitChargeBisOn; }
-          Int_t    GetMinEntries() const                                     { return fMinEntries;     }
-          Int_t    GetNumberFit() const                                      { return fNumberFit;      }
-          Double_t GetStatisticMean() const                                  { return fStatisticMean;  }
+          Bool_t   GetFitPHOn() const                                        { return fFitPHOn;                }
+          Int_t    GetPeriodeFitPH() const                                   { return fFitPHPeriode;           }
+          Float_t  GetBeginFitCharge() const                                 { return fBeginFitCharge;         }
+          Float_t  GetT0Shift() const                                        { return fT0Shift;                }
+          Float_t  GetRangeFitPRF() const                                    { return fRangeFitPRF;            }
+          Bool_t   GetMeanChargeOn() const                                   { return fMeanChargeOn;           }
+          Bool_t   GetAccCDB() const                                         { return fAccCDB;                 }
+          Bool_t   GetFitChargeBisOn() const                                 { return fFitChargeBisOn;         }
+          Int_t    GetMinEntries() const                                     { return fMinEntries;             }
+          Int_t    GetNumberFit() const                                      { return fNumberFit;              }
+	  Int_t    GetNumberEnt() const                                      { return fNumberEnt;              }
+          Double_t GetStatisticMean() const                                  { return fStatisticMean;          }
   
   // Debug
-          void     SetDebug(Short_t debug)                                   { fDebug   = debug;   }
+          void     SetDebug(Short_t debug)                                   { fDebug   = debug;               }
           void     SetDet(Int_t iPlane, Int_t iChamb, Int_t iSect)           { fDet[0]  = iPlane; 
                                                                                fDet[1]  = iChamb; 
-                                                                               fDet[2]  = iSect;   }
-          void     SetFitVoir(Int_t fitVoir)                                 { fFitVoir = fitVoir; }
+                                                                               fDet[2]  = iSect;               }
+          void     SetFitVoir(Int_t fitVoir)                                 { fFitVoir = fitVoir;             }
   
-          Short_t  GetDebug() const                                          { return fDebug;      }
-          Int_t    GetDet(Int_t i) const                                     { return fDet[i];     }
-          Int_t    GetFitVoir() const                                        { return fFitVoir;    }
+          Short_t  GetDebug() const                                          { return fDebug;                  }
+          Int_t    GetDet(Int_t i) const                                     { return fDet[i];                 }
+          Int_t    GetFitVoir() const                                        { return fFitVoir;                }
 
   //
   // Internal variables to be sure!
   //
   
   // Pad calibration
-          Short_t  GetNnz(Int_t i) const                                     { return fNnZ[i];       }
-          Short_t  GetNnrphi(Int_t i) const                                  { return fNnRphi[i];    }
-          Short_t  GetNfragz(Int_t i) const                                  { return fNfragZ[i];    }
-          Short_t  GetNfragrphi(Int_t i) const                               { return fNfragRphi[i]; }
-          Short_t  GetDetChamb0(Int_t i) const                               { return fDetChamb0[i]; }
-          Short_t  GetDetChamb2(Int_t i) const                               { return fDetChamb2[i]; }
+          Short_t  GetNnz(Int_t i) const                                     { return fNnZ[i];                 }
+          Short_t  GetNnrphi(Int_t i) const                                  { return fNnRphi[i];              }
+          Short_t  GetNfragz(Int_t i) const                                  { return fNfragZ[i];              }
+          Short_t  GetNfragrphi(Int_t i) const                               { return fNfragRphi[i];           }
+          Short_t  GetDetChamb0(Int_t i) const                               { return fDetChamb0[i];           }
+          Short_t  GetDetChamb2(Int_t i) const                               { return fDetChamb2[i];           }
     
           void     SetRebin(Short_t rebin);
-          Short_t  GetRebin() const                                          { return fRebin;        }
+          Short_t  GetRebin() const                                          { return fRebin;                  }
 
   // Getter for the coefficient trees 
-          TTree   *GetPRF() const                                            { return fPRF;          }
-          TTree   *GetGain() const                                           { return fGain;         }
-          TTree   *GetT0() const                                             { return fT0;           }
-          TTree   *GetVdrift() const                                         { return fVdrift;       }
+          TTree   *GetPRF() const                                            { return fPRF;                    }
+          TTree   *GetGain() const                                           { return fGain;                   }
+          TTree   *GetT0() const                                             { return fT0;                     }
+          TTree   *GetVdrift() const                                         { return fVdrift;                 }
 
  private:
   
@@ -271,6 +273,7 @@ class AliTRDCalibra : public TObject {
           Float_t  fT0Shift;                // T0 Shift with the actual method
           Bool_t   fAccCDB;                 // If there is a calibration database to be compared with....
           Int_t    fNumberFit;              // To know how many pad groups have been fitted
+	  Int_t    fNumberEnt;              // To know how many pad groups have entries in the histo
           Double_t fStatisticMean;          // To know the mean statistic of the histos
 
   // Debug Mode

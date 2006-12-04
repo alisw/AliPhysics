@@ -223,6 +223,7 @@ AliTRDCalibra::AliTRDCalibra()
   ,fT0Shift(0.0)
   ,fAccCDB(kFALSE)
   ,fNumberFit(0)
+  ,fNumberEnt(0)
   ,fStatisticMean(0.0)
   ,fDebug(0)
   ,fFitVoir(0)
@@ -299,7 +300,7 @@ AliTRDCalibra::AliTRDCalibra()
     fDet[k] = 0;
   }
 
-  for (Int_t i = 0; i < 2; i++) {
+  for (Int_t i = 0; i < 3; i++) {
     fPhd[i] = 0.0;
   }
 
@@ -338,6 +339,7 @@ AliTRDCalibra::AliTRDCalibra(const AliTRDCalibra &c)
   ,fT0Shift(0.0)
   ,fAccCDB(kFALSE)
   ,fNumberFit(0)
+  ,fNumberEnt(0)
   ,fStatisticMean(0.0)
   ,fDebug(0)
   ,fFitVoir(0)
@@ -560,6 +562,7 @@ Bool_t AliTRDCalibra::FitCHOnline(TH2I *ch)
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
 
   // For memory
   if (fVectorCH) {
@@ -589,7 +592,10 @@ Bool_t AliTRDCalibra::FitCHOnline(TH2I *ch)
     for (Int_t k = 0; k < nybins; k++) {
       nentries += ch->GetBinContent(ch->GetBin(idect+1,k+1));
     }
-      
+    if (nentries > 0) {
+      fNumberEnt++;
+    }
+
     // Rebin and statistic stuff
     // Rebin
     if (fRebin > 1) {
@@ -691,6 +697,7 @@ Bool_t AliTRDCalibra::FitCHOnline()
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
  
   // Init fCountDet and fCount
   InitfCountDetAndfCount(0);
@@ -727,6 +734,9 @@ Bool_t AliTRDCalibra::FitCHOnline()
       for (Int_t k = 0; k < fNumberBinCharge; k++) {
         nentries += projch->GetBinContent(k+1);
       }
+    }
+    if (nentries > 0) {
+      fNumberEnt++;
     }
   
     // Rebin and statistic stuff
@@ -840,6 +850,7 @@ Bool_t AliTRDCalibra::FitCHOnline(TTree *tree)
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
   
   // For memory
   if (fVectorCH) {
@@ -879,7 +890,10 @@ Bool_t AliTRDCalibra::FitCHOnline(TTree *tree)
       for (Int_t k = 0; k < projch->GetXaxis()->GetNbins(); k++) {
         nentries += projch->GetBinContent(k+1);
       }
-    }    
+    } 
+    if (nentries > 0) {
+      fNumberEnt++;   
+    }
 
     // Rebin and statistic stuff
     // Rebin
@@ -990,6 +1004,7 @@ Bool_t AliTRDCalibra::FitPHOnline(TProfile2D *ph)
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
 
   // For memory
   if (fVectorPH) {
@@ -1013,7 +1028,10 @@ Bool_t AliTRDCalibra::FitPHOnline(TProfile2D *ph)
     for (Int_t k = 0; k < nybins; k++) {
       nentries += ph->GetBinEntries(ph->GetBin(idect+1,k+1));
     }
-  
+    if (nentries > 0) {
+      fNumberEnt++;
+    }  
+
     // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
     UpdatefCountDetAndfCount(idect,1);
 
@@ -1127,6 +1145,7 @@ Bool_t AliTRDCalibra::FitPHOnline()
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
 
   // Init fCountDet and fCount
   InitfCountDetAndfCount(1);
@@ -1142,6 +1161,8 @@ Bool_t AliTRDCalibra::FitPHOnline()
     TString name("PH");
     name += idect;
     if (place != -1) {
+      //Entries
+      fNumberEnt++;
       // Variable
       AliTRDPInfo *fPHInfo = new AliTRDPInfo();
       // Retrieve
@@ -1264,6 +1285,7 @@ Bool_t AliTRDCalibra::FitPHOnline(TTree *tree)
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
 
   // For memory
   if (fVectorPH) {
@@ -1288,6 +1310,8 @@ Bool_t AliTRDCalibra::FitPHOnline(TTree *tree)
     TH1F *projph = 0x0;
     // Is in
     if (place != -1) {
+      //Entries
+      fNumberEnt++;
       // Variable
       tree->GetEntry(place);
       projph = CorrectTheError(projphtree);
@@ -1412,6 +1436,7 @@ Bool_t AliTRDCalibra::FitPRFOnline(TProfile2D *prf)
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
 
   // For memory
   if (fVectorPRF) {
@@ -1435,6 +1460,7 @@ Bool_t AliTRDCalibra::FitPRFOnline(TProfile2D *prf)
     for (Int_t k = 0; k < nybins; k++) {
       nentries += prf->GetBinEntries(prf->GetBin(idect+1,k+1));
     }
+    if(nentries > 0) fNumberEnt++;
     
     // Determination of fNnZ, fNnRphi, fNfragZ and fNfragRphi
     UpdatefCountDetAndfCount(idect,2);
@@ -1538,6 +1564,7 @@ Bool_t AliTRDCalibra::FitPRFOnline(TTree *tree)
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
 
   // For memory
   if (fVectorPRF) {
@@ -1562,6 +1589,8 @@ Bool_t AliTRDCalibra::FitPRFOnline(TTree *tree)
     // Is in   
     TH1F *projprf = 0x0;
     if (place != -1) {
+      //Entries
+      fNumberEnt++;
       // Variable
       tree->GetEntry(place);
       projprf = CorrectTheError(projprftree);
@@ -1671,6 +1700,7 @@ Bool_t AliTRDCalibra::FitPRFOnline()
   }
   fStatisticMean = 0.0;
   fNumberFit     = 0;
+  fNumberEnt     = 0;
 
   // Init fCountDet and fCount
   InitfCountDetAndfCount(2);
@@ -1686,6 +1716,8 @@ Bool_t AliTRDCalibra::FitPRFOnline()
     TString name("PRF");
     name += idect;
     if (place != -1) {
+      //Entries
+      fNumberEnt++;
       // Variable
       AliTRDPInfo *fPRFInfo = new AliTRDPInfo();
       // Retrieve
@@ -2721,20 +2753,9 @@ TObject *AliTRDCalibra::CreatePadObjectTree(TTree *tree, Int_t i
     Int_t colMax = calROC->GetNcols();
     for (Int_t row = 0; row < rowMax; ++row) {
       for (Int_t col = 0; col < colMax; ++col) {
-	if (i == 0) {
-          calROC->SetValue(col,row,TMath::Abs(values[(Int_t) (col*rowMax+row)])/mean);
-	}
-	if (i == 1) {
-          calROC->SetValue(col,row,TMath::Abs(values[(Int_t) (col*rowMax+row)])/mean);
-	}
-	if (i == 3) {
-	  if (values[(Int_t) (col*rowMax+row)]/mean < 0.0) {
-	    calROC->SetValue(col,row,0.0);
-	  }
-	  if (values[(Int_t) (col*rowMax+row)]/mean >= 0.0) {
-	    calROC->SetValue(col,row,values[(Int_t) (col*rowMax+row)]/mean);
-	  }
-	}
+	
+	calROC->SetValue(col,row,TMath::Abs(values[(Int_t) (col*rowMax+row)])/mean);
+	
       } // Col
     } // Row
   }
@@ -4420,8 +4441,8 @@ void AliTRDCalibra::CreateFitHistoT0(Int_t nbins, Double_t low, Double_t high)
   // Histograms for Debug
   fDeltaT0[0] = new TH1F("deltaT00","",nbins,low ,high);
   fDeltaT0[1] = new TH1F("deltaT01","",nbins,low ,high);
-  fErrorT0[0] = new TH1I("errorT00","",300  ,-0.1,0.1);
-  fErrorT0[1] = new TH1I("errorT01","",300  ,-0.1,0.1);
+  fErrorT0[0] = new TH1I("errorT00","",100,-0.2,0.2);
+  fErrorT0[1] = new TH1I("errorT01","",100,-0.2,0.2);
 
   fCoefT0[0]->SetXTitle("Det/pad groups");
   fCoefT0[0]->SetYTitle("t0 [timebin]");
@@ -4573,7 +4594,7 @@ void AliTRDCalibra::CreateFitHistoPRF(Int_t nbins, Double_t low, Double_t high)
  
   // Histograms for Debug 
   fDeltaPRF   = new TH1F("deltaPRF","",nbins,low ,high);
-  fErrorPRF   = new TH1I("errorPRF","",300  ,-0.5,0.5);
+  fErrorPRF   = new TH1I("errorPRF","",300,-0.5,0.5);
 
   fDeltaPRF->SetMarkerColor(6);
   fDeltaPRF->SetMarkerStyle(26);
@@ -5210,12 +5231,12 @@ Bool_t AliTRDCalibra::NotEnoughStatistic(Int_t idect, Int_t i)
         (fDebug == 4)) {
 
       if (fFitPHOn) {
-	fCoefVdrift[0]->SetBinContent(idect-fDect1[1]+1,fVdriftCoef[2]);
-	fCoefT0[0]->SetBinContent(idect-fDect1[1]+1,fT0Coef[2]);
+	fCoefVdrift[0]->SetBinContent(idect-fDect1[1]+1,-fVdriftCoef[2]);
+	fCoefT0[0]->SetBinContent(idect-fDect1[1]+1,-fT0Coef[2]);
       }
 
-      fCoefVdrift[1]->SetBinContent(idect-fDect1[1]+1,fVdriftCoef[2]);
-      fCoefT0[1]->SetBinContent(idect-fDect1[1]+1,fT0Coef[2]);
+      fCoefVdrift[1]->SetBinContent(idect-fDect1[1]+1,-fVdriftCoef[2]);
+      fCoefT0[1]->SetBinContent(idect-fDect1[1]+1,-fT0Coef[2]);
 
     }
     
@@ -7423,7 +7444,7 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
     fVdriftCoef[1] = (kDrWidth) / (fPhd[2]-fPhd[1]);
     if (fPhd[0] >= 0.0) {
       fT0Coef[1] = (fPhd[0] - fT0Shift) / widbins;
-      if (fT0Coef[1] <= -1.0) {
+      if (fT0Coef[1] < 0.0) {
         fT0Coef[1] = - TMath::Abs(fT0Coef[2]);
       }
     }
@@ -7438,12 +7459,14 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
 
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    fCoefVdrift[1]->SetBinContent(idect+1,TMath::Abs(fVdriftCoef[1]));
+    fCoefVdrift[1]->SetBinContent(idect+1,fVdriftCoef[1]);
     fCoefT0[1]->SetBinContent(idect+1,fT0Coef[1]);
     if (fVdriftCoef[1] > 0.0) {
       if (fVdriftCoef[2] != 0.0) {
         fDeltaVdrift[1]->SetBinContent(idect+1,(fVdriftCoef[1] - fVdriftCoef[2]) / fVdriftCoef[2]);
       }
+    }
+    if(fT0Coef[1] >= 0.0){
       fDeltaT0[1]->SetBinContent(idect+1,(fT0Coef[1] - fT0Coef[2]));
     }
   }
@@ -7543,8 +7566,8 @@ void AliTRDCalibra::FitPH(TH1* projPH, Int_t idect)
 
     if ((fDebug == 1) || 
         (fDebug == 4)) {
-      fCoefVdrift[0]->SetBinContent(idect+1,TMath::Abs(fVdriftCoef[0]));
-      fCoefT0[0]->SetBinContent(idect+1,TMath::Abs(fT0Coef[0]));
+      fCoefVdrift[0]->SetBinContent(idect+1,fVdriftCoef[0]);
+      fCoefT0[0]->SetBinContent(idect+1,fT0Coef[0]);
     if (fVdriftCoef[0] > 0.0){
 	if (fVdriftCoef[2] != 0.0) {
           fDeltaVdrift[0]->SetBinContent(idect+1,(fVdriftCoef[0]-fVdriftCoef[2])/fVdriftCoef[2]);
@@ -7596,6 +7619,7 @@ void AliTRDCalibra::FitPRF(TH1 *projPRF, Int_t idect)
   }
 
   fPRFCoef[0] = projPRF->GetFunction("gaus")->GetParameter(2);
+  if(fPRFCoef[0] <= 0.0) fPRFCoef[0] = -fPRFCoef[1];
 
   if ((fDebug == 1) || 
       (fDebug == 4)) {
