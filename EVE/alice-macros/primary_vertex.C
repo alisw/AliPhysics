@@ -6,7 +6,7 @@ TPolyMarker3D* make_vertex_marker(AliESDVertex* v, const Text_t* name)
   v->GetTruePos(x);
   v->GetSigmaXYZ(e);
 
-  printf("%s: %f %f %f   -   %f %f %f\n", name,
+  printf("%16s: %f %f %f   -   %f %f %f\n", name,
 	 x[0], x[1], x[2], e[0], e[1], e[2]);
 
   TPolyMarker3D* m = new TPolyMarker3D(1);
