@@ -15,9 +15,10 @@ namespace Reve {
 class TrackRnrStyle;
 class TrackList;
 
-class Track : public Line
+class Track : public Line, public TQObject
 {
   friend class TrackList;
+  friend class TrackCounter;
 
   Track(const Track&);            // Not implemented
   Track& operator=(const Track&); // Not implemented
@@ -55,6 +56,10 @@ public:
   void ImportHits();     // *MENU*
   void ImportClusters(); // *MENU*
 
+  //--------------------------------
+
+  void CtrlClicked(Reve::Track*); // *SIGNAL*
+
   ClassDef(Track, 1);
 }; // endclass Track
 
@@ -71,7 +76,7 @@ public:
 // TrackList has Get/Set methods for RnrStlye and
 // TrackListEditor provides editor access to them.
 
-class TrackRnrStyle : public TObject 
+class TrackRnrStyle : public TObject
 {
 public:
   Color_t                  fColor;
@@ -184,6 +189,46 @@ public:
 
   ClassDef(TrackList, 1);
 };
+
+/**************************************************************************/
+// TrackCounter
+/**************************************************************************/
+
+class TrackCounter : public RenderElement, public TNamed
+{
+  friend class TrackCounterEditor;
+
+public:
+  enum ClickAction_e { CA_PrintTrackInfo, CA_ToggleTrack };
+
+private:
+  TrackCounter(const TrackCounter&);            // Not implemented
+  TrackCounter& operator=(const TrackCounter&); // Not implemented
+
+protected:
+  Int_t fBadLineStyle;
+  Int_t fClickAction;
+
+  Int_t fAllTracks;
+  Int_t fGoodTracks;
+
+  TList fTrackLists;
+
+public:
+  TrackCounter(const Text_t* name="TrackCounter", const Text_t* title="");
+  virtual ~TrackCounter();
+
+  void Reset();
+
+  void RegisterTracks(TrackList* tlist, Bool_t goodTracks);
+
+  void DoTrackAction(Track* track);
+
+  Int_t GetClickAction() const  { return fClickAction; }
+  void  SetClickAction(Int_t a) { fClickAction = a; }
+
+  ClassDef(TrackCounter, 1);
+}; // endclass TrackCounter
 
 
 } // namespace Reve

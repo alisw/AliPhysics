@@ -234,6 +234,13 @@ void Track::ImportClusters()
   gROOT->ProcessLine(Form("clusters_from_label(%d);", fLabel));
 }
 
+/**************************************************************************/
+
+void Track::CtrlClicked(Reve::Track* track)
+{
+  Emit("CtrlClicked(Reve::Track*)", (Long_t)track);
+}
+
 
 /**************************************************************************/
 /**************************************************************************/
@@ -330,7 +337,7 @@ void TrackList::Paint(Option_t* option)
       TPolyMarker3D::Paint(option);
     }
     if(fRnrTracks) {
-      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement())
 	  (*i)->GetObject()->Paint(option);
       }
@@ -367,7 +374,7 @@ void TrackList::SetRnrTracks(Bool_t rnr)
 
 void TrackList::MakeTracks()
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->MakeTrack();
   }
   gReve->Redraw3D();
@@ -377,7 +384,7 @@ void TrackList::MakeTracks()
 void TrackList::MakeMarkers()
 {
   Reset(fChildren.size());
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     Track& t = *((Track*)(*i));
     if(t.GetN() > 0)
       SetNextPoint(t.fV.x, t.fV.y, t.fV.z);
@@ -392,7 +399,7 @@ void TrackList::SetWidth(Width_t w)
 {
   Width_t oldw = fRnrStyle->fWidth;
   fRnrStyle->fWidth = w;
-  for (lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     Track& t = *((Track*)(*i));
     if (t.GetLineWidth() == oldw)
       t.SetLineWidth(w);
@@ -452,7 +459,7 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
   Float_t maxptsq = max_pt*max_pt;
   Float_t ptsq;
 
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ptsq = ((Track*)(*i))->fP.Perp2();
     (*i)->SetRnrElement(ptsq >= minptsq && ptsq <= maxptsq);
   }
@@ -462,14 +469,128 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 
 void TrackList::ImportHits()
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportHits();
   }
 }
 
 void TrackList::ImportClusters()
 {
-  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportClusters();
   }
+}
+
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+
+#include "RGEditor.h"
+
+//______________________________________________________________________
+// TrackCounter
+//
+
+ClassImp(TrackCounter)
+
+TrackCounter::TrackCounter(const Text_t* name, const Text_t* title) :
+  RenderElement(),
+  TNamed(name, title),
+
+  fBadLineStyle (6),
+  fClickAction  (CA_ToggleTrack),
+  fAllTracks    (0),
+  fGoodTracks   (0),
+  fTrackLists   ()
+{
+  TQObject::Connect("Reve::Track", "CtrlClicked(Reve::Track*)",
+		    "Reve::TrackCounter", this, "DoTrackAction(Reve::Track*)");
+}
+
+TrackCounter::~TrackCounter()
+{
+  TQObject::Disconnect("Reve::Track", "DoTrackAction(Reve::Track*)");
+}
+
+/**************************************************************************/
+
+void TrackCounter::Reset()
+{
+  printf("TrackCounter::Reset()\n");
+  fAllTracks  = 0;
+  fGoodTracks = 0;
+  TIter next(&fTrackLists);
+  TrackList* tlist;
+  while ((tlist = dynamic_cast<TrackList*>(next())))
+    tlist->RemoveParent(this);
+  fTrackLists.Clear();
+}
+
+void TrackCounter::RegisterTracks(TrackList* tlist, Bool_t goodTracks)
+{
+  // printf("TrackCounter::RegisterTracks '%s', %s\n",
+  //   tlist->GetObject()->GetName(), goodTracks ? "good" : "bad");
+
+  tlist->AddParent(this);
+  fTrackLists.Add(tlist);
+
+  List_i i = tlist->BeginChildren();
+  while (i != tlist->EndChildren())
+  {
+    Track* t = dynamic_cast<Track*>(*i);
+    if (t != 0)
+    {
+      if (goodTracks)
+      {
+	++fGoodTracks;
+      } else {
+	t->SetLineStyle(fBadLineStyle);
+      }
+      ++fAllTracks;
+    }
+    ++i;
+  }
+}
+
+void TrackCounter::DoTrackAction(Track* track)
+{
+  // !!!! No check done if ok.
+  // !!!! Should also override RemoveElementLocal
+  // !!!! But then ... should also sore local information if track is ok.
+
+  switch (fClickAction)
+  {
+
+    case CA_PrintTrackInfo:
+    {
+      printf("Track '%s'\n", track->GetObject()->GetName());
+      Vector &v = track->fV, &p = track->fP;
+      printf("  Vx=%f, Vy=%f, Vz=%f; Pt=%f, Pz=%f, phi=%f)\n",
+	     v.x, v.y, v.z, p.Perp(), p.z, TMath::RadToDeg()*p.Phi());
+      printf("  <other information should be printed ... full AliESDtrack>\n");
+      break;
+    }
+
+    case CA_ToggleTrack:
+    {
+      if (track->GetLineStyle() == 1)
+      {
+	track->SetLineStyle(fBadLineStyle);
+	--fGoodTracks;
+      } else {
+	track->SetLineStyle(1);
+	++fGoodTracks;
+      }
+      gReve->Redraw3D();
+
+      printf("TrackCounter::CountTrack All=%d, Good=%d, Bad=%d\n",
+	     fAllTracks, fGoodTracks, fAllTracks-fGoodTracks);
+
+      if (gReve->GetEditor()->GetModel() == GetObject())
+	gReve->EditRenderElement(this);
+
+      break;
+    }
+
+  } // end switch fClickAction
 }
