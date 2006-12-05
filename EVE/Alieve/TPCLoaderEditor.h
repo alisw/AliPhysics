@@ -33,7 +33,13 @@ protected:
   Reve::RGValuator* fEvent;
   TGCheckButton*    fDoubleSR;
 
+  // TPCData loading settings
+  Reve::RGValuator* fDataLoadThreshold;
+  Reve::RGValuator* fDataLoadPedestal;
+  TGCheckButton*    fDataAutoPedestal;
+
   TGTextButton* fUpdateSectors;
+  TGTextButton* fReloadSectors;
   TGTextButton* fCreateSectors3D;
   TGTextButton* fDeleteSectors3D;
 
@@ -51,7 +57,12 @@ public:
   void DoEvent();
   void DoDoubleSR();
 
+  void DoDataLoadThreshold();
+  void DoDataLoadPedestal();
+  void DoDataAutoPedestal();
+
   void DoUpdateSectors();
+  void DoReloadSectors();
   void DoCreateSectors3D();
   void DoDeleteSectors3D();
 
