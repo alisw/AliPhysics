@@ -203,6 +203,12 @@ void TPCLoader::UpdateSectors()
   gReve->EnableRedraw();
 }
 
+void TPCLoader::ReloadSectors()
+{
+  LoadEvent();
+  UpdateSectors();
+}
+
 void TPCLoader::CreateSectors3D()
 {
   gReve->DisableRedraw();

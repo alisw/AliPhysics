@@ -58,6 +58,7 @@ public:
   void GotoEvent(Int_t event);
 
   void UpdateSectors();
+  void ReloadSectors();
   void CreateSectors3D();
   void DeleteSectors3D();
 
