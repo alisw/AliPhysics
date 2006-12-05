@@ -33,13 +33,13 @@ ClassImp(AliV0vertexer)
 
 
 //A set of very loose cuts 
-Double_t AliV0vertexer::fgChi2max=33.;//max. chi2
-Double_t AliV0vertexer::fgDNmin=0.16; //min. negative daughter's imp parameter 
-Double_t AliV0vertexer::fgDPmin=0.05; //min. positive daughter's imp parameter
-Double_t AliV0vertexer::fgDCAmax=0.08; //max. DCA between the daughter tracks
-Double_t AliV0vertexer::fgCPAmax=0.99;//max. cosine of V0's pointing angle
-Double_t AliV0vertexer::fgRmin=0.9;   //min. radius of the fiducial volume
-Double_t AliV0vertexer::fgRmax=2.9;   //max. radius of the fiducial volume
+Double_t AliV0vertexer::fgChi2max=33.; //max chi2
+Double_t AliV0vertexer::fgDNmin=0.05;  //min imp parameter for the 1st daughter
+Double_t AliV0vertexer::fgDPmin=0.05;  //min imp parameter for the 2nd daughter
+Double_t AliV0vertexer::fgDCAmax=0.5;  //max DCA between the daughter tracks
+Double_t AliV0vertexer::fgCPAmax=0.99; //max cosine of V0's pointing angle
+Double_t AliV0vertexer::fgRmin=0.2;    //min radius of the fiducial volume
+Double_t AliV0vertexer::fgRmax=100.;   //max radius of the fiducial volume
 
 Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
   //--------------------------------------------------------------------

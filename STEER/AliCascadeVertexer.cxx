@@ -37,21 +37,21 @@ ClassImp(AliCascadeVertexer)
 
 //A set of loose cuts
 Double_t 
-  AliCascadeVertexer::fgChi2max=33.; //maximal allowed chi2 
+  AliCascadeVertexer::fgChi2max=33.;    //maximal allowed chi2 
 Double_t 
-  AliCascadeVertexer::fgDV0min=0.05;  //min. V0 impact parameter
+  AliCascadeVertexer::fgDV0min=0.05;    //min V0 impact parameter
 Double_t 
-  AliCascadeVertexer::fgMassWin=0.008; //window around the Lambda mass
+  AliCascadeVertexer::fgMassWin=0.01;   //"window" around the Lambda mass
 Double_t 
-  AliCascadeVertexer::fgDBachMin=0.035;//min. bachelor impact parameter
+  AliCascadeVertexer::fgDBachMin=0.035; //min bachelor impact parameter
 Double_t 
-  AliCascadeVertexer::fgDCAmax=0.1;  //max. DCA between the V0 and the track 
+  AliCascadeVertexer::fgDCAmax=0.10;    //max DCA between the V0 and the track 
 Double_t 
-  AliCascadeVertexer::fgCPAmax=0.9985;//max. cosine of the cascade pointing angle
+  AliCascadeVertexer::fgCPAmax=0.9985;  //max cosine of the cascade pointing angle
 Double_t 
-  AliCascadeVertexer::fgRmin=0.9;    //min radius of the fiducial volume
+  AliCascadeVertexer::fgRmin=0.2;       //min radius of the fiducial volume
 Double_t 
-  AliCascadeVertexer::fgRmax=2.9;    //max radius of the fiducial volume
+  AliCascadeVertexer::fgRmax=100.;      //max radius of the fiducial volume
   
 
 Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
