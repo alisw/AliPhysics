@@ -14,7 +14,11 @@
  **************************************************************************/
 
 /* $Id$ */
-
+/* History of cvs commits:
+ *
+ * $Log$
+ *
+ */
 //_________________________________________________________________________
 // Base Class for EMCAL description:
 // This class contains material definitions    
@@ -45,9 +49,11 @@ class TFile;
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALDigit.h"
+//#include "AliAltroMapping.h"
+#include "AliCaloAltroMapping.h"
 #include "AliAltroBuffer.h"
 #include "AliRawReader.h"
-#include "AliEMCALRawStream.h"
+#include "AliCaloRawStream.h"
 #include "AliDAQ.h"
 
 ClassImp(AliEMCAL)
@@ -58,10 +64,8 @@ Double_t AliEMCAL::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
 Double_t AliEMCAL::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
 // some digitization constants
 Int_t    AliEMCAL::fgThreshold = 1;
-// 24*48=1152 towers per SM; divided up on 3 DDLs, 
-// each DDL with 12FEC *32towers or 12*32*2 channels (high&low gain) 
-Int_t    AliEMCAL::fgChannelsPerDDL = 768; // 2*(1152/3 or 12*32) 
- 
+Int_t    AliEMCAL::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
+
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL()
   : AliDetector(),
@@ -251,79 +255,114 @@ void AliEMCAL::CreateMaterials()
   fBirkC2 =  9.6e-6/(dP * dP);
 
 }
-      
-//____________________________________________________________________________
+ //____________________________________________________________________________
 void AliEMCAL::Digits2Raw()
 {
   // convert digits of the current event to raw data
+  
   AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
-
+  
   // get the digits
   loader->LoadDigits("EMCAL");
   loader->GetEvent();
   TClonesArray* digits = loader->Digits() ;
-
+  
   if (!digits) {
     Error("Digits2Raw", "no digits found !");
     return;
   }
-
+  
   // get the digitizer 
   loader->LoadDigitizer();
   AliEMCALDigitizer * digitizer = dynamic_cast<AliEMCALDigitizer *>(loader->Digitizer())  ; 
   
-
+  // get the geometry
+  AliEMCALGeometry* geom = GetGeometry();
+  if (!geom) {
+    AliError(Form("No geometry found !"));
+    return;
+  }
+  
   AliAltroBuffer* buffer = NULL;
   Int_t prevDDL = -1;
   Int_t adcValuesLow[fgkTimeBins];
   Int_t adcValuesHigh[fgkTimeBins];
-  
+
+  //Load Mapping RCU files once
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/EMCAL/mapping/RCU";
+  TString path0 = path+"0.data";//This file will change in future
+  TString path1 = path+"1.data";//This file will change in future
+  AliAltroMapping * mapping[2] ; // For the moment only 2
+  mapping[0] = new AliCaloAltroMapping(path0.Data());
+  mapping[1] = new AliCaloAltroMapping(path1.Data());
+
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
     AliEMCALDigit* digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit)) ;
     if (digit->GetAmp() < fgThreshold) 
       continue;
-    Int_t iDDL = digit->GetId() / fgChannelsPerDDL ;
-    // for each DDL id is numbered from 1 to  fgChannelsperDDL -1 
-    Int_t idDDL = digit->GetId() - iDDL * ( fgChannelsPerDDL - 1 ) ;  
+
+    //get cell indeces
+    Int_t nSM = 0;
+    Int_t nIphi = 0;
+    Int_t nIeta = 0;
+    Int_t iphi = 0;
+    Int_t ieta = 0;
+    Int_t nTower = 0;
+    geom->GetCellIndex(digit->GetId(), nSM, nTower, nIphi, nIeta);
+    geom->GetCellPhiEtaIndexInSModule(nSM, nTower, nIphi, nIeta,iphi, ieta) ;
+    
+    //Check which is the RCU of the cell.
+    Int_t iRCU = -111;
+    //RCU0
+    if (0<=iphi&&iphi<8) iRCU=0; // first cable row
+    else if (8<=iphi&&iphi<16 && 0<=ieta&&ieta<24) iRCU=0; // first half; 
+    //second cable row
+    //RCU1
+    else if(8<=iphi&&iphi<16 && 24<=ieta&&ieta<48) iRCU=1; // second half; 
+    //second cable row
+    else if(16<=iphi&&iphi<24) iRCU=1; // third cable row
+    
+    //Which DDL?
+    Int_t iDDL = fgDDLPerSuperModule* nSM + iRCU;
+    
     // new DDL
     if (iDDL != prevDDL) {
       // write real header and close previous file
+       
       if (buffer) {
 	buffer->Flush();
 	buffer->WriteDataHeader(kFALSE, kFALSE);
 	delete buffer;
       }
-
+      
       // open new file and write dummy header
-      TString fileName(AliDAQ::DdlFileName("EMCAL",iDDL));
-      buffer = new AliAltroBuffer(fileName.Data());
+      TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
+      buffer = new AliAltroBuffer(fileName.Data(),mapping[iRCU]);
       buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
-
       prevDDL = iDDL;
     }
-
+    
     // out of time range signal (?)
     if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
-      buffer->FillBuffer(digit->GetAmp());
+      AliInfo("Signal is out of time range.\n");
+      buffer->FillBuffer((Int_t)digit->GetAmp());
       buffer->FillBuffer(GetRawFormatTimeBins() );  // time bin
-      buffer->FillBuffer(3);          // bunch length
-      buffer->WriteTrailer(3, idDDL, 0, 0);  // trailer
-
+      buffer->FillBuffer(3);          // bunch length      
+      buffer->WriteTrailer(3, ieta, iphi, nSM);  // trailer
       // calculate the time response function
     } else {
-      Double_t energy = 0 ;  
-      energy = digit->GetAmp() * digitizer->GetECAchannel() + digitizer->GetECApedestal() ; 
+
+      Double_t energy = digit->GetAmp() * digitizer->GetECAchannel() + digitizer->GetECApedestal() ; 
       
       Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
       if (lowgain) 
-	buffer->WriteChannel(iDDL, 0, fLowGainOffset, 
-			     GetRawFormatTimeBins(), adcValuesLow, fgThreshold);
+	buffer->WriteChannel(ieta, iphi, 0, GetRawFormatTimeBins(), adcValuesLow, fgThreshold);
       else 
-	buffer->WriteChannel(iDDL, 0, 0, 
-			     GetRawFormatTimeBins(), adcValuesHigh, fgThreshold);
-      
+	buffer->WriteChannel(ieta,iphi, 1, GetRawFormatTimeBins(), adcValuesHigh, fgThreshold);
+           
     }
   }
   
@@ -333,7 +372,8 @@ void AliEMCAL::Digits2Raw()
     buffer->WriteDataHeader(kFALSE, kFALSE);
     delete buffer;
   }
-
+  mapping[0]->Delete();
+  mapping[1]->Delete();
   loader->UnloadDigits();
 }
 
@@ -341,7 +381,7 @@ void AliEMCAL::Digits2Raw()
 void AliEMCAL::Raw2Digits(AliRawReader* reader)
 {
   // convert raw data of the current event to digits
-  GetGeometry();
+  AliEMCALGeometry * geom = GetGeometry();
   AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
 
   // get the digits
@@ -365,7 +405,7 @@ void AliEMCAL::Raw2Digits(AliRawReader* reader)
 
   // Use AliAltroRawStream to read the ALTRO format.  No need to
   // reinvent the wheel :-) 
-  AliEMCALRawStream in(reader);
+  AliCaloRawStream in(reader,"EMCAL");
   // Select EMCAL DDL's;
   reader->Select("EMCAL");
 
@@ -376,9 +416,8 @@ void AliEMCAL::Raw2Digits(AliRawReader* reader)
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
   signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero"); 
   
-  Int_t id = -1;
   Bool_t lowGainFlag = kFALSE ; 
-
+  Int_t id =  -1;
   Int_t idigit = 0 ; 
   Int_t amp = 0 ; 
   Double_t time = 0. ; 
@@ -388,36 +427,39 @@ void AliEMCAL::Raw2Digits(AliRawReader* reader)
   TGraph * gHighGain= new TGraph(GetRawFormatTimeBins()) ;  
 
   while ( in.Next() ) { // EMCAL entries loop 
-    if ( in.IsNewId() ) {
-      if (!first) {
-	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
-
-	if (time == 0. && energy == 0.) { 
-	  amp = 0 ; 
+    if ( in.IsNewRow() ) {//phi
+      if ( in.IsNewColumn() ) {//eta
+	id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+	if (!first) {
+	  FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
+	  
+	  if (time == 0. && energy == 0.) { 
+	    amp = 0 ; 
+	  }
+	  else {
+	    amp = static_cast<Int_t>( (energy - digitizer->GetECApedestal()) / digitizer->GetECAchannel() + 0.5 ) ; 
+	  }
+	  
+	  if (amp > 0) {
+	    new((*digits)[idigit]) AliEMCALDigit( -1, -1, id, amp, time) ;	
+	    idigit++ ; 
+	  }
+	  Int_t index ; 
+	  for (index = 0; index < GetRawFormatTimeBins(); index++) {
+	    gLowGain->SetPoint(index, index * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 0) ;  
+	    gHighGain->SetPoint(index, index * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 0) ; 
+	  } 
+	} // not first  
+	first = kFALSE ; 
+	id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+	if (in.GetModule() == GetRawFormatLowGainOffset() ) {
+	  lowGainFlag = kTRUE ; 
 	}
-	else {
-	  amp = static_cast<Int_t>( (energy - digitizer->GetECApedestal()) / digitizer->GetECAchannel() + 0.5 ) ; 
+	else { 
+	  lowGainFlag = kFALSE ; 
 	}
-
-	if (amp > 0) {
-	  new((*digits)[idigit]) AliEMCALDigit( -1, -1, id, amp, time) ;	
-	  idigit++ ; 
-	}
-	Int_t index ; 
-	for (index = 0; index < GetRawFormatTimeBins(); index++) {
-	  gLowGain->SetPoint(index, index * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 0) ;  
-	  gHighGain->SetPoint(index, index * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 0) ; 
-	} 
-      } // not first  
-      first = kFALSE ; 
-      id = in.GetId() ; 
-      if (in.GetModule() == GetRawFormatLowGainOffset() ) {
-	lowGainFlag = kTRUE ; 
-      }
-      else { 
-	lowGainFlag = kFALSE ; 
-      }
-    } // new Id?
+      } //new column-eta
+    }// new row-phi
     if (lowGainFlag) {
       gLowGain->SetPoint(in.GetTime(), 
 			 in.GetTime()* GetRawFormatTimeMax() / GetRawFormatTimeBins(), 
@@ -430,11 +472,11 @@ void AliEMCAL::Raw2Digits(AliRawReader* reader)
     }
   } // EMCAL entries loop
   digits->Sort() ; 
-
+  
   delete signalF ; 
   delete gLowGain;
   delete gHighGain ; 
-    
+  
   return ; 
 }
 

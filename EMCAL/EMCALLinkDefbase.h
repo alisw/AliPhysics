@@ -16,7 +16,6 @@
 #pragma link C++ class AliEMCALGeometryOfflineTrd1+;
 #pragma link C++ class AliEMCALWsuCosmicRaySetUp+;
 #pragma link C++ class AliEMCALRecPoint+;
-#pragma link C++ class AliEMCALRawStream+;
 #pragma link C++ class AliEMCALClusterizer+;
 #pragma link C++ class AliEMCALHistoUtilities+;
 #pragma link C++ class AliEMCALSDigitizer+;
