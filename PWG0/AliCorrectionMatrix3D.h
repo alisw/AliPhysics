@@ -20,14 +20,28 @@ public:
   AliCorrectionMatrix3D();
   AliCorrectionMatrix3D(const AliCorrectionMatrix3D& c);
   AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
-		     Int_t nBinX=10, Float_t Xmin=0., Float_t Xmax=10.,
-		     Int_t nBinY=10, Float_t Ymin=0., Float_t Ymax=10.,
-		     Int_t nBinZ=10, Float_t Zmin=0., Float_t Zmax=10.);
+		     Int_t nBinX, Float_t Xmin, Float_t Xmax,
+		     Int_t nBinY, Float_t Ymin, Float_t Ymax,
+		     Int_t nBinZ, Float_t Zmin, Float_t Zmax);
 
   AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
          Int_t nBinX, Float_t Xmin, Float_t Xmax,
          Int_t nBinY, Float_t Ymin, Float_t Ymax,
          Int_t nBinZ, const Float_t* zbins);
+
+  AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
+         Int_t nBinX, const Float_t* xbins,
+         Int_t nBinY, Float_t Ymin, Float_t Ymax,
+         Int_t nBinZ, const Float_t* zbins);
+
+  AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
+         Int_t nBinX, const Float_t* xbins,
+         Int_t nBinY, const Float_t* ybins,
+         Int_t nBinZ, const Float_t* zbins);
+
+  void CreateHists(Int_t nBinX, const Float_t* binLimitsX,
+         Int_t nBinY, const Float_t* binLimitsY,
+         Int_t nBinZ, const Float_t* binLimitsZ);
 
   virtual ~AliCorrectionMatrix3D();
 

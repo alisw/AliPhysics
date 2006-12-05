@@ -20,11 +20,12 @@ public:
   AliCorrectionMatrix2D();
   AliCorrectionMatrix2D(const AliCorrectionMatrix2D& c);
   AliCorrectionMatrix2D(const Char_t* name, const Char_t* title,
-		     Int_t nBinX=10, Float_t Xmin=0., Float_t Xmax=10.,
-		     Int_t nBinY=10, Float_t Ymin=0., Float_t Ymax=10.);
+         Int_t nBinX, Float_t Xmin, Float_t Xmax,
+         Int_t nBinY, Float_t Ymin, Float_t Ymax);
 
   AliCorrectionMatrix2D(const Char_t* name, const Char_t* title,
-		     Int_t nBinX, Float_t *X, Int_t nBinY, Float_t *Y);
+         Int_t nBinX, Float_t *X,
+         Int_t nBinY, Float_t *Y);
 
   virtual ~AliCorrectionMatrix2D();
 
