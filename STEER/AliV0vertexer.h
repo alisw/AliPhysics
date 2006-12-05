@@ -30,9 +30,9 @@ private:
   static
   Double_t fgChi2max;      // maximal allowed chi2 
   static
-  Double_t fgDNmin;        // min. allowed negative daughter's impact parameter
+  Double_t fgDNmin;        // min allowed impact parameter for the 1st daughter
   static
-  Double_t fgDPmin;        // min. allowed positive daughter's impact parameter
+  Double_t fgDPmin;        // min allowed impact parameter for the 2nd daughter
   static
   Double_t fgDCAmax;       // maximal allowed DCA between the daughter tracks 
   static
@@ -41,8 +41,8 @@ private:
   Double_t fgRmin, fgRmax; // max & min radii of the fiducial volume
   
   Double_t fChi2max;      // maximal allowed chi2 
-  Double_t fDNmin;        // min. allowed negative daughter's impact parameter
-  Double_t fDPmin;        // min. allowed positive daughter's impact parameter
+  Double_t fDNmin;        // min allowed impact parameter for the 1st daughter
+  Double_t fDPmin;        // min allowed impact parameter for the 2nd daughter
   Double_t fDCAmax;       // maximal allowed DCA between the daughter tracks 
   Double_t fCPAmax;       // maximal allowed cosine of V0's pointing angle
   Double_t fRmin, fRmax;  // max & min radii of the fiducial volume
