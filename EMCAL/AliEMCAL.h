@@ -4,7 +4,11 @@
  * See cxx source for full Copyright notice     */
 
 /* $Id$ */
-
+/* History of cvs commits:
+ *
+ * $Log$
+ *
+ */
 //_________________________________________________________________________
 //  Base Class for EMCAL     
 //  holds all geant information of
@@ -69,7 +73,7 @@ class AliEMCAL : public AliDetector {
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
-  Int_t GetRawFormatChannelsPerDDL() const { return fgChannelsPerDDL ; }       
+  Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; }       
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   //  
@@ -98,9 +102,9 @@ protected:
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
   static Int_t fgThreshold;             // threshold
-  static Int_t fgChannelsPerDDL;        // number of channels per DDL
-
- private:
+  static Int_t fgDDLPerSuperModule;        // number of DDL per SuperModule
+ 
+private:
   AliEMCAL(const AliEMCAL& emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);
 
