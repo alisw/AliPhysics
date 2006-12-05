@@ -1,3 +1,14 @@
+2006-12-05  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Added method ReloadSectors() allowing re-reading of data with
+	different load threshold/pedestal settings.
+
+	* TPCLoaderEditor.cxx:
+	* TPCLoaderEditor.h:
+	Added interface to load-time threshold/(auto)pedestal settings.
+
 2006-12-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:
