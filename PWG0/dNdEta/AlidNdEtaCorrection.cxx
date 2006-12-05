@@ -275,18 +275,11 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
   //
   // uses the generated particle histogram from the correction passed, e.g. pass GetTrack2ParticleCorrection()
 
-  const TH3F* generated = 0;
+  if (!GetCorrection(correctionType))
+    return -1;
 
-  switch (correctionType)
-  {
-    case kNone : return -1;
-    case kTrack2Particle : generated = fTrack2ParticleCorrection->GetTrackCorrection()->GetGeneratedHistogram(); break;
-    case kVertexReco : generated = fVertexRecoCorrection->GetTrackCorrection()->GetGeneratedHistogram(); break;
-    case kINEL : generated = fTriggerBiasCorrectionMBToINEL->GetTrackCorrection()->GetGeneratedHistogram(); break;
-    case kNSD: generated = fTriggerBiasCorrectionMBToNSD->GetTrackCorrection()->GetGeneratedHistogram(); break;
-    case kND: generated = fTriggerBiasCorrectionMBToND->GetTrackCorrection()->GetGeneratedHistogram(); break;
-  }
-  
+  const TH3F* generated = GetCorrection(correctionType)->GetTrackCorrection()->GetGeneratedHistogram();
+
   // find eta borders, if eta is negative assume -0.8 ... 0.8
   Int_t etaBegin = 0;
   Int_t etaEnd = 0;
@@ -301,8 +294,8 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
     etaEnd = etaBegin;
   }
 
-  Int_t vertexBegin = generated->GetXaxis()->FindBin(-4.99);
-  Int_t vertexEnd = generated->GetXaxis()->FindBin(4.99);
+  Int_t vertexBegin = generated->GetXaxis()->FindBin(-9.99);
+  Int_t vertexEnd = generated->GetXaxis()->FindBin(9.99);
 
   TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", generated->GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
   //printf("GetMeasuredFraction: bin range %d %d %d %d\n", vertexBegin, vertexEnd, etaBegin, etaEnd);
@@ -347,3 +340,20 @@ void AlidNdEtaCorrection::ReduceInformation()
   fTriggerBiasCorrectionMBToND   ->ReduceInformation();
 }
 
+//____________________________________________________________________
+AliCorrection* AlidNdEtaCorrection::GetCorrection(CorrectionType correctionType)
+{
+  // returns the given correction
+
+  switch (correctionType)
+  {
+    case kNone : return 0;
+    case kTrack2Particle : return fTrack2ParticleCorrection;
+    case kVertexReco :     return fVertexRecoCorrection;
+    case kINEL :           return fTriggerBiasCorrectionMBToINEL;
+    case kNSD :            return fTriggerBiasCorrectionMBToNSD;
+    case kND :             return fTriggerBiasCorrectionMBToND;
+  }
+
+  return 0;
+}

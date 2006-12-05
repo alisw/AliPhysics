@@ -156,7 +156,8 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   Double_t vtx[3];
   vtxESD->GetXYZ(vtx);
 
-  vtx[2] = vtxMC[2];
+  //vtx[2] = vtxMC[2];
+  //vtx[2] += 0.1;
 
   // get number of "good" tracks
   TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);

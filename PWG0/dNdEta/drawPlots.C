@@ -105,10 +105,10 @@ void ComparedNdEta(const char* ESDfolder = "dndeta", const char* MCfolder = "dnd
   TFile::Open(mcFile);
   dNdEtaAnalysis* fdNdEtaAnalysisMC = new dNdEtaAnalysis(MCfolder, MCfolder);
   fdNdEtaAnalysisMC->LoadHistograms();
-  fdNdEtaAnalysisMC->Finish(0, 0.3);
+  //fdNdEtaAnalysisMC->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
 
   for (Int_t i=0; i<dNdEtaAnalysis::kVertexBinning; ++i)
-    fdNdEtaAnalysisESD->GetdNdEtaHistogram(i)->Divide(fdNdEtaAnalysisMC->GetdNdEtaHistogram(i));
+    fdNdEtaAnalysisESD->GetdNdEtaPtCutOffCorrectedHistogram(i)->Divide(fdNdEtaAnalysisMC->GetdNdEtaPtCutOffCorrectedHistogram(i));
 
   fdNdEtaAnalysisESD->DrawHistograms();
 }
@@ -455,12 +455,13 @@ void ptCutoff()
 {
   gSystem->Load("libPWG0base");
 
+  TFile::Open("correction_map.root");
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
-  dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
+  dNdEtaCorrection->LoadHistograms();
 
-  dNdEtaCorrection->GetMeasuredFraction(0.3, -100, kTRUE);
+  dNdEtaCorrection->GetMeasuredFraction(AlidNdEtaCorrection::kINEL, 0.3, -100, kTRUE);
 
-  TH1* hist = dynamic_cast<TH1*> (gROOT->FindObject("gene_dndeta_correction_nTrackToNPart_pt")->Clone("ptcutoff"));
+  TH1* hist = dynamic_cast<TH1*> (gROOT->FindObject("generated_pt")->Clone("ptcutoff"));
 
   hist->GetXaxis()->SetRangeUser(0, 0.9999);
   hist->SetMinimum(0);
@@ -479,9 +480,10 @@ void ptCutoff()
   canvas->SaveAs("ptCutoff.gif");
   canvas->SaveAs("ptCutoff.eps");
 
-  TH1F* factor = new TH1F("factor", ";#eta;correction factor", 10, -1, 1.000001);
-  for (Float_t eta = -0.9; eta<1; eta += 0.2)
-    factor->Fill(eta, 1.0 / dNdEtaCorrection->GetMeasuredFraction(0.3, eta, kFALSE));
+  TH1F* factor = new TH1F("factor", ";#eta;correction factor", 20, -1, 1.000001);
+  factor->SetLineWidth(2);
+  for (Float_t eta = -0.95; eta<1; eta += 0.1)
+    factor->Fill(eta, 1.0 / dNdEtaCorrection->GetMeasuredFraction(AlidNdEtaCorrection::kINEL, 0.3, eta, kFALSE));
 
   TCanvas* canvas = new TCanvas("ptCutoff_factor", "ptCutoff_factor", 700, 500);
   InitPad();
@@ -496,16 +498,20 @@ void ptCutoff()
 
 void TriggerBiasVtxRecon(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction")
 {
-  TFile* file = TFile::Open(fileName);
+  gSystem->Load("libPWG0base");
 
-  TH2* corrTrigger = dynamic_cast<TH2*> (file->Get(Form("%s/corr_%s_trigger", folder, folder)));
-  TH2* corrVtx = dynamic_cast<TH2*> (file->Get(Form("%s/corr_%s_vtxReco", folder, folder)));
+  TFile::Open(fileName);
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
+  dNdEtaCorrection->LoadHistograms();
+
+  TH2* corrTrigger = dNdEtaCorrection->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->GetCorrectionHistogram();
+  TH2* corrVtx = dNdEtaCorrection->GetVertexRecoCorrection()->GetEventCorrection()->GetCorrectionHistogram();
 
   Prepare2DPlot(corrTrigger);
-  corrTrigger->SetTitle("a) Trigger bias correction");
+  corrTrigger->SetTitle("b) Trigger bias correction");
 
   Prepare2DPlot(corrVtx);
-  corrVtx->SetTitle("b) Vertex reconstruction correction");
+  corrVtx->SetTitle("a) Vertex reconstruction correction");
 
   corrTrigger->GetYaxis()->SetTitle("Multiplicity");
   corrVtx->GetYaxis()->SetTitle("Multiplicity");
@@ -515,11 +521,11 @@ void TriggerBiasVtxRecon(const char* fileName = "correction_map.root", const cha
 
   canvas->cd(1);
   InitPadCOLZ();
-  corrTrigger->DrawCopy("COLZ");
+  corrVtx->DrawCopy("COLZ");
 
   canvas->cd(2);
   InitPadCOLZ();
-  corrVtx->DrawCopy("COLZ");
+  corrTrigger->DrawCopy("COLZ");
 
   canvas->SaveAs(Form("TriggerBiasVtxRecon_%d.gif", gMax));
   canvas->SaveAs(Form("TriggerBiasVtxRecon_%d.eps", gMax));
@@ -532,11 +538,11 @@ void TriggerBiasVtxRecon(const char* fileName = "correction_map.root", const cha
 
   canvas->cd(1);
   InitPadCOLZ();
-  corrTrigger->DrawCopy("COLZ");
+  corrVtx->DrawCopy("COLZ");
 
   canvas->cd(2);
   InitPadCOLZ();
-  corrVtx->DrawCopy("COLZ");
+  corrTrigger->DrawCopy("COLZ");
 
   canvas->SaveAs(Form("TriggerBiasVtxReconZoom_%d.gif", gMax));
   canvas->SaveAs(Form("TriggerBiasVtxReconZoom_%d.eps", gMax));
@@ -574,12 +580,12 @@ void TriggerBias1D(const char* fileName = "correction_map.root", const char* fol
 
   TFile* file = TFile::Open(fileName);
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(folderName, folderName);
-  dNdEtaCorrection->LoadHistograms(fileName, folderName);
+  dNdEtaCorrection->LoadHistograms();
 
-  TH1* hist = dNdEtaCorrection->GetTriggerBiasCorrection()->Get1DCorrection("x");
-  TH1* hist2 = dNdEtaCorrection->GetTriggerBiasCorrection()->Get1DCorrection("y", -10, 10);
+  TH1* hist = dNdEtaCorrection->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->Get1DCorrection("x");
+  TH1* hist2 = dNdEtaCorrection->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->Get1DCorrection("y", -10, 10);
 
-  TCanvas* canvas = new TCanvas("VtxRecon1D", "VtxRecon1D", 1000, 500);
+  TCanvas* canvas = new TCanvas("TriggerBias1D", "TriggerBias1D", 1000, 500);
   canvas->Divide(2, 1);
 
   canvas->cd(1);
@@ -643,10 +649,10 @@ void VtxRecon1D(const char* fileName = "correction_map.root", const char* folder
 
   TFile* file = TFile::Open(fileName);
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(folderName, folderName);
-  dNdEtaCorrection->LoadHistograms(fileName, folderName);
+  dNdEtaCorrection->LoadHistograms();
 
-  TH1* hist = dNdEtaCorrection->GetVertexRecoCorrection()->Get1DCorrection("x");
-  TH1* hist2 = dNdEtaCorrection->GetVertexRecoCorrection()->Get1DCorrection("y", -10, 10);
+  TH1* hist = dNdEtaCorrection->GetVertexRecoCorrection()->GetEventCorrection()->Get1DCorrection("x");
+  TH1* hist2 = dNdEtaCorrection->GetVertexRecoCorrection()->GetEventCorrection()->Get1DCorrection("y", -10, 10);
 
   TCanvas* canvas = new TCanvas("VtxRecon1D", "VtxRecon1D", 1000, 500);
   canvas->Divide(2, 1);
@@ -679,14 +685,41 @@ void VtxRecon1D(const char* fileName = "correction_map.root", const char* folder
 
   canvas->SaveAs("VtxRecon1D.eps");
 
-  for (Int_t i=1; i<=hist->GetNbinsX() / 2; ++i)
-    if (hist->GetBinContent(hist->GetNbinsX() + 1 - i) != 0)
-      hist->SetBinContent(i, hist->GetBinContent(i) / hist->GetBinContent(hist->GetNbinsX() + 1 - i));
+  Correction1DCreatePlots(fileName, folderName, 9.9, 2);
 
-  new TCanvas;
-  hist->GetXaxis()->SetRange(1, hist->GetNbinsX() / 2);
-  hist->GetYaxis()->SetRangeUser(0.8, 1.2);
-  hist->DrawCopy();
+  TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject("generated_x_div_measured_x"));
+  TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject("generated_z_div_measured_z"));
+
+  Prepare1DPlot(corrX);
+  Prepare1DPlot(corrZ);
+
+  corrX->GetYaxis()->SetTitleOffset(1.5);
+  corrZ->GetYaxis()->SetTitleOffset(1.5);
+
+  corrX->SetTitle("a) z projection");
+  corrZ->SetTitle("b) p_{T} projection");
+
+  corrX->GetYaxis()->SetTitle("correction factor");
+  corrZ->GetYaxis()->SetTitle("correction factor");
+
+  corrZ->GetXaxis()->SetRangeUser(0.11, 9.9);
+
+  TString canvasName;
+  canvasName.Form("VtxRecon1D_Track");
+  TCanvas* canvas = new TCanvas(canvasName, canvasName, 800, 400);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  InitPad();
+  corrX->DrawCopy();
+
+  canvas->cd(2);
+  InitPad();
+  gPad->SetLogx();
+  corrZ->Draw();
+
+  canvas->SaveAs("VtxRecon1D_Track.eps");
+  canvas->SaveAs("VtxRecon1D_Track.gif");
 }
 
 void Track2ParticleAsNumber(const char* fileName = "correction_map.root")
@@ -730,14 +763,14 @@ void Track2ParticleAsNumber(const char* fileName = "correction_map.root")
   printf("Correction with 0.3 < pT < 0.5: %f +- %f\n", eff3, error3);
 }
 
-void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction", Float_t upperPtLimit = 10)
+void Correction1DCreatePlots(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction", Float_t upperPtLimit = 9.9, Int_t correctionType = 0)
 {
   TFile::Open(fileName);
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(folderName, folderName);
-  dNdEtaCorrection->LoadHistograms(fileName, folderName);
+  dNdEtaCorrection->LoadHistograms();
 
-  TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
-  TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+  TH3F* gene = dNdEtaCorrection->GetCorrection(correctionType)->GetTrackCorrection()->GetGeneratedHistogram();
+  TH3F* meas = dNdEtaCorrection->GetCorrection(correctionType)->GetTrackCorrection()->GetMeasuredHistogram();
 
   gene->GetZaxis()->SetRangeUser(0.3, upperPtLimit);
   meas->GetZaxis()->SetRangeUser(0.3, upperPtLimit);
@@ -758,21 +791,66 @@ void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", c
   AliPWG0Helper::CreateDividedProjections(gene, meas, "z", kTRUE);
 }
 
-void Track2Particle1D(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction", Float_t upperPtLimit = 9.9)
+void Correction1D(Int_t correctionType = 0, const char* fileName = "correction_map.root", const char* folder = "dndeta_correction", Float_t upperPtLimit = 9.9)
 {
   gSystem->Load("libPWG0base");
 
-  Track2Particle1DCreatePlots(fileName, folder, upperPtLimit);
+  Correction1DCreatePlots(fileName, folder, upperPtLimit, correctionType);
 
-  TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_x_div_meas_%s_nTrackToNPart_x", folder, folder)));
-  TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_y_div_meas_%s_nTrackToNPart_y", folder, folder)));
-  TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_z_div_meas_%s_nTrackToNPart_z", folder, folder)));
+  TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject(Form("generated_x_div_measured_x", folder, folder)));
+  TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject(Form("generated_y_div_measured_y", folder, folder)));
+  TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("generated_z_div_measured_z", folder, folder)));
 
   Prepare1DPlot(corrX);
   Prepare1DPlot(corrY);
   Prepare1DPlot(corrZ);
 
-  //corrX->SetTitle("a) z projection");
+  corrX->SetTitle("a) z projection");
+  corrY->SetTitle("b) #eta projection");
+  corrZ->SetTitle("c) p_{T} projection");
+
+  corrX->GetYaxis()->SetTitle("correction factor");
+  corrY->GetYaxis()->SetTitle("correction factor");
+  corrZ->GetYaxis()->SetTitle("correction factor");
+
+  corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
+
+  TString canvasName;
+  canvasName.Form("Correction1D_%s", folder);
+  TCanvas* canvas = new TCanvas(canvasName, canvasName, 1200, 400);
+  canvas->Divide(3, 1);
+
+  canvas->cd(1);
+  InitPad();
+  corrX->DrawCopy();
+
+  canvas->cd(2);
+  InitPad();
+  corrY->Draw();
+
+  canvas->cd(3);
+  InitPad();
+  corrZ->Draw();
+
+  canvas->SaveAs(Form("Correction1D_%d_%s_%f.gif", correctionType, fileName, upperPtLimit));
+  canvas->SaveAs(Form("Correction1D_%d_%s_%f.eps", correctionType, fileName, upperPtLimit));
+}
+
+void Track2Particle1D(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction", Float_t upperPtLimit = 9.9)
+{
+  gSystem->Load("libPWG0base");
+
+  Correction1DCreatePlots(fileName, folder, upperPtLimit, AlidNdEtaCorrection::kTrack2Particle);
+
+  TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject(Form("generated_x_div_measured_x", folder, folder)));
+  TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject(Form("generated_y_div_measured_y", folder, folder)));
+  TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("generated_z_div_measured_z", folder, folder)));
+
+  Prepare1DPlot(corrX);
+  Prepare1DPlot(corrY);
+  Prepare1DPlot(corrZ);
+
+  corrX->SetTitle("a) z projection");
   corrY->SetTitle("a) #eta projection");
   corrZ->SetTitle("b) p_{T} projection");
 
@@ -792,11 +870,11 @@ void Track2Particle1D(const char* fileName = "correction_map.root", const char* 
 
   canvas->cd(2);
   InitPad();
-  corrY->DrawCopy();
+  corrY->Draw();
 
   canvas->cd(3);
   InitPad();
-  corrZ->DrawCopy();
+  corrZ->Draw();
 
   canvas->SaveAs(Form("Track2Particle1D_%s_%f.gif", fileName, upperPtLimit));
   canvas->SaveAs(Form("Track2Particle1D_%s_%f.eps", fileName, upperPtLimit));
@@ -916,10 +994,10 @@ void Track2Particle2DCreatePlots(const char* fileName = "correction_map.root")
 {
   TFile::Open(fileName);
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
-  dNdEtaCorrection->LoadHistograms(fileName, "dndeta_correction");
+  dNdEtaCorrection->LoadHistograms();
 
-  TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
-  TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+  TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetGeneratedHistogram();
+  TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetMeasuredHistogram();
 
   gene->GetZaxis()->SetRangeUser(0.3, 10);
   meas->GetZaxis()->SetRangeUser(0.3, 10);
@@ -946,9 +1024,9 @@ void Track2Particle2D(const char* fileName = "correction_map.root", const char* 
 
   Track2Particle2DCreatePlots(fileName);
 
-  TH2* corrYX = dynamic_cast<TH2*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_yx_div_meas_%s_nTrackToNPart_yx", folder, folder)));
-  TH2* corrZX = dynamic_cast<TH2*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_zx_div_meas_%s_nTrackToNPart_zx", folder, folder)));
-  TH2* corrZY = dynamic_cast<TH2*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_zy_div_meas_%s_nTrackToNPart_zy", folder, folder)));
+  TH2* corrYX = dynamic_cast<TH2*> (gROOT->FindObject("generated_yx_div_measured_yx"));
+  TH2* corrZX = dynamic_cast<TH2*> (gROOT->FindObject("generated_zx_div_measured_zx"));
+  TH2* corrZY = dynamic_cast<TH2*> (gROOT->FindObject("generated_zy_div_measured_zy"));
 
   /* this reads them from the file
   TH2* corrYX = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx"));
