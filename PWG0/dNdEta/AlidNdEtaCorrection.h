@@ -26,7 +26,7 @@ class AlidNdEtaCorrection : public TNamed
 {
 public:
   enum CorrectionType {
-    kNone,
+    kNone = 0,
     kTrack2Particle,  // measured events
     kVertexReco,      // MB sample
     kINEL,
@@ -52,6 +52,7 @@ public:
   AliCorrection* GetTriggerBiasCorrectionINEL() {return fTriggerBiasCorrectionMBToINEL;}
   AliCorrection* GetTriggerBiasCorrectionNSD()  {return fTriggerBiasCorrectionMBToNSD;}
   AliCorrection* GetTriggerBiasCorrectionND()   {return fTriggerBiasCorrectionMBToND;}
+  AliCorrection* GetCorrection(CorrectionType correctionType);
 
   void    SaveHistograms();
   Bool_t  LoadHistograms(const Char_t* dir = 0);

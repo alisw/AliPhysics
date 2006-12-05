@@ -54,7 +54,7 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  fdNdEta[0] = new TH1F("dNdEta", "dN_{ch}/d#eta;#eta;dN_{ch}/d#eta", 20, -2, 2);
+  fdNdEta[0] = new TH1F("dNdEta", "dN_{ch}/d#eta;#eta;dN_{ch}/d#eta", 40, -2, 2);
 
   fdNdEtaPtCutOffCorrected[0] = dynamic_cast<TH1F*> (fdNdEta[0]->Clone(Form("%s_corrected", fdNdEta[0]->GetName())));
 
@@ -282,7 +282,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     return;
   }
 
-  const Float_t vertexRange = 4.99;
+  const Float_t vertexRange = 9.99;
 
   for (Int_t iEta=1; iEta<=vtxVsEta->GetNbinsY(); iEta++)
   {
@@ -451,7 +451,7 @@ void dNdEtaAnalysis::DrawHistograms(Bool_t simple)
     //printf("%d\n", yPads);
     //canvas2->Divide(2, yPads);
 
-    TLegend* legend = new TLegend(0.4, 0.7, 0.6, 0.9);
+    TLegend* legend = new TLegend(0.4, 0.2, 0.6, 0.4);
 
     for (Int_t i=0; i<kVertexBinning; ++i)
     {

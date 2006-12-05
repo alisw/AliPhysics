@@ -22,11 +22,6 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
 
   TString libraries("libEG;libGeom;libESD;libPWG0base");
   TString packages("adaptivepacketizer;PWG0base");
-  if (aMC != kFALSE)
-  {
-    libraries += ";libVMC;libMinuit;libSTEER;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6;libPWG0dep";
-    packages += ";PWG0dep";
-  }
 
   if (!prepareQuery(libraries, packages, kTRUE))
     return;
@@ -76,10 +71,10 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
         return;
       }
       fdNdEtaAnalysis->LoadHistograms();
-      fdNdEtaAnalysis->DrawHistograms();
+      fdNdEtaAnalysis->DrawHistograms(kTRUE);
     }
     else
-      FinishAnalysisAll(correctionMapFile, correctionMapFolder);
+      FinishAnalysisAll("analysis_esd_raw.root", "analysis_esd.root", correctionMapFile, correctionMapFolder);
   }
 }
 
