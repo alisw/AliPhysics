@@ -55,19 +55,23 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   // constructor
   //
 
-  // do not add this hists to the directory
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
+  Float_t* binLimitsX = new Float_t[nBinX+1];
+  for (Int_t i=0; i<=nBinX; ++i)
+    binLimitsX[i] = Xmin + (Xmax - Xmin) / nBinX * i;
 
-  fhMeas  = new TH3F("measured",   Form("%s measured",title),   nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
-  fhGene  = new TH3F("generated",  Form("%s generated",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
-  fhCorr  = new TH3F("correction", Form("%s correction",title), nBinX, Xmin, Xmax, nBinY, Ymin, Ymax, nBinZ, Zmin, Zmax);
+  Float_t* binLimitsY = new Float_t[nBinY+1];
+  for (Int_t i=0; i<=nBinY; ++i)
+    binLimitsY[i] = Ymin + (Ymax - Ymin) / nBinY * i;
 
-  TH1::AddDirectory(oldStatus);
+  Float_t* binLimitsZ = new Float_t[nBinZ+1];
+  for (Int_t i=0; i<=nBinZ; ++i)
+    binLimitsZ[i] = Zmin + (Zmax - Zmin) / nBinZ * i;
 
-  fhMeas->Sumw2();
-  fhGene->Sumw2();
-  fhCorr->Sumw2();
+  CreateHists(nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, binLimitsZ);
+
+  delete[] binLimitsX;
+  delete[] binLimitsY;
+  delete[] binLimitsZ;
 }
 
 AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
@@ -86,23 +90,51 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   for (Int_t i=0; i<=nBinY; ++i)
     binLimitsY[i] = Ymin + (Ymax - Ymin) / nBinY * i;
 
+  CreateHists(nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+
+  delete[] binLimitsX;
+  delete[] binLimitsY;
+}
+
+AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
+      Int_t nBinX, const Float_t* xbins,
+      Int_t nBinY, Float_t Ymin, Float_t Ymax,
+      Int_t nBinZ, const Float_t* zbins)
+  : AliCorrectionMatrix(name, title)
+{
+  // constructor with variable bin sizes
+
+  Float_t* binLimitsY = new Float_t[nBinY+1];
+  for (Int_t i=0; i<=nBinY; ++i)
+    binLimitsY[i] = Ymin + (Ymax - Ymin) / nBinY * i;
+
+  CreateHists(nBinX, xbins, nBinY, binLimitsY, nBinZ, zbins);
+
+  delete[] binLimitsY;
+}
+
+//____________________________________________________________________
+void AliCorrectionMatrix3D::CreateHists(Int_t nBinX, const Float_t* binLimitsX,
+      Int_t nBinY, const Float_t* binLimitsY,
+      Int_t nBinZ, const Float_t* binLimitsZ)
+{
+  // create the histograms
+
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  fhMeas  = new TH3F("measured",   Form("%s measured",title),   nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
-  fhGene  = new TH3F("generated",  Form("%s generated",title),  nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
-  fhCorr  = new TH3F("correction", Form("%s correction",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
-
-  TH1::AddDirectory(oldStatus);
-
-  delete[] binLimitsX;
-  delete[] binLimitsY;
+  fhMeas  = new TH3F("measured",   Form("%s measured",GetTitle()),   nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, binLimitsZ);
+  fhGene  = new TH3F("generated",  Form("%s generated",GetTitle()),  nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, binLimitsZ);
+  fhCorr  = new TH3F("correction", Form("%s correction",GetTitle()), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, binLimitsZ);
 
   fhMeas->Sumw2();
   fhGene->Sumw2();
   fhCorr->Sumw2();
+
+  TH1::AddDirectory(oldStatus);
 }
+
 
 //____________________________________________________________________
 AliCorrectionMatrix3D::~AliCorrectionMatrix3D()

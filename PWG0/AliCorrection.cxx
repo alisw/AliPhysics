@@ -38,10 +38,11 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title) : TNamed(n
   Float_t binLimitsPt[] = {0.0, 0.05, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3, 0.325, 0.35, 0.375, 0.4, 0.425, 0.45, 0.475, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
   Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 300.5};
   //Float_t binLimitsVtx[] = {-20,-15,-10,-6,-3,0,3,6,10,15,20};
-  Float_t binLimitsVtx[] = {-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+  //Float_t binLimitsVtx[] = {-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+  Float_t binLimitsVtx[] = {-20,-15,-10,-8,-6,-4,-2,0,2,4,6,8,10,15,20};
 
-  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", title), 40, binLimitsVtx, 22, binLimitsN);
-  fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", title), 40, -20, 20, 20, -2, 2, 28, binLimitsPt);
+  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", title), 14, binLimitsVtx, 22, binLimitsN);
+  fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", title), 14, binLimitsVtx, 40, -2, 2, 28, binLimitsPt);
 
   fEventCorr->SetAxisTitles("vtx z [cm]", "Ntracks");
   fTrackCorr->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");
