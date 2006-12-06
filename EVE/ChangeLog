@@ -1,3 +1,11 @@
+2006-12-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* macros/reve_quad_test.C:
+	Added test function for hexagons.
+
+	* macros/trackcount_init.C:
+	Use RenderElement::List_i typedef.
+
 2006-12-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/esd_tracks.C:

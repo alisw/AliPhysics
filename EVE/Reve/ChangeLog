@@ -1,3 +1,11 @@
+2006-12-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* QuadSet.cxx:
+	* QuadSet.h:
+	* QuadSetGL.cxx:
+	* QuadSetGL.h:
+	Added support for rendering hexagons (needed by PMD).
+
 2006-12-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RenderElement.cxx:
