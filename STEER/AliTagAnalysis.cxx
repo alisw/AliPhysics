@@ -22,8 +22,9 @@
 //ROOT
 #include <TSystem.h>
 #include <TChain.h>
+#include <TFile.h>
 #include <TEventList.h>
-#include <TTreeFormula.h>
+#include <TEntryList.h>
 
 //ROOT-AliEn
 #include <TGridResult.h>
@@ -36,6 +37,8 @@
 #include "AliEventTagCuts.h"
 #include "AliRunTagCuts.h"
 #include "AliXMLCollection.h"
+
+class TTree;
 
 ClassImp(AliTagAnalysis)
 
@@ -151,61 +154,6 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *RunTagCuts, AliEventTagCuts *Ev
 }
 
 //___________________________________________________________________________
-TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fEventCut) {
-  //Queries the tag chain using the defined 
-  //event tag cuts from the AliEventTagCuts object
-  //and returns a TChain along with the associated TEventList
-  AliInfo(Form("Querying the tags........"));
-  
-  //ESD file chain
-  TChain *fESDchain = new TChain("esdTree");
-  //Event list
-  TEventList *fEventList = new TEventList();
-  
-  //Defining tag objects
-  AliRunTag *tag = new AliRunTag;
-  AliEventTag *evTag = new AliEventTag;
-  fChain->SetBranchAddress("AliTAG",&tag);
-
-  TString guid = 0;
-  TString turl = 0;
-  TString path = 0;
-
-  TTreeFormula *fRunFormula = new TTreeFormula("fRun",fRunCut,fChain);
-  TTreeFormula *fEventFormula = new TTreeFormula("fEvent",fEventCut,fChain);
-
-  Int_t current = -1;
-  Int_t iAccepted = 0;
-  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
-    fChain->GetEntry(iTagFiles);
-    if (current != fChain->GetTreeNumber()) {
-      fRunFormula->UpdateFormulaLeaves();
-      fEventFormula->UpdateFormulaLeaves();
-      current = fChain->GetTreeNumber();
-    }
-    if(fRunFormula->EvalInstance(iTagFiles) == 1) {
-      Int_t iEvents = fEventFormula->GetNdata();
-      const TClonesArray *tagList = tag->GetEventTags();
-      for(Int_t i = 0; i < iEvents; i++) {
-	evTag = (AliEventTag *) tagList->At(i);
-	guid = evTag->GetGUID(); 
-	turl = evTag->GetTURL(); 
-	path = evTag->GetPath();
-	if(fEventFormula->EvalInstance(i) == 1) fEventList->Enter(iAccepted+i);
-      }//event loop
-      iAccepted += iEvents;
-    
-      if(path != "") fESDchain->AddFile(path);
-      else if(turl != "") fESDchain->AddFile(turl);
-    }//run tag cut
-  }//tag file loop
-  AliInfo(Form("Accepted events: %d",fEventList->GetN()));
-  fESDchain->SetEventList(fEventList);
-   
-  return fESDchain;
-}
-
-//___________________________________________________________________________
 Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *RunTagCuts, AliEventTagCuts *EvTagCuts) {
   //Queries the tag chain using the defined 
   //event tag cuts from the AliEventTagCuts object
@@ -237,6 +185,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *RunT
 	guid = evTag->GetGUID(); 
 	turl = evTag->GetTURL(); 
 	lfn = turl(8,turl.Length());
+
 	if(EvTagCuts->IsAccepted(evTag)) fEventList->Enter(i);
       }//event loop
       collection->WriteBody(iTagFiles+1,guid,lfn,turl,fEventList);
@@ -249,53 +198,31 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *RunT
 }
 
 //___________________________________________________________________________
-Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, const char *fRunCut, const char *fEventCut) {
-  //Queries the tag chain using the defined 
-  //event tag cuts from the AliEventTagCuts object
-  //and returns a XML collection
-  AliInfo(Form("Creating the collection........"));
-
-  AliXMLCollection *collection = new AliXMLCollection();
-  collection->SetCollectionName(name);
-  collection->WriteHeader();
-
+TChain *AliTagAnalysis::GetInputChain(const char* system, const char*global, const char *wn) {
+  //returns the chain+event list - used in batch sessions
+  TString fsystem = system;
+  Int_t iAccepted = 0;
+  //ESD file chain
+  TChain *fESDchain = new TChain("esdTree");
   //Event list
   TEventList *fEventList = new TEventList();
-  TString guid = 0x0;
-  TString turl = 0x0;
-  TString lfn = 0x0;
+  AliXMLCollection *collection1 = AliXMLCollection::Open(global);
+  AliXMLCollection *collection2 = AliXMLCollection::Open(wn);
+  collection1->OverlapCollection(collection2);
+  collection1->Reset();
+  while (collection1->Next()) {
+    AliInfo(Form("Adding: %s",collection1->GetTURL("")));
+    fESDchain->Add(collection1->GetTURL(""));
+    TEntryList *list = (TEntryList *)collection1->GetEventList("");
+    for(Int_t i = 0; i < list->GetN(); i++) fEventList->Enter(iAccepted+list->GetEntry(i));
+
+    if(fsystem == "pp") iAccepted += 100;
+    else if(fsystem == "PbPb") iAccepted += 1;
+  }
+
+  fESDchain->SetEventList(fEventList);
   
-  //Defining tag objects
-  AliRunTag *tag = new AliRunTag;
-  AliEventTag *evTag = new AliEventTag;
-  fChain->SetBranchAddress("AliTAG",&tag);
+  AliInfo(Form("Number of selected events: %d",fEventList->GetN()));
 
-  TTreeFormula *fRunFormula = new TTreeFormula("fRun",fRunCut,fChain);
-  TTreeFormula *fEventFormula = new TTreeFormula("fEvent",fEventCut,fChain);
-
-  Int_t current = -1;
-  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
-    fChain->GetEntry(iTagFiles);
-    if (current != fChain->GetTreeNumber()) {
-      fRunFormula->UpdateFormulaLeaves();
-      fEventFormula->UpdateFormulaLeaves();
-      current = fChain->GetTreeNumber();
-    }
-    if(fRunFormula->EvalInstance(iTagFiles) == 1) {
-      Int_t iEvents = fEventFormula->GetNdata();
-      const TClonesArray *tagList = tag->GetEventTags();
-      for(Int_t i = 0; i < iEvents; i++) {
-	evTag = (AliEventTag *) tagList->At(i);
-	guid = evTag->GetGUID(); 
-	turl = evTag->GetTURL(); 
-	lfn = turl(8,turl.Length());
-	if(fEventFormula->EvalInstance(i) == 1) fEventList->Enter(i);
-      }//event loop
-      collection->WriteBody(iTagFiles+1,guid,lfn,turl,fEventList);
-      fEventList->Clear();
-    }//run tag cuts
-  }//tag file loop
-  collection->Export();
-
-  return kTRUE;
+  return fESDchain;
 }
