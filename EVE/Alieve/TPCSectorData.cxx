@@ -243,7 +243,7 @@ void TPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
     Short_t* wpos = beg;
     Short_t* rpos = beg;
     while(rpos < end) {
-      if(rpos[1] > threshold) {
+      if(rpos[1] >= threshold) {
 	wpos[0] = rpos[0];
 	wpos[1] = rpos[1];
 	wpos += 2;

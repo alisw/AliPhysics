@@ -129,8 +129,13 @@ void TPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
 	curPad = pad;
 	inFill = kTRUE;
       }
-      if(signal > fLoadThreshold)
-	secData->RegisterData(time, signal - fLoadPedestal);
+      if(fAutoPedestal) {
+	secData->RegisterData(time, signal);
+      } else {
+	signal -= fLoadPedestal;
+	if(signal >= fLoadThreshold)
+	  secData->RegisterData(time, signal);
+      }
 
     } while (digit.Next());
     if(inFill) {
@@ -219,8 +224,9 @@ void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t warn)
     if(fAutoPedestal) {
       secData->RegisterData(time, signal);
     } else {
+      signal -= fLoadPedestal;
       if(signal > threshold)
-	secData->RegisterData(time, signal - fLoadPedestal);
+	secData->RegisterData(time, signal);
     }
   }
 
