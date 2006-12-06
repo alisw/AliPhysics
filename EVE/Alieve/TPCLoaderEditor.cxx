@@ -103,7 +103,7 @@ ClassImp(TPCLoaderEditor)
   fDataLoadThreshold->SetNELength(6);
   fDataLoadThreshold->Build();
   fDataLoadThreshold->SetLimits(0, 1000);
-  fDataLoadThreshold->SetToolTip("Minimum signal that will be stored (pedestal subtracted afterwards).");
+  fDataLoadThreshold->SetToolTip("Minimum signal that will be stored (pedestal subtracted first).");
   fDataLoadThreshold->Connect
     ("ValueSet(Double_t)",
      "Alieve::TPCLoaderEditor", this, "DoDataLoadThreshold()");
