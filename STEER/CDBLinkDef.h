@@ -33,4 +33,7 @@
 
 #pragma link C++ class AliShuttleInterface;
 
+#pragma link C++ class AliGRPPreprocessor;
+#pragma link C++ class AliGRPDCS;
+
 #endif
