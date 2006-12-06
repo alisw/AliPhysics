@@ -1,3 +1,14 @@
+2006-12-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCData.cxx:
+	* TPCSectorData.cxx:
+	Make consistent use of fLoadPedestal and fLoadThreshold with and
+	without auto-pedestal determination and for reading of
+	raw-data/digits.
+
+	* TPCLoaderEditor.cxx:
+	Fix tooltip of load-threshold number-entry.
+
 2006-12-05  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCLoader.cxx:
