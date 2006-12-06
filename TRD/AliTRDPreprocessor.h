@@ -1,20 +1,25 @@
 #ifndef ALI_TRD_PREPROCESSOR_H
 #define ALI_TRD_PREPROCESSOR_H
 
-#include "AliPreprocessor.h"
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-/////////////////////////////////////////////////////
-//
-// TRD preprocessor
-//
-//////////////////////////////////////////////////
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// TRD preprocessor for the database SHUTTLE                              //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
+#include "AliPreprocessor.h"
 
 class AliTRDPreprocessor : public AliPreprocessor
 {
 
   public:
 
-    AliTRDPreprocessor(const Char_t *detector, AliShuttleInterface *shuttle);
+    AliTRDPreprocessor(AliShuttleInterface *shuttle);
     virtual ~AliTRDPreprocessor();
 
   protected:
