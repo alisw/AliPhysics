@@ -96,9 +96,15 @@ public:
     QT_RectangleXZFixedY,    // rectangle in x-z plane: specify x, z, w, h; y taken from fDefCoord
     QT_RectangleXYFixedDimZ, // rectangle in x-y plane: specify x, y; w, h, z taken from fDefWidth/Height/Coord
     QT_RectangleXZFixedDimY, // rectangle in x-z plane: specify x, z; w, h, y taken from fDefWidth/Height/Coord
+    QT_Rectangle_End,
     // line modes (needed for uniform handling of silicon-strip digits)
-    QT_LineXYFixedZ,           // line in x-y plane: specify x, y, w(dx), h(dy); z taken from fDefCoord
-    QT_LineXZFixedY            // line in x-z plane: specify x, z, w(dx), h(dz); y taken from fDefCoord
+    QT_LineXYFixedZ,         // line in x-y plane: specify x, y, w(dx), h(dy); z taken from fDefCoord
+    QT_LineXZFixedY,         // line in x-z plane: specify x, z, w(dx), h(dz); y taken from fDefCoord
+    QT_Line_End,
+    // hexagon modes
+    QT_HexagonXY,            // horizontal hexagon: specify x, y, z, r
+    QT_HexagonYX,            // vertical   hexagon: specify x, y, z, r
+    QT_Hexagon_End
     // circle modes:
     // QT_CircleXY,          // specify r, z
     // QT_CircleXYFixedZ,    // specify r
@@ -129,6 +135,8 @@ protected:
   struct QRect         : public QRectFixDim   { Float_t fW, fH; };
 
   struct QLineFixC     : public QOrigin       { Float_t fDx, fDy; };
+
+  struct QHex          : public QOrigin       { Float_t fZ, fR; };
 
 protected:
   QuadType_e        fQuadType;
@@ -197,6 +205,8 @@ public:
   void AddQuad(Float_t x, Float_t y, Float_t z, Float_t w, Float_t h);
 
   void AddLine(Float_t x, Float_t y, Float_t w, Float_t h);
+
+  void AddHexagon(Float_t x, Float_t y, Float_t z, Float_t r);
 
   void QuadValue(Int_t value);
   void QuadColor(Color_t ci);

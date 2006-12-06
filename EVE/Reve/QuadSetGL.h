@@ -40,6 +40,7 @@ protected:
 
   void   RenderQuads(const TGLDrawFlags & flags) const;
   void   RenderLines(const TGLDrawFlags & flags) const;
+  void   RenderHexagons(const TGLDrawFlags & flags) const;
 
 public:
   QuadSetGL();

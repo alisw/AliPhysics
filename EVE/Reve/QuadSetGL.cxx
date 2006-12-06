@@ -160,12 +160,9 @@ void QuadSetGL::DirectDraw(const TGLDrawFlags & flags) const
 
   if (mQ.fDisableLigting)  glDisable(GL_LIGHTING);
 
-
-  if (mQ.fQuadType < QuadSet::QT_LineXYFixedZ)
-    RenderQuads(flags);
-  else
-    RenderLines(flags);
-
+  if (mQ.fQuadType < QuadSet::QT_Rectangle_End)      RenderQuads(flags);
+  else if (mQ.fQuadType < QuadSet::QT_Line_End)      RenderLines(flags);
+  else if (mQ.fQuadType < QuadSet::QT_Hexagon_End)   RenderHexagons(flags);
 
   glPopAttrib();
 
@@ -559,4 +556,148 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &) const
 
     }
   }
+}
+
+void QuadSetGL::RenderHexagons(const TGLDrawFlags &) const
+{
+  static const Exc_t eH("QuadSetGL::RenderHexagons ");
+
+  const Float_t sqr3hf = 0.5*TMath::Sqrt(3);
+
+  QuadSet& mQ = * fM;
+
+  if (mQ.fRenderMode != QuadSet::RM_Line)
+  {
+
+    glNormal3f(0, 0, 1);
+
+    for (Int_t c=0; c<mQ.fPlex.VecSize(); ++c)
+    {
+      QuadSet::QuadBase* qbp = (QuadSet::QuadBase*) mQ.fPlex.Chunk(c);
+      Int_t n = mQ.fPlex.NAtoms(c);
+
+      switch (mQ.fQuadType)
+      {
+
+	case QuadSet::QT_HexagonXY:
+	{
+	  QuadSet::QHex* qp = (QuadSet::QHex*) qbp;
+	  while (n--) {
+	    QuadSet::QHex& q = * qp;
+	    if (SetupColor(q))
+	    {
+	      const Float_t rh = q.fR * 0.5;
+	      const Float_t rs = q.fR * sqr3hf;
+	      glBegin(GL_POLYGON);
+	      glVertex3f( q.fR + q.fX,       q.fY, q.fZ);
+	      glVertex3f(   rh + q.fX,  rs + q.fY, q.fZ);
+	      glVertex3f(  -rh + q.fX,  rs + q.fY, q.fZ);
+	      glVertex3f(-q.fR + q.fX,       q.fY, q.fZ);
+	      glVertex3f(  -rh + q.fX, -rs + q.fY, q.fZ);
+	      glVertex3f(   rh + q.fX, -rs + q.fY, q.fZ);
+	      glEnd();
+	    }
+	    ++qp;
+	  }
+	  break;
+	}
+
+	case QuadSet::QT_HexagonYX:
+	{
+	  QuadSet::QHex* qp = (QuadSet::QHex*) qbp;
+	  while (n--) {
+	    QuadSet::QHex& q = * qp;
+	    if (SetupColor(q))
+	    {
+	      const Float_t rh = q.fR * 0.5;
+	      const Float_t rs = q.fR * sqr3hf;
+	      glBegin(GL_POLYGON);
+	      glVertex3f( rs + q.fX,    rh + q.fY, q.fZ);
+	      glVertex3f(      q.fX,  q.fR + q.fY, q.fZ);
+	      glVertex3f(-rs + q.fX,    rh + q.fY, q.fZ);
+	      glVertex3f(-rs + q.fX,   -rh + q.fY, q.fZ);
+	      glVertex3f(      q.fX, -q.fR + q.fY, q.fZ);
+	      glVertex3f( rs + q.fX,   -rh + q.fY, q.fZ);
+	      glEnd();
+	    }
+	    ++qp;
+	  }
+	  break;
+	}
+
+	default:
+	  throw(eH + "unsupported quad-type.");
+
+      } // end switch quad-type
+
+    } // end for chunk
+
+  }
+  else
+  {
+
+    for (Int_t c=0; c<mQ.fPlex.VecSize(); ++c)
+    {
+      QuadSet::QuadBase* qbp = (QuadSet::QuadBase*) mQ.fPlex.Chunk(c);
+      Int_t n = mQ.fPlex.NAtoms(c);
+
+      switch (mQ.fQuadType)
+      {
+
+	case QuadSet::QT_HexagonXY:
+	{
+	  QuadSet::QHex* qp = (QuadSet::QHex*) qbp;
+	  while (n--) {
+	    QuadSet::QHex& q = * qp;
+	    if (SetupColor(q))
+	    {
+	      const Float_t rh = q.fR * 0.5;
+	      const Float_t rs = q.fR * sqr3hf;
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f( q.fR + q.fX,       q.fY, q.fZ);
+	      glVertex3f(   rh + q.fX,  rs + q.fY, q.fZ);
+	      glVertex3f(  -rh + q.fX,  rs + q.fY, q.fZ);
+	      glVertex3f(-q.fR + q.fX,       q.fY, q.fZ);
+	      glVertex3f(  -rh + q.fX, -rs + q.fY, q.fZ);
+	      glVertex3f(   rh + q.fX, -rs + q.fY, q.fZ);
+	      glEnd();
+	    }
+	    ++qp;
+	  }
+	  break;
+	}
+
+	case QuadSet::QT_HexagonYX:
+	{
+	  QuadSet::QHex* qp = (QuadSet::QHex*) qbp;
+	  while (n--) {
+	    QuadSet::QHex& q = * qp;
+	    if (SetupColor(q))
+	    {
+	      const Float_t rh = q.fR * 0.5;
+	      const Float_t rs = q.fR * sqr3hf;
+	      glBegin(GL_LINE_LOOP);
+	      glVertex3f( rs + q.fX,    rh + q.fY, q.fZ);
+	      glVertex3f(      q.fX,  q.fR + q.fY, q.fZ);
+	      glVertex3f(-rs + q.fX,    rh + q.fY, q.fZ);
+	      glVertex3f(-rs + q.fX,   -rh + q.fY, q.fZ);
+	      glVertex3f(      q.fX, -q.fR + q.fY, q.fZ);
+	      glVertex3f( rs + q.fX,   -rh + q.fY, q.fZ);
+	      glEnd();
+	    }
+	    ++qp;
+	  }
+	  break;
+	}
+
+	default:
+	  throw(eH + "unsupported quad-type.");
+
+      } // end switch quad-type
+
+    } // end for chunk
+
+  } // end else of RenderMode
+
+
 }

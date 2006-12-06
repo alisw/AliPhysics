@@ -225,6 +225,8 @@ QuadSet::~QuadSet()
 
 Int_t QuadSet::SizeofAtom(QuadSet::QuadType_e qt)
 {
+  static const Exc_t eH("QuadSet::SizeofAtom ");
+
   switch (qt) {
     case QT_Undef:                return 0;
     case QT_FreeQuad:             return sizeof(QFreeQuad);
@@ -236,6 +238,9 @@ Int_t QuadSet::SizeofAtom(QuadSet::QuadType_e qt)
     case QT_RectangleXYFixedDimZ: return sizeof(QRectFixDimC);
     case QT_LineXZFixedY:
     case QT_LineXYFixedZ:         return sizeof(QLineFixC);
+    case QT_HexagonXY:
+    case QT_HexagonYX:            return sizeof(QHex);
+    default:                      throw(eH + "unexpected atom type.");
   }
   return 0;
 }
@@ -380,12 +385,6 @@ void QuadSet::AddQuad(Float_t x, Float_t y, Float_t z, Float_t w, Float_t h)
     case QT_RectangleXYFixedDimZ: {
       break;
     }
-    case QT_LineXZFixedY:
-    case QT_LineXYFixedZ: {
-      QLineFixC& q = (QLineFixC&) fq;
-      q.fDx = w; q.fDy = h;
-      break;
-    }
     default:
       throw(eH + "expect axis-aligned quad-type.");
   }
@@ -403,6 +402,25 @@ void QuadSet::AddLine(Float_t x, Float_t y, Float_t w, Float_t h)
     case QT_LineXYFixedZ: {
       QLineFixC& q = (QLineFixC&) fq;
       q.fDx = w; q.fDy = h;
+      break;
+    }
+    default:
+      throw(eH + "expect line quad-type.");
+  }
+}
+
+void QuadSet::AddHexagon(Float_t x, Float_t y, Float_t z, Float_t r)
+{
+  static const Exc_t eH("QuadSet::AddHexagon ");
+
+  QOrigin& fq = * (QOrigin*) NewQuad();
+  fq.fX = x; fq.fY = y;
+  switch (fQuadType)
+  {
+    case QT_HexagonXY:
+    case QT_HexagonYX: {
+      QHex& q = (QHex&) fq;
+      q.fZ = z; q.fR = r;
       break;
     }
     default:
@@ -592,6 +610,19 @@ void QuadSet::ComputeBBox()
 	  QLineFixC& q = * qp;
 	  BBoxCheckPoint(q.fX,         fDefCoord, q.fY);
 	  BBoxCheckPoint(q.fX + q.fDx, fDefCoord, q.fY + q.fDy);
+	  ++qp;
+	}
+	break;
+      }
+
+      case QT_HexagonXY:
+      case QT_HexagonYX:
+      {
+	QHex* qp =  (QHex*) qbp;
+	while (n--) {
+	  QHex& q = * qp;
+	  BBoxCheckPoint(q.fX-q.fR, q.fY-q.fR, q.fZ);
+	  BBoxCheckPoint(q.fX+q.fR, q.fY+q.fR, q.fZ);
 	  ++qp;
 	}
 	break;
