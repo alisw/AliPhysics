@@ -306,7 +306,7 @@ void ITSModule::LoadQuads()
 
 	  Float_t a = ( d->GetCoord1() == 1) ? ap : an;
 
-	  AddQuad(x-a, -fDz, 2*a, 2*fDz);
+	  AddLine(x-a, -fDz, 2*a, 2*fDz);
 	  QuadValue(d->GetSignal());
 	  // printf("%3d -> %3d -> %8x\n", d->GetSignal(), ci, fQuads.back().color);
 	}
