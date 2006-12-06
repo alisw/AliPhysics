@@ -14,17 +14,24 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include "TGridCollection.h"
 #include <Riostream.h>
 #include <TString.h>
 
+class TMap;
+class TIter;
 class TEventList;
+class TEntryList;
 
 //___________________________________________________________________________
-class AliXMLCollection : public TObject {
+class AliXMLCollection : public TGridCollection {
  
  public:
   AliXMLCollection();
-  ~AliXMLCollection();
+  AliXMLCollection(const char *localCollectionFile);
+  AliXMLCollection(const AliXMLCollection& collection);
+  
+  virtual ~AliXMLCollection();
   
   //____________________________________________________//
   Bool_t WriteHeader();
@@ -37,10 +44,29 @@ class AliXMLCollection : public TObject {
   const char* GetCollectionName() {return fCollectionName.Data();}
 
   //____________________________________________________//
+  void        Reset();
+  TMap       *Next();
+  Bool_t      Remove(TMap *map);
+  const char *GetTURL(const char *name) const;
+  const char *GetLFN(const char *name) const;
+  TEntryList *GetEventList(const char *filename) const;
+  Bool_t      OverlapCollection(AliXMLCollection * comparator);
+
+  static AliXMLCollection *Open(const char *localcollectionfile);
+
+  //____________________________________________________//
  protected:
-  TString fCollectionName;   //the name of the xml file
+  virtual void ParseXML();
+
+  TString  fXmlFile;        // collection XML file
+  TList   *fEventList;      // list with event file maps
+  TIter   *fEventListIter;  // event file list iterator
+  TMap    *fCurrent;        // current event file map
+  TString  fCollectionName;   //the name of the xml file
   ofstream fout; // The output stream
   
+  AliXMLCollection & operator=(const AliXMLCollection & ) {return *this;}
+
   ClassDef(AliXMLCollection,0)  //(ClassName, ClassVersion)
 };
 //___________________________________________________________________________
