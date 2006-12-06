@@ -38,7 +38,7 @@ AliTPCClusterHistograms::AliTPCClusterHistograms()
   fhQtotVsRow(0),          
   fhQtotProfileVsRow(0),   
   fhQmaxProfileVsRow(0),
-  fhNClustersYVsRow(0),  
+  fhNClustersYVsRow(0),
   fhNClustersZVsRow(0),
   fhSigmaYVsRow(0),        
   fhSigmaZVsRow(0),          			
@@ -887,67 +887,62 @@ void AliTPCClusterHistograms::SaveHistograms()
 
 
 //____________________________________________________________________
-TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* /*opt*/) {
+TCanvas* AliTPCClusterHistograms::DrawHistograms(const Char_t* opt) {
   //
   // Draws some histograms and save the canvas as eps and gif file.
   //  
 
-  TCanvas* c = new TCanvas(fName.Data(), fName.Data(), 1200, 1000);
+  TCanvas* c = new TCanvas(fName.Data(), fName.Data(), 1200, 800);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
 
   gStyle->SetPadLeftMargin(0.1);
 
-  c->Divide(3,3);
+  c->Divide(3, 2);
 
-  c->Draw();  
+  c->Draw();
 
   c->cd(1);
-  
+
   // this is not really a nice way to do it...
   c->GetPad(1)->Delete();
-  
+
   TLatex* tName = new TLatex(0.05,0.9,fName.Data());
   tName->SetTextSize(0.02);
   tName->DrawClone();
-  
+
   TLatex* tEdge;
-  if (fEdgeSuppression) 
+  if (fEdgeSuppression)
     tEdge = new TLatex(0.05,0.85,"(edges cut)");
-  else 
+  else
     tEdge = new TLatex(0.05,0.85,"(no edge cut)");
-  
+
   tEdge->SetTextSize(0.015);
   tEdge->DrawClone();
-  
 
+  tName = new TLatex(0.05,0.7, Form("Run: %s", opt));
+  tName->SetTextSize(0.02);
+  tName->DrawClone();
 
   c->cd(2);
   fhNClustersYVsRow->Draw("colz");
 
   c->cd(3);
-  fhNClustersZVsRow->Draw("colz");
+  fhQtotVsRow->Draw("colz");
+  fhQtotProfileVsRow->SetMarkerStyle(3);
+  fhQtotProfileVsRow->Draw("same");
 
   c->cd(4);
-  fhQmaxVsRow->Draw("colz");
-  fhQmaxProfileVsRow->Draw("same");
-
-  c->cd(5);
-  fhQtotVsRow->Draw("colz"); 
-  fhQtotProfileVsRow->Draw("same");       
-  			
-  c->cd(6);
   fhQtotProfileYVsRow   ->Draw("colz");
 
-  c->cd(7);
+  c->cd(5);
   fhQtotProfileZVsRow   ->Draw("colz");
 
-  c->cd(8);
-  fhQmaxProfileYVsRow   ->Draw("colz");
+  c->cd(6);
+  fhQtotVsTime->Draw("COLZ");
+  fhMeanQtotVsTime->SetMarkerStyle(3);
+  fhMeanQtotVsTime->Draw("SAME");
 
-  c->cd(9);
-  fhQmaxProfileZVsRow   ->Draw("colz");    
-  			
   return c;
 }
