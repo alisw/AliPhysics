@@ -42,6 +42,11 @@ class AliAltroRawStream: public TObject {
     Int_t GetSignal()     const { return fSignal; }     // Provide signal in ADC counts
     Int_t GetTimeLength() const { return fTimeBunch; }  // Provide total length of current time bunch
 
+    Int_t GetBranch()     const; // Provide the branch index for the current hardware address
+    Int_t GetFEC()        const; // Provide the front-end card index for the current hardware address
+    Int_t GetAltro()      const; // Provide the altro chip index for the current hardware address
+    Int_t GetChannel()    const; // Provide the channel index for the current hardware address
+
     Bool_t  GetRCUTrailerData(UChar_t*& data) const;              // Provide a pointer to RCU trailer
     Int_t   GetRCUTrailerSize() const { return fRCUTrailerSize; } // Provide size of RCU trailer
 

@@ -457,3 +457,51 @@ void AliAltroRawStream::PrintDebug() const
 
   AliError("End of debug printout\n--------------------");
 }
+
+//_____________________________________________________________________________
+Int_t AliAltroRawStream::GetBranch() const
+{
+  // The method provides the RCU branch index (0 or 1)
+  // for the current hardware address.
+  // In case the hardware address has not been yet
+  // initialized, the method returns -1
+  if (fHWAddress == -1) return -1;
+
+  return ((fHWAddress >> 11) & 0x1);
+}
+
+//_____________________________________________________________________________
+Int_t AliAltroRawStream::GetFEC() const
+{
+  // The method provides the front-end card index
+  // for the current hardware address.
+  // In case the hardware address has not been yet
+  // initialized, the method returns -1
+  if (fHWAddress == -1) return -1;
+
+  return ((fHWAddress >> 7) & 0xF);
+}
+
+//_____________________________________________________________________________
+Int_t AliAltroRawStream::GetAltro() const
+{
+  // The method provides the altro chip index
+  // for the current hardware address.
+  // In case the hardware address has not been yet
+  // initialized, the method returns -1
+  if (fHWAddress == -1) return -1;
+
+  return ((fHWAddress >> 4) & 0x7);
+}
+
+//_____________________________________________________________________________
+Int_t AliAltroRawStream::GetChannel() const
+{
+  // The method provides the channel index
+  // for the current hardware address.
+  // In case the hardware address has not been yet
+  // initialized, the method returns -1
+  if (fHWAddress == -1) return -1;
+
+  return (fHWAddress & 0xF);
+}
