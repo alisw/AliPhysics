@@ -328,7 +328,10 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* calibType) {
 // get storage specific for detector or calibration type 
 
-	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(calibType);
+	AliCDBPath calibPath(calibType);
+	if(!calibPath.IsValid()) return NULL;
+	
+	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(calibPath.GetPath());
 	if(!checkPar){
 		AliError(Form("%s storage not found!", calibType));
 		return NULL;
