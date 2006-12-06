@@ -46,7 +46,6 @@
 #include "AliTRDCalibra.h"
 #include "Cal/AliTRDCalDet.h"
 
-
 ClassImp(AliTRDPreprocessor)
 
 //______________________________________________________________________________________________
@@ -83,7 +82,7 @@ void AliTRDPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
 {
   //
-  // Process the calibraion data for the HLT part
+  // Process the calibration data for the HLT part
   //
 
   // How long does it take for the HLT part?
@@ -95,7 +94,6 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Raphaelle Bailhache");
   metaData.SetComment("This preprocessor fills reference data.");
-
 
   // Take the file from the HLT file exchange server
   TList *filesources = GetFileSources(kHLT,"GAINDRIFTPRF");
@@ -128,8 +126,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   Double_t statisticmean[3]    = { 0.0, 0.0, 0.0 }; // Mean values of the number of entries in these histos
   Int_t    numbertotalgroup[3] = { 0,   0,   0   }; // Total number of groups
 
-
-  // Loop over the files taken from the HLT/
+  // Loop over the files taken from the HLT
   TIter iter(filesources);
   TObjString *source;
   while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
@@ -163,7 +160,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
     // Set the mode of calibration from the TObject, store the reference data and try to fit them
     if (histogain) {
       calibra->SetModeCalibrationFromTObject((TObject *) histogain,0);
-      Store("Data","Gain",(TObject *) histogain,&metaData,0,0);
+      StoreReferenceData("HLTData","Gain",(TObject *) histogain,&metaData);
       AliInfo("Take the CH reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100); // If there is less than 100 entries in the histo: no fit
       calibra->FitCHOnline(histogain);
@@ -178,7 +175,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
     
     if (histodriftvelocity) {
       calibra->SetModeCalibrationFromTObject((TObject *) histodriftvelocity,1);
-      Store("Data","VdriftT0",(TObject *) histodriftvelocity,&metaData,0,0);
+      StoreReferenceData("HLTData","VdriftT0",(TObject *) histodriftvelocity,&metaData);
       AliInfo("Take the PH reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100*20); // If there is less than 2000
       calibra->FitPHOnline(histodriftvelocity);
@@ -195,7 +192,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
     
     if (histoprf) {
       calibra->SetModeCalibrationFromTObject((TObject *) histoprf,2);
-      Store("Data","PRF",(TObject *) histoprf,&metaData,0,0);
+      StoreReferenceData("HLTData","PRF",(TObject *) histoprf,&metaData);
       AliInfo("Take the PRF reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100*20); // If there is less than 2000
       calibra->SetRangeFitPRF(0.5);
