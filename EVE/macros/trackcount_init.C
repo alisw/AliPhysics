@@ -42,7 +42,7 @@ void on_new_event()
   // Other three are almost certainly secondaries.
   Int_t count = 1;
   g_trkcnt->Reset();
-  Reve::RenderElement::lpRE_i i = cont->BeginChildren();
+  Reve::RenderElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
     Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(*i);
     if (l != 0) {
