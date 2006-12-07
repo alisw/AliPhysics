@@ -21,7 +21,7 @@ class AliShuttleInterface : public TObject
 {
   public:
     enum System { kDAQ = 0, kDCS, kHLT };
-    enum { kNDetectors=17 }; // number of subdetectors in ALICE
+    enum { kNDetectors = 18 }; // number of subdetectors in ALICE
 
     virtual UInt_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
     				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) = 0;

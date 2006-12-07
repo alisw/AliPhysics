@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/11/29 16:08:01  hristov
+START becomes T0
+
 Revision 1.3  2006/11/29 09:53:27  hristov
 RICH becomes HMPID
 
@@ -61,11 +64,11 @@ const char* AliShuttleInterface::fkSystemNames[3] = { "DAQ", "DCS", "HLT" };
 
 // names of the detectors preprocessors
 const char* AliShuttleInterface::fgkDetName[kNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
-       "PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00"};
+       "PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00", "GRP"};
 
 // names of the detectors in OCDB
 const char* AliShuttleInterface::fgkOfflineDetName[kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF",
-       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO"};
+       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "GRP"};
 
 //______________________________________________________________________________________________
 const char* AliShuttleInterface::GetOfflineDetName(const char* detName){
