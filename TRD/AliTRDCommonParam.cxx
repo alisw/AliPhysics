@@ -27,9 +27,11 @@
 #include <TObjArray.h>
 
 #include "AliTracker.h"
+#include "AliRun.h"
 
 #include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
+
 
 ClassImp(AliTRDCommonParam)
 
@@ -100,7 +102,16 @@ void AliTRDCommonParam::Init()
   fExBOn          = kTRUE;
 
   // The magnetic field strength in Tesla
-  fField          = AliTracker::GetBz() * 0.1; 
+  fField = AliTracker::GetBz() * 0.1; 
+
+  if (TMath::Abs(fField) < 1e-5) {
+    Info("Init", "MC B field ... ");
+    Double_t x[3] = { 0.0, 0.0, 0.0 };
+    Double_t b[3]; 	 
+    gAlice->Field(x,b);  // b[] is in kilo Gauss 	 
+    fField = b[2] * 0.1; // Tesla
+  }
+
   
   // ----------------------------------------------------------------------------
   // The pad planes
