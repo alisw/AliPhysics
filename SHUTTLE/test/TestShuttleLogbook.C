@@ -8,7 +8,11 @@ Bool_t Connect(){
 	// check connection: if already connected return
 	if(fServer && fServer->IsConnected()) return kTRUE;
 
-	fServer = TSQLServer::Connect("mysql://pcald30.cern.ch","offline","alice");
+//	TString serverHost="mysql://pcald30.cern.ch";
+	TString serverHost="mysql://pcepalice62.cern.ch";
+	fServer = TSQLServer::Connect(serverHost.Data(),"offline","alice");
+	
+	printf("Connecting to mysql server on %s !!!!!!\n", serverHost.Data());
 
 	if (!fServer || !fServer->IsConnected()) {
 		printf("Can't establish connection to DAQ log book DB!\n");
@@ -282,12 +286,13 @@ void TestShuttleLogbook(){
 	
 	DeleteEntries();
 
-	AliShuttleLogbookEntry::Status y[17]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	AliShuttleLogbookEntry::Status y[18]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 	AliShuttleLogbookEntry lb(21242, y);
-	lb.SetDetectorStatus("HMP","Unprocessed"); // HMPID
-	lb.SetDetectorStatus("ZDC","Unprocessed"); // ZDC
-	lb.SetDetectorStatus("TPC","Unprocessed"); // TPC
-	lb.SetDetectorStatus("SPD","Unprocessed"); // SPD
+//	lb.SetDetectorStatus("HMP","Unprocessed"); // HMPID
+//	lb.SetDetectorStatus("ZDC","Unprocessed"); // ZDC
+//	lb.SetDetectorStatus("TPC","Unprocessed"); // TPC
+//	lb.SetDetectorStatus("SPD","Unprocessed"); // SPD
+	lb.SetDetectorStatus("GRP","Unprocessed"); // GRP
 	lb.Print();
 
 	InsertNewRun(lb);
@@ -295,5 +300,6 @@ void TestShuttleLogbook(){
 	InsertNewRun(lb,21244);
 	InsertNewRun(lb,21245);
 	InsertNewRun(lb,21246);
+	InsertNewRun(lb,1000);
 
 }

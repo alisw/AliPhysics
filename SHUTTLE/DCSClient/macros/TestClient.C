@@ -87,7 +87,7 @@ void GetValues(const char* host, Int_t port, const char* request,
 void TestClient(const char* host, Int_t port, const char* request,
 	UInt_t startShift, UInt_t endShift) {
 
-	gSystem->Load("libSHUTTLE");
+	gSystem->Load("$ALICE_ROOT/SHUTTLE/DCSClient/AliDCSClient");
 
 //	AliLog::EnableDebug(kFALSE);
 //	AliLog::SetGlobalDebugLevel(3);

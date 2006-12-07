@@ -33,6 +33,8 @@ class TMutex;
 
 class AliShuttle: public AliShuttleInterface {
 public:
+	enum DCSType {kAlias=0, kDP};
+
 	AliShuttle(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	virtual ~AliShuttle();
 
@@ -87,7 +89,8 @@ private:
 	Bool_t QueryShuttleLogbook(const char* whereClause, TObjArray& entries);
 	Bool_t RetrieveConditionsData(const TObjArray& shuttleLogbookEntries);
 
-	Bool_t GetValueSet(const char* host, Int_t port, const char* alias, TObjArray* result);
+	Bool_t GetValueSet(const char* host, Int_t port, const char* alias,
+				TObjArray* result, DCSType type);
 
 	const char* GetDAQFileName(const char* detector, const char* id, const char* source);
 	Bool_t RetrieveDAQFile(const char* daqFileName, const char* localFileName);
@@ -134,9 +137,9 @@ private:
 	AliShuttleLogbookEntry* fLogbookEntry;   //! current Shuttle logbook entry
 	TString fCurrentDetector; // current detector
 
-	TSQLServer *fServer[4]; 	// pointer to the three FES + Run & Shuttle logbook servers
-	Bool_t fFESCalled[3];		// FES call status
-	TList  fFESlist[3];		// List of files retrieved from each FES
+	TSQLServer *fServer[4]; 	// pointer to the three FXS + Run & Shuttle logbook servers
+	Bool_t fFXSCalled[3];		// FXS call status
+	TList  fFXSlist[3];		// List of files retrieved from each FXS
 
 	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved
 	Bool_t fGridError; 	   // Grid storage error flag

@@ -6,31 +6,34 @@ attributetype ( DETECTOR_CONFIG:1 NAME 'det'         DESC 'Detector name'       
 attributetype ( DETECTOR_CONFIG:2 NAME 'DCSHost'     DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( DETECTOR_CONFIG:3 NAME 'DCSPort'     DESC ''                                                  SUP ipServicePort )
 attributetype ( DETECTOR_CONFIG:4 NAME 'DCSalias'    DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( DETECTOR_CONFIG:5 NAME 'StrictRunOrder' DESC 'Strict run ordering flag' EQUALITY caseIgnoreMatch SUP name )
+attributetype ( DETECTOR_CONFIG:5 NAME 'DCSdatapoint' DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DETECTOR_CONFIG:6 NAME 'StrictRunOrder' DESC 'Strict run ordering flag' EQUALITY caseIgnoreMatch SUP name )
 
 objectclass ( DETECTOR_CONFIG
         NAME 'AliShuttleDetector'
         DESC 'ALICE: Shuttle configuration object.'
         SUP top
-        MUST (det)
-        MAY  (DCSHost $ DCSPort $ DCSalias $ StrictRunOrder) )
+        MUST (det $ StrictRunOrder)
+        MAY  (DCSHost $ DCSPort $ DCSalias $ DCSdatapoint) )
 
 
 objectidentifier SYS_CONFIG SHUTTLE_BASE:2
 
 attributetype ( SYS_CONFIG:1 NAME 'system' 	     DESC 'System name (DAQ, DCS, HLT)'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:2 NAME 'LogbookHost'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:3 NAME 'LogbookUser'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:4 NAME 'LogbookPassword'  DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:5 NAME 'FSHost'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:6 NAME 'FSUser'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:7 NAME 'FSPassword'       DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:2 NAME 'DBHost'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:3 NAME 'DBUser'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:4 NAME 'DBPassword'  DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:5 NAME 'DBName'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:6 NAME 'DBTable'     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:7 NAME 'FSHost'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:8 NAME 'FSUser'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:9 NAME 'FSPassword'       DESC ''	EQUALITY caseIgnoreMatch    SUP name )
 
 objectclass ( SYS_CONFIG
         NAME 'AliShuttleSYSConfig'
         DESC 'ALICE: Configuration of the Shuttle for access to online network'
         SUP top
-        MUST (system $ LogbookHost $ LogbookUser $ LogbookPassword $ FSHost $ FSUser ) 
+        MUST (system $ DBHost $ DBUser $ DBPassword $ DBName $ DBTable $ FSHost $ FSUser )
         MAY ( FSPassword ) )
 
 
@@ -39,14 +42,16 @@ objectidentifier GLOBAL_CONFIG SHUTTLE_BASE:3
 attributetype ( GLOBAL_CONFIG:1 NAME 'DAQLogbookHost'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( GLOBAL_CONFIG:2 NAME 'DAQLogbookUser'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( GLOBAL_CONFIG:3 NAME 'DAQLogbookPassword'  DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:4 NAME 'MaxRetries'  DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:5 NAME 'PPTimeOut'  DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:4 NAME 'DAQLogbookDB'        DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:5 NAME 'DAQLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:6 NAME 'MaxRetries'          DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:7 NAME 'PPTimeOut'           DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'AliShuttleGlobalConfig'
         DESC 'ALICE: Access to DAQ logbook settings'
         SUP top
-        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ MaxRetries $ PPTimeOut) )
+        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ DAQLogbookDB $ DAQLogbookTable $ MaxRetries $ PPTimeOut) )
 
 
 objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:4

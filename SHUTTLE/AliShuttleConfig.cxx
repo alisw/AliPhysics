@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.12  2006/11/16 16:16:48  jgrosseo
+introducing strict run ordering flag
+removed giving preprocessor name to preprocessor, they have to know their name themselves ;-)
+
 Revision 1.11  2006/11/06 14:23:04  jgrosseo
 major update (Alberto)
 o) reading of run parameters from the logbook
@@ -117,8 +121,15 @@ fStrictRunOrder(kFALSE)
 	TLDAPAttribute* anAttribute;
 	fDCSAliases = new TObjArray();
 	fDCSAliases->SetOwner(1);
+	fDCSDataPoints = new TObjArray();
+	fDCSDataPoints->SetOwner(1);
 
 	anAttribute = entry->GetAttribute("det"); // MUST
+        if (!anAttribute)
+	{
+		AliError(Form("Invalid configuration! No \"det\" attribute!"));
+		return;
+        }
 	fDetector = anAttribute->GetValue();
 
 	anAttribute = entry->GetAttribute("StrictRunOrder"); // MAY
@@ -137,7 +148,8 @@ fStrictRunOrder(kFALSE)
 	}
 
 	anAttribute = entry->GetAttribute("DCSHost"); // MAY
-	if (!anAttribute) {
+	if (!anAttribute)
+	{
 		AliWarning(
 			Form("%s has not DCS host entry - Shuttle will skip DCS data query!",
 				fDetector.Data()));
@@ -149,7 +161,8 @@ fStrictRunOrder(kFALSE)
 	fDCSHost = anAttribute->GetValue();
 
 	anAttribute = entry->GetAttribute("DCSPort"); // MAY
-        if (!anAttribute) {
+        if (!anAttribute)
+	{
 		AliError(Form("Invalid configuration! %s has DCS Host but no port number!",
 				fDetector.Data()));
 		return;
@@ -157,16 +170,24 @@ fStrictRunOrder(kFALSE)
 	TString portStr = anAttribute->GetValue();
 	fDCSPort = portStr.Atoi();
 
-	anAttribute = entry->GetAttribute("DCSAlias"); // MAY
-        if (!anAttribute) {
-		AliError(Form("Invalid configuration! %s has DCS host settings but no DCSAlias entries!",
-				fDetector.Data()));
-		return;
+	anAttribute = entry->GetAttribute("DCSalias"); // MAY
+        if (anAttribute)
+	{
+		const char* anAlias;
+		while ((anAlias	= anAttribute->GetValue()))
+		{
+			fDCSAliases->AddLast(new TObjString(anAlias));
+		}
 	}
 
-	const char* anAlias;
-	while ((anAlias	= anAttribute->GetValue())) {
-		fDCSAliases->AddLast(new TObjString(anAlias));
+	anAttribute = entry->GetAttribute("DCSdatapoint"); // MAY
+        if (anAttribute)
+	{
+		const char* aDataPoint;
+		while ((aDataPoint = anAttribute->GetValue()))
+		{
+			fDCSDataPoints->AddLast(new TObjString(aDataPoint));
+		}
 	}
 
 	fIsValid = kTRUE;
@@ -180,6 +201,7 @@ AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder()
 // destructor of the shuttle configuration holder
 
 	delete fDCSAliases;
+	delete fDCSDataPoints;
 }
 
 ClassImp(AliShuttleConfig)
@@ -330,6 +352,23 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 	fDAQlbPass = anAttribute->GetValue();
 
+	anAttribute = anEntry->GetAttribute("DAQLogbookDB");
+	if (!anAttribute) {
+		AliError("Can't find DAQLogbookDB attribute!");
+		delete aResult; delete anEntry;
+		return;
+	}
+	fDAQlbDB = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("DAQLogbookTable");
+	if (!anAttribute) {
+		AliError("Can't find DAQLogbookTable attribute!");
+		delete aResult; delete anEntry;
+		return;
+	}
+	fDAQlbTable = anAttribute->GetValue();
+
+
 	anAttribute = anEntry->GetAttribute("MaxRetries");
 	if (!anAttribute) {
 		AliError("Can't find MaxRetries attribute!");
@@ -350,7 +389,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 
 	delete aResult; delete anEntry;
 
-	// FES configuration (FES logbook and hosts)
+	// FXS configuration (FXS logbook and hosts)
 
 	for(int iSys=0;iSys<3;iSys++){
 		queryFilter = Form("(system=%s)", AliShuttleInterface::GetSystemName(iSys));
@@ -362,39 +401,57 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		}
 
 		if (aResult->GetCount() != 1 ) {
-			AliError("Error in FES configuration!");
+			AliError("Error in FXS configuration!");
 			delete aResult;
 			return;
 		}
 
 		anEntry = aResult->GetNext();
 
-		anAttribute = anEntry->GetAttribute("LogbookHost");
+		anAttribute = anEntry->GetAttribute("DBHost");
 		if (!anAttribute) {
 			AliError(Form ("Can't find LogbookHost attribute for %s!!",
 						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
-		fFESlbHost[iSys] = anAttribute->GetValue();
+		fFXSdbHost[iSys] = anAttribute->GetValue();
 
-		anAttribute = anEntry->GetAttribute("LogbookUser");
+		anAttribute = anEntry->GetAttribute("DBUser");
 		if (!anAttribute) {
-			AliError(Form ("Can't find LogbookUser attribute for %s!!",
+			AliError(Form ("Can't find DBUser attribute for %s!!",
 						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
-		fFESlbUser[iSys] = anAttribute->GetValue();
+		fFXSdbUser[iSys] = anAttribute->GetValue();
 
-		anAttribute = anEntry->GetAttribute("LogbookPassword");
+		anAttribute = anEntry->GetAttribute("DBPassword");
 		if (!anAttribute) {
-			AliError(Form ("Can't find LogbookPassword attribute for %s!!",
+			AliError(Form ("Can't find DBPassword attribute for %s!!",
 						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
-		fFESlbPass[iSys] = anAttribute->GetValue();
+		fFXSdbPass[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("DBName");
+		if (!anAttribute) {
+			AliError(Form ("Can't find DBName attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			delete aResult; delete anEntry;
+			return;
+		}
+
+		fFXSdbName[iSys] = anAttribute->GetValue();
+		anAttribute = anEntry->GetAttribute("DBTable");
+		if (!anAttribute) {
+			AliError(Form ("Can't find DBTable attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			delete aResult; delete anEntry;
+			return;
+		}
+		fFXSdbTable[iSys] = anAttribute->GetValue();
 
 		anAttribute = anEntry->GetAttribute("FSHost");
 		if (!anAttribute) {
@@ -403,7 +460,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 			delete aResult; delete anEntry;
 			return;
 		}
-		fFESHost[iSys] = anAttribute->GetValue();
+		fFXSHost[iSys] = anAttribute->GetValue();
 
 		anAttribute = anEntry->GetAttribute("FSUser");
 		if (!anAttribute) {
@@ -412,10 +469,10 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 			delete aResult; delete anEntry;
 			return;
 		}
-		fFESUser[iSys] = anAttribute->GetValue();
+		fFXSUser[iSys] = anAttribute->GetValue();
 
 		anAttribute = anEntry->GetAttribute("FSPassword");
-		if (anAttribute) fFESPass[iSys] = anAttribute->GetValue();
+		if (anAttribute) fFXSPass[iSys] = anAttribute->GetValue();
 
 		delete aResult; delete anEntry;
 	}
@@ -507,6 +564,24 @@ const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const
 }
 
 //______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetDCSDataPoints(const char* detector) const
+{
+	//
+	// returns collection of TObjString which represents the set of aliases
+	// which used for data retrieval for particular detector
+	//
+
+	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+        if (!aHolder) {
+                AliError(Form("There isn't configuration for detector: %s",
+                        detector));
+                return NULL;
+        }
+
+	return aHolder->GetDCSDataPoints();
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 {
 	// return TRUE if detector is handled by host or if fProcessAll is TRUE
@@ -560,20 +635,24 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 
 	result += Form("PP time out = %d - Max total retries = %d\n\n", fPPTimeOut, fMaxRetries);
 
-	result += Form("DAQ Logbook Configuration \n \tHost: %s - User: %s - ",
+	result += Form("DAQ Logbook Configuration \n \tHost: %s; \tUser: %s; ",
 		fDAQlbHost.Data(), fDAQlbUser.Data());
 
-	result += "Password: ";
-	result.Append('*', fDAQlbPass.Length());
+//	result += "Password: ";
+//	result.Append('*', fDAQlbPass.Length());
+	result += Form("\tDB: %s; \tTable: %s",
+		fDAQlbDB.Data(), fDAQlbTable.Data());
+
 	result += "\n\n";
 
 	for(int iSys=0;iSys<3;iSys++){
-		result += Form("FES Configuration for %s system\n", AliShuttleInterface::GetSystemName(iSys));
-		result += Form("\tLogbook host: \t%s - \tUser: %s\n",
-						fFESlbHost[iSys].Data(), fFESlbUser[iSys].Data());
-		// result += Form("Logbook Password:",fFESlbPass[iSys].Data());
-		result += Form("\tFES host: \t%s - \tUser: %s\n\n", fFESHost[iSys].Data(), fFESUser[iSys].Data());
-		// result += Form("FES Password:",fFESPass[iSys].Data());
+		result += Form("FXS Configuration for %s system\n", AliShuttleInterface::GetSystemName(iSys));
+		result += Form("\tDB  host: %s; \tUser: %s; \tName: %s; \tTable: %s\n",
+						fFXSdbHost[iSys].Data(), fFXSdbUser[iSys].Data(),
+						fFXSdbName[iSys].Data(), fFXSdbTable[iSys].Data());
+		// result += Form("DB Password:",fFXSdbPass[iSys].Data());
+		result += Form("\tFXS host: %s; \tUser: %s\n\n", fFXSHost[iSys].Data(), fFXSUser[iSys].Data());
+		// result += Form("FXS Password:",fFXSPass[iSys].Data());
 	}
 
 	TIter iter(fDetectorMap.GetTable());
@@ -584,21 +663,38 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 		result += Form("\tStrict run ordering flag: %s \n", aHolder->StrictRunOrder() ? "TRUE" : "FALSE");
 		if(aHolder->SkipDCSQuery())
 		{
-			result += "\n\n";
+			result += "\n";
 			continue;
 		}
 		result += Form("\tAmanda server: %s:%d \n", aHolder->GetDCSHost(), aHolder->GetDCSPort());
 
-		result += "\tDCS Aliases: ";
 		const TObjArray* aliases = aHolder->GetDCSAliases();
-		TIter it(aliases);
-		TObjString* anAlias;
-		while ((anAlias = (TObjString*) it.Next())) {
-			result += Form("%s ", anAlias->String().Data());
+		if (aliases->GetEntries() != 0)
+		{
+			result += "\tDCS Aliases: ";
+			TIter it(aliases);
+			TObjString* anAlias;
+			while ((anAlias = (TObjString*) it.Next()))
+			{
+				result += Form("%s ", anAlias->String().Data());
+			}
+			result += "\n";
 		}
 
-		result += "\n\n";
 
+		const TObjArray* dataPoints = aHolder->GetDCSDataPoints();
+		if (dataPoints->GetEntries() != 0)
+		{
+			result += "\tDCS Data Points: ";
+			TIter it(dataPoints);
+			TObjString* aDataPoint;
+			while ((aDataPoint = (TObjString*) it.Next())) {
+				result += Form("%s ", aDataPoint->String().Data());
+			}
+				result += "\n";
+		}
+		result += "\n";
+		
 	}
 
 	if(!fIsValid) result += "\n\n********** !!!!! Configuration is INVALID !!!!! **********\n";
