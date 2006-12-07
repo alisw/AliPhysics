@@ -43,7 +43,7 @@
 //     by how much your program is leaking.          
 //*-- Author: Laurent Aphecetche(SUBATECH)
 // --- std system ---
-class assert ; 
+#include <cassert> 
 #ifdef __APPLE__
 #include <stdlib.h>
 #else
