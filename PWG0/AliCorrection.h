@@ -41,6 +41,8 @@ public:
   void Multiply();
   void SetCorrectionToUnity();
 
+  void Add(AliCorrection* aCorrectionToAdd, Float_t c=1);
+
   virtual Bool_t LoadHistograms(const Char_t* dir = 0);
   virtual void SaveHistograms();
   virtual void DrawHistograms(const Char_t* name = 0);

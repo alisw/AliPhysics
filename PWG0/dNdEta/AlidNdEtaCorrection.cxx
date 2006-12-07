@@ -146,6 +146,36 @@ Long64_t AlidNdEtaCorrection::Merge(TCollection* list)
 }
 
 //____________________________________________________________________
+void AlidNdEtaCorrection::Add(AlidNdEtaCorrection* aCorrectionsToAdd, Float_t c) {
+  //
+  // adds the measured and generated of aCorrectionsToAdd to measured and generated
+  // of all corrections in this
+
+  fTrack2ParticleCorrection      ->Add(aCorrectionsToAdd->GetTrack2ParticleCorrection() ,c);
+  fVertexRecoCorrection          ->Add(aCorrectionsToAdd->GetVertexRecoCorrection()     ,c);
+  fTriggerBiasCorrectionMBToINEL ->Add(aCorrectionsToAdd->GetTriggerBiasCorrectionINEL(),c);
+  fTriggerBiasCorrectionMBToNSD  ->Add(aCorrectionsToAdd->GetTriggerBiasCorrectionNSD() ,c);
+  fTriggerBiasCorrectionMBToND   ->Add(aCorrectionsToAdd->GetTriggerBiasCorrectionND()  ,c);
+    
+}
+
+//____________________________________________________________________
+void AlidNdEtaCorrection::Reset(void) {
+  //
+  // reset all corrections
+  // 
+
+  fTrack2ParticleCorrection      ->Reset();
+  fVertexRecoCorrection          ->Reset();
+  fTriggerBiasCorrectionMBToINEL ->Reset();
+  fTriggerBiasCorrectionMBToNSD  ->Reset();
+  fTriggerBiasCorrectionMBToND   ->Reset();
+    
+}
+
+
+
+//____________________________________________________________________
 Bool_t AlidNdEtaCorrection::LoadHistograms(const Char_t* dir)
 {
   //

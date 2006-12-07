@@ -292,8 +292,9 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     //printf("vertexBinGlobalBegin = %d, vertexBinWidth = %d\n", vertexBinGlobalBegin, vertexBinWidth);
     for (Int_t vertexPos=0; vertexPos<kVertexBinning; ++vertexPos)
     {
+
       Int_t vertexBinBegin = vertexBinGlobalBegin;
-      Int_t vertexBinEnd = vertexBinGlobalBegin + vertexBinWidth * (kVertexBinning-1);
+      Int_t vertexBinEnd   = vertexBinGlobalBegin + vertexBinWidth * (kVertexBinning-1);
 
       // the first histogram is always for the whole vertex range
       if (vertexPos > 0)
@@ -314,10 +315,14 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Float_t sum = 0;
       Float_t sumError2 = 0;
       for (Int_t iVtx = vertexBinBegin; iVtx < vertexBinEnd; iVtx++)
-      {
-        if (vtxVsEta->GetBinContent(iVtx, iEta) != 0)
+      {      
+	if (vtxVsEta->GetBinContent(iVtx, iEta) != 0)
         {
           sum = sum + vtxVsEta->GetBinContent(iVtx, iEta);
+
+	  if (sumError2 > 10e30)
+	    printf("WARNING: sum of error2 is dangerously large - be prepared for crash... ");
+
           sumError2 = sumError2 + TMath::Power(vtxVsEta->GetBinError(iVtx, iEta),2);
         }
       }
@@ -333,7 +338,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       }
 
       printf("Eta: %d Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f\n", iEta, vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
-
+      
       Float_t dndeta = sum / totalEvents;
       Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
 
@@ -348,6 +353,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
       fdNdEtaPtCutOffCorrected[vertexPos]->SetBinContent(iEta, dndeta);
       fdNdEtaPtCutOffCorrected[vertexPos]->SetBinError(iEta, error);
+
     }
   }
 }

@@ -54,9 +54,12 @@ public:
   AliCorrection* GetTriggerBiasCorrectionND()   {return fTriggerBiasCorrectionMBToND;}
   AliCorrection* GetCorrection(CorrectionType correctionType);
 
+  void    Reset(void);
+  void    Add(AlidNdEtaCorrection* aCorrectionsToAdd, Float_t c=1);
+
   void    SaveHistograms();
   Bool_t  LoadHistograms(const Char_t* dir = 0);
-  void DrawHistograms();
+  void    DrawHistograms();
 
   Float_t GetMeasuredFraction(CorrectionType correctionType, Float_t ptCutOff, Float_t eta = -100, Bool_t debug = kFALSE);
 

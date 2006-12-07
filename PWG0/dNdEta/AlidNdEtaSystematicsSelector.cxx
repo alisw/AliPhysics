@@ -361,6 +361,28 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     if (!esdTrack)
       continue;
 
+    Float_t eta = particle->Eta();
+    Float_t pt  = particle->Pt();
+    
+    // non diffractive
+    if (processtype!=92 && processtype!=93 && processtype!=94) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillTrackedParticle(vtxMC[2], eta, pt);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillTrackedParticle(vtxMC[2], eta, pt);
+    }
+    
+    // single diffractive
+    if (processtype==92 || processtype==93) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillTrackedParticle(vtxMC[2], eta, pt);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillTrackedParticle(vtxMC[2], eta, pt);
+    }
+
+    // double diffractive
+    if (processtype==94) { 
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillTrackedParticle(vtxMC[2], eta, pt);
+      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillTrackedParticle(vtxMC[2], eta, pt);
+    }
+    
+
     // using the properties of the mc particle
     Int_t label = TMath::Abs(esdTrack->GetLabel());
     TParticle* particle = stack->Particle(label);
@@ -409,8 +431,6 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
       case 2212: id = 2; break;
       default:   id = 3; break;
     }
-    Float_t eta = particle->Eta();
-    Float_t pt  = particle->Pt();
 
     if (vertexReconstructed && eventTriggered) {
       if (fdNdEtaCorrectionSpecies[id])
@@ -419,25 +439,6 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
       if (fPIDTracks)
 	fPIDTracks->Fill(particle->GetPdgCode());
     }
-
-    // non diffractive
-    if (processtype!=92 && processtype!=93 && processtype!=94) { 
-      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillTrackedParticle(vtxMC[2], eta, pt);
-      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillTrackedParticle(vtxMC[2], eta, pt);
-    }
-    
-    // single diffractive
-    if (processtype==92 || processtype==93) { 
-      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillTrackedParticle(vtxMC[2], eta, pt);
-      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[1] ->FillTrackedParticle(vtxMC[2], eta, pt);
-    }
-
-    // double diffractive
-    if (processtype==94) { 
-      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillTrackedParticle(vtxMC[2], eta, pt);
-      if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillTrackedParticle(vtxMC[2], eta, pt);
-    }
-
   } // end of track loop
 
   
