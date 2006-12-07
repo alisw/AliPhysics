@@ -32,7 +32,7 @@ public:
    Int_t  GetModule() const     {return fModule;}
    Int_t  GetPatchBusId() const {return fPatchBus;}
    Int_t  GetMCM() const        {return fMCM;}
-   Int_t  GetChannel() const    {return fMCM;}
+   Int_t  GetChannel() const    {return fChannel;}
    Int_t  GetRow() const        {return fRow;}
    Int_t  GetColumn() const     {return fCol;}
    Int_t  GetSignal() const     {return fSignal;}
