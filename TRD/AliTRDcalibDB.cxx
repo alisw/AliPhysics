@@ -73,6 +73,7 @@ AliTRDcalibDB* AliTRDcalibDB::Instance()
     fgInstance = new AliTRDcalibDB();
   }
 
+  //cout << "Run id = " << fRun << endl;
   return fgInstance;
 }
 
@@ -759,11 +760,11 @@ const AliTRDCalMonitoring* AliTRDcalibDB::GetMonitoringObject()
   //
 
   return dynamic_cast<const AliTRDCalMonitoring *> (GetCachedCDBObject(kIDMonitoringData));
-
+   
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDcalibDB::GetOmegaTau(Float_t vdrift)
+Float_t AliTRDcalibDB::GetOmegaTau(Float_t vdrift, Float_t bz)
 {
   //
   // Returns omega*tau (tan(Lorentz-angle)) for a given drift velocity <vd> 
@@ -774,16 +775,18 @@ Float_t AliTRDcalibDB::GetOmegaTau(Float_t vdrift)
   // However, currently it is in use by simulation and reconstruction.
   //
   
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    return -1;
-  }
+  //AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
+  //if (!commonParam) {
+  //  return -1;
+  //}
 
-  Float_t fieldAbs = TMath::Abs(commonParam->GetField());
-  Float_t fieldSgn = 1.0;
-  if (fieldAbs > 0.0) {
-    fieldSgn = commonParam->GetField() / fieldAbs;
-  }
+  //Float_t fieldAbs = TMath::Abs(commonParam->GetField());
+  //Float_t fieldSgn = 1.0;
+  //if (fieldAbs > 0.0) {
+  //  fieldSgn = commonParam->GetField() / fieldAbs;
+  //}
+  Float_t fieldAbs = TMath::Abs(bz);
+  Float_t fieldSgn = (bz > 0.0)? 1.0 : -1.0;
 
   const Int_t kNb = 5;
   Float_t p0[kNb] = {  0.004810,  0.007412,  0.010252,  0.013409,  0.016888 };

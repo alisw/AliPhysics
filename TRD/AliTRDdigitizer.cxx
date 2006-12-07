@@ -2528,7 +2528,16 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
     return;
   }
   
-  Float_t field = commonParam->GetField();
+  //Float_t field = commonParam->GetField();
+  
+  /**/
+  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t b[3]; 	 
+  gAlice->Field(x,b);  // b[] is in kilo Gauss 	 
+  Float_t field = b[2] * 0.1; // Tesla
+  /**/
+
+
   fDiffLastVdrift = vdrift;
   
   // DiffusionL
@@ -2564,8 +2573,9 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
               + p3T[ibT] * vdrift*vdrift*vdrift;
 
   // OmegaTau
-  fOmegaTau = calibration->GetOmegaTau(vdrift);
-  
+  fOmegaTau = calibration->GetOmegaTau(vdrift, field);
+  cout << fOmegaTau << "\t" << field << endl;
+
   // Lorentzfactor
   if (commonParam->ExBOn()) {
     fLorentzFactor = 1.0 / (1.0 + fOmegaTau*fOmegaTau);
