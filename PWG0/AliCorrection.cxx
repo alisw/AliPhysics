@@ -161,6 +161,18 @@ void AliCorrection::Divide()
 }
 
 //____________________________________________________________________
+void AliCorrection::Add(AliCorrection* aCorrectionToAdd, Float_t c)
+{
+  //
+  // add to measured and generated the measured and generated of aCorrectionToAdd
+  // with the weight c
+
+  fEventCorr->Add(aCorrectionToAdd->GetEventCorrection(),c);
+  fTrackCorr->Add(aCorrectionToAdd->GetTrackCorrection(),c);
+}
+
+
+//____________________________________________________________________
 Bool_t AliCorrection::LoadHistograms(const Char_t* dir)
 {
   //

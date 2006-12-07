@@ -43,6 +43,8 @@ public:
   void Multiply();
   void SetCorrectionToUnity();
 
+  void Add(AliCorrectionMatrix* aMatrixToAdd, Float_t c=1);
+
   void SetAxisTitles(const Char_t* titleX="", const Char_t* titleY="", const Char_t* titleZ="");
 
   virtual Bool_t LoadHistograms(const Char_t* dir = 0);

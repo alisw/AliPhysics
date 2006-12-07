@@ -190,6 +190,18 @@ void AliCorrectionMatrix::Multiply()
 }
 
 //____________________________________________________________________
+void AliCorrectionMatrix::Add(AliCorrectionMatrix* aMatrixToAdd, Float_t c) {
+  //
+  // adds the measured and generated of aMatrixToAdd to measured and generated of this
+  // 
+  // NB: the correction will naturally stay the same
+  
+  fhMeas->Add(aMatrixToAdd->GetMeasuredHistogram(), c);
+  fhGene->Add(aMatrixToAdd->GetGeneratedHistogram(), c);
+}
+
+
+//____________________________________________________________________
 Bool_t AliCorrectionMatrix::LoadHistograms(const Char_t* dir)
 {
   //
