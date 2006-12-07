@@ -139,6 +139,7 @@ class AliMUONTrackK : public AliMUONTrack {
   void DropBranches(AliMUONSegment *segment);
   Bool_t ExistDouble(AliMUONHitForRec *hit);
   Bool_t ExistDouble(void);
+  void CheckBranches(TArrayD &branchChi2, Int_t nBranch);
 
   private:
    // Some constants

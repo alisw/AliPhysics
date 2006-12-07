@@ -668,6 +668,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
   } // while
   if (fgDebug > 0) cout << fNmbTrackHits << " " << fChi2 << " " << 1/(*fTrackPar)(4,0) << " " << fPosition << endl;
   if (1/TMath::Abs((*fTrackPar)(4,0)) < fgTrackReconstructor->GetMinBendingMomentum()) success = kFALSE; // p < p_min
+  if (GetRecover() < 0) success = kFALSE;
   return success;
 }
 
@@ -823,7 +824,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 {
 /// Picks up point within a window for the chamber No ichamb 
 /// Split the track if there are more than 1 hit
-  Int_t ihit, nRecTracks = fgTrackReconstructor->GetNRecTracks();
+  Int_t ihit, nRecTracks;
   Double_t windowB, windowNonB, dChi2Tmp=0, dChi2, y, x, savePosition=0;
   TClonesArray *trackPtr;
   AliMUONHitForRec *hit, *hitLoop;
@@ -880,7 +881,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
     iDhit = 1;
   }
 
-
+  TArrayD branchChi2(20);
   for (ihit = ihitB; ihit >= 0 && ihit < ihitE; ihit+=iDhit) {
     if (fgTrackReconstructor->GetTrackMethod() != 3 || !detElem) 
       hit = (AliMUONHitForRec*) ((*fgHitForRec)[ihit]);
@@ -963,7 +964,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  ok = kTRUE;
 	  nHitsOK++;
 	  //if (nHitsOK > -1) {
-	  if (nHitsOK == 1 || nRecTracks > 10000) {
+	  if (nHitsOK == 1) {
 	    // Save current members
 	    saveWeight = *fWeight;
 	    savePosition = fPosition;
@@ -973,6 +974,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    pointWeightTmp = pointWeight;
 	    hitAdd = hit;
 	    if (fgDebug > 0) cout << " Added point: " << x << " " << y << " " << dChi2 << endl;
+	    branchChi2[0] = dChi2;
 	  } else {
 	    // branching: create a new track
 	    trackPtr = fgTrackReconstructor->GetRecTracksPtr();
@@ -1033,6 +1035,8 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	      trackK->fTrackDir = 1;
 	      trackK->fBPFlag = kTRUE; 
 	    }
+	    if (nHitsOK > branchChi2.GetSize()) branchChi2.Set(branchChi2.GetSize()+10);
+	    branchChi2[nHitsOK-1] = dChi2;
 	  }
 	}
       }
@@ -1063,8 +1067,39 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
       }
       */
     } // if (fTrackDir > 0)
+    // Check for maximum number of branches - exclude excessive
+    if (nHitsOK > 1) CheckBranches(branchChi2, nHitsOK); 
   }
   return ok;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackK::CheckBranches(TArrayD &branchChi2, Int_t nBranch)
+{
+/// Check for maximum number of branches - exclude excessive
+
+  Int_t nBranchMax = 5;
+  if (nBranch <= nBranchMax) return;
+
+  Double_t *chi2 = branchChi2.GetArray();
+  Int_t *indx = new Int_t [nBranch];
+  TMath::Sort (nBranch, chi2, indx, kFALSE);
+  TClonesArray *trackPtr = fgTrackReconstructor->GetRecTracksPtr();
+  Int_t nRecTracks = fgTrackReconstructor->GetNRecTracks();
+  Int_t ibeg = nRecTracks - nBranch;
+
+  // Discard excessive branches with higher Chi2 contribution
+  for (Int_t i = nBranchMax; i < nBranch; ++i) {
+    if (indx[i] == 0) {
+      // Discard current track
+      SetRecover(-1);
+      continue;
+    }
+    Int_t j = ibeg + indx[i];
+    AliMUONTrackK *trackK = (AliMUONTrackK*) trackPtr->UncheckedAt(j);
+    trackK->SetRecover(-1);
+  }
+  delete [] indx;
 }
 
   //__________________________________________________________________________
