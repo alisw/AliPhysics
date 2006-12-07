@@ -26,6 +26,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #include <Riostream.h>
 #include <TFile.h>
 #include <TBranch.h>
@@ -34,6 +35,8 @@
 #include <TTreeStream.h>
 #include <TGraph.h>
 #include <TLinearFitter.h>
+#include <TH1D.h>
+#include <TH2D.h>
 
 #include "AliESD.h"
 #include "AliAlignObj.h"
@@ -51,29 +54,28 @@
 #include "AliTRDtracker.h"
 #include "AliTRDReconstructor.h"
 #include "AliTRDCalibra.h"
+ClassImp(AliTRDtracker)
 
-ClassImp(AliTRDtracker) 
-
-  const  Float_t  AliTRDtracker::fgkMinClustersInTrack =  0.5;  
-  const  Float_t  AliTRDtracker::fgkLabelFraction      =  0.8;  
-  const  Double_t AliTRDtracker::fgkMaxChi2            = 12.0; 
-  const  Double_t AliTRDtracker::fgkMaxSnp             =  0.95; // Corresponds to tan = 3
-  const  Double_t AliTRDtracker::fgkMaxStep            =  2.0;  // Maximal step size in propagation 
+const  Float_t  AliTRDtracker::fgkMinClustersInTrack =  0.5;  
+const  Float_t  AliTRDtracker::fgkLabelFraction      =  0.8;  // ??
+const  Double_t AliTRDtracker::fgkMaxChi2            = 12.0; 
+const  Double_t AliTRDtracker::fgkMaxSnp             =  0.95; // Corresponds to tan = 3
+const  Double_t AliTRDtracker::fgkMaxStep            =  2.0;  // Maximal step size in propagation 
 
 //_____________________________________________________________________________
 AliTRDtracker::AliTRDtracker()
-  :AliTracker()
-  ,fGeom(0)
-  ,fNclusters(0)
-  ,fClusters(0)
-  ,fNseeds(0)
-  ,fSeeds(0)
-  ,fNtracks(0)
-  ,fTracks(0)
-  ,fTimeBinsPerPlane(0)
-  ,fAddTRDseeds(kFALSE)
-  ,fNoTilt(kFALSE)
-  ,fDebugStreamer(0)
+  :AliTracker(),
+  fGeom(0),
+  fNclusters(0),
+  fClusters(0),
+  fNseeds(0),
+  fSeeds(0),
+  fNtracks(0),
+  fTracks(0),
+  fTimeBinsPerPlane(0),
+  fAddTRDseeds(kFALSE),
+  fNoTilt(kFALSE),
+  fDebugStreamer(0)
 {
   //
   // Default constructor
@@ -88,6 +90,7 @@ AliTRDtracker::AliTRDtracker()
     }
   }
 
+  InitLogHists();
 } 
 
 //_____________________________________________________________________________
@@ -168,6 +171,8 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile)
   fDebugStreamer    = new TTreeSRedirector("TRDdebug.root");
 
   savedir->cd();
+  
+  InitLogHists();
 
 }   
 
@@ -318,7 +323,7 @@ Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
   // ExB correction
   //
   Double_t vdrift = AliTRDcalibDB::Instance()->GetVdrift(cluster->GetDetector(),0,0);
-  Double_t exB    = AliTRDcalibDB::Instance()->GetOmegaTau(vdrift);
+  Double_t exB    = AliTRDcalibDB::Instance()->GetOmegaTau(vdrift, -AliTracker::GetBz()*0.1);
 
   AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();  
   AliTRDpadPlane    *padPlane    = commonParam->GetPadPlane(plane,chamber);
@@ -612,7 +617,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
   // by the TPC tracker.   
   //  
 
-  Int_t   found    = 0;  
+  Int_t   found    = 0;     // number of tracks found
   Float_t foundMin = 20.0;
   Int_t   n        = event->GetNumberOfTracks();
 
@@ -624,6 +629,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
     Double_t covariance[15];
     seed->GetExternalCovariance(covariance);
     quality[i] = covariance[0]+covariance[2];      
+    //quality[i] = covariance[0];
   }
   TMath::Sort(n,quality,index,kFALSE);
 
@@ -631,12 +637,16 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
 
     //AliESDtrack *seed = event->GetTrack(i);
     AliESDtrack *seed = event->GetTrack(index[i]);
+    fHBackfit->Fill(0);
 
     ULong_t status = seed->GetStatus();
     if ((status & AliESDtrack::kTPCout) == 0) {
+      fHBackfit->Fill(1);
       continue;
     }
+
     if ((status & AliESDtrack::kTRDout) != 0) {
+      fHBackfit->Fill(2);
       continue;
     }
 
@@ -646,15 +656,40 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
     seed->UpdateTrackParams(track,AliESDtrack::kTRDbackup); // Make backup
     fNseeds++;
     Float_t p4  = track->GetC();
-
     Int_t expectedClr = FollowBackProlongation(*track);
+    
+    fHBackfit->Fill(3);
+    fHX->Fill(track->GetX());
+
+
+    // store the last measurement
+    /*
+    fHNClTrack->Fill(track->GetNumberOfClusters());
+    if (track->GetNumberOfClusters() >= foundMin) {
+
+      fHBackfit->Fill(4);
+      track->CookdEdx(); 
+      CookdEdxTimBin(*track);
+      CookLabel(track,1 - fgkLabelFraction);
+      if (track->GetBackupTrack()) {
+	//fHBackfit->Fill(5);
+	UseClusters(track->GetBackupTrack());
+	seed->UpdateTrackParams(track->GetBackupTrack(),AliESDtrack::kTRDbackup);
+      }
+    }
+    */
+
+    /**/
+    // inter-tracks competition ???
     if ((TMath::Abs(track->GetC() - p4) / TMath::Abs(p4) < 0.2) || 
         (TMath::Abs(track->GetPt())                      > 0.8)) {
-
+      
+      fHBackfit->Fill(4);
+      
       // 
       // Make backup for back propagation 
       //
-
+      
       Int_t foundClr = track->GetNumberOfClusters();
       if (foundClr >= foundMin) {
 	track->CookdEdx(); 
@@ -666,7 +701,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
 
         // Sign only gold tracks
 	if (track->GetChi2() / track->GetNumberOfClusters() < 4) {   
-	  if ((seed->GetKinkIndex(0)      ==   0) &&
+ 	  if ((seed->GetKinkIndex(0)      ==   0) &&
               (TMath::Abs(track->GetPt()) <  1.5)) {
             UseClusters(track);
 	  }
@@ -678,8 +713,10 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
 	  //seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
 	  if (track->GetBackupTrack()) {
             seed->UpdateTrackParams(track->GetBackupTrack(),AliESDtrack::kTRDbackup);
+	    
 	  }
 	  isGold = kTRUE;
+	  //fHBackfit->Fill()
 	}
 
         // Almost gold track
@@ -695,23 +732,24 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
 
 	if ((!isGold) && 
             (track->GetBackupTrack())) {
-	  if ((track->GetBackupTrack()->GetNumberOfClusters()                                          > foundMin) &&
-	      ((track->GetBackupTrack()->GetChi2()/(track->GetBackupTrack()->GetNumberOfClusters()+1)) <        7)) {	  
+	  if ((track->GetBackupTrack()->GetNumberOfClusters() > foundMin) &&
+	      ((track->GetBackupTrack()->GetChi2()/(track->GetBackupTrack()->GetNumberOfClusters()+1)) < 7)) {	  
 	    seed->UpdateTrackParams(track->GetBackupTrack(),AliESDtrack::kTRDbackup);
 	    isGold = kTRUE;
 	  }
 	}
 
-	if ((track->StatusForTOF()                                                   >   0) &&
-            (track->GetNCross()                                                     ==   0) && 
+	if ((track->StatusForTOF() > 0) &&
+            (track->GetNCross() == 0) && 
             (Float_t(track->GetNumberOfClusters()) / Float_t(track->GetNExpected())  > 0.4)) {
 	  //seed->UpdateTrackParams(track->GetBackupTrack(), AliESDtrack::kTRDbackup);
 	}
 
       }
-
     }
+    /**/
 
+    /**/
     // Debug part of tracking
     TTreeSRedirector &cstream = *fDebugStreamer;
     Int_t eventNr = event->GetEventNumber();
@@ -733,44 +771,62 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
 	        << "\n";
       }
     }
+    /**/
 
     // Propagation to the TOF (I.Belikov)    
     if (track->GetStop() == kFALSE) {
-      
+      fHBackfit->Fill(5);
+
       Double_t xtof  = 371.0;
+      Double_t xTOF0 = 370.0;
+    
       Double_t c2    = track->GetSnp() + track->GetC() * (xtof - track->GetX());
       if (TMath::Abs(c2) >= 0.99) {
+	
+	fHBackfit->Fill(6);
 	delete track;
 	continue;
       }
-      Double_t xTOF0 = 370.0;          
+      
       PropagateToX(*track,xTOF0,fgkMaxStep);
 
       // Energy losses taken to the account - check one more time
       c2 = track->GetSnp() + track->GetC() * (xtof - track->GetX());
       if (TMath::Abs(c2) >= 0.99) {
+	
+	fHBackfit->Fill(7);
 	delete track;
 	continue;
       }
+      
+      //if (!PropagateToX(*track,xTOF0,fgkMaxStep)) {
+      //	fHBackfit->Fill(7);
+      //delete track;
+      //	continue;
+      //} 
 
       Double_t ymax = xtof * TMath::Tan(0.5 * AliTRDgeometry::GetAlpha());
       Double_t y; 
       track->GetYAt(xtof,GetBz(),y);
-      if      (y >  ymax) {
+      if (y >  ymax) {
 	if (!track->Rotate( AliTRDgeometry::GetAlpha())) {
+	  fHBackfit->Fill(8);
 	  delete track;
 	  continue;
 	}
       } 
       else if (y < -ymax) {
 	if (!track->Rotate(-AliTRDgeometry::GetAlpha())) {
+	  fHBackfit->Fill(9);
 	  delete track;
 	  continue;
 	}
       }
-      
+         
       if (track->PropagateTo(xtof)) {
 	seed->UpdateTrackParams(track,AliESDtrack::kTRDout);
+	fHBackfit->Fill(10);
+
         for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
           for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
             seed->SetTRDsignals(track->GetPIDsignals(i,j),i,j);
@@ -779,16 +835,22 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
         }
 	//seed->SetTRDtrack(new AliTRDtrack(*track));
 	if (track->GetNumberOfClusters() > foundMin) {
+	  fHBackfit->Fill(11);
           found++;
 	}
       }
 
     }
     else {
-
+      
+      fHBackfit->Fill(12);
+      
       if ((track->GetNumberOfClusters() >              15) &&
           (track->GetNumberOfClusters() > 0.5*expectedClr)) {
+	
 	seed->UpdateTrackParams(track,AliESDtrack::kTRDout);
+	fHBackfit->Fill(13);
+
 	//seed->SetStatus(AliESDtrack::kTRDStop);    
         for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
           for (Int_t j = 0; j <AliESDtrack::kNSlice; j++) {
@@ -805,8 +867,8 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
     seed->SetTRDQuality(track->StatusForTOF());    
     seed->SetTRDBudget(track->GetBudget(0));    
   
+    fHBackfit->Fill(14);
     delete track;
-
   }
 
   AliInfo(Form("Number of seeds: %d",fNseeds));
@@ -823,8 +885,9 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
   delete [] index;
   delete [] quality;
   
+  SaveLogHists();
+  
   return 0;
-
 }
 
 //_____________________________________________________________________________
@@ -850,19 +913,26 @@ Int_t AliTRDtracker::RefitInward(AliESD *event)
 
     AliESDtrack *seed = event->GetTrack(i);
     new (&seed2) AliTRDtrack(*seed);
+    fHRefit->Fill(0);
+
     if (seed2.GetX() < 270.0) {
       seed->UpdateTrackParams(&seed2,AliESDtrack::kTRDbackup); // Backup TPC track - only update
+      fHRefit->Fill(1);
       continue;
     }
 
     ULong_t status = seed->GetStatus();
     if ((status & AliESDtrack::kTRDout) == 0) {
+      fHRefit->Fill(2);
       continue;
     }
     if ((status & AliESDtrack::kTRDin)  != 0) {
+      fHRefit->Fill(3);
       continue;
     }
+    
     nseed++; 
+    fHRefit->Fill(4);
 
     seed2.ResetCovariance(50.0); 
 
@@ -896,7 +966,10 @@ Int_t AliTRDtracker::RefitInward(AliESD *event)
 
     Double_t xTPC = 250.0;
     if (PropagateToX(t,xTPC,fgkMaxStep)) {
+
       seed->UpdateTrackParams(pt,AliESDtrack::kTRDrefit);
+      fHRefit->Fill(5);
+
       for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
         for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
           seed->SetTRDsignals(pt->GetPIDsignals(i,j),i,j);
@@ -906,6 +979,7 @@ Int_t AliTRDtracker::RefitInward(AliESD *event)
     }
     else {
       // If not prolongation to TPC - propagate without update
+      fHRefit->Fill(5);
       AliTRDtrack *seed2 = new AliTRDtrack(*seed);
       seed2->ResetCovariance(5.0); 
       AliTRDtrack *pt2   = new AliTRDtrack(*seed2,seed2->GetAlpha());
@@ -914,6 +988,8 @@ Int_t AliTRDtracker::RefitInward(AliESD *event)
         pt2->CookdEdx( ); 
         CookdEdxTimBin(*pt2);
 	seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
+	fHRefit->Fill(6);
+
         for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
           for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
             seed->SetTRDsignals(pt2->GetPIDsignals(i,j),i,j);
@@ -931,8 +1007,8 @@ Int_t AliTRDtracker::RefitInward(AliESD *event)
   AliInfo(Form("Number of loaded seeds: %d",nseed));
   AliInfo(Form("Number of found tracks from loaded seeds: %d",found));
 
+  SaveLogHists();
   return 0;
-
 }
 
 //_____________________________________________________________________________
@@ -1010,7 +1086,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
         t.SetNExpectedLast(t.GetNExpectedLast() + 1);
       }
       AliTRDpropagationLayer &timeBin = *(fTrSec[sector]->GetLayer(ilayer));
-      AliTRDcluster          *cl      = 0;
+      AliTRDcluster *cl = 0;
       UInt_t   index   = 0;
       Double_t maxChi2 = fgkMaxChi2;
       x = timeBin.GetX();
@@ -1085,6 +1161,9 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
   // Returns the number of clusters expected to be found in sensitive layers
   // Use GEO manager for material Description
   //
+  // return number of assigned clusters ? 
+  //
+
 
   Int_t    sector;
   Int_t    clusters[1000];
@@ -1109,10 +1188,14 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 
   for (Int_t iplane = 0; iplane < AliESDtrack::kNPlane; iplane++) {
 
+    int hb = iplane * 10;
+    fHClSearch->Fill(hb);
+
     Int_t    row0     = GetGlobalTimeBin(0,iplane,GetTimeBinsPerPlane()-1);
     Int_t    rowlast  = GetGlobalTimeBin(0,iplane,0);
     Double_t currentx = fTrSec[0]->GetLayer(row0)->GetX();
     if (currentx < t.GetX()) {
+      fHClSearch->Fill(hb+1);
       continue;
     }
 
@@ -1121,13 +1204,16 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
     //
     if (currentx > (fgkMaxStep + t.GetX())) {
       if (!PropagateToX(t,currentx-fgkMaxStep,fgkMaxStep)) {
+	fHClSearch->Fill(hb+2);
         break;
       }
     }
     if (!AdjustSector(&t)) {
+      fHClSearch->Fill(hb+3);
       break;
     }
     if (TMath::Abs(t.GetSnp()) > fgkMaxSnp) {
+      fHClSearch->Fill(hb+4);
       break;
     }
 
@@ -1145,6 +1231,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
     // End global position
     x = fTrSec[0]->GetLayer(rowlast)->GetX();
     if (!t.GetProlongation(x,y,z)) {
+      fHClSearch->Fill(hb+5);
       break;
     }
     xyz1[0] =  x * TMath::Cos(t.GetAlpha()) - y * TMath::Sin(t.GetAlpha()); 
@@ -1159,7 +1246,10 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
     //
     sector = t.GetSector();
     Float_t ncl = FindClusters(sector,row0,rowlast,&t,clusters,tracklet);
+    fHNCl->Fill(tracklet.GetN());
+
     if (tracklet.GetN() < GetTimeBinsPerPlane()/3) {
+      fHClSearch->Fill(hb+6);
       continue;
     }
 
@@ -1175,7 +1265,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
         t.SetNExpectedLast(t.GetNExpectedLast() + 1);
       }
       AliTRDpropagationLayer &timeBin = *(fTrSec[sector]->GetLayer(ilayer));
-      AliTRDcluster          *cl      = 0;
+      AliTRDcluster *cl = 0;
       UInt_t   index   = 0;
       Double_t maxChi2 = fgkMaxChi2;
       x = timeBin.GetX();
@@ -1237,13 +1327,13 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
         (t.GetNCross()           ==    0) && 
         (TMath::Abs(t.GetSnp())  <  0.85) &&
         (t.GetNumberOfClusters() >    20)){
+      //if (ratio0 > 0.8) {
       t.MakeBackupTrack(); // Make backup of the track until is gold
     }
     
   }
 
   return expectedNumberOfClusters;  
-
 }         
 
 //_____________________________________________________________________________
@@ -1328,7 +1418,8 @@ Int_t AliTRDtracker::LoadClusters(TTree *cTree)
     Int_t plane          = fGeom->GetPlane(detector);
     Int_t trackingSector = CookSectorIndex(sector);
 
-    if (c->GetLabel(0) > 0) {
+    //if (c->GetLabel(0) > 0) {
+    if (c->GetQ() > 10) {
       Int_t chamber = fGeom->GetChamber(detector);
       fHoles[chamber][trackingSector] = kFALSE;
     }
@@ -1342,9 +1433,11 @@ Int_t AliTRDtracker::LoadClusters(TTree *cTree)
     index = ncl;
 
     // Apply pos correction
-    Transform(c);    
-    fTrSec[trackingSector]->GetLayer(layer)->InsertCluster(c,index);
+    Transform(c);  
+    fHXCl->Fill(c->GetX());
 
+    fTrSec[trackingSector]->GetLayer(layer)->SetX(c->GetX());
+    fTrSec[trackingSector]->GetLayer(layer)->InsertCluster(c,index);
   }
 
   return 0;
@@ -2875,8 +2968,8 @@ AliTRDtracker::AliTRDtrackingSector
   // AliTRDtrackingSector Constructor
   //
 
-  AliTRDpadPlane         *padPlane = 0;
-  AliTRDpropagationLayer *ppl      = 0;
+  AliTRDpadPlane *padPlane = 0;
+  AliTRDpropagationLayer *ppl = 0;
 
   // Get holes description from geometry
   Bool_t holes[AliTRDgeometry::kNcham];
@@ -3468,6 +3561,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
   if (road > 6.0) {
     road = 6.0;
   }
+  //road = 20.0;
 
   for (Int_t it = 0; it < t1-t0; it++) {
 
@@ -3491,7 +3585,12 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
     //
     // Find 2 nearest cluster at given time bin
     // 
+    int checkPoint[4] = {0,0,0,0};
+    double minY = 123456789;
+    double minD[2] = {1,1};
+
     for (Int_t i = timeBin.Find(y - road); i < maxn; i++) {
+      //for (Int_t i = 0; i < maxn; i++) {
 
       AliTRDcluster *c = (AliTRDcluster *) (timeBin[i]);
       h01 = GetTiltFactor(c);
@@ -3500,18 +3599,35 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
 	plane     = fGeom->GetPlane(det);
 	padlength = TMath::Sqrt(c->GetSigmaZ2() * 12.0);
       }
+
       //if (c->GetLocalTimeBin()==0) continue;
       if (c->GetY() > (y + road)) {
         break;
       }
-      if ((c->GetZ() - z) * (c->GetZ() - z) > (12.0 * sz2)) {
-        continue;
+
+      fHDeltaX->Fill(c->GetX() - x[it]);
+      //printf("%f\t%f\t%f \n", c->GetX(),  x[it], c->GetX()-x[it]);
+
+      if (TMath::Abs(c->GetY()-y) < TMath::Abs(minY)) {
+	minY = c->GetY()-y;
+	minD[0] = c->GetY()-y;
+	minD[1] = c->GetZ()-z;
       }
 
+      checkPoint[0]++;
+
+      fHMinZ->Fill(c->GetZ() - z);
+      if ((c->GetZ() - z) * (c->GetZ() - z) > 2 * (12.0 * sz2)) {
+        continue;
+      }
+      checkPoint[1]++;
+
       Double_t dist = TMath::Abs(c->GetZ() - z);
-      if (dist > (0.5 * padlength + 6.0 * sigmaz)) {
+      if (dist > (0.5 * padlength + 6.0 * sigmaz)) { // 0.5
         continue;   // 6 sigma boundary cut
       }
+      checkPoint[2]++;
+
       Double_t cost = 0.0;
       // Sigma boundary cost function
       if (dist> (0.5 * padlength - sigmaz)){ 
@@ -3531,6 +3647,8 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
       if (chi2 > maxChi2[1]) {
         continue;
       }
+      checkPoint[3]++;
+
       detector = c->GetDetector();
       // Store the clusters in the road
       for (Int_t ih = 2; ih < 9; ih++) {  
@@ -3555,6 +3673,16 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
       indexes[1][it] = timeBin.GetIndex(i); 
 
     }
+    
+    for(int iCheckPoint = 0; iCheckPoint<4; iCheckPoint++)
+      fHFindCl[iCheckPoint]->Fill(checkPoint[iCheckPoint]);
+
+    if (checkPoint[3]) {
+      if (track->GetPt() > 0) fHMinYPos->Fill(minY);
+      else fHMinYNeg->Fill(minY);
+
+    fHMinD->Fill(minD[0], minD[1]);
+     }
 
     if (cl[0][it]) {
       nfound++;
@@ -3608,13 +3736,13 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
     mean[it]       = 0.0;    // Mean value
     angle[it]      = 0.0;    // Angle
 
-    smoffset[it]   = 1.0e10; // Sigma of mean offset
-    smean[it]      = 1.0e10; // Sigma of mean value
-    sangle[it]     = 1.0e10; // Sigma of angle
+    smoffset[it]   = 1.0e5; // Sigma of mean offset
+    smean[it]      = 1.0e5; // Sigma of mean value
+    sangle[it]     = 1.0e5; // Sigma of angle
     smeanangle[it] = 0.0;    // Correlation
 
-    sigmas[it]     = 1.0e10;     
-    tchi2s[it]     = 1.0e10; // Chi2s for tracklet
+    sigmas[it]     = 1.0e5;     
+    tchi2s[it]     = 1.0e5; // Chi2s for tracklet
 
   }
 
@@ -3845,7 +3973,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
   //if (tchi2s[bestiter]>25.) sigma2=1000.;  // dont'accept
 
   Double_t exB         = AliTRDcalibDB::Instance()->GetOmegaTau(
-                          AliTRDcalibDB::Instance()->GetVdrift(0,0,0));
+                          AliTRDcalibDB::Instance()->GetVdrift(0,0,0), -AliTracker::GetBz()*0.1);
   Double_t expectederr = sigma2*sigma2 + 0.01*0.01;
   if (mpads > 3.5) {
     expectederr += (mpads - 3.5) * 0.04;
@@ -4151,5 +4279,72 @@ AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed *seeds, Double_t *params)
   }
 
   return track;
-
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void AliTRDtracker::InitLogHists() {
+ 
+  fHBackfit = new TH1D("logTRD_backfit", "", 40, -0.5, 39.5);  
+  fHRefit = new TH1D("logTRD_refit", "", 40, -0.5, 39.5);
+  fHClSearch = new TH1D("logTRD_clSearch", "", 60, -0.5, 59.5); 
+  
+  fHX = new TH1D("logTRD_X", ";x (cm)", 200, 50, 400);
+  fHNCl = new TH1D("logTRD_ncl", "", 40, -0.5, 39.5);
+  fHNClTrack = new TH1D("logTRD_nclTrack", "", 180, -0.5, 179.5);
+  
+  fHMinYPos = new TH1D("logTRD_minYPos", ";#delta Y (cm)", 400, -6, 6);
+  fHMinYNeg = new TH1D("logTRD_minYNeg", ";#delta Y (cm)", 400, -6, 6);
+  fHMinZ = new TH1D("logTRD_minZ", ";#delta Z (cm)", 400, -20, 20);
+  fHMinD = new TH2D("logTRD_minD", ";#delta Y (cm);#delta Z (cm)", 100, -6, 6, 100, -50, 50);
+  
+  fHDeltaX = new TH1D("logTRD_deltaX", ";#delta X (cm)", 100, -5, 5);
+  fHXCl = new TH1D("logTRD_xCl", ";cluster x position (cm)", 1000, 280, 380);
+  
+  const char *nameFindCl[4] = {"logTRD_clY", "logTRD_clZ", "logTRD_clB", "logTRD_clG"};
+  
+  for(int i=0; i<4; i++) {
+    fHFindCl[i] = new TH1D(nameFindCl[i], "", 30, -0.5, 29.5);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void AliTRDtracker::SaveLogHists() {
+
+  TDirectory *sav = gDirectory;
+  TFile *logFile = 0;
+
+  TSeqCollection *col = gROOT->GetListOfFiles();
+  int N = col->GetEntries();
+  for(int i=0; i<N; i++) {
+    logFile = (TFile*)col->At(i);
+    if (strstr(logFile->GetName(), "AliESDs.root")) break;
+  }
+   
+  logFile->cd();
+  fHBackfit->Write(fHBackfit->GetName(), TObject::kOverwrite);
+  fHRefit->Write(fHRefit->GetName(), TObject::kOverwrite);
+  fHClSearch->Write(fHClSearch->GetName(), TObject::kOverwrite);
+  fHX->Write(fHX->GetName(), TObject::kOverwrite);
+  fHNCl->Write(fHNCl->GetName(), TObject::kOverwrite);
+  fHNClTrack->Write(fHNClTrack->GetName(), TObject::kOverwrite);
+
+  fHMinYPos->Write(fHMinYPos->GetName(), TObject::kOverwrite);
+  fHMinYNeg->Write(fHMinYNeg->GetName(), TObject::kOverwrite);
+  fHMinD->Write(fHMinD->GetName(), TObject::kOverwrite);
+  fHMinZ->Write(fHMinZ->GetName(), TObject::kOverwrite);
+  
+  fHDeltaX->Write(fHDeltaX->GetName(), TObject::kOverwrite);
+  fHXCl->Write(fHXCl->GetName(), TObject::kOverwrite);
+
+
+  for(int i=0; i<4; i++)
+    fHFindCl[i]->Write(fHFindCl[i]->GetName(), TObject::kOverwrite);
+
+  logFile->Flush();
+  
+  sav->cd();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
