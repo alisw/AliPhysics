@@ -60,9 +60,9 @@ class AliTRDgeometry : public AliGeometry {
   
   static  Int_t    GetDetectorSec(Int_t p, Int_t c);
   static  Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
-  virtual Int_t    GetPlane(Int_t d)   const;
+  virtual Int_t    GetPlane(Int_t d) const;
   virtual Int_t    GetChamber(Int_t d) const;
-  virtual Int_t    GetSector(Int_t d)  const;
+  virtual Int_t    GetSector(Int_t d) const;
 
   static Float_t   GetTime0(Int_t p)                                   { return fgkTime0[p];     }
 
@@ -81,11 +81,6 @@ class AliTRDgeometry : public AliGeometry {
   static  Int_t    Nplan()                                             { return fgkNplan;        }
   static  Int_t    Ncham()                                             { return fgkNcham;        }
   static  Int_t    Ndet()                                              { return fgkNdet;         }
-
-  static  Float_t  Rmin()                                              { return fgkRmin;         }
-  static  Float_t  Rmax()                                              { return fgkRmax;         }
-  static  Float_t  Zmax1()                                             { return fgkZmax1;        }
-  static  Float_t  Zmax2()                                             { return fgkZmax2;        }
 
   static  Float_t  Cheight()                                           { return fgkCH;           }
   static  Float_t  Cspace()                                            { return fgkVspace;       }
@@ -113,24 +108,16 @@ class AliTRDgeometry : public AliGeometry {
                                                                            fMatrixCorrectionArray->At(det); }
 
  protected:
- 
+
   static const Int_t    fgkNsect;                            //  Number of sectors in the full detector (18)
   static const Int_t    fgkNplan;                            //  Number of planes of the TRD (6)
   static const Int_t    fgkNcham;                            //  Number of chambers in z-direction (5)
   static const Int_t    fgkNdet;                             //  Total number of detectors (18 * 6 * 5 = 540)
 
-  static const Float_t  fgkRmin;                             //  Minimal radius of the TRD
-  static const Float_t  fgkRmax;                             //  Maximal radius of the TRD
-
-  static const Float_t  fgkZmax1;                            //  Half-length of the TRD at outer radius
-  static const Float_t  fgkZmax2;                            //  Half-length of the TRD at inner radius
-
-  static const Float_t  fgkSheight;                          //  Height of the TRD-volume in spaceframe (BTR1-3)
-  static const Float_t  fgkSwidth1;                          //  Lower width of the TRD-volume in spaceframe (BTR1-3)
-  static const Float_t  fgkSwidth2;                          //  Upper width of the TRD-volume in spaceframe (BTR1-3)
-  static const Float_t  fgkSlenTR1;                          //  Length of the TRD-volume in spaceframe (BTR1)
-  static const Float_t  fgkSlenTR2;                          //  Length of the TRD-volume in spaceframe (BTR2)
-  static const Float_t  fgkSlenTR3;                          //  Length of the TRD-volume in spaceframe (BTR3)
+  static const Float_t  fgkSheight;                          //  Height of the TRD-volume in spaceframe (BTRD)
+  static const Float_t  fgkSwidth1;                          //  Lower width of the TRD-volume in spaceframe (BTRD)
+  static const Float_t  fgkSwidth2;                          //  Upper width of the TRD-volume in spaceframe (BTRD)
+  static const Float_t  fgkSlength;                          //  Length of the TRD-volume in spaceframe (BTRD)
 
   static const Float_t  fgkSMpltT;                           //  Thickness of the super module side plates
 
@@ -144,40 +131,41 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t  fgkHspace;                           //  Horizontal spacing of the chambers
   static const Float_t  fgkVrocsm;                           //  Radial distance of the first ROC to the outer SM plates
   static const Float_t  fgkCalT;                             //  Thickness of the lower aluminum frame
-  static const Float_t  fgkCclsT;                            //  Thickness of the lower G10 frame sides
-  static const Float_t  fgkCclfT;                            //  Thickness of the lower G10 frame front
-  static const Float_t  fgkCcuT;                             //  Thickness of the upper G10 frame
-  static const Float_t  fgkCauT;                             //  Thickness of the upper aluminum frame
+  static const Float_t  fgkCalW;                             //  Width of additional aluminum on lower frame
+  static const Float_t  fgkCclsT;                            //  Thickness of the lower Wacosit frame sides
+  static const Float_t  fgkCclfT;                            //  Thickness of the lower Wacosit frame front
+  static const Float_t  fgkCglT;                             //  Thichness of the glue around the radiator
+  static const Float_t  fgkCcuT;                             //  Thickness of the upper Wacosit frame
+  static const Float_t  fgkCauT;                             //  Thickness of the aluminum frame of the back panel
 
   static const Float_t  fgkCroW;                             //  Additional width of the readout chamber frames
 
   static const Float_t  fgkCpadW;                            //  Difference of outer chamber width and pad plane width
   static const Float_t  fgkRpadW;                            //  Difference of outer chamber width and pad plane width
 
-  static const Float_t  fgkRaThick;                          //  Thickness of the radiator
   static const Float_t  fgkMyThick;                          //  Thickness of the mylar-layer
+  static const Float_t  fgkRaThick;                          //  Thickness of the radiator
   static const Float_t  fgkXeThick;                          //  Thickness of the gas volume
   static const Float_t  fgkDrThick;                          //  Thickness of the drift region
   static const Float_t  fgkAmThick;                          //  Thickness of the amplification region
+  static const Float_t  fgkWrThick;                          //  Thickness of the wire planes
   static const Float_t  fgkCuThick;                          //  Thickness of the pad plane
-  static const Float_t  fgkSuThick;                          //  Thickness of the HEXCEL+G10 support structure
-  static const Float_t  fgkFeThick;                          //  Thickness of the FEE + signal lines
-  static const Float_t  fgkCoThick;                          //  Thickness of the PE of the cooling device
-  static const Float_t  fgkWaThick;                          //  Thickness of the cooling water
+  static const Float_t  fgkGlThick;                          //  Thickness of the glue layer
+  static const Float_t  fgkSuThick;                          //  Thickness of the NOMEX support structure
   static const Float_t  fgkRpThick;                          //  Thickness of the PCB readout boards
   static const Float_t  fgkRcThick;                          //  Thickness of the PCB copper layers
+  static const Float_t  fgkRoThick;                          //  Thickness of all other ROB componentes (caps, etc.)
 
   static const Float_t  fgkRaZpos;                           //  Position of the radiator
-  static const Float_t  fgkMyZpos;                           //  Position of the mylar-layer
   static const Float_t  fgkDrZpos;                           //  Position of the drift region
   static const Float_t  fgkAmZpos;                           //  Position of the amplification region
+  static const Float_t  fgkWrZpos;                           //  Position of the wire planes
   static const Float_t  fgkCuZpos;                           //  Position of the pad plane
+  static const Float_t  fgkGlZpos;                           //  Position of the glue layer
   static const Float_t  fgkSuZpos;                           //  Position of the HEXCEL+G10 support structure
-  static const Float_t  fgkFeZpos;                           //  Position of the FEE + signal lines
-  static const Float_t  fgkCoZpos;                           //  Position of the PE of the cooling device
-  static const Float_t  fgkWaZpos;                           //  Position of the cooling water
   static const Float_t  fgkRpZpos;                           //  Position of the PCB readout boards
   static const Float_t  fgkRcZpos;                           //  Position of the PCB copper layers
+  static const Float_t  fgkRoZpos;                           //  Position of all other ROB componentes (caps, etc.)
 
   Char_t                fSMstatus[kNsect];                   //  Super module status byte
 
@@ -211,7 +199,7 @@ class AliTRDgeometry : public AliGeometry {
   TObjArray *           fMatrixCorrectionArray;              //! Transformation Cluster to  Tracking systerm
   TObjArray *           fMatrixGeo;                          //! Geo matrices
 
-  ClassDef(AliTRDgeometry,10)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,11)                                //  TRD geometry class
 
 };
 
