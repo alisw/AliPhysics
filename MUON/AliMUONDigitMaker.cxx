@@ -357,7 +357,7 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 	localStruct = regHeader->GetLocalEntry(iLocal);
 
 	// if card has triggered
-	if (localStruct->GetTriggerY() == 0) {
+	if (!localStruct->GetTriggerY() || !localStruct->GetTriggerX()) {
 
 
 	  AliMUONLocalTriggerBoard* localBoard = 

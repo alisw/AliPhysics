@@ -37,12 +37,13 @@ public:
    UShort_t GetY4() const {return (fData[3] >> 16) &  0xFFFF;}
    UShort_t GetY3() const {return (fData[3])       &  0xFFFF;}
 
-   UChar_t   GetId()  const  {return fData[4] >> 19 &  0xF;}
-   UChar_t   GetDec() const  {return fData[4] >> 15 &  0xF;}
-   UChar_t   GetTriggerY() const {return fData[4] >> 14 &  0x1;}
-   UChar_t   GetYPos() const {return fData[4] >> 10 &  0xF;}
-   UChar_t   GetXDev() const {return fData[4] >> 5  &  0x1F;}
-   UChar_t   GetXPos() const {return fData[4]       &  0x1F;}
+   UChar_t  GetId()  const  {return fData[4] >> 19 &  0xF;}
+   UChar_t  GetDec() const  {return fData[4] >> 15 &  0xF;}
+   Bool_t   GetTriggerY() const {return (fData[4] >> 14 & 0x1);}
+   UChar_t  GetYPos() const {return fData[4] >> 10 &  0xF;}
+   UChar_t  GetXDev() const {return fData[4] >> 5  &  0x1F;}
+   Bool_t   GetTriggerX() const {return ((GetXDev() >> 4  & 0x1) && !(GetXDev() & 0xF));}
+   UChar_t  GetXPos() const {return fData[4]       &  0x1F;}
 
    Int_t   GetLpt() const {return (GetDec() & 0x3);}
    Int_t   GetHpt() const {return (GetDec() >> 2) & 0x3;}

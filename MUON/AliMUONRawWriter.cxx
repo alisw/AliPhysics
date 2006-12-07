@@ -280,7 +280,7 @@ Int_t AliMUONRawWriter::Digits2Raw()
   strcpy(name,AliDAQ::DdlFileName("MUONTRG",idDDL));
   fFile[1] = fopen(name,"w");
 
-  WriteTriggerDDL();
+   WriteTriggerDDL();
   
   // reset and close
   fclose(fFile[0]);
@@ -683,14 +683,14 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   Int_t index;
   Int_t iEntries = 0;
   Int_t iLocCard, locCard;
-  Char_t locDec, trigY, posY, posX, regOut;
+  UChar_t locDec, trigY, posY, posX, regOut;
   UInt_t regInpLpt;
   UInt_t regInpHpt;
 
-  Int_t devX;
-  Int_t version = 1; // software version
-  Int_t eventPhys = 1; // trigger type: 1 for physics, 0 for software
-  Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment
+  UInt_t devX;
+  UInt_t version = 1; // software version
+  UInt_t eventPhys = 1; // trigger type: 1 for physics, 0 for software
+  UInt_t serialNb = 0xF; // serial nb of card: all bits on for the moment
   Int_t globalFlag = 0; // set to 1 if global info present in DDL else set to 0
 
   // size of headers
