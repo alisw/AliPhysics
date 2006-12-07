@@ -322,8 +322,15 @@ void AliTRD::BuildGeometry()
   // Create the ROOT TNode geometry for the TRD
   //
 
-  TNode *node, *top;
+  TNode *node;
+  TNode *top;
   TPGON *pgon;
+
+  // The dimensions of the TRD super module
+  const Float_t kRmin  = 291.0;
+  const Float_t kRmax  = 369.0;
+  const Float_t kZmax1 = 378.35;
+  const Float_t kZmax2 = 302.0;
 
   Float_t rmin;
   Float_t rmax;
@@ -340,12 +347,12 @@ void AliTRD::BuildGeometry()
   if      (fDisplayType == 0) {
 
     pgon = new TPGON("S_TRD","TRD","void",0,360,AliTRDgeometry::Nsect(),4);
-    rmin = AliTRDgeometry::Rmin();
-    rmax = AliTRDgeometry::Rmax();
-    pgon->DefineSection(0,-AliTRDgeometry::Zmax1(),rmax,rmax);
-    pgon->DefineSection(1,-AliTRDgeometry::Zmax2(),rmin,rmax);
-    pgon->DefineSection(2, AliTRDgeometry::Zmax2(),rmin,rmax);
-    pgon->DefineSection(3, AliTRDgeometry::Zmax1(),rmax,rmax);
+    rmin = kRmin;
+    rmax = kRmax;
+    pgon->DefineSection(0,-kZmax1,rmax,rmax);
+    pgon->DefineSection(1,-kZmax2,rmin,rmax);
+    pgon->DefineSection(2, kZmax2,rmin,rmax);
+    pgon->DefineSection(3, kZmax1,rmax,rmax);
     top->cd();
     node = new TNode("TRD","TRD","S_TRD",0,0,0,"");
     node->SetLineColor(kColorTRD);
@@ -356,14 +363,13 @@ void AliTRD::BuildGeometry()
 
     Char_t name[7];
 
-    Float_t slope = (AliTRDgeometry::Zmax1() - AliTRDgeometry::Zmax2())
-                  / (AliTRDgeometry::Rmax()  - AliTRDgeometry::Rmin());
+    Float_t slope = (kZmax1 - kZmax2) / (kRmax  - kRmin);
 
-    rmin  = AliTRDgeometry::Rmin() + AliTRDgeometry::CraHght();
-    rmax  = rmin                   + AliTRDgeometry::CdrHght();
+    rmin  = kRmin + AliTRDgeometry::CraHght();
+    rmax  = rmin  + AliTRDgeometry::CdrHght();
 
-    Float_t thickness = rmin - AliTRDgeometry::Rmin();
-    zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
+    Float_t thickness = rmin - kRmin;
+    zmax2 = kZmax2 + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::DrThick();
 
     for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
@@ -388,10 +394,10 @@ void AliTRD::BuildGeometry()
     }
 
     thickness += AliTRDgeometry::DrThick();
-    rmin       = AliTRDgeometry::Rmin() + thickness;
-    rmax       = rmin + AliTRDgeometry::AmThick();
-    zmax2      = AliTRDgeometry::Zmax2() + slope * thickness;
-    zmax1      = zmax2 + slope * AliTRDgeometry::AmThick();
+    rmin       = kRmin  + thickness;
+    rmax       = rmin   + AliTRDgeometry::AmThick();
+    zmax2      = kZmax2 + slope * thickness;
+    zmax1      = zmax2  + slope * AliTRDgeometry::AmThick();
 
     for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
@@ -451,12 +457,6 @@ void AliTRD::CreateMaterials()
   Float_t wpe[2]    = {  1.0   ,  2.0    };
   Float_t dpe       = 0.95;
 
-  // For mylar (C5H4O2) 
-  Float_t amy[3]    = { 12.011 ,  1.0079, 15.9994 };
-  Float_t zmy[3]    = {  6.0   ,  1.0   ,  8.0    };
-  Float_t wmy[3]    = {  5.0   ,  4.0   ,  2.0    };
-  Float_t dmy       = 1.39;
-
   // For CO2 
   Float_t aco[2]    = { 12.011 , 15.9994 };
   Float_t zco[2]    = {  6.0   ,  8.0    };
@@ -487,11 +487,17 @@ void AliTRD::CreateMaterials()
   Float_t wEpoxy[3] = {  3.0   , 19.0   , 18.0    }; 
   Float_t dEpoxy    = 1.8 ; 
 
+  // For Araldite, low density epoxy (C18H19O3)
+  Float_t aAral[3]  = { 15.9994,  1.0079, 12.011  }; 
+  Float_t zAral[3]  = {  8.0   ,  1.0   ,  6.0    }; 
+  Float_t wAral[3]  = {  3.0   , 19.0   , 18.0    }; 
+  Float_t dAral     = 1.05; 
+
   // For air  
   Float_t aAir[4]   = { 12.011   , 14.0     , 15.9994  , 36.0      };
   Float_t zAir[4]   = {  6.0     ,  7.0     ,  8.0     , 18.0      };
   Float_t wAir[4]   = {  0.000124,  0.755267,  0.231781,  0.012827 };
-  Float_t dAir      = 1.20479E-3;
+  Float_t dAir      = 1.20479e-03;
 
   // For G10
   Float_t aG10[4]   = {  1.0079  , 12.011   , 15.9994  , 28.086    };
@@ -525,11 +531,11 @@ void AliTRD::CreateMaterials()
   AliMaterial( 6, "C"    ,  12.01,  6.0, 2.265   ,    18.8 ,    74.4);
   AliMaterial(15, "Sn"   , 118.71, 50.0, 7.31    ,     1.21,    14.8);
   AliMaterial(16, "Si"   ,  28.09, 14.0, 2.33    ,     9.36,    37.2);
+  AliMaterial(18, "Fe"   ,  55.85, 26.0, 7.87    ,     1.76,    14.8);
 
   // Mixtures 
   AliMixture(2, "Air"         , aAir,   zAir,   dAir,    4, wAir  );
   AliMixture(3, "Polyethilene", ape,    zpe,    dpe,    -2, wpe   );
-  AliMixture(7, "Mylar",        amy,    zmy,    dmy,    -3, wmy   );
   AliMixture(8, "CO2",          aco,    zco,    dco,    -2, wco   );
   AliMixture(9, "Isobutane",    ais,    zis,    dis,    -2, wis   );
   AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,    -3, wXeCO2);
@@ -537,92 +543,91 @@ void AliTRD::CreateMaterials()
   AliMixture(13,"Water",        awa,    zwa,    dwa,    -2, wwa   );
   AliMixture(14,"Plexiglas",    apg,    zpg,    dpg,    -3, wpg   );
   AliMixture(17,"Epoxy",        aEpoxy, zEpoxy, dEpoxy, -3, wEpoxy);
+  AliMixture(19,"Araldite",     aAral,  zAral,  dAral,  -3, wAral );
 
   //////////////////////////////////////////////////////////////////////////
   //     Tracking Media Parameters 
   //////////////////////////////////////////////////////////////////////////
 
   // Al Frame 
-  AliMedium(1, "Al Frame",   1, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 1,"Al Frame"   , 1,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Air 
-  AliMedium(2, "Air",        2, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
-  // Polyethilene 
-  AliMedium(3, "Radiator",   3, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
-  // Xe 
-  AliMedium(4, "Xe",         4, 1, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 2,"Air"        , 2,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
+  // Wires
+  AliMedium( 3,"Wires"      , 5,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
+  // All other ROB materials (caps, etc.)
+  AliMedium( 4,"ROB Other"  , 5,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Cu pads 
-  AliMedium(5, "Padplane",   5, 1, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 5,"Padplane"   , 5,1,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Fee + cables 
-  AliMedium(6, "Readout",    5, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 6,"Readout"    , 5,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // C frame 
-  AliMedium(7, "C Frame",    6, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
-  // Mylar foils 
-  AliMedium(8, "Mylar",      7, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 7,"C Frame"    , 6,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
+  // INOX of cooling bus bars
+  AliMedium( 8,"Cooling bus",18,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Gas-mixture (Xe/CO2) 
-  AliMedium(9, "Gas-mix",   10, 1, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
-  // Nomex-honeycomb (use carbon for the time being) 
-  AliMedium(10, "Nomex",      6, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
-  // Kapton foils (use Mylar for the time being) 
-  AliMedium(11, "Kapton",     7, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
-  // Gas-filling of the radiator 
-  AliMedium(12, "CO2",        8, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 9,"Gas-mix"    ,10,1,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
+  // Nomex-honeycomb
+  AliMedium(10,"Nomex"      ,12,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
+  // Araldite glue
+  AliMedium(11,"Glue"       ,19,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // G10-plates
-  AliMedium(13, "G10-plates",12, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(13,"G10-plates" ,12,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Cooling water
-  AliMedium(14, "Water",     13, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(14,"Water"      ,13,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Rohacell (plexiglas) for the radiator
-  AliMedium(15, "Rohacell",  14, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15,"Rohacell"   ,14,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Al layer in MCMs
-  AliMedium(16, "MCM-Al"  ,   1, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16,"MCM-Al"     , 1,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Sn layer in MCMs
-  AliMedium(17, "MCM-Sn"  ,  15, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(17,"MCM-Sn"     ,15,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Cu layer in MCMs
-  AliMedium(18, "MCM-Cu"  ,   5, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(18,"MCM-Cu"     , 5,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // G10 layer in MCMs
-  AliMedium(19, "MCM-G10" ,  12, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(19,"MCM-G10"    ,12,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Si in readout chips
-  AliMedium(20, "Chip-Si" ,  16, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(20,"Chip-Si"    ,16,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Epoxy in readout chips
-  AliMedium(21, "Chip-Ep" ,  17, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(21,"Chip-Ep"    ,17,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // PE in connectors
-  AliMedium(22, "Conn-PE" ,   3, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(22,"Conn-PE"    , 3,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Cu in connectors
-  AliMedium(23, "Chip-Cu" ,   5, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(23,"Chip-Cu"    , 5,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Al of cooling pipes
-  AliMedium(24, "Cooling" ,   1, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(24,"Cooling"    , 1,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
   // Cu in services
-  AliMedium(25, "Serv-Cu" ,   5, 0, isxfld, sxmgmx
-                , tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(25,"Serv-Cu"    , 5,0,isxfld,sxmgmx
+              ,tmaxfd,stemax,deemax,epsil,stmin);
 
   // Special tracking options for charged particles for XeCO2
   gMC->Gstpar((* fIdtmed)[9],"DRAY",1.0);
   gMC->Gstpar((* fIdtmed)[9],"STRA",1.0); 
 
   // Save the density values for the TRD absorbtion
+  Float_t dmy  = 1.39;
   fFoilDensity = dmy;
   fGasDensity  = dgm;
 
@@ -903,7 +908,9 @@ AliTRD &AliTRD::operator=(const AliTRD &trd)
   // Assignment operator
   //
 
-  if (this != &trd) ((AliTRD &) trd).Copy(*this);
+  if (this != &trd) {
+    ((AliTRD &) trd).Copy(*this);
+  }
 
   return *this;
 
