@@ -278,10 +278,6 @@ Int_t AliRawDB::Close()
 	return -1;
    }
 
-   // Create semaphore to say this file is finished
-   Int_t tfd = ::creat(Form("%s.done", fRawDB->GetName()), 0644);
-   close(tfd);
-
    delete fRawDB;
    fRawDB = 0;
    if(!error)
