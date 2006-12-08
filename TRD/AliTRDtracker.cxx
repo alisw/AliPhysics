@@ -64,18 +64,30 @@ const  Double_t AliTRDtracker::fgkMaxStep            =  2.0;  // Maximal step si
 
 //_____________________________________________________________________________
 AliTRDtracker::AliTRDtracker()
-  :AliTracker(),
-  fGeom(0),
-  fNclusters(0),
-  fClusters(0),
-  fNseeds(0),
-  fSeeds(0),
-  fNtracks(0),
-  fTracks(0),
-  fTimeBinsPerPlane(0),
-  fAddTRDseeds(kFALSE),
-  fNoTilt(kFALSE),
-  fDebugStreamer(0)
+  :AliTracker()
+  ,fHBackfit(0x0)
+  ,fHClSearch(0x0)
+  ,fHRefit(0x0)
+  ,fHX(0x0)
+  ,fHNCl(0x0)
+  ,fHNClTrack(0x0)
+  ,fHMinYPos(0x0)
+  ,fHMinYNeg(0x0)
+  ,fHMinZ(0x0)
+  ,fHMinD(0x0)
+  ,fHDeltaX(0x0)
+  ,fHXCl(0x0)
+  ,fGeom(0)
+  ,fNclusters(0)
+  ,fClusters(0)
+  ,fNseeds(0)
+  ,fSeeds(0)
+  ,fNtracks(0)
+  ,fTracks(0)
+  ,fTimeBinsPerPlane(0)
+  ,fAddTRDseeds(kFALSE)
+  ,fNoTilt(kFALSE)
+  ,fDebugStreamer(0)
 {
   //
   // Default constructor
@@ -91,11 +103,24 @@ AliTRDtracker::AliTRDtracker()
   }
 
   InitLogHists();
+
 } 
 
 //_____________________________________________________________________________
 AliTRDtracker::AliTRDtracker(const AliTRDtracker &t)
   :AliTracker(t)
+  ,fHBackfit(0x0)
+  ,fHClSearch(0x0)
+  ,fHRefit(0x0)
+  ,fHX(0x0)
+  ,fHNCl(0x0)
+  ,fHNClTrack(0x0)
+  ,fHMinYPos(0x0)
+  ,fHMinYNeg(0x0)
+  ,fHMinZ(0x0)
+  ,fHMinD(0x0)
+  ,fHDeltaX(0x0)
+  ,fHXCl(0x0)
   ,fGeom(0)
   ,fNclusters(0)
   ,fClusters(0)
@@ -111,11 +136,24 @@ AliTRDtracker::AliTRDtracker(const AliTRDtracker &t)
   //
   // Copy constructor
   //
+
 }
 
 //_____________________________________________________________________________
 AliTRDtracker::AliTRDtracker(const TFile *geomfile)
   :AliTracker()
+  ,fHBackfit(0x0)
+  ,fHClSearch(0x0)
+  ,fHRefit(0x0)
+  ,fHX(0x0)
+  ,fHNCl(0x0)
+  ,fHNClTrack(0x0)
+  ,fHMinYPos(0x0)
+  ,fHMinYNeg(0x0)
+  ,fHMinZ(0x0)
+  ,fHMinD(0x0)
+  ,fHDeltaX(0x0)
+  ,fHXCl(0x0)
   ,fGeom(0)
   ,fNclusters(0)
   ,fClusters(new TObjArray(2000))
@@ -323,7 +361,7 @@ Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
   // ExB correction
   //
   Double_t vdrift = AliTRDcalibDB::Instance()->GetVdrift(cluster->GetDetector(),0,0);
-  Double_t exB    = AliTRDcalibDB::Instance()->GetOmegaTau(vdrift, -AliTracker::GetBz()*0.1);
+  Double_t exB    = AliTRDcalibDB::Instance()->GetOmegaTau(vdrift,-AliTracker::GetBz()*0.1);
 
   AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();  
   AliTRDpadPlane    *padPlane    = commonParam->GetPadPlane(plane,chamber);
@@ -401,7 +439,7 @@ Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
 //   // ExB correction
 //   //
 //   Double_t vdrift = AliTRDcalibDB::Instance()->GetVdrift(cluster->GetDetector(),0,0);
-//   Double_t exB =   AliTRDcalibDB::Instance()->GetOmegaTau(vdrift);
+//   Double_t exB =   AliTRDcalibDB::Instance()->GetOmegaTau(vdrift,-AliTracker::GetBz()*0.1);
 //   //
 
 //   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();  
@@ -3972,8 +4010,8 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
   //if (tchi2s[bestiter]>25.) sigma2*=tchi2s[bestiter]/25.;
   //if (tchi2s[bestiter]>25.) sigma2=1000.;  // dont'accept
 
-  Double_t exB         = AliTRDcalibDB::Instance()->GetOmegaTau(
-                          AliTRDcalibDB::Instance()->GetVdrift(0,0,0), -AliTracker::GetBz()*0.1);
+  Double_t exB         = AliTRDcalibDB::Instance()->GetOmegaTau(AliTRDcalibDB::Instance()->GetVdrift(0,0,0)
+                                                               ,-AliTracker::GetBz()*0.1);
   Double_t expectederr = sigma2*sigma2 + 0.01*0.01;
   if (mpads > 3.5) {
     expectederr += (mpads - 3.5) * 0.04;

@@ -79,7 +79,6 @@ void AliTRDCommonParam::Terminate()
 //_____________________________________________________________________________
 AliTRDCommonParam::AliTRDCommonParam()
   :TObject()
-  ,fField(0)
   ,fExBOn(kFALSE)
   ,fPadPlaneArray(0)
 {
@@ -99,19 +98,7 @@ void AliTRDCommonParam::Init()
   //
   
   // E x B effects
-  fExBOn          = kTRUE;
-
-  // The magnetic field strength in Tesla
-  fField = AliTracker::GetBz() * 0.1; 
-
-  if (TMath::Abs(fField) < 1e-5) {
-    Info("Init", "MC B field ... ");
-    Double_t x[3] = { 0.0, 0.0, 0.0 };
-    Double_t b[3]; 	 
-    gAlice->Field(x,b);  // b[] is in kilo Gauss 	 
-    fField = b[2] * 0.1; // Tesla
-  }
-
+  fExBOn         = kTRUE;
   
   // ----------------------------------------------------------------------------
   // The pad planes
@@ -146,7 +133,6 @@ AliTRDCommonParam::~AliTRDCommonParam()
 //_____________________________________________________________________________
 AliTRDCommonParam::AliTRDCommonParam(const AliTRDCommonParam &p)
   :TObject(p)
-  ,fField(p.fField)
   ,fExBOn(p.fExBOn)
   ,fPadPlaneArray(0)
 {
@@ -184,7 +170,6 @@ void AliTRDCommonParam::Copy(TObject &p) const
   }  
 
   target->fExBOn = fExBOn;
-  target->fField = fField;
 
 }
 

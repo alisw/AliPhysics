@@ -635,7 +635,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   for (Int_t isect = 0; isect < kNsect; isect++) {
     if (fSMstatus[isect]) {
       sprintf(cTagV,"BTRD%d",isect);
-      gMC->Gspos("UTR1",1,cTagV,xpos,ypos,zpos,0,"ONLY");
+      gMC->Gspos("UTR1",1+isect,cTagV,xpos,ypos,zpos,0,"ONLY");
     }
   }
 

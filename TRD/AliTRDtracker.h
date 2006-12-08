@@ -39,9 +39,9 @@ class TTreeSRedirector;
 
 class AliTRDtracker : public AliTracker { 
 
-  // histograms
-  TH1D *fHBackfit;  // histogram for back propagation
-  TH1D *fHClSearch; // cluster search
+  // Histograms
+  TH1D *fHBackfit;  // Histogram for back propagation
+  TH1D *fHClSearch; // Cluster search
   TH1D *fHRefit;
   
   TH1D *fHX;
@@ -59,7 +59,6 @@ class AliTRDtracker : public AliTracker {
 
   void InitLogHists();
   void SaveLogHists();
-
 
  public:
 

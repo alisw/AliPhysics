@@ -31,10 +31,8 @@ class AliTRDCommonParam : public TObject
 
     virtual void    Copy(TObject &p) const;
     
-    void            SetField(Float_t field)                        { fField = field; };
     void            SetExB(Int_t exbOn = 1)                        { fExBOn = exbOn; };
     
-    Float_t         GetField()                               const { return fField;  };
     Bool_t          ExBOn()                                  const { return fExBOn;  };
     
     AliTRDpadPlane *GetPadPlane(Int_t p, Int_t c) const;
@@ -50,7 +48,6 @@ class AliTRDCommonParam : public TObject
     
     void Init();
     
-    Float_t                   fField;         //  Magnetic field
     Int_t                     fExBOn;         //  Switch for the ExB effects
   
     TObjArray                *fPadPlaneArray; //! Array of pad plane objects
@@ -60,7 +57,7 @@ class AliTRDCommonParam : public TObject
     // This is a singleton, constructor is private!  
     AliTRDCommonParam();
   
-    ClassDef(AliTRDCommonParam,1)             // The constant parameters common to simulation and reconstruction       
+    ClassDef(AliTRDCommonParam,2)             // The constant parameters common to simulation and reconstruction       
 
 };
 
