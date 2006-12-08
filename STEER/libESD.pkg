@@ -11,6 +11,7 @@ SRCS = AliESD.cxx AliESDfriend.cxx\
        AliTrackPointArray.cxx \
        AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx \
        AliESDMultITS.cxx \
+       AliESDVZERO.cxx \
        AliMultiplicity.cxx AliXMLCollection.cxx \
        AliSelector.cxx
 

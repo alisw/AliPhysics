@@ -28,6 +28,7 @@
 #include "AliESDCaloCluster.h"
 #include "AliESDv0.h"
 #include "AliESDFMD.h"
+#include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 
 class AliESDfriend;
@@ -193,11 +194,11 @@ public:
 
   void  Print(Option_t *option="") const;
 
-  void SetFMDData(AliESDFMD * obj) {
-    fESDFMD = new AliESDFMD(*obj);
-  }
-
-  AliESDFMD * GetFMDData(){ return fESDFMD;}
+  void SetFMDData(AliESDFMD * obj) { fESDFMD = new AliESDFMD(*obj); }
+  AliESDFMD *GetFMDData(){ return fESDFMD; }
+   
+  void SetVZEROData(AliESDVZERO * obj) { fESDVZERO = new AliESDVZERO(*obj); }
+  AliESDVZERO *GetVZEROData(){ return fESDVZERO; }
    
 protected:
   AliESD(const AliESD&);
@@ -245,9 +246,10 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
  
-  AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
+  AliESDFMD   *fESDFMD;   // FMD object containing rough multiplicity
+  AliESDVZERO *fESDVZERO; // VZERO object containing rough multiplicity
 
-  ClassDef(AliESD,15)  //ESD class 
+  ClassDef(AliESD,16)  //ESD class 
 };
 #endif 
 

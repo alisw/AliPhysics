@@ -52,6 +52,8 @@
 #pragma link C++ class  AliFMDMap+;
 #pragma link C++ class  AliFMDFloatMap+;
 
+#pragma link C++ class  AliESDVZERO+;
+
 #pragma link C++ class  AliESDMultITS+;
 #pragma link C++ class  AliMultiplicity+;
 

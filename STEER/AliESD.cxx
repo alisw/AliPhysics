@@ -62,7 +62,8 @@ AliESD::AliESD():
   fFirstEMCALCluster(-1),
   fPHOSClusters(0), 
   fFirstPHOSCluster(-1),
-  fESDFMD(0x0)
+  fESDFMD(0x0),
+  fESDVZERO(0x0)
 {
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = 0;
@@ -105,7 +106,8 @@ AliESD::AliESD(const AliESD& esd):
   fFirstEMCALCluster(esd.fFirstEMCALCluster),
   fPHOSClusters(esd.fPHOSClusters), 
   fFirstPHOSCluster(esd.fFirstPHOSCluster),
-  fESDFMD(esd.fESDFMD)
+  fESDFMD(esd.fESDFMD),
+  fESDVZERO(esd.fESDVZERO)
 {
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = esd.fT0time[i];
@@ -154,6 +156,7 @@ AliESD & AliESD::operator=(const AliESD& source) {
   fPHOSClusters = source.fPHOSClusters;
   fFirstPHOSCluster = source.fFirstPHOSCluster;
   fESDFMD = source.fESDFMD;
+  fESDVZERO = source.fESDVZERO;
 
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = source.fT0time[i];
@@ -182,6 +185,7 @@ AliESD::~AliESD()
   fKinks.Delete();
   fCaloClusters.Delete();
   delete fESDFMD;
+  delete fESDVZERO;
 }
 
 //______________________________________________________________________________
@@ -264,6 +268,7 @@ void AliESD::Print(Option_t *) const
   printf("                 phos      %d\n", GetNumberOfPHOSClusters());
   printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
   printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
+  printf("                 VZERO     %s\n", (fESDVZERO ? "yes" : "no"));
 }
 
 void AliESD::SetESDfriend(const AliESDfriend *ev) {
