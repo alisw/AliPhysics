@@ -701,22 +701,23 @@ void VSDCreator::ConvertV0()
 
     mV0.status = av->GetStatus();
     // Point of closest approach
-    mV0.V_ca.x = av->GetXr(0); 
-    mV0.V_ca.y = av->GetXr(1);
-    mV0.V_ca.z = av->GetXr(2);
+    av->GetXYZ(pos[0],pos[1],pos[2]);
+    mV0.V_ca.x = pos[0]; 
+    mV0.V_ca.y = pos[1];
+    mV0.V_ca.z = pos[2];
     // set birth vertex of neutral particle     
-    { Double_t p[3];
-      av->GetXYZ(p[0], p[1], p[2]);
-      mV0.V0_birth.Set(p);
-    }
+    av->GetXYZ(pos[0], pos[1], pos[2]);
+    mV0.V0_birth.Set(pos);
 
     // momentum and position of negative particle
-    mV0.P_neg.Set(av->GetPMp());
-    av->GetParamM()->GetXYZ(pos);
+    av->GetParamN()->GetPxPyPz(pos);
+    mV0.P_neg.Set(pos);
+    av->GetParamN()->GetXYZ(pos);
     mV0.V_neg.Set(pos);
 
     // momentum and position of positive particle
-    mV0.P_pos.Set(av->GetPPp());
+    av->GetParamP()->GetPxPyPz(pos);
+    mV0.P_pos.Set(pos);
     av->GetParamP()->GetXYZ(pos);
     mV0.V_pos.Set(pos);
 

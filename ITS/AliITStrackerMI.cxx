@@ -641,12 +641,12 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       AliESDv0 * vertex = fEsd->GetV0(index);
       if (vertex->GetStatus()<0) continue;     // rejected V0
       //
-      if (esd->GetSign()>0) {
-        vertex->SetIndex(0,esdindex);
-      }
-      else{
-        vertex->SetIndex(1,esdindex);
-      }
+            if (esd->GetSign()>0) {
+              vertex->SetIndex(0,esdindex);
+            }
+            else{
+              vertex->SetIndex(1,esdindex);
+            }
     }
   }
   TObjArray *bestarray = (TObjArray*)fBestHypothesys.At(esdindex);
@@ -954,7 +954,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	vertex->SetIndex(1,esdindex);
       }
       //find nearest layer with track info
-      Int_t nearestold  = GetNearestLayer(vertex->GetXrp());
+      Double_t xrp[3]; vertex->GetXYZ(xrp[0],xrp[1],xrp[2]);  //I.B.
+      Int_t nearestold  = GetNearestLayer(xrp);               //I.B.
       Int_t nearest     = nearestold; 
       for (Int_t ilayer =nearest;ilayer<8;ilayer++){
 	if (ntracks[nearest]==0){
@@ -967,12 +968,12 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	Bool_t accept = track.GetNormChi2(nearest)<10; 
 	if (accept){
 	  if (track.GetSign()>0) {
-	    vertex->SetP(track);
+	    vertex->SetParamP(track);
 	    vertex->Update(fprimvertex);
 	    //	    vertex->SetIndex(0,track.fESDtrack->GetID()); 
 	    if (track.GetNumberOfClusters()>2) AddTrackHypothesys(new AliITStrackMI(track), esdindex);
 	  }else{
-	    vertex->SetM(track);
+	    vertex->SetParamN(track);
 	    vertex->Update(fprimvertex);
 	    //vertex->SetIndex(1,track.fESDtrack->GetID());
 	    if (track.GetNumberOfClusters()>2) AddTrackHypothesys(new AliITStrackMI(track), esdindex);
@@ -3538,7 +3539,8 @@ void AliITStrackerMI::UpdateTPCV0(AliESD *event){
     }
     if (vertex->GetStatus()==-100) continue;
     //
-    Int_t clayer = GetNearestLayer(vertex->GetXrp());
+    Double_t xrp[3]; vertex->GetXYZ(xrp[0],xrp[1],xrp[2]);  //I.B.
+    Int_t clayer = GetNearestLayer(xrp);                    //I.B.
     vertex->SetNBefore(clayer);        //
     vertex->SetChi2Before(9*clayer);   //
     vertex->SetNAfter(6-clayer);       //
@@ -3948,20 +3950,20 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       }      
       //
       //
-      pvertex->SetM(*track0);
-      pvertex->SetP(*track1);
+      pvertex->SetParamN(*track0);
+      pvertex->SetParamP(*track1);
       pvertex->Update(primvertex);
       pvertex->SetClusters(track0->ClIndex(),track1->ClIndex());  // register clusters
 
       if (pvertex->GetRr()<kMinR) continue;
       if (pvertex->GetRr()>kMaxR) continue;
-      if (pvertex->GetPointAngle()<kMinPointAngle) continue;
-      if (pvertex->GetDist2()>maxDist) continue;
-      pvertex->SetLab(0,track0->GetLabel());
-      pvertex->SetLab(1,track1->GetLabel());
+      if (pvertex->GetV0CosineOfPointingAngle()<kMinPointAngle) continue;
+//Bo:      if (pvertex->GetDist2()>maxDist) continue;
+      if (pvertex->GetDcaV0Daughters()>maxDist) continue;
+//Bo:        pvertex->SetLab(0,track0->GetLabel());
+//Bo:        pvertex->SetLab(1,track1->GetLabel());
       pvertex->SetIndex(0,track0->GetESDtrack()->GetID());
       pvertex->SetIndex(1,track1->GetESDtrack()->GetID());
-      
       //      
       AliITStrackMI * htrackc0 = trackc0 ? trackc0:dummy;      
       AliITStrackMI * htrackc1 = trackc1 ? trackc1:dummy;
@@ -3984,7 +3986,8 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       Float_t minchi2before1=16;
       Float_t minchi2after0 =16;
       Float_t minchi2after1 =16;
-      Int_t maxLayer = GetNearestLayer(pvertex->GetXrp());
+      Double_t xrp[3]; pvertex->GetXYZ(xrp[0],xrp[1],xrp[2]);  //I.B.
+      Int_t maxLayer = GetNearestLayer(xrp);                   //I.B.
       
       if (array0b) for (Int_t i=0;i<5;i++){
 	// best track after vertex
@@ -4091,19 +4094,20 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       }
       //       
       AliV0 vertex2;
-      vertex2.SetM(*track0b);
-      vertex2.SetP(*track1b);
+      vertex2.SetParamN(*track0b);
+      vertex2.SetParamP(*track1b);
       vertex2.Update(primvertex);
-      if (vertex2.GetDist2()<=pvertex->GetDist2()&&(vertex2.GetPointAngle()>=pvertex->GetPointAngle())){
-	pvertex->SetM(*track0b);
-	pvertex->SetP(*track1b);
+      //Bo:      if (vertex2.GetDist2()<=pvertex->GetDist2()&&(vertex2.GetV0CosineOfPointingAngle()>=pvertex->GetV0CosineOfPointingAngle())){
+      if (vertex2.GetDcaV0Daughters()<=pvertex->GetDcaV0Daughters()&&(vertex2.GetV0CosineOfPointingAngle()>=pvertex->GetV0CosineOfPointingAngle())){
+	pvertex->SetParamN(*track0b);
+	pvertex->SetParamP(*track1b);
 	pvertex->Update(primvertex);
 	pvertex->SetClusters(track0b->ClIndex(),track1b->ClIndex());  // register clusters
 	pvertex->SetIndex(0,track0->GetESDtrack()->GetID());
 	pvertex->SetIndex(1,track1->GetESDtrack()->GetID());
       }
       pvertex->SetDistSigma(sigmad);
-      pvertex->SetDistNorm(pvertex->GetDist2()/sigmad);       
+      //Bo:      pvertex->SetDistNorm(pvertex->GetDist2()/sigmad);       
       pvertex->SetNormDCAPrim(normdist[itrack0],normdist[itrack1]);
       //
       // define likelihhod and causalities
@@ -4147,7 +4151,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       //         
       Bool_t v0OK = kTRUE;
       Float_t p12 = pvertex->GetParamP()->GetParameter()[4]*pvertex->GetParamP()->GetParameter()[4];
-      p12        += pvertex->GetParamM()->GetParameter()[4]*pvertex->GetParamM()->GetParameter()[4];
+      p12        += pvertex->GetParamN()->GetParameter()[4]*pvertex->GetParamN()->GetParameter()[4];
       p12         = TMath::Sqrt(p12);                             // "mean" momenta
       Float_t    sigmap0   = 0.0001+0.001/(0.1+pvertex->GetRr()); 
       Float_t    sigmap    = 0.5*sigmap0*(0.6+0.4*p12);           // "resolution: of point angle - as a function of radius and momenta
@@ -4156,12 +4160,14 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       Float_t causalityB  = TMath::Sqrt(TMath::Min(pvertex->GetCausalityP()[2],Float_t(0.7))*
 					TMath::Min(pvertex->GetCausalityP()[3],Float_t(0.7)));
       //
-      Float_t likelihood0 = (TMath::Exp(-pvertex->GetDistNorm())+0.1) *(pvertex->GetDist2()<0.5)*(pvertex->GetDistNorm()<5);
+      //Bo:      Float_t likelihood0 = (TMath::Exp(-pvertex->GetDistNorm())+0.1) *(pvertex->GetDist2()<0.5)*(pvertex->GetDistNorm()<5);
+      Float_t lDistNorm = pvertex->GetDcaV0Daughters()/pvertex->GetDistSigma();
+      Float_t likelihood0 = (TMath::Exp(-lDistNorm)+0.1) *(pvertex->GetDcaV0Daughters()<0.5)*(lDistNorm<5);
 
-      Float_t likelihood1 = TMath::Exp(-(1.0001-pvertex->GetPointAngle())/sigmap)+
-	0.4*TMath::Exp(-(1.0001-pvertex->GetPointAngle())/(4.*sigmap))+
-	0.4*TMath::Exp(-(1.0001-pvertex->GetPointAngle())/(8.*sigmap))+
-	0.1*TMath::Exp(-(1.0001-pvertex->GetPointAngle())/0.01);
+      Float_t likelihood1 = TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/sigmap)+
+	0.4*TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/(4.*sigmap))+
+	0.4*TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/(8.*sigmap))+
+	0.1*TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/0.01);
       //
       if (causalityA<kCausality0Cut)                                          v0OK = kFALSE;
       if (TMath::Sqrt(likelihood0*likelihood1)<kLikelihood01Cut)              v0OK = kFALSE;
@@ -4200,8 +4206,10 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       //      if (rejectBase) {
       //	pvertex->SetStatus(-100);
       //}
-      if (pvertex->GetPointAngle()>kMinPointAngle2) {
-	  pvertex->SetESDindexes(track0->GetESDtrack()->GetID(),track1->GetESDtrack()->GetID());
+      if (pvertex->GetV0CosineOfPointingAngle()>kMinPointAngle2) {
+	//Bo:	  pvertex->SetESDindexes(track0->GetESDtrack()->GetID(),track1->GetESDtrack()->GetID());
+	pvertex->SetIndex(0,track0->GetESDtrack()->GetID());//Bo: consistency 0 for neg
+	pvertex->SetIndex(1,track1->GetESDtrack()->GetID());//Bo: consistency 1 for pos
 	if (v0OK){
 	  //	  AliV0vertex vertexjuri(*track0,*track1);
 	  //	  vertexjuri.SetESDindexes(track0->fESDtrack->GetID(),track1->fESDtrack->GetID());
@@ -4209,6 +4217,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	  pvertex->SetStatus(100);
 	}
         pvertex->SetOnFlyStatus(kTRUE);
+        pvertex->ChangeMassHypothesis(kK0Short);
 	event->AddV0(pvertex);
       }
     }
@@ -4251,11 +4260,12 @@ void AliITStrackerMI::RefitV02(AliESD *event)
     if (!esd0||!esd1) continue;
     AliITStrackMI tpc0(*esd0);  
     AliITStrackMI tpc1(*esd1);
-    Double_t alpha =TMath::ATan2(v0mi->GetXr(1),v0mi->GetXr(0));
+    Double_t x,y,z; v0mi->GetXYZ(x,y,z); //I.B. 
+    Double_t alpha =TMath::ATan2(y,x);   //I.B.
     if (v0mi->GetRr()>85){
       if (tpc0.Propagate(alpha,v0mi->GetRr())&&tpc1.Propagate(alpha,v0mi->GetRr())){
-	v0temp.SetM(tpc0);
-	v0temp.SetP(tpc1);
+	v0temp.SetParamN(tpc0);
+	v0temp.SetParamP(tpc1);
 	v0temp.Update(primvertex);
 	if (kFALSE) cstream<<"Refit"<<
 	  "V0.="<<v0mi<<
@@ -4263,9 +4273,10 @@ void AliITStrackerMI::RefitV02(AliESD *event)
 	  "Tr0.="<<&tpc0<<
 	  "Tr1.="<<&tpc1<<
 	  "\n";
-	if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetPointAngle()>v0mi->GetPointAngle()){
-	  v0mi->SetM(tpc0);
-	  v0mi->SetP(tpc1);
+	//Bo:	if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetV0CosineOfPointingAngle()>v0mi->GetV0CosineOfPointingAngle()){
+	if (v0temp.GetDcaV0Daughters()<v0mi->GetDcaV0Daughters() || v0temp.GetV0CosineOfPointingAngle()>v0mi->GetV0CosineOfPointingAngle()){
+	  v0mi->SetParamN(tpc0);
+	  v0mi->SetParamP(tpc1);
 	  v0mi->Update(primvertex);
 	}
       }
@@ -4275,8 +4286,8 @@ void AliITStrackerMI::RefitV02(AliESD *event)
       CorrectForDeadZoneMaterial(&tpc0);
       CorrectForDeadZoneMaterial(&tpc1);
       if (tpc0.Propagate(alpha,v0mi->GetRr())&&tpc1.Propagate(alpha,v0mi->GetRr())){
-	v0temp.SetM(tpc0);
-	v0temp.SetP(tpc1);
+	v0temp.SetParamN(tpc0);
+	v0temp.SetParamP(tpc1);
 	v0temp.Update(primvertex);
 	if (kFALSE) cstream<<"Refit"<<
 	  "V0.="<<v0mi<<
@@ -4284,9 +4295,10 @@ void AliITStrackerMI::RefitV02(AliESD *event)
 	  "Tr0.="<<&tpc0<<
 	  "Tr1.="<<&tpc1<<
 	  "\n";
-	if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetPointAngle()>v0mi->GetPointAngle()){
-	  v0mi->SetM(tpc0);
-	  v0mi->SetP(tpc1);
+	//Bo:	if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetV0CosineOfPointingAngle()>v0mi->GetV0CosineOfPointingAngle()){
+	if (v0temp.GetDcaV0Daughters()<v0mi->GetDcaV0Daughters() || v0temp.GetV0CosineOfPointingAngle()>v0mi->GetV0CosineOfPointingAngle()){
+	  v0mi->SetParamN(tpc0);
+	  v0mi->SetParamP(tpc1);
 	  v0mi->Update(primvertex);
 	}	
       }
@@ -4296,8 +4308,8 @@ void AliITStrackerMI::RefitV02(AliESD *event)
     CorrectForDeadZoneMaterial(&tpc1);    
     //    if (tpc0.Propagate(alpha,v0mi->GetRr())&&tpc1.Propagate(alpha,v0mi->GetRr())){
     if (RefitAt(v0mi->GetRr(),&tpc0, v0mi->GetClusters(0)) && RefitAt(v0mi->GetRr(),&tpc1, v0mi->GetClusters(1))){
-      v0temp.SetM(tpc0);
-      v0temp.SetP(tpc1);
+      v0temp.SetParamN(tpc0);
+      v0temp.SetParamP(tpc1);
       v0temp.Update(primvertex);
       if (kFALSE) cstream<<"Refit"<<
 	"V0.="<<v0mi<<
@@ -4305,9 +4317,10 @@ void AliITStrackerMI::RefitV02(AliESD *event)
 	"Tr0.="<<&tpc0<<
 	"Tr1.="<<&tpc1<<
 	"\n";
-      if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetPointAngle()>v0mi->GetPointAngle()){
-	v0mi->SetM(tpc0);
-	v0mi->SetP(tpc1);
+      //Bo:      if (v0temp.GetDist2()<v0mi->GetDist2() || v0temp.GetV0CosineOfPointingAngle()>v0mi->GetV0CosineOfPointingAngle()){
+      if (v0temp.GetDcaV0Daughters()<v0mi->GetDcaV0Daughters() || v0temp.GetV0CosineOfPointingAngle()>v0mi->GetV0CosineOfPointingAngle()){
+	v0mi->SetParamN(tpc0);
+	v0mi->SetParamP(tpc1);
 	v0mi->Update(primvertex);
       }	
     }    

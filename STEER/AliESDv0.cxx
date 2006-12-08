@@ -45,26 +45,21 @@ AliESDv0::AliESDv0() :
   fPdgCode(kK0Short),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
   fDcaV0Daughters(0),
-  fChi2V0(1.e+33),
-  fNidx(0),
-  fPidx(0),
-  fParamP(),
+  fPointAngle(0),
+  fChi2V0(31.),
+  fNidx(-1),
   fParamN(),
-  fID(0),
-  fDist1(-1),
-  fDist2(-1),
+  fPidx(-1),
+  fParamP(),
   fRr(-1),
   fStatus(0),
-  fRow0(-1),
-  fDistNorm(0),
   fDistSigma(0),
   fChi2Before(0),
   fNBefore(0),
   fChi2After(0),
   fNAfter(0),
   fPointAngleFi(0),
-  fPointAngleTh(0),
-  fPointAngle(0)
+  fPointAngleTh(0)
 {
   //--------------------------------------------------------------------
   // Default constructor  (K0s)
@@ -78,19 +73,11 @@ AliESDv0::AliESDv0() :
 
   for (Int_t i=0; i<6; i++) {
     fPosCov[i]= 0.;
-    fNmomCov[i] = 0.;
-    fPmomCov[i] = 0.;
   }
 
-  for (Int_t i=0;i<5;i++){
-    fRP[i]=fRM[i]=0;
-  }
-  fLab[0]=fLab[1]=-1;
-  fIndex[0]=fIndex[1]=-1;
   for (Int_t i=0;i<6;i++){fClusters[0][i]=0; fClusters[1][i]=0;}
   fNormDCAPrim[0]=fNormDCAPrim[1]=0;
-  for (Int_t i=0;i<3;i++){fPP[i]=fPM[i]=fXr[i]=fAngle[i]=0;}
-  for (Int_t i=0;i<3;i++){fOrder[i]=0;}
+  for (Int_t i=0;i<3;i++){fAngle[i]=0;}
   for (Int_t i=0;i<4;i++){fCausality[i]=0;}
 }
 
@@ -100,26 +87,21 @@ AliESDv0::AliESDv0(const AliESDv0& v0) :
   fPdgCode(v0.fPdgCode),
   fEffMass(v0.fEffMass),
   fDcaV0Daughters(v0.fDcaV0Daughters),
+  fPointAngle(v0.fPointAngle),
   fChi2V0(v0.fChi2V0),
   fNidx(v0.fNidx),
+  fParamN(v0.fParamN),
   fPidx(v0.fPidx),
   fParamP(v0.fParamP),
-  fParamN(v0.fParamN),
-  fID(v0.fID),
-  fDist1(v0.fDist1),
-  fDist2(v0.fDist2),
   fRr(v0.fRr),
   fStatus(v0.fStatus),
-  fRow0(v0.fRow0),
-  fDistNorm(v0.fDistNorm),
   fDistSigma(v0.fDistSigma),
   fChi2Before(v0.fChi2Before),
   fNBefore(v0.fNBefore),
   fChi2After(v0.fChi2After),
   fNAfter(v0.fNAfter),
   fPointAngleFi(v0.fPointAngleFi),
-  fPointAngleTh(v0.fPointAngleTh),
-  fPointAngle(v0.fPointAngle)
+  fPointAngleTh(v0.fPointAngleTh)
 {
   //--------------------------------------------------------------------
   // The copy constructor
@@ -132,29 +114,17 @@ AliESDv0::AliESDv0(const AliESDv0& v0) :
   }
   for (int i=0; i<6; i++) {
     fPosCov[i]  = v0.fPosCov[i];
-    fNmomCov[i] = v0.fNmomCov[i];
-    fPmomCov[i] = v0.fPmomCov[i];
   }
 
-  for (Int_t i=0;i<5;i++){
-    fRP[i]=v0.fRP[i];
-    fRM[i]=v0.fRM[i];
-  }
   for (Int_t i=0; i<2; i++) {
-     fLab[i]=v0.fLab[i];
-     fIndex[i]=v0.fIndex[i];
-     fNormDCAPrim[i]=v0.fNormDCAPrim[i];
+    fNormDCAPrim[i]=v0.fNormDCAPrim[i];
   }
   for (Int_t i=0;i<6;i++){
       fClusters[0][i]=v0.fClusters[0][i]; 
       fClusters[1][i]=v0.fClusters[1][i];
   }
   for (Int_t i=0;i<3;i++){
-      fPP[i]=v0.fPP[i];
-      fPM[i]=v0.fPM[i];
-      fXr[i]=v0.fXr[i];
       fAngle[i]=v0.fAngle[i];
-      fOrder[i]=v0.fOrder[i];
   }
   for (Int_t i=0;i<4;i++){fCausality[i]=v0.fCausality[i];}
 }
@@ -166,26 +136,21 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   fPdgCode(kK0Short),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
   fDcaV0Daughters(0),
-  fChi2V0(1.e+33),
+  fPointAngle(0),
+  fChi2V0(31.),
   fNidx(i1),
+  fParamN(t1),
   fPidx(i2),
-  fParamP(),
-  fParamN(),
-  fID(0),
-  fDist1(-1),
-  fDist2(-1),
+  fParamP(t2),
   fRr(-1),
   fStatus(0),
-  fRow0(-1),
-  fDistNorm(0),
   fDistSigma(0),
   fChi2Before(0),
   fNBefore(0),
   fChi2After(0),
   fNAfter(0),
   fPointAngleFi(0),
-  fPointAngleTh(0),
-  fPointAngle(0)
+  fPointAngleTh(0)
 {
   //--------------------------------------------------------------------
   // Main constructor  (K0s)
@@ -193,35 +158,24 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
 
   for (Int_t i=0; i<6; i++) {
     fPosCov[i]= 0.;
-    fNmomCov[i] = 0.;
-    fPmomCov[i] = 0.;
   }
 
   //Trivial estimation of the vertex parameters
-  Double_t x=t1.GetX(), alpha=t1.GetAlpha();
-  const Double_t *par=t1.GetParameter();
-  Double_t pt=1./TMath::Abs(par[4]), 
-           phi=TMath::ASin(par[2]) + alpha, 
-           cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
-
-  Double_t px1=pt*TMath::Cos(phi), py1=pt*TMath::Sin(phi), pz1=pt*par[3];
-  Double_t x1=x*cs - par[0]*sn;
-  Double_t y1=x*sn + par[0]*cs;
-  Double_t z1=par[1];
+  Double_t alpha=t1.GetAlpha(), cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
+  Double_t tmp[3];
+  t1.GetPxPyPz(tmp);
+  Double_t px1=tmp[0], py1=tmp[1], pz1=tmp[2];
+  t1.GetXYZ(tmp);
+  Double_t  x1=tmp[0],  y1=tmp[1],  z1=tmp[2];
   const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
   Double_t sx1=sn*sn*t1.GetSigmaY2()+ss, sy1=cs*cs*t1.GetSigmaY2()+ss; 
 
 
-
-  x=t2.GetX(); alpha=t2.GetAlpha(); par=t2.GetParameter();
-  pt=1./TMath::Abs(par[4]);
-  phi=TMath::ASin(par[2]) + alpha;  
-  cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
-
-  Double_t px2=pt*TMath::Cos(phi), py2=pt*TMath::Sin(phi), pz2=pt*par[3];
-  Double_t x2=x*cs - par[0]*sn;
-  Double_t y2=x*sn + par[0]*cs;
-  Double_t z2=par[1];
+  alpha=t2.GetAlpha(); cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
+  t2.GetPxPyPz(tmp);
+  Double_t px2=tmp[0], py2=tmp[1], pz2=tmp[2];
+  t2.GetXYZ(tmp);
+  Double_t  x2=tmp[0],  y2=tmp[1],  z2=tmp[2];
   Double_t sx2=sn*sn*t2.GetSigmaY2()+ss, sy2=cs*cs*t2.GetSigmaY2()+ss; 
     
   Double_t sz1=t1.GetSigmaZ2(), sz2=t2.GetSigmaZ2();
@@ -234,13 +188,10 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   fNmom[0]=px1; fNmom[1]=py1; fNmom[2]=pz1; 
   fPmom[0]=px2; fPmom[1]=py2; fPmom[2]=pz2;
 
-  Double_t e1=TMath::Sqrt(0.13957*0.13957 + px1*px1 + py1*py1 + pz1*pz1);
-  Double_t e2=TMath::Sqrt(0.13957*0.13957 + px2*px2 + py2*py2 + pz2*pz2);
-  fEffMass=TMath::Sqrt((e1+e2)*(e1+e2)-
-    (px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
-
-  fChi2V0=7.;   
-
+  for (Int_t i=0;i<6;i++){fClusters[0][i]=0; fClusters[1][i]=0;}
+  fNormDCAPrim[0]=fNormDCAPrim[1]=0;
+  for (Int_t i=0;i<3;i++){fAngle[i]=0;}
+  for (Int_t i=0;i<4;i++){fCausality[i]=0;}
 }
 
 AliESDv0::~AliESDv0(){
@@ -256,15 +207,24 @@ Double_t AliESDv0::ChangeMassHypothesis(Int_t code) {
   // This function changes the mass hypothesis for this V0
   // and returns the "kinematical quality" of this hypothesis 
   //--------------------------------------------------------------------
-  Double_t nmass=0.13957, pmass=0.13957, mass=0.49767, ps=0.206;
+  static
+  Double_t piMass=TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
+  static
+  Double_t prMass=TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
+  static
+  Double_t k0Mass=TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+  static
+  Double_t l0Mass=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+
+  Double_t nmass=piMass, pmass=piMass, mass=k0Mass, ps=0.206;
 
   fPdgCode=code;
 
   switch (code) {
   case kLambda0:
-    nmass=0.13957; pmass=0.93827; mass=1.1157; ps=0.101; break;
+    nmass=piMass; pmass=prMass; mass=l0Mass; ps=0.101; break;
   case kLambda0Bar:
-    pmass=0.13957; nmass=0.93827; mass=1.1157; ps=0.101; break;
+    pmass=piMass; nmass=prMass; mass=l0Mass; ps=0.101; break;
   case kK0Short: 
     break;
   default:
@@ -315,7 +275,7 @@ void AliESDv0::GetXYZ(Double_t &x, Double_t &y, Double_t &z) const {
   z=fPos[2]; 
 }
 
-Double_t AliESDv0::GetD(Double_t x0, Double_t y0, Double_t z0) const {
+Float_t AliESDv0::GetD(Double_t x0, Double_t y0, Double_t z0) const {
   //--------------------------------------------------------------------
   // This function returns V0's impact parameter
   //--------------------------------------------------------------------
@@ -332,7 +292,7 @@ Double_t AliESDv0::GetD(Double_t x0, Double_t y0, Double_t z0) const {
 }
 
 
-Double_t AliESDv0::GetV0CosineOfPointingAngle(Double_t& refPointX, Double_t& refPointY, Double_t& refPointZ) const {
+Float_t AliESDv0::GetV0CosineOfPointingAngle(Double_t& refPointX, Double_t& refPointY, Double_t& refPointZ) const {
   // calculates the pointing angle of the V0 wrt a reference point
 
   Double_t momV0[3]; //momentum of the V0
@@ -399,11 +359,11 @@ Double_t AliESDv0::GetSigmaAP0(){
   //
   //Sigma parameterization using covariance matrices
   //
-  Double_t prec  = TMath::Sqrt((fPM[0]+fPP[0])*(fPM[0]+fPP[0])
-			       +(fPM[1]+fPP[1])*(fPM[1]+fPP[1])
-			       +(fPM[2]+fPP[2])*(fPM[2]+fPP[2]));
-  Double_t normp = TMath::Sqrt(fPP[0]*fPP[0]+fPP[1]*fPP[1]+fPP[2]*fPP[2])/prec;  // fraction of the momenta
-  Double_t normm = TMath::Sqrt(fPM[0]*fPM[0]+fPM[1]*fPM[1]+fPM[2]*fPM[2])/prec;  
+  Double_t prec  = TMath::Sqrt((fNmom[0]+fPmom[0])*(fNmom[0]+fPmom[0])
+			      +(fNmom[1]+fPmom[1])*(fNmom[1]+fPmom[1])
+			      +(fNmom[2]+fPmom[2])*(fNmom[2]+fPmom[2]));
+  Double_t normp = TMath::Sqrt(fPmom[0]*fPmom[0]+fPmom[1]*fPmom[1]+fPmom[2]*fPmom[2])/prec;  // fraction of the momenta
+  Double_t normm = TMath::Sqrt(fNmom[0]*fNmom[0]+fNmom[1]*fNmom[1]+fNmom[2]*fNmom[2])/prec;  
   const Double_t * cp      = fParamP.GetCovariance();
   const Double_t * cm      = fParamN.GetCovariance();
   Double_t sigmaAP0 = fgkParams.fPSigmaOffsetAP0*fgkParams.fPSigmaOffsetAP0;                           // minimal part
@@ -518,7 +478,9 @@ Double_t AliESDv0::GetLikelihoodD(Int_t mode0, Int_t mode1){
     sigmaD = GetMinimaxSigmaD0();    // mode 2 - minimax sigma
     break;
   }
-  Double_t dNorm = TMath::Min(fDist2/sigmaD,50.);  
+
+  //Bo:  Double_t dNorm = TMath::Min(fDist2/sigmaD,50.);
+  Double_t dNorm = TMath::Min(fDcaV0Daughters/sigmaD,50.);//Bo:
   //normalized point angle, restricted - because of overflow problems in Exp
   Double_t likelihood = 0;
   switch(mode1){
@@ -582,97 +544,3 @@ void  AliESDv0::SetClusters(Int_t *clp, Int_t *clm)
   for (Int_t i=0;i<6;i++) fClusters[0][i] = clp[i]; 
   for (Int_t i=0;i<6;i++) fClusters[1][i] = clm[i]; 
 }
-
-
-void AliESDv0::SetP(const AliExternalTrackParam & paramp)  {
-  //
-  // set track +
-  //
-  fParamP   = paramp;
-}
-
-void AliESDv0::SetM(const AliExternalTrackParam & paramm){
-  //
-  //set track -
-  //
-  fParamN = paramm;
-}
-  
-void AliESDv0::SetRp(const Double_t *rp){
-  //
-  // set pid +
-  //
-  for (Int_t i=0;i<5;i++) fRP[i]=rp[i];
-}
-
-void AliESDv0::SetRm(const Double_t *rm){
-  //
-  // set pid -
-  //
-  for (Int_t i=0;i<5;i++) fRM[i]=rm[i];
-}
-
-
-void  AliESDv0::UpdatePID(Double_t pidp[5], Double_t pidm[5])
-{
-  //
-  // set PID hypothesy
-  //
-  // norm PID to 1
-  Float_t sump =0;
-  Float_t summ =0;
-  for (Int_t i=0;i<5;i++){
-    fRP[i]=pidp[i];
-    sump+=fRP[i];
-    fRM[i]=pidm[i];
-    summ+=fRM[i];
-  }
-  for (Int_t i=0;i<5;i++){
-    fRP[i]/=sump;
-    fRM[i]/=summ;
-  }
-}
-
-Float_t AliESDv0::GetProb(UInt_t p1, UInt_t p2){
-  //
-  //
-  //
-  //
-  return TMath::Max(fRP[p1]+fRM[p2], fRP[p2]+fRM[p1]);
-}
-
-Float_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2){
-  //
-  // calculate effective mass
-  //
-  const Float_t kpmass[5] = {5.10000000000000037e-04,1.05660000000000004e-01,1.39570000000000000e-01,
-		      4.93599999999999983e-01, 9.38270000000000048e-01};
-  if (p1>4) return -1;
-  if (p2>4) return -1;
-  Float_t mass1 = kpmass[p1]; 
-  Float_t mass2 = kpmass[p2];   
-  Double_t *m1 = fPP;
-  Double_t *m2 = fPM;
-  //
-  //if (fRP[p1]+fRM[p2]<fRP[p2]+fRM[p1]){
-  //  m1 = fPM;
-  //  m2 = fPP;
-  //}
-  //
-  Float_t e1    = TMath::Sqrt(mass1*mass1+
-                              m1[0]*m1[0]+
-                              m1[1]*m1[1]+
-                              m1[2]*m1[2]);
-  Float_t e2    = TMath::Sqrt(mass2*mass2+
-                              m2[0]*m2[0]+
-                              m2[1]*m2[1]+
-                              m2[2]*m2[2]);  
-  Float_t mass =  
-    (m2[0]+m1[0])*(m2[0]+m1[0])+
-    (m2[1]+m1[1])*(m2[1]+m1[1])+
-    (m2[2]+m1[2])*(m2[2]+m1[2]);
-  
-  mass = TMath::Sqrt((e1+e2)*(e1+e2)-mass);
-  return mass;
-}
-

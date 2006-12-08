@@ -31,21 +31,26 @@ public:
   Double_t ChangeMassHypothesis(Int_t code=kK0Short); 
 
   Int_t    GetPdgCode() const {return fPdgCode;}
-  Double_t GetEffMass() const {return fEffMass;}
-  Double_t GetChi2V0() const {return fChi2V0;}
+  Float_t  GetEffMass() const {return fEffMass;}
+  Float_t  GetChi2V0()  const {return fChi2V0;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetNPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetXYZ(Double_t &x, Double_t &y, Double_t &z) const;
-  Double_t GetD(Double_t x0=0.,Double_t y0=0.,Double_t z0=0.) const;
+  Float_t  GetD(Double_t x0=0.,Double_t y0=0.,Double_t z0=0.) const;
   Int_t    GetNindex() const {return fNidx;}
   Int_t    GetPindex() const {return fPidx;}
-  void     SetESDindexes(Int_t ip, Int_t im){fNidx=ip;fPidx=im;}
   void     SetDcaV0Daughters(Double_t rDcaV0Daughters=0.);
-  Double_t GetDcaV0Daughters() {return fDcaV0Daughters;}
-  Double_t GetV0CosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;
-  void SetOnFlyStatus(Bool_t status){fOnFlyStatus=status;}
-  Bool_t GetOnFlyStatus() const {return fOnFlyStatus;}
+  Float_t  GetDcaV0Daughters() {return fDcaV0Daughters;}
+  Float_t  GetV0CosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;
+  Float_t  GetV0CosineOfPointingAngle() const {return fPointAngle;}
+  void     SetV0CosineOfPointingAngle(Double_t cpa) {fPointAngle=cpa;}
+  void     SetOnFlyStatus(Bool_t status){fOnFlyStatus=status;}
+  Bool_t   GetOnFlyStatus() const {return fOnFlyStatus;}
+  const AliExternalTrackParam *GetParamP() const {return &fParamP;}
+  const AliExternalTrackParam *GetParamN() const {return &fParamN;}
+
+
 
   // **** The following member functions need to be revised ***
 
@@ -62,49 +67,25 @@ public:
   Double_t GetLikelihoodC(Int_t mode0, Int_t mode1);    // get likelihood for Causality
   //
   //
-  const AliExternalTrackParam *GetParamP() const {return &fParamP;}
-  const AliExternalTrackParam *GetParamM() const {return &fParamN;}
   static const AliESDV0Params & GetParameterization(){return fgkParams;}
-  void SetP(const AliExternalTrackParam & paramp); 
-  void SetM(const AliExternalTrackParam & paramd);
-  void SetRp(const Double_t *rp);
-  void SetRm(const Double_t *rm);
-  void UpdatePID(Double_t pidp[5], Double_t pidm[5]);
+  void SetParamP(const AliExternalTrackParam & paramP) {fParamP = paramP;}
+  void SetParamN(const AliExternalTrackParam & paramN) {fParamN = paramN;}
   void SetStatus(Int_t status){fStatus=status;}
   Int_t GetStatus() const {return fStatus;}
-  Float_t GetEffMass(UInt_t p1, UInt_t p2);
-  Float_t GetProb(UInt_t p1, UInt_t p2);
-  void SetID(Int_t id){fID =id;}
-  Int_t GetID() const { return fID;}
-  Int_t GetIndex(Int_t i) const {return fIndex[i];}
-  void SetIndex(Int_t i, Int_t ind) {fIndex[i]=ind;}
-  void SetDist1(Double_t d1) {fDist1=d1;}
-  void SetDist2(Double_t d2) {fDist2=d2;}
-  Double_t GetDist1() const {return fDist1;}
-  Double_t GetDist2() const {return fDist2;}
+  Int_t GetIndex(Int_t i) const {return (i==0) ? fNidx : fPidx;}
+  void SetIndex(Int_t i, Int_t ind) {(i==0) ? (fNidx=ind) : (fPidx=ind);}
   Double_t *GetAnglep() {return fAngle;}
   Double_t GetRr() const {return fRr;}
-  void SetRr(Double_t rr) {fRr=rr;}
-  Double_t *GetPMp() {return fPM;}
-  Double_t *GetPPp() {return fPP;}
-  Double_t *GetXrp() {return fXr;}
-  Double_t GetXr(Int_t i) const {return fXr[i];}
   Double_t GetDistSigma() const {return fDistSigma;}
   void SetDistSigma(Double_t ds) {fDistSigma=ds;}
-  Double_t GetDistNorm() const {return fDistNorm;}
-  void SetDistNorm(Double_t ds) {fDistNorm=ds;}
   Float_t GetChi2Before() const {return fChi2Before;}
   void SetChi2Before(Float_t cb) {fChi2Before=cb;}
   Float_t GetChi2After() const {return fChi2After;}
   void SetChi2After(Float_t ca) {fChi2After=ca;}
-  Float_t GetPointAngle() const {return fPointAngle;}
-  void SetOrder(Int_t i, Int_t ord) {fOrder[i]=ord;}
   Float_t GetNAfter() const {return fNAfter;}
   void SetNAfter(Float_t na) {fNAfter=na;}
   Float_t GetNBefore() const {return fNBefore;}
   void SetNBefore(Float_t nb) {fNBefore=nb;}  
-  Int_t GetLab(Int_t i) const {return fLab[i];}
-  void  SetLab(Int_t i, Int_t lab) {fLab[i]=lab;}
   void SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1);
   const Float_t * GetCausalityP() const {return fCausality;}
   void SetClusters(Int_t *clp, Int_t *clm);
@@ -116,49 +97,33 @@ protected:
   Bool_t   fOnFlyStatus;    // if kTRUE, then this V0 is recontructed
                             // "on fly" during the tracking
 
-  Int_t    fPdgCode;        // reconstructed V0's type (PDG code)
-  Double_t fEffMass;        // reconstructed V0's effective mass
-  Double_t fDcaV0Daughters; // dca between V0's daughters
-  Double_t fChi2V0;         // V0's chi2 value
-  Double_t fPos[3];         // V0's position (global)
-  Double_t fPosCov[6];      // covariance matrix of the vertex position
+  Int_t    fPdgCode;          // reconstructed V0's type (PDG code)
+  Float_t  fEffMass;          // reconstructed V0's effective mass
+  Float_t  fDcaV0Daughters;   // dca between V0's daughters
+  Float_t  fPointAngle;       //cosine of the pointing angle
+  Float_t  fChi2V0;           // V0's chi2 value
 
-  Int_t    fNidx;           // index of the negative daughter
-  Double_t fNmom[3];        // momentum of the negative daughter (global)
-  Double_t fNmomCov[6];     // covariance matrix of the negative daughter mom.
+  Double32_t fPos[3];         // V0's position (global)
+  Double32_t fPosCov[6];      // covariance matrix of the vertex position
 
-  Int_t    fPidx;           // index of the positive daughter
-  Double_t fPmom[3];        // momentum of the positive daughter (global)
-  Double_t fPmomCov[6];     // covariance matrix of the positive daughter mom.
+  Int_t fNidx;                // index of the negative daughter
+  Double32_t fNmom[3];        // momentum of the negative daughter (global)
+  AliExternalTrackParam fParamN;  // external parameters of negative particle
+  Int_t fPidx;                // index of the positive daughter
+  Double32_t fPmom[3];        // momentum of the positive daughter (global)
+  AliExternalTrackParam fParamP;  // external parameters of positive particle
+
 
   // **** The following data members need to be revised ***
 
-  AliExternalTrackParam fParamP;  // external parameters of positive particle
-  AliExternalTrackParam fParamN;  // external parameters of negative particle
-  Float_t        fRP[5];         // combined pid positive
-  Float_t        fRM[5];         // combined pid positive
-  Int_t          fID;            // ID number of the V0 in the ESDV0 container
-  Int_t          fLab[2];         // MC label of the particle
-  Int_t          fIndex[2];       // reconstructed labels of the tracks
   Int_t          fClusters[2][6]; //! its clusters 
   //
-  //  
   Float_t        fNormDCAPrim[2];  // normalize distance to the priary vertex
-  Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
-  Double_t       fDist2;    //info about closest distance parabolic DCA
   //
-  Double_t       fPP[3];    //momentum  positive   - according approx at DCA
-  Double_t       fPM[3];    //momentum negative
-  //
-  Double_t       fXr[3];      //rec. position according helix
-  Double_t       fAngle[3];   //three angles
-  Double_t       fRr;         //rec position of the vertex 
+  Double32_t     fAngle[3];   //three angles
+  Float_t        fRr;         //rec position of the vertex 
   Int_t          fStatus;       //status
-  Int_t          fRow0;         // critical layer
-  Int_t          fOrder[3]; //order of the vertex 
-  //  quality information
-  Double_t       fDistNorm; //normalized  DCA
-  Double_t       fDistSigma; //sigma of distance
+  Float_t        fDistSigma; //sigma of distance
   Float_t        fCausality[4];  // causality information - see comments in SetCausality
   Float_t        fChi2Before;   //chi2 of the tracks before V0
   Float_t        fNBefore;      // number of possible points before V0
@@ -166,7 +131,6 @@ protected:
   Float_t        fNAfter;      // number of possible points after V0
   Float_t        fPointAngleFi; //point angle fi
   Float_t        fPointAngleTh; //point angle theta
-  Double_t       fPointAngle;   //point angle full
   //
   // parameterization coefficients
   static AliESDV0Params fgkParams;  // resolution and likelihood parameterization  
@@ -174,7 +138,7 @@ protected:
 private:
   AliESDv0& operator=(const AliESDv0&);
 
-  ClassDef(AliESDv0,2)      // ESD V0 vertex
+  ClassDef(AliESDv0,3)      // ESD V0 vertex
 };
 
 inline 

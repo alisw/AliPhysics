@@ -227,8 +227,7 @@ Int_t AliESD::AddV0(const AliESDv0 *v) {
   // Add V0
   //
     Int_t idx=fV0s.GetEntriesFast();
-    AliESDv0 *v0=new(fV0s[idx]) AliESDv0(*v);
-    v0->SetID(idx);
+    new(fV0s[idx]) AliESDv0(*v);
     return idx;
 }  
 

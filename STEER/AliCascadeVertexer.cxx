@@ -106,7 +106,8 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
 
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
- 	 if (bidx==v->GetNindex()) continue; //bachelor and v0's negative tracks must be different
+ 	 //Bo:   if (bidx==v->GetNindex()) continue; //bachelor and v0's negative tracks must be different
+         if (bidx==v->GetIndex(0)) continue; //Bo:  consistency 0 for neg
 	 AliESDtrack *btrk=event->GetTrack(bidx);
          if (btrk->GetSign()>0) continue;  // bachelor's charge 
           
@@ -147,7 +148,8 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
 
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
- 	 if (bidx==v->GetPindex()) continue; //bachelor and v0's positive tracks must be different
+ 	 //Bo:   if (bidx==v->GetPindex()) continue; //bachelor and v0's positive tracks must be different
+         if (bidx==v->GetIndex(1)) continue; //Bo:  consistency 1 for pos
 	 AliESDtrack *btrk=event->GetTrack(bidx);
          if (btrk->GetSign()<0) continue;  // bachelor's charge 
           

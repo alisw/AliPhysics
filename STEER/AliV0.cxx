@@ -119,45 +119,46 @@ void  AliV0::Update(Float_t vertex[3])
     Double_t xd[3],xm[3];
     phelix.Evaluate(phase[0][0],xd);
     mhelix.Evaluate(phase[0][1], xm);
-    fXr[0] = 0.5*(xd[0]+xm[0]);
-    fXr[1] = 0.5*(xd[1]+xm[1]);
-    fXr[2] = 0.5*(xd[2]+xm[2]);
+    fPos[0] = 0.5*(xd[0]+xm[0]);
+    fPos[1] = 0.5*(xd[1]+xm[1]);
+    fPos[2] = 0.5*(xd[2]+xm[2]);
 
     Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]);
     Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]);
-    fXr[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
-    fXr[1] = (1.-wy)*xd[1]+ wy*xm[1];
-    fXr[2] = (1.-wz)*xd[2]+ wz*xm[2];
+    fPos[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
+    fPos[1] = (1.-wy)*xd[1]+ wy*xm[1];
+    fPos[2] = (1.-wz)*xd[2]+ wz*xm[2];
     //
-    phelix.GetMomentum(phase[0][0],fPP);
-    mhelix.GetMomentum(phase[0][1],fPM);
+    phelix.GetMomentum(phase[0][0],fPmom);
+    mhelix.GetMomentum(phase[0][1],fNmom);
     phelix.GetAngle(phase[0][0],mhelix,phase[0][1],fAngle);
-    fRr = TMath::Sqrt(fXr[0]*fXr[0]+fXr[1]*fXr[1]);
+    fRr = TMath::Sqrt(fPos[0]*fPos[0]+fPos[1]*fPos[1]);
   }
   else{
     Double_t xd[3],xm[3];
     phelix.Evaluate(phase[1][0],xd);
     mhelix.Evaluate(phase[1][1], xm);
-    fXr[0] = 0.5*(xd[0]+xm[0]);
-    fXr[1] = 0.5*(xd[1]+xm[1]);
-    fXr[2] = 0.5*(xd[2]+xm[2]);
+    fPos[0] = 0.5*(xd[0]+xm[0]);
+    fPos[1] = 0.5*(xd[1]+xm[1]);
+    fPos[2] = 0.5*(xd[2]+xm[2]);
     Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]);
     Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]);
-    fXr[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
-    fXr[1] = (1.-wy)*xd[1]+ wy*xm[1];
-    fXr[2] = (1.-wz)*xd[2]+ wz*xm[2];
+    fPos[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
+    fPos[1] = (1.-wy)*xd[1]+ wy*xm[1];
+    fPos[2] = (1.-wz)*xd[2]+ wz*xm[2];
     //
-    phelix.GetMomentum(phase[1][0], fPP);
-    mhelix.GetMomentum(phase[1][1], fPM);
+    phelix.GetMomentum(phase[1][0], fPmom);
+    mhelix.GetMomentum(phase[1][1], fNmom);
     phelix.GetAngle(phase[1][0],mhelix,phase[1][1],fAngle);
-    fRr = TMath::Sqrt(fXr[0]*fXr[0]+fXr[1]*fXr[1]);
+    fRr = TMath::Sqrt(fPos[0]*fPos[0]+fPos[1]*fPos[1]);
   }
-  fDist1 = TMath::Sqrt(TMath::Min(d1,d2));
-  fDist2 = TMath::Sqrt(distance2);      
+  //Bo:  fDist1 = TMath::Sqrt(TMath::Min(d1,d2));
+  //Bo:  fDist2 = TMath::Sqrt(distance2);
+  fDcaV0Daughters = TMath::Sqrt(distance2);//Bo:
   //            
   //
-  Double_t v[3] = {fXr[0]-vertex[0],fXr[1]-vertex[1],fXr[2]-vertex[2]};
-  Double_t p[3] = {fPP[0]+fPM[0], fPP[1]+fPM[1],fPP[2]+fPM[2]};
+  Double_t v[3] = {fPos[0]-vertex[0],fPos[1]-vertex[1],fPos[2]-vertex[2]};
+  Double_t p[3] = {fPmom[0]+fNmom[0], fPmom[1]+fNmom[1],fPmom[2]+fNmom[2]};
   Double_t vnorm2 = v[0]*v[0]+v[1]*v[1];
   if (TMath::Abs(v[2])>100000) return;
   Double_t vnorm3 = TMath::Sqrt(TMath::Abs(v[2]*v[2]+vnorm2));

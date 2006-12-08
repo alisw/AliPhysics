@@ -115,8 +115,11 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
          AliESDv0 vertex(nt,nidx,pt,pidx);
          if (vertex.GetChi2V0() > fChi2max) continue;
 	 
-	 if (vertex.GetV0CosineOfPointingAngle(xv,yv,zv) < fCPAmax) continue;
+	 Float_t cpa=vertex.GetV0CosineOfPointingAngle(xv,yv,zv);
+	 if (cpa < fCPAmax) continue;
 	 vertex.SetDcaV0Daughters(dca);
+         vertex.SetV0CosineOfPointingAngle(cpa);
+         vertex.ChangeMassHypothesis(kK0Short);
 
          event->AddV0(&vertex);
 

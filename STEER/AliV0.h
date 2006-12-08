@@ -13,9 +13,9 @@
 
 #include "AliESDv0.h"
 
-class AliV0 :  public AliESDv0 {
+class AliV0: public AliESDv0 {
 public:
-  AliV0(){;} 
+  AliV0(): AliESDv0() {} 
   void Update(Float_t vertex[3]);            //update
   ClassDef(AliV0,1)      // V0 MI vertex
 };

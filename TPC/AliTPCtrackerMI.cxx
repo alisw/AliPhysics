@@ -4915,23 +4915,26 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
       if (pointAngle<cpointAngle) continue;
       //
       Bool_t isGamma = kFALSE;
-      vertex.SetP(*track0); //track0 - plus
-      vertex.SetM(*track1); //track1 - minus
+      vertex.SetParamP(*track0); //track0 - plus
+      vertex.SetParamN(*track1); //track1 - minus
       vertex.Update(fprimvertex);
       if (track0->TPCrPID(0)>0.3&&track1->TPCrPID(0)>0.3&&vertex.GetAnglep()[2]<0.15) isGamma=kTRUE;              // gamma conversion candidate
-      Double_t pointAngle2 = vertex.GetPointAngle();
+      Double_t pointAngle2 = vertex.GetV0CosineOfPointingAngle();
       //continue;
-      if (vertex.GetPointAngle()<cpointAngle && (!isGamma)) continue; // point angle cut
-      if (vertex.GetDist2()>2&&(!isGamma)) continue;         // point angle cut
+      if (vertex.GetV0CosineOfPointingAngle()<cpointAngle && (!isGamma)) continue;// point angle cut
+      //Bo:      if (vertex.GetDist2()>2&&(!isGamma)) continue;      // point angle cut
+      if (vertex.GetDcaV0Daughters()>2&&(!isGamma)) continue;//Bo:   // point angle cut
       Float_t sigmae     = 0.15*0.15;
       if (vertex.GetRr()<80) 
 	sigmae += (sdcar[i]*sdcar[i]+sdcar[j]*sdcar[j])*(1.-vertex.GetRr()/80.)*(1.-vertex.GetRr()/80.);
       sigmae+= TMath::Sqrt(sigmae);
-      if (vertex.GetDist2()/sigmae>3.&&(!isGamma)) continue; 
+      //Bo:      if (vertex.GetDist2()/sigmae>3.&&(!isGamma)) continue; 
+      if (vertex.GetDcaV0Daughters()/sigmae>3.&&(!isGamma)) continue; 
       Float_t densb0=0,densb1=0,densa0=0,densa1=0;
       Int_t row0 = GetRowNumber(vertex.GetRr());
       if (row0>15){
-	if (vertex.GetDist2()>0.2) continue;             
+	//Bo:	if (vertex.GetDist2()>0.2) continue;             
+	if (vertex.GetDcaV0Daughters()>0.2) continue;             
 	densb0     = track0->Density2(0,row0-5);          
 	densb1     = track1->Density2(0,row0-5);         
 	if (densb0>0.3|| densb1>0.3) continue;            //clusters before vertex
@@ -4944,15 +4947,16 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
 	densa1     = track1->Density2(0,40);  //cluster density
 	if ((vertex.GetRr()<80&&densa0+densa1<1.)&&(!isGamma)) continue;
       }
-      vertex.SetLab(0,track0->GetLabel());
-      vertex.SetLab(1,track1->GetLabel());
+//Bo:        vertex.SetLab(0,track0->GetLabel());
+//Bo:        vertex.SetLab(1,track1->GetLabel());
       vertex.SetChi2After((densa0+densa1)*0.5);
       vertex.SetChi2Before((densb0+densb1)*0.5);
       vertex.SetIndex(0,i);
       vertex.SetIndex(1,j);
-      vertex.SetStatus(1); // TPC v0 candidate
-      vertex.SetRp(track0->TPCrPIDs());
-      vertex.SetRm(track1->TPCrPIDs());
+//Bo:      vertex.SetStatus(1); // TPC v0 candidate
+      vertex.SetOnFlyStatus(2);//Bo: // TPC v0 candidate
+//Bo:        vertex.SetRp(track0->TPCrPIDs());
+//Bo:        vertex.SetRm(track1->TPCrPIDs());
       tpcv0s->AddLast(new AliESDv0(vertex));      
       ncandidates++;
       {
@@ -5014,12 +5018,17 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
   for (Int_t i=0;i<ncandidates;i++){
     quality[i]     = 0; 
     AliESDv0 *v0 = (AliESDv0*)tpcv0s->At(i);
-    quality[i]     = 1./(1.00001-v0->GetPointAngle());   //base point angle
+    quality[i]     = 1./(1.00001-v0->GetV0CosineOfPointingAngle());   //base point angle
     // quality[i]    /= (0.5+v0->GetDist2());  
     // quality[i]    *= v0->GetChi2After();               //density factor
-    Double_t minpulldca = TMath::Min(2.+pulldca[v0->GetIndex(0)],(2.+pulldca[v0->GetIndex(1)]) );     //pull
+
     Int_t index0 = v0->GetIndex(0);
     Int_t index1 = v0->GetIndex(1);
+    //Bo:    Double_t minpulldca = TMath::Min(2.+pulldca[v0->GetIndex(0)],(2.+pulldca[v0->GetIndex(1)]) );     //pull
+    Double_t minpulldca = TMath::Min(2.+pulldca[index0],(2.+pulldca[index1]) );//Bo:
+
+
+
     AliTPCseed * track0 = (AliTPCseed*)array->At(index0);
     AliTPCseed * track1 = (AliTPCseed*)array->At(index1);
     if (track0->TPCrPID(0)>0.3&&track1->TPCrPID(0)>0.3&&v0->GetAnglep()[2]<0.15) quality[i]+=1000000;              // gamma conversion candidate
@@ -5054,9 +5063,9 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
     //
     AliESDv0 * v02 = v0;
     if (accept){
-      v0->SetOrder(0,order0);
-      v0->SetOrder(1,order1);
-      v0->SetOrder(1,order0+order1);     
+      //Bo:      v0->SetOrder(0,order0);
+      //Bo:      v0->SetOrder(1,order1);
+      //Bo:      v0->SetOrder(1,order0+order1);     
       v0->SetOnFlyStatus(kTRUE);
       Int_t index = esd->AddV0(v0);
       v02 = esd->GetV0(index);
