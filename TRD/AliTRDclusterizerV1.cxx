@@ -290,7 +290,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
               if (signalM >= maxThresh) {
                 if ((TMath::Abs(signalL) <= signalM) && 
                     (TMath::Abs(signalR) <= signalM)) {
-		  if ((TMath::Abs(signalL) + TMath::Abs(signalR)) > sigThresh) {
+		  if ((TMath::Abs(signalL) >= sigThresh) ||
+		      (TMath::Abs(signalR) >= sigThresh)) {
                     // Maximum found, mark the position by a negative signal
                     digitsOut->SetDataUnchecked(row,col-1,time,-signalM);
 		  }

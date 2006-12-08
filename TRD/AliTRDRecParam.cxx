@@ -180,8 +180,8 @@ void AliTRDRecParam::Init()
   //
   
   // The default parameter for the clustering
-  fClusMaxThresh = 3.5;
-  fClusSigThresh = 1.5;
+  fClusMaxThresh = 4.5;
+  fClusSigThresh = 3.5;
 
   // Use the LUT
   fLUTOn         = kTRUE;
