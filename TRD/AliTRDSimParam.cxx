@@ -122,7 +122,7 @@ void AliTRDSimParam::Init()
   fNoise           = 1000.0;
   fADCoutRange     = 1023.0;          // 10-bit ADC
   fADCinRange      = 2000.0;          // 2V input range
-  fADCthreshold    =    1;
+  fADCthreshold    =    3;
   fADCbaseline     =    0;
 
   // Diffusion on
