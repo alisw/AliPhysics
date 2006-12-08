@@ -220,6 +220,8 @@ public:
 
   virtual void Paint(Option_t* option="");
 
+  VoidCPlex* GetPlex() { return &fPlex; }
+
   ClassDef(QuadSet, 1);
 };
 
