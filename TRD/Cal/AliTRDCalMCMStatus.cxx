@@ -28,7 +28,8 @@
 ClassImp(AliTRDCalMCMStatus)
 
 //_____________________________________________________________________________
-AliTRDCalMCMStatus::AliTRDCalMCMStatus():TNamed()
+AliTRDCalMCMStatus::AliTRDCalMCMStatus()
+                   :TNamed()
 {
   //
   // AliTRDCalMCMStatus default constructor
@@ -42,7 +43,7 @@ AliTRDCalMCMStatus::AliTRDCalMCMStatus():TNamed()
 
 //_____________________________________________________________________________
 AliTRDCalMCMStatus::AliTRDCalMCMStatus(const Text_t *name, const Text_t *title)
-                :TNamed(name,title)
+                   :TNamed(name,title)
 {
   //
   // AliTRDCalMCMStatus constructor
@@ -60,7 +61,8 @@ AliTRDCalMCMStatus::AliTRDCalMCMStatus(const Text_t *name, const Text_t *title)
 }
 
 //_____________________________________________________________________________
-AliTRDCalMCMStatus::AliTRDCalMCMStatus(const AliTRDCalMCMStatus &c):TNamed(c)
+AliTRDCalMCMStatus::AliTRDCalMCMStatus(const AliTRDCalMCMStatus &c)
+                   :TNamed(c)
 {
   //
   // AliTRDCalMCMStatus copy constructor
@@ -93,7 +95,10 @@ AliTRDCalMCMStatus &AliTRDCalMCMStatus::operator=(const AliTRDCalMCMStatus &c)
   // Assignment operator
   //
 
-  if (this != &c) ((AliTRDCalMCMStatus &) c).Copy(*this);
+  if (this != &c) {
+    ((AliTRDCalMCMStatus &) c).Copy(*this);
+  }
+
   return *this;
 
 }
@@ -122,19 +127,43 @@ Bool_t AliTRDCalMCMStatus::CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitM
   // Checks the MCM status byte
   //
 
+  // To translate pad column number into MCM number
+  Int_t mcm = ((Int_t) col / 18);
+
   AliTRDCalSingleChamberStatus* roc = GetCalROC(d);
 
   if (!roc) {
     return kFALSE;
   }
   else {
-    return (roc->GetStatus(col, row) & bitMask) ? kTRUE : kFALSE;
+    return (roc->GetStatus(mcm,row) & bitMask) ? kTRUE : kFALSE;
   }
 
 }
 
 //_____________________________________________________________________________
-AliTRDCalSingleChamberStatus* AliTRDCalMCMStatus::GetCalROC(Int_t p, Int_t c, Int_t s) const
+Char_t AliTRDCalMCMStatus::GetStatus(Int_t d, Int_t col, Int_t row) const
+{
+  //
+  // Gets the MCM status byte
+  //
+
+  // To translate pad column number into MCM number
+  Int_t mcm = ((Int_t) col / 18);
+
+  AliTRDCalSingleChamberStatus* roc = GetCalROC(d);
+
+  if (!roc) {
+    return kFALSE;
+  }
+  else {
+    return roc->GetStatus(mcm,row);
+  }
+
+}
+
+//_____________________________________________________________________________
+AliTRDCalSingleChamberStatus *AliTRDCalMCMStatus::GetCalROC(Int_t p, Int_t c, Int_t s) const
 {
   //
   // Returns the readout chamber of this MCM

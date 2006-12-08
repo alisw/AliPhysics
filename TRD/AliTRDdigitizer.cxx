@@ -1160,16 +1160,19 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Int_t nDigits = 0;
 
     // Don't create noise in detectors that are switched off / not installed, etc.
-    if (calibration->GetChamberStatus(iDet)) {
+    if (( calibration->IsChamberInstalled(iDet)) &&
+        (!calibration->IsChamberMasked(iDet))    &&
+        ( fGeo->GetSMstatus(sector))) {
 
       // Create the digits for this chamber
       for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
         for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
 
-	  // Check whether pad is active / installed / whatever ...
-          if (calibration->GetPadStatus(iDet,iCol,iRow)) continue;
-	  // Check whether MCM is active / installed / whatever ...
-          if (calibration->GetMCMStatus(iDet,iCol,iRow)) continue;
+          // Check whether pad is masked
+	  // Bridged pads are not considered yet!!!
+          if (calibration->IsPadMasked(iDet,iCol,iRow)) continue;
+          // Check whether MCM is masked
+          if (calibration->IsMCMMasked(iDet,iCol,iRow)) continue;
 
 	  // Create summable digits
           if (fSDigits) {
@@ -1383,56 +1386,69 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
       dictionaryOut[iDict]->Allocate(nRowMax,nColMax,nTimeTotal);
     }
 
-    for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
-      for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
+    // Don't create noise in detectors that are switched off / not installed, etc.
+    if (( calibration->IsChamberInstalled(iDet)) &&
+        (!calibration->IsChamberMasked(iDet))    &&
+        ( fGeo->GetSMstatus(sector))) {
 
-        for (iTime = 0; iTime < nTimeTotal; iTime++) {
+      for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
+        for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
 
-	  // Scale s-digits to normal digits
-          Double_t signal = (Double_t) digitsIn->GetDataUnchecked(iRow,iCol,iTime);
-          signal         *= sDigitsScale;
-	  // Apply the pad-by-pad gain factors
-          Float_t padgain = calibration->GetGainFactor(iDet,iCol,iRow);
-          if (padgain <= 0.0) {
-            AliError(Form("Not a valid gain %f, %d %d %d\n",padgain,iDet,iCol,iRow));
-          }
-          signal *= padgain;
-          // Pad and time coupling
-          signal *= coupling;
-          // Add the noise, starting from minus ADC baseline in electrons
-          Double_t baselineEl = adcBaseline * (adcInRange / adcOutRange) / convert;
-          signal  = TMath::Max((Double_t) gRandom->Gaus(signal,noise),-baselineEl);
-          // Convert to mV
-          signal *= convert;
-          // add ADC baseline in mV
-          signal += adcBaseline * (adcInRange / adcOutRange);
-	  // Convert to ADC counts. Set the overflow-bit adcOutRange if the
-	  // signal is larger than adcInRange
-          Int_t adc  = 0;
-          if (signal >= adcInRange) {
-            adc = ((Int_t) adcOutRange);
+          // Check whether pad is masked
+	  // Bridged pads are not considered yet!!!
+          if (calibration->IsPadMasked(iDet,iCol,iRow)) continue;
+          // Check whether MCM is masked
+          if (calibration->IsMCMMasked(iDet,iCol,iRow)) continue;
+
+            for (iTime = 0; iTime < nTimeTotal; iTime++) {
+
+ 	    // Scale s-digits to normal digits
+            Double_t signal = (Double_t) digitsIn->GetDataUnchecked(iRow,iCol,iTime);
+            signal         *= sDigitsScale;
+	    // Apply the pad-by-pad gain factors
+            Float_t padgain = calibration->GetGainFactor(iDet,iCol,iRow);
+            if (padgain <= 0.0) {
+              AliError(Form("Not a valid gain %f, %d %d %d\n",padgain,iDet,iCol,iRow));
+            }
+            signal *= padgain;
+            // Pad and time coupling
+            signal *= coupling;
+            // Add the noise, starting from minus ADC baseline in electrons
+            Double_t baselineEl = adcBaseline * (adcInRange / adcOutRange) / convert;
+            signal  = TMath::Max((Double_t) gRandom->Gaus(signal,noise),-baselineEl);
+            // Convert to mV
+            signal *= convert;
+            // add ADC baseline in mV
+            signal += adcBaseline * (adcInRange / adcOutRange);
+	    // Convert to ADC counts. Set the overflow-bit adcOutRange if the
+	    // signal is larger than adcInRange
+            Int_t adc  = 0;
+            if (signal >= adcInRange) {
+              adc = ((Int_t) adcOutRange);
+	    }
+            else {
+              adc = TMath::Nint(signal * (adcOutRange / adcInRange));
+	    }
+            inADC[iTime]  = adc;
+            outADC[iTime] = adc;
+
 	  }
-          else {
-            adc = TMath::Nint(signal * (adcOutRange / adcInRange));
-	  }
-          inADC[iTime]  = adc;
-          outADC[iTime] = adc;
 
-	}
-
-        for (iTime = 0; iTime < nTimeTotal; iTime++) {
-          // Store the amplitude of the digit if above threshold
-          if (outADC[iTime] > adcThreshold) {
-            digitsOut->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
-  	    // Copy the dictionary
-            for (iDict = 0; iDict < kNDict; iDict++) { 
-              Int_t track = dictionaryIn[iDict]->GetDataUnchecked(iRow,iCol,iTime);
-              dictionaryOut[iDict]->SetDataUnchecked(iRow,iCol,iTime,track);
+          for (iTime = 0; iTime < nTimeTotal; iTime++) {
+            // Store the amplitude of the digit if above threshold
+            if (outADC[iTime] > adcThreshold) {
+              digitsOut->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
+  	      // Copy the dictionary
+              for (iDict = 0; iDict < kNDict; iDict++) { 
+                Int_t track = dictionaryIn[iDict]->GetDataUnchecked(iRow,iCol,iTime);
+                dictionaryOut[iDict]->SetDataUnchecked(iRow,iCol,iTime,track);
+	      }
 	    }
 	  }
-	}
 
+        }
       }
+
     }
 
     if (fCompress) {

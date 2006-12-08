@@ -34,6 +34,7 @@ class AliTRDCalMCMStatus : public TNamed {
          Bool_t IsMasked(Int_t d, Int_t col, Int_t row) const 
                                                          { return CheckStatus(d, col, row, kMasked); };
          Bool_t CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitMask) const;
+         Char_t GetStatus(Int_t d, Int_t col, Int_t row) const;
 
          AliTRDCalSingleChamberStatus *GetCalROC(Int_t p, Int_t c, Int_t s) const;
          AliTRDCalSingleChamberStatus *GetCalROC(Int_t d) const 

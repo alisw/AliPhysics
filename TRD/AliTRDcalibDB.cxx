@@ -82,7 +82,8 @@ void AliTRDcalibDB::Terminate()
 {
   //
   // Singleton implementation
-  // Deletes the instance of this class and sets the terminated flag, instances cannot be requested anymore
+  // Deletes the instance of this class and sets the terminated flag,
+  // instances cannot be requested anymore
   // This function can be called several times.
   //
   
@@ -554,21 +555,13 @@ Char_t AliTRDcalibDB::GetMCMStatus(Int_t det, Int_t col, Int_t row)
   // Returns the status of the given MCM
   //
 
-  // To translate pad column number into MCM number
-  Int_t mcm = ((Int_t) col / 18);
-
   const AliTRDCalMCMStatus *cal     = dynamic_cast<const AliTRDCalMCMStatus *> 
                                       (GetCachedCDBObject(kIDMCMStatus));
   if (!cal) {
     return -1;
   }
 
-  const AliTRDCalSingleChamberStatus *roc = cal->GetCalROC(det);
-  if (!roc) {
-    return -1;
-  }
-
-  return roc->GetStatus(mcm,row);
+  return cal->GetStatus(det,col,row);
 
 }
 
