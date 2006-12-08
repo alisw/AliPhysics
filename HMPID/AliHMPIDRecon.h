@@ -45,12 +45,12 @@ public :
    
   
 protected:
-  const static Double_t fgkRadThick;                      //radiator thickness
-  const static Double_t fgkWinThick;                      //window thickness
-  const static Double_t fgkGapThick;                      //proximity gap thickness
-  const static Double_t fgkRadIdx;                        //mean refractive index of RAD material (C6F14)
-  const static Double_t fgkWinIdx;                        //mean refractive index of WIN material (SiO2) 
-  const static Double_t fgkGapIdx;                        //mean refractive index of GAP material (CH4)
+  static const Double_t fgkRadThick;                      //radiator thickness
+  static const Double_t fgkWinThick;                      //window thickness
+  static const Double_t fgkGapThick;                      //proximity gap thickness
+  static const Double_t fgkRadIdx;                        //mean refractive index of RAD material (C6F14)
+  static const Double_t fgkWinIdx;                        //mean refractive index of WIN material (SiO2) 
+  static const Double_t fgkGapIdx;                        //mean refractive index of GAP material (CH4)
   Int_t    fPhotCnt;                           // counter of photons candidate
   Int_t    fPhotFlag[3000];                    // flags of photon candidates
   Double_t fPhotCkov[3000];                    // Ckov angles of photon candidates, [rad]
