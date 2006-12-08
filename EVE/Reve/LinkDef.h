@@ -51,6 +51,7 @@
 
 // Plexes
 #pragma link C++ class Reve::VoidCPlex+;
+#pragma link C++ class Reve::VoidCPlex::iterator-;
 
 // EventBase, VSDEvent, VSD
 #pragma link C++ class Reve::EventBase+;

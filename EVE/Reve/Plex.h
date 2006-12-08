@@ -49,12 +49,37 @@ public:
   Int_t    VecSize()  const { return fVecSize; }
   Int_t    Capacity() const { return fCapacity; }
 
-  Char_t* Atom(Int_t idx)   { return fChunks[idx/fN]->fArray + idx%fN*fS; }
-  Char_t* Chunk(Int_t chk)  { return fChunks[chk]->fArray; }
-  Int_t   NAtoms(Int_t chk) { return (chk < fVecSize-1) ? fN : (fSize-1)%fN + 1; }
+  Char_t* Atom(Int_t idx)   const { return fChunks[idx/fN]->fArray + idx%fN*fS; }
+  Char_t* Chunk(Int_t chk)  const { return fChunks[chk]->fArray; }
+  Int_t   NAtoms(Int_t chk) const { return (chk < fVecSize-1) ? fN : (fSize-1)%fN + 1; }
 
   Char_t* NewAtom();
   Char_t* NewChunk();
+
+
+  // Iterators
+
+  struct iterator
+  {
+    VoidCPlex *fPlex;
+    Char_t    *fCurrent;
+    Int_t      fAtomIndex;
+    Int_t      fNextChunk;
+    Int_t      fAtomsToGo;
+
+    iterator(VoidCPlex* p) :
+      fPlex(p),  fCurrent(0), fAtomIndex(-1), fNextChunk(0), fAtomsToGo(0) {}
+    iterator(VoidCPlex& p) :
+      fPlex(&p), fCurrent(0), fAtomIndex(-1), fNextChunk(0), fAtomsToGo(0) {}
+
+    Bool_t  next();
+    void    reset() { fCurrent = 0; fNextChunk = fAtomsToGo = 0; }
+
+    Char_t* operator()() { return fCurrent; }
+    Char_t* operator*()  { return fCurrent; }
+    Int_t   index()      { return fAtomIndex; }
+  };
+
 
   ClassDef(VoidCPlex, 1)
 };
@@ -64,6 +89,24 @@ inline Char_t* VoidCPlex::NewAtom()
   Char_t *a = (fSize >= fCapacity) ? NewChunk() : Atom(fSize);
   ++fSize;
   return a;
+}
+
+inline Bool_t VoidCPlex::iterator::next()
+{
+  if (fAtomsToGo <= 0) {
+    if (fNextChunk < fPlex->fVecSize) {
+      fCurrent   = fPlex->Chunk(fNextChunk);
+      fAtomsToGo = fPlex->NAtoms(fNextChunk);
+      ++fNextChunk;
+    } else {
+      return kFALSE;
+    }
+  } else {
+    fCurrent += fPlex->fS;
+  }
+  ++fAtomIndex;
+  --fAtomsToGo;
+  return kTRUE;
 }
 
 
