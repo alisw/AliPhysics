@@ -15,8 +15,8 @@ void recTPC(Int_t type, const char *filename="data.root")
   //               = 1 - laser test   
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetRun(0);
-  man->SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
+  //man->SetRun(0);
+  //man->SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   //
   // Set reconstruction parameters
   //
@@ -50,7 +50,7 @@ void recTPC(Int_t type, const char *filename="data.root")
   rec.Run();
 }
 
-void recTracking(Int_t type, const char *filename="data.root", Int_t nevents=1)
+void recTracking(Int_t type, const char *filename="data.root")
 {
   //
   // Set path to calibration data
@@ -90,7 +90,7 @@ void recTracking(Int_t type, const char *filename="data.root", Int_t nevents=1)
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
   AliTracker::SetFieldMap(field,1);
   rec.SetWriteAlignmentData(kTRUE);
-  rec.Run(0,nevents);
+  rec.Run(0);
 }
 
 
