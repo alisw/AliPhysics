@@ -91,7 +91,7 @@ AliTPCcalibDB::AliTPCcalibDB()
   //
   // constructor
   //  
-
+  fRun = AliCDBManager::Instance()->GetRun();
   Update();    // temporary
 }
 
