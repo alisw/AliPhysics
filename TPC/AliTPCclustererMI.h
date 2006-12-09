@@ -27,6 +27,7 @@ class AliSimDigits;
 class TTree;
 class TTreeSRedirector;
 class  AliRawEventHeaderBase;
+class AliTPCCalROC;
 
 class AliTPCclustererMI : public TObject{
 public:
@@ -52,8 +53,8 @@ private:
   void AddCluster(AliTPCclusterMI &c);  // add the cluster to the array
   void UnfoldCluster(Float_t * matrix[7], Float_t recmatrix[5][5], 
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
-  void FindClusters();
-  Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms);
+  void FindClusters(AliTPCCalROC * noiseROC);
+  Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms, Double_t &pedestalCalib);
   void DumpHistos();
 
 

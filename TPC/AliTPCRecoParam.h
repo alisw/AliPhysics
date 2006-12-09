@@ -24,10 +24,17 @@ class AliTPCRecoParam : public TObject
   Int_t    GetFirstBin() const     { return fFirstBin;}
   Int_t    GetLastBin() const      { return fLastBin;}
   void     SetTimeBinRange(Int_t first, Int_t last){ fFirstBin = first; fLastBin = last;}
-  Bool_t   GetCalcPedestal() const { return fBCalcPedestal;}
-  Bool_t   GetDoUnfold() const     { return fBDoUnfold;}
-  Float_t  GetDumpAmplitudeMin() const  { return fDumpAmplitudeMin;}
-  Float_t  GetMaxNoise() const     { return fMaxNoise;}  
+  Bool_t   GetCalcPedestal()       const  { return fBCalcPedestal;}
+  Bool_t   GetDoUnfold()           const  { return fBDoUnfold;}
+  Float_t  GetDumpAmplitudeMin()   const  { return fDumpAmplitudeMin;}
+  Float_t  GetMaxNoise()           const  { return fMaxNoise;}  
+  Float_t  GetMinMaxCutAbs()       const  { return fMinMaxCutAbs; }
+  Float_t  GetMinLeftRightCutAbs() const  { return fMinLeftRightCutAbs;}  // minimal amplitude left right - PRF
+  Float_t  GetMinUpDownCutAbs()    const  { return fMinUpDownCutAbs;}  // minimal amplitude up-down - TRF 
+  Float_t  GetMinMaxCutSigma()       const  { return fMinMaxCutSigma; }
+  Float_t  GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;}  // minimal amplitude left right - PRF
+  Float_t  GetMinUpDownCutSigma()    const  { return fMinUpDownCutSigma;}  // minimal amplitude up-down - TRF 
+
   //
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Float_t  GetMaxC()    const      { return fMaxC;}
@@ -52,6 +59,12 @@ class AliTPCRecoParam : public TObject
   Bool_t   fBDoUnfold;       // do unfolding of clusters
   Float_t  fDumpAmplitudeMin; // minimal amplitude of signal to be dumped 
   Float_t  fMaxNoise;        // maximal noise sigma on pad to be used in cluster finder
+  Float_t  fMinMaxCutAbs;    // minimal amplitude at cluster maxima
+  Float_t  fMinLeftRightCutAbs;  // minimal amplitude left right - PRF
+  Float_t  fMinUpDownCutAbs;  // minimal amplitude up-down - TRF 
+  Float_t  fMinMaxCutSigma;    // minimal amplitude at cluster maxima
+  Float_t  fMinLeftRightCutSigma;  // minimal amplitude left right - PRF
+  Float_t  fMinUpDownCutSigma;  // minimal amplitude up-down - TRF 
   //
   //
   Float_t  fMaxC;            // maximal curvature for tracking
