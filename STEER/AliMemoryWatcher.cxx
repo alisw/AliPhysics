@@ -78,7 +78,7 @@ AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize) :
   //
   //ctor
   //
-  sprintf(fCmd,"ps -h -p %d -o vsize,rssize",fPID);
+  sprintf(fCmd,"ps -h -p %d -o vsz,rss | grep -v VSZ",fPID);
 }
 
 //_____________________________________________________________________________

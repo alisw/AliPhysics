@@ -70,10 +70,10 @@ private:
   char fCmd[1024];     // the command sent to the system to retrieve things ("ps .....")
   UInt_t fMAXSIZE;     // maximum size of arrays where the informationis stored
   UInt_t fSize;        // the requested size of information to be retrieved
-  Int_t* fX;           // array that contains the step numbers
-  Int_t* fVSIZE;       // array that contains the virtual memory at each step
-  Int_t* fRSSIZE;      // array that contains the real memory at each step
-  Double_t* fTIME;     // array that contains the CPU time at each step
+  Int_t* fX;           //[fMAXSIZE] array that contains the step numbers
+  Int_t* fVSIZE;       //[fMAXSIZE] array that contains the virtual memory at each step
+  Int_t* fRSSIZE;      //[fMAXSIZE] array that contains the real memory at each step
+  Double_t* fTIME;     //[fMAXSIZE] array that contains the CPU time at each step
   TStopwatch* fTimer;  // the chronometer
   Bool_t fDisabled;    // to switch on/off the monitoring
 
