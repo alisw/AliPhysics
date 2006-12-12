@@ -3,11 +3,15 @@
 #include <TCanvas.h>  //Terminate()
 #include <TChain.h>
 #include <TBenchmark.h>
+#include <TFile.h>    //docosmic()    
 #include <fstream>    //caf()      
 #include <TProof.h>   //caf()
 #include <AliSelector.h>      //base class
 #include <AliESD.h>           
-
+#include <AliBitPacking.h> //HmpidPayload()
+#include "AliHMPIDDigit.h" 
+#include "AliHMPIDCluster.h" 
+#include "AliHMPIDReconstructor.h" //docosmic()
 
 class AliHMPIDSelector : public AliSelector {
  public :
@@ -182,5 +186,151 @@ void caf()
   
   gBenchmark->Show("PRooF exec");
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t DateHeader(ifstream *pFile,Bool_t isPrint=0)
+{
+  Int_t iSize=-1;
+  pFile->read((char*)&iSize,4);
+  if(!isPrint)     
+    pFile->seekg(16*4,ios::cur);
+  else{
+    Int_t w32=-1; 
+                                Printf("");
+                                Printf("Event size        %i bytes",iSize);                           //1  common DATE header 17 words
+    pFile->read((char*)&w32,4); Printf("Event magic       0x%x"    ,w32);                             //2
+    pFile->read((char*)&w32,4); Printf("Event head size   %i bytes",w32);                             //3  
+    pFile->read((char*)&w32,4); Printf("Event version     0x%x"    ,w32);                             //4
+    pFile->read((char*)&w32,4); Printf("Event type        %i (%s)" ,w32,(w32==7)? "physics":"SOR");   //5 
+    pFile->read((char*)&w32,4); Printf("Run number        %i"      ,w32);                             //6
+  
+    pFile->read((char*)&w32,4); Printf("Event ID 1        %i"      ,w32);                             //7
+    pFile->read((char*)&w32,4); Printf("Event ID 2        %i"      ,w32);                             //8
+  
+    pFile->read((char*)&w32,4); Printf("Trigger pattern 1 %i"      ,w32);                             //9
+    pFile->read((char*)&w32,4); Printf("Trigger pattern 2 %i"      ,w32);                             //10
+  
+    pFile->read((char*)&w32,4); Printf("Detector pattern  %i"      ,w32);                             //11
+  
+    pFile->read((char*)&w32,4); Printf("Type attribute 1  %i"      ,w32);                             //12
+    pFile->read((char*)&w32,4); Printf("Type attribute 2  %i"      ,w32);                             //13
+    pFile->read((char*)&w32,4); Printf("Type attribute 3  %i"      ,w32);                             //14
+  
+    pFile->read((char*)&w32,4); Printf("LDC ID            %i"      ,w32);                             //15
+    pFile->read((char*)&w32,4); Printf("GDC ID            %i"      ,w32);                             //16
+    pFile->read((char*)&w32,4); TDatime time(w32); time.Print();                                      //17
+  
+    Printf("");
+  }
+  return iSize;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void HmpidHeader(ifstream *pFile,Bool_t isPrint=kFALSE)
+{
+// Prints hmpid trailer and returns number of words for this trailer  
+  if(!isPrint) {pFile->seekg(15*4,ios::cur);return;}
+  Int_t w32=-1;
+  Printf("\nHMPID Header:");//private HEADER is 15 words
+  for(Int_t i=1;i<=11;i++) { pFile->read((char*)&w32,4); Printf("Word #%2i=%12i meaningless",i,w32);}
+                             pFile->read((char*)&w32,4); Printf("Word #12=%12i event counter",w32);   
+  for(Int_t i=13;i<=15;i++){ pFile->read((char*)&w32,4); Printf("Word #%2i=%12i empty",i,w32);}
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void HmpidPayload(ifstream *pFile,Int_t iDdl,TClonesArray *pDigLst)
+{
+// payload is 8 sequences with structure: WC36A8 then WC number of w32
+  UInt_t w32=0;
+  Int_t iDigCnt=pDigLst->GetEntriesFast();
+  for(Int_t row=1;row<=8;row++){  
+    pFile->read((char*)&w32,4);  Int_t wc=AliBitPacking::UnpackWord(w32,16,31); Int_t ma=AliBitPacking::UnpackWord(w32, 0,15);    
+    if(ma!=0x36a8) Printf("ERROR ERROR ERROR WRONG Marker=0x%x ERROR ERROR ERROR",ma);    
+    for(Int_t i=1;i<=wc;i++){//words loop
+      pFile->read((char*)&w32,4);
+      if(w32&0x08000000) continue; //it's DILOGIC CW
+      AliHMPIDDigit *pDig=new AliHMPIDDigit;
+      pDig->Raw(iDdl,w32);   
+      new ((*pDigLst)[iDigCnt++]) AliHMPIDDigit(*pDig);
+    }//words loop 
+  }//rows loop
+}//HmpidPayload()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void docosmic(const char* name)
+{
+  gBenchmark->Start("Cosmic converter");
+  ifstream in(name);
+
+  
+  Bool_t isPrint=kFALSE;
+  
+  TString rooName=name; rooName.Replace(1+rooName.First('.'),4,"root");
+  Int_t ddl=0;    
+  
+  TFile *pOut=new TFile(rooName,"recreate");
+  TTree *pTr=new TTree("cosmic","some for time being");
+  
+  TClonesArray *pDigLst=new TClonesArray("AliHMPIDDigit");   pTr->Branch("Digs",&pDigLst);
+  TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster"); pTr->Branch("Clus",&pCluLst);
+
+  while(1){      
+    Int_t iSize=DateHeader(&in,      isPrint);  if(iSize==68) continue;  //DATE header 
+    if(in.eof()) break;
+    HmpidHeader (&in,      isPrint);    //HMPID header 
+    HmpidPayload(&in,ddl+1,pDigLst);    //HMPID payload
+    HmpidHeader (&in,      isPrint);    //HMPID header 
+    HmpidPayload(&in,ddl  ,pDigLst);    //HMPID payload
+    
+    AliHMPIDReconstructor::Dig2Clu(pDigLst,pCluLst);
+    pTr->Fill();
+    pDigLst->Clear(); pCluLst->Clear();
+  }
+  
+  pTr->Write();
+  pOut->Close();
+  delete pDigLst;
+  in.close();
+  gBenchmark->Show("Cosmic converter");
+}//docosmic()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void cosmic()
+{
+  TChain *pCh=new TChain("cosmic");
+  pCh->Add("test.root");
+
+  
+  TH1F *pDigQ=new TH1F("digQ","Digits QDC",500,0,4100);
+  TH1F *pDigO=new TH1F("digO","Digits # per event",500,0,8000);
+  TH2F *pDigM=new TH2F("digM","Digits map",500,0,131,500,0,127);
+    
+  TH1F *pCluQ=new TH1F("cluQ","Clusters QDC",500,0,12100);
+  TH1F *pCluO=new TH1F("cluO","Clusters # per event",500,0,5000);
+  TH2F *pCluM=new TH2F("cluM","Clusters map",500,0,131,500,0,127);
+  
+  TClonesArray *pDigLst=new TClonesArray("AliHMPIDDigit");   pCh->SetBranchAddress("Digs",&pDigLst);
+  TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster"); pCh->SetBranchAddress("Clus",&pCluLst);
+  
+  for(Int_t iEvt=0;iEvt<pCh->GetEntries();iEvt++){
+    pCh->GetEntry(iEvt);
+    
+    pDigO->Fill(pDigLst->GetEntriesFast());
+    pCluO->Fill(pCluLst->GetEntriesFast());
+    
+    for(Int_t iDig=0;iDig<pDigLst->GetEntriesFast();iDig++){//digits loop
+      AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigLst->UncheckedAt(iDig);
+      pDigQ->Fill(pDig->Q());
+      pDigM->Fill(pDig->LorsX(),pDig->LorsY());
+    }//digits loop
+    
+    for(Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
+      AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);
+      pCluQ->Fill(pClu->Q());
+      pCluM->Fill(pClu->X(),pClu->Y());
+    }//digits loop
+  }//entries loop
+  
+  TCanvas *pC=new TCanvas("comic","cosmic"); pC->Divide(2,3);
+  
+  pC->cd(1); pDigM->Draw(); pC->cd(2); pCluM->Draw();
+  pC->cd(3); pDigQ->Draw(); pC->cd(4); pCluQ->Draw();
+  pC->cd(5); pDigO->Draw(); pC->cd(6); pCluO->Draw();
+}//cosmic()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

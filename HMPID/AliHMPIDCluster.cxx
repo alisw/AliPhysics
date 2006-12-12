@@ -113,7 +113,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
     for(Int_t iDig2=0;iDig2<Size();iDig2++) {                                           //loop on all digits again
       if(iDig1==iDig2) continue;                                                        //the same digit, no need to compare 
       AliHMPIDDigit *pDig2 = Dig(iDig2);                                                 //take second digit to compare with the first one
-      Int_t dist = TMath::Sign(Int_t(pDig1->PadX()-pDig2->PadX()),1)+TMath::Sign(Int_t(pDig1->PadY()-pDig2->PadY()),1);//distance between pads
+      Int_t dist = TMath::Sign(Int_t(pDig1->PadChX()-pDig2->PadChX()),1)+TMath::Sign(Int_t(pDig1->PadChY()-pDig2->PadChY()),1);//distance between pads
       if(dist==1)                                                                       //means dig2 is a neighbour of dig1
          if(pDig2->Q()>=pDig1->Q()) iHowManyMoreCnt++;                                 //count number of pads with Q more then Q of current pad
     }//second digits loop

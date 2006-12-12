@@ -552,7 +552,7 @@ Bool_t AliHMPIDv1::Raw2SDigits(AliRawReader *pRR)
   UInt_t w32=0;
   while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
     UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-    sdi.ReadRaw(ddl,w32);  
+    sdi.Raw(ddl,w32);  
     new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(sdi); //add this digit to the tmp list
   }//raw records loop
   GetLoader()->TreeS()->Fill(); GetLoader()->WriteSDigits("OVERWRITE");//write out sdigits

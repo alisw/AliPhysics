@@ -15,9 +15,8 @@ class AliHMPIDDigit :public AliDigit //TObject-AliDigit-AliHMPIDDigit
 {
 public:
   enum EAbsPad {kChAbs=100000000,kPcAbs=1000000,kPadAbsX=1000,kPadAbsY=1};       //absolute pad number structure
-  enum ERawData{kDilX=8,kDilY=6,kNdil=10,kNrow=24,kNddls=14};                    //RAW data structure
-  enum EPadData{kPcX=2,kPcY=3,kPad1=0,kPadPcX=80,kPadPcY=48,kPadAllX=kPadPcX*kPcX,kPadAllY=kPadPcY*kPcY,kPcAll=kPcX*kPcY,kPadAll=kPadAllX*kPadAllY};   //Segmentation structure 
-  enum EPadShif{kC=0,kU=1,kUR=2,kR=3,kDR=4,kD=5,kDL=6,kL=7,kUL=8};                 
+  enum ERawData{kNddls=14};                                                      //RAW data structure
+  enum EPadData{kPcX=2,kPcY=3,kPadPcX=80,kPadPcY=48,kPadAllX=kPadPcX*kPcX,kPadAllY=kPadPcY*kPcY,kPcAll=kPcX*kPcY,kPadAll=kPadAllX*kPadAllY};   //Segmentation structure 
 //ctor&dtor    
            AliHMPIDDigit(                                                     ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  {}                //default ctor
            AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t                           ):AliDigit(t),fPad(pad             ),fQ(q )  {}                //digit ctor 
@@ -33,30 +32,38 @@ public:
   static Int_t   A2P         (Int_t pad                      )     {return pad%kChAbs/kPcAbs;                       }                  //abs pad -> pc
   static Int_t   A2X         (Int_t pad                      )     {return pad%kPcAbs/kPadAbsX;                     }                  //abs pad -> pad X 
   static Int_t   A2Y         (Int_t pad                      )     {return pad%kPadAbsX;                            }                  //abs pad -> pad Y 
-         Int_t   Addr        (                               )const{Int_t mapY2A[kDilY]={5,3,1,0,2,4}; return mapY2A[A2Y(fPad)%kDilY]+kDilY*(A2X(fPad)%kDilX);}//raw a=0..47
+         Int_t   Addr        (                               )const{Int_t map[6]={5,3,1,0,2,4};return map[A2Y(fPad)%6]+6*(A2X(fPad)%8);}//ADDRESS 0..47
          void    AddTidOffset(Int_t offset                   )     {for (Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;};  //needed for merging
          Int_t   Ch          (                               )const{return A2C(fPad);                               }                  //chamber number
-         Int_t   Dilogic     (                               )const{return 10-PadX()/kDilX;                         }                  //raw d=1..10
+         Int_t   Dilogic     (                               )const{return 1+PadPcX()/8;                            }                  //DILOGIC# 1..10
   static void    DrawPc      (Bool_t isFill=kTRUE            );                                                                        //draw PCs
-         Int_t   Ddl         (                               )const{return (PadX()<kPadPcX) ? 2*Ch() : 2*Ch()+1;    }                  //DDL number 0..13
-  static Float_t Hit2Sdi     (AliHMPIDHit *pHit,TClonesArray *);                                                                        //hit -> 9 sdigits, returns total QDC   
-  static Bool_t  IsOverTh    (Float_t q                      )     {return q > 6;                                                  }   //is digit over threshold????
-  static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();                   }   //is point inside pc boundary?
-  inline static Bool_t  IsInDead    (Float_t x,Float_t y            );                                                                 //is point in dead area?
-         Float_t LorsX       (                               )const{return (PadX()+0.5)*SizePadX()+(Pc()%2)*(SizePcX()+SizeDead());}   //center of the pad x, [cm]
-         Float_t LorsY       (                               )const{return (PadY()+0.5)*SizePadY()+(Pc()/2)*(SizePcY()+SizeDead());}   //center of the pad y, [cm]
+  static void    DrawSeg     (                               );                                                                        //draw segmentation
+         void    DrawZoom    (                               ); 
+         Int_t   DdlIdx      (                               )const{return 2*Ch()+Pc()%2;                           }                  //DDL# 0..13
+         Int_t   DdlId       (                               )const{return (6<<8)+DdlIdx();                         }                  //DDL ID 0x600..0x60d
+  static Float_t Hit2Sdi     (AliHMPIDHit *pHit,TClonesArray*);                                                                        //hit -> 9 sdigits, returns total QDC   
+  static Bool_t  IsOverTh    (Float_t q                      )     {return q > 6;                                   }                  //is digit over threshold????
+  static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();    }                  //is point inside pc boundary?
+  inline static Bool_t IsInDead  (Float_t x,Float_t y        );                                                                        //is point in dead area?
+         Float_t LorsX       (                               )const{return (PadPcX()+0.5)*SizePadX()+(Pc()%2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
+         Float_t LorsY       (                               )const{return (PadPcY()+0.5)*SizePadY()+(Pc()/2)*(SizePcY()+SizeDead());} //center of the pad y, [cm]
   inline Float_t Mathieson   (Float_t x,Float_t y            )const;                                                                   //Mathieson distribution 
-         Int_t   PadX        (                               )const{return A2X(fPad);}                                                 //x position of the pad
-         Int_t   PadY        (                               )const{return A2Y(fPad);}                                                 //y postion of the pad     
+         Int_t   PadPcX      (                               )const{return A2X(fPad);}                                                 //pad x within PC 0..79
+         Int_t   PadPcY      (                               )const{return A2Y(fPad);}                                                 //pad y within PC 0..47
+         Int_t   PadChX      (                               )const{return A2X(fPad);}                                                 //pad x within chamber
+         Int_t   PadChY      (                               )const{return A2Y(fPad);}                                                 //pad y within chamber
          Int_t   Pad         (                               )const{return fPad;}                                                      //absolute id of this pad
-         Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
          Int_t   Pc          (                               )const{return A2P(fPad);}                                                 //PC position number
   static void    PrintSize   (                               );                                                                        //print all segmentation sizes      
-  inline Int_t   Raw         (UInt_t &w32                    )const;                                                                   //raw
-         Int_t   Row         (                               )const{Int_t r=1+Pc()/2*8+PadY()/kDilY; return (Pc()%2)?kNrow-r+1:r;}     //row r=1..24
-         void    Set         (Int_t c,Int_t s,Int_t x,Int_t y)     {fPad=Abs(c,s,x,y);}                                                //set new digit
-         void    ReadRaw     (Int_t ddl,Int_t r,Int_t d,Int_t a){Int_t mapA2Y[kDilY]={3,2,4,1,5,0};fPad=Abs(ddl/2,ddl%7,d*kDilX+a/kDilY,r*kDilY+mapA2Y[a%kDilY]);} //from raw
-  inline void    ReadRaw     (Int_t ddl,UInt_t w32           );                                                                        //read raw word
+         Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
+  inline Int_t   Raw         (        UInt_t &raw32          )const;                                                                   //digit->(ddl,raw32)
+  inline void    Raw         (Int_t l,UInt_t raw32           );                                                                        //(ddl,raw32)->digit
+  static Int_t   Raw2Ch      (UInt_t l                       )     {return l/2;}                                                       //ch=f(ddl)   
+  static Int_t   Raw2Pc      (UInt_t l,UInt_t r              )     {r=(r-1)/8;return (l%2)?5-2*r:2*r;}                                 //pc=f(ddl,r)   
+  static Int_t   Raw2X       (         UInt_t d,UInt_t a     )     {                                              return (d-1)*8+a/6;} //padx=f(d,a)
+  static Int_t   Raw2Y       (UInt_t l,UInt_t r,UInt_t a     )     {Int_t a2y[6]={3,2,4,1,5,0};r=(l%2)?(24-r):r-1;return 6*(r%8)+a2y[a%6];}//pady=f(ddl,r,a)
+         Int_t   Row         (                               )const{Int_t r=1+Pc()/2*8+PadPcY()/6; return (Pc()%2)? 25-r:r;}           //row r=1..24
+         void    Set         (Int_t c,Int_t s,Int_t x,Int_t y)     {fPad=Abs(c,s,x,y);fQ=0xa3;}                                        //set new digit
   
   static Float_t SizeAllX    (                               )     {return SizePadX()*kPadAllX+SizeDead();}                            //all PCs size x, [cm]        
   static Float_t SizeAllY    (                               )     {return SizePadY()*kPadAllY+2*SizeDead();}                          //all PCs size y, [cm]    
@@ -67,13 +74,12 @@ public:
   static Float_t SizePadY    (                               )     {return 0.84;}                                                      //pad size y, [cm]  
   static Float_t SizePcX     (                               )     {return SizePadX()*kPadPcX;}                                        //PC size x, [cm]        
   static Float_t SizePcY     (                               )     {return SizePadY()*kPadPcY;}                                        //PC size y, [cm]    
-  static Float_t SizeWin     (                               )     {return 0.5;}
-  static Float_t SizeRad     (                               )     {return 1.5;}     
-  static void    TestSeg     (                               );                                                                        //test segmentation
-         void    Zoom        (                               ); 
+  static Float_t SizeWin     (                               )     {return 0.5;}                                                       //Quartz window width
+  static Float_t SizeRad     (                               )     {return 1.5;}                                                       //Rad width   
+  static void    Test        (                               );                                                                        //Test conversions
 protected:                  //AliDigit has fTracks[3]
   Int_t   fPad;             //absolute pad number is chamber*kCham
-  Float_t fQ;               //QDC value, fractions are permitted for summable procedure  
+  Float_t  fQ;              //QDC value, fractions are permitted for summable procedure  
   ClassDef(AliHMPIDDigit,4) //HMPID digit class       
 };//class AliHMPIDDigitN
 
@@ -86,7 +92,8 @@ AliHMPIDDigit::AliHMPIDDigit(Int_t c,Float_t q,Int_t t,Float_t x,Float_t y,Int_t
 // Arguments: c- chamber 
 //            q- total QDC
 //            t -TID
-//            x,y - hit position, LORS        
+//            x,y - hit position, LORS      
+//            flag- which pad to try     
 //   Returns: none    
   Int_t pc,padx,pady;
   if     (x>=          0          && x<=  SizePcX()            ) {pc=0; padx=Int_t( x                           / SizePadX());}//PC 0 or 2 or 4
@@ -98,11 +105,11 @@ AliHMPIDDigit::AliHMPIDDigit(Int_t c,Float_t q,Int_t t,Float_t x,Float_t y,Int_t
   else return;
   
   switch(flag){
-    case kUL:padx--;pady++;break;    case kU:pady++;break;     case kUR:padx++; pady++;break;
+    case 8:padx--;pady++;break;    case 1:pady++;break;    case 2:padx++; pady++;break;
                                               
-    case kL: padx--;       break;    case kC:       break;     case kR:padx++;         break;
+    case 7: padx--;      break;    case 0:       break;    case 3:padx++;        break;
                                                  
-    case kDL:padx--;pady--;break;    case kD:pady--;break;     case kDR:padx++; pady--;break;                                            
+    case 6:padx--;pady--;break;    case 5:pady--;break;    case 4:padx++; pady--;break;                                            
   }
   if(padx<0 || padx>=kPadPcX) return;
   if(pady<0 || pady>=kPadPcY) return;
@@ -119,7 +126,7 @@ Int_t AliHMPIDDigit::Compare(const TObject *pObj) const
 //   Retunrs: -1 if AbsPad less then in pObj, 1 if more and 0 if they are the same      
   if     (fPad==((AliHMPIDDigit*)pObj)->Pad()) return  0;
   else if(fPad >((AliHMPIDDigit*)pObj)->Pad()) return  1;
-  else                                        return -1;
+  else                                         return -1;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDDigit::IsInDead(Float_t x,Float_t y)
@@ -160,10 +167,10 @@ Int_t AliHMPIDDigit::Raw(UInt_t &w32)const
   AliBitPacking::PackWord(         Addr()   ,w32,12,17);  // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
   AliBitPacking::PackWord(         Dilogic(),w32,18,21);  // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
   AliBitPacking::PackWord(         Row()    ,w32,22,26);  //                                                Row number        bits (22..26) counts (1..24)  
-  return Ddl(); //ddl 0..13 where to write this digit 
+  return DdlIdx(); //ddl 0..13 where to write this digit 
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::ReadRaw(Int_t ddl,UInt_t w32)
+void AliHMPIDDigit::Raw(Int_t ddl,UInt_t w32)
 {
 // Converts a given raw data word to a digit
 // Arguments: w32 - 32 bits raw data word
@@ -173,7 +180,7 @@ void AliHMPIDDigit::ReadRaw(Int_t ddl,UInt_t w32)
   UInt_t a = AliBitPacking::UnpackWord(w32,12,17);  // 3322 2222 2222 1111 1111 1000 0000 0000         DILOGIC address   bits (12..17) counts (0..47)
   UInt_t d = AliBitPacking::UnpackWord(w32,18,21);  // 1098 7654 3210 9876 5432 1098 7654 3210         DILOGIC number    bits (18..21) counts (1..10)
   UInt_t r = AliBitPacking::UnpackWord(w32,22,26);  //                                                 Row number        bits (22..26) counts (1..24)    
-  ReadRaw(ddl,r,d,a);    
+  fPad=Abs(Raw2Ch(ddl),Raw2Pc(ddl,r),Raw2X(d,a),Raw2Y(ddl,r,a));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif
