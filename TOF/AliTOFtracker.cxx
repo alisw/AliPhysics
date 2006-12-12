@@ -73,10 +73,8 @@ AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]):
  { 
   //AliTOFtracker main Ctor
 
-  //fHoles=true;
   fDy=AliTOFGeometry::XPad(); 
   fDz=AliTOFGeometry::ZPad(); 
-  fHoles = fGeom->GetHoles();
 }
 //_____________________________________________________________________________
 AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):

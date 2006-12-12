@@ -28,7 +28,7 @@
 #include "AliESDtrack.h" 
 #include "AliTracker.h" 
 
-#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtrack.h" 
 
@@ -51,7 +51,7 @@ AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) :
   AliKalmanTrack(t),
   fSeedInd(t.fSeedInd),
   fSeedLab(t.fSeedLab),
-  fTOFgeometry(new AliTOFGeometryV4()) 
+  fTOFgeometry(new AliTOFGeometryV5()) 
 {
   //
   // Copy constructor.
@@ -63,7 +63,7 @@ AliTOFtrack::AliTOFtrack(const AliESDtrack& t) :
   AliKalmanTrack(), 
   fSeedInd(-1),
   fSeedLab(-1),
-  fTOFgeometry(new AliTOFGeometryV4()) 
+  fTOFgeometry(new AliTOFGeometryV5()) 
 {
   //
   // Constructor from AliESDtrack

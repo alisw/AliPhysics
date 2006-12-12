@@ -29,6 +29,7 @@
 
 #include "AliTOFClusterFinder.h"
 #include "AliTOFGeometry.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtracker.h"
 #include "AliTOFReconstructor.h"
@@ -91,7 +92,8 @@ AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* runLoader) const
 {
 // create a TOF tracker
 
-  AliTOFGeometry* geom = GetTOFGeometry(runLoader);
+//  AliTOFGeometry* geom = GetTOFGeometry(runLoader);
+  AliTOFGeometry* geom = new AliTOFGeometryV5();
   if (!geom) return NULL;
   //  Double_t parPID[] = {130., 5.};
   Double_t parPID[] = {80., 5.};
@@ -122,7 +124,7 @@ AliTOFGeometry* AliTOFReconstructor::GetTOFGeometry(AliRunLoader* runLoader) con
   TFile *in=(TFile*)gFile;  
   if (!in->IsOpen()) {
     AliWarning("Geometry file is not open default  TOF geometry will be used");
-    tofGeom = new AliTOFGeometry();
+    tofGeom = new AliTOFGeometryV5();
   }
   else {
     in->cd();  

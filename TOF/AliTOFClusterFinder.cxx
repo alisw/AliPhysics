@@ -107,10 +107,10 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
 // Constructor
 //
 
-  runLoader->CdGAFile();
-  TFile *in=(TFile*)gFile;
-  in->cd();
-  fTOFGeometry = (AliTOFGeometry*)in->Get("TOFgeometry");
+//  runLoader->CdGAFile();
+//  TFile *in=(TFile*)gFile;
+//  in->cd();
+//  fTOFGeometry = (AliTOFGeometry*)in->Get("TOFgeometry");
 
 }
 
