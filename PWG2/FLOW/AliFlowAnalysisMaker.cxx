@@ -3618,8 +3618,11 @@ void AliFlowAnalysisMaker::Resolution()
     cout << FlowAnalysis << "v" << j+1 << "= (" << content << " +/- " << error << " +/- " << totalError << "(with syst.)) %" << endl;
     // V0s
     errorV0 = histFull[k].mHistV0_v->GetBinError(j+1) ; 
-    errorV0 /= mRes[k][j];                                         
-    totalError = fabs(contentV0) * TMath::Sqrt((errorV0/contentV0)*(errorV0/contentV0) + (mResErr[k][j]/mRes[k][j])*(mResErr[k][j]/mRes[k][j]));
+    errorV0 /= mRes[k][j]; 
+    if (contentV0>0)
+      totalError = fabs(contentV0) * TMath::Sqrt((errorV0/contentV0)*(errorV0/contentV0) + (mResErr[k][j]/mRes[k][j])*(mResErr[k][j]/mRes[k][j]));
+    else
+      totalError = 0;
     histFull[k].mHistV0_v->SetBinError(j+1, totalError);
    } 
    else 
