@@ -2478,33 +2478,39 @@ void AliFlowAnalysisMaker::FillParticleHistograms()
   
   // - here ITS   (chi2 & nHits)
   mHistChi2ITS->Fill(chi2ITS);
-  mHistChi2normITS->Fill(chi2ITS/((float)fitPtsITS-5.));  // 5 is the # of parameters in the track fit
+  if (fitPtsITS>0)
+    mHistChi2normITS->Fill(chi2ITS/((float)fitPtsITS));  // 5 is the # of parameters in the track fit
   mHistFitPtsITS->Fill((float)fitPtsITS);
   mHistMaxPtsITS->Fill((float)maxPtsITS);
 
   // - here TPC   (chi2 & nHits)
   mHistChi2TPC->Fill(chi2TPC);
-  mHistChi2normTPC->Fill(chi2TPC/((float)fitPtsTPC-5.));
+  if (fitPtsTPC>0)
+    mHistChi2normTPC->Fill(chi2TPC/((float)fitPtsTPC));
   mHistFitPtsTPC->Fill((float)fitPtsTPC);
   mHistMaxPtsTPC->Fill((float)maxPtsTPC);
-  if(maxPtsTPC) { mHistFitOverMaxTPC->Fill((float)(fitPtsTPC)/(float)maxPtsTPC) ; }
+  if(maxPtsTPC>0)
+    mHistFitOverMaxTPC->Fill((float)(fitPtsTPC)/(float)maxPtsTPC);
 
   // - here TRD  (chi2 & nHits)
   mHistChi2TRD->Fill(chi2TRD);
-  mHistChi2normTRD->Fill(chi2TRD/((float)fitPtsTRD-5.));
+  if (fitPtsTRD>0)
+    mHistChi2normTRD->Fill(chi2TRD/((float)fitPtsTRD));
   mHistFitPtsTRD->Fill((float)fitPtsTRD);
   mHistMaxPtsTRD->Fill((float)maxPtsTRD);
 
   // - here TOF   (chi2 & nHits)
   mHistChi2TOF->Fill(chi2TOF);
-  mHistChi2normTOF->Fill(chi2TOF/((float)fitPtsTOF-5.));
+  if (fitPtsTOF>0)
+    mHistChi2normTOF->Fill(chi2TOF/((float)fitPtsTOF));
   mHistFitPtsTOF->Fill((float)fitPtsTOF);
   mHistMaxPtsTOF->Fill((float)maxPtsTOF);
   
   // fit over max (all)
   int maxPts = maxPtsITS + maxPtsTPC + maxPtsTRD + maxPtsTOF ;
   int fitPts = fitPtsITS + fitPtsTPC + fitPtsTRD + fitPtsTOF ;
-  if(maxPts) { mHistFitOverMax->Fill((float)(fitPts)/(float)maxPts) ; }
+  if(maxPts>0)
+    mHistFitOverMax->Fill((float)(fitPts)/(float)maxPts) ;
   
   // lenght
   mHistLenght->Fill(lenght) ;
