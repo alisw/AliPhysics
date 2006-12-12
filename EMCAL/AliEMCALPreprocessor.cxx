@@ -16,7 +16,10 @@
 /* $Id$ */
 /* History of cvs commits:
  *
- * $Log$ 
+ * $Log$
+ * Revision 1.1  2006/12/07 16:32:16  gustavo
+ * First shuttle code, online calibration histograms producer, EMCAL preprocessor
+ * 
  *
 */
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,27 +31,32 @@
 // Adapted for EMCAL by Gustavo Conesa Balbastre, October 2006
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliEMCALPreprocessor.h"
-#include "AliLog.h"
-#include "AliCDBMetaData.h"
-#include "AliEMCALCalibData.h"
+//Root
 #include "TFile.h"
 #include "TH1.h"
 #include "TMap.h"
 #include "TRandom.h"
+#include "TKey.h"
+#include "TList.h"
+#include "Riostream.h"
+//AliRoot
+#include "AliEMCALPreprocessor.h"
+#include "AliLog.h"
+#include "AliCDBMetaData.h"
+#include "AliEMCALCalibData.h"
 
 ClassImp(AliEMCALPreprocessor)
 
 //_______________________________________________________________________________________
 AliEMCALPreprocessor::AliEMCALPreprocessor() :
-AliPreprocessor("EMCAL",0)
+AliPreprocessor("EMC",0)
 {
   //default constructor
 }
 
 //_______________________________________________________________________________________
-AliEMCALPreprocessor::AliEMCALPreprocessor(const char* detector, AliShuttleInterface* shuttle):
-AliPreprocessor(detector,shuttle)
+AliEMCALPreprocessor::AliEMCALPreprocessor(AliShuttleInterface* shuttle):
+AliPreprocessor("EMC",shuttle)
 {
   // Constructor
 }
@@ -81,35 +89,54 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
   char hnam[80];
   TH1F* histo=0;
 
-  // Generate name of the reference histogram
-  TString refHistoName = "mod";
-  refHistoName += gRandom->Integer(nMod)+1;
-  refHistoName += "col";
-  refHistoName += gRandom->Integer(nCol)+1;
-  refHistoName += "row";
-  refHistoName += gRandom->Integer(nRow)+1;
-  TH1F* hRef = (TH1F*)f.Get(refHistoName);
 
-  // If the reference histogram does not exist or has too little statistics,
-  // it is better to give up preprocessing
-  if(!hRef || hRef->GetEntries()<2) {
-    AliInfo(Form("Cannot get reference histogram %s",refHistoName.Data()));
-    return 0;
+  //Get reference histogram
+  TList * keylist = f.GetListOfKeys();
+  Int_t nkeys   = f.GetNkeys();
+  Bool_t ok = kFALSE;
+  TKey  *key;
+  TString refHistoName= "";
+  Int_t ikey = 0;
+  Int_t counter = 0;
+  TH1F* hRef;
+  
+  //Check if the file contains any histogram
+  if(nkeys< 2){
+    AliInfo(Form("Not enough histograms for calibration, nhist = %d",nkeys));
+    return 1;
   }
-
-  AliEMCALCalibData calibData;
+  
+  while(!ok){
+    ikey = gRandom->Integer(nkeys);
+    key = (TKey*)keylist->At(ikey);
+    refHistoName = key->GetName();
+    hRef = (TH1F*)f.Get(refHistoName);
+    counter++;
+    // Check if the reference has too little statistics and 
+    // if the histogram has the correct name (2 kinds, mod#col#row for 
+    // reference here, and mod#, see AliEMCALHistoProducer.
+    if(refHistoName.Contains("col") && hRef->GetEntries()>2 && hRef->GetMean()>0) 
+      ok=kTRUE;
+    if(!ok && counter >= nMod*nCol*nRow+nMod){
+      AliInfo("No histogram with enough statistics for reference");
+      return 1;
+    }
+  }
+  
   Double_t refMean=hRef->GetMean();
+
   // Calculates relative calibration coefficients for all non-zero channels
+  AliEMCALCalibData calibData;
 
   for(Int_t mod=0; mod<nMod; mod++) {
-   if(mod > 10) nRow = nRowHalfSM ;
+    if(mod > 10) nRow = nRowHalfSM ;
     for(Int_t col=0; col<nCol; col++) {
       for(Int_t row=0; row<nRow; row++) {
         sprintf(hnam,"mod%dcol%drow%d",mod,col,row);
         histo = (TH1F*)f.Get(hnam);
 	//TODO: dead channels exclusion!
-        if(histo) {
-          coeff = histo->GetMean()/refMean;
+        if(histo && histo->GetMean() > 0) {
+	  coeff = histo->GetMean()/refMean;
 	  calibData.SetADCchannel(mod+1,col+1,row+1,1./coeff);
 	  AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
 	}

@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2006/12/07 16:32:16  gustavo
+ * First shuttle code, online calibration histograms producer, EMCAL preprocessor
+ *
  *
  */
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,7 +23,7 @@ class AliEMCALPreprocessor : public AliPreprocessor {
 public:
 
   AliEMCALPreprocessor();
-  AliEMCALPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+  AliEMCALPreprocessor(AliShuttleInterface* shuttle);
 
 protected:
 
