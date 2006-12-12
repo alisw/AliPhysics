@@ -9,6 +9,7 @@
 
 #include <TFile.h>
 #include <TCanvas.h>
+#include <TH3F.h>
 #include <TH2F.h>
 
 #include <AliLog.h>
@@ -40,9 +41,15 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title) : TNamed(n
   //Float_t binLimitsVtx[] = {-20,-15,-10,-6,-3,0,3,6,10,15,20};
   //Float_t binLimitsVtx[] = {-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
   Float_t binLimitsVtx[] = {-20,-15,-10,-8,-6,-4,-2,0,2,4,6,8,10,15,20};
+  Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,
+			    0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+
+  TH3F* dummyBinning = new TH3F("","",14, binLimitsVtx, 40, binLimitsEta , 28, binLimitsPt);
 
   fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", title), 14, binLimitsVtx, 22, binLimitsN);
-  fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", title), 14, binLimitsVtx, 40, -2, 2, 28, binLimitsPt);
+  fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", title), dummyBinning);
+
+  delete dummyBinning;
 
   fEventCorr->SetAxisTitles("vtx z [cm]", "Ntracks");
   fTrackCorr->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");

@@ -8,11 +8,14 @@
 //
 
 #include <TH3F.h>
+#include <TH2F.h>
 #include <TH1F.h>
+#include <TString.h>
 
 #include <AliLog.h>
 
 #include "AliCorrectionMatrix3D.h"
+#include "AliCorrectionMatrix2D.h"
 #include "AliPWG0Helper.h"
 
 //____________________________________________________________________
@@ -96,21 +99,32 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   delete[] binLimitsY;
 }
 
-AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
-      Int_t nBinX, const Float_t* xbins,
-      Int_t nBinY, Float_t Ymin, Float_t Ymax,
-      Int_t nBinZ, const Float_t* zbins)
+AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title, TH3F* hBinning)
   : AliCorrectionMatrix(name, title)
 {
-  // constructor with variable bin sizes
+  // constructor with variable bin sizes (uses binning of hBinning)
 
-  Float_t* binLimitsY = new Float_t[nBinY+1];
-  for (Int_t i=0; i<=nBinY; ++i)
-    binLimitsY[i] = Ymin + (Ymax - Ymin) / nBinY * i;
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
 
-  CreateHists(nBinX, xbins, nBinY, binLimitsY, nBinZ, zbins);
+  fhMeas = (TH3F*)hBinning->Clone("measured");
+  fhGene = (TH3F*)hBinning->Clone("generated");
+  fhCorr = (TH3F*)hBinning->Clone("correction");
 
-  delete[] binLimitsY;
+  fhMeas->SetTitle(Form("%s measured",title)  );
+  fhGene->SetTitle(Form("%s generated",title ));
+  fhCorr->SetTitle(Form("%s correction",title));
+
+  fhMeas->Reset();
+  fhGene->Reset();
+  fhCorr->Reset();
+
+  TH1::AddDirectory(oldStatus);
+
+  fhMeas->Sumw2();
+  fhGene->Sumw2();
+  fhCorr->Sumw2();
 }
 
 //____________________________________________________________________
@@ -166,6 +180,86 @@ TH3F* AliCorrectionMatrix3D::GetCorrectionHistogram()
   // return correction histogram casted to correct type
   return dynamic_cast<TH3F*> (fhCorr);
 }
+
+//____________________________________________________________________
+AliCorrectionMatrix2D* AliCorrectionMatrix3D::Get2DCorrection(Char_t* opt, Float_t aMin, Float_t aMax)
+{
+  // returns a 2D projection of this correction
+
+  TString option = opt;
+
+  if (aMin<aMax) {
+    if (option.Contains("xy") || option.Contains("yx")) {
+      Int_t bMin = fhMeas->GetZaxis()->FindBin(aMin);
+      Int_t bMax = fhMeas->GetZaxis()->FindBin(aMax);
+      fhMeas->GetZaxis()->SetRange(bMin, bMax);      
+    }
+    else if (option.Contains("xz") || option.Contains("zx")) {
+      Int_t bMin = fhMeas->GetYaxis()->FindBin(aMin);
+      Int_t bMax = fhMeas->GetYaxis()->FindBin(aMax);
+      fhMeas->GetYaxis()->SetRange(bMin, bMax);      
+    }
+    else if (option.Contains("yz") || option.Contains("zy")) {
+      Int_t bMin = fhMeas->GetXaxis()->FindBin(aMin);
+      Int_t bMax = fhMeas->GetXaxis()->FindBin(aMax);
+      fhMeas->GetXaxis()->SetRange(bMin, bMax);      
+    }
+    else {
+      AliDebug(AliLog::kWarning, Form("WARNING: unknown projection option %s", opt));
+      return 0;
+    }
+  }
+  AliCorrectionMatrix2D* corr2D = new AliCorrectionMatrix2D(Form("%s_%s",GetName(),opt),Form("%s projection %s",GetName(),opt),100,0,100,100,0,100);
+
+  TH2F* meas = (TH2F*) ((TH3F*)fhMeas)->Project3D(opt);
+  TH2F* gene = (TH2F*) ((TH3F*)fhGene)->Project3D(opt);
+
+  TH2F* corr = (TH2F*)gene->Clone("corr");
+  corr->Reset();
+
+  corr2D->SetGeneratedHistogram(gene);
+  corr2D->SetMeasuredHistogram(meas);
+  corr2D->SetCorrectionHistogram(corr);
+
+  corr2D->Divide();
+
+  // unzoom
+  fhMeas->GetXaxis()->UnZoom();  
+  fhMeas->GetYaxis()->UnZoom();  
+  fhMeas->GetZaxis()->UnZoom();  
+
+  fhGene->GetXaxis()->UnZoom();
+  fhGene->GetYaxis()->UnZoom();
+  fhGene->GetZaxis()->UnZoom();
+
+  return corr2D;
+}
+
+//____________________________________________________________________
+TH1F* AliCorrectionMatrix3D::Get1DCorrectionHistogram(Char_t* opt, Float_t aMin1, Float_t aMax1, Float_t aMin2, Float_t aMax2)
+{
+  // returns a 1D projection of this correction
+  AliDebug(AliLog::kWarning, Form("WARNING: test"));
+  
+  AliCorrectionMatrix2D* corr2D;
+  if (strcmp(opt,"x")==0) {  
+    corr2D = Get2DCorrection("xy",aMin1,aMax1);
+    return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
+  }
+  if (strcmp(opt,"y")==0) {
+    corr2D = Get2DCorrection("xy",aMin1,aMax1);
+    return corr2D->Get1DCorrectionHistogram("y",aMin2,aMax2);
+  }  
+  if (strcmp(opt,"z")==0) {
+    corr2D = Get2DCorrection("yz",aMin1,aMax1);    
+    return corr2D->Get1DCorrectionHistogram("x",aMin2,aMax2);
+  }  
+  AliDebug(AliLog::kWarning, Form("WARNING: unknown projection option %s (should be x,y or z)", opt));  
+  
+  return 0;
+}
+
+
 
 //____________________________________________________________________
 void AliCorrectionMatrix3D::FillMeas(Float_t ax, Float_t ay, Float_t az)
