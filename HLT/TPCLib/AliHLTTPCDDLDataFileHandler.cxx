@@ -8,13 +8,8 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDigitData.h"
-#ifdef use_newio
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
-#else
-#include "AliHLTTPCDDLTPCRawStream.h"
-#include "AliHLTTPCDDLRawReaderFile.h"
-#endif
 #include "AliHLTTPCDDLDataFileHandler.h"
 
 #if __GNUC__ >= 3
@@ -60,7 +55,6 @@ void AliHLTTPCDDLDataFileHandler::FreeAll()
 }
 
 
-#ifdef use_newio
 Bool_t AliHLTTPCDDLDataFileHandler::SetReaderInput(AliRawEvent *rawevent)
 {
   // sets the input of the reader
@@ -91,37 +85,6 @@ Bool_t AliHLTTPCDDLDataFileHandler::SetReaderInput(Char_t *name,Int_t event)
 
   return kTRUE;
 }
-#else
-Bool_t AliHLTTPCDDLDataFileHandler::SetReaderInput(Char_t *name, Bool_t add)
-{
-  // sets the input of the reader
-  if(fReader){
-    LOG(AliHLTTPCLog::kError,"AliHLTTPCDDLDataFileHandler::SetReaderInput","File Open")
-      <<"Reader ptr is already in use"<<ENDLOG;
-    return kFALSE;
-  }
- 
-  fReader=new AliHLTTPCDDLRawReaderFile(name,add);
-  fTPCStream=new AliHLTTPCDDLTPCRawStream(fReader);
-  
-  return kTRUE;
-}
-Bool_t AliHLTTPCDDLDataFileHandler::SetReaderInput(AliHLTTPCDDLRawReaderFile *rf)
-{
-  // sets the input of the reader
-  if(fReader){
-    LOG(AliHLTTPCLog::kError,"AliHLTTPCRawDataFileHandler::SetReaderInput","File Open")
-      <<"Reader ptr is already in use, delete it first"<<ENDLOG;
-    return kFALSE;
-  }
-
-  //Open the raw data file with given file.
-  fReader = rf;
-  fTPCStream=new AliHLTTPCDDLTPCRawStream(fReader);
-
-  return kTRUE;
-}
-#endif
 
 void AliHLTTPCDDLDataFileHandler::CloseReaderInput()
 {
@@ -138,19 +101,16 @@ void AliHLTTPCDDLDataFileHandler::CloseReaderInput()
   fTPCStream = 0;
 }
 
-#ifdef use_newio
 Bool_t AliHLTTPCDDLDataFileHandler::IsDigit(Int_t /*i*/) const
 {
   // dummy
   return kTRUE;
 }
-#endif
 
 #ifndef fast_raw
 AliHLTTPCDigitRowData * AliHLTTPCDDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t event)
 {
   // transfers the DDL data to the memory
-#ifdef use_newio
   if((fEvent>=0)&&(event!=fEvent)){
     fEvent=event;
     if(fReader) delete fReader;
@@ -158,7 +118,6 @@ AliHLTTPCDigitRowData * AliHLTTPCDDLDataFileHandler::DDLData2Memory(UInt_t &nrow
     fReader=new AliRawReaderRoot(fFilename,event);
     fTPCStream=new AliTPCRawStream(fReader);
   }
-#endif
   AliHLTTPCDigitRowData *data = 0;
   nrow=0;
 
@@ -218,13 +177,9 @@ AliHLTTPCDigitRowData * AliHLTTPCDDLDataFileHandler::DDLData2Memory(UInt_t &nrow
     ddls[0] = ddls[ddlsToSearch-1];
     ddls[ddlsToSearch-1] = tempddl;
   }
-#ifdef use_newio
     fReader->Reset();
     fReader->Select(0,ddls[0],ddls[ddlsToSearch-1]);
     fTPCStream->Reset();
-#else
-    fTPCStream->SetDDLID(ddls[i]); //ddl to read out
-#endif
     Int_t zerosup = AliHLTTPCTransform::GetZeroSup();
     Int_t adcsat = AliHLTTPCTransform::GetADCSat();
     Int_t slice,srow;
@@ -344,7 +299,6 @@ AliHLTTPCDigitRowData * AliHLTTPCDDLDataFileHandler::DDLData2Memory(UInt_t &nrow
 AliHLTTPCDigitRowData * AliHLTTPCDDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t event)
 {
   // transfers the DDL data to the memory
-#ifdef use_newio
   if((fEvent>=0)&&(event!=fEvent)){
     fEvent=event;
     if(fReader) delete fReader;
@@ -352,7 +306,6 @@ AliHLTTPCDigitRowData * AliHLTTPCDDLDataFileHandler::DDLData2Memory(UInt_t &nrow
     fReader=new AliRawReaderRoot(fFilename,event);
     fTPCStream=new AliTPCRawStream(fReader);
   }
-#endif
   AliHLTTPCDigitRowData *data = 0;
   nrow=0;
 
@@ -386,13 +339,9 @@ AliHLTTPCDigitRowData * AliHLTTPCDDLDataFileHandler::DDLData2Memory(UInt_t &nrow
 
   //  for(Int_t i=0;i<ddlsToSearch;i++) cout << ddls[i] <<endl;
 
-#ifdef use_newio
   fReader->Reset();
   fReader->Select(0,ddls[0],ddls[ddlsToSearch-1]);
   fTPCStream->Reset();
-#else
-  fTPCStream->SetDDLID(ddls[i]); //ddl to read out
-#endif
 
   nrow = (UInt_t)nrows;
 

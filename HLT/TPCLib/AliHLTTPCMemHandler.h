@@ -23,10 +23,8 @@ class AliHLTTPCTrackArray;
 class AliHLTTPCRandomPointData;
 class AliHLTTPCRandomDigitData;
 
-#ifdef use_newio
 class AliRunLoader;
 class AliRawEvent;
-#endif
 class AliTPCRawStream;
 
 class AliHLTTPCMemHandler { 
@@ -117,9 +115,7 @@ class AliHLTTPCMemHandler {
   //virtual functions:
   virtual void FreeDigitsTree() {fDummy=0; return;}
   virtual Bool_t SetAliInput(char */*name*/){fDummy=0; return 0;}
-#ifdef use_newio
   virtual Bool_t SetAliInput(AliRunLoader */*runloader*/){fDummy=0; return 0;}
-#endif
   virtual void CloseAliInput(){fDummy=0; return;} 
   virtual Bool_t IsDigit(Int_t /*i*/=0){fDummy=0; return 0;}
   virtual Bool_t SetMCOutput(char */*name*/){fDummy=0; return 0;}
@@ -159,12 +155,8 @@ class AliHLTTPCMemHandler {
   virtual Bool_t RawData2CompMemory(Int_t /*event*/=-1){fDummy=0; return 0;}
 
   //AliHLTTPCDDLDataFileHandler
-#ifdef use_newio
   virtual Bool_t SetReaderInput(AliRawEvent */*rawevent*/){fDummy=0; return 0;}
   virtual Bool_t SetReaderInput(Char_t */*name*/,Int_t /*event*/=0){fDummy=0; return 0;}
-#else
-  virtual Bool_t SetReaderInput(Char_t */*name*/,Bool_t /*add*/=kTRUE){fDummy=0; return 0;}
-#endif
   virtual void CloseReaderInput(){};
 
   virtual AliHLTTPCDigitRowData* DDLData2Memory(UInt_t &/*nrow*/,Int_t /*event*/=-1){fDummy=0; return 0;}

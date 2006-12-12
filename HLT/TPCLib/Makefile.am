@@ -32,7 +32,6 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCFileHandler.cxx \
 				  AliHLTTPCBenchmark.cxx \
 				  AliHLTTPCDDLDataFileHandler.cxx \
-				  AliHLTTPCClustFinderNew.cxx \
 				  AliHLTTPCClusterFinder.cxx \
 				  AliHLTTPCDigitReader.cxx \
 				  AliHLTTPCDigitReaderPacked.cxx \
@@ -52,7 +51,6 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCTrackMerger.cxx \
 				  AliHLTTPCGlobalMerger.cxx \
 				  AliHLTTPCInterMerger.cxx \
-				  AliHLTTPC.cxx \
 				  AliHLTTPCPad.cxx \
 				  AliHLTTPCDefinitions.cxx \
 				  AliHLTTPCRawDataUnpackerComponent.cxx \
@@ -62,6 +60,8 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCGlobalMergerComponent.cxx
 
 
+#				  AliHLTTPCClustFinderNew.cxx \
+#				  AliHLTTPC.cxx \
 # 				  AliHLTTPCDisplay.cxx \
 #				  AliRawReaderMemory.cxx
 
@@ -83,7 +83,6 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCFileHandler.h \
 				  AliHLTTPCBenchmark.h \
 				  AliHLTTPCDDLDataFileHandler.h \
-				  AliHLTTPCClustFinderNew.h \
 				  AliHLTTPCClusterFinder.h \
 				  AliHLTTPCDigitReader.h \
 				  AliHLTTPCDigitReaderPacked.h \
@@ -103,7 +102,6 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCTrackMerger.h \
 				  AliHLTTPCGlobalMerger.h \
 				  AliHLTTPCInterMerger.h \
-				  AliHLTTPC.h \
 				  AliHLTTPCPad.h \
 				  AliHLTTPCSpacePointData.h \
 				  AliHLTTPCDefinitions.h \
@@ -112,6 +110,9 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCVertexFinderComponent.h \
 				  AliHLTTPCSliceTrackerComponent.h \
 				  AliHLTTPCGlobalMergerComponent.h
+
+#				  AliHLTTPCClustFinderNew.h \
+#				  AliHLTTPC.h
 
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \

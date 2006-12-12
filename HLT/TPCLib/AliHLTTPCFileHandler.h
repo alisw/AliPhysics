@@ -8,15 +8,13 @@
 
 class TClonesArray;
 
-#include <AliSimDigits.h>
-#include <AliTPCParam.h>
-#ifdef use_newio
+class AliSimDigits;
+class AliTPCParam;
 #include <AliRunLoader.h>
-#endif
 
-#include <TObject.h>
-#include <TFile.h>
-#include <TTree.h>
+class TObject;
+class TFile;
+class TTree;
 #include "AliHLTLogging.h"
 
 class AliHLTTPCSpacePointData;
@@ -24,15 +22,17 @@ class AliHLTTPCDigitRowData;
 class AliHLTTPCTrackSegmentData;
 class AliHLTTPCTrackArray;
 
+/**
+ * class AliHLTTPCFileHandler
+ * This is the input interface class for the TPC tracking code before conversion to
+ * the HLT component framework.
+ * 
+ */
 class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
 
  protected:
-#ifdef use_newio
   AliRunLoader *fInAli;//!
   Bool_t fUseRunLoader; //use runloader
-#else
-  TFile *fInAli;//!
-#endif
 
   AliTPCParam *fParam;//!
   AliSimDigits *fDigits;//!
@@ -59,7 +59,7 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
   /** not a valid assignment op, but defined according to effective C++ style */
   AliHLTTPCFileHandler& operator=(const AliHLTTPCFileHandler&);
   /** destructor */
-  ~AliHLTTPCFileHandler();
+  virtual ~AliHLTTPCFileHandler();
 
   void FreeDigitsTree();
   static void CleanStaticIndex();
@@ -67,11 +67,7 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
   static Int_t LoadStaticIndex(Char_t *prefix=0,Int_t event=0);
 
   Bool_t SetAliInput(Char_t *name);
-  Bool_t SetAliInput(TFile *file);
-#ifdef use_newio
   Bool_t SetAliInput(AliRunLoader *runLoader);
-#else
-#endif
   void CloseAliInput(); 
   Bool_t IsDigit(Int_t event);
   
@@ -85,7 +81,7 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
   AliHLTTPCDigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t eventmerge=kFALSE); 
   //Allocates Memory
   Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE);  
-  void AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_t *new_digitsfile);
+  void AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_t *newDigitsfile);
 
   //Point IO
   Bool_t AliPoints2Binary(Int_t eventn=0);

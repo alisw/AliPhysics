@@ -2138,12 +2138,6 @@ void AliHLTTPCTransform::PrintCompileOptions()
   cout << "NOT including any support for TPC Hough transformations." << endl;
 #endif // INCLUDE_TPC_HOUGH
 
-#ifdef use_newio
-  cout << "Using NEWIO version: -Duse_newio was given." << endl;
-#else
-  cout << "NOT using NEWIO version: -Duse_newio was not given." << endl;
-#endif
-
 #ifdef use_logging
   cout << "Using logging classes (MLUC): -Duse_logging was given." << endl;
 #else

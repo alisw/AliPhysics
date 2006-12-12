@@ -402,18 +402,6 @@ fi
 AC_MSG_RESULT([$enable_mc_saving])
 
 dnl ------------------------------------------------------------------
-AC_MSG_CHECKING([whether to enable AliRoot NEWIO])
-AH_TEMPLATE([use_newio],[AliRoot NEWIO])
-AC_ARG_ENABLE(newio,
-  [AC_HELP_STRING([--enable-newio],
-      [enable AliRoot NEWIO ])],
-  [],[enable_newio=yes])
-if test "x$enable_newio" = "xyes" ; then 
-  AC_DEFINE(use_newio)
-fi
-AC_MSG_RESULT([$enable_newio])
-
-dnl ------------------------------------------------------------------
 dnl certainly something old, but we keep the define
 AC_MSG_CHECKING([whether to use ROWHOUGH])
 AH_TEMPLATE([USEROWHOUGH],[HLT ROWHOUGH])

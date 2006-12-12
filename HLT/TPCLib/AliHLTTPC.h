@@ -9,9 +9,7 @@
 #include <TFile.h>
 #endif
 
-#ifdef use_newio
 class AliRunLoader;
-#endif
 
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCRootTypes.h"
@@ -62,9 +60,7 @@ class AliHLTTPC : public TObject {
   Float_t fEta[2]; //eta
   
   Char_t *fInputFile;//!
-#ifdef use_newio
   AliRunLoader *fRunLoader; //runloader
-#endif
   Char_t fPath[256]; //path to aliroot
   Char_t fWriteOutPath[256]; //path to store
   
@@ -93,9 +89,7 @@ class AliHLTTPC : public TObject {
  public:
   AliHLTTPC ();
   AliHLTTPC(Char_t *infile);
-#ifdef use_newio
   AliHLTTPC(AliRunLoader *rl);
-#endif
   virtual ~AliHLTTPC();
   enum EFileType {kBinary, kBinary8, kRoot, kRaw, kDate, kRunLoader};
   void Init(Char_t *path,EFileType filetype=kBinary,Int_t npatches=6);

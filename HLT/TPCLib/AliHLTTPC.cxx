@@ -11,9 +11,7 @@
 #include <TStopwatch.h>
 #endif
 
-#ifdef use_newio
 #include <AliRunLoader.h>
-#endif
 
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPC.h"
@@ -73,9 +71,7 @@ AliHLTTPC::AliHLTTPC()
   fFileHandler=0;
   fGlobalMerger=0;
   fInputFile=0;
-#ifdef use_newio
   fRunLoader=0;
-#endif
 }
 
 AliHLTTPC::AliHLTTPC(Char_t *infile)
@@ -91,12 +87,9 @@ AliHLTTPC::AliHLTTPC(Char_t *infile)
   fFileHandler=0;
   fGlobalMerger=0;
   fInputFile = infile;
-#ifdef use_newio
   fRunLoader=0;
-#endif
 }
 
-#ifdef use_newio
 AliHLTTPC::AliHLTTPC(AliRunLoader *rl)
 {
   //Constructor to use when input is aliroot runloader
@@ -110,20 +103,12 @@ AliHLTTPC::AliHLTTPC(AliRunLoader *rl)
   fInputFile=0;
   fRunLoader = rl;
 }
-#endif
 
 Bool_t AliHLTTPC::fgDoVertexFit = kTRUE;//Include the vertex in the final track fit
 
 void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
 {
   //Init the whole standard tracker chain
-#ifndef use_newio
-  if (filetype==kRunLoader){
-    LOG(AliHLTTPCLog::kError,"AliHLTTPC::Init","Files")
-	<<"You have not supplied the input rootfile; if you want "
-	<<"to run with RunLoader use -Duse_newio for compiling!"<<ENDLOG;
-  }
-#endif
 
   if((filetype!=kBinary) && (filetype!=kDate) 
        && (filetype!=kRunLoader)&& !fInputFile)
@@ -132,14 +117,12 @@ void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
 	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
       return;
     }
-#if use_newio
   if((filetype==kRunLoader) && !fRunLoader)
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPC::Init","Files")
 	<<"You have not supplied the input runloader; use the appropriate ctor!"<<ENDLOG;
       return;
     }
-#endif
   
   fWriteOut = kFALSE;
   fPileUp = kFALSE;
@@ -212,12 +195,10 @@ void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
     fFileHandler = new AliHLTTPCDDLDataFileHandler();
     fFileHandler->SetReaderInput(fInputFile,-1);
   }
-#if use_newio
   else if(filetype==kRunLoader){
     fFileHandler = new AliHLTTPCFileHandler(kTRUE); //static version
     fFileHandler->SetAliInput(fRunLoader);
   }
-#endif
   else{
     fFileHandler = new AliHLTTPCMemHandler();
   }

@@ -41,9 +41,6 @@ using namespace std;
 #endif
 
 /** \class AliHLTTPCClusterFinder
-<pre>
-//_____________________________________________________________
-// AliHLTTPCClusterFinder
 //
 // The current cluster finder for HLT
 // (Based on STAR L3)
@@ -108,7 +105,6 @@ using namespace std;
 //     delete cf;
 //   }
 // }
-</pre> 
 */
 
 ClassImp(AliHLTTPCClusterFinder)

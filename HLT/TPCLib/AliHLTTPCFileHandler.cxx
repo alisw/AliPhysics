@@ -8,9 +8,10 @@
 #include <TSystem.h>
 #include <TMath.h>
 
-#ifdef use_newio
 #include <AliRunLoader.h>
-#endif
+#include <TObject.h>
+#include <TFile.h>
+#include <TTree.h>
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
 #include <AliTPCClustersArray.h>
@@ -20,11 +21,10 @@
 
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDigitData.h"
-#include "AliHLTTPCTrackSegmentData.h"
+//#include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCTrackArray.h"
+//#include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCFileHandler.h"
 
 #if __GNUC__ >= 3
@@ -74,9 +74,7 @@ ClassImp(AliHLTTPCFileHandler)
 AliHLTTPCFileHandler::AliHLTTPCFileHandler(Bool_t b)
   :
   fInAli(NULL),
-#ifdef use_newio
   fUseRunLoader(kFALSE),
-#endif
   fParam(NULL),
   fMC(NULL),
   fDigits(NULL),
@@ -96,9 +94,7 @@ AliHLTTPCFileHandler::AliHLTTPCFileHandler(Bool_t b)
 AliHLTTPCFileHandler::AliHLTTPCFileHandler(const AliHLTTPCFileHandler& ref)
   :
   fInAli(NULL),
-#ifdef use_newio
   fUseRunLoader(kFALSE),
-#endif
   fParam(NULL),
   fMC(NULL),
   fDigits(NULL),
@@ -200,9 +196,6 @@ void AliHLTTPCFileHandler::FreeDigitsTree()
     }
   delete fDigits;
   fDigits=0;
-#ifndef use_newio
-  fDigitsTree->Delete();
-#endif
   fDigitsTree=0;
 
   for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++){
@@ -251,7 +244,6 @@ void AliHLTTPCFileHandler::CloseMCOutput()
 Bool_t AliHLTTPCFileHandler::SetAliInput()
 { 
   //set ali input
-#ifdef use_newio
   fInAli->CdGAFile();
   fParam = (AliTPCParam*)gFile->Get("75x40_100x60_150x60");
   if(!fParam){
@@ -266,26 +258,6 @@ Bool_t AliHLTTPCFileHandler::SetAliInput()
       <<"No AliTPCParam "<<AliHLTTPCTransform::GetParamName()<<" in File "<<gFile->GetName()<<ENDLOG;
     return kFALSE;
   }
-#else
-  if(!fInAli->IsOpen()){
-    LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::SetAliInput","File Open")
-      <<"Ali File "<<fInAli->GetName()<<" does not exist"<<ENDLOG;
-    return kFALSE;
-  }
-  fParam = (AliTPCParam*)fInAli->Get(AliHLTTPCTransform::GetParamName());
-  if(!fParam){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::SetAliInput","File")
-      <<"No TPC parameters found in \""<<fInAli->GetName()
-      <<"\", creating standard parameters "
-      <<"which might not be what you want!"<<ENDLOG;
-    fParam = new AliTPCParamSR;
-  }
-  if(!fParam){ 
-    LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::SetAliInput","File Open")
-      <<"No AliTPCParam "<<AliHLTTPCTransform::GetParamName()<<" in File "<<fInAli->GetName()<<ENDLOG;
-    return kFALSE;
-  }
-#endif
 
   return kTRUE;
 }
@@ -293,11 +265,7 @@ Bool_t AliHLTTPCFileHandler::SetAliInput()
 Bool_t AliHLTTPCFileHandler::SetAliInput(Char_t *name)
 { 
   //Open the AliROOT file with name.
-#ifdef use_newio
   fInAli= AliRunLoader::Open(name);
-#else
-  fInAli= new TFile(name,"READ");
-#endif
   if(!fInAli){
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::SetAliInput","File Open")
     <<"Pointer to fInAli = 0x0 "<<ENDLOG;
@@ -306,7 +274,6 @@ Bool_t AliHLTTPCFileHandler::SetAliInput(Char_t *name)
   return SetAliInput();
 }
 
-#ifdef use_newio
 Bool_t AliHLTTPCFileHandler::SetAliInput(AliRunLoader *runLoader)
 { 
   //set ali input as runloader
@@ -319,44 +286,16 @@ Bool_t AliHLTTPCFileHandler::SetAliInput(AliRunLoader *runLoader)
   }
   return SetAliInput();
 }
-#endif
-
-#ifdef use_newio
-Bool_t AliHLTTPCFileHandler::SetAliInput(TFile */*file*/)
-{
-  //Specify already opened AliROOT file to use as an input.
-  LOG(AliHLTTPCLog::kFatal,"AliHLTTPCFileHandler::SetAliInput","File Open")
-    <<"This function is not supported for NEWIO, check ALIHLT_USENEWIO settings in Makefile.conf"<<ENDLOG;
-  return kFALSE;
-}
-#else
-Bool_t AliHLTTPCFileHandler::SetAliInput(TFile *file)
-{ 
-  //Specify already opened AliROOT file to use as an input.
-  fInAli=file;
-  if(!fInAli){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::SetAliInput","File Open")
-    <<"Pointer to fInAli = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  return SetAliInput();
-}
-#endif
 
 void AliHLTTPCFileHandler::CloseAliInput()
 { 
   //close ali input
-#ifdef use_newio
   if(fUseRunLoader) return;
-#endif
   if(!fInAli){
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::CloseAliInput","RunLoader")
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
-#ifndef use_newio
-  if(fInAli->IsOpen()) fInAli->Close();
-#endif
 
   delete fInAli;
   fInAli = 0;
@@ -372,7 +311,6 @@ Bool_t AliHLTTPCFileHandler::IsDigit(Int_t event)
     <<"Pointer to fInAli = 0x0 "<<ENDLOG;
     return kTRUE;  //maybe you are using binary input which is Digits!
   }
-#ifdef use_newio
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandlerNewIO::IsDigit","File")
@@ -382,11 +320,6 @@ Bool_t AliHLTTPCFileHandler::IsDigit(Int_t event)
   fInAli->GetEvent(event);
   tpcLoader->LoadDigits();
   TTree *t=tpcLoader->TreeD();
-#else
-  Char_t name[1024];
-  sprintf(name,"TreeD_%s_%d",AliHLTTPCTransform::GetParamName(),event);
-  TTree *t=(TTree*)fInAli->Get(name);
-#endif
   if(t){
     LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandlerNewIO::IsDigit","File Type")
     <<"Found Digit Tree -> Use Fast Cluster Finder"<<ENDLOG;
@@ -493,14 +426,6 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
     <<"No Input avalible: Pointer to fInAli == NULL"<<ENDLOG;
     return 0; 
   }
-
-#ifndef use_newio
-  if(!fInAli->IsOpen()){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2Memory","File")
-    <<"No Input avalible: TFile not opened"<<ENDLOG;
-    return 0;
-  }
-#endif
 
   if(!fDigitsTree)
     if(!GetDigitsTree(event)) return 0;
@@ -649,13 +574,6 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
     <<"No Input avalible: Pointer to TFile == NULL"<<ENDLOG;
     return 0; 
   }
-#ifndef use_newio
-  if(!fInAli->IsOpen()){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliAltroDigits2Memory","File")
-    <<"No Input avalible: TFile not opened"<<ENDLOG;
-    return 0;
-  }
-#endif
   if(eventmerge == kTRUE && event >= 1024)
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliAltroDigits2Memory","TrackIDs")
@@ -664,16 +582,10 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
     }
   delete fDigits;
   fDigits=0;
-#ifdef use_newio 
   /* Dont understand why we have to do 
      reload the tree, but otherwise the code crashes */
   fDigitsTree=0;
   if(!GetDigitsTree(event)) return 0;
-#else
-  if(!fDigitsTree){
-    if(!GetDigitsTree(event)) return 0;
-  }
-#endif
 
   UShort_t dig;
   Int_t time,pad,sector,row;
@@ -995,7 +907,6 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
 Bool_t AliHLTTPCFileHandler::GetDigitsTree(Int_t event)
 {
   //Connects to the TPC digit tree in the AliROOT file.
-#ifdef use_newio
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::GetDigitsTree","File")
@@ -1005,12 +916,6 @@ Bool_t AliHLTTPCFileHandler::GetDigitsTree(Int_t event)
   fInAli->GetEvent(event);
   tpcLoader->LoadDigits();
   fDigitsTree = tpcLoader->TreeD();
-#else  
-  fInAli->cd();
-  Char_t dname[100];
-  sprintf(dname,"TreeD_%s_%d",AliHLTTPCTransform::GetParamName(),event);
-  fDigitsTree = (TTree*)fInAli->Get(dname);
-#endif
   if(!fDigitsTree) 
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::GetDigitsTree","Digits Tree")
@@ -1023,7 +928,7 @@ Bool_t AliHLTTPCFileHandler::GetDigitsTree(Int_t event)
   else return kTRUE;
 }
 
-void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_t *new_digitsfile)
+void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_t *newDigitsfile)
 {
   //Write the data stored in rowPt, into a new AliROOT file.
   //The data is stored in the AliROOT format 
@@ -1046,7 +951,6 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
       return;
     }
 
-#ifdef use_newio
   //Get the original digitstree:
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
@@ -1057,11 +961,11 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
   tpcLoader->LoadDigits();
   TTree *t=tpcLoader->TreeD();
 
-  AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
-  old_array->Setup(fParam);
-  old_array->SetClass("AliSimDigits");
+  AliTPCDigitsArray *oldArray = new AliTPCDigitsArray();
+  oldArray->Setup(fParam);
+  oldArray->SetClass("AliSimDigits");
 
-  Bool_t ok = old_array->ConnectTree(t);
+  Bool_t ok = oldArray->ConnectTree(t);
   if(!ok)
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
@@ -1069,7 +973,7 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
       return;
     }
 
-  tpcLoader->SetDigitsFileName(new_digitsfile);
+  tpcLoader->SetDigitsFileName(newDigitsfile);
   tpcLoader->MakeDigitsContainer();
     
   //setup a new one, or connect it to the existing one:
@@ -1077,68 +981,6 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
   arr->SetClass("AliSimDigits");
   arr->Setup(fParam);
   arr->MakeTree(tpcLoader->TreeD());
-#else
-  
-  //Get the original digitstree:
-  Char_t dname[100];
-  sprintf(dname,"TreeD_%s_0",AliHLTTPCTransform::GetParamName());
-
-  fInAli->cd();
-  AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
-  old_array->Setup(fParam);
-  old_array->SetClass("AliSimDigits");
-
-  Bool_t ok = old_array->ConnectTree(dname);
-  if(!ok)
-    {
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
-	<<"No digits tree object." <<ENDLOG;
-      return;
-    }
-
-  Bool_t create=kFALSE;
-  TFile *digFile;
-  
-  if(gSystem->AccessPathName(new_digitsfile))
-    {
-      LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
-	<<"Creating new file "<<new_digitsfile<<ENDLOG;
-      create = kTRUE;
-      digFile = TFile::Open(new_digitsfile,"RECREATE");
-      fParam->Write(fParam->GetTitle());
-    }
-  else
-    {
-      create = kFALSE;
-      digFile = TFile::Open(new_digitsfile,"UPDATE");
-      
-    }
-  if(!digFile->IsOpen())
-    {
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","Rootfile")
-	<<"Error opening rootfile "<<new_digitsfile<<ENDLOG;
-      return;
-    }
-  
-  digFile->cd();
-    
-  //setup a new one, or connect it to the existing one:
-  AliTPCDigitsArray *arr = new AliTPCDigitsArray(); 
-  arr->SetClass("AliSimDigits");
-  arr->Setup(fParam);
-  if(create)
-    arr->MakeTree();
-  else
-    {
-      Bool_t ok = arr->ConnectTree(dname);
-      if(!ok)
-	{
-	  LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","Rootfile")
-	    <<"No digits tree object in existing file"<<ENDLOG;
-	  return;
-	}
-    }
-#endif
 
   Int_t digcounter=0,trackID[3];
 
@@ -1152,14 +994,14 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
       Int_t sector,row;
       AliHLTTPCTransform::Slice2Sector(fSlice,i,sector,row);
       
-      AliSimDigits *old_dig = (AliSimDigits*)old_array->LoadRow(sector,row);
+      AliSimDigits *oldDig = (AliSimDigits*)oldArray->LoadRow(sector,row);
       AliSimDigits * dig = (AliSimDigits*)arr->CreateRow(sector,row);
-      old_dig->ExpandBuffer();
-      old_dig->ExpandTrackBuffer();
+      oldDig->ExpandBuffer();
+      oldDig->ExpandTrackBuffer();
       dig->ExpandBuffer();
       dig->ExpandTrackBuffer();
       
-      if(!old_dig)
+      if(!oldDig)
 	LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2RootFile","Data")
 	  <<"No padrow " << sector << " " << row <<ENDLOG;
 
@@ -1183,7 +1025,7 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
 	  //Tricks to get and set the correct track id's. 
 	  for(Int_t t=0; t<3; t++)
 	    {
-	      Int_t label = old_dig->GetTrackIDFast(time,pad,t);
+	      Int_t label = oldDig->GetTrackIDFast(time,pad,t);
 	      if(label > 1)
 		trackID[t] = label - 2;
 	      else if(label==0)
@@ -1202,24 +1044,17 @@ void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_
       UpdateRowPointer(rowPt);
       arr->StoreRow(sector,row);
       arr->ClearRow(sector,row);  
-      old_array->ClearRow(sector,row);
+      oldArray->ClearRow(sector,row);
     }
 
   char treeName[100];
   sprintf(treeName,"TreeD_%s_0",fParam->GetTitle());
   
-#ifdef use_newio
   arr->GetTree()->SetName(treeName);
   arr->GetTree()->AutoSave();
   tpcLoader->WriteDigits("OVERWRITE");
-#else
-  digFile->cd();
-  arr->GetTree()->SetName(treeName);
-  arr->GetTree()->AutoSave();
-  digFile->Close();
-#endif
   delete arr;
-  delete old_array;
+  delete oldArray;
 }
 
 ///////////////////////////////////////// Point IO  
@@ -1244,16 +1079,8 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
     <<"No Input avalible: no object fInAli"<<ENDLOG;
     return 0;
   }
-#ifndef use_newio
-  if(!fInAli->IsOpen()){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliPoints2Memory","File")
-    <<"No Input avalible: TFile not opend"<<ENDLOG;
-    return 0;
-  }
-#endif
 
   TDirectory *savedir = gDirectory;
-#ifdef use_newio
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliPoints2Memory","File")
@@ -1267,16 +1094,6 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
   carray.Setup(fParam);
   carray.SetClusterType("AliTPCcluster");
   Bool_t clusterok = carray.ConnectTree(tpcLoader->TreeR());
-#else
-  fInAli->cd();
-  
-  Char_t cname[100];
-  sprintf(cname,"TreeC_TPC_%d",eventn);
-  AliTPCClustersArray carray;
-  carray.Setup(fParam);
-  carray.SetClusterType("AliTPCcluster");
-  Bool_t clusterok = carray.ConnectTree(cname);
-#endif
 
   if(!clusterok) return 0;
 
@@ -1316,8 +1133,8 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
     Int_t row = rows[i];
     Int_t sector = sects[i];
     AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
-    Int_t entries_in_row = clusterrow[i]->GetArray()->GetEntriesFast();
-    for(Int_t j = 0;j<entries_in_row;j++){
+    Int_t entriesInRow = clusterrow[i]->GetArray()->GetEntriesFast();
+    for(Int_t j = 0;j<entriesInRow;j++){
       AliTPCcluster *c = (AliTPCcluster*)(*clusterrow[i])[j];
       data[n].fZ = c->GetZ();
       data[n].fY = c->GetY();
