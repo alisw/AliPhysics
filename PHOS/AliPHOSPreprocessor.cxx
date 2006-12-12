@@ -31,6 +31,7 @@
 #include "TH1.h"
 #include "TMap.h"
 #include "TRandom.h"
+#include "TKey.h"
 
 ClassImp(AliPHOSPreprocessor)
 
@@ -75,21 +76,42 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   char hnam[80];
   TH1F* histo=0;
 
-  // Generate name of the reference histogram
-  TString refHistoName = "mod";
-  refHistoName += gRandom->Integer(nMod)+1;
-  refHistoName += "col";
-  refHistoName += gRandom->Integer(nCol)+1;
-  refHistoName += "row";
-  refHistoName += gRandom->Integer(nRow)+1;
-  TH1F* hRef = (TH1F*)f.Get(refHistoName);
+  //Get the reference histogram
+  //(author: Gustavo Conesa Balbastre)
 
-  // If the reference histogram does not exist or has too little statistics,
-  // it is better to give up preprocessing
-  if(!hRef || hRef->GetEntries()<2) {
-    AliInfo(Form("Cannot get reference histogram %s",refHistoName.Data()));
+  TList * keylist = f.GetListOfKeys();
+  Int_t nkeys   = f.GetNkeys();
+  Bool_t ok = kFALSE;
+  TKey  *key;
+  TString refHistoName= "";
+  Int_t ikey = 0;
+  Int_t counter = 0;
+  TH1F* hRef = 0;
+
+  //Check if the file contains any histogram
+
+  if(nkeys< 2){
+    AliInfo(Form("Not enough histograms (%d) for calibration.",nkeys));
     return 0;
   }
+
+  while(!ok){
+    ikey = gRandom->Integer(nkeys);
+    key = (TKey*)keylist->At(ikey);
+    refHistoName = key->GetName();
+    hRef = (TH1F*)f.Get(refHistoName);
+    counter++;
+    // Check if the reference histogram has too little statistics
+    if(hRef->GetEntries()>2) ok=kTRUE;
+    if(!ok && counter >= nMod*nCol*nRow){
+      AliInfo("No histogram with enough statistics for reference.");
+      return 0;
+    }
+  }
+
+  AliInfo(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
+	 hRef->GetName(),hRef->GetEntries(),
+	 hRef->GetMean(),hRef->GetRMS()));
 
   AliPHOSEmcCalibData calibData;
   Double_t refMean=hRef->GetMean();
@@ -108,7 +130,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 	  AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
 	}
         else
-          calibData.SetADCchannelEmc(mod+1,col+1,row+1,-111); 
+          calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.001); 
       }
     }
   }
