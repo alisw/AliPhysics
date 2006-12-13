@@ -51,6 +51,9 @@ public:
 
   virtual Bool_t IgnoreSizeForOfInterest() const { return kTRUE; }
 
+  virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
+  virtual void   ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
+
   ClassDef(QuadSetGL, 0);
 };
 
