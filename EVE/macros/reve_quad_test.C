@@ -53,7 +53,7 @@ Reve::QuadSet* reve_quad_test_circ()
 }
 
 Reve::QuadSet* reve_quad_test_hex(Float_t x=0, Float_t y=0, Float_t z=0,
-			      Int_t num=100)
+				  Int_t num=100)
 {
   TRandom r(0);
 
@@ -83,6 +83,35 @@ Reve::QuadSet* reve_quad_test_hex(Float_t x=0, Float_t y=0, Float_t z=0,
       q->AddHexagon(r.Uniform(-10, 10), r.Uniform(-10, 10), r.Uniform(-10, 10),
 		    r.Uniform(0.2, 1));
       q->QuadValue(r.Uniform(0, 120));
+    }
+    q->RefitPlex();
+
+    Reve::ZTrans& t = q->RefHMTrans();
+    t.SetPos(x, y, z);
+
+    gReve->AddRenderElement(q);
+    gReve->Redraw3D();
+  }
+
+  return q;
+}
+
+Reve::QuadSet* reve_quad_test_hexid(Float_t x=0, Float_t y=0, Float_t z=0,
+				    Int_t num=100)
+{
+  TRandom r(0);
+
+  gStyle->SetPalette(1, 0);
+
+  {
+    Reve::QuadSet* q = new Reve::QuadSet("HexagonXY");
+    q->SetOwnIds(kTRUE);
+    q->Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
+    for (Int_t i=0; i<num; ++i) {
+      q->AddHexagon(r.Uniform(-10, 10), r.Uniform(-10, 10), r.Uniform(-10, 10),
+		    r.Uniform(0.2, 1));
+      q->QuadValue(r.Uniform(0, 120));
+      q->QuadId(new TNamed(Form("Quad with idx=%d", i), "This title is not confusing."));
     }
     q->RefitPlex();
 
