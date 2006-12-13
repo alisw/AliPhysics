@@ -117,6 +117,8 @@ protected:
   struct QuadBase
   {
     Int_t fValue;
+    TRef  fId;
+
     // Here could have additional integer (like time, second threshold).
 
     QuadBase(Int_t v=0) : fValue(v) {}
@@ -140,8 +142,9 @@ protected:
 
 protected:
   QuadType_e        fQuadType;
-  Bool_t            fValueIsColor;
   Int_t             fDefaultValue;
+  Bool_t            fValueIsColor;
+  Bool_t            fOwnIds;       //Flag specifying if id-objects are owned by the QuadSet
   VoidCPlex         fPlex;
   QuadBase*         fLastQuad;     //!
 
@@ -157,6 +160,8 @@ protected:
 
   static Int_t SizeofAtom(QuadType_e qt);
   QuadBase*    NewQuad();
+
+  void ReleaseIds();
 
 public:
   QuadSet(const Text_t* n="QuadSet", const Text_t* t="");
@@ -211,6 +216,15 @@ public:
   void QuadValue(Int_t value);
   void QuadColor(Color_t ci);
   void QuadColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a=255);
+
+  void QuadId(TObject* id);
+  Bool_t GetOwnIds() const    { return fOwnIds; }
+  void   SetOwnIds(Bool_t o)  { fOwnIds = o; }
+
+  QuadBase* GetQuad(Int_t n) { return (QuadBase*) fPlex.Atom(n);   }
+  TObject*  GetId(Int_t n)   { return GetQuad(n)->fId.GetObject(); }
+
+  virtual void QuadSelected(Int_t idx);
 
   // --------------------------------
 

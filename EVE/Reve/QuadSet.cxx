@@ -181,8 +181,9 @@ QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
   TNamed(n, t),
 
   fQuadType(QT_Undef),
-  fValueIsColor(kFALSE),
   fDefaultValue(kMinInt),
+  fValueIsColor(kFALSE),
+  fOwnIds      (kFALSE),
   fPlex(),
   fLastQuad(0),
 
@@ -201,8 +202,9 @@ QuadSet::QuadSet(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize,
   TNamed(n, t),
 
   fQuadType(quadType),
-  fValueIsColor(valIsCol),
   fDefaultValue(valIsCol ? 0 : kMinInt),
+  fValueIsColor(valIsCol),
+  fOwnIds      (kFALSE),
   fPlex(SizeofAtom(quadType), chunkSize),
   fLastQuad(0),
 
@@ -219,6 +221,20 @@ QuadSet::~QuadSet()
 {
   SetFrame(0);
   SetPalette(0);
+  if (fOwnIds)
+    ReleaseIds();
+}
+
+void QuadSet::ReleaseIds()
+{
+  VoidCPlex::iterator qi(fPlex);
+  while (qi.next()) {
+    QuadBase& q = * (QuadBase*) qi();
+    if (q.fId.GetObject()) {
+      delete q.fId.GetObject();
+      q.fId = 0;
+    }
+  }
 }
 
 /**************************************************************************/
@@ -252,6 +268,7 @@ void QuadSet::Reset(QuadSet::QuadType_e quadType, Bool_t valIsCol, Int_t chunkSi
   fQuadType     = quadType;
   fValueIsColor = valIsCol;
   fDefaultValue = valIsCol ? 0 : kMinInt;
+  ReleaseIds();
   fPlex.Reset(SizeofAtom(fQuadType), chunkSize);
 }
 
@@ -444,6 +461,25 @@ void QuadSet::QuadColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a)
 {
   UChar_t* x = (UChar_t*) & fLastQuad->fValue;
   x[0] = r; x[1] = g; x[2] = b; x[3] = a;
+}
+
+/**************************************************************************/
+
+void QuadSet::QuadId(TObject* id)
+{
+  fLastQuad->fId = id;
+}
+
+/**************************************************************************/
+
+void QuadSet::QuadSelected(Int_t idx)
+{
+  QuadBase* qb = GetQuad(idx);
+  TObject* obj = qb->fId.GetObject();
+  printf("QuadSet::QuadSelected idx=%d, value=%d, obj=0x%lx\n",
+	 idx, qb->fValue, (ULong_t)obj);
+  if (obj)
+    obj->Print();
 }
 
 /**************************************************************************/
