@@ -44,6 +44,8 @@ public:
   Int_t GetID() const { return fID; }
   void  SetID(Int_t gid);
 
+  virtual void QuadSelected(Int_t idx);
+
   virtual void Print(Option_t* opt="") const;
 
   static Reve::FrameBox* fgSPDFrameBox;

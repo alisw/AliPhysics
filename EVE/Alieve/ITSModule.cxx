@@ -257,6 +257,7 @@ void ITSModule::LoadQuads()
 
 	AddQuad(x, z, dpx, dpz);
 	QuadValue(1); // In principle could have color based on number of neigbours
+	QuadId(d);
       }
       break;
     }
@@ -280,6 +281,7 @@ void ITSModule::LoadQuads()
 
 	  AddQuad(x-2*dpx, z, 4*dpx, dpz);
 	  QuadValue(d->GetSignal());
+	  QuadId(d);
 	}
       }
       break;
@@ -308,6 +310,7 @@ void ITSModule::LoadQuads()
 
 	  AddLine(x-a, -fDz, 2*a, 2*fDz);
 	  QuadValue(d->GetSignal());
+	  QuadId(d);
 	  // printf("%3d -> %3d -> %8x\n", d->GetSignal(), ci, fQuads.back().color);
 	}
       }
@@ -334,6 +337,24 @@ void ITSModule::SetTrans()
   // translation
   fInfo->fGeom->GetTrans(fID, x);  
   fHMTrans.SetBaseVec(4, x);
+}
+
+/**************************************************************************/
+
+void ITSModule::QuadSelected(Int_t idx)
+{
+  // Override control-click from QuadSet
+
+  QuadBase* qb   = GetQuad(idx);
+  TObject* obj   = qb->fId.GetObject();
+  AliITSdigit* d = dynamic_cast<AliITSdigit*>(obj);
+  printf("ITSModule::QuadSelected "); Print();
+  printf("  idx=%d, value=%d, obj=0x%lx, digit=0x%lx\n",
+	 idx, qb->fValue, (ULong_t)obj, (ULong_t)d);
+  if (d)
+    printf("  coord1=%3d coord2=%3d signal=%d\n",
+	   d->GetCoord1(), d->GetCoord2(), d->GetSignal());
+
 }
 
 /**************************************************************************/
