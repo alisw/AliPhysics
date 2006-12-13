@@ -1,3 +1,11 @@
+2006-12-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* libAlieve.pkg:
+	Added T0 to EINCLUDES.
+
+	* macros/reve_quad_test.C:
+	Added function demonstrating use of per-quad object-ref.
+
 2006-12-08  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* macros/reve_quad_test.C:

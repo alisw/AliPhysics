@@ -1,3 +1,15 @@
+2006-12-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* QuadSet.cxx:
+	* QuadSet.h:
+	Added per-quad TRef, implemented virtual callback QuadSelected()
+	for secondary selection from GL.
+
+	* QuadSetGL.cxx:
+	* QuadSetGL.h:
+	Added support for secondary selection. Sacrificed some speed for
+	simplicity / clarity. 
+
 2006-12-08  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* LinkDef.h:
