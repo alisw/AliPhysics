@@ -1,5 +1,14 @@
 2006-12-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* TPCSector2D.cxx:
+	* TPCSector2D.h:
+	* TPCSector2DGL.cxx:
+	Moved code responding to secondary selection from
+	TPCSector2DGL::ProcessSelection() to virtual
+	TPCSector2D::PadSelected(Int_t row, Int_t pad).
+
+2006-12-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* ITSModule.cxx:
 	* ITSModule.h:
 	Use two-level selection, implement callback QuadSelected() to
