@@ -260,11 +260,9 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
   }
 
-  if (eventTriggered & vertexReconstructed) {
-    for (Int_t i=0; i<4; ++i) {
-      if (fdNdEtaCorrectionSpecies[i])
-	fdNdEtaCorrectionSpecies[i]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
-    }
+  for (Int_t i=0; i<4; ++i) {
+    if (fdNdEtaCorrectionSpecies[i])
+      fdNdEtaCorrectionSpecies[i]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
   }
 
   // --------------------------------------------------------------
@@ -359,7 +357,16 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
   {
     AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (obj);
     if (!esdTrack)
+      continue;    
+
+    // using the properties of the mc particle
+    Int_t label = TMath::Abs(esdTrack->GetLabel());
+    TParticle* particle = stack->Particle(label);
+    if (!particle)
+    {
+      AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (track loop).", label));
       continue;
+    }
 
     Float_t eta = particle->Eta();
     Float_t pt  = particle->Pt();
@@ -381,16 +388,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillTrackedParticle(vtxMC[2], eta, pt);
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillTrackedParticle(vtxMC[2], eta, pt);
     }
-    
 
-    // using the properties of the mc particle
-    Int_t label = TMath::Abs(esdTrack->GetLabel());
-    TParticle* particle = stack->Particle(label);
-    if (!particle)
-    {
-      AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (track loop).", label));
-      continue;
-    }
 
     TParticle* mother = particle;
     // find primary particle that created this particle
