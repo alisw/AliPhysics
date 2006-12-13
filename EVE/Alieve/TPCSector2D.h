@@ -36,6 +36,8 @@ public:
 
   virtual void ComputeBBox();
 
+  virtual void PadSelected(Int_t row, Int_t pad);
+
   virtual void Paint(Option_t* option="");
 
   ClassDef(TPCSector2D, 1); // Visualization of TPC raw-data in 2D
