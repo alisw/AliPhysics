@@ -88,13 +88,17 @@ void DrawEffectOfChangeInComposition() {
 
   TH1F* hRatios[6];
 
+  Float_t etaRange = 0.899;
+
   for (Int_t i=0; i<6; i++) {
     hRatios[i] = (TH1F*)fin->Get(Form("ratio_%d",i));
-		
+
     hRatios[i]->SetLineWidth(2);
-    hRatios[i]->SetLineColor(colors[i]);				 
+    hRatios[i]->SetLineColor(colors[i]);
     hRatios[i]->SetMarkerStyle(22);
     hRatios[i]->SetMarkerSize(0.8);
+
+    hRatios[i]->GetXaxis()->SetRangeUser(-etaRange, etaRange);
   }
 
   TPad* p = DrawCanvasAndPad("syst_changeOfComposition",700,400);
@@ -113,7 +117,7 @@ void DrawEffectOfChangeInComposition() {
     
     TString str(hRatios[i]->GetTitle());
     str.Remove(0,16);
-    text[i] = new TLatex(1.08,hRatios[i]->GetBinContent(hRatios[i]->FindBin(0.9))-0.002,str.Data());
+    text[i] = new TLatex(1.08,hRatios[i]->GetBinContent(hRatios[i]->FindBin(0))-0.002,str.Data());
     text[i]->SetTextColor(colors[i]);
     text[i]->SetTextSize(0.053);
     
