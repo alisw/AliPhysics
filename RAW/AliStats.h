@@ -38,8 +38,8 @@ public:
    AliStats &operator=(const AliStats &rhs);
 
    void SetEvents(Int_t events) { fEvents = events; }
-   void SetFirstId(Int_t run, Int_t event) { fFirstRun = run; fFirstEvent = event; }
-   void SetLastId(Int_t run, Int_t event) { fLastRun = run; fLastEvent = event; }
+   void SetFirstId(Int_t run, Int_t event) { fRun = run; fFirstEvent = event; }
+   void SetLastId(Int_t event) { fLastEvent = event; }
    void SetBeginTime() { fBegin.Set(); }
    void SetEndTime() { fEnd.Set(); }
    void SetFileSize(Double_t size) { fFileSize = size; }
@@ -47,9 +47,8 @@ public:
    void Fill(Float_t time);
 
    Int_t       GetEvents() const { return fEvents; }
-   Int_t       GetFirstRun() const { return fFirstRun; }
+   Int_t       GetRun() const { return fRun; }
    Int_t       GetFirstEvent() const { return fFirstEvent; }
-   Int_t       GetLastRun() const { return fLastRun; }
    Int_t       GetLastEvent() const { return fLastEvent; }
    TDatime    &GetBeginTime() { return fBegin; }
    TDatime    &GetEndTime() { return fEnd; }
@@ -62,9 +61,8 @@ public:
 
 private:
    Int_t    fEvents;     // number of events in this file
-   Int_t    fFirstRun;   // run number of first event in file
+   Int_t    fRun;   // run number of first event in file
    Int_t    fFirstEvent; // event number of first event in file
-   Int_t    fLastRun;    // run number of last event in file
    Int_t    fLastEvent;  // event number of last event in file
    TDatime  fBegin;      // begin of filling time
    TDatime  fEnd;        // end of filling time

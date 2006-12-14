@@ -353,7 +353,7 @@ void AliRawDB::WriteStats(AliStats* stats)
    TDirectory *ds = gDirectory;
    GetDB()->cd();
    stats->SetEvents(GetEvents());
-   stats->SetLastId(header.Get("RunNb"), header.GetP("Id")[0]);
+   stats->SetLastId(header.GetP("Id")[0]);
    stats->SetFileSize(GetBytesWritten());
    stats->SetCompressionFactor(GetCompressionFactor());
    stats->SetEndTime();

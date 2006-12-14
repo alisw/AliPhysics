@@ -34,9 +34,8 @@ ClassImp(AliStats)
 //______________________________________________________________________________
 AliStats::AliStats(const char *filename, Int_t compmode, Bool_t filter):
 fEvents(0),
-fFirstRun(0),
+fRun(0),
 fFirstEvent(0),
-fLastRun(0),
 fLastEvent(0),
 fBegin(),
 fEnd(),
@@ -56,9 +55,8 @@ fChunk(-0.5)
 AliStats::AliStats(const AliStats &rhs):
 TObject(rhs),
 fEvents(rhs.fEvents),
-fFirstRun(rhs.fFirstRun),
+fRun(rhs.fRun),
 fFirstEvent(rhs.fFirstEvent),
-fLastRun(rhs.fLastRun),
 fLastEvent(rhs.fLastEvent),
 fBegin(rhs.fBegin),
 fEnd(rhs.fEnd),
@@ -90,9 +88,8 @@ AliStats &AliStats::operator=(const AliStats &rhs)
    if (this != &rhs) {
       TObject::operator=(rhs);
       fEvents     = rhs.fEvents;
-      fFirstRun   = rhs.fFirstRun;
+      fRun        = rhs.fRun;
       fFirstEvent = rhs.fFirstEvent;
-      fLastRun    = rhs.fLastRun;
       fLastEvent  = rhs.fLastEvent;
       fBegin      = rhs.fBegin;
       fEnd        = rhs.fEnd;

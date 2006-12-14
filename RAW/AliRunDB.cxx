@@ -130,9 +130,9 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
    strcpy(et, stats->GetEndTime().AsSQLString());
 
    sprintf(sql, "INSERT INTO mdccatalog VALUES (0, '%s', %d, "
-           "%d, %d, %d, %d, %d, %d, %.2f, '%s', '%s', '%s')",
+           "%d, %d, %d, %d, %d, %.2f, '%s', '%s', '%s')",
            stats->GetFileName(), (int)stats->GetFileSize(), stats->GetEvents(),
-           stats->GetFirstRun(), stats->GetFirstEvent(), stats->GetLastRun(),
+           stats->GetRun(), stats->GetFirstEvent(),
            stats->GetLastEvent(), stats->GetCompressionMode(),
            stats->GetCompressionFactor(), stats->GetFilterState() ? "on" : "off",
            bt, et);
