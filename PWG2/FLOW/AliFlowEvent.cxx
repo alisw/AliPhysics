@@ -51,7 +51,7 @@ Bool_t  AliFlowEvent::fNoWgt	       = kFALSE ;  // No Weight is used
 // - Eta Sub-Events (later used to calculate the resolution)
 Bool_t  AliFlowEvent::fEtaSubs 	       = kFALSE ;  // makes eta subevents
 
-ClassImp(AliFlowEvent) ;
+ClassImp(AliFlowEvent) 
 //-----------------------------------------------------------
 AliFlowEvent::AliFlowEvent(Int_t lenght)  
 {

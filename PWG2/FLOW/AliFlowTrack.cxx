@@ -34,7 +34,7 @@
 #include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
-ClassImp(AliFlowTrack) ;
+ClassImp(AliFlowTrack) 
 //////////////////////////////////////////////////////////////////////////////
 AliFlowTrack::AliFlowTrack()
 {
