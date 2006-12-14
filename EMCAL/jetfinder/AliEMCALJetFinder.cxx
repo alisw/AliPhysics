@@ -1664,11 +1664,12 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
 // pt [Gev]
 // B  [kG]
 //
-    Float_t rB = 3335.6 * pt / b;  // [cm]  (case of |charge|=1)
+  Float_t rB = 3335.6 * pt / TMath::Abs(b);  // [cm]  (case of |charge|=1)
 //
 // check if particle is curling below EMCAL
     if (2.*rB < rEMCAL) {
 	curls = kTRUE;
+        AliDebug(1, Form(" Low pt %f \n", pt));
 	return dPhi;
     }
 //
@@ -1677,6 +1678,8 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
     dPhi = TMath::ATan2(1.-TMath::Cos(phi), TMath::Sin(phi));
     dPhi = -TMath::Sign(dPhi, charge);
 //    
+    AliDebug(1, Form(" B %7.3f kG : rEMCAL %7.2f : dphi %7.5f(%7.5f)\n", 
+		     b, rEMCAL, dPhi,dPhi*TMath::RadToDeg()));
     return dPhi;
 }
 

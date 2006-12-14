@@ -456,7 +456,7 @@ TList *AliEMCALSDigitizer::BookControlHists(int var)
   gROOT->cd();
   const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance() ;
   if(var>=1){
-    printf(" AliEMCALSDigitizer::BookControlHists() in action \n");
+    AliDebug(1, " BookControlHists() in action ");
     new TH1F("HSDigiN",  "#EMCAL  sdigits ", 1001, -0.5, 1000.5);
     new TH1F("HSDigiSumEnergy","Sum.EMCAL energy", 1000, 0.0, 100.);
     new TH1F("HSDigiAmp",  "EMCAL sdigits amplitude", 1000, 0., 2.e+9);
@@ -466,7 +466,7 @@ TList *AliEMCALSDigitizer::BookControlHists(int var)
   }
 
   fHists = AliEMCALHistoUtilities::MoveHistsToList("EmcalSDigiControlHists", kFALSE);
-  fHists = 0;
+  //  fHists = 0; ??
 
   return fHists;
 }

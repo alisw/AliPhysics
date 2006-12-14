@@ -782,6 +782,15 @@ Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,I
 { 
   // 21-sep-04; 19-oct-05;
   // May 31, 2006; ALICE numbering scheme:
+  // 
+  // In:
+  // absId   - cell is as in Geant,     0<= absId   < fNCells;
+  // Out:
+  // nSupMod - super module(SM) number, 0<= nSupMod < fNumberOfSuperModules;
+  // nTower  - module number in SM,     0<= nTower  < fNCellsInSupMod/fNCellsInSupMod or(/2) for tow last SM (10th and 11th);
+  // nIphi   - cell number in phi driection inside module; 0<= nIphi < fNPHIdiv; 
+  // nIeta   - cell number in eta driection inside module; 0<= nIeta < fNETAdiv; 
+  // 
   static Int_t tmp=0, sm10=0;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
@@ -824,6 +833,13 @@ int &iphi, int &ieta) const
   // 
   // Added nSupMod; Nov 25, 05
   // Alice numbering scheme  - Jun 01,2006 
+  // IN:
+  // nSupMod - super module(SM) number, 0<= nSupMod < fNumberOfSuperModules;
+  // nTower  - module number in SM,     0<= nTower  < fNCellsInSupMod/fNCellsInSupMod or(/2) for tow last SM (10th and 11th);
+  // nIphi   - cell number in phi driection inside module; 0<= nIphi < fNPHIdiv; 
+  // nIeta   - cell number in eta driection inside module; 0<= nIeta < fNETAdiv; 
+  // 
+ // OUT:
   // ieta, iphi - indexes of cell(tower) in two dimensional grid of SM
   // ieta - have to change from 0 to (fNZ*fNETAdiv-1)
   // iphi - have to change from 0 to (fNPhi*fNPHIdiv-1 or fNPhi*fNPHIdiv/2-1)
@@ -885,6 +901,10 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   // position inside a given cell is
   // for a recpoint.
   // Alice numbering scheme - Jun 08, 2006
+  // In:
+  // absId   - cell is as in Geant,     0<= absId   < fNCells;
+  // OUT:
+  // xr,yr,zr - x,y,z coordinates of cell with absId inside SM 
 
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
