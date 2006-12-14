@@ -37,7 +37,7 @@ using namespace std;
 #include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
-#include "AliHLTTPC.h"
+//#include "AliHLTTPC.h"
 #include <stdlib.h>
 #include <errno.h>
 
@@ -154,6 +154,15 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
 // END ################################################# MODIFIY JMT
 
     //fTracker->SetParamDone(true);
+    /* Matthias 13.12.2006
+     * the global variable AliHLTTPCS::fgDoVertexFit has never been used so far
+     * and has always been kTRUE.
+     * In order to remove the AliHLTTPC class (which is the old steering class for
+     * HLT (TPC) tracking) from the compilation, this function can not be activated
+     * again. We have to think about a more elegant way to specify the parameters
+     * anyway. The following line was surely for some testing, but was never active
+     * in a tested release.
+     */
     //AliHLTTPC::SetVertexFit( kFALSE );
     
     fTracker->InitVolumes();

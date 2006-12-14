@@ -21,7 +21,7 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPC.h"
+//#include "AliHLTTPC.h"
 
 #if __GNUC__ >= 3
 using namespace std;

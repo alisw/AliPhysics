@@ -11,7 +11,7 @@
 #include "AliHLTTPCConfMapFit.h"
 #include "AliHLTTPCConfMapTrack.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPC.h"
+//#include "AliHLTTPC.h"
 
 /** \class AliHLTTPCConfMapTrack
 <pre>
@@ -174,7 +174,16 @@ void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
 	
 	//go for fit of straight line in real space
 	AliHLTTPCConfMapFit *fit = new AliHLTTPCConfMapFit(this,vertex);
+    /* Matthias 13.12.2006
+     * the global variable AliHLTTPCS::fgDoVertexFit has never been used so far
+     * and has always been kTRUE.
+     * In order to remove the AliHLTTPC class (which is the old steering class for
+     * HLT (TPC) tracking) from the compilation, this function can not be activated
+     * again. We have to think about a more elegant way to specify the parameters
+     * anyway. 
 	ComesFromMainVertex(AliHLTTPC::DoVertexFit());
+     */
+	ComesFromMainVertex(kTRUE);
 	fit->FitStraightLine();
 	    
 	AliHLTTPCConfMapPoint *fHit = (AliHLTTPCConfMapPoint*)fFirstHit;
@@ -199,7 +208,16 @@ void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
 	if(GetPt() > max_Dca) //go for fit of helix in real space
 	{
 	    AliHLTTPCConfMapFit *fit = new AliHLTTPCConfMapFit(this,vertex);
+    /* Matthias 13.12.2006
+     * the global variable AliHLTTPCS::fgDoVertexFit has never been used so far
+     * and has always been kTRUE.
+     * In order to remove the AliHLTTPC class (which is the old steering class for
+     * HLT (TPC) tracking) from the compilation, this function can not be activated
+     * again. We have to think about a more elegant way to specify the parameters
+     * anyway. 
 	    ComesFromMainVertex(AliHLTTPC::DoVertexFit());
+     */
+	    ComesFromMainVertex(kTRUE);
 	    fit->FitHelix();
 	    
 	    //AliHLTTPCConfMapPoint *lHit = (AliHLTTPCConfMapPoint*)fLastHit;
