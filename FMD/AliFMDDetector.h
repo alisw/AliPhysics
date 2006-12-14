@@ -135,6 +135,9 @@ public:
       detector.  */
   Bool_t XYZ2Detector(Double_t x, Double_t y, Double_t z, 
 		      Char_t& ring, UShort_t& sector, UShort_t& strip) const;
+
+  /** Declare alignable volumes */
+  virtual void SetAlignableVolumes() const;
 protected:
   /** Check if we have all transformations for a ring 
       @param ring Ring to check for 

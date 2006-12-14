@@ -205,6 +205,8 @@ public:
       @param particle Track 
       @return @c true if @a particle will hit this detector */
   virtual Bool_t Impact(const TParticle* particle) const;
+  /** Declare alignable volumes */
+  virtual void SetAlignableVolumes() const;
 protected:
   Bool_t        fIsInitialized; // Whether singleton is initalized
   AliFMDRing*	fInner;		// Inner ring geometry information

@@ -165,6 +165,8 @@ AliFMDDetector::HasAllTransforms(Char_t ring) const
    (name[3] == 'T' || name[3] == 'B'))
 #define IS_NODE_SENSOR(name) \
   (name[0] == 'F' && name[2] == 'S' && name[3] == 'E')
+#define IS_NODE_HALF(name) \
+  (name[0] == 'F' && name[2] == 'M' && (name[3] == 'B' || name[3] == 'T'))
 
 //____________________________________________________________________
 void
@@ -254,6 +256,141 @@ AliFMDDetector::InitTransformations()
     }
   }
 }
+
+//____________________________________________________________________
+void
+AliFMDDetector::SetAlignableVolumes() const
+{
+  AliDebug(10, Form("Making alignable volumes for FMD%d", fId));
+  if (!gGeoManager) {
+    AliFatal("No TGeoManager defined");
+    return;
+  }
+  TGeoVolume* topVolume = gGeoManager->GetTopVolume();
+  if (!topVolume) {
+    AliFatal("No top-level volume defined");
+    return;
+  }
+
+  // Make an iterator
+  TGeoIterator next(topVolume);
+  next.Reset(topVolume);
+  next.SetTopName(Form("/%s_1", topVolume->GetName()));
+  TGeoNode* node = 0;
+  
+  Int_t nInnerSensor = (fInner ? fInner->GetNModules() : 0);
+  Int_t nOuterSensor = (fOuter ? fOuter->GetNModules() : 0);
+  // Find the node corresponding to this detector, and then find the
+  // sensor volumes 
+  Bool_t thisNodeFound = kFALSE;
+  Char_t thisHalf      = '\0';
+  Int_t  iInnerSensor  = 0;
+  Int_t  iOuterSensor  = 0;
+  Bool_t hasTop        = false;
+  Bool_t hasBottom     = false;
+  
+  TString path, align;
+  while ((node = static_cast<TGeoNode*>(next())) 
+	 && (iInnerSensor < nInnerSensor || iOuterSensor < nOuterSensor
+	     || !hasBottom || !hasTop)) {
+    // Get nodes names 
+    const Char_t* name = node->GetName();
+    if (!name) continue;
+    AliDebug((name[0] == 'F' ? 40 : 50), Form("Got volume %s", name));
+    // Check if this node is this detector 
+    // The base offset for numbers in the ASCII table is 48
+    if (IS_NODE_THIS(name)) {
+      AliDebug(20, Form("Found detector node '%s' for FMD%d", name, fId));
+      thisNodeFound = kTRUE;
+    }
+
+    // if a half ring is found, then we're on that branch, and we
+    // check if this node represents a half ring on that branch 
+    if (thisNodeFound && IS_NODE_HALF(name)) {
+      AliDebug(30, Form("Found half node '%s' for FMD%d", name, fId));
+      // Get the half Id.
+      thisHalf = name[3];
+
+      // Check if we're done 
+      Bool_t done = (thisHalf == 'T' ? hasTop : hasBottom);
+      if (done) {
+	AliDebug(20,Form("Already has all halves for detector %c",name[1]));
+	continue;
+      }
+
+      switch (thisHalf) {
+      case 'T': hasTop = true; break;
+      case 'B': hasBottom = true; break;
+      default:  
+	AliWarning(Form("Unknown part '%c' of FMD%d", fId));
+	continue; // because the node is unknown. 
+      }
+      
+      // Get the node path 
+      next.GetPath(path);
+      align = Form("FMD/FMD%d%c", fId, thisHalf);
+    }
+    
+    // if the detector was found, then we're on that branch, and we
+    // check if this node represents a module in that branch.
+    if (thisNodeFound && thisHalf && IS_NODE_SENSOR(name)) {
+      AliDebug(30, Form("Found sensor node '%s' for FMD%d", name, fId));
+      // Get the ring Id.
+      Char_t ringid = name[1];
+
+      // check that the ring is valid 
+      if (!GetRing(ringid)) {
+	AliWarning(Form("Invalid ring %c for FMD%d", ringid, fId));
+	continue;
+      }
+
+      // Check if we're done
+      Bool_t done = false;
+      switch (ringid) {
+      case 'I': done = iInnerSensor >= nInnerSensor; break;
+      case 'O': done = iOuterSensor >= nOuterSensor; break;
+      default: continue;
+      }
+      if (done) {
+	AliDebug(20,Form("Already has all sensor volumes for ring %c",ringid));
+	continue;
+      }
+      // Get the copy (module) number, and check that it hasn't
+      // already been added to the container. 
+      Int_t copy  = node->GetNumber();
+      next.GetPath(path);
+      // path.Replace("ALIC", "/ALIC_1");
+      align = Form("FMD/FMD%d_%c/FMD%c_%02d", fId, thisHalf, ringid, copy);
+      
+      switch (ringid) {
+      case 'I': iInnerSensor++; break;
+      case 'O': iOuterSensor++; break;
+      }
+    }
+    if (!align.IsNull() && !path.IsNull()) {
+      AliDebug(20, Form("Got %s -> %s", path.Data(), align.Data()));
+      TGeoPNEntry* entry = 
+	gGeoManager->SetAlignableEntry(align.Data(),path.Data());
+      if(!entry)
+	AliFatal(Form("Alignable entry %s not created. "
+		      "Volume path %s not valid", 
+			align.Data(),path.Data()));
+#ifdef MAKE_ALIGNABLE_PHYSICAL
+      TGeoPhysicalNode* phys = gGeoManager->MakeAlignablePN(entry);
+      if (!phys) 
+	AliWarning(Form("Physical node entry %s not created. "
+			"Volume path %s not valid", 
+			align.Data(),path.Data()));
+#endif
+      align = "";
+    }
+    AliDebug(20, Form("FMD%d: top: %d bottom: %d Inner: %d/%d Outer %d/%d", 
+		      fId, hasTop, hasBottom, iInnerSensor,  nInnerSensor, 
+		      iOuterSensor, nOuterSensor));
+  }
+}
+
+  
 
 //____________________________________________________________________
 AliFMDRing*

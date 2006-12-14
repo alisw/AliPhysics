@@ -1086,6 +1086,8 @@ AliFMD::AddAlignableVolumes() const
   // This code was made by Raffaele Grosso <rgrosso@mail.cern.ch>.  I
   // (cholm) will probably want to change it.   For one, I think it
   // should be the job of the geometry manager to deal with this. 
+  AliFMDGeometry::Instance()->SetAlignableVolumes();
+#if 0  
   for(size_t f = 1; f <= 3; f++){ // Detector 1,2,3
     for(size_t tb =  0; tb <2 ; tb++){ // Top/Bottom 
       char     stb = tb == 0 ? 'T' : 'B';
@@ -1116,7 +1118,7 @@ AliFMD::AddAlignableVolumes() const
       }
     }
   }
-
+#endif
 }
 //___________________________________________________________________
 //

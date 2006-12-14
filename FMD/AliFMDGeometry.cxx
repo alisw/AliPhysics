@@ -402,6 +402,16 @@ AliFMDGeometry::Impact(const TParticle* /* particle */) const
 
 //____________________________________________________________________	
 void  
+AliFMDGeometry::SetAlignableVolumes() const
+{
+  // Declare alignable volumes
+  for (Int_t d = 1; d <= 3; d++) 
+    if (GetDetector(d)) GetDetector(d)->SetAlignableVolumes();
+}
+
+
+//____________________________________________________________________	
+void  
 AliFMDGeometry::ExtractGeomInfo()
 {
   // Check the volume depth of some nodes, get the active volume
