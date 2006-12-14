@@ -203,7 +203,9 @@ void AliMUONQATask::Terminate(Option_t *)
 
   AliInfo(Form("Terminate %s:", GetName())) ;
   
-  Int_t eff_match = 100 * fnTrackTrig / ftracktot ;
+  Int_t eff_match = -1 ; 
+  if (ftracktot) 
+    eff_match = 100 * fnTrackTrig / ftracktot ;
 
   printf("===================================================\n") ;
   printf("================  %s ESD SUMMARY    ==============\n", GetName()) ;
