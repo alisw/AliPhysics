@@ -1,0 +1,13 @@
+# Put this file under your $HOME/bin (or wherever you want)
+# and place the corresponding directory in your $PATH
+#!/bin/bash
+
+export ALIEN=/home/trn2301/alien
+export ROOTSYS=/home/trn2301/root
+export PATH=$ROOTSYS/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH:$ALIEN/api/lib
+
+if [ -e /tmp/gclient_env_$UID ]; then
+   source /tmp/gclient_env_$UID;
+  root.exe $*
+fi
