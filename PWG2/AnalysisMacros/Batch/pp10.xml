@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<alien>
+  <collection name="pp">
+    <event name="1">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:13:31" dir="58570" entryId="60538" expiretime="" gowner="pchrist" guid="52CFBF44-836F-11DB-BC35-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/001/AliESDs.root" md5="f5bd5ce400e953fdba711f69a4fd92db" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="19050411" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/001/AliESDs.root" type="f" />
+    </event>
+    <event name="10">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:14:54" dir="60535" entryId="60547" expiretime="" gowner="pchrist" guid="842AC46C-836F-11DB-A4DC-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/010/AliESDs.root" md5="92c17c3bec1e696485f7e02814b446a8" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="15979800" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/010/AliESDs.root" type="f" />
+    </event>
+    <event name="2">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:13:40" dir="58571" entryId="60539" expiretime="" gowner="pchrist" guid="57C8BC6C-836F-11DB-BC36-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/002/AliESDs.root" md5="72eebe77bc4ab6d68f8be55e0427d0e9" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="20303287" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/002/AliESDs.root" type="f" />
+    </event>
+    <event name="3">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:13:48" dir="60528" entryId="60540" expiretime="" gowner="pchrist" guid="5C974808-836F-11DB-BC37-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/003/AliESDs.root" md5="7f39487407b7ee787ba34e36e5f5e5fe" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="19401982" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/003/AliESDs.root" type="f" />
+    </event>
+    <event name="4">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:13:58" dir="60529" entryId="60541" expiretime="" gowner="pchrist" guid="6277A92A-836F-11DB-BC38-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/004/AliESDs.root" md5="66344d280a5b5056910775f2fa04b404" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="21103655" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/004/AliESDs.root" type="f" />
+    </event>
+    <event name="5">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:14:10" dir="60530" entryId="60542" expiretime="" gowner="pchrist" guid="69211950-836F-11DB-A4D7-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/005/AliESDs.root" md5="e5ca72a563db289c49bc8c739a1f7847" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="21378912" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/005/AliESDs.root" type="f" />
+    </event>
+    <event name="6">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:14:19" dir="60531" entryId="60543" expiretime="" gowner="pchrist" guid="6F1767C4-836F-11DB-A4D8-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/006/AliESDs.root" md5="92f847e8804c753619a61a811c26279f" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="19329193" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/006/AliESDs.root" type="f" />
+    </event>
+    <event name="7">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:14:27" dir="60532" entryId="60544" expiretime="" gowner="pchrist" guid="73DC60C0-836F-11DB-A4D9-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/007/AliESDs.root" md5="eeaae52fa53f06a5ac5687bb13c9a665" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="19139990" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/007/AliESDs.root" type="f" />
+    </event>
+    <event name="8">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:14:36" dir="60533" entryId="60545" expiretime="" gowner="pchrist" guid="78F70A10-836F-11DB-A4DA-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/008/AliESDs.root" md5="96a8d1ffe70c4060c03f9725e8c6c9c9" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="23334443" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/008/AliESDs.root" type="f" />
+    </event>
+    <event name="9">
+      <file name="AliESDs.root" aclId="" ctime="2006-12-04 09:14:45" dir="60534" entryId="60546" expiretime="" gowner="pchrist" guid="7E6C8678-836F-11DB-A4DB-001676743654" lfn="/alice/cern.ch/user/p/pchrist/Tutorial/PDC06/009/AliESDs.root" md5="75059d9e4ade18ec9bd3c3ee99d8b1e2" owner="pchrist" perm="755" replicated="0" seStringlist=",120," size="18410558" turl="alien:///alice/cern.ch/user/p/pchrist/Tutorial/PDC06/009/AliESDs.root" type="f" />
+    </event>
+    <info command="[/alice/cern.ch/user/p/pchrist/]: find -z -x pp Tutorial/PDC06/* AliESDs.root" creator="admin" date="Tue Dec  5 12:07:23 CET 2006" timestamp="1165316843" />
+  </collection>
+</alien>

@@ -1,0 +1,40 @@
+# this is the startup process for root
+Executable="batch.sh";
+Jobtag={"comment:AliEn tutorial batch example"};
+
+# we split per storage element
+Split="se";
+
+# we want each job to read 100 input files
+#SplitMaxInputFileNumber="100";
+
+# this job has to run in the ANALYSIS partition
+Requirements=( member(other.GridPartitions,"Analysis") );
+
+# we need ROOT and the API service configuration package
+Packages={"APISCONFIG::V2.2","ROOT::v5-13-04"};
+TTL = "30000";
+
+#ROOT will read this collection file to know, which files to analyze
+InputDataList="pp.xml";
+
+#ROOT requires the collection file in the xml-single format
+InputDataListFormat="xml-single";
+
+# this is our collection file containing the files to be analyzed
+InputDataCollection="LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/pp10.xml,nodownload";
+
+InputFile= {"LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/AliAnalysisTaskPt.cxx",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/AliAnalysisTaskPt.h",
+	    "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/ESD.par", 
+	    "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/ANALYSIS_NEW.par", 
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/demoBatch.C",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/runAnalysis.C"};
+	    
+OutputArchive={"log_archive:stdout,stderr@Alice::CERN::se01","root_archive.zip:*.root@Alice::CERN::castor2"};
+
+# Output directory
+OutputDir="/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/output";
+
+# email
+Email="Panos.Christakoglou@cern.ch";
