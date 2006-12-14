@@ -12,6 +12,8 @@
 #include <TStopwatch.h> 
 #include <TString.h> 
 
+#include "AliLog.h"
+
 class AliAnalysisTask ; 
 class TChain ; 
 class TClass ; 
@@ -38,9 +40,11 @@ public:
   const Bool_t MakeEsdCollectionFromTagFile(AliRunTagCuts * runCuts, AliEventTagCuts * evCuts, const char * in, const char * out) const  ; 
 
 private:
-  const Bool_t MakeEsdCollectionFromTagFile(const char * runCuts, const char * evCuts, const char * in, const char * out) const  ; 
+  const Bool_t MakeEsdCollectionFromTagFile(const char * , const char * , const char * , const char *) const 
+  { AliError("Not implemented") ; return 0 ;}
   const Bool_t MakeEsdCollectionFromTagCollection(AliRunTagCuts * runCuts, AliEventTagCuts * evtCuts, const char * in, const char * out) const ; 
-  const Bool_t MakeEsdCollectionFromTagCollection(const char * runCuts, const char * evtCuts, const char * in, const char * out) const ; 
+  const Bool_t MakeEsdCollectionFromTagCollection(const char * , const char * , const char * , const char * ) const 
+  { AliError("Not implemented") ; return 0 ;}
   const Bool_t ProcessChain(TChain * chain) const ; 
   const Bool_t ProcessEsdFile(const char * esdFile) const ;
   const Bool_t ProcessTagFile(const char * tagFile, AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts) const ;
