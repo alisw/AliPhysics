@@ -21,7 +21,7 @@
 #include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
-ClassImp(AliFlowV0) ;
+ClassImp(AliFlowV0) 
 //////////////////////////////////////////////////////////////////////////////
 AliFlowV0::AliFlowV0()
 {
