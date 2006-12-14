@@ -74,7 +74,7 @@ private:
    TH1F    *fRTHist;     // histogram of real-time to process chunck of data
    Float_t  fChunk;      //!chunk to be histogrammed
 
-   ClassDef(AliStats,1)  // Statistics object
+   ClassDef(AliStats,2)  // Statistics object
 };
 
 #endif
