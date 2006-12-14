@@ -1,0 +1,21 @@
+===========================================================
+===========================================================
+===========================================================
+The AnalysisMacros is divided into three sub-directories:
+
+o) Local
+   Inside this directory you can find the files you need to run the following processes:
+    i)  (Sub-dir Tags)Creation tag files for the locally stored ESDs - The two files are stored under the Tags directory. Run it by typing "root runTagCreator.C".
+    ii) Analysis of the locally stored ESDs using the previously created tag files - Run the example by typing "root runAnalysis.C"
+
+o) Interactive
+   You can find the runAnalysis.C and demoInteractive.C files that use the root api to access the grid. You should also use the AliAnalysisTaskPt.* from the Local directory. Run the example by typing "alienroot runAnalysis.C" (you can find the alienroot executable in this directory - open it and change it accordingly - place it in a directory which is defined in your $PATH).
+
+o) Batch
+   You can find the executable (that you should store under your $HOME/bin  AliEn directory), the jdl, the xml collection, as well as the macro runAnalysis.C. You should also use the AliAnalysisTaskPt.* from the Local directory. The macros will be updated slightly (I'll include the usage of the tags) once the new root version will be deployed in AliEn. Everybody who wants to use these files should change them accordingly!!!
+
+In order to run the examples you should use the ESD.par as well as the ANALYSIS_NEW.par. You can creat both par files by typing "make ESD.par" and "make ANALYSIS_NEW.par" respectively under $ALICE_ROOT.
+
+===========================================================
+For any questions send mails to: Panos.Christakoglou@cern.ch
+===========================================================
