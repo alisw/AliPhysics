@@ -24,7 +24,8 @@
 
 	* Track.cxx:
 	* Track.h:
-	Added method 'void ImportClustersFromIndex()'.
+	Added method 'void ImportClustersFromIndex()' and data-member
+	'Int_t fIndex'.
 
 	* TrackEditors.cxx:
 	Increase range of track extrapolation precision.
