@@ -225,9 +225,6 @@ void AliTRDv1::CreateTRhit(Int_t det)
   // volume.
   //
 
-  // PDG code electron
-  const Int_t   kPdgElectron = 11;
-
   // Ionization energy
   const Float_t kWion        = 23.53;
 
@@ -237,85 +234,74 @@ void AliTRDv1::CreateTRhit(Int_t det)
   TLorentzVector mom;
   TLorentzVector pos;
 
-  // Create TR at the entrance of the chamber
-  if (gMC->IsTrackEntering()) {
+  Float_t eTR[kNTR];
+  Int_t   nTR;
 
-    // Create TR only for electrons 
-    Int_t iPdg = gMC->TrackPid();
-    if (TMath::Abs(iPdg) != kPdgElectron) {
-      return;
-    }
+  // Create TR photons
+  gMC->TrackMomentum(mom);
+  Float_t pTot = mom.Rho();
+  fTR->CreatePhotons(11,pTot,nTR,eTR);
+  if (nTR > kNTR) {
+    AliFatal(Form("Boundary error: nTR = %d, kNTR = %d",nTR,kNTR));
+  }
 
-    Float_t eTR[kNTR];
-    Int_t   nTR;
+  // Loop through the TR photons
+  for (Int_t iTR = 0; iTR < nTR; iTR++) {
 
-    // Create TR photons
-    gMC->TrackMomentum(mom);
-    Float_t pTot = mom.Rho();
-    fTR->CreatePhotons(iPdg,pTot,nTR,eTR);
-    if (nTR > kNTR) {
-      AliFatal(Form("Boundary error: nTR = %d, kNTR = %d",nTR,kNTR));
-    }
+    Float_t energyMeV = eTR[iTR] * 0.001;
+    Float_t energyeV  = eTR[iTR] * 1000.0;
+    Float_t absLength = 0.0;
+    Float_t sigma     = 0.0;
 
-    // Loop through the TR photons
-    for (Int_t iTR = 0; iTR < nTR; iTR++) {
-
-      Float_t energyMeV = eTR[iTR] * 0.001;
-      Float_t energyeV  = eTR[iTR] * 1000.0;
-      Float_t absLength = 0.0;
-      Float_t sigma     = 0.0;
-
-      // Take the absorbtion in the entrance window into account
-      Double_t muMy = fTR->GetMuMy(energyMeV);
-      sigma         = muMy * fFoilDensity;
-      if (sigma > 0.0) {
-        absLength = gRandom->Exp(1.0/sigma);
-        if (absLength < AliTRDgeometry::MyThick()) {
-          continue;
-	}
-      }
-      else {
+    // Take the absorbtion in the entrance window into account
+    Double_t muMy = fTR->GetMuMy(energyMeV);
+    sigma         = muMy * fFoilDensity;
+    if (sigma > 0.0) {
+      absLength = gRandom->Exp(1.0/sigma);
+      if (absLength < AliTRDgeometry::MyThick()) {
         continue;
       }
+    }
+    else {
+      continue;
+    }
 
-      // The absorbtion cross sections in the drift gas
-      // Gas-mixture (Xe/CO2)
-      Double_t muXe = fTR->GetMuXe(energyMeV);
-      Double_t muCO = fTR->GetMuCO(energyMeV);
-      sigma = (0.85 * muXe + 0.15 * muCO) * fGasDensity * fTR->GetTemp();
+    // The absorbtion cross sections in the drift gas
+    // Gas-mixture (Xe/CO2)
+    Double_t muXe = fTR->GetMuXe(energyMeV);
+    Double_t muCO = fTR->GetMuCO(energyMeV);
+    sigma = (0.85 * muXe + 0.15 * muCO) * fGasDensity * fTR->GetTemp();
 
-      // The distance after which the energy of the TR photon
-      // is deposited.
-      if (sigma > 0.0) {
-        absLength = gRandom->Exp(1.0/sigma);
-        if (absLength > (AliTRDgeometry::DrThick()
-                       + AliTRDgeometry::AmThick())) {
-          continue;
-	}
-      }
-      else {
+    // The distance after which the energy of the TR photon
+    // is deposited.
+    if (sigma > 0.0) {
+      absLength = gRandom->Exp(1.0/sigma);
+      if (absLength > (AliTRDgeometry::DrThick()
+                     + AliTRDgeometry::AmThick())) {
         continue;
       }
-
-      // The position of the absorbtion
-      Float_t posHit[3];
-      gMC->TrackPosition(pos);
-      posHit[0] = pos[0] + mom[0] / pTot * absLength;
-      posHit[1] = pos[1] + mom[1] / pTot * absLength;
-      posHit[2] = pos[2] + mom[2] / pTot * absLength;
-
-      // Create the charge 
-      Int_t q = ((Int_t) (energyeV / kWion));
-
-      // Add the hit to the array. TR photon hits are marked 
-      // by negative charge
-      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
-            ,det
-            ,posHit
-            ,-q
-            ,kTRUE); 
-
     }
+    else {
+      continue;
+    }
+
+    // The position of the absorbtion
+    Float_t posHit[3];
+    gMC->TrackPosition(pos);
+    posHit[0] = pos[0] + mom[0] / pTot * absLength;
+    posHit[1] = pos[1] + mom[1] / pTot * absLength;
+    posHit[2] = pos[2] + mom[2] / pTot * absLength;
+
+    // Create the charge 
+    Int_t q = ((Int_t) (energyeV / kWion));
+
+    // Add the hit to the array. TR photon hits are marked 
+    // by negative charge
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
+          ,det
+          ,posHit
+          ,-q
+          ,kTRUE); 
 
   }
 
@@ -514,146 +500,139 @@ void AliTRDv1::StepManagerGeant()
       cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
       pla = ((Int_t) idChamber % kNplan);
 
-      // Check on selected volumes
-      Int_t addthishit = 1;
+      // The detector number
+      det = fGeometry->GetDetector(pla,cha,sec);
 
-      // Add this hit
-      if (addthishit) {
+      // Special hits only in the drift region
+      if      ((drRegion) &&
+               (gMC->IsTrackEntering())) {
 
-	// The detector number
-        det = fGeometry->GetDetector(pla,cha,sec);
+        // Create a track reference at the entrance of each
+        // chamber that contains the momentum components of the particle
+        gMC->TrackMomentum(mom);
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
-	// Special hits only in the drift region
-        if (drRegion) {
-
-          // Create a track reference at the entrance and
-          // exit of each chamber that contain the
-	  // momentum components of the particle
-          if (gMC->IsTrackEntering() || 
-              gMC->IsTrackExiting()) {
-            gMC->TrackMomentum(mom);
-            AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
-          }
-
-	  if (gMC->IsTrackEntering() && 
-              !gMC->IsNewTrack()) {
-	    // determine if hit belong to primary track 
-	    fPrimaryTrackPid = gAlice->GetMCApp()->GetCurrentTrackNumber();
-	    // determine track length when entering the detector
-	    fTrackLength0    = gMC->TrackLength();
-	  }
-					
-	  // Create the hits from TR photons
-          if (fTR) CreateTRhit(det);
-
+        // Create the hits from TR photons if electron/positron is
+        // entering the drift volume
+        if ((fTR) && 
+            (TMath::Abs(gMC->TrackPid()) == kPdgElectron)) {
+          CreateTRhit(det);    
         }
 
-	// Calculate the energy of the delta-electrons
-	// modified by Alex Bercuci (A.Bercuci@gsi.de) on 26.01.06
-	// take into account correlation with the underlying GEANT tracking
-	// mechanism. see
-        // http://www-linux.gsi.de/~abercuci/Contributions/TRD/index.html
-	//
-	// determine the most significant process (last on the processes list)
-	// which caused this hit
-        gMC->StepProcesses(processes);
-        Int_t nofprocesses = processes.GetSize();
-        Int_t pid;
-	if (!nofprocesses) {
-          pid = 0;
-	}
-	else {
-          pid =	processes[nofprocesses-1];		
-	}		
+      }
+      else if ((amRegion) && 
+               (gMC->IsTrackExiting())) {
+
+        // Create a track reference at the exit of each
+        // chamber that contains the momentum components of the particle
+        gMC->TrackMomentum(mom);
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+
+      }
+
+      // Calculate the energy of the delta-electrons
+      // modified by Alex Bercuci (A.Bercuci@gsi.de) on 26.01.06
+      // take into account correlation with the underlying GEANT tracking
+      // mechanism. see
+      // http://www-linux.gsi.de/~abercuci/Contributions/TRD/index.html
+      //
+      // determine the most significant process (last on the processes list)
+      // which caused this hit
+      gMC->StepProcesses(processes);
+      Int_t nofprocesses = processes.GetSize();
+      Int_t pid;
+      if (!nofprocesses) {
+        pid = 0;
+      }
+      else {
+        pid =	processes[nofprocesses-1];		
+      }		
 		
-	// generate Edep according to GEANT parametrisation
-	eDelta = TMath::Exp(fDeltaG->GetRandom()) - kPoti;
-        eDelta = TMath::Max(eDelta,0.0);
-	Float_t prRange = 0.0;
-	Float_t range   = gMC->TrackLength() - fTrackLength0;
-	// merge GEANT tracker information with locally cooked one
-	if (gAlice->GetMCApp()->GetCurrentTrackNumber() == fPrimaryTrackPid) {
-	  if      (pid == 27) { 
-	    if (eDelta >= kECut) {                
-	      prRange = kRa * eDelta * 0.001
-                      * (1.0 - kRb / (1.0 + kRc * eDelta * 0.001)) / kRho;
-              if (prRange >= (3.7 - range)) {
-                eDelta *= 0.1;
-	      }
-	    }
-	  } 
-          else if (pid ==  1) {	
-	    if (eDelta <  kECut) {
+      // Generate Edep according to GEANT parametrisation
+      eDelta = TMath::Exp(fDeltaG->GetRandom()) - kPoti;
+      eDelta = TMath::Max(eDelta,0.0);
+      Float_t prRange = 0.0;
+      Float_t range   = gMC->TrackLength() - fTrackLength0;
+      // merge GEANT tracker information with locally cooked one
+      if (gAlice->GetMCApp()->GetCurrentTrackNumber() == fPrimaryTrackPid) {
+	if      (pid == 27) { 
+          if (eDelta >= kECut) {                
+            prRange = kRa * eDelta * 0.001
+                    * (1.0 - kRb / (1.0 + kRc * eDelta * 0.001)) / kRho;
+            if (prRange >= (3.7 - range)) {
+              eDelta *= 0.1;
+            }
+          }
+        } 
+        else if (pid ==  1) {	
+          if (eDelta <  kECut) {
+            eDelta *= 0.5;
+          }
+          else {                
+            prRange = kRa * eDelta * 0.001
+                    * (1.0 - kRb / (1.0 + kRc * eDelta * 0.001)) / kRho;
+            if (prRange >= ((AliTRDgeometry::DrThick()
+                           + AliTRDgeometry::AmThick()) - range)) {
+              eDelta *= 0.05;
+            }
+            else {
               eDelta *= 0.5;
-	    }
-	    else {                
-	      prRange = kRa * eDelta * 0.001
-                      * (1.0 - kRb / (1.0 + kRc * eDelta * 0.001)) / kRho;
-              if (prRange >= ((AliTRDgeometry::DrThick()
-                             + AliTRDgeometry::AmThick()) - range)) {
-                eDelta *= 0.05;
-	      }
-	      else {
-                eDelta *= 0.5;
-	      }
-	    }
-	  } 
-          else {
-            eDelta = 0.0;
-	  }	
-	} 
+            }
+          }
+        } 
         else {
           eDelta = 0.0;
-	}
+        }	
+      } 
+      else {
+        eDelta = 0.0;
+      }
 
-        // Generate the electron cluster size
-        if (eDelta == 0.0) {
-          qTot = 0;
-	}
-	else {
-          qTot = ((Int_t) (eDelta / kWion) + 1);
-	}
+      // Generate the electron cluster size
+      if (eDelta > 0.0) {
 
-	// Create a new dEdx hit
+        qTot = ((Int_t) (eDelta / kWion) + 1);
+
+        // Create a new dEdx hit
         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
               ,det
               ,hits
               ,qTot
               ,drRegion);
-				
-        // Calculate the maximum step size for the next tracking step
-	// Produce only one hit if Ekin is below cutoff
-        aMass = gMC->TrackMass();
-        if ((gMC->Etot() - aMass) > kEkinMinStep) {
 
-          // The energy loss according to Bethe Bloch
-          iPdg = TMath::Abs(gMC->TrackPid());
-          if ((iPdg != kPdgElectron) ||
-	      ((iPdg == kPdgElectron) && 
-               (pTot  < kPTotMaxEl))) {
-            gMC->TrackMomentum(mom);
-            pTot      = mom.Rho();
-            betaGamma = pTot / aMass;
-            pp        = BetheBlochGeant(betaGamma);
-	    // Take charge > 1 into account
-            charge     = gMC->TrackCharge();
-            if (TMath::Abs(charge) > 1) {
-              pp = pp * charge*charge;
-	    }
-          } 
-          else { 
-            // Electrons above 20 Mev/c are at the plateau
-	    pp = kPrim * kPlateau;
+      }
+			
+      // Calculate the maximum step size for the next tracking step
+      // Produce only one hit if Ekin is below cutoff
+      aMass = gMC->TrackMass();
+      if ((gMC->Etot() - aMass) > kEkinMinStep) {
+
+        // The energy loss according to Bethe Bloch
+        iPdg = TMath::Abs(gMC->TrackPid());
+        if ((iPdg != kPdgElectron) ||
+	    ((iPdg == kPdgElectron) && 
+             (pTot  < kPTotMaxEl))) {
+          gMC->TrackMomentum(mom);
+          pTot      = mom.Rho();
+          betaGamma = pTot / aMass;
+          pp        = BetheBlochGeant(betaGamma);
+	  // Take charge > 1 into account
+          charge     = gMC->TrackCharge();
+          if (TMath::Abs(charge) > 1) {
+            pp = pp * charge*charge;
           }
+        } 
+        else { 
+          // Electrons above 20 Mev/c are at the plateau
+          pp = kPrim * kPlateau;
+        }
 
-	  Int_t nsteps = 0;
-	  do {
-            nsteps = gRandom->Poisson(pp);
-          } while(!nsteps);
-          stepSize = 1.0 / nsteps;
-	  gMC->SetMaxStep(stepSize);
-
-	}
+	Int_t nsteps = 0;
+        do {
+          nsteps = gRandom->Poisson(pp);
+        } while(!nsteps);
+        stepSize = 1.0 / nsteps;
+        gMC->SetMaxStep(stepSize);
 
       }
 
@@ -768,43 +747,44 @@ void AliTRDv1::StepManagerErmilova()
       cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
       pla = ((Int_t) idChamber % kNplan);
 
-      // Check on selected volumes
-      Int_t addthishit = 1;
+      // The detector number
+      det = fGeometry->GetDetector(pla,cha,sec);
 
-      // Add this hit
-      if (addthishit) {
+      // Special hits only in the drift region
+      if      ((drRegion) &&
+               (gMC->IsTrackEntering())) {
 
-	// The detector number
-        det = fGeometry->GetDetector(pla,cha,sec);
+        // Create a track reference at the entrance of each
+        // chamber that contains the momentum components of the particle
+        gMC->TrackMomentum(mom);
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
-	// Special hits only in the drift region
-        if (drRegion) {
+        // Create the hits from TR photons if electron/positron is
+        // entering the drift volume
+        if ((fTR) && 
+            (TMath::Abs(gMC->TrackPid()) == kPdgElectron)) {
+          CreateTRhit(det);    
+        }
 
-          // Create a track reference at the entrance and
-          // exit of each chamber that contain the 
-	  // momentum components of the particle
-          if (gMC->IsTrackEntering() || 
-              gMC->IsTrackExiting()) {
-            gMC->TrackMomentum(mom);
-            AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
-          }
-          // Create the hits from TR photons
-          if (fTR) {
-            CreateTRhit(det);
-	  }
+      }
+      else if ((amRegion) && 
+               (gMC->IsTrackExiting())) {
 
-	}
+        // Create a track reference at the exit of each
+        // chamber that contains the momentum components of the particle
+        gMC->TrackMomentum(mom);
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
-        // Calculate the energy of the delta-electrons
-        eDelta = TMath::Exp(fDeltaE->GetRandom()) - kPoti;
-        eDelta = TMath::Max(eDelta,0.0);
-        // Generate the electron cluster size
-        if (eDelta == 0.0) {
-          qTot = 0;
-	}
-	else {
-          qTot = ((Int_t) (eDelta / kWion) + 1);
-	}
+      }
+
+      // Calculate the energy of the delta-electrons
+      eDelta = TMath::Exp(fDeltaE->GetRandom()) - kPoti;
+      eDelta = TMath::Max(eDelta,0.0);
+
+      // Generate the electron cluster size
+      if (eDelta > 0.0) {
+
+        qTot = ((Int_t) (eDelta / kWion) + 1);
 
 	// Create a new dEdx hit
         if (drRegion) {
@@ -822,42 +802,42 @@ void AliTRDv1::StepManagerErmilova()
                 ,kFALSE);
 	}
 
-        // Calculate the maximum step size for the next tracking step
-	// Produce only one hit if Ekin is below cutoff 
-        aMass = gMC->TrackMass();
-        if ((gMC->Etot() - aMass) > kEkinMinStep) {
+      }
 
-          // The energy loss according to Bethe Bloch
-          iPdg  = TMath::Abs(gMC->TrackPid());
-          if ((iPdg != kPdgElectron) ||
-	      ((iPdg == kPdgElectron) && 
-               (pTot  < kPTotMaxEl))) {
-            gMC->TrackMomentum(mom);
-            pTot      = mom.Rho();
-            betaGamma = pTot / aMass;
-            pp        = kPrim * BetheBloch(betaGamma);
-	    // Take charge > 1 into account
-            charge = gMC->TrackCharge();
-            if (TMath::Abs(charge) > 1) {
-              pp = pp * charge*charge;
-	    }
-          } 
-          else { 
-            // Electrons above 20 Mev/c are at the plateau
-	    pp = kPrim * kPlateau;
+      // Calculate the maximum step size for the next tracking step
+      // Produce only one hit if Ekin is below cutoff 
+      aMass = gMC->TrackMass();
+      if ((gMC->Etot() - aMass) > kEkinMinStep) {
+
+        // The energy loss according to Bethe Bloch
+        iPdg  = TMath::Abs(gMC->TrackPid());
+        if ((iPdg != kPdgElectron) ||
+	    ((iPdg == kPdgElectron) && 
+             (pTot  < kPTotMaxEl))) {
+          gMC->TrackMomentum(mom);
+          pTot      = mom.Rho();
+          betaGamma = pTot / aMass;
+          pp        = kPrim * BetheBloch(betaGamma);
+          // Take charge > 1 into account
+          charge = gMC->TrackCharge();
+          if (TMath::Abs(charge) > 1) {
+            pp = pp * charge*charge;
           }
+        } 
+        else { 
+          // Electrons above 20 Mev/c are at the plateau
+	  pp = kPrim * kPlateau;
+        }
       
-          if (pp > 0.0) {
-            do {
-              gMC->GetRandom()->RndmArray(1,random);
-	    }
-            while ((random[0] == 1.0) || 
-                   (random[0] == 0.0));
-            stepSize = - TMath::Log(random[0]) / pp; 
-            gMC->SetMaxStep(stepSize);
+        if (pp > 0.0) {
+          do {
+            gMC->GetRandom()->RndmArray(1,random);
 	  }
-
-	}
+          while ((random[0] == 1.0) || 
+                 (random[0] == 0.0));
+          stepSize = - TMath::Log(random[0]) / pp; 
+          gMC->SetMaxStep(stepSize);
+        }
 
       }
 
@@ -875,6 +855,9 @@ void AliTRDv1::StepManagerFixedStep()
   // along its path across the drift volume. The step size is fixed in
   // this version of the step manager.
   //
+
+  // PDG code electron
+  const Int_t   kPdgElectron = 11;
 
   Int_t    pla = 0;
   Int_t    cha = 0;
@@ -912,13 +895,19 @@ void AliTRDv1::StepManagerFixedStep()
 
   // If not charged track or already stopped or disappeared, just return.
   if ((!gMC->TrackCharge()) || 
-        gMC->IsTrackDisappeared()) return;
+        gMC->IsTrackDisappeared()) {
+    return;
+  }
 
   // Inside a sensitive volume?
   cIdCurrent = gMC->CurrentVolName();
 
-  if (cIdSensDr == cIdCurrent[1]) drRegion = kTRUE;
-  if (cIdSensAm == cIdCurrent[1]) amRegion = kTRUE;
+  if (cIdSensDr == cIdCurrent[1]) {
+    drRegion = kTRUE;
+  }
+  if (cIdSensAm == cIdCurrent[1]) {
+    amRegion = kTRUE;
+  }
 
   if ((!drRegion) && 
       (!amRegion)) {
@@ -933,7 +922,7 @@ void AliTRDv1::StepManagerFixedStep()
 
   // The sector number (0 - 17)
   // The numbering goes clockwise and starts at y = 0
-  Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
+  Float_t phi = kRaddeg * TMath::ATan2(pos[0],pos[1]);
   if (phi < 90.0) {
     phi = phi + 270.0;
   }
@@ -949,13 +938,6 @@ void AliTRDv1::StepManagerFixedStep()
   cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
   pla = ((Int_t) idChamber % kNplan);
 
-  // Check on selected volumes
-  Int_t addthishit = 1;
-
-  if (!addthishit) {
-    return;
-  }
-
   // The detector number
   det = fGeometry->GetDetector(pla,cha,sec);
 
@@ -963,26 +945,31 @@ void AliTRDv1::StepManagerFixedStep()
   Int_t trkStat = 0;
 
   // Special hits only in the drift region
-  if (drRegion) {
+  if      ((drRegion) &&
+           (gMC->IsTrackEntering())) {
 
-    // Create a track reference at the entrance and exit of each
-    // chamber that contain the momentum components of the particle
+    // Create a track reference at the entrance of each
+    // chamber that contains the momentum components of the particle
+    gMC->TrackMomentum(mom);
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    trkStat = 1;
 
-    if (gMC->IsTrackEntering()) {
-      gMC->TrackMomentum(mom);
-      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
-      trkStat = 1;
-    }
-    if (gMC->IsTrackExiting()) {
-      gMC->TrackMomentum(mom);
-      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
-      trkStat = 2;
-    }
-
-    // Create the hits from TR photons
-    if (fTR) {
+    // Create the hits from TR photons if electron/positron is
+    // entering the drift volume
+    if ((fTR) && 
+        (TMath::Abs(gMC->TrackPid()) == kPdgElectron)) {
       CreateTRhit(det);    
     }
+
+  }
+  else if ((amRegion) && 
+           (gMC->IsTrackExiting())) {
+
+    // Create a track reference at the exit of each
+    // chamber that contains the momentum components of the particle
+    gMC->TrackMomentum(mom);
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    trkStat = 2;
 
   }
   
@@ -990,11 +977,14 @@ void AliTRDv1::StepManagerFixedStep()
   // Create a new dEdx hit
   eDep = TMath::Max(gMC->Edep(),0.0) * 1.0e+09;
   qTot = (Int_t) (eDep / kWion);
-  AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
-        ,det
-        ,hits
-        ,qTot
-        ,drRegion);
+  if ((qTot) ||
+      (trkStat)) {
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
+          ,det
+          ,hits
+          ,qTot
+          ,drRegion);
+  }
 
   // Set Maximum Step Size
   // Produce only one hit if Ekin is below cutoff
