@@ -73,6 +73,10 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   const char* timeStart = GetRunParameter("time_start");
   const char* timeEnd = GetRunParameter("time_end");
   TObjArray *alias1 = (TObjArray *)valueMap->GetValue("SFTTemp1.FloatValue");
+  if(!alias1) {
+    Log(Form("SFTTemp1.FloatValue not found!!!"));
+    return 0;
+  }
   AliGRPDCS *dcs = new AliGRPDCS(alias1);
   TH1F *h1 = new TH1F("alias1","",100,15,25);
   TString sAlias1Mean = dcs->ProcessDCS(h1);  
