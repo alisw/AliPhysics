@@ -9,7 +9,7 @@
 
 namespace Reve {
 
-class FrameBox : public TObject, public ReferenceCount
+class FrameBox : public TObject, public ReferenceBackPtr
 {
   friend class FrameBoxGL;
 
