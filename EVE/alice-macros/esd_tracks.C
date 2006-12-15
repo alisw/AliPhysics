@@ -1,7 +1,8 @@
 // $Id$
 
-Reve::Track* esd_make_track(Reve::TrackRnrStyle* rnrStyle,
-			    AliESDtrack* at,
+Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
+			    Int_t                  index,
+			    AliESDtrack*           at,
 			    AliExternalTrackParam* tp=0)
 {
   // Helper function
@@ -10,7 +11,8 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle* rnrStyle,
 
   if(tp == 0) tp = at;
 
-  rt.label  =         at->GetLabel();
+  rt.label  = at->GetLabel();
+  rt.index  = index;
   rt.status = (Int_t) at->GetStatus();
   rt.sign   = tp->GetSign();
   tp->GetXYZ(vbuf);
@@ -31,7 +33,8 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle* rnrStyle,
   char form[1000];
   sprintf(form,"ESDTrack %d", rt.label);
   track->SetName(form);
-  sprintf(form,"pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
+  sprintf(form,"idx=%d, lbl=%d; pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
+	  index, rt.label,
 	  rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
 	  rt.V.x, rt.V.y, rt.V.z);
   track->SetTitle(form);
@@ -57,7 +60,8 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 
   Int_t    count = 0;
   Double_t pbuf[3];
-  for (Int_t n=0; n<esd->GetNumberOfTracks(); n++) {
+  for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
+  {
     AliESDtrack* at = esd->GetTrack(n);
 
     // Here would be sweet to have TObjectFormula.
@@ -75,7 +79,7 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
        tp = at->GetInnerParam();
     }
 
-    Reve::Track* track = esd_make_track(rnrStyle, at, tp);
+    Reve::Track* track = esd_make_track(rnrStyle, n, at, tp);
     gReve->AddRenderElement(cont, track);
   }
 
@@ -116,7 +120,8 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESD* esd=0)
   Int_t    count = 0;
   TIter    next(col);
   TObject *obj;
-  while((obj = next()) != 0) {
+  while((obj = next()) != 0)
+  {
     if(obj->IsA()->InheritsFrom("AliESDtrack") == kFALSE) {
       Warning("Object '%s', '%s' is not an AliESDtrack.",
 	      obj->GetName(), obj->GetTitle());
@@ -126,7 +131,7 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESD* esd=0)
     ++count;
     AliESDtrack* at = (AliESDtrack*) obj;
 
-    Reve::Track* track = esd_make_track(rnrStyle, at);
+    Reve::Track* track = esd_make_track(rnrStyle, count, at);
     gReve->AddRenderElement(cont, track);
   }
 
@@ -172,7 +177,7 @@ Float_t get_sigma_to_vertex(AliESDtrack* esdTrack)
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
   if (bCov[0]<=0 || bCov[2]<=0) {
-    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    printf("Estimated b resolution lower or equal zero!\n");
     bCov[0]=0; bCov[2]=0;
   }
   bRes[0] = TMath::Sqrt(bCov[0]);
@@ -246,7 +251,8 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
   tl[4]->SetMainColor(Color_t(48));
   gReve->AddRenderElement(cont, tl[4]);
 
-  for (Int_t n=0; n<esd->GetNumberOfTracks(); n++) {
+  for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
+  {
     AliESDtrack* at = esd->GetTrack(n);
 
     Float_t s  = get_sigma_to_vertex(at);
@@ -269,13 +275,14 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     ++tc[ti];
     ++count;
 
-    Reve::Track* track = esd_make_track(tlist->GetRnrStyle(), at, tp);
+    Reve::Track* track = esd_make_track(tlist->GetRnrStyle(), n, at, tp);
+
     //PH The line below is replaced waiting for a fix in Root
     //PH which permits to use variable siza arguments in CINT
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     //PH    track->SetName(Form("track %d, sigma=%5.3f", at->GetLabel(), s));
     char form[1000];
-    sprintf(form,"track %d, sigma=%5.3f", at->GetLabel(), s);
+    sprintf(form,"Track lbl=%d, sigma=%5.3f", at->GetLabel(), s);
     track->SetName(form);
     gReve->AddRenderElement(tlist, track);
   }
