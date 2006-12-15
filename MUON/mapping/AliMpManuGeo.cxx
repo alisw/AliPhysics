@@ -63,10 +63,10 @@ AliMpManuGeo::~AliMpManuGeo()
 }
 
 //____________________________________________________________________
-AliMpIntPair*  AliMpManuGeo::GetDetElemManu(Int_t manuSerial) 
+AliMpIntPair  AliMpManuGeo::GetDetElemManu(Int_t manuSerial) 
 {
  /// getting (DE, manuId) from manu serial number
-  return (AliMpIntPair*) fSerialNbToDeManu.GetValue(manuSerial);
+  return * (AliMpIntPair*) fSerialNbToDeManu.GetValue(manuSerial);
 
 }
 

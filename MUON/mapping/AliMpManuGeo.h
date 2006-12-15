@@ -33,8 +33,8 @@ class AliMpManuGeo : public TObject
   void ReadGeomManuFiles();
   void ReadGeomManuFile(Int_t idDE);
 
-  AliMpIntPair*   GetDetElemManu(Int_t manuSerial);
-  Int_t           GetManuSerial(AliMpIntPair& pair);
+  AliMpIntPair  GetDetElemManu(Int_t manuSerial);
+  Int_t         GetManuSerial(AliMpIntPair& pair);
 
  private:
   AliMpManuGeo(const AliMpManuGeo& src);
