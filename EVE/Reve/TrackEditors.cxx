@@ -100,7 +100,7 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
     TGLabel *l = new TGLabel(f, "Delta:");
     f->AddFrame(l, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 32, 2, 1, 1));
     fDelta = new TGNumberEntry(f, 0., 6, -1, 
-			       TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
+			       TGNumberFormat::kNESRealThree, TGNumberFormat::kNEAPositive,
 			       TGNumberFormat::kNELLimitMinMax, 0.001, 100.0);
     fDelta->GetNumberEntry()->SetToolTipText("Maximal error at the mid-point of the line connecting to helix points.");
     f->AddFrame(fDelta, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
