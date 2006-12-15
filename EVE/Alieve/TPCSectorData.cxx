@@ -461,8 +461,6 @@ TPCSectorData::SegmentInfo::SegmentInfo() :
 // TPCSectorData::PadRowHack
 /**************************************************************************/
 
-#include <set>
-
 TPCSectorData::PadRowHack* TPCSectorData::GetPadRowHack(Int_t r, Int_t p)
 {
   if(fPadRowHackSet == 0) return 0;
