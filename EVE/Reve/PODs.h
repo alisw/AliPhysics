@@ -104,6 +104,7 @@ class MCTrack : public TParticle // ?? Copy stuff over ??
 {
 public:
   Int_t   label;       // Label of the track
+  Int_t   index;       // Index of the track (in some source array)
   Int_t   eva_label;   // Label of primary particle
 
   Bool_t  decayed;     // True if decayed during tracking.
@@ -112,7 +113,7 @@ public:
   Vector  V_decay;     // Decay vertex
   Vector  P_decay;     // Decay momentum
 
-  MCTrack() : label(0), eva_label(0),
+  MCTrack() : label(-1), index(-1), eva_label(-1),
               decayed(false), t_decay(0), V_decay(), P_decay() {}
   virtual ~MCTrack() {}
 
@@ -141,7 +142,7 @@ public:
   Float_t length;
   Float_t time;
 
-  MCTrackRef() : label(0), status(0), V(), P(), length(0), time(0) {}
+  MCTrackRef() : label(-1), status(-1), V(), P(), length(0), time(0) {}
   virtual ~MCTrackRef() {}
 
   ClassDef(MCTrackRef, 1)
@@ -212,6 +213,7 @@ class RecTrack : public TObject
 {
 public:
   Int_t   label;       // Label of the track
+  Int_t   index;       // Index of the track (in some source array)
   Int_t   status;      // Status as exported from reconstruction
   Int_t   sign;
   Vector  V;           // Start vertex from reconstruction
@@ -220,7 +222,7 @@ public:
 
   // PID data missing
 
-  RecTrack() : label(0), status(0), sign(0), V(), P(), beta(0) {}
+  RecTrack() : label(-1), index(-1), status(0), sign(0), V(), P(), beta(0) {}
   virtual ~RecTrack() {}
 
   Float_t Pt() { return P.Perp(); }
