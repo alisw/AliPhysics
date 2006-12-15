@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2006/10/13 11:22:27  arcelli
+remove warnings due to uninitialized AliTOFtdcDigit data members
+
 Revision 1.8  2006/08/22 13:30:17  arcelli
 removal of effective c++ warnings (C.Zampolli)
 
@@ -612,7 +615,7 @@ AliTOFRawStream::~AliTOFRawStream()
 {
 // destructor
 
-  fTOFGeometry = 0;
+  delete fTOFGeometry;
 
 }
 
