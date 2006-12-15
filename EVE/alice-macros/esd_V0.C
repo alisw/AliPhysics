@@ -14,57 +14,57 @@
 
 
 Reve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
-		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i) {
+		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
+{
+  if (! v0->GetOnFlyStatus())
+  { // v0 on fly do not have the momentum vector filled...
+    Reve::RecTrack  rcPos;
+    Reve::RecTrack  rcNeg;
+    Reve::RecV0 rcV0;
+
+    Double_t p[3];
+    v0->GetNPxPyPz(p[0], p[1], p[2]);
+    rcV0.P_pos.Set(p);
+    v0->GetPPxPyPz(p[0], p[1], p[2]);
+    rcV0.P_neg.Set(p);
+
+    v0->GetPxPyPz(p[0], p[1], p[2]);
+    Double_t v[3];
+    v0->GetXYZ(v[0], v[1], v[2]);
 
 
-  if (! v0->GetOnFlyStatus()) { // v0 on fly do not have the momentum vector filled...
-  Reve::RecTrack  rcPos;
-  Reve::RecTrack  rcNeg;
-  Reve::RecV0 rcV0;
+    //   printf(" %f %f %f / %f %f %f    %i\n",p[0], p[1], p[2],
+    // 	 v[0], v[1], v[2], v0->GetOnFlyStatus());
 
-  Double_t p[3];
-  v0->GetNPxPyPz(p[0], p[1], p[2]);
-  rcV0.P_pos.Set(p);
-  v0->GetPPxPyPz(p[0], p[1], p[2]);
-  rcV0.P_neg.Set(p);
+    rcV0.V_neg.Set(v); //original track vertices at dca not stored 
+    rcV0.V_pos.Set(v);
+    rcV0.V_ca.Set(v);
 
-  v0->GetPxPyPz(p[0], p[1], p[2]);
-  Double_t v[3];
-  v0->GetXYZ(v[0], v[1], v[2]);
+    rcV0.d_label[0] = v0->GetNindex();
+    rcV0.d_label[1] = v0->GetPindex();
 
-
-//   printf(" %f %f %f / %f %f %f    %i\n",p[0], p[1], p[2],
-// 	 v[0], v[1], v[2], v0->GetOnFlyStatus());
-
-  rcV0.V_neg.Set(v); //original track vertices at dca not stored 
-  rcV0.V_pos.Set(v);
-  rcV0.V_ca.Set(v);
-
-  rcV0.d_label[0] = v0->GetNindex();
-  rcV0.d_label[1] = v0->GetPindex();
-
-  Double_t ep = neg->GetP(), mc = neg->GetMass();
-  rcNeg.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
-  ep = pos->GetP(); mc = pos->GetMass();
-  rcPos.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
+    Double_t ep = neg->GetP(), mc = neg->GetMass();
+    rcNeg.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
+    ep = pos->GetP(); mc = pos->GetMass();
+    rcPos.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
 
 
-  Reve::V0* myV0 = new Reve::V0(&rcNeg, &rcPos, &rcV0, rnrStyle);
-  char ch[50];
-//   sprintf(ch,"ESDv0%i",i); 
-//   myV0->SetName(ch);
-//   myV0->SetTitle(ch);
-  myV0->SetESDIndex(i);
-  myV0->SetDaughterDCA(v0->GetDcaV0Daughters());
+    Reve::V0* myV0 = new Reve::V0(&rcNeg, &rcPos, &rcV0, rnrStyle);
+    char ch[50];
+    //   sprintf(ch,"ESDv0%i",i); 
+    //   myV0->SetName(ch);
+    //   myV0->SetTitle(ch);
+    myV0->SetESDIndex(i);
+    myV0->SetDaughterDCA(v0->GetDcaV0Daughters());
 
-  Double_t primx = primVtx->GetXv(),
-    primy = primVtx->GetYv(),
-    primz = primVtx->GetZv();
-  myV0->SetCosPointingAngle(v0->GetV0CosineOfPointingAngle(primx,primy,primz));
+    Double_t primx = primVtx->GetXv(),
+      primy = primVtx->GetYv(),
+      primz = primVtx->GetZv();
+    myV0->SetCosPointingAngle(v0->GetV0CosineOfPointingAngle(primx,primy,primz));
 
-  myV0->SetDecayLength(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
+    myV0->SetDecayLength(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
 
-  return myV0;
+    return myV0;
   } else {
     return 0;
   }
