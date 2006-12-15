@@ -1,20 +1,12 @@
-#include "AliHMPIDTracker.h" //class header
-#include "AliHMPID.h"             //GetTrackPoint(),PropagateBack()   
-#include "AliHMPIDCluster.h"      //GetTrackPoint(),PropagateBack() 
-#include "AliHMPIDParam.h"        //GetTrackPoint(),PropagateBack()
-#include "AliHMPIDRecon.h"        //PropagateBack()
+#include "AliHMPIDTracker.h"     //class header
+#include "AliHMPIDCluster.h"     //GetTrackPoint(),PropagateBack() 
+#include "AliHMPIDParam.h"       //GetTrackPoint(),PropagateBack()
+#include "AliHMPIDRecon.h"       //PropagateBack()
 #include <AliESD.h>              //PropagateBack()  
 #include <AliRun.h>              //GetTrackPoint(),PropagateBack()  
 #include <AliTrackPointArray.h>  //GetTrackPoint()
 #include <AliAlignObj.h>         //GetTrackPoint()
 ClassImp(AliHMPIDTracker)
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDTracker::AliHMPIDTracker():AliTracker()
-{
-// AliHMPIDTracker is created from AliReconstraction::Run() which invokes AliReconstraction::CreateTrackers() 
-// which in turn invokes AliHMPIDReconstructor::CreateTracker(). 
-// Note that this is done just once per session before AliReconstruction::Run() goes to events loop.
-}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
 Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
 {
@@ -43,13 +35,12 @@ Int_t AliHMPIDTracker::LoadClusters(TTree *pCluTree)
   AliDebug(1,"Start.");  pCluTree->GetEntry(0);  AliDebug(1,"Stop."); return 0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::PropagateBack(AliESD *pESD)
+Int_t AliHMPIDTracker::Recon(AliESD *pESD,TObjArray *pCluAll)
 {
 // Interface callback methode invoked by AliRecontruction::RunTracking() during tracking after TOF. It's done just once per event
 // Arguments: pESD - pointer to Event Summary Data class instance which contains a list of tracks
 //   Returns: error code, 0 if no errors   
-  Int_t iNtracks=pESD->GetNumberOfTracks();  AliDebug(1,Form("Start with %i tracks",iNtracks));
-  AliHMPID *pRich=((AliHMPID*)gAlice->GetDetector("HMPID"));  
+  Int_t iNtracks=pESD->GetNumberOfTracks();  AliDebugClass(1,Form("Start with %i tracks",iNtracks));
   AliHMPIDRecon recon;                                                        //instance of reconstruction class, nothing important in ctor
    
   AliHMPIDParam *pParam=AliHMPIDParam::Instance();
@@ -77,7 +68,7 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pESD)
     
     if(iCh==-1) continue;                                                                  //no intersection at all, go after next track
     
-    TClonesArray *pCluLst=pRich->CluLst(iCh);                                              //get clusters list for intersected chamber
+    TClonesArray *pCluLst=(TClonesArray *)pCluAll->At(iCh);                                //get clusters list for intersected chamber
     
     Double_t    dMin=999;                                                                  //distance between track-PC intersection point and current cluster
     Int_t   iMip=-1;                                                                       //index of cluster nearest to intersection point
@@ -105,7 +96,7 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pESD)
                    pTrk->SetHMPIDchi2     (recon.CkovSigma2());                              //error squared 
                    pTrk->SetHMPIDmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q(),iMip);     //info on mip cluster + n. phot.
  }//ESD tracks loop
-  AliDebug(1,"Stop pattern recognition");
+  AliDebugClass(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;
 }//PropagateBack()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

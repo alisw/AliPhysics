@@ -29,10 +29,9 @@ public:
    using AliReconstructor::Reconstruct;                                                                                 //to get rid of virtual hidden warning 
 
   //private part  
-  static        void          Dig2Clu (TClonesArray*pDigLst,TClonesArray *pCluLst,Bool_t isTryUnfold=kTRUE            );//digits list -> clusters list
-  static        void          CluQA   (AliRunLoader* pAL                                                              );//QA for clusters
-  static        void          FormClu (AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pDigMap);//cluster formation recursive algorithm
-  static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,TClonesArray *pDigList,TMatrixF *pDigMap                 );//use this pad's digit to form a cluster
+  static        void           Dig2Clu (TObjArray *pDigLst,TObjArray *pCluLst,Bool_t isUnfold=kTRUE                      );//digits->clusters
+  static        void           FormClu (AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pPadMap);//cluster formation recursive algorithm
+  static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
 
   protected:
   ClassDef(AliHMPIDReconstructor, 0)   //class for the HMPID reconstruction
@@ -41,7 +40,7 @@ public:
 typedef AliHMPIDReconstructor AliRICHReconstructor; // for backward compatibility
 
 //__________________________________________________________________________________________________
-AliHMPIDDigit* AliHMPIDReconstructor::UseDig(Int_t padX,Int_t padY,TClonesArray *pDigLst,TMatrixF *pDigMap)
+AliHMPIDDigit* AliHMPIDReconstructor::UseDig(Int_t padX,Int_t padY,TClonesArray *pDigLst,TMatrixF *pPadMap)
 {
 //Digit map contains a matrix if digit numbers.
 //Main operation in forming initial cluster is done here. Requested digit pointer is returned and this digit marked as taken.
@@ -49,8 +48,8 @@ AliHMPIDDigit* AliHMPIDReconstructor::UseDig(Int_t padX,Int_t padY,TClonesArray 
 //           pDigLst   - list of digits for one sector
 //           pDigMap   - map of those digits
 //  Returns: pointer to digit if not yet used or 0 if used
-  Int_t iDig=(Int_t)(*pDigMap)(padX,padY);(*pDigMap)(padX,padY)=-1;//take digit number from the map and reset this map cell to -1
-  if(iDig!=-1)    return (AliHMPIDDigit*)pDigLst->At(iDig);         //digit pointer
+  Int_t iDig=(Int_t)(*pPadMap)(padX,padY);(*pPadMap)(padX,padY)=-1;//take digit number from the map and reset this map cell to -1
+  if(iDig!=-1)    return (AliHMPIDDigit*)pDigLst->At(iDig);        //digit pointer
   else            return 0;
 }
 

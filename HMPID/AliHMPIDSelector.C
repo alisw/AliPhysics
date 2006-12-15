@@ -235,11 +235,14 @@ void HmpidHeader(ifstream *pFile,Bool_t isPrint=kFALSE)
   for(Int_t i=13;i<=15;i++){ pFile->read((char*)&w32,4); Printf("Word #%2i=%12i empty",i,w32);}
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void HmpidPayload(ifstream *pFile,Int_t iDdl,TClonesArray *pDigLst)
+void HmpidPayload(ifstream *pFile,Int_t iDdl,TObjArray *pDigAll)
 {
 // payload is 8 sequences with structure: WC36A8 then WC number of w32
+  
+  TClonesArray *pDig1=(TClonesArray*)pDigAll->At(iDdl/2); //get list of digits for requested chamber
+  
   UInt_t w32=0;
-  Int_t iDigCnt=pDigLst->GetEntriesFast();
+  Int_t iDigCnt=pDig1->GetEntriesFast();
   for(Int_t row=1;row<=8;row++){  
     pFile->read((char*)&w32,4);  Int_t wc=AliBitPacking::UnpackWord(w32,16,31); Int_t ma=AliBitPacking::UnpackWord(w32, 0,15);    
     if(ma!=0x36a8) Printf("ERROR ERROR ERROR WRONG Marker=0x%x ERROR ERROR ERROR",ma);    
@@ -248,12 +251,12 @@ void HmpidPayload(ifstream *pFile,Int_t iDdl,TClonesArray *pDigLst)
       if(w32&0x08000000) continue; //it's DILOGIC CW
       AliHMPIDDigit *pDig=new AliHMPIDDigit;
       pDig->Raw(iDdl,w32);   
-      new ((*pDigLst)[iDigCnt++]) AliHMPIDDigit(*pDig);
+      new ((*pDig1)[iDigCnt++]) AliHMPIDDigit(*pDig);
     }//words loop 
   }//rows loop
 }//HmpidPayload()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void docosmic(const char* name)
+void docosmic(const char* name,Int_t iMaxEvt=9999999)
 {
   gBenchmark->Start("Cosmic converter");
   ifstream in(name);
@@ -267,70 +270,85 @@ void docosmic(const char* name)
   TFile *pOut=new TFile(rooName,"recreate");
   TTree *pTr=new TTree("cosmic","some for time being");
   
-  TClonesArray *pDigLst=new TClonesArray("AliHMPIDDigit");   pTr->Branch("Digs",&pDigLst);
-  TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster"); pTr->Branch("Clus",&pCluLst);
+  
+  TObjArray *pDigAll=new TObjArray(7); pDigAll->SetOwner(); for(Int_t i=0;i<7;i++) pDigAll->AddAt(new TClonesArray("AliHMPIDDigit")  ,i); pTr->Branch("Digs",&pDigAll,64000,0); 
+  TObjArray *pCluAll=new TObjArray(7); pCluAll->SetOwner(); for(Int_t i=0;i<7;i++) pCluAll->AddAt(new TClonesArray("AliHMPIDCluster"),i); pTr->Branch("Clus",&pCluAll,64000,0);
 
+  Int_t iEvt=0;
   while(1){      
     Int_t iSize=DateHeader(&in,      isPrint);  if(iSize==68) continue;  //DATE header 
     if(in.eof()) break;
     HmpidHeader (&in,      isPrint);    //HMPID header 
-    HmpidPayload(&in,ddl+1,pDigLst);    //HMPID payload
+    HmpidPayload(&in,ddl+1,pDigAll);    //HMPID payload
     HmpidHeader (&in,      isPrint);    //HMPID header 
-    HmpidPayload(&in,ddl  ,pDigLst);    //HMPID payload
+    HmpidPayload(&in,ddl  ,pDigAll);    //HMPID payload
     
-    AliHMPIDReconstructor::Dig2Clu(pDigLst,pCluLst);
+    AliHMPIDReconstructor::Dig2Clu(pDigAll,pCluAll);
     pTr->Fill();
-    pDigLst->Clear(); pCluLst->Clear();
-  }
+    for(Int_t i=0;i<7;i++){
+      ((TClonesArray*)pDigAll->At(i))->Clear(); 
+      ((TClonesArray*)pCluAll->At(i))->Clear(); 
+    }
+    
+    if(!(iEvt%200)) Printf("Event %i processed",iEvt);
+    iEvt++;
+    if(iEvt==iMaxEvt) break;
+  }//events loop
   
-  pTr->Write();
-  pOut->Close();
-  delete pDigLst;
+  pTr->Write();  pOut->Close();
+  pDigAll->Delete(); pCluAll->Delete();
   in.close();
+  
+  Printf("Total %i events processed",iEvt);
   gBenchmark->Show("Cosmic converter");
 }//docosmic()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void cosmic()
 {
-  TChain *pCh=new TChain("cosmic");
-  pCh->Add("test.root");
+  TChain *pCh=new TChain("cosmic");  pCh->Add("test.root");
 
   
   TH1F *pDigQ=new TH1F("digQ","Digits QDC",500,0,4100);
   TH1F *pDigO=new TH1F("digO","Digits # per event",500,0,8000);
   TH2F *pDigM=new TH2F("digM","Digits map",500,0,131,500,0,127);
     
-  TH1F *pCluQ=new TH1F("cluQ","Clusters QDC",500,0,12100);
+  TH1F *pCluQ   =new TH1F("cluQ","Clusters QDC",500,0,12100);
+  TH1F *pCluQmax=new TH1F("cluQmax","Clusters Max QDC",500,0,12100); pCluQmax->SetLineColor(kRed);
   TH1F *pCluO=new TH1F("cluO","Clusters # per event",500,0,5000);
   TH2F *pCluM=new TH2F("cluM","Clusters map",500,0,131,500,0,127);
   
-  TClonesArray *pDigLst=new TClonesArray("AliHMPIDDigit");   pCh->SetBranchAddress("Digs",&pDigLst);
-  TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster"); pCh->SetBranchAddress("Clus",&pCluLst);
-  
+  TObjArray *pDigAll=0; pCh->SetBranchAddress("Digs",&pDigAll);
+  TObjArray *pCluAll=0; pCh->SetBranchAddress("Clus",&pCluAll);
+
+    
   for(Int_t iEvt=0;iEvt<pCh->GetEntries();iEvt++){
     pCh->GetEntry(iEvt);
     
-    pDigO->Fill(pDigLst->GetEntriesFast());
-    pCluO->Fill(pCluLst->GetEntriesFast());
+    TClonesArray *pDigCh=(TClonesArray*)pDigAll->At(0);
+    TClonesArray *pCluCh=(TClonesArray*)pCluAll->At(0);
+    pDigO->Fill(pDigCh->GetEntriesFast());
+    pCluO->Fill(pCluCh->GetEntriesFast());
     
-    for(Int_t iDig=0;iDig<pDigLst->GetEntriesFast();iDig++){//digits loop
-      AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigLst->UncheckedAt(iDig);
+    for(Int_t iDig=0;iDig<pDigCh->GetEntriesFast();iDig++){//digits loop
+      AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigCh->UncheckedAt(iDig);
       pDigQ->Fill(pDig->Q());
       pDigM->Fill(pDig->LorsX(),pDig->LorsY());
     }//digits loop
-    
-    for(Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
-      AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);
+    Int_t qmax=0;    
+    for(Int_t iClu=0;iClu<pCluCh->GetEntriesFast();iClu++){//clusters loop
+      AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluCh->UncheckedAt(iClu);
       pCluQ->Fill(pClu->Q());
+      if(pClu->Q()>qmax) qmax=pClu->Q();
       pCluM->Fill(pClu->X(),pClu->Y());
     }//digits loop
+    pCluQmax->Fill(qmax);
   }//entries loop
   
   TCanvas *pC=new TCanvas("comic","cosmic"); pC->Divide(2,3);
   
   pC->cd(1); pDigM->Draw(); pC->cd(2); pCluM->Draw();
-  pC->cd(3); pDigQ->Draw(); pC->cd(4); pCluQ->Draw();
-  pC->cd(5); pDigO->Draw(); pC->cd(6); pCluO->Draw();
+  pC->cd(3); gPad->SetLogy(); pDigQ->Draw(); pC->cd(4); gPad->SetLogy(); pCluQ->Draw(); pCluQmax->Draw("same");
+  pC->cd(5); gPad->SetLogy(); pDigO->Draw(); pC->cd(6); gPad->SetLogy(); pCluO->Draw();
 }//cosmic()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

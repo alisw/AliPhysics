@@ -150,13 +150,11 @@ Double_t AliHMPIDRecon::FindRingCkov(Int_t)
   
   for(Int_t i=0;i<fPhotCnt;i++){//candidates loop
     if(fPhotFlag[i] == 2){
+      if(fPhotCkov[i]<=0) continue;//?????????????????Flag photos = 2 may imply CkovEta = 0?????????????? 
       if(fPhotCkov[i]<ckovMin) ckovMin=fPhotCkov[i];  //find max and min Theta ckov from all candidates within probable window
       if(fPhotCkov[i]>ckovMax) ckovMax=fPhotCkov[i]; 
       weightThetaCerenkov += fPhotCkov[i]*fPhotWei[i];   wei += fPhotWei[i];                 //collect weight as sum of all candidate weghts   
       
-     //Double_t phiref=(GetPhiPoint()-GetTrackPhi());
-       if(fPhotCkov[i]<=0) continue;//?????????????????Flag photos = 2 may imply CkovEta = 0?????????????? 
-                                     
       sigma2 += 1./Sigma2(fPhotCkov[i],fPhotPhi[i]);
     }
   }//candidates loop
@@ -164,7 +162,6 @@ Double_t AliHMPIDRecon::FindRingCkov(Int_t)
   if(sigma2>0) fCkovSigma2=1./sigma2;
   else         fCkovSigma2=1e10;  
   
-
   if(wei != 0.) weightThetaCerenkov /= wei; else weightThetaCerenkov = 0.;  
   return weightThetaCerenkov;
 }//FindCkovRing()

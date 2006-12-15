@@ -78,7 +78,7 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
   
   for(Int_t i=0;i<7;i++){
     pLst[i]=(TClonesArray*)(*pDigLst)[i];
-    iCnt[i]=pLst[i]->GetEntries();         //in principle those lists should be empty                                                                       
+    iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");         //in principle those lists should be empty                                                                       
   }
   
   pSdiLst->Sort();  
@@ -98,7 +98,7 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     q=pSdig->Q();    
   }//sdigits loop (sorted)
   
-  if(AliHMPIDDigit::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);             //add the last one, in case of empty sdigits list q=-1
+  if(AliHMPIDDigit::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);           //add the last one, in case of empty sdigits list q=-1
                                                                                                                //so digit is not created    
 }//Sdi2Dig()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

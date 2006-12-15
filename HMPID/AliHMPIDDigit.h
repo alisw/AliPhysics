@@ -7,10 +7,10 @@
 #include <TMath.h>         //Mathieson()
 #include <TRandom.h>       //IsOverTh()  
 #include <AliBitPacking.h> //Raw()
+#include "AliHMPIDHit.h"   //Hit2Sdi(), ctor()
 
-class AliHMPIDHit;          //Hit2Sdi()
 class TClonesArray;        //Hit2Sdi()
- 
+  
 class AliHMPIDDigit :public AliDigit //TObject-AliDigit-AliHMPIDDigit
 {
 public:
@@ -18,10 +18,9 @@ public:
   enum ERawData{kNddls=14};                                                      //RAW data structure
   enum EPadData{kPcX=2,kPcY=3,kPadPcX=80,kPadPcY=48,kPadAllX=kPadPcX*kPcX,kPadAllY=kPadPcY*kPcY,kPcAll=kPcX*kPcY,kPadAll=kPadAllX*kPadAllY};   //Segmentation structure 
 //ctor&dtor    
-           AliHMPIDDigit(                                                     ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  {}                //default ctor
-           AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t                           ):AliDigit(t),fPad(pad             ),fQ(q )  {}                //digit ctor 
-  inline   AliHMPIDDigit(Int_t c,Float_t q,Int_t t,Float_t x,Float_t y,Int_t f=0);                                                               //sdigit ctor 
-  virtual ~AliHMPIDDigit()                                {} //dtor
+           AliHMPIDDigit(                                      ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  {}                                      //default ctor
+           AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t            ):AliDigit(t),fPad(pad             ),fQ(q )  {}                                      //ctor used in digitizer
+  virtual ~AliHMPIDDigit(                                      )                                            {}                                      //dtor
 //framework part    
          Bool_t  IsSortable  (                               )const{return kTRUE;}                                                     //provision to use TObject::Sort() 
   inline Int_t   Compare     (const TObject *pObj            )const;                                                                   //provision to use TObject::Sort()
@@ -41,17 +40,19 @@ public:
          void    DrawZoom    (                               ); 
          Int_t   DdlIdx      (                               )const{return 2*Ch()+Pc()%2;                           }                  //DDL# 0..13
          Int_t   DdlId       (                               )const{return (6<<8)+DdlIdx();                         }                  //DDL ID 0x600..0x60d
-  static Float_t Hit2Sdi     (AliHMPIDHit *pHit,TClonesArray*);                                                                        //hit -> 9 sdigits, returns total QDC   
+  static void    Hit2Sdi     (AliHMPIDHit *pHit,TClonesArray*);                                                                        //hit -> 9 sdigits  
   static Bool_t  IsOverTh    (Float_t q                      )     {return q > 6;                                   }                  //is digit over threshold????
   static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();    }                  //is point inside pc boundary?
   inline static Bool_t IsInDead  (Float_t x,Float_t y        );                                                                        //is point in dead area?
          Float_t LorsX       (                               )const{return (PadPcX()+0.5)*SizePadX()+(Pc()%2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
          Float_t LorsY       (                               )const{return (PadPcY()+0.5)*SizePadY()+(Pc()/2)*(SizePcY()+SizeDead());} //center of the pad y, [cm]
+         void    Manual1     (Int_t c,Float_t x,Float_t y,Int_t q=33){AliHMPIDHit h(c,q,x,y); Set(&h,0);}                              //manual creation
+         void    Manual2     (Int_t c,Int_t p,Int_t x,Int_t y)     {fPad=Abs(c,p,x,y);}                                                //manual creation 
   inline Float_t Mathieson   (Float_t x,Float_t y            )const;                                                                   //Mathieson distribution 
-         Int_t   PadPcX      (                               )const{return A2X(fPad);}                                                 //pad x within PC 0..79
-         Int_t   PadPcY      (                               )const{return A2Y(fPad);}                                                 //pad y within PC 0..47
-         Int_t   PadChX      (                               )const{return A2X(fPad);}                                                 //pad x within chamber
-         Int_t   PadChY      (                               )const{return A2Y(fPad);}                                                 //pad y within chamber
+         Int_t   PadPcX      (                               )const{return A2X(fPad);}                                                 //pad pc x # 0..79
+         Int_t   PadPcY      (                               )const{return A2Y(fPad);}                                                 //pad pc y # 0..47
+         Int_t   PadChX      (                               )const{return (Pc()%2)*kPadPcX+PadPcX();}                                 //pad ch x # 0..159
+         Int_t   PadChY      (                               )const{return (Pc()/2)*kPadPcY+PadPcY();}                                 //pad ch y # 0..143
          Int_t   Pad         (                               )const{return fPad;}                                                      //absolute id of this pad
          Int_t   Pc          (                               )const{return A2P(fPad);}                                                 //PC position number
   static void    PrintSize   (                               );                                                                        //print all segmentation sizes      
@@ -63,7 +64,7 @@ public:
   static Int_t   Raw2X       (         UInt_t d,UInt_t a     )     {                                              return (d-1)*8+a/6;} //padx=f(d,a)
   static Int_t   Raw2Y       (UInt_t l,UInt_t r,UInt_t a     )     {Int_t a2y[6]={3,2,4,1,5,0};r=(l%2)?(24-r):r-1;return 6*(r%8)+a2y[a%6];}//pady=f(ddl,r,a)
          Int_t   Row         (                               )const{Int_t r=1+Pc()/2*8+PadPcY()/6; return (Pc()%2)? 25-r:r;}           //row r=1..24
-         void    Set         (Int_t c,Int_t s,Int_t x,Int_t y)     {fPad=Abs(c,s,x,y);fQ=0xa3;}                                        //set new digit
+  inline Bool_t  Set         (AliHMPIDHit *pHit,Int_t pad    );                                                                        //sdigit from hit in given pad
   
   static Float_t SizeAllX    (                               )     {return SizePadX()*kPadAllX+SizeDead();}                            //all PCs size x, [cm]        
   static Float_t SizeAllY    (                               )     {return SizePadY()*kPadAllY+2*SizeDead();}                          //all PCs size y, [cm]    
@@ -78,7 +79,7 @@ public:
   static Float_t SizeRad     (                               )     {return 1.5;}                                                       //Rad width   
   static void    Test        (                               );                                                                        //Test conversions
 protected:                  //AliDigit has fTracks[3]
-  Int_t   fPad;             //absolute pad number is chamber*kCham
+  Int_t    fPad;            //absolute pad number
   Float_t  fQ;              //QDC value, fractions are permitted for summable procedure  
   ClassDef(AliHMPIDDigit,4) //HMPID digit class       
 };//class AliHMPIDDigitN
@@ -86,37 +87,39 @@ protected:                  //AliDigit has fTracks[3]
 typedef AliHMPIDDigit AliRICHDigit; // for backward compatibility
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDDigit::AliHMPIDDigit(Int_t c,Float_t q,Int_t t,Float_t x,Float_t y,Int_t flag):AliDigit(),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  
+Bool_t AliHMPIDDigit::Set(AliHMPIDHit *pHit,Int_t pad) 
 {
-// Creation of sdigit  
-// Arguments: c- chamber 
-//            q- total QDC
-//            t -TID
-//            x,y - hit position, LORS      
-//            flag- which pad to try     
+// Creates digit
+// Arguments: pHit- pointer to the hit
+//            pad - for which pad to create
 //   Returns: none    
-  Int_t pc,padx,pady;
-  if     (x>=          0          && x<=  SizePcX()            ) {pc=0; padx=Int_t( x                           / SizePadX());}//PC 0 or 2 or 4
-  else if(x>=SizePcX()+SizeDead() && x<=  SizeAllX()           ) {pc=1; padx=Int_t((x-  SizePcX()-  SizeDead()) / SizePadX());}//PC 2 or 4 or 6
-  else return;
-  if     (y>=          0          && y<=  SizePcY()            ) {      pady=Int_t( y                           / SizePadY());}//PC 0 or 1
-  else if(y>=SizePcY()+SizeDead() && y<=2*SizePcY()+SizeDead() ) {pc+=2;pady=Int_t((y-  SizePcY()-  SizeDead()) / SizePadY());}//PC 2 or 3
-  else if(y>=SizeAllY()-SizePcY() && y<=  SizeAllY()           ) {pc+=4;pady=Int_t((y-2*SizePcY()-2*SizeDead()) / SizePadY());}//PC 4 or 5
-  else return;
   
-  switch(flag){
-    case 8:padx--;pady++;break;    case 1:pady++;break;    case 2:padx++; pady++;break;
+  fPad=Abs(-1,-1,-1,-1); fQ=-1; //reset
+  Int_t pc,px,py;
+  Float_t x=pHit->LorsX(),y=pHit->LorsY();
+  
+  if     (x>=          0          && x<=  SizePcX()            ) {pc=0; px=Int_t( x                           / SizePadX());}//PC 0 or 2 or 4
+  else if(x>=SizePcX()+SizeDead() && x<=  SizeAllX()           ) {pc=1; px=Int_t((x-  SizePcX()-  SizeDead()) / SizePadX());}//PC 2 or 4 or 6
+  else return kFALSE;
+  if     (y>=          0          && y<=  SizePcY()            ) {      py=Int_t( y                           / SizePadY());}//PC 0 or 1
+  else if(y>=SizePcY()+SizeDead() && y<=2*SizePcY()+SizeDead() ) {pc+=2;py=Int_t((y-  SizePcY()-  SizeDead()) / SizePadY());}//PC 2 or 3
+  else if(y>=SizeAllY()-SizePcY() && y<=  SizeAllY()           ) {pc+=4;py=Int_t((y-2*SizePcY()-2*SizeDead()) / SizePadY());}//PC 4 or 5
+  else return kFALSE;
+  
+  switch(pad){
+    case 8: px--;py++;break;    case 1:py++;break;    case 2:px++; py++;break;
                                               
-    case 7: padx--;      break;    case 0:       break;    case 3:padx++;        break;
+    case 7: px--;     break;    case 0:     break;    case 3:px++;      break;
                                                  
-    case 6:padx--;pady--;break;    case 5:pady--;break;    case 4:padx++; pady--;break;                                            
+    case 6: px--;py--;break;    case 5:py--;break;    case 4:px++; py--;break;                                            
   }
-  if(padx<0 || padx>=kPadPcX) return;
-  if(pady<0 || pady>=kPadPcY) return;
-  fPad=Abs(c,pc,padx,pady);
-  fQ=q*Mathieson(x,y);
-  fTracks[0]=t; 
-}    
+  if(px<0 || px>=kPadPcX) return kFALSE;
+  if(py<0 || py>=kPadPcY) return kFALSE;
+  fPad=Abs(pHit->Ch(),pc,px,py);
+  fQ=pHit->Q()*Mathieson(x,y);
+  fTracks[0]=pHit->Tid(); 
+  return kTRUE;
+}//Set()    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDDigit::Compare(const TObject *pObj) const
 {

@@ -5,7 +5,7 @@
 
 #include <AliDetector.h>  //base class
 #include <TClonesArray.h> //XxxCreate() 
-#include <TObjArray.h>    //fClu field
+#include <TObjArray.h>    //fDig,fClu field
 
 
 
@@ -40,14 +40,11 @@ public:
   void          DigReset (         )     {if(fDig)for(int i=0;i<7;i++)fDig->At(i)->Clear();                     }//clean digits list 
   void          DigPrint (Int_t evt)const;                                                                       //print digits
           
+  TObjArray*    CluLst   (         )const{return fClu;                                                          }//get clusters list for all chambers
   TClonesArray* CluLst   (Int_t c  )const{return fClu ? (TClonesArray *)fClu->At(c):0;                          }//get clusters list for chamber
   inline void   CluCreate(         )     {fClu=new TObjArray(7); for(Int_t i=0;i<7;i++)fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);}//create clusters list
          void   CluReset (         )     {if(fClu)for(int i=0;i<7;i++)fClu->At(i)->Clear();                     }//clean clusters list
          void   CluPrint (Int_t evt)const;                                                                       //print clusters list
-         
-  void          OccupancyPrint(Int_t evt=-1);                    //print chambers occupancy 
-  void          SummaryOfEvent(Int_t evt=0)const;
-
 protected:  
   TClonesArray         *fSdi;                     //! list of sdigits  
   TObjArray            *fDig;                     //! each chamber holds it's one list of digits

@@ -21,91 +21,42 @@
 #include <AliRunLoader.h>         //Reconstruct() for simulated digits
 #include <AliRawReader.h>         //Reconstruct() for raw digits
 #include <AliRun.h>               //Reconstruct()
-#include <TH1F.h>                 //CluQA() 
-#include <TH2F.h>                 //CluQA() 
-#include <TCanvas.h>              //CluQA() 
-#include <TNtupleD.h>             //CheckPR()
 ClassImp(AliHMPIDReconstructor)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::CluQA(AliRunLoader *pAL)
-{
-// Quality assesment plots for clusters. 
-// This methode takes list of digits and form list of clusters again in order to 
-// calculate cluster shape and cluster particle mixture    
-  AliLoader *pRL=pAL->GetDetectorLoader("HMPID");  AliHMPID *pRich=(AliHMPID*)pAL->GetAliRun()->GetDetector("HMPID");//get pointers for HMPID and HMPID loader
-  Int_t iNevt=pAL->GetNumberOfEvents();  if(iNevt==0)             {AliInfoClass("No events");return;}   
-                                         if(pRL->LoadDigits())    {AliInfoClass("No digits file");return;}
-                                            pAL->LoadHeader();
-                                            pAL->LoadKinematics(); 
-//                                            AliStack *pStack=pAL->Stack();
-  TH1::AddDirectory(kFALSE);
-  
-        
-  TH1F*    pQ=new TH1F("RiAllQ"  ,"Charge All"           ,4000 ,0  ,4000);// Q hists
-  TH1F* pCerQ=new TH1F("RiCerQ"  ,"Charge Ckov"          ,4000 ,0  ,4000);
-  TH1F* pMipQ=new TH1F("RiMipQ"  ,"Charge MIP"           ,4000 ,0  ,4000);
-  
-  TH1F*    pS=new TH1F("RichCluSize"    ,"Cluster size;size"         ,100  ,0  ,100 );// size hists
-  TH1F* pCerS=new TH1F("RichCluCerSize" ,"Ckov size;size"            ,100  ,0  ,100 );
-  TH1F* pMipS=new TH1F("RichCluMipSize" ,"MIP size;size"             ,100  ,0  ,100 );
-  
-  TH2F*    pM=new TH2F("RichCluMap"     ,"Cluster map;x [cm];y [cm]" ,1000 ,0  ,AliHMPIDDigit::SizePcX(),1000,0,AliHMPIDDigit::SizePcY()); // maps
-  TH2F* pMipM=new TH2F("RichCluMipMap"  ,"MIP map;x [cm];y [cm]"     ,1000 ,0  ,AliHMPIDDigit::SizePcX(),1000,0,AliHMPIDDigit::SizePcY());
-  TH2F* pCerM=new TH2F("RichCluCerMap"  ,"Ckov map;x [cm];y [cm]"    ,1000 ,0  ,AliHMPIDDigit::SizePcX(),1000,0,AliHMPIDDigit::SizePcY());
- 
-  
-  
-  for(Int_t iEvt=0;iEvt<iNevt;iEvt++){
-    pAL->GetEvent(iEvt);               
-    pRL->TreeD()->GetEntry(0); 
-    TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster");//tmp list of clusters for this event
-    
-    for(Int_t iCh=0;iCh<7;iCh++) Dig2Clu(pRich->DigLst(iCh),pCluLst,kFALSE);//cluster finder for all chamber if any digits present
-    
-    for(Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){
-      AliHMPIDCluster *pClu = (AliHMPIDCluster*)pCluLst->At(iClu);
-      Int_t cfm=0; for(Int_t iDig=0;iDig<pClu->Size();iDig++)  cfm+=pClu->Dig(iDig)->Ch(); //collect ckov-fee-mip structure of current cluster ?????
-      Int_t iNckov=cfm/1000000;      Int_t iNfee =cfm%1000000/1000;      Int_t iNmip =cfm%1000000%1000; 
-
-                                             pQ   ->Fill(pClu->Q()) ; pS   ->Fill(pClu->Size()) ; pM    ->Fill(pClu->X(),pClu->Y()); //all clusters                                      
-      if(iNckov!=0 && iNfee==0 && iNmip==0) {pCerQ->Fill(pClu->Q()) ; pCerS->Fill(pClu->Size()) ; pCerM ->Fill(pClu->X(),pClu->Y());}//ckov only cluster
-      if(iNckov==0 && iNfee==0 && iNmip!=0) {pMipQ->Fill(pClu->Q()) ; pMipS->Fill(pClu->Size()) ; pMipM ->Fill(pClu->X(),pClu->Y());}//mip only cluster
-                                       
-    }//clusters loop   
-    pCluLst->Clear();delete pCluLst;
-  }//events loop
-  
-  pRL->UnloadDigits(); pAL->UnloadKinematics(); pAL->UnloadHeader();
-  TCanvas *pC=new TCanvas("RichCluQA",Form("QA for cluster from %i events",iNevt),1000,900); pC->Divide(3,3);
-  pC->cd(1);    pM->Draw();          pC->cd(2);    pQ->Draw();       pC->cd(3);    pS->Draw();        
-  pC->cd(4); pMipM->Draw();          pC->cd(5); pMipQ->Draw();       pC->cd(6); pMipS->Draw();        
-  pC->cd(7); pCerM->Draw();          pC->cd(8); pCerQ->Draw();       pC->cd(9); pCerS->Draw();        
-}//CluQA()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::Dig2Clu(TClonesArray *pDigLst,TClonesArray *pCluLst,Bool_t isTryUnfold)
+void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t isTryUnfold)
 {
 // Finds all clusters for a given digits list provided not empty. Currently digits list is a list of all digits for a single chamber.
 // Puts all found clusters in separate lists, one per clusters. 
-// Arguments: pDigLst     - list of digits provided not empty
-//            pCluLst     - list of clusters, provided empty     
+// Arguments: pDigAll     - list of digits for all chambers 
+//            pCluAll     - list of clusters for all chambers
 //            isTryUnfold - flag to choose between CoG and Mathieson fitting  
 //  Returns: none    
-  TMatrixF digMap(AliHMPIDDigit::kPadAllX,AliHMPIDDigit::kPadAllY);  digMap=(Float_t)-1;   //digit map for single chamber reseted to -1
-  for(Int_t iDig=0;iDig<pDigLst->GetEntriesFast();iDig++){                                 //digits loop to fill digits map
-    AliHMPIDDigit *pDig= (AliHMPIDDigit*)pDigLst->At(iDig);                                //get current digit
-    digMap( pDig->PadChX(), pDig->PadChY() )=iDig;                                             //fill the map, (padx,pady) cell takes digit index
-  }                                                                                        //digits loop to fill digits map 
+  TMatrixF padMap(AliHMPIDDigit::kPadAllX,AliHMPIDDigit::kPadAllY);                   //pads map for single chamber 0..159 x 0..143 
   
-  AliHMPIDCluster clu;                                                                      //tmp cluster to be used as current
+  for(Int_t iCh=0;iCh<7;iCh++){                                                           //chambers loop 
+    TClonesArray *pDigCur=(TClonesArray*)pDigAll->At(iCh);                                //get list of digits for current chamber
+    if(pDigCur->GetEntriesFast()==0) continue;                                            //no digits for current chamber
   
-  for(Int_t iDig=0;iDig<pDigLst->GetEntriesFast();iDig++){                                 //digits loop to form clusters list
-    AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigLst->At(iDig);                                 //take current digit
-    if(!(pDig=UseDig(pDig->PadChX(),pDig->PadChY(),pDigLst,&digMap))) continue;            //this digit is already taken in FormClu(), go after next digit
-    FormClu(&clu,pDig,pDigLst,&digMap);                                                    //form cluster starting from this digit by recursion
-    clu.Solve(pCluLst,isTryUnfold);                                                        //solve this cluster and add all unfolded clusters to provided list  
-    clu.Reset();                                                                           //empty current cluster
-  }                                                                                        //digits loop to form clusters list
+    padMap=(Float_t)-1;                                                                   //reset map to -1 (means no digit for this pad)  
+    TClonesArray *pCluCur=(TClonesArray*)pCluAll->At(iCh);                                //get list of clusters for current chamber
+    
+    for(Int_t iDig=0;iDig<pDigCur->GetEntriesFast();iDig++){                              //digits loop to fill pads map
+      AliHMPIDDigit *pDig= (AliHMPIDDigit*)pDigCur->At(iDig);                             //get current digit
+      padMap( pDig->PadChX(), pDig->PadChY() )=iDig;                                      //fill the map, (padx,pady) cell takes digit index
+    }//digits loop to fill digits map 
+    
+    AliHMPIDCluster clu;                                                                  //tmp cluster to be used as current
+  
+    for(Int_t iDig=0;iDig<pDigCur->GetEntriesFast();iDig++){                              //digits loop for current chamber
+      AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigCur->At(iDig);                              //take current digit
+      if(!(pDig=UseDig(pDig->PadChX(),pDig->PadChY(),pDigCur,&padMap))) continue;         //this digit is already taken in FormClu(), go after next digit
+      FormClu(&clu,pDig,pDigCur,&padMap);                                                 //form cluster starting from this digit by recursion
+      
+      clu.Solve(pCluCur,isTryUnfold);                                                     //solve this cluster and add all unfolded clusters to provided list  
+      clu.Reset();                                                                        //empty current cluster
+    }//digits loop for current chamber
+  }//chambers loop
 }//Dig2Clu()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void  AliHMPIDReconstructor::FormClu(AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pDigMap)
@@ -113,19 +64,18 @@ void  AliHMPIDReconstructor::FormClu(AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,T
 // Forms the initial cluster as a combination of all adjascent digits. Starts from the given digit
 // then calls itself recursevly  for all possible neighbours.
 // Arguments: pClu - pointer to cluster being formed
-//  Returns: none   ???????????????????
+//  Returns: none   
   pClu->DigAdd(pDig);//take this digit in cluster
 
-  Int_t x[4],y[4];
+  Int_t cnt=0,cx[4],cy[4];
   
-  Int_t cnt=0;  Int_t iPadX=pDig->PadPcX(); Int_t iPadY=pDig->PadPcY();
-  if(iPadX != 0)                        {x[cnt]=iPadX-1; y[cnt]=iPadY;   cnt++;}       //left
-  if(iPadX != AliHMPIDDigit::kPadPcX-1) {x[cnt]=iPadX+1; y[cnt]=iPadY;   cnt++;}       //right
-  if(iPadY != 0)                        {x[cnt]=iPadX;   y[cnt]=iPadY-1; cnt++;}       //down
-  if(iPadY != AliHMPIDDigit::kPadPcY-1) {x[cnt]=iPadX;   y[cnt]=iPadY+1; cnt++;}       //up
+  if(pDig->PadPcX() != 0                       ){cx[cnt]=pDig->PadChX()-1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //left
+  if(pDig->PadPcX() != AliHMPIDDigit::kPadPcX-1){cx[cnt]=pDig->PadChX()+1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //right
+  if(pDig->PadPcY() != 0                       ){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()-1;cnt++;}       //down
+  if(pDig->PadPcY() != AliHMPIDDigit::kPadPcY-1){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()+1;cnt++;}       //up
   
   for (Int_t i=0;i<cnt;i++)
-    if((pDig=UseDig(x[i],y[i],pDigLst,pDigMap))) FormClu(pClu,pDig,pDigLst,pDigMap);   //check if this neighbour pad fired and mark it as taken  
+    if((pDig=UseDig(cx[i],cy[i],pDigLst,pDigMap))) FormClu(pClu,pDig,pDigLst,pDigMap);   //check if this neighbour pad fired and mark it as taken  
   
 }//FormClu()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -144,7 +94,7 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL)const
     pAL->GetEvent(iEvtN); AliDebug(1,Form("Processing event %i...",iEvtN)); //switch current directory to next event    
     pRL->TreeD()->GetEntry(0);  pRL->MakeTree("R");  pRich->MakeBranch("R");  //load digits to memory  and create branches for clusters              
     
-    for(Int_t iCh=0;iCh<7;iCh++) Dig2Clu(pRich->DigLst(iCh),pRich->CluLst(iCh));//cluster finder 
+    Dig2Clu(pRich->DigLst(),pRich->CluLst());//cluster finder 
       
     pRL->TreeR()->Fill();            //fill tree for current event
     pRL->WriteRecPoints("OVERWRITE");//write out clusters for current event
@@ -167,25 +117,28 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)cons
   
   AliHMPIDDigit dig; //tmp digit, raw digit will be converted to it
   
+  TObjArray digLst; Int_t iDigCnt[7]; for(Int_t i=0;i<7;i++){digLst.AddAt(new TClonesArray("AliHMPIDDigit"),i); iDigCnt[i]=0;} //tmp list of digits for all chambers
+  
   Int_t iEvtN=0;
   while(pRR->NextEvent()){//events loop
     pAL->GetEvent(iEvtN++);
     pRL->MakeTree("R");  pRich->MakeBranch("R");
     
     for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
-      TClonesArray *pDigLst=new TClonesArray("AliHMPIDDigit"); Int_t iDigCnt=0; //tmp list of digits for single chamber
       pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber      
       UInt_t w32=0;
       while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
         dig.Raw(ddl,w32);  
         AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
-        new((*pDigLst)[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list
+        new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
       }//raw records loop
-      if(iDigCnt) Dig2Clu(pDigLst,pRich->CluLst(iCh));//cluster finder for the current chamber if any digits present
       pRR->Reset();        
-      pDigLst->Delete();  iDigCnt=0;//clean up list of digits for the current chamber
     }//chambers loop
+    
+    Dig2Clu(&digLst,pRich->CluLst());//cluster finder for all chambers
+    for(Int_t i=0;i<7;i++){digLst.At(i)->Delete(); iDigCnt[i]=0;}                    //clean up list of digits for all chambers
+    
     pRL->TreeR()->Fill();            //fill tree for current event
     pRL->WriteRecPoints("OVERWRITE");//write out clusters for current event
     pRich->CluReset();

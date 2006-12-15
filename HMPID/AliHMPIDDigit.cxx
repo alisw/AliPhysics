@@ -72,28 +72,19 @@ HMPID raw word is 32 bits with the structure:
  5 bits zero  5 bits row number (1..24)  4 bits DILOGIC chip number (1..10) 6 bits DILOGIC address (0..47)  12 bits QDC value (0..4095)
 */
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Float_t AliHMPIDDigit::Hit2Sdi(AliHMPIDHit *pHit,TClonesArray *pSdiLst)
+void AliHMPIDDigit::Hit2Sdi(AliHMPIDHit *pHit,TClonesArray *pSdiLst)
 {
 // Creates a list of sdigits out of provided hit
 // Arguments: pHit- hit
 //   Returns: none
   
-  Float_t  x=(pHit->LorsX() > SizePcX())? pHit->LorsX()-SizePcX()-SizeDead():pHit->LorsX();          //sagita is for PC (0-64) and not for chamber   
-  Float_t  qdcEle=34.06311+0.2337070*x+5.807476e-3*x*x-2.956471e-04*x*x*x+2.310001e-06*x*x*x*x;      //reparametrised from DiMauro
-  
-  Int_t iNele=Int_t(pHit->E()/26e-9);  if(iNele<1) iNele=1;                                          //number of electrons created by hit
-  Float_t qdcTot=0; for(Int_t i=1;i<=iNele;i++) qdcTot-=qdcEle*TMath::Log(gRandom->Rndm()+1e-6);     //total qdc fro hit, 1e-6 is a protection against 0 from rndm
-  
-  AliHMPIDDigit dd(1,1,1,pHit->LorsX(),pHit->LorsY());                                                //tmp digit to shift hit y to the nearest anod wire  
-  Float_t y=  (pHit->LorsY() > dd.LorsY()) ? dd.LorsY()+0.21 :  dd.LorsY()-0.21;
-  
-  Int_t iSdiCnt=pSdiLst->GetEntries();
+  Int_t iSdiCnt=pSdiLst->GetEntries(); //list of sdigits contains sdigits from previous ivocations of Hit2Sdi, do not override them
+  AliHMPIDDigit dig;
   for(Int_t i=0;i<9;i++){                                      //affected pads loop
-    AliHMPIDDigit dig(pHit->Ch(),qdcTot,pHit->Tid(),pHit->LorsX(),y,i); //c,q,tid,x,y   create tmp sdigit for pad i around hit position
+    dig.Set(pHit,i); //c,q,tid,x,y   create tmp sdigit for pad i around hit position
     if(dig.PadPcX()==-1) continue;
     new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(dig);
   }
-  return qdcTot;
 }//Hit2Sdi()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Print(Option_t*)const
@@ -102,8 +93,8 @@ void AliHMPIDDigit::Print(Option_t*)const
 // Arguments: option string not used
 //   Returns: none    
   UInt_t w32; Raw(w32);
-  Printf("(ch=%1i,pc=%1i,x=%2i,y=%2i),pos=(%7.2f,%7.2f) Q=%8.3f TID=(%5i,%5i,%5i) ddl=%i raw=0x%x (r=%2i,d=%2i,a=%2i)",
-               A2C(fPad),A2P(fPad),A2X(fPad),A2Y(fPad),LorsX(),LorsY(), Q(),  fTracks[0],fTracks[1],fTracks[2],DdlIdx(),w32,Row(),Dilogic(),Addr());
+  Printf("(ch=%1i,pc=%1i,x=%2i,y=%2i) (%7.3f,%7.3f) Q=%8.3f TID=(%5i,%5i,%5i) ddl=%i raw=0x%x (r=%2i,d=%2i,a=%2i) %s",
+               A2C(fPad),A2P(fPad),A2X(fPad),A2Y(fPad),LorsX(),LorsY(), Q(),  fTracks[0],fTracks[1],fTracks[2],DdlIdx(),w32,Row(),Dilogic(),Addr(), (IsOverTh(Q()))?"":"below thr");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::PrintSize()
@@ -140,7 +131,7 @@ void AliHMPIDDigit::DrawZoom()
   pBar->SetParts(5);
   Float_t x=gPad->AbsPixeltoX(gPad->GetEventX());
   Float_t y=gPad->AbsPixeltoY(gPad->GetEventY());
-  AliHMPIDDigit dig(1,0,1,x,y); UInt_t w32=0; 
+  AliHMPIDDigit dig;dig.Manual1(1,x,y); UInt_t w32=0; 
   if(IsInDead(x,y))
     pBar->SetText("Out of sensitive area",4);    
   else{
@@ -196,11 +187,11 @@ void AliHMPIDDigit::DrawPc(Bool_t isFill)
     if(iPc==0) pc=new TPolyLine(5,xL,yD); if(iPc==1) pc=new TPolyLine(5,xR,yD);
     (iPc%2)? pc->SetFillColor(iColLeft): pc->SetFillColor(iColRight);
     if(isFill) pc->Draw("f"); else pc->Draw();
-    if(iPc%2) {dig.Set(0,iPc,79,25); txt.DrawText(dig.LorsX()+2,dig.LorsY(),Form("PC%i",dig.Pc()));}//print PC#    
+    if(iPc%2) {dig.Manual2(0,iPc,79,25); txt.DrawText(dig.LorsX()+2,dig.LorsY(),Form("PC%i",dig.Pc()));}//print PC#    
     
     txt.SetTextAlign(32);
     for(Int_t iRow=0;iRow<8 ;iRow++){//draw row lines (horizontal)
-      dig.Set(0,iPc,0,iRow*6);   //set digit to the left-down pad of this row
+      dig.Manual2(0,iPc,0,iRow*6);   //set digit to the left-down pad of this row
       if(iPc%2) txt.DrawText(dig.LorsX()-1           ,dig.LorsY(),Form("%i",dig.PadPcY())); //print PadY#    
                 txt.DrawText(dig.LorsX()-1+(iPc%2)*67,dig.LorsY()+2,Form("r%i",dig.Row())); //print Row#    
       pL=new TLine(dig.LorsX()-0.5*SizePadX(),dig.LorsY()-0.5*SizePadY(),dig.LorsX()+SizePcX()-0.5*SizePadX(),dig.LorsY()-0.5*SizePadY()); 
@@ -209,7 +200,7 @@ void AliHMPIDDigit::DrawPc(Bool_t isFill)
     
     txt.SetTextAlign(13);
     for(Int_t iDil=0;iDil<10;iDil++){//draw dilogic lines (vertical)
-      dig.Set(0,iPc,iDil*8,0);       //set this digit to the left-down pad of this dilogic        
+      dig.Manual2(0,iPc,iDil*8,0);       //set this digit to the left-down pad of this dilogic        
                            txt.DrawText(dig.LorsX()  ,dig.LorsY()-1,Form("%i",dig.PadPcX()));   //print PadX# 
       if(iPc==4 || iPc==5) txt.DrawText(dig.LorsX()+2,dig.LorsY()+42,Form("d%i",dig.Dilogic())); //print Dilogic#    
       pL=new TLine(dig.LorsX()-0.5*SizePadX(),dig.LorsY()-0.5*SizePadY(),dig.LorsX()-0.5*SizePadX(),dig.LorsY()+SizePcY()-0.5*SizePadY()); 
@@ -226,7 +217,7 @@ void AliHMPIDDigit::Test()
     Int_t pc=Int_t(gRandom->Rndm()*6);
     Int_t px=Int_t(gRandom->Rndm()*80);
     Int_t py=Int_t(gRandom->Rndm()*48);
-    d1.Set(ch,pc,px,py);                
+    d1.Manual2(ch,pc,px,py);                
     ddl=d1.Raw(w32);    d2.Raw(ddl,w32);
     if(d1.Compare(&d2)) Printf("Problem!!!");
   }

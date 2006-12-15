@@ -13,9 +13,9 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 
-#include "AliHMPIDHit.h" //class header
-#include <TPDGCode.h>   //Print() 
-#include <TString.h>
+#include "AliHMPIDHit.h"  //class header
+#include "AliHMPIDDigit.h"
+#include <TPDGCode.h>    
  
 ClassImp(AliHMPIDHit)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -38,6 +38,8 @@ void AliHMPIDHit::Print(Option_t*)const
     case 50000051:     sPart="feed";break;
   }
 
-  Printf("%s Ch:%i TID:%6i,E:%9.3f eV, LORS:(%7.2f,%7.2f) MARS:(%7.2f,%7.2f,%7.2f)cm",sPart,Ch(),Tid(),E()*1e9,LorsX(),LorsY(),X(),Y(),Z());
+  Printf(" ch=%i                 (%7.3f,%7.3f) Q=%8.3f TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
+           Ch(),                LorsX(),LorsY(), Q(),  Tid(),         X(),  Y(),  Z(),   sPart, 
+                        (AliHMPIDDigit::IsInDead(LorsX(),LorsY()))? "IN DEAD ZONE":"");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

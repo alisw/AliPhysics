@@ -15,16 +15,14 @@
 
 #include "AliHMPID.h"
 #include "AliHMPIDHit.h"   //OccupancyPrint(), HitQa()
-#include "AliHMPIDDigit.h" //OccupancyPrint()
+#include "AliHMPIDDigit.h" //
 #include <TParticle.h>  //SummaryOfEvent(), HitQa()
 #include <TBenchmark.h>  //HitQA()
 #include <TPDGCode.h>    //HitQA()
-#include <AliStack.h>   //OccupancyPrint(), SummaryOfEvent(), HitQa()
+#include <AliStack.h>   //SummaryOfEvent(), HitQa()
 #include <AliRun.h>     //HitQa() 
 #include <AliMC.h>       //ctor
 #include <AliHeader.h>
-#include <AliGenEventHeader.h>
-#include <AliGenHijingEventHeader.h>
 #include <TH1F.h>        //HitQA()
 #include <AliLog.h>      //in many methods to print AliInfo 
 ClassImp(AliHMPID)    
@@ -141,62 +139,6 @@ void AliHMPID::DigPrint(Int_t iEvt)const
   Printf("totally %i Digits",DigLst()->GetEntries());
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPID::OccupancyPrint(Int_t iEvtNreq)
-{
-//prints occupancy for each chamber in a given event
-  Int_t iEvtNmin,iEvtNmax;
-  if(iEvtNreq==-1){
-    iEvtNmin=0;
-    iEvtNmax=gAlice->GetEventsPerRun();
-  } else { 
-    iEvtNmin=iEvtNreq;iEvtNmax=iEvtNreq+1;
-  }
-    
-  if(GetLoader()->GetRunLoader()->LoadHeader()) return;    
-  if(GetLoader()->GetRunLoader()->LoadKinematics()) return;    
-  
-//  Info("Occupancy","for event %i",iEvtN);
-  if(GetLoader()->LoadHits()) return;
-  if(GetLoader()->LoadDigits()) return;
-
-  
-  for(Int_t iEvtN=iEvtNmin;iEvtN<iEvtNmax;iEvtN++){    
-    Int_t nDigCh[7]={0,0,0,0,0,0,0};  
-    Int_t iChHits[7]={0,0,0,0,0,0,0};
-    Int_t nPrim[7]={0,0,0,0,0,0,0};
-    Int_t nSec[7]={0,0,0,0,0,0,0};
-    AliInfo(Form("events processed %i",iEvtN));
-    if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
-    AliStack *pStack = GetLoader()->GetRunLoader()->Stack();
-    for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
-      GetLoader()->TreeH()->GetEntry(iPrimN);      
-      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){
-        AliHMPIDHit *pHit = (AliHMPIDHit*)Hits()->At(iHitN);
-        if(pHit->E()>0){
-          iChHits[pHit->Ch()]++;
-          if(pStack->Particle(pHit->GetTrack())->Rho()<0.01) nPrim[pHit->Ch()]++;else nSec[pHit->Ch()]++;
-        }
-      }
-    }
-    
-    GetLoader()->TreeD()->GetEntry(0);
-    for(Int_t iCh=0;iCh<7;iCh++){
-      for(Int_t iDig=0;iDig<DigLst(iCh)->GetEntries();iDig++){
-        AliHMPIDDigit *pDig=(AliHMPIDDigit*)DigLst(iCh)->At(iDig);
-        nDigCh[pDig->Ch()]++;
-      }
-      Printf("Occupancy for chamber %i = %4.2f %% and charged prim tracks %i and sec. tracks %i with total %i",
-        iCh,Float_t(nDigCh[iCh])*100/AliHMPIDDigit::kPadAll,nPrim[iCh],nSec[iCh],iChHits[iCh]);
-    }      
-    
-    
-  }//events loop
-  GetLoader()->UnloadHits();
-  GetLoader()->UnloadDigits();
-  GetLoader()->GetRunLoader()->UnloadHeader();    
-  GetLoader()->GetRunLoader()->UnloadKinematics();    
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPID::CluPrint(Int_t iEvtN)const
 {
 //prints a list of HMPID clusters  for a given event
@@ -211,30 +153,5 @@ void AliHMPID::CluPrint(Int_t iEvtN)const
   }
   GetLoader()->UnloadRecPoints();
   Printf("totally %i clusters for event %i",iCluCnt,iEvtN);
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPID::SummaryOfEvent(Int_t iEvtN) const
-{
-//prints a summary for a given event
-  AliInfo(Form("Summary of event %i",iEvtN));
-  GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
-  if(GetLoader()->GetRunLoader()->LoadHeader()) return;
-  if(GetLoader()->GetRunLoader()->LoadKinematics()) return;
-  AliStack *pStack=GetLoader()->GetRunLoader()->Stack();
-  
-  AliGenEventHeader* pGenHeader =  gAlice->GetHeader()->GenEventHeader();
-  if(pGenHeader->InheritsFrom("AliGenHijingEventHeader")) {
-    AliInfo(Form(" Hijing event with impact parameter b = %.2f (fm)",((AliGenHijingEventHeader*) pGenHeader)->ImpactParameter()));
-  }
-  Int_t nChargedPrimaries=0;
-  for(Int_t i=0;i<pStack->GetNtrack();i++) {
-    TParticle *pParticle = pStack->Particle(i);
-    if(pParticle->IsPrimary()&&pParticle->GetPDG()->Charge()!=0) nChargedPrimaries++;
-    }
-  AliInfo(Form("Total number of         primaries %i",pStack->GetNprimary()));
-  AliInfo(Form("Total number of charged primaries %i",nChargedPrimaries));
-  AliInfo(Form("Total n. of tracks in stack(+sec) %i",pStack->GetNtrack()));
-  GetLoader()->GetRunLoader()->UnloadHeader();
-  GetLoader()->GetRunLoader()->UnloadKinematics();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -11,9 +11,9 @@ class AliHMPIDCluster :public TObject
 {
 public:
   enum EClusterStatus {kFor,kCoG,kUnf,kEmp=-1};      //status flags    
-  AliHMPIDCluster(                                   ):TObject( ),fSt(kEmp ),fCh(-1   ),fQ(-1  ),fX(-1  ),fY(-1  ),fDigs(0                                  ) {} 
-  AliHMPIDCluster(Int_t c,Float_t x,Float_t y,Int_t q):TObject( ),fSt(kUnf ),fCh(c    ),fQ(q   ),fX(x   ),fY(y   ),fDigs(0                                  ) {} 
-  AliHMPIDCluster(const AliHMPIDCluster &c            ):TObject(c),fSt(c.fSt),fCh(c.fCh),fQ(c.fQ),fX(c.fX),fY(c.fY),fDigs(c.fDigs ? new TObjArray(*c.fDigs):0) {}
+  AliHMPIDCluster(                                           ):TObject( ),fSt(kEmp ),fCh(-1   ),fQ(-1  ),fX(-1  ),fY(-1  ),fDigs(0                                  ) {} 
+  AliHMPIDCluster(Int_t c,Float_t x,Float_t y,Int_t q,Int_t s):TObject( ),fSt(s    ),fCh(c    ),fQ(q   ),fX(x   ),fY(y   ),fDigs(0                                  ) {} 
+  AliHMPIDCluster(const AliHMPIDCluster &c                   ):TObject(c),fSt(c.fSt),fCh(c.fCh),fQ(c.fQ),fX(c.fX),fY(c.fY),fDigs(c.fDigs ? new TObjArray(*c.fDigs):0) {}
   AliHMPIDCluster &operator=(const AliHMPIDCluster &c) {
     if(this == &c)return *this;TObject::operator=(c);            fSt=c.fSt; fCh=c.fCh; fQ=c.fQ; fX=c.fX; fY=c.fY; fDigs=c.fDigs ? new TObjArray(*c.fDigs):0; return *this;}
     

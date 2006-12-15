@@ -43,7 +43,7 @@ void AliHMPIDCluster::CorrSin()
 // Correction of cluster x position due to sinoid, see HMPID TDR  page 30
 // Arguments: none
 //   Returns: none
-  AliHMPIDDigit dig(Ch(),100,1,fX,fY);                                               //tmp digit to get it center
+  AliHMPIDDigit dig;dig.Manual1(Ch(),fX,fY);                                               //tmp digit to get it center
   Float_t x=fX-dig.LorsX();  
   fX+=3.31267e-2*TMath::Sin(2*TMath::Pi()/0.8*x)-2.66575e-3*TMath::Sin(4*TMath::Pi()/0.8*x)+2.80553e-3*TMath::Sin(6*TMath::Pi()/0.8*x)+0.0070;
 }
@@ -82,8 +82,8 @@ void AliHMPIDCluster::Print(Option_t* opt)const
     case      kCoG: status="coged"      ;break;
     case      kEmp: status="empty"      ;break;
   }
-  Printf("%s cs=%2i, Size=%2i (x=%7.3f cm,y=%7.3f cm,Q=%4i qdc), %s",
-         opt,Ch(),Size(),X(),Y(),Q(),status);
+  Printf("%s ch=%i, Size=%2i        (%7.3f,%7.3f) Q=%4i          %s",
+         opt,Ch(),Size(),            X(),  Y(),   Q(),status);
   for(Int_t i=0;i<Size();i++) Dig(i)->Print();    
 }//Print()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -135,12 +135,12 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
 	pMinuit->mnpout(3*i+1 ,sName,  fitY, d1 , d2, d3, iErrFlg);
 	pMinuit->mnpout(3*i+2 ,sName,  fitQ, d1 , d2, d3, iErrFlg);
 	if (TMath::Abs(fitQ)>2147483647.0) fitQ = TMath::Sign((Double_t)2147483647,fitQ);//???????????????
-	new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(Ch(),fitX,fitY,(Int_t)fitQ);	    //add new unfolded clusters
+	new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(Ch(),fitX,fitY,(Int_t)fitQ,kUnf);	    //add new unfolded clusters
       }//local maxima loop
     }
   }else{//do not unfold since number of loc max is unresonably high or user's baned unfolding 
     CoG();
-    new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);  //add this raw cluster 
+    new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(Ch(),X(),Y(),Q(),kCoG);  //add this raw cluster 
   }
   delete pMinuit;
   return iLocMaxCnt;
