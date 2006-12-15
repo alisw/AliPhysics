@@ -84,7 +84,7 @@
 // These files are not in the same directory, so there's no reason to
 // ask the preprocessor to search in the current directory for these
 // files by including them with `#include "..."' 
-// #include <math.h>               // __CMATH__
+#include <cmath>                // __CMATH__
 #include <TClonesArray.h>	// ROOT_TClonesArray
 #include <TGeometry.h>		// ROOT_TGeomtry
 #include <TNode.h>		// ROOT_TNode
