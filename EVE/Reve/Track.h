@@ -32,6 +32,7 @@ protected:
   Double_t          fBeta;
   Int_t             fCharge;
   Int_t             fLabel;
+  Int_t             fIndex;
   vpPathMark_t      fPathMarks;
 
   TrackRnrStyle*    fRnrStyle;
@@ -48,13 +49,18 @@ public:
   TrackRnrStyle* GetRnrStyle() const  { return fRnrStyle; }
   void SetRnrStyle(TrackRnrStyle* rs) { fRnrStyle = rs; }
 
-  Int_t GetLabel() const { return fLabel; }
+  Int_t GetLabel() const    { return fLabel; }
+  void  SetLabel(Int_t lbl) { fLabel = lbl;  }
+  Int_t GetIndex() const    { return fIndex; }
+  void  SetIndex(Int_t idx) { fIndex = idx;  }
+
   void  AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
 
   //--------------------------------
 
-  void ImportHits();     // *MENU*
-  void ImportClusters(); // *MENU*
+  void ImportHits();              // *MENU*
+  void ImportClusters();          // *MENU*
+  void ImportClustersFromIndex(); // *MENU*
 
   //--------------------------------
 

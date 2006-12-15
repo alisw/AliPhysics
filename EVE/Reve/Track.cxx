@@ -64,6 +64,7 @@ Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
   fBeta(t->P()/t->Energy()),
   fCharge(0),
   fLabel(t->label),
+  fIndex(t->index),
   fPathMarks(),
 
   fRnrStyle(rs)
@@ -88,6 +89,7 @@ Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
   fBeta(t->beta),
   fCharge(t->sign),
   fLabel(t->label),
+  fIndex(t->index),
   fPathMarks(),
 
   fRnrStyle(rs)
@@ -232,6 +234,12 @@ void Track::ImportClusters()
 {
   Reve::LoadMacro("clusters_from_label.C");
   gROOT->ProcessLine(Form("clusters_from_label(%d);", fLabel));
+}
+
+void Track::ImportClustersFromIndex()
+{
+  Reve::LoadMacro("clusters_from_index.C");
+  gROOT->ProcessLine(Form("clusters_from_index(%d);", fIndex));
 }
 
 /**************************************************************************/
