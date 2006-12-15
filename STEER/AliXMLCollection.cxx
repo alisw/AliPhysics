@@ -27,7 +27,6 @@
 #include "TMap.h"
 #include "TObjString.h"
 #include "TXMLEngine.h"
-#include "TEventList.h"
 #include "TEntryList.h"
 #include "TObjArray.h"
 
@@ -66,9 +65,6 @@ AliXMLCollection::AliXMLCollection(const char *localcollectionfile) {
 AliXMLCollection::AliXMLCollection(const AliXMLCollection& collection):
   TGridCollection(collection),
   fXmlFile(collection.fXmlFile),
-  //fEventList(0),
-  //fEventListIter(0),
-  //fCurrent(0),
   fCollectionName(collection.fCollectionName) {
   //copy constructor
 
@@ -107,7 +103,7 @@ Bool_t AliXMLCollection::WriteHeader() {
 }
 
 //___________________________________________________________________________
-Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* lfn, const char* turl, TEventList *list) {
+Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* lfn, const char* turl, TEntryList *list) {
   //Writes the body of the xml collection
   TString listline;
   for(Int_t i = 0; i < list->GetN(); i++) {

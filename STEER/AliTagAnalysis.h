@@ -31,6 +31,7 @@ class TChain;
 class AliEventTagCuts;
 class AliRunTagCuts;
 class TGridResult;
+class TTreeFormula;
 
 //____________________________________________________//
 class AliTagAnalysis : public TObject {
@@ -40,8 +41,12 @@ class AliTagAnalysis : public TObject {
   
   void ChainLocalTags(const char *dirname);
   void ChainGridTags(TGridResult *result);
+  
   TChain *QueryTags(AliRunTagCuts *RunTagCuts, AliEventTagCuts *EvTagCuts);
+  TChain *QueryTags(const char *fRunCut, const char *fEventCut);  
+
   Bool_t CreateXMLCollection(const char* name, AliRunTagCuts *RunTagCuts, AliEventTagCuts *EvTagCuts);
+  Bool_t CreateXMLCollection(const char* name, const char *fRunCut, const char *fEventCut);
 
   TChain *GetInputChain(const char* system, const char* global, const char* wn);
   

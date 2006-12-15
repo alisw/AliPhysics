@@ -20,7 +20,6 @@
 
 class TMap;
 class TIter;
-class TEventList;
 class TEntryList;
 
 //___________________________________________________________________________
@@ -35,7 +34,7 @@ class AliXMLCollection : public TGridCollection {
   
   //____________________________________________________//
   Bool_t WriteHeader();
-  Bool_t WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEventList *fEventList);
+  Bool_t WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEntryList *fEntryList);
   Bool_t Export();
 
   void SetCollectionName(const char* name) {fCollectionName = name;}
