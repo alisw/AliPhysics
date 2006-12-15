@@ -1,3 +1,18 @@
+2006-12-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/clusters_from_index.C:
+	New macro: import clusters based on index of track in the esd
+	array.
+
+	* alice-macros/clusters_from_label.C:
+	Provide return value.
+
+	* alice-macros/esd_V0.C:
+	Fix indentation.
+
+	* alice-macros/esd_tracks.C:
+	Store also track index.
+
 2006-12-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* libAlieve.pkg:
