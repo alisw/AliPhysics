@@ -8,9 +8,6 @@
 #include <TNamed.h>
 #include <TRef.h>
 
-#include <list>
-#include <set>
-
 class TGListTree;
 class TGListTreeItem;
 
@@ -214,28 +211,6 @@ public:
   ClassDef(RenderElementList, 1);
 };
 
-
-/**************************************************************************/
-/**************************************************************************/
-/**************************************************************************/
-
-class ReferenceBackPtr : public ReferenceCount
-{
-protected:
-  std::list<RenderElement*> fBackRefs;
-
-public:
-  ReferenceBackPtr();
-  virtual ~ReferenceBackPtr();
-
-  ReferenceBackPtr(const ReferenceBackPtr&);
-  ReferenceBackPtr& operator=(const ReferenceBackPtr&);
-
-  void IncRefCount(RenderElement* re);
-  void DecRefCount(RenderElement* re);
-
-  ClassDef(ReferenceBackPtr, 0);
-};
 
 }
 

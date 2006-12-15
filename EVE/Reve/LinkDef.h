@@ -23,6 +23,7 @@
 #pragma link C++ class Reve::PadHolder+;
 #pragma link C++ class Reve::GeoManagerHolder+;
 #pragma link C++ class Reve::ReferenceCount+;
+#pragma link C++ class Reve::ReferenceBackPtr+;
 
 #pragma link C++ function Reve::ColorFromIdx;
 #pragma link C++ function Reve::FindColorVar;
@@ -73,8 +74,6 @@
 #pragma link C++ class Reve::RenderElementListBase+;
 #pragma link C++ class Reve::RenderElementList+;
 #pragma link C++ class Reve::RenderElementEditor+;
-
-#pragma link C++ class Reve::ReferenceBackPtr;
 
 #pragma link C++ class std::list<Reve::RenderElement*>;
 #pragma link C++ class std::list<Reve::RenderElement*>::iterator;

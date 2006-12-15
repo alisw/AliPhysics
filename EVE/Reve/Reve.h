@@ -5,6 +5,9 @@
 
 // #include <string>
 #include <exception>
+#include <list>
+#include <set>
+
 #include <TObject.h>
 #include <TString.h>
 #include <TError.h>
@@ -118,6 +121,32 @@ public:
   virtual void OnZeroRefCount() { delete this; }
 
   ClassDef(ReferenceCount, 0);
+};
+
+/**************************************************************************/
+// ReferenceBackPtr reference-count with back pointers
+/**************************************************************************/
+
+class ReferenceBackPtr : public ReferenceCount
+{
+protected:
+  std::list<RenderElement*> fBackRefs;
+
+public:
+  ReferenceBackPtr();
+  virtual ~ReferenceBackPtr();
+
+  ReferenceBackPtr(const ReferenceBackPtr&);
+  ReferenceBackPtr& operator=(const ReferenceBackPtr&);
+
+  using ReferenceCount::IncRefCount;
+  using ReferenceCount::DecRefCount;
+  virtual void IncRefCount(RenderElement* re);
+  virtual void DecRefCount(RenderElement* re);
+
+  virtual void UpdateBackPtrItems();
+
+  ClassDef(ReferenceBackPtr, 0);
 };
 
 

@@ -1,6 +1,7 @@
 // $Header$
 
 #include "Reve.h"
+#include "RenderElement.h"
 
 #include <TError.h>
 #include <TPad.h>
@@ -12,8 +13,6 @@
 #include <TROOT.h>
 #include <TInterpreter.h>
 
-#include <list>
-#include <string>
 #include <iostream>
 
 //______________________________________________________________________
@@ -191,7 +190,7 @@ TVirtualPad* PopPad(Bool_t modify_update_p)
 }
 
 /**************************************************************************/
-// 
+// GeoManagerHolder
 /**************************************************************************/
 
 GeoManagerHolder::GeoManagerHolder(TGeoManager* new_gmgr) :
@@ -204,6 +203,7 @@ GeoManagerHolder::~GeoManagerHolder()
 {
   gGeoManager = fManager;
 }
+
 
 /**************************************************************************/
 // Color management
@@ -252,3 +252,66 @@ Color_t* FindColorVar(TObject* obj, const Text_t* varname)
 } // end namespace Reve
 /**************************************************************************/
 /**************************************************************************/
+
+using namespace Reve;
+
+/**************************************************************************/
+// ReferenceBackPtr
+/**************************************************************************/
+
+ClassImp(ReferenceBackPtr)
+
+ReferenceBackPtr::ReferenceBackPtr() :
+  ReferenceCount(),
+  fBackRefs()
+{}
+
+ReferenceBackPtr::~ReferenceBackPtr()
+{
+  // !!!! Complain if list not empty.
+}
+
+ReferenceBackPtr::ReferenceBackPtr(const ReferenceBackPtr&) :
+  ReferenceCount(),
+  fBackRefs()
+{}
+
+ReferenceBackPtr& ReferenceBackPtr::operator=(const ReferenceBackPtr&)
+{
+  return *this;
+}
+
+/**************************************************************************/
+
+void ReferenceBackPtr::IncRefCount(RenderElement* re)
+{
+  ReferenceCount::IncRefCount();
+  fBackRefs.push_back(re);
+}
+
+void ReferenceBackPtr::DecRefCount(RenderElement* re)
+{
+  static const Exc_t eH("ReferenceBackPtr::DecRefCount ");
+
+  std::list<RenderElement*>::iterator i =
+    std::find(fBackRefs.begin(), fBackRefs.end(), re);
+  if (i != fBackRefs.end()) {
+    fBackRefs.erase(i);
+    ReferenceCount::DecRefCount();
+  } else {
+    Warning(eH, Form("render element '%s' not found in back-refs.",
+		     re->GetObject()->GetName()));
+  }
+}
+
+/**************************************************************************/
+
+void ReferenceBackPtr::UpdateBackPtrItems()
+{
+  std::list<RenderElement*>::iterator i = fBackRefs.begin();
+  while (i != fBackRefs.end())
+  {
+    (*i)->UpdateItems();
+    ++i;
+  }
+}
