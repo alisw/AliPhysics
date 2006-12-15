@@ -23,6 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <errno.h>
+#include <Riostream.h>
 
 #include <TSystem.h>
 #include <TKey.h>
@@ -277,6 +278,14 @@ Int_t AliRawDB::Close()
       else
 	return -1;
    }
+
+   // Write a text file with file GUID
+   TString guidFileName = fRawDB->GetName();
+   guidFileName += ".guid";
+   ofstream fguid(guidFileName.Data());
+   TString guid = fRawDB->GetUUID().AsString();
+   fguid << fRawDB->GetName() << " \t" << guid.Data();
+   fguid.close();
 
    delete fRawDB;
    fRawDB = 0;
