@@ -102,6 +102,7 @@ class AliMpFiles : public TObject
     static const TString fgkSectorSpecial2;///< sector special data file name
     static const TString fgkMotifPrefix;   ///< motif data file name
     static const TString fgkMotifSpecialPrefix; ///< special motif data file name 
+    static const TString fgkManuToSerialDir;///< manu to serial file directory
     static const TString fgkManuToSerial;  ///< manu to serial file name suffix
     static const TString fgkPadPosPrefix;  ///< pad position data file name
     static const TString fgkDataExt;       ///< file extension
