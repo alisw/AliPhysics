@@ -1,12 +1,13 @@
 // $Id$
 
-void clusters_from_label(Int_t label=0)
+Reve::PointSet* clusters_from_label(Int_t label=0)
 {
   AliESD* esd = Alieve::Event::AssertESD();
   Reve::PointSet* clusters = new Reve::PointSet(64);
   clusters->SetOwnIds(kTRUE);
 
-  for (Int_t n=0; n<esd->GetNumberOfTracks(); n++) {
+  for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
+  {
     AliESDtrack* at = esd->GetTrack(n);
     if (at->GetLabel() == label) {
       const AliTrackPointArray* pArr = at->GetTrackPointArray();
@@ -40,4 +41,6 @@ void clusters_from_label(Int_t label=0)
   using namespace Reve;
   gReve->AddRenderElement(clusters);
   gReve->Redraw3D();
+
+  return clusters;
 }
