@@ -1,0 +1,135 @@
+Module 		:=HMPID
+
+include	lib$(Module)base.pkg
+SrcBase   	:=$(SRCS)
+
+include	lib$(Module)sim.pkg
+SrcSim   	:=$(SRCS)
+
+include	lib$(Module)rec.pkg
+SrcRec   	:=$(SRCS)
+
+RootTarget      :=$(shell root-config --arch)
+DirOut	        :=/tmp/$(USER)_$(Module)_obj
+LibBase		:=$(LIB_MY)/lib$(Module)base.so
+LibSim		:=$(LIB_MY)/lib$(Module)sim.so
+LibRec		:=$(LIB_MY)/lib$(Module)rec.so
+
+
+HdrBase       := $(SrcBase:.cxx=.h)  $(Module)baseLinkDef.h
+HdrSim        := $(SrcSim:.cxx=.h)   $(Module)simLinkDef.h
+HdrRec        := $(SrcRec:.cxx=.h)   $(Module)recLinkDef.h
+
+DictSrcBase   := $(DirOut)/Dict$(Module)base.cxx
+DictObjBase   := $(DictSrcBase:.cxx=.o)
+
+DictSrcSim    := $(DirOut)/Dict$(Module)sim.cxx
+DictObjSim    := $(DictSrcSim:.cxx=.o)
+
+DictSrcRec    := $(DirOut)/Dict$(Module)rec.cxx
+DictObjRec    := $(DictSrcRec:.cxx=.o)
+
+
+
+ObjBase       := $(patsubst %.cxx,$(DirOut)/%.o,$(SrcBase)) $(DictObjBase)
+ObjSim        := $(patsubst %.cxx,$(DirOut)/%.o,$(SrcSim))  $(DictObjSim)
+ObjRec        := $(patsubst %.cxx,$(DirOut)/%.o,$(SrcRec))  $(DictObjRec)
+
+
+DepFile	      := $(DirOut)/$(Module).depend
+
+ifeq ($(RootTarget),linuxicc)
+ Compiler    :=icc
+ CompilerOpt :=-fpstkchk -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ LibOpt      :=-g -shared -Wl
+else
+ Compiler    :=g++
+ CompilerOpt :=-g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ LibOpt      :=-g -shared -Wl
+endif
+
+ifdef ALIVERBOSE
+	Mute		:=
+else
+	Mute		:=@        
+endif        
+
+##### TARGETS #####
+
+all:		$(LibBase) $(LibSim) $(LibRec)
+$(LibBase):	$(ObjBase)
+	@echo "Creating $@"
+	$(Mute)$(Compiler) $(LibOpt) $^ -o $@	
+
+$(LibSim):	$(ObjSim)
+	@echo "Creating $@"
+	$(Mute)$(Compiler) $(LibOpt) $^ -o $@	
+        
+$(LibRec):	$(ObjRec)
+	@echo "Creating $@"
+	$(Mute)$(Compiler) $(LibOpt) $^ -o $@	
+        
+$(DepFile):	$(HdrBase) $(HdrSim) $(HdrRec)
+	@[ -d $(DirOut) ] || mkdir -p $(DirOut)
+	@[ -d $(LIB_MY) ] || mkdir -p $(LIB_MY)
+	@touch $(DepFile)
+	@echo "Generating dependency $@"
+	$(Mute)rmkdepend -f$(DepFile) -p$(DirOut)/ -- $(CompilerOpt) -- $(SrcBase) $(SrcSim) $(SrcRec) 2>/dev/null
+
+$(DictSrcBase):  $(HdrBase)
+	@echo "Generating $@"
+	$(Mute)rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
+        
+$(DictSrcSim):  $(HdrSim)
+	@echo "Generating $@"
+	$(Mute)rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
+        
+$(DictSrcRec):  $(HdrRec)
+	@echo "Generating $@"
+	$(Mute)rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
+
+$(DictObjBase) : $(DictSrcBase)
+	@echo "Compiling $^"        
+	$(Mute)$(Compiler) $(CompilerOpt) -I. -c $^ -o $@
+        
+$(DictObjSim) : $(DictSrcSim)
+	@echo "Compiling $^"        
+	$(Mute)$(Compiler) $(CompilerOpt) -I. -c $^ -o $@
+        
+$(DictObjRec) : $(DictSrcRec)
+	@echo "Compiling $^"        
+	$(Mute)$(Compiler) $(CompilerOpt) -I. -c $^ -o $@
+
+show:
+	@echo    "Base Headers: $(HdrBase)"
+	@echo    "Base Sources: $(SrcBase)"
+	@echo    "Base Objects: $(ObjBase)"
+	@echo    "Base    Dict: $(DictSrcBase)"
+	@echo -e "Base Library: $(LibBase)\n"
+        
+	@echo    "Sim Headers: $(HdrSim)"
+	@echo    "Sim Sources: $(SrcSim)"
+	@echo    "Sim Objects: $(ObjSim)"
+	@echo -e "Sim Library: $(LibSim)\n"
+
+	@echo    "Rec Headers: $(HdrRec)"
+	@echo    "Rec Sources: $(SrcRec)"
+	@echo    "Rec Objects: $(ObjRec)"
+	@echo -e "Rec Library: $(LibRec)\n"
+
+spec:	$(SrcBase)
+	@echo "^ $^"
+	@echo "@ $@"
+	@echo "< $<"
+                
+clean:
+	@echo "Cleaning..."
+	$(Mute)rm -rf $(DirOut) $(LibBase) $(LibSim) $(LibRec)
+
+############################ cxx rule #########################################
+$(DirOut)/%.o : %.cxx
+	@echo $*.cxx
+	$(Mute)$(Compiler) $(CompilerOpt) -c $*.cxx -o $(DirOut)/$*.o
+############################ Dependencies #####################################
+
+-include $(DepFile) 
