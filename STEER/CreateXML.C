@@ -40,7 +40,7 @@ Bool_t CreateXML() {
   //Usage of string statements//
   //__________________________//
   /*const char* fRunCuts = "fAliceRunId == 340";
-  const char* fEventCuts = "(fEventTag.fMaxPt >= 1.0)&&(fEventTag.fNumberOfTracks >= 11)&&(fEventTag.fNumberOfTracks <= 12)";
+  const char* fEventCuts = "(fEventTag.fTopPtMin >= 1.0)&&(fEventTag.fNumberOfTracks >= 11)&&(fEventTag.fNumberOfTracks <= 12)";
   TagAna->CreateXMLCollection("global",fRunCuts,fEventCuts);*/
 
   //________________________________________________//
@@ -52,7 +52,7 @@ Bool_t CreateXML() {
   // create an EventTagCut object
   AliEventTagCuts *EvCuts = new AliEventTagCuts();
   EvCuts->SetMultiplicityRange(11,12);
-  EvCuts->SetMaxPt(1.0);
+  EvCuts->SetTopPtMin(1.0);
   TagAna->CreateXMLCollection("global2",RunCuts,EvCuts);
 
   timer.Stop();
