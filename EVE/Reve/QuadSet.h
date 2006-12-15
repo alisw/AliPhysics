@@ -5,6 +5,7 @@
 
 #include <Gtypes.h>
 #include <TNamed.h>
+#include <TQObject.h>
 #include <TAtt3D.h>
 #include <TAttBBox.h>
 
@@ -75,7 +76,7 @@ public:
 /**************************************************************************/
 
 class QuadSet : public RenderElement,
-		public TNamed,
+		public TNamed, public TQObject,
 		public TAtt3D,
 		public TAttBBox
 {
@@ -156,6 +157,7 @@ protected:
   RGBAPalette*      fPalette;
   RenderMode_e      fRenderMode;
   Bool_t            fDisableLigting;
+  Bool_t            fEmitSignals;
   ZTrans            fHMTrans;
 
   static Int_t SizeofAtom(QuadType_e qt);
@@ -170,6 +172,7 @@ public:
   virtual ~QuadSet();
 
   virtual Bool_t CanEditMainColor() { return kTRUE; }
+  virtual void   SetMainColor(Color_t color);
 
   void Reset(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize);
   void RefitPlex();
@@ -195,6 +198,9 @@ public:
 
   RenderMode_e  GetRenderMode() const { return fRenderMode; }
   void SetRenderMode(RenderMode_e rm) { fRenderMode = rm; }
+
+  Bool_t GetEmitSignals() const   { return fEmitSignals; }
+  void   SetEmitSignals(Bool_t f) { fEmitSignals = f; }
 
   ZTrans& RefHMTrans() { return fHMTrans; }
   void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
@@ -225,6 +231,8 @@ public:
   TObject*  GetId(Int_t n)   { return GetQuad(n)->fId.GetObject(); }
 
   virtual void QuadSelected(Int_t idx);
+
+  virtual void CtrlClicked(QuadSet* qs, Int_t idx); // *SIGNAL*
 
   // --------------------------------
 

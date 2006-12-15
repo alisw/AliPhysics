@@ -2,6 +2,7 @@
 
 #include "QuadSet.h"
 #include "RGBAPalette.h"
+#include "RGTopFrame.h"
 
 #include <TColor.h>
 
@@ -193,6 +194,7 @@ QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
   fPalette(0),
   fRenderMode(RM_Fill),
   fDisableLigting(kTRUE),
+  fEmitSignals(kFALSE),
   fHMTrans()
 {}
 
@@ -214,6 +216,7 @@ QuadSet::QuadSet(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize,
   fPalette(0),
   fRenderMode(RM_Fill),
   fDisableLigting(kTRUE),
+  fEmitSignals(kFALSE),
   fHMTrans()
 {}
 
@@ -305,13 +308,22 @@ void QuadSet::ScanMinMaxValues(Int_t& min, Int_t& max)
 
 /**************************************************************************/
 
+void QuadSet::SetMainColor(Color_t color)
+{
+  if (fFrame) {
+    fFrame->SetFrameColor(color);
+    fFrame->UpdateBackPtrItems();
+  }
+  gReve->Redraw3D();
+}
+
 void QuadSet::SetFrame(FrameBox* b)
 {
   if (fFrame == b) return;
-  if (fFrame) fFrame->DecRefCount();
+  if (fFrame) fFrame->DecRefCount(this);
   fFrame = b;
   if (fFrame) {
-    fFrame->IncRefCount();
+    fFrame->IncRefCount(this);
     SetMainColorPtr(fFrame->PtrFrameColor());
   } else {
     SetMainColorPtr(0);
@@ -474,12 +486,25 @@ void QuadSet::QuadId(TObject* id)
 
 void QuadSet::QuadSelected(Int_t idx)
 {
-  QuadBase* qb = GetQuad(idx);
-  TObject* obj = qb->fId.GetObject();
-  printf("QuadSet::QuadSelected idx=%d, value=%d, obj=0x%lx\n",
-	 idx, qb->fValue, (ULong_t)obj);
-  if (obj)
-    obj->Print();
+  if (fEmitSignals) {
+    CtrlClicked(this, idx);
+  } else {
+    QuadBase* qb = GetQuad(idx);
+    TObject* obj = qb->fId.GetObject();
+    printf("QuadSet::QuadSelected idx=%d, value=%d, obj=0x%lx\n",
+	   idx, qb->fValue, (ULong_t)obj);
+    if (obj)
+      obj->Print();
+  }
+}
+
+void QuadSet::CtrlClicked(QuadSet* qs, Int_t idx)
+{
+  Long_t args[2];
+  args[0] = (Long_t) qs;
+  args[1] = (Long_t) idx;
+
+  Emit("CtrlClicked(Reve::Track*, Int_t)", args);
 }
 
 /**************************************************************************/
