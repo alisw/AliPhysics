@@ -28,6 +28,10 @@
 // been specified via the SetOutputFile memberfunction.
 // In case no outputfile has been specified, this class provides a facility
 // to investigate/analyse F2K data using the Ralice/IcePack analysis tools.
+// An indication of the active DAQ system is available in the IceEvent structure
+// via a device named "Daq". Here the various daq systems (TWR, Muon, ...)
+// from which the actual hits (ADC, LE, TOT) are composed have been indicated
+// as "signals" of the device itself. 
 //
 // Note : Sometimes the filtering/reco process which produced the F2K file
 //        may have introduced a shift (i.e. offset) in the hit times w.r.t.
@@ -425,6 +429,12 @@ void IceF2k::Exec(Option_t* opt)
 
  ListEnvironment();
 
+ // Set DAQ device info
+ AliDevice daq;
+ daq.SetName("Daq");
+ daq.SetSlotName("Muon",1);
+ daq.SetSignal(1,1);
+
  Int_t nevt=0;
  for (Int_t ifile=0; ifile<ninfiles; ifile++)
  {
@@ -469,6 +479,8 @@ void IceF2k::Exec(Option_t* opt)
    evt->SetRunNumber(fEvent.nrun);
    evt->SetEventNumber(fEvent.enr);
    evt->SetMJD(fEvent.mjd,fEvent.secs,fEvent.nsecs);
+
+   evt->AddDevice(daq);
 
    // Take trigger offset into account which might have been
    // introduced during the filtering process.

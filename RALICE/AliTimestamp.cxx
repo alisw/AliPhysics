@@ -59,15 +59,17 @@
 // the yy-mm-dd hh:mm:ss:ns TTimeStamp from a given input (M/T)JD and time.
 // Obviously this TTimeStamp implementation would prevent usage of values
 // smaller than JD=2440587.5 or MJD=40587 or TJD=587.
+// Furthermore, due to a limitation on the "seconds since the EPOCH start" count
+// in TTimeStamp, the latest accessible date/time is 19-jan-2038 02:14:08 UTC.
 // However, this AliTimestamp facility provides support for the full range
 // of (M/T)JD values, but the setting of the corresponding TTimeStamp parameters
 // is restricted to the values allowed by the TTimeStamp implementation.
-// For these earlier (M/T)JD values, the standard TTimeStamp parameters will
+// For these earlier/later (M/T)JD values, the standard TTimeStamp parameters will
 // be set corresponding to the start of the TTimeStamp EPOCH.
-// This implies that for these earlier (M/T)JD values the TTimeStamp parameters
+// This implies that for these earlier/later (M/T)JD values the TTimeStamp parameters
 // do not match the Julian parameters of AliTimestamp.
 // As such the standard TTimeStamp parameters do not appear on the print output
-// when invoking the Date() memberfunction for these earlier (M/T)JD values.  
+// when invoking the Date() memberfunction for these earlier/later (M/T)JD values.  
 //
 // Examples :
 // ==========
@@ -194,8 +196,11 @@ void AliTimestamp::Date(Int_t mode)
 
   Int_t mjd,mjsec,mjns;
   GetMJD(mjd,mjsec,mjns);
-
- if ((mode==1 || mode==3) && mjd>=40587) cout << " " << AsString() << endl;
+ 
+ if ((mode==1 || mode==3) && mjd>=40587 && (mjd<65442 || (mjd==65442 && mjsec<8047)))
+ {
+  cout << " " << AsString() << endl;
+ }
  if (mode==2 || mode==3)
  {
   Int_t jd,jsec,jns;
@@ -452,7 +457,7 @@ void AliTimestamp::FillJulian()
  fCalcns=GetNanoSec();
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTimestamp::GetMJD(Int_t& mjd,Int_t& sec, Int_t& ns)
+void AliTimestamp::GetMJD(Int_t& mjd,Int_t& sec,Int_t& ns)
 {
 // Provide the Modified Julian Date (MJD) and time corresponding to the
 // currently stored AliTimestamp date/time parameters.
@@ -584,12 +589,14 @@ void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns,Int_t ps)
 // the yy-mm-dd hh:mm:ss:ns TTimeStamp from a given input MJD and time.
 // Obviously this TTimeStamp implementation would prevent usage of MJD values
 // smaller than 40587.
+// Furthermore, due to a limitation on the "seconds since the EPOCH start" count
+// in TTimeStamp, the latest accessible date/time is 19-jan-2038 02:14:08 UTC.
 // However, this AliTimestamp facility provides support for the full range
 // of (M)JD values, but the setting of the corresponding TTimeStamp parameters
 // is restricted to the values allowed by the TTimeStamp implementation.
-// For these earlier MJD values, the standard TTimeStamp parameters will
+// For these earlier/later MJD values, the standard TTimeStamp parameters will
 // be set corresponding to the start of the TTimeStamp EPOCH.  
-// This implies that for these earlier MJD values the TTimeStamp parameters
+// This implies that for these earlier/later MJD values the TTimeStamp parameters
 // do not match the Julian parameters of AliTimestamp.  
 //
 // The input arguments represent the following :
@@ -612,11 +619,16 @@ void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns,Int_t ps)
  fJns=ns;
  fJps=ps;
 
- Int_t epoch=40587;
+ Int_t epoch=40587; // MJD of the start of the epoch
+ Int_t limit=65442; // MJD of the latest possible TTimeStamp date/time
  
- if (mjd<epoch)
+ Int_t date,time;
+ if (mjd<epoch || (mjd>=limit && sec>=8047))
  {
   Set(0,kFALSE,0,kFALSE);
+  date=GetDate();
+  time=GetTime();
+  Set(date,time,0,kTRUE,0);
  }
  else
  {
@@ -625,8 +637,8 @@ void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns,Int_t ps)
   UInt_t secs=days*24*3600;
   secs+=sec;
   Set(secs,kFALSE,0,kFALSE);
-  Int_t date=GetDate();
-  Int_t time=GetTime();
+  date=GetDate();
+  time=GetTime();
   Set(date,time,ns,kTRUE,0);
  }
 
@@ -651,12 +663,14 @@ void AliTimestamp::SetMJD(Double_t mjd)
 // the yy-mm-dd hh:mm:ss:ns TTimeStamp from a given input MJD and time.
 // Obviously this TTimeStamp implementation would prevent usage of MJD values
 // smaller than 40587.
+// Furthermore, due to a limitation on the "seconds since the EPOCH start" count
+// in TTimeStamp, the latest accessible date/time is 19-jan-2038 02:14:08 UTC.
 // However, this AliTimestamp facility provides support for the full range
 // of (M)JD values, but the setting of the corresponding TTimeStamp parameters
 // is restricted to the values allowed by the TTimeStamp implementation.
-// For these earlier MJD values, the standard TTimeStamp parameters will
+// For these earlier/later MJD values, the standard TTimeStamp parameters will
 // be set corresponding to the start of the TTimeStamp EPOCH.  
-// This implies that for these earlier MJD values the TTimeStamp parameters
+// This implies that for these earlier/later MJD values the TTimeStamp parameters
 // do not match the Julian parameters of AliTimestamp.  
 //
 // Due to computer accuracy the ns precision may be lost.
@@ -685,12 +699,14 @@ void AliTimestamp::SetJD(Int_t jd,Int_t sec,Int_t ns,Int_t ps)
 // the yy-mm-dd hh:mm:ss:ns TTimeStamp from a given input MJD and time.
 // Obviously this TTimeStamp implementation would prevent usage of values
 // smaller than JD=2440587.5.
+// Furthermore, due to a limitation on the "seconds since the EPOCH start" count
+// in TTimeStamp, the latest accessible date/time is 19-jan-2038 02:14:08 UTC.
 // However, this AliTimestamp facility provides support for the full range
 // of (M)JD values, but the setting of the corresponding TTimeStamp parameters
 // is restricted to the values allowed by the TTimeStamp implementation.
-// For these earlier JD values, the standard TTimeStamp parameters will
+// For these earlier/later JD values, the standard TTimeStamp parameters will
 // be set corresponding to the start of the TTimeStamp EPOCH.  
-// This implies that for these earlier (M)JD values the TTimeStamp parameters
+// This implies that for these earlier/later (M)JD values the TTimeStamp parameters
 // do not match the Julian parameters of AliTimestamp.  
 //
 // The input arguments represent the following :
@@ -725,12 +741,14 @@ void AliTimestamp::SetJD(Double_t jd)
 // the yy-mm-dd hh:mm:ss:ns TTimeStamp from a given input MJD and time.
 // Obviously this TTimeStamp implementation would prevent usage of values
 // smaller than JD=2440587.5.
+// Furthermore, due to a limitation on the "seconds since the EPOCH start" count
+// in TTimeStamp, the latest accessible date/time is 19-jan-2038 02:14:08 UTC.
 // However, this AliTimestamp facility provides support for the full range
 // of (M)JD values, but the setting of the corresponding TTimeStamp parameters
 // is restricted to the values allowed by the TTimeStamp implementation.
-// For these earlier JD values, the standard TTimeStamp parameters will
+// For these earlier/later JD values, the standard TTimeStamp parameters will
 // be set corresponding to the start of the TTimeStamp EPOCH.  
-// This implies that for these earlier (M)JD values the TTimeStamp parameters
+// This implies that for these earlier/later (M)JD values the TTimeStamp parameters
 // do not match the Julian parameters of AliTimestamp.  
 //
 // Due to computer accuracy the ns precision may be lost.
@@ -760,12 +778,14 @@ void AliTimestamp::SetTJD(Int_t tjd,Int_t sec,Int_t ns,Int_t ps)
 // the yy-mm-dd hh:mm:ss:ns TTimeStamp from a given input MJD and time.
 // Obviously this TTimeStamp implementation would prevent usage of values
 // smaller than TJD=587.
+// Furthermore, due to a limitation on the "seconds since the EPOCH start" count
+// in TTimeStamp, the latest accessible date/time is 19-jan-2038 02:14:08 UTC.
 // However, this AliTimestamp facility provides support for the full range
 // of (T)JD values, but the setting of the corresponding TTimeStamp parameters
 // is restricted to the values allowed by the TTimeStamp implementation.
-// For these earlier JD values, the standard TTimeStamp parameters will
+// For these earlier/later JD values, the standard TTimeStamp parameters will
 // be set corresponding to the start of the TTimeStamp EPOCH.  
-// This implies that for these earlier (T)JD values the TTimeStamp parameters
+// This implies that for these earlier/later (T)JD values the TTimeStamp parameters
 // do not match the Julian parameters of AliTimestamp.  
 //
 // The input arguments represent the following :
@@ -794,12 +814,14 @@ void AliTimestamp::SetTJD(Double_t tjd)
 // the yy-mm-dd hh:mm:ss:ns TTimeStamp from a given input MJD and time.
 // Obviously this TTimeStamp implementation would prevent usage of values
 // smaller than TJD=587.
+// Furthermore, due to a limitation on the "seconds since the EPOCH start" count
+// in TTimeStamp, the latest accessible date/time is 19-jan-2038 02:14:08 UTC.
 // However, this AliTimestamp facility provides support for the full range
 // of (T)JD values, but the setting of the corresponding TTimeStamp parameters
 // is restricted to the values allowed by the TTimeStamp implementation.
-// For these earlier JD values, the standard TTimeStamp parameters will
+// For these earlier/later JD values, the standard TTimeStamp parameters will
 // be set corresponding to the start of the TTimeStamp EPOCH.  
-// This implies that for these earlier (T)JD values the TTimeStamp parameters
+// This implies that for these earlier/later (T)JD values the TTimeStamp parameters
 // do not match the Julian parameters of AliTimestamp.  
 //
 // Due to computer accuracy the ns precision may be lost.
@@ -1185,5 +1207,84 @@ Double_t AliTimestamp::GetDifference(AliTimestamp& t,TString u,Int_t mode)
 // The default is mode=1.
 
  return GetDifference(&t,u,mode);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::SetUT(Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_t ns,Int_t ps)
+{
+// Set the AliTimestamp parameters corresponding to the UT date and time
+// in the Gregorian calendar as specified by the input arguments.
+// This facility is exact upto picosecond precision and as such is
+// for scientific observations preferable above the corresponding
+// Set function(s) of TTimestamp.
+// The latter has a random spread in the sub-second part, which
+// might be of use in generating distinguishable timestamps while
+// still keeping second precision.
+//
+// The input arguments represent the following :
+// y  : year in UT (e.g. 1952, 2003 etc...)
+// m  : month in UT (1=jan  2=feb etc...)
+// d  : day in UT (1-31)
+// hh : elapsed hours in UT (0-23) 
+// mm : elapsed minutes in UT (0-59)
+// ss : elapsed seconds in UT (0-59)
+// ns : remaining fractional elapsed second of UT in nanosecond
+// ps : remaining fractional elapsed nanosecond of UT in picosecond
+//
+// Note : ns=0 and ps=0 are the default values.
+//
+// This facility first determines the elapsed days, seconds etc...
+// since the beginning of the specified UT year on bais of the
+// input arguments. Subsequently it invokes the SetUT memberfunction
+// for the elapsed timespan.
+// As such this facility is valid for all AD dates in the Gregorian
+// calendar with picosecond precision.
+
+ Int_t day=GetDayOfYear(d,m,y);
+ Int_t secs=hh*3600+mm*60+ss;
+ SetUT(y,day-1,secs,ns,ps);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::SetUT(Int_t y,Int_t d,Int_t s,Int_t ns,Int_t ps)
+{
+// Set the AliTimestamp parameters corresponding to the specified elapsed
+// timespan since the beginning of the new UT year.
+// This facility is exact upto picosecond precision and as such is
+// for scientific observations preferable above the corresponding
+// Set function(s) of TTimestamp.
+// The latter has a random spread in the sub-second part, which
+// might be of use in generating distinguishable timestamps while
+// still keeping second precision.
+//
+// The UT year and elapsed time span is entered via the following input arguments :
+//
+// y  : year in UT (e.g. 1952, 2003 etc...)
+// d  : elapsed number of days 
+// s  : (remaining) elapsed number of seconds
+// ns : (remaining) elapsed number of nanoseconds
+// ps : (remaining) elapsed number of picoseconds
+//
+// The specified d, s, ns and ps values will be used in an additive
+// way to determine the elapsed timespan.
+// So, specification of d=1, s=100, ns=0, ps=0 will result in the
+// same elapsed time span as d=0, s=24*3600+100, ns=0, ps=0.
+// However, by making use of the latter the user should take care
+// of possible integer overflow problems in the input arguments,
+// which obviously will provide incorrect results. 
+//
+// Note : ns=0 and ps=0 are the default values.
+//
+// This facility first sets the (M)JD corresponding to the start (01-jan 00:00:00)
+// of the specified UT year following the recipe of R.W. Sinnott
+// Sky & Telescope 82, (aug. 1991) 183.
+// Subsequently the day and (sub)second parts are added to the AliTimestamp.
+// As such this facility is valid for all AD dates in the Gregorian calendar.
+
+ Double_t jd=GetJD(y,1,1,0,0,0,0);
+ SetJD(jd);
+
+ Int_t mjd,sec,nsec;
+ GetMJD(mjd,sec,nsec);
+ SetMJD(mjd,0,0,0);
+ Add(d,s,ns,ps);
 }
 ///////////////////////////////////////////////////////////////////////////

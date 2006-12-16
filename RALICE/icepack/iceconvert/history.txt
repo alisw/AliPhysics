@@ -78,5 +78,10 @@
                 resulting histos are baseline corrected.
 25-oct-2006 NvE IceF2k updated to include an IceF2k device into the event structure
                 containing the processor parameters.
+14-dec-2006 NvE IceF2k updated to include a Daq device into the event structure
+                containing an indication of the DAQ system that was used to produce
+                the hit data (i.e. ADC, LE, TOT).
+16-dec-2006 NvE New class IceRawTWR introduced to read raw TWR data into the Ralice/IcePack
+                event structures.
 
 

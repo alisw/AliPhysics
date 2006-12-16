@@ -746,4 +746,6 @@
                 statements by while() loops in determining the remaining fractional counts.
                 Furthermore, some modulo operations have been introduced to prevent
                 integer overflows.
+08-dec-2006 NvE Memberfunctions SetUT introduced in AliTimestamp to provide convenient
+                ways to set a specific UT date/time.
 

@@ -14,6 +14,7 @@
  #pragma link off all functions;
  
  #pragma link C++ class IceF2k+;
- #pragma link C++ class IceCal2Root;
+ #pragma link C++ class IceCal2Root+;
+ #pragma link C++ class IceRawTWR+;
 #endif
  
