@@ -96,14 +96,14 @@ const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, con
   //        ou: the local directory where to save the esd root files          
 
   Bool_t rv = kTRUE ; 
-  const char * kFileName = "AliESDs.root" ;  
 
   fTimer.Start() ; 
 
-  AliXMLCollection collectionIn(collectionNameIn) ; 
+  AliXMLCollection * collectionIn = AliXMLCollection::Open(collectionNameIn) ;
+  collectionIn->Reset() ; 
 
   AliXMLCollection * collectionOu = new AliXMLCollection() ; 
-  TString collectionNameOu(collectionIn.GetCollectionName()) ; 
+  TString collectionNameOu(collectionIn->GetCollectionName()) ; 
   collectionNameOu.Append("Local") ; 
   collectionOu->SetCollectionName(collectionNameOu) ; 
   collectionOu->WriteHeader() ; 
@@ -113,9 +113,9 @@ const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, con
   const char* ocwd = gSystem->WorkingDirectory();
 
   Int_t counter = 0 ;  
-  while ( collectionIn.Next() ) {
+  while ( collectionIn->Next() ) {
     gSystem->ChangeDirectory(localDir) ; 
-    TString fileTURL = collectionIn.GetTURL(kFileName) ; 
+    TString fileTURL = collectionIn->GetTURL("") ; 
 
     TString tempo(fileTURL) ; 
     tempo.Remove(tempo.Last('/'), tempo.Length()) ; 
@@ -128,10 +128,10 @@ const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, con
     dir += evtsNumber + "/"; 
     gSystem->MakeDirectory(dir) ; 
     gSystem->ChangeDirectory(dir) ; 
-    dir += collectionIn.GetCollectionName() ; 
-    TEntryList * list = collectionIn.GetEventList(kFileName) ; 
+    dir += collectionIn->GetCollectionName() ; 
+    TEntryList * list = collectionIn->GetEventList("") ; 
     
-    collectionOu->WriteBody(counter, collectionIn.GetGUID(kFileName), collectionIn.GetLFN(kFileName), collectionIn.GetTURL(kFileName),  list) ;
+    collectionOu->WriteBody(counter, collectionIn->GetGUID(""), collectionIn->GetLFN(""), collectionIn->GetTURL(""), list) ;
     counter++ ; 
     printf("Copying %s to %s\n", fileTURL.Data(), dir.Data()) ;  
     merger.Cp(fileTURL, dir) ;
@@ -215,25 +215,26 @@ const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCut
 }
 
 //______________________________________________________________________
-// const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char * runCuts, const char * evtCuts, const char * in, const char * out) const 
-// {
-//   // Makes an esd collection from a xml tag collection 
-//   Bool_t rv = kTRUE ; 
+const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char * runCuts, const char * evtCuts, const char * in, const char * out) const 
+{
+  // Makes an esd collection from a xml tag collection 
+  
+  Bool_t rv = kTRUE ; 
  
-//   // Open the file collection 
-//   printf("*** Create Collection       ***\n");
-//   printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
-//   printf("***  Coll   = |%s|             \n",in);              	
+  // Open the file collection 
+  printf("*** Create Collection       ***\n");
+  printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
+  printf("***  Coll   = |%s|             \n",in);              	
   
-//   TAlienCollection * collection = TAlienCollection::Open(in);
-//   TGridResult* result = collection->GetGridResult("");
-//   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
-//   tagAna->ChainGridTags(result);
+  TAlienCollection * collection = TAlienCollection::Open(in);
+  TGridResult* result = collection->GetGridResult("");
+  AliTagAnalysis * tagAna = new AliTagAnalysis(); 
+  tagAna->ChainGridTags(result);
   
-//   tagAna->CreateXMLCollection(out, runCuts, evtCuts) ;
+  tagAna->CreateXMLCollection(out, runCuts, evtCuts) ;
 
-//   return rv ; 
-// }
+  return rv ; 
+}
 
 //______________________________________________________________________
 const Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char * subFile, const char * outFile) 
@@ -505,38 +506,38 @@ const Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, AliRunTagC
 }
 
 //______________________________________________________________________
-// const Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, const char * runCuts, const char * evtCuts) const   
-// {
-//   // process the events in a single Tag file with an Analysis Task 
-//   // usage ProcessLocalEsdFile(tagFile)
-//   //              tagFile: is the root file (local or in alien) with the Tag Tree (ex: Run102.Event0_100.ESD.tag.root) 
+const Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, const char * runCuts, const char * evtCuts) const   
+{
+  // process the events in a single Tag file with an Analysis Task 
+  // usage ProcessLocalEsdFile(tagFile)
+  //              tagFile: is the root file (local or in alien) with the Tag Tree (ex: Run102.Event0_100.ESD.tag.root) 
  
-//   Bool_t rv = kTRUE ;  
+  Bool_t rv = kTRUE ;  
   
 
-//   if ( !evtCuts && !runCuts ) {
-//     AliError("No Tag cuts provided") ; 
-//     return kFALSE ; 
-//   }
+  if ( !evtCuts && !runCuts ) {
+    AliError("No Tag cuts provided") ; 
+    return kFALSE ; 
+  }
   
-//   printf("*** Process       ***\n");
-//   printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
-//   printf("***  Coll   = |%s|             \n",tagFile);              	
+  printf("*** Process       ***\n");
+  printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
+  printf("***  Coll   = |%s|             \n",tagFile);              	
 
-//   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
-//   rv = tagAna->AddTagsFile(tagFile);
-//   if ( ! rv ) 
-//     return rv ; 
+  AliTagAnalysis * tagAna = new AliTagAnalysis(); 
+  rv = tagAna->AddTagsFile(tagFile);
+  if ( ! rv ) 
+    return rv ; 
 
-//   // Query the tag file and make the analysis chain
-//   TChain * analysisChain = new TChain(fESDTreeName)  ;
-//   analysisChain = tagAna->QueryTags(runCuts, evtCuts);
+  // Query the tag file and make the analysis chain
+  TChain * analysisChain = new TChain(fESDTreeName)  ;
+  analysisChain = tagAna->QueryTags(runCuts, evtCuts);
   
-//   // Process the events
-//  rv = ProcessChain(analysisChain) ; 
+  // Process the events
+ rv = ProcessChain(analysisChain) ; 
 
-//   return rv;
-// }
+  return rv;
+}
 
 //______________________________________________________________________
 const Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const   
@@ -614,46 +615,46 @@ const Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, A
 }
 
 //______________________________________________________________________
-// const Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const char * runCuts, const char * evtCuts) const   
-// {
-//   // process the events in a xml ESD collection  with an Analysis Task 
-//   // usage ProcessLocalEsdFile(xmlFile)
-//   //              xmlFile: is the local xml file with the tag collection ( ex: tagCollection.xml) 
+const Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const char * runCuts, const char * evtCuts) const   
+{
+  // process the events in a xml ESD collection  with an Analysis Task 
+  // usage ProcessLocalEsdFile(xmlFile)
+  //              xmlFile: is the local xml file with the tag collection ( ex: tagCollection.xml) 
  
-//   Bool_t rv = kTRUE ;  
+  Bool_t rv = kTRUE ;  
 
-//  if ( !evtCuts && !runCuts ) {
-//     AliError("No Tag cuts provided") ; 
-//     return kFALSE ; 
-//   }
+ if ( !evtCuts && !runCuts ) {
+    AliError("No Tag cuts provided") ; 
+    return kFALSE ; 
+  }
 
-//   printf("*** Process       ***\n");
-//   printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
-//   printf("***  Coll   = |%s|             \n",xmlFile);              	
+  printf("*** Process       ***\n");
+  printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
+  printf("***  Coll   = |%s|             \n",xmlFile);              	
  
-//   // check if file is local or alien
-//   if ( gSystem->AccessPathName(xmlFile) ) 
-//     TGrid::Connect("alien://"); 
+  // check if file is local or alien
+  if ( gSystem->AccessPathName(xmlFile) ) 
+    TGrid::Connect("alien://"); 
 
-//   TAlienCollection * collection = TAlienCollection::Open(xmlFile) ; 
-//   if (! collection) {
-//     AliError(Form("%s not found", xmlFile)) ; 
-//     return kFALSE ; 
-//   }
+  TAlienCollection * collection = TAlienCollection::Open(xmlFile) ; 
+  if (! collection) {
+    AliError(Form("%s not found", xmlFile)) ; 
+    return kFALSE ; 
+  }
 
-//   TGridResult* result = collection->GetGridResult("");
-//   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
-//   tagAna->ChainGridTags(result);
+  TGridResult* result = collection->GetGridResult("");
+  AliTagAnalysis * tagAna = new AliTagAnalysis(); 
+  tagAna->ChainGridTags(result);
   
-//   // Query the tag file and make the analysis chain
-//   TChain * analysisChain = new TChain(fESDTreeName)  ;
-//   analysisChain = tagAna->QueryTags(runCuts, evtCuts);
+  // Query the tag file and make the analysis chain
+  TChain * analysisChain = new TChain(fESDTreeName)  ;
+  analysisChain = tagAna->QueryTags(runCuts, evtCuts);
 
-//   // Process the events
-//   rv = ProcessChain(analysisChain) ; 
+  // Process the events
+  rv = ProcessChain(analysisChain) ; 
 
-//   return rv ; 
-// }
+  return rv ; 
+}
 
 //______________________________________________________________________
 const Bool_t AliAnalysisGoodies::Register( const char * lfndir, const char * pfndir, const char * file) 
