@@ -227,32 +227,17 @@ AliMUONDigitizerV3::ApplyResponseToTriggerDigit(AliMUONDigit& digit,
     segment[1]->PadByIndices(AliMpIntPair(correspondingDigit->PadX(),correspondingDigit->PadY()),kTRUE)
   };
 
-  Int_t ix(0);
-  Int_t iy(1);
+  Int_t p0(1);
+  if (digit.Cathode()==0)p0=0;
 
-  if (digit.Cathode()==0)
-  {
-	  ix=1;
-	  iy=0;
-  }
-  
-  Float_t x = pad[ix].Position().X();
-  Float_t y = pad[iy].Position().Y();
-  if ( x==-1 && y==-1 )
-  {
-	  x=-9999.;
-	  y=-9999.;
-    AliError(Form("Got an unknown position for a digit in DE %d at (ix,iy)=(%d,%d)",
-             detElemId,pad[ix].GetIndices().GetFirst(),pad[iy].GetIndices().GetSecond()));
-  }
-  Float_t x0 = segment[0]->Dimensions().X();
-  Float_t y0 = segment[1]->Dimensions().Y();
-  TVector2 newCoord = fTriggerEfficiency->ChangeReferenceFrame(x, y, x0, y0);
-  
+  AliMpIntPair location = pad[p0].GetLocation(0);
+  Int_t nboard = location.GetFirst();
+
   Bool_t isTrig[2];
-  fTriggerEfficiency->IsTriggered(detElemId, newCoord.Px(), newCoord.Py(), 
+
+  fTriggerEfficiency->IsTriggered(detElemId, nboard-1, 
                                   isTrig[0], isTrig[1]);
-  
+
   if (!isTrig[digit.Cathode()])
   {
 	  digit.SetSignal(0);
