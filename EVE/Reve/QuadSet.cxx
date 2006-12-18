@@ -512,167 +512,177 @@ void QuadSet::CtrlClicked(QuadSet* qs, Int_t idx)
 
 void QuadSet::ComputeBBox()
 {
+  // Fill bounding-box information in base-class TAttBBox (virtual method).
+  // If member 'FrameBox* fFrame' is set, frame's corners are used as bbox.
+
   static const Exc_t eH("QuadSet::ComputeBBox ");
 
-  // !!!! Missing handling of FrameBox !!!!
-  // It shoud even simpify things ...
-
-  if(fPlex.Size() == 0) {
-    BBoxZero();
-    return;
-  }
-
-  BBoxInit();
-  if (fQuadType == QT_RectangleXYFixedZ    ||
-      fQuadType == QT_RectangleXYFixedDimZ)
+  if (fFrame != 0)
   {
-    fBBox[4] = fDefCoord;
-    fBBox[5] = fDefCoord;
+    BBoxInit();
+    Int_t    n    = fFrame->GetFrameSize() / 3;
+    Float_t *bbps = fFrame->GetFramePoints();
+    for (int i=0; i<n; ++i, bbps+=3)
+      BBoxCheckPoint(bbps);
   }
-  else if (fQuadType == QT_RectangleXZFixedY    ||
-	   fQuadType == QT_RectangleXZFixedDimY)
+  else
   {
-    fBBox[2] = fDefCoord;
-    fBBox[3] = fDefCoord;
-  }
+    if(fPlex.Size() == 0) {
+      BBoxZero();
+      return;
+    }
 
-  VoidCPlex::iterator qi(fPlex);
+    BBoxInit();
+    if (fQuadType == QT_RectangleXYFixedZ    ||
+	fQuadType == QT_RectangleXYFixedDimZ)
+    {
+      fBBox[4] = fDefCoord;
+      fBBox[5] = fDefCoord;
+    }
+    else if (fQuadType == QT_RectangleXZFixedY    ||
+	     fQuadType == QT_RectangleXZFixedDimY)
+    {
+      fBBox[2] = fDefCoord;
+      fBBox[3] = fDefCoord;
+    }
+
+    VoidCPlex::iterator qi(fPlex);
   
-  switch (fQuadType)
-  {
-
-    case QT_FreeQuad:
+    switch (fQuadType)
     {
-      while (qi.next()) {
-	const Float_t* p =  ((QFreeQuad*) qi())->fVertices;
-	BBoxCheckPoint(p); p += 3;
-	BBoxCheckPoint(p); p += 3;
-	BBoxCheckPoint(p); p += 3;
-	BBoxCheckPoint(p);
+
+      case QT_FreeQuad:
+      {
+	while (qi.next()) {
+	  const Float_t* p =  ((QFreeQuad*) qi())->fVertices;
+	  BBoxCheckPoint(p); p += 3;
+	  BBoxCheckPoint(p); p += 3;
+	  BBoxCheckPoint(p); p += 3;
+	  BBoxCheckPoint(p);
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_RectangleXY:
-    {
-      while (qi.next()) {
-	QRect& q = * (QRect*) qi();
-	if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
-	if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
-	if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
-	if(q.fY + q.fH > fBBox[3]) fBBox[3] = q.fY + q.fH;
-	if(q.fZ        < fBBox[4]) fBBox[4] = q.fZ;
-	if(q.fZ        > fBBox[5]) fBBox[5] = q.fZ;
+      case QT_RectangleXY:
+      {
+	while (qi.next()) {
+	  QRect& q = * (QRect*) qi();
+	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
+	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
+	  if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
+	  if(q.fY + q.fH > fBBox[3]) fBBox[3] = q.fY + q.fH;
+	  if(q.fZ        < fBBox[4]) fBBox[4] = q.fZ;
+	  if(q.fZ        > fBBox[5]) fBBox[5] = q.fZ;
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_RectangleXYFixedDim:
-    {
-      const Float_t& w = fDefWidth;
-      const Float_t& h = fDefHeight;
-      while (qi.next()) {
-	QRectFixDim& q = * (QRectFixDim*) qi();
-	if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
-	if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
-	if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
-	if(q.fY + h > fBBox[3]) fBBox[3] = q.fY + h;
-	if(q.fZ     < fBBox[4]) fBBox[4] = q.fZ;
-	if(q.fZ     > fBBox[5]) fBBox[5] = q.fZ;
+      case QT_RectangleXYFixedDim:
+      {
+	const Float_t& w = fDefWidth;
+	const Float_t& h = fDefHeight;
+	while (qi.next()) {
+	  QRectFixDim& q = * (QRectFixDim*) qi();
+	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
+	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
+	  if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
+	  if(q.fY + h > fBBox[3]) fBBox[3] = q.fY + h;
+	  if(q.fZ     < fBBox[4]) fBBox[4] = q.fZ;
+	  if(q.fZ     > fBBox[5]) fBBox[5] = q.fZ;
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_RectangleXYFixedZ:
-    {
-      while (qi.next()) {
-	QRectFixC& q = * (QRectFixC*) qi();
-	if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
-	if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
-	if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
-	if(q.fY + q.fH > fBBox[3]) fBBox[3] = q.fY + q.fH;
+      case QT_RectangleXYFixedZ:
+      {
+	while (qi.next()) {
+	  QRectFixC& q = * (QRectFixC*) qi();
+	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
+	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
+	  if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
+	  if(q.fY + q.fH > fBBox[3]) fBBox[3] = q.fY + q.fH;
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_RectangleXZFixedY:
-    {
-      while (qi.next()) {
-	QRectFixC& q = * (QRectFixC*) qi();
-	if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
-	if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
-	if(q.fY        < fBBox[4]) fBBox[4] = q.fY;
-	if(q.fY + q.fH > fBBox[5]) fBBox[5] = q.fY + q.fH;
+      case QT_RectangleXZFixedY:
+      {
+	while (qi.next()) {
+	  QRectFixC& q = * (QRectFixC*) qi();
+	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
+	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
+	  if(q.fY        < fBBox[4]) fBBox[4] = q.fY;
+	  if(q.fY + q.fH > fBBox[5]) fBBox[5] = q.fY + q.fH;
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_RectangleXYFixedDimZ:
-    {
-      const Float_t& w = fDefWidth;
-      const Float_t& h = fDefHeight;
-      while (qi.next()) {
-	QRectFixDimC& q = * (QRectFixDimC*) qi();
-	if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
-	if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
-	if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
-	if(q.fY + h > fBBox[3]) fBBox[3] = q.fY + h;
+      case QT_RectangleXYFixedDimZ:
+      {
+	const Float_t& w = fDefWidth;
+	const Float_t& h = fDefHeight;
+	while (qi.next()) {
+	  QRectFixDimC& q = * (QRectFixDimC*) qi();
+	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
+	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
+	  if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
+	  if(q.fY + h > fBBox[3]) fBBox[3] = q.fY + h;
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_RectangleXZFixedDimY:
-    {
-      const Float_t& w = fDefWidth;
-      const Float_t& h = fDefHeight;
-      while (qi.next()) {
-	QRectFixDimC& q = * (QRectFixDimC*) qi();
-	if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
-	if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
-	if(q.fY     < fBBox[4]) fBBox[4] = q.fY;
-	if(q.fY + h > fBBox[5]) fBBox[5] = q.fY + h;
+      case QT_RectangleXZFixedDimY:
+      {
+	const Float_t& w = fDefWidth;
+	const Float_t& h = fDefHeight;
+	while (qi.next()) {
+	  QRectFixDimC& q = * (QRectFixDimC*) qi();
+	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
+	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
+	  if(q.fY     < fBBox[4]) fBBox[4] = q.fY;
+	  if(q.fY + h > fBBox[5]) fBBox[5] = q.fY + h;
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_LineXYFixedZ:
-    {
-      while (qi.next()) {
-	QLineFixC& q = * (QLineFixC*) qi();
-	BBoxCheckPoint(q.fX,         q.fY,         fDefCoord);
-	BBoxCheckPoint(q.fX + q.fDx, q.fY + q.fDy, fDefCoord);
+      case QT_LineXYFixedZ:
+      {
+	while (qi.next()) {
+	  QLineFixC& q = * (QLineFixC*) qi();
+	  BBoxCheckPoint(q.fX,         q.fY,         fDefCoord);
+	  BBoxCheckPoint(q.fX + q.fDx, q.fY + q.fDy, fDefCoord);
+	}
+	break;
       }
-      break;
-    }
 
-    case QT_LineXZFixedY:
-    {
-      while (qi.next()) {
-	QLineFixC& q = * (QLineFixC*) qi();
-	BBoxCheckPoint(q.fX,         fDefCoord, q.fY);
-	BBoxCheckPoint(q.fX + q.fDx, fDefCoord, q.fY + q.fDy);
+      case QT_LineXZFixedY:
+      {
+	while (qi.next()) {
+	  QLineFixC& q = * (QLineFixC*) qi();
+	  BBoxCheckPoint(q.fX,         fDefCoord, q.fY);
+	  BBoxCheckPoint(q.fX + q.fDx, fDefCoord, q.fY + q.fDy);
+	}
+	break;
       }
-      break;
-    }
 
-    // Ignore 'slight' difference, assume square box for both cases.
-    case QT_HexagonXY:
-    case QT_HexagonYX:
-    {
-      while (qi.next()) {
-	QHex& q = * (QHex*) qi();
-	BBoxCheckPoint(q.fX-q.fR, q.fY-q.fR, q.fZ);
-	BBoxCheckPoint(q.fX+q.fR, q.fY+q.fR, q.fZ);
+      // Ignore 'slight' difference, assume square box for both cases.
+      case QT_HexagonXY:
+      case QT_HexagonYX:
+      {
+	while (qi.next()) {
+	  QHex& q = * (QHex*) qi();
+	  BBoxCheckPoint(q.fX-q.fR, q.fY-q.fR, q.fZ);
+	  BBoxCheckPoint(q.fX+q.fR, q.fY+q.fR, q.fZ);
+	}
+	break;
       }
-      break;
-    }
 
-    default: {
-      throw(eH + "unsupported quad-type.");
-    }
+      default: {
+	throw(eH + "unsupported quad-type.");
+      }
 
-  } // end switch quad-type
-
+    } // end switch quad-type
+  } // end if frame ... else ...
 
 #if ROOT_VERSION_CODE <= ROOT_VERSION(5,14,0)
   { // Resize bounding box so that it does not have 0 volume.
