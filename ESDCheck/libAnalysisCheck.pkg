@@ -1,5 +1,4 @@
-SRCS = AliAnalysisGoodies.cxx \
-       AliPHOSQATask.cxx \
+SRCS = AliPHOSQATask.cxx \
        AliEMCALQATask.cxx \
        AliPMDQATask.cxx AliPMDUtility.cxx \
        AliAnalysisTaskPt.cxx \
