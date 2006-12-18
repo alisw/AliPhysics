@@ -129,6 +129,12 @@ Int_t AliHLTITStracker::Clusters2Tracks(AliESD *event) {
        fBestTrack.CookdEdx();
        CookLabel(&fBestTrack,0.); //For comparison only
        fBestTrack.UpdateESDtrack(AliESDtrack::kITSin);
+       {
+       AliESDtrack  *esdTrack =fBestTrack.GetESDtrack();
+       Float_t r[3]={0.,0.,0.};
+       Double_t maxD=3.;
+       esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
+       }
        UseClusters(&fBestTrack);
        delete itsTracks.RemoveAt(i);
        ntrk++;
