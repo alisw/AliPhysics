@@ -9,4 +9,6 @@
 #pragma link C++ class  AliAnalysisDataSlot+;
 #pragma link C++ class  AliAnalysisManager+;
 
+#pragma link C++ class  AliAnalysisGoodies+;
+
 #endif
