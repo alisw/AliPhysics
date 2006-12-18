@@ -2,7 +2,7 @@
 
 SRCS:=  AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx \
 	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
-	AliStats.cxx \
+	AliStats.cxx AliRawEventTag.cxx \
 	AliAltroMapping.cxx AliCaloAltroMapping.cxx \
 	AliDAQ.cxx
 
