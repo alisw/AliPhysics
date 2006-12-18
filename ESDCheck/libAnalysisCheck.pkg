@@ -1,0 +1,17 @@
+SRCS = AliAnalysisGoodies.cxx \
+       AliPHOSQATask.cxx \
+       AliEMCALQATask.cxx \
+       AliPMDQATask.cxx AliPMDUtility.cxx \
+       AliAnalysisTaskPt.cxx \
+       AliHMPIDQATask.cxx \
+       AliT0QATask.cxx \
+       AliMUONQATask.cxx \
+       AliFMDQATask.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= AnalysisCheckLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+
