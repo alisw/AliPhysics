@@ -50,6 +50,7 @@
 #pragma link C++ class AliMUONCalibParam2F+;
 #pragma link C++ class AliMUONCalibrationData+;
 #pragma link C++ class AliMUONTriggerEfficiencyCells+;
+#pragma link C++ class AliMUONTriggerChamberEff+;
 
 // raw data
 #pragma link C++ class AliMUONDigitMaker+;

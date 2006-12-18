@@ -39,7 +39,8 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONTriggerEfficiencyCells.cxx\
         AliMUONRawStreamTrigger.cxx \
         AliMUONRawStreamTracker.cxx  \
-        AliMUONDigitMaker.cxx 
+        AliMUONDigitMaker.cxx \
+        AliMUONTriggerChamberEff.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 
