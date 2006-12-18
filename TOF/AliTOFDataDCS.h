@@ -22,9 +22,10 @@ class AliTOFFormatDCS;
 
 class AliTOFDataDCS : public TObject {
 public:
-  enum {kNAliases=10442, kNHV=90, kNLV=576, 
-	kNFEEthr=1152, kNFEEt=7776, kNFunctions=0, 
-	kNT=1, kNP=1};
+  enum {kNAliases=10514, kNHV=90, kNLV=576, 
+	kNLV33=72, kNLV50=72, kNLV48=72, 
+	kNFEEthr=1152, kNFEEtfeac=576, kNFEEttrm=6840, 
+	kNFunctions=0, kNT=1, kNP=1};
   
   AliTOFDataDCS();
   AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);
@@ -66,22 +67,36 @@ public:
   
   void Draw(const Option_t* option);
   
-  AliTOFFormatDCS* GetHVvpos(Int_t pos) const
-    {return pos<kNHV ? fHVvpos[pos] : 0;}
-  AliTOFFormatDCS* GetHVvneg(Int_t pos) const 
-    {return pos<kNHV ? fHVvneg[pos] : 0;}
-  AliTOFFormatDCS* GetHVcpos(Int_t pos) const 
-    {return pos<kNHV ? fHVcpos[pos] : 0;}
-  AliTOFFormatDCS* GetHVcneg(Int_t pos) const 
-    {return pos<kNHV ? fHVcneg[pos] : 0;}
+  AliTOFFormatDCS* GetHVvp(Int_t pos) const
+    {return pos<kNHV ? fHVvp[pos] : 0;}
+  AliTOFFormatDCS* GetHVvn(Int_t pos) const 
+    {return pos<kNHV ? fHVvn[pos] : 0;}
+  AliTOFFormatDCS* GetHVip(Int_t pos) const 
+    {return pos<kNHV ? fHVip[pos] : 0;}
+  AliTOFFormatDCS* GetHVin(Int_t pos) const 
+    {return pos<kNHV ? fHVin[pos] : 0;}
   AliTOFFormatDCS* GetLVv(Int_t pos) const 
     {return pos<kNLV ? fLVv[pos] : 0;}
-  AliTOFFormatDCS* GetLVc(Int_t pos) const 
-    {return pos<kNLV ? fLVc[pos] : 0;}
+  AliTOFFormatDCS* GetLVi(Int_t pos) const 
+    {return pos<kNLV ? fLVi[pos] : 0;}
+  AliTOFFormatDCS* GetLVv33(Int_t pos) const 
+    {return pos<kNLV ? fLVv33[pos] : 0;}
+  AliTOFFormatDCS* GetLVi33(Int_t pos) const 
+    {return pos<kNLV ? fLVi33[pos] : 0;}
+  AliTOFFormatDCS* GetLVv50(Int_t pos) const 
+    {return pos<kNLV ? fLVv50[pos] : 0;}
+  AliTOFFormatDCS* GetLVi50(Int_t pos) const 
+    {return pos<kNLV ? fLVi50[pos] : 0;}
+  AliTOFFormatDCS* GetLVv48(Int_t pos) const 
+    {return pos<kNLV ? fLVv48[pos] : 0;}
+  AliTOFFormatDCS* GetLVi48(Int_t pos) const 
+    {return pos<kNLV ? fLVi48[pos] : 0;}
   AliTOFFormatDCS* GetFEEthr(Int_t pos) const
     {return pos<kNFEEthr ? fFEEthr[pos] : 0;}
-  AliTOFFormatDCS* GetFEEt(Int_t pos) const
-    {return pos<kNFEEt ? fFEEt[pos] : 0;}
+  AliTOFFormatDCS* GetFEEtfeac(Int_t pos) const
+    {return pos<kNFEEtfeac ? fFEEtfeac[pos] : 0;}
+  AliTOFFormatDCS* GetFEEttrm(Int_t pos) const
+    {return pos<kNFEEttrm ? fFEEttrm[pos] : 0;}
 
 private:
   void Init();
@@ -93,19 +108,26 @@ private:
   Int_t fEndTime;   // end time
   
   
-  TString fAliasNames[kNAliases];     // aliases for DCS data
-  AliTOFFormatDCS *fHVvpos[kNHV];     // HV voltages, positive ch
-  AliTOFFormatDCS *fHVvneg[kNHV];     // HV voltages, negative ch
-  AliTOFFormatDCS *fHVcpos[kNHV];     // HV currents, positive ch
-  AliTOFFormatDCS *fHVcneg[kNHV];     // HV currents, negative ch
-  AliTOFFormatDCS *fLVv[kNLV];        // LV voltages
-  AliTOFFormatDCS *fLVc[kNLV];        // LV currents
-  AliTOFFormatDCS *fFEEthr[kNFEEthr]; // FEE thresholds
-  AliTOFFormatDCS *fFEEt[kNFEEt];     // FEE temperatures
-  Float_t fT[3];                      // environment temperature
-  Float_t fP[3];                      // environment pressure
+  TString fAliasNames[kNAliases];        // aliases for DCS data
+  AliTOFFormatDCS *fHVvp[kNHV];          // HV voltages, positive ch
+  AliTOFFormatDCS *fHVvn[kNHV];          // HV voltages, negative ch
+  AliTOFFormatDCS *fHVip[kNHV];          // HV currents, positive ch
+  AliTOFFormatDCS *fHVin[kNHV];          // HV currents, negative ch
+  AliTOFFormatDCS *fLVv[kNLV];           // LV fea voltages
+  AliTOFFormatDCS *fLVi[kNLV];           // LV fea currents
+  AliTOFFormatDCS *fLVv33[kNLV33];       // LV 3.3 V voltages
+  AliTOFFormatDCS *fLVi33[kNLV33];       // LV 3.3 V currents
+  AliTOFFormatDCS *fLVv50[kNLV50];       // LV 5.0 V voltages
+  AliTOFFormatDCS *fLVi50[kNLV50];       // LV 5.0 V currents
+  AliTOFFormatDCS *fLVv48[kNLV48];       // LV 48 V voltages
+  AliTOFFormatDCS *fLVi48[kNLV48];       // LV 48 V currents
+  AliTOFFormatDCS *fFEEthr[kNFEEthr];    // FEE thresholds
+  AliTOFFormatDCS *fFEEtfeac[kNFEEtfeac];// FEE feac temperatures
+  AliTOFFormatDCS *fFEEttrm[kNFEEttrm];  // FEE trm temperatures
+  Float_t fT[3];                         // environment temperature
+  Float_t fP[3];                         // environment pressure
   
-  Bool_t fIsProcessed;                // bool to know processing status
+  Bool_t fIsProcessed;                   // bool to know processing status
   
   ClassDef(AliTOFDataDCS, 2);
 };
