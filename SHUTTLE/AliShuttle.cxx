@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.21  2006/12/07 08:51:26  jgrosseo
+update (alberto):
+table, db names in ldap configuration
+added GRP preprocessor
+DCS data can also be retrieved by data point
+
 Revision 1.20  2006/11/16 16:16:48  jgrosseo
 introducing strict run ordering flag
 removed giving preprocessor name to preprocessor, they have to know their name themselves ;-)
@@ -839,6 +845,8 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 // Query DAQ's Shuttle logbook and fills detector status object.
 // Call QueryRunParameters to query DAQ logbook for run parameters.
 
+	entries.SetOwner(1);
+
 	// check connection, in case connect
 	if(!Connect(3)) return kFALSE;
 
@@ -851,8 +859,10 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 		return kFALSE;
 	}
 
+	AliDebug(2,Form("Query = %s", sqlQuery.Data()));
+
 	if(aResult->GetRowCount() == 0) {
-		if(sqlQuery.Contains("where shuttle_done=0")){
+		if(sqlQuery.EndsWith("where shuttle_done=0 order by run")){
 			Log("SHUTTLE", "QueryShuttleLogbook - All runs in Shuttle Logbook are already DONE");
 			delete aResult;
 			return kTRUE;
@@ -864,14 +874,12 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	}
 
 	// TODO Check field count!
-	const UInt_t nCols = 24;
+	const UInt_t nCols = 22;
 	if (aResult->GetFieldCount() != (Int_t) nCols) {
 		AliError("Invalid SQL result field number!");
 		delete aResult;
 		return kFALSE;
 	}
-
-	entries.SetOwner(1);
 
 	TSQLRow* aRow;
 	while ((aRow = aResult->Next())) {
@@ -890,7 +898,7 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 		delete aRow;
 	}
 
-	if(sqlQuery.Contains("where shuttle_done=0"))
+	if(sqlQuery.EndsWith("where shuttle_done=0 order by run"))
 		Log("SHUTTLE", Form("QueryShuttleLogbook - Found %d unprocessed runs in Shuttle Logbook",
 							entries.GetEntriesFast()));
 	delete aResult;
@@ -1197,13 +1205,13 @@ Bool_t AliShuttle::Connect(Int_t system)
 
 	if (system < 3) // FXS db servers
 	{
-		dbHost = Form("mysql://%s", fConfig->GetFXSdbHost(system));
+		dbHost = Form("mysql://%s:%d", fConfig->GetFXSdbHost(system), fConfig->GetFXSdbPort(system));
 		dbUser = fConfig->GetFXSdbUser(system);
 		dbPass = fConfig->GetFXSdbPass(system);
 		dbName =   fConfig->GetFXSdbName(system);
 	} else { // Run & Shuttle logbook servers
 	// TODO Will the Shuttle logbook server be the same as the Run logbook server ???
-		dbHost = Form("mysql://%s", fConfig->GetDAQlbHost());
+		dbHost = Form("mysql://%s:%d", fConfig->GetDAQlbHost(), fConfig->GetDAQlbPort());
 		dbUser = fConfig->GetDAQlbUser();
 		dbPass = fConfig->GetDAQlbPass();
 		dbName =   fConfig->GetDAQlbDB();
@@ -1355,7 +1363,8 @@ Bool_t AliShuttle::RetrieveDAQFile(const char* daqFileName, const char* localFil
 	}
 
 	TString baseDAQFXSFolder = "DAQ";
-	TString command = Form("scp %s@%s:%s/%s %s/%s",
+	TString command = Form("scp -oPort=%d -2 %s@%s:%s/%s %s/%s",
+		fConfig->GetFXSPort(kDAQ),
 		fConfig->GetFXSUser(kDAQ),
 		fConfig->GetFXSHost(kDAQ),
 		baseDAQFXSFolder.Data(),
@@ -1654,7 +1663,7 @@ Bool_t AliShuttle::Collect(Int_t run)
 	for (UInt_t iDet=0; iDet<NDetectors(); iDet++)
 		fFirstUnprocessed[iDet] = kTRUE;
 
-	if (run != 1)
+	if (run != -1)
 	{
 		// query Shuttle logbook for earlier runs, check if some detectors are unprocessed,
 		// flag them into fFirstUnprocessed array

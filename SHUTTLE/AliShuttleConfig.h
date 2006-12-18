@@ -28,16 +28,19 @@ public:
 	Bool_t IsValid() const {return fIsValid;};
 
 	const char* GetDAQlbHost() const {return fDAQlbHost.Data();}
+	UInt_t 	    GetDAQlbPort() const {return fDAQlbPort;}
 	const char* GetDAQlbUser() const {return fDAQlbUser.Data();}
 	const char* GetDAQlbPass() const {return fDAQlbPass.Data();}
 	const char* GetDAQlbDB() const {return fDAQlbDB.Data();}
 	const char* GetDAQlbTable() const {return fDAQlbTable.Data();}
 
 	const char* GetFXSHost(Int_t system) const {return fFXSHost[system].Data();}
+	UInt_t 	    GetFXSPort(Int_t system) const {return fFXSPort[system];}
 	const char* GetFXSUser(Int_t system) const {return fFXSUser[system].Data();}
 	const char* GetFXSPass(Int_t system) const {return fFXSPass[system].Data();}
 
 	const char* GetFXSdbHost(Int_t system) const {return fFXSdbHost[system].Data();}
+	UInt_t 	    GetFXSdbPort(Int_t system) const {return fFXSdbPort[system];}
 	const char* GetFXSdbUser(Int_t system) const {return fFXSdbUser[system].Data();}
 	const char* GetFXSdbPass(Int_t system) const {return fFXSdbPass[system].Data();}
 	const char* GetFXSdbName(Int_t system) const {return fFXSdbName[system].Data();}
@@ -98,16 +101,19 @@ private:
 	Bool_t fIsValid;  		//! flag for the validity of the configuration
 
 	TString fDAQlbHost;		//! Host of the DAQ logbook MySQL Server
+	UInt_t  fDAQlbPort;		//! port of the DAQ logbook MySQL Server
 	TString fDAQlbUser;  		//! username of the DAQ logbook MySQL Server
 	TString fDAQlbPass; 		//! password of the DAQ logbook MySQL Server
 	TString fDAQlbDB; 		//! DB name of the DAQ logbook MySQL Server
 	TString fDAQlbTable; 		//! Table name of the DAQ logbook MySQL Server
 
 	TString fFXSHost[3]; 		//! Host of the [DAQ, DCS, HLT] File eXchange Server
+	UInt_t  fFXSPort[3]; 		//! Port of the [DAQ, DCS, HLT] File eXchange Server
 	TString fFXSUser[3]; 		//! username of the [DAQ, DCS, HLT] File eXchange Server
 	TString fFXSPass[3]; 		//! password of the [DAQ, DCS, HLT] File eXchange Server
 
 	TString fFXSdbHost[3];		//! Host of the [DAQ, DCS, HLT] FXS database
+	UInt_t  fFXSdbPort[3];		//! Port of the [DAQ, DCS, HLT] FXS database
 	TString fFXSdbUser[3];  	//! username of the [DAQ, DCS, HLT] FXS database
 	TString fFXSdbPass[3]; 		//! password of the [DAQ, DCS, HLT] FXS database
 	TString fFXSdbName[3]; 		//! name of the [DAQ, DCS, HLT] FXS database

@@ -16,8 +16,8 @@
 ClassImp(AliTestPreprocessor)
 
 //______________________________________________________________________________________________
-AliTestPreprocessor::AliTestPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
-  AliPreprocessor(detector, shuttle),
+AliTestPreprocessor::AliTestPreprocessor(AliShuttleInterface* shuttle) :
+  AliPreprocessor("TPC", shuttle),
   fData(0)
 {
   // constructor

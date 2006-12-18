@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.13  2006/12/07 08:51:26  jgrosseo
+update (alberto):
+table, db names in ldap configuration
+added GRP preprocessor
+DCS data can also be retrieved by data point
+
 Revision 1.12  2006/11/16 16:16:48  jgrosseo
 introducing strict run ordering flag
 removed giving preprocessor name to preprocessor, they have to know their name themselves ;-)
@@ -112,6 +118,8 @@ AliShuttleConfig::AliShuttleConfigHolder::AliShuttleConfigHolder(const TLDAPEntr
 fDetector(""),
 fDCSHost(""),
 fDCSPort(0),
+fDCSAliases(0),
+fDCSDataPoints(0),
 fIsValid(kFALSE),
 fSkipDCSQuery(kFALSE),
 fStrictRunOrder(kFALSE)
@@ -210,7 +218,8 @@ ClassImp(AliShuttleConfig)
 AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
 	fIsValid(kFALSE),
-	fDAQlbHost(""), fDAQlbUser(""), fDAQlbPass(""),
+	fDAQlbHost(""), fDAQlbPort(), fDAQlbUser(""), fDAQlbPass(""),
+	fDAQlbDB(""), fDAQlbTable(""),
 	fMaxRetries(0), fPPTimeOut(0), fDetectorMap(), fDetectorList(),
 	fShuttleInstanceHost(""), fProcessedDetectors(), fProcessAll(kFALSE)
 {
@@ -336,6 +345,14 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 	fDAQlbHost = anAttribute->GetValue();
 
+	anAttribute = anEntry->GetAttribute("DAQLogbookPort"); // MAY
+	if (anAttribute)
+	{
+		fDAQlbPort = ((TString) anAttribute->GetValue()).Atoi();
+	} else {
+		fDAQlbPort = 3306; // mysql
+	}
+
 	anAttribute = anEntry->GetAttribute("DAQLogbookUser");
 	if (!anAttribute) {
 		AliError("Can't find DAQLogbookUser attribute!");
@@ -410,12 +427,20 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 
 		anAttribute = anEntry->GetAttribute("DBHost");
 		if (!anAttribute) {
-			AliError(Form ("Can't find LogbookHost attribute for %s!!",
+			AliError(Form ("Can't find DBHost attribute for %s!!",
 						AliShuttleInterface::GetSystemName(iSys)));
 			delete aResult; delete anEntry;
 			return;
 		}
 		fFXSdbHost[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("DBPort"); // MAY
+		if (anAttribute)
+		{
+			fFXSdbPort[iSys] = ((TString) anAttribute->GetValue()).Atoi();
+		} else {
+			fFXSdbPort[iSys] = 3306; // mysql
+		}
 
 		anAttribute = anEntry->GetAttribute("DBUser");
 		if (!anAttribute) {
@@ -461,6 +486,14 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 			return;
 		}
 		fFXSHost[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("FSPort"); // MAY
+		if (anAttribute)
+		{
+			fFXSPort[iSys] = ((TString) anAttribute->GetValue()).Atoi();
+		} else {
+			fFXSPort[iSys] = 22; // scp port number
+		}
 
 		anAttribute = anEntry->GetAttribute("FSUser");
 		if (!anAttribute) {
@@ -635,8 +668,8 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 
 	result += Form("PP time out = %d - Max total retries = %d\n\n", fPPTimeOut, fMaxRetries);
 
-	result += Form("DAQ Logbook Configuration \n \tHost: %s; \tUser: %s; ",
-		fDAQlbHost.Data(), fDAQlbUser.Data());
+	result += Form("DAQ Logbook Configuration \n \tHost: %s:%d; \tUser: %s; ",
+		fDAQlbHost.Data(), fDAQlbPort, fDAQlbUser.Data());
 
 //	result += "Password: ";
 //	result.Append('*', fDAQlbPass.Length());
@@ -647,11 +680,12 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 
 	for(int iSys=0;iSys<3;iSys++){
 		result += Form("FXS Configuration for %s system\n", AliShuttleInterface::GetSystemName(iSys));
-		result += Form("\tDB  host: %s; \tUser: %s; \tName: %s; \tTable: %s\n",
-						fFXSdbHost[iSys].Data(), fFXSdbUser[iSys].Data(),
+		result += Form("\tDB  host: %s:%d; \tUser: %s; \tName: %s; \tTable: %s\n",
+						fFXSdbHost[iSys].Data(), fFXSdbPort[iSys], fFXSdbUser[iSys].Data(),
 						fFXSdbName[iSys].Data(), fFXSdbTable[iSys].Data());
 		// result += Form("DB Password:",fFXSdbPass[iSys].Data());
-		result += Form("\tFXS host: %s; \tUser: %s\n\n", fFXSHost[iSys].Data(), fFXSUser[iSys].Data());
+		result += Form("\tFXS host: %s:%d; \tUser: %s\n\n", fFXSHost[iSys].Data(), fFXSPort[iSys],
+						fFXSUser[iSys].Data());
 		// result += Form("FXS Password:",fFXSPass[iSys].Data());
 	}
 

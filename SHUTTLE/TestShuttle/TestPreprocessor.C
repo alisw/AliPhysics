@@ -57,10 +57,12 @@ void TestPreprocessor()
   // AddInputFile(<system>, <detector>, <id>, <source>, <local-file>)
   // In this example we add a file originating from the GDC with the id PEDESTALS
   // Three files originating from different LDCs but with the same id are also added
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "PEDESTALS", "GDC", "file1.root");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC0", "file2a.root");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC1", "file2b.root");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC2", "file2b.root");
+  // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
+  // the "online" naming convention ALICE-INT-2003-039.
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "PEDESTALS", "GDC", "file1.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "DRIFTVELOCITY", "LDC0", "file2a.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "DRIFTVELOCITY", "LDC1", "file2b.root");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "DRIFTVELOCITY", "LDC2", "file2b.root");
 
   // TODO(3)
   //
@@ -73,9 +75,7 @@ void TestPreprocessor()
 
   // TODO(4)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
-//  AliPreprocessor* pp = new AliTestPreprocessor("DET", shuttle);
-//  AliPreprocessor* start = new AliT0Preprocessor("T00", shuttle);
-  AliPreprocessor* test = new AliTestPreprocessor("DET", shuttle);
+  AliPreprocessor* test = new AliTestPreprocessor(shuttle);
 
   // Test the preprocessor
   shuttle->Process();
@@ -87,7 +87,7 @@ void TestPreprocessor()
   //
   // Check the file which should have been created
   AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetOCDBStorage())
-  			->Get("DET/SHUTTLE/Data", 7);
+  			->Get("TPC/SHUTTLE/Data", 7);
   if (!entry)
   {
     printf("The file is not there. Something went wrong.\n");

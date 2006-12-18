@@ -10,7 +10,7 @@ class AliTestDataDCS;
 class AliTestPreprocessor : public AliPreprocessor
 {
   public:
-    AliTestPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+    AliTestPreprocessor(AliShuttleInterface* shuttle);
     virtual ~AliTestPreprocessor();
 
   protected:

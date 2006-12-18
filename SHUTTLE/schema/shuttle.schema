@@ -21,37 +21,41 @@ objectidentifier SYS_CONFIG SHUTTLE_BASE:2
 
 attributetype ( SYS_CONFIG:1 NAME 'system' 	     DESC 'System name (DAQ, DCS, HLT)'    EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( SYS_CONFIG:2 NAME 'DBHost'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:3 NAME 'DBUser'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:4 NAME 'DBPassword'  DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:5 NAME 'DBName'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:6 NAME 'DBTable'     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:7 NAME 'FSHost'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:8 NAME 'FSUser'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:9 NAME 'FSPassword'       DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:3 NAME 'DBPort'      DESC ''				    SUP ipServicePort )
+attributetype ( SYS_CONFIG:4 NAME 'DBUser'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:5 NAME 'DBPassword'  DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:6 NAME 'DBName'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:7 NAME 'DBTable'     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:8 NAME 'FSHost'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:9 NAME 'FSPort'	     DESC ''				    SUP ipServicePort )
+attributetype ( SYS_CONFIG:10 NAME 'FSUser'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( SYS_CONFIG:11 NAME 'FSPassword'       DESC ''	EQUALITY caseIgnoreMatch    SUP name )
 
 objectclass ( SYS_CONFIG
         NAME 'AliShuttleSYSConfig'
         DESC 'ALICE: Configuration of the Shuttle for access to online network'
         SUP top
         MUST (system $ DBHost $ DBUser $ DBPassword $ DBName $ DBTable $ FSHost $ FSUser )
-        MAY ( FSPassword ) )
+        MAY ( FSPassword $ DBPort $ FSPort) )
 
 
 objectidentifier GLOBAL_CONFIG SHUTTLE_BASE:3
 
 attributetype ( GLOBAL_CONFIG:1 NAME 'DAQLogbookHost'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:2 NAME 'DAQLogbookUser'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:3 NAME 'DAQLogbookPassword'  DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:4 NAME 'DAQLogbookDB'        DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:5 NAME 'DAQLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:6 NAME 'MaxRetries'          DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:7 NAME 'PPTimeOut'           DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:2 NAME 'DAQLogbookPort'      DESC ''    				  SUP ipServicePort )
+attributetype ( GLOBAL_CONFIG:3 NAME 'DAQLogbookUser'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:4 NAME 'DAQLogbookPassword'  DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:5 NAME 'DAQLogbookDB'        DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:6 NAME 'DAQLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:7 NAME 'MaxRetries'          DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:8 NAME 'PPTimeOut'           DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'AliShuttleGlobalConfig'
         DESC 'ALICE: Access to DAQ logbook settings'
         SUP top
-        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ DAQLogbookDB $ DAQLogbookTable $ MaxRetries $ PPTimeOut) )
+        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ DAQLogbookDB $ DAQLogbookTable $ MaxRetries $ PPTimeOut)
+        MAY ( DAQLogbookPort ) )
 
 
 objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:4
