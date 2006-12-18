@@ -1,3 +1,11 @@
+2006-12-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* FrameBox.h:
+	Added getters for frame-point details.
+
+	* QuadSet.cxx:
+	If frame-box is set, use it for determination of bounding-box.
+
 2006-12-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* FrameBox.h:
