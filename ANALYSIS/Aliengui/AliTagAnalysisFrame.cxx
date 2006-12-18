@@ -45,7 +45,22 @@
 ClassImp(AliTagAnalysisFrame)
 
 //___________________________________________________________________________
-AliTagAnalysisFrame::AliTagAnalysisFrame(const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI* fAliAnalysisGUI): TGMainFrame(main, w, h, kHorizontalFrame), fkNumberOfTags(3),fAliAnalysisGUI(fAliAnalysisGUI), fAliEnBrowser(NULL), fBrowser(NULL), fBrowserButton(NULL) {
+AliTagAnalysisFrame::AliTagAnalysisFrame(const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI* fAliAnalysisGUI): 
+  TGMainFrame(main, w, h, kHorizontalFrame), 
+  fkNumberOfTags(3), 
+  fVFrame1(0), fVFrame2(0),
+  fGroup1(0), fGroup2(0), fGroup3(0),
+  fAliAnalysisGUI(fAliAnalysisGUI),
+  fTagFrame(0), fAliEnBrowser(0),
+  fLocalLabel1(0), fLocalPath(0),
+  fLocalButton(0), fButtonInsert(0), fButtonRun(0),
+  fComboEventTagCut(0), fGridLabel1(0),
+  fGridPath(0), fGridButton(0), fButtonInsert2(0), fButtonRun2(0),
+  fComboEventTagCut2(0), fTagResult(0),
+  fAnalysisChain(0), fListBox(0),
+  fBrowser(NULL), fBrowserButton(NULL),
+  fAliTagAnalysis(0), fAliRunCuts(0),
+  fAliEventCuts(0), fEventTagCutsName(0) {
    // Constructor.
 
 /*

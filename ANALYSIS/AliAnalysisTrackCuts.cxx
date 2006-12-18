@@ -39,8 +39,20 @@
 ClassImp(AliAnalysisTrackCuts)
 
 //----------------------------------------//
-AliAnalysisTrackCuts::AliAnalysisTrackCuts()
-{
+  AliAnalysisTrackCuts::AliAnalysisTrackCuts() :
+  TObject(),
+  fPMin(0), fPMax(0), fPtMin(0), fPtMax(0),
+  fPxMin(0), fPxMax(0), fPyMin(0), fPyMax(0),
+  fPzMin(0), fPzMax(0), fEtaMin(0), fEtaMax(0),
+  fRapMin(0), fRapMax(0), fBrMin(0), fBrMax(0),
+  fBzMin(0), fBzMax(0),
+  fP(0), fPt(0), fPx(0), fPy(0), fPz(0),
+  fEta(0), fRap(0),
+  fbr(0), fbz(0),
+  fTotalTracks(0), fAcceptedTracks(0),
+  fFlagP(0), fFlagPt(0), fFlagPx(0), fFlagPy(0), fFlagPz(0),
+  fFlagEta(0), fFlagRap(0), fFlagbr(0), fFlagbz(0),
+  fAcceptedParticleList(0) {
   //Default constructor.
   //Calls the Reset method.
   Reset();

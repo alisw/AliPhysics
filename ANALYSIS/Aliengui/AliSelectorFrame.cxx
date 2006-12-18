@@ -35,7 +35,11 @@
 ClassImp(AliSelectorFrame)
 
 //___________________________________________________________________________
-AliSelectorFrame::AliSelectorFrame(const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI *v, AliTagAnalysisFrame* t): TGHorizontalFrame(main, w, h), fAliAnalysisGUI(v), fTagAnalysisFrame(t) {
+AliSelectorFrame::AliSelectorFrame(const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI *v, AliTagAnalysisFrame* t): 
+  TGHorizontalFrame(main, w, h), 
+  fVFrame1(0), fVFrame2(0),
+  fLabel1(0), fTextSelector(0), fButtonSelect(0), fButtonRun(0),
+  fAliAnalysisGUI(v), fTagAnalysisFrame(t) {
   // ctor.
   
   fVFrame1 = new TGVerticalFrame(this, 100, 100);

@@ -65,7 +65,19 @@ enum EAliEnViewerCommands {
 ClassImp(AliAnalysisGUI)
 
 //___________________________________________________________________________
-AliAnalysisGUI::AliAnalysisGUI(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,w,h), fIsConnected(false) {
+AliAnalysisGUI::AliAnalysisGUI(const TGWindow *p, UInt_t w, UInt_t h) : 
+  TGMainFrame(p,w,h), 
+  fHFrame1(0), fVFrame1(0), fVFrame2(0),
+  fMenuDock(0), fMenuFile(0), fMenuBar(0),
+  fToolBar(0), fTab(0),
+  fMenuBarLayout(0), fMenuBarItemLayout(0),
+  fH3DLine(0), fCanvas2(0), fStatusBar(0),
+  fAliEnBrowser(0), fFileListFrame(0),
+  fLogInFrame(0), fTagFrame(0),
+  fTagAnalysisFrame(0), fPackageFrame(0),
+  fSelectorFrame(0), fIcon(0),
+  fRightIconPicture(0), fRightIcon(0),
+  fIsConnected(kFALSE), fAlien(0) {
   // AliAnalysisGUI Constructor
   
   SetWindowName("AliEn");
@@ -80,9 +92,9 @@ AliAnalysisGUI::AliAnalysisGUI(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFr
   
   fTab = new TGTab(this, 900, 300);
   //   fTab->Connect("Selected(Int_t)", "TestDialog", this, "DoTab(Int_t)");
-
+  
   AddFrame(fTab);
-
+  
   //_____________________________________//
   //_________File Catalogue TAB__________//
   //_____________________________________//

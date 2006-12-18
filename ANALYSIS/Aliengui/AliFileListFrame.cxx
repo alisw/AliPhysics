@@ -39,7 +39,13 @@
 ClassImp(AliFileListFrame)
 
 //___________________________________________________________________________
-AliFileListFrame::AliFileListFrame(const TGWindow *main, UInt_t w, UInt_t h): TGCompositeFrame(main, w, h), fTableLayout(0) {
+AliFileListFrame::AliFileListFrame(const TGWindow *main, UInt_t w, UInt_t h): 
+  TGCompositeFrame(main, w, h), 
+  fHFrame1(0), fVFrame1(0), fVFrame2(0),
+  fHFrame2(0), fLabel1(0), fLabel2(0), fLabel3(0),
+  fTextQueryPath(0), fNumMaxResults(0), fTextQueryPattern(0),
+  fButtonRun(0), fContents(0), fCanvas(0),
+  fTableLayout(0), fTags(0) {
   // Creates a composite frame containing a filelist widget.
    
   // use hierarchical cleaning

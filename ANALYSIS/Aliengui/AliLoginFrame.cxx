@@ -36,7 +36,13 @@
 ClassImp(AliLoginFrame)
 
 //___________________________________________________________________________
-AliLoginFrame::AliLoginFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UInt_t options) : TGTransientFrame(p, main, w, h, options) {
+AliLoginFrame::AliLoginFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UInt_t options) : 
+  TGTransientFrame(p, main, w, h, options),
+  fLabel1(0), fLabel2(0),
+  fTextServer(0), fTextUsername(0),
+  fButtonLogIn(0), fButtonCancel(0),
+  fVFrame1(0),
+  fHFrame1(0), fHFrame2(0), fHFrame3(0) {
   // Constructor.
 
   SetWindowName("Login");

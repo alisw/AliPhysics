@@ -35,7 +35,11 @@
 ClassImp(AliPackageFrame)
 
 //___________________________________________________________________________
-  AliPackageFrame::AliPackageFrame (const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI * v): TGHorizontalFrame(main, w, h), fAliAnalysisGUI(v) {
+  AliPackageFrame::AliPackageFrame (const TGWindow *main, UInt_t w, UInt_t h, AliAnalysisGUI * v): 
+    TGHorizontalFrame(main, w, h), 
+    fVFrame1(0), fVFrame2(0),
+    fLabel1(0), fTextPackage(0), fButtonSelect(0), fButtonBuild(0),
+    fAliAnalysisGUI(v) {
    // ctor.
   
    fVFrame1 = new TGVerticalFrame(this, 100, 100);

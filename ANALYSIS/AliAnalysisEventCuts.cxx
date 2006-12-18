@@ -35,11 +35,21 @@
 ClassImp(AliAnalysisEventCuts)
 
 //----------------------------------------//
-AliAnalysisEventCuts::AliAnalysisEventCuts()
-{
-  //Default constructor which calls the Reset method.
-  Reset();
-}
+  AliAnalysisEventCuts::AliAnalysisEventCuts() :
+    TObject(),
+    fVerboseOff(0), fVxMin(0), fVxMax(0),
+    fVyMin(0), fVyMax(0),
+    fVzMin(0), fVzMax(0),
+    fMultMin(0), fMultMax(0),
+    fVzFlagType(""),
+    fMult(0), fVx(0), fVy(0), fVz(0),
+    fVzFlag(0), fTotalEvents(0),
+    fAcceptedEvents(0), fFlagMult(0),
+    fFlagVx(0), fFlagVy(0), fFlagVz(0),
+    fFlagVzType(0) {
+    //Default constructor which calls the Reset method.
+    Reset();
+  }
 
 //----------------------------------------//
 AliAnalysisEventCuts::~AliAnalysisEventCuts()
