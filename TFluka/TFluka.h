@@ -15,6 +15,7 @@
 
 
 #include "TVirtualMC.h"
+#include "TMCOptical.h"
 #include "TFlukaCodes.h"
 #include "TFlukaMCGeometry.h"
 
@@ -132,7 +133,22 @@ class TFluka : public TVirtualMC {
   virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
 			     Double_t *absco, Double_t *effic, Double_t *rindex, Double_t *rfl);
   
+//
+  virtual void   DefineOpSurface(const char* name, EMCOpSurfaceModel model, EMCOpSurfaceType surface,
+				 EMCOpSurfaceFinish surfaceFinish, Double_t sigmaAlpha);
   
+  virtual void  SetBorderSurface(const char* name, const char* vol1Name, int vol1CopyNo, const char* vol2Name, int vol2CopyNo,
+				 const char* opSurfaceName);
+  
+  
+  virtual void  SetSkinSurface(const char* name, const char* volName, const char* opSurfaceName);
+  
+  virtual void  SetMaterialProperty(Int_t itmed, const char* propertyName, Int_t np, Double_t* pp, Double_t* values);
+
+  virtual void  SetMaterialProperty(Int_t itmed, const char* propertyName, Double_t value);
+
+  virtual void  SetMaterialProperty(const char* surfaceName, const char* propertyName, Int_t np, Double_t* pp, Double_t* values);
+
   // Functions for drawing
   virtual void   DrawOneSpec(const char* /*name*/)
       {Warning("DrawOneSpec",  "Not yet implemented !\n");}
@@ -453,6 +469,45 @@ class TFluka : public TVirtualMC {
     Warning("VolDaughterCopyNo", "New function - not yet implemented.");
     return 0;
   }
+
+
+inline void TFluka::DefineOpSurface(const char* /*name*/, EMCOpSurfaceModel /*model*/, EMCOpSurfaceType /*surface*/,
+				    EMCOpSurfaceFinish /*surfaceFinish*/, Double_t /*sigmaAlpha*/)
+{
+    Warning("DefineOpSurface", "New function - not yet implemented.");
+}
+
+
+inline void TFluka::SetBorderSurface(const char* /*name*/, const char* /*vol1Name*/, int /*vol1CopyNo*/, const char* /*vol2Name*/,
+				     int /*vol2CopyNo*/, const char* /*opSurfaceName*/)
+{
+    Warning("SetBorderSurface", "New function - not yet implemented."); 
+}
+
+  
+inline void TFluka::SetSkinSurface(const char* /*name*/, const char* /*volName*/, const char* /*opSurfaceName*/)
+{
+    Warning("SetSkinSurface", "New function - not yet implemented.");
+}
+
+  
+inline void TFluka::SetMaterialProperty(Int_t /*itmed*/, const char* /*propertyName*/, Int_t /*np*/, Double_t* /*pp*/, Double_t* /*values*/)
+{
+    Warning("SetMaterialProperty", "New function - not yet implemented."); 
+}
+
+
+inline void TFluka::SetMaterialProperty(Int_t /*itmed*/, const char* /*propertyName*/, Double_t /*value*/)
+{
+    Warning("SetMaterialProperty", "New function - not yet implemented.");
+}
+
+
+inline void TFluka::SetMaterialProperty(const char* /*surfaceName*/, const char* /*propertyName*/, Int_t /*np*/,
+					Double_t* /*pp*/, Double_t* /*values*/)
+{
+    Warning("SetMaterialProperty", "New function - not yet implemented."); 	 
+}
 
 
 
