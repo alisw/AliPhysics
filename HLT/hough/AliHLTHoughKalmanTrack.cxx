@@ -58,7 +58,6 @@ AliHLTHoughKalmanTrack::AliHLTHoughKalmanTrack(const AliHLTHoughTrack& t) throw 
   if(CalcExternalParams(t,0,0,0,zvertex,xhit,par)==0) throw "AliHLTHoughKalmanTrack: conversion failed !\n";
 
   Double_t cnv=1./(GetBz()*kB2C);
-  par[4]*=cnv;;
 
   //and covariance matrix
   //For the moment estimate the covariance matrix numerically
@@ -94,6 +93,7 @@ AliHLTHoughKalmanTrack::AliHLTHoughKalmanTrack(const AliHLTHoughTrack& t) throw 
   fC20=fC42=fC40=0;
   */
   cov[10]*=cnv; cov[11]*=cnv; cov[12]*=cnv; cov[13]*=cnv; cov[14]*=(cnv*cnv); 
+  par[4]*=cnv;
 
   Set(xhit,alpha,par,cov);
 
