@@ -22,4 +22,6 @@
 
 #pragma link C++ class AliFMDQATask+;
 
+#pragma link C++ class AliTRDQATask+;
+
 #endif

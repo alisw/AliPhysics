@@ -6,7 +6,8 @@ SRCS = AliAnalysisGoodies.cxx \
        AliHMPIDQATask.cxx \
        AliT0QATask.cxx \
        AliMUONQATask.cxx \
-       AliFMDQATask.cxx
+       AliFMDQATask.cxx \
+       AliTRDQATask.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
