@@ -7,7 +7,7 @@ SRCS          = AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 		AliStats.cxx AliRawDB.cxx \
 		AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
 		AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
-		AliRunDB.cxx AliMDC.cxx
+		AliMDC.cxx
 
 HDRS          = $(SRCS:.cxx=.h) LinkDef.h
 

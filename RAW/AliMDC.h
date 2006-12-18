@@ -30,7 +30,6 @@ class AliRawEventHeaderBase;
 class AliRawEquipmentHeader;
 class AliRawData;
 class AliRawDB;
-class AliRunDB;
 class AliTagDB;
 class AliStats;
 class AliESD;
@@ -53,8 +52,6 @@ public:
 
    AliMDC(Int_t compress, Bool_t deleteFiles, 
 	  EFilterMode filterMode = kFilterTransparent, 
-	  const char* localRunDB = NULL, Bool_t rdbmsRunDB = kFALSE,
-	  const char* alienHostRunDB = NULL, const char* alienDirRunDB = NULL,
 	  Double_t maxSizeTagDB = -1, const char* fileNameTagDB = NULL);
    virtual ~AliMDC();
 
@@ -88,7 +85,6 @@ private:
    AliESD      *fESD;         // pointer to HLT ESD object
    AliStats    *fStats;       // statistics
    AliRawDB    *fRawDB;       // raw data DB
-   AliRunDB    *fRunDB;       // run DB
    AliTagDB    *fTagDB;       // tag DB
    Int_t        fCompress;    // compression factor used for raw output DB
    Bool_t       fDeleteFiles; // flag for deletion of files

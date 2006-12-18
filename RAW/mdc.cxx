@@ -26,14 +26,11 @@
 #include "AliLog.h"
 
 void* alimdcCreate(int compress, int filterMode, 
-		   const char* localRunDB, int rdbmsRunDB,
-		   const char* alienHostRunDB, const char* alienDirRunDB,
 		   double maxSizeTagDB, const char* fileNameTagDB)
 {
 // create an AliMDC object
 
   return new AliMDC(compress, kFALSE, AliMDC::EFilterMode(filterMode), 
-		    localRunDB, rdbmsRunDB, alienHostRunDB, alienDirRunDB,
 		    maxSizeTagDB, fileNameTagDB);
 
 }

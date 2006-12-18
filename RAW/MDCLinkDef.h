@@ -11,7 +11,6 @@
 #pragma link C++ class AliRawNullDB;
 #pragma link C++ class AliTagDB;
 #pragma link C++ class AliTagNullDB;
-#pragma link C++ class AliRunDB;
 #pragma link C++ class AliMDC;
 
 #endif

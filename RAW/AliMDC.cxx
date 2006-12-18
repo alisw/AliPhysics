@@ -33,8 +33,6 @@
 // AliRawRFIODB or via rootd using AliRawRootdDB or to CASTOR via       //
 // rootd using AliRawCastorDB (and for performance testing there is     //
 // also AliRawNullDB).                                                  //
-// The AliRunDB class provides the interface to the run and file        //
-// catalogues (AliEn or plain MySQL).                                   //
 // The AliStats class provides statics information that is added as     //
 // a single keyed object to each raw file.                              //
 // The AliTagDB provides an interface to a TAG database.                //
@@ -72,7 +70,6 @@
 #include "AliRawRootdDB.h"
 #include "AliRawNullDB.h"
 #include "AliTagDB.h"
-#include "AliRunDB.h"
 #include "AliFilter.h"
 
 #include "AliMDC.h"
@@ -85,14 +82,11 @@ const char* const AliMDC::fgkFilterName[kNFilters] = {"AliHoughFilter"};
 
 //______________________________________________________________________________
 AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode, 
-	       const char* localRunDB, Bool_t rdbmsRunDB,
-	       const char* alienHostRunDB, const char* alienDirRunDB,
 	       Double_t maxSizeTagDB, const char* fileNameTagDB) :
   fEvent(new AliRawEvent),
   fESD(NULL),
   fStats(NULL),
   fRawDB(NULL),
-  fRunDB(new AliRunDB(localRunDB, rdbmsRunDB, alienHostRunDB, alienDirRunDB)),
   fTagDB(NULL),
   fCompress(compress),
   fDeleteFiles(deleteFiles),
@@ -111,11 +105,6 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   // kFilterTransparent the algorthims will be run but no events will be
   // rejected, if it is kFilterOn the filters will be run and the event will
   // be rejected if all filters return kFALSE.
-  // localRunDB is the file name of the local run DB; if NULL no local run DB
-  // will be created.
-  // The filling of a MySQL run DB can be switch on or off with rdbmsRunDB.
-  // The host and directory name of the alien run DB can be specified by
-  // alienHostRunDB and alienDirRunDB; if NULL no alien DB will be filled.
   // If maxSizeTagDB is greater than 0 it determines the maximal size of the
   // tag DB and then fileNameTagDB is the directory name for the tag DB.
   // Otherwise fileNameTagDB is the file name of the tag DB. If it is NULL
@@ -167,7 +156,6 @@ AliMDC::~AliMDC()
 
   fFilters.Delete();
   if(fTagDB) delete fTagDB;
-  delete fRunDB;
   delete fRawDB;
   delete fStats;
   delete fESD;
@@ -405,7 +393,6 @@ Int_t AliMDC::Close()
   if (!fRawDB) return -1;
 
   fRawDB->WriteStats(fStats);
-  fRunDB->Update(fStats);
   Int_t filesize = fRawDB->Close();
   delete fRawDB;
   fRawDB = NULL;
@@ -611,7 +598,6 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 
 	// Write stats object to raw db, run db, MySQL and AliEn
 	fRawDB->WriteStats(fStats);
-	if (fRunDB) fRunDB->Update(fStats);
 	delete fStats;
 	fStats = NULL;
 

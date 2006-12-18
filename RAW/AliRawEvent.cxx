@@ -30,8 +30,6 @@
 // AliRawRFIODB or via rootd using AliRawRootdDB or to CASTOR via       //
 // rootd using AliRawCastorDB (and for performance testing there is     //
 // also AliRawNullDB).                                                  //
-// The AliRunDB class provides the interface to the run and file        //
-// catalogues (AliEn or plain MySQL).                                   //
 // The AliStats class provides statics information that is added as     //
 // a single keyed object to each raw file.                              //
 // The AliTagDB provides an interface to a TAG database.                //

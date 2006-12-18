@@ -10,7 +10,7 @@ PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 SRCS:=  AliMDC.cxx AliRawDB.cxx \
 	AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
 	AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
-	AliRunDB.cxx mdc.cxx
+	mdc.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

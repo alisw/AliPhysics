@@ -122,8 +122,6 @@ static void Usage(const char *prognam)
       fprintf(stderr, " <dbsize> = maximum raw DB size (in bytes)\n");
       fprintf(stderr, "    (precede by - to delete raw and tag databases on close)\n");
       fprintf(stderr, " <tagdbsize> = maximum tag DB size (in bytes, 0 for no tag DB)\n");
-      fprintf(stderr, "    (precede by - to switch off the run DB)\n");
-      fprintf(stderr, "    (precede by + to fill only the local run DB)\n");
       fprintf(stderr, " <filter> = state of 3rd level filter (0: off, 1: transparent, 2: on)\n");
       fprintf(stderr, " <compmode> = compression level (see TFile)\n");
       fprintf(stderr, "    (precede by - to use RFIO, -0 is RFIO and 0 compression)\n");
@@ -150,13 +148,11 @@ int main(int argc, char **argv)
 #ifdef USE_EB
    const char* rawDBFS[2] = { "/data1/mdc", "/data2/mdc" };
    const char* tagDBFS    = "/data1/mdc/tags";
-   const char* runDBFS    = "/data1/mdc/meta";
    const char* rfioFS     = "rfio:/castor/cern.ch/lcg/dc5";
    const char* castorFS   = "castor:/castor/cern.ch/lcg/dc5";
 #else
    const char* rawDBFS[2] = { "/tmp/mdc1", "/tmp/mdc2" };
    const char* tagDBFS    = "/tmp/mdc1/tags";
-   const char* runDBFS    = "/tmp/mdc1/meta";
    TString user(gSystem->Getenv("USER")[0] + TString("/") + 
 		gSystem->Getenv("USER"));
    TString rfioStr("rfio:/castor/cern.ch/user/" + user);
@@ -165,9 +161,6 @@ int main(int argc, char **argv)
    const char* castorFS   = castorStr.Data();
 #endif
    const char* rootdFS    = "root://localhost//tmp/mdc1";
-   //   const char* alienHost  = "alien://aliens7.cern.ch:15000/?direct";
-   const char* alienHost  = NULL;
-   const char* alienDir   = "/alice_mdc/DC";
 
    // User defined file system locations
    if (gSystem->Getenv("ALIMDC_RAWDB1")) 
@@ -176,18 +169,12 @@ int main(int argc, char **argv)
      rawDBFS[1] = gSystem->Getenv("ALIMDC_RAWDB2");
    if (gSystem->Getenv("ALIMDC_TAGDB")) 
      tagDBFS = gSystem->Getenv("ALIMDC_TAGDB");
-   if (gSystem->Getenv("ALIMDC_RUNDB")) 
-     runDBFS = gSystem->Getenv("ALIMDC_RUNDB");
    if (gSystem->Getenv("ALIMDC_RFIO")) 
      rfioFS = gSystem->Getenv("ALIMDC_RFIO");
    if (gSystem->Getenv("ALIMDC_CASTOR")) 
      castorFS = gSystem->Getenv("ALIMDC_CASTOR");
    if (gSystem->Getenv("ALIMDC_ROOTD")) 
      rootdFS = gSystem->Getenv("ALIMDC_ROOTD");
-   if (gSystem->Getenv("ALIMDC_ALIENHOST")) 
-     alienHost = gSystem->Getenv("ALIMDC_ALIENHOST");
-   if (gSystem->Getenv("ALIMDC_ALIENDIR")) 
-    alienDir  = gSystem->Getenv("ALIMDC_ALIENDIR");
 
    // Handle command line arguments
    if ((argc == 2 && (!strcmp(argv[1], "-?") || !strcmp(argv[1], "-help"))) ||
@@ -214,7 +201,6 @@ int main(int argc, char **argv)
    Int_t    filterMode = 0;
    Bool_t   useLoop = kFALSE;
    Bool_t   delFiles = kFALSE;
-   Bool_t   rdbmsRunDB = kTRUE;
    Int_t    compress;
    Double_t maxFileSize;
    Double_t maxTagSize;
@@ -233,17 +219,7 @@ int main(int argc, char **argv)
    }
    iarg++;
 
-   if (argv[iarg][0] == '-') {
-      runDBFS = NULL;
-      rdbmsRunDB = kFALSE;
-      alienHost = alienDir = NULL;
-      maxTagSize = atoi(argv[iarg]+1);
-   } else if (argv[iarg][0] == '+') {
-      rdbmsRunDB = kFALSE;
-      alienHost = alienDir = NULL;
-      maxTagSize = atoi(argv[iarg]+1);
-   } else
-      maxTagSize = atoi(argv[iarg]);
+   maxTagSize = atoi(argv[iarg]);
    if (maxTagSize > 0 && (maxTagSize < 1000 || maxTagSize > 2.e9)) {
       Error(argv[0], "unreasonable tag file size %f\n", maxTagSize);
       return 1;
@@ -295,7 +271,6 @@ int main(int argc, char **argv)
 
    // Create MDC processor object and process input stream
    AliMDC mdcproc(compress, delFiles, AliMDC::EFilterMode(filterMode), 
-		  runDBFS, rdbmsRunDB, alienHost, alienDir, 
 		  maxTagSize, tagDBFS);
 
    Int_t result = mdcproc.Run(file, useLoop, wmode, maxFileSize, fs1, fs2);

@@ -16,8 +16,6 @@ extern "C" {
 #endif
 
 void* alimdcCreate(int compress, int filterMode, 
-		   const char* localRunDB, int rdbmsRunDB,
-		   const char* alienHostRunDB, const char* alienDirRunDB,
 		   double maxSizeTagDB, const char* fileNameTagDB);
 int   alimdcOpen(void* alimdc, int mode, const char* fileName);
 int   alimdcProcessEvent(void* alimdc, void* event, int isIovecArray);
