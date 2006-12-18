@@ -17,11 +17,12 @@ class TObjArray;
 class AliTOFCalOnline;
 class AliTOFGeometryV5;
 class AliTOFGeometry;
+class TH2S;
 
 class AliTOFPreprocessor : public AliPreprocessor
 {
   public:
-    AliTOFPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+    AliTOFPreprocessor(AliShuttleInterface* shuttle);
     virtual ~AliTOFPreprocessor();
 
   protected:
@@ -35,7 +36,8 @@ class AliTOFPreprocessor : public AliPreprocessor
     static const Int_t fgkBinRangeAve;   // number of bins where to 
                                           // calculate the mean
     AliTOFDataDCS *fData;    // CDB class that stores the data
-    TObjArray *fArray;       // Array of DAQ histograms for delays  
+    //    TObjArray *fArray;       // Array of DAQ histograms for delays  
+    TH2S *fh2;       // TH2S from DAQ for histograms for delays  
     AliTOFCalOnline *fCal;         // TOF Calibration object
     AliTOFGeometry *fTOFGeometry;  // TOF Geometry version
 

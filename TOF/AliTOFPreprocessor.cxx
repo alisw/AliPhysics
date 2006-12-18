@@ -33,6 +33,12 @@ prototype for the TOF Shuttle preprocessor (C.Zampolli)
 #include "AliTOFGeometryV5.h"
 #include "TTimeStamp.h"
 #include "TH1F.h"
+#include "TH2S.h"
+#include "TH1S.h"
+#include "TH1.h"
+#include <Riostream.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 class TF1;
 class AliDCSValue;
@@ -52,10 +58,10 @@ const Int_t AliTOFPreprocessor::fgkBinRangeAve    = 13; // number of bins where 
 
 //_____________________________________________________________________________
 
-AliTOFPreprocessor::AliTOFPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
-  AliPreprocessor(detector, shuttle),
+AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
+  AliPreprocessor("TOF", shuttle),
   fData(0),
-  fArray(0),
+  fh2(0),
   fCal(0),
   fTOFGeometry(0)
 {
@@ -82,7 +88,7 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(endTime).AsString()));
 
 	fData = new AliTOFDataDCS(fRun, fStartTime, fEndTime);
-	fArray = 0x0;
+	fh2 = 0x0;
 	fTOFGeometry = new AliTOFGeometryV5();
 	fCal = new AliTOFCalOnline(fTOFGeometry);
 	fCal->CreateArray();
@@ -94,6 +100,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 {
   // Fills data into a AliTOFDataDCS object
 
+  TH1::AddDirectory(0);
   UInt_t resultDCS=0;
   UInt_t resultDAQ=0;
   UInt_t resultDAQRef=0;
@@ -134,12 +141,14 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	if (fileNameRun){
 	  AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun));
 	  daqFile = new TFile(fileNameRun,"READ");
-	  fArray = (TObjArray*) daqFile->Get("ciccio");
+	  //	  fArray = (TObjArray*) daqFile->Get("ciccio");
+	  fh2 = (TH2S*) daqFile->Get("htof");
 	  AliCDBMetaData metaDataHisto;
 	  metaDataHisto.SetBeamPeriod(0);
 	  metaDataHisto.SetResponsible("Chiara Zampolli");
 	  metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
-	  resultDAQRef = StoreReferenceData("Calib","DAQData",fArray, &metaDataHisto);
+	  //	  resultDAQRef = StoreReferenceData("Calib","DAQData",fArray, &metaDataHisto);
+	  resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
 	  result+=resultDAQRef*2;
 	  if (!resultDAQRef){
 	    AliInfo(Form("some problems occurred::No Reference Data stored"));
@@ -158,21 +167,27 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  AliInfo(Form("Got the file %s, now we can extract some values.", fileName));
 
 	  daqFile = new TFile(fileName,"READ");
-	  fArray = (TObjArray*) daqFile->Get("ciccio");
-	  if (!fArray){
-	    AliInfo(Form("some problems occurred:: No histo array retrieved"));
+	  fh2 = (TH2S*) daqFile->Get("htoftot");
+	  if (!fh2){
+	    AliInfo(Form("some problems occurred:: No histo retrieved"));
 	  }
 	  
 	  else {
-	    Int_t nentries=(Int_t)fArray->GetEntries();
-	    AliInfo(Form(" il numero di entries e' = %i ", nentries)); 
+	    static const Int_t size=fh2->GetNbinsX();
+	    static const Int_t nbins=fh2->GetNbinsY();
+	    static const Double_t xbinmin=fh2->GetYaxis()->GetBinLowEdge(1);
 	    Int_t npads = fCal->NPads();
-	    for (Int_t i=0 ; i<nentries; i++){
+	    if (size != npads) AliError(Form(" number of bins along x different from number of pads. retrieving only %i histograms",size));
+
+	    for (Int_t ich=0;ich<size;ich++){
+	      TH1S *h1 = new TH1S("h1","h1",nbins,xbinmin-0.5,nbins*1.+xbinmin-0.5);
+	      for (Int_t ibin=0;ibin<nbins;ibin++){
+		h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
+	      }
+
 	      Bool_t found=kFALSE; 
-	      TH1F * h1 = (TH1F*)fArray->At(i);
-	      Float_t minContent=h1->Integral()*0.01; //for the time being 
-	      //we use integral() since we simulate landau distribution
-	      //Float_t minContent=h1->GetEntries()*0.01;
+	      //	      Float_t minContent=h1->Integral()*0.05208; 
+	      Float_t minContent=h1->Integral()*0.013; 
 	      Int_t nbinsX = h1->GetNbinsX();
 	      Int_t startBin=1;
 	      for (Int_t j=1; j<=nbinsX; j++){
@@ -186,7 +201,8 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 		  break;
 		}
 	      }
-	      if(!found) AliInfo(Form("WARNING!!! no start of fit found for histo # %i",i));
+	      if(!found) AliInfo(Form("WARNING!!! no start of fit found for histo # %i",ich));
+	      AliInfo(Form("starting bin = %i",startBin));
 	      // Now calculate the mean over the interval. 
 	      Double_t mean = 0;
 	      Double_t sumw2 = 0;
@@ -201,10 +217,13 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	      sumw2=sumw2/nent; //<x^2>
 	      Double_t rmsmean= 0;
 	      rmsmean = TMath::Sqrt((sumw2-mean*mean)/nent);
-	      if (i<npads) {
-		AliTOFChannelOnline * ch = fCal->GetChannel(i);
+	      if (ich<npads) {
+		AliTOFChannelOnline * ch = fCal->GetChannel(ich);
 		ch->SetDelay(mean);
+		AliInfo(Form("mean = %f",mean));
 	      }
+	    delete h1;
+	    h1=0x0;
 	    }
 	  }
 	  daqFile->Close();
@@ -223,6 +242,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
     }
   else{
     AliInfo(Form("Problem: no list found"));
+    return 0;
   }
 
   delete list;
@@ -232,8 +252,8 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   fData = 0;
   delete fCal;
   fCal = 0;
-  delete fArray;
-  fArray = 0;
+  delete fh2;
+  fh2 = 0;
   return result;
 }
 
