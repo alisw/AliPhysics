@@ -63,7 +63,8 @@ void AliTRDCommonParam::Terminate()
 {
   //
   // Singleton implementation
-  // Deletes the instance of this class and sets the terminated flag, instances cannot be requested anymore
+  // Deletes the instance of this class and sets the terminated flag,
+  // instances cannot be requested anymore
   // This function can be called several times.
   //
   

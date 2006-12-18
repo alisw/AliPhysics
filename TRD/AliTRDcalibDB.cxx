@@ -779,16 +779,27 @@ Float_t AliTRDcalibDB::GetOmegaTau(Float_t vdrift, Float_t bz)
   Float_t p2[kNb] = { -0.008682, -0.012896, -0.016987, -0.020880, -0.024623 };
   Float_t p3[kNb] = {  0.000155,  0.000238,  0.000330,  0.000428,  0.000541 };
 
-  Int_t ib = ((Int_t) (10 * (fieldAbs - 0.15)));
-  ib       = TMath::Max(  0,ib);
-  ib       = TMath::Min(kNb,ib);
+  // No ExB if field is too small (or zero)
+  if (fieldAbs < 0.01) {
 
-  Float_t alphaL = p0[ib] 
-                 + p1[ib] * vdrift
-                 + p2[ib] * vdrift*vdrift
-                 + p3[ib] * vdrift*vdrift*vdrift;
+    return 0.0;
 
-  return TMath::Tan(fieldSgn * alphaL);
+  }
+  // Calculate ExB from parametrization
+  else {
+
+    Int_t ib = ((Int_t) (10 * (fieldAbs - 0.15)));
+    ib       = TMath::Max(  0,ib);
+    ib       = TMath::Min(kNb,ib);
+
+    Float_t alphaL = p0[ib] 
+                   + p1[ib] * vdrift
+                   + p2[ib] * vdrift*vdrift
+                   + p3[ib] * vdrift*vdrift*vdrift;
+
+    return TMath::Tan(fieldSgn * alphaL);
+
+  }
 
 }
 
