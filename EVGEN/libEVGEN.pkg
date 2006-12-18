@@ -17,7 +17,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 	        AliGenGeVSimEventHeader.cxx\
 		AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx \
 		AliGenMUONCocktail.cxx AliGenMUONCocktailpp.cxx AliGenHBTosl.cxx AliGenCocktailEventHeader.cxx \
-		AliGenReaderEMD.cxx AliDecayerPolarized.cxx
+		AliGenReaderEMD.cxx AliDecayerPolarized.cxx AliGenCorrHF.cxx
 
 # Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 

@@ -55,10 +55,5 @@
 #pragma link C++ class  AliGenCocktailEventHeader+;
 #pragma link C++ class  AliGenReaderEMD+;
 #pragma link C++ class  AliDecayerPolarized+;
+#pragma link C++ class  AliGenCorrHF+;
 #endif
-
-
-
-
-
-
