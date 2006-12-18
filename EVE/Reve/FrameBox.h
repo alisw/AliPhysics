@@ -28,8 +28,6 @@ protected:
   Color_t      fFrameColor;
   UChar_t      fFrameRGBA[4];
 
-  // !!!! Back-refs to RenderElement consumers (as for palette)
-
 public:
   FrameBox();
   virtual ~FrameBox();
@@ -41,6 +39,10 @@ public:
 		Float_t dx, Float_t dy, Float_t dz);
 
   // ----------------------------------------------------------------
+
+  FrameType_e  GetFrameType()   const { return fFrameType; }
+  Int_t        GetFrameSize()   const { return fFrameSize; }
+  Float_t*     GetFramePoints() const { return fFramePoints; }
 
   Color_t  GetFrameColor() const { return fFrameColor; }
   Color_t* PtrFrameColor() { return &fFrameColor; }
