@@ -1192,13 +1192,13 @@ void TFluka::InitPhysics()
     }
     
     while ((fgets(sLine,255,pFlukaVmcCoreInp)) != NULL) { 
-        if (strncmp(sLine,"T0",5) != 0)
+        if (strncmp(sLine,"START",5) != 0)
             fprintf(pFlukaVmcInp,"%s\n",sLine);
         else {
             sscanf(sLine+10,"%10f",&fEventsPerRun);
             goto fin;
         }
-    } //end of while until T0 card
+    } //end of while until START card
     
  fin:
 
@@ -1254,8 +1254,8 @@ void TFluka::InitPhysics()
 
 // Add RANDOMIZ card
     fprintf(pFlukaVmcInp,"RANDOMIZ  %10.1f%10.0f\n", 1., Float_t(gRandom->GetSeed()));
-// Add T0 and STOP card
-    fprintf(pFlukaVmcInp,"T0     %10.1f\n",fEventsPerRun);
+// Add START and STOP card
+    fprintf(pFlukaVmcInp,"START     %10.1f\n",fEventsPerRun);
     fprintf(pFlukaVmcInp,"STOP      \n");
    
   
