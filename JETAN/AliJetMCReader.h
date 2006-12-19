@@ -18,7 +18,7 @@ class AliJetMCReader : public AliJetESDReader
     Bool_t FillMomentumArray(Int_t event);
     
  protected:
-    Float_t fPdgC;   // Pdg code
+    TChain* fChainMC;// Input chain
     ClassDef(AliJetMCReader,1)
 };
  

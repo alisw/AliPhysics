@@ -18,10 +18,6 @@ class AliJetKineReader : public AliJetReader
  public: 
   AliJetKineReader();
   virtual ~AliJetKineReader();
-
-  // Getters
-  Float_t GetParticleMass() const {return fMass;}        // returns mass of the Track
-  Int_t   GetParticlePdgCode() const {return fPdgC;}     // returns Pdg code
   // Setters
   Bool_t  FillMomentumArray(Int_t event);
   void    OpenInputFiles();
@@ -38,10 +34,6 @@ class AliJetKineReader : public AliJetReader
 
   AliRunLoader *fRunLoader;       //! Pointer to the run loader
   AliHeader    *fAliHeader;       //! Header
-  
-  Float_t fMass;                  //!Particle mass
-  Int_t   fPdgC;                  //!Pdg code
- 
   ClassDef(AliJetKineReader,1)
 };
  

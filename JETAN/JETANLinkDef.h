@@ -20,4 +20,10 @@
 #pragma link C++ class AliJetDistributions+;
 #pragma link C++ class AliUA1JetFinderV1+;
 #pragma link C++ class AliUA1JetHeaderV1+;
+#pragma link C++ class AliJetGrid+;
+#pragma link C++ class AliJetUnitArray+;
+#pragma link C++ class AliJetHadronCorrection+; 
+#pragma link C++ class AliJetHadronCorrectionv0+;
+#pragma link C++ class AliJetHadronCorrectionv1+; 
+#pragma link C++ class AliJetFillUnitArrayTracks+;
 #endif

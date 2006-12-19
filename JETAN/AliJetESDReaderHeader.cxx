@@ -27,7 +27,8 @@ ClassImp(AliJetESDReaderHeader)
 AliJetESDReaderHeader::AliJetESDReaderHeader():
   AliJetReaderHeader("AliJetESDReaderHeader"), 
   fReadSignalOnly(kFALSE),
-  fReadBkgdOnly(kFALSE)
+  fReadBkgdOnly(kFALSE),
+  fNesd(0)
 {
   // Default constructor
   

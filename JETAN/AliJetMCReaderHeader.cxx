@@ -25,10 +25,10 @@ ClassImp(AliJetMCReaderHeader)
 //____________________________________________________________________________
 
 AliJetMCReaderHeader::AliJetMCReaderHeader():
- AliJetReaderHeader("AliJetMCReaderHeader") 
+    AliJetESDReaderHeader()
 {
   // Constructor
-  fDCA = 3.;
+    fDCA = 3.;
 }
 
 //____________________________________________________________________________

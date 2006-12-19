@@ -16,7 +16,8 @@
 //------------------------------------------------------------------------
 // Jet reader base class
 // manages the reading of input for jet algorithms
-// Author: jgcn@mda.cinvestav.mx
+// Authors: jgcn@mda.cinvestav.mx
+//          magali.estienne@IReS.in2p3.fr
 //------------------------------------------------------------------------
 
 // root
@@ -32,20 +33,19 @@ ClassImp(AliJetReader)
 ////////////////////////////////////////////////////////////////////////
 
 AliJetReader::AliJetReader():
-  fChain(0),
-  fChainMC(0),
-  fMomentumArray(0),
+  fMomentumArray(new TClonesArray("TLorentzVector",2000)),
   fArrayMC(0),
-  fESD(0),
+  fFillUnitArray(new TTask("fillUnitArray","Fill unit array jet finder")),
   fReaderHeader(0),
   fSignalFlag(0),
-  fCutFlag(0)
-    
+  fCutFlag(0),
+  fUnitArray(new AliJetUnitArray[60000]),     
+  fUnitArrayNoCuts(new AliJetUnitArray[60000]),
+  fArrayInitialised(0)
 {
   // Default constructor
-  fMomentumArray = new TClonesArray("TLorentzVector",2000);
   fSignalFlag = TArrayI();
-  fCutFlag = TArrayI();
+  fCutFlag    = TArrayI();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -53,14 +53,27 @@ AliJetReader::AliJetReader():
 AliJetReader::~AliJetReader()
 {
   // Destructor
-  delete fChain;
-  delete fChainMC;
-  delete fESD;
   if (fMomentumArray) {
       fMomentumArray->Delete();
       delete fMomentumArray;
   }
+  
+  if (fUnitArray) {
+      fUnitArray->Delete();
+      delete fUnitArray;
+  }
+  
+  if (fUnitArrayNoCuts) {
+    fUnitArrayNoCuts->Delete();
+    delete fUnitArrayNoCuts;
+  }
+
+  if (fFillUnitArray) {
+    fFillUnitArray->Delete();
+    delete fFillUnitArray;
+  }
   delete fArrayMC;
+  
 }
 
 
@@ -70,4 +83,5 @@ void AliJetReader::ClearArray()
 
 {
   if (fMomentumArray)  fMomentumArray->Clear();
+  if (fFillUnitArray)  fFillUnitArray->Clear();
 }

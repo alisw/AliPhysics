@@ -16,7 +16,8 @@
 //------------------------------------------------------------------------- 
 // Jet ESD Reader 
 // ESD reader for jet analysis
-// Author: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
+// Authors: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
+//          Magali Estienne <magali.estienne@IReS.in2p3.fr>
 //------------------------------------------------------------------------- 
 
 
@@ -24,19 +25,38 @@
 #include <TSystem.h>
 #include <TLorentzVector.h>
 #include <TVector3.h>
+#include <TGeoManager.h>
+
 #include "AliJetESDReader.h"
 #include "AliJetESDReaderHeader.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
+#include "AliEMCALGeometry.h"
+#include "AliJetFillUnitArrayTracks.h"
+#include "AliJetUnitArray.h"
 
 ClassImp(AliJetESDReader)
 
 AliJetESDReader::AliJetESDReader():
-  fMass(0),
-  fSign(0)
+    AliJetReader(),  
+    fGeom(0),
+    fChain(0x0),
+    fESD(0x0),
+    fHadCorr(0x0),
+    fTpcGrid(0x0),
+    fEmcalGrid(0x0),
+    fPtCut(0),
+    fHCorrection(0),
+    fNumUnits(0),
+    fDebug(0),
+    fNIn(0),
+    fOpt(0),
+    fNeta(0),
+    fNphi(0),
+    fArrayInitialised(0) 
 {
   // Constructor    
-  fReaderHeader = 0x0;
+    SetEMCALGeometry();
 }
 
 //____________________________________________________________________________
@@ -44,6 +64,10 @@ AliJetESDReader::AliJetESDReader():
 AliJetESDReader::~AliJetESDReader()
 {
   // Destructor
+    delete fChain;
+    delete fESD;
+    delete fTpcGrid;
+    delete fEmcalGrid;
 }
 
 //____________________________________________________________________________
@@ -61,7 +85,7 @@ void AliJetESDReader::OpenInputFiles()
   
    void *dir  = gSystem->OpenDirectory(dirName);
    const char *name = 0x0;
-   int nesd = fReaderHeader->GetNesd();
+   int nesd = ((AliJetESDReaderHeader*) fReaderHeader)->GetNesd();
    int a = 0;
    while ((name = gSystem->GetDirEntry(dir))){
        if (a>=nesd) continue;
@@ -94,6 +118,7 @@ void AliJetESDReader::OpenInputFiles()
 }
 
 void AliJetESDReader::ConnectTree(TTree* tree) {
+    // Connect the tree
      fChain = (TChain*) tree;
      
      fChain->SetBranchAddress("ESD",    &fESD);
@@ -121,7 +146,8 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
   
   // clear momentum array
    ClearArray();
-  
+   fDebug = fReaderHeader->GetDebug();
+   InitParameters();
   // get event from chain
   fChain->GetTree()->GetEntry(event);
 
@@ -149,14 +175,14 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
       track->GetPxPyPz(mom);
       p3.SetXYZ(mom[0],mom[1],mom[2]);
       pt = p3.Pt();
-      if ((status & AliESDtrack::kTPCrefit) == 0) continue;    // quality check
-      if ((status & AliESDtrack::kITSrefit) == 0) continue;    // quality check
+      if ((status & AliESDtrack::kTPCrefit) == 0)    continue;      // quality check
+      if ((status & AliESDtrack::kITSrefit) == 0)    continue;      // quality check
       if (((AliJetESDReaderHeader*) fReaderHeader)->ReadSignalOnly() 
-	  && TMath::Abs(track->GetLabel()) > 10000)  continue;   // quality check
+	  && TMath::Abs(track->GetLabel()) > 10000)  continue;      // quality check
       if (((AliJetESDReaderHeader*) fReaderHeader)->ReadBkgdOnly() 
-	  && TMath::Abs(track->GetLabel()) < 10000)  continue;   // quality check
+	  && TMath::Abs(track->GetLabel()) < 10000)  continue;      // quality check
       eta = p3.Eta();
-      if ( (eta > etaMax) || (eta < etaMin)) continue;           // checking eta cut
+      if ( (eta > etaMax) || (eta < etaMin))         continue;      // checking eta cut
       
       new ((*fMomentumArray)[goodTrack]) TLorentzVector(p3,p3.Mag());
       sflag[goodTrack]=0;
@@ -168,9 +194,64 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
   // set the signal flags
   fSignalFlag.Set(goodTrack,sflag);
   fCutFlag.Set(goodTrack,cflag);
+
+//
+//
+  AliJetFillUnitArrayTracks *fillUAFromTracks = new AliJetFillUnitArrayTracks(); 
+  fillUAFromTracks->SetReaderHeader(fReaderHeader);
+  fillUAFromTracks->SetMomentumArray(fMomentumArray);
+  fillUAFromTracks->SetTPCGrid(fTpcGrid);
+  fillUAFromTracks->SetEMCalGrid(fEmcalGrid);
+  fillUAFromTracks->SetHadCorrection(fHCorrection);
+  fillUAFromTracks->SetHadCorrector(fHadCorr);
+  fNeta = fillUAFromTracks->GetNeta();
+  fNphi = fillUAFromTracks->GetNphi();
+  fillUAFromTracks->SetActive(kFALSE);
+  // TPC only or Digits+TPC or Clusters+TPC
+  if(fOpt%2==!0 && fOpt!=0){ 
+    fillUAFromTracks->SetActive(kTRUE);
+    fillUAFromTracks->SetUnitArray(fUnitArray);
+    fillUAFromTracks->ExecuteTask("tpc");
+  }
+  delete fillUAFromTracks;
   return kTRUE;
 }
 
+
+void AliJetESDReader::SetEMCALGeometry()
+{
+  // Define EMCAL geometry to be able to read ESDs
+    fGeom = AliEMCALGeometry::GetInstance();
+    if (fGeom == 0)
+	fGeom = AliEMCALGeometry::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
+    
+    // To be setted to run some AliEMCALGeometry functions
+    TGeoManager::Import("geometry.root");
+    fGeom->GetTransformationForSM();  
+    
+    printf("\n EMCal Geometry set ! \n");
+
+}
   
+void AliJetESDReader::InitParameters()
+{
+    // Initialise parameters
+    fHCorrection    = 0;                 // For hadron correction
+    fHadCorr        = 0;                 // For hadron correction
+    fNumUnits       = fGeom->GetNCells();      // Number of cells in EMCAL
+    if(fDebug>1) printf("\n EMCal parameters initiated ! \n");
+}
+
+void AliJetESDReader::InitUnitArray()
+{
+  //Initialises unit arrays
+    Int_t nElements = fTpcGrid->GetNEntries();
+    if(fArrayInitialised) delete [] fUnitArray;
+    if(fTpcGrid->GetGridType()==0)
+	fUnitArray = new AliJetUnitArray[nElements];
+    if(fTpcGrid->GetGridType()==1)
+	fUnitArray = new AliJetUnitArray[fNumUnits+nElements];
+    fArrayInitialised = 1;
+}
 
 

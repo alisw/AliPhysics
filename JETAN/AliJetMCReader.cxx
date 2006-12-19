@@ -31,14 +31,14 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 
-ClassImp(AliJetMCReader)
+ClassImp(AliJetMCReader);
 
-AliJetMCReader::AliJetMCReader()
+
+AliJetMCReader::AliJetMCReader():
+    AliJetESDReader(),
+    fChainMC(0x0)
 {
   // Constructor
-  fReaderHeader = 0x0;
-  fMass = 0;
-  fPdgC = 0;
 }
 
 //____________________________________________________________________________
@@ -46,7 +46,7 @@ AliJetMCReader::AliJetMCReader()
 AliJetMCReader::~AliJetMCReader()
 {
   // Destructor
-  delete fReaderHeader;
+    delete fChainMC;
 }
 
 //____________________________________________________________________________
@@ -85,8 +85,6 @@ Bool_t AliJetMCReader::FillMomentumArray(Int_t event)
     if (pt < ptMin) continue; //check  cuts 
     p = part->P();
     e = part->Energy();
-    fMass = part->GetCalcMass();
-    fPdgC = part->GetPdgCode();
    // fill momentum array
     new ((*fMomentumArray)[goodTrack]) TLorentzVector(p.X(), p.Y(), p.Z(), e);
     goodTrack++;

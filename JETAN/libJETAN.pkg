@@ -7,10 +7,13 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliLeading.cxx \
 	AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx \
 	AliJetAnalysis.cxx AliJetDistributions.cxx \
-	AliUA1JetFinderV1.cxx AliUA1JetHeaderV1.cxx
+	AliUA1JetFinderV1.cxx AliUA1JetHeaderV1.cxx \
+	AliJetGrid.cxx AliJetUnitArray.cxx AliJetHadronCorrection.cxx \
+	AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx \
+	AliJetFillUnitArrayTracks.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
-
+EINCLUDE:= EMCAL
 DHDR= JETANLinkDef.h
 

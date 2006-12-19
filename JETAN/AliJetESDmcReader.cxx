@@ -34,12 +34,11 @@
 ClassImp(AliJetESDmcReader)
 
 AliJetESDmcReader::AliJetESDmcReader():
-    fAliHeader(0),
-    fMass(0),
-    fSign(0)
+    AliJetESDReader(),
+    fChainMC(0x0),
+    fAliHeader(0)
 {
   // Constructor    
-  fReaderHeader = 0x0;
 }
 
 //____________________________________________________________________________
@@ -47,6 +46,7 @@ AliJetESDmcReader::AliJetESDmcReader():
 AliJetESDmcReader::~AliJetESDmcReader()
 {
   // Destructor
+    delete fChainMC;
 }
 
 //____________________________________________________________________________
@@ -65,7 +65,7 @@ void AliJetESDmcReader::OpenInputFiles()
   // Add files matching patters to the chain
   void *dir  = gSystem->OpenDirectory(dirName);
   const char *name = 0x0;
-  int nesd = fReaderHeader->GetNesd();
+  int nesd = ((AliJetESDReaderHeader*)fReaderHeader)->GetNesd();
   int a = 0;
   while ((name = gSystem->GetDirEntry(dir))){
     if (a>=nesd) continue;

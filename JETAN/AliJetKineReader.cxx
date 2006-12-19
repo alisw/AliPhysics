@@ -41,13 +41,11 @@
 ClassImp(AliJetKineReader)
 
 AliJetKineReader::AliJetKineReader():
-  fRunLoader(0x0),
-  fAliHeader(0x0),
-  fMass(0),
-  fPdgC(0)
+    AliJetReader(),  
+    fRunLoader(0x0),
+    fAliHeader(0x0)
 {
   // Default constructor
-  fReaderHeader = 0x0;
 }
 
 //____________________________________________________________________________
@@ -55,7 +53,6 @@ AliJetKineReader::AliJetKineReader():
 AliJetKineReader::~AliJetKineReader()
 {
   // Destructor
-  delete fReaderHeader;
   delete fAliHeader;
 }
 
@@ -155,9 +152,6 @@ Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
       if (pdg == kNeutron || pdg == kK0Long) continue;
     } // End fast EMCAL
     
-    fMass = part->GetCalcMass();
-    fPdgC = part->GetPdgCode();
-
     // Fill momentum array
     Float_t r  = p/p0;
     Float_t px = r * part->Px(); 

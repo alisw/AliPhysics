@@ -8,31 +8,24 @@
 // ESD reader for jet analysis (it reads the esd and the MC trees)
 // Author: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
 
-#include "AliJetReader.h"
+#include "AliJetESDReader.h"
 class AliJetESDReaderHeader;
 class AliHeader;
 
 
 
-class AliJetESDmcReader : public AliJetReader
+class AliJetESDmcReader : public AliJetESDReader
 {
  public: 
   AliJetESDmcReader();
   virtual ~AliJetESDmcReader();
-
-  // Getters
-  Float_t GetTrackMass() const {return fMass;}  // returns mass of the track
-  Int_t   GetTrackSign() const {return fSign;}  // returns sign of the track
-
   // Setters
   Bool_t FillMomentumArray(Int_t event); 
   void   OpenInputFiles();
    
  protected:
+  TChain*    fChainMC;   // chain for mc information
   AliHeader* fAliHeader; //! Event header
-  Float_t    fMass;      //! Particle mass
-  Int_t      fSign;      //! Particle sign
-
   ClassDef(AliJetESDmcReader,1)
 };
  

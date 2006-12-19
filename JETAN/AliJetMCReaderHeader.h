@@ -8,9 +8,9 @@
 // Header for the MC reader in the jet analysis
 // Author: Mercedes Lopez Noriega (mercedes.lopez.noriega@cern.ch)
 
-#include "AliJetReaderHeader.h"
+#include "AliJetESDReaderHeader.h"
  
-class AliJetMCReaderHeader : public AliJetReaderHeader
+class AliJetMCReaderHeader : public AliJetESDReaderHeader
 {
 
  public:

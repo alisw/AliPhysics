@@ -80,7 +80,7 @@ AliJetFillUnitArrayTracks::AliJetFillUnitArrayTracks()
   : TTask("AliJetFillUnitArrayTracks","Fill Unit Array with tpc/its and emcal information")
 {
   // constructor
-   fNIn = 0;
+  fNIn = 0;
   fOpt = 0;
   fDebug = 0;
   fNphi = 0;
@@ -99,11 +99,11 @@ AliJetFillUnitArrayTracks::AliJetFillUnitArrayTracks()
 //____________________________________________________________________________
 void AliJetFillUnitArrayTracks::SetEMCALGeometry()
 {
-  // Set EMCAL geometry information
-  fGeom = AliEMCALGeometry::GetInstance();
-  if (fGeom == 0)
-    fGeom = AliEMCALGeometry::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
-  if(fDebug>1) printf("\n EMCAL Geometry setted ! \n");
+    // Set EMCAL geometry information
+    fGeom = AliEMCALGeometry::GetInstance();
+    if (fGeom == 0)
+	fGeom = AliEMCALGeometry::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
+    if(fDebug>1) printf("\n EMCAL Geometry setted ! \n");
 }
 
 //____________________________________________________________________________

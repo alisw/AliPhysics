@@ -27,14 +27,11 @@ ClassImp(AliJetReaderHeader)
 
 AliJetReaderHeader::AliJetReaderHeader():  
  TNamed("AliJetReaderHeader", "Jet Reader Header"),
- fNesd(0),
  fFirst(0),
  fLast(-1),
  fFiducialEtaMin(-0.9),
  fFiducialEtaMax(0.9),
  fPtCut(2.0),
- fDCA(0.),
- fTLength(0.),
  fComment("No comment"),
  fDir(""),
  fPattern("")
@@ -46,14 +43,11 @@ AliJetReaderHeader::AliJetReaderHeader():
 
 AliJetReaderHeader::AliJetReaderHeader(const char * name):  
  TNamed(name, "Jet Reader Header"),
- fNesd(0),
  fFirst(0),
  fLast(-1),
  fFiducialEtaMin(-0.9),
  fFiducialEtaMax(0.9),
  fPtCut(2.0),
- fDCA(0.),
- fTLength(0.),
  fComment("No comment"),
  fDir(""),
  fPattern("")

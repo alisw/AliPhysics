@@ -135,21 +135,35 @@ void AliJetFinder::Run()
   // write headers
   WriteHeaders();
   // loop over events
-  Int_t nFirst,nLast;
+  Int_t nFirst, nLast, option, debug, arrayInitialised; 
   nFirst = fReader->GetReaderHeader()->GetFirstEvent();
-  nLast = fReader->GetReaderHeader()->GetLastEvent();
+  nLast  = fReader->GetReaderHeader()->GetLastEvent();
+
+  option = fReader->GetReaderHeader()->GetDetector();
+  debug  = fReader->GetReaderHeader()->GetDebug();
+  arrayInitialised = fReader->GetArrayInitialised();
+
   // loop over events
   for (Int_t i=nFirst;i<nLast;i++) {
       fReader->FillMomentumArray(i);
       fLeading->FindLeading(fReader);
       fReader->GetGenJets(fGenJets);
-      FindJets();
+
+      if (option == 0) { // TPC with fMomentumArray
+	  if(debug > 1) 
+	      printf("In FindJetsTPC() routine: find jets with fMomentumArray !!!\n");
+	  FindJetsTPC();
+      } else {
+	   if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
+	   FindJets();
+      }
       if (fOut) WriteJetsToFile(i);
       if (fPlots) fPlots->FillHistos(fJets);
       fLeading->Reset();
       fGenJets->ClearJets();
       Reset();
   } 
+
   // write out
   if (fPlots) {
       fPlots->Normalize();

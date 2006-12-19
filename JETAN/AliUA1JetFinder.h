@@ -28,6 +28,7 @@ class AliUA1JetFinder : public AliJetFinder
   // setters
   void SetJetHeader(AliUA1JetHeader* h) {fHeader= h;}
   // others
+  void FindJetsTPC();
   void FindJets();
   void Reset();
   void Init();

@@ -59,7 +59,7 @@ class AliJetFillUnitArrayTracks : public TTask
   Float_t fPhiMinCal;     // Define EMCal acceptance in Phi
   Float_t fPhiMaxCal;     // Define EMCal acceptance in Phi
   AliJetHadronCorrectionv1   *fHadCorr;         // Pointer to Hadron Correction Object
-  Int_t                       fHCorrection;     //  Hadron correction flag
+  Int_t                       fHCorrection;     // Hadron correction flag
   Int_t                       fNIn;             // Number of Array filled in UnitArray
   Int_t                       fOpt;             // Detector to be used for jet reconstruction
   Int_t                       fDebug;           // Debug option

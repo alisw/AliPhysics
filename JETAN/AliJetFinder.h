@@ -44,8 +44,9 @@ class AliJetFinder : public TObject
   virtual void   WriteRHeaderToFile();  
   // the following have to be implemented for each specific finder
   virtual void Init() {}
-  virtual void Reset() { }
-  virtual void FindJets() { }
+  virtual void Reset() {}
+  virtual void FindJets() {}
+  virtual void FindJetsTPC(){}
   virtual void WriteJHeaderToFile() { }
   // some methods to allow steering from the outside
   virtual Bool_t ProcessEvent(Long64_t entry);
