@@ -89,10 +89,10 @@ class AliJetUnitArray : public TObject
   Int_t           fUnitID;            // ID of the unit
   Int_t           fUnitNum;           // number of units
   Int_t           fUnitClusterID;     // ID of the unit
-  AliJetFinderUnitFlagType_t         fUnitFlag; //Flag of the unit
-  AliJetFinderUnitCutFlagType_t      fUnitCutFlag; //Flag of the unit
-  AliJetFinderUnitSignalFlagType_t   fUnitSignalFlag; //Flag of the unit
-  AliJetFinderUnitDetectorFlagType_t fUnitDetectorFlag; // Detector flag of the unit
+  AliJetFinderUnitFlagType_t         fUnitFlag;          // Flag of the unit
+  AliJetFinderUnitCutFlagType_t      fUnitCutFlag;       // Flag of the unit
+  AliJetFinderUnitSignalFlagType_t   fUnitSignalFlag;    // Flag of the unit
+  AliJetFinderUnitDetectorFlagType_t fUnitDetectorFlag;  // Detector flag of the unit
 
   ClassDef(AliJetUnitArray,3)
 };

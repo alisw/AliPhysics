@@ -19,6 +19,7 @@
 #include "AliJetGrid.h"
 class AliJetESDReaderHeader;
 class AliEMCALGeometry;
+class AliJetDummyGeo;
 class AliJetHadronCorrection;
 class AliJetUnitArray;
 class AliJetReaderHeader;
@@ -43,7 +44,7 @@ class AliJetESDReader : public AliJetReader
   void SetEMCALGeometry();
   void InitParameters();
  protected:
-  AliEMCALGeometry           *fGeom;             //!EMCAL Geometry 
+  AliJetDummyGeo             *fGeom;             //!EMCAL Geometry 
   TChain                     *fChain;            // chain for reconstructed tracks
   AliESD                     *fESD;              // pointer to esd
   AliJetHadronCorrectionv1   *fHadCorr;          // Pointer to Hadron Correction Object 

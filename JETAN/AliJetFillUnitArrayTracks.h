@@ -18,6 +18,7 @@
 #include <TArrayD.h>
 
 class AliEMCALGeometry;
+class AliJetDummyGeo;
 class AliJetHadronCorrection;
 class AliJetReader;
 class AliJetESDReader;
@@ -71,7 +72,7 @@ class AliJetFillUnitArrayTracks : public TTask
   AliJetGrid                  *fEMCalGrid;      // Define filled grid
 
   // geometry info
-  static AliEMCALGeometry *fGeom;     //!
+  AliJetDummyGeo              *fGeom;           //!
 
   Int_t     fNphi;                    // number of points in the grid:   phi
   Int_t     fNeta;                    //               "                 eta

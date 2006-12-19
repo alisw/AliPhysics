@@ -31,7 +31,8 @@
 #include "AliJetESDReaderHeader.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
-#include "AliEMCALGeometry.h"
+//#include "AliEMCALGeometry.h"
+#include "AliJetDummyGeo.h"
 #include "AliJetFillUnitArrayTracks.h"
 #include "AliJetUnitArray.h"
 
@@ -221,9 +222,9 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
 void AliJetESDReader::SetEMCALGeometry()
 {
   // Define EMCAL geometry to be able to read ESDs
-    fGeom = AliEMCALGeometry::GetInstance();
+    fGeom = AliJetDummyGeo::GetInstance();
     if (fGeom == 0)
-	fGeom = AliEMCALGeometry::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
+	fGeom = AliJetDummyGeo::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
     
     // To be setted to run some AliEMCALGeometry functions
     TGeoManager::Import("geometry.root");

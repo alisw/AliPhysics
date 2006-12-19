@@ -26,4 +26,5 @@
 #pragma link C++ class AliJetHadronCorrectionv0+;
 #pragma link C++ class AliJetHadronCorrectionv1+; 
 #pragma link C++ class AliJetFillUnitArrayTracks+;
+#pragma link C++ class AliJetDummyGeo+;
 #endif
