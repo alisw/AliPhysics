@@ -3,7 +3,8 @@ SRCS =\
 AliEMCALReconstructor.cxx \
 AliEMCALClusterizerv1.cxx \
 AliEMCALTrack.cxx \
-AliEMCALTracker.cxx
+AliEMCALTracker.cxx \
+AliEMCALPID.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
