@@ -20,5 +20,10 @@ void hits_from_label(Int_t label=0)
   //PH	       Form("TPC2.fArray.fTrackID==%d", label));
   h->SetMarkerSize(1);
 
+  Reve::LoadMacro("trd_hits.C");
+  sprintf(form,"TRD.fTrack==%d", label);
+  h = trd_hits("fX:fY:fZ", form);
+  h->SetMarkerSize(1);
+
   gReve->Redraw3D();
 }
