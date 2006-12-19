@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/12/18 18:16:53  arcelli
+Change in the format of the input data from DAQ FXS (C.Zampolli)
+
 Revision 1.1  2006/10/26 09:09:29  arcelli
 prototype for the TOF Shuttle preprocessor (C.Zampolli)
 
@@ -55,6 +58,7 @@ class AliTOFGeometry;
 ClassImp(AliTOFPreprocessor)
 
 const Int_t AliTOFPreprocessor::fgkBinRangeAve    = 13; // number of bins where to calculate the mean 
+const Int_t AliTOFPreprocessor::fgkThrPar    = 0.013; // parameter used to trigger the calculation of the delay
 
 //_____________________________________________________________________________
 
@@ -127,27 +131,27 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   // processing DAQ
 
   TFile * daqFile=0x0;
-  TList* list = GetFileSources(kDAQ, "DELAYS");
+
+  //retrieving data at Run level
+  TList* list = GetFileSources(kDAQ, "RUNLevel");
 
   if (list)
     {
-      AliInfo("The following sources produced files with the id DELAYS");
+      AliInfo("The following sources produced files with the id RUNLevel");
       list->Print();
       for (Int_t jj=0;jj<list->GetEntries();jj++){
 	TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
 	AliInfo(Form("found source %s", str->String().Data()));
 	// file to be stored run per run
-	const char* fileNameRun = GetFile(kDAQ, "RUNLevel", str->GetName());
-	if (fileNameRun){
-	  AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun));
-	  daqFile = new TFile(fileNameRun,"READ");
-	  //	  fArray = (TObjArray*) daqFile->Get("ciccio");
+	TString fileNameRun = GetFile(kDAQ, "RUNLevel", str->GetName());
+	if (fileNameRun.Length()>0){
+	  AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun.Data()));
+	  daqFile = new TFile(fileNameRun.Data(),"READ");
 	  fh2 = (TH2S*) daqFile->Get("htof");
 	  AliCDBMetaData metaDataHisto;
 	  metaDataHisto.SetBeamPeriod(0);
 	  metaDataHisto.SetResponsible("Chiara Zampolli");
 	  metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
-	  //	  resultDAQRef = StoreReferenceData("Calib","DAQData",fArray, &metaDataHisto);
 	  resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
 	  result+=resultDAQRef*2;
 	  if (!resultDAQRef){
@@ -158,15 +162,32 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	}
 
 	else{
-	  AliError(Form("The file %s does not exist",fileNameRun)); 
+	  AliError(Form("The file %s does not exist",fileNameRun.Data())); 
 	}
-       
-	// file with summed histos, to extract calib params
-	const char *fileName = GetFile(kDAQ, "DELAYS", str->GetName());
-	if (fileName){
-	  AliInfo(Form("Got the file %s, now we can extract some values.", fileName));
+      }
+    }
+  else{
+    AliError(Form("Problem: no list for Run Level found"));
+    result+=10;   //to know whether some problems occurred with run level data, we add 10 to the result variable
+  }
 
-	  daqFile = new TFile(fileName,"READ");
+  //Total files, with summed histos
+
+  TList* listTot = GetFileSources(kDAQ, "DELAYS");
+  if (listTot)
+    {
+      AliInfo("The following sources produced files with the id DELAYS");
+      listTot->Print();
+      for (Int_t jj=0;jj<listTot->GetEntries();jj++){
+	TObjString * str = dynamic_cast<TObjString*> (listTot->At(jj));
+	AliInfo(Form("found source %s", str->String().Data()));
+
+	// file with summed histos, to extract calib params
+	TString fileName = GetFile(kDAQ, "DELAYS", str->GetName());
+	if (fileName.Length()>0){
+	  AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+
+	  daqFile = new TFile(fileName.Data(),"READ");
 	  fh2 = (TH2S*) daqFile->Get("htoftot");
 	  if (!fh2){
 	    AliInfo(Form("some problems occurred:: No histo retrieved"));
@@ -177,8 +198,10 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	    static const Int_t nbins=fh2->GetNbinsY();
 	    static const Double_t xbinmin=fh2->GetYaxis()->GetBinLowEdge(1);
 	    Int_t npads = fCal->NPads();
-	    if (size != npads) AliError(Form(" number of bins along x different from number of pads. retrieving only %i histograms",size));
-
+	    if (size != npads){
+	      AliError(Form(" number of bins along x different from number of pads, found only %i histograms, TOF exiting from Shuttle",size));
+              return 0;
+	    }
 	    for (Int_t ich=0;ich<size;ich++){
 	      TH1S *h1 = new TH1S("h1","h1",nbins,xbinmin-0.5,nbins*1.+xbinmin-0.5);
 	      for (Int_t ibin=0;ibin<nbins;ibin++){
@@ -186,8 +209,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	      }
 
 	      Bool_t found=kFALSE; 
-	      //	      Float_t minContent=h1->Integral()*0.05208; 
-	      Float_t minContent=h1->Integral()*0.013; 
+	      Float_t minContent=h1->Integral()*fgkThrPar; 
 	      Int_t nbinsX = h1->GetNbinsX();
 	      Int_t startBin=1;
 	      for (Int_t j=1; j<=nbinsX; j++){
@@ -202,7 +224,6 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 		}
 	      }
 	      if(!found) AliInfo(Form("WARNING!!! no start of fit found for histo # %i",ich));
-	      AliInfo(Form("starting bin = %i",startBin));
 	      // Now calculate the mean over the interval. 
 	      Double_t mean = 0;
 	      Double_t sumw2 = 0;
@@ -220,7 +241,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	      if (ich<npads) {
 		AliTOFChannelOnline * ch = fCal->GetChannel(ich);
 		ch->SetDelay(mean);
-		AliInfo(Form("mean = %f",mean));
+		//		AliInfo(Form("mean = %f",mean));
 	      }
 	    delete h1;
 	    h1=0x0;
@@ -236,17 +257,19 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  result+=resultDAQ*2*2;
 	}
 	else{
-	  AliError(Form("The file %s does not exist",fileName)); 
+	  AliError(Form("The file %s does not exist",fileName.Data())); 
 	}
       }
     }
   else{
-    AliInfo(Form("Problem: no list found"));
+    AliError(Form("Problem: no listTot found, TOF exiting from Shuttle"));
     return 0;
   }
 
   delete list;
   list = 0;
+  delete listTot;
+  listTot = 0;
   daqFile=0;
   delete fData;
   fData = 0;
