@@ -439,9 +439,8 @@ void AliTRDQATask::DrawESD()
       if (!j) hist->Draw();
       else hist->Draw("SAME");
     }
-
-    gPad->Print(Form("%s.gif", names[i]));
   }
+  cTRD->Print("TRD_ESD.gif");
 }
 
 //______________________________________________________________________________
@@ -493,9 +492,9 @@ void AliTRDQATask::DrawGeoESD()
     
     hist->Draw(opt[i]);    
     AliInfo(Form("%s\t%d", names[i], hist->GetEntries()));
-
-    gPad->Print(Form("%s.gif", names[i]));
   }
+  
+  cTRDGeo->Print("TRD_Geo.gif");
 }
 
 //______________________________________________________________________________
@@ -547,8 +546,8 @@ void AliTRDQATask::DrawConvESD()
       else hist->Draw("same");
     }
 
-    gPad->Print(Form("%s.eps", names[i]));
   }
+    cTRDConv->Print("TRD_Conv.eps");
 }
 
 //______________________________________________________________________________
@@ -625,8 +624,6 @@ void AliTRDQATask::DrawPidESD()
 
     hist->Draw(opt[i]);    
     AliInfo(Form("%s\t%d", names[i], hist->GetEntries()));
-
-    gPad->Print(Form("%s.gif", names[i]));
   }
-
+   cTRDPid->Print("TRD_Pid.gif");
 }
