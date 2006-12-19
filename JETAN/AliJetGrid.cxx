@@ -42,7 +42,7 @@
 // AliRoot headers
 #include "AliJetGrid.h"
 
-ClassImp(AliJetGrid);
+ClassImp(AliJetGrid)
 
 
 //__________________________________________________________

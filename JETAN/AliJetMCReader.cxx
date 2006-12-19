@@ -31,7 +31,7 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 
-ClassImp(AliJetMCReader);
+ClassImp(AliJetMCReader)
 
 
 AliJetMCReader::AliJetMCReader():
