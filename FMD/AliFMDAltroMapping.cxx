@@ -86,8 +86,8 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr,
   //   +-------------+----------+----------+
   // 
   // The board number identifier among other things the ring.  There's
-  // up to 4 boards per DDL, and the two first (0 and 1) corresponds
-  // to the inner rings, while the two last (2 and 3) corresponds to
+  // up to 4 boards per DDL, and the two first (0 and 16) corresponds
+  // to the inner rings, while the two last (1 and 17) corresponds to
   // the outer rings. 
   // 
   // The board number and ALTRO number together identifies the sensor,
@@ -145,24 +145,21 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr,
   UInt_t board =  (addr >> 7) & 0x1F;
   UInt_t altro =  (addr >> 4) & 0x7;
   UInt_t chan  =  (addr & 0xf);
-  if (board > 3) {
-    AliError(Form("Invalid board address %d for the FMD", board));
-    return kFALSE;
+  ring         =  (board % 2) == 0 ? 'I' : 'O';
+  switch (ring) {
+  case 'i':
+  case 'I':
+    sec = ((board / 16) * 10 + (altro < 1 ? 0 : altro < 2 ? 4 : 6) 
+	   + 2 * (chan / 8) + chan % 2);
+    str = ((chan % 8) / 2) * 128;
+    break;
+  case 'o':
+  case 'O': 
+    sec = ((board / 16) * 20 + (altro < 1 ? 0 : altro < 2 ? 8 : 12) 
+	   + 2 * (chan / 4) + chan % 2);
+    str = ((chan % 4) / 2) * 128;
+    break;
   }
-  if (altro > 2) {
-    AliError(Form("Invalid ALTRO address %d for the FMD digitizer %d", 
-		  altro, board));
-    return kFALSE;
-  }
-  ring         =  (board > 1 ? 'O' : 'I');
-  UInt_t nsen  =  (ring == 'I' ? 10 : 20);
-  UInt_t nsa   =  (ring == 'I' ? 2 : 4);   // Sensors per ALTRO
-  UInt_t ncs   =  (ring == 'I' ? 8 : 4);   // Channels per sensor 
-  UInt_t sen   =  (board % 2) * nsen / 2;  // Base for half-ring
-  sen          += chan / ncs + (altro == 0 ? 0   : 
-				altro == 1 ? nsa : UInt_t(1.5 * nsa));
-  sec          =  2 * sen + (chan % 2);
-  str          =  (chan % ncs) / 2 * 128;
   return kTRUE;
 }
 
@@ -187,13 +184,13 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
   //   +-------------+----------+----------+
   // 
   // The board number is given by the ring and sector.  The inner
-  // rings board 0 and 1, while the outer are 2 and 3.  Which of these
+  // rings board 0 and 16, while the outer are 1 and 17.  Which of these
   // depends on the sector.  The map is 
   // 
   //    Ring I, sector  0- 9       ->   board 0 
-  //    Ring I, sector 10-19       ->   board 1
-  //    Ring O, sector  0-19       ->   board 2 
-  //    Ring O, sector 20-39       ->   board 3
+  //    Ring I, sector 10-19       ->   board 16
+  //    Ring O, sector  0-19       ->   board 1 
+  //    Ring O, sector 20-39       ->   board 17
   // 
   // There are 3 ALTRO's per board.  The ALTRO number is given by the
   // sector number.  For the inner rings, these are given by
@@ -253,21 +250,26 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
   // give us a unique hardware address 
   //
   ddl          =  (det - 1);
-  UInt_t nsen  =  (ring == 'I' ? 10 : 20);
-  UInt_t nsa   =  (ring == 'I' ? 2 : 4);   // Sensors per ALTRO
-  UInt_t ncs   =  (ring == 'I' ? 8 : 4);   // Channels per sensor 
-  UInt_t bbase =  (ring == 'I' ? 0 : 2);
-  UInt_t board =  bbase + sec / nsen;
-  UInt_t lsec  =  (sec - (board - bbase) * nsen); // Local sec in half-ring
-  UInt_t altro =  (lsec < 2 * nsa ? 0 : (lsec < 3 * nsa ? 1       : 2));
-  UInt_t sbase =  (altro == 0     ? 0 : altro == 1      ? 2 * nsa : 3 * nsa);
-  UInt_t chan  =  (sec % 2) + (lsec-sbase) / 2 * ncs + 2 * (str / 128);
-  AliDebug(40, Form("\n"
-		    "  chan = (%d %% 2) + (%d-%d) / %d * %d + 2 * %d / 128\n"
-		    "       = %d + %d + %d = %d", 
-		    sec, lsec, sbase, 2, ncs, str, 
-		    (sec % 2), (lsec - sbase) / 2 * ncs, 
-		    2 * (str / 128), chan));
+  UInt_t board = 0;
+  UInt_t altro = 0;
+  UInt_t chan  = 0;
+  UInt_t tmp   = 0;
+  switch (ring) {
+  case 'I':
+  case 'i':
+    board += (sec / 10) * 16;
+    altro =  (sec % 10) < 4 ? 0 : (sec % 10) < 6 ? 1 : 2;
+    tmp   =  (sec % 10) - (altro == 0 ? 0 : altro == 1 ? 4 : 6);
+    chan  =  2  * (str / 128) + (sec % 2) + ((tmp / 2) % 2) * 8;
+    break;
+  case 'O':
+  case 'o':
+    board += (sec / 20) * 20 + 1;
+    altro =  (sec % 20) < 8 ? 0 : (sec % 20) < 12 ? 1 : 2;
+    tmp   =  (sec % 20) - (altro == 0 ? 0 : altro == 1 ? 8 : 12);
+    chan  =  2 * (str / 128) + (sec % 2) + ((tmp / 2) % 4) * 4;
+    break;
+  }
   addr         =  chan + (altro << 4) + (board << 7);
   
   return kTRUE;

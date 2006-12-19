@@ -82,7 +82,7 @@ public:
   /** Initialize the manager.  This tries to read the parameters from
       CDB.  If that fails, the class uses the hard-coded parameters. 
    */
-  void Init();
+  void Init(Bool_t forceReInit=kFALSE);
   /** Print all parameters. 
       @param option Option string */
   void Print(Option_t* option="A") const;

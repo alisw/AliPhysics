@@ -47,6 +47,8 @@
 #include <TCanvas.h>
 #include <TView.h>
 #include <TVirtualX.h>
+#include <TSlider.h>
+#include <TH1D.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDDisplay)
@@ -66,16 +68,31 @@ AliFMDDisplay::Instance()
 }
 
 //____________________________________________________________________
-AliFMDDisplay::AliFMDDisplay(const char* gAliceFile)
+AliFMDDisplay::~AliFMDDisplay()
+{
+  if (fMarkers) {
+    fMarkers->Delete();
+    delete fMarkers;
+  }
+  if (fHits) {
+    fHits->Clear();
+    delete fHits;
+  }
+  if (fPad)     delete fPad;
+  fButtons.Delete();
+  if (fSlider)  delete fSlider;
+  if (fCanvas)  delete fCanvas;
+}
+  
+//____________________________________________________________________
+AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
   : AliFMDInput(gAliceFile),
     fWait(kFALSE),
     fMarkers(0),
     fHits(0),
     fCanvas(0), 
     fPad(0), 
-    fButton(0), 
-    fZoom(0),
-    fPick(0),
+    fSlider(0),
     fZoomMode(kFALSE),
     fX0(0),
     fY0(0),
@@ -87,19 +104,117 @@ AliFMDDisplay::AliFMDDisplay(const char* gAliceFile)
     fYPixel(0),
     fOldXPixel(0),
     fOldYPixel(0),
-    fLineDrawn(0)
+    fLineDrawn(0),
+    fOnlyFMD(onlyFMD)
 {
   // Constructor of an FMD display object. 
   AddLoad(kGeometry);
-  fMarkers = new TObjArray;
-  fHits    = new TObjArray;
-  fMarkers->SetOwner(kTRUE);
-  fHits->SetOwner(kFALSE);
+  if (fgInstance) delete fgInstance;
   fgInstance = this;
   SetMultiplicityCut();
   SetPedestalFactor();
 }
 
+//____________________________________________________________________
+void           
+AliFMDDisplay::MakeCanvas(const char** which)
+{
+  gStyle->SetPalette(1);
+  Double_t y1 = .10;
+  Int_t    w  = 700;
+  fCanvas = new TCanvas("display", "Display", w, Int_t(w / (1-y1)));
+  fCanvas->SetFillColor(1);
+  fCanvas->ToggleEventStatus();
+  fCanvas->cd();
+  fPad = new TPad("view", "3DView", 0.0, y1, 1.0, 1.0, 1, 0, 0);
+  fPad->Draw();
+
+  Double_t yb = 0;
+  fCanvas->cd();
+  if (TESTBIT(fTreeMask, kESD) || 
+      TESTBIT(fTreeMask, kDigits) || 
+      TESTBIT(fTreeMask, kRaw)) {
+    yb = .05;
+    fSlider = new TSlider("multCut", "Multiplicity cut", 0, 0, 1, yb);
+    fSlider->SetMethod("AliFMDDisplay::Instance()->ChangeCut()");
+    fSlider->SetMinimum(TESTBIT(fTreeMask, kESD) ? fMultCut :
+			fPedestalFactor * 10);
+    fSlider->Draw();
+  }
+  const char** p = which;
+  const char*  m;
+  Int_t        n  = 0;
+  Int_t        j  = 0;
+  while (*(p++)) n++;
+  AliInfo(Form("Got %d buttons", n));
+  Float_t      x0 = 0;
+  Float_t      dx = 1. / n;
+  p               = which;
+  while ((m = *(p++))) {
+    fCanvas->cd();
+    AliInfo(Form("Adding button %s", m));
+    TButton* b = new TButton(m, Form("AliFMDDisplay::Instance()->%s()", m),
+			     x0, yb, x0 + dx, y1);
+    b->Draw();
+    fButtons.Add(b);
+    x0 += dx;
+    j++;
+  }
+}
+
+//____________________________________________________________________
+void           
+AliFMDDisplay::ShowOnlyFMD()
+{
+  if (!fGeoManager) return;
+  static bool once = false;
+  if (once) return;
+  once = true;
+  AliInfo("Will only show the FMD");
+  TGeoVolume* top = gGeoManager->GetTopVolume();
+  top->InvisibleAll(kTRUE);
+  TGeoIterator next(top);
+  TGeoNode* node;
+  TGeoVolume* v = 0;
+  Bool_t hasFMD1 = kFALSE;
+  Bool_t hasFMD2 = kFALSE;
+  Bool_t hasFMD3 = kFALSE;
+  TObjArray toshow;
+  while ((node = static_cast<TGeoNode*>(next()))) {
+    const char* name = node->GetName();
+    if (!name) continue;
+    if (!(v = node->GetVolume())) continue;
+
+    if (name[0] == 'F') {
+      if (name[2] == 'M' && (name[3] == 'T' || name[3] == 'B')) {
+	// Virtual Master half-ring volume - top-level
+	Int_t det = node->GetNumber();
+	switch (det) {
+	case 1: hasFMD1 = true; break;
+	case 2: hasFMD2 = true; break;
+	case 3: hasFMD3 = true; break;
+	default: continue;
+	}
+	toshow.Add(v);
+      }
+      else if (name[3] == 'V' && (name[2] == 'T' || name[2] == 'B')) 
+	toshow.Add(v); // Virtual Half-ring, bare detectors
+      // else if (name[3] == 'H' && (name[2] == 'F' || name[2] == 'B')) 
+      //  toshow.Add(v); // Virtual Hybrid container 
+    }
+    v->SetVisibility(kFALSE);
+    v->SetVisDaughters(kFALSE);
+    v->InvisibleAll(kTRUE);
+  }
+  TIter i(&toshow);
+  while ((v = static_cast<TGeoVolume*>(i()))) {
+    v->SetVisibility(kTRUE);
+    v->SetVisDaughters(kTRUE);
+    v->InvisibleAll(kFALSE);
+  }  
+}
+
+    
 //____________________________________________________________________
 void           
 AliFMDDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py) 
@@ -165,37 +280,65 @@ AliFMDDisplay::Init()
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
   geom->InitTransformations();
-  // AliFMDParameters* parm = AliFMDParameters::Instance();
-  // parm->Init();
+  fMarkers = new TObjArray;
+  fHits    = new TObjArray;
+  fMarkers->SetOwner(kTRUE);
+  fHits->SetOwner(kFALSE);
   return kTRUE;
 }
+
+//____________________________________________________________________
+void
+AliFMDDisplay::MakeAux()
+{
+  if ((TESTBIT(fTreeMask, kESD) || 
+       TESTBIT(fTreeMask, kDigits) || 
+       TESTBIT(fTreeMask, kRaw))) {
+    if (!fAux) {
+      fAux = new TCanvas("aux", "Aux");
+      fAux->SetLogy();
+      if (TESTBIT(fTreeMask, kESD)) 
+	fSpec = new TH1D("spec", "Mult spectra", 150, 0, 3);
+      else 
+	fSpec = new TH1D("spec", "Adc spectra", 1024, -.5, 1023.5);
+      fSpecCut = static_cast<TH1*>(fSpec->Clone("specCut"));
+      fSpec->SetFillColor(2);
+      fSpec->SetFillStyle(3001);
+      fSpecCut->SetFillColor(4);
+      fSpecCut->SetFillStyle(3001);
+    }
+    else {
+      fSpec->Reset();
+      fSpecCut->Reset();
+    }
+  }
+}
+
+//____________________________________________________________________
+void
+AliFMDDisplay::DrawAux()
+{
+  if (!fAux) return;
+  fAux->cd();
+  fAux->Clear();
+  fSpec->Draw();
+  fSpecCut->Draw("same");
+  fAux->Modified();
+  fAux->Update();
+  fAux->cd();
+}
+
 //____________________________________________________________________
 Bool_t 
 AliFMDDisplay::Begin(Int_t event) 
 {
   // Begin of event.  Make canvas is not already done 
   if (!fCanvas) {
-    gStyle->SetPalette(1);
-    fCanvas = new TCanvas("display", "Display", 700, 700);
-    fCanvas->SetFillColor(1);
-    fCanvas->ToggleEventStatus();
-    fPad = new TPad("view3D", "3DView", 0.0, 0.05, 1.0, 1.0, 1, 0, 0);
-    fCanvas->cd();
-    fPad->Draw();
+    const char* m[] = { "Continue", "Zoom", "Pick", "Redisplay", 0 }; 
+    MakeCanvas(m);
+    MakeAux();
   }
-  if (!fButton) {
-    fCanvas->cd();
-    fButton = new TButton("Continue", "AliFMDDisplay::Instance()->Continue()",
-			  0, 0, .5, .05);
-    fButton->Draw();
-    fZoom = new TButton("Zoom", "AliFMDDisplay::Instance()->Zoom()",
-			.5, 0, .75, .05);
-    fZoom->Draw();
-    fPick = new TButton("Pick", "AliFMDDisplay::Instance()->Pick()",
-			.75, 0, 1, .05);
-    fPick->Draw();
-  }
-  AliInfo("Clearing canvas");
+  // AliInfo("Clearing canvas");
   // fCanvas->Clear();
   if (!fGeoManager) {
     Warning("End", "No geometry manager");
@@ -204,6 +347,7 @@ AliFMDDisplay::Begin(Int_t event)
   AliInfo("Drawing geometry");
   fPad->cd();
   fGeoManager->GetTopVolume()->Draw();
+  if (fOnlyFMD) ShowOnlyFMD();
   AliInfo("Adjusting view");
   Int_t irep;
   if (fPad->GetView()) {
@@ -216,20 +360,21 @@ AliFMDDisplay::Begin(Int_t event)
 }
 
 //____________________________________________________________________
-Bool_t 
-AliFMDDisplay::End()
+void
+AliFMDDisplay::AtEnd() 
 {
-  // End of event.  Draw everything 
   fPad->cd();
   fMarkers->Draw();
   fPad->cd();
   AppendPad();
-  // fPad->Update();
   fPad->cd();
-  // fCanvas->Modified(kTRUE);
-  //fCanvas->Update();
-  // fCanvas->cd();
-  // fPad->cd();
+  DrawAux();
+}
+
+//____________________________________________________________________
+void
+AliFMDDisplay::Idle() 
+{
   fWait = kTRUE;
   while (fWait) {
     gApplication->StartIdleing();
@@ -237,9 +382,18 @@ AliFMDDisplay::End()
     gApplication->StopIdleing();
   }
   AliInfo("After idle loop");
-  fMarkers->Delete();
-  fHits->Clear();
+  if (fMarkers) fMarkers->Delete();
+  if (fHits)    fHits->Clear();
   AliInfo("After clearing caches");
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDDisplay::End()
+{
+  // End of event.  Draw everything 
+  AtEnd();
+  Idle();
   return AliFMDInput::End();
 }
 
@@ -250,6 +404,29 @@ AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
   // Look-up color 
   Int_t idx = Int_t(x / max * gStyle->GetNumberOfColors());
   return gStyle->GetColorPalette(idx);
+}
+
+//____________________________________________________________________
+void
+AliFMDDisplay::ChangeCut() 
+{
+  fMultCut        = fSlider->GetMinimum();
+  fPedestalFactor = fSlider->GetMinimum() * 10;
+  AliInfo(Form("Multiplicity cut: %7.5f, Pedestal factor: %7.4f (%6.5f)", 
+	       fMultCut, fPedestalFactor, fSlider->GetMinimum()));
+  Redisplay();
+}
+
+//____________________________________________________________________
+void
+AliFMDDisplay::Redisplay()
+{
+  if (fMarkers) fMarkers->Delete();
+  if (fHits)    fHits->Clear();
+  if (fSpec)    fSpec->Reset();
+  if (fSpecCut) fSpecCut->Reset();
+  Event();
+  AtEnd();
 }
 
 //____________________________________________________________________
@@ -285,15 +462,15 @@ AliFMDDisplay::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
 
 //____________________________________________________________________
 Bool_t 
-AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* p) 
+AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* /* p */) 
 {
   // Process a hit 
   if (!hit) { AliError("No hit");   return kFALSE; }
-  if (!p)   { AliError("No track"); return kFALSE; }
+  // if (!p)   { AliError("No track"); return kFALSE; }
 
-  fHits->Add(hit);
+  if (fHits) fHits->Add(hit);
   Float_t  size  = .1;
-  Float_t  zsize = hit->Edep() * 10;
+  Float_t  zsize = TMath::Sqrt(hit->Edep() * 20);
   Float_t  z     = hit->Z() + (hit->Z() < 0 ? 1 : -1) * zsize; 
   Float_t  pt    = TMath::Sqrt(hit->Py()*hit->Py()+hit->Px()*hit->Px());
   Float_t  theta = TMath::ATan2(pt, hit->Pz());
@@ -322,8 +499,10 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
   Double_t threshold     =  ped * fPedestalFactor * pedW;
   Float_t  counts        = digit->Counts();
+  if (fSpec) fSpec->Fill(counts);
   if (counts < threshold) return kTRUE;
-  fHits->Add(digit);
+  if (fHits) fHits->Add(digit);
+  if (fSpecCut) fSpecCut->Fill(counts);
 
   AddMarker(det, ring, sec, str, digit, counts, 1024);
   return kTRUE;
@@ -344,7 +523,7 @@ AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
   // Process reconstructed point 
   if (!recpoint) { AliError("No recpoint");   return kFALSE; }
   if (recpoint->Particles() < fMultCut) return kTRUE;
-  fHits->Add(recpoint);
+  if (fHits) fHits->Add(recpoint);
   AddMarker(recpoint->Detector(), recpoint->Ring(), recpoint->Sector(),  
 	    recpoint->Strip(), recpoint, recpoint->Particles(), 20);
   return kTRUE;
@@ -352,23 +531,15 @@ AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 
 //____________________________________________________________________
 Bool_t 
-AliFMDDisplay::ProcessESD(AliESDFMD* esd)
+AliFMDDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
+			  Float_t eta, Float_t mult)
 {
-  // Process event summary data
-  for (UShort_t det = 1; det <= 3; det++) {
-    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
-    for (Char_t* rng = rings; *rng != '\0'; rng++) {
-      UShort_t nsec = (*rng == 'I' ?  20 :  40);
-      UShort_t nstr = (*rng == 'O' ? 512 : 256);
-      for (UShort_t sec = 0; sec < nsec; sec++) {
-	for (UShort_t str = 0; str < nstr; str++) {
-	  Float_t mult = esd->Multiplicity(det,*rng,sec,str);
-	  if (mult < fMultCut) continue;
-	  AddMarker(det,*rng,sec,str, 0, mult, 20);
-	}
-      }
-    }
-  }
+  Double_t cmult = (mult * 
+		    TMath::Abs(TMath::Cos(2.*TMath::ATan(TMath::Exp(-eta)))));
+  if (fSpec) fSpec->Fill(cmult);
+  if (cmult < fMultCut || cmult == AliESDFMD::kInvalidMult) return kTRUE;
+  AddMarker(det,rng,sec,str, 0, cmult, 20);
+  if (fSpecCut) fSpecCut->Fill(cmult);
   return kTRUE;
 }
 

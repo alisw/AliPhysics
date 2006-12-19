@@ -19,10 +19,12 @@
 // various types of data produced by the FMD. 
 //
 #include "AliFMDInput.h"
-class TObjArray;
+#include <TObjArray.h>
 class TCanvas;
 class TPad;
 class TButton;
+class TSlider;
+class TH1;
 
 //___________________________________________________________________
 /** @class AliFMDDisplay 
@@ -33,10 +35,11 @@ class AliFMDDisplay : public AliFMDInput
 {
 public:
   /** Constructor
+      @param onlyFMD Only show the FMD
       @param gAliceFile galice file*/
-  AliFMDDisplay(const char* gAliceFile="galice.root");
+  AliFMDDisplay(Bool_t onlyFMD=kTRUE, const char* gAliceFile="galice.root");
   /** DTOR */
-  virtual ~AliFMDDisplay() {}
+  virtual ~AliFMDDisplay();
   /** Singleton access function
       @return Singleton object. */
   static AliFMDDisplay* Instance();
@@ -47,19 +50,23 @@ public:
   void  Zoom() { fZoomMode = kTRUE; }
   /** Pick mode */
   void  Pick() { fZoomMode = kFALSE; }
+  /** Redisplay the event */ 
+  virtual void Redisplay(); // *MENU*
+  /** Change cut */
+  virtual void ChangeCut();
   /** Called when a mouse or similar event happens in the display. 
       @param event Event type
       @param px    where the event happened in pixels along X
       @param py    where the event happened in pixels along Y */
-  void  ExecuteEvent(Int_t event, Int_t px, Int_t py);
+  virtual void  ExecuteEvent(Int_t event, Int_t px, Int_t py);
   /** Calculate distance from point @f$ (p_x,p_y)@f$ to this object. 
       @param px Pixel X coordinate 
       @param py Pixel Y coordinate 
       @return distance. */
-  Int_t DistancetoPrimitive(Int_t px, Int_t py);
+  virtual Int_t DistancetoPrimitive(Int_t px, Int_t py);
   /** Paint into canvas 
       @param option Not used */
-  void  Paint(Option_t* option="") { (void)option; }
+  virtual void  Paint(Option_t* option="") { (void)option; }
 
   /** Initialize
       @return  @c false on error */
@@ -88,10 +95,17 @@ public:
       @param recpoint Reconstructed point
       @return @c false on error  */
   virtual Bool_t ProcessRecPoint(AliFMDRecPoint* recpoint);
-  /** Visualize data in ESD 
-      @param esd FMD ESD data 
-      @return  Always @c true */
-  virtual Bool_t ProcessESD(AliESDFMD* esd);
+  /** Process ESD data for the FMD.  Users should overload this to
+      deal with ESD data. 
+      @param d    Detector number (1-3)
+      @param r    Ring identifier ('I' or 'O')
+      @param s    Sector number (0-19, or 0-39)
+      @param t    Strip number (0-511, or 0-255)
+      @param eta  Psuedo-rapidity 
+      @param mult Psuedo-multiplicity 
+      @return  @c false on error  */
+  virtual Bool_t ProcessESD(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+			    Float_t eta, Float_t mult);
   /** Look up a color index, based on the value @a x and the maximum
       value of @a x
       @param x   Value 
@@ -114,9 +128,7 @@ protected:
       fHits(0),
       fCanvas(0),
       fPad(0),
-      fButton(0),
-      fZoom(0),
-      fPick(0),
+      fSlider(0),
       fZoomMode(0),
       fX0(0),
       fY0(0),
@@ -141,8 +153,17 @@ protected:
       @param o   Object to refer to
       @param s   Signal 
       @param max Maximum of signal */
-  void AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str, 
-		 TObject* o, Float_t s, Float_t max);
+  virtual void AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str, 
+			 TObject* o, Float_t s, Float_t max);
+  
+  /** Show only the FMD detectors. */
+  void ShowOnlyFMD();
+  /** Make base canvas */ 
+  virtual void MakeCanvas(const char** which);
+  virtual void MakeAux();
+  virtual void DrawAux();
+  virtual void Idle();
+  virtual void AtEnd();
   
   static AliFMDDisplay* fgInstance; // Static instance 
   Bool_t                fWait;      // Wait until user presses `Continue'
@@ -150,9 +171,8 @@ protected:
   TObjArray*            fHits;      // Cache of `hits'
   TCanvas*              fCanvas;    // Canvas to draw in 
   TPad*                 fPad;       // View pad. 
-  TButton*              fButton;    // Continue button
-  TButton*              fZoom;      // Zoom button
-  TButton*              fPick;      // Pick button
+  TObjArray             fButtons;   // Continue button
+  TSlider*              fSlider;    // Cut slider
   Bool_t                fZoomMode;  // Whether we're in Zoom mode
   Float_t               fX0;        // X at lower left corner or range 
   Float_t               fY0;        // Y at lower left corner or range 
@@ -165,6 +185,10 @@ protected:
   Int_t                 fOldXPixel; // Old x pixel of mark
   Int_t                 fOldYPixel; // Old y pixel of mark
   Bool_t                fLineDrawn; // Whether we're drawing a box
+  Bool_t                fOnlyFMD;
+  TH1*                  fSpec;
+  TH1*                  fSpecCut;
+  TCanvas*              fAux;
   ClassDef(AliFMDDisplay,0)  // FMD specialised event display
 };
 

@@ -101,7 +101,7 @@ public:
     UShort_t str = digit->Strip();
     if (str > 511) {
       AliWarning(Form("Bad strip number %d in digit", str));
-      continue;
+      return kFALSE;
     }
     fElossVsAdc->Fill(fMap(det, rng, sec, str).fEdep, digit->Counts());
     return kTRUE;

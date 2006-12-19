@@ -60,10 +60,19 @@ DrawXsection(Bool_t scale=kFALSE,
     // 5 sigma
     graph->SetPointError(i, 0, 5 * .1 * y);
   }
+  TCanvas* c = new TCanvas("c","c");
+  c->SetLogx();
+  c->SetLogy();
   graph->SetLineWidth(2);
   graph->SetFillStyle(3001);
   graph->SetFillColor(6);
-  graph->Draw("L3 same");
+  graph->Draw("L");
+  graph->DrawClone("AL3");
+  c->Modified();
+  c->Update();
+  c->cd();
+  c->SaveAs("xsec.C");
+  
 }
 
 //____________________________________________________________________

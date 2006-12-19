@@ -477,25 +477,35 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   //                  = E + (l - E) * ext(-B * t)
   // 
   AliFMDParameters* param = AliFMDParameters::Instance();
-  Float_t  convF          = 1/param->GetPulseGain(detector,ring,sector,strip);
-  UShort_t ped            = MakePedestal(detector,ring,sector,strip);
-  UInt_t   maxAdc         = param->GetAltroChannelSize()-1;
+  Float_t  convF          = 1./param->GetPulseGain(detector,ring,sector,strip);
+  Int_t    ped            = MakePedestal(detector,ring,sector,strip);
+  Int_t    maxAdc         = param->GetAltroChannelSize()-1;
+  if (maxAdc < 0) {
+    AliWarning(Form("Maximum ADC is %d < 0, forcing it to 1023", maxAdc));
+    maxAdc = 1023;
+  }
   UShort_t rate           = param->GetSampleRate(detector,ring,sector,strip);
+  if (rate < 1 || rate > 3) rate = 1;
   
   // In case we don't oversample, just return the end value. 
   if (rate == 1) {
-    counts[0] = UShort_t(TMath::Min(edep * convF + ped, Float_t(maxAdc)));
-    AliDebug(2, Form("FMD%d%c[%2d,%3d]: converting ELoss %f to ADC %d (%f)", 
-		     detector,ring,sector,strip,edep,counts[0],convF));
+    Float_t    a = edep * convF + ped;
+    if (a < 0) a = 0;
+    counts[0]    = UShort_t(TMath::Min(a, Float_t(maxAdc)));
+    AliDebug(2, Form("FMD%d%c[%2d,%3d]: converting ELoss %f to "
+		     "ADC %4d (%f,%d)",
+		     detector,ring,sector,strip,edep,counts[0],convF,ped));
     return;
   }
   
   // Create a pedestal 
   Float_t b = fShapingTime;
   for (Ssiz_t i = 0; i < rate;  i++) {
-    Float_t t = Float_t(i) / rate;
-    Float_t s = edep + (last - edep) * TMath::Exp(-b * t);
-    counts[i] = UShort_t(TMath::Min(s * convF + ped, Float_t(maxAdc)));
+    Float_t t  = Float_t(i) / rate;
+    Float_t s  = edep + (last - edep) * TMath::Exp(-b * t);
+    Float_t a  = Int_t(s * convF + ped);
+    if (a < 0) a = 0;
+    counts[i]  = UShort_t(TMath::Min(a, Float_t(maxAdc)));
   }
 }
 

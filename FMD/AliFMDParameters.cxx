@@ -113,10 +113,11 @@ AliFMDParameters::AliFMDParameters()
 
 //__________________________________________________________________
 void
-AliFMDParameters::Init()
+AliFMDParameters::Init(Bool_t forceReInit)
 {
   // Initialize the parameters manager.  We need to get stuff from the
   // CDB here. 
+  if (forceReInit) fIsInit = kFALSE;
   if (fIsInit) return;
   InitPulseGain();
   InitPedestal();
@@ -130,7 +131,7 @@ AliFMDParameters::Init()
 
 //__________________________________________________________________
 #define DET2IDX(det,ring,sec,str) \
-  (det * 10000 + (ring == 'I' ? 0 : 1000) + str)  
+  (det * 1000 + (ring == 'I' ? 0 : 512) + str)  
   
 //__________________________________________________________________
 void
@@ -188,7 +189,11 @@ AliFMDParameters::Draw(Option_t* option)
       UShort_t nStrip  = (iring == 0 ? 512 : 256);
       Char_t   ring    = (iring == 0 ? 'I' : 'O');
       for (UShort_t str = 0; str < nStrip; str++) {
+	// UShort_t nSec    = (iring == 0 ? 20  : 40);
+	// Char_t   ring    = (iring == 0 ? 'I' : 'O');
+	// for (UShort_t sec = 0; sec < nSec; sec++) {
 	Int_t idx = DET2IDX(det, ring, 0, str);
+	// Int_t idx = DET2IDX(det, ring, sec, 0);
 	if (skip) {
 	  xbins[i-1] = idx - .5;
 	  skip  = kFALSE;
@@ -201,11 +206,13 @@ AliFMDParameters::Draw(Option_t* option)
     }
   }
   TArrayD ybins(41);
-  for (Int_t i = 0; i < 41; i++) ybins[i] = Float_t(i - .5);
+  for (Int_t i = 0; i < ybins.fN; i++) ybins[i] = Float_t(i - .5);
   TH2D* hist = new TH2D("calib", Form("Calibration %s", option), 
 			xbins.fN-1, xbins.fArray,  
 			ybins.fN-1, ybins.fArray);
-
+  hist->GetXaxis()->SetTitle("1000 #times detector + 512 #times ring + strip");
+  hist->GetYaxis()->SetTitle("sector");
+  
   // hist->Draw("Lego");
   // return;
   
@@ -244,6 +251,7 @@ AliFMDParameters::Draw(Option_t* option)
             val = GetMaxStrip(det,ring,sec,str); break;
 	  }
 	  hist->Fill(idx,sec,val);
+	  // hist->Fill(idx,str,val);
 	}
       }
     }
@@ -257,76 +265,164 @@ AliFMDParameters::Print(Option_t* option) const
 {
   // Print information. 
   // If option contains an 'A' then everything is printed. 
+  // If the option contains the string "FMD" the function will search 
+  // for detector, ring, sector, and strip numbers to print, in the
+  // format 
+  // 
+  //    FMD<detector><ring>[<sector>,<string>] 
+  // 
+  // The wild card '*' means all of <detector>, <ring>, <sector>, or 
+  // <strip>. 
   TString opt(option);
-  Bool_t showStrips = opt.Contains("a", TString::kIgnoreCase);
+  Bool_t showStrips  = opt.Contains("a", TString::kIgnoreCase);
+  UShort_t ds[]      = { 1, 2, 3, 0 };
+  Char_t   rs[]      = { 'I', 'O', '\0' };
+  UShort_t minStrip  = 0;
+  UShort_t maxStrip  = 512;
+  UShort_t minSector = 0;
+  UShort_t maxSector = 40;
+  
+  
   if (opt.Contains("fmd",TString::kIgnoreCase)) {
-    size_t   i   = opt.Index("fmd",TString::kIgnoreCase);
-    size_t   j   = opt.Index("]",TString::kIgnoreCase);
-    UShort_t det, sec, str;
-    Char_t ring, lbrack, rbrack, comma;
-    UInt_t ddl, addr;
+    showStrips    = kTRUE;
+    size_t   i    = opt.Index("fmd",TString::kIgnoreCase);
+    size_t   j    = opt.Index("]",TString::kIgnoreCase);
+    enum {
+      read_det, 
+      read_ring, 
+      read_lbrack,
+      read_sector,
+      read_comma,
+      read_strip,
+      read_rbrack, 
+      end
+    } state = read_det;
     std::stringstream s(opt(i+4, j-i-3).Data());
-    s >> det >> ring >> lbrack >> sec >> comma >> str >> rbrack;
-    Detector2Hardware(det, ring, sec, str, ddl, addr);
-    std::cout 
-      << "     Strip    |     Pedestal      |    Gain    | ZS thr. | Address\n"
-      << "--------------+-------------------+------------+---------+---------" 
-      << "\nFMD" << det << ring << "[" << std::setw(2) << sec << "," 
-      << std::setw(3) << str << "] | " 
-      << std::setw(7) << GetPedestal(det, ring, sec, str) 
-      << "+/-" << std::setw(7) 
-      << GetPedestalWidth(det, ring, sec, str) 
-      << " | " << std::setw(10) 
-      << GetPulseGain(det, ring, sec, str) 
-      << " | " << std::setw(7) 
-      << GetZeroSuppression(det, ring, sec, str) 
-      << " | 0x" << std::hex << std::setw(4) 
-      << std::setfill('0') << ddl << ",0x" << std::setw(3) 
-      << addr << std::dec << std::setfill(' ') << std::endl;
-    return;
+    while (state != end) {
+      Char_t tmp = s.peek();
+      if (tmp == ' ' || tmp == '\t') {
+	s.get();
+	continue;
+      }
+      switch (state) {
+      case read_det: { // First, try to read the detector 
+	if (tmp == '*') s.get();
+	else { 
+	  UShort_t det;
+	  s >> det;
+	  if (!s.bad()) {
+	    ds[0] = det;
+	    ds[1] = 0;
+	  }
+	}
+	state = (s.bad() ? end : read_ring);
+      } break;
+      case read_ring: { // Then try to read the ring;
+	Char_t ring;
+	s >> ring;
+	if (ring != '*' && !s.bad()) {
+	  rs[0] = ring;
+	  rs[1] = '\0';
+	}
+	state = (s.bad() ? end : read_lbrack);
+      } break;
+      case read_lbrack: { // Try to read a left bracket 
+	Char_t lbrack;
+	s >> lbrack;
+	state = (s.bad() ? end : read_sector);
+      } break;
+      case read_sector: { // Try to read a sector 
+	if (tmp == '*') s.get();
+	else {
+	  UShort_t sec;
+	  s >> sec;
+	  if (!s.bad()) {
+	    minSector = sec;
+	    maxSector = sec + 1;
+	  }
+	}
+	state = (s.bad() ? end : read_comma);
+      } break;
+      case read_comma: { // Try to read a left bracket 
+	Char_t comma;
+	s >> comma;
+	state = (s.bad() ? end : read_strip);
+      } break;
+      case read_strip: { // Try to read a strip 
+	if (tmp == '*') s.get();
+	else {
+	  UShort_t str;
+	  s >> str;
+	  if (!s.bad()) {
+	    minStrip = str;
+	    maxStrip = str + 1;
+	  }
+	}
+	state = (s.bad() ? end : read_rbrack);
+      } break;
+      case read_rbrack: { // Try to read a left bracket 
+	Char_t rbrack;
+	s >> rbrack;
+	state = end;
+      } break;
+      case end: 
+	break;
+      }
+    }
   }
-  for (UShort_t det=1 ; det <= 3; det++) {
-    std::cout << "FMD" << det << std::endl;
-    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
-    for (Char_t* ring = rings; *ring != '\0'; ring++) {
-      std::cout << " Ring " << *ring << std::endl;
-      UShort_t nSec = ( *ring == 'I' ? 20  :  40 );
-      UShort_t nStr = ( *ring == 'I' ? 512 : 256 );
-      for (UShort_t sec = 0; sec < nSec; sec++) {
-	UShort_t min  = GetMinStrip(det, *ring, sec, 0);
-	UShort_t max  = GetMaxStrip(det, *ring, sec, 0);
-	UShort_t rate = GetSampleRate(det, *ring, sec, 0);
-	std::cout << "  Sector " << std::setw(2) << sec 
-		  << "  Strip range: " << std::setw(3) << min << "," 
-		  << std::setw(3) << max << "  Rate: " << std::setw(2) 
-		  << rate << std::endl;
-	if (!showStrips) continue;
+  UShort_t* dp = ds;
+  UShort_t  det;
+  while ((det = *(dp++))) {
+
+    Char_t* rp = rs;
+    Char_t  ring;
+    while ((ring = *(rp++))) {
+      if (det == 1 && ring == 'O') continue;
+      UShort_t min  = GetMinStrip(det, ring, 0, 0);
+      UShort_t max  = GetMaxStrip(det, ring, 0, 0);
+      UShort_t rate = GetSampleRate(det, ring, 0, 0);
+      std::cout << "FMD" << det << ring 
+		<< "  Strip range: " 
+		<< std::setw(3) << min << "," 
+		<< std::setw(3) << max << "  Rate: " 
+		<< std::setw(2) << rate << std::endl;
+
+      if (!showStrips) continue;
+      UShort_t nSec = ( ring == 'I' ? 20  :  40 );
+      UShort_t nStr = ( ring == 'I' ? 512 : 256 );
+      for (UShort_t sec = minSector; sec < maxSector && sec < nSec; sec++) {
 	std::cout 
 	  << "  Strip |     Pedestal      |    Gain    | ZS thr. | Address\n" 
 	  << "--------+-------------------+------------+---------+---------" 
 	  << std::endl;
-        for (UShort_t str = 0; str < nStr; str++) {
-	  std::cout << "    " << std::setw(3) << str << " | ";
-	  if (IsDead(det, *ring, sec, str)) {
+        for (UShort_t str = minStrip; str < nStr && str < maxStrip; str++) {
+	  if (str == minStrip) std::cout << std::setw(3) << sec << ",";
+	  else std::cout << "    ";
+	  std::cout << std::setw(3) << str << " | ";
+	  if (IsDead(det, ring, sec, str)) {
 	    std::cout << "dead" << std::endl;
 	    continue;
 	  }
 	  UInt_t ddl, addr;
-	  Detector2Hardware(det, *ring, sec, str, ddl, addr);
-	  std::cout << std::setw(7) << GetPedestal(det, *ring, sec, str) 
+	  Detector2Hardware(det, ring, sec, str, ddl, addr);
+	  std::cout << std::setw(7) << GetPedestal(det, ring, sec, str) 
 		    << "+/-" << std::setw(7) 
-		    << GetPedestalWidth(det, *ring, sec, str) 
+		    << GetPedestalWidth(det, ring, sec, str) 
 		    << " | " << std::setw(10) 
-		    << GetPulseGain(det, *ring, sec, str) 
-		    << " | " << std::setw(5) 
-		    << GetZeroSuppression(det, *ring, sec, str) 
+		    << GetPulseGain(det, ring, sec, str) 
+		    << " | " << std::setw(7) 
+		    << GetZeroSuppression(det, ring, sec, str) 
 		    << " | 0x" << std::hex << std::setw(4) 
 		    << std::setfill('0') << ddl << ",0x" << std::setw(3) 
 		    << addr << std::dec << std::setfill(' ') << std::endl;
-        }
-      }
-    }
-  }
+        } // for (strip)
+      } // for (sector)
+      std::cout
+	<< "=============================================================" 
+	<< std::endl;
+    } // while (ring)
+  } // while (det)
+  
 }
 
 //__________________________________________________________________

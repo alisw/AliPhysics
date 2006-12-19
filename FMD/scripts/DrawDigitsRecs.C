@@ -17,8 +17,9 @@
 #include <AliFMDInput.h>
 #include <AliFMDUShortMap.h>
 #include <AliFMDFloatMap.h>
-#include <AliFMDMultStrip.h>
-#include <AliFMDMultRegion.h>
+#include <AliFMDRecPoint.h>
+#include <AliESDFMD.h>
+#include <AliLog.h>
 #include <iostream>
 #include <TStyle.h>
 #include <TArrayF.h>
@@ -71,7 +72,7 @@ public:
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();
-    return AliFMDInputDigits::Begin(ev);
+    return AliFMDInput::Begin(ev);
   }
   //__________________________________________________________________
   Bool_t ProcessDigit(AliFMDDigit* digit) 
@@ -92,14 +93,14 @@ public:
   //__________________________________________________________________
   Bool_t ProcessRecPoint(AliFMDRecPoint* single)
   {
-    if (!single) continue;
+    if (!single) return kFALSE;
     UShort_t det = single->Detector();
     Char_t   rng = single->Ring();
     UShort_t sec = single->Sector();
     UShort_t str = single->Strip();
     if (str > 511) {
       AliWarning(Form("Bad strip number %d in single", str));
-      continue;
+      return kFALSE;
     }
     fAdcVsSingle->Fill(fMap(det, rng, sec, str), single->Particles());
     return kTRUE;

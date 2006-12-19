@@ -170,30 +170,47 @@ public:
       each reconstructed point. 
       @return @c false on error  */
   virtual Bool_t ProcessRecPoints();
+  /** Loop over all ESD data, and call ProcessESD for each entry.
+      @return  @c false on error  */
+  virtual Bool_t ProcessESDs();
 
   /** Process one hit, and optionally it's corresponding kinematics
       track.  Users should over this to process each hit. 
+      @param h Hit 
+      @param p Associated track
       @return  @c false on error   */
-  virtual Bool_t ProcessHit(AliFMDHit*, TParticle*)  { return kTRUE; }
-  /** Process one digit.  Users should over this to process each digit. 
+  virtual Bool_t ProcessHit(AliFMDHit* h, TParticle* p);
+  /** Process one digit.  Users should over this to process each
+      digit. 
+      @param digit Digit
       @return  @c false on error   */
-  virtual Bool_t ProcessDigit(AliFMDDigit*)          { return kTRUE; }
+  virtual Bool_t ProcessDigit(AliFMDDigit* digit);
   /** Process one summable digit.  Users should over this to process
       each summable digit.  
+      @param sdigit Summable digit
       @return  @c false on error   */
-  virtual Bool_t ProcessSDigit(AliFMDSDigit*)        { return kTRUE; }
+  virtual Bool_t ProcessSDigit(AliFMDSDigit* sdigit);
   /** Process one digit from raw data files.  Users should over this
       to process each raw digit.  
+      @param digit Raw digit
       @return  @c false on error   */
-  virtual Bool_t ProcessRawDigit(AliFMDDigit*)       { return kTRUE; }
+  virtual Bool_t ProcessRawDigit(AliFMDDigit* digit);
   /** Process one reconstructed point.  Users should over this to
       process each reconstructed point.  
+      @param point Reconstructed point 
       @return  @c false on error   */
-  virtual Bool_t ProcessRecPoint(AliFMDRecPoint*)    { return kTRUE; }
+  virtual Bool_t ProcessRecPoint(AliFMDRecPoint* point);
   /** Process ESD data for the FMD.  Users should overload this to
       deal with ESD data. 
+      @param d    Detector number (1-3)
+      @param r    Ring identifier ('I' or 'O')
+      @param s    Sector number (0-19, or 0-39)
+      @param t    Strip number (0-511, or 0-255)
+      @param eta  Psuedo-rapidity 
+      @param mult Psuedo-multiplicity 
       @return  @c false on error  */
-  virtual Bool_t ProcessESD(AliESDFMD*)              { return kTRUE; }
+  virtual Bool_t ProcessESD(UShort_t, Char_t, UShort_t, UShort_t, 
+			    Float_t, Float_t);
   
 protected:
   /** Copy ctor 
@@ -257,6 +274,14 @@ protected:
   Bool_t        fIsInit;     // Have we been initialized 
   ClassDef(AliFMDInput,0)  //Hits for detector FMD
 };
+
+inline Bool_t AliFMDInput::ProcessHit(AliFMDHit*,TParticle*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessDigit(AliFMDDigit*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessSDigit(AliFMDSDigit*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessRawDigit(AliFMDDigit*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessRecPoint(AliFMDRecPoint*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessESD(UShort_t,Char_t,UShort_t,UShort_t,
+				      Float_t,Float_t) { return kTRUE; }
 
 
 #endif

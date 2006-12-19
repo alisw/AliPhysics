@@ -93,7 +93,12 @@ public:
 			 AliESD* esd) const;
   /** Not used */
   virtual void   SetESD(AliESD* esd) { fESD = esd; }
-     
+  /** Set the noise factor 
+      @param f Factor to use */
+  virtual void SetNoiseFactor(Float_t f=3) { fNoiseFactor = f; }
+  /** Set whether we should do angle correction or nor 
+      @param use If true, do angle correction */
+  virtual void SetAngleCorrect(Bool_t use=kTRUE) { fAngleCorrect = use; }
 protected:
   /** Copy CTOR 
       @param other Object to copy from. */
@@ -153,6 +158,8 @@ protected:
   mutable TTree*        fTreeR;         // Output tree 
   mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
   mutable AliESDFMD*    fESDObj;        // ESD output object
+  mutable Float_t       fNoiseFactor;   // Factor of noise to check
+  mutable Bool_t        fAngleCorrect;  // Whether to angle correct
   AliESD*               fESD;           // ESD object(?)
   
 private:

@@ -79,9 +79,9 @@ CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str,
 	   UShort_t odet, Char_t oring, UShort_t osec, UShort_t ostr)
 {
   if (det != odet) 
-    Waring("TestHWMap", "Detector # differ %d != %d", det, odet);
+    Warning("TestHWMap", "Detector # differ %d != %d", det, odet);
   if (ring != oring) 
-    Waring("TestHWMap", "Ring Id differ %c != %c", ring, oring);  
+    Warning("TestHWMap", "Ring Id differ %c != %c", ring, oring);  
   if (sec != osec) 
     Warning("TestHWMap", "Sector # differ %d != %d", sec, osec);
   if (str != ostr) 
@@ -92,12 +92,14 @@ CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str,
 /** @ingroup ALTRO_test
  */
 void
-TestAltroMapping()
+TestAltroMapping(Int_t min=2, Int_t max=0)
 {
+  // if (min < 1 || min > 3) min = 1;
+  if (max < min)          max = min;
   AliFMDParameters* param = AliFMDParameters::Instance();
   AliFMDAltroMapping m;
   
-  for (UShort_t det = 2; det <= 2; det++) {
+  for (UShort_t det = min; det <= max; det++) {
     for (UShort_t rng = 0; rng < 2; rng++) {
       Char_t ring = (rng == 0 ? 'I' : 'O');
       Int_t  nsec = (ring == 'I' ?  20 :  40);

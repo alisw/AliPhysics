@@ -45,6 +45,7 @@
 // #include <TMath.h>
 #include <TROOT.h>
 #include <TRandom.h>
+#include <TF1.h>
 
 //====================================================================
 ClassImp(AliFMDCalibFaker)
@@ -208,21 +209,51 @@ AliFMDCalibFaker::MakePulseGain() const
 }
 
 //__________________________________________________________________
+Float_t 
+AliFMDCalibFaker::MakeNoise(Char_t ring, UShort_t str) const
+{
+  const UShort_t innerN    = 512;
+  const UShort_t outerN    = 256;
+  const UShort_t innerCut  = 350;
+  const UShort_t outerCut  = 190;
+  const Float_t  innerBase =   1.2;
+  const Float_t  outerBase =   2.1;
+  const Float_t  innerInc  =   0.5;
+  const Float_t  outerInc  =   0.8;
+  Float_t cut, base, inc, n;
+  switch (ring) {
+  case 'I': 
+    cut = innerCut; base = innerBase; inc = innerInc; n = innerN; break;
+  case 'O': 
+    cut = outerCut; base = outerBase; inc = outerInc; n = outerN; break;
+  default:
+    return -1;
+  }
+  Float_t bare = base + (str < cut ? 
+			 str / cut * inc : 
+			 inc  - (str - cut) / (n - cut) * inc);
+  return bare + gRandom->Uniform(-.07, .07);
+}
+  
+//__________________________________________________________________
 AliFMDCalibPedestal*
 AliFMDCalibFaker::MakePedestal() const
 {
   // Make the actual data
   AliFMDCalibPedestal*  pedestal  = new AliFMDCalibPedestal;
+  
   for (UShort_t det = 1; det <= 3; det++) {
-    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
+    Char_t rings[] = { 'I', 'O', '\0' };
     for (Char_t* ring = rings; *ring != '\0'; ring++) {
+      if (*ring == 'O' && det == 1) continue;
       UShort_t nSec = ( *ring == 'I' ? 20  :  40 );
       UShort_t nStr = ( *ring == 'I' ? 512 : 256 );
       for (UShort_t sec = 0; sec < nSec; sec++) {
         for (UShort_t str = 0; str < nStr; str++) {
-          pedestal->Set(det, *ring, sec, str,
-			gRandom->Uniform(fPedestalMin, fPedestalMax), 1.5);
-        }
+	  Float_t noise = MakeNoise(*ring, str);
+	  Float_t ped   = gRandom->Uniform(fPedestalMin, fPedestalMax);
+          pedestal->Set(det, *ring, sec, str, ped, noise);
+	}
       }
     }
   }

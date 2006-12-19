@@ -4,6 +4,8 @@
 
 SRCS		=  AliFMDInput.cxx 		\
 		   AliFMDDisplay.cxx		\
+		   AliFMDPattern.cxx		\
+		   AliFMDFancy.cxx		\
 		   AliFMDCalibFaker.cxx		\
 		   AliFMDAlignFaker.cxx		
 HDRS		=  $(SRCS:.cxx=.h) 

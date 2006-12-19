@@ -21,6 +21,8 @@
 // #pragma link C++ typedef  AliFMDEdepMap;
 #pragma link C++ class  AliFMDInput;
 #pragma link C++ class  AliFMDDisplay;
+#pragma link C++ class  AliFMDPattern;
+#pragma link C++ class  AliFMDFancy;
 #pragma link C++ class  AliFMDCalibFaker;
 #pragma link C++ class  AliFMDAlignFaker;
 

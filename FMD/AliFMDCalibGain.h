@@ -53,6 +53,7 @@ public:
   Float_t Value(UShort_t det, Char_t ring, UShort_t sec, UShort_t str);
   /** @return threshold */
   Float_t Threshold() const { return fThreshold; }
+  const AliFMDFloatMap& Values() const { return fValue; }
 private:
   AliFMDFloatMap fValue;       // Map
   Float_t        fThreshold;   // Global threshold

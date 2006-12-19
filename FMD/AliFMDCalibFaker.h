@@ -144,7 +144,8 @@ protected:
   /** Make a strip range
       @return strip range map */
   virtual AliFMDCalibStripRange*      MakeStripRange() const;
-
+  virtual Float_t MakeNoise(Char_t ring, UShort_t str) const;
+  
   Long_t   fMask;            // What to write 
   Float_t  fGain;            // Gain
   Float_t  fThresholdFactor; // Threshold factor

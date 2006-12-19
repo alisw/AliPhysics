@@ -284,7 +284,13 @@ AliFMDInput::Begin(Int_t event)
     AliInfo("Getting FMD digits");
     if (fFMDLoader->LoadDigits()) return kFALSE;
     fTreeD = fFMDLoader->TreeD();
-    if (!fArrayD) fArrayD = fFMD->Digits();
+    if (fTreeD) {
+      if (!fArrayD) fArrayD = fFMD->Digits();
+    }
+    else {
+      fArrayD = 0;
+      AliWarning(Form("Failed to load FMD Digits"));
+    } 
   }
   // Possibly load FMD Sdigit information 
   if (TESTBIT(fTreeMask, kSDigits)) {
@@ -307,6 +313,7 @@ AliFMDInput::Begin(Int_t event)
     if (read <= 0) return kFALSE;
     fESD = fMainESD->GetFMDData();
     if (!fESD) return kFALSE;
+    fESD->CheckNeedUShort(fChainE->GetFile());
   }
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kRaw)) {
@@ -344,7 +351,7 @@ AliFMDInput::Event()
   if (TESTBIT(fTreeMask, kRecPoints)) 
     if (!ProcessRecPoints()) return kFALSE;
   if (TESTBIT(fTreeMask, kESD))
-    if (!ProcessESD(fESD)) return kFALSE;
+    if (!ProcessESDs()) return kFALSE;
   
   return kTRUE;
 }
@@ -457,6 +464,29 @@ AliFMDInput::ProcessRecPoints()
       if (!recPoint) continue;
       if (!ProcessRecPoint(recPoint)) return kFALSE;
     }    
+  }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessESDs()
+{
+  // Process event summary data
+  if (!fESD) return kFALSE;
+  for (UShort_t det = 1; det <= 3; det++) {
+    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
+    for (Char_t* rng = rings; *rng != '\0'; rng++) {
+      UShort_t nsec = (*rng == 'I' ?  20 :  40);
+      UShort_t nstr = (*rng == 'I' ? 512 : 256);
+      for (UShort_t sec = 0; sec < nsec; sec++) {
+	for (UShort_t str = 0; str < nstr; str++) {
+	  Float_t eta  = fESD->Eta(det,*rng,sec,str);
+	  Float_t mult = fESD->Multiplicity(det,*rng,sec,str);
+	  if (!ProcessESD(det, *rng, sec, str, eta, mult)) continue;
+	}
+      }
+    }
   }
   return kTRUE;
 }

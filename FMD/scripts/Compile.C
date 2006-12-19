@@ -22,6 +22,7 @@ Compile(const char* script, Option_t* option="g")
 {
   gSystem->Load("libFMDutil.so");
   gSystem->SetIncludePath("-I`root-config --incdir` "
+			  "-I${ALICE_ROOT} " 
 			  "-I${ALICE_ROOT}/include " 
 			  "-I${ALICE_ROOT}/FMD "
 			  "-I${ALICE_ROOT}/geant3/TGeant3");

@@ -64,6 +64,8 @@ AliFMDReconstructor::AliFMDReconstructor()
     fESD(0x0)
 {
   // Make a new FMD reconstructor object - default CTOR.  
+  SetNoiseFactor();
+  SetAngleCorrect();
 }
   
 
@@ -75,7 +77,9 @@ AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other)
     fTreeR(other.fTreeR),
     fCurrentVertex(other.fCurrentVertex),
     fESDObj(other.fESDObj),
-    fESD(other.fESD)
+    fESD(other.fESD), 
+    fNoiseFactor(other.fNoiseFactor),
+    fAngleCorrect(other.fAngleCorrect)
 {
   // Copy constructor 
 }
@@ -86,12 +90,15 @@ AliFMDReconstructor&
 AliFMDReconstructor::operator=(const AliFMDReconstructor& other) 
 {
   // Assignment operator
-  fMult   = other.fMult;
-  fNMult = other.fNMult;
-  fTreeR = other.fTreeR;
+  fMult          = other.fMult;
+  fNMult         = other.fNMult;
+  fTreeR         = other.fTreeR;
   fCurrentVertex = other.fCurrentVertex;
-  fESDObj = other.fESDObj;
-  fESD = other.fESD;
+  fESDObj        = other.fESDObj;
+  fESD           = other.fESD;
+  fNoiseFactor   = other.fNoiseFactor;
+  fAngleCorrect  = other.fAngleCorrect;
+   
   return *this;
 }
 
@@ -223,6 +230,8 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
   // used. 
   Int_t nDigits = digits->GetEntries();
   AliDebug(1, Form("Got %d digits", nDigits));
+  fESDObj->SetNoiseFactor(fNoiseFactor);
+  fESDObj->SetAngleCorrected(fAngleCorrect);
   for (Int_t i = 0; i < nDigits; i++) {
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
     AliFMDParameters* param  = AliFMDParameters::Instance();
@@ -282,16 +291,21 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
 
   Int_t             counts = 0;
   AliFMDParameters* param  = AliFMDParameters::Instance();
-  Float_t           pedM   = param->GetPedestal(digit->Detector(), 
+  Float_t           ped    = param->GetPedestal(digit->Detector(), 
 						digit->Ring(), 
 						digit->Sector(), 
 						digit->Strip());
+  Float_t           noise  = param->GetPedestalWidth(digit->Detector(), 
+						     digit->Ring(), 
+						     digit->Sector(), 
+						     digit->Strip());
   AliDebug(15, Form("Subtracting pedestal %f from signal %d", 
-		   pedM, digit->Counts()));
+		   ped, digit->Counts()));
   if (digit->Count3() > 0)      counts = digit->Count3();
   else if (digit->Count2() > 0) counts = digit->Count2();
   else                          counts = digit->Count1();
-  counts = TMath::Max(Int_t(counts - pedM), 0);
+  counts = TMath::Max(Int_t(counts - ped), 0);
+  if (counts < noise * fNoiseFactor) counts = 0;
   if (counts > 0) AliDebug(15, "Got a hit strip");
   
   return  UShort_t(counts);
@@ -300,7 +314,7 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
 //____________________________________________________________________
 Float_t
 AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit, 
-				Float_t      /* eta */, 
+				Float_t      eta, 
 				UShort_t     count) const
 {
   // Converts number of ADC counts to energy deposited. 
@@ -320,16 +334,20 @@ AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit,
   // 
   // is constant and the same for all strips.
 
-  // Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));
-  // Double_t edep  = TMath::Abs(TMath::Cos(theta)) * fGain * count;
+  if (count <= 0) return 0;
   AliFMDParameters* param = AliFMDParameters::Instance();
   Float_t           gain  = param->GetPulseGain(digit->Detector(), 
 						digit->Ring(), 
 						digit->Sector(), 
 						digit->Strip());
-  Double_t          edep  = count * gain;
   AliDebug(15, Form("Converting counts %d to energy via factor %f", 
 		    count, gain));
+
+  Double_t edep  = count * gain;
+  if (fAngleCorrect) {
+    Double_t theta =  2 * TMath::ATan(TMath::Exp(-eta));
+    edep           *= TMath::Abs(TMath::Cos(theta));
+  }
   return edep;
 }
 
