@@ -124,13 +124,15 @@ void AliFMDQATask::Exec(Option_t *)
     return ; 
   }
   
+  TFile * currentFile = (dynamic_cast<TChain *>(fChain))->GetFile() ; 
   if ( !((entry-1)%100) ) 
-    AliInfo(Form("%s ----> Processing event # %lld",  (dynamic_cast<TChain *>(fChain))->GetFile()->GetName(), entry)) ; 
-  
+    AliInfo(Form("%s ----> Processing event # %lld", currentFile->GetName(), entry)) ; 
+	    
   // ************************  FMD *************************************
- 
+  
   AliESDFMD * fmd = fESD->GetFMDData() ;
-  fmd->CheckNeedUShort(fChain->GetFile());
+  
+  fmd->CheckNeedUShort(currentFile);
 
   Int_t nFMD1 = 0, nFMD2i = 0, nFMD2o = 0, nFMD3i = 0, nFMD3o = 0 ;
   
