@@ -12,12 +12,12 @@
 //---------------------------------------------------------------------
 
 #include <TObject.h>
-#include <AliJetHeader.h>
 
 class TFile;
 class TTree;
 class AliJet;
 class AliJetReader;
+class AliJetHeader;
 class AliJetControlPlots;
 class AliLeading;
 

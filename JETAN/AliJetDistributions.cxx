@@ -33,8 +33,7 @@ ClassImp(AliJetDistributions)
   
 #include "AliJetProductionDataPDC2004.h"
 #include "AliJet.h"
-#include "AliJetKineReaderHeader.h"
-#include "AliJetESDReaderHeader.h"
+#include "AliJetReaderHeader.h"
 #include "AliLeading.h"
   
 ////////////////////////////////////////////////////////////////////////

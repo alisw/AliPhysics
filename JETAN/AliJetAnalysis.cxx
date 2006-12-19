@@ -38,11 +38,9 @@ ClassImp(AliJetAnalysis)
 // aliroot
 #include "AliJetProductionDataPDC2004.h"
 #include "AliJet.h"
-#include "AliJetKineReaderHeader.h"
-#include "AliJetESDReaderHeader.h"
 #include "AliUA1JetHeader.h"
 #include "AliLeading.h"
-  
+#include "AliJetReaderHeader.h"
   
 AliJetAnalysis::AliJetAnalysis():
   fReaderHeader(0x0),

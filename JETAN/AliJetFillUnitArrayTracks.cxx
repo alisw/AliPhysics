@@ -70,6 +70,7 @@
 #include "AliJetDummyGeo.h"
 #include "AliJetUnitArray.h"
 #include "AliJetFillUnitArrayTracks.h"
+#include "AliJetHadronCorrectionv1.h"
 #include "AliJetGrid.h"
 
 ClassImp(AliJetFillUnitArrayTracks)

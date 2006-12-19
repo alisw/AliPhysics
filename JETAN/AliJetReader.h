@@ -16,15 +16,12 @@
 #include "TTask.h"
 #endif
 
-#include <AliJetUnitArray.h>
-#include <AliJetHadronCorrectionv1.h>
-
 class TTree;
 class TTask;
 class TClonesArray;
 class AliJetReaderHeader;
 class AliJetUnitArray;
-class AliESD;
+class AliJetHadronCorrectionv1;
 class AliJet;
 
 class AliJetReader : public TObject 

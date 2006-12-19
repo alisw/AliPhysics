@@ -25,8 +25,8 @@
 //AliRoot
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
-#include "AliESD.h"
-#include "AliHeader.h"
+#include "AliJetUnitArray.h"
+#include "AliJetHadronCorrectionv1.h"
 
 ClassImp(AliJetReader)
 
