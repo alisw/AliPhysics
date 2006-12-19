@@ -24,9 +24,9 @@
 // Number of Modules and Layers may be controlled by 
 // the name of the instance defined               
 //     EMCAL geometry tree:
-//     EMCAL -> superModule -> module -> cell
+//     EMCAL -> superModule -> module -> tower(cell)
 //     Indexes
-//     absId -> nSupMod     -> nTower -> (nIphi,nIeta)
+//     absId -> nSupMod     -> nModule -> (nIphi,nIeta)
 //
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //     and  : Yves Schutz (SUBATECH)
@@ -73,7 +73,7 @@ AliEMCALGeometry::AliEMCALGeometry()
     fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
-    fNCells(0),fNCellsInSupMod(0),fNCellsInTower(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0),fEtaMaxOfTRD1(0),
     fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
     fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
@@ -92,7 +92,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title)
     fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
-    fNCells(0),fNCellsInSupMod(0),fNCellsInTower(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0), fEtaMaxOfTRD1(0),
     fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
     fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
@@ -145,7 +145,7 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
     fNETAdiv(geom.fNETAdiv),
     fNCells(geom.fNCells),
     fNCellsInSupMod(geom.fNCellsInSupMod),
-    fNCellsInTower(geom.fNCellsInTower),
+    fNCellsInModule(geom.fNCellsInModule),
     fNTRU(geom.fNTRU),
     fNTRUEta(geom.fNTRUEta),
     fNTRUPhi(geom.fNTRUPhi),
@@ -322,8 +322,8 @@ void AliEMCALGeometry::Init(void){
     fEtaTileSize = fEtaModuleSize/double(fNETAdiv) - fLateralSteelStrip; // 13-may-05 
 
     // constant for transition absid <--> indexes
-    fNCellsInTower  = fNPHIdiv*fNETAdiv;
-    fNCellsInSupMod = fNCellsInTower*fNPhi*fNZ;
+    fNCellsInModule  = fNPHIdiv*fNETAdiv;
+    fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
     fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
     if(GetKey110DEG()) fNCells -= fNCellsInSupMod;
 
@@ -405,7 +405,7 @@ void AliEMCALGeometry::PrintGeometry()
     if(fSteelFrontThick>0.) 
     printf(" fSteelFrontThick  %6.3f cm \n", fSteelFrontThick);
     printf(" fNPhi %i   |  fNZ %i \n", fNPhi, fNZ);
-    printf(" fNCellsInTower %i : fNCellsInSupMod %i : fNCells %i\n",fNCellsInTower, fNCellsInSupMod, fNCells);
+    printf(" fNCellsInModule %i : fNCellsInSupMod %i : fNCells %i\n",fNCellsInModule, fNCellsInSupMod, fNCells);
     if(fGeoName.Contains("MAY05")){
       printf(" fFrontSteelStrip         %6.4f cm (thickness of front steel strip)\n", 
       fFrontSteelStrip);
@@ -471,14 +471,14 @@ void AliEMCALGeometry::PrintGeometry()
 void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, char *tit)
 {
   // Service methods
-  Int_t nSupMod, nTower, nIphi, nIeta;
+  Int_t nSupMod, nModule, nIphi, nIeta;
   Int_t iphi, ieta;
   TVector3 vg;
 
-  GetCellIndex(absId,  nSupMod, nTower, nIphi, nIeta);
-  printf(" %s | absId : %i -> nSupMod %i nTower %i nIphi %i nIeta %i \n", tit, absId,  nSupMod, nTower, nIphi, nIeta);
+  GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
+  printf(" %s | absId : %i -> nSupMod %i nModule %i nIphi %i nIeta %i \n", tit, absId,  nSupMod, nModule, nIphi, nIeta);
   if(pri>0) {
-    GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+    GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
     printf(" local SM index : iphi %i : ieta %i \n", iphi,ieta);
     GetGlobal(absId, vg);
     printf(" vglob : mag %7.2f : perp %7.2f : z %7.2f : eta %6.4f : phi %6.4f(%6.2f) \n", 
@@ -582,7 +582,7 @@ void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampma
   Float_t amp   = -1;
   Float_t timeR = -1;
   Int_t iSupMod = -1;
-  Int_t nTower  = -1;
+  Int_t nModule  = -1;
   Int_t nIphi   = -1;
   Int_t nIeta   = -1;
   Int_t iphi    = -1;
@@ -613,11 +613,11 @@ void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampma
     timeR  = dig->GetTimeR() ; // Earliest time of the digit
    
     //Get eta and phi cell position in supermodule
-    Bool_t bCell = GetCellIndex(id, iSupMod, nTower, nIphi, nIeta) ;
+    Bool_t bCell = GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
     if(!bCell)
       Error("FillTRU","Wrong cell id number") ;
     
-    GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
+    GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 
     //Check to which TRU in the supermodule belongs the cell. 
     //Supermodules are divided in a TRU matrix of dimension 
@@ -738,14 +738,14 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
 //
 // == Shish-kebab cases ==
 //
-Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta) const
+Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta) const
 { 
   // 27-aug-04; 
   // corr. 21-sep-04; 
   //       13-oct-05; 110 degree case
   // May 31, 2006; ALICE numbering scheme:
   // 0 <= nSupMod < fNumberOfSuperModules
-  // 0 <= nTower  < fNPHI * fNZ ( fNPHI * fNZ/2 for fKey110DEG=1)
+  // 0 <= nModule  < fNPHI * fNZ ( fNPHI * fNZ/2 for fKey110DEG=1)
   // 0 <= nIphi   < fNPHIdiv
   // 0 <= nIeta   < fNETAdiv
   // 0 <= absid   < fNCells
@@ -755,7 +755,7 @@ Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, I
   } else {
     id  = fNCellsInSupMod*nSupMod;
   }
-  id += fNCellsInTower *nTower;
+  id += fNCellsInModule *nModule;
   id += fNPHIdiv *nIphi;
   id += nIeta;
   if(id<0 || id >= fNCells) {
@@ -763,7 +763,7 @@ Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, I
 //     printf("    id      %6i(will be force to -1)\n", id);
 //     printf("    fNCells %6i\n", fNCells);
 //     printf("    nSupMod %6i\n", nSupMod);
-//     printf("    nTower  %6i\n", nTower);
+//     printf("    nModule  %6i\n", nModule);
 //     printf("    nIphi   %6i\n", nIphi);
 //     printf("    nIeta   %6i\n", nIeta);
     id = -TMath::Abs(id); // if negative something wrong
@@ -778,7 +778,7 @@ Bool_t  AliEMCALGeometry::CheckAbsCellId(Int_t absId) const
   else                            return kTRUE;
 }
 
-Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,Int_t &nIphi,Int_t &nIeta) const
+Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nModule,Int_t &nIphi,Int_t &nIeta) const
 { 
   // 21-sep-04; 19-oct-05;
   // May 31, 2006; ALICE numbering scheme:
@@ -787,7 +787,7 @@ Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,I
   // absId   - cell is as in Geant,     0<= absId   < fNCells;
   // Out:
   // nSupMod - super module(SM) number, 0<= nSupMod < fNumberOfSuperModules;
-  // nTower  - module number in SM,     0<= nTower  < fNCellsInSupMod/fNCellsInSupMod or(/2) for tow last SM (10th and 11th);
+  // nModule  - module number in SM,     0<= nModule  < fNCellsInSupMod/fNCellsInSupMod or(/2) for tow last SM (10th and 11th);
   // nIphi   - cell number in phi driection inside module; 0<= nIphi < fNPHIdiv; 
   // nIeta   - cell number in eta driection inside module; 0<= nIeta < fNETAdiv; 
   // 
@@ -803,15 +803,15 @@ Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nTower,I
     tmp     = absId % fNCellsInSupMod;
   }
 
-  nTower  = tmp / fNCellsInTower;
-  tmp     = tmp % fNCellsInTower;
+  nModule  = tmp / fNCellsInModule;
+  tmp     = tmp % fNCellsInModule;
   nIphi   = tmp / fNPHIdiv;
   nIeta   = tmp % fNPHIdiv;
 
   return kTRUE;
 }
 
-void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower,  int &iphim, int &ietam) const
+void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule,  int &iphim, int &ietam) const
 { 
   // added nSupMod; - 19-oct-05 !
   // Alice numbering scheme        - Jun 01,2006 
@@ -823,11 +823,11 @@ void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower
   if(fKey110DEG == 1 && nSupMod>=10) nphi = fNPhi/2;
   else                               nphi = fNPhi;
 
-  ietam = nTower/nphi;
-  iphim = nTower%nphi;
+  ietam = nModule/nphi;
+  iphim = nModule%nphi;
 }
 
-void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta, 
+void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta, 
 int &iphi, int &ieta) const
 { 
   // 
@@ -835,7 +835,7 @@ int &iphi, int &ieta) const
   // Alice numbering scheme  - Jun 01,2006 
   // IN:
   // nSupMod - super module(SM) number, 0<= nSupMod < fNumberOfSuperModules;
-  // nTower  - module number in SM,     0<= nTower  < fNCellsInSupMod/fNCellsInSupMod or(/2) for tow last SM (10th and 11th);
+  // nModule  - module number in SM,     0<= nModule  < fNCellsInSupMod/fNCellsInSupMod or(/2) for tow last SM (10th and 11th);
   // nIphi   - cell number in phi driection inside module; 0<= nIphi < fNPHIdiv; 
   // nIeta   - cell number in eta driection inside module; 0<= nIeta < fNETAdiv; 
   // 
@@ -846,14 +846,14 @@ int &iphi, int &ieta) const
   //
   static Int_t iphim, ietam;
 
-  GetModulePhiEtaIndexInSModule(nSupMod,nTower, iphim, ietam); 
+  GetModulePhiEtaIndexInSModule(nSupMod,nModule, iphim, ietam); 
   //  ieta  = ietam*fNETAdiv + (1-nIeta); // x(module) = -z(SM) 
   ieta  = ietam*fNETAdiv + (fNETAdiv - 1 - nIeta); // x(module) = -z(SM) 
   iphi  = iphim*fNPHIdiv + nIphi;     // y(module) =  y(SM) 
 
   if(iphi<0 || ieta<0)
-  AliDebug(1,Form(" nSupMod %i nTower %i nIphi %i nIeta %i => ieta %i iphi %i\n", 
-  nSupMod, nTower, nIphi, nIeta, ieta, iphi));
+  AliDebug(1,Form(" nSupMod %i nModule %i nIphi %i nIeta %i => ieta %i iphi %i\n", 
+  nSupMod, nModule, nIphi, nIeta, ieta, iphi));
 }
 
 Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
@@ -861,36 +861,36 @@ Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
   // Return the number of the  supermodule given the absolute
   // ALICE numbering id
 
-  static Int_t nSupMod, nTower, nIphi, nIeta;
-  GetCellIndex(absId, nSupMod, nTower, nIphi, nIeta);
+  static Int_t nSupMod, nModule, nIphi, nIeta;
+  GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
   return nSupMod;
 } 
 
 void  AliEMCALGeometry::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, Int_t iphi, Int_t ieta, 
-			Int_t &iphim, Int_t &ietam, Int_t &nTower) const
+			Int_t &iphim, Int_t &ietam, Int_t &nModule) const
 {
-  // Transition from cell indexes (ieta,iphi) to module indexes (ietam,iphim, nTower)
+  // Transition from cell indexes (ieta,iphi) to module indexes (ietam,iphim, nModule)
   static Int_t nphi;
   nphi  = GetNumberOfModuleInPhiDirection(nSupMod);  
 
   ietam  = ieta/fNETAdiv;
   iphim  = iphi/fNPHIdiv;
-  nTower = ietam * nphi + iphim; 
+  nModule = ietam * nphi + iphim; 
 }
 
 Int_t  AliEMCALGeometry::GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const
 {
   // Transition from super module number(nSupMod) and cell indexes (ieta,iphi) to absId
-  static Int_t ietam, iphim, nTower;
+  static Int_t ietam, iphim, nModule;
   static Int_t nIeta, nIphi; // cell indexes in module
 
-  GetModuleIndexesFromCellIndexesInSModule(nSupMod, iphi, ieta, ietam, iphim, nTower);
+  GetModuleIndexesFromCellIndexesInSModule(nSupMod, iphi, ieta, ietam, iphim, nModule);
 
   nIeta = ieta%fNETAdiv;
   nIeta = fNETAdiv - 1 - nIeta;
   nIphi = iphi%fNPHIdiv;
 
-  return GetAbsCellId(nSupMod, nTower, nIphi, nIeta);
+  return GetAbsCellId(nSupMod, nModule, nIphi, nIeta);
 }
 
 
@@ -909,11 +909,11 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
   const Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
-  static Int_t nSupMod, nTower, nIphi, nIeta, iphi, ieta;
+  static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
-  GetCellIndex(absId, nSupMod, nTower, nIphi, nIeta);
-  GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi, ieta); 
+  GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
+  GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi, ieta); 
  
   xr = fCentersOfCellsXDir.At(ieta);
   zr = fCentersOfCellsEtaDir.At(ieta);
@@ -991,7 +991,7 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
   // 
   AliDebug(2,Form(" Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize()));
   Int_t ind=0; // this is phi index
-  Int_t iphi=0, ieta=0, nTower=0, iphiTemp;
+  Int_t iphi=0, ieta=0, nModule=0, iphiTemp;
   Double_t xr, zr, theta, phi, eta, r, x,y;
   TVector3 vglob;
   Double_t ytCenterModule, ytCenterCell;
@@ -1028,17 +1028,17 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
   AliDebug(2,Form(" Cells grid in eta directions : size %i\n", fCentersOfCellsEtaDir.GetSize()));
   for(Int_t it=0; it<fNZ; it++) {
     AliEMCALShishKebabTrd1Module *trd1 = GetShishKebabModule(it);
-    nTower = fNPhi*it;
+    nModule = fNPhi*it;
     for(Int_t ic=0; ic<fNETAdiv; ic++) {
       if(fNPHIdiv==2) {
         trd1->GetCenterOfCellInLocalCoordinateofSM(ic, xr, zr);      // case of 2X2
-        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphiTemp, ieta); 
+        GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
       } if(fNPHIdiv==3) {
         trd1->GetCenterOfCellInLocalCoordinateofSM_3X3(ic, xr, zr);  // case of 3X3
-        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphiTemp, ieta); 
+        GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
       } if(fNPHIdiv==1) {
         trd1->GetCenterOfCellInLocalCoordinateofSM_1X1(xr, zr);      // case of 1X1
-        GetCellPhiEtaIndexInSModule(0, nTower, 0, ic, iphiTemp, ieta); 
+        GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
       }
       fCentersOfCellsXDir.AddAt(float(xr) - fParSM[0],ieta);
       fCentersOfCellsEtaDir.AddAt(float(zr) - fParSM[2],ieta);

@@ -496,7 +496,7 @@ void AliEMCALv2::DrawAlicWithHits(int mode)
   }
 
   TClonesArray *hits = Hits();
-  Int_t nhits = hits->GetEntries(), absId, nSupMod, nTower, nIphi, nIeta, iphi, ieta;
+  Int_t nhits = hits->GetEntries(), absId, nSupMod, nModule, nIphi, nIeta, iphi, ieta;
   AliEMCALHit *hit = 0;
   Double_t de, des=0.;
   for(Int_t i=0; i<nhits; i++) {
@@ -504,11 +504,11 @@ void AliEMCALv2::DrawAlicWithHits(int mode)
     absId = hit->GetId();
     de    = hit->GetEnergy();
     des += de;
-    if(fGeometry->GetCellIndex(absId, nSupMod, nTower, nIphi, nIeta)){
+    if(fGeometry->GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta)){
       //      printf(" de %f abs id %i smod %i tower %i | cell iphi %i : ieta %i\n",
-      // de, absId, nSupMod, nTower, nIphi, nIeta); 
+      // de, absId, nSupMod, nModule, nIphi, nIeta); 
       if(nSupMod==3) {
-        fGeometry->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+        fGeometry->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
         // printf(" iphi %i : ieta %i\n", iphi,ieta);
         h2->Fill(double(ieta),double(iphi), de);
       }
@@ -540,18 +540,18 @@ void AliEMCALv2::TestIndexTransition(int pri, int idmax)
     return; 
   }
 
-  Int_t nSupMod, nTower, nIphi, nIeta, idNew, nGood=0;
+  Int_t nSupMod, nModule, nIphi, nIeta, idNew, nGood=0;
   if(idmax==0) idmax = fGeometry->GetNCells();
   for(Int_t id=1; id<=idmax; id++) {
-    if(!fGeometry->GetCellIndex(id, nSupMod, nTower, nIphi, nIeta)){
+    if(!fGeometry->GetCellIndex(id, nSupMod, nModule, nIphi, nIeta)){
       printf(" Wrong abs ID %i : #cells %i\n", id, fGeometry->GetNCells());
       break;  
     }
-    idNew = fGeometry->GetAbsCellId(nSupMod, nTower, nIphi, nIeta);
+    idNew = fGeometry->GetAbsCellId(nSupMod, nModule, nIphi, nIeta);
     if(id != idNew || pri>0) {
       printf(" ID %i : %i <- new id\n", id, idNew);
       printf(" nSupMod   %i ",  nSupMod);
-      printf(" nTower    %i ", nTower);
+      printf(" nModule    %i ", nModule);
       printf(" nIphi     %i ", nIphi);
       printf(" nIeta     %i \n", nIeta);
      

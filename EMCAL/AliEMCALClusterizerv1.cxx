@@ -186,19 +186,19 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t AbsId)
       AliFatal("Did not get geometry from EMCALLoader") ;
     
     Int_t iSupMod = -1;
-    Int_t nTower  = -1;
+    Int_t nModule  = -1;
     Int_t nIphi   = -1;
     Int_t nIeta   = -1;
     Int_t iphi    = -1;
     Int_t ieta    = -1;
     
-    Bool_t bCell = fGeom->GetCellIndex(AbsId, iSupMod, nTower, nIphi, nIeta) ;
+    Bool_t bCell = fGeom->GetCellIndex(AbsId, iSupMod, nModule, nIphi, nIeta) ;
     if(!bCell) {
       fGeom->PrintGeometry();
       Error("Calibrate()"," Wrong cell id number : %i", AbsId);
       assert(0);
     }
-    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
+    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 
     fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
     fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
@@ -438,17 +438,17 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
   //                                      which is compared to a digit (d2)  not yet in a cluster  
 
   static Int_t rv; 
-  static Int_t nSupMod1=0, nTower1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
-  static Int_t nSupMod2=0, nTower2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
+  static Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
+  static Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
   static Int_t rowdiff, coldiff;
   rv = 0 ; 
 
-  fGeom->GetCellIndex(d1->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
-  fGeom->GetCellIndex(d2->GetId(), nSupMod2,nTower2,nIphi2,nIeta2);
+  fGeom->GetCellIndex(d1->GetId(), nSupMod1,nModule1,nIphi1,nIeta1);
+  fGeom->GetCellIndex(d2->GetId(), nSupMod2,nModule2,nIphi2,nIeta2);
   if(nSupMod1 != nSupMod2) return 2; // different SM
 
-  fGeom->GetCellPhiEtaIndexInSModule(nSupMod1,nTower1,nIphi1,nIeta1, iphi1,ieta1);
-  fGeom->GetCellPhiEtaIndexInSModule(nSupMod2,nTower2,nIphi2,nIeta2, iphi2,ieta2);
+  fGeom->GetCellPhiEtaIndexInSModule(nSupMod1,nModule1,nIphi1,nIeta1, iphi1,ieta1);
+  fGeom->GetCellPhiEtaIndexInSModule(nSupMod2,nModule2,nIphi2,nIeta2, iphi2,ieta2);
 
   rowdiff = TMath::Abs(iphi1 - iphi2);  
   coldiff = TMath::Abs(ieta1 - ieta2) ;  
@@ -482,21 +482,21 @@ Int_t AliEMCALClusterizerv1::AreInGroup(AliEMCALDigit * d1, AliEMCALDigit * d2) 
   //find another in the list that will match?  How about my TowerGroup search?
 
   static Int_t rv;
-  static Int_t nSupMod1=0, nTower1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
-  static Int_t nSupMod2=0, nTower2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
+  static Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
+  static Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
   static Int_t towerGroup1 = -1, towerGroup2 = -1;
   rv = 0 ;
 
-  fGeom->GetCellIndex(d1->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
-  fGeom->GetCellIndex(d2->GetId(), nSupMod2,nTower2,nIphi2,nIeta2);
+  fGeom->GetCellIndex(d1->GetId(), nSupMod1,nModule1,nIphi1,nIeta1);
+  fGeom->GetCellIndex(d2->GetId(), nSupMod2,nModule2,nIphi2,nIeta2);
   if(nSupMod1 != nSupMod2) return 2; // different SM
 
-  static Int_t nTowerInSM = fGeom->GetNCellsInSupMod()/fGeom->GetNCellsInTower();
+  static Int_t nTowerInSM = fGeom->GetNCellsInSupMod()/fGeom->GetNCellsInModule();
 
   //figure out which tower grouping each digit belongs to
   for(int it = 0; it < nTowerInSM/fNTowerInGroup; it++) {
-    if(nTower1 <= nTowerInSM - it*fNTowerInGroup) towerGroup1 = it;
-    if(nTower2 <= nTowerInSM - it*fNTowerInGroup) towerGroup2 = it;
+    if(nModule1 <= nTowerInSM - it*fNTowerInGroup) towerGroup1 = it;
+    if(nModule2 <= nTowerInSM - it*fNTowerInGroup) towerGroup2 = it;
   }
   if(towerGroup1 != towerGroup2) return 3; //different Towergroup
 

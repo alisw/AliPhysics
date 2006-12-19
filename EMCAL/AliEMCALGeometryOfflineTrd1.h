@@ -33,12 +33,12 @@ class AliEMCALGeometryOfflineTrd1 : public TNamed {
   virtual ~AliEMCALGeometryOfflineTrd1() { /* nothing */ };
   static   AliEMCALGeometryOfflineTrd1* GetInstance();
   // positon in SuperModule
-  TVector3&  PosInSuperModule(int nSupMod, int nTower, int nIphi, int nIeta); 
+  TVector3&  PosInSuperModule(int nSupMod, int nModule, int nIphi, int nIeta); 
 
  public:
   // One Super Module
   void PositionInSuperModule(int iphi, int ieta, double &lphi, double &leta);
-  void PositionInSuperModule(int nSupMod, int nTower, int nIphi, int nIeta, double &lphi, double &leta);
+  void PositionInSuperModule(int nSupMod, int nModule, int nIphi, int nIeta, double &lphi, double &leta);
   // Position towers(cells)
   TVector3* CellPosition(int absId); // from 0 to fGeometry->GetNCells()
   // Global System

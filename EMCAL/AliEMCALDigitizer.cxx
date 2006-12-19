@@ -464,17 +464,17 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
     AliFatal("Did not get geometry from EMCALLoader");
 
   Int_t iSupMod = -1;
-  Int_t nTower  = -1;
+  Int_t nModule  = -1;
   Int_t nIphi   = -1;
   Int_t nIeta   = -1;
   Int_t iphi    = -1;
   Int_t ieta    = -1;
   Int_t channel = -999; 
 
-  Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nTower, nIphi, nIeta) ;
+  Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nModule, nIphi, nIeta) ;
   if(!bCell)
     Error("DigitizeEnergy","Wrong cell id number : AbsId %i ", AbsId) ;
-  geom->GetCellPhiEtaIndexInSModule(iSupMod,nTower,nIphi, nIeta,iphi,ieta);
+  geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
   if(emcalLoader->CalibData()) {
     fADCpedestalEC = emcalLoader->CalibData()

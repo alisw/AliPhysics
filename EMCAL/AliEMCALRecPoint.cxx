@@ -220,18 +220,18 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   // A neighbour is defined as being two digits which share a corner
   
   static Bool_t areNeighbours = kFALSE ;
-  static Int_t nSupMod=0, nTower=0, nIphi=0, nIeta=0;
-  static int nSupMod1=0, nTower1=0, nIphi1=0, nIeta1=0;
+  static Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0;
+  static int nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0;
   static Int_t relid1[2] , relid2[2] ; // ieta, iphi
   static Int_t rowdiff=0, coldiff=0;
 
   areNeighbours = kFALSE ;
 
-  fGeomPtr->GetCellIndex(digit1->GetId(), nSupMod,nTower,nIphi,nIeta);
-  fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, relid1[0],relid1[1]);
+  fGeomPtr->GetCellIndex(digit1->GetId(), nSupMod,nModule,nIphi,nIeta);
+  fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, relid1[0],relid1[1]);
 
-  fGeomPtr->GetCellIndex(digit2->GetId(), nSupMod1,nTower1,nIphi1,nIeta1);
-  fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod1,nTower1,nIphi1,nIeta1, relid2[0],relid2[1]);
+  fGeomPtr->GetCellIndex(digit2->GetId(), nSupMod1,nModule1,nIphi1,nIeta1);
+  fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod1,nModule1,nIphi1,nIeta1, relid2[0],relid2[1]);
   
   rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
   coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
@@ -414,15 +414,15 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
   
   // Calculates the dispersion in cell units 
   Double_t etai, phii, etaMean=0.0, phiMean=0.0; 
-  int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+  int nSupMod=0, nModule=0, nIphi=0, nIeta=0;
   int iphi=0, ieta=0;
   // Calculate mean values
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
 
     if (fAmp>0 && fEnergyList[iDigit]>0) {
-      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nModule,nIphi,nIeta);
+      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
       w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
@@ -444,8 +444,8 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
 
     if (fAmp>0 && fEnergyList[iDigit]>0) {
-      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nModule,nIphi,nIeta);
+      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
       w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
@@ -574,7 +574,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   AliEMCALDigit * digit = 0;
 
   Double_t etai , phii, w; 
-  int nSupMod=0, nTower=0, nIphi=0, nIeta=0;
+  int nSupMod=0, nModule=0, nIphi=0, nIeta=0;
   int iphi=0, ieta=0;
   for(Int_t iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
@@ -583,10 +583,10 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
     // Nov 15,2006 - use cell numbers as coordinates
     // Copied for shish-kebab geometry, ieta,iphi is cast as double as eta,phi
     // We can use the eta,phi(or coordinates) of cell
-      nSupMod = nTower = nIphi = nIeta = iphi = ieta = 0;
+      nSupMod = nModule = nIphi = nIeta = iphi = ieta = 0;
 
-      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nTower,nIphi,nIeta);
-      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
+      fGeomPtr->GetCellIndex(digit->GetId(), nSupMod,nModule,nIphi,nIeta);
+      fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
     } else { // 

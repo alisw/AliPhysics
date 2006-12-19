@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.47  2006/12/05 17:12:03  gustavo
+ * Updated AliEMCAL::Digits2Raw, reads first provisional RCU mapping files to make Raw data with new AliCaloAltroMapping and AliCaloRawStream
+ *
  *
  */
 //_________________________________________________________________________
@@ -309,9 +312,9 @@ void AliEMCAL::Digits2Raw()
     Int_t nIeta = 0;
     Int_t iphi = 0;
     Int_t ieta = 0;
-    Int_t nTower = 0;
-    geom->GetCellIndex(digit->GetId(), nSM, nTower, nIphi, nIeta);
-    geom->GetCellPhiEtaIndexInSModule(nSM, nTower, nIphi, nIeta,iphi, ieta) ;
+    Int_t nModule = 0;
+    geom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
+    geom->GetCellPhiEtaIndexInSModule(nSM, nModule, nIphi, nIeta,iphi, ieta) ;
     
     //Check which is the RCU of the cell.
     Int_t iRCU = -111;

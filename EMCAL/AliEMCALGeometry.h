@@ -142,17 +142,31 @@ public:
   TGeoMatrix *GetTransformationForSM(int i) {
   if(i>=0 && i<GetNumberOfSuperModules()) return fMatrixOfSM[i]; 
                                         else return 0;}
-  // abs id <-> indexes; Shish-kebab case, only TRD1 now.
-  // EMCAL -> Super Module -> module -> tower(or cell) - logic tree of EMCAL
   // May 31, 2006; ALICE numbering scheme: 
   // see ALICE-INT-2003-038: ALICE Coordinate System and Software Numbering Convention
   // All indexes are stared from zero now.
-  Int_t   GetAbsCellId(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta) const;
+  // 
+  // abs id <-> indexes; Shish-kebab case, only TRD1 now.
+  // EMCAL -> Super Module -> module -> tower(or cell) - logic tree of EMCAL
+  // 
+  //**  Usual name of variable - Dec 18,2006 **
+  //  nSupMod - index of super module (SM)
+  //  nModule - index of module in SM
+  //  nIphi   - phi index of tower(cell) in module
+  //  nIeta   - eta index of tower(cell) in module
+  //  
+  //  Inside SM
+  //  iphim   - phi index of module in SM  
+  //  ietam   - eta index of module in SM  
+  //
+  //  iphi    - phi index of tower(cell) in SM  
+  //  ieta    - eta index of tower(cell) in SM  
+  Int_t   GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta) const;
   Bool_t  CheckAbsCellId(Int_t absId) const;
-  Bool_t  GetCellIndex(Int_t absId, Int_t &nSupMod, Int_t &nTower, Int_t &nIphi, Int_t &nIeta) const;
+  Bool_t  GetCellIndex(Int_t absId, Int_t &nSupMod, Int_t &nModule, Int_t &nIphi, Int_t &nIeta) const;
   // Local coordinate of Super Module 
-  void    GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t &iphim, Int_t &ietam) const;
-  void    GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta,
+  void    GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, Int_t &iphim, Int_t &ietam) const;
+  void    GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta,
                                       Int_t &iphi, Int_t &ieta) const ;
   Int_t   GetSuperModuleNumber(Int_t absId)  const;
   Int_t   GetNumberOfModuleInPhiDirection(Int_t nSupMod)  const
@@ -163,7 +177,7 @@ public:
   }
   // From cell indexes to abs cell id
   void    GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, Int_t iphi, Int_t ieta, 
-	  Int_t &iphim, Int_t &ietam, Int_t &nTower) const;
+	  Int_t &iphim, Int_t &ietam, Int_t &nModule) const;
   Int_t   GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const;
   // Methods for AliEMCALRecPoint - Feb 19, 2006
   Bool_t   RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr) const;
@@ -187,7 +201,7 @@ public:
   void SetSampling(Float_t samp) { fSampling = samp; printf("SetSampling: Sampling factor set to %f", fSampling) ; }
 
   Int_t GetNCellsInSupMod() const {return fNCellsInSupMod;}
-  Int_t GetNCellsInTower()  const {return fNCellsInTower; }
+  Int_t GetNCellsInModule()  const {return fNCellsInModule; }
   Int_t GetKey110DEG()      const {return fKey110DEG;}
 
   AliEMCALGeometry(); // default ctor only for internal usage (singleton)
@@ -244,7 +258,7 @@ private:
   //
   Int_t   fNCells;                       // number of cells in calo
   Int_t   fNCellsInSupMod;               // number cell in super module
-  Int_t   fNCellsInTower;                // number cell in tower(or module)
+  Int_t   fNCellsInModule;               // number cell in module)
   //TRU parameters
   Int_t   fNTRU ;                        //! Number of TRUs per module
   Int_t   fNTRUEta ;                     //! Number of cell rows per Z in one TRU
