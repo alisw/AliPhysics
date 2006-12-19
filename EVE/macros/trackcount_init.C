@@ -41,6 +41,8 @@ void on_new_event()
   // First two have reasonable primaries (sigma-to-prim-vertex < 5).
   // Other three are almost certainly secondaries.
   Int_t count = 1;
+  if (g_trkcnt == 0) // This sometimes happens; linked to macro execution, cint reset.
+    g_trkcnt = Reve::TrackCounter::fgInstance;
   g_trkcnt->Reset();
   Reve::RenderElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
@@ -54,13 +56,18 @@ void on_new_event()
   }
 }
 
-void id(Int_t label=0, Bool_t showParents=kFALSE)
+TParticle* id(Int_t label=0, Bool_t showParents=kTRUE)
 {
   AliRunLoader* rl = Alieve::Event::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
 
-  printf("Number primaries %d %d\n", stack->GetNprimary(), stack->GetNtrack());
+  printf("Number primaries %d, all particles %d, label %d\n",
+	 stack->GetNprimary(), stack->GetNtrack(), label);
+  if (label < 0 || label >= stack->GetNtrack()) {
+    printf("  Label exceeds available range.\n");
+    return 0;
+  }
 
   TParticle* part = stack->Particle(label);
   if(part != 0) {
@@ -72,4 +79,6 @@ void id(Int_t label=0, Bool_t showParents=kFALSE)
       }
     }
   }
+
+  return stack->Particle(label);
 }
