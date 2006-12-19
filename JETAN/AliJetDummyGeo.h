@@ -22,7 +22,7 @@ class AliJetDummyGeo : public TObject
     void    EtaPhiFromIndex(Int_t id, Float_t& eta, Float_t& phi);
     Int_t   TowerIndexFromEtaPhi2(Float_t eta, Float_t phi) {return 0;}
     void    GetTransformationForSM();
-    
+    Float_t GetSampling() {return 0.;}
     ClassDef(AliJetDummyGeo,1)
 };
  

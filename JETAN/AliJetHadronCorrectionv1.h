@@ -12,6 +12,8 @@
 #define HCPARAMETERSETS 2
 
 class AliEMCALGeometry;
+class AliJetDummyGeo;
+
 
 class AliJetHadronCorrectionv1 : public AliJetHadronCorrection 
 {
@@ -26,7 +28,7 @@ class AliJetHadronCorrectionv1 : public AliJetHadronCorrection
  protected:
   AliJetHadronCorrectionv1(const char *name="HadronCorrectionv1", const char *title="Hadron Correction");
   //    AliJetHadronCorrectionv1(const char *name="HadronCorrectionv1", const char *title="Hadron Correction",AliJetGeometry *geometry = NULL);
-  void SetGeometry(AliEMCALGeometry *geometry);
+  void SetGeometry(AliJetDummyGeo *geometry);
     
  private:
   void SetParameters(TString name = "") {Warning("SetParameter","Dummy method with argument %s",name.Data());}

@@ -25,7 +25,8 @@
 
 // --- AliRoot header files ---
 //#include "../EMCAL/AliJetGeometry.h"
-#include "AliEMCALGeometry.h"
+#include "AliJetDummyGeo.h"
+//#include "AliEMCALGeometry.h"
 #include "AliJetHadronCorrectionv1.h"
 
 ClassImp(AliJetHadronCorrectionv1)
@@ -42,7 +43,7 @@ Double_t AliJetHadronCorrectionv1::fgParLookup[HCPARAMETERS][HCPARAMETERSETS] =
 
 AliJetHadronCorrectionv1* AliJetHadronCorrectionv1::fgHadrCorr = 0;
 
-void AliJetHadronCorrectionv1::SetGeometry(AliEMCALGeometry *geometry)
+void AliJetHadronCorrectionv1::SetGeometry(AliJetDummyGeo *geometry)
 {
   // Initialise EMCAL geometry
     if (!geometry)
