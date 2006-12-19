@@ -47,3 +47,4 @@ EVE/module.mk:		 EVE/libReve.pkg EVE/binreve.pkg EVE/libAlieve.pkg EVE/binalieve
 PWG0/module.mk:          PWG0/libPWG0base.pkg  PWG0/libPWG0selectors.pkg
 PWG2/module.mk:          PWG2/libPWG2.pkg
 PWG3/module.mk:          PWG3/libPWG3base.pkg
+ESDCheck/module.mk:	 ESDCheck/libAnalysisCheck.pkg 
