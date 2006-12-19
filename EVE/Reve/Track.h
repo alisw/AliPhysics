@@ -61,6 +61,7 @@ public:
   void ImportHits();              // *MENU*
   void ImportClusters();          // *MENU*
   void ImportClustersFromIndex(); // *MENU*
+  void PrintKineStack();          // *MENU*
 
   //--------------------------------
 
@@ -232,6 +233,8 @@ public:
 
   Int_t GetClickAction() const  { return fClickAction; }
   void  SetClickAction(Int_t a) { fClickAction = a; }
+
+  static TrackCounter* fgInstance;
 
   ClassDef(TrackCounter, 1);
 }; // endclass TrackCounter

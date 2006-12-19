@@ -242,6 +242,12 @@ void Track::ImportClustersFromIndex()
   gROOT->ProcessLine(Form("clusters_from_index(%d);", fIndex));
 }
 
+void Track::PrintKineStack()
+{
+  Reve::LoadMacro("print_kine_from_label.C");
+  gROOT->ProcessLine(Form("print_kine_from_label(%d);", fLabel));
+}
+
 /**************************************************************************/
 
 void Track::CtrlClicked(Reve::Track* track)
@@ -501,6 +507,8 @@ void TrackList::ImportClusters()
 
 ClassImp(TrackCounter)
 
+TrackCounter* TrackCounter::fgInstance = 0;
+
 TrackCounter::TrackCounter(const Text_t* name, const Text_t* title) :
   RenderElement(),
   TNamed(name, title),
@@ -511,6 +519,7 @@ TrackCounter::TrackCounter(const Text_t* name, const Text_t* title) :
   fGoodTracks   (0),
   fTrackLists   ()
 {
+  if (fgInstance == 0) fgInstance = this;
   TQObject::Connect("Reve::Track", "CtrlClicked(Reve::Track*)",
 		    "Reve::TrackCounter", this, "DoTrackAction(Reve::Track*)");
 }
@@ -518,6 +527,7 @@ TrackCounter::TrackCounter(const Text_t* name, const Text_t* title) :
 TrackCounter::~TrackCounter()
 {
   TQObject::Disconnect("Reve::Track", "DoTrackAction(Reve::Track*)");
+  if (fgInstance == this) fgInstance = 0;
 }
 
 /**************************************************************************/
