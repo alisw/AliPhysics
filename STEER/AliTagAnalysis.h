@@ -39,6 +39,7 @@ class AliTagAnalysis : public TObject {
   AliTagAnalysis();
   ~AliTagAnalysis(); 
   
+  Bool_t AddTagsFile(const char *alienUrl);
   void ChainLocalTags(const char *dirname);
   void ChainGridTags(TGridResult *result);
   

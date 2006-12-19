@@ -61,6 +61,29 @@ AliTagAnalysis::~AliTagAnalysis() {
 }
 
 //___________________________________________________________________________
+Bool_t  AliTagAnalysis::AddTagsFile(const char *alienUrl) {
+
+  // Add a single tags file to the chain
+
+  Bool_t rv = kTRUE ;
+
+  if (! fgChain || ! fChain ) {
+    TChain *fgChain = new TChain("T");
+    fChain = fgChain;
+  }
+
+  TFile *f = TFile::Open(alienUrl,"READ");
+  fChain->Add(alienUrl);
+  AliInfo(Form("Chained tag files: %d ",fChain->GetEntries()));
+  delete f;
+
+  if (fChain->GetEntries() == 0 )
+    rv = kFALSE ;
+
+  return rv ;
+}
+
+//___________________________________________________________________________
 void AliTagAnalysis::ChainLocalTags(const char *dirname) {
   //Searches the entries of the provided direcory
   //Chains the tags that are stored locally
@@ -220,6 +243,8 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *RunT
   collection->SetCollectionName(name);
   collection->WriteHeader();
 
+  //Event list
+  //TEntryList *fEventList = new TEntryList();
   TString guid = 0x0;
   TString turl = 0x0;
   TString lfn = 0x0;
