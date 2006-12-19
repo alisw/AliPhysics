@@ -29,14 +29,22 @@
 
 ClassImp(AliJetUnitArray)
 
-AliJetUnitArray::AliJetUnitArray()
+
+AliJetUnitArray::AliJetUnitArray():
+    fUnitEnergy(0.),
+    fUnitEta(0.),
+    fUnitPhi(0.),
+    fUnitDeta(0.),
+    fUnitDphi(0.),
+    fUnitID(0),
+    fUnitNum(0),
+    fUnitClusterID(0),
+    fUnitFlag(kOutJet),
+    fUnitCutFlag(kPtSmaller),
+    fUnitSignalFlag(kGood),
+    fUnitDetectorFlag(kAll)
 {
   // Default constructor
-  fUnitEnergy         = 0.0;
-  fUnitEta            = 0.0;
-  fUnitPhi            = 0.0;
-  fUnitID             = 0;
-  fUnitFlag           = kOutJet;
 }  
 
 AliJetUnitArray::~AliJetUnitArray()

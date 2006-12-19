@@ -66,43 +66,62 @@
 #include "AliJetESDReader.h"
 #include "AliJetESDReaderHeader.h"
 #include "AliESD.h"
-#include "AliEMCALGeometry.h"
+//#include "AliEMCALGeometry.h"
+#include "AliJetDummyGeo.h"
 #include "AliJetUnitArray.h"
 #include "AliJetFillUnitArrayTracks.h"
 #include "AliJetGrid.h"
 
 ClassImp(AliJetFillUnitArrayTracks)
 
-AliEMCALGeometry *AliJetFillUnitArrayTracks::fGeom=0; 
-
 //_____________________________________________________________________________
 AliJetFillUnitArrayTracks::AliJetFillUnitArrayTracks()
-  : TTask("AliJetFillUnitArrayTracks","Fill Unit Array with tpc/its and emcal information")
+    : TTask("AliJetFillUnitArrayTracks","Fill Unit Array with tpc/its and emcal information"),
+      fNumUnits(0),
+      fEtaMinCal(0.),
+      fEtaMaxCal(0.),
+      fPhiMinCal(0.),
+      fPhiMaxCal(0.),
+      fHadCorr(0x0),
+      fHCorrection(0),
+      fNIn(0),
+      fOpt(0),
+      fDebug(0),
+      fReaderHeader(0x0),
+      fMomentumArray(0x0),
+      fUnitArray(0x0),
+      fTPCGrid(0x0),
+      fEMCalGrid(0x0),
+      fGeom(0x0),
+      fNphi(0),
+      fNeta(0),
+      fPhi2(0x0),
+      fEta2(0x0),
+      fPhi(0x0),
+      fEta(0x0),
+      fIndex(0x0),
+      fParams(0x0),
+      fGrid(0),
+      fPhiMin(0.),
+      fPhiMax(0.),
+      fEtaMin(0.),
+      fEtaMax(0.),
+      fEtaBinInTPCAcc(0),
+      fPhiBinInTPCAcc(0),
+      fEtaBinInEMCalAcc(0),
+      fPhiBinInEMCalAcc(0),
+      fNbinPhi(0)
 {
   // constructor
-  fNIn = 0;
-  fOpt = 0;
-  fDebug = 0;
-  fNphi = 0;
-  fNeta = 0;
-  fPhiMin = 0;
-  fPhiMax = 0;
-  fEtaMin = 0;
-  fEtaMax = 0;
-  fEtaBinInTPCAcc = 0;
-  fPhiBinInTPCAcc = 0;
-  fEtaBinInEMCalAcc = 0;
-  fPhiBinInEMCalAcc = 0;
-  fNbinPhi = 0;
 }
 
 //____________________________________________________________________________
 void AliJetFillUnitArrayTracks::SetEMCALGeometry()
 {
     // Set EMCAL geometry information
-    fGeom = AliEMCALGeometry::GetInstance();
+    fGeom = AliJetDummyGeo::GetInstance();
     if (fGeom == 0)
-	fGeom = AliEMCALGeometry::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
+	fGeom = AliJetDummyGeo::GetInstance("SHISH_77_TRD1_2X2_FINAL_110DEG","EMCAL");
     if(fDebug>1) printf("\n EMCAL Geometry setted ! \n");
 }
 

@@ -42,68 +42,80 @@
 // AliRoot headers
 #include "AliJetGrid.h"
 
-ClassImp(AliJetGrid)
+ClassImp(AliJetGrid);
+
 
 //__________________________________________________________
-AliJetGrid::AliJetGrid() {
-
+AliJetGrid::AliJetGrid():
+    fGrid(0),
+    fNphi(0),        
+    fNeta(0),      
+    fPhi(0),       
+    fEta(0),       
+    fIndex(0),     
+    fIndexI(0),    
+    fIndexJ(0),    
+    fPhiMin(0),    
+    fPhiMax(0),    
+    fEtaMin(0),    
+    fEtaMax(0),    
+    fEtaBinInTPCAcc(0),   
+    fPhiBinInTPCAcc(0),   
+    fEtaBinInEMCalAcc(0), 
+    fPhiBinInEMCalAcc(0), 
+    fNbinEta(0),
+    fNbinPhi(0),
+    fMaxPhi(0),
+    fMinPhi(0),
+    fMaxEta(0),
+    fMinEta(0),
+    fDebug(1)
+ {
   // Default constructor
-
-  fNphi = 0;
-  fNeta = 0;
-  fPhi = 0;
-  fEta = 0;
-  fIndex = 0x0;
-  fPhiMin = 0.; // acceptance removed inside
-  fPhiMax = 0.; // acceptance removed inside
-  fEtaMin = 0.; // acceptance removed inside
-  fEtaMax = 0.; // acceptance removed inside
-  fMinPhi = 0.; // total acceptance
-  fMaxPhi = 0.; // total acceptance
-  fMinEta = 0.; // total acceptance
-  fMaxEta = 0.; // total acceptance
-  fEtaBinInTPCAcc = 0;
-  fPhiBinInTPCAcc = 0;
-  fEtaBinInEMCalAcc = 0;
-  fPhiBinInEMCalAcc = 0;
-  fNbinPhi = 0;
-
-  fDebug = 1;
 }
 
 //__________________________________________________________
-AliJetGrid::AliJetGrid(Int_t nphi,Int_t neta,Double_t phiMin,Double_t phiMax,Double_t etaMin,Double_t etaMax) {
-
+AliJetGrid::AliJetGrid(Int_t nphi,Int_t neta,Double_t phiMin,Double_t phiMax,Double_t etaMin,Double_t etaMax):
+    fGrid(0),
+    fNphi(nphi),        
+    fNeta(neta),      
+    fPhi(0),       
+    fEta(0),       
+    fIndex(0),     
+    fIndexI(0),    
+    fIndexJ(0),    
+    fPhiMin(0),    
+    fPhiMax(0),    
+    fEtaMin(0),    
+    fEtaMax(0),    
+    fEtaBinInTPCAcc(0),   
+    fPhiBinInTPCAcc(0),   
+    fEtaBinInEMCalAcc(0), 
+    fPhiBinInEMCalAcc(0), 
+    fNbinEta(0),
+    fNbinPhi(0),
+    fMaxPhi(phiMax),
+    fMinPhi(phiMin),
+    fMaxEta(etaMax),
+    fMinEta(etaMin),
+    fDebug(1)
+ {
   // Standard constructor
-
-  fNphi = nphi;
-  fNeta = neta;
-  fPhiMin = 0.; // rad - acceptance removed inside
-  fPhiMax = 0.; // rad - acceptance removed inside
-  fEtaMin = 0.; //  acceptance removed inside
-  fEtaMax = 0.; //  acceptance removed inside
-  fNbinPhi = 0;
-
-  fMaxPhi = phiMax; // total acceptance
-  fMinPhi = phiMin; // total acceptance
-  fMaxEta = etaMax; // total acceptance
-  fMinEta = etaMin; // total acceptance
-
-  fPhi  = new TArrayD(fNphi+1);
-  fEta  = new TArrayD(fNeta+1);
+  fPhi    = new TArrayD(fNphi+1);
+  fEta    = new TArrayD(fNeta+1);
   fIndexI = new TArrayI((fNeta+1)*(fNphi+1)+1);
   fIndexJ = new TArrayI((fNeta+1)*(fNphi+1)+1);
-
+  
   for(Int_t i=0; i<fNphi+1; i++) (*fPhi)[i] = (phiMax-phiMin)/fNphi*i+phiMin;
   for(Int_t i=0; i<fNeta+1; i++) (*fEta)[i] = (etaMax-etaMin)/fNeta*i+etaMin;
-
+  
   if(fDebug > 3){
-    for(Int_t i=0; i<(fNphi+1); i++)  cout << (*fPhi)[i] << endl;
-    for(Int_t i=0; i<(fNeta+1); i++)  cout << (*fEta)[i] << endl;
+      for(Int_t i=0; i<(fNphi+1); i++)  cout << (*fPhi)[i] << endl;
+      for(Int_t i=0; i<(fNeta+1); i++)  cout << (*fEta)[i] << endl;
   }
-
+  
   fIndex = new TMatrixD(fNphi+1,fNeta+1);
-
+  
 }
 
 //__________________________________________________________
