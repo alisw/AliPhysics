@@ -382,6 +382,9 @@ void AliTRDQATask::DrawESD()
   // Makes a few plots
 
   AliInfo("Plotting....") ; 
+  
+  TCanvas * cTRD = new TCanvas("cTRD", "TRD ESD Test", 400, 10, 600, 700) ;
+  cTRD->Divide(6,3) ;
 
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
@@ -418,8 +421,9 @@ void AliTRDQATask::DrawESD()
 
   int nhist=0;
   for(int i=0; i<nplots; i++) {
+  cTRD->cd(i+1) ;
   
-    new TCanvas(names[i], names[nhist], 500, 300);
+  //  new TCanvas(names[i], names[nhist], 500, 300);
     gPad->SetLogy(logy[i]);
       
     for(int j=0; j<nover[i]; j++) {
@@ -446,6 +450,9 @@ void AliTRDQATask::DrawGeoESD()
   // Makes a few plots
 
   AliInfo("Plotting....") ; 
+
+  TCanvas * cTRDGeo = new TCanvas("cTRDGeo", "TRD ESDGeo Test", 400, 10, 600, 700) ;
+  cTRDGeo->Divide(4,2) ;
 
   gStyle->SetOptStat(0);
   TGaxis::SetMaxDigits(3);
@@ -474,12 +481,12 @@ void AliTRDQATask::DrawGeoESD()
   };
   
   for(int i=0; i<nnames; i++) {
-
+  cTRDGeo->cd(i+1) ;
     TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[i]));
     if (!hist) continue;
     
-    if (i<2) new TCanvas(names[i], names[i], 500, 300);
-    else new TCanvas(names[i], names[i], 300, 900);
+    //if (i<2) new TCanvas(names[i], names[i], 500, 300);
+    //else new TCanvas(names[i], names[i], 300, 900);
    
     gPad->SetLogy(logy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
@@ -497,6 +504,8 @@ void AliTRDQATask::DrawConvESD()
   // Makes a few plots
 
   AliInfo("Plotting....") ; 
+  TCanvas * cTRDConv = new TCanvas("cTRDConv", "TRD ESDConv Test", 400, 10, 600, 700) ;
+  cTRDConv->Divide(3,2) ;
 
   gROOT->SetStyle("Plain");
   gROOT->ForceStyle();
@@ -527,8 +536,8 @@ void AliTRDQATask::DrawConvESD()
 
   int nhist = 0;
   for(int i=0; i<nplots; i++) {
-        
-    new TCanvas(names[i], names[i], 500, 300);
+    cTRDConv->cd(i+1) ;
+    //new TCanvas(names[i], names[i], 500, 300);
     gPad->SetLogy(logy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
    
@@ -548,6 +557,8 @@ void AliTRDQATask::DrawPidESD()
   // Makes a few plots
 
   AliInfo("Plotting....") ; 
+  TCanvas * cTRDPid = new TCanvas("cTRDPid", "TRD ESDPid Test", 400, 10, 600, 700) ;
+  cTRDPid->Divide(9,3) ;
 
   gROOT->SetStyle("Plain");
   gROOT->ForceStyle();
@@ -600,11 +611,12 @@ void AliTRDQATask::DrawPidESD()
   };
 
   for(int i=0; i<nnames; i++) {
-    
+    cTRDPid->cd(i+1) ;
+
     TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[i]));
     if (!hist) continue;
     
-    new TCanvas(names[i], names[i], 500, 300);
+    //new TCanvas(names[i], names[i], 500, 300);
     gPad->SetLogy(logy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
     
