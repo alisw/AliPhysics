@@ -33,6 +33,7 @@
 #include "AliEMCALLoader.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALRecPoint.h"
+#include "AliEMCALPID.h"
 #include "AliRawReader.h"
 
 
@@ -174,6 +175,15 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     }
     // add the cluster to the esd object
     esd->AddCaloCluster(ec);
-    delete ec;
+
+   delete ec;
   }
+  //Fill ESDCaloCluster with PID weights
+
+  AliEMCALPID *pid = new AliEMCALPID;
+  //pid->SetPrintInfo(kTRUE);
+  pid->SetReconstructor(kTRUE);
+  pid->RunPID(esd);
+
 }
+
