@@ -48,6 +48,7 @@ class AliXMLCollection : public TGridCollection {
   Bool_t      Remove(TMap *map);
   const char *GetTURL(const char *name) const;
   const char *GetLFN(const char *name) const;
+  const char *GetGUID(const char *name) const;
   TEntryList *GetEventList(const char *filename) const;
   Bool_t      OverlapCollection(AliXMLCollection * comparator);
 

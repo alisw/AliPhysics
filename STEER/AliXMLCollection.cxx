@@ -182,6 +182,22 @@ const char *AliXMLCollection::GetTURL(const char* filename) const {
 }
 
 //___________________________________________________________________________
+const char *AliXMLCollection::GetGUID(const char* filename) const {
+  // Get a file's transport UID. Returns 0 in case of error.
+  
+  if (fCurrent) {
+    TMap *obj = (TMap*)fCurrent->GetValue(filename);
+    if (obj) {
+      if (obj->GetValue("guid")) {
+	return ( ((TObjString*)obj->GetValue("uid"))->GetName());
+      }
+    }
+  }
+  Error("GetGUID","cannot get GUID of file %s",filename);
+  return 0;
+}
+
+//___________________________________________________________________________
 TEntryList *AliXMLCollection::GetEventList(const char *filename) const {
   // Get a file's event list. Returns 0 in case of error.
 
@@ -208,7 +224,7 @@ Bool_t AliXMLCollection::Remove(TMap * map) {
 }
 
 //___________________________________________________________________________
-const char *AliXMLCollection::GetLFN(const char* filename) const {
+const char *AliXMLCollection::GetLFN(const char* ) const {
   // Get a file's LFN. Returns 0 in case of error.
   
   if (fCurrent) {
