@@ -25,6 +25,11 @@
 //
 #include "AliFMDMap.h"		// ALIFMDMAP_H
 #include "AliLog.h"
+//#include <TClass.h>
+//#include <TBuffer.h>
+#include <TFile.h>
+#include <TList.h>
+#include <TStreamerInfo.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDMap)
@@ -49,8 +54,19 @@ AliFMDMap::AliFMDMap(UShort_t maxDet,
   //     maxRinf      Maximum # of rings
   //     maxSec       Maximum # of sectors
   //     maxStr       Maximum # of strips
+  SetBit(kNeedUShort, kFALSE);
 }
 
+//____________________________________________________________________
+void
+AliFMDMap::CheckNeedUShort(TFile* file) 
+{
+  if (!file) return;
+  TObject* o = file->GetStreamerInfoList()->FindObject(ClassName());
+  if (!o) return;
+  TStreamerInfo* info = static_cast<TStreamerInfo*>(o);
+  if (info->GetClassVersion() == 2) SetBit(kNeedUShort);
+}
 //____________________________________________________________________
 Int_t 
 AliFMDMap::CheckIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) const
@@ -59,9 +75,11 @@ AliFMDMap::CheckIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) con
   // on error. 
   if (det < 1) return -1;
   UShort_t ringi = (ring == 'I' ||  ring == 'i' ? 0 : 1);
-  UShort_t idx = 
+  Int_t idx = 
     (str + fMaxStrips * (sec + fMaxSectors * (ringi + fMaxRings * (det-1))));
-  if (idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) return -1;
+  if (TestBit(kNeedUShort)) idx = UShort_t(idx);
+  if (idx < 0 || idx >= fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips) 
+    return -1;
   return idx;
 }
 
@@ -94,6 +112,27 @@ AliFMDMap::CalcIndex(UShort_t det, Char_t ring, UShort_t sec, UShort_t str) cons
   return idx;
 }
 
+#if 0
+//___________________________________________________________________
+void AliFMDMap::Streamer(TBuffer &R__b)
+{
+  // Stream an object of class AliFMDMap.
+  // This is overridden so that we can know the version of the object
+  // that we are reading in.  In this way, we can fix problems that
+  // might occur in the class. 
+  if (R__b.IsReading()) {
+    // read the class version from the buffer
+    UInt_t R__s, R__c;
+    Version_t version = R__b.ReadVersion(&R__s, &R__c, this->Class());
+    TFile *file = (TFile*)R__b.GetParent();
+    if (file && file->GetVersion() < 30000) version = -1; 
+    AliFMDMap::Class()->ReadBuffer(R__b, this, version, R__s, R__c);
+    if (version == 2) SetBit(kNeedUShort);
+  } else {
+    AliFMDMap::Class()->WriteBuffer(R__b, this);
+  }
+}
+#endif
 
 //___________________________________________________________________
 //

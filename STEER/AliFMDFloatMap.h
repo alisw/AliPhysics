@@ -36,6 +36,7 @@ public:
 				    Char_t   ring,
 				    UShort_t sec,
 				    UShort_t str) const;
+  Float_t* Data() const { return fData; }
 protected:
   Int_t   fTotal;  // Total number of entries
   Float_t* fData;   //[fTotal]

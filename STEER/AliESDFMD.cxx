@@ -43,7 +43,8 @@ AliESDFMD::AliESDFMD()
     fEta(AliFMDFloatMap::kMaxDetectors, 
 	 AliFMDFloatMap::kMaxRings, 
 	 1,
-	 AliFMDFloatMap::kMaxStrips)
+	 AliFMDFloatMap::kMaxStrips), 
+    fAngleCorrected(kFALSE)
 {
   // Default CTOR
 }
@@ -65,6 +66,14 @@ AliESDFMD::operator=(const AliESDFMD& other)
   fMultiplicity = other.fMultiplicity;
   fEta          = other.fEta;
   return *this;
+}
+
+//____________________________________________________________________
+void
+AliESDFMD::CheckNeedUShort(TFile* file) 
+{
+  fMultiplicity.CheckNeedUShort(file);
+  fEta.CheckNeedUShort(file);
 }
 
 //____________________________________________________________________
