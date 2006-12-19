@@ -34,9 +34,10 @@ class AliTOFPreprocessor : public AliPreprocessor
     AliTOFPreprocessor& operator=(const AliTOFPreprocessor & proc);
 
     static const Int_t fgkBinRangeAve;   // number of bins where to 
-                                          // calculate the mean
+                                         // calculate the mean
+    static const Int_t fgkThrPar;        // parameter used to trigger the 
+                                         //calculation of the delay
     AliTOFDataDCS *fData;    // CDB class that stores the data
-    //    TObjArray *fArray;       // Array of DAQ histograms for delays  
     TH2S *fh2;       // TH2S from DAQ for histograms for delays  
     AliTOFCalOnline *fCal;         // TOF Calibration object
     AliTOFGeometry *fTOFGeometry;  // TOF Geometry version
