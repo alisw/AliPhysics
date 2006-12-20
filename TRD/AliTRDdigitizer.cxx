@@ -2521,6 +2521,9 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
   //
   // Recalculates the diffusion parameters
   //
+  // The B=0 case is not really included here.
+  // Should be revisited!
+  //
 
   if (vdrift == fDiffLastVdrift) {
     return;
