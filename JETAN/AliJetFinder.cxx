@@ -222,11 +222,13 @@ void AliJetFinder::FinishRun()
   if (fPlots) {
       fPlots->Normalize();
       fPlots->PlotHistos();
+      if (fOut) {
+	  fOut->cd();
+	  fPlots->Write();
+	  fOut->Close();
+      }   
+  } else {
+      if (fOut) fOut->Close();
   }
-  if (fOut) {
-      fOut->cd();
-      fPlots->Write();
-      fOut->Close();
-  }   
 }
 
