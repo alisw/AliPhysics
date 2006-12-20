@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.83  2006/11/14 17:11:15  hristov
+ * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
+ *
  * Revision 1.82  2006/09/27 19:55:57  kharlov
  * Alignment object with symbolic volume names are introduced
  *
@@ -332,7 +335,8 @@ void AliPHOSv0::CreateGeometry()
   
   this->CreateGeometryforEMC() ; 
 
-  this->CreateGeometryforCPV() ;
+  if (strstr(fTitle.Data(),"noCPV") == 0) 
+    this->CreateGeometryforCPV() ;
   
   this->CreateGeometryforSupport() ; 
   

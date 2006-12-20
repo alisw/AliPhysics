@@ -110,7 +110,7 @@ void AliPHOSGeometry::Init(void)
   //  IHEP is the Protvino CPV (cathode pad chambers)
   
   TString test(GetName()) ; 
-  if (test != "IHEP" ) {
+  if (test != "IHEP" && test != "noCPV") {
     AliFatal(Form("%s is not a known geometry (choose among IHEP)", 
 		  test.Data() )) ; 
   }
