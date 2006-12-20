@@ -415,6 +415,8 @@ void AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack* trackCandidat
   AliMUONTrack *newTrack = 0x0;
   AliMUONHitForRec *hitForRecCh1, *hitForRecCh2;
   AliMUONHitForRec *bestHitForRec1 = 0x0, *bestHitForRec2 = 0x0;
+  Bool_t *hitForRecCh1Used = new Bool_t[fNHitsForRecPerChamber[ch1]];
+  for (Int_t hit1 = 0; hit1 < fNHitsForRecPerChamber[ch1]; hit1++) hitForRecCh1Used[hit1] = kFALSE;
   //
   //Extrapolate trackCandidate to chamber "ch2" to save computing time in the next steps
   AliMUONTrackParam *extrapTrackParamPtr = trackCandidate->GetExtrapTrackParam();
@@ -467,6 +469,8 @@ void AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack* trackCandidat
 	    // Update the chi2 of the new track
 	    if (newTrack->GetFitFMin()<0) newTrack->SetFitFMin(chi2WithTwoHitForRec);
 	    else newTrack->SetFitFMin(newTrack->GetFitFMin() + chi2WithTwoHitForRec);
+	    // Tag hitForRecCh1 as used
+	    hitForRecCh1Used[hit1] = kTRUE;
 	    // Printout for debuging
 	    if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
 	      cout << "FollowTrackInStation: added two hits in station(1..): " << nextStation+1
@@ -521,7 +525,7 @@ void AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack* trackCandidat
     }
     for (Int_t hit1 = 0; hit1 < fNHitsForRecPerChamber[ch1]; hit1++) {
       hitForRecCh1 = (AliMUONHitForRec*) fHitsForRecPtr->UncheckedAt(fIndexOfFirstHitForRecPerChamber[ch1]+hit1);
-      if (hitForRecCh1->GetNTrackHits() >= 1) continue; // Skip hitForRec already used
+      if (hitForRecCh1Used[hit1]) continue; // Skip hitForRec already used
       chi2WithOneHitForRec = trackCandidate->TryOneHitForRec(hitForRecCh1);
       // if good chi2 then create a new track by adding the good hitForRec in "ch1" to the "trackCandidate"
       // We do not try to attach a hitForRec in the other chamber too since it has already been done above

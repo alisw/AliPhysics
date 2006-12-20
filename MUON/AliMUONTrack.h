@@ -39,7 +39,6 @@ class AliMUONTrack : public TObject
   TClonesArray*              GetTrackParamAtHit(void) const {return fTrackParamAtHit;}
 	/// reset array of track parameters at hit
   void                       ResetTrackParamAtHit(void) { fTrackParamAtHit->Delete(); }
-	/// add track parameters to the array of track parameters at hit
   void                       AddTrackParamAtHit(AliMUONTrackParam *trackParam, AliMUONHitForRec *hitForRec); 
   
 	/// return array of hitForRec at hit

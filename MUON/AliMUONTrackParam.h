@@ -61,7 +61,8 @@ class AliMUONTrackParam : public TObject
   void     SetTrackParam(AliMUONTrackParam& theMUONTrackParam);
   
   AliMUONHitForRec* GetHitForRecPtr(void) const;
-  void     SetHitForRecPtr(AliMUONHitForRec* hitForRec);
+	/// set pointeur to associated HitForRec
+  void     SetHitForRecPtr(AliMUONHitForRec* hitForRec) {fHitForRecPtr = hitForRec;}
   
   Double_t Px() const;  // return px
   Double_t Py() const;  // return py

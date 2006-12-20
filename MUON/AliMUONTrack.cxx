@@ -98,10 +98,7 @@ AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitFo
   AliMUONTrackParam* trackParamAtFirstHit = (AliMUONTrackParam*) fTrackParamAtHit->First();
   AliMUONHitForRec* firstHit = trackParamAtFirstHit->GetHitForRecPtr();
   AliMUONHitForRec* lastHit = ((AliMUONTrackParam*) fTrackParamAtHit->Last())->GetHitForRecPtr();
-  // Z position
-  Double_t z1 = firstHit->GetZ();
-  trackParamAtFirstHit->SetZ(z1);
-  Double_t dZ = z1 - lastHit->GetZ();
+  Double_t dZ = firstHit->GetZ() - lastHit->GetZ();
   // Non bending plane
   Double_t nonBendingCoor = firstHit->GetNonBendingCoor();
   trackParamAtFirstHit->SetNonBendingCoor(nonBendingCoor);
@@ -112,7 +109,7 @@ AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitFo
   Double_t bendingSlope = (bendingCoor - lastHit->GetBendingCoor()) / dZ;
   trackParamAtFirstHit->SetBendingSlope(bendingSlope);
   // Inverse bending momentum
-  Double_t bendingImpact = bendingCoor - z1 * bendingSlope;
+  Double_t bendingImpact = bendingCoor - firstHit->GetZ() * bendingSlope;
   Double_t inverseBendingMomentum = 1. / AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(bendingImpact);
   trackParamAtFirstHit->SetInverseBendingMomentum(inverseBendingMomentum);
   
@@ -265,15 +262,24 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   //__________________________________________________________________________
 void AliMUONTrack::AddTrackParamAtHit(AliMUONTrackParam *trackParam, AliMUONHitForRec *hitForRec) 
 {
-  /// Add TrackParamAtHit if "trackParam" != NULL else create empty TrackParamAtHit
+  /// Add TrackParamAtHit if "trackParam" != NULL
+  /// else create empty TrackParamAtHit and set the z position to the one of "hitForRec" if any
   /// Update link to HitForRec if "hitForRec" != NULL
   if (!fTrackParamAtHit) {
     fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);  
     fNTrackHits = 0;
   }
   AliMUONTrackParam* trackParamAtHit;
-  if (trackParam) trackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam(*trackParam);
-  else trackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam();
+  if (trackParam) {
+    trackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam(*trackParam);
+    if (hitForRec) {
+      if (hitForRec->GetZ() != trackParam->GetZ())
+        AliWarning("Added track parameters at a different z position than the one of the attached hit");
+    }
+  } else {
+    trackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam();
+    if (hitForRec) ((AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(fNTrackHits))->SetZ(hitForRec->GetZ());
+  }
   if (hitForRec) trackParamAtHit->SetHitForRecPtr(hitForRec);
   fNTrackHits++;
 }

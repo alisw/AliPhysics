@@ -100,8 +100,6 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
 AliMUONTrackParam::~AliMUONTrackParam()
 {
 /// Destructor
-/// Update the number of TrackHit's connected to the attached HitForRec if any
-  if (fHitForRecPtr) fHitForRecPtr->SetNTrackHits(fHitForRecPtr->GetNTrackHits() - 1); // decrement NTrackHits of hit
   DeleteCovariances();
 }
 
@@ -124,14 +122,6 @@ AliMUONHitForRec* AliMUONTrackParam::GetHitForRecPtr(void) const
 /// this method should not be called when fHitForRecPtr == NULL
   if (!fHitForRecPtr) AliWarning("fHitForRecPtr == NULL");
   return fHitForRecPtr;
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackParam::SetHitForRecPtr(AliMUONHitForRec* hitForRec)
-{
-/// set pointeur to associated HitForRec and update the number of TrackHit's connected to it
-  fHitForRecPtr = hitForRec;
-  fHitForRecPtr->SetNTrackHits(fHitForRecPtr->GetNTrackHits() + 1); // increment NTrackHits of hit
 }
 
   //_________________________________________________________________________
@@ -297,8 +287,12 @@ Int_t AliMUONTrackParam::Compare(const TObject* trackParam) const
   /// "Compare" function to sort with decreasing Z (spectro. muon Z <0).
   /// Returns 1 (0, -1) if Z of current TrackHit
   /// is smaller than (equal to, larger than) Z of TrackHit
-  if (fHitForRecPtr->GetZ() < ((AliMUONTrackParam*)trackParam)->fHitForRecPtr->GetZ()) return(1);
-  else if (fHitForRecPtr->GetZ() == ((AliMUONTrackParam*)trackParam)->fHitForRecPtr->GetZ()) return(0);
+  if (fHitForRecPtr) {
+    if (fHitForRecPtr->GetZ() != fZ)
+      AliWarning("track parameters are given at a different z position than the one of the corresponding hit");
+  }
+  if (fZ < ((AliMUONTrackParam*)trackParam)->GetZ()) return(1);
+  else if (fZ == ((AliMUONTrackParam*)trackParam)->GetZ()) return(0);
   else return(-1);
 }
 
