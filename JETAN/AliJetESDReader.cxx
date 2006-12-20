@@ -146,9 +146,8 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
   TVector3 p3;
   
   // clear momentum array
-   ClearArray();
-   fDebug = fReaderHeader->GetDebug();
-   InitParameters();
+  ClearArray();
+  fDebug = fReaderHeader->GetDebug();
   // get event from chain
   fChain->GetTree()->GetEntry(event);
 
@@ -189,7 +188,7 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
       sflag[goodTrack]=0;
       if (TMath::Abs(track->GetLabel()) < 10000) sflag[goodTrack]=1;
       cflag[goodTrack]=0;
-      if (pt > ptMin) cflag[goodTrack]=1;                       // pt cut
+      if (pt > ptMin) cflag[goodTrack]=1;                           // pt cut
       goodTrack++;
   }
   // set the signal flags
@@ -198,23 +197,29 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
 
 //
 //
-  AliJetFillUnitArrayTracks *fillUAFromTracks = new AliJetFillUnitArrayTracks(); 
-  fillUAFromTracks->SetReaderHeader(fReaderHeader);
-  fillUAFromTracks->SetMomentumArray(fMomentumArray);
-  fillUAFromTracks->SetTPCGrid(fTpcGrid);
-  fillUAFromTracks->SetEMCalGrid(fEmcalGrid);
-  fillUAFromTracks->SetHadCorrection(fHCorrection);
-  fillUAFromTracks->SetHadCorrector(fHadCorr);
-  fNeta = fillUAFromTracks->GetNeta();
-  fNphi = fillUAFromTracks->GetNphi();
-  fillUAFromTracks->SetActive(kFALSE);
-  // TPC only or Digits+TPC or Clusters+TPC
-  if(fOpt%2==!0 && fOpt!=0){ 
-    fillUAFromTracks->SetActive(kTRUE);
-    fillUAFromTracks->SetUnitArray(fUnitArray);
-    fillUAFromTracks->ExecuteTask("tpc");
+  if (fTpcGrid || fEmcalGrid) {
+      SetEMCALGeometry();
+      InitParameters();
+      AliJetFillUnitArrayTracks *fillUAFromTracks = new AliJetFillUnitArrayTracks(); 
+      fillUAFromTracks->SetReaderHeader(fReaderHeader);
+      fillUAFromTracks->SetMomentumArray(fMomentumArray);
+      fillUAFromTracks->SetTPCGrid(fTpcGrid);
+      fillUAFromTracks->SetEMCalGrid(fEmcalGrid);
+      fillUAFromTracks->SetHadCorrection(fHCorrection);
+      fillUAFromTracks->SetHadCorrector(fHadCorr);
+      fNeta = fillUAFromTracks->GetNeta();
+      fNphi = fillUAFromTracks->GetNphi();
+      fillUAFromTracks->SetActive(kFALSE);
+      // TPC only or Digits+TPC or Clusters+TPC
+      if(fOpt%2==!0 && fOpt!=0) { 
+	  fillUAFromTracks->SetActive(kTRUE);
+	  fillUAFromTracks->SetUnitArray(fUnitArray);
+	  fillUAFromTracks->ExecuteTask("tpc");
+      }
+  
+      delete fillUAFromTracks;
   }
-  delete fillUAFromTracks;
+
   return kTRUE;
 }
 
@@ -229,7 +234,6 @@ void AliJetESDReader::SetEMCALGeometry()
     // To be setted to run some AliEMCALGeometry functions
     TGeoManager::Import("geometry.root");
     fGeom->GetTransformationForSM();  
-    
     printf("\n EMCal Geometry set ! \n");
 
 }
