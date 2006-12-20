@@ -3,7 +3,7 @@ void SETUP()
    // Load some ROOT libraries
    gSystem->Load("libEG");
    gSystem->Load("libGeom");
-   gSystem->Load("libVMC")
+   gSystem->Load("libVMC");
    gSystem->Load("libESD");
 
    // Set the Inlucde paths
