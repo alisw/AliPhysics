@@ -21,7 +21,6 @@
 #pragma link C++ class AliMUONTriggerTrack+; 
 #pragma link C++ class AliMUONRecoTrack+; 
 #pragma link C++ class AliMUONHitForRec+; 
-#pragma link C++ class AliMUONSegment+;
 #pragma link C++ class AliMUONClusterDrawAZ+;
 #pragma link C++ class AliMUONDetElement+; 
 #pragma link C++ class AliMUONEventRecoCombi+; 

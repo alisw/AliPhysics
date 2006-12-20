@@ -46,8 +46,6 @@ AliMUONHitForRec::AliMUONHitForRec()
     fHitNumber(0),
     fTTRTrack(0),
     fTrackRefSignal(0),
-    fIndexOfFirstSegment(0),
-    fNSegments(0),
     fNTrackHits(0)
 {
 /// Default Constructor
@@ -67,8 +65,6 @@ AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
     fHitNumber(0),
     fTTRTrack(0),
     fTrackRefSignal(0),
-    fIndexOfFirstSegment(-1),
-    fNSegments(0),
     fNTrackHits(0)
 {
 /// Constructor for AliMUONHitForRec from a track ref. hit.
@@ -115,8 +111,6 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
     fHitNumber(0),
     fTTRTrack(-1),
     fTrackRefSignal(-1),
-    fIndexOfFirstSegment(-1),
-    fNSegments(0),
     fNTrackHits(0)
 {
 /// Constructor for AliMUONHitForRec from a raw cluster.
@@ -140,8 +134,6 @@ AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
     fHitNumber(theMUONHitForRec.fHitNumber),
     fTTRTrack(theMUONHitForRec.fTTRTrack),
     fTrackRefSignal(theMUONHitForRec.fTrackRefSignal),
-    fIndexOfFirstSegment(theMUONHitForRec.fIndexOfFirstSegment),
-    fNSegments(theMUONHitForRec.fNSegments),
     fNTrackHits(theMUONHitForRec.fNTrackHits)
 {
 /// Copy constructor
@@ -163,8 +155,6 @@ AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& theMUONHi
   fHitNumber = theMUONHitForRec.fHitNumber;
   fTTRTrack = theMUONHitForRec.fTTRTrack;
   fTrackRefSignal = theMUONHitForRec.fTrackRefSignal;
-  fIndexOfFirstSegment = theMUONHitForRec.fIndexOfFirstSegment;
-  fNSegments = theMUONHitForRec.fNSegments;
   fNTrackHits = theMUONHitForRec.fNTrackHits;
   return *this;
 }
@@ -195,29 +185,23 @@ Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
   //__________________________________________________________________________
 Double_t AliMUONHitForRec::NormalizedChi2WithHitForRec(AliMUONHitForRec* hitForRec, Double_t Sigma2Cut) const
 {
-/// Calculate the normalized Chi2 between the current hitForRec (this)
-/// and the hitForRec pointed to by "hitForRec",
-/// i.e. the square deviations between the coordinates,
-/// in both the bending and the non bending plane,
+/// Calculate the normalized Chi2 between the current hitForRec (this) and the hitForRec pointed to by "hitForRec",
+/// i.e. the square deviations between the coordinates, in both the bending and the non bending plane,
 /// divided by the variance of the same quantities and by "Sigma2Cut".
-/// Returns 3 if none of the 2 quantities is OK,
-/// something smaller than or equal to 2 otherwise.
-/// Would it be more correct to use a real chi square
-/// including the non diagonal term ????
+/// Returns 3 if none of the 2 quantities is OK, something smaller than or equal to 2 otherwise.
+/// Would it be more correct to use a real chi square including the non diagonal term ????
 
   Double_t chi2, chi2Max, diff, normDiff;
   chi2 = 0.0;
   chi2Max = 3.0;
   // coordinate in bending plane
   diff = fBendingCoor - hitForRec->fBendingCoor;
-  normDiff = diff * diff /
-    (fBendingReso2 + hitForRec->fBendingReso2) / Sigma2Cut;
+  normDiff = diff * diff / (fBendingReso2 + hitForRec->fBendingReso2) / Sigma2Cut;
   if (normDiff > 1.0) return chi2Max;
   chi2 = chi2 + normDiff;
   // coordinate in non bending plane
   diff = fNonBendingCoor - hitForRec->fNonBendingCoor;
-  normDiff = diff * diff /
-    (fNonBendingReso2 + hitForRec->fNonBendingReso2) / Sigma2Cut;
+  normDiff = diff * diff / (fNonBendingReso2 + hitForRec->fNonBendingReso2) / Sigma2Cut;
   if (normDiff > 1.0) return chi2Max;
   chi2 = chi2 + normDiff;
   return chi2;

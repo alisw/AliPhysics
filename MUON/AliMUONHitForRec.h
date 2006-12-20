@@ -47,16 +47,10 @@ class AliMUONHitForRec : public TObject {
   void SetTTRTrack(Int_t TTRTrack) { fTTRTrack = TTRTrack;}
   Int_t GetTrackRefSignal(void) const { return fTrackRefSignal;}
   void SetTrackRefSignal(Int_t TrackRefSignal) { fTrackRefSignal = TrackRefSignal;}
-  Int_t GetIndexOfFirstSegment(void) const { return fIndexOfFirstSegment;}
-  void SetIndexOfFirstSegment(Int_t IndexOfFirstSegment) { fIndexOfFirstSegment = IndexOfFirstSegment;}
-  Int_t GetNSegments(void) const { return fNSegments;}
-  void SetNSegments(Int_t NSegments) { fNSegments = NSegments;}
   Int_t GetNTrackHits(void) const { return fNTrackHits;}
   void SetNTrackHits(Int_t NTrackHits) { fNTrackHits = NTrackHits;}
 
-
   Double_t NormalizedChi2WithHitForRec(AliMUONHitForRec* Hit, Double_t Sigma2Cut) const;
-/*   void UpdateFromChamberTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor); */
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable() const { return kTRUE; }
@@ -79,10 +73,6 @@ class AliMUONHitForRec : public TObject {
   Int_t fHitNumber; ///< hit number (0...): RawCluster in "chamber" event of TR or track ref. hit in "track" event of TTR
   Int_t fTTRTrack; ///< track number (0...) in TTR
   Int_t fTrackRefSignal; ///< Track ref. signal (1) or background (0)
-
-  // links forward to the segment(s) if HitForRec in first chamber of a station
-  Int_t fIndexOfFirstSegment; //!<  index of first Segment
-  Int_t fNSegments; //!<  number of Segments
 
   Int_t fNTrackHits; //!<  number of TrackHit's made with HitForRec
   

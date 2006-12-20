@@ -32,11 +32,12 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor {
   
   // Functions
   virtual void AddHitsForRecFromRawClusters();
-  virtual void MakeSegments(void);
   virtual void MakeTracks(void);
   virtual void MakeTrackCandidates(void);
   virtual void FollowTracks(void);
   virtual void RemoveDoubleTracks(void);
+  virtual void ExtrapTracksToVertex(void);
+  virtual void FillMUONTrack(void);
   
 
  private:
@@ -50,8 +51,6 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor {
   AliMUONTrackReconstructorK& operator=(const AliMUONTrackReconstructorK& rhs); ///< assignment operator
   
   Bool_t CheckCandidate(Int_t icand, Int_t nSeeds) const;
-  void GoToVertex(void);
-  void FillMUONTrack(void); // set track parameters at hits for Kalman track
 
 
   ClassDef(AliMUONTrackReconstructorK, 0) // MUON track reconstructor in ALICE

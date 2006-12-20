@@ -33,8 +33,8 @@
 
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMagF.h"
-#include "AliMUONSegment.h"
 #include "AliMUONHitForRec.h"
+#include "AliMUONObjectPair.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
@@ -53,7 +53,7 @@ const Double_t AliMUONTrackK::fgkChi2max = 100;
 const Int_t AliMUONTrackK::fgkTriesMax = 10000; 
 const Double_t AliMUONTrackK::fgkEpsilon = 0.002; 
 
-void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail); // from AliMUONTrack
+void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
 
 Int_t AliMUONTrackK::fgDebug = -1; //-1;
 Int_t AliMUONTrackK::fgNOfPoints = 0; 
@@ -137,10 +137,9 @@ AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructorK *TrackReconstructor, TCl
 }
 
   //__________________________________________________________________________
-AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
-  //: AliMUONTrack(segment, segment, fgTrackReconstructor)
-  : AliMUONTrack(NULL, segment),
-    fStartSegment(segment),
+AliMUONTrackK::AliMUONTrackK(AliMUONObjectPair *segment)
+  : AliMUONTrack(NULL,NULL),
+    fStartSegment(new AliMUONObjectPair(*segment)),
     fPosition(0.),
     fPositionNew(0.),
     fChi2(0.),
@@ -166,20 +165,20 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
     fChi2Smooth(0x0)
 {
 /// Constructor from a segment
-  Double_t dX, dY, dZ;
+  Double_t dX, dY, dZ, bendingSlope, bendingImpact;
   AliMUONHitForRec *hit1, *hit2;
   AliMUONRawCluster *clus;
   TClonesArray *rawclusters;
 
   // Pointers to hits from the segment
-  hit1 = segment->GetHitForRec1();
-  hit2 = segment->GetHitForRec2();
+  hit1 = (AliMUONHitForRec*) segment->First();
+  hit2 = (AliMUONHitForRec*) segment->Second();
   hit1->SetNTrackHits(hit1->GetNTrackHits()+1); // mark hit as being on track
   hit2->SetNTrackHits(hit2->GetNTrackHits()+1); // mark hit as being on track
   // check sorting in Z
   if (TMath::Abs(hit1->GetZ()) > TMath::Abs(hit2->GetZ())) {
     hit1 = hit2;
-    hit2 = segment->GetHitForRec1();
+    hit2 = (AliMUONHitForRec*) segment->First();
   }
 
   // Fill array of track parameters
@@ -205,17 +204,21 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   dZ = hit2->GetZ() - hit1->GetZ();
   dY = hit2->GetBendingCoor() - hit1->GetBendingCoor();
   dX = hit2->GetNonBendingCoor() - hit1->GetNonBendingCoor();
+  bendingSlope = (hit2->GetBendingCoor() - hit1->GetBendingCoor()) / dZ;
+  bendingImpact = hit1->GetBendingCoor() - hit1->GetZ() * bendingSlope;
   (*fTrackPar)(2,0) = TMath::ATan2(dY,dZ); // alpha
   if ((*fTrackPar)(2,0) < 0.) (*fTrackPar)(2,0) += 2*TMath::Pi(); // from 0 to 2*pi
   (*fTrackPar)(3,0) = TMath::ATan2(-dX,dZ/TMath::Cos((*fTrackPar)(2,0))); // beta
   (*fTrackPar)(2,0) -= TMath::Pi();
-  (*fTrackPar)(4,0) = 1/fgTrackReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()); // 1/Pt
+  (*fTrackPar)(4,0) = 1./AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(bendingImpact); // 1/Pt
   (*fTrackPar)(4,0) *= TMath::Cos((*fTrackPar)(3,0)); // 1/p
   // Evaluate covariance (and weight) matrix
   EvalCovariance(dZ);
 
   if (fgDebug < 0 ) return;
-  cout << fgTrackReconstructor->GetNRecTracks()-1 << " " << fgTrackReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()) << " " << 1/(*fTrackPar)(4,0) << " ";
+  cout << fgTrackReconstructor->GetNRecTracks()-1 << " "
+       << AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(bendingImpact)
+       << " " << 1/(*fTrackPar)(4,0) << " ";
     // from raw clusters
   for (Int_t i=0; i<2; i++) {
     hit1 = (AliMUONHitForRec*) ((*fTrackHits)[i]);
@@ -225,7 +228,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
     if (clus->GetTrack(2) != -1) cout << " " << clus->GetTrack(2);
     if (i == 0) cout << " <--> ";
   }
-  cout << " @ " << fStartSegment->GetHitForRec1()->GetChamberNumber() << endl;
+  cout << " @ " << hit1->GetChamberNumber() << endl;
   
 }
 
@@ -234,6 +237,11 @@ AliMUONTrackK::~AliMUONTrackK()
 {
 /// Destructor
 
+  if (fStartSegment) {
+    delete fStartSegment;
+    fStartSegment = 0x0;
+  }
+  
   if (fTrackHits) {
     //cout << fNmbTrackHits << endl;
     for (Int_t i = 0; i < fNmbTrackHits; i++) {
@@ -323,8 +331,11 @@ AliMUONTrackK & AliMUONTrackK::operator=(const AliMUONTrackK& source)
   // base class assignement
   //AZ TObject::operator=(source);
   AliMUONTrack::operator=(source);
-
-  fStartSegment = source.fStartSegment;
+  
+  if (fStartSegment) delete fStartSegment;
+  if (source.fStartSegment) fStartSegment = new AliMUONObjectPair(*(source.fStartSegment));
+  else fStartSegment = 0x0;
+  
   fNmbTrackHits = source.fNmbTrackHits;
   fChi2 = source.fChi2;
   fPosition = source.fPosition;
@@ -442,7 +453,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
   } else if (fRecover) {
     hit = GetHitLastOk();
     currIndx = fTrackHits->IndexOf(hit);
-    if (currIndx < 0) hit = fStartSegment->GetHitForRec1(); // for station 3
+    if (currIndx < 0) hit = (AliMUONHitForRec*) fStartSegment->First(); // for station 3
     Back = kTRUE;
     ichamb = hit->GetChamberNumber();
     if (hit == fSkipHit || fRecover == 2 && currIndx >= 0) {
@@ -1160,7 +1171,7 @@ void AliMUONTrackK::MSThin(Int_t sign)
   momentum = 1/(*fTrackParNew)(4,0); // particle momentum
   //velo = momentum/TMath::Sqrt(momentum*momentum+muonMass*muonMass); // velocity/c for muon hypothesis
   velo = 1; // relativistic
-  path = TMath::Abs(fgTrackReconstructor->GetChamberThicknessInX0()/cosAlph/cosBeta); // path length
+  path = TMath::Abs(AliMUONConstants::ChamberThicknessInX0()/cosAlph/cosBeta); // path length
   theta0 = 0.0136/velo/momentum*TMath::Sqrt(path)*(1+0.038*TMath::Log(path)); // projected scattering angle
 
   (*fWeight)(2,2) += sign*theta0/cosBeta*theta0/cosBeta; // alpha
@@ -1191,7 +1202,7 @@ void AliMUONTrackK::StartBack(void)
   //__________________________________________________________________________
 void AliMUONTrackK::SortHits(Int_t iflag, TObjArray *array)
 {
-/// Sort hits in Z if the seed segment in the last but one station
+/// Sort hits in Z if the seed segment is in the last but one station
 /// (if iflag==0 in descending order in abs(z), if !=0 - unsort)
   
   if (iflag && ((AliMUONHitForRec*)(array->UncheckedAt(0)))->GetChamberNumber() == 6) return;
@@ -1736,7 +1747,7 @@ Bool_t AliMUONTrackK::Recover(void)
   if (chi2max < 15) imax = fNmbTrackHits - 1; // discard the last point
   // Check if the outlier is not from the seed segment
   AliMUONHitForRec *skipHit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(imax);
-  if (skipHit == fStartSegment->GetHitForRec1() || skipHit == fStartSegment->GetHitForRec2()) {
+  if (skipHit == (AliMUONHitForRec*) fStartSegment->First() || skipHit == (AliMUONHitForRec*) fStartSegment->Second()) {
     //DropBranches(fStartSegment); // drop all tracks with the same seed segment
     return kFALSE; // to be changed probably
   }
@@ -1770,8 +1781,8 @@ Bool_t AliMUONTrackK::Recover(void)
   // Remove all saved steps and smoother matrices after the skipped hit 
   RemoveMatrices(skipHit->GetZ());
 
-  //AZ(z->-z) if (skipHit->GetZ() > fStartSegment->GetHitForRec2()->GetZ() || !fNSteps) {
-  if (TMath::Abs(skipHit->GetZ()) > TMath::Abs(fStartSegment->GetHitForRec2()->GetZ()) || !fNSteps) {
+  //AZ(z->-z) if (skipHit->GetZ() > ((AliMUONHitForRec*) fStartSegment->Second())->GetZ() || !fNSteps) {
+  if (TMath::Abs(skipHit->GetZ()) > TMath::Abs( ((AliMUONHitForRec*) fStartSegment->Second())->GetZ()) || !fNSteps) {
     // Propagation toward high Z or skipped hit next to segment - 
     // start track from segment 
     trackK = new ((*trackPtr)[nRecTracks]) AliMUONTrackK(fStartSegment); 
@@ -2089,7 +2100,7 @@ void AliMUONTrackK::Outlier()
   }
   // Check if the outlier is not from the seed segment
   AliMUONHitForRec *hit = (AliMUONHitForRec*) fTrackHits->UncheckedAt(imax);
-  if (hit == fStartSegment->GetHitForRec1() || hit == fStartSegment->GetHitForRec2()) return; // to be changed probably
+  if (hit == (AliMUONHitForRec*) fStartSegment->First() || hit == (AliMUONHitForRec*) fStartSegment->Second()) return; // to be changed probably
 
   // Check for missing station
   Int_t ok = 1;
@@ -2271,12 +2282,13 @@ void AliMUONTrackK::DropBranches(Int_t imax, TObjArray *hits)
 }
 
   //__________________________________________________________________________
-void AliMUONTrackK::DropBranches(AliMUONSegment *segment)
+void AliMUONTrackK::DropBranches(AliMUONObjectPair *segment)
 {
 /// Drop all candidates with the same seed segment
   Int_t nRecTracks;
   TClonesArray *trackPtr;
   AliMUONTrackK *trackK;
+  AliMUONObjectPair *trackKSegment;
 
   trackPtr = fgTrackReconstructor->GetRecTracksPtr();
   nRecTracks = fgTrackReconstructor->GetNRecTracks();
@@ -2284,9 +2296,11 @@ void AliMUONTrackK::DropBranches(AliMUONSegment *segment)
 
   for (Int_t i=icand+1; i<nRecTracks; i++) {
     trackK = (AliMUONTrackK*) ((*trackPtr)[i]);
+    trackKSegment = trackK->fStartSegment;
     if (trackK->fNmbTrackHits == 2 && trackK->GetRecover() == 0) continue;
     if (trackK->GetRecover() < 0) continue;
-    if (trackK->fStartSegment == segment) trackK->SetRecover(-1);
+    if (trackKSegment->First()  == segment->First() &&
+        trackKSegment->Second() == segment->Second()) trackK->SetRecover(-1);
   }
   if (fgDebug >= 0) cout << " Drop segment " << endl; 
 }
@@ -2304,7 +2318,7 @@ AliMUONHitForRec* AliMUONTrackK::GetHitLastOk(void)
 Int_t AliMUONTrackK::GetStation0(void)
 {
 /// Return seed station number
-  return fStartSegment->GetHitForRec1()->GetChamberNumber() / 2;
+  return ((AliMUONHitForRec*) fStartSegment->First())->GetChamberNumber() / 2;
 }
 
   //__________________________________________________________________________
@@ -2398,3 +2412,103 @@ Bool_t AliMUONTrackK::ExistDouble(void)
   delete hitArray;
   return same;
 }
+
+//______________________________________________________________________________
+ void mnvertLocal(Double_t *a, Int_t l, Int_t, Int_t n, Int_t &ifail)
+{
+///*-*-*-*-*-*-*-*-*-*-*-*Inverts a symmetric matrix*-*-*-*-*-*-*-*-*-*-*-*-*
+///*-*                    ==========================
+///*-*        inverts a symmetric matrix.   matrix is first scaled to
+///*-*        have all ones on the diagonal (equivalent to change of units)
+///*-*        but no pivoting is done since matrix is positive-definite.
+///*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+  // taken from TMinuit package of Root (l>=n)
+  // fVERTs, fVERTq and fVERTpp changed to localVERTs, localVERTq and localVERTpp
+  //  Double_t localVERTs[n], localVERTq[n], localVERTpp[n];
+  Double_t * localVERTs = new Double_t[n];
+  Double_t * localVERTq = new Double_t[n];
+  Double_t * localVERTpp = new Double_t[n];
+  // fMaxint changed to localMaxint
+  Int_t localMaxint = n;
+
+    /* System generated locals */
+    Int_t aOffset;
+
+    /* Local variables */
+    Double_t si;
+    Int_t i, j, k, kp1, km1;
+
+    /* Parameter adjustments */
+    aOffset = l + 1;
+    a -= aOffset;
+
+    /* Function Body */
+    ifail = 0;
+    if (n < 1) goto L100;
+    if (n > localMaxint) goto L100;
+//*-*-                  scale matrix by sqrt of diag elements
+    for (i = 1; i <= n; ++i) {
+        si = a[i + i*l];
+        if (si <= 0) goto L100;
+        localVERTs[i-1] = 1 / TMath::Sqrt(si);
+    }
+    for (i = 1; i <= n; ++i) {
+        for (j = 1; j <= n; ++j) {
+            a[i + j*l] = a[i + j*l]*localVERTs[i-1]*localVERTs[j-1];
+        }
+    }
+//*-*-                                       . . . start main loop . . . .
+    for (i = 1; i <= n; ++i) {
+        k = i;
+//*-*-                  preparation for elimination step1
+        if (a[k + k*l] != 0) localVERTq[k-1] = 1 / a[k + k*l];
+        else goto L100;
+        localVERTpp[k-1] = 1;
+        a[k + k*l] = 0;
+        kp1 = k + 1;
+        km1 = k - 1;
+        if (km1 < 0) goto L100;
+        else if (km1 == 0) goto L50;
+        else               goto L40;
+L40:
+        for (j = 1; j <= km1; ++j) {
+            localVERTpp[j-1] = a[j + k*l];
+            localVERTq[j-1]  = a[j + k*l]*localVERTq[k-1];
+            a[j + k*l]   = 0;
+        }
+L50:
+        if (k - n < 0) goto L51;
+        else if (k - n == 0) goto L60;
+        else                goto L100;
+L51:
+        for (j = kp1; j <= n; ++j) {
+            localVERTpp[j-1] = a[k + j*l];
+            localVERTq[j-1]  = -a[k + j*l]*localVERTq[k-1];
+            a[k + j*l]   = 0;
+        }
+//*-*-                  elimination proper
+L60:
+        for (j = 1; j <= n; ++j) {
+            for (k = j; k <= n; ++k) { a[j + k*l] += localVERTpp[j-1]*localVERTq[k-1]; }
+        }
+    }
+//*-*-                  elements of left diagonal and unscaling
+    for (j = 1; j <= n; ++j) {
+        for (k = 1; k <= j; ++k) {
+            a[k + j*l] = a[k + j*l]*localVERTs[k-1]*localVERTs[j-1];
+            a[j + k*l] = a[k + j*l];
+        }
+    }
+    delete [] localVERTs;
+    delete [] localVERTq;
+    delete [] localVERTpp;
+    return;
+//*-*-                  failure return
+L100:
+    delete [] localVERTs;
+    delete [] localVERTq;
+    delete [] localVERTpp;
+    ifail = 1;
+} /* mnvertLocal */
+

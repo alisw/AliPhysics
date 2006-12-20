@@ -20,7 +20,7 @@ class TObjArray;
 
 class AliMUONEventRecoCombi;
 class AliMUONHitForRec;
-class AliMUONSegment;
+class AliMUONObjectPair;
 class AliMUONTrackReconstructorK;
 #include "AliMUONTrack.h" 
 
@@ -32,7 +32,7 @@ class AliMUONTrackK : public AliMUONTrack {
   virtual ~AliMUONTrackK(); // Destructor
 
   AliMUONTrackK(AliMUONTrackReconstructorK *TrackReconstructor, TClonesArray *hitForRec); // Constructor
-  AliMUONTrackK(AliMUONSegment *segment); // Constructor from a segment
+  AliMUONTrackK(AliMUONObjectPair *segment); // Constructor from a segment
 
   // Pointer to hits on track
   TObjArray* GetTrackHits(void) const {return fTrackHits;} // ptr. to hits on track
@@ -47,7 +47,7 @@ class AliMUONTrackK : public AliMUONTrack {
   void SetBPFlag(Bool_t BPFlag) {fBPFlag = BPFlag;} // set backpropagation flag
   Int_t GetRecover(void) const {return fRecover;} // return recover flag 
   void SetRecover(Int_t iRecover) {fRecover = iRecover;} // set recover flag
-  AliMUONSegment* GetStartSegment(void) const {return fStartSegment;} // return seed segment
+  AliMUONObjectPair* GetStartSegment(void) const {return fStartSegment;} // return seed segment
   Bool_t KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, Double_t zDipole1, Double_t zDipole2); // Kalman filter
   void StartBack(void); // start backpropagator
   void SetTrackQuality(Int_t iChi2); // compute track quality or Chi2
@@ -86,7 +86,7 @@ class AliMUONTrackK : public AliMUONTrack {
   static TClonesArray *fgHitForRec; ///< pointer to hits
   static AliMUONEventRecoCombi *fgCombi; ///< pointer to combined cluster/track finder
 
-  AliMUONSegment *fStartSegment; ///< seed segment  
+  AliMUONObjectPair *fStartSegment; ///< seed segment  
   Double_t fPosition; ///< Z-coordinate of track
   Double_t fPositionNew; //!< Z-coordinate of track
   Double_t fChi2; ///< Chi2 of track
@@ -136,7 +136,7 @@ class AliMUONTrackK : public AliMUONTrack {
   void Outlier();
   void SortHits(Int_t iflag, TObjArray *array);
   void DropBranches(Int_t imax, TObjArray *hits);
-  void DropBranches(AliMUONSegment *segment);
+  void DropBranches(AliMUONObjectPair *segment);
   Bool_t ExistDouble(AliMUONHitForRec *hit);
   Bool_t ExistDouble(void);
   void CheckBranches(TArrayD &branchChi2, Int_t nBranch);

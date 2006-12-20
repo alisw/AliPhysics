@@ -38,8 +38,8 @@
 #include "AliMUONData.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHitForRec.h"
+#include "AliMUONObjectPair.h"
 #include "AliMUONRawCluster.h"
-#include "AliMUONSegment.h"
 #include "AliMUONTrackK.h" 
 #include "AliLog.h"
 
@@ -79,7 +79,7 @@ void AliMUONTrackReconstructorK::AddHitsForRecFromRawClusters()
   TTree *treeR;
   AliMUONHitForRec *hitForRec;
   AliMUONRawCluster *clus;
-  Int_t iclus, nclus, nTRentries;
+  Int_t iclus, nclus;
   TClonesArray *rawclusters;
   AliDebug(1,"Enter AddHitsForRecFromRawClusters");
 
@@ -90,24 +90,12 @@ void AliMUONTrackReconstructorK::AddHitsForRecFromRawClusters()
   }
   
   if (fTrackMethod != 3) { //AZ
-    nTRentries = Int_t(treeR->GetEntries());
-    
-    if (!(fMUONData->IsRawClusterBranchesInTree())) {
-      AliError(Form("RawCluster information is not avalaible, nTRentries = %d not equal to 1",nTRentries));
-      exit(0);
-    }
-
     fMUONData->SetTreeAddress("RC"); //AZ
     fMUONData->GetRawClusters(); // only one entry  
   }
 
   // Loop over tracking chambers
   for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
-    // number of HitsForRec to 0 for the chamber
-    fNHitsForRecPerChamber[ch] = 0;
-    // index of first HitForRec for the chamber
-    if (ch == 0) fIndexOfFirstHitForRecPerChamber[ch] = 0;
-    else fIndexOfFirstHitForRecPerChamber[ch] = fNHitsForRec;
     rawclusters =fMUONData->RawClusters(ch);
     nclus = (Int_t) (rawclusters->GetEntries());
     // Loop over (cathode correlated) raw clusters
@@ -117,7 +105,6 @@ void AliMUONTrackReconstructorK::AddHitsForRecFromRawClusters()
       // and increment number of AliMUONHitForRec's (total and in chamber)
       hitForRec = new ((*fHitsForRecPtr)[fNHitsForRec]) AliMUONHitForRec(clus);
       fNHitsForRec++;
-      (fNHitsForRecPerChamber[ch])++;
       // more information into HitForRec
       hitForRec->SetBendingReso2(clus->GetErrY() * clus->GetErrY());
       hitForRec->SetNonBendingReso2(clus->GetErrX() * clus->GetErrX());
@@ -126,7 +113,6 @@ void AliMUONTrackReconstructorK::AddHitsForRecFromRawClusters()
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the raw cluster (cm)
       hitForRec->SetZ(clus->GetZ(0));
-      
       StdoutToAliDebug(3,
                        cout << "Chamber " << ch <<
                        " raw cluster  " << iclus << " : " << endl;
@@ -158,32 +144,6 @@ void AliMUONTrackReconstructorK::AddHitsForRecFromRawClusters()
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructorK::MakeSegments(void)
-{
-  /// To make the list of segments in all stations,
-  /// from the list of hits to be reconstructed
-  AliDebug(1,"Enter MakeSegments");
-  //AZ ResetSegments();
-  // Loop over stations
-  for (Int_t st = 3; st < AliMUONConstants::NTrackingCh()/2; st++) MakeSegmentsPerStation(st); 
-  
-  StdoutToAliDebug(3,
-    cout << "end of MakeSegments" << endl;
-    for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) 
-    {
-      cout << "station " << st
-	    << "  has " << fNSegments[st] << " segments:"
-	    << endl;
-      for (Int_t seg = 0; seg < fNSegments[st]; seg++) 
-      {
-	      ((*fSegmentsPtr[st])[seg])->Print();
-      }
-    }
-                   );
-  return;
-}
-
-  //__________________________________________________________________________
 void AliMUONTrackReconstructorK::MakeTracks(void)
 {
   /// To make the tracks from the list of segments and points in all stations
@@ -196,8 +156,8 @@ void AliMUONTrackReconstructorK::MakeTracks(void)
   FollowTracks();
   // Remove double tracks
   RemoveDoubleTracks();
-  // Propagate tracks to the vertex thru absorber
-  GoToVertex();
+  // Propagate tracks to the vertex through absorber
+  ExtrapTracksToVertex();
   // Fill AliMUONTrack data members
   FillMUONTrack();
 }
@@ -205,9 +165,10 @@ void AliMUONTrackReconstructorK::MakeTracks(void)
   //__________________________________________________________________________
 void AliMUONTrackReconstructorK::MakeTrackCandidates(void)
 {
-  /// To make initial tracks for Kalman filter from the list of segments
+  /// To make initial tracks for Kalman filter from segments in stations(1..)  4 and 5
   Int_t istat, iseg;
-  AliMUONSegment *segment;
+  TClonesArray *segments;
+  AliMUONObjectPair *segment;
   AliMUONTrackK *trackK;
 
   AliDebug(1,"Enter MakeTrackCandidatesK");
@@ -215,10 +176,12 @@ void AliMUONTrackReconstructorK::MakeTrackCandidates(void)
   AliMUONTrackK a(this, fHitsForRecPtr);
   // Loop over stations(1...) 5 and 4
   for (istat=4; istat>=3; istat--) {
+    // Make segments in the station
+    segments = MakeSegmentsInStation(istat);
     // Loop over segments in the station
-    for (iseg=0; iseg<fNSegments[istat]; iseg++) {
-      // Transform segments to tracks and evaluate covariance matrix
-      segment = (AliMUONSegment*) ((*fSegmentsPtr[istat])[iseg]);
+    for (iseg=0; iseg<segments->GetEntriesFast(); iseg++) {
+      // Transform segments to tracks
+      segment = (AliMUONObjectPair*) ((*segments)[iseg]);
       trackK = new ((*fRecTracksPtr)[fNRecTracks++]) AliMUONTrackK(segment);
     } // for (iseg=0;...)
   } // for (istat=4;...)
@@ -231,15 +194,16 @@ void AliMUONTrackReconstructorK::FollowTracks(void)
   /// Follow tracks using Kalman filter
   Bool_t ok;
   Int_t icand, ichamBeg = 0, ichamEnd, chamBits;
-  Double_t zDipole1, zDipole2;
   AliMUONTrackK *trackK;
   AliMUONHitForRec *hit;
   AliMUONRawCluster *clus;
   TClonesArray *rawclusters;
   clus = 0; rawclusters = 0;
 
-  zDipole1 = fSimpleBPosition + fSimpleBLength/2;
-  zDipole2 = zDipole1 - fSimpleBLength;
+  Double_t simpleBPosition = 0.5 * (AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
+  Double_t simpleBLength = 0.5 * (AliMUONConstants::CoilL() + AliMUONConstants::YokeL());
+  Double_t zDipole1 = simpleBPosition + 0.5 * simpleBLength;
+  Double_t zDipole2 = zDipole1 - simpleBLength;
 
   // Print hits
   trackK = (AliMUONTrackK*) ((*fRecTracksPtr)[0]);
@@ -366,6 +330,7 @@ Bool_t AliMUONTrackReconstructorK::CheckCandidate(Int_t icand, Int_t nSeeds) con
   /// the same seed segment hits as hits of a good track found before)
   AliMUONTrackK *track1, *track2;
   AliMUONHitForRec *hit1, *hit2, *hit;
+  AliMUONObjectPair *segment1, *segment2;
 
   track1 = (AliMUONTrackK*) ((*fRecTracksPtr)[icand]);
   hit1 = (AliMUONHitForRec*) (*track1->GetTrackHits())[0]; // 1'st hit
@@ -375,8 +340,10 @@ Bool_t AliMUONTrackReconstructorK::CheckCandidate(Int_t icand, Int_t nSeeds) con
     track2 = (AliMUONTrackK*) ((*fRecTracksPtr)[i]);
     //if (track2->GetRecover() < 0) continue;
     if (track2->GetRecover() < 0 && icand >= nSeeds) continue;
-
-    if (track1->GetStartSegment() == track2->GetStartSegment()) {
+    segment1 = track1->GetStartSegment();
+    segment2 = track2->GetStartSegment();
+    if (segment1->First()  == segment2->First() &&
+        segment1->Second() == segment2->Second()) {
       return kFALSE;
     } else {
       Int_t nSame = 0;
@@ -427,7 +394,7 @@ void AliMUONTrackReconstructorK::RemoveDoubleTracks(void)
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructorK::GoToVertex(void)
+void AliMUONTrackReconstructorK::ExtrapTracksToVertex(void)
 {
   /// Propagates track to the vertex thru absorber
   /// (using Branson correction for now)

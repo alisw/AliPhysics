@@ -80,8 +80,31 @@ Float_t  AliMUONConstants::fgDmax[7]  = {  176.6, 229.0, 308.84, 418.2,  522.0, 
  
 Int_t    AliMUONConstants::fgMaxZoom = 20;
 
+// Defaults parameters for dipole magnet
+// From ALICE Dimuon - parameters / geometry table,
+// V7-3 (version 7 created 24/03/2004 updated 25/10/2005)
+Double_t AliMUONConstants::fgCoilZ = -994.05;
+Double_t AliMUONConstants::fgCoilL = 502.1;
+Double_t AliMUONConstants::fgYokeZ = -986.6;
+Double_t AliMUONConstants::fgYokeL = 309.4;
+
+// All material constants are taken from AliRoot (version 3.08)  (spectro. (z<0))
+Double_t AliMUONConstants::fgZAbsorberEnd = -503.; // to be coherent with the Geant absorber geometry !!!!
+Int_t	 AliMUONConstants::fgNAbsorberElements = 5;
+Double_t AliMUONConstants::fgZAbsorberElement[5] = {-90., -105., -315., -443., -468.};
+Double_t AliMUONConstants::fgX0AbsorberIn[5] = { 30413.000,  // Air
+			  	   	            24.282,  // C
+			  	   	            11.274,  // Concrete
+			  	   	             1.758,  // Fe
+			  	   	             0.369}; // W (cm)
+Double_t AliMUONConstants::fgX0AbsorberOut[5] = { 24.282,  // C
+			  	     		  24.282,  // C
+			  	     		  11.274,  // Concrete
+			  	     		   1.758,  // Fe 
+			  	     		   1.758}; // Fe (cm)
+
 // Defaults parameters for track reconstruction
-Double_t  AliMUONConstants::fgDefaultChamberThicknessInX0 = 0.03;
+Double_t  AliMUONConstants::fgChamberThicknessInX0 = 0.03;
 
 //______________________________________________________________________________
 Int_t AliMUONConstants::ChamberNumber(Float_t z) 

@@ -30,15 +30,24 @@ class AliMUONTrackExtrap : public TObject
 	/// set field map
   static void SetField(const AliMagF* magField) {fgkField = magField;}
   
+  static Double_t GetImpactParamFromBendingMomentum(Double_t bendingMomentum);
+  static Double_t GetBendingMomentumFromImpactParam(Double_t impactParam);
+  
   static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t Z);
+  static void ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd);
   static void ExtrapToStation(AliMUONTrackParam *trackParamIn, Int_t station, AliMUONTrackParam *trackParamOut);
+  static void ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx);
   static void ExtrapToVertex(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
+  
+  static void AddMCSEffectInTrackParamCov(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
   
   static void ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout);
   
   
  private:
-  static const AliMagF* fgkField;     //!< field map
+  static const AliMagF* fgkField;	  //!< field map
+  static const Int_t    fgkMaxStepNumber; //!< Maximum number of steps for track extrapolation
+  static const Double_t fgkStepLength;	  //!< Step lenght for track extrapolation
 
   // Functions
   AliMUONTrackExtrap(const AliMUONTrackExtrap& trackExtrap);
