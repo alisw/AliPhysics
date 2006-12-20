@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2006/12/12 17:16:09  gustavo
+ * Detector name hardcoded in Preprocesor with new detector name notation (3 letters). New way to take reference histogram to avoid problems in case of low number of entries or no existing histogram. Change return 0 by return 1
+ *
  * Revision 1.1  2006/12/07 16:32:16  gustavo
  * First shuttle code, online calibration histograms producer, EMCAL preprocessor
  * 
@@ -38,7 +41,8 @@
 #include "TRandom.h"
 #include "TKey.h"
 #include "TList.h"
-#include "Riostream.h"
+#include "TString.h"
+
 //AliRoot
 #include "AliEMCALPreprocessor.h"
 #include "AliLog.h"
@@ -70,13 +74,13 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
   // AliEMCALCalibHistoProducer.
   // It is a responsibility of the SHUTTLE framework to form the fileName
 
-  const char* fileName = GetFile(kDAQ, "AMPLITUDES", "GDC");
-  AliInfo(Form("Got filename: %s",fileName));
+  TString  fileName = GetFile(kDAQ, "AMPLITUDES", "GDC");
+  Log(Form("Got filename: %s",fileName.Data()));
 
   TFile f(fileName);
 
   if(!f.IsOpen()) {
-    AliInfo(Form("File %s is not opened, something goes wrong!",fileName));
+    Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
     return 0;
   }
 
@@ -98,11 +102,11 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
   TString refHistoName= "";
   Int_t ikey = 0;
   Int_t counter = 0;
-  TH1F* hRef;
+  TH1F* hRef = new TH1F();
   
   //Check if the file contains any histogram
   if(nkeys< 2){
-    AliInfo(Form("Not enough histograms for calibration, nhist = %d",nkeys));
+    Log(Form("Not enough histograms for calibration, nhist = %d",nkeys));
     return 1;
   }
   
@@ -118,7 +122,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
     if(refHistoName.Contains("col") && hRef->GetEntries()>2 && hRef->GetMean()>0) 
       ok=kTRUE;
     if(!ok && counter >= nMod*nCol*nRow+nMod){
-      AliInfo("No histogram with enough statistics for reference");
+      Log("No histogram with enough statistics for reference");
       return 1;
     }
   }
@@ -138,7 +142,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
         if(histo && histo->GetMean() > 0) {
 	  coeff = histo->GetMean()/refMean;
 	  calibData.SetADCchannel(mod+1,col+1,row+1,1./coeff);
-	  AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
+	  AliDebug(1,Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
 	}
         else
           calibData.SetADCchannel(mod+1,col+1,row+1,-111); 
@@ -150,6 +154,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
   Int_t result = Store("Calib", "Data", &calibData, &metaData);
 
   f.Close();
+
   return result;
 
 }
