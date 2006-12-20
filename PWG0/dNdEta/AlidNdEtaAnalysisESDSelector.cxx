@@ -8,6 +8,7 @@
 #include <TVector3.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TH1F.h>
 
 #include <AliLog.h>
 #include <AliESDVertex.h>
@@ -27,6 +28,7 @@ ClassImp(AlidNdEtaAnalysisESDSelector)
 AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   AliSelectorRL(),
   fdNdEtaAnalysis(0),
+  fMult(0),
   fEsdTrackCuts(0)
 {
   //
@@ -78,6 +80,7 @@ void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree* tree)
   ReadUserObjects(tree);
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fMult = new TH1F("fMult", "fMult;Ntracks;Count", 201, -0.5, 200.5);
 }
 
 void AlidNdEtaAnalysisESDSelector::Init(TTree* tree)
@@ -157,7 +160,7 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   vtxESD->GetXYZ(vtx);
 
   //vtx[2] = vtxMC[2];
-  //vtx[2] += 0.1;
+  //vtx[2] -= 2.951034e-03 + 6.859620e-04 * vtxMC[2];
 
   // get number of "good" tracks
   TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
@@ -210,6 +213,7 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
 
   // for event count per vertex
   fdNdEtaAnalysis->FillEvent(vtx[2], nGoodTracks);
+  fMult->Fill(nGoodTracks);
 
   return kTRUE;
 }
@@ -232,6 +236,8 @@ void AlidNdEtaAnalysisESDSelector::SlaveTerminate()
   // Add the objects to the output list and set them to 0, so that the destructor does not delete them.
 
   fOutput->Add(fdNdEtaAnalysis);
+  fOutput->Add(fMult);
+
   fdNdEtaAnalysis = 0;
 }
 
@@ -244,6 +250,7 @@ void AlidNdEtaAnalysisESDSelector::Terminate()
   AliSelectorRL::Terminate();
 
   fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+  fMult = dynamic_cast<TH1F*> (fOutput->FindObject("fMult"));
 
   if (!fdNdEtaAnalysis)
   {
@@ -258,6 +265,9 @@ void AlidNdEtaAnalysisESDSelector::Terminate()
 
   if (fEsdTrackCuts)
     fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
+
+  if (fMult)
+    fMult->Write();
 
   fout->Write();
   fout->Close();

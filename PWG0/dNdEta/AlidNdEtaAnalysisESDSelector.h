@@ -8,6 +8,7 @@
 class AliESDtrackCuts;
 class dNdEtaAnalysis;
 class AlidNdEtaCorrection;
+class TH1F;
 
 class AlidNdEtaAnalysisESDSelector : public AliSelectorRL {
   public:
@@ -25,6 +26,7 @@ class AlidNdEtaAnalysisESDSelector : public AliSelectorRL {
     void ReadUserObjects(TTree* tree);
 
     dNdEtaAnalysis* fdNdEtaAnalysis;        // contains the uncorrected histograms
+    TH1F*           fMult;                  // raw multiplicity histogram (control histogram)
 
     AliESDtrackCuts*  fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
 

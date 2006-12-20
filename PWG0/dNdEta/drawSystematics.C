@@ -1691,3 +1691,75 @@ void PlotErrors(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax, Float_t 
     
     dNdEtaCorrection->GetTrack2ParticleCorrection()->PlotBinErrors(xmin, xmax, ymin, ymax, zmin, zmax)->Draw();
 }
+
+
+void runStudy(const char* baseCorrectionMapFile = "correction_map.root", const char* baseCorrectionMapFolder = "dndeta_correction", const char* changedCorrectionMapFile = "correction_map.root", const char* changedCorrectionMapFolder = "dndeta_correction", const char* dataFile = "analysis_esd_raw.root", const char* output = "analysis_esd_syst.root")
+{
+  gSystem->Load("libPWG0base");
+
+  TFile* file = TFile::Open(output, "RECREATE");
+
+  const Int_t max = 5;
+  dNdEtaAnalysis* fdNdEtaAnalysis[5];
+
+  new TCanvas;
+  TLegend* legend = new TLegend(0.63, 0.73, 0.98, 0.98);
+  legend->SetFillColor(0);
+
+  for (Int_t i = 0; i < max; ++i)
+  {
+    TFile::Open(baseCorrectionMapFile);
+    AlidNdEtaCorrection* baseCorrection = new AlidNdEtaCorrection(baseCorrectionMapFolder, baseCorrectionMapFolder);
+    baseCorrection->LoadHistograms();
+
+    AlidNdEtaCorrection::CorrectionType correctionType = AlidNdEtaCorrection::kNone;
+    const char* name = 0;
+
+    TFile::Open(changedCorrectionMapFile);
+    switch (i)
+    {
+      case 0 :
+        name = "default";
+        break;
+
+      case 1 :
+        baseCorrection->GetTrack2ParticleCorrection()->LoadHistograms(Form("%s/Track2Particle", changedCorrectionMapFolder));
+        name = "Track2Particle";
+        break;
+
+      case 2 :
+        baseCorrection->GetVertexRecoCorrection()->LoadHistograms(Form("%s/VertexReconstruction", changedCorrectionMapFolder));
+        name = "VertexReco";
+        break;
+
+      case 3 :
+        baseCorrection->GetTriggerBiasCorrectionINEL()->LoadHistograms(Form("%s/TriggerBias_MBToINEL", changedCorrectionMapFolder));
+        name = "TriggerBias_MBToINEL";
+        break;
+
+      case 4 :
+        baseCorrection->LoadHistograms(changedCorrectionMapFolder);
+        name = "all";
+        break;
+
+      default: return;
+    }
+
+    TFile::Open(dataFile);
+    fdNdEtaAnalysis[i] = new dNdEtaAnalysis(name, name);
+    fdNdEtaAnalysis[i]->LoadHistograms("dndeta");
+
+    fdNdEtaAnalysis[i]->Finish(baseCorrection, 0.3, AlidNdEtaCorrection::kINEL);
+    file->cd();
+    fdNdEtaAnalysis[i]->SaveHistograms();
+
+    TH1* hist = fdNdEtaAnalysis[i]->GetdNdEtaHistogram(0);
+    hist->SetLineColor(colors[i]);
+    hist->SetMarkerColor(colors[i]);
+    hist->SetMarkerStyle(markers[i]+1);
+    hist->DrawCopy((i == 0) ? "" : "SAME");
+    legend->AddEntry(hist, name);
+  }
+
+  legend->Draw();
+}

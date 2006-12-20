@@ -34,18 +34,15 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
 
   TList inputList;
 
-  if (aMC == kFALSE)
+  // selection of esd tracks
+  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
+  if (!esdTrackCuts)
   {
-    // selection of esd tracks
-    AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
-    if (!esdTrackCuts)
-    {
-      printf("ERROR: esdTrackCuts could not be created\n");
-      return;
-    }
-
-    inputList.Add(esdTrackCuts);
+    printf("ERROR: esdTrackCuts could not be created\n");
+    return;
   }
+
+  inputList.Add(esdTrackCuts);
 
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
@@ -113,6 +110,14 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
   fdNdEtaAnalysis->LoadHistograms("dndeta");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle);
+  fdNdEtaAnalysis->DrawHistograms(kTRUE);
+  file2->cd();
+  fdNdEtaAnalysis->SaveHistograms();
+
+  file->cd();
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
+  fdNdEtaAnalysis->LoadHistograms("dndeta");
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
   fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
   fdNdEtaAnalysis->SaveHistograms();

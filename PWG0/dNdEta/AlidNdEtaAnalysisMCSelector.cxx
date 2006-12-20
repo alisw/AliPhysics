@@ -17,20 +17,24 @@
 #include <AliGenEventHeader.h>
 #include <AliHeader.h>
 #include <AliStack.h>
+#include <AliESDtrack.h>
 
 #include "dNdEta/dNdEtaAnalysis.h"
 #include <AliPWG0Helper.h>
 #include <AliCorrection.h>
 #include <AliCorrectionMatrix2D.h>
+#include "esdTrackCuts/AliESDtrackCuts.h"
 
 
 ClassImp(AlidNdEtaAnalysisMCSelector)
 
 AlidNdEtaAnalysisMCSelector::AlidNdEtaAnalysisMCSelector() :
   AliSelectorRL(),
+  fEsdTrackCuts(0),
   fdNdEtaAnalysis(0),
   fdNdEtaAnalysisTr(0),
   fdNdEtaAnalysisTrVtx(0),
+  fdNdEtaAnalysisTracks(0),
   fVertex(0),
   fPartPt(0),
   fEvents(0)
@@ -47,6 +51,27 @@ AlidNdEtaAnalysisMCSelector::~AlidNdEtaAnalysisMCSelector()
   //
 }
 
+void AlidNdEtaAnalysisMCSelector::Begin(TTree* tree)
+{
+  // Begin function
+
+  ReadUserObjects(tree);
+}
+
+void AlidNdEtaAnalysisMCSelector::ReadUserObjects(TTree* tree)
+{
+  // read the user objects, called from slavebegin and begin
+
+  if (!fEsdTrackCuts && fInput)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("AliESDtrackCuts"));
+
+  if (!fEsdTrackCuts && tree)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (tree->GetUserInfo()->FindObject("AliESDtrackCuts"));
+
+  if (!fEsdTrackCuts)
+     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from input list.");
+}
+
 void AlidNdEtaAnalysisMCSelector::SlaveBegin(TTree * tree)
 {
   // The SlaveBegin() function is called after the Begin() function.
@@ -55,9 +80,12 @@ void AlidNdEtaAnalysisMCSelector::SlaveBegin(TTree * tree)
 
   AliSelectorRL::SlaveBegin(tree);
 
+  ReadUserObjects(tree);
+
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fdNdEtaAnalysisTr = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
   fdNdEtaAnalysisTrVtx = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
+  fdNdEtaAnalysisTracks = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
   fVertex = new TH3F("vertex_check", "vertex_check", 50, -50, 50, 50, -50, 50, 50, -50, 50);
   for (Int_t i=0; i<3; ++i)
   {
@@ -73,9 +101,18 @@ void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
 {
   AliSelectorRL::Init(tree);
 
+  if (!tree)
+  {
+    AliDebug(AliLog::kError, "tree not available");
+    return;
+  }
+
   tree->SetBranchStatus("*", 0);
   tree->SetBranchStatus("fTriggerMask", 1);
   tree->SetBranchStatus("fSPDVertex*", 1);
+  tree->SetBranchStatus("fTracks.fLabel", 1);
+
+  AliESDtrackCuts::EnableNeededBranches(tree);
 }
 
 Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
@@ -167,6 +204,43 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
       fdNdEtaAnalysisTrVtx->FillEvent(vtxMC[2], nAcceptedParticles);
   }
 
+  if (!eventTriggered || !vertexReconstructed)
+    return kTRUE;
+
+  // from tracks is only done for triggered and vertex reconstructed events
+
+  // get number of "good" tracks
+  TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+  Int_t nGoodTracks = list->GetEntries();
+
+  // loop over esd tracks
+  for (Int_t t=0; t<nGoodTracks; t++)
+  {
+    AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(t));
+    if (!esdTrack)
+    {
+      AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", t));
+      continue;
+    }
+
+    Int_t label = TMath::Abs(esdTrack->GetLabel());
+
+    TParticle* particle = stack->Particle(label);
+    if (!particle)
+    {
+      AliDebug(AliLog::kError, Form("ERROR: Could not retrieve particle %d.", esdTrack->GetLabel()));
+      continue;
+    }
+
+    fdNdEtaAnalysisTracks->FillTrack(vtxMC[2], particle->Eta(), particle->Pt());
+  } // end of track loop
+
+  delete list;
+  list = 0;
+
+  // for event count per vertex
+  fdNdEtaAnalysisTracks->FillEvent(vtxMC[2], nGoodTracks);
+
   return kTRUE;
 }
 
@@ -188,6 +262,8 @@ void AlidNdEtaAnalysisMCSelector::SlaveTerminate()
   fOutput->Add(fdNdEtaAnalysis);
   fOutput->Add(fdNdEtaAnalysisTr);
   fOutput->Add(fdNdEtaAnalysisTrVtx);
+  fOutput->Add(fdNdEtaAnalysisTracks);
+
   fOutput->Add(fPartPt);
   fOutput->Add(fEvents);
   for (Int_t i=0; i<3; ++i)
@@ -203,6 +279,7 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
   fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
   fdNdEtaAnalysisTr = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTr"));
   fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
+  fdNdEtaAnalysisTracks = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTracks"));
   fPartPt = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_pt"));
   fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
   for (Int_t i=0; i<3; ++i)
@@ -217,6 +294,7 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
   fdNdEtaAnalysis->Finish(0, -1, AlidNdEtaCorrection::kNone);
   fdNdEtaAnalysisTr->Finish(0, -1, AlidNdEtaCorrection::kNone);
   fdNdEtaAnalysisTrVtx->Finish(0, -1, AlidNdEtaCorrection::kNone);
+  fdNdEtaAnalysisTracks->Finish(0, -1, AlidNdEtaCorrection::kNone);
 
   Int_t events = (Int_t) fdNdEtaAnalysis->GetData()->GetEventCorrection()->GetMeasuredHistogram()->Integral();
   fPartPt->Scale(1.0/events);
@@ -247,6 +325,7 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
   fdNdEtaAnalysis->SaveHistograms();
   fdNdEtaAnalysisTr->SaveHistograms();
   fdNdEtaAnalysisTrVtx->SaveHistograms();
+  fdNdEtaAnalysisTracks->SaveHistograms();
   fPartPt->Write();
 
   fout->Write();

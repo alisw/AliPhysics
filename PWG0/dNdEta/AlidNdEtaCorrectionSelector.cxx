@@ -340,11 +340,6 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     }
   } // end of track loop
 
-  // get the ESD vertex
-  const AliESDVertex* vtxESD = fESD->GetVertex();
-  // FAKE test!
-  //nGoodTracks = vtxESD->GetNContributors();
-
   if (eventTriggered && vertexReconstructed)
     fdNdEtaAnalysisMC->FillEvent(vtxMC[2], nGoodTracks);
 
