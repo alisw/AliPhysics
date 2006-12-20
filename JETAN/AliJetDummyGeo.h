@@ -19,9 +19,10 @@ class AliJetDummyGeo : public TObject
     Float_t GetArm1EtaMax() {return 0.;}
     Float_t GetArm1PhiMin() {return 0.;}
     Float_t GetArm1PhiMax() {return 0.;}
-    void    EtaPhiFromIndex(Int_t id, Float_t& eta, Float_t& phi);
-    Int_t   TowerIndexFromEtaPhi2(Float_t eta, Float_t phi) {return 0;}
-    void    GetTransformationForSM();
+    void    EtaPhiFromIndex(Int_t /*id*/, Float_t& /*eta*/, Float_t& /*phi*/)
+	{;}
+    Int_t   TowerIndexFromEtaPhi2(Float_t /*eta*/, Float_t /*phi*/) {return 0;}
+    void    GetTransformationForSM(){;}
     Float_t GetSampling() {return 0.;}
     ClassDef(AliJetDummyGeo,1)
 };
