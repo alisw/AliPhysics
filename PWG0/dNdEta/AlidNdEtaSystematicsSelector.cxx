@@ -95,6 +95,8 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
 
   printf("Running AlidNdEtaSystematicsSelector with options %s\n", option.Data());
 
+  // Options: secondaries particle-composition sigma-vertex vertexreco triggerbias
+
   if (option.Contains("secondaries"))
   {
     fSecondaries = new TH2F("fSecondaries", "fSecondaries;Case;N", 8, 0.5, 8.5, 2001, -0.5, 2000.5);

@@ -337,8 +337,8 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         continue;
       }
 
-      printf("Eta: %d Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f\n", iEta, vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
-      
+      //printf("Eta: %d Vertex Range: %d %d, Event Count %f, Track Sum: %f, Track Sum corrected: %f\n", iEta, vertexBinBegin, vertexBinEnd, totalEvents, sum, sum / ptCutOffCorrection);
+
       Float_t dndeta = sum / totalEvents;
       Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
 

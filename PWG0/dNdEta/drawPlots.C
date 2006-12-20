@@ -211,8 +211,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   TH1* histESDMBNoPt = (TH1*) file->Get("dndetaTr/dNdEta");
   TH1* histESDMBVtx = (TH1*) file->Get("dndetaTrVtx/dNdEta_corrected");
   TH1* histESDMBVtxNoPt = (TH1*) file->Get("dndetaTrVtx/dNdEta");
-
-  TCanvas* canvas = new TCanvas("dNdEta1", "dNdEta1", 500, 500);
+  TH1* histESDMBTracksNoPt = (TH1*) file->Get("dndetaTracks/dNdEta");
 
   Prepare1DPlot(histESD);
   Prepare1DPlot(histESDMB);
@@ -221,6 +220,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   Prepare1DPlot(histESDNoPt);
   Prepare1DPlot(histESDMBNoPt);
   Prepare1DPlot(histESDMBVtxNoPt);
+  Prepare1DPlot(histESDMBTracksNoPt);
 
   histESD->SetLineWidth(0);
   histESDMB->SetLineWidth(0);
@@ -230,13 +230,14 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMBNoPt->SetLineWidth(0);
   histESDMBVtxNoPt->SetLineWidth(0);
 
-  histESD->SetMarkerColor(kRed);
-  histESDMB->SetMarkerColor(kBlue);
-  histESDMBVtx->SetMarkerColor(103);
+  histESD->SetMarkerColor(1);
+  histESDMB->SetMarkerColor(2);
+  histESDMBVtx->SetMarkerColor(3);
 
-  histESDNoPt->SetMarkerColor(kRed);
-  histESDMBNoPt->SetMarkerColor(kBlue);
-  histESDMBVtxNoPt->SetMarkerColor(103);
+  histESDNoPt->SetMarkerColor(1);
+  histESDMBNoPt->SetMarkerColor(2);
+  histESDMBVtxNoPt->SetMarkerColor(3);
+  histESDMBTracksNoPt->SetMarkerColor(4);
 
   histESD->SetMarkerStyle(20);
   histESDMB->SetMarkerStyle(21);
@@ -245,8 +246,9 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDNoPt->SetMarkerStyle(20);
   histESDMBNoPt->SetMarkerStyle(21);
   histESDMBVtxNoPt->SetMarkerStyle(22);
+  histESDMBTracksNoPt->SetMarkerStyle(23);
 
-  TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0.1, histESDMBVtx->GetMaximum() * 1.1);
+  TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 3.1, histESDMBVtx->GetMaximum() * 1.1);
   Prepare1DPlot(dummy);
   dummy->SetStats(kFALSE);
   dummy->SetXTitle("#eta");
@@ -262,6 +264,9 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMBNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMBVtxNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histESDMBTracksNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+
+  /*TCanvas* canvas = new TCanvas("dNdEta1", "dNdEta1", 500, 500);
 
   dummy->DrawCopy();
   histESDMBVtx->Draw("SAME");
@@ -269,7 +274,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESD->Draw("SAME");
 
   canvas->SaveAs("dNdEta1.gif");
-  canvas->SaveAs("dNdEta1.eps");
+  canvas->SaveAs("dNdEta1.eps");*/
 
   if (onlyESD)
     return;
@@ -296,6 +301,11 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
   TH1* histMCTrVtxPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
 
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
+  fdNdEtaAnalysis->LoadHistograms();
+  fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
+  TH1* histMCTracksPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(0);
+
   TCanvas* canvas2 = new TCanvas("dNdEta2", "dNdEta2", 500, 500);
 
   Prepare1DPlot(histMC);
@@ -305,14 +315,18 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   Prepare1DPlot(histMCPtCut);
   Prepare1DPlot(histMCTrPtCut);
   Prepare1DPlot(histMCTrVtxPtCut);
+  if (histMCTracksPtCut)
+    Prepare1DPlot(histMCTracksPtCut);
 
-  histMC->SetLineColor(kBlue);
-  histMCTr->SetLineColor(kBlue);
-  histMCTrVtx->SetLineColor(kBlue);
+  histMC->SetLineColor(1);
+  histMCTr->SetLineColor(2);
+  histMCTrVtx->SetLineColor(3);
 
-  histMCPtCut->SetLineColor(kBlue);
-  histMCTrPtCut->SetLineColor(kBlue);
-  histMCTrVtxPtCut->SetLineColor(kBlue);
+  histMCPtCut->SetLineColor(1);
+  histMCTrPtCut->SetLineColor(2);
+  histMCTrVtxPtCut->SetLineColor(3);
+  if (histMCTracksPtCut)
+    histMCTracksPtCut->SetLineColor(4);
 
   TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
   Prepare1DPlot(dummy2);
@@ -328,9 +342,12 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDNoPt->Draw("SAME");
   histESDMBNoPt->Draw("SAME");
   histESDMBVtxNoPt->Draw("SAME");
+  histESDMBTracksNoPt->Draw("SAME");
   histMCPtCut->Draw("SAME");
   histMCTrPtCut->Draw("SAME");
   histMCTrVtxPtCut->Draw("SAME");
+  if (histMCTracksPtCut)
+    histMCTracksPtCut->Draw("SAME");
 
   canvas2->SaveAs("dNdEta2.gif");
   canvas2->SaveAs("dNdEta2.eps");
@@ -346,15 +363,15 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   ratio->SetLineColor(1);
   ratioNoPt->SetLineColor(2);
 
-  TCanvas* canvas3 = new TCanvas("dNdEta", "dNdEta", 700, 700);
+  TCanvas* canvas3 = new TCanvas("dNdEta", "dNdEta", 700, 600);
   canvas3->Range(0, 0, 1, 1);
   //canvas3->Divide(1, 2, 0, 0);
 
   //canvas3->cd(1);
-  TPad* pad1 = new TPad("dNdEta_1", "", 0, 0.4, 0.98, 0.98);
+  TPad* pad1 = new TPad("dNdEta_1", "", 0, 0.5, 0.98, 0.98);
   pad1->Draw();
 
-  TPad* pad2 = new TPad("dNdEta_2", "", 0, 0.02, 0.98, 0.4);
+  TPad* pad2 = new TPad("dNdEta_2", "", 0, 0.02, 0.98, 0.5);
   pad2->Draw();
 
   pad1->SetRightMargin(0.05);
@@ -366,13 +383,18 @@ void dNdEta(Bool_t onlyESD = kFALSE)
 
   pad1->cd();
 
-  TLegend* legend = new TLegend(0.4, 0.2, 0.65, 0.4);
+  TLegend* legend = new TLegend(0.4, 0.05, 0.65, 0.3);
   legend->SetFillColor(0);
   legend->AddEntry(histESDMBVtx, "triggered, vertex");
   legend->AddEntry(histESDMB, "triggered");
   legend->AddEntry(histESD, "all events");
   legend->AddEntry(histMC, "MC prediction");
 
+  dummy->GetXaxis()->SetLabelSize(0.06);
+  dummy->GetYaxis()->SetLabelSize(0.06);
+  dummy->GetXaxis()->SetTitleSize(0.06);
+  dummy->GetYaxis()->SetTitleSize(0.06);
+  dummy->GetYaxis()->SetTitleOffset(0.7);
   dummy->DrawCopy();
   histESDMBVtx->Draw("SAME");
   histESDMB->Draw("SAME");
@@ -384,10 +406,13 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   pad2->cd();
   pad2->SetBottomMargin(0.15);
 
+  Float_t min = TMath::Min(0.961, ratio->GetMinimum() * 0.95);
+  Float_t max = TMath::Max(1.049, ratio->GetMaximum() * 1.05);
+
   TH1F dummy3("dummy3", ";#eta;Ratio: MC / ESD", 1, -1.5, 1.5);
   dummy3.SetStats(kFALSE);
   dummy3.SetBinContent(1, 1);
-  dummy3.GetYaxis()->SetRangeUser(0.961, 1.049);
+  dummy3.GetYaxis()->SetRangeUser(min, max);
   dummy3.SetLineWidth(2);
   dummy3.GetXaxis()->SetLabelSize(0.06);
   dummy3.GetYaxis()->SetLabelSize(0.06);
