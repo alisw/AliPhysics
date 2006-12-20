@@ -6,6 +6,10 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= AnalysisTaskLinkDef.h
 
+CHECKALIEN = `root-config --has-alien`
+ifeq ($(CHECKALIEN),yes)
+PACKCXXFLAGS := -DWITHALIEN
+endif
 EXPORT:=$(SRCS:.cxx=.h)
 
 
