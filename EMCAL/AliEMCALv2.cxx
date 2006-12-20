@@ -25,6 +25,7 @@
 // This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
 // This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
 
+#include <cassert>
 // --- ROOT system ---
 #include <TParticle.h>
 #include <TVirtualMC.h>

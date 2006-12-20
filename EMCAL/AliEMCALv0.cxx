@@ -24,6 +24,7 @@
 //          : Aleksei Pavlinov (WSU)     SHASHLYK
 
 // --- ROOT system ---
+#include <cassert>
 
 #include <TNode.h>
 #include <TBRIK.h>

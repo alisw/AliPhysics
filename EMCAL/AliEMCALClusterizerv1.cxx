@@ -45,6 +45,7 @@
 //               // time - print benchmarking results
 
 // --- ROOT system ---
+#include <cassert>
 
 class TROOT;
 #include <TH1.h>
