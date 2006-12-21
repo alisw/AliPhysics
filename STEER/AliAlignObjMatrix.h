@@ -15,8 +15,8 @@
 class AliAlignObjMatrix : public AliAlignObj {
  public:
   AliAlignObjMatrix();
-  AliAlignObjMatrix(const char* volpath, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *);
-  AliAlignObjMatrix(const char* volpath, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *);
+  AliAlignObjMatrix(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *);
+  AliAlignObjMatrix(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *);
   AliAlignObjMatrix(const AliAlignObj& theAlignObj);
   AliAlignObjMatrix& operator= (const AliAlignObj& theAlignObj);
   virtual ~AliAlignObjMatrix();
