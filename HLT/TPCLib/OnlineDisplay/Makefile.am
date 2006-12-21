@@ -11,6 +11,8 @@ AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
 # library definition
 lib_LTLIBRARIES			=  libAliHLTTPCDisplay.la
 
+LIBRARY_VERSION			= '2:0:0'
+
 # library sources
 libAliHLTTPCDisplay_la_SOURCES	= AliHLTTPCDisplayMain.cxx \
 				  AliHLTTPCDisplay.cxx  \
@@ -48,7 +50,7 @@ libAliHLTTPCDisplay_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ALIROOT_LIBS@ \
 				  @HOMER_LDFLAGS@ \
 				  @HOMER_LIBS@ \
-				  -version-info 1:1:0
+				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  AliHLTTPCDisplayCompileInfo.cxx

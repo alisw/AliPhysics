@@ -635,6 +635,60 @@ unsigned AliHLTTPCDigitReaderRaw::GetMaxHWA( unsigned patch )
   return fMaxHWA[patch];
 }
 
+Int_t AliHLTTPCDigitReaderRaw::DecodeMode(Int_t mode) {
+  Int_t decodedMode;
+
+  if ( mode >= kNofRawReaderModes ) 
+    decodedMode = -1;
+  else
+    decodedMode = mode;
+
+  return decodedMode;
+}
+
+Int_t AliHLTTPCDigitReaderRaw::DecodeMode(const Char_t *mode) {
+  Int_t decodedMode;
+  Char_t *cpErr;
+
+  // Check if String is convertible to Int_t
+  // if not decode the string, otherwise, check if Int_t is valid
+  Int_t intMode = strtoul( mode, &cpErr ,0);
+
+  if ( *cpErr ) {
+    if ( !strcmp( mode, "sorted_3_trailerword" ) ) 
+      decodedMode = kSorted3Trailerword;
+    
+    else if ( !strcmp( mode, "sorted_2_trailerword" ) ) 
+      decodedMode = kSorted2Trailerword;
+    
+    else if ( !strcmp( mode, "sorted_1_trailerword" ) ) 
+      decodedMode = kSorted1Trailerword;
+    
+    else if ( !strcmp( mode, "unsorted_3_trailerword" ) ) 
+      decodedMode = kUnsorted3Trailerword;
+    
+    else if ( !strcmp( mode, "unsorted_2_trailerword" ) ) 
+      decodedMode = kUnsorted2Trailerword;
+    
+    else if ( !strcmp( mode, "unsorted_1_trailerword" ) ) 
+      decodedMode = kUnsorted1Trailerword;
+    
+    else if ( ! strcmp( mode, "offline" ) )
+      decodedMode = -2;
+    
+    else 
+      decodedMode = -1;
+  }  // END if ( *cpErr ) {
+  else {
+    if ( intMode >= kNofRawReaderModes ) 
+      decodedMode = -1;
+    else
+      decodedMode = intMode;
+  }
+
+  return decodedMode;
+}
+
 
 // ----- MAPPING ARRAYS
 #include "mapping_array_out.inc"

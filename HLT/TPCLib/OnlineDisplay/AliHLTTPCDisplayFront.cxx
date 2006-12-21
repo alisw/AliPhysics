@@ -73,6 +73,8 @@ AliHLTTPCDisplayFront::AliHLTTPCDisplayFront(AliHLTTPCDisplayMain* display) {
     fHistfront = new TH2F("fHistfront","FrontView of selected slice;Pad #;Padrow #",Bins,fBinX[0],fBinX[1],fBinY[1]+1,fBinY[0],fBinY[1]);
 #else
     fHistfront = new TH2F("fHistfront","FrontView of selected slice;Pad #;Padrow #",fBinX[1]+1,fBinX[0],fBinX[1],fBinY[1]+1,fBinY[0],fBinY[1]);
+    fHistfrontcl = new TH1F("fHistfrontcl","cvcv;ddd;kkk",fBinX[1]+1,fBinX[0],fBinX[1]);
+    gStyle->SetPalette(1);
 #endif
 
     fHistfront->SetOption("COLZ");  
@@ -250,6 +252,32 @@ void AliHLTTPCDisplayFront::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen
     }// end use maximum
   } // end - else of  if ( fDisplay->GetZeroSuppression() ){
 
+
+  if (fDisplay->ExistsClusterData()){
+    for (patch=0; patch < 6; patch++){
+      AliHLTTPCSpacePointData *points = fDisplay->GetSpacePointDataPointer(fDisplay->GetSlicePadRow(),patch);
+      if(!points) return;
+
+      cout << "fill" << patch << endl;
+
+      Float_t xyz[3];
+      for(Int_t i=0; i< fDisplay->GetNumberSpacePoints(fDisplay->GetSlicePadRow(),patch); i++){
+	xyz[0] = points[i].fX;
+	xyz[1] = points[i].fY;
+	xyz[2] = points[i].fZ;
+	Int_t padRow = AliHLTTPCTransform::GetPadRow(xyz[0]);
+	
+
+	// select padrow to fill in histogramm
+	//      if (padRow == AliHLTTPCTransform::GetPadRow(xyz[0])){
+	AliHLTTPCTransform::LocHLT2Raw(xyz, 0, padRow);
+	fHistfrontcl->Fill(xyz[1],padRow);
+	//      }
+      }
+    }
+  } // END if (fDisplay->ExistsClusterData()){
+
+
 }
 
 //____________________________________________________________________________________________________
@@ -279,6 +307,18 @@ void AliHLTTPCDisplayFront::Draw(){
     fHistfront->SetTitle(title);
     fHistfront->SetStats(kFALSE);
     fHistfront->Draw("COLZ");
+
+    if ( fDisplay->ExistsClusterData() ){
+     	fHistfrontcl->SetAxisRange(fBinX[0],fBinX[1]);
+	fHistfrontcl->SetAxisRange(fBinY[0],fBinY[1],"Y");
+	fHistfrontcl->SetStats(kFALSE);
+	fHistfrontcl->SetMarkerStyle(28);
+	fHistfrontcl->SetMarkerSize(2);
+	fHistfrontcl->SetMarkerColor(1);
+	fHistfrontcl->Draw("psame");
+
+	cout << "draw" << endl;
+    }
 
     if (fDisplay->GetSplitFront()){
       fDisplay->GetCanvasFront()->cd(2);

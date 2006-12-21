@@ -437,7 +437,6 @@ void AliHLTTPCClusterFinder::ProcessDigits()
     Int_t padmean = seqcharge*pad;
     Int_t paderror = pad*padmean;
 
-
     //Compare with results on previous pad:
     for(UInt_t p=0; p<nprevious && p<kPadArraySize && ncurrent<kPadArraySize; p++){
       
@@ -479,7 +478,6 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 	break;
       } //Checking for match at previous pad
     } //Loop over results on previous pad.
-
 
     if(newcluster && ncurrent<kPadArraySize){
       //Start a new cluster. Add it to the clusterlist, and update

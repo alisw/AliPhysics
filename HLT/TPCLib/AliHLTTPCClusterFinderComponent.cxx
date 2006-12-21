@@ -147,28 +147,14 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	  Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Raw Reader Mode not specified" );
 	  return ENOTSUP;
 	}
-	
-	if ( !strcmp( argv[i+1], "sorted_1_trailerword" ) ) {
-	  rawreadermode = 0;
-	}
-	else if ( !strcmp( argv[i+1], "sorted_3_trailerword" ) ) {
-	  rawreadermode = 2;
-	}
-	else if ( !strcmp( argv[i+1], "unsorted_1_trailerword" ) ) {
-	  rawreadermode = 1;
-	}
-	else if ( !strcmp( argv[i+1], "unsorted_3_trailerword" ) ) {
-	  rawreadermode = 3;
-	}
-	else if ( !strcmp( argv[i+1], "offline" ) ) {
-	  rawreadermode = -1;
-	}
-	else {
-	  rawreadermode = strtoul( argv[i+1], &cpErr ,0);
-	    if ( *cpErr ) {
-	      Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Cannot convert rawreadermode specifier '%s'.", argv[i+1] );
-	      return EINVAL;
-	    }
+
+	// Decodes the rawreader mode: either number or string and returns the rawreadermode
+	// -1 on failure, -2 for offline
+	rawreadermode = AliHLTTPCDigitReaderRaw::DecodeMode( argv[i+1] );
+
+	if (rawreadermode == -1 ) {
+	  Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Cannot convert rawreadermode specifier '%s'.", argv[i+1] );
+	  return EINVAL;
 	}
 
 	i += 2;
@@ -194,7 +180,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       }
 
       // -- pad occupancy limit
-      if ( !strcmp( argv[i], "occupancy-threshold" ) ) {
+      if ( !strcmp( argv[i], "occupancy-limit" ) ) {
 	occulimit = strtof( argv[i+1], &cpErr);
 	if ( *cpErr ) {
 	  HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
@@ -212,7 +198,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     // Choose reader
 
     if (fPackedSwitch) { 
-      if (rawreadermode == -1) {
+      if (rawreadermode == -2) {
 #if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 	fReader = new AliHLTTPCDigitReaderPacked();
 	fClusterFinder->SetReader(fReader);

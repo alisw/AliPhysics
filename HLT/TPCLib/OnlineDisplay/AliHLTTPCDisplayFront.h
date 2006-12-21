@@ -15,6 +15,7 @@
 //*-- Copyright &copy ALICE HLT Group 
 
 #include <TCanvas.h>
+#include <TH1F.h>
 #include <TH2F.h>
 #include <AliHLTTPCDisplayMain.h>
 
@@ -35,7 +36,7 @@ class AliHLTTPCDisplayFront : public AliHLTLogging  {
     TCanvas * fCanvas;
 
     TH2F *fHistfront;              // histogram for front view of one slice
-
+  TH1F *fHistfrontcl;              // histogram for cluster in front
     Int_t fNTimes;
 
     Int_t fBinX[2];                // Minimum / Maximum - Bin on X Axis

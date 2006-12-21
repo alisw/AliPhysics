@@ -203,6 +203,26 @@ AliHLTTPCDisplayMain::~AliHLTTPCDisplayMain() {
 //____________________________________________________________________________________________________
 Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, unsigned short* ports, Char_t *gfile){
 
+    Char_t* defaultGeometry=NULL;
+#if defined(DEFAULT_GEOMETRY)
+    defaultGeometry=DEFAULT_GEOMETRY;
+#endif
+    if (gfile!=NULL) {
+      HLTDebug("probing geometry file %s", gfile);
+      ifstream test(gfile);
+      if (test.fail()) {
+	HLTWarning("unable to find geometry file %s, using default file", gfile);
+	gfile=defaultGeometry;
+      }
+      test.close();
+    } else {
+      HLTDebug("using default geometry file %s", gfile, defaultGeometry);
+      gfile=defaultGeometry;
+    }
+    if (gfile==NULL) {
+      HLTError("geometry file missing");
+      return -EINVAL;
+    }
 #if defined(HAVE_HOMERREADER) 
   // -- input datatypes , reverse
   Char_t* spptID="SRETSULC";       // CLUSTERS
@@ -825,7 +845,7 @@ void AliHLTTPCDisplayMain::ReadRawData(){
 	  
 	  if (!pCurrentPad->IsStarted()) {
 	    
-	    HLTDebug("reading data for pad %d, padrow %d", digitReader.GetPad(), digitReader.GetRow()+rowOffset);
+	    //	    HLTDebug("reading data for pad %d, padrow %d", digitReader.GetPad(), digitReader.GetRow()+rowOffset);
 	    
 	    pCurrentPad->SetID(digitReader.GetRow()+rowOffset,digitReader.GetPad());
 	    
@@ -836,7 +856,7 @@ void AliHLTTPCDisplayMain::ReadRawData(){
 		if ( digitReader.GetPad() != pCurrentPad->GetPadNumber() ) break;
 		pCurrentPad->SetRawData( digitReader.GetTime(), digitReader.GetSignal() );
 		
-		HLTDebug("set raw data to pad: bin %d charge %d", digitReader.GetTime(), digitReader.GetSignal());
+		//	HLTDebug("set raw data to pad: bin %d charge %d", digitReader.GetTime(), digitReader.GetSignal());
 		
 	      } while ( (readValue = digitReader.Next()) != 0 );
 	    }
@@ -845,7 +865,7 @@ void AliHLTTPCDisplayMain::ReadRawData(){
 	    pCurrentPad->CalculateBaseLine( GetNTimeBins() / 2);
 	    
 	    if ( pCurrentPad->Next(kTRUE/*do zero suppression*/) == 0 ) {
-	      HLTDebug("no data available after zero suppression");
+	      //	      HLTDebug("no data available after zero suppression");
 	      
 	      pCurrentPad->StopEvent();
 	      pCurrentPad->ResetHistory();

@@ -1,3 +1,7 @@
+2006-12-18 commit from Jochen
+	- TPCDisplay library version 2
+	  - library version for the AliHLTGUI v 1.5
+	- argument scan of the AliHLTTPCDigitReaderRaw cleaned up
 2006-12-12
 	- use_newio switch removed, always on
 	- AliHLTTPC and AliHLTTPCClustFinderNew removed from compilation of
