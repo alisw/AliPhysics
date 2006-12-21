@@ -70,6 +70,6 @@
 #pragma link C++ class AliHLTMUONClusterFinderCallback+;
 
 #pragma link C++ class AliHLTMUONTracker+;
-
+#pragma link C++ class AliHLTMUONHitReconstructor+;
 #endif // __CINT__
 
