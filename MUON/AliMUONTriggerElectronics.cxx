@@ -574,15 +574,18 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 	if (board) 
 	{
 	  //          L0 TRIGGER
-	  if (board->Triggered())
-	  {
+// pcrochet 181206: MOOD needs ALL boards
+//	  if (board->Triggered())
+//	  {
           
 	    Int_t icirc = board->GetNumber();
+	    if (icirc != 0) { // pcrochet 181206: MOOD needs ALL boards
 
 	    fLocalTrigger->SetLoCircuit(icirc);
 	    fLocalTrigger->SetLoStripX(board->GetStripX11());
 	    fLocalTrigger->SetLoDev(board->GetDev());
 	    fLocalTrigger->SetLoStripY(board->GetStripY11());
+	    fLocalTrigger->SetLoOutput(board->Triggered());
           
 	    //             SAVE LUT OUTPUT 
 	    UShort_t response = board->GetResponse();
