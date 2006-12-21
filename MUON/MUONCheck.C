@@ -526,11 +526,16 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
 
     for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
+
+      if (locTrg->LoOutput()) { // board is fired
+
       if (PRINTOUT) locTrg->Print("full");
       
       AliMUONTriggerCircuit* circuit = (AliMUONTriggerCircuit*)triggerCircuit->At(locTrg->LoCircuit()-1); 
       
       TgtupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
+      }
+      
     } // end of loop on Local Trigger
 
     // fill ntuple
