@@ -38,11 +38,11 @@
 #include "AliHLTITStracker.h"
 #include "AliHLTTPCtracker.h"
 #include "MUON/src/AliRoot/AliHLTMUONTracker.h"
-
+#include "MUON/src/AliRoot/AliHLTMUONHitReconstructor.h"
+#include "AliRawReader.h"
 #if __GNUC__== 3
 using namespace std;
 #endif
-
 
 ClassImp(AliHLTReconstructor)
 
@@ -357,6 +357,25 @@ AliITSgeom* AliHLTReconstructor::GetITSgeom(AliRunLoader* runLoader) const
     return NULL;
   }
   return its->GetITSgeom();
+}
+
+void AliHLTReconstructor::FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEvent, Int_t dcCut = 0) const
+{
+  // Hit recontruction for dimuon-HLT
+  AliHLTMUONHitReconstructor kdHLTRec(rawReader);
+
+  Int_t iEvent = 0 ;
+  kdHLTRec.SetDCCut(dcCut);
+  TString lookupTablePath = getenv("ALICE_ROOT");
+  lookupTablePath += "/HLT/MUON/src/AliRoot/Lut";
+  kdHLTRec.Init(lookupTablePath.Data(),lookupTablePath.Data());
+
+   while(rawReader->NextEvent() && iEvent < nofEvent){
+     AliInfo(Form("Event : %d",iEvent));
+     kdHLTRec.WriteDHLTRecHits(iEvent);  
+     iEvent++;
+   }
+
 }
 
 #endif

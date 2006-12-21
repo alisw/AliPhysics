@@ -43,7 +43,7 @@ public:
   }
   void SetDoBench(Bool_t b){fDoBench=b;}
   void SetDoCleanup(Bool_t b){fDoCleanUp=b;}
-
+  virtual void         FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEvent, Int_t dcCut) const;
 private:
   void ReconstructWithConformalMapping(AliRunLoader* runLoader,Int_t iEvent) const;
   void ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const;

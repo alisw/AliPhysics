@@ -19,6 +19,8 @@ HDRS:= $(SRCS:.cxx=.hpp) \
 MUON/src/AliRoot/TrackerInterface.hpp \
 MUON/src/AliRoot/ClusterFinderInterface.hpp \
 MUON/src/AliRoot/AliHLTMUONTracker.h \
+MUON/src/AliRoot/AliHLTMUONHitReconstructor.h \
+MUON/src/PubSub/HLTMUONHitReconstructor.h \
 MUON/src/AliRoot/Tracker.hpp \
 MUON/src/AliRoot/ClusterFinder.hpp \
 
@@ -33,6 +35,8 @@ MUON/src/AliRoot/TrackerProxy.cxx \
 MUON/src/AliRoot/ClusterFinderProxy.cxx \
 MUON/src/AliRoot/convert.cxx \
 MUON/src/AliRoot/AliHLTMUONTracker.cxx \
+MUON/src/AliRoot/AliHLTMUONHitReconstructor.cxx \
+MUON/src/PubSub/HLTMUONHitReconstructor.cxx \
 MUON/src/Debug/AliHLTMUONPrint.cxx
 
 
