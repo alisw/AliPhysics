@@ -1,3 +1,4 @@
+#include <strings.h>
 #include "HLTMUONHitReconstructor.h"
 
 
