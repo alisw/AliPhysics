@@ -1,0 +1,47 @@
+#-*- Mode: Makefile -*-
+# $Id: 
+
+include $(MODDIR)/hlt.conf
+
+MODULE_SRCS= 	AliHLTComponent.cxx \
+		AliHLTComponentHandler.cxx \
+		AliHLTSystem.cxx \
+		AliHLT_C_Component_WrapperInterface.cxx \
+		AliHLTProcessor.cxx \
+		AliHLTConfiguration.cxx \
+		AliHLTLogging.cxx \
+		AliHLTDataBuffer.cxx \
+		AliHLTDataSource.cxx \
+		AliHLTDataSink.cxx
+
+CLASS_HDRS:=  	AliHLTComponent.h \
+		AliHLTComponentHandler.h \
+		AliHLTSystem.h \
+		AliHLTProcessor.h \
+		AliHLTConfiguration.h \
+		AliHLTConfigurationHandler.h \
+		AliHLTTask.h \
+		AliHLTLogging.h \
+		AliHLTDataBuffer.h \
+		AliHLTDataSource.h \
+		AliHLTDataSink.h
+
+MODULE_HDRS:= 	$(CLASS_HDRS) \
+		AliHLTDataTypes.h \
+		AliHLT_C_Component_WrapperInterface.h \
+		AliHLTDefinitions.h \
+		AliHLTStdIncludes.h
+
+DHDR:= 		BASE/HLTbaseLinkDef.h
+CINTAUTOLINK:=
+
+SRCS:=$(patsubst %,BASE/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,BASE/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,BASE/%,$(MODULE_HDRS))
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := HLT/BASE

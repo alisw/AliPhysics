@@ -1,0 +1,54 @@
+#-*- Mode: Makefile -*-
+# $Id: 
+
+# This files defines the source and header files for the
+# libAliHLTSample library and additional flags for the compilation
+# and linking process. For further information refer to the 
+# README.
+
+# library sources
+MODULE_SRCS= 	AliHLTSampleComponent1.cxx \
+		AliHLTSampleComponent2.cxx \
+		AliHLTDummyComponent.cxx
+
+# class header files, the link definition for the root dictionary
+# will be created from the names of the header files
+CLASS_HDRS:=  	AliHLTSampleComponent1.h \
+		AliHLTSampleComponent2.h \
+		AliHLTDummyComponent.h
+
+# library headers
+# in most cases you might have already added all the header files to
+# the CLASS_HDRS variable. So we just use the content of this. You
+# can simply add more header files which don't contain classes with
+# ROOT dictionary support
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+# The autotools-based stand-alone built system creates  the LinkDef
+# file required by the ROOT dictionary generation for the all header
+# files specified in CLASS_HDRS.  
+# When creating a ROOT dictionary in AliRoot you must eventually
+# provide a *LinkDef.h file which tells rootcint what to do with the
+# classes. The *LinkDef.h must be added to DHDR in that case.
+# There might be an extension also in ALIROOT which allows to 
+# generate the LinkDef automatically.
+DHDR:= 		
+CINTAUTOLINK:=
+
+# extra defines and flags for the AliRoot build system. NOTE: include
+# directories and linking flags/options must be specified in 
+# Makefile.am (stand-alone build system) and here (AliRoot).
+EDEFINE      :=
+PACKCXXFLAGS :=
+PACKCFLAGS   :=
+PACKDCXXFLAGS:=
+
+EINCLUDE := HLT/BASE
+
+###############################################################################
+#
+# do not change anything below this line
+#
+SRCS:=$(patsubst %,SampleLib/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,SampleLib/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,SampleLib/%,$(MODULE_HDRS))
