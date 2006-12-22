@@ -229,7 +229,11 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
 #ifdef HAVE_DLFCN_H
       HLTError("dlopen error: %s", dlerror());
 #endif //HAVE_DLFCN_H
+#ifdef __APPLE__
+      iResult=-EFTYPE;
+#else
       iResult=-ELIBACC;
+#endif
     }
     AliHLTComponent::UnsetGlobalComponentHandler();
   } else {
