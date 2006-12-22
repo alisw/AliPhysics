@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id: 
 
-include $(MODDIR)/hlt.conf
+include HLT/hlt.conf
 
 MODULE_SRCS= 	AliHLTComponent.cxx \
 		AliHLTComponentHandler.cxx \

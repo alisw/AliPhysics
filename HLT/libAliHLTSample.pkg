@@ -1,6 +1,8 @@
 #-*- Mode: Makefile -*-
 # $Id: 
 
+include HLT/hlt.conf
+
 # This files defines the source and header files for the
 # libAliHLTSample library and additional flags for the compilation
 # and linking process. For further information refer to the 
@@ -38,10 +40,10 @@ CINTAUTOLINK:=
 # extra defines and flags for the AliRoot build system. NOTE: include
 # directories and linking flags/options must be specified in 
 # Makefile.am (stand-alone build system) and here (AliRoot).
-EDEFINE      :=
-PACKCXXFLAGS :=
-PACKCFLAGS   :=
-PACKDCXXFLAGS:=
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 EINCLUDE := HLT/BASE
 
