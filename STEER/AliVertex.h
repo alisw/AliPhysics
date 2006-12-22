@@ -40,6 +40,10 @@ class AliVertex : public TNamed {
   virtual Double_t GetDispersion() const { return fSigma; }
   virtual Int_t    GetNContributors() const { return fNContributors; }
   virtual Int_t    GetNIndices() const { return fNIndices; }
+  virtual Bool_t   GetStatus() const {
+    if(fNContributors>0) return 1;
+    return 0;
+  }
 
   virtual void     Print(Option_t* option = "") const;
   virtual void     SetIndices(Int_t nindices,UShort_t *indices); 
