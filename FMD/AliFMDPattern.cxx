@@ -85,6 +85,7 @@ void
 AliFMDPattern::Detector::Begin(Int_t nlevel, Double_t r, 
 			       TObjArray& inners, TObjArray& outers)
 {
+  if (nlevel < 1) nlevel = gStyle->GetNumberOfColors();
   fCounts.Set(nlevel);
   if (!fFrame) {
     fFrame = new TH2F(Form("fmd%dFrame", fId), Form("FMD%d", fId), 
@@ -226,10 +227,10 @@ AliFMDPattern::Init()
 Bool_t 
 AliFMDPattern::Begin(Int_t event) 
 {
+  MakeAux();
   if (!fCanvas) {
     const char* which[] = { "Continue", "Redisplay", 0 };
     MakeCanvas(which);
-    MakeAux();
     
     AliFMDGeometry* geom = AliFMDGeometry::Instance();
     AliFMDDetector* det;
@@ -238,21 +239,21 @@ AliFMDPattern::Begin(Int_t event)
       fFMD1Pad = new TPad("FMD1", "FMD1", 0.0, 0.50, 0.5, 1.0, 0, 0);
       fFMD1Pad->Draw();
       fFMD1Pad->cd();
-      fFMD1.Begin(10, fInnerMax, fInners, fOuters);
+      fFMD1.Begin(-1, fInnerMax, fInners, fOuters);
     }
     if ((det = geom->GetDetector(2))) {
       fPad->cd();
       fFMD2Pad = new TPad("FMD2", "FMD2", 0.5, 0.50, 1.0, 1.0, 0, 0);
       fFMD2Pad->Draw();
       fFMD2Pad->cd();
-      fFMD2.Begin(10, fOuterMax, fInners, fOuters);
+      fFMD2.Begin(-1, fOuterMax, fInners, fOuters);
     }
     if ((det = geom->GetDetector(3))) {
       fPad->cd();
       fFMD3Pad = new TPad("FMD3", "FMD3", 0.0, 0.0, .5, .5, 0, 0);
       fFMD3Pad->Draw();
       fFMD3Pad->cd();
-      fFMD3.Begin(10, fOuterMax, fInners, fOuters);
+      fFMD3.Begin(-1, fOuterMax, fInners, fOuters);
     }
     fPad->cd();
     fSummary = new TPad("display", "Display", 0.5, 0.0, 1.0, 0.5, 0, 0);

@@ -328,7 +328,7 @@ AliFMDDetector::SetAlignableVolumes() const
       
       // Get the node path 
       next.GetPath(path);
-      align = Form("FMD/FMD%d%c", fId, thisHalf);
+      align = Form("FMD/FMD%d_%c", fId, thisHalf);
     }
     
     // if the detector was found, then we're on that branch, and we

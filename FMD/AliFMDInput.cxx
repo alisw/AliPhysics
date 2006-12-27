@@ -55,7 +55,7 @@
 #include <TGeoManager.h>        // ROOT_TGeoManager 
 #include <TSystemDirectory.h>   // ROOT_TSystemDirectory
 #include <Riostream.h>		// ROOT_Riostream
-
+#include <TFile.h>              // ROOT_TFile
 //____________________________________________________________________
 ClassImp(AliFMDInput)
 #if 0
@@ -313,7 +313,16 @@ AliFMDInput::Begin(Int_t event)
     if (read <= 0) return kFALSE;
     fESD = fMainESD->GetFMDData();
     if (!fESD) return kFALSE;
-    fESD->CheckNeedUShort(fChainE->GetFile());
+    TFile* f = fChainE->GetFile();
+    if (f) {
+      TObject* o = f->GetStreamerInfoList()->FindObject("AliFMDMap");
+      if (o) {
+	TStreamerInfo* info = static_cast<TStreamerInfo*>(o);
+	std::cout << "AliFMDMap class version read is " 
+		  <<  info->GetClassVersion() << std::endl;
+      }
+    }
+    // fESD->CheckNeedUShort(fChainE->GetFile());
   }
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kRaw)) {
@@ -483,6 +492,8 @@ AliFMDInput::ProcessESDs()
 	for (UShort_t str = 0; str < nstr; str++) {
 	  Float_t eta  = fESD->Eta(det,*rng,sec,str);
 	  Float_t mult = fESD->Multiplicity(det,*rng,sec,str);
+	  if (!fESD->IsAngleCorrected()) 
+	    mult *= TMath::Abs(TMath::Cos(2.*TMath::ATan(TMath::Exp(-eta))));
 	  if (!ProcessESD(det, *rng, sec, str, eta, mult)) continue;
 	}
       }

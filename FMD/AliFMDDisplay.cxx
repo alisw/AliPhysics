@@ -137,9 +137,9 @@ AliFMDDisplay::MakeCanvas(const char** which)
     yb = .05;
     fSlider = new TSlider("multCut", "Multiplicity cut", 0, 0, 1, yb);
     fSlider->SetMethod("AliFMDDisplay::Instance()->ChangeCut()");
-    fSlider->SetMinimum(TESTBIT(fTreeMask, kESD) ? fMultCut :
-			fPedestalFactor * 10);
     fSlider->Draw();
+    fSlider->SetMinimum(TESTBIT(fTreeMask, kESD) ? fMultCut * 10 :
+			fPedestalFactor * 10);
   }
   const char** p = which;
   const char*  m;
@@ -280,6 +280,9 @@ AliFMDDisplay::Init()
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
   geom->InitTransformations();
+  if (TESTBIT(fTreeMask, kDigits) || TESTBIT(fTreeMask, kRaw)) 
+    AliFMDParameters::Instance()->Init();
+
   fMarkers = new TObjArray;
   fHits    = new TObjArray;
   fMarkers->SetOwner(kTRUE);
@@ -298,7 +301,7 @@ AliFMDDisplay::MakeAux()
       fAux = new TCanvas("aux", "Aux");
       fAux->SetLogy();
       if (TESTBIT(fTreeMask, kESD)) 
-	fSpec = new TH1D("spec", "Mult spectra", 150, 0, 3);
+	fSpec = new TH1D("spec", "Mult spectra", 500, 0, 10);
       else 
 	fSpec = new TH1D("spec", "Adc spectra", 1024, -.5, 1023.5);
       fSpecCut = static_cast<TH1*>(fSpec->Clone("specCut"));
@@ -336,8 +339,9 @@ AliFMDDisplay::Begin(Int_t event)
   if (!fCanvas) {
     const char* m[] = { "Continue", "Zoom", "Pick", "Redisplay", 0 }; 
     MakeCanvas(m);
-    MakeAux();
   }
+  MakeAux();
+
   // AliInfo("Clearing canvas");
   // fCanvas->Clear();
   if (!fGeoManager) {
@@ -410,7 +414,7 @@ AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
 void
 AliFMDDisplay::ChangeCut() 
 {
-  fMultCut        = fSlider->GetMinimum();
+  fMultCut        = fSlider->GetMinimum() * 10;
   fPedestalFactor = fSlider->GetMinimum() * 10;
   AliInfo(Form("Multiplicity cut: %7.5f, Pedestal factor: %7.4f (%6.5f)", 
 	       fMultCut, fPedestalFactor, fSlider->GetMinimum()));
@@ -497,8 +501,12 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   UShort_t str           =  digit->Strip();
   Double_t ped           =  parm->GetPedestal(det,ring, sec, str);
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
-  Double_t threshold     =  ped * fPedestalFactor * pedW;
-  Float_t  counts        = digit->Counts();
+  Double_t threshold     =  ped + fPedestalFactor * pedW;
+  Float_t  counts        =  digit->Counts();
+  AliDebug(10, Form("FMD%d%c[%2d,%3d] ADC: %d > %d (=%4.2f+%4.2f*%4.2f)", 
+		    digit->Detector(), digit->Ring(), digit->Sector(), 
+		    digit->Strip(), Int_t(counts), Int_t(threshold), 
+		    ped, fPedestalFactor, pedW));
   if (fSpec) fSpec->Fill(counts);
   if (counts < threshold) return kTRUE;
   if (fHits) fHits->Add(digit);
@@ -532,10 +540,9 @@ AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 //____________________________________________________________________
 Bool_t 
 AliFMDDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
-			  Float_t eta, Float_t mult)
+			  Float_t, Float_t mult)
 {
-  Double_t cmult = (mult * 
-		    TMath::Abs(TMath::Cos(2.*TMath::ATan(TMath::Exp(-eta)))));
+  Double_t cmult = mult;
   if (fSpec) fSpec->Fill(cmult);
   if (cmult < fMultCut || cmult == AliESDFMD::kInvalidMult) return kTRUE;
   AddMarker(det,rng,sec,str, 0, cmult, 20);
