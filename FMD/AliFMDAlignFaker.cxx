@@ -82,6 +82,12 @@ AliFMDAlignFaker::AliFMDAlignFaker(Int_t mask, const char* geo,
     fComment("")
 {
   // Default constructor 
+  if (!loc) { 
+    AliCDBStorage* storage = AliCDBManager::Instance()->GetDefaultStorage();
+    if (!storage) AliFatal("Default Storage not set");
+    const TString& uri = storage->GetURI();
+    fTitle = uri;
+  }
   SetSensorDisplacement();
   SetSensorRotation();
   SetHalfDisplacement();
@@ -160,15 +166,47 @@ AliFMDAlignFaker::Exec(Option_t*)
   
   // Make an iterator
   TGeoIterator next(topVolume);
+  next.SetTopName(Form("/%s_1", topVolume->GetName()));
   TGeoNode* node = 0;
-
+  
+  Char_t currentDet  = '\0';
+  Char_t currentHalf = '\0';
   // Loop over all entries in geometry to find our nodes. 
   while ((node = static_cast<TGeoNode*>(next()))) {
     const char* name =  node->GetName();
     if (!(IS_NODE_HALF(name) && TESTBIT(fMask, kHalves)) &&
 	!(IS_NODE_SENSOR(name) && TESTBIT(fMask, kSensors))) 
       continue;
-    
+
+    TString path, alignName;
+    next.GetPath(path);
+    Int_t id = node->GetVolume()->GetNumber();
+    if (IS_NODE_HALF(name))   { 
+      currentDet    = name[1];
+      currentHalf   = name[3];
+      alignName     = Form("FMD/FMD%c_%c", currentDet, currentHalf);
+    }
+    if (IS_NODE_SENSOR(name)) {
+      Char_t ring  = name[1];
+      Int_t  copy  = node->GetNumber();
+      alignName    = Form("FMD/FMD%c_%c/FMD%c_%02d", 
+			  currentDet, currentHalf, ring, copy);
+    }
+    if (alignName.IsNull()) continue;
+    if (!gGeoManager->GetAlignableEntry(alignName.Data())) {
+      AliWarning(Form("No alignable entry for %s, using path %s",
+		      alignName.Data(), path.Data()));
+      alignName = path;
+    }
+    AliDebug(1, Form("Making alignment for %s -> %s (%d)", 
+		     alignName.Data(), path.Data(), id));
+    if (IS_NODE_HALF(name))   MakeAlignHalf(alignName, id);
+    if (IS_NODE_SENSOR(name)) MakeAlignSensor(alignName, id);
+#if 0    
+    if (!(IS_NODE_HALF(name) && TESTBIT(fMask, kHalves)) &&
+	!(IS_NODE_SENSOR(name) && TESTBIT(fMask, kSensors))) 
+      continue;
+
     // Get the path 
     TString path(Form("/%s", gGeoManager->GetNode(0)->GetName()));
     Int_t nLevel = next.GetLevel();
@@ -185,6 +223,7 @@ AliFMDAlignFaker::Exec(Option_t*)
     Int_t id = node->GetVolume()->GetNumber();
     if (IS_NODE_HALF(name))   MakeAlignHalf(path, id);
     if (IS_NODE_SENSOR(name)) MakeAlignSensor(path, id);
+#endif 
   }
 
   TString t(GetTitle());
@@ -210,12 +249,13 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
   //   rotX      Rotation about X-axis 
   //   rotY      Rotation about Y-axis
   //   rotZ      Rotation about Z-axis 
-  AliDebug(1, Form("Make alignment for %s (volume %d): (%f,%f,%f) (%f,%f,%f)", 
+  AliDebug(3, Form("Make alignment for %s (volume %d): (%f,%f,%f) (%f,%f,%f)", 
 		   path.Data(), id, transX, transY, transZ, rotX, rotY, rotZ));
   Int_t nAlign = fArray->GetEntries();
   id = 0;
   AliAlignObjAngles* obj = 
-    new ((*fArray)[nAlign]) AliAlignObjAngles(path.Data(), id,0,0,0,0,0,0,kTRUE);
+    new ((*fArray)[nAlign]) AliAlignObjAngles(path.Data(),
+					      id,0,0,0,0,0,0,kTRUE);
   if (!obj) {
     AliError(Form("Failed to create alignment object for %s", path.Data()));
     return kFALSE;
@@ -263,8 +303,9 @@ void
 AliFMDAlignFaker::WriteToCDB()
 {
   // Make the objects. 
+  const char* loc = GetTitle();
   AliCDBManager*     cdb  = AliCDBManager::Instance();
-  AliCDBStorage*  storage = cdb->GetStorage(GetTitle());
+  AliCDBStorage*  storage = cdb->GetStorage(!loc ? "" : loc);
   AliCDBMetaData*    meta = new AliCDBMetaData; 
   meta->SetResponsible(gSystem->GetUserInfo()->fRealName.Data()); 
   meta->SetAliRootVersion(gROOT->GetVersion()); 

@@ -13,8 +13,8 @@ MakeAlignment()
   if (!TGeoManager::Import("geometry.root")) 
     gAlice->Init("$ALICE_ROOT/FMD/Config.C");
   AliCDBManager* cdb   = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
-  
+  cdb->SetDefaultStorage("$ALICE_ROOT");
+  AliLog::SetModuleDebugLevel("FMD", 1);
   gSystem->Load("libFMDutil.so");
   AliFMDAlignFaker f(AliFMDAlignFaker::kAll, "geometry.root", 0);
   // f.RemoveAlign(AliFMDAlignFaker::kHalves);
