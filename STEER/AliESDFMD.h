@@ -90,7 +90,7 @@ public:
   /** @param done Whether we've done angle correction or not */
   void SetAngleCorrected(Bool_t done) { fAngleCorrected = done; }
   /** @return Whether we've done angle correction or not */
-  Bool_t IsAngleCorrecte() const { return fAngleCorrected; }
+  Bool_t IsAngleCorrected() const { return fAngleCorrected; }
   /** @return the  factor for noise suppression */
   Float_t GetNoiseFactor() const { return fNoiseFactor; }
   /** @return maximum number of detectors */

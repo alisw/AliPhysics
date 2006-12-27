@@ -62,7 +62,7 @@ void
 AliFMDMap::CheckNeedUShort(TFile* file) 
 {
   if (!file) return;
-  TObject* o = file->GetStreamerInfoList()->FindObject(ClassName());
+  TObject* o = file->GetStreamerInfoList()->FindObject("AliFMDMap");
   if (!o) return;
   TStreamerInfo* info = static_cast<TStreamerInfo*>(o);
   if (info->GetClassVersion() == 2) SetBit(kNeedUShort);
