@@ -45,6 +45,9 @@
 #include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
 #include "AliESD.h"			   // ALIESD_H
 #include <AliESDFMD.h>			   // ALIESDFMD_H
+#include <TH1.h>
+#include <TH2.h>
+#include <TFile.h>
 class AliRawReader;
 
 //____________________________________________________________________
@@ -61,7 +64,17 @@ AliFMDReconstructor::AliFMDReconstructor()
     fTreeR(0x0),
     fCurrentVertex(0),
     fESDObj(0x0),
-    fESD(0x0)
+    fNoiseFactor(0),
+    fAngleCorrect(kTRUE),
+    fVertexType(kNoVertex),
+    fRunLoader(0x0),
+    fESD(0x0),
+    fDiagnostics(kFALSE),
+    fDiagStep1(0), 
+    fDiagStep2(0),
+    fDiagStep3(0),
+    fDiagStep4(0),
+    fDiagAll(0)
 {
   // Make a new FMD reconstructor object - default CTOR.  
   SetNoiseFactor();
@@ -77,9 +90,17 @@ AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other)
     fTreeR(other.fTreeR),
     fCurrentVertex(other.fCurrentVertex),
     fESDObj(other.fESDObj),
-    fESD(other.fESD), 
     fNoiseFactor(other.fNoiseFactor),
-    fAngleCorrect(other.fAngleCorrect)
+    fAngleCorrect(other.fAngleCorrect),
+    fVertexType(other.fVertexType),
+    fRunLoader(other.fRunLoader),
+    fESD(other.fESD),
+    fDiagnostics(other.fDiagnostics),
+    fDiagStep1(other.fDiagStep1), 
+    fDiagStep2(other.fDiagStep2),
+    fDiagStep3(other.fDiagStep3),
+    fDiagStep4(other.fDiagStep4),
+    fDiagAll(other.fDiagAll) 
 {
   // Copy constructor 
 }
@@ -95,10 +116,17 @@ AliFMDReconstructor::operator=(const AliFMDReconstructor& other)
   fTreeR         = other.fTreeR;
   fCurrentVertex = other.fCurrentVertex;
   fESDObj        = other.fESDObj;
-  fESD           = other.fESD;
   fNoiseFactor   = other.fNoiseFactor;
   fAngleCorrect  = other.fAngleCorrect;
-   
+  fVertexType    = other.fVertexType;
+  fRunLoader     = other.fRunLoader;
+  fESD           = other.fESD;
+  fDiagnostics   = other.fDiagnostics;
+  fDiagStep1     = other.fDiagStep1;
+  fDiagStep2     = other.fDiagStep2;
+  fDiagStep3     = other.fDiagStep3;
+  fDiagStep4     = other.fDiagStep4;
+  fDiagAll       = other.fDiagAll;
   return *this;
 }
 
@@ -116,7 +144,7 @@ void
 AliFMDReconstructor::Init(AliRunLoader* runLoader) 
 {
   // Initialize the reconstructor 
-  AliDebug(1, Form("Init called with runloader 0x%x", runLoader));
+  AliDebug(2, Form("Init called with runloader 0x%x", runLoader));
   // Initialize the geometry 
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
@@ -134,32 +162,36 @@ AliFMDReconstructor::Init(AliRunLoader* runLoader)
   fESDObj = new AliESDFMD;
   
   // Check that we have a run loader
-  if (!runLoader) { 
-    Warning("Init", "No run loader");
-    return;
-  }
+  fRunLoader = runLoader;
 
-  // Check if we can get the header tree 
-  AliHeader* header = runLoader->GetHeader();
-  if (!header) {
-    Warning("Init", "No header");
-    return;
-  }
-
-  // Check if we can get a simulation header 
-  AliGenEventHeader* eventHeader = header->GenEventHeader();
-  if (eventHeader) {
-    TArrayF vtx;
-    eventHeader->PrimaryVertex(vtx);
-    fCurrentVertex = vtx[2];
-    AliDebug(1, Form("Primary vertex Z coordinate for event # %d/%d is %f", 
-		     header->GetRun(), header->GetEvent(), fCurrentVertex));
-    Warning("Init", "no generator event header");
-  }
-  else {
-    Warning("Init", "No generator event header - "
-	    "perhaps we get the vertex from ESD?");
-  }
+  // Check if we need diagnostics histograms 
+  if (!fDiagnostics) return;
+  fDiagStep1   = new TH2I("diagStep1", "Read ADC vs. Noise surpressed ADC",
+			1024, -.5, 1023.5, 1024, -.5, 1023.5);
+  fDiagStep1->SetDirectory(0);
+  fDiagStep1->GetXaxis()->SetTitle("ADC (read)");
+  fDiagStep1->GetYaxis()->SetTitle(Form("ADC (noise surpressed %4.f)", 
+					fNoiseFactor));
+  fDiagStep2  = new TH2F("diagStep2",  "ADC vs Edep deduced",
+			1024, -.5, 1023.5, 100, 0, 2);
+  fDiagStep2->SetDirectory(0);
+  fDiagStep2->GetXaxis()->SetTitle("ADC (noise surpressed)");
+  fDiagStep2->GetYaxis()->SetTitle("#Delta E [GeV]");
+  fDiagStep3  = new TH2F("diagStep3",  "Edep vs Edep path corrected",
+			100, 0., 2., 100, 0., 2.);
+  fDiagStep3->SetDirectory(0);
+  fDiagStep3->GetXaxis()->SetTitle("#Delta E [GeV]");
+  fDiagStep3->GetYaxis()->SetTitle("#Delta E/#Delta x #times #delta x [GeV]");
+  fDiagStep4  = new TH2F("diagStep4",  "Edep vs Multiplicity deduced", 
+			100, 0., 2., 100, -.1, 19.9);
+  fDiagStep4->SetDirectory(0);
+  fDiagStep4->GetXaxis()->SetTitle("#Delta E/#Delta x #times #delta x [GeV]");
+  fDiagStep4->GetYaxis()->SetTitle("Multiplicity");
+  fDiagAll    = new TH2F("diagAll",    "Read ADC vs Multiplicity deduced", 
+			 1024, -.5, 1023.5, 100, -.1, 19.9);
+  fDiagAll->SetDirectory(0);
+  fDiagAll->GetXaxis()->SetTitle("ADC (read)");
+  fDiagAll->GetYaxis()->SetTitle("Multiplicity");
 }
 
 //____________________________________________________________________
@@ -168,11 +200,45 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 				   TTree* digitsTree) const
 {
   // Convert Raw digits to AliFMDDigit's in a tree 
-  AliDebug(1, "Reading raw data into digits tree");
+  AliDebug(2, "Reading raw data into digits tree");
   AliFMDRawReader rawRead(reader, digitsTree);
   // rawRead.SetSampleRate(fFMD->GetSampleRate());
   rawRead.Exec();
 }
+
+//____________________________________________________________________
+void 
+AliFMDReconstructor::GetVertex() const
+{
+  fVertexType    = kNoVertex;
+  fCurrentVertex = 0;
+  if (fESD) {
+    const AliESDVertex* vertex = fESD->GetVertex();
+    if (vertex) {
+      AliDebug(2, Form("Got vertex from ESD: %f", vertex->GetZv()));
+      fCurrentVertex = vertex->GetZv();
+      fVertexType    = kESDVertex;
+      return;
+    }
+  }
+  // Check if we can get the header tree 
+  AliGenEventHeader* genHeader = ((!fRunLoader || 
+				   !fRunLoader->GetHeader() || 
+				   !fRunLoader->GetHeader()->GenEventHeader())
+				  ? 0 
+				  : fRunLoader->GetHeader()->GenEventHeader());
+  if (genHeader) {
+    TArrayF vtx;
+    genHeader->PrimaryVertex(vtx);
+    fCurrentVertex = vtx[2];
+    fVertexType    = kGenVertex;
+    AliDebug(2, Form("Got vertex from generator: %f", fCurrentVertex));
+    AliWarning("Got vertex from generator event header");
+    return;
+  }
+  AliWarning("Didn't get any vertex from ESD or generator");
+}
+  
 
 //____________________________________________________________________
 void 
@@ -183,16 +249,9 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // Get the FMD branch holding the digits. 
   // FIXME: The vertex may not be known yet, so we may have to move
   // some of this to FillESD. 
-  AliDebug(1, "Reconstructing from digits in a tree");
-#if 1
-  if (fESD) {
-    const AliESDVertex* vertex = fESD->GetVertex();
-    if (vertex) {
-      AliDebug(1, Form("Got vertex from ESD: %f", vertex->GetZv()));
-      fCurrentVertex = vertex->GetZv();
-    }
-  }
-#endif  
+  AliDebug(2, "Reconstructing from digits in a tree");
+  GetVertex();
+
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
@@ -277,6 +336,8 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
 			     digit->Sector(),  digit->Strip(), mult);
     fESDObj->SetEta(digit->Detector(), digit->Ring(), 
 		    digit->Sector(),  digit->Strip(), eta);
+
+    if (fDiagAll) fDiagAll->Fill(digit->Counts(), mult);  
   }
 }
 
@@ -290,6 +351,7 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
   // something like that. 
 
   Int_t             counts = 0;
+  Int_t             adc    = 0;
   AliFMDParameters* param  = AliFMDParameters::Instance();
   Float_t           ped    = param->GetPedestal(digit->Detector(), 
 						digit->Ring(), 
@@ -301,12 +363,13 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
 						     digit->Strip());
   AliDebug(15, Form("Subtracting pedestal %f from signal %d", 
 		   ped, digit->Counts()));
-  if (digit->Count3() > 0)      counts = digit->Count3();
-  else if (digit->Count2() > 0) counts = digit->Count2();
-  else                          counts = digit->Count1();
-  counts = TMath::Max(Int_t(counts - ped), 0);
+  if (digit->Count3() > 0)      adc = digit->Count3();
+  else if (digit->Count2() > 0) adc = digit->Count2();
+  else                          adc = digit->Count1();
+  counts = TMath::Max(Int_t(adc - ped), 0);
   if (counts < noise * fNoiseFactor) counts = 0;
   if (counts > 0) AliDebug(15, "Got a hit strip");
+  if (fDiagStep1) fDiagStep1->Fill(adc, counts);
   
   return  UShort_t(counts);
 }
@@ -333,7 +396,6 @@ AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit,
   //           ADC_channel_size    
   // 
   // is constant and the same for all strips.
-
   if (count <= 0) return 0;
   AliFMDParameters* param = AliFMDParameters::Instance();
   Float_t           gain  = param->GetPulseGain(digit->Detector(), 
@@ -344,9 +406,15 @@ AliFMDReconstructor::Adc2Energy(AliFMDDigit* digit,
 		    count, gain));
 
   Double_t edep  = count * gain;
+  if (fDiagStep2) fDiagStep2->Fill(count, edep);  
   if (fAngleCorrect) {
-    Double_t theta =  2 * TMath::ATan(TMath::Exp(-eta));
-    edep           *= TMath::Abs(TMath::Cos(theta));
+    Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));
+    Double_t corr  = TMath::Abs(TMath::Cos(theta));
+    Double_t cedep = corr * edep;
+    AliDebug(10, Form("correcting for path %f * %f = %f (eta=%f, theta=%f)",
+		      edep, corr, cedep, eta, theta));
+    if (fDiagStep3) fDiagStep3->Fill(edep, cedep);  
+    edep = cedep;
   }
   return edep;
 }
@@ -376,6 +444,7 @@ AliFMDReconstructor::Energy2Multiplicity(AliFMDDigit* /* digit */,
   if (edep > 0) 
     AliDebug(15, Form("Translating energy %f to multiplicity via "
 		     "divider %f->%f", edep, edepMIP, mult));
+  if (fDiagStep4) fDiagStep4->Fill(edep, mult);  
   return mult;
 }
 
@@ -411,13 +480,39 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   // nothing to be done
   // FIXME: The vertex may not be known when Reconstruct is executed,
   // so we may have to move some of that member function here. 
-  AliDebug(1, Form("Calling FillESD with two trees and one ESD"));
+  AliDebug(2, Form("Calling FillESD with two trees and one ESD"));
   // fESDObj->Print();
 
   if (esd) { 
-    AliDebug(1, Form("Writing FMD data to ESD tree"));
+    AliDebug(2, Form("Writing FMD data to ESD tree"));
     esd->SetFMDData(fESDObj);
   }
+
+  if (!fDiagnostics || !esd) return;
+  static bool first = true;
+  Int_t evno = esd->GetEventNumber();
+  AliDebug(1, Form("Writing diagnostics histograms to FMD.Diag.root/%03d",
+		   evno));
+  TFile f("FMD.Diag.root", (first ? "RECREATE" : "UPDATE"));
+  first = false;
+  f.cd(); 
+  TDirectory* d = f.mkdir(Form("%03d", evno), 
+			  Form("Diagnostics histograms for event # %d", evno));
+  d->cd();
+  if (fDiagStep1) fDiagStep1->Write();
+  if (fDiagStep2) fDiagStep2->Write();
+  if (fDiagStep3) fDiagStep3->Write();
+  if (fDiagStep4) fDiagStep4->Write();
+  if (fDiagAll)   fDiagAll->Write();
+  d->Write();
+  f.Write();
+  f.Close();
+
+  if (fDiagStep1) fDiagStep1->Reset();
+  if (fDiagStep2) fDiagStep2->Reset();
+  if (fDiagStep3) fDiagStep3->Reset();
+  if (fDiagStep4) fDiagStep4->Reset();
+  if (fDiagAll)   fDiagAll->Reset();
 }
 
 
@@ -427,7 +522,7 @@ AliFMDReconstructor::Reconstruct(AliRawReader*,TTree*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
-  AliDebug(1, Form("Calling FillESD with loader and tree"));
+  AliDebug(2, Form("Calling FillESD with loader and tree"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -436,7 +531,7 @@ AliFMDReconstructor::Reconstruct(AliRunLoader*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
-  AliDebug(1, Form("Calling FillESD with loader"));
+  AliDebug(2, Form("Calling FillESD with loader"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -445,7 +540,7 @@ AliFMDReconstructor::Reconstruct(AliRunLoader*, AliRawReader*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
-  AliDebug(1, Form("Calling FillESD with loader and raw reader"));
+  AliDebug(2, Form("Calling FillESD with loader and raw reader"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -454,7 +549,7 @@ AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESD*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
-  AliDebug(1, Form("Calling FillESD with raw reader, tree, and ESD"));
+  AliDebug(2, Form("Calling FillESD with raw reader, tree, and ESD"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -463,7 +558,7 @@ AliFMDReconstructor::FillESD(AliRunLoader*,AliESD*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
-  AliDebug(1, Form("Calling FillESD with loader and ESD"));
+  AliDebug(2, Form("Calling FillESD with loader and ESD"));
   AliError("MayNotUse");
 }
 //____________________________________________________________________
@@ -472,7 +567,7 @@ AliFMDReconstructor::FillESD(AliRunLoader*,AliRawReader*,AliESD*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
-  AliDebug(1, Form("Calling FillESD with loader, raw reader, and ESD"));
+  AliDebug(2, Form("Calling FillESD with loader, raw reader, and ESD"));
   AliError("MayNotUse");
 }
 

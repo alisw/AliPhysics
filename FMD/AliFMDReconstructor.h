@@ -33,6 +33,8 @@ class AliRawReader;
 class AliRunLoader;
 class AliESD;
 class AliESDFMD;
+class TH1;
+
 
 /** @defgroup FMD_rec Reconstruction */
 //____________________________________________________________________
@@ -99,6 +101,19 @@ public:
   /** Set whether we should do angle correction or nor 
       @param use If true, do angle correction */
   virtual void SetAngleCorrect(Bool_t use=kTRUE) { fAngleCorrect = use; }
+  /** Set whether we want to do diagnostics.  If this is enabled, a
+      file named @c FMD.Diag.root will be made.  It contains a set of
+      histograms for each event, filed in separate directories in the
+      file.  The histograms are 
+      @verbatim 
+      diagStep1   Read ADC vs. Noise surpressed ADC 
+      diagStep2   Noise surpressed ADC vs. calculated Energy dep.
+      diagStep3   Energy deposition vs. angle corrected Energy dep.
+      diagStep4   Energy deposition vs. calculated multiplicity
+      diagAll     Read ADC vs. calculated multiplicity
+      @endverbatim 
+      @param use If true, make the diagnostics file */
+  void SetDiagnose(Bool_t use=kTRUE) { fDiagnostics = use; }
 protected:
   /** Copy CTOR 
       @param other Object to copy from. */
@@ -107,6 +122,10 @@ protected:
       @param other Object to assign from
       @return reference to this object */
   AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
+  /** Try to get the vertex from either ESD or generator header.  Sets
+      @c fCurrentVertex to the found Z posistion of the vertex (if 
+      found), and sets the flag @c fVertexType accordingly */
+  virtual void GetVertex() const;
   /** Process AliFMDDigit objects in @a digits.  For each digit, find
       the psuedo-rapidity @f$ \eta@f$, azimuthal angle @f$ \varphi@f$,
       energy deposited @f$ E@f$, and psuedo-inclusive multiplicity @f$
@@ -153,15 +172,27 @@ protected:
   virtual void     PhysicalCoordinates(AliFMDDigit* digit, Float_t& eta, 
 				       Float_t& phi) const;
   
+  enum Vertex_t {
+    kNoVertex,   // Got no vertex
+    kGenVertex,  // Got generator vertex 
+    kESDVertex   // Got ESD vertex 
+  };
   mutable TClonesArray* fMult;          // Cache of RecPoints
   mutable Int_t         fNMult;         // Number of entries in fMult 
   mutable TTree*        fTreeR;         // Output tree 
   mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
   mutable AliESDFMD*    fESDObj;        // ESD output object
-  mutable Float_t       fNoiseFactor;   // Factor of noise to check
-  mutable Bool_t        fAngleCorrect;  // Whether to angle correct
+  Float_t               fNoiseFactor;   // Factor of noise to check
+  Bool_t                fAngleCorrect;  // Whether to angle correct
+  mutable Vertex_t      fVertexType;    // What kind of vertex we got
+  AliRunLoader*         fRunLoader;     // Run loader passed to Init  
   AliESD*               fESD;           // ESD object(?)
-  
+  Bool_t                fDiagnostics;   // Wheter to do diagnostics
+  TH1*                  fDiagStep1;	// Diagnostics histogram
+  TH1*                  fDiagStep2;	// Diagnostics histogram
+  TH1*                  fDiagStep3;	// Diagnostics histogram
+  TH1*                  fDiagStep4;	// Diagnostics histogram
+  TH1*                  fDiagAll;	// Diagnostics histogram
 private:
   /** Hide base classes unused function */
   void Reconstruct(AliRawReader*, TTree*) const;
