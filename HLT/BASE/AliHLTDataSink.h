@@ -43,14 +43,14 @@ class AliHLTDataSink : public AliHLTComponent {
    * preparation of data structures. The call is redirected to DumpEvent.
    * @return neg. error code if failed
    */
-  int ProcessEvent( const AliHLTComponent_EventData& evtData,
-		    const AliHLTComponent_BlockData* blocks, 
-		    AliHLTComponent_TriggerData& trigData,
+  int ProcessEvent( const AliHLTComponentEventData& evtData,
+		    const AliHLTComponentBlockData* blocks, 
+		    AliHLTComponentTriggerData& trigData,
 		    AliHLTUInt8_t* outputPtr, 
 		    AliHLTUInt32_t& size,
 		    AliHLTUInt32_t& outputBlockCnt, 
-		    AliHLTComponent_BlockData*& outputBlocks,
-		    AliHLTComponent_EventDoneData*& edd );
+		    AliHLTComponentBlockData*& outputBlocks,
+		    AliHLTComponentEventDoneData*& edd );
 
   // Information member functions for registration.
 
@@ -67,9 +67,9 @@ class AliHLTDataSink : public AliHLTComponent {
    * @param blocks        input data block descriptors
    * @param trigData	  trigger data structure
    */
-  virtual int DumpEvent( const AliHLTComponent_EventData& evtData,
-			 const AliHLTComponent_BlockData* blocks, 
-			 AliHLTComponent_TriggerData& trigData ) = 0;
+  virtual int DumpEvent( const AliHLTComponentEventData& evtData,
+			 const AliHLTComponentBlockData* blocks, 
+			 AliHLTComponentTriggerData& trigData ) = 0;
 
   ClassDef(AliHLTDataSink, 0)
 };

@@ -27,11 +27,11 @@
 
 ClassImp(AliHLTTPCDefinitions)
 
-const AliHLTComponent_DataType AliHLTTPCDefinitions::gkDDLPackedRawDataType = { sizeof(AliHLTComponent_DataType), {'D','D','L','_','R','W','P','K'},{'T','P','C',' '}};;
-const AliHLTComponent_DataType AliHLTTPCDefinitions::gkPackedRawDataType = { sizeof(AliHLTComponent_DataType), {'R','A','W','P','A','K','E','D'},{'T','P','C',' '}};;
-const AliHLTComponent_DataType AliHLTTPCDefinitions::gkUnpackedRawDataType = { sizeof(AliHLTComponent_DataType), {'R','A','W','U','N','P','A','K'},{'T','P','C',' '}};;
-const AliHLTComponent_DataType AliHLTTPCDefinitions::gkClustersDataType = { sizeof(AliHLTComponent_DataType), {'C','L','U','S','T','E','R','S'},{'T','P','C',' '}};;
-const AliHLTComponent_DataType AliHLTTPCDefinitions::gkVertexDataType = { sizeof(AliHLTComponent_DataType), {'V','E','R','T','E','X',' ',' '},{'T','P','C',' '}};;
-const AliHLTComponent_DataType AliHLTTPCDefinitions::gkTrackSegmentsDataType = { sizeof(AliHLTComponent_DataType), {'T','R','A','K','S','E','G','S'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::gkDDLPackedRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','_','R','W','P','K'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::gkPackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','P','A','K','E','D'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::gkUnpackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','U','N','P','A','K'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::gkClustersDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::gkVertexDataType = { sizeof(AliHLTComponentDataType), {'V','E','R','T','E','X',' ',' '},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::gkTrackSegmentsDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','K','S','E','G','S'},{'T','P','C',' '}};;
 
     

@@ -92,7 +92,7 @@ const char* AliHLTTPCClusterFinderComponent::GetComponentID()
       else return "TPCClusterFinderUnpacked";
     }
 
-void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
     list.clear(); 
     if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::gkDDLPackedRawDataType );
@@ -100,7 +100,7 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponent_
    
     }
 
-AliHLTComponent_DataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
     {
     return AliHLTTPCDefinitions::gkClustersDataType;
     }
@@ -259,15 +259,15 @@ int AliHLTTPCClusterFinderComponent::DoDeinit()
     return 0;
     }
 
-int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& evtData, 
-					      const AliHLTComponent_BlockData* blocks, 
-					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, 
+					      const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, 
-					      vector<AliHLTComponent_BlockData>& outputBlocks )
+					      vector<AliHLTComponentBlockData>& outputBlocks )
     {
 
     //  == init iter (pointer to datablock)
-    const AliHLTComponent_BlockData* iter = NULL;
+    const AliHLTComponentBlockData* iter = NULL;
     unsigned long ndx;
 
     //  == OUTdatatype pointer
@@ -341,7 +341,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
 		 "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
 		 realPoints, slice, patch, row[0], row[1] );
-	AliHLTComponent_BlockData bd;
+	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
 	bd.fOffset = offset;
 	bd.fSize = mysize;

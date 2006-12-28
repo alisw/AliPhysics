@@ -16,6 +16,8 @@
  * @defgroup alihlt_component Component handling of the HLT module
  * This section describes the the component handling for the HLT module.
  */
+
+#include <vector>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
@@ -93,11 +95,11 @@ class AliHLTComponent : public AliHLTLogging {
    * @param edd
    * @return neg. error code if failed
    */
-  virtual int ProcessEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-			    AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+  virtual int ProcessEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
-			    AliHLTComponent_BlockData*& outputBlocks,
-			    AliHLTComponent_EventDoneData*& edd ) = 0;
+			    AliHLTComponentBlockData*& outputBlocks,
+			    AliHLTComponentEventDoneData*& edd ) = 0;
 
   // Information member functions for registration.
 
@@ -121,14 +123,14 @@ class AliHLTComponent : public AliHLTLogging {
    * The function is pure virtual and must be implemented by the child class.
    * @return list of data types in the vector reference
    */
-  virtual void GetInputDataTypes( vector<AliHLTComponent_DataType>& ) = 0;
+  virtual void GetInputDataTypes( vector<AliHLTComponentDataType>& ) = 0;
 
   /**
    * Get the output data type of the component.
    * The function is pure virtual and must be implemented by the child class.
    * @return output data type
    */
-  virtual AliHLTComponent_DataType GetOutputDataType() = 0;
+  virtual AliHLTComponentDataType GetOutputDataType() = 0;
 
   /**
    * Get a ratio by how much the data volume is shrinked or enhanced.
@@ -156,7 +158,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param tgtList   reference to a vector list to receive the matching data types.
    * @return >= 0 success, neg. error code if failed
    */ 
-  int FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponent_DataType>* tgtList);
+  int FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList);
  
   /**
    * Set the global component handler.
@@ -173,10 +175,10 @@ class AliHLTComponent : public AliHLTLogging {
  protected:
 
   /**
-   * Fill AliHLTComponent_BlockData structure with default values.
+   * Fill AliHLTComponentBlockData structure with default values.
    * @param blockData   reference to data structure
    */
-  void FillBlockData( AliHLTComponent_BlockData& blockData ) {
+  void FillBlockData( AliHLTComponentBlockData& blockData ) {
     blockData.fStructSize = sizeof(blockData);
     FillShmData( blockData.fShmKey );
     blockData.fOffset = ~(AliHLTUInt32_t)0;
@@ -187,20 +189,20 @@ class AliHLTComponent : public AliHLTLogging {
   }
 
   /**
-   * Fill AliHLTComponent_ShmData structure with default values.
+   * Fill AliHLTComponentShmData structure with default values.
    * @param shmData   reference to data structure
    */
-  void FillShmData( AliHLTComponent_ShmData& shmData ) {
+  void FillShmData( AliHLTComponentShmData& shmData ) {
     shmData.fStructSize = sizeof(shmData);
-    shmData.fShmType = gkAliHLTComponent_InvalidShmType;
-    shmData.fShmID = gkAliHLTComponent_InvalidShmID;
+    shmData.fShmType = gkAliHLTComponentInvalidShmType;
+    shmData.fShmID = gkAliHLTComponentInvalidShmID;
   }
 
   /**
-   * Fill AliHLTComponent_DataType structure with default values.
+   * Fill AliHLTComponentDataType structure with default values.
    * @param dataType   reference to data structure
    */
-  void FillDataType( AliHLTComponent_DataType& dataType ) {
+  void FillDataType( AliHLTComponentDataType& dataType ) {
     dataType.fStructSize = sizeof(dataType);
     memset( dataType.fID, '*', 8 );
     memset( dataType.fOrigin, '*', 4 );
@@ -237,8 +239,8 @@ class AliHLTComponent : public AliHLTLogging {
    * framework. Function pointers are transferred via the @ref
    * AliHLTComponentEnvironment structure.
    */
-  int MakeOutputDataBlockList( const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount,
-			       AliHLTComponent_BlockData** outputBlocks );
+  int MakeOutputDataBlockList( const vector<AliHLTComponentBlockData>& blocks, AliHLTUInt32_t* blockCount,
+			       AliHLTComponentBlockData** outputBlocks );
 
   /**
    * Fill the EventDoneData structure.
@@ -246,12 +248,12 @@ class AliHLTComponent : public AliHLTLogging {
    * framework. Function pointers are transferred via the @ref
    * AliHLTComponentEnvironment structure.
    */
-  int GetEventDoneData( unsigned long size, AliHLTComponent_EventDoneData** edd );
+  int GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd );
 
   /**
    * Helper function to convert the data type to a string.
    */
-  void DataType2Text( const AliHLTComponent_DataType& type, char output[14] );
+  void DataType2Text( const AliHLTComponentDataType& type, char output[14] );
 
  private:
   /** The global component handler instance */

@@ -541,7 +541,7 @@ void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
 }
 
 /* this function is most likely depricated
-int AliHLTTask::InsertBlockData(AliHLTComponent_BlockData* pBlock, AliHLTTask* pSource)
+int AliHLTTask::InsertBlockData(AliHLTComponentBlockData* pBlock, AliHLTTask* pSource)
 {
   int iResult=0;
   return iResult;
@@ -623,7 +623,7 @@ int AliHLTTask::SetTarget(AliHLTTask* pTgt)
 }
 
 /* this function is most likely depricated
-int AliHLTTask::BuildBlockDataArray(AliHLTComponent_BlockData*& pBlockData)
+int AliHLTTask::BuildBlockDataArray(AliHLTComponentBlockData*& pBlockData)
 {
   int iResult=0;
   return iResult;
@@ -664,7 +664,7 @@ int AliHLTTask::StartRun()
       //iResult=Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv );
 
       // allocate internal task varables for bookkeeping aso.
-      fpBlockDataArray=new AliHLTComponent_BlockData[iNofInputDataBlocks];
+      fpBlockDataArray=new AliHLTComponentBlockData[iNofInputDataBlocks];
       if (fpBlockDataArray) {
 	fBlockDataArraySize=iNofInputDataBlocks;
       } else {
@@ -746,12 +746,12 @@ int AliHLTTask::ProcessTask()
       fpComponent->GetOutputDataSize(iConstBase, fInputMultiplier);
       int iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
       AliHLTUInt8_t* pTgtBuffer=fpDataBuffer->GetTargetBuffer(iOutputDataSize);
-      AliHLTComponent_EventData evtData;
-      AliHLTComponent_TriggerData trigData;
+      AliHLTComponentEventData evtData;
+      AliHLTComponentTriggerData trigData;
       AliHLTUInt32_t size=iOutputDataSize;
       AliHLTUInt32_t outputBlockCnt=0;
-      AliHLTComponent_BlockData* outputBlocks=NULL;
-      AliHLTComponent_EventDoneData* edd;
+      AliHLTComponentBlockData* outputBlocks=NULL;
+      AliHLTComponentEventDoneData* edd;
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
 	iResult=fpComponent->ProcessEvent(evtData, fpBlockDataArray, trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
       } else {
@@ -824,7 +824,7 @@ int AliHLTTask::GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask)
   return iResult;
 }
 
-int AliHLTTask::Subscribe(const AliHLTTask* pConsumerTask, AliHLTComponent_BlockData* pBlockDesc, int iArraySize)
+int AliHLTTask::Subscribe(const AliHLTTask* pConsumerTask, AliHLTComponentBlockData* pBlockDesc, int iArraySize)
 {
   int iResult=0;
   if (pConsumerTask) {
@@ -840,7 +840,7 @@ int AliHLTTask::Subscribe(const AliHLTTask* pConsumerTask, AliHLTComponent_Block
   return iResult;
 }
 
-int AliHLTTask::Release(AliHLTComponent_BlockData* pBlockDesc, const AliHLTTask* pConsumerTask)
+int AliHLTTask::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTTask* pConsumerTask)
 {
   int iResult=0;
   if (pConsumerTask && pBlockDesc) {

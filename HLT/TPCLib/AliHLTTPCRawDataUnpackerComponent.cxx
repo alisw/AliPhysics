@@ -59,13 +59,13 @@ const char* AliHLTTPCRawDataUnpackerComponent::GetComponentID()
     return "TPCRawDataUnpacker";
     }
 
-void AliHLTTPCRawDataUnpackerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTPCRawDataUnpackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
     list.clear();
     list.push_back( AliHLTTPCDefinitions::gkDDLPackedRawDataType );
     }
 
-AliHLTComponent_DataType AliHLTTPCRawDataUnpackerComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTPCRawDataUnpackerComponent::GetOutputDataType()
     {
     return AliHLTTPCDefinitions::gkUnpackedRawDataType;
     }
@@ -131,11 +131,11 @@ int AliHLTTPCRawDataUnpackerComponent::DoDeinit()
     return 0;
     }
 
-int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
-    const AliHLTComponent_BlockData* iter = NULL;
+    const AliHLTComponentBlockData* iter = NULL;
     unsigned long ndx;
 
     AliHLTUInt8_t* outBPtr;
@@ -237,7 +237,7 @@ int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponent_EventData&
 		     sizeof(AliHLTTPCDigitRowData)+currentRow->fNDigit*sizeof(AliHLTTPCDigitData), currentRow->fNDigit );
 	    }
 
-	AliHLTComponent_BlockData bd;
+	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
 	bd.fOffset = outputSize-blockOutputSize;
 	bd.fSize = blockOutputSize;

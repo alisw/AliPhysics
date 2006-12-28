@@ -62,14 +62,14 @@ const char* AliHLTTPCGlobalMergerComponent::GetComponentID()
     return "TPCGlobalMerger";
     }
 
-void AliHLTTPCGlobalMergerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTPCGlobalMergerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
     list.clear();
     list.push_back( AliHLTTPCDefinitions::gkTrackSegmentsDataType );
     list.push_back( AliHLTTPCDefinitions::gkVertexDataType );
     }
 
-AliHLTComponent_DataType AliHLTTPCGlobalMergerComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTPCGlobalMergerComponent::GetOutputDataType()
     {
     return AliHLTTPCDefinitions::gkTrackSegmentsDataType;
     }
@@ -112,12 +112,12 @@ int AliHLTTPCGlobalMergerComponent::DoDeinit()
     return 0;
     }
 
-int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
-    const AliHLTComponent_BlockData* iter = NULL;
-    const AliHLTComponent_BlockData* lastVertexBlock = NULL;
+    const AliHLTComponentBlockData* iter = NULL;
+    const AliHLTComponentBlockData* lastVertexBlock = NULL;
     unsigned long ndx;
 
     std::vector<SliceData> slices;
@@ -249,7 +249,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& ev
 
     tSize += sizeof(AliHLTTPCTrackletData);
 
-    AliHLTComponent_BlockData bd;
+    AliHLTComponentBlockData bd;
     FillBlockData( bd );
     bd.fOffset = 0;
     bd.fSize = tSize;

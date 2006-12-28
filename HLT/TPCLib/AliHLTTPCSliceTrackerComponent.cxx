@@ -74,14 +74,14 @@ const char* AliHLTTPCSliceTrackerComponent::GetComponentID()
     return "TPCSliceTracker";
     }
 
-void AliHLTTPCSliceTrackerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTPCSliceTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
     list.clear();
     list.push_back( AliHLTTPCDefinitions::gkClustersDataType );
     list.push_back( AliHLTTPCDefinitions::gkVertexDataType );
     }
 
-AliHLTComponent_DataType AliHLTTPCSliceTrackerComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTPCSliceTrackerComponent::GetOutputDataType()
     {
     return AliHLTTPCDefinitions::gkTrackSegmentsDataType;
     }
@@ -419,9 +419,9 @@ int AliHLTTPCSliceTrackerComponent::DoDeinit()
     return 0;
     }
 
-int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "DoEvent()" );
     if ( evtData.fBlockCnt<=0 )
@@ -429,11 +429,11 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	Logging( kHLTLogWarning, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "no blocks in event" );
 	return 0;
       }
-    const AliHLTComponent_BlockData* iter = NULL;
+    const AliHLTComponentBlockData* iter = NULL;
     unsigned long ndx;
     AliHLTTPCClusterData* inPtrSP;
     AliHLTTPCVertexData* inPtrV = NULL;
-    const AliHLTComponent_BlockData* vertexIter=NULL;
+    const AliHLTComponentBlockData* vertexIter=NULL;
     AliHLTTPCTrackletData* outPtr;
     AliHLTUInt8_t* outBPtr;
     AliHLTUInt32_t vSize = 0;
@@ -638,7 +638,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
     tSize += mysize+sizeof(AliHLTTPCTrackletData);
     outBPtr += mysize+sizeof(AliHLTTPCTrackletData);
     
-    AliHLTComponent_BlockData bd;
+    AliHLTComponentBlockData bd;
     FillBlockData( bd );
     bd.fOffset = offset;
     bd.fSize = tSize;

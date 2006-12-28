@@ -14,13 +14,14 @@
                                                                           */
    
 
+#include <vector>
 #include "TObject.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 
 class AliHLTComponent;
 struct AliHLTComponentEnvironment;
-struct AliHLTComponent_DataType;
+struct AliHLTComponentDataType;
 
 typedef void* AliHLTLibHandle;
 
@@ -101,7 +102,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
    *                  with the same output data type.
    * @return component id
    */
-  //const char* FindComponentType( AliHLTComponent_DataType dtype,
+  //const char* FindComponentType( AliHLTComponentDataType dtype,
   //                               const char* prevType = NULL )
   //  { return NULL;}
 

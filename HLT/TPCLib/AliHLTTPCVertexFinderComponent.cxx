@@ -57,13 +57,13 @@ const char* AliHLTTPCVertexFinderComponent::GetComponentID()
     return "TPCVertexFinder";
     }
 
-void AliHLTTPCVertexFinderComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTPCVertexFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
     list.clear();
     list.push_back( AliHLTTPCDefinitions::gkClustersDataType );
     }
 
-AliHLTComponent_DataType AliHLTTPCVertexFinderComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTPCVertexFinderComponent::GetOutputDataType()
     {
     return AliHLTTPCDefinitions::gkVertexDataType;
     }
@@ -98,11 +98,11 @@ int AliHLTTPCVertexFinderComponent::DoDeinit()
     return 0;
     }
 
-int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
-    const AliHLTComponent_BlockData* iter = NULL;
+    const AliHLTComponentBlockData* iter = NULL;
     unsigned long ndx;
 
     AliHLTTPCClusterData* inPtr;
@@ -146,7 +146,7 @@ int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponent_EventData& ev
 
 	mysize += sizeof(AliHLTTPCVertexData);
 	
-	AliHLTComponent_BlockData bd;
+	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
 	bd.fOffset = offset;
 	bd.fSize = mysize;

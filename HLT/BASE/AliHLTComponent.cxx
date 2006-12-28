@@ -94,7 +94,7 @@ int AliHLTComponent::DoDeinit()
   return 0;
 }
 
-void AliHLTComponent::DataType2Text( const AliHLTComponent_DataType& type, char output[14] ) {
+void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[14] ) {
 memset( output, 0, 14 );
 strncat( output, type.fOrigin, 4 );
 strcat( output, ":" );
@@ -107,8 +107,8 @@ void* AliHLTComponent::AllocMemory( unsigned long size ) {
   return NULL;
 }
 
-int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount,
-					      AliHLTComponent_BlockData** outputBlocks ) {
+int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockData>& blocks, AliHLTUInt32_t* blockCount,
+					      AliHLTComponentBlockData** outputBlocks ) {
     if ( !blockCount || !outputBlocks )
 	return EFAULT;
     AliHLTUInt32_t count = blocks.size();
@@ -118,7 +118,7 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponent_Block
 	*outputBlocks = NULL;
 	return 0;
 	}
-    *outputBlocks = reinterpret_cast<AliHLTComponent_BlockData*>( AllocMemory( sizeof(AliHLTComponent_BlockData)*count ) );
+    *outputBlocks = reinterpret_cast<AliHLTComponentBlockData*>( AllocMemory( sizeof(AliHLTComponentBlockData)*count ) );
     if ( !*outputBlocks )
 	return ENOMEM;
     for ( unsigned long i = 0; i < count; i++ )
@@ -128,19 +128,19 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponent_Block
 
 }
 
-int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponent_EventDoneData** edd ) {
+int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd ) {
   if (fEnvironment.fGetEventDoneDataFunc)
     return (*fEnvironment.fGetEventDoneDataFunc)(fEnvironment.fParam, fCurrentEvent, size, edd );
   return -ENOSYS;
 }
 
-int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponent_DataType>* tgtList) 
+int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList) 
 {
   int iResult=0;
   if (pConsumer) {
-    vector<AliHLTComponent_DataType> ctlist;
+    vector<AliHLTComponentDataType> ctlist;
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(ctlist);
-    vector<AliHLTComponent_DataType>::iterator type=ctlist.begin();
+    vector<AliHLTComponentDataType>::iterator type=ctlist.begin();
     while (type!=ctlist.end() && iResult==0) {
       if ((*type)==GetOutputDataType()) {
 	if (tgtList) tgtList->push_back(*type);

@@ -23,6 +23,13 @@
  */
 
 #include <AliHLTDataTypes.h>
+typedef AliHLTComponentLogSeverity AliHLTComponent_LogSeverity;
+typedef AliHLTComponentEventData AliHLTComponent_EventData;
+typedef AliHLTComponentShmData AliHLTComponent_ShmData;
+typedef AliHLTComponentDataType AliHLTComponent_DataType;
+typedef AliHLTComponentBlockData AliHLTComponent_BlockData;
+typedef AliHLTComponentTriggerData AliHLTComponent_TriggerData;
+typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,7 +87,7 @@ void AliHLT_C_DestroyComponent( AliHLTComponentHandle );
  * 
  * @ingroup alihlt_wrapper_interface
  */
-int AliHLT_C_ProcessEvent( AliHLTComponentHandle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
+int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 
                            AliHLTComponent_TriggerData* trigData, AliHLTUInt8_t* outputPtr,
                            AliHLTUInt32_t* size, AliHLTUInt32_t* outputBlockCnt, 
                            AliHLTComponent_BlockData** outputBlocks,

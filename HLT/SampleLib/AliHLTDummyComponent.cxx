@@ -48,14 +48,14 @@ const char* AliHLTDummyComponent::GetComponentID()
     return "Dummy"; // The ID of this component
     }
 
-void AliHLTDummyComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTDummyComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
     list.clear(); // We do not have any requirements for our input data type(s).
     }
 
-AliHLTComponent_DataType AliHLTDummyComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTDummyComponent::GetOutputDataType()
     {
-    return (AliHLTComponent_DataType){ sizeof(AliHLTComponent_DataType), {'D','U','M','M','Y',' ',' ',' '},{'D','U','M','Y'}};
+    return (AliHLTComponentDataType){ sizeof(AliHLTComponentDataType), {'D','U','M','M','Y',' ',' ',' '},{'D','U','M','Y'}};
     }
 
 void AliHLTDummyComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -110,9 +110,9 @@ int AliHLTDummyComponent::DoDeinit()
     return 0;
     }
 
-int AliHLTDummyComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-				      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-				      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+int AliHLTDummyComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+				      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+				      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
     Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
     // Process an event
@@ -153,7 +153,7 @@ int AliHLTDummyComponent::DoEvent( const AliHLTComponent_EventData& evtData, con
 	Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Copied", "Copied: %lu B - totalSize: %lu B", 
 		 copied, totalSize );
 	// Fill a block data structure for our output block.
-	AliHLTComponent_BlockData ob;
+	AliHLTComponentBlockData ob;
 	// Let the structure be filled with the default values.
 	// This takes care of setting the shared memory and data type values to default values,
 	// so that they can be filled in by the calling code.

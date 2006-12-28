@@ -193,7 +193,7 @@ int AliHLTDataBuffer::SetConsumer(AliHLTComponent* pConsumer)
   return iResult;
 }
 
-int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, vector<AliHLTComponent_DataType>* tgtList)
+int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList)
 {
   int iResult=0;
   if (pConsumer) {
@@ -218,11 +218,11 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
 {
   int iResult=0;
   if (pConsumer) {
-    vector<AliHLTComponent_DataType> dtlist;
+    vector<AliHLTComponentDataType> dtlist;
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(dtlist);
     vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
     while (segment!=fSegments.end()) {
-      vector<AliHLTComponent_DataType>::iterator type=dtlist.begin();
+      vector<AliHLTComponentDataType>::iterator type=dtlist.begin();
       while (type!=dtlist.end()) {
 	if ((*segment).fDataType==(*type)) {
 	  tgtList.push_back(*segment);
@@ -239,7 +239,7 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
   return iResult;
 }
 
-int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponent_BlockData* arrayBlockDesc, int iArraySize)
+int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponentBlockData* arrayBlockDesc, int iArraySize)
 {
   int iResult=0;
   if (pConsumer && arrayBlockDesc) {
@@ -256,11 +256,11 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	  vector<AliHLTDataSegment>::iterator segment=tgtList.begin();
 	  while (segment!=tgtList.end() && i<iArraySize) {
 	    // fill the block data descriptor
-	    arrayBlockDesc[i].fStructSize=sizeof(AliHLTComponent_BlockData);
+	    arrayBlockDesc[i].fStructSize=sizeof(AliHLTComponentBlockData);
 	    // the shared memory key is not used in AliRoot
-	    arrayBlockDesc[i].fShmKey.fStructSize=sizeof(AliHLTComponent_ShmData);
-	    arrayBlockDesc[i].fShmKey.fShmType=gkAliHLTComponent_InvalidShmType;
-	    arrayBlockDesc[i].fShmKey.fShmID=gkAliHLTComponent_InvalidShmID;
+	    arrayBlockDesc[i].fShmKey.fStructSize=sizeof(AliHLTComponentShmData);
+	    arrayBlockDesc[i].fShmKey.fShmType=gkAliHLTComponentInvalidShmType;
+	    arrayBlockDesc[i].fShmKey.fShmID=gkAliHLTComponentInvalidShmID;
 	    arrayBlockDesc[i].fOffset=(*segment).fSegmentOffset;
 	    arrayBlockDesc[i].fPtr=fpBuffer->fPtr;
 	    arrayBlockDesc[i].fSize=(*segment).fSegmentSize;
@@ -276,7 +276,7 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	    HLTDebug("component %p (%s) subscribed to data buffer %p", pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID(), this);
 	  } else {
 	    // TODO: cleanup the consumer descriptor correctly
-	    memset(arrayBlockDesc, 0, iArraySize*sizeof(AliHLTComponent_BlockData));
+	    memset(arrayBlockDesc, 0, iArraySize*sizeof(AliHLTComponentBlockData));
 	    HLTError("can not activate consumer %p for data buffer %p", pConsumer, this);
 	    iResult=-EACCES;
 	  }
@@ -299,7 +299,7 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
   return iResult;
 }
 
-int AliHLTDataBuffer::Release(AliHLTComponent_BlockData* pBlockDesc, const AliHLTComponent* pConsumer)
+int AliHLTDataBuffer::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTComponent* pConsumer)
 {
   int iResult=0;
   if (pBlockDesc && pConsumer) {
@@ -345,7 +345,7 @@ AliHLTUInt8_t* AliHLTDataBuffer::GetTargetBuffer(int iMinSize)
   return pTargetBuffer;
 }
 
-int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponent_BlockData* arrayBlockData, int iSize)
+int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData* arrayBlockData, int iSize)
 {
   int iResult=0;
   if (pTgt && arrayBlockData && iSize>=0) {

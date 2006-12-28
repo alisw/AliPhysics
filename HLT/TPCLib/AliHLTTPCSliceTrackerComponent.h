@@ -25,8 +25,8 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 	// These functions are required for the registration process
 
 	const char* GetComponentID();
-	void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
-	AliHLTComponent_DataType GetOutputDataType();
+	void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+	AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 	AliHLTComponent* Spawn();
 	
@@ -55,9 +55,9 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 
 	int DoInit( int argc, const char** argv );
 	int DoDeinit();
-	int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-		     AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
+	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
     private:
 

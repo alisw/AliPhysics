@@ -16,7 +16,7 @@ class AliHLTTPCDefinitions
     {
     public:
 
-	static AliHLTUInt8_t GetMinSliceNr( const AliHLTComponent_BlockData& block )
+	static AliHLTUInt8_t GetMinSliceNr( const AliHLTComponentBlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x00FF0000) >> 16 );
 		}
@@ -24,7 +24,7 @@ class AliHLTTPCDefinitions
 		{
 		return (AliHLTUInt8_t)( (spec & 0x00FF0000) >> 16 );
 		}
-	static AliHLTUInt8_t GetMaxSliceNr( const AliHLTComponent_BlockData& block )
+	static AliHLTUInt8_t GetMaxSliceNr( const AliHLTComponentBlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0xFF000000) >> 24 );
 		}
@@ -32,7 +32,7 @@ class AliHLTTPCDefinitions
 		{
 		return (AliHLTUInt8_t)( (spec & 0xFF000000) >> 24 );
 		}
-	static AliHLTUInt8_t GetMinPatchNr( const AliHLTComponent_BlockData& block )
+	static AliHLTUInt8_t GetMinPatchNr( const AliHLTComponentBlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x000000FF) );
 		}
@@ -40,7 +40,7 @@ class AliHLTTPCDefinitions
 		{
 		return (AliHLTUInt8_t)( (spec & 0x000000FF) );
 		}
-	static AliHLTUInt8_t GetMaxPatchNr( const AliHLTComponent_BlockData& block )
+	static AliHLTUInt8_t GetMaxPatchNr( const AliHLTComponentBlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x0000FF00) >> 8 );
 		}
@@ -57,12 +57,12 @@ class AliHLTTPCDefinitions
 		return ((maxSliceNr & 0xFF) << 24) | ((minSliceNr & 0xFF) << 16) | ((maxPatchNr & 0xFF) << 8) | ((minPatchNr & 0xFF));
 		}
 
-	static const AliHLTComponent_DataType gkDDLPackedRawDataType;
-	static const AliHLTComponent_DataType gkPackedRawDataType;
-	static const AliHLTComponent_DataType gkUnpackedRawDataType;
-	static const AliHLTComponent_DataType gkClustersDataType;
-	static const AliHLTComponent_DataType gkTrackSegmentsDataType;
-	static const AliHLTComponent_DataType gkVertexDataType;
+	static const AliHLTComponentDataType gkDDLPackedRawDataType;
+	static const AliHLTComponentDataType gkPackedRawDataType;
+	static const AliHLTComponentDataType gkUnpackedRawDataType;
+	static const AliHLTComponentDataType gkClustersDataType;
+	static const AliHLTComponentDataType gkTrackSegmentsDataType;
+	static const AliHLTComponentDataType gkVertexDataType;
 
 	ClassDef(AliHLTTPCDefinitions, 0)
 

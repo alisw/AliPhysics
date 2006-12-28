@@ -13,6 +13,7 @@
 */
 
 #include <cerrno>
+#include <vector>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
@@ -36,7 +37,7 @@ struct AliHLTDataSegment {
     fSegmentSize(0),
     fSpecification(0)
   {
-    memset(&fDataType, 0, sizeof(AliHLTComponent_DataType));
+    memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
   }
   AliHLTDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size) 
     :
@@ -45,10 +46,10 @@ struct AliHLTDataSegment {
     fSegmentSize(size),
     fSpecification(0)
   {
-    memset(&fDataType, 0, sizeof(AliHLTComponent_DataType));
+    memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
   }
   /** the data type of this segment */
-  AliHLTComponent_DataType fDataType;
+  AliHLTComponentDataType fDataType;
   /** offset in byte within the data buffer */
   AliHLTUInt32_t fSegmentOffset;
   /** size of the actual content */
@@ -200,7 +201,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    *          of the consumer, neg. error code if failed <br>
    *          -EINVAL       invalid parameter <br>
    */
-  int FindMatchingDataBlocks(const AliHLTComponent* pConsumer, vector<AliHLTComponent_DataType>* tgtList=NULL);
+  int FindMatchingDataBlocks(const AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList=NULL);
 
   /**
    * Subscribe to a segment of the data buffer.
@@ -219,7 +220,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    *          -ENODATA      data buffer does not have raw data <br>
    *          -EINVAL       invalid parameter <br>
    */
-  int Subscribe(const AliHLTComponent* pConsumer, AliHLTComponent_BlockData* arrayBlockDesc, int iArraySize);
+  int Subscribe(const AliHLTComponent* pConsumer, AliHLTComponentBlockData* arrayBlockDesc, int iArraySize);
 
   /**
    * Release an instance of the data buffer.
@@ -234,7 +235,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    *          -ENOENT       consumer component has not subscribed to the buffer <br>
    *          -EINVAL       invalid parameter <br>
    */
-  int Release(AliHLTComponent_BlockData* pBlockDesc, const AliHLTComponent* pConsumer);
+  int Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTComponent* pConsumer);
 
   /**
    * Get a target buffer of minimum size iMinSize.
@@ -251,13 +252,13 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    * which was requested by the @ref GetTargetBuffer method. The component might
    * produce different types of data, for each type a segment has to be defined
    * which describes the data inside the bauffer.<br>
-   * The @ref AliHLTComponent_BlockData segment descriptor comes directly from the
+   * The @ref AliHLTComponentBlockData segment descriptor comes directly from the
    * @ref AliHLTComponent::ProcessEvent method.
    * @param pTgt            the target buffer which the segments refer to
    * @param arraySegments   the output block descriptors of the component
    * @param iSize           size of the array
    */
-  int SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponent_BlockData* arraySegments, int iSize);
+  int SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData* arraySegments, int iSize);
 
   /**
    * Check if the data buffer is empty.
@@ -291,7 +292,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
 
  private:
   /* lets see if this is needed
-  AliHLTDataSegment* FindDataSegment(AliHLTComponent_DataType datatype);
+  AliHLTDataSegment* FindDataSegment(AliHLTComponentDataType datatype);
   */
 
   /**

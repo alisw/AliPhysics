@@ -61,7 +61,7 @@ AliHLTLogging& AliHLTLogging::operator=(const AliHLTLogging&)
   return *this;
 }
 
-AliHLTComponent_LogSeverity AliHLTLogging::fGlobalLogFilter=kHLTLogAll;
+AliHLTComponentLogSeverity AliHLTLogging::fGlobalLogFilter=kHLTLogAll;
 AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
 
 AliHLTLogging::~AliHLTLogging()
@@ -77,7 +77,7 @@ int AliHLTLogging::Init(AliHLTfctLogging pFun)
   return 0;
 }
 
-int AliHLTLogging::Message(void *param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message) {
+int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message) {
   int iResult=0;
   if (param==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
@@ -135,7 +135,7 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) {
   return gAliHLTLoggingBuffer;
 }
 
-int AliHLTLogging::Logging(AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) {
+int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) {
   int iResult=CheckFilter(severity);
   if (iResult>0) {
     va_list args;
@@ -149,7 +149,7 @@ int AliHLTLogging::Logging(AliHLTComponent_LogSeverity severity, const char* ori
   return iResult;
 }
 
-int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const
+int AliHLTLogging::LoggingVarargs( AliHLTComponentLogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const
 {
   int iResult=CheckFilter(severity);
   if (iResult>0) {
@@ -191,7 +191,7 @@ int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const c
   return iResult;
 }
 
-int AliHLTLogging::CheckFilter(AliHLTComponent_LogSeverity severity) const
+int AliHLTLogging::CheckFilter(AliHLTComponentLogSeverity severity) const
 {
   int iResult=severity==kHLTLogNone || (severity&fGlobalLogFilter)>0 && (severity&fLocalLogFilter)>0;
   return iResult;

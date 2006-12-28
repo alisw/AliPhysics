@@ -13,6 +13,7 @@
 */
 
 #include <cerrno>
+#include <vector>
 #include <TObject.h>
 #include <TList.h>
 #include "AliHLTDataTypes.h"

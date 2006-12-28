@@ -35,8 +35,8 @@ AliHLTSampleComponent2 gAliHLTSampleComponent2;
 
 ClassImp(AliHLTSampleComponent2)
 
-const AliHLTComponent_DataType AliHLTSampleComponent2::inputDataTypes[]={{0,0}, {0,0}}; //'zero' terminated array
-const AliHLTComponent_DataType AliHLTSampleComponent2::outputDataType={0,0};
+const AliHLTComponentDataType AliHLTSampleComponent2::inputDataTypes[]={{0,0}, {0,0}}; //'zero' terminated array
+const AliHLTComponentDataType AliHLTSampleComponent2::outputDataType={0,0};
 
 AliHLTSampleComponent2::AliHLTSampleComponent2()
 {
@@ -56,9 +56,9 @@ int AliHLTSampleComponent2::DoDeinit(){
   return 0;
 }
 
-int AliHLTSampleComponent2::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-				      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-				      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks ) {
+int AliHLTSampleComponent2::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+				      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+				      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ) {
   Logging(kHLTLogInfo, "HLT", "Sample", "Sample component2, DoEvent");
   return 0;
 }

@@ -53,14 +53,14 @@ int AliHLTProcessor::Deinit()
   return iResult;
 }
 
-int AliHLTProcessor::ProcessEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-			    AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+int AliHLTProcessor::ProcessEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
-			    AliHLTComponent_BlockData*& outputBlocks,
-			    AliHLTComponent_EventDoneData*& edd )
+			    AliHLTComponentBlockData*& outputBlocks,
+			    AliHLTComponentEventDoneData*& edd )
 {
   int iResult=0;
-  vector<AliHLTComponent_BlockData> blockData;
+  vector<AliHLTComponentBlockData> blockData;
   iResult=DoEvent(evtData, blocks, trigData, outputPtr, size, blockData);
   if (iResult>=0) {
     iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);

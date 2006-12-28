@@ -1,3 +1,7 @@
+2006-12-28 changes according to coding conventions
+	- special characters in function names have been removed in the
+	  internal usage, the C interface still uses them in order to preserve
+	  backward compatibility
 2006-12-18 commit from Jochen
 	- TPCDisplay library version 2
 	  - library version for the AliHLTGUI v 1.5
@@ -27,7 +31,7 @@
 	    component dead lock
 	  - AliHLTTPCClusterFinder adapted to use occupancy level for suppression of 
 	    noisy pads
-	  - AliHLTTPCClusterFinderComponent: new parameter 'occupancy-limit' which is effectice
+	  - AliHLTTPCClusterFinderComponent: new parameter 'occupancy-limit' which is effective
 	    when pp-run option is set
 	  - AliHLTTPCDigitReaderRaw
 	    2 more rawreader modes ( 4, 5) are added by Timm.

@@ -46,11 +46,11 @@ public:
 
   // logging filter for all objects
   //
-  static AliHLTComponent_LogSeverity SetGlobalLogLevel(AliHLTComponent_LogSeverity iLogFilter) {fGlobalLogFilter=iLogFilter; return fGlobalLogFilter;}
+  static AliHLTComponentLogSeverity SetGlobalLogLevel(AliHLTComponentLogSeverity iLogFilter) {fGlobalLogFilter=iLogFilter; return fGlobalLogFilter;}
 
   // logging filter for individual object
   //
-  AliHLTComponent_LogSeverity SetLocalLogLevel(AliHLTComponent_LogSeverity iLogFilter) {fLocalLogFilter=iLogFilter; return fLocalLogFilter;}
+  AliHLTComponentLogSeverity SetLocalLogLevel(AliHLTComponentLogSeverity iLogFilter) {fLocalLogFilter=iLogFilter; return fLocalLogFilter;}
 
   // set the default key word
   // the keyword is intended to simplify the use of logging macros
@@ -79,17 +79,17 @@ public:
 
   // genaral logging function
   //
-  int Logging( AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message, ... );
+  int Logging( AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message, ... );
 
   // logging function with two origin parameters, used by the log macros
   //
-  int LoggingVarargs( AliHLTComponent_LogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const;
+  int LoggingVarargs( AliHLTComponentLogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const;
 
   // apply filter, return 1 if message should pass
   //
-  int CheckFilter(AliHLTComponent_LogSeverity severity) const;
+  int CheckFilter(AliHLTComponentLogSeverity severity) const;
 
-  static int Message(void * param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message);
+  static int Message(void * param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message);
 
   static const char* BuildLogString(const char *format, va_list ap);
 
@@ -97,8 +97,8 @@ public:
 protected:
 
 private:
-  static  AliHLTComponent_LogSeverity fGlobalLogFilter;
-  AliHLTComponent_LogSeverity fLocalLogFilter;
+  static  AliHLTComponentLogSeverity fGlobalLogFilter;
+  AliHLTComponentLogSeverity fLocalLogFilter;
   static AliHLTfctLogging fLoggingFunc;
   const char* fpDefaultKeyword;
   const char* fpCurrentKeyword;

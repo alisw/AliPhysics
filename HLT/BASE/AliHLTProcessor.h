@@ -46,14 +46,14 @@ class AliHLTProcessor : public AliHLTComponent {
    * preparation of data structures. The call is redirected to DoEvent.
    * @return neg. error code if failed 
    */
-  int ProcessEvent( const AliHLTComponent_EventData& evtData,
-		    const AliHLTComponent_BlockData* blocks, 
-		    AliHLTComponent_TriggerData& trigData,
+  int ProcessEvent( const AliHLTComponentEventData& evtData,
+		    const AliHLTComponentBlockData* blocks, 
+		    AliHLTComponentTriggerData& trigData,
 		    AliHLTUInt8_t* outputPtr, 
 		    AliHLTUInt32_t& size,
 		    AliHLTUInt32_t& outputBlockCnt, 
-		    AliHLTComponent_BlockData*& outputBlocks,
-		    AliHLTComponent_EventDoneData*& edd );
+		    AliHLTComponentBlockData*& outputBlocks,
+		    AliHLTComponentEventDoneData*& edd );
 
   // Information member functions for registration.
 
@@ -74,12 +74,12 @@ class AliHLTProcessor : public AliHLTComponent {
    *            	  <i>output</i>:size of produced data
    * @param outputBlocks  list to receive output block descriptors
    */
-  virtual int DoEvent( const AliHLTComponent_EventData& evtData,
-		       const AliHLTComponent_BlockData* blocks, 
-		       AliHLTComponent_TriggerData& trigData,
+  virtual int DoEvent( const AliHLTComponentEventData& evtData,
+		       const AliHLTComponentBlockData* blocks, 
+		       AliHLTComponentTriggerData& trigData,
 		       AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size,
-		       vector<AliHLTComponent_BlockData>& outputBlocks ) = 0;
+		       vector<AliHLTComponentBlockData>& outputBlocks ) = 0;
 
   ClassDef(AliHLTProcessor, 0)
 };

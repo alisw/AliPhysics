@@ -18,7 +18,7 @@
 #include "AliHLTLogging.h"
 #include "AliHLTDataBuffer.h"
 
-struct AliHLTComponent_BlockData;
+struct AliHLTComponentBlockData;
 class AliHLTComponent;
 class AliHLTComponentHandler;
 
@@ -114,7 +114,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    */
   /*
    * this function is most likely depricated
-  int InsertBlockData(AliHLTComponent_BlockData* pBlock, AliHLTTask* pSource);
+  int InsertBlockData(AliHLTComponentBlockData* pBlock, AliHLTTask* pSource);
   */
 
   /**
@@ -165,7 +165,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   // @return: array size, pointer to array in the target pTgt
   //
   /* this function is most likely depricated
-  int BuildBlockDataArray(AliHLTComponent_BlockData*& pBlockData);
+  int BuildBlockDataArray(AliHLTComponentBlockData*& pBlockData);
   */
 
   /**
@@ -233,7 +233,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * @return number of matching data blocks, negative error code if failed
    */
   int Subscribe(const AliHLTTask* pConsumerTask,
-		AliHLTComponent_BlockData* arrayBlockDesc, int iArraySize);
+		AliHLTComponentBlockData* arrayBlockDesc, int iArraySize);
 
   /**
    * Release a block descriptor.
@@ -242,7 +242,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * @param pConsumerTask   the task which subscribed to the data
    * @return: >0 if success, negative error code if failed
    */
-  int Release(AliHLTComponent_BlockData* pBlockDesc,
+  int Release(AliHLTComponentBlockData* pBlockDesc,
 	      const AliHLTTask* pConsumerTask);
 
   /**
@@ -295,7 +295,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * @ref AliHLTComponent::ProcessEvent method. 
    * Filled through subscription to source tasks (@ref Subscribe).
    */
-  AliHLTComponent_BlockData* fpBlockDataArray;
+  AliHLTComponentBlockData* fpBlockDataArray;
   /** size of the block data array */
   int fBlockDataArraySize;
 
