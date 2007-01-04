@@ -62,8 +62,8 @@ AliAnalysisGoodies::AliAnalysisGoodies() :
 void AliAnalysisGoodies::Help() const  
 {
   AliInfo("Analysis utilities:\n") ; 
-  printf("                ***  Copy  : copy files ESD files listed in an xml collection from AliEn catalog to local storage and creates a local xml collection  \n") ; 
-  printf("                                        usage: Copy(in, out)\n") ; 
+  printf("                ***  Alien2Local  : copy files ESD files listed in an xml collection from AliEn catalog to local storage and creates a local xml collection  \n") ; 
+  printf("                                        usage: Alien2Local(in, out)\n") ; 
   printf("                                                in: a xml esd collection file name    \n") ;  
   printf("                                                ou: the local directory where to save the esd root files   \n") ;  
   printf("                ***  Make  : makes esd collection from tags  \n") ; 
