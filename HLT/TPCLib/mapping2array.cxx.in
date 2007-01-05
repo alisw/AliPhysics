@@ -43,7 +43,7 @@ int main(){
 
 	cout << numberOfChannels[ii] << "  "<< maxHWAddress[ii]<< endl;
 	
-	outFile << "Int_t AliHLTTPCDigitReaderRaw::fMapping_"<< ii << "["<< maxHWAddress[ii]+1 << "][2] = { " << endl;
+	outFile << "Int_t AliHLTTPCDigitReaderRaw::fMapping"<< ii << "["<< maxHWAddress[ii]+1 << "][2] = { " << endl;
 	tmpPad = new int[maxHWAddress[ii]+1];
 	tmpRow = new int[maxHWAddress[ii]+1];
 

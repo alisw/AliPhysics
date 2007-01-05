@@ -15,7 +15,6 @@
 
 #include "TObject.h"
 
-#if defined(HAVE_TPC_MAPPING)
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTDataTypes.h"
 
@@ -77,7 +76,7 @@ public:
   /**
    * Init the reader with a data block.
    * The function fetches the first and last row for the readout partition
-   * from @ref AliHLTTransform.
+   * from @ref AliHLTTPCTransform.
    * @param ptr     pointer to data buffer
    * @param size    size of the data buffer
    * @param patch   patch (readout partition) number within the slice
@@ -176,7 +175,7 @@ public:
 
 protected:
 
-    AliHLTUInt8_t* fBuffer;
+  AliHLTUInt8_t* fBuffer; //! transient value
     unsigned long fBufferSize;
     /*
     Int_t fFirstRow;
@@ -204,14 +203,38 @@ protected:
   bool fVerify;
 
 private:
-    static Int_t fMapping_0[3200][2];
-    static Int_t fMapping_1[3584][2];
-    static Int_t fMapping_2[3200][2];
-    static Int_t fMapping_3[3328][2];
-    static Int_t fMapping_4[3328][2];
-    static Int_t fMapping_5[3328][2];
+  /** number of patches */ 
+  static const Int_t fNofPatches=6;
+  /** dimension of each mapping array */ 
+  static const Int_t fMappingDimension=2;
 
-    static unsigned fMaxHWA[6];
+  /** size of mapping arrays */
+  static const Int_t fMapping0Size=3200;
+  /** size of mapping array for patch 1 */
+  static const Int_t fMapping1Size=3584;
+  /** size of mapping array for patch 2 */
+  static const Int_t fMapping2Size=3200;
+  /** size of mapping array for patch 3 */
+  static const Int_t fMapping3Size=3328;
+  /** size of mapping array for patch 4 */
+  static const Int_t fMapping4Size=3328;
+  /** size of mapping array for patch 5 */
+  static const Int_t fMapping5Size=3328;
+
+  /** mapping array for patch 0 */
+  static Int_t fMapping0[fMapping0Size][fMappingDimension];
+  /** mapping array for patch 1 */
+  static Int_t fMapping1[fMapping1Size][fMappingDimension];
+  /** mapping array for patch 2 */
+  static Int_t fMapping2[fMapping2Size][fMappingDimension];
+  /** mapping array for patch 3 */
+  static Int_t fMapping3[fMapping3Size][fMappingDimension];
+  /** mapping array for patch 4 */
+  static Int_t fMapping4[fMapping4Size][fMappingDimension];
+  /** mapping array for patch 5 */
+  static Int_t fMapping5[fMapping5Size][fMappingDimension];
+
+    static unsigned fMaxHWA[fNofPatches];
 
   // For reordering
     Int_t fCurrentRow;
@@ -225,23 +248,13 @@ private:
     Int_t fNMaxPads;
     Int_t fNTimeBins;
 
-    Int_t *fData;
+  Int_t *fData; //! transient value
 
+  /** indicate a virgin object and throw the warnig only once */
+  Int_t fMapErrThrown; //! transient value
 
-  ClassDef(AliHLTTPCDigitReaderRaw, 0)
+  ClassDef(AliHLTTPCDigitReaderRaw, 1)
     
 };
 
-#else
-// add a dummy class to make CINT happy
-class AliHLTTPCDigitReaderRaw : public AliHLTLogging{
-public:
-  AliHLTTPCDigitReaderRaw()
-  {
-    HLTFatal("AliHLTTPCDigitReaderRaw not build");
-  }
-};
-#endif //#if defined(HAVE_TPC_MAPPING)
-
 #endif
-
