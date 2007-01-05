@@ -421,7 +421,7 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 {
   int iResult=0;
   if (fpConfiguration!=NULL && fpConfiguration!=pConf) {
-    HLTWarning("overriding previous reference to configuration object %p (%s) by %p",
+    HLTWarning("overriding existing reference to configuration object %p (%s) by %p",
 	       fpConfiguration, GetName(), pConf);
   }
   if (pConf!=NULL) fpConfiguration=pConf;
@@ -431,6 +431,8 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
       const char** argv=NULL;
       if ((iResult=fpConfiguration->GetArguments(&argv))>=0) {
 	argc=iResult; // just to make it clear
+	// TODO: we have to think about the optional environment parameter,
+	// currently just set to NULL. 
 	iResult=pCH->CreateComponent(fpConfiguration->GetComponentID(), NULL, argc, argv, fpComponent);
 	if (fpComponent) {
 	} else {
@@ -450,7 +452,16 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 
 int AliHLTTask::Deinit()
 {
-  return 0;
+  int iResult=0;
+  AliHLTComponent* pComponent=GetComponent();
+  fpComponent=NULL;
+  if (pComponent) {
+    pComponent->Deinit();
+    delete pComponent;
+  } else {
+    HLTWarning("task %s (%p) doesn't seem to be in initialized", GetName(), this);
+  }
+  return iResult;
 }
 
 const char *AliHLTTask::GetName() const
@@ -540,14 +551,6 @@ void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
   }
 }
 
-/* this function is most likely depricated
-int AliHLTTask::InsertBlockData(AliHLTComponentBlockData* pBlock, AliHLTTask* pSource)
-{
-  int iResult=0;
-  return iResult;
-}
-*/
-
 int AliHLTTask::SetDependency(AliHLTTask* pDep)
 {
   int iResult=0;
@@ -622,14 +625,6 @@ int AliHLTTask::SetTarget(AliHLTTask* pTgt)
   return iResult;
 }
 
-/* this function is most likely depricated
-int AliHLTTask::BuildBlockDataArray(AliHLTComponentBlockData*& pBlockData)
-{
-  int iResult=0;
-  return iResult;
-}
-*/
-
 int AliHLTTask::StartRun()
 {
   int iResult=0;
@@ -661,9 +656,11 @@ int AliHLTTask::StartRun()
       }
 
       // component init
+      // the initialization of the component is done by the ComponentHandler after creation
+      // of the component.
       //iResult=Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv );
 
-      // allocate internal task varables for bookkeeping aso.
+      // allocate internal task variables for bookkeeping aso.
       fpBlockDataArray=new AliHLTComponentBlockData[iNofInputDataBlocks];
       if (fpBlockDataArray) {
 	fBlockDataArraySize=iNofInputDataBlocks;
@@ -682,13 +679,21 @@ int AliHLTTask::StartRun()
 int AliHLTTask::EndRun()
 {
   int iResult=0;
+  if (fpBlockDataArray) {
+    fBlockDataArraySize=0;
+    delete [] fpBlockDataArray;
+    fpBlockDataArray=0;
+  } else {
+    HLTWarning("task %s (%p) doesn't seem to be in running mode", GetName(), this);
+  }
   return iResult;
 }
 
 int AliHLTTask::ProcessTask()
 {
   int iResult=0;
-  if (fpComponent && fpBlockDataArray) {
+  AliHLTComponent* pComponent=GetComponent();
+  if (pComponent && fpBlockDataArray) {
     int iSourceDataBlock=0;
     int iInputDataVolume=0;
 
@@ -743,7 +748,7 @@ int AliHLTTask::ProcessTask()
     if (iResult>=0) {
       long unsigned int iConstBase=0;
       double fInputMultiplier=0;
-      fpComponent->GetOutputDataSize(iConstBase, fInputMultiplier);
+      pComponent->GetOutputDataSize(iConstBase, fInputMultiplier);
       int iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
       AliHLTUInt8_t* pTgtBuffer=fpDataBuffer->GetTargetBuffer(iOutputDataSize);
       AliHLTComponentEventData evtData;
@@ -753,7 +758,10 @@ int AliHLTTask::ProcessTask()
       AliHLTComponentBlockData* outputBlocks=NULL;
       AliHLTComponentEventDoneData* edd;
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
-	iResult=fpComponent->ProcessEvent(evtData, fpBlockDataArray, trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
+	iResult=pComponent->ProcessEvent(evtData, fpBlockDataArray, trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
+	if (iResult>=0) {
+	  iResult=fpDataBuffer->SetSegments(pTgtBuffer, outputBlocks, outputBlockCnt);
+	}
       } else {
       }
     }
@@ -771,8 +779,8 @@ int AliHLTTask::ProcessTask()
 	  HLTError("Task %s (%p): realease of task %s (%p) failed with error %d", GetName(), this, pSrcTask->GetName(), pSrcTask, iTempRes);
 	}
       } else {
-	HLTFatal("fatal internal error in ROOT list handling");
-	iResult=-EFAULT;
+	HLTFatal("internal error in ROOT list handling");
+	if (iResult>=0) iResult=-EFAULT;
       }
       subscribedTaskList.Remove(lnk);
       lnk=subscribedTaskList.FirstLink();
@@ -788,7 +796,7 @@ int AliHLTTask::ProcessTask()
   return iResult;
 }
 
-int AliHLTTask::GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask)
+int AliHLTTask::GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask) const
 {
   int iResult=0;
   if (pConsumerTask) {
@@ -804,7 +812,7 @@ int AliHLTTask::GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask)
   return iResult;
 }
 
-int AliHLTTask::GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask)
+int AliHLTTask::GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask) const
 {
   int iResult=0;
   if (pConsumerTask) {
@@ -867,8 +875,9 @@ int AliHLTTask::ClearSourceBlocks()
 void AliHLTTask::PrintStatus()
 {
   HLTLogKeyword("task properties");
-  if (fpComponent) {
-    HLTMessage("     component: %s (%p)", fpComponent->GetComponentID(), fpComponent);
+  AliHLTComponent* pComponent=GetComponent();
+  if (pComponent) {
+    HLTMessage("     component: %s (%p)", pComponent->GetComponentID(), pComponent);
   } else {
     HLTMessage("     no component set!");
   }

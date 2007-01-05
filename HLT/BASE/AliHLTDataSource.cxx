@@ -37,6 +37,12 @@ AliHLTDataSource::~AliHLTDataSource()
 { 
 }
 
+void AliHLTDataSource::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+{
+  list.clear(); // there are no input data types
+}
+
+
 int AliHLTDataSource::ProcessEvent( const AliHLTComponentEventData& evtData,
 				    const AliHLTComponentBlockData* blocks, 
 				    AliHLTComponentTriggerData& trigData,

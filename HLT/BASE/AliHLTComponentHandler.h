@@ -108,28 +108,36 @@ class AliHLTComponentHandler : public AliHLTLogging {
 
   /**
    * Create a component of the given name (ID).
+   * The method tries to find a registerd component of id \em componentID and calls
+   * the \em Spawn method of the template component. After successful creation of
+   * a new object, the Init method is called in order to initialize the environment
+   * and the component arguments. <br>
+   * The environment is the same for all components, but each component can
+   * have an additional private parameter \em pEnvParam.<br>
+   * The component arguments consist of an array of strings and the array size in the
+   * usual manner of the main() function.
    * @param componentID  ID of the component to create
-   * @param pEnv         environment for the component
+   * @param pEnvParam    environment parameter for the component
    * @param argc         number of arguments in argv
    * @param argv         argument array like in main()
    * @param component    reference to receive the create component instance
    * @return component pointer in component, neg. error code if failed
    */
-  int CreateComponent( const char* componentID, void* pEnv, 
+  int CreateComponent( const char* componentID, void* pEnvParam, 
 		       int argc, const char** argv, AliHLTComponent*& component );
 
   /**
    * Create a component of the given name (ID).
    * Introduced for backward compatibility.
    * @param componentID  ID of the component to create
-   * @param pEnv         environment for the component
+   * @param pEnvParam    environment parameter for the component
    * @param component    reference to receive the create component instance
    * @return component pointer in component, neg. error code if failed
    */
-  int CreateComponent( const char* componentID, void* pEnv, 
+  int CreateComponent( const char* componentID, void* pEnvParam, 
 		       AliHLTComponent*& component ) 
     {
-    return CreateComponent( componentID, pEnv, 0, NULL, component );
+    return CreateComponent( componentID, pEnvParam, 0, NULL, component );
     }
 
   /**

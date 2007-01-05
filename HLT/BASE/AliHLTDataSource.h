@@ -23,7 +23,6 @@
  * - @ref DoDeinit (optional)
  * - @ref GetEvent
  * - @ref GetComponentID
- * - @ref GetInputDataTypes
  * - @ref GetOutputDataType
  * - @ref GetOutputDataSize
  * - @ref Spawn
@@ -59,6 +58,12 @@ class AliHLTDataSource : public AliHLTComponent {
    * @return component type id
    */
   TComponentType GetComponentType() { return AliHLTComponent::kSource;}
+
+  /**
+   * Default implementation for all data sources.
+   * There are no input data types.
+   */
+  void AliHLTDataSource::GetInputDataTypes( vector<AliHLTComponentDataType>& list);
 
  private:
   /**

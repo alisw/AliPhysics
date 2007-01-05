@@ -110,7 +110,7 @@ void* AliHLTComponent::AllocMemory( unsigned long size ) {
 int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockData>& blocks, AliHLTUInt32_t* blockCount,
 					      AliHLTComponentBlockData** outputBlocks ) {
     if ( !blockCount || !outputBlocks )
-	return EFAULT;
+	return -EFAULT;
     AliHLTUInt32_t count = blocks.size();
     if ( !count )
 	{
@@ -120,7 +120,7 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockD
 	}
     *outputBlocks = reinterpret_cast<AliHLTComponentBlockData*>( AllocMemory( sizeof(AliHLTComponentBlockData)*count ) );
     if ( !*outputBlocks )
-	return ENOMEM;
+	return -ENOMEM;
     for ( unsigned long i = 0; i < count; i++ )
 	(*outputBlocks)[i] = blocks[i];
     *blockCount = count;
@@ -153,4 +153,47 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<Al
     iResult=-EINVAL;
   }
   return iResult;
+}
+
+void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) {
+  blockData.fStructSize = sizeof(blockData);
+  FillShmData( blockData.fShmKey );
+  blockData.fOffset = ~(AliHLTUInt32_t)0;
+  blockData.fPtr = NULL;
+  blockData.fSize = 0;
+  FillDataType( blockData.fDataType );
+  blockData.fSpecification = ~(AliHLTUInt32_t)0;
+}
+
+void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) {
+  shmData.fStructSize = sizeof(shmData);
+  shmData.fShmType = gkAliHLTComponentInvalidShmType;
+  shmData.fShmID = gkAliHLTComponentInvalidShmID;
+}
+
+void AliHLTComponent::FillDataType( AliHLTComponentDataType& dataType ) {
+  dataType.fStructSize = sizeof(dataType);
+  memset( dataType.fID, '*', kAliHLTComponentDataTypefIDsize );
+  memset( dataType.fOrigin, '*', kAliHLTComponentDataTypefOriginSize );
+}
+
+void AliHLTComponent::CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt) {
+  memcpy(&tgtdt.fID[0], &srcdt.fID[0], kAliHLTComponentDataTypefIDsize);
+  memcpy(&tgtdt.fOrigin[0], &srcdt.fOrigin[0], kAliHLTComponentDataTypefOriginSize);
+}
+
+void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin) {
+  tgtdt.fStructSize = sizeof(AliHLTComponentDataType);
+  memset(&tgtdt.fID[0], 0, kAliHLTComponentDataTypefIDsize);
+  memset(&tgtdt.fOrigin[0], 0, kAliHLTComponentDataTypefOriginSize);
+
+  if (strlen(id)>kAliHLTComponentDataTypefIDsize) {
+    HLTWarning("data type id %s is too long, truncated to %d", id, kAliHLTComponentDataTypefIDsize);
+  }
+  strncpy(&tgtdt.fID[0], id, kAliHLTComponentDataTypefIDsize);
+
+  if (strlen(origin)>kAliHLTComponentDataTypefOriginSize) {
+    HLTWarning("data type origin %s is too long, truncated to %d", origin, kAliHLTComponentDataTypefOriginSize);
+  }
+  strncpy(&tgtdt.fOrigin[0], origin, kAliHLTComponentDataTypefOriginSize);
 }

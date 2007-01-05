@@ -251,7 +251,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    * This is usually done after the component has written the data to the buffer, 
    * which was requested by the @ref GetTargetBuffer method. The component might
    * produce different types of data, for each type a segment has to be defined
-   * which describes the data inside the bauffer.<br>
+   * which describes the data inside the buffer.<br>
    * The @ref AliHLTComponentBlockData segment descriptor comes directly from the
    * @ref AliHLTComponent::ProcessEvent method.
    * @param pTgt            the target buffer which the segments refer to

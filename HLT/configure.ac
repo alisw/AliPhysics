@@ -26,6 +26,7 @@ AC_PROG_LIBTOOL
 
 AC_DEBUG
 AC_OPTIMIZATION
+AM_CONDITIONAL(STANDALONE_SAMPLELIB, 0)
 
 dnl ------------------------------------------------------------------
 dnl

@@ -115,6 +115,11 @@ class AliHLTSystem : public AliHLTLogging {
   void PrintTaskList();
 
   /**
+   * Print info on an AliHLTComponentDataType structure
+   */
+  void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
+
+  /**
    * Run the task list.
    * All tasks of the list will be subsequently processed for each event.
    * @param iNofEvents number of events

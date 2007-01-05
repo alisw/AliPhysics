@@ -61,7 +61,8 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   /**
    * Initialize the task.
    * The task is initialized with a configuration descriptor. It needs a
-   * component handler instance to create the analysis component.
+   * component handler instance to create the analysis component. The
+   * component is created and initialized.
    * @param pConf pointer to configuration descriptor, can be NULL if it
    *              was already provided to the constructor
    * @param pCH   the HLT component handler
@@ -70,7 +71,8 @@ class AliHLTTask : public TObject, public AliHLTLogging {
 
   /**
    * De-Initialize the task.
-   * Final cleanup after the run. The analysis component is deleted.
+   * Final cleanup after the run. The @ref AliHLTComponent::Deinit method of
+   * the component is called. The analysis component is deleted.
    */
   int Deinit();
 
@@ -104,18 +106,6 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * @return pointer to task
    */
   AliHLTTask* FindDependency(const char* id);
-
-  /*
-   * insert block data to the list
-   * the data has to come from a task the current one depends on
-   * result:
-   *    -EEXIST : the block data from this task has already been inserted
-   *    -ENOENT : no dependencies to the task the data is coming from
-   */
-  /*
-   * this function is most likely depricated
-  int InsertBlockData(AliHLTComponentBlockData* pBlock, AliHLTTask* pSource);
-  */
 
   /**
    * Add a dependency for the task.
@@ -160,27 +150,18 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    */
   int SetTarget(AliHLTTask* pDep);
 
-  // build a monolithic array of block data
-  // @param pBlockData reference to the block data target
-  // @return: array size, pointer to array in the target pTgt
-  //
-  /* this function is most likely depricated
-  int BuildBlockDataArray(AliHLTComponentBlockData*& pBlockData);
-  */
-
   /**
    * Prepare the task for event processing.
    * The method initializes the Data Buffer and calls the
    * @ref AliHLTComponent::Init method of the component.<br>
-   * The @ref ProcessTask methode can be called an arbitrary number of times
+   * The @ref ProcessTask method can be called an arbitrary number of times
    * as soon as the task is in <i>running</i> mode. 
    */
   int StartRun();
 
   /**
    * Clean-up the task after event processing.
-   * The method cleans up internal structures and calls the
-   * @ref AliHLTComponent::Deinit method of the component.
+   * The method cleans up internal structures.
    */
   int EndRun();
 
@@ -209,7 +190,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * @param pConsumerTask   the task which subscribes to the data
    * @return number of matching data blocks
    */
-  int GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask);
+  int GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask) const;
 
   /**
    * Determine the number of matching data types between the component and a
@@ -218,7 +199,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * @param pConsumerTask   the task which subscribes to the data
    * @return number of matching data types
    */
-  int GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask);
+  int GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask) const;
 
   /**
    * Subscribe to the data of a source task.
@@ -276,7 +257,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * Get number of source tasks.
    * @return number of source tasks
    */
-  int GetNofSources() {return fListDependencies.GetSize();}
+  int GetNofSources() const {return fListDependencies.GetSize();}
 
  private:
   /** the configuration descriptor (external pointer) */

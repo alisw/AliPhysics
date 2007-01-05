@@ -32,6 +32,7 @@ using namespace std;
 #include "AliHLTConfiguration.h"
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTTask.h"
+#include "TString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
@@ -78,16 +79,17 @@ AliHLTSystem& AliHLTSystem::operator=(const AliHLTSystem&)
 
 AliHLTSystem::~AliHLTSystem()
 {
-    AliHLTConfiguration::GlobalDeinit();
-    if (fpConfigurationHandler) {
-      delete fpConfigurationHandler;
-    }
-    fpConfigurationHandler=NULL;
-
-    if (fpComponentHandler) {
-      delete fpComponentHandler;
-    }
-    fpComponentHandler=NULL;
+  CleanTaskList();
+  AliHLTConfiguration::GlobalDeinit();
+  if (fpConfigurationHandler) {
+    delete fpConfigurationHandler;
+  }
+  fpConfigurationHandler=NULL;
+  
+  if (fpComponentHandler) {
+    delete fpComponentHandler;
+  }
+  fpComponentHandler=NULL;
 }
 
 int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
@@ -260,12 +262,38 @@ void AliHLTSystem::PrintTaskList()
   }
 }
 
+void AliHLTSystem::PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt) {
+  TString msg;
+  msg.Form("AliHLTComponentDataType(%d): ID=\"", dt.fStructSize);
+  for ( unsigned i = 0; i < kAliHLTComponentDataTypefIDsize; i++ ) {
+   if (dt.fID[i]!=0) msg+=dt.fID[i];
+   else msg+="\\0";
+  }
+  msg+="\" Origin=\"";
+  for ( unsigned i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ ) {
+   if (dt.fOrigin[i]!=0) msg+=dt.fOrigin[i];
+   else msg+="\\0";
+  }
+  msg+="\"";
+  HLTMessage(msg.Data());
+}
+
 int AliHLTSystem::Run(Int_t iNofEvents) 
 {
   int iResult=0;
   if ((iResult=StartTasks())>=0) {
     for (int i=0; i<iNofEvents && iResult>=0; i++) {
       iResult=ProcessTasks(i);
+      if (iResult>=0) {
+	HLTInfo("Event %d successfully finished (%d)", i, iResult);
+	iResult=0;
+      } else {
+	HLTError("Processing of event %d failed (%d)", i, iResult);
+	// TODO: define different running modes to either ignore errors in
+	// event processing or not
+	// currently ignored 
+	iResult=0;
+      }
     }
     StopTasks();
   } else {

@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id: 
 
-include HLT/hlt.conf
+include $(MODDIR)/hlt.conf
 
 MODULE_SRCS= 	AliHLTComponent.cxx \
 		AliHLTComponentHandler.cxx \
@@ -12,7 +12,8 @@ MODULE_SRCS= 	AliHLTComponent.cxx \
 		AliHLTLogging.cxx \
 		AliHLTDataBuffer.cxx \
 		AliHLTDataSource.cxx \
-		AliHLTDataSink.cxx
+		AliHLTDataSink.cxx \
+		AliHLTFilePublisher.cxx
 
 CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTComponentHandler.h \
@@ -24,7 +25,8 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTLogging.h \
 		AliHLTDataBuffer.h \
 		AliHLTDataSource.h \
-		AliHLTDataSink.h
+		AliHLTDataSink.h \
+		AliHLTFilePublisher.h
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDataTypes.h \

@@ -34,11 +34,11 @@ as 'topdir' from now on.
 3. Copy the SampleLib folder as new 'Test' folder
 > cp -a SampleLib Test
 
-4. Change dir to the new folder
-> cd Test
+4. Copy libAliHLTSample.pkg to libAliHLTTest.pkg
+> cp libAliHLTSample.pkg libAliHLTTest.pkg
 
-5. Rename libAliHLTSample.pkg to libAliHLTTest.pkg
-> mv libAliHLTSample.pkg libAliHLTTest.pkg
+5. Change dir to the new folder
+> cd Test
 
 6. Open 'Makefile.am' with an editor
    This is the Makefile template for the autotools build system. In particular
@@ -64,7 +64,8 @@ as 'topdir' from now on.
    http://www.kip.uni-heidelberg.de/wiki/HLT
 
 8. Once you are finnished with the first code development, you have to add
-   the new component files to the build system. Open 'libAliHLTTest.pkg' 
+   the new component files to the build system. Open 'libAliHLTTest.pkg' in
+   the package topdir
 8.1. Add all your source files to the SRCS variable, remove the files from
      the libAliHLTSample
 8.2. Add all header files of classes which should be added to the ROOT
@@ -113,6 +114,11 @@ of the AliRoot compilation.
 
 2. Requirements
 ===============
+At this point you should have downloaded and unpacked a package with name
+alice-hlt-sample.tar.gz. If not, please download it from
+http://www.kip.uni-heidelberg.de/ti/HLT/software/download/alice-hlt-sample.tar.gz
+The following description refers to that package.
+
 The package needs both ROOT and AliRoot. Both must be set up in the
 usual way (ROOTSYS, ALICE_ROOT, library locations evtl. specified in
 LD_LIBRARY_PATH, ...). The package also needs the ALICE HLT component
@@ -155,7 +161,8 @@ section.
 ===============
 Package build relies on the GNU triplet configure, make and make install.
 In order to keep the development directory clean, it is recommended to
-use a separate build directory. 
+use a separate build directory. Please read the full section before you
+start. The build is in priciple done like
 
   mkdir build
   cd build
@@ -196,9 +203,13 @@ Each of the components has aheader file '<component>.h' and a source code
 file '<component>.cxx
 
 Leave your build directory and go back to the top directory where you can find 
-the source code as well as the Makefile template Makefile.am. Choose a new 
-name of your library (the tutorial uses AliHLTTest) and follow the instructions 
-5 to 8 of Part A (embedded case).
+the source code as well as the Makefile template Makefile.am. 
+1. Choose a new name of your library (the tutorial uses AliHLTTest)
+
+2. Copy libAliHLTSample.pkg to libAliHLTTest.pkg
+> cp libAliHLTSample.pkg libAliHLTTest.pkg
+
+3. follow the instructions 6 to 8 of Part A (embedded case).
 
 When you are done with this, you can build the library by typing 'make' in your
 build directory, and install it by make install.

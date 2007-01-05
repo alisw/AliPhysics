@@ -1,3 +1,12 @@
+2007-01-05
+	- changes according to coding conventions and documentation
+	- AliHLTTPCDigitReaderRaw: HAVE_TPC_MAPPING dependend implementation
+	  fixed in order to make class definition independend
+	- helper functions for data structure handling added
+	- libHLTbase.pkg and libAliHLTSample.pkg included to the stand-alone
+	  build system
+	- AliHLTFilePublisher added
+	- target to create the stand-alone sample library package added
 2006-12-28 changes according to coding conventions
 	- special characters in function names have been removed in the
 	  internal usage, the C interface still uses them in order to preserve

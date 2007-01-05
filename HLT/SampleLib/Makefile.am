@@ -8,11 +8,14 @@
 
 MODULE 				= AliHLTSample
 
-#EXTRA_DIST			= libAliHLTSample.pkg
+EXTRA_DIST			=
+if STANDALONE_SAMPLELIB
+EXTRA_DIST			+= libAliHLTSample.pkg
+endif
 
 # include the pkg definition which actually contains the source
 # file definitions
-#include libAliHLTSample.pkg
+include $(top_srcdir)/libAliHLTSample.pkg
 
 # library definition
 # The lib_LTLIBRARIES variable is a fixed variable of the autotools build
@@ -45,22 +48,11 @@ LIBRARY_VERSION			= '1:0:0'
 
 # library sources
 # The source files are specified in libAliHLTSample.pkg
-#libAliHLTSample_la_SOURCES	=  $(MODULE_SRCS)
-# temporary until lib*.pkg file is commited to AliRoot
-libAliHLTSample_la_SOURCES= 	AliHLTSampleComponent1.cxx \
-				AliHLTSampleComponent2.cxx \
-				AliHLTDummyComponent.cxx
-
-# temporary until lib*.pkg file is commited to AliRoot
-CLASS_HDRS=  	AliHLTSampleComponent1.h \
-		AliHLTSampleComponent2.h \
-		AliHLTDummyComponent.h
+libAliHLTSample_la_SOURCES	=  $(MODULE_SRCS)
 
 # library headers
 # The header files are specified in libAliHLTSample.pkg
-#noinst_HEADERS			=  $(MODULE_HDRS)
-# temporary until lib*.pkg file is commited to AliRoot
-noinst_HEADERS= 	$(CLASS_HDRS)
+noinst_HEADERS			=  $(MODULE_HDRS)
 
 # compilation flags of the library
 # This is the place to add further include directories if you are

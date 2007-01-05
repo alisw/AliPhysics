@@ -87,7 +87,7 @@ int AliHLTConsumerDescriptor::CheckActiveDataSegment(AliHLTUInt32_t offset, AliH
   if (fSegments.size()>0) {
     vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
     while (segment!=fSegments.end()) {
-      if (iResult=((*segment).fSegmentOffset==offset && (*segment).fSegmentSize==size)) {
+      if ((iResult=((*segment).fSegmentOffset==offset && (*segment).fSegmentSize==size))>0) {
 	break;
       }
       segment++;
@@ -105,13 +105,13 @@ int AliHLTConsumerDescriptor::ReleaseActiveDataSegment(AliHLTUInt32_t offset, Al
   if (fSegments.size()>0) {
     vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
     while (segment!=fSegments.end()) {
-      if (iResult=((*segment).fSegmentOffset==offset && (*segment).fSegmentSize==size)) {
+      if ((iResult=((*segment).fSegmentOffset==offset && (*segment).fSegmentSize==size))>0) {
 	fSegments.erase(segment);
 	break;
       }
       segment++;
     }
-    if (iResult=0) {
+    if (iResult==0) {
       //HLTWarning("no data segment (%d:%d) active for consumer %p", offset, size, this);
       iResult=-ENOENT;
     }

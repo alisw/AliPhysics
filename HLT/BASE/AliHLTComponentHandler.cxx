@@ -113,7 +113,7 @@ Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
   return iResult;
 }
 
-int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnv, int argc, const char** argv, AliHLTComponent*& component )
+int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvParam, int argc, const char** argv, AliHLTComponent*& component )
 {
   int iResult=0;
   if (componentID) {
@@ -122,7 +122,7 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnv,
       component=pSample->Spawn();
       if (component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
-	if ((iResult=component->Init(&fEnvironment, pEnv, argc, argv))!=0) {
+	if ((iResult=component->Init(&fEnvironment, pEnvParam, argc, argv))!=0) {
 	  HLTError("Initialization of component \"%s\" failed with error %d", componentID, iResult);
 	  delete component;
 	  component=NULL;

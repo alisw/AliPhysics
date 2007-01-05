@@ -23,6 +23,19 @@
 #include "AliHLTDefinitions.h"
 #include "TObject.h"
 
+/* Matthias Dec 2006
+ * The names have been changed for Aliroot's coding conventions sake
+ * The old names are defined for backward compatibility with the 
+ * stand alone SampleLib package
+ */
+typedef AliHLTComponentLogSeverity AliHLTComponent_LogSeverity;
+typedef AliHLTComponentEventData AliHLTComponent_EventData;
+typedef AliHLTComponentShmData AliHLTComponent_ShmData;
+typedef AliHLTComponentDataType AliHLTComponent_DataType;
+typedef AliHLTComponentBlockData AliHLTComponent_BlockData;
+typedef AliHLTComponentTriggerData AliHLTComponent_TriggerData;
+typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
+
 class AliHLTComponentHandler;
 
 /**
@@ -90,8 +103,8 @@ class AliHLTComponent : public AliHLTLogging {
    * @param trigData
    * @param outputPtr
    * @param size
-   * @param outputBlockCnt
-   * @param outputBlocks
+   * @param outputBlockCnt  out: size of the output block array, set by the component
+   * @param outputBlocks    out: the output block array is allocated internally
    * @param edd
    * @return neg. error code if failed
    */
@@ -178,36 +191,42 @@ class AliHLTComponent : public AliHLTLogging {
    * Fill AliHLTComponentBlockData structure with default values.
    * @param blockData   reference to data structure
    */
-  void FillBlockData( AliHLTComponentBlockData& blockData ) {
-    blockData.fStructSize = sizeof(blockData);
-    FillShmData( blockData.fShmKey );
-    blockData.fOffset = ~(AliHLTUInt32_t)0;
-    blockData.fPtr = NULL;
-    blockData.fSize = 0;
-    FillDataType( blockData.fDataType );
-    blockData.fSpecification = ~(AliHLTUInt32_t)0;
-  }
+  void FillBlockData( AliHLTComponentBlockData& blockData );
 
   /**
    * Fill AliHLTComponentShmData structure with default values.
    * @param shmData   reference to data structure
    */
-  void FillShmData( AliHLTComponentShmData& shmData ) {
-    shmData.fStructSize = sizeof(shmData);
-    shmData.fShmType = gkAliHLTComponentInvalidShmType;
-    shmData.fShmID = gkAliHLTComponentInvalidShmID;
-  }
+  void FillShmData( AliHLTComponentShmData& shmData );
 
   /**
    * Fill AliHLTComponentDataType structure with default values.
    * @param dataType   reference to data structure
    */
-  void FillDataType( AliHLTComponentDataType& dataType ) {
-    dataType.fStructSize = sizeof(dataType);
-    memset( dataType.fID, '*', 8 );
-    memset( dataType.fOrigin, '*', 4 );
-  }
+  void FillDataType( AliHLTComponentDataType& dataType );
   
+  /**
+   * Copy data type structure
+   * Copies the value an AliHLTComponentDataType structure to another one
+   * @param[out] tgtdt   target structure
+   * @param[in] srcdt   source structure
+   */
+  void CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt);
+
+  /**
+   * Set the ID and Origin of an AliHLTComponentDataType structure.
+   * The function sets the fStructureSize member and copies the strings
+   * to the ID and Origin. Only characters from the valid part of the string
+   * are copied, the rest is fille with 0's.
+   * Please note that the fID and fOrigin members are not strings, just arrays of
+   * chars of size @ref kAliHLTComponentDataTypefIDsize and
+   * @kAliHLTComponentDataTypefOriginSize respectively and not necessarily with
+   * a terminating zero.
+   * @param id      ID string
+   * @param origin  Origin string
+   */
+  void SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin);
+
   /**
    * Default method for the internal initialization.
    * The method is called by @ref Init

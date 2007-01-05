@@ -46,12 +46,18 @@ extern "C" {
     const AliHLTUInt32_t gkAliHLTComponentInvalidShmType = 0;
     const AliHLTUInt64_t gkAliHLTComponentInvalidShmID = ~(AliHLTUInt64_t)0;
 
+  const int kAliHLTComponentDataTypefIDsize=8;
+  const int kAliHLTComponentDataTypefOriginSize=4;
   struct AliHLTComponentDataType
   {
     AliHLTUInt32_t fStructSize;
-    char fID[8];
-    char fOrigin[4];
+    char fID[kAliHLTComponentDataTypefIDsize];
+    char fOrigin[kAliHLTComponentDataTypefOriginSize];
   };
+
+# define kAliHLTVoidDataTypeID "\0\0\0\0\0\0\0"
+# define kAliHLTVoidDataOrigin "\0\0\0"
+  const AliHLTComponentDataType kAliHLTVoidDataType = {sizeof(AliHLTComponentDataType), kAliHLTVoidDataTypeID, kAliHLTVoidDataOrigin};
   
   struct AliHLTComponentBlockData
   {
@@ -95,10 +101,10 @@ extern "C" {
 
 inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
     {
-    for ( unsigned i = 0; i < 8; i++ )
+    for ( unsigned i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
 	if ( dt1.fID[i] != dt2.fID[i] )
 	    return false;
-    for ( unsigned i = 0; i < 4; i++ )
+    for ( unsigned i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
 	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
 	    return false;
     return true;
@@ -106,10 +112,10 @@ inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponen
 
 inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
     {
-    for ( unsigned i = 0; i < 8; i++ )
+    for ( unsigned i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
 	if ( dt1.fID[i] != dt2.fID[i] )
 	    return true;
-    for ( unsigned i = 0; i < 4; i++ )
+    for ( unsigned i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
 	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
 	    return true;
     return false;

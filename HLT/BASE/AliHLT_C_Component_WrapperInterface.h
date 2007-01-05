@@ -23,6 +23,11 @@
  */
 
 #include <AliHLTDataTypes.h>
+/* Matthias Dec 2006
+ * The names have been changed for Aliroot's coding conventions sake
+ * The old names are defined for backward compatibility with the 
+ * PublisherSubscriber framework
+ */
 typedef AliHLTComponentLogSeverity AliHLTComponent_LogSeverity;
 typedef AliHLTComponentEventData AliHLTComponent_EventData;
 typedef AliHLTComponentShmData AliHLTComponent_ShmData;

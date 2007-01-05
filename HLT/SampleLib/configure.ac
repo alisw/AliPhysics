@@ -18,6 +18,7 @@ AC_PROG_LIBTOOL
 
 AC_DEBUG
 AC_OPTIMIZATION
+AM_CONDITIONAL(STANDALONE_SAMPLELIB, 1)
 
 dnl ------------------------------------------------------------------
 dnl
@@ -32,7 +33,7 @@ dnl ------------------------------------------------------------------
 dnl check for AliRoot features
 AC_LANG_PUSH(C++)
 have_aliroot=no
-AC_ARG_WITH(aliroot,[  --with-aliroot	top of the AliRoot installation],
+AC_ARG_WITH(aliroot,[  --with-aliroot	  top of the AliRoot installation],
 		    [test -d $with_aliroot && ALICE_ROOT=$with_aliroot],
 		    [])
 
@@ -149,7 +150,7 @@ fi
 dnl ------------------------------------------------------------------
 dnl check for the HLT component framework
 AC_MSG_CHECKING([for HLT component framework in ])
-AC_ARG_WITH(hltbase, [installation path of the HLT component framework],
+AC_ARG_WITH(hltbase, [  --with-hltbase	  installation path of the HLT component framework],
 		     [],
 		     [test -n $have_aliroot && with_hltbase=$have_aliroot ])
 if test -z $with_hltbase || ! test -d $with_hltbase ; then

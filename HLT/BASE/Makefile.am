@@ -1,6 +1,11 @@
 # $Id$
 # Makefile template for the Alice HLT framework
 
+# be aware of the two different meanings of 'MODULE'
+# 1. AliRoot classifies each detector and main sub-package as a module
+#    so for all HLT library packages MODULE is equal HLT
+# 2. The HLT stand-alone build system knows about sub-modules
+#    e.g. for libHLTbase, MODULE=HLTbase
 MODULE				= HLTbase
 
 AM_CPPFLAGS			= -DMODULE=$(MODULE)
@@ -10,48 +15,24 @@ bin_SCRIPTS			= setenv.sh setenv.csh
 # library definition
 lib_LTLIBRARIES			=  libHLTbase.la
 
+# version info for the library
+LIBRARY_VERSION			= '1:1:0'
+
+# MODDIR is set by the AliRoot build system and denotes the topdir
+# of the module, we must set it since the package definition libHLTbase.pkg
+# includes another common configuration file
 MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libHLTbase.pkg
-#include $(top_srcdir)/libHLTbase.pkg
+include $(top_srcdir)/libHLTbase.pkg
 
 # library sources
-# temporary until lib*.pkg file is commited to AliRoot
-#libHLTbase_la_SOURCES		= $(MODULE_SRCS)
-libHLTbase_la_SOURCES		=  AliHLTComponent.cxx \
-				   AliHLTComponentHandler.cxx \
-				   AliHLTSystem.cxx \
-				   AliHLT_C_Component_WrapperInterface.cxx \
-				   AliHLTProcessor.cxx \
-				   AliHLTConfiguration.cxx \
-				   AliHLTLogging.cxx \
-				   AliHLTDataBuffer.cxx \
-				   AliHLTDataSource.cxx \
-				   AliHLTDataSink.cxx
+libHLTbase_la_SOURCES		= $(MODULE_SRCS)
 
-# class header files, the link definition for the root dictionary
-# will be created from the names of the header files
-CLASS_HDRS			=  AliHLTComponent.h \
-				   AliHLTComponentHandler.h \
-				   AliHLTSystem.h \
-				   AliHLTProcessor.h \
-				   AliHLTConfiguration.h \
-				   AliHLTConfigurationHandler.h \
-				   AliHLTTask.h \
-				   AliHLTLogging.h \
-				   AliHLTDataBuffer.h \
-				   AliHLTDataSource.h \
-				   AliHLTDataSink.h
+# library headers
+pkginclude_HEADERS		= $(MODULE_HDRS)
 
-# temporary until lib*.pkg file is commited to AliRoot
-#pkginclude_HEADERS		=  $(MODULE_HDRS)
-pkginclude_HEADERS		=  $(CLASS_HDRS) \
-				   AliHLTDataTypes.h \
-				   AliHLT_C_Component_WrapperInterface.h \
-				   AliHLTDefinitions.h \
-				   AliHLTStdIncludes.h
-
-# version info for the library
-libHLTbase_la_LDFLAGS		=  -version-info 1:1:0
+# linker flags
+libHLTbase_la_LDFLAGS		=  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  HLTBaseCompileInfo.cxx
@@ -71,4 +52,3 @@ $(COMPILE_INFO): $(libHLTbase_la_SOURCES) $(pkginclude_HEADERS) $(noinst_HEADERS
 	@echo '//add changes in Makefile.am' >> $@
 	@echo 'void $(MODULE)CompileInfo( char*& date, char*& time)' >> $@
 	@echo '{date=__DATE__; time=__TIME__; return;}' >> $@
-

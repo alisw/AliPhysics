@@ -25,6 +25,7 @@
 using namespace std;
 #endif
 
+#include "AliHLTSystem.h"
 #include "AliHLTDummyComponent.h"
 #include <stdlib.h>
 #include <errno.h>
@@ -35,8 +36,9 @@ AliHLTDummyComponent gAliHLTDummyComponent;
 ClassImp(AliHLTDummyComponent)
     
 AliHLTDummyComponent::AliHLTDummyComponent()
+  :
+    fOutputPercentage(100) // By default we copy to the output exactly what we got as input
     {
-    fOutputPercentage = 100; // By default we copy to the output exactly what we got as input
     }
 
 AliHLTDummyComponent::~AliHLTDummyComponent()
@@ -55,7 +57,10 @@ void AliHLTDummyComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& l
 
 AliHLTComponentDataType AliHLTDummyComponent::GetOutputDataType()
     {
-    return (AliHLTComponentDataType){ sizeof(AliHLTComponentDataType), {'D','U','M','M','Y',' ',' ',' '},{'D','U','M','Y'}};
+      AliHLTComponentDataType dt;
+      SetDataType(dt, "DUMMY", "DUMY");
+      cout << "SetDataType: size " << dt.fStructSize << endl;
+      return dt;
     }
 
 void AliHLTDummyComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -70,7 +75,7 @@ void AliHLTDummyComponent::GetOutputDataSize( unsigned long& constBase, double& 
 AliHLTComponent* AliHLTDummyComponent::Spawn()
     {
     return new AliHLTDummyComponent;
-    };
+    }
 
 int AliHLTDummyComponent::DoInit( int argc, const char** argv )
     {
