@@ -63,7 +63,7 @@ class AliHLTDataSource : public AliHLTComponent {
    * Default implementation for all data sources.
    * There are no input data types.
    */
-  void AliHLTDataSource::GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
 
  private:
   /**

@@ -220,7 +220,7 @@ class AliHLTComponent : public AliHLTLogging {
    * are copied, the rest is fille with 0's.
    * Please note that the fID and fOrigin members are not strings, just arrays of
    * chars of size @ref kAliHLTComponentDataTypefIDsize and
-   * @kAliHLTComponentDataTypefOriginSize respectively and not necessarily with
+   * @ref kAliHLTComponentDataTypefOriginSize respectively and not necessarily with
    * a terminating zero.
    * @param id      ID string
    * @param origin  Origin string

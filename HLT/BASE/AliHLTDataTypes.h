@@ -101,10 +101,10 @@ extern "C" {
 
 inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
     {
-    for ( unsigned i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
+    for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
 	if ( dt1.fID[i] != dt2.fID[i] )
 	    return false;
-    for ( unsigned i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
+    for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
 	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
 	    return false;
     return true;
@@ -112,10 +112,10 @@ inline bool operator==( const AliHLTComponentDataType& dt1, const AliHLTComponen
 
 inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponentDataType& dt2 )
     {
-    for ( unsigned i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
+    for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ )
 	if ( dt1.fID[i] != dt2.fID[i] )
 	    return true;
-    for ( unsigned i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
+    for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
 	if ( dt1.fOrigin[i] != dt2.fOrigin[i] )
 	    return true;
     return false;
