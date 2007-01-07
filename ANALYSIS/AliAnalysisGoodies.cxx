@@ -38,7 +38,7 @@
 #include <TGrid.h>
 #include <TROOT.h> 
 #include <TSystem.h>
-
+#include <TEntryList.h>
 
 //______________________________________________________________________________
 AliAnalysisGoodies::AliAnalysisGoodies() :
@@ -125,17 +125,20 @@ const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, con
     tempo.Remove(tempo.Last('/'), tempo.Length()) ; 
     TString runNumber = tempo(tempo.Last('/')+1, tempo.Length())+"/" ; 
     TString dir = localDir + runNumber ; 
-    gSystem->MakeDirectory(dir) ; 
-    gSystem->ChangeDirectory(dir) ; 
-    dir += evtsNumber + "/"; 
-    gSystem->MakeDirectory(dir) ; 
-    gSystem->ChangeDirectory(dir) ; 
-    dir += collectionIn->GetCollectionName() ; 
+    dir += evtsNumber ;
+    char line[1024] ; 
+    sprintf(line, ".! mkdir -p %s", dir.Data()) ; 
+    gROOT->ProcessLine(line) ; 
+    printf("***************************%s\n", line) ; 
     TEntryList * list = collectionIn->GetEventList("") ; 
-    
+    if (!list) 
+     list = new TEntryList() ; 
     collectionOu->WriteBody(counter, collectionIn->GetGUID(""), collectionIn->GetLFN(""), collectionIn->GetTURL(""), list) ;
-    counter++ ; 
-    printf("Copying %s to %s\n", fileTURL.Data(), dir.Data()) ;  
+    counter++ ;
+    tempo = fileTURL ; 
+    TString filename = tempo(tempo.Last('/')+1, tempo.Length()) ;  
+    dir += filename ; 
+    AliInfo(Form("Copying %s to %s\n", fileTURL.Data(), dir.Data())) ;  
     merger.Cp(fileTURL, dir) ;
   }
   collectionOu->Export() ;
@@ -215,10 +218,10 @@ const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCut
 
   tagAna->CreateXMLCollection(out, runCuts, evtCuts) ;
 
-  return rv ; 
 #else
-  return kFALSE;
+  rv =  kFALSE;
 #endif
+  return rv ; 
 }
 
 //______________________________________________________________________
