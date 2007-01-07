@@ -189,7 +189,7 @@ const char *AliXMLCollection::GetGUID(const char* filename) const {
     TMap *obj = (TMap*)fCurrent->GetValue(filename);
     if (obj) {
       if (obj->GetValue("guid")) {
-	return ( ((TObjString*)obj->GetValue("uid"))->GetName());
+	return ( ((TObjString*)obj->GetValue("guid"))->GetName());
       }
     }
   }
