@@ -1,16 +1,12 @@
 void SETUP()
 {
-   // Load some ROOT libraries
-   gSystem->Load("libEG");
-   gSystem->Load("libGeom");
-
    // Load the ESD library
-   gSystem->Load("libESD");
+   gSystem->Load("libANALYSIS_NEW");
 
    // Set the Inlucde paths
-   gSystem->SetIncludePath("-I$ROOTSYS/include -IESD");
-   gROOT->ProcessLine(".include ESD");
+   gSystem->SetIncludePath("-I$ROOTSYS/include -IANALYSIS_NEW");
+   gROOT->ProcessLine(".include ANALYSIS_NEW");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("ESD_INCLUDE", "ESD");
+   gSystem->Setenv("ANALYSIS_NEW_INCLUDE", "ANALYSIS_NEW");
 }
