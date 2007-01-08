@@ -11,7 +11,8 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetGrid.cxx AliJetUnitArray.cxx AliJetHadronCorrection.cxx \
 	AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx \
 	AliJetFillUnitArrayTracks.cxx \
-	AliJetDummyGeo.cxx
+	AliJetDummyGeo.cxx \
+	AliAnalysisTaskJets.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
