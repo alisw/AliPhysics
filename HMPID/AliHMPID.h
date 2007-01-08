@@ -36,13 +36,17 @@ public:
          
   TObjArray*    DigLst   (         )const{return fDig;                                                          }//get digits list for all chambers
   TClonesArray* DigLst   (Int_t c  )const{return fDig ? (TClonesArray *)fDig->At(c):0;                          }//get digits list for chamber
-  void          DigCreate(         )     {fDig=new TObjArray(7);for(Int_t i=0;i<7;i++)fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);}//create digits list
+  void          DigCreate(         )     {
+    if (fDig) return; //PH do not recreate existing containers
+    fDig=new TObjArray(7);for(Int_t i=0;i<7;i++)fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);               }//create digits list
   void          DigReset (         )     {if(fDig)for(int i=0;i<7;i++)fDig->At(i)->Clear();                     }//clean digits list 
   void          DigPrint (Int_t evt)const;                                                                       //print digits
           
   TObjArray*    CluLst   (         )const{return fClu;                                                          }//get clusters list for all chambers
   TClonesArray* CluLst   (Int_t c  )const{return fClu ? (TClonesArray *)fClu->At(c):0;                          }//get clusters list for chamber
-  inline void   CluCreate(         )     {fClu=new TObjArray(7); for(Int_t i=0;i<7;i++)fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);}//create clusters list
+  void          CluCreate(         )     {
+    if (fClu) return; //PH do not recreate existing containers
+    fClu=new TObjArray(7); for(Int_t i=0;i<7;i++)fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);            }//create clusters list
          void   CluReset (         )     {if(fClu)for(int i=0;i<7;i++)fClu->At(i)->Clear();                     }//clean clusters list
          void   CluPrint (Int_t evt)const;                                                                       //print clusters list
 protected:  
