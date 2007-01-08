@@ -1047,7 +1047,7 @@ void AliTPCtrackerParam::BuildTrack(AliTPCseedGeant *s,Int_t ch) {
 //-----------------------------------------------------------------------------
   Double_t xref = s->GetXL();
   Double_t xx[5],cc[15];
-  cc[0]=cc[2]=cc[5]=cc[9]=cc[14]=10.;
+  cc[0]=cc[2]=cc[5]=cc[9]=cc[14]=0.;
   cc[1]=cc[3]=cc[4]=cc[6]=cc[7]=cc[8]=cc[10]=cc[11]=cc[12]=cc[13]=0.;
   
   // Magnetic field
