@@ -114,7 +114,7 @@ const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, con
   
   const char* ocwd = gSystem->WorkingDirectory();
 
-  Int_t counter = 0 ;  
+  Int_t counter = 1 ;  
   while ( collectionIn->Next() ) {
     gSystem->ChangeDirectory(localDir) ; 
     TString fileTURL = collectionIn->GetTURL("") ; 
@@ -133,12 +133,12 @@ const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, con
     TEntryList * list = collectionIn->GetEventList("") ; 
     if (!list) 
      list = new TEntryList() ; 
-    collectionOu->WriteBody(counter, collectionIn->GetGUID(""), collectionIn->GetLFN(""), collectionIn->GetTURL(""), list) ;
-    counter++ ;
     tempo = fileTURL ; 
     TString filename = tempo(tempo.Last('/')+1, tempo.Length()) ;  
     dir += filename ; 
     AliInfo(Form("Copying %s to %s\n", fileTURL.Data(), dir.Data())) ;  
+    collectionOu->WriteBody(counter, collectionIn->GetGUID(""), collectionIn->GetLFN(""), dir, list) ;
+    counter++ ;
     merger.Cp(fileTURL, dir) ;
   }
   collectionOu->Export() ;

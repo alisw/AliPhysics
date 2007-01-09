@@ -44,7 +44,7 @@ endif
 	@echo "done"
 
 %.o:    %.cxx %.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(PACKCXXFLAGS) -c $< -o $@
 
 clean:
 	@rm -f $(OBJS_ANALYSIS_NEW) *.so G__$(PACKAGE).* $(PARFILE)
