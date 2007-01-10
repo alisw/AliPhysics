@@ -12,17 +12,18 @@
 ///
 /// \author Alexander Zinchenko, JINR Dubna
 
-class TArrayD;
-class TClonesArray;
-class TObjArray;
-#include <TMatrixDfwd.h>
-#include <TObject.h>
-
 class AliMUONEventRecoCombi;
 class AliMUONHitForRec;
 class AliMUONObjectPair;
 class AliMUONTrackReconstructorK;
 #include "AliMUONTrack.h" 
+
+class TArrayD;
+class TClonesArray;
+class TObjArray;
+
+#include <TMatrixD.h>
+#include <TObject.h>
 
 class AliMUONTrackK : public AliMUONTrack {
 
