@@ -7,7 +7,7 @@
 
 /// \ingroup rec
 /// \class AliMUONEventRecoCombi
-/// \brief Combined cluster / track finder in MUON arm of ALICE
+/// \brief Combined cluster / track finder in the MUON arm of ALICE
  
 #include <TObject.h>
 #include <TArrayD.h>
@@ -38,11 +38,11 @@ class AliMUONEventRecoCombi : public TObject
     AliMUONEventRecoCombi();
 
  private:
-    static AliMUONEventRecoCombi* fgRecoCombi; //!<  singleton instance
-    TClonesArray *fDetElems; //!<  array of Det. Elem. objects
-    TArrayD *fZ; //!<  array of det. elem. Z-coordinates
-    Int_t fNZ; //!<  number of different Z's
-    Int_t **fDEvsZ; //!<  list of DE's vs Z-coordinates
+    static AliMUONEventRecoCombi* fgRecoCombi; //!< singleton instance
+    TClonesArray *fDetElems; //!< array of Det. Elem. objects
+    TArrayD *fZ; //!< array of det. elem. Z-coordinates
+    Int_t fNZ; //!< number of different Z's
+    Int_t **fDEvsZ; //!< list of DE's vs Z-coordinates
 
     AliMUONEventRecoCombi(const AliMUONEventRecoCombi& rhs);
     AliMUONEventRecoCombi & operator = (const AliMUONEventRecoCombi& rhs);
