@@ -57,7 +57,6 @@ AliJetESDReader::AliJetESDReader():
     fArrayInitialised(0) 
 {
   // Constructor    
-    SetEMCALGeometry();
 }
 
 //____________________________________________________________________________
@@ -107,7 +106,7 @@ void AliJetESDReader::OpenInputFiles()
   
   int nMax = fChain->GetEntries(); 
 
-  printf("\nTotal number of events in chain= %d",nMax);
+  printf("\nTotal number of events in chain= %d \n",nMax);
   
   // set number of events in header
   if (fReaderHeader->GetLastEvent() == -1)
@@ -124,7 +123,7 @@ void AliJetESDReader::ConnectTree(TTree* tree) {
      
      fChain->SetBranchAddress("ESD",    &fESD);
      Int_t nMax = fChain->GetEntries(); 
-     printf("\nTotal number of events in chain= %5d", nMax);
+     printf("\nTotal number of events in chain= %5d \n", nMax);
      // set number of events in header
      if (fReaderHeader->GetLastEvent() == -1)
 	 fReaderHeader->SetLastEvent(nMax);
@@ -150,7 +149,7 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
   fDebug = fReaderHeader->GetDebug();
   // get event from chain
   fChain->GetTree()->GetEntry(event);
-
+  
   if (!fESD) {
       return kFALSE;
   }
