@@ -180,19 +180,8 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
 
   Int_t eventNumber = runLoader->GetEventNumber() ;
 
-  if(eventNumber==0) {
-    rawReader->RewindEvents();
-    rawReader->NextEvent();
-  }
-
   AliPHOSGetter *gime = AliPHOSGetter::Instance();
-
-  Bool_t isOldRCUFormat = kFALSE;
-  TString opt = GetOption();
-  if(opt.Contains("OldRCUFormat"))
-    isOldRCUFormat = kTRUE;
-
-  gime->ReadRaw(rawReader,isOldRCUFormat) ;
+  gime->Event(eventNumber, "DRTP") ; 
 
   TClonesArray *recParticles  = gime->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
@@ -228,7 +217,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
 	AliFatal(Form("Digit not found at the expected position %d!",iDigit));
       }
       else {
-	amplList[iDigit] = (UShort_t)(digit->GetEnergy()*500); // Energy in units of GeV/500
+	amplList[iDigit] = (UShort_t)digit->GetEnergy();
 	digiList[iDigit] = (UShort_t)(digit->GetId());
       }
     }
@@ -241,7 +230,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
     ec->SetNumberOfDigits(digitMult);           //digit multiplicity
-    ec->SetDigitAmplitude(amplList);            //energies in 1/500 of GeV
+    ec->SetDigitAmplitude(amplList);            //digit energies
     ec->SetDigitIndex(digiList);                //abs id of the cell
     ec->SetEmcCpvDistance(-1);                  //not yet implemented
     ec->SetClusterChi2(-1);                     //not yet implemented

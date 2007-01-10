@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.99  2006/11/07 16:49:51  kharlov
+ * Corrections for next event switch in case of raw data (B.Polichtchouk)
+ *
  * Revision 1.98  2006/10/27 17:14:27  kharlov
  * Introduce AliDebug and AliLog (B.Polichtchouk)
  *
@@ -560,6 +563,13 @@ void AliPHOSClusterizerv1::CleanDigits(TClonesArray * digits)
     digit->SetIndexInList(i) ;     
   }
 
+  //Overwrite digits tree
+  AliPHOSGetter* gime = AliPHOSGetter::Instance();
+  TTree * treeD = gime->TreeD();
+  treeD->Branch("PHOS", &digits);
+  treeD->Fill() ;
+  gime->WriteDigits("OVERWRITE");
+  gime->PhosLoader()->UnloadDigits() ;
 }
 //____________________________________________________________________________
 Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit) const
