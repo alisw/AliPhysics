@@ -266,7 +266,7 @@ AliMUONGeometrySegmentation::HasPad(Int_t detElemId, Int_t ix, Int_t iy)
 //______________________________________________________________________________
 Bool_t
 AliMUONGeometrySegmentation::HasPad(Int_t detElemId, 
-                                    Float_t& xg, Float_t& yg, Float_t& zg)
+                                    Float_t xg, Float_t yg, Float_t zg)
 {
 /// Tell if a given pad exists in a given detector element
 

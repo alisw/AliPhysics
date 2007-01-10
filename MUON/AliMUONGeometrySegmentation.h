@@ -87,7 +87,7 @@ class AliMUONGeometrySegmentation : public TObject
     virtual Bool_t HasPad(Int_t detElemId, 
                           Int_t ix, Int_t iy);
     virtual Bool_t HasPad(Int_t detElemId, 
-                          Float_t& x, Float_t& y, Float_t& z);
+                          Float_t x, Float_t y, Float_t z);
   
     // Initialisation
     //
