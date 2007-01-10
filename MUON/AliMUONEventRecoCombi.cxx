@@ -33,12 +33,12 @@
 #include "AliMUONConstants.h"
 
 #include "AliLoader.h"
+#include "AliLog.h"
 
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TArrayS.h>
 #include <TArrayD.h>
-#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONEventRecoCombi)
@@ -47,30 +47,26 @@ ClassImp(AliMUONEventRecoCombi)
 AliMUONEventRecoCombi* AliMUONEventRecoCombi::fgRecoCombi = 0; 
 
 //_________________________________________________________________________
-  AliMUONEventRecoCombi::AliMUONEventRecoCombi() 
-    : TObject(),
-      fDetElems(0x0),
-      fZ(0x0),
-      fNZ(0),
-      fDEvsZ(0x0)
+AliMUONEventRecoCombi::AliMUONEventRecoCombi() 
+  : TObject(),
+    fDetElems(0x0),
+    fZ(new TArrayD(20)),
+    fNZ(0),
+    fDEvsZ(0x0)
 {
   /// Ctor
 
   fDetElems = new TClonesArray("AliMUONDetElement", 20);
-  fZ = new TArrayD(20);
 }
 
 //_________________________________________________________________________
 AliMUONEventRecoCombi* AliMUONEventRecoCombi::Instance()
 {
-/// return pointer to the singleton instance
+/// Return pointer to the singleton instance
 
   if (fgRecoCombi == 0) {
     fgRecoCombi = new AliMUONEventRecoCombi();
   }
-  //fDetElems = new TClonesArray("AliMUONDetElement", 20);
-  //fZ = new TArrayD(20);
-  //fNZ = 0;
   return fgRecoCombi;
 }
 
@@ -98,6 +94,7 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
   for (Int_t ich = 0; ich < 6; ich++) {
     // loop over chambers 0-5
     TClonesArray *digs = data->Digits(ich);
+    digs->Sort(); //AZ
     //cout << ich << " " << digs << " " << digs->GetEntriesFast() << endl;
     Int_t idDE = -1;
     for (Int_t i = 0; i < digs->GetEntriesFast(); i++) {
@@ -110,6 +107,14 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
     }
   }
 
+  // Compute average Z-position
+  for (Int_t i = 0; i < nDetElem; i++) {
+    AliMUONDetElement *detElem = (AliMUONDetElement*) fDetElems->UncheckedAt(i);
+    Int_t nDigs = detElem->Digits(0)->GetEntriesFast() + 
+                  detElem->Digits(1)->GetEntriesFast();
+    detElem->SetZ(detElem->Z() / nDigs);
+  }
+  
   // Sort according to Z
   fDetElems->Sort();
   //cout << nDetElem << endl;
@@ -123,13 +128,13 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
   for (Int_t i = 0; i < nDetElem; i++) {
     AliMUONDetElement *detElem = (AliMUONDetElement*) fDetElems->UncheckedAt(i);
     detElem->Fill(data);
-    //cout << i << " " << detElem->Z() << endl;
-    if (detElem->Z() - z0 < 0.5) { 
+    //cout << i << " " << detElem->IdDE() << " " << detElem->Z() << endl;
+    if (detElem->Z() - z0 < 0.05) { 
       // the same Z
       (*nPerZ)[fNZ]++;
     } else {
-      if (fZ->GetSize() <= fNZ) fZ->Set(fZ->GetSize()+10);
-      if (nPerZ->GetSize() <= fNZ) nPerZ->Set(nPerZ->GetSize()+10);
+      if (fZ->GetSize() <= fNZ+1) fZ->Set(fZ->GetSize()+10);
+      if (nPerZ->GetSize() <= fNZ+1) nPerZ->Set(nPerZ->GetSize()+10);
       (*fZ)[++fNZ] = detElem->Z();
       z0 = detElem->Z();
       (*nPerZ)[fNZ]++;
@@ -159,15 +164,19 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
   // Fill rec. point container for stations 4 and 5
   //cout << data->TreeR() << endl;
   //data->MakeBranch("RC");
+  /*
   data->SetTreeAddress("RCC");
   for (Int_t ch = 6; ch < 10; ch++) {
     TClonesArray *raw = data->RawClusters(ch);
-    //cout << raw->GetEntriesFast() << " " << data->RawClusters(ch) << endl;
-    for (Int_t i = 0; i < raw->GetEntriesFast(); i++) {
+    cout << ch << " " << raw->GetEntriesFast() << " " << data->RawClusters(ch) << endl;
+    //for (Int_t i = 0; i < raw->GetEntriesFast(); i++) {
+    for (Int_t i = 0; i < TMath::Min(raw->GetEntriesFast(),1000); i++) {
       AliMUONRawCluster *clus = (AliMUONRawCluster*) raw->UncheckedAt(i);
       data->AddRawCluster(ch, *clus);
+      cout << i << " " << raw->GetEntriesFast() << endl;
     }
   }
+  */
   //data->SetTreeAddress("RC");
 }
 
