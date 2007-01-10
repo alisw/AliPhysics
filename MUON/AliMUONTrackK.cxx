@@ -22,17 +22,11 @@
 // Kalman filter approach
 // Author: Alexander Zinchenko, JINR Dubna
 
-#include <Riostream.h>
-#include <TClonesArray.h>
-#include <TArrayD.h>
-#include <TMatrixD.h>
-
 #include "AliMUONTrackK.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
 
 #include "AliMUONTrackReconstructorK.h"
-#include "AliMagF.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONRawCluster.h"
@@ -40,8 +34,14 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONEventRecoCombi.h"
 #include "AliMUONDetElement.h"
+
 #include "AliRun.h"
 #include "AliLog.h"
+#include "AliMagF.h"
+
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TArrayD.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackK) // Class implementation in ROOT context
@@ -826,7 +826,8 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
   tmp->SetUniqueID(1);
   if (fSteps->fN <= fNSteps) fSteps->Set(fSteps->fN+10);
   fSteps->AddAt(fPositionNew,fNSteps++); 
-  if (fgDebug > 0) cout << " WeightPropagation " << fNSteps << " " << fPositionNew << endl;
+  if (fgDebug > 0) printf(" WeightPropagation %d %.3f %.3f %.3f \n", fNSteps, 
+			  (*fTrackParNew)(1,0), (*fTrackParNew)(0,0), fPositionNew);
   return;
 }
 
@@ -842,6 +843,19 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   AliMUONTrackK *trackK;
   AliMUONDetElement *detElem = NULL;
 
+  //sigmaB = fgTrackReconstructor->GetBendingResolution(); // bending resolution
+  //sigmaNonB = fgTrackReconstructor->GetNonBendingResolution(); // non-bending resolution
+  *fCovariance = *fWeight;
+  // check whether the Invert method returns flag if matrix cannot be inverted,
+  // and do not calculate the Determinant in that case !!!!
+  if (fCovariance->Determinant() != 0) {
+      Int_t ifail;
+      mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
+  } else {
+    AliWarning(" Determinant fCovariance=0:");
+  }
+  //windowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+sigmaB*sigmaB);
+  //windowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+sigmaNonB*sigmaNonB);
   Bool_t ok = kFALSE;
 
   if (fgTrackReconstructor->GetTrackMethod() == 3 && iz >= 0) {
@@ -850,10 +864,15 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
     Int_t *pDEatZ = fgCombi->DEatZ(iz);
     Int_t nDetElem = pDEatZ[-1];
     //cout << fgCombi->Z(iz) << " " << nDetElem << endl;
+    windowB = fgkNSigma * TMath::Sqrt((*fCovariance)(0,0));
+    windowNonB = fgkNSigma * TMath::Sqrt((*fCovariance)(1,1));
+    if (fgkNSigma > 6) windowB = TMath::Min (windowB, 5.);
+    windowB = TMath::Max (windowB, 2.);
+    windowNonB = TMath::Max (windowNonB, 2.);
     for (Int_t i = 0; i < nDetElem; i++) {
       detElem = fgCombi->DetElem(pDEatZ[i]);
-      if (detElem->Inside((*fTrackParNew)(1,0), (*fTrackParNew)(0,0), fPosition)) {
-	detElem->ClusterReco((*fTrackParNew)(1,0), (*fTrackParNew)(0,0));
+      if (detElem->Inside((*fTrackParNew)(1,0), (*fTrackParNew)(0,0), fPosition, windowNonB, windowB)) {
+	detElem->ClusterReco((*fTrackParNew)(1,0), (*fTrackParNew)(0,0), windowNonB, windowB);
 	hitAdd = (AliMUONHitForRec*) detElem->HitsForRec()->First();
 	ok = kTRUE;
 	break;
@@ -984,7 +1003,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    trackParTmp = trackPar;
 	    pointWeightTmp = pointWeight;
 	    hitAdd = hit;
-	    if (fgDebug > 0) cout << " Added point: " << x << " " << y << " " << dChi2 << endl;
+	    if (fgDebug > 0) printf(" Added point (ch, x, y, Chi2): %d %.3f %.3f %.3f\n", ichamb, x, y, dChi2);
 	    branchChi2[0] = dChi2;
 	  } else {
 	    // branching: create a new track
@@ -993,7 +1012,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    trackK = new ((*trackPtr)[nRecTracks]) AliMUONTrackK(NULL, NULL); 
 	    *trackK = *this;
 	    fgTrackReconstructor->SetNRecTracks(nRecTracks+1);
-	    if (fgDebug > 0) cout << " ******** New track: " << ichamb << " " << hit->GetTTRTrack() << " " << 1/(trackPar)(4,0) << " " << hit->GetBendingCoor() << " " << hit->GetNonBendingCoor() << " " << fNmbTrackHits << " " << nRecTracks << endl;
+	    if (fgDebug > 0) printf(" ******** New track (ch, hit, x, y, mom, Chi2, nhits, cand): %d %d %.3f %.3f %.3f %.3f %d %d\n", ichamb, hit->GetTTRTrack(), hit->GetNonBendingCoor(), hit->GetBendingCoor(), 1/(trackPar)(4,0), dChi2, fNmbTrackHits, nRecTracks);
 	    trackK->fRecover = 0;
 	    *(trackK->fTrackPar) = trackPar;
 	    *(trackK->fWeight) += pointWeight; 
@@ -1598,21 +1617,20 @@ vertex:
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
     }
     printf ("%5d", clus->GetTrack(1)%10000000); 
-    
-    cout << endl;
-    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
-      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
-      if (hit->GetHitNumber() < 0) { // combined cluster / track finder
-	Int_t index = -hit->GetHitNumber() / 100000;
-	Int_t iPos = -hit->GetHitNumber() - index * 100000;
-	clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
-      } else {
-	rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
-	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
-      }
-      if (clus->GetTrack(2) != -1) printf ("%5d", clus->GetTrack(2)%10000000);
-      else printf ("%5s", "    ");
+  }    
+  cout << endl;
+  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
+    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
+    if (hit->GetHitNumber() < 0) { // combined cluster / track finder
+      Int_t index = -hit->GetHitNumber() / 100000;
+      Int_t iPos = -hit->GetHitNumber() - index * 100000;
+      clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
+    } else {
+      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
+      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
     }
+    if (clus->GetTrack(2) != -1) printf ("%5d", clus->GetTrack(2)%10000000);
+    else printf ("%5s", "    ");
   }
   cout << endl;
   for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
