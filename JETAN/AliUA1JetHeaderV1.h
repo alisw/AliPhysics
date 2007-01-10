@@ -69,19 +69,19 @@ protected:
   // parameters of backgound substraction
   Float_t fMinMove;         // min cone move
   Float_t fMaxMove;         // max cone move
-  Int_t   fBackgMode;   // background subtraction mode
+  Int_t   fBackgMode;       // background subtraction mode
   Float_t fPrecBg;          // max value of change for BG (in %)
-  Float_t fBackgStat;           // pre-calculated background used in statistic subtraction method
-  Float_t fBackgCutRatio;       // pre-calculated pt-cut ratio used in ratio subtraction method
-  Int_t   fNAcceptJets;           // number of accepted jets per events
+  Float_t fBackgStat;       // pre-calculated background used in statistic subtraction method
+  Float_t fBackgCutRatio;   // pre-calculated pt-cut ratio used in ratio subtraction method
+  Int_t   fNAcceptJets;     // number of accepted jets per events
 
   // parameters for legos
-  Int_t   fLegoNbinEta;         //! number of cells in eta
-  Int_t   fLegoNbinPhi;         //! number of cells in phi
-  Float_t fLegoEtaMin;          //! minimum eta
-  Float_t fLegoEtaMax;          //! maximum eta
-  Float_t fLegoPhiMin;          //! minimun phi
-  Float_t fLegoPhiMax;          //! maximum phi
+  Int_t   fLegoNbinEta;         // number of cells in eta
+  Int_t   fLegoNbinPhi;         // number of cells in phi
+  Float_t fLegoEtaMin;          // minimum eta
+  Float_t fLegoEtaMax;          // maximum eta
+  Float_t fLegoPhiMin;          // minimun phi
+  Float_t fLegoPhiMax;          // maximum phi
 
   ClassDef(AliUA1JetHeaderV1,1)
 };
