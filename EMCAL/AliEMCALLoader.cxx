@@ -116,7 +116,10 @@ AliEMCALLoader::~AliEMCALLoader()
     TreeS()->SetBranchAddress(fDetectorName,0);
   if (TreeR())
     TreeR()->SetBranchAddress(fgkECARecPointsBranchName,0);
-  delete fHits;
+  if (fHits) {
+    fHits->Delete();
+    delete fHits;
+  }
   delete fDigits;
   delete fSDigits;
   delete fRecPoints;
@@ -181,36 +184,63 @@ Int_t AliEMCALLoader::GetEvent()
      Int_t nEnt = treeH->GetEntries();  // TreeH has array of hits for every primary
      fHits->Clear();
      Int_t index = 0;
-     TClonesArray *temp_arr = new TClonesArray("AliEMCALHit");
-     treeH->SetBranchAddress(fDetectorName,&temp_arr);
+     TClonesArray *tempArr = 0x0;
+     TBranch * branchH = treeH->GetBranch(fDetectorName);
+     branchH->SetAddress(&tempArr);
      for (Int_t iEnt = 0; iEnt < nEnt; iEnt++) {
        treeH->GetEntry(iEnt);
-       Int_t nHit = temp_arr->GetEntriesFast();
+       Int_t nHit = tempArr->GetEntriesFast();
        for (Int_t iHit = 0; iHit < nHit; iHit++) {
-	 new ((*fHits)[index]) AliEMCALHit(*((AliEMCALHit*)temp_arr->At(iHit)));
+	 new ((*fHits)[index]) AliEMCALHit(*((AliEMCALHit*)tempArr->At(iHit)));
 	 index++;
        }
+     }
+     branchH->ResetAddress();
+     if (tempArr) {
+       tempArr->Delete();
+       delete tempArr;
      }
    }
   
    // SDigits
    TTree *treeS = TreeS();
    if (treeS) {
-     treeS->SetBranchAddress(fDetectorName,&fSDigits);
+     TBranch * branchS = treeS->GetBranch(fDetectorName);
+     branchS->ResetAddress();
+     if (fSDigits) {
+       fSDigits->Delete();
+       delete fSDigits;
+       fSDigits = 0x0;
+     }
+     branchS->SetAddress(&fSDigits);
      treeS->GetEvent(0);
    }
    
    // Digits
    TTree *treeD = TreeD();
    if (treeD) {
-     treeD->SetBranchAddress(fDetectorName,&fDigits);
+     TBranch * branchD = treeD->GetBranch(fDetectorName);
+     branchD->ResetAddress();
+     if (fDigits) {
+       fDigits->Delete();
+       delete fDigits;
+       fDigits = 0x0;
+     }
+     branchD->SetAddress(&fDigits);
      treeD->GetEvent(0);
    }
 
    // RecPoints
    TTree *treeR = TreeR();
    if (treeR) {
-     treeR->SetBranchAddress(fgkECARecPointsBranchName,&fRecPoints);
+     TBranch * branchR = treeR->GetBranch(fgkECARecPointsBranchName);
+     branchR->ResetAddress();
+     if (fRecPoints) {
+       fRecPoints->Delete();
+       delete fRecPoints;
+       fRecPoints = 0x0;
+     }
+     branchR->SetAddress(&fRecPoints);
      treeR->GetEvent(0);
    }
    
