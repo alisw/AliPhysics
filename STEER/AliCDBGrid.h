@@ -114,7 +114,7 @@ private:
 	TString fGridUrl;    // Grid url "Host:port"
 	TString fUser;	     // User
 	TString fDBFolder;   // path of the DB folder
-	TString fSE;	     // Storage Element 
+	TString fSE;	     // Storage Element
 
 	ClassDef(AliCDBGridParam, 0);
 };

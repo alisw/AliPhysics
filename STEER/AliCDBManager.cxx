@@ -138,7 +138,7 @@ Bool_t AliCDBManager::HasStorage(const char* dbString) const {
 
 		if (factory->Validate(dbString)) {
 			return kTRUE;
-		}	
+		}
 	}
 
 	return kFALSE;
@@ -307,7 +307,7 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 		AliError("Please activate a default storage first!");
 		return;
 	}
-	
+
 	AliCDBPath aPath(calibType);
 	if(!aPath.IsValid()){
 		AliError(Form("Not a valid path: %s", calibType));
@@ -318,6 +318,8 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 	if(fSpecificStorages.Contains(objCalibType)){
 		AliWarning(Form("Storage \"%s\" already activated! It will be replaced by the new one",
 					calibType));
+		AliCDBParam *checkPar = dynamic_cast<AliCDBParam*> (fSpecificStorages.GetValue(calibType));
+		if(checkPar) delete checkPar;
 		delete fSpecificStorages.Remove(objCalibType);
 	}
 	GetStorage(param);
@@ -346,10 +348,7 @@ AliCDBParam* AliCDBManager::SelectSpecificStorage(const TString& path) {
 // select storage valid for path from the list of specific storages
 
 	AliCDBPath aPath(path);
-	if(!aPath.IsValid()){
-		AliError(Form("Not a valid path: %s", path.Data()));
-		return NULL;
-	}
+	if(!aPath.IsValid()) return NULL;
 
 	TIter iter(&fSpecificStorages);
 	TObjString *aCalibType=0;
@@ -582,7 +581,7 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, DataType type){
 	AliCDBId id = entry->GetId();
 	AliCDBParam *aPar = SelectSpecificStorage(id.GetPath());
 
-	AliCDBStorage *aStorage;
+	AliCDBStorage *aStorage=0;
 	
 	if(aPar) {
 		aStorage=GetStorage(aPar);
@@ -602,7 +601,11 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, DataType type){
 
 	AliDebug(2,Form("Storing object into storage: %s", aStorage->GetURI().Data()));
 
-	return aStorage->Put(entry, type);
+	Bool_t result = aStorage->Put(entry, type);
+
+	if(fRun >= 0) QueryCDB();
+
+	return result;
 
 
 }
@@ -670,6 +673,44 @@ void AliCDBManager::ClearCache(){
 	fEntryCache.DeleteAll();
 	AliDebug(2,Form("Cache entries: %d",fEntryCache.GetEntries()));
 
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::UnloadFromCache(const char* path){
+// unload cached object
+
+	AliCDBPath queryPath(path);
+	if(!queryPath.IsValid()) return;
+
+	if(!queryPath.IsWildcard()) { // path is not wildcard, get it directly from the cache and unload it!
+		if(fEntryCache.Contains(path)){
+			AliInfo(Form("Unloading object \"%s\" from cache", path));
+			TObjString pathStr(path);
+			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
+			if(entry) delete entry;
+			delete fEntryCache.Remove(&pathStr);
+		} else {
+			AliError(Form("Cache does not contain object \"%s\"!", path))
+		}
+		AliDebug(2,Form("Cache entries: %d",fEntryCache.GetEntries()));
+		return;
+	}
+
+	// path is wildcard: loop on the cache and unload all comprised objects!
+	TIter iter(fEntryCache.GetTable());
+	TPair* pair = 0;
+
+	while((pair = dynamic_cast<TPair*> (iter.Next()))){
+		AliCDBPath entryPath = pair->Key()->GetName();
+		if(queryPath.Comprises(entryPath)) {
+			AliInfo(Form("Unloading object \"%s\" from cache", entryPath.GetPath().Data()));
+			TObjString pathStr(entryPath.GetPath().Data());
+			AliCDBEntry *entry = dynamic_cast<AliCDBEntry*> (fEntryCache.GetValue(&pathStr));
+			if(entry) delete entry;
+			delete fEntryCache.Remove(&pathStr);
+		}
+	}
+	AliDebug(2,Form("Cache entries: %d",fEntryCache.GetEntries()));
 }
 
 //_____________________________________________________________________________

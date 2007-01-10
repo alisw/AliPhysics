@@ -100,8 +100,9 @@ class AliCDBManager: public TObject {
 	~AliCDBManager();
 
   	void ClearCache();
+  	void UnloadFromCache(const char* path);
 
-	static AliCDBManager* Instance(); 
+	static AliCDBManager* Instance();
 
  private:
 

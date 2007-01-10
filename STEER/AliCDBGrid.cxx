@@ -101,7 +101,7 @@ AliCDBGrid::~AliCDBGrid()
 
 //_____________________________________________________________________________
 Bool_t AliCDBGrid::FilenameToId(TString& filename, AliCDBId& id) {
-// build AliCDBId from full path filename (fDBFolder/path/Run#x_#y_v#z.root)
+// build AliCDBId from full path filename (fDBFolder/path/Run#x_#y_v#z_s0.root)
 
 	if(filename.Contains(fDBFolder)){
 		filename = filename(fDBFolder.Length(),filename.Length()-fDBFolder.Length());
@@ -114,13 +114,26 @@ Bool_t AliCDBGrid::FilenameToId(TString& filename, AliCDBId& id) {
 	filename=filename(idPath.Length()+1,filename.Length()-idPath.Length());
 
         Ssiz_t mSize;
-	// valid filename: Run#firstRun_#lastRun_v#version.root
-        TRegexp keyPattern("^Run[0-9]+_[0-9]+_v[0-9]+.root$");
+	// valid filename: Run#firstRun_#lastRun_v#version_s0.root
+        TRegexp keyPattern("^Run[0-9]+_[0-9]+_v[0-9]+_s0.root$");
         keyPattern.Index(filename, &mSize);
         if (!mSize) {
-		AliDebug(2,Form("Bad filename <%s>.", filename.Data()));
-                return kFALSE;
-        }
+
+		// TODO backward compatibility ... maybe remove later!
+        	Ssiz_t oldmSize;
+        	TRegexp oldKeyPattern("^Run[0-9]+_[0-9]+_v[0-9]+.root$");
+        	oldKeyPattern.Index(filename, &oldmSize);
+		if(!oldmSize) {
+			AliDebug(2,Form("Bad filename <%s>.", filename.Data()));
+                	return kFALSE;
+		} else {
+			AliDebug(2,Form("Old filename format <%s>.", filename.Data()));
+			id.SetSubVersion(-11); // TODO trick to ensure backward compatibility
+		}
+
+        } else {
+		id.SetSubVersion(-1); // TODO trick to ensure backward compatibility
+	}
 
 	filename.Resize(filename.Length() - sizeof(".root") + 1);
 
@@ -153,10 +166,13 @@ Bool_t AliCDBGrid::IdToFilename(const AliCDBId& id, TString& filename) const {
                 return kFALSE;
 	}
 
-	filename = Form("Run%d_%d_v%d.root",
+	filename = Form("Run%d_%d_v%d",
 				id.GetFirstRun(),
 				id.GetLastRun(),
 				id.GetVersion());
+
+	if (id.GetSubVersion() != -11) filename += "_s0"; // TODO to ensure backward compatibility
+	filename += ".root";
 
 	filename.Prepend(fDBFolder + id.GetPath() + '/');
 
@@ -173,7 +189,7 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 	TString dirName(fDBFolder);
 
 	Bool_t dirExist=kFALSE;
- 
+
 	// go to the path; if directory does not exist, create it
 	TObjArray *arrName=pathName.Tokenize("/");
 	for(int i=0;i<arrName->GetEntries();i++){
@@ -209,9 +225,10 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 		}
 
 	}
-	delete res; 
- 
+	delete res;
+
 	id.SetVersion(lastVersion + 1);
+	id.SetSubVersion(0);
 
 	TString lastStorage = id.GetLastStorage();
 	if(lastStorage.Contains(TString("new"), TString::kIgnoreCase) && id.GetVersion() > 1 ){
@@ -221,10 +238,10 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 					id.GetVersion()-1));
 	}
 
-	if(!lastRunRange.IsAnyRange() && !(lastRunRange.IsEqual(&id.GetAliCDBRunRange()))) 
+	if(!lastRunRange.IsAnyRange() && !(lastRunRange.IsEqual(&id.GetAliCDBRunRange())))
     		AliWarning(Form("Run range modified w.r.t. previous version (Run%d_%d_v%d)",
     		     	lastRunRange.GetFirstRun(), lastRunRange.GetLastRun(), id.GetVersion()));
-    
+
 	return kTRUE;
 }
 
@@ -304,7 +321,7 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 		MakeQueryFilter(selectedId.GetFirstRun(), selectedId.GetLastRun(), 0, filter);
 
 		TString pattern = Form("%s/Run*", selectedId.GetPath().Data());
-		if(selectedId.GetVersion() >= 0) pattern += Form("_v%d",selectedId.GetVersion());
+		if(selectedId.GetVersion() >= 0) pattern += Form("_v%d*",selectedId.GetVersion());
 		pattern += ".root";
 		AliDebug(2,Form("pattern: %s", pattern.Data()));
 
@@ -363,12 +380,14 @@ AliCDBEntry* AliCDBGrid::GetEntryFromFile(TString& filename, AliCDBId* dataId){
 
 	if(anEntry){
 		AliCDBId entryId = anEntry->GetId();
-		dataId->SetSubVersion(entryId.GetSubVersion());
+		Int_t tmpSubVersion = dataId->GetSubVersion();
+		dataId->SetSubVersion(entryId.GetSubVersion()); // otherwise filename and id may mismatch
 		if(!entryId.IsEqual(dataId)){
 			AliWarning(Form("Mismatch between file name and object's Id!"));
 			AliWarning(Form("File name: %s", dataId->ToString().Data()));
 			AliWarning(Form("Object's Id: %s", entryId.ToString().Data()));
 		}
+		dataId->SetSubVersion(tmpSubVersion);
 	}
 
 	anEntry->SetLastStorage("grid");
@@ -522,7 +541,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	entry->SetVersion(id.GetVersion());
 
 	// write object (key name: "AliCDBEntry")
-	Bool_t result = (entry->Write("AliCDBEntry") != 0); 
+	Bool_t result = (entry->Write("AliCDBEntry") != 0);
 	if (!result) AliError(Form("Can't write entry to file <%s>!", filename.Data()));
 
 
@@ -687,7 +706,7 @@ void AliCDBGrid::QueryValidFiles()
 	MakeQueryFilter(fRun, fRun, fMetaDataFilter, filter);
 
 	TString pattern = Form("%s/Run*", fPathFilter.GetPath().Data());
-	if(fVersion >= 0) pattern += Form("_v%d", fVersion);
+	if(fVersion >= 0) pattern += Form("_v%d*", fVersion);
 	pattern += ".root";
 	AliDebug(2,Form("pattern: %s", pattern.Data()));
 
