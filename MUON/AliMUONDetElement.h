@@ -8,7 +8,7 @@
 /// \ingroup rec
 /// \class AliMUONDetElement
 /// \brief Detection element object containing information for combined 
-/// cluster / track finder in MUON arm 
+/// cluster / track finder in the MUON arm 
 ///
 /// \author Alexander Zinchenko, JINR Dubna
  
@@ -37,9 +37,10 @@ class AliMUONDetElement : public TObject
   //Int_t GetMapElem(AliMUONDigit *digit) const; // get map element
   TObjArray *Digits(Int_t cath) const { return fDigits[cath]; } // array of digits
   TObjArray *RawClusters() const { return fRawClus; } // array of raw clusters
-  TClonesArray *HitsForRec() const { return fHitsForRec; } // hits for rec.
+  TObjArray *HitsForRec() const { return fHitsForRec; } // hits for rec.
   Int_t NHitsForRec() const { return fNHitsForRec; } // No. of hits for rec.
-  Bool_t Inside(Double_t x, Double_t y, Double_t z) const; // check if point inside DE
+  //Bool_t Inside(Double_t x, Double_t y, Double_t z) const; // check if point inside DE
+  Bool_t Inside(Double_t x, Double_t y, Double_t z, Double_t dx, Double_t dy) const; // check if point inside DE
   
   void SetID(Int_t idDE) { fidDE = idDE; } // set det. elem. ID
   void SetIndex(Int_t index) { fIndex = index; } // set position index
@@ -48,7 +49,7 @@ class AliMUONDetElement : public TObject
   //void SetMapElem(const AliMUONDigit *digit, Int_t flag); // set map element 
   void AddDigit(AliMUONDigit *dig); // add digit
   void Fill(AliMUONData *data); // fill hit maps 
-  void ClusterReco(Double_t x, Double_t y); // run cluster reco around (x,y)
+  void ClusterReco(Double_t x, Double_t y, Double_t dx, Double_t dy); // run cluster reco around (x,y)
   void AddHitForRec(AliMUONRawCluster *clus); // make HitForRec
   // What is necessary for sorting TObjArray's
   Bool_t IsSortable() const { return kTRUE; }
@@ -66,7 +67,7 @@ class AliMUONDetElement : public TObject
   AliMUONHitMapA1 *fHitMap[2]; ///< map of digits
   TObjArray *fDigits[2]; ///< container of digits from this det. elem.
   TObjArray *fRawClus; ///< raw clusters
-  TClonesArray *fHitsForRec; ///< HitForRec's
+  TObjArray *fHitsForRec; ///< HitForRec's
   AliMUONClusterFinderAZ *fRecModel; ///< cluster finder
 
   // Functions
