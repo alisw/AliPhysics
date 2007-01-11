@@ -16,7 +16,10 @@
 /* $Id$ */
 /* History of cvs commits:
  *
- * $Log$ 
+ * $Log$
+ * Revision 1.1  2006/12/07 16:32:16  gustavo
+ * First shuttle code, online calibration histograms producer, EMCAL preprocessor
+ * 
  *
 */
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,19 +33,21 @@
 // Adapted for EMCAL by Gustavo Conesa Balbastre, October 2006
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
-#include "AliEMCALCalibHistoProducer.h"
 #include "TH1.h"
 #include "TFile.h"
 #include "TProfile.h"
+
+
+#include "AliLog.h"
 #include "AliRawReader.h"
 #include "AliCaloRawStream.h"
+#include "AliEMCALCalibHistoProducer.h"
 
 ClassImp(AliEMCALCalibHistoProducer)
 
 //-----------------------------------------------------------------------------
 AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer(AliRawReader* rawReader) : 
-  fRawReader(rawReader),fHistoFile(0),fHistoFileName("calibHisto.root"),
+  TObject(),fRawReader(rawReader),fHistoFile(0),fHistoFileName("calibEmcHisto.root"),
   fUpdatingRate(100),fIsOldRCUFormat(kFALSE), fNSuperModules(12),  fNCellsEta (48),   
   fNCellsPhi(24),  fNCellsPhiHalfSM(12)
 {
@@ -57,13 +62,42 @@ AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer(AliRawReader* rawReader) 
   }
 
 }
+//-----------------------------------------------------------------------------
+AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer() : 
+  fRawReader(0x0),fHistoFile(0),fHistoFileName(""),
+  fUpdatingRate(0),fIsOldRCUFormat(kFALSE), fNSuperModules(12),  fNCellsEta (48),   
+  fNCellsPhi(24),  fNCellsPhiHalfSM(12)
+{
+  // default Constructor
+
+  for(Int_t ism=0; ism<fNSuperModules; ism++) {
+    fAmpProf[ism] = 0;
+    fSMInstalled[ism]=kTRUE;
+    for(Int_t icol=0; icol<fNCellsEta; icol++) 
+      for(Int_t irow=0; irow<fNCellsPhi; irow++) 
+	  fAmpHisto[ism][icol][irow]=0;
+  }
+
+}
 
 //-----------------------------------------------------------------------------
-AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer() :
-  fRawReader(0),fHistoFile(0),fUpdatingRate(0),fIsOldRCUFormat(kFALSE),
-  fNSuperModules(12), fNCellsEta (48), fNCellsPhi(24), fNCellsPhiHalfSM(12)
+AliEMCALCalibHistoProducer::AliEMCALCalibHistoProducer(const AliEMCALCalibHistoProducer & copy) :
+  TObject(copy),fRawReader((AliRawReader*)copy. fRawReader->Clone()),
+  fHistoFile((TFile*)copy.fHistoFile->Clone()),fHistoFileName(copy.fHistoFileName),
+  fUpdatingRate(copy.fUpdatingRate),fIsOldRCUFormat(copy.fIsOldRCUFormat),
+  fNSuperModules(copy.fNSuperModules), fNCellsEta (copy.fNCellsEta), 
+  fNCellsPhi(copy.fNCellsPhi), fNCellsPhiHalfSM(copy.fNCellsPhiHalfSM)
 {
-  // Default constructor
+  //copy constructor
+
+ for(Int_t ism=0; ism<fNSuperModules; ism++) {
+    fAmpProf[ism] = copy. fAmpProf[ism];
+    fSMInstalled[ism]= copy.fSMInstalled[ism];
+    for(Int_t icol=0; icol<fNCellsEta; icol++) 
+      for(Int_t irow=0; irow<fNCellsPhi; irow++) 
+	  fAmpHisto[ism][icol][irow]= copy.fAmpHisto[ism][icol][irow];
+  }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -74,6 +108,38 @@ AliEMCALCalibHistoProducer::~AliEMCALCalibHistoProducer()
     fHistoFile->Close();
     delete fHistoFile;
   }
+}
+
+//------------------------------------------------------------------------------
+//
+AliEMCALCalibHistoProducer& AliEMCALCalibHistoProducer::operator=(const AliEMCALCalibHistoProducer& copy)
+{
+	//
+	// Assignment operator.
+	// Besides copying all parameters, duplicates all collections.	
+	//
+                if (&copy == this) return *this;
+	TObject::operator=(copy);
+	fHistoFileName = copy.fHistoFileName;
+	fUpdatingRate = copy.fUpdatingRate;
+	fIsOldRCUFormat = copy.fIsOldRCUFormat;
+	fNSuperModules = copy.fNSuperModules;
+	fNCellsEta = copy.fNCellsEta;
+	fNCellsPhi = copy.fNCellsPhi;
+	fNCellsPhiHalfSM = copy.fNCellsPhiHalfSM;
+	
+	fRawReader  = (AliRawReader*)copy. fRawReader->Clone();
+	fHistoFile      = (TFile*)copy.fHistoFile->Clone();
+
+	for(Int_t ism=0; ism<fNSuperModules; ism++) {
+	  fAmpProf[ism] = copy. fAmpProf[ism];
+	  fSMInstalled[ism]= copy.fSMInstalled[ism];
+	  for(Int_t icol=0; icol<fNCellsEta; icol++) 
+	    for(Int_t irow=0; irow<fNCellsPhi; irow++) 
+	      fAmpHisto[ism][icol][irow]= copy.fAmpHisto[ism][icol][irow];
+	}
+
+	return (*this);
 }
 //-----------------------------------------------------------------------------
 void AliEMCALCalibHistoProducer::Init()
