@@ -10,13 +10,19 @@ AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@ \
 lib_LTLIBRARIES			=  libAliHLTPHOS.la
 
 # library sources
-libAliHLTPHOS_la_SOURCES	= AliPHOSPulseGenerator.cxx \
-				  AliPHOSFitter.cxx
+libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx\
+			          AliHLTPHOSPeakFinder.cxx\
+				  AliHLTPHOSRawAnalyzer.cxx\
+				  AliHLTPHOSEmcCalibData.cxx
+				  PeakFinderTest.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
-CLASS_HDRS			= AliPHOSPulseGenerator.h \
-				  AliPHOSFitter.h
+CLASS_HDRS			= AliHLTPHOSPulseGenerator.h\
+				  AliHLTPHOSPeakFinder.h\
+				  AliHLTPHOSRawAnalyzer.h\
+				  AliHLTPHOSEmcCalibData.h	
+
 
 pkginclude_HEADERS		= $(CLASS_HDRS)
 
