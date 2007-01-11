@@ -172,8 +172,6 @@ AliRun::AliRun(const char *name, const char *title):
 
   // Add to list of browsable  
   gROOT->GetListOfBrowsables()->Add(this,name);
-  // Create the TNode geometry for the event display
-  BuildSimpleGeometry();
   
   // Create default mag field
   SetField();
@@ -474,7 +472,10 @@ TGeometry *AliRun::GetGeometry()
   // Import Alice geometry from current file
   // Return pointer to geometry object
   //
-  if (!fGeometry) fGeometry = dynamic_cast<TGeometry*>(gDirectory->Get("AliceGeom"));
+  //PH  if (!fGeometry) fGeometry = dynamic_cast<TGeometry*>(gDirectory->Get("AliceGeom"));
+
+  // Create the TNode geometry for the event display
+  if (!fGeometry) BuildSimpleGeometry();
   //
   // Unlink and relink nodes in detectors
   // This is bad and there must be a better way...
