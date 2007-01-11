@@ -60,6 +60,8 @@ class AliMUONClusterFinderVS : public TObject
     TClonesArray*  GetRawClusters() {return fRawClusters;}
 // reset raw clusters
     void ResetRawClusters();
+// set evt number
+    void SetEventNumber(Int_t evtNumber) {fEvtNumber = evtNumber;}
 
  protected:
 
@@ -107,6 +109,8 @@ class AliMUONClusterFinderVS : public TObject
     // Selected track for debugging
     Int_t                    fTrack[2];        ///< Only digits with main contributions from these tracks are
     // considered 
+    
+    Int_t                    fEvtNumber;       ///< evt number for AZ
     
  private:
     AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);

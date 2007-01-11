@@ -60,7 +60,8 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
     fRawClusters(0x0),
     fZPlane(0.),
     fSector(0),
-    fFitStat(0)
+    fFitStat(0),
+    fEvtNumber(0)
 {
 /// Default constructor
     fDigitMap[0] = 0;
@@ -1990,10 +1991,6 @@ void AliMUONClusterFinderVS::AddRawCluster(AliMUONRawCluster& c)
 {
 /// Add a raw cluster copy to the list
 
-  //     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
-  //     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
-  //     fNRawClusters++;
-  
   // Setting detection element in raw cluster for alignment
   // BB 19/05/05
   c.SetDetElemId(fInput->DetElemId());

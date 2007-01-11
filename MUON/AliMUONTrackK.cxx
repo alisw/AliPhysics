@@ -35,7 +35,6 @@
 #include "AliMUONEventRecoCombi.h"
 #include "AliMUONDetElement.h"
 
-#include "AliRun.h"
 #include "AliLog.h"
 #include "AliMagF.h"
 
@@ -2241,7 +2240,7 @@ void AliMUONTrackK::Print(FILE *lun) const
 	tid[j] = clus->GetTrack(j+1) - 1;
 	if (clus->GetTrack(j+1) < 0) { sig[j] = 0; tid[j] = 999; }
       }
-      fprintf(lun,"%3d %3d %10.4f", gAlice->GetEvNumber(), hit->GetChamberNumber(), GetChi2PerPoint(i1));
+//      fprintf(lun,"%3d %3d %10.4f", gAlice->GetEvNumber(), hit->GetChamberNumber(), GetChi2PerPoint(i1));
       if (!(clus->GetTrack(2))) fprintf(lun, "%3d %3d", sig[0], tid[0]); // simple cluster
       else { // track overlap
 	fprintf(lun, "%3d %3d", TMath::Max(sig[0],sig[1]), TMath::Min(tid[0],tid[1]));

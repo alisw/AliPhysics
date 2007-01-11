@@ -21,12 +21,11 @@
 // MUON cluster reconstructor for MUON
 // Should implement a virtual class ClusterFinder to choose between VS and AZ method
 
+#include <Riostream.h>
 #include "AliMUONClusterReconstructor.h"
-#include "AliRun.h" // for gAlice
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
-#include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"

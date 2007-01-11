@@ -25,7 +25,6 @@
 #include "AliESD.h"
 #include "AliESDMuonTrack.h"
 #include "AliLog.h"
-#include "AliMUON.h"
 #include "AliMUONConstants.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONClusterFinderAZ.h"
@@ -191,7 +190,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 /// \todo add more
 
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
-  Int_t nEvents = runLoader->GetNumberOfEvents();
+  Int_t nEvents     = runLoader->GetNumberOfEvents();
+  Int_t evtNumber   = runLoader->GetEventNumber();
 
   AliMUONData* data = new AliMUONData(loader,"MUON","MUON");
 
@@ -212,6 +212,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     recoCluster->SetRecoModel(recModel);
   }
   recModel->SetGhostChi2Cut(10);
+  recModel->SetEventNumber(evtNumber);
 
   loader->LoadDigits("READ");
   loader->LoadRecPoints("RECREATE");
@@ -321,6 +322,8 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   //  AliLoader
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
+  Int_t evtNumber   = runLoader->GetEventNumber();
+ 
   AliMUONData data(loader,"MUON","MUON");
 
   // passing loader as argument.
@@ -343,6 +346,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     recoCluster->SetRecoModel(recModel);
   }
   recModel->SetGhostChi2Cut(10);
+  recModel->SetEventNumber(evtNumber);
 
   TTask* calibration = GetCalibrationTask(&data);
   

@@ -32,7 +32,6 @@
 #include "AliMUONClusterDrawAZ.h"
 #include "AliMUONVGeometryDESegmentation.h"
 #include "AliMUONGeometryModuleTransformer.h"
-#include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
@@ -110,7 +109,7 @@ void AliMUONClusterFinderAZ::FindRawClusters()
 /// To provide the same interface as in AliMUONClusterFinderVS
 
   ResetRawClusters(); 
-  EventLoop (gAlice->GetEvNumber(), fInput->Chamber());
+  EventLoop (fEvtNumber, fInput->Chamber());
 }
 
 //_____________________________________________________________________________
