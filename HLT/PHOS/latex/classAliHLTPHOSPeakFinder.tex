@@ -1,0 +1,205 @@
+\section{Ali\-HLTPHOSPeak\-Finder Class Reference}
+\label{classAliHLTPHOSPeakFinder}\index{AliHLTPHOSPeakFinder@{AliHLTPHOSPeakFinder}}
+{\tt \#include $<$Ali\-HLTPHOSPeak\-Finder.h$>$}
+
+Inheritance diagram for Ali\-HLTPHOSPeak\-Finder::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classAliHLTPHOSPeakFinder}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSPeak\-Finder} ()
+\item 
+{\bf Ali\-HLTPHOSPeak\-Finder} (double $\ast$data\-Ptr, double fs)
+\item 
+{\bf Ali\-HLTPHOSPeak\-Finder} (const {\bf Ali\-HLTPHOSPeak\-Finder} \&)
+\item 
+{\bf Ali\-HLTPHOSPeak\-Finder} \& {\bf operator=} (const {\bf Ali\-HLTPHOSPeak\-Finder})
+\item 
+virtual {\bf $\sim$Ali\-HLTPHOSPeak\-Finder} ()
+\item 
+void {\bf Fit\-Peak\-Finder} (int start=0, int lenght=100, double $\ast$t\-Vector=0, double $\ast$a\-Vector=0)
+\item 
+int {\bf Find\-Start\-Index} (double treshold)
+\item 
+virtual void {\bf Analyze} () const 
+\item 
+virtual const char $\ast$ {\bf Get\-Component\-ID} ()
+\item 
+virtual void {\bf Get\-Output\-Data\-Size} (unsigned long \&const\-Base, double \&input\-Multiplier)
+\item 
+virtual void {\bf Get\-Output\-Data\-Size} (long int \&, double \&)
+\item 
+virtual Ali\-HLTComponent $\ast$ {\bf Spawn} ()
+\item 
+virtual Ali\-HLTComponent\-Data\-Type {\bf Get\-Output\-Data\-Type} ()
+\item 
+virtual void {\bf Get\-Input\-Data\-Types} (vector$<$ Ali\-HLTComponent\-Data\-Type $>$ \&)
+\item 
+virtual int {\bf Do\-Event} (const Ali\-HLTComponent\-Event\-Data \&, const Ali\-HLTComponent\-Block\-Data $\ast$, Ali\-HLTComponent\-Trigger\-Data \&, Ali\-HLTUInt8\_\-t $\ast$, Ali\-HLTUInt32\_\-t \&, std::vector$<$ Ali\-HLTComponent\-Block\-Data, std::allocator$<$ Ali\-HLTComponent\-Block\-Data $>$ $>$ \&)
+\end{CompactItemize}
+\subsection*{Private Member Functions}
+\begin{CompactItemize}
+\item 
+void {\bf Make\-Initial\-Guess} ()
+\item 
+void {\bf Make\-Initial\-Guess} (int treshold)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+double {\bf f\-DTof\-Guess}
+\item 
+double {\bf f\-DAmpl\-Guess}
+\item 
+double $\ast$$\ast$ {\bf kf\-MCovar\-Ptr\-Ptr}
+\item 
+double $\ast$$\ast$ {\bf f\-PCovar\-Ptr\-Ptr}
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!AliHLTPHOSPeakFinder@{AliHLTPHOSPeakFinder}}
+\index{AliHLTPHOSPeakFinder@{AliHLTPHOSPeakFinder}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPeak\-Finder::Ali\-HLTPHOSPeak\-Finder ()}\label{classAliHLTPHOSPeakFinder_a0}
+
+
+The Ali\-HLTPHOSPeakfinder class is the class for extracting the basic signal parameters \char`\"{}timing\char`\"{} and \char`\"{}energy\char`\"{} from the PHOS raw data. Physical data will for a given readout channel be a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in calculation is of type double. \index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!AliHLTPHOSPeakFinder@{AliHLTPHOSPeakFinder}}
+\index{AliHLTPHOSPeakFinder@{AliHLTPHOSPeakFinder}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPeak\-Finder::Ali\-HLTPHOSPeak\-Finder (double $\ast$ {\em dta\-Ptr}, double {\em fs})}\label{classAliHLTPHOSPeakFinder_a1}
+
+
+Main constructor \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em data\-Ptr}]Data array for wich a subarray will be taken to perform the fit \item[{\em fs}]the sampling frequency in entities of MHz. Needed in order to calculate physical time \end{description}
+\end{Desc}
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!AliHLTPHOSPeakFinder@{AliHLTPHOSPeakFinder}}
+\index{AliHLTPHOSPeakFinder@{AliHLTPHOSPeakFinder}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPeak\-Finder::Ali\-HLTPHOSPeak\-Finder (const {\bf Ali\-HLTPHOSPeak\-Finder} \&)}\label{classAliHLTPHOSPeakFinder_a2}
+
+
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!~AliHLTPHOSPeakFinder@{$\sim$AliHLTPHOSPeakFinder}}
+\index{~AliHLTPHOSPeakFinder@{$\sim$AliHLTPHOSPeakFinder}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPeak\-Finder::$\sim${\bf Ali\-HLTPHOSPeak\-Finder} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSPeakFinder_a4}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!Analyze@{Analyze}}
+\index{Analyze@{Analyze}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPeak\-Finder::Analyze () const\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSPeakFinder_a7}
+
+
+
+
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a9})}.\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!DoEvent@{DoEvent}}
+\index{DoEvent@{DoEvent}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int Ali\-HLTPHOSPeak\-Finder::Do\-Event (const Ali\-HLTComponent\-Event\-Data \&, const Ali\-HLTComponent\-Block\-Data $\ast$, Ali\-HLTComponent\-Trigger\-Data \&, Ali\-HLTUInt8\_\-t $\ast$, Ali\-HLTUInt32\_\-t \&, std::vector$<$ Ali\-HLTComponent\-Block\-Data, std::allocator$<$ Ali\-HLTComponent\-Block\-Data $>$ $>$ \&)\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classAliHLTPHOSPeakFinder_a14}
+
+
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!FindStartIndex@{FindStartIndex}}
+\index{FindStartIndex@{FindStartIndex}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSPeak\-Finder::Find\-Start\-Index (double {\em treshold})}\label{classAliHLTPHOSPeakFinder_a6}
+
+
+This method finds the start index of the pulse (relative to the data array) by serching for three or more continious samples above trheshold. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em treshold}]treshold to use when searchin for the start of the pulse \end{description}
+\end{Desc}
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!FitPeakFinder@{FitPeakFinder}}
+\index{FitPeakFinder@{FitPeakFinder}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPeak\-Finder::Fit\-Peak\-Finder (int {\em start} = {\tt 0}, int {\em length} = {\tt 100}, double $\ast$ {\em t\-Vector} = {\tt 0}, double $\ast$ {\em a\-Vector} = {\tt 0})}\label{classAliHLTPHOSPeakFinder_a5}
+
+
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em start}]the start index of the subarray of the data array. \item[{\em length}]the number of samples to use starting from index \item[{\em t\-Vector}]the peakfinder vector for timing \item[{\em a\-Vector}]the peakfinder vector for amplitude (energy) \end{description}
+\end{Desc}
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!GetComponentID@{GetComponentID}}
+\index{GetComponentID@{GetComponentID}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual const char$\ast$ Ali\-HLTPHOSPeak\-Finder::Get\-Component\-ID ()\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classAliHLTPHOSPeakFinder_a8}
+
+
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!GetInputDataTypes@{GetInputDataTypes}}
+\index{GetInputDataTypes@{GetInputDataTypes}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSPeak\-Finder::Get\-Input\-Data\-Types (vector$<$ Ali\-HLTComponent\-Data\-Type $>$ \&)\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classAliHLTPHOSPeakFinder_a13}
+
+
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!GetOutputDataSize@{GetOutputDataSize}}
+\index{GetOutputDataSize@{GetOutputDataSize}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSPeak\-Finder::Get\-Output\-Data\-Size (long int \&, double \&)\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classAliHLTPHOSPeakFinder_a10}
+
+
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!GetOutputDataSize@{GetOutputDataSize}}
+\index{GetOutputDataSize@{GetOutputDataSize}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSPeak\-Finder::Get\-Output\-Data\-Size (unsigned long \& {\em const\-Base}, double \& {\em input\-Multiplier})\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classAliHLTPHOSPeakFinder_a9}
+
+
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!GetOutputDataType@{GetOutputDataType}}
+\index{GetOutputDataType@{GetOutputDataType}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual Ali\-HLTComponent\-Data\-Type Ali\-HLTPHOSPeak\-Finder::Get\-Output\-Data\-Type ()\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classAliHLTPHOSPeakFinder_a12}
+
+
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!MakeInitialGuess@{MakeInitialGuess}}
+\index{MakeInitialGuess@{MakeInitialGuess}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPeak\-Finder::Make\-Initial\-Guess (int {\em treshold})\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPeakFinder_d1}
+
+
+This function applies only to the Chi and Least mean square fit. An initial guess is made based on the average of the first 5 samples and the first value exeeding threshold + this value. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em treshold}]The index of the first value above treshold is ntaken to be the first value. \end{description}
+\end{Desc}
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!MakeInitialGuess@{MakeInitialGuess}}
+\index{MakeInitialGuess@{MakeInitialGuess}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPeak\-Finder::Make\-Initial\-Guess ()\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPeakFinder_d0}
+
+
+This function applies only to the Chi and Least mean square fit. An initial guess is made based on the average of the first 5 samples and the first value exeeding this value. \index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSPeak\-Finder}\& Ali\-HLTPHOSPeak\-Finder::operator= (const  {\em Ali\-HLTPHOSPeak\-Finder})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSPeakFinder_a3}
+
+
+
+
+Reimplemented from {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a3})}.\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!Spawn@{Spawn}}
+\index{Spawn@{Spawn}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual Ali\-HLTComponent$\ast$ Ali\-HLTPHOSPeak\-Finder::Spawn ()\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classAliHLTPHOSPeakFinder_a11}
+
+
+
+
+\subsection{Member Data Documentation}
+\index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!fDAmplGuess@{fDAmplGuess}}
+\index{fDAmplGuess@{fDAmplGuess}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPeak\-Finder::f\-DAmpl\-Guess}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPeakFinder_r1}
+
+
+Initial guess for amplitude \index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!fDTofGuess@{fDTofGuess}}
+\index{fDTofGuess@{fDTofGuess}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPeak\-Finder::f\-DTof\-Guess}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPeakFinder_r0}
+
+
+Initial guess for t0 \index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!fPCovarPtrPtr@{fPCovarPtrPtr}}
+\index{fPCovarPtrPtr@{fPCovarPtrPtr}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$$\ast$ {\bf Ali\-HLTPHOSPeak\-Finder::f\-PCovar\-Ptr\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPeakFinder_r3}
+
+
+Covariance matrix of the estimated parameters \index{AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}!kfMCovarPtrPtr@{kfMCovarPtrPtr}}
+\index{kfMCovarPtrPtr@{kfMCovarPtrPtr}!AliHLTPHOSPeakFinder@{Ali\-HLTPHOSPeak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$$\ast$ {\bf Ali\-HLTPHOSPeak\-Finder::kf\-MCovar\-Ptr\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPeakFinder_r2}
+
+
+Covariance matrix of the measurements 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSPeak\-Finder.h}\item 
+{\bf Ali\-HLTPHOSPeak\-Finder.cxx}\end{CompactItemize}

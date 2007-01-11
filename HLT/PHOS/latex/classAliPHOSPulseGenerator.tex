@@ -1,0 +1,219 @@
+\section{Ali\-PHOSPulse\-Generator Class Reference}
+\label{classAliPHOSPulseGenerator}\index{AliPHOSPulseGenerator@{AliPHOSPulseGenerator}}
+{\tt \#include $<$Ali\-PHOSPulse\-Generator.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-PHOSPulse\-Generator} ()
+\item 
+{\bf $\sim$Ali\-PHOSPulse\-Generator} ()
+\item 
+{\bf Ali\-PHOSPulse\-Generator} (double a, double t0, const int N, const double t, const double f)
+\item 
+void {\bf Add\-Baseline} (double baseline\-Level, double $\ast$samples)
+\item 
+double $\ast$ {\bf Add\-Pretrigger\-Samples} (double basline\-Level, double $\ast$samples)
+\item 
+void {\bf Add\-Noise} (double $\ast$data\-Ptr, double $\ast$sigma)
+\item 
+void {\bf Add\-Noise} (double $\ast$data\-Ptr, double $\ast$sigma, double cutoff)
+\item 
+double $\ast$ {\bf Get\-Pulse} ()
+\item 
+double $\ast$ {\bf Get\-Pulse} (double a, double t0)
+\item 
+void {\bf Quantisize} (double $\ast$data\-Ptr)
+\item 
+void {\bf Set\-Amplitude} (double a)
+\item 
+void {\bf Set\-DT} (double fs)
+\item 
+void {\bf Set\-TZero} (double t0)
+\end{CompactItemize}
+\subsection*{Private Member Functions}
+\begin{CompactItemize}
+\item 
+void {\bf Make\-Pulse} (double $\ast$dta\-Ptr)
+\item 
+void {\bf Make\-Pulse} (double $\ast$dta\-Ptr, double ampl)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+double {\bf f\-Amplitude}
+\item 
+int {\bf f\-NSamples}
+\item 
+double {\bf f\-Tau}
+\item 
+double {\bf f\-Sample\-Freq}
+\item 
+double {\bf f\-TZero}
+\item 
+double $\ast$ {\bf f\-Data\-Ptr}
+\item 
+double {\bf f\-DT}
+\item 
+double $\ast$ {\bf f\-Event}
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!AliPHOSPulseGenerator@{AliPHOSPulseGenerator}}
+\index{AliPHOSPulseGenerator@{AliPHOSPulseGenerator}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-PHOSPulse\-Generator::Ali\-PHOSPulse\-Generator ()}\label{classAliPHOSPulseGenerator_a0}
+
+
+Default constructor \index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!~AliPHOSPulseGenerator@{$\sim$AliPHOSPulseGenerator}}
+\index{~AliPHOSPulseGenerator@{$\sim$AliPHOSPulseGenerator}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-PHOSPulse\-Generator::$\sim${\bf Ali\-PHOSPulse\-Generator} ()}\label{classAliPHOSPulseGenerator_a1}
+
+
+Destructor \index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!AliPHOSPulseGenerator@{AliPHOSPulseGenerator}}
+\index{AliPHOSPulseGenerator@{AliPHOSPulseGenerator}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-PHOSPulse\-Generator::Ali\-PHOSPulse\-Generator (double {\em a}, double {\em t0}, const int {\em N}, const double {\em t}, const double {\em f})}\label{classAliPHOSPulseGenerator_a2}
+
+
+Contruct a pulsegenrator object an initializes all necessary parameters \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em a}]Amplitude in ADC levels (0 -1023) \item[{\em t0}]Timedelay in nanoseconds of signal relative the first sample. This value should be between 0 and Ts where Ts is the sample interval \end{description}
+\end{Desc}
+
+
+\subsection{Member Function Documentation}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!AddBaseline@{AddBaseline}}
+\index{AddBaseline@{AddBaseline}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Add\-Baseline (double {\em baseline\-Level}, double $\ast$ {\em samples})}\label{classAliPHOSPulseGenerator_a3}
+
+
+Adds a baseline offset to the signal \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em baseline\-Level}]The basline level to add \item[{\em $\ast$samples}]The sample array for which to add te basline offset \end{description}
+\end{Desc}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!AddNoise@{AddNoise}}
+\index{AddNoise@{AddNoise}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Add\-Noise (double $\ast$ {\em data\-Ptr}, double $\ast$ {\em sigma}, double {\em cutoff})}\label{classAliPHOSPulseGenerator_a6}
+
+
+Adds correlated Gaussian noise with cutof frequency \char`\"{}cutoff\char`\"{} \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em data\-Ptr}]array of values \item[{\em sigma}]noise amplitude in entities of ADC levels \item[{\em -30DB}]cutoff frequency of the noise in entities of sampling frequency \end{description}
+\end{Desc}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!AddNoise@{AddNoise}}
+\index{AddNoise@{AddNoise}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Add\-Noise (double $\ast$ {\em data\-Ptr}, double $\ast$ {\em sigma})}\label{classAliPHOSPulseGenerator_a5}
+
+
+Adds Gaussian white noise to the sample array given by $\ast$data\-Ptr. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em data\-Ptr}]array of samples \item[{\em sigma}]the noise amplitude in entities of ADC levels \end{description}
+\end{Desc}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!AddPretriggerSamples@{AddPretriggerSamples}}
+\index{AddPretriggerSamples@{AddPretriggerSamples}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-PHOSPulse\-Generator::Add\-Pretrigger\-Samples (double {\em basline\-Level}, double $\ast$ {\em samples})}\label{classAliPHOSPulseGenerator_a4}
+
+
+Adds pretrigger samples to the sample array and returns a new array containing the pretrigger samples concatenatet in front of the samples given by \char`\"{}samples\char`\"{} \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em The}]baseline value of the pretrigger samples \item[{\em The}]sample array for which to add the pretrigger samples \end{description}
+\end{Desc}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!GetPulse@{GetPulse}}
+\index{GetPulse@{GetPulse}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ Ali\-PHOSPulse\-Generator::Get\-Pulse (double {\em a}, double {\em t0})}\label{classAliPHOSPulseGenerator_a8}
+
+
+Returns a Pulse with new amplidude and t0 \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em a}]new amplidude, overriding the one given in the constructor \end{description}
+\end{Desc}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!GetPulse@{GetPulse}}
+\index{GetPulse@{GetPulse}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-PHOSPulse\-Generator::Get\-Pulse ()}\label{classAliPHOSPulseGenerator_a7}
+
+
+Returns the generated pulse with the parameters given in the constructor \index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!MakePulse@{MakePulse}}
+\index{MakePulse@{MakePulse}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Make\-Pulse (double $\ast$ {\em dta\-Ptr}, double {\em ampl})\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_d1}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!MakePulse@{MakePulse}}
+\index{MakePulse@{MakePulse}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Make\-Pulse (double $\ast$ {\em dta\-Ptr})\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_d0}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!Quantisize@{Quantisize}}
+\index{Quantisize@{Quantisize}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Quantisize (double $\ast$ {\em data\-Ptr})}\label{classAliPHOSPulseGenerator_a9}
+
+
+Emulates the ADC. Rounds down to nearest Integerevalue all entries given by data\-Ptr \index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!SetAmplitude@{SetAmplitude}}
+\index{SetAmplitude@{SetAmplitude}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Set\-Amplitude (double {\em a})}\label{classAliPHOSPulseGenerator_a10}
+
+
+sets the timedelay. Take as argument the timedelay in nanoseconds and sets in i entities of sample intervals \index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!SetDT@{SetDT}}
+\index{SetDT@{SetDT}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Set\-DT (double {\em fs})}\label{classAliPHOSPulseGenerator_a11}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!SetTZero@{SetTZero}}
+\index{SetTZero@{SetTZero}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-PHOSPulse\-Generator::Set\-TZero (double {\em t0})}\label{classAliPHOSPulseGenerator_a12}
+
+
+
+
+\subsection{Member Data Documentation}
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fAmplitude@{fAmplitude}}
+\index{fAmplitude@{fAmplitude}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-PHOSPulse\-Generator::f\-Amplitude}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r0}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fDataPtr@{fDataPtr}}
+\index{fDataPtr@{fDataPtr}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-PHOSPulse\-Generator::f\-Data\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r5}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fDT@{fDT}}
+\index{fDT@{fDT}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-PHOSPulse\-Generator::f\-DT}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r6}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fEvent@{fEvent}}
+\index{fEvent@{fEvent}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-PHOSPulse\-Generator::f\-Event}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r7}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fNSamples@{fNSamples}}
+\index{fNSamples@{fNSamples}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int {\bf Ali\-PHOSPulse\-Generator::f\-NSamples}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r1}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fSampleFreq@{fSampleFreq}}
+\index{fSampleFreq@{fSampleFreq}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-PHOSPulse\-Generator::f\-Sample\-Freq}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r3}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fTau@{fTau}}
+\index{fTau@{fTau}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-PHOSPulse\-Generator::f\-Tau}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r2}
+
+
+\index{AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}!fTZero@{fTZero}}
+\index{fTZero@{fTZero}!AliPHOSPulseGenerator@{Ali\-PHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-PHOSPulse\-Generator::f\-TZero}\hspace{0.3cm}{\tt  [private]}}\label{classAliPHOSPulseGenerator_r4}
+
+
+
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-PHOSPulse\-Generator.h}\item 
+{\bf Ali\-PHOSPulse\-Generator.cxx}\end{CompactItemize}
