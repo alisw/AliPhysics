@@ -1,0 +1,42 @@
+include HLT/hlt.conf
+                    
+##SRCS              = PHOS/AliHLTPHOSPeakFinder.cxx   PHOS/AliHLTPHOSPulseGenerator.cxx \
+##                    PHOS/AliHLTPHOSEmcCalibData.cxx PHOS/AliHLTPHOSRawAnalyzer.cxx
+
+SRCS              = PHOS/AliHLTPHOSPulseGenerator.cxx
+
+
+##HDRS:= $(SRCS:.cxx=.h) 
+
+ 				     
+HDRS:= PHOS/AliHLTPHOSPulseGenerator.h \
+      
+
+##HDRS:= PHOS/AliHLTPHOSPeakFinder.h PHOS/AliHLTPHOSPulseGenerator.h \
+##       PHOS/AliHLTPHOSEmcCalibData.h PHOS/AliHLTPHOSRawAnalyzer.h \
+##       PHOS/AliHLTPHOSCommonDefs.h 
+
+
+DHDR= PHOS/AliHLTPHOSLinkDef.h
+ 					    
+##CLASS_HDRS:=  PHOS/AliHLTPHOSPeakFinder.h PHOS/AliHLTPHOSPulseGenerator.h \
+##	      PHOS/AliHLTPHOSEmcCalibData.h PHOS/AliHLTPHOSRawAnalyzer.h PHOS/AliHLTPHOSCommonDefs.h 
+
+CLASS_HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h                                             
+
+
+##MODULE_SRCS=PHOS/AliHLTPHOSPeakFinder.cxx PHOS/AliHLTPHOSPulseGenerator.cxx \
+##       PHOS/AliHLTPHOSEmcCalibData.cxx PHOS/AliHLTPHOSRawAnalyzer.cxx
+
+MODULE_SRCS=AliHLTPHOSPulseGenerator.cxx 
+
+ 
+EINCLUDE+= HLT/BASE HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
+##EINCLUDE:=RAW
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+
