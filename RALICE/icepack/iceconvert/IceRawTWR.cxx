@@ -633,10 +633,10 @@ Int_t IceRawTWR::clear_system(sys_config_t* sys)
 
  if (!sys) return 0;
 
- for(Int_t icrate=0; icrate < sys->n_crates; icrate++)
+ for(Int_t icrate=0; icrate < int(sys->n_crates); icrate++)
  {
   if (!sys->crate[icrate]) continue;
-  for(Int_t itwr=0; itwr < sys->crate[icrate]->n_twr; itwr++)
+  for(Int_t itwr=0; itwr < int(sys->crate[icrate]->n_twr); itwr++)
   {
    if (sys->crate[icrate]->twr[itwr]) delete sys->crate[icrate]->twr[itwr];
   }
@@ -652,7 +652,7 @@ Int_t IceRawTWR::clear_event(event_t* event_ptr)
   Int_t i_value;
   Int_t *int_ptr = (int*) event_ptr;
 
-  for(i_value=0; i_value < sizeof(event_t)/sizeof(Int_t); i_value++)
+  for(i_value=0; i_value < int(sizeof(event_t)/sizeof(Int_t)); i_value++)
     {
       *int_ptr++ = 0;
     }
@@ -663,7 +663,6 @@ Int_t IceRawTWR::read_header_from_file(FILE* fin,sys_config_t** system_ptr,UInt_
 {
   Int_t i_crate, i_twr, i_channel;
   UInt_t count_twr_in_system = 0;
-  UInt_t length = 0;
   UInt_t dummy;
   
   sys_config_t *sys;
@@ -680,7 +679,7 @@ Int_t IceRawTWR::read_header_from_file(FILE* fin,sys_config_t** system_ptr,UInt_
   if( (sys->n_crates > MAX_N_CRATES) || (sys->n_crates < 0) )
     return(ERROR_TOO_MANY_CRATES);
 
-  for(i_crate=0; i_crate < sys->n_crates; i_crate++)
+  for(i_crate=0; i_crate < int(sys->n_crates); i_crate++)
     {
       sys->crate[i_crate] = 
 	(crate_config_t*) malloc( sizeof(crate_config_t) );
@@ -694,7 +693,7 @@ Int_t IceRawTWR::read_header_from_file(FILE* fin,sys_config_t** system_ptr,UInt_
 	  || (sys->crate[i_crate]->n_twr < 0) )
 	return(ERROR_TOO_MANY_TWRS);
 
-      for(i_twr=0; i_twr < sys->crate[i_crate]->n_twr; i_twr++)
+      for(i_twr=0; i_twr < int(sys->crate[i_crate]->n_twr); i_twr++)
 	{
 	  sys->crate[i_crate]->twr[i_twr] = 
 	    (twr_config_t*) malloc( sizeof(twr_config_t) );
@@ -766,12 +765,7 @@ Int_t IceRawTWR::update_system(sys_config_t* sys,Int_t run_number)
 {
   Int_t i_crate, i_twr, i_channel;
 
-  UInt_t ext_stop;  /* DO NOT CHANGE THIS VALUE !! */
-
   /* Data for bug fix 1 */
-  UInt_t om_no_w1[CHANNELS_PER_TWR] 
-    = {639, 642, 1, 9, 10, 11, 12, 30}; 
-  
   UInt_t om_no_r1[CHANNELS_PER_TWR] 
     = {111, 112, 113, 114, 115, 116, 39, 118}; 
   UInt_t om_is_optical_r1[CHANNELS_PER_TWR] 
@@ -779,9 +773,6 @@ Int_t IceRawTWR::update_system(sys_config_t* sys,Int_t run_number)
   UInt_t threshold_r1[CHANNELS_PER_TWR]
     = {50, 50, 50, 50, 50, 50, 80, 50};
 
-  UInt_t om_no_w2[CHANNELS_PER_TWR] 
-    = {492, 493, 495, 496, 497, 499, 500, 501}; 
-  
   UInt_t om_no_r2[CHANNELS_PER_TWR] 
     = {473, 484, 485, 486, 487, 475, 490, 491}; 
   UInt_t om_is_optical_r2[CHANNELS_PER_TWR] 
@@ -869,8 +860,8 @@ Int_t IceRawTWR::update_system(sys_config_t* sys,Int_t run_number)
 ///////////////////////////////////////////////////////////////////////////
 Int_t IceRawTWR::read_event(FILE* fin,sys_config_t* sys,event_t* event_ptr)
 {
-    UInt_t i_channel, i_twr, i_crate, i_wfm;
-    UInt_t header_length, length_of_event_block;
+    Int_t i_wfm;
+    UInt_t length_of_event_block;
     
     Int_t n_twr, n_of_waveforms_in_event, read_number;
     UInt_t length_wfm[CHANNELS_PER_TWR];
@@ -896,7 +887,7 @@ Int_t IceRawTWR::read_event(FILE* fin,sys_config_t* sys,event_t* event_ptr)
 	
     // --reading waveforms from TWR blocks
     n_twr = 0;
-    while(n_twr < sys->n_twr)
+    while(n_twr < int(sys->n_twr))
     {
 	// --read TWR header
 	if( !fread(&dummy,sizeof(UInt_t),1,fin) ) return(1);
@@ -942,7 +933,7 @@ Int_t IceRawTWR::read_event(FILE* fin,sys_config_t* sys,event_t* event_ptr)
                 // read_number correction for usage of fread() instead of read()
                 read_number*=length_wfm[i_wfm]-sizeof(UInt_t);
 
-		if( read_number != length_wfm[i_wfm]-sizeof(UInt_t) ) 
+		if( read_number != int(length_wfm[i_wfm]-sizeof(UInt_t)) ) 
                 {
                   cout << " read_number : " << read_number
                        << " length_wfm["<<i_wfm<<"] : " << length_wfm[i_wfm]

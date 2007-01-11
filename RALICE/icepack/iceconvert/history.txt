@@ -83,5 +83,7 @@
                 the hit data (i.e. ADC, LE, TOT).
 16-dec-2006 NvE New class IceRawTWR introduced to read raw TWR data into the Ralice/IcePack
                 event structures.
+11-jan-2007 NvE IceRawTWR.cxx updated to prevent gcc compiler warnings about unused
+                variables.
 
 
