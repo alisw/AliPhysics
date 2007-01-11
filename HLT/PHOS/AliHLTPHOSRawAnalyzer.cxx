@@ -12,7 +12,19 @@ AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer():fFloatDataPtr(0), fSampleFrequen
 
 }
 
+//int AliHLTPHOSRawAnalyzer::Deinit()
+//{
+//  return(0);
+//}
+AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
+{
 
+}
+
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999)
+{
+
+}
 
 /**
 * Attemps to level the basline to zero.

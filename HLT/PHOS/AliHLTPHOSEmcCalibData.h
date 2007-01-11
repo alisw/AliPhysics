@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "AliPHOSCommonDefs.h"
+#include "AliHLTPHOSCommonDefs.h"
 
 
 class AliHLTPHOSEmcCalibData: public TNamed {

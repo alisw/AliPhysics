@@ -23,6 +23,9 @@ class AliHLTPHOSPeakFinder : public  TObject, public AliHLTPHOSRawAnalyzer
     }
   
   virtual ~AliHLTPHOSPeakFinder();
+
+  //  virtual void Analyze() const {};
+
   void FitPeakFinder(int start = 0, int lenght = 100, double *tVector = 0, double *aVector = 0);
   int FindStartIndex(double treshold);
   //  virtual void Analyze(int start = 0, int lenght = 100, double *tVector = 0, double *aVector = 0) const;
