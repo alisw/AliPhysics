@@ -739,94 +739,122 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   TF1 * signalF = new TF1("signal", AliPHOS::RawResponseFunction, 0, PHOS()->GetRawFormatTimeMax(), 4);
   signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
 
-  Int_t relId[4], id =0;
+  Int_t relId[4], absId =0;
   Bool_t lowGainFlag = kFALSE ; 
 
   TClonesArray * digits = Digits() ;
   digits->Clear() ;
 
-  Int_t iBin = 0;
-  Int_t idigit = 0 ; 
+  Int_t    iBin     = 0;
+  Int_t    iDigit   = 0 ; 
   Double_t energyHG = 0. ; 
   Double_t energyLG = 0. ; 
-  Double_t time   = 0. ;
-
-  Int_t iDigLow = 0;
-  Int_t iDigHigh = 0;
-
-  TH1F* gLowGain = 0;
-  TH1F* gHighGain = 0;
+  Double_t time     = 0. ;
+  Int_t    iOldDigit;
+  Bool_t   seen;    
+  TH1F*    hLowGain  = 0;
+  TH1F*    hHighGain = 0;
 
   while ( in.Next() ) { // PHOS entries loop 
-       
-    if(!gHighGain) gHighGain = new TH1F("gHighGain","High gain",in.GetTimeLength(),0,in.GetTimeLength());
-    else
-      if(gHighGain->GetNbinsX() != in.GetTimeLength()) {
-	delete gHighGain;
-	gHighGain = new TH1F("gHighGain","High gain",in.GetTimeLength(),0,in.GetTimeLength());
-      }
-	
-    if(!gLowGain)  gLowGain = new TH1F("gLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
-    else
-      if(gLowGain->GetNbinsX() != in.GetTimeLength()) {
-        delete gLowGain;
-        gLowGain = new TH1F("gLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
-      }
 
     lowGainFlag = in.IsLowGain();
-    
+
+    // (Re)create histograms to store samples
+
+    if (lowGainFlag) {
+      if(!hLowGain)
+	hLowGain = new TH1F("hLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
+      else
+	if(hLowGain->GetNbinsX() != in.GetTimeLength()) {
+	  delete hLowGain;
+	  hLowGain = new TH1F("hLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
+	}
+    } else {
+      if(!hHighGain)
+	hHighGain = new TH1F("hHighGain","High gain",in.GetTimeLength(),0,in.GetTimeLength());
+      else
+	if(hHighGain->GetNbinsX() != in.GetTimeLength()) {
+	  delete hHighGain;
+	  hHighGain = new TH1F("hHighGain","High gain",in.GetTimeLength(),0,in.GetTimeLength());
+	}
+    }
+
+    // Fill histograms with samples
     if(lowGainFlag) 
-      gLowGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+      hLowGain ->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
     else {
-      gHighGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+      hHighGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
     }
 
     iBin++;
 
+    // Fit the full sample
     if(iBin==in.GetTimeLength()) {
       iBin=0;
 
-      if(lowGainFlag) iDigLow++;
-      else iDigHigh++;
-	  
       // Temporarily we do not fit the sample graph, but
       // take the energy from the graph maximum, and the pedestal from the 0th point
       // 30 Aug 2006
-
-      //FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time);
       
-      energyHG = gHighGain->GetMaximum();
-      energyHG -= gHighGain->GetBinContent(0); // "pedestal subtraction"
+      //FitRaw(lowGainFlag, hLowGain, hHighGain, signalF, energy, time);
       
-      energyLG = gLowGain->GetMaximum();
-      energyLG -= gLowGain->GetBinContent(0); // "pedestal subtraction"
-      energyLG *= AliPHOS::GetRawFormatHighLowGainFactor(); // *16
-      
-      if(AliLog::GetGlobalDebugLevel()>3) {
-      AliDebug(4,Form("----Printing gHighGain: ----\n")); gHighGain->Print("all");
-      AliDebug(4,Form("----Printing gLowGain: ----\n")); gLowGain->Print("all");
+      if(lowGainFlag) {
+	energyLG  = hLowGain ->GetMaximum();     // "digit amplitude"
+// 	energyLG -= hLowGain ->GetBinContent(0); // "pedestal subtraction"
+	energyLG *= AliPHOS::GetRawFormatHighLowGainFactor(); // *16
+	if(AliLog::GetGlobalDebugLevel()>3)
+	  AliDebug(4,Form("----Printing hLowGain: ----\n")) ; hLowGain ->Print("all");
+	AliDebug(2,Form("AliPHOSGetter::ReadRaw: (mod,col,row)=(%d,%d,%d), low gain energy=%f\n\n",
+			in.GetModule(),in.GetColumn(),in.GetRow(),energyLG));
       }
 
-      AliDebug(2,Form("AliPHOSGetter::ReadRaw: mod %d energyHG %f, energyLG %f lowGainFlag %d\n",
-	     in.GetModule(),energyHG,energyLG,(Int_t)lowGainFlag));
+      else {
+	energyHG  = hHighGain->GetMaximum();     // "digit amplitude"
+// 	energyHG -= hHighGain->GetBinContent(0); // "pedestal subtraction"
+	if(AliLog::GetGlobalDebugLevel()>3)
+	  AliDebug(4,Form("----Printing hHighGain: ----\n")); hHighGain->Print("all");
+	AliDebug(2,Form("AliPHOSGetter::ReadRaw: (mod,col,row)=(%d,%d,%d), high gain energy=%f\n\n",
+			in.GetModule(),in.GetColumn(),in.GetRow(),energyHG));
+      }
+
+      // Time is not evaluated for the moment (12.01.2007). To be implemented later.
       time = -1;
 
       relId[0] = in.GetModule()+1;
       relId[1] = 0;
       relId[2] = in.GetRow();
       relId[3] = in.GetColumn();
-      if(!PHOSGeometry()) Fatal("ReadRaw","Couldn't find PHOSGeometry!");
-      PHOSGeometry()->RelToAbsNumbering(relId, id);
+      if(!PHOSGeometry()) AliFatal("Couldn't find PHOSGeometry!");
+      PHOSGeometry()->RelToAbsNumbering(relId, absId);
 
-      if(!lowGainFlag) {
-	new((*digits)[idigit]) AliPHOSDigit(-1,id,(Float_t)energyHG,time);
-	idigit++;
+      // Add low gain digit only if the high gain digit does not exist in the digits array
+      if(lowGainFlag) {
+	seen = kFALSE;
+	for (iOldDigit=iDigit; iOldDigit=0; iOldDigit--) {
+	  if (dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit))->GetId() == absId) {
+	    seen = kTRUE;
+	    break;
+	  }
+	}
+	if (!seen)
+	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyLG,time);
+	energyLG = 0. ; 
       }
+      // Add high gain digit only if the low gain digit does not exist in the digits array
+      // and it is not saturated
       else {
-	new((*digits)[idigit]) AliPHOSDigit(-1,id,(Float_t)energyLG,time);
-	idigit++;
+	seen = kFALSE;
+	for (iOldDigit=iDigit; iOldDigit=0; iOldDigit--) {
+	  if (dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit))->GetId() == absId) {
+	    seen = kTRUE;
+	    break;
+	  }
+	}
+	if (!seen && energyHG < 1023)
+	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
+	energyHG = 0. ; 
       }
-
+      iDigit++;
     }
   }
 
@@ -841,7 +869,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   Float_t eMax=-333;
   //!!!for debug!!!
 
-  for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
+  for(iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
     AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(iDigit);
     if(digit->GetEnergy()>eMax) {
       PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
@@ -851,15 +879,13 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       colMax=relId[3];
     }
   }
-//   printf("\t\t\t------ %d Digits: %d LowGain + %d HighGain.\n",
-//    	 digits->GetEntriesFast(),iDigLow,iDigHigh);   
 
-  AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n",
-	 modMax,colMax,rowMax,eMax));
+  AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n\n",
+		  modMax,colMax,rowMax,eMax));
 
   delete signalF ;
-  delete gHighGain;
-  delete gLowGain;
+  delete hHighGain;
+  delete hLowGain;
 
   return digits->GetEntriesFast() ; 
 }

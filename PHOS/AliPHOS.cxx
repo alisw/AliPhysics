@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.104  2006/11/23 13:40:44  hristov
+ * Common class for raw data reading and ALTRO mappiing for PHOS and EMCAL (Gustavo, Cvetan)
+ *
  * Revision 1.103  2006/11/14 17:11:15  hristov
  * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
  *
@@ -538,17 +541,14 @@ void AliPHOS::Digits2Raw()
 	if(energy>eMax) {eMax=energy; modMax=module; colMax=col; rowMax=row;}
       }
       else {
-// 	energy = digit->GetAmp()*digitizer->GetCPVchannel()+digitizer->GetCPVpedestal();
  	energy = 0; // CPV raw data format is now know yet
       }        
       Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
-      if (lowgain) 
 	buffer->WriteChannel(relId[3]-1, relId[2]-1, 0, 
 			     GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
-      else 
-	buffer->WriteChannel(relId[3]-1, relId[2]-1, 1, 
-			     GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
+ 	buffer->WriteChannel(relId[3]-1, relId[2]-1, 1, 
+ 			     GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
       
     }
   }
