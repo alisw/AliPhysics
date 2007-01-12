@@ -29,6 +29,7 @@
 #  include "AliMpPlaneType.h"
 #endif
 
+class AliMpSlatMotifMap;
 class AliMpSlat;
 class AliMpPCB;
 class TObjString;
@@ -36,20 +37,17 @@ class TObjString;
 class AliMpSt345Reader : public TObject
 {
  public:
-  AliMpSt345Reader();
+  AliMpSt345Reader(AliMpSlatMotifMap&);
   virtual ~AliMpSt345Reader();
 
-  static AliMpSlat* ReadSlat(const char* slatType, AliMpPlaneType planeType);
+  AliMpSlat* ReadSlat(const char* slatType, AliMpPlaneType planeType);
 
-  static AliMpPCB* ReadPCB(const char* pcbType);
+  AliMpPCB* ReadPCB(const char* pcbType);
 
- private:
-
-	static AliMpPCB* PCB(const char* pcbType); 
-
-  static TMap fgPCBMap; ///< map of TObjString to AliMpPCB*
-
-  ClassDef(AliMpSt345Reader,1) // Reader for slat stations mapping files 
+private:
+    AliMpSlatMotifMap& fMotifMap; //!< storage for motifTypes and motifs...
+  
+  ClassDef(AliMpSt345Reader,0) // Reader for slat stations mapping files 
 };
 
 #endif

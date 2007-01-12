@@ -19,12 +19,12 @@
 #include "AliMpSt345Reader.h"
 
 #include "AliLog.h"
+#include "AliMpSlatMotifMap.h"
 #include "AliMpMotifReader.h"
 #include "AliMpFiles.h"
 #include "AliMpMotifType.h"
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
-#include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotif.h"
 #include "AliMpHelper.h"
@@ -43,7 +43,7 @@
 //
 /// Read slat and pcb ASCII files.
 /// 
-/// Basically this class provides 2 static methods :
+/// Basically this class provides two methods :
 /// - AliMpSlat* ReadSlat()
 /// - AliMpPCB ReadPCB()
 ///
@@ -53,10 +53,11 @@
 ClassImp(AliMpSt345Reader)
 /// \endcond
 
-TMap AliMpSt345Reader::fgPCBMap;
-
 //_____________________________________________________________________________
-AliMpSt345Reader::AliMpSt345Reader() : TObject()
+AliMpSt345Reader::AliMpSt345Reader(AliMpSlatMotifMap& motifMap) 
+: 
+TObject(),
+fMotifMap(motifMap)
 {
   //
   // Default ctor.
@@ -69,40 +70,15 @@ AliMpSt345Reader::~AliMpSt345Reader()
   //
   // Dtor.
   //
-  fgPCBMap.Delete();
-}
-
-//_____________________________________________________________________________
-AliMpPCB*
-AliMpSt345Reader::PCB(const char* pcbType)
-{
-  //
-  // Get access to an AliMpPCB object, given its type (e.g. N1, SB2, etc...)
-  //
-  // Note that the returned object is either a new one (read from file) or a 
-  // reused one if it is already present in the internal map.
-  //
-  
-  TPair* pair = (TPair*)fgPCBMap.FindObject(pcbType);
-  if ( pair )
-  {
-    AliDebugClass(2,Form("Getting pcb %s from internal map",pcbType));
-    return (AliMpPCB*)pair->Value();
-  }
-  else
-  {
-    AliDebugClass(2,Form("Reading pcb %s from file",pcbType));
-    return ReadPCB(pcbType);
-  }
 }
 
 //_____________________________________________________________________________
 AliMpPCB*
 AliMpSt345Reader::ReadPCB(const char* pcbType)
 { 
-  //
-  // Create a new AliMpPCB object, by reading it from file.
-  //
+  ///
+  /// Create a new AliMpPCB object, by reading it from file.
+  /// The returned object must be deleted by the client
   
   std::ifstream in(AliMpFiles::SlatPCBFilePath(kStation345,pcbType).Data());
   if (!in.good()) 
@@ -134,13 +110,13 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
     {
       std::istringstream sin(sline(kSizeKeyword.Length(),
                                    sline.Length()-kSizeKeyword.Length()).Data());
-      float padSizeX = 0.0;
-      float padSizeY = 0.0;
-      float pcbSizeX = 0.0;
-      float pcbSizeY = 0.0;
+      double padSizeX = 0.0;
+      double padSizeY = 0.0;
+      double pcbSizeX = 0.0;
+      double pcbSizeY = 0.0;
       sin >> padSizeX >> padSizeY >> pcbSizeX >> pcbSizeY;
       assert(pcb==0);
-      pcb = new AliMpPCB(pcbType,padSizeX,padSizeY,pcbSizeX,pcbSizeY);
+      pcb = new AliMpPCB(&fMotifMap,pcbType,padSizeX,padSizeY,pcbSizeX,pcbSizeY);
     }
     
     if ( sline(0,kMotifKeyword.Length()) == kMotifKeyword )
@@ -152,8 +128,17 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
       int iy;
       sin >> sMotifType >> ix >> iy;
       
-      AliMpMotifType* motifType = 
-        reader.BuildMotifType(sMotifType.Data());
+      AliMpMotifType* motifType = fMotifMap.FindMotifType(sMotifType);
+      if (!motifType)
+      {
+        AliDebug(1,Form("Reading motifType %s from file",sMotifType.Data()));
+        motifType = reader.BuildMotifType(sMotifType.Data());
+        fMotifMap.AddMotifType(motifType);
+      }
+      else
+      {
+        AliDebug(1,Form("Got motifType %s from motifMap",sMotifType.Data()));
+      }
       
       assert(pcb!=0);
       pcb->Add(motifType,ix,iy);
@@ -162,7 +147,6 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
   
   in.close();
   
-  fgPCBMap.Add(new TObjString(pcbType),pcb);
   return pcb;
 }
 
@@ -170,9 +154,9 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
 AliMpSlat*
 AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
 {
-  //
-  // Create a new AliMpSlat object, by reading it from file.
-  //
+  ///
+  /// Create a new AliMpSlat object, by reading it from file.
+  /// The returned object must be deleted by the client.
   
   std::ifstream in(AliMpFiles::SlatFilePath(kStation345,slatType,
                                             planeType).Data());
@@ -210,7 +194,7 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
       TString pcbName(tmp(0,blankPos));
       TString manus(tmp(blankPos+1,tmp.Length()-blankPos));
       
-      AliMpPCB* pcbType = PCB(pcbName.Data());	  
+      AliMpPCB* pcbType = ReadPCB(pcbName.Data());	  
       if (!pcbType)
 	    {
         AliErrorClass(Form("Cannot read pcbType=%s",pcbName.Data()));
@@ -225,6 +209,7 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
         AliErrorClass(Form("Wrong number of manu ids for this PCB ("
                            "%s) : %d out of %d",pcbName.Data(),
                            manuList.GetSize(),pcbType->GetSize()));
+        delete pcbType;
 	      delete slat;
 	      return 0;
       }
@@ -233,7 +218,8 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
       {
         manuList[i] |= AliMpConstants::ManuMask(planeType);
       }
-      slat->Add(pcbType,manuList);
+      slat->Add(*pcbType,manuList);
+      delete pcbType;
     }
   }
   
