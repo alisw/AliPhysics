@@ -1,3 +1,15 @@
+2007-01-12  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	TrackCounter: added method OutputEventTracks() for storing
+	scanning results.
+
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	TrackCounterEditor: added buttons to print/file scanning results
+	and to display current histograms.
+
 2006-12-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:
