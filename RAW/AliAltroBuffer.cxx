@@ -199,7 +199,7 @@ void AliAltroBuffer::WriteChannel(Int_t padNumber, Int_t rowNumber,
   //Write all ADC values and the trailer of a channel
   Int_t nWords = WriteBunch(nTimeBins,adcValues,threshold);
   // write the trailer
-  WriteTrailer(nWords, padNumber, rowNumber, secNumber);
+  if (nWords) WriteTrailer(nWords, padNumber, rowNumber, secNumber);
 }
 
 //_____________________________________________________________________________
@@ -210,7 +210,7 @@ void AliAltroBuffer::WriteChannel(Short_t hwAddress,
   //Write all ADC values and the trailer of a channel
   Int_t nWords = WriteBunch(nTimeBins,adcValues,threshold);
   // write the trailer
-  WriteTrailer(nWords, hwAddress);
+  if (nWords) WriteTrailer(nWords, hwAddress);
 }
 
 //_____________________________________________________________________________
