@@ -68,7 +68,8 @@ AliMUONTriggerCircuit::~AliMUONTriggerCircuit()
 //----------------------------------------------------------------------
 AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& circuit)
    :  TObject(circuit),
-      fILocalBoard(circuit.fILocalBoard)
+      fILocalBoard(circuit.fILocalBoard),
+  fTransformer(0x0)
 {
 /// Copy constructor
 
