@@ -19,6 +19,7 @@
 #include <TObject.h>
 #include "AliPID.h"
 
+class TLorentzVector;
 
 class AliESDCaloCluster : public TObject {
 
@@ -91,6 +92,8 @@ public:
 
   void SetDigitIndex(UShort_t *digit)     { fDigitIndex = digit;}
   UShort_t *GetDigitIndex() const         { return fDigitIndex; }
+
+  void GetMomentum(TLorentzVector& p);
 
 protected:
 

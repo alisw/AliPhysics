@@ -24,6 +24,7 @@
 //   J.L. Klay (LLNL)
 //-----------------------------------------------------------------
 
+#include <TLorentzVector.h>
 #include "AliESDCaloCluster.h"
 
 ClassImp(AliESDCaloCluster)
@@ -202,4 +203,17 @@ void AliESDCaloCluster::SetPid(const Float_t *p) {
   else
     for (Int_t i=0; i<n; i++) fPID[i] = uniform;
 
+}
+
+//_______________________________________________________________________
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p) {
+  // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
+  // identified as photons or pi0 (overlapped gamma) produced on the vertex
+  
+  Double_t r = TMath::Sqrt(fGlobalPos[0]*fGlobalPos[0]+
+		            fGlobalPos[1]*fGlobalPos[1]+
+		            fGlobalPos[2]*fGlobalPos[2]   ) ; 
+
+  p.SetPxPyPzE( fEnergy*fGlobalPos[0]/r,  fEnergy*fGlobalPos[1]/r,  fEnergy*fGlobalPos[2]/r,  fEnergy) ; 
+  
 }
