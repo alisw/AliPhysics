@@ -46,6 +46,7 @@ class AliMpIntPair : public TObject
   // set methods
   void SetFirst(Int_t ix)  {fFirst=ix; fValidity=true; }
   void SetSecond(Int_t iy) {fSecond=iy; fValidity=true;}
+  void Set(Int_t ix, Int_t iy) { fFirst=ix; fSecond=iy; fValidity=true; }
   
   // TObject functions used for sorting in Root collections
   virtual Bool_t  IsSortable() const {return kTRUE;}
