@@ -216,6 +216,8 @@ protected:
   Int_t fBadLineStyle;
   Int_t fClickAction;
 
+  Int_t fEventId;
+
   Int_t fAllTracks;
   Int_t fGoodTracks;
 
@@ -225,6 +227,9 @@ public:
   TrackCounter(const Text_t* name="TrackCounter", const Text_t* title="");
   virtual ~TrackCounter();
 
+  Int_t GetEventId() const { return fEventId; }
+  void  SetEventId(Int_t id) { fEventId = id; }
+
   void Reset();
 
   void RegisterTracks(TrackList* tlist, Bool_t goodTracks);
@@ -233,6 +238,8 @@ public:
 
   Int_t GetClickAction() const  { return fClickAction; }
   void  SetClickAction(Int_t a) { fClickAction = a; }
+
+  void OutputEventTracks(FILE* out=0);
 
   static TrackCounter* fgInstance;
 

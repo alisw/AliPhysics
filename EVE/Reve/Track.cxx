@@ -574,7 +574,7 @@ void TrackCounter::DoTrackAction(Track* track)
 {
   // !!!! No check done if ok.
   // !!!! Should also override RemoveElementLocal
-  // !!!! But then ... should also sore local information if track is ok.
+  // !!!! But then ... should also sotre local information if track is ok.
 
   switch (fClickAction)
   {
@@ -611,4 +611,37 @@ void TrackCounter::DoTrackAction(Track* track)
     }
 
   } // end switch fClickAction
+}
+
+/**************************************************************************/
+
+void TrackCounter::OutputEventTracks(FILE* out)
+{
+  if (out == 0)
+  {
+    out = stdout;
+    fprintf(out, "TrackCounter::FinalizeEvent()\n");
+  }
+
+  fprintf(out, "Event = %d  Ntracks = %d\n", fEventId, fGoodTracks);
+
+  TIter tlists(&fTrackLists);
+  TrackList* tlist;
+  Int_t cnt = 0;
+  while ((tlist = (TrackList*) tlists()) != 0)
+  {
+    List_i i = tlist->BeginChildren();
+    while (i != tlist->EndChildren())
+    {
+      Track* t = dynamic_cast<Track*>(*i);
+      if (t != 0 && t->GetLineStyle() == 1)
+      {
+	++cnt;
+	fprintf(out, " %2d: chg=%+2d  pt=%8.5f  eta=%+8.5f\n",
+	       cnt, t->fCharge, t->fP.Perp(), t->fP.Eta());
+      }
+      ++i;
+    }
+
+  }
 }
