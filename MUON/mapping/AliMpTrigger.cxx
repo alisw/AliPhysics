@@ -18,7 +18,7 @@
 
 #include "AliMpTrigger.h"
 #include "AliMpSlatSegmentation.h"
-
+#include "AliMpConstants.h"
 #include "AliLog.h"
 #include "AliMpSlat.h"
 
@@ -76,6 +76,9 @@ AliMpTrigger::AliMpTrigger()
   // default ctor
 
   AliDebugStream(1) << "this = " << this << endl;
+
+  fSlats.SetOwner(kFALSE);
+  fSlatSegmentations.SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -92,6 +95,9 @@ AliMpTrigger::AliMpTrigger(const char* slatType, AliMpPlaneType bendingOrNot)
   // normal ctor
 
   AliDebugStream(1) << "this = " << this << endl;
+
+  fSlats.SetOwner(kFALSE);
+  fSlatSegmentations.SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -100,7 +106,6 @@ AliMpTrigger::~AliMpTrigger()
   // dtor
   AliDebugStream(1) << "this = " << this << endl;
 
-  fSlats.Delete();
   fSlatSegmentations.Delete();
 }
 
@@ -115,21 +120,23 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
                   GetID(),slat->GetID()));
 
   // Check that we keep our size constant.
-  
-  const Double_t kPrecision = 1E-3;
-  
+    
   if ( GetSize() > 0 && 
-       ( !::IsEqual(slat->DX(),fDX,kPrecision) || 
-         !::IsEqual(slat->DY(),fDY,kPrecision) )
+       ( !::IsEqual(slat->DX(),fDX,AliMpConstants::LengthTolerance()) || 
+         !::IsEqual(slat->DY(),fDY,AliMpConstants::LengthTolerance()) )
      )
   {
-    AliError(Form("In %s trying to add a layer (%e,%e) of a different size than "
-             "mine (%e,%e)\n",GetID(),slat->DX(),slat->DY(),
+    AliError(Form("In %s trying to add a layer (%e,%e) (layer #%d) "
+                  "of a different size than mine (%e,%e)",
+                  GetID(),slat->DX(),slat->DY(),fSlats.GetEntries(),
                   fDX,fDY));
     return kFALSE;
   }
   fSlats.Add(slat);
-  fSlatSegmentations.Add(new AliMpSlatSegmentation(slat));
+  Bool_t owner(kTRUE);
+  // the slat segmentation will be the owner of the slat, and will delete
+  // it when it'll be deleted itself
+  fSlatSegmentations.Add(new AliMpSlatSegmentation(slat,owner));
   fMaxNofPadsY = std::max(slat->GetMaxNofPadsY(),fMaxNofPadsY);
   fDX = std::max(fDX,slat->DX());
   fDY = std::max(fDY,slat->DY());
