@@ -231,7 +231,15 @@ TString AliMpFiles::SectorSpecialFilePath2(AliMpStationType station,
 
   return TString(PlaneDataDir(station, plane) + fgkSectorSpecial2 + fgkDataExt);
 }
-    
+
+//______________________________________________________________________________
+TString AliMpFiles::MotifFileName(const TString& motifTypeID)
+{
+  /// Returns name of data file for a given motif type.
+  
+  return TString(fgkMotifPrefix +  motifTypeID + fgkDataExt);
+}
+
 //______________________________________________________________________________
 TString AliMpFiles::MotifFilePath(AliMpStationType station, 
                                   AliMpPlaneType plane, 
@@ -239,10 +247,17 @@ TString AliMpFiles::MotifFilePath(AliMpStationType station,
 {
 /// Returns path to data file for a given motif type.
 
-  return TString(PlaneDataDir(station, plane) 
-                 + fgkMotifPrefix +  motifTypeID + fgkDataExt);
+  return TString(PlaneDataDir(station, plane) + MotifFileName(motifTypeID));
 }
-    
+
+//______________________________________________________________________________
+TString AliMpFiles::PadPosFileName(const TString& motifTypeID)
+{
+  /// Returns name of data file with pad positions for a given motif type.
+  
+  return TString(fgkPadPosPrefix +  motifTypeID + fgkDataExt);
+}
+
 //______________________________________________________________________________
 TString AliMpFiles::PadPosFilePath(AliMpStationType station, 
                                    AliMpPlaneType plane, 
@@ -250,8 +265,16 @@ TString AliMpFiles::PadPosFilePath(AliMpStationType station,
 {
 /// Returns path to data file with pad positions for a given motif type.
 
-  return TString(PlaneDataDir(station, plane) 
-                 + fgkPadPosPrefix +  motifTypeID + fgkDataExt);
+  return TString(PlaneDataDir(station, plane) + PadPosFileName(motifTypeID));
+}
+
+//______________________________________________________________________________ 
+TString AliMpFiles::MotifSpecialFileName(const TString& motifID)
+{
+  /// Returns name of data file with pad dimensions for a given motif ID.
+  
+  return TString(fgkMotifSpecialPrefix + motifID + fgkDataExt);
+  
 }
 
 //______________________________________________________________________________ 
@@ -261,9 +284,7 @@ TString AliMpFiles::MotifSpecialFilePath(AliMpStationType station,
 {
 /// Returns path to data file with pad dimensions for a given motif ID.
 
-  return TString(PlaneDataDir(station, plane) 
-                 + fgkMotifSpecialPrefix + motifID + fgkDataExt);
-
+  return TString(PlaneDataDir(station, plane) + MotifSpecialFileName(motifID));
 }
 
 //______________________________________________________________________________ 

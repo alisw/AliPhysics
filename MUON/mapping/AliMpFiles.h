@@ -68,10 +68,14 @@ class AliMpFiles : public TObject
     static TString MotifFilePath(AliMpStationType station, 
                                  AliMpPlaneType plane, 
                                  const TString& motifTypeID);
+    static TString MotifFileName(const TString& motifTypeID);
     static TString MotifSpecialFilePath(AliMpStationType station,
                                  AliMpPlaneType plane, const TString& motifID);
+    static TString MotifSpecialFileName(const TString& motifID);
     static TString PadPosFilePath(AliMpStationType station, 
                                  AliMpPlaneType plane, const TString& motifTypeID);
+    static TString PadPosFileName(const TString& motifTypeID);
+
     static TString BergToGCFilePath(AliMpStationType station);
 
     static TString ManuToSerialPath(const TString& deName, AliMpStationType station);
