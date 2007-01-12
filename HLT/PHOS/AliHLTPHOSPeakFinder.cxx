@@ -16,6 +16,8 @@
 
 
 
+
+
 #include "AliHLTPHOSPeakFinder.h"
 #include <iostream>
 
@@ -25,10 +27,18 @@ using std::endl;
 ClassImp(AliHLTPHOSPeakFinder) 
 
 
-AliHLTPHOSPeakFinder::AliHLTPHOSPeakFinder(const AliHLTPHOSPeakFinder&):TObject(), AliHLTPHOSRawAnalyzer(), fDTofGuess(0), fDAmplGuess(0), kfMCovarPtrPtr(0), fPCovarPtrPtr(0)
+AliHLTPHOSPeakFinder::AliHLTPHOSPeakFinder(const AliHLTPHOSPeakFinder&):AliHLTPHOSRawAnalyzer(), fDTofGuess(0), fDAmplGuess(0), kfMCovarPtrPtr(0), fPCovarPtrPtr(0)
 {
 
 }
+
+
+
+//int 
+//AliHLTPHOSPeakFinder::Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv )
+//{
+
+//}
 
 //AliHLTComponent::GetComponentID()}
 

@@ -14,11 +14,11 @@
  **************************************************************************/
 
 
-
 #include "AliHLTPHOSPulseGenerator.h"
 //#include <stdio.h>
 #include <cmath>
 #include <iostream>
+
 
 
 using std::cout;
