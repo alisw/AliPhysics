@@ -157,6 +157,56 @@ void AliITSVertexerZ::ConfigIterations(Int_t noiter,Float_t *ptr){
 }
 
 //______________________________________________________________________
+Int_t AliITSVertexerZ::GetPeakRegion(TH1F*h, Int_t &binmin, Int_t &binmax) const {
+  // Finds a region around a peak in the Z histogram
+  // Case of 2 peaks is treated 
+  Int_t imax=h->GetNbinsX();
+  Float_t maxval=0;
+  Int_t bi1=h->GetMaximumBin();
+  Int_t bi2=0;
+  for(Int_t i=imax;i>=1;i--){
+    if(h->GetBinContent(i)>maxval){
+      maxval=h->GetBinContent(i);
+      bi2=i;
+    }
+  }
+  Int_t npeaks=0;
+
+  if(bi1==bi2){
+    binmin=bi1-3;
+    binmax=bi1+3;
+    npeaks=1;
+  }else{
+    TH1F *copy = new TH1F(*h);
+    copy->SetBinContent(bi1,0.);
+    copy->SetBinContent(bi2,0.);
+    Int_t l1=TMath::Max(bi1-3,1);
+    Int_t l2=TMath::Min(bi1+3,h->GetNbinsX());
+    Float_t cont1=copy->Integral(l1,l2);
+    Int_t ll1=TMath::Max(bi2-3,1);
+    Int_t ll2=TMath::Min(bi2+3,h->GetNbinsX());
+    Float_t cont2=copy->Integral(ll1,ll2);
+    if(cont1>cont2){
+      binmin=l1;
+      binmax=l2;
+      npeaks=1;
+    }
+    if(cont2>cont1){
+      binmin=ll1;
+      binmax=ll2;
+      npeaks=1;
+    }
+    if(cont1==cont2){
+      binmin=l1;
+      binmax=ll2;
+      if(bi2-bi1==1) npeaks=1;
+      else npeaks=2;
+    }  
+    delete copy;
+  }    
+  return npeaks;
+}
+//______________________________________________________________________
 AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   // Defines the AliESDVertex for the current event
   VertexZFinder(evnumber);
@@ -340,58 +390,32 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
     fCurrentVertex = new AliESDVertex(0.,5.3,-1);
     return;
   }
-  /*
-  else {
-    if(fDebug>0)cout<<"Number of entries in hist. "<<fZCombc->GetEntries()<<endl;
-  }
-  */
 
   TH1F *hc = fZCombc;
-  Bool_t goon = kFALSE;
-  Int_t cnt = 0;
-  Int_t bi;
 
-  do {
-    goon = kFALSE;
-    cnt++;
-    bi = hc->GetMaximumBin();   // bin with maximal content on coarse histogram
-    if(hc->GetBinContent(bi)<3){
-      if(cnt==1)goon = kTRUE;
-      hc = fZCombv;
-    }
-  } while(goon);
-
-
-  Float_t centre = hc->GetBinCenter(bi);  // z value of the bin with maximal content
   
-  Int_t bifine=static_cast<Int_t>((hc->GetBinCenter(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
-  Int_t nbinsfine=static_cast<Int_t>(3*hc->GetBinWidth(bi)/fStepFine);
-  // evaluation of the centroid
-  Int_t ii1=TMath::Max(bifine-nbinsfine,1);
-  Int_t ii2=TMath::Min(bifine+nbinsfine,fZCombf->GetNbinsX());
-  centre = 0.;
+  if(hc->GetBinContent(hc->GetMaximumBin())<3)hc = fZCombv;
+  Int_t binmin,binmax;
+  Int_t nPeaks=GetPeakRegion(hc,binmin,binmax);   
+  if(nPeaks==2)AliWarning("2 peaks found");
+  Int_t ii1=1+static_cast<Int_t>((hc->GetBinLowEdge(binmin)-fLowLim)/fStepFine);
+  Int_t ii2=1+static_cast<Int_t>((hc->GetBinLowEdge(binmax)+hc->GetBinWidth(binmax)-fLowLim)/fStepFine);
+  Float_t centre = 0.;
   Int_t nn=0;
-  for(Int_t ii=ii1;ii<ii2;ii++){
+  for(Int_t ii=ii1;ii<=ii2;ii++){
     centre+= fZCombf->GetBinCenter(ii)*fZCombf->GetBinContent(ii);
     nn+=static_cast<Int_t>(fZCombf->GetBinContent(ii));
   }
   if (nn) centre/=nn;
-  /*
-  if(fDebug>0){
-    cout<<"Value of center "<<centre<<endl;
-    cout<<"Population of 3 central bins: "<<hc->GetBinContent(bi-1)<<", ";
-    cout<<hc->GetBinContent(bi)<<", ";
-    cout<<hc->GetBinContent(bi+1)<<endl;
-  }
-  */
+
   // n1 is the bin number of fine histogram containing the point located 1 coarse bin less than "centre"
-  Int_t n1 = static_cast<Int_t>((centre-hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+  Int_t n1 = 1+static_cast<Int_t>((centre-hc->GetBinWidth(1)-fLowLim)/fStepFine);
   // n2 is the bin number of fine histogram containing the point located 1 coarse bin more than "centre"
-  Int_t n2 = static_cast<Int_t>((centre+hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+  Int_t n2 = 1+static_cast<Int_t>((centre+hc->GetBinWidth(1)-fLowLim)/fStepFine);
   if(n1<1)n1=1;
   if(n2>nbinfine)n2=nbinfine;
   Int_t niter = 0;
-  goon = kTRUE;
+  Bool_t goon = kTRUE;
   Int_t num=0;
   Bool_t last = kFALSE;
 
@@ -426,42 +450,27 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
       // a window in the fine grained histogram is centered aroung the found Z. The width is 2 bins of
       // the coarse grained histogram
       if(num>0){
-	n1 = static_cast<Int_t>((fZFound-hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+	n1 = 1+static_cast<Int_t>((fZFound-hc->GetBinWidth(1)-fLowLim)/fStepFine);
 	if(n1<1)n1=1;
-	n2 = static_cast<Int_t>((fZFound+hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+	n2 = 1+static_cast<Int_t>((fZFound+hc->GetBinWidth(1)-fLowLim)/fStepFine);
 	if(n2>nbinfine)n2=nbinfine;
-	/*
-	  if(fDebug>0){
-	  cout<<"Search restricted to n1 = "<<n1<<", n2= "<<n2<<endl;
-	  cout<<"z1= "<<fZCombf->GetBinCenter(n1)<<", n2 = "<<fZCombf->GetBinCenter(n2)<<endl;
-	  }
-	*/
       }
       else {
-	n1 = static_cast<Int_t>((centre-(niter+2)*hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
-	n2 = static_cast<Int_t>((centre+(niter+2)*hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+	n1 = 1+static_cast<Int_t>((centre-(niter+2)*hc->GetBinWidth(1)-fLowLim)/fStepFine);
+	n2 = 1+static_cast<Int_t>((centre+(niter+2)*hc->GetBinWidth(1)-fLowLim)/fStepFine);
 	if(n1<1)n1=1;
 	if(n2>nbinfine)n2=nbinfine;
       }
       niter++;
       // no more than 10 adjusting iterations
-      if(niter>=10){
-	goon = kFALSE;
-	//	Warning("FindVertexForCurrentEvent","The procedure does not converge\n");
-      }
+      if(niter>=10)goon = kFALSE;
 
       if((fZsig> 0.0001) && !goon && num>5){
 	last = kTRUE;
-	n1 = static_cast<Int_t>((fZFound-fZsig-fZCombf->GetBinLowEdge(0))/fZCombf->GetBinWidth(0));
+	n1 = 1+static_cast<Int_t>((fZFound-fZsig-fLowLim)/fStepFine);
 	if(n1<1)n1=1;
-	n2 = static_cast<Int_t>((fZFound+fZsig-fZCombf->GetBinLowEdge(0))/fZCombf->GetBinWidth(0));
+	n2 = 1+static_cast<Int_t>((fZFound+fZsig-fLowLim)/fStepFine);  
 	if(n2>nbinfine)n2=nbinfine;
-	/*
-	if(fDebug>0){
-	  cout<<"FINAL Search restricted to n1 = "<<n1<<", n2= "<<n2<<endl;
-	  cout<<"z1= "<<fZCombf->GetBinCenter(n1)<<", n2 = "<<fZCombf->GetBinCenter(n2)<<endl;
-	}
-	*/
       }
     }
     else {
