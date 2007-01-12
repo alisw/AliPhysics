@@ -68,7 +68,7 @@ class AliMpSlat : public TObject
   
   const char* GetID() const;
 
-  void Add(AliMpPCB* pcbType, const TArrayI& manuList);
+  void Add(const AliMpPCB& pcbType, const TArrayI& manuList);
 
   Double_t DX() const;
   Double_t DY() const;

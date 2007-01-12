@@ -60,6 +60,10 @@ AliMpSlat::AliMpSlat()
     // Empty ctor.
     //
   AliDebug(1,Form("this=%p Empty ctor",this));
+#ifdef WITH_ROOT    
+    fPCBs.SetOwner(kTRUE);
+#endif    
+    fManuMap.SetOwner(kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -80,6 +84,10 @@ AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
     // Normal ctor
     //
   AliDebug(1,Form("this=%p id=%s",this,id));			
+#ifdef WITH_ROOT    
+    fPCBs.SetOwner(kTRUE);
+#endif    
+    fManuMap.SetOwner(kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -89,11 +97,19 @@ AliMpSlat::~AliMpSlat()
   // Dtor.
   //
   AliDebug(1,Form("this=%p fId=%s",this,fId.Data()));			
+#ifdef WITH_ROOT    
+  fPCBs.Delete();
+#else
+  for ( size_t i = 0; i < fPCBs.size(); ++i )
+  {
+    delete fPCBs[i];
+  }
+#endif    
 }
 
 //_____________________________________________________________________________
 void
-AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList) 
+AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList) 
 {
   //
   // Adds a PCB to this slat. The manuList specifies the ids of the manu
@@ -108,10 +124,10 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
 	}
   else
   {
-    ixOffset = pcbType->Ixmin();
+    ixOffset = pcbType.Ixmin();
   }
   Double_t xOffset = DX()*2;
-  AliMpPCB* pcb = pcbType->Clone(manuList,ixOffset,xOffset);
+  AliMpPCB* pcb = pcbType.Clone(manuList,ixOffset,xOffset);
 #ifdef WITH_ROOT
   fPCBs.AddLast(pcb);
 #else
@@ -134,7 +150,7 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
     }
     else
     {
-      AliError(Form("ManuID %d is duplicated for PCB %s",manuID,pcbType->GetID()));      
+      AliError(Form("ManuID %d is duplicated for PCB %s",manuID,pcbType.GetID()));      
     }
 //#else
 //  fManuMap[manuID] = mp;
