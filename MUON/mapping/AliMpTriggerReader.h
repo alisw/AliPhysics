@@ -33,6 +33,7 @@
 #  include "AliMpStationType.h"
 #endif
 
+class AliMpSlatMotifMap;
 class AliMpSlat;
 class AliMpTrigger;
 class AliMpPCB;
@@ -41,55 +42,53 @@ class TList;
 class AliMpTriggerReader : public TObject
 {
  public:
-  AliMpTriggerReader();
+  AliMpTriggerReader(AliMpSlatMotifMap& motifMap);
   virtual ~AliMpTriggerReader();
 
-  static AliMpTrigger* ReadSlat(const char* slatType, AliMpPlaneType planeType);
+  AliMpTrigger* ReadSlat(const char* slatType, AliMpPlaneType planeType);
 
-  static AliMpPCB* ReadPCB(const char* pcbType);
-  
-  static void Reset();
+  AliMpPCB* ReadPCB(const char* pcbType);
   
 private:
     
-  static AliMpSlat* BuildSlat(const char* slatName, 
+  AliMpSlat* BuildSlat(const char* slatName, 
                               AliMpPlaneType planeType,
                               const TList& descriptionLines,
                               Double_t scale=1.0);
   
-  static Int_t DecodeFlipLine(const TString& sline,
+  Int_t DecodeFlipLine(const TString& sline,
                               TString& slatType2,
                               Bool_t& flipX, Bool_t& flipY);
   
-  static Int_t DecodeScaleLine(const TString& sline, 
+  Int_t DecodeScaleLine(const TString& sline, 
                                Double_t& scale, TString& slatType);
   
-  static void FlipLines(TList& lines, Bool_t flipX, Bool_t flipY, 
+  void FlipLines(TList& lines, Bool_t flipX, Bool_t flipY, 
                         Int_t srcLine, Int_t destLine);
   
-  static TString GetBoardNameFromPCBLine(const TString& sline);
+  TString GetBoardNameFromPCBLine(const TString& sline);
   
-  static Int_t GetLine(const TString& slatType);
+  Int_t GetLine(const TString& slatType);
   
-  static Int_t IsLayerLine(const TString& sline);
+  Int_t IsLayerLine(const TString& sline);
     
-  static int LocalBoardNumber(const char* localBoardName);
+  int LocalBoardNumber(const char* localBoardName);
   
-  static AliMpPCB* PCB(const char* pcbType); 
+  AliMpPCB* PCB(const char* pcbType); 
   
-  static void ReadLines(const char* slatType,
+  void ReadLines(const char* slatType,
                         AliMpPlaneType planeType,
                         TList& lines,
                         Double_t& scale, Bool_t& flipX, Bool_t& flipY,
                         Int_t& srcLine, Int_t& destLine);
   
-  static void ReadLocalBoardMapping();
+  void ReadLocalBoardMapping();
   
 private:
     
-  static TMap fgPCBMap; //!< map of TObjString to AliMpPCB*
+  AliMpSlatMotifMap& fMotifMap; //!< storage for motifTypes and motifs...
   
-  static TMap fgLocalBoardMap; //!< map of TObjString to TObjString
+  TMap fLocalBoardMap; //!< map of TObjString to TObjString
 
   static const TString fgkKeywordLayer; //!< Keyword: LAYER
   static const TString fgkKeywordScale; //!< Keyword: SCALE
@@ -97,7 +96,7 @@ private:
   static const TString fgkKeywordFlipX; //!< Keyword : FLIPX
   static const TString fgkKeywordFlipY; //!< Keyword : FLIPY
   
-  ClassDef(AliMpTriggerReader,1) // Reader for trigger slats mapping files 
+  ClassDef(AliMpTriggerReader,0) // Reader for trigger slats mapping files 
 };
 
 #endif

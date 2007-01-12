@@ -22,7 +22,8 @@
 #include "AliMpMotifType.h"
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
-#include "AliMpMotifMap.h"
+#include "AliMpSlatMotifMap.h"
+#include "AliMpMotifSpecial.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotif.h"
 #include "AliMpHelper.h"
@@ -38,12 +39,12 @@
 #include "TString.h"
 
 #include <sstream>
-#include <cassert>
+#include <assert.h>
 
 /// 
 /// \class AliMpTriggerReader
 /// Read trigger slat ASCII files
-/// Basically provides 2 static methods:
+/// Basically provides two methods:
 /// - AliMpTrigger* ReadSlat()
 /// - AliMpPCB* ReadPCB()
 ///
@@ -53,9 +54,6 @@
 ClassImp(AliMpTriggerReader)
 /// \endcond
 
-TMap AliMpTriggerReader::fgPCBMap;
-TMap AliMpTriggerReader::fgLocalBoardMap;
-
 const TString AliMpTriggerReader::fgkKeywordLayer("LAYER");
 const TString AliMpTriggerReader::fgkKeywordScale("SCALE");
 const TString AliMpTriggerReader::fgkKeywordPcb("PCB");  
@@ -63,11 +61,15 @@ const TString AliMpTriggerReader::fgkKeywordFlipX("FLIP_X");
 const TString AliMpTriggerReader::fgkKeywordFlipY("FLIP_Y");
 
 //_____________________________________________________________________________
-AliMpTriggerReader::AliMpTriggerReader() : TObject()
+AliMpTriggerReader::AliMpTriggerReader(AliMpSlatMotifMap& motifMap) 
+: TObject(),
+  fMotifMap(motifMap),
+  fLocalBoardMap()
 {
   //
   // Default ctor.
   //
+    fLocalBoardMap.SetOwner(kTRUE);
 } 
 
 //_____________________________________________________________________________
@@ -76,8 +78,7 @@ AliMpTriggerReader::~AliMpTriggerReader()
   //
   // Dtor.
   //
-  fgPCBMap.Delete();
-  fgLocalBoardMap.Delete();
+  fLocalBoardMap.DeleteAll();
 }
 
 //_____________________________________________________________________________
@@ -87,12 +88,19 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
                               const TList& lines,
                               Double_t scale)
 {
-  // Construct a slat from the list of lines, taking into account
-  // the scale factor
+  /// Construct a slat from the list of lines, taking into account
+  /// the scale factor. The returned pointer must be deleted by the client
 
+  AliDebug(1,Form("slat %s %s scale %e",
+                  slatName,PlaneTypeName(planeType).Data(),scale))
+  ;
+  
   AliMpSlat* slat = new AliMpSlat(slatName, planeType);
     
   TIter it(&lines);
+  
+  StdoutToAliDebug(3,lines.Print(););
+  
   TObjString* osline;
   while ( ( osline = (TObjString*)it.Next() ) )
   {
@@ -124,7 +132,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
         pcbName = s.str().c_str();
       }
       
-      AliMpPCB* pcbType = PCB(pcbName.Data());	  
+      AliMpPCB* pcbType = ReadPCB(pcbName.Data());	  
       if (!pcbType)
       {
         AliErrorClass(Form("Cannot read pcbType=%s",pcbName.Data()));
@@ -161,9 +169,14 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
           }
         }
       }
+      AliDebug(3,"Deleting tokens");
       delete tokens;
+      AliDebug(3,"Deleting localBoardList");
       delete localBoardList;
-      slat->Add(pcbType,allLocalBoards);
+      AliDebug(3,"Adding pcb to slat");
+      slat->Add(*pcbType,allLocalBoards);
+      AliDebug(3,Form("Deleting pcbType=%p %s",pcbType,pcbName.Data()));
+      delete pcbType;
     }
   }
   
@@ -201,11 +214,11 @@ void
 AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
                               Int_t srcLine, Int_t destLine)
 {
-  //
-  // Change the local board names contained in lines, 
-  // to go from right to left, and/or
-  // from top to bottom
-  //
+  ///
+  /// Change the local board names contained in lines, 
+  /// to go from right to left, and/or
+  /// from top to bottom
+  ///
  
 
   if ( flipX )
@@ -322,7 +335,7 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
 Int_t
 AliMpTriggerReader::IsLayerLine(const TString& sline)
 {
-  // Whether sline contains LAYER keyword
+  /// Whether sline contains LAYER keyword
 
   if ( sline.BeginsWith(fgkKeywordLayer) )
   {
@@ -340,7 +353,7 @@ AliMpTriggerReader::DecodeFlipLine(const TString& sline,
                                    TString& slatType2,
                                    Bool_t& flipX, Bool_t& flipY)
 {
-  // Decode a line containing FLIP_X and/or FLIP_Y keywords
+  /// Decode a line containing FLIP_X and/or FLIP_Y keywords
 
   Ssiz_t blankPos = sline.First(' ');
   if ( blankPos < 0 ) return 0;
@@ -368,7 +381,7 @@ Int_t
 AliMpTriggerReader::DecodeScaleLine(const TString& sline, 
                                     Double_t& scale, TString& slatType)
 {
-  // Decode sline containing SCALE keyword
+  /// Decode sline containing SCALE keyword
 
   if ( sline(0,fgkKeywordScale.Length()) == fgkKeywordScale )
   {
@@ -396,12 +409,13 @@ AliMpTriggerReader::DecodeScaleLine(const TString& sline,
 Int_t
 AliMpTriggerReader::GetLine(const TString& slatType)
 {
-  //
-  // Assuming slatType is a 4 character string of the form XSLN
-  // where X=1,2,3 or 4
-  // S = R or L
-  // N is the line number
-  // returns N
+  ///
+  /// Assuming slatType is a 4 character string of the form XSLN
+  /// where X=1,2,3 or 4
+  /// S = R or L
+  /// N is the line number
+  /// returns N
+  
   if ( isdigit(slatType[0]) && 
        ( slatType[1] == 'R' || slatType[1] == 'L' ) &&
        slatType[2] == 'L' )
@@ -415,44 +429,20 @@ AliMpTriggerReader::GetLine(const TString& slatType)
 int
 AliMpTriggerReader::LocalBoardNumber(const char* localBoardName)
 {
-  // From local board name to local board number
+  /// From local board name to local board number
 
-  if ( !fgLocalBoardMap.GetSize() ) 
+  if ( !fLocalBoardMap.GetSize() ) 
   {
     ReadLocalBoardMapping();
   }
   
-  TPair* pair = (TPair*)fgLocalBoardMap.FindObject(localBoardName);
+  TPair* pair = (TPair*)fLocalBoardMap.FindObject(localBoardName);
   
   if (pair)
   {
     return atoi(((TObjString*)pair->Value())->String().Data());
   }
   return -1;
-}
-
-//_____________________________________________________________________________
-AliMpPCB*
-AliMpTriggerReader::PCB(const char* pcbType)
-{
-  //
-  // Get access to an AliMpPCB object, given its type (e.g. N1, SB2, etc...)
-  //
-  // Note that the returned object is either a new one (read from file) or a 
-  // reused one if it is already present in the internal map.
-  //
-  
-  TPair* pair = (TPair*)fgPCBMap.FindObject(pcbType);
-  if ( pair )
-  {
-    AliDebugClass(2,Form("Getting pcb %s from internal map",pcbType));
-    return (AliMpPCB*)pair->Value();
-  }
-  else
-  {
-    AliDebugClass(2,Form("Reading pcb %s from file",pcbType));
-    return ReadPCB(pcbType);
-  }
 }
 
 //_____________________________________________________________________________
@@ -464,11 +454,11 @@ AliMpTriggerReader::ReadLines(const char* slatType,
                               Bool_t& flipX, Bool_t& flipY,
                               Int_t& srcLine, Int_t& destLine)
 {
-  //
-  // Reads in lines from file for a given slat
-  // Returns the list of lines (lines), together with some global
-  // information as the scale, whether to flip the lines, etc...
-  //
+  ///
+  /// Reads in lines from file for a given slat
+  /// Returns the list of lines (lines), together with some global
+  /// information as the scale, whether to flip the lines, etc...
+  ///
   AliDebugClass(2,Form("SlatType %s Scale %e FlipX %d FlipY %d srcLine %d"
                        " destLine %d\n",slatType,scale,flipX,flipY,
                        srcLine,destLine));
@@ -548,13 +538,13 @@ AliMpTriggerReader::ReadLines(const char* slatType,
 void
 AliMpTriggerReader::ReadLocalBoardMapping()
 {
-  // Reads the file that contains the mapping local board name <-> number
+  /// Reads the file that contains the mapping local board name <-> number
 
   TString filename(AliMpFiles::LocalTriggerBoardMapping());
   
   AliDebugClass(2,Form("Reading from %s\n",filename.Data()));
 
-  fgLocalBoardMap.Delete();
+  fLocalBoardMap.DeleteAll();
   
   ifstream in(filename.Data());
   if (!in.good())
@@ -577,7 +567,7 @@ AliMpTriggerReader::ReadLocalBoardMapping()
         Int_t n = atoi(number.Data());
         if ( n == 0 ) continue;
         TString& name = ((TObjString*)(tokens->At(4)))->String();
-        fgLocalBoardMap.Add(new TObjString(name), new TObjString(number));
+        fLocalBoardMap.Add(new TObjString(name), new TObjString(number));
         AliDebugClass(10,Form("Board %s has number %s\n",name.Data(),number.Data()));
         delete tokens;
       }
@@ -590,9 +580,9 @@ AliMpTriggerReader::ReadLocalBoardMapping()
 AliMpPCB*
 AliMpTriggerReader::ReadPCB(const char* pcbType)
 { 
-  //
-  // Create a new AliMpPCB object, by reading it from file.
-  //
+  ///
+  /// Create a new AliMpPCB object, by reading it from file.
+  /// Returned pointer must be deleted by client.
   
   AliDebugClass(2,Form("pcbType=%s\n",pcbType));
   
@@ -627,7 +617,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
   const TString kMotifKeyword("MOTIF");
   const TString kMotifSpecialKeyword("SPECIAL_MOTIF");
   
-  AliMpPCB* pcb = 0;
+  AliMpPCB* pcb(0x0);
   
   while ( in.getline(line,80) )
   {
@@ -645,7 +635,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       float pcbSizeY = 0.0;
       sin >> padSizeX >> padSizeY >> pcbSizeX >> pcbSizeY;
       assert(pcb==0);
-      pcb = new AliMpPCB(pcbType,padSizeX*scale,padSizeY*scale,
+      pcb = new AliMpPCB(&fMotifMap,pcbType,padSizeX*scale,padSizeY*scale,
                          pcbSizeX*scale,pcbSizeY*scale);
     }
     
@@ -657,9 +647,34 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       TString sMotifType;
       sin >> sMotifSpecial >> sMotifType;
       
-      AliMpMotifType* motifType = reader.BuildMotifType(sMotifType);
-      AliMpMotifSpecial* specialMotif = 
-        reader.BuildMotifSpecial(sMotifSpecial,motifType,scale);
+      TString id = reader.MotifSpecialName(sMotifSpecial,scale);
+      
+      AliMpMotifSpecial* specialMotif =
+        dynamic_cast<AliMpMotifSpecial*>(fMotifMap.FindMotif(id));
+      if (!specialMotif)
+      {
+        AliDebug(1,Form("Reading motifSpecial %s (%s) from file",
+                        sMotifSpecial.Data(),id.Data()));
+        AliMpMotifType* motifType = fMotifMap.FindMotifType(sMotifType.Data());
+        if ( !motifType)
+        {
+          AliDebug(1,Form("Reading motifType %s (%s) from file",
+                          sMotifType.Data(),id.Data()));
+          motifType = reader.BuildMotifType(sMotifType.Data());
+          fMotifMap.AddMotifType(motifType);
+        }
+        else
+        {
+          AliDebug(1,Form("Got motifType %s (%s) from motifMap",
+                          sMotifType.Data(),id.Data()));        
+        }
+        specialMotif = reader.BuildMotifSpecial(sMotifSpecial,motifType,scale);
+        fMotifMap.AddMotif(specialMotif);
+      }
+      else
+      {
+        AliDebug(1,Form("Got motifSpecial %s from motifMap",sMotifSpecial.Data()));
+      }
       
       assert(pcb==0);      
       pcb = new AliMpPCB(pcbType,specialMotif);
@@ -674,7 +689,17 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       int iy;
       sin >> sMotifType >> ix >> iy;
       
-      AliMpMotifType* motifType = reader.BuildMotifType(sMotifType.Data());
+      AliMpMotifType* motifType = fMotifMap.FindMotifType(sMotifType.Data());
+      if ( !motifType)
+      {
+        AliDebug(1,Form("Reading motifType %s from file",sMotifType.Data()));
+        motifType = reader.BuildMotifType(sMotifType.Data());
+        fMotifMap.AddMotifType(motifType);
+      }
+      else
+      {
+        AliDebug(1,Form("Got motifType %s from motifMap",sMotifType.Data()));        
+      }
       
       assert(pcb!=0);
       pcb->Add(motifType,ix,iy);
@@ -683,7 +708,6 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
   
   in.close();
   
-  fgPCBMap.Add(new TObjString(pcbType),pcb);
   return pcb;
 }
 
@@ -691,14 +715,15 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
 AliMpTrigger*
 AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
 {
-  //
-  // Create a new AliMpTrigger object, by reading it from file.
-  //
+  ///
+  /// Create a new AliMpTrigger object, by reading it from file.
+  /// Returned object must be deleted by client.
 
   Double_t scale = 1.0;
   Bool_t flipX = kFALSE;
   Bool_t flipY = kFALSE;
   TList lines;
+  lines.SetOwner(kTRUE);
   Int_t srcLine(-1);
   Int_t destLine(-1);
   
@@ -724,6 +749,7 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
   // Now splits the lines in packets corresponding to different layers 
   // (if any), and create sub-slats.
   TObjArray layers;
+  layers.SetOwner(kTRUE);
   Int_t ilayer(-1);
   TIter it(&lines);
   TObjString* osline;
@@ -733,7 +759,9 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
     TString& s = osline->String();
     if ( IsLayerLine(s) )
     {
-      layers.Add(new TList);
+      TList* list(new TList);
+      list->SetOwner(kTRUE);
+      layers.Add(list);
       ++ilayer;
     }
     else
@@ -754,7 +782,37 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
     AliMpSlat* slat = BuildSlat(slatName.str().c_str(),planeType,lines,scale);
     if ( slat )
     {
-      triggerSlat->AdoptLayer(slat);
+      Bool_t ok = triggerSlat->AdoptLayer(slat);
+      if (!ok)
+      {
+        StdoutToAliError(cout << "could not add slat=" << endl;
+                         slat->Print();
+                         cout << "to the triggerSlat=" << endl;
+                         triggerSlat->Print();
+                         );
+        AliError("Slat is=");
+        for ( Int_t i = 0; i < slat->GetSize(); ++i )
+        {
+          AliMpPCB* pcb = slat->GetPCB(i);
+          AliError(Form("ERR pcb %d size %e,%e (unscaled is %e,%e)",
+                                i,pcb->DX()*2,pcb->DY()*2,
+                                pcb->DX()*2/scale,pcb->DY()*2/scale));
+        }
+        AliError("TriggerSlat is=");
+        for ( Int_t j = 0; j < triggerSlat->GetSize(); ++j )
+        {
+          AliMpSlat* slat = triggerSlat->GetLayer(j);
+          AliError(Form("Layer %d",j));
+          for ( Int_t i = 0; i < slat->GetSize(); ++i )
+          {
+            AliMpPCB* pcb = slat->GetPCB(i);
+            AliError(Form("ERR pcb %d size %e,%e (unscaled is %e,%e)",
+                          i,pcb->DX()*2,pcb->DY()*2,
+                          pcb->DX()*2/scale,pcb->DY()*2/scale));
+          }
+        } 
+        StdoutToAliError(fMotifMap.Print(););
+      }
     }
     else
     {
@@ -764,16 +822,5 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
     }
   }
   
-  layers.SetOwner(kTRUE);
-  layers.Delete();
-  
   return triggerSlat;
-}
-
-//_____________________________________________________________________________
-void
-AliMpTriggerReader::Reset()
-{
-  // Resets the PCB internal map
-  fgPCBMap.Delete();
 }
