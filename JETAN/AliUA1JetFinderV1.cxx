@@ -453,7 +453,7 @@ void AliUA1JetFinderV1::SubtractBackg(Int_t& nIn, Int_t&nJ, Float_t&etbgTotalN,
              break;
          }
      }// end jets loop
-     if(injet[jpart] == -1 && fReader->GetSignalFlag(jpart) == 1)
+     if(injet[jpart] == -1 && fReader->GetCutFlag(jpart) == 1)
         etOut += ptT[jpart]; // particle outside cones and pt cut
   } //end particle loop
 
@@ -598,7 +598,7 @@ void AliUA1JetFinderV1::SubtractBackgCone(Int_t& nIn, Int_t&nJ,Float_t& etbgTota
              break;
          }
      }// end jets loop
-     if(injet[jpart] == -1  && fReader->GetSignalFlag(jpart) == 1)
+     if(injet[jpart] == -1  && fReader->GetCutFlag(jpart) == 1)
         hEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
   } //end particle loop
 
