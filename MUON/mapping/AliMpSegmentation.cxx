@@ -76,7 +76,8 @@ AliMpSegmentation* AliMpSegmentation::Instance()
 AliMpSegmentation::AliMpSegmentation()
 : TObject(),
   fMpSegmentations(true),
-  fElCardsMap(true)
+  fElCardsMap(true),
+  fSlatMotifMap()
 {  
 /// Standard constructor
 
@@ -84,21 +85,24 @@ AliMpSegmentation::AliMpSegmentation()
   fElCardsMap.SetOwner(true);
 
   // Create mapping segmentations for all detection elements
-  for ( Int_t cath = 0; cath < 2; cath ++ ) { 
+  for ( Int_t cath = 0; cath < 2; cath ++ ) 
+  { 
     AliMpDEIterator it;
-    for ( it.First(); ! it.IsDone(); it.Next() ) {
-      //if ( AliMpDEManager::GetChamberId(it.CurrentDE()) >= 4 ) break;
-      CreateMpSegmentation(it.CurrentDE(), cath);
+    for ( it.First(); ! it.IsDone(); it.Next() ) 
+    {
+        CreateMpSegmentation(it.CurrentDE(), cath);
     } 
   }  
 
   // Fill el cards map for all detection elements
   // of tracking chambers
   AliMpDEIterator it;
-  for ( it.First(); ! it.IsDone(); it.Next() ) { 
-    //if ( AliMpDEManager::GetChamberId(it.CurrentDE()) >= 4 ) break;
-    if ( AliMpDEManager::GetChamberId(it.CurrentDE()) >= 10 ) break;
-    FillElCardsMap(it.CurrentDE());
+  for ( it.First(); ! it.IsDone(); it.Next() ) 
+  { 
+    if ( AliMpDEManager::GetStationType(it.CurrentDE()) != kStationTrigger )
+    {
+      FillElCardsMap(it.CurrentDE());
+    }
   }  
 }
 
@@ -106,7 +110,8 @@ AliMpSegmentation::AliMpSegmentation()
 AliMpSegmentation::AliMpSegmentation(TRootIOCtor* /*ioCtor*/)
 : TObject(),
   fMpSegmentations(),
-  fElCardsMap()
+  fElCardsMap(),
+  fSlatMotifMap()
 {  
 /// Constructor for IO
 
@@ -164,17 +169,22 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, Int_t cath)
     mpSegmentation = new AliMpSectorSegmentation(sector, true);
   }
   else if ( stationType == kStation345 ) { 
-    AliMpSlat* slat = AliMpSt345Reader::ReadSlat(deTypeName, planeType);
+    AliMpSt345Reader reader(fSlatMotifMap);
+    AliMpSlat* slat = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation =  new AliMpSlatSegmentation(slat, true);
   }
   else if ( stationType == kStationTrigger ) {
-    AliMpTrigger* trigger = AliMpTriggerReader::ReadSlat(deTypeName, planeType);
+    AliMpTriggerReader reader(fSlatMotifMap);
+    AliMpTrigger* trigger = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation = new AliMpTriggerSegmentation(trigger, true);
   }
   else   
     AliErrorStream() << "Unknown station type" << endl;
 
   fMpSegmentations.Add(deName, mpSegmentation); 
+  
+  StdoutToAliDebug(3,fSlatMotifMap.Print(););
+  
   return mpSegmentation;
 } 
 

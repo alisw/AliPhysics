@@ -32,9 +32,12 @@
 #  include "AliMpExMap.h"
 #endif
 
+#ifndef ALIMPSLATMOTIFMAP_H
+#  include "AliMpSlatMotifMap.h"
+#endif
+
 class AliMpVSegmentation;
 class AliMpSegmentation;
-
 class TRootIOCtor;
 
 class AliMpSegmentation : public  TObject {
@@ -71,7 +74,7 @@ class AliMpSegmentation : public  TObject {
     // data members
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE seg names
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations
-      
+    AliMpSlatMotifMap  fSlatMotifMap; ///< Map of motif, motifTypes to avoid duplications and allow proper deletion
     
   ClassDef(AliMpSegmentation,1)  // The factory for building mapping segmentations
 };
