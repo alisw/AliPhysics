@@ -19,12 +19,15 @@
 #include "AliMpPCB.h"
 
 #include "AliMpMotif.h"
+#include "AliMpSlatMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliLog.h"
 
 #include "Riostream.h"
+#include "TList.h"
+#include "TObjString.h"
 #include "TMath.h"
 #include <sstream>
 
@@ -65,16 +68,21 @@ AliMpPCB::AliMpPCB()
   fIxmax(0), 
   fIymin(99999), 
   fIymax(0),
-  fMotifs(),
-  fNofPads(0)
+  fMotifPositions(),
+  fNofPads(0),
+  fMotifMap(0)
 {
       //
       // Default ctor.
       //
+#ifdef WITH_ROOT
+    fMotifPositions.SetOwner(kTRUE);
+#endif
+    AliDebug(1,Form("this=%p",this));
 }
 
 //_____________________________________________________________________________
-AliMpPCB::AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
+AliMpPCB::AliMpPCB(AliMpSlatMotifMap* motifMap, const char* id, Double_t padSizeX, Double_t padSizeY,
 		   Double_t enveloppeSizeX, Double_t enveloppeSizeY)
 : TObject(), 
   fId(id), 
@@ -89,13 +97,18 @@ AliMpPCB::AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
   fIxmax(0),
   fIymin(99999), 
   fIymax(0),
-  fMotifs(),
-  fNofPads(0)
+  fMotifPositions(),
+  fNofPads(0),
+  fMotifMap(motifMap)
 {
       //
       // Normal ctor. Must be fed with the PCB's name (id), the pad dimensions
       // and the global dimension of the virtual enveloppe of the PCB
       // (usually 400x400 mm)
+#ifdef WITH_ROOT
+    fMotifPositions.SetOwner(kTRUE);
+#endif
+    AliDebug(1,Form("this=%p id=%s",this,id));
 }
 
 //_____________________________________________________________________________
@@ -113,10 +126,16 @@ AliMpPCB::AliMpPCB(const AliMpPCB& o)
   fIxmax(0), 
   fIymin(99999), 
   fIymax(0),
-  fMotifs(),
-  fNofPads(0)
+  fMotifPositions(),
+  fNofPads(0),
+  fMotifMap(0x0)
 {
+#ifdef WITH_ROOT
+    fMotifPositions.SetOwner(kTRUE);
+#endif
+  AliDebug(1,Form("this=%p (copy ctor) : begin",this));
   o.Copy(*this);
+  AliDebug(1,Form("this=%p (copy ctor) : end",this));
 }
 
 //_____________________________________________________________________________
@@ -134,8 +153,9 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
   fIxmax(ms->GetMotifType()->GetNofPadsX()-1),
   fIymin(0),
   fIymax(ms->GetMotifType()->GetNofPadsY()-1),
-  fMotifs(),
-  fNofPads(ms->GetMotifType()->GetNofPads())
+  fMotifPositions(),
+  fNofPads(ms->GetMotifType()->GetNofPads()),
+  fMotifMap(0x0)
 {
   //
   // Very special ctor to be used by trigger stations only (and for a very
@@ -146,14 +166,19 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
   // so far ;-)
   //
  
+    AliDebug(1,Form("this=%p (ctor special motif)",this));
+    
+#ifdef WITH_ROOT
+    fMotifPositions.SetOwner(kTRUE);
+#endif
   TVector2 position(ms->Dimensions());
   AliMpMotifPosition* mp = new AliMpMotifPosition(-1,ms,position);
   mp->SetLowIndicesLimit(AliMpIntPair(fIxmin,fIymin));
   mp->SetHighIndicesLimit(AliMpIntPair(fIxmax,fIymax));
 #ifdef WITH_ROOT
-  fMotifs.AddLast(mp);
+  fMotifPositions.AddLast(mp);
 #else
-  fMotifs.push_back(mp);
+  fMotifPositions.push_back(mp);
 #endif
 }
 
@@ -161,7 +186,9 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
 AliMpPCB&
 AliMpPCB::operator=(const AliMpPCB& o)
 {
+  AliDebug(1,Form("this=%p (assignment op) : begin",this));
   o.Copy(*this);
+  AliDebug(1,Form("this=%p (assignment op) : end",this));
   return *this;  
 }
 
@@ -171,6 +198,14 @@ AliMpPCB::~AliMpPCB()
   //
   // Dtor.
   //
+  AliDebug(1,Form("this=%p",this));
+#ifndef WITH_ROOT
+  for ( size_t i = 0; i < fMotifPositions.size(); ++i )
+  {
+    delete fMotifPositions[i];
+  }
+#endif
+  
 }
 
 //_____________________________________________________________________________
@@ -211,8 +246,21 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
   // (ix<0,iy<0) : top-right corner
   // (ix>0,iy<0) : top-left corner.
   
-  AliMpVMotif* motif = 
-    new AliMpMotif(mt->GetID(),mt,TVector2(PadSizeX()/2.0,PadSizeY()/2.0));
+  TString id(Form("%s-%e-%e",mt->GetID().Data(),PadSizeX(),PadSizeY()));
+
+  AliMpVMotif* motif = fMotifMap->FindMotif(id);
+  
+  if (!motif)
+  {
+    motif = new AliMpMotif(id,mt,TVector2(PadSizeX()/2.0,PadSizeY()/2.0));
+    AliDebug(1,Form("Adding motif %s to motifMap",id.Data()));
+    fMotifMap->AddMotif(motif);
+  }
+  else
+  {
+    AliDebug(1,Form("Got motif %s from motifMap",id.Data()));
+  }
+  
   TVector2 position;
   Int_t ixmin(-1);
   Int_t iymin(-1);
@@ -255,9 +303,9 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
   mp->SetHighIndicesLimit(AliMpIntPair(ixmax,iymax));
 
 #ifdef WITH_ROOT
-  fMotifs.AddLast(mp);
+  fMotifPositions.AddLast(mp);
 #else
-  fMotifs.push_back(mp);
+  fMotifPositions.push_back(mp);
 #endif
 
   fIxmin = std::min(fIxmin,ixmin);
@@ -271,13 +319,24 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
 }
 
 //_____________________________________________________________________________
+AliMpArea 
+AliMpPCB::Area() const
+{
+  return AliMpArea(TVector2( (Xmin()+Xmax())/2.0,DY()),
+                   TVector2( DX(), DY() ) );
+}
+
+//_____________________________________________________________________________
 TObject*
 AliMpPCB::Clone(const char* /*newname*/) const
 {
   //
   // Return a full copy of this object.
   //
-  return new AliMpPCB(*this);
+  AliDebug(1,"begin");
+  TObject* object = new AliMpPCB(*this);
+  AliDebug(1,"end");
+  return object;
 }
 
 //_____________________________________________________________________________
@@ -293,6 +352,8 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
   //    pcb of a slat will start at ix=0 (only relevant for rounded pcbs).
   //
 
+  AliDebug(1,"begin");
+  
   // First get a full clone.
   AliMpPCB* pcb = static_cast<AliMpPCB*>(Clone());
 
@@ -304,7 +365,7 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
       return 0;
   }
 
-  AliMpIntPair shift(-fIxmin,0);
+  AliMpIntPair shift(-fIxmin+ixOffset,0);
 
   // Then change the internal MotifPositions wrt manu id
   // and position (offset in x).
@@ -312,21 +373,26 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
     {
       AliMpMotifPosition* mp = pcb->GetMotifPosition(i);
       mp->SetID(manuids[i]);
-      mp->SetPosition(mp->Position() + TVector2(xOffset,0));
-      mp->SetLowIndicesLimit(mp->GetLowIndicesLimit()+
-			     shift+
- 			     AliMpIntPair(ixOffset,0));
-      mp->SetHighIndicesLimit(mp->GetHighIndicesLimit()+
-			      shift+
- 			      AliMpIntPair(ixOffset,0));
+      TVector2 pos(mp->Position());
+      pos += TVector2(xOffset,0);
+      mp->SetPosition(pos);
+      AliMpIntPair offset(ixOffset,0);
+      AliMpIntPair low(mp->GetLowIndicesLimit());
+      low += shift;
+      mp->SetLowIndicesLimit(low);
+      AliMpIntPair high(mp->GetHighIndicesLimit());
+      high += shift;
+      mp->SetHighIndicesLimit(high);
     }
   
-  pcb->fIxmin += ixOffset + shift.GetFirst();
-  pcb->fIxmax += ixOffset + shift.GetFirst();
+  pcb->fIxmin += shift.GetFirst();
+  pcb->fIxmax += shift.GetFirst();
   pcb->fXoffset = xOffset;
 
   pcb->fActiveXmin += xOffset;
   pcb->fActiveXmax += xOffset;
+
+  AliDebug(1,"end");
 
   return pcb;
 }
@@ -337,6 +403,8 @@ AliMpPCB::Copy(TObject& o) const
 {
   // Copy *this into o
 
+  AliDebug(1,"begin");
+  
   TObject::Copy(o);
   AliMpPCB& pcb = static_cast<AliMpPCB&>(o);
   pcb.fId = fId;
@@ -353,30 +421,40 @@ AliMpPCB::Copy(TObject& o) const
   pcb.fActiveXmax = fActiveXmax;
 
 #ifdef WITH_ROOT
-  pcb.fMotifs.Clear();
+  AliDebug(1,"Deleting pcb.fMotifPositions");
+  pcb.fMotifPositions.Delete();
+  AliDebug(1,"Deleting pcb.fMotifPositions : done");
 #else
-  pcb.fMotifs.clear();
+  for ( Size_t i = 0; i < pcb.fMotifPositions.size(); ++i )
+  {
+    delete pcb.fMotifPositions[i];
+  }
 #endif
 
 #ifdef WITH_ROOT
-  for ( Size_t i = 0; i < fMotifs.GetEntriesFast(); ++i )
+  for ( Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else
-  for ( Size_t i = 0; i < fMotifs.size(); ++i )
+  for ( Size_t i = 0; i < fMotifPositions.size(); ++i )
 #endif  
     {
-      AliMpMotifPosition* pos = (AliMpMotifPosition*)fMotifs[i];
-      AliMpMotifPosition* pcbpos = 
-	new AliMpMotifPosition(pos->GetID(),pos->GetMotif(),pos->Position());
+      AliMpMotifPosition* pos = (AliMpMotifPosition*)fMotifPositions[i];
+      AliMpMotifPosition* pcbpos = new AliMpMotifPosition(pos->GetID(),
+                                                          pos->GetMotif(),
+                                                          pos->Position());
       pcbpos->SetLowIndicesLimit(pos->GetLowIndicesLimit());
       pcbpos->SetHighIndicesLimit(pos->GetHighIndicesLimit());
 #ifdef WITH_ROOT
-      pcb.fMotifs.AddLast(pcbpos);
+      pcb.fMotifPositions.AddLast(pcbpos);
 #else      
-      pcb.fMotifs.push_back(pcbpos);
+      pcb.fMotifPositions.push_back(pcbpos);
 #endif      
     }
     
     pcb.fNofPads = fNofPads;  
+  
+  pcb.fMotifMap = fMotifMap; // warning : we do share the motifmap.
+  
+  AliDebug(1,"end");
 }
 
 //_____________________________________________________________________________
@@ -441,12 +519,12 @@ AliMpPCB::FindMotifPosition(Int_t ix, Int_t iy) const
   //
   
 #ifdef WITH_ROOT
-  for (Size_t i = 0; i < fMotifs.GetEntriesFast(); ++i )
+  for (Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else  
-  for (Size_t i = 0; i < fMotifs.size(); ++i )
+  for (Size_t i = 0; i < fMotifPositions.size(); ++i )
 #endif
     {
-      AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifs[i];
+      AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifPositions[i];
       if ( mp->HasPad(AliMpIntPair(ix,iy)) )
       {
         return mp;
@@ -464,12 +542,12 @@ AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
   //
   
 #ifdef WITH_ROOT
-  for (Size_t i = 0; i < fMotifs.GetEntriesFast(); ++i )
+  for (Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else  
-  for (Size_t i = 0; i < fMotifs.size(); ++i )
+  for (Size_t i = 0; i < fMotifPositions.size(); ++i )
 #endif   
   {
-    AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifs[i];
+    AliMpMotifPosition* mp = (AliMpMotifPosition*)fMotifPositions[i];
     
     TVector2 localPos( TVector2(x,y) - mp->Position() );
     
@@ -503,11 +581,11 @@ AliMpPCB::GetMotifPosition(AliMpPCB::Size_t i) const
   //
   
 #ifdef WITH_ROOT
-  if ( i >= fMotifs.GetEntriesFast() ) return 0;
+  if ( i >= fMotifPositions.GetEntriesFast() ) return 0;
 #else
-  if ( i >= fMotifs.size() ) return 0;
+  if ( i >= fMotifPositions.size() ) return 0;
 #endif  
-  return (AliMpMotifPosition*)fMotifs[i];
+  return (AliMpMotifPosition*)fMotifPositions[i];
 }
 
 //_____________________________________________________________________________
@@ -541,9 +619,9 @@ AliMpPCB::GetSize() const
   //
   
 #ifdef WITH_ROOT
-  return fMotifs.GetEntriesFast();
+  return fMotifPositions.GetEntriesFast();
 #else  
-  return fMotifs.size();
+  return fMotifPositions.size();
 #endif  
 }
 
@@ -633,21 +711,66 @@ AliMpPCB::Print(Option_t* option) const
   if ( option && option[0] == 'M' )
   {
 #ifdef WITH_ROOT
-    for ( Size_t i = 0; i < fMotifs.GetEntriesFast(); ++i )
+    for ( Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
 #else  
-    for ( Size_t i = 0; i < fMotifs.size(); ++i )
+    for ( Size_t i = 0; i < fMotifPositions.size(); ++i )
 #endif    
     {
       if (option)
 	    {
-	      fMotifs[i]->Print(option+1);
+	      fMotifPositions[i]->Print(option+1);
 	    }
       else
 	    {
-	      fMotifs[i]->Print();
+	      fMotifPositions[i]->Print();
 	    }
     }
   }
+}
+
+//_____________________________________________________________________________
+void 
+AliMpPCB::Save() const
+{
+  TString fileName(fId);
+  fileName += ".pcb";
+  TList lines;
+  lines.SetOwner(kTRUE);
+  
+  for ( Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+  {
+    AliMpMotifPosition* pos = GetMotifPosition(i);
+    AliMpVMotif* motif = pos->GetMotif();
+    TVector2 lowerLeft(pos->Position()-pos->Dimensions());
+    TString id(motif->GetID());
+    // id is supposed to be of the form %s-%e-%e, and we're only
+    // interested in the %s part of it
+    Ssiz_t index = id.Index("-");
+    if ( index < 1 )
+    {
+      AliError(Form("id=%s does not meet expectations",id.Data()));
+      return;
+    }
+    TString motifName(id(0,index));
+    lines.Add(new TObjString(Form("MOTIF %s %d %d",
+                                  motifName.Data(),
+                                  TMath::Nint(lowerLeft.X()/fPadSizeX),
+                                  TMath::Nint(lowerLeft.Y()/fPadSizeY))));
+  }
+
+  ofstream out(fileName.Data());
+  out.precision(9);
+  out << "SIZES " << fPadSizeX << " " << fPadSizeY
+    << " " << fEnveloppeSizeX << " " << fEnveloppeSizeY
+    << endl;
+  
+  TIter next(&lines);
+  TObjString* s;
+  while ( ( s = (TObjString*)next() ) )
+  {
+    out << s->String().Data() << endl;
+  }
+  out.close();
 }
 
 //_____________________________________________________________________________

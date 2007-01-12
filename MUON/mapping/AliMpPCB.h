@@ -35,6 +35,11 @@
 #  include <vector>
 #endif
 
+#ifndef ALI_MP_AREA_H
+#  include "AliMpArea.h"
+#endif
+
+class AliMpSlatMotifMap;
 class AliMpMotifPosition;
 class AliMpMotifType;
 class AliMpMotifSpecial;
@@ -53,8 +58,9 @@ class AliMpPCB : public TObject
   /** Ctor. The sizes are given in mm.
       See full doc for the meaning of enveloppe parameters.
   */
-  AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
-	   Double_t enveloppeSizeX, Double_t enveloppeSizeY);
+  AliMpPCB(AliMpSlatMotifMap* motifMap,
+           const char* id, Double_t padSizeX, Double_t padSizeY,
+           Double_t enveloppeSizeX, Double_t enveloppeSizeY);
   
   AliMpPCB(const char* id, AliMpMotifSpecial* ms);
   
@@ -83,6 +89,8 @@ class AliMpPCB : public TObject
     */
   void Add(AliMpMotifType* motifType, Int_t ix, Int_t iy);
 
+  AliMpArea Area() const;
+  
   void Print(Option_t* option = "") const;
 
   Double_t ActiveDX() const;
@@ -133,6 +141,10 @@ class AliMpPCB : public TObject
   
   Int_t NofPads() const { return fNofPads; }
   
+  AliMpSlatMotifMap* MotifMap() const { return fMotifMap; }
+  
+  void Save() const;
+  
  private:
   TString fId; ///< PCB name
   Double_t fPadSizeX; ///< x-size of this PCB's pads (cm)
@@ -147,13 +159,14 @@ class AliMpPCB : public TObject
   Int_t fIymin; ///< min pad index in y
   Int_t fIymax; ///< max pad index in y
 #ifdef WITH_ROOT
-  TObjArray fMotifs; ///< array of motifs
+  TObjArray fMotifPositions; ///< array of motifs
 #else  
-  std::vector<AliMpMotifPosition*> fMotifs; ///< array of motifs
+  std::vector<AliMpMotifPosition*> fMotifPositions; ///< array of motif positions
 #endif
   Int_t fNofPads; ///< number of pads in this PCB
+  AliMpSlatMotifMap* fMotifMap; ///< to keep track of things to avoid duplications of motif and motiftypes, and get proper deletion
   
-  ClassDef(AliMpPCB,2) // A PCB for Stations 3,4,5
+  ClassDef(AliMpPCB,3) // A PCB for Stations 3,4,5
 };
 
 #endif 
