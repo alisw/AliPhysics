@@ -10,7 +10,9 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
 
-class AliHLTPHOSPeakFinder : public  TObject, public AliHLTPHOSRawAnalyzer
+//class AliHLTPHOSPeakFinder : public  TObject, public AliHLTPHOSRawAnalyzer
+
+class AliHLTPHOSPeakFinder : public AliHLTPHOSRawAnalyzer
 //class AliHLTPHOSPeakFinder : public  TObject
 {
  public:
@@ -37,6 +39,7 @@ class AliHLTPHOSPeakFinder : public  TObject, public AliHLTPHOSRawAnalyzer
 
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ){};
   virtual void GetOutputDataSize(long  int&, double&) {};
+
 
   virtual AliHLTComponent* Spawn(){return 0;};
 

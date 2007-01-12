@@ -2,6 +2,8 @@
 #define ALIHLTPHOSPULSEGENERATOR_H
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
+
+//#include <TObject.h>
 #include <Rtypes.h>
 
 class AliHLTPHOSPulseGenerator
@@ -38,7 +40,8 @@ class AliHLTPHOSPulseGenerator
   double  fDT;
   double *fEvent;
   
-  ClassDef(AliHLTPHOSPulseGenerator,1)   //
+  ClassDef(AliHLTPHOSPulseGenerator,1)
+
 };
 
 #endif
