@@ -81,7 +81,8 @@
 #pragma link C++ class  AliMpSlatSegmentation+;
 #pragma link C++ class  AliMpPCB+;
 #pragma link C++ class  AliMpSlatPadIterator+;
-#pragma link C++ class  AliMpSlatZonePadIterator+;
+#pragma link C++ class  AliMpPCBPadIterator+;
+#pragma link C++ class  AliMpSlatMotifMap+;
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */

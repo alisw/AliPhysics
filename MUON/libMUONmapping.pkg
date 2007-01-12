@@ -64,9 +64,10 @@ SRCS +=  \
 	 mapping/AliMpSlat.cxx  \
 	 mapping/AliMpSlatPadIterator.cxx  \
 	 mapping/AliMpSlatSegmentation.cxx  \
-	 mapping/AliMpSlatZonePadIterator.cxx  \
+	 mapping/AliMpPCBPadIterator.cxx  \
 	 mapping/AliMpSt345Reader.cxx  \
-
+   mapping/AliMpSlatMotifMap.cxx
+   
 # Category trigger
 #
 SRCS +=  \
@@ -78,7 +79,7 @@ SRCS +=  \
 #
 SRCS +=  \
 	 mapping/AliMpBusPatch.cxx  \
-         mapping/AliMpManuGeo.cxx  \
+   mapping/AliMpManuGeo.cxx  \
 	 mapping/AliMpDEIterator.cxx  \
 	 mapping/AliMpDEManager.cxx  \
 	 mapping/AliMpSegmentation.cxx
