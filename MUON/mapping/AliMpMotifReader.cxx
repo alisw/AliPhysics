@@ -251,6 +251,23 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   return motifType;
 }
 
+//_____________________________________________________________________________
+TString 
+AliMpMotifReader::MotifSpecialName(const TString& motifID, Double_t scale)
+{
+  /// Build the name taking into the scale, if not 1.0
+  TString id;
+  
+  if ( scale != 1.0 )
+  {
+    id = Form("%s-%e",motifID.Data(),scale);
+  }
+  else
+  {
+    id = motifID;
+  }
+  return id;
+}
 
 //_____________________________________________________________________________
 AliMpMotifSpecial*  
@@ -271,7 +288,9 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
      return 0;
   }
 
-  AliMpMotifSpecial* res = new AliMpMotifSpecial(motifID,motifType);
+  TString id = MotifSpecialName(motifID,scale);
+  
+  AliMpMotifSpecial* res = new AliMpMotifSpecial(id,motifType);
   Int_t i,j;
   Double_t x,y;
   in >> i;

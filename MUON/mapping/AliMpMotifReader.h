@@ -60,6 +60,7 @@ class AliMpMotifReader : public TObject
     AliMpMotifSpecial*  BuildMotifSpecial(const TString& motifID,
                                           AliMpMotifType* motifType,
                                           Double_t scale=1.0);
+    TString MotifSpecialName(const TString& motifID, Double_t scale);
     
   private:
     AliMpMotifReader(const AliMpMotifReader& right);
