@@ -22,11 +22,7 @@
 #include "AliMpArea.h"
 #include "AliMpPCB.h"
 #include "AliMpSlat.h"
-#include "AliMpSlatZonePadIterator.h"
-
-#include <algorithm>
-#include <limits>
-#include <cassert>
+#include "AliMpPCBPadIterator.h"
 
 ///
 /// \class AliMpSlatPadIterator
@@ -44,9 +40,6 @@
 /// \cond CLASSIMP
 ClassImp(AliMpSlatPadIterator)
 /// \endcond
-
-//const Double_t
-//AliMpSlatPadIterator::fgkDmax = std::numeric_limits<Double_t>::max();
 
 //_____________________________________________________________________________
 AliMpSlatPadIterator::AliMpSlatPadIterator()
@@ -74,11 +67,14 @@ fCurrentDelegateIndex(0)
   // Normal ctor.
   // The iteration will occur on the given slat over the specified area.
   //
-  AliDebug(1,Form("this=%p ctor",this));
+  AliDebug(1,Form("this=%p ctor area=(%e,%e,%e,%e)",this,
+									area.LeftBorder(),area.DownBorder(),
+                  area.RightBorder(),area.UpBorder()));
   if (!Prepare(area)) 
 	{
 		AliError("Iterator invalidated by improper initialization (e.g. incorrect area given ?)");
 	}
+  fDelegates.SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -125,8 +121,7 @@ AliMpSlatPadIterator::Prepare(const AliMpArea& area)
   for ( AliMpSlat::Size_t i = 0; i < fkSlat->GetSize(); ++i )
 	{
 		const AliMpPCB* pcb = fkSlat->GetPCB(i);
-		AliMpArea pcbArea( TVector2( (pcb->Xmin()+pcb->Xmax())/2.0,fkSlat->DY()),
-											 TVector2( pcb->DX(), pcb->DY() ) );
+		AliMpArea pcbArea(pcb->Area());
 		AliMpArea zone = Intersect(pcbArea,area);
 		AliDebug(3,Form("i=%2d zone is %7.2f,%7.2f->%7.2f,%7.2f %d",i,
 										zone.LeftBorder(),zone.DownBorder(),
@@ -134,10 +129,12 @@ AliMpSlatPadIterator::Prepare(const AliMpArea& area)
 										zone.IsValid()));
 		if ( zone.IsValid() )
 		{
-			fDelegates.push_back(new AliMpSlatZonePadIterator(fkSlat,zone));
+			fDelegates.AddLast(new AliMpPCBPadIterator(fkSlat,zone));
 		}
 	}
-  return !fDelegates.empty();
+  AliDebug(3,Form("Number of delegates = %d",fDelegates.GetEntries()));
+  StdoutToAliDebug(3,fDelegates.Print(););
+  return fDelegates.GetLast()>=0;
 }
 
 //_____________________________________________________________________________
@@ -164,14 +161,14 @@ AliMpSlatPadIterator::First()
   //
   // (Re)starts the iteration.
   //
-  if ( fDelegates.empty() )
+  if ( fDelegates.GetLast() < 0 )
 	{
 		AliError("Iterator is not valid, as it gets no delegates at all !");
 	}
   else
 	{
 		fCurrentDelegateIndex = 0;
-		fCurrentDelegate = fDelegates[0];
+		fCurrentDelegate = static_cast<AliMpVPadIterator*>(fDelegates.At(0));
 		fCurrentDelegate->First();
 	}
 }
@@ -183,12 +180,7 @@ AliMpSlatPadIterator::Invalidate()
   //
   // Make the iterator invalid.
   //
-  for ( size_t i = 0; i < fDelegates.size(); ++i )
-	{
-		delete fDelegates[i];
-		fDelegates[i] = 0;
-	}
-  fDelegates.clear();
+  fDelegates.Delete();
   fCurrentDelegate = 0;
   fCurrentDelegateIndex = 0;
 }
@@ -201,7 +193,7 @@ AliMpSlatPadIterator::IsDone() const
   // Returns whether the iteration is ended or not.
   //
   return ( !fCurrentDelegate ||
-					 ( fCurrentDelegateIndex >= fDelegates.size() && 
+					 ( fCurrentDelegateIndex > fDelegates.GetLast() && 
 						 fCurrentDelegate->IsDone() ) );
 }
 
@@ -220,9 +212,9 @@ AliMpSlatPadIterator::Next()
 	{
 		AliDebug(3,"Moving to next delegate");
 		++fCurrentDelegateIndex;
-		if ( fCurrentDelegateIndex < fDelegates.size() )
+		if ( fCurrentDelegateIndex <= fDelegates.GetLast() )
 		{
-			fCurrentDelegate = fDelegates[fCurrentDelegateIndex];
+			fCurrentDelegate = static_cast<AliMpVPadIterator*>(fDelegates.At(fCurrentDelegateIndex));
 			fCurrentDelegate->First();
 		}
 	}

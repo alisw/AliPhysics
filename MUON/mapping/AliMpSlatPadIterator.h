@@ -14,7 +14,7 @@
 #define ALI_MP_SLAT_PAD_ITERATOR_H
 
 #include "AliMpVPadIterator.h"
-#include <vector>
+#include "TObjArray.h"
 
 class AliMpSlat;
 class AliMpArea;
@@ -41,11 +41,11 @@ class AliMpSlatPadIterator : public AliMpVPadIterator
 
  private:
   const AliMpSlat* fkSlat; ///< pointer to the slat being iterated over
-  std::vector<AliMpVPadIterator*> fDelegates; ///< iterators we do use
+  TObjArray fDelegates; ///< iterators we do use (array of AliMpVPadIterator*)
   AliMpVPadIterator* fCurrentDelegate; ///< current iterator
-  UInt_t fCurrentDelegateIndex; ///< current iterator index
+  Int_t fCurrentDelegateIndex; ///< current iterator index
 
-  ClassDef(AliMpSlatPadIterator,1) // Pad iterator for St 345 Slats
+  ClassDef(AliMpSlatPadIterator,2) // Pad iterator for St 345 Slats
 };
 
 #endif
