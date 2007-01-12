@@ -44,6 +44,7 @@ void on_new_event()
   if (g_trkcnt == 0) // This sometimes happens; linked to macro execution, cint reset.
     g_trkcnt = Reve::TrackCounter::fgInstance;
   g_trkcnt->Reset();
+  g_trkcnt->SetEventId(Alieve::gEvent->GetEventId());
   Reve::RenderElement::List_i i = cont->BeginChildren();
   while (i != cont->EndChildren()) {
     Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(*i);
