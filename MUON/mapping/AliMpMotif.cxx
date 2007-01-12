@@ -25,8 +25,10 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpMotif.h"
-#include "AliMpMotifType.h"
+
+#include "AliMpConstants.h"
 #include "AliMpIntPair.h"
+#include "AliMpMotifType.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMpMotif)
@@ -100,7 +102,8 @@ AliMpIntPair AliMpMotif::PadIndicesLocal(const TVector2& localPos) const
 
   TVector2 lowerLeft = localPos+Dimensions();
 
- if ( lowerLeft.X() < 0 || lowerLeft.Y() < 0 ) 
+  if ( lowerLeft.X() < - AliMpConstants::LengthTolerance() || 
+       lowerLeft.Y() < - AliMpConstants::LengthTolerance() ) 
     {
       return AliMpIntPair::Invalid();
     }
@@ -108,8 +111,8 @@ AliMpIntPair AliMpMotif::PadIndicesLocal(const TVector2& localPos) const
   Int_t ix = (Int_t)(lowerLeft.X()/(2.*fPadDimensions.X()));
   Int_t iy = (Int_t)(lowerLeft.Y()/(2.*fPadDimensions.Y()));
   
-  if (!GetMotifType()->FindConnectionByLocalIndices(AliMpIntPair(ix,iy))) {
-    //Warning("PadIndicesLocal","Position outside motif");
+  if (!GetMotifType()->FindConnectionByLocalIndices(AliMpIntPair(ix,iy)))
+  {
     return AliMpIntPair::Invalid();
   }
   return AliMpIntPair(ix,iy);
