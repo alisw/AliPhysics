@@ -132,6 +132,58 @@ AliMpExMap::AliMpExMap()
 /// Default constructor
 }
 
+
+//_____________________________________________________________________________
+AliMpExMap::AliMpExMap(const AliMpExMap& rhs)
+  : TObject(),
+    fMap(),
+    fObjects(),
+    fKeys()
+
+{
+  /// Copy ctor
+  rhs.Copy(*this);
+}
+
+//_____________________________________________________________________________
+AliMpExMap&
+AliMpExMap::operator=(const AliMpExMap& rhs)
+{
+  /// Assignment operator
+  AliMpExMap tmp(rhs);
+  tmp.Copy(*this);
+  return *this;
+}
+
+//_____________________________________________________________________________
+void
+AliMpExMap::Copy(TObject& dest) const
+{
+  /// Copy this to dest
+  /// Copy implies that dest will become owner of its objects, whatever
+  /// the ownership of (*this) is.
+  
+  AliDebug(1,"");
+  
+  TObject::Copy(dest);
+  AliMpExMap& m = static_cast<AliMpExMap&>(dest);
+  m.fKeys = fKeys;
+  m.fMap.Delete();
+  m.fObjects.Delete();
+  
+  for ( Int_t i = 0; i <= fObjects.GetLast(); ++i ) 
+  {
+    TObject* o = fObjects.At(i)->Clone();
+    if (!o)
+    {
+      AliError("Object was not cloned properly ! Please investigate...");
+    }
+    m.fObjects.AddLast(o);
+  }
+  m.FillMap();
+  m.fObjects.SetOwner(kTRUE);
+}
+
 //_____________________________________________________________________________
 AliMpExMap::~AliMpExMap() 
 {

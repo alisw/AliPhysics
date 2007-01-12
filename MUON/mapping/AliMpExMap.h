@@ -28,8 +28,10 @@ class TString;
 class AliMpExMap : public TObject
 {
   public:
-    AliMpExMap(Bool_t standardConstructor);
     AliMpExMap();
+    AliMpExMap(Bool_t standardConstructor);
+    AliMpExMap(const AliMpExMap& rhs);
+    AliMpExMap& operator=(const AliMpExMap& rhs);
     virtual ~AliMpExMap();
     
     // static methods
@@ -56,6 +58,8 @@ class AliMpExMap : public TObject
     TObject*    GetValue(const AliMpIntPair& key) const;
     TObject*    GetValue(const TString& key) const;
     TObject*    GetValue(Int_t key) const;
+
+    void Copy(TObject& dest) const;
     
   private:  
     // methods
