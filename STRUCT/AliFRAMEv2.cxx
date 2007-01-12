@@ -119,8 +119,6 @@ void AliFRAMEv2::CreateGeometry()
   ppgon[9] =   ppgon[6];
 
   gMC->Gsvolu("B077", "PGON", kAir, ppgon, 10);
-
-//  gMC->Gsvolu("B077", "TUBE", kAir, ptube, 3);
   gMC->Gspos("B077", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 //
 // Reference plane for TRD
@@ -391,21 +389,21 @@ void AliFRAMEv2::CreateGeometry()
   AliMatrix(idrotm[2018],   0.0, 0.0, 90.0,  50.0, 90.0, 140.0);
 
   AliMatrix(idrotm[2019], 180.0, 0.0, 90.0, 130.0, 90.0, 220.0);
-  AliMatrix(idrotm[2020], 180.0, 0.0, 90.0, 50.0, 90.0, 320.0);
-  AliMatrix(idrotm[2021], 180.0, 0.0, 90.0, 150.0, 90.0, 60.0);
-  AliMatrix(idrotm[2022], 180.0, 0.0, 90.0, 30.0, 90.0, 120.0);
+  AliMatrix(idrotm[2020], 180.0, 0.0, 90.0,  50.0, 90.0, 320.0);
+  AliMatrix(idrotm[2021], 180.0, 0.0, 90.0, 150.0, 90.0,  60.0);
+  AliMatrix(idrotm[2022], 180.0, 0.0, 90.0,  30.0, 90.0, 120.0);
   AliMatrix(idrotm[2023], 180.0, 0.0, 90.0, 170.0, 90.0, 260.0);
   AliMatrix(idrotm[2024], 180.0, 0.0, 90.0, 190.0, 90.0, 100.0);
-  AliMatrix(idrotm[2025], 180.0, 0.0, 90.0, 350.0, 90.0, 80.0);
-  AliMatrix(idrotm[2026], 180.0, 0.0, 90.0, 10.0, 90.0, 280.0);
+  AliMatrix(idrotm[2025], 180.0, 0.0, 90.0, 350.0, 90.0,  80.0);
+  AliMatrix(idrotm[2026], 180.0, 0.0, 90.0,  10.0, 90.0, 280.0);
   
-  AliMatrix(idrotm[2027], 0.0, 0.0, 90.0, 50.0, 90.0, 320.0);
-  AliMatrix(idrotm[2028], 0.0, 0.0, 90.0, 150.0, 90.0, 60.0); 
-  AliMatrix(idrotm[2029], 0.0, 0.0, 90.0, 30.0, 90.0, 120.0);
-  AliMatrix(idrotm[2030], 0.0, 0.0, 90.0, 10.0, 90.0, 280.0);
-  AliMatrix(idrotm[2031], 0.0, 0.0, 90.0, 170.0, 90.0, 260.0);
-  AliMatrix(idrotm[2032], 0.0, 0.0, 90.0, 190.0, 90.0, 100.0);
-  AliMatrix(idrotm[2033], 0.0, 0.0, 90.0, 350.0, 90.0, 80.0);
+  AliMatrix(idrotm[2027],   0.0, 0.0, 90.0,  50.0, 90.0, 320.0);
+  AliMatrix(idrotm[2028],   0.0, 0.0, 90.0, 150.0, 90.0,  60.0); 
+  AliMatrix(idrotm[2029],   0.0, 0.0, 90.0,  30.0, 90.0, 120.0);
+  AliMatrix(idrotm[2030],   0.0, 0.0, 90.0,  10.0, 90.0, 280.0);
+  AliMatrix(idrotm[2031],   0.0, 0.0, 90.0, 170.0, 90.0, 260.0);
+  AliMatrix(idrotm[2032],   0.0, 0.0, 90.0, 190.0, 90.0, 100.0);
+  AliMatrix(idrotm[2033],   0.0, 0.0, 90.0, 350.0, 90.0,  80.0);
   
   Float_t rd =  410.56;
   dz = (dymodU[1]+dymodU[0])/2.;
@@ -628,7 +626,7 @@ void AliFRAMEv2::CreateGeometry()
   AliMatrix(idrotm[2071], 100.0,   0.0,  90.0, 270.0,  10.0,   0.0);
   AliMatrix(idrotm[2072], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
   AliMatrix(idrotm[2073], 100.0, 180.0,  90.0, 270.0,  10.0, 180.0);
-  AliMatrix(idrotm[2074], 100.0, 180.0,  90.0,  90.0,  10.0,  180.0);
+  AliMatrix(idrotm[2074], 100.0, 180.0,  90.0,  90.0,  10.0, 180.0);
 //
   AliMatrix(idrotm[2075],  10.0,   0.0,  80.0, 180.0,  90.0,  90.0);
   AliMatrix(idrotm[2076],  10.0,   0.0,  80.0, 180.0,  90.0, 270.0);
@@ -645,11 +643,13 @@ void AliFRAMEv2::CreateGeometry()
   AliMatrix(idrotm[2084], 170.0, 180.0,  90.0,  90.0,  80.0, 180.0);
   AliMatrix(idrotm[2085],  90.0, 180.0,  90.0,  90.0,   0.0,   0.0);
 //
-  AliMatrix(idrotm[2086],  90.0,  90.0, 100.0,    0.,  170.0,  180.0);
-  AliMatrix(idrotm[2087],  90.0,  90.0, 100.0,    0.,   10.0,    0.0);
-  AliMatrix(idrotm[2088],  90.0,  90.0,  80.0,    0.,  170.0,    0.0);
-  AliMatrix(idrotm[2089],  90.0,  90.0,  80.0,    0.,  -10.0,    0.0);
-
+  AliMatrix(idrotm[2086],  90.0,  90.0, 100.0,    0., 170.0, 180.0);
+  AliMatrix(idrotm[2087],  90.0,  90.0, 100.0,    0.,  10.0,   0.0);
+  AliMatrix(idrotm[2088],  90.0,  90.0,  80.0,    0., 170.0,   0.0);
+  AliMatrix(idrotm[2089],  90.0,  90.0,  80.0,    0., -10.0,   0.0);
+//
+  AliMatrix(idrotm[2090],  90.0,   0.0,   0.0,    0.,   90.0, 90.0);
+  AliMatrix(idrotm[2091],   0.0,   0.0,  90.0,   90.,   90.0,  0.0);
 //
 // web frame diagonal (outer)
 //  
@@ -831,39 +831,41 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("BA59", 2*jmod+1, module[jmod],  49.6476, 0.0, dz, idrotm[2084], "ONLY");
       gMC->Gspos("BA59", 2*jmod+2, module[jmod], -49.6476, 0.0, dz, idrotm[2083], "ONLY");
   }
+
+  
+//
+// Thermal shield
+//
+  Float_t dyM  =  99.0;
+  MakeHeatScreen("M",   dyM, idrotm[2090], idrotm[2091]);
+  Float_t dyAM = 119.5;
+  MakeHeatScreen("AM", dyAM, idrotm[2090], idrotm[2091]);
+  Float_t dyA  = 128.0;
+  MakeHeatScreen("A" ,  dyA, idrotm[2090], idrotm[2091]);
 //
 //
-// Spacer between TRD and TOF modules
-/*
-  ptrap[0]  =   0.99;
-  ptrap[1]  =  10.00;
-  ptrap[2]  =   0.00;
-  ptrap[3]  = 350.00;
-  ptrap[4]  =    0.9;
-  ptrap[5]  = ptrap[4];
-  ptrap[6]  = 0;
-  ptrap[7]  = ptrap[3];
-  ptrap[8]  = ptrap[4];
-  ptrap[9]  = ptrap[4];
-  ptrap[10] = 0;
-  gMC->Gsvolu("B056", "TRAP", kSteel, ptrap, 11);
-  for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B056", 2*jmod+1, module[jmod],  61.9607, 0.0, 27.2, 0           , "ONLY");
-      gMC->Gspos("B056", 2*jmod+2, module[jmod], -61.9607, 0.0, 27.2, idrotm[2085], "ONLY");
-  }
-*/
+//
+  dz = -57.2 + 5.2 - 0.7;  
+  for (i = 0; i < 18; i++) {
+
+      char nameMo[16];
+      sprintf(nameMo, "BSEGMO%d",i);
+      // M
+      gMC->Gspos("BTSH_M" , i+1 , nameMo,  0., 0., dz, 0, "ONLY"); 
+      // AM, CM
+      dy = dymodL[0] + dyAM / 2.;
+      gMC->Gspos("BTSH_AM", i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
+      gMC->Gspos("BTSH_AM", i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
+      // A, C
+      dy = dymodL[1] + dyA / 2.;
+      gMC->Gspos("BTSH_A" , i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
+      gMC->Gspos("BTSH_A" , i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
+}
+  
+  
   //
   // TRD mother volumes
   //
-
-//  ptrd1[0] = 49.8065;
-//  ptrd1[1] = 62.8535;
-//  ptrd1[2] = 375.5;
-//  ptrd1[3] = 37.;
-// ptrd1[0] = 49.8065;
-// ptrd1[1] = 63.0060;
-// ptrd1[2] = 375.5;
-// ptrd1[3] = 37.43;
 
   ptrd1[0] = 47.4405;   // CBL 28/6/2006
   ptrd1[1] = 61.1765;   // CBL
@@ -879,8 +881,6 @@ void AliFRAMEv2::CreateGeometry()
     sprintf(nameMo, "BSEGMO%d",i);
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
-    
-//    gMC->Gspos(nameCh, 1, nameMo, 0., 0., -10.37, 0, "ONLY");
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., -11.75, 0, "ONLY"); // CBL 28/6/2006
   }
 
@@ -1271,9 +1271,9 @@ void AliFRAMEv2::CreateMaterials()
   Float_t epsil, stemax, tmaxfd, deemax, stmin;
   
   epsil  = 1.e-4;     // Tracking precision, 
-  stemax = -0.01;   // Maximum displacement for multiple scat 
-  tmaxfd = -20.;    // Maximum angle due to field deflection 
-  deemax = -.3;     // Maximum fractional energy loss, DLS 
+  stemax = -0.01;     // Maximum displacement for multiple scat 
+  tmaxfd = -20.;      // Maximum angle due to field deflection 
+  deemax = -.3;       // Maximum fractional energy loss, DLS 
   stmin  = -.8;
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
@@ -1292,9 +1292,11 @@ void AliFRAMEv2::CreateMaterials()
 
   AliMixture(65, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
   AliMixture(5, "AIR$      ", aAir, zAir, dAir,4, wAir);
+  AliMaterial(9, "ALU      ", 26.98, 13., 2.7, 8.9, 37.2);
 
   AliMedium(65, "Stainless Steel", 65, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium( 5, "Air", 5, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 9, "Aluminum", 9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 }
 
@@ -1353,6 +1355,84 @@ void AliFRAMEv2::StepManager()
 
   
 
+void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
+{
+    // Heat screen panel
+    //
+    Int_t *idtmed = fIdtmed->GetArray()-1999;
+    const Int_t kAir   = idtmed[2004];
+    const Int_t kAlu   = idtmed[2008];
+
+    Float_t dx, dy;
+    char mname [128];
+    char cname [128];
+    char t1name[128];
+    char t2name[128];
+    char t3name[128];
+    char t4name[128];
+    char t5name[128];
+    
+    // 
+    Float_t dxP = 98.5 - 3.;
+    Float_t dzP =  1.2;
+    //
+    // Mother volume
+    Float_t thshM[3];
+    thshM[0]  =  dxP / 2.;
+    thshM[1]  =  dyP / 2.;
+    thshM[2]  =  dzP / 2.;
+    sprintf(mname, "BTSH_%s", name);
+    gMC->Gsvolu(mname,  "BOX ", kAir, thshM,  3);
+    //
+    // Aluminum sheet
+    thshM[2] = 0.05;
+    sprintf(cname, "BTSHA_%s", name);
+    gMC->Gsvolu(cname, "BOX ", kAlu, thshM,  3);
+    gMC->Gspos(cname, 1, mname, 0., 0., -0.55, 0);
+    //
+    // Tubes
+    Float_t thshT[3];
+    thshT[0] = 0.4;
+    thshT[1] = 0.5;
+    thshT[2] = (dyP / 2. - 8.);
+    //
+    sprintf(t1name, "BTSHT1_%s", name);
+    gMC->Gsvolu(t1name,  "TUBE", kAlu, thshT,  3);
+    dx = - dxP / 2. + 8.;
+    gMC->Gspos(t1name, 1, mname,  dx, 0., 0., rot1);
+    gMC->Gspos(t1name, 2, mname, -dx, 0., 0., rot1);
+    //
+    sprintf(t2name, "BTSHT2_%s", name);
+    sprintf(t3name, "BTSHT3_%s", name);
+    sprintf(t4name, "BTSHT4_%s", name);
+    sprintf(t5name, "BTSHT5_%s", name);
+    thshT[2] = (thshM[1] - 12.);
+    gMC->Gsvolu(t2name,  "TUBE", kAlu, thshT,  3);
+    thshT[2] = 7.9/2.;
+    gMC->Gsvolu(t3name,  "TUBE", kAlu, thshT,  3);
+    thshT[2] = 23.9/2.;
+    gMC->Gsvolu(t4name,  "TUBE", kAlu, thshT,  3);
+    thshT[2] =  9.0/2.;
+    gMC->Gsvolu(t5name,  "TUBE", kAlu, thshT,  3);
+    gMC->Gspos(t5name, 0, mname, -dx - 4.,  - (dyP / 2. -  7.5), 0.1, rot2);      
+
+    Int_t sig = 1;
+    Int_t ipo = 1;
+    for (Int_t i = 0; i < 5; i++) {
+	sig *= -1;
+	dx += 8.00;
+	dy = 4. * sig;
+	Float_t dy1 =  - (thshM[1] - 15.5) * sig;
+	Float_t dy2 =  - (thshM[1] -  7.5) * sig;
+	
+	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.0, rot1);
+	dx += 6.9;
+	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.0, rot1);      
+	
+	gMC->Gspos(t3name, i+1,   mname, dx - 3.45, dy1, 0.0, rot2);      
+	gMC->Gspos(t4name, i+1,   mname, dx - 3.45, dy2, 0.0, rot2);      
+    }
+}
 
 
 
