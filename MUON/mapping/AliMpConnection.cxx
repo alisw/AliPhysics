@@ -24,6 +24,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpConnection.h"
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMpConnection)
@@ -40,6 +41,8 @@ AliMpConnection::AliMpConnection(Int_t padNum, Int_t bergNum,Int_t kaptonNum,
     fOwner(0)
 {
 /// Standard constructor
+      AliDebug(1,Form("this=%p padNum=%d bergNum=%d kaptonNum=%d gassiNum=%d",
+                      this,padNum,bergNum,kaptonNum,gassiNum));
 }
 
 //_____________________________________________________________________________
@@ -52,9 +55,12 @@ AliMpConnection::AliMpConnection()
     fOwner(0)
 {
 /// Default constructor
+      AliDebug(1,Form("this=%p",this));
 }
 
 //_____________________________________________________________________________
-AliMpConnection::~AliMpConnection() {
-//  
+AliMpConnection::~AliMpConnection() 
+{
+//
+  AliDebug(1,Form("this=%p"));
 }

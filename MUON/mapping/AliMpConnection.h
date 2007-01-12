@@ -36,6 +36,8 @@ class AliMpConnection : public TObject
     Int_t GetPadNum()  const {return fPadNum;}
     AliMpMotifType *GetOwner() const {return fOwner;}
     
+    void SetGassiNum(Int_t n) { fGassiNum = n; }
+    
     AliMpIntPair LocalIndices() const;
     TString  PadName() const;
     // modifiers
