@@ -43,10 +43,17 @@ class AliMpMotifType : public TObject
 #endif    
 
   public:
+      /** Please note that id should be of the form %s for station 1,2,
+        %s-%e-%e for station345 and %sx%e for stationTrigger
+      */
     AliMpMotifType(const TString &id);
+    AliMpMotifType(const AliMpMotifType& rhs);
+    AliMpMotifType& operator=(const AliMpMotifType& rhs);
     AliMpMotifType();
     virtual ~AliMpMotifType();
 
+    TObject* Clone(const char* newname="") const;
+    
     virtual AliMpVPadIterator* CreateIterator() const;
 
     // find methods
@@ -82,7 +89,13 @@ class AliMpMotifType : public TObject
     TString PadName(Int_t padNum) const;
     Bool_t  HasPad(const AliMpIntPair& localIndices) const;
     Bool_t  IsFull() const;
+    
+    Bool_t Save(const char* motifName) const;
+    Bool_t Save() const;
 
+  private:
+      void Copy(TObject& o) const;
+    
   private:
     // static data members
     static const Int_t  fgkPadNumForA; ///< the pad number for the pad "A"

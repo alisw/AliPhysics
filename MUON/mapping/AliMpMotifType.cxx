@@ -27,9 +27,11 @@
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpConnection.h"
 
-#include <Riostream.h>
+#include "AliLog.h"
+#include "AliMpFiles.h"
+#include "TSystem.h"
 
-#include <stdlib.h>
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpMotifType)
@@ -52,6 +54,7 @@ AliMpMotifType::AliMpMotifType(const TString &id)
 #endif
 {
   /// Standard constructor
+      AliDebug(1,Form("this=%p id=%s",this,id.Data()));
 }
 
 //______________________________________________________________________________
@@ -64,6 +67,50 @@ AliMpMotifType::AliMpMotifType()
     fConnections()
 {
   /// Default constructor
+      AliDebug(1,Form("this=%p",this));
+}
+
+//______________________________________________________________________________
+AliMpMotifType::AliMpMotifType(const AliMpMotifType& rhs)
+: TObject(),
+  fID(""),
+  fNofPadsX(0),   
+  fNofPadsY(0),
+  fVerboseLevel(0),
+  fConnections()
+{
+    AliDebug(1,Form("this=%p (copy ctor)",this));
+    rhs.Copy(*this);
+}
+
+//______________________________________________________________________________
+AliMpMotifType&
+AliMpMotifType::operator=(const AliMpMotifType& rhs)
+{
+  TObject::operator=(rhs);
+  rhs.Copy(*this);
+  return *this;  
+}
+
+//______________________________________________________________________________
+TObject*
+AliMpMotifType::Clone(const char* /*newname*/) const 
+{
+  /// Returns a full copy of this object
+  return new AliMpMotifType(*this);
+}
+
+//______________________________________________________________________________
+void
+AliMpMotifType::Copy(TObject& object) const
+{
+  TObject::Copy(object);
+  AliMpMotifType& mt = static_cast<AliMpMotifType&>(object);
+  mt.fID = fID;
+  mt.fNofPadsX = fNofPadsX;
+  mt.fNofPadsY = fNofPadsY;
+  mt.fVerboseLevel = fVerboseLevel;
+  mt.fConnections = fConnections;
 }
 
 //______________________________________________________________________________
@@ -78,6 +125,9 @@ AliMpMotifType::~AliMpMotifType()
 
   fConnections.erase(fConnections.begin(),fConnections.end());
 #endif  
+  
+  AliDebug(1,Form("this=%p",this));
+  StdoutToAliDebug(1,this->Print(););
 }
 
 //______________________________________________________________________________
@@ -430,21 +480,87 @@ void AliMpMotifType::Print(Option_t *option) const
       AliMpConnection *connexion = FindConnectionByLocalIndices(AliMpIntPair(i,j));
       TString str;
       if (connexion){
-	switch (option[0]){
-	case 'N':str=PadName(connexion->GetPadNum());
-	  break;
-	case 'K':str=Form("%d",connexion->GetKaptonNum());
-	  break;
-	case 'B':str=Form("%d",connexion->GetBergNum());
-	  break;
-        case 'G':str=Form("%d",connexion->GetGassiNum());
-          break;
-	default:str= Form("%d",connexion->GetPadNum());
-	}
-	cout<<setw(2)<<str;
+        AliDebug(1,Form("i,j=%2d,%2d connexion=%p",i,j,connexion));
+        
+        switch (option[0]){
+          case 'N':str=PadName(connexion->GetPadNum());
+            break;
+          case 'K':str=Form("%d",connexion->GetKaptonNum());
+            break;
+          case 'B':str=Form("%d",connexion->GetBergNum());
+            break;
+          case 'G':str=Form("%d",connexion->GetGassiNum());
+            break;
+          default:str= Form("%d",connexion->GetPadNum());
+        }
+        cout<<setw(2)<<str;
       } else cout<<setw(2)<<"--";
       cout<<" ";
     }
     cout<<endl;
   }
 }
+
+//_____________________________________________________________________________
+Bool_t
+AliMpMotifType::Save() const
+{
+  return Save(fID.Data());
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMpMotifType::Save(const char* motifName) const
+{
+  /// Generate the 2 files needed to describe the motif
+  
+  TString padPosFileName(AliMpFiles::PadPosFileName(motifName));
+  
+  TString motifTypeFileName(AliMpFiles::MotifFileName(motifName));
+
+  // first a protection : do not allow overwriting existing files...
+  Bool_t test = gSystem->AccessPathName(padPosFileName.Data());
+  if (test==kFALSE) // AccessPathName has a strange return value convention...
+  {
+    AliError("Cannot overwrite existing padPos file");
+    return kFALSE;
+  }
+  test = gSystem->AccessPathName(motifTypeFileName.Data());
+  if (test==kFALSE)
+  {
+    AliError("Cannot overwrite existing motifType file");
+    return kFALSE;    
+  }
+  
+  ofstream padPosFile(padPosFileName.Data());
+  ofstream motifFile(motifTypeFileName.Data());
+  
+  motifFile <<  "# Motif " << motifName << endl
+    << "#" << endl
+    << "#connecteur_berg kapton padname not_used" << endl
+    << "#for slats there's no kapton connector, so it's always 1" 
+    << " (zero make the reader" << endl
+    << "#abort, so it's not a valid value here)." << endl
+    << "#" << endl;
+  
+  for ( Int_t ix = 0; ix < GetNofPadsX(); ++ix ) 
+  {
+    for ( Int_t iy = 0; iy < GetNofPadsY(); ++iy ) 
+    {
+      AliMpConnection* con = FindConnectionByLocalIndices(AliMpIntPair(ix,iy));
+      if (con)
+      {
+        motifFile << con->GetBergNum() << "\t1\t" << con->GetPadNum() << "\t-" << endl;
+        padPosFile << con->GetPadNum() << "\t" << ix << "\t" << iy << endl;
+      }
+    }
+  }
+  
+  padPosFile.close();
+  motifFile.close();
+  
+  return kTRUE;
+}
+
+
+
