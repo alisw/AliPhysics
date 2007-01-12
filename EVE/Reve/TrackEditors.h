@@ -107,6 +107,10 @@ public:
   void DoPrev();
   void DoNext();
 
+  void DoPrintReport();
+  void DoFileReport();
+  void DoShowHistos();
+
   void DoClickAction(Int_t);
 
   ClassDef(TrackCounterEditor, 1); // Editor for TrackCounter

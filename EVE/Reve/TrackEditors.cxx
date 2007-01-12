@@ -13,7 +13,10 @@
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
 #include <TGDoubleSlider.h>
-#include "TGComboBox.h"
+#include <TGComboBox.h>
+
+#include <TGMsgBox.h>
+#include <TH1F.h>
 
 using namespace Reve;
 
@@ -315,7 +318,7 @@ TrackCounterEditor::TrackCounterEditor(const TGWindow *p, Int_t width, Int_t hei
     TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
 
     TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
-    TGLabel* l = new TGLabel(g, "View: ");
+    TGLabel* l = new TGLabel(g, "View:");
     g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
     f->AddFrame(g);
 
@@ -340,7 +343,7 @@ TrackCounterEditor::TrackCounterEditor(const TGWindow *p, Int_t width, Int_t hei
     TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
 
     TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
-    TGLabel* l = new TGLabel(g, "Event: ");
+    TGLabel* l = new TGLabel(g, "Event:");
     g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
     f->AddFrame(g);
 
@@ -355,6 +358,43 @@ TrackCounterEditor::TrackCounterEditor(const TGWindow *p, Int_t width, Int_t hei
     b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoNext()");
 
     AddFrame(f);
+  }
+
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
+
+    TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
+    TGLabel* l = new TGLabel(g, "Report:");
+    g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
+    f->AddFrame(g);
+
+    TGTextButton* b;
+
+    b = new TGTextButton(f, "Print");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoPrintReport()");
+
+    b = new TGTextButton(f, "File");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoFileReport()");
+
+    AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 4, 0));
+  }
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
+
+    TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
+    TGLabel* l = new TGLabel(g, "Histos:");
+    g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
+    f->AddFrame(g);
+
+    TGTextButton* b;
+
+    b = new TGTextButton(f, "Show");
+    f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoShowHistos()");
+
+    AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
   }
 
 }
@@ -400,15 +440,90 @@ void TrackCounterEditor::DoPrev()
 {
   Reve::Macro("event_prev.C");
   gReve->EditRenderElement(fM);
-
 }
 
 void TrackCounterEditor::DoNext()
 {
   Reve::Macro("event_next.C");
   gReve->EditRenderElement(fM);
-
 }
+
+/**************************************************************************/
+
+void TrackCounterEditor::DoPrintReport()
+{
+  fM->OutputEventTracks();
+}
+
+void TrackCounterEditor::DoFileReport()
+{
+  TString file(Form("ev-report-%03d.txt", fM->GetEventId()));
+  if (gSystem->AccessPathName(file) == kFALSE)
+  {
+    Int_t ret;
+    new TGMsgBox(fClient->GetRoot(), GetMainFrame(),
+		 "File Exist",
+		 Form("Event record for event %d already exist.\n Replace?", fM->GetEventId()),
+		 kMBIconQuestion, kMBYes | kMBNo, &ret);
+    if (ret == kMBNo)
+      return;
+  }
+  FILE* out = fopen(file, "w");
+  fM->OutputEventTracks(out);
+  fclose(out);
+}
+
+void TrackCounterEditor::DoShowHistos()
+{
+  TH1F* hcnt = new TH1F("cnt", "Primeries per event", 41, -0.5, 40.5);
+  TH1F* hchg = new TH1F("chg", "Primary charge",       3, -1.5,  1.5);
+  TH1F* hpt  = new TH1F("pt",  "pT distribution",     40,  0.0,  8.0);
+  TH1F* heta = new TH1F("eta", "eta distribution",    40, -1.0,  1.0);
+
+  Int_t nn; // fscanf return value
+
+  for (Int_t i=0; i<1000; ++i)
+  {
+    TString file(Form("ev-report-%03d.txt", i));
+    if (gSystem->AccessPathName(file) == kFALSE)
+    {
+      Int_t   ev, ntr;
+      FILE* f = fopen(file, "read");
+      nn = fscanf(f, "Event = %d  Ntracks = %d", &ev, &ntr);
+      if (nn != 2) { printf("SAFR1 %d\n", nn); fclose(f); return;  }
+      hcnt->Fill(ntr);
+      for (Int_t t=0; t<ntr; ++t)
+      {
+	Int_t   id, chg;
+	Float_t pt, eta;
+	nn = fscanf(f, "%d: chg=%d pt=%f eta=%f", &id, &chg, &pt, &eta);
+	if (nn != 4) { printf("SAFR2 %d\n", nn); fclose(f); return;  }
+	hchg->Fill(chg);
+	hpt ->Fill(pt);
+	heta->Fill(eta);
+      }
+      fclose(f);
+    }
+  }
+
+  TCanvas* c;
+  if (gPad == 0 || gPad->GetCanvas()->IsEditable() == kFALSE) {
+    c = new TCanvas("Scanwas", "Scanning Results", 800, 600);
+  } else {
+    c = gPad->GetCanvas();
+    c->Clear();
+  }
+  c->Divide(2, 2);
+
+  c->cd(1); hcnt->Draw();
+  c->cd(2); hchg->Draw();
+  c->cd(3); hpt ->Draw();
+  c->cd(4); heta->Draw();
+
+  c->Modified();
+  c->Update();
+}
+
 
 /**************************************************************************/
 
