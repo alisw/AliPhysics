@@ -119,10 +119,12 @@ void AliMpMotifPainter::Paint(Option_t *option)
   gPad->Range(0.,0.,1.,1.);
   InitGraphContext();
 
+  gVirtualX->SetLineWidth(1);
+  
   switch (option[0]){
-  case 'T':
-  case 'I':
-  case 'X':
+    case 'T':
+    case 'I':
+    case 'X':
     {
       PaintWholeBox();
       Float_t textSize =   gVirtualX->GetTextSize();
@@ -133,159 +135,195 @@ void AliMpMotifPainter::Paint(Option_t *option)
           str = Form("%d",fMotifPos->GetID());
           break;
         case 'I':{
-	  switch (option[1]){
-	    case '+' :
-            str = Form("(%d,%d)",fMotifPos->GetHighIndicesLimit().GetFirst(),
-                               fMotifPos->GetHighIndicesLimit().GetSecond());
-      	    break;
-	    default:
-            str = Form("(%d,%d)",fMotifPos->GetLowIndicesLimit().GetFirst(),
-                               fMotifPos->GetLowIndicesLimit().GetSecond());
+          switch (option[1]){
+            case '+' :
+              str = Form("(%d,%d)",fMotifPos->GetHighIndicesLimit().GetFirst(),
+                         fMotifPos->GetHighIndicesLimit().GetSecond());
+              break;
+            default:
+              str = Form("(%d,%d)",fMotifPos->GetLowIndicesLimit().GetFirst(),
+                         fMotifPos->GetLowIndicesLimit().GetSecond());
       	  }
-	}
-        break;
+        }
+          break;
         case 'X' :
           str = Form("(%f,%f)",(GetPosition()-GetDimensions()).X(),
-                               (GetPosition()-GetDimensions()).Y());
+                     (GetPosition()-GetDimensions()).Y());
           break;
       }
       gPad->PaintText(GetPadPosition().X()-0.01,GetPadPosition().Y()-0.01,str);
       
       gVirtualX->SetTextSize(textSize);
     }
-    break;
-  case 'P':
-  {
-    //PaintWholeBox(kFALSE);
-    AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
-    StdoutToAliDebug(1,motifType->Print("G"););
-    for (Int_t j=motifType->GetNofPadsY()-1;j>=0;j--){
-      for (Int_t i=0;i<motifType->GetNofPadsX();i++){
-        AliMpIntPair indices(i,j);
-        AliMpConnection* connect = 
-          motifType->FindConnectionByLocalIndices(indices);
-        if (connect){
-          TVector2 realPadPos = 
-	        GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
-          TVector2 padPadPos,padPadDim;
-          gr->RealToPad(realPadPos,
-                        fMotifPos->GetMotif()->GetPadDimensions(indices),
-                        padPadPos,padPadDim);
-          TVector2 bl = padPadPos - padPadDim;
-          TVector2 ur = padPadPos + padPadDim;
-          
-          
-          Style_t sty = gVirtualX->GetFillStyle();
-          gVirtualX->SetFillStyle(1);
-          gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
-          gVirtualX->SetFillStyle(0);
-          gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
-          gVirtualX->SetFillStyle(sty);
-          if (option[1]=='T'){
-            Float_t textSize =   gVirtualX->GetTextSize();
-            gVirtualX->SetTextSize(10);
-            gVirtualX->SetTextAlign(22);
-            //	         gPad->PaintText(padPadPos.X()-0.01,padPadPos.Y()-0.01,
-            gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
-                            Form("%d",connect->GetGassiNum()));
+      break;
+    case 'P':
+    case 'Z':
+    {
+      //PaintWholeBox(kFALSE);
+      AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
+//      StdoutToAliDebug(1,motifType->Print("G"););
+      for (Int_t j=motifType->GetNofPadsY()-1;j>=0;j--){
+        for (Int_t i=0;i<motifType->GetNofPadsX();i++){
+          AliMpIntPair indices(i,j);
+          AliMpConnection* connect = 
+            motifType->FindConnectionByLocalIndices(indices);
+          if (connect){
+            TVector2 realPadPos = 
+            GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
+            TVector2 padPadPos,padPadDim;
+            gr->RealToPad(realPadPos,
+                          fMotifPos->GetMotif()->GetPadDimensions(indices),
+                          padPadPos,padPadDim);
+            TVector2 bl = padPadPos - padPadDim;
+            TVector2 ur = padPadPos + padPadDim;
             
-            gVirtualX->SetTextSize(textSize);
+            
+            Style_t sty = gVirtualX->GetFillStyle();
+            gVirtualX->SetFillStyle(1);
+            gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
+            gVirtualX->SetFillStyle(0);
+            gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
+            gVirtualX->SetFillStyle(sty);
+            if (option[1]=='T'){
+              Float_t textSize =   gVirtualX->GetTextSize();
+              gVirtualX->SetTextSize(10);
+              gVirtualX->SetTextAlign(22);
+              //	         gPad->PaintText(padPadPos.X()-0.01,padPadPos.Y()-0.01,
+              gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
+                              Form("%d",connect->GetGassiNum()));
+              
+              gVirtualX->SetTextSize(textSize);
                  }
 	    }
           }
       }
-    
+      if ( option[0]=='Z' )
+      {
+        PaintContour(option,kFALSE);
+      }
     }
-    break;
-
- case 'C':
-   {
-     // drawing real motif (not envelop) the real contour
-     Float_t xl = 0;
-     Float_t yl = 0;
-     Int_t manuId = 0;
-     TVector2 bl0 = TVector2(999, 999);
-     TVector2 ur0 = TVector2(0,0); 
-     TVector2 padPadPos,padPadDim;
-
-     AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
-     manuId = fMotifPos->GetID();
-
-     if (manuId % 5 == 0) 
-        gVirtualX->SetFillColor(0);
-     if (manuId % 5 == 1) 
-        gVirtualX->SetFillColor(38);
-     if (manuId % 5 == 2) 
-        gVirtualX->SetFillColor(33);
-     if (manuId % 5 == 3) 
-        gVirtualX->SetFillColor(16);
-     if (manuId % 5 == 4) 
-        gVirtualX->SetFillColor(44);
-
-     for (Int_t i = 0; i < motifType->GetNofPadsX(); i++){
-
-       for (Int_t j = 0; j < motifType->GetNofPadsY(); j++){
-
-	 AliMpIntPair indices = AliMpIntPair(i,j);
-	 AliMpConnection* connect =  motifType->FindConnectionByLocalIndices(indices);
-	 if (connect){
-	   TVector2 realPadPos = 
-	     GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
-	   gr->RealToPad(realPadPos, fMotifPos->GetMotif()->GetPadDimensions(indices),
-	     		 padPadPos, padPadDim);
-
-	   TVector2 bl = padPadPos - padPadDim;
-	   TVector2 ur = padPadPos + padPadDim;
-	   if (bl0.X() > bl.X())
-	     bl0 = bl;
-
-	   if (ur0.Y() < ur.Y())
-	     ur0 = ur;
-	  
-	   Style_t sty = gVirtualX->GetFillStyle();
-	   gVirtualX->SetFillStyle(1);
-	   gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
-	   gVirtualX->SetFillStyle(0);
-
-	   if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j-1)))
-	       gPad->PaintLine(bl.X(), bl.Y(), bl.X()+ padPadDim.X()*2, bl.Y());
-
-	   if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j+1)))
-	       gPad->PaintLine(bl.X(), bl.Y() + padPadDim.Y()*2, bl.X()+ padPadDim.X()*2, bl.Y() +  padPadDim.Y()*2);
-	     
-	   if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i-1,j)))
-	     gPad->PaintLine(bl.X(), bl.Y(), bl.X(), bl.Y()+ padPadDim.Y()*2);
-
-	   gVirtualX->SetFillStyle(sty);
-
-	 }
-       }
-     }
-
-     switch (option[1]) {
-       // add manudId indexes
-     case 'I' :
-       xl = bl0.X()+ padPadDim.X()/2.;
-  
-       yl = bl0.Y() + 1.5*padPadDim.Y();
-     
-       Float_t textSize =   gVirtualX->GetTextSize();
-       gVirtualX->SetTextSize(12);
-       gVirtualX->SetTextAlign(13);
-       gVirtualX->SetTextAngle(90.);
-       
-       gPad->PaintText(xl, yl, Form("%d", manuId));
-       
-       gVirtualX->SetTextAngle(0.);
-       gVirtualX->SetTextSize(textSize);
-       break;
-     }
-   }
-   break;
-
-  default:
-    PaintWholeBox(kFALSE);
+      break;
+      
+    case 'C':
+      PaintContour(option,kTRUE);
+      break;
+      
+    default:
+      PaintWholeBox(kFALSE);
   }
   gr->Pop();
   gVirtualX->SetFillColor(col);
+}
+
+//_______________________________________________________________________
+void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
+{
+  AliMpGraphContext *gr = AliMpGraphContext::Instance();
+  
+  // drawing real motif (not envelop) the real contour
+  Float_t xl = 0;
+  Float_t yl = 0;
+  Int_t manuId = 0;
+  TVector2 bl0 = TVector2(999, 999);
+  TVector2 ur0 = TVector2(0,0); 
+  TVector2 padPadPos,padPadDim;
+  
+  AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
+  manuId = fMotifPos->GetID();
+  
+  if ( fill )
+  {
+    if (manuId % 5 == 0) 
+      gVirtualX->SetFillColor(0);
+    if (manuId % 5 == 1) 
+      gVirtualX->SetFillColor(38);
+    if (manuId % 5 == 2) 
+      gVirtualX->SetFillColor(33);
+    if (manuId % 5 == 3) 
+      gVirtualX->SetFillColor(16);
+    if (manuId % 5 == 4) 
+      gVirtualX->SetFillColor(44);
+  }
+  
+  Width_t lineW = gPad->GetLineWidth();
+  Width_t lw = lineW*4;
+  Double_t xlw = gPad->AbsPixeltoX(lw/2);
+  
+  gVirtualX->SetLineWidth(lw);
+    
+    for (Int_t i = 0; i < motifType->GetNofPadsX(); i++){
+      
+      for (Int_t j = 0; j < motifType->GetNofPadsY(); j++){
+        
+        AliMpIntPair indices = AliMpIntPair(i,j);
+        AliMpConnection* connect =  motifType->FindConnectionByLocalIndices(indices);
+        if (connect){
+          TVector2 realPadPos = 
+          GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
+          gr->RealToPad(realPadPos, fMotifPos->GetMotif()->GetPadDimensions(indices),
+                        padPadPos, padPadDim);
+          
+          TVector2 bl = padPadPos - padPadDim;
+          TVector2 ur = padPadPos + padPadDim;
+          if (bl0.X() > bl.X())
+            bl0 = bl;
+          
+          if (ur0.Y() < ur.Y())
+            ur0 = ur;
+          
+          
+          if ( fill )
+          {
+            Style_t sty = gVirtualX->GetFillStyle();
+            gVirtualX->SetFillStyle(1);
+            gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
+            gVirtualX->SetFillStyle(0);
+            gVirtualX->SetFillStyle(sty);
+          }
+          
+          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j-1)))
+          {
+            gPad->PaintLine(bl.X()-xlw, bl.Y(), bl.X()+ padPadDim.X()*2 + xlw, bl.Y());
+          }
+          
+          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j+1)))
+          {
+            gPad->PaintLine(bl.X()-xlw, bl.Y() + padPadDim.Y()*2, bl.X()+ padPadDim.X()*2+xlw, bl.Y() +  padPadDim.Y()*2);
+          }
+          
+          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i-1,j)))
+          {
+            gPad->PaintLine(bl.X(), bl.Y(), bl.X(), bl.Y()+ padPadDim.Y()*2);                  
+          }          
+
+          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i+1,j)))
+          {
+            gPad->PaintLine(bl.X()+padPadDim.X()*2, bl.Y(), bl.X()+padPadDim.X()*2, bl.Y()+ padPadDim.Y()*2);                  
+          }          
+          
+        }
+      }
+    }
+    
+    switch (option[1]) {
+      // add manudId indexes
+      case 'I' :
+        xl = bl0.X()+ padPadDim.X()/2.;
+        
+        yl = bl0.Y() + 1.5*padPadDim.Y();
+        
+        Float_t textSize =   gVirtualX->GetTextSize();
+        gVirtualX->SetTextSize(12);
+        gVirtualX->SetTextAlign(13);
+        gVirtualX->SetTextAngle(90.);
+        
+        gPad->PaintText(xl, yl, Form("%d", manuId));
+        
+        gVirtualX->SetTextAngle(0.);
+        gVirtualX->SetTextSize(textSize);
+        break;
+    }
+
+    gVirtualX->SetLineWidth(lineW);
+
 }

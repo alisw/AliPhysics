@@ -35,6 +35,8 @@ class AliMpMotifPainter : public AliMpVPainter
   AliMpMotifPainter(const AliMpMotifPainter& right);
   AliMpMotifPainter&  operator = (const AliMpMotifPainter& right);
 
+  void PaintContour(Option_t* option, Bool_t fill);
+
   AliMpMotifPosition *fMotifPos; ///< the motif to draw
   
   ClassDef(AliMpMotifPainter,1) // Motif painter
