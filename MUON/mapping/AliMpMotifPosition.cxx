@@ -54,7 +54,7 @@ AliMpMotifPosition::AliMpMotifPosition()
 }
 
 //______________________________________________________________________________
-AliMpMotifPosition::~AliMpMotifPosition()\
+AliMpMotifPosition::~AliMpMotifPosition()
 {
 /// Destructor 
 }
