@@ -840,18 +840,17 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyLG,time);
 	energyLG = 0. ; 
       }
-      // Add high gain digit only if the low gain digit does not exist in the digits array
-      // and it is not saturated
+      // Add high gain digit only if it is not saturated;
+      // replace low gain digit by a high gain one
       else {
-	seen = kFALSE;
+	if (energyHG >= 1023) continue;
 	for (iOldDigit=iDigit; iOldDigit=0; iOldDigit--) {
 	  if (dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit))->GetId() == absId) {
-	    seen = kTRUE;
+	    digits->RemoveAt(iOldDigit);
+	    new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
 	    break;
 	  }
 	}
-	if (!seen && energyHG < 1023)
-	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
 	energyHG = 0. ; 
       }
       iDigit++;
