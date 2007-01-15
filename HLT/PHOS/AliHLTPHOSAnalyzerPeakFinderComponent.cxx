@@ -16,7 +16,7 @@
 #include "AliHLTPHOSAnalyzerPeakFinderComponent.h"
 
 
-ClassImp(AliHLTPHOSAnalyzerPeakFinderComponent) 
+//ClassImp(AliHLTPHOSAnalyzerPeakFinderComponent) 
 
 
   AliHLTPHOSAnalyzerPeakFinderComponent::AliHLTPHOSAnalyzerPeakFinderComponent():AliHLTPHOSAnalyzerComponent()

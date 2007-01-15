@@ -16,12 +16,12 @@
 #include "AliHLTPHOSAnalyzerCrudeComponent.h"
 
 
-ClassImp(AliHLTPHOSAnalyzerCrudeComponent) 
+//ClassImp(AliHLTPHOSAnalyzerCrudeComponent) 
 
 
 AliHLTPHOSAnalyzerCrudeComponent::AliHLTPHOSAnalyzerCrudeComponent()
 {
-
+  analyzerPtr = new AliHLTPHOSAnalyzerCrude();
 } 
 
 AliHLTPHOSAnalyzerCrudeComponent::~AliHLTPHOSAnalyzerCrudeComponent()
@@ -30,7 +30,7 @@ AliHLTPHOSAnalyzerCrudeComponent::~AliHLTPHOSAnalyzerCrudeComponent()
 }
 
 
-AliHLTPHOSAnalyzerCrudeComponent::AliHLTPHOSAnalyzerCrudeComponent(const AliHLTPHOSAnalyzerCrudeComponent & )
+AliHLTPHOSAnalyzerCrudeComponent::AliHLTPHOSAnalyzerCrudeComponent(const AliHLTPHOSAnalyzerCrudeComponent & ):AliHLTPHOSAnalyzerComponent()
 {
 
 }

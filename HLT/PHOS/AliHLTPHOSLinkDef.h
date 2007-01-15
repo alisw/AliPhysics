@@ -11,10 +11,10 @@
 #pragma link C++ class AliHLTPHOSAnalyzerLMS+;
 #pragma link C++ class AliHLTPHOSPulseGenerator+;
 #pragma link C++ class AliHLTPHOSEmcCalibData+; 
-#pragma link C++ class AliHLTPHOSAnalyzerComponent+;
-#pragma link C++ class AliHLTPHOSAnalyzerPeakFinderComponent+;
-#pragma link C++ class AliHLTPHOSAnalyzerCrudeComponent+;
-#pragma link C++ class AliHLTPHOSAnalyzerPeakFinderComponent+;
+//#pragma link C++ class AliHLTPHOSAnalyzerComponent+;
+//#pragma link C++ class AliHLTPHOSAnalyzerPeakFinderComponent+;
+//#pragma link C++ class AliHLTPHOSAnalyzerCrudeComponent+;
+//#pragma link C++ class AliHLTPHOSAnalyzerPeakFinderComponent+;
 //#pragma link C++ class AliHLTPHOSAnalyzer+;
 
 #endif

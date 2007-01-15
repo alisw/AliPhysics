@@ -16,7 +16,7 @@
 #include "AliHLTPHOSAnalyzerComponent.h"
 #include <iostream>
 
-ClassImp(AliHLTPHOSAnalyzerComponent) 
+//ClassImp(AliHLTPHOSAnalyzerComponent) 
 
 AliHLTPHOSAnalyzerComponent::AliHLTPHOSAnalyzerComponent()
 {
@@ -29,8 +29,63 @@ AliHLTPHOSAnalyzerComponent::~AliHLTPHOSAnalyzerComponent()
 }
 
 
-AliHLTPHOSAnalyzerComponent::AliHLTPHOSAnalyzerComponent(const AliHLTPHOSAnalyzerComponent & )
+AliHLTPHOSAnalyzerComponent::AliHLTPHOSAnalyzerComponent(const AliHLTPHOSAnalyzerComponent & ) : AliHLTProcessor()
 {
 
 }
 
+int 
+AliHLTPHOSAnalyzerComponent::Deinit()
+{
+  return 0;
+}
+
+int 
+AliHLTPHOSAnalyzerComponent::DoDeinit()
+{
+  return 0;
+}
+
+const char* 
+AliHLTPHOSAnalyzerComponent::GetComponentID()
+{
+  return 0;
+}
+
+void
+AliHLTPHOSAnalyzerComponent::GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&)
+{
+
+}
+
+AliHLTComponentDataType 
+AliHLTPHOSAnalyzerComponent::GetOutputDataType()
+{
+  AliHLTComponentDataType tmp;
+  return tmp;
+}
+
+void
+AliHLTPHOSAnalyzerComponent::GetOutputDataSize(long unsigned int&, double&)
+{
+
+}
+
+void 
+AliHLTPHOSAnalyzerComponent::GetOutputDataSize(long  int&, double&)
+{
+
+}
+
+AliHLTComponent* 
+AliHLTPHOSAnalyzerComponent::Spawn()
+{
+  return 0;
+}
+
+int 
+AliHLTPHOSAnalyzerComponent::DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&)
+{
+  printf("\nPHOSHLT DoEvent, not yet implemented\n");
+  return 0;
+}

@@ -16,7 +16,7 @@ class AliHLTPHOSAnalyzerPeakFinderComponent: public AliHLTPHOSAnalyzerComponent
     return *this;
   };
 
-ClassDef(AliHLTPHOSAnalyzerPeakFinderComponent, 2) 
+  //ClassDef(AliHLTPHOSAnalyzerPeakFinderComponent, 2) 
   };
 
 

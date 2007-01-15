@@ -17,7 +17,7 @@ class AliHLTPHOSAnalyzerCrudeComponent: public AliHLTPHOSAnalyzerComponent
     return *this;
   };
 
-ClassDef(AliHLTPHOSAnalyzerCrudeComponent, 2) 
+  //ClassDef(AliHLTPHOSAnalyzerCrudeComponent, 2) 
   };
 
 #endif

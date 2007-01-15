@@ -94,9 +94,16 @@ AliHLTPHOSAnalyzer::GetEnergy()
 void 
 AliHLTPHOSAnalyzer::SetData(double *data)
 {
-  double *dta;
-  dta = data;
-  cout << "Set data not yet implemented" << endl;
+  //  double *dta;
+  //  dta = data;
+  fFloatDataPtr = data;
+  //  cout << "Set data not yet implemented" << endl;
+}
+
+void 
+AliHLTPHOSAnalyzer::SetSampleFreq(double freq)
+{
+
 }
 
 int 
