@@ -8,12 +8,13 @@ attributetype ( DETECTOR_CONFIG:3 NAME 'DCSPort'     DESC ''                    
 attributetype ( DETECTOR_CONFIG:4 NAME 'DCSalias'    DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( DETECTOR_CONFIG:5 NAME 'DCSdatapoint' DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( DETECTOR_CONFIG:6 NAME 'StrictRunOrder' DESC 'Strict run ordering flag' EQUALITY caseIgnoreMatch SUP name )
+attributetype ( DETECTOR_CONFIG:7 NAME 'responsible' DESC 'responsible email address' EQUALITY caseIgnoreMatch SUP name )
 
 objectclass ( DETECTOR_CONFIG
         NAME 'AliShuttleDetector'
         DESC 'ALICE: Shuttle configuration object.'
         SUP top
-        MUST (det $ StrictRunOrder)
+        MUST (det $ StrictRunOrder $ responsible)
         MAY  (DCSHost $ DCSPort $ DCSalias $ DCSdatapoint) )
 
 
