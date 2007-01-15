@@ -284,7 +284,7 @@ Int_t AliRawDB::Close()
    guidFileName += ".guid";
    ofstream fguid(guidFileName.Data());
    TString guid = fRawDB->GetUUID().AsString();
-   fguid << fRawDB->GetName() << " \t" << guid.Data();
+   fguid << "guid: \t" << guid.Data();
    fguid.close();
 
    delete fRawDB;
