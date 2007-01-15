@@ -12,6 +12,7 @@ SRCS:=  PHOS/AliHLTPHOSPulseGenerator.cxx \
 	PHOS/AliHLTPHOSAnalyzerCrudeComponent.cxx \
 	PHOS/AliHLTPHOSAnalyzerPeakFinderComponent.cxx
 
+
 HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSAnalyzer.h \
 	PHOS/AliHLTPHOSAnalyzerCrude.h \
