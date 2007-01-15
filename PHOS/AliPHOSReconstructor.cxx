@@ -150,6 +150,8 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
       timeList[iDigit] = (UShort_t)(digit->GetTime()*1e9*100); // time in units of 0.01 ns
       digiList[iDigit] = (UShort_t)(digit->GetId());
     }
+
+    ec->SetPHOS(kTRUE);
     ec->SetGlobalPosition(xyz);                 //rec.point position in MARS
     ec->SetClusterEnergy(rp->Energy());         //total particle energy
     ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
@@ -172,6 +174,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   }  
 }
 
+//____________________________________________________________________________
 void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
 				   AliRawReader* rawReader, AliESD* esd) const
 {
@@ -222,6 +225,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
       }
     }
 
+    ec->SetPHOS(kTRUE);
     ec->SetGlobalPosition(xyz);                 //rec.point position in MARS
     ec->SetClusterEnergy(rp->Energy());         //total particle energy
     ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
