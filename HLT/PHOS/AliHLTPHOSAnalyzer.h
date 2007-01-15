@@ -10,10 +10,10 @@ class AliHLTPHOSAnalyzer
   virtual ~AliHLTPHOSAnalyzer();
   AliHLTPHOSAnalyzer(double *dataPtr, double fs);
   AliHLTPHOSAnalyzer(const AliHLTPHOSAnalyzer & );
-  AliHLTPHOSAnalyzer & operator = (const AliHLTPHOSAnalyzer)
+  AliHLTPHOSAnalyzer & operator = (const AliHLTPHOSAnalyzer &)
     {
       return *this;
-    };
+    }
 
   void BaselineCorrection(double *dataPtr, int N);
   void BaselineCorrection(double *dataPtr, double baselineValue);  
