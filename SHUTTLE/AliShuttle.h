@@ -96,13 +96,14 @@ private:
 	Bool_t RetrieveDAQFile(const char* daqFileName, const char* localFileName);
 	TList* GetDAQFileSources(const char* detector, const char* id);
 	Bool_t UpdateDAQTable();
+	Bool_t UpdateHLTTable();
 
 	const char* GetDCSFileName(const char* detector, const char* id, const char* source);
 //	Bool_t RetrieveDCSFile(const char* daqFileName const char* localFileName);
 	TList* GetDCSFileSources(const char* detector, const char* id);
 
 	const char* GetHLTFileName(const char* detector, const char* id, const char* source);
-//	Bool_t RetrieveHLTFile(const char* daqFileName, const char* localFileName;
+	Bool_t RetrieveHLTFile(const char* hltFileName, const char* localFileName);
 	TList* GetHLTFileSources(const char* detector, const char* id);
 
 	UInt_t WriteToCDB(const char* mainUri, const char* localUri,
