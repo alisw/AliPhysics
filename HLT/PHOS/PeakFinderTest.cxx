@@ -1,5 +1,5 @@
-#include "AliPHOSPulseGenerator.h"
-#include "AliPHOSFitter.h"
+#include "AliHLTPHOSPulseGenerator.h"
+#include "AliHLTPHOSAnalyzerPeakFinder.h"
 #include <stdio.h>
 #include <cmath>
 
@@ -32,7 +32,7 @@ int main()
   printf("type timedelay in nanoseconds (0-%d):", ts); 
   scanf("%lf", &t0);
 
-  AliPHOSPulseGenerator *pulseGenPtr = new AliPHOSPulseGenerator(amplitude, t0, N, tau, fs);
+  AliHLTPHOSPulseGenerator *pulseGenPtr = new AliHLTPHOSPulseGenerator(amplitude, t0, N, tau, fs);
   double *data = pulseGenPtr->GetPulse(); 
 
   setFileName(fileName, start, N, tau, fs);
@@ -66,8 +66,15 @@ int main()
    aSystError = aSystError*100;        //to give systematic error of amplitude in percent
 
 
-  AliPHOSFitter *fitPtr= new AliPHOSFitter(data, fs); 
-  fitPtr->FitPeakFinder(start, N, timeVector, amplitudeVector);
+   //  AliHLTPHOSAnalyzerPeakFinder *fitPtr= new AliHLTPHOSAnalyzerPeakFinder(data, fs); 
+   AliHLTPHOSAnalyzerPeakFinder *fitPtr= new AliHLTPHOSAnalyzerPeakFinder(); 
+  
+   fitPtr->SetData(data);
+   fitPtr->SetSampleFreq(fs);
+   fitPtr->SetTVector(timeVector);
+   fitPtr->SetAVector(amplitudeVector);
+   //   fitPtr->Set
+   fitPtr->Evaluate(start, N);
   
   double energy;
   double time;
