@@ -1,4 +1,4 @@
-SRCS=
+SRCS=AliESDtrackCuts.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
