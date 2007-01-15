@@ -34,12 +34,14 @@
 //
 // Latest changes by Christian Holm Christensen
 //
+
+#include <TGeoManager.h>	// ROOT_TGeoManager 
+#include <TGeoMatrix.h>		// ROOT_TGeoMatrix 
+#include <TMath.h>              // ROOT_TMath
+
 #include "AliFMDDetector.h"	// ALIFMDSUBDETECTOR_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
 #include "AliLog.h"             // ALILOG_H
-#include <TGeoManager.h>	// ROOT_TGeoManager 
-#include <TGeoMatrix.h>		// ROOT_TGeoMatrix 
-// #include <TMath.h>              // ROOT_TMath
 
 //====================================================================
 ClassImp(AliFMDDetector)

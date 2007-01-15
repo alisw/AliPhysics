@@ -30,6 +30,7 @@
 
 #include <TArrayI.h>
 #include <TArrayD.h>
+#include <TMath.h>
 
 #include "AliLog.h"
 

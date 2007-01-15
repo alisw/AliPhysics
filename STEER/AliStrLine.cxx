@@ -12,14 +12,20 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // A straight line is coded as a point (3 Double_t) and           //
 // 3 direction cosines                                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
+
 #include <Riostream.h>
 #include <TTree.h>
+#include <TMath.h>
+
 #include "AliStrLine.h"
 
 ClassImp(AliStrLine)

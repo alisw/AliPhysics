@@ -196,6 +196,7 @@
 //                    -1 + B + exp(-B)
 //
 
+#include <TMath.h>
 #include <TTree.h>		// ROOT_TTree
 //#include <TRandom.h>		// ROOT_TRandom
 #include <AliLog.h>		// ALILOG_H

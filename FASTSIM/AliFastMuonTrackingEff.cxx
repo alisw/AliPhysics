@@ -22,6 +22,9 @@
 // Author: Alessandro de Falco 
 // alessandro.de.falco@ca.infn.it
 // 
+
+#include <TMath.h>
+
 #include "AliFastMuonTrackingEff.h"
 #include "AliMUONFastTracking.h"
 

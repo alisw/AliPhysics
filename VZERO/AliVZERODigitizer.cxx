@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
+/* $Id$ */
+
 ///_________________________________________________________________________
 ///
 /// This class constructs Digits out of Hits
@@ -22,6 +24,7 @@
 // --- Standard library ---
 
 // --- ROOT system ---
+#include <TMath.h>
 #include <TTree.h>
 #include <TRandom.h>
 

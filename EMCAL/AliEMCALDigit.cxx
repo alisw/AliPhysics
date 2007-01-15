@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:  */
+/* $Id$ */
 
 //_________________________________________________________________________
 //  EMCAL digit: 
@@ -27,10 +27,10 @@
 //__________________________________________________________________________
 
 // --- ROOT system ---
+#include <Riostream.h>
+#include <TMath.h>
 
 // --- Standard library ---
-
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 

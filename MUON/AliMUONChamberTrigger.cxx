@@ -15,6 +15,8 @@
 
 /* $Id$ */
 
+#include <TMath.h>
+
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONResponseTrigger.h"
 #include "AliMUONHit.h"

@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 //////////////////////////////////////////////////////
 //  Calibration class for set:ITS                   //
@@ -22,7 +23,9 @@
 //  AliITSCalibrationSSD                            //
 //////////////////////////////////////////////////////
 
-#include "Riostream.h"
+#include <Riostream.h>
+#include <TMath.h>
+
 #include "AliITSCalibration.h"
 #include "AliLog.h"
 

@@ -24,6 +24,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+
 #include "AliEMCALCalibData.h"
 
 ClassImp(AliEMCALCalibData)

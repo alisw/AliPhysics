@@ -13,7 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliITSresponseSDD.h"
+/* $Id$ */
+
 //////////////////////////////////////////////////////
 //  Base response class forITS                      //
 //  It is used to set static data members           //
@@ -23,6 +24,9 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
+#include <TMath.h>
+
+#include "AliITSresponseSDD.h"
 
 const Int_t AliITSresponseSDD::fgkMaxAdcDefault = 1024;
 const Float_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;

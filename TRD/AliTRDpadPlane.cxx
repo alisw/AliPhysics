@@ -28,6 +28,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
 

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------
 //  Implementation of the alignment object class, holding the alignment
 //  constants for a single volume, through the abstract class AliAlignObj.
@@ -21,6 +23,7 @@
 //-----------------------------------------------------------------
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
+#include <TMath.h>
 
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"

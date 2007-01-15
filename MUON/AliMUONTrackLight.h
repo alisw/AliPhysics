@@ -23,7 +23,9 @@
 /// (authors: H.Woehri, A.de Falco)
 
 // ROOT classes
-#include "TLorentzVector.h"
+
+#include <TClonesArray.h>
+#include <TLorentzVector.h>
 
 class AliMUONTrack;
 class AliESDMuonTrack;

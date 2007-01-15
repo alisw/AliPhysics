@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 //_________________________________________________________________________
 // Class for the management by the Emc reconstruction.
@@ -20,6 +21,8 @@
 //*-- Author   : Boris Polichtchouk (IHEP, Protvino) 6 Mar 2001
 //
 // --- ROOT system ---
+
+#include <TMath.h>
 
 // --- Standard library ---
 

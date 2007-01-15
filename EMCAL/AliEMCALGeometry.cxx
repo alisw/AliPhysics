@@ -33,23 +33,22 @@
 //     and  : Jennifer Klay (LBL)
 //     SHASHLYK : Aleksei Pavlinov (WSU)
 //
-// --- AliRoot header files ---
-#include <assert.h>
-#include <Riostream.h>
 
-#include <TMath.h>
-#include <TVector3.h>
-#include <TObjArray.h>
-#include <TGeoManager.h>
-#include <TGeoNode.h>
-#include <TGeoMatrix.h>
-#include <TMatrixD.h>
-#include <TObjString.h>
-#include <TClonesArray.h>
+#include <assert.h>
+
+// --- AliRoot header files ---
+#include <Riostream.h>
 #include <TBrowser.h>
+#include <TClonesArray.h>
+#include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoNode.h>
+#include <TMatrixD.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TVector3.h>
 
 // -- ALICE Headers.
-//#include "AliConst.h"
 #include "AliLog.h"
 
 // --- EMCAL headers

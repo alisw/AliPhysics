@@ -32,12 +32,14 @@
 //	Track stopping status. 
 //  Latest changes by Christian Holm Christensen
 //
-#include "AliFMDHit.h"		// ALIFMDHIT_H
-// #include "AliLog.h"		// ALILOG_H
+
 #include "Riostream.h"		// ROOT_Riostream
 #include <TDatabasePDG.h>
-// #include <TMath.h>
+#include <TMath.h>
 #include <TString.h>
+
+#include "AliFMDHit.h"		// ALIFMDHIT_H
+// #include "AliLog.h"		// ALILOG_H
 
 //____________________________________________________________________
 ClassImp(AliFMDHit)

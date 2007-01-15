@@ -22,6 +22,8 @@
 // Author: Andreas Morsch
 // andreas.morsch@cern.ch 
 
+#include <TMath.h>
+
 #include "AliFastMuonTrackingAcc.h"
 #include "AliMUONFastTracking.h"
 

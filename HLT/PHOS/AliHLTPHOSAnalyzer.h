@@ -1,7 +1,9 @@
 #ifndef ALIHLTPHOSANALYZER_H
 #define ALIHLTPHOSANALYZER_H
+/* Copyright(c) 1998-2004, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-//#include "AliHLTProcessor.h"
+/* $Id$ */
 
 class AliHLTPHOSAnalyzer
 {

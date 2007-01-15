@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TMath.h>
 
 #include "AliDAQ.h"
 #include "AliRawDataHeader.h"

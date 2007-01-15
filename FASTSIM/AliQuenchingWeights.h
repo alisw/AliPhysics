@@ -17,6 +17,7 @@
 //                     A. Dainese    andrea.dainese@pd.infn.it            
 //----------------------------------------------------------------------------
 
+#include <TMath.h>
 #include <TObject.h>
 class TH1F;
 
