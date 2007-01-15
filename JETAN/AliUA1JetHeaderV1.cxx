@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
+/* $Id$ */
+
 //---------------------------------------------------------------------
 //  Jet Gen header class
 // Stores parameters of particle algoritm
@@ -20,6 +22,8 @@
 //---------------------------------------------------------------------
 
 #include <Riostream.h> 
+#include <TMath.h>
+
 #include "AliUA1JetHeaderV1.h"
 ClassImp(AliUA1JetHeaderV1)
 
