@@ -96,15 +96,16 @@ private:
 	Bool_t RetrieveDAQFile(const char* daqFileName, const char* localFileName);
 	TList* GetDAQFileSources(const char* detector, const char* id);
 	Bool_t UpdateDAQTable();
-	Bool_t UpdateHLTTable();
 
 	const char* GetDCSFileName(const char* detector, const char* id, const char* source);
 //	Bool_t RetrieveDCSFile(const char* daqFileName const char* localFileName);
 	TList* GetDCSFileSources(const char* detector, const char* id);
+//	Bool_t UpdateDCSTable();
 
 	const char* GetHLTFileName(const char* detector, const char* id, const char* source);
 	Bool_t RetrieveHLTFile(const char* hltFileName, const char* localFileName);
 	TList* GetHLTFileSources(const char* detector, const char* id);
+	Bool_t UpdateHLTTable();
 
 	UInt_t WriteToCDB(const char* mainUri, const char* localUri,
 				const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
@@ -118,7 +119,8 @@ private:
   	Bool_t ContinueProcessing();
   	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
   	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
-  	
+	Bool_t SendMail();
+
   	void SetLastAction(const char* action);
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object

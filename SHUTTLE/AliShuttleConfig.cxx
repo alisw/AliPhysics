@@ -120,6 +120,7 @@ fDCSHost(""),
 fDCSPort(0),
 fDCSAliases(0),
 fDCSDataPoints(0),
+fResponsibles(0),
 fIsValid(kFALSE),
 fSkipDCSQuery(kFALSE),
 fStrictRunOrder(kFALSE)
@@ -131,6 +132,8 @@ fStrictRunOrder(kFALSE)
 	fDCSAliases->SetOwner(1);
 	fDCSDataPoints = new TObjArray();
 	fDCSDataPoints->SetOwner(1);
+	fResponsibles = new TObjArray();
+	fResponsibles->SetOwner(1);
 
 	anAttribute = entry->GetAttribute("det"); // MUST
         if (!anAttribute)
@@ -155,10 +158,22 @@ fStrictRunOrder(kFALSE)
 		fStrictRunOrder = (Bool_t) strictRunStr.Atoi();
 	}
 
+	anAttribute = entry->GetAttribute("responsible"); // MUST
+        if (!anAttribute)
+	{
+		AliError(Form("Invalid configuration! No \"responsible\" attribute!"));
+		return;
+        }
+	const char* aResponsible;
+	while ((aResponsible = anAttribute->GetValue()))
+	{
+		fResponsibles->AddLast(new TObjString(aResponsible));
+	}
+
 	anAttribute = entry->GetAttribute("DCSHost"); // MAY
 	if (!anAttribute)
 	{
-		AliWarning(
+		AliDebug(2,
 			Form("%s has not DCS host entry - Shuttle will skip DCS data query!",
 				fDetector.Data()));
 		fIsValid = kTRUE;
@@ -199,8 +214,6 @@ fStrictRunOrder(kFALSE)
 	}
 
 	fIsValid = kTRUE;
-
-
 }
 
 //______________________________________________________________________________________________
@@ -210,6 +223,7 @@ AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder()
 
 	delete fDCSAliases;
 	delete fDCSDataPoints;
+	delete fResponsibles;
 }
 
 ClassImp(AliShuttleConfig)
@@ -217,7 +231,7 @@ ClassImp(AliShuttleConfig)
 //______________________________________________________________________________________________
 AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
-	fIsValid(kFALSE),
+	fIsValid(kFALSE), fConfigHost(host),
 	fDAQlbHost(""), fDAQlbPort(), fDAQlbUser(""), fDAQlbPass(""),
 	fDAQlbDB(""), fDAQlbTable(""),
 	fMaxRetries(0), fPPTimeOut(0), fDetectorMap(), fDetectorList(),
@@ -615,6 +629,24 @@ const TObjArray* AliShuttleConfig::GetDCSDataPoints(const char* detector) const
 }
 
 //______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetResponsibles(const char* detector) const
+{
+	//
+	// returns collection of TObjString which represents the list of mail addresses
+	// of the detector's responsible(s)
+	//
+
+	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+        if (!aHolder) {
+                AliError(Form("There isn't configuration for detector: %s",
+                        detector));
+                return NULL;
+        }
+
+	return aHolder->GetResponsibles();
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 {
 	// return TRUE if detector is handled by host or if fProcessAll is TRUE
@@ -652,10 +684,13 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 	TString result;
 	result += '\n';
 
-	result += Form("\nShuttle running on %s \n\n", fShuttleInstanceHost.Data());
+	result += "####################################################\n";
+	result += Form(" Shuttle configuration from %s \n", fConfigHost.Data());
+	result += "####################################################\n";
+	result += Form("\nShuttle running on %s \n", fShuttleInstanceHost.Data());
 
 	if(fProcessAll) {
-		result += Form("All detectors will be processed! \n\n");
+		result += Form("All detectors will be processed! \n");
 	} else {
 		result += "Detectors processed by this host: ";
 		TIter it(&fProcessedDetectors);
@@ -663,12 +698,13 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 		while ((aDet = (TObjString*) it.Next())) {
 			result += Form("%s ", aDet->String().Data());
 		}
-		result += "\n\n";
+		result += "\n";
 	}
 
 	result += Form("PP time out = %d - Max total retries = %d\n\n", fPPTimeOut, fMaxRetries);
+	result += "------------------------------------------------------\n";
 
-	result += Form("DAQ Logbook Configuration \n \tHost: %s:%d; \tUser: %s; ",
+	result += Form("Logbook Configuration \n\n \tHost: %s:%d; \tUser: %s; ",
 		fDAQlbHost.Data(), fDAQlbPort, fDAQlbUser.Data());
 
 //	result += "Password: ";
@@ -678,8 +714,11 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 
 	result += "\n\n";
 
+	result += "------------------------------------------------------\n";
+	result += "FXS configuration\n\n";
+
 	for(int iSys=0;iSys<3;iSys++){
-		result += Form("FXS Configuration for %s system\n", AliShuttleInterface::GetSystemName(iSys));
+		result += Form("*** %s ***\n", AliShuttleInterface::GetSystemName(iSys));
 		result += Form("\tDB  host: %s:%d; \tUser: %s; \tName: %s; \tTable: %s\n",
 						fFXSdbHost[iSys].Data(), fFXSdbPort[iSys], fFXSdbUser[iSys].Data(),
 						fFXSdbName[iSys].Data(), fFXSdbTable[iSys].Data());
@@ -689,12 +728,28 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 		// result += Form("FXS Password:",fFXSPass[iSys].Data());
 	}
 
+	result += "------------------------------------------------------\n";
+	result += "Detector-specific configuration\n\n";
 	TIter iter(fDetectorMap.GetTable());
 	TPair* aPair;
 	while ((aPair = (TPair*) iter.Next())) {
 		AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) aPair->Value();
-		result += Form("Detector-specific configuration: *** %s *** \n", aHolder->GetDetector());
-		result += Form("\tStrict run ordering flag: %s \n", aHolder->StrictRunOrder() ? "TRUE" : "FALSE");
+		result += Form("*** %s *** \n", aHolder->GetDetector());
+
+		const TObjArray* responsibles = aHolder->GetResponsibles();
+		if (responsibles->GetEntries() != 0)
+		{
+			result += "\tDetector responsible(s): ";
+			TIter it(responsibles);
+			TObjString* aResponsible;
+			while ((aResponsible = (TObjString*) it.Next()))
+			{
+				result += Form("%s ", aResponsible->String().Data());
+			}
+			result += "\n";
+		}
+
+		result += Form("\tStrict run ordering: %s \n", aHolder->StrictRunOrder() ? "YES" : "NO");
 		if(aHolder->SkipDCSQuery())
 		{
 			result += "\n";
@@ -715,7 +770,6 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 			result += "\n";
 		}
 
-
 		const TObjArray* dataPoints = aHolder->GetDCSDataPoints();
 		if (dataPoints->GetEntries() != 0)
 		{
@@ -728,7 +782,6 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 				result += "\n";
 		}
 		result += "\n";
-		
 	}
 
 	if(!fIsValid) result += "\n\n********** !!!!! Configuration is INVALID !!!!! **********\n";

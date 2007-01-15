@@ -27,6 +27,8 @@ public:
 
 	Bool_t IsValid() const {return fIsValid;};
 
+	const char* GetConfigHost() const {return fConfigHost.Data();}
+
 	const char* GetDAQlbHost() const {return fDAQlbHost.Data();}
 	UInt_t 	    GetDAQlbPort() const {return fDAQlbPort;}
 	const char* GetDAQlbUser() const {return fDAQlbUser.Data();}
@@ -57,6 +59,7 @@ public:
 	Int_t GetDCSPort(const char* detector) const;
 	const TObjArray* GetDCSAliases(const char* detector) const;
 	const TObjArray* GetDCSDataPoints(const char* detector) const;
+	const TObjArray* GetResponsibles(const char* detector) const;
 	Bool_t StrictRunOrder(const char* detector) const;
 
 	void SetProcessAll(Bool_t flag=kTRUE) {fProcessAll=flag;}
@@ -78,6 +81,7 @@ private:
 		Int_t GetDCSPort() const {return fDCSPort;}
 		const TObjArray* GetDCSAliases() const {return fDCSAliases;}
 		const TObjArray* GetDCSDataPoints() const {return fDCSDataPoints;}
+		const TObjArray* GetResponsibles() const {return fResponsibles;}
 
 		Bool_t IsValid() const {return fIsValid;}
 		Bool_t SkipDCSQuery() const {return fSkipDCSQuery;}
@@ -89,6 +93,7 @@ private:
 		Int_t 	fDCSPort; 	// port of the DCS server
 		TObjArray* fDCSAliases; // List of DCS aliases to be retrieved
 		TObjArray* fDCSDataPoints; // List of DCS data points to be retrieved
+		TObjArray* fResponsibles; // List of email addresses of the detector's responsible(s)
 		Bool_t fIsValid;  	// flag for the validity of the configuration
 		Bool_t fSkipDCSQuery; 	// flag - if TRUE (-> DCS config empty) skip DCS archive data query
 		Bool_t fStrictRunOrder; // flag - if TRUE connect data in a strict run ordering
@@ -99,6 +104,8 @@ private:
 
 
 	Bool_t fIsValid;  		//! flag for the validity of the configuration
+
+	TString fConfigHost;  		//! Host of the Shuttle configuration LDAP server
 
 	TString fDAQlbHost;		//! Host of the DAQ logbook MySQL Server
 	UInt_t  fDAQlbPort;		//! port of the DAQ logbook MySQL Server

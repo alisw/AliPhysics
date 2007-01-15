@@ -448,6 +448,16 @@ Bool_t AliShuttle::ContinueProcessing()
 // checks if the processing should be continued
 // if yes it returns kTRUE and updates the AliShuttleStatus with nextStatus
 
+	if (!fConfig->HostProcessDetector(fCurrentDetector)) return kFALSE;
+
+	AliPreprocessor* aPreprocessor =
+		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
+	if (!aPreprocessor)
+	{
+		AliInfo(Form("%s: no preprocessor registered", fCurrentDetector.Data()));
+		return kFALSE;
+	}
+
 	AliShuttleLogbookEntry::Status entryStatus =
 		fLogbookEntry->GetDetectorStatus(fCurrentDetector);
 
@@ -506,24 +516,29 @@ Bool_t AliShuttle::ContinueProcessing()
 	}
 
 	// if we get here, there is a restart
+	Bool_t cont = kFALSE;
 
 	// abort conditions
 	if (status->GetCount() >= fConfig->GetMaxRetries()) {
-		Log("SHUTTLE",
-			Form("ContinueProcessing - %s failed %d times in status %s - Updating Shuttle Logbook",
-				fCurrentDetector.Data(),
+		Log("SHUTTLE", Form("ContinueProcessing - %s failed %d times in status %s - "
+				"Updating Shuttle Logbook", fCurrentDetector.Data(),
 				status->GetCount(), status->GetStatusName()));
 		UpdateShuttleLogbook(fCurrentDetector.Data(), "FAILED");
-		return kFALSE;
+	} else {
+		Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. "
+				"Aborted before with %s. Retry number %d.", fCurrentDetector.Data(),
+				status->GetStatusName(), status->GetCount()));
+		UpdateShuttleStatus(AliShuttleStatus::kStarted, kTRUE);
+		cont = kTRUE;
 	}
 
-	Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. Aborted before with %s. Retry number %d.",
-  			fCurrentDetector.Data(),
-			status->GetStatusName(), status->GetCount()));
+	// Send mail to detector expert!
+	AliInfo(Form("Sending mail to %s expert...", fCurrentDetector.Data()));
+	if (!SendMail())
+		Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
+				fCurrentDetector.Data()));
 
-	UpdateShuttleStatus(AliShuttleStatus::kStarted, kTRUE);
-
-	return kTRUE;
+	return cont;
 }
 
 //______________________________________________________________________________________________
@@ -570,18 +585,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	{
 		fCurrentDetector = aDetector->String();
 
-		if (!fConfig->HostProcessDetector(fCurrentDetector)) continue;
-
 		if (ContinueProcessing() == kFALSE) continue;
-
-		AliPreprocessor* aPreprocessor =
-			dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
-		if (!aPreprocessor)
-		{
-			Log("SHUTTLE",Form("Process - %s: no preprocessor registered. Skipping",
-							fCurrentDetector.Data()));
-			continue;
-		}
 
 		AliInfo(Form("\n\n \t\t\t****** run %d - %s: START  ******",
 						GetCurrentRun(), aDetector->GetName()));
@@ -2041,4 +2045,94 @@ const char* AliShuttle::GetRunParameter(const char* param)
 	}
 
 	return fLogbookEntry->GetRunParameter(param);
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttle::SendMail()
+{
+// sends a mail to the subdetector expert in case of preprocessor error
+
+	void* dir = gSystem->OpenDirectory(fgkShuttleLogDir);
+	if (dir == NULL)
+	{
+		if (gSystem->mkdir(fgkShuttleLogDir, kTRUE))
+		{
+			AliError(Form("Can't open directory <%s>", fgkShuttleTempDir));
+			return kFALSE;
+		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
+	}
+
+  	TString bodyFileName;
+  	bodyFileName.Form("%s/mail.body", fgkShuttleLogDir);
+  	gSystem->ExpandPathName(bodyFileName);
+
+  	ofstream mailBody;
+  	mailBody.open(bodyFileName, ofstream::out);
+
+  	if (!mailBody.is_open())
+	{
+    		AliError(Form("Could not open mail body file %s", bodyFileName.Data()));
+    		return kFALSE;
+  	}
+
+	TString to="";
+	TIter iterExperts(fConfig->GetResponsibles(fCurrentDetector));
+	TObjString *anExpert=0;
+	while ((anExpert = (TObjString*) iterExperts.Next()))
+	{
+		to += Form("%s,", anExpert->GetName());
+	}
+	to.Remove(to.Length()-1);
+	AliInfo(Form("to: %s",to.Data()));
+
+	TString cc="alberto.colla@cern.ch";
+
+	TString subject = Form("%s Shuttle preprocessor error in run %d !",
+				fCurrentDetector.Data(), GetCurrentRun());
+	AliInfo(Form("subject: %s", subject.Data()));
+
+	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
+	body += Form("SHUTTLE just detected that your preprocessor "
+			"exited with ERROR state in run %d !!\n\n", GetCurrentRun());
+	body += Form("Please check %s status on the web page asap!\n\n", fCurrentDetector.Data());
+	body += Form("The last 10 lines of %s log file are following:\n\n");
+
+	AliInfo(Form("Body begin: %s", body.Data()));
+
+	mailBody << body.Data();
+  	mailBody.close();
+  	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
+
+	TString logFileName = Form("%s/%s.log", fgkShuttleLogDir, fCurrentDetector.Data());
+	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
+	if (gSystem->Exec(tailCommand.Data()))
+	{
+		mailBody << Form("%s log file not found ...\n\n", fCurrentDetector.Data());
+	}
+
+	TString endBody = Form("------------------------------------------------------\n\n");
+	endBody += Form("In case of problems please contact the SHUTTLE core team!\n\n");
+	endBody += "Please do not answer this message directly, it is automatically generated!\n\n";
+	endBody += "Sincerely yours,\n\n \t\t\tthe SHUTTLE\n";
+
+	AliInfo(Form("Body end: %s", endBody.Data()));
+
+	mailBody << endBody.Data();
+
+  	mailBody.close();
+
+	// send mail!
+	TString mailCommand = Form("mail -s \"%s\" -c %s %s < %s",
+						subject.Data(),
+						cc.Data(),
+						to.Data(),
+						bodyFileName.Data());
+	AliInfo(Form("mail command: %s", mailCommand.Data()));
+
+	Bool_t result = gSystem->Exec(mailCommand.Data());
+
+	return result == 0;
 }
