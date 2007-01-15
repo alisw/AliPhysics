@@ -1,7 +1,6 @@
-
 ALIROOT/module.mk:	 ALIROOT/binaliroot.pkg 
 ANALYSIS/module.mk:	 ANALYSIS/libANALYSIS.pkg ANALYSIS/libANALYSIS_NEW.pkg ANALYSIS/libANALYSIS_EXTRA.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
-ACORDE/module.mk:           ACORDE/libACORDE.pkg
+ACORDE/module.mk:        ACORDE/libACORDE.pkg
 EMCAL/module.mk:	 EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg
 EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
 EVGEN/module.mk:	 EVGEN/libEVGEN.pkg
@@ -12,7 +11,7 @@ HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
 HBTP/module.mk:		 HBTP/libHBTP.pkg
 HERWIG/module.mk:        HERWIG/libherwig.pkg
 HIJING/module.mk:	 HIJING/libhijing.pkg
-HLT/module.mk:           HLT/libAliHLTSrc.pkg  HLT/libAliHLTHough.pkg  HLT/libAliHLTMisc.pkg  HLT/libAliHLTComp.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTSample.pkg HLT/libHLTbase.pkg
+HLT/module.mk:           HLT/libAliHLTSrc.pkg  HLT/libAliHLTHough.pkg  HLT/libAliHLTMisc.pkg  HLT/libAliHLTComp.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTSample.pkg HLT/libHLTbase.pkg HLT/libAliHLTPHOS.pkg
 ITS/module.mk:		 ITS/libITSbase.pkg ITS/libITSsim.pkg ITS/libITSrec.pkg
 JETAN/module.mk:	 JETAN/libJETAN.pkg
 MEVSIM/module.mk:	 MEVSIM/libmevsim.pkg

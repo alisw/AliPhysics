@@ -5,11 +5,13 @@ CSRCS:=fpu.c
 
 ELIBSDIR:=
 
+
+
 ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         TPCbase TPCsim TPCrec TPCfast \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
-	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec ACORDE \
+	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec AliHLTPHOS ACORDE \
         HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet \
@@ -18,8 +20,8 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
-	AliHLTSrc AliHLTComp AliHLTMisc AliHLTMUON \
-	AliHLTHough AliHLTITS \
+	HLTbase AliHLTSrc AliHLTComp AliHLTMisc AliHLTMUON \
+	AliHLTHough AliHLTITS\
 #	THerwig herwig TPHIC
 
 ifeq (macosx,$(ALICE_TARGET))
@@ -85,6 +87,8 @@ ARLIBS:= \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSbase.o $(LIBPATH)/libPHOSbase.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSsim.o $(LIBPATH)/libPHOSsim.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSrec.o $(LIBPATH)/libPHOSrec.a \
+   HLT/tgt_$(ALICE_TARGET)/G__HLTbase.o $(LIBPATH)/libHLTbase.a \
+   HLT/tgt_$(ALICE_TARGET)/G__AliHLTPHOS.o $(LIBPATH)/libAliHLTPHOS.a \
    ITS/tgt_$(ALICE_TARGET)/G__ITSbase.o $(LIBPATH)/libITSbase.a \
    ITS/tgt_$(ALICE_TARGET)/G__ITSsim.o $(LIBPATH)/libITSsim.a \
    ITS/tgt_$(ALICE_TARGET)/G__ITSrec.o $(LIBPATH)/libITSrec.a \
