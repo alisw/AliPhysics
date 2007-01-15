@@ -12,6 +12,7 @@
 #pragma link C++ class TestTPCPreprocessor;
 #pragma link C++ class TestHMPIDPreprocessor;
 #pragma link C++ class TestZDCPreprocessor;
+#pragma link C++ class TestTRDPreprocessor;
 #pragma link C++ class AliTPCDataDCS;
 
 #endif

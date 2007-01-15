@@ -288,10 +288,10 @@ void TestShuttleLogbook(){
 
 	AliShuttleLogbookEntry::Status y[18]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 	AliShuttleLogbookEntry lb(21242, y);
-//	lb.SetDetectorStatus("HMP","Unprocessed"); // HMPID
-//	lb.SetDetectorStatus("ZDC","Unprocessed"); // ZDC
-//	lb.SetDetectorStatus("TPC","Unprocessed"); // TPC
-//	lb.SetDetectorStatus("SPD","Unprocessed"); // SPD
+	lb.SetDetectorStatus("HMP","Unprocessed"); // HMPID
+	lb.SetDetectorStatus("ZDC","Unprocessed"); // ZDC
+	lb.SetDetectorStatus("TPC","Unprocessed"); // TPC
+	lb.SetDetectorStatus("SPD","Unprocessed"); // SPD
 	lb.SetDetectorStatus("GRP","Unprocessed"); // GRP
 	lb.Print();
 
@@ -299,7 +299,7 @@ void TestShuttleLogbook(){
 	InsertNewRun(lb,21243);
 	InsertNewRun(lb,21244);
 	InsertNewRun(lb,21245);
-	InsertNewRun(lb,21246);
-	InsertNewRun(lb,1000);
+//	InsertNewRun(lb,21246);
+//	InsertNewRun(lb,1000);
 
 }

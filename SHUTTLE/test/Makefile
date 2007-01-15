@@ -3,7 +3,7 @@ include ../../build/Makefile.$(ALICE_TARGET)
 
 
 CLASSES = TestITSPreprocessorSPD.cxx TestTPCPreprocessor.cxx TestHMPIDPreprocessor.cxx AliTPCDataDCS.cxx \
-	  TestZDCPreprocessor.cxx
+	  TestZDCPreprocessor.cxx TestTRDPreprocessor.cxx
 DICT = DictTest.cxx
 
 HEADERS := $(patsubst %.cxx,%.h,$(CLASSES))
