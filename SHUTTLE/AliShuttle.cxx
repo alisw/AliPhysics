@@ -2086,13 +2086,13 @@ Bool_t AliShuttle::SendMail()
 		to += Form("%s,", anExpert->GetName());
 	}
 	to.Remove(to.Length()-1);
-	AliInfo(Form("to: %s",to.Data()));
+	AliDebug(2, Form("to: %s",to.Data()));
 
 	TString cc="alberto.colla@cern.ch";
 
 	TString subject = Form("%s Shuttle preprocessor error in run %d !",
 				fCurrentDetector.Data(), GetCurrentRun());
-	AliInfo(Form("subject: %s", subject.Data()));
+	AliDebug(2, Form("subject: %s", subject.Data()));
 
 	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
 	body += Form("SHUTTLE just detected that your preprocessor "
@@ -2100,7 +2100,7 @@ Bool_t AliShuttle::SendMail()
 	body += Form("Please check %s status on the web page asap!\n\n", fCurrentDetector.Data());
 	body += Form("The last 10 lines of %s log file are following:\n\n");
 
-	AliInfo(Form("Body begin: %s", body.Data()));
+	AliDebug(2, Form("Body begin: %s", body.Data()));
 
 	mailBody << body.Data();
   	mailBody.close();
@@ -2118,7 +2118,7 @@ Bool_t AliShuttle::SendMail()
 	endBody += "Please do not answer this message directly, it is automatically generated!\n\n";
 	endBody += "Sincerely yours,\n\n \t\t\tthe SHUTTLE\n";
 
-	AliInfo(Form("Body end: %s", endBody.Data()));
+	AliDebug(2, Form("Body end: %s", endBody.Data()));
 
 	mailBody << endBody.Data();
 
@@ -2130,7 +2130,7 @@ Bool_t AliShuttle::SendMail()
 						cc.Data(),
 						to.Data(),
 						bodyFileName.Data());
-	AliInfo(Form("mail command: %s", mailCommand.Data()));
+	AliDebug(2, Form("mail command: %s", mailCommand.Data()));
 
 	Bool_t result = gSystem->Exec(mailCommand.Data());
 
