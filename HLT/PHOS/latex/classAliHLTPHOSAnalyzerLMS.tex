@@ -1,0 +1,101 @@
+\section{Ali\-HLTPHOSAnalyzer\-LMS Class Reference}
+\label{classAliHLTPHOSAnalyzerLMS}\index{AliHLTPHOSAnalyzerLMS@{AliHLTPHOSAnalyzerLMS}}
+{\tt \#include $<$Ali\-HLTPHOSAnalyzer\-LMS.h$>$}
+
+Inheritance diagram for Ali\-HLTPHOSAnalyzer\-LMS::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classAliHLTPHOSAnalyzerLMS}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-LMS} ()
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-LMS} (double $\ast$data\-Ptr, double fs)
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-LMS} (const {\bf Ali\-HLTPHOSAnalyzer\-LMS} \&)
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-LMS} \& {\bf operator=} (const {\bf Ali\-HLTPHOSAnalyzer\-LMS})
+\item 
+virtual {\bf $\sim$Ali\-HLTPHOSAnalyzer\-LMS} ()
+\item 
+virtual void {\bf Evaluate} (int start=0, int lenght=100)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+double $\ast$$\ast$ {\bf kf\-MCovar\-Ptr\-Ptr}
+\item 
+double $\ast$$\ast$ {\bf f\-PCovar\-Ptr\-Ptr}
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!AliHLTPHOSAnalyzerLMS@{AliHLTPHOSAnalyzerLMS}}
+\index{AliHLTPHOSAnalyzerLMS@{AliHLTPHOSAnalyzerLMS}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSAnalyzer\-LMS::Ali\-HLTPHOSAnalyzer\-LMS ()}\label{classAliHLTPHOSAnalyzerLMS_a0}
+
+
+The Ali\-HLTPHOSPeakfinder class is the class for extracting the basic signal parameters \char`\"{}timing\char`\"{} and \char`\"{}energy\char`\"{} from the PHOS raw data. Physical data will for a given readout channel be a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in calculation is of type double. \index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!AliHLTPHOSAnalyzerLMS@{AliHLTPHOSAnalyzerLMS}}
+\index{AliHLTPHOSAnalyzerLMS@{AliHLTPHOSAnalyzerLMS}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSAnalyzer\-LMS::Ali\-HLTPHOSAnalyzer\-LMS (double $\ast$ {\em dta\-Ptr}, double {\em fs})}\label{classAliHLTPHOSAnalyzerLMS_a1}
+
+
+Main constructor \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em data\-Ptr}]Data array for wich a subarray will be taken to perform the fit \item[{\em fs}]the sampling frequency in entities of MHz. Needed in order to calculate physical time \end{description}
+\end{Desc}
+\index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!AliHLTPHOSAnalyzerLMS@{AliHLTPHOSAnalyzerLMS}}
+\index{AliHLTPHOSAnalyzerLMS@{AliHLTPHOSAnalyzerLMS}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSAnalyzer\-LMS::Ali\-HLTPHOSAnalyzer\-LMS (const {\bf Ali\-HLTPHOSAnalyzer\-LMS} \&)}\label{classAliHLTPHOSAnalyzerLMS_a2}
+
+
+\index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!~AliHLTPHOSAnalyzerLMS@{$\sim$AliHLTPHOSAnalyzerLMS}}
+\index{~AliHLTPHOSAnalyzerLMS@{$\sim$AliHLTPHOSAnalyzerLMS}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSAnalyzer\-LMS::$\sim${\bf Ali\-HLTPHOSAnalyzer\-LMS} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSAnalyzerLMS_a4}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!Evaluate@{Evaluate}}
+\index{Evaluate@{Evaluate}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSAnalyzer\-LMS::Evaluate (int {\em start} = {\tt 0}, int {\em length} = {\tt 100})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSAnalyzerLMS_a5}
+
+
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em start}]the start index of the subarray of the data array. \item[{\em length}]the number of samples to use starting from index \end{description}
+\end{Desc}
+
+
+Implements {\bf Ali\-HLTPHOSAnalyzer} {\rm (p.\,\pageref{classAliHLTPHOSAnalyzer_a14})}.\index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSAnalyzer\-LMS}\& Ali\-HLTPHOSAnalyzer\-LMS::operator= (const  {\em Ali\-HLTPHOSAnalyzer\-LMS})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSAnalyzerLMS_a3}
+
+
+
+
+Reimplemented from {\bf Ali\-HLTPHOSAnalyzer} {\rm (p.\,\pageref{classAliHLTPHOSAnalyzer_a4})}.
+
+\subsection{Member Data Documentation}
+\index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!fPCovarPtrPtr@{fPCovarPtrPtr}}
+\index{fPCovarPtrPtr@{fPCovarPtrPtr}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$$\ast$ {\bf Ali\-HLTPHOSAnalyzer\-LMS::f\-PCovar\-Ptr\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSAnalyzerLMS_r1}
+
+
+Covariance matrix of the estimated parameters \index{AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}!kfMCovarPtrPtr@{kfMCovarPtrPtr}}
+\index{kfMCovarPtrPtr@{kfMCovarPtrPtr}!AliHLTPHOSAnalyzerLMS@{Ali\-HLTPHOSAnalyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$$\ast$ {\bf Ali\-HLTPHOSAnalyzer\-LMS::kf\-MCovar\-Ptr\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSAnalyzerLMS_r0}
+
+
+Covariance matrix of the measurements 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-LMS.h}\item 
+{\bf Ali\-HLTPHOSAnalyzer\-LMS.cxx}\end{CompactItemize}

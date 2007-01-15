@@ -1,0 +1,103 @@
+\section{Ali\-HLTPHOSAnalyzer\-Peak\-Finder Class Reference}
+\label{classAliHLTPHOSAnalyzerPeakFinder}\index{AliHLTPHOSAnalyzerPeakFinder@{AliHLTPHOSAnalyzerPeakFinder}}
+{\tt \#include $<$Ali\-HLTPHOSAnalyzer\-Peak\-Finder.h$>$}
+
+Inheritance diagram for Ali\-HLTPHOSAnalyzer\-Peak\-Finder::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classAliHLTPHOSAnalyzerPeakFinder}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder} ()
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder} (const {\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder} \&)
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder} \& {\bf operator=} (const {\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder})
+\item 
+virtual {\bf $\sim$Ali\-HLTPHOSAnalyzer\-Peak\-Finder} ()
+\item 
+void {\bf Set\-TVector} (double $\ast${\bf t\-Vector})
+\item 
+void {\bf Set\-AVector} (double $\ast${\bf a\-Vector})
+\item 
+virtual void {\bf Evaluate} (int start=0, int lenght=100)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+double $\ast$ {\bf t\-Vector}
+\item 
+double $\ast$ {\bf a\-Vector}
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!AliHLTPHOSAnalyzerPeakFinder@{AliHLTPHOSAnalyzerPeakFinder}}
+\index{AliHLTPHOSAnalyzerPeakFinder@{AliHLTPHOSAnalyzerPeakFinder}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSAnalyzer\-Peak\-Finder::Ali\-HLTPHOSAnalyzer\-Peak\-Finder ()}\label{classAliHLTPHOSAnalyzerPeakFinder_a0}
+
+
+The Ali\-HLTPHOSPeakfinder class is the class for extracting the basic signal parameters \char`\"{}timing\char`\"{} and \char`\"{}energy\char`\"{} from the PHOS raw data. Physical data will for a given readout channel be a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in calculation is of type double. \index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!AliHLTPHOSAnalyzerPeakFinder@{AliHLTPHOSAnalyzerPeakFinder}}
+\index{AliHLTPHOSAnalyzerPeakFinder@{AliHLTPHOSAnalyzerPeakFinder}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSAnalyzer\-Peak\-Finder::Ali\-HLTPHOSAnalyzer\-Peak\-Finder (const {\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder} \&)}\label{classAliHLTPHOSAnalyzerPeakFinder_a1}
+
+
+\index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!~AliHLTPHOSAnalyzerPeakFinder@{$\sim$AliHLTPHOSAnalyzerPeakFinder}}
+\index{~AliHLTPHOSAnalyzerPeakFinder@{$\sim$AliHLTPHOSAnalyzerPeakFinder}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSAnalyzer\-Peak\-Finder::$\sim${\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSAnalyzerPeakFinder_a3}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!Evaluate@{Evaluate}}
+\index{Evaluate@{Evaluate}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSAnalyzer\-Peak\-Finder::Evaluate (int {\em start} = {\tt 0}, int {\em length} = {\tt 100})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSAnalyzerPeakFinder_a6}
+
+
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em start}]the start index of the subarray of the data array. \item[{\em length}]the number of samples to use starting from index \item[{\em t\-Vector}]the peakfinder vector for timing \item[{\em a\-Vector}]the peakfinder vector for amplitude (energy) \end{description}
+\end{Desc}
+
+
+Implements {\bf Ali\-HLTPHOSAnalyzer} {\rm (p.\,\pageref{classAliHLTPHOSAnalyzer_a14})}.\index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder}\& Ali\-HLTPHOSAnalyzer\-Peak\-Finder::operator= (const  {\em Ali\-HLTPHOSAnalyzer\-Peak\-Finder})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSAnalyzerPeakFinder_a2}
+
+
+
+
+Reimplemented from {\bf Ali\-HLTPHOSAnalyzer} {\rm (p.\,\pageref{classAliHLTPHOSAnalyzer_a4})}.\index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!SetAVector@{SetAVector}}
+\index{SetAVector@{SetAVector}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSAnalyzer\-Peak\-Finder::Set\-AVector (double $\ast$ {\em a\-Vector})}\label{classAliHLTPHOSAnalyzerPeakFinder_a5}
+
+
+\index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!SetTVector@{SetTVector}}
+\index{SetTVector@{SetTVector}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSAnalyzer\-Peak\-Finder::Set\-TVector (double $\ast$ {\em t\-Vector})}\label{classAliHLTPHOSAnalyzerPeakFinder_a4}
+
+
+
+
+\subsection{Member Data Documentation}
+\index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!aVector@{aVector}}
+\index{aVector@{aVector}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder::a\-Vector}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSAnalyzerPeakFinder_r1}
+
+
+Peakfinder vector for Energy reconstruction \index{AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}!tVector@{tVector}}
+\index{tVector@{tVector}!AliHLTPHOSAnalyzerPeakFinder@{Ali\-HLTPHOSAnalyzer\-Peak\-Finder}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder::t\-Vector}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSAnalyzerPeakFinder_r0}
+
+
+Peakfinder vector for TOF reconstruction 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder.h}\item 
+{\bf Ali\-HLTPHOSAnalyzer\-Peak\-Finder.cxx}\end{CompactItemize}
