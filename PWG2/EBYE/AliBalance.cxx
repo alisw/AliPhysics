@@ -31,7 +31,11 @@
 ClassImp(AliBalance)
 
 //____________________________________________________________________//
-  AliBalance::AliBalance() :TObject() {
+AliBalance::AliBalance() :
+  TObject(), 
+  fCharge(0), fNtrack(0), fV(0), fNumberOfBins(0),
+  fAnalysisType(0), fAnalyzedEvents(0), fP2Start(0),
+  fP2Stop(0), fP2Step(0), fNn(0), fNp(0) {
   // Default constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
@@ -40,19 +44,16 @@ ClassImp(AliBalance)
     fB[i] = 0.0;
     ferror[i] = 0.0;
   } 
-  fNp = 0.0;
-  fNn = 0.0;
-  fP2Start = 0.0;
-  fP2Stop = 0.0;
-  fP2Step = 0.0; 
-  fAnalysisType = 0;
-  fNumberOfBins = 0;
-  fNtrack = 0;
-  fAnalyzedEvents = 0;
 }
 
 //____________________________________________________________________//
-AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :TObject() {
+AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
+  TObject(), 
+  fCharge(0), fNtrack(0), fV(0), 
+  fNumberOfBins(p2Bins), fAnalysisType(0), 
+  fAnalyzedEvents(0), fP2Start(p2Start), fP2Stop(p2Stop), 
+  fP2Step(TMath::Abs(fP2Start - fP2Stop) / (Double_t)fNumberOfBins), 
+  fNn(0), fNp(0) {
   // Constructor
   for(Int_t i = 0; i < MAXIMUM_NUMBER_OF_STEPS; i++) {
     fNpp[i] = .0;
@@ -61,16 +62,6 @@ AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :TObject
     fB[i] = 0.0;
     ferror[i] = 0.0;
   } 
-  fNp = 0.0;
-  fNn = 0.0;
-  fAnalysisType = 0;
-  fNtrack = 0;
-  fAnalyzedEvents = 0;
-
-  fP2Start = p2Start;
-  fP2Stop = p2Stop;
-  fNumberOfBins = p2Bins;
-  fP2Step = TMath::Abs(fP2Start - fP2Stop) / (Double_t)fNumberOfBins;
 }
 
 //____________________________________________________________________//
