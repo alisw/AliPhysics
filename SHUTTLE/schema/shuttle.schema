@@ -8,7 +8,7 @@ attributetype ( DETECTOR_CONFIG:3 NAME 'DCSPort'     DESC ''                    
 attributetype ( DETECTOR_CONFIG:4 NAME 'DCSalias'    DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( DETECTOR_CONFIG:5 NAME 'DCSdatapoint' DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( DETECTOR_CONFIG:6 NAME 'StrictRunOrder' DESC 'Strict run ordering flag' EQUALITY caseIgnoreMatch SUP name )
-attributetype ( DETECTOR_CONFIG:7 NAME 'responsible' DESC 'responsible email address' EQUALITY caseIgnoreMatch SUP name )
+attributetype ( DETECTOR_CONFIG:7 NAME 'responsible' DESC 'responsible email address' EQUALITY caseIgnoreIA5Match SUP mail )
 
 objectclass ( DETECTOR_CONFIG
         NAME 'AliShuttleDetector'
