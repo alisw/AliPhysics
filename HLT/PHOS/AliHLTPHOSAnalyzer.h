@@ -21,6 +21,7 @@ class AliHLTPHOSAnalyzer
   float GetTiming();
   float GetEnergy();
   void SetData(double *data);
+  void SetSampleFreq(double freq);
   void MakeInitialGuess();
   void MakeInitialGuess(int treshold);
   virtual void Evaluate(int start = 0, int lenght = 100) = 0;
