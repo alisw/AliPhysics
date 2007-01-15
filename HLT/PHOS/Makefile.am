@@ -10,18 +10,31 @@ AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@ \
 lib_LTLIBRARIES			=  libAliHLTPHOS.la
 
 # library sources
-libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx\
-			          AliHLTPHOSPeakFinder.cxx\
-				  AliHLTPHOSRawAnalyzer.cxx\
-				  AliHLTPHOSEmcCalibData.cxx
+libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
+			          AliHLTPHOSAnalyzerPeakFinder.cxx \
+				  AliHLTPHOSAnalyzerCrude.cxx \
+				  AliHLTPHOSAnalyzerKLevel.cxx \
+		                  AliHLTPHOSAnalyzerLMS.cxx \
+				  AliHLTPHOSAnalyzerChiSquareFit.cxx \
+				  AliHLTPHOSAnalyzer.cxx \
+				  AliHLTPHOSEmcCalibData.cxx \
+				  AliHLTPHOSAnalyzerComponent.cxx \
+				  AliHLTPHOSAnalyzerCrudeComponent.cxx \
+				  AliHLTPHOSAnalyzerPeakFinderComponent.cxx \
 				  PeakFinderTest.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
-CLASS_HDRS			= AliHLTPHOSPulseGenerator.h\
-				  AliHLTPHOSPeakFinder.h\
-				  AliHLTPHOSRawAnalyzer.h\
-				  AliHLTPHOSEmcCalibData.h	
+CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
+				  AliHLTPHOSAnalyzerPeakFinder.h \
+				  AliHLTPHOSAnalyzerCrude.h \
+				  AliHLTPHOSAnalyzerKLevel.h \
+				  AliHLTPHOSAnalyzerLMS.h \
+				  AliHLTPHOSAnalyzerChiSquareFit.h \
+				  AliHLTPHOSEmcCalibData.h \
+				  AliHLTPHOSAnalyzerComponent.h \
+				  AliHLTPHOSAnalyzerCrudeComponent.h \
+				  AliHLTPHOSAnalyzerPeakFinderComponent.h 
 
 
 pkginclude_HEADERS		= $(CLASS_HDRS)

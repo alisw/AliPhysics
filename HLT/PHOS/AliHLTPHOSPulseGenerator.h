@@ -36,9 +36,9 @@ class AliHLTPHOSPulseGenerator
   double  fTau;
   double  fSampleFreq;
   double  fTZero;
-  double *fDataPtr;
+  double *fDataPtr; //[1000]
   double  fDT;
-  double *fEvent;
+  double *fEvent; //[1000]
   
   ClassDef(AliHLTPHOSPulseGenerator,1)
 
