@@ -45,8 +45,12 @@ class AliAlignObj : public TObject {
   //Setters
   virtual void SetTranslation(Double_t x, Double_t y, Double_t z) = 0;
   virtual void SetTranslation(const TGeoMatrix& m) = 0;
+  virtual Bool_t SetLocalTranslation(Double_t x, Double_t y, Double_t z);
+  virtual Bool_t SetLocalTranslation(const TGeoMatrix& m);
   virtual void SetRotation(Double_t psi, Double_t theta, Double_t phi) = 0;
   virtual Bool_t SetRotation(const TGeoMatrix& m) = 0;
+  virtual Bool_t SetLocalRotation(Double_t psi, Double_t theta, Double_t phi);
+  virtual Bool_t SetLocalRotation(const TGeoMatrix& m);
   virtual void SetPars(Double_t x, Double_t y, Double_t z, Double_t psi,
                Double_t theta, Double_t phi);
   virtual Bool_t SetLocalPars(Double_t x, Double_t y, Double_t z,
@@ -62,9 +66,13 @@ class AliAlignObj : public TObject {
   UShort_t     GetVolUID()     const {return fVolUID;}
   void         GetVolUID(ELayerID &layerId, Int_t &modId) const;
   virtual void GetTranslation(Double_t* tr)  const=0;
+  virtual Bool_t GetLocalTranslation(Double_t* tr) const;
   virtual Bool_t GetAngles(Double_t* angles) const=0;
-  virtual Bool_t GetPars(Double_t transl[], Double_t rot[]) const;
+  virtual Bool_t GetLocalAngles(Double_t* angles) const;
+  virtual Bool_t GetPars(Double_t transl[], Double_t angles[]) const;
+  virtual Bool_t GetLocalPars(Double_t transl[], Double_t angles[]) const;
   virtual void GetMatrix(TGeoHMatrix& m) const=0;
+  virtual Bool_t GetLocalMatrix(TGeoHMatrix& m) const;
 
   Bool_t   IsSortable() const {return kTRUE;}
   Int_t         GetLevel() const;

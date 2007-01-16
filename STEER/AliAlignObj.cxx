@@ -411,8 +411,8 @@ AliAlignObj::ELayerID AliAlignObj::VolUIDToLayer(UShort_t voluid)
 void AliAlignObj::SetPars(Double_t x, Double_t y, Double_t z,
 			  Double_t psi, Double_t theta, Double_t phi)
 {
-  // Set rotation matrix and translation using 3 angles and 3 translations
-  // The three angles are expressed in degrees
+  // Set the global delta transformation by passing 3 angles (expressed in
+  // degrees) and 3 shifts (in centimeters)
   // 
   SetTranslation(x,y,z);
   SetRotation(psi,theta,phi);
@@ -422,9 +422,8 @@ void AliAlignObj::SetPars(Double_t x, Double_t y, Double_t z,
 Bool_t AliAlignObj::SetLocalPars(Double_t x, Double_t y, Double_t z,
 				 Double_t psi, Double_t theta, Double_t phi)
 {
-  // Set the translations and angles (in degrees) by considering the
-  // parameters passed as arguments as expressed in the local reference
-  // system of the alignable volume (known by TGeo geometry).
+  // Set the global delta transformation by passing the parameters
+  // for the local delta transformation (3 shifts and 3 angles).
   // In case that the TGeo was not initialized or not closed,
   // returns false and the object parameters are not set.
   //
@@ -441,11 +440,78 @@ Bool_t AliAlignObj::SetLocalPars(Double_t x, Double_t y, Double_t z,
 }
 
 //_____________________________________________________________________________
+Bool_t AliAlignObj::SetLocalTranslation(Double_t x, Double_t y, Double_t z)
+{
+  // Set the global delta transformation by passing the three shifts giving
+  // the translation in the local reference system of the alignable
+  // volume (known by TGeo geometry).
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  TGeoHMatrix m;
+  Double_t tr[3] = {x, y, z};
+  m.SetTranslation(tr);
+
+  return SetLocalMatrix(m);
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::SetLocalTranslation(const TGeoMatrix& m)
+{
+  // Set the global delta transformation by passing the matrix of
+  // the local delta transformation and taking its translational part
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  const Double_t* tr = m.GetTranslation();
+  TGeoHMatrix mtr;
+  mtr.SetTranslation(tr);
+
+  return SetLocalMatrix(mtr);
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::SetLocalRotation(Double_t psi, Double_t theta, Double_t phi)
+{
+  // Set the global delta transformation by passing the three angles giving
+  // the rotation in the local reference system of the alignable
+  // volume (known by TGeo geometry).
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  TGeoHMatrix m;
+  Double_t angles[3] = {psi, theta, phi};
+  Double_t rot[9];
+  AnglesToMatrix(angles,rot);
+  m.SetRotation(rot);
+
+  return SetLocalMatrix(m);
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::SetLocalRotation(const TGeoMatrix& m)
+{
+  // Set the global delta transformation by passing the matrix of
+  // the local delta transformation and taking its rotational part
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  TGeoHMatrix rotm;
+  const Double_t* rot = m.GetRotationMatrix();
+  rotm.SetRotation(rot);
+
+  return SetLocalMatrix(rotm);
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
 {
-  // Set the translations and angles by considering the TGeo matrix
-  // passed as argument as expressing the transformation in the local
-  // reference system of the alignable volume (known by TGeo geometry).
+  // Set the global delta transformation by passing the TGeo matrix
+  // for the local delta transformation.
   // In case that the TGeo was not initialized or not closed,
   // returns false and the object parameters are not set.
   //
@@ -489,12 +555,94 @@ Bool_t AliAlignObj::SetLocalMatrix(const TGeoMatrix& m)
 //_____________________________________________________________________________
 Bool_t AliAlignObj::SetMatrix(const TGeoMatrix& m)
 {
-  // Set rotation matrix and translation using the TGeoMatrix passed
-  // as argument considering it as relative to the global reference
-  // system
+  // Set the global delta transformation by passing the TGeoMatrix
+  // for it
   //
   SetTranslation(m);
   return SetRotation(m);
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::GetLocalPars(Double_t transl[], Double_t angles[]) const
+{
+  // Get the translations and angles (in degrees) expressing the
+  // local delta transformation.
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  if(!GetLocalTranslation(transl)) return kFALSE;
+  return GetLocalAngles(angles);
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::GetLocalTranslation(Double_t* tr) const
+{
+  // Get the 3 shifts giving the translational part of the local
+  // delta transformation.
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  TGeoHMatrix ml;
+  if(!GetLocalMatrix(ml)) return kFALSE;
+  const Double_t* transl;
+  transl = ml.GetTranslation();
+  tr[0]=transl[0];
+  tr[1]=transl[1];
+  tr[2]=transl[2];
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::GetLocalAngles(Double_t* angles) const
+{
+  // Get the 3 angles giving the rotational part of the local
+  // delta transformation.
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  TGeoHMatrix ml;
+  if(!GetLocalMatrix(ml)) return kFALSE;
+  const Double_t *rot = ml.GetRotationMatrix();
+  return MatrixToAngles(rot,angles);
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::GetLocalMatrix(TGeoHMatrix& m) const
+{
+  // Get the matrix for the local delta transformation.
+  // In case that the TGeo was not initialized or not closed,
+  // returns false and the object parameters are not set.
+  //
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliError("Can't set the alignment object parameters! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }
+
+  const char* symname = GetSymName();
+  TGeoPhysicalNode* node;
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+  if(pne){
+    node = gGeoManager->MakeAlignablePN(pne);
+  }else{
+    AliWarning(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as volume path!",symname));
+    node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(symname);
+  }
+
+  if (!node) {
+    AliError(Form("Volume name or path %s not valid!",symname));
+    return kFALSE;
+  }
+  if (node->IsAligned())
+    AliWarning(Form("Volume %s has been already misaligned!",symname));
+
+  GetMatrix(m);
+  TGeoHMatrix gprime,gprimeinv;
+  gprime = *node->GetMatrix();
+  gprimeinv = gprime.Inverse();
+  m.Multiply(&gprime);
+  m.MultiplyLeft(&gprimeinv);
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
