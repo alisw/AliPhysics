@@ -182,7 +182,7 @@ void  AliMC::ConstructGeometry()
 void  AliMC::InitGeometry()
 { 
   //
-  // Initialize detectors and display geometry
+  // Initialize detectors
   //
 
   AliInfo("Initialisation:");
@@ -191,10 +191,9 @@ void  AliMC::InitGeometry()
   AliModule *detector;
   while((detector = dynamic_cast<AliModule*>(next()))) {
     stw.Start();
-    // Initialise detector and display geometry
+    // Initialise detector geometry
     if(gAlice->IsRootGeometry()) detector->CreateMaterials();
     detector->Init();
-    detector->BuildGeometry();
     AliInfo(Form("%10s R:%.2fs C:%.2fs",
 		 detector->GetName(),stw.RealTime(),stw.CpuTime()));
   }
@@ -647,9 +646,6 @@ void AliMC::Init()
    //Compute cross-sections
    gMC->BuildPhysics();
    
-   //Write Geometry object to current file.
-   gAlice->GetRunLoader()->WriteGeometry();
-
    //Initialise geometry deposition table
    fEventEnergy.Set(gMC->NofVolumes()+1);
    fSummEnergy.Set(gMC->NofVolumes()+1);
@@ -845,7 +841,6 @@ void AliMC::Browse(TBrowser *b)
   b->Add(fMCQA,"AliMCQA");
 }
 
-//PH
 //_______________________________________________________________________
 void AliMC::AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const
 {

@@ -468,30 +468,27 @@ Int_t AliRun::GetEvent(Int_t event)
 //_______________________________________________________________________
 TGeometry *AliRun::GetGeometry()
 {
-  //
-  // Import Alice geometry from current file
-  // Return pointer to geometry object
-  //
-  //PH  if (!fGeometry) fGeometry = dynamic_cast<TGeometry*>(gDirectory->Get("AliceGeom"));
-
   // Create the TNode geometry for the event display
-  if (!fGeometry) BuildSimpleGeometry();
-  //
-  // Unlink and relink nodes in detectors
-  // This is bad and there must be a better way...
-  //
+  if (!fGeometry) { 
+    BuildSimpleGeometry();
+    //
+    // Unlink and relink nodes in detectors
+    // This is bad and there must be a better way...
+    //
   
-  TIter next(fModules);
-  AliModule *detector;
-  while((detector = dynamic_cast<AliModule*>(next()))) {
-    TList *dnodes=detector->Nodes();
-    Int_t j;
-    TNode *node, *node1;
-    for ( j=0; j<dnodes->GetSize(); j++) {
-      node = dynamic_cast<TNode*>(dnodes->At(j));
-      node1 = fGeometry->GetNode(node->GetName());
-      dnodes->Remove(node);
-      dnodes->AddAt(node1,j);
+    TIter next(fModules);
+    AliModule *detector;
+    while((detector = dynamic_cast<AliModule*>(next()))) {
+      detector->BuildGeometry();
+      TList *dnodes=detector->Nodes();
+      Int_t j;
+      TNode *node, *node1;
+      for ( j=0; j<dnodes->GetSize(); j++) {
+	node = dynamic_cast<TNode*>(dnodes->At(j));
+	node1 = fGeometry->GetNode(node->GetName());
+	dnodes->Remove(node);
+	dnodes->AddAt(node1,j);
+      }
     }
   }
   return fGeometry;
