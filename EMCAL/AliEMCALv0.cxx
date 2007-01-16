@@ -130,6 +130,22 @@ void AliEMCALv0::BuildGeometry()
         TPGON *pgon = new TPGON(envn, "PGON that contains arm 1", "void", 
         geom->GetArm1PhiMin(),geom->GetArm1PhiMax()-geom->GetArm1PhiMin(),geom->GetNPhiSuperModule(), 2);
       // define section
+	if (fEnvelop1.GetSize()<8) {
+	  fEnvelop1.Set(10);
+	  fEnvelop1[0] = geom->GetArm1PhiMin(); // minimum phi angle
+	  fEnvelop1[1] = geom->GetArm1PhiMax() - geom->GetArm1PhiMin(); // angular range in phi
+	  fEnvelop1[2] = geom->GetNPhi(); // number of sections in phi
+	  fEnvelop1[3] = 2; // 2 z coordinates
+	  fEnvelop1[4] = -350.;
+	  fEnvelop1[5] = geom->GetEnvelop(0) ; // rmin at z1
+	  fEnvelop1[6] = geom->GetEnvelop(1) ; // rmax at z1
+	  fEnvelop1[7] = 350.;
+	  fEnvelop1[8] = fEnvelop1[5] ;        // radii are the same.
+	  fEnvelop1[9] = fEnvelop1[6] ;        // radii are the same.
+	  
+	  if(gn.Contains("SHISH"))
+	    fEnvelop1[2] = geom->GetNPhiSuperModule();
+	}
         pgon->DefineSection(0, fEnvelop1[4],  fEnvelop1[5], fEnvelop1[6]);
         pgon->DefineSection(1, fEnvelop1[7],  fEnvelop1[5], fEnvelop1[6]);
         top->cd();
