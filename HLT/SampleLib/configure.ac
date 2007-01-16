@@ -18,7 +18,7 @@ AC_PROG_LIBTOOL
 
 AC_DEBUG
 AC_OPTIMIZATION
-AM_CONDITIONAL(STANDALONE_SAMPLELIB, 1)
+AM_CONDITIONAL(STANDALONE_SAMPLELIB, test 1)
 
 dnl ------------------------------------------------------------------
 dnl
@@ -27,6 +27,34 @@ dnl
 ROOT_PATH(, [have_root=1], [AC_ERROR([Stop! The HLT package needs ROOT.])])
 AM_CONDITIONAL(HAVE_ROOT, test "x$have_root" = "x1" )
 AC_SUBST([ROOTSYS])
+
+dnl test for additional required root libraries
+  # we check for the libSTEER library which is linked to
+  # - the ROOT libs libGeom libMinuit libVMC libEG
+  # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
+  # - ROOT libCint needs also libdl
+  # - from Nov 1 2006 TTreeFormula is needed by AliTagAnalysis and requires
+  #   libTreePlayer.so
+  # - from Jan 07 libESD also depends on libXMLIO
+LIBS='-ldl'
+if test "x$have_root" = "x1"; then
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  
+  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO'
+  for CHECKLIB in $ROOT_CHECKLIBS ; do
+    CPPFLAGS="$save_CPPFLAGS"
+    LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR}"
+    LIBS="$save_LIBS $ROOTLIBS $ADD_ROOTLIBS"
+    AC_CHECK_LIB([$CHECKLIB],[_init], [ADD_ROOTLIBS="$ADD_ROOTLIBS -l$CHECKLIB"])
+  done
+  
+  CPPFLAGS=$save_CPPFLAGS
+  LDFLAGS=$save_LDFLAGS
+  LIBS=$save_LIBS
+fi
+
 CPPFLAGS="$CPPFLAGS ${ROOTCFLAGS}"
 
 dnl ------------------------------------------------------------------
@@ -81,15 +109,9 @@ fi
 AC_MSG_RESULT([$have_aliroot])
 
 if test ! "x$have_aliroot" = "xno" ; then
-  # we check for the libSTEER library which is linked to
-  # - the ROOT libs libGeom libMinuit libVMC libEG
-  # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
-  # - ROOT libCint needs also libdl
-  # - from Nov 1 2006 TTreeFormula is needed by AliTagAnalysis and requires
-  #   libTreePlayer.so
   ALIROOT_CPPFLAGS="-I${ALIROOTINCDIR} -I${ALICE_ROOT}/RAW"
   ALIROOT_LDFLAGS="-L${ALIROOTLIBDIR}"
-  ALIROOT_LIBS="-lESD -lGeom -lMinuit -lVMC -lEG -ldl -lTreePlayer"
+  ALIROOT_LIBS="-lESD $ADD_ROOTLIBS"
   save_CPPFLAGS=$CPPFLAGS
   save_LDFLAGS=$LDFLAGS
   save_LIBS=$LIBS
