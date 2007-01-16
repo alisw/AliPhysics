@@ -64,7 +64,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   TFile f(fileName);
 
   if(!f.IsOpen()) {
-    AliInfo(Form("File %s is not opened, something goes wrong!",fileName));
+    Log(Form("File %s is not opened, something goes wrong!",fileName));
     return 0;
   }
 
@@ -91,8 +91,8 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   //Check if the file contains any histogram
 
   if(nkeys< 2){
-    AliInfo(Form("Not enough histograms (%d) for calibration.",nkeys));
-    return 0;
+    Log(Form("Not enough histograms (%d) for calibration.",nkeys));
+    return 1;
   }
 
   while(!ok){
@@ -104,12 +104,12 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     // Check if the reference histogram has too little statistics
     if(hRef->GetEntries()>2) ok=kTRUE;
     if(!ok && counter >= nMod*nCol*nRow){
-      AliInfo("No histogram with enough statistics for reference.");
-      return 0;
+      Log("No histogram with enough statistics for reference.");
+      return 1;
     }
   }
 
-  AliInfo(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
+  Log(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
 	 hRef->GetName(),hRef->GetEntries(),
 	 hRef->GetMean(),hRef->GetRMS()));
 
