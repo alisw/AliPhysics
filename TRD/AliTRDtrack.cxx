@@ -488,7 +488,7 @@ Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t x0, Double_t rho)
     // Energy losses************************
     Double_t p2    = (1.0 + GetTgl()*GetTgl()) / (Get1Pt()*Get1Pt());
     Double_t beta2 = p2 / (p2 + GetMass()*GetMass());
-    if ((5940.0 * beta2/(1.0 - beta2 + 1.0e-10) - beta2) < 0.0) {
+    if (beta2<1.0e-10 || (5940.0 * beta2/(1.0 - beta2 + 1.0e-10) - beta2) < 0.0) {
       return kFALSE;
     }
 
