@@ -103,7 +103,7 @@ AliGenerator *PyMbTriggered(Int_t pdg);
 void ProcessEnvironmentVars();
 
 // This part for configuration
-static PDC06Proc_t   proc     = kPyOmegaPlus;
+static PDC06Proc_t   proc     = kPyMbNoHvq;
 static DecayHvFl_t   decHvFl  = kNature; 
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
