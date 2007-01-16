@@ -55,7 +55,9 @@ public:
 	  Double_t maxSizeTagDB = -1, const char* fileNameTagDB = NULL);
    virtual ~AliMDC();
 
-   Int_t      Open(EWriteMode mode, const char* fileName);
+   Int_t      Open(EWriteMode mode, const char* fileName,
+		   Double_t maxFileSize = 0,
+		   const char* fs1 = NULL, const char* fs2 = NULL);
    Int_t      ProcessEvent(void* event, Bool_t isIovecArray = kFALSE);
    Int_t      GetTotalSize();
    Int_t      Close();

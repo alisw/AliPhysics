@@ -163,7 +163,9 @@ AliMDC::~AliMDC()
 }
  
 //______________________________________________________________________________
-Int_t AliMDC::Open(EWriteMode mode, const char* fileName)
+Int_t AliMDC::Open(EWriteMode mode, const char* fileName,
+		   Double_t maxFileSize,
+		   const char* fs1, const char* fs2)
 {
 // open a new raw DB file
 
@@ -178,6 +180,12 @@ Int_t AliMDC::Open(EWriteMode mode, const char* fileName)
   else
     fRawDB = new AliRawDB(fEvent, fESD, fCompress, fileName);
   fRawDB->SetDeleteFiles(fDeleteFiles);
+
+  if (fileName == NULL) {
+    fRawDB->SetMaxSize(maxFileSize);
+    fRawDB->SetFS(fs1, fs2);
+    fRawDB->Create();
+  }
 
   if (fRawDB->IsZombie()) {
     delete fRawDB;
@@ -440,32 +448,8 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 
   // Create new raw DB.
   if (fRawDB) Close();
-  if (mode == kRFIO) {
-    fRawDB = new AliRawRFIODB(fEvent, fESD, fCompress, NULL);
-  } else if (mode == kROOTD) {
-    fRawDB = new AliRawRootdDB(fEvent, fESD, fCompress, NULL);
-  } else if (mode == kCASTOR) {
-    fRawDB = new AliRawCastorDB(fEvent, fESD, fCompress, NULL);
-  } else if (mode == kDEVNULL) {
-    fRawDB = new AliRawNullDB(fEvent, fESD, fCompress, NULL);
-  } else {
-    fRawDB = new AliRawDB(fEvent, fESD, fCompress, NULL);
-  }
-  fRawDB->SetMaxSize(maxFileSize);
-  fRawDB->SetFS(fs1, fs2);
-  fRawDB->SetDeleteFiles(fDeleteFiles);
-  fRawDB->Create();
 
-  if (fRawDB->IsZombie()) {
-    delete fRawDB;
-    fRawDB = NULL;
-    return 1;
-  }
-  printf("Filling raw DB %s\n", fRawDB->GetDBName());
-
-  // Create AliStats object
-  fStats = new AliStats(fRawDB->GetDBName(), fCompress, 
-			fFilterMode != kFilterOff);
+  if (Open(mode,NULL,maxFileSize,fs1,fs2) < 0) return 1;
 
   // Process input stream
 #ifdef USE_EB
