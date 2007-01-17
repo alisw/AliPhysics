@@ -90,8 +90,9 @@ protected:
   TrackCounter* fM; // fModel dynamic-casted to TrackCounter
 
   // Declare widgets
-  TGComboBox*   fClickAction;
-  TGLabel*      fInfoLabel;
+  TGComboBox*    fClickAction;
+  TGLabel*       fInfoLabel;
+  TGNumberEntry* fEventId;
 
 public:
   TrackCounterEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
@@ -106,6 +107,7 @@ public:
 
   void DoPrev();
   void DoNext();
+  void DoSetEvent();
 
   void DoPrintReport();
   void DoFileReport();

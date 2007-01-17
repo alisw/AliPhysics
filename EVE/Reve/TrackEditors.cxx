@@ -280,7 +280,8 @@ TrackCounterEditor::TrackCounterEditor(const TGWindow *p, Int_t width, Int_t hei
   TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fClickAction (0),
-  fInfoLabel   (0)
+  fInfoLabel   (0),
+  fEventId     (0)
 {
   MakeTitle("TrackCounter");
 
@@ -353,6 +354,11 @@ TrackCounterEditor::TrackCounterEditor(const TGWindow *p, Int_t width, Int_t hei
     f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
     b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoPrev()");
 
+    fEventId = new TGNumberEntry(f, 0, 3, -1,TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive,
+				 TGNumberFormat::kNELLimitMinMax, 0, 1000);
+    f->AddFrame(fEventId, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    fEventId->Connect("ValueSet(Long_t)", "Reve::TrackCounterEditor", this, "DoSetEvent()");
+
     b = new TGTextButton(f, "Next");
     f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
     b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoNext()");
@@ -410,6 +416,7 @@ void TrackCounterEditor::SetModel(TObject* obj)
 
   fClickAction->Select(fM->fClickAction, kFALSE);
   fInfoLabel->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracks, fM->fGoodTracks));
+  fEventId->SetNumber(fM->GetEventId());
 }
 
 /**************************************************************************/
@@ -445,6 +452,13 @@ void TrackCounterEditor::DoPrev()
 void TrackCounterEditor::DoNext()
 {
   Reve::Macro("event_next.C");
+  gReve->EditRenderElement(fM);
+}
+
+void TrackCounterEditor::DoSetEvent()
+{
+  Reve::LoadMacro("event_goto.C");
+  gROOT->ProcessLine(Form("event_goto(%d);", (Int_t) fEventId->GetNumber()));
   gReve->EditRenderElement(fM);
 }
 
