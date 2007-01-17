@@ -18,7 +18,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   AliHLTPHOSRawAnalyzerComponent();
   ~AliHLTPHOSRawAnalyzerComponent();
   AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & );
-  AliHLTPHOSRawAnalyzerComponent & operator = (const AliHLTPHOSRawAnalyzerComponent)
+  AliHLTPHOSRawAnalyzerComponent & operator = (const AliHLTPHOSRawAnalyzerComponent &)
    {
       return *this;
    };
