@@ -55,14 +55,14 @@ void primary_vertex(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
   AliESDVertex*  pv  = esd->GetPrimaryVertex();
   TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");
   pvm->SetMarkerStyle(5);
-  pvm->SetMarkerColor(3);
+  pvm->SetMarkerColor(5);
   register_vertex_marker(pvm);
 
   if(showSPD) {
     AliESDVertex*  spdv  = esd->GetVertex();
     TPolyMarker3D* spdvm = make_vertex_marker(spdv, "SPD Vertex");
     spdvm->SetMarkerStyle(2);
-    spdvm->SetMarkerColor(7);
+    spdvm->SetMarkerColor(6);
     register_vertex_marker(spdvm);
   }
 
