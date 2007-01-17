@@ -24,7 +24,6 @@
 #include <TPDGCode.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
-//#include <TVector3.h>
 #include <TLorentzVector.h>
 #include <TSystem.h>
 #include <TDatabasePDG.h>
@@ -86,88 +85,116 @@ void AliJetKineReader::OpenInputFiles()
 Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
 {
   // Fill momentum array for event
- 
+  char path[256];
+  const char* dirName   = fReaderHeader->GetDirectory();
+  const char* bgdirName = fReaderHeader->GetBgDirectory();
   Int_t goodTrack = 0;
   // Clear array
-  ClearArray();
-  // Get event from runloader
-  fRunLoader->GetEvent(event);
-  // Get the stack
-  AliStack* stack = fRunLoader->Stack();
-  // Number of primaries
-  Int_t nt = stack->GetNprimary();
-
-  // Get cuts set by user and header
-  Double_t ptMin = ((AliJetKineReaderHeader*) fReaderHeader)->GetPtCut();
-  Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
-  Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
-  fAliHeader = fRunLoader->GetHeader();
-  
   // temporary storage of signal and cut flags
-  Int_t* sflag  = new Int_t[nt];
-  Int_t* cflag  = new Int_t[nt];
+  Int_t* sflag  = new Int_t[50000];
+  Int_t* cflag  = new Int_t[50000];
+  Int_t  spb = 0;
   
-  TLorentzVector p4;
-  // Loop over particles
-  for (Int_t it = 0; it < nt; it++) {
-    TParticle *part = stack->Particle(it);
-    Int_t   status  = part->GetStatusCode();
-    Int_t   pdg     = TMath::Abs(part->GetPdgCode());
-    Float_t pt      = part->Pt(); 
-    
-    // Skip non-final state particles, neutrinos 
-    // and particles with pt < pt_min 
-    if ((status != 1)            
-	|| (pdg == 12 || pdg == 14 || pdg == 16)) continue; 
-    
-    Float_t p       = part->P();
-    Float_t p0      = p;
-    Float_t eta     = part->Eta();
-    Float_t phi     = part->Phi();
-    
-    // Fast simulation of TPC if requested
-    if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimTPC()) {
-      // Charged particles only
-      Float_t charge = 
-	TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-      if (charge == 0)               continue;
-      // Simulate efficiency
-      if (!Efficiency(p0, eta, phi)) continue;
-      // Simulate resolution
-      p = SmearMomentum(4, p0);
-    } // End fast TPC
-    
-    // Fast simulation of EMCAL if requested
-    if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimEMCAL()) {
-      Float_t charge = 
-	TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-      // Charged particles only
-      if (charge != 0){
-	// Simulate efficiency
-	if (!Efficiency(p0, eta, phi)) continue;
-	// Simulate resolution
-	p = SmearMomentum(4, p0);
-      } // end "if" charged particles
-      // Neutral particles (exclude K0L, n, nbar)
-      if (pdg == kNeutron || pdg == kK0Long) continue;
-    } // End fast EMCAL
-    
-    // Fill momentum array
-    Float_t r  = p/p0;
-    Float_t px = r * part->Px(); 
-    Float_t py = r * part->Py(); 
-    Float_t pz = r * part->Pz();
-    Float_t m  = part->GetMass();
-    Float_t e  = TMath::Sqrt(px * px + py * py + pz * pz + m * m);
-    p4 = TLorentzVector(px, py, pz, e);
-    if ( (p4.Eta()>etaMax) || (p4.Eta()<etaMin)) continue;
-    new ((*fMomentumArray)[goodTrack]) TLorentzVector(p4);
-    
-    // all tracks are signal ... ?
-    sflag[goodTrack]=1;
-    cflag[goodTrack]=0;
-    if (pt > ptMin) cflag[goodTrack]=1; // track surviving pt cut
-    goodTrack++;
+  ClearArray();
+  for (Int_t i = 0; i < 2; i++) {
+      if (i == 1) {
+// Pythia Events
+	  if (fRunLoader) delete fRunLoader;
+	  sprintf(path, "%s/galice.root", dirName);
+	  fRunLoader = AliRunLoader::Open(path);
+	  fRunLoader->LoadKinematics();
+	  fRunLoader->LoadHeader(); 
+	  // Get event from runloader
+	  fRunLoader->GetEvent(event);
+      } else {
+// Background events
+	  if ((spb = fReaderHeader->GetSignalPerBg()) > 0) {
+	      if (fRunLoader) delete fRunLoader;
+	      sprintf(path, "%s/galice.root", bgdirName);
+	      fRunLoader = AliRunLoader::Open(path);
+	      fRunLoader->LoadKinematics();
+	      fRunLoader->LoadHeader(); 
+	      // Get event from runloader
+	      fRunLoader->GetEvent(event / spb);
+	  } else {
+	      continue;
+	  }
+      }
+
+      // Get the stack
+      AliStack* stack = fRunLoader->Stack();
+      // Number of primaries
+      Int_t nt = stack->GetNprimary();
+      
+      // Get cuts set by user and header
+      Double_t ptMin = ((AliJetKineReaderHeader*) fReaderHeader)->GetPtCut();
+      Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
+      Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
+      fAliHeader = fRunLoader->GetHeader();
+      
+      
+      TLorentzVector p4;
+      // Loop over particles
+      for (Int_t it = 0; it < nt; it++) {
+	  TParticle *part = stack->Particle(it);
+	  Int_t   status  = part->GetStatusCode();
+	  Int_t   pdg     = TMath::Abs(part->GetPdgCode());
+	  Float_t pt      = part->Pt(); 
+	  
+	  // Skip non-final state particles, neutrinos 
+	  // and particles with pt < pt_min 
+	  if ((status != 1)            
+	      || (pdg == 12 || pdg == 14 || pdg == 16)) continue; 
+	  
+	  Float_t p       = part->P();
+	  Float_t p0      = p;
+	  Float_t eta     = part->Eta();
+	  Float_t phi     = part->Phi();
+	  
+	  // Fast simulation of TPC if requested
+	  if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimTPC()) {
+	      // Charged particles only
+	      Float_t charge = 
+		  TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	      if (charge == 0)               continue;
+	      // Simulate efficiency
+	      if (!Efficiency(p0, eta, phi)) continue;
+	      // Simulate resolution
+	      p = SmearMomentum(4, p0);
+	  } // End fast TPC
+	  
+	  // Fast simulation of EMCAL if requested
+	  if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimEMCAL()) {
+	      Float_t charge = 
+		  TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	      // Charged particles only
+	      if (charge != 0){
+		  // Simulate efficiency
+		  if (!Efficiency(p0, eta, phi)) continue;
+		  // Simulate resolution
+		  p = SmearMomentum(4, p0);
+	      } // end "if" charged particles
+	      // Neutral particles (exclude K0L, n, nbar)
+	      if (pdg == kNeutron || pdg == kK0Long) continue;
+	  } // End fast EMCAL
+    	  
+	  // Fill momentum array
+	  Float_t r  = p/p0;
+	  Float_t px = r * part->Px(); 
+	  Float_t py = r * part->Py(); 
+	  Float_t pz = r * part->Pz();
+	  Float_t m  = part->GetMass();
+	  Float_t e  = TMath::Sqrt(px * px + py * py + pz * pz + m * m);
+	  p4 = TLorentzVector(px, py, pz, e);
+	  if ( (p4.Eta()>etaMax) || (p4.Eta()<etaMin)) continue;
+	  new ((*fMomentumArray)[goodTrack]) TLorentzVector(p4);
+	  
+	  // all tracks are signal ... ?
+	  sflag[goodTrack]=1;
+	  cflag[goodTrack]=0;
+	  if (pt > ptMin) cflag[goodTrack]=1; // track surviving pt cut
+	  goodTrack++;
+      }
   }
 
   // set the signal flags

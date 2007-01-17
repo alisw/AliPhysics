@@ -29,11 +29,14 @@ AliJetReaderHeader::AliJetReaderHeader():
  TNamed("AliJetReaderHeader", "Jet Reader Header"),
  fFirst(0),
  fLast(-1),
+ fOption(0),
+ fSignalPerBg(0),
  fFiducialEtaMin(-0.9),
  fFiducialEtaMax(0.9),
  fPtCut(2.0),
  fComment("No comment"),
  fDir(""),
+ fBgDir(""),
  fPattern("")
 {
   // Default constructor
@@ -45,11 +48,14 @@ AliJetReaderHeader::AliJetReaderHeader(const char * name):
  TNamed(name, "Jet Reader Header"),
  fFirst(0),
  fLast(-1),
+ fOption(0),
+ fSignalPerBg(0),
  fFiducialEtaMin(-0.9),
  fFiducialEtaMax(0.9),
  fPtCut(2.0),
  fComment("No comment"),
  fDir(""),
+ fBgDir(""),
  fPattern("")
 {
   // Constructor
