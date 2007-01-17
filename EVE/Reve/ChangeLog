@@ -1,3 +1,10 @@
+2007-01-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	TrackCounterEditor: add number-entry to directly set the event
+	number.
+
 2007-01-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:
