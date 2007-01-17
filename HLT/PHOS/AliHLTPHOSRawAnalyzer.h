@@ -5,14 +5,14 @@
 
 /* $Id$ */
 
-class AliHLTPHOSAnalyzer
+class AliHLTPHOSRawAnalyzer
 {
  public:
-  AliHLTPHOSAnalyzer();
-  virtual ~AliHLTPHOSAnalyzer();
-  AliHLTPHOSAnalyzer(double *dataPtr, double fs);
-  AliHLTPHOSAnalyzer(const AliHLTPHOSAnalyzer & );
-  AliHLTPHOSAnalyzer & operator = (const AliHLTPHOSAnalyzer &)
+  AliHLTPHOSRawAnalyzer();
+  virtual ~AliHLTPHOSRawAnalyzer();
+  AliHLTPHOSRawAnalyzer(double *dataPtr, double fs);
+  AliHLTPHOSRawAnalyzer(const AliHLTPHOSRawAnalyzer & );
+  AliHLTPHOSRawAnalyzer & operator = (const AliHLTPHOSRawAnalyzer &)
     {
       return *this;
     }

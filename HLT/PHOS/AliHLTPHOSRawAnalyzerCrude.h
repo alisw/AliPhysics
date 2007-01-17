@@ -2,27 +2,28 @@
 #define ALIHLTPHOSANALYZERCRUDE_H
 #include <Rtypes.h>
 #include "TObject.h"
-#include "AliHLTPHOSAnalyzer.h"
+//         "AliHLTPHOSRawAnalyzer"
+#include "AliHLTPHOSRawAnalyzer.h"
 
 
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
 
 
-class AliHLTPHOSAnalyzerCrude : public AliHLTPHOSAnalyzer
+class AliHLTPHOSRawAnalyzerCrude : public AliHLTPHOSRawAnalyzer
 {
  public:
-  AliHLTPHOSAnalyzerCrude();
-  AliHLTPHOSAnalyzerCrude(const AliHLTPHOSAnalyzerCrude & );
-  AliHLTPHOSAnalyzerCrude & operator = (const AliHLTPHOSAnalyzerCrude)
+  AliHLTPHOSRawAnalyzerCrude();
+  AliHLTPHOSRawAnalyzerCrude(const AliHLTPHOSRawAnalyzerCrude & );
+  AliHLTPHOSRawAnalyzerCrude & operator = (const AliHLTPHOSRawAnalyzerCrude)
     {
       return *this; 
     }
   
-  virtual ~AliHLTPHOSAnalyzerCrude();
+  virtual ~AliHLTPHOSRawAnalyzerCrude();
   virtual void Evaluate(int start = 0, int lenght = 100);
  private:
-  ClassDef(AliHLTPHOSAnalyzerCrude, 2) 
+  ClassDef(AliHLTPHOSRawAnalyzerCrude, 2) 
   
     };
 

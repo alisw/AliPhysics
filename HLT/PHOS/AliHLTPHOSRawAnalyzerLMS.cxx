@@ -14,16 +14,16 @@
  **************************************************************************/
 
 
-#include "AliHLTPHOSRawRawAnalyzerLMS.h"
+#include "AliHLTPHOSRawAnalyzerLMS.h"
 #include <iostream>
 
 using std::cout;
 using std::endl;
 
-ClassImp(AliHLTPHOSRawRawAnalyzerLMS) 
+ClassImp(AliHLTPHOSRawAnalyzerLMS) 
 
 
-AliHLTPHOSRawRawAnalyzerLMS::AliHLTPHOSRawRawAnalyzerLMS(const AliHLTPHOSRawRawAnalyzerLMS&):AliHLTPHOSRawRawAnalyzer(), kfMCovarPtrPtr(0), fPCovarPtrPtr(0)
+AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(const AliHLTPHOSRawAnalyzerLMS&):AliHLTPHOSRawAnalyzer(), kfMCovarPtrPtr(0), fPCovarPtrPtr(0)
 {
 
 }
@@ -35,7 +35,7 @@ AliHLTPHOSRawRawAnalyzerLMS::AliHLTPHOSRawRawAnalyzerLMS(const AliHLTPHOSRawRawA
  * a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in
  * calculation is of type double.
  **/
-AliHLTPHOSRawRawAnalyzerLMS::AliHLTPHOSRawRawAnalyzerLMS():AliHLTPHOSRawRawAnalyzer(), kfMCovarPtrPtr(0), fPCovarPtrPtr(0) 
+AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer(), kfMCovarPtrPtr(0), fPCovarPtrPtr(0) 
 {
   cout <<"You cannot invoke the Fitter without arguments"<<endl;;
 }
@@ -46,17 +46,17 @@ AliHLTPHOSRawRawAnalyzerLMS::AliHLTPHOSRawRawAnalyzerLMS():AliHLTPHOSRawRawAnaly
 * @param dataPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-AliHLTPHOSRawRawAnalyzerLMS::AliHLTPHOSRawRawAnalyzerLMS(double *dtaPtr, double fs):AliHLTPHOSRawRawAnalyzer(),kfMCovarPtrPtr(0), fPCovarPtrPtr(0) 
+AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double *dtaPtr, double fs):AliHLTPHOSRawAnalyzer(),kfMCovarPtrPtr(0), fPCovarPtrPtr(0) 
 {
   fFloatDataPtr = dtaPtr;  
   fSampleFrequency = fs;
-} //end   AliHLTPHOSRawRawAnalyzerLMS 
+} //end   AliHLTPHOSRawAnalyzerLMS 
 
 
-AliHLTPHOSRawRawAnalyzerLMS::~AliHLTPHOSRawRawAnalyzerLMS()
+AliHLTPHOSRawAnalyzerLMS::~AliHLTPHOSRawAnalyzerLMS()
 {
 
-} //end AliHLTPHOSRawRawAnalyzerLMS
+} //end AliHLTPHOSRawAnalyzerLMS
 
 
 /**
@@ -71,7 +71,7 @@ AliHLTPHOSRawRawAnalyzerLMS::~AliHLTPHOSRawRawAnalyzerLMS()
 * @param length the number of samples to use starting from index 
 **/
 void 
-AliHLTPHOSRawRawAnalyzerLMS::Evaluate(int start, int length)
+AliHLTPHOSRawAnalyzerLMS::Evaluate(int start, int length)
 {
   /*
 
