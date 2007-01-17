@@ -1,0 +1,67 @@
+\section{Ali\-HLTPHOSRaw\-Analyzer\-Crude Class Reference}
+\label{classAliHLTPHOSRawAnalyzerCrude}\index{AliHLTPHOSRawAnalyzerCrude@{AliHLTPHOSRawAnalyzerCrude}}
+{\tt \#include $<$Ali\-HLTPHOSRaw\-Analyzer\-Crude.h$>$}
+
+Inheritance diagram for Ali\-HLTPHOSRaw\-Analyzer\-Crude::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classAliHLTPHOSRawAnalyzerCrude}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude} ()
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude} \&)
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude} \& {\bf operator=} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude})
+\item 
+virtual {\bf $\sim$Ali\-HLTPHOSRaw\-Analyzer\-Crude} ()
+\item 
+virtual void {\bf Evaluate} (int start=0, int lenght=100)
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}!AliHLTPHOSRawAnalyzerCrude@{AliHLTPHOSRawAnalyzerCrude}}
+\index{AliHLTPHOSRawAnalyzerCrude@{AliHLTPHOSRawAnalyzerCrude}!AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Crude::Ali\-HLTPHOSRaw\-Analyzer\-Crude ()}\label{classAliHLTPHOSRawAnalyzerCrude_a0}
+
+
+The Ali\-HLTPHOSPeakfinder class is the class for extracting the basic signal parameters \char`\"{}timing\char`\"{} and \char`\"{}energy\char`\"{} from the PHOS raw data. Physical data will for a given readout channel be a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in calculation is of type double. \index{AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}!AliHLTPHOSRawAnalyzerCrude@{AliHLTPHOSRawAnalyzerCrude}}
+\index{AliHLTPHOSRawAnalyzerCrude@{AliHLTPHOSRawAnalyzerCrude}!AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Crude::Ali\-HLTPHOSRaw\-Analyzer\-Crude (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude} \&)}\label{classAliHLTPHOSRawAnalyzerCrude_a1}
+
+
+\index{AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}!~AliHLTPHOSRawAnalyzerCrude@{$\sim$AliHLTPHOSRawAnalyzerCrude}}
+\index{~AliHLTPHOSRawAnalyzerCrude@{$\sim$AliHLTPHOSRawAnalyzerCrude}!AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Crude::$\sim${\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerCrude_a3}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}!Evaluate@{Evaluate}}
+\index{Evaluate@{Evaluate}!AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Crude::Evaluate (int {\em start} = {\tt 0}, int {\em length} = {\tt 100})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerCrude_a4}
+
+
+Extraction of timing and energy using Crude estimate. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em start}]the start index of the subarray of the data array. \item[{\em length}]the number of samples to use starting from index \item[{\em t\-Vector}]the peakfinder vector for timing \item[{\em a\-Vector}]the peakfinder vector for amplitude (energy) \end{description}
+\end{Desc}
+
+
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a14})}.\index{AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSRawAnalyzerCrude@{Ali\-HLTPHOSRaw\-Analyzer\-Crude}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude}\& Ali\-HLTPHOSRaw\-Analyzer\-Crude::operator= (const  {\em Ali\-HLTPHOSRaw\-Analyzer\-Crude})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSRawAnalyzerCrude_a2}
+
+
+
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude.h}\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude.cxx}\end{CompactItemize}

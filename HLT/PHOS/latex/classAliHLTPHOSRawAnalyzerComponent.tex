@@ -1,0 +1,162 @@
+\section{Ali\-HLTPHOSRaw\-Analyzer\-Component Class Reference}
+\label{classAliHLTPHOSRawAnalyzerComponent}\index{AliHLTPHOSRawAnalyzerComponent@{AliHLTPHOSRawAnalyzerComponent}}
+{\tt \#include $<$Ali\-HLTPHOSRaw\-Analyzer\-Component.h$>$}
+
+Inheritance diagram for Ali\-HLTPHOSRaw\-Analyzer\-Component::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.89189cm]{classAliHLTPHOSRawAnalyzerComponent}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} ()
+\item 
+{\bf $\sim$Ali\-HLTPHOSRaw\-Analyzer\-Component} ()
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} \&)
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} \& {\bf operator=} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component})
+\item 
+virtual int {\bf Do\-Init} (int argc, const char $\ast$$\ast$argv)
+\item 
+virtual int {\bf Deinit} ()
+\item 
+virtual int {\bf Do\-Deinit} ()
+\item 
+virtual const char $\ast$ {\bf Get\-Component\-ID} ()=0
+\item 
+virtual void {\bf Get\-Input\-Data\-Types} (std::vector$<$ Ali\-HLTComponent\-Data\-Type, std::allocator$<$ Ali\-HLTComponent\-Data\-Type $>$ $>$ \&)
+\item 
+virtual Ali\-HLTComponent\-Data\-Type {\bf Get\-Output\-Data\-Type} ()
+\item 
+virtual void {\bf Get\-Output\-Data\-Size} (long unsigned int \&, double \&)
+\item 
+virtual Ali\-HLTComponent $\ast$ {\bf Spawn} ()=0
+\item 
+virtual int {\bf Do\-Event} (const Ali\-HLTComponent\-Event\-Data \&, const Ali\-HLTComponent\-Block\-Data $\ast$, Ali\-HLTComponent\-Trigger\-Data \&, Ali\-HLTUInt8\_\-t $\ast$, Ali\-HLTUInt32\_\-t \&, std::vector$<$ Ali\-HLTComponent\-Block\-Data, std::allocator$<$ Ali\-HLTComponent\-Block\-Data $>$ $>$ \&)
+\end{CompactItemize}
+\subsection*{Protected Attributes}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer} $\ast$ {\bf analyzer\-Ptr}
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+int {\bf event\-Count}
+\end{CompactItemize}
+\subsection*{Static Private Attributes}
+\begin{CompactItemize}
+\item 
+const Ali\-HLTComponent\-Data\-Type {\bf input\-Data\-Types} [$\,$] = \{k\-Ali\-HLTVoid\-Data\-Type,\{0,\char`\"{}\char`\"{},\char`\"{}\char`\"{}\}\}
+\item 
+const Ali\-HLTComponent\-Data\-Type {\bf output\-Data\-Type} = k\-Ali\-HLTVoid\-Data\-Type
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!AliHLTPHOSRawAnalyzerComponent@{AliHLTPHOSRawAnalyzerComponent}}
+\index{AliHLTPHOSRawAnalyzerComponent@{AliHLTPHOSRawAnalyzerComponent}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Component::Ali\-HLTPHOSRaw\-Analyzer\-Component ()}\label{classAliHLTPHOSRawAnalyzerComponent_a0}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!~AliHLTPHOSRawAnalyzerComponent@{$\sim$AliHLTPHOSRawAnalyzerComponent}}
+\index{~AliHLTPHOSRawAnalyzerComponent@{$\sim$AliHLTPHOSRawAnalyzerComponent}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Component::$\sim${\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} ()}\label{classAliHLTPHOSRawAnalyzerComponent_a1}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!AliHLTPHOSRawAnalyzerComponent@{AliHLTPHOSRawAnalyzerComponent}}
+\index{AliHLTPHOSRawAnalyzerComponent@{AliHLTPHOSRawAnalyzerComponent}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Component::Ali\-HLTPHOSRaw\-Analyzer\-Component (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} \&)}\label{classAliHLTPHOSRawAnalyzerComponent_a2}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!Deinit@{Deinit}}
+\index{Deinit@{Deinit}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Deinit ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a5}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!DoDeinit@{DoDeinit}}
+\index{DoDeinit@{DoDeinit}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Deinit ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a6}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!DoEvent@{DoEvent}}
+\index{DoEvent@{DoEvent}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Event (const Ali\-HLTComponent\-Event\-Data \&, const Ali\-HLTComponent\-Block\-Data $\ast$, Ali\-HLTComponent\-Trigger\-Data \&, Ali\-HLTUInt8\_\-t $\ast$, Ali\-HLTUInt32\_\-t \&, std::vector$<$ Ali\-HLTComponent\-Block\-Data, std::allocator$<$ Ali\-HLTComponent\-Block\-Data $>$ $>$ \&)\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a12}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!DoInit@{DoInit}}
+\index{DoInit@{DoInit}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Init (int {\em argc}, const char $\ast$$\ast$ {\em argv})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a4}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!GetComponentID@{GetComponentID}}
+\index{GetComponentID@{GetComponentID}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual const char$\ast$ Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Component\-ID ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a7}
+
+
+
+
+Implemented in {\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerCrudeComponent_a4})}, and {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerPeakFinderComponent_a4})}.\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!GetInputDataTypes@{GetInputDataTypes}}
+\index{GetInputDataTypes@{GetInputDataTypes}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Input\-Data\-Types (std::vector$<$ Ali\-HLTComponent\-Data\-Type, std::allocator$<$ Ali\-HLTComponent\-Data\-Type $>$ $>$ \&)\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a8}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!GetOutputDataSize@{GetOutputDataSize}}
+\index{GetOutputDataSize@{GetOutputDataSize}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Output\-Data\-Size (long unsigned int \&, double \&)\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a10}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!GetOutputDataType@{GetOutputDataType}}
+\index{GetOutputDataType@{GetOutputDataType}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTComponent\-Data\-Type Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Output\-Data\-Type ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a9}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSRaw\-Analyzer\-Component}\& Ali\-HLTPHOSRaw\-Analyzer\-Component::operator= (const  {\em Ali\-HLTPHOSRaw\-Analyzer\-Component})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSRawAnalyzerComponent_a3}
+
+
+
+
+Reimplemented in {\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerCrudeComponent_a3})}, and {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerPeakFinderComponent_a3})}.\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!Spawn@{Spawn}}
+\index{Spawn@{Spawn}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual Ali\-HLTComponent$\ast$ Ali\-HLTPHOSRaw\-Analyzer\-Component::Spawn ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classAliHLTPHOSRawAnalyzerComponent_a11}
+
+
+
+
+Implemented in {\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerCrudeComponent_a5})}, and {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerPeakFinderComponent_a5})}.
+
+\subsection{Member Data Documentation}
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!analyzerPtr@{analyzerPtr}}
+\index{analyzerPtr@{analyzerPtr}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSRaw\-Analyzer}$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component::analyzer\-Ptr}\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSRawAnalyzerComponent_p0}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!eventCount@{eventCount}}
+\index{eventCount@{eventCount}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component::event\-Count}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerComponent_r0}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!inputDataTypes@{inputDataTypes}}
+\index{inputDataTypes@{inputDataTypes}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}const Ali\-HLTComponent\-Data\-Type {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component::input\-Data\-Types} = \{k\-Ali\-HLTVoid\-Data\-Type,\{0,\char`\"{}\char`\"{},\char`\"{}\char`\"{}\}\}\hspace{0.3cm}{\tt  [static, private]}}\label{classAliHLTPHOSRawAnalyzerComponent_v0}
+
+
+\index{AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}!outputDataType@{outputDataType}}
+\index{outputDataType@{outputDataType}!AliHLTPHOSRawAnalyzerComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}const Ali\-HLTComponent\-Data\-Type {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component::output\-Data\-Type} = k\-Ali\-HLTVoid\-Data\-Type\hspace{0.3cm}{\tt  [static, private]}}\label{classAliHLTPHOSRawAnalyzerComponent_v1}
+
+
+
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Component.h}\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx}\end{CompactItemize}

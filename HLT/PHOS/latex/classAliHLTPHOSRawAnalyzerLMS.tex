@@ -1,0 +1,99 @@
+\section{Ali\-HLTPHOSRaw\-Analyzer\-LMS Class Reference}
+\label{classAliHLTPHOSRawAnalyzerLMS}\index{AliHLTPHOSRawAnalyzerLMS@{AliHLTPHOSRawAnalyzerLMS}}
+{\tt \#include $<$Ali\-HLTPHOSRaw\-Analyzer\-LMS.h$>$}
+
+Inheritance diagram for Ali\-HLTPHOSRaw\-Analyzer\-LMS::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classAliHLTPHOSRawAnalyzerLMS}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} ()
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} (double $\ast$data\-Ptr, double fs)
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} \&)
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} \& {\bf operator=} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS})
+\item 
+virtual {\bf $\sim$Ali\-HLTPHOSRaw\-Analyzer\-LMS} ()
+\item 
+virtual void {\bf Evaluate} (int start=0, int lenght=100)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+double $\ast$$\ast$ {\bf kf\-MCovar\-Ptr\-Ptr}
+\item 
+double $\ast$$\ast$ {\bf f\-PCovar\-Ptr\-Ptr}
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!AliHLTPHOSRawAnalyzerLMS@{AliHLTPHOSRawAnalyzerLMS}}
+\index{AliHLTPHOSRawAnalyzerLMS@{AliHLTPHOSRawAnalyzerLMS}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-LMS::Ali\-HLTPHOSRaw\-Analyzer\-LMS ()}\label{classAliHLTPHOSRawAnalyzerLMS_a0}
+
+
+The Ali\-HLTPHOSPeakfinder class is the class for extracting the basic signal parameters \char`\"{}timing\char`\"{} and \char`\"{}energy\char`\"{} from the PHOS raw data. Physical data will for a given readout channel be a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in calculation is of type double. \index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!AliHLTPHOSRawAnalyzerLMS@{AliHLTPHOSRawAnalyzerLMS}}
+\index{AliHLTPHOSRawAnalyzerLMS@{AliHLTPHOSRawAnalyzerLMS}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-LMS::Ali\-HLTPHOSRaw\-Analyzer\-LMS (double $\ast$ {\em dta\-Ptr}, double {\em fs})}\label{classAliHLTPHOSRawAnalyzerLMS_a1}
+
+
+Main constructor \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em data\-Ptr}]Data array for wich a subarray will be taken to perform the fit \item[{\em fs}]the sampling frequency in entities of MHz. Needed in order to calculate physical time \end{description}
+\end{Desc}
+\index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!AliHLTPHOSRawAnalyzerLMS@{AliHLTPHOSRawAnalyzerLMS}}
+\index{AliHLTPHOSRawAnalyzerLMS@{AliHLTPHOSRawAnalyzerLMS}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-LMS::Ali\-HLTPHOSRaw\-Analyzer\-LMS (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} \&)}\label{classAliHLTPHOSRawAnalyzerLMS_a2}
+
+
+\index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!~AliHLTPHOSRawAnalyzerLMS@{$\sim$AliHLTPHOSRawAnalyzerLMS}}
+\index{~AliHLTPHOSRawAnalyzerLMS@{$\sim$AliHLTPHOSRawAnalyzerLMS}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-LMS::$\sim${\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerLMS_a4}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!Evaluate@{Evaluate}}
+\index{Evaluate@{Evaluate}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-LMS::Evaluate (int {\em start} = {\tt 0}, int {\em length} = {\tt 100})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerLMS_a5}
+
+
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em start}]the start index of the subarray of the data array. \item[{\em length}]the number of samples to use starting from index \end{description}
+\end{Desc}
+
+
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a14})}.\index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS}\& Ali\-HLTPHOSRaw\-Analyzer\-LMS::operator= (const  {\em Ali\-HLTPHOSRaw\-Analyzer\-LMS})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSRawAnalyzerLMS_a3}
+
+
+
+
+\subsection{Member Data Documentation}
+\index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!fPCovarPtrPtr@{fPCovarPtrPtr}}
+\index{fPCovarPtrPtr@{fPCovarPtrPtr}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS::f\-PCovar\-Ptr\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerLMS_r1}
+
+
+Covariance matrix of the estimated parameters \index{AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}!kfMCovarPtrPtr@{kfMCovarPtrPtr}}
+\index{kfMCovarPtrPtr@{kfMCovarPtrPtr}!AliHLTPHOSRawAnalyzerLMS@{Ali\-HLTPHOSRaw\-Analyzer\-LMS}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS::kf\-MCovar\-Ptr\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerLMS_r0}
+
+
+Covariance matrix of the measurements 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS.h}\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS.cxx}\end{CompactItemize}

@@ -1,0 +1,80 @@
+\section{Ali\-HLTPHOSRaw\-Analyzer\-KLevel Class Reference}
+\label{classAliHLTPHOSRawAnalyzerKLevel}\index{AliHLTPHOSRawAnalyzerKLevel@{AliHLTPHOSRawAnalyzerKLevel}}
+{\tt \#include $<$Ali\-HLTPHOSRaw\-Analyzer\-KLevel.h$>$}
+
+Inheritance diagram for Ali\-HLTPHOSRaw\-Analyzer\-KLevel::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classAliHLTPHOSRawAnalyzerKLevel}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel} ()
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel} \&)
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel} \& {\bf operator=} (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel})
+\item 
+virtual {\bf $\sim$Ali\-HLTPHOSRaw\-Analyzer\-KLevel} ()
+\item 
+virtual void {\bf Evaluate} (int start=0, int lenght=100)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+double {\bf t\-KLevel}
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!AliHLTPHOSRawAnalyzerKLevel@{AliHLTPHOSRawAnalyzerKLevel}}
+\index{AliHLTPHOSRawAnalyzerKLevel@{AliHLTPHOSRawAnalyzerKLevel}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-KLevel::Ali\-HLTPHOSRaw\-Analyzer\-KLevel ()}\label{classAliHLTPHOSRawAnalyzerKLevel_a0}
+
+
+The Ali\-HLTPHOSPeakfinder class is the class for extracting the basic signal parameters \char`\"{}timing\char`\"{} and \char`\"{}energy\char`\"{} from the PHOS raw data. Physical data will for a given readout channel be a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in calculation is of type double. \index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!AliHLTPHOSRawAnalyzerKLevel@{AliHLTPHOSRawAnalyzerKLevel}}
+\index{AliHLTPHOSRawAnalyzerKLevel@{AliHLTPHOSRawAnalyzerKLevel}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-KLevel::Ali\-HLTPHOSRaw\-Analyzer\-KLevel (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel} \&)}\label{classAliHLTPHOSRawAnalyzerKLevel_a1}
+
+
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!~AliHLTPHOSRawAnalyzerKLevel@{$\sim$AliHLTPHOSRawAnalyzerKLevel}}
+\index{~AliHLTPHOSRawAnalyzerKLevel@{$\sim$AliHLTPHOSRawAnalyzerKLevel}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-KLevel::$\sim${\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerKLevel_a3}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!Evaluate@{Evaluate}}
+\index{Evaluate@{Evaluate}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-KLevel::Evaluate (int {\em start} = {\tt 0}, int {\em length} = {\tt 100})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerKLevel_a4}
+
+
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em start}]the start index of the subarray of the data array. \item[{\em length}]the number of samples to use starting from index \end{description}
+\end{Desc}
+
+
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a14})}.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel}\& Ali\-HLTPHOSRaw\-Analyzer\-KLevel::operator= (const  {\em Ali\-HLTPHOSRaw\-Analyzer\-KLevel})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSRawAnalyzerKLevel_a2}
+
+
+
+
+\subsection{Member Data Documentation}
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!tKLevel@{tKLevel}}
+\index{tKLevel@{tKLevel}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel::t\-KLevel}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerKLevel_r0}
+
+
+
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel.h}\item 
+{\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel.cxx}\end{CompactItemize}

@@ -1,0 +1,137 @@
+\section{Ali\-HLTPHOSEmc\-Calib\-Data Class Reference}
+\label{classAliHLTPHOSEmcCalibData}\index{AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}}
+{\tt \#include $<$Ali\-HLTPHOSEmc\-Calib\-Data.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSEmc\-Calib\-Data} ()
+\item 
+{\bf Ali\-HLTPHOSEmc\-Calib\-Data} (const char $\ast$name)
+\item 
+{\bf Ali\-HLTPHOSEmc\-Calib\-Data} (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \&calibda)
+\item 
+{\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& {\bf operator=} (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \&calibda)
+\item 
+virtual {\bf $\sim$Ali\-HLTPHOSEmc\-Calib\-Data} ()
+\item 
+void {\bf Reset} ()
+\item 
+virtual void {\bf Print} (Option\_\-t $\ast$option=\char`\"{}\char`\"{}) const 
+\item 
+Float\_\-t {\bf Get\-ADCchannel\-Energy} (Int\_\-t module, Int\_\-t column, Int\_\-t row, Int\_\-t gain) const 
+\item 
+Float\_\-t {\bf Get\-ADCpedestal\-Emc\-Measured} (Int\_\-t module, Int\_\-t column, Int\_\-t row, Int\_\-t gain) const 
+\item 
+void {\bf Set\-ADCchannel\-Energy} (Int\_\-t module, Int\_\-t column, Int\_\-t row, Int\_\-t gain, Float\_\-t value)
+\item 
+void {\bf Set\-ADCpedestal\-Emc\-Measured} (Int\_\-t module, Int\_\-t column, Int\_\-t row, Int\_\-t gain, Float\_\-t value)
+\item 
+void {\bf Make\-ADCpedestal\-Correction\-Table} ()
+\end{CompactItemize}
+\subsection*{Protected Attributes}
+\begin{CompactItemize}
+\item 
+Float\_\-t {\bf f\-ADCchannel\-Energy} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+\item 
+Float\_\-t {\bf f\-ADCpedestal\-Emc\-Measured} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+\item 
+Int\_\-t {\bf f\-ADCpedestal\-Altro\-Reg} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+\item 
+Float\_\-t {\bf f\-ADCpedestal\-Correction\-Table} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+\end{CompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}}
+\index{AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data ()}\label{classAliHLTPHOSEmcCalibData_a0}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}}
+\index{AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data (const char $\ast$ {\em name})}\label{classAliHLTPHOSEmcCalibData_a1}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}}
+\index{AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& {\em calibda})}\label{classAliHLTPHOSEmcCalibData_a2}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!~AliHLTPHOSEmcCalibData@{$\sim$AliHLTPHOSEmcCalibData}}
+\index{~AliHLTPHOSEmcCalibData@{$\sim$AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::$\sim${\bf Ali\-HLTPHOSEmc\-Calib\-Data} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSEmcCalibData_a4}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!GetADCchannelEnergy@{GetADCchannelEnergy}}
+\index{GetADCchannelEnergy@{GetADCchannelEnergy}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t Ali\-HLTPHOSEmc\-Calib\-Data::Get\-ADCchannel\-Energy (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}) const}\label{classAliHLTPHOSEmcCalibData_a7}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!GetADCpedestalEmcMeasured@{GetADCpedestalEmcMeasured}}
+\index{GetADCpedestalEmcMeasured@{GetADCpedestalEmcMeasured}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t Ali\-HLTPHOSEmc\-Calib\-Data::Get\-ADCpedestal\-Emc\-Measured (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}) const}\label{classAliHLTPHOSEmcCalibData_a8}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!MakeADCpedestalCorrectionTable@{MakeADCpedestalCorrectionTable}}
+\index{MakeADCpedestalCorrectionTable@{MakeADCpedestalCorrectionTable}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Make\-ADCpedestal\-Correction\-Table ()}\label{classAliHLTPHOSEmcCalibData_a11}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!operator=@{operator=}}
+\index{operator=@{operator=}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& Ali\-HLTPHOSEmc\-Calib\-Data::operator= (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& {\em calibda})}\label{classAliHLTPHOSEmcCalibData_a3}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!Print@{Print}}
+\index{Print@{Print}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Print (Option\_\-t $\ast$ {\em option} = {\tt \char`\"{}\char`\"{}}) const\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSEmcCalibData_a6}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!Reset@{Reset}}
+\index{Reset@{Reset}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Reset ()}\label{classAliHLTPHOSEmcCalibData_a5}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!SetADCchannelEnergy@{SetADCchannelEnergy}}
+\index{SetADCchannelEnergy@{SetADCchannelEnergy}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Set\-ADCchannel\-Energy (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}, Float\_\-t {\em value})}\label{classAliHLTPHOSEmcCalibData_a9}
+
+
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!SetADCpedestalEmcMeasured@{SetADCpedestalEmcMeasured}}
+\index{SetADCpedestalEmcMeasured@{SetADCpedestalEmcMeasured}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Set\-ADCpedestal\-Emc\-Measured (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}, Float\_\-t {\em value})}\label{classAliHLTPHOSEmcCalibData_a10}
+
+
+
+
+\subsection{Member Data Documentation}
+\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCchannelEnergy@{fADCchannelEnergy}}
+\index{fADCchannelEnergy@{fADCchannelEnergy}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCchannel\-Energy}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p0}
+
+
+width of one EMC ADC channel in Ge\-V \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalAltroReg@{fADCpedestalAltroReg}}
+\index{fADCpedestalAltroReg@{fADCpedestalAltroReg}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Altro\-Reg}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p2}
+
+
+value of the EMC ADC pedestal subtraction values stored in the ALTRO registers \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalCorrectionTable@{fADCpedestalCorrectionTable}}
+\index{fADCpedestalCorrectionTable@{fADCpedestalCorrectionTable}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Correction\-Table}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p3}
+
+
+value of the EMC ADC pedestal values to be subtracted form the decoed cahnnel data (= f\-ADCpedestal\-Emc\-Measured - f\-ADCpedestal\-Altro\-Reg) \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalEmcMeasured@{fADCpedestalEmcMeasured}}
+\index{fADCpedestalEmcMeasured@{fADCpedestalEmcMeasured}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Emc\-Measured}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p1}
+
+
+value of the EMC ADC pedestal measured from calibration run 
+
+The documentation for this class was generated from the following files:\begin{CompactItemize}
+\item 
+{\bf Ali\-HLTPHOSEmc\-Calib\-Data.h}\item 
+{\bf Ali\-HLTPHOSEmc\-Calib\-Data.cxx}\end{CompactItemize}
