@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSANALYZER_H
-#define ALIHLTPHOSANALYZER_H
+#ifndef ALIHLTPHOSRAWANALYZER_H
+#define ALIHLTPHOSRAWANALYZER_H
 /* Copyright(c) 1998-2004, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 

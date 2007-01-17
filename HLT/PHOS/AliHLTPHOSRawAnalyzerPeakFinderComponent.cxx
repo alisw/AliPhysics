@@ -14,14 +14,14 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzerPeakFinderComponent.h"
-
+#include "AliHLTPHOSRawAnalyzerPeakFinder.h"
 
 //ClassImp(AliHLTPHOSRawAnalyzerPeakFinderComponent) 
+AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
 
-
-  AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
+AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
 {
-
+  analyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
 } 
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::~AliHLTPHOSRawAnalyzerPeakFinderComponent()
@@ -30,9 +30,22 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::~AliHLTPHOSRawAnalyzerPeakFinderCompon
 }
 
 
+
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent(const AliHLTPHOSRawAnalyzerPeakFinderComponent & ) : AliHLTPHOSRawAnalyzerComponent()
 {
 
 }
 
 
+const char* 
+AliHLTPHOSRawAnalyzerPeakFinderComponent::GetComponentID()
+{
+  return "PhosRawPeakFinder";
+}
+
+
+AliHLTComponent*
+AliHLTPHOSRawAnalyzerPeakFinderComponent::Spawn()
+{
+  return new AliHLTPHOSRawAnalyzerPeakFinderComponent;
+}

@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSANALYZERLMS_H
-#define ALIHLTPHOSANALYZERLMS_H
+#ifndef ALIHLTPHOSRAWANALYZERLMS_H
+#define ALIHLTPHOSRAWANALYZERLMS_H
 #include <Rtypes.h>
 #include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"

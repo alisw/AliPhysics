@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSANALYZERPEAKFINDERCOMPONENT_H
-#define ALIHLTPHOSANALYZERPEAKFINDERCOMPONENT_H
+#ifndef ALIHLTPHOSRAWANALYZERPEAKFINDERCOMPONENT_H
+#define ALIHLTPHOSRAWANALYZERPEAKFINDERCOMPONENT_H
 
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice  */ 
@@ -8,6 +8,7 @@
 
 class AliHLTPHOSRawAnalyzerPeakFinderComponent: public AliHLTPHOSRawAnalyzerComponent
 {
+ public:
   AliHLTPHOSRawAnalyzerPeakFinderComponent();
   ~AliHLTPHOSRawAnalyzerPeakFinderComponent();
   AliHLTPHOSRawAnalyzerPeakFinderComponent(const AliHLTPHOSRawAnalyzerPeakFinderComponent & );
@@ -16,6 +17,9 @@ class AliHLTPHOSRawAnalyzerPeakFinderComponent: public AliHLTPHOSRawAnalyzerComp
     return *this;
   };
 
+  
+ virtual const char* GetComponentID();
+ virtual AliHLTComponent* Spawn();
   //ClassDef(AliHLTPHOSRawAnalyzerPeakFinderComponent, 2) 
   };
 

@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
@@ -14,10 +15,10 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzerCrudeComponent.h"
-
+#include "AliHLTPHOSRawAnalyzerCrude.h"
 
 //ClassImp(AliHLTPHOSRawAnalyzerCrudeComponent) 
-
+AliHLTPHOSRawAnalyzerCrudeComponent gAliHLTPHOSRawAnalyzerCrudeComponent;
 
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent()
 {
@@ -35,3 +36,14 @@ AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent(const A
 
 }
 
+const char* 
+AliHLTPHOSRawAnalyzerCrudeComponent::GetComponentID()
+{
+  return "PhosRawCrude";
+}
+
+AliHLTComponent*
+AliHLTPHOSRawAnalyzerCrudeComponent::Spawn()
+{
+  return new AliHLTPHOSRawAnalyzerCrudeComponent;
+}

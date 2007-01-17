@@ -1,14 +1,16 @@
+
+
+#ifndef ALIHLTPHOSRAWANALYZERCOMPONENT_H
+#define ALIHLTPHOSRAWANALYZERCOMPONENT_H
+
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
-
-#ifndef ALIHLTPHOSANALYZERCOMPONENT_H
-#define ALIHLTPHOSANALYZERCOMPONENT_H
 
 //#include <Rtypes.h>
 //#include "TObject.h"
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSRawAnalyzer.h"
-#include "AliHLTPHOSRawAnalyzerCrude.h"
+//#include "AliHLTPHOSRawAnalyzerCrude.h"
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 {
@@ -21,14 +23,21 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
       return *this;
    };
 
+  virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
   virtual int DoDeinit();
-  virtual const char* GetComponentID();
+
+  virtual const char* GetComponentID() = 0;
+
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(long unsigned int&, double&);
-  virtual void GetOutputDataSize(long  int&, double&);
-  virtual AliHLTComponent* Spawn();
+
+  //  virtual void GetOutputDataSize(long  int&, double&);
+
+  //  virtual AliHLTComponent* Spawn();
+  virtual AliHLTComponent* Spawn() = 0;
+
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
 
   // private:
@@ -36,5 +45,10 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
  AliHLTPHOSRawAnalyzer *analyzerPtr; 
 
  // ClassDef(AliHLTPHOSRawAnalyzerComponent, 2) 
+ private:
+ int eventCount;
+  static const AliHLTComponentDataType inputDataTypes[];
+  static const AliHLTComponentDataType outputDataType;
+
 };
 #endif

@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSANALYZERCRUDECOMPONENT_H
-#define ALIHLTPHOSANALYZERCRUDECOMPONENT_H
+#ifndef ALIHLTPHOSRAWANALYZERCRUDECOMPONENT_H
+#define ALIHLTPHOSRAWANALYZERCRUDECOMPONENT_H
 
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 
@@ -9,6 +9,7 @@
 
 class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponent
 {
+ public:
   AliHLTPHOSRawAnalyzerCrudeComponent();
   ~AliHLTPHOSRawAnalyzerCrudeComponent();
   AliHLTPHOSRawAnalyzerCrudeComponent(const AliHLTPHOSRawAnalyzerCrudeComponent & );
@@ -18,6 +19,9 @@ class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponent
   };
 
   //ClassDef(AliHLTPHOSRawAnalyzerCrudeComponent, 2) 
+  virtual const char* GetComponentID();
+  virtual AliHLTComponent* Spawn();
+
   };
 
 #endif

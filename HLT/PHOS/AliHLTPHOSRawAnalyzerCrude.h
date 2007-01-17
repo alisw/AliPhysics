@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSANALYZERCRUDE_H
-#define ALIHLTPHOSANALYZERCRUDE_H
+#ifndef ALIHLTPHOSRAWANALYZERCRUDE_H
+#define ALIHLTPHOSRAWANALYZERCRUDE_H
 #include <Rtypes.h>
 #include "TObject.h"
 //         "AliHLTPHOSRawAnalyzer"

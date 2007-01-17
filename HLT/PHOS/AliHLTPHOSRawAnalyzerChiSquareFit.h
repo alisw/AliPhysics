@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSANALYZERCHISQUAREFIT_H
-#define ALIHLTPHOSANALYZERCHISQUAREFIT_H
+#ifndef ALIHLTPHOSRAWANALYZERCHISQUAREFIT_H
+#define ALIHLTPHOSRAWANALYZERCHISQUAREFIT_H
 #include <Rtypes.h>
 #include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"
@@ -21,6 +21,8 @@ class AliHLTPHOSRawAnalyzerChiSquareFit : public AliHLTPHOSRawAnalyzer
   
   virtual ~AliHLTPHOSRawAnalyzerChiSquareFit();
   virtual void Evaluate(int start = 0, int lenght = 100);
+   
+
  private:
 
   ClassDef(AliHLTPHOSRawAnalyzerChiSquareFit, 2) 

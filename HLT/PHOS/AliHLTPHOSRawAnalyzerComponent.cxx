@@ -16,9 +16,13 @@
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include <iostream>
 
-//ClassImp(AliHLTPHOSRawAnalyzerComponent) 
+const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
+const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::outputDataType=kAliHLTVoidDataType;
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent()
+
+
+//ClassImp(AliHLTPHOSRawAnalyzerComponent) 
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), eventCount(0)
 {
 
 } 
@@ -29,7 +33,7 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 }
 
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor()
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(), eventCount(0)
 {
 
 }
@@ -43,49 +47,56 @@ AliHLTPHOSRawAnalyzerComponent::Deinit()
 int 
 AliHLTPHOSRawAnalyzerComponent::DoDeinit()
 {
+ Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen DoDeinit");
   return 0;
+
 }
 
-const char* 
-AliHLTPHOSRawAnalyzerComponent::GetComponentID()
-{
-  return 0;
-}
+//const char* 
+//AliHLTPHOSRawAnalyzerComponent::GetComponentID()
+//{
+//  return 0;
+//}
 
 void
-AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&)
+AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-
+  const AliHLTComponentDataType* pType=inputDataTypes;
+  while (pType->fID!=0) {
+    list.push_back(*pType);
+    pType++;
+  }
 }
 
 AliHLTComponentDataType 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
 {
-  AliHLTComponentDataType tmp;
-  return tmp;
+  return outputDataType;
 }
 
 void
-AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(long unsigned int&, double&)
+AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-
-}
-
-void 
-AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(long  int&, double&)
-{
-
-}
-
-AliHLTComponent* 
-AliHLTPHOSRawAnalyzerComponent::Spawn()
-{
-  return 0;
+  constBase = 0;inputMultiplier = 0;
 }
 
 int 
 AliHLTPHOSRawAnalyzerComponent::DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&)
 {
-  printf("\nPHOSHLT DoEvent, not yet implemented\n");
+  Logging(kHLTLogInfo, "HLT", "Sample", "PhosHLTRawAnalyzerComonent, DoEvent");
+  printf("\nPHOSHLT DoEvent: processing event: %d\n", eventCount);
+  //  printf("\nPHOSHLT DoEvent, not yet implemented\n");
+  eventCount++;
+  return 0;
+}
+
+
+int
+AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
+{
+  printf("\nInside AliHLTPHOSRawAnalyzerComponent:DoInit\n");
+  if (argc==0 && argv==NULL) {
+    // this is currently just to get rid of the warning "unused parameter"
+  }
   return 0;
 }

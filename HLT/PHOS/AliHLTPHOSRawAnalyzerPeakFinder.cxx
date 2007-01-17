@@ -37,7 +37,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHO
  **/
 AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRawAnalyzer(),tVector(0), aVector(0) 
 {
-  cout <<"You cannot invoke the Fitter without arguments"<<endl;;
+  cout <<"PeakFinder:You cannot invoke the Fitter without arguments"<<endl;;
 }
 
 
