@@ -354,7 +354,7 @@ TrackCounterEditor::TrackCounterEditor(const TGWindow *p, Int_t width, Int_t hei
     f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
     b->Connect("Clicked()", "Reve::TrackCounterEditor", this, "DoPrev()");
 
-    fEventId = new TGNumberEntry(f, 0, 3, -1,TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive,
+    fEventId = new TGNumberEntry(f, 0, 3, -1,TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative,
 				 TGNumberFormat::kNELLimitMinMax, 0, 1000);
     f->AddFrame(fEventId, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
     fEventId->Connect("ValueSet(Long_t)", "Reve::TrackCounterEditor", this, "DoSetEvent()");
