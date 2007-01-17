@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/12/19 08:53:27  arcelli
+Changed filenames types to TString + split file sources (C.Zampolli)
+
 Revision 1.3  2006/12/18 18:16:53  arcelli
 Change in the format of the input data from DAQ FXS (C.Zampolli)
 
@@ -58,7 +61,7 @@ class AliTOFGeometry;
 ClassImp(AliTOFPreprocessor)
 
 const Int_t AliTOFPreprocessor::fgkBinRangeAve    = 13; // number of bins where to calculate the mean 
-const Int_t AliTOFPreprocessor::fgkThrPar    = 0.013; // parameter used to trigger the calculation of the delay
+const Double_t AliTOFPreprocessor::fgkThrPar    = 0.013; // parameter used to trigger the calculation of the delay
 
 //_____________________________________________________________________________
 
@@ -77,6 +80,14 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
 AliTOFPreprocessor::~AliTOFPreprocessor()
 {
   // destructor
+  delete fData;
+  fData = 0;
+  delete fh2;
+  fh2 = 0;
+  delete fCal;
+  fCal = 0;
+  delete fTOFGeometry;
+  fTOFGeometry = 0;
 }
 
 //______________________________________________________________________________
@@ -113,7 +124,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   // processing DCS
 
   if (!dcsAliasMap){
-    AliInfo(Form("No DCS map found "));
+    Log("No DCS map found");
   }
   else {
   // The processing of the DCS input data is forwarded to AliTOFDataDCS
@@ -122,9 +133,10 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
     metaDataDCS.SetBeamPeriod(0);
     metaDataDCS.SetResponsible("Chiara Zampolli");
     metaDataDCS.SetComment("This preprocessor fills an AliTOFDataDCS object.");     resultDCS = Store("Calib","DCSData",fData, &metaDataDCS);
-    result+=resultDCS;
+    //    result+=resultDCS;
     if (!resultDCS){
-      AliInfo(Form("some problems occurred while storing DCS data processing results"));
+      Log("Some problems occurred while storing DCS data processing results");
+      return 0;
     }
   }
 
@@ -134,7 +146,6 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 
   //retrieving data at Run level
   TList* list = GetFileSources(kDAQ, "RUNLevel");
-
   if (list)
     {
       AliInfo("The following sources produced files with the id RUNLevel");
@@ -153,22 +164,21 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  metaDataHisto.SetResponsible("Chiara Zampolli");
 	  metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
 	  resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
-	  result+=resultDAQRef*2;
+	  //	  result+=resultDAQRef*2;
 	  if (!resultDAQRef){
-	    AliInfo(Form("some problems occurred::No Reference Data stored"));
+	    Log("some problems occurred::No Reference Data stored, still going on (please check!)");
 	  }
 	  daqFile->Close();
 	  delete daqFile;
 	}
 
 	else{
-	  AliError(Form("The file %s does not exist",fileNameRun.Data())); 
-	}
+          Log("The input data file from DAQ (run-level) was not found, still going on with Cumulative data file (please check!) "); 
+	} 
       }
     }
   else{
-    AliError(Form("Problem: no list for Run Level found"));
-    result+=10;   //to know whether some problems occurred with run level data, we add 10 to the result variable
+    Log("The input data file list from DAQ (run-level) was not found, still going on with Cumulative data file (please check!) "); 
   }
 
   //Total files, with summed histos
@@ -190,24 +200,25 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  daqFile = new TFile(fileName.Data(),"READ");
 	  fh2 = (TH2S*) daqFile->Get("htoftot");
 	  if (!fh2){
-	    AliInfo(Form("some problems occurred:: No histo retrieved"));
+	    Log("some problems occurred:: No histo retrieved, TOF exiting from Shuttle");
+	    delete daqFile;
+	    return 0;
 	  }
-	  
 	  else {
 	    static const Int_t size=fh2->GetNbinsX();
 	    static const Int_t nbins=fh2->GetNbinsY();
 	    static const Double_t xbinmin=fh2->GetYaxis()->GetBinLowEdge(1);
 	    Int_t npads = fCal->NPads();
 	    if (size != npads){
-	      AliError(Form(" number of bins along x different from number of pads, found only %i histograms, TOF exiting from Shuttle",size));
-              return 0;
+	      Log(" number of bins along x different from number of pads, found only a subset of the histograms, TOF exiting from Shuttle");
+	      delete daqFile;
+	      return 0;
 	    }
 	    for (Int_t ich=0;ich<size;ich++){
 	      TH1S *h1 = new TH1S("h1","h1",nbins,xbinmin-0.5,nbins*1.+xbinmin-0.5);
 	      for (Int_t ibin=0;ibin<nbins;ibin++){
 		h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
 	      }
-
 	      Bool_t found=kFALSE; 
 	      Float_t minContent=h1->Integral()*fgkThrPar; 
 	      Int_t nbinsX = h1->GetNbinsX();
@@ -233,7 +244,6 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 		nent=nent+h1->GetBinContent(startBin+k);                 
 		sumw2=sumw2+(h1->GetBinCenter(startBin+k))*(h1->GetBinCenter(startBin+k))*(h1->GetBinContent(startBin+k));
 	      }
-	      
 	      mean= mean/nent; //<x>
 	      sumw2=sumw2/nent; //<x^2>
 	      Double_t rmsmean= 0;
@@ -241,7 +251,6 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	      if (ich<npads) {
 		AliTOFChannelOnline * ch = fCal->GetChannel(ich);
 		ch->SetDelay(mean);
-		//		AliInfo(Form("mean = %f",mean));
 	      }
 	    delete h1;
 	    h1=0x0;
@@ -254,29 +263,35 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  metaData.SetResponsible("Chiara Zampolli");
 	  metaData.SetComment("This preprocessor fills an AliTOFCal object.");
 	  resultDAQ = Store("Calib","OnlineDelay",fCal, &metaData);
-	  result+=resultDAQ*2*2;
+          if(!resultDAQ){
+	    Log("Some problems occurred while storing DAQ data processing results");
+	    return 0;
+	  }
 	}
 	else{
-	  AliError(Form("The file %s does not exist",fileName.Data())); 
+	  Log("The Cumulative data file from DAQ does not exist, TOF exiting from Shuttle"); 
+          return 0;
 	}
       }
     }
   else{
-    AliError(Form("Problem: no listTot found, TOF exiting from Shuttle"));
+    Log("Problem: no list for Cumulative data file from DAQ was found, TOF exiting from Shuttle");
     return 0;
   }
 
-  delete list;
-  list = 0;
-  delete listTot;
-  listTot = 0;
+  //  delete list;
+  // list = 0;
+  // delete listTot;
+  // listTot = 0;
   daqFile=0;
-  delete fData;
-  fData = 0;
-  delete fCal;
-  fCal = 0;
-  delete fh2;
-  fh2 = 0;
+
+  if(resultDCS ==2|| resultDAQ ==2) {
+    result=2;
+  }
+  else{ 
+    result=1;
+  }
+
   return result;
 }
 

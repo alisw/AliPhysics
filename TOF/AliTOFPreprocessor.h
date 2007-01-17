@@ -35,7 +35,7 @@ class AliTOFPreprocessor : public AliPreprocessor
 
     static const Int_t fgkBinRangeAve;   // number of bins where to 
                                          // calculate the mean
-    static const Int_t fgkThrPar;        // parameter used to trigger the 
+    static const Double_t fgkThrPar;     // parameter used to trigger the 
                                          //calculation of the delay
     AliTOFDataDCS *fData;    // CDB class that stores the data
     TH2S *fh2;       // TH2S from DAQ for histograms for delays  
