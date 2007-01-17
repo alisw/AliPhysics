@@ -1,56 +1,56 @@
 include HLT/hlt.conf
 
 SRCS:=  PHOS/AliHLTPHOSPulseGenerator.cxx \
-	PHOS/AliHLTPHOSAnalyzer.cxx \
-	PHOS/AliHLTPHOSAnalyzerCrude.cxx \
-	PHOS/AliHLTPHOSAnalyzerChiSquareFit.cxx \
-	PHOS/AliHLTPHOSAnalyzerKLevel.cxx \
-	PHOS/AliHLTPHOSAnalyzerLMS.cxx \
-	PHOS/AliHLTPHOSAnalyzerPeakFinder.cxx \
+	PHOS/AliHLTPHOSRawAnalyzer.cxx \
+	PHOS/AliHLTPHOSRawAnalyzerCrude.cxx \
+	PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx \
+	PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx \
+	PHOS/AliHLTPHOSRawAnalyzerLMS.cxx \
+	PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx \
 	PHOS/AliHLTPHOSEmcCalibData.cxx \
-	PHOS/AliHLTPHOSAnalyzerComponent.cxx \
-	PHOS/AliHLTPHOSAnalyzerCrudeComponent.cxx \
-	PHOS/AliHLTPHOSAnalyzerPeakFinderComponent.cxx
+	PHOS/AliHLTPHOSRawAnalyzerComponent.cxx \
+	PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
+	PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx
 
 
 HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
-	PHOS/AliHLTPHOSAnalyzer.h \
-	PHOS/AliHLTPHOSAnalyzerCrude.h \
-	PHOS/AliHLTPHOSAnalyzerChiSquareFit.h \
-	PHOS/AliHLTPHOSAnalyzerKLevel.h \
-	PHOS/AliHLTPHOSAnalyzerLMS.h \
-	PHOS/AliHLTPHOSAnalyzerPeakFinder.h \
+	PHOS/AliHLTPHOSRawAnalyzer.h \
+	PHOS/AliHLTPHOSRawAnalyzerCrude.h \
+	PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.h \
+	PHOS/AliHLTPHOSRawAnalyzerKLevel.h \
+	PHOS/AliHLTPHOSRawAnalyzerLMS.h \
+	PHOS/AliHLTPHOSRawAnalyzerPeakFinder.h \
 	PHOS/AliHLTPHOSEmcCalibData.h \
-	PHOS/AliHLTPHOSAnalyzerComponent.h \
-	PHOS/AliHLTPHOSAnalyzerCrudeComponent.h \
-	PHOS/AliHLTPHOSAnalyzerPeakFinderComponent.h
+	PHOS/AliHLTPHOSRawAnalyzerComponent.h \
+	PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.h \
+	PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h
 
 DHDR=   PHOS/AliHLTPHOSLinkDef.h
  					    
 
 CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
-		PHOS/AliHLTPHOSAnalyzer.h \
-		PHOS/AliHLTPHOSAnalyzerCrude.h \
-		PHOS/AliHLTPHOSAnalyzerChiSquareFit.h \
-		PHOS/AliHLTPHOSAnalyzerKLevel.h \
-		PHOS/AliHLTPHOSAnalyzerLMS.h \
-		PHOS/AliHLTPHOSAnalyzerPeakFinder.h \
+		PHOS/AliHLTPHOSRawAnalyzer.h \
+		PHOS/AliHLTPHOSRawAnalyzerCrude.h \
+		PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.h \
+		PHOS/AliHLTPHOSRawAnalyzerKLevel.h \
+		PHOS/AliHLTPHOSRawAnalyzerLMS.h \
+		PHOS/AliHLTPHOSRawAnalyzerPeakFinder.h \
 		PHOS/AliHLTPHOSEmcCalibData.h \
-		PHOS/AliHLTPHOSAnalyzerComponent.h \
-		PHOS/AliHLTPHOSAnalyzerCrudeComponent.h \
-		PHOS/AliHLTPHOSAnalyzerPeakFinderComponent.h \
+		PHOS/AliHLTPHOSRawAnalyzerComponent.h \
+		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.h \
+		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
 
 MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
-		PHOS/AliHLTPHOSAnalyzer.cxx \
-		PHOS/AliHLTPHOSAnalyzerCrude.cxx\
-		PHOS/AliHLTPHOSAnalyzerChiSquareFit.cxx \
-		PHOS/AliHLTPHOSAnalyzerKLevel.cxx \
-		PHOS/AliHLTPHOSAnalyzerLMS.cxx\
-		PHOS/AliHLTPHOSAnalyzerPeakFinder.cxx \
+		PHOS/AliHLTPHOSRawAnalyzer.cxx \
+		PHOS/AliHLTPHOSRawAnalyzerCrude.cxx\
+		PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx \
+		PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx \
+		PHOS/AliHLTPHOSRawAnalyzerLMS.cxx\
+		PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx \
 		PHOS/AliHLTPHOSEmcCalibData.cxx \
-		PHOS/AliHLTPHOSAnalyzerComponent.cxx \
-		PHOS/AliHLTPHOSAnalyzerCrudeComponent.cxx \
-		PHOS/AliHLTPHOSAnalyzerPeakFinderComponent.cxx 
+		PHOS/AliHLTPHOSRawAnalyzerComponent.cxx \
+		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
+		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx 
 
 EINCLUDE+= HLT/BASE HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
 
