@@ -213,7 +213,6 @@ void AliT0v1::CreateGeometry()
   
     
     gMC->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
-    gMC->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
     gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetC+pstartR[3],idrotm[901],"ONLY");
     // gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetA+pstart[2],0,"ONLY");
 
@@ -242,7 +241,7 @@ void AliT0v1::CreateGeometry()
     TGeoTranslation *trPgon = new TGeoTranslation("trPgon",0,0,0);
     trPgon->RegisterYourself();
  
-    TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("OSTL");//empty segment
+    TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("0STL");//empty segment
     TGeoVolume *ins = gGeoManager->GetVolume("0INS");
 
     Double_t phimin = TMath::ACos((16-4.8)/16.) * (180 / TMath::Pi()) ;
@@ -372,13 +371,11 @@ void AliT0v1::CreateGeometry()
     gMC->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
     
     z += par[2];
-    cout<<" z 0SA1 "<<z<<endl;
     gMC->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
     par[0]=3.15;
     par[1]=3.16;
     par[2]=4.7/2;
-    cout<<" z 0SA2 "<<z<<endl;
     gMC->Gsvolu("0SA2","TUBE",idtmed[kAl],par,3);
     z += par[2];
     gMC->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
@@ -386,14 +383,12 @@ void AliT0v1::CreateGeometry()
     par[0]=3.16; // eta chast' prikruchena k absorberu
     par[1]=7.5;
     par[2]=0.1;
-    cout<<" z 0SA23"<<z<<endl;
     gMC->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
     z += par[2];
     gMC->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
     par[0]=3.16; // gvozdi eta chast' prikruchena k absorberu
     par[1]=7.5;
     par[2]=0.01;
-    cout<<" z 0SN2 "<<z<<endl;
     gMC->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
     gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"ONLY"); 
  
@@ -417,13 +412,12 @@ void AliT0v1::AddAlignableVolumes() const
   TString vpC  = "/ALIC_1/0STR_1/0INS_";
   TString vpInside  = "/0PMT_1/0TOP_1";
 
-
   for (Int_t imod=0; imod<24; imod++)
     {
       if (imod < 12) 
-	{volPath  = vpC; sn="T0/C/PMT";}
-      else  
-	{volPath  = vpA; sn="T0/A/PMT";}
+	{volPath  = vpC; sn="T0/C/PMT";} 
+     else  
+       {volPath  = vpA; sn="T0/A/PMT";}
       volPath += imod+1;
       volPath += vpInside;
       
@@ -435,10 +429,8 @@ void AliT0v1::AddAlignableVolumes() const
       AliDebug(2,Form("volPath=%s\n",volPath.Data()));
       AliDebug(2,Form("symName=%s\n",symName.Data()));
       AliDebug(2,"--------------------------------------------");
-      gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
-      // if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data()))
-      //	AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", 
-      //	      symName.Data(),volPath.Data()));
+      if(!gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data()))
+     	AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symName.Data(),volPath.Data()));
       
     }
 }   
