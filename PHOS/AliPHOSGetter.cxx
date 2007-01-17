@@ -837,7 +837,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       // Add low gain digit only if the high gain digit does not exist in the digits array
       if(lowGainFlag) {
 	seen = kFALSE;
-	for (iOldDigit=iDigit; iOldDigit=0; iOldDigit--) {
+	for (iOldDigit=iDigit; iOldDigit==0; iOldDigit--) {
 	  if (dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit))->GetId() == absId) {
 	    seen = kTRUE;
 	    break;
@@ -851,7 +851,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       // replace low gain digit by a high gain one
       else {
 	if (energyHG >= 1023) continue;
-	for (iOldDigit=iDigit; iOldDigit=0; iOldDigit--) {
+	for (iOldDigit=iDigit; iOldDigit==0; iOldDigit--) {
 	  if (dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit))->GetId() == absId) {
 	    digits->RemoveAt(iOldDigit);
 	    new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
