@@ -45,22 +45,78 @@ Float\_\-t {\bf f\-ADCpedestal\-Correction\-Table} [PHOS\_\-MODULES][PHOS\_\-COL
 \subsection{Constructor \& Destructor Documentation}
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}}
 \index{AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data ()}\label{classAliHLTPHOSEmcCalibData_a0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data ()}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa0}
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}}
 \index{AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data (const char $\ast$ {\em name})}\label{classAliHLTPHOSEmcCalibData_a1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data (const char $\ast$ {\em name})}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa1}
+
+
+
+
+Definition at line 42 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References Reset().
+
+\footnotesize\begin{verbatim}43 {
+44   // Constructor
+45   TString namst = "Calib_";
+46   namst += name;
+47   SetName(namst.Data());
+48   SetTitle(namst.Data());
+49   Reset();
+50 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}}
 \index{AliHLTPHOSEmcCalibData@{AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& {\em calibda})}\label{classAliHLTPHOSEmcCalibData_a2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::Ali\-HLTPHOSEmc\-Calib\-Data (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& {\em calibda})}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa2}
+
+
+
+
+Definition at line 53 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
+
+\footnotesize\begin{verbatim}53                                                                                     :
+54   TNamed(calibda)
+55 {
+56   // copy constructor
+57   SetName(calibda.GetName());
+58   SetTitle(calibda.GetName());
+59 
+60 
+61   //  for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+62   for(Int_t module=0; module<PHOS_MODULES; module++) {
+63     for(Int_t column=0; column< PHOS_COLUMNS; column++) {
+64       for(Int_t row=0; row<PHOS_ROWS; row++) {
+65         for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+66           fADCchannelEnergy[module][column][row][gain] =  calibda.fADCchannelEnergy[module][column][row][gain];
+67           fADCpedestalEmcMeasured[module][column][row][gain] = calibda.fADCpedestalEmcMeasured[module][column][row][gain];
+68         }
+69       }  
+70     }
+71   }
+72 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!~AliHLTPHOSEmcCalibData@{$\sim$AliHLTPHOSEmcCalibData}}
 \index{~AliHLTPHOSEmcCalibData@{$\sim$AliHLTPHOSEmcCalibData}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::$\sim${\bf Ali\-HLTPHOSEmc\-Calib\-Data} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSEmcCalibData_a4}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSEmc\-Calib\-Data::$\sim${\bf Ali\-HLTPHOSEmc\-Calib\-Data} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa4}
+
+
+
+
+Definition at line 99 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+\footnotesize\begin{verbatim}100 {
+101   // Destructor
+102 }
+\end{verbatim}\normalsize 
 
 
 
@@ -68,42 +124,230 @@ Float\_\-t {\bf f\-ADCpedestal\-Correction\-Table} [PHOS\_\-MODULES][PHOS\_\-COL
 \subsection{Member Function Documentation}
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!GetADCchannelEnergy@{GetADCchannelEnergy}}
 \index{GetADCchannelEnergy@{GetADCchannelEnergy}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t Ali\-HLTPHOSEmc\-Calib\-Data::Get\-ADCchannel\-Energy (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}) const}\label{classAliHLTPHOSEmcCalibData_a7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t Ali\-HLTPHOSEmc\-Calib\-Data::Get\-ADCchannel\-Energy (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}) const}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa7}
+
+
+
+
+Definition at line 181 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCchannel\-Energy.
+
+\footnotesize\begin{verbatim}182 {
+183   //Return EMC calibration coefficient
+184   //module, column,raw should follow the internal PHOS convention:
+185   //module 1:5, column 1:56, row 1:64
+186 
+187   return fADCchannelEnergy[module-1][column-1][row-1][gain];
+188 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!GetADCpedestalEmcMeasured@{GetADCpedestalEmcMeasured}}
 \index{GetADCpedestalEmcMeasured@{GetADCpedestalEmcMeasured}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t Ali\-HLTPHOSEmc\-Calib\-Data::Get\-ADCpedestal\-Emc\-Measured (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}) const}\label{classAliHLTPHOSEmcCalibData_a8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t Ali\-HLTPHOSEmc\-Calib\-Data::Get\-ADCpedestal\-Emc\-Measured (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}) const}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa8}
+
+
+
+
+Definition at line 191 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCpedestal\-Emc\-Measured.
+
+\footnotesize\begin{verbatim}192 {
+193   //Return EMC pedestal
+194   //module, column,raw should follow the internal PHOS convention:
+195   //module 1:5, column 1:56, row 1:64
+196 
+197 
+198   return fADCpedestalEmcMeasured[module-1][column-1][row-1][gain];
+199 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!MakeADCpedestalCorrectionTable@{MakeADCpedestalCorrectionTable}}
 \index{MakeADCpedestalCorrectionTable@{MakeADCpedestalCorrectionTable}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Make\-ADCpedestal\-Correction\-Table ()}\label{classAliHLTPHOSEmcCalibData_a11}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Make\-ADCpedestal\-Correction\-Table ()}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa11}
+
+
+
+
+Definition at line 162 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCpedestal\-Altro\-Reg, f\-ADCpedestal\-Correction\-Table, and f\-ADCpedestal\-Emc\-Measured.
+
+\footnotesize\begin{verbatim}163 {
+164   for (Int_t module=0; module<PHOS_MODULES; module++){
+165     printf("============== Module %d\n",module+1);
+166     for (Int_t column=0; column< PHOS_COLUMNS; column++){
+167       for (Int_t row=0; row<PHOS_ROWS; row++){
+168         for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){ 
+169           fADCpedestalCorrectionTable[module][column][row][gain] = fADCpedestalEmcMeasured[module][column][row][gain] - fADCpedestalAltroReg[module][column][row][gain];
+170           //      printf("%4.1f",fADCchannelEnergy[module][column][row][gain]);
+171           //
+172         }
+173         printf("\n");
+174       }
+175     }
+176   }    
+177 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!operator=@{operator=}}
 \index{operator=@{operator=}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& Ali\-HLTPHOSEmc\-Calib\-Data::operator= (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& {\em calibda})}\label{classAliHLTPHOSEmcCalibData_a3}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& Ali\-HLTPHOSEmc\-Calib\-Data::operator= (const {\bf Ali\-HLTPHOSEmc\-Calib\-Data} \& {\em calibda})}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa3}
+
+
+
+
+Definition at line 75 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
+
+\footnotesize\begin{verbatim}76 {
+77   // assignment operator
+78 
+79   if(this != &calibda) { 
+80 
+81     SetName(calibda.GetName());
+82     SetTitle(calibda.GetName());
+83     //    for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+84     for(Int_t module=0; module<PHOS_MODULES; module++) {
+85       for(Int_t column=0; column< PHOS_COLUMNS; column++) {
+86         for(Int_t row=0; row<PHOS_ROWS; row++) {
+87           for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+88             fADCchannelEnergy[module][column][row][gain] = calibda.fADCchannelEnergy[module][column][row][gain];
+89             fADCpedestalEmcMeasured[module][column][row][gain] = calibda.fADCpedestalEmcMeasured[module][column][row][gain];
+90           }
+91         }
+92       }
+93     }
+94   }
+95   return *this;
+96 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!Print@{Print}}
 \index{Print@{Print}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Print (Option\_\-t $\ast$ {\em option} = {\tt \char`\"{}\char`\"{}}) const\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSEmcCalibData_a6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Print (Option\_\-t $\ast$ {\em option} = {\tt \char`\"{}\char`\"{}}) const\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa6}
+
+
+
+
+Definition at line 123 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
+
+\footnotesize\begin{verbatim}124 {
+125   // Print tables of pedestals and ADC channels
+126 
+127   if (strstr(option,"ped")) {
+128     printf("\n  ----    EMC Pedestal values     ----\n\n");
+129     //    for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+130       for (Int_t module=0; module<PHOS_MODULES; module++){
+131         printf("============== Module %d\n",module+1);
+132         for (Int_t column=0; column< PHOS_COLUMNS; column++){
+133           for (Int_t row=0; row<PHOS_ROWS; row++){
+134             for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+135             printf("%4.1f",fADCpedestalEmcMeasured[module][column][row][gain]);
+136           }
+137           printf("\n");
+138         }
+139       }
+140     }
+141   }
+142 
+143   if (strstr(option,"gain")) {
+144     printf("\n  ----    EMC ADC channel values  ----\n\n");
+145     //   for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){ 
+146     for (Int_t module=0; module<PHOS_MODULES; module++){
+147       printf("============== Module %d\n",module+1);
+148       for (Int_t column=0; column< PHOS_COLUMNS; column++){
+149         for (Int_t row=0; row<PHOS_ROWS; row++){
+150           for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){ 
+151             printf("%4.1f",fADCchannelEnergy[module][column][row][gain]);
+152           }
+153           printf("\n");
+154         }
+155       }
+156     }  
+157   }
+158 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!Reset@{Reset}}
 \index{Reset@{Reset}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Reset ()}\label{classAliHLTPHOSEmcCalibData_a5}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Reset ()}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa5}
+
+
+
+
+Definition at line 105 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
+
+Referenced by Ali\-HLTPHOSEmc\-Calib\-Data().
+
+\footnotesize\begin{verbatim}106 {
+107   // Set all pedestals and all ADC channels to its ideal values = 1.
+108 
+109   //  for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+110     for (Int_t module=0; module<PHOS_MODULES; module++){
+111       for (Int_t column=0; column< PHOS_COLUMNS; column++){
+112         for (Int_t row=0; row<PHOS_ROWS; row++){
+113           for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+114           fADCpedestalEmcMeasured[module][column][row][gain] = 0.;
+115           fADCchannelEnergy[module][column][row][gain]  = 1.;
+116         }
+117       }
+118     }
+119   }
+120 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!SetADCchannelEnergy@{SetADCchannelEnergy}}
 \index{SetADCchannelEnergy@{SetADCchannelEnergy}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Set\-ADCchannel\-Energy (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}, Float\_\-t {\em value})}\label{classAliHLTPHOSEmcCalibData_a9}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Set\-ADCchannel\-Energy (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}, Float\_\-t {\em value})}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa9}
+
+
+
+
+Definition at line 202 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCchannel\-Energy.
+
+\footnotesize\begin{verbatim}203 {
+204   //Set EMC calibration coefficient
+205   //module, column,raw should follow the internal PHOS convention:
+206   //module 1:5, column 1:56, row 1:64
+207 
+208   fADCchannelEnergy[module-1][column-1][row-1][gain] = value;
+209 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!SetADCpedestalEmcMeasured@{SetADCpedestalEmcMeasured}}
 \index{SetADCpedestalEmcMeasured@{SetADCpedestalEmcMeasured}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Set\-ADCpedestal\-Emc\-Measured (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}, Float\_\-t {\em value})}\label{classAliHLTPHOSEmcCalibData_a10}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSEmc\-Calib\-Data::Set\-ADCpedestal\-Emc\-Measured (Int\_\-t {\em module}, Int\_\-t {\em column}, Int\_\-t {\em row}, Int\_\-t {\em gain}, Float\_\-t {\em value})}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDataa10}
+
+
+
+
+Definition at line 212 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
+
+References f\-ADCpedestal\-Emc\-Measured.
+
+\footnotesize\begin{verbatim}213 {
+214   //Set EMC pedestal
+215   //module, column,raw should follow the internal PHOS convention:
+216   //module 1:5, column 1:56, row 1:64
+217   fADCpedestalEmcMeasured[module-1][column-1][row-1][gain] = value;
+218 }
+\end{verbatim}\normalsize 
 
 
 
@@ -111,25 +355,41 @@ Float\_\-t {\bf f\-ADCpedestal\-Correction\-Table} [PHOS\_\-MODULES][PHOS\_\-COL
 \subsection{Member Data Documentation}
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCchannelEnergy@{fADCchannelEnergy}}
 \index{fADCchannelEnergy@{fADCchannelEnergy}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCchannel\-Energy}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCchannel\-Energy}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap0}
 
 
-width of one EMC ADC channel in Ge\-V \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalAltroReg@{fADCpedestalAltroReg}}
+width of one EMC ADC channel in Ge\-V 
+
+Definition at line 31 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+
+Referenced by Ali\-HLTPHOSEmc\-Calib\-Data(), Get\-ADCchannel\-Energy(), operator=(), Print(), Reset(), and Set\-ADCchannel\-Energy().\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalAltroReg@{fADCpedestalAltroReg}}
 \index{fADCpedestalAltroReg@{fADCpedestalAltroReg}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Altro\-Reg}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Altro\-Reg}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap2}
 
 
-value of the EMC ADC pedestal subtraction values stored in the ALTRO registers \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalCorrectionTable@{fADCpedestalCorrectionTable}}
+value of the EMC ADC pedestal subtraction values stored in the ALTRO registers 
+
+Definition at line 33 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+
+Referenced by Make\-ADCpedestal\-Correction\-Table().\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalCorrectionTable@{fADCpedestalCorrectionTable}}
 \index{fADCpedestalCorrectionTable@{fADCpedestalCorrectionTable}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Correction\-Table}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p3}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Correction\-Table}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap3}
 
 
-value of the EMC ADC pedestal values to be subtracted form the decoed cahnnel data (= f\-ADCpedestal\-Emc\-Measured - f\-ADCpedestal\-Altro\-Reg) \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalEmcMeasured@{fADCpedestalEmcMeasured}}
+value of the EMC ADC pedestal values to be subtracted form the decoed cahnnel data (= f\-ADCpedestal\-Emc\-Measured - f\-ADCpedestal\-Altro\-Reg) 
+
+Definition at line 34 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+
+Referenced by Make\-ADCpedestal\-Correction\-Table().\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalEmcMeasured@{fADCpedestalEmcMeasured}}
 \index{fADCpedestalEmcMeasured@{fADCpedestalEmcMeasured}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Emc\-Measured}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_p1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Emc\-Measured}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap1}
 
 
 value of the EMC ADC pedestal measured from calibration run 
+
+Definition at line 32 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+
+Referenced by Ali\-HLTPHOSEmc\-Calib\-Data(), Get\-ADCpedestal\-Emc\-Measured(), Make\-ADCpedestal\-Correction\-Table(), operator=(), Print(), Reset(), and Set\-ADCpedestal\-Emc\-Measured().
 
 The documentation for this class was generated from the following files:\begin{CompactItemize}
 \item 

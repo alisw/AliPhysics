@@ -66,17 +66,30 @@ double $\ast$ {\bf f\-Event}
 \subsection{Constructor \& Destructor Documentation}
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!AliHLTPHOSPulseGenerator@{AliHLTPHOSPulseGenerator}}
 \index{AliHLTPHOSPulseGenerator@{AliHLTPHOSPulseGenerator}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::Ali\-HLTPHOSPulse\-Generator ()}\label{classAliHLTPHOSPulseGenerator_a0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::Ali\-HLTPHOSPulse\-Generator ()}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora0}
 
 
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!~AliHLTPHOSPulseGenerator@{$\sim$AliHLTPHOSPulseGenerator}}
 \index{~AliHLTPHOSPulseGenerator@{$\sim$AliHLTPHOSPulseGenerator}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::$\sim${\bf Ali\-HLTPHOSPulse\-Generator} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSPulseGenerator_a1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::$\sim${\bf Ali\-HLTPHOSPulse\-Generator} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora1}
+
+
+
+
+Definition at line 44 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+References f\-Data\-Ptr.
+
+\footnotesize\begin{verbatim}45 {
+46   delete fDataPtr;
+47   fDataPtr=0;
+48 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!AliHLTPHOSPulseGenerator@{AliHLTPHOSPulseGenerator}}
 \index{AliHLTPHOSPulseGenerator@{AliHLTPHOSPulseGenerator}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::Ali\-HLTPHOSPulse\-Generator (double {\em a}, double {\em t0}, const int {\em N}, const double {\em t}, const double {\em f})}\label{classAliHLTPHOSPulseGenerator_a2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::Ali\-HLTPHOSPulse\-Generator (double {\em a}, double {\em t0}, const int {\em N}, const double {\em t}, const double {\em f})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora2}
 
 
 Contruct a pulsegenrator object an initializes all necessary parameters \begin{Desc}
@@ -84,9 +97,46 @@ Contruct a pulsegenrator object an initializes all necessary parameters \begin{D
 \begin{description}
 \item[{\em a}]Amplitude in ADC levels (0 -1023) \item[{\em t0}]Timedelay in nanoseconds of signal relative the first sample. This value should be between 0 and Ts where Ts is the sample interval \end{description}
 \end{Desc}
+
+
+Definition at line 56 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+References f\-Data\-Ptr, f\-NSamples, f\-Sample\-Freq, f\-Tau, Make\-Pulse(), Set\-Amplitude(), Set\-DT(), and Set\-TZero().
+
+\footnotesize\begin{verbatim}56                                                                                                  : fAmplitude(a), fNSamples(N),fTau(0), fSampleFreq(fs), fTZero(0), fDataPtr(0), fDT(0), fEvent(0)
+57 {
+58 
+59   fDataPtr = new double[100];
+60 
+61 
+62 
+63   SetAmplitude(a);
+64   SetDT(fs);
+65   SetTZero(t0);
+66   fNSamples=N;
+67   fTau=t;
+68   fSampleFreq=fs;
+69   //  dT=tau/fs;   //Function values are calculated at intervals dT
+70   //  fDT=1/fs;   //Function values are calculated at intervals dT
+71   MakePulse(fDataPtr);
+72 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!AliHLTPHOSPulseGenerator@{AliHLTPHOSPulseGenerator}}
 \index{AliHLTPHOSPulseGenerator@{AliHLTPHOSPulseGenerator}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::Ali\-HLTPHOSPulse\-Generator (const {\bf Ali\-HLTPHOSPulse\-Generator} \&)}\label{classAliHLTPHOSPulseGenerator_a3}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSPulse\-Generator::Ali\-HLTPHOSPulse\-Generator (const {\bf Ali\-HLTPHOSPulse\-Generator} \&)}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora3}
+
+
+
+
+Definition at line 38 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}38                                                                                   : fAmplitude(0), fNSamples(0),fTau(0), fSampleFreq(0), fTZero(0), fDataPtr(0), fDT(0), fEvent(0)
+39 {
+40   
+41 }
+\end{verbatim}\normalsize 
 
 
 
@@ -94,7 +144,7 @@ Contruct a pulsegenrator object an initializes all necessary parameters \begin{D
 \subsection{Member Function Documentation}
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!AddBaseline@{AddBaseline}}
 \index{AddBaseline@{AddBaseline}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Add\-Baseline (double {\em baseline\-Level}, double $\ast$ {\em samples})}\label{classAliHLTPHOSPulseGenerator_a5}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Add\-Baseline (double {\em baseline\-Level}, double $\ast$ {\em samples})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora5}
 
 
 Adds a baseline offset to the signal \begin{Desc}
@@ -102,9 +152,22 @@ Adds a baseline offset to the signal \begin{Desc}
 \begin{description}
 \item[{\em baseline\-Level}]The basline level to add \item[{\em $\ast$samples}]The sample array for which to add te basline offset \end{description}
 \end{Desc}
+
+
+Definition at line 80 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}81 {
+82   double *tmpSamples;
+83   tmpSamples = samples;
+84   printf("\nbaselineLevel = %f\n", baselineLevel);
+85   cout << "AddBaseline not implemented yet" << endl;
+86 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!AddNoise@{AddNoise}}
 \index{AddNoise@{AddNoise}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Add\-Noise (double $\ast$ {\em data\-Ptr}, double $\ast$ {\em sigma}, double {\em cutoff})}\label{classAliHLTPHOSPulseGenerator_a7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Add\-Noise (double $\ast$ {\em data\-Ptr}, double $\ast$ {\em sigma}, double {\em cutoff})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora7}
 
 
 Adds correlated Gaussian noise with cutof frequency \char`\"{}cutoff\char`\"{} \begin{Desc}
@@ -112,9 +175,20 @@ Adds correlated Gaussian noise with cutof frequency \char`\"{}cutoff\char`\"{} \
 \begin{description}
 \item[{\em data\-Ptr}]array of values \item[{\em sigma}]noise amplitude in entities of ADC levels \item[{\em -30DB}]cutoff frequency of the noise in entities of sampling frequency \end{description}
 \end{Desc}
+
+
+Definition at line 108 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}109 {
+110   printf("\ndataPtr = %f, sigma = %f, cutoff = %f\n", *dataPtr, *sigma, cutoff);
+111   cout << "AddNoise is not implemeted yet" << endl;
+112 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!AddNoise@{AddNoise}}
 \index{AddNoise@{AddNoise}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Add\-Noise (double $\ast$ {\em data\-Ptr}, double $\ast$ {\em sigma})}\label{classAliHLTPHOSPulseGenerator_a6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Add\-Noise (double $\ast$ {\em data\-Ptr}, double $\ast$ {\em sigma})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora6}
 
 
 Adds Gaussian white noise to the sample array given by $\ast$data\-Ptr. \begin{Desc}
@@ -122,9 +196,20 @@ Adds Gaussian white noise to the sample array given by $\ast$data\-Ptr. \begin{D
 \begin{description}
 \item[{\em data\-Ptr}]array of samples \item[{\em sigma}]the noise amplitude in entities of ADC levels \end{description}
 \end{Desc}
+
+
+Definition at line 94 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}95 {
+96   printf("\ndataPtr = %f, sigma = %f\n", *dataPtr, *sigma);
+97   cout << "AddNoise is not implemented yet" << endl;
+98 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!AddPretriggerSamples@{AddPretriggerSamples}}
 \index{AddPretriggerSamples@{AddPretriggerSamples}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-HLTPHOSPulse\-Generator::Add\-Pretrigger\-Samples (double {\em baseline\-Level}, double $\ast$ {\em samples})}\label{classAliHLTPHOSPulseGenerator_a8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-HLTPHOSPulse\-Generator::Add\-Pretrigger\-Samples (double {\em baseline\-Level}, double $\ast$ {\em samples})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora8}
 
 
 Adds pretrigger samples to the sample array and returns a new array containing the pretrigger samples concatenatet in front of the samples given by \char`\"{}samples\char`\"{} \begin{Desc}
@@ -132,9 +217,21 @@ Adds pretrigger samples to the sample array and returns a new array containing t
 \begin{description}
 \item[{\em The}]baseline value of the pretrigger samples \item[{\em The}]sample array for which to add the pretrigger samples \end{description}
 \end{Desc}
+
+
+Definition at line 122 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}123 {
+124   printf("\nbaslinelevel = %f, samples = %f\n", baselineLevel, *samples);
+125   cout << "AddPretriggerSamples not implemented yet" << endl;
+126   return 0;
+127 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!GetPulse@{GetPulse}}
 \index{GetPulse@{GetPulse}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-HLTPHOSPulse\-Generator::Get\-Pulse (double {\em a}, double {\em t0})}\label{classAliHLTPHOSPulseGenerator_a10}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-HLTPHOSPulse\-Generator::Get\-Pulse (double {\em a}, double {\em t0})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora10}
 
 
 Returns a Pulse with new amplidude and t0 \begin{Desc}
@@ -142,44 +239,148 @@ Returns a Pulse with new amplidude and t0 \begin{Desc}
 \begin{description}
 \item[{\em a}]new amplidude, overriding the one given in the constructor \end{description}
 \end{Desc}
+
+
+Definition at line 145 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}146 {
+147   return fDataPtr;
+148 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!GetPulse@{GetPulse}}
 \index{GetPulse@{GetPulse}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-HLTPHOSPulse\-Generator::Get\-Pulse ()}\label{classAliHLTPHOSPulseGenerator_a9}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Ali\-HLTPHOSPulse\-Generator::Get\-Pulse ()}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora9}
 
 
-Returns the generated pulse with the parameters given in the constructor \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!MakePulse@{MakePulse}}
-\index{MakePulse@{MakePulse}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Make\-Pulse (double $\ast$ {\em dta\-Ptr}, double {\em ampl})\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_d1}
+Returns the generated pulse with the parameters given in the constructor 
+
+Definition at line 134 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+Referenced by main().
+
+\footnotesize\begin{verbatim}135 {
+136   return fDataPtr;
+137 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!MakePulse@{MakePulse}}
 \index{MakePulse@{MakePulse}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Make\-Pulse (double $\ast$ {\em dta\-Ptr})\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_d0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Make\-Pulse (double $\ast$ {\em dta\-Ptr}, double {\em ampl})\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratord1}
+
+
+\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!MakePulse@{MakePulse}}
+\index{MakePulse@{MakePulse}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Make\-Pulse (double $\ast$ {\em dta\-Ptr})\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratord0}
+
+
+
+
+Definition at line 183 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+References f\-Amplitude, f\-DT, f\-Tau, and f\-TZero.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator().
+
+\footnotesize\begin{verbatim}184 {
+185 for(int i=0; i<fNSamples; i++)
+186   {
+187     dtaPtr[i]=fAmplitude*exp(2)*pow((i*fDT-fTZero)/fTau, 2)*exp(-2*(i*fDT-fTZero)/fTau);
+188   }  
+189 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!operator=@{operator=}}
 \index{operator=@{operator=}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSPulse\-Generator}\& Ali\-HLTPHOSPulse\-Generator::operator= (const  {\em Ali\-HLTPHOSPulse\-Generator})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSPulseGenerator_a4}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSPulse\-Generator}\& Ali\-HLTPHOSPulse\-Generator::operator= (const  {\em Ali\-HLTPHOSPulse\-Generator})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora4}
+
+
+
+
+Definition at line 16 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+\footnotesize\begin{verbatim}17     {
+18       return *this; 
+19     }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!Quantisize@{Quantisize}}
 \index{Quantisize@{Quantisize}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Quantisize (double $\ast$ {\em data\-Ptr})}\label{classAliHLTPHOSPulseGenerator_a11}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Quantisize (double $\ast$ {\em data\-Ptr})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora11}
 
 
-Emulates the ADC. Rounds down to nearest Integerevalue all entries given by data\-Ptr \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!SetAmplitude@{SetAmplitude}}
+Emulates the ADC. Rounds down to nearest Integerevalue all entries given by data\-Ptr 
+
+Definition at line 155 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}156 {
+157   double *dtaPtr;
+158   dtaPtr = new double[100];
+159   dtaPtr = dataPtr;
+160   //  cout << "Quantisize is not implemented yet" << endl;
+161 }
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!SetAmplitude@{SetAmplitude}}
 \index{SetAmplitude@{SetAmplitude}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Set\-Amplitude (double {\em a})}\label{classAliHLTPHOSPulseGenerator_a12}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Set\-Amplitude (double {\em a})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora12}
+
+
+
+
+Definition at line 164 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+References f\-Amplitude.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator().
+
+\footnotesize\begin{verbatim}165 {
+166   fAmplitude=a;
+167 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!SetDT@{SetDT}}
 \index{SetDT@{SetDT}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Set\-DT (double {\em fs})}\label{classAliHLTPHOSPulseGenerator_a13}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Set\-DT (double {\em fs})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora13}
+
+
+
+
+Definition at line 170 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+References f\-DT.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator().
+
+\footnotesize\begin{verbatim}171 {
+172   fDT=1/fs;  
+173 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!SetTZero@{SetTZero}}
 \index{SetTZero@{SetTZero}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Set\-TZero (double {\em t0})}\label{classAliHLTPHOSPulseGenerator_a14}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSPulse\-Generator::Set\-TZero (double {\em t0})}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratora14}
+
+
+
+
+Definition at line 176 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+References f\-TZero.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator().
+
+\footnotesize\begin{verbatim}177 {
+178   fTZero = -t0/1000; // Since time is in nanoseconds and the samplingfrequency is in MHz -> divide by 1000
+179 }
+\end{verbatim}\normalsize 
 
 
 
@@ -187,45 +388,75 @@ Emulates the ADC. Rounds down to nearest Integerevalue all entries given by data
 \subsection{Member Data Documentation}
 \index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fAmplitude@{fAmplitude}}
 \index{fAmplitude@{fAmplitude}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-Amplitude}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-Amplitude}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr0}
 
 
-\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fDataPtr@{fDataPtr}}
+
+
+Definition at line 34 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+Referenced by Make\-Pulse(), and Set\-Amplitude().\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fDataPtr@{fDataPtr}}
 \index{fDataPtr@{fDataPtr}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-HLTPHOSPulse\-Generator::f\-Data\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r5}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-HLTPHOSPulse\-Generator::f\-Data\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr5}
 
 
-\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fDT@{fDT}}
+
+
+Definition at line 39 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator(), and $\sim$Ali\-HLTPHOSPulse\-Generator().\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fDT@{fDT}}
 \index{fDT@{fDT}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-DT}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-DT}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr6}
 
 
-\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fEvent@{fEvent}}
+
+
+Definition at line 40 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+Referenced by Make\-Pulse(), and Set\-DT().\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fEvent@{fEvent}}
 \index{fEvent@{fEvent}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-HLTPHOSPulse\-Generator::f\-Event}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-HLTPHOSPulse\-Generator::f\-Event}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr7}
 
 
-\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fNSamples@{fNSamples}}
+
+
+Definition at line 41 of file Ali\-HLTPHOSPulse\-Generator.h.\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fNSamples@{fNSamples}}
 \index{fNSamples@{fNSamples}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int {\bf Ali\-HLTPHOSPulse\-Generator::f\-NSamples}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int {\bf Ali\-HLTPHOSPulse\-Generator::f\-NSamples}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr1}
 
 
-\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fSampleFreq@{fSampleFreq}}
+
+
+Definition at line 35 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator().\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fSampleFreq@{fSampleFreq}}
 \index{fSampleFreq@{fSampleFreq}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-Sample\-Freq}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r3}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-Sample\-Freq}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr3}
 
 
-\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fTau@{fTau}}
+
+
+Definition at line 37 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator().\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fTau@{fTau}}
 \index{fTau@{fTau}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-Tau}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-Tau}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr2}
 
 
-\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fTZero@{fTZero}}
+
+
+Definition at line 36 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+Referenced by Ali\-HLTPHOSPulse\-Generator(), and Make\-Pulse().\index{AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}!fTZero@{fTZero}}
 \index{fTZero@{fTZero}!AliHLTPHOSPulseGenerator@{Ali\-HLTPHOSPulse\-Generator}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-TZero}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_r4}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSPulse\-Generator::f\-TZero}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSPulseGenerator_AliHLTPHOSPulseGeneratorr4}
 
 
 
+
+Definition at line 38 of file Ali\-HLTPHOSPulse\-Generator.h.
+
+Referenced by Make\-Pulse(), and Set\-TZero().
 
 The documentation for this class was generated from the following files:\begin{CompactItemize}
 \item 

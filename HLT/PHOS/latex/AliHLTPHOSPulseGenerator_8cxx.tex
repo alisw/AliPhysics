@@ -1,5 +1,7 @@
 \section{Ali\-HLTPHOSPulse\-Generator.cxx File Reference}
 \label{AliHLTPHOSPulseGenerator_8cxx}\index{AliHLTPHOSPulseGenerator.cxx@{AliHLTPHOSPulseGenerator.cxx}}
+
+
 {\tt \#include \char`\"{}Ali\-HLTPHOSPulse\-Generator.h\char`\"{}}\par
 {\tt \#include $<$cmath$>$}\par
 {\tt \#include $<$iostream$>$}\par
@@ -17,3 +19,13 @@
 
 
 Default constructor, not to be called without argumets 
+
+Definition at line 28 of file Ali\-HLTPHOSPulse\-Generator.cxx.
+
+\footnotesize\begin{verbatim}33                                                   : fAmplitude(0), fNSamples(0),fTau(0), fSampleFreq(0), fTZero(0), fDataPtr(0), fDT(0), fEvent(0)
+34 {
+35   cout << "You cannot invoke the Pulsgenerator without parameters" << endl;
+36 }
+\end{verbatim}\normalsize 
+
+

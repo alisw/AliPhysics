@@ -1,5 +1,7 @@
 \section{Peak\-Finder\-Test.cxx File Reference}
 \label{PeakFinderTest_8cxx}\index{PeakFinderTest.cxx@{PeakFinderTest.cxx}}
+
+
 {\tt \#include \char`\"{}Ali\-HLTPHOSPulse\-Generator.h\char`\"{}}\par
 {\tt \#include \char`\"{}Ali\-HLTPHOSAnalyzer\-Peak\-Finder.h\char`\"{}}\par
 {\tt \#include $<$stdio.h$>$}\par
@@ -19,8 +21,109 @@ int {\bf main} ()
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int main ()}\label{PeakFinderTest_8cxx_a1}
 
 
-Testing of the Class Ali\-PHOSFitter \index{PeakFinderTest.cxx@{Peak\-Finder\-Test.cxx}!setFileName@{setFileName}}
+Testing of the Class Ali\-PHOSFitter 
+
+Definition at line 11 of file Peak\-Finder\-Test.cxx.
+
+References Ali\-HLTPHOSPulse\-Generator::Get\-Pulse(), and set\-File\-Name().
+
+\footnotesize\begin{verbatim}12 {
+13   FILE *fp = 0;
+14   int start  = 0;               // Start index of subarray of sample array
+15   int N = 128;                  // Number of samples 
+16   char fileName[100];           // Name of file containing Peakfinder vectors
+17   double amplitude;             // Amplitude/energy in ADC levels
+18   double t0;                    // timedelay in nanoseconds  
+19 
+20   double tau = 2;               // risetime in microseconds
+21   double fs = 20;               // sample frequency in Megahertz
+22   double timeVector[N];         // Peakfinder vector for reconstruction of time
+23   double amplitudeVector[N];    // Peakfinder vector for reconstruction of energy
+24   double aSystError;
+25   double tSystError;
+26 
+27   int ts = (int)(1000/fs);  
+28   printf("\nts=%d\n", ts);
+29 
+30   printf("type amplitude in ADC levels (0-1023):");
+31   scanf("%lf", &amplitude);
+32   printf("type timedelay in nanoseconds (0-%d):", ts); 
+33   scanf("%lf", &t0);
+34 
+35   AliHLTPHOSPulseGenerator *pulseGenPtr = new AliHLTPHOSPulseGenerator(amplitude, t0, N, tau, fs);
+36   double *data = pulseGenPtr->GetPulse(); 
+37 
+38   setFileName(fileName, start, N, tau, fs);
+39   fp = fopen(fileName,"r");
+40 
+41   if(fp == 0)
+42     {
+43       printf("\nFile does not exist\n");
+44     }
+45   else
+46     {
+47       for(int i=0; i < N; i++)
+48         {
+49           fscanf(fp, "%lf", &amplitudeVector[i]);
+50         }
+51 
+52       fscanf(fp, "\n");
+53 
+54      for(int i=0; i < N; i++)
+55         {
+56           fscanf(fp, "%lf", &timeVector[i]);
+57         }
+58 
+59      fscanf(fp, "%lf", &aSystError);
+60      fscanf(fp, "%lf", &tSystError);
+61      printf("\nPeakfinder vectors loaded from %s\n", fileName);
+62     }
+63 
+64 
+65    tSystError = tSystError*pow(10, 9); //to give systematic error of timing in nanoseconds
+66    aSystError = aSystError*100;        //to give systematic error of amplitude in percent
+67 
+68 
+69    //  AliHLTPHOSAnalyzerPeakFinder *fitPtr= new AliHLTPHOSAnalyzerPeakFinder(data, fs); 
+70    AliHLTPHOSAnalyzerPeakFinder *fitPtr= new AliHLTPHOSAnalyzerPeakFinder(); 
+71   
+72    fitPtr->SetData(data);
+73    fitPtr->SetSampleFreq(fs);
+74    fitPtr->SetTVector(timeVector);
+75    fitPtr->SetAVector(amplitudeVector);
+76    //   fitPtr->Set
+77    fitPtr->Evaluate(start, N);
+78   
+79   double energy;
+80   double time;
+81 
+82   time    = fitPtr->GetTiming();
+83   energy  = fitPtr->GetEnergy();
+84 
+85   printf("\nReal amplitude \t\t= %lf ADC counts \nReconstructed amplitude\t= %lf ADC counts\n", amplitude, energy);
+86   printf("\nReal time \t\t= %lf nanoseconds \nReconstructed time\t= %lf nanoseconds\n", t0, time);
+87   printf("\n\nMaximum systematic error in amplitude \t= %lf %%", aSystError);
+88   printf("\nMaximum systematic error for timing \t= %lf nanoseconds\n\n", tSystError);
+89   return 0;
+90 }
+\end{verbatim}\normalsize 
+
+
+\index{PeakFinderTest.cxx@{Peak\-Finder\-Test.cxx}!setFileName@{setFileName}}
 \index{setFileName@{setFileName}!PeakFinderTest.cxx@{Peak\-Finder\-Test.cxx}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}void set\-File\-Name (char $\ast$ {\em f\-Name}, int {\em start}, int {\em length}, double {\em tau}, double {\em fs})}\label{PeakFinderTest_8cxx_a0}
+
+
+
+
+Definition at line 92 of file Peak\-Finder\-Test.cxx.
+
+Referenced by main().
+
+\footnotesize\begin{verbatim}93 {
+94   sprintf(fName, "PFVectors/start%dN%dtau%.ffs%.f.txt", start, N, tau, fs);
+95   //  printf("\nfilename: %s\n", fName);
+96 }
+\end{verbatim}\normalsize 
 
 
