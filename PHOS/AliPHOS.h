@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.69  2006/11/14 17:11:15  hristov
+ * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
+ *
  * Revision 1.68  2006/08/11 12:36:25  cvetan
  * Update of the PHOS code needed in order to read and reconstruct the beam test raw data (i.e. without an existing galice.root)
  *
@@ -80,41 +83,9 @@ public:
   virtual AliTriggerDetector* CreateTriggerDetector() const 
     { return new AliPHOSTrigger(); }
 
-  // Raw Read Out
-  Double_t GetRawFormatCapa() const { return fgCapa ; }   
-  static Double_t GetRawFormatHighCharge() { return fgHighCharge ; }  
-  static Double_t GetRawFormatHighGain() { return fgHighGain ; }  
-  static Double_t GetRawFormatHighLowGainFactor() { return fgHighLowGainFactor ; }  
-  static Double_t GetRawFormatLowCharge() { return ( fgHighCharge *  fgHighLowGainFactor ) ; }  
-  static Double_t GetRawFormatLowGain() { return ( fgHighGain / fgHighLowGainFactor ) ; }  
-  Int_t GetRawFormatOrder() const { return fgOrder ; }   
-  static Int_t GetRawFormatTimeBins() { return fkTimeBins ; }    
-  Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
-  Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
-  Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
-  static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
-  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
-  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
-  //
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void    SetTreeAddress();   
   virtual const TString Version() const {return TString(" ") ; } 
-
-
-protected:
-
-  
-  
-  static Double_t fgCapa ;              // capacitor of the preamplifier for the raw RO signal
-  static Double_t fgHighCharge ;                // high charge (to convert energy to charge) for the raw RO signal
-  static Double_t fgHighGain ;                  // high gain for the raw RO signal
-  static Double_t fgHighLowGainFactor ;         // high to low gain factor for the raw RO signal
-  static Int_t fgOrder ;                // order of the gamma function for the RO signal
-//   static const Int_t fkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
-  static const Int_t fkTimeBins = 64 ; // number of sampling bins of the raw RO signal  
-  static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
-  static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
-  static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
 
  private:                                        
   AliPHOS(AliPHOS & phos);

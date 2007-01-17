@@ -8,7 +8,8 @@ SRCS          =  AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSCalibrator.cxx AliPHOSCalibrManager.cxx \
 		 AliPHOSConTableDB.cxx \
                  AliPHOSOnlineMonitor.cxx \
-		 AliPHOSTrigger.cxx
+		 AliPHOSTrigger.cxx \
+		 AliPHOSPulseGenerator.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

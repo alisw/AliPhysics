@@ -46,6 +46,7 @@
 #include "AliPHOSTrigger.h" 
 #include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h" 
+#include "AliPHOSPulseGenerator.h" 
 #include "AliTriggerInput.h"
 //#include "AliLog.h"
 
@@ -400,36 +401,37 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
   //Set max amplitude if larger than in other Modules
   Float_t maxtimeR2 = -1 ;
   Float_t maxtimeRn = -1 ;
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
-  AliPHOS * phos  = gime->PHOS();
-  Int_t nTimeBins = phos->GetRawFormatTimeBins() ;
+  // Create a shaper pulse object
+  AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
+  Int_t nTimeBins = pulse->GetRawFormatTimeBins() ;
  
   //Set max 2x2 amplitude and select L0 trigger
   if(max2[0] > f2x2MaxAmp ){
     f2x2MaxAmp  = max2[0] ;
     f2x2SM      = iMod ;
     maxtimeR2   = max2[3] ;
-    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itru2,static_cast<Int_t>(max2[1]),static_cast<Int_t>(max2[2]),f2x2CrystalPhi,f2x2CrystalEta,geom) ;
+    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itru2,
+					      static_cast<Int_t>(max2[1]),
+					      static_cast<Int_t>(max2[2]),
+					      f2x2CrystalPhi,f2x2CrystalEta,geom) ;
     
     //Transform digit amplitude in Raw Samples
     fADCValuesLow2x2  = new Int_t[nTimeBins];
     fADCValuesHigh2x2 = new Int_t[nTimeBins];
     
-    phos->RawSampledResponse(maxtimeR2, f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
+    pulse->SetAmplitude(f2x2MaxAmp);
+    pulse->SetTZero(maxtimeR2);
+    pulse->MakeSamples();
+    pulse->GetSamples(fADCValuesHigh2x2, fADCValuesLow2x2) ; 
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //Set L0
     for(Int_t i = 0 ; i < nTimeBins ; i++){
-      if(fADCValuesHigh2x2[i] >= fL0Threshold          || fADCValuesLow2x2[i] >= fL0Threshold){
+      if(fADCValuesHigh2x2[i] >= fL0Threshold || fADCValuesLow2x2[i] >= fL0Threshold) {
 	SetInput("PHOS_L0") ;
 	break;
       }
     }
-//     for(Int_t i = 0 ; i < 256 ; i++)
-//       if(fADCValuesLow2x2[i]!=0||fADCValuesHigh2x2[i]!=0)
-// 	cout<< "2x2 Time Bin "<<i
-// 	    <<"; 2x2 Low Gain  "<<fADCValuesLow2x2[i]
-// 	    <<"; 2x2 High Gain "<<fADCValuesHigh2x2[i]<<endl;
   }
 
   //Set max nxn amplitude and select L1 triggers
@@ -437,12 +439,19 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
     fnxnMaxAmp  = maxn[0] ;
     fnxnSM      = iMod ;
     maxtimeRn   = maxn[3] ;
-    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itrun,static_cast<Int_t>(maxn[1]),static_cast<Int_t>(maxn[2]),fnxnCrystalPhi,fnxnCrystalEta,geom) ; 
+    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itrun,
+					      static_cast<Int_t>(maxn[1]),
+					      static_cast<Int_t>(maxn[2]),
+					      fnxnCrystalPhi,fnxnCrystalEta,geom) ; 
     
     //Transform digit amplitude in Raw Samples
     fADCValuesHighnxn = new Int_t[nTimeBins];
     fADCValuesLownxn  = new Int_t[nTimeBins];
-    phos->RawSampledResponse(maxtimeRn, fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
+
+    pulse->SetAmplitude(maxtimeRn);
+    pulse->SetTZero(fnxnMaxAmp);
+    pulse->MakeSamples();
+    pulse->GetSamples(fADCValuesHighnxn, fADCValuesLownxn) ;
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //SetL1 Low
@@ -459,11 +468,6 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
 	break;
       }
     }
-//     for(Int_t i = 0 ; i < 256 ; i++)
-//       if(fADCValuesLownxn[i]!=0||fADCValuesHighnxn[i]!=0)
-// 	cout<< "nxn Time Bin "<<i
-// 	    <<"; nxn Low Gain  "<<fADCValuesLownxn[i]
-// 	    <<"; nxn High Gain "<<fADCValuesHighnxn[i]<<endl;
   }
 }
 

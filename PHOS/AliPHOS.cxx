@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.105  2007/01/12 21:44:29  kharlov
+ * Simulate and reconstruct two gains simulaneouslsy
+ *
  * Revision 1.104  2006/11/23 13:40:44  hristov
  * Common class for raw data reading and ALTRO mappiing for PHOS and EMCAL (Gustavo, Cvetan)
  *
@@ -104,19 +107,10 @@ class TFile;
 #include "AliCDBEntry.h"
 #include "AliCDBStorage.h"
 #include "AliPHOSCalibData.h"
+#include "AliPHOSPulseGenerator.h"
 #include "AliDAQ.h"
 
 ClassImp(AliPHOS)
-
-Double_t AliPHOS::fgCapa        = 1.;        // 1pF 
-Int_t    AliPHOS::fgOrder       = 2 ;
-Double_t AliPHOS::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTimeMax/fTimeBins
-Double_t AliPHOS::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
-Double_t AliPHOS::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
-
-Double_t AliPHOS::fgHighCharge  = 8.2;       // adjusted for a high gain range of 5.12 GeV (10 bits)
-Double_t AliPHOS::fgHighGain    = 6.64;
-Double_t AliPHOS::fgHighLowGainFactor = 16.; // adjusted for a low gain range of 82 GeV (10 bits) 
 
 //____________________________________________________________________________
   AliPHOS:: AliPHOS() : AliDetector()
@@ -446,15 +440,17 @@ void AliPHOS::Digits2Raw()
   }
 
   // some digitization constants
-//   const Int_t    kThreshold = 1; // skip digits below this threshold // YVK
   const Float_t    kThreshold = 0.001; // skip digits below 1 MeV
   const Int_t      kAdcThreshold = 1;  // Lower ADC threshold to write to raw data
 
   AliAltroBuffer* buffer = NULL;
   Int_t prevDDL = -1;
-  Int_t adcValuesLow[fkTimeBins];
-  Int_t adcValuesHigh[fkTimeBins];
 
+  // Create a shaper pulse object
+  AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
+
+  Int_t *adcValuesLow = new Int_t[pulse->GetRawFormatTimeBins()];
+  Int_t *adcValuesHigh= new Int_t[pulse->GetRawFormatTimeBins()];
 
   //!!!!for debug!!!
   Int_t modMax=-111;
@@ -472,10 +468,10 @@ void AliPHOS::Digits2Raw()
     geom->AbsToRelNumbering(digit->GetId(), relId);
     Int_t module = relId[0];
  
-   // Begin FIXME 
+    // Begin FIXME 
     if (relId[1] != 0) 
       continue;    // ignore digits from CPV
-   // End FIXME 
+    // End FIXME 
 
     Int_t row = relId[2]-1;
     Int_t col = relId[3]-1;
@@ -524,10 +520,10 @@ void AliPHOS::Digits2Raw()
     }
 
     // out of time range signal (?)
-    if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
+    if (digit->GetTimeR() > pulse->GetRawFormatTimeMax() ) {
       AliInfo("Signal is out of time range.\n");
       buffer->FillBuffer((Int_t)digit->GetEnergy());
-      buffer->FillBuffer(GetRawFormatTimeBins() );  // time bin
+      buffer->FillBuffer(pulse->GetRawFormatTimeBins() );  // time bin
       buffer->FillBuffer(3);          // bunch length      
       buffer->WriteTrailer(3, relId[3], relId[2], module);  // trailer
       
@@ -543,12 +539,15 @@ void AliPHOS::Digits2Raw()
       else {
  	energy = 0; // CPV raw data format is now know yet
       }        
-      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
+      pulse->SetAmplitude(energy);
+      pulse->SetTZero(digit->GetTimeR());
+      pulse->MakeSamples();
+      pulse->GetSamples(adcValuesHigh, adcValuesLow) ; 
       
-	buffer->WriteChannel(relId[3]-1, relId[2]-1, 0, 
-			     GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
- 	buffer->WriteChannel(relId[3]-1, relId[2]-1, 1, 
- 			     GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
+      buffer->WriteChannel(relId[3]-1, relId[2]-1, 0, 
+			   pulse->GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
+      buffer->WriteChannel(relId[3]-1, relId[2]-1, 1, 
+			   pulse->GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
       
     }
   }
@@ -563,6 +562,7 @@ void AliPHOS::Digits2Raw()
   AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n",
 	 modMax,colMax,rowMax,eMax));
 
+  delete pulse;
   loader->UnloadDigits();
 }
 
@@ -583,79 +583,6 @@ AliLoader* AliPHOS::MakeLoader(const char* topfoldername)
 // --> to be discussed and made eventually coherent
  fLoader = new AliPHOSLoader(GetName(),topfoldername);
  return fLoader;
-}
-
-//__________________________________________________________________
-Double_t AliPHOS::RawResponseFunction(Double_t *x, Double_t *par) 
-{
-  // Shape of the electronics raw reponse:
-  // It is a semi-gaussian, 2nd order Gamma function of the general form
-  // v(t) = n**n * Q * A**n / C *(t/tp)**n * exp(-n * t/tp) with 
-  // tp : peaking time par[0]
-  // n  : order of the function
-  // C  : integrating capacitor in the preamplifier
-  // A  : open loop gain of the preamplifier
-  // Q  : the total APD charge to be measured Q = C * energy
-  
-  Double_t signal ;
-  Double_t xx = x[0] - ( fgTimeTrigger + par[3] ) ; 
-
-  if (xx < 0 || xx > fgTimeMax) 
-    signal = 0. ;  
-  else { 
-    Double_t fac = par[0] * TMath::Power(fgOrder, fgOrder) * TMath::Power(par[1], fgOrder) / fgCapa ; 
-    signal = fac * par[2] * TMath::Power(xx / fgTimePeak, fgOrder) * TMath::Exp(-fgOrder * (xx / fgTimePeak)) ; 
-  }
-  return signal ;  
-}
-
-//__________________________________________________________________
-Double_t AliPHOS::RawResponseFunctionMax(Double_t charge, Double_t gain) 
-{
-  return ( charge * TMath::Power(fgOrder, fgOrder) * TMath::Power(gain, fgOrder) 
-     / ( fgCapa * TMath::Exp(fgOrder) ) );  
-
-}
-
-//__________________________________________________________________
-Bool_t AliPHOS::RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const 
-{
-  // for a start time dtime and an amplitude damp given by digit, 
-  // calculates the raw sampled response AliPHOS::RawResponseFunction
-  // Input: dtime - signal start time
-  //        damp  - signal amplitude (energy)
-  // Output: adcH - array[fkTimeBins] of 10-bit samples for high-gain channel
-  //         adcL - array[fkTimeBins] of 10-bit samples for low-gain channel
-
-  const Int_t kRawSignalOverflow = 0x3FF ; 
-  Bool_t lowGain = kFALSE ; 
-
-  TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
-
-  for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    signalF.SetParameter(0, GetRawFormatHighCharge() ) ; 
-    signalF.SetParameter(1, GetRawFormatHighGain() ) ; 
-    signalF.SetParameter(2, damp) ; 
-    signalF.SetParameter(3, dtime) ; 
-    Double_t time = iTime * GetRawFormatTimeMax() / GetRawFormatTimeBins() ;
-    Double_t signal = signalF.Eval(time) ;     
-    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow ){  // larger than 10 bits 
-      signal = kRawSignalOverflow ;
-      lowGain = kTRUE ; 
-    }
-    adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
-    AliDebug(4,Form("iTime: %d Energy: %f HG signal: %f adcH: %d ",iTime,damp,signal,adcH[iTime]));
-
-    signalF.SetParameter(0, GetRawFormatLowCharge() ) ;     
-    signalF.SetParameter(1, GetRawFormatLowGain() ) ; 
-    signal = signalF.Eval(time) ;  
-    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow)  // larger than 10 bits 
-      signal = kRawSignalOverflow ;
-    adcL[iTime] = static_cast<Int_t>(0.5 + signal ) ; 
-    AliDebug(4,Form("..LG: %f adcL: %d\n",signal,adcL[iTime]));
-
-  }
-  return lowGain ; 
 }
 
 //____________________________________________________________________________
