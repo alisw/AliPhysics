@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.15  2007/01/15 18:27:11  acolla
+implementation of sending mail to subdetector expert in case the preprocessor fails.
+shuttle.schema updated with expert's email entry
+
 Revision 1.13  2006/12/07 08:51:26  jgrosseo
 update (alberto):
 table, db names in ldap configuration
@@ -199,7 +203,7 @@ fStrictRunOrder(kFALSE)
 		const char* anAlias;
 		while ((anAlias	= anAttribute->GetValue()))
 		{
-			fDCSAliases->AddLast(new TObjString(anAlias));
+			ExpandAndAdd(fDCSAliases, anAlias);
 		}
 	}
 
@@ -209,11 +213,68 @@ fStrictRunOrder(kFALSE)
 		const char* aDataPoint;
 		while ((aDataPoint = anAttribute->GetValue()))
 		{
-			fDCSDataPoints->AddLast(new TObjString(aDataPoint));
+      ExpandAndAdd(fDCSDataPoints, aDataPoint);
 		}
 	}
 
 	fIsValid = kTRUE;
+}
+
+//______________________________________________________________________________________________
+void AliShuttleConfig::AliShuttleConfigHolder::ExpandAndAdd(TObjArray* target, const char* entry)
+{
+  //
+  // adds <entry> to <target> applying expanding of the name
+  // [N..M] creates M-N+1 names with the corresponding digits
+  //
+
+  TString entryStr(entry);
+
+  Int_t begin = entryStr.Index("[");
+  Int_t end = entryStr.Index("]");
+  if (begin != -1 && end != -1 && end > begin)
+  {
+    TString before(entryStr(0, begin));
+    TString after(entryStr(end+1, entryStr.Length()));
+
+    AliDebug(2, Form("Found [] pattern. Splitted input string %s %s", before.Data(), after.Data()));
+
+    Int_t dotdot = entryStr.Index("..");
+
+    TString nStr(entryStr(begin+1, dotdot-begin-1));
+    TString mStr(entryStr(dotdot+2, end-dotdot-2));
+
+    AliDebug(2, Form("Found [N..M] pattern. %s %s", nStr.Data(), mStr.Data()));
+
+    if (nStr.IsDigit() && mStr.IsDigit())
+    {
+      Int_t n = nStr.Atoi();
+      Int_t m = mStr.Atoi();
+
+      Int_t nDigits = nStr.Length();
+      TString formatStr;
+      formatStr.Form("%%s%%0%dd%%s", nDigits);
+
+      AliDebug(2, Form("Format string is %s", formatStr.Data()));
+
+      for (Int_t current = n; current<=m; ++current)
+      {
+        TString newEntry;
+        newEntry.Form(formatStr.Data(), before.Data(), current, after.Data());
+
+        AliDebug(2, Form("Calling recursive with %s", newEntry.Data()));
+
+        // and go recursive
+        ExpandAndAdd(target, newEntry);
+      }
+
+      // return here because we processed the entries already recursively.
+      return;
+    }
+  }
+
+  AliDebug(2, Form("Adding name %s", entry));
+  target->AddLast(new TObjString(entry));
 }
 
 //______________________________________________________________________________________________
