@@ -87,7 +87,7 @@ private:
 		Bool_t SkipDCSQuery() const {return fSkipDCSQuery;}
 		Bool_t StrictRunOrder() const {return fStrictRunOrder;}
 
-    void ExpandAndAdd(TObjArray* target, const char* entry);
+		void ExpandAndAdd(TObjArray* target, const char* entry);
 
 	private:
 		TString fDetector;  	// Detector name
