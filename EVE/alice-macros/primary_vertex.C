@@ -3,7 +3,7 @@
 TPolyMarker3D* make_vertex_marker(AliESDVertex* v, const Text_t* name)
 {
   Double_t x[3], e[3];
-  v->GetTruePos(x);
+  v->GetXYZ(x);
   v->GetSigmaXYZ(e);
 
   printf("%16s: %f %f %f   -   %f %f %f\n", name,
