@@ -70,6 +70,7 @@
 #include "AliRawRootdDB.h"
 #include "AliRawNullDB.h"
 #include "AliTagDB.h"
+#include "AliRawEventTag.h"
 #include "AliFilter.h"
 
 #include "AliMDC.h"
@@ -88,6 +89,7 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   fStats(NULL),
   fRawDB(NULL),
   fTagDB(NULL),
+  fEventTag(new AliRawEventTag),
   fCompress(compress),
   fDeleteFiles(deleteFiles),
   fFilterMode(filterMode),
@@ -160,6 +162,7 @@ AliMDC::~AliMDC()
   delete fStats;
   delete fESD;
   delete fEvent;
+  delete fEventTag;
 }
  
 //______________________________________________________________________________
@@ -353,23 +356,28 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   // Store raw event in tree
   Int_t nBytes = fRawDB->Fill();
 
+  // Fill the event tag object
+  fEventTag->SetHeader(fEvent->GetHeader());
+  fEventTag->SetGUID(fRawDB->GetDB()->GetUUID().AsString());
+  fEventTag->SetEventNumber(fRawDB->GetEvents()-1);
+
   // Create Tag DB here only after the raw data header
   // version was already identified
   if (!fIsTagDBCreated) {
     if (fFileNameTagDB) {
       if (fMaxSizeTagDB > 0) {
-	fTagDB = new AliTagDB(fEvent->GetHeader(), NULL);
+	fTagDB = new AliTagDB(fEventTag, NULL);
 	fTagDB->SetMaxSize(fMaxSizeTagDB);
 	fTagDB->SetFS(fFileNameTagDB);
 	fTagDB->Create();
       } else {
-	fTagDB = new AliTagDB(fEvent->GetHeader(), fFileNameTagDB);
+	fTagDB = new AliTagDB(fEventTag, fFileNameTagDB);
       }
     }
     fIsTagDBCreated = kTRUE;
   }
 
-  // Store header in tree
+  // Store event tag in tree
   if (fTagDB) fTagDB->Fill();
 
   // Make top event object ready for next event data

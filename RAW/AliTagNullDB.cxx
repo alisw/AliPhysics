@@ -29,8 +29,8 @@ ClassImp(AliTagNullDB)
 
 
 //______________________________________________________________________________
-AliTagNullDB::AliTagNullDB(AliRawEventHeaderBase *header) :
-   AliTagDB(header, "/dev/null")
+AliTagNullDB::AliTagNullDB(AliRawEventTag *eventTag) :
+   AliTagDB(eventTag, "/dev/null")
 {
    // Create tag db writing to /dev/null.
 

@@ -25,22 +25,24 @@
 #include <errno.h>
 
 #include <TSystem.h>
+#include <TTimeStamp.h>
 
 #include "AliESD.h"
 
 #include "AliRawDB.h"
-#include "AliRawEventHeaderBase.h"
+#include "AliRawEventTag.h"
 #include "AliTagDB.h"
+#include "AliRawEventHeaderBase.h"
 
 
 ClassImp(AliTagDB)
 
 
 //______________________________________________________________________________
-AliTagDB::AliTagDB(AliRawEventHeaderBase *header, const char* fileName) :
+AliTagDB::AliTagDB(AliRawEventTag *eventTag, const char* fileName) :
   fTagDB(NULL),
   fTree(NULL),
-  fHeader(header),
+  fEventTag(eventTag),
   fMaxSize(-1),
   fFS(""),
   fDeleteFiles(kFALSE)
@@ -75,13 +77,13 @@ Bool_t AliTagDB::Create(const char* fileName)
    }
 
    // Create ROOT Tree object container
-   fTree = new TTree("TAG", Form("ALICE header data tree (%s)", AliRawDB::GetAliRootTag()));
+   fTree = new TTree("T", Form("ALICE raw-data tag tree (%s)", AliRawDB::GetAliRootTag()));
    fTree->SetAutoSave(100000000);  // autosave when 100 Mbyte written
 
    Int_t bufsize = 32000;
    Int_t split   = 1;
-   const char *headername = fHeader->GetName();
-   fTree->Branch("header", headername, &fHeader, bufsize, split);
+   const char *tagname = fEventTag->GetName();
+   fTree->Branch("TAG", tagname, &fEventTag, bufsize, split);
 
    return kTRUE;
 }
@@ -158,17 +160,24 @@ const char *AliTagDB::GetFileName() const
    // check that fs exists (crude check fails if fs is a file)
    gSystem->MakeDirectory(fs);
 
-   char hostname[64];
+   // Get the run number
+   Int_t runNumber = -1;
+   if (fEventTag) {
+     AliRawEventHeaderBase *header = fEventTag->GetHeader();
+     if (header) runNumber = header->Get("RunNb");
+   }
 
+   char hostname[64];
    strcpy(hostname, gSystem->HostName());
 
    char *s;
    if ((s = strchr(hostname, '.')))
-      *s = 0;
+     *s = 0;
 
-   TDatime dt;
+   TTimeStamp ts;
 
-   sprintf(fname, "%s/%s_%d_%d.root", fs, hostname, dt.GetDate(), dt.GetTime());
+   sprintf(fname, "%s/Run%d.%s_%d_%d_%d.RAW.tag.root", fs, runNumber, hostname,
+	   ts.GetDate(), ts.GetTime(), ts.GetNanoSec());
 
    return fname;
 }

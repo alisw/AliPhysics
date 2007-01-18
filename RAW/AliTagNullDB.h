@@ -18,7 +18,7 @@
 class AliTagNullDB : public AliTagDB {
 
 public:
-   AliTagNullDB(AliRawEventHeaderBase *header);
+   AliTagNullDB(AliRawEventTag *eventTag);
    ~AliTagNullDB() { Close(); }
 
    void Close();

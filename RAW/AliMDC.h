@@ -31,6 +31,7 @@ class AliRawEquipmentHeader;
 class AliRawData;
 class AliRawDB;
 class AliTagDB;
+class AliRawEventTag;
 class AliStats;
 class AliESD;
 
@@ -88,6 +89,7 @@ private:
    AliStats    *fStats;       // statistics
    AliRawDB    *fRawDB;       // raw data DB
    AliTagDB    *fTagDB;       // tag DB
+   AliRawEventTag *fEventTag; // raw-data event tag object
    Int_t        fCompress;    // compression factor used for raw output DB
    Bool_t       fDeleteFiles; // flag for deletion of files
    EFilterMode  fFilterMode;  // high level filter mode
