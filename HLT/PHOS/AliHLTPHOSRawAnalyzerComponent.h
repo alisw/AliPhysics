@@ -6,11 +6,9 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
 
-//#include <Rtypes.h>
-//#include "TObject.h"
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSRawAnalyzer.h"
-//#include "AliHLTPHOSRawAnalyzerCrude.h"
+#include "AliRawReaderMemory.h"
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 {
@@ -32,10 +30,6 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-
-  //  virtual void GetOutputDataSize(long  int&, double&);
-
-  //  virtual AliHLTComponent* Spawn();
   virtual AliHLTComponent* Spawn() = 0;
 
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
@@ -44,9 +38,9 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
  protected:
  AliHLTPHOSRawAnalyzer *analyzerPtr; 
 
- // ClassDef(AliHLTPHOSRawAnalyzerComponent, 2) 
  private:
  int eventCount;
+AliRawReaderMemory *fRawMemoryReader;
   static const AliHLTComponentDataType inputDataTypes[];
   static const AliHLTComponentDataType outputDataType;
 
