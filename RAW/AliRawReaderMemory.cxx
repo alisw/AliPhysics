@@ -38,6 +38,8 @@ AliRawReaderMemory::AliRawReaderMemory() :
 // the given memory location
 
   fHeader = new AliRawDataHeader;
+
+  fEventNumber = 0;
 }
 
 AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
@@ -49,6 +51,8 @@ AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
 // create an object to read digits from the given memory
 
   fHeader = new AliRawDataHeader;
+
+  fEventNumber = 0;
 }
 
 AliRawReaderMemory::~AliRawReaderMemory()

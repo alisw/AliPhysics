@@ -266,6 +266,8 @@ Bool_t AliRawReaderFile::NextEvent()
     Reset();
   } while (!IsEventSelected());
 
+  fEventNumber++;
+
   return kTRUE;
 }
 
@@ -274,5 +276,6 @@ Bool_t AliRawReaderFile::RewindEvents()
 // reset the event counter
 
   if (fEventIndex >= 0)  fEventIndex = -1;
+  fEventNumber = -1;
   return Reset();
 }

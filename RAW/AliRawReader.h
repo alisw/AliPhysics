@@ -13,6 +13,9 @@
 
 #include <TObject.h>
 #include <TArrayI.h>
+#include <TClonesArray.h>
+
+#include "AliRawDataErrorLog.h"
 #include "AliRawDataHeader.h"
 
 class AliRawEventHeaderBase;
@@ -106,6 +109,13 @@ class AliRawReader: public TObject {
 
     void             DumpData(Int_t limit = -1);
 
+    void             AddErrorLog(AliRawDataErrorLog::ERawDataErrorType type,
+				 const char *message = NULL);
+    Int_t            GetNumberOfErrorLogs() const { return fErrorLogs.GetEntriesFast(); }
+    AliRawDataErrorLog *GetErrorLog(Int_t i) const {
+      return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);
+    }
+
   protected :
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;
@@ -125,6 +135,9 @@ class AliRawReader: public TObject {
     Int_t            fSelectEventType;      // type of selected events (<0 = no selection)
 
     Int_t            fErrorCode;            // code of last error
+
+    Int_t            fEventNumber;          // current event number
+    TClonesArray     fErrorLogs;        // raw data decoding errors
 
     ClassDef(AliRawReader, 0) // base class for reading raw digits
 };

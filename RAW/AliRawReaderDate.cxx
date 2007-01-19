@@ -523,6 +523,7 @@ Bool_t AliRawReaderDate::NextEvent()
       break;
     }
     fEvent = (eventHeaderStruct*) buffer;
+    fEventNumber++;
     return kTRUE;
   };
 
@@ -539,6 +540,7 @@ Bool_t AliRawReaderDate::RewindEvents()
   if (!fFile) return kFALSE;
 
   fseek(fFile, 0, SEEK_SET);
+  fEventNumber = -1;
   return Reset();
 }
 

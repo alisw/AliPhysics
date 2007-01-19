@@ -39,6 +39,7 @@
 #include <Riostream.h>
 #include "AliRawReader.h"
 #include "AliDAQ.h"
+#include "AliLog.h"
 
 ClassImp(AliRawReader)
 
@@ -54,7 +55,9 @@ AliRawReader::AliRawReader() :
   fSelectMaxEquipmentId(-1),
   fSkipInvalid(kFALSE),
   fSelectEventType(-1),
-  fErrorCode(0)
+  fErrorCode(0),
+  fEventNumber(-1),
+  fErrorLogs("AliRawDataErrorLog",100)
 {
 // default constructor: initialize data members
 }
@@ -103,7 +106,9 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectMaxEquipmentId(rawReader.fSelectMaxEquipmentId),
   fSkipInvalid(rawReader.fSkipInvalid),
   fSelectEventType(rawReader.fSelectEventType),
-  fErrorCode(0)
+  fErrorCode(0),
+  fEventNumber(-1),
+  fErrorLogs("AliRawDataErrorLog",100)
 {
 // copy constructor
 }
@@ -124,6 +129,9 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSelectEventType = rawReader.fSelectEventType;
 
   fErrorCode = rawReader.fErrorCode;
+
+  fEventNumber = rawReader.fEventNumber;
+  fErrorLogs = *((TClonesArray*)rawReader.fErrorLogs.Clone());
 
   return *this;
 }
@@ -447,4 +455,26 @@ void AliRawReader::DumpData(Int_t limit)
     printf("\n");
 	   
   } while (ReadHeader());
+}
+
+void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorType type,
+			       const char *message)
+{
+  // Add a raw data error message to the list
+  // of raw-data decoding errors
+  if (fEventNumber < 0) {
+    AliError("No events have read so far! Impossible to add a raw data error log!");
+    return;
+  }
+  Int_t ddlId = GetDDLID();
+  if (ddlId < 0) {
+    AliError("No ddl raw data have been read so far! Impossible to add a raw data error log!");
+    return;
+  }
+
+  new (fErrorLogs[fErrorLogs.GetEntriesFast()])
+    AliRawDataErrorLog(fEventNumber,
+		       ddlId,
+		       type,
+		       message);
 }

@@ -477,6 +477,7 @@ Bool_t AliRawReaderRoot::NextEvent()
       return kFALSE;
     fEventIndex++;
   } while (!IsEventSelected());
+  fEventNumber++;
   return Reset();
 }
 
@@ -490,6 +491,7 @@ Bool_t AliRawReaderRoot::RewindEvents()
   delete fEvent;
   fEvent = new AliRawEvent;
   fBranch->SetAddress(&fEvent);
+  fEventNumber = -1;
   return Reset();
 }
 
