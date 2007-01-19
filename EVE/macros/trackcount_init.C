@@ -1,5 +1,3 @@
-Reve::TrackCounter* g_trkcnt = 0;
-
 void trackcount_init()
 {
   Reve::LoadMacro("alieve_init.C");
@@ -13,7 +11,7 @@ void trackcount_init()
     // glv->SetOrthoCamera(TGLViewer::kCameraOrthoZOY, -22, 22, 22, -22);
   }
 
-  g_trkcnt = new Reve::TrackCounter("Primary Counter");
+  Reve::TrackCounter* g_trkcnt = new Reve::TrackCounter("Primary Counter");
   gReve->AddGlobalRenderElement(g_trkcnt);
 
   Alieve::gEvent->AddNewEventCommand("on_new_event();");
@@ -41,8 +39,7 @@ void on_new_event()
   // First two have reasonable primaries (sigma-to-prim-vertex < 5).
   // Other three are almost certainly secondaries.
   Int_t count = 1;
-  if (g_trkcnt == 0) // This sometimes happens; linked to macro execution, cint reset.
-    g_trkcnt = Reve::TrackCounter::fgInstance;
+  Reve::TrackCounter* g_trkcnt = Reve::TrackCounter::fgInstance;
   g_trkcnt->Reset();
   g_trkcnt->SetEventId(Alieve::gEvent->GetEventId());
   Reve::RenderElement::List_i i = cont->BeginChildren();
