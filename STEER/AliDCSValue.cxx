@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/09/04 17:42:34  hristov
+Changes required by Effective C++
+
 Revision 1.3  2006/07/20 09:43:46  jgrosseo
 removing dynamic types
 
@@ -232,7 +235,7 @@ const Char_t* AliDCSValue::ToString() const
 
   switch (fType)
   {
-    case kBool:  str.Form("%d", fBool);  break;
+    case kBool:  str = (fBool == kFALSE) ? "FALSE" : "TRUE"; break;
     case kChar:  str.Form("%d", fChar);  break;
     case kInt:   str.Form("%d", fInt);  break;
     case kUInt:  str.Form("%d", fUInt);  break;
@@ -242,4 +245,9 @@ const Char_t* AliDCSValue::ToString() const
   }
 
   return Form("%s Timestamp: %s", str.Data(), TTimeStamp(fTimeStamp).AsString());
+}
+
+void AliDCSValue::Print(Option_t* /*opt*/) const
+{
+  printf("%s\n", ToString());
 }

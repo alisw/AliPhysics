@@ -27,7 +27,7 @@ public:
   AliDCSValue();
   AliDCSValue(const AliDCSValue& c);
 
-  ~AliDCSValue();
+  virtual ~AliDCSValue();
 
   AliDCSValue& operator=(const AliDCSValue& c);
   virtual void Copy(TObject& c) const;
@@ -52,6 +52,7 @@ public:
   Int_t GetSize() const;
 
   const Char_t* ToString() const;
+	void Print(Option_t* /*opt*/) const;
 
 protected:
   void Init();
