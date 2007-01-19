@@ -22,7 +22,7 @@ public:
   virtual  ~AliPHOSPulseGenerator();
 
   void      AddBaseline(Double_t baselineLevel);
-  void      AddNoise   (Double_t *sigma);
+  void      AddNoise   (Double_t sigma);
   void      AddNoise   (Double_t *sigma, Double_t cutoff);
   void      AddPretriggerSamples(Int_t nPresamples);
   void      GetSamples(Int_t *adcHG, Int_t *adcLG) const;
@@ -30,8 +30,9 @@ public:
   void      Digitize();
   Bool_t    GetDigitize() {return fDigitize;}
   void      SetDigitise (Bool_t flag) {fDigitize  = flag;}
-  void      SetAmplitude(Double_t  a) {fAmplitude = a   ;}
-  void      SetTZero    (Double_t t0) {fTZero     = t0  ;}
+  void      SetAmplitude(Double_t  a) {fAmplitude = a   ; Reset();}
+  void      SetTZero    (Double_t t0) {fTZero     = t0  ; Reset();}
+  void      Reset();
 
   // Raw Read Out
   Double_t        GetRawFormatCapa()        const { return fgCapa ; }

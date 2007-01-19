@@ -21,6 +21,7 @@
 //   AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator(energy,time);
 //   Int_t *adcHG = new Int_t[pulse->GetRawFormatTimeBins()];
 //   Int_t *adcLG= new Int_t[pulse->GetRawFormatTimeBins()];
+//   pulse->AddNoise(1.);
 //   pulse->MakeSamples();
 //   pulse->GetSamples(adcHG, adcHG) ; 
 //   pulse->Print();
@@ -33,6 +34,7 @@
 #include "TF1.h" 
 #include "TGraph.h" 
 #include "TCanvas.h" 
+#include "TRandom.h"
 
 // --- AliRoot header files ---
 #include "AliLog.h"
@@ -67,6 +69,7 @@ AliPHOSPulseGenerator::AliPHOSPulseGenerator(Double_t a, Double_t t0)
 
   fDataHG = new Double_t[fkTimeBins];
   fDataLG = new Double_t[fkTimeBins];
+  Reset();
 }
 
 //-----------------------------------------------------------------------------
@@ -93,6 +96,17 @@ AliPHOSPulseGenerator::~AliPHOSPulseGenerator()
 }
 
 //-----------------------------------------------------------------------------
+void AliPHOSPulseGenerator::Reset()
+{
+  // Reset all sample amplitudes to 0
+
+  for (Int_t i=0; i<fkTimeBins; i++) {
+    fDataHG[i] = 0.;
+    fDataLG[i] = 0.;
+  }
+}
+
+//-----------------------------------------------------------------------------
 void AliPHOSPulseGenerator::AddBaseline(Double_t baselineLevel)
 {
   // Adds a baseline offset to the signal
@@ -101,17 +115,21 @@ void AliPHOSPulseGenerator::AddBaseline(Double_t baselineLevel)
     fDataHG[i] += baselineLevel;
     fDataLG[i] += baselineLevel;
   }
+  // Digitize floating point amplitudes to integers
+  if (fDigitize) Digitize();
 }
 
 //-----------------------------------------------------------------------------
-void AliPHOSPulseGenerator::AddNoise(Double_t * /* sigma */)
+void AliPHOSPulseGenerator::AddNoise(Double_t sigma)
 {
-  // Adds Gaussian white noise to the sample array given by *dataPtr.
+  // Adds Gaussian uncorrelated to the sample array
   // @param sigma the noise amplitude in entities of ADC levels  
   
-  AliError("not implemented yet");
+  for (Int_t i=0; i<fkTimeBins; i++) {
+    fDataHG[i] = gRandom->Gaus(0., sigma) ; 
+    fDataLG[i] = gRandom->Gaus(0., sigma) ; 
+  }
 }
-
 
 //-----------------------------------------------------------------------------
 void AliPHOSPulseGenerator::AddNoise(Double_t * /* sigma */, Double_t /* cutoff */)
@@ -138,12 +156,12 @@ void AliPHOSPulseGenerator::AddPretriggerSamples(Int_t nPresamples)
   }
   for (i=0; i<fkTimeBins; i++) {
     if (i<nPresamples) {
-      tmpDataHG[i] = 0.;
-      tmpDataLG[i] = 0.;
+      fDataHG[i] = 0.;
+      fDataLG[i] = 0.;
     }
     else {
-      tmpDataHG[i] = fDataHG[i-nPresamples];
-      tmpDataLG[i] = fDataLG[i-nPresamples];
+      fDataHG[i] = tmpDataHG[i-nPresamples];
+      fDataLG[i] = tmpDataLG[i-nPresamples];
     }
   }
   delete [] tmpDataHG;
@@ -198,7 +216,7 @@ Bool_t AliPHOSPulseGenerator::MakeSamples()
   // for a start time fTZero and an amplitude fAmplitude given by digit, 
   // calculates the raw sampled response AliPHOSPulseGenerator::RawResponseFunction
 
-  const Int_t kRawSignalOverflow = 0x3FF ; 
+  const Int_t kRawSignalOverflow = 0x3FF ; // decimal 1023
   Bool_t lowGain = kFALSE ; 
 
   TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
@@ -210,20 +228,22 @@ Bool_t AliPHOSPulseGenerator::MakeSamples()
     signalF.SetParameter(3, fTZero) ; 
     Double_t time = iTime * GetRawFormatTimeMax() / GetRawFormatTimeBins() ;
     Double_t signal = signalF.Eval(time) ;     
-    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow ){  // larger than 10 bits 
-      signal = kRawSignalOverflow ;
+    fDataHG[iTime] += signal;
+    if ( static_cast<Int_t>(fDataHG[iTime]+0.5) > kRawSignalOverflow ){  // larger than 10 bits 
+      fDataHG[iTime] = kRawSignalOverflow ;
       lowGain = kTRUE ; 
     }
-    fDataHG[iTime] = signal;
 
     signalF.SetParameter(0, GetRawFormatLowCharge() ) ;     
     signalF.SetParameter(1, GetRawFormatLowGain() ) ; 
     signal = signalF.Eval(time) ;  
-    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow)  // larger than 10 bits 
-      signal = kRawSignalOverflow ;
-    fDataLG[iTime] = signal;
+    fDataLG[iTime] += signal;
+    if ( static_cast<Int_t>(fDataLG[iTime]+0.5) > kRawSignalOverflow)  // larger than 10 bits 
+      fDataLG[iTime] = kRawSignalOverflow ;
 
   }
+  // Digitize floating point amplitudes to integers
+  if (fDigitize) Digitize();
   return lowGain ; 
 }
 
@@ -266,13 +286,14 @@ void AliPHOSPulseGenerator::Draw(Option_t*)
   TGraph *graphHG = new TGraph(nPoints,time,fDataHG);
   TGraph *graphLG = new TGraph(nPoints,time,fDataLG);
   graphHG->SetMarkerStyle(20);
-  graphLG->SetMarkerStyle(24);
-  graphHG->SetMarkerSize(0.3);
-  graphLG->SetMarkerSize(0.3);
+  graphLG->SetMarkerStyle(20);
+  graphHG->SetMarkerSize(0.4);
+  graphLG->SetMarkerSize(0.4);
   graphHG->SetTitle("High gain samples");
   graphLG->SetTitle("Low gain samples");
 
   TCanvas *c1 = new TCanvas("c1","Raw ALTRO samples",10,10,700,500);
+  c1->SetFillColor(0);
   c1->Divide(2,1);
   c1->cd(1);
   gPad->SetLeftMargin(0.15);
