@@ -35,7 +35,7 @@ AliHLTPHOSRawAnalyzerCrude::AliHLTPHOSRawAnalyzerCrude(const AliHLTPHOSRawAnalyz
  **/
 AliHLTPHOSRawAnalyzerCrude::AliHLTPHOSRawAnalyzerCrude():AliHLTPHOSRawAnalyzer() 
 {
-  cout <<"AliHLTPHOSRawAnalyzerCrude::Creating a new AliHLTPHOSRawAnalyzerCrude() object "<<endl;
+  //  cout <<"AliHLTPHOSRawAnalyzerCrude::Creating a new AliHLTPHOSRawAnalyzerCrude() object "<<endl;
 }
 
 
@@ -63,6 +63,8 @@ AliHLTPHOSRawAnalyzerCrude::~AliHLTPHOSRawAnalyzerCrude()
 void 
 AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
 {
+  printf("\nAliHLTPHOSRawAnalyzerCrude::Evaluat() from index %d to %d\n", start, start + length);
+  
   
   double tmpAmplitudeMax =0; 
   double tmpTime = 0;
@@ -78,6 +80,7 @@ AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
 	
   fDAmpl = tmpAmplitudeMax;
   fDTof =  tmpTime;
+ 
   //thats all 
 } //end Crude
 
