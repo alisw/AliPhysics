@@ -1,3 +1,8 @@
+2007-01-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	Use RGTopFrame::RedrawDisabler in GotoEvent(Int_t).
+
 2006-12-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCSectorData.cxx:

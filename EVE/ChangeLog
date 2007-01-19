@@ -1,3 +1,9 @@
+2007-01-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* macros/trackcount_init.C:
+	Avoid usage of script-global variables as they get reset on
+	exceptions; rely on static data-member instead.
+
 2007-01-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/primary_vertex.C:
