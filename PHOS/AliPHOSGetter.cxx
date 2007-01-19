@@ -846,42 +846,43 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       // Add low gain digit only if the high gain digit does not exist in the digits array
       seen = kFALSE;
       if(lowGainFlag) {
-	for (iOldDigit=iDigit-1; iOldDigit==0; iOldDigit--) {
+	for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
 	  if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
 	    seen = kTRUE;
 	    break;
 	  }
 	}
-	if (!seen)
+	if (!seen) {
 	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyLG,time);
+	  iDigit++;
+	}
 	energyLG = 0. ; 
       }
       // Add high gain digit only if it is not saturated;
       // replace low gain digit by a high gain one
       else {
 	if (energyHG >= 1023) continue;
-	for (iOldDigit=iDigit-1; iOldDigit==0; iOldDigit--) {
+	for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
 	  if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
 	    digits->RemoveAt(iOldDigit);
-	    new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
+	    new((*digits)[iOldDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
 	    seen = kTRUE;
 	    break;
 	  }
 	}
-	if (!seen)
+	if (!seen) {
 	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
+	  iDigit++;
+	}
 	energyHG = 0. ; 
       }
-      AliPHOSDigit *dig = dynamic_cast<AliPHOSDigit*>(digits->At(iDigit));
-      dig->Print();
-      iDigit++;
     }
   }
 
   // PHOS entries loop
  
+  digits->Compress() ;
   digits->Sort() ;
-  digits->Print();
 
   //!!!!for debug!!!
   Int_t modMax=-111;
