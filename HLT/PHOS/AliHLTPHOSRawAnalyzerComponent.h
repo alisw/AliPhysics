@@ -31,7 +31,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
-  virtual void GetOutputDataSize(long unsigned int&, double&);
+  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
   //  virtual void GetOutputDataSize(long  int&, double&);
 
