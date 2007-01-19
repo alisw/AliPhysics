@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+ <SimpleChainConfig1 ID="PHOS_pi0_test" verbosity="0x3F">
+  
+     <!-- ============================================================== -->
+     <!-- =========================  NODELIST  ========================= -->
+     <!-- ============================================================== -->
+     <Node ID="0" hostname="mixing"/>
+
+
+     <!-- ============================================================== -->
+     <!-- =========================  Sector 00  ======================== -->
+     <!-- ============================================================== -->
+  
+
+          <!-- ############################################################## -->
+          <!-- #########################  Patch 0  ########################## -->
+          <!-- ############################################################## -->
+    
+    <Proc ID="PHOS_RAW_0_0" type="src">
+               <Cmd>FilePublisher
+                    -datafilelist /home/perthi/simulations/yuri/run6/raw*/PHOS_1806.ddl
+                    -datatype DDL_RWPK -dataspec 0x00000000 -dataorigin TPC
+                    -eventtime 500000
+                    -sleeptillevent -diskpublisher -eventidfromfile
+               </Cmd>
+               
+               <Node>0</Node>
+               <Shm blocksize="40k" blockcount="4" type="sysv"/>
+          </Proc>
+  
+          <Proc ID="PHOSP0_0_0" type="prc">
+               <Cmd>AliRootWrapperSubscriber
+                    -componentid AliPhosTestRaw
+                    -addlibrary libNew.so
+                    -addlibrary libMatrix.so
+                    -addlibrary libMinuit.so
+                    -addlibrary libEG.so
+                    -addlibrary libFoam.so
+                    -addlibrary libGedOld.so
+                    -addlibrary libGeom.so
+                    -addlibrary libRootAuth.so
+                    -addlibrary libThread.so
+                    -addlibrary libVMC.so
+                    -addlibrary libCore.so
+                    -addlibrary libCint.so
+                    -addlibrary libHist.so
+                    -addlibrary libGraf.so
+                    -addlibrary libGraf3d.so
+                    -addlibrary libGpad.so 
+                    -addlibrary libTree.so
+                    -addlibrary libRint.so
+                    -addlibrary libTree.so 
+                    -addlibrary libESD.so 
+                    -addlibrary libSTEER.so        
+                    -addlibrary libRAWDatarec.so
+                    -componentlibrary libAliHLTPHOS.so
+                   -componentargs "pp-run rawreadermode 4 adc-threshold 20"
+               </Cmd>
+               <Parent>PHOS_RAW_0_0</Parent>
+               <Node>0</Node>
+               <Shm blocksize="240k" blockcount="4" type="sysv"/>
+          </Proc>
+
+     <!-- ============================================================== -->
+     <!-- ====================  TOPLEVEL PROCESSES  ==================== -->
+     <!-- ============================================================== -->
+ </SimpleChainConfig1>
