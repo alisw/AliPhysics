@@ -295,17 +295,18 @@ if test "x$with_pubsub" != "xno" ; then
   # directory layout
   if test -d ${with_pubsub}/include/HOMER ; then
     # the 'early' location of the include files with separated HOMER sub dirs
-    HOMER_CPPFLAGS="-I${with_pubsub}/include/HOMER -I${with_pubsub}/include/HOMER/reader"
+    HOMER_INCDIRS="${with_pubsub}/include/HOMER ${with_pubsub}/include/HOMER/reader"
   elif test -d ${with_pubsub}/include/Util/HOMER ; then
     # location for HLT Framework versions after Sep 2006
-    HOMER_CPPFLAGS="-I${with_pubsub}/include/Util/HOMER"
+    HOMER_INCDIRS="${with_pubsub}/include/Util/HOMER"
   elif test -d ${with_pubsub}/src/Util/HOMER/include ; then
     # fall back if include files were not installed (versions after Sep 06)
-    HOMER_CPPFLAGS="-I${with_pubsub}/src/Util/HOMER/include"
+    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/include"
   else
     # fall back if include files were not installed (versions before Sep 06)
-    HOMER_CPPFLAGS="-I${with_pubsub}/src/Util/HOMER/reader/include -I${with_pubsub}/src/Util/HOMER/data/include"
+    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/reader/include ${with_pubsub}/src/Util/HOMER/data/include"
   fi
+  HOMER_CPPFLAGS=`for i in ${HOMER_INCDIRS}; do echo -n "-I$i " ; done`
   HOMER_BINDIR="${with_pubsub}/bin/`uname -s`-`uname -m`"
   HOMER_LIBDIR="${with_pubsub}/lib/`uname -s`-`uname -m`"
   HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
@@ -322,7 +323,7 @@ if test "x$with_pubsub" != "xno" ; then
                      [with_homer=yes
 		      HOMER_LIBS="-lHOMERReader"])])
       LIBS="$LIBS $HOMER_LIBS"
-      AC_MSG_CHECKING([for HOMER version])
+      AC_MSG_CHECKING([version of HOMER library])
       dnl The Homer library has no versioning, so we do our own
       dnl version           description
       dnl ----------------------------------------------------------------------

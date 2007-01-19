@@ -89,11 +89,27 @@ class AliHLTComponentHandler : public AliHLTLogging {
   int RegisterComponent(AliHLTComponent* pSample );
 
   /**
+   * Registers all scheduled components.
+   */
+  int RegisterScheduledComponents();
+
+  /**
    * Deregister a component.
    * @param componentID   ID of the component
    * @return neg. error code if failed
    */
   int DeregisterComponent( const char* componentID );
+
+  /**
+   * Add standard components
+   * The standard components are part of the libHLTbase library and
+   * need therefore a special handling.
+   */
+  int AddStandardComponents();
+
+  /**
+   */
+  int DeleteStandardComponents();
 
   /**
    * Find the ID of a component with the given output data.
@@ -189,6 +205,8 @@ class AliHLTComponentHandler : public AliHLTLogging {
   vector<AliHLTLibHandle> fLibraryList;
   /** running environment for the component */
   AliHLTComponentEnvironment fEnvironment;
+  /** list of standard components */
+  vector<AliHLTComponent*> fStandardList;  
 
   ClassDef(AliHLTComponentHandler, 0);
 

@@ -32,7 +32,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # classes. The *LinkDef.h must be added to DHDR in that case.
 # There might be an extension also in ALIROOT which allows to 
 # generate the LinkDef automatically.
-DHDR:= 		
+DHDR:= 		SampleLib/AliHLTSampleLinkDef.h		
 CINTAUTOLINK:=
 
 # extra defines and flags for the AliRoot build system. NOTE: include

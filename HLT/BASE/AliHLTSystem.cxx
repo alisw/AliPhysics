@@ -34,6 +34,19 @@ using namespace std;
 #include "AliHLTTask.h"
 #include "TString.h"
 
+// #include <sstream>
+// #include <iostream>
+// #include "AliLog.h"
+
+// ostringstream g_logstr;
+
+// void LogNotification(AliLog::EType_t level, const char* message)
+// {
+//   cout << "notification handler" << endl;
+//   cout << g_logstr.str() << endl;
+//   g_logstr.clear();
+// }
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
 
@@ -46,6 +59,7 @@ AliHLTSystem::AliHLTSystem()
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
+    env.fAllocMemoryFunc=AliHLTSystem::AllocMemory;
     env.fLoggingFunc=AliHLTLogging::Message;
     fpComponentHandler->SetEnvironment(&env);
 
@@ -59,6 +73,11 @@ AliHLTSystem::AliHLTSystem()
   } else {
     HLTFatal("can not create Configuration Handler");
   }
+//   AliLog log;
+//   log.SetLogNotification(LogNotification);
+//   log.SetStreamOutput(&g_logstr);
+//   AliInfo("this is a printf message");
+//   AliInfoStream() << "this is a stream message" << endl;
 }
 
 AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
@@ -262,42 +281,49 @@ void AliHLTSystem::PrintTaskList()
   }
 }
 
-void AliHLTSystem::PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt) {
-  TString msg;
-  msg.Form("AliHLTComponentDataType(%d): ID=\"", dt.fStructSize);
-  for ( unsigned i = 0; i < kAliHLTComponentDataTypefIDsize; i++ ) {
-   if (dt.fID[i]!=0) msg+=dt.fID[i];
-   else msg+="\\0";
-  }
-  msg+="\" Origin=\"";
-  for ( unsigned i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ ) {
-   if (dt.fOrigin[i]!=0) msg+=dt.fOrigin[i];
-   else msg+="\\0";
-  }
-  msg+="\"";
-  HLTMessage(msg.Data());
-}
-
 int AliHLTSystem::Run(Int_t iNofEvents) 
 {
   int iResult=0;
-  if ((iResult=StartTasks())>=0) {
-    for (int i=0; i<iNofEvents && iResult>=0; i++) {
-      iResult=ProcessTasks(i);
-      if (iResult>=0) {
-	HLTInfo("Event %d successfully finished (%d)", i, iResult);
-	iResult=0;
-      } else {
-	HLTError("Processing of event %d failed (%d)", i, iResult);
-	// TODO: define different running modes to either ignore errors in
-	// event processing or not
-	// currently ignored 
-	iResult=0;
+  if ((iResult=InitTasks())>=0) {
+    if ((iResult=StartTasks())>=0) {
+      for (int i=0; i<iNofEvents && iResult>=0; i++) {
+	iResult=ProcessTasks(i);
+	if (iResult>=0) {
+	  HLTInfo("Event %d successfully finished (%d)", i, iResult);
+	  iResult=0;
+	} else {
+	  HLTError("Processing of event %d failed (%d)", i, iResult);
+	  // TODO: define different running modes to either ignore errors in
+	  // event processing or not
+	  // currently ignored 
+	  //iResult=0;
+	}
       }
+      StopTasks();
+    } else {
+      HLTError("can not start task list");
     }
-    StopTasks();
+    DeinitTasks();
   } else {
-    HLTError("can not start task list");
+    HLTError("can not initialize task list");
+  }
+  return iResult;
+}
+
+int AliHLTSystem::InitTasks()
+{
+  int iResult=0;
+  TObjLink *lnk=fTaskList.FirstLink();
+  while (lnk && iResult>=0) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      iResult=pTask->Init(NULL, fpComponentHandler);
+    } else {
+    }
+    lnk = lnk->Next();
+  }
+  if (iResult<0) {
   }
   return iResult;
 }
@@ -329,7 +355,8 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
-      iResult=pTask->ProcessTask();
+      iResult=pTask->ProcessTask(eventNo);
+      HLTDebug("task %s finnished (%d)", pTask->GetName(), iResult);
     } else {
     }
     lnk = lnk->Next();
@@ -351,4 +378,25 @@ int AliHLTSystem::StopTasks()
     lnk = lnk->Next();
   }
   return iResult;
+}
+
+int AliHLTSystem::DeinitTasks()
+{
+  int iResult=0;
+  TObjLink *lnk=fTaskList.FirstLink();
+  while (lnk && iResult>=0) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      iResult=pTask->Deinit();
+    } else {
+    }
+    lnk = lnk->Next();
+  }
+  return iResult;
+}
+
+void* AliHLTSystem::AllocMemory( void* param, unsigned long size )
+{
+  return (void*)new char[size];
 }

@@ -111,7 +111,7 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
 
   /**
    * Set an active data segment
-   * the pointer will be handled in a container, not allocation, copy or cleanup
+   * the pointer will be handled in a container, no allocation, copy or cleanup
    * @param offset  offset of the segment in the buffer
    * @param size    size of the segment in the buffer
    * @return >=0 if succeeded
@@ -150,15 +150,15 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
  * @class AliHLTDataBuffer
  * @brief  Handling of data buffers for the HLT.
  * 
- * The class provides handling of data buffers for HLT components. Each component gets its
+ * The class provides handling of data buffers for HLT tasks. Each task gets its
  * own Data Buffer instance. The buffer is grouped into different data segments according
  * to the output of the component.<br>
- * The Data Buffer keeps control over the data requests of the 'child' componets. Each 
- * component can subscribe to a certain segment of the data buffer. It's state is that 
- * changed from 'reserved' to 'active'. After the data processing the component has to 
+ * The Data Buffer keeps control over the data requests of the 'child' components. Each 
+ * component can subscribe to a certain segment of the data buffer. It's state is then 
+ * changed from 'reserved' to 'active'. After the data processing, the component has to 
  * release the segment and it's state is set to 'processed'.
  * If all components have requested and released their data, the Raw Buffer is released
- * and pushed back in the list of available buffers. 
+ * and pushed back in the list of available buffers.
  *
  * @note This class is only used for the @ref alihlt_system.
  *
@@ -290,6 +290,22 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    */
   int GetNofActiveConsumers();
 
+  /**
+   * Check if a consumer is already in the list
+   * @param pConsumer   pointer to consumer component
+   * @param bAllLists   search in all lists if 1
+   *                    search only in fConsumer list if 0
+   * @return 1 if found, 0 if not
+   */
+  int FindConsumer(AliHLTComponent* pConsumer, int bAllLists=1);
+
+  /**
+   * Public method to reset the buffer.
+   * Eventually with some additional checks. In normal operation,
+   * an external reset should not be necessary.
+   */
+  int Reset();
+
  private:
   /* lets see if this is needed
   AliHLTDataSegment* FindDataSegment(AliHLTComponentDataType datatype);
@@ -307,11 +323,10 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
 
   /**
    * Reset the data buffer.
-   * Removes all consumers back to the @ref fConsumers list
-   * and releases the Raw Buffer.
+   * Removes all consumers back to the @ref fConsumers list, deletes
+   * segments and releases the Raw Buffer.
    */
   int ResetDataBuffer();
-
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // the data description

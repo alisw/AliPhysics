@@ -60,6 +60,18 @@ class AliHLTDataSink : public AliHLTComponent {
    */
   TComponentType GetComponentType() { return AliHLTComponent::kSink;}
 
+  /**
+   * Default implementation for all data sinks.
+   * There are no output data types.
+   */
+  AliHLTComponentDataType GetOutputDataType();
+
+  /**
+   * Default implementation for all data sinks.
+   * There is no output data.
+   */
+  void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+
  private:
   /**
    * Data processing method for the component.

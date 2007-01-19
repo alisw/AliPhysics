@@ -76,11 +76,6 @@ const char* AliHLTFilePublisher::GetComponentID()
   return "FilePublisher";
 }
 
-void AliHLTFilePublisher::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
-{
-  list.clear();
-}
-
 AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 {
   return (AliHLTComponentDataType){ sizeof(AliHLTComponentDataType), kAliHLTVoidDataTypeID, kAliHLTVoidDataOrigin};
@@ -99,10 +94,11 @@ AliHLTComponent* AliHLTFilePublisher::Spawn()
 
 int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 {
+  //HLTDebug("%d %s", argc, argv[0]);
   int iResult=0;
   TString argument="";
   int bMissingParam=0;
-  for (int i; i<argc; i++) {
+  for (int i=0; i<argc && iResult>=0; i++) {
     argument=argv[i];
 
     // -datafile
@@ -140,8 +136,16 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       if ((bMissingParam=(++i>=argc))) break;
       memcpy(&fDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize,(Int_t)strlen(argv[i])));
     } else {
-      HLTError("unknown argument %s", argument.Data());
-      iResult=-EINVAL;
+      if ((iResult=ScanArgument(argc-i, &argv[i]))==-EINVAL) {
+	HLTError("unknown argument %s", argument.Data());
+	break;
+      } else if (iResult==-EPROTO) {
+	bMissingParam=1;
+	break;
+      } else if (iResult>=0) {
+	i+=iResult;
+	iResult=0;
+      }
     }
   }
   if (bMissingParam) {
@@ -157,6 +161,12 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
     fFileNames.Clear();
   }
   return iResult;
+}
+
+int AliHLTFilePublisher::ScanArgument(int argc, const char** argv)
+{
+  // there are no other arguments than the standard ones
+  return -EINVAL;
 }
 
 int AliHLTFilePublisher::OpenFiles()
@@ -200,8 +210,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
 	      vector<AliHLTComponentBlockData>& outputBlocks )
 {
   int iResult=0;
-  TFile * pFile=NULL;
-  TObjLink *lnk;
+  TObjLink *lnk=NULL;
   if (fpCurrent) lnk=fpCurrent->Next();
   if (lnk==NULL) lnk=fFiles.FirstLink();
   fpCurrent=lnk;
@@ -209,7 +218,8 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
     TFile* pFile=(TFile*)lnk->GetObject();
     if (pFile) {
       int iCopy=pFile->GetSize();
-      if (iCopy>size) {
+      pFile->Seek(0);
+      if (iCopy>(int)size) {
 	iCopy=size;
 	HLTWarning("buffer to small, data of file %s truncated", pFile->GetName());
       }
@@ -228,6 +238,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
 	size=iCopy;
       }
     } else {
+      HLTError("no file available");
       iResult=-EFAULT;
     }
   } else {

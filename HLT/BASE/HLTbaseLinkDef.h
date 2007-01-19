@@ -18,6 +18,7 @@
 #pragma link C++ class AliHLTDataSource;
 #pragma link C++ class AliHLTDataSink;
 #pragma link C++ class AliHLTFilePublisher;
+#pragma link C++ class AliHLTFileWriter;
 
 #endif
 

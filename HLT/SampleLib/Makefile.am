@@ -8,10 +8,7 @@
 
 MODULE 				= AliHLTSample
 
-EXTRA_DIST			=
-if STANDALONE_SAMPLELIB
-EXTRA_DIST			+= libAliHLTSample.pkg
-endif
+EXTRA_DIST			= AliHLTSampleLinkDef.h
 
 # include the pkg definition which actually contains the source
 # file definitions

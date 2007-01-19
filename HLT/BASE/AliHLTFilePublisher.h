@@ -45,7 +45,6 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   virtual ~AliHLTFilePublisher();
 
   const char* GetComponentID();
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
   AliHLTComponentDataType GetOutputDataType();
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
@@ -83,6 +82,19 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
 		        AliHLTUInt8_t* outputPtr, 
 		        AliHLTUInt32_t& size,
 		        vector<AliHLTComponentBlockData>& outputBlocks );
+
+  /**
+   * Scan one argument and adjacent parameters.
+   * Can be overloaded by child classes in order to add additional arguments
+   * beyond the standard arguments of the file publisher. The method is called
+   * whenever a non-standard argument is recognized.
+   * @param argc           size of the argument array
+   * @param argv           agument array for component initialization
+   * @return number of processed members of the argv <br>
+   *         -EINVAL unknown argument <br>
+   *         -EPROTO parameter for argument missing <br>
+   */
+  virtual int ScanArgument(int argc, const char** argv);
 
  private:
   TList                   fFileNames;

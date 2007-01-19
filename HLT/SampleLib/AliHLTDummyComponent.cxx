@@ -52,15 +52,22 @@ const char* AliHLTDummyComponent::GetComponentID()
 
 void AliHLTDummyComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
-    list.clear(); // We do not have any requirements for our input data type(s).
+      /* in order to be backward compatible we have to keep the old code, at
+       * least for a while. Remember to use the new const kAliHLTVoidDataType
+       * if you are using a more recent AliRoot version (from Jan 07)
+       list.push_back(kAliHLTAnyDataType); // We do not have any requirements for our input data type(s).
+      */
+       list.push_back((AliHLTComponentDataType){ sizeof(AliHLTComponentDataType), {'*','*','*','*','*','*','*','\0'},{'*','*','*','\0'}});
     }
 
 AliHLTComponentDataType AliHLTDummyComponent::GetOutputDataType()
     {
-      AliHLTComponentDataType dt;
-      SetDataType(dt, "DUMMY", "DUMY");
-      cout << "SetDataType: size " << dt.fStructSize << endl;
-      return dt;
+      /* in order to be backward compatible we have to keep the old code, at
+       * least for a while. Remember to use the new const kAliHLTVoidDataType
+       * if you are using a more recent AliRoot version (from Jan 07)
+      return kAliHLTVoidDataType;
+      */
+      return (AliHLTComponentDataType){ sizeof(AliHLTComponentDataType), {'\0','\0','\0','0','\0','\0','\0','\0'},{'\0','\0','\0','\0'}};
     }
 
 void AliHLTDummyComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )

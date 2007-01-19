@@ -115,17 +115,23 @@ class AliHLTSystem : public AliHLTLogging {
   void PrintTaskList();
 
   /**
-   * Print info on an AliHLTComponentDataType structure
-   */
-  void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
-
-  /**
    * Run the task list.
+   * The method checks whether the task list has already been build. If not,
+   * or the configuration list has been changed, the @ref BuildTaskList
+   * method is scalled
    * All tasks of the list will be subsequently processed for each event.
    * @param iNofEvents number of events
    * @return neg error code if failed
    */
   int Run(Int_t iNofEvents=1);
+
+  /**
+   * Init all tasks from the list.
+   * The @ref AliHLTTask::Init method is called for each task, the components
+   * will be created.
+   * @return neg error code if failed
+   */
+  int InitTasks();
 
   /**
    * Start task list.
@@ -149,6 +155,20 @@ class AliHLTSystem : public AliHLTLogging {
    * @return neg error code if failed
    */
   int StopTasks();
+
+  /**
+   * De-init all tasks from the list.
+   * The @ref AliHLTTask::Deinit method is called for each task, the components
+   * will be deleted.
+   * @return neg error code if failed
+   */
+  int DeinitTasks();
+
+  /**
+   * The memory allocation function for components.
+   * This function is part of the running environment of the components.
+   */
+  static void* AllocMemory( void* param, unsigned long size );
 
  protected:
   int ProcessTask();

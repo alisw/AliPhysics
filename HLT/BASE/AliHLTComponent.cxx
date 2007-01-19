@@ -94,22 +94,37 @@ int AliHLTComponent::DoDeinit()
   return 0;
 }
 
-void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[14] ) {
-memset( output, 0, 14 );
-strncat( output, type.fOrigin, 4 );
-strcat( output, ":" );
-strncat( output, type.fID, 8 );
+void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) {
+  memset( output, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2 );
+  strncat( output, type.fOrigin, kAliHLTComponentDataTypefOriginSize );
+  strcat( output, ":" );
+  strncat( output, type.fID, kAliHLTComponentDataTypefIDsize );
 }
+
+string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type )
+{
+  string out("");
+  if (type==kAliHLTVoidDataType) {
+    out="VOID:VOID";
+  } else {
+    out.append(type.fOrigin, kAliHLTComponentDataTypefOriginSize);
+    out.append(":");
+    out.append(type.fID, kAliHLTComponentDataTypefIDsize);
+  }
+  return out;
+}
+
 
 void* AliHLTComponent::AllocMemory( unsigned long size ) {
   if (fEnvironment.fAllocMemoryFunc)
     return (*fEnvironment.fAllocMemoryFunc)(fEnvironment.fParam, size );
+  HLTFatal("no memory allocation handler registered");
   return NULL;
 }
 
 int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockData>& blocks, AliHLTUInt32_t* blockCount,
 					      AliHLTComponentBlockData** outputBlocks ) {
-    if ( !blockCount || !outputBlocks )
+    if ( blockCount==NULL || outputBlocks==NULL )
 	return -EFAULT;
     AliHLTUInt32_t count = blocks.size();
     if ( !count )
@@ -142,9 +157,11 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<Al
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(ctlist);
     vector<AliHLTComponentDataType>::iterator type=ctlist.begin();
     while (type!=ctlist.end() && iResult==0) {
-      if ((*type)==GetOutputDataType()) {
+      if ((*type)==GetOutputDataType() ||
+	  (*type)==kAliHLTAnyDataType) {
 	if (tgtList) tgtList->push_back(*type);
 	iResult++;
+	// this loop has to be changed in case of multiple output types
 	break;
       }
       type++;
@@ -172,9 +189,7 @@ void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) {
 }
 
 void AliHLTComponent::FillDataType( AliHLTComponentDataType& dataType ) {
-  dataType.fStructSize = sizeof(dataType);
-  memset( dataType.fID, '*', kAliHLTComponentDataTypefIDsize );
-  memset( dataType.fOrigin, '*', kAliHLTComponentDataTypefOriginSize );
+  dataType=kAliHLTVoidDataType;
 }
 
 void AliHLTComponent::CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt) {
@@ -187,13 +202,36 @@ void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id
   memset(&tgtdt.fID[0], 0, kAliHLTComponentDataTypefIDsize);
   memset(&tgtdt.fOrigin[0], 0, kAliHLTComponentDataTypefOriginSize);
 
-  if (strlen(id)>kAliHLTComponentDataTypefIDsize) {
+  if ((int)strlen(id)>kAliHLTComponentDataTypefIDsize) {
     HLTWarning("data type id %s is too long, truncated to %d", id, kAliHLTComponentDataTypefIDsize);
   }
   strncpy(&tgtdt.fID[0], id, kAliHLTComponentDataTypefIDsize);
 
-  if (strlen(origin)>kAliHLTComponentDataTypefOriginSize) {
+  if ((int)strlen(origin)>kAliHLTComponentDataTypefOriginSize) {
     HLTWarning("data type origin %s is too long, truncated to %d", origin, kAliHLTComponentDataTypefOriginSize);
   }
   strncpy(&tgtdt.fOrigin[0], origin, kAliHLTComponentDataTypefOriginSize);
 }
+
+void AliHLTComponent::FillEventData(AliHLTComponentEventData& evtData)
+{
+  memset(&evtData, 0, sizeof(AliHLTComponentEventData));
+  evtData.fStructSize=sizeof(AliHLTComponentEventData);
+}
+
+void AliHLTComponent::PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt) {
+  TString msg;
+  msg.Form("AliHLTComponentDataType(%d): ID=\"", dt.fStructSize);
+  for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ ) {
+   if (dt.fID[i]!=0) msg+=dt.fID[i];
+   else msg+="\\0";
+  }
+  msg+="\" Origin=\"";
+  for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ ) {
+   if (dt.fOrigin[i]!=0) msg+=dt.fOrigin[i];
+   else msg+="\\0";
+  }
+  msg+="\"";
+  HLTMessage(msg.Data());
+}
+

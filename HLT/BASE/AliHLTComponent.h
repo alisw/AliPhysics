@@ -18,6 +18,7 @@
  */
 
 #include <vector>
+#include <string>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
@@ -45,9 +46,9 @@ class AliHLTComponentHandler;
  * The interface can be accessed from the online HLT framework or the AliRoot
  * offline analysis framework.
  * Components can be of type 
- * - @ref kSource:    components which only produce data 
- * - @ref kProcessor: components which consume and produce data
- * - @ref kSink:      components which only consume data
+ * - @ref AliHLTComponent::kSource:    components which only produce data 
+ * - @ref AliHLTComponent::kProcessor: components which consume and produce data
+ * - @ref AliHLTComponent::kSink:      components which only consume data
  *
  * where data production and consumption refer to the analysis data stream.<br>
  *
@@ -185,6 +186,23 @@ class AliHLTComponent : public AliHLTLogging {
    */
   static int UnsetGlobalComponentHandler();
 
+  /**
+   * Helper function to convert the data type to a string.
+   */
+  static string DataType2Text( const AliHLTComponentDataType& type );
+
+  /**
+   * helper function to initialize AliHLTComponentEventData structure
+   */
+  static void FillEventData(AliHLTComponentEventData& evtData);
+
+  /**
+   * Print info on an AliHLTComponentDataType structure
+   * This is just a helper function to examine an @ref AliHLTComponentDataType
+   * structur.
+   */
+  void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
+
  protected:
 
   /**
@@ -222,6 +240,7 @@ class AliHLTComponent : public AliHLTLogging {
    * chars of size @ref kAliHLTComponentDataTypefIDsize and
    * @ref kAliHLTComponentDataTypefOriginSize respectively and not necessarily with
    * a terminating zero.
+   * @param tgtdt   target data type structure
    * @param id      ID string
    * @param origin  Origin string
    */
@@ -272,7 +291,7 @@ class AliHLTComponent : public AliHLTLogging {
   /**
    * Helper function to convert the data type to a string.
    */
-  void DataType2Text( const AliHLTComponentDataType& type, char output[14] );
+  void DataType2Text(const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2]);
 
  private:
   /** The global component handler instance */

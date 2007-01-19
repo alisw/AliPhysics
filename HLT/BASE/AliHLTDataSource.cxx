@@ -58,11 +58,15 @@ int AliHLTDataSource::ProcessEvent( const AliHLTComponentEventData& evtData,
   }
   vector<AliHLTComponentBlockData> blockData;
   if (evtData.fBlockCnt > 0) {
-    HLTWarning("Data source component skips imput data blocks");
+    HLTWarning("Data source component skips input data blocks");
   }
   iResult=GetEvent(evtData, trigData, outputPtr, size, blockData);
+  HLTDebug("component %s (%p) GetEvent finished (%d)", GetComponentID(), this, iResult);
   if (iResult>=0) {
     iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
+    if (iResult<0) {
+      HLTFatal("component %s (%p): can not convert output block descriptor list", GetComponentID(), this);
+    }
   }
   edd = NULL;
   return iResult;

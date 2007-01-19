@@ -8,6 +8,8 @@
 #    e.g. for libHLTbase, MODULE=HLTbase
 MODULE				= HLTbase
 
+EXTRA_DIST			= HLTbaseLinkDef.h
+
 AM_CPPFLAGS			= -DMODULE=$(MODULE)
 
 bin_SCRIPTS			= setenv.sh setenv.csh

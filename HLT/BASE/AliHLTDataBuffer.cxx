@@ -179,15 +179,19 @@ int AliHLTDataBuffer::SetConsumer(AliHLTComponent* pConsumer)
 {
   int iResult=0;
   if (pConsumer) {
+    if (FindConsumer(pConsumer)) {
+      HLTWarning("consumer %s (%p) already set to data buffer %p", pConsumer->GetComponentID(), pConsumer, this);
+    }
     AliHLTConsumerDescriptor* pDesc=new AliHLTConsumerDescriptor(pConsumer);
     if (pDesc) {
       fConsumers.push_back(pDesc);
+      HLTDebug("set consumer %s (%p) to data buffer %p", pConsumer->GetComponentID(), pConsumer, this);
     } else {
       HLTError("memory allocation failed");
       iResult=-ENOMEM;
     }
   } else {
-    HLTError("invalid parameter");
+    HLTError("invalid parameter: consumer component (nil)");
     iResult=-EINVAL;
   }
   return iResult;
@@ -224,7 +228,8 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
     while (segment!=fSegments.end()) {
       vector<AliHLTComponentDataType>::iterator type=dtlist.begin();
       while (type!=dtlist.end()) {
-	if ((*segment).fDataType==(*type)) {
+	if ((*segment).fDataType==(*type) ||
+	    (*type)==kAliHLTAnyDataType) {
 	  tgtList.push_back(*segment);
 	  iResult++;
 	  break;
@@ -341,7 +346,11 @@ AliHLTUInt8_t* AliHLTDataBuffer::GetTargetBuffer(int iMinSize)
 {
   AliHLTUInt8_t* pTargetBuffer=NULL;
   fpBuffer=CreateRawBuffer(iMinSize);
-  pTargetBuffer=(AliHLTUInt8_t*)fpBuffer;
+  if (fpBuffer) {
+    pTargetBuffer=(AliHLTUInt8_t*)fpBuffer->fPtr;
+  } else {
+    HLTError("can not create raw buffer");
+  }
   return pTargetBuffer;
 }
 
@@ -354,14 +363,16 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	AliHLTDataSegment segment;
 	memset(&segment, 0, sizeof(AliHLTDataSegment));
 	for (int i=0; i<iSize; i++) {
-	  if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<fpBuffer->fSize) {
+	  if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->fSize) {
 	    segment.fSegmentOffset=arrayBlockData[i].fOffset;
 	    segment.fSegmentSize=arrayBlockData[i].fSize;
 	    segment.fDataType=arrayBlockData[i].fDataType;
 	    segment.fSpecification=arrayBlockData[i].fSpecification;
 	    fSegments.push_back(segment);
+	    HLTDebug("set segment %s with size %d at offset %d", AliHLTComponent::DataType2Text(segment.fDataType).data(), segment.fSegmentSize, segment.fSegmentOffset);
 	  } else {
-	    HLTError("block data specification #%d (%s@%s) exceeds size of data buffer", i, arrayBlockData[i].fDataType.fOrigin, arrayBlockData[i].fDataType.fID);
+	    HLTError("block data specification %#d (%s) exceeds size of data buffer", i, AliHLTComponent::DataType2Text(arrayBlockData[i].fDataType).data());
+	    HLTError("block offset=%d, block size=%d, buffer size=%d", arrayBlockData[i].fOffset, arrayBlockData[i].fSize, fpBuffer->fSize);
 	  }
 	}
       } else {
@@ -476,7 +487,7 @@ int AliHLTDataBuffer::DeleteRawBuffers()
     buffer=fFreeBuffers.begin();
   }
   buffer=fActiveBuffers.begin();
-  while (buffer!=fFreeBuffers.end()) {
+  while (buffer!=fActiveBuffers.end()) {
     fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", (*buffer)->fPtr, (*buffer)->fTotalSize);
     free((*buffer)->fPtr);
     delete *buffer;
@@ -504,6 +515,8 @@ int AliHLTDataBuffer::ResetDataBuffer()
   int iResult=0;
   AliHLTRawBuffer* pBuffer=fpBuffer;
   fpBuffer=NULL;
+
+  // cleanup consumer states
   vector<AliHLTConsumerDescriptor*>::iterator desc=fReleasedConsumers.begin();
   while (desc!=fReleasedConsumers.end()) {
     AliHLTConsumerDescriptor* pDesc=*desc;
@@ -519,8 +532,24 @@ int AliHLTDataBuffer::ResetDataBuffer()
     desc=fActiveConsumers.begin();
     fConsumers.push_back(pDesc);
   }
-  ReleaseRawBuffer(pBuffer);
+
+  // cleanup segments
+  vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
+  while (segment!=fSegments.end()) {
+    fSegments.erase(segment);
+    segment=fSegments.begin();
+  }
+
+  // cleanup raw buffer
+  if (pBuffer) {
+    ReleaseRawBuffer(pBuffer);
+  }
   return iResult;
+}
+
+int AliHLTDataBuffer::Reset()
+{
+  return ResetDataBuffer();
 }
 
 // this is the version which works on lists of components instead of consumer descriptors
@@ -550,20 +579,20 @@ int AliHLTDataBuffer::ResetDataBuffer()
 
 int AliHLTDataBuffer::ChangeConsumerState(AliHLTConsumerDescriptor* pDesc, vector<AliHLTConsumerDescriptor*> &srcList, vector<AliHLTConsumerDescriptor*> &tgtList)
 {
-  int iResult=0;
+  int iResult=-ENOENT;
   if (pDesc) {
     vector<AliHLTConsumerDescriptor*>::iterator desc=srcList.begin();
     while (desc!=srcList.end()) {
       if ((*desc)==pDesc) {
 	srcList.erase(desc);
 	tgtList.push_back(pDesc);
+	iResult=0;
 	break;
       }
       desc++;
     }
-    if (desc==srcList.end()) {
+    if (iResult<0) {
       HLTError("can not find consumer descriptor %p in list", pDesc);
-      iResult=-ENOENT;
     }
   } else {
     HLTError("invalid parameter");
@@ -582,4 +611,28 @@ int AliHLTDataBuffer::CleanupConsumerList() {
     desc=fConsumers.begin();
   }
   return iResult;
+}
+
+int AliHLTDataBuffer::FindConsumer(AliHLTComponent* pConsumer, int bAllLists) {
+  vector<AliHLTConsumerDescriptor*>::iterator desc=fConsumers.begin();
+  while (desc!=fConsumers.end()) {
+    if ((*desc)->GetComponent()==pConsumer)
+      return 1;
+    desc++;
+  }
+  if (bAllLists==0) return 0;
+
+  desc=fActiveConsumers.begin();
+  while (desc!=fActiveConsumers.end()) {
+    if ((*desc)->GetComponent()==pConsumer)
+      return 1;
+    desc++;
+  }
+  desc=fReleasedConsumers.begin();
+  while (desc!=fReleasedConsumers.end()) {
+    if ((*desc)->GetComponent()==pConsumer)
+      return 1;
+    desc++;
+  }
+  return 0;
 }

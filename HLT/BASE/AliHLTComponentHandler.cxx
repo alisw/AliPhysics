@@ -37,6 +37,10 @@ using namespace std;
 #include "AliHLTDataTypes.h"
 #include "AliHLTSystem.h"
 
+// the standard components
+#include "AliHLTFilePublisher.h"
+#include "AliHLTFileWriter.h"
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponentHandler)
 
@@ -45,14 +49,17 @@ AliHLTComponentHandler::AliHLTComponentHandler()
   fComponentList(),
   fScheduleList(),
   fLibraryList(),
-  fEnvironment()
+  fEnvironment(),
+  fStandardList()
 {
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
+  AddStandardComponents();
 }
 
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {
   UnloadLibraries();
+  DeleteStandardComponents();
 }
 
 int AliHLTComponentHandler::AnnounceVersion()
@@ -215,15 +222,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
     if (hLib) {
       HLTInfo("library %s loaded", libraryPath);
       fLibraryList.push_back(hLib);
-      vector<AliHLTComponent*>::iterator element=fScheduleList.begin();
-      int iSize=fScheduleList.size();
-      int iLocalResult=0;
-      while (iSize-- > 0) {
-	element=fScheduleList.begin();
-	iLocalResult=RegisterComponent(*element);
-	if (iResult==0) iResult=iLocalResult;
-	fScheduleList.erase(element);
-      }
+      iResult=RegisterScheduledComponents();
     } else {
       HLTError("can not load library %s", libraryPath);
 #ifdef HAVE_DLFCN_H
@@ -265,6 +264,44 @@ int AliHLTComponentHandler::UnloadLibraries()
     delete libraryPath;
 #endif //HAVE_DLFCN_H
     element++;
+  }
+  return iResult;
+}
+
+int AliHLTComponentHandler::AddStandardComponents()
+{
+  int iResult=0;
+  AliHLTComponent::SetGlobalComponentHandler(this);
+  fStandardList.push_back(new AliHLTFilePublisher);
+  fStandardList.push_back(new AliHLTFileWriter);
+  AliHLTComponent::UnsetGlobalComponentHandler();
+  iResult=RegisterScheduledComponents();
+  return iResult;
+}
+
+int AliHLTComponentHandler::RegisterScheduledComponents()
+{
+  int iResult=0;
+  vector<AliHLTComponent*>::iterator element=fScheduleList.begin();
+  int iLocalResult=0;
+  while (element!=fScheduleList.end()) {
+    iLocalResult=RegisterComponent(*element);
+    if (iResult==0) iResult=iLocalResult;
+    fScheduleList.erase(element);
+    element=fScheduleList.begin();
+  }
+  return iResult;
+}
+
+int AliHLTComponentHandler::DeleteStandardComponents()
+{
+  int iResult=0;
+  vector<AliHLTComponent*>::iterator element=fStandardList.begin();
+  while (element!=fStandardList.end()) {
+    DeregisterComponent((*element)->GetComponentID());
+    delete(*element);
+    fStandardList.erase(element);
+    element=fStandardList.begin();
   }
   return iResult;
 }

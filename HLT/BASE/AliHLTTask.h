@@ -173,14 +173,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * processing, the data blocks are released. <br>
    * The @ref StartRun method must be called before.
    */
-  int ProcessTask();
-
-  // clear the list of source data blocks
-  // the list of source data blocks has to be cleared at the beginning of 
-  // a new event
-  /* this function is most likely depricated
-  int ClearSourceBlocks();
-  */
+  int ProcessTask(Int_t eventNo);
 
   /**
    * Determine the number of matching data block between the component and the
