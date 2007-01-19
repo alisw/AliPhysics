@@ -59,6 +59,14 @@ bin/, Makefile and make_base.inc are used for stand-alone build of the
 packages.
 
 
+Examples
+========
+
+1. Run the interface for visual scanning:
+
+alieve -mode 2 trackcount_init.C
+
+
 Notes
 =====
 
@@ -76,3 +84,5 @@ prevents further execution of macros. For example:
   Error: G__unloadfile() File "/tmp/MUON_geom.C" not loaded  :0:
 
 'gROOT->Reset()' helps in most of the cases.
+
+This has been fixed for most cases.
