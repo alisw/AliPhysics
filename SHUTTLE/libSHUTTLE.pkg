@@ -2,7 +2,8 @@ SRCS = DCSClient/AliDCSClient.cxx DCSClient/AliDCSMessage.cxx \
        AliShuttle.cxx AliShuttleConfig.cxx \
        AliShuttleTrigger.cxx AliShuttleStatus.cxx AliShuttleLogbookEntry.cxx
 
-CINTHDRS:= $(patsubst %,$(MODDIR)/%,$(SRCS:.cxx=.h))
+CINTHDRS:= $(SRCS:.cxx=.h)
+#CINTHDRS:= $(patsubst %,$(MODDIR)/%,$(SRCS:.cxx=.h))
 
 SRCS += DATENotifier.cxx
 HDRS:= $(SRCS:.cxx=.h) 
