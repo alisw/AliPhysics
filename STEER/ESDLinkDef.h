@@ -59,6 +59,8 @@
 
 #pragma link C++ class  AliSelector+;
 
+#pragma link C++ class  AliRawDataErrorLog+;
+
 #endif
 
 

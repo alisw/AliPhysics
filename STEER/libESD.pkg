@@ -13,7 +13,8 @@ SRCS = AliESD.cxx AliESDfriend.cxx\
        AliESDMultITS.cxx \
        AliESDVZERO.cxx \
        AliMultiplicity.cxx AliXMLCollection.cxx \
-       AliSelector.cxx
+       AliSelector.cxx \
+       AliRawDataErrorLog.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 
