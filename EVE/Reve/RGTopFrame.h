@@ -37,6 +37,17 @@ class RGTopFrame : public TGMainFrame
 public:
   enum LookType_e { LT_Classic, LT_Editor, LT_GLViewer };
 
+  class RedrawDisabler
+  {
+  private:
+    RGTopFrame* fFrame;
+  public:
+    RedrawDisabler(RGTopFrame* f) : fFrame(f)
+    { if (fFrame) fFrame->DisableRedraw(); }
+    ~RedrawDisabler()
+    { if (fFrame) fFrame->EnableRedraw(); }
+  };
+
 private:
   TGCompositeFrame    *fMasterFrame;
   TGTab               *fMasterTab;
