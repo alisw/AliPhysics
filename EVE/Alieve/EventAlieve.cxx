@@ -2,6 +2,7 @@
 
 #include "EventAlieve.h"
 #include <Reve/Reve.h>
+#include <Reve/RGTopFrame.h>
 
 #include <AliRunLoader.h>
 #include <AliESD.h>
@@ -164,6 +165,8 @@ void Event::GotoEvent(Int_t event)
   if(event < 0 || event > maxEvent)
     throw(eH + Form("event %d not present, available range [%d, %d].",
 		    event, 0, maxEvent));
+
+  RGTopFrame::RedrawDisabler rd(gReve);
 
   DestroyElements();
   fEventId = event;
