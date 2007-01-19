@@ -28,7 +28,7 @@ class AliRawDataErrorLog: public TNamed {
     kNone = 0, 
     kMinor = 1, 
     kMajor = 2, 
-    kFatal = 3, 
+    kFatal = 3
   };
 
   AliRawDataErrorLog();
