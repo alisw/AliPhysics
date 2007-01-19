@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.54  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.53  2005/12/20 14:28:47  hristov
  * Additional protection
  *
@@ -930,27 +933,27 @@ void AliPHOSEmcRecPoint::Print(Option_t *) const
   
   TString message ; 
   message  = "AliPHOSEmcRecPoint:\n" ;
-  message +=  " digits # = " ; 
-  AliInfo(Form(message.Data())) ; 
+  message += "Digit multiplicity = %d" ;
+  message += ", cluster Energy = %f" ; 
+  message += ", number of primaries = %d" ; 
+  message += ", rec.point index = %d \n" ; 
+  printf(message.Data(), fMulDigit, fAmp, fMulTrack,GetIndexInList() ) ;  
 
   Int_t iDigit;
+  printf(" digits ids = ") ; 
   for(iDigit=0; iDigit<fMulDigit; iDigit++)
     printf(" %d ", fDigitsList[iDigit] ) ;  
   
-  printf(" Energies = ") ;
+  printf("\n digit energies = ") ;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
     printf(" %f ", fEnergyList[iDigit] ) ;
-  printf("\n") ; 
-   printf(" Primaries  ") ;
+
+  printf("\n digit primaries  ") ;
+  if (fMulTrack<1) printf("... no primaries");
   for(iDigit = 0;iDigit < fMulTrack; iDigit++)
     printf(" %d ", fTracksList[iDigit]) ;
   printf("\n") ; 	
-  message  = "       Multiplicity    = %d" ;
-  message += "       Cluster Energy  = %f" ; 
-  message += "       Number of primaries %d" ; 
-  message += "       Stored at position %d" ; 
- 
-  printf(message.Data(), fMulDigit, fAmp, fMulTrack,GetIndexInList() ) ;  
+
 }
  
   
