@@ -640,14 +640,14 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
   energy = 0. ; 
 
   // Create a shaper pulse object which contains all the shaper parameters
-  AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
+  AliPHOSPulseGenerator pulse;
 
   if (lowGainFlag) {
     timezero1 = timezero2 = signalmax = timemax = 0. ;
-    signalF->FixParameter(0, pulse->GetRawFormatLowCharge()) ; 
-    signalF->FixParameter(1, pulse->GetRawFormatLowGain()) ; 
+    signalF->FixParameter(0, pulse.GetRawFormatLowCharge()) ; 
+    signalF->FixParameter(1, pulse.GetRawFormatLowGain()) ; 
     Int_t index ; 
-    for (index = 0; index < pulse->GetRawFormatTimeBins(); index++) {
+    for (index = 0; index < pulse.GetRawFormatTimeBins(); index++) {
       gLowGain->GetPoint(index, time, signal) ; 
       if (signal > kNoiseThreshold && timezero1 == 0.) 
 	timezero1 = time ;
@@ -659,21 +659,21 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
       }
     }
     signalmax /= 
-      pulse->RawResponseFunctionMax(pulse->GetRawFormatLowCharge(), 
-				    pulse->GetRawFormatLowGain()) ;
-    if ( timezero1 + pulse->GetRawFormatTimePeak() < pulse->GetRawFormatTimeMax() * 0.4 ) { // else its noise 
+      pulse.RawResponseFunctionMax(pulse.GetRawFormatLowCharge(), 
+				   pulse.GetRawFormatLowGain()) ;
+    if ( timezero1 + pulse.GetRawFormatTimePeak() < pulse.GetRawFormatTimeMax() * 0.4 ) { // else its noise 
       signalF->SetParameter(2, signalmax) ; 
       signalF->SetParameter(3, timezero1) ;    	    
       gLowGain->Fit(signalF, "QRO", "", 0., timezero2); //, "QRON") ; 
       energy = signalF->GetParameter(2) ; 
-      time   = signalF->GetMaximumX() - pulse->GetRawFormatTimePeak() - pulse->GetRawFormatTimeTrigger() ;
+      time   = signalF->GetMaximumX() - pulse.GetRawFormatTimePeak() - pulse.GetRawFormatTimeTrigger() ;
     }
   } else {
     timezero1 = timezero2 = signalmax = timemax = 0. ;
-    signalF->FixParameter(0, pulse->GetRawFormatHighCharge()) ; 
-    signalF->FixParameter(1, pulse->GetRawFormatHighGain()) ; 
+    signalF->FixParameter(0, pulse.GetRawFormatHighCharge()) ; 
+    signalF->FixParameter(1, pulse.GetRawFormatHighGain()) ; 
     Int_t index ; 
-    for (index = 0; index < pulse->GetRawFormatTimeBins(); index++) {
+    for (index = 0; index < pulse.GetRawFormatTimeBins(); index++) {
       gHighGain->GetPoint(index, time, signal) ;               
       if (signal > kNoiseThreshold && timezero1 == 0.) 
 	timezero1 = time ;
@@ -684,14 +684,14 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
 	timemax   = time ; 
       }
     }
-    signalmax /= pulse->RawResponseFunctionMax(pulse->GetRawFormatHighCharge(), 
-					       pulse->GetRawFormatHighGain()) ;;
-    if ( timezero1 + pulse->GetRawFormatTimePeak() < pulse->GetRawFormatTimeMax() * 0.4 ) { // else its noise  
+    signalmax /= pulse.RawResponseFunctionMax(pulse.GetRawFormatHighCharge(), 
+					      pulse.GetRawFormatHighGain()) ;;
+    if ( timezero1 + pulse.GetRawFormatTimePeak() < pulse.GetRawFormatTimeMax() * 0.4 ) { // else its noise  
       signalF->SetParameter(2, signalmax) ; 
       signalF->SetParameter(3, timezero1) ;               
       gHighGain->Fit(signalF, "QRO", "", 0., timezero2) ; 
       energy = signalF->GetParameter(2) ; 
-      time   = signalF->GetMaximumX() - pulse->GetRawFormatTimePeak() - pulse->GetRawFormatTimeTrigger() ;
+      time   = signalF->GetMaximumX() - pulse.GetRawFormatTimePeak() - pulse.GetRawFormatTimeTrigger() ;
     }
   }
   if (time == 0) energy = 0 ; 
@@ -742,8 +742,8 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   in.SetOldRCUFormat(isOldRCUFormat);
  
   // Create a shaper pulse object
-  AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
-  TF1 * signalF = new TF1("signal", AliPHOSPulseGenerator::RawResponseFunction, 0, pulse->GetRawFormatTimeMax(), 4);
+  AliPHOSPulseGenerator pulse; 
+  TF1 * signalF = new TF1("signal", AliPHOSPulseGenerator::RawResponseFunction, 0, pulse.GetRawFormatTimeMax(), 4);
   signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
 
   Int_t relId[4], absId =0;
@@ -808,37 +808,46 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       if(lowGainFlag) {
 	energyLG  = hLowGain ->GetMaximum();     // "digit amplitude"
 // 	energyLG -= hLowGain ->GetBinContent(0); // "pedestal subtraction"
-	energyLG *= pulse->GetRawFormatHighLowGainFactor(); // *16
-	if(AliLog::GetGlobalDebugLevel()>3)
-	  AliDebug(4,Form("----Printing hLowGain: ----\n")) ; hLowGain ->Print("all");
-	AliDebug(2,Form("AliPHOSGetter::ReadRaw: (mod,col,row)=(%d,%d,%d), low gain energy=%f\n\n",
-			in.GetModule(),in.GetColumn(),in.GetRow(),energyLG));
+	energyLG *= pulse.GetRawFormatHighLowGainFactor(); // *16
+	if(AliLog::GetGlobalDebugLevel()>3) {
+	  AliDebug(4,Form("----Printing hLowGain: ----\n")) ;
+	  hLowGain ->Print("all");
+	}
+	if(AliLog::GetGlobalDebugLevel()>2)
+	  AliDebug(2,Form("(mod,col,row)=(%d,%d,%d), low gain energy=%f\n\n",
+			  in.GetModule(),in.GetColumn(),in.GetRow(),energyLG));
       }
 
       else {
 	energyHG  = hHighGain->GetMaximum();     // "digit amplitude"
 // 	energyHG -= hHighGain->GetBinContent(0); // "pedestal subtraction"
-	if(AliLog::GetGlobalDebugLevel()>3)
-	  AliDebug(4,Form("----Printing hHighGain: ----\n")); hHighGain->Print("all");
-	AliDebug(2,Form("AliPHOSGetter::ReadRaw: (mod,col,row)=(%d,%d,%d), high gain energy=%f\n\n",
-			in.GetModule(),in.GetColumn(),in.GetRow(),energyHG));
+	if(AliLog::GetGlobalDebugLevel()>3) {
+	  AliDebug(4,Form("----Printing hHighGain: ----\n"));
+	  hHighGain->Print("all");
+	}
+	if(AliLog::GetGlobalDebugLevel()>2)
+	  AliDebug(2,Form("(mod,col,row)=(%d,%d,%d), high gain energy=%f\n\n",
+			  in.GetModule(),in.GetColumn(),in.GetRow(),energyHG));
       }
 
       // Time is not evaluated for the moment (12.01.2007). To be implemented later.
       time = -1;
 
       relId[0] = in.GetModule()+1;
-      relId[1] = 0;
-      relId[2] = in.GetRow();
-      relId[3] = in.GetColumn();
+      relId[1] =                0;
+      relId[2] = in.GetRow()   +1;
+      relId[3] = in.GetColumn()+1;
       if(!PHOSGeometry()) AliFatal("Couldn't find PHOSGeometry!");
       PHOSGeometry()->RelToAbsNumbering(relId, absId);
 
+      AliDebug(2,Form("relId=(mod,row,col)=(%d,%d,%d), absId=%d\n\n",
+		      relId[0],relId[2],relId[3],absId));
+
       // Add low gain digit only if the high gain digit does not exist in the digits array
+      seen = kFALSE;
       if(lowGainFlag) {
-	seen = kFALSE;
-	for (iOldDigit=iDigit; iOldDigit==0; iOldDigit--) {
-	  if (dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit))->GetId() == absId) {
+	for (iOldDigit=iDigit-1; iOldDigit==0; iOldDigit--) {
+	  if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
 	    seen = kTRUE;
 	    break;
 	  }
@@ -851,15 +860,20 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       // replace low gain digit by a high gain one
       else {
 	if (energyHG >= 1023) continue;
-	for (iOldDigit=iDigit; iOldDigit==0; iOldDigit--) {
-	  if (dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit))->GetId() == absId) {
+	for (iOldDigit=iDigit-1; iOldDigit==0; iOldDigit--) {
+	  if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
 	    digits->RemoveAt(iOldDigit);
 	    new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
+	    seen = kTRUE;
 	    break;
 	  }
 	}
+	if (!seen)
+	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energyHG,time);
 	energyHG = 0. ; 
       }
+      AliPHOSDigit *dig = dynamic_cast<AliPHOSDigit*>(digits->At(iDigit));
+      dig->Print();
       iDigit++;
     }
   }
@@ -867,6 +881,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   // PHOS entries loop
  
   digits->Sort() ;
+  digits->Print();
 
   //!!!!for debug!!!
   Int_t modMax=-111;
