@@ -1,5 +1,5 @@
 #include "AliHLTPHOSPulseGenerator.h"
-#include "AliHLTPHOSAnalyzerPeakFinder.h"
+#include "AliHLTPHOSRawAnalyzerPeakFinder.h"
 #include <stdio.h>
 #include <cmath>
 
@@ -67,7 +67,7 @@ int main()
 
 
    //  AliHLTPHOSAnalyzerPeakFinder *fitPtr= new AliHLTPHOSAnalyzerPeakFinder(data, fs); 
-   AliHLTPHOSAnalyzerPeakFinder *fitPtr= new AliHLTPHOSAnalyzerPeakFinder(); 
+   AliHLTPHOSRawAnalyzerPeakFinder *fitPtr= new AliHLTPHOSRawAnalyzerPeakFinder(); 
   
    fitPtr->SetData(data);
    fitPtr->SetSampleFreq(fs);
