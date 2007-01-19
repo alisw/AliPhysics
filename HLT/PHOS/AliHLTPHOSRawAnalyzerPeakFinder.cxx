@@ -37,7 +37,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHO
  **/
 AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRawAnalyzer(),tVector(0), aVector(0) 
 {
-  cout <<"PeakFinder:You cannot invoke the Fitter without arguments"<<endl;;
+  //  cout <<"PeakFinder:You cannot invoke the Fitter without arguments"<<endl;;
 }
 
 
@@ -76,9 +76,11 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(double *aVec)
 void 
 AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
 {
+  printf("\n AliHLTPHOSRawAnalyzerPeakFinder::Evaluat from index %d to %d\n", start, start + length);
   fDTof = 0;
   fDAmpl = 0;
 
+  
   if(tVector == 0 || aVector == 0)
     {
       printf("\nError: the peakfinder vectors are not specified, aborting !!!\n");
@@ -102,6 +104,8 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
 
       fDTof = fDTof/fDAmpl;
     }
+  
+
   //thats all 
 } //end FitPeakFinder
 
