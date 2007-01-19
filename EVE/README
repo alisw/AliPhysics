@@ -36,8 +36,14 @@ or
 The general form to go to event via its number is:
    root[x] Alieve::gEvent->GotoEvent(<event-number>)
 
-See files in EVE/alice-macros/. For specific uses these should be
-edited to suit your needs.
+See files in EVE/alice-macros/ from the ROOT browser that is spawned
+automatically with the application. They can be executed directly from
+the browser (by dpouble-clicking on their icon) or via standard ROOT's
+macro execution methods using '.x' and '.L'. If you want to pass the
+arguments to the macros, use '.L' as this gives you automatic tab
+completion.
+
+For specific uses you can copy them and edit them to suit your needs.
 
 
 Directory structure
