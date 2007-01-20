@@ -19,7 +19,7 @@
     <Proc ID="PHOS_RAW_0_0" type="src">
                <Cmd>FilePublisher
                     -datafilelist /home/perthi/simulations/yuri/run6/raw*/PHOS_1806.ddl
-                    -datatype DDL_RWPK -dataspec 0x00000000 -dataorigin TPC
+                    -datatype DDL_RWPK -dataspec 0x00000000 -dataorigin PHOS
                     -eventtime 500000
                     -sleeptillevent -diskpublisher -eventidfromfile
                </Cmd>
@@ -30,7 +30,7 @@
   
           <Proc ID="PHOSP0_0_0" type="prc">
                <Cmd>AliRootWrapperSubscriber
-                    -componentid AliPhosTestRaw
+                    -componentid PhosRawCrude
                     -addlibrary libNew.so
                     -addlibrary libMatrix.so
                     -addlibrary libMinuit.so
@@ -53,6 +53,7 @@
                     -addlibrary libESD.so 
                     -addlibrary libSTEER.so        
                     -addlibrary libRAWDatarec.so
+                    -addlibrary libRAWDatabase.so
                     -componentlibrary libAliHLTPHOS.so
                    -componentargs "pp-run rawreadermode 4 adc-threshold 20"
                </Cmd>
