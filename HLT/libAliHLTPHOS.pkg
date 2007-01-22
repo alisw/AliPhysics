@@ -10,8 +10,8 @@ SRCS:=  PHOS/AliHLTPHOSPulseGenerator.cxx \
 	PHOS/AliHLTPHOSEmcCalibData.cxx \
 	PHOS/AliHLTPHOSRawAnalyzerComponent.cxx \
 	PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
-	PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx
-
+	PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
+	PHOS/AliHLTPHOSDefinitions.cxx 
 
 HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSRawAnalyzer.h \
@@ -23,7 +23,9 @@ HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSEmcCalibData.h \
 	PHOS/AliHLTPHOSRawAnalyzerComponent.h \
 	PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.h \
-	PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h
+	PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
+	PHOS/AliHLTPHOSDefinitions.h 
+
 
 DHDR=   PHOS/AliHLTPHOSLinkDef.h
  					    
@@ -39,6 +41,8 @@ CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
 		PHOS/AliHLTPHOSRawAnalyzerComponent.h \
 		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.h \
 		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
+		PHOS/AliHLTPHOSDefinitions.h
+
 
 MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
 		PHOS/AliHLTPHOSRawAnalyzer.cxx \
@@ -50,7 +54,8 @@ MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
 		PHOS/AliHLTPHOSEmcCalibData.cxx \
 		PHOS/AliHLTPHOSRawAnalyzerComponent.cxx \
 		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
-		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx 
+		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \ 
+		PHOS/AliHLTPHOSDefinitions.cxx 
 
 EINCLUDE+= HLT/BASE HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
 
