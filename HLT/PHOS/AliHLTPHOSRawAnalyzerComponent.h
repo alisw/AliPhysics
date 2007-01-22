@@ -9,6 +9,21 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliRawReaderMemory.h"
+#include "AliCaloRawStream.h"
+#include "AliHLTPHOSDefinitions.h"
+
+
+/*
+#include "AliHLTTPCRawDataUnpackerComponent.h"
+#include "AliTPCRawStream.h"
+#include "AliRawDataHeader.h"
+#include "AliRawReaderMemory.h"
+#include "AliHLTTPCRawDataFormat.h"
+#include "AliHLTTPCDigitData.h"
+#include "AliHLTTPCTransform.h"
+#include <stdlib.h>
+#include <errno.h>
+*/
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 {
@@ -20,6 +35,8 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
    {
       return *this;
    };
+
+
 
   virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
@@ -40,9 +57,13 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 
  private:
  int eventCount;
-AliRawReaderMemory *fRawMemoryReader;
-  static const AliHLTComponentDataType inputDataTypes[];
-  static const AliHLTComponentDataType outputDataType;
+ //	AliRawReaderMemory *fRawMemoryReader;
+ //	AliTPCRawStream *fTPCRawStream;
+
+ AliCaloRawStream *fPHOSRawStream;
+ AliRawReaderMemory *fRawMemoryReader;
+ static const AliHLTComponentDataType inputDataTypes[];
+ static const AliHLTComponentDataType outputDataType;
 
 };
 #endif

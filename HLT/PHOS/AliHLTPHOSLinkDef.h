@@ -11,6 +11,7 @@
 #pragma link C++ class AliHLTPHOSRawAnalyzerLMS+;
 #pragma link C++ class AliHLTPHOSPulseGenerator+;
 #pragma link C++ class AliHLTPHOSEmcCalibData+; 
+#pragma link C++ AliHLTPHOSDefinitions+; 
 //#pragma link C++ class AliHLTPHOSRawAnalyzerComponent+;
 //#pragma link C++ class AliHLTPHOSRawAnalyzerPeakFinderComponent+;
 //#pragma link C++ class AliHLTPHOSRawAnalyzerCrudeComponent+;

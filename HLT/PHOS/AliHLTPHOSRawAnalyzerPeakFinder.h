@@ -1,11 +1,12 @@
 #ifndef ALIHLTPHOSRAWANALYZERPEAKFINDER_H
 #define ALIHLTPHOSRAWANALYZERPEAKFINDER_H
+/* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                          */
+
 #include <Rtypes.h>
 #include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"
 
-/* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                          */
 
 class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
 {

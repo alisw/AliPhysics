@@ -17,7 +17,11 @@
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include <iostream>
 #include "stdio.h"
+
 #include "AliRawReaderMemory.h"
+#include "AliCaloRawStream.h"
+
+//#include "AliHLTTPCDefinitions.h"
 
 const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::outputDataType=kAliHLTVoidDataType;
@@ -25,31 +29,30 @@ const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::outputDataType=kAl
 
 //AliHLTPHOSRawAnalyzerComponent gAliHLTPHOSRawAnalyzerComponent;
 //ClassImp(AliHLTPHOSRawAnalyzerComponent) 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), eventCount(0)
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(),  eventCount(0), fPHOSRawStream(), fRawMemoryReader(0)
 {
-  //  ddlDecoderPtr = new AliRawReaderMemory();
   //  fRawMemoryReader = NULL;
 } 
 
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
-  // fRawMemoryReader = NULL;
+  if(fRawMemoryReader != 0)
+    {
+      delete fRawMemoryReader;
+    }
+    if(fPHOSRawStream != 0)
+    {
+      delete fPHOSRawStream;
+    }
+
 }
 
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(), eventCount(0)
+
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(),  eventCount(0), fPHOSRawStream(),fRawMemoryReader(0)
 {
-  //  ddlDecoderPtr = new AliRawReaderMemory();
   //  fRawMemoryReader = NULL;
 }
-
-
-//AliHLTComponent*
-//AliHLTPHOSRawAnalyzerComponent::Spawn()
-//{
-//  return new AliHLTPHOSRawAnalyzerComponent;
-//}
-
 
 
 int 
@@ -63,10 +66,15 @@ AliHLTPHOSRawAnalyzerComponent::DoDeinit()
 {
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen DoDeinit");
 
-  //  if ( fRawMemoryReader )
-  //   delete fRawMemoryReader;
-  //  fRawMemoryReader = NULL;
- 
+  if(fRawMemoryReader !=0)
+    {
+      delete fRawMemoryReader;
+    }
+    
+  if(fPHOSRawStream != 0)
+    {
+      delete fPHOSRawStream;
+    }
   return 0;
 
 }
@@ -100,109 +108,171 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, doub
   constBase = 0;inputMultiplier = 0;
 }
 
-int 
-AliHLTPHOSRawAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evtDtaPtr, const AliHLTComponentBlockData* dtaPtr, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&)
+
+int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
- 
-  //  AliRawReaderMemory *testDDLDecoderPtr = new AliRawReaderMemory() ;
- //  virtual Bool_t   SetMemory( UChar_t* memory, ULong_t size );
-
-  //  ddlDecoderPtr->SetMemory( reinterpret_cast<UChar_t*>( dtaPtr->fPtr ), dtaPtr->fSize );
-
-  //  analyzerPtr->Evaluate(0, 100);
-
-  Logging(kHLTLogInfo, "HLT", "Sample", "PhosHLTRawAnalyzerComonent, DoEvent");
-
-  //  AliHLTUInt32_t *tmpDtaPtr  = (AliHLTUInt32_t *)dtaPtr->fPtr;
-
-
-  //  UChar_t *dataPtr = address;
-  //ULong_t address,
-
-  UChar_t *tmpDtaPtr  = (UChar_t *)dtaPtr->fPtr;
-  // UChar_t *tmpDtaPtr  = (ULong_t *)dtaPtr->fPtr;
-
-
-  AliHLTUInt32_t tmpSize =  dtaPtr->fSize;
-  AliHLTUInt32_t tmpSize32 = dtaPtr->fSize/4;
-
-  cout <<"PHOSHLT DoEvent: processing event:"<< eventCount << endl;
-  cout <<"Struct size = " <<evtDtaPtr.fStructSize << endl;
-  cout <<"Event ID = " <<evtDtaPtr.fEventID << endl;
-  cout <<"Block count = " <<evtDtaPtr.fBlockCnt << endl;
-  cout <<"Block size = " << dtaPtr->fSize << endl;
-  cout <<"printing out start od data block" << endl;
-
-  
-  //  tmpDtaPtr = dtaPtr->fPtr;
-  //  AliHLTUInt32_t *tmpDtaPtr  = (AliHLTUInt32_t *)dtaPtr->fPtr;
-
-  
-  //  testDDLDecoderPtr->SetMemory(tmpDtaPtr, tmpSize);
-  //  cout << "Dumoing data from the AliRawReader" << endl;
-  // ddlDecoderPtr->DumpData(30);
-  // cout << "finnished dumping data from the AliRawReader" << endl;
-  
-  //  unsigned int tmpSize =   (dtaPtr->fSize)/4;
- 
-  cout << "content of data pointer =" << tmpDtaPtr << endl;
-  
-
-  //  for(unsigned int i = 0; i < tmpSize; i++)
-  for(unsigned int i = 0; i < 10; i++)
+  //  int tmpCnt = 0;
+  cout << "processing Event" << endl;
+  const AliHLTComponentBlockData* iter = NULL; 
+  unsigned long ndx;
+    
+  for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      // getc();
-      //     sleep(10);
-      printf("\ntype return to continue; ");
-      getc(stdin);
-      printf("\nThanks; read in \n");
-      cout << "entry:" <<i <<" =  " << *tmpDtaPtr << endl;
-      tmpDtaPtr ++;
-   }
+      cout <<"Inside for loop ndx =" << ndx << endl;
+      iter = blocks+ndx;
+      
+       if (eventCount == 0)
+	{
+	  continue;
+	}
  
+      
+      if ( iter->fDataType == AliHLTPHOSDefinitions::gkDDLPackedRawDataType ) cout << "data type is :gkDDLPackedRawDataType " <<endl;
+      if ( iter->fDataType == AliHLTPHOSDefinitions::gkPackedRawDataType ) cout << "data type is : gkPackedRawDataType" <<endl;
+      if ( iter->fDataType == AliHLTPHOSDefinitions::gkUnpackedRawDataType) cout << "data type is gkUnpackedRawDataType" <<endl;
+      if ( iter->fDataType == AliHLTPHOSDefinitions::gkClustersDataType) cout << "data type is ::gkClustersDataType" <<endl;
+      if ( iter->fDataType == AliHLTPHOSDefinitions::gkVertexDataType ) cout << "data type is ::gkVertexDataType " <<endl;
+      if ( iter->fDataType == AliHLTPHOSDefinitions::gkTrackSegmentsDataType) cout << "data type is :::gkTrackSegmentsDataType" <<endl;
 
-  eventCount++;
-  return 0;
+      if ( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
+	{
+	  cout << "Warning: data type = is nOT gkDDLPackedRawDataType " << endl;
+	  continue;
+	}
+
+     cout <<"PHOSHLT DoEvent: processing event:"<< eventCount << endl;
+     cout <<"Struct size = " << evtData.fStructSize << endl;
+     cout <<"Event ID = " <<evtData.fEventID << endl;
+     cout <<"Block count = " <<evtData.fBlockCnt << endl;
+     cout <<"Block size = " << blocks->fSize << endl;
+     cout <<"printing out start od data block" << endl;
+     //     cout << "content of data pointer =" << tmpDtaPtr << endl;  
+
+     //     UChar_t *tmpDtaPtr  = (UChar_t *)blocks->fPtr;
+     UInt_t *tmpDtaPtr  = (UInt_t *)blocks->fPtr;
+
+    
+     for(unsigned int i = 0; i < 15; i++)
+       {
+	 // getc();
+	 //     sleep(10);
+	 //    printf("\ntype return to continue; ");
+	 //     getc(stdin);
+	 //    printf("\nThanks; read in \n");
+	 cout << "entry:" <<i <<" =  " << *tmpDtaPtr << endl;
+	 tmpDtaPtr ++;
+	 //	 cout << "entry:" <<i <<" =  " << *blocks << endl;
+	 //	 blocks ++;
+       } 
+
+
+     fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize );
+     bool readValue = true;
+     
+ 
+     cout << endl << "eventCount =" << eventCount << endl;
+    fRawMemoryReader->DumpData();
+
+     readValue = fPHOSRawStream->Next();
+     //    fPHOSRawStream->Next();  
+
+     while( readValue )
+       {
+	 cout <<"reading value" << endl;
+	 readValue = fPHOSRawStream->Next();
+       }
+     cout << "end of for lop" << endl;
+   }
+
+  eventCount++; 
+
+ return 0;
 }
 
-//void
-//AliHLTPHOSRawAnalyzerComponent::Evaluate(int start, int length)
-//{
-//  cout <<" AliHLTPHOSRawAnalyzerComponent::Evaluate" << endl ;
-//}
 
 
 int
 AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 {
   cout << "AliHLTPHOSRawAnalyzerComponent::DoInit Creating new  AliRawReaderMemory()" << endl; 
-  fRawMemoryReader = new AliRawReaderMemory;
-
-
-
-  /*
-  if(fRawMemoryReader)
-    {
-      return EINPROGRESS;
-    }
-  int i = 0;
-  //     const char* tableFileBaseDir = NULL;
-  while ( i < argc )
-    {
-      Logging(kHLTLogError, "HLT::TPCRawDataUnpacker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-      return EINVAL;
-    }
-  
-  //  fRawMemoryReader = new AliRawReaderMemory;
-  */
-
-
-
-
-
+  fRawMemoryReader = new AliRawReaderMemory();
+  fPHOSRawStream = new  AliCaloRawStream(fRawMemoryReader,"PHOS");
   cout <<"AliHLTPHOSRawAnalyzerComponent::DoIni  DONE!" << endl;
   if (argc==0 && argv==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
   }
   return 0;
 }
+
+
+
+/*
+int 
+AliHLTPHOSRawAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evtDtaPtr, const AliHLTComponentBlockData* dtaPtr, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&)
+{
+  const Bool_t skipBadEvent=kFALSE;
+  const AliHLTComponentBlockData* iter = NULL;
+
+  fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( dtaPtr->fPtr ), dtaPtr->fSize );
+
+  //  fPHOSRawStream = new  AliCaloRawStream(fRawMemoryReader,"PHOS");
+
+  fRawMemoryReader->DumpData();
+
+  Logging(kHLTLogInfo, "HLT", "Sample", "PhosHLTRawAnalyzerComonent, DoEvent");
+
+  //  UChar_t *tmpDtaPtr  = (UChar_t *)dtaPtr->fPtr;
+  //  UInt32_t *tmpDtaPtr  = (UInt32_t *)dtaPtr->fPtr;
+  //  unsigned long *tmpDtaPtr  = (unsigned long *)dtaPtr->fPtr;
+
+  
+  cout <<"PHOSHLT DoEvent: processing event:"<< eventCount << endl;
+  cout <<"Struct size = " <<evtDtaPtr.fStructSize << endl;
+  cout <<"Event ID = " <<evtDtaPtr.fEventID << endl;
+  cout <<"Block count = " <<evtDtaPtr.fBlockCnt << endl;
+  cout <<"Block size = " << dtaPtr->fSize << endl;
+  cout <<"printing out start od data block" << endl;
+  cout << "content of data pointer =" << tmpDtaPtr << endl;
+  
+
+  // UChar_t *tmpDtaPtr  = (UChar_t *)blokcs->fPtr;
+
+  //  AliCaloRawStream in(fRawMemoryReader,"PHOS");
+  //  for(unsigned int i = 0; i < tmpSize; i++)
+  for(unsigned int i = 0; i < 15; i++)
+    {
+      // getc();
+      //     sleep(10);
+      //    printf("\ntype return to continue; ");
+      //     getc(stdin);
+      //    printf("\nThanks; read in \n");
+      //    cout << "entry:" <<i <<" =  " << *tmpDtaPtr << endl;
+      //   tmpDtaPtr ++;
+   }
+
+  
+  
+  cout << "Entering while loop" << endl;
+  while ( fPHOSRawStream->Next() ) 
+    { 
+      cout << "Inside while loop" << endl;
+      if (fPHOSRawStream->IsNewHWAddress()) cout << endl << " New HW address: " << endl;
+      cout << "time bin=" << fPHOSRawStream->GetTime() << " of "<< fPHOSRawStream->GetTimeLength()
+	   << ", amp=" <<  fPHOSRawStream->GetSignal() <<" gain="<< fPHOSRawStream->IsLowGain()
+	   << " HW address="<<fPHOSRawStream->GetHWAddress()
+	   << " channel=("<<fPHOSRawStream->GetModule() <<","<<fPHOSRawStream->GetColumn()<<","<<fPHOSRawStream->GetRow()<<")"<< endl;
+      
+      
+      if (skipBadEvent && (fPHOSRawStream->GetTime() < 0 || fPHOSRawStream->GetTimeLength() <=0) ) {
+	cout << "Wrong time bin or time length. Skip this event" << endl;
+	break;
+      }
+    }
+  cout << "Finnsihed while loop" << endl << endl;
+
+  eventCount++;
+  return 0;
+}
+*/
