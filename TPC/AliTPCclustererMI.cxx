@@ -572,7 +572,7 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
   if (matrix) {
     Int_t nbins=0;
     Float_t *graph =0;
-    if (fRecoParam->GetCalcPedestal()){
+    if (fRecoParam->GetCalcPedestal() && cl->GetMax()>fRecoParam->GetDumpAmplitudeMin()){
       nbins = fMaxTime;
       graph = &(fBins[fMaxTime*(pos/fMaxTime)]);
     }
