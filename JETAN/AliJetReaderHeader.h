@@ -41,7 +41,7 @@ class AliJetReaderHeader : public TNamed
   virtual void SetPattern(const char* s)     {fPattern=TString(s);}
   virtual void SetDirectory(const char* s)   {fDir=TString(s);}
   virtual void SetBgDirectory(const char* s, Int_t n = 1)
-      {fDir=TString(s); fSignalPerBg = n;}
+      {fBgDir=TString(s); fSignalPerBg = n;}
   virtual void SetFirstEvent(Int_t i=0) {fFirst=i;}
   virtual void SetLastEvent(Int_t i=-1) {fLast=i;}
   virtual void SetFiducialEta(Float_t etamin, Float_t etamax) 
