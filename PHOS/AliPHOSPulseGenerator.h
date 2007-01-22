@@ -43,7 +43,7 @@ public:
   static Double_t GetRawFormatLowGain()           { return ( fgHighGain / fgHighLowGainFactor ) ; }
   Int_t           GetRawFormatOrder()       const { return fgOrder ; }
   static Int_t    GetRawFormatTimeBins()          { return fkTimeBins ; }
-  Double_t        GetRawFormatTimeMax()     const { return fgTimeMax ; }
+  static Double_t GetRawFormatTimeMax()           { return fgTimeTrigger*fkTimeBins ; }
   Double_t        GetRawFormatTimePeak()    const { return fgTimePeak ; }
   Double_t        GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;

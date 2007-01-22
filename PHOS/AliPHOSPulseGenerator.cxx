@@ -49,14 +49,13 @@ using std::endl;
 
 ClassImp(AliPHOSPulseGenerator) 
 
-Double_t AliPHOSPulseGenerator::fgCapa        = 1.;        // 1pF 
+Double_t AliPHOSPulseGenerator::fgCapa        = 1.1;       // 1pF 
 Int_t    AliPHOSPulseGenerator::fgOrder       = 2 ;        // order of the Gamma function
-Double_t AliPHOSPulseGenerator::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTimeMax/fTimeBins
-Double_t AliPHOSPulseGenerator::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
-Double_t AliPHOSPulseGenerator::fgTimeTrigger = 100E-9 ;   // 100ns, just for a reference
-Double_t AliPHOSPulseGenerator::fgHighCharge  = 8.2;       // adjusted for a high gain range of 5.12 GeV (10 bits)
-Double_t AliPHOSPulseGenerator::fgHighGain    = 6.64;
-Double_t AliPHOSPulseGenerator::fgHighLowGainFactor = 16.; // adjusted for a low gain range of 82 GeV (10 bits) 
+Double_t AliPHOSPulseGenerator::fgTimePeak    = 2.1E-6 ;   // tau=2.1 micro seconds
+Double_t AliPHOSPulseGenerator::fgTimeTrigger = 100E-9 ;   // one tick 100 ns
+Double_t AliPHOSPulseGenerator::fgHighCharge  = 8.8;       // adjusted for a high gain range of 5 GeV (10 bits)
+Double_t AliPHOSPulseGenerator::fgHighGain    = 6.85;
+Double_t AliPHOSPulseGenerator::fgHighLowGainFactor = 16.; // adjusted for a low gain range of 80 GeV (10 bits) 
 
 //-----------------------------------------------------------------------------
 AliPHOSPulseGenerator::AliPHOSPulseGenerator(Double_t a, Double_t t0)
@@ -193,7 +192,7 @@ Double_t AliPHOSPulseGenerator::RawResponseFunction(Double_t *x, Double_t *par)
   Double_t signal ;
   Double_t xx = x[0] - ( fgTimeTrigger + par[3] ) ; 
 
-  if (xx < 0 || xx > fgTimeMax) 
+  if (xx < 0 || xx > GetRawFormatTimeMax()) 
     signal = 0. ;  
   else {
     Double_t fac = par[0] * TMath::Power(fgOrder, fgOrder) * TMath::Power(par[1], fgOrder)/fgCapa ; 
