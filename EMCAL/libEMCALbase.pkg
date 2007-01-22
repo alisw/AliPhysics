@@ -16,7 +16,9 @@ AliEMCALHistoUtilities.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALDigit.cxx \
-AliEMCALCalibData.cxx
+AliEMCALCalibData.cxx \
+AliEMCALCalibHistoProducer.cxx \
+AliEMCALPreprocessor.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 

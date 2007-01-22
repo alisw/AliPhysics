@@ -9,8 +9,6 @@ void AliEMCALCalibHistoProducer(const char* file="EMCAL.raw.root")
   // raw data file in the ROOT format.
   //
   //  Gustavo Conesa Balbastre, December 2006 
-  // Load EMCAL shuttle library as it is not linked to aliroot
-  gSystem->Load("libEMCALshuttle");
 
   AliRawReaderRoot* rf = new AliRawReaderRoot(file);
   AliEMCALCalibHistoProducer hp(rf);
