@@ -1,8 +1,0 @@
-SRCS          =  AliEMCALCalibHistoProducer.cxx \
-                 AliEMCALPreprocessor.cxx
-
-HDRS:= $(SRCS:.cxx=.h) 
-
-DHDR= EMCALLinkDefshuttle.h
-
-EINCLUDE:=RAW
