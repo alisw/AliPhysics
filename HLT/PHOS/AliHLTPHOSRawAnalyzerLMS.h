@@ -1,3 +1,4 @@
+
 #ifndef ALIHLTPHOSRAWANALYZERLMS_H
 #define ALIHLTPHOSRAWANALYZERLMS_H
 #include <Rtypes.h>
@@ -22,8 +23,11 @@ class AliHLTPHOSRawAnalyzerLMS : public AliHLTPHOSRawAnalyzer
   virtual ~AliHLTPHOSRawAnalyzerLMS();
   virtual void Evaluate(int start = 0, int lenght = 100);
  private:
-  double   **kfMCovarPtrPtr;   /**<Covariance matrix of the measurements*/
-  double   **fPCovarPtrPtr;    /**<Covariance matrix of the estimated parameters*/
+  //  double   **kfMCovarPtrPtr; //*[1000000]   /**<Covariance matrix of the measurements*/
+  // double   **fPCovarPtrPtr;  //*[1000000]  /**<Covariance matrix of the estimated parameters*/
+
+  double   kfMCovarPtrPtr[1008][1008]; /**<Covariance matrix of the measurements*/
+  double   fPCovarPtrPtr[1008][1008];   /**<Covariance matrix of the estimated parameters*/
 
   ClassDef(AliHLTPHOSRawAnalyzerLMS, 2) 
   

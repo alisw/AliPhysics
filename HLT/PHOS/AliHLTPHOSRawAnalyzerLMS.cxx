@@ -23,7 +23,7 @@ using std::endl;
 ClassImp(AliHLTPHOSRawAnalyzerLMS) 
 
 
-AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(const AliHLTPHOSRawAnalyzerLMS&):AliHLTPHOSRawAnalyzer(), kfMCovarPtrPtr(0), fPCovarPtrPtr(0)
+AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(const AliHLTPHOSRawAnalyzerLMS&):AliHLTPHOSRawAnalyzer()
 {
 
 }
@@ -35,7 +35,7 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(const AliHLTPHOSRawAnalyzerLM
  * a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in
  * calculation is of type double.
  **/
-AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer(), kfMCovarPtrPtr(0), fPCovarPtrPtr(0) 
+AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer() 
 {
   cout <<"You cannot invoke the Fitter without arguments"<<endl;;
 }
@@ -46,7 +46,7 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer(), kf
 * @param dataPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double *dtaPtr, double fs):AliHLTPHOSRawAnalyzer(),kfMCovarPtrPtr(0), fPCovarPtrPtr(0) 
+AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double *dtaPtr, double fs):AliHLTPHOSRawAnalyzer() 
 {
   fFloatDataPtr = dtaPtr;  
   fSampleFrequency = fs;

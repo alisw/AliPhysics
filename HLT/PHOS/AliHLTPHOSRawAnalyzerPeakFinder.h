@@ -17,14 +17,15 @@ class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
     {
       return *this; 
     }
+
   
   virtual ~AliHLTPHOSRawAnalyzerPeakFinder();
   void SetTVector(double *tVector);
   void SetAVector(double *aVector);
   virtual void Evaluate(int start = 0, int lenght = 100);
  private:
-  double    *tVector;          /**<Peakfinder vector for TOF reconstruction*/
-  double    *aVector;          /**<Peakfinder vector for Energy reconstruction*/
+  double    *tVector;  //[1008]        /**<Peakfinder vector for TOF reconstruction*/
+  double    *aVector;  //[1008]        /**<Peakfinder vector for Energy reconstruction*/
 
   ClassDef(AliHLTPHOSRawAnalyzerPeakFinder, 2) 
   
