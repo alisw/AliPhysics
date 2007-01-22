@@ -1308,3 +1308,120 @@ Double_t AliMath::NegBinomialPvalue(Int_t n,Int_t k,Double_t p,Int_t sides,Int_t
  return val;
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::Nfac(Int_t n,Int_t mode) const
+{
+// Compute n!.
+// The algorithm can be selected by the "mode" input argument.
+//
+// mode : 0 ==> Calculation by means of straightforward multiplication
+//      : 1 ==> Calculation by means of Stirling's approximation
+//      : 2 ==> Calculation by means of n!=Gamma(n+1)
+//
+// For large n the calculation modes 1 and 2 will in general be faster.
+// By default mode=0 is used.
+// For n<0 the value 0 will be returned.
+//
+// Note : Because of Double_t value overflow the maximum value is n=170.
+//
+//--- NvE 20-jan-2007 Utrecht University
+
+ if (n<0) return 0;
+ if (n==0) return 1;
+
+ Double_t twopi=2.*acos(-1.);
+ Double_t z=0;
+ Double_t nfac=1;
+ Int_t i=n;
+ 
+ switch (mode)
+ {
+  case 0: // Straightforward multiplication
+   while (i>1)
+   {
+    nfac*=Double_t(i);
+    i--;
+   }
+   break;
+
+  case 1: // Stirling's approximation 
+   z=n;
+   nfac=sqrt(twopi)*pow(z,z+0.5)*exp(-z)*(1.+1./(12.*z));
+   break;
+
+  case 2: // Use of Gamma(n+1)
+   z=n+1;
+   nfac=Gamma(z);
+   break;
+
+  default:
+   nfac=0;
+   break;
+ }
+
+ return nfac;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::LnNfac(Int_t n,Int_t mode) const
+{
+// Compute ln(n!).
+// The algorithm can be selected by the "mode" input argument.
+//
+// mode : 0 ==>  Calculation via evaluation of n! followed by taking ln(n!)
+//      : 1 ==>  Calculation via Stirling's approximation ln(n!)=0.5*ln(2*pi)+(n+0.5)*ln(n)-n+1/(12*n)
+//      : 2 ==>  Calculation by means of ln(n!)=LnGamma(n+1)
+//
+// Note : Because of Double_t value overflow the maximum value is n=170 for mode=0.
+//
+// For mode=2 rather accurate results are obtained for both small and large n.
+// By default mode=2 is used.
+// For n<1 the value 0 will be returned.
+//
+//--- NvE 20-jan-2007 Utrecht University
+
+ if (n<=1) return 0;
+
+ Double_t twopi=2.*acos(-1.);
+ Double_t z=0;
+ Double_t lognfac=0;
+ 
+ switch (mode)
+ {
+  case 0: // Straightforward ln(n!)
+   z=Nfac(n);
+   lognfac=log(z);
+   break;
+
+  case 1: // Stirling's approximation 
+   z=n;
+   lognfac=0.5*log(twopi)+(z+0.5)*log(z)-z+1./(12.*z);
+   break;
+
+  case 2: // Use of LnGamma(n+1)
+   z=n+1;
+   lognfac=LnGamma(z);
+   break;
+
+  default:
+   lognfac=0;
+   break;
+ }
+
+ return lognfac;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::LogNfac(Int_t n,Int_t mode) const
+{
+// Compute log_10(n!).
+// First ln(n!) is evaluated via invokation of LnNfac(n,mode).
+// Then the algorithm log_10(z)=ln(z)*log_10(e) is used.
+//
+//--- NvE 20-jan-2007 Utrecht University
+
+ Double_t e=exp(1.);
+
+ Double_t val=LnNfac(n,mode);
+ val*=log10(e);
+
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////

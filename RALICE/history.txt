@@ -748,4 +748,5 @@
                 integer overflows.
 08-dec-2006 NvE Memberfunctions SetUT introduced in AliTimestamp to provide convenient
                 ways to set a specific UT date/time.
+20-jan-2007 NvE AliMath extended with Nfac(), LnNfac() and LogNfac() facilities.
 

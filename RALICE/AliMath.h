@@ -38,7 +38,10 @@ class AliMath : public TObject
   Double_t BinomialPvalue(Int_t k,Int_t n,Double_t p,Int_t sides=0,Int_t sigma=0,Int_t mode=0) const; // Bin. P-value
   Double_t PoissonPvalue(Int_t k,Double_t mu,Int_t sides=0,Int_t sigma=0) const; // Poisson P-value
   Double_t NegBinomialPvalue(Int_t n,Int_t k,Double_t p,Int_t sides=0,Int_t sigma=0,Int_t mode=0) const; // NegBin. P-value
- 
+  Double_t Nfac(Int_t n,Int_t mode=0) const;    // Compute n!
+  Double_t LnNfac(Int_t n,Int_t mode=2) const;  // Compute ln(n!) 
+  Double_t LogNfac(Int_t n,Int_t mode=2) const; // Compute log_10(n!) 
+
  protected:
   Double_t GamSer(Double_t a,Double_t x) const; // Compute P(a,x) via serial representation
   Double_t GamCf(Double_t a,Double_t x) const;  // Compute P(a,x) via continued fractions
@@ -47,7 +50,7 @@ class AliMath : public TObject
   Double_t BesselI1(Double_t x) const;          // Compute modified Bessel function I_1(x)
   Double_t BesselK1(Double_t x) const;          // Compute modified Bessel function K_1(x)
  
- ClassDef(AliMath,4) // Various mathematical tools for physics analysis.
+ ClassDef(AliMath,5) // Various mathematical tools for physics analysis.
  
 };
 #endif

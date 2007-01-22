@@ -22,4 +22,5 @@
 #include "IceLinefit.h"
 #include "IceChi2.h"
 #include "IceDwalkx.h"
+#include "IceMakeHits.h"
 

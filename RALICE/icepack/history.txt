@@ -94,4 +94,5 @@
                 sophisticated approach with more physics driven selection criteria.
 23-nov-2006 NvE Improved version of IceDwalk installed. Note that the old algorithm is
                 still available as IceDwalkx.
+22-jan-2007 NvE New class IceMakeHits introduced to perform wavefrom feature extraction.
                  
