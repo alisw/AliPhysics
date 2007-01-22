@@ -756,6 +756,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   Int_t    iDigit   = 0 ; 
   Double_t energyHG = 0. ; 
   Double_t energyLG = 0. ; 
+  Double_t startTime= 0. ;
   Double_t time     = 0. ;
   Int_t    iOldDigit;
   Bool_t   seen;    
@@ -770,7 +771,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 
     if (lowGainFlag) {
       if(!hLowGain)
-	hLowGain = new TH1F("hLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
+ 	hLowGain = new TH1F("hLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
       else
 	if(hLowGain->GetNbinsX() != in.GetTimeLength()) {
 	  delete hLowGain;
@@ -788,9 +789,9 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 
     // Fill histograms with samples
     if(lowGainFlag) 
-      hLowGain ->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+      hLowGain ->SetBinContent(in.GetTime(),in.GetSignal());
     else {
-      hHighGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+      hHighGain->SetBinContent(in.GetTime(),in.GetSignal());
     }
 
     iBin++;
@@ -805,6 +806,10 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       
       //FitRaw(lowGainFlag, hLowGain, hHighGain, signalF, energy, time);
       
+      // Time is not evaluated for the moment (12.01.2007). 
+      // Take is as a first time bin multiplied by the sample tick time
+      time = pulse.GetRawFormatTimeTrigger() * in.GetTime();
+
       if(lowGainFlag) {
 	energyLG  = hLowGain ->GetMaximum();     // "digit amplitude"
 // 	energyLG -= hLowGain ->GetBinContent(0); // "pedestal subtraction"
@@ -814,8 +819,8 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 	  hLowGain ->Print("all");
 	}
 	if(AliLog::GetGlobalDebugLevel()>2)
-	  AliDebug(2,Form("(mod,col,row)=(%d,%d,%d), low gain energy=%f\n\n",
-			  in.GetModule(),in.GetColumn(),in.GetRow(),energyLG));
+	  AliDebug(2,Form("(mod,col,row)=(%d,%d,%d), low gain energy=%f, time=%g\n\n",
+			  in.GetModule(),in.GetColumn(),in.GetRow(),energyLG,time));
       }
 
       else {
@@ -826,12 +831,9 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 	  hHighGain->Print("all");
 	}
 	if(AliLog::GetGlobalDebugLevel()>2)
-	  AliDebug(2,Form("(mod,col,row)=(%d,%d,%d), high gain energy=%f\n\n",
-			  in.GetModule(),in.GetColumn(),in.GetRow(),energyHG));
+	  AliDebug(2,Form("(mod,col,row)=(%d,%d,%d), high gain energy=%f, time=%g\n\n",
+			  in.GetModule(),in.GetColumn(),in.GetRow(),energyHG,time));
       }
-
-      // Time is not evaluated for the moment (12.01.2007). To be implemented later.
-      time = -1;
 
       relId[0] = in.GetModule()+1;
       relId[1] =                0;
