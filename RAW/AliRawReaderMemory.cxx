@@ -38,8 +38,6 @@ AliRawReaderMemory::AliRawReaderMemory() :
 // the given memory location
 
   fHeader = new AliRawDataHeader;
-
-  fEventNumber = 0;
 }
 
 AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
@@ -51,8 +49,6 @@ AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
 // create an object to read digits from the given memory
 
   fHeader = new AliRawDataHeader;
-
-  fEventNumber = 0;
 }
 
 AliRawReaderMemory::~AliRawReaderMemory()
@@ -143,12 +139,18 @@ Bool_t AliRawReaderMemory::Reset()
 Bool_t AliRawReaderMemory::NextEvent()
 {
 // each memory buffer always contains only one event
- return kFALSE; 
+  if (fEventNumber < 0) {
+    fEventNumber++;
+    return kTRUE;
+  }
+  else
+    return kFALSE; 
 }
 
 Bool_t AliRawReaderMemory::RewindEvents()
 {
 // reset the event counter
+  fEventNumber = -1;
 
   return Reset();
 }
