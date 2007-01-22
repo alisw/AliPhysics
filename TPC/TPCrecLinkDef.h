@@ -10,6 +10,7 @@
  
 #pragma link C++ class AliTPCcluster+;
 #pragma link C++ class AliTPCclusterMI+;
+#pragma link C++ class AliTPCclusterInfo+;
 
 #pragma link C++ class AliComplexCluster+;
 #pragma link C++ class AliTPCTrackerPoint+;   // defined in AliComplexCluster.h
@@ -42,6 +43,7 @@
 
 #pragma link C++ class AliTPCReconstructor+;
 #pragma link C++ class AliTPCRecoParam+;
+#pragma link C++ class AliTPCClusterParam+;
 
 #endif
 

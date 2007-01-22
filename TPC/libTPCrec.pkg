@@ -1,12 +1,12 @@
 SRCS:=  AliTPCcluster.cxx \
-        AliTPCclusterMI.cxx AliComplexCluster.cxx \
+        AliTPCclusterMI.cxx AliComplexCluster.cxx  AliTPCclusterInfo.cxx \
 	AliClusters.cxx AliTPCClustersRow.cxx \
         AliClustersArray.cxx AliTPCClustersArray.cxx \
 	AliTPCclusterer.cxx AliTPCclustererMI.cxx \
 	AliTPCtrack.cxx AliTPCtracker.cxx \
 	AliTPCpolyTrack.cxx  AliTPCseed.cxx AliTPCtrackerMI.cxx \
 	AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx \
-	AliTPCReconstructor.cxx AliTPCRecoParam.cxx
+	AliTPCReconstructor.cxx AliTPCRecoParam.cxx AliTPCClusterParam.cxx 
         
 HDRS:= $(SRCS:.cxx=.h)
 
