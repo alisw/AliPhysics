@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.48  2006/12/19 02:34:13  pavlinov
+ * clean up the EMCAL name scheme : super module -> module -> tower (or cell)
+ *
  * Revision 1.47  2006/12/05 17:12:03  gustavo
  * Updated AliEMCAL::Digits2Raw, reads first provisional RCU mapping files to make Raw data with new AliCaloAltroMapping and AliCaloRawStream
  *
@@ -135,6 +138,8 @@ void AliEMCAL::CreateMaterials()
   // Definitions of materials to build EMCAL and associated tracking media.
   // media number in idtmed are 1599 to 1698.
 
+  AliEMCALGeometry* geom = GetGeometry();
+
   // --- Air ---               
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
   Float_t zAir[4]={6.,7.,8.,18.};
@@ -181,8 +186,9 @@ void AliEMCAL::CreateMaterials()
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
  // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
+  float deemax = 0.1; // maximum fractional energy loss in one step (0 < DEEMAX ≤ 1);i
   AliMedium(2, "Scintillator$", 2, 1,
-            isxfld, sxmgmx, 10.0, 0.001, 0.1, 0.001, 0.001, 0, 0) ;
+            isxfld, sxmgmx, 10.0, 0.001, deemax, 0.001, 0.001, 0, 0) ;
 
   // Various Aluminium parts made of Al                                            -> idtmed[1602]
   AliMedium(3, "Al$", 3, 0,
@@ -216,8 +222,8 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   gMC->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   // --- Generate explicitly delta rays in Lead ---
-  gMC->Gstpar(idtmed[1600], "LOSS",3.) ;
-  gMC->Gstpar(idtmed[1600], "DRAY",1.) ;
+  gMC->Gstpar(idtmed[1600], "LOSS", 3) ;
+  gMC->Gstpar(idtmed[1600], "DRAY", 1) ;
   gMC->Gstpar(idtmed[1600], "DCUTE", cutele) ;
   gMC->Gstpar(idtmed[1600], "DCUTM", cutele) ;
 
@@ -236,8 +242,8 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
   gMC->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   gMC->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed[1601], "LOSS",3.) ; // generate delta rays 
-  gMC->Gstpar(idtmed[1601], "DRAY",1.) ;
+  gMC->Gstpar(idtmed[1601], "LOSS",3) ; // generate delta rays 
+  gMC->Gstpar(idtmed[1601], "DRAY",1) ;
   gMC->Gstpar(idtmed[1601], "DCUTE", cutele) ;
   gMC->Gstpar(idtmed[1601], "DCUTM", cutele) ;
 
@@ -247,10 +253,17 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   gMC->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   // --- Generate explicitly delta rays 
-  gMC->Gstpar(idtmed[1603], "LOSS",3.);
-  gMC->Gstpar(idtmed[1603], "DRAY",1.);
+  gMC->Gstpar(idtmed[1603], "LOSS",3);
+  gMC->Gstpar(idtmed[1603], "DRAY",1);
   gMC->Gstpar(idtmed[1603], "DCUTE", cutele) ;
   gMC->Gstpar(idtmed[1603], "DCUTM", cutele) ;
+
+  if(geom->GetILOSS()>=0) {
+    for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
+  } 
+  if(geom->GetIHADR()>=0) {
+    for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
+  }
 
   //set constants for Birk's Law implentation
   fBirkC0 =  1;

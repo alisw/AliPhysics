@@ -37,12 +37,13 @@ public:
 
   static AliEMCALGeometry * GetInstance(const Text_t* name,
 					const Text_t* title="") ; 
-  static AliEMCALGeometry * GetInstance() ;
+  static AliEMCALGeometry * GetInstance();
   AliEMCALGeometry & operator = (const AliEMCALGeometry  & /*rvalue*/) {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented");
     return *this;
   };
+  static Char_t* GetDefaulGeometryName() {return fgDefaultGeometryName;}
   void PrintGeometry();                                           //*MENU*  
   void PrintCellIndexes(Int_t absId=0, int pri=0, char *tit="");  //*MENU*
   virtual void Browse(TBrowser* b);
@@ -205,6 +206,8 @@ public:
   Int_t GetNCellsInSupMod() const {return fNCellsInSupMod;}
   Int_t GetNCellsInModule()  const {return fNCellsInModule; }
   Int_t GetKey110DEG()      const {return fKey110DEG;}
+  Int_t GetILOSS() const {return fILOSS;}
+  Int_t GetIHADR() const {return fIHADR;}
 
   AliEMCALGeometry(); // default ctor only for internal usage (singleton)
 
@@ -217,7 +220,8 @@ protected:
   
 private:
   static AliEMCALGeometry * fgGeom;	// pointer to the unique instance of the singleton
-  static Bool_t fgInit;			// Tells if geometry has been succesfully set up.
+  static Bool_t  fgInit;	        // Tells if geometry has been succesfully set up.
+  static Char_t* fgDefaultGeometryName; // Default name of geometry
 
   TString fGeoName;                     //geometry name
 
@@ -293,8 +297,12 @@ private:
   Float_t     fParSM[3];       // SM sizes as in GEANT (TRD1)
   TGeoMatrix* fMatrixOfSM[12]; //![fNumberOfSuperModules]; get from gGeoManager;
 
-  char *fAdditionalOpts[4];  //! some additional options for the geometry type and name
-  int  fNAdditionalOpts;  //! size of additional options parameter
+  char *fAdditionalOpts[6];  //! some additional options for the geometry type and name
+  int  fNAdditionalOpts;     //! size of additional options parameter
+
+  // Options for Geant (MIP business) - will call in AliEMCAL
+  Int_t fILOSS;
+  Int_t fIHADR;
 
   ClassDef(AliEMCALGeometry, 11) // EMCAL geometry class 
   };

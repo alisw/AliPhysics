@@ -63,7 +63,17 @@ ClassImp(AliEMCALGeometry)
 // these initialisations are needed for a singleton
 AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
 Bool_t             AliEMCALGeometry::fgInit      = kFALSE;
-
+Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_FINAL_110DEG";
+//
+// Usage: 
+//        You can create the AliEMCALGeometry object independently from anything.
+//        You have to use just the correct name of geometry. If name is empty string the
+//        default name of geometry will be used.
+//         
+//  AliEMCALGeometry* g = AliEMCALGeometry::GetInstance(name,title); // first time
+//  ..
+//  g = AliEMCALGeometry::GetInstance();                             // after first time
+//
 
 AliEMCALGeometry::AliEMCALGeometry() 
   : AliGeometry(),
@@ -76,7 +86,8 @@ AliEMCALGeometry::AliEMCALGeometry()
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0),fEtaMaxOfTRD1(0),
     fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
     fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
-    fShishKebabTrd1Modules(0),fNAdditionalOpts(0) 
+    fShishKebabTrd1Modules(0), fNAdditionalOpts(0),
+    fILOSS(-1), fIHADR(-1) 
 { 
   // default ctor only for internal usage (singleton)
   // must be kept public for root persistency purposes, but should never be called by the outside world    
@@ -95,7 +106,8 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title)
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0), fEtaMaxOfTRD1(0),
     fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
     fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
-    fShishKebabTrd1Modules(0),fNAdditionalOpts(0)
+    fShishKebabTrd1Modules(0),fNAdditionalOpts(0),
+    fILOSS(-1), fIHADR(-1) 
 {
   // ctor only for internal usage (singleton)
   AliDebug(2, Form("AliEMCALGeometry(%s,%s) ", name,title));
@@ -166,7 +178,8 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
     fEtaCentersOfCells(geom.fEtaCentersOfCells),
     fPhiCentersOfCells(geom.fPhiCentersOfCells),
     fShishKebabTrd1Modules(geom.fShishKebabTrd1Modules),
-    fNAdditionalOpts(geom.fNAdditionalOpts)
+    fNAdditionalOpts(geom.fNAdditionalOpts),
+    fILOSS(geom.fILOSS), fIHADR(geom.fIHADR) 
 {
   //copy ctor
 }
@@ -190,10 +203,12 @@ void AliEMCALGeometry::Init(void){
   // Oct 30,2006 - SHISH_TRD1_CURRENT_1X1, SHISH_TRD1_CURRENT_2X2 or SHISH_TRD1_CURRENT_3X3;
   //
 
-  fAdditionalOpts[0] = "nl=";    // number of sampling layers (fNECLayers)
-  fAdditionalOpts[1] = "pbTh=";  // cm, Thickness of the Pb   (fECPbRadThick)
-  fAdditionalOpts[2] = "scTh=";  // cm, Thickness of the Sc    (fECScintThick)
-  fAdditionalOpts[3] = "latSS=";  // cm, Thickness of lateral steel strip (fLateralSteelStrip)
+  fAdditionalOpts[0] = "nl=";       // number of sampling layers (fNECLayers)
+  fAdditionalOpts[1] = "pbTh=";     // cm, Thickness of the Pb   (fECPbRadThick)
+  fAdditionalOpts[2] = "scTh=";     // cm, Thickness of the Sc    (fECScintThick)
+  fAdditionalOpts[3] = "latSS=";    // cm, Thickness of lateral steel strip (fLateralSteelStrip)
+  fAdditionalOpts[4] = "allILOSS="; // = 0,1,2,3,4 (4 - energy loss without fluctuation)
+  fAdditionalOpts[5] = "allIHADR="; // = 0,1,2 (0 - no hadronic interaction)
 
   fNAdditionalOpts = sizeof(fAdditionalOpts) / sizeof(char*);
 
@@ -379,19 +394,55 @@ void AliEMCALGeometry::Init(void){
   fPhiBoundariesOfSM[10] = fPhiBoundariesOfSM[11] - TMath::ATan2((fParSM[1]) , fIPDistance);
   fPhiCentersOfSM[5]      = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
 
-  fgInit = kTRUE; 
-  
   //TRU parameters. These parameters values are not the final ones.
   fNTRU    = 3 ;
   fNTRUEta = 3 ;
   fNTRUPhi = 1 ;
 
+      // Define TGeoMatrix of SM - Jan 19, 2007 (just fro TRD1)
+  if(fGeoName.Contains("TRD1")) { // copy code from  AliEMCALv0::CreateSmod()
+    int nphism  = GetNumberOfSuperModules()/2;
+    double dphi = (GetArm1PhiMax() - GetArm1PhiMin())/nphism;
+    double rpos = (GetEnvelop(0) + GetEnvelop(1))/2.;
+    double phi, phiRad, xpos, ypos, zpos;
+    for(int i=0; i<nphism; i++){
+       phi    = GetArm1PhiMin() + dphi*(2*i+1)/2.; // phi= 90, 110, 130, 150, 170, 190
+       phiRad = phi*TMath::Pi()/180.;
+       xpos = rpos * TMath::Cos(phiRad);
+       ypos = rpos * TMath::Sin(phiRad);
+       zpos = fParSM[2];
+       if(i==5) {
+         xpos += (fParSM[1]/2. * TMath::Sin(phiRad)); 
+         ypos -= (fParSM[1]/2. * TMath::Cos(phiRad));
+       }
+       // pozitive z
+       int ind = 2*i;
+       TGeoRotation *geoRot0 = new TGeoRotation("geoRot0", 90.0, phi, 90.0, 90.0+phi, 0.0, 0.0);
+       fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
+						 xpos,ypos, zpos, geoRot0);
+       // negaive z
+       ind++;
+       double phiy = 90. + phi + 180.;
+       if(phiy>=360.) phiy -= 360.;
+       TGeoRotation *geoRot1 = new TGeoRotation("geoRot1", 90.0, phi, 90.0, phiy, 180.0, 0.0);
+       fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
+					   xpos,ypos,-zpos, geoRot1);
+    } // for
+  }
+  fgInit = kTRUE; 
+  AliInfo(" is ended");  
 }
 
 void AliEMCALGeometry::PrintGeometry()
 {
   // Separate routine is callable from broswer; Nov 7,2006
-  printf("\nInit: geometry of EMCAL named %s is as follows:\n", fGeoName.Data());
+  printf("\nInit: geometry of EMCAL named %s :\n", fGeoName.Data());
+  if(fArrayOpts) {
+    for(Int_t i=0; i<fArrayOpts->GetEntries(); i++){
+      TObjString *o = (TObjString*)fArrayOpts->At(i);
+      printf(" %i : %s \n", i, o->String().Data());
+    }
+  }
   printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
   printf("Layout: phi = (%7.1f, %7.1f), eta = (%5.2f, %5.2f), IP = %7.2f -> for EMCAL envelope only\n",  
 	   GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() );
@@ -419,6 +470,7 @@ void AliEMCALGeometry::PrintGeometry()
     printf(" fLongModuleSize     %6.3f cm \n", fLongModuleSize);
     printf(" #supermodule in phi direction %i \n", fNPhiSuperModule );
   }
+  printf(" fILOSS %i : fIHADR %i \n", fILOSS, fIHADR);
   if(fGeoName.Contains("TRD")) {
     printf(" fTrd1Angle %7.4f\n", fTrd1Angle);
     printf(" f2Trd1Dx2  %7.4f\n",  f2Trd1Dx2);
@@ -455,6 +507,15 @@ void AliEMCALGeometry::PrintGeometry()
           if((iphi+1)%12 == 0) printf("\n");
 	}
         printf("\n");
+
+      }
+      printf(" Matrix transformation\n");
+      for(Int_t i=0; i<12; i++) {
+        TGeoMatrix *m = fMatrixOfSM[i];
+        if(m==0) continue;
+        const double *xyz = m->GetTranslation();
+        printf(" %2.2i %s %s x %7.2f y %7.2f z %7.2f\n", 
+	       i, m->GetName(), m->ClassName(), xyz[0],xyz[1],xyz[2]); 
       }
 
       printf("\n Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize());
@@ -465,6 +526,7 @@ void AliEMCALGeometry::PrintGeometry()
       }
     }
   }
+  cout<<endl;
 }
 
 void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, char *tit)
@@ -489,11 +551,12 @@ void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, char *tit)
 void AliEMCALGeometry::CheckAdditionalOptions()
 {
   // Feb 06,2006
-  //Additional options that
-  //can be used to select
-  //the specific geometry of 
-  //EMCAL to run
-
+  // Additional options that
+  // can be used to select
+  // the specific geometry of 
+  // EMCAL to run
+  // Dec 27,2006
+  // adeed allILOSS= and allIHADR= for MIP investigation
   fArrayOpts = new TObjArray;
   Int_t nopt = AliEMCALHistoUtilities::ParseString(fGeoName, *fArrayOpts);
   if(nopt==1) { // no aditional option(s)
@@ -531,6 +594,12 @@ void AliEMCALGeometry::CheckAdditionalOptions()
       } else if(addOpt.Contains("LATSS=",TString::kIgnoreCase)) {// Thickness of lateral steel strip (fLateralSteelStrip)
         sscanf(addOpt.Data(),"LATSS=%f", &fLateralSteelStrip);
         AliDebug(2,Form(" fLateralSteelStrip %f (new) \n", fLateralSteelStrip));
+      } else if(addOpt.Contains("ILOSS=",TString::kIgnoreCase)) {// As in Geant
+        sscanf(addOpt.Data(),"ALLILOSS=%i", &fILOSS);
+        AliDebug(2,Form(" fILOSS %i \n", fILOSS));
+      } else if(addOpt.Contains("IHADR=",TString::kIgnoreCase)) {// As in Geant
+        sscanf(addOpt.Data(),"ALLIHADR=%i", &fIHADR);
+        AliDebug(2,Form(" fIHADR %i \n", fIHADR));
       }
     }
   }
@@ -684,16 +753,17 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
 
     AliEMCALGeometry * rv = 0; 
     if ( fgGeom == 0 ) {
-	if ( strcmp(name,"") == 0 ) rv = 0;
-	else {
-	    fgGeom = new AliEMCALGeometry(name, title);
-	    if ( fgInit ) rv = (AliEMCALGeometry * ) fgGeom;
-	    else {
-		rv = 0; 
-		delete fgGeom; 
-		fgGeom = 0; 
-	    } // end if fgInit
-	} // end if strcmp(name,"")
+      if ( strcmp(name,"") == 0 ) { // get default geometry
+	 fgGeom = new AliEMCALGeometry(fgDefaultGeometryName, title);
+      } else {
+	 fgGeom = new AliEMCALGeometry(name, title);
+      }  // end if strcmp(name,"")
+      if ( fgInit ) rv = (AliEMCALGeometry * ) fgGeom;
+      else {
+	 rv = 0; 
+	 delete fgGeom; 
+	 fgGeom = 0; 
+      } // end if fgInit
     }else{
 	if ( strcmp(fgGeom->GetName(), name) != 0) {
 	  printf("\ncurrent geometry is %s : ", fgGeom->GetName());
@@ -1067,7 +1137,9 @@ void  AliEMCALGeometry::GetTransformationForSM()
   //Uses the geometry manager to
   //load the transformation matrix
   //for the supermodules
+  // Unused after 19 Jan, 2007 - keep for compatibility; 
 
+  return;
   static Bool_t transInit=kFALSE;
   if(transInit) return;
 
@@ -1300,6 +1372,9 @@ AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta)
 void AliEMCALGeometry::Browse(TBrowser* b)
 {
   if(fShishKebabTrd1Modules) b->Add(fShishKebabTrd1Modules);
+  for(int i=0; i<fNumberOfSuperModules; i++) {
+    if(fMatrixOfSM[i])  b->Add(fMatrixOfSM[i]);
+  }
 }
 
 Bool_t AliEMCALGeometry::IsFolder() const
