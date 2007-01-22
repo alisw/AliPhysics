@@ -836,16 +836,16 @@ void AliFRAMEv2::CreateGeometry()
 //
 // Thermal shield
 //
-  Float_t dyM  =  99.0;
+  Float_t dyM  =  99.0 - 4.;
   MakeHeatScreen("M",   dyM, idrotm[2090], idrotm[2091]);
-  Float_t dyAM = 119.5;
+  Float_t dyAM = 119.5 - 4.;
   MakeHeatScreen("AM", dyAM, idrotm[2090], idrotm[2091]);
-  Float_t dyA  = 128.0;
+  Float_t dyA  = 128.0 - 4.;
   MakeHeatScreen("A" ,  dyA, idrotm[2090], idrotm[2091]);
 //
 //
 //
-  dz = -57.2 + 5.2 - 0.7;  
+  dz = -57.2 + 0.6;  
   for (i = 0; i < 18; i++) {
 
       char nameMo[16];
@@ -853,11 +853,11 @@ void AliFRAMEv2::CreateGeometry()
       // M
       gMC->Gspos("BTSH_M" , i+1 , nameMo,  0., 0., dz, 0, "ONLY"); 
       // AM, CM
-      dy = dymodL[0] + dyAM / 2.;
+      dy = dymodL[0] + dyAM / 2. + 4.5;
       gMC->Gspos("BTSH_AM", i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
       gMC->Gspos("BTSH_AM", i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
       // A, C
-      dy = dymodL[1] + dyA / 2.;
+      dy = dymodL[1] + dyA / 2. + 6.0;
       gMC->Gspos("BTSH_A" , i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
       gMC->Gspos("BTSH_A" , i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
 }
@@ -1373,8 +1373,8 @@ void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
     char t5name[128];
     
     // 
-    Float_t dxP = 98.5 - 3.;
-    Float_t dzP =  1.2;
+    Float_t dxP = 98.5;
+    Float_t dzP =  1.05;
     //
     // Mother volume
     Float_t thshM[3];
@@ -1385,22 +1385,22 @@ void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
     gMC->Gsvolu(mname,  "BOX ", kAir, thshM,  3);
     //
     // Aluminum sheet
-    thshM[2] = 0.05;
+    thshM[2] = 0.025;
     sprintf(cname, "BTSHA_%s", name);
     gMC->Gsvolu(cname, "BOX ", kAlu, thshM,  3);
-    gMC->Gspos(cname, 1, mname, 0., 0., -0.55, 0);
+    gMC->Gspos(cname, 1, mname, 0., 0., -0.5, 0);
     //
     // Tubes
     Float_t thshT[3];
     thshT[0] = 0.4;
     thshT[1] = 0.5;
-    thshT[2] = (dyP / 2. - 8.);
+    thshT[2] = (dyP / 2. - 6.);
     //
     sprintf(t1name, "BTSHT1_%s", name);
     gMC->Gsvolu(t1name,  "TUBE", kAlu, thshT,  3);
     dx = - dxP / 2. + 8.;
-    gMC->Gspos(t1name, 1, mname,  dx, 0., 0., rot1);
-    gMC->Gspos(t1name, 2, mname, -dx, 0., 0., rot1);
+    gMC->Gspos(t1name, 1, mname,  dx, 0., 0.05, rot1);
+    gMC->Gspos(t1name, 2, mname, -dx, 0., 0.05, rot1);
     //
     sprintf(t2name, "BTSHT2_%s", name);
     sprintf(t3name, "BTSHT3_%s", name);
@@ -1414,7 +1414,7 @@ void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
     gMC->Gsvolu(t4name,  "TUBE", kAlu, thshT,  3);
     thshT[2] =  9.0/2.;
     gMC->Gsvolu(t5name,  "TUBE", kAlu, thshT,  3);
-    gMC->Gspos(t5name, 0, mname, -dx - 4.,  - (dyP / 2. -  7.5), 0.1, rot2);      
+    gMC->Gspos(t5name, 0, mname, -dx - 4.,  - (dyP / 2. -  5.5), 0.05, rot2);      
 
     Int_t sig = 1;
     Int_t ipo = 1;
@@ -1425,12 +1425,12 @@ void AliFRAMEv2::MakeHeatScreen(char* name, Float_t dyP, Int_t rot1, Int_t rot2)
 	Float_t dy1 =  - (thshM[1] - 15.5) * sig;
 	Float_t dy2 =  - (thshM[1] -  7.5) * sig;
 	
-	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.0, rot1);
+	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.05, rot1);
 	dx += 6.9;
-	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.0, rot1);      
+	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.05, rot1);      
 	
-	gMC->Gspos(t3name, i+1,   mname, dx - 3.45, dy1, 0.0, rot2);      
-	gMC->Gspos(t4name, i+1,   mname, dx - 3.45, dy2, 0.0, rot2);      
+	gMC->Gspos(t3name, i+1,   mname, dx - 3.45, dy1, 0.05, rot2);      
+	gMC->Gspos(t4name, i+1,   mname, dx - 3.45, dy2, 0.05, rot2);      
     }
 }
 
