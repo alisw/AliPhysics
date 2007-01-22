@@ -11,6 +11,7 @@
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
 #include "AliHLTPHOSDefinitions.h"
+#include "TH2.h"
 
 
 /*
@@ -41,6 +42,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
   virtual int DoDeinit();
+  void DumpData();
 
   virtual const char* GetComponentID() = 0;
 
@@ -54,12 +56,24 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   // private:
  protected:
  AliHLTPHOSRawAnalyzer *analyzerPtr; 
+ void Reset();
+ void ResetDataPtr();
 
  private:
+ 
+
  int eventCount;
+
+
  //	AliRawReaderMemory *fRawMemoryReader;
  //	AliTPCRawStream *fTPCRawStream;
+ Double_t fTmpChannelData[1008];
+ // Int_t fMaxValues[5][64][56][2];
+ Double_t fMaxValues[5][64][56][2];
 
+  //  Int_t fMaxValuesLG[5][64][56][2];
+  TH2S *legoPlotPtr;
+  //  TH2S *legoPlotLgPtr;
  AliCaloRawStream *fPHOSRawStream;
  AliRawReaderMemory *fRawMemoryReader;
  static const AliHLTComponentDataType inputDataTypes[];

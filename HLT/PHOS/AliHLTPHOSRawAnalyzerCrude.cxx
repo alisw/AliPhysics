@@ -63,7 +63,7 @@ AliHLTPHOSRawAnalyzerCrude::~AliHLTPHOSRawAnalyzerCrude()
 void 
 AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
 {
-  printf("\nAliHLTPHOSRawAnalyzerCrude::Evaluat() from index %d to %d\n", start, start + length);
+  //  printf("\nAliHLTPHOSRawAnalyzerCrude::Evaluat() from index %d to %d\n", start, start + length);
   
   
   double tmpAmplitudeMax =0; 
