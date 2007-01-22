@@ -31,7 +31,7 @@ const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::outputDataType=kAl
 
 //AliHLTPHOSRawAnalyzerComponent gAliHLTPHOSRawAnalyzerComponent;
 //ClassImp(AliHLTPHOSRawAnalyzerComponent) 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(),  eventCount(0), fPHOSRawStream(), fRawMemoryReader(0)
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(),  fEventCount(0),  fEquippmentId(0), fPHOSRawStream(), fRawMemoryReader(0)
 {
   //  fRawMemoryReader = NULL;
 } 
@@ -51,7 +51,7 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 
 
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(),  eventCount(0), fPHOSRawStream(),fRawMemoryReader(0)
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentId(0), fPHOSRawStream(),fRawMemoryReader(0)
 {
   //  fRawMemoryReader = NULL;
 }
@@ -107,7 +107,8 @@ void
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 
 {
-  constBase = 0;inputMultiplier = 0;
+  constBase = 30;
+  inputMultiplier = 0.1;
 }
 
 
@@ -115,11 +116,24 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+
   Int_t tmpMod  = 0;
   Int_t tmpRow  = 0;
   Int_t tmpCol  = 0;
   Int_t tmpGain = 0;
   Int_t processedChannels = 0;
+
+  //  AliHLTUInt8_t *tmpOut = &((AliHLTUInt8_t)(GetEquippmentId()));
+
+  AliHLTUInt8_t *tmpOut =( AliHLTUInt8_t*)&fEquippmentId;
+
+  outputPtr[0] = tmpOut[0];
+  outputPtr[1] = tmpOut[1];
+
+  AliHLTUInt16_t  tmpID = *((AliHLTUInt16_t*)(outputPtr));
+
+  cout << "OutputBuffer setting equippment ID to " << tmpID << endl;
+
   //  Int_t tmpMax  = 0;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
@@ -128,20 +142,16 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
-      if (eventCount == 0)
-      	{
-      	  continue;
-      	}
- 
+
       if ( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
 	{
 	  cout << "Warning: data type = is nOT gkDDLPackedRawDataType " << endl;
 	  continue;
 	}
+
      fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize );
      fRawMemoryReader->DumpData();
      fRawMemoryReader->RewindEvents();
-
      analyzerPtr->SetData(fTmpChannelData);
  
       while(fPHOSRawStream->Next())
@@ -192,10 +202,12 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 
   Reset();
   cout << "AliHLTPHOSRawAnalyzerComponent::DoInit Creating new  AliRawReaderMemory()" << endl; 
-  legoPlotPtr   = new TH2S("Lego plot 1","Phi0 20Gev, High gain", 56*5, 0, 56*5, 64, 0, 64);
+  //legoPlotPtr   = new TH2S("Lego plot 1","Phi0 20Gev, High gain", 56*5, 0, 56*5, 64, 0, 64);
   fRawMemoryReader = new AliRawReaderMemory();
   fPHOSRawStream = new  AliCaloRawStream(fRawMemoryReader,"PHOS");
   fRawMemoryReader->SetEquipmentID(equippmentId); 
+
+  SetEquippmentId(equippmentId);
 
   cout <<"AliHLTPHOSRawAnalyzerComponent::DoIni  DONE!" << endl;
   if (argc==0 && argv==NULL) {
@@ -254,4 +266,17 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr()
     {
       fTmpChannelData[i] = 0;
     }
+}
+
+
+void 
+AliHLTPHOSRawAnalyzerComponent::SetEquippmentId(int id)
+{
+  fEquippmentId = id;
+}
+
+int 
+AliHLTPHOSRawAnalyzerComponent::GetEquippmentId()
+{
+  return  fEquippmentId;
 }
