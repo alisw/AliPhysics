@@ -24,6 +24,7 @@
 #include "AliTPCReconstructor.h"
 #include "AliTPCclustererMI.h"
 #include "AliTPCclusterMI.h"
+#include "AliTPCclusterInfo.h"
 #include <TObjArray.h>
 #include <TFile.h>
 #include "TGraph.h"
@@ -49,7 +50,7 @@
 #include "AliTPCCalROC.h"
 #include "TTreeStream.h"
 #include "AliLog.h"
-
+#include "TVirtualFFT.h"
 
 ClassImp(AliTPCclustererMI)
 
@@ -82,7 +83,8 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fNcluster(0),
   fAmplitudeHisto(0),
   fDebugStreamer(0),
-  fRecoParam(0)
+  fRecoParam(0),
+  fFFTr2c(0)
 {
   //
   // COSNTRUCTOR
@@ -102,6 +104,8 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   }
   fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
   fAmplitudeHisto = 0;
+  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
+  fFFTr2c = TVirtualFFT::FFT(1, &nPoints, "R2C  K");
 }
 //______________________________________________________________
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
@@ -313,9 +317,11 @@ AliTPCclusterMI &c)
     c.SetQ(sumw);
     c.SetY(meani*fPadWidth); 
     c.SetZ(meanj*fZWidth); 
+    c.SetPad(meani);
+    c.SetTimeBin(meanj);
     c.SetSigmaY2(mi2);
     c.SetSigmaZ2(mj2);
-    AddCluster(c);
+    AddCluster(c,(Float_t*)vmatrix,k);
     //remove cluster data from data
     for (Int_t di=-2;di<=2;di++)
       for (Int_t dj=-2;dj<=2;dj++){
@@ -349,10 +355,12 @@ AliTPCclusterMI &c)
   c.SetQ(sumu);
   c.SetY(meani*fPadWidth); 
   c.SetZ(meanj*fZWidth); 
+  c.SetPad(meani);
+  c.SetTimeBin(meanj);
   c.SetSigmaY2(mi2);
   c.SetSigmaZ2(mj2);
   c.SetType(Char_t(overlap)+1);
-  AddCluster(c);
+  AddCluster(c,(Float_t*)vmatrix,k);
 
   //unfolding 2
   meani-=i0;
@@ -510,7 +518,7 @@ Float_t AliTPCclustererMI::FitMax(Float_t vmatrix[5][5], Float_t y, Float_t z, F
   return max;
 }
 
-void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c){
+void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t pos){
   //
   // transform cluster to the global coordinata
   // add the cluster to the array
@@ -560,8 +568,17 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c){
   if (fLoop==2) c.SetType(100);
 
   TClonesArray * arr = fRowCl->GetArray();
-  // AliTPCclusterMI * cl = 
-  new ((*arr)[fNcluster]) AliTPCclusterMI(c);
+  AliTPCclusterMI * cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
+  if (matrix) {
+    Int_t nbins=0;
+    Float_t *graph =0;
+    if (fRecoParam->GetCalcPedestal()){
+      nbins = fMaxTime;
+      graph = &(fBins[fMaxTime*(pos/fMaxTime)]);
+    }
+    AliTPCclusterInfo * info = new AliTPCclusterInfo(matrix,nbins,graph);
+    cl->SetInfo(info);
+  }
 
   fNcluster++;
 }
@@ -922,10 +939,13 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
       continue; 
     }
     //absolute custs
-    if (b[0]<minMaxCutAbs) continue;   //threshold form maxima  
-    if (b[-1]+b[1]<=0) continue;               // cut on isolated clusters
-    if (b[-fMaxTime]+b[fMaxTime]<=0) continue; // cut on isolated clusters
-    if ((b[0]+b[-1]+b[1])<minUpDownCutAbs) continue;   //threshold for up town TRF 
+    if (b[0]<minMaxCutAbs) continue;   //threshold for maxima  
+    //
+    if (b[-1]+b[1]+b[-fMaxTime]+b[fMaxTime]<=0) continue;  // cut on isolated clusters 
+    //    if (b[-1]+b[1]<=0) continue;               // cut on isolated clusters
+    //if (b[-fMaxTime]+b[fMaxTime]<=0) continue; // cut on isolated clusters
+    //
+    if ((b[0]+b[-1]+b[1])<minUpDownCutAbs) continue;   //threshold for up down  (TRF) 
     if ((b[0]+b[-fMaxTime]+b[fMaxTime])<minLeftRightCutAbs) continue;   //threshold for left right (PRF)    
     if (!IsMaximum(*b,fMaxTime,b)) continue;
     //
@@ -935,7 +955,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
     if ((b[0]+b[-1]+b[1])<minUpDownCutSigma*noise) continue;   //threshold for up town TRF 
     if ((b[0]+b[-fMaxTime]+b[fMaxTime])<minLeftRightCutSigma*noise) continue;   //threshold for left right (PRF)    
   
-    AliTPCclusterMI c;
+    AliTPCclusterMI c(kFALSE);   // default cosntruction  without info
     Int_t dummy=0;
     MakeCluster(i, fMaxTime, fBins, dummy,c);
     
@@ -955,7 +975,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   // ESTIMATE pedestal and the noise
   // 
-  Int_t offset =100;
   const Int_t kPedMax = 100;
   Float_t  max    =  0;
   Float_t  maxPos =  0;
@@ -1095,19 +1114,115 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     dsignal[i] = signal[i];
   }
   //
+  // Digital noise
   //
-  TGraph * graph;
-  Bool_t random = (gRandom->Rndm()<0.0001);
-  if (max-median>kMin || rms06>2.*fParam->GetZeroSup() || random){
-    graph =new TGraph(nchannels, dtime, dsignal);
-    if (rms06>2.*fParam->GetZeroSup() || random)
-      (*fDebugStreamer)<<"SignalN"<<    //noise pads - or random sample of pads
+  if (max-median>30.*TMath::Max(1.,rms06)){    
+    //
+    //
+    TGraph * graph =new TGraph(nchannels, dtime, dsignal);
+    //
+    //
+    // jumps left - right
+    Int_t    njumps0=0;
+    Double_t deltaT0[2000];
+    Double_t deltaA0[2000];
+    Int_t    lastJump0 = fRecoParam->GetFirstBin();
+    Int_t    njumps1=0;
+    Double_t deltaT1[2000];
+    Double_t deltaA1[2000];
+    Int_t    lastJump1 = fRecoParam->GetFirstBin();
+    Int_t    njumps2=0;
+    Double_t deltaT2[2000];
+    Double_t deltaA2[2000];
+    Int_t    lastJump2 = fRecoParam->GetFirstBin();
+
+    for (Int_t itime=fRecoParam->GetFirstBin()+1; itime<fRecoParam->GetLastBin()-1; itime++){
+      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,rms06)  && 
+	  TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,rms06)  &&
+	  (dsignal[itime-1]-median<5.*rms06) &&
+	  (dsignal[itime+1]-median<5.*rms06) 	  
+	  ){
+	deltaA0[njumps0] = dsignal[itime]-dsignal[itime-1];
+	deltaT0[njumps0] = itime-lastJump0;
+	lastJump0 = itime;
+	njumps0++;
+      }
+      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,rms06) &&
+	  (dsignal[itime-1]-median<5.*rms06) 
+	  ) {
+	deltaA1[njumps1] = dsignal[itime]-dsignal[itime-1];
+	deltaT1[njumps1] = itime-lastJump1;
+	lastJump1 = itime;
+	njumps1++;
+      }
+      if (TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,rms06) &&
+	  (dsignal[itime+1]-median<5.*rms06) 
+	  ) {
+	deltaA2[njumps2] = dsignal[itime]-dsignal[itime+1];
+	deltaT2[njumps2] = itime-lastJump2;
+	lastJump2 = itime;
+	njumps2++;
+      }
+    }
+    //
+    if (njumps0>0 || njumps1>0 || njumps2>0){
+      TGraph *graphDN0 = new TGraph(njumps0, deltaT0, deltaA0);
+      TGraph *graphDN1 = new TGraph(njumps1, deltaT1, deltaA1);
+      TGraph *graphDN2 = new TGraph(njumps2, deltaT2, deltaA2);
+      (*fDebugStreamer)<<"SignalDN"<<    //digital - noise pads - or random sample of pads
 	"TimeStamp="<<fTimeStamp<<
 	"EventType="<<fEventType<<
 	"Sector="<<uid[0]<<
 	"Row="<<uid[1]<<
 	"Pad="<<uid[2]<<
 	"Graph="<<graph<<
+	"Max="<<max<<
+	"MaxPos="<<maxPos<<
+	"Graph.="<<graph<<  
+	"P0GraphDN0.="<<graphDN0<<
+	"P1GraphDN1.="<<graphDN1<<
+	"P2GraphDN2.="<<graphDN2<<
+	//
+	"Median="<<median<<
+	"Mean="<<mean<<
+	"RMS="<<rms<<      
+	"Mean06="<<mean06<<
+	"RMS06="<<rms06<<
+	"Mean09="<<mean09<<
+	"RMS09="<<rms09<<
+	"\n";
+      delete graphDN0;
+      delete graphDN1;
+      delete graphDN2;
+    }
+    delete graph;
+  }
+
+  //
+  // NOISE STUDY  Fourier transform
+  //
+  TGraph * graph;
+  Bool_t random = (gRandom->Rndm()<0.0003);
+  if (max-median>kMin || rms06>1.*fParam->GetZeroSup() || random){
+    graph =new TGraph(nchannels, dtime, dsignal);
+    if (rms06>1.*fParam->GetZeroSup() || random){
+      //Double_t *input, Double_t threshold, Bool_t locMax, Double_t *freq, Double_t *re, Double_t *im, Double_t *mag, Double_t *phi);
+      Float_t * input = &(dsignal[fRecoParam->GetFirstBin()]);
+      Float_t freq[2000], re[2000], im[2000], mag[2000], phi[2000];
+      Int_t npoints = TransformFFT(input, -1,kFALSE, freq, re, im, mag, phi);
+      TGraph *graphMag0 = new TGraph(npoints, freq, mag);
+      TGraph *graphPhi0 = new TGraph(npoints, freq, phi);
+      npoints = TransformFFT(input, 0.5,kTRUE, freq, re, im, mag, phi);
+      TGraph *graphMag1 = new TGraph(npoints, freq, mag);
+      TGraph *graphPhi1 = new TGraph(npoints, freq, phi);
+      
+      (*fDebugStreamer)<<"SignalN"<<    //noise pads - or random sample of pads
+	"TimeStamp="<<fTimeStamp<<
+	"EventType="<<fEventType<<
+	"Sector="<<uid[0]<<
+	"Row="<<uid[1]<<
+	"Pad="<<uid[2]<<
+	"Graph.="<<graph<<
 	"Max="<<max<<
 	"MaxPos="<<maxPos<<
 	//
@@ -1118,7 +1233,21 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	"RMS06="<<rms06<<
 	"Mean09="<<mean09<<
 	"RMS09="<<rms09<<
+	// FFT part
+	"Mag0.="<<graphMag0<<
+	"Mag1.="<<graphMag1<<
+	"Phi0.="<<graphPhi0<<
+	"Phi1.="<<graphPhi1<<
 	"\n";
+      delete graphMag0;
+      delete graphMag1;
+      delete graphPhi0;
+      delete graphPhi1;
+    }
+    //
+    // Big signals dumping
+    //
+    
     if (max-median>kMin &&maxPos>AliTPCReconstructor::GetRecoParam()->GetFirstBin()) 
       (*fDebugStreamer)<<"SignalB"<<     // pads with signal
 	"TimeStamp="<<fTimeStamp<<
@@ -1272,6 +1401,8 @@ void AliTPCclustererMI::DumpHistos(){
       Float_t rms  =  histo->GetRMS();
       Float_t gmean = histo->GetFunction("gaus")->GetParameter(1);
       Float_t gsigma = histo->GetFunction("gaus")->GetParameter(2);
+      Float_t gmeanErr = histo->GetFunction("gaus")->GetParError(1);
+      Float_t gsigmaErr = histo->GetFunction("gaus")->GetParError(2);
       Float_t max = histo->GetFunction("gaus")->GetParameter(0);
 
       // get pad number
@@ -1297,8 +1428,58 @@ void AliTPCclustererMI::DumpHistos(){
 	"RMS="<<rms<<      
 	"GMean="<<gmean<<
 	"GSigma="<<gsigma<<
+	"GMeanErr="<<gmeanErr<<
+	"GSigmaErr="<<gsigmaErr<<
 	"\n";
       if (array->UncheckedAt(ipad)) fDebugStreamer->StoreObject(array->UncheckedAt(ipad));
     }
   }
 }
+
+
+
+Int_t  AliTPCclustererMI::TransformFFT(Float_t *input, Float_t threshold, Bool_t locMax, Float_t *freq, Float_t *re, Float_t *im, Float_t *mag, Float_t *phi)
+{
+  //
+  // calculate fourrie transform 
+  // return only frequncies with mag over threshold
+  // if locMax is spectified only freque with local maxima over theshold is returned 
+
+  if (! fFFTr2c) return kFALSE;
+  if (!freq) return kFALSE;
+
+  Int_t current=0;
+  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
+  Double_t *in = new Double_t[nPoints];
+  Double_t *rfft = new Double_t[nPoints];
+  Double_t *ifft = new Double_t[nPoints];
+  for (Int_t i=0; i<nPoints; i++){in[i]=input[i];}
+  fFFTr2c->SetPoints(in);
+  fFFTr2c->Transform();
+  fFFTr2c->GetPointsComplex(rfft, ifft);
+  for (Int_t i=3; i<nPoints/2-3; i++){
+    Float_t lmag =  TMath::Sqrt(rfft[i]*rfft[i]+ifft[i]*ifft[i])/nPoints;
+    if (lmag<threshold) continue;
+    if (locMax){
+      if ( TMath::Sqrt(rfft[i-1]*rfft[i-1]+ifft[i-1]*ifft[i-1])/nPoints>lmag) continue;
+      if ( TMath::Sqrt(rfft[i+1]*rfft[i+1]+ifft[i+1]*ifft[i+1])/nPoints>lmag) continue;
+      if ( TMath::Sqrt(rfft[i-2]*rfft[i-2]+ifft[i-2]*ifft[i-2])/nPoints>lmag) continue;
+      if ( TMath::Sqrt(rfft[i+2]*rfft[i+2]+ifft[i+2]*ifft[i+2])/nPoints>lmag) continue;
+      if ( TMath::Sqrt(rfft[i-3]*rfft[i-3]+ifft[i-3]*ifft[i-3])/nPoints>lmag) continue;
+      if ( TMath::Sqrt(rfft[i+3]*rfft[i+3]+ifft[i+3]*ifft[i+3])/nPoints>lmag) continue;
+    }
+    
+    freq[current] = Float_t(i)/Float_t(nPoints);
+    //
+    re[current] = rfft[i];
+    im[current] = ifft[i];
+    mag[current]=lmag;
+    phi[current]=TMath::ATan2(ifft[i],rfft[i]);
+    current++;
+  }
+  delete [] in;
+  delete [] rfft;
+  delete [] ifft;
+  return current;
+}
+

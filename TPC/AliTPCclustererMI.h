@@ -28,6 +28,7 @@ class TTree;
 class TTreeSRedirector;
 class  AliRawEventHeaderBase;
 class AliTPCCalROC;
+class TVirtualFFT;
 
 class AliTPCclustererMI : public TObject{
 public:
@@ -50,13 +51,13 @@ private:
   Float_t  GetSigmaY2(Int_t iz);
   Float_t  GetSigmaZ2(Int_t iz);
   Float_t  FitMax(Float_t vmatrix[5][5], Float_t y, Float_t z, Float_t sigmay, Float_t sigmaz);
-  void AddCluster(AliTPCclusterMI &c);  // add the cluster to the array
+  void AddCluster(AliTPCclusterMI &c, Float_t *matrix, Int_t pos);  // add the cluster to the array
   void UnfoldCluster(Float_t * matrix[7], Float_t recmatrix[5][5], 
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
   void FindClusters(AliTPCCalROC * noiseROC);
   Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms, Double_t &pedestalCalib);
-  void DumpHistos();
-
+  void DumpHistos(); 
+  Int_t  TransformFFT(Float_t *input, Float_t threshold, Bool_t locMax, Float_t *freq, Float_t *re, Float_t *im, Float_t *mag, Float_t *phi);
 
   Float_t * fBins;       //!digits array
   Float_t * fResBins;    //!digits array with res. after 1 finder
@@ -86,6 +87,7 @@ private:
   TObjArray * fAmplitudeHisto;          //! array of histograms of amplitudes
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
+  TVirtualFFT *fFFTr2c;                 //! Fast Furier transform object   
   ClassDef(AliTPCclustererMI,1)  // Time Projection Chamber digits
 };
 

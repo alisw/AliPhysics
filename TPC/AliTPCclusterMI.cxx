@@ -27,11 +27,13 @@
 /* $Id$ */
 
 #include "AliTPCclusterMI.h"
+#include "AliTPCclusterInfo.h"
+#include "AliLog.h"
 
 ClassImp(AliTPCclusterMI)
 
 
-AliTPCclusterMI::AliTPCclusterMI():
+AliTPCclusterMI::AliTPCclusterMI(Bool_t withInfo):
   AliCluster(),
   fX(0),
   fQ(0),
@@ -39,12 +41,60 @@ AliTPCclusterMI::AliTPCclusterMI():
   fMax(0),
   fUsed(0),
   fDetector(0),
-  fRow(0)
+  fRow(0),
+  fTimeBin(0),
+  fPad(0),
+  fInfo(0)
 {
   //
   // default constructor
   //
+  if (withInfo) fInfo = new AliTPCclusterInfo;
 }
+
+AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
+  AliCluster(cluster),
+  fX(cluster.fX),
+  fQ(cluster.fQ),
+  fType(cluster.fType),
+  fMax(cluster.fMax),
+  fUsed(cluster.fUsed),
+  fDetector(cluster.fDetector),
+  fRow(cluster.fRow),
+  fTimeBin(cluster.fTimeBin),
+  fPad(cluster.fPad),
+  fInfo(0)
+{
+  //
+  // copy constructor
+  // 
+  //  AliInfo("Copy constructor\n");
+  if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
+}
+
+AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
+{
+  //
+  // assignment operator
+  // 
+  //  AliInfo("Asignment operator\n");
+
+  (AliCluster&)(*this) = (AliCluster&)cluster;
+  fX    = cluster.fX;
+  fQ    = cluster.fQ;
+  fType = cluster.fType;
+  fMax  = cluster.fMax;
+  fUsed = cluster.fUsed;
+  fDetector = cluster.fDetector;
+  fRow  = cluster.fRow;
+  fTimeBin = cluster.fTimeBin;
+  fPad     = cluster.fPad;
+  fInfo = 0;
+  if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
+}
+
+
+
 
 AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) : 
   AliCluster(lab,hit),
@@ -54,13 +104,24 @@ AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) :
   fMax(0),
   fUsed(0),
   fDetector(0),
-  fRow(0)    
+  fRow(0),
+  fInfo(0)
 {
   //
   // constructor
   //
   fQ = (UShort_t)hit[4];
+  fInfo = 0;
 }
+
+AliTPCclusterMI::~AliTPCclusterMI() {
+  //
+  // destructor
+  //
+  if (fInfo) delete fInfo;
+}
+
+
 
 Bool_t AliTPCclusterMI::IsSortable() const
 {
