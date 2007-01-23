@@ -168,6 +168,7 @@ void IceMakeHits::Exec(Option_t* opt)
  Amanda();
  InIce();
  IceTop();
+
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceMakeHits::Amanda()
@@ -180,14 +181,14 @@ void IceMakeHits::Amanda()
  Int_t* upend=new Int_t[fMaxPeaksA];
  Int_t* startcharge=new Int_t[fMaxPeaksA];
  Int_t* stopcharge=new Int_t[fMaxPeaksA];
- Int_t* status=new Int_t[fMaxPeaksA]; // 0=OK, 1=rejected, 2=saturation
+ Int_t* status=new Int_t[fMaxPeaksA]; // 0=OK, 1=rejected, 2=saturation, 3=completely below baseline
  Float_t* leadingedge=new Float_t[fMaxPeaksA];
  Float_t* charge=new Float_t[fMaxPeaksA];
  Float_t* tot=new Float_t[fMaxPeaksA];
 
  // Some objects and variables we will need
  TH1F foo, diff;
- TSpectrum* spec=new TSpectrum(fMaxPeaksA);
+ TSpectrum spec(fMaxPeaksA);
  Int_t nrIterations=(Int_t)(7*fSigmaA+0.5); // Number of iterations used in TSpectrum::SearchHighRes()
  Int_t npeaks=0, ibin=0, lookforsteepestuntilbin=0, steep=0;
  Float_t maxval=0, rise=0, rc=0, yyy=0;
@@ -218,7 +219,6 @@ void IceMakeHits::Amanda()
   if (!omx) continue;
   // Remove all existing hits of this OM 
   omx->RemoveHits();
-
   // Should we skip OMs that we know from the dbase to have problems ?
 ////  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
 
@@ -227,15 +227,12 @@ void IceMakeHits::Amanda()
   {
    wf=omx->GetWaveform(iwf);
    if (!wf) continue; 
-
    maxval=wf->GetMaximum();
-
    // Check if clipping window is not too large
    if(wf->GetNbinsX() > 2*nrIterations+1)
    {
     // Find peaks with TSpectrum
-    npeaks=spec->Search(wf,fSigmaA,"goff");
- 
+    npeaks=spec.Search(wf,fSigmaA,"goff");
     // Discard waveform if no or too many peaks found
     if(npeaks<1 || npeaks>fMaxPeaksA) continue;
 
@@ -246,13 +243,12 @@ void IceMakeHits::Amanda()
      diff.SetBinContent(ibin,wf->GetBinContent(ibin)-wf->GetBinContent(ibin-1));
     }
     diff.SetBinContent(1,0);
-  
     // Set baseline and lower end for first peak,
     baseline[0]=0;
     lowend[0]=1;
 
     // Sort peaks in time
-    TMath::Sort(npeaks,spec->GetPositionX(),index,false);
+    TMath::Sort(npeaks,spec.GetPositionX(),index,false);
     // For each of the peaks,
     for(Int_t ipeak=0; ipeak<npeaks; ipeak++)
     {
@@ -269,7 +265,7 @@ void IceMakeHits::Amanda()
      // (Upper edge range is minimum between this and next peak)
      if(ipeak<npeaks-1)
      {
-      foo.SetAxisRange(spec->GetPositionX()[index[ipeak]],spec->GetPositionX()[index[ipeak+1]]);
+      foo.SetAxisRange(spec.GetPositionX()[index[ipeak]],spec.GetPositionX()[index[ipeak+1]]);
       upend[ipeak]=foo.GetMinimumBin();
      }
      // (Last peak: upper edge is end of histo)
@@ -277,18 +273,24 @@ void IceMakeHits::Amanda()
      {
       upend[ipeak]=wf->GetNbinsX();
      }
- 
      // Find steepest rise
-     lookforsteepestuntilbin=wf->FindBin(spec->GetPositionX()[index[ipeak]]);
+     lookforsteepestuntilbin=wf->FindBin(spec.GetPositionX()[index[ipeak]]);
      foo=diff;
-     foo.SetAxisRange(wf->GetBinLowEdge(lowend[ipeak]),wf->GetBinLowEdge(lookforsteepestuntilbin+1));
+     // Look for steepest rise between lower edge and peak position
+     foo.SetAxisRange(wf->GetBinCenter(lowend[ipeak]),wf->GetBinCenter(lookforsteepestuntilbin));
+     // Signal should be above baseline at location of steepest rise
      do
      {
       steep=foo.GetMaximumBin();
       rise=foo.GetBinContent(steep);
-      if(rise==1e-9) break;
+      if(rise==-1e9) break;
       foo.SetBinContent(steep,-1e9);
      } while(wf->GetBinContent(steep)<baseline[ipeak]);
+     if(rise==-1e9)
+     {
+      status[ipeak]=3;
+      continue;
+     }
  
      // Extrapolate tangent to find leading edge
      yyy=wf->GetBinContent(steep)-baseline[ipeak];
@@ -298,13 +300,13 @@ void IceMakeHits::Amanda()
      // Determine peak status
      status[ipeak]=0;
      // Check for saturation
-     if(rc<0.1 && wf->GetBinContent(wf->FindBin(spec->GetPositionX()[index[ipeak]])) == maxval)
+     if(rc<0.1 && wf->GetBinContent(wf->FindBin(spec.GetPositionX()[index[ipeak]])) == maxval)
      {
       status[ipeak]=2;
      }
      // Check quality: LE should not be too far below lower edge
      // Otherwise, ignore this peak and set baseline back to what it was
-     else if(wf->GetBinLowEdge(lowend[ipeak]) - leadingedge[ipeak] > spec->GetPositionX()[index[ipeak]] - wf->GetBinLowEdge(lowend[ipeak]))
+     else if(wf->GetBinLowEdge(lowend[ipeak]) - leadingedge[ipeak] > spec.GetPositionX()[index[ipeak]] - wf->GetBinLowEdge(lowend[ipeak]))
      {
       status[ipeak]=1;
       if(ipeak>0) baseline[ipeak]=baseline[ipeak-1];
@@ -316,7 +318,7 @@ void IceMakeHits::Amanda()
  
      // Integrate charge until pulse drop below baseline, or else until edge of range
      stopcharge[ipeak]=upend[ipeak];
-     for(ibin=wf->FindBin(spec->GetPositionX()[index[ipeak]]); ibin<=upend[ipeak]; ibin++)
+     for(ibin=wf->FindBin(spec.GetPositionX()[index[ipeak]]); ibin<=upend[ipeak]; ibin++)
      {
       if(wf->GetBinContent(ibin)<0)
       {
