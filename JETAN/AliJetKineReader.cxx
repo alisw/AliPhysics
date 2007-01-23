@@ -198,9 +198,13 @@ Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
   }
 
   // set the signal flags
-  fSignalFlag.Set(goodTrack,sflag);
-  fCutFlag.Set(goodTrack,cflag);
+  fSignalFlag.Set(goodTrack, sflag);
+  fCutFlag.Set(goodTrack, cflag);
   printf("\nIn event %d, number of good tracks %d \n", event, goodTrack);
+  
+  delete[] sflag;
+  delete[] cflag;
+  
   return kTRUE;
 }
 
@@ -281,5 +285,7 @@ Bool_t AliJetKineReader::GetGenJets(AliJet* genJets)
     genJets->SetNinput(nj);
     genJets->SetMultiplicities(m);
     genJets->SetInJet(k);
+    delete[] k;
+    delete[] m;
     return kTRUE;
 }
