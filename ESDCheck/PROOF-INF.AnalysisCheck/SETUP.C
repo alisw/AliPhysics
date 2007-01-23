@@ -2,12 +2,12 @@ void SETUP()
 {
 
    // Load the ESD library
-   gSystem->Load("libAnalysisCheck");
+   gSystem->Load("libGamma");
 
    // Set the Include paths
-   gSystem->SetIncludePath("-I$ROOTSYS/include -IAnalysisCheck");
-   gROOT->ProcessLine(".include AnalysisCheck");
+   gSystem->SetIncludePath("-I$ROOTSYS/include -IPWG4");
+   gROOT->ProcessLine(".include PWG4");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("AnalysisCheck_INCLUDE", "AnalysisCheck");
+   gSystem->Setenv("Gamma_INCLUDE", "PWG4");
 }
