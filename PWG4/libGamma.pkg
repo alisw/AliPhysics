@@ -1,0 +1,9 @@
+SRCS = AliAnaGammaDirect.cxx AliAnaGammaHadron.cxx AliAnaGammaJet.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= GammaLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+
