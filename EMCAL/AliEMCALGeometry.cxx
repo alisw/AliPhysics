@@ -31,7 +31,7 @@
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //     and  : Yves Schutz (SUBATECH)
 //     and  : Jennifer Klay (LBL)
-//     SHASHLYK : Aleksei Pavlinov (WSU)
+//     SHASHLYK : Aleksei Pavlinov (WSU) 
 //
 
 #include <assert.h>
@@ -1060,10 +1060,10 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
   // 
   AliDebug(2,Form(" Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize()));
   Int_t ind=0; // this is phi index
-  Int_t iphi=0, ieta=0, nModule=0, iphiTemp;
+  Int_t ieta=0, nModule=0, iphiTemp;
   Double_t xr, zr, theta, phi, eta, r, x,y;
   TVector3 vglob;
-  Double_t ytCenterModule, ytCenterCell;
+  Double_t ytCenterModule=0.0, ytCenterCell=0.0;
 
   fCentersOfCellsPhiDir.Set(fNPhi*fNPHIdiv);
   fPhiCentersOfCells.Set(fNPhi*fNPHIdiv);
