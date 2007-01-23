@@ -1173,9 +1173,10 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 	  }
 	  maxChi2 = t.GetPredictedChi2(cl,h01);
           
-	  if (!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
-	    // ????
-	  }
+	  if (maxChi2<1e+10)
+	    if (!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
+	      // ????
+	    }
 
 	}			
 
@@ -1333,11 +1334,12 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 	  t.PropagateTo(xcluster,radLength,rho);
 	  maxChi2 = t.GetPredictedChi2(cl,h01);
 
-	  if (!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
-	    if (!t.Update(cl,maxChi2,index,h01)) {
-	      // ????
-	    }
-          }  
+	  if (maxChi2<1e+10)
+	    if (!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
+	      if (!t.Update(cl,maxChi2,index,h01)) {
+		// ????
+	      }
+	    }  
 
           if (calibra->GetMITracking()) {
             calibra->UpdateHistograms(cl,&t);
