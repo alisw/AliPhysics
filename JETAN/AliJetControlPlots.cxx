@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
   
+/* $Id$ */
+
 //---------------------------------------------------------------------
 // Jet Control Plots class 
 // manages histograms with control plots of jet searching
@@ -20,10 +22,12 @@
 // Author: jgcn@mda.cinvestav.mx
 //---------------------------------------------------------------------
 
-#include <TStyle.h>
 #include <TCanvas.h>
-#include <TH1I.h>
 #include <TH1D.h>
+#include <TH1I.h>
+#include <TMath.h>
+#include <TStyle.h>
+
 #include "AliJetReader.h"
 #include "AliJet.h"
 
