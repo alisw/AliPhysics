@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.13  2006/09/07 18:31:08  kharlov
+ * Effective c++ corrections (T.Pocheptsov)
+ *
  * Revision 1.12  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -61,11 +64,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TClonesArray.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TSystem.h"
-//#include "Bytes.h"
+#include <Bytes.h>
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TSystem.h>
+#include <TTree.h>
 
 // --- Standard library ---
 

@@ -10,8 +10,9 @@
 // Author: Aleksei Pavlinov(WSU).
 // Nov 2004; Feb 2006
 
-#include "TNamed.h"
-#include "TVector2.h"
+#include <TNamed.h>
+#include <TMath.h>
+#include <TVector2.h>
 
 class AliEMCALGeometry;
 

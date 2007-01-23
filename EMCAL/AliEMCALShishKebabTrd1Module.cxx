@@ -30,7 +30,6 @@
 #include "AliEMCALGeometry.h"
 
 #include <Riostream.h>
-#include <TMath.h>
 
 ClassImp(AliEMCALShishKebabTrd1Module)
 

@@ -29,10 +29,11 @@
 // Latest changes by Christian Holm Christensen
 //
 
+#include <TMath.h>		// ROOT_TMath
+#include <TVector2.h>		// ROOT_TVector2
+
 // #include <AliLog.h>		// ALILOG_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
-// #include <TMath.h>		// ROOT_TMath
-#include <TVector2.h>		// ROOT_TVector2
 
 //====================================================================
 ClassImp(AliFMDRing)

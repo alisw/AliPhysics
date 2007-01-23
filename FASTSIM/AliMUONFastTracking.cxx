@@ -13,37 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.12  2006/08/28 10:31:17  morsch
-Coding rule violations corrected (A. de Falco)
-
-Revision 1.10  2006/01/27 09:51:37  morsch
-Some small corrections to avoid infinite loops at high momenta.
-(A. de Falco)
-
-Revision 1.9  2004/02/03 16:45:20  morsch
-Unique name for functions (TF1).
-
-Revision 1.8  2004/01/27 18:02:38  hristov
-Removing some warning (Sun)
-
-Revision 1.7  2003/11/13 14:21:57  morsch
-Coding Rule violation corrections.
-
-Revision 1.6  2003/08/12 15:16:25  morsch
-Saver initialisation of fFitp  array. (Lenaic COUEDEL)
-
-Revision 1.5  2003/08/05 16:14:20  morsch
-Some problems with too big fluctuations corrected. (A. de Falco)
-
-Revision 1.2  2003/01/08 10:29:33  morsch
-Path to data file changed.
-
-Revision 1.1  2003/01/06 10:13:33  morsch
-First commit.
-
-*/
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 //        Class AliMUONFastTracking 
@@ -56,17 +26,20 @@ First commit.
 //  AliFastMuonTrackingRes. 
 //-------------------------------------------------------------------------
 
-#include "AliMUONFastTracking.h"
-#include "AliMUONFastTrackingEntry.h"
-#include <TSpline.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <Riostream.h>
+#include <TF1.h>
 #include <TFile.h>
 #include <TH3.h>
-#include <TF1.h>
+#include <TMath.h>
 #include <TRandom.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <Riostream.h>
+#include <TSpline.h>
+
+#include "AliMUONFastTracking.h"
+#include "AliMUONFastTrackingEntry.h"
 
 ClassImp(AliMUONFastTracking)
 

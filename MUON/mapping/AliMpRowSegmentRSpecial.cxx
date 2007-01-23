@@ -24,6 +24,9 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+#include <Riostream.h>
+#include <TMath.h>
+
 #include "AliMpRowSegmentRSpecial.h"
 #include "AliMpRow.h"
 #include "AliMpPadRow.h"
@@ -33,8 +36,6 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpConstants.h"
-
-#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpRowSegmentRSpecial)

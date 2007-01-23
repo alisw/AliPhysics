@@ -13,11 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 /// \class AliMUONTriggerChamberEff
 /// implementation of the trigger chamber efficiency determination from
 /// data, and returns the
 /// efficiencyCells.dat with the calculated efficiencies
 /// Author: Diego Stocco (Torino)
+
+#include <fstream>
+
+#include <TFile.h>
+#include <TH1F.h>
+#include <TMath.h>
+#include <TString.h>
 
 #include "AliMUONTriggerChamberEff.h"
 #include "AliMUONDigit.h"
@@ -34,12 +43,6 @@
 #include "AliMpDEIterator.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
-
-#include "TString.h"
-#include "TFile.h"
-#include "TH1F.h"
-
-#include <fstream>
 
 ClassImp(AliMUONTriggerChamberEff)
 

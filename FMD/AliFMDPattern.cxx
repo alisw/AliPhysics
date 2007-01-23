@@ -28,6 +28,22 @@
 //
 // Latest changes by Christian Holm Christensen
 //
+
+#include <iostream>
+
+#include <TApplication.h>
+#include <TButton.h>
+#include <TCanvas.h>
+#include <TH2F.h>
+#include <TMath.h>
+#include <TPad.h>
+#include <TRandom.h>
+#include <TSlider.h>
+#include <TStyle.h>
+#include <TSystem.h>
+#include <TVector2.h>
+#include <TView.h>
+
 #include "AliFMDPattern.h"	// ALIFMDDISPLAY_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
@@ -35,18 +51,6 @@
 #include "AliFMDDetector.h"
 #include "AliFMDHit.h"
 #include <AliLog.h>
-#include <TStyle.h>
-#include <TApplication.h>
-#include <TButton.h>
-#include <TCanvas.h>
-#include <TView.h>
-#include <TH2F.h>
-#include <TSystem.h>
-#include <TVector2.h>
-#include <TRandom.h>
-#include <TSlider.h>
-#include <TPad.h>
-#include <iostream>
 
 //____________________________________________________________________
 ClassImp(AliFMDPattern)

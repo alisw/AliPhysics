@@ -15,6 +15,12 @@
 
 // $Id$
 
+
+#include <Riostream.h>
+#include <TF1.h>
+#include <TMath.h>
+#include <TRandom.h>
+#include <TString.h>
 #include "AliMUONDigitizerV3.h"
 
 #include "AliMUON.h"
@@ -41,11 +47,6 @@
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "AliLog.h"
-
-#include "Riostream.h"
-#include "TF1.h"
-#include "TRandom.h"
-#include "TString.h"
 
 ///
 /// \class AliMUONDigitizerV3

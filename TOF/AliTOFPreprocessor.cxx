@@ -13,38 +13,29 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2006/12/19 08:53:27  arcelli
-Changed filenames types to TString + split file sources (C.Zampolli)
+/* $Id$ */
 
-Revision 1.3  2006/12/18 18:16:53  arcelli
-Change in the format of the input data from DAQ FXS (C.Zampolli)
-
-Revision 1.1  2006/10/26 09:09:29  arcelli
-prototype for the TOF Shuttle preprocessor (C.Zampolli)
-
-*/  
-
-#include "AliTOFPreprocessor.h"
-
-#include "AliCDBMetaData.h"
-#include "AliLog.h"
-#include "AliTOFDataDCS.h"
-#include "TFile.h"
-#include "TObjArray.h"
-#include "TObjString.h"
-#include "AliTOFCalOnline.h"
-#include "AliTOFChannelOnline.h"
-#include "AliTOFGeometryV5.h"
-#include "TTimeStamp.h"
-#include "TH1F.h"
-#include "TH2S.h"
-#include "TH1S.h"
-#include "TH1.h"
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <TFile.h>
+#include <TH1.h>
+#include <TH1F.h>
+#include <TH1S.h>
+#include <TH2S.h>
+#include <TMath.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TTimeStamp.h>
+
+#include "AliCDBMetaData.h"
+#include "AliLog.h"
+#include "AliTOFCalOnline.h"
+#include "AliTOFChannelOnline.h"
+#include "AliTOFDataDCS.h"
+#include "AliTOFGeometryV5.h"
+#include "AliTOFPreprocessor.h"
 
 class TF1;
 class AliDCSValue;

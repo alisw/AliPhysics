@@ -21,6 +21,8 @@
 // Author: Piotr.Skowronski@cern.ch                      *
 //********************************************************
 
+#include <TDirectory.h>
+
 #include "AliRunAnalysis.h"
 #include "AliLog.h"
 #include "AliAnalysis.h"

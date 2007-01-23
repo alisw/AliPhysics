@@ -24,6 +24,7 @@
  
 #include <TError.h>
 #include <TF1.h>
+#include <TMath.h>
 #include <TObjArray.h>
 #include <TVector2.h>
 #include <TSystem.h>

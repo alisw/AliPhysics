@@ -31,6 +31,20 @@
 // which has 1 or 2 rings of silicon sensors. 
 //                                                       
 // 
+
+#include <TArrayD.h>		// ROOT_TArrayD
+#include <TGeoManager.h>	// ROOT_TGeoManager
+#include <TGeoTube.h>		// ROOT_TGeoTube
+#include <TGeoTube.h>		// ROOT_TGeoTube
+#include <TGeoVolume.h>		// ROOT_TGeoVolume
+#include <TGeoXtru.h>		// ROOT_TGeoXtru
+#include <TMath.h>
+#include <TVector2.h>		// ROOT_TVector2
+//#include <TGeoMaterial.h>	// ROOT_TGeoMaterial
+//#include <TGeoMedium.h>		// ROOT_TGeoMedium
+//#include <TGeoPcon.h>		// ROOT_TGeoPcon
+//#include <TGeoPolygon.h>	// ROOT_TGeoPolygon
+
 #include "AliFMDGeometryBuilder.h"	// ALIFMDGEOSIMULATOR_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
@@ -40,17 +54,6 @@
 #include "AliFMD3.h"		// ALIFMD3_H
 // #include "AliFMD.h"		// ALIFMD_H
 #include "AliLog.h"		// ALILOG_H
-#include <TGeoVolume.h>		// ROOT_TGeoVolume
-#include <TGeoTube.h>		// ROOT_TGeoTube
-//#include <TGeoPcon.h>		// ROOT_TGeoPcon
-//#include <TGeoMaterial.h>	// ROOT_TGeoMaterial
-//#include <TGeoMedium.h>		// ROOT_TGeoMedium
-#include <TGeoXtru.h>		// ROOT_TGeoXtru
-//#include <TGeoPolygon.h>	// ROOT_TGeoPolygon
-#include <TGeoTube.h>		// ROOT_TGeoTube
-#include <TGeoManager.h>	// ROOT_TGeoManager
-#include <TVector2.h>		// ROOT_TVector2
-#include <TArrayD.h>		// ROOT_TArrayD
 
 //====================================================================
 ClassImp(AliFMDGeometryBuilder)

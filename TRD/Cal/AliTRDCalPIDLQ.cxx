@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -26,6 +27,7 @@
 
 #include <TH1F.h>
 #include <TFile.h>
+#include <TROOT.h>
 
 #include "AliLog.h"
 #include "AliPID.h"

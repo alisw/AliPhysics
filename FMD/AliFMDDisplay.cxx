@@ -28,6 +28,21 @@
 //
 // Latest changes by Christian Holm Christensen
 //
+
+#include <TApplication.h>
+#include <TButton.h>
+#include <TCanvas.h>
+#include <TGeoManager.h>
+#include <TH1D.h>
+#include <TMarker3DBox.h>
+#include <TMath.h>
+#include <TSlider.h>
+#include <TStyle.h>
+#include <TView.h>
+#include <TVirtualX.h>
+// #include <TArrayF.h>
+// #include <TParticle.h>
+
 #include "AliFMDDisplay.h"	// ALIFMDDISPLAY_H
 #include "AliFMDHit.h"          // ALIFMDHIT_H
 #include "AliFMDDigit.h"        // ALIFMDDIGIT_H
@@ -36,19 +51,6 @@
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include <AliESDFMD.h>          // ALIESDFMD_H
 #include <AliLog.h>
-#include <TStyle.h>
-// #include <TArrayF.h>
-#include <TMarker3DBox.h>
-#include <TGeoManager.h>
-// #include <TMath.h>
-#include <TApplication.h>
-#include <TButton.h>
-// #include <TParticle.h>
-#include <TCanvas.h>
-#include <TView.h>
-#include <TVirtualX.h>
-#include <TSlider.h>
-#include <TH1D.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDDisplay)

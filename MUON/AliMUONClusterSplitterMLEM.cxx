@@ -24,6 +24,14 @@
 /// \author Laurent Aphecetche (for the "new" C++ structure) and 
 /// Alexander Zinchenko, JINR Dubna, for the hardcore of it ;-)
 
+#include <TClonesArray.h>
+#include <TH2.h>
+#include <TMath.h>
+#include <TMatrixD.h>
+#include <TObjArray.h>
+#include <TROOT.h>
+#include <TRandom.h>
+
 #include "AliMUONClusterSplitterMLEM.h"
 
 #include "AliLog.h"
@@ -34,13 +42,6 @@
 #include "AliMUONConstants.h"
 #include "AliMpDEManager.h"
 #include "AliMUONMathieson.h"
-
-#include "TClonesArray.h"
-#include "TH2.h"
-#include "TMath.h"
-#include "TObjArray.h"
-#include "TMatrixD.h"
-#include "TRandom.h"
 
 ClassImp(AliMUONClusterSplitterMLEM)
 

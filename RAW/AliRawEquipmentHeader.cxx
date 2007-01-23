@@ -1,6 +1,3 @@
-// @(#)alimdc:$Name$:$Id$
-// Author: Fons Rademakers  26/11/99
-
 /**************************************************************************
  * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -16,14 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// @(#)alimdc:$Name$:$Id$
+// Author: Fons Rademakers  26/11/99
+
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // AliRawEquipmentHeader                                                //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "AliRawEquipmentHeader.h"
+#include <Bytes.h>
 
+#include "AliRawEquipmentHeader.h"
 
 ClassImp(AliRawEquipmentHeader)
 

@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2006/03/29 18:15:06  pavlinov
-Alignmnet staff and some clean up
-
-Revision 1.2  2006/03/01 23:36:50  jklay
-suppress compiler warnings by correcting some hidden virtual methods
-
-Revision 1.1  2006/02/28 21:55:11  jklay
-add histogram utilities class, correct package definitions
-
-*/
+/* $Id$ */
 
 //_________________________________________________________________________
 // This is a set of histogram
@@ -37,13 +26,14 @@ add histogram utilities class, correct package definitions
 #include "AliEMCALHistoUtilities.h"
 
 #include <TFile.h>
-#include <TList.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TROOT.h>
-#include <TString.h>
+#include <TList.h>
+#include <TObjArray.h>
 #include <TObjString.h>
+#include <TROOT.h>
 #include <TRegexp.h>
+#include <TString.h>
 
 ClassImp(AliEMCALHistoUtilities)
 

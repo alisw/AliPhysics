@@ -11,6 +11,7 @@
 
 class TFile;
 class TTree;
+#include <Htypes.h>
 #include <TMatrixFfwd.h>
 #include <TVector.h>
 

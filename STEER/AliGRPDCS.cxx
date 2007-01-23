@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------
 //                AliGRPDCS class
 //   This class deals with the DCS related info of the GRP
@@ -27,6 +29,7 @@
 class TObjString;
 
 #include <TH1.h>
+#include <TObjArray.h>
 
 ClassImp(AliGRPDCS)
 

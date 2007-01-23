@@ -15,19 +15,19 @@
 
 /* $Id$ */
 
-#include "AliFieldReader.h"
-#include "AliMagFMaps.h"
-
-
-
 #include <TCanvas.h>
+#include <TFile.h>
 #include <TGraph.h>
+#include <TMath.h>
 #include <TMultiGraph.h>
 #include <TNtuple.h>
 #include <TObjString.h>
 #include <TString.h>
 #include <TStyle.h>
-#include <TFile.h>
+
+#include "AliFieldReader.h"
+#include "AliMagFMaps.h"
+
 ClassImp(AliFieldReader)
 
 

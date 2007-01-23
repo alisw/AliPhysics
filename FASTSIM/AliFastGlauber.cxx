@@ -50,17 +50,18 @@
 // from AliRoot
 #include "AliFastGlauber.h"
 // from root
-#include <TStyle.h>
-#include <TH1F.h>
-#include <TH2F.h>
+#include <Riostream.h>
+#include <TCanvas.h>
 #include <TF1.h>
 #include <TF2.h>
-#include <TLegend.h>
-#include <TCanvas.h>
-#include <TRandom.h>
 #include <TFile.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TLegend.h>
+#include <TMath.h>
 #include <TROOT.h>
-#include <Riostream.h>
+#include <TRandom.h>
+#include <TStyle.h>
 
 ClassImp(AliFastGlauber)
 

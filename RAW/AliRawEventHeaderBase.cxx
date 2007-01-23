@@ -1,5 +1,3 @@
-// Author: Cvetan Cheshkov  10/10/2005
-
 /**************************************************************************
  * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,6 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
+// Author: Cvetan Cheshkov  10/10/2005
+
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // AliRawEventHeaderBase                                                //
@@ -25,6 +27,7 @@
 
 #include <unistd.h>
 
+#include <Bytes.h>
 #include <TClass.h>
 #include <TDataMember.h>
 #include <TMethodCall.h>

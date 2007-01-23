@@ -15,14 +15,16 @@
 
 // $Id$
 
+#include <Riostream.h>
+#include <TMath.h>
+#include <TObjArray.h>
+#include <TVirtualPad.h>
+#include <TVirtualX.h>
+
 #include "AliMUONCluster.h"
 
 #include "AliLog.h"
 #include "AliMUONPad.h"
-#include "TObjArray.h"
-#include "Riostream.h"
-#include "TVirtualPad.h"
-#include "TVirtualX.h"
 
 /// \class AliMUONCluster
 ///
