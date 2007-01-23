@@ -75,7 +75,10 @@ public:
 	void SetProcessDCS(Bool_t process) {fgkProcessDCS = process;}
 	void SetLogbookEntry(AliShuttleLogbookEntry* entry) {fLogbookEntry=entry;}
 
-	static const char* GetShuttleTempDir() {return fgkShuttleTempDir;}
+	static void SetShuttleTempDir (const char* tmpDir);
+	static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
+	static void SetShuttleLogDir (const char* logDir);
+	static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
 
 	Bool_t Connect(Int_t system);
 
@@ -129,8 +132,8 @@ private:
 	static TString 	    fgkLocalCDB;		//! URI of the local backup CDB storage
 	static TString 	    fgkMainRefStorage;	// URI of the main (Grid) REFERENCE storage
 	static TString 	    fgkLocalRefStorage;	// URI of the local REFERENCE storage
-	static const char*  fgkShuttleTempDir;	// base path of SHUTTLE temp folder
-	static const char*  fgkShuttleLogDir;	// path of SHUTTLE log folder
+	static TString 	    fgkShuttleTempDir;	// base path of SHUTTLE temp folder
+	static TString 	    fgkShuttleLogDir;	// path of SHUTTLE log folder
 
 	UInt_t fTimeout; 	// DCS server connection timeout parameter
 	Int_t fRetries; 	// Number of DCS server connection retries

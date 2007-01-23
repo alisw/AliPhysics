@@ -52,13 +52,15 @@ public:
 
 	Int_t GetPPTimeOut() const { return fPPTimeOut; }
 
-  const TObjArray* GetDetectors() const;
+	const TObjArray* GetDetectors() const;
 
 	Bool_t HasDetector(const char* detector) const;
 	const char* GetDCSHost(const char* detector) const;
 	Int_t GetDCSPort(const char* detector) const;
 	const TObjArray* GetDCSAliases(const char* detector) const;
 	const TObjArray* GetDCSDataPoints(const char* detector) const;
+	const TObjArray* GetCompactDCSAliases(const char* detector) const;
+	const TObjArray* GetCompactDCSDataPoints(const char* detector) const;
 	const TObjArray* GetResponsibles(const char* detector) const;
 	Bool_t StrictRunOrder(const char* detector) const;
 
@@ -81,6 +83,8 @@ private:
 		Int_t GetDCSPort() const {return fDCSPort;}
 		const TObjArray* GetDCSAliases() const {return fDCSAliases;}
 		const TObjArray* GetDCSDataPoints() const {return fDCSDataPoints;}
+		const TObjArray* GetCompactDCSAliases() const {return fDCSAliasesComp;}
+		const TObjArray* GetCompactDCSDataPoints() const {return fDCSDataPointsComp;}
 		const TObjArray* GetResponsibles() const {return fResponsibles;}
 
 		Bool_t IsValid() const {return fIsValid;}
@@ -95,6 +99,8 @@ private:
 		Int_t 	fDCSPort; 	// port of the DCS server
 		TObjArray* fDCSAliases; // List of DCS aliases to be retrieved
 		TObjArray* fDCSDataPoints; // List of DCS data points to be retrieved
+		TObjArray* fDCSAliasesComp; // Compact list of DCS aliases to be printed
+		TObjArray* fDCSDataPointsComp; // Compact list of DCS data points to be printed
 		TObjArray* fResponsibles; // List of email addresses of the detector's responsible(s)
 		Bool_t fIsValid;  	// flag for the validity of the configuration
 		Bool_t fSkipDCSQuery; 	// flag - if TRUE (-> DCS config empty) skip DCS archive data query

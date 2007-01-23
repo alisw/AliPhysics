@@ -1,9 +1,0 @@
-#TPC config
-dn: dt=TPC,dc=alice,dc=cern,dc=ch
-objectClass: shuttleConfig
-dt: TPC
-ipHost: 192.168.39.23
-ipServicePort: 4242
-alias: HighVol01
-alias: HighVol07
-

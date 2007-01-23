@@ -1,9 +1,0 @@
-#ITS config
-dn: dt=ITS,dc=alice,dc=cern,dc=ch
-objectClass: shuttleConfig
-dt: ITS
-ipHost: 192.168.39.23
-ipServicePort: 4242
-alias: HighVol01
-alias: HighVol07
-

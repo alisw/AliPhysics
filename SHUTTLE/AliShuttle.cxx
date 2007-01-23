@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2007/01/15 19:13:52  acolla
+Moved some AliInfo to AliDebug in SendMail function
+
 Revision 1.21  2006/12/07 08:51:26  jgrosseo
 update (alberto):
 table, db names in ldap configuration
@@ -176,8 +179,8 @@ TString AliShuttle::fgkLocalRefStorage("local://LocalReferenceStorage");
 
 Bool_t AliShuttle::fgkProcessDCS(kTRUE); 
 
-const char* AliShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/temp");
-const char* AliShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/log");
+TString AliShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/temp");
+TString AliShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/log");
 
 //______________________________________________________________________________________________
 AliShuttle::AliShuttle(const AliShuttleConfig* config,
@@ -431,7 +434,7 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
 
 	TString actionStr = Form("UpdateShuttleStatus - %s: Changing state from %s to %s",
 				fCurrentDetector.Data(),
-				status->GetStatusName(), 
+				status->GetStatusName(),
 				status->GetStatusName(newStatus));
 	Log("SHUTTLE", actionStr);
 	SetLastAction(actionStr);
@@ -771,13 +774,17 @@ UInt_t AliShuttle::ProcessCurrentDetector()
 
 		// Retrieval of Aliases
 		TObjString* anAlias = 0;
+		Int_t iAlias = 1;
+		Int_t nTotAliases= ((TMap*)fConfig->GetDCSAliases(fCurrentDetector))->GetEntries();
 		TIter iterAliases(fConfig->GetDCSAliases(fCurrentDetector));
 		while ((anAlias = (TObjString*) iterAliases.Next()))
 		{
 			TObjArray *valueSet = new TObjArray();
 			valueSet->SetOwner(1);
 
-			AliInfo("Querying DCS archive DB (Aliases)...");
+			if (((iAlias-1) % 500) == 0 || iAlias == nTotAliases)
+				AliInfo(Form("Querying DCS archive: alias %s (%d of %d)",
+						anAlias->GetName(), iAlias++, nTotAliases));
 			aDCSError = (GetValueSet(host, port, anAlias->String(), valueSet, kAlias) == 0);
 
 			if(!aDCSError)
@@ -795,12 +802,16 @@ UInt_t AliShuttle::ProcessCurrentDetector()
 
 		// Retrieval of Data Points
 		TObjString* aDP = 0;
+		Int_t iDP = 0;
+		Int_t nTotDPs= ((TMap*)fConfig->GetDCSDataPoints(fCurrentDetector))->GetEntries();
 		TIter iterDP(fConfig->GetDCSDataPoints(fCurrentDetector));
 		while ((aDP = (TObjString*) iterDP.Next()))
 		{
 			TObjArray *valueSet = new TObjArray();
 			valueSet->SetOwner(1);
-			AliInfo("Querying DCS archive DB (Data Points)...");
+			if (((iDP-1) % 500) == 0 || iDP == nTotDPs)
+				AliInfo(Form("Querying DCS archive: DP %s (%d of %d)",
+						aDP->GetName(), iDP++, nTotDPs));
 			aDCSError = (GetValueSet(host, port, aDP->String(), valueSet, kDP) == 0);
 
 			if(!aDCSError)
@@ -1339,7 +1350,7 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 		return 0;
 	} else {
 		AliInfo(Form("File %s copied from DAQ FXS into %s/%s",
-			filePath.Data(), fgkShuttleTempDir, localFileName.Data()));
+			filePath.Data(), GetShuttleTempDir(), localFileName.Data()));
 	}
 
 	fFXSCalled[kDAQ]=kTRUE;
@@ -1347,8 +1358,8 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 	fFXSlist[kDAQ].Add(fileParams);
 
 	static TString fullLocalFileName;
-	fullLocalFileName = TString::Format("%s/%s", fgkShuttleTempDir, localFileName.Data());
-	
+	fullLocalFileName = TString::Format("%s/%s", GetShuttleTempDir(), localFileName.Data());
+
 	AliInfo(Form("fullLocalFileName = %s", fullLocalFileName.Data()));
 
 	return fullLocalFileName.Data();
@@ -1362,12 +1373,12 @@ Bool_t AliShuttle::RetrieveDAQFile(const char* daqFileName, const char* localFil
 
 	// check temp directory: trying to cd to temp; if it does not exist, create it
 	AliDebug(2, Form("Copy file %s from DAQ FXS into %s/%s",
-			daqFileName, fgkShuttleTempDir, localFileName));
+			daqFileName, GetShuttleTempDir(), localFileName));
 
-	void* dir = gSystem->OpenDirectory(fgkShuttleTempDir);
+	void* dir = gSystem->OpenDirectory(GetShuttleTempDir());
 	if (dir == NULL) {
-		if (gSystem->mkdir(fgkShuttleTempDir, kTRUE)) {
-			AliError(Form("Can't open directory <%s>", fgkShuttleTempDir));
+		if (gSystem->mkdir(GetShuttleTempDir(), kTRUE)) {
+			AliError(Form("Can't open directory <%s>", GetShuttleTempDir()));
 			return kFALSE;
 		}
 
@@ -1382,7 +1393,7 @@ Bool_t AliShuttle::RetrieveDAQFile(const char* daqFileName, const char* localFil
 		fConfig->GetFXSHost(kDAQ),
 		baseDAQFXSFolder.Data(),
 		daqFileName,
-		fgkShuttleTempDir,
+		GetShuttleTempDir(),
 		localFileName);
 
 	AliDebug(2, Form("%s",command.Data()));
@@ -1560,12 +1571,12 @@ const char* AliShuttle::GetHLTFileName(const char* detector, const char* id, con
 		return 0;
 	} else {
 		AliInfo(Form("File %s copied from HLT FXS into %s/%s",
-			filePath.Data(), fgkShuttleTempDir, localFileName.Data()));
+			filePath.Data(), GetShuttleTempDir(), localFileName.Data()));
 	}
 
 	// compare md5sum of local file with the one stored in the HLT DB
 	Int_t md5Comp = gSystem->Exec(Form("md5sum %s/%s |grep %s 2>&1 > /dev/null",
-						fgkShuttleTempDir, localFileName.Data(), fileMd5Sum.Data()));
+						GetShuttleTempDir(), localFileName.Data(), fileMd5Sum.Data()));
 
 	if (md5Comp != 0)
 	{
@@ -1578,8 +1589,8 @@ const char* AliShuttle::GetHLTFileName(const char* detector, const char* id, con
 	fFXSlist[kHLT].Add(fileParams);
 
 	static TString fullLocalFileName;
-	fullLocalFileName = TString::Format("%s/%s", fgkShuttleTempDir, localFileName.Data());
-	
+	fullLocalFileName = TString::Format("%s/%s", GetShuttleTempDir(), localFileName.Data());
+
 	AliInfo(Form("fullLocalFileName = %s", fullLocalFileName.Data()));
 
 	return fullLocalFileName.Data();
@@ -1593,12 +1604,12 @@ Bool_t AliShuttle::RetrieveHLTFile(const char* hltFileName, const char* localFil
 
 	// check temp directory: trying to cd to temp; if it does not exist, create it
 	AliDebug(2, Form("Copy file %s from HLT FXS into %s/%s",
-			hltFileName, fgkShuttleTempDir, localFileName));
+			hltFileName, GetShuttleTempDir(), localFileName));
 
-	void* dir = gSystem->OpenDirectory(fgkShuttleTempDir);
+	void* dir = gSystem->OpenDirectory(GetShuttleTempDir());
 	if (dir == NULL) {
-		if (gSystem->mkdir(fgkShuttleTempDir, kTRUE)) {
-			AliError(Form("Can't open directory <%s>", fgkShuttleTempDir));
+		if (gSystem->mkdir(GetShuttleTempDir(), kTRUE)) {
+			AliError(Form("Can't open directory <%s>", GetShuttleTempDir()));
 			return kFALSE;
 		}
 
@@ -1613,7 +1624,7 @@ Bool_t AliShuttle::RetrieveHLTFile(const char* hltFileName, const char* localFil
 		fConfig->GetFXSHost(kHLT),
 		baseHLTFXSFolder.Data(),
 		hltFileName,
-		fgkShuttleTempDir,
+		GetShuttleTempDir(),
 		localFileName);
 
 	AliDebug(2, Form("%s",command.Data()));
@@ -1858,10 +1869,10 @@ void AliShuttle::Log(const char* detector, const char* message)
 {
 // Fill log string with a message
 
-	void* dir = gSystem->OpenDirectory(fgkShuttleLogDir);
+	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
 	if (dir == NULL) {
-		if (gSystem->mkdir(fgkShuttleLogDir, kTRUE)) {
-			AliError(Form("Can't open directory <%s>", fgkShuttleTempDir));
+		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE)) {
+			AliError(Form("Can't open directory <%s>", GetShuttleLogDir()));
 			return;
 		}
 
@@ -1876,7 +1887,7 @@ void AliShuttle::Log(const char* detector, const char* message)
   	AliInfo(toLog.Data());
 
   	TString fileName;
-  	fileName.Form("%s/%s.log", fgkShuttleLogDir, detector);
+  	fileName.Form("%s/%s.log", GetShuttleLogDir(), detector);
   	gSystem->ExpandPathName(fileName);
 
   	ofstream logFile;
@@ -1969,6 +1980,7 @@ Bool_t AliShuttle::Collect(Int_t run)
 		return kFALSE;
 	}
 
+	Log("SHUTTLE", "Collect - Requested run(s) successfully processed");
 	return kTRUE;
 }
 
@@ -1995,13 +2007,13 @@ Bool_t AliShuttle::RetrieveConditionsData(const TObjArray& dateEntries)
 ULong_t AliShuttle::GetTimeOfLastAction() const
 {
 	ULong_t tmp;
-	
+
 	fMonitoringMutex->Lock();
 
 	tmp = fLastActionTime;
-	
+
 	fMonitoringMutex->UnLock();
-	
+
 	return tmp;
 }
 
@@ -2011,23 +2023,23 @@ const TString AliShuttle::GetLastAction() const
 	// returns a string description of the last action
 
 	TString tmp;
-	
+
 	fMonitoringMutex->Lock();
 	
 	tmp = fLastAction;
 	
 	fMonitoringMutex->UnLock();
 
-	return tmp;	
+	return tmp;
 }
 
 //______________________________________________________________________________________________
 void AliShuttle::SetLastAction(const char* action)
 {
 	// updates the monitoring variables
-	
+
 	fMonitoringMutex->Lock();
-	
+
 	fLastAction = action;
 	fLastActionTime = time(0);
 	
@@ -2052,12 +2064,12 @@ Bool_t AliShuttle::SendMail()
 {
 // sends a mail to the subdetector expert in case of preprocessor error
 
-	void* dir = gSystem->OpenDirectory(fgkShuttleLogDir);
+	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
 	if (dir == NULL)
 	{
-		if (gSystem->mkdir(fgkShuttleLogDir, kTRUE))
+		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE))
 		{
-			AliError(Form("Can't open directory <%s>", fgkShuttleTempDir));
+			AliError(Form("Can't open directory <%s>", GetShuttleLogDir()));
 			return kFALSE;
 		}
 
@@ -2066,7 +2078,7 @@ Bool_t AliShuttle::SendMail()
 	}
 
   	TString bodyFileName;
-  	bodyFileName.Form("%s/mail.body", fgkShuttleLogDir);
+  	bodyFileName.Form("%s/mail.body", GetShuttleLogDir());
   	gSystem->ExpandPathName(bodyFileName);
 
   	ofstream mailBody;
@@ -2088,6 +2100,12 @@ Bool_t AliShuttle::SendMail()
 	to.Remove(to.Length()-1);
 	AliDebug(2, Form("to: %s",to.Data()));
 
+	// TODO this will be removed...
+	if (to.Contains("not_yet_set")) {
+		AliInfo("List of detector responsibles not yet set!");
+		return kFALSE;
+	}
+
 	TString cc="alberto.colla@cern.ch";
 
 	TString subject = Form("%s Shuttle preprocessor error in run %d !",
@@ -2096,7 +2114,7 @@ Bool_t AliShuttle::SendMail()
 
 	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
 	body += Form("SHUTTLE just detected that your preprocessor "
-			"exited with ERROR state in run %d !!\n\n", GetCurrentRun());
+			"exited with ERROR state in run %d!!\n\n", GetCurrentRun());
 	body += Form("Please check %s status on the web page asap!\n\n", fCurrentDetector.Data());
 	body += Form("The last 10 lines of %s log file are following:\n\n");
 
@@ -2106,7 +2124,7 @@ Bool_t AliShuttle::SendMail()
   	mailBody.close();
   	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
 
-	TString logFileName = Form("%s/%s.log", fgkShuttleLogDir, fCurrentDetector.Data());
+	TString logFileName = Form("%s/%s.log", GetShuttleLogDir(), fCurrentDetector.Data());
 	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
 	if (gSystem->Exec(tailCommand.Data()))
 	{
@@ -2114,8 +2132,8 @@ Bool_t AliShuttle::SendMail()
 	}
 
 	TString endBody = Form("------------------------------------------------------\n\n");
-	endBody += Form("In case of problems please contact the SHUTTLE core team!\n\n");
-	endBody += "Please do not answer this message directly, it is automatically generated!\n\n";
+	endBody += Form("In case of problems please contact the SHUTTLE core team.\n\n");
+	endBody += "Please do not answer this message directly, it is automatically generated.\n\n";
 	endBody += "Sincerely yours,\n\n \t\t\tthe SHUTTLE\n";
 
 	AliDebug(2, Form("Body end: %s", endBody.Data()));
@@ -2135,4 +2153,20 @@ Bool_t AliShuttle::SendMail()
 	Bool_t result = gSystem->Exec(mailCommand.Data());
 
 	return result == 0;
+}
+
+//______________________________________________________________________________________________
+void AliShuttle::SetShuttleTempDir(const char* tmpDir)
+{
+// sets Shuttle temp directory
+
+	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
+}
+
+//______________________________________________________________________________________________
+void AliShuttle::SetShuttleLogDir(const char* logDir)
+{
+// sets Shuttle log directory
+
+	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }

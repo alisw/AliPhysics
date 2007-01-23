@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2007/01/18 11:17:47  jgrosseo
+changing spaces to tabs ;-)
+
 Revision 1.16  2007/01/18 11:10:35  jgrosseo
 adding the possibility of defining DCS alias and data points with patterns
 first pattern introduced: [N..M] to add all names between the two digits, this works also recursively.
@@ -128,6 +131,8 @@ fDCSHost(""),
 fDCSPort(0),
 fDCSAliases(0),
 fDCSDataPoints(0),
+fDCSAliasesComp(0),
+fDCSDataPointsComp(0),
 fResponsibles(0),
 fIsValid(kFALSE),
 fSkipDCSQuery(kFALSE),
@@ -140,6 +145,10 @@ fStrictRunOrder(kFALSE)
 	fDCSAliases->SetOwner(1);
 	fDCSDataPoints = new TObjArray();
 	fDCSDataPoints->SetOwner(1);
+	fDCSAliasesComp = new TObjArray();
+	fDCSAliasesComp->SetOwner(1);
+	fDCSDataPointsComp = new TObjArray();
+	fDCSDataPointsComp->SetOwner(1);
 	fResponsibles = new TObjArray();
 	fResponsibles->SetOwner(1);
 
@@ -207,6 +216,7 @@ fStrictRunOrder(kFALSE)
 		const char* anAlias;
 		while ((anAlias	= anAttribute->GetValue()))
 		{
+			fDCSAliasesComp->AddLast(new TObjString(anAlias));
 			ExpandAndAdd(fDCSAliases, anAlias);
 		}
 	}
@@ -217,7 +227,8 @@ fStrictRunOrder(kFALSE)
 		const char* aDataPoint;
 		while ((aDataPoint = anAttribute->GetValue()))
 		{
-      ExpandAndAdd(fDCSDataPoints, aDataPoint);
+		fDCSDataPointsComp->AddLast(new TObjString(aDataPoint));
+		ExpandAndAdd(fDCSDataPoints, aDataPoint);
 		}
 	}
 
@@ -742,10 +753,14 @@ Bool_t AliShuttleConfig::StrictRunOrder(const char* detector) const
 }
 
 //______________________________________________________________________________________________
-void AliShuttleConfig::Print(Option_t* /*option*/) const
+void AliShuttleConfig::Print(Option_t* option) const
 {
 // print configuration
-	
+// options : "": print configuration for all detectors, aliases and DPs in compacted format
+// 	     "uncompact": print configuration for all detectors, aliases and DPs in uncompacted format
+// 	     "DET": print configuration for DET, aliases and DPs in compacted format
+//	     "DET, uncompact": print configuration for DET, aliases and DPs in uncompacted format
+
 	TString result;
 	result += '\n';
 
@@ -793,12 +808,16 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 		// result += Form("FXS Password:",fFXSPass[iSys].Data());
 	}
 
+	TString optStr(option);
+
 	result += "------------------------------------------------------\n";
 	result += "Detector-specific configuration\n\n";
 	TIter iter(fDetectorMap.GetTable());
 	TPair* aPair;
 	while ((aPair = (TPair*) iter.Next())) {
 		AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) aPair->Value();
+		if (option != 0 && !optStr.Contains(aHolder->GetDetector()) && optStr.CompareTo("uncompact",TString::kIgnoreCase) != 0 )
+				continue;
 		result += Form("*** %s *** \n", aHolder->GetDetector());
 
 		const TObjArray* responsibles = aHolder->GetResponsibles();
@@ -822,7 +841,14 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 		}
 		result += Form("\tAmanda server: %s:%d \n", aHolder->GetDCSHost(), aHolder->GetDCSPort());
 
-		const TObjArray* aliases = aHolder->GetDCSAliases();
+		const TObjArray* aliases = 0;
+		if (optStr.Contains("uncompact",TString::kIgnoreCase))
+		{
+			aliases = aHolder->GetDCSAliases();
+		} else {
+			aliases = aHolder->GetCompactDCSAliases();
+		}
+
 		if (aliases->GetEntries() != 0)
 		{
 			result += "\tDCS Aliases: ";
@@ -835,7 +861,13 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 			result += "\n";
 		}
 
-		const TObjArray* dataPoints = aHolder->GetDCSDataPoints();
+		const TObjArray* dataPoints = 0;
+		if (optStr.Contains("uncompact",TString::kIgnoreCase))
+		{
+			dataPoints = aHolder->GetDCSDataPoints();
+		} else {
+			dataPoints = aHolder->GetCompactDCSDataPoints();
+		}
 		if (dataPoints->GetEntries() != 0)
 		{
 			result += "\tDCS Data Points: ";

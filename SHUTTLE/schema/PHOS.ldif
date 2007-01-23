@@ -1,9 +1,0 @@
-#PHOS config
-dn: dt=PHOS,dc=alice,dc=cern,dc=ch
-objectClass: shuttleConfig
-dt: PHOS
-ipHost: 192.168.39.23
-ipServicePort: 4242
-alias: temperature
-alias: pressure
-
