@@ -3,6 +3,8 @@
  * See cxx source for full Copyright notice                               *
  **************************************************************************/
 
+/* $Id$ */
+
 //-------------------------------------------------------------------------
 //                      Class AliRsnEvent
 //  Simple collection of reconstructed tracks, selected from an ESD event
@@ -12,6 +14,8 @@
 
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
+
+#include <TClonesArray.h>
 
 #include "AliPID.h"
 
