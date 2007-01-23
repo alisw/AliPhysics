@@ -789,9 +789,9 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 
     // Fill histograms with samples
     if(lowGainFlag) 
-      hLowGain ->SetBinContent(in.GetTime(),in.GetSignal());
+      hLowGain ->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
     else {
-      hHighGain->SetBinContent(in.GetTime(),in.GetSignal());
+      hHighGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
     }
 
     iBin++;
