@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/12/18 18:17:38  arcelli
+Updated Aliases for DCS TOF datapoints (C.Zampolli)
+
 Revision 1.1  2006/10/26 09:10:52  arcelli
 Class for handling the TOF DCS data in the Shuttle (C.Zampolli)
 
@@ -335,7 +338,7 @@ Float_t* AliTOFDataDCS::GetP() const{
 }
 
 //---------------------------------------------------------------
-void AliTOFDataDCS::ProcessData(TMap& aliasMap){
+Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 
   if(!(fAliasNames[0])) Init();
 
@@ -363,7 +366,7 @@ void AliTOFDataDCS::ProcessData(TMap& aliasMap){
     aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
     if(!aliasArr){
       AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
-      continue;
+      return kFALSE;
     }
 
     Introduce(j, aliasArr);
@@ -618,6 +621,7 @@ void AliTOFDataDCS::ProcessData(TMap& aliasMap){
     
   fIsProcessed=kTRUE;
 
+  return kTRUE;
 }
 
 //---------------------------------------------------------------

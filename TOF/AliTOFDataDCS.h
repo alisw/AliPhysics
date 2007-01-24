@@ -40,7 +40,7 @@ public:
   Int_t GetStartTime() const {return fStartTime;}
   Int_t GetEndTime() const {return fEndTime;}
   
-  void ProcessData(TMap& aliasMap);
+  Bool_t ProcessData(TMap& aliasMap);
   
   const char* GetAliasName(Int_t pos) const 
     {return pos<kNAliases ? fAliasNames[pos].Data() : 0;}
