@@ -55,11 +55,31 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
     printf("ERROR: Executing process failed with %d.\n", result);
     return;
   }
-
-  // and draw it
-  if (aMC != kFALSE)
-    MultiplicityMC();
-  else
-    MultiplicityESD();
 }
 
+void draw(const char* fileName = "multiplicityMC.root")
+{
+  gSystem->Load("libPWG0base");
+
+  AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+
+  TFile::Open(fileName);
+  mult->LoadHistograms("Multiplicity");
+
+  mult->DrawHistograms();
+}
+
+
+void* fit(const char* fileName = "multiplicityMC.root")
+{
+  gSystem->Load("libPWG0base");
+
+  AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+
+  TFile::Open(fileName);
+  mult->LoadHistograms("Multiplicity");
+
+  mult->ApplyMinuitFit(3, kFALSE);
+
+  return mult;
+}
