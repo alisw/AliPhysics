@@ -663,11 +663,6 @@ Bool_t AliAlignObj::ApplyToGeometry()
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
   if(pne){
     path = pne->GetTitle();
-    if(!gGeoManager->CheckPath(path)){
-      AliDebug(1,Form("Valid PNEntry but invalid volume path %s!",path));
-          // this should happen only for volumes in disactivated branches
-      return kTRUE;
-    }
     node = gGeoManager->MakeAlignablePN(pne);
   }else{
     AliWarning(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as a volume path!",symname));
