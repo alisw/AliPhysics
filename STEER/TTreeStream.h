@@ -6,6 +6,7 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include "TTree.h"
 class TFile;
 class TObjArray;
 class TTree;
@@ -43,6 +44,7 @@ public:
   Int_t CheckIn(TObject *o);
   void BuildTree();
   void Fill();
+  Double_t GetSize(){ return fTree->GetZipBytes();}
   TTreeStream& Endl();
   //
   TTreeStream  &operator<<(Bool_t   &b){CheckIn('B',&b);return *this;}
