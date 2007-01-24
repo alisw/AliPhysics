@@ -7,7 +7,7 @@ void MakeFMDResMisAlignment()
   gSystem->Load("libFMDutil.so");
   if(!gSystem->Getenv("$TOCDB")){
     // save on file
-    AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root","");
+    AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root","FMDresidualMisalignment.root");
   }else{
     // save in CDB storage
     const char* Storage = gSystem->Getenv("$STORAGE");
