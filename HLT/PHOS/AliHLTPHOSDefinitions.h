@@ -16,7 +16,7 @@
 class AliHLTPHOSDefinitions
     {
     public:
-
+      /*
 	static AliHLTUInt8_t GetMinSliceNr( const AliHLTComponentBlockData& block )
 		{
 		return (AliHLTUInt8_t)( (block.fSpecification & 0x00FF0000) >> 16 );
@@ -57,13 +57,15 @@ class AliHLTPHOSDefinitions
 		{
 		return ((maxSliceNr & 0xFF) << 24) | ((minSliceNr & 0xFF) << 16) | ((maxPatchNr & 0xFF) << 8) | ((minPatchNr & 0xFF));
 		}
+      */
 
-	static const AliHLTComponentDataType gkDDLPackedRawDataType;
-	static const AliHLTComponentDataType gkPackedRawDataType;
-	static const AliHLTComponentDataType gkUnpackedRawDataType;
-	static const AliHLTComponentDataType gkClustersDataType;
-	static const AliHLTComponentDataType gkTrackSegmentsDataType;
-	static const AliHLTComponentDataType gkVertexDataType;
+      static const AliHLTComponentDataType gkDDLPackedRawDataType;
+      static const AliHLTComponentDataType gkCellEnergyDataType;
+      //     static const AliHLTComponentDataType gkPackedRawDataType;
+      //   static const AliHLTComponentDataType gkUnpackedRawDataType;
+      //   static const AliHLTComponentDataType gkClustersDataType;
+      //    static const AliHLTComponentDataType gkTrackSegmentsDataType;
+      //   static const AliHLTComponentDataType gkVertexDataType;
 
       //	ClassDef(AliHLTPHOSDefinitions, 0)
 
