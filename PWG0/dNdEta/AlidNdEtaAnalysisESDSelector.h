@@ -10,6 +10,9 @@ class dNdEtaAnalysis;
 class AlidNdEtaCorrection;
 class TH1F;
 
+// TODO this derives from AliSelectorRL to track down the effect of the vertex bias
+//      however, it should of course only depend on the ESD and thus be changed to AliSelector
+
 class AlidNdEtaAnalysisESDSelector : public AliSelectorRL {
   public:
     AlidNdEtaAnalysisESDSelector();

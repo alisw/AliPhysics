@@ -1331,9 +1331,9 @@ DrawSpectraPID(Char_t* fileName) {
   generatedPt[0]->Draw("same");
 }
 
-void changePtSpectrum()
+void changePtSpectrum(const char* fileName = "analysis_mc.root")
 {
-  TFile* file = TFile::Open("analysis_mc.root");
+  TFile* file = TFile::Open(fileName);
   TH1F* hist = dynamic_cast<TH1F*> (file->Get("dndeta_check_pt"));
 
   //hist->Rebin(3);
@@ -1383,7 +1383,7 @@ void changePtSpectrum()
   clone1->SetMarkerStyle(markers[0]);
   clone2->SetMarkerStyle(markers[0]);*/
 
-  hist->SetTitle(";p_{T} in GeV/c;dN/dp_{T} in c/GeV");
+  hist->SetTitle(";p_{T} in GeV/c;dN_{ch}/dp_{T} in c/GeV");
   hist->GetXaxis()->SetRangeUser(0, 0.7);
   hist->GetYaxis()->SetRangeUser(0.01, clone2->GetMaximum() * 1.1);
   hist->GetYaxis()->SetTitleOffset(1);

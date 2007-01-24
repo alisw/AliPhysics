@@ -181,12 +181,6 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
 
     Int_t label = TMath::Abs(esdTrack->GetLabel());
 
-    if (label == 0)
-    {
-      AliDebug(AliLog::kError, Form("Label is 0. Skipping! Track %d.", t));
-      continue;
-    }
-
     TParticle* particle = stack->Particle(label);
     if (!particle)
     {
