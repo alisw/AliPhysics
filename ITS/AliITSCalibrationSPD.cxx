@@ -13,17 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-
 #include "AliITSCalibrationSPD.h"
-
-const Double_t AliITSCalibrationSPD::fgkThreshDefault = 3000.;
-const Double_t AliITSCalibrationSPD::fgkSigmaDefault = 250.;
-const Double_t AliITSCalibrationSPD::fgkCouplColDefault = 0.;
-const Double_t AliITSCalibrationSPD::fgkCouplRowDefault = 0.047;
-const Double_t AliITSCalibrationSPD::fgkBiasVoltageDefault = 18.182;
-
-ClassImp(AliITSCalibrationSPD)	
 ///////////////////////////////////////////////////////////////////////////
 //  Calibration class for set:ITS                   
 //  Specific subdetector implementation for         
@@ -31,8 +21,16 @@ ClassImp(AliITSCalibrationSPD)
 //
 //  Modified by D. Elia, G.E. Bruno, H. Tydesjo
 //  March-April 2006
+//  Last mod:  H. Tydesjo  January 2007
 //
 ///////////////////////////////////////////////////////////////////////////
+const Double_t AliITSCalibrationSPD::fgkThreshDefault = 3000.;
+const Double_t AliITSCalibrationSPD::fgkSigmaDefault = 250.;
+const Double_t AliITSCalibrationSPD::fgkCouplColDefault = 0.;
+const Double_t AliITSCalibrationSPD::fgkCouplRowDefault = 0.047;
+const Double_t AliITSCalibrationSPD::fgkBiasVoltageDefault = 18.182;
+
+ClassImp(AliITSCalibrationSPD)	
 
 //______________________________________________________________________
 AliITSCalibrationSPD::AliITSCalibrationSPD():
@@ -98,36 +96,6 @@ Bool_t AliITSCalibrationSPD::IsPixelDead(Int_t col, Int_t row) const {
     }
   }
   return false;
-}
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//___________________________________________________________________________
-// THIS METHOD SHOULD BE DELETED AS SOON AS POSSIBLE!!!!!!!!!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-Bool_t AliITSCalibrationSPD::IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const {
- // Returns kTRUE if pixel is dead
-  // Inputs:
-  //    Int_t mod      module number
-  //    Int_t ix       x pixel number
-  //    Int_t iz       z pixel number
-  // Outputs:
-  //    none.
-  // Return:
-  //    kFALSE if pixel is alive, or kTRUE if pixel is dead.
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  Double_t fDeadPixels = 0.01; // fix to keep AliITSsimulationSPDdubna alive!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  Bool_t  dead = kFALSE;
-  Int_t   seed;
-  static TRandom ran; // don't use gRandom. This must not be a true randome
-  // sequence. These sequence must be random one and then fully repetable.
-
-  seed = mod*256*256+iz*256+ix;
-  ran.SetSeed(seed);
-  if(ran.Rndm(0)<fDeadPixels) dead = kTRUE;
-  return dead;
 }
 //____________________________________________________________________________
 void AliITSCalibrationSPD::AddNoisy(UInt_t col, UInt_t row) {

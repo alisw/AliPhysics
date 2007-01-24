@@ -52,6 +52,19 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSBeamTestDigitizer.cxx \
 		AliITSMultReconstructor.cxx \
 		AliITSPreprocessorSPD.cxx \
+                AliITSIntMap.cxx \
+		AliITSIntMapNode.cxx \
+		AliITSOnlineCalibrationSPD.cxx \
+		AliITSOnlineCalibrationSPDhandler.cxx \
+		AliITSOnlineSPDHitArray.cxx \
+		AliITSOnlineSPDHitEvent.cxx \
+		AliITSOnlineSPDscan.cxx \
+		AliITSOnlineSPDscanInfo.cxx \
+		AliITSOnlineSPDscanInfoMeanTh.cxx \
+		AliITSOnlineSPDscanInfoMultiple.cxx \
+		AliITSOnlineSPDscanMeanTh.cxx \
+		AliITSOnlineSPDscanMultiple.cxx \
+		AliITSOnlineSPDscanSingle.cxx \
 		AliITSBadChannelsAuxSPD.cxx \
 		AliITSBadChannelsSPD.cxx  \
 		AliITSChannelSPD.cxx  \

@@ -88,6 +88,19 @@
 #pragma link C++ class AliITSBadChannelsSPD+;
 #pragma link C++ class AliITSChannelSPD+;
 #pragma link C++ class AliITSPreprocessorSPD+;
+#pragma link C++ class AliITSIntMap+;
+#pragma link C++ class AliITSIntMapNode+;
+#pragma link C++ class AliITSOnlineCalibrationSPD+;
+#pragma link C++ class AliITSOnlineCalibrationSPDhandler+;
+#pragma link C++ class AliITSOnlineSPDHitArray+;
+#pragma link C++ class AliITSOnlineSPDHitEvent+;
+#pragma link C++ class AliITSOnlineSPDscan+;
+#pragma link C++ class AliITSOnlineSPDscanInfo+;
+#pragma link C++ class AliITSOnlineSPDscanInfoMeanTh+;
+#pragma link C++ class AliITSOnlineSPDscanInfoMultiple+;
+#pragma link C++ class AliITSOnlineSPDscanMeanTh+;
+#pragma link C++ class AliITSOnlineSPDscanMultiple+;
+#pragma link C++ class AliITSOnlineSPDscanSingle+;
 #pragma link C++ class AliITSPreprocessorSDD+;
 
 #endif

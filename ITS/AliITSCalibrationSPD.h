@@ -78,7 +78,6 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     Int_t  GetDeadRowAt(UInt_t index); //returns -1 if out of bounds
     void   ClearDead() {fDeadChannels.Reset(); fNrDead=0;}
     Bool_t IsPixelDead(Int_t col, Int_t row) const ;
-    Bool_t IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const ; // remove as soon as possible!!!
 
     void   AddNoisy(UInt_t col, UInt_t row);
     Int_t  GetNrNoisy() const {return fNrNoisy;}
@@ -87,6 +86,10 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     void   ClearNoisy() {fNoisyChannels.Reset(); fNrNoisy=0;}
     Bool_t IsPixelNoisy(Int_t col, Int_t row) const ;
 
+    void   SetDeadList(TArrayI deadlist) {fDeadChannels=deadlist;}
+    void   SetNoisyList(TArrayI noisylist) {fNoisyChannels=noisylist;}
+    void   SetNrDead(UInt_t nr) {fNrDead=nr;}
+    void   SetNrNoisy(UInt_t nr) {fNrNoisy=nr;}
 
  protected:
     // static const Double_t fgkDiffCoeffDefault; //default for fDiffCoeff
