@@ -124,4 +124,6 @@
 
 #pragma link C++ class  AliSelectorRL+;
 
+#pragma link C++ class  AliSplineFit+;
+
 #endif
