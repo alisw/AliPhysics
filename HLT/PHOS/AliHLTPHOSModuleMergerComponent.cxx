@@ -30,9 +30,9 @@ const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::inputDataTypes[]
 const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::outputDataType=kAliHLTVoidDataType;
 
 
-// AliHLTPHOSModuleMergerComponent g AliHLTPHOSModuleMergerComponent;
+AliHLTPHOSModuleMergerComponent gAliHLTPHOSModuleMergerComponent;
 //ClassImp( AliHLTPHOSModuleMergerComponent) 
-AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent():AliHLTProcessor(),  fEventCount(0),  fEquippmentId(0)
+AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent():AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
 {
 
 } 
@@ -42,7 +42,7 @@ AliHLTPHOSModuleMergerComponent::~ AliHLTPHOSModuleMergerComponent()
 
 }
 
-AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentId(0)
+AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
 {
 
 }
@@ -63,7 +63,7 @@ AliHLTPHOSModuleMergerComponent::DoDeinit()
 }
 
 const char* 
- AliHLTPHOSModuleMergerComponent::GetComponentID()
+AliHLTPHOSModuleMergerComponent::GetComponentID()
 {
   return "ModuleMerger";
 }
@@ -79,17 +79,20 @@ void
 }
 
 AliHLTComponentDataType 
- AliHLTPHOSModuleMergerComponent::GetOutputDataType()
+AliHLTPHOSModuleMergerComponent::GetOutputDataType()
 {
-  return outputDataType;
-}
+  // return AliHLTPHOSDefinitions::gkUnpackedRawDataType;
+  return AliHLTPHOSDefinitions::gkCellEnergyDataType;
+  //  return outputDataType;
+
+ }
 
 void
- AliHLTPHOSModuleMergerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
+AliHLTPHOSModuleMergerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 
 {
   constBase = 30;
-  inputMultiplier = 0.1;
+  inputMultiplier = 1;
 }
 
 
@@ -97,8 +100,70 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  unsigned long ndx;
+  const AliHLTComponentBlockData* iter = NULL;   
+ 
+  // cout << "Inside AliHLTPHOSModuleMergerComponent::DoEvent" << endl;
+  //  AliHLTUInt32_t *tmp = 
+  //  cout << " AliHLTPHOSModuleMergerComponen: the size of ouputblocks is " << outputBlocks.size()  <<endl;
+  //  cout << " AliHLTPHOSModuleMergerComponen: the size of inputblock is "  << blocks->fSize  <<endl;
+  //  cout << " AliHLTPHOSModuleMergerComponen: the size "  << size  <<endl;
+  
+  //  cout << "AliHLTPHOSModuleMergerComponen: evtData  fStructSize  =  "<< evtData.fStructSize<<endl;
+  //  cout << "AliHLTPHOSModuleMergerComponen: evtData  EventID      =  "<< evtData.fEventID<<endl;
+  //  cout << "AliHLTPHOSModuleMergerComponen: evtData  block count  =  "<< evtData.fBlockCnt<<endl;
+  for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
+    {
+      iter = blocks+ndx;
+      //   iter = ndx; 
+
+      AliHLTUInt32_t *tmpPtr = reinterpret_cast<AliHLTUInt32_t*>( iter->fPtr); 
+ 
+      //
+      //  if( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
+      //  	{
+      // 	  cout << "Warning: data type = is nOT gkDDLPackedRawDataType " << endl;
+      //	  continue;
+      //	}
 
 
+      if (iter->fDataType == kAliHLTVoidDataType){ cout << "ModuleMerger: datatype is kAliHLTVoidDataType :" << endl;} 
+      if (iter->fDataType ==  kAliHLTAnyDataType){ cout << "ModuleMerger: datatype is kAliHLTAnyDataType :" << endl;} 
+      if (iter->fDataType == AliHLTPHOSDefinitions::gkDDLPackedRawDataType){ cout << "ModuleMerger: datatType is : AliHLTPHOSDefinitions::gkDDLPackedRawDataType :" << endl;} 
+      if (iter->fDataType == AliHLTPHOSDefinitions::gkCellEnergyDataType){ cout << "ModuleMerger: datatype isAliHLTPHOSDefinitions::gkCellEnergyDataType" << endl;} 
+   
+      //  if (iter->fDataType == AliHLTPHOSDefinitions::gkPackedRawDataType){ cout << "ModuleMerger: datatype is: AliHLTPHOSDefinitions::gkPackedRawDataType" << endl;} 
+      //  if (iter->fDataType == AliHLTPHOSDefinitions::gkUnpackedRawDataType){ cout << "ModuleMerger: datatype is: AliHLTPHOSDefinitions::gkUnpackedRawDataType" << endl;} 
+      //  if (iter->fDataType == AliHLTPHOSDefinitions::gkClustersDataType){ cout << "ModuleMerger: datatype is: AliHLTPHOSDefinitions::gkClustersDataType" << endl;} 
+      //  if (iter->fDataType == AliHLTPHOSDefinitions::gkVertexDataType){ cout << "ModuleMerger: datatype is: AliHLTPHOSDefinitions::gkVertexDataTypeg" << endl;} 
+      //  if (iter->fDataType == AliHLTPHOSDefinitions::gkTrackSegmentsDataType){ cout << "ModuleMerger: datatype is: AliHLTPHOSDefinitions::gkTrackSegmentsDataTypeg" << endl;} 
+
+    }
+
+
+
+  cout << "blocks.fSize = " << blocks->fSize << endl ; 
+
+  //  AliHLTUInt32_t* tmpPtr = reinterpret_cast<AliHLTUInt32_t*>(blocks->fPtr);
+
+  AliHLTUInt32_t* tmpPtr = (AliHLTUInt32_t*)(blocks->fPtr);
+  //  *tmpPtr = 100;
+
+
+
+  cout << "ModuleMerge*tmpPtr =" << *tmpPtr << endl;
+  cout << "ModuleMerge tmpPtr =" << tmpPtr << endl;
+
+  for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
+    {
+      //     AliHLTUInt16_t* tmpPtr = reinterpret_cast<AliHLTUInt16_t*>(blocks->fPtr);   
+      iter = blocks+ndx;
+      //      AliHLTUInt16_t *tmp =  (AliHLTUInt16_t *)(iter->fPtr);
+      //    cout <<"AliHLTPHOSModuleMergerComponent::Equippment ID *tmp= " <<  *tmp  << endl;
+      //      cout <<"AliHLTPHOSModuleMergerComponent::Equippment ID  blocks->fPtr[0] = " << tmpPtr[0] << endl;
+    }
+  
+  
   fEventCount++; 
   return 0;
 }//end DoEvent
@@ -106,26 +171,10 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
 
 
 int
- AliHLTPHOSModuleMergerComponent::DoInit( int argc, const char** argv )
+AliHLTPHOSModuleMergerComponent::DoInit( int argc, const char** argv )
 {
-  cout << "DOINIT argc =" << argc << endl;
-  cout << "DOINIT argv[0] =" << argv[0] << endl;
-  cout << "DOINIT argv[1] =" << argv[1] << endl;
-  cout << "DOINIT argv[2] =" << argv[2] << endl;
-  cout << "DOINIT argv[3] =" << argv[3] << endl;
-  cout << "DOINIT argv[4] =" << argv[4] << endl;
-  cout << "DOINIT argv[5] =" << argv[5] << endl;
-  cout << "DOINIT argv[6] =" << argv[6] << endl;
- 
-  int equippmentId = atoi(argv[6]);
-  cout << "The equipment ID was set to " <<equippmentId << endl;
-  
-
   Reset();
-  cout << " AliHLTPHOSModuleMergerComponent::DoInit Creating new  AliRawReaderMemory()" << endl; 
 
-
-  cout <<" AliHLTPHOSModuleMergerComponent::DoIni  DONE!" << endl;
   if (argc==0 && argv==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
   }
@@ -133,7 +182,7 @@ int
 }
 
 void
- AliHLTPHOSModuleMergerComponent::DumpData()
+AliHLTPHOSModuleMergerComponent::DumpData()
 {
   for(int mod = 0; mod <5; mod ++)
     {
@@ -153,7 +202,7 @@ void
 
 
 void
- AliHLTPHOSModuleMergerComponent::Reset()
+AliHLTPHOSModuleMergerComponent::Reset()
 {
   for(int mod = 0; mod <5; mod ++)
     {
@@ -176,7 +225,7 @@ void
 } // end Reset
 
 void
- AliHLTPHOSModuleMergerComponent::ResetDataPtr()
+AliHLTPHOSModuleMergerComponent::ResetDataPtr()
 {
   for(int i = 0 ; i< 1008; i++)
     {
@@ -186,13 +235,22 @@ void
 
 
 void 
- AliHLTPHOSModuleMergerComponent::SetEquippmentId(int id)
+AliHLTPHOSModuleMergerComponent::SetEquippmentId(int id)
 {
-  fEquippmentId = id;
+  fEquippmentID = id;
 }
 
 int 
 AliHLTPHOSModuleMergerComponent::GetEquippmentId()
 {
-  return  fEquippmentId;
+  return  fEquippmentID;
 }
+
+
+AliHLTComponent*
+AliHLTPHOSModuleMergerComponent::Spawn()
+{
+  return new AliHLTPHOSModuleMergerComponent;
+}
+
+
