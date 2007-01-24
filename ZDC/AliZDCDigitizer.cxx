@@ -299,9 +299,9 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
  
   TFile* file = NULL;
   if (SpecType == 1) {		// --- Signal for spectator neutrons
-    file = TFile::Open("$ALICE/$ALICE_LEVEL/ZDC/ZNsignalntu.root");
+    file = TFile::Open("$ALICE_ROOT/ZDC/ZNsignalntu.root");
   } else if (SpecType == 2) {	// --- Signal for spectator protons
-    file = TFile::Open("$ALICE/$ALICE_LEVEL/ZDC/ZPsignalntu.root");
+    file = TFile::Open("$ALICE_ROOT/ZDC/ZPsignalntu.root");
   }
   if (!file || !file->IsOpen()) {
     AliError("Opening of file failed");

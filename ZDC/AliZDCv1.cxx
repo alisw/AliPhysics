@@ -1100,22 +1100,22 @@ void AliZDCv1::InitTables()
   FILE *fp1, *fp2, *fp3, *fp4, *fp5, *fp6, *fp7, *fp8;
 
   //  --- Reading light tables for ZN 
-  lightfName1 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362207s");
+  lightfName1 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620362207s");
   if((fp1 = fopen(lightfName1,"r")) == NULL){
      printf("Cannot open file fp1 \n");
      return;
   }
-  lightfName2 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362208s");
+  lightfName2 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620362208s");
   if((fp2 = fopen(lightfName2,"r")) == NULL){
      printf("Cannot open file fp2 \n");
      return;
   }  
-  lightfName3 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362209s");
+  lightfName3 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620362209s");
   if((fp3 = fopen(lightfName3,"r")) == NULL){
      printf("Cannot open file fp3 \n");
      return;
   }
-  lightfName4 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620362210s");
+  lightfName4 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620362210s");
   if((fp4 = fopen(lightfName4,"r")) == NULL){
      printf("Cannot open file fp4 \n");
      return;
@@ -1135,22 +1135,22 @@ void AliZDCv1::InitTables()
   fclose(fp4);
   
   //  --- Reading light tables for ZP and ZEM
-  lightfName5 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552207s");
+  lightfName5 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620552207s");
   if((fp5 = fopen(lightfName5,"r")) == NULL){
      printf("Cannot open file fp5 \n");
      return;
   }
-  lightfName6 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552208s");
+  lightfName6 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620552208s");
   if((fp6 = fopen(lightfName6,"r")) == NULL){
      printf("Cannot open file fp6 \n");
      return;
   }
-  lightfName7 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552209s");
+  lightfName7 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620552209s");
   if((fp7 = fopen(lightfName7,"r")) == NULL){
      printf("Cannot open file fp7 \n");
      return;
   }
-  lightfName8 = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/light22620552210s");
+  lightfName8 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620552210s");
   if((fp8 = fopen(lightfName8,"r")) == NULL){
      printf("Cannot open file fp8 \n");
      return;

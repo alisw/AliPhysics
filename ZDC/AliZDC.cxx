@@ -571,7 +571,7 @@ void AliZDC::WriteCalibData(Int_t option)
   const int kCompressLevel = 9;
   char* fnam = GetZDCCalibFName();
   if (!fnam || fnam[0]=='\0') {
-    fnam = gSystem->ExpandPathName("$(ALICE)/$(ALICE_LEVEL)/data/AliZDCCalib.root");
+    fnam = gSystem->ExpandPathName("$(ALICE_ROOT)/data/AliZDCCalib.root");
     Warning("WriteCalibData","No File Name is provided, using default %s",fnam);
   }
   TFile* cdfile = TFile::Open(fnam,"UPDATE","",kCompressLevel);

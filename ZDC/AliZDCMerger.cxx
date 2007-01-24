@@ -256,14 +256,14 @@ void AliZDCMerger::ExtractSignal(Int_t SpecType)
  
  Int_t numEvents = 0;
  if(SpecType == 1){		// --- Signal for spectator neutrons
-   fFnSpecn = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZNsignalntu.root");
+   fFnSpecn = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/ZNsignalntu.root");
    fSpecnFile = TFile::Open(fFnSpecn,"R");
    fSpecnFile->cd();
    printf("\n	--- ExtractSignal x n: file %s opened\n", fFnSpecn);
    numEvents = fFreeSpn;
  }
  else if(SpecType == 2){	// --- Signal for spectator protons
-   fFnSpecp = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZPsignalntu.root");
+   fFnSpecp = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/ZPsignalntu.root");
    fSpecpFile = TFile::Open(fFnSpecp,"R");
    fSpecpFile->cd();
    printf("\n	--- ExtractSignal x p: file %s opened\n", fFnSpecp);
