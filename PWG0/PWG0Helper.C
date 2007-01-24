@@ -3,9 +3,9 @@
 // Helper macros can be found in this file
 // A set of them can be used to connect to proof and execute selectors.
 
-TVirtualProof* connectProof(const char* proofServer)
+TProof* connectProof(const char* proofServer)
 {
-  TVirtualProof* proof = TProof::Open(proofServer);
+  TProof* proof = TProof::Open(proofServer);
 
   if (!proof)
   {
@@ -95,7 +95,10 @@ Int_t executeQuery(TChain* chain, TList* inputList, TString selectorName, const 
   Long64_t result = -1;
 
   if (gProof)
-    result = chain->MakeTDSet()->Process(selectorName, option, entries);
+  {
+    chain->SetProof();
+    result = chain->Process(selectorName, option, entries);
+  }
   else
     result = chain->Process(selectorName, option, entries);
 
