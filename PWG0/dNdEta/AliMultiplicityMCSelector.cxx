@@ -8,24 +8,26 @@
 #include <TVector3.h>
 #include <TChain.h>
 #include <TFile.h>
-#include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TParticle.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
 #include <AliStack.h>
+#include <AliHeader.h>
+#include <AliGenEventHeader.h>
+#include <AliMultiplicity.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
+#include "dNdEta/AliMultiplicityCorrection.h"
 
 ClassImp(AliMultiplicityMCSelector)
 
 AliMultiplicityMCSelector::AliMultiplicityMCSelector() :
   AliSelectorRL(),
-  fMultiplicityESD(0),
-  fMultiplicityMC(0),
-  fCorrelation(0),
+  fMultiplicity(0),
   fEsdTrackCuts(0)
 {
   //
@@ -76,10 +78,25 @@ void AliMultiplicityMCSelector::SlaveBegin(TTree* tree)
 
   ReadUserObjects(tree);
 
-  fMultiplicityESD = new TH1F("fMultiplicityESD", "fMultiplicityESD;Ntracks;Count", 201, -0.5, 200.5);
-  fMultiplicityMC = new TH1F("fMultiplicityMC", "fMultiplicityMC;Npart;Count", 201, -0.5, 200.5);
+  fMultiplicity = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+}
 
-  fCorrelation = new TH2F("fCorrelation", "fCorrelation;Npart;Ntracks", 201, -0.5, 200.5, 201, -0.5, 200.5);
+void AliMultiplicityMCSelector::Init(TTree* tree)
+{
+  // read the user objects
+
+  AliSelectorRL::Init(tree);
+
+  // TODO Enable only the needed branches
+  /*if (tree)
+  {
+    tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("fTriggerMask", 1);
+    tree->SetBranchStatus("fSPDVertex*", 1);
+    tree->SetBranchStatus("fTracks.fLabel", 1);
+
+    AliESDtrackCuts::EnableNeededBranches(tree);
+  }*/
 }
 
 Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
@@ -118,6 +135,13 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
+  AliHeader* header = GetHeader();
+  if (!header)
+  {
+    AliDebug(AliLog::kError, "Header not available");
+    return kFALSE;
+  }
+
   AliStack* stack = GetStack();
   if (!stack)
   {
@@ -131,16 +155,37 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   if (AliPWG0Helper::IsVertexReconstructed(fESD) == kFALSE)
     return kTRUE;
 
-  // TODO put pt cut
+  // get the ESD vertex
+  const AliESDVertex* vtxESD = fESD->GetVertex();
+  Double_t vtx[3];
+  vtxESD->GetXYZ(vtx);
 
-  // get number of "good" tracks from ESD
-  Int_t nESDTracks = fEsdTrackCuts->CountAcceptedTracks(fESD);
-  fMultiplicityESD->Fill(nESDTracks);
+  // get the MC vertex
+  AliGenEventHeader* genHeader = header->GenEventHeader();
+  TArrayF vtxMC(3);
+  genHeader->PrimaryVertex(vtxMC);
+
+  // get tracklets
+  const AliMultiplicity* mult = fESD->GetMultiplicity();
+  if (!mult)
+  {
+    AliDebug(AliLog::kError, "AliMultiplicity not available");
+    return kFALSE;
+  }
+
+  //const Float_t kPtCut = 0.3;
 
   // get number of tracks from MC
   // loop over mc particles
   Int_t nPrim  = stack->GetNprimary();
-  Int_t nMCTracks = 0;
+
+  // tracks in different eta ranges
+  Int_t nMCTracks05 = 0;
+  Int_t nMCTracks10 = 0;
+  Int_t nMCTracks15 = 0;
+  Int_t nMCTracks20 = 0;
+  Int_t nMCTracksAll = 0;
+
   for (Int_t iMc = 0; iMc < nPrim; ++iMc)
   {
     AliDebug(AliLog::kDebug+1, Form("MC Loop: Processing particle %d.", iMc));
@@ -156,17 +201,98 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
-    Float_t eta = particle->Eta();
+    //if (particle->Pt() < kPtCut)
+    //  continue;
 
-    if (TMath::Abs(eta) > 0.9)
-      continue;
+    if (TMath::Abs(particle->Eta()) < 0.5)
+      nMCTracks05++;
 
-    nMCTracks++;
+    if (TMath::Abs(particle->Eta()) < 1.0)
+      nMCTracks10++;
+
+    if (TMath::Abs(particle->Eta()) < 1.5)
+      nMCTracks15++;
+
+    if (TMath::Abs(particle->Eta()) < 2.0)
+      nMCTracks20++;
+
+    nMCTracksAll++;
   }// end of mc particle
 
-  fMultiplicityMC->Fill(nMCTracks);
+  // FAKE: put back vtxMC[2]
+  fMultiplicity->FillGenerated(vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll);
 
-  fCorrelation->Fill(nMCTracks, nESDTracks);
+  Int_t nESDTracks05 = 0;
+  Int_t nESDTracks10 = 0;
+  Int_t nESDTracks15 = 0;
+  Int_t nESDTracks20 = 0;
+
+  // get multiplicity from ITS tracklets
+  for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
+  {
+    //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
+
+    // this removes non-tracklets. Very bad solution. SPD guys are working on better solution...
+    if (mult->GetDeltaPhi(i) < -1000)
+      continue;
+
+    Float_t theta = mult->GetTheta(i);
+    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
+
+    if (TMath::Abs(eta) < 0.5)
+      nESDTracks05++;
+
+    if (TMath::Abs(eta) < 1.0)
+      nESDTracks10++;
+
+    if (TMath::Abs(eta) < 1.5)
+      nESDTracks15++;
+
+    if (TMath::Abs(eta) < 2.0)
+      nESDTracks20++;
+  }
+
+  // get multiplicity from ESD tracks
+  /*TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+  Int_t nGoodTracks = list->GetEntries();
+  // loop over esd tracks
+  for (Int_t i=0; i<nGoodTracks; i++)
+  {
+    AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
+    if (!esdTrack)
+    {
+      AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
+      continue;
+    }
+
+    Double_t p[3];
+    esdTrack->GetConstrainedPxPyPz(p); // ### TODO should be okay because we have a vertex, however GetInnerPxPyPy / GetOuterPxPyPy also exist
+    TVector3 vector(p);
+
+    Float_t theta = vector.Theta();
+    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
+    Float_t pt = vector.Pt();
+
+    if (pt < kPtCut)
+      continue;
+
+    if (TMath::Abs(eta) < 0.5)
+      nESDTracks05++;
+
+    if (TMath::Abs(eta) < 1.0)
+      nESDTracks10++;
+
+    if (TMath::Abs(eta) < 1.5)
+      nESDTracks15++;
+
+    if (TMath::Abs(eta) < 2.0)
+      nESDTracks20++;
+  }*/
+
+  fMultiplicity->FillMeasured(vtxMC[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
+
+  // TODO should this be vtx[2] or vtxMC[2] ?
+  fMultiplicity->FillCorrection(vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
   return kTRUE;
 }
@@ -186,9 +312,7 @@ void AliMultiplicityMCSelector::SlaveTerminate()
     return;
   }
 
-  fOutput->Add(fMultiplicityESD);
-  fOutput->Add(fMultiplicityMC);
-  fOutput->Add(fCorrelation);
+  fOutput->Add(fMultiplicity);
 }
 
 void AliMultiplicityMCSelector::Terminate()
@@ -199,23 +323,19 @@ void AliMultiplicityMCSelector::Terminate()
 
   AliSelector::Terminate();
 
-  fOutput->Print();
+  fMultiplicity = dynamic_cast<AliMultiplicityCorrection*> (fOutput->FindObject("Multiplicity"));
 
-  fMultiplicityESD = dynamic_cast<TH1F*> (fOutput->FindObject("fMultiplicityESD"));
-  fMultiplicityMC = dynamic_cast<TH1F*> (fOutput->FindObject("fMultiplicityMC"));
-  fCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fCorrelation"));
-
-  if (!fMultiplicityESD || !fMultiplicityMC || !fCorrelation)
+  if (!fMultiplicity)
   {
-    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p %p", (void*) fMultiplicityESD, (void*) fMultiplicityMC, (void*) fCorrelation));
+    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fMultiplicity));
     return;
   }
 
   TFile* file = TFile::Open("multiplicityMC.root", "RECREATE");
 
-  fMultiplicityMC->Write();
-  fMultiplicityESD->Write();
-  fCorrelation->Write();
+  fMultiplicity->SaveHistograms();
 
   file->Close();
+
+  fMultiplicity->DrawHistograms();
 }
