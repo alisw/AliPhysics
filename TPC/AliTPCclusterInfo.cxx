@@ -30,7 +30,7 @@
 #include "AliTPCclusterInfo.h"
 #include "AliLog.h"
 
-ClassImp(AliTPCclusterInfo);
+ClassImp(AliTPCclusterInfo)
 
 
 AliTPCclusterInfo::AliTPCclusterInfo():
