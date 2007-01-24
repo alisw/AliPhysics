@@ -72,7 +72,6 @@ private:
   Float_t fPadWidth;  // the width of the pad
   Float_t fPadLength;  // the width of the pad
   Float_t fZWidth;     //the z bin width
-
   Bool_t  fPedSubtraction; // perform pedestal subtraction or not
   Bool_t  fIsOldRCUFormat; // assume old RCU raw data format
   AliRawEventHeaderBase *fEventHeader; //! event header information
@@ -87,6 +86,7 @@ private:
   TObjArray * fAmplitudeHisto;          //! array of histograms of amplitudes
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
+  Bool_t  fBDumpSignal; // dump signal flag
   TVirtualFFT *fFFTr2c;                 //! Fast Furier transform object   
   ClassDef(AliTPCclustererMI,1)  // Time Projection Chamber digits
 };

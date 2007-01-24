@@ -84,6 +84,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fAmplitudeHisto(0),
   fDebugStreamer(0),
   fRecoParam(0),
+  fBDumpSignal(kFALSE),
   fFFTr2c(0)
 {
   //
@@ -569,10 +570,10 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
 
   TClonesArray * arr = fRowCl->GetArray();
   AliTPCclusterMI * cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
-  if (matrix) {
+  if (matrix ) {
     Int_t nbins=0;
     Float_t *graph =0;
-    if (fRecoParam->GetCalcPedestal() && cl->GetMax()>fRecoParam->GetDumpAmplitudeMin()){
+    if (fRecoParam->GetCalcPedestal() && cl->GetMax()>fRecoParam->GetDumpAmplitudeMin() &&fBDumpSignal){
       nbins = fMaxTime;
       graph = &(fBins[fMaxTime*(pos/fMaxTime)]);
     }
@@ -894,6 +895,9 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   //
   // add virtual charge at the edge   
   //
+  Double_t kMaxDumpSize = 500000;
+  if (fRecoParam->GetCalcPedestal() && fOutput->GetZipBytes()< kMaxDumpSize) fBDumpSignal =kTRUE;   //dump signal flag
+  //
   if (0) for (Int_t i=0; i<fMaxTime; i++){
     Float_t amp1 = fBins[i+3*fMaxTime]; 
     Float_t amp0 =0;
@@ -976,6 +980,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   // ESTIMATE pedestal and the noise
   // 
   const Int_t kPedMax = 100;
+  Double_t kMaxDebugSize = 5000000.;
   Float_t  max    =  0;
   Float_t  maxPos =  0;
   Int_t    median =  -1;
@@ -1004,9 +1009,9 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   }
   // truncated mean  
   //
-  Double_t count10=histo[median] ,mean=histo[median]*median,  rms=histo[median]*median*median ;
-  Double_t count06=histo[median] ,mean06=histo[median]*median,  rms06=histo[median]*median*median ;
-  Double_t count09=histo[median] ,mean09=histo[median]*median,  rms09=histo[median]*median*median ;
+  Float_t count10=histo[median] ,mean=histo[median]*median,  rms=histo[median]*median*median ;
+  Float_t count06=histo[median] ,mean06=histo[median]*median,  rms06=histo[median]*median*median ;
+  Float_t count09=histo[median] ,mean09=histo[median]*median,  rms09=histo[median]*median*median ;
   //
   for (Int_t idelta=1; idelta<10; idelta++){
     if (median-idelta<=0) continue;
@@ -1116,7 +1121,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   // Digital noise
   //
-  if (max-median>30.*TMath::Max(1.,rms06)){    
+  if (max-median>30.*TMath::Max(1.,Double_t(rms06)) &&  (((*fDebugStreamer)<<"SignalDN").GetSize()<kMaxDebugSize)){    
     //
     //
     TGraph * graph =new TGraph(nchannels, dtime, dsignal);
@@ -1137,8 +1142,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     Int_t    lastJump2 = fRecoParam->GetFirstBin();
 
     for (Int_t itime=fRecoParam->GetFirstBin()+1; itime<fRecoParam->GetLastBin()-1; itime++){
-      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,rms06)  && 
-	  TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,rms06)  &&
+      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06))  && 
+	  TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06))  &&
 	  (dsignal[itime-1]-median<5.*rms06) &&
 	  (dsignal[itime+1]-median<5.*rms06) 	  
 	  ){
@@ -1147,7 +1152,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	lastJump0 = itime;
 	njumps0++;
       }
-      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,rms06) &&
+      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06)) &&
 	  (dsignal[itime-1]-median<5.*rms06) 
 	  ) {
 	deltaA1[njumps1] = dsignal[itime]-dsignal[itime-1];
@@ -1155,7 +1160,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	lastJump1 = itime;
 	njumps1++;
       }
-      if (TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,rms06) &&
+      if (TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06)) &&
 	  (dsignal[itime+1]-median<5.*rms06) 
 	  ) {
 	deltaA2[njumps2] = dsignal[itime]-dsignal[itime+1];
@@ -1203,7 +1208,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   TGraph * graph;
   Bool_t random = (gRandom->Rndm()<0.0003);
-  if (max-median>kMin || rms06>1.*fParam->GetZeroSup() || random){
+  if (((*fDebugStreamer)<<"SignalN").GetSize()<kMaxDebugSize)
+    if (max-median>kMin || rms06>1.*fParam->GetZeroSup() || random){
     graph =new TGraph(nchannels, dtime, dsignal);
     if (rms06>1.*fParam->GetZeroSup() || random){
       //Double_t *input, Double_t threshold, Bool_t locMax, Double_t *freq, Double_t *re, Double_t *im, Double_t *mag, Double_t *phi);
@@ -1274,11 +1280,11 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   //  Central Electrode signal analysis  
   //
-  Double_t ceQmax  =0, ceQsum=0, ceTime=0;
-  Double_t cemean  = mean06, cerms=rms06 ;
+  Float_t ceQmax  =0, ceQsum=0, ceTime=0;
+  Float_t cemean  = mean06, cerms=rms06 ;
   Int_t    cemaxpos= 0;
-  Double_t ceThreshold=5.*cerms;
-  Double_t ceSumThreshold=8.*cerms;
+  Float_t ceThreshold=5.*cerms;
+  Float_t ceSumThreshold=8.*cerms;
   const Int_t    kCemin=5;  // range for the analysis of the ce signal +- channels from the peak
   const Int_t    kCemax=5;
   for (Int_t i=nchannels-2; i>nchannels/2; i--){
