@@ -1,7 +1,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libGamma.so
+default-target: libPWG4Gamma.so
 
 ALICEINC      = -I.
 
@@ -14,25 +14,25 @@ else
   endif
 endif
 
-# for building of Gamma.par
+# for building of PWG4Gamma.par
 ifneq ($(GAMMA_INCLUDE),)
   ALICEINC += -I../$(GAMMA_INCLUDE)
 endif
 
 CXXFLAGS     += $(ALICEINC) -g
 
-PACKAGE = Gamma
+PACKAGE = PWG4Gamma
 include lib$(PACKAGE).pkg
 
-DHDR_Gamma := $(DHDR)
-HDRS_Gamma := $(HDRS)
-SRCS_Gamma := $(SRCS) G__$(PACKAGE).cxx
-OBJS_Gamma := $(SRCS_Gamma:.cxx=.o)
+DHDR_PWG4Gamma := $(DHDR)
+HDRS_PWG4Gamma := $(HDRS)
+SRCS_PWG4Gamma := $(SRCS) G__$(PACKAGE).cxx
+OBJS_PWG4Gamma := $(SRCS_PWG4Gamma:.cxx=.o)
 
 PARFILE       = $(PACKAGE).par
 
 
-lib$(PACKAGE).so: $(OBJS_Gamma)
+lib$(PACKAGE).so: $(OBJS_PWG4Gamma)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(PLATFORM),macosx)
@@ -47,7 +47,7 @@ endif
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS_Gamma) *.so G__$(PACKAGE).* $(PARFILE)
+	@rm -f $(OBJS_PWG4Gamma) *.so G__$(PACKAGE).* $(PARFILE)
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionary ..."
@@ -55,7 +55,7 @@ G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 
 ### CREATE PAR FILE
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_Gamma) $(SRCS_Gamma) $(DHDR_Gamma) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_PWG4Gamma) $(SRCS_PWG4Gamma) $(DHDR_PWG4Gamma) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)

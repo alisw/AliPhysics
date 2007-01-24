@@ -2,7 +2,7 @@ SRCS = AliAnaGammaDirect.cxx AliAnaGammaHadron.cxx AliAnaGammaJet.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
-DHDR:= GammaLinkDef.h
+DHDR:= PWG4GammaLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
