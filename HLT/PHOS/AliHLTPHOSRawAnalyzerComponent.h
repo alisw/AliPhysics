@@ -25,8 +25,9 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   virtual int Deinit();
   virtual int DoDeinit();
   void DumpData();
-  void SetEquippmentId(int id);
-  int GetEquippmentId();
+  void SetEquippmentID(AliHLTUInt32_t id);
+  int GetEquippmentID();
+  void SetCoordinates( AliHLTUInt32_t equippmentID);
   virtual const char* GetComponentID() = 0;
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
@@ -41,13 +42,20 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 
  private:
   int fEventCount;
-  int fEquippmentId;
+  //  int fEquippmentId;
+  //  AliHLTUInt16_t fEquippmentId;
+  AliHLTUInt32_t fEquippmentID;
+  AliHLTUInt8_t fRcuX;
+  AliHLTUInt8_t fRcuY;
+  AliHLTUInt8_t fModuleID;
+
   Double_t fTmpChannelData[1008];
   Double_t fMaxValues[5][64][56][2];
   AliCaloRawStream *fPHOSRawStream;
   AliRawReaderMemory *fRawMemoryReader;
+
   static const AliHLTComponentDataType inputDataTypes[];
-  static const AliHLTComponentDataType outputDataType;
+  //  static const AliHLTComponentDataType outputDataType;
   
 };
 #endif

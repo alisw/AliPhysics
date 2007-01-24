@@ -26,12 +26,12 @@
 //#include "AliHLTTPCDefinitions.h"
 
 const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
-const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::outputDataType=kAliHLTVoidDataType;
+//const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::outputDataType=kAliHLTVoidDataType;
 
 
 //AliHLTPHOSRawAnalyzerComponent gAliHLTPHOSRawAnalyzerComponent;
 //ClassImp(AliHLTPHOSRawAnalyzerComponent) 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(),  fEventCount(0),  fEquippmentId(0), fPHOSRawStream(), fRawMemoryReader(0)
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0), fPHOSRawStream(), fRawMemoryReader(0)
 {
   //  fRawMemoryReader = NULL;
 } 
@@ -51,7 +51,7 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 
 
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentId(0), fPHOSRawStream(),fRawMemoryReader(0)
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0), fPHOSRawStream(),fRawMemoryReader(0)
 {
   //  fRawMemoryReader = NULL;
 }
@@ -100,7 +100,9 @@ AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 AliHLTComponentDataType 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
 {
-  return outputDataType;
+  //   return AliHLTTPCDefinitions::gkUnpackedRawDataType;
+  return AliHLTPHOSDefinitions::gkCellEnergyDataType;
+  //  return outputDataType;
 }
 
 void
@@ -116,32 +118,30 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-
   Int_t tmpMod  = 0;
   Int_t tmpRow  = 0;
   Int_t tmpCol  = 0;
   Int_t tmpGain = 0;
   Int_t processedChannels = 0;
+  UInt_t offset = 0; 
+  UInt_t mysize = 0;
+  UInt_t tSize  = 0;
 
-  //  AliHLTUInt8_t *tmpOut = &((AliHLTUInt8_t)(GetEquippmentId()));
+  AliHLTUInt8_t* outBPtr;
+  AliHLTUInt32_t* outPtr;
+  outBPtr = outputPtr;
 
-  AliHLTUInt8_t *tmpOut =( AliHLTUInt8_t*)&fEquippmentId;
-
-  outputPtr[0] = tmpOut[0];
-  outputPtr[1] = tmpOut[1];
-
-  AliHLTUInt16_t  tmpID = *((AliHLTUInt16_t*)(outputPtr));
-
-  cout << "OutputBuffer setting equippment ID to " << tmpID << endl;
-
-  //  Int_t tmpMax  = 0;
   const AliHLTComponentBlockData* iter = NULL; 
+  
   unsigned long ndx;
   Reset();
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
+      mysize = 0;
+      offset = tSize;
+
 
       if ( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
 	{
@@ -150,8 +150,10 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	}
 
      fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize );
-     fRawMemoryReader->DumpData();
-     fRawMemoryReader->RewindEvents();
+
+     //   fRawMemoryReader->DumpData();
+     //  fRawMemoryReader->RewindEvents();
+    
      analyzerPtr->SetData(fTmpChannelData);
  
       while(fPHOSRawStream->Next())
@@ -173,11 +175,41 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	      processedChannels ++;
 	    }
 
+
 	  fTmpChannelData[fPHOSRawStream->GetTime()] =  fPHOSRawStream->GetSignal();
 	}
+      
+ 
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      mysize += sizeof(fEquippmentID);
+
+      outPtr = ( AliHLTUInt32_t*)outBPtr;  
+      *outPtr = fEquippmentID;
+
+      //      bd.fPtr = &fEquippmentId;
+      bd.fOffset = offset;
+      bd.fSize = mysize;
+      
+      bd.fDataType = AliHLTPHOSDefinitions::gkCellEnergyDataType;
+      outputBlocks.push_back( bd );
+      
+      
+      tSize += mysize;
+      outBPtr += mysize;
+      
+      if ( tSize > size )
+	{
+	  Logging( kHLTLogFatal, "HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent", "Too much data",
+		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
+		   , tSize, size );
+	  return EMSGSIZE;
+	}
+
     }
-  DumpData();
+
   fEventCount++; 
+  size = tSize;
   return 0;
 }//end DoEvent
 
@@ -195,8 +227,8 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
   cout << "DOINIT argv[5] =" << argv[5] << endl;
   cout << "DOINIT argv[6] =" << argv[6] << endl;
  
-  int equippmentId = atoi(argv[6]);
-  cout << "The equipment ID was set to " <<equippmentId << endl;
+  int equippmentID = atoi(argv[6]);
+  cout << "The equipment ID was set to " <<equippmentID << endl;
   
  //fRawMemoryReader->SetEquipmentID(1806); 
 
@@ -205,11 +237,12 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
   //legoPlotPtr   = new TH2S("Lego plot 1","Phi0 20Gev, High gain", 56*5, 0, 56*5, 64, 0, 64);
   fRawMemoryReader = new AliRawReaderMemory();
   fPHOSRawStream = new  AliCaloRawStream(fRawMemoryReader,"PHOS");
-  fRawMemoryReader->SetEquipmentID(equippmentId); 
+  fRawMemoryReader->SetEquipmentID(equippmentID); 
 
-  SetEquippmentId(equippmentId);
+  SetEquippmentID(equippmentID);
+  SetCoordinates(equippmentID);
 
-  cout <<"AliHLTPHOSRawAnalyzerComponent::DoIni  DONE!" << endl;
+  //  cout <<"AliHLTPHOSRawAnalyzerComponent::DoIni  DONE!" << endl;
   if (argc==0 && argv==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
   }
@@ -270,13 +303,50 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr()
 
 
 void 
-AliHLTPHOSRawAnalyzerComponent::SetEquippmentId(int id)
+AliHLTPHOSRawAnalyzerComponent::SetEquippmentID(AliHLTUInt32_t id)
 {
-  fEquippmentId = id;
+  fEquippmentID = id;
 }
 
 int 
-AliHLTPHOSRawAnalyzerComponent::GetEquippmentId()
+AliHLTPHOSRawAnalyzerComponent::GetEquippmentID()
 {
-  return  fEquippmentId;
+  return  fEquippmentID;
+}
+
+
+void 
+AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt32_t equippmentID)
+{
+  int rcuIndex =  (fEquippmentID - 1792)%4;
+  //  int moduleIndex = (fEquippmentID  -1792 -rcuIndex)/5;
+ fModuleID = (fEquippmentID  -1792 -rcuIndex)/5;
+
+  if(rcuIndex == 0)
+    {
+      fRcuX = 0; 
+      fRcuY = 0;
+    }
+
+  if(rcuIndex == 1)
+    {
+      fRcuX = 1; 
+      fRcuY = 0;
+    }
+ 
+  if(rcuIndex == 2)
+    {
+      fRcuX = 0; 
+      fRcuY = 1;
+    }
+
+
+  if(rcuIndex == 2)
+    {
+      fRcuX = 1; 
+      fRcuY = 1;
+    }
+
+//  cout << "AliHLTPHOSModuleMergerComponent::SetRcuCoordinates. (fEquippmentId - 1792)%4 =  " << rcuIndex << endl;
+//  cout << "AliHLTPHOSModuleMergerComponent::SetRcuCoordinates. Module undex =  " <<  moduleIndex  << endl; 
 }
