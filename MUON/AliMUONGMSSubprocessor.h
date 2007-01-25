@@ -33,9 +33,9 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
 
   private:
     // static data members
-    static const Int_t    fgkSystem;
-    static const TString  fgkDataId;
-    static const TString  fgkMatrixArrayName;
+    static const Int_t    fgkSystem;           ///< The data system
+    static const TString  fgkDataId;           ///< The data Id
+    static const TString  fgkMatrixArrayName;  ///< The fixed matrix array name
   
     // data members
     AliMUONGeometryTransformer fTransformer;///< Geometry transformer (used to get vo

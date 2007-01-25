@@ -54,8 +54,8 @@ private:
   AliMUONVSubprocessor* Subprocessor(Int_t i) const;
   
 private:
-  static const TString  fgkTrackerDetName;
-  static const TString  fgkTriggerDetName;
+  static const TString  fgkTrackerDetName;  ///< The tracker detector name
+  static const TString  fgkTriggerDetName;  ///< The trigger detector name
 
   TObjArray* fSubprocessors; ///!< sub processors to execute
   

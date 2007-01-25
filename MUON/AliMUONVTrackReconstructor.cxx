@@ -15,19 +15,20 @@
 
 /* $Id$ */
 
+/// \class AliMUONVTrackReconstructor
 ////////////////////////////////////
-//
-// Virtual MUON track reconstructor in ALICE (class renamed from AliMUONEventReconstructor)
-//
-// This class contains as data:
-// * a pointer to the array of hits to be reconstructed (the event)
-// * a pointer to the array of segments made with these hits inside each station
-// * a pointer to the array of reconstructed tracks
-//
-// It contains as methods, among others:
-// * EventReconstruct to build the muon tracks
-// * EventReconstructTrigger to build the trigger tracks
-//
+///
+/// Virtual MUON track reconstructor in ALICE (class renamed from AliMUONEventReconstructor)
+///
+/// This class contains as data:
+/// * a pointer to the array of hits to be reconstructed (the event)
+/// * a pointer to the array of segments made with these hits inside each station
+/// * a pointer to the array of reconstructed tracks
+///
+/// It contains as methods, among others:
+/// * EventReconstruct to build the muon tracks
+/// * EventReconstructTrigger to build the trigger tracks
+///
 ////////////////////////////////////
 
 #include <stdlib.h>
@@ -298,7 +299,7 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(Int_t station)
 void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
 {
   /// Try to match track from tracking system with trigger track
-  static const Double_t distSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
+  static const Double_t kDistSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
   
   AliMUONTrack *track;
   AliMUONTrackParam trackParam; 
@@ -327,9 +328,9 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
   
     triggerTrack = (AliMUONTriggerTrack*) recTriggerTracks->First();
     while(triggerTrack){
-      distTriggerTrack[0] = (triggerTrack->GetX11()-xTrack)/distSigma[0];
-      distTriggerTrack[1] = (triggerTrack->GetY11()-yTrack)/distSigma[1];
-      distTriggerTrack[2] = (TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack)/distSigma[2];
+      distTriggerTrack[0] = (triggerTrack->GetX11()-xTrack)/kDistSigma[0];
+      distTriggerTrack[1] = (triggerTrack->GetY11()-yTrack)/kDistSigma[1];
+      distTriggerTrack[2] = (TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack)/kDistSigma[2];
       chi2 = 0.;
       for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
       chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)

@@ -147,6 +147,8 @@ AliMUONReconstructor::Init(AliRunLoader* runLoader)
 AliMUONClusterReconstructor*
 AliMUONReconstructor::CreateClusterReconstructor(AliMUONData* data) const
 {
+/// Create cluster reconstructor
+
   AliMUONVClusterFinder* clusterFinder(0x0);
   
   TString opt(GetOption());

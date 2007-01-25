@@ -15,16 +15,17 @@
 
 /* $Id$ */
 
-////////////////////////////////////
-//
-// MUON track reconstructor using the kalman method
-//
-// This class contains as data:
-// * the parameters for the track reconstruction
-//
-// It contains as methods, among others:
-// * MakeTracks to build the tracks
-//
+/// \class AliMUONTrackReconstructorK
+/////////////////////////////////////
+///
+/// MUON track reconstructor using the kalman method
+///
+/// This class contains as data:
+/// - the parameters for the track reconstruction
+///
+/// It contains as methods, among others:
+/// - MakeTracks to build the tracks
+///
 ////////////////////////////////////
 
 #include <stdlib.h>
