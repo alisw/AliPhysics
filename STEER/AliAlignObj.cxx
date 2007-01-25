@@ -821,11 +821,11 @@ Bool_t AliAlignObj::GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m)
     nodeStr.Append(str->String());
 
     TGeoMatrix *lm = NULL;
-    if (TGeoPhysicalNode *physNode = (TGeoPhysicalNode *)gGeoManager->GetListOfPhysicalNodes()->FindObject(nodeStr.Data())) {
+    TGeoPhysicalNode *physNode = NULL;
+    if ((physNode = (TGeoPhysicalNode *)gGeoManager->GetListOfPhysicalNodes()->FindObject(nodeStr.Data()))) {
         lm = physNode->GetOriginalMatrix();
 	if (!lm) lm = physNode->GetNode()->GetMatrix();
-    }
-    else {
+    } else {
       gGeoManager->cd(nodeStr.Data());
       TGeoNode *node = gGeoManager->GetCurrentNode();
       lm = node->GetMatrix();
@@ -833,6 +833,7 @@ Bool_t AliAlignObj::GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m)
     m.Multiply(lm);
   }
 
+  pathArr->Delete();
   delete pathArr;
 
   return kTRUE;
