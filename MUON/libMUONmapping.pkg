@@ -5,9 +5,13 @@
 # Category basic
 #
 SRCS +=  \
+         mapping/AliMpPlaneType.cxx \
+         mapping/AliMpStationType.cxx \
+         mapping/AliMpCathodType.cxx \
 	 mapping/AliMpArea.cxx  \
 	 mapping/AliMpConstants.cxx  \
 	 mapping/AliMpExMap.cxx  \
+	 mapping/AliMpArrayI.cxx  \
 	 mapping/AliMpFiles.cxx  \
 	 mapping/AliMpIntPair.cxx  \
 	 mapping/AliMpPad.cxx  \
@@ -78,11 +82,14 @@ SRCS +=  \
 # Category management
 #
 SRCS +=  \
-	 mapping/AliMpBusPatch.cxx  \
-   mapping/AliMpManuGeo.cxx  \
+         mapping/AliMpSegmentation.cxx \
+	 mapping/AliMpDetElement.cxx \
+	 mapping/AliMpDEStore.cxx  \
 	 mapping/AliMpDEIterator.cxx  \
 	 mapping/AliMpDEManager.cxx  \
-	 mapping/AliMpSegmentation.cxx
+         mapping/AliMpBusPatch.cxx \
+         mapping/AliMpDDL.cxx \
+	 mapping/AliMpDDLStore.cxx
 	 
 # Category graphics
 #
@@ -99,6 +106,7 @@ SRCS +=  \
 	 mapping/AliMpZonePainter.cxx  \
 
 HDRS  = $(SRCS:.cxx=.h)
+#HDRS  = $(SRCS:.cxx=.h)
  
 DHDR := MUONmappingLinkDef.h
  

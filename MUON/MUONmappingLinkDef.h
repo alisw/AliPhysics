@@ -3,10 +3,14 @@
 
 // $MpId: basicLinkDefIn.h,v 1.8 2006/01/11 10:09:18 ivana Exp $ 
 
+#pragma link C++ nestedclasses;
+#pragma link C++ nestedtypedef;
+
 #pragma link C++ class  AliMpArea+;
 #pragma link C++ class  AliMpConstants+;
 #pragma link C++ class  AliMpIntPair+;
 #pragma link C++ class  AliMpExMap-;
+#pragma link C++ class  AliMpArrayI+;
 #pragma link C++ class  AliMpStringObjMap+;
 #pragma link C++ class  AliMpPad+;
 #pragma link C++ class  AliMpPadPair+;
@@ -17,10 +21,12 @@
 #pragma link C++ class  AliMpFiles!;
 #pragma link C++ class  AliMpManuList;
 
-#pragma link C++ enum   AliMpDirection;
-#pragma link C++ enum   AliMpXDirection;
-#pragma link C++ enum   AliMpPlaneType;
-#pragma link C++ enum   AliMpStationType;
+#pragma link C++ namespace AliMp;
+#pragma link C++ enum   AliMp::Direction;
+#pragma link C++ enum   AliMp::XDirection;
+#pragma link C++ enum   AliMp::PlaneType;
+#pragma link C++ enum   AliMp::StationType;
+#pragma link C++ enum   AliMp::CathodType;
 
 #pragma link C++ function operator-(const AliMpIntPair& ,const AliMpIntPair& );
 #pragma link C++ function operator+(const AliMpIntPair& ,const AliMpIntPair& );
@@ -98,11 +104,14 @@
 
 // $MpId: managementLinkDefIn.h,v 1.1 2006/01/11 10:24:20 ivana Exp $ 
 
-#pragma link C++ class  AliMpBusPatch+;
-#pragma link C++ class  AliMpManuGeo+;
+#pragma link C++ class  AliMpSegmentation+;
+#pragma link C++ class  AliMpDetElement+;
+#pragma link C++ class  AliMpDEStore+;
 #pragma link C++ class  AliMpDEIterator+;
 #pragma link C++ class  AliMpDEManager+;
-#pragma link C++ class  AliMpSegmentation+;
+#pragma link C++ class  AliMpBusPatch+;
+#pragma link C++ class  AliMpDDL+;
+#pragma link C++ class  AliMpDDLStore+;
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
