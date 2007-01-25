@@ -69,7 +69,6 @@ void draw(const char* fileName = "multiplicityMC.root")
   mult->DrawHistograms();
 }
 
-
 void* fit(const char* fileName = "multiplicityMC.root")
 {
   gSystem->Load("libPWG0base");
@@ -80,6 +79,31 @@ void* fit(const char* fileName = "multiplicityMC.root")
   mult->LoadHistograms("Multiplicity");
 
   mult->ApplyMinuitFit(3, kFALSE);
+  mult->ApplyGaussianMethod(3, kFALSE);
+  mult->ApplyBayesianMethod(3, kFALSE);
+
+  return mult;
+}
+
+void* fitOther(const char* fileNameMC = "multiplicityMC.root", const char* fileNameESD = "multiplicityESD.root")
+{
+  gSystem->Load("libPWG0base");
+
+  AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+
+  TFile::Open(fileNameMC);
+  mult->LoadHistograms("Multiplicity");
+
+  TFile::Open(fileNameESD);
+  TH2F* hist = (TH2F*) gFile->Get("Multiplicity/fMultiplicityESD3");
+  TH2F* hist2 = (TH2F*) gFile->Get("Multiplicity/fMultiplicityMC3");
+
+  mult->SetMultiplicityESD(3, hist);
+  mult->SetMultiplicityMC(3, hist2);
+
+  mult->ApplyMinuitFit(3, kFALSE);
+  mult->ApplyGaussianMethod(3, kFALSE);
+  mult->ApplyBayesianMethod(3, kFALSE);
 
   return mult;
 }
