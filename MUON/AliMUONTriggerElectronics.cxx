@@ -40,6 +40,7 @@
 
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpCathodType.h"
 
 #include "AliLog.h"
 #include "AliLoader.h"
@@ -151,7 +152,8 @@ void AliMUONTriggerElectronics::FeedM()
 	      Int_t cathode    = mdig->Cathode();
 
 	      const AliMpVSegmentation *seg = 
-		AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode);
+		AliMpSegmentation::Instance()
+                  ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
 
 	      Int_t ix = mdig->PadX(), iy = mdig->PadY();
 				

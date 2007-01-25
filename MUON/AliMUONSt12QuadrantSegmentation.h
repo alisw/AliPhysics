@@ -32,8 +32,8 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
 {
   public:
     AliMUONSt12QuadrantSegmentation(AliMpVSegmentation* segmentation,
-                                    AliMpStationType stationType, 
-                                    AliMpPlaneType planeType);
+                                    AliMp::StationType stationType, 
+                                    AliMp::PlaneType planeType);
     AliMUONSt12QuadrantSegmentation();
     
     virtual ~AliMUONSt12QuadrantSegmentation();
@@ -164,8 +164,8 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
 
     // From mapping
     //
-    AliMpStationType         fStationType;       ///< Station type
-    AliMpPlaneType           fPlaneType;         ///< Plane type
+    AliMp::StationType       fStationType;       ///< Station type
+    AliMp::PlaneType         fPlaneType;         ///< Plane type
     const AliMpSector*       fSector;            ///< Sector (from mapping)
     AliMpSectorSegmentation* fSectorSegmentation;///< Sector segmentation (from mapping)
     AliMpVPadIterator*       fSectorIterator;    //!< Iterator over pads

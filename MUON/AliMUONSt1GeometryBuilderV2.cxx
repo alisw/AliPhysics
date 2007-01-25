@@ -499,7 +499,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   specialMap.Add(47, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
 #endif
 
-  AliMpSectorReader reader1(kStation1, kBendingPlane);
+  AliMpSectorReader reader1(AliMp::kStation1, AliMp::kBendingPlane);
   AliMpSector* sector1 = reader1.BuildSector();
 
   //Bool_t reflectZ = true;
@@ -523,7 +523,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 #endif
 
 #ifdef WITH_ROOT
-  Int_t nb = AliMpConstants::ManuMask(kNonBendingPlane);
+  Int_t nb = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
   specialMap.Delete();
   specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
   specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
@@ -536,7 +536,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
       // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
 #endif
 
-  AliMpSectorReader reader2(kStation1, kNonBendingPlane);
+  AliMpSectorReader reader2(AliMp::kStation1, AliMp::kNonBendingPlane);
   AliMpSector* sector2 = reader2.BuildSector();
   
   //reflectZ = false;
@@ -2206,7 +2206,7 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
           AliMpMotifPosition* motifPos = 
             sector->GetMotifMap()->FindMotifPosition(motifPosId);
 	  Int_t copyNo = motifPosId;
-	  if ( sector->GetDirection() == kX) copyNo += fgkDaughterCopyNoOffset;
+	  if ( sector->GetDirection() == AliMp::kX) copyNo += fgkDaughterCopyNoOffset;
   
           // Position
           posX = where.X() + motifPos->Position().X() + fgkOffsetX;
@@ -2248,7 +2248,7 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 
           // Copy number
 	  Int_t copyNo = motifPosId;
-	  if ( sector->GetDirection() == kX) copyNo += fgkDaughterCopyNoOffset;
+	  if ( sector->GetDirection() == AliMp::kX) copyNo += fgkDaughterCopyNoOffset;
 
           // place the hole for the motif, wrt the requested rotation angle
           Int_t rot = ( spMot.GetRotAngle()<0.1 ) ? reflZ:rotMat;

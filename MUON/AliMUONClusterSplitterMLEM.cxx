@@ -24,17 +24,8 @@
 /// \author Laurent Aphecetche (for the "new" C++ structure) and 
 /// Alexander Zinchenko, JINR Dubna, for the hardcore of it ;-)
 
-#include <TClonesArray.h>
-#include <TH2.h>
-#include <TMath.h>
-#include <TMatrixD.h>
-#include <TObjArray.h>
-#include <TROOT.h>
-#include <TRandom.h>
-
 #include "AliMUONClusterSplitterMLEM.h"
 
-#include "AliLog.h"
 #include "AliMUONCluster.h"
 #include "AliMUONPad.h"
 #include "AliMUONPad.h"
@@ -42,6 +33,16 @@
 #include "AliMUONConstants.h"
 #include "AliMpDEManager.h"
 #include "AliMUONMathieson.h"
+
+#include "AliLog.h"
+
+#include <TClonesArray.h>
+#include <TH2.h>
+#include <TMath.h>
+#include <TMatrixD.h>
+#include <TObjArray.h>
+#include <TROOT.h>
+#include <TRandom.h>
 
 ClassImp(AliMUONClusterSplitterMLEM)
 
@@ -60,13 +61,13 @@ fnCoupled(0)
 {
   /// Constructor
   
-  AliMpStationType stationType = AliMpDEManager::GetStationType(fDetElemId);
+  AliMp::StationType stationType = AliMpDEManager::GetStationType(fDetElemId);
   
   Float_t kx3 = AliMUONConstants::SqrtKx3();
   Float_t ky3 = AliMUONConstants::SqrtKy3();
   Float_t pitch = AliMUONConstants::Pitch();
   
-  if ( stationType == kStation1 )
+  if ( stationType == AliMp::kStation1 )
   {
     kx3 = AliMUONConstants::SqrtKx3St1();
     ky3 = AliMUONConstants::SqrtKy3St1();

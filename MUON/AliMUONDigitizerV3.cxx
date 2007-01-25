@@ -16,11 +16,6 @@
 // $Id$
 
 
-#include <Riostream.h>
-#include <TF1.h>
-#include <TMath.h>
-#include <TRandom.h>
-#include <TString.h>
 #include "AliMUONDigitizerV3.h"
 
 #include "AliMUON.h"
@@ -42,12 +37,18 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpDEManager.h"
+#include "AliMpCathodType.h"
 
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "AliLog.h"
 
+#include <Riostream.h>
+#include <TF1.h>
+#include <TMath.h>
+#include <TRandom.h>
+#include <TString.h>
 ///
 /// \class AliMUONDigitizerV3
 /// The digitizer is performing the transformation to go from SDigits (digits
@@ -218,8 +219,8 @@ AliMUONDigitizerV3::ApplyResponseToTriggerDigit(AliMUONDigit& digit,
   AliMpSegmentation* segmentation = AliMpSegmentation::Instance();
   const AliMpVSegmentation* segment[2] = 
   {
-    segmentation->GetMpSegmentation(detElemId,digit.Cathode()), 
-    segmentation->GetMpSegmentation(detElemId,correspondingDigit->Cathode())
+    segmentation->GetMpSegmentation(detElemId,AliMp::GetCathodType(digit.Cathode())), 
+    segmentation->GetMpSegmentation(detElemId,AliMp::GetCathodType(correspondingDigit->Cathode()))
   };
 
   AliMpPad pad[2] = 
@@ -531,7 +532,7 @@ AliMUONDigitizerV3::GenerateNoisyDigits()
     {
       for ( Int_t cathode = 0; cathode < 2; ++cathode )
       {
-        GenerateNoisyDigitsForOneCathode(it.CurrentDE(),cathode);
+        GenerateNoisyDigitsForOneCathode(it.CurrentDEId(),cathode);
       }
       it.Next();
     }
@@ -551,7 +552,7 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cath
   TClonesArray* digits = fOutputData->Digits(chamberId);
   
   const AliMpVSegmentation* seg 
-    = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode);
+    = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
   Int_t nofPads = seg->NofPads();
   
   Int_t maxIx = seg->MaxPadIndexX();

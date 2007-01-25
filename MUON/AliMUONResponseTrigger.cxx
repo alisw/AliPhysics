@@ -32,6 +32,7 @@
 #include "AliMUONConstants.h"
 
 #include "AliMpPad.h"
+#include "AliMpCathodType.h"
 #include "AliMpPlaneType.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
@@ -108,10 +109,11 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
     twentyNano=1;
   }
   
-  for ( Int_t cath = 0; cath < 2; ++cath )
+  for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
   {
     const AliMpVSegmentation* seg 
-      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cath);
+      = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
     
     AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
     Int_t ix = pad.GetIndices().GetFirst();

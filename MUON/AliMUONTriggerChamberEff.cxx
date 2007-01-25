@@ -272,11 +272,12 @@ Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t cha
     const AliMUONGeometryTransformer *kGeomTransformer = fMUON->GetGeometryTransformer();
     AliMUONSegmentation *segmentation = fMUON->GetSegmentation();
     for ( it.First(chamber-1); ! it.IsDone(); it.Next() ){
-	Int_t detElemId = it.CurrentDE();
+	Int_t detElemId = it.CurrentDEId();
 
 	if (  segmentation->HasDE(detElemId) ){
 	    const AliMpVSegmentation* seg = 
-		AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode);
+		AliMpSegmentation::Instance()
+                  ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
 	    if (seg){
 		Float_t deltax = seg->Dimensions().X();
 		Float_t deltay = seg->Dimensions().Y();
@@ -326,7 +327,8 @@ void AliMUONTriggerChamberEff::LocalBoardFromPos(Float_t x, Float_t y, Int_t det
     kGeomTransformer->Global2Local(detElemId, x, y, 0, xl, yl, zl);
     TVector2 pos(xl,yl);
     const AliMpVSegmentation* seg = 
-	AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode);
+	AliMpSegmentation::Instance()
+          ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
     if (seg){
 	AliMpPad pad = seg->PadByPosition(pos,kFALSE);
 	for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
@@ -536,8 +538,8 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 		    if(detElOfDigitsInData[idigit][ch][cathode]==-1)detElOfDigitsInData[idigit][ch][cathode] = detElemId;
 
 		    if(fDebugLevel>=2)printf("cathode = %i\n",cathode);
-		    const AliMpVSegmentation* seg = 
-			AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode);
+		    const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
+                      ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
 
 		    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
 		    for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){

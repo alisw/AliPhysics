@@ -133,13 +133,13 @@ AliMUONClusterFinderSimpleFit::Prepare(const AliMpVSegmentation* segmentations[2
     return kFALSE;
   }
   
-  AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
+  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
   
   Float_t kx3 = AliMUONConstants::SqrtKx3();
   Float_t ky3 = AliMUONConstants::SqrtKy3();
   Float_t pitch = AliMUONConstants::Pitch();
   
-  if ( stationType == kStation1 )
+  if ( stationType == AliMp::kStation1 )
   {
     kx3 = AliMUONConstants::SqrtKx3St1();
     ky3 = AliMUONConstants::SqrtKy3St1();

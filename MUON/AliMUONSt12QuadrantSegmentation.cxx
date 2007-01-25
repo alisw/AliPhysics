@@ -22,14 +22,8 @@
 // the mapping package
 // Author: Ivana Hrivnacova, IPN Orsay
  
-#include <TError.h>
-#include <TF1.h>
-#include <TMath.h>
-#include <TObjArray.h>
-#include <TVector2.h>
-#include <TSystem.h>
-
-#include "AliLog.h"
+#include "AliMUONSt12QuadrantSegmentation.h"
+#include "AliMUONConstants.h"
 
 #include "AliMpPad.h"
 #include "AliMpArea.h"
@@ -40,8 +34,14 @@
 #include "AliMpFiles.h"
 #include "AliMpNeighboursPadIterator.h"
 
-#include "AliMUONSt12QuadrantSegmentation.h"
-#include "AliMUONConstants.h"
+#include "AliLog.h"
+
+#include <TError.h>
+#include <TF1.h>
+#include <TMath.h>
+#include <TObjArray.h>
+#include <TVector2.h>
+#include <TSystem.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONSt12QuadrantSegmentation)
@@ -50,8 +50,8 @@ ClassImp(AliMUONSt12QuadrantSegmentation)
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
                                        AliMpVSegmentation* segmentation,
-                                       AliMpStationType stationType,
-				       AliMpPlaneType planeType) 
+                                       AliMp::StationType stationType,
+				       AliMp::PlaneType planeType) 
 : AliMUONVGeometryDESegmentation(),
   fStationType(stationType),
   fPlaneType(planeType),
@@ -87,9 +87,9 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
     AliFatal("Wrong mapping segmentation type");
     
   // Anod pitch
-  if ( stationType == kStation1 )  
+  if ( stationType == AliMp::kStation1 )  
     fWireD = AliMUONConstants::PitchSt1();
-  else if ( stationType == kStation2 )   
+  else if ( stationType == AliMp::kStation2 )   
     fWireD = AliMUONConstants::Pitch();
   else  
     AliFatal("Wrong station type");
@@ -105,8 +105,8 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation() 
 : AliMUONVGeometryDESegmentation(),
-  fStationType(kStation1),
-  fPlaneType(kBendingPlane),
+  fStationType(AliMp::kStation1),
+  fPlaneType(AliMp::kBendingPlane),
   fSector(0),
   fSectorSegmentation(0),
   fSectorIterator(0),
@@ -215,8 +215,8 @@ AliMUONGeometryDirection  AliMUONSt12QuadrantSegmentation::GetDirection()
 /// (Direction or coordinate where the resolution is the best)
 
   switch ( fSector->GetDirection() ) {
-    case kX: return kDirX;
-    case kY: return kDirY;
+    case AliMp::kX: return kDirX;
+    case AliMp::kY: return kDirY;
     default: return kDirUndefined;
   }  
 }  

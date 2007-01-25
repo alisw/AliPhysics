@@ -36,6 +36,7 @@
 #include "AliMUONCluster.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
+#include "AliMpCathodType.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliLog.h"
 
@@ -80,10 +81,13 @@ AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 void
 AliMUONClusterReconstructor::ClusterizeOneDEV2(Int_t detElemId)
 {
+/// Clusterize one detection element, and let fMUONData know about
+/// the results.
+
   AliDebug(1,Form("DE %d",detElemId));
   const AliMpVSegmentation* seg[2] = 
-  { AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,0),
-    AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,1)
+  { AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0),
+    AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath1)
   };
   
   

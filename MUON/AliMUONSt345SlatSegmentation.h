@@ -33,7 +33,7 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
   AliMUONSt345SlatSegmentation();
   AliMUONSt345SlatSegmentation(AliMpVSegmentation* segmentation,
                                  Int_t detElemId,
-				 AliMpPlaneType bendingOrNonBending);
+				 AliMp::PlaneType bendingOrNonBending);
   virtual ~AliMUONSt345SlatSegmentation();
 
   void FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, 
@@ -129,7 +129,7 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
  private:
 
   Int_t fDetElemId;                ///< det element Id
-	AliMpPlaneType fPlaneType; ///< plane type
+	AliMp::PlaneType fPlaneType; ///< plane type
   const AliMpSlat* fSlat;          ///< slat
   AliMpSlatSegmentation* fSlatSegmentation; ///< slat segmentation
   AliMpVPadIterator* fPadIterator; //!< pad iterator

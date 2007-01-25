@@ -35,6 +35,7 @@
 #include "AliMpVPadIterator.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpCathodType.h"
 
 #include "AliRun.h"
 #include "AliLog.h"
@@ -200,13 +201,14 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
   // Get the charge correlation between cathodes.
   Float_t currentCorrel = TMath::Exp(gRandom->Gaus(0.0,ChargeCorrel()/2.0));
 
-  for ( Int_t cath = 0; cath < 2; ++cath )
+  for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
   {
     Float_t qcath = qtot * ( cath == 0 ? currentCorrel : 1.0/currentCorrel);
     
     // Get an iterator to loop over pads, within the given area.
     const AliMpVSegmentation* seg = 
-        AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cath);
+        AliMpSegmentation::Instance()
+          ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
       
     AliMpVPadIterator* it = seg->CreateIterator(area);
       

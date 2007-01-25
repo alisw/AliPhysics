@@ -61,7 +61,7 @@ namespace
 AliMUONTriggerSegmentation::AliMUONTriggerSegmentation() 
 : AliMUONVGeometryDESegmentation(),
   fDetElemId(-1),
-  fPlaneType(kNonBendingPlane),
+  fPlaneType(AliMp::kBendingPlane),
   fSlat(0),
   fSlatSegmentation(0),
   fCurrentPad(),
@@ -77,7 +77,7 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation()
 //_____________________________________________________________________________
 AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(
                                    AliMpVSegmentation* segmentation,
-                                   Int_t detElemId, AliMpPlaneType bendingOrNonBending)
+                                   Int_t detElemId, AliMp::PlaneType bendingOrNonBending)
     : AliMUONVGeometryDESegmentation(),
       fDetElemId(detElemId),
       fPlaneType(bendingOrNonBending),
@@ -105,7 +105,7 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(
   fLineNumber = TString(id(pos+1),1).Atoi();
 		
   AliDebug(1,Form("this=%p detElemId=%3d %s fSlatSegmentation=%p",this,detElemId,
-									( (bendingOrNonBending==kBendingPlane)?"Bending":"NonBending" ),
+									( (bendingOrNonBending==AliMp::kBendingPlane)?"Bending":"NonBending" ),
 									fSlatSegmentation));
 }
 
@@ -313,12 +313,12 @@ AliMUONTriggerSegmentation::GetPadLoc2Glo(Int_t ix, Int_t iy,
 
   ixGlo=iyGlo=-1; // starts with invalid values
   
-  if ( fPlaneType == kBendingPlane )
+  if ( fPlaneType == AliMp::kBendingPlane )
   {
     ixGlo = 10*LineNumber() + ix;
     iyGlo = iy - fgIntOffset;
   }
-  else if ( fPlaneType == kNonBendingPlane )
+  else if ( fPlaneType == AliMp::kNonBendingPlane )
   {
     Int_t i = fSlat->GetLayer(0)->FindPCBIndex(ix-fgIntOffset);
     if (i<0)
@@ -346,12 +346,12 @@ AliMUONTriggerSegmentation::GetPadGlo2Loc(Int_t ixGlo, Int_t iyGlo,
   
   Int_t column = ModuleColNum(ixGlo);
 
-  if ( fPlaneType == kBendingPlane )
+  if ( fPlaneType == AliMp::kBendingPlane )
   {
     ix = column + fgIntOffset;
     iy = iyGlo + fgIntOffset;
   }
-  else if ( fPlaneType == kNonBendingPlane )
+  else if ( fPlaneType == AliMp::kNonBendingPlane )
   {
     if ( LineNumber()==5 ) --column;
     AliMpPCB* pcb = fSlat->GetLayer(0)->GetPCB(column);
@@ -474,13 +474,13 @@ void AliMUONTriggerSegmentation::IntegrationLimits(Float_t& x1,
     Double_t ystrip = strip.Position().Y();
     AliDebug(1,Form("fXhit,Yhit=%e,%e xstrip,ystrip=%e,%e\n",
                     fXhit,fYhit,xstrip,ystrip));
-    x1 = (fPlaneType==kBendingPlane) ? fYhit : fXhit;
-    x2 = (fPlaneType==kBendingPlane) ? ystrip : xstrip;
-    x3 = (fPlaneType==kBendingPlane) ? 
+    x1 = (fPlaneType==AliMp::kBendingPlane) ? fYhit : fXhit;
+    x2 = (fPlaneType==AliMp::kBendingPlane) ? ystrip : xstrip;
+    x3 = (fPlaneType==AliMp::kBendingPlane) ? 
       fCurrentPad.Position().Y() : fCurrentPad.Position().X();
     Double_t xmin = 0.0;
     Double_t xmax = 0.0;
-    if (fPlaneType==kBendingPlane)
+    if (fPlaneType==AliMp::kBendingPlane)
     {
       xmin = x3 - fCurrentPad.Dimensions().X();
       xmax = x3 + fCurrentPad.Dimensions().X();
@@ -549,7 +549,7 @@ AliMUONTriggerSegmentation::LA2PC(Int_t ixLA, Int_t iyLA,
   ixPC = ixLA + 1;
   iyPC = iyLA + 1;
   
-  if ( fPlaneType == kBendingPlane )
+  if ( fPlaneType == AliMp::kBendingPlane )
   {
     if ( LineNumber()==5 )
     {
@@ -670,7 +670,7 @@ AliMUONTriggerSegmentation::PC2LA(Int_t ixPC, Int_t iyPC,
   ixLA = ixPC - 1;
   iyLA = iyPC - 1;
   
-  if ( fPlaneType == kBendingPlane )
+  if ( fPlaneType == AliMp::kBendingPlane )
   {
     if ( LineNumber()==5 )
     {

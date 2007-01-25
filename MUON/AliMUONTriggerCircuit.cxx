@@ -35,6 +35,7 @@
 #include "AliMpPCB.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpCathodType.h"
 
 #include "AliRun.h"
 #include "AliLog.h"
@@ -145,7 +146,8 @@ void AliMUONTriggerCircuit::LoadYPos(const AliMUONTriggerCrateStore& crates)
   DecodeBoardName(localBoard->GetName(),side,iline,icol);
   
   Int_t detElemId = DetElemId(ichamber,side,iline);
-  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId, AliMp::GetCathodType(icathode));  
 
   Int_t iFirstStrip = FirstStrip(localBoard->GetName());
   Int_t iLastStrip = iFirstStrip + 16;    
@@ -157,7 +159,8 @@ void AliMUONTriggerCircuit::LoadYPos(const AliMUONTriggerCrateStore& crates)
   ichamber = 12;
   
   detElemId = DetElemId(ichamber,side,iline);
-  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId, AliMp::GetCathodType(icathode));  
 
   // second plane middle part
   Int_t iFirstStripMiddle = FirstStrip(localBoard->GetName());
@@ -179,7 +182,8 @@ void AliMUONTriggerCircuit::LoadYPos(const AliMUONTriggerCrateStore& crates)
       //	    icolUp = icol;
     } else {             // upper strips in another detElemId
       detElemId = DetElemId(ichamber,side,iline+1); // get detElemId
-      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
+      seg = AliMpSegmentation::Instance()
+            ->GetMpSegmentation(detElemId, AliMp::GetCathodType(icathode));  
 
       iFirstStripUp = 0;
       iLastStripUp = iFirstStripUp + 8;
@@ -197,7 +201,8 @@ void AliMUONTriggerCircuit::LoadYPos(const AliMUONTriggerCrateStore& crates)
   
   // restore current detElemId & segmentation
   detElemId = DetElemId(ichamber,side,iline); 
-  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId, AliMp::GetCathodType(icathode));  
 
   // second plane lower part
   if (zeroDown == 0) { // something down
@@ -213,7 +218,8 @@ void AliMUONTriggerCircuit::LoadYPos(const AliMUONTriggerCrateStore& crates)
       //	    icolDo = icol;
     } else {             // lower strips in another detElemId 
       detElemId = DetElemId(ichamber,side,iline-1); // get detElemId
-      seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
+      seg = AliMpSegmentation::Instance()
+            ->GetMpSegmentation(detElemId, AliMp::GetCathodType(icathode));  
 
       // get iFirstStrip in this module 
       const AliMpTriggerSegmentation* trig = (AliMpTriggerSegmentation*)(seg);
@@ -273,7 +279,8 @@ void AliMUONTriggerCircuit::LoadXPos(const AliMUONTriggerCrateStore& crates)
   DecodeBoardName(localBoard->GetName(),side,iline,icol);
   
   Int_t detElemId=DetElemId(ichamber,side,iline); // get detElemId
-  seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, icathode);  
+  seg = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId, AliMp::GetCathodType(icathode));  
 
   // check if one needs a strip doubling or not
   if ( (x2u == 1 || x2m == 1 || x2d == 1) && x2m == 1) doubling = kTRUE;

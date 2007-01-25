@@ -50,7 +50,7 @@ namespace
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
 : AliMUONVGeometryDESegmentation(),
 fDetElemId(-1),
-fPlaneType(kBendingPlane),
+fPlaneType(AliMp::kBendingPlane),
 fSlat(0),
 fSlatSegmentation(0),
 fPadIterator(0),
@@ -66,7 +66,7 @@ fYhit(FMAX)
 //_____________________________________________________________________________
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(
                                    AliMpVSegmentation* segmentation,
-                                   Int_t detElemId, AliMpPlaneType bendingOrNonBending)
+                                   Int_t detElemId, AliMp::PlaneType bendingOrNonBending)
 : AliMUONVGeometryDESegmentation(),
 fDetElemId(detElemId),
 fPlaneType(bendingOrNonBending),
@@ -86,7 +86,7 @@ fYhit(FMAX)
     AliFatal("Wrong mapping segmentation type");
 		
   AliDebug(1,Form("this=%p detElemId=%3d %s fSlatSegmentation=%p",this,detElemId,
-									( (bendingOrNonBending==kBendingPlane)?"Bending":"NonBending" ),
+									( (bendingOrNonBending==AliMp::kBendingPlane)?"Bending":"NonBending" ),
 									fSlatSegmentation));
 }
 

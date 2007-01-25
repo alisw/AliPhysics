@@ -36,6 +36,7 @@
 #define ALI_MUON_SEG_FACTORY_H
 
 #include "AliMpStringObjMap.h"
+#include "AliMpCathodType.h"
 
 #include <TObject.h>
 
@@ -74,11 +75,11 @@ class AliMUONSegFactory : public  TObject {
 
   private:
     AliMUONVGeometryDESegmentation*  
-      CreateDESegmentation(Int_t detElemId, Int_t cath);
+      CreateDESegmentation(Int_t detElemId, AliMp::CathodType cath);
               // Create DE segmentation, operating in local reference frame
     
     void
-      CreateModuleSegmentations(Int_t chamberId, Int_t cath); 
+      CreateModuleSegmentations(Int_t chamberId, AliMp::CathodType cath); 
               // Create module segmentation(s) for a given chamber, operating 
 	      // in global reference frame
 

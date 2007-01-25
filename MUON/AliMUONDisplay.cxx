@@ -89,6 +89,7 @@
 #include "AliMpTriggerSegmentation.h"
 #include "AliMpTrigger.h"
 #include "AliMpStationType.h"
+#include "AliMpCathodType.h"
 #include "AliMpDEManager.h"
 
 #include "AliMC.h"
@@ -810,9 +811,9 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     AliMpDEIterator it;
     for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) {
       
-      Int_t detElemId = it.CurrentDE();
+      Int_t detElemId = it.CurrentDEId();
       AliMpSectorSegmentation * seg =   
-        (AliMpSectorSegmentation *) AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, 0);
+        (AliMpSectorSegmentation *) AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::kCath0);
       const AliMpSector * sector = seg->GetSector();
       
       // get sector measurements
@@ -850,13 +851,13 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     AliMpDEIterator it;
     for ( it.First(fChamber-1); ! it.IsDone(); it.Next() ) 
     {
-      Int_t detElemId = it.CurrentDE();
-      AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
+      Int_t detElemId = it.CurrentDEId();
+      AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
 
       if (  segmentation->HasDE(detElemId) ) 
       {
         const AliMpVSegmentation* seg 
-	  = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, 0);
+	  = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::kCath0);
         if (seg) 
         {  
           Float_t deltax = seg->Dimensions().X();
@@ -875,10 +876,10 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
           TMarker3DBox* box = new TMarker3DBox(xCenter,yCenter,0,xlocal1,ylocal2,0,0,0);
           
           box->SetFillStyle(0);
-          box->SetLineColor( stationType == kStationTrigger ? 4 : 2);
+          box->SetLineColor( stationType == AliMp::kStationTrigger ? 4 : 2);
           box->Draw("s");
           
-          if ( stationType == kStation345 )
+          if ( stationType == AliMp::kStation345 )
           {
             // drawing inner circle + disc
             TPolyLine3D* poly  = new  TPolyLine3D();
@@ -1061,7 +1062,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     }
     
     Int_t ndigits = muonDigits->GetEntriesFast();    
-    if (ndigits == 0) return;
+    if (ndigits == 0) return;	
     if (fPoints == 0) fPoints = new TObjArray(ndigits);
     
     Float_t zpos = AliMUONConstants::DefaultChamberZ(chamber-1);
@@ -1175,7 +1176,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	    if (color > 282) color = 282;
 	    
 	    const AliMpVSegmentation* seg = 
-		AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode-1);
+              AliMpSegmentation::Instance()
+                ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode-1));
 	    
 	    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
 	    

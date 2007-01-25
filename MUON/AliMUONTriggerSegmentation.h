@@ -33,7 +33,7 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
 
   AliMUONTriggerSegmentation();
   AliMUONTriggerSegmentation(AliMpVSegmentation* segmentation,
-                               Int_t detElemId, AliMpPlaneType bendingOrNonBending);
+                               Int_t detElemId, AliMp::PlaneType bendingOrNonBending);
   virtual ~AliMUONTriggerSegmentation();
       
   /// Distance between 1 pad and a position
@@ -123,7 +123,7 @@ protected:
 
 private:
     Int_t fDetElemId;          ///< det elem Id
-    AliMpPlaneType fPlaneType; ///< plane type
+    AliMp::PlaneType fPlaneType; ///< plane type
     const AliMpTrigger* fSlat; ///< slat
     AliMpTriggerSegmentation* fSlatSegmentation; ///< mapping segmentation
 //    AliMpVPadIterator* fPadIterator; //!

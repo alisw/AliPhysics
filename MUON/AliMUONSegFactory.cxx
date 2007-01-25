@@ -38,6 +38,8 @@
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
 #include "AliMpSegmentation.h"
+#include "AliMpDetElement.h"
+#include "AliMpCathodType.h"
 
 #include "AliLog.h"
 
@@ -109,7 +111,7 @@ Bool_t AliMUONSegFactory::IsGeometryDefined(Int_t ichamberId)
 
   AliMpDEIterator it;
   it.First(ichamberId);
-  Int_t firstDE = it.CurrentDE(); 
+  Int_t firstDE = it.CurrentDEId(); 
   
   if ( ! fkTransformer ||
        ! fkTransformer->GetModuleTransformerByDEId(firstDE, false) )
@@ -136,12 +138,12 @@ AliMUONSegmentation* AliMUONSegFactory::Segmentation()
 
 //______________________________________________________________________________
 AliMUONVGeometryDESegmentation*  
-AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
+AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, AliMp::CathodType cath)
 { 
 /// Create DE segmentation, operating in local DE reference frame
 
   // Check detElemId & cath  
-  if ( ! AliMpDEManager::IsValid(detElemId, cath, true) ) return 0;
+  if ( ! AliMpDEManager::IsValidDetElemId(detElemId, true) ) return 0;
   
   // Check if transformer is defined
   if ( ! fkTransformer) {
@@ -172,8 +174,9 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
   // Get DE segmentation for this DE type, create it if it does not exist 
   // 
   AliMUONVGeometryDESegmentation* deSegmentation = 0;
-  TString deName = AliMpDEManager::GetDESegName(detElemId, cath);
-  TObject* objSegmentation = fDESegmentations.Get(deName);
+  AliMpDetElement* detElement = AliMpDEManager::GetDetElement(detElemId);
+  TString deSegName = detElement->GetSegName(cath);
+  TObject* objSegmentation = fDESegmentations.Get(deSegName);
   if ( objSegmentation ) 
     deSegmentation = (AliMUONVGeometryDESegmentation*)objSegmentation;  
     
@@ -187,13 +190,13 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
     AliMpVSegmentation* mpSegmentation 
       = const_cast<AliMpVSegmentation*>(kmpSegmentation);
 
-    AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
-    AliMpPlaneType planeType = AliMpDEManager::GetPlaneType(detElemId, cath);
+    AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+    AliMp::PlaneType planeType = AliMpDEManager::GetPlaneType(detElemId, cath);
     
     switch (stationType) {
 
-      case kStation1:
-      case kStation2:
+      case AliMp::kStation1:
+      case AliMp::kStation2:
         deSegmentation = new AliMUONSt12QuadrantSegmentation(
 	                         mpSegmentation, stationType, planeType);
         //cout << "   new AliMUONSt12QuadrantSegmentation "
@@ -203,7 +206,7 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
 	      				  
         break;
         
-      case kStation345:  	          
+      case AliMp::kStation345:  	          
         deSegmentation = new AliMUONSt345SlatSegmentation(
 	                         mpSegmentation, detElemId, planeType); 
         //cout << "   new AliMUONSt345SlatSegmentationV2 "			  
@@ -212,7 +215,7 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
 	//     << deName << endl;				  
         break;
     
-      case kStationTrigger:  	          
+      case AliMp::kStationTrigger:  	          
         deSegmentation = new AliMUONTriggerSegmentation(
 	                         mpSegmentation, detElemId, planeType); 
         //cout << "   new AliMUONTriggerSegmentation "			  
@@ -223,13 +226,13 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
     }
     
     // Map new DE segmentation
-    fDESegmentations.Add(deName, deSegmentation);
+    fDESegmentations.Add(deSegName, deSegmentation);
     Segmentation()->AddDESegmentation(deSegmentation);
   }
   
   // Add  DE segmentation to module
   //
-  moduleSegmentation->Add(detElemId, deName, deSegmentation);  
+  moduleSegmentation->Add(detElemId, deSegName, deSegmentation);  
   
   return deSegmentation;
 }        
@@ -237,18 +240,17 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
 
 //______________________________________________________________________________
 void
-AliMUONSegFactory::CreateModuleSegmentations(Int_t chamberId, Int_t cath)
+AliMUONSegFactory::CreateModuleSegmentations(Int_t chamberId, AliMp::CathodType cath)
 { 
 /// Create module segmentation(s), operating in the global reference frame
 /// Detection elements are defined via DE names map.
 
-  // Check cathod & module Id 
-  if ( ! AliMpDEManager::IsValidCathod(cath, true) || 
-       ! AliMpDEManager::IsValidChamberId(chamberId, true) ) return;
+  // Check module Id 
+  if ( ! AliMpDEManager::IsValidChamberId(chamberId, true) ) return;
 
   AliMpDEIterator it;
   for ( it.First(chamberId); ! it.IsDone(); it.Next() )
-    CreateDESegmentation(it.CurrentDE(), cath);
+    CreateDESegmentation(it.CurrentDEId(), cath);
 }  
     
 //______________________________________________________________________________
@@ -258,9 +260,9 @@ AliMUONSegFactory::CreateSegmentation()
 /// Create segmentations on all levels and return their container.
 
   for (Int_t chamberId = 0; chamberId<AliMUONConstants::NCh(); chamberId++)
-    for (Int_t cath = 0; cath < 2; cath++) {
+    for (Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; cath++) {
       if ( IsGeometryDefined(chamberId) )
-        CreateModuleSegmentations( chamberId, cath);
+        CreateModuleSegmentations( chamberId, AliMp::GetCathodType(cath));
   }
 
   return Segmentation();
