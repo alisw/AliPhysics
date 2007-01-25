@@ -14,7 +14,6 @@
 #define ALI_MP_V_ROW_SEGMENT_H
 
 #include "AliMpVIndexed.h"
-#include "AliMpDirection.h"
 
 #include <TVector2.h>
 
