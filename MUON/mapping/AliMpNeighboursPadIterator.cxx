@@ -29,6 +29,8 @@
 #include "AliMpRow.h"
 #include "AliMpConstants.h"
 
+#include "AliLog.h"
+
 #include <TVector2.h>
 
 /// \cond CLASSIMP

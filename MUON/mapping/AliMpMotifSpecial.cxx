@@ -29,6 +29,8 @@
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
 
+#include "AliLog.h"
+
 #include <TString.h>
 
 /// \cond CLASSIMP

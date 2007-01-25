@@ -28,6 +28,8 @@
 #include "AliMpSectorSegmentation.h"
 #include "AliMpConstants.h"
 
+#include "AliLog.h"
+
 #include <Riostream.h>
 
 /// \cond CLASSIMP

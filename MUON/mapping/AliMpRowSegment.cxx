@@ -33,6 +33,8 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpConstants.h"
 
+#include "AliLog.h"
+
 #include <TMath.h>
 #include <Riostream.h>
 
