@@ -21,13 +21,6 @@
 /// efficiencyCells.dat with the calculated efficiencies
 /// Author: Diego Stocco (Torino)
 
-#include <fstream>
-
-#include <TFile.h>
-#include <TH1F.h>
-#include <TMath.h>
-#include <TString.h>
-
 #include "AliMUONTriggerChamberEff.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
@@ -37,14 +30,24 @@
 #include "AliMUON.h"
 #include "AliMUONData.h"
 #include "AliMUONTriggerTrack.h"
+
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpPad.h"
 #include "AliMpDEIterator.h"
+#include "AliMpPlaneType.h"
+
 #include "AliRunLoader.h"
 #include "AliRun.h"
 
+#include <Riostream.h>
+#include <TFile.h>
+#include <TH1F.h>
+#include <TMath.h>
+
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerChamberEff)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(const char* galiceFile, 
@@ -100,6 +103,10 @@ AliMUONTriggerChamberEff::~AliMUONTriggerChamberEff()
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::SetGaliceFile(const char *galiceFile)
 {
+    //
+    /// Opens the galice.root and loads tracks and digits.
+    //
+
     fRunLoader = AliRunLoader::Open(galiceFile,"MUONFolder","READ");
     if (!fRunLoader) 
     {
@@ -132,13 +139,22 @@ void AliMUONTriggerChamberEff::SetGaliceFile(const char *galiceFile)
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::CleanGalice()
 {
+    //
+    /// Unload all loaded data
+    //
+    
     fRunLoader->UnloadAll();
     delete fRunLoader;
+    fRunLoader = 0;
 }
 
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::ResetArrays()
 {
+    //
+    /// Sets the data member counters to 0.
+    //
+
     for(Int_t ch=0; ch<fgkNchambers; ch++){
 	for(Int_t cath=0; cath<fgkNcathodes; cath++){
 	    fTrigger34[ch][cath] = 0;
@@ -155,6 +171,10 @@ void AliMUONTriggerChamberEff::ResetArrays()
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::InfoDigit()
 {
+    //
+    /// Prints information on digits (for debugging)
+    //
+
     AliMUONDigit * mDigit=0x0;
     Int_t firstTrigCh = AliMUONConstants::NTrackingCh();
     // Addressing
@@ -180,6 +200,10 @@ void AliMUONTriggerChamberEff::InfoDigit()
 Bool_t AliMUONTriggerChamberEff::PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy, 
 					       Float_t xTrackAtPad, Float_t yTrackAtPad, Int_t chamber)
 {
+    //
+    /// Decides if the digit belongs to the trigger track.
+    //
+
     Float_t numOfHalfWidth = 5.;
     Bool_t match = kFALSE;
     Float_t maxDistX = dpx;
@@ -196,8 +220,14 @@ Bool_t AliMUONTriggerChamberEff::PadMatchTrack(Float_t xPad, Float_t yPad, Float
 
 
 //_____________________________________________________________________________
-Bool_t AliMUONTriggerChamberEff::IsDiffLocalBoard(Int_t currDetElemId, Int_t iy, Int_t detElemIdP1, Int_t iyDigitP1)
+Bool_t AliMUONTriggerChamberEff::IsDiffLocalBoard(Int_t currDetElemId, Int_t iy, Int_t detElemIdP1, Int_t iyDigitP1) const
 {
+    //
+    /// Determins if the digits belong to the same local board.
+    /// Used only if one wants to reproduce the trigger algorithm result.
+    /// (fReproduceTrigResponse = kTRUE).
+    //
+
     Bool_t isDiff = kTRUE;
     if(detElemIdP1<0 || iyDigitP1<0)return kFALSE;
     Int_t currSlat = currDetElemId%100;
@@ -213,6 +243,10 @@ Bool_t AliMUONTriggerChamberEff::IsDiffLocalBoard(Int_t currDetElemId, Int_t iy,
 void AliMUONTriggerChamberEff::CalculateEfficiency(Int_t trigger44, Int_t trigger34,
 						   Float_t &efficiency, Float_t &error, Bool_t failuresAsInput)
 {
+    //
+    /// Returns the efficiency.
+    //
+
     efficiency=-9.;
     error=0.;
     if(trigger34>0){
@@ -228,6 +262,11 @@ void AliMUONTriggerChamberEff::CalculateEfficiency(Int_t trigger44, Int_t trigge
 //_____________________________________________________________________________
 Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t chamber, Int_t cathode)
 {
+    //
+    /// Given the (x,y) position in the chamber,
+    /// it returns the corresponding slat
+    //
+
     Int_t resultingDetElemId = -1;
     AliMpDEIterator it;
     const AliMUONGeometryTransformer *kGeomTransformer = fMUON->GetGeometryTransformer();
@@ -274,6 +313,11 @@ Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t cha
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId, Int_t cathode, Int_t localBoard[4])
 {
+    //
+    /// Given the (x,y) position in the chamber,
+    /// it returns the corresponding local board
+    //
+
     for(Int_t loc=0; loc<4; loc++){
 	localBoard[loc]=-1;
     }
@@ -296,6 +340,9 @@ void AliMUONTriggerChamberEff::LocalBoardFromPos(Float_t x, Float_t y, Int_t det
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::PrintTrigger(AliMUONGlobalTrigger *globalTrig)
 {
+    //
+    /// Print trigger response.
+    //
 
     printf("===================================================\n");
     printf(" Global Trigger output\t \tLow pt\tHigh pt\n");
@@ -320,7 +367,15 @@ void AliMUONTriggerChamberEff::PrintTrigger(AliMUONGlobalTrigger *globalTrig)
 
 void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 {
-    enum {bending, nonBending, numOfCathodes};
+    //
+    /// Main method.
+    /// It loops over the the trigger rec. tracks in the event.
+    /// Then it search for matching digits around the track.
+    /// Finally it calculates the efficiency for each trigger board.
+    /// Files with calculated efficiency are placed in the user defined outputDir.
+    //
+
+    enum {kBending, kNonBending};
     Int_t evtBeforePrint = 1000;
     Float_t rad2deg = 180./TMath::Pi();
 
@@ -331,7 +386,7 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 
     Bool_t match[fgkNchambers][fgkNcathodes] = {{kFALSE}};
 
-    TClonesArray *RecTrigTracks = 0x0;
+    TClonesArray *recTrigTracksArray = 0x0;
     AliMUONTriggerTrack *recTrigTrack = 0x0;
     AliMUONDigit * mDigit = 0x0;
 
@@ -353,16 +408,16 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
     Int_t slatInPlane1[2][fgkNcathodes];
     Int_t iyDigitInPlane1[2][fgkNcathodes];
 
-    const Int_t maxNumOfTracks = 10;
-    Int_t trigScheme[maxNumOfTracks][fgkNchambers][fgkNcathodes]={{{0}}};
-    Int_t triggeredDigits[maxNumOfTracks][fgkNchambers][fgkNcathodes] = {{{-1}}};
-    Int_t slatThatTriggered[maxNumOfTracks][fgkNchambers][fgkNcathodes]={{{-1}}};
-    Int_t boardThatTriggered[maxNumOfTracks][fgkNchambers][fgkNcathodes][4]={{{{-1}}}};
+    const Int_t kMaxNumOfTracks = 10;
+    Int_t trigScheme[kMaxNumOfTracks][fgkNchambers][fgkNcathodes]={{{0}}};
+    Int_t triggeredDigits[kMaxNumOfTracks][fgkNchambers][fgkNcathodes] = {{{-1}}};
+    Int_t slatThatTriggered[kMaxNumOfTracks][fgkNchambers][fgkNcathodes]={{{-1}}};
+    Int_t boardThatTriggered[kMaxNumOfTracks][fgkNchambers][fgkNcathodes][4]={{{{-1}}}};
     Int_t nboard[4]={-1};
     Int_t ineffBoard[4]={-1};
 
-    const Int_t maxNumOfDigits = 20;
-    Int_t detElOfDigitsInData[maxNumOfDigits][fgkNchambers][fgkNcathodes] = {{{-1}}};
+    const Int_t kMaxNumOfDigits = 20;
+    Int_t detElOfDigitsInData[kMaxNumOfDigits][fgkNchambers][fgkNcathodes] = {{{-1}}};
 
     char filename[150];
     FileStat_t fs;
@@ -389,14 +444,14 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
 		partNumOfTrig[ch][cath]=0;
 		match[ch][cath]=kFALSE;
-		for(Int_t itrack=0; itrack<maxNumOfTracks; itrack++){
+		for(Int_t itrack=0; itrack<kMaxNumOfTracks; itrack++){
 		    triggeredDigits[itrack][ch][cath]=-1;
 		    slatThatTriggered[itrack][ch][cath]=-1;
 		    for(Int_t loc=0; loc<4; loc++){
 			boardThatTriggered[itrack][ch][cath][loc]=-1;
 		    }
 		}
-		for(Int_t idig=0; idig<maxNumOfDigits; idig++){
+		for(Int_t idig=0; idig<kMaxNumOfDigits; idig++){
 		    detElOfDigitsInData[idig][ch][cath]=-1;
 		}
 	    }
@@ -407,8 +462,8 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 
 	fData->SetTreeAddress("RL");
 	fData->GetRecTriggerTracks();
-	RecTrigTracks = fData->RecTriggerTracks();
-	Int_t nRecTrigTracks = (Int_t) RecTrigTracks->GetEntriesFast();
+	recTrigTracksArray = fData->RecTriggerTracks();
+	Int_t nRecTrigTracks = (Int_t) recTrigTracksArray->GetEntriesFast();
 
 	fData->SetTreeAddress("D,GLT");
 	fData->GetDigits();
@@ -427,7 +482,7 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 	    Bool_t doubleCountTrack = kFALSE;
 
 	    // reading info from tracks
-	    recTrigTrack = (AliMUONTriggerTrack *)RecTrigTracks->At(iRecTrigTrack);
+	    recTrigTrack = (AliMUONTriggerTrack *)recTrigTracksArray->At(iRecTrigTrack);
 	    Float_t x11 = recTrigTrack->GetX11();// x position (info from non-bending plane)
 	    Float_t y11 = recTrigTrack->GetY11();// y position (info from bending plane)
 	    Float_t thetaX = recTrigTrack->GetThetax();
@@ -458,13 +513,13 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 		    correctFactor[cath]=1.;
 		}
 		// calculate corrections to trigger track theta
-		if(ch>=1)correctFactor[nonBending] = zMeanChamber[0]/zRealMatch[0];// corrects x position
-		if(ch>=2)correctFactor[bending] = (zMeanChamber[2] - zMeanChamber[0]) / (zRealMatch[2] - zRealMatch[0]);// corrects y position
+		if(ch>=1)correctFactor[kNonBending] = zMeanChamber[0]/zRealMatch[0];// corrects x position
+		if(ch>=2)correctFactor[kBending] = (zMeanChamber[2] - zMeanChamber[0]) / (zRealMatch[2] - zRealMatch[0]);// corrects y position
 
 		// searching track intersection with chambers (first approximation)
 		Float_t deltaZ = zMeanChamber[currCh] - zMeanChamber[0];
-		trackIntersectCh[0][currCh] = zMeanChamber[currCh] * TMath::Tan(thetaX) * correctFactor[nonBending];// x position (info from non-bending plane) 
-		trackIntersectCh[1][currCh] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[bending];// y position (info from bending plane)
+		trackIntersectCh[0][currCh] = zMeanChamber[currCh] * TMath::Tan(thetaX) * correctFactor[kNonBending];// x position (info from non-bending plane) 
+		trackIntersectCh[1][currCh] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[kBending];// y position (info from bending plane)
 
 		for(Int_t idigit=0; idigit<ndigits; idigit++) { // digit loop
 		    mDigit = (AliMUONDigit*)digits->At(idigit);
@@ -503,7 +558,7 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 		    // searching track intersection with chambers (second approximation)
 		    if(ch>=2){
 			deltaZ = zpad - zRealMatch[0];
-			trackIntersectCh[1][currCh] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[bending];// y position (info from bending plane)
+			trackIntersectCh[1][currCh] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[kBending];// y position (info from bending plane)
 		    }
 
 		    // deciding if digit matches track
@@ -551,7 +606,7 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 	    Int_t doubleTrack = -1;
 	    for(Int_t itrack=0; itrack<iRecTrigTrack; itrack++){
 		for(Int_t ch=0; ch<fgkNchambers; ch++){
-		    if(triggeredDigits[itrack][ch][bending]==triggeredDigits[iRecTrigTrack][ch][bending])commonDigits++;
+		    if(triggeredDigits[itrack][ch][kBending]==triggeredDigits[iRecTrigTrack][ch][kBending])commonDigits++;
 		}
 		if(commonDigits>=2){
 		    doubleCountTrack=kTRUE;
@@ -621,7 +676,7 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 				if(ineffSlat>0){
 				    Int_t slatInCh = ineffSlat%100;
 				    fInefficientSlat[ch][cath][slatInCh]++;
-				    for(Int_t idig=0; idig<maxNumOfDigits; idig++){
+				    for(Int_t idig=0; idig<kMaxNumOfDigits; idig++){
 					if(ineffSlat==detElOfDigitsInData[idig][ch][cath])cout<<"Warning: "<<ineffSlat<<" is not inefficient!!!"<<endl;
 				    }
 				    LocalBoardFromPos(trackIntersectCh[0][ch], trackIntersectCh[1][ch], ineffSlat, cath, ineffBoard);
@@ -691,6 +746,14 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::WriteOutput(const char* outputDir, Int_t totNumOfTrig[4][2], Int_t atLeast1MuPerEv[4][2])
 {
+    //
+    /// Writes information on calculated efficiency.
+    /// It writes: triggerChamberEff.root file containing efficiency histograms.
+    ///
+    /// In addition a text file triggerChamberEff.out is created,
+    /// with further informations on efficiencies.
+    //
+
     char *cathodeName[fgkNcathodes]={"Bending plane", "Non-Bending plane"};
     char *cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
 
@@ -748,7 +811,7 @@ void AliMUONTriggerChamberEff::WriteOutput(const char* outputDir, Int_t totNumOf
     TFile *outputHistoFile = new TFile(outFileName,"RECREATE");
     TDirectory *dir = gDirectory;
 
-    enum {slatIn11, slatIn12, slatIn13, slatIn14, chamberEff};
+    enum {kSlatIn11, kSlatIn12, kSlatIn13, kSlatIn14, kChamberEff};
     char *yAxisTitle = "trigger efficiency (a.u.)";
     char *xAxisTitle = "chamber";
 
@@ -760,7 +823,7 @@ void AliMUONTriggerChamberEff::WriteOutput(const char* outputDir, Int_t totNumOf
 
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
 	for(Int_t ch=0; ch<fgkNchambers+1; ch++){
-	    if(ch==chamberEff){
+	    if(ch==kChamberEff){
 		sprintf(histoName, "%sChamberEff", cathCode[cath]);
 		sprintf(histoTitle, "Chamber efficiency %s", cathCode[cath]);
 		histo[cath][ch] = new TH1F(histoName, histoTitle, fgkNchambers, 11-0.5, 15-0.5);
@@ -796,8 +859,8 @@ void AliMUONTriggerChamberEff::WriteOutput(const char* outputDir, Int_t totNumOf
 		histo[cath][ch]->SetBinError(slat+1, efficiencyError);
 	    }
 	    CalculateEfficiency(fTrigger44[cath], fTrigger34[ch][cath]+fTrigger44[cath], efficiency, efficiencyError, kFALSE);
-	    histo[cath][chamberEff]->SetBinContent(ch+1, efficiency);
-	    histo[cath][chamberEff]->SetBinError(ch+1, efficiencyError);
+	    histo[cath][kChamberEff]->SetBinContent(ch+1, efficiency);
+	    histo[cath][kChamberEff]->SetBinError(ch+1, efficiencyError);
 
 	    for(Int_t board=0; board<fgkNboards; board++){
 		CalculateEfficiency(fHitPerBoard[ch][cath][board], fHitPerBoard[ch][cath][board]+fInefficientBoard[ch][cath][board], efficiency, efficiencyError, kFALSE);
@@ -817,6 +880,13 @@ void AliMUONTriggerChamberEff::WriteOutput(const char* outputDir, Int_t totNumOf
 //_____________________________________________________________________________
 void AliMUONTriggerChamberEff::WriteEfficiencyMap(const char* outputDir)
 {
+    //
+    /// Writes the calculated efficiency in the text file efficiencyCells.dat
+    ///
+    /// The file can be further put in $ALICE_ROOT/MUON/data
+    /// and used to run simulations with measured trigger chamber efficiencies.
+    //
+
     Int_t effOutWidth=4;
 
     Float_t efficiency, efficiencyError;

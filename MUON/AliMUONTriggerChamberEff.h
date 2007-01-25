@@ -15,6 +15,7 @@ class AliRunLoader;
 class AliMUONData;
 class AliMUON;
 class AliMUONGlobalTrigger;
+class TString;
 
 class AliMUONTriggerChamberEff : public TObject
 {
@@ -35,7 +36,7 @@ public:
 protected:
     Bool_t PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy,
 			 Float_t xTrackAtPad, Float_t yTrackAtPad, Int_t chamber);
-    Bool_t IsDiffLocalBoard(Int_t currDetElemId, Int_t iy, Int_t detElemIdP1, Int_t iyDigitP1);
+    Bool_t IsDiffLocalBoard(Int_t currDetElemId, Int_t iy, Int_t detElemIdP1, Int_t iyDigitP1) const;
     void PrintTrigger(AliMUONGlobalTrigger *globalTrig);
     void InfoDigit();
     void CalculateEfficiency(Int_t trigger44, Int_t trigger34, Float_t &efficiency, Float_t &error, Bool_t failuresAsInput);
@@ -46,6 +47,9 @@ protected:
     void WriteEfficiencyMap(const char* outputDir);
     
 private:
+    AliMUONTriggerChamberEff(const AliMUONTriggerChamberEff& other);
+    AliMUONTriggerChamberEff& operator=(const AliMUONTriggerChamberEff& other);
+    
     void SetGaliceFile(const char* galiceFile);
     void CleanGalice();
     
@@ -61,10 +65,10 @@ private:
     Int_t fDebugLevel; //!< Debug level
     TString fGaliceDir; //!< base directory for many runs.
 
-    static const Int_t fgkNchambers=4;
-    static const Int_t fgkNcathodes=2;
-    static const Int_t fgkNslats=18;
-    static const Int_t fgkNboards=234;
+    static const Int_t fgkNchambers=4; //!< Number of trigger chambers
+    static const Int_t fgkNcathodes=2; //!< Number of cathodes per chamber
+    static const Int_t fgkNslats=18;   //!< Number of slats per chamber
+    static const Int_t fgkNboards=234; //!< Number of trigger boards per chamber
 
     Int_t fTrigger34[fgkNchambers][fgkNcathodes];//!< Array counting # of times chamber was inefficient
     Int_t fTrigger44[fgkNcathodes];//!< Array counting # of times all chambers were efficient
