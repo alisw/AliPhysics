@@ -26,13 +26,6 @@
 /// \author Laurent Aphecetche (for the "new" C++ structure) and 
 /// Alexander Zinchenko, JINR Dubna, for the hardcore of it ;-)
 
-#include <Riostream.h>
-#include <TH2.h>
-#include <TMinuit.h>
-#include <TCanvas.h>
-#include <TStopwatch.h>
-#include <TMath.h>
-
 #include "AliMUONClusterFinderMLEM.h"
 #include "AliLog.h"
 #include "AliMUONCluster.h"
@@ -44,6 +37,13 @@
 #include "AliMpVPadIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliRunLoader.h"
+
+#include <Riostream.h>
+#include <TH2.h>
+#include <TMinuit.h>
+#include <TCanvas.h>
+#include <TStopwatch.h>
+#include <TMath.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderMLEM)
