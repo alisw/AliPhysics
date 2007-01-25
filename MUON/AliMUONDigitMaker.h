@@ -14,7 +14,6 @@
 #include <TObject.h>
 #include "TStopwatch.h"
 class AliRawReader;
-class AliMpBusPatch;
 class AliMUONData;
 class AliMUONDigit;
 class AliMUONGlobalTrigger;
@@ -62,8 +61,6 @@ class AliMUONDigitMaker : public TObject
 
   AliMUONData*     fMUONData;          //!< Data container for MUON subsystem 
   
-  AliMpBusPatch*   fBusPatchManager;   //!< buspatch versus DE's & DDL
-
   Bool_t           fScalerEvent;       //!< flag to generates scaler event
 
   Bool_t           fDigitFlag;        //!< true for Digit, false for SDigit

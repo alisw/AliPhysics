@@ -29,7 +29,7 @@
 #include "AliMUONVDataIterator.h"
 #include "AliMUONConstants.h"
 #include "AliMUONObjectPair.h"
-#include "AliMpBusPatch.h"
+#include "AliMpDDLStore.h"
 #include "AliMUONPreprocessor.h"
 
 ///
@@ -149,8 +149,6 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
   char line[80];
   Int_t busPatchID, manuID, manuChannel;
   Float_t pedMean, pedSigma;
-  AliMpBusPatch busPatch;
-  busPatch.ReadBusPatchFile();
   static const Int_t kNchannels(64);
   static Bool_t replace(kFALSE);
   
@@ -159,7 +157,7 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
     if ( line[0] == '/' && line[1] == '/' ) continue;
     std::istringstream sin(line);
     sin >> busPatchID >> manuID >> manuChannel >> pedMean >> pedSigma;
-    Int_t detElemID = busPatch.GetDEfromBus(busPatchID);
+    Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
     AliDebug(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d MEAN %7.2f SIGMA %7.2f",
              busPatchID,detElemID,manuID,manuChannel,pedMean,pedSigma));
     

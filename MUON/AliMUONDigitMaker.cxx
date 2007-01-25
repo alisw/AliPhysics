@@ -66,7 +66,8 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
 #include "AliMpDEManager.h"
-#include "AliMpBusPatch.h"
+#include "AliMpDDLStore.h"
+#include "AliMpCathodType.h"
 
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
@@ -84,7 +85,6 @@ ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
   : TObject(),
     fMUONData(0x0),
-    fBusPatchManager(new AliMpBusPatch()),
     fScalerEvent(kFALSE),
     fDigitFlag(flag),
     fRawStreamTracker(new AliMUONRawStreamTracker()),    
@@ -104,10 +104,6 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
 
   // Standard Constructor
 
-  // bus patch 
-  fBusPatchManager->ReadBusPatchFile();
-
- 
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
   fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
@@ -126,8 +122,6 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
   delete fDigit;
   delete fLocalTrigger;
   delete fGlobalTrigger;
-
-  delete fBusPatchManager;
 
   AliDebug(1, Form("Execution time for MUON tracker : R:%.2fs C:%.2fs",
                fTrackerTimer.RealTime(),fTrackerTimer.CpuTime()));
@@ -268,7 +262,7 @@ Int_t AliMUONDigitMaker::GetMapping(Int_t busPatchId, UShort_t manuId,
   fMappingTimer.Start(kFALSE);
   
   // getting DE from buspatch
-  Int_t detElemId = fBusPatchManager->GetDEfromBus(busPatchId);
+  Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(busPatchId);
   AliDebug(3,Form("detElemId: %d busPatchId %d\n", detElemId, busPatchId));
 
   const AliMpVSegmentation* seg 
@@ -477,7 +471,8 @@ Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard,
     nBoard    = localBoard->GetNumber();
 
     const AliMpVSegmentation* seg 
-      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, iCath);  
+      = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId, AliMp::GetCathodType(iCath));  
 
     // loop over the 16 bits of pattern
     for (Int_t ibitxy = 0; ibitxy < 16; ibitxy++) {

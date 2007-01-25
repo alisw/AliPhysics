@@ -24,7 +24,7 @@ class AliMUONLocalStruct;
 class AliMpExMap;
 class AliMUONBusStruct;
 class AliMUONGlobalTrigger;
-class AliMpBusPatch;
+class AliMpDDLStore;
 class AliMUONTriggerCrateStore;
 class TStopwatch;
 
@@ -67,7 +67,7 @@ private:
   AliMUONRegHeader*   fRegHeader;    //!< DDL regional header class pointers
   AliMUONLocalStruct* fLocalStruct;  //!< DDL local structure class pointers
 
-  AliMpBusPatch*            fBusPatchManager; //!< buspatch versus DE's & DDL
+  AliMpDDLStore*            fBusPatchManager; //!< buspatch versus DE's & DDL
   AliMUONTriggerCrateStore* fCrateManager;    //!< Crate array
 
   Bool_t fScalerEvent;               ///< flag to generates scaler event
