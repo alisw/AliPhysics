@@ -102,6 +102,8 @@ class AliAlignObj : public TObject {
   static AliAlignObj* GetAlignObj(UShort_t voluid);
   static AliAlignObj* GetAlignObj(ELayerID layerId, Int_t modId);
 
+  static Bool_t   GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m);
+
  protected:
 
   void AnglesToMatrix(const Double_t *angles, Double_t *rot) const;

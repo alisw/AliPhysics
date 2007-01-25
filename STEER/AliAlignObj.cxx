@@ -24,6 +24,7 @@
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TMath.h>
+#include "TObjString.h"
 
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
@@ -765,6 +766,76 @@ Bool_t AliAlignObj::GetFromGeometry(const char *symname, AliAlignObj &alobj)
   align = gprime * ginv;
 
   return alobj.SetMatrix(align);
+}
+
+//_____________________________________________________________________________
+Bool_t AliAlignObj::GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m)
+{
+  // The method returns global matrix for the ideal detector geometry
+  // Symname identifies either the corresponding TGeoPNEntry or directly
+  // the volume path. The output global matrix is stored in 'm'.
+  // Returns kFALSE in case, TGeo has not been initialized or the symname
+  // is invalid.
+  //
+
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliErrorClass("Can't get the original global matrix! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }
+  
+  if (!gGeoManager->GetListOfPhysicalNodes()) {
+    AliWarningClass("gGeoManager doesn't contain any aligned nodes!");
+    if (!gGeoManager->cd(symname)) {
+      AliErrorClass(Form("Volume path %s not valid!",symname));
+      return kFALSE;
+    }
+    else {
+      m = *gGeoManager->GetCurrentMatrix();
+      return kTRUE;
+    }
+  }
+
+  const char* path = NULL;
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+  if(pne){
+    path = pne->GetTitle();
+  }else{
+    AliWarningClass(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as a volume path!",symname));
+    path=symname;
+  }
+
+  if (!gGeoManager->CheckPath(path)) {
+    AliErrorClass(Form("Volume path %s not valid!",path));
+    return kFALSE;
+  }
+
+  TString pathStr = path;
+  TObjArray *pathArr = pathStr.Tokenize('/');
+  TIter iter(pathArr);
+  TString nodeStr = "";
+  m.Clear();
+
+  TObjString *str = NULL;
+  while((str = (TObjString*) iter.Next())){
+    nodeStr.Append("/");
+    nodeStr.Append(str->String());
+
+    TGeoMatrix *lm = NULL;
+    if (TGeoPhysicalNode *physNode = (TGeoPhysicalNode *)gGeoManager->GetListOfPhysicalNodes()->FindObject(nodeStr.Data())) {
+        lm = physNode->GetOriginalMatrix();
+	if (!lm) lm = physNode->GetNode()->GetMatrix();
+    }
+    else {
+      gGeoManager->cd(nodeStr.Data());
+      TGeoNode *node = gGeoManager->GetCurrentNode();
+      lm = node->GetMatrix();
+    }
+    m.Multiply(lm);
+  }
+
+  delete pathArr;
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
