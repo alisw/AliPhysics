@@ -79,6 +79,8 @@ AliMpMotifType::AliMpMotifType(const AliMpMotifType& rhs)
   fVerboseLevel(0),
   fConnections()
 {
+  /// Copy constructor
+
     AliDebug(1,Form("this=%p (copy ctor)",this));
     rhs.Copy(*this);
 }
@@ -87,6 +89,8 @@ AliMpMotifType::AliMpMotifType(const AliMpMotifType& rhs)
 AliMpMotifType&
 AliMpMotifType::operator=(const AliMpMotifType& rhs)
 {
+  /// Assignment operator
+
   TObject::operator=(rhs);
   rhs.Copy(*this);
   return *this;  
@@ -104,6 +108,8 @@ AliMpMotifType::Clone(const char* /*newname*/) const
 void
 AliMpMotifType::Copy(TObject& object) const
 {
+  /// Copy object
+
   TObject::Copy(object);
   AliMpMotifType& mt = static_cast<AliMpMotifType&>(object);
   mt.fID = fID;

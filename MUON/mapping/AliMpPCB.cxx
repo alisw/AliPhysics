@@ -130,6 +130,9 @@ AliMpPCB::AliMpPCB(const AliMpPCB& o)
   fNofPads(0),
   fMotifMap(0x0)
 {
+  //
+  // Copy constructor
+
 #ifdef WITH_ROOT
     fMotifPositions.SetOwner(kTRUE);
 #endif
@@ -186,6 +189,8 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
 AliMpPCB&
 AliMpPCB::operator=(const AliMpPCB& o)
 {
+  // Assignment operator
+
   AliDebug(1,Form("this=%p (assignment op) : begin",this));
   o.Copy(*this);
   AliDebug(1,Form("this=%p (assignment op) : end",this));
@@ -732,6 +737,9 @@ AliMpPCB::Print(Option_t* option) const
 void 
 AliMpPCB::Save() const
 {
+  // 
+  // Save this PCB in the file
+
   TString fileName(fId);
   fileName += ".pcb";
   TList lines;

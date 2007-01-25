@@ -218,9 +218,10 @@ void AliMpMotifPainter::Paint(Option_t *option)
 //_______________________________________________________________________
 void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
 {
+/// Drawing real motif (not envelop) the real contour
+
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   
-  // drawing real motif (not envelop) the real contour
   Float_t xl = 0;
   Float_t yl = 0;
   Int_t manuId = 0;
