@@ -739,19 +739,19 @@ Bool_t AliAlignObj::GetFromGeometry(const char *symname, AliAlignObj &alobj)
   for (Int_t iNode = 0; iNode < nodesArr->GetEntriesFast(); iNode++) {
     TGeoPhysicalNode* tempNode = (TGeoPhysicalNode*) nodesArr->UncheckedAt(iNode);
     const char *nodePath = tempNode->GetName();
-    if (strcmp(symname,nodePath) == 0) {
+    if (strcmp(path,nodePath) == 0) {
       node = tempNode;
       break;
     }
   }
 
   if (!node) {
-    if (!gGeoManager->cd(symname)) {
-      AliErrorClass(Form("%s not valid neither as symbolic volume name nor as volume path!",symname));
+    if (!gGeoManager->cd(path)) {
+      AliErrorClass(Form("%s not valid neither as symbolic volume name nor as volume path!",path));
       return kFALSE;
     }
     else {
-      AliWarningClass(Form("Volume (%s) has not been misaligned!",symname));
+      AliWarningClass(Form("Volume (%s) has not been misaligned!",path));
       return kTRUE;
     }
   }
