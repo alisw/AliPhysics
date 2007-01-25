@@ -42,20 +42,16 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 
  private:
   int fEventCount;
-  //  int fEquippmentId;
-  //  AliHLTUInt16_t fEquippmentId;
   AliHLTUInt32_t fEquippmentID;
-  AliHLTUInt8_t fRcuX;
-  AliHLTUInt8_t fRcuY;
-  AliHLTUInt8_t fModuleID;
-
+  AliHLTUInt16_t fRcuX;
+  AliHLTUInt16_t fRcuZ;
+  AliHLTUInt16_t fRcuRowOffeset;
+  AliHLTUInt16_t fRcuColOffeset;
+  AliHLTUInt16_t fModuleID;
   Double_t fTmpChannelData[1008];
   Double_t fMaxValues[5][64][56][2];
   AliCaloRawStream *fPHOSRawStream;
   AliRawReaderMemory *fRawMemoryReader;
-
   static const AliHLTComponentDataType inputDataTypes[];
-  //  static const AliHLTComponentDataType outputDataType;
-  
 };
 #endif

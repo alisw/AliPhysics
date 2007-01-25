@@ -3,11 +3,11 @@
 
 struct AliHLTPHOSRcuCellEnergyData
 {
-  AliHLTUInt8_t fRcuX;
-  AliHLTUInt8_t fRcuY;
-  AliHLTUInt8_t fModuleID;
+  AliHLTUInt16_t fRcuX;
+  AliHLTUInt16_t fRcuZ;
+  AliHLTUInt16_t fModuleID;
   
-  unsigned long cellEnergies[32][28][2];
+  Double_t fCellEnergies[32][28][2];
   
 };
 
