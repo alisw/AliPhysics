@@ -9,7 +9,6 @@
 /// \class AliMUONTrackReconstructor
 /// \brief Standard class for the MUON track reconstruction
 
-#include <TObject.h>
 #include "AliMUONVTrackReconstructor.h"
 
 class AliMUONTrack;

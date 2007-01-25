@@ -25,11 +25,6 @@
 /// - MakeTracks to build the tracks
 ///
 
-#include <stdlib.h>
-#include <Riostream.h>
-#include <TMatrixD.h>
-
-#include "AliMUONVTrackReconstructor.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONData.h"
 #include "AliMUONConstants.h"
@@ -39,8 +34,12 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
+
 #include "AliLog.h"
+
 #include <TMinuit.h>
+#include <Riostream.h>
+#include <TMatrixD.h>
 
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
@@ -319,14 +318,14 @@ void AliMUONTrackReconstructor::FollowTracks(void)
   AliMUONTrack *track, *nextTrack;
   AliMUONTrackParam *trackParamAtFirstHit;
   Double_t numberOfDegFree, chi2Norm;
-  Int_t CurrentNRecTracks;
+  Int_t currentNRecTracks;
   
   for (Int_t station = 2; station >= 0; station--) {
     // Save the actual number of reconstructed track in case of
     // tracks are added or suppressed during the tracking procedure
     // !! Do not compress fRecTracksPtr until the end of the loop over tracks !!
-    CurrentNRecTracks = fNRecTracks;
-    for (Int_t iRecTrack = 0; iRecTrack <CurrentNRecTracks; iRecTrack++) {
+    currentNRecTracks = fNRecTracks;
+    for (Int_t iRecTrack = 0; iRecTrack <currentNRecTracks; iRecTrack++) {
       AliDebug(1,Form("FollowTracks: track candidate(1..) %d", iRecTrack+1));
       track = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iRecTrack);
       // Fit the track:
@@ -458,12 +457,12 @@ void AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack* trackCandidat
 	    // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new hitForRec's
             newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(*trackCandidate);
 	    fNRecTracks++;
-            AliMUONTrackParam TrackParam1(extrapTrackParamSave);
-            AliMUONTrackExtrap::ExtrapToZ(&TrackParam1, hitForRecCh1->GetZ());
-	    newTrack->AddTrackParamAtHit(&TrackParam1,hitForRecCh1);
-            AliMUONTrackParam TrackParam2(extrapTrackParamSave);
-            AliMUONTrackExtrap::ExtrapToZ(&TrackParam2, hitForRecCh2->GetZ());
-	    newTrack->AddTrackParamAtHit(&TrackParam2,hitForRecCh2);
+            AliMUONTrackParam trackParam1(extrapTrackParamSave);
+            AliMUONTrackExtrap::ExtrapToZ(&trackParam1, hitForRecCh1->GetZ());
+	    newTrack->AddTrackParamAtHit(&trackParam1,hitForRecCh1);
+            AliMUONTrackParam trackParam2(extrapTrackParamSave);
+            AliMUONTrackExtrap::ExtrapToZ(&trackParam2, hitForRecCh2->GetZ());
+	    newTrack->AddTrackParamAtHit(&trackParam2,hitForRecCh2);
             // Sort TrackParamAtHit according to increasing Z
             newTrack->GetTrackParamAtHit()->Sort();
 	    // Update the chi2 of the new track
@@ -491,9 +490,9 @@ void AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack* trackCandidat
 	  // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new hitForRec's
           newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(*trackCandidate);
 	  fNRecTracks++;
-          AliMUONTrackParam TrackParam1(extrapTrackParamSave);
-          AliMUONTrackExtrap::ExtrapToZ(&TrackParam1, hitForRecCh2->GetZ());
-          newTrack->AddTrackParamAtHit(&TrackParam1,hitForRecCh2);
+          AliMUONTrackParam trackParam1(extrapTrackParamSave);
+          AliMUONTrackExtrap::ExtrapToZ(&trackParam1, hitForRecCh2->GetZ());
+          newTrack->AddTrackParamAtHit(&trackParam1,hitForRecCh2);
           // Sort TrackParamAtHit according to increasing Z
           newTrack->GetTrackParamAtHit()->Sort();
 	  // Update the chi2 of the new track
@@ -534,9 +533,9 @@ void AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack* trackCandidat
 	  // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new hitForRec's
   	  newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(*trackCandidate);
 	  fNRecTracks++;
-  	  AliMUONTrackParam TrackParam1(extrapTrackParamSave);
-  	  AliMUONTrackExtrap::ExtrapToZ(&TrackParam1, hitForRecCh1->GetZ());
-  	  newTrack->AddTrackParamAtHit(&TrackParam1,hitForRecCh1);
+  	  AliMUONTrackParam trackParam1(extrapTrackParamSave);
+  	  AliMUONTrackExtrap::ExtrapToZ(&trackParam1, hitForRecCh1->GetZ());
+  	  newTrack->AddTrackParamAtHit(&trackParam1,hitForRecCh1);
   	  // Sort TrackParamAtHit according to increasing Z
   	  newTrack->GetTrackParamAtHit()->Sort();
 	  // Update the chi2 of the new track
@@ -560,13 +559,13 @@ void AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack* trackCandidat
   //
   // fill out the best track if required else clean up the fRecTracksPtr array
   if (!fgkTrackAllTracks && bestHitForRec1) {
-    AliMUONTrackParam TrackParam1(extrapTrackParamSave);
-    AliMUONTrackExtrap::ExtrapToZ(&TrackParam1, bestHitForRec1->GetZ());
-    trackCandidate->AddTrackParamAtHit(&TrackParam1,bestHitForRec1);
+    AliMUONTrackParam trackParam1(extrapTrackParamSave);
+    AliMUONTrackExtrap::ExtrapToZ(&trackParam1, bestHitForRec1->GetZ());
+    trackCandidate->AddTrackParamAtHit(&trackParam1,bestHitForRec1);
     if (bestHitForRec2) {
-      AliMUONTrackParam TrackParam2(extrapTrackParamSave);
-      AliMUONTrackExtrap::ExtrapToZ(&TrackParam2, bestHitForRec2->GetZ());
-      trackCandidate->AddTrackParamAtHit(&TrackParam2,bestHitForRec2);
+      AliMUONTrackParam trackParam2(extrapTrackParamSave);
+      AliMUONTrackExtrap::ExtrapToZ(&trackParam2, bestHitForRec2->GetZ());
+      trackCandidate->AddTrackParamAtHit(&trackParam2,bestHitForRec2);
       // Sort TrackParamAtHit according to increasing Z
       trackCandidate->GetTrackParamAtHit()->Sort();
       // Update the chi2 of the new track
