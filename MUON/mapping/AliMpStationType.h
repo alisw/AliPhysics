@@ -13,31 +13,20 @@
 #ifndef ALI_MP_STATION_TYPE_H
 #define ALI_MP_STATION_TYPE_H
 
-#include "AliLog.h"
- 
 #include <TString.h>
 
-enum AliMpStationType
-{
-  kStation1,           ///< station 1 (quadrants)
-  kStation2,           ///< station 2 (quadrants)
-  kStation345,         ///< station 3,4,5 (slats)
-  kStationTrigger      ///< trigger stations (slats)
-};
+namespace AliMp {
 
-inline 
-TString StationTypeName(AliMpStationType stationType)
-{
-  switch ( stationType ) {
-    case kStation1:       return "st1";     break;
-    case kStation2:       return "st2";     break;
-    case kStation345:     return "slat";    break;
-    case kStationTrigger: return "trigger"; break;
-  }
-  
-  // Cannot reach this line
-  AliFatalGeneral("AliMpStationType.h", "Unknown station type"); 
-  return "invalidStation";
+  enum StationType
+  {
+    kStation1,           ///< station 1 (quadrants)
+    kStation2,           ///< station 2 (quadrants)
+    kStation345,         ///< station 3,4,5 (slats)
+    kStationTrigger      ///< trigger stations (slats)
+  };
+
+  /// Return name for given stationType
+  TString StationTypeName(AliMp::StationType stationType);
 }
 
 #endif //ALI_MP_STATION_TYPE_H

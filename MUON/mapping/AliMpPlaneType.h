@@ -13,27 +13,22 @@
 #ifndef ALI_MP_PLANE_TYPE_H
 #define ALI_MP_PLANE_TYPE_H
 
-#include "AliLog.h"
- 
 #include <TString.h>
 
-enum AliMpPlaneType
-{
-  kBendingPlane,    ///< bending plane
-  kNonBendingPlane  ///< non-bending plane
-};
+namespace AliMp {
 
-inline 
-TString PlaneTypeName(AliMpPlaneType planeType)
-{
-  switch ( planeType ) {
-    case kBendingPlane:    return "bp";  break;
-    case kNonBendingPlane: return "nbp"; break;
-  }
-  
-  // Cannot reach this line
-  AliFatalGeneral("AliMpPlaneType.h", "Unknown plane type"); 
-  return "invalidPlane";
-}       
+  enum PlaneType
+  {
+    kBendingPlane,    ///< bending plane
+    kNonBendingPlane  ///< non-bending plane
+  };
+
+  /// Return name for given planeType
+  TString PlaneTypeName(AliMp::PlaneType planeType);
+
+
+  /// Return the other plane type
+  AliMp::PlaneType OtherPlaneType(AliMp::PlaneType planeType);
+}  
 
 #endif //ALI_MP_PLANE_TYPE_H
