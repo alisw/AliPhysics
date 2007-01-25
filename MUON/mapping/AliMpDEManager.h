@@ -26,8 +26,10 @@
 #include "AliMpExMap.h"
 #include "AliMpPlaneType.h"
 #include "AliMpStationType.h"
+#include "AliMpCathodType.h"
+#include "AliMpDEIterator.h"
 
-class AliMpVSegmentation;
+class AliMpDetElement;
 
 class AliMpDEManager : public  TObject {
 
@@ -36,47 +38,27 @@ class AliMpDEManager : public  TObject {
     
     // methods
     static Bool_t IsValidDetElemId(Int_t detElemId, Bool_t warn = false);
-    static Bool_t IsValidCathod(Int_t cath, Bool_t warn = false);
-    static Bool_t IsValid(Int_t detElemId, Int_t cath, Bool_t warn = false);
     static Bool_t IsValidChamberId(Int_t chamberId, Bool_t warn = false);
     static Bool_t IsValidGeomModuleId(Int_t moduleId, Bool_t warn = false);
 
-    static TString GetDEName(Int_t detElemId, Bool_t warn = true);
-    static TString GetDESegName(Int_t detElemId, Int_t cath, Bool_t warn = true);
-    static TString GetDETypeName(Int_t detElemId, Int_t cath, Bool_t warn = true);
     static Int_t   GetChamberId(Int_t detElemId, Bool_t warn = true);    
     static Int_t   GetGeomModuleId(Int_t detElemId, Bool_t warn = true);    
-    static AliMpPlaneType   GetPlaneType(Int_t detElemId, Int_t cath);
-    static AliMpStationType GetStationType(Int_t detElemId);
-    static Int_t            GetCathod(Int_t detElemId, AliMpPlaneType planeType);
+    static AliMp::PlaneType   GetPlaneType(Int_t detElemId, AliMp::CathodType cath);
+    static AliMp::StationType GetStationType(Int_t detElemId);
+    static AliMp::CathodType  GetCathod(Int_t detElemId, AliMp::PlaneType planeType);
 
+    static AliMpDetElement* GetDetElement(Int_t detElemId, Bool_t warn = true);
     static Int_t GetNofDEInChamber(Int_t chamberId, Bool_t warn = true);
+
   private:
     AliMpDEManager();
     AliMpDEManager(const AliMpDEManager& rhs);
     AliMpDEManager& operator=(const AliMpDEManager& rhs);
-
-    // methods
-    static Bool_t IsPlaneType(const TString& planeTypeName);
-    static AliMpPlaneType   PlaneType(const TString& planeTypeName);
-    static AliMpStationType StationType(const TString& stationTypeName);
-
-    static Bool_t ReadDENames(AliMpStationType station);
-    static void   FillDENames();
-
-    // static data members	
-    static const char  fgkNameSeparator; ///< Separator character used in DE names
-    static const char  fgkCommentPrefix; ///< Comment prefix in DE names file
-    static const Int_t fgkCoefficient;   ///< Coefficient used in DE Id <-> station
-
-    // data members	
-    static  AliMpExMap fgDENamesMap;   ///< \brief Map between DE Ids and names
-    static  AliMpExMap fgDESegNamesMap;///< \brief Map between DE Ids and 
-                                       /// a pair of DE seg names for 2 cathods
-    static  AliMpExMap fgDECathBNBMap; ///< \brief  Map between DE Is and a pair
-                                       /// of planeTypes for cathodes (0,1)
-    static  TArrayI fgNofDEPerChamber; ///< number of detElemId per chamber
       
+    // static data members	
+    static const Int_t   fgkCoefficient; ///< Coefficient used in DE Id <-> station
+    static    TArrayI fgNofDEPerChamber; ///< Number of detElemId per chamber
+
   ClassDef(AliMpDEManager,0)  // The manager class for definition of detection element types
 };
 

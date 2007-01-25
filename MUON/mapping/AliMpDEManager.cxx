@@ -24,28 +24,25 @@
 //          Laurent Aphecetche, SUBATECH Nantes
 
 #include "AliMpDEManager.h"
+#include "AliMpDEStore.h"
+#include "AliMpDetElement.h"
 #include "AliMpConstants.h"
-#include "AliMpFiles.h"
-#include "AliMpIntPair.h"
+#include "AliMpCathodType.h"
 
 #include "AliLog.h"
 
 #include <Riostream.h>
-#include <TSystem.h>
-#include <TObjString.h>
-#include <TMap.h>
+#include <TClass.h>
+//#include <TSystem.h>
+//#include <TObjString.h>
+//#include <TMap.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpDEManager)
 /// \endcond
 
-const char  AliMpDEManager::fgkNameSeparator = '_'; 
-const char  AliMpDEManager::fgkCommentPrefix = '#'; 
 const Int_t AliMpDEManager::fgkCoefficient = 100;
-AliMpExMap  AliMpDEManager::fgDENamesMap(true);
-AliMpExMap  AliMpDEManager::fgDESegNamesMap(true);
-AliMpExMap  AliMpDEManager::fgDECathBNBMap(true);
-TArrayI     AliMpDEManager::fgNofDEPerChamber(AliMpConstants::NofChambers());
+TArrayI     AliMpDEManager::fgNofDEPerChamber;
 
 //______________________________________________________________________________
 
@@ -59,207 +56,12 @@ AliMpDEManager::~AliMpDEManager()
 //
 
 //______________________________________________________________________________
-Bool_t AliMpDEManager::IsPlaneType(const TString& planeTypeName)
+AliMpDetElement* AliMpDEManager::GetDetElement(Int_t detElemId, Bool_t warn)
 {
-/// Return true if the planeTypeName corresponds to a valid plane type
+/// Return det element for given detElemId
 
-  if ( planeTypeName == PlaneTypeName(kBendingPlane) ||
-       planeTypeName == PlaneTypeName(kNonBendingPlane) ) 
-    return true;   
-
-  return false;
-}  
-
-//______________________________________________________________________________
-AliMpPlaneType AliMpDEManager::PlaneType(const TString& planeTypeName)
-{
-/// Return plane type for the given planeTypeName                            \n
-/// Fatal error if planeTypeName is wrong 
-
-  if ( planeTypeName == PlaneTypeName(kBendingPlane) ) 
-    return kBendingPlane;
-
-  if ( planeTypeName == PlaneTypeName(kNonBendingPlane) ) 
-    return kNonBendingPlane;
-
-  // Should never reach this line
-  AliFatalClass(Form("No plane type defined for %s", planeTypeName.Data()));
-  return kBendingPlane;
-}       
-
-//______________________________________________________________________________
-AliMpStationType AliMpDEManager::StationType(const TString& stationTypeName)
-{
-/// Return station type for the given stationTypeName                        \n
-/// Fatal error if stationTypeName is wrong 
-
-  if ( stationTypeName == StationTypeName(kStation1) )
-    return kStation1;
-
-  if ( stationTypeName == StationTypeName(kStation2) )
-    return kStation2;
-
-  if ( stationTypeName == StationTypeName(kStation345) )
-    return kStation345;
-
-  if ( stationTypeName == StationTypeName(kStationTrigger) ) 
-    return kStationTrigger;
-
-  // Should never reach this line
-  AliFatalClass(Form("No station type defined for ", stationTypeName.Data()));
-  return kStation1;
-}
-
-//______________________________________________________________________________
-Bool_t
-AliMpDEManager::ReadDENames(AliMpStationType station)
-{ 
-/// Read det element names for cath = 0 from the file specified by name
-/// and fill the map 
-
-  // Open file
-  TString filePath = AliMpFiles::DENamesFilePath(station);
-  std::ifstream in(filePath);
-  if (!in.good()) {
-    AliErrorClassStream() << "Cannot open file " << filePath << endl;;
-    return false;
-  }
-  
-  // Read plane types per cathods
-  //
-  char line[80];
-  TString word;
-  TString cathName1, cathName2;
-  in >> word;
-  while ( ! in.eof() && cathName1.Length() == 0 ) {
-    if ( word[0] == '#' ) 
-      in.getline(line, 80);
-    else { 
-      cathName1 = word;
-      in >> cathName2;
-    }
-    in >> word;
-  }
-  
-  Bool_t isCathNameDefined = false;
-  if ( IsPlaneType(cathName1) &&  IsPlaneType(cathName2) )
-    isCathNameDefined = true;
-    
-  // Read DE names
-  //
-  Int_t detElemId;
-  TString name, name1, name2;
-  AliMpPlaneType planeForCathode[2];
-  
-  while ( ! in.eof() ) 
-  {
-    if ( word[0] == '#' ) 
-    {
-      in.getline(line, 80);
-    }
-    else 
-    {  
-      detElemId = word.Atoi();
-      in >> name;
-      in >> name1;
-      // warning : important to check non bending first (=nbp),
-      // as bp is contained within nbp...
-      if ( name1.Contains(PlaneTypeName(kNonBendingPlane)) )
-      {
-        planeForCathode[0] = kNonBendingPlane;
-      }
-      else
-      {
-        planeForCathode[0] = kBendingPlane;
-      }
-      if ( !isCathNameDefined ) 
-      {       
-        in >> name2;
-        // Other cathode is other plane...
-        if ( planeForCathode[0] == kBendingPlane ) 
-        {
-          planeForCathode[1]=kNonBendingPlane;
-        }
-        else
-        {
-          planeForCathode[1]=kBendingPlane;
-        }
-      }
-      else 
-      {
-        name1 += fgkNameSeparator;
-        name2 = name1;
-        name1 += cathName1;
-        name2 += cathName2;
-        if ( name2.Contains(PlaneTypeName(kNonBendingPlane)) )
-        {
-          planeForCathode[1] = kNonBendingPlane;
-        }
-        else
-        {
-          planeForCathode[1] = kBendingPlane;
-        }        
-      }   
-
-      if ( planeForCathode[0]==planeForCathode[1] )
-      {
-        AliFatalClass(Form("Got the same cathode type for both planes"
-                      " of DetElemId %d",detElemId));
-      }
-      
-      if ( ! fgDENamesMap.GetValue(detElemId) ) 
-      {
-        AliDebugClassStream(3)  
-          << "Adding DE name "  << detElemId << "  " << name << endl;
-        fgDENamesMap.Add(detElemId, new TObjString(name)); 
-      } 
-      else 
-      {
-        AliWarningClassStream()
-          << "DE name "  << detElemId << "  " << name << " already defined." << endl;
-      }	  
-
-      if ( ! fgDESegNamesMap.GetValue(detElemId) ) 
-      {
-        AliDebugClassStream(3)  
-        << "Adding DE seg. names  "  << detElemId << "  " << name1 << "  " << name2 << endl;
-        fgDESegNamesMap.Add(detElemId, 
-                         new TPair(new TObjString(name1), new TObjString(name2)));
-        fgDECathBNBMap.Add(detElemId,
-                           new AliMpIntPair(planeForCathode[0],planeForCathode[1]));
-        fgNofDEPerChamber[GetChamberId(detElemId)]++;
-      } 
-      else 
-      {
-        AliWarningClassStream()
-          << "DE seg. names "  << detElemId << "  " << name1 << "  " << name2 
-	  << " already defined." << endl;
-      }	  
-    } 
-    in >> word;
-  }
-
-  // Close file
-  in.close();
-  
-  return true;
-}
-
-//______________________________________________________________________________
-void AliMpDEManager::FillDENames()
-{
-/// Fill DE names from files
-  AliDebugClass(2,"");
-  Bool_t result1 = ReadDENames(kStation1);
-  Bool_t result2 = ReadDENames(kStation2);
-  Bool_t result3 = ReadDENames(kStation345);
-  Bool_t result4 = ReadDENames(kStationTrigger);
-  
-  Bool_t result = result1 && result2 && result3 && result4;
-  if ( ! result ) {
-    AliErrorClassStream() << "Error in reading DE names files" << endl;
-  }  
-}
+  return AliMpDEStore::Instance()->GetDetElement(detElemId, warn);
+}    
 
 //
 // static public methods
@@ -269,40 +71,11 @@ void AliMpDEManager::FillDENames()
 Bool_t AliMpDEManager::IsValidDetElemId(Int_t detElemId, Bool_t warn)
 {
 /// Return true if detElemId is valid
-/// (is present in the DE names files)
+/// (is present in the DE map)
 
-  if ( fgDENamesMap.GetSize() == 0 ) FillDENames();
+  if ( GetDetElement(detElemId, warn) ) return true;
 
-  if ( fgDENamesMap.GetValue(detElemId) ) return true;
-
-  if (warn) {
-    AliErrorClassStream() 
-        << "Detection element " << detElemId << " not defined." << endl;
-  }	
   return false;
-}    
-
-//______________________________________________________________________________
-Bool_t AliMpDEManager::IsValidCathod(Int_t cath, Bool_t warn)
-{
-/// Return true if cath is 0 or 1 
-/// (Better solution would be to use systematically enum)
-
-  if (cath == 0 || cath == 1 ) return true;  
-
-  if (warn)
-    AliErrorClassStream() << "Wrong cathod number " << cath << endl;
-     
-  return false;
-}    
-
-
-//______________________________________________________________________________
-Bool_t AliMpDEManager::IsValid(Int_t detElemId, Int_t cath, Bool_t warn)
-{
-/// Return true if both detElemId and cathod number are valid
-
-  return ( IsValidDetElemId(detElemId, warn) && IsValidCathod(cath, warn) );
 }    
 
 //______________________________________________________________________________
@@ -331,61 +104,6 @@ Bool_t AliMpDEManager::IsValidGeomModuleId(Int_t moduleId, Bool_t warn)
     AliErrorClassStream() << "Wrong module Id " << moduleId << endl;
   
   return false;
-}    
-
-//______________________________________________________________________________
-Int_t 
-AliMpDEManager::GetCathod(Int_t detElemId, AliMpPlaneType planeType)
-{
-/// Return cathod number for given detElemId and planeType
-
-  if ( !IsValidDetElemId(detElemId) ) return -1;
-  AliMpIntPair* pair = 
-    static_cast<AliMpIntPair*>(fgDECathBNBMap.GetValue(detElemId));
-  if ( planeType == pair->GetFirst() )
-  {
-    return 0;
-  }
-  return 1;
-}
-
-//______________________________________________________________________________
-TString AliMpDEManager::GetDEName(Int_t detElemId, Bool_t warn)
-{
-/// Return det element name 
-
-  if ( !IsValidDetElemId(detElemId, warn) ) return "undefined";
-
-  TObjString* name = (TObjString*)fgDENamesMap.GetValue(detElemId);
-
-  return name->GetString();
-}    
-
-//______________________________________________________________________________
-TString AliMpDEManager::GetDESegName(Int_t detElemId, Int_t cath, Bool_t warn)
-{
-/// Return det element segmentation name (segmentation type + plane type)
-
-  if ( ! IsValid(detElemId, cath, warn) ) return "undefined";
-
-  TPair* namePair = (TPair*)fgDESegNamesMap.GetValue(detElemId);
-
-  if (cath == 0) return ((TObjString*)namePair->Key())->GetString();
-  if (cath == 1) return ((TObjString*)namePair->Value())->GetString();
-  
-  return "undefined";
-}    
-
-//______________________________________________________________________________
-TString AliMpDEManager::GetDETypeName(Int_t detElemId, Int_t cath, Bool_t warn) 
-{
-/// Return det element segmentation type
-
-  TString fullName = GetDESegName(detElemId, cath, warn);  
-  
-  // cut plane type extension
-  Ssiz_t pos = fullName.First(fgkNameSeparator);
-  return fullName(0,pos);
 }    
 
 //______________________________________________________________________________
@@ -438,56 +156,47 @@ Int_t AliMpDEManager::GetGeomModuleId(Int_t detElemId, Bool_t warn)
 }  
 
 //______________________________________________________________________________
-AliMpPlaneType  AliMpDEManager::GetPlaneType(Int_t detElemId, Int_t cath)
+AliMp::PlaneType  AliMpDEManager::GetPlaneType(Int_t detElemId, AliMp::CathodType cath)
 {
 /// Return plane type                                                      \n
-/// Failure causes Fatal error - as AliMpPlaneType has no possibility
-/// to return undefined value
-
-  if ( ! IsValid(detElemId, cath, true) ) {
-    AliFatalClass("Cannot return AliMpPlaneType value.");
-    return kBendingPlane;
-  }  
-
-  TPair* namePair = (TPair*)fgDESegNamesMap.GetValue(detElemId);
-
-  TString fullName;  
-  if (cath == 0) fullName = ((TObjString*)namePair->Key())->GetString();
-  if (cath == 1) fullName = ((TObjString*)namePair->Value())->GetString();
-  
-  // Get plane type name
-  Ssiz_t pos = fullName.First(fgkNameSeparator);
-  TString planeTypeName = fullName(pos+1,fullName.Length()-pos);
-  
-  return PlaneType(planeTypeName);
-}    
-
-//______________________________________________________________________________
-AliMpStationType AliMpDEManager::GetStationType(Int_t detElemId)
-{
-/// Return station type                                                      \n
-/// Failure causes Fatal error - as AliMpStationType has no possibility
+/// Failure causes Fatal error - as AliMp::PlaneType has no possibility
 /// to return undefined value
 
   if ( ! IsValidDetElemId(detElemId, true) ) {
-    AliFatalClass("Cannot return AliMpStationType value.");
-    return kStation1;
+    AliFatalClass("Cannot return AliMp::PlaneType value.");
+    return AliMp::kBendingPlane;
   }  
-  
-  Int_t chamberId = GetChamberId(detElemId, false);
-  if ( ! IsValidChamberId(chamberId, true) ) {
-    AliFatalClass("Cannot return AliMpStationType value.");
-    return kStation1;
-  }  
-  
-  if ( chamberId ==  0 || chamberId ==  1 )  return kStation1;
-  if ( chamberId ==  2 || chamberId ==  3 )  return kStation2;
-  if ( chamberId >=  4 && chamberId <=  9 )  return kStation345;
-  if ( chamberId >= 10 && chamberId <= 13 )  return kStationTrigger;
 
-  // Should never get to this line
-  AliFatalClass("Cannot return AliMpStationType value.");
-  return kStation1;
+  return GetDetElement(detElemId)->GetPlaneType(cath);
+}    
+
+//______________________________________________________________________________
+AliMp::StationType AliMpDEManager::GetStationType(Int_t detElemId)
+{
+/// Return station type                                                      \n
+/// Failure causes Fatal error - as AliMp::StationType has no possibility
+/// to return undefined value
+
+  if ( ! IsValidDetElemId(detElemId, true) ) {
+    AliFatalClass("Cannot return AliMp::StationType value.");
+    return AliMp::kStation1;
+  }  
+  
+  return GetDetElement(detElemId)->GetStationType();
+}
+
+//______________________________________________________________________________
+AliMp::CathodType 
+AliMpDEManager::GetCathod(Int_t detElemId, AliMp::PlaneType planeType)
+{
+/// Return cathod number for given detElemId and planeType
+
+  if ( ! IsValidDetElemId(detElemId, true) ) {
+    AliFatalClass("Cannot return AliMp::CathodType value.");
+    return AliMp::kCath0;
+  }  
+  
+  return GetDetElement(detElemId)->GetCathodType(planeType);
 }
 
 //______________________________________________________________________________
@@ -496,8 +205,20 @@ Int_t AliMpDEManager::GetNofDEInChamber(Int_t chamberId, Bool_t warn)
 /// Return the number of detection elements in the chamber with the given 
 /// chamberId
 
-  if ( fgDENamesMap.GetSize() == 0 ) FillDENames();
-  if (!IsValidChamberId(chamberId,warn) ) return 0;
-  return fgNofDEPerChamber[chamberId];
+  if ( ! IsValidChamberId(chamberId,warn) ) return 0;
+
+  // Fill array if it is empty
+  if ( ! fgNofDEPerChamber.GetSize() ) {
+    fgNofDEPerChamber.Set(AliMpConstants::NofChambers());
+    AliMpDEIterator it;
+    for ( Int_t i=0; i<AliMpConstants::NofChambers(); i++ ) {
+      Int_t counter = 0;
+      for ( it.First(i); ! it.IsDone(); it.Next() ) ++counter;
+      fgNofDEPerChamber[i] = counter;
+    }  
+  }
+  
+  return fgNofDEPerChamber[chamberId];    
+
 }
 
