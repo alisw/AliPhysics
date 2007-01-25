@@ -664,5 +664,89 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
     }
   }
 
-  // TODO to be implemented
+  Float_t regPar = 0.01;
+
+  Float_t norm = 0;
+  // pick prior distribution
+  TH1F* hPrior = (TH1F*)fCurrentMinuitESD->Clone("prior");
+  for (Int_t t=1; t<=hPrior->GetNbinsX(); t++)
+    norm = norm + hPrior->GetBinContent(t);
+  for (Int_t t=1; t<=hPrior->GetNbinsX(); t++) {
+    hPrior->SetBinContent(t, hPrior->GetBinContent(t)/norm);
+
+    printf(" bin %d content %f \n", t, hPrior->GetBinContent(t));
+
+  }
+  
+  // define hist to store guess of true
+  TH1F* hTrue  = (TH1F*)fCurrentMinuitESD->Clone("prior");
+  //  hTrue->Reset();
+
+  // clone response R
+  TH2F* hResponse = (TH2F*)fCurrentMinuitCorrelation->Clone("pij");
+
+  // histogram to store the inverse response calculated from bayes theorem (from prior and response)  
+  // IR
+  TAxis* xAxis = hResponse->GetYaxis();
+  TAxis* yAxis = hResponse->GetXaxis();
+
+  TH2F* hInverseResponseBayes = (TH2F*)hResponse->Clone("pji");
+  //new TH2F("pji","pji",
+  //					 xAxis->GetNbins(),xAxis->GetXbins()->GetArray(),
+  //					 yAxis->GetNbins(),yAxis->GetXbins()->GetArray());
+  hInverseResponseBayes->Reset();
+  
+  // unfold...
+  Int_t iterations = 20;
+  for (Int_t i=0; i<iterations; i++) {
+    printf(" iteration %i \n", i);
+    
+    // calculate IR from Beyes theorem
+    // IR_ji = R_ij * prior_i / sum_k(R_kj * prior_k)
+    for(Int_t t = 1; t<=hResponse->GetNbinsX(); t++) {
+      for (Int_t m=1; m<=hResponse->GetNbinsY(); m++) {
+
+        norm = 0;
+        for(Int_t t2 = 1; t2<=hResponse->GetNbinsX(); t2++)
+          norm = norm + (hResponse->GetBinContent(t2,m) * hPrior->GetBinContent(t2));
+	
+        if (norm==0)
+	  hInverseResponseBayes->SetBinContent(t,m,0);
+        else
+	  hInverseResponseBayes->SetBinContent(t,m, hResponse->GetBinContent(t,m) * hPrior->GetBinContent(t)/norm);
+      }
+    }
+    // calculate true assuming IR is the correct inverse response 
+    for(Int_t t = 1; t<=hResponse->GetNbinsX(); t++) {
+      hTrue ->SetBinContent(t, 0);
+      for (Int_t m=1; m<=hResponse->GetNbinsY(); m++)
+        hTrue->SetBinContent(t, hTrue->GetBinContent(t) + fCurrentMinuitESD->GetBinContent(m)*hInverseResponseBayes->GetBinContent(t,m));
+    }
+    
+    // regularization (simple smoothing) NB : not good bin width!!!
+    TH1F* hTrueSmoothed = (TH1F*)hTrue->Clone("truesmoothed");
+    
+    for (Int_t t=2; t<hTrue->GetNbinsX()-1; t++) {
+      Float_t average = (hTrue->GetBinContent(t-1) + hTrue->GetBinContent(t) + hTrue->GetBinContent(t+1))/3.;
+      // weight the average with the regularization parameter
+      hTrueSmoothed->SetBinContent(t, (1-regPar)*hTrue->GetBinContent(t) + (regPar*average));
+    }
+    
+    // use smoothed true (normalized) as new prior 
+    norm = 0;
+    for (Int_t t=1; t<=hPrior->GetNbinsX(); t++)
+      norm = norm + hTrueSmoothed->GetBinContent(t);
+    for (Int_t t=1; t<=hPrior->GetNbinsX(); t++) {
+      hPrior->SetBinContent(t, hTrueSmoothed->GetBinContent(t)/norm);
+      hTrue->SetBinContent(t, hTrueSmoothed->GetBinContent(t));
+    }
+  } // end of iterations
+
+  for (Int_t t=1; t<=fMultiplicityESDCorrected[inputRange]->GetNbinsX(); t++) {
+    fMultiplicityESDCorrected[inputRange]->SetBinContent(t, hTrue->GetBinContent(t));
+    fMultiplicityESDCorrected[inputRange]->SetBinError(t, 0.05*hTrue->GetBinContent(t));
+
+    printf(" bin %d content %f \n", t, hPrior->GetBinContent(t));
+  }
+  
 }
