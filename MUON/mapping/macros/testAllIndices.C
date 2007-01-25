@@ -3,8 +3,8 @@
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
-void testAllIndices(AliMpStationType station = kStation1,
-                    AliMpPlaneType plane = kBendingPlane) 
+void testAllIndices(AliMp::StationType station = AliMp::kStation1,
+                    AliMp::PlaneType plane = AliMp::kBendingPlane) 
 {
   AliMpSectorReader r(station, plane);
 
@@ -28,7 +28,7 @@ void testAllIndices(AliMpStationType station = kStation1,
 
   Int_t nx2 = 950/2;
   Int_t ny2 = 950/2;
-  if (station == kStation2) {
+  if (station == AliMp::kStation2) {
     nx2 = 1200/2;
     ny2 = 1200/2;
   }

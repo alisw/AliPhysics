@@ -47,8 +47,8 @@ void MarkPads(AliMpVPadIterator& it, Double_t xmax, Double_t ymax,
   //timer.Print();
 }
 
-void testSectorAreaIterator(AliMpStationType station = kStation1,
-                            AliMpPlaneType plane = kBendingPlane,
+void testSectorAreaIterator(AliMp::StationType station = AliMp::kStation1,
+                            AliMp::PlaneType plane = AliMp::kBendingPlane,
 	     	            Bool_t rootInput = false)
 {
   AliMpSector *sector = 0;

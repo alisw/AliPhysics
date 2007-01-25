@@ -66,7 +66,7 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   
   void GetAllElectronicCardIDs(TArrayI& ecn) const;
   
-  AliMpPlaneType PlaneType() const;
+  AliMp::PlaneType PlaneType() const;
   
   TVector2 Dimensions() const;
   

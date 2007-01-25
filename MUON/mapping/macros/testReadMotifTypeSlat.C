@@ -30,7 +30,7 @@ Int_t test(AliMpMotifReader& r, const char letter, Int_t from, Int_t to)
 
 void testReadMotifTypeSlat()
 {
-  AliMpMotifReader r(kStation345,kNonBendingPlane); 
+  AliMpMotifReader r(AliMp::kStation345,AliMp::kNonBendingPlane); 
   // note that second parameter is not used for station345.
 
   Int_t n = 0;

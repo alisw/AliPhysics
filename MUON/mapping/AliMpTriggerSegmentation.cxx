@@ -295,7 +295,7 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
 }
 
 //_____________________________________________________________________________
-AliMpPlaneType
+AliMp::PlaneType
 AliMpTriggerSegmentation::PlaneType() const
 {
   return Slat()->PlaneType();

@@ -22,7 +22,6 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
-#include "AliMpStationType.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpDEManager.h"

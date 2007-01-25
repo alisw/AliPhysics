@@ -228,8 +228,8 @@ void testSlatPads(const char* slatlist)
   {
     TString slatName( ((TObjString*)slatsToTest[i])->String());
     
-    AliMpSlat* bending = reader.ReadSlat(slatName.Data(),kBendingPlane);
-    AliMpSlat* nonbending = reader.ReadSlat(slatName.Data(),kNonBendingPlane);
+    AliMpSlat* bending = reader.ReadSlat(slatName.Data(),AliMp::kBendingPlane);
+    AliMpSlat* nonbending = reader.ReadSlat(slatName.Data(),AliMp::kNonBendingPlane);
   
     timerCount.Start(false);
     Int_t NumberOfBendingPads = Count(*bending);

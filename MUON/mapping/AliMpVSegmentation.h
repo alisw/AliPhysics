@@ -60,7 +60,7 @@ class AliMpVSegmentation : public TObject
     
     virtual void GetAllElectronicCardIDs(TArrayI& ecn) const = 0;
 
-    virtual AliMpPlaneType PlaneType() const = 0;
+    virtual AliMp::PlaneType PlaneType() const = 0;
     
     /// Gives the half-sizes (in cm) of the underlying detection element.
     virtual TVector2 Dimensions() const = 0;

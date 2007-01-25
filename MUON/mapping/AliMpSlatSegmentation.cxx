@@ -322,7 +322,7 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
 }
 
 //_____________________________________________________________________________
-AliMpPlaneType
+AliMp::PlaneType
 AliMpSlatSegmentation::PlaneType() const
 {
   return Slat()->PlaneType();

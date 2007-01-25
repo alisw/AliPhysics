@@ -27,8 +27,8 @@ void testReadSlat()
     TString slat( ((TObjString*)slatsToTest[i])->String());
     
     cout << "Trying to read " << slat << endl;
-    AliMpSlat* b = AliMpSt345Reader::ReadSlat(slat.Data(),kBendingPlane);
-    AliMpSlat* nb = AliMpSt345Reader::ReadSlat(slat.Data(),kNonBendingPlane);
+    AliMpSlat* b = AliMpSt345Reader::ReadSlat(slat.Data(),AliMp::kBendingPlane);
+    AliMpSlat* nb = AliMpSt345Reader::ReadSlat(slat.Data(),AliMp::kNonBendingPlane);
     if ( !b ) cout << " Missing BENDING !" << endl;
     if ( !nb ) cout << " Missing NONBENDING !" << endl;
     if ( b && nb )

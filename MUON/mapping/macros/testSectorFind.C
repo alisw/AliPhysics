@@ -4,8 +4,8 @@
 // Test macro for which verify that all FindPosition, FindIndices
 // and FindLocation methods are consistents between them.
 
-void testSectorFind(AliMpStationType station = kStation1,
-                    AliMpPlaneType plane = kBendingPlane,
+void testSectorFind(AliMp::StationType station = AliMp::kStation1,
+                    AliMp::PlaneType plane = AliMp::kBendingPlane,
 		    Bool_t rootInput = false) 
 {
   AliMpSector *sector = 0;

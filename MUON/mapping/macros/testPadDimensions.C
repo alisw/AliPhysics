@@ -4,8 +4,8 @@
 // Test macro for testing retrieving of pad dimensions from
 // the map in AliMpSectorSegmentation.
 
-void testPadDimensions(AliMpStationType station = kStation1,
-                       AliMpPlaneType plane = kBendingPlane,
+void testPadDimensions(AliMp::StationType station = AliMp::kStation1,
+                       AliMp::PlaneType plane = AliMp::kBendingPlane,
 		       Bool_t rootInput = false)
 {
   AliMpSector *sector = 0;

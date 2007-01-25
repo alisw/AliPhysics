@@ -80,14 +80,14 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
   /// Create a new AliMpPCB object, by reading it from file.
   /// The returned object must be deleted by the client
   
-  std::ifstream in(AliMpFiles::SlatPCBFilePath(kStation345,pcbType).Data());
+  std::ifstream in(AliMpFiles::SlatPCBFilePath(AliMp::kStation345,pcbType).Data());
   if (!in.good()) 
   {
     AliErrorClass(Form("Cannot open file for PCB %s",pcbType));
     return 0;
   }
  
-  AliMpMotifReader reader(kStation345,kNonBendingPlane); 
+  AliMpMotifReader reader(AliMp::kStation345,AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for station345, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory
@@ -152,18 +152,18 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
 
 //_____________________________________________________________________________
 AliMpSlat*
-AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
+AliMpSt345Reader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
 {
   ///
   /// Create a new AliMpSlat object, by reading it from file.
   /// The returned object must be deleted by the client.
   
-  std::ifstream in(AliMpFiles::SlatFilePath(kStation345,slatType,
+  std::ifstream in(AliMpFiles::SlatFilePath(AliMp::kStation345,slatType,
                                             planeType).Data());
   if (!in.good()) 
   {
     AliErrorClass(Form("Cannot read slat from %s",
-                       AliMpFiles::SlatFilePath(kStation345,slatType,planeType).Data()));
+                       AliMpFiles::SlatFilePath(AliMp::kStation345,slatType,planeType).Data()));
     return 0;
   }
   

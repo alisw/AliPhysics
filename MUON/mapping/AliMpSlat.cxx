@@ -46,7 +46,7 @@ ClassImp(AliMpSlat)
 AliMpSlat::AliMpSlat() 
 : TObject(), 
   fId(""), 
-  fPlaneType(kNonBendingPlane),
+  fPlaneType(AliMp::kNonBendingPlane),
   fDX(0), 
   fDY(0),
   fNofPadsX(0), 
@@ -67,7 +67,7 @@ AliMpSlat::AliMpSlat()
 }
 
 //_____________________________________________________________________________
-AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
+AliMpSlat::AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending)
 : TObject(), 
   fId(id), 
   fPlaneType(bendingOrNonBending),
@@ -403,11 +403,11 @@ AliMpSlat::GetName() const
   // the plane type as a suffix.
   //
   TString name(GetID());
-  if ( fPlaneType == kBendingPlane )
+  if ( fPlaneType == AliMp::kBendingPlane )
   {
     name += ".Bending";
   }
-  else if ( fPlaneType == kNonBendingPlane )
+  else if ( fPlaneType == AliMp::kNonBendingPlane )
   {
     name += ".NonBending";
   }

@@ -3,8 +3,8 @@
 //
 // Test macro for reading motif type data.
 
-void testReadMotifType(AliMpStationType station = kStation1,
-                       AliMpPlaneType plane = kBendingPlane,
+void testReadMotifType(AliMp::StationType station = AliMp::kStation1,
+                       AliMp::PlaneType plane = AliMp::kBendingPlane,
 	     	       Bool_t rootInput = false)
 {
   AliMpMotifReader r(station, plane);
@@ -13,13 +13,13 @@ void testReadMotifType(AliMpStationType station = kStation1,
   TString names;
   TString names2;
   Int_t nv =0;
-  if ( station == kStation1 )
-    if ( plane == kBendingPlane ) 
+  if ( station == AliMp::kStation1 )
+    if ( plane == AliMp::kBendingPlane ) 
       names ="ABCDEFGHI";
     else
       names = "ABCDEFGHIJKLMN";
-  else if ( station == kStation2 ) 
-    if ( plane == kBendingPlane ) {
+  else if ( station == AliMp::kStation2 ) 
+    if ( plane == AliMp::kBendingPlane ) {
       names ="ABCDEFGHIJKLMNOPQRSTUVWXY";
       names2 ="abcdefghimnptuv";
       nv = 5;

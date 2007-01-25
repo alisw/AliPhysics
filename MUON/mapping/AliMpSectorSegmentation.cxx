@@ -196,7 +196,7 @@ AliMpSectorSegmentation::FindMotifPosition(const AliMpIntPair& indices) const
 /// return 0 if not found
 
   switch (fkSector->GetDirection()) {
-    case kX : {
+    case AliMp::kX : {
     // Case where all the pads have the same size along X direction
 
       for (Int_t irow=0; irow<fkSector->GetNofRows(); ++irow) {
@@ -224,7 +224,7 @@ AliMpSectorSegmentation::FindMotifPosition(const AliMpIntPair& indices) const
     }
     break;
     ////////////////////////////////////////////////////////////////////////////////
-    case kY : {
+    case AliMp::kY : {
       // Case where all the pads have the same size along Y direction   
       // look for the row which contains the indices
       AliMpRow* row=0;
@@ -330,9 +330,9 @@ AliMpSectorSegmentation::CreateIterator(const AliMpArea& area) const
 
   switch (fkSector->GetDirection()) {
   
-    case kX: return new AliMpSectorAreaVPadIterator(this, area);
+    case AliMp::kX: return new AliMpSectorAreaVPadIterator(this, area);
              ;;
-    case kY: return new AliMpSectorAreaHPadIterator(this, area);
+    case AliMp::kY: return new AliMpSectorAreaHPadIterator(this, area);
              ;;
   }
   
@@ -358,7 +358,7 @@ AliMpSectorSegmentation::Dimensions() const
 }
 
 //______________________________________________________________________________
-AliMpPlaneType
+AliMp::PlaneType
 AliMpSectorSegmentation::PlaneType() const
 {
   return GetSector()->GetPlaneType();
@@ -483,9 +483,9 @@ AliMpSectorSegmentation::PadByDirection(const TVector2& startPosition,
 
   switch (fkSector->GetDirection()) {
   
-    case kX: return PadByYDirection(startPosition, distance);
+    case AliMp::kX: return PadByYDirection(startPosition, distance);
              ;;
-    case kY: return PadByXDirection(startPosition, distance);
+    case AliMp::kY: return PadByXDirection(startPosition, distance);
              ;;
   }
   

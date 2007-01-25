@@ -34,7 +34,7 @@ class AliMpConstants : public TObject
   static Int_t    StartPadIndex();
   static Int_t    NofChambers();
   static Int_t    NofGeomModules();
-  static Int_t    ManuMask(AliMpPlaneType planeType);
+  static Int_t    ManuMask(AliMp::PlaneType planeType);
   
  private:
   // unused derived functions

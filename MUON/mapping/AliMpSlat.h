@@ -58,7 +58,7 @@ class AliMpSlat : public TObject
 #endif  
   
   AliMpSlat();
-  AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending);
+  AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending);
   virtual ~AliMpSlat();
 
   TVector2 Dimensions() const;
@@ -135,7 +135,7 @@ class AliMpSlat : public TObject
     */
   void ForcePosition(const TVector2& pos);
   
-  AliMpPlaneType PlaneType() const { return fPlaneType; }
+  AliMp::PlaneType PlaneType() const { return fPlaneType; }
   
   Int_t NofPads() const { return fNofPads; }
  
@@ -144,7 +144,7 @@ class AliMpSlat : public TObject
   AliMpSlat& operator=(const AliMpSlat& rhs);
 
   TString fId; ///< The name of this slat, e.g. 112233N
-  AliMpPlaneType fPlaneType; ///< Whether it's bending or non-bending plane
+  AliMp::PlaneType fPlaneType; ///< Whether it's bending or non-bending plane
   Double_t fDX; ///< Half-size in X (cm)
   Double_t fDY; ///< Half-size in Y (cm)
   Int_t fNofPadsX; ///< Actual number of pads in x direction

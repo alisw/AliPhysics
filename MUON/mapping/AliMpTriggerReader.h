@@ -29,10 +29,6 @@
 #  include "AliMpPlaneType.h"
 #endif
 
-#ifndef ALI_MP_STATION_TYPE_H
-#  include "AliMpStationType.h"
-#endif
-
 class AliMpSlatMotifMap;
 class AliMpSlat;
 class AliMpTrigger;
@@ -45,14 +41,14 @@ class AliMpTriggerReader : public TObject
   AliMpTriggerReader(AliMpSlatMotifMap& motifMap);
   virtual ~AliMpTriggerReader();
 
-  AliMpTrigger* ReadSlat(const char* slatType, AliMpPlaneType planeType);
+  AliMpTrigger* ReadSlat(const char* slatType, AliMp::PlaneType planeType);
 
   AliMpPCB* ReadPCB(const char* pcbType);
   
 private:
     
   AliMpSlat* BuildSlat(const char* slatName, 
-                              AliMpPlaneType planeType,
+                              AliMp::PlaneType planeType,
                               const TList& descriptionLines,
                               Double_t scale=1.0);
   
@@ -77,7 +73,7 @@ private:
   AliMpPCB* PCB(const char* pcbType); 
   
   void ReadLines(const char* slatType,
-                        AliMpPlaneType planeType,
+                        AliMp::PlaneType planeType,
                         TList& lines,
                         Double_t& scale, Bool_t& flipX, Bool_t& flipY,
                         Int_t& srcLine, Int_t& destLine);

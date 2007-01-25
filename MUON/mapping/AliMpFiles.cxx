@@ -94,55 +94,55 @@ TString AliMpFiles::GetTop()
 }
 
 //______________________________________________________________________________
-TString AliMpFiles::PlaneDataDir(AliMpStationType station, 
-                                 AliMpPlaneType plane)
+TString AliMpFiles::PlaneDataDir(AliMp::StationType station, 
+                                 AliMp::PlaneType plane)
 {
 /// Returns path to data files with sector description
 /// for a specified plane.
 
   switch (station) {
-  case kStation1:
-  case kStation2:
+  case AliMp::kStation1:
+  case AliMp::kStation2:
     switch (plane) {
-    case kBendingPlane:
+    case AliMp::kBendingPlane:
       return GetTop() + fgkDataDir + StationDataDir(station) + fgkBendingDir;
       ;;
-    case kNonBendingPlane:   
+    case AliMp::kNonBendingPlane:   
       return GetTop() + fgkDataDir + StationDataDir(station) + fgkNonBendingDir;
       ;;
     }   
     break;
-  case kStation345:
-  case kStationTrigger:  
+  case AliMp::kStation345:
+  case AliMp::kStationTrigger:  
     return GetTop() + fgkDataDir + StationDataDir(station) + "/";
     break;
   default:  
-    AliFatalClass("Incomplete switch on AliMpPlaneType");
+    AliFatalClass("Incomplete switch on AliMp::PlaneType");
     break;
   }
   return TString();
 }
 
 //______________________________________________________________________________
-TString AliMpFiles::StationDataDir(AliMpStationType station)
+TString AliMpFiles::StationDataDir(AliMp::StationType station)
 {
 /// Returns the station directory name for the specified station number.
 
   TString stationDataDir(fgkStationDir);
   switch (station) {
-  case kStation1: 
+  case AliMp::kStation1: 
     stationDataDir += "1/";
     break;
     ;;
-  case kStation2: 
+  case AliMp::kStation2: 
     stationDataDir += "2/";
     break;
     ;;
-  case kStation345: 
+  case AliMp::kStation345: 
     stationDataDir += "345/";
     break;
     ;;      
-  case kStationTrigger:
+  case AliMp::kStationTrigger:
     stationDataDir += "Trigger/";
     break;
     ;;
@@ -166,7 +166,7 @@ TString AliMpFiles::BusPatchFilePath()
 }  
 
 //______________________________________________________________________________
-TString AliMpFiles::DENamesFilePath(AliMpStationType station)
+TString AliMpFiles::DENamesFilePath(AliMp::StationType station)
 {
 /// Return path to data file with DE names for given station.
  
@@ -178,36 +178,36 @@ TString AliMpFiles::LocalTriggerBoardMapping()
 {
 /// Return path to data file with local trigger board mapping.
 
-  return GetTop() + fgkDataDir + StationDataDir(kStationTrigger) 
+  return GetTop() + fgkDataDir + StationDataDir(AliMp::kStationTrigger) 
           + fgkTriggerLocalBoards + fgkDataExt;;
 }
 
 //_____________________________________________________________________________
-TString AliMpFiles::SlatFilePath(AliMpStationType stationType,
+TString AliMpFiles::SlatFilePath(AliMp::StationType stationType,
                                  const char* slatType,
-                                 AliMpPlaneType plane)
+                                 AliMp::PlaneType plane)
 {
 /// \todo add ..
 
   return TString(PlaneDataDir(stationType,plane) + slatType + "." +
-		 ( plane == kNonBendingPlane ? "NonBending":"Bending" ) + ".slat");
+		 ( plane == AliMp::kNonBendingPlane ? "NonBending":"Bending" ) + ".slat");
 }
 
 //_____________________________________________________________________________
-TString AliMpFiles::SlatPCBFilePath(AliMpStationType stationType,
+TString AliMpFiles::SlatPCBFilePath(AliMp::StationType stationType,
                                     const char* pcbType)
 {
 /// Get the full path for a given PCB (only relevant to stations 3,
 /// 4, 5 and trigger). The bending parameter below is of no use in this case, but
 /// we use it to re-use the PlaneDataDir() method untouched.
 
-  return TString(PlaneDataDir(stationType,kNonBendingPlane) + pcbType +
+  return TString(PlaneDataDir(stationType,AliMp::kNonBendingPlane) + pcbType +
                  ".pcb");
 }
 
 //______________________________________________________________________________
-TString AliMpFiles::SectorFilePath(AliMpStationType station, 
-                                   AliMpPlaneType plane)
+TString AliMpFiles::SectorFilePath(AliMp::StationType station, 
+                                   AliMp::PlaneType plane)
 {
 /// Return path to data file with sector description.
  
@@ -215,8 +215,8 @@ TString AliMpFiles::SectorFilePath(AliMpStationType station,
 }
     
 //______________________________________________________________________________
-TString AliMpFiles::SectorSpecialFilePath(AliMpStationType station, 
-                                          AliMpPlaneType plane)
+TString AliMpFiles::SectorSpecialFilePath(AliMp::StationType station, 
+                                          AliMp::PlaneType plane)
 {
 /// Return path to data file with sector special description (irregular motifs).
 
@@ -224,8 +224,8 @@ TString AliMpFiles::SectorSpecialFilePath(AliMpStationType station,
 }
     
 //______________________________________________________________________________
-TString AliMpFiles::SectorSpecialFilePath2(AliMpStationType station, 
-                                           AliMpPlaneType plane)
+TString AliMpFiles::SectorSpecialFilePath2(AliMp::StationType station, 
+                                           AliMp::PlaneType plane)
 {
 /// Returns path to data file with sector special description (irregular motifs).
 
@@ -241,8 +241,8 @@ TString AliMpFiles::MotifFileName(const TString& motifTypeID)
 }
 
 //______________________________________________________________________________
-TString AliMpFiles::MotifFilePath(AliMpStationType station, 
-                                  AliMpPlaneType plane, 
+TString AliMpFiles::MotifFilePath(AliMp::StationType station, 
+                                  AliMp::PlaneType plane, 
                                   const TString& motifTypeID)
 {
 /// Returns path to data file for a given motif type.
@@ -259,8 +259,8 @@ TString AliMpFiles::PadPosFileName(const TString& motifTypeID)
 }
 
 //______________________________________________________________________________
-TString AliMpFiles::PadPosFilePath(AliMpStationType station, 
-                                   AliMpPlaneType plane, 
+TString AliMpFiles::PadPosFilePath(AliMp::StationType station, 
+                                   AliMp::PlaneType plane, 
                                    const TString& motifTypeID)
 {
 /// Returns path to data file with pad positions for a given motif type.
@@ -278,8 +278,8 @@ TString AliMpFiles::MotifSpecialFileName(const TString& motifID)
 }
 
 //______________________________________________________________________________ 
-TString AliMpFiles::MotifSpecialFilePath(AliMpStationType station, 
-                                         AliMpPlaneType plane,
+TString AliMpFiles::MotifSpecialFilePath(AliMp::StationType station, 
+                                         AliMp::PlaneType plane,
                                          const TString& motifID)
 {
 /// Returns path to data file with pad dimensions for a given motif ID.
@@ -288,7 +288,7 @@ TString AliMpFiles::MotifSpecialFilePath(AliMpStationType station,
 }
 
 //______________________________________________________________________________ 
-TString AliMpFiles::BergToGCFilePath(AliMpStationType station)
+TString AliMpFiles::BergToGCFilePath(AliMp::StationType station)
 {
 /// Returns the path of the file which describes the correspondance between
 /// the berg number and the gassiplex channel.
@@ -298,7 +298,7 @@ TString AliMpFiles::BergToGCFilePath(AliMpStationType station)
 }
 
 //______________________________________________________________________________ 
-TString AliMpFiles::ManuToSerialPath(const TString& deName, AliMpStationType station)
+TString AliMpFiles::ManuToSerialPath(const TString& deName, AliMp::StationType station)
 {
 /// Returns the path of the file for the manu id to their serial number
 

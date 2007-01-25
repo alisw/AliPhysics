@@ -39,7 +39,7 @@ void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = T
   // Warning : this function leaks memory. But should be fine as only used 
   // interactively to check a few motifs at once...
   //
-  AliMpMotifReader reader(kStation345,kBendingPlane);
+  AliMpMotifReader reader(AliMp::kStation345,AliMp::kBendingPlane);
   AliMpMotifType* type = reader.BuildMotifType(motifType);
   if (!type)
   {
@@ -63,7 +63,7 @@ void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = T
 //220000N
 //122000NR1
 //112200NR2
-void testGraphicsSlat(AliMpPlaneType planeType = kBendingPlane, 
+void testGraphicsSlat(AliMpPlaneType planeType = AliMp::kBendingPlane, 
 	              Option_t* option = "PMCI",
 		      Bool_t saveJPG = false)
 {

@@ -51,7 +51,7 @@ class AliMpMotifReader : public TObject
 #endif    
 
   public:
-    AliMpMotifReader(AliMpStationType station, AliMpPlaneType plane);
+    AliMpMotifReader(AliMp::StationType station, AliMp::PlaneType plane);
     AliMpMotifReader();
     virtual ~AliMpMotifReader();
   
@@ -67,8 +67,8 @@ class AliMpMotifReader : public TObject
     AliMpMotifReader&  operator = (const AliMpMotifReader& right);
 
     // data members  
-    AliMpStationType  fStationType; ///< station type 
-    AliMpPlaneType    fPlaneType;   ///< plane type 
+    AliMp::StationType  fStationType; ///< station type 
+    AliMp::PlaneType    fPlaneType;   ///< plane type 
 
   ClassDef(AliMpMotifReader,1)  // Data reader
 };

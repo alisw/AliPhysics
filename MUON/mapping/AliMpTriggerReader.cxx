@@ -84,7 +84,7 @@ AliMpTriggerReader::~AliMpTriggerReader()
 //_____________________________________________________________________________
 AliMpSlat*
 AliMpTriggerReader::BuildSlat(const char* slatName,
-                              AliMpPlaneType planeType,
+                              AliMp::PlaneType planeType,
                               const TList& lines,
                               Double_t scale)
 {
@@ -448,7 +448,7 @@ AliMpTriggerReader::LocalBoardNumber(const char* localBoardName)
 //_____________________________________________________________________________
 void 
 AliMpTriggerReader::ReadLines(const char* slatType,
-                              AliMpPlaneType planeType,
+                              AliMp::PlaneType planeType,
                               TList& lines,
                               Double_t& scale,
                               Bool_t& flipX, Bool_t& flipY,
@@ -463,7 +463,7 @@ AliMpTriggerReader::ReadLines(const char* slatType,
                        " destLine %d\n",slatType,scale,flipX,flipY,
                        srcLine,destLine));
   
-  TString filename(AliMpFiles::SlatFilePath(kStationTrigger,slatType,
+  TString filename(AliMpFiles::SlatFilePath(AliMp::kStationTrigger,slatType,
                                             planeType).Data());
   std::ifstream in(filename.Data());
   if (!in.good()) 
@@ -598,14 +598,14 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
     pcbName = pcbName(0,pos);
   }
   
-  std::ifstream in(AliMpFiles::SlatPCBFilePath(kStationTrigger,pcbName).Data());
+  std::ifstream in(AliMpFiles::SlatPCBFilePath(AliMp::kStationTrigger,pcbName).Data());
   if (!in.good()) 
   {
     AliErrorClass(Form("Cannot open file for PCB %s",pcbName.Data()));
     return 0;
   }
  
-  AliMpMotifReader reader(kStationTrigger,kNonBendingPlane); 
+  AliMpMotifReader reader(AliMp::kStationTrigger,AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for trigger, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory
@@ -713,7 +713,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
 
 //_____________________________________________________________________________
 AliMpTrigger*
-AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
+AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
 {
   ///
   /// Create a new AliMpTrigger object, by reading it from file.

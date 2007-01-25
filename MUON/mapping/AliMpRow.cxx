@@ -33,6 +33,8 @@
 #include "AliMpMotifMap.h"
 #include "AliMpConstants.h"
 
+#include "AliLog.h"
+
 #include <TMath.h>
 #include <Riostream.h>
 
@@ -283,7 +285,7 @@ void AliMpRow::SetMotifPositions()
 }    
 
 //_____________________________________________________________________________
-void AliMpRow::SetGlobalIndices(AliMpDirection constPadSizeDirection, 
+void AliMpRow::SetGlobalIndices(AliMp::Direction constPadSizeDirection, 
                                 AliMpRow* rowBefore)
 {
 /// Set the global indices limits to its row segments, motif positions
@@ -301,7 +303,7 @@ void AliMpRow::SetGlobalIndices(AliMpDirection constPadSizeDirection,
      
        // Find the y index value of the low edge
        if (rowBefore) {
-         if (constPadSizeDirection == kY) {
+         if (constPadSizeDirection == AliMp::kY) {
            iy = rowBefore->GetHighIndicesLimit().GetSecond()+1;
          } 
 	 else {

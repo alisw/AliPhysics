@@ -37,7 +37,7 @@ class AliMpMotifType;
 class AliMpSectorReader : public TObject
 {
   public:
-    AliMpSectorReader(AliMpStationType station, AliMpPlaneType plane);
+    AliMpSectorReader(AliMp::StationType station, AliMp::PlaneType plane);
     AliMpSectorReader();
     virtual ~AliMpSectorReader();
   
@@ -55,12 +55,12 @@ class AliMpSectorReader : public TObject
     void  ReadRowSegmentsData(ifstream& in,
                           AliMpZone* zone, AliMpSubZone* subZone);
     AliMpVMotif*  ReadMotifData(ifstream& in, AliMpZone* zone);
-    void  ReadSectorSpecialData(ifstream& in, AliMpXDirection direction);
+    void  ReadSectorSpecialData(ifstream& in, AliMp::XDirection direction);
     void  ReadMotifsSpecialData(ifstream& in);
-    void  ReadRowSpecialData(ifstream& in, AliMpXDirection direction);
+    void  ReadRowSpecialData(ifstream& in, AliMp::XDirection direction);
     void  ReadRowSegmentSpecialData(ifstream& in,
                           AliMpVRowSegmentSpecial* segment,
-			  AliMpXDirection direction);
+			  AliMp::XDirection direction);
     
     // static data members
     static const TString  fgkSectorKeyword;        ///< sector keyword
@@ -75,10 +75,10 @@ class AliMpSectorReader : public TObject
     static const TString  fgkPadRowSegmentKeyword; ///< pad row segment keyword
   
     // data members  
-    AliMpStationType  fStationType; ///< station type 
-    AliMpPlaneType    fPlaneType;   ///< plane type 
-    AliMpSector*      fSector;      ///< sector
-    AliMpMotifReader* fMotifReader; ///< motif reader
+    AliMp::StationType  fStationType; ///< station type 
+    AliMp::PlaneType    fPlaneType;   ///< plane type 
+    AliMpSector*        fSector;      ///< sector
+    AliMpMotifReader*   fMotifReader; ///< motif reader
 
   ClassDef(AliMpSectorReader,1)  // Data reader
 };

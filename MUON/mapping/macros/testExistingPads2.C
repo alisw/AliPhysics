@@ -9,8 +9,8 @@
 
 #include <iomanip>
 
-void testExistingPads2(AliMpStationType station = kStation1,
-                       AliMpPlaneType plane = kBendingPlane) 
+void testExistingPads2(AliMp::StationType station = AliMp::kStation1,
+                       AliMp::PlaneType plane = AliMp::kBendingPlane) 
 {
   AliMpSectorReader r(station, plane);
   AliMpSector* sector = r.BuildSector();
@@ -22,7 +22,7 @@ void testExistingPads2(AliMpStationType station = kStation1,
   // First loop over indices
   cout << "Iterating via indices ..." << endl;
   Int_t counter1 = 0;
-  if ( sector->GetDirection() == kX )
+  if ( sector->GetDirection() == AliMp::kX )
     for (Int_t i=1; i<segmentation.MaxPadIndexX()+1; i++) {
       for (Int_t j=1; j<segmentation.MaxPadIndexY()+1; j++) {
         AliMpIntPair indices(i,j);
@@ -32,7 +32,7 @@ void testExistingPads2(AliMpStationType station = kStation1,
       }
     }
 
-  if ( sector->GetDirection() == kY )
+  if ( sector->GetDirection() == AliMp::kY )
     for (Int_t j=1; j<segmentation.MaxPadIndexY()+1; j++) {
       for (Int_t i=1; i<segmentation.MaxPadIndexX()+1; i++) {
         AliMpIntPair indices(i,j);

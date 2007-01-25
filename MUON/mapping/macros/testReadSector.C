@@ -5,8 +5,8 @@
 
 #include <iomanip>
 
-void testReadSector(AliMpStationType station = kStation1,
-                    AliMpPlaneType plane = kBendingPlane, 
+void testReadSector(AliMp::StationType station = AliMp::kStation1,
+                    AliMp::PlaneType plane = AliMp::kBendingPlane, 
 	 	    Bool_t rootInput = false)
 {
   AliMpSector *sector = 0;
@@ -39,16 +39,16 @@ void testReadSector(AliMpStationType station = kStation1,
   cout << endl;
 
   // Find row test
-  if (plane == kBendingPlane)
+  if (plane == AliMp::kBendingPlane)
     cout << "0th row low border " << sector->FindRow(TVector2(0., 0.))->GetID() << endl;
-  if (plane == kNonBendingPlane)
+  if (plane == AliMp::kNonBendingPlane)
     cout << "0th row low border " << sector->FindRow(TVector2(0., 0.215))->GetID() << endl;
   cout << "in 0th row         " << sector->FindRow(TVector2(0., 2.5))->GetID() << endl;
   cout << "0th row up border  " << sector->FindRow(TVector2(0., 6.72))->GetID() << endl;
   cout << "in 4th row         " << sector->FindRow(TVector2(0., 30.))->GetID() << endl;
-  if (plane == kBendingPlane)
+  if (plane == AliMp::kBendingPlane)
     cout << "12th row up border " << sector->FindRow(TVector2(0., 89.46))->GetID() << endl;
-  if (plane == kNonBendingPlane)
+  if (plane == AliMp::kNonBendingPlane)
     cout << "12th row up border " << sector->FindRow(TVector2(0., 84.84))->GetID() << endl;
   cout << endl;
   
@@ -84,7 +84,7 @@ void testReadSector(AliMpStationType station = kStation1,
   }
 
   // Find special motif test
-  if (plane == kNonBendingPlane) {
+  if (plane == AliMp::kNonBendingPlane) {
   
     Int_t ids[6] = { 20, 46, 47, 74, 75, 76 };
     for (Int_t i=0; i<6 ; i++) {

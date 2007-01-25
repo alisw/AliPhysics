@@ -42,7 +42,7 @@ class AliMpTrigger : public TObject
 {
 public:
   AliMpTrigger();
-  AliMpTrigger(const char* slatType, AliMpPlaneType bendingOrNonBending);
+  AliMpTrigger(const char* slatType, AliMp::PlaneType bendingOrNonBending);
   virtual ~AliMpTrigger();
   
   Bool_t AdoptLayer(AliMpSlat* slat);
@@ -70,7 +70,7 @@ public:
   
   void Print(Option_t* option="") const;
 
-  AliMpPlaneType PlaneType() const;
+  AliMp::PlaneType PlaneType() const;
   
   TVector2 Dimensions() const;
   
@@ -79,7 +79,7 @@ private:
   Bool_t IsLayerValid(int layer) const;
   
   TString fId; ///< name of that slat
-  AliMpPlaneType fPlaneType; ///< bending or non-bending
+  AliMp::PlaneType fPlaneType; ///< bending or non-bending
   TObjArray fSlats; ///< virtual slat composing this trigger slat
   TObjArray fSlatSegmentations; ///< segmentations for virtual slats
   Int_t fMaxNofPadsY; ///< max number of pads in y direction

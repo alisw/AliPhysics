@@ -24,8 +24,8 @@ void MarkPads(AliMpVPadIterator& it,Int_t xmax,Int_t ymax,Bool_t print=kTRUE)
   }
 }
 
-void testAnyPadIterators(AliMpStationType station = kStation1,
-                         AliMpPlaneType plane = kBendingPlane, 
+void testAnyPadIterators(AliMp::StationType station = AliMp::kStation1,
+                         AliMp::PlaneType plane = AliMp::kBendingPlane, 
 		         Bool_t rootInput = false,
                          Int_t i=50, Int_t j=50)
 {

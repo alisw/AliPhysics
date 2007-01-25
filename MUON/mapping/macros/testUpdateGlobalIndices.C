@@ -5,7 +5,7 @@
 
 void testUpdateGlobalIndices()
 {
-  AliMpSectorReader reader(kStation1, kNonBendingPlane);  
+  AliMpSectorReader reader(AliMp::kStation1, AliMp::kNonBendingPlane);  
   //reader.SetVerboseLevel(1);
   
   // Read data 

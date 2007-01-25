@@ -31,7 +31,6 @@
 #include "AliMpMotifType.h"
 #include "AliMpConnection.h"
 #include "AliMpIntPair.h"
-#include "AliMpDirection.h"
 
 #include "AliLog.h"
 
@@ -49,8 +48,8 @@ ClassImp(AliMpMotifReader)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpMotifReader::AliMpMotifReader(AliMpStationType station, 
-                                   AliMpPlaneType plane) 
+AliMpMotifReader::AliMpMotifReader(AliMp::StationType station, 
+                                   AliMp::PlaneType plane) 
   : TObject(),
     fStationType(station),
     fPlaneType(plane)
@@ -61,8 +60,8 @@ AliMpMotifReader::AliMpMotifReader(AliMpStationType station,
 //_____________________________________________________________________________
 AliMpMotifReader::AliMpMotifReader() 
   : TObject(),
-    fStationType(kStation1),
-    fPlaneType(kBendingPlane)
+    fStationType(AliMp::kStation1),
+    fPlaneType(AliMp::kBendingPlane)
 {
 /// Default constructor
 }
@@ -130,7 +129,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
   ifstream bergToGCFile(bergToGCFileName);
   const Int_t knbergpins = 
-    (fStationType == kStation1 || fStationType == kStation2 ) ? 80 : 100;
+    (fStationType == AliMp::kStation1 || fStationType == AliMp::kStation2 ) ? 80 : 100;
   // Station1 & 2 Bergstak connectors have 80 pins, while for stations
   // 3, 4 and 5 they have 100 pins.
   Int_t gassiChannel[100];

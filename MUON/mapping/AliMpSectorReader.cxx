@@ -71,8 +71,8 @@ const TString  AliMpSectorReader::fgkPadRowsKeyword        = "PAD_ROWS";
 const TString  AliMpSectorReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
 
 //_____________________________________________________________________________
-AliMpSectorReader::AliMpSectorReader(AliMpStationType station, 
-                                     AliMpPlaneType plane) 
+AliMpSectorReader::AliMpSectorReader(AliMp::StationType station, 
+                                     AliMp::PlaneType plane) 
   : TObject(),
     fStationType(station),
     fPlaneType(plane),
@@ -85,8 +85,8 @@ AliMpSectorReader::AliMpSectorReader(AliMpStationType station,
 //_____________________________________________________________________________
 AliMpSectorReader::AliMpSectorReader() 
   : TObject(),
-    fStationType(kStation1),
-    fPlaneType(kBendingPlane),
+    fStationType(AliMp::kStation1),
+    fPlaneType(AliMp::kBendingPlane),
     fSector(0),
     fMotifReader(0)
 {
@@ -130,8 +130,8 @@ void  AliMpSectorReader::ReadSectorData(ifstream& in)
   in >> offsetX;
   in >> offsetY;
   
-  AliMpDirection direction;
-  direction = (directionStr == "Y") ? kY  :  kX;
+  AliMp::Direction direction;
+  direction = (directionStr == "Y") ? AliMp::kY  :  AliMp::kX;
 
   AliDebugStream(2) << nofZones << " " <<  nofRows << endl;
 
@@ -299,7 +299,7 @@ void AliMpSectorReader::ReadRowSegmentsData(ifstream& in,
 }   
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection direction)
+void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMp::XDirection direction)
 {
 /// Read sector input data
 /// with a special (irregular) motifs.
@@ -356,7 +356,7 @@ void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection direction)
+void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMp::XDirection direction)
 {
 /// Read row input data
 /// with a special (irregular) motifs.
@@ -370,7 +370,7 @@ void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection directi
   AliMpRow* row = fSector->GetRow(id);
 
   AliMpVRowSegmentSpecial* segment = 0;
-  if (direction == kLeft) {
+  if (direction == AliMp::kLeft) {
     AliMpVRowSegment* firstNormalSeg = row->GetRowSegment(0);
     Double_t offsetX = firstNormalSeg->LeftBorderX();
   
@@ -419,7 +419,7 @@ void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection directi
 //_____________________________________________________________________________
 void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in, 
                                             AliMpVRowSegmentSpecial* segment,
-					    AliMpXDirection direction)
+					    AliMp::XDirection direction)
 {
 /// Read row segment input data
 /// with a special (irregular) motifs.
@@ -556,7 +556,7 @@ AliMpSector* AliMpSectorReader::BuildSector()
        return 0;
     }
     
-    ReadSectorSpecialData(in2, kLeft);
+    ReadSectorSpecialData(in2, AliMp::kLeft);
   }   
 
   // Open input file for special outer zone
@@ -571,7 +571,7 @@ AliMpSector* AliMpSectorReader::BuildSector()
        return 0;
     }
     
-    ReadSectorSpecialData(in3, kRight);
+    ReadSectorSpecialData(in3, AliMp::kRight);
   }   
 
   fSector->Initialize();

@@ -66,7 +66,7 @@ namespace
 AliMpTrigger::AliMpTrigger()
 : TObject(), 
   fId(""), 
-  fPlaneType(kNonBendingPlane), 
+  fPlaneType(AliMp::kNonBendingPlane), 
   fSlats(0),
   fSlatSegmentations(0),
   fMaxNofPadsY(0),
@@ -82,7 +82,7 @@ AliMpTrigger::AliMpTrigger()
 }
 
 //_____________________________________________________________________________
-AliMpTrigger::AliMpTrigger(const char* slatType, AliMpPlaneType bendingOrNot)
+AliMpTrigger::AliMpTrigger(const char* slatType, AliMp::PlaneType bendingOrNot)
     :  TObject(), 
        fId(slatType), 
        fPlaneType(bendingOrNot), 
@@ -208,11 +208,11 @@ AliMpTrigger::GetName() const
 {
   // returns the name (=id+bending/non-bending) of this slat
   TString name(GetID());
-  if ( fPlaneType == kBendingPlane )
+  if ( fPlaneType == AliMp::kBendingPlane )
   {
     name += ".Bending";
   }
-  else if ( fPlaneType == kNonBendingPlane )
+  else if ( fPlaneType == AliMp::kNonBendingPlane )
   {
     name += ".NonBending";
   }
@@ -289,7 +289,7 @@ AliMpTrigger::IsLayerValid(int layer) const
 }
 
 //_____________________________________________________________________________
-AliMpPlaneType
+AliMp::PlaneType
 AliMpTrigger::PlaneType() const
 {
   // Bending or not

@@ -58,7 +58,7 @@ class AliMpRow : public AliMpVIndexed
     void      SetRowSegmentOffsets(const TVector2& offset);
     Double_t  SetOffsetY(Double_t offsetY);
     void      SetMotifPositions();
-    void      SetGlobalIndices(AliMpDirection constPadSizeDirection, 
+    void      SetGlobalIndices(AliMp::Direction constPadSizeDirection, 
                                AliMpRow* rowBefore);
 
     // geometry

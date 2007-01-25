@@ -3,8 +3,8 @@
 //
 // Test macro for reading  sector, and iterate over it
 
-void testSectorPadIterators(AliMpStationType station = kStation1,
-                            AliMpPlaneType plane = kBendingPlane,
+void testSectorPadIterators(AliMp::StationType station = AliMp::kStation1,
+                            AliMp::PlaneType plane = AliMp::kBendingPlane,
 	 	            Bool_t rootInput = false)
 {
   AliMpSector *sector = 0;

@@ -33,6 +33,8 @@
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
 
+#include "AliLog.h"
+
 #include <Riostream.h>
 
 /// \cond CLASSIMP
@@ -41,7 +43,7 @@ ClassImp(AliMpSector)
 
 //_____________________________________________________________________________
 AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows, 
-                         AliMpDirection direction, const TVector2& offset) 
+                         AliMp::Direction direction, const TVector2& offset) 
   : TNamed("Sector", ""),
     fID(id),
     fOffset(offset),
@@ -85,7 +87,7 @@ AliMpSector::AliMpSector()
     fZones(),
     fRows(),
     fMotifMap(0),
-    fDirection(kX),
+    fDirection(AliMp::kX),
     fMinPadDimensions(TVector2(0., 0.)),
     fMaxPadIndices(AliMpIntPair::Invalid()),
     fNofPads(0)
@@ -185,9 +187,9 @@ void  AliMpSector::SetMinPadDimensions()
   for (Int_t i=1; i<GetNofZones()+1; i++) {
     TVector2 padDimensions = GetZone(i)->GetPadDimensions();
     
-    if ( fDirection == kX &&  
+    if ( fDirection == AliMp::kX &&  
          padDimensions.Y() > 0. && padDimensions.Y() < fMinPadDimensions.Y() ||
-         fDirection == kY && 
+         fDirection == AliMp::kY && 
 	 padDimensions.X() > 0. && padDimensions.X() < fMinPadDimensions.X())
       
       fMinPadDimensions = padDimensions;
@@ -507,12 +509,12 @@ AliMpRow* AliMpSector::GetRow(Int_t rowID) const
 }
 
 //_____________________________________________________________________________
-AliMpPlaneType
+AliMp::PlaneType
 AliMpSector::GetPlaneType() const
 {
 /// Return the plane type
 
-  return GetDirection()==kY ? kBendingPlane : kNonBendingPlane;
+  return GetDirection()==AliMp::kY ? AliMp::kBendingPlane : AliMp::kNonBendingPlane;
 }
 
 //_____________________________________________________________________________

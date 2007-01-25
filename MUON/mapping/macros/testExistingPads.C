@@ -3,8 +3,8 @@
 //
 // Test macro for testing which pad is seen as "existing" by AliMpSector.
 
-void testExistingPads(AliMpStationType station = kStation1,
-                      AliMpPlaneType plane = kBendingPlane, 
+void testExistingPads(AliMp::StationType station = AliMp::kStation1,
+                      AliMp::PlaneType plane = AliMp::kBendingPlane, 
 		      Bool_t rootInput = false)
 {
   AliMpSector *sector = 0;

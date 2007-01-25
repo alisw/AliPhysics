@@ -41,7 +41,7 @@ class AliMpPadRow : public TObject
 #endif
 
   public:
-    AliMpPadRow(AliMpXDirection direction);
+    AliMpPadRow(AliMp::XDirection direction);
     AliMpPadRow();
     virtual ~AliMpPadRow();
   
@@ -67,7 +67,7 @@ class AliMpPadRow : public TObject
     Double_t CurrentBorderX() const;
 
     // data members
-    AliMpXDirection     fDirection; ///< the pad row x direction
+    AliMp::XDirection   fDirection; ///< the pad row x direction
     Int_t               fID;        ///< the pad row ID
     Double_t            fOffsetX;   ///< the x position of the border
     PadRowSegmentVector fSegments;  ///< the pad row segments

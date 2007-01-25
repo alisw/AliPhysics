@@ -101,9 +101,9 @@ bool testAllDetelem()
       slattypes.insert(it->second);
       std::cout << it->first << " : " << it->second <<  " ";
       AliMpSlat* b = static_cast<AliMpSlat*>
-	(AliMpSegmentationManager::Segmentation(it->first,kBendingPlane));
+	(AliMpSegmentationManager::Segmentation(it->first,AliMp::kBendingPlane));
       AliMpSlat* nb = static_cast<AliMpSlat*>
-	(AliMpSegmentationManager::Segmentation(it->first,kNonBendingPlane));
+	(AliMpSegmentationManager::Segmentation(it->first,AliMp::kNonBendingPlane));
       std::cout << " B : " << b << " NB : " << nb;
       Double_t bx = 0.0;
       Double_t nbx = 0.0;
@@ -193,7 +193,7 @@ bool getSegmentation(int detElemId,
   AliMUONChamber& chamber = muon->Chamber(ichamber);
 
   int icathode = 1;
-  if ( bendingornot == kNonBendingPlane ) icathode = 2;
+  if ( bendingornot == AliMp::kNonBendingPlane ) icathode = 2;
 
   AliMUONGeometrySegmentation* gs = chamber.SegmentationModel2(icathode);
   if (!gs) return error(Form("Cannot get cathode %d",icathode));
@@ -298,11 +298,11 @@ void countPads(Int_t d1, Int_t d2)
   AliMUONVGeometryDESegmentation* o;
   AliMUONVGeometryDESegmentation* n;
 
-  AliMpPlaneType pt[] = { kNonBendingPlane, kBendingPlane };
+  AliMpPlaneType pt[] = { AliMp::kNonBendingPlane, AliMp::kBendingPlane };
 
   for ( int ipt = 0; ipt < 2; ++ipt )
     {
-      std::cout << ( (pt[ipt] == kNonBendingPlane )?"NonBending"
+      std::cout << ( (pt[ipt] == AliMp::kNonBendingPlane )?"NonBending"
 		     : "Bending" )
 		<< std::endl;
       Int_t p_nnpads = 0;

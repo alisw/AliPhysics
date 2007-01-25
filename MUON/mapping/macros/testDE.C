@@ -5,15 +5,14 @@
 
 void testDE() 
 {
-  AliMpSegFactory factory; 
-
   AliMpDEIterator it;
   for ( it.First(); ! it.IsDone(); it.Next() ) {
-    cout << "In detection element: " << it.CurrentDE() << endl;
+    cout << "In detection element: " << it.CurrentDEId() << endl;
 
     // Create/get segmentation via factory
     AliMpVSegmentation* segmentation 
-      = factory.CreateMpSegmentation(it.CurrentDE(), 0);
+      = AliMpSegmentation::Instance()
+          ->GetMpSegmentation(it.CurrentDEId(), kCath0);
       
     // Print number of pads
    cout << "   number of pads: " << segmentation->NofPads() << endl;   
@@ -25,7 +24,4 @@ void testDE()
     
     cout << "   found pad: " << pad << endl << endl;
   }
-
-  // Delete all created segmentations
-  factory.DeleteSegmentations();
 }

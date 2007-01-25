@@ -4,10 +4,10 @@
 // Test macro for making an output file, where all mapping elements
 // indices & positions are written.
 
-void testPrintLimits(AliMpStationType station = kStation1,
-                    AliMpPlaneType plane = kBendingPlane, 
-		    Bool_t rootInput = false,
-		    ostream& out=cout)
+void testPrintLimits(AliMp::StationType station = AliMp::kStation1,
+                     AliMp::PlaneType plane = AliMp::kBendingPlane, 
+		     Bool_t rootInput = false,
+		     ostream& out=cout)
 {
   AliMpSector *sector = 0;
   if (!rootInput) {

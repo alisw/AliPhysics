@@ -40,7 +40,7 @@ class AliMpSt345Reader : public TObject
   AliMpSt345Reader(AliMpSlatMotifMap&);
   virtual ~AliMpSt345Reader();
 
-  AliMpSlat* ReadSlat(const char* slatType, AliMpPlaneType planeType);
+  AliMpSlat* ReadSlat(const char* slatType, AliMp::PlaneType planeType);
 
   AliMpPCB* ReadPCB(const char* pcbType);
 

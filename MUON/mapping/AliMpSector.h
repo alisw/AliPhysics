@@ -54,7 +54,7 @@ class AliMpSector : public TNamed
 
   public:
     AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
-                AliMpDirection direction, const TVector2& offset);
+                AliMp::Direction direction, const TVector2& offset);
     AliMpSector();
     virtual ~AliMpSector();
   
@@ -88,8 +88,8 @@ class AliMpSector : public TNamed
     Int_t       GetNofRows() const;
     AliMpRow*   GetRow(Int_t i) const;
 
-    AliMpDirection  GetDirection() const;  
-    AliMpPlaneType  GetPlaneType() const;  
+    AliMp::Direction  GetDirection() const;  
+    AliMp::PlaneType  GetPlaneType() const;  
 
     TVector2        GetMinPadDimensions() const;
     AliMpIntPair    GetMaxPadIndices() const;
@@ -119,11 +119,11 @@ class AliMpSector : public TNamed
     TVector2   fOffset;   ///< sector position
     ZoneVector fZones;    ///< zones
     RowVector  fRows;     ///< rows
-    AliMpMotifMap* fMotifMap; ///< motif map
-    AliMpDirection fDirection;///< the direction of constant pad size
-    TVector2       fMinPadDimensions; ///< minimal pad dimensions
-    AliMpIntPair   fMaxPadIndices;    ///< maximum pad indices    
-    Int_t          fNofPads;          ///<  total number of pads
+    AliMpMotifMap*   fMotifMap; ///< motif map
+    AliMp::Direction fDirection;///< the direction of constant pad size
+    TVector2         fMinPadDimensions; ///< minimal pad dimensions
+    AliMpIntPair     fMaxPadIndices;    ///< maximum pad indices    
+    Int_t            fNofPads;          ///<  total number of pads
 
 
   ClassDef(AliMpSector,1)  // Sector
@@ -131,7 +131,7 @@ class AliMpSector : public TNamed
 
 // inline functions
 
-inline AliMpDirection AliMpSector::GetDirection() const 
+inline AliMp::Direction AliMpSector::GetDirection() const 
 { return fDirection; }    
 
 inline TVector2   AliMpSector::GetMinPadDimensions() const

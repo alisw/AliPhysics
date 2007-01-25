@@ -36,7 +36,7 @@ ClassImp(AliMpPadRow)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpPadRow::AliMpPadRow(AliMpXDirection direction) 
+AliMpPadRow::AliMpPadRow(AliMp::XDirection direction) 
   : TObject(),
     fDirection(direction), 
     fID(0),
@@ -49,7 +49,7 @@ AliMpPadRow::AliMpPadRow(AliMpXDirection direction)
 //_____________________________________________________________________________
 AliMpPadRow::AliMpPadRow() 
   : TObject(),
-    fDirection(kLeft), 
+    fDirection(AliMp::kLeft), 
     fID(0),
     fOffsetX(0),
     fSegments() 
@@ -79,7 +79,7 @@ Double_t AliMpPadRow::CurrentBorderX() const
   if (GetNofPadRowSegments() == 0)
       return fOffsetX;
   else 
-    if (fDirection == kLeft)
+    if (fDirection == AliMp::kLeft)
       return GetPadRowSegment(GetNofPadRowSegments()-1)->LeftBorderX();
     else  
       return GetPadRowSegment(GetNofPadRowSegments()-1)->RightBorderX();
@@ -98,7 +98,7 @@ AliMpPadRow::AddPadRowSegment(AliMpMotif* motif, Int_t motifPositionId,
 
   AliMpVPadRowSegment* padRowSegment = 0;
 
-  if (fDirection == kLeft) {
+  if (fDirection == AliMp::kLeft) {
     padRowSegment 
       = new AliMpPadRowLSegment(this, motif, motifPositionId, nofPads);
   }    

@@ -21,6 +21,7 @@
 #include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
+#include "AliMpCathodType.h"
 #include "AliMpVSegmentation.h"
 #include "TArrayI.h"
 #include "TList.h"
@@ -87,14 +88,15 @@ AliMpManuList::ManuList()
   
   while ( !it.IsDone() )
   {
-    Int_t detElemId = it.CurrentDE();
-    AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
-    if ( stationType != kStationTrigger ) 
+    Int_t detElemId = it.CurrentDEId();
+    AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+    if ( stationType != AliMp::kStationTrigger ) 
     {
-      for ( Int_t cath = 0; cath <=1 ; ++cath )
+      for ( Int_t cath = AliMp::kCath0; cath <=AliMp::kCath1 ; ++cath )
       {
         const AliMpVSegmentation* seg 
-	  = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cath);
+	  = AliMpSegmentation::Instance()
+            ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
         
         TArrayI manus;
         
@@ -136,10 +138,12 @@ AliMpManuList::NumberOfManus(Int_t detElemId)
 {
   /// Returns the number of manus contained in the given detection element.
   Int_t n(0);
-  for ( Int_t i = 0; i < 2; ++i )
+  for ( Int_t i = AliMp::kCath0; i <= AliMp::kCath1; ++i )
   {
     const AliMpVSegmentation* seg 
-      = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,i);
+      = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId,AliMp::GetCathodType(i));
+        
     TArrayI manus;
     seg->GetAllElectronicCardIDs(manus);
     n += manus.GetSize();

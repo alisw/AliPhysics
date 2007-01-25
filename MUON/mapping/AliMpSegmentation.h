@@ -32,6 +32,10 @@
 #  include "AliMpExMap.h"
 #endif
 
+#ifndef ALI_MP_CATHOD_TYPE_H
+#  include "AliMpCathodType.h"
+#endif
+
 #ifndef ALIMPSLATMOTIFMAP_H
 #  include "AliMpSlatMotifMap.h"
 #endif
@@ -51,7 +55,7 @@ class AliMpSegmentation : public  TObject {
 
     // methods
     const AliMpVSegmentation* GetMpSegmentation(
-                                 Int_t detElemId, Int_t cath, 
+                                 Int_t detElemId, AliMp::CathodType cath, 
 			         Bool_t warn = true) const;
 
     const AliMpVSegmentation* GetMpSegmentationByElectronics(
@@ -64,7 +68,7 @@ class AliMpSegmentation : public  TObject {
     AliMpSegmentation& operator=(const AliMpSegmentation& rhs);
 
     AliMpVSegmentation* CreateMpSegmentation(
-                              Int_t detElemId, Int_t cath);
+                              Int_t detElemId, AliMp::CathodType cath);
 
     AliMpExMap* FillElCardsMap(Int_t detElemId);
 

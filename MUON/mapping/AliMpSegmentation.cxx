@@ -26,6 +26,7 @@
 
 #include "AliMpSegmentation.h"
 
+#include "AliMpDetElement.h"
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
 #include "AliMpExMap.h"
@@ -38,6 +39,7 @@
 #include "AliMpTrigger.h"
 #include "AliMpTriggerReader.h"
 #include "AliMpTriggerSegmentation.h"
+#include "AliMpCathodType.h"
 
 #include "AliLog.h"
 
@@ -85,23 +87,19 @@ AliMpSegmentation::AliMpSegmentation()
   fElCardsMap.SetOwner(true);
 
   // Create mapping segmentations for all detection elements
-  for ( Int_t cath = 0; cath < 2; cath ++ ) 
-  { 
+  for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; cath ++ ) { 
     AliMpDEIterator it;
-    for ( it.First(); ! it.IsDone(); it.Next() ) 
-    {
-        CreateMpSegmentation(it.CurrentDE(), cath);
+    for ( it.First(); ! it.IsDone(); it.Next() ) {
+      CreateMpSegmentation(it.CurrentDEId(), AliMp::GetCathodType(cath));
     } 
   }  
 
   // Fill el cards map for all detection elements
   // of tracking chambers
   AliMpDEIterator it;
-  for ( it.First(); ! it.IsDone(); it.Next() ) 
-  { 
-    if ( AliMpDEManager::GetStationType(it.CurrentDE()) != kStationTrigger )
-    {
-      FillElCardsMap(it.CurrentDE());
+  for ( it.First(); ! it.IsDone(); it.Next() ) { 
+    if ( AliMpDEManager::GetStationType(it.CurrentDEId()) != AliMp::kStationTrigger ) {
+      FillElCardsMap(it.CurrentDEId());
     }
   }  
 }
@@ -114,6 +112,8 @@ AliMpSegmentation::AliMpSegmentation(TRootIOCtor* /*ioCtor*/)
   fSlatMotifMap()
 {  
 /// Constructor for IO
+
+  AliDebug(1,"");
 
   fgInstance = this;
 }
@@ -137,18 +137,19 @@ AliMpSegmentation::~AliMpSegmentation()
 
 //______________________________________________________________________________
 AliMpVSegmentation* 
-AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, Int_t cath)
+AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
 {
 /// Create mapping segmentation for given detElemId and cath
 /// or return it if it was already built
 
   // Check detElemId & cath  
-  if ( ! AliMpDEManager::IsValid(detElemId, cath, true) ) return 0;
+  if ( ! AliMpDEManager::IsValidDetElemId(detElemId, true) ) return 0;
 
   // If segmentation is already built, just return it
   //
-  TString deName = AliMpDEManager::GetDESegName(detElemId, cath);
-  TObject* object = fMpSegmentations.Get(deName);
+  AliMpDetElement* detElement = AliMpDEManager::GetDetElement(detElemId);
+  TString deSegName = detElement->GetSegName(cath);
+  TObject* object = fMpSegmentations.Get(deSegName);
   if ( object ) return (AliMpVSegmentation*)object;
 
   AliDebugStream(3)
@@ -157,23 +158,23 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, Int_t cath)
   
   // Read mapping data and create segmentation
   //
-  AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
-  AliMpPlaneType planeType = AliMpDEManager::GetPlaneType(detElemId, cath);
-  TString deTypeName = AliMpDEManager::GetDETypeName(detElemId, cath);
+  AliMp::StationType stationType = detElement->GetStationType();
+  AliMp::PlaneType planeType = detElement->GetPlaneType(cath);
+  TString deTypeName = detElement->GetSegType();
 
   AliMpVSegmentation* mpSegmentation = 0;
 
-  if ( stationType == kStation1 || stationType == kStation2 ) {
+  if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) {
     AliMpSectorReader reader(stationType, planeType);
     AliMpSector* sector = reader.BuildSector();
     mpSegmentation = new AliMpSectorSegmentation(sector, true);
   }
-  else if ( stationType == kStation345 ) { 
+  else if ( stationType == AliMp::kStation345 ) { 
     AliMpSt345Reader reader(fSlatMotifMap);
     AliMpSlat* slat = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation =  new AliMpSlatSegmentation(slat, true);
   }
-  else if ( stationType == kStationTrigger ) {
+  else if ( stationType == AliMp::kStationTrigger ) {
     AliMpTriggerReader reader(fSlatMotifMap);
     AliMpTrigger* trigger = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation = new AliMpTriggerSegmentation(trigger, true);
@@ -181,9 +182,9 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, Int_t cath)
   else   
     AliErrorStream() << "Unknown station type" << endl;
 
-  fMpSegmentations.Add(deName, mpSegmentation); 
+  fMpSegmentations.Add(deSegName, mpSegmentation); 
   
-  StdoutToAliDebug(3,fSlatMotifMap.Print(););
+  StdoutToAliDebug(3, fSlatMotifMap.Print(););
   
   return mpSegmentation;
 } 
@@ -207,15 +208,15 @@ AliMpSegmentation::FillElCardsMap(Int_t detElemId)
   // Do it in 2 steps to be able to set the AliMpExMap size once for all,
   // to avoid annoying warning message in case of dynamical resizing.
   // (not critical).
-  for ( Int_t cathode = 0; cathode < 2; ++cathode )
+  for ( Int_t cathode = AliMp::kCath0; cathode <= AliMp::kCath1; ++cathode )
   {
-    seg[cathode] = GetMpSegmentation(detElemId,cathode);
+    seg[cathode] = GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
     seg[cathode]->GetAllElectronicCardIDs(ecn[cathode]);
   }
   
   mde->SetSize(ecn[0].GetSize()+ecn[1].GetSize());
   
-  for ( Int_t cathode = 0; cathode < 2; ++ cathode )
+  for ( Int_t cathode = AliMp::kCath0; cathode <= AliMp::kCath1; ++ cathode )
   {
     for ( Int_t i = 0; i < ecn[cathode].GetSize(); ++i )
     {
@@ -233,23 +234,25 @@ AliMpSegmentation::FillElCardsMap(Int_t detElemId)
 //______________________________________________________________________________
 const AliMpVSegmentation* 
 AliMpSegmentation::GetMpSegmentation(
-                      Int_t detElemId, Int_t cath, Bool_t warn) const
+                      Int_t detElemId, AliMp::CathodType cath, Bool_t warn) const
 {
 /// Return mapping segmentation for given detElemId and cath
 
   // Check detElemId & cath  
-  if ( ! AliMpDEManager::IsValid(detElemId, cath, false) ) {
+  if ( ! AliMpDEManager::IsValidDetElemId(detElemId, false) ) {
     
     if ( warn ) {
       AliWarningStream() 
-        << "Invalid detElemId/cathod (" 
-	<< detElemId << ", " << cath << ")" << endl;
+        << "Invalid detElemId " << detElemId << endl;
     }	
     return 0;
   }  
 
-  TString deName = AliMpDEManager::GetDESegName(detElemId, cath);
-  TObject* object = fMpSegmentations.Get(deName);
+  // If segmentation is already built, just return it
+  //
+  AliMpDetElement* detElement = AliMpDEManager::GetDetElement(detElemId);
+  TString deSegName = detElement->GetSegName(cath);
+  TObject* object = fMpSegmentations.Get(deSegName);
   if ( ! object ) {
     // Should never happen
     AliErrorStream() 
