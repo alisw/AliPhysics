@@ -35,8 +35,6 @@
 #include "AliDAQ.h"
 #include "AliLog.h"
 
-#include "AliMpBusPatch.h"
-
 /// \cond CLASSIMP
 ClassImp(AliMUONRawStreamTracker)
 /// \endcond
