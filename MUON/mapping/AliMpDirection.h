@@ -13,10 +13,14 @@
 #ifndef ALI_MP_DIRECTION_H
 #define ALI_MP_DIRECTION_H
 
-enum AliMpDirection 
-{
-  kX, ///< direction in x
-  kY  ///< direction in y
-};
+namespace AliMp {
+
+  enum Direction 
+  {
+    kX, ///< direction in x
+    kY  ///< direction in y
+  };
+
+}  
 
 #endif //ALI_MP_DIRECTION_H
