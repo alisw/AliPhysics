@@ -6,11 +6,10 @@
 
 /// \ingroup management
 /// \class AliMpDEIterator
-/// \brief The iterator over valid detection element IDs
+/// \brief The iterator over detection elements
 ///
-/// The valid detection element Ids are defined in the files denames*.dat.     \n
 /// It can iterate 
-/// - over all valid detection elements, if started with First() function; 
+/// - over all detection elements, if started with First() function; 
 /// - or over detection elements in a selected chamber, if started with
 ///   First(Int_t chamberId) function                                          \n 
 /// 
@@ -21,11 +20,13 @@
 
 #include <TObject.h>
 
-#include "AliMpStationType.h"
-
 #include <TArrayI.h>
 
+class AliMpDEStore;
+class AliMpDetElement;
+
 class TString;
+
 
 class AliMpDEIterator : public  TObject {
 
@@ -43,21 +44,18 @@ class AliMpDEIterator : public  TObject {
     void First(Int_t chamberId);
     void Next();
     Bool_t IsDone() const;
-    Int_t CurrentDE() const;
+    
+    AliMpDetElement* CurrentDE() const;
+    Int_t CurrentDEId() const;
 
   private:
-    // static methods
-    static Bool_t ReadDEIds(AliMpStationType station);
-    static void   ReadData();
-
-    // static data members	
-    static const Int_t  fgkMaxNofDetElements; ///< Maximum number of DEs
-    static TArrayI      fgDetElemIds;         ///< DE Ids	
-    static Int_t        fgNofDetElemIds;      ///< Number of DE Ids	
+    // methods
+    AliMpDetElement*  GetDetElement(Int_t index) const;
 
     // data members	
-    Int_t  fIndex;     ///< Current DE index
-    Int_t  fChamberId; ///< The iterated chamber 
+    AliMpDEStore*  fDEStore;   ///< DE store 
+    Int_t          fIndex;     ///< Current DE index
+    Int_t          fChamberId; ///< The iterated chamber 
 
   ClassDef(AliMpDEIterator,0)  // The iterator over valid detection element IDs
 };
