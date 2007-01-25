@@ -13,12 +13,12 @@
   
 
           <!-- ############################################################## -->
-          <!-- #########################  Patch 0  ########################## -->
+          <!-- #########################  RCU 0  ########################## -->
           <!-- ############################################################## -->
     
-    <Proc ID="PHOS_RAW_0_0" type="src">
+    <Proc ID="PHOS_RAW_3_0" type="src">
                <Cmd>FilePublisher
-                    -datafilelist /home/perthi/simulations/yuri/run6/raw*/PHOS_1806.ddl
+                    -datafilelist /home/perthi/simulations/yuri/run6/raw*/PHOS_1804.ddl
                     -datatype DDL_RWPK -dataspec 0x00000000 -dataorigin PHOS
                     -eventtime 500000
                     -sleeptillevent -diskpublisher -eventidfromfile
@@ -28,7 +28,7 @@
                <Shm blocksize="40k" blockcount="4" type="sysv"/>
           </Proc>
   
-          <Proc ID="PHOSP0_0_0" type="prc">
+          <Proc ID="PHOSP0_3_0" type="prc">
                <Cmd>AliRootWrapperSubscriber
                     -componentid PhosRawCrude
                     -addlibrary libNew.so
@@ -55,14 +55,209 @@
                     -addlibrary libRAWDatarec.so
                     -addlibrary libRAWDatabase.so
                     -componentlibrary libAliHLTPHOS.so
-                   -componentargs "pp-run rawreadermode 4 adc-threshold 20"
+                   -componentargs "pp-run rawreadermode 4 adc-threshold 20 equipmentID 1804"
                </Cmd>
-               <Parent>PHOS_RAW_0_0</Parent>
+               <Parent>PHOS_RAW_3_0</Parent>
                <Node>0</Node>
                <Shm blocksize="240k" blockcount="4" type="sysv"/>
           </Proc>
 
+
+        <!-- ############################################################## -->
+        <!-- #########################  RCU 1  ########################## -->
+        <!-- ############################################################## -->
+    <Proc ID="PHOS_RAW_3_1" type="src">
+               <Cmd>FilePublisher
+                    -datafilelist /home/perthi/simulations/yuri/run6/raw*/PHOS_1805.ddl
+                    -datatype DDL_RWPK -dataspec 0x00000000 -dataorigin PHOS
+                    -eventtime 500000
+                    -sleeptillevent -diskpublisher -eventidfromfile
+               </Cmd>
+               
+               <Node>0</Node>
+               <Shm blocksize="40k" blockcount="4" type="sysv"/>
+          </Proc>
+  
+          <Proc ID="PHOSP0_3_1" type="prc">
+               <Cmd>AliRootWrapperSubscriber
+                    -componentid PhosRawCrude
+                    -addlibrary libNew.so
+                    -addlibrary libMatrix.so
+                    -addlibrary libMinuit.so
+                    -addlibrary libEG.so
+                    -addlibrary libFoam.so
+                    -addlibrary libGedOld.so
+                    -addlibrary libGeom.so
+                    -addlibrary libRootAuth.so
+                    -addlibrary libThread.so
+                    -addlibrary libVMC.so
+                    -addlibrary libCore.so
+                    -addlibrary libCint.so
+                    -addlibrary libHist.so
+                    -addlibrary libGraf.so
+                    -addlibrary libGraf3d.so
+                    -addlibrary libGpad.so 
+                    -addlibrary libTree.so
+                    -addlibrary libRint.so
+                    -addlibrary libTree.so 
+                    -addlibrary libESD.so 
+                    -addlibrary libSTEER.so        
+                    -addlibrary libRAWDatarec.so
+                    -addlibrary libRAWDatabase.so
+                    -componentlibrary libAliHLTPHOS.so
+                   -componentargs "pp-run rawreadermode 4 adc-threshold 20 equipmentID 1805"
+               </Cmd>
+               <Parent>PHOS_RAW_3_1</Parent>
+               <Node>0</Node>
+               <Shm blocksize="240k" blockcount="4" type="sysv"/>
+          </Proc>
+
+
+     <!-- ############################################################## -->
+     <!-- #########################  RCU 2  ########################## -->
+     <!-- ############################################################## -->
+
+    <Proc ID="PHOS_RAW_3_2" type="src">
+               <Cmd>FilePublisher
+                    -datafilelist /home/perthi/simulations/yuri/run6/raw*/PHOS_1806.ddl
+                    -datatype DDL_RWPK -dataspec 0x00000000 -dataorigin PHOS
+                    -eventtime 500000
+                    -sleeptillevent -diskpublisher -eventidfromfile
+               </Cmd>
+               
+               <Node>0</Node>
+               <Shm blocksize="40k" blockcount="4" type="sysv"/>
+          </Proc>
+  
+          <Proc ID="PHOSP0_3_2" type="prc">
+               <Cmd>AliRootWrapperSubscriber
+                    -componentid PhosRawCrude
+                    -addlibrary libNew.so
+                    -addlibrary libMatrix.so
+                    -addlibrary libMinuit.so
+                    -addlibrary libEG.so
+                    -addlibrary libFoam.so
+                    -addlibrary libGedOld.so
+                    -addlibrary libGeom.so
+                    -addlibrary libRootAuth.so
+                    -addlibrary libThread.so
+                    -addlibrary libVMC.so
+                    -addlibrary libCore.so
+                    -addlibrary libCint.so
+                    -addlibrary libHist.so
+                    -addlibrary libGraf.so
+                    -addlibrary libGraf3d.so
+                    -addlibrary libGpad.so 
+                    -addlibrary libTree.so
+                    -addlibrary libRint.so
+                    -addlibrary libTree.so 
+                    -addlibrary libESD.so 
+                    -addlibrary libSTEER.so        
+                    -addlibrary libRAWDatarec.so
+                    -addlibrary libRAWDatabase.so
+                    -componentlibrary libAliHLTPHOS.so
+                   -componentargs "pp-run rawreadermode 4 adc-threshold 20 equipmentID 1806"
+               </Cmd>
+               <Parent>PHOS_RAW_3_2</Parent>
+               <Node>0</Node>
+               <Shm blocksize="240k" blockcount="4" type="sysv"/>
+          </Proc>
+
+
+
+
+   <!-- ############################################################## -->
+   <!-- #########################  RCU 4  ########################## -->
+   <!-- ############################################################## -->
+
+    <Proc ID="PHOS_RAW_3_3" type="src">
+               <Cmd>FilePublisher
+                    -datafilelist /home/perthi/simulations/yuri/run6/raw*/PHOS_1807.ddl
+                    -datatype DDL_RWPK -dataspec 0x00000000 -dataorigin PHOS
+                    -eventtime 500000
+                    -sleeptillevent -diskpublisher -eventidfromfile
+               </Cmd>
+               
+               <Node>0</Node>
+               <Shm blocksize="40k" blockcount="4" type="sysv"/>
+          </Proc>
+  
+          <Proc ID="PHOSP0_3_3" type="prc">
+               <Cmd>AliRootWrapperSubscriber
+                    -componentid PhosRawCrude
+                    -addlibrary libNew.so
+                    -addlibrary libMatrix.so
+                    -addlibrary libMinuit.so
+                    -addlibrary libEG.so
+                    -addlibrary libFoam.so
+                    -addlibrary libGedOld.so
+                    -addlibrary libGeom.so
+                    -addlibrary libRootAuth.so
+                    -addlibrary libThread.so
+                    -addlibrary libVMC.so
+                    -addlibrary libCore.so
+                    -addlibrary libCint.so
+                    -addlibrary libHist.so
+                    -addlibrary libGraf.so
+                    -addlibrary libGraf3d.so
+                    -addlibrary libGpad.so 
+                    -addlibrary libTree.so
+                    -addlibrary libRint.so
+                    -addlibrary libTree.so 
+                    -addlibrary libESD.so 
+                    -addlibrary libSTEER.so        
+                    -addlibrary libRAWDatarec.so
+                    -addlibrary libRAWDatabase.so
+                    -componentlibrary libAliHLTPHOS.so
+                   -componentargs "pp-run rawreadermode 4 adc-threshold 20 equipmentID 1807"
+               </Cmd>
+               <Parent>PHOS_RAW_3_3</Parent>
+               <Node>0</Node>
+               <Shm blocksize="240k" blockcount="4" type="sysv"/>
+          </Proc>
+
+         <Proc ID="MODULE_3" type="prc">
+               <Cmd>AliRootWrapperSubscriber
+                    -componentid ModuleMerger
+                    -addlibrary libNew.so
+                    -addlibrary libMatrix.so
+                    -addlibrary libMinuit.so
+                    -addlibrary libEG.so
+                    -addlibrary libFoam.so
+                    -addlibrary libGedOld.so
+                    -addlibrary libGeom.so
+                    -addlibrary libRootAuth.so
+                    -addlibrary libThread.so
+                    -addlibrary libVMC.so
+                    -addlibrary libCore.so
+                    -addlibrary libCint.so
+                    -addlibrary libHist.so
+                    -addlibrary libGraf.so
+                    -addlibrary libGraf3d.so
+                    -addlibrary libGpad.so 
+                    -addlibrary libTree.so
+                    -addlibrary libRint.so
+                    -addlibrary libTree.so 
+                    -addlibrary libESD.so 
+                    -addlibrary libSTEER.so        
+                    -addlibrary libRAWDatarec.so
+                    -addlibrary libRAWDatabase.so
+                    -componentlibrary libAliHLTPHOS.so
+                   -componentargs "pp-run rawreadermode 4 adc-threshold 20 equipmentID 1807"
+               </Cmd>
+               <Parent>PHOSP0_3_0</Parent>
+               <Parent>PHOSP0_3_1</Parent>
+               <Parent>PHOSP0_3_2</Parent>
+               <Parent>PHOSP0_3_3</Parent>
+               <Node>0</Node>
+               <Shm blocksize="240k" blockcount="4" type="sysv"/>
+          </Proc>
+ 
+
+
      <!-- ============================================================== -->
      <!-- ====================  TOPLEVEL PROCESSES  ==================== -->
      <!-- ============================================================== -->
+
+
  </SimpleChainConfig1>
