@@ -218,21 +218,8 @@ void AliITS::Init(){
     // Array of TStrings
     if(gMC) for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
  
-    WriteGeometry();
 }
 
-//______________________________________________________________________
-void AliITS::WriteGeometry(){
-  
-  //Writes ITS geometry on gAlice
-
-  if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
-  AliRunLoader* rl  = fLoader->GetRunLoader();
-  rl->CdGAFile();
-  AliITSgeom* geom = GetITSgeom();
-  geom->Write();
-
-}
 
 //______________________________________________________________________
 void AliITS::SetDefaults(){
@@ -1256,11 +1243,5 @@ void AliITS::UpdateInternalGeometry(){
   AliITSInitGeometry initgeom("AliITSvPPRasymmFMD",2);
   AliITSgeom* geom = initgeom.CreateAliITSgeom();
   SetITSgeom(geom);
-
-  if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
-  AliRunLoader* rl  = fLoader->GetRunLoader();
-  rl->CdGAFile();
-  geom->Write(0,kOverwrite);
-
 }
 

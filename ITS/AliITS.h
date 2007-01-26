@@ -54,7 +54,6 @@ class AliITS : public AliDetector {
     // ITS geometry functions From Simulation
     AliITSgeom* GetITSgeom() const {return fDetTypeSim->GetITSgeom();}
     void   SetITSgeom(AliITSgeom *geom) {fDetTypeSim->SetITSgeom(geom);}
-    virtual void   WriteGeometry();
     // return pointer to the array of modules
     TObjArray *GetModules(){return fITSmodules;}
 

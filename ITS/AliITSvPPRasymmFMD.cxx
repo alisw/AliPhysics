@@ -5600,14 +5600,18 @@ void AliITSvPPRasymmFMD::Init(){
     AliDebug(1,Form("Init: Major version %d Minor version %d",fMajorVersion,
 		 fMinorVersion));
     //
+    /*  obsolete initialization of AliITSgeom from external "det" file
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
     AliITSgeom* geom = new AliITSgeom();
     SetITSgeom(geom);
     if(fGeomDetIn) GetITSgeom()->ReadNewFile(fRead);
     else this->InitAliITSgeom();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
+    */
+    UpdateInternalGeometry();
     AliITS::Init();
+    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
+
     //
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 }

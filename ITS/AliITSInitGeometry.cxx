@@ -26,12 +26,6 @@ $Id$
 #include <TArrayD.h>
 #include <TArrayF.h>
 #include <TStopwatch.h>
-#include <AliITSgeomSPD.h>
-#include <AliITSgeomSDD.h>
-#include <AliITSgeomSSD.h>
-#include <AliITSsegmentationSPD.h>
-#include <AliITSsegmentationSDD.h>
-#include <AliITSsegmentationSSD.h>
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoShape.h>
@@ -48,6 +42,13 @@ $Id$
 #include <TGeoEltu.h>
 #include <TGeoHype.h>
 
+#include "AliLog.h"
+#include "AliITSgeomSPD.h"
+#include "AliITSgeomSDD.h"
+#include "AliITSgeomSSD.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSSD.h"
 #include "AliITSgeom.h"
 #include "AliITSInitGeometry.h"
 
@@ -121,27 +122,31 @@ AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(){
 }
 //______________________________________________________________________
 Bool_t AliITSInitGeometry::InitAliITSgeom(AliITSgeom *geom){
-    // Initilizes the geometry transformation class AliITSgeom
-    // to values appropreate to this specific geometry. Now that
-    // the segmentation is part of AliITSgeom, the detector
-    // segmentations are also defined here.
-    // Inputs:
-    //   AliITSgeom *geom  A pointer to the AliITSgeom class
-    // Outputs:
-    //   AliITSgeom *geom  This pointer recreated and properly inilized.
-    // Return:
-    //   none.
+  // Initilizes the geometry transformation class AliITSgeom
+  // to values appropreate to this specific geometry. Now that
+  // the segmentation is part of AliITSgeom, the detector
+  // segmentations are also defined here.
+  // Inputs:
+  //   AliITSgeom *geom  A pointer to the AliITSgeom class
+  // Outputs:
+  //   AliITSgeom *geom  This pointer recreated and properly inilized.
+  // Return:
+  //   none.
 
-    switch(fMajorVersion){
-    case 10:{ // only case defined so far
-	return InitAliITSgeomPPRasymmFMD(geom);
-    }break; // end case
-    default:{
-	Error("InitAliITSgeom","Undefine geomtery");
-	return kFALSE;
-    } break; // end case
-    } // end switch
+  if(!gGeoManager){
+    AliFatal("The geometry manager has not been initialized (e.g. TGeoManager::Import(\"geometry.root\")should be called in advance) - exit forced");
     return kFALSE;
+  }
+  switch(fMajorVersion){
+  case 10:{ // only case defined so far
+    return InitAliITSgeomPPRasymmFMD(geom);
+  }break; // end case
+  default:{
+    Error("InitAliITSgeom","Undefined geomtery");
+    return kFALSE;
+  } break; // end case
+  } // end switch
+  return kFALSE;
 }
 //______________________________________________________________________
 Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){

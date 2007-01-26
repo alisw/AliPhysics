@@ -20,6 +20,7 @@
 #include "AliITSdigit.h"
 #include "AliITSLoader.h"
 #include "AliRunLoader.h"
+#include "AliITSInitGeometry.h"
 #include "AliLog.h"
 
 ///////////////////////////////////////////////////////////////////////////
@@ -327,22 +328,9 @@ AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
     delete fGeom;
     fGeom = 0;
   }
-  AliRunLoader *runLoader = GetRunLoader();
-  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
-  if (!runLoader->GetAliRun()) {
-    Error("GetITSgeom", "couldn't get AliRun object");
-    return NULL;
-  }
-  
-  TDirectory *curdir = gDirectory;
-  runLoader->CdGAFile();
-  fGeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
-  curdir->cd();
-  if(!fGeom){
-    Error("GetITSgeom","no ITS geometry available");
-    return NULL;
-  }
-  AliDebug(1,"AliITSgeom object has been fetched from galice.root file");
+  AliITSInitGeometry initgeom("AliITSvPPRasymmFMD",2);
+  fGeom = initgeom.CreateAliITSgeom();
+  AliDebug(1,"AliITSgeom object has been initialized from TGeo\n");
   return fGeom;
 }
 //______________________________________________________________________
