@@ -24,6 +24,10 @@
 // HLTMessage is not filtered
 #define HLTMessage( ... )   LoggingVarargs(kHLTLogNone,      NULL , NULL ,  __VA_ARGS__ )
 
+#ifndef __func__
+#define __func__ "???"
+#endif
+
 // the following macros are filtered by the Global and Local Log Filter
 #define HLTBenchmark( ... ) LoggingVarargs(kHLTLogBenchmark, this->Class_Name() , __func__ ,  __VA_ARGS__ )
 #define HLTDebug( ... )     LoggingVarargs(kHLTLogDebug,     this->Class_Name() , __func__ ,  __VA_ARGS__ )
