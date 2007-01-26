@@ -20,6 +20,7 @@
 
 #include <AliTracker.h>
 #include <AliMagFMaps.h>
+#include <AliLog.h>
 
 #include <AliMUONTrack.h>
 #include <AliMUONTrackParam.h>
@@ -38,7 +39,7 @@
 #include <AliMUONTriggerCrate.h>
 #include <AliMUONLocalTriggerBoard.h>
 #include <AliMUONTriggerCircuit.h>
-#include <mapping/AliMpBusPatch.h>
+#include <mapping/AliMpDDLStore.h>
 #include <mapping/AliMpVSegmentation.h>
 #include <mapping/AliMpSegmentation.h>
 #include <mapping/AliMpPad.h>
@@ -61,7 +62,7 @@ ClassImp(MUONData)
 AliRawReader*            MUONData::fgRawReader        = 0;
 AliMUONRawStreamTracker* MUONData::fgRawStreamTracker = 0;
 AliMUONRawStreamTrigger* MUONData::fgRawStreamTrigger = 0;
-AliMpBusPatch*           MUONData::fgBusPatchManager  = 0;
+AliMpDDLStore*           MUONData::fgBusPatchManager  = 0;
 
 //______________________________________________________________________
 MUONData::MUONData() :
@@ -421,8 +422,7 @@ void MUONData::LoadRaw(TString fileName)
     }
     fgRawStreamTracker = new AliMUONRawStreamTracker(fgRawReader);
     fgRawStreamTrigger = new AliMUONRawStreamTrigger(fgRawReader);
-    fgBusPatchManager = new AliMpBusPatch();
-    fgBusPatchManager->ReadBusPatchFile();
+    fgBusPatchManager = AliMpDDLStore::Instance();
   }
   
   LoadRawTracker();
@@ -730,7 +730,9 @@ Int_t MUONData::GetTriggerMapping(AliMUONLocalTriggerBoard* localBoard,
     detElemId = triggerCircuit.DetElemId(iChamber, localBoard->GetName());
     nBoard    = localBoard->GetNumber();
 
-    const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, iCath);  
+    const AliMpVSegmentation* seg 
+      = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId, AliMp::GetCathodType(iCath));  
 
     // loop over the 16 bits of pattern
     for (Int_t ibitxy = 0; ibitxy < 16; ibitxy++) {

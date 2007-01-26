@@ -16,7 +16,7 @@ class AliMUONRawStreamTracker;
 class AliMUONRawStreamTrigger;
 class AliMUONDigit;
 class AliMpSegFactory;
-class AliMpBusPatch;
+class AliMpDDLStore;
 class AliMUONLocalTriggerBoard;
 class AliMUONLocalStruct;
 class AliMUONLocalStruct;
@@ -36,7 +36,7 @@ class MUONData : public TObject, public Reve::ReferenceCount
   static AliMUONRawStreamTracker* fgRawStreamTracker;  // tracker raw streamer 
   static AliMUONRawStreamTrigger* fgRawStreamTrigger;  // trigger raw streamer
   static AliMpSegFactory*         fgSegFactory;        // segmentation mapping
-  static AliMpBusPatch*           fgBusPatchManager;   // bus mapping
+  static AliMpDDLStore*           fgBusPatchManager;   // bus mapping
 
   Int_t    fNTracks;              // number of tracks
   Float_t* fTrackPoints;          // array with track points coordinates

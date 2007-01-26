@@ -102,11 +102,12 @@ void MUONChamberData::Init(Int_t chamber)
 
   for ( it.First(chamber); ! it.IsDone(); it.Next() ) {
 
-    Int_t detElemId = it.CurrentDE();
+    Int_t detElemId = it.CurrentDEId();
 
     if (chamber < 4) {
 
-      sseg = (AliMpSectorSegmentation*)AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,0);
+      sseg = (AliMpSectorSegmentation*)
+             AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
       sector = sseg->GetSector();
       
       position  = sector->Position(); 
@@ -150,7 +151,7 @@ void MUONChamberData::Init(Int_t chamber)
 	continue;
       }
 
-      vseg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,0);
+      vseg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
 
       if (vseg == 0) {
 	printf("No MpVSegmentation for %d detElemId! \n",detElemId);
@@ -214,7 +215,8 @@ void MUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t ix, In
 
   Float_t locP[3], gloP[3], locD[3], gloD[3];
 
-  const AliMpVSegmentation* vseg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,cathode);
+  const AliMpVSegmentation* vseg = AliMpSegmentation::Instance()
+    ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
 
   AliMpPad pad = vseg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
   
