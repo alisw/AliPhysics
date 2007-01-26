@@ -184,6 +184,6 @@ AliHLTPHOSPulseGenerator::MakePulse(double *dtaPtr)
 {
 for(int i=0; i<fNSamples; i++)
   {
-    dtaPtr[i]=fAmplitude*exp(2)*pow((i*fDT-fTZero)/fTau, 2)*exp(-2*(i*fDT-fTZero)/fTau);
+    dtaPtr[i]=fAmplitude*exp((Double_t)2)*pow((i*fDT-fTZero)/fTau, 2)*exp(-2*(i*fDT-fTZero)/fTau);
   }  
 }
