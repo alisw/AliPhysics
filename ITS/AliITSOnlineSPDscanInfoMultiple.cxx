@@ -12,7 +12,7 @@
 ClassImp(AliITSOnlineSPDscanInfoMultiple)
 
 AliITSOnlineSPDscanInfoMultiple::AliITSOnlineSPDscanInfoMultiple() :
-  AliITSOnlineSPDscanInfo::AliITSOnlineSPDscanInfo(), fDacId(-1), fDacValues(TArrayI())
+  AliITSOnlineSPDscanInfo(), fDacId(-1), fDacValues(TArrayI())
 {}
 
 AliITSOnlineSPDscanInfoMultiple::~AliITSOnlineSPDscanInfoMultiple() {}

@@ -12,7 +12,7 @@
 ClassImp(AliITSOnlineSPDscanInfoMeanTh)
 
 AliITSOnlineSPDscanInfoMeanTh::AliITSOnlineSPDscanInfoMeanTh() :
-  AliITSOnlineSPDscanInfoMultiple::AliITSOnlineSPDscanInfoMultiple() {}
+  AliITSOnlineSPDscanInfoMultiple() {}
 
 AliITSOnlineSPDscanInfoMeanTh::~AliITSOnlineSPDscanInfoMeanTh() {}
 
