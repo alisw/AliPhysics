@@ -20,6 +20,5 @@
 #pragma link C++ class AliPHOSConTableDB+;
 #pragma link C++ class AliPHOSOnlineMonitor+;
 #pragma link C++ class AliPHOSTrigger+;
-#pragma link C++ class AliPHOSPulseGenerator+;
 
 #endif
