@@ -16,8 +16,9 @@ PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
 ifdef DATE_ROOT
 
-ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS} ${DATE_INFOLOGGER_DIR}/${DATE_SYS} ${DATE_DB_DIR}/${DATE_SYS}
-ELIBS:= ESD CDB STEER RAWDatabase RAWDatarec RAWDatasim monitor shift TPCbase TPCsim TPCrec ITSbase ITSsim ITSrec AliHLTSrc AliHLTComp AliHLTMisc AliHLTHough AliHLTITS AliHLTMUON MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONmapping Info Db mysqlclient
+PACKBLIBS += $(shell date-config --monitorlibs)
+ELIBSDIR:=
+ELIBS:= ESD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCsim TPCrec ITSbase ITSsim ITSrec AliHLTSrc AliHLTComp AliHLTMisc AliHLTHough AliHLTITS AliHLTMUON MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONmapping
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
 
 endif
