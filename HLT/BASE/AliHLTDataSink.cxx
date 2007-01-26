@@ -39,7 +39,11 @@ AliHLTDataSink::~AliHLTDataSink()
 
 AliHLTComponentDataType AliHLTDataSink::GetOutputDataType()
 {
-  return (AliHLTComponentDataType){ sizeof(AliHLTComponentDataType), kAliHLTVoidDataTypeID, kAliHLTVoidDataOrigin};
+  AliHLTComponentDataType dt =
+    {sizeof(AliHLTComponentDataType),
+     kAliHLTVoidDataTypeID,
+     kAliHLTVoidDataOrigin};
+  return dt;
 }
 
 void AliHLTDataSink::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )

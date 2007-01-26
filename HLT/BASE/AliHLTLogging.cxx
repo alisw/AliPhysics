@@ -177,7 +177,7 @@ int AliHLTLogging::LoggingVarargs( AliHLTComponentLogSeverity severity, const ch
     const char* format = va_arg(args, const char*);
 
     const char* message=format;
-    char* qualifier=NULL;
+    const char* qualifier=NULL;
     if ((qualifier=strchr(format, '%'))!=NULL) {
       message=AliHLTLogging::BuildLogString(format, args);
     }
