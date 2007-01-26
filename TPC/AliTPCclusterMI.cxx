@@ -91,6 +91,7 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
   fPad     = cluster.fPad;
   fInfo = 0;
   if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
+  return *this;
 }
 
 
