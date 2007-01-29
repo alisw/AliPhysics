@@ -415,6 +415,10 @@ void AliTRDv1::StepManagerGeant()
   Bool_t   drRegion = kFALSE;
   Bool_t   amRegion = kFALSE;
 
+  TString  cIdPath;
+  Char_t   cIdSector[3];
+           cIdSector[2]  = 0;
+
   TString  cIdCurrent;
   TString  cIdSensDr = "J";
   TString  cIdSensAm = "K";
@@ -482,16 +486,11 @@ void AliTRDv1::StepManagerGeant()
       hits[1] = pos[1];
       hits[2] = pos[2];
 
-      // The sector number (0 - 17)
-      // The numbering goes clockwise and starts at y = 0
-      Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
-      if (phi < 90.0) {
-        phi = phi + 270.0;
-      }
-      else {
-        phi = phi -  90.0;
-      }
-      sec = ((Int_t) (phi / 20.0));
+      // The sector number (0 - 17), according to standard coordinate system
+      cIdPath      = gGeoManager->GetPath();
+      cIdSector[0] = cIdPath[21];
+      cIdSector[1] = cIdPath[22];
+      sec = atoi(cIdSector);
 
       // The plane and chamber number
       cIdChamber[0]   = cIdCurrent[2];
@@ -673,6 +672,10 @@ void AliTRDv1::StepManagerErmilova()
   Bool_t   drRegion = kFALSE;
   Bool_t   amRegion = kFALSE;
 
+  TString  cIdPath;
+  Char_t   cIdSector[3];
+           cIdSector[2]  = 0;
+
   TString  cIdCurrent;
   TString  cIdSensDr = "J";
   TString  cIdSensAm = "K";
@@ -729,16 +732,11 @@ void AliTRDv1::StepManagerErmilova()
       hits[1] = pos[1];
       hits[2] = pos[2];
 
-      // The sector number (0 - 17)
-      // The numbering goes clockwise and starts at y = 0
-      Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
-      if (phi < 90.0) { 
-        phi = phi + 270.0;
-      }
-      else {
-        phi = phi -  90.0;
-      }
-      sec = ((Int_t) (phi / 20.0));
+      // The sector number (0 - 17), according to standard coordinate system
+      cIdPath      = gGeoManager->GetPath();
+      cIdSector[0] = cIdPath[21];
+      cIdSector[1] = cIdPath[22];
+      sec = atoi(cIdSector);
 
       // The plane and chamber number
       cIdChamber[0] = cIdCurrent[2];
@@ -871,11 +869,15 @@ void AliTRDv1::StepManagerFixedStep()
   Bool_t   drRegion = kFALSE;
   Bool_t   amRegion = kFALSE;
 
+  TString  cIdPath;
+  Char_t   cIdSector[3];
+           cIdSector[2]  = 0;
+
   TString  cIdCurrent;
   TString  cIdSensDr = "J";
   TString  cIdSensAm = "K";
   Char_t   cIdChamber[3];
-  cIdChamber[2] = 0;
+           cIdChamber[2] = 0;
 
   TLorentzVector pos;
   TLorentzVector mom;
@@ -920,16 +922,11 @@ void AliTRDv1::StepManagerFixedStep()
   hits[1] = pos[1];
   hits[2] = pos[2];
 
-  // The sector number (0 - 17)
-  // The numbering goes clockwise and starts at y = 0
-  Float_t phi = kRaddeg * TMath::ATan2(pos[0],pos[1]);
-  if (phi < 90.0) {
-    phi = phi + 270.0;
-  }
-  else {          
-    phi = phi -  90.0;
-  }
-  sec = ((Int_t) (phi / 20.0));
+  // The sector number (0 - 17), according to standard coordinate system
+  cIdPath      = gGeoManager->GetPath();
+  cIdSector[0] = cIdPath[21];
+  cIdSector[1] = cIdPath[22];
+  sec = atoi(cIdSector);
 
   // The plane and chamber number
   cIdChamber[0]   = cIdCurrent[2];
