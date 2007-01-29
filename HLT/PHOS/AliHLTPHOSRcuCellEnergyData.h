@@ -1,6 +1,9 @@
 #ifndef ALIHLTPHOSRCUCELLENERGYDATA_H
 #define ALIHLTPHOSRCUCELLENERGYDATA_H
 
+//#include "AliHLTDataTypes.h"
+//#include "Rtypes.h"
+
 struct AliHLTPHOSRcuCellEnergyData
 {
   AliHLTUInt16_t fRcuX;

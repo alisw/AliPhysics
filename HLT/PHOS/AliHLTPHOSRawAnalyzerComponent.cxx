@@ -179,6 +179,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
       bd.fOffset = offset;
       bd.fSize = mysize;
       bd.fDataType = AliHLTPHOSDefinitions::gkCellEnergyDataType;
+      bd.fSpecification = 0xFFFFFFFF;
       outputBlocks.push_back( bd );
       tSize += mysize;
       outBPtr += mysize;
