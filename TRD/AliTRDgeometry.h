@@ -39,12 +39,6 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   Impact(const TParticle* ) const                     { return kTRUE;           }
   virtual Bool_t   IsHole(Int_t /*p*/, Int_t /*c*/, Int_t /*s*/) const { return kFALSE;          }
 
-  virtual Bool_t   Local2Global(Int_t d, Double_t *local, Double_t *global) const;
-  virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s
-                              , Double_t *local, Double_t *global) const;
-  virtual Bool_t   Global2Local(Int_t mode, Double_t *local, Double_t *global
-                              , Int_t *index) const;
-  virtual Bool_t   Global2Detector(Double_t global[3], Int_t index[3]);
   virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;
   virtual Bool_t   RotateBack(Int_t d, Double_t *rot, Double_t *pos) const;
 
