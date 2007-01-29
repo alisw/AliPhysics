@@ -16,7 +16,7 @@
 
 #include "AliSplineFit.h"
  
-ClassImp(AliSplineFit);
+ClassImp(AliSplineFit)
 
 TLinearFitter*
 AliSplineFit::fitterStatic()
