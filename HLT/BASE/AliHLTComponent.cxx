@@ -136,8 +136,13 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockD
     *outputBlocks = reinterpret_cast<AliHLTComponentBlockData*>( AllocMemory( sizeof(AliHLTComponentBlockData)*count ) );
     if ( !*outputBlocks )
 	return -ENOMEM;
-    for ( unsigned long i = 0; i < count; i++ )
+    for ( unsigned long i = 0; i < count; i++ ) {
 	(*outputBlocks)[i] = blocks[i];
+	if (blocks[i].fDataType==kAliHLTAnyDataType) {
+	  memset((*outputBlocks)[i].fDataType.fID, '*', kAliHLTComponentDataTypefIDsize);
+	  memset((*outputBlocks)[i].fDataType.fOrigin, '*', kAliHLTComponentDataTypefOriginSize);
+	}
+    }
     *blockCount = count;
     return 0;
 
@@ -189,7 +194,7 @@ void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) {
 }
 
 void AliHLTComponent::FillDataType( AliHLTComponentDataType& dataType ) {
-  dataType=kAliHLTVoidDataType;
+  dataType=kAliHLTAnyDataType;
 }
 
 void AliHLTComponent::CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt) {
