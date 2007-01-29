@@ -52,28 +52,28 @@ lhapdf5.2.2/commons.f
 EXPORT:=AliStructFuncType.h
 
 
-ifeq (,$(findstring macosx,$(ALICE_TARGET)))
+#ifeq (,$(findstring macosx,$(ALICE_TARGET)))
 
-FSRCS += lhapdf5.2.2/lhaglue.f
+# FSRCS += lhapdf5.2.2/lhaglue.f
 
-else
+#else
 
 
-TCSRCS=ctmp/lhapdf5.2.2/lhaglue.c
+#TCSRCS=ctmp/lhapdf5.2.2/lhaglue.c
 
-CSRCS+=$(TCSRCS)
+#CSRCS+=$(TCSRCS)
 
-.SECONDARY: $(TCSRCS)
+#.SECONDARY: $(TCSRCS)
 
-PACKCFLAGS:=$(CFLAGS) -w
+#PACKCFLAGS:=$(CFLAGS) -w
 
-LHAPDF/ctmp/%.c: LHAPDF/%.f
-	[ -d $(dir $@) ] || mkdir -p $(dir $@)
-ifeq (macosx,$(ALICE_TARGET))
-	$(F77) -E $(lhapdfINC) $(lhapdfFFLAGS) $< | f2c -E | sed -e 's/___/__/g' > $@
-endif
-ifeq (macosxgcc4,$(ALICE_TARGET))
-	$(F77) -E $(lhapdfINC) $(lhapdfFFLAGS) $< | f2c -E | sed -e 's/\___/__/g' > $@
-endif
+#LHAPDF/ctmp/%.c: LHAPDF/%.f
+#	[ -d $(dir $@) ] || mkdir -p $(dir $@)
+#ifeq (macosx,$(ALICE_TARGET))
+#	$(F77) -E $(lhapdfINC) $(lhapdfFFLAGS) $< | f2c -E | sed -e 's/___/__/g' > $@
+#endif
+#ifeq (macosxgcc4,$(ALICE_TARGET))
+#	$(F77) -E $(lhapdfINC) $(lhapdfFFLAGS) $< | f2c -E | sed -e 's/\___/__/g' > $@
+#endif
 
-endif
+#endif
