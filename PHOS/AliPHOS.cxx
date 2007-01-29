@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.106  2007/01/17 17:28:56  kharlov
+ * Extract ALTRO sample generation to a separate class AliPHOSPulseGenerator
+ *
  * Revision 1.105  2007/01/12 21:44:29  kharlov
  * Simulate and reconstruct two gains simulaneouslsy
  *
@@ -519,36 +522,36 @@ void AliPHOS::Digits2Raw()
       prevDDL = iDDL;
     }
 
-    // out of time range signal (?)
-    if (digit->GetTimeR() > pulse->GetRawFormatTimeMax() ) {
+    AliDebug(2,Form("digit E=%.4f GeV, t=%g s, (mod,col,row)=(%d,%d,%d)\n",
+		    digit->GetEnergy(),digit->GetTimeR(),
+		    relId[0]-1,relId[3]-1,relId[2]-1));
+    // if a signal is out of time range, write only trailer
+    if (digit->GetTimeR() > pulse->GetRawFormatTimeMax()*0.5 ) {
       AliInfo("Signal is out of time range.\n");
-      buffer->FillBuffer((Int_t)digit->GetEnergy());
+      buffer->FillBuffer(0);
       buffer->FillBuffer(pulse->GetRawFormatTimeBins() );  // time bin
-      buffer->FillBuffer(3);          // bunch length      
-      buffer->WriteTrailer(3, relId[3], relId[2], module);  // trailer
+      buffer->FillBuffer(3);                               // bunch length
+      buffer->WriteTrailer(3, relId[3]-1, relId[2]-1, 0);  // trailer
       
     // calculate the time response function
     } else {
       Double_t energy = 0 ;
       Int_t   module = relId[0];
-      if ( digit->GetId() <= geom->GetNModules() *  geom->GetNCristalsInModule()) {
+      if (digit->GetId() <= geom->GetNModules() * geom->GetNCristalsInModule()) {
 	energy=digit->GetEnergy();
-	AliDebug(2,Form("digit energy: %f\n",digit->GetEnergy()));
 	if(energy>eMax) {eMax=energy; modMax=module; colMax=col; rowMax=row;}
       }
       else {
  	energy = 0; // CPV raw data format is now know yet
-      }        
+      }
       pulse->SetAmplitude(energy);
       pulse->SetTZero(digit->GetTimeR());
       pulse->MakeSamples();
       pulse->GetSamples(adcValuesHigh, adcValuesLow) ; 
-      
       buffer->WriteChannel(relId[3]-1, relId[2]-1, 0, 
 			   pulse->GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
       buffer->WriteChannel(relId[3]-1, relId[2]-1, 1, 
 			   pulse->GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
-      
     }
   }
   
