@@ -17,7 +17,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD calibration class for global TRD parameters //
+//  TRD calibration class for global TRD parameters                          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +28,6 @@ ClassImp(AliTRDCalGlobals)
 //_____________________________________________________________________________
 AliTRDCalGlobals::AliTRDCalGlobals()
   :TNamed()
-  ,fSamplingFrequency(0)
   ,fNumberOfTimeBins(0)
 {
   //
@@ -40,7 +39,6 @@ AliTRDCalGlobals::AliTRDCalGlobals()
 //_____________________________________________________________________________
 AliTRDCalGlobals::AliTRDCalGlobals(const Text_t *name, const Text_t *title)
   :TNamed(name,title)
-  ,fSamplingFrequency(0)
   ,fNumberOfTimeBins(0)
 {
   //

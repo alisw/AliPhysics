@@ -769,7 +769,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   if (simParam->TRFOn()) {
     timeBinTRFend = ((Int_t) (simParam->GetTRFhi() 
-                  * calibration->GetSamplingFrequency())) - 1;
+                  * commonParam->GetSamplingFrequency())) - 1;
     AliDebug(1,Form("Sample the TRF up to bin %d\n",timeBinTRFend));
   }
 
@@ -797,7 +797,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   // (Number of primary particles creating a hit somewhere)
   Int_t nTrack = (Int_t) hitTree->GetEntries();
   AliDebug(1,Form("Found %d primary particles\n",nTrack));
-  AliDebug(1,Form("Sampling = %.0fMHz\n"        ,calibration->GetSamplingFrequency()));
+  AliDebug(1,Form("Sampling = %.0fMHz\n"        ,commonParam->GetSamplingFrequency()));
   AliDebug(1,Form("Gain     = %d\n"             ,((Int_t) simParam->GetGasGain())));
   AliDebug(1,Form("Noise    = %d\n"             ,((Int_t) simParam->GetNoise())));
   if (simParam->TimeStructOn()) {
@@ -811,7 +811,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t   countHits    =  0;
  
   Int_t   nTimeTotal   = calibration->GetNumberOfTimeBins();
-  Float_t samplingRate = calibration->GetSamplingFrequency();
+  Float_t samplingRate = commonParam->GetSamplingFrequency();
 
   // Loop through all entries in the tree
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {

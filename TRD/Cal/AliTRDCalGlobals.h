@@ -18,21 +18,17 @@ class AliTRDCalGlobals : public TNamed {
  public:
 
   AliTRDCalGlobals();
-  AliTRDCalGlobals(const Text_t* name, const Text_t* title);
+  AliTRDCalGlobals(const Text_t *name, const Text_t *title);
   virtual ~AliTRDCalGlobals() {};
-    
-  void    SetSamplingFrequency(Float_t freq) { fSamplingFrequency = freq; };
-  Float_t GetSamplingFrequency() const       { return fSamplingFrequency; };
     
   void    SetNumberOfTimeBins(Int_t value)   { fNumberOfTimeBins = value; };
   Int_t   GetNumberOfTimeBins() const        { return fNumberOfTimeBins;  };
   
  protected:
 
-  Float_t fSamplingFrequency;      // Sampling Frequency in MHz
   Int_t   fNumberOfTimeBins;       // Number of timebins  
     
-  ClassDef(AliTRDCalGlobals,1)     // TRD calibration class for global TRD parameters
+  ClassDef(AliTRDCalGlobals,2)     // TRD calibration class for global TRD parameters
 
 };
 

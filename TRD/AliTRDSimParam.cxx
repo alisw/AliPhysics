@@ -117,43 +117,43 @@ void AliTRDSimParam::Init()
   //
   
   // The default parameter for the digitization
-  fGasGain         = 4000.0;
-  fChipGain        =   12.4;
-  fNoise           = 1000.0;
-  fADCoutRange     = 1023.0;          // 10-bit ADC
-  fADCinRange      = 2000.0;          // 2V input range
-  fADCthreshold    =    3;
-  fADCbaseline     =    0;
+  fGasGain           = 4000.0;
+  fChipGain          =   12.4;
+  fNoise             = 1000.0;
+  fADCoutRange       = 1023.0;          // 10-bit ADC
+  fADCinRange        = 2000.0;          // 2V input range
+  fADCthreshold      =    3;
+  fADCbaseline       =    0;
 
   // Diffusion on
-  fDiffusionOn     = kTRUE;
+  fDiffusionOn       = kTRUE;
   
   // Propability for electron attachment
-  fElAttachOn      = kFALSE;
-  fElAttachProp    = 0.0;
+  fElAttachOn        = kFALSE;
+  fElAttachProp      = 0.0;
 
   // The time response function
-  fTRFOn           = kTRUE;
+  fTRFOn             = kTRUE;
 
   // The cross talk
-  fCTOn            = kTRUE;
+  fCTOn              = kTRUE;
 
   // The pad coupling factor
   // Use 0.46, instead of the theroetical value 0.3, since it reproduces better 
   // the test beam data, even tough it is not understood why.
-  fPadCoupling     = 0.46;
+  fPadCoupling       = 0.46;
 
   // The time coupling factor (same number as for the TPC)
-  fTimeCoupling    = 0.4;
+  fTimeCoupling      = 0.4;
 
   // Distance of first Anode wire from first pad edge
-  fAnodeWireOffset = 0.25;
+  fAnodeWireOffset   = 0.25;
 
   // Use drift time maps
-  fTimeStructOn    = kTRUE;
+  fTimeStructOn      = kTRUE;
   
   // The pad response function
-  fPRFOn           = kTRUE;
+  fPRFOn             = kTRUE;
 
   ReInit();
 
@@ -236,7 +236,9 @@ AliTRDSimParam &AliTRDSimParam::operator=(const AliTRDSimParam &p)
   // Assignment operator
   //
 
-  if (this != &p) ((AliTRDSimParam &) p).Copy(*this);
+  if (this != &p) {
+    ((AliTRDSimParam &) p).Copy(*this);
+  }
 
   return *this;
 
@@ -249,7 +251,7 @@ void AliTRDSimParam::Copy(TObject &p) const
   // Copy function
   //
   
-  AliTRDSimParam* target = dynamic_cast<AliTRDSimParam*> (&p);
+  AliTRDSimParam *target = dynamic_cast<AliTRDSimParam *> (&p);
   if (!target) {
     return;
   }

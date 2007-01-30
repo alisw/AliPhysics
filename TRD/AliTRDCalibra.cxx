@@ -1825,15 +1825,20 @@ Bool_t AliTRDCalibra::Init2Dhistos()
 
   // DB Setting
   // Get cal
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  AliTRDcalibDB     *cal    = AliTRDcalibDB::Instance();
   if (!cal) {
     AliInfo("Could not get calibDB");
+    return kFALSE;
+  }
+  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
+  if (!parCom) {
+    AliInfo("Could not get CommonParam");
     return kFALSE;
   }
 
   // Some parameters
   fTimeMax = cal->GetNumberOfTimeBins();
-  fSf      = cal->GetSamplingFrequency();
+  fSf      = parCom->GetSamplingFrequency();
   if (fRelativeScaleAuto) {
     fRelativeScale = 0;
   }
@@ -2519,9 +2524,6 @@ Bool_t AliTRDCalibra::IsPadOn(Int_t detector, Int_t col, Int_t row) const
     AliInfo("Could not get calibDB");
     return kFALSE;
   }
-  
-  Int_t npads  = 18;
-  Int_t colmcm = (Int_t) col / npads;
   
   if (!cal->IsChamberInstalled(detector)     || 
        cal->IsChamberMasked(detector)        || 
@@ -3216,7 +3218,7 @@ Bool_t AliTRDCalibra::Create2DDiSimOnline(Int_t iev1, Int_t iev2)
 
   // Some parameters
   fTimeMax = cal->GetNumberOfTimeBins();
-  fSf      = (Float_t) cal->GetSamplingFrequency();
+  fSf      = (Float_t) parCom->GetSamplingFrequency();
   if (fRelativeScaleAuto) {
     fRelativeScale = 0;
   }
@@ -3523,7 +3525,7 @@ Bool_t AliTRDCalibra::Create2DRaDaOnline(Int_t iev1, Int_t iev2)
 
   // Some parameters
   fTimeMax = cal->GetNumberOfTimeBins();
-  fSf      = (Float_t) cal->GetSamplingFrequency();
+  fSf      = (Float_t) parCom->GetSamplingFrequency();
   if (fRelativeScaleAuto) {
     fRelativeScale = 0;
   }

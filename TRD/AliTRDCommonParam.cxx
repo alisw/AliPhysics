@@ -81,6 +81,7 @@ void AliTRDCommonParam::Terminate()
 AliTRDCommonParam::AliTRDCommonParam()
   :TObject()
   ,fExBOn(kFALSE)
+  ,fSamplingFrequency(0.0)
   ,fPadPlaneArray(0)
 {
   //
@@ -99,7 +100,10 @@ void AliTRDCommonParam::Init()
   //
   
   // E x B effects
-  fExBOn         = kTRUE;
+  fExBOn             = kTRUE;
+
+  // Sampling Frequency in MHz
+  fSamplingFrequency = 10.0;
   
   // ----------------------------------------------------------------------------
   // The pad planes
@@ -135,6 +139,7 @@ AliTRDCommonParam::~AliTRDCommonParam()
 AliTRDCommonParam::AliTRDCommonParam(const AliTRDCommonParam &p)
   :TObject(p)
   ,fExBOn(p.fExBOn)
+  ,fSamplingFrequency(p.fSamplingFrequency)
   ,fPadPlaneArray(0)
 {
   //
@@ -170,7 +175,8 @@ void AliTRDCommonParam::Copy(TObject &p) const
     return;
   }  
 
-  target->fExBOn = fExBOn;
+  target->fExBOn             = fExBOn;
+  target->fSamplingFrequency = fSamplingFrequency;
 
 }
 

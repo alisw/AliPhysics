@@ -3061,7 +3061,7 @@ AliTRDtracker::AliTRDtrackingSector
     }
 
     dx        = AliTRDcalibDB::Instance()->GetVdrift(0,0,0)
-              / AliTRDcalibDB::Instance()->GetSamplingFrequency();
+              / commonParam->GetSamplingFrequency();
     rho       = 0.00295 * 0.85; //????
     radLength = 11.0;  
 

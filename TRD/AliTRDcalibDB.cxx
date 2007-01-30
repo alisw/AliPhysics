@@ -485,23 +485,6 @@ Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
   return roc->GetValue(col,row);
 
 }
-
-//_____________________________________________________________________________
-Float_t AliTRDcalibDB::GetSamplingFrequency()
-{
-  //
-  // Returns the sampling frequency of the TRD read-out.
-  //
-  
-  const AliTRDCalGlobals *calGlobal = dynamic_cast<const AliTRDCalGlobals *> 
-                                      (GetCachedCDBObject(kIDGlobals));
-  if (!calGlobal) {
-    return -1;  
-  }  
-
-  return calGlobal->GetSamplingFrequency();
-
-}
   
 //_____________________________________________________________________________
 Int_t AliTRDcalibDB::GetNumberOfTimeBins()

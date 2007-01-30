@@ -35,6 +35,7 @@
 #include "AliTRDrecPoint.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
+#include "AliTRDCommonParam.h"
 
 ClassImp(AliTRDclusterizer)
 
@@ -98,7 +99,9 @@ AliTRDclusterizer &AliTRDclusterizer::operator=(const AliTRDclusterizer &c)
   // Assignment operator
   //
 
-  if (this != &c) ((AliTRDclusterizer &) c).Copy(*this);
+  if (this != &c) {
+    ((AliTRDclusterizer &) c).Copy(*this);
+  }
   return *this;
 
 }
@@ -308,15 +311,20 @@ Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Int_t idet
   // depends on the drift velocity and t0
   //
   
-  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliError("Cannot find calibration object");
     return -1;
   }
+  AliTRDCommonParam *parCom      = AliTRDCommonParam::Instance();
+  if (!parCom) {
+    AliError("Could not get common parameters\n");
+    return kFALSE;
+  }
 
   Float_t vdrift            = calibration->GetVdrift(idet,col,row);  
   Float_t t0                = calibration->GetT0(idet,col,row);
-  Float_t samplingFrequency = calibration->GetSamplingFrequency();
+  Float_t samplingFrequency = parCom->GetSamplingFrequency();
 
   timebin -= t0;
 

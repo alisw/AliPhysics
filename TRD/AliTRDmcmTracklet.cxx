@@ -289,7 +289,7 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
 
   AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
 
-  Float_t samplFreq = calibration->GetSamplingFrequency();
+  Float_t samplFreq = commonParam->GetSamplingFrequency();
 
   Int_t time, col;
   Float_t amp[3];

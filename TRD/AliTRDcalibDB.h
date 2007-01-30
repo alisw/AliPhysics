@@ -22,7 +22,10 @@ class AliTRDcalibDB : public TObject {
 
  public:
 
-  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
+  enum { kNplan =   6
+       , kNcham =   5
+       , kNsect =  18
+       , kNdet  = 540 };
   
   static AliTRDcalibDB *Instance();
   static void           Terminate();
@@ -41,7 +44,6 @@ class AliTRDcalibDB : public TObject {
 
   Float_t  GetPRFWidth(Int_t det, Int_t col, Int_t row);
 
-  Float_t  GetSamplingFrequency();
   Int_t    GetNumberOfTimeBins();
 
   Char_t   GetPadStatus(Int_t det, Int_t col, Int_t row);
@@ -59,29 +61,35 @@ class AliTRDcalibDB : public TObject {
 
   // Related functions, these depend on calibration data
   static Float_t GetOmegaTau(Float_t vdrift, Float_t bz);
-
-  Int_t          PadResponse(Double_t signal, Double_t dist, Int_t plane, Double_t *pad) const;
+         Int_t   PadResponse(Double_t signal, Double_t dist, Int_t plane, Double_t *pad) const;
   
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
   enum { kCDBCacheSize = 15 };   // Number of cached objects
-  enum { kIDVdriftPad = 0, kIDVdriftChamber,
-         kIDT0Pad, kIDT0Chamber,
-         kIDGainFactorPad, kIDGainFactorChamber,
-         kIDPRFWidth,
-         kIDGlobals,
-         kIDChamberPos, kIDStackPos, kIDSuperModulePos,
-         kIDPIDLQ, kIDMonitoringData,
-         kIDChamberStatus, kIDPadStatus };    // IDs of cached objects
+  enum { kIDVdriftPad = 0
+       , kIDVdriftChamber
+       , kIDT0Pad
+       , kIDT0Chamber
+       , kIDGainFactorPad
+       , kIDGainFactorChamber
+       , kIDPRFWidth
+       , kIDGlobals
+       , kIDChamberPos
+       , kIDStackPos
+       , kIDSuperModulePos
+       , kIDPIDLQ
+       , kIDMonitoringData
+       , kIDChamberStatus
+       , kIDPadStatus };         // IDs of cached objects
 
   const TObject* GetCachedCDBObject(Int_t id);
   
   void           Invalidate();
   void           SamplePRF();
   
-  AliCDBEntry   *GetCDBEntry(const char* cdbPath);
-  const TObject *CacheCDBEntry(Int_t id, const char* cdbPath);
+  AliCDBEntry   *GetCDBEntry(const Char_t *cdbPath);
+  const TObject *CacheCDBEntry(Int_t id, const Char_t *cdbPath);
 
   static AliTRDcalibDB *fgInstance;                 //  Instance of this class (singleton implementation)
   static Bool_t         fgTerminated;               //  Defines if this class has already been terminated
@@ -105,7 +113,7 @@ class AliTRDcalibDB : public TObject {
   AliTRDcalibDB &operator=(const AliTRDcalibDB &c); 
   virtual ~AliTRDcalibDB();
 
-  ClassDef(AliTRDcalibDB,3)                        //  Provides central access to the CDB
+  ClassDef(AliTRDcalibDB,3)                         //  Provides central access to the CDB
 
 };
 
