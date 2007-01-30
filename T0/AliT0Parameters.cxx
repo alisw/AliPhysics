@@ -27,12 +27,14 @@
 #include "AliLog.h"		  
 #include "AliT0Parameters.h"	  
 #include "AliT0CalibData.h"   
+#include "AliT0LookUpValue.h"
 #include <AliCDBManager.h>        
 #include <AliCDBEntry.h>          
-#include <AliCDBStorage.h>         
+#include <AliCDBStorage.h>          
 #include <Riostream.h>
 
 AliT0CalibData* AliT0Parameters::fgCalibData = 0;
+AliT0CalibData* AliT0Parameters::fgLookUp = 0;
 //====================================================================
 ClassImp(AliT0Parameters)
 #if 0
@@ -93,6 +95,14 @@ AliT0Parameters::Init()
   fCalibentry  = cdb->Get("T0/Calib/Gain_TimeDelay_Slewing_Walk");
   if (fCalibentry){
    fgCalibData  = (AliT0CalibData*)fCalibentry->GetObject();
+  }
+ fLookUpentry  = cdb->Get("T0/Calib/LookUp_Table");
+  if (fLookUpentry){
+    fgLookUp  = (AliT0CalibData*)fLookUpentry->GetObject();
+    //   fgLookUp->Dump();
+  }
+  else {
+    fgLookUp->ReadAsciiLookup("$ALICE_ROOT/T0/lookUpTable.txt");
   }
 
   fIsInit = kTRUE;
@@ -236,4 +246,25 @@ AliT0Parameters::SetPMTeff(Int_t ipmt)
 
   TGraph* gr = new TGraph(50,lambda,eff);
   fPMTeff.AddAtAndExpand(gr,ipmt);
+}
+//________________________________________________________________
+
+Int_t 
+AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
+{
+
+  
+  AliT0LookUpKey * lookkey;  //= new AliT0LookUpKey();
+  AliT0LookUpValue * lookvalue= new AliT0LookUpValue(trm,tdc,chain,channel);
+    
+   lookkey = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)lookvalue);
+  if (!lookkey ) {
+    cout<<" no such address "<<endl; return -1;
+  }
+  
+
+  //cout<<"AliT0Parameters:: key "<<lookkey->GetKey()<<endl;
+  return lookkey->GetKey();
+  
+
 }

@@ -61,6 +61,7 @@
 #include "AliT0Digitizer.h"
 #include "AliT0RawData.h"
 #include "AliT0RecPoint.h"
+#include "AliT0Parameters.h"
 #include "AliLog.h"
 
 ClassImp(AliT0)
@@ -356,4 +357,63 @@ void AliT0::Digits2Raw()
   
   fLoader->UnloadDigits();
   
+}
+
+//____________________________________________________________________________
+void AliT0::Raw2Digits(AliRawReader *rawReader,TTree* digitsTree)
+{
+
+ //T0 raw data-> digits conversion
+ // reconstruct time information from raw data
+ // cout<<"  AliT0::Raw2Digits(AliRawReader *rawReader,TTree* digitsTree) "<<
+  // rawReader<<" "<<digitsTree<<endl;
+
+ 
+  //  AliT0RawReader myrawreader(rawReader,digitsTree);
+   AliT0RawReader myrawreader(rawReader);
+   if (!myrawreader.Next())
+     AliDebug(1,Form(" no raw data found!! %i", myrawreader.Next()));
+   Int_t allData[110][5];
+   for (Int_t i=0; i<110; i++) {
+     allData[i][0]=myrawreader.GetData(i,0);
+   }
+
+
+   AliT0digit* fDigits = new AliT0digit();
+   digitsTree->Branch("T0","AliT0digit",&fDigits,405,1);
+   
+   
+   TArrayI *timeLED = new TArrayI(24);
+   TArrayI * timeCFD = new TArrayI(24);
+   TArrayI *chargeQT0 = new TArrayI(24);
+   TArrayI *chargeQT1 = new TArrayI(24);
+   
+   for (Int_t in=0; in<24; in++)
+     {
+       timeLED->AddAt(allData[in+1][0],in);
+       timeCFD->AddAt(allData[in+25][0],in);
+       chargeQT0->AddAt(allData[in+55][0],in);
+       chargeQT1->AddAt(allData[in+79][0],in);
+       AliDebug(2, Form(" readed Raw %i %i %i %i %i", in, timeLED->At(in),timeCFD->At(in),chargeQT0->At(in),chargeQT1->At(in)));
+     }
+  
+   fDigits->SetTime(*timeCFD);
+   fDigits->SetADC(*chargeQT1);
+
+   fDigits->SetTimeAmp(*timeLED);
+   fDigits->SetADCAmp(*chargeQT1);
+
+   fDigits->SetMeanTime(allData[49][0]);
+   fDigits->SetDiffTime(allData[50][0]);
+   fDigits->SetTimeBestRight(allData[51][0]);
+   fDigits->SetTimeBestLeft(allData[52][0]);
+   digitsTree->Fill();
+   fDigits->Write();
+ 
+   delete timeCFD ;
+   delete chargeQT0;
+   delete timeLED ;
+   delete chargeQT1;
+
+
 }

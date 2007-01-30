@@ -1,6 +1,5 @@
 #include "AliT0RawReader.h"
-#include "AliT0RawData.h"
-#include "AliT0digit.h"
+#include "AliT0Parameters.h"
 #include "AliBitPacking.h"
 #include "TBits.h"
 
@@ -12,10 +11,8 @@
  
 ClassImp(AliT0RawReader)
   
-  AliT0RawReader::AliT0RawReader (AliRawReader *rawReader, TTree* tree)
+  AliT0RawReader::AliT0RawReader (AliRawReader *rawReader)
     :  TTask("T0RawReader","read raw T0 data"),
-       fDigits(NULL),
-       fTree(tree),
        fRawReader(rawReader),
        fData(NULL),
        fPosition(0)
@@ -23,8 +20,6 @@ ClassImp(AliT0RawReader)
   //
 // create an object to read T0raw digits
   AliDebug(1,"Start ");
-  if (fDigits == 0x0) fDigits = new AliT0digit(); 
-  fTree->Branch("T0","AliT0digit",&fDigits,405,1);
  
   fRawReader->Reset();
   fRawReader->Select("T0");
@@ -64,19 +59,26 @@ Bool_t  AliT0RawReader::Next()
 //  allData[48]  mean (T0) signal  
 // allData[49]   time difference (vertex)
 
+
+ //  if (fDigits == 0x0) fDigits = new AliT0digit(); 
+  // fTree->Branch("T0","AliT0digit",&fDigits,405,1);
+ 
   UInt_t word;
   Int_t time=0,  itdc=0, ichannel=0; 
   Int_t numberOfWordsInTRM=0, iTRM=0;
-  Int_t tdcTime, koef, meanTime, timeDiff ;
-  Int_t allData[107];
+  Int_t tdcTime, koef,hit, meanTime, timeDiff ;
 
-  TArrayI *timeTDC1 = new TArrayI(24);
-  TArrayI * chargeTDC1 = new TArrayI(24);
-  TArrayI *timeTDC2 = new TArrayI(24);
-  TArrayI *chargeTDC2 = new TArrayI(24);
-   
-  for ( Int_t k=0; k<107; k++)  allData[k]=0;
-  do {
+
+
+  AliT0Parameters* param = AliT0Parameters::Instance();   //-->Zhenya
+  param->Init();
+ 
+ for ( Int_t k=0; k<110; k++) {
+    for ( Int_t jj=0; jj<5; jj++) {
+      fAllData[k][jj]=0;
+    }
+  }
+    do {
     if (!fRawReader->ReadNextData(fData)) return kFALSE;
   } while (fRawReader->GetDataSize() == 0);
   
@@ -93,6 +95,7 @@ Bool_t  AliT0RawReader::Next()
    iTRM=AliBitPacking::UnpackWord(word,0,3);
 
    //chain header
+   Int_t ichain=0;
    word = GetNextWord();
   
    for (Int_t i=0; i<numberOfWordsInTRM; i++) {
@@ -104,8 +107,11 @@ Bool_t  AliT0RawReader::Next()
 	 itdc=AliBitPacking::UnpackWord(word,24,27);
 	 ichannel=AliBitPacking::UnpackWord(word,21,23);
 	 time=AliBitPacking::UnpackWord(word,0,20);
-	 koef = itdc*4 + ichannel/2;
-	 allData[koef]=time;
+	 //  koef = itdc*4 + ichannel/2;
+	 koef = param->GetChannel(iTRM,itdc,ichain,ichannel);
+	 //	 cout<<" RawReader::Next ::"<<iTRM<<"  "<<itdc<<" "<<ichain<<" "<<ichannel<<" "<<  koef<<" "<<time<<endl;
+	 if(fAllData[koef][0] == 0)  fAllData[koef][0]=time;  // yield only 1st particle
+	  
        }
    }
    word = GetNextWord(); //chain trailer
@@ -115,6 +121,7 @@ Bool_t  AliT0RawReader::Next()
    word = GetNextWord();
    numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
    iTRM=AliBitPacking::UnpackWord(word,0,3);
+   
    //chain header
    word = GetNextWord();
    
@@ -127,56 +134,20 @@ Bool_t  AliT0RawReader::Next()
 	 itdc=AliBitPacking::UnpackWord(word,24,27);
 	 ichannel=AliBitPacking::UnpackWord(word,21,23);
 	 time=AliBitPacking::UnpackWord(word,0,20);
-	 koef = itdc*4 + ichannel/2;
-	 allData[koef+54]=time;
+	 //	 koef = itdc*4 + ichannel/2;
+	 koef = param->GetChannel(iTRM,itdc,ichain,ichannel);
+ 
+	   if(fAllData[koef][0] == 0)	 fAllData[koef][0]=time;
+		 //	 if(allData[koef+55] == 0) allData[koef+55]=time; // yield only 1st particle
        }
    }
-      
-   for (Int_t in=0; in<24; in++)
-     {
-       timeTDC1->AddAt(allData[in],in);
-       timeTDC2->AddAt(allData[in+24],in);
-       chargeTDC1->AddAt(allData[in+54],in);
-       chargeTDC2->AddAt(allData[in+78],in);
-     }      
-
-   meanTime = allData[48];  // T0 !!!!!!
-   timeDiff = allData[49];
+   meanTime = fAllData[49][0];  // T0 !!!!!!
+   timeDiff = fAllData[50][0];
 
    word = GetNextWord();
    word = GetNextWord();
-   
-   fDigits->SetTime(*timeTDC2);
-   fDigits->SetADC(*chargeTDC1);
-   
-   fDigits->SetTimeAmp(*timeTDC1);
-   fDigits->SetADCAmp(*chargeTDC2);
-
-   fDigits->SetMeanTime(meanTime);
-   fDigits->SetDiffTime(timeDiff);
-   fTree->Fill();
-   
-   delete timeTDC1 ;
-   delete chargeTDC1;
-   delete timeTDC2 ;
-   delete chargeTDC2;
-   
    return kTRUE;
 }
-//_____________________________________________________________________________
-/*
-void AliT0RawReader::UnpackTime(Int_t outTime, Int_t outCh)
-{
-      UInt_t word=0;
-      UInt_t unpackword=0;
-    
-      word = GetNextWord();
-      unpackword=AliBitPacking::UnpackWord(word,0,12);
-      outTime=unpackword;
-      unpackword= AliBitPacking::UnpackWord(word,21,27);
-      outCh=unpackword;  
- }
- */
 //_____________________________________________________________________________
 Int_t AliT0RawReader::GetPosition()
 {

@@ -13,6 +13,7 @@
 #include "AliT0RecPoint.h"
 #include "AliT0digit.h"
 #include "AliT0Trigger.h"
+#include "AliT0RawReader.h"
 
 class TDirectory;
 class TFile;
@@ -52,6 +53,7 @@ public:
    // virtual AliLoader* MakeLoader(const char* topfoldername);
    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
    void  Digits2Raw ();
+   void  Raw2Digits (AliRawReader *reader,TTree* digitsTree);
    virtual AliTriggerDetector* CreateTriggerDetector() const 
      { return new  AliT0Trigger(); }
 

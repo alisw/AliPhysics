@@ -16,6 +16,7 @@
 //
 # include <TNamed.h>
 # include <TF1.h>
+# include <TMap.h>
 # include <TGraph.h>
 #include <TObjArray.h>
 class AliT0CalibData;
@@ -97,6 +98,10 @@ public:
   Float_t GetTimeDelayCFD(Int_t ipmt);
   Float_t GetTimeDelayLED(Int_t ipmt);
 
+  //  TMap *LookupTable;
+
+  Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
+
 protected:
   AliT0Parameters();
   virtual ~AliT0Parameters() {}
@@ -125,18 +130,20 @@ protected:
   Float_t fTimeDelayCFD;  // sum time delay for CFD channel
   Float_t  fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
   
+  TMap fLookUp;           //lookup table
+  
   static AliT0CalibData * fgCalibData; // singleton for Calibration data
-
+  static AliT0CalibData * fgLookUp; // singleton for Calibration data
+  
   AliCDBEntry*   fCalibentry ;  // pointer to T0 calibration object
-
+  AliCDBEntry*   fLookUpentry ;  // pointer to T0 lokkup table
+  
   ClassDef(AliT0Parameters,2)
-private:
+    private:
   AliT0Parameters(const  AliT0Parameters&);
   AliT0Parameters& operator=(const AliT0Parameters&);
 
 };
-
-typedef AliT0Parameters AliSTARTParameters; // for backward compatibility
 
 #endif
 //____________________________________________________________________

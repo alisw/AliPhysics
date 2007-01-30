@@ -16,6 +16,7 @@
 #include "TString.h"
 #include "TObjArray.h"
 #include "AliT0.h"
+#include "AliT0LookUpValue.h"
 
 class AliT0CalibData: public TNamed {
 
@@ -59,6 +60,14 @@ class AliT0CalibData: public TNamed {
   void SetTimeDelayTVD(Int_t r=150)   { fTimeDelayTVD = r; };
   Float_t GetTimeDelayTVD()   { return fTimeDelayTVD; }
 
+  void ReadAsciiLookup(const Char_t *filename);
+  Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
+  void PrintLookup(Option_t* option= "", Int_t iTRM=0, Int_t iTDC=0, Int_t iChannel=0) const;
+  TMap *GetMapLookup(void) {return &fLookup;}
+
+  //Int_t GetA(void) {return fa;}
+  //void SetA (Int_t a) {fa=a;}
+  
  protected:
 
   Float_t  fTimeDelayCFD[24]; // Coeff. for time delay (24 different cables & CFD )
@@ -68,8 +77,11 @@ class AliT0CalibData: public TNamed {
   TObjArray fWalk;  //time - amp. walk
   TObjArray fSlewingLED;  //time - amp.LED slew
   TObjArray fSlewingRec;  //time - amp. LED slew for reconstruction
+  TMap fLookup;           //lookup table
+  //Int_t fa;
+
   //
-  ClassDef(AliT0CalibData,1)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibData,2)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibData AliSTARTCalibData; // for backward compatibility
