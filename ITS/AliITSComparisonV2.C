@@ -31,8 +31,6 @@
   #include "AliRun.h"
   #include "AliESD.h"
 
-  #include "AliITS.h"
-  #include "AliITSgeom.h"
   #include "AliITSRecPoint.h"
   #include "AliITSLoader.h"
 #endif
@@ -48,7 +46,7 @@ static Int_t allselected=0;
 static Int_t allfound=0;
 
 Int_t AliITSComparisonV2
-(Float_t ptcutl=0.2, Float_t ptcuth=10., const Char_t *dir=".", Float_t ratio=0.0) {
+(Float_t ptcutl=0.2, Float_t ptcuth=10., const Char_t *dir=".") {
    gBenchmark->Start("AliITSComparisonV2");
 
    ::Info("AliITSComparisonV2.C","Doing comparison...");
@@ -382,19 +380,6 @@ Int_t GoodTracksITS(const Char_t *dir) {
    rl->LoadHeader();
    rl->LoadKinematics();
 
-   AliITS *ITS=(AliITS*)rl->GetAliRun()->GetDetector("ITS");
-   if (!ITS) {
-      ::Error("GoodTracksITS","Can't get the ITS !");
-      delete rl;
-      return 2;
-   }
-   AliITSgeom *geom=ITS->GetITSgeom();
-   if (!geom) {
-      ::Error("GoodTracksITS","Can't get the ITS geometry !"); 
-      delete rl;
-      return 3;
-   }
-
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
    if (itsl == 0x0) {
        ::Error("GoodTracksITS","Can not find the ITSLoader");
@@ -466,14 +451,16 @@ Int_t GoodTracksITS(const Char_t *dir) {
      for (k=0; k<entr; k++) {
          cTree->GetEvent(k);
          Int_t ncl=clusters->GetEntriesFast(); if (ncl==0) continue;
-         Int_t lay,lad,det;  geom->GetModuleId(k,lay,lad,det);
-         if (lay<1 || lay>6) {
-	    ::Error("GoodTracksITS","Wrong layer !"); 
-            delete rl;
-            return 10;
-         }
          while (ncl--) {
             AliITSRecPoint *pnt=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
+
+            Int_t lay=pnt->GetLayer();
+            if (lay<0 || lay>5) {
+               ::Error("GoodTracksITS","Wrong layer !");
+               delete rl;
+               return 10;
+            }
+
             Int_t l0=pnt->GetLabel(0);
 	       if (l0>=np) {
 // 		 cerr<<"Wrong label: "<<l0<<endl;
@@ -489,7 +476,7 @@ Int_t GoodTracksITS(const Char_t *dir) {
 // 		 cerr<<"Wrong label: "<<l2<<endl;
 		 continue;
 	       }
-            Int_t mask=1<<(lay-1);
+            Int_t mask=1<<lay;
             if (l0>=0) good[l0]|=mask; 
             if (l1>=0) good[l1]|=mask; 
             if (l2>=0) good[l2]|=mask;
