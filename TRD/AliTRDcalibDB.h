@@ -45,21 +45,14 @@ class AliTRDcalibDB : public TObject {
   Int_t    GetNumberOfTimeBins();
 
   Char_t   GetPadStatus(Int_t det, Int_t col, Int_t row);
-  Char_t   GetMCMStatus(Int_t det, Int_t col, Int_t row);
   Char_t   GetChamberStatus(Int_t det);
-  Char_t   GetSuperModuleStatus(Int_t sm);
 
   Bool_t   IsPadMasked(Int_t det, Int_t col, Int_t row);
   Bool_t   IsPadBridgedLeft(Int_t det, Int_t col, Int_t row);
   Bool_t   IsPadBridgedRight(Int_t det, Int_t col, Int_t row);
   
-  Bool_t   IsMCMMasked(Int_t det, Int_t col, Int_t row);
-  
   Bool_t   IsChamberInstalled(Int_t det);
   Bool_t   IsChamberMasked(Int_t det);
-  
-  Bool_t   IsSuperModuleInstalled(Int_t det);
-  Bool_t   IsSuperModuleMasked(Int_t det);
 
   const AliTRDCalMonitoring *GetMonitoringObject();
   const AliTRDCalPIDLQ      *GetPIDLQObject();
@@ -72,7 +65,7 @@ class AliTRDcalibDB : public TObject {
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
-  enum { kCDBCacheSize = 17 };   // Number of cached objects
+  enum { kCDBCacheSize = 15 };   // Number of cached objects
   enum { kIDVdriftPad = 0, kIDVdriftChamber,
          kIDT0Pad, kIDT0Chamber,
          kIDGainFactorPad, kIDGainFactorChamber,
@@ -80,7 +73,7 @@ class AliTRDcalibDB : public TObject {
          kIDGlobals,
          kIDChamberPos, kIDStackPos, kIDSuperModulePos,
          kIDPIDLQ, kIDMonitoringData,
-         kIDSuperModuleStatus, kIDChamberStatus, kIDMCMStatus, kIDPadStatus };    // IDs of cached objects
+         kIDChamberStatus, kIDPadStatus };    // IDs of cached objects
 
   const TObject* GetCachedCDBObject(Int_t id);
   

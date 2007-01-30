@@ -47,9 +47,7 @@
 #include "Cal/AliTRDCalGlobals.h"
 #include "Cal/AliTRDCalPIDLQ.h"
 #include "Cal/AliTRDCalMonitoring.h"
-#include "Cal/AliTRDCalSuperModuleStatus.h"
 #include "Cal/AliTRDCalChamberStatus.h"
-#include "Cal/AliTRDCalMCMStatus.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "Cal/AliTRDCalSingleChamberStatus.h"
 
@@ -232,14 +230,8 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
       break;
 
     // Status values
-    case kIDSuperModuleStatus : 
-      return CacheCDBEntry(kIDSuperModuleStatus ,"TRD/Calib/SuperModuleStatus"); 
-      break;
     case kIDChamberStatus : 
       return CacheCDBEntry(kIDChamberStatus     ,"TRD/Calib/ChamberStatus"); 
-      break;
-    case kIDMCMStatus : 
-      return CacheCDBEntry(kIDMCMStatus         ,"TRD/Calib/MCMStatus"); 
       break;
     case kIDPadStatus : 
       return CacheCDBEntry(kIDPadStatus         ,"TRD/Calib/PadStatus"); 
@@ -325,7 +317,8 @@ void AliTRDcalibDB::Invalidate()
   for (Int_t i = 0; i < kCDBCacheSize; ++i) {
     if (fCDBEntries[i]) {
       if (AliCDBManager::Instance()->GetCacheFlag() == kFALSE) {
-        if ((fCDBEntries[i]->IsOwner() == kFALSE) && fCDBCache[i]) {
+        if ((fCDBEntries[i]->IsOwner() == kFALSE) && 
+            (fCDBCache[i])) {
           delete fCDBCache[i];
 	}
         delete fCDBEntries[i];
@@ -550,23 +543,6 @@ Char_t AliTRDcalibDB::GetPadStatus(Int_t det, Int_t col, Int_t row)
 }
 
 //_____________________________________________________________________________
-Char_t AliTRDcalibDB::GetMCMStatus(Int_t det, Int_t col, Int_t row)
-{
-  //
-  // Returns the status of the given MCM
-  //
-
-  const AliTRDCalMCMStatus *cal     = dynamic_cast<const AliTRDCalMCMStatus *> 
-                                      (GetCachedCDBObject(kIDMCMStatus));
-  if (!cal) {
-    return -1;
-  }
-
-  return cal->GetStatus(det,col,row);
-
-}
-
-//_____________________________________________________________________________
 Char_t AliTRDcalibDB::GetChamberStatus(Int_t det)
 {
   //
@@ -580,23 +556,6 @@ Char_t AliTRDcalibDB::GetChamberStatus(Int_t det)
   }
 
   return cal->GetStatus(det);
-
-}
-
-//_____________________________________________________________________________
-Char_t AliTRDcalibDB::GetSuperModuleStatus(Int_t sm)
-{
-  //
-  // Returns the status of the given chamber
-  //
-
-  const AliTRDCalSuperModuleStatus *cal = dynamic_cast<const AliTRDCalSuperModuleStatus *> 
-                                          (GetCachedCDBObject(kIDSuperModuleStatus));
-  if (!cal) {
-    return -1;
-  }
-
-  return cal->GetStatus(sm);
 
 }
 
@@ -652,23 +611,6 @@ Bool_t AliTRDcalibDB::IsPadBridgedRight(Int_t det, Int_t col, Int_t row)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDcalibDB::IsMCMMasked(Int_t det, Int_t col, Int_t row)
-{
-  //
-  // Returns status, see name of functions for details ;-)
-  //
-
-  const AliTRDCalMCMStatus         * cal = dynamic_cast<const AliTRDCalMCMStatus *> 
-                                           (GetCachedCDBObject(kIDMCMStatus));
-  if (!cal) {
-    return -1;
-  }
-
-  return cal->IsMasked(det,col,row);
-
-}
-
-//_____________________________________________________________________________
 Bool_t AliTRDcalibDB::IsChamberInstalled(Int_t det)
 {
   //
@@ -694,40 +636,6 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
 
   const AliTRDCalChamberStatus     * cal = dynamic_cast<const AliTRDCalChamberStatus *> 
                                            (GetCachedCDBObject(kIDChamberStatus));
-  if (!cal) {
-    return -1;
-  }
-
-  return cal->IsMasked(det);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDcalibDB::IsSuperModuleInstalled(Int_t det)
-{
-  //
-  // Returns status, see name of functions for details ;-)
-  //
-
-  const AliTRDCalSuperModuleStatus * cal = dynamic_cast<const AliTRDCalSuperModuleStatus *> 
-                                           (GetCachedCDBObject(kIDSuperModuleStatus));
-  if (!cal) {
-    return -1;
-  }
-
-  return cal->IsInstalled(det);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDcalibDB::IsSuperModuleMasked(Int_t det)
-{
-  //
-  // Returns status, see name of functions for details ;-)
-  //
-
-  const AliTRDCalSuperModuleStatus * cal = dynamic_cast<const AliTRDCalSuperModuleStatus *> 
-                                           (GetCachedCDBObject(kIDSuperModuleStatus));
   if (!cal) {
     return -1;
   }
@@ -999,4 +907,3 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
   }
 
 }
-

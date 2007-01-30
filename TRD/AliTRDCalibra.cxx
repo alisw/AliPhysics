@@ -2525,7 +2525,6 @@ Bool_t AliTRDCalibra::IsPadOn(Int_t detector, Int_t col, Int_t row) const
   
   if (!cal->IsChamberInstalled(detector)     || 
        cal->IsChamberMasked(detector)        || 
-       cal->IsMCMMasked(detector,colmcm,row) || 
        cal->IsPadMasked(detector,col,row)) {
     return kFALSE;
   }

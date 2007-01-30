@@ -1171,8 +1171,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
           // Check whether pad is masked
 	  // Bridged pads are not considered yet!!!
           if (calibration->IsPadMasked(iDet,iCol,iRow)) continue;
-          // Check whether MCM is masked
-          if (calibration->IsMCMMasked(iDet,iCol,iRow)) continue;
 
 	  // Create summable digits
           if (fSDigits) {
@@ -1397,8 +1395,6 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
           // Check whether pad is masked
 	  // Bridged pads are not considered yet!!!
           if (calibration->IsPadMasked(iDet,iCol,iRow)) continue;
-          // Check whether MCM is masked
-          if (calibration->IsMCMMasked(iDet,iCol,iRow)) continue;
 
             for (iTime = 0; iTime < nTimeTotal; iTime++) {
 

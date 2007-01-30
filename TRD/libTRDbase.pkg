@@ -20,9 +20,7 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalGlobals.cxx \
       Cal/AliTRDCalPIDLQ.cxx \
       Cal/AliTRDCalMonitoring.cxx \
-      Cal/AliTRDCalSuperModuleStatus.cxx \
       Cal/AliTRDCalChamberStatus.cxx \
-      Cal/AliTRDCalMCMStatus.cxx \
       Cal/AliTRDCalPadStatus.cxx \
       Cal/AliTRDCalSingleChamberStatus.cxx \
       AliTRDCalibra.cxx \

@@ -37,9 +37,7 @@
 #pragma link C++ class  AliTRDCalPIDLQ+;
 #pragma link C++ class  AliTRDCalMonitoring+;
 
-#pragma link C++ class  AliTRDCalSuperModuleStatus+;
 #pragma link C++ class  AliTRDCalChamberStatus+;
-#pragma link C++ class  AliTRDCalMCMStatus+;
 #pragma link C++ class  AliTRDCalPadStatus+;
 #pragma link C++ class  AliTRDCalSingleChamberStatus+;
 
