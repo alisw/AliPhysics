@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.26  2007/01/23 19:20:03  acolla
+Removed old ldif files, added TOF, MCH ldif files. Added some options in
+AliShuttleConfig::Print. Added in Ali Shuttle: SetShuttleTempDir and
+SetShuttleLogDir
+
 Revision 1.25  2007/01/15 19:13:52  acolla
 Moved some AliInfo to AliDebug in SendMail function
 
@@ -165,6 +170,8 @@ some docs added
 #include <TSQLRow.h>
 #include <TMutex.h>
 
+#include <TMonaLisaWriter.h>
+
 #include <fstream>
 
 #include <sys/types.h>
@@ -194,7 +201,8 @@ fStatusEntry(0),
 fGridError(kFALSE),
 fMonitoringMutex(0),
 fLastActionTime(0),
-fLastAction()
+fLastAction(),
+fMonaLisa(0)
 {
 	//
 	// config: AliShuttleConfig used
@@ -411,6 +419,8 @@ Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 		AliError(Form("WriteShuttleStatus for %s, run %d failed", fCurrentDetector.Data(), run));
 		return kFALSE;
 	}
+	
+	SendMLInfo();
 
 	return kTRUE;
 }
@@ -443,7 +453,34 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
 	if (increaseCount) status->IncreaseCount();
 
 	AliCDBManager::Instance()->GetStorage(fgkLocalCDB)->Put(fStatusEntry);
+
+	SendMLInfo();
 }
+
+//______________________________________________________________________________________________
+void AliShuttle::SendMLInfo()
+{
+	//
+	// sends ML information about the current status of the current detector being processed
+	//
+	
+	AliShuttleStatus* status = dynamic_cast<AliShuttleStatus*> (fStatusEntry->GetObject());
+	
+	if (!status){
+		AliError("UNEXPECTED: status could not be read from current CDB entry");
+		return;
+	}
+	
+	TMonaLisaText  mlStatus(Form("%s_status", fCurrentDetector.Data()), status->GetStatusName());
+	TMonaLisaValue mlRetryCount(Form("%s_count", fCurrentDetector.Data()), status->GetCount());
+
+	TList mlList;
+	mlList.Add(&mlStatus);
+	mlList.Add(&mlRetryCount);
+
+	fMonaLisa->SendParameters(&mlList);
+}
+
 //______________________________________________________________________________________________
 Bool_t AliShuttle::ContinueProcessing()
 {
@@ -514,6 +551,8 @@ Bool_t AliShuttle::ContinueProcessing()
 			Log("SHUTTLE",
 				Form("ContinueProcessing - %s: Grid storage failed again",
 					fCurrentDetector.Data()));
+			// trigger ML information manually because we do not had a status change
+			SendMLInfo();
 		}
 		return kFALSE;
 	}
@@ -527,6 +566,7 @@ Bool_t AliShuttle::ContinueProcessing()
 				"Updating Shuttle Logbook", fCurrentDetector.Data(),
 				status->GetCount(), status->GetStatusName()));
 		UpdateShuttleLogbook(fCurrentDetector.Data(), "FAILED");
+		UpdateShuttleStatus(AliShuttleStatus::kFailed);
 	} else {
 		Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. "
 				"Aborted before with %s. Retry number %d.", fCurrentDetector.Data(),
@@ -558,17 +598,31 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 
 	fLogbookEntry = entry;
 
-	if(fLogbookEntry->IsDone()){
+	if (fLogbookEntry->IsDone())
+	{
 		Log("SHUTTLE","Process - Shuttle is already DONE. Updating logbook");
 		UpdateShuttleLogbook("shuttle_done");
 		fLogbookEntry = 0;
 		return kTRUE;
 	}
 
+	// create ML instance that monitors this run
+	fMonaLisa = new TMonaLisaWriter(Form("%d", GetCurrentRun()), "SHUTTLE", "aliendb1.cern.ch");
+	// disable monitoring of other parameters that come e.g. from TFile
+	gMonitoringWriter = 0;
 
 	AliInfo(Form("\n\n \t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^* \n",
 					GetCurrentRun()));
 
+
+	// Send the information to ML
+	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
+
+	TList mlList;
+	mlList.Add(&mlStatus);
+
+	fMonaLisa->SendParameters(&mlList);
+			
 	fLogbookEntry->Print("all");
 
 	// Initialization
@@ -593,6 +647,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 		AliInfo(Form("\n\n \t\t\t****** run %d - %s: START  ******",
 						GetCurrentRun(), aDetector->GetName()));
 
+		Log(fCurrentDetector.Data(), "Starting processing");
 
 		Int_t pid = fork();
 
@@ -739,6 +794,10 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 		}
 	}
+
+	// remove ML instance
+	delete fMonaLisa;
+	fMonaLisa = 0;
 
 	fLogbookEntry = 0;
 
@@ -1795,8 +1854,10 @@ Bool_t AliShuttle::UpdateHLTTable()
 //______________________________________________________________________________________________
 Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status)
 {
-// Update Shuttle logbook filling detector or shuttle_done column
-// ex. of usage: UpdateShuttleLogbook("PHOS", "DONE") or UpdateShuttleLogbook("shuttle_done")
+	//
+	// Update Shuttle logbook filling detector or shuttle_done column
+	// ex. of usage: UpdateShuttleLogbook("PHOS", "DONE") or UpdateShuttleLogbook("shuttle_done")
+	//
 
 	// check connection, in case connect
 	if(!Connect(3)){
@@ -1806,8 +1867,17 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 
 	TString detName(detector);
 	TString setClause;
-	if(detName == "shuttle_done") {
+	if(detName == "shuttle_done")
+	{
 		setClause = "set shuttle_done=1";
+
+		// Send the information to ML
+		TMonaLisaText  mlStatus("SHUTTLE_status", "Done");
+
+		TList mlList;
+		mlList.Add(&mlStatus);
+
+		fMonaLisa->SendParameters(&mlList);
 	} else {
 		TString statusStr(status);
 		if(statusStr.Contains("done", TString::kIgnoreCase) ||
@@ -1881,13 +1951,18 @@ void AliShuttle::Log(const char* detector, const char* message)
 	}
 
 	TString toLog = Form("%s (%d): %s - ", TTimeStamp(time(0)).AsString("s"), getpid(), detector);
-	if(GetCurrentRun()>=0 ) toLog += Form("run %d - ", GetCurrentRun());
+	if (GetCurrentRun() >= 0) 
+		toLog += Form("run %d - ", GetCurrentRun());
 	toLog += Form("%s", message);
 
   	AliInfo(toLog.Data());
 
   	TString fileName;
-  	fileName.Form("%s/%s.log", GetShuttleLogDir(), detector);
+	if (GetCurrentRun() >= 0) 
+		fileName.Form("%s/%s_%d.log", GetShuttleLogDir(), detector, GetCurrentRun());
+	else
+		fileName.Form("%s/%s.log", GetShuttleLogDir(), detector);
+	
   	gSystem->ExpandPathName(fileName);
 
   	ofstream logFile;

@@ -5,9 +5,14 @@ Bool_t Shuttle(const char* param = "listen") {
 	// loading LDAP libraries!!!
 
 	gSystem->Load("libRLDAP.so");
+	gSystem->Load("libMonaLisa");
 	gSystem->Load("libSHUTTLE");
 	gSystem->Load("$ROOTSYS/lib/libThread");
 	gSystem->Load("$ALICE_ROOT/SHUTTLE/test/libTest.so");
+	
+	// libRalien complains otherwise, weird...
+	//gSystem->Load("libNetx");
+
 
 //	AliLog::SetGlobalDebugLevel(1);
 

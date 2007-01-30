@@ -30,6 +30,7 @@ class TSQLServer;
 class AliCDBEntry;
 class AliCDBPath;
 class TMutex;
+class TMonaLisaWriter;
 
 class AliShuttle: public AliShuttleInterface {
 public:
@@ -117,14 +118,16 @@ private:
 	Bool_t TryToStoreAgain();
 	Bool_t TryToStoreAgain(TString& storageType);
 
-  	AliShuttleStatus* ReadShuttleStatus();
-  	Bool_t WriteShuttleStatus(AliShuttleStatus* status);
-  	Bool_t ContinueProcessing();
-  	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
-  	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
+	AliShuttleStatus* ReadShuttleStatus();
+	Bool_t WriteShuttleStatus(AliShuttleStatus* status);
+	Bool_t ContinueProcessing();
+	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
+	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
 	Bool_t SendMail();
 
-  	void SetLastAction(const char* action);
+	void SetLastAction(const char* action);
+	
+	void SendMLInfo();
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
 
@@ -155,6 +158,8 @@ private:
 	TString fLastAction;       // string description for last action
 
 	Bool_t fFirstUnprocessed[AliShuttleInterface::kNDetectors];       // array of flags for first unprocessed dets
+
+	TMonaLisaWriter* fMonaLisa;  // ML instance that sends the processing information
 
 	//TODO Test only, remove later !
 	static Bool_t fgkProcessDCS; // flag to enable DCS archive data processing
