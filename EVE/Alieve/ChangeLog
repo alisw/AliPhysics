@@ -1,3 +1,9 @@
+2007-01-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TRDModuleImp.cxx:
+	From Christoph Blume: changes in the TRD code that affect the
+	database parameter samplingFrequency.
+
 2007-01-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:
