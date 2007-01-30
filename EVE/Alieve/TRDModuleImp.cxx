@@ -215,8 +215,8 @@ TRDChamber::TRDChamber(const Int_t det) :
 	fRecPoints = 0x0;
 	fTracklets = 0x0;
 	
-	AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-	samplingFrequency = calibration->GetSamplingFrequency();
+	AliTRDCommonParam* parCom = AliTRDCommonParam::Instance();
+	samplingFrequency = parCom->GetSamplingFrequency();
 	
 	fGeo      = 0x0;
 	fPadPlane = 0x0;
