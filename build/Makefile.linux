@@ -39,7 +39,7 @@ CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-leng
 CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi
 endif
 endif
-CFLAGS	       = $(OPT) -Wall -Weffc++ -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
+CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
 FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS   = $(FFLAGS)
