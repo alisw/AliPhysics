@@ -81,7 +81,7 @@ void TPCSector2D::PadSelected(Int_t row, Int_t pad)
   // EVE -> Std convention
   Int_t sseg = fSectorID, srow = row;
   if (row >= TPCSectorData::GetInnSeg().GetNRows()) {
-    sseg += 18;
+    sseg += 36;
     srow -= TPCSectorData::GetInnSeg().GetNRows();
   }
   switch (fPickMode)
