@@ -1,3 +1,8 @@
+2007-01-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/geom_t0.C:
+	New file: import geometry of T0.
+
 2007-01-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* macros/trackcount_init.C:
