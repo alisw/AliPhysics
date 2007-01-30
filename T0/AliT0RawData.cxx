@@ -130,9 +130,9 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
 
   //  Int_t error=0;
   Int_t time,  positionOfTRMHeader;
-
-    // Get the digits array
-
+  
+  // Get the digits array
+  
   fDigits->GetTime(*fTimeCFD);
   fDigits->GetADC(*fADC1);
   fDigits->GetTimeAmp(*fTimeLED);
@@ -143,27 +143,32 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   Int_t mult1=fDigits->SumMult();
   Int_t timeA = fDigits->BestTimeLeft();
   Int_t timeC = fDigits->BestTimeRight();
-
-
-  TArrayI  *allData = new TArrayI(107);
+  
+  
+  TArrayI  *allData = new TArrayI(110);
   Int_t i=0;
-  for (i=0; i<24; i++) {
-    allData->AddAt(fTimeLED->At(i),i);
-    allData->AddAt(fTimeCFD->At(i),i+24);
-    allData->AddAt(fADC0->At(i),i+54);
-    allData->AddAt(fADC1->At(i),i+78);
+  allData->AddAt(0,0);
+  for (i=1; i<25; i++) {
+    allData->AddAt(fTimeLED->At(i-1),i);
+    allData->AddAt(fTimeCFD->At(i-1),i+24);
+    allData->AddAt(fADC0->At(i-1),i+54);
+    allData->AddAt(fADC1->At(i-1),i+78);
+    //    cout<<i<<" led "<<fTimeLED->At(i-1)<<" cfd "<<fTimeCFD->At(i-1)<<" qt0 "<<fADC0->At(i-1)<<" qt1 "<<fADC1->At(i-1)<<endl;
   }
-    allData->AddAt(meantime,48);
-    allData->AddAt(timediff,49);
-    allData->AddAt(timediff,102); //trigger vertex
-    allData->AddAt(timeA,50);
-    allData->AddAt(timeA,103); //trigger T0A
-    allData->AddAt(timeC,51);
-    allData->AddAt(timeC,104); //trigger T0C
-    allData->AddAt(mult0,52);
-    allData->AddAt(mult1,105); //trigger central
-    allData->AddAt(mult1,53);
-    allData->AddAt(mult1,106); //trigger semi-central
+  allData->AddAt(meantime,49);
+  allData->AddAt(timediff,50);
+  allData->AddAt(timediff,103); //trigger vertex
+  allData->AddAt(timeA,51);
+  allData->AddAt(timeA,104); //trigger T0A
+  allData->AddAt(timeC,52);
+  allData->AddAt(timeC,105); //trigger T0C
+  allData->AddAt(mult0,53);
+  allData->AddAt(mult1,106); //trigger central
+  allData->AddAt(mult1,54);
+  allData->AddAt(mult1,107); //trigger semi-central
+
+  // cout<<" new Event "<<endl;
+  //   for (Int_t ia=0; ia<110; ia++) cout<<ia<<" "<<allData->At(ia)<<endl;
   //space for DRM header
   fIndex += 4;
 
@@ -181,7 +186,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   Int_t trm1words=0;
   Int_t fWordsIn1stTRM=0;
   //LED
-  for (Int_t det = 0; det < 54; det++) {
+  for (Int_t det = 0; det < 55; det++) {
     time = allData->At(det);
 
     if (time >0) { 
@@ -194,12 +199,14 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
       iTDC++;
       if (iTDC>15) { chain++; iTDC=0;}
     }
+    //  cout<<det<<" "<<time<<" "<<iTDC<<" "<<channel<<" "<<endl;
   }
   
   WriteTrailer(0,0,fEventNumber,1); // 1st chain trailer
   WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
   fWordsIn1stTRM = trm1words + 4;
-  WriteTRMDataHeader(3, trm1words , positionOfTRMHeader);
+  //  WriteTRMDataHeader(3, trm1words , positionOfTRMHeader);
+  WriteTRMDataHeader(0, trm1words , positionOfTRMHeader);
 
 
   //space for 2st TRM header
@@ -214,7 +221,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   iTDC = 0;
   channel=0;
   Int_t trm2words=0;
-  for (Int_t det = 54; det < 107; det++) {
+  for (Int_t det = 55; det < 108; det++) {
     time = allData->At(det);
 
     if (time >0) { 
@@ -226,11 +233,13 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
       iTDC++;
       if (iTDC>15) { chain++; iTDC=0;}
     }
-  }
+    //    cout<<det<<" "<<time<<" "<<channel<<" "<<iTDC<<endl;
+ }
 
   WriteTrailer(0,0,fEventNumber,1); // 1st chain trailer
   WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
-  WriteTRMDataHeader(5,trm2words,positionOfTRMHeader);
+  //  WriteTRMDataHeader(5,trm2words,positionOfTRMHeader);
+  WriteTRMDataHeader(1,trm2words,positionOfTRMHeader);
 
   WriteTrailer(1,fEventNumber,0,5); //DRM trailer
   WriteDRMDataHeader();
@@ -351,7 +360,7 @@ void  AliT0RawData::WriteTRMDataHeader(UInt_t slotID, Int_t nWordsInTRM,
   word=4;
   PackWord(baseWord,word,28,31); // 0100 marks header
   fBuffer[positionOfTRMHeader] =  baseWord;
-   
+ cout<<" TRM header "<<baseWord<<endl;   
   word=0; 
   baseWord=0;
      
