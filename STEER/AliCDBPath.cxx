@@ -150,9 +150,9 @@ void AliCDBPath::InitPath() {
 
 	} else if (paramCount == 2) {
 		fLevel0 = ((TObjString*) anArray->At(0))->GetString();
-		TString aString =  ((TObjString*) anArray->At(1))->GetString();
+		TString bString =  ((TObjString*) anArray->At(1))->GetString();
 
-		if (IsWord(fLevel0) && aString == "*") {
+		if (IsWord(fLevel0) && bString == "*") {
 			fLevel1 = "*";
 			fLevel2 = "*";
 		
