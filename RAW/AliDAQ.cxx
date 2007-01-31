@@ -273,7 +273,9 @@ const char *AliDAQ::DdlFileName(Int_t detectorID, Int_t ddlIndex)
   }
 
   ddlID += ddlIndex;
-  TString fileName = DetectorName(detectorID);
+  static TString fileName;
+
+  fileName = DetectorName(detectorID);
   fileName += "_";
   fileName += ddlID;
   fileName += ".ddl";
