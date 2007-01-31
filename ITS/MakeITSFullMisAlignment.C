@@ -7,8 +7,10 @@ void MakeITSFullMisAlignment(){
   if(!gGeoManager) TGeoManager::Import("geometry.root");
   // needed for the constructors with local coordinates not to fail
 
-  Double_t globalZ = 0.005; // in cm, = 50 microns
-  Double_t resFact = 0.7;
+  Double_t globalZ = 0.015; // in cm, = 150 microns
+  Double_t mecanicalPrec = 0.0020;
+
+  Double_t resFact = 0.;
   Double_t spdXY   = 0.0015*resFact;
   Double_t sddXYZ  = 0.0030*resFact;
   Double_t ssdXY   = 0.0020*resFact;
@@ -17,14 +19,14 @@ void MakeITSFullMisAlignment(){
   Double_t spdZ    = 0.002;
   Double_t ssdZ    = 0.010;
 
+
   TRandom *rnd   = new TRandom(65416087);
   AliAlignObjAngles a;
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
   Int_t j = 0;
-  new(alobj[j]) AliAlignObjAngles("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
-  j++;
+  new(alobj[j++]) AliAlignObjAngles("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
 
   for ( Int_t l = AliAlignObj::kSPD1; l <= AliAlignObj::kSSD2; l++) {
     
@@ -39,47 +41,46 @@ void MakeITSFullMisAlignment(){
       switch (l) {
       case 1: {
 	iLayer = AliAlignObj::kSPD1;
-	dx = rnd->Gaus(0., spdXY);
-	dy = rnd->Gaus(0., spdXY);
-	dz = rnd->Gaus(0., spdZ);
+	dx = rnd->Gaus(0., spdXY + mecanicalPrec);
+	dy = rnd->Gaus(0., spdXY + mecanicalPrec);
+	dz = rnd->Gaus(0., spdZ + mecanicalPrec);
       }; break;
       case 2: {
 	iLayer = AliAlignObj::kSPD2;
-	dx = rnd->Gaus(0., spdXY);
-	dy = rnd->Gaus(0., spdXY);
-	dz = rnd->Gaus(0., spdZ);
+	dx = rnd->Gaus(0., spdXY + mecanicalPrec);
+	dy = rnd->Gaus(0., spdXY + mecanicalPrec);
+	dz = rnd->Gaus(0., spdZ + mecanicalPrec);
       }; break;
       case 3: {
 	iLayer = AliAlignObj::kSDD1;
-	dx = rnd->Gaus(0., sddXYZ);
-	dy = rnd->Gaus(0., sddXYZ);
-	dz = rnd->Gaus(0., sddXYZ);
+	dx = rnd->Gaus(0., sddXYZ + mecanicalPrec);
+	dy = rnd->Gaus(0., sddXYZ + mecanicalPrec);
+	dz = rnd->Gaus(0., sddXYZ + mecanicalPrec);
       }; break;
       case 4: {
 	iLayer = AliAlignObj::kSDD2;
-	dx = rnd->Gaus(0., sddXYZ);
-	dy = rnd->Gaus(0., sddXYZ);
-	dz = rnd->Gaus(0., sddXYZ);
+	dx = rnd->Gaus(0., sddXYZ + mecanicalPrec);
+	dy = rnd->Gaus(0., sddXYZ + mecanicalPrec);
+	dz = rnd->Gaus(0., sddXYZ + mecanicalPrec);
       }; break;
       case 5: {
 	iLayer = AliAlignObj::kSSD1;
-	dx = rnd->Gaus(0., ssdXY);
-	dy = rnd->Gaus(0., ssdXY);
-	dz = rnd->Gaus(0., ssdZ);
+	dx = rnd->Gaus(0., ssdXY + mecanicalPrec);
+	dy = rnd->Gaus(0., ssdXY + mecanicalPrec);
+	dz = rnd->Gaus(0., ssdZ + mecanicalPrec);
       }; break;
       case 6: {
 	iLayer = AliAlignObj::kSSD2;
-	dx = rnd->Gaus(0., ssdXY);
-	dy = rnd->Gaus(0., ssdXY);
-	dz = rnd->Gaus(0., ssdZ);
+	dx = rnd->Gaus(0., ssdXY + mecanicalPrec);
+	dy = rnd->Gaus(0., ssdXY + mecanicalPrec);
+	dz = rnd->Gaus(0., ssdZ + mecanicalPrec);
       }; break;
       default: Printf("Wrong layer index in ITS (%d) !",l);
       };
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
       const char *symname = AliAlignObj::SymName(volid);
 
-      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
-      j++;
+      new(alobj[j++]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
 
     }
   }
@@ -106,5 +107,6 @@ void MakeITSFullMisAlignment(){
   array->Delete();
 
 }
+
 
 
