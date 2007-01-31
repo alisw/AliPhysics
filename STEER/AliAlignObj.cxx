@@ -1136,7 +1136,6 @@ void AliAlignObj::InitSymNames()
   /*********************      HMPID layer   ***********************/
   {
     TString str = "/HMPID/Chamber";
-    TString symname;
 
     for (modnum=0; modnum < 7; modnum++) {
       symname = str;

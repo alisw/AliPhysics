@@ -706,7 +706,7 @@ void AliVertexerTracks::VertexFinder(Int_t optUseWeights) {
 	if(optUseWeights>0){
 	  Int_t retcode = line1->CrossPoints(line2,pnt1,pnt2);
 	  if(retcode>=0){
-	    Double_t alpha, cs, sn;
+	    Double_t cs, sn;
 	    alpha=track1->GetAlpha();
 	    cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);	  
 	    Double_t sx1=sn*sn*track1->GetSigmaY2(), sy1=cs*cs*track1->GetSigmaY2();
