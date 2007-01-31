@@ -64,7 +64,7 @@ class AliSplineFit : public TObject {
   TClonesArray *fParams;  //  object array of parameters in knots
   TClonesArray *fCovars;  //  object array of covariance in knots
   Int_t        *fIndex;   //  [fN0] index of point corresponding to knot
-  static TLinearFitter fitterStatic; // static fitter to save processing time
+  static TLinearFitter* fitterStatic(); // static fitter to save processing time
   //
   // 
   //
