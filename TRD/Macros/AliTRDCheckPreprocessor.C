@@ -165,7 +165,7 @@ void AliTRDCheckPreprocessor()
     
     AliTRDCalROC *calROC = calPad->GetCalROC(det);
     Float_t valuedetector = calROC->GetValue(0);
-    if(((object->GetValue(det)*valuedetector)> 0.05) || ((object->GetValue(det)*valuedetector) < 0.0)) ErrorT0++;
+    if(((object->GetValue(det)*valuedetector)> 0.05) || ((object->GetValue(det)*valuedetector) < 0.06)) ErrorT0++;
     for(Int_t channel =0; channel < calROC->GetNchannels(); channel++){
       if(calROC->GetValue(channel) != valuedetector) {
 	ErrorT0Pad++;

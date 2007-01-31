@@ -114,6 +114,7 @@ Example of fDelta (right) and fError (left) for the relative gain calibration of
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TGraphErrors.h>
+#include <TGraph.h>
 #include <TObjArray.h>
 #include <TChain.h>
 #include <TH1.h>
@@ -249,8 +250,7 @@ AliTRDCalibra::AliTRDCalibra()
   ,fProcent(0.0)
   ,fDifference(0)
   ,fNumberTrack(0)
-  ,fDeltaPRF(0)
-  ,fErrorPRF(0)
+  ,fCoefPRFE(0)
   ,fCoefPRFDB(0)
   ,fTimeMax(0)
   ,fSf(0.0)
@@ -365,8 +365,7 @@ AliTRDCalibra::AliTRDCalibra(const AliTRDCalibra &c)
   ,fProcent(0.0)
   ,fDifference(0)
   ,fNumberTrack(0)
-  ,fDeltaPRF(0)
-  ,fErrorPRF(0)
+  ,fCoefPRFE(0)
   ,fCoefPRFDB(0)
   ,fTimeMax(0)
   ,fSf(0.0)
@@ -555,9 +554,7 @@ Bool_t AliTRDCalibra::FitCHOnline(TH2I *ch)
   Int_t    nbins   = xch->GetNbins();
   TAxis   *yph     = ch->GetYaxis();
   Int_t    nybins  = yph->GetNbins();
-  Double_t lowedge = xch->GetBinLowEdge(1);
-  Double_t upedge  = xch->GetBinUpEdge(xch->GetNbins());
-  if (!InitFit(nbins,lowedge,upedge,0)) {
+  if (!InitFit(nbins,0)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -646,17 +643,11 @@ Bool_t AliTRDCalibra::FitCHOnline(TH2I *ch)
     NormierungCharge();
   }
   
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorCH();
-  }
- 
   // Plot
   // 0 no plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    PlotCH();
+    PlotWriteCH();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)) {
@@ -692,7 +683,7 @@ Bool_t AliTRDCalibra::FitCHOnline()
   //
 
   // Number of Xbins (detectors or groups of pads)
-  if (!InitFit(0,0,0,0)) {
+  if (!InitFit(0,0)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -798,18 +789,13 @@ Bool_t AliTRDCalibra::FitCHOnline()
   if (fDebug != 2) {
     NormierungCharge();
   }
-  
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorCH();
-  }
+
   
   // Plot
   // 0 no plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)){
-    PlotCH();
+    PlotWriteCH();
   }
   if((fDebug == 4) || 
      (fDebug == 3)){
@@ -845,7 +831,7 @@ Bool_t AliTRDCalibra::FitCHOnline(TTree *tree)
   //
    
   // Number of Xbins (detectors or groups of pads)
-  if (!InitFit(0,0,0,0)) {
+  if (!InitFit(0,0)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -945,17 +931,12 @@ Bool_t AliTRDCalibra::FitCHOnline(TTree *tree)
     NormierungCharge();
   }
 
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorCH();
-  }
  
   // Plot
   // 0 no plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)){
-    PlotCH();
+    PlotWriteCH();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)){
@@ -997,9 +978,7 @@ Bool_t AliTRDCalibra::FitPHOnline(TProfile2D *ph)
   TAxis   *yph     = ph->GetYaxis();
   Int_t    nbins   = xph->GetNbins();
   Int_t    nybins  = yph->GetNbins();
-  Double_t lowedge = xph->GetBinLowEdge(1);
-  Double_t upedge  = xph->GetBinUpEdge(xph->GetNbins());
-  if (!InitFit(nbins,lowedge,upedge,1)) {
+  if (!InitFit(nbins,1)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -1090,19 +1069,13 @@ Bool_t AliTRDCalibra::FitPHOnline(TProfile2D *ph)
   
   } // Boucle object
 
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorPH();
-    ErrorT0();
-  }
- 
+  
   // Plot
   // 0 no plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    PlotPH();
-    PlotT0();
+    PlotWritePH();
+    PlotWriteT0();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)) {
@@ -1140,7 +1113,7 @@ Bool_t AliTRDCalibra::FitPHOnline()
   //
    
   // Number of Xbins (detectors or groups of pads)
-  if (!InitFit(0,0,0,1)) {
+  if (!InitFit(0,1)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -1232,19 +1205,13 @@ Bool_t AliTRDCalibra::FitPHOnline()
     
   } // Boucle object
   
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorPH();
-    ErrorT0();
-  }
- 
+  
   // Plot
   // 0 no plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    PlotPH();
-    PlotT0();
+    PlotWritePH();
+    PlotWriteT0();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)) {
@@ -1280,7 +1247,7 @@ Bool_t AliTRDCalibra::FitPHOnline(TTree *tree)
   //
    
   // Number of Xbins (detectors or groups of pads)
-  if (!InitFit(0,0,0,1)) {
+  if (!InitFit(0,1)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -1375,20 +1342,13 @@ Bool_t AliTRDCalibra::FitPHOnline(TTree *tree)
     }
        
   } // Boucle object
-
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorPH();
-    ErrorT0();
-  }
  
   // Plot
   // 0 no plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)){
-    PlotPH();
-    PlotT0();
+    PlotWritePH();
+    PlotWriteT0();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)){
@@ -1429,9 +1389,7 @@ Bool_t AliTRDCalibra::FitPRFOnline(TProfile2D *prf)
   TAxis   *yprf    = prf->GetYaxis();
   Int_t    nybins  = yprf->GetNbins();
   Int_t    nbins   = xprf->GetNbins();
-  Double_t lowedge = xprf->GetBinLowEdge(1);
-  Double_t upedge  = xprf->GetBinUpEdge(xprf->GetNbins());
-  if (!InitFit(nbins,lowedge,upedge,2)) {
+  if (!InitFit(nbins,2)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -1514,18 +1472,12 @@ Bool_t AliTRDCalibra::FitPRFOnline(TProfile2D *prf)
     }
     
   } // Boucle object
-
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorPRF();
-  }
  
   // Plot
   // No plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    PlotPRF();
+    PlotWritePRF();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)){
@@ -1559,7 +1511,7 @@ Bool_t AliTRDCalibra::FitPRFOnline(TTree *tree)
   //
   
   // Number of Xbins (detectors or groups of pads)
-  if (!InitFit(0,0,0,2)) {
+  if (!InitFit(0,2)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -1648,18 +1600,12 @@ Bool_t AliTRDCalibra::FitPRFOnline(TTree *tree)
     }                
     
   } // Boucle object
-
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorPRF();
-  }
   
   // Plot
   // No plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)){
-    PlotPRF();
+    PlotWritePRF();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)){
@@ -1695,7 +1641,7 @@ Bool_t AliTRDCalibra::FitPRFOnline()
   //
   
   // Number of Xbins (detectors or groups of pads)
-  if (!InitFit(0,0,0,2)) {
+  if (!InitFit(0,2)) {
     return kFALSE;
   }
   fStatisticMean = 0.0;
@@ -1780,17 +1726,11 @@ Bool_t AliTRDCalibra::FitPRFOnline()
     
   } // Boucle object
 
-  // Error
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    ErrorPRF();
-  }
- 
   // Plot
   // No plot, 1 and 4 error plot, 3 and 4 DB plot
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    PlotPRF();
+    PlotWritePRF();
   }
   if ((fDebug == 4) || 
       (fDebug == 3)) {
@@ -1825,7 +1765,7 @@ Bool_t AliTRDCalibra::Init2Dhistos()
 
   // DB Setting
   // Get cal
-  AliTRDcalibDB     *cal    = AliTRDcalibDB::Instance();
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
   if (!cal) {
     AliInfo("Could not get calibDB");
     return kFALSE;
@@ -2526,7 +2466,7 @@ Bool_t AliTRDCalibra::IsPadOn(Int_t detector, Int_t col, Int_t row) const
   }
   
   if (!cal->IsChamberInstalled(detector)     || 
-       cal->IsChamberMasked(detector)        || 
+       cal->IsChamberMasked(detector)        ||
        cal->IsPadMasked(detector,col,row)) {
     return kFALSE;
   }
@@ -2687,8 +2627,15 @@ AliTRDCalDet *AliTRDCalibra::CreateDetObjectTree(TTree *tree, Int_t i)
       nto = 2304;
     }
     mean = 0.0;
-    for (Int_t k = 0; k < nto; k++) {
-      mean += TMath::Abs(values[k]) / nto;  
+    if(i != 3){
+      for (Int_t k = 0; k < nto; k++) {
+	mean += TMath::Abs(values[k]) / nto;  
+      }
+    }
+    else {
+      for (Int_t k = 0; k < nto; k++) {
+	mean += values[k] / nto;  
+      }
     }
     object->SetValue(detector,mean);
   }
@@ -2754,8 +2701,8 @@ TObject *AliTRDCalibra::CreatePadObjectTree(TTree *tree, Int_t i
     Int_t colMax = calROC->GetNcols();
     for (Int_t row = 0; row < rowMax; ++row) {
       for (Int_t col = 0; col < colMax; ++col) {
-	
-	calROC->SetValue(col,row,TMath::Abs(values[(Int_t) (col*rowMax+row)])/mean);
+	if(i != 3) calROC->SetValue(col,row,TMath::Abs(values[(Int_t) (col*rowMax+row)])/mean);
+	else calROC->SetValue(col,row,values[(Int_t) (col*rowMax+row)]/mean);
 	
       } // Col
     } // Row
@@ -4363,267 +4310,100 @@ void AliTRDCalibra::PlotPRF2d()
 //____________Create histos if fDebug == 1 or fDebug >= 3______________________
 
 //_____________________________________________________________________________
-void AliTRDCalibra::CreateFitHistoPH(Int_t nbins, Double_t low, Double_t high)
+void AliTRDCalibra::InitArrayFitPH()
 {
   //
-  // Create the histos for fDebug = 1 and fDebug = 4 (Fit functions)
+  // Initialise fCoefVdrift[3] and fCoefVdriftE[2] to the right dimension
+  //
+  
+  Int_t nbins = fDect2[1]-fDect1[1];
+
+  //Init the pointer to nbins
+  fCoefVdrift[0] = new Double_t[nbins];
+  fCoefVdrift[1] = new Double_t[nbins];
+  fCoefVdrift[2] = new Double_t[nbins];
+  
+  fCoefVdriftE[0] = new Double_t[nbins];
+  fCoefVdriftE[1] = new Double_t[nbins];
+
+  for(Int_t k = 0; k < nbins; k++){
+    fCoefVdriftE[0][k] = 0.0;
+    fCoefVdriftE[1][k] = 0.0;
+  }
+ 
+}
+
+//_____________________________________________________________________________
+void AliTRDCalibra::InitArrayFitT0()
+{
+  //
+  // Initialise fCoefT0[3] and fCoefT0E[2] to the right dimension
+  //
+  
+  Int_t nbins = fDect2[1]-fDect1[1];
+
+  //Init the pointer to nbins
+  fCoefT0[0] = new Double_t[nbins];
+  fCoefT0[1] = new Double_t[nbins];
+  fCoefT0[2] = new Double_t[nbins];
+  
+  fCoefT0E[0] = new Double_t[nbins];
+  fCoefT0E[1] = new Double_t[nbins];
+
+  for(Int_t k = 0; k < nbins; k++){
+    fCoefT0E[0][k] = 0.0;
+    fCoefT0E[1][k] = 0.0;
+  }
+ 
+}
+
+//_____________________________________________________________________________
+void AliTRDCalibra::InitArrayFitCH()
+{
+  //
+  // Initialise fCoefCharge[4] and fCoefChargeE[3] to the right dimension
   //
 
-  // Histograms to store the coef
-  fCoefVdrift[0]  = new TH1F("coefvdrift0" ,"",nbins,low ,high);
-  fCoefVdrift[1]  = new TH1F("coefvdrift1" ,"",nbins,low ,high);
-  fCoefVdrift[2]  = new TH1F("coefvdrift2" ,"",nbins,low ,high);
+  Int_t nbins = fDect2[0]-fDect1[0];
 
-  // Histograms for Debug 
-  fDeltaVdrift[0] = new TH1F("deltavdrift0","",nbins,low ,high);
-  fDeltaVdrift[1] = new TH1F("deltavdrift1","",nbins,low ,high);
-  fErrorVdrift[0] = new TH1I("errorvdrift0","",300  ,-0.5,0.5);
-  fErrorVdrift[1] = new TH1I("errorvdrift1","",300  ,-0.5,0.5);
+  //Init the pointer to nbins
+  fCoefCharge[0] = new Double_t[nbins];
+  fCoefCharge[1] = new Double_t[nbins];
+  fCoefCharge[2] = new Double_t[nbins];
+  fCoefCharge[3] = new Double_t[nbins];
 
-  fCoefVdrift[0]->SetXTitle("Det/pad groups");
-  fCoefVdrift[0]->SetYTitle("Vdrift [cm/#mus]");
-  fCoefVdrift[1]->SetXTitle("Det/pad groups");
-  fCoefVdrift[1]->SetYTitle("Vdrift [cm/#mus]");
-  fCoefVdrift[2]->SetXTitle("Det/pad groups");
-  fCoefVdrift[2]->SetYTitle("Vdrift [cm/#mus]");
+  fCoefChargeE[0] = new Double_t[nbins];
+  fCoefChargeE[1] = new Double_t[nbins];
+  fCoefChargeE[2] = new Double_t[nbins];
 
-  fDeltaVdrift[0]->SetXTitle("Det/pad groups");
-  fDeltaVdrift[0]->SetYTitle("#Deltav/v_{sim}");
-  fDeltaVdrift[1]->SetXTitle("Det/pad groups");
-  fDeltaVdrift[1]->SetYTitle("#Deltav/v_{sim}");
+  for(Int_t k = 0; k < nbins; k++){
+    fCoefChargeE[0][k] = 0.0;
+    fCoefChargeE[1][k] = 0.0;
+    fCoefChargeE[2][k] = 0.0;
+  }
 
-  fErrorVdrift[0]->SetXTitle("#Deltav/v_{sim}");
-  fErrorVdrift[0]->SetYTitle("counts");
-  fErrorVdrift[1]->SetXTitle("#Deltav/v_{sim}");
-  fErrorVdrift[1]->SetYTitle("counts");
-
-  fCoefVdrift[0]->SetStats(0);
-  fCoefVdrift[1]->SetStats(0);
-  fCoefVdrift[2]->SetStats(0);
-  fDeltaVdrift[0]->SetStats(0);
-  fDeltaVdrift[1]->SetStats(0);
-  fErrorVdrift[0]->SetStats(0);
-  fErrorVdrift[1]->SetStats(0);
- 
-  fCoefVdrift[0]->SetMarkerColor(6);
-  fCoefVdrift[0]->SetMarkerStyle(26);
-  fCoefVdrift[0]->SetLineColor(6);
-  fCoefVdrift[1]->SetMarkerColor(2);
-  fCoefVdrift[1]->SetMarkerStyle(24);
-  fCoefVdrift[1]->SetLineColor(2);
-  fCoefVdrift[2]->SetLineColor(4);
-  
-  fDeltaVdrift[1]->SetMarkerColor(2);
-  fDeltaVdrift[1]->SetMarkerStyle(24);
-  fDeltaVdrift[1]->SetLineColor(2);
-  fDeltaVdrift[0]->SetMarkerColor(6);
-  fDeltaVdrift[0]->SetMarkerStyle(26);
-  fDeltaVdrift[0]->SetLineColor(6); 
-
-  fErrorVdrift[1]->SetLineColor(2);
-  fErrorVdrift[1]->SetLineStyle(2);
-  fErrorVdrift[0]->SetLineColor(6);
-  fErrorVdrift[0]->SetLineStyle(1);
   
 }
 
 //_____________________________________________________________________________
-void AliTRDCalibra::CreateFitHistoT0(Int_t nbins, Double_t low, Double_t high)
+void AliTRDCalibra::InitArrayFitPRF()
 {
   //
-  // Create the histos for fDebug = 1 and fDebug = 4 (Fit functions)
+  // Initialise fCoefPRF[2] and fCoefPRFE to the right dimension
   //
 
-  // Histograms to store the coef
-  fCoefT0[0]  = new TH1F("coefT00" ,"",nbins,low ,high);
-  fCoefT0[1]  = new TH1F("coefT01" ,"",nbins,low ,high);
-  fCoefT0[2]  = new TH1F("coefT02" ,"",nbins,low ,high);
+  Int_t nbins = fDect2[2]-fDect1[2];
 
-  // Histograms for Debug
-  fDeltaT0[0] = new TH1F("deltaT00","",nbins,low ,high);
-  fDeltaT0[1] = new TH1F("deltaT01","",nbins,low ,high);
-  fErrorT0[0] = new TH1I("errorT00","",100,-0.2,0.2);
-  fErrorT0[1] = new TH1I("errorT01","",100,-0.2,0.2);
-
-  fCoefT0[0]->SetXTitle("Det/pad groups");
-  fCoefT0[0]->SetYTitle("t0 [timebin]");
-  fCoefT0[1]->SetXTitle("Det/pad groups");
-  fCoefT0[1]->SetYTitle("t0 [timebin]");
-  fCoefT0[2]->SetXTitle("Det/pad groups");
-  fCoefT0[2]->SetYTitle("t0 [timebin]");
-
-  fDeltaT0[0]->SetXTitle("Det/pad groups");
-  fDeltaT0[0]->SetYTitle("#Deltat0 [timebin]");
-  fDeltaT0[1]->SetXTitle("Det/pad groups");
-  fDeltaT0[1]->SetYTitle("#Deltat0 [timebin]");
-
-  fErrorT0[0]->SetXTitle("#Deltat0 [timebin]");
-  fErrorT0[0]->SetYTitle("counts");
-  fErrorT0[1]->SetXTitle("#Deltat0 [timebin]");
-  fErrorT0[1]->SetYTitle("counts");
-
-  fCoefT0[0]->SetStats(0);
-  fCoefT0[1]->SetStats(0);
-  fCoefT0[2]->SetStats(0);
-  fDeltaT0[0]->SetStats(0);
-  fDeltaT0[1]->SetStats(0);
-  fErrorT0[0]->SetStats(0);
-  fErrorT0[1]->SetStats(0);
- 
-  fCoefT0[0]->SetMarkerColor(6);
-  fCoefT0[0]->SetMarkerStyle(26);
-  fCoefT0[0]->SetLineColor(6);
-  fCoefT0[1]->SetMarkerColor(2);
-  fCoefT0[1]->SetMarkerStyle(24);
-  fCoefT0[1]->SetLineColor(2);
-  fCoefT0[2]->SetLineColor(4);
+  //Init the pointer to nbins
+  fCoefPRF[0] = new Double_t[nbins];
+  fCoefPRF[1] = new Double_t[nbins];
   
-  fDeltaT0[1]->SetMarkerColor(2);
-  fDeltaT0[1]->SetMarkerStyle(24);
-  fDeltaT0[1]->SetLineColor(2);
-  fDeltaT0[0]->SetMarkerColor(6);
-  fDeltaT0[0]->SetMarkerStyle(26);
-  fDeltaT0[0]->SetLineColor(6); 
-
-  fErrorT0[1]->SetLineColor(2);
-  fErrorT0[1]->SetLineStyle(2);
-  fErrorT0[0]->SetLineColor(6);
-  fErrorT0[0]->SetLineStyle(1);
-
-}
-
-//_____________________________________________________________________________
-void AliTRDCalibra::CreateFitHistoCH(Int_t nbins, Double_t low, Double_t high)
-{
-  //
-  // Create the histos for fDebug = 1 and fDebug = 4 (Fit functions)
-  //
-
-  // Histograms to store the coef
-  fCoefCharge[0]  = new TH1F("coefcharge0" ,"",nbins,low ,high);
-  fCoefCharge[1]  = new TH1F("coefcharge1" ,"",nbins,low ,high);
-  fCoefCharge[2]  = new TH1F("coefcharge2" ,"",nbins,low ,high);
-  fCoefCharge[3]  = new TH1F("coefcharge3" ,"",nbins,low ,high);
-
-  // Histograms for Debug 
-  fDeltaCharge[0] = new TH1F("deltacharge0","",nbins,low ,high);
-  fDeltaCharge[1] = new TH1F("deltacharge1","",nbins,low ,high);
-  fDeltaCharge[2] = new TH1F("deltacharge2","",nbins,low ,high);
+  fCoefPRFE = new Double_t[nbins];
  
-  fErrorCharge[0] = new TH1I("errorcharge0","",100  ,-0.5,0.5);
-  fErrorCharge[1] = new TH1I("errorcharge1","",100  ,-0.5,0.5);
-  fErrorCharge[2] = new TH1I("errorcharge2","",100  ,-0.5,0.5);
-
-  fCoefCharge[0]->SetXTitle("Det/Pad groups");
-  fCoefCharge[0]->SetYTitle("gain factor");
-  fCoefCharge[1]->SetXTitle("Det/Pad groups");
-  fCoefCharge[1]->SetYTitle("gain factor");
-  fCoefCharge[2]->SetXTitle("Det/Pad groups");
-  fCoefCharge[2]->SetYTitle("gain factor");
-  fCoefCharge[3]->SetXTitle("Det/Pad groups");
-  fCoefCharge[3]->SetYTitle("gain factor");
-
-  fDeltaCharge[0]->SetXTitle("Det/Pad groups");
-  fDeltaCharge[0]->SetYTitle("#Deltag/g_{sim}");
-  fDeltaCharge[1]->SetXTitle("Det/Pad groups");
-  fDeltaCharge[1]->SetYTitle("#Deltag/g_{sim}");
-  fDeltaCharge[2]->SetXTitle("Det/Pad groups");
-  fDeltaCharge[2]->SetYTitle("#Deltag/g_{sim}");
-  fDeltaCharge[0]->SetAxisRange(-0.5,0.5,"Y");
-  fDeltaCharge[1]->SetAxisRange(-0.5,0.5,"Y");
-  fDeltaCharge[2]->SetAxisRange(-0.5,0.5,"Y");
-
-  fErrorCharge[0]->SetXTitle("#Deltag/g_{sim}");
-  fErrorCharge[0]->SetYTitle("counts"); 
-  fErrorCharge[1]->SetXTitle("#Deltag/g_{sim}");
-  fErrorCharge[1]->SetYTitle("counts"); 
-  fErrorCharge[2]->SetXTitle("#Deltag/g_{sim}");
-  fErrorCharge[2]->SetYTitle("counts"); 
-
-  fDeltaCharge[1]->SetMarkerColor(2);
-  fDeltaCharge[1]->SetMarkerStyle(24);
-  fDeltaCharge[1]->SetLineColor(2);
-  fErrorCharge[1]->SetLineColor(2);
-  fErrorCharge[1]->SetLineStyle(2);
-  fDeltaCharge[2]->SetMarkerColor(8);
-  fDeltaCharge[2]->SetLineColor(8);
-  fDeltaCharge[2]->SetMarkerStyle(9);
-  fErrorCharge[2]->SetLineColor(8);
-  fErrorCharge[2]->SetLineStyle(5);
-  fDeltaCharge[0]->SetMarkerColor(6);
-  fDeltaCharge[0]->SetLineColor(6);
-  fDeltaCharge[0]->SetMarkerStyle(26);
-  fErrorCharge[0]->SetLineColor(6);
-  fErrorCharge[0]->SetLineStyle(1);
-
-  fCoefCharge[3]->SetLineColor(4);
-  fCoefCharge[1]->SetMarkerColor(2);
-  fCoefCharge[1]->SetLineColor(2);
-  fCoefCharge[1]->SetMarkerStyle(24);
-  fCoefCharge[2]->SetMarkerColor(8);
-  fCoefCharge[2]->SetLineColor(8);
-  fCoefCharge[2]->SetMarkerStyle(9);
-  fCoefCharge[0]->SetMarkerColor(6);
-  fCoefCharge[0]->SetLineColor(6);
-  fCoefCharge[0]->SetMarkerStyle(26);
- 
-  fErrorCharge[2]->SetLineWidth(3);
-
-  fDeltaCharge[1]->SetStats(0);
-  fDeltaCharge[2]->SetStats(0);
-  fDeltaCharge[0]->SetStats(0);
-  fErrorCharge[1]->SetStats(0);
-  fErrorCharge[2]->SetStats(0);
-  fErrorCharge[0]->SetStats(0);
-  fCoefCharge[1]->SetStats(0);
-  fCoefCharge[0]->SetStats(0);
-  fCoefCharge[3]->SetStats(0); 
-  fCoefCharge[2]->SetStats(0);
-
-}
-
-//_____________________________________________________________________________
-void AliTRDCalibra::CreateFitHistoPRF(Int_t nbins, Double_t low, Double_t high)
-{
-  //
-  // Create the histos for fDebug = 1 and fDebug = 4 (Fit functions)
-  //
-
-  // Histograms to store the coef
-  fCoefPRF[0] = new TH1F("coefPRF0","",nbins,low ,high);
-  fCoefPRF[1] = new TH1F("coefPRF1","",nbins,low ,high);
- 
-  // Histograms for Debug 
-  fDeltaPRF   = new TH1F("deltaPRF","",nbins,low ,high);
-  fErrorPRF   = new TH1I("errorPRF","",300,-0.5,0.5);
-
-  fDeltaPRF->SetMarkerColor(6);
-  fDeltaPRF->SetMarkerStyle(26);
-  fDeltaPRF->SetLineColor(6);
-  fErrorPRF->SetLineColor(6);
-  fErrorPRF->SetLineStyle(2);
-
-  fCoefPRF[1]->SetLineColor(4);
-  fCoefPRF[0]->SetMarkerColor(6);
-  fCoefPRF[0]->SetMarkerStyle(26);
-  fCoefPRF[0]->SetLineColor(6);
-
-  fCoefPRF[0]->SetXTitle("Det/Pad groups");
-  fCoefPRF[0]->SetYTitle("#sigma_{PRF}"); 
-  fCoefPRF[1]->SetXTitle("Det/Pad groups");
-  fCoefPRF[1]->SetYTitle("#sigma_{PRF}"); 
-
-  fDeltaPRF->SetXTitle("Det/Pad groups");
-  fDeltaPRF->SetYTitle("#Delta#sigma/#sigma_{sim}");
-
-  fErrorPRF->SetXTitle("#Delta#sigma/#sigma_{sim}");
-  fErrorPRF->SetYTitle("counts");  
- 
-  fDeltaPRF->SetStats(0);
-  fErrorPRF->SetStats(0);
-  fCoefPRF[1]->SetStats(0);
-  fCoefPRF[0]->SetStats(0);
-
+  for(Int_t k = 0; k < nbins; k++){
+    fCoefPRFE[k] = 0.0;
+  }
+  
 }
 
 //_____________________________________________________________________________
@@ -4770,8 +4550,7 @@ Bool_t AliTRDCalibra::FillVectorFitCH(Int_t countdet)
 }
 
 //____________Functions for initialising the AliTRDCalibra in the code_________
-Bool_t AliTRDCalibra::InitFit(Int_t nbins, Double_t lowedge
-                            , Double_t upedge, Int_t i)
+Bool_t AliTRDCalibra::InitFit(Int_t nbins, Int_t i)
 {
   //
   // Init the calibration mode (Nz, Nrphi), the histograms for
@@ -4882,14 +4661,7 @@ Bool_t AliTRDCalibra::InitFit(Int_t nbins, Double_t lowedge
     
     // fDebug == 1 
     if (fDebug == 1) {
-      if (nbins != 0) {
-	// Create the histos replique de ch if histos2D
-	CreateFitHistoCH(nbins,lowedge,upedge);
-      }
-      else {
-	// Ccreate the histos replique de ch vector2d
-	CreateFitHistoCH(numberofbinsexpected,0,numberofbinsexpected);
-      }
+      InitArrayFitCH();
     }
 
     // fDebug == 2 and fFitVoir no histo
@@ -4918,7 +4690,7 @@ Bool_t AliTRDCalibra::InitFit(Int_t nbins, Double_t lowedge
 	// Create the histos to visualise
 	CreateFitHistoCHDB(rowMax,colMax);
 	if (fDebug == 4) {
-          CreateFitHistoCH((Int_t) (fDect2[0]-fDect1[0]),fDect1[0],fDect2[0]);
+          InitArrayFitCH();
 	}
       }
     }
@@ -4957,16 +4729,9 @@ Bool_t AliTRDCalibra::InitFit(Int_t nbins, Double_t lowedge
     
     // fDebug == 1 
     if (fDebug == 1) {
-      if (nbins != 0) {
-	// Create the histos replique de ch
-	CreateFitHistoPH(nbins,lowedge,upedge);
-	CreateFitHistoT0(nbins,lowedge,upedge);
-      }
-      else {
-	// Create the histos replique de ch if vector2d
-	CreateFitHistoPH(numberofbinsexpected,0,numberofbinsexpected);
-	CreateFitHistoT0(numberofbinsexpected,0,numberofbinsexpected);
-      }
+      // Create the histos replique de ph
+      InitArrayFitPH();
+      InitArrayFitT0();
     }
 
     // fDebug == 2 and fFitVoir no histo
@@ -4997,8 +4762,8 @@ Bool_t AliTRDCalibra::InitFit(Int_t nbins, Double_t lowedge
 	CreateFitHistoPHDB(rowMax,colMax);
 	CreateFitHistoT0DB(rowMax,colMax);
 	if (fDebug == 4) {
-	  CreateFitHistoPH((Int_t) (fDect2[1]-fDect1[1]),fDect1[1],fDect2[1]);
-	  CreateFitHistoT0((Int_t) (fDect2[1]-fDect1[1]),fDect1[1],fDect2[1]);
+	  InitArrayFitPH();
+	  InitArrayFitT0();
 	}
       }
     }
@@ -5036,14 +4801,8 @@ Bool_t AliTRDCalibra::InitFit(Int_t nbins, Double_t lowedge
 
     // fDebug == 1 
     if (fDebug == 1) {
-      if (nbins != 0) {
-	// Create the histos replique de ch
-	CreateFitHistoPRF(nbins,lowedge,upedge);
-      }
-      else {
-	// Create the histos replique de ch
-	CreateFitHistoPRF(numberofbinsexpected,0,numberofbinsexpected);
-      }
+      // Create the histos replique de ch
+      InitArrayFitPRF();
     }
     
     // fDebug == 2 and fFitVoir no histo
@@ -5073,7 +4832,7 @@ Bool_t AliTRDCalibra::InitFit(Int_t nbins, Double_t lowedge
 	// Create the histos to visualise
 	CreateFitHistoPRFDB(rowMax,colMax);
 	if (fDebug == 4) {
-          CreateFitHistoPRF((Int_t) (fDect2[2]-fDect1[2]),fDect1[2],fDect2[2]);
+          InitArrayFitPRF();
 	}
       }
     }
@@ -5210,6 +4969,21 @@ Bool_t AliTRDCalibra::NotEnoughStatistic(Int_t idect, Int_t i)
 	}
       }
     }
+
+    // Put the default value negative 
+    if ((fDebug == 1) || 
+        (fDebug == 4)) {
+
+      if (fFitChargeBisOn) {
+	fCoefCharge[2][idect-fDect1[0]]=-TMath::Abs(fChargeCoef[3]);
+      }
+      if (fMeanChargeOn) {
+	fCoefCharge[1][idect-fDect1[0]]=-TMath::Abs(fChargeCoef[3]);
+      }
+
+      fCoefCharge[0][idect-fDect1[0]]=-TMath::Abs(fChargeCoef[3]);
+
+    }
       
     // End of one detector
     if ((idect == (fCount[0]-1))) {
@@ -5227,17 +5001,17 @@ Bool_t AliTRDCalibra::NotEnoughStatistic(Int_t idect, Int_t i)
     CalculVdriftCoefMean(fCountDet[1],(Int_t) (idect-fDect1[1]));
     CalculT0CoefMean(fCountDet[1],(Int_t) (idect-fDect1[1]));
 
-    // Put the default value 
+    // Put the default value (time0 can be negativ, so we stay with + )
     if ((fDebug == 1) || 
         (fDebug == 4)) {
 
       if (fFitPHOn) {
-	fCoefVdrift[0]->SetBinContent(idect-fDect1[1]+1,-fVdriftCoef[2]);
-	fCoefT0[0]->SetBinContent(idect-fDect1[1]+1,-fT0Coef[2]);
+	fCoefVdrift[0][(idect-fDect1[1])] = -fVdriftCoef[2];
+	fCoefT0[0][(idect-fDect1[1])] = fT0Coef[2];
       }
 
-      fCoefVdrift[1]->SetBinContent(idect-fDect1[1]+1,-fVdriftCoef[2]);
-      fCoefT0[1]->SetBinContent(idect-fDect1[1]+1,-fT0Coef[2]);
+      fCoefVdrift[1][(idect-fDect1[1])] = -fVdriftCoef[2];
+      fCoefT0[1][(idect-fDect1[1])] = fT0Coef[2];
 
     }
     
@@ -5252,7 +5026,7 @@ Bool_t AliTRDCalibra::NotEnoughStatistic(Int_t idect, Int_t i)
     }
 
     // Fill the tree if end of a detector.
-    // The pointer to the branch stays with the default value 1.5!!!
+    // The pointer to the branch stays with the default value negative!!!
     // PH
     // Pointer to the branch
     for (Int_t k = fRowMin[1]; k < fRowMax[1]; k++) {
@@ -5273,15 +5047,15 @@ Bool_t AliTRDCalibra::NotEnoughStatistic(Int_t idect, Int_t i)
 
     // T0
     // Fill the tree if end of a detector.
-    // The pointer to the branch stays with the default value 1.5!!!
+    // The pointer to the branch stays with the default value positive!!!
     // Pointer to the branch
     for (Int_t k = fRowMin[1]; k < fRowMax[1]; k++) {
       for (Int_t j = fColMin[1]; j < fColMax[1]; j++) {
 	if (GetChamber(fCountDet[1]) == 2) {
-          fT0Pad[(Int_t)(j*12+k)] = -TMath::Abs(fT0Coef[2]);
+          fT0Pad[(Int_t)(j*12+k)] = fT0Coef[2];
 	}
 	if (GetChamber(fCountDet[1]) != 2) {
-          fT0Pad[(Int_t)(j*16+k)] = -TMath::Abs(fT0Coef[2]);
+          fT0Pad[(Int_t)(j*16+k)] = fT0Coef[2];
 	}
       }
     }
@@ -5299,7 +5073,7 @@ Bool_t AliTRDCalibra::NotEnoughStatistic(Int_t idect, Int_t i)
       
     if ((fDebug == 1) || 
         (fDebug == 4)) {
-      fCoefPRF[0]->SetBinContent(idect-fDect1[2]+1,fPRFCoef[1]);
+      fCoefPRF[0][(idect-fDect1[2])] = -fPRFCoef[1];
     }
 
     if (fDebug >= 3){
@@ -5493,11 +5267,6 @@ Bool_t AliTRDCalibra::WriteFitInfos(Int_t i)
   }
 
   if ((i == 0) && (fDebug != 2)) {
-    // The error stuff  
-    if ((fDebug == 1) || 
-        (fDebug == 4)) {
-      WriteCH(fout);
-    }
     // The DB stuff
     if ((fDebug == 4) || 
         (fDebug == 3)) {
@@ -5508,12 +5277,6 @@ Bool_t AliTRDCalibra::WriteFitInfos(Int_t i)
   }
 
   if ((i == 1) && (fDebug != 2)) {
-    // PH
-    // The error stuff  
-    if ((fDebug == 1) || 
-        (fDebug == 4)) {
-      WritePH(fout);
-    }
     // The DB stuff
     if ((fDebug == 4) || 
         (fDebug == 3)) {
@@ -5521,12 +5284,6 @@ Bool_t AliTRDCalibra::WriteFitInfos(Int_t i)
     }
     // The tree
     fout->WriteTObject(fVdrift,fVdrift->GetName(),(Option_t *) "writedelete");
-    // T0
-    // The error stuff  
-    if ((fDebug == 1) || 
-        (fDebug == 4)) {
-      WriteT0(fout);
-    }
     // The DB stuff
     if ((fDebug == 4) || 
         (fDebug == 3)) {
@@ -5537,11 +5294,6 @@ Bool_t AliTRDCalibra::WriteFitInfos(Int_t i)
   }
 
   if ((i == 2) && (fDebug != 2)) {
-    // The error stuff  
-    if ((fDebug == 1) || 
-        (fDebug == 4)) {
-      WritePRF(fout);
-    }
     // The DB stuff
     if ((fDebug == 4) || 
         (fDebug == 3)) {
@@ -5554,98 +5306,6 @@ Bool_t AliTRDCalibra::WriteFitInfos(Int_t i)
   fout->Close();
 
   return kTRUE;
-
-}
-
-//
-//____________Fill the Error histos in case of fDebug == 1_____________________
-//
-
-//_____________________________________________________________________________
-void AliTRDCalibra::ErrorPRF()
-{
-  //
-  // Fill the error histos for fDebug = 1 and fDebug = 4 from the delta histos
-  //
-
-  for (Int_t k= 0; k < fDeltaPRF->GetNbinsX(); k++) {
-    if (fDeltaPRF->GetBinContent(k+1) != 0.0) {
-      fErrorPRF->Fill(fDeltaPRF->GetBinContent(k+1));
-    }
-  }
- 
-}
-
-//_____________________________________________________________________________
-void AliTRDCalibra::ErrorCH()
-{
-  //
-  // Fill the error histos for fDebug = 1 and fDebug = 4 from the delta histos
-  //
-
-  for (Int_t k= 0; k < fDeltaCharge[0]->GetNbinsX(); k++) {
-    if (fDeltaCharge[0]->GetBinContent(k+1) != 0.0) {
-      fErrorCharge[0]->Fill(fDeltaCharge[0]->GetBinContent(k+1));
-    }
-  }
-  if (fMeanChargeOn) {
-    for (Int_t k= 0; k < fDeltaCharge[1]->GetNbinsX(); k++) {
-      if (fDeltaCharge[1]->GetBinContent(k+1) != 0.0) {
-        fErrorCharge[1]->Fill(fDeltaCharge[1]->GetBinContent(k+1));
-      }
-    }
-  }
-  if (fFitChargeBisOn ) {
-    for (Int_t k= 0; k < fDeltaCharge[2]->GetNbinsX(); k++) {
-      if (fDeltaCharge[2]->GetBinContent(k+1) != 0.0) {
-        fErrorCharge[2]->Fill(fDeltaCharge[2]->GetBinContent(k+1));
-      }
-    }
-  }
- 
-}
-
-//_____________________________________________________________________________
-void AliTRDCalibra::ErrorPH()
-{
-  //
-  // Fill the error histos for fDebug = 1 and fDebug = 4 from the delta histos
-  //
-
-  if (fFitPHOn ) {
-    for (Int_t k = 0; k < fDeltaVdrift[0]->GetNbinsX(); k++) {     
-      if (fDeltaVdrift[0]->GetBinContent(k+1) != 0.0) {
-        fErrorVdrift[0]->Fill(fDeltaVdrift[0]->GetBinContent(k+1));
-      }
-    }
-  }
-  for (Int_t k = 0; k < fDeltaVdrift[1]->GetNbinsX(); k++) {
-    if (fDeltaVdrift[1]->GetBinContent(k+1) != 0.0) {
-      fErrorVdrift[1]->Fill(fDeltaVdrift[1]->GetBinContent(k+1));
-    }
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDCalibra::ErrorT0()
-{
-  //
-  // Fill the error histos for fDebug = 1 and fDebug = 4 from the delta histos
-  //
-
-  if (fFitPHOn ) {
-    for (Int_t k = 0; k < fDeltaT0[0]->GetNbinsX(); k++) {     
-      if (fDeltaT0[0]->GetBinContent(k+1) != 0.0) {
-        fErrorT0[0]->Fill(fDeltaT0[0]->GetBinContent(k+1));
-      }
-    }
-  }
-  for (Int_t k = 0; k < fDeltaT0[1]->GetNbinsX(); k++) {
-    if (fDeltaT0[1]->GetBinContent(k+1) != 0.0) {
-      fErrorT0[1]->Fill(fDeltaT0[1]->GetBinContent(k+1));
-    }
-  }
 
 }
 
@@ -5730,203 +5390,769 @@ void AliTRDCalibra::FillCoefPRFDB()
 //
 
 //_____________________________________________________________________________
-void AliTRDCalibra::PlotCH()
+void AliTRDCalibra::PlotWriteCH()
 {
   //
-  // Plot the histos for fDebug = 1 and fDebug = 4 for the errors
+  // Scale the coefficients to one, create the graph errors and write them if wanted
   //
 
+  //TObjArray of the grapherrors and so on
+  TObjArray *listofgraphs = new TObjArray(); 
+
+  Int_t nbins = fDect2[0]-fDect1[0];
+
+  //Scale the coefs
+
+  //counter
+  Int_t counter[3];
+  counter[0] = 0;
+  counter[1] = 0;
+  counter[2] = 0;
+  Double_t sum = 0.0;
+  Double_t scale = 1.0; 
+
+  // Scale the histo
+  Double_t *xValuesFitted = new Double_t[nbins];
+  Double_t *xValuesFittedMean = new Double_t[nbins];
+  Double_t *xValuesFittedBis =  new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValuesFitted[k] = -1;
+    xValuesFittedMean[k] = -1;
+    xValuesFittedBis[k] = -1;
+  }
+
+  for(Int_t l = 0; l < nbins; l++){
+    if(fCoefCharge[0][l] > 0){
+      fCoefCharge[0][l]=fCoefCharge[0][l]*fScaleFitFactor;
+      fCoefChargeE[0][l]=fCoefChargeE[0][l]*fScaleFitFactor;
+      xValuesFitted[counter[0]]=l;
+      counter[0]++;
+    }
+  }
+  if(fMeanChargeOn){
+    sum = 0.0;
+    for(Int_t l = 0; l < nbins; l++){
+      if(fCoefCharge[1][l] > 0){
+	sum += fCoefCharge[1][l];
+	xValuesFittedMean[counter[1]]= l;
+	counter[1]++;
+      }
+    }
+    scale = 1.0;
+    if(sum > 0.0) scale = counter[1]/sum;
+    for(Int_t l = 0; l < nbins; l++){
+      if(fCoefCharge[1][l] > 0){
+	fCoefCharge[1][l]=fCoefCharge[1][l]*scale;
+	fCoefChargeE[1][l]=fCoefChargeE[1][l]*scale;
+      }
+    }
+  }
+  if(fFitChargeBisOn){
+    sum = 0.0;
+    for(Int_t l = 0; l < nbins; l++){
+      if(fCoefCharge[2][l] > 0){
+	fCoefCharge[2][l]=fCoefCharge[2][l]*fScaleFitFactor;
+	fCoefChargeE[2][l]=fCoefChargeE[2][l]*fScaleFitFactor;
+	sum += fCoefCharge[2][l];
+	xValuesFittedBis[counter[2]]= l;
+	counter[2]++;
+      }
+    }
+    scale = 1.0;
+    if(sum > 0.0) scale = counter[2]/sum;
+    for(Int_t l = 0; l < nbins; l++){
+      if(fCoefCharge[2][l] > 0){
+	fCoefCharge[2][l]=fCoefCharge[2][l]*scale;
+	fCoefChargeE[2][l]=fCoefChargeE[2][l]*scale;
+	if(fCoefCharge[2][l] > 1.0) printf("for the group %d, I have the coef %f with the error %f\n",l,fCoefCharge[2][l],fCoefChargeE[2][l]);
+      }
+    }
+  }
+  
+  //Create the X and Xerror
+  Double_t *xValues = new Double_t[nbins];
+  Double_t *xValuesE = new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValues[k] = k;
+    xValuesE[k] = 0.0;
+  }
+
+  //Create the graph erros and plot them
+  TGraph *graphCharge3  = new TGraph(nbins,xValues,fCoefCharge[3]);
+  graphCharge3->SetName("coefcharge3");
+  graphCharge3->SetTitle("");
+  graphCharge3->GetXaxis()->SetTitle("Det/Pad groups");
+  graphCharge3->GetYaxis()->SetTitle("gain factor");
+  graphCharge3->SetLineColor(4);
+  listofgraphs->Add((TObject *)graphCharge3);
+  TGraphErrors *graphCharge0  = new TGraphErrors(nbins,xValues,fCoefCharge[0],xValuesE,fCoefChargeE[0]);
+  graphCharge0->SetName("coefcharge0");
+  graphCharge0->SetTitle("");
+  graphCharge0->GetXaxis()->SetTitle("Det/Pad groups");
+  graphCharge0->GetYaxis()->SetTitle("gain factor");
+  graphCharge0->SetMarkerColor(6);
+  graphCharge0->SetLineColor(6);
+  graphCharge0->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphCharge0);
   TCanvas *cch1 = new TCanvas("cch1","",50,50,600,800);
   cch1->cd();
   TLegend *legch1 = new TLegend(0.4,0.6,0.89,0.89);
-  legch1->AddEntry(fCoefCharge[3],"f_{g} simulated","l");
+  legch1->AddEntry(graphCharge3,"f_{g} simulated","l");
+  legch1->AddEntry(graphCharge0,"f_{g} fit","p");
+  graphCharge0->Draw("AP");
+  //graphCharge3->Draw("AL");
   if (fMeanChargeOn) {
-    legch1->AddEntry(fCoefCharge[1],"f_{g} mean","p");
-  }
-  legch1->AddEntry(fCoefCharge[0],"f_{g} fit","p");
-  if (fFitChargeBisOn ) {
-    legch1->AddEntry(fCoefCharge[2],"f_{g} fitbis","p");
+    TGraphErrors *graphCharge1  = new TGraphErrors(nbins,xValues,fCoefCharge[1],xValuesE,fCoefChargeE[1]);
+    graphCharge1->SetName("coefcharge1");
+    graphCharge1->GetXaxis()->SetTitle("Det/Pad groups");
+    graphCharge1->GetYaxis()->SetTitle("gain factor");
+    graphCharge1->SetTitle("");
+    graphCharge1->SetMarkerColor(2);
+    graphCharge1->SetLineColor(2);
+    graphCharge1->SetMarkerStyle(24);
+    legch1->AddEntry(graphCharge1,"f_{g} mean","p");
+    graphCharge1->Draw("P");
+    listofgraphs->Add((TObject *)graphCharge1);
   } 
-
-  fCoefCharge[0]->Draw("E2");
-  if (fMeanChargeOn) {
-    fCoefCharge[1]->Draw("E2 same");
-  }
   if (fFitChargeBisOn ) {
-    fCoefCharge[2]->Draw("E2 same");
-  }
-  fCoefCharge[3]->Draw("same");
+    TGraphErrors *graphCharge2  = new TGraphErrors(nbins,xValues,fCoefCharge[2],xValuesE,fCoefChargeE[2]);
+    graphCharge2->SetName("coefcharge2");
+    graphCharge2->SetTitle("");
+    graphCharge2->GetXaxis()->SetTitle("Det/Pad groups");
+    graphCharge2->GetYaxis()->SetTitle("gain factor");
+    graphCharge2->SetMarkerColor(8);
+    graphCharge2->SetLineColor(8);
+    graphCharge2->SetMarkerStyle(25);
+    legch1->AddEntry(graphCharge2,"f_{g} fitbis","p");
+    graphCharge2->Draw("P");
+    listofgraphs->Add((TObject *)graphCharge2);
+  } 
   legch1->Draw("same");
 
+  
+  //Create the arrays and the graphs for the delta
   TCanvas *cch2 = new TCanvas("cch2","",50,50,600,800);
   cch2->Divide(2,1);
-  cch2->cd(1);
-  TLegend *legch2 = new TLegend(0.4,0.6,0.89,0.89);
-  if (fMeanChargeOn) {
-    legch2->AddEntry(fErrorCharge[1],"f_{g} mean","l");
-  }
-  legch2->AddEntry(fErrorCharge[0],"f_{g} fit","l");
-  if (fFitChargeBisOn) {
-    legch2->AddEntry(fErrorCharge[2],"f_{g} fitbis","l");
-  }
-  fErrorCharge[0]->Draw();
-  if (fMeanChargeOn) {
-    fErrorCharge[1]->Draw("same");
-  }
-  if (fFitChargeBisOn) {
-    fErrorCharge[2]->Draw("same");
-  }
-  legch2->Draw("same");
   cch2->cd(2);
+  Double_t *yValuesDelta = new Double_t[counter[0]];
+  for(Int_t k = 0; k < counter[0]; k++){
+    if(fCoefCharge[3][(Int_t)(xValuesFitted[k])] > 0.0) {
+      yValuesDelta[k] = (fCoefCharge[0][(Int_t)xValuesFitted[k]]-fCoefCharge[3][(Int_t)xValuesFitted[k]])/fCoefCharge[3][(Int_t)xValuesFitted[k]];
+    }
+    else yValuesDelta[k] = 0.0;
+  }
+  TGraph *graphDeltaCharge0 = new TGraph(counter[0],&xValuesFitted[0],yValuesDelta);
+  graphDeltaCharge0->SetName("deltacharge0");
+  graphDeltaCharge0->GetXaxis()->SetTitle("Det/Pad groups");
+  graphDeltaCharge0->GetYaxis()->SetTitle("#Deltag/g_{sim}");
+  graphDeltaCharge0->SetMarkerColor(6);
+  graphDeltaCharge0->SetTitle("");
+  graphDeltaCharge0->SetLineColor(6);
+  graphDeltaCharge0->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphDeltaCharge0);
   TLegend *legch3 = new TLegend(0.4,0.6,0.89,0.89);
+  legch3->AddEntry(graphDeltaCharge0,"fit","p");
+  graphDeltaCharge0->Draw("AP");
+  cch2->cd(1); 
+  TH1I *histoErrorCharge0 = new TH1I("errorcharge0","",100  ,-0.3,0.3);
+  histoErrorCharge0->SetXTitle("#Deltag/g_{sim}");
+  histoErrorCharge0->SetYTitle("counts"); 
+  histoErrorCharge0->SetLineColor(6);
+  histoErrorCharge0->SetLineStyle(1);
+  histoErrorCharge0->SetStats(0);
+  for(Int_t k = 0; k < counter[0]; k++){
+    histoErrorCharge0->Fill(yValuesDelta[k]);
+  }
+  TLegend *legch2 = new TLegend(0.4,0.6,0.89,0.89);
+  legch2->AddEntry(histoErrorCharge0,"f_{g} fit","l");
+  histoErrorCharge0->Draw();
+  listofgraphs->Add((TObject *)histoErrorCharge0); 
   if (fMeanChargeOn) {
-    legch3->AddEntry(fDeltaCharge[1],"mean","p");
+    cch2->cd(2);
+    Double_t *yValuesDeltaMean = new Double_t[counter[1]];
+    for(Int_t k = 0; k < counter[1]; k++){
+      if(fCoefCharge[3][(Int_t)xValuesFittedMean[k]] > 0.0) {
+	yValuesDeltaMean[k] = (fCoefCharge[1][(Int_t)xValuesFittedMean[k]]-fCoefCharge[3][(Int_t)xValuesFittedMean[k]])/fCoefCharge[3][(Int_t)xValuesFittedMean[k]];
+      }
+      else yValuesDeltaMean[k] = 0.0;
+    }
+    TGraph *graphDeltaCharge1 = new TGraph(counter[1],&xValuesFittedMean[0],yValuesDeltaMean);
+    graphDeltaCharge1->SetName("deltacharge1");
+    graphDeltaCharge1->GetXaxis()->SetTitle("Det/Pad groups");
+    graphDeltaCharge1->GetYaxis()->SetTitle("#Deltag/g_{sim}");
+    graphDeltaCharge1->SetMarkerColor(2);
+    graphDeltaCharge1->SetMarkerStyle(24);
+    graphDeltaCharge1->SetLineColor(2);
+    graphDeltaCharge1->SetTitle("");
+    legch3->AddEntry(graphDeltaCharge1,"mean","p");
+    graphDeltaCharge1->Draw("P");
+    listofgraphs->Add((TObject *)graphDeltaCharge1);
+    cch2->cd(1);
+    TH1I *histoErrorCharge1 = new TH1I("errorcharge1","",100  ,-0.3,0.3);
+    histoErrorCharge1->SetXTitle("#Deltag/g_{sim}");
+    histoErrorCharge1->SetYTitle("counts");
+    histoErrorCharge1->SetLineColor(2);
+    histoErrorCharge1->SetLineStyle(2);
+    histoErrorCharge1->SetStats(0); 
+    for(Int_t k = 0; k < counter[1]; k++){
+      histoErrorCharge1->Fill(yValuesDeltaMean[k]);
+    }
+    legch2->AddEntry(histoErrorCharge1,"f_{g} mean","l");
+    histoErrorCharge1->Draw("same");
+    listofgraphs->Add((TObject *)histoErrorCharge1);
   }
-  legch3->AddEntry(fDeltaCharge[0],"fit","p");
-  if (fFitChargeBisOn) {
-    legch3->AddEntry(fDeltaCharge[2],"fit","p");
-  }
-  fDeltaCharge[0]->Draw("E2");
-  if (fMeanChargeOn) {
-    fDeltaCharge[1]->Draw("E2 same");
-  }
-  if (fFitChargeBisOn) {
-    fDeltaCharge[2]->Draw("E2 same");
-  }
-  legch3->Draw("same");
   
+  if (fFitChargeBisOn) {
+    cch2->cd(2);
+    Double_t *yValuesDeltaBis = new Double_t[counter[2]];
+    for(Int_t k = 0; k < counter[2]; k++){
+      if(fCoefCharge[3][(Int_t)xValuesFittedBis[k]] > 0.0) {
+	yValuesDeltaBis[k] = (fCoefCharge[2][(Int_t)xValuesFittedBis[k]]-fCoefCharge[3][(Int_t)xValuesFittedBis[k]])/fCoefCharge[3][(Int_t)xValuesFittedBis[k]];
+      }
+      else yValuesDeltaBis[k] = 0.0;
+    }
+    TGraph *graphDeltaCharge2 = new TGraph(counter[2],&xValuesFittedBis[0],yValuesDeltaBis);
+    graphDeltaCharge2->SetName("deltacharge2");
+    graphDeltaCharge2->GetXaxis()->SetTitle("Det/Pad groups");
+    graphDeltaCharge2->GetYaxis()->SetTitle("#Deltag/g_{sim}");
+    graphDeltaCharge2->SetMarkerColor(8);
+    graphDeltaCharge2->SetLineColor(8);
+    graphDeltaCharge2->SetMarkerStyle(25);
+    legch3->AddEntry(graphDeltaCharge2,"fit","p");
+    graphDeltaCharge2->SetTitle("");
+    graphDeltaCharge2->Draw("P");
+    listofgraphs->Add((TObject *)graphDeltaCharge2);
+    cch2->cd(1);
+    TH1I *histoErrorCharge2 = new TH1I("errorcharge2","",100  ,-0.3,0.3);
+    histoErrorCharge2->SetXTitle("#Deltag/g_{sim}");
+    histoErrorCharge2->SetYTitle("counts"); 
+    histoErrorCharge2->SetLineColor(8);
+    histoErrorCharge2->SetLineStyle(5);
+    histoErrorCharge2->SetLineWidth(3);
+    histoErrorCharge2->SetStats(0);
+    for(Int_t k = 0; k < counter[2]; k++){
+      histoErrorCharge2->Fill(yValuesDeltaBis[k]);
+    }
+    legch2->AddEntry(histoErrorCharge2,"f_{g} fitbis","l");
+    histoErrorCharge2->Draw("same");
+    listofgraphs->Add((TObject *)histoErrorCharge2);
+  }
+  cch2->cd(2);
+  legch3->Draw("same");
+  cch2->cd(1);
+  legch2->Draw("same");
+
+
+  //Write if wanted
+  if (fWriteCoef[0]){
+    TFile *fout = TFile::Open(fWriteNameCoef,"UPDATE");
+    // Check if the file could be opened
+    if (!fout || !fout->IsOpen()) {
+      AliInfo("No File found!");
+    }
+    
+    else{
+      for(Int_t k = 0; k < listofgraphs->GetEntriesFast(); k++){
+	fout->WriteTObject((TObject *) listofgraphs->At(k),((TObject *)listofgraphs->At(k))->GetName(),(Option_t *) "OverWrite");
+      }
+    }
+    fout->Close();
+  }
+    
 }
 
 //_____________________________________________________________________________
-void AliTRDCalibra::PlotPH()
+void AliTRDCalibra::PlotWritePH()
 {
   //
-  // Plot the histos for fDebug = 1 and fDebug = 4 for the errors
+  // create the graph errors and write them if wanted
   //
 
+  //TObjArray of the grapherrors and so on
+  TObjArray *listofgraphs = new TObjArray(); 
+
+  Int_t nbins = fDect2[1]-fDect1[1];
+
+  //See the number of fitted for delta
+  
+  //counter
+  Int_t counter[2];
+  counter[0] = 0;
+  counter[1] = 0;
+
+  Double_t *xValuesFitted = new Double_t[nbins];
+  Double_t *xValuesFittedPH = new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValuesFitted[k] = -1;
+    xValuesFittedPH[k] = -1;
+  }
+
+  for(Int_t l = 0; l < nbins; l++){
+    if(fCoefVdrift[1][l] > 0){
+      xValuesFitted[counter[1]]=l;
+      counter[1]++;
+    }
+  }
+  if(fFitPHOn){
+    for(Int_t l = 0; l < nbins; l++){
+      if(fCoefVdrift[0][l] > 0){
+	xValuesFittedPH[counter[0]]= l;
+	counter[0]++;
+      }
+    }
+  }
+
+
+  //Create the X and Xerror
+  Double_t *xValues = new Double_t[nbins];
+  Double_t *xValuesE = new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValues[k] = k;
+    xValuesE[k] = 0.0;
+  }
+
+  //Create the graph erros and plot them
+  TGraph *graphVdrift2  = new TGraph(nbins,xValues,fCoefVdrift[2]);
+  graphVdrift2->SetName("coefvdrift2");
+  graphVdrift2->SetTitle("");
+  graphVdrift2->GetXaxis()->SetTitle("Det/Pad groups");
+  graphVdrift2->GetYaxis()->SetTitle("Vdrift [cm/#mus]");
+  graphVdrift2->SetLineColor(4);
+  listofgraphs->Add((TObject *)graphVdrift2);
+  TGraphErrors *graphVdrift1  = new TGraphErrors(nbins,xValues,fCoefVdrift[1],xValuesE,fCoefVdriftE[1]);
+  graphVdrift1->SetName("coefvdrift1");
+  graphVdrift1->SetTitle("");
+  graphVdrift1->GetXaxis()->SetTitle("Det/Pad groups");
+  graphVdrift1->GetYaxis()->SetTitle("Vdrift [cm/#mus]");
+  graphVdrift1->SetMarkerColor(6);
+  graphVdrift1->SetLineColor(6);
+  graphVdrift1->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphVdrift1);
   TCanvas *cph1 = new TCanvas("cph1","",50,50,600,800);
   cph1->cd();
   TLegend *legph1 = new TLegend(0.4,0.6,0.89,0.89);
-  legph1->AddEntry(fCoefVdrift[2],"v_{real} simulated","l");
-  legph1->AddEntry(fCoefVdrift[1],"v_{sm} slope 1 method","p");
- 
+  legph1->AddEntry(graphVdrift2,"Vdrift simulated","l");
+  legph1->AddEntry(graphVdrift1,"Vdrift fit","p");
+  graphVdrift2->Draw("AL");
+  graphVdrift1->Draw("P");
   if (fFitPHOn) {
-    legph1->AddEntry(fCoefVdrift[0],"v_{fit} fit","p");
-  }
-  fCoefVdrift[1]->Draw("E2");
-  fCoefVdrift[2]->Draw("same");
-  if (fFitPHOn){
-    fCoefVdrift[0]->Draw("E2 same");
-  }
+    TGraphErrors *graphVdrift0  = new TGraphErrors(nbins,xValues,fCoefVdrift[0],xValuesE,fCoefVdriftE[0]);
+    graphVdrift0->SetName("coefVdrift0");
+    graphVdrift0->GetXaxis()->SetTitle("Det/Pad groups");
+    graphVdrift0->GetYaxis()->SetTitle("Vdrift [cm/#mus]");
+    graphVdrift0->SetTitle("");
+    graphVdrift0->SetMarkerColor(2);
+    graphVdrift0->SetLineColor(2);
+    graphVdrift0->SetMarkerStyle(24);
+    legph1->AddEntry(graphVdrift0,"v_{fit PH}","p");
+    graphVdrift0->Draw("P");
+    listofgraphs->Add((TObject *)graphVdrift0);
+  } 
   legph1->Draw("same");
 
+  
+  //Create the arrays and the graphs for the delta
   TCanvas *cph2 = new TCanvas("cph2","",50,50,600,800);
   cph2->Divide(2,1);
-  cph2->cd(1);
-  TLegend *legph2 = new TLegend(0.4,0.6,0.89,0.89);
-  legph2->AddEntry(fErrorVdrift[1],"v_{sm} slope 1 method","l");
-  if (fFitPHOn) {
-    legph2->AddEntry(fErrorVdrift[0],"v_{fit} fit","l");
-  }
-  fErrorVdrift[1]->Draw();
-  if (fFitPHOn) {
-    fErrorVdrift[0]->Draw("l,same");
-  }
-  legph2->Draw("same");
   cph2->cd(2);
+  Double_t *yValuesDelta = new Double_t[counter[1]];
+  for(Int_t k = 0; k < counter[1]; k++){
+    if(fCoefVdrift[2][(Int_t)(xValuesFitted[k])] > 0.0) {
+      yValuesDelta[k] = (fCoefVdrift[1][(Int_t)xValuesFitted[k]]-fCoefVdrift[2][(Int_t)xValuesFitted[k]])/fCoefVdrift[2][(Int_t)xValuesFitted[k]];
+    }
+    else yValuesDelta[k] = 0.0;
+  }
+  TGraph *graphDeltaVdrift1 = new TGraph(counter[1],&xValuesFitted[0],yValuesDelta);
+  graphDeltaVdrift1->SetName("deltavdrift1");
+  graphDeltaVdrift1->GetXaxis()->SetTitle("Det/Pad groups");
+  graphDeltaVdrift1->GetYaxis()->SetTitle("#Deltav/v_{sim}");
+  graphDeltaVdrift1->SetMarkerColor(6);
+  graphDeltaVdrift1->SetTitle("");
+  graphDeltaVdrift1->SetLineColor(6);
+  graphDeltaVdrift1->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphDeltaVdrift1);
   TLegend *legph3 = new TLegend(0.4,0.6,0.89,0.89);
-  legph3->AddEntry(fDeltaVdrift[1],"v_{sm} slope 1 method","p");
-  if (fFitPHOn) {
-    legph3->AddEntry(fDeltaVdrift[0],"v_{fit} fit","p");
+  legph3->AddEntry(graphDeltaVdrift1,"v_{slope method}","p");
+  graphDeltaVdrift1->Draw("AP");
+  cph2->cd(1); 
+  TH1I *histoErrorVdrift1 = new TH1I("errorvdrift1","",100  ,-0.05,0.05);
+  histoErrorVdrift1->SetXTitle("#Deltav/v_{sim}");
+  histoErrorVdrift1->SetYTitle("counts"); 
+  histoErrorVdrift1->SetLineColor(6);
+  histoErrorVdrift1->SetLineStyle(1);
+  histoErrorVdrift1->SetStats(0);
+  for(Int_t k = 0; k < counter[1]; k++){
+    histoErrorVdrift1->Fill(yValuesDelta[k]);
   }
-  fDeltaVdrift[1]->Draw("E2");
+  TLegend *legph2 = new TLegend(0.4,0.6,0.89,0.89);
+  legph2->AddEntry(histoErrorVdrift1,"v_{slope method}","l");
+  histoErrorVdrift1->Draw();
+  listofgraphs->Add((TObject *)histoErrorVdrift1); 
   if (fFitPHOn) {
-    fDeltaVdrift[0]->Draw("E2 same");
+    cph2->cd(2);
+    Double_t *yValuesDeltaPH = new Double_t[counter[0]];
+    for(Int_t k = 0; k < counter[0]; k++){
+      if(fCoefVdrift[2][(Int_t)xValuesFittedPH[k]] > 0.0) {
+	yValuesDeltaPH[k] = (fCoefVdrift[0][(Int_t)xValuesFittedPH[k]]-fCoefVdrift[2][(Int_t)xValuesFittedPH[k]])/fCoefVdrift[2][(Int_t)xValuesFittedPH[k]];
+      }
+      else yValuesDeltaPH[k] = 0.0;
+    }
+    TGraph *graphDeltaVdrift0 = new TGraph(counter[0],&xValuesFittedPH[0],yValuesDeltaPH);
+    graphDeltaVdrift0->SetName("deltavdrift0");
+    graphDeltaVdrift0->GetXaxis()->SetTitle("Det/Pad groups");
+    graphDeltaVdrift0->GetYaxis()->SetTitle("#Deltav/v_{sim}");
+    graphDeltaVdrift0->SetMarkerColor(2);
+    graphDeltaVdrift0->SetMarkerStyle(24);
+    graphDeltaVdrift0->SetLineColor(2);
+    graphDeltaVdrift0->SetTitle("");
+    legph3->AddEntry(graphDeltaVdrift0,"v_{fit PH}","p");
+    graphDeltaVdrift0->Draw("P");
+    listofgraphs->Add((TObject *)graphDeltaVdrift0);
+    cph2->cd(1);
+    TH1I *histoErrorVdrift0 = new TH1I("errorvdrift0","",100  ,-0.05,0.05);
+    histoErrorVdrift0->SetXTitle("#Deltav/v_{sim}");
+    histoErrorVdrift0->SetYTitle("counts");
+    histoErrorVdrift0->SetLineColor(2);
+    histoErrorVdrift0->SetLineStyle(2);
+    histoErrorVdrift0->SetStats(0); 
+    for(Int_t k = 0; k < counter[0]; k++){
+      histoErrorVdrift0->Fill(yValuesDeltaPH[k]);
+    }
+    legph2->AddEntry(histoErrorVdrift0,"v_{fit PH}","l");
+    histoErrorVdrift0->Draw("same");
+    listofgraphs->Add((TObject *)histoErrorVdrift0);
   }
+  cph2->cd(2);
   legph3->Draw("same");
+  cph2->cd(1);
+  legph2->Draw("same");
+
+
+  //Write if wanted
+  if (fWriteCoef[1]){
+    TFile *fout = TFile::Open(fWriteNameCoef,"UPDATE");
+    // Check if the file could be opened
+    if (!fout || !fout->IsOpen()) {
+      AliInfo("No File found!");
+    }
+    
+    else{
+      for(Int_t k = 0; k < listofgraphs->GetEntriesFast(); k++){
+	fout->WriteTObject((TObject *) listofgraphs->At(k),((TObject *)listofgraphs->At(k))->GetName(),(Option_t *) "OverWrite");
+      }
+    }
+    fout->Close();
+  }
 
 }
 
 //_____________________________________________________________________________
-void AliTRDCalibra::PlotT0()
+void AliTRDCalibra::PlotWriteT0()
 {
   //
-  // Plot the histos for fDebug = 1 and fDebug = 4 for the errors
+  // create the graph errors and write them if wanted
   //
 
+  //TObjArray of the grapherrors and so on
+  TObjArray *listofgraphs = new TObjArray(); 
+
+  Int_t nbins = fDect2[1]-fDect1[1];
+
+  //See the number of fitted for delta: here T0 can be negative, we don't use the sign but the error
+  //and the grapherrors of the coefficients contained the no fitted with error 0.0
+  
+  //counter
+  Int_t counter[2];
+  counter[0] = 0;
+  counter[1] = 0;
+
+  Double_t *xValuesFitted = new Double_t[nbins];
+  Double_t *xValuesFittedPH = new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValuesFitted[k] = -1;
+    xValuesFittedPH[k] = -1;
+  }
+
+  for(Int_t l = 0; l < nbins; l++){
+    if(fCoefT0E[1][l] != 0.0){
+      xValuesFitted[counter[1]]=l;
+      counter[1]++;
+    }
+  }
+  if(fFitPHOn){
+    for(Int_t l = 0; l < nbins; l++){
+      if(fCoefT0E[0][l] != 0.0){
+	xValuesFittedPH[counter[0]]= l;
+	counter[0]++;
+      }
+    }
+  }
+
+
+  //Create the X and Xerror
+  Double_t *xValues = new Double_t[nbins];
+  Double_t *xValuesE = new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValues[k] = k;
+    xValuesE[k] = 0.0;
+  }
+
+  //Create the graph erros and plot them
+  TGraph *graphT02  = new TGraph(nbins,xValues,fCoefT0[2]);
+  graphT02->SetName("coeft02");
+  graphT02->SetTitle("");
+  graphT02->GetXaxis()->SetTitle("Det/Pad groups");
+  graphT02->GetYaxis()->SetTitle("T0 [time bins]");
+  graphT02->SetLineColor(4);
+  listofgraphs->Add((TObject *)graphT02);
+  TGraphErrors *graphT01  = new TGraphErrors(nbins,xValues,fCoefT0[1],xValuesE,fCoefT0E[1]);
+  graphT01->SetName("coeft01");
+  graphT01->SetTitle("");
+  graphT01->GetXaxis()->SetTitle("Det/Pad groups");
+  graphT01->GetYaxis()->SetTitle("T0 [time bins]");
+  graphT01->SetMarkerColor(6);
+  graphT01->SetLineColor(6);
+  graphT01->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphT01);
   TCanvas *ct01 = new TCanvas("ct01","",50,50,600,800);
   ct01->cd();
   TLegend *legt01 = new TLegend(0.4,0.6,0.89,0.89);
-  legt01->AddEntry(fCoefT0[2],"t0 simulated","l");
-  legt01->AddEntry(fCoefT0[1],"t0 slope 1 method","p");
- 
+  legt01->AddEntry(graphT02,"T0 simulated","l");
+  legt01->AddEntry(graphT01,"T0 slope method","p");
+  graphT02->Draw("AL");
+  graphT01->Draw("P");
   if (fFitPHOn) {
-    legt01->AddEntry(fCoefT0[0],"t0 fit","p");
-  }
-  fCoefT0[1]->Draw("E2");
-  fCoefT0[2]->Draw("same");
-  if (fFitPHOn){
-    fCoefT0[0]->Draw("E2 same");
-  }
+    TGraphErrors *graphT00  = new TGraphErrors(nbins,xValues,fCoefT0[0],xValuesE,fCoefT0E[0]);
+    graphT00->SetName("coeft00");
+    graphT00->GetXaxis()->SetTitle("Det/Pad groups");
+    graphT00->GetYaxis()->SetTitle("T0 [time bins]");
+    graphT00->SetTitle("");
+    graphT00->SetMarkerColor(2);
+    graphT00->SetLineColor(2);
+    graphT00->SetMarkerStyle(24);
+    legt01->AddEntry(graphT00,"T0 fit","p");
+    graphT00->Draw("P");
+    listofgraphs->Add((TObject *)graphT00);
+  } 
   legt01->Draw("same");
 
+  
+  //Create the arrays and the graphs for the delta
   TCanvas *ct02 = new TCanvas("ct02","",50,50,600,800);
   ct02->Divide(2,1);
-  ct02->cd(1);
-  TLegend *legt02 = new TLegend(0.4,0.6,0.89,0.89);
-  legt02->AddEntry(fErrorT0[1],"t0 slope 1 method","l");
-  if (fFitPHOn) {
-    legt02->AddEntry(fErrorT0[0],"t0 fit","l");
-  }
-  fErrorT0[1]->Draw();
-  if (fFitPHOn) {
-    fErrorT0[0]->Draw("l,same");
-  }
-  legt02->Draw("same");
   ct02->cd(2);
+  Double_t *yValuesDelta = new Double_t[counter[1]];
+  for(Int_t k = 0; k < counter[1]; k++){
+    yValuesDelta[k] = (fCoefT0[1][(Int_t)xValuesFitted[k]]-fCoefT0[2][(Int_t)xValuesFitted[k]]);
+  }
+  TGraph *graphDeltaT01 = new TGraph(counter[1],&xValuesFitted[0],yValuesDelta);
+  graphDeltaT01->SetName("deltat01");
+  graphDeltaT01->GetXaxis()->SetTitle("Det/Pad groups");
+  graphDeltaT01->GetYaxis()->SetTitle("#Deltat0 [time bins]");
+  graphDeltaT01->SetMarkerColor(6);
+  graphDeltaT01->SetTitle("");
+  graphDeltaT01->SetLineColor(6);
+  graphDeltaT01->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphDeltaT01);
   TLegend *legt03 = new TLegend(0.4,0.6,0.89,0.89);
-  legt03->AddEntry(fDeltaT0[1],"t0 slope 1 method","p");
-  if (fFitPHOn) {
-    legt03->AddEntry(fDeltaT0[0],"t0 fit","p");
+  legt03->AddEntry(graphDeltaT01,"T0_{slope method}","p");
+  graphDeltaT01->Draw("AP");
+  ct02->cd(1); 
+  TH1I *histoErrorT01 = new TH1I("errort01","",100  ,-0.05,0.05);
+  histoErrorT01->SetXTitle("#Deltat0 [time bins]");
+  histoErrorT01->SetYTitle("counts"); 
+  histoErrorT01->SetLineColor(6);
+  histoErrorT01->SetLineStyle(1);
+  histoErrorT01->SetStats(0);
+  for(Int_t k = 0; k < counter[1]; k++){
+    histoErrorT01->Fill(yValuesDelta[k]);
   }
-  fDeltaT0[1]->Draw("E2");
+  TLegend *legt02 = new TLegend(0.4,0.6,0.89,0.89);
+  legt02->AddEntry(histoErrorT01,"T0_{slope method}","l");
+  histoErrorT01->Draw();
+  listofgraphs->Add((TObject *)histoErrorT01); 
   if (fFitPHOn) {
-    fDeltaT0[0]->Draw("E2 same");
+    ct02->cd(2);
+    Double_t *yValuesDeltaPH = new Double_t[counter[0]];
+    for(Int_t k = 0; k < counter[0]; k++){
+      yValuesDeltaPH[k] = (fCoefT0[0][(Int_t)xValuesFittedPH[k]]-fCoefT0[2][(Int_t)xValuesFittedPH[k]]);
+    }
+    TGraph *graphDeltaT00 = new TGraph(counter[0],&xValuesFittedPH[0],yValuesDeltaPH);
+    graphDeltaT00->SetName("deltat00");
+    graphDeltaT00->GetXaxis()->SetTitle("Det/Pad groups");
+    graphDeltaT00->GetYaxis()->SetTitle("#Deltat0 [time bins]");
+    graphDeltaT00->SetMarkerColor(2);
+    graphDeltaT00->SetMarkerStyle(24);
+    graphDeltaT00->SetLineColor(2);
+    graphDeltaT00->SetTitle("");
+    legt03->AddEntry(graphDeltaT00,"T0_{fit PH}","p");
+    graphDeltaT00->Draw("P");
+    listofgraphs->Add((TObject *)graphDeltaT00);
+    ct02->cd(1);
+    TH1I *histoErrorT00 = new TH1I("errort00","",100  ,-0.05,0.05);
+    histoErrorT00->SetXTitle("#Deltat0 [time bins]");
+    histoErrorT00->SetYTitle("counts");
+    histoErrorT00->SetLineColor(2);
+    histoErrorT00->SetLineStyle(2);
+    histoErrorT00->SetStats(0); 
+    for(Int_t k = 0; k < counter[0]; k++){
+      histoErrorT00->Fill(yValuesDeltaPH[k]);
+    }
+    legt02->AddEntry(histoErrorT00,"T0_{fit PH}","l");
+    histoErrorT00->Draw("same");
+    listofgraphs->Add((TObject *)histoErrorT00);
   }
+  ct02->cd(2);
   legt03->Draw("same");
+  ct02->cd(1);
+  legt02->Draw("same");
+
+
+  //Write if wanted
+  if (fWriteCoef[1]){
+    TFile *fout = TFile::Open(fWriteNameCoef,"UPDATE");
+    // Check if the file could be opened
+    if (!fout || !fout->IsOpen()) {
+      AliInfo("No File found!");
+    }
+    
+    else{
+      for(Int_t k = 0; k < listofgraphs->GetEntriesFast(); k++){
+	fout->WriteTObject((TObject *) listofgraphs->At(k),((TObject *)listofgraphs->At(k))->GetName(),(Option_t *) "OverWrite");
+      }
+    }
+    fout->Close();
+  }  
 
 }
 
 //_____________________________________________________________________________
-void AliTRDCalibra::PlotPRF()
+void AliTRDCalibra::PlotWritePRF()
 {
   //
-  // Plot the histos for fDebug = 1 and fDebug = 4 for the errors
+  // create the graph errors and write them if wanted
   //
 
+  //TObjArray of the grapherrors and so on
+  TObjArray *listofgraphs = new TObjArray(); 
+
+  Int_t nbins = fDect2[2]-fDect1[2];
+
+  //See the number of fitted for delta
+  
+  //counter
+  Int_t counter = 0;
+
+  Double_t *xValuesFitted = new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValuesFitted[k] = -1;
+  }
+
+  for(Int_t l = 0; l < nbins; l++){
+    if(fCoefPRF[0][l] > 0){
+      xValuesFitted[counter]=l;
+      counter++;
+    }
+  }
+ 
+
+
+  //Create the X and Xerror
+  Double_t *xValues = new Double_t[nbins];
+  Double_t *xValuesE = new Double_t[nbins];
+  for(Int_t k = 0; k < nbins; k ++){
+    xValues[k] = k;
+    xValuesE[k] = 0.0;
+  }
+
+  //Create the graph erros and plot them
+  TGraph *graphPRF1  = new TGraph(nbins,xValues,fCoefPRF[1]);
+  graphPRF1->SetName("coefprf1");
+  graphPRF1->SetTitle("");
+  graphPRF1->GetXaxis()->SetTitle("Det/Pad groups");
+  graphPRF1->GetYaxis()->SetTitle("PRF width [p.u]");
+  graphPRF1->SetLineColor(4);
+  graphPRF1->SetMarkerColor(4);
+  graphPRF1->SetMarkerStyle(25);
+  graphPRF1->SetMarkerSize(0.7);
+  listofgraphs->Add((TObject *)graphPRF1);
+  TGraphErrors *graphPRF0  = new TGraphErrors(nbins,xValues,fCoefPRF[0],xValuesE,fCoefPRFE);
+  graphPRF0->SetName("coefprf0");
+  graphPRF0->SetTitle("");
+  graphPRF0->GetXaxis()->SetTitle("Det/Pad groups");
+  graphPRF0->GetYaxis()->SetTitle("PRF Width [p.u]");
+  graphPRF0->SetMarkerColor(6);
+  graphPRF0->SetLineColor(6);
+  graphPRF0->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphPRF0);
   TCanvas *cprf1 = new TCanvas("cprf1","",50,50,600,800);
   cprf1->cd();
   TLegend *legprf1 = new TLegend(0.4,0.6,0.89,0.89);
-  legprf1->AddEntry(fCoefPRF[1],"#sigma_{real} simulated","l");
-  legprf1->AddEntry(fCoefPRF[0],"#sigma_{fit} reconstructed","p");
-
-  fCoefPRF[0]->Draw("E2");
-  fCoefPRF[1]->Draw("same");
+  legprf1->AddEntry(graphPRF1,"PRF width simulated","p");
+  legprf1->AddEntry(graphPRF0,"PRF fit","p");
+  graphPRF1->Draw("AP");
+  graphPRF0->Draw("P");
   legprf1->Draw("same");
+
   
+  //Create the arrays and the graphs for the delta
   TCanvas *cprf2 = new TCanvas("cprf2","",50,50,600,800);
   cprf2->Divide(2,1);
-  cprf2->cd(1);
-  TLegend *legprf2 = new TLegend(0.4,0.6,0.89,0.89);
-  legprf2->AddEntry(fErrorPRF,"#sigma_{fit} reconstructed","l");
-  fErrorPRF->Draw("");
-  legprf2->Draw("same");
   cprf2->cd(2);
+  Double_t *yValuesDelta = new Double_t[counter];
+  for(Int_t k = 0; k < counter; k++){
+    if(fCoefPRF[1][(Int_t)xValuesFitted[k]] > 0.0){
+      yValuesDelta[k] = (fCoefPRF[0][(Int_t)xValuesFitted[k]]-fCoefPRF[1][(Int_t)xValuesFitted[k]])/(fCoefPRF[1][(Int_t)xValuesFitted[k]]);
+    }
+  }
+  TGraph *graphDeltaPRF = new TGraph(counter,&xValuesFitted[0],yValuesDelta);
+  graphDeltaPRF->SetName("deltaprf");
+  graphDeltaPRF->GetXaxis()->SetTitle("Det/Pad groups");
+  graphDeltaPRF->GetYaxis()->SetTitle("#Delta#sigma/#sigma_{sim}");
+  graphDeltaPRF->SetMarkerColor(6);
+  graphDeltaPRF->SetTitle("");
+  graphDeltaPRF->SetLineColor(6);
+  graphDeltaPRF->SetMarkerStyle(26);
+  listofgraphs->Add((TObject *)graphDeltaPRF);
   TLegend *legprf3 = new TLegend(0.4,0.6,0.89,0.89);
-  legprf3->AddEntry(fDeltaPRF,"#sigma_{fit} reconstructed","p");
-  fDeltaPRF->Draw("E2");
+  legprf3->AddEntry(graphDeltaPRF,"#sigma_{fit}","p");
+  graphDeltaPRF->Draw("AP");
+  cprf2->cd(1); 
+  TH1I *histoErrorPRF = new TH1I("errorprf1","",100  ,-0.5,0.5);
+  histoErrorPRF->SetXTitle("#Delta#sigma/#sigma_{sim}");
+  histoErrorPRF->SetYTitle("counts"); 
+  histoErrorPRF->SetLineColor(6);
+  histoErrorPRF->SetLineStyle(1);
+  histoErrorPRF->SetStats(0);
+  for(Int_t k = 0; k < counter; k++){
+    histoErrorPRF->Fill(yValuesDelta[k]);
+  }
+  TLegend *legprf2 = new TLegend(0.4,0.6,0.89,0.89);
+  legprf2->AddEntry(histoErrorPRF,"#sigma_{fit}","l");
+  histoErrorPRF->Draw();
+  listofgraphs->Add((TObject *)histoErrorPRF); 
+  cprf2->cd(2);
   legprf3->Draw("same");
+  cprf2->cd(1);
+  legprf2->Draw("same");
 
+
+  //Write if wanted
+  if (fWriteCoef[2]){
+    TFile *fout = TFile::Open(fWriteNameCoef,"UPDATE");
+    // Check if the file could be opened
+    if (!fout || !fout->IsOpen()) {
+      AliInfo("No File found!");
+    }
+    
+    else{
+      for(Int_t k = 0; k < listofgraphs->GetEntriesFast(); k++){
+	fout->WriteTObject((TObject *) listofgraphs->At(k),((TObject *)listofgraphs->At(k))->GetName(),(Option_t *) "OverWrite");
+      }
+    }
+    fout->Close();
+  }  
+  
 }
 
 //
@@ -6018,110 +6244,6 @@ void AliTRDCalibra::PlotPRFDB()
   TCanvas *cprfdb = new TCanvas("cprfdb","",50,50,600,800);
   cprfdb->cd();
   fCoefPRFDB->Draw("LEGO");
-
-}
-
-//
-//____________Write histos Coef________________________________________________
-//
-
-//_____________________________________________________________________________
-void AliTRDCalibra::WriteCH(TFile *fout)
-{
-  //
-  // If wanted, write the debug histos for fDebug = 1 and fDebug = 4
-  //
-
-  fout->WriteTObject(fCoefCharge[0],fCoefCharge[0]->GetName(),(Option_t *) "OverWrite");
-  if (fMeanChargeOn) {
-    fout->WriteTObject(fCoefCharge[1],fCoefCharge[1]->GetName(),(Option_t *) "OverWrite");
-  }
-  if (fFitChargeBisOn) {
-    fout->WriteTObject(fCoefCharge[2],fCoefCharge[2]->GetName(),(Option_t *) "OverWrite");
-  }  
-
-  fout->WriteTObject(fCoefCharge[3],fCoefCharge[3]->GetName(),(Option_t *) "OverWrite");
-  
-  fout->WriteTObject(fDeltaCharge[0],fDeltaCharge[0]->GetName(),(Option_t *) "OverWrite");
-  if (fMeanChargeOn) {
-    fout->WriteTObject(fDeltaCharge[1],fDeltaCharge[1]->GetName(),(Option_t *) "OverWrite");
-  }
-  if (fFitChargeBisOn) {
-    fout->WriteTObject(fDeltaCharge[2],fDeltaCharge[2]->GetName(),(Option_t *) "OverWrite");
-  }
-  
-  fout->WriteTObject(fErrorCharge[0],fErrorCharge[0]->GetName(),(Option_t *) "OverWrite");
-  if (fMeanChargeOn) {
-    fout->WriteTObject(fErrorCharge[1],fErrorCharge[1]->GetName(),(Option_t *) "OverWrite");
-  }
-  if (fFitChargeBisOn) {
-    fout->WriteTObject(fErrorCharge[2],fErrorCharge[2]->GetName(),(Option_t *) "OverWrite");
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDCalibra::WritePH(TFile *fout)
-{
-  //
-  // If wanted, write the debug histos for fDebug = 1 and fDebug = 4
-  //
-
-  if (fFitPHOn) {
-    fout->WriteTObject(fCoefVdrift[0],fCoefVdrift[0]->GetName(),(Option_t *) "OverWrite");
-  }
-  fout->WriteTObject(fCoefVdrift[1],fCoefVdrift[1]->GetName(),(Option_t *) "OverWrite");
-  fout->WriteTObject(fCoefVdrift[2],fCoefVdrift[2]->GetName(),(Option_t *) "OverWrite");
-
-  if (fFitPHOn) {
-    fout->WriteTObject(fDeltaVdrift[0],fDeltaVdrift[0]->GetName(),(Option_t *) "OverWrite");
-  }
-  fout->WriteTObject(fDeltaVdrift[1],fDeltaVdrift[1]->GetName(),(Option_t *) "OverWrite");
-
-  if (fFitPHOn) {
-    fout->WriteTObject(fErrorVdrift[0],fErrorVdrift[0]->GetName(),(Option_t *) "OverWrite");
-  }
-  fout->WriteTObject(fErrorVdrift[1],fErrorVdrift[1]->GetName(),(Option_t *) "OverWrite");
-
-}
-
-//_____________________________________________________________________________
-void AliTRDCalibra::WriteT0(TFile *fout)
-{
-  //
-  // If wanted, write the debug histos for fDebug = 1 and fDebug = 4
-  //
-
-  if (fFitPHOn) {
-    fout->WriteTObject(fCoefT0[0],fCoefT0[0]->GetName(),(Option_t *) "OverWrite");
-  }
-  fout->WriteTObject(fCoefT0[1],fCoefT0[1]->GetName(),(Option_t *) "OverWrite");
-  fout->WriteTObject(fCoefT0[2],fCoefT0[2]->GetName(),(Option_t *) "OverWrite");
-
-  if (fFitPHOn) {
-    fout->WriteTObject(fDeltaT0[0],fDeltaT0[0]->GetName(),(Option_t *) "OverWrite");
-  }
-  fout->WriteTObject(fDeltaT0[1],fDeltaT0[1]->GetName(),(Option_t *) "OverWrite");
-    
-  if (fFitPHOn) {
-    fout->WriteTObject(fErrorT0[0],fErrorT0[0]->GetName(),(Option_t *) "OverWrite");
-  }
-  fout->WriteTObject(fErrorT0[1],fErrorT0[1]->GetName(),(Option_t *) "OverWrite");
-
-}
-
-//________________________________________________________________________________
-void AliTRDCalibra::WritePRF(TFile *fout)
-{
-  //
-  // If wanted, write the debug histos for fDebug = 1 and fDebug = 4
-  //
-  
-  fout->WriteTObject(fCoefPRF[0],fCoefPRF[0]->GetName(),(Option_t *) "OverWrite");
-  fout->WriteTObject(fCoefPRF[1],fCoefPRF[1]->GetName(),(Option_t *) "OverWrite");
-
-  fout->WriteTObject(fDeltaPRF,fDeltaPRF->GetName(), (Option_t *)"OverWrite");
-  fout->WriteTObject(fErrorPRF,fErrorPRF->GetName(), (Option_t *)"OverWrite");
 
 }
 
@@ -6224,7 +6346,7 @@ Bool_t AliTRDCalibra::CalculT0CoefMean(Int_t dect, Int_t idect)
     fT0Coef[2] = fT0Coef[2] / ((fColMax[1]-fColMin[1])*(fRowMax[1]-fRowMin[1]));
     if ((fDebug == 1) || 
         (fDebug == 4)) {
-      fCoefT0[2]->SetBinContent(idect+1,fT0Coef[2]);
+      fCoefT0[2][idect] = fT0Coef[2];
     }
 
   }
@@ -6295,7 +6417,7 @@ Bool_t AliTRDCalibra::CalculChargeCoefMean(Int_t dect, Int_t idect, Bool_t vrai)
     fChargeCoef[3] = fChargeCoef[3] / ((fColMax[0]-fColMin[0])*(fRowMax[0]-fRowMin[0]));
     if ((fDebug == 1) || 
         (fDebug == 4)) {
-      fCoefCharge[3]->SetBinContent(idect+1,fChargeCoef[3]);
+      fCoefCharge[3][idect]=fChargeCoef[3];
     }
 
   }
@@ -6347,17 +6469,17 @@ Bool_t AliTRDCalibra::CalculPRFCoefMean(Int_t dect, Int_t idect)
       fPRFCoef[1] = fPRFCoef[1]/cot;
       if ((fDebug == 1) ||
           (fDebug == 4)) {
-        fCoefPRF[1]->SetBinContent(idect+1,fPRFCoef[1]);
+        fCoefPRF[1][idect] = fPRFCoef[1];
       }
     }
     if (cot <= 0) {
       if ((fDebug == 1) ||
           (fDebug == 4)) {
 	if (fAccCDB) {
-          fCoefPRF[1]->SetBinContent(idect+1,cal->GetPRFWidth(dect,fColMin[2],fRowMin[2]));
+          fCoefPRF[1][idect] = cal->GetPRFWidth(dect,fColMin[2],fRowMin[2]);
 	}
 	if (!fAccCDB) {
-          fCoefPRF[1]->SetBinContent(idect+1,GetPRFDefault(GetPlane(dect)));
+          fCoefPRF[1][idect] = GetPRFDefault(GetPlane(dect));
 	}
       }
     }
@@ -6411,7 +6533,7 @@ Bool_t AliTRDCalibra::CalculVdriftCoefMean(Int_t dect, Int_t idect)
     fVdriftCoef[2] = fVdriftCoef[2] / ((fColMax[1]-fColMin[1])*(fRowMax[1]-fRowMin[1]));
     if ((fDebug == 1) || 
         (fDebug == 4)) {
-      fCoefVdrift[2]->SetBinContent(idect+1,fVdriftCoef[2]);
+      fCoefVdrift[2][idect] = fVdriftCoef[2];
     }
   }
 
@@ -7367,6 +7489,8 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
   fPhd[1]        = 0.0;
   fPhd[2]        = 0.0;
   Int_t ju       = 0;
+  Double_t vdriftCoefE = 0.0;
+  Double_t t0CoefE = 0.0;
   fVdriftCoef[1] = 0.0;
   fT0Coef[1]     = 0.0;
   TLine *line = new TLine();
@@ -7393,15 +7517,20 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
   pentea->Fit("pol2","0MR","",TMath::Max(pentea->GetBinCenter(binmax-1),0.0),pentea->GetBinCenter(binmax+1));
   Float_t l3P1am = pentea->GetFunction("pol2")->GetParameter(1);
   Float_t l3P2am = pentea->GetFunction("pol2")->GetParameter(2);
+  Float_t l3P1amE = pentea->GetFunction("pol2")->GetParError(1);
+  Float_t l3P2amE = pentea->GetFunction("pol2")->GetParError(2);
   if (l3P2am != 0) {
     fPhd[0] = -(l3P1am / (2 * l3P2am));
+  }
+  if((l3P1am != 0.0) && (l3P2am != 0.0)){
+    t0CoefE = (l3P1amE/l3P1am + l3P2amE/l3P2am)*fPhd[0];
   }
   
   // Amplification region
   binmax = 0;
   ju     = 0;
   for (Int_t kbin = 1; kbin < projPH->GetNbinsX(); kbin ++) {
-    if (((projPH->GetBinContent(kbin+1) - projPH->GetBinContent(kbin)) <= 0.0) && (ju == 0)) {
+    if (((projPH->GetBinContent(kbin+1) - projPH->GetBinContent(kbin)) <= 0.0) && (ju == 0) && (kbin > (fPhd[0]/widbins))) {
       binmax = kbin;
       ju     = 1;
     }
@@ -7413,9 +7542,14 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
   projPH->Fit("pol2","0MR","",TMath::Max(projPH->GetBinCenter(binmax-1),0.0),projPH->GetBinCenter(binmax+1));
   Float_t l3P1amf = projPH->GetFunction("pol2")->GetParameter(1);
   Float_t l3P2amf = projPH->GetFunction("pol2")->GetParameter(2);
+  Float_t l3P1amfE = projPH->GetFunction("pol2")->GetParError(1);
+  Float_t l3P2amfE = projPH->GetFunction("pol2")->GetParError(2);
   
   if (l3P2amf != 0) {
     fPhd[1] = -(l3P1amf / (2 * l3P2amf));
+  }
+  if((l3P1amf != 0.0) && (l3P2amf != 0.0)){
+    vdriftCoefE = (l3P1amfE/l3P1amf + l3P2amfE/l3P2amf)*fPhd[1];
   }
 
   // Drift region
@@ -7435,8 +7569,13 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
             ,TMath::Min(pente->GetBinCenter(binmin+2),(Double_t) limit));
   Float_t l3P1dr = pente->GetFunction("pol2")->GetParameter(1);
   Float_t l3P2dr = pente->GetFunction("pol2")->GetParameter(2);
+  Float_t l3P1drE = pente->GetFunction("pol2")->GetParError(1);
+  Float_t l3P2drE = pente->GetFunction("pol2")->GetParError(2);
   if (l3P2dr != 0) {
     fPhd[2] = -(l3P1dr / (2 * l3P2dr));
+  }
+  if((l3P1dr != 0.0) && (l3P2dr != 0.0)){
+    vdriftCoefE += (l3P1drE/l3P1dr + l3P2drE/l3P2dr)*fPhd[2]; 
   }
 
   if ((fPhd[2] > fPhd[0]) && 
@@ -7445,31 +7584,25 @@ void AliTRDCalibra::FitPente(TH1* projPH, Int_t idect)
     fVdriftCoef[1] = (kDrWidth) / (fPhd[2]-fPhd[1]);
     if (fPhd[0] >= 0.0) {
       fT0Coef[1] = (fPhd[0] - fT0Shift) / widbins;
-      if (fT0Coef[1] < 0.0) {
-        fT0Coef[1] = - TMath::Abs(fT0Coef[2]);
+      if (fT0Coef[1] < -1.0) {
+        fT0Coef[1] = fT0Coef[2];
       }
     }
     else {
-      fT0Coef[1] = -TMath::Abs(fT0Coef[2]);
+      fT0Coef[1] = fT0Coef[2];
     }
   }
   else {
     fVdriftCoef[1] = -TMath::Abs(fVdriftCoef[2]);
-    fT0Coef[1]     = -TMath::Abs(fT0Coef[2]);
+    fT0Coef[1]     = fT0Coef[2];
   }
 
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    fCoefVdrift[1]->SetBinContent(idect+1,fVdriftCoef[1]);
-    fCoefT0[1]->SetBinContent(idect+1,fT0Coef[1]);
-    if (fVdriftCoef[1] > 0.0) {
-      if (fVdriftCoef[2] != 0.0) {
-        fDeltaVdrift[1]->SetBinContent(idect+1,(fVdriftCoef[1] - fVdriftCoef[2]) / fVdriftCoef[2]);
-      }
-    }
-    if(fT0Coef[1] >= 0.0){
-      fDeltaT0[1]->SetBinContent(idect+1,(fT0Coef[1] - fT0Coef[2]));
-    }
+    fCoefVdrift[1][idect] = fVdriftCoef[1];
+    fCoefVdriftE[1] [idect] = vdriftCoefE;
+    fCoefT0[1][idect] = fT0Coef[1];
+    fCoefT0E[1][idect] = t0CoefE;
   }
   
   if (fDebug == 2) {
@@ -7521,6 +7654,8 @@ void AliTRDCalibra::FitPH(TH1* projPH, Int_t idect)
 
   fVdriftCoef[0] = 0.0;
   fT0Coef[0]     = 0.0;
+  Double_t vdriftCoefE = 0.0;
+  Double_t t0CoefE = 0.0;
  
   if (idect%fFitPHPeriode == 0) {
 
@@ -7558,23 +7693,21 @@ void AliTRDCalibra::FitPH(TH1* projPH, Int_t idect)
 
     if (fPH->GetParameter(3) != 0) {
       fVdriftCoef[0] = kDrWidth / (fPH->GetParameter(3));
+      vdriftCoefE = (fPH->GetParError(3)/fPH->GetParameter(3))*fVdriftCoef[0];
       fT0Coef[0]     = fPH->GetParameter(1);
+      t0CoefE = fPH->GetParError(1);
     } 
     else {
       fVdriftCoef[0] = -TMath::Abs(fVdriftCoef[2]);
-      fT0Coef[0]     = -TMath::Abs(fT0Coef[2]);
+      fT0Coef[0]     = fT0Coef[2];
     }
 
     if ((fDebug == 1) || 
         (fDebug == 4)) {
-      fCoefVdrift[0]->SetBinContent(idect+1,fVdriftCoef[0]);
-      fCoefT0[0]->SetBinContent(idect+1,fT0Coef[0]);
-    if (fVdriftCoef[0] > 0.0){
-	if (fVdriftCoef[2] != 0.0) {
-          fDeltaVdrift[0]->SetBinContent(idect+1,(fVdriftCoef[0]-fVdriftCoef[2])/fVdriftCoef[2]);
-	}
-	fDeltaT0[0]->SetBinContent(idect+1,(fT0Coef[0]-fT0Coef[2]));
-      }
+      fCoefVdrift[0][idect] = fVdriftCoef[0];
+      fCoefVdriftE[0][idect] = vdriftCoefE;
+      fCoefT0[0][idect] = fT0Coef[0];
+      fCoefT0E[0][idect] = t0CoefE;
     }
     if (fDebug == 2) {
       AliInfo(Form("fVdriftCoef[0]: %f",(Float_t) fVdriftCoef[0]));
@@ -7587,8 +7720,8 @@ void AliTRDCalibra::FitPH(TH1* projPH, Int_t idect)
     // Put the default value 
     if ((fDebug <= 1) || 
         (fDebug == 4)) {
-      fCoefVdrift[0]->SetBinContent(idect+1,fVdriftCoef[2]);
-      fCoefT0[0]->SetBinContent(idect+1,fT0Coef[2]);
+      fCoefVdrift[0][idect] = -TMath::Abs(fVdriftCoef[2]);
+      fCoefT0[0][idect] = -TMath::Abs(fT0Coef[2]);
     }
 
   }
@@ -7607,6 +7740,7 @@ void AliTRDCalibra::FitPRF(TH1 *projPRF, Int_t idect)
   //
   
   fPRFCoef[0] = 0.0;
+  Double_t prfCoefE = 0.0;
 
   if (fDebug != 2) {
     projPRF->Fit("gaus","0M","",-fRangeFitPRF,fRangeFitPRF);
@@ -7620,14 +7754,13 @@ void AliTRDCalibra::FitPRF(TH1 *projPRF, Int_t idect)
   }
 
   fPRFCoef[0] = projPRF->GetFunction("gaus")->GetParameter(2);
+  prfCoefE = projPRF->GetFunction("gaus")->GetParError(2);
   if(fPRFCoef[0] <= 0.0) fPRFCoef[0] = -fPRFCoef[1];
 
   if ((fDebug == 1) || 
       (fDebug == 4)) {
-    fCoefPRF[0]->SetBinContent(idect+1,fPRFCoef[0]);
-    if (fPRFCoef[1] != 0.0) {
-      fDeltaPRF->SetBinContent(idect+1,(fPRFCoef[0]-fPRFCoef[1])/fPRFCoef[1]);
-    }
+    fCoefPRF[0][idect] = fPRFCoef[0];
+    fCoefPRFE[idect] = prfCoefE;
   }
   if (fDebug == 2) {
     AliInfo(Form("fPRFCoef[0]: %f",(Float_t) fPRFCoef[0]));
@@ -7644,9 +7777,12 @@ void AliTRDCalibra::FitCH(TH1 *projch, Int_t idect)
  
   fChargeCoef[0] = 0.0;
   fChargeCoef[1] = 0.0;
+  Double_t chargeCoefE0 = 0.0;
+  Double_t chargeCoefE1 = 0.0;
   TF1 *fLandauGaus = new TF1("fLandauGaus",FuncLandauGaus,0,300,5);
 
   fChargeCoef[1] = projch->GetMean();
+  chargeCoefE1 = projch->GetMeanError();
   projch->Fit("landau","0",""
              ,(Float_t) fChargeCoef[1]/fBeginFitCharge
              ,projch->GetBinCenter(projch->GetNbinsX()));
@@ -7682,6 +7818,7 @@ void AliTRDCalibra::FitCH(TH1 *projch, Int_t idect)
     // Calcul of "real" coef
     CalculChargeCoefMean(fCountDet[0],(Int_t) idect,kTRUE);
     fChargeCoef[0] = projch->GetFunction("fLandauGaus")->GetParameter(1);
+    chargeCoefE0 = projch->GetFunction("fLandauGaus")->GetParError(1);
   }
   else {
     // Calcul of "real" coef
@@ -7697,10 +7834,10 @@ void AliTRDCalibra::FitCH(TH1 *projch, Int_t idect)
   if ((fDebug == 1) || 
       (fDebug == 4)) {
     if (fChargeCoef[0] > 0.0) {
-      fCoefCharge[0]->SetBinContent(idect+1,fChargeCoef[0]);
-      fCoefCharge[1]->SetBinContent(idect+1,fChargeCoef[1]);
-      fDeltaCharge[0]->SetBinContent(idect+1,fChargeCoef[0]);
-      fDeltaCharge[1]->SetBinContent(idect+1,fChargeCoef[1]);
+      fCoefCharge[0][idect]= fChargeCoef[0];
+      fCoefChargeE[0][idect]= chargeCoefE0;
+      fCoefCharge[1][idect]= fChargeCoef[1];
+      fCoefChargeE[1][idect]= chargeCoefE1;
     }
   }
   fL3P0 = fLandauGaus->Integral(0.3*projch->GetMean(),3*projch->GetMean());
@@ -7731,6 +7868,7 @@ void AliTRDCalibra::FitBisCH(TH1* projch, Int_t idect)
   fr[0]            = 0.3 * projch->GetMean();
   fr[1]            = 3.0 * projch->GetMean();
   fChargeCoef[2]   = 0.0;
+  Double_t chargeCoefE2 = 0.0;
 
   Double_t chisqr;
   Int_t    ndf;
@@ -7745,6 +7883,8 @@ void AliTRDCalibra::FitBisCH(TH1* projch, Int_t idect)
 
   if (fp[1] > 0) {
     fChargeCoef[2] = fp[1];
+    chargeCoefE2 = fpe[1];
+    //chargeCoefE2 = chisqr;
   } 
   else {
     fChargeCoef[2] = -TMath::Abs(fChargeCoef[3]);
@@ -7761,8 +7901,8 @@ void AliTRDCalibra::FitBisCH(TH1* projch, Int_t idect)
   if ((fDebug == 1) || 
       (fDebug == 4)) {
     if (fChargeCoef[2] > 0.0) {
-      fCoefCharge[2]->SetBinContent(idect+1,fChargeCoef[2]);
-      fDeltaCharge[2]->SetBinContent(idect+1,fChargeCoef[2]);
+      fCoefCharge[2][idect]= fChargeCoef[2];
+      fCoefChargeE[2][idect]= chargeCoefE2;
     }
   }
 
@@ -7781,7 +7921,6 @@ void AliTRDCalibra::NormierungCharge()
   
   // Calcul of the mean of the fit
   Double_t sum         = 0.0;
-  Float_t  scalefactor = 1.0;
   for (Int_t k = 0; k < (Int_t) fVectorFitCH->GetEntriesFast(); k++) {
     Int_t    total    = 0;
     Int_t    detector = ((AliTRDFitCHInfo *) fVectorFitCH->At(k))->GetDetector();
@@ -7806,40 +7945,12 @@ void AliTRDCalibra::NormierungCharge()
     fScaleFitFactor = 1.0;
   }
 
-  // Scale the histo
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-    if ((fCoefCharge[0]->GetEntries()      > 0.0) && 
-        (fCoefCharge[0]->GetSumOfWeights() > 0.0)) {
-      scalefactor = fCoefCharge[0]->GetEntries() / fCoefCharge[0]->GetSumOfWeights();
-      fCoefCharge[0]->Scale(scalefactor);
-      fDeltaCharge[0]->Scale(scalefactor);
-    }
-    if ((fMeanChargeOn) && 
-        (fCoefCharge[1]->GetEntries()      > 0.0) && 
-        (fCoefCharge[1]->GetSumOfWeights() > 0.0)) {
-      fCoefCharge[1]->Scale(fCoefCharge[1]->GetEntries() / fCoefCharge[1]->GetSumOfWeights());
-    }
-    if ((fFitChargeBisOn) && 
-        (fCoefCharge[2]->GetEntries()      > 0.0) && 
-        (fCoefCharge[2]->GetSumOfWeights() > 0.0)) {
-      fCoefCharge[2]->Scale(fCoefCharge[2]->GetEntries() / fCoefCharge[2]->GetSumOfWeights());
-    }
-    if ((fMeanChargeOn) && 
-        (fDeltaCharge[1]->GetEntries()      > 0.0) && 
-        (fDeltaCharge[1]->GetSumOfWeights() > 0.0)) {
-      fDeltaCharge[1]->Scale(fDeltaCharge[1]->GetEntries() / fDeltaCharge[1]->GetSumOfWeights());
-    }
-    if ((fFitChargeBisOn) && 
-        (fDeltaCharge[2]->GetEntries()      > 0.0) && 
-        (fDeltaCharge[2]->GetSumOfWeights() > 0.0)) {
-      fDeltaCharge[2]->Scale(fDeltaCharge[2]->GetEntries() / fDeltaCharge[2]->GetSumOfWeights());
-    }
-  }
-
   if ((fDebug == 3) || 
       (fDebug == 4)) {
-    fCoefChargeDB[0]->Scale(scalefactor);
+    if ((fCoefChargeDB[0]->GetEntries()      > 0.0) && 
+        (fCoefChargeDB[0]->GetSumOfWeights() > 0.0)) {
+      fCoefChargeDB[0]->Scale(fCoefChargeDB[0]->GetEntries() / fCoefChargeDB[0]->GetSumOfWeights());
+    }
     if ((fMeanChargeOn)  && 
         (fCoefChargeDB[1]->GetEntries()      > 0.0) && 
         (fCoefChargeDB[1]->GetSumOfWeights() > 0.0)) {
@@ -7850,28 +7961,6 @@ void AliTRDCalibra::NormierungCharge()
         (fCoefChargeDB[2]->GetSumOfWeights() > 0.0)) {
       fCoefChargeDB[2]->Scale(fCoefChargeDB[2]->GetEntries() / fCoefChargeDB[2]->GetSumOfWeights());
     }
-  }
-
-  if ((fDebug == 1) || 
-      (fDebug == 4)) {
-  
-    fDeltaCharge[0]->Add(fCoefCharge[3],-1);
-    fDeltaCharge[0]->Divide(fCoefCharge[3]);
-    
-    if (fMeanChargeOn) {
-      fDeltaCharge[1]->Add(fCoefCharge[3],-1);
-    }
-    if (fMeanChargeOn) {
-      fDeltaCharge[1]->Divide(fCoefCharge[3]);
-    }
-    
-    if (fFitChargeBisOn) {
-      fDeltaCharge[2]->Add(fCoefCharge[3],-1);
-    }
-    if (fFitChargeBisOn) {
-      fDeltaCharge[2]->Divide(fCoefCharge[3]);
-    }
-
   }
   
 }
@@ -8215,10 +8304,7 @@ void AliTRDCalibra::FillTreeVdrift(Int_t countdet)
 
   Int_t numberofgroup = 0;
   fVdriftDetector = countdet;
-
-  for (Int_t k = 0; k < 2304; k++) {
-    // ????
-  }
+ 
   fVdrift->Fill();
   if (GetChamber((Int_t)(countdet+1)) == 2) {
     numberofgroup = 1728;
@@ -8264,9 +8350,7 @@ void AliTRDCalibra::FillTreeT0(Int_t countdet)
   Int_t numberofgroup = 0;
 
   fT0Detector = countdet;
-  for (Int_t k = 0; k < 2304; k++) {
-    // ????
-  }
+ 
   fT0->Fill();
   if (GetChamber((Int_t) (countdet+1)) == 2) {
     numberofgroup = 1728;
@@ -8274,7 +8358,7 @@ void AliTRDCalibra::FillTreeT0(Int_t countdet)
   else {
     numberofgroup = 2304;
   }
-  // Reset to default value the gain coef
+  // Reset to default value 
   for (Int_t k = 0; k < numberofgroup; k++) {
     fT0Pad[k] = 0.0;
   }

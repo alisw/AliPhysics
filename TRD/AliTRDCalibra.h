@@ -18,6 +18,7 @@
 class TTree;
 class TProfile2D;
 class TGraphErrors;
+class TGraph;
 class TObjArray;
 class TH1I;
 class TH1;
@@ -319,23 +320,19 @@ class AliTRDCalibra : public TObject {
   // For debugging 
   //
 
-  // Histograms to store the coef
-          TH1F    *fCoefCharge[4];          // Replica des 2D but in coefs resulting from the fit for the gain
-          TH1F    *fCoefVdrift[3];          // Replica des 2D but in coefs resulting from the fit for the drift velocity
-          TH1F    *fCoefPRF[2];             // Replica des 2D but in coefs resulting from the fit for the pad response function
-          TH1F    *fCoefT0[3];              // Replica des 2D but in coefs resulting from the fit for time 0
-          TH1F    *fDeltaCharge[3];         // Replica des 2D but in errors for each detector resulting from the fit for the gain
-          TH1F    *fDeltaVdrift[2];         // Replica des 2D but in errors for each detector resulting from the fit for the drift velocity
-          TH1F    *fDeltaT0[2];             // Replica des 2D but in errors for each detector resulting from the fit for time 0
-          TH1F    *fDeltaPRF;               // Replica des 2D but in errors for each detector resulting from the fit for the pad response function
-          TH1I    *fErrorCharge[3];         // Replica des 2D but in errors resulting from the fit for the gain
-          TH1I    *fErrorVdrift[2];         // Replica des 2D but in errors resulting from the fit for the drift velocity
-          TH1I    *fErrorT0[2];             // Replica des 2D but in errors resulting from the fit for time 0
-          TH1I    *fErrorPRF;               // Replica des 2D but in errors resulting from the fit for the pad response function
-          TH2F    *fCoefChargeDB[3];        // Visualisation of the coef of the detecteur fDet for the gain
-          TH2F    *fCoefVdriftDB[2];        // Visualisation of the coef of the detecteur fDet for the drift velocity
-          TH2F    *fCoefT0DB[2];            // Visualisation of the coef of the detecteur fDet for time 0
-          TH2F    *fCoefPRFDB;              // Visualisation of the coef of the detecteur fDet for the pad response function
+  // To build the graph with the errors of the fits
+	  Double_t        *fCoefCharge[4];   // Coefs resulting from the fit for the gain
+	  Double_t        *fCoefChargeE[3];  // Error of the found coefs for the gain
+	  Double_t        *fCoefVdrift[3];   // Coefs resulting from the fit for the drift velocity
+	  Double_t        *fCoefVdriftE[2];  // Error of the found coefs for the drift velocity
+	  Double_t        *fCoefT0[3];       // Coefs resulting from the fit for the drift velocity
+	  Double_t        *fCoefT0E[2];      // Error of the found coefs for the drift velocity
+	  Double_t        *fCoefPRF[2];      // Coefs resulting from the fit for the PRF
+	  Double_t        *fCoefPRFE;        // Error of the found coefs for the PRF
+	  TH2F    *fCoefChargeDB[3];         // Visualisation of the coef of the detecteur fDet for the gain
+          TH2F    *fCoefVdriftDB[2];         // Visualisation of the coef of the detecteur fDet for the drift velocity
+          TH2F    *fCoefT0DB[2];             // Visualisation of the coef of the detecteur fDet for time 0
+          TH2F    *fCoefPRFDB;               // Visualisation of the coef of the detecteur fDet for the pad response function
 
   // Variables in the loop for the coef or more general
           Float_t  fChargeCoef[4];          // 3 database value, 0 fit, 1 mean, 2 fit time consuming   
@@ -367,7 +364,7 @@ class AliTRDCalibra : public TObject {
           Short_t  fColMax[3];              // Limits of the group in pad col
           Int_t    fXbins[3];               // First Xbins of the detector
           Short_t  fDetChamb0[3];           // Number of XBins for chamber != 2
-          Short_t  fDetChamb2[3];           // Number of Xbins fir chamber 2
+          Short_t  fDetChamb2[3];           // Number of Xbins for chamber 2
   
   // Methode  Alexandru store info
   class AliTRDPlace : public TObject {
@@ -528,14 +525,14 @@ class AliTRDCalibra : public TObject {
           void     CreateFitHistoT0DB(Int_t rowMax, Int_t colMax);
           void     CreateFitHistoCHDB(Int_t rowMax, Int_t colMax);
           void     CreateFitHistoPRFDB(Int_t rowMax, Int_t colMax);
-          void     CreateFitHistoCH(Int_t nbins, Double_t low, Double_t high);
-          void     CreateFitHistoPH(Int_t nbins, Double_t low, Double_t high);
-          void     CreateFitHistoT0(Int_t nbins, Double_t low, Double_t high);
-          void     CreateFitHistoPRF(Int_t nbins, Double_t low, Double_t high);
+          void     InitArrayFitCH();
+          void     InitArrayFitPH();
+          void     InitArrayFitT0();
+          void     InitArrayFitPRF();
   
   // CHFit functions
           Bool_t   FillVectorFitCH(Int_t countdet);
-          Bool_t   InitFit(Int_t nbins, Double_t lowedge, Double_t upedge, Int_t i);
+          Bool_t   InitFit(Int_t nbins, Int_t i);
           void     InitfCountDetAndfCount(Int_t i);
           void     UpdatefCountDetAndfCount(Int_t idect, Int_t i);
           void     ReconstructFitRowMinRowMax(Int_t idect, Int_t i);
@@ -544,12 +541,6 @@ class AliTRDCalibra : public TObject {
           Bool_t   WriteFitInfos(Int_t i);
           void     NormierungCharge();
 
-  // Fill histos Errors from the delta histos
-          void     ErrorPH();
-          void     ErrorT0();
-          void     ErrorCH();
-          void     ErrorPRF();
-
   // Fill histos DB from the Coef histos 
           void     FillCoefChargeDB();
           void     FillCoefVdriftDB();
@@ -557,23 +548,17 @@ class AliTRDCalibra : public TObject {
           void     FillCoefPRFDB();
 
   // Plot histos CoefPRF Coef....
-          void     PlotPH();
-          void     PlotT0();
-          void     PlotCH();
-          void     PlotPRF();
+          void     PlotWritePH();
+          void     PlotWriteT0();
+          void     PlotWriteCH();
+          void     PlotWritePRF();
   
   // Plot histos DB
           void     PlotPHDB();
           void     PlotT0DB();
           void     PlotCHDB();
           void     PlotPRFDB();
-
-  // Write the Coef, delta and error histos
-          void     WritePH(TFile *fout);
-          void     WriteT0(TFile *fout);
-          void     WriteCH(TFile *fout);
-          void     WritePRF(TFile *fout);
-    
+  
   // Write the DB histos
           void     WritePHDB(TFile *fout);
           void     WriteT0DB(TFile *fout);
@@ -638,7 +623,7 @@ class AliTRDCalibra : public TObject {
   static  AliTRDCalibra *fgInstance;        // Instance
   static  Bool_t   fgTerminated;            // If terminated
     
-  ClassDef(AliTRDCalibra, 1)   // TRD Calibration class
+  ClassDef(AliTRDCalibra,2)                 // TRD Calibration class
 
 };
   

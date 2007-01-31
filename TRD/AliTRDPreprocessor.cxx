@@ -132,7 +132,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
     
     TString filename = GetFile(kHLT,"GAINDRIFTPRF",source->GetName());
-    if (!filename.Data()) {
+    if (filename.Length() == 0) {
       AliError(Form("Error retrieving file from source %d failed!", source->GetName()));
       delete filesources;
       return 0;
