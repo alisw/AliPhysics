@@ -673,11 +673,11 @@ Bool_t AliReconstruction::Run(const char* input)
     AliInfo(Form("processing event %d", iEvent));
     fRunLoader->GetEvent(iEvent);
 
-    char fileName[256];
-    sprintf(fileName, "ESD_%d.%d_final.root", 
+    char aFileName[256];
+    sprintf(aFileName, "ESD_%d.%d_final.root", 
 	    fRunLoader->GetHeader()->GetRun(), 
 	    fRunLoader->GetHeader()->GetEventNrInRun());
-    if (!gSystem->AccessPathName(fileName)) continue;
+    if (!gSystem->AccessPathName(aFileName)) continue;
 
     // local reconstruction
     if (!fRunLocalReconstruction.IsNull()) {
@@ -1463,7 +1463,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
 	->CreateDetectorFolders(fRunLoader->GetEventFolder(), 
 				detName, detName);
       // first check if a plugin is defined for the loader
-      TPluginHandler* pluginHandler = 
+      pluginHandler = 
 	pluginManager->FindHandler("AliLoader", detName);
       // if not, add a plugin for it
       if (!pluginHandler) {
@@ -1687,7 +1687,7 @@ void AliReconstruction::CreateTag(TFile* file)
   b->GetEntry(fFirstEvent);
   Int_t iInitRunNumber = esd->GetRunNumber();
   
-  Int_t iNumberOfEvents = b->GetEntries();
+  Int_t iNumberOfEvents = (Int_t)b->GetEntries();
   if(fLastEvent != -1) iNumberOfEvents = fLastEvent + 1;
   for (Int_t iEventNumber = fFirstEvent; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
@@ -1893,7 +1893,7 @@ void AliReconstruction::CreateTag(TFile* file)
     tag->SetRunId(iInitRunNumber);
     tag->AddEventTag(*evTag);
   }
-  if(fLastEvent == -1) lastEvent = b->GetEntries();
+  if(fLastEvent == -1) lastEvent = (Int_t)b->GetEntries();
   else lastEvent = fLastEvent;
 	
   ttag.Fill();
