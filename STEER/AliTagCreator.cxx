@@ -366,7 +366,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
   b->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
 
-  Int_t iNumberOfEvents = b->GetEntries();
+  Int_t iNumberOfEvents = (Int_t)b->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
     nPos = 0;
@@ -672,7 +672,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counter) 
   b->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
 
-  Int_t iNumberOfEvents = b->GetEntries();
+  Int_t iNumberOfEvents = (Int_t)b->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
     nPos = 0;
