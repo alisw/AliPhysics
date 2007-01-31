@@ -35,6 +35,8 @@ typedef AliHLTComponentDataType AliHLTComponent_DataType;
 typedef AliHLTComponentBlockData AliHLTComponent_BlockData;
 typedef AliHLTComponentTriggerData AliHLTComponent_TriggerData;
 typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
+const AliHLTUInt32_t gkAliHLTComponent_InvalidShmType = gkAliHLTComponentInvalidShmType;
+const AliHLTUInt64_t gkAliHLTComponent_InvalidShmID = gkAliHLTComponentInvalidShmID;
 
 #ifdef __cplusplus
 extern "C" {
