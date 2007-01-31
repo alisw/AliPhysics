@@ -13,17 +13,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//-------------------------------------------------------------------------
+//                Implementation of the AliSplineFit class
+//   The class performs a spline fit on an incoming TGraph. The graph is 
+//   divided into several parts (identified by knots between each part). 
+//   Spline fits are performed on each part. According to user parameters,
+//   the function, first and second derivative are requested to be continuous 
+//   at each knot.
+//        Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
+//   Adjustments by Haavard Helstrup,  Haavard.Helstrup@cern.ch
+//-------------------------------------------------------------------------
+
 
 #include "AliSplineFit.h"
  
-ClassImp(AliSplineFit)
+ClassImp(AliSplineFit);
 
-TLinearFitter*
-AliSplineFit::fitterStatic()
-{
-  static TLinearFitter* fit = new TLinearFitter(4,"pol3","");
-  return fit;
-}
+TLinearFitter AliSplineFit::fitterStatic = TLinearFitter(4,"pol3","");
 
 AliSplineFit::AliSplineFit() :
   fBDump(kFALSE),
@@ -441,7 +447,6 @@ Bool_t   AliSplineFit::RefitKnot(Int_t iKnot){
   //
   //
   //
-  const Double_t kEpsilon = 1.e-7;
 
   Int_t iPrevious=(iKnot>0)  ?iKnot-1: 0;
   Int_t iNext    =(iKnot<fN0)?iKnot+1: fN0-1;
@@ -451,7 +456,7 @@ Bool_t   AliSplineFit::RefitKnot(Int_t iKnot){
   if (iNext>=fN0) iNext=fN0-1;
   
   Double_t startX = fGraph->GetX()[fIndex[iKnot]]; 
-  AliSplineFit::fitterStatic()->ClearPoints();
+  AliSplineFit::fitterStatic.ClearPoints();
   Int_t indPrev = fIndex[iPrevious];
   Int_t indNext = fIndex[iNext];
   Double_t *graphX = fGraph->GetX();
@@ -470,11 +475,9 @@ Bool_t   AliSplineFit::RefitKnot(Int_t iKnot){
     xPoint[indVec] = dxl;
     yPoint[indVec] = y;
     ePoint[indVec] =  fSigma;
-//    ePoint[indVec] =  fSigma+TMath::Abs(y)*kEpsilon;
-//    AliSplineFit::fitterStatic.AddPoint(&dxl,y,fSigma+TMath::Abs(y)*kEpsilon);
   }
-  AliSplineFit::fitterStatic()->AssignData(nPoints,1,xPoint,yPoint,ePoint);
-  AliSplineFit::fitterStatic()->Eval();
+  AliSplineFit::fitterStatic.AssignData(nPoints,1,xPoint,yPoint,ePoint);
+  AliSplineFit::fitterStatic.Eval();
 
 //  delete temporary arrays
 
@@ -482,8 +485,8 @@ Bool_t   AliSplineFit::RefitKnot(Int_t iKnot){
   
   TMatrixD   * covar = (TMatrixD*)fCovars->At(iKnot);
   TVectorD   * param = (TVectorD*)fParams->At(iKnot);
-  AliSplineFit::fitterStatic()->GetParameters(*param);
-  AliSplineFit::fitterStatic()->GetCovarianceMatrix(*covar);
+  AliSplineFit::fitterStatic.GetParameters(*param);
+  AliSplineFit::fitterStatic.GetCovarianceMatrix(*covar);
   return 0;
 }
 
