@@ -479,8 +479,8 @@ void    AliConfig::Add (char *list)
       while ((obj = next ()))
         {
           TString dir(obj->GetName());
-          TString path  = dir + "/" + token;
-          TString macro = path + ".C";
+          TString apath  = dir + "/" + token;
+          TString macro = apath + ".C";
           if (!gSystem->AccessPathName (macro.Data()))	
            {
             gInterpreter->ExecuteMacro (macro.Data());				   
@@ -499,12 +499,12 @@ void    AliConfig::Add (char *list)
            } 
           else 
            {
-            TString macroDefault = path + "/Default.C";
+            TString macroDefault = apath + "/Default.C";
             if (!gSystem->AccessPathName (macroDefault.Data()))
               {
                 gInterpreter->ExecuteMacro (macroDefault.Data());
                 found = "(" + macro + ")";
-                TString macroConfigure = path + "/Configure.C";
+                TString macroConfigure = apath + "/Configure.C";
                 if (!gSystem->AccessPathName (macroConfigure.Data()))	
                   {
                     gInterpreter->ExecuteMacro (macroConfigure.Data());				    
