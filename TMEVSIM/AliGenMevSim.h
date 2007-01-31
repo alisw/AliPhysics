@@ -34,6 +34,10 @@ public:
 protected:
   TMevSim * fMevSim;           // Pointer to the MevSim generator
   AliMevSimConfig *fConfig;    // Pointer to the Configuration class
+
+ private:
+  AliGenMevSim(const AliGenMevSim & gen);
+  AliGenMevSim & operator=(const AliGenMevSim & gen);
       
   ClassDef(AliGenMevSim,1) // Interface class for AliMevsim
     

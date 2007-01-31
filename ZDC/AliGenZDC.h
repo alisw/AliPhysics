@@ -70,6 +70,10 @@ protected:
   Int_t    fDebugOpt;		// Option for debugging [0->No debug, 1->Screen
   				//  prints, 2->ASCII data file]
   
+ private:
+  AliGenZDC(const AliGenZDC & gen);
+  AliGenZDC & operator=(const AliGenZDC & gen);
+
    ClassDef(AliGenZDC,1)  	// Generator for AliZDC class
 };
 
