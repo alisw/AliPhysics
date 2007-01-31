@@ -13,40 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2006/11/29 16:08:01  hristov
-START becomes T0
-
-Revision 1.3  2006/11/29 09:53:27  hristov
-RICH becomes HMPID
-
-Revision 1.2  2006/11/06 14:24:21  jgrosseo
-reading of run parameters from the logbook
-online offline naming conversion
-
-Revision 1.1  2006/06/02 14:14:36  hristov
-Separate library for CDB (Jan)
-
-Revision 1.2  2006/03/07 07:52:34  hristov
-New version (B.Yordanov)
-
-Revision 1.3  2005/11/17 17:47:34  byordano
-TList changed to TObjArray
-
-Revision 1.2  2005/11/17 14:43:22  byordano
-import to local CVS
-
-Revision 1.1.1.1  2005/10/28 07:33:58  hristov
-Initial import as subdirectory in AliRoot
-
-Revision 1.1.1.1  2005/09/12 22:11:40  byordano
-SHUTTLE package
-
-Revision 1.2  2005/08/29 21:15:47  byordano
-some docs added
-
-*/
+/* $Id$ */
 
 //
 // abstract interface class to AliShuttle
@@ -56,6 +23,7 @@ some docs added
 
 #include "AliShuttleInterface.h"
 #include "AliLog.h"
+#include <TClass.h>
 #include <TSystem.h>
 
 ClassImp(AliShuttleInterface)

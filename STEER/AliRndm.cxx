@@ -23,10 +23,11 @@
 // It also allows saving and retrieving of the random number seeds
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TFile.h"
-#include "TError.h"
-#include "TRandom3.h"
-#include "TSystem.h"
+#include <TClass.h>
+#include <TFile.h>
+#include <TError.h>
+#include <TRandom3.h>
+#include <TSystem.h>
 
 #include "AliRndm.h"
 #include "AliLog.h"

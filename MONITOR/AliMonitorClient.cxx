@@ -24,33 +24,34 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliMonitorClient.h"
-#include "AliMonitorProcess.h"
-#include "AliLog.h"
-#include <TGMsgBox.h>
-#include <TGFileDialog.h>
-#include <TMessage.h>
-#include <TCanvas.h>
 #include <TApplication.h>
-#include <TStyle.h>
-#include <TGMenu.h>
-#include <TGButton.h>
-#include <TGLabel.h>
-#include <TGTextEntry.h>
-#include <TGToolBar.h>
-#include <TG3DLine.h>
-#include <TGNumberEntry.h>
-#include <TGCanvas.h>
-#include <TGSplitter.h>
-#include <TGListTree.h>
-#include <TRootEmbeddedCanvas.h>
-#include <TGTextView.h>
-#include <TFolder.h>
-#include <TSocket.h>
-#include <TTimer.h>
+#include <TCanvas.h>
+#include <TClass.h>
 #include <TFile.h>
-#include "AliMonitorHisto.h"
+#include <TFolder.h>
+#include <TG3DLine.h>
+#include <TGButton.h>
+#include <TGCanvas.h>
+#include <TGFileDialog.h>
+#include <TGLabel.h>
+#include <TGListTree.h>
+#include <TGMenu.h>
+#include <TGMsgBox.h>
+#include <TGNumberEntry.h>
+#include <TGSplitter.h>
+#include <TGTextEntry.h>
+#include <TGTextView.h>
+#include <TGToolBar.h>
+#include <TMessage.h>
+#include <TRootEmbeddedCanvas.h>
+#include <TSocket.h>
+#include <TStyle.h>
+#include <TTimer.h>
 
+#include "AliLog.h"
+#include "AliMonitorClient.h"
+#include "AliMonitorHisto.h"
+#include "AliMonitorProcess.h"
 
 ClassImp(AliMonitorClient) 
 

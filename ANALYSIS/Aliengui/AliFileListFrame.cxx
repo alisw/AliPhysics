@@ -21,18 +21,17 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
-#include "TObjString.h"
-#include "TGTextEntry.h"
-#include "TGLabel.h"
-#include "TGNumberEntry.h"
-#include "TGMsgBox.h"
-#include "TGTableLayout.h"
-#include "TGListView.h"
-
-#include "TFile.h"
-
-#include "TGrid.h"
-#include "TGridResult.h"
+#include <TFile.h>
+#include <TGLabel.h>
+#include <TGListView.h>
+#include <TGMsgBox.h>
+#include <TGNumberEntry.h>
+#include <TGTableLayout.h>
+#include <TGTextEntry.h>
+#include <TGrid.h>
+#include <TGridResult.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 #include "AliFileListFrame.h"
 

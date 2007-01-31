@@ -19,6 +19,7 @@
 // various types of data produced by the FMD. 
 //
 #include "AliFMDDisplay.h"
+#include <TArrayI.h>
 #include <TObjArray.h>
 #include <TGraph.h>
 #include <TLatex.h>

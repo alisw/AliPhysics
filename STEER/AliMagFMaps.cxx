@@ -22,6 +22,7 @@
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
 //------------------------------------------------------------------------
 
+#include <TClass.h>
 #include <TFile.h>
 #include <TSystem.h>
 

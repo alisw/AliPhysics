@@ -13,6 +13,8 @@
 // memory.                                                //
 ////////////////////////////////////////////////////////////
 
+#include <math.h>
+
 #include <TFile.h>
 #include "AliITSOnlineSPDscan.h"
 #include "AliITSOnlineSPDscanInfo.h"

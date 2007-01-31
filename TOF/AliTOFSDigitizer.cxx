@@ -32,6 +32,7 @@
 #include <TParticle.h>
 #include <TTree.h>
 #include <TRandom.h>
+#include <TROOT.h>
 
 #include "AliLoader.h"
 #include "AliLog.h"

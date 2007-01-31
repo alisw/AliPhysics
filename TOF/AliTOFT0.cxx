@@ -90,6 +90,7 @@
 #include <TTask.h>
 #include <TTree.h>
 #include <TRandom.h>
+#include <TROOT.h>
 
 #include "AliMC.h"
 #include "AliRun.h"

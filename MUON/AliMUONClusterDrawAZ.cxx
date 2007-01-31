@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 #include <Riostream.h>
-//#include <TROOT.h>
+#include <TROOT.h>
 #include <TCanvas.h>
 #include <TLine.h>
 //#include <TTree.h>

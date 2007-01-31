@@ -21,13 +21,14 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
-#include "TGLabel.h"
-#include "TGTextEntry.h"
-#include "TGButton.h"
-#include "TGFileDialog.h"
 
-#include "TSystem.h"
-#include "TObjString.h"
+#include <TGButton.h>
+#include <TGFileDialog.h>
+#include <TGLabel.h>
+#include <TGTextEntry.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TSystem.h>
 
 #include "AliAnalysisGUI.h"
 #include "AliPackageFrame.h"

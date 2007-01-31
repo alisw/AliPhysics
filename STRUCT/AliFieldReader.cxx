@@ -18,6 +18,7 @@
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TGraph.h>
+#include <TH1F.h>
 #include <TMath.h>
 #include <TMultiGraph.h>
 #include <TNtuple.h>

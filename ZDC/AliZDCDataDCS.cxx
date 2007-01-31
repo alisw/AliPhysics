@@ -10,12 +10,13 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
-#include <TTimeStamp.h>
-#include <TObjString.h>
-#include <TGraph.h>
-#include <TDatime.h>
-#include <TStyle.h>
 #include <TCanvas.h>
+#include <TDatime.h>
+#include <TGraph.h>
+#include <TH1.h>
+#include <TObjString.h>
+#include <TStyle.h>
+#include <TTimeStamp.h>
 
 ClassImp(AliZDCDataDCS)
 

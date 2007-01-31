@@ -56,6 +56,7 @@
 #include <TSystemDirectory.h>   // ROOT_TSystemDirectory
 #include <Riostream.h>		// ROOT_Riostream
 #include <TFile.h>              // ROOT_TFile
+#include <TStreamerInfo.h>
 //____________________________________________________________________
 ClassImp(AliFMDInput)
 #if 0

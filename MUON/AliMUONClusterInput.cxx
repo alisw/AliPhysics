@@ -35,6 +35,7 @@
 #include "AliLog.h"
 
 #include <TClonesArray.h>
+#include <TClass.h>
 #include <TMinuit.h>
 #include <TGeoManager.h>
 

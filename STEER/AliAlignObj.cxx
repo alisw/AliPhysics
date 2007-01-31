@@ -21,6 +21,8 @@
 //  From it two derived concrete representation of alignment object class
 //  (AliAlignObjAngles, AliAlignObjMatrix) are derived in separate files.
 //-----------------------------------------------------------------
+
+#include <TClass.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TMath.h>

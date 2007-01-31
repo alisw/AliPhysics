@@ -29,21 +29,21 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-#include "TMath.h"
-#include "AliTPCPRF2D.h"
-#include "TF2.h"
 #include <Riostream.h>
+#include <TCanvas.h>
+#include <TClass.h>
+#include <TF2.h>
+#include <TH1.h> 
+#include <TMath.h>
+#include <TPad.h>
+#include <TPaveText.h>
+#include <TStyle.h>
+#include <TText.h>
 #include <string.h>
-#include "TCanvas.h"
-#include "TPad.h"
-#include "TStyle.h"
-#include "TH1.h" 
+
 #include "AliH2F.h"
+#include "AliTPCPRF2D.h"
 
-
-#include "TPaveText.h"
-#include "TText.h"
 
 extern TStyle * gStyle;
 

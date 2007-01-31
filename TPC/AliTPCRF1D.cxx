@@ -28,15 +28,17 @@
 
 //
 
-#include "TMath.h"
-#include "AliTPCRF1D.h"
-#include "TF2.h"
 #include <Riostream.h>
-#include "TCanvas.h"
-#include "TPad.h"
-#include "TStyle.h"
-#include "TH1.h"
+#include <TCanvas.h>
+#include <TClass.h>
+#include <TF2.h>
+#include <TH1.h>
+#include <TMath.h>
+#include <TPad.h>
 #include <TString.h>
+#include <TStyle.h>
+
+#include "AliTPCRF1D.h"
 
 extern TStyle * gStyle; 
 

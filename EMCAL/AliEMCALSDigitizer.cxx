@@ -54,6 +54,7 @@
 #include <TBrowser.h>
 #include <Riostream.h>
 #include <TMath.h>
+#include <TROOT.h>
 
 // --- Standard library ---
 #include "stdlib.h"

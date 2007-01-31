@@ -44,6 +44,7 @@
 #include <TCanvas.h>
 #include <TStopwatch.h>
 #include <TMath.h>
+#include <TROOT.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderMLEM)

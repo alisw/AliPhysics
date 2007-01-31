@@ -25,6 +25,7 @@
 #include <TH1.h>
 #include <TFile.h>
 #include <TRandom.h>
+#include <TROOT.h>
 
 #include "AliITS.h"
 #include "AliITSMapA2.h"

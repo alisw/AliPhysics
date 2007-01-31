@@ -27,6 +27,7 @@ $Id$
 ////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TClass.h>
 #include <TMath.h>
 #include <TBuffer.h>
 #include <TCanvas.h>

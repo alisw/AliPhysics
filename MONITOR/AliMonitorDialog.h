@@ -6,6 +6,7 @@
 /* $Id$ */
 
 #include <RQ_OBJECT.h>
+#include <TObject.h>
 
 class TGFrame;
 class TGTransientFrame;

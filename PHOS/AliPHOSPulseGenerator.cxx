@@ -30,11 +30,13 @@
 // Author: Yuri Kharlov, after Yves Schutz and Per Thomas Hille
 
 // --- ROOT system ---
-#include "TMath.h" 
-#include "TF1.h" 
-#include "TGraph.h" 
-#include "TCanvas.h" 
-#include "TRandom.h"
+
+#include <TCanvas.h> 
+#include <TF1.h> 
+#include <TGraph.h> 
+#include <TH1F.h> 
+#include <TMath.h> 
+#include <TRandom.h>
 
 // --- AliRoot header files ---
 #include "AliLog.h"

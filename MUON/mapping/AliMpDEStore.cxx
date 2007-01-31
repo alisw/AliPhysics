@@ -35,6 +35,7 @@
 #include "AliLog.h"
 
 #include <Riostream.h>
+#include <TClass.h>
 #include <TSystem.h>
 #include <TObjString.h>
 #include <TMap.h>

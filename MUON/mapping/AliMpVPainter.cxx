@@ -46,6 +46,7 @@
 #include <TList.h>
 #include <TVirtualX.h>
 #include <TPad.h>
+#include <TROOT.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpVPainter)
