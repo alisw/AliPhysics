@@ -222,7 +222,7 @@ void AliAlignmentTracks::BuildIndex()
   // to initialize the volume paths
   AliAlignObjAngles alobj;
 
-  TFile *fPointsFile = TFile::Open(fPointsFilename);
+  fPointsFile = TFile::Open(fPointsFilename);
   if (!fPointsFile || !fPointsFile->IsOpen()) {
     AliWarning(Form("Can't open %s !",fPointsFilename.Data()));
     return;
@@ -237,7 +237,7 @@ void AliAlignmentTracks::BuildIndex()
   }
   fPointsTree->SetBranchAddress("SP", &array);
 
-  Int_t nArrays = fPointsTree->GetEntries();
+  Int_t nArrays = (Int_t)fPointsTree->GetEntries();
   for (Int_t iArray = 0; iArray < nArrays; iArray++)
     {
       fPointsTree->GetEvent(iArray);
@@ -561,7 +561,7 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
   for (Int_t i = 0; i < nArrays; i++) points[i] = 0x0;
 
   // Init the array used to flag already loaded tree entries
-  Bool_t *indexUsed = new Bool_t[fPointsTree->GetEntries()];
+  Bool_t *indexUsed = new Bool_t[(UInt_t)fPointsTree->GetEntries()];
   for (Int_t i = 0; i < fPointsTree->GetEntries(); i++)
     indexUsed[i] = kFALSE;
 
