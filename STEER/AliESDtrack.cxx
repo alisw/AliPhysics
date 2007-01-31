@@ -319,7 +319,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   alpha *= TMath::Pi();
 
   // Covariance matrix: no errors, the parameters are exact
-  for (Int_t i=0; i<15; i++) covar[i]=0.;
+  for (i=0; i<15; i++) covar[i]=0.;
 
   // Get the vertex of origin and the momentum
   TVector3 ver(part->Vx(),part->Vy(),part->Vz());

@@ -61,7 +61,7 @@ fTRDtrack(0)
   if (t.fCalibContainer) {
      fCalibContainer = new TObjArray(5);
      Int_t no=t.fCalibContainer->GetEntriesFast();
-     for (Int_t i=0; i<no; i++) {
+     for (i=0; i<no; i++) {
        TObject *o=t.fCalibContainer->At(i);
        fCalibContainer->AddLast(o->Clone());
      }  

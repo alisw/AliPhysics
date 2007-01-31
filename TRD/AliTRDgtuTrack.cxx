@@ -269,7 +269,7 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   Float_t y[kNmaxTrk+1];
   Float_t z[kNmaxTrk+1];
   Bool_t  count[kNmaxTrk];
-  for (Int_t i = 0; i < kNmaxTrk; i++) {
+  for (i = 0; i < kNmaxTrk; i++) {
     count[i] = kFALSE;
   }
 
@@ -278,7 +278,7 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   x[0] = y[0] = z[0] = 0.0;
   while (j < nTracklets) {
     iXmin = -1;
-    for (Int_t i = 0; i < nTracklets; i++) {
+    for (i = 0; i < nTracklets; i++) {
       if (count[i]) continue;
       if (iXmin == -1) {
 	iXmin = i;
