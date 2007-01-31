@@ -47,7 +47,7 @@ Bool_t AliTrackResidualsChi2::Minimize()
   // of track residuala sum
   Double_t arglist[10];
   Int_t ierflg = 0;
-  TMinuit *gMinuit = new TMinuit(6);  //initialize TMinuit
+  gMinuit = new TMinuit(6);  //initialize TMinuit
   arglist[0] = -1;
   gMinuit->mnexcm("SET PRINT", arglist, 1, ierflg);
 
