@@ -80,7 +80,7 @@ Bool_t AliSelectorRL::Process(Long64_t entry)
 
   if (fRunLoader)
   {
-    if (fRunLoader->GetEvent(entry) != 0)
+    if (fRunLoader->GetEvent((Int_t)entry) != 0)
       return kFALSE;
   }
 
@@ -117,7 +117,7 @@ AliRunLoader* AliSelectorRL::GetRunLoader()
     if (!fRunLoader)
       return 0;
 
-    fRunLoader->GetEvent(fTree->GetTree()->GetReadEntry());
+    fRunLoader->GetEvent((Int_t)(fTree->GetTree()->GetReadEntry()));
   }
 
   return fRunLoader;
