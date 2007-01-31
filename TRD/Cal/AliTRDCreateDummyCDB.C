@@ -53,7 +53,6 @@ TObject* CreateGlobalsObject()
 {
   AliTRDCalGlobals *object = new AliTRDCalGlobals("Globals", "Global TRD calibration parameters");
 
-  object->SetSamplingFrequency(10.0);
   object->SetNumberOfTimeBins(22);
   
   return object;

@@ -19,7 +19,7 @@
 //                                                                           //
 // Class containing constant reconstruction parameters                       //
 //                                                                           //
-// Request an instance with AliTRDRecParam::Instance()                 //
+// Request an instance with AliTRDRecParam::Instance()                       //
 // Then request the needed values                                            //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,7 +135,9 @@ AliTRDRecParam &AliTRDRecParam::operator=(const AliTRDRecParam &p)
   // Assignment operator
   //
 
-  if (this != &p) ((AliTRDRecParam &) p).Copy(*this);
+  if (this != &p) {
+    ((AliTRDRecParam &) p).Copy(*this);
+  }
 
   return *this;
 

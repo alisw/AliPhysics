@@ -29,6 +29,10 @@ ClassImp(AliTRDCalGlobals)
 AliTRDCalGlobals::AliTRDCalGlobals()
   :TNamed()
   ,fNumberOfTimeBins(0)
+  ,fTailCancelationTau1(0)
+  ,fTailCancelationTau2(0)
+  ,fTailCancelationAmp(0)
+  ,fPedestal(0)
 {
   //
   // AliTRDCalGlobals default constructor
@@ -40,6 +44,10 @@ AliTRDCalGlobals::AliTRDCalGlobals()
 AliTRDCalGlobals::AliTRDCalGlobals(const Text_t *name, const Text_t *title)
   :TNamed(name,title)
   ,fNumberOfTimeBins(0)
+  ,fTailCancelationTau1(0)
+  ,fTailCancelationTau2(0)
+  ,fTailCancelationAmp(0)
+  ,fPedestal(0)
 {
   //
   // AliTRDCalGlobals constructor
