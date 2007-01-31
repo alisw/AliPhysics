@@ -38,7 +38,7 @@ public:
 
                 Bool_t    LoadDescriptor( TString & descriptor );
                 Bool_t    RunTrigger( AliRunLoader * runloader );
-                Long_t    CheckConditions();
+                ULong64_t CheckConditions();
                   void    Reset();
                   void    DeleteDescriptors();
                   void    MakeBranch( TString name, TTree * tree );

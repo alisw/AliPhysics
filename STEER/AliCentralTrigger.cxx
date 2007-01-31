@@ -333,7 +333,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
 }
 
 //_____________________________________________________________________________
-Long_t AliCentralTrigger::CheckConditions()
+ULong64_t AliCentralTrigger::CheckConditions()
 {
    // Check trigger conditions and create the trigger class mask
 
