@@ -129,49 +129,6 @@ AliGenHijing::AliGenHijing(Int_t npart)
     AliHijingRndm::SetHijingRandom(GetRandom());
 }
 
-AliGenHijing::AliGenHijing(const AliGenHijing & hijing):
-    AliGenMC(hijing),
-     fFrame("CMS"),
-     fMinImpactParam(0.),
-     fMaxImpactParam(5.),
-     fKeep(0),
-     fQuench(1),
-     fShadowing(1),
-     fDecaysOff(1),
-     fTrigger(0),     
-     fEvaluate(0),
-     fSelectAll(0),
-     fFlavor(0),
-     fEnergyCMS(5500.),
-     fKineBias(0.),
-     fTrials(0),
-     fXsection(0.),
-     fHijing(0),
-     fPtHardMin(0.),
-     fPtHardMax(1.e4),
-     fSpectators(1),
-     fDsigmaDb(0),
-     fDnDb(0),
-     fPtMinJet(-2.5),
-     fEtaMinJet(-20.),
-     fEtaMaxJet(+20.),
-     fPhiMinJet(0.),
-     fPhiMaxJet(2. * TMath::Pi()),
-     fRadiation(3),
-     fSimpleJet(kFALSE),
-     fNoGammas(kFALSE),
-     fProjectileSpecn(0),
-     fProjectileSpecp(0),
-     fTargetSpecn(0),
-     fTargetSpecp(0),
-     fLHC(kFALSE),
-     fRandomPz(kFALSE),
-     fNoHeavyQuarks(kFALSE)
-{
-// copy constructor
-}
-
-
 AliGenHijing::~AliGenHijing()
 {
 // Destructor
@@ -700,16 +657,3 @@ Bool_t AliGenHijing::CheckTrigger()
     } // fTrigger == 2
     return triggered;
 }
-
-
-void AliGenHijing::Copy(TObject &) const
-{
-  Fatal("Copy","Not implemented!\n");
-}
-
-AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
-{
-    rhs.Copy(*this); 
-    return (*this);
-}
-

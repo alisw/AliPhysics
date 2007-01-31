@@ -19,7 +19,6 @@ public:
     enum constants{kY1Day0, kY1Day70, kY2D0, kY2D10, kY3D90, kLHCPR674Startup, kLHCPR674Conditioned};
     AliGenHaloProtvino();
     AliGenHaloProtvino(Int_t npart);
-    AliGenHaloProtvino(const AliGenHaloProtvino &HaloProtvino);
     virtual ~AliGenHaloProtvino();
     virtual void Init();
     virtual void SetFileName(TString filename) {fFileName=TString(filename);}
@@ -30,7 +29,6 @@ public:
     virtual void SetRunPeriod(Int_t t = kY3D90) {fRunPeriod = t;}
     virtual void SetTimePerEvent(Float_t t = 1.e-4) {fTimePerEvent = t;}
     virtual void Draw(Option_t * opt="");
-    AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
 
 protected:
   FILE*    fFile;                       // ! Pointer to file
@@ -45,7 +43,9 @@ protected:
   Float_t* fG2;                         // ! gas pressures
   Int_t    fGPASize;                    // ! Size of arrays
  private:
-  void Copy(TObject&) const;
+  AliGenHaloProtvino(const AliGenHaloProtvino &HaloProtvino);
+  AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
+
   ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)
       
 

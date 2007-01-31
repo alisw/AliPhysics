@@ -40,13 +40,6 @@ AliGenBeamGas::AliGenBeamGas()
     fOsigma[2] = 2000.;
 }
 
-AliGenBeamGas::AliGenBeamGas(const AliGenBeamGas & beamgas):
-    AliGenExtFile(beamgas),
-    fInteractions(1)
-{
-// Copy constructor
-    beamgas.Copy(*this);
-}
 //____________________________________________________________
 
 AliGenBeamGas::~AliGenBeamGas()
@@ -119,17 +112,6 @@ void AliGenBeamGas::Generate()
 //
   CdEventFile();
 }
-
-
-
-void AliGenBeamGas::Copy(TObject&) const
-{
-    //
-    // Copy 
-    //
-    Fatal("Copy","Not implemented!\n");
-}
-
 
 
 

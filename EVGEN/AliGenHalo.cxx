@@ -57,16 +57,6 @@ AliGenHalo::AliGenHalo(Int_t npart)
     fNpart=-1;
 }
 
-AliGenHalo::AliGenHalo(const AliGenHalo & Halo)
-    :AliGenerator(Halo),
-     fp(0),
-     fFileName(0)
-{
-// Copy constructor
-    Halo.Copy(*this);
-}
-
-
 //____________________________________________________________
 AliGenHalo::~AliGenHalo()
 {
@@ -138,23 +128,6 @@ void AliGenHalo::Generate()
   }
 }
  
-
-AliGenHalo& AliGenHalo::operator=(const  AliGenHalo& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return *this;
-}
-
-
-void AliGenHalo::Copy(TObject&) const
-{
-    //
-    // Copy 
-  //
-    Fatal("Copy","Not implemented!\n");
-}
-
 
 
 

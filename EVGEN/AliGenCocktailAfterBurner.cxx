@@ -66,23 +66,6 @@ ClassImp(AliGenCocktailAfterBurner)
     SetName("AliGenCocktailAfterBurner");
     SetTitle("AliGenCocktailAfterBurner");
 }
-/*********************************************************************/ 
-AliGenCocktailAfterBurner::AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& cocktail):
-    AliGenCocktail(cocktail), 
-    fNAfterBurners(0),
-    fAfterBurnerEntries(new TList()),
-    fGenerationDone(kFALSE),
-    fInternalStacks(0),
-    fCollisionGeometries(0),
-    fCurrentEvent(0),
-    fActiveStack(0),
-    fActiveEvent(-1),
-    fCurrentGenerator(0),
-    fNBgEvents(0)
-{
- //Copy constructor
-    cocktail.Copy(*this);
-}
 
 /*********************************************************************/ 
 
@@ -289,15 +272,6 @@ void AliGenCocktailAfterBurner::Generate()
 /*********************************************************************/
 /*********************************************************************/ 
 
-AliGenCocktailAfterBurner& AliGenCocktailAfterBurner::operator=(const  AliGenCocktailAfterBurner& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return (*this);
-}
-/*********************************************************************/
-/*********************************************************************/ 
-
 AliStack* AliGenCocktailAfterBurner::GetStack(Int_t n) const
 {
 //Returns the pointer to the N'th stack (event)
@@ -419,7 +393,3 @@ TMCProcess AliGenCocktailAfterBurner::IntToMCProcess(Int_t no)
     return kPNoProcess;
 }
 
-void AliGenCocktailAfterBurner::Copy(TObject &) const
-{
-    Fatal("Copy","Not implemented!\n");
-}

@@ -87,14 +87,6 @@ AliGenEpEmv1::AliGenEpEmv1()
 }
 
 //____________________________________________________________
-AliGenEpEmv1::AliGenEpEmv1(const AliGenEpEmv1 & gen)
-    :AliGenMC(gen)
-{
-  // copy constructor
-  gen.Copy(*this);
-}
-
-//____________________________________________________________
 AliGenEpEmv1::~AliGenEpEmv1()
 {
   // Destructor

@@ -32,7 +32,6 @@ class AliGenParam : public AliGenMC
 		Double_t (*PtPara)(Double_t*, Double_t*),
 		Double_t (*YPara )(Double_t*, Double_t*),
 		Int_t    (*IpPara)(TRandom*)           );
-    AliGenParam(const AliGenParam &Param);
      
     virtual ~AliGenParam();
     virtual void Generate();
@@ -48,7 +47,6 @@ class AliGenParam : public AliGenMC
     TF1 *  GetY() {return fYPara;}
     Float_t GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax);
 
-    AliGenParam & operator=(const AliGenParam & rhs);
  protected:
     Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
     Double_t (*fYParaFunc )(Double_t*, Double_t*); //! Pointer to Y parametrisation function
@@ -63,7 +61,12 @@ class AliGenParam : public AliGenMC
     Int_t       fTrials;       // Number of trials
     Float_t     fDeltaPt;      // pT sampling in steps of fDeltaPt
     AliDecayer  *fDecayer;     // ! Pointer to pythia object for decays
-  ClassDef(AliGenParam,1) // Generator using parameterised pt- and y-distribution
+
+ private:
+    AliGenParam(const AliGenParam &Param);
+    AliGenParam & operator=(const AliGenParam & rhs);
+
+    ClassDef(AliGenParam,1) // Generator using parameterised pt- and y-distribution
 };
 #endif
 

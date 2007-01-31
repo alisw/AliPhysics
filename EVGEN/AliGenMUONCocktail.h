@@ -32,8 +32,7 @@ class AliGenMUONCocktail : public AliGenCocktail
 {
  public:
     AliGenMUONCocktail();
-    AliGenMUONCocktail(const AliGenMUONCocktail &cocktail); 
-    virtual ~AliGenMUONCocktail();
+     virtual ~AliGenMUONCocktail();
     virtual void Init();
     virtual void Generate();
     Int_t   GetMuonMultiplicity()  const {return fMuonMultiplicity;}
@@ -57,8 +56,9 @@ class AliGenMUONCocktail : public AliGenCocktail
         fInvMassMaxCut=MassMax;
         fInvMassCut = kTRUE; }
  private:
+    AliGenMUONCocktail(const AliGenMUONCocktail &cocktail); 
     AliGenMUONCocktail& operator=(const AliGenMUONCocktail & rhs);
-    void Copy(TObject &cocktail) const;
+
     //
  private:
     AliFastGlauber *  fFastGlauber; //! Fast glauber calculations

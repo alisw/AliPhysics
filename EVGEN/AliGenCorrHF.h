@@ -27,15 +27,12 @@ class AliGenCorrHF : public AliGenMC
     AliGenCorrHF();
     AliGenCorrHF(Int_t npart, Int_t param);
     AliGenCorrHF(char* tname, Int_t npart, Int_t param);
-    AliGenCorrHF(const AliGenCorrHF &CorrHF);
      
     virtual ~AliGenCorrHF();
     virtual void Generate();
     virtual void Init();
     // force decay type
     virtual void SetDecayer(AliDecayer* decayer) {fDecayer = decayer;}
-
-    AliGenCorrHF & operator=(const AliGenCorrHF & rhs);
 
     // Particle type parametrisation functions, needed by GetHadronPair
     static Int_t IpCharm(TRandom* ran);
@@ -57,6 +54,9 @@ class AliGenCorrHF : public AliGenMC
     AliDecayer* fDecayer;     //! Pointer to pythia object for decays
 
  private:
+    AliGenCorrHF(const AliGenCorrHF &CorrHF);
+    AliGenCorrHF & operator=(const AliGenCorrHF & rhs);
+
     static Double_t* fgIntegral; //! Pointer to array of cumulative sums of wght-s
     static Int_t  fgnptbins;             // =12 Number of bins for the fragm. 
                                          //   function dependence on quark pt

@@ -187,20 +187,6 @@ AliGenCorrHF::AliGenCorrHF(char* tname, Int_t npart, Int_t param):
 }
 
 //____________________________________________________________
-AliGenCorrHF::AliGenCorrHF(const AliGenCorrHF & CorrHF)
-    :AliGenMC(CorrHF),	
-     fFileName(0),
-     fFile(0),
-     fQuark(0),
-     fBias(0.),
-     fTrials(0),
-     fDecayer(0)
-{
-// Copy constructor
-    CorrHF.Copy(*this);
-}
-
-//____________________________________________________________
 AliGenCorrHF::~AliGenCorrHF()
 {
 // Destructor
@@ -529,14 +515,6 @@ void AliGenCorrHF::Generate()
   } // while(ipa<fNpart) --> event loop
 
   SetHighWaterMark(nt);
-}
-
-//____________________________________________________________________________________
-AliGenCorrHF& AliGenCorrHF::operator=(const  AliGenCorrHF& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return *this;
 }
 
 //____________________________________________________________________________________

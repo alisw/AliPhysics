@@ -101,37 +101,6 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
 }
 
 //____________________________________________________________
-AliGenSlowNucleons::AliGenSlowNucleons(const AliGenSlowNucleons & sn):
-    AliGenerator(sn),
-    fCMS(0.),
-    fMomentum(0.),
-    fBeta(0.),
-    fPmax (0.),
-    fATarget (0.),
-    fZTarget (0.),
-    fCharge(0),
-    fProtonDirection(0.),
-    fTemperatureG(0.), 
-    fBetaSourceG(0.),
-    fTemperatureB(0.),
-    fBetaSourceB(0.),
-    fNgp(0),
-    fNgn(0),
-    fNbp(0),
-    fNbn(0),
-    fDebug(0),
-    fDebugHist1(0),
-    fDebugHist2(0),
-    fThetaDistribution(),
-    fCosThetaGrayHist(),
-    fCosTheta(),
-    fSlowNucleonModel(0)
-{
-// Copy constructor
-    sn.Copy(*this);
-}
-
-//____________________________________________________________
 AliGenSlowNucleons::~AliGenSlowNucleons()
 {
 // Destructor
@@ -345,26 +314,3 @@ void AliGenSlowNucleons::Lorentz(Double_t m, Double_t beta, Float_t* q)
     Double_t energy = sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
     q[2] = gamma * (q[2] + beta*energy);
 }
-
-	  
-AliGenSlowNucleons& AliGenSlowNucleons::operator=(const  AliGenSlowNucleons& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return *this;
-}
-
-void AliGenSlowNucleons::Copy(TObject&) const
-{
-    //
-    // Copy 
-    //
-    Fatal("Copy","Not implemented!\n");
-}
-
-
-
-
-
-
-

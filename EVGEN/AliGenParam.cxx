@@ -164,27 +164,6 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
     SetChildThetaRange();  
 }
 
-
-AliGenParam::AliGenParam(const AliGenParam & Param)
-    :AliGenMC(Param),	
-     fPtParaFunc(0),
-     fYParaFunc(0),
-     fIpParaFunc(0),
-     fPtPara(0),
-     fYPara(0),
-     fParam(0),
-     fdNdy0(0.),
-     fYWgt(0.),
-     fPtWgt(0.),
-     fBias(0.),
-     fTrials(0),
-     fDeltaPt(0.01),
-     fDecayer(0)
-{
-// Copy constructor
-    Param.Copy(*this);
-}
-
 //____________________________________________________________
 AliGenParam::~AliGenParam()
 {
@@ -534,12 +513,6 @@ void AliGenParam::Draw( const char * /*opt*/)
      fYPara->GetHistogram()->SetXTitle("y");     
 }
 
-AliGenParam& AliGenParam::operator=(const  AliGenParam& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return *this;
-}
 
 
 

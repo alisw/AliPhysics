@@ -200,23 +200,6 @@ AliGenHIJINGpara::AliGenHIJINGpara(Int_t npart)
     SetPtRange();
 }
 
-AliGenHIJINGpara::AliGenHIJINGpara(const AliGenHIJINGpara & para):
-    AliGenerator(para),
-    fNt(-1),
-    fNpartProd(0),
-    fPi0Decays(kFALSE),
-    fPtWgtPi(0.),
-    fPtWgtKa(0.),
-    fPtpi(0),
-    fPtka(0),
-    fETApic(0),
-    fETAkac(0),
-    fDecayer(0)
-{
-// Copy constructor
-    para.Copy(*this);
-}
-
 //_____________________________________________________________________________
 AliGenHIJINGpara::~AliGenHIJINGpara()
 {
@@ -452,12 +435,6 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
     }
     fNt = nt;
 }
-
-void AliGenHIJINGpara::Copy(TObject &) const
-{
-  Fatal("Copy","Not implemented!\n");
-}
-
 
 void AliGenHIJINGpara::Draw( const char * /*opt*/)
 {

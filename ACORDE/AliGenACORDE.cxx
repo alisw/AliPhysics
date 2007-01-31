@@ -112,26 +112,6 @@ AliGenACORDE::AliGenACORDE(Int_t npart)
 }
 
 //_____________________________________________________________________________
-AliGenACORDE::AliGenACORDE(const AliGenACORDE& gen)
-  : AliGenerator(gen)
-{
-  //
-  // Copy constructor
-  //
-  gen.Copy(*this);
-}
-
-//_____________________________________________________________________________
-AliGenACORDE& AliGenACORDE::operator=(const AliGenACORDE& gen)
-{
-  //
-  // Asingment operator
-  //
-  gen.Copy(*this);
-  return *this;
-}
-
-//_____________________________________________________________________________
 AliGenACORDE::~AliGenACORDE()
 {
   //

@@ -22,7 +22,6 @@ class AliGenCocktail : public AliGenerator
 {
  public:
     AliGenCocktail();
-    AliGenCocktail(const AliGenCocktail &cocktail);
      
     virtual ~AliGenCocktail();
     virtual void Init();
@@ -42,7 +41,6 @@ class AliGenCocktail : public AliGenerator
     AliGenCocktailEntry*  NextGenerator();
     void FirstGeneratorPair(AliGenCocktailEntry*&e1, AliGenCocktailEntry*&e2);
     void NextGeneratorPair (AliGenCocktailEntry*&e1, AliGenCocktailEntry*&e2);
-    AliGenCocktail & operator=(const AliGenCocktail & rhs);
     virtual void AddHeader(AliGenEventHeader* header);
 	    
  protected:
@@ -57,7 +55,9 @@ class AliGenCocktail : public AliGenerator
 			   
 //
  private:
-    void Copy(TObject &arun) const;
+    AliGenCocktail(const AliGenCocktail &cocktail);
+    AliGenCocktail & operator=(const AliGenCocktail & rhs);
+
     ClassDef(AliGenCocktail,1) // Particle cocktail generator a la SHAKER
 };
 

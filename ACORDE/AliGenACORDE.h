@@ -15,10 +15,7 @@ class AliGenACORDE : public AliGenerator {
  public:
   AliGenACORDE();
   AliGenACORDE(Int_t npart);
-  AliGenACORDE(const AliGenACORDE& gen);
   virtual ~AliGenACORDE();
-
-  AliGenACORDE& operator= (const AliGenACORDE& gen);
 
   virtual void Init();
   virtual void Generate();
@@ -54,6 +51,9 @@ class AliGenACORDE : public AliGenerator {
   void GenerateOneSingleMuon(Bool_t withFlatMomentum=kFALSE);
 
  private:
+  AliGenACORDE(const AliGenACORDE& gen);
+  AliGenACORDE& operator= (const AliGenACORDE& gen);
+
   Int_t    fIpart;              //! Particle type.
   ECRMode  fCRMode;             //! Cosmic muons generation method flag
   TString* fCRModeName;         //! Cosmic muons generation mode name

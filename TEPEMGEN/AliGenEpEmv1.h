@@ -25,8 +25,10 @@ public:
   void Init();
   void SetDebug(Int_t debug) {fDebug=debug;}
   
-  AliGenEpEmv1(const AliGenEpEmv1 & gen);
  protected:
+  AliGenEpEmv1(const AliGenEpEmv1 & gen);
+  AliGenEpEmv1 & operator=(const AliGenEpEmv1 & gen);
+
   Float_t    fMass;    // electron mass
   TEpEmGen * fEpEmGen; // e+e- generator
   Int_t      fDebug;   // debug level

@@ -20,19 +20,20 @@ class AliGenExtFile : public AliGenMC
  public:
     AliGenExtFile();
     AliGenExtFile(Int_t npart);
-    AliGenExtFile(const AliGenExtFile &ext);
-    virtual ~AliGenExtFile();
+     virtual ~AliGenExtFile();
     // Initialise 
     virtual void Init();
     // generate event
     virtual void Generate();
-    AliGenExtFile & operator=(const AliGenExtFile & rhs);
     void SetReader(AliGenReader* reader) {fReader = reader;}
  protected:
     void CdEventFile();
-    void Copy(TObject&) const;
     const Text_t     *fFileName;      //! File to read from
     AliGenReader     *fReader;        //! Reader to read the file
+
+ private:
+    AliGenExtFile(const AliGenExtFile &ext);
+    AliGenExtFile & operator=(const AliGenExtFile & rhs);
     
   ClassDef(AliGenExtFile,1) //Generate particles from external file
 };

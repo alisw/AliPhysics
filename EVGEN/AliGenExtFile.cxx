@@ -64,14 +64,6 @@ AliGenExtFile::AliGenExtFile(Int_t npart)
     fTitle  = "Primaries from ext. File";
 }
 
-AliGenExtFile::AliGenExtFile(const AliGenExtFile & ExtFile):
-    AliGenMC(ExtFile),
-     fFileName(0),
-     fReader(0)
-{
-// Copy constructor
-    ExtFile.Copy(*this);
-}
 //____________________________________________________________
 AliGenExtFile::~AliGenExtFile()
 {
@@ -191,25 +183,6 @@ void AliGenExtFile::CdEventFile()
 // CD back to the event file
     (AliRunLoader::GetRunLoader())->CdGAFile();
 }
-
-
-AliGenExtFile& AliGenExtFile::operator=(const  AliGenExtFile& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return *this;
-}
- 
-
-void AliGenExtFile::Copy(TObject&) const
-{
-    //
-    // Copy 
-    //
-    Fatal("Copy","Not implemented!\n");
-}
-
-
 
 
 

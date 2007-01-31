@@ -91,14 +91,6 @@ AliGenTPHIC::AliGenTPHIC()
 }
 
 //____________________________________________________________
-AliGenTPHIC::AliGenTPHIC(const AliGenTPHIC & gen):
-    AliGenMC(gen)
-{
-  // copy constructor
-  gen.Copy(*this);
-}
-
-//____________________________________________________________
 AliGenTPHIC::~AliGenTPHIC()
 {
   // Destroys the object, deletes and disposes all TParticles currently on list.
@@ -395,12 +387,3 @@ void AliGenTPHIC::SetProcess       (Int_t   proc  )
   // calculated so far
   return fTPHICgen->GetXSTOTE();
 }
-
-void AliGenTPHIC::Copy(TObject&) const
-{
-    //
-    // Copy 
-    //
-    Fatal("Copy","Not implemented!\n");
-}
-

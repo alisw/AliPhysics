@@ -36,10 +36,8 @@ class AliGenerator : public TNamed, public AliRndm
  public:
     AliGenerator();
     AliGenerator(Int_t npart);
-    AliGenerator(const AliGenerator &gen);
     virtual ~AliGenerator();
     virtual void Init();
-    void Copy(TObject &gen) const;
     virtual void SetOrigin(Float_t ox, Float_t oy, Float_t oz);
     virtual void SetOrigin(const TLorentzVector &o);
     virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz);
@@ -74,7 +72,6 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetMC(TGenerator *theMC) {fMCEvGen =theMC;}
     virtual void AddHeader(AliGenEventHeader* /*header*/) {;}
     virtual void SetContainer(AliGenerator* container) {fContainer = container;}
-    AliGenerator & operator=(const AliGenerator &gen);
 
   // Getters
 
@@ -144,6 +141,11 @@ class AliGenerator : public TNamed, public AliRndm
 	  kYRange        = BIT(18),
 	  kMomentumRange = BIT(19)     
     };
+
+ private:
+    AliGenerator(const AliGenerator &gen);
+    AliGenerator & operator=(const AliGenerator &gen);
+
     ClassDef(AliGenerator,3) // Base class for event generators
 };
 

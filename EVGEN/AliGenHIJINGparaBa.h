@@ -18,15 +18,16 @@ class AliGenHIJINGparaBa : public AliGenHIJINGpara
  public:
     AliGenHIJINGparaBa();
     AliGenHIJINGparaBa(Int_t npart);
-    AliGenHIJINGparaBa(const AliGenHIJINGparaBa &HIJINGpara);
-    AliGenHIJINGparaBa& operator = (const AliGenHIJINGparaBa &para) 
-	{para.Copy(*this); return (*this);}
     virtual ~AliGenHIJINGparaBa();
     virtual void Generate();
     virtual void Init();
  protected:
     TF1* fPtba;          //! Parametrised pt distribution for baryons
     TF1* fETAba;         //! Parametrised eta distribution for baryons
+
+ private:
+    AliGenHIJINGparaBa(const AliGenHIJINGparaBa &HIJINGpara);
+    AliGenHIJINGparaBa& operator = (const AliGenHIJINGparaBa &para);
 
     ClassDef(AliGenHIJINGparaBa,1) // Hijing parametrisation generator with baryons
 };

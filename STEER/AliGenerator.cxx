@@ -174,65 +174,6 @@ AliGenerator::AliGenerator(Int_t npart):
 }
 
 //_______________________________________________________________________
-AliGenerator::AliGenerator(const AliGenerator &gen): 
-  TNamed(gen),
-  AliRndm(gen),
-  fMCEvGen(0),
-  fThetaMin(0),
-  fThetaMax(0),
-  fPhiMin(0),
-  fPhiMax(0),
-  fPMin(0),
-  fPMax(0),
-  fPtMin(0),
-  fPtMax(0),
-  fYMin(0),
-  fYMax(0),
-  fVMin(3),
-  fVMax(3),
-  fNpart(0),
-  fParentWeight(0),
-  fChildWeight(0),
-  fAnalog(0),
-  fVertexSmear(kNoSmear),
-  fVertexSource(kInternal),
-  fCutVertexZ(0),
-  fPileUpTimeWindow(-1.),
-  fTrackIt(0),
-  fVertexGenerator(0),
-  fOrigin(3),
-  fOsigma(3),
-  fVertex(3),
-  fStack(0),
-  fContainer(0),
-  fCollisionGeometry(0)
-{
-  //
-  // Copy constructor
-  //
-  gen.Copy(*this);
-}
-
-//_______________________________________________________________________
-AliGenerator & AliGenerator::operator=(const AliGenerator &gen)
-{
-  //
-  // Assignment operator
-  //
-  gen.Copy(*this);
-  return (*this);
-}
-
-//_______________________________________________________________________
-void AliGenerator::Copy(TObject &/* gen */) const
-{
-  //
-  // Copy *this onto gen
-  //
-  AliFatal("Not implemented!");
-}
-
-//_______________________________________________________________________
 AliGenerator::~AliGenerator()
 {
   //

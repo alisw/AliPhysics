@@ -20,9 +20,6 @@ class AliGenHIJINGpara : public AliGenerator
 
   AliGenHIJINGpara();
   AliGenHIJINGpara(Int_t npart);
-  AliGenHIJINGpara(const AliGenHIJINGpara &HIJINGpara);
-  AliGenHIJINGpara& operator = (const AliGenHIJINGpara &para) 
-  {para.Copy(*this); return (*this);}
   virtual ~AliGenHIJINGpara();
   virtual void SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
   virtual void Generate();
@@ -45,7 +42,12 @@ class AliGenHIJINGpara : public AliGenerator
   AliDecayer* fDecayer; // ! Pointer to pythia object for decays
 
   void DecayPi0(Float_t* orig, Float_t * p);
-  void Copy(TObject &para) const;
+
+ private:
+  AliGenHIJINGpara(const AliGenHIJINGpara &HIJINGpara);
+  AliGenHIJINGpara& operator = (const AliGenHIJINGpara &para) ;
+
+
   ClassDef(AliGenHIJINGpara,3) // Hijing parametrisation generator
 };
 #endif

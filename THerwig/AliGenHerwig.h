@@ -30,7 +30,6 @@ class AliGenHerwig : public AliGenMC
  public:
     AliGenHerwig();
     AliGenHerwig(Int_t npart);
-    AliGenHerwig(const AliGenHerwig &Herwig);
     virtual ~AliGenHerwig();
     virtual void    Generate();
     virtual void    Init();
@@ -44,7 +43,6 @@ class AliGenHerwig : public AliGenMC
     virtual void    SetTrigger(Int_t flag=kNoTrigger) {fTrigger   = flag;}
     virtual void    SetFlavor(Int_t flag=0)           {fFlavor    = flag;}
     virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll = flag;}
-    AliGenHerwig &  operator=(const AliGenHerwig & rhs);
     virtual void    SetStrucFunc(StrucFunc_t func = kCTEQ5L)
       {fStrucFunc = func;}
     virtual void    SetPtHardMin(Double_t pt) {fPtHardMin=pt;}
@@ -88,6 +86,9 @@ class AliGenHerwig : public AliGenMC
     TString     fFileName;       //!Name of file to read from hard scattering
 
  private:
+    AliGenHerwig(const AliGenHerwig &Herwig);
+    AliGenHerwig &  operator=(const AliGenHerwig & rhs);
+
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip);
     // check if particle is selected as child particle

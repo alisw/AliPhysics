@@ -69,30 +69,6 @@ AliGenMUONCocktail::AliGenMUONCocktail()
 // Constructor
 }
 //_________________________________________________________________________
-AliGenMUONCocktail::AliGenMUONCocktail(const AliGenMUONCocktail & cocktail):
-    AliGenCocktail(cocktail),
-    fFastGlauber(0x0),
-    fTotalRate(0),  
-    fMuonMultiplicity(1),
-    fMuonPtCut(1.),
-    fMuonThetaMinCut(171.), 
-    fMuonThetaMaxCut(178.),
-    fNSucceded(0), 
-    fNGenerated(0), 
-    fLowImpactParameter(0.),
-    fHighImpactParameter(5.),
-    fAverageImpactParameter(0.),
-    fNumberOfCollisions(0.), 
-    fNumberOfParticipants(0.),
-    fHadronicMuons(kTRUE),
-    fInvMassCut (kFALSE),
-    fInvMassMinCut (0.),
-    fInvMassMaxCut (100.)
-{
-// Copy constructor
-}
-
-//_________________________________________________________________________
 AliGenMUONCocktail::~AliGenMUONCocktail()
 {
 // Destructor
@@ -474,19 +450,3 @@ void AliGenMUONCocktail::Generate()
 
     AliDebug(5,Form("Generated Events are %d and Succeeded Events are %d",fNGenerated,fNSucceded));
 }
-
-
-AliGenMUONCocktail& AliGenMUONCocktail::operator=(const  AliGenMUONCocktail& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return *this;
-}
-
-void AliGenMUONCocktail::Copy(TObject &) const
-{
-    Fatal("Copy","Not implemented!\n");
-}
-
-
-

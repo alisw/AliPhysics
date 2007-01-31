@@ -30,9 +30,7 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
 
  public:
     AliGenCocktailAfterBurner();
-    AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& in);
     virtual ~AliGenCocktailAfterBurner();
-    AliGenCocktailAfterBurner & operator=(const AliGenCocktailAfterBurner & rhs);
     
     virtual void  Init();
     virtual void  Generate();
@@ -85,7 +83,8 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
                                           //needed by some afterburners that works better with higher statistics 
                                           //this generates such a artificial one
  private:
-    void Copy(TObject &arun) const;    
+    AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& in);
+    AliGenCocktailAfterBurner & operator=(const AliGenCocktailAfterBurner & rhs);
 
     ClassDef(AliGenCocktailAfterBurner,2) // Particle cocktail generator a la SHAKER
                                           //background events added

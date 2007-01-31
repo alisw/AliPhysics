@@ -88,16 +88,7 @@ static TRandom* gAliRandom;//RNG to be used by the fortran code
 
 AliGenCocktailAfterBurner*  GetGenerator();
 /*******************************************************************/
-AliGenHBTprocessor::AliGenHBTprocessor(const AliGenHBTprocessor& in):
-  AliGenerator(in), 
-  fHBTprocessor(0x0),
-  fHbtPStatCodes(0x0),
-  fEventMerge(1)
-{
-//copy contructor
-  // AliGenHBTprocessor::AliGenHBTprocessor();
 
-}
 AliGenHBTprocessor::AliGenHBTprocessor(): 
   AliGenerator(), 
   fHBTprocessor(0x0),

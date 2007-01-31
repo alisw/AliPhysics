@@ -30,7 +30,6 @@ class AliGenHBTprocessor : public AliGenerator
 
   public:
     AliGenHBTprocessor();
-    AliGenHBTprocessor(const AliGenHBTprocessor& in);
     virtual ~AliGenHBTprocessor();
 
     virtual void Init();
@@ -256,6 +255,10 @@ class AliGenHBTprocessor : public AliGenerator
 
       /******* P R O T E C T E D   M E T H O D S  *****/
       void GetTrackEventIndex(Int_t n, Int_t &evno, Int_t &index) const; //returns event(stack) number and 
+
+ private:
+      AliGenHBTprocessor(const AliGenHBTprocessor& in);
+      AliGenHBTprocessor & operator=(const AliGenHBTprocessor& in);
 
     ClassDef(AliGenHBTprocessor,1) // Interface class for AliMevsim
     

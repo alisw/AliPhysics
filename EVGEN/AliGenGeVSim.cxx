@@ -154,22 +154,6 @@ AliGenGeVSim::AliGenGeVSim(Float_t psi, Bool_t isMultTotal)
   InitFormula();
 }
 
-AliGenGeVSim::AliGenGeVSim(const AliGenGeVSim & ggs)
-    : AliGenerator(ggs),
-      fModel(0),
-      fPsi(0),
-      fIsMultTotal(0),
-      fPtFormula(0),
-      fYFormula(0),
-      fPhiFormula(0),
-      fCurrentForm(0),
-      fPtYHist(0),
-      fPartTypes(0) 
-{
-    Fatal("copy ctor","Not implemented\n");
-}
-
-
 //////////////////////////////////////////////////////////////////////////////////
 
 AliGenGeVSim::~AliGenGeVSim() {

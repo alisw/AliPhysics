@@ -24,7 +24,6 @@ class AliGenHijing : public AliGenMC
  public:
     AliGenHijing();
     AliGenHijing(Int_t npart);
-    AliGenHijing(const AliGenHijing &Hijing);
     virtual ~AliGenHijing();
     virtual void    Generate();
     virtual void    Init();
@@ -88,7 +87,6 @@ class AliGenHijing : public AliGenMC
     virtual TGraph* BinaryCollisions() {return fDnDb;}
     virtual Bool_t  CheckTrigger();
 //
-    AliGenHijing &  operator=(const AliGenHijing & rhs);
  protected:
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
@@ -133,7 +131,9 @@ class AliGenHijing : public AliGenMC
     Bool_t      fNoHeavyQuarks;  // If true no heavy quarks are produced
     
  private:
-    void Copy(TObject &rhs) const;
+    AliGenHijing(const AliGenHijing &Hijing);
+    AliGenHijing &  operator=(const AliGenHijing & rhs);
+
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
     // check seleted daughters

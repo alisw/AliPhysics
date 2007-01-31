@@ -98,38 +98,6 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     AliHerwigRndm::SetHerwigRandom(GetRandom());
 }
 
-AliGenHerwig::AliGenHerwig(const AliGenHerwig & Herwig)
-    :AliGenMC(Herwig),
-    fAutPDF("LHAPDF"),
-    fModPDF(19070),
-    fStrucFunc(kCTEQ5L),
-    fKeep(0),
-    fDecaysOff(1),
-    fTrigger(0),
-    fSelectAll(0),
-    fFlavor(0),
-    fEnergyCMS(14000),
-    fMomentum1(7000),
-    fMomentum2(7000),
-    fKineBias(1),
-    fTrials(0),
-    fXsection(0),
-    fHerwig(0x0),
-    fProcess(0),
-    fPtHardMin(0.),
-    fPtRMS(0.),
-    fMaxPr(10),
-    fMaxErrors(1000),
-    fEnSoft(1),
-    fEv1Pr(0),
-    fEv2Pr(0),
-    fFileName(0)
-{
-// Copy constructor
-    Herwig.Copy(*this);
-}
-
-
 AliGenHerwig::~AliGenHerwig()
 {
 // Destructor
@@ -449,14 +417,6 @@ Bool_t AliGenHerwig::Stable(TParticle*  particle)
 void AliGenHerwig::FinishRun()
 {
   fHerwig->Hwefin();
-}
-
-
-AliGenHerwig& AliGenHerwig::operator=(const  AliGenHerwig& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return (*this);
 }
 
 void AliGenHerwig::FinishRunJimmy()

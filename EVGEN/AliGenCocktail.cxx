@@ -51,21 +51,6 @@ AliGenCocktail::AliGenCocktail()
     fTitle= "Particle Generator using cocktail of generators";
 }
 
-AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail):
-    AliGenerator(cocktail), 
-    fNGenerators(0),
-    fRandom(kFALSE),
-    fUsePerEventRate(kFALSE),
-    fProb(0),
-    fEntries(0),
-    flnk1(0),
-    flnk2(0), 
-    fHeader(0)
-{
-// Copy constructor
-    cocktail.Copy(*this);
-}
-
 AliGenCocktail::~AliGenCocktail()
 {
 // Destructor
@@ -319,18 +304,7 @@ void AliGenCocktail::AddHeader(AliGenEventHeader* header)
 // Add a header to the list 
     if (fHeader) fHeader->AddHeader(header);
 }
-			      
-AliGenCocktail& AliGenCocktail::operator=(const  AliGenCocktail& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this); 
-    return (*this);
-}
 
-void AliGenCocktail::Copy(TObject &) const
-{
-    Fatal("Copy","Not implemented!\n");
-}
 
 
 

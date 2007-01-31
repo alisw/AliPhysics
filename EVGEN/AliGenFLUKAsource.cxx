@@ -117,40 +117,6 @@ AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
     fTitle = "FLUKA Boundary Source";
 }
 
-AliGenFLUKAsource::AliGenFLUKAsource(const AliGenFLUKAsource & FLUKAsource):
-    AliGenerator(FLUKAsource), 
-    fIkine(6),
-    fAgeMax(1.e-5), 
-    fAddWeight(1.),
-    fZshift(0.),
-    fFrac(0.),
-    fSourceId(-1),
-    fFileName(0),
-    fTreeChain(0),
-    fTreeFluka(0),
-    fIp(0.),
-    fIpp(0.),
-    fXi(0.),
-    fYi(0.),
-    fZi(0.),
-    fPx(0.),
-    fPy(0.),
-    fPz(0.),
-    fEkin(0.),
-    fZv(0.),
-    fRv(0.),
-    fItra(0.),
-    fIgas(0.),
-    fWgt(0.),
-    fEtag(0.),
-    fPtg(0.),
-    fAge(0.)
-{
-// Copy constructor
-    FLUKAsource.Copy(*this);
-}
-
-
 //____________________________________________________________
 AliGenFLUKAsource::~AliGenFLUKAsource()
 {
@@ -334,19 +300,6 @@ void AliGenFLUKAsource::Generate()
     pFile->cd();
 }
 
-
-AliGenFLUKAsource& AliGenFLUKAsource::operator=(const  AliGenFLUKAsource& rhs)
-{
-// Assignment operator
-    rhs.Copy(*this);
-    return (*this);
-}
-
-
-void AliGenFLUKAsource::Copy(TObject &) const
-{
-    Fatal("Copy","Not implemented!\n");
-}
 
 
 

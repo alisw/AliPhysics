@@ -21,7 +21,6 @@ class AliGenSlowNucleons : public AliGenerator
 public:
     AliGenSlowNucleons();
     AliGenSlowNucleons(Int_t npart);
-    AliGenSlowNucleons(const AliGenSlowNucleons &sn);
     virtual ~AliGenSlowNucleons();
     virtual void Init();
     virtual void FinishRun();
@@ -52,8 +51,6 @@ public:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q, Float_t &theta);
     Double_t Maxwell(Double_t m, Double_t p, Double_t t);
     void     Lorentz(Double_t m, Double_t beta, Float_t* q);
-    void Copy(TObject&) const;
-    AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
  protected:
     Float_t  fCMS;             // Center of mass energy
     Float_t  fMomentum;        // Target nucleus momentum
@@ -81,6 +78,11 @@ public:
     
     //
     AliSlowNucleonModel* fSlowNucleonModel; // The slow nucleon model
+
+ private:
+    AliGenSlowNucleons(const AliGenSlowNucleons &sn);
+    AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
+
     ClassDef(AliGenSlowNucleons,2) // Slow Nucleon Generator
 };
 #endif

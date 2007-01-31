@@ -12,7 +12,6 @@ class AliGenMUONCocktailpp : public AliGenCocktail
  public:
 
     AliGenMUONCocktailpp();
-    AliGenMUONCocktailpp(const AliGenMUONCocktailpp &cocktail); 
     virtual ~AliGenMUONCocktailpp();    
     virtual void Init();
     virtual void Generate();    
@@ -33,6 +32,9 @@ class AliGenMUONCocktailpp : public AliGenCocktail
 
     //
  private:
+    AliGenMUONCocktailpp(const AliGenMUONCocktailpp &cocktail); 
+    AliGenMUONCocktailpp & operator=(const AliGenMUONCocktailpp &cocktail); 
+
     Float_t fTotalRate;// Total rate of the full cocktail processes
     Int_t   fMuonMultiplicity; // Muon multiplicity for the primordial trigger
     Float_t fMuonPtCut;// Transverse momentum cut for muons

@@ -56,26 +56,7 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
 {
 // Constructor
 }
-//_________________________________________________________________________
-AliGenMUONCocktailpp::AliGenMUONCocktailpp(const AliGenMUONCocktailpp & cocktail):
-    AliGenCocktail(cocktail),
-    fTotalRate(0),
-    fMuonMultiplicity(0),
-    fMuonPtCut(0.),
-    fMuonThetaMinCut(0.),
-    fMuonThetaMaxCut(0.),
-    fNSucceded(0),
-    fNGenerated(0)
-{
-// Copy constructor
-  fTotalRate =0;
-  fNSucceded=0; 
-  fNGenerated=0;
-  fMuonMultiplicity=0;
-  fMuonPtCut=0.;
-  fMuonThetaMinCut=0.; 
-  fMuonThetaMaxCut=0.;
-}
+
 //_________________________________________________________________________
 AliGenMUONCocktailpp::~AliGenMUONCocktailpp()
 // Destructor

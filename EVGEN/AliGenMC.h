@@ -26,12 +26,10 @@ class AliGenMC : public AliGenerator
  public:
     AliGenMC();
     AliGenMC(Int_t npart);
-    AliGenMC(const AliGenMC &MC);
     virtual ~AliGenMC();
     virtual void Init();
     virtual void SetForceDecay(Decay_t decay = kAll) {fForceDecay = decay;}
-    AliGenMC & operator=(const AliGenMC & rhs);
-        virtual void SetCutOnChild(Int_t flag = 0) {fCutOnChild = flag;}
+    virtual void SetCutOnChild(Int_t flag = 0) {fCutOnChild = flag;}
     virtual void SetChildMomentumRange(Float_t pmin = 0, Float_t pmax = 1.e10)
 	{fChildPMin = pmin; fChildPMax = pmax;}
     virtual void SetChildPtRange(Float_t ptmin = 0, Float_t ptmax = 20.)
@@ -69,7 +67,7 @@ class AliGenMC : public AliGenerator
     // all kinematic selection cuts go here 
     Bool_t KinematicSelection(TParticle *particle, Int_t flag) const;
     Int_t  CheckPDGCode(Int_t pdgcode) const;
-    void Copy(TObject&) const;
+
  protected:
     TClonesArray* fParticles;   //!Particle  List
     TArrayI     fParentSelect;  //!Parent particles to be selected 
@@ -99,6 +97,10 @@ class AliGenMC : public AliGenerator
     AliGeometry * fGeometryAcceptance; // Geometry to which particles must be simulated
     Int_t       fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t       fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
+
+ private:
+    AliGenMC(const AliGenMC &MC);
+    AliGenMC & operator=(const AliGenMC & rhs);
     
     ClassDef(AliGenMC,5)       // AliGenerator implementation for generators using MC methods
 };

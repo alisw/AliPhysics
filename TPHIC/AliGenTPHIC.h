@@ -18,7 +18,6 @@ class AliGenTPHIC : public AliGenMC
 {
 public:
   AliGenTPHIC();
-  AliGenTPHIC(const AliGenTPHIC & gen);
   virtual ~AliGenTPHIC();
   void Generate();
   void Init();
@@ -55,8 +54,6 @@ public:
   Float_t GetXSectionCurrent     ();
   Float_t GetXSection            ();
   Float_t GetXSectionError       ();
- private:
-  void Copy(TObject&) const;
  protected:
   TPHICgen     *fTPHICgen;          //!generator TPHIC17
   AliPythia    *fPythia;            //!generator PYTHIA6
@@ -65,6 +62,11 @@ public:
   Int_t         fDebug;             //!debug level
   Int_t         fDebugEventFirst;   //!First event to debug
   Int_t         fDebugEventLast;    //!Last  event to debug
-ClassDef(AliGenTPHIC,1)     // Generator of 2-photon processes in ultra-peripheral collisions
+
+ private:
+  AliGenTPHIC(const AliGenTPHIC & gen);
+  AliGenTPHIC & operator=(const AliGenTPHIC & gen);
+
+  ClassDef(AliGenTPHIC,1)     // Generator of 2-photon processes in ultra-peripheral collisions
 };
 #endif

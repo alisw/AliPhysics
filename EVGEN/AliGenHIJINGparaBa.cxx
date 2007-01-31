@@ -177,15 +177,6 @@ AliGenHIJINGparaBa::AliGenHIJINGparaBa(Int_t npart)
     fTitle="HIJING Parametrisation Particle Generator with Baryons";
 }
 
-AliGenHIJINGparaBa::AliGenHIJINGparaBa(const AliGenHIJINGparaBa& para) : 
-    AliGenHIJINGpara(para),
-    fPtba(0),
-    fETAba(0)									
-{
-// Copy constructor
-    para.Copy(*this);
-}
-
 //_____________________________________________________________________________
 AliGenHIJINGparaBa::~AliGenHIJINGparaBa()
 {

@@ -21,8 +21,7 @@ public:
 
     AliGenFLUKAsource();
     AliGenFLUKAsource(Int_t npart);
-    AliGenFLUKAsource(const AliGenFLUKAsource &FLUKAsource);
-    virtual ~AliGenFLUKAsource();
+     virtual ~AliGenFLUKAsource();
     // Initialise 
     virtual void Init() {}
     // Initialise fluka data 
@@ -45,7 +44,6 @@ public:
     virtual void SetFraction(Float_t frac=1.){fFrac=frac;}
     // generate event
     virtual void Generate();
-    AliGenFLUKAsource & operator=(const AliGenFLUKAsource & rhs);
 
  protected:
 
@@ -80,7 +78,8 @@ public:
     Float_t         fAge;    // Time of flight
 
  private:
-    void Copy(TObject &arun) const;
+    AliGenFLUKAsource(const AliGenFLUKAsource &FLUKAsource);
+    AliGenFLUKAsource & operator=(const AliGenFLUKAsource & rhs);
 
     ClassDef(AliGenFLUKAsource,1) //Boundary source
 };
