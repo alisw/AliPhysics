@@ -56,7 +56,6 @@ class AliTagAnalysis : public TObject {
   TGridResult *ftagresult; //the results from the tag grid query     
   TString fTagDirName; //the location of the locally stored tags
   
-  static TChain *fgChain; //tag chain 
   TChain *fChain; //tag chain 
   
   //____________________________________________________//

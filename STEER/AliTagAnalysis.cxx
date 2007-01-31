@@ -43,8 +43,6 @@ class TTree;
 
 ClassImp(AliTagAnalysis)
 
-TChain *AliTagAnalysis::fgChain = 0;
-
 //___________________________________________________________________________
 AliTagAnalysis::AliTagAnalysis(): 
   TObject(),
@@ -67,10 +65,7 @@ Bool_t  AliTagAnalysis::AddTagsFile(const char *alienUrl) {
 
   Bool_t rv = kTRUE ;
 
-  if (! fgChain || ! fChain ) {
-    TChain *fgChain = new TChain("T");
-    fChain = fgChain;
-  }
+  if (! fChain) fChain = new TChain("T");
 
   TFile *f = TFile::Open(alienUrl,"READ");
   fChain->Add(alienUrl);
@@ -90,8 +85,7 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
   fTagDirName = dirname;
   TString fTagFilename;
   
-  TChain *fgChain = new TChain("T");
-  fChain = fgChain;
+  if (! fChain)  fChain = new TChain("T");
   
   const char * tagPattern = "tag.root";
   // Open the working directory
@@ -118,8 +112,7 @@ void AliTagAnalysis::ChainGridTags(TGridResult *res) {
   ftagresult = res;
   Int_t nEntries = ftagresult->GetEntries();
  
-  TChain *fgChain = new TChain("T");
-  fChain = fgChain;
+  if (! fChain)  fChain = new TChain("T");
 
   TString gridname = "alien://";
   TString alienUrl;
