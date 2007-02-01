@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/01/24 16:57:14  gustavo
+ * Calibratio file sources machines are now not hardcoded but retreived from shuttle
+ *
  * Revision 1.3  2006/12/20 10:53:28  gustavo
  * Change const char * by TString, change AliInfos per AliPreprocessor::Log or AliDebug
  *
@@ -172,7 +175,11 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
 	f.Close();
       }//while
     }//If list
-  
+  else {
+    Log("Sources not found for id AMPLITUDES");
+    return 0;
+  }
+
   AliCDBMetaData metaData;
   Int_t result = Store("Calib", "Data", &calibData, &metaData);
   
