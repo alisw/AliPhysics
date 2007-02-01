@@ -4,6 +4,7 @@
 #define ALIEVE_TPCLoader_H
 
 #include <Reve/RenderElement.h>
+#include <vector>
 
 class AliRawReaderRoot;
 

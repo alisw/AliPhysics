@@ -23,16 +23,17 @@
 // andreas.morsch@cern.ch
 //
 
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TGraph.h>
+#include <TH1F.h>
+#include <TMath.h>
+#include <TMultiGraph.h>
+
 #include "AliLhcProcessIBS.h"
 #include "AliLHC.h"
 #include "AliLhcIRegion.h"
 #include "AliLhcBeam.h"
-
-#include <TF1.h>
-#include <TMath.h>
-#include <TCanvas.h>
-#include <TGraph.h>
-#include <TMultiGraph.h>
 
 ClassImp(AliLhcProcessIBS)
 

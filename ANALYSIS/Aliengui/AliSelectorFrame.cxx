@@ -21,11 +21,12 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
-#include "TGFileDialog.h"
-#include "TGTextEntry.h"
-#include "TGLabel.h"
 
-#include "TObjString.h"
+#include <TGFileDialog.h>
+#include <TGLabel.h>
+#include <TGTextEntry.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 #include "AliTagAnalysisFrame.h"
 #include "AliAnalysisGUI.h"

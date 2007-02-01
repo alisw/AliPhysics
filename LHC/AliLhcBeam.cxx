@@ -23,12 +23,14 @@
 // andreas.morsch@cern.ch
 //
 
-#include "AliLhcBeam.h"
-#include "AliLHC.h"
-#include <TMath.h>
 #include <TCanvas.h>
 #include <TGraph.h>
+#include <TH1F.h>
+#include <TMath.h>
 #include <TMultiGraph.h>
+
+#include "AliLhcBeam.h"
+#include "AliLHC.h"
 
 ClassImp(AliLhcBeam)
 

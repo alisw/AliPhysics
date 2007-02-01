@@ -33,6 +33,7 @@
 #include "ZTrans.h"
 #include "Reve.h"
 #include <TMath.h>
+#include <TClass.h>
 
 #include <ctype.h>
 

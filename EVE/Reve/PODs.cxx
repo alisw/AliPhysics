@@ -1,5 +1,7 @@
 // $Header$
 
+#include <TClass.h>
+
 #include "PODs.h"
 
 using namespace Reve;

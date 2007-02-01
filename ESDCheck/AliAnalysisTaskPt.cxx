@@ -12,16 +12,20 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 //_________________________________________________________________________
 // A test analysis task to check the pt of tracks distribution in simulated data
 //
 //*-- Panos
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TChain.h>
-#include <TH1.h>
-#include <TFile.h>
 #include <TCanvas.h>
+#include <TChain.h>
+#include <TFile.h>
+#include <TH1.h>
+#include <TROOT.h>
 #include <TSystem.h>
 
 #include "AliAnalysisTaskPt.h"

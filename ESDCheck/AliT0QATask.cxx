@@ -12,17 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 //______________________________________________________________________________
 // An analysis task to check the T0 data in simulated data
 //
 //*-- Alla Maevskaya
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TChain.h>
-#include <TH1F.h>
 #include <TCanvas.h>
-#include <TLegend.h> 
+#include <TChain.h>
 #include <TFile.h> 
+#include <TH1F.h>
+#include <TLegend.h> 
+#include <TROOT.h>
 
 #include "AliT0QATask.h" 
 #include "AliESD.h" 

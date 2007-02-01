@@ -12,17 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 //_________________________________________________________________________
 // An analysis task to check the FMD data in simulated data
 //
 //*-- Hans Hjersing Dalsgaard 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TChain.h>
-#include <TFile.h> 
 #include <TCanvas.h> 
-#include <TH1D.h> 
+#include <TChain.h>
 #include <TF1.h> 
+#include <TFile.h> 
+#include <TH1D.h> 
+#include <TROOT.h>
 
 #include "AliFMDQATask.h" 
 #include "AliESD.h" 

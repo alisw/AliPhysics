@@ -12,16 +12,20 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 // An analysis task to check the MUON data in simulated data
 //
 //*-- Ivana Hrivnacova
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
+#include <TCanvas.h>
 #include <TChain.h>
 #include <TFile.h> 
 #include <TH1F.h>
-#include <TCanvas.h>
+#include <TROOT.h>
 
 #include "AliMUONQATask.h" 
 #include "AliESD.h" 

@@ -2,6 +2,7 @@
 
 #include "RGValuators.h"
 
+#include <TMath.h>
 #include <TGLabel.h>
 #include <TGSlider.h>
 #include <TGDoubleSlider.h>

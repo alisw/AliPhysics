@@ -12,20 +12,24 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 //_________________________________________________________________________
 // An analysis task to check the HMPID data in simulated data
 //
 //*-- Annalisa Mastroserio
 //////////////////////////////////////////////////////////////////////////////
 
+#include <TCanvas.h>
 #include <TChain.h>
+#include <TF1.h>
+#include <TFile.h> 
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TF1.h>
-#include <TCanvas.h>
 #include <TLegend.h> 
+#include <TROOT.h>
 #include <TVector3.h> 
-#include <TFile.h> 
 
 #include "AliHMPIDQATask.h" 
 #include "AliESD.h" 

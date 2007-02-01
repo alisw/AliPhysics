@@ -3,9 +3,12 @@
 #ifndef REVE_RGTopFrame_H
 #define REVE_RGTopFrame_H
 
+#include <TClass.h>
 #include <TGFrame.h>
-#include <TGeoManager.h>
 #include <TGStatusBar.h>
+#include <TGeoManager.h>
+#include <TROOT.h>
+#include <TVirtualPad.h>
 
 #include <map>
 

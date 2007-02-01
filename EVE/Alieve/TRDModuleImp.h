@@ -10,6 +10,8 @@
 // by A.Bercuci (A.Bercuci@gsi.de)   Fri Oct 27 2006
 /////////////////////////////////////////////////////////////////////////
 
+#include <vector>
+
 #ifndef REVE_RenderElement_H
 #include <Reve/RenderElement.h>
 #endif

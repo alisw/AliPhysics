@@ -4,6 +4,7 @@
 
 #include <TColor.h>
 #include <TStyle.h>
+#include <TMath.h>
 
 using namespace Reve;
 

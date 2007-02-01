@@ -28,6 +28,7 @@
 #include <TGTextEntry.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TROOT.h>
 #include <TSystem.h>
 
 #include "AliAnalysisGUI.h"

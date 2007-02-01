@@ -68,9 +68,9 @@
 //
 //==============================================================================
 
-#include "Riostream.h"
-
-#include "TClass.h"
+#include <Riostream.h>
+#include <TClass.h>
+#include <TDirectory.h>
 
 //#include "AliLog.h"
 #include "AliAnalysisTask.h"

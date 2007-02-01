@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 //_________________________________________________________________________
 // An analysis task to check the TRD data in simulated data
 //
@@ -27,16 +30,16 @@
 // trdz = kTRDout && !kTRDref
 // 
 
+#include <TCanvas.h>
+#include <TChain.h>
+#include <TFile.h>
+#include <TGaxis.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TROOT.h>
+#include <TStyle.h>
+
 #include "AliTRDQATask.h"
-
-#include "TChain.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TFile.h"
-#include "TStyle.h"
-#include "TGaxis.h"
-#include "TCanvas.h"
-
 #include "AliESD.h"
 #include "AliLog.h"
 

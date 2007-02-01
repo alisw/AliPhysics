@@ -13,19 +13,23 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
+
 //_________________________________________________________________________
 // An analysis task to check the PMD data in simulated data
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
 
+#include <TCanvas.h>
 #include <TChain.h>
+#include <TFile.h> 
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TCanvas.h>
 #include <TLine.h> 
+#include <TROOT.h>
 #include <TStyle.h> 
-#include <TFile.h> 
 
 #include "AliPMDQATask.h" 
 #include "AliPMDUtility.h" 
