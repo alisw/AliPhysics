@@ -25,6 +25,12 @@
 #include <errno.h>
 #include <Riostream.h>
 
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,15,0)
+#include <TBufferFile.h>
+#else
+#include <TBuffer.h>
+#endif
+
 #include <TSystem.h>
 #include <TKey.h>
 
@@ -328,7 +334,11 @@ Int_t AliRawDB::GetTotalSize()
     }
     total += skey;
     if (fTree->GetZipBytes() > 0) total += fTree->GetTotBytes();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,15,0)
+    TBufferFile b(TBuffer::kWrite,10000);
+#else
     TBuffer b(TBuffer::kWrite,10000);
+#endif
     TTree::Class()->WriteBuffer(b,fTree);
     total += b.Length();
   }
@@ -343,7 +353,11 @@ Int_t AliRawDB::GetTotalSize()
       }
       total += skey;
       if (fESDTree->GetZipBytes() > 0) total += fESDTree->GetTotBytes();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,15,0)
+      TBufferFile b(TBuffer::kWrite,10000);
+#else
       TBuffer b(TBuffer::kWrite,10000);
+#endif
       TTree::Class()->WriteBuffer(b,fESDTree);
       total += b.Length();
     }

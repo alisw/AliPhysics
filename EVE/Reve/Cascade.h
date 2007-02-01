@@ -24,13 +24,16 @@ class CascadeList;
 
 class Cascade : public RenderElement, public TPolyMarker3D
 {
+public:
+  typedef std::vector<Reve::PathMark*>           vpPathMark_t;
+
+private:
   friend class CascadeList;
 
   Cascade(const Cascade&);            // Not implemented
   Cascade& operator=(const Cascade&); // Not implemented
 
 protected:
-  typedef std::vector<Reve::PathMark*>           vpPathMark_t;
   typedef std::vector<Reve::PathMark*>::iterator vpPathMark_i;
 
   Reve::Vector fV_neg;       // Vertex of negative track

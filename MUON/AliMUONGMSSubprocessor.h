@@ -32,6 +32,7 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
     virtual UInt_t Process(TMap* /*dcsAliasMap*/);
 
   private:
+    AliMUONGMSSubprocessor(const AliMUONGMSSubprocessor&); // Not implemented
     // static data members
     static const Int_t    fgkSystem;           ///< The data system
     static const TString  fgkDataId;           ///< The data Id
