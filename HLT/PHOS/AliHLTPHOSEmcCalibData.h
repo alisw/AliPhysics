@@ -28,10 +28,10 @@ class AliHLTPHOSEmcCalibData: public TNamed {
   void SetADCpedestalEmcMeasured(Int_t module, Int_t column, Int_t row, Int_t gain, Float_t value);
   void MakeADCpedestalCorrectionTable(); 
  protected:
-  Float_t  fADCchannelEnergy[PHOS_MODULES][PHOS_COLUMNS][PHOS_ROWS][PHOS_GAINS] ;  /**<width of one EMC ADC channel in GeV*/
-  Float_t  fADCpedestalEmcMeasured[PHOS_MODULES][PHOS_COLUMNS][PHOS_ROWS][PHOS_GAINS] ; /**<value of the EMC ADC pedestal measured from calibration run*/
-  Int_t  fADCpedestalAltroReg[PHOS_MODULES][PHOS_COLUMNS][PHOS_ROWS][PHOS_GAINS] ; /**<value of the EMC ADC pedestal subtraction values stored in the ALTRO registers*/
-  Float_t  fADCpedestalCorrectionTable[PHOS_MODULES][PHOS_COLUMNS][PHOS_ROWS][PHOS_GAINS] ; /**<value of the EMC ADC pedestal values to be subtracted form the decoed cahnnel data (= fADCpedestalEmcMeasured - fADCpedestalAltroReg)*/
+  Float_t  fADCchannelEnergy[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ;  /**<width of one EMC ADC channel in GeV*/
+  Float_t  fADCpedestalEmcMeasured[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ; /**<value of the EMC ADC pedestal measured from calibration run*/
+  Int_t  fADCpedestalAltroReg[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ; /**<value of the EMC ADC pedestal subtraction values stored in the ALTRO registers*/
+  Float_t  fADCpedestalCorrectionTable[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ; /**<value of the EMC ADC pedestal values to be subtracted form the decoed cahnnel data (= fADCpedestalEmcMeasured - fADCpedestalAltroReg)*/
 
   ClassDef(AliHLTPHOSEmcCalibData,1)    // PHOS EMC calibration data
 };

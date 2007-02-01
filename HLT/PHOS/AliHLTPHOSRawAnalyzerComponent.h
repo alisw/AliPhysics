@@ -13,6 +13,7 @@
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 {
  public:
+
   AliHLTPHOSRawAnalyzerComponent();
   ~AliHLTPHOSRawAnalyzerComponent();
   AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & );

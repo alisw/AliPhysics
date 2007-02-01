@@ -40,9 +40,9 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
 			          AliHLTPHOSDefinitions.h \
 				  AliHLTPHOSModuleMergerComponent.h \
-				  AliHLTPHOSRcuCellEnergyData.h \
-				  AliHLTPHOSModuleCellEnergyData.h
-
+				  AliHLTPHOSRcuCellEnergyDataStruct.h \
+				  AliHLTPHOSModuleCellEnergyDataStruct.h\
+#				  AliHLTPHOSValidCellDataStruct.h
 pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSCommonDefs.h
 

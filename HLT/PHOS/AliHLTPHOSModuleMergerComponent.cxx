@@ -19,7 +19,7 @@
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
 #include <cstdlib>
-#include "AliHLTPHOSRcuCellEnergyData.h"
+#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 
 
 const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
@@ -94,7 +94,7 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
 {
   unsigned long ndx;
   const AliHLTComponentBlockData* iter = NULL;   
-  AliHLTPHOSRcuCellEnergyData *cellDataPtr;
+  AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr;
 
   Reset();
 
@@ -105,7 +105,7 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
       int tmpRcuZ = 0;
 
       iter = blocks+ndx;
-      AliHLTPHOSRcuCellEnergyData *cellDataPtr = (AliHLTPHOSRcuCellEnergyData*)( iter->fPtr);
+      AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)( iter->fPtr);
 
       tmpModuleID = cellDataPtr->fModuleID;
       tmpRcuX     = cellDataPtr->fRcuX ;
