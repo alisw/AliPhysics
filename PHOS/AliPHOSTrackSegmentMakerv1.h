@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.48  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.47  2005/11/17 12:35:27  hristov
  * Use references instead of objects. Avoid to create objects when they are not really needed
  *
@@ -32,6 +35,7 @@
 
 class AliPHOSEmcRecPoint ;
 class AliPHOSCpvRecPoint ;
+class TClonesArray;
 
 class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 
