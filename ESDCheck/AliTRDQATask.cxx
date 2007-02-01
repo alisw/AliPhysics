@@ -172,7 +172,7 @@ void AliTRDQATask::Init(const Option_t *)
 
   
   // create output container
-  fOutputContainer = new TObjArray(80); 
+  fOutputContainer = new TObjArray(150); 
   
   // register histograms to the container  
   TIter next(gDirectory->GetList());
