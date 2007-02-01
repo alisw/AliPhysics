@@ -35,7 +35,7 @@ ELIBSCPP:=$(filter-out EPEMGEN,$(ELIBSCPP))
 PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
 # On Mac OS X gcc we need f2c
 ELIBS+=f2c
-ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libf2c.*'))
+ELIBSDIR+=$(FINK_ROOT)/lib
 endif
 
 # The two variables below are used for the creation of profile target.

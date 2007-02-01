@@ -32,6 +32,7 @@
 #include <TCanvas.h>
 #include <TString.h>
 #include <TF1.h>
+#include <TMath.h>
 
 ClassImp(AliMultiplicityCorrection)
 

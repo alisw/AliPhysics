@@ -12,6 +12,8 @@ EINCLUDE := $(DIMDIR)/dim
 ELIBS := dim
 ELIBSDIR := $(DIMDIR)/$(ODIR)
 
+EINCLUDE += $(ALIEN_ROOT)/api/include
+
 DHDR= SHUTTLELinkDef.h 
 
 EXPORT:=
