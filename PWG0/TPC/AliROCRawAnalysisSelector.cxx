@@ -30,6 +30,7 @@
 #include <TTree.h>
 #include <TCanvas.h>
 #include <TTimeStamp.h>
+#include <TROOT.h>
 
 #include <TPC/AliTPCRawHistograms.h>
 

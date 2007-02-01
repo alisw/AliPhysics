@@ -17,6 +17,7 @@
 #ifndef AliRsnANALYSIS_H
 #define AliRsnANALYSIS_H
 
+#include <Htypes.h>
 #include <TNamed.h>
 
 #include "AliPID.h"
