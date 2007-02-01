@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.106  2006/11/14 17:11:15  hristov
+ * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
+ *
  * Revision 1.105  2006/09/13 07:31:01  kharlov
  * Effective C++ corrections (T.Pocheptsov)
  *
@@ -257,8 +260,8 @@ void AliPHOSv1::StepManager(void)
 	Float_t x2 = cpvDigit2->GetXpad() ;
 	Float_t z2 = cpvDigit2->GetYpad() ;
 	if (x1==x2 && z1==z2) {
-	  Float_t qsum = cpvDigit1->GetQpad() + cpvDigit2->GetQpad() ;
-	  cpvDigit2->SetQpad(qsum) ;
+	  Float_t qsumpad = cpvDigit1->GetQpad() + cpvDigit2->GetQpad() ;
+	  cpvDigit2->SetQpad(qsumpad) ;
 	  cpvDigits->RemoveAt(idigit) ;
 	}
       }

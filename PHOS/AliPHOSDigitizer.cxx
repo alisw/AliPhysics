@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.93  2006/10/17 13:17:01  kharlov
+ * Replace AliInfo by AliDebug
+ *
  * Revision 1.92  2006/08/28 10:01:56  kharlov
  * Effective C++ warnings fixed (Timur Pocheptsov)
  *
@@ -298,13 +301,13 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   for(i = 1 ; i < fInput ; i++){
     TString tempo(fEventNames[i]) ; 
     tempo += i ;
-    AliPHOSGetter * gime = AliPHOSGetter::Instance(fInputFileNames[i], tempo) ;
+    AliPHOSGetter * gime1 = AliPHOSGetter::Instance(fInputFileNames[i], tempo) ;
     if (fManager) 
       ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
     AliInfo(Form("Adding event %d from input stream %d %s %s", 
 		 ReadEvent, i, fInputFileNames[i].Data(), tempo.Data())) ; 
-    gime->Event(ReadEvent,"S");
-    sdigArray->AddAt(gime->SDigits(), i) ;
+    gime1->Event(ReadEvent,"S");
+    sdigArray->AddAt(gime1->SDigits(), i) ;
   }
 
   //Find the first crystal with signal

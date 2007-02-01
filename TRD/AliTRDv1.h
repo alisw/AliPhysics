@@ -47,7 +47,7 @@ class AliTRDv1 : public AliTRD {
           void     SelectStepManager(Int_t t);
 
           void     SetStepSize(Double_t s)    { fStepSize = s; }
-          void     SetTR(Bool_t kTRUE)        { fTRon = kTRUE; }
+          void     SetTR(Bool_t)              { fTRon = kTRUE; }
 
           Bool_t   GetTR() const              { return fTRon;  }
   AliTRDsim       *GetTRDsim() const          { return fTR;    }

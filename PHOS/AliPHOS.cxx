@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.107  2007/01/29 16:29:37  kharlov
+ * Digits2Raw(): special workaround for digits with time out of range
+ *
  * Revision 1.106  2007/01/17 17:28:56  kharlov
  * Extract ALTRO sample generation to a separate class AliPHOSPulseGenerator
  *
@@ -536,7 +539,7 @@ void AliPHOS::Digits2Raw()
     // calculate the time response function
     } else {
       Double_t energy = 0 ;
-      Int_t   module = relId[0];
+      module = relId[0];
       if (digit->GetId() <= geom->GetNModules() * geom->GetNCristalsInModule()) {
 	energy=digit->GetEnergy();
 	if(energy>eMax) {eMax=energy; modMax=module; colMax=col; rowMax=row;}

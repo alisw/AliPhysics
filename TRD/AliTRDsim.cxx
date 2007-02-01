@@ -428,7 +428,7 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
   Double_t csi2;
   Double_t rho1;
   Double_t rho2;
-  Double_t fSigma;
+  Double_t sigma;
   Double_t sum;
   Double_t nEqu;
   Double_t thetaN;
@@ -440,7 +440,7 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
     energykeV = fSpectrum->GetBinCenter(iBin);
     energyeV  = energykeV * 1.0e3;
 
-    fSigma    = Sigma(energykeV);
+    sigma    = Sigma(energykeV);
 
     csi1      = fFoilOmega / energyeV;
     csi2      = fGapOmega  / energyeV;
@@ -462,7 +462,7 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
     }
 
     // Equivalent number of foils
-    nEqu = (1.0 - TMath::Exp(-foils * fSigma)) / (1.0 - TMath::Exp(-fSigma));
+    nEqu = (1.0 - TMath::Exp(-foils * sigma)) / (1.0 - TMath::Exp(-sigma));
 
     // dN / domega
     fSpectrum->SetBinContent(iBin,4.0 * kAlpha * nEqu * sum /  (energykeV * (1.0 + tau)));

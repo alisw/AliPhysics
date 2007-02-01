@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.14  2007/01/23 10:27:37  alibrary
+ * Adding include files where needed for latest ROOT
+ *
  * Revision 1.13  2006/09/07 18:31:08  kharlov
  * Effective c++ corrections (T.Pocheptsov)
  *
@@ -551,7 +554,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
       Info("ProcessRawFile", "event= %d written", fEvent) ;
  
     // Read next record 
-    UInt_t nb = nwphr *sizeof(UInt_t);
+    nb = nwphr *sizeof(UInt_t);
     n = fread( recBuf, nb,1,dataFile);
     if (n < 0 ){
       perror(fInName);
