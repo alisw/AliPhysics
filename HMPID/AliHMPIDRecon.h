@@ -40,10 +40,6 @@ public :
   Double_t SigGeom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknown photon origin
   Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
   Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma
-  
-  static void  Display  (                                                                   );    //event display  
-   
-  
 protected:
   static const Double_t fgkRadThick;                      //radiator thickness
   static const Double_t fgkWinThick;                      //window thickness
