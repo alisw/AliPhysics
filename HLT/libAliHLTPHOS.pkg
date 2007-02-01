@@ -27,8 +27,8 @@ HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
 	PHOS/AliHLTPHOSDefinitions.h \
 	PHOS/AliHLTPHOSModuleMergerComponent.h \
-	PHOS/AliHLTPHOSRcuCellEnergyData.h\
-	PHOS/AliHLTPHOSModuleCellEnergyData.h
+	PHOS/AliHLTPHOSRcuCellEnergyDataStruct.h \
+	PHOS/AliHLTPHOSValidCellDataStruct.h
 
 DHDR=   PHOS/AliHLTPHOSLinkDef.h
  					    
