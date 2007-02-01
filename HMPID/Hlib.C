@@ -11,4 +11,6 @@ void Hlib()
   gSystem->Load("libHMPIDbase.so");
   gSystem->Load("libHMPIDsim.so");
   gSystem->Load("libHMPIDrec.so");
+  
+  gROOT->LoadMacro("Hmenu.C");
 }
