@@ -24,6 +24,7 @@
 // Author: Andrei Gheata 10/07/2003
 
 #include "Riostream.h"
+#include "TList.h"
 #include "TCallf77.h"
 #include "TFluka.h"
 #include "TFlukaMCGeometry.h"
