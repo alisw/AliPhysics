@@ -1,7 +1,11 @@
-SRCS= FLOW/AliFlowEvent.cxx FLOW/AliFlowTrack.cxx \
-      FLOW/AliFlowConstants.cxx FLOW/AliFlowV0.cxx\
+SRCS= FLOW/AliFlowEvent.cxx \
+      FLOW/AliFlowTrack.cxx \
+      FLOW/AliFlowConstants.cxx \
+      FLOW/AliFlowV0.cxx \
       FLOW/AliFlowSelection.cxx \
-      FLOW/AliFlowAnalysisMaker.cxx
+      FLOW/AliFlowAnalyser.cxx \
+      FLOW/AliFlowMaker.cxx \
+      FLOW/AliFlowWeighter.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 
@@ -9,5 +13,5 @@ DHDR:=PWG2flowLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PYTHIA6
+EINCLUDE:= 
 

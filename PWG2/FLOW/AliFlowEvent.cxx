@@ -125,14 +125,6 @@ Double_t AliFlowEvent::PhiWeightRaw(Int_t selN, Int_t harN, AliFlowTrack* pFlowT
   else  				{ phiWgt = (Double_t)fPhiWgtCross[selN][harN][n] ; }
  } 
 
- // ... weight can be implemented as well for ITS , TRD , PHOS , etc.
- // 
- // if(...) 
- // {
- //  n = (int)((phi/2*TMath::Pi())*Flow::nPhiBins...) ;
- //  ...
- // }
-
  return phiWgt ;
 }
 //-------------------------------------------------------------
@@ -162,7 +154,7 @@ Double_t AliFlowEvent::PhiWeight(Int_t selN, Int_t harN, AliFlowTrack* pFlowTrac
  // (it simply rerurns PhiWeightRaw() * Weight()). If fNoWgt = kTRUE, returns +/-1 ,
  // basing on Sign(eta), for odd harmonics .
  
- if(NoWgt()) // no weights (but +/- according to eta)
+ if(fNoWgt) // no weights (but +/- according to eta)
  { 
   bool oddHar = (harN+1) % 2 ;
   if(oddHar) { return TMath::Sign((Double_t)1.,(Double_t)pFlowTrack->Eta()) ; }

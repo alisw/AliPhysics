@@ -16,8 +16,8 @@
 
 ClassImp(Flow)
   
-  Float_t  Flow::fEtaMin    = -2.5 ;
-  Float_t  Flow::fEtaMax    =  2.5 ;
+  Float_t  Flow::fEtaMin    = -2. ;
+  Float_t  Flow::fEtaMax    =  2. ;
   Float_t  Flow::fPtMin     =  0. ;
   Float_t  Flow::fPtMax     = 10. ;
   Float_t  Flow::fPtMaxPart =  5. ;

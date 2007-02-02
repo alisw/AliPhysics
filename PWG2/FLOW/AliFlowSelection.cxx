@@ -32,8 +32,8 @@
 using namespace std; //required for resolving the 'cout' symbol
 
 // - 1st selection (both harmonic) is Disabled ! - the 2 following are the same (basic cuts, no P.id)
-Float_t  AliFlowSelection::fEtaTpcCuts[2][Flow::nHars][Flow::nSels] = {{{1.0,0.0},{1.0,0.0}},{{0.0,2.1},{0.0,2.1}}} ;
-Float_t  AliFlowSelection::fPtTpcCuts[2][Flow::nHars][Flow::nSels]  = {{{1.0,0.1},{1.0,0.1}},{{0.0,9.0},{0.0,9.0}}} ;
+Float_t  AliFlowSelection::fEtaTpcCuts[2][Flow::nHars][Flow::nSels] = {{{1.0,0.0},{1.0,0.0}},{{0.0,1.1},{0.0,1.1}}} ;
+Float_t  AliFlowSelection::fPtTpcCuts[2][Flow::nHars][Flow::nSels]  = {{{1.0,0.1},{1.0,0.1}},{{0.0,10.0},{0.0,10.0}}} ;
 Float_t  AliFlowSelection::fDcaGlobalCuts[2] 	 = { 0. , 1. } ;
 Char_t   AliFlowSelection::fPid[10]              = { '\0' } ;
 Bool_t   AliFlowSelection::fConstrainable        = kTRUE ;
@@ -45,8 +45,6 @@ AliFlowSelection::AliFlowSelection()
 {
  // Default constructor: when initialized all selection cuts are disabled (lo>hi).
 
- fJustLoopConstrainable = kFALSE ;  	// = kTRUE
- // -
  fCent		       = -1 ; 
  fRun		       = -1 ; 
  // -
@@ -95,6 +93,8 @@ AliFlowSelection::AliFlowSelection()
  fV0LenghtOverSigma[1] = 0 ;  
  fV0DcaCross[0]        = 1 ;  
  fV0DcaCross[1]        = 0 ;  
+ fV0Mass[0]	       = 1 ;
+ fV0Mass[1]	       = 0 ;
  // -
  fPtBinsPart 	       = Flow::nPtBinsPart ;  
  // -		        
@@ -465,12 +465,6 @@ void AliFlowSelection::SetSubevent(const Int_t& subN)
  else { fSubevent = subN; } 
 }
 //-----------------------------------------------------------------------
-Float_t AliFlowSelection::PtMaxPart() const			       
-{ 
- if(fPtPart[1]>fPtPart[0]) { return fPtPart[1] ; } 
- else { return 0. ; } 
-}
-//-----------------------------------------------------------------------
 void AliFlowSelection::SetEtaCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN) 
 { 
  fEtaTpcCuts[0][harN][selN] = lo ; 
@@ -483,67 +477,31 @@ void AliFlowSelection::SetPtCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN)
  fPtTpcCuts[1][harN][selN] = hi ; 
 }
 //-----------------------------------------------------------------------
-void AliFlowSelection::SetV0SideBands() 
-{  
- Float_t massInterval = fV0Mass[1] - fV0Mass[0] ;
- SetV0SideBands(TMath::Abs(massInterval/2)) ; 
-}			
-//-----------------------------------------------------------------------
-void AliFlowSelection::SetV0SideBands(Float_t sb)           	       
+void AliFlowSelection::SetDcaGlobalCut(Float_t lo, Float_t hi)      
 { 
- fV0SideBand = sb ; 
-}			
+ fDcaGlobalCuts[0] = lo ; 
+ fDcaGlobalCuts[1] = hi ; 
+}
 //-----------------------------------------------------------------------
-void    AliFlowSelection::SetCentralityCut(Int_t cent) 		       { fCent = cent ; }
-void    AliFlowSelection::SetRunIdCut(Int_t run)  		       { fRun = run ; }
-void 	AliFlowSelection::SetDcaGlobalCut(Float_t lo, Float_t hi)      { fDcaGlobalCuts[0] = lo ; fDcaGlobalCuts[1] = hi ; }
-void 	AliFlowSelection::SetPidCut(const Char_t* pid)  	       { strncpy(fPid, pid, 9) ; fPid[9] = '\0' ; }
-void 	AliFlowSelection::SetConstrainCut(Bool_t tf)		       { fConstrainable = tf ; }
-void 	AliFlowSelection::SetNhitsCut(Int_t hits,Int_t selN)	       { fTPChits[selN] = hits; }
-void	AliFlowSelection::SetPidPart(const Char_t* pid) 	       { strncpy(fPidPart, pid, 9); fPidPart[9] = '\0'; }
-void	AliFlowSelection::SetPidProbPart(Float_t lo, Float_t hi)       { fPidProbPart[0] = lo ; fPidProbPart[1] = hi; }
-void	AliFlowSelection::SetPtPart(Float_t lo, Float_t hi)	       { fPtPart[0] = lo; fPtPart[1] = hi; }
-void	AliFlowSelection::SetPtBinsPart(Int_t bins)		       { fPtBinsPart = bins; }
-void	AliFlowSelection::SetPPart(Float_t lo, Float_t hi)	       { fPPart[0] = lo; fPPart[1] = hi; }
-void	AliFlowSelection::SetEtaPart(Float_t lo, Float_t hi)	       { fEtaPart[0] = lo; fEtaPart[1] = hi; }
-void    AliFlowSelection::SetEtaAbsPart(Float_t lo, Float_t hi)        { fEtaAbsPart[0] = TMath::Abs(lo); fEtaAbsPart[1] = TMath::Abs(hi); }
-void	AliFlowSelection::SetYPart(Float_t lo, Float_t hi)	       { fYPart[0] = lo; fYPart[1] = hi; }
-void	AliFlowSelection::SetFitPtsPart(Int_t lo, Int_t hi)	       { fFitPtsPart[0] = lo; fFitPtsPart[1] = hi; }
-void	AliFlowSelection::SetDedxPtsPart(Int_t lo, Int_t hi)	       { fDedxPtsPart[0] = lo; fDedxPtsPart[1] = hi; }
-void	AliFlowSelection::SetFitOverMaxPtsPart(Float_t lo, Float_t hi) { fFitOverMaxPtsPart[0] = lo; fFitOverMaxPtsPart[1] = hi; }
-void	AliFlowSelection::SetChiSqPart(Float_t lo, Float_t hi)         { fChiSqPart[0] = lo; fChiSqPart[1] = hi; }
-void	AliFlowSelection::SetDcaGlobalPart(Float_t lo, Float_t hi)     { fDcaGlobalPart[0] = lo; fDcaGlobalPart[1] = hi; }
-void    AliFlowSelection::SetConstrainablePart(Bool_t constr)          { fConstrainablePart = constr ; }
-void	AliFlowSelection::SetV0Pid(const Char_t* pid)  	       	       { strncpy(fV0Pid, pid, 9) ; fV0Pid[9] = '\0' ; }			
-void    AliFlowSelection::SetV0Mass(Float_t lo, Float_t hi)            { fV0Mass[0] = lo ; fV0Mass[1] = hi; }
-void	AliFlowSelection::SetV0Pt(Float_t lo, Float_t hi)              { fV0Pt[0] = lo ; fV0Pt[1] = hi; }
-void	AliFlowSelection::SetV0P(Float_t lo, Float_t hi)               { fV0P[0] = lo ; fV0P[1] = hi; }
-void	AliFlowSelection::SetV0Eta(Float_t lo, Float_t hi)             { fV0Eta[0] = lo ; fV0Eta[1] = hi; }
-void	AliFlowSelection::SetV0EtaAbs(Float_t lo, Float_t hi)          { fV0EtaAbs[0] = lo ; fV0EtaAbs[1] = hi; }
-void	AliFlowSelection::SetV0Y(Float_t lo, Float_t hi)               { fV0Y[0] = lo ; fV0Y[1] = hi; }
-void	AliFlowSelection::SetV0ChiSqPart(Float_t lo, Float_t hi)       { fV0ChiSq[0] = lo ; fV0ChiSq[1] = hi; }
-void	AliFlowSelection::SetV0Lenght(Float_t lo, Float_t hi)          { fV0Lenght[0] = lo ; fV0Lenght[1] = hi; }
-void	AliFlowSelection::SetV0DcaCross(Float_t lo, Float_t hi)        { fV0DcaCross[0] = lo ; fV0DcaCross[1] = hi; }
-void	AliFlowSelection::SetV0LenghtOverSigma(Float_t lo, Float_t hi) { fV0LenghtOverSigma[0] = lo ; fV0LenghtOverSigma[1] = hi; }
+void AliFlowSelection::SetPidCut(const Char_t* pid)  	       
+{ 
+ strncpy(fPid, pid, 9) ; 
+ fPid[9] = '\0' ; 
+}
 //-----------------------------------------------------------------------
-Char_t* AliFlowSelection::PidPart()	 			       { return fPidPart; }
-Int_t	AliFlowSelection::PtBinsPart() const			       { return fPtBinsPart; }
-Int_t	AliFlowSelection::Sel() const				       { return fSelection; }
-Int_t	AliFlowSelection::Har() const				       { return fHarmonic; }
-Int_t	AliFlowSelection::Sub() const				       { return fSubevent; }
-Float_t AliFlowSelection::EtaCutLo(Int_t harN, Int_t selN) const       { return fEtaTpcCuts[0][harN][selN] ; }
-Float_t AliFlowSelection::EtaCutHi(Int_t harN, Int_t selN) const       { return fEtaTpcCuts[1][harN][selN] ; }
-Float_t AliFlowSelection::PtCutLo(Int_t harN, Int_t selN) const        { return fPtTpcCuts[0][harN][selN] ; }
-Float_t AliFlowSelection::PtCutHi(Int_t harN, Int_t selN) const        { return fPtTpcCuts[1][harN][selN] ; }
-Char_t* AliFlowSelection::Pid() const			               { return fPid; }
-Float_t AliFlowSelection::DcaGlobalCutLo() const  	               { return fDcaGlobalCuts[0] ; }
-Float_t AliFlowSelection::DcaGlobalCutHi() const  	               { return fDcaGlobalCuts[1] ; }
-Bool_t  AliFlowSelection::ConstrainCut() const		   	       { return fConstrainable ; }
-Int_t   AliFlowSelection::NhitsCut(Int_t selN) const		       { return fTPChits[selN] ; }
+void AliFlowSelection::SetConstrainCut(Bool_t tf) 
+{ 
+ fConstrainable = tf ; 
+}
 //-----------------------------------------------------------------------
-Int_t   AliFlowSelection::CentralityCut() const 		       { return fCent ; }
-Int_t   AliFlowSelection::RunIdCut() const 		       	       { return fRun ; }
+void AliFlowSelection::SetNhitsCut(Int_t hits,Int_t selN)
+{ 
+ fTPChits[selN] = hits; 
+}
 //-----------------------------------------------------------------------
-void    AliFlowSelection::SetJustLoopConstrainable()		       { fJustLoopConstrainable = kTRUE ; }
-Bool_t  AliFlowSelection::JustLoopConstrainable() const		       { return fJustLoopConstrainable ; }
+Float_t AliFlowSelection::PtMaxPart() const			       
+{ 
+ if(fPtPart[1]>fPtPart[0]) { return fPtPart[1] ; } 
+ else { return 0. ; } 
+}
 //-----------------------------------------------------------------------
