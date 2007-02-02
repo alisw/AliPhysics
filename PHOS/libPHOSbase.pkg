@@ -14,7 +14,8 @@ SRCS          =  AliPHOS.cxx \
                  AliPHOSCpvCalibData.cxx \
                  AliPHOSEmcCalibData.cxx \
 		 AliPHOSPulseGenerator.cxx \
-		 AliPHOSRawDecoder.cxx
+		 AliPHOSRawDecoder.cxx \
+		 AliPHOSRawDigiProducer.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

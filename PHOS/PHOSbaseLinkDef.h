@@ -28,5 +28,6 @@
 #pragma link C++ class AliPHOSEmcCalibData+;
 #pragma link C++ class AliPHOSPulseGenerator+;
 #pragma link C++ class AliPHOSRawDecoder+;
+#pragma link C++ class AliPHOSRawDigiProducer+;
 
 #endif
