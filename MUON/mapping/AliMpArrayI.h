@@ -13,17 +13,17 @@
 #ifndef ALI_MP_ARRAY_I_H
 #define ALI_MP_ARRAY_I_H
 
+#include "AliMpIntPair.h"
+
 #include <TObject.h>
 #include <TArrayI.h>
-
-class AliMpIntPair;
 
 class TString;
 
 class AliMpArrayI : public TObject
 {
   public:
-    AliMpArrayI();
+    AliMpArrayI(Bool_t sort = true);
     AliMpArrayI(TRootIOCtor* /*ioCtor*/);
     virtual ~AliMpArrayI();
     
@@ -47,8 +47,10 @@ class AliMpArrayI : public TObject
     static const Int_t    fgkDefaultSize; ///< Default initial size
 
     // data members
-    Int_t    fNofValues; ///< Number of values in the array
-    TArrayI  fValues;    ///< Array of values 
+    Bool_t   fSort;       ///< Option to sort the values
+    Int_t    fNofValues;  ///< Number of values in the array
+    TArrayI  fValues;     ///< Array of values 
+    AliMpIntPair fLimits; ///< The minimum and maximum values in the array
 
   ClassDef(AliMpArrayI,1)  // Helper class for sorted integer array
 };

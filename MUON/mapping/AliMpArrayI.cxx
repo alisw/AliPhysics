@@ -23,7 +23,6 @@
 // Author:Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpArrayI.h"
-#include "AliMpIntPair.h"
 
 #include "AliLog.h"
 
@@ -32,6 +31,7 @@
 #include <Riostream.h>
 
 #include <stdlib.h>
+#include <limits.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpArrayI)
@@ -40,10 +40,12 @@ ClassImp(AliMpArrayI)
 const Int_t AliMpArrayI::fgkDefaultSize = 100;
 
 //_____________________________________________________________________________
-AliMpArrayI::AliMpArrayI() 
+AliMpArrayI::AliMpArrayI(Bool_t sort) 
   : TObject(),
+    fSort(sort),
     fNofValues(0),
-    fValues(fgkDefaultSize)
+    fValues(fgkDefaultSize),
+    fLimits(INT_MIN,INT_MAX)
 {
 /// Standard & default constructor
 
@@ -52,8 +54,10 @@ AliMpArrayI::AliMpArrayI()
 //_____________________________________________________________________________
 AliMpArrayI::AliMpArrayI(TRootIOCtor* /*ioCtor*/) 
   : TObject(),
+    fSort(),
     fNofValues(),
-    fValues()
+    fValues(),
+    fLimits()
 {
 /// IO constructor
 }
@@ -95,16 +99,26 @@ Bool_t AliMpArrayI::Add(Int_t value)
    AliWarningStream() << "Resized array." << endl;
   }
   
-  // Find the position for the new value  
-  Int_t pos = GetPosition(value); 
-   
-  // Move elements 
-  for ( Int_t i=fNofValues; i>=pos; i-- )
-    fValues.AddAt(fValues.At(i), i+1);
-    
+  
+  // The position for the new value  
+  Int_t pos;
+  if ( fSort ) {
+    pos = GetPosition(value);
+
+    // Move elements 
+    for ( Int_t i=fNofValues; i>=pos; i-- )
+      fValues.AddAt(fValues.At(i), i+1);
+  }  
+  else
+    pos = fNofValues;     
+     
   // Add the new value in freed space
   fValues.AddAt(value, pos);  
   ++fNofValues;
+  
+  // Update linits
+  if ( value < fLimits.GetFirst() )  fLimits.SetFirst(value);
+  if ( value > fLimits.GetSecond() ) fLimits.SetSecond(value);
   
   return true;
 }
@@ -112,7 +126,7 @@ Bool_t AliMpArrayI::Add(Int_t value)
 //_____________________________________________________________________________
 Bool_t AliMpArrayI::Remove(Int_t value)
 {
-/// Add object with its key to the map and arrays
+/// Remove value from the array
   
   // Find the position for the new value  
   Int_t pos = GetPosition(value); 
@@ -166,7 +180,7 @@ Bool_t AliMpArrayI::HasValue(Int_t value) const
 
   if ( ! fNofValues ) return false;
 
-  if ( fValues.At(0) > value || fValues.At(fNofValues-1) < value ) 
+  if ( value < fLimits.GetFirst() || value > fLimits.GetSecond() ) 
     return false;
 
   for ( Int_t i=0; i<fNofValues; i++ )
