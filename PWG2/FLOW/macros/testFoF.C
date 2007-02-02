@@ -1,33 +1,20 @@
-/* $Id$ */
-
-//
-// This is an example how to run an AliSelector ...
-// this script runs the AliSelectorFlow on a chain of ESD files, some debug information is printed
-//
-
-// parameters are
-//   dataDir: the directory containing subdirectories that contain the ESD files
-//   nRuns: the number of files that should be processed
-//   offset: the directory to start with
-
 // from CreateESDChain.C - instead of  #include "CreateESDChain.C"
 TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
 //
 
-void testAliSelector(const Char_t* dataDir=".", Int_t nRuns = 10, Int_t offset = 0)
+void testFoF(const Char_t* dataDir=".", Int_t nRuns = 10, Int_t offset = 0)
 {
  // load needed libraries
   gSystem->Load("libESD");
+  gSystem->Load("libPhysics.so");
   
- // PWG2 libraries 
-  gSystem->Load("libPWG2.so");
-  gSystem->Load("libPWG2flow.so");
-  //char *loadFrom = gSystem->ExpandPathName("$ALICE_ROOT/PWG2/FLOW/AliFlow_Pure.so") ;
-  //gSystem->Load(loadFrom);
+ // Flow libraries 
+ gSystem->Load("libPWG2.so");
+ gSystem->Load("libPWG2flow.so");
 
  // Selector
-  char *loadSelector = gSystem->ExpandPathName("$ALICE_ROOT/PWG2/FLOW/AliSelectorFlow.cxx+") ;
+  char *loadSelector = gSystem->ExpandPathName("/localstore/alice/alice_new/AliRoot/PWG2/FLOW/AliSelectorFoF.cxx+") ;
   //gInterpreter->AddIncludePath(inc) ;
 
  // create the TChain. CreateESDChain() is defined in CreateESDChain.C
@@ -36,7 +23,7 @@ void testAliSelector(const Char_t* dataDir=".", Int_t nRuns = 10, Int_t offset =
   cout << " * " << chain->GetEntries() << " * " << endl ;
 
  // enable debugging
-  AliLog::SetClassDebugLevel("AliSelectorFlow", AliLog::kInfo);
+  AliLog::SetClassDebugLevel("AliSelectorFoF", AliLog::kInfo);
 
  // run selector on chain
   Long64_t result = chain->Process(loadSelector);

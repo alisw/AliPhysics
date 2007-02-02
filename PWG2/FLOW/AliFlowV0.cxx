@@ -59,6 +59,9 @@ Float_t  AliFlowV0::P() const
 { 
  // Returns the reconstructed momentum of the v0
 
+ if(Pt()<=0)  { return 0. ; }
+ if(Eta()==0) { return 0. ; }
+
  float momentum = Pt()/TMath::Sqrt(1-(tanh(Eta())*tanh(Eta()))) ; 
  return momentum; 
 }
@@ -68,7 +71,7 @@ Float_t  AliFlowV0::Y() const
  // Rapidity of the v0
 
  if(TMath::Abs((Float_t)P()) == TMath::Abs((Float_t)Pt())) 	{ return 0. ; }
- else if(TMath::Abs((Float_t)P()) < TMath::Abs((Float_t)Pt()))	{ cout << "v0: " << GetName() << "has  Pt() > P() !!!" << endl ; }
+ else if(TMath::Abs((Float_t)P()) < TMath::Abs((Float_t)Pt()))	{ cout << "v0: " << GetName() << "has  Pt() > P() !!!" << endl ; return -1000. ; }
  // -
  float M = Mass() ; 
  double Pz = TMath::Sqrt(P()*P() - Pt()*Pt()); 
