@@ -1,9 +1,13 @@
-/* $Id$ */
-
 #ifndef ALIMULTIPLICITYCORRECTION_H
 #define ALIMULTIPLICITYCORRECTION_H
 
-#include "TNamed.h"
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+#include <TCollection.h>
+#include <TNamed.h>
 
 //
 // class that contains the correction matrix and the functions for

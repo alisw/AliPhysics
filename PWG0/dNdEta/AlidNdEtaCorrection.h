@@ -18,6 +18,7 @@
 // - update MERge function
 //
 
+#include <TCollection.h>
 #include <TNamed.h>
 
 class AliCorrection;

@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 /* $Id$ */
 
 // This class contains a number of histograms for diagnostics of a TPC
@@ -8,19 +23,19 @@
 //
 //
 
-#include "AliTPCRawHistograms.h"
 
-#include <TStyle.h>
-#include <TFile.h>
 #include <TCanvas.h>
-#include <TH3F.h>
+#include <TCollection.h>
+#include <TFile.h>
 #include <TH1F.h>
+#include <TH3F.h>
 #include <TLatex.h>
 #include <TNtuple.h>
+#include <TStyle.h>
 
-#include <AliTPCRawStream.h>
-#include <AliLog.h>
-
+#include "AliLog.h"
+#include "AliTPCRawHistograms.h"
+#include "AliTPCRawStream.h"
 
 //____________________________________________________________________
 ClassImp(AliTPCRawHistograms)
