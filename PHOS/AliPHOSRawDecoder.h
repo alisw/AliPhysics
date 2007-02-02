@@ -3,6 +3,8 @@
 /* Copyright(c) 2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
 
+/* $Id$ */
+
 // This class extracts the PHOS "digits" of current event
 // (amplitude,time, position,gain) from the raw stream 
 // provided by AliRawReader. See cxx source for use case.
@@ -34,17 +36,17 @@ public:
 
 protected:   
   
-  AliRawReader* fRawReader;
-  AliCaloRawStream* fCaloStream;
-  Bool_t fPedSubtract;
+  AliRawReader* fRawReader;      // raw data reader
+  AliCaloRawStream* fCaloStream; // PHOS/EMCAL raw data stream
+  Bool_t fPedSubtract;           // pedestals subtraction (kTRUE="yes")
 
 private:
 
-  Double_t fEnergy;
-  Double_t fTime;
-  Int_t fModule;
-  Int_t fColumn;
-  Int_t fRow;
+  Double_t fEnergy; // "digit" energy
+  Double_t fTime;   // "digit" time
+  Int_t fModule;    // PHOS module number (1-5)
+  Int_t fColumn;    // column in the module
+  Int_t fRow;       // row
   
   ClassDef(AliPHOSRawDecoder,1)
 };

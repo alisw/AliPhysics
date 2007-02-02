@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 // This class decodes the stream of ALTRO samples to extract
 // the PHOS "digits" of current event.
 // 
@@ -86,6 +88,8 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosDecode)
 {
+  //Assignment operator.
+
   if(this != &phosDecode) {
     fRawReader = phosDecode.fRawReader;
 
