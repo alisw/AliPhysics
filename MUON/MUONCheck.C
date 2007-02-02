@@ -58,6 +58,8 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpIntPair.h"
 #include "AliMpDEManager.h"
+#include "AliMpCathodType.h"
+#include "AliMpPlaneType.h"
 #endif
 
 void MUONkine(Int_t event2Check=0, char * filename="galice.root")
@@ -273,10 +275,11 @@ void MUONoccupancy(Int_t event2Check=0,  Bool_t perDetEle =kFALSE, char * filena
       dEoccupancy_bending[ichamber][idetele]=0;
       dEoccupancy_nonbending[ichamber][idetele]=0;
       if ( AliMpDEManager::IsValidDetElemId(detele) ) {
-	
-	segbend    = AliMpSegmentation::Instance()->GetMpSegmentation(detele, 0);
-	segnonbend = AliMpSegmentation::Instance()->GetMpSegmentation(detele, 1);
-        if (AliMpDEManager::GetPlaneType(detele, 0) != kBendingPlane ) {
+	segbend    = AliMpSegmentation::Instance()
+                     ->GetMpSegmentation(detele, AliMp::kCath0);
+	segnonbend = AliMpSegmentation::Instance()
+                     ->GetMpSegmentation(detele, AliMp::kCath1);
+        if (AliMpDEManager::GetPlaneType(detele, AliMp::kCath0) != AliMp::kBendingPlane ) {
 	  const AliMpVSegmentation* tmp = segbend;
 	  segbend    =  segnonbend;
 	  segnonbend =  tmp;
