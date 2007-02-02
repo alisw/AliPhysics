@@ -60,7 +60,7 @@ AliMpBusPatch::AliMpBusPatch(Int_t id, Int_t detElemId, Int_t ddlId)
     fId(id),
     fDEId(detElemId),
     fDdlId(ddlId),
-    fManus()
+    fManus(false)
 {
 /// Standard constructor
 }
