@@ -5,11 +5,11 @@
 //#include "AliHLTDataTypes.h"
 //#include "Rtypes.h"
 
-struct AliHLTPHOSValiCellDataStruct
+struct AliHLTPHOSValidCellDataStruct
 {
-  AliHLTUInt16_t fRcuX;
-  AliHLTUInt16_t fRcuZ;
-  AliHLTUInt16_t fModuleID;
+  //  AliHLTUInt16_t fRcuX;
+  //  AliHLTUInt16_t fRcuZ;
+  //  AliHLTUInt16_t fModuleID;
   AliHLTUInt16_t fRow;
   AliHLTUInt16_t fCol;
   AliHLTUInt16_t fGain;

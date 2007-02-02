@@ -10,6 +10,9 @@
 #include "AliCaloRawStream.h"
 #include "AliHLTPHOSDefinitions.h"
 
+class AliHLTPHOSRcuCellEnergyDataStruct;
+
+
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 {
  public:
@@ -42,7 +45,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   void ResetDataPtr();
 
  private:
-  int fEventCount;
+  static int fEventCount;
   AliHLTUInt32_t fEquippmentID;
   AliHLTUInt16_t fRcuX;
   AliHLTUInt16_t fRcuZ;
@@ -53,6 +56,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   Double_t fMaxValues[5][64][56][2];
   AliCaloRawStream *fPHOSRawStream;
   AliRawReaderMemory *fRawMemoryReader;
+  AliHLTPHOSRcuCellEnergyDataStruct* outPtr;
   static const AliHLTComponentDataType inputDataTypes[];
 };
 #endif

@@ -23,7 +23,6 @@ using std::endl;
 
 AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer():fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999)
 {
-  //  cout <<"AliHLTPHOSRawAnalyzer Base class::Creating a new AliHLTPHOSRawAnalyzer() object"<<endl;
   fFloatDataPtr = new double[1008];
 }
 
