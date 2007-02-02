@@ -748,7 +748,21 @@ Bool_t AliReconstruction::Run(const char* input)
       }
     }
 
-    esd->SetPrimaryVertex(tVertexer.FindPrimaryVertex(esd));
+    //Try to improve the reconstructed primary vertex position using the tracks
+    AliESDVertex *pvtx=tVertexer.FindPrimaryVertex(esd);
+    if (pvtx)
+    if (pvtx->GetStatus()) {
+       // Store the improved primary vertex
+       esd->SetPrimaryVertex(pvtx);
+       // Propagate the tracks to the DCA to the improved primary vertex
+       Double_t somethingbig = 777.;
+       Double_t bz = esd->GetMagneticField();
+       Int_t nt=esd->GetNumberOfTracks();
+       while (nt--) {
+	 AliESDtrack *t = esd->GetTrack(nt);
+         t->RelateToVertex(pvtx, bz, somethingbig);
+       } 
+    }
 
     {
     // V0 finding
