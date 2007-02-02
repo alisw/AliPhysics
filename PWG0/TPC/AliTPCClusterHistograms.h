@@ -8,6 +8,7 @@
 // read out chamber from the reconstructed clusters.
 //
 
+#include <TCollection.h>
 #include <TNamed.h>
 #include <TString.h>
 

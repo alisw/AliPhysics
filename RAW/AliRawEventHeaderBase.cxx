@@ -30,6 +30,7 @@
 #include <Bytes.h>
 #include <TClass.h>
 #include <TDataMember.h>
+#include <TList.h>
 #include <TMethodCall.h>
 
 #include "AliLog.h"

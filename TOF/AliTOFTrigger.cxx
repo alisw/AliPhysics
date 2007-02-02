@@ -26,6 +26,8 @@
 //
 /////////////////////////////////////////////////////////////////////
 
+#include <TClonesArray.h>
+
 #include "AliLoader.h"
 #include "AliLog.h"
 #include "AliRunLoader.h"

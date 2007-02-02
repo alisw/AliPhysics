@@ -15,6 +15,8 @@
 
 // $Id$
 
+#include <TClonesArray.h>
+
 #include "AliMUONSDigitizerV2.h"
 
 #include "AliLog.h"

@@ -23,6 +23,7 @@
 // Origin: Elena Bruna bruna@to.infn.it, Massimo Masera masera@to.infn.it//
 /////////////////////////////////////////////////////////////////////////
 
+#include <TClonesArray.h>
 #include <TMath.h>
 
 #include "AliITSSteerPid.h"

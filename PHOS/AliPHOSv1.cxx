@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.107  2007/02/01 10:34:47  hristov
+ * Removing warnings on Solaris x86
+ *
  * Revision 1.106  2006/11/14 17:11:15  hristov
  * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
  *
@@ -41,6 +44,7 @@
 
 
 // --- ROOT system ---
+#include <TClonesArray.h>
 #include <TParticle.h>
 #include <TVirtualMC.h>
 

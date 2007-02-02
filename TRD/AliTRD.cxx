@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <Riostream.h>
 
+#include <TClonesArray.h>
 #include <TFile.h>
 #include <TGeometry.h>
 #include <TLorentzVector.h>

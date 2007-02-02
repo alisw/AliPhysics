@@ -22,6 +22,7 @@
 // andreas.morsch@cern.ch
 
 #include <TCanvas.h>
+#include <TClonesArray.h>
 #include <TDatabasePDG.h>
 #include <TF1.h>
 #include <TH1F.h>

@@ -12,6 +12,7 @@
 
 #include "AliGenerator.h"
 #include <TArrayF.h>
+#include <TList.h>
 
 class AliGenCocktailEntry;
 class AliGenCocktailEventHeader;

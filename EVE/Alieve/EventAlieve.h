@@ -3,6 +3,8 @@
 #ifndef ALIEVE_Event_H
 #define ALIEVE_Event_H
 
+#include <TList.h>
+
 #include <Reve/EventBase.h>
 
 class AliRunLoader;

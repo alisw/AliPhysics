@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <TClonesArray.h>
 #include <TClass.h>
 
 #include "AliITSdigit.h"

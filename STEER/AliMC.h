@@ -13,6 +13,7 @@
 
 #include <TArrayF.h>
 #include <TArrayI.h>
+#include <TList.h>
 #include <TMCProcess.h>
 #include <TVirtualMCApplication.h>
 

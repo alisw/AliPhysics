@@ -27,6 +27,7 @@
 //__________________________________________________________//
 
 #include <TBenchmark.h>
+#include <TClonesArray.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TParticle.h>

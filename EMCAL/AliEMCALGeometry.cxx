@@ -43,6 +43,7 @@
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoNode.h>
+#include <TList.h>
 #include <TMatrixD.h>
 #include <TObjArray.h>
 #include <TObjString.h>

@@ -37,17 +37,14 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliACORDE.h"
-
+#include <TClonesArray.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 
-#include "AliRun.h"
-#include "AliMagF.h"
-//#include "AliMC.h"
-
-//#include "AliACORDEhit.h"
+#include "AliACORDE.h"
 #include "AliACORDEModule.h"
+#include "AliMagF.h"
+#include "AliRun.h"
 
 ClassImp(AliACORDE)
 

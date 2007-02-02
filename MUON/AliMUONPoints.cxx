@@ -28,6 +28,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TClonesArray.h>
 #include <TROOT.h>
 #include <TPolyMarker3D.h>
 #include <TVirtualPad.h>

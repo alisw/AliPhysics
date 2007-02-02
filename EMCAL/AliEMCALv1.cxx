@@ -30,6 +30,7 @@
 //  2. Timing signal is collected and added to hit
 
 // --- ROOT system ---
+#include <TClonesArray.h>
 #include <TParticle.h>
 #include <TVirtualMC.h>
 

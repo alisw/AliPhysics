@@ -23,11 +23,11 @@
 
 #include <RVersion.h>
 #include <TBrowser.h>
+#include <TClonesArray.h>
+#include <TGeoManager.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
-#include <TGeoManager.h>
-
  
 #include "AliLog.h"
 #include "AliDetector.h"

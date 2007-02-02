@@ -79,19 +79,20 @@
 // One can include AliGenCorrHF in an AliGenCocktail generator.
 //--------------------------------------------------------------------------
 
+#include <Riostream.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TDatabasePDG.h>
 #include <TFile.h>
-#include <TTree.h>
 #include <TH2F.h>
-#include <TMath.h>
-#include <TRandom.h>
-#include <TROOT.h>
 #include <TLorentzVector.h>
+#include <TMath.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
-#include <TDatabasePDG.h>
+#include <TROOT.h>
+#include <TRandom.h>
+#include <TTree.h>
 #include <TVirtualMC.h>
-#include <TCanvas.h>
-#include <Riostream.h>
 
 #include "AliGenCorrHF.h"
 #include "AliLog.h"
