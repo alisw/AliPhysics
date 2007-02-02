@@ -32,6 +32,7 @@
 
 #include <TClass.h>
 #include <TFile.h>
+#include <TDirectory.h>
 #include <TObjArray.h>
 #include <TTree.h>
 #include <TTreeStream.h>
@@ -163,7 +164,7 @@ void TTreeSRedirector::StoreObject(TObject* object){
   //
   //
   //
-  TFile * backup = gFile;
+  TDirectory * backup = gDirectory;
   fFile->cd();
   object->Write();
   if (backup) backup->cd();
@@ -224,7 +225,7 @@ TTreeStream  & TTreeSRedirector::operator<<(const char* name)
 void TTreeSRedirector::Close(){
   //
   //
-  TFile * backup = gFile;
+  TDirectory * backup = gDirectory;
   fFile->cd();
   if (fDataLayouts){
     Int_t entries = fDataLayouts->GetEntriesFast();
