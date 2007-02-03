@@ -15,6 +15,7 @@
 
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
 #include <iostream>
+#include <cmath>
 
 using std::cout;
 using std::endl;
@@ -22,8 +23,9 @@ using std::endl;
 ClassImp(AliHLTPHOSRawAnalyzerPeakFinder) 
 
 
-AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHOSRawAnalyzerPeakFinder&):AliHLTPHOSRawAnalyzer(),tVector(0), aVector(0)
+AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHOSRawAnalyzerPeakFinder&):AliHLTPHOSRawAnalyzer() , fTVectorPtr(0), fAVectorPtr(0), fTVectorSize(0), fAVectorSize(0)
 {
+
 
 }
 
@@ -34,7 +36,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHO
  * a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in
  * calculation is of type double.
  **/
-AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRawAnalyzer(),tVector(0), aVector(0) 
+AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRawAnalyzer(), fTVectorPtr(0), fAVectorPtr(0), fTVectorSize(0), fAVectorSize(0)
 {
   //  cout <<"PeakFinder:You cannot invoke the Fitter without arguments"<<endl;;
 }
@@ -47,17 +49,44 @@ AliHLTPHOSRawAnalyzerPeakFinder::~AliHLTPHOSRawAnalyzerPeakFinder()
 } //end AliHLTPHOSRawAnalyzerPeakFinder
 
 void 
-AliHLTPHOSRawAnalyzerPeakFinder::SetTVector(double *tVec)
+AliHLTPHOSRawAnalyzerPeakFinder::SetTVector(Double_t *tVec, Int_t size)
 {
-  tVector = tVec;
+  fTVectorSize = size;
+
+  if(fTVectorPtr != 0)
+    {
+      delete fTVectorPtr;
+    }
+  
+  fTVectorPtr = new Double_t[size];
+
+  for(int i=0; i< size; i++)
+    {
+      fTVectorPtr[i] = tVec[i];
+    }
 }
+
 
 void
-AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(double *aVec)
+AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
 {
-  aVector = aVec;
+    
+  fAVectorSize = size;
 
+  if(fAVectorPtr != 0)
+    {
+      delete fAVectorPtr;
+    }
+  
+  fAVectorPtr = new Double_t[size];
+
+  for(int i=0; i< size; i++)
+    {
+      fAVectorPtr[i] = aVec[i];
+    }
 }
+
+
 
 /**
 * Extraction of timing and energy using the Peakfinde Algorithm.
@@ -75,36 +104,61 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(double *aVec)
 void 
 AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
 {
-  printf("\n AliHLTPHOSRawAnalyzerPeakFinder::Evaluat from index %d to %d\n", start, start + length);
+  //  printf("\n AliHLTPHOSRawAnalyzerPeakFinder::Evaluat from index %d to %d\n", start, start + length);
   fDTof = 0;
   fDAmpl = 0;
+  Int_t tmpLength;
 
-  
-  if(tVector == 0 || aVector == 0)
+
+  if(fTVectorPtr == 0 || fAVectorPtr == 0)
     {
       printf("\nError: the peakfinder vectors are not specified, aborting !!!\n");
     }
   else
     {
-
-      printf("\nstart = %d, length = %d\n", start, length);   
-      double tmpTime[1008];
       
-      for(int i=0; i < length; i++)
+      if(length <  fTVectorSize)
+	{
+	  tmpLength = length;
+	}
+      else
+	{
+	  tmpLength = fTVectorSize;
+	}
+
+      printf("\nstart = %d, length = %d\n", start,  tmpLength);   
+      
+      for(int i=0; i < tmpLength; i++)
 	{  
-	  fDAmpl += aVector[i]*fFloatDataPtr[i];    
+	  cout <<fFloatDataPtr[i]<< " ";
+	  fDAmpl += fAVectorPtr[i]*fFloatDataPtr[i];    
 	}
   
-      for(int i=0; i < length; i++)
+      cout<<endl;
+
+      for(int i=0; i < tmpLength; i++)
 	{   
-	  tmpTime[i] = tVector[i]*fFloatDataPtr[i];
-	  fDTof = fDTof + tmpTime[i]; 
+	  fDTof += fTVectorPtr[i]*fFloatDataPtr[i]; 
+	  cout <<fFloatDataPtr[i]<< " ";  
+	}
+      
+      cout <<endl;
+
+      if(fDAmpl > 900)
+	{
+	  Double_t tmpMax = GetMaxValue(fFloatDataPtr, tmpLength);
+	  if(tmpMax == 1023)
+	    {
+	      fDAmpl = tmpMax;
+	    }
 	}
 
       fDTof = fDTof/fDAmpl;
+
     }
   
-
+  cout <<" AliHLTPHOSRawAnalyzerPeakFinder: amplitude ="<<fDAmpl<< endl;
+  cout <<" AliHLTPHOSRawAnalyzerPeakFinder: time ="<<fDTof<< endl << endl;
   //thats all 
 } //end FitPeakFinder
 

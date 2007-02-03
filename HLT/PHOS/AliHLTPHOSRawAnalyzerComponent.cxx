@@ -26,7 +26,7 @@
 const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 int   AliHLTPHOSRawAnalyzerComponent::fEventCount = 0; 
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), fEquippmentID(0), fPHOSRawStream(), fRawMemoryReader(0)
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), fEquippmentID(0), fRcuX(0), fRcuZ(0),fRcuRowOffeset(0), fRcuColOffeset(0),  fModuleID(0), fPHOSRawStream(), fRawMemoryReader(0), outPtr(0)
 {
 
 } 
@@ -46,7 +46,7 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 
 
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(),  fEquippmentID(0), fPHOSRawStream(),fRawMemoryReader(0)
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(), fEquippmentID(0), fRcuX(0), fRcuZ(0),fRcuRowOffeset(0), fRcuColOffeset(0),  fModuleID(0), fPHOSRawStream(), fRawMemoryReader(0), outPtr(0)
 {
 }
 
@@ -122,24 +122,23 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
   Int_t tmpChannelCnt     = 0;
 
 
-  cout << "analyzing event: " << fEventCount << endl; 
-
-  //  AliHLTPHOSRcuCellEnergyDataStruct
-  //  AliHLTPHOSRcuCellEnergyDataStruct* outPtr; 
+  //  cout << "analyzing event: " << fEventCount << endl; 
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
 
-  Reset();
+  if((fEventCount % 100) == 0)
+    {
+      cout << "analyzing event: " << fEventCount << endl;
+    }
+    // Reset();
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-  
       iter = blocks+ndx;
       mysize = 0;
       offset = tSize;
-
 
       if ( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
 	{
@@ -154,66 +153,50 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
       outPtr->fRcuX = fRcuX;
       outPtr->fRcuZ = fRcuZ;
       outPtr->fModuleID = fModuleID;
-      
-      //     cout << "analyzing evnt: " <<  fEventCount << "Module:" << fModuleID << "Rcu(" <<  fRcuZ <<"," << fRcuX << ")" << endl;
-  
-    //   outPtr->fCnt = 0;
       tmpChannelCnt = 0;
-      //  outPtr->fValidData.fRcuX =  fRcuX;
-      //  outPtr->fValidData.fRcuZ =  fRcuZ;
  
-
       while(fPHOSRawStream->Next())
 	{
 	  if (fPHOSRawStream->IsNewHWAddress())
 	    {
+	      //	      cout << "samplCount =" <<  sampleCnt <<endl; 
+	      //	      sampleCnt = 0;
+
+
 	      if(processedChannels > 0)
 		{
 		  analyzerPtr->SetData(fTmpChannelData);
-		  //		  cout << "sampleCnt = " << sampleCnt << endl;
+
+		  //		  DumpChannelData(fTmpChannelData);
+
 		  analyzerPtr->Evaluate(0, sampleCnt);
-		  //		  fMaxValues[tmpMod][tmpRow][tmpCol][tmpGain] = analyzerPtr->GetEnergy();
-
-		  //	  outPtr->fValidData[fCnt] = ;
-		  //		  outPtr->fCnt ++;
-		  //fCnt;
-		  //		  outPtr->fCellEnergies[tmpRow - fRcuRowOffeset][tmpCol - fRcuColOffeset][tmpGain] =  fMaxValues[tmpMod][tmpRow][tmpCol][tmpGain];
-		  //		  outPtr->fCellEnergies[tmpRow][tmpCol][tmpGain] =  fMaxValues[tmpMod][tmpRow][tmpCol][tmpGain];
 		  outPtr->fCellEnergies[tmpRow][tmpCol][tmpGain] =  analyzerPtr->GetEnergy();
-		  sampleCnt = 0;
 
+
+		  sampleCnt = 0;
 		  outPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
 		  outPtr->fValidData[tmpChannelCnt].fRow  = tmpRow;
 		  outPtr->fValidData[tmpChannelCnt].fCol  = tmpCol; 
-		  
 		  tmpChannelCnt ++;
-
-		  //		  outPtr->fCnt ++;
-		  //		  ResetDataPtr(); 
+		  ResetDataPtr();
+		  sampleCnt = 0;
 
 		}
-
-
 
 	      tmpMod  =  fPHOSRawStream->GetModule() ;
 	      tmpRow  =  fPHOSRawStream->GetRow() - fRcuRowOffeset;
 	      tmpCol  =  fPHOSRawStream->GetColumn() - fRcuColOffeset;
 	      tmpGain =  fPHOSRawStream->IsLowGain(); 
-	      
-	      //    outPtr->fValidData.fRow = tmpRow;
-	      //   outPtr->fValidData).fCol = tmpCol;
-	      
-	      
 	      processedChannels ++;
 	    }
 	  fTmpChannelData[fPHOSRawStream->GetTime()] =  fPHOSRawStream->GetSignal();
 	  sampleCnt ++;
+
 	}
- 
-     
+      
+
+
       outPtr->fCnt =  tmpChannelCnt;
-      //     cout << "outPtr->fCnt = "  << outPtr->fCnt << endl;
- 
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;
@@ -231,6 +214,9 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 		   , tSize, size );
 	  return EMSGSIZE;
 	}
+
+      //      DumpData();
+
       
     }
 
@@ -275,6 +261,32 @@ AliHLTPHOSRawAnalyzerComponent::DumpData()
 	} 
     }
 }
+
+void
+AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
+{
+      cout << endl;
+      
+      for(int i=0; i< 1008; i++)
+	{
+	  if (data[i] != 0)
+	    {
+	      cout <<i <<"\t";
+	    }
+	}
+      cout << endl;
+      
+      for(int i=0; i< 1008; i++)
+	{
+	  if (data[i] != 0)
+	    {
+	      cout <<data[i] <<"\t";
+	    }
+	}
+      
+      cout << endl;
+}
+
 
 
 void

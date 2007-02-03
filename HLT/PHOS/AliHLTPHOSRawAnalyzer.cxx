@@ -31,7 +31,7 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 
 }
 
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999)
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999), fStartIndex(0)
 {
 
 }
@@ -41,7 +41,7 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloa
 * @param dataPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999)
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999), fStartIndex(0)
 {
   fFloatDataPtr = dtaPtr;  
   fSampleFrequency = fs;
@@ -150,4 +150,43 @@ AliHLTPHOSRawAnalyzer::MakeInitialGuess(int treshold)
 {
   printf("\ntreshold = %d\n", treshold);
   cout << "Make initial guess not yet implemeted" << endl;  
+}
+
+void
+AliHLTPHOSRawAnalyzer::SetStartIndex(int index)
+{
+  fStartIndex = index;
+}
+
+void 
+AliHLTPHOSRawAnalyzer::SetTVector(Double_t *tVector, Int_t size)
+{
+  cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetTVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
+}
+
+
+void
+AliHLTPHOSRawAnalyzer::SetAVector(Double_t *aVector, Int_t size)
+{
+ cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetAVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
+}
+
+
+Double_t
+AliHLTPHOSRawAnalyzer::GetMaxValue(Double_t *dta, Int_t size)
+{
+
+  Double_t tmpMax = 0;
+
+  for(int i = 0; i < size; i++)
+    {
+      if(dta[i] > tmpMax)
+	{
+	  tmpMax = dta[i];
+	}
+
+    }
+  
+  return tmpMax;
+
 }

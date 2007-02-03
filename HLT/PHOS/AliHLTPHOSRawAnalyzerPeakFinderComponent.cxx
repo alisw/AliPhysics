@@ -21,7 +21,40 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderCompone
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
 {
+  Double_t tmpAVector[70];
+  Double_t tmpTVector[70]; 
   analyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
+  analyzerPtr->SetStartIndex(0);
+  FILE *fp;
+  fp = fopen("/home/perthi/cern/aliroot/AliRoot_head/HLT/PHOS/PFVectors/start0N70tau2fs10.txt", "r");
+  
+  if(fp != 0)
+    {
+      for(int i=0; i < 70; i++)
+	{
+	  fscanf(fp, "%lf", &tmpAVector[i]);
+	}
+
+      fscanf(fp, "\n");
+
+      for(int i=0; i < 70; i++)
+	{
+	  	  fscanf(fp, "%lf", &tmpTVector[i]);
+	}
+
+      analyzerPtr->SetAVector(tmpAVector, 70);
+      analyzerPtr->SetTVector(tmpTVector, 70);
+
+      fclose(fp);
+
+    }
+  
+  else
+    {
+      cout <<"AliHLTPHOSRawAnalyzerPeakFinderComponent, ERROR: could not  open PF vector file" << endl;
+    }
+  
+
 } 
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::~AliHLTPHOSRawAnalyzerPeakFinderComponent()
@@ -49,3 +82,4 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::Spawn()
 {
   return new AliHLTPHOSRawAnalyzerPeakFinderComponent;
 }
+
