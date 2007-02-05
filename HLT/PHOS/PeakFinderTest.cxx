@@ -71,8 +71,8 @@ int main()
   
    fitPtr->SetData(data);
    fitPtr->SetSampleFreq(fs);
-   fitPtr->SetTVector(timeVector);
-   fitPtr->SetAVector(amplitudeVector);
+   fitPtr->SetTVector(timeVector, 100);
+   fitPtr->SetAVector(amplitudeVector, 100);
    //   fitPtr->Set
    fitPtr->Evaluate(start, N);
   
