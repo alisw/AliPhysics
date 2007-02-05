@@ -121,7 +121,7 @@ AliTRDcalibDB::AliTRDcalibDB()
   
   // Create the sampled PRF
   SamplePRF();
-
+  
 }
 
 //_____________________________________________________________________________
@@ -382,24 +382,32 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
   // Returns t0 for the given pad.
   //
   
-  const AliTRDCalPad *calPad     = dynamic_cast<const AliTRDCalPad *> 
-                                   (GetCachedCDBObject(kIDT0Pad));
+  const AliTRDCalGlobals *calGlobal  = dynamic_cast<const AliTRDCalGlobals *> 
+                                       (GetCachedCDBObject(kIDGlobals));
+  if (!calGlobal) {
+    return -1;
+  }
+
+  const AliTRDCalPad     *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                       (GetCachedCDBObject(kIDT0Pad));
   if (!calPad) {
     return -1;
   }
 
-  AliTRDCalROC       *roc        = calPad->GetCalROC(det);
+  AliTRDCalROC           *roc        = calPad->GetCalROC(det);
   if (!roc) {
     return -1;
   }
 
-  const AliTRDCalDet *calChamber = dynamic_cast<const AliTRDCalDet *> 
-                                   (GetCachedCDBObject(kIDT0Chamber));
+  const AliTRDCalDet     *calChamber = dynamic_cast<const AliTRDCalDet *> 
+                                       (GetCachedCDBObject(kIDT0Chamber));
   if (!calChamber) {
     return -1;
   }
 
-  return calChamber->GetValue(det) * roc->GetValue(col,row);
+  return calGlobal->GetT0Offset() 
+       + calChamber->GetValue(det) 
+       + roc->GetValue(col,row);
 
 }
 
@@ -628,24 +636,26 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
 }
 
 //_____________________________________________________________________________
-const AliTRDCalPIDLQ* AliTRDcalibDB::GetPIDLQObject()
+const AliTRDCalPIDLQ *AliTRDcalibDB::GetPIDLQObject()
 {
   //
   // Returns the object storing the distributions for PID with likelihood
   //
 
-  return dynamic_cast<const AliTRDCalPIDLQ *> (GetCachedCDBObject(kIDPIDLQ));
+  return dynamic_cast<const AliTRDCalPIDLQ *> 
+         (GetCachedCDBObject(kIDPIDLQ));
 
 }
 
 //_____________________________________________________________________________
-const AliTRDCalMonitoring* AliTRDcalibDB::GetMonitoringObject()
+const AliTRDCalMonitoring *AliTRDcalibDB::GetMonitoringObject()
 {
   //
   // Returns the object storing the monitoring data
   //
 
-  return dynamic_cast<const AliTRDCalMonitoring *> (GetCachedCDBObject(kIDMonitoringData));
+  return dynamic_cast<const AliTRDCalMonitoring *> 
+         (GetCachedCDBObject(kIDMonitoringData));
    
 }
 

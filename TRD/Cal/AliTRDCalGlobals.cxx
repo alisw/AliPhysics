@@ -33,6 +33,8 @@ AliTRDCalGlobals::AliTRDCalGlobals()
   ,fTailCancelationTau2(0)
   ,fTailCancelationAmp(0)
   ,fPedestal(0)
+  ,fADCClockphase(0)
+  ,fT0Offset(0)
 {
   //
   // AliTRDCalGlobals default constructor
@@ -48,6 +50,8 @@ AliTRDCalGlobals::AliTRDCalGlobals(const Text_t *name, const Text_t *title)
   ,fTailCancelationTau2(0)
   ,fTailCancelationAmp(0)
   ,fPedestal(0)
+  ,fADCClockphase(0)
+  ,fT0Offset(0)
 {
   //
   // AliTRDCalGlobals constructor

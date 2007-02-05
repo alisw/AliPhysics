@@ -991,7 +991,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
         // Also re-retrieve drift velocity because col and row may have changed
         driftvelocity = calibration->GetVdrift(detector,colE,rowE);
         Float_t t0    = calibration->GetT0(detector,colE,rowE);
-          
+
         // Convert the position to drift time, using either constant drift velocity or
         // time structure of drift cells (non-isochronity, GARFIELD calculation).
 	Double_t drifttime;

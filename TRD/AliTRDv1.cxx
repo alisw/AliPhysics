@@ -301,7 +301,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
           ,det
           ,posHit
           ,-q
-          ,kTRUE); 
+          ,kTRUE);
 
   }
 
