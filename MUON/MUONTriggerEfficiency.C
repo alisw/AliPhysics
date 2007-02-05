@@ -54,7 +54,7 @@
 // Upsilon(1S)
 
 
-void MUONTriggerEfficiency (char filename[10]="galice.root"){
+void MUONTriggerEfficiency (char filename[10]="galice.root",  Bool_t readFromRP = 0){
  
 // output file
   char digitdat[100];
@@ -67,8 +67,7 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
   Int_t CoincMuPlus,CoincMuMinus;
   coincmuon=0;
   muonlpt=0;  
-  muonhpt=0;         
-  
+  muonhpt=0;
  
 // Initialise AliRoot
    // Creating Run Loader and openning file containing Hits
@@ -81,16 +80,20 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
              
    nevents = RunLoader->GetNumberOfEvents();          
      
-   //Loading hits  
-   AliLoader * MUONHits = RunLoader->GetLoader("MUONLoader");     
-   MUONHits->LoadHits("READ");
-   AliMUONData data_hits(MUONHits,"MUON","MUON");
+ 
+   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+   if (!readFromRP) {
+       cout << " reading from digits \n";
+       MUONLoader->LoadDigits("READ");
+   } else {
+       cout << " reading from RecPoints \n";
+       MUONLoader->LoadRecPoints("READ");
+   }
+   MUONLoader->LoadHits("READ");
    
-    //Loading Digits  
-   AliLoader * MUONDigits = RunLoader->GetLoader("MUONLoader");    
-   MUONDigits->LoadDigits("READ");
-   AliMUONData data_digits(MUONDigits,"MUON","MUON");
-  
+   // Creating MUON data container
+   AliMUONData muondata(MUONLoader,"MUON","MUON");
+
    TClonesArray * globalTrigger;
    AliMUONGlobalTrigger * gloTrg; 
  
@@ -98,14 +101,12 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
    for (Int_t ievent=0; ievent<nevents; ievent++) {    // event loop
        CoincMuPlus=0;
        CoincMuMinus=0;
-       
-       
-     RunLoader->GetEvent(ievent);
+       RunLoader->GetEvent(ievent);
          
      if (ievent%1000==0) printf("\t Event = %d\n",ievent);    
 
 // Hits
-    data_hits.SetTreeAddress("H");    
+     muondata.SetTreeAddress("H");    
         
     Int_t itrack, ntracks, NbHits[2][4];
     Int_t SumNbHits;
@@ -114,15 +115,15 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
       NbHits[j][jj]=0;
      }
     } 
-    ntracks = (Int_t) data_hits.GetNtracks();      
+    ntracks = (Int_t) muondata.GetNtracks();      
     for (itrack=0; itrack<ntracks; itrack++) { // Track loop
-      data_hits.GetTrack(itrack); 
+      muondata.GetTrack(itrack); 
 
       Int_t ihit, nhits;
-      nhits = (Int_t) data_hits.Hits()->GetEntriesFast();   
+      nhits = (Int_t) muondata.Hits()->GetEntriesFast();   
       AliMUONHit* mHit;
       for(ihit=0; ihit<nhits; ihit++) {
-        mHit = static_cast<AliMUONHit*>(data_hits.Hits()->At(ihit));
+        mHit = static_cast<AliMUONHit*>(muondata.Hits()->At(ihit));
         Int_t Nch        = mHit->Chamber(); 
         Int_t hittrack   = mHit->Track();
         Float_t IdPart     = mHit->Particle();
@@ -136,7 +137,7 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
         }
        }
        
-      data_hits.ResetHits();
+      muondata.ResetHits();
       
     } // end track loop     
     
@@ -150,10 +151,15 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
     if (CoincMuPlus==1 && CoincMuMinus==1) coincmuon++;         
            
 // Trigger
-    data_digits.SetTreeAddress("D,GLT"); 
-    data_digits.GetTriggerD();
+    if (!readFromRP) {
+	muondata.SetTreeAddress("D,GLT"); 
+	muondata.GetTriggerD();
+    } else {    
+	muondata.SetTreeAddress("RC,TC"); 
+	muondata.GetTrigger();
+    }
    
-    globalTrigger = data_digits.GlobalTrigger();
+    globalTrigger = muondata.GlobalTrigger();
 
     Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
 
@@ -165,13 +171,17 @@ void MUONTriggerEfficiency (char filename[10]="galice.root"){
                                
     } // end of loop on Global Trigger         
     
-    data_digits.ResetTrigger();    
+    muondata.ResetTrigger();    
 
   } // end loop on event  
 
-  MUONHits->UnloadHits();
-  MUONDigits->UnloadDigits();  
-  
+   MUONLoader->UnloadHits();
+
+  if (!readFromRP) {
+      MUONLoader->UnloadDigits();  
+  } else {    
+      MUONLoader->UnloadRecPoints();
+  }  
  
   // calculate efficiency with as a ref. at least 3/4 planes fired
   Float_t efficiencylpt,efficiencyhpt;
