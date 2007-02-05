@@ -1,8 +1,11 @@
 /**************************************************************************
- * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
- *                                                                        *
- * Author: Per Thomas Hille for the ALICE HLT Project.                    *
+ * This file is property of and copyright by the Experimental Nuclear     *
+ * Physics Group, Dep. of Physics                                         *
+ * University of Oslo, Norway, 2007                                       *
+ *                                                                        * 
+ * Author: Per Thomas Hille <perthi@fys.uio.no> for the ALICE HLT Project.*
  * Contributors are mentioned in the code where appropriate.              *
+ * Please report bugs to perthi@fys.uio.no                                * 
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -125,25 +128,17 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
 	{
 	  tmpLength = fTVectorSize;
 	}
-
-      printf("\nstart = %d, length = %d\n", start,  tmpLength);   
       
       for(int i=0; i < tmpLength; i++)
 	{  
-	  cout <<fFloatDataPtr[i]<< " ";
 	  fDAmpl += fAVectorPtr[i]*fFloatDataPtr[i];    
 	}
-  
-      cout<<endl;
 
       for(int i=0; i < tmpLength; i++)
 	{   
 	  fDTof += fTVectorPtr[i]*fFloatDataPtr[i]; 
-	  cout <<fFloatDataPtr[i]<< " ";  
 	}
       
-      cout <<endl;
-
       if(fDAmpl > 900)
 	{
 	  Double_t tmpMax = GetMaxValue(fFloatDataPtr, tmpLength);
@@ -156,11 +151,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
       fDTof = fDTof/fDAmpl;
 
     }
-  
-  cout <<" AliHLTPHOSRawAnalyzerPeakFinder: amplitude ="<<fDAmpl<< endl;
-  cout <<" AliHLTPHOSRawAnalyzerPeakFinder: time ="<<fDTof<< endl << endl;
-  //thats all 
-} //end FitPeakFinder
+} //end Evaluate
 
 
 

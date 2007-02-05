@@ -73,6 +73,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
 const char* 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::GetComponentID()
 {
+  //cout << "AliHLTPHOSRawAnalyzerPeakFinderComponent returning ID" << endl;
   return "PhosRawPeakFinder";
 }
 
@@ -80,6 +81,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::GetComponentID()
 AliHLTComponent*
 AliHLTPHOSRawAnalyzerPeakFinderComponent::Spawn()
 {
+  //  cout << "AliHLTPHOSRawAnalyzerPeakFinderComponent spawning new instance" << endl;
   return new AliHLTPHOSRawAnalyzerPeakFinderComponent;
 }
 
