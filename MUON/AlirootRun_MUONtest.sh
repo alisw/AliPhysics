@@ -29,6 +29,10 @@ MuonSim.Run($NEVENTS);
 .q
 EOF
 
+echo "Removing Digits files ..."
+mkdir MUON.Digits
+mv MUON.Digits*.root MUON.Digits/ 
+
 echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF
