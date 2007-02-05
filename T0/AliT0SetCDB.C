@@ -31,10 +31,14 @@ void AliT0SetCDB()
 		  "Set calibration coefficients");
   menu->AddButton("Set Align","SetAC()",
 		  "Set alignment coefficients");
+  menu->AddButton("Set LookUpTable","SetLookUp()",
+                  "Set LookUp table");
   menu->AddButton("Read calibration CC","GetCC()",
 		  "Read calibration  coefficients");
   menu->AddButton("Read alignment CC","GetAC()",
 		  "Read face detector position ");
+  menu->AddButton("Read Lookup","GetLookUp()",
+		  "Read Lookup table ");
   menu->Show();
 }
 
@@ -74,7 +78,7 @@ void SetAC()
 
   //  AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("T0");
   AliCDBStorage* storage = AliCDBManager::Instance()->GetDefaultStorage();
- if(storage) {
+  if(storage) {
    AliCDBId id(fPath.Data(),firstRun,lastRun);
 
    storage->Put(alignda, id, &md);
@@ -173,4 +177,70 @@ void GetAC()
    
   AliT0AlignData *aln = (AliT0AlignData*)entry->GetObject();
   aln->Print();
+}
+//------------------------------------------------------------------------
+void SetLookUp()
+{
+  // Writing Lookup table into the Calibration DB
+  // Arguments:
+
+  TString DBFolder;
+  Int_t firstRun   =  0;
+  Int_t lastRun    = 10;
+  Int_t beamPeriod =  1;
+  char* objFormat  = "";
+
+  DBFolder  ="local://Calib";
+  firstRun  =  0;
+  lastRun   =  10;
+  objFormat = "T0 Lookup Table";
+
+  AliT0CalibData *calibda=new AliT0CalibData("T0");
+
+  calibda->ReadAsciiLookup("lookUpTable.txt");
+//calibda->SetA(5);
+  //Store calibration data into database
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+
+  //  AliCDBManager::Instance()->SetSpecificStorage("T0",DBFolder.Data());
+
+  AliCDBMetaData md;
+  md.SetComment(objFormat);
+  md.SetBeamPeriod(beamPeriod);
+  md.SetResponsible("Alla");
+  TString fPath="T0/Calib/LookUp_Table";
+
+
+  // AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("T0");
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetDefaultStorage();
+  if(storage) {
+    AliCDBId id(fPath.Data(),firstRun,lastRun);
+    storage->Put(calibda, id, &md);
+  }
+}
+//------------------------------------------------------------------------
+void GetLookUp()
+{
+  // Read calibration coefficients into the Calibration DB
+  // Arguments:
+
+  TString DBFolder;
+
+  //  DBFolder  ="local://Calib";
+  //   Int_t nRun=gAlice->GetRunNumber();
+  AliCDBManager* cdb      = AliCDBManager::Instance();
+  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
+  // cout<<" GetLookUp :: "<<stor<<endl;
+  AliCDBEntry *entry;
+  //entry = stor->Get("T0/Calib/LookUp_Table",2,0,0);
+  entry = stor->Get("T0/Calib/LookUp_Table",1);
+  //cout<<"entry="<<entry<<endl;
+   cout<<" AliT0CalibData ::GetLookUp :: "<<entry<<endl;
+  AliT0CalibData *clb = (AliT0CalibData*)entry->GetObject();
+  cout<<" AliT0CalibData *clb "<<clb <<endl;
+  //cout<<"clb->a="<<clb->GetA()<<endl;
+  //  clb->Dump();
+  for (Int_t i=0; i<6; i++) 
+    clb->PrintLookup("all",0,i,4);
+
 }

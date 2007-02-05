@@ -90,13 +90,17 @@ AliT0Parameters::Init()
   // CDB here. 
   //   if (fIsInit) return;
   
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  //  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
-  fCalibentry  = cdb->Get("T0/Calib/Gain_TimeDelay_Slewing_Walk");
-  if (fCalibentry){
+  // AliCDBManager* cdb      = AliCDBManager::Instance();
+  // fCalibentry  = cdb->Get("T0/Calib/Gain_TimeDelay_Slewing_Walk");
+ 
+
+  AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+  AliCDBEntry* fCalibentry  = stor->Get("T0/Calib/Gain_TimeDelay_Slewing_Walk",0);
+ if (fCalibentry){
    fgCalibData  = (AliT0CalibData*)fCalibentry->GetObject();
   }
- fLookUpentry  = cdb->Get("T0/Calib/LookUp_Table");
+ // fLookUpentry  = cdb->Get("T0/Calib/LookUp_Table");
+  fLookUpentry  = stor->Get("T0/Calib/LookUp_Table",0);
   if (fLookUpentry){
     fgLookUp  = (AliT0CalibData*)fLookUpentry->GetObject();
     //   fgLookUp->Dump();
