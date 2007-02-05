@@ -12,7 +12,7 @@ cd $OUTDIR
 FULLPATH="$CURDIR/$OUTDIR"
 # Minimum number of events to have enough stat. for invariant mass fit
 # 10000 is ok, 20000 is really fine
-NEVENTS=10
+NEVENTS=100
 SEED=1234567
 
 
@@ -51,7 +51,7 @@ echo "Running Trigger efficiency  ..."
 
 aliroot -b >& testTriggerResults.out << EOF
 .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
-MUONTriggerEfficiency();
+MUONTriggerEfficiency("galice.root",0);
 .q
 EOF
 

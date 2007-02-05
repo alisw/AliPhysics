@@ -60,7 +60,7 @@ EOF
 echo "Running Trigger efficiency  ..."
 aliroot -b >& testTriggerResults.out << EOF
 .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
-MUONTriggerEfficiency();
+MUONTriggerEfficiency("galice.root",1);
 .q
 EOF
 
