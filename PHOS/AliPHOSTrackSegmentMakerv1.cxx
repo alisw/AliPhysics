@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.80  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.79  2006/04/25 12:41:15  hristov
  * Moving non-persistent data to AliESDfriend (Yu.Belikov)
  *
@@ -235,7 +238,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
       Double_t * phmax = new Double_t[nModules];// phi max
       
       for (Int_t imod=0; imod<nModules; imod++) {
-	geom->EmcModuleCoverage(imod,
+	// Modules are numbered from 1 to 5 in AliPHOSGeometry
+	geom->EmcModuleCoverage(imod+1,
 				thmin[imod],thmax[imod],
 				phmin[imod],phmax[imod]);
       }
