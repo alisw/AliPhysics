@@ -21,7 +21,7 @@ using std::endl;
 
 
 
-AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer():fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999)
+AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer():fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999)
 {
   fFloatDataPtr = new double[1008];
 }
@@ -31,7 +31,7 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 
 }
 
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999), fStartIndex(0)
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
 {
 
 }
@@ -41,7 +41,7 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloa
 * @param dataPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), n(99999), fStartIndex(0)
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
 {
   fFloatDataPtr = dtaPtr;  
   fSampleFrequency = fs;
@@ -60,13 +60,13 @@ void
 AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, int N)
 {
   fFloatDataPtr = dataPtr;  
-  n=N;
+  //  n=N;
   cout << "Baseline correction not yet implemeted" << endl;
 } //end BaselineCorrection
 
 
 /**
-* Shifts the basline with the amount given by baselineValue
+* Shifts the baseline with the amount given by baselineValue
 * If pretrigger samples are not present then the basline correction will be incorrect. 
 * @param dataPtr array for wich to correct the basline 
 * @param BaslineValue the basline value to subtract..
