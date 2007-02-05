@@ -3,7 +3,11 @@
 /**************************************************************************
  * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
- * Author: Per Thomas Hille for the ALICE HLT Project.                    *
+ * Authors: Per Thomas Hille <perthi@fys.uio.no>, after                   * 
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
+ *          for the ALICE Offline Project.                                *
+ *	                                                                  *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
