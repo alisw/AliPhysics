@@ -1,3 +1,4 @@
+
 #ifndef ALIHLTPHOSEMCCALIBDATA_H
 #define ALIHLTPHOSEMCCALIBDATA_H
 
@@ -30,7 +31,7 @@ class AliHLTPHOSEmcCalibData: public TNamed {
  protected:
   Float_t  fADCchannelEnergy[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ;  /**<width of one EMC ADC channel in GeV*/
   Float_t  fADCpedestalEmcMeasured[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ; /**<value of the EMC ADC pedestal measured from calibration run*/
-  Int_t  fADCpedestalAltroReg[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ; /**<value of the EMC ADC pedestal subtraction values stored in the ALTRO registers*/
+  Int_t    fADCpedestalAltroReg[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ; /**<value of the EMC ADC pedestal subtraction values stored in the ALTRO registers*/
   Float_t  fADCpedestalCorrectionTable[N_MODULES][N_COLUMNS_MOD][N_ROWS_MOD][N_GAINS] ; /**<value of the EMC ADC pedestal values to be subtracted form the decoed cahnnel data (= fADCpedestalEmcMeasured - fADCpedestalAltroReg)*/
 
   ClassDef(AliHLTPHOSEmcCalibData,1)    // PHOS EMC calibration data
