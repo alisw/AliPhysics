@@ -39,7 +39,6 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
     fLoStripY(0),
     fLoLpt(0),
     fLoHpt(0),
-    fLoOutput(0),
     
     fX1Pattern(0),
     fX2Pattern(0),
@@ -64,7 +63,6 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
       fLoStripY(theMUONLocalTrig.fLoStripY),
       fLoLpt(theMUONLocalTrig.fLoLpt),
       fLoHpt(theMUONLocalTrig.fLoHpt),
-      fLoOutput(theMUONLocalTrig.fLoOutput),
       
       fX1Pattern(theMUONLocalTrig.fX1Pattern),
       fX2Pattern(theMUONLocalTrig.fX2Pattern),
@@ -99,7 +97,6 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
   fLoStripY  = theMUONLocalTrig.fLoStripY;           
   fLoLpt     = theMUONLocalTrig.fLoLpt;
   fLoHpt     = theMUONLocalTrig.fLoHpt;
-  fLoOutput  = theMUONLocalTrig.fLoOutput;
 
   fX1Pattern  = theMUONLocalTrig.fX1Pattern;
   fX2Pattern  = theMUONLocalTrig.fX2Pattern;

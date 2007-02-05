@@ -587,7 +587,6 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 	    fLocalTrigger->SetLoStripX(board->GetStripX11());
 	    fLocalTrigger->SetLoDev(board->GetDev());
 	    fLocalTrigger->SetLoStripY(board->GetStripY11());
-	    fLocalTrigger->SetLoOutput(board->Triggered());
           
 	    //             SAVE LUT OUTPUT 
 	    UShort_t response = board->GetResponse();
