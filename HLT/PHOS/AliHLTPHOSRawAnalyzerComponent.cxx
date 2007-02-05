@@ -1,8 +1,11 @@
 /**************************************************************************
- * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
- *                                                                        *
- * Author: Per Thomas Hille for the ALICE HLT Project.                    *
+ * This file is property of and copyright by the Experimental Nuclear     *
+ * Physics Group, Dep. of Physics                                         *
+ * University of Oslo, Norway, 2007                                       *
+ *                                                                        * 
+ * Author: Per Thomas Hille <perthi@fys.uio.no> for the ALICE HLT Project.*
  * Contributors are mentioned in the code where appropriate.              *
+ * Please report bugs to perthi@fys.uio.no                                * 
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
