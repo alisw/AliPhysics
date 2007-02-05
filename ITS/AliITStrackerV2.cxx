@@ -26,8 +26,10 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom.h>
+#include <TGeoMatrix.h>
 
 #include "AliITSgeom.h"
+#include "AliAlignObj.h"
 #include "AliITSRecPoint.h"
 #include "AliESD.h"
 #include "AliITSRecPoint.h"
@@ -35,7 +37,7 @@
 
 ClassImp(AliITStrackerV2)
 
-AliITStrackerV2::AliITSlayer AliITStrackerV2::fgLayers[kMaxLayer]; // ITS layers
+AliITStrackerV2::AliITSlayer AliITStrackerV2::fgLayers[kMaxLayer]; //ITS layers
 
 AliITStrackerV2::AliITStrackerV2(): 
   AliTracker(), 
@@ -104,9 +106,9 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) :
     Int_t ndet=g->GetNdetectors(i);
 
     g->GetTrans(i,1,1,x,y,z); 
-    Double_t r=TMath::Sqrt(x*x + y*y);
     Double_t poff=TMath::ATan2(y,x);
     Double_t zoff=z;
+    Double_t r=TMath::Sqrt(x*x + y*y);
 
     g->GetTrans(i,1,2,x,y,z);
     r += TMath::Sqrt(x*x + y*y);
@@ -184,7 +186,13 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
         AliITSRecPoint *c=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
 
         Int_t idx=c->GetDetectorIndex();
-        Double_t y=r*fgLayers[i].GetDetector(idx).GetPhi()+c->GetY();
+        AliITSdetector &det=fgLayers[i].GetDetector(idx);
+   
+        //Shift the cluster to the misaligned position
+        Double_t x=det.GetR(); //y=...;      z=...;
+        c->SetX(x);            //c->SetY(y); c->SetZ(z); 
+
+        Double_t y=r*det.GetPhi()+c->GetY();
         if (y>circ) y-=circ; else if (y<0) y+=circ;
         c->SetPhiR(y);
 
@@ -596,6 +604,7 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
 
   if (!cc) return 0;
 
+  if (!fTrackToFollow.PropagateTo(cc->GetX(),0.,0.)) return 0; // Alignment
   if (!fTrackToFollow.Update(cc,chi2,(fI<<28)+cci)) {
      //Warning("TakeNextProlongation","filtering failed !\n");
      return 0;
@@ -1048,6 +1057,7 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
      }
  
      if (cl) {
+       if (!t->PropagateTo(cl->GetX(),0.,0.)) return kFALSE; //Alignment
        if (!t->Update(cl,maxchi2,idx)) {
           return kFALSE;
        }

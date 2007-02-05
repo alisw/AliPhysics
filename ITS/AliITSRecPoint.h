@@ -56,6 +56,7 @@ class AliITSRecPoint : public AliCluster {
   virtual Int_t Read(const char *name) {return TObject::Read(name);}
   
   void SetITSgeom(AliITSgeom* geom) {fGeom=geom;}
+
   virtual void SetY(Float_t  y ){fY=y;
     AliError("For consistency, Use method SetYZ. Data members are only partially set\n");}
   virtual void SetZ(Float_t  z ){fZ=z;
@@ -95,9 +96,13 @@ class AliITSRecPoint : public AliCluster {
   Int_t GetType() const {return fType;}  // type of the cluster
   Float_t GetDeltaProbability() const{return fDeltaProb;} //probability to belong to the delta ray
   
-
+  // The following two methods deal with the misaligned x position
+  // of a cluster in the tracking coordidate system 
+  virtual Float_t GetX() const {return fX;}
+  virtual void SetX(Float_t x) {fX=x;}
 
  protected:
+  Float_t   fX;        // X coordinate in the misaligned tracking system 
 
   Float_t   fXloc ;        //X of cluster (local coordinates)
   Float_t   fZloc ;        //Z of cluster (local coordinates)

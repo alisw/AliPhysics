@@ -206,7 +206,14 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
       SignDeltas(clusters,GetZ());
       while (ncl--) {
         AliITSRecPoint *c=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
+
 	detector = c->GetDetectorIndex();
+        AliITSdetector &det=fgLayers[i].GetDetector(detector);
+   
+        //Shift the cluster to the misaligned position
+        Double_t x=det.GetR(); //y=...;      z=...;
+        c->SetX(x);            //c->SetY(y); c->SetZ(z); 
+
         fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
       }
       clusters->Delete();
@@ -3237,6 +3244,9 @@ Int_t    AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* c
     chi2+= (0.5-track->GetNormQ(layer)/track->GetExpQ())*10.;
     track->SetdEdxMismatch(track->GetdEdxMismatch()+(0.5-track->GetNormQ(layer)/track->GetExpQ())*10.);
   }
+
+  if (!track->PropagateTo(cl->GetX(),0.,0.)) return 0; // Alignment
+
   return track->UpdateMI(cl->GetY(),cl->GetZ(),track->GetSigmaY(layer),track->GetSigmaZ(layer),chi2,index);
 }
 
