@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.49  2007/01/22 17:29:12  pavlinov
+ * EMCAL geometry can be created independently form anything now
+ *
  * Revision 1.48  2006/12/19 02:34:13  pavlinov
  * clean up the EMCAL name scheme : super module -> module -> tower (or cell)
  *
@@ -85,7 +88,7 @@ AliEMCAL::AliEMCAL()
 {
   // Default ctor 
   fName = "EMCAL" ;
-  Init();
+  InitConstants();
 
 }
 
@@ -101,7 +104,7 @@ AliEMCAL::AliEMCAL(const char* name, const char* title)
     fLowGainOffset(0)
 {
   //   ctor : title is used to identify the layout
-  Init();
+  InitConstants();
 
 }
 
@@ -112,7 +115,7 @@ AliEMCAL::~AliEMCAL()
 }
 
 //____________________________________________________________________________
-void AliEMCAL::Init(void)
+void AliEMCAL::InitConstants()
 {
   //initialize EMCAL values
   fBirkC0 = 1;
@@ -126,78 +129,10 @@ void AliEMCAL::Init(void)
 }
 
 //____________________________________________________________________________
-AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager) const
+void AliEMCAL::Init()
 {
-  //create and return the digitizer
-  return new AliEMCALDigitizer(manager);
-}
-
-//____________________________________________________________________________
-void AliEMCAL::CreateMaterials()
-{
-  // Definitions of materials to build EMCAL and associated tracking media.
-  // media number in idtmed are 1599 to 1698.
-
-  AliEMCALGeometry* geom = GetGeometry();
-
-  // --- Air ---               
-  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
-  Float_t zAir[4]={6.,7.,8.,18.};
-  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
-  Float_t dAir = 1.20479E-3;
-  AliMixture(0, "Air$", aAir, zAir, dAir, 4, wAir) ;
-
-  // --- Lead ---                                                                     
-  AliMaterial(1, "Pb$", 207.2, 82, 11.35, 0.56, 0., 0, 0) ;
-
-
-  // --- The polysterene scintillator (CH) ---
-  Float_t aP[2] = {12.011, 1.00794} ;
-  Float_t zP[2] = {6.0, 1.0} ;
-  Float_t wP[2] = {1.0, 1.0} ;
-  Float_t dP = 1.032 ;
-
-  AliMixture(2, "Polystyrene$", aP, zP, dP, -2, wP) ;
-
-  // --- Aluminium ---
-  AliMaterial(3, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
-  // ---         Absorption length is ignored ^
-
-  // 25-aug-04 by PAI - see  PMD/AliPMDv0.cxx for STEEL definition
-  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
-  Float_t zsteel[4] = { 26.,24.,28.,14. };
-  Float_t wsteel[4] = { .715,.18,.1,.005 };
-  AliMixture(4, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-
-  // DEFINITION OF THE TRACKING MEDIA
-
-  // for EMCAL: idtmed[1599->1698] equivalent to fIdtmed[0->100]
+  //EMCAL cuts
   Int_t * idtmed = fIdtmed->GetArray() - 1599 ; 
-  Int_t   isxfld = gAlice->Field()->Integ() ;
-  Float_t sxmgmx = gAlice->Field()->Max() ;
-
-  // Air                                                                         -> idtmed[1599]
- AliMedium(0, "Air$", 0, 0,
-	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
-
-  // The Lead                                                                      -> idtmed[1600]
- 
-  AliMedium(1, "Lead$", 1, 0,
-	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
-
- // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
-  float deemax = 0.1; // maximum fractional energy loss in one step (0 < DEEMAX ≤ 1);i
-  AliMedium(2, "Scintillator$", 2, 1,
-            isxfld, sxmgmx, 10.0, 0.001, deemax, 0.001, 0.001, 0, 0) ;
-
-  // Various Aluminium parts made of Al                                            -> idtmed[1602]
-  AliMedium(3, "Al$", 3, 0,
-             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
-
-  // 25-aug-04 by PAI : see  PMD/AliPMDv0.cxx for STEEL definition                 -> idtmed[1603]
-  AliMedium(4, "S steel$", 4, 0, 
-             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
-
 // --- Set decent energy thresholds for gamma and electron tracking
 
   // Tracking threshold for photons and electrons in Lead 
@@ -258,12 +193,84 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1603], "DCUTE", cutele) ;
   gMC->Gstpar(idtmed[1603], "DCUTM", cutele) ;
 
+  AliEMCALGeometry* geom = GetGeometry();
   if(geom->GetILOSS()>=0) {
     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
   } 
   if(geom->GetIHADR()>=0) {
     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
   }
+}
+
+//____________________________________________________________________________
+AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager) const
+{
+  //create and return the digitizer
+  return new AliEMCALDigitizer(manager);
+}
+
+//____________________________________________________________________________
+void AliEMCAL::CreateMaterials()
+{
+  // Definitions of materials to build EMCAL and associated tracking media.
+  // media number in idtmed are 1599 to 1698.
+  // --- Air ---               
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  AliMixture(0, "Air$", aAir, zAir, dAir, 4, wAir) ;
+
+  // --- Lead ---                                                                     
+  AliMaterial(1, "Pb$", 207.2, 82, 11.35, 0.56, 0., 0, 0) ;
+
+
+  // --- The polysterene scintillator (CH) ---
+  Float_t aP[2] = {12.011, 1.00794} ;
+  Float_t zP[2] = {6.0, 1.0} ;
+  Float_t wP[2] = {1.0, 1.0} ;
+  Float_t dP = 1.032 ;
+
+  AliMixture(2, "Polystyrene$", aP, zP, dP, -2, wP) ;
+
+  // --- Aluminium ---
+  AliMaterial(3, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
+  // ---         Absorption length is ignored ^
+
+  // 25-aug-04 by PAI - see  PMD/AliPMDv0.cxx for STEEL definition
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };
+  AliMixture(4, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
+
+  // DEFINITION OF THE TRACKING MEDIA
+
+  // for EMCAL: idtmed[1599->1698] equivalent to fIdtmed[0->100]
+  Int_t   isxfld = gAlice->Field()->Integ() ;
+  Float_t sxmgmx = gAlice->Field()->Max() ;
+
+  // Air                                                                         -> idtmed[1599]
+ AliMedium(0, "Air$", 0, 0,
+	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
+
+  // The Lead                                                                      -> idtmed[1600]
+ 
+  AliMedium(1, "Lead$", 1, 0,
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+
+ // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
+  float deemax = 0.1; // maximum fractional energy loss in one step (0 < DEEMAX â¤ 1);i
+  AliMedium(2, "Scintillator$", 2, 1,
+            isxfld, sxmgmx, 10.0, 0.001, deemax, 0.001, 0.001, 0, 0) ;
+
+  // Various Aluminium parts made of Al                                            -> idtmed[1602]
+  AliMedium(3, "Al$", 3, 0,
+             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+
+  // 25-aug-04 by PAI : see  PMD/AliPMDv0.cxx for STEEL definition                 -> idtmed[1603]
+  AliMedium(4, "S steel$", 4, 0, 
+             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+
 
   //set constants for Birk's Law implentation
   fBirkC0 =  1;

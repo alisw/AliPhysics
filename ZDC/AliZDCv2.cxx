@@ -898,10 +898,7 @@ void AliZDCv2::CreateMaterials()
   // Create Materials for the Zero Degree Calorimeter
   //
   
-  Int_t *idtmed = fIdtmed->GetArray();
-  
   Float_t dens, ubuf[1], wmat[2], a[2], z[2];
-  Int_t i;
   
   // --- Store in UBUF r0 for nuclear radius calculation R=r0*A**1/3 
 
@@ -1015,8 +1012,37 @@ void AliZDCv2::CreateMaterials()
   AliMedium(12,"ZAIR", 12, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   //
   AliMedium(11,"ZVOIM", 11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(13,"ZIRONE",13, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  
+  AliMedium(13,"ZIRONE",13, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);  
+} 
+
+//_____________________________________________________________________________
+void AliZDCv2::AddAlignableVolumes() const
+{
+ //
+ // Create entries for alignable volumes associating the symbolic volume
+ // name with the corresponding volume path. Needs to be syncronized with
+ // eventual changes in the geometry.
+ //
+ Int_t modnum = 0;
+ TString volpath1 = "ALIC_1/ZDC_1/ZNEU_1";
+ TString volpath2 = "ALIC_1/ZDC_1/ZPRO_1";
+
+ TString symname1="ZDC/NeutronZDC";
+ TString symname2="ZDC/ProtonZDC";
+
+ if(!gGeoManager->SetAlignableEntry(symname1.Data(),volpath1.Data()))
+     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname1.Data(),volpath1.Data()));
+
+ if(!gGeoManager->SetAlignableEntry(symname2.Data(),volpath2.Data()))
+     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname2.Data(),volpath2.Data()));
+}
+
+//_____________________________________________________________________________
+void AliZDCv2::Init()
+{
+ InitTables();
+  Int_t i;
+  Int_t *idtmed = fIdtmed->GetArray();
   // Thresholds for showering in the ZDCs 
   i = 1; //tantalum
   gMC->Gstpar(idtmed[i], "CUTGAM", .001);
@@ -1112,35 +1138,7 @@ void AliZDCv2::CreateMaterials()
   fMedSensZEM = idtmed[5];  // Sensitive volume: ZEM passive material
   fMedSensTDI = idtmed[6];  // Sensitive volume: TDI Cu shield
   fMedSensPI  = idtmed[7];  // Sensitive volume: beam pipes
-  fMedSensGR  = idtmed[12]; // Sensitive volume: air into the grooves
-} 
-
-//_____________________________________________________________________________
-void AliZDCv2::AddAlignableVolumes() const
-{
- //
- // Create entries for alignable volumes associating the symbolic volume
- // name with the corresponding volume path. Needs to be syncronized with
- // eventual changes in the geometry.
- //
- Int_t modnum = 0;
- TString volpath1 = "ALIC_1/ZDC_1/ZNEU_1";
- TString volpath2 = "ALIC_1/ZDC_1/ZPRO_1";
-
- TString symname1="ZDC/NeutronZDC";
- TString symname2="ZDC/ProtonZDC";
-
- if(!gGeoManager->SetAlignableEntry(symname1.Data(),volpath1.Data()))
-     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname1.Data(),volpath1.Data()));
-
- if(!gGeoManager->SetAlignableEntry(symname2.Data(),volpath2.Data()))
-     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname2.Data(),volpath2.Data()));
-}
-
-//_____________________________________________________________________________
-void AliZDCv2::Init()
-{
- InitTables();
+  fMedSensGR  = idtmed[12]; // Sensitive volume: air into the grooves  
 }
 
 //_____________________________________________________________________________

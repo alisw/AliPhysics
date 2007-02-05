@@ -986,8 +986,15 @@ void AliZDCv1::CreateMaterials()
   
   ifield =2;
   fieldm = 45.;
-  AliMedium(11, "ZVOIM", 11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  
+  AliMedium(11, "ZVOIM", 11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);  
+} 
+
+//_____________________________________________________________________________
+void AliZDCv1::Init()
+{
+  InitTables();
+  Int_t *idtmed = fIdtmed->GetArray();  
+  Int_t i;
   // Thresholds for showering in the ZDCs 
   i = 1; //tantalum
   gMC->Gstpar(idtmed[i], "CUTGAM", .001);
@@ -1078,12 +1085,6 @@ void AliZDCv1::CreateMaterials()
 //  fMedSensTDI = idtmed[6];  // Sensitive volume: TDI Cu shield
 //  fMedSensPI  = idtmed[7];  // Sensitive volume: beam pipes
   fMedSensGR  = idtmed[12]; // Sensitive volume: air into the grooves
-} 
-
-//_____________________________________________________________________________
-void AliZDCv1::Init()
-{
- InitTables();
 }
 
 //_____________________________________________________________________________

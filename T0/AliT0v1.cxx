@@ -441,8 +441,6 @@ void AliT0v1::CreateMaterials()
    Float_t sxmgmx = gAlice->Field()->Max();
    //   Float_t a,z,d,radl,absl,buf[1];
    // Int_t nbuf;
-   Int_t *idtmed = fIdtmed->GetArray();
-
 // AIR
                                                                                 
    Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
@@ -536,8 +534,47 @@ void AliT0v1::CreateMaterials()
    AliMedium(17, "T0 OpAir$", 22, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
    AliMedium(18, "T0 OpAirNext$", 23, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
     AliMedium(19, "OpticalGlassCathode$", 24, 1, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   
+   AliDebugClass(1,": ++++++++++++++Medium set++++++++++");
+   
+   
+}
+//---------------------------------------------------------------------
+void AliT0v1::DrawDetector()
+{
+//
+// Draw a shaded view of the Forward multiplicity detector version 0
+//
+  
+  //Set ALIC mother transparent
+  gMC->Gsatt("ALIC","SEEN",0);
+  //
+  //Set volumes visible
+  //  gMC->Gsatt("0STR","SEEN",0);
+  //  gMC->Gsatt("0INS","SEEN",0);
+  // gMC->Gsatt("0PMT","SEEN",1);
+  // gMC->Gsatt("0DIV","SEEN",1);
+  //
+  gMC->Gdopt("hide","off");
+  gMC->Gdopt("shad","on");
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*",0,1000,-1000,1000,-1000,1000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic",90,0,0,-35,9.5,.6,0.6);
+  //gMC->Gdraw("alic",0,0,0,10,9.5,.8,0.8); //other side view
+  gMC->Gdhead(1111,"T-Zero detector");
+  gMC->Gdopt("hide","off");
+}
 
-
+//-------------------------------------------------------------------
+void AliT0v1::Init()
+{
+// Initialises version 0 of the Forward Multiplicity Detector
+//
+//Int_t *idtmed  = gAlice->Idtmed();
+  AliT0::Init();
+  fIdSens1=gMC->VolId("0REG");
+   Int_t *idtmed = fIdtmed->GetArray();
 // Definition Cherenkov parameters
    int i;
    const Int_t kNbins=31;
@@ -587,46 +624,6 @@ void AliT0v1::CreateMaterials()
    gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2,efficAll , rindexSiO2 );
   gMC->SetCerenkov (idtmed[kOpAir], kNbins, aPckov,absorAir , efficAll,rindexAir );
    gMC->SetCerenkov (idtmed[kOpAirNext], kNbins, aPckov,absorbCathodeNext , efficAll, rindexCathodeNext);
-   
-   AliDebugClass(1,": ++++++++++++++Medium set++++++++++");
-   
-   
-}
-//---------------------------------------------------------------------
-void AliT0v1::DrawDetector()
-{
-//
-// Draw a shaded view of the Forward multiplicity detector version 0
-//
-  
-  //Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN",0);
-  //
-  //Set volumes visible
-  //  gMC->Gsatt("0STR","SEEN",0);
-  //  gMC->Gsatt("0INS","SEEN",0);
-  // gMC->Gsatt("0PMT","SEEN",1);
-  // gMC->Gsatt("0DIV","SEEN",1);
-  //
-  gMC->Gdopt("hide","off");
-  gMC->Gdopt("shad","on");
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*",0,1000,-1000,1000,-1000,1000);
-  gMC->DefaultRange();
-  gMC->Gdraw("alic",90,0,0,-35,9.5,.6,0.6);
-  //gMC->Gdraw("alic",0,0,0,10,9.5,.8,0.8); //other side view
-  gMC->Gdhead(1111,"T-Zero detector");
-  gMC->Gdopt("hide","off");
-}
-
-//-------------------------------------------------------------------
-void AliT0v1::Init()
-{
-// Initialises version 0 of the Forward Multiplicity Detector
-//
-//Int_t *idtmed  = gAlice->Idtmed();
-  AliT0::Init();
-  fIdSens1=gMC->VolId("0REG");
 
    AliDebug(1,Form("%s: *** T0 version 1 initialized ***\n",ClassName()));
 

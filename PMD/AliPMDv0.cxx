@@ -776,7 +776,6 @@ void AliPMDv0::CreateMaterials()
   
   //  cout << " Inside create materials " << endl;
 
-  Int_t *idtmed = fIdtmed->GetArray()-599;
   Int_t isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   
@@ -848,7 +847,33 @@ void AliPMDv0::CreateMaterials()
   AliMedium(98, "Vacuum  $", 98, 0, 0, isxfld, sxmgmx, 1., .1, .10, 10);
   AliMedium(99, "Air gaps$", 99, 0, 0, isxfld, sxmgmx, 1., .1, .10, .1);
 
-  
+}
+
+//_____________________________________________________________________________
+void AliPMDv0::Init()
+{
+  //
+  // Initialises PMD detector after it has been built
+  //
+  Int_t i;
+  //  kdet=1;
+  //
+  if(AliLog::GetGlobalDebugLevel()>0) {
+      printf("\n%s: ",ClassName());
+      for(i=0;i<35;i++) printf("*");
+      printf(" PMD_INIT ");
+      for(i=0;i<35;i++) printf("*");
+      printf("\n%s: ",ClassName());
+      printf("                 PMD simulation package (v0) initialised\n");
+      printf("%s: parameters of pmd\n", ClassName());
+      printf("%s: %10.2f %10.2f %10.2f \
+      %10.2f\n",ClassName(),fgkCellRadius,fgkCellWall,fgkCellDepth,fgkZdist );
+      printf("%s: ",ClassName());
+      for(i=0;i<80;i++) printf("*");
+      printf("\n");
+  }
+  Int_t *idtmed = fIdtmed->GetArray()-599;
+  fMedSens=idtmed[605-1];
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
   gMC->Gstpar(idtmed[600], "LOSS", 3.);
   gMC->Gstpar(idtmed[600], "DRAY", 1.);
@@ -897,33 +922,6 @@ void AliPMDv0::CreateMaterials()
   gMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
-}
-
-//_____________________________________________________________________________
-void AliPMDv0::Init()
-{
-  //
-  // Initialises PMD detector after it has been built
-  //
-  Int_t i;
-  //  kdet=1;
-  //
-  if(AliLog::GetGlobalDebugLevel()>0) {
-      printf("\n%s: ",ClassName());
-      for(i=0;i<35;i++) printf("*");
-      printf(" PMD_INIT ");
-      for(i=0;i<35;i++) printf("*");
-      printf("\n%s: ",ClassName());
-      printf("                 PMD simulation package (v0) initialised\n");
-      printf("%s: parameters of pmd\n", ClassName());
-      printf("%s: %10.2f %10.2f %10.2f \
-      %10.2f\n",ClassName(),fgkCellRadius,fgkCellWall,fgkCellDepth,fgkZdist );
-      printf("%s: ",ClassName());
-      for(i=0;i<80;i++) printf("*");
-      printf("\n");
-  }
-  Int_t *idtmed = fIdtmed->GetArray()-599;
-  fMedSens=idtmed[605-1];
 }
 
 //_____________________________________________________________________________

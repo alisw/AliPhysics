@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.70  2007/01/17 17:28:56  kharlov
+ * Extract ALTRO sample generation to a separate class AliPHOSPulseGenerator
+ *
  * Revision 1.69  2006/11/14 17:11:15  hristov
  * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
  *
@@ -79,7 +82,7 @@ public:
 
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;  
-
+  virtual void    Init();
   virtual AliTriggerDetector* CreateTriggerDetector() const 
     { return new AliPHOSTrigger(); }
 

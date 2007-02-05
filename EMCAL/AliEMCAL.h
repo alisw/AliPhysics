@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.40  2006/12/05 17:19:26  gustavo
+ * Updated AliEMCAL::Digits2Raw, reads first provisional RCU mapping files to make Raw data with new AliCaloAltroMapping and AliCaloRawStream
+ *
  *
  */
 //_________________________________________________________________________
@@ -54,6 +57,7 @@ class AliEMCAL : public AliDetector {
   virtual AliEMCALGeometry * GetGeometry() const 
     {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
   virtual void    Hits2SDigits();
+  virtual void    Init(); 
   virtual Int_t   IsVersion(void) const = 0 ;   
   
   virtual AliTriggerDetector* CreateTriggerDetector() const 
@@ -85,7 +89,7 @@ protected:
   static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ;
 
-  void Init(void);  //initializes some params
+  void InitConstants();  //initializes some params
 
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation

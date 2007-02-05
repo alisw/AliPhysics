@@ -191,6 +191,70 @@ void AliT0v2::CreateMaterials()
    Float_t wribber[3] = { 6., 12.,  1.};
    Float_t denribber  = 0.8;
    
+    
+   AliMaterial (0, "T0 Steel$", 55.850, 26., 7.87, 1.76, 999);
+   AliMaterial (1, "T0 Vacuum$", 1.e-16, 1.e-16, 1.e-16, 1.e16, 999);
+   AliMaterial (2, "T0 Air$", 14.61, 7.3, .001205, 30423., 999); 
+   
+   AliMixture (3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wal2o3);
+   AliMixture (4, "PMT glass   $", aglass, zglass, dglass, -2, wglass);
+   char namate[21]="";
+   gMC->Gfmate ((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
+   acer[0] = a;
+   zcer[0] = z;
+   gMC->Gfmate ((*fIdmate)[4], namate, a, z, d, radl, absl, buf, nbuf);
+   acer[1] = a;
+   zcer[1] = z;
+   
+   AliMixture (5, "Scintillator$",ascin,zscin,denscin,-2,wscin);
+   AliMixture (6, "Brass    $", abrass, zbrass, denbrass, 2, wbrass);
+   AliMixture (7, "Ribber $",aribber,zribber,denribber,-3,wribber);
+   AliMixture (9, "Ceramic    $", acer, zcer, denscer, 2, wcer);
+   
+   AliMedium (1, "T0 Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+   AliMedium (2, "Scintillator$", 5, 1, isxfld, sxmgmx, 10., .01, 1., .003, .003);
+   AliMedium (3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium (4, "Ceramic$", 9, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium (6, "Glass$", 4, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium (8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
+   AliMedium (9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(11, "Brass  $", 6, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// Draw a shaded view of the Forward multiplicity detector version 2
+//////////////////////////////////////////////////////////////////////
+void AliT0v2::DrawModule() const
+{  
+  //Set ALIC mother transparent
+  gMC->Gsatt ("ALIC", "SEEN", 0);
+
+  //Set volumes visible
+  gMC->Gsatt ("0STA", "SEEN", 0);
+  gMC->Gsatt ("0PMT", "SEEN", 1);
+  gMC->Gsatt ("0DIV", "SEEN", 1);
+
+  gMC->Gdopt ("hide", "on");
+  gMC->Gdopt ("shad", "on");
+  gMC->SetClipBox (".");
+  gMC->SetClipBox ("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->DefaultRange();
+  gMC->Gdraw ("alic", 40, 30, 0, 12, 9.5, 0.7, 0.7);
+  gMC->Gdhead (1111, "T-Zero detector");
+  gMC->Gdopt ("hide", "off");
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// Initialises version 2 of the Forward Multiplicity Detector
+//////////////////////////////////////////////////////////////////////
+void AliT0v2::Init()
+{
+//Int_t *idtmed  = gAlice->Idtmed();
+
+  AliT0::Init();
+  fIdSens1 = gMC->VolId ("0REG");
 // Definition Cherenkov parameters
   const Int_t NUMENTRIES = 32;
 
@@ -237,73 +301,8 @@ void AliT0v2::CreateMaterials()
    
   Int_t *idtmed = fIdtmed->GetArray();
 
-    
-   AliMaterial (0, "T0 Steel$", 55.850, 26., 7.87, 1.76, 999);
-   AliMaterial (1, "T0 Vacuum$", 1.e-16, 1.e-16, 1.e-16, 1.e16, 999);
-   AliMaterial (2, "T0 Air$", 14.61, 7.3, .001205, 30423., 999); 
-   
-   AliMixture (3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wal2o3);
-   AliMixture (4, "PMT glass   $", aglass, zglass, dglass, -2, wglass);
-   char namate[21]="";
-   gMC->Gfmate ((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
-   acer[0] = a;
-   zcer[0] = z;
-   gMC->Gfmate ((*fIdmate)[4], namate, a, z, d, radl, absl, buf, nbuf);
-   acer[1] = a;
-   zcer[1] = z;
-   
-   AliMixture (5, "Scintillator$",ascin,zscin,denscin,-2,wscin);
-   AliMixture (6, "Brass    $", abrass, zbrass, denbrass, 2, wbrass);
-   AliMixture (7, "Ribber $",aribber,zribber,denribber,-3,wribber);
-   AliMixture (9, "Ceramic    $", acer, zcer, denscer, 2, wcer);
-   
-   AliMedium (1, "T0 Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
-   AliMedium (2, "Scintillator$", 5, 1, isxfld, sxmgmx, 10., .01, 1., .003, .003);
-   AliMedium (3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium (4, "Ceramic$", 9, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium (6, "Glass$", 4, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium (8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
-   AliMedium (9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   AliMedium(11, "Brass  $", 6, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-
    gMC->SetCerenkov (idtmed[6], NUMENTRIES, ppckov, absor_qwarz, effic_all, rindex_qwarz);
    gMC->SetCerenkov (idtmed[1], NUMENTRIES, ppckov, absor_air, effic_all, rindex_air);
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// Draw a shaded view of the Forward multiplicity detector version 2
-//////////////////////////////////////////////////////////////////////
-void AliT0v2::DrawModule() const
-{  
-  //Set ALIC mother transparent
-  gMC->Gsatt ("ALIC", "SEEN", 0);
-
-  //Set volumes visible
-  gMC->Gsatt ("0STA", "SEEN", 0);
-  gMC->Gsatt ("0PMT", "SEEN", 1);
-  gMC->Gsatt ("0DIV", "SEEN", 1);
-
-  gMC->Gdopt ("hide", "on");
-  gMC->Gdopt ("shad", "on");
-  gMC->SetClipBox (".");
-  gMC->SetClipBox ("*", 0, 1000, -1000, 1000, -1000, 1000);
-  gMC->DefaultRange();
-  gMC->Gdraw ("alic", 40, 30, 0, 12, 9.5, 0.7, 0.7);
-  gMC->Gdhead (1111, "T-Zero detector");
-  gMC->Gdopt ("hide", "off");
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// Initialises version 2 of the Forward Multiplicity Detector
-//////////////////////////////////////////////////////////////////////
-void AliT0v2::Init()
-{
-//Int_t *idtmed  = gAlice->Idtmed();
-
-  AliT0::Init();
-  fIdSens1 = gMC->VolId ("0REG");
 
   printf ("*** T0 version 2 initialized ***\n");
 }

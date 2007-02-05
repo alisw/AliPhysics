@@ -59,37 +59,7 @@ void AliHMPIDv1::CreateMaterials()
 // Arguments: none
 //   Returns: none    
   AliDebug(1,"Start v1 HMPID.");
-  
-  Float_t emin=5.5,emax=8.5;         //Photon energy range,[eV]
-
-  TF2 *pRaIF=new TF2("RidxRad","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5796)-0.0005*(y-20))"                                       ,emin,emax,0,50); //DiMauro mail temp 0-50 degrees C
-  TF1 *pWiIF=new TF1("RidxWin","sqrt(1+46.411/(10.666*10.666-x*x)+228.71/(18.125*18.125-x*x))"                                        ,emin,emax);      //SiO2 idx TDR p.35
-  TF1 *pGaIF=new TF1("RidxGap","1+0.12489e-6/(2.62e-4 - x*x/1239.84/1239.84)"                                                         ,emin,emax);      //?????? from where  
-
-  TF1 *pRaAF=new TF1("RabsRad","(x<7.8)*(gaus+gaus(3))+(x>=7.8)*0.0001"                                                               ,emin,emax);  //fit from DiMauro data 28.10.03 
-  pRaAF->SetParameters(3.20491e16,-0.00917890,0.742402,3035.37,4.81171,0.626309);
-  TF1 *pWiAF=new TF1("RabsWin","(x<8.2)*(818.8638-301.0436*x+36.89642*x*x-1.507555*x*x*x)+(x>=8.2)*0.0001"                            ,emin,emax);  //fit from DiMauro data 28.10.03 
-  TF1 *pGaAF=new TF1("RabsGap","(x<7.75)*6512.399+(x>=7.75)*3.90743e-2/(-1.655279e-1+6.307392e-2*x-8.011441e-3*x*x+3.392126e-4*x*x*x)",emin,emax);  //????? from where  
-  
-  TF1 *pQeF =new TF1("Qe"    ,"0+(x>6.07267)*0.344811*(1-exp(-1.29730*(x-6.07267)))"                                                  ,emin,emax);  //fit from DiMauro data 28.10.03  
-
-  const Int_t kNbins=30;       //number of photon energy points
-  Float_t aEckov [kNbins]; 
-  Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins], aAbsMet[kNbins];
-  Float_t aIdxRad[kNbins], aIdxWin[kNbins], aIdxGap[kNbins], aIdxMet[kNbins], aIdxPc[kNbins]; 
-  Float_t                                                    aQeAll [kNbins], aQePc [kNbins];
-                            
-  for(Int_t i=0;i<kNbins;i++){
-    Float_t eV=emin+0.1*i;  //Ckov energy in eV
-    aEckov [i] =1e-9*eV;    //Ckov energy in GeV
-    aAbsRad[i]=pRaAF->Eval(eV); aIdxRad[i]=1.292;//pRaIF->Eval(eV,20);      //Simulation for 20 degress C       
-    aAbsWin[i]=pWiAF->Eval(eV); aIdxWin[i]=1.5787;//pWiIF->Eval(eV);
-    aAbsGap[i]=pGaAF->Eval(eV); aIdxGap[i]=1.0005;//pGaIF->Eval(eV);    aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
-    aAbsMet[i] =0.0001;                aIdxMet[i]=0;                                             //metal ref idx must be 0 in order to reflect photon
-                                       aIdxPc [i]=1;           aQePc [i]=pQeF->Eval(eV);         //PC ref idx must be 1 in order to apply photon to QE conversion 
-                                       
-  }
-  
+    
 //data from PDG booklet 2002     density [gr/cm^3] rad len [cm] abs len [cm]    
   Float_t   aAir[4]={12,14,16,36}    ,   zAir[4]={6,7,8,18} ,   wAir[4]={0.000124,0.755267,0.231781,0.012827} , dAir=0.00120479; Int_t nAir=4;//mixture 0.9999999
   Float_t aC6F14[2]={ 12.01 , 18.99} , zC6F14[2]={ 6 , 9}   , wC6F14[2]={6 , 14} , dC6F14=1.68    ; Int_t nC6F14=-2;
@@ -120,16 +90,7 @@ void AliHMPIDv1::CreateMaterials()
     AliMaterial(++matId,"Cu"  ,aCu  ,zCu  ,dCu  ,radCu  ,absCu  );  AliMedium(kCu  ,"Cu"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"W"   ,aW   ,zW   ,dW   ,radW   ,absW   );  AliMedium(kW   ,"W"   , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-  
-    gMC->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsRad  , aQeAll , aIdxRad );    
-    gMC->SetCerenkov((*fIdtmed)[kSiO2]     , kNbins, aEckov, aAbsWin  , aQeAll , aIdxWin );    
-    gMC->SetCerenkov((*fIdtmed)[kCH4]      , kNbins, aEckov, aAbsGap  , aQeAll , aIdxGap );    
-    gMC->SetCerenkov((*fIdtmed)[kCu]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
-    gMC->SetCerenkov((*fIdtmed)[kW]        , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet ); //n=0 means reflect photons       
-    gMC->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet  , aQePc  , aIdxPc  ); //n=1 means convert photons    
-    gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
-  
-  delete pRaAF;delete pWiAF;delete pGaAF; delete pRaIF; delete pWiIF; delete pGaIF; delete pQeF;
+    
     AliDebug(1,"Stop v1 HMPID.");
 
   TString ttl=GetTitle(); if(!ttl.Contains("ShowOptics")) return;              //user didn't aks to plot optical curves
@@ -139,7 +100,12 @@ void AliHMPIDv1::CreateMaterials()
   const Int_t kWinM=26 , kWinC=kBlue;  
   const Int_t kGapM=25 , kGapC=kGreen;  
   const Int_t kPcM = 2 , kPcC =kMagenta;  
-  
+  const Int_t kNbins=30;       //number of photon energy points
+
+  Float_t aEckov [kNbins]; 
+  Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins];
+  Float_t aIdxRad[kNbins], aIdxWin[kNbins], aIdxGap[kNbins]; 
+  Float_t aQePc [kNbins];  
   Float_t aTraRad[kNbins],aTraWin[kNbins],aTraGap[kNbins],aTraTot[kNbins];
   for(Int_t i=0;i<kNbins;i++){//calculate probability for photon to survive during transversing a volume of material with absorption length  
     aTraRad[i]=TMath::Exp(-AliHMPIDDigit::SizeRad()/ (aAbsRad[i]+0.0001)); //radiator
@@ -297,6 +263,43 @@ void AliHMPIDv1::Init()
   fIdPc      = gMC->VolId("Rpc");
   fIdAmpGap  = gMC->VolId("Rgap");
   fIdProxGap = gMC->VolId("Rgap");
+  const Int_t kNbins=30;       //number of photon energy points
+  Float_t emin=5.5,emax=8.5;         //Photon energy range,[eV]
+  Float_t aEckov [kNbins]; 
+  Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins], aAbsMet[kNbins];
+  Float_t aIdxRad[kNbins], aIdxWin[kNbins], aIdxGap[kNbins], aIdxMet[kNbins], aIdxPc[kNbins]; 
+  Float_t                                                    aQeAll [kNbins], aQePc [kNbins];
+
+  TF2 *pRaIF=new TF2("RidxRad","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5796)-0.0005*(y-20))"                                       ,emin,emax,0,50); //DiMauro mail temp 0-50 degrees C
+  TF1 *pWiIF=new TF1("RidxWin","sqrt(1+46.411/(10.666*10.666-x*x)+228.71/(18.125*18.125-x*x))"                                        ,emin,emax);      //SiO2 idx TDR p.35
+  TF1 *pGaIF=new TF1("RidxGap","1+0.12489e-6/(2.62e-4 - x*x/1239.84/1239.84)"                                                         ,emin,emax);      //?????? from where  
+
+  TF1 *pRaAF=new TF1("RabsRad","(x<7.8)*(gaus+gaus(3))+(x>=7.8)*0.0001"                                                               ,emin,emax);  //fit from DiMauro data 28.10.03 
+  pRaAF->SetParameters(3.20491e16,-0.00917890,0.742402,3035.37,4.81171,0.626309);
+  TF1 *pWiAF=new TF1("RabsWin","(x<8.2)*(818.8638-301.0436*x+36.89642*x*x-1.507555*x*x*x)+(x>=8.2)*0.0001"                            ,emin,emax);  //fit from DiMauro data 28.10.03 
+  TF1 *pGaAF=new TF1("RabsGap","(x<7.75)*6512.399+(x>=7.75)*3.90743e-2/(-1.655279e-1+6.307392e-2*x-8.011441e-3*x*x+3.392126e-4*x*x*x)",emin,emax);  //????? from where  
+  
+  TF1 *pQeF =new TF1("Qe"    ,"0+(x>6.07267)*0.344811*(1-exp(-1.29730*(x-6.07267)))"                                                  ,emin,emax);  //fit from DiMauro data 28.10.03  
+                            
+  for(Int_t i=0;i<kNbins;i++){
+    Float_t eV=emin+0.1*i;  //Ckov energy in eV
+    aEckov [i] =1e-9*eV;    //Ckov energy in GeV
+    aAbsRad[i]=pRaAF->Eval(eV); aIdxRad[i]=1.292;//pRaIF->Eval(eV,20);      //Simulation for 20 degress C       
+    aAbsWin[i]=pWiAF->Eval(eV); aIdxWin[i]=1.5787;//pWiIF->Eval(eV);
+    aAbsGap[i]=pGaAF->Eval(eV); aIdxGap[i]=1.0005;//pGaIF->Eval(eV);    aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
+    aAbsMet[i] =0.0001;                aIdxMet[i]=0;                                             //metal ref idx must be 0 in order to reflect photon
+                                       aIdxPc [i]=1;           aQePc [i]=pQeF->Eval(eV);         //PC ref idx must be 1 in order to apply photon to QE conversion 
+                                       
+  }
+  gMC->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsRad  , aQeAll , aIdxRad );    
+  gMC->SetCerenkov((*fIdtmed)[kSiO2]     , kNbins, aEckov, aAbsWin  , aQeAll , aIdxWin );    
+  gMC->SetCerenkov((*fIdtmed)[kCH4]      , kNbins, aEckov, aAbsGap  , aQeAll , aIdxGap );    
+  gMC->SetCerenkov((*fIdtmed)[kCu]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
+  gMC->SetCerenkov((*fIdtmed)[kW]        , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet ); //n=0 means reflect photons       
+  gMC->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet  , aQePc  , aIdxPc  ); //n=1 means convert photons    
+  gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
+  delete pRaAF;delete pWiAF;delete pGaAF; delete pRaIF; delete pWiIF; delete pGaIF; delete pQeF;
+
   AliDebug(1,"Stop v1 HMPID.");    
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

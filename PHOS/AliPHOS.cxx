@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.108  2007/02/01 10:34:47  hristov
+ * Removing warnings on Solaris x86
+ *
  * Revision 1.107  2007/01/29 16:29:37  kharlov
  * Digits2Raw(): special workaround for digits with time out of range
  *
@@ -303,7 +306,6 @@ void AliPHOS::CreateMaterials()
   // DEFINITION OF THE TRACKING MEDIA
 
   // for PHOS: idtmed[699->798] equivalent to fIdtmed[0->100]
-  Int_t * idtmed = fIdtmed->GetArray() - 699 ; 
   Int_t   isxfld = gAlice->Field()->Integ() ;
   Float_t sxmgmx = gAlice->Field()->Max() ;
 
@@ -386,8 +388,16 @@ void AliPHOS::CreateMaterials()
   // Air                                                                            -> idtmed[798] 
   AliMedium(99, "Air          $", 99, 0,
 	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
+}
 
+//_____________________________________________________________________________
+void AliPHOS::Init()
+{
+  //
+  // Initialises cuts for PHOS
+  //
   // --- Set decent energy thresholds for gamma and electron tracking
+  Int_t * idtmed = fIdtmed->GetArray() - 699 ; 
 
   // Tracking threshold for photons and electrons in the scintillator crystal 
   gMC->Gstpar(idtmed[699], "CUTGAM",0.5E-4) ; 
@@ -419,7 +429,6 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[715], "LOSS",2.) ;
   gMC->Gstpar(idtmed[715], "DRAY",0.) ;
   gMC->Gstpar(idtmed[715], "STRA",2.) ;
-
 }
 
 //____________________________________________________________________________

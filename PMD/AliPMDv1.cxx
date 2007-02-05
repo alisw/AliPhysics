@@ -1383,7 +1383,6 @@ void AliPMDv1::CreateMaterials()
   //
   //  cout << " Inside create materials " << endl;
 
-  Int_t *idtmed = fIdtmed->GetArray()-599;
   Int_t isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   
@@ -1454,6 +1453,25 @@ void AliPMDv1::CreateMaterials()
   AliMedium(98, "Vacuum  $", 98, 0, 0, isxfld, sxmgmx, 1., .1, .10, 10);
   AliMedium(99, "Air gaps$", 99, 0, 0, isxfld, sxmgmx, 1., .1, .10, .1);
   
+  AliDebug(1,"Outside create materials");
+
+}
+
+//_____________________________________________________________________________
+void AliPMDv1::Init()
+{
+  //
+  // Initialises PMD detector after it has been built
+  //
+
+  //
+  AliDebug(2,"Inside Init");
+  AliDebug(2,"PMD simulation package (v1) initialised");
+  AliDebug(2,"parameters of pmd");
+  AliDebug(2,Form("%10.2f %10.2f %10.2f %10.2f\n",
+		  fgkCellRadius,fgkCellWall,fgkCellDepth,fgkZdist));
+  Int_t *idtmed = fIdtmed->GetArray()-599;
+  fMedSens=idtmed[605-1];
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
   gMC->Gstpar(idtmed[600], "LOSS", 3.);
   gMC->Gstpar(idtmed[600], "DRAY", 1.);
@@ -1496,27 +1514,6 @@ void AliPMDv1::CreateMaterials()
   gMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
-
-  AliDebug(1,"Outside create materials");
-
-}
-
-//_____________________________________________________________________________
-void AliPMDv1::Init()
-{
-  //
-  // Initialises PMD detector after it has been built
-  //
-
-  //
-  AliDebug(2,"Inside Init");
-  AliDebug(2,"PMD simulation package (v1) initialised");
-  AliDebug(2,"parameters of pmd");
-  AliDebug(2,Form("%10.2f %10.2f %10.2f %10.2f\n",
-		  fgkCellRadius,fgkCellWall,fgkCellDepth,fgkZdist));
-  Int_t *idtmed = fIdtmed->GetArray()-599;
-  fMedSens=idtmed[605-1];
-
 }
 
 //_____________________________________________________________________________
