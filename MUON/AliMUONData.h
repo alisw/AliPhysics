@@ -140,6 +140,7 @@ class AliMUONData : public TNamed
     
     virtual void   Fill(Option_t* opt=" ");
     virtual void   MakeBranch(Option_t *opt=" ");
+    virtual void   SetDataContainer(Option_t *opt=" ");
     virtual void   SetTreeAddress(Option_t *opt=" ");
     
                    /// Set split level
