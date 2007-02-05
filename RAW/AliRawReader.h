@@ -109,8 +109,21 @@ class AliRawReader: public TObject {
 
     void             DumpData(Int_t limit = -1);
 
-    void             AddErrorLog(AliRawDataErrorLog::ERawDataErrorType type,
+    void             AddErrorLog(AliRawDataErrorLog::ERawDataErrorLevel level,
+				 Int_t code,
 				 const char *message = NULL);
+    void             AddMinorErrorLog(Int_t code,
+				      const char *message = NULL) {
+      return AddErrorLog(AliRawDataErrorLog::kMinor,code,message);
+    }
+    void             AddMajorErrorLog(Int_t code,
+				      const char *message = NULL) {
+      return AddErrorLog(AliRawDataErrorLog::kMajor,code,message);
+    }
+    void             AddFatalErrorLog(Int_t code,
+				      const char *message = NULL) {
+      return AddErrorLog(AliRawDataErrorLog::kFatal,code,message);
+    }
     Int_t            GetNumberOfErrorLogs() const { return fErrorLogs.GetEntriesFast(); }
     AliRawDataErrorLog *GetErrorLog(Int_t i) const {
       return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);

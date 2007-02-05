@@ -457,7 +457,8 @@ void AliRawReader::DumpData(Int_t limit)
   } while (ReadHeader());
 }
 
-void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorType type,
+void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorLevel level,
+			       Int_t code,
 			       const char *message)
 {
   // Add a raw data error message to the list
@@ -475,6 +476,7 @@ void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorType type,
   new (fErrorLogs[fErrorLogs.GetEntriesFast()])
     AliRawDataErrorLog(fEventNumber,
 		       ddlId,
-		       type,
+		       level,
+		       code,
 		       message);
 }

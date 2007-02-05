@@ -24,8 +24,7 @@ class AliRawDataErrorLog: public TNamed {
 
  public:
 
-  enum ERawDataErrorType {
-    kNone = 0, 
+  enum ERawDataErrorLevel {
     kMinor = 1, 
     kMajor = 2, 
     kFatal = 3
@@ -33,27 +32,30 @@ class AliRawDataErrorLog: public TNamed {
 
   AliRawDataErrorLog();
   AliRawDataErrorLog(Int_t eventNumber, Int_t ddlId,
-		     ERawDataErrorType errorType,
+		     ERawDataErrorLevel errorLevel,
+		     Int_t errorCode,
 		     const char *message = NULL);
   AliRawDataErrorLog(const AliRawDataErrorLog & source);
   AliRawDataErrorLog & operator=(const AliRawDataErrorLog & source);
   virtual ~AliRawDataErrorLog() {};
 
-  Int_t             GetEventNumber() const { return fEventNumber; }
-  Int_t             GetDdlID()       const { return fDdlID; }
-  ERawDataErrorType GetErrorType()   const { return fErrorType; }
-  const char *      GetMessage()     const { return fName.Data(); }
+  Int_t              GetEventNumber() const { return fEventNumber; }
+  Int_t              GetDdlID()       const { return fDdlID; }
+  ERawDataErrorLevel GetErrorLevel()  const { return fErrorLevel; }
+  Int_t              GetErrorCode()   const { return fErrorCode; }
+  const char *       GetMessage()     const { return fName.Data(); }
 
   Bool_t            IsSortable() const {return kTRUE;}
   Int_t             Compare(const TObject* obj) const;
 
  private:
 
-  Int_t             fEventNumber; // Event number as it appears in the input raw-data file
-  Int_t             fDdlID;       // ID of the DLL in which the error occured
-  ERawDataErrorType fErrorType;   // Type of the raw data error
+  Int_t              fEventNumber; // Event number as it appears in the input raw-data file
+  Int_t              fDdlID;       // ID of the DLL in which the error occured
+  ERawDataErrorLevel fErrorLevel;  // Level of the raw data error
+  Int_t              fErrorCode;   // Code of the raw data error (detector-specific)
 
-  ClassDef(AliRawDataErrorLog, 1)
+  ClassDef(AliRawDataErrorLog, 2)
 };
 
 #endif
