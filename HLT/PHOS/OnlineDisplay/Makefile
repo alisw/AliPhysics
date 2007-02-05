@@ -1,0 +1,54 @@
+ObjSuf		= o
+SrcSuf		= cxx
+HeadSuf		= h
+
+ROOTLIBS	= -L$(ROOTSYS)/lib -lNew -lCint \
+		-lGraf -lGraf3d -lHist -lHtml -lMatrix -lMinuit\
+		-lPostscript -lTree -lASImage \
+		-lCore -lEG -lFoam -lFumili -lGedOld -lGed \
+		-lGeom -lGpad -lGraf -lGuiBld -lGui -lMatrix\
+		-lRint -lRootAuth  -lThread -lVMC
+
+###ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lESD -lSTEER -lRAWDatarec   -lRAWDatabase 
+ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  
+
+HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-i686 -lHOMERReader
+
+HOMERINCLUDE	=$(ALIHLT_DC_DIR)/src/Util/HOMER/include 
+
+##echo $(HOMERINCLUDE)
+
+ALIHLTPHOSINCLUDE	=$(ALICE_ROOT)/HLT/PHOS
+
+ALIHLTINCLUDE	=$(ALICE_ROOT)/HLT/BASE
+
+MAINO		= main.$(ObjSuf)
+MAINS		= main.$(SrcSuf)
+
+ALIHLTPHOSONLINEDISPLAYO	=AliHLTPHOSGetEventButton.$(ObjSuf)
+ALIHLTPHOSONLINEDISPLAYS	=AliHLTPHOSGetEventButton.$(SrcSuf)
+ALIHLTPHOSONLINEDISPLAYH	=AliHLTPHOSGetEventButton.$(HeadSuf)
+
+GETEVENTBUTTONO	=AliHLTPHOSOnlineDisplay.$(ObjSuf)
+GETEVENTBUTTONS	=AliHLTPHOSOnlineDisplay.$(SrcSuf)
+GETEVENTBUTTONH	=AliHLTPHOSOnlineDisplay.$(HeadSuf)
+
+
+OBJS	= $(MAINO)  $(ALIHLTPHOSONLINEDISPLAYO) $(GETEVENTBUTTONO)
+
+
+
+pftest:$(OBJS)
+	g++ $(ROOTLIBS) $(ALIROOTLIBS) $(HLTLIBS)  $(OBJS) -o onlinedisplay
+
+$(MAINO):$(MAINS)
+	g++ -I$(ROOTSYS)/include -I$(HOMERINCLUDE) -c $(MAINS)
+
+$(ALIHLTPHOSONLINEDISPLAYO):$(ALIHLTPHOSONLINEDISPLAYS) $(ALIHLTPHOSONLINEDISPLAYH)
+	g++ -I$(ROOTSYS)/include -I$(ALIHLTPHOSINCLUDE) -I$(HOMERINCLUDE) -I$(ALIHLTINCLUDE) -c $(ALIHLTPHOSONLINEDISPLAYS)
+
+$(GETEVENTBUTTONO):$(GETEVENTBUTTONS) $(GETEVENTBUTTONH)
+	g++ -I$(ROOTSYS)/include -I$(ALIHLTPHOSINCLUDE) -I$(HOMERINCLUDE) -I$(ALIHLTINCLUDE) -c $(GETEVENTBUTTONS)
+
+clean:
+	@rm -f *o *~ *# pftest
