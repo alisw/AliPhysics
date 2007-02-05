@@ -354,8 +354,11 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
   
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
-  loader->LoadDigits("READ");
-  
+ 
+  //  Digits are not stored on disk and created on flight from rawdata.
+  // In order to write digits on disk the following line should be uncommented
+  // loader->LoadDigits("RECREATE"); 
+
   //   Loop over events  
   Int_t iEvent = 0;
            
@@ -379,13 +382,16 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     runLoader->GetEvent(iEvent++);
 
     //----------------------- raw2digits & raw2trigger-------------------
-    if (!loader->TreeD()) 
-    {
-      AliDebug(1,Form("Making Digit Container for event %d",iEvent));
-      loader->MakeDigitsContainer();
-    }
-    
-    data.SetTreeAddress("D,GLT");
+//     if (!loader->TreeD()) 
+//     {
+//       AliDebug(1,Form("Making Digit Container for event %d",iEvent));
+//       loader->MakeDigitsContainer();
+//     }
+  //  Digits are not stored on disk and created on flight from rawdata.
+  //  In order to write digits on disk the following lines should be uncommented
+  //  data.MakeBranch("D,GLT");
+  //  data.SetTreeAddress("D,GLT");
+    data.SetDataContainer("D, GLT");
     rawTimer.Start(kFALSE);
     fDigitMaker->Raw2Digits(rawReader);
     rawTimer.Stop();
@@ -396,7 +402,10 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
       calibration->ExecuteTask();
       calibTimer.Stop();
     }
-  
+    // Digits are not stored on disk and created on flight from rawdata.
+    // In order to write digits on disk the following lines should be uncommented
+    // data.Fill("D,GLT");
+    // loader->WriteDigits("OVERWRITE");
     //----------------------- digit2cluster & Trigger2Trigger -------------------
     clusterTimer.Start(kFALSE);
 
@@ -411,7 +420,6 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     // trigger branch
     data.MakeBranch("TC");
     data.SetTreeAddress("TC");
-    recoCluster->Trigger2Trigger();
     data.Fill("TC");
     
     loader->WriteRecPoints("OVERWRITE");
