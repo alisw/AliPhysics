@@ -1,13 +1,9 @@
+/* $Id$ */
+
 #ifndef ALIMULTIPLICITYCORRECTION_H
 #define ALIMULTIPLICITYCORRECTION_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
-
-#include <TCollection.h>
-#include <TNamed.h>
+#include "TNamed.h"
 
 //
 // class that contains the correction matrix and the functions for
@@ -19,6 +15,8 @@ class TH2;
 class TH1F;
 class TH2F;
 class TH3F;
+class TF1;
+class TCollection;
 
 class AliMultiplicityCorrection : public TNamed {
   public:
@@ -53,11 +51,15 @@ class AliMultiplicityCorrection : public TNamed {
     void SetMultiplicityMC(Int_t i, TH2F* hist) { fMultiplicityMC[i] = hist; }
     void SetCorrelation(Int_t i, TH3F* hist) { fCorrelation[i] = hist; }
 
+    void SetGenMeasFromFunc(TF1* inputMC, Int_t id);
+    TH2F* CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap);
+
     TH1F* GetMultiplicityESDCorrected(Int_t i) { return fMultiplicityESDCorrected[i]; }
 
     static void NormalizeToBinWidth(TH1* hist);
     static void NormalizeToBinWidth(TH2* hist);
 
+  public:
   protected:
     enum { kESDHists = 4, kMCHists = 5, kCorrHists = 8 };
 
@@ -66,6 +68,7 @@ class AliMultiplicityCorrection : public TNamed {
     static Double_t RegularizationPol0(Double_t *params);
     static Double_t RegularizationPol1(Double_t *params);
     static Double_t RegularizationTotalCurvature(Double_t *params);
+    static Double_t RegularizationEntropy(Double_t *params);
 
     static void MinuitFitFunction(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t);
 
