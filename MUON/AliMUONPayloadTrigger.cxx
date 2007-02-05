@@ -72,7 +72,7 @@ AliMUONPayloadTrigger::~AliMUONPayloadTrigger()
 Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 {
   /// decode trigger DDL
-  /// store only non-empty structures (TrigY ==0)
+  /// store only notified cards
 
  // reading DDL for trigger
 
@@ -165,7 +165,10 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 #else
       printf("Wrong end of local word %x instead of %x\n",buffer[index-1], fLocalStruct->GetEndOfLocal());
 #endif
-	  
+      // fill only if card notified
+      if (fLocalStruct->GetData(0) == fLocalStruct->GetDisableWord())
+	  continue;
+
       fDDLTrigger->AddLocStruct(*fLocalStruct, iReg);
 
     } // local card loop

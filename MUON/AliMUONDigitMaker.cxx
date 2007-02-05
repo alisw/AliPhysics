@@ -350,14 +350,15 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
 	localStruct = regHeader->GetLocalEntry(iLocal);
 
-	// if card has triggered
-	if (!localStruct->GetTriggerY() || !localStruct->GetTriggerX()) {
-
+	// if card exist
+	if (localStruct) {
 
 	  AliMUONLocalTriggerBoard* localBoard = 
 	    (AliMUONLocalTriggerBoard*)boards->At(localStruct->GetId()+1);
 
-	  loCircuit = localBoard->GetNumber();
+	  // skip copy cards
+	  if( !(loCircuit = localBoard->GetNumber()) )
+	     continue;
 
 	  if (fDigitFlag) {
 	    // fill local trigger

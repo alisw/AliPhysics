@@ -272,104 +272,104 @@ AliMUONTriggerCrateStore::NumberOfLocalBoards() const
 void
 AliMUONTriggerCrateStore::ReadFromFile(const char* file)
 {
-  /// Read crate and local board information from file.
-  fCrates = new AliMpExMap(kTRUE);
-  fLocalBoards = new AliMpExMap(kFALSE);
+    /// Read crate and local board information from file.
+    fCrates = new AliMpExMap(kTRUE);
+    fLocalBoards = new AliMpExMap(kFALSE);
   
-  ifstream myInputFile(gSystem->ExpandPathName(file), ios::in);
+    ifstream myInputFile(gSystem->ExpandPathName(file), ios::in);
   
-  string sLine, sValue;
+    string sLine, sValue;
   
-  if ( !myInputFile ) 
-  {
-    AliError("TRIGGER ELECTRONICS CONFIGURATION FILE COULD NOT BE OPENED");
-  }
-  else
-  {
-    while (getline(myInputFile,sLine))
+    if ( !myInputFile ) 
     {
-      if (sLine.empty()) continue; // Ignore empty lines
-      else
+      AliError("TRIGGER ELECTRONICS CONFIGURATION FILE COULD NOT BE OPENED");
+    }
+    else
+    {
+      while (getline(myInputFile,sLine))
       {
-        const Int_t kMaxfields = 15; char **fields = new char*[kMaxfields];
+	if (sLine.empty()) continue; // Ignore empty lines
+	else
+	{
+	  const Int_t kMaxfields = 15; char **fields = new char*[kMaxfields];
         
-        char s[100]; 
+	  char s[100]; 
         
-        if (sLine.find("Board",0) != string::npos) 
-        {   
-          strcpy(s,sLine.c_str());
+	  if (sLine.find("Board",0) != string::npos) 
+	  {   
+	    strcpy(s,sLine.c_str());
           
-          Int_t numlines = 0;
+	    Int_t numlines = 0;
           
-          for (char *token = strtok(s, " ");
-               token != NULL;
-               token = strtok(NULL, " "))
-          {
-            fields[numlines] = new char[strlen(token)+1];
-            strcpy(fields[numlines++],token);
-          }
+	    for (char *token = strtok(s, " ");
+		 token != NULL;
+		 token = strtok(NULL, " "))
+	    {
+	      fields[numlines] = new char[strlen(token)+1];
+	      strcpy(fields[numlines++],token);
+	    }
           
-          char str[10]; strcpy(str, fields[6]); strcat(str, fields[7]);
+	    char str[10]; strcpy(str, fields[6]); strcat(str, fields[7]);
           
-          AliMUONTriggerCrate *crate = Crate(str); 
+	    AliMUONTriggerCrate *crate = Crate(str); 
           
-          if (!crate) 
-          {
-            AddCrate(str); crate = Crate(str);
+	    if (!crate) 
+	    {
+	      AddCrate(str); crate = Crate(str);
             
-            AliMUONRegionalTriggerBoard *rboard = new AliMUONRegionalTriggerBoard();
-            crate->AddBoard(rboard, 0);
-          }               
+	      AliMUONRegionalTriggerBoard *rboard = new AliMUONRegionalTriggerBoard();
+	      crate->AddBoard(rboard, 0);
+	    }               
           
-          //             CONVENTION: SLOT 0 HOLDS THE REGIONAL BOARD
-          Int_t sl = atoi(fields[10]);
+	    //             CONVENTION: SLOT 0 HOLDS THE REGIONAL BOARD
+	    Int_t sl = atoi(fields[10]);
           
 //          AliMUONTriggerLut* lut = calibData->TriggerLut();
           
-          AliMUONLocalTriggerBoard *board = 
-            new AliMUONLocalTriggerBoard(fields[4], sl, 0x0);
+	    AliMUONLocalTriggerBoard *board = 
+		new AliMUONLocalTriggerBoard(fields[4], sl, 0x0);
           
-					if (strcmp(fields[1],"nn")) 
-					{
-						Int_t sboard = atoi(fields[1]);
+	    if (strcmp(fields[1],"nn")) 
+	    {
+	      Int_t sboard = atoi(fields[1]);
             
-						board->SetNumber(sboard);
-            fLocalBoards->Add(sboard,board);
+	      board->SetNumber(sboard);
+	      fLocalBoards->Add(sboard,board);
             
-//						fCrateMap[sboard-1] = new char[strlen(str)+1]; strcpy(fCrateMap[sboard-1], str);
-//						fBoardMap[sboard-1] = sl;
-					}
+// 	      fCrateMap[sboard-1] = new char[strlen(str)+1]; strcpy(fCrateMap[sboard-1], str);
+// 	      fBoardMap[sboard-1] = sl;
+	    }
           
-					board->SetCrate(str);
+	    board->SetCrate(str);
           
-          crate->AddBoard(board, sl);
+	    crate->AddBoard(board, sl);
           
-          while (getline(myInputFile,sLine)) if (sLine.find("transv",0) != string::npos) break;
+	    while (getline(myInputFile,sLine)) if (sLine.find("transv",0) != string::npos) break;
           
-          strcpy(s,sLine.c_str());
+	    strcpy(s,sLine.c_str());
           
-          for (char *token = strtok(s, " ");
-               token != NULL;
-               token = strtok(NULL, " ")) if (!strcmp(token,"NONE")) board->SetTC(kFALSE);
+	    for (char *token = strtok(s, " ");
+		 token != NULL;
+		 token = strtok(NULL, " ")) if (!strcmp(token,"NONE")) board->SetTC(kFALSE);
           
-          while (getline(myInputFile,sLine)) if (sLine.find("Switch",0) != string::npos) break;
+	    while (getline(myInputFile,sLine)) if (sLine.find("Switch",0) != string::npos) break;
           
-          while (getline(myInputFile,sLine)) if (!sLine.empty()) break;   
+	    while (getline(myInputFile,sLine)) if (!sLine.empty()) break;   
           
-          strcpy(s,sLine.c_str());
+	    strcpy(s,sLine.c_str());
           
-          Int_t lines = 0;
+	    Int_t lines = 0;
           
-          for (char *token = strtok(s, " ");
-               token != NULL;
-               token = strtok(NULL, " ")) board->SetSwitch(lines++, atoi(token));
+	    for (char *token = strtok(s, " ");
+		 token != NULL;
+		 token = strtok(NULL, " ")) board->SetSwitch(lines++, atoi(token));
           
-          for (Int_t i = 0; i<numlines; i++) 
-            if (fields[i]) {delete [] fields[i]; fields[i] = 0;}
+	    for (Int_t i = 0; i<numlines; i++) 
+		if (fields[i]) {delete [] fields[i]; fields[i] = 0;}
               
-              delete [] fields; fields = 0;
-        }
+	    delete [] fields; fields = 0;
+	  }
+	}
       }
     }
-  }
 }
