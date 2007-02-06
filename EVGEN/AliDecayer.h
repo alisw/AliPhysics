@@ -13,7 +13,7 @@ typedef TVirtualMCDecayer AliDecayer;
 #if ROOT_VERSION_CODE >= 197633  //Corresponds to Root v3-04-01
 typedef enum 
 {
-    kSemiElectronic, kDiElectron, kSemiMuonic, kDiMuon,
+    kBSemiElectronic, kSemiElectronic, kDiElectron, kBSemiMuonic, kSemiMuonic, kDiMuon,
     kBJpsiDiMuon, kBJpsiDiElectron, 
     kBPsiPrimeDiMuon, kBPsiPrimeDiElectron, kPiToMu, kKaToMu, 
     kNoDecay, kHadronicD, kOmega, kPhiKK, 

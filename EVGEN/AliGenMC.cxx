@@ -111,6 +111,7 @@ void AliGenMC::Init()
 //
 //  Initialization
     switch (fForceDecay) {
+    case kBSemiElectronic:
     case kSemiElectronic:
     case kDiElectron:
     case kBJpsiDiElectron:
@@ -118,6 +119,7 @@ void AliGenMC::Init()
 	fChildSelect[0] = kElectron;	
 	break;
     case kHardMuons:	
+    case kBSemiMuonic:
     case kSemiMuonic:
     case kDiMuon:
     case kBJpsiDiMuon:
