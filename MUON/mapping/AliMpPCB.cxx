@@ -745,7 +745,11 @@ AliMpPCB::Save() const
   TList lines;
   lines.SetOwner(kTRUE);
   
-  for ( Int_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+#ifdef WITH_ROOT
+  for ( Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
+#else  
+  for ( Size_t i = 0; i < fMotifPositions.size(); ++i )
+#endif    
   {
     AliMpMotifPosition* pos = GetMotifPosition(i);
     AliMpVMotif* motif = pos->GetMotif();

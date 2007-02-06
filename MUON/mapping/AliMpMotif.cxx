@@ -100,7 +100,9 @@ AliMpIntPair AliMpMotif::PadIndicesLocal(const TVector2& localPos) const
   /// or (-1,-1) if this position doesn't correspond to any valid
   /// connection
 
-  TVector2 lowerLeft = localPos+Dimensions();
+  TVector2 lowerLeft(localPos);
+  
+  lowerLeft += Dimensions();
 
   if ( lowerLeft.X() < - AliMpConstants::LengthTolerance() || 
        lowerLeft.Y() < - AliMpConstants::LengthTolerance() ) 
