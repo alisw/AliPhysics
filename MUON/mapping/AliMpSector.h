@@ -92,6 +92,7 @@ class AliMpSector : public TNamed
     AliMp::PlaneType  GetPlaneType() const;  
 
     TVector2        GetMinPadDimensions() const;
+    TVector2        GetMaxPadDimensions() const;
     AliMpIntPair    GetMaxPadIndices() const;
     Int_t           GetNofPads() const;
 
@@ -110,7 +111,7 @@ class AliMpSector : public TNamed
     void SetRowOffsets();
     void SetMotifPositions();
     void SetGlobalIndices();
-    void SetMinPadDimensions();
+    void SetMinMaxPadDimensions();
     void SetMaxPadIndices();
     void SetNofPads();
 
@@ -121,7 +122,8 @@ class AliMpSector : public TNamed
     RowVector  fRows;     ///< rows
     AliMpMotifMap*   fMotifMap; ///< motif map
     AliMp::Direction fDirection;///< the direction of constant pad size
-    TVector2         fMinPadDimensions; ///< minimal pad dimensions
+    TVector2         fMinPadDimensions; ///< minimum pad dimensions
+    TVector2         fMaxPadDimensions; ///< miximum pad dimensions
     AliMpIntPair     fMaxPadIndices;    ///< maximum pad indices    
     Int_t            fNofPads;          ///<  total number of pads
 
@@ -136,6 +138,9 @@ inline AliMp::Direction AliMpSector::GetDirection() const
 
 inline TVector2   AliMpSector::GetMinPadDimensions() const
 { return fMinPadDimensions; }
+
+inline TVector2   AliMpSector::GetMaxPadDimensions() const
+{ return fMaxPadDimensions; }
 
 inline AliMpIntPair  AliMpSector::GetMaxPadIndices() const
 { return fMaxPadIndices; }

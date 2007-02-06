@@ -52,6 +52,7 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
     fMotifMap(0),
     fDirection(direction),
     fMinPadDimensions(TVector2(1.e6, 1.e6)),
+    fMaxPadDimensions(),
     fMaxPadIndices(AliMpIntPair::Invalid()),
     fNofPads(0)
 {
@@ -89,6 +90,7 @@ AliMpSector::AliMpSector()
     fMotifMap(0),
     fDirection(AliMp::kX),
     fMinPadDimensions(TVector2(0., 0.)),
+    fMaxPadDimensions(),
     fMaxPadIndices(AliMpIntPair::Invalid()),
     fNofPads(0)
 {
@@ -180,7 +182,7 @@ void  AliMpSector::SetGlobalIndices()
 }
 
 //_____________________________________________________________________________
-void  AliMpSector::SetMinPadDimensions()
+void  AliMpSector::SetMinMaxPadDimensions()
 {
 /// Set the minimal pad dimensions.
 
@@ -193,6 +195,13 @@ void  AliMpSector::SetMinPadDimensions()
 	 padDimensions.X() > 0. && padDimensions.X() < fMinPadDimensions.X())
       
       fMinPadDimensions = padDimensions;
+
+    if ( fDirection == AliMp::kX &&  
+         padDimensions.Y() > 0. && padDimensions.Y() > fMaxPadDimensions.Y() ||
+         fDirection == AliMp::kY && 
+	 padDimensions.X() > 0. && padDimensions.X() > fMinPadDimensions.X())
+      
+      fMaxPadDimensions = padDimensions;
   }
 }
 
@@ -248,7 +257,7 @@ void AliMpSector::Initialize()
   SetRowOffsets();
   SetMotifPositions();
   SetGlobalIndices();
-  SetMinPadDimensions();
+  SetMinMaxPadDimensions();
   SetMaxPadIndices();
   SetNofPads();
 }  
