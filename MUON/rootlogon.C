@@ -11,5 +11,5 @@
   gInterpreter->ProcessLine("loadlibs()");
     
   cout << "Setting include path ..." << endl;
-  gSystem->SetIncludePath("-I${ALICE_ROOT}/include -I${ALICE_ROOT}/MUON -I${ALICE_ROOT}/MUON/mapping");
+  gSystem->SetIncludePath("-I${ALICE_ROOT}/include -I${ALICE_ROOT}/RAW -I${ALICE_ROOT}/MUON -I${ALICE_ROOT}/MUON/mapping");
 }
