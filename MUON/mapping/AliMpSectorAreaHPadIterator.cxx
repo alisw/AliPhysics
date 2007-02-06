@@ -119,12 +119,12 @@ void AliMpSectorAreaHPadIterator::MoveUp()
 {
 /// Increase the current row position and searches the first valid pad.
 
-  Double_t step = 2.* fkSegmentation->GetMinPadDimensions().Y();
+  Double_t dy = fkSegmentation->GetMinPadDimensions().Y();
 
   while ( !fCurrentPad.IsValid() && 
-          fCurrentRowPosition + step < fkArea.UpBorder())
+          fCurrentRowPosition + dy < fkArea.UpBorder())
   {
-    fCurrentRowPosition += step;
+    fCurrentRowPosition += 2.*dy;
     TVector2 position = TVector2(fkArea.LeftBorder(), fCurrentRowPosition);
     
     fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.RightBorder());
@@ -150,7 +150,7 @@ void AliMpSectorAreaHPadIterator::First()
   //
   fCurrentRowPosition = fkArea.DownBorder();
   TVector2 position(fkArea.LeftDownCorner()); 
-  
+
   fCurrentPad = fkSegmentation->PadByDirection(position, fkArea.RightBorder());
 
   MoveUp();
