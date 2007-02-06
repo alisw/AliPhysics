@@ -103,7 +103,31 @@ AliMpTriggerSegmentation::CreateIterator(const AliMpArea&) const
   //
   // Returns an iterator to loop over the pad contained within given area.
   // Not implemented for trigger.
+  AliError("Not implemented for trigger");
+  return 0;
+}
+
+//_____________________________________________________________________________
+AliMpVPadIterator*
+AliMpTriggerSegmentation::CreateIterator() const
+{
+  //
+  // Returns an iterator to loop over all the pads
+  // Not implemented for trigger.
+  AliError("Not implemented for trigger");
   
+  return 0;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMpTriggerSegmentation::GetNeighbours(const AliMpPad& /*pad*/, 
+                                        TObjArray& /*neighbours*/,
+                                        Bool_t /*includeSelf*/,
+                                        Bool_t /*includeVoid*/) const
+{
+  /// not implemented.
+  AliError("Not implemented for trigger");
   return 0;
 }
 

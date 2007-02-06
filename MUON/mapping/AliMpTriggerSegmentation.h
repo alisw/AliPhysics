@@ -37,7 +37,10 @@ public:
   virtual ~AliMpTriggerSegmentation();
   
   virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const;
-  
+  virtual AliMpVPadIterator* CreateIterator() const;
+  virtual Int_t GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
+                              Bool_t includeSelf=kFALSE,
+                              Bool_t includeVoid=kFALSE) const;
   const char* GetName() const;
   
   Bool_t HasPad(const AliMpIntPair& indices) const;

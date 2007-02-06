@@ -27,6 +27,8 @@
 #include "AliLog.h"
 #include "AliMpArea.h"
 #include "AliMpConnection.h"
+#include "AliMpConstants.h"
+#include "AliLog.h"
 #include "AliMpMotif.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
@@ -91,6 +93,31 @@ AliMpSlatSegmentation::CreateIterator(const AliMpArea& area) const
                   a.RightBorder(),a.UpBorder()));
                   
   return new AliMpSlatPadIterator(fkSlat,a);
+}
+
+//_____________________________________________________________________________
+AliMpVPadIterator*
+AliMpSlatSegmentation::CreateIterator() const
+{
+  /// Returns an iterator to loop over all pads of that segmentation
+  ///
+  /// FIXME: we currently just forward this to the other CreateIterator,
+  /// with the proper region. Might be more efficient to write a dedicated
+  /// iterator ? Test that idea.
+  
+  AliMpArea area(TVector2(0.0,0.0),fkSlat->Dimensions());
+  return CreateIterator(area);
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMpSlatSegmentation::GetNeighbours(const AliMpPad& pad, 
+                                     TObjArray& neighbours,
+                                     Bool_t includeSelf,
+                                     Bool_t includeVoid) const
+{
+  /// Uses default implementation
+  return AliMpVSegmentation::GetNeighbours(pad,neighbours,includeSelf,includeVoid);
 }
 
 //_____________________________________________________________________________
@@ -278,8 +305,9 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
   // AliMpPad::Invalid() is returned if there's no pad at the given location.
   //
   
-  TVector2 blPos(position+fkSlat->Position()); // position relative to 
-  // bottom-left of the slat.
+  TVector2 blPos(position);
+  
+  blPos += fkSlat->Position(); // position relative to bottom-left of the slat.
   
   AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(blPos.X(),blPos.Y());
 	
@@ -296,8 +324,9 @@ AliMpSlatSegmentation::PadByPosition(const TVector2& position,
 	}
 	
   AliMpVMotif* motif =  motifPos->GetMotif();  
+  blPos -= motifPos->Position();
   AliMpIntPair localIndices 
-    = motif->PadIndicesLocal(blPos-motifPos->Position());
+    = motif->PadIndicesLocal(blPos);
 	
   AliMpConnection* connect = 
     motif->GetMotifType()->FindConnectionByLocalIndices(localIndices);
