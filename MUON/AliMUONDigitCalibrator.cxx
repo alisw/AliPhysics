@@ -22,6 +22,9 @@
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
+#include "AliMUONPadStatusMaker.h"
+#include "AliMUONPadStatusMapMaker.h"
+#include "AliMUONV2DStore.h"
 #include "AliMUONVCalibParam.h"
 #include "TClonesArray.h"
 
@@ -49,19 +52,46 @@ ClassImp(AliMUONDigitCalibrator)
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
-                                              AliMUONCalibrationData* calib)
-: TTask("AliMUONDigitCalibrator","Subtract pedestal from digit charge"),
+                                               AliMUONCalibrationData* calib)
+: TTask("AliMUONDigitCalibrator","Raw digit calibration"),
   fData(muonData),
-  fCalibrationData(calib)
+  fCalibrationData(calib),
+  fStatusMap(0x0)
 {
-    /// ctor. This class need the muonData to get access to the digit,
+    /// ctor. This class needs the muonData to get access to the digit,
     /// and the calibrationData to get access to calibration parameters.
+    
+    if (!calib) throw;
+    
+    AliMUONPadStatusMaker maker(*calib);
+    
+    // this is here that we decide on our "goodness" policy, i.e.
+    // what do we call an invalid pad (a pad maybe bad because it's HV
+    // was too low, or its pedestals too high, etc..)
+    //
+    maker.SetHVSt12Limits(1300,1600);
+    maker.SetHVSt345Limits(1500,2000);
+    maker.SetPedMeanLimits(50,200);
+    maker.SetPedSigmaLimits(0.1,3);
+    
+    // From this set of limits, compute the status of all tracker pads.
+    AliMUONV2DStore* status = maker.MakeStatus();
+    
+    AliMUONPadStatusMapMaker mapMaker;
+    
+    Int_t mask(0x8000000); 
+      //FIXME: fake one (consider dead only if ped mean too high or hv switch off)
+    
+    fStatusMap = mapMaker.MakePadStatusMap(*status,mask);
+    
+    delete status;
 }
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
-  /// empty dtor.
+  /// dtor.
+  delete fStatusMap;
 }
 
 //_____________________________________________________________________________
@@ -71,8 +101,7 @@ AliMUONDigitCalibrator::Exec(Option_t*)
   /// Main method.
   /// We loop on tracking chambers (i.e. we do nothing for trigger)
   /// and for each digit in that chamber, we calibrate it :
-  /// a) if the corresponding channel is known to be bad, we set the signal to 0
-  ///    (so that digit can be suppressed later on)
+  /// a) we set its status map and if status is bad, set the signal to zero
   /// b) we then apply pedestal and gain corrections.
   
   for ( Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ++ch )
@@ -84,16 +113,16 @@ AliMUONDigitCalibrator::Exec(Option_t*)
       AliMUONDigit* digit = 
         static_cast<AliMUONDigit*>(digitArray->UncheckedAt(d));
  
-      // Very first check is whether this channel is known to be bad,
-      // in which case we set the signal to zero.
-      AliMUONVCalibParam* dead = static_cast<AliMUONVCalibParam*>
-        (fCalibrationData->DeadChannels(digit->DetElemId(),digit->ManuId()));
-      if ( dead && dead->ValueAsInt(digit->ManuChannel()) )
+      AliMUONVCalibParam* deadmap = static_cast<AliMUONVCalibParam*>
+        (fStatusMap->Get(digit->DetElemId(),digit->ManuId()));
+      Int_t statusMap = deadmap->ValueAsInt(digit->ManuChannel());
+      digit->SetStatusMap(statusMap);
+      if ( ( statusMap & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0 ) // pad itself is bad (not testing its neighbours at this stage)
       {
-        AliWarning(Form("Removing dead channel detElemId %d manuId %d "
-                        "manuChannel %d",digit->DetElemId(),digit->ManuId(),
-                        digit->ManuChannel()));
         digit->SetSignal(0);
+        AliWarning(Form("Channel detElemId %d manuId %d "
+                        "manuChannel %d is bad %x",digit->DetElemId(),digit->ManuId(),
+                        digit->ManuChannel(),digit->StatusMap()));
         continue;
       }
           

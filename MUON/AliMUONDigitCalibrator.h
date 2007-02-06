@@ -9,8 +9,8 @@
 /// 
 /// \author Laurent Aphecetche
 
-#ifndef AliMUONDigitCalibrator_H
-#define AliMUONDigitCalibrator_H
+#ifndef ALIMUONDIGITCALIBRATOR_H
+#define ALIMUONDIGITCALIBRATOR_H
 
 #ifndef ROOT_TTask
 #include "TTask.h"
@@ -18,6 +18,7 @@
 
 class AliMUONCalibrationData;
 class AliMUONData;
+class AliMUONV2DStore;
 
 class AliMUONDigitCalibrator : public TTask
 {
@@ -33,8 +34,9 @@ private:
 
     AliMUONData* fData;                       //!< MUON data 
     AliMUONCalibrationData* fCalibrationData; //!< Calibration data
-  
-  ClassDef(AliMUONDigitCalibrator,1) // Subtract pedestal from digit charge.
+    AliMUONV2DStore* fStatusMap; //!< Channel status map
+    
+  ClassDef(AliMUONDigitCalibrator,2) // Calibrate raw digit
 };
 
 #endif
