@@ -22,11 +22,11 @@ class AliTRDgeometry : public AliGeometry {
 
  public:
 
-          enum { kNplan =   6
-               , kNcham =   5
-               , kNsect =  18
-               , kNdet  = 540 
-               , kNdets =  30 };
+  enum { kNplan =   6
+       , kNcham =   5
+       , kNsect =  18
+       , kNdet  = 540 
+       , kNdets =  30 };
 
   AliTRDgeometry();
   AliTRDgeometry(const AliTRDgeometry &g);
@@ -57,6 +57,13 @@ class AliTRDgeometry : public AliGeometry {
   virtual Int_t    GetPlane(Int_t d) const;
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
+
+  virtual Int_t    GetPadRow(Int_t irob, Int_t imcm) const;
+  virtual Int_t    GetPadCol(Int_t irob, Int_t imcm, Int_t iadc) const;
+  virtual Int_t    GetMCM(Int_t irow, Int_t icol) const;
+  virtual Int_t    GetROB(Int_t irow, Int_t icol) const;
+  virtual Int_t    GetRobSide(Int_t irob) const;
+  virtual Int_t    GetColSide(Int_t icol) const;
 
   static Float_t   GetTime0(Int_t p)                                   { return fgkTime0[p];     }
 
@@ -93,6 +100,17 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  Cwidcha()                                           { return (fgkSwidth2 - fgkSwidth1) 
                                                                                 / fgkSheight 
                                                                                 * (fgkCH + fgkVspace);      }
+
+  static  Int_t    MCMmax()                                            { return fgkMCMmax;       }
+  static  Int_t    MCMrow()                                            { return fgkMCMrow;       }
+  static  Int_t    ROBmaxC0()                                          { return fgkROBmaxC0;     }
+  static  Int_t    ROBmaxC1()                                          { return fgkROBmaxC1;     }
+  static  Int_t    ADCmax()                                            { return fgkADCmax;       }
+  static  Int_t    TBmax()                                             { return fgkTBmax;        }            
+  static  Int_t    Padmax()                                            { return fgkPadmax;       }
+  static  Int_t    Colmax()                                            { return fgkColmax;       }
+  static  Int_t    RowmaxC0()                                          { return fgkRowmaxC0;     }
+  static  Int_t    RowmaxC1()                                          { return fgkRowmaxC1;     }
 
   TGeoHMatrix     *GetGeoMatrix(Int_t det)                             { return (TGeoHMatrix *) 
                                                                            fMatrixGeo->At(det);             }
@@ -161,6 +179,17 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t  fgkRcZpos;                           //  Position of the PCB copper layers
   static const Float_t  fgkRoZpos;                           //  Position of all other ROB componentes (caps, etc.)
 
+  static const Int_t    fgkMCMmax;                           //  Maximum number of MCMs per ROB
+  static const Int_t    fgkMCMrow;                           //  Maximum number of MCMs per ROB Row
+  static const Int_t    fgkROBmaxC0;                         //  Maximum number of ROBs per C0 chamber
+  static const Int_t    fgkROBmaxC1;                         //  Maximum number of ROBs per C1 chamber
+  static const Int_t    fgkADCmax;                           //  Maximum number of ADC channels per MCM
+  static const Int_t    fgkTBmax;                            //  Maximum number of Time bins
+  static const Int_t    fgkPadmax;                           //  Maximum number of pads per MCM
+  static const Int_t    fgkColmax;                           //  Maximum number of pads per padplane row
+  static const Int_t    fgkRowmaxC0;                         //  Maximum number of Rows per C0 chamber
+  static const Int_t    fgkRowmaxC1;                         //  Maximum number of Rows per C1 chamber
+
   Char_t                fSMstatus[kNsect];                   //  Super module status byte
 
   Float_t               fCwidth[kNplan];                     //  Outer widths of the chambers
@@ -189,11 +218,11 @@ class AliTRDgeometry : public AliGeometry {
   Float_t               fChamberUFboxd[3*kNdets][3];         //  [3] = x, y, z
   Float_t               fChamberUUboxd[3*kNdets][3];         // 
 
-  TObjArray *           fMatrixArray;                        //! Transformation Global to Local
-  TObjArray *           fMatrixCorrectionArray;              //! Transformation Cluster to  Tracking systerm
-  TObjArray *           fMatrixGeo;                          //! Geo matrices
+  TObjArray            *fMatrixArray;                        //! Transformation Global to Local
+  TObjArray            *fMatrixCorrectionArray;              //! Transformation Cluster to  Tracking systerm
+  TObjArray            *fMatrixGeo;                          //! Geo matrices
 
-  ClassDef(AliTRDgeometry,11)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,12)                                //  TRD geometry class
 
 };
 

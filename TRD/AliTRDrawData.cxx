@@ -42,7 +42,7 @@ ClassImp(AliTRDrawData)
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData()
   :TObject()
-  ,fRawVersion(0)
+  ,fRawVersion(1)    // Default Raw Data version set here
   ,fCommonParam(0)
   ,fCalibration(0)
   ,fGeo(0)
@@ -57,7 +57,7 @@ AliTRDrawData::AliTRDrawData()
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   :TObject(r)
-  ,fRawVersion(0)
+  ,fRawVersion(1)    // Default Raw Data version set here
   ,fCommonParam(0)
   ,fCalibration(0)
   ,fGeo(0)
@@ -82,12 +82,10 @@ AliTRDrawData::~AliTRDrawData()
 Bool_t AliTRDrawData::SetRawVersion(Int_t v)
 {
   //
-  // Set the raw data version
-  // Currently only version 0 and 1 are available.
+  // Set the raw data version (Currently only version 0, 1 and 2 are available)
   //
 
-  if ((v == 0) || 
-      (v == 1)) {
+  if ( (v >= 0) && (v <= 2) ) {
     fRawVersion = v;
     return kTRUE;
   }
@@ -118,7 +116,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
 
   if (tracks != NULL) {
     delete digitsManager;
-    printf("<AliTRDrawData::Digits2Raw> Tracklet input is not supported yet.\n");
+    AliError("Tracklet input is not supported yet.");
     return kFALSE;
   }
 
@@ -126,7 +124,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
 
   fCommonParam = AliTRDCommonParam::Instance();
   if (!fCommonParam) {
-    AliError("Could not get common params\n");
+    AliError("Could not get common params");
     delete fGeo;
     delete digitsManager;
     return kFALSE;
@@ -134,7 +132,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
 
   fCalibration = AliTRDcalibDB::Instance();
   if (!fCalibration) {
-    AliError("Could not get calibration object\n");
+    AliError("Could not get calibration object");
     delete fGeo;
     delete digitsManager;
     return kFALSE;
@@ -143,17 +141,11 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
   Int_t retval = kTRUE;
 
   // Call appropriate Raw Simulator
-  switch( fRawVersion ) {
-    case 0 : 
-      retval = Digits2RawV0(digitsManager); 
-      break;
-    case 1 : 
-      retval = Digits2RawV1(digitsManager); 
-      break;
-  default: 
-      retval = kFALSE;
-      AliWarning(Form("Unsupported raw version (fRawVersion=%d).\n",fRawVersion));
-    break;
+  if      ( fRawVersion == 0 )                    retval = Digits2RawV0(digitsManager); 
+  else if ( fRawVersion > 0 && fRawVersion <= 2 ) retval = Digits2RawVx(digitsManager); 
+  else {
+    retval = kFALSE;
+    AliWarning(Form("Unsupported raw version (fRawVersion=%d).",fRawVersion));
   }
 
   // Cleanup
@@ -359,16 +351,14 @@ Bool_t AliTRDrawData::Digits2RawV0(AliTRDdigitsManager* digitsManager)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDrawData::Digits2RawV1(AliTRDdigitsManager *digitsManager)
+Bool_t AliTRDrawData::Digits2RawVx(AliTRDdigitsManager *digitsManager)
 {
   //
-  // Raw data simulator version 1.
+  // Raw data simulator for all versions > 0. This is prepared for real data.
   // This version simulate only raw data with ADC data and not with tracklet.
-  // This is close to the SM-I commissiong data format in Oct.2006.
   //
 
-  // (timebin/3)*nADC*nMCM*nROB + header + tracklet(max 20)
-  const Int_t kMaxHcWords = (60/3)*21*16*4 + 100 + 20;
+  const Int_t kMaxHcWords = (fGeo->TBmax()/3)*fGeo->ADCmax()*fGeo->MCMmax()*fGeo->ROBmaxC1()/2 + 100 + 20;
 
   // Buffer to temporary store half chamber data
   UInt_t     *hc_buffer   = new UInt_t[kMaxHcWords];
@@ -393,10 +383,16 @@ Bool_t AliTRDrawData::Digits2RawV1(AliTRDdigitsManager *digitsManager)
     // Reset payload byte size (payload does not include header).
     Int_t npayloadbyte = 0;
 
-    // GTU common data header (5x4 bytes shows link mask)
+    // GTU common data header (5x4 bytes per super module, shows link mask)
     for( Int_t cham = 0; cham < fGeo->Ncham(); cham++ ) {
-      UInt_t GtuCdh;
-      GtuCdh = 0x00000FFF;    // Assume all ORI links (12 per stack) are always up
+      UInt_t GtuCdh = (0xe << 28);
+      for( Int_t plan = 0; plan < fGeo->Nplan(); plan++) {
+	Int_t iDet = fGeo->GetDetector(plan, cham, sect);
+	// If chamber status is ok, we assume that the optical link is also OK.
+        // This is shown in the GTU link mask.
+	if ( fCalibration->GetChamberStatus(iDet) )
+	  GtuCdh = GtuCdh | (3 << (2*plan));
+      }
       of->write((char *) (& GtuCdh), sizeof(GtuCdh));
       npayloadbyte += 4;
     }
@@ -411,15 +407,15 @@ Bool_t AliTRDrawData::Digits2RawV1(AliTRDdigitsManager *digitsManager)
         AliTRDdataArrayI *digits = digitsManager->GetDigits(iDet);
         digits->Expand();
 
-        Int_t hcwords;
+        Int_t hcwords = 0;
 
         // Process A side of the chamber
-        hcwords = ProduceHcDataV1(digits,0,iDet,hc_buffer,kMaxHcWords);
+	if ( fRawVersion >= 1 && fRawVersion <= 2 ) hcwords = ProduceHcDataV1andV2(digits,0,iDet,hc_buffer,kMaxHcWords);
         of->write((char *) hc_buffer, hcwords*4);
         npayloadbyte += hcwords*4;
 
         // Process B side of the chamber
-        hcwords = ProduceHcDataV1(digits,1,iDet,hc_buffer,kMaxHcWords);
+	if ( fRawVersion >= 1 && fRawVersion <= 2 ) hcwords = ProduceHcDataV1andV2(digits,1,iDet,hc_buffer,kMaxHcWords);
         of->write((char *) hc_buffer, hcwords*4);
         npayloadbyte += hcwords*4;
 
@@ -442,12 +438,16 @@ Bool_t AliTRDrawData::Digits2RawV1(AliTRDdigitsManager *digitsManager)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
-                                   , Int_t det, UInt_t *buf, Int_t maxSize)
+Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
+                                        , Int_t det, UInt_t *buf, Int_t maxSize)
 {
+  //
+  // This function simulates: 1) SM-I commissiong data Oct. 06 (fRawVersion == 1).
+  //                          2) Full Raw Production Version   (fRawVersion == 2)
   //
   // Produce half chamber data (= an ORI data) for the given chamber (det) and side (side)
   // where
+  //
   //   side=0 means A side with ROB positions 0, 2, 4, 6.
   //   side=1 means B side with ROB positions 1, 3, 5, 7.
   //
@@ -467,10 +467,7 @@ Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
   Int_t        sect = fGeo->GetSector( det );  // Sector (=iDDL)
   Int_t        nRow = fCommonParam->GetRowMax( plan, cham, sect );
   Int_t        nCol = fCommonParam->GetColMax( plan );
-  const Int_t  nMcm = 16;                      // Number of MCMs per ROB (fixed)
   const Int_t nTBin = fCalibration->GetNumberOfTimeBins();
-  Int_t         dcs = det+100;                 // DCS Serial (in simulation, it's always 
-                                               // chamber ID+1000 without any reason
   Int_t      kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
   UInt_t          x = 0;                       // General used number
@@ -481,7 +478,7 @@ Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
     kCtype = (nRow-12) / 4;
   } 
   else {
-    AliError(Form("This type of chamber is not supported (nRow=%d, nCol=%d).\n"
+    AliError(Form("This type of chamber is not supported (nRow=%d, nCol=%d)."
                  ,nRow,nCol));
     return 0;
   }
@@ -493,31 +490,56 @@ Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
 
   // Write end of tracklet marker
   if (nw < maxSize) {
-    buf[nw++] = 0xAAAAAAAA;
+    buf[nw++] = end_of_tracklet_marker;
   } 
   else {
     of++;
   }
 
   // Half Chamber header
-  // Now it is the same version as used in SM-I commissioning.
-  // It is: (dcs << 20) | (sect << 15) | (plan << 12) | (cham << 9) | (side << 8)
-  x = (dcs << 20) | (sect << 15) | (plan << 12) | (cham << 9) | (side << 8);
-  if (nw < maxSize) {
-    buf[nw++] = x; 
-  }
-  else {
-    of++;
+  if      ( fRawVersion == 1 ) {
+    // Now it is the same version as used in SM-I commissioning.
+    Int_t  dcs = det+100;      // DCS Serial (in simulation, it is meaningless
+    x = (dcs<<20) | (sect<<15) | (plan<<12) | (cham<<9) | (side<<8) | 1;
+    if (nw < maxSize) {
+      buf[nw++] = x; 
+    }
+    else {
+      of++;
+    }
+  } 
+  else if ( fRawVersion == 2 ) {
+    // h[0] (there are 2 HC header)
+    Int_t minorv = 0;      // The minor version number
+    Int_t add    = 1;      // The number of additional header words to follow
+    x = (1<<31) | (fRawVersion<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
+    if (nw < maxSize) {
+      buf[nw++] = x; 
+    }
+    else {
+      of++;
+    }
+    // h[1]
+    Int_t bc_ctr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
+    Int_t pt_ctr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
+    Int_t pt_phase = 11; // pretrigger phase. Here it is set to 11 always for no reason
+    x = (bc_ctr<<16) | (pt_ctr<<12) | (pt_phase<<8) | ((nTBin-1)<<2) | 1;
+    if (nw < maxSize) {
+      buf[nw++] = x; 
+    }
+    else {
+      of++;
+    }
   }
 
   // Scan for ROB and MCM
   for (Int_t iRobRow = 0; iRobRow < (kCtype + 3); iRobRow++ ) {
     Int_t iRob = iRobRow * 2 + side;
-    for (Int_t iMcm = 0; iMcm < nMcm; iMcm++ ) {
+    for (Int_t iMcm = 0; iMcm < fGeo->MCMmax(); iMcm++ ) {
       Int_t padrow = iRobRow * 4 + iMcm / 4;
 
       // MCM header
-      x = ((iRob * nMcm + iMcm) << 24) | ((iEv % 0x100000) << 4) | 0xC;
+      x = ((iRob * fGeo->MCMmax() + iMcm) << 24) | ((iEv % 0x100000) << 4) | 0xC;
       if (nw < maxSize) {
         buf[nw++] = x; 
       }
@@ -527,49 +549,27 @@ Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
 
       // ADC data
       for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
-        Int_t padcol = (17-(iAdc-2)) + (iMcm % 4)*18 + side*72;
-        UInt_t aa = 2;
+	Int_t padcol = fGeo->GetPadCol(iRob, iMcm, iAdc);
+	UInt_t aa = !(iAdc & 1) + 2;
         UInt_t *a = new UInt_t[nTBin+2];
         // 3 timebins are packed into one 32 bits word
         for (Int_t iT = 0; iT < nTBin; iT+=3) { 
-          if ((padcol >=    0) && 
-              (padcol <  nCol)) {
-            if ((iT    ) < nTBin ) {
-              a[iT  ] = digits->GetDataUnchecked(padrow,padcol,iT);
-	    }
-            else {
-              a[iT  ] = 0;
-	    }
-            if ((iT + 1) < nTBin ) {
-              a[iT+1] = digits->GetDataUnchecked(padrow,padcol,iT + 1);
-            }
-            else {
-              a[iT+1] = 0;
-	    }
-            if ((iT + 2) < nTBin ) {
-              a[iT+2] = digits->GetDataUnchecked(padrow,padcol,iT + 2); 
-	    }
-            else {
-              a[iT+2] = 0;
-	    }
-          } 
-          else {
-            a[iT] = a[iT+1] = a[iT+2] = 0; // This happenes at the edge of chamber
-          }
-          x = (a[iT+2] << 22) | (a[iT+1] << 12) | (a[iT] << 2) | aa;
-          if (nw < maxSize) {
-            buf[nw++] = x; 
+          if ((padcol >=    0) && (padcol <  nCol)) {
+	    a[iT  ] = ((iT    ) < nTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT    ) : 0;
+	    a[iT+1] = ((iT + 1) < nTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 1) : 0;
+	    a[iT+2] = ((iT + 2) < nTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 2) : 0; 
+	  } 
+	  else {
+	    a[iT] = a[iT+1] = a[iT+2] = 0; // This happenes at the edge of chamber (should be pedestal! How?)
 	  }
-          else {
-            of++;
+	  x = (a[iT+2] << 22) | (a[iT+1] << 12) | (a[iT] << 2) | aa;
+	  if (nw < maxSize) {
+	    buf[nw++] = x; 
 	  }
-          if (aa == 2) {
-            aa = 3; 
-          }
-          else {
-            aa = 2;  // aa alternatively changes between 10b and 11b
+	  else {
+	    of++;
 	  }
-        }
+	}
         // Diagnostics
         Float_t avg = 0;
         Float_t rms = 0;
@@ -582,8 +582,8 @@ Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
 	}
         rms = TMath::Sqrt(rms / (Float_t) nTBin);
         if (rms > 1.7) {
-          AliDebug(1,Form("Large RMS (>1.7)  (ROB,MCM,ADC)=(%02d,%02d,%02d), avg=%03.1f, rms=%03.1f\n"
-			 ,iRob,iMcm,iAdc,avg,rms));
+          AliDebug(2,Form("Large RMS (>1.7)  (ROB,MCM,ADC)=(%02d,%02d,%02d), avg=%03.1f, rms=%03.1f"
+			  ,iRob,iMcm,iAdc,avg,rms));
 	}
         delete a;
       }
@@ -592,7 +592,7 @@ Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
 
   // Write end of raw data marker
   if (nw < maxSize) {
-    buf[nw++] = 0x00000000; 
+    buf[nw++] = end_of_event_marker; 
   }
   else {
     of++;
@@ -606,10 +606,26 @@ Int_t AliTRDrawData::ProduceHcDataV1(AliTRDdataArrayI *digits, Int_t side
 }
 
 //_____________________________________________________________________________
-AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
+AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 {
   //
-  // Read the raw data digits and put them into the returned digits manager
+  // Read raw data and convert to digits
+  //
+
+  if ( fRawVersion == 0 ) {
+    return Raw2DigitsV0(rawReader);  // fRawVersion == 0
+  }
+  else {
+    return Raw2DigitsVx(rawReader);  // fRawVersion > 0
+  }
+
+}
+
+//_____________________________________________________________________________
+AliTRDdigitsManager *AliTRDrawData::Raw2DigitsV0(AliRawReader *rawReader)
+{
+  //
+  // Bogdan's raw data reader (for offline only).
   //
 
   AliTRDdataArrayI *digits = 0;
@@ -621,13 +637,13 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
-    AliError("Could not get common parameters\n");
+    AliError("Could not get common parameters");
     return 0;
   }
-    
+
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    AliError("Could not get calibration object\n");
+    AliError("Could not get calibration object");
     return 0;
   }
 
@@ -675,7 +691,7 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
         track2->Allocate(rowMax,colMax,timeTotal);
       }
 
-    } 
+    }
 
     digits->SetDataUnchecked(input.GetRow(),input.GetColumn(),
 			     input.GetTime(),input.GetSignal());
@@ -694,6 +710,43 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   if (track2) track2->Compress(1,0);
 
   delete geo;
+
+  return digitsManager;
+
+}
+
+//_____________________________________________________________________________
+AliTRDdigitsManager *AliTRDrawData::Raw2DigitsVx(AliRawReader *rawReader)
+{
+
+  //
+  // This is executed for all Raw Data Versions > 0. Raw data is read and filled
+  // into digits array. Next function is not used.
+  //
+
+  AliTRDdataArrayI  *digits      = 0;
+
+  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
+  if (!commonParam) {
+    AliError("Could not get common params");
+    return 0;
+  }
+
+  AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliError("Could not get calibration object");
+    return 0;
+  }
+
+  // Create the digits manager
+  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
+  digitsManager->CreateArrays();
+
+  AliTRDRawStream input(rawReader, digitsManager, digits);
+  input.SetRawVersion( fRawVersion );
+  input.ReadAll();     // Loop through the digits
+
+  delete digits;
 
   return digitsManager;
 

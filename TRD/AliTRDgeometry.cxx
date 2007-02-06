@@ -45,108 +45,118 @@ ClassImp(AliTRDgeometry)
   //
   // The geometry constants
   //
-  const Int_t   AliTRDgeometry::fgkNsect   = kNsect;
-  const Int_t   AliTRDgeometry::fgkNplan   = kNplan;
-  const Int_t   AliTRDgeometry::fgkNcham   = kNcham;
-  const Int_t   AliTRDgeometry::fgkNdet    = kNdet;
+  const Int_t    AliTRDgeometry::fgkNsect     = kNsect;
+  const Int_t    AliTRDgeometry::fgkNplan     = kNplan;
+  const Int_t    AliTRDgeometry::fgkNcham     = kNcham;
+  const Int_t    AliTRDgeometry::fgkNdet      = kNdet;
 
   //
   // Dimensions of the detector
   //
 
   // Parameter of the BTRD mother volumes 
-  const Float_t AliTRDgeometry::fgkSheight =  77.9; 
-  const Float_t AliTRDgeometry::fgkSwidth1 =  94.881; 
-  const Float_t AliTRDgeometry::fgkSwidth2 = 122.353;
-  const Float_t AliTRDgeometry::fgkSlength = 751.0;
+  const Float_t  AliTRDgeometry::fgkSheight   =  77.9; 
+  const Float_t  AliTRDgeometry::fgkSwidth1   =  94.881; 
+  const Float_t  AliTRDgeometry::fgkSwidth2   = 122.353;
+  const Float_t  AliTRDgeometry::fgkSlength   = 751.0;
 
   // The super module side plates
-  const Float_t AliTRDgeometry::fgkSMpltT  =   0.2;
+  const Float_t  AliTRDgeometry::fgkSMpltT    =   0.2;
 
   // Height of different chamber parts
   // Radiator
-  const Float_t AliTRDgeometry::fgkCraH    =   4.8; 
+  const Float_t  AliTRDgeometry::fgkCraH      =   4.8; 
   // Drift region
-  const Float_t AliTRDgeometry::fgkCdrH    =   3.0;
+  const Float_t  AliTRDgeometry::fgkCdrH      =   3.0;
   // Amplification region
-  const Float_t AliTRDgeometry::fgkCamH    =   0.7;
+  const Float_t  AliTRDgeometry::fgkCamH      =   0.7;
   // Readout
-  const Float_t AliTRDgeometry::fgkCroH    =   2.316;
+  const Float_t  AliTRDgeometry::fgkCroH      =   2.316;
   // Total height
-  const Float_t AliTRDgeometry::fgkCH      = AliTRDgeometry::fgkCraH
-                                           + AliTRDgeometry::fgkCdrH
-                                           + AliTRDgeometry::fgkCamH
-                                           + AliTRDgeometry::fgkCroH;  
+  const Float_t  AliTRDgeometry::fgkCH        = AliTRDgeometry::fgkCraH
+                                              + AliTRDgeometry::fgkCdrH
+                                              + AliTRDgeometry::fgkCamH
+                                              + AliTRDgeometry::fgkCroH;  
 
   // Vertical spacing of the chambers
-  const Float_t AliTRDgeometry::fgkVspace  =   1.784;
+  const Float_t  AliTRDgeometry::fgkVspace    =   1.784;
   // Horizontal spacing of the chambers
-  const Float_t AliTRDgeometry::fgkHspace  =   2.0;
+  const Float_t  AliTRDgeometry::fgkHspace    =   2.0;
   // Radial distance of the first ROC to the outer plates of the SM
-  const Float_t AliTRDgeometry::fgkVrocsm  =   1.2;
+  const Float_t  AliTRDgeometry::fgkVrocsm    =   1.2;
 
   // Thicknesses of different parts of the chamber frame
   // Lower aluminum frame
-  const Float_t AliTRDgeometry::fgkCalT    =   0.4;
+  const Float_t  AliTRDgeometry::fgkCalT      =   0.4;
   // Lower Wacosit frame sides
-  const Float_t AliTRDgeometry::fgkCclsT   =   0.21;
+  const Float_t  AliTRDgeometry::fgkCclsT     =   0.21;
   // Lower Wacosit frame front
-  const Float_t AliTRDgeometry::fgkCclfT   =   1.0;
+  const Float_t  AliTRDgeometry::fgkCclfT     =   1.0;
   // Thickness of glue around radiator
-  const Float_t AliTRDgeometry::fgkCglT    =   0.25;
+  const Float_t  AliTRDgeometry::fgkCglT      =   0.25;
   // Upper Wacosit frame
-  const Float_t AliTRDgeometry::fgkCcuT    =   0.9;
+  const Float_t  AliTRDgeometry::fgkCcuT      =   0.9;
   // Al frame of back panel
-  const Float_t AliTRDgeometry::fgkCauT    =   1.5;
+  const Float_t  AliTRDgeometry::fgkCauT      =   1.5;
   // Additional Al of the lower chamber frame
-  const Float_t AliTRDgeometry::fgkCalW    =   1.11;
+  const Float_t  AliTRDgeometry::fgkCalW      =   1.11;
 
   // Additional width of the readout chamber frames
-  const Float_t AliTRDgeometry::fgkCroW    =   0.9;
+  const Float_t  AliTRDgeometry::fgkCroW      =   0.9;
 
   // Difference of outer chamber width and pad plane width
-  const Float_t AliTRDgeometry::fgkCpadW   =   0.0;
-  const Float_t AliTRDgeometry::fgkRpadW   =   1.0;
+  const Float_t  AliTRDgeometry::fgkCpadW     =   0.0;
+  const Float_t  AliTRDgeometry::fgkRpadW     =   1.0;
 
   //
   // Thickness of the the material layers
   //
-  const Float_t AliTRDgeometry::fgkMyThick = 0.005;
-  const Float_t AliTRDgeometry::fgkRaThick = 0.3233;  
-  const Float_t AliTRDgeometry::fgkDrThick = AliTRDgeometry::fgkCdrH;    
-  const Float_t AliTRDgeometry::fgkAmThick = AliTRDgeometry::fgkCamH;
-  const Float_t AliTRDgeometry::fgkXeThick = AliTRDgeometry::fgkDrThick
-                                           + AliTRDgeometry::fgkAmThick;
-  const Float_t AliTRDgeometry::fgkWrThick = 0.0002;
-  const Float_t AliTRDgeometry::fgkCuThick = 0.0072; 
-  const Float_t AliTRDgeometry::fgkGlThick = 0.05;
-  const Float_t AliTRDgeometry::fgkSuThick = 0.0919; 
-  const Float_t AliTRDgeometry::fgkRcThick = 0.0058;
-  const Float_t AliTRDgeometry::fgkRpThick = 0.0632;
-  const Float_t AliTRDgeometry::fgkRoThick = 0.0028;
+  const Float_t  AliTRDgeometry::fgkMyThick   = 0.005;
+  const Float_t  AliTRDgeometry::fgkRaThick   = 0.3233;  
+  const Float_t  AliTRDgeometry::fgkDrThick   = AliTRDgeometry::fgkCdrH;    
+  const Float_t  AliTRDgeometry::fgkAmThick   = AliTRDgeometry::fgkCamH;
+  const Float_t  AliTRDgeometry::fgkXeThick   = AliTRDgeometry::fgkDrThick
+                                              + AliTRDgeometry::fgkAmThick;
+  const Float_t  AliTRDgeometry::fgkWrThick   = 0.0002;
+  const Float_t  AliTRDgeometry::fgkCuThick   = 0.0072; 
+  const Float_t  AliTRDgeometry::fgkGlThick   = 0.05;
+  const Float_t  AliTRDgeometry::fgkSuThick   = 0.0919; 
+  const Float_t  AliTRDgeometry::fgkRcThick   = 0.0058;
+  const Float_t  AliTRDgeometry::fgkRpThick   = 0.0632;
+  const Float_t  AliTRDgeometry::fgkRoThick   = 0.0028;
 
   //
   // Position of the material layers
   //
-  //const Float_t AliTRDgeometry::fgkRaZpos  = -1.50;
-  const Float_t AliTRDgeometry::fgkRaZpos  =  0.0;
-  const Float_t AliTRDgeometry::fgkDrZpos  =  2.4;
-  const Float_t AliTRDgeometry::fgkAmZpos  =  0.0;
-  const Float_t AliTRDgeometry::fgkWrZpos  =  0.0;
-  const Float_t AliTRDgeometry::fgkCuZpos  = -0.9995;
-  const Float_t AliTRDgeometry::fgkGlZpos  = -0.5; 
-  const Float_t AliTRDgeometry::fgkSuZpos  =  0.0;
-  const Float_t AliTRDgeometry::fgkRcZpos  =  1.04;
-  const Float_t AliTRDgeometry::fgkRpZpos  =  1.0;
-  const Float_t AliTRDgeometry::fgkRoZpos  =  1.05;
+  const Float_t  AliTRDgeometry::fgkRaZpos    =  0.0;
+  const Float_t  AliTRDgeometry::fgkDrZpos    =  2.4;
+  const Float_t  AliTRDgeometry::fgkAmZpos    =  0.0;
+  const Float_t  AliTRDgeometry::fgkWrZpos    =  0.0;
+  const Float_t  AliTRDgeometry::fgkCuZpos    = -0.9995;
+  const Float_t  AliTRDgeometry::fgkGlZpos    = -0.5; 
+  const Float_t  AliTRDgeometry::fgkSuZpos    =  0.0;
+  const Float_t  AliTRDgeometry::fgkRcZpos    =  1.04;
+  const Float_t  AliTRDgeometry::fgkRpZpos    =  1.0;
+  const Float_t  AliTRDgeometry::fgkRoZpos    =  1.05;
+
+  const Int_t    AliTRDgeometry::fgkMCMmax    = 16;   
+  const Int_t    AliTRDgeometry::fgkMCMrow    = 4;   
+  const Int_t    AliTRDgeometry::fgkROBmaxC0  = 6; 
+  const Int_t    AliTRDgeometry::fgkROBmaxC1  = 8; 
+  const Int_t    AliTRDgeometry::fgkADCmax    = 21;   
+  const Int_t    AliTRDgeometry::fgkTBmax     = 60;   
+  const Int_t    AliTRDgeometry::fgkPadmax    = 18;   
+  const Int_t    AliTRDgeometry::fgkColmax    = 144;
+  const Int_t    AliTRDgeometry::fgkRowmaxC0  = 12;
+  const Int_t    AliTRDgeometry::fgkRowmaxC1  = 16;
 
   const Double_t AliTRDgeometry::fgkTime0Base = 300.65;
-  const Float_t  AliTRDgeometry::fgkTime0[6]  = { fgkTime0Base + 0 * (Cheight() + Cspace()), 
-                                                  fgkTime0Base + 1 * (Cheight() + Cspace()), 
-                                                  fgkTime0Base + 2 * (Cheight() + Cspace()), 
-                                                  fgkTime0Base + 3 * (Cheight() + Cspace()), 
-                                                  fgkTime0Base + 4 * (Cheight() + Cspace()), 
-                                                  fgkTime0Base + 5 * (Cheight() + Cspace()) };
+  const Float_t  AliTRDgeometry::fgkTime0[6]  = { fgkTime0Base + 0 * (Cheight() + Cspace()) 
+                                                , fgkTime0Base + 1 * (Cheight() + Cspace()) 
+                                                , fgkTime0Base + 2 * (Cheight() + Cspace()) 
+                                                , fgkTime0Base + 3 * (Cheight() + Cspace()) 
+                                                , fgkTime0Base + 4 * (Cheight() + Cspace()) 
+                                                , fgkTime0Base + 5 * (Cheight() + Cspace())};
 
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry()
@@ -1401,6 +1411,78 @@ Int_t AliTRDgeometry::GetSector(Int_t d) const
   //
 
   return ((Int_t) (d / (fgkNplan * fgkNcham)));
+
+}
+
+//CL
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetPadRow(Int_t irob, Int_t imcm) const
+{
+
+  // return on which row this mcm sits 
+
+  return fgkMCMrow*(irob/2) + imcm/fgkMCMrow;
+
+;
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetPadCol(Int_t irob, Int_t imcm, Int_t iadc) const
+{
+  //
+  // return which pad is connected to this adc channel. return -1 if it
+  // is one of the not directly connected adc channels (0, 1 20)
+  //
+
+  if (iadc < 2 || iadc > 19 ) return -1;
+
+  return (iadc-2) + (imcm%fgkMCMrow)*fgkPadmax + GetRobSide(irob)*fgkColmax/2;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetMCM(Int_t irow, Int_t icol) const
+{
+
+  // return on which mcm this pad is
+
+  if ( irow < 0 || icol < 0 || irow > fgkRowmaxC1 || icol > fgkColmax ) return -1;
+
+  return (icol%(fgkColmax/2))/fgkPadmax + fgkMCMrow*(irow%fgkMCMrow);
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetROB(Int_t irow, Int_t icol) const
+{
+
+  // return on which rob this pad is
+
+  return (irow/fgkMCMrow)*2 + GetColSide(icol);
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetRobSide(Int_t irob) const
+{
+
+  // return on which side this rob sits (A side = 0, B side = 1)
+
+  if ( irob < 0 || irob >= fgkROBmaxC1 ) return -1;
+
+  return irob%2;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetColSide(Int_t icol) const
+{
+
+  // return on which side this column sits (A side = 0, B side = 1)
+
+  if ( icol < 0 || icol >= fgkColmax ) return -1;
+
+  return icol/(fgkColmax/2);
 
 }
 
