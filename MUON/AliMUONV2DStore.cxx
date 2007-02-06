@@ -31,6 +31,15 @@
 ClassImp(AliMUONV2DStore)
 /// \endcond
 
+#include "AliMpIntPair.h"
+#include "AliMUONObjectPair.h"
+#include "AliMUONVDataIterator.h"
+#include "Riostream.h"
+#include "TMap.h"
+#include "TObjArray.h"
+#include "TObjString.h"
+#include "TString.h"
+
 //_____________________________________________________________________________
 AliMUONV2DStore::AliMUONV2DStore()
 {
@@ -43,6 +52,86 @@ AliMUONV2DStore::~AliMUONV2DStore()
 /// Destructor
 }
 
+TMap* Decode(const TString& s)
+{
+  TString ss(s);
+  ss.ToUpper();
+  
+  TMap* m = new TMap;
+  m->SetOwner(true);
+  
+  TObjArray* a = ss.Tokenize(";");
+  TIter next(a);
+  TObjString* o;
+  
+  while ( ( o = static_cast<TObjString*>(next()) ) )
+  {
+    TString& os(o->String());
+    TObjArray* b = os.Tokenize("=");
+    if (b->GetEntries()==2)
+    {
+      m->Add(b->At(0),b->At(1));
+    }
+  }
+  return m;
+}
 
+Bool_t Decode(const TMap& m, const TString& key, TString& value)
+{
+  TString skey(key);
+  skey.ToUpper();
+  value = "";
+  TPair* p = static_cast<TPair*>(m.FindObject(skey));
+  if (p) 
+  {
+    value = (static_cast<TObjString*>(p->Value()))->String();
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONV2DStore::Print(Option_t* opt) const
+{
+  /// Printout
+  /// opt is used to filter which (i,j) couple you want to see
+  /// e.g opt="I=12;J=1;opt=Full" to see complete values, but only for the 
+  /// (12,1) pair.
+  /// Warning : decoding of opt format is not really bullet-proof (yet?)
+  
+  AliMUONVDataIterator* it = this->Iterator();
+  
+  AliMUONObjectPair* pair;
+  
+  TMap* m = Decode(opt);
+  
+  TString si;  
+  Bool_t selectI = Decode(*m,"i",si);
+  TString sj;
+  Bool_t selectJ = Decode(*m,"j",sj);
+  TString sopt;
+  Decode(*m,"opt",sopt);
+  
+  m->DeleteAll();
+  delete m;
+  
+  while ( ( pair = static_cast<AliMUONObjectPair*>(it->Next() ) ) )
+  {
+    AliMpIntPair* ip = static_cast<AliMpIntPair*>(pair->First());
+    Int_t i = ip->GetFirst();
+    Int_t j = ip->GetSecond();
+    if ( selectI && i != si.Atoi() ) continue;
+    if ( selectJ && j != sj.Atoi() ) continue;
+    cout << Form("[%d,%d]",i,j) << endl;
+    TObject* o = pair->Second();
+    if (o) 
+    {
+      o->Print(sopt.Data());
+    }
+  }
+  
+  delete it;
+}
 
 

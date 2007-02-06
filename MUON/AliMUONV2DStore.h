@@ -40,6 +40,8 @@ public:
   /// Whether or not this container is the owner of its contents.
   virtual Bool_t IsOwner() const = 0;
   
+  virtual void Print(Option_t* opt="") const;
+  
 private:  
   ClassDef(AliMUONV2DStore,0) // Generic container indexed by a pair of integers
 };
