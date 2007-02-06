@@ -12,7 +12,7 @@ void testDE()
     // Create/get segmentation via factory
     AliMpVSegmentation* segmentation 
       = AliMpSegmentation::Instance()
-          ->GetMpSegmentation(it.CurrentDEId(), kCath0);
+          ->GetMpSegmentation(it.CurrentDEId(), AliMp::kCath0);
       
     // Print number of pads
    cout << "   number of pads: " << segmentation->NofPads() << endl;   

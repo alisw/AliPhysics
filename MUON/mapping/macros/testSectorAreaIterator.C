@@ -67,7 +67,7 @@ void testSectorAreaIterator(AliMp::StationType station = AliMp::kStation1,
   AliMpSectorSegmentation segmentation(sector);
 
   AliMpArea area;
-  if ( station == kStation1 )
+  if ( station == AliMp::kStation1 )
     area = AliMpArea(TVector2(45.,45.),TVector2(45.,45.));
   else   
     area = AliMpArea(TVector2(60.,60.),TVector2(60.,60.));

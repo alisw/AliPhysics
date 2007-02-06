@@ -25,7 +25,7 @@ void testPadsUpEtc(AliMp::StationType station = AliMp::kStation1,
   AliMpSectorSegmentation segmentation(sector);
   
   AliMpIntPair indices(85, 101);
-  if( plane == kNonBendingPlane) indices = AliMpIntPair(129, 10);
+  if( plane == AliMp::kNonBendingPlane) indices = AliMpIntPair(129, 10);
  
   AliMpPad pad;
   if (segmentation.HasPad(indices)) {
