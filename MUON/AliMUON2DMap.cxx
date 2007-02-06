@@ -90,7 +90,7 @@ AliMUONV2DStore*
 AliMUON2DMap::CloneEmpty() const
 {
   /// Create a void copy of *this. 
-  return new AliMUON2DMap;
+  return new AliMUON2DMap(fOptimizeForDEManu);
 }
 
 //_____________________________________________________________________________
@@ -131,13 +131,6 @@ AliMUON2DMap::Iterator() const
     return new AliMUON2DMapIterator(*fMap);
   }
   return 0x0;
-}
-
-//_____________________________________________________________________________
-void
-AliMUON2DMap::Print(Option_t*) const
-{
-/// Not implemented (yet?)
 }
 
 //_____________________________________________________________________________

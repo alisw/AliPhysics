@@ -33,8 +33,6 @@ public:
   /// Whether or not this container is the owner of its contents.
   virtual Bool_t IsOwner() const { return kTRUE; } 
 
-  virtual void Print(Option_t* opt="") const;
-  
   AliMUON2DMap(const AliMUON2DMap& other);
   AliMUON2DMap&  operator = (const AliMUON2DMap& other);
 
