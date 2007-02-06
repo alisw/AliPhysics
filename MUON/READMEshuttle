@@ -1,0 +1,130 @@
+How to test the Shuttle preprocessor(s) for MUON.
+
+We will get two "logical" MUON preprocessors : one for the tracker and one for the trigger.
+Both will manage several subtasks (e.g. the tracker one will handle pedestals,
+ gains and deadchannels, while the trigger one will handle masks and trigger lut)
+"Physically", only one class will manage both the tracker and the trigger : AliMUONPreprocessor.
+Depending on the subsystem and on the task to be performed (based on the run type), this class
+ will instanciate the correct set of AliMUONVSubProcessor(s) which does the actual job.
+Output of most processors will end up in OCDB (Offine Condition DataBase). A set of helper functions
+ to peek at this OCDB are gathered in MUONCDB.C macro.
+ 
+-------
+TestMUONPreprocessor.C
+-------
+
+This is the master macro used to check the MUON part of the Shuttle.
+Depending on what you want to test, you'll have to modify the input files 
+(using shuttle->AddInputFile) and/or the run type (using shuttle->AddInputRunParameter())
+
+-------
+AliMUONPreprocessor(const TString& detName)
+-------
+
+Depending on how this one is constructed, and depending on the runtype, it will
+ perform differents tasks. Note that for the moment the runtypes are "fake", i.e.
+ put by hand in the TestMUONPreprocessor.C macro, and might not correspond to
+ the final values to be used by the DAQ.
+ 
+detName   runType                     task to be done           worker class (AliMUONVSubprocessor child)
+--------------------------------------------------------------------------------------------------------
+MCH       PEDESTAL_RUN                read ASCII ped files      AliMUONPedestalSubprocessor
+                                      and put them into OCDB
+                        
+MCH       GMS                         read GMS alignment files  AliMUONGMSSubprocessor
+                                      and put them into OCDB
+
+MCH       PHYSICS                     read DCS HV values and    AliMUONHVSubprocessor
+                                      put them into OCDB
+                                      
+MCH       ELECTRONICS_CALIBRATION_RUN read ASCII gain files     to be done
+                                      and put them into OCDB
+                                      
+MTR       to be defined               to be defined             to be done
+
+----------
+Pedestals
+----------
+
+Two options here. You can either use a pre-done set of ASCII pedestals files (generated as
+ explained below for the 2nd option), located at /afs/cern.ch/user/l/laphecet/public/LDC*.ped, 
+ or build you own set.
+ 
+We've written an AliMUONPedestalEventGenerator which creates fake pedestal events. The pedestal values
+are taken from the Offline Condition DataBase (OCDB) (which is itself fakely filled
+using the writePedestals() function located in the MUONCDB.C macro.
+
+So first generate a valid pedestal CDB entry but using the MUONCDB.C macro.
+
+root[] .L MUONCDB.C++
+root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
+root[] Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
+root[] Int_t startRun = 80;
+root[] Int_t endRun = 80;
+root[] writePedestals(cdbpath, defaultValues, startRun, endRun);
+
+Expected output is (don't worry about the warnings, they are harmless) :
+
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
+16828 Manus and 1064008 channels.
+Ngenerated = 1064008
+
+Then use the AliMUONPedestalEventGenerator to produce simulated pedestal events.
+
+Usage :
+root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
+// back pedestals values generated in the previous step
+root[] const char* dateFileName = "raw.date"; // base filename for the output
+root[] Int_t runNumber = 80; // run number used to fetch the pedestals from the OCDB 
+root[] Int_t nevents = 100; // # of events to generate. 100 should be enough
+root[] AliMUONPedestalEventGenerator ped(runNumber,nevents,dateFileName);
+root[] ped.Exec("");
+
+It *will* take a lot of time (mainly due to the fact that we're writting a 
+bunch of ASCII files = DDL files), so please be patient.
+
+The output should be the normal simulated sequence of MUON.Hits.root, MUON.SDigits.root,
+ MUON.Digits.root, raw/*.ddl files and raw.date.LDCi where i=0-3 (i.e. one DATE file
+per LDC, as will be used in real life), the latter ones being roughly 100 MB each.
+
+The raw.date.LDC* files are then processed using the makeped online program 
+(currently found, pending an agreement on where to put online programs under cvs,
+ under /afs/cern.ch/user/a/abaldiss/public/v15; Please contact Alberto to check 
+ it's the latest version) which outputs manus-*.ped ASCII files (one per LDC) :
+ 
+ makeped -f raw.date.LCDi (i=0,1,2,3)
+ mv manus-1.ped LDCi.ped
+ 
+ (repeat for each LDC)
+
+The LDCi.ped files are the input for the pedestal subprocessor,
+which is tested using the TestMUONPreprocessor.C macro. 
+The output of the pedestal subprocessor (upon success only) is written into the OCDB. 
+Difference between the input and the output can be inferred using the diff() function
+of MUONCDB.C macro.
+
+
+-------
+HV
+-------
+
+HV DCS values are created in CreateDCSAliasMap() of TestMUONPreprocessor.C
+You might want to modify this function to create a given set of error conditions
+ in order to test whether the HVSubprocessor is reacting properly to those errors.
+ 
+ 

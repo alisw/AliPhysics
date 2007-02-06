@@ -1,0 +1,68 @@
+The Offline Condition DataBase is described extensively on ALICE Offline pages.
+
+Here you'll find only information relevant to the MUONCDB.C macro, which defines
+ a set of functions to read/write MUON information to this CDB. Those functions are
+  not meant to be used as black boxes. Please have a closer look before using 
+  (especially the ones writing to the CDB...)
+ 
+-------
+Calibration data objects
+-------
+
+We've designed generic data containers to store calibration information, 
+tailored to the way we usually access MUON tracker data, that is, indexed by the pair (detElemId,manuId). 
+This container is called AliMUONV2DStore. You can attach a TObject to every and each pair (detElemId,manuId).
+ For the moment, that TObject is generally of AliMUONVCalibParam type, 
+ which handles a given number of channels (64 typically) as a group.
+ As the class names suggest, both classes are only interfaces. Concrete ones are AliMUON2DMap (used instead of a vector
+as detElemId are not contiguous) for the V2DStore, CalibParam1I (VCalibParam storing one integer per channel), and
+ CalibParam2F (VCalibParam storing 2 floats per channel).
+
+One exception are the HV values from DCS, which are stored "as they come" from the shuttle-dcs interface, as a TMap, where
+ the key is the aliasname (TString), and the value a TObjArray of AliDCSValue.
+
+For trigger, the same virtual container idea applies, except we're using 1D container (AliMUONV1DStore).
+
+--------
+CDB location
+--------
+
+One very important notion is that of the DefaultStorage (which you set with 
+ AliCDBManager::Instance()->SetDefaultStorage(path)), which tells the CDB library where
+ the CDB is sitting (either locally on disk, or on the grid).
+
+For local tests, path will be most likely = local://$ALICE_ROOT/MUON (i.e. there is, in CVS a slim version of the calibration objects needed
+  for running the MUON code), or local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB for Shuttle testing.
+ 
+-------
+Writing to CDB
+-------
+ 
+ In write mode, this macro was/is used to populate the CDB with fake calibration objects for testing purposes.
+Real calibration data will normally be handled by the Shuttle (see READMEshuttle).
+
+writeGains() and writePedestals() functions may be used to populate MUON tracker information,
+ and generateTrigger() for trigger parts. 
+ 
+------
+Reading the CDB
+------
+ 
+The actual reading is encapsulated into AliMUONCalibrationData class. 
+e.g. to read pedestals for run 4567, one would do :
+
+AliCDBManager::Instance()->SetDefaultStorage(cdbPath);
+AliMUONCalibrationData cd(4567);
+AliMUONV2DStore* ped = cd.Pedestals();
+
+If you want to plot calibration data (not terribly usefull as it's a really global view), use the plot() function 
+ in MUONCDB.C, e.g. :
+ 
+plot(*ped,"pedestal")
+
+which will create 2 histograms : pedestal_0 (mean) and pedestal_1 (sigma).
+
+You might also be interested in the diff() method which generates an AliMUONV2DStore
+ containing the difference (either absolute or relative) of two AliMUONV2DStore.
+
+
