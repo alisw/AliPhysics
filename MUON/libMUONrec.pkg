@@ -32,7 +32,10 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONClusterFinderSimpleFit.cxx \
        AliMUONClusterFinderCOG.cxx \
        AliMUONPad.cxx \
-       AliMUONCluster.cxx
+       AliMUONCluster.cxx \
+       AliMUONPadStatusMaker.cxx \
+       AliMUONPadStatusMapMaker.cxx \
+       AliMUONHVNamer.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

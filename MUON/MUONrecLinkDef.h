@@ -37,6 +37,9 @@
 
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
+#pragma link C++ class AliMUONHVNamer+;
+#pragma link C++ class AliMUONPadStatusMaker+;
+#pragma link C++ class AliMUONPadStatusMapMaker+;
 
 // display
 #pragma link C++ class AliMUONDisplay+; 
