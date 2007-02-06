@@ -56,6 +56,7 @@ void testReadSector(AliMp::StationType station = AliMp::kStation1,
   Int_t ids[15] = { 19, 14, 9, 32, 36, 136, 187, 212, 207, 220, 1, 131, 239, 243, 250 };  
   for (Int_t i=0; i<15 ; i++) {
     Int_t id = ids[i];
+    id |= AliMpConstants::ManuMask(plane);
     cout << "Motif pos " << std::setw(3) << id;
     if (!sector->FindRowSegment(id)) {
        cout << " not found." << endl;
