@@ -610,10 +610,9 @@ void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
 //
 
   if ((evNumber2-evNumber1)==1) 
-      AliDebug(1, Form("I am making sdigits for the %dth event", evNumber1))
-  else if ((evNumber2-evNumber1)>1)
-      AliDebug(1, Form("I am making sdigits for the events from the " 
-		       "%dth to the %dth", evNumber1, evNumber2-1));
+    AliDebug(1, Form("I am making sdigits for the %dth event", evNumber1));
+  if ((evNumber2-evNumber1)>1)
+    AliDebug(1, Form("I am making sdigits for the events from the %dth to the %dth", evNumber1, evNumber2-1));
  
   AliRunLoader * rl = fLoader->GetRunLoader();
   AliTOFSDigitizer sd((rl->GetFileName()).Data(),evNumber1,evNumber2) ;
