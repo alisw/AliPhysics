@@ -16,11 +16,13 @@
 // $Id$
 
 #include "AliMUONPreprocessor.h"
+
 #include "AliMUONPedestalSubprocessor.h"
+#include "AliMUONHVSubprocessor.h"
 #include "AliMUONGMSSubprocessor.h"
 
 #include "AliLog.h"
-
+#include "AliShuttleInterface.h"
 #include "Riostream.h"
 #include "TObjArray.h"
 
@@ -61,8 +63,24 @@ AliMUONPreprocessor::AliMUONPreprocessor(const TString& detName,
   /// - lut
   
   if ( detName == fgkTrackerDetName ) { 
-    fSubprocessors->Add(new AliMUONPedestalSubprocessor(this));
-    fSubprocessors->Add(new AliMUONGMSSubprocessor(this));
+    TString runType = shuttle->GetRunParameter("RunType");
+    if ( runType == "PEDESTAL_RUN" ) // FIXME : check the name 
+    {
+      fSubprocessors->Add(new AliMUONPedestalSubprocessor(this)); // to be called only for pedestal runs
+    }
+    else if ( runType == "ELECTRONICS_CALIBRATION_RUN" ) // FIXME : check the name 
+    {  
+      AliError("Not implemented yet");
+      //fSubprocessors->Add(new AliMUONGainSubprocessor(this)); // to be called only for gain runs
+    }
+    else if ( runType == "GMS" ) // FIXME : check the name 
+    {
+      fSubprocessors->Add(new AliMUONGMSSubprocessor(this));
+    }
+    else if ( runType == "PHYSICS" ) // FIXME : check the name
+    {
+      fSubprocessors->Add(new AliMUONHVSubprocessor(this)); // to be called only for physics runs
+    }
   }
   else if ( detName == fgkTriggerDetName ) {
     AliWarningStream() << "Trigger subprocessors not yet implemented." << endl;

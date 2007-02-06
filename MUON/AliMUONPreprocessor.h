@@ -29,6 +29,8 @@ public:
   virtual UInt_t Process(TMap* dcsAliasMap);
   virtual void Print(Option_t* opt="") const;
   
+  void Log(const char* message) { AliPreprocessor::Log(message); }
+  
   TList* GetFileSources(Int_t system, const char* id) 
   { return AliPreprocessor::GetFileSources(system,id); }
 
