@@ -22,6 +22,7 @@ class AliMUONTriggerLut;
 class AliMUONV1DStore;
 class AliMUONV2DStore;
 class AliMUONVCalibParam;
+class TMap;
 
 class AliMUONCalibrationData : public TObject
 {
@@ -34,8 +35,7 @@ public:
   AliMUONCalibrationData(Int_t runNumber=-1, Bool_t deferredInitialization=kTRUE);
   virtual ~AliMUONCalibrationData();
 
-  /// Get the DeadChannel calibration object for channels within (detElemId,manuId).
-  AliMUONVCalibParam* DeadChannels(Int_t detElemId, Int_t manuId) const;
+  AliMUONV2DStore* Gains() const;
   
   /// Get the Gain calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Gains(Int_t detElemId, Int_t manuId) const;
@@ -45,9 +45,14 @@ public:
 
   /// Get the mask for a given local trigger board.
   AliMUONVCalibParam* LocalTriggerBoardMasks(Int_t localBoardNumber) const;
+
+  /// Get the HV values
+  TMap* HV() const;
   
   /// Whether this object is valid or not (might be invalid if fetching from CDB failed).
   Bool_t IsValid() const { return fIsValid; }
+  
+  AliMUONV2DStore* Pedestals() const;
   
   /// Get the Pedestal calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Pedestals(Int_t detElemId, Int_t manuId) const;
@@ -75,7 +80,7 @@ private:
   AliCDBEntry* GetEntry(const char* path) const;
   AliMUONV2DStore* OnDemandGains() const;
   AliMUONV2DStore* OnDemandPedestals() const;
-  AliMUONV2DStore* OnDemandDeadChannels() const;
+  TMap* OnDemandHV() const;
   AliMUONVCalibParam* OnDemandGlobalTriggerBoardMasks() const;
   AliMUONV1DStore* OnDemandRegionalTriggerBoardMasks() const;
   AliMUONV1DStore* OnDemandLocalTriggerBoardMasks() const;
@@ -87,14 +92,14 @@ private:
   Int_t fRunNumber; // The run number for which we hold calibrations
   mutable AliMUONV2DStore* fGains; //!
   mutable AliMUONV2DStore* fPedestals; //!
-  mutable AliMUONV2DStore* fDeadChannels; //!
+  mutable TMap* fHV; //!
   mutable AliMUONV1DStore* fLocalTriggerBoardMasks; //!
   mutable AliMUONV1DStore* fRegionalTriggerBoardMasks; //!
   mutable AliMUONVCalibParam* fGlobalTriggerBoardMasks; //!
   mutable AliMUONTriggerLut* fTriggerLut; //!
   mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!
   
-  ClassDef(AliMUONCalibrationData,3) // Storage for all MUON calibration data.
+  ClassDef(AliMUONCalibrationData,4) // Storage for all MUON calibration data.
 };
 
 #endif

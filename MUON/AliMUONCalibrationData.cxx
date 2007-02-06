@@ -26,11 +26,12 @@
 #include "AliMUONV2DStore.h"
 #include "AliMUONVCalibParam.h"
 #include "Riostream.h"
+#include "TMap.h"
 
 /// \class AliMUONCalibrationData
 ///
-/// For the moment, this class stores pedestals, gains and deadchannels
-/// that are fetched from the CDB.
+/// For the moment, this class stores pedestals, gains, hv (for tracker)
+/// and lut, masks and efficiencies (for trigger) that are fetched from the CDB.
 ///
 /// This class is to be considered as a convenience class.
 /// Its aim is to ease retrieval of calibration data from the 
@@ -53,7 +54,7 @@ fIsValid(kTRUE),
 fRunNumber(runNumber), 
 fGains(0x0), 
 fPedestals(0x0),
-fDeadChannels(0x0),
+fHV(0x0),
 fLocalTriggerBoardMasks(0x0),
 fRegionalTriggerBoardMasks(0x0),
 fGlobalTriggerBoardMasks(0x0),
@@ -72,7 +73,7 @@ fTriggerEfficiency(0x0)
   {
     OnDemandGains();
     OnDemandPedestals();
-    OnDemandDeadChannels();
+    OnDemandHV();
     OnDemandLocalTriggerBoardMasks();
     OnDemandRegionalTriggerBoardMasks();
     OnDemandGlobalTriggerBoardMasks();
@@ -88,7 +89,7 @@ AliMUONCalibrationData::~AliMUONCalibrationData()
 
   delete fPedestals;
   delete fGains;
-  delete fDeadChannels;
+  delete fHV;
   delete fLocalTriggerBoardMasks;
   delete fRegionalTriggerBoardMasks;
   delete fGlobalTriggerBoardMasks;
@@ -97,40 +98,37 @@ AliMUONCalibrationData::~AliMUONCalibrationData()
 }
 
 //_____________________________________________________________________________
-AliMUONVCalibParam*
-AliMUONCalibrationData::DeadChannels(Int_t detElemId, Int_t manuId) const
+TMap*
+AliMUONCalibrationData::HV() const
 {
 /// Return the calibration for a given (detElemId, manuId) pair
-/// Note that for DeadChannel, it's "legal" to return 0x0 (e.g. if a manu
-/// is perfect, we might simply forget it in the store).
 
-  return
-  static_cast<AliMUONVCalibParam*>(OnDemandDeadChannels()->Get(detElemId,manuId));
+  return OnDemandHV();
 }
 
 //_____________________________________________________________________________
-AliMUONV2DStore*
-AliMUONCalibrationData::OnDemandDeadChannels() const
+TMap*
+AliMUONCalibrationData::OnDemandHV() const
 {
 /// Create (if needed) and return the internal store for DeadChannels.
 
-  if (!fDeadChannels)
+  if (!fHV)
   {
-    AliCDBEntry* entry = GetEntry("MUON/Calib/DeadChannels");
+    AliCDBEntry* entry = GetEntry("MUON/Calib/HV");
     if (entry)
     {
-      fDeadChannels = dynamic_cast<AliMUONV2DStore*>(entry->GetObject());
-      if (!fDeadChannels)
+      fHV = dynamic_cast<TMap*>(entry->GetObject());
+      if (!fHV)
       {
-        AliError("fDeadChannels not of the expected type !!!");
+        AliError("fHV not of the expected type !!!");
       }
     }
     else
     {
-      AliError("Could not get dead channels !");
+      AliError("Could not get HV values !");
     }
   }
-  return fDeadChannels;
+  return fHV;
 }
 
 //_____________________________________________________________________________
@@ -151,14 +149,29 @@ AliMUONCalibrationData::Gains(Int_t detElemId, Int_t manuId) const
 /// Note that, unlike the DeadChannel case, if the result is 0x0, that's an
 /// error (meaning that we should get gains for all channels).
 
-  AliMUONVCalibParam* gain = 
-    static_cast<AliMUONVCalibParam*>(OnDemandGains()->Get(detElemId,manuId));
-  if (!gain)
+  AliMUONV2DStore* gains = Gains();
+  if (!gains)
+  {
+    AliError("Could not get gains");
+    return 0x0;
+  }
+  
+  AliMUONVCalibParam* g = 
+    static_cast<AliMUONVCalibParam*>(gains->Get(detElemId,manuId));
+  if (!g)
   {
     AliError(Form("Could not get gain for detElemId=%d manuId=%d ",
                     detElemId,manuId));
   }
-  return gain;
+  return g;
+}
+
+//_____________________________________________________________________________
+AliMUONV2DStore*
+AliMUONCalibrationData::Gains() const
+{
+  /// Create (if needed) and return the internal store for gains.
+  return OnDemandGains();
 }
 
 //_____________________________________________________________________________
@@ -226,8 +239,15 @@ AliMUONCalibrationData::LocalTriggerBoardMasks(Int_t localBoardNumber) const
 {
 /// Return the masks for a given trigger local board.
 
+  AliMUONV1DStore* store = OnDemandLocalTriggerBoardMasks();
+  if (!store)
+  {
+    AliError("Could not get LocalTriggerBoardMasks");
+    return 0x0;
+  }
+  
   AliMUONVCalibParam* ltbm = 
-  static_cast<AliMUONVCalibParam*>(OnDemandLocalTriggerBoardMasks()->Get(localBoardNumber));
+    static_cast<AliMUONVCalibParam*>(store->Get(localBoardNumber));
   if (!ltbm)
   {
     AliError(Form("Could not get mask for localBoardNumber=%d",localBoardNumber));
@@ -294,7 +314,7 @@ AliMUONCalibrationData::Print(Option_t*) const
   cout << "RunNumber " << RunNumber()
   << " fGains=" << fGains
   << " fPedestals=" << fPedestals
-  << " fDeadChannels=" << fDeadChannels
+  << " fHV=" << fHV
   << " fLocalTriggerBoardMasks=" << fLocalTriggerBoardMasks
   << " fRegionalTriggerBoardMasks=" << fRegionalTriggerBoardMasks
   << " fGlobalTriggerBoardMasks=" << fGlobalTriggerBoardMasks
@@ -302,6 +322,13 @@ AliMUONCalibrationData::Print(Option_t*) const
   << endl;
 }
 
+//_____________________________________________________________________________
+AliMUONV2DStore*
+AliMUONCalibrationData::Pedestals() const
+{
+  /// Return pedestals
+  return OnDemandPedestals();
+}
 
 //_____________________________________________________________________________
 AliMUONVCalibParam*
@@ -311,8 +338,16 @@ AliMUONCalibrationData::Pedestals(Int_t detElemId, Int_t manuId) const
 /// A return value of 0x0 is considered an error, meaning we should get
 /// pedestals for all channels.
 
+  AliMUONV2DStore* pedestals = OnDemandPedestals();
+  if (!pedestals) 
+  {
+    AliError(Form("Did not find pedestals for DE %d manuId %d",
+                  detElemId,manuId));
+    return 0x0;
+  }
+  
   AliMUONVCalibParam* ped = 
-    static_cast<AliMUONVCalibParam*>(OnDemandPedestals()->Get(detElemId,manuId));
+    static_cast<AliMUONVCalibParam*>(pedestals->Get(detElemId,manuId));
   if (!ped)
   {
     AliError(Form("Could not get pedestal for detElemId=%d manuId=%d ",
@@ -327,8 +362,16 @@ AliMUONCalibrationData::RegionalTriggerBoardMasks(Int_t index) const
 {
 /// Return the masks for a given trigger regional board.
 
+  AliMUONV1DStore* store = OnDemandRegionalTriggerBoardMasks();
+  
+  if (!store)
+  {
+    AliError("Could not get RegionalTriggerBoardMasks");
+    return 0x0;
+  }
+  
   AliMUONVCalibParam* rtbm = 
-  static_cast<AliMUONVCalibParam*>(OnDemandRegionalTriggerBoardMasks()->Get(index));
+    static_cast<AliMUONVCalibParam*>(store->Get(index));
   if (!rtbm)
   {
     AliError(Form("Could not get mask for regionalBoard index=%d",index));
