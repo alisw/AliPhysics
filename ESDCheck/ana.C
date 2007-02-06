@@ -55,7 +55,7 @@ void ana()
 {  
   if (! gIsAnalysisLoaded ) {
     LoadLib("ESD") ; 
-    LoadLib("ANALYSIS_NEW") ; 
+    LoadLib("ANALYSIS") ; 
     printf("Include path = %s\n", gSystem->GetIncludePath()) ; 
     LoadLib("AnalysisCheck") ; 
   }

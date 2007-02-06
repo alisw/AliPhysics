@@ -46,7 +46,7 @@ AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name) :
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskPt::Init(Option_t *) 
+void AliAnalysisTaskPt::ConnectInputData(Option_t *) 
 {
   // Initialisation of branch container and histograms 
   
@@ -59,25 +59,20 @@ void AliAnalysisTaskPt::Init(Option_t *)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
-  
-  // create histograms 
+}
 
+//________________________________________________________________________
+void AliAnalysisTaskPt::CreateOutputObjects()
+{
+  // create histograms 
   fhPt = new TH1F("fhPt","This is the Pt distribution",15,0.1,3.1);
   fhPt->SetStats(kTRUE);
   fhPt->GetXaxis()->SetTitle("P_{T} [GeV]");
@@ -133,7 +128,9 @@ void AliAnalysisTaskPt::Terminate(Option_t *)
   c1->cd(1)->SetLeftMargin(0.15);
   c1->cd(1)->SetBottomMargin(0.15);  
   c1->cd(1)->SetLogy();
-  fhPt->DrawCopy("E");
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  fhPt = (TH1F*)fOutputContainer->At(0);
+  if (fhPt) fhPt->DrawCopy("E");
 
   c1->Print("TracksPt.eps");
 

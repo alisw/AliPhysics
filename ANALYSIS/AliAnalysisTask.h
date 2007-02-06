@@ -31,7 +31,44 @@ class AliAnalysisTask : public TTask {
     kTaskZombie  = BIT(15),
     kTaskChecked = BIT(16)
   };   
+
+ protected:
+  Bool_t                    fReady;      // Flag if the task is ready
+  Bool_t                    fInitialized; // True if Init() was called
+  Int_t                     fNinputs;    // Number of inputs
+  Int_t                     fNoutputs;   // Number of outputs
+  Bool_t                   *fOutputReady; //[fNoutputs] Flags for output readyness
+  TObject                  *fPublishedData; // !published data
+  TObjArray                *fInputs;     // Array of input slots
+  TObjArray                *fOutputs;    // Array of output slots
+
+  // Define the input/output slots (called by user in the ctor of the derived class)
+  //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===
+  void                      DefineInput(Int_t islot, TClass *type);
+  void                      DefineOutput(Int_t islot, TClass *type);
+  //=====================================================================
   
+  //=====================================================================
+  // === OVERLOAD THIS TO CONNECT TREE BRANCHES AT INPUT SLOTS. YOU
+  // SHOULD DEFINE HERE ALSO THE OBJECTS TO BE CONNECTED TO YOUR OUTPUTS
+  virtual void              ConnectInputData(Option_t *option="");
+  //=====================================================================
+  
+  // Post output data (called by Exec() when data is ready)
+  //=== CALL IN EXEC() FOR EACH OUTPUT WHEN READY ===
+  Bool_t                    PostData(Int_t iout, TObject *data, Option_t *option="");
+  //=====================================================================
+  
+  // === USE THIS FIRST IN YOUR Init() TO CHECH IF A BRANCH IS ALREADY CONNECTED
+  // TO SOME ADDRESS.
+  char                     *GetBranchAddress(Int_t islot, const char *branch) const;
+  // === CALL THIS AFTERWARDS IN Init() IF THE BRANCH ADDRESS IS NOT YET SET
+  Bool_t                    SetBranchAddress(Int_t islot, const char *branch, void *address) const;
+  //=====================================================================
+  // === CALL THIS IN CreateOutputObjects IF THE OUTPUT IS TO BE WRITTEN AT OUTPUT IOUT
+//  void                      OpenFile(Int_t iout, const char *name, Option_t *option) const;
+  
+public:  
   AliAnalysisTask();
   AliAnalysisTask(const char *name, const char *title);
   AliAnalysisTask(const AliAnalysisTask &task); 
@@ -39,6 +76,9 @@ class AliAnalysisTask : public TTask {
   
   // Assignment
   AliAnalysisTask& operator=(const AliAnalysisTask &task);
+  //=====================================================================
+  // === OVERLOAD THIS AND CREATE YOUR OUTPUT OBJECTS (HISTOGRAMS,DATA) HERE
+  virtual void              CreateOutputObjects();
   // Conect inputs/outputs to data containers (by AliAnalysisModule)
   Bool_t                    ConnectInput(Int_t islot, AliAnalysisDataContainer *cont);
   Bool_t                    ConnectOutput(Int_t islot, AliAnalysisDataContainer *cont);
@@ -58,6 +98,7 @@ class AliAnalysisTask : public TTask {
   TClass                   *GetOutputType(Int_t islot) const;
   // === USE THIS TO RETREIVE INPUT DATA AND STATICALLY CAST IT TO THE DECLARED TYPE
   TObject                  *GetInputData(Int_t islot) const;
+  TObject                  *GetOutputData(Int_t islot) const;  
   Bool_t                    IsOutputReady(Int_t islot) const {return fOutputReady[islot];}
   Bool_t                    IsChecked() const  {return TObject::TestBit(kTaskChecked);}
   Bool_t                    IsInitialized() const  {return fInitialized;}
@@ -78,43 +119,7 @@ class AliAnalysisTask : public TTask {
   // === OVERLOAD THIS IF YOU WANT TO DO SOMETHING WITH THE OUTPUT
   virtual void              Terminate(Option_t *option="");
   //=====================================================================
-  
- protected:
-  // Define the input/output slots (called by user in the ctor of the derived class)
-  //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===
-  void                      DefineInput(Int_t islot, TClass *type);
-  void                      DefineOutput(Int_t islot, TClass *type);
-  //=====================================================================
-  
-  //=====================================================================
-  // === OVERLOAD THIS TO CONNECT TREE BRANCHES AT INPUT SLOTS. YOU
-  // SHOULD DEFINE HERE ALSO THE OBJECTS TO BE CONNECTED TO YOUR OUTPUTS
-  virtual void              Init(Option_t *option="");
-  //=====================================================================
-  
-  // Post output data (called by Exec() when data is ready)
-  //=== CALL IN EXEC() FOR EACH OUTPUT WHEN READY ===
-  Bool_t                    PostData(Int_t iout, TObject *data, Option_t *option="");
-  //=====================================================================
-  
-  // === USE THIS FIRST IN YOUR Init() TO CHECH IF A BRANCH IS ALREADY CONNECTED
-  // TO SOME ADDRESS.
-  char                     *GetBranchAddress(Int_t islot, const char *branch) const;
-  // === CALL THIS AFTERWARDS IN Init() IF THE BRANCH ADDRESS IS NOT YET SET
-  Bool_t                    SetBranchAddress(Int_t islot, const char *branch, void *address) const;
-  //=====================================================================
-  // === CALL THIS IN INIT IF THE OUTPUT IS TO BE WRITTEN AT OUTPUT IOUT
-  void                      OpenFile(Int_t iout, const char *name, Option_t *option) const;
-  
-  Bool_t                    fReady;      // Flag if the task is ready
-  Bool_t                    fInitialized; // True if Init() was called
-  Int_t                     fNinputs;    // Number of inputs
-  Int_t                     fNoutputs;   // Number of outputs
-  Bool_t                   *fOutputReady; //[fNoutputs] Flags for output readyness
-  TObject                  *fPublishedData; // !published data
-  TObjArray                *fInputs;     // Array of input slots
-  TObjArray                *fOutputs;    // Array of output slots
-  
-  ClassDef(AliAnalysisTask,2)  // Class describing an analysis task
+    
+  ClassDef(AliAnalysisTask,1)  // Class describing an analysis task
 };
 #endif

@@ -1,0 +1,33 @@
+SRCS= TGliteXmlEventlist.cxx\
+      AliAOD.cxx AliEventBuffer.cxx \
+      AliRunAnalysis.cxx AliAnalysis.cxx \
+      AliVAODParticle.cxx AliAODParticle.cxx \
+      AliAODPair.cxx   AliAODRun.cxx     \
+      AliAODParticleCut.cxx AliAODParticleBaseCut.cxx \
+      AliAODPairCut.cxx AliAODPairBaseCut.cxx \
+      AliEventCut.cxx AliEventBaseCut.cxx \
+      AliReader.cxx AliReaderAOD.cxx AliReaderKineTree.cxx \
+      AliReaderESD.cxx AliReaderESDTree.cxx \
+      AliTrackPoints.cxx AliClusterMap.cxx \
+      AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx AliFlowAnalysis.cxx \
+      AliMuonAnalysis.cxx  AliAODv0.cxx  AliAODxi.cxx  AliAODevent.cxx \
+      AliAnalysisEventCuts.cxx AliAnalysisTrackCuts.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=AnalysisOldLinkDef.h
+
+EXPORT:=AliAOD.h AliEventBuffer.h\
+      AliVAODParticle.h     AliAODParticle.h  \
+      AliAODPair.h          AliAODRun.h \
+      AliAODPairCut.h       AliAODPairBaseCut.h \
+      AliAODParticleCut.h   AliAODParticleBaseCut.h \
+      AliRunAnalysis.h      AliAnalysis.h     \
+      AliEventCut.h         AliEventBaseCut.h \
+      AliReader.h           AliReaderESD.h    \
+      AliTrackPoints.h      AliClusterMap.h   \
+      AliFlowAnalysis.h     AliReaderESDTree.h \
+      AliMuonAnalysis.h     AliAODv0.h   AliAODxi.h  AliAODevent.h \
+      AliAnalysisEventCuts.h AliAnalysisTrackCuts.h
+
+EINCLUDE:= TPC ITS

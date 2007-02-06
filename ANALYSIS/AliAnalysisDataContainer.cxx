@@ -42,12 +42,12 @@
 //
 //==============================================================================
 
-#include "Riostream.h"
+#include <Riostream.h>
+#include <TMethodCall.h>
 
-#include "TClass.h"
-#include "TTree.h"
-#include "TFile.h"
-//#include "AliLog.h"
+#include <TClass.h>
+#include <TTree.h>
+#include <TROOT.h>
 
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
@@ -59,13 +59,13 @@ ClassImp(AliAnalysisDataContainer)
 AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
                           fDataReady(kFALSE),
                           fOwnedData(kFALSE),
-                          fFile(NULL),
+                          fFileName(),
                           fData(NULL),
                           fType(NULL),
                           fProducer(NULL),
                           fConsumers(NULL)
 {
-// Default ctor.
+// Dummy ctor.
 }
 
 //______________________________________________________________________________
@@ -73,13 +73,14 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
                          :TNamed(name,""),
                           fDataReady(kFALSE),
                           fOwnedData(kTRUE),
-                          fFile(NULL),
+                          fFileName(),
                           fData(NULL),
                           fType(type),
                           fProducer(NULL),
                           fConsumers(NULL)
 {
-// Normal constructor.
+// Default constructor.
+   SetTitle(fType->GetName());
 }
 
 //______________________________________________________________________________
@@ -87,13 +88,14 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const AliAnalysisDataContaine
                          :TNamed(cont),
                           fDataReady(cont.fDataReady),
                           fOwnedData(kFALSE),
-                          fFile(cont.fFile),
+                          fFileName(cont.fFileName),
                           fData(cont.fData),
-                          fType(cont.fType),
+                          fType(NULL),
                           fProducer(cont.fProducer),
                           fConsumers(NULL)
 {
 // Copy ctor.
+   GetType();
    if (cont.fConsumers) {
       fConsumers = new TObjArray(2);
       Int_t ncons = cont.fConsumers->GetEntriesFast();
@@ -107,10 +109,6 @@ AliAnalysisDataContainer::~AliAnalysisDataContainer()
 // Destructor. Deletes data ! (What happens if data is a container ???)
    if (fData && fOwnedData) delete fData;
    if (fConsumers) delete fConsumers;
-   if (fFile) {
-      fFile->Close();
-      delete fFile;
-   }   
 }
 
 //______________________________________________________________________________
@@ -121,9 +119,9 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
       TNamed::operator=(cont);
       fDataReady = cont.fDataReady;
       fOwnedData = kFALSE;  // !!! Data owned by cont.
-      fFile = cont.fFile;
+      fFileName = cont.fFileName;
       fData = cont.fData;
-      fType = cont.fType;
+      GetType();
       fProducer = cont.fProducer;
       if (cont.fConsumers) {
          fConsumers = new TObjArray(2);
@@ -133,6 +131,154 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
    }   
    return *this;
 }      
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::AddConsumer(AliAnalysisTask *consumer, Int_t islot)
+{
+// Add a consumer for contained data;
+   AliAnalysisDataSlot *slot = consumer->GetInputSlot(islot);
+   if (!slot || !slot->GetType()) {
+     cout<<"Consumer task "<< consumer->GetName()<<" does not have an input/type #"<<islot<<endl;
+     //AliError(Form("Consumer task %s does not have an input #%i", consumer->GetName(),islot));
+      return;
+   }
+   if (!slot->GetType()->InheritsFrom(GetType())) {
+     cout<<"Data type "<<slot->GetTitle()<<" for input slot "<<islot<<" of task "<<consumer->GetName()<<" does not match container type "<<GetTitle()<<endl;  
+     //AliError(Form("Data type %s for input slot %i of task %s does not match container type %s", slot->GetType()->GetName(),islot,consumer->GetName(),fType->GetName()));
+      return;
+   }   
+
+   if (!fConsumers) fConsumers = new TObjArray(2);   
+   fConsumers->Add(consumer);
+   // Add the consumer task to the list of task of the producer
+   if (fProducer && !fProducer->GetListOfTasks()->FindObject(consumer)) 
+      fProducer->Add(consumer);
+}      
+
+//______________________________________________________________________________
+Bool_t AliAnalysisDataContainer::ClientsExecuted() const
+{
+// Check if all client tasks have executed.
+   TIter next(fConsumers);
+   AliAnalysisTask *task;
+   while ((task=(AliAnalysisTask*)next())) {
+      if (!task->HasExecuted()) return kFALSE;
+   }
+   return kTRUE;
+}   
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::DeleteData()
+{
+// Delete data if not needed anymore.
+   if (!fDataReady || !ClientsExecuted()) {
+     cout<<"Data not ready or not all clients of container "<<GetName()<<" executed. Data not deleted."<<endl;
+     //AliWarning(Form("Data not ready or not all clients of container %s executed. Data not deleted.", GetName()));
+      return;
+   }
+   if (!fOwnedData) {
+     cout<<"Data not owned by container "<<GetName()<<". Not deleted."<<endl;
+     //AliWarning(Form("Data not owned by container %s. Not deleted.", GetName()));
+      return;
+   }
+   delete fData;
+   fData = 0;
+   fDataReady = kFALSE;
+}   
+
+//______________________________________________________________________________
+TClass *AliAnalysisDataContainer::GetType() const
+{
+// Get class type for this slot.
+   AliAnalysisDataContainer *cont = (AliAnalysisDataContainer*)this;
+   if (!fType) cont->SetType(gROOT->GetClass(fTitle.Data()));
+   if (!fType) printf("AliAnalysisDataContainer: Unknown class: %s\n", GetTitle());
+   return fType;
+}
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::GetEntry(Long64_t ientry)
+{
+// If data is ready and derives from TTree or from TBranch, this will get the
+// requested entry in memory if not already loaded.
+   if (!fDataReady || !GetType()) return;
+   Bool_t istree = fType->InheritsFrom(TTree::Class());
+   if (istree) {
+      TTree *tree = (TTree*)fData;
+      if (tree->GetReadEntry() != ientry) tree->GetEntry(ientry);
+      return;
+   }   
+   Bool_t isbranch = fType->InheritsFrom(TBranch::Class());
+   if (isbranch) {
+      TBranch *branch = (TBranch*)fData;
+      if (branch->GetReadEntry() != ientry) branch->GetEntry(ientry);
+      return;
+   }   
+}   
+
+//______________________________________________________________________________
+Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
+{
+// Merge a list of containers with this one. Containers in the list must have
+// data of the same type.
+   if (!list || !fData) return 0;
+   printf("Merging %d containers %s\n", list->GetSize()+1, GetName());
+   TMethodCall callEnv;
+   if (fData->IsA())
+      callEnv.InitWithPrototype(fData->IsA(), "Merge", "TCollection*");
+   if (!callEnv.IsValid() && !list->IsEmpty()) {
+      cout << "No merge interface for data stored by " << GetName() << ". Merging not possible !" << endl;
+      return 1;
+   }   
+   
+   if (list->IsEmpty()) return 1;
+
+   TIter next(list);
+   AliAnalysisDataContainer *cont;   
+   // Make a list where to temporary store the data to be merged.
+   TList *collectionData = new TList();
+   Int_t count = 0; // object counter
+   while ((cont=(AliAnalysisDataContainer*)next())) {
+      TObject *data = cont->GetData();
+      if (!data) continue;
+      if (strcmp(cont->GetName(), GetName())) {
+         cout << "Not merging containers with different names !" << endl;
+         continue;
+      }
+      printf(" ... merging object %s\n", data->GetName());
+      collectionData->Add(data);
+      count++;
+   }   
+   callEnv.SetParam((Long_t) collectionData);
+   callEnv.Execute(fData);
+   delete collectionData;
+   
+   return count+1;   
+}
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) const
+{
+// Print info about this container.
+   TString ind;
+   for (Int_t i=0; i<indent; i++) ind += " ";
+   TString opt(option);
+   opt.ToLower();
+   Bool_t dep = (opt.Contains("dep"))?kTRUE:kFALSE;
+   if (!dep) {
+      printf("%s\n", Form("%sContainer: %s  type: %s", ind.Data(), GetName(), GetTitle()));
+      if (fProducer) 
+         printf("%s\n", Form("%s = Data producer: task %s",ind.Data(),fProducer->GetName()));
+      else
+         printf("%s\n", Form("%s= No data producer"));
+      printf("%s", Form("%s = Consumer tasks: "));
+      if (!fConsumers || !fConsumers->GetEntriesFast()) printf("-none-\n");
+      else printf("\n");
+   }   
+   TIter next(fConsumers);
+   AliAnalysisTask *task;
+   while ((task=(AliAnalysisTask*)next())) task->PrintTask(option, indent+3);
+}   
 
 //______________________________________________________________________________
 Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
@@ -175,56 +321,6 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
 }
 
 //______________________________________________________________________________
-void AliAnalysisDataContainer::OpenFile(const char *name, Option_t *option)
-{
-// Data will be written to this file at the end of processing.
-// Option represent the way the file is accessed: NEW, APPEND, ...
-   if (fFile) {
-      fFile->Close();
-      delete fFile;
-   }
-   fFile =  new TFile(name, option);
-   if (fFile->IsZombie()) {
-     cout<<"Cannot open file "<<name<<" with option "<<option<<endl;
-     //AliError(Form("Cannot open file %s with option %s",name,option));
-      fFile = 0;
-   }   
-}   
-
-//______________________________________________________________________________
-void AliAnalysisDataContainer::WriteData()
-{
-// Write data to the file.
-   if (fFile) {
-      TDirectory *cursav = gDirectory;
-      fFile->cd();
-      fData->Write();
-//      fFile->Write();
-      if (cursav) cursav->cd();
-   }   
-}
-
-//______________________________________________________________________________
-void AliAnalysisDataContainer::GetEntry(Long64_t ientry)
-{
-// If data is ready and derives from TTree or from TBranch, this will get the
-// requested entry in memory if not already loaded.
-   if (!fDataReady) return;
-   Bool_t istree = fType->InheritsFrom(TTree::Class());
-   if (istree) {
-      TTree *tree = (TTree*)fData;
-      if (tree->GetReadEntry() != ientry) tree->GetEntry(ientry);
-      return;
-   }   
-   Bool_t isbranch = fType->InheritsFrom(TBranch::Class());
-   if (isbranch) {
-      TBranch *branch = (TBranch*)fData;
-      if (branch->GetReadEntry() != ientry) branch->GetEntry(ientry);
-      return;
-   }   
-}   
-
-//______________________________________________________________________________
 void AliAnalysisDataContainer::SetProducer(AliAnalysisTask *prod, Int_t islot)
 {
 // Set the producer of data. The slot number is required for data type checking.
@@ -243,8 +339,8 @@ void AliAnalysisDataContainer::SetProducer(AliAnalysisTask *prod, Int_t islot)
      //AliError(Form("Producer task %s does not have an output #%i", prod->GetName(),islot));
       return;
    }   
-   if (!slot->GetType()->InheritsFrom(fType)) {
-     cout<<"Data type "<<slot->GetType()->GetName()<<"for output slot "<<islot<<" of task "<<prod->GetName()<<" does not match container type "<<fType->GetName()<<endl;
+   if (!slot->GetType()->InheritsFrom(GetType())) {
+     cout<<"Data type "<<slot->GetTitle()<<"for output slot "<<islot<<" of task "<<prod->GetName()<<" does not match container type "<<GetTitle()<<endl;
      //AliError(Form("Data type %s for output slot %i of task %s does not match container type %s", slot->GetType()->GetName(),islot,prod->GetName(),fType->GetName()));
       return;
    }   
@@ -257,81 +353,4 @@ void AliAnalysisDataContainer::SetProducer(AliAnalysisTask *prod, Int_t islot)
       if (!prod->GetListOfTasks()->FindObject(cons)) prod->Add(cons);
    }   
 }   
-
-//______________________________________________________________________________
-void AliAnalysisDataContainer::AddConsumer(AliAnalysisTask *consumer, Int_t islot)
-{
-// Add a consumer for contained data;
-   AliAnalysisDataSlot *slot = consumer->GetInputSlot(islot);
-   if (!slot) {
-     cout<<"Consumer task "<< consumer->GetName()<<" does not have an input #"<<islot<<endl;
-     //AliError(Form("Consumer task %s does not have an input #%i", consumer->GetName(),islot));
-      return;
-   }   
-   if (!slot->GetType()->InheritsFrom(fType)) {
-     cout<<"Data type "<<slot->GetType()->GetName()<<" for input slot "<<islot<<" of task "<<consumer->GetName()<<" does not match container type "<<fType->GetName()<<endl;  
-     //AliError(Form("Data type %s for input slot %i of task %s does not match container type %s", slot->GetType()->GetName(),islot,consumer->GetName(),fType->GetName()));
-      return;
-   }   
-
-   if (!fConsumers) fConsumers = new TObjArray(2);   
-   fConsumers->Add(consumer);
-   // Add the consumer task to the list of task of the producer
-   if (fProducer && !fProducer->GetListOfTasks()->FindObject(consumer)) 
-      fProducer->Add(consumer);
-}      
-
-//______________________________________________________________________________
-Bool_t AliAnalysisDataContainer::ClientsExecuted() const
-{
-// Check if all client tasks have executed.
-   TIter next(fConsumers);
-   AliAnalysisTask *task;
-   while ((task=(AliAnalysisTask*)next())) {
-      if (!task->HasExecuted()) return kFALSE;
-   }
-   return kTRUE;
-}   
-
-//______________________________________________________________________________
-void AliAnalysisDataContainer::DeleteData()
-{
-// Delete data if not needed anymore.
-   if (!fDataReady || !ClientsExecuted()) {
-     cout<<"Data not ready or not all clients of container "<<GetName()<<" executed. Data not deleted."<<endl;
-     //AliWarning(Form("Data not ready or not all clients of container %s executed. Data not deleted.", GetName()));
-      return;
-   }
-   if (!fOwnedData) {
-     cout<<"Data not owned by container "<<GetName()<<". Not deleted."<<endl;
-     //AliWarning(Form("Data not owned by container %s. Not deleted.", GetName()));
-      return;
-   }
-   delete fData;
-   fData = 0;
-   fDataReady = kFALSE;
-}   
       
-//______________________________________________________________________________
-void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) const
-{
-// Print info about this container.
-   TString ind;
-   for (Int_t i=0; i<indent; i++) ind += " ";
-   TString opt(option);
-   opt.ToLower();
-   Bool_t dep = (opt.Contains("dep"))?kTRUE:kFALSE;
-   if (!dep) {
-      printf("%s\n", Form("%sContainer: %s  type: %s", ind.Data(), GetName(), fType->GetName()));
-      if (fProducer) 
-         printf("%s\n", Form("%s = Data producer: task %s",ind.Data(),fProducer->GetName()));
-      else
-         printf("%s\n", Form("%s= No data producer"));
-      printf("%s", Form("%s = Consumer tasks: "));
-      if (!fConsumers || !fConsumers->GetEntriesFast()) printf("-none-\n");
-      else printf("\n");
-   }   
-   TIter next(fConsumers);
-   AliAnalysisTask *task;
-   while ((task=(AliAnalysisTask*)next())) task->PrintTask(option, indent+3);
-}   

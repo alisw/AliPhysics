@@ -1,6 +1,6 @@
 // #####    TO RUN THIS MACRO:
 // bash$ aliroot         (due to AliInfo, AliError, ...)
-// root[0] gSystem->Load("libANALYSIS_NEW");
+// root[0] gSystem->Load("libANALYSIS");
 // IN case you do not have the include path set to AliRoot includes:
 // root[1] gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");
 // root[2] .L testEvent.C+;
@@ -10,6 +10,7 @@
 #include "TClonesArray.h"
 #include "TChain.h"
 #include "TH1.h"
+#include "TMath.h"
 #include "TCanvas.h"
 #include "testEvent.h"   
 
@@ -17,13 +18,13 @@
 void generate()
 {
 // Simple event generation
-   AliAnalysisManager *mgr = new AliAnalysisManager();
+   AliAnalysisManager *mgr = new AliAnalysisManager("generate");
    TaskGenerate *task = new TaskGenerate("gener");
    mgr->AddTask(task);
 
    if (mgr->InitAnalysis()) {
       mgr->PrintStatus();
-      mgr->ExecAnalysis();
+      mgr->StartAnalysis();
    }   
    delete mgr;
 }   
@@ -41,11 +42,12 @@ void filter_reco()
    chain->Add("event08000.root");
    chain->Add("event10000.root");
    // Create an analysis manager
-   AliAnalysisManager *mgr = new AliAnalysisManager();
+   AliAnalysisManager *mgr = new AliAnalysisManager("testEvent");
    // Create a filter task and register it
    TaskFilter *task1 = new TaskFilter("TaskFilter");
    mgr->AddTask(task1);
    // Create a reco task and register it
+
    TaskRecoPi0 *task2 = new TaskRecoPi0("TaskRecoPi0");
    mgr->AddTask(task2);
    // Create containers for input/output
@@ -56,21 +58,22 @@ void filter_reco()
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output1", 
                       TList::Class(), AliAnalysisManager::kOutputContainer);
    AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", 
-                      TH1::Class(), AliAnalysisManager::kOutputContainer);
+                      TH1::Class(), AliAnalysisManager::kOutputContainer, "output.root");
    // Connect containers to the task input/outputs
    mgr->ConnectInput(task1,0,cinput);
    mgr->ConnectOutput(task1,0,coutput1);
    mgr->ConnectOutput(task1,1,coutput2);
    mgr->ConnectInput(task2,0,coutput1);
    mgr->ConnectOutput(task2,0,coutput);
+
    // Connect input data
-   cinput->SetData(chain);
+//   cinput->SetData(chain);
    // Init analysis and start event loop
    if (mgr->InitAnalysis()) {
       mgr->PrintStatus();
-      chain->Process(mgr);
+      mgr->StartAnalysis("local",chain);
    }
-//   delete mgr;   
+   delete mgr;   
 }
    
 ClassImp(TaskGenerate)
@@ -102,28 +105,28 @@ TaskFilter::TaskFilter(const char *name)
 }
 
 //______________________________________________________________________________
-void TaskFilter::Init(Option_t *)
+void TaskFilter::ConnectInputData(Option_t *)
 {
 // Initialize branches.
-   printf("   Init %s\n", GetName());
-   if (!fEvent) {
+   printf("   ConnectInputData of task %s\n", GetName());
+   char ** address = (char **)GetBranchAddress(0, "event");
+   if (address) {
       // One should first check if the branch address was taken by some other task
-      char ** address = (char **)GetBranchAddress(0, "event");
-      if (address) fEvent = (AnaEvent*)(*address);
-      if (!fEvent) {
-         fEvent = new AnaEvent();
-         SetBranchAddress(0, "event", &fEvent);
-      }
-      // The output tree will be written to gammas.root
-      TDirectory *dirsav = gDirectory;
-      // Open a file for output #0
-      OpenFile(0, "gammas.root", "RECREATE");
+      fEvent = (AnaEvent*)(*address);
+   } else {
+      fEvent = new AnaEvent();
+      SetBranchAddress(0, "event", &fEvent);
+   } 
+}
+   
+//______________________________________________________________________________
+void TaskFilter::CreateOutputObjects()
+{
+   printf("   CreateOutputObjects of task %s\n", GetName());
+   if (!fList) {
       fOutput = new TTree("TGAM", "gammas");
       TBranch *branch = fOutput->Branch("event", &fEvent, 18000,1);
       branch->SetAutoDelete(kFALSE);
-      if (dirsav) dirsav->cd();
-   } 
-   if (!fList) {
       fList = new TList();
       fHist1 = new TH1I("ntracks", "Number of tracks per event", 100, 0, 1000);
       fHist1->SetLineColor(kRed);
@@ -196,10 +199,10 @@ TaskRecoPi0::~TaskRecoPi0()
 }   
 
 //______________________________________________________________________________
-void TaskRecoPi0::Init(Option_t *)
+void TaskRecoPi0::ConnectInputData(Option_t *)
 {
 // Initialize branches.
-   printf("   Init %s\n", GetName());
+   printf("   ConnectInputData for task %s\n", GetName());
    if (!fEvent) {
       // One should first check if the branch address was taken by some other task
       char ** address = (char **)GetBranchAddress(0, "event");
@@ -208,10 +211,16 @@ void TaskRecoPi0::Init(Option_t *)
          fEvent = new AnaEvent();
          SetBranchAddress(0, "event", &fEvent);
       }
+   } 
+}
+
+//______________________________________________________________________________
+void TaskRecoPi0::CreateOutputObjects()
+{
+   printf("   CreateOutputObjects of task %s\n", GetName());
+   if (!fHist) {
       fGammas = new TObjArray();
       fPions  = new TObjArray();
-   } 
-   if (!fHist) {
       fHist = new TH1F("Pt_pi0", "Pt distribution for pi0's", 100, 0., 10.);
       fHist->SetLineColor(kRed);
    }   

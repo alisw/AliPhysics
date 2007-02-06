@@ -1,7 +1,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libANALYSIS_NEW.so
+default-target: libANALYSIS.so
 
 ALICEINC      = -I.
 
@@ -14,25 +14,25 @@ else
   endif
 endif
 
-# for building of ANALYSIS_NEW.par
-ifneq ($(ANALYSIS_NEW_INCLUDE),)
-  ALICEINC += -I../$(ANALYSIS_NEW_INCLUDE)
+# for building of ANALYSIS.par
+ifneq ($(ANALYSIS_INCLUDE),)
+  ALICEINC += -I../$(ANALYSIS_INCLUDE)
 endif
 
 CXXFLAGS     += $(ALICEINC) -g
 
-PACKAGE = ANALYSIS_NEW
+PACKAGE = ANALYSIS
 include lib$(PACKAGE).pkg
 
-DHDR_ANALYSIS_NEW := $(DHDR)
-HDRS_ANALYSIS_NEW := $(HDRS)
-SRCS_ANALYSIS_NEW := $(SRCS) G__$(PACKAGE).cxx
-OBJS_ANALYSIS_NEW := $(SRCS_ANALYSIS_NEW:.cxx=.o)
+DHDR_ANALYSIS := $(DHDR)
+HDRS_ANALYSIS := $(HDRS)
+SRCS_ANALYSIS := $(SRCS) G__$(PACKAGE).cxx
+OBJS_ANALYSIS := $(SRCS_ANALYSIS:.cxx=.o)
 
 PARFILE       = $(PACKAGE).par
 
 
-lib$(PACKAGE).so: $(OBJS_ANALYSIS_NEW)
+lib$(PACKAGE).so: $(OBJS_ANALYSIS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(PLATFORM),macosx)
@@ -47,7 +47,7 @@ endif
 	$(CXX) $(CXXFLAGS) $(PACKCXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS_ANALYSIS_NEW) *.so G__$(PACKAGE).* $(PARFILE)
+	@rm -f $(OBJS_ANALYSIS) *.so G__$(PACKAGE).* $(PARFILE)
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionary ..."
@@ -55,7 +55,7 @@ G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 
 ### CREATE PAR FILE
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_ANALYSIS_NEW) $(SRCS_ANALYSIS_NEW) $(DHDR_ANALYSIS_NEW) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_ANALYSIS) $(SRCS_ANALYSIS) $(DHDR_ANALYSIS) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)

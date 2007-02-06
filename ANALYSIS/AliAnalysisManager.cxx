@@ -25,65 +25,90 @@
 //
 //==============================================================================
 
-#include "Riostream.h"
+#include <Riostream.h>
 
-#include "TClass.h"
-#include "TFile.h"
-#include "TTree.h"
-//#include "AliLog.h"
+#include <TClass.h>
+#include <TFile.h>
+#include <TMethodCall.h>
+#include <TChain.h>
+#include <TSystem.h>
+#include <TROOT.h>
 
-#include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisManager)
 
+AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;
+
 //______________________________________________________________________________
-AliAnalysisManager::AliAnalysisManager() : TSelector(),
+AliAnalysisManager::AliAnalysisManager() 
+                   :TNamed(),
                     fTree(NULL),
+                    fCurrentEntry(-1),
+                    fMode(kLocalAnalysis),
                     fInitOK(kFALSE),
-                    fContainers(NULL),
-                    fInputs(NULL),
-                    fOutputs(NULL),
                     fTasks(NULL),
                     fTopTasks(NULL),
-                    fZombies(NULL)
+                    fZombies(NULL),
+                    fContainers(NULL),
+                    fInputs(NULL),
+                    fOutputs(NULL)
 {
-// Default constructor.
-   if (TClass::IsCallingNew() != TClass::kDummyNew) {
-      fContainers = new TObjArray();
-      fInputs     = new TObjArray();
-      fOutputs    = new TObjArray();  
-      fTasks      = new TObjArray();
-      fTopTasks   = new TObjArray();
-      fZombies    = new TObjArray();
-//      fStatus     = new AliAnalysisInfo(this);
-   }
+// Dummy constructor.
+   fgAnalysisManager = this;
 }
 
-#ifdef NEVER
 //______________________________________________________________________________
-AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
-                   :TSelector(other),
+AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
+                   :TNamed(name,title),
                     fTree(NULL),
+                    fCurrentEntry(-1),
+                    fMode(kLocalAnalysis),
                     fInitOK(kFALSE),
-                    fContainers(NULL),
-                    fInputs(NULL),
-                    fOutputs(NULL),
+                    fDebug(0),
                     fTasks(NULL),
                     fTopTasks(NULL),
-                    fZombies(NULL)
+                    fZombies(NULL),
+                    fContainers(NULL),
+                    fInputs(NULL),
+                    fOutputs(NULL)
+{
+// Default constructor.
+   fgAnalysisManager = this;
+   fTasks      = new TObjArray();
+   fTopTasks   = new TObjArray();
+   fZombies    = new TObjArray();
+   fContainers = new TObjArray();
+   fInputs     = new TObjArray();
+   fOutputs    = new TObjArray();  
+}
+
+//______________________________________________________________________________
+AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
+                   :TNamed(other),
+                    fTree(NULL),
+                    fCurrentEntry(-1),
+                    fMode(other.fMode),
+                    fInitOK(other.fInitOK),
+                    fDebug(other.fDebug),
+                    fTasks(NULL),
+                    fTopTasks(NULL),
+                    fZombies(NULL),
+                    fContainers(NULL),
+                    fInputs(NULL),
+                    fOutputs(NULL)
 {
 // Copy constructor.
-   fInitOK     = other.fInitOK;
-   fContainers = new TObjArray(*other.fContainers);
-   fInputs     = new TObjArray(*other.fInputs);
-   fOutputs    = new TObjArray(*other.fOutputs);
    fTasks      = new TObjArray(*other.fTasks);
    fTopTasks   = new TObjArray(*other.fTopTasks);
    fZombies    = new TObjArray(*other.fZombies);
-//   fStatus     = new AliAnalysisInfo(this);
+   fContainers = new TObjArray(*other.fContainers);
+   fInputs     = new TObjArray(*other.fInputs);
+   fOutputs    = new TObjArray(*other.fOutputs);
+   fgAnalysisManager = this;
 }
    
 //______________________________________________________________________________
@@ -91,36 +116,44 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
 {
 // Assignment
    if (&other != this) {
-      TSelector::operator=(other);
-      fTree       = other.fTree;
+      TNamed::operator=(other);
+      fTree       = NULL;
+      fCurrentEntry = -1;
+      fMode       = other.fMode;
       fInitOK     = other.fInitOK;
-      fContainers = new TObjArray(*other.fContainers);
-      fInputs     = new TObjArray(*other.fInputs);
-      fOutputs    = new TObjArray(*other.fOutputs);
+      fDebug      = other.fDebug;
       fTasks      = new TObjArray(*other.fTasks);
       fTopTasks   = new TObjArray(*other.fTopTasks);
       fZombies    = new TObjArray(*other.fZombies);
-//      fStatus     = new AliAnalysisInfo(this);
+      fContainers = new TObjArray(*other.fContainers);
+      fInputs     = new TObjArray(*other.fInputs);
+      fOutputs    = new TObjArray(*other.fOutputs);
+      fgAnalysisManager = this;
    }
    return *this;
 }
-#endif
 
 //______________________________________________________________________________
 AliAnalysisManager::~AliAnalysisManager()
 {
 // Destructor.
-   if (fContainers) {fContainers->Delete(); delete fContainers;}
-   if (fInputs) delete fInputs;
-   if (fOutputs) delete fOutputs;
    if (fTasks) {fTasks->Delete(); delete fTasks;}
    if (fTopTasks) delete fTopTasks;
    if (fZombies) delete fZombies;
+   if (fContainers) {fContainers->Delete(); delete fContainers;}
+   if (fInputs) delete fInputs;
+   if (fOutputs) delete fOutputs;
+   if (fgAnalysisManager==this) fgAnalysisManager = NULL;
 }
+
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
 // Read one entry of the tree or a whole branch.
+   if (fDebug > 1) {
+      cout << "== AliAnalysisManager::GetEntry()" << endl;
+   }   
+   fCurrentEntry = entry;
    return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
 }
    
@@ -132,15 +165,18 @@ void AliAnalysisManager::Init(TTree *tree)
   // will be set. It is normaly not necessary to make changes to the
   // generated code, but the routine can be extended by the user if needed.
   // Init() will be called many times when running with PROOF.
-   printf("AliAnalysisManager::Init(%s)\n", tree->GetName());
-   if (!fInitOK) {
-     cout<<"You have to call InitAnalysis first"<<endl;
-     //AliError("You have to call InitAnalysis first");
-      return;
-   }   
    if (!tree) return;
+   if (fDebug > 1) {
+      printf("AliAnalysisManager::Init(%s)\n", tree->GetName());
+   }
+   if (!fInitOK) InitAnalysis();
+   if (!fInitOK) return;
    fTree = tree;
    AliAnalysisDataContainer *top = (AliAnalysisDataContainer*)fInputs->At(0);
+   if (!top) {
+      cout<<"Error: No top input container !" <<endl;
+      return;
+   }   
    top->SetData(tree);
 }
 
@@ -150,7 +186,9 @@ void AliAnalysisManager::Begin(TTree *tree)
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
-   printf("AliAnalysisManager::Begin(%s)\n", tree->GetName());
+   if (fDebug > 1) {
+      cout << "AliAnalysisManager::Begin()" << endl;
+   }   
    Init(tree);
 }
 
@@ -160,8 +198,15 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
-   printf("AliAnalysisManager::SlaveBegin(%s)\n", tree->GetName());
-   Init(tree);
+   if (fDebug > 1) {
+      cout << "AliAnalysisManager::SlaveBegin()" << endl;
+   }   
+   TIter next(fTasks);
+   AliAnalysisTask *task;
+   // Call CreateOutputObjects for all tasks
+   while ((task=(AliAnalysisTask*)next())) 
+      task->CreateOutputObjects();
+   if (fMode == kLocalAnalysis) Init(tree);   
 }
 
 //______________________________________________________________________________
@@ -174,7 +219,7 @@ Bool_t AliAnalysisManager::Notify()
    // user if needed. The return value is currently not used.
    if (fTree) {
       TFile *curfile = fTree->GetCurrentFile();
-      if (curfile) printf("AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
+      if (curfile && fDebug>1) printf("AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
    }
    return kTRUE;
 }    
@@ -200,32 +245,117 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
   
-//   printf("AliAnalysisManager::Process(%lld)\n", entry);
+   if (fDebug > 1) {
+      cout << "AliAnalysisManager::Process()" << endl;
+   }   
    GetEntry(entry);
    ExecAnalysis();
    return kTRUE;
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::SlaveTerminate()
+void AliAnalysisManager::PackOutput(TList *target)
 {
-  // The SlaveTerminate() function is called after all entries or objects
-  // have been processed. When running with PROOF SlaveTerminate() is called
-  // on each slave server.
-
-   printf("AliAnalysisManager::SlaveTerminate()\n");
-   if (!fOutput)
-   {
-     cout<<"ERROR: Output list not initialized."<<endl;
-     //AliError("ERROR: Output list not initialized.");
-     return;
-   }
-   TIter next(fOutputs);
-   AliAnalysisDataContainer *output;
-   while ((output=(AliAnalysisDataContainer *)next())) {
-      output->SetDataOwned(kFALSE);
-      fOutput->Add(output->GetData());
+  // Pack all output data containers in the output list.
+   if (fDebug > 1) {
+      cout << "AliAnalysisManager::PackOutput()" << endl;
    }   
+   if (!target) {
+      Error("PackOutput", "No target. Aborting.");
+      return;
+   }   
+
+   if (fMode == kProofAnalysis) {
+      TIter next(fOutputs);
+      AliAnalysisDataContainer *output;
+      while ((output=(AliAnalysisDataContainer*)next())) {
+         if (fDebug > 1) printf("   Packing container %s\n", output->GetName());
+         if (output->GetData()) target->Add(output);
+//         output->SetDataOwned(kFALSE);
+      }
+   } 
+   fContainers->Clear();
+   if (fDebug > 1) {
+      printf("   ->output list contains %d containers\n", target->GetSize());  
+   }   
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::ReplaceOutputContainers(TList *source)
+{
+// Replace all exising containers with the ones coming in source.
+   TIter next(fOutputs);
+   AliAnalysisDataContainer *cont, *output;
+   while ((cont=(AliAnalysisDataContainer*)next())) {
+      output = (AliAnalysisDataContainer*)source->FindObject(cont->GetName());
+      if (!output) {
+         printf("Error: container %s not found in analysis output !\n", cont->GetName());
+         continue;
+      }
+      if (fDebug > 1) printf("...Replacing output container %s\n", output->GetName());
+      if (cont->GetFileName()) printf("    -> %s\n", output->GetFileName());
+      Int_t ntasks = fTasks->GetEntries();
+      AliAnalysisTask *task;
+      AliAnalysisDataSlot *oslot;
+      for (Int_t i=0; i<ntasks; i++) {  
+         task = (AliAnalysisTask*)fTasks->At(i);
+         Int_t nout = task->GetNoutputs();
+         for (Int_t iout=0; iout<nout; iout++) {
+            oslot = task->GetOutputSlot(iout);
+            if (oslot->GetContainer() == cont) oslot->ConnectContainer(output);
+         }
+      }
+//      output->GetConsumers()->Delete();
+//      if (output->GetProducer()) delete output->GetProducer();
+   }         
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::UnpackOutput(TList *source)
+{
+  // Called by AliAnalysisSelector::Terminate. Output containers should
+  // be in source in the same order as in fOutputs.
+
+   if (!source) {
+      Error("PackOutput", "No target. Aborting.");
+      return;
+   }
+   if (fDebug > 1) {
+      printf("AliAnalysisManager::UnpackOutput(): %d containers\n", source->GetSize());
+      printf("   Source list contains %d containers\n", source->GetSize());
+   }   
+   TCollection *collection = source;
+   if (fMode == kLocalAnalysis) collection = fOutputs;
+   TIter next(collection);
+
+   if (fMode == kProofAnalysis) {
+      ReplaceOutputContainers(source);
+      fOutputs->Clear();
+   }   
+   AliAnalysisDataContainer *output;
+   while ((output=(AliAnalysisDataContainer*)next())) {
+      if (fMode == kProofAnalysis) {
+         output->SetDataOwned(kTRUE);
+         fOutputs->Add(output);
+      }   
+      if (!output->GetData()) continue;
+      // Check if the output need to be written to a file.
+      const char *filename = output->GetFileName();
+      if (!filename || !strlen(filename)) continue;
+      TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+      if (file) file->cd();
+      else      file = new TFile(filename, "RECREATE");
+      if (file->IsZombie()) continue;
+      // Reparent data to this file
+      TMethodCall callEnv;
+      if (output->GetData()->IsA())
+         callEnv.InitWithPrototype(output->GetData()->IsA(), "SetDirectory", "TDirectory*");
+      if (callEnv.IsValid()) {
+         callEnv.SetParam((Long_t) file);
+         callEnv.Execute(output->GetData());
+      }
+      output->GetData()->Write();      
+   }
 }
 
 //______________________________________________________________________________
@@ -233,15 +363,14 @@ void AliAnalysisManager::Terminate()
 {
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
-  // the results graphically or save the results to file.
-   printf("AliAnalysisManager::Terminate()\n");
-   AliAnalysisDataContainer *output;
+  // the results graphically.
+   if (fDebug > 1) {
+      cout << "AliAnalysisManager::Terminate()" << endl;
+   }   
    AliAnalysisTask *task;
-   TIter next(fOutputs);
-   while ((output=(AliAnalysisDataContainer *)next())) output->WriteData();
-   TIter next1(fTasks);
+   TIter next(fTasks);
    // Call Terminate() for tasks
-   while ((task=(AliAnalysisTask*)next1())) task->Terminate();
+   while ((task=(AliAnalysisTask*)next())) task->Terminate();
 }
 
 //______________________________________________________________________________
@@ -262,10 +391,10 @@ AliAnalysisTask *AliAnalysisManager::GetTask(const char *name) const
 
 //______________________________________________________________________________
 AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name, 
-                                TClass *datatype, EAliAnalysisContType type)
+                                TClass *datatype, EAliAnalysisContType type, const char *filename)
 {
 // Create a data container of a certain type. Types can be:
-//   kNormalContainer  = 0, used to exchange date between tasks
+//   kExchangeContainer  = 0, used to exchange date between tasks
 //   kInputContainer   = 1, used to store input data
 //   kOutputContainer  = 2, used for posting results
    AliAnalysisDataContainer *cont = new AliAnalysisDataContainer(name, datatype);
@@ -275,9 +404,11 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
          fInputs->Add(cont);
          break;
       case kOutputContainer:
+         if (fOutputs->FindObject(name)) printf("CreateContainer: warning: a container named %s existing !\n",name);
          fOutputs->Add(cont);
+         if (filename && strlen(filename)) cont->SetFileName(filename);
          break;
-      case kNormalContainer:
+      case kExchangeContainer:
          break;   
    }
    return cont;
@@ -290,8 +421,7 @@ Bool_t AliAnalysisManager::ConnectInput(AliAnalysisTask *task, Int_t islot,
 // Connect input of an existing task to a data container.
    if (!fTasks->FindObject(task)) {
       AddTask(task);
-      cout<<"Task "<<task->GetName()<<" not registered. Now owned by analysis manager"<<endl;
-      //AliInfo(Form("Task %s not registered. Now owned by analysis manager", task->GetName()));
+      Warning("ConnectInput", "Task %s not registered. Now owned by analysis manager", task->GetName());
    } 
    Bool_t connected = task->ConnectInput(islot, cont);
    return connected;
@@ -304,8 +434,7 @@ Bool_t AliAnalysisManager::ConnectOutput(AliAnalysisTask *task, Int_t islot,
 // Connect output of an existing task to a data container.
    if (!fTasks->FindObject(task)) {
       AddTask(task);
-      cout<<"Task "<<task->GetName()<<"not registered. Now owned by analysis manager"<<endl;
-      //AliInfo(Form("Task %s not registered. Now owned by analysis manager", task->GetName()));
+      Warning("ConnectOutput", "Task %s not registered. Now owned by analysis manager", task->GetName());
    } 
    Bool_t connected = task->ConnectOutput(islot, cont);
    return connected;
@@ -331,18 +460,9 @@ Bool_t AliAnalysisManager::InitAnalysis()
 // and data containers are properly connected
    // Check for input/output containers
    fInitOK = kFALSE;
-//   if (!fInputs->GetEntriesFast()) {
-//      AliError("No input container defined. At least one container should store input data");
-//      return kFALSE;
-//   }   
-//   if (!fOutputs->GetEntriesFast()) {
-//      AliError("No output container defined. At least one container should store output data");
-//      return kFALSE;
-//   }   
    // Check for top tasks (depending only on input data containers)
    if (!fTasks->First()) {
-     cout<<"Analysis has no tasks !"<<endl;
-     //AliError("Analysis have no tasks !");
+      Error("InitAnalysis", "Analysis has no tasks !");
       return kFALSE;
    }   
    TIter next(fTasks);
@@ -357,13 +477,6 @@ Bool_t AliAnalysisManager::InitAnalysis()
       istop = kTRUE;
       iszombie = kFALSE;
       Int_t ninputs = task->GetNinputs();
-//      if (!ninputs) {
-//         task->SetZombie();
-//         fZombies->Add(task);
-//         nzombies++;
-//         AliWarning(Form("Task %s has no input slots defined ! Declared zombie...",task->GetName()));
-//         continue;
-//      }
       for (i=0; i<ninputs; i++) {
          cont = task->GetInputSlot(i)->GetContainer();
          if (!cont) {
@@ -373,8 +486,8 @@ Bool_t AliAnalysisManager::InitAnalysis()
                nzombies++;
                iszombie = kTRUE;
             }   
-            cout<<"Input slot "<<i<<" of task "<<task->GetName()<<" has no container connected ! Declared zombie..."<<endl;
-	    //AliWarning(Form("Input slot %i of task %s has no container connected ! Declared zombie...",i,task->GetName()));
+            Error("InitAnalysis", "Input slot %d of task %s has no container connected ! Declared zombie...", 
+                  i, task->GetName()); 
          }
          if (iszombie) continue;
          // Check if cont is an input container
@@ -387,8 +500,7 @@ Bool_t AliAnalysisManager::InitAnalysis()
       }
    }
    if (!ntop) {
-     cout<<"No top task defined. At least one task should be connected only to input containers"<<endl;
-     //AliError("No top task defined. At least one task should be connected only to input containers");
+      Error("InitAnalysis", "No top task defined. At least one task should be connected only to input containers");
       return kFALSE;
    }                        
    // Check now if there are orphan tasks
@@ -401,8 +513,7 @@ Bool_t AliAnalysisManager::InitAnalysis()
    while ((task=(AliAnalysisTask*)next())) {
       if (!task->IsUsed()) {
          norphans++;
-         cout<<"Task "<<task->GetName()<<" is orphan"<<endl;
-	 //AliWarning(Form("Task %s is orphan",task->GetName()));
+         Warning("InitAnalysis", "Task %s is orphan", task->GetName());
       }   
    }          
    // Check the task hierarchy (no parent task should depend on data provided
@@ -410,8 +521,7 @@ Bool_t AliAnalysisManager::InitAnalysis()
    for (i=0; i<ntop; i++) {
       task = (AliAnalysisTask*)fTopTasks->At(i);
       if (task->CheckCircularDeps()) {
-	cout<<"Found illegal circular dependencies between following tasks:"<<endl;
-	//AliError("Found illegal circular dependencies between following tasks:");
+         Error("InitAnalysis", "Found illegal circular dependencies between following tasks:");
          PrintStatus("dep");
          return kFALSE;
       }   
@@ -438,30 +548,93 @@ void AliAnalysisManager::ResetAnalysis()
 }
 
 //______________________________________________________________________________
+void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
+{
+// Start analysis for this manager. Analysis task can be: LOCAL, PROOF or GRID.
+   if (!fInitOK) {
+      Error("StartAnalysis","Analysis manager was not initialized !");
+      return;
+   }
+   if (fDebug>1) {
+      cout << "StartAnalysis: " << GetName() << endl;   
+   }   
+   TString anaType = type;
+   anaType.ToLower();
+   fMode = kLocalAnalysis;
+   if (tree) {
+      if (anaType.Contains("proof"))     fMode = kProofAnalysis;
+      else if (anaType.Contains("grid")) fMode = kGridAnalysis;
+   }
+   if (fMode == kGridAnalysis) {
+      Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
+      fMode = kLocalAnalysis; 
+   }     
+   char line[128];   
+   TChain *chain = dynamic_cast<TChain*>(tree);
+   switch (fMode) {
+      case kLocalAnalysis:
+         if (!tree) {
+            ExecAnalysis();
+            return;
+         } 
+         // Run tree-based analysis via AliAnalysisSelector  
+         gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+");
+         cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
+         sprintf(line, "AliAnalysisSelector *selector = new AliAnalysisSelector((AliAnalysisManager*)0x%lx);",(ULong_t)this);
+         gROOT->ProcessLine(line);
+         sprintf(line, "((TTree*)0x%lx)->Process(selector);",(ULong_t)tree);
+         gROOT->ProcessLine(line);
+         break;
+      case kProofAnalysis:
+         if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
+            printf("StartAnalysis: no PROOF!!!\n");
+            return;
+         }   
+         sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
+         gROOT->ProcessLine(line);
+         if (chain) {
+            chain->SetProof();
+            cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON CHAIN " << chain->GetName() << endl;
+            chain->Process(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+"));
+         } else {
+            printf("StartAnalysis: no chain\n");
+            return;
+         }      
+         break;
+      case kGridAnalysis:
+         Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
+   }   
+}   
+
+//______________________________________________________________________________
 void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
 // Execute analysis.
    if (!fInitOK) {
-     cout<<"Analysis manager was not initialized !"<<endl;
-     //AliError("Analysis manager was not initialized !");
+     Error("ExecAnalysis", "Analysis manager was not initialized !");
       return;
    }   
    AliAnalysisTask *task;
    // Check if the top tree is active.
    if (fTree) {
+      if (fDebug>1) {
+         printf("AliAnalysisManager::ExecAnalysis\n");
+      }   
       TIter next(fTasks);
    // De-activate all tasks
       while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
       AliAnalysisDataContainer *cont = (AliAnalysisDataContainer*)fInputs->At(0);
       if (!cont) {
-	cout<<"Cannot execute analysis in TSelector mode without at least one top container"<<endl;
-	//AliError("Cannot execute analysis in TSelector mode without at least one top container");
+	      Error("ExecAnalysis","Cannot execute analysis in TSelector mode without at least one top container");
          return;
       }   
       cont->SetData(fTree); // This will notify all consumers
       TIter next1(cont->GetConsumers());
       while ((task=(AliAnalysisTask*)next1())) {
 //         task->SetActive(kTRUE);
+         if (fDebug >1) {
+            cout << "    Executing task " << task->GetName() << endl;
+         }   
          task->ExecuteTask(option);
       }
       return;
@@ -470,7 +643,9 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    TIter next2(fTopTasks);
    while ((task=(AliAnalysisTask*)next2())) {
       task->SetActive(kTRUE);
-      printf("executing %s\n", task->GetName());
+      if (fDebug > 1) {
+         cout << "    Executing task " << task->GetName() << endl;
+      }   
       task->ExecuteTask(option);
    }   
 }

@@ -75,7 +75,7 @@ AliPHOSQATask::~AliPHOSQATask()
 
 
 //______________________________________________________________________________
-void AliPHOSQATask::Init(const Option_t*)
+void AliPHOSQATask::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
@@ -88,23 +88,19 @@ void AliPHOSQATask::Init(const Option_t*)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
-  
+}
+
+//________________________________________________________________________
+void AliPHOSQATask::CreateOutputObjects()
+{  
   // create histograms 
   
   fhPHOSPos            = new TNtuple("PHOSPos"         , "Position in PHOS"  , "x:y:z");
@@ -205,7 +201,17 @@ void AliPHOSQATask::Exec(Option_t *)
 void AliPHOSQATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
-  
+
+  fOutputContainer = (TObjArray*)GetOutputData(0);  
+  fhPHOSPos            = (TNtuple*)fOutputContainer->At(0);
+  fhPHOS               = (TNtuple*)fOutputContainer->At(1);
+  fhPHOSEnergy         = (TH1D*)fOutputContainer->At(2);
+  fhPHOSDigits         = (TH1I*)fOutputContainer->At(3);
+  fhPHOSRecParticles   = (TH1D*)fOutputContainer->At(4);
+  fhPHOSPhotons        = (TH1I*)fOutputContainer->At(5);
+  fhPHOSInvariantMass  = (TH1D*)fOutputContainer->At(6);
+  fhPHOSDigitsEvent    = (TH1I*)fOutputContainer->At(7);
+
   printf("PHOSEnergy Mean         : %5.3f , RMS : %5.3f \n", fhPHOSEnergy->GetMean(),         fhPHOSEnergy->GetRMS()         ) ;
   printf("PHOSDigits Mean         : %5.3f , RMS : %5.3f \n", fhPHOSDigits->GetMean(),         fhPHOSDigits->GetRMS()         ) ;
   printf("PHOSRecParticles Mean   : %5.3f , RMS : %5.3f \n", fhPHOSRecParticles->GetMean(),   fhPHOSRecParticles->GetRMS()   ) ;

@@ -20,7 +20,8 @@ public:
   AliAnalysisTaskPt(const char *name);
   virtual ~AliAnalysisTaskPt() {}
   
-  virtual void   Init(Option_t * opt = "");
+  virtual void   ConnectInputData(Option_t *);
+  virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t * opt = "");
   virtual void   Terminate(Option_t * opt = "");
   

@@ -19,9 +19,13 @@
 #include "TNamed.h"
 #endif
 
+#ifndef ROOT_TString
+#include "TString.h"
+#endif
+
 class TClass;
-class TFile;
 class TObjArray;
+class TCollection;
 class AliAnalysisTask;
 class AliESD;
 
@@ -42,7 +46,8 @@ enum ENotifyMessage {
    AliAnalysisDataContainer &operator=(const AliAnalysisDataContainer &cont);
    // Getters
    TObject                  *GetData() const      {return fData;}
-   TClass                   *GetType() const      {return fType;}
+   const char               *GetFileName() const  {return fFileName.Data();}
+   TClass                   *GetType() const;
    AliAnalysisTask          *GetProducer() const  {return fProducer;}
    TObjArray                *GetConsumers() const {return fConsumers;}
    virtual void              GetEntry(Long64_t ientry);
@@ -50,7 +55,7 @@ enum ENotifyMessage {
    void                      ResetDataReady()     {fDataReady = kFALSE;}
    virtual Bool_t            SetData(TObject *data, Option_t *option="");
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
-   void                      OpenFile(const char *name, Option_t *option="RECREATE");
+   void                      SetFileName(const char *filename) {fFileName = filename;}
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
    void                      DeleteData();
@@ -60,18 +65,22 @@ enum ENotifyMessage {
    Bool_t                    ClientsExecuted() const;
    Bool_t                    HasConsumers() const {return (fConsumers != 0);}
    Bool_t                    HasProducer() const  {return (fProducer != 0);}
+   // Container merging
+   virtual Long64_t          Merge(TCollection *list);
    // Send a notify signal to the container
    virtual void              NotifyChange(ENotifyMessage /*type*/) {;}
    // Print connected tasks/status
    void                      PrintContainer(Option_t *option="all", Int_t indent=0) const;
-   void                      WriteData();
-   
+
+private:
+   void                      SetType(TClass *type) {fType = type;}   
+
 protected:
    Bool_t                    fDataReady;  // Flag that data is ready
    Bool_t                    fOwnedData;  // Flag data ownership
-   TFile                    *fFile;       // File storing the data
+   TString                   fFileName;   // File storing the data
    TObject                  *fData;       // Contained data
-   TClass                   *fType;       // Type of contained data
+   TClass                   *fType;       //! Type of contained data
    AliAnalysisTask          *fProducer;   // Analysis task to which the slot belongs
    TObjArray                *fConsumers;  // List of consumers of the data
    

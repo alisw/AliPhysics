@@ -72,7 +72,7 @@ AliHMPIDQATask::~AliHMPIDQATask()
 }
 
 //______________________________________________________________________________
-void AliHMPIDQATask::Init(const Option_t*)
+void AliHMPIDQATask::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
@@ -85,23 +85,19 @@ void AliHMPIDQATask::Init(const Option_t*)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
-  
+}
+
+//________________________________________________________________________
+void AliHMPIDQATask::CreateOutputObjects()
+{  
   // create histograms 
   fhHMPIDCkovP    = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]", 150,   0,  7  ,100, -3, 1); 
   fhHMPIDSigP     = new TH2F("SigP"  ,"#sigma_{#theta_c}"          , 150,   0,  7  ,100, 0, 1e20);
@@ -177,6 +173,16 @@ void AliHMPIDQATask::Exec(Option_t *)
 void AliHMPIDQATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  fhHMPIDCkovP   = (TH2F*)fOutputContainer->At(0);
+  fhHMPIDSigP    = (TH2F*)fOutputContainer->At(1);
+  fhHMPIDMipXY   = (TH2F*)fOutputContainer->At(2);
+  fhHMPIDDifXY   = (TH2F*)fOutputContainer->At(3);
+  fhHMPIDProb[0] = (TH1F*)fOutputContainer->At(4);
+  fhHMPIDProb[1] = (TH1F*)fOutputContainer->At(5);
+  fhHMPIDProb[2] = (TH1F*)fOutputContainer->At(6);
+  fhHMPIDProb[3] = (TH1F*)fOutputContainer->At(7);
+  fhHMPIDProb[4] = (TH1F*)fOutputContainer->At(8);
   
   Float_t n = 1.292 ; //mean freon ref idx 
   TF1 * hHMPIDpPi = new TF1("RiPiTheo", "acos(sqrt(x*x+[0]*[0])/(x*[1]))", 1.2, 7) ; 

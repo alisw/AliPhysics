@@ -27,7 +27,7 @@ InputDataCollection="LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/pp10.xml,no
 InputFile= {"LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/AliAnalysisTaskPt.cxx",
             "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/AliAnalysisTaskPt.h",
 	    "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/ESD.par", 
-	    "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/ANALYSIS_NEW.par", 
+	    "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/ANALYSIS.par", 
             "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/demoBatch.C",
             "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/runAnalysis.C"};
 	    

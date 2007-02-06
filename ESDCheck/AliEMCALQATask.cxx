@@ -75,7 +75,7 @@ AliEMCALQATask::~AliEMCALQATask()
 }
 
 //______________________________________________________________________________
-void AliEMCALQATask::Init(const Option_t*)
+void AliEMCALQATask::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
@@ -88,25 +88,20 @@ void AliEMCALQATask::Init(const Option_t*)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
+}
   
-  // create histograms 
-  
+//______________________________________________________________________________
+void AliEMCALQATask::CreateOutputObjects()  
+{
+// create histograms  
   fhEMCALPos           = new TNtuple("EMCALPos"        , "Position in EMCAL" , "x:y:z");
   fhEMCAL              = new TNtuple("EMCAL"           , "EMCAL" , "event:digits:clusters:photons");
   fhEMCALEnergy        = new TH1D("EMCALEnergy"        , "EMCALEnergy"       , 1000, 0., 10. ) ;
@@ -208,7 +203,13 @@ void AliEMCALQATask::Exec(Option_t *)
 void AliEMCALQATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
-  
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  fhEMCALEnergy = (TH1D*)fOutputContainer->At(2);
+  fhEMCALDigits = (TH1I*)fOutputContainer->At(3);
+  fhEMCALRecParticles = (TH1D*)fOutputContainer->At(4);
+  fhEMCALPhotons = (TH1I*)fOutputContainer->At(5);
+  fhEMCALInvariantMass = (TH1D*)fOutputContainer->At(6);
+  fhEMCALDigitsEvent = (TH1I*)fOutputContainer->At(7);
   printf("EMCALEnergy Mean        : %5.3f , RMS : %5.3f \n", fhEMCALEnergy->GetMean(),        fhEMCALEnergy->GetRMS()        ) ;
   printf("EMCALDigits Mean        : %5.3f , RMS : %5.3f \n", fhEMCALDigits->GetMean(),        fhEMCALDigits->GetRMS()        ) ;
   printf("EMCALRecParticles Mean  : %5.3f , RMS : %5.3f \n", fhEMCALRecParticles->GetMean(),  fhEMCALRecParticles->GetRMS()  ) ;

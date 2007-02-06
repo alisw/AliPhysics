@@ -45,7 +45,7 @@ public:
    virtual ~TaskGenerate() {}
    
    virtual void   Exec(Option_t *option);
-   ClassDef(TaskGenerate,0)  // Simple generator
+   ClassDef(TaskGenerate,1)  // Simple generator
 };
 
 // The next task is filtering the input events coming from a chain and having
@@ -60,13 +60,15 @@ private:
    TH1I          *fHist1;        // Number of gammas per event
    TH1I          *fHist2;        // Number of gammas per event
 public:
+   TaskFilter() : AliAnalysisTask(), fEvent(0), fOutput(0), fList(0), fHist1(0), fHist2(0) {}
    TaskFilter(const char *name);
    virtual ~TaskFilter() {}
    
-   virtual void   Init(Option_t *);
+   virtual void   ConnectInputData(Option_t *);
+   virtual void   CreateOutputObjects();
    virtual void   Exec(Option_t *option);
    virtual void   Terminate(Option_t *);
-   ClassDef(TaskFilter,0)  // Event filter
+   ClassDef(TaskFilter,1)  // Event filter
 };   
 
 // This task reconstructs pi0's for gammas coming from the same vertex   
@@ -78,13 +80,15 @@ private:
    TObjArray     *fPions;        // Array of pi0's
    TH1F          *fHist;         // Pt distrib. of reconstructed pions
 public:
+   TaskRecoPi0() : AliAnalysisTask(), fEvent(0), fGammas(0), fPions(0), fHist(0) {}
    TaskRecoPi0(const char *name);
    virtual ~TaskRecoPi0();
 
-   virtual void   Init(Option_t *);
+   virtual void   ConnectInputData(Option_t *);
+   virtual void   CreateOutputObjects();
    virtual void   Exec(Option_t *option);
    virtual void   Terminate(Option_t *);
-   ClassDef(TaskRecoPi0,0)  // Pi0 reconstructor
+   ClassDef(TaskRecoPi0,1)  // Pi0 reconstructor
 };   
       
 //______________________________________________________________________________

@@ -81,7 +81,7 @@ void runAnalysis() {
     
     gSystem->ChangeDirectory("../");
   }
-  gSystem->Load("libANALYSIS_NEW.so");
+  gSystem->Load("libANALYSIS.so");
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://"); 

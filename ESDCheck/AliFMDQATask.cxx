@@ -67,7 +67,7 @@ AliFMDQATask::~AliFMDQATask()
 }
 
 //______________________________________________________________________________
-void AliFMDQATask::Init(const Option_t*)
+void AliFMDQATask::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
@@ -80,23 +80,19 @@ void AliFMDQATask::Init(const Option_t*)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
-  
+}
+
+//________________________________________________________________________
+void AliFMDQATask::CreateOutputObjects()
+{  
   // create histograms 
   fhFMD1i = new TH1D("FMD1i", "FMD1i", 100, -0.5, 3);
   fhFMD2i = new TH1D("FMD2i", "FMD2i", 100, -0.5, 3);
@@ -190,6 +186,13 @@ void AliFMDQATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
  
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  fhFMD1i = (TH1D*)fOutputContainer->At(0);
+  fhFMD2i = (TH1D*)fOutputContainer->At(1);
+  fhFMD2o = (TH1D*)fOutputContainer->At(2);
+  fhFMD3i = (TH1D*)fOutputContainer->At(3);
+  fhFMD3o = (TH1D*)fOutputContainer->At(4);
+
   TCanvas * cFMD1 = new TCanvas("cFMD1", "FMD ESD Test", 400, 10, 600, 700);
   cFMD1->Divide(3, 2) ; 
 

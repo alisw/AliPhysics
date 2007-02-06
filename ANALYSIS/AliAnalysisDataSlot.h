@@ -13,20 +13,20 @@
 //      container with data of the same type.
 //==============================================================================
 
-#ifndef ROOT_TObject
-#include "TObject.h"
+#ifndef ROOT_TNamed
+#include "TNamed.h"
 #endif
 
 class TClass;
 class AliAnalysisDataContainer;
 class AliAnalysisTask;
 
-class AliAnalysisDataSlot : public TObject {
+class AliAnalysisDataSlot : public TNamed {
 
 public:
-   AliAnalysisDataSlot() : fType(NULL), fParent(NULL), fContainer(NULL) {}
-   AliAnalysisDataSlot(TClass *type, AliAnalysisTask *task) : fType(type), fParent(task), fContainer(NULL) {}
-   AliAnalysisDataSlot(const AliAnalysisDataSlot &slot) : TObject(), fType(slot.fType), fParent(slot.fParent), fContainer(slot.fContainer) {}
+   AliAnalysisDataSlot() : TNamed(), fType(NULL), fParent(NULL), fContainer(NULL) {}
+   AliAnalysisDataSlot(TClass *type, AliAnalysisTask *task);
+   AliAnalysisDataSlot(const AliAnalysisDataSlot &slot);
    virtual ~AliAnalysisDataSlot() {}
 
    // Assignment
@@ -36,16 +36,19 @@ public:
    // Getters
    void                     *GetBranchAddress(const char *branch) const;
    Bool_t                    SetBranchAddress(const char *branch, void *address);
-   TClass                   *GetType() const      {return fType;}
+   TClass                   *GetType() const;
    AliAnalysisTask          *GetParent() const    {return fParent;}
    AliAnalysisDataContainer *GetContainer() const {return fContainer;}
    TObject                  *GetData() const;
    // Slot status checking
    Bool_t                    IsConnected() const  {return ((fContainer)?kTRUE:kFALSE);}
    Bool_t                    IsDataReady() const;
+
+private:
+   void                      SetType(TClass *type) {fType = type;}
    
 protected:
-   TClass                   *fType;       // Data type required by the slot
+   TClass                   *fType;       //! Type of the slot
    AliAnalysisTask          *fParent;     // Analysis task to which the slot belongs
    AliAnalysisDataContainer *fContainer;  // Container connected to the slot
    

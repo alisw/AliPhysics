@@ -62,7 +62,7 @@ AliT0QATask::~AliT0QATask()
 }
 
 //______________________________________________________________________________
-void AliT0QATask::Init(const Option_t*)
+void AliT0QATask::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
@@ -75,25 +75,20 @@ void AliT0QATask::Init(const Option_t*)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
+}
   
-  // create histograms 
-  
+//________________________________________________________________________
+void AliT0QATask::CreateOutputObjects()
+{
+  // create histograms   
   fhT01 = new TH1F("hRealVertex", "Primary vertex", 100,   -20,    20);
   fhT02 = new TH1F("hT0start",    "T0 start time",  100, 12400, 12600);
   fhT03 = new TH1F("hT0vertex",   "T0vertex",       100,   -20,    20);
@@ -142,7 +137,11 @@ void AliT0QATask::Exec(Option_t *)
 void AliT0QATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
-  
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  fhT01 = (TH1F*)fOutputContainer->At(0);
+  fhT02 = (TH1F*)fOutputContainer->At(1);
+  fhT03 = (TH1F*)fOutputContainer->At(2);
+
   Float_t mean = fhT02->GetMean();
 
   printf ("mean time T0 ps %f\n", mean) ;

@@ -166,7 +166,7 @@ AliTOFQATask& AliTOFQATask::operator=(const AliTOFQATask &qatask)
   return *this;
 }
 //______________________________________________________________________________
-void AliTOFQATask::Init(const Option_t*)
+void AliTOFQATask::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
@@ -179,16 +179,23 @@ void AliTOFQATask::Init(const Option_t*)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
+}
+
+//________________________________________________________________________
+void AliTOFQATask::CreateOutputObjects()
+{
+// Create histograms
   BookHistos();
 }
+
 //______________________________________________________________________________
 void AliTOFQATask::Exec(Option_t *) 
 {
@@ -323,16 +330,7 @@ void AliTOFQATask::Exec(Option_t *)
 }
 //______________________________________________________________________________
 void AliTOFQATask::BookHistos()
-{
-  
-  // The output objects will be written to: 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) cdir->cd() ;   
-
+{  
   // Construct histograms:
   
   fhTOFMatch= 
@@ -574,8 +572,26 @@ void AliTOFQATask::Terminate(Option_t *)
   // some plots
 
   AliInfo("TOF QA Task: End of events loop");
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  fhTOFMatch       = (TH1F*)fOutputContainer->At(0);
+  fhESDeffPhi      = (TH1F*)fOutputContainer->At(1);
+  fhESDeffTheta    = (TH1F*)fOutputContainer->At(2);
+  fhESDeffMom      = (TH1F*)fOutputContainer->At(3);
+  fhTOFeffPhi      = (TH1F*)fOutputContainer->At(4);
+  fhTOFeffPhiMT    = (TH1F*)fOutputContainer->At(5);
+  fhTOFeffTheta    = (TH1F*)fOutputContainer->At(6);
+  fhTOFeffThetaMT  = (TH1F*)fOutputContainer->At(7);
+  fhTOFeffMom      = (TH1F*)fOutputContainer->At(8);
+  fhTOFeffMomMT    = (TH1F*)fOutputContainer->At(9);
+  fhTOFsector      = (TH1F*)fOutputContainer->At(10);
+  fhTOFsectorMT    = (TH1F*)fOutputContainer->At(11);
+  fhTOFTime        = (TH1F*)fOutputContainer->At(12);
+  fhTOFDeltaTime   = (TH1F*)fOutputContainer->At(13);
+  fhTOFDeltaTimeMT = (TH1F*)fOutputContainer->At(14);
+  fhTOFIDSpecies   = (TH1F*)fOutputContainer->At(15);
+  fhTOFMassVsMom   = (TH1F*)fOutputContainer->At(16);
+  fhTOFMass        = (TH1F*)fOutputContainer->At(17);
   GetEfficiency();
-  PostData(0, fOutputContainer);
+//  PostData(0, fOutputContainer);
   DrawHistos() ; 
-
 }

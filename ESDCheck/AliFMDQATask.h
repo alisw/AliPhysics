@@ -22,7 +22,8 @@ public:
   virtual ~AliFMDQATask() ;
    
   virtual void Exec(Option_t * opt = "") ;
-  virtual void Init(Option_t * opt = "") ; 
+  virtual void ConnectInputData(Option_t *);
+  virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "") ;
 
 private:

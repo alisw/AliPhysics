@@ -57,7 +57,7 @@ AliTRDQATask::AliTRDQATask(const char *name) :
 }
 
 //______________________________________________________________________________
-void AliTRDQATask::Init(const Option_t *)
+void AliTRDQATask::ConnectInputData(const Option_t *)
 {
   // Initialisation of branch container and histograms 
 
@@ -70,27 +70,20 @@ void AliTRDQATask::Init(const Option_t *)
     return ;
   }
 
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD");
-    if (address) {
-      fESD = (AliESD *)(*address); 
-      AliInfo("Old ESD found.");
-    }
-    if (!fESD) {
-      fESD = new AliESD();
-      SetBranchAddress(0, "ESD", &fESD);  
-      if (fESD) AliInfo("ESD connected.");
-    }
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  OpenFile(0, Form("%s.root", GetName()), "RECREATE"); 
-  if (cdir) 
-    cdir->cd() ; 
+}
 
+//________________________________________________________________________
+void AliTRDQATask::CreateOutputObjects()
+{
   // create histograms 
-
   fNTracks     = new TH1D("ntracks", ";number of all tracks", 500, -0.5, 499.5); 
   fEventSize   = new TH1D("evSize", ";event size (MB)", 100, 0, 5);
 
@@ -175,12 +168,48 @@ void AliTRDQATask::Init(const Option_t *)
   fOutputContainer = new TObjArray(150); 
   
   // register histograms to the container  
-  TIter next(gDirectory->GetList());
-  TObject *obj;
   int counter = 0;
   
-  while (obj = next.Next()) {
-    if (obj->InheritsFrom("TH1"))  fOutputContainer->AddAt(obj, counter++);
+  fOutputContainer->AddAt(fNTracks,     counter++);
+  fOutputContainer->AddAt(fEventSize,   counter++);
+  fOutputContainer->AddAt(fTrackStatus, counter++);
+  fOutputContainer->AddAt(fKinkIndex,   counter++);
+  fOutputContainer->AddAt(fParIn,       counter++);
+  fOutputContainer->AddAt(fParOut,      counter++);
+  fOutputContainer->AddAt(fXIn,         counter++);
+  fOutputContainer->AddAt(fXOut,        counter++);
+  fOutputContainer->AddAt(fAlpha[0],    counter++);
+  fOutputContainer->AddAt(fAlpha[1],    counter++);
+  fOutputContainer->AddAt(fAlpha[2],    counter++);
+  fOutputContainer->AddAt(fAlpha[3],    counter++);
+
+  fOutputContainer->AddAt(fSectorTRD,   counter++);
+  for(int i=0; i<nbits; i++) {
+     fOutputContainer->AddAt(fPt[i],      counter++);
+     fOutputContainer->AddAt(fTheta[i],   counter++);
+     fOutputContainer->AddAt(fSigmaY[i],  counter++);
+     fOutputContainer->AddAt(fChi2[i],    counter++);
+     fOutputContainer->AddAt(fPlaneYZ[i], counter++);
+  }   
+  fOutputContainer->AddAt(fEffPt[0], counter++);
+  fOutputContainer->AddAt(fEffPt[1], counter++);
+  fOutputContainer->AddAt(fEffPt[2], counter++);
+  fOutputContainer->AddAt(fEffPt[3], counter++);
+
+  fOutputContainer->AddAt(fClustersTRD[0], counter++);
+  fOutputContainer->AddAt(fClustersTRD[1], counter++);
+  fOutputContainer->AddAt(fClustersTRD[2], counter++);
+  fOutputContainer->AddAt(fTime,      counter++);
+  fOutputContainer->AddAt(fBudget,    counter++);
+  fOutputContainer->AddAt(fQuality,   counter++);
+  fOutputContainer->AddAt(fSignal,    counter++);
+  fOutputContainer->AddAt(fTrdSigMom, counter++);
+  fOutputContainer->AddAt(fTpcSigMom, counter++);
+  for(int i=0; i<6; i++) {
+     fOutputContainer->AddAt(fTpcPID[i],       counter++);
+     fOutputContainer->AddAt(fTpcSigMomPID[i], counter++);
+     fOutputContainer->AddAt(fTrdPID[i],       counter++);
+     fOutputContainer->AddAt(fTrdSigMomPID[i], counter++);
   }
 
   AliInfo(Form("Number of histograms = %d", counter));
@@ -324,11 +353,55 @@ void AliTRDQATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
   AliInfo("TRD QA module");
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  int counter = 0;
+  fNTracks     = (TH1D*)fOutputContainer->At(counter++);
+  fEventSize   = (TH1D*)fOutputContainer->At(counter++);
+  fTrackStatus = (TH1D*)fOutputContainer->At(counter++);
+  fKinkIndex   = (TH1D*)fOutputContainer->At(counter++);
+  fParIn       = (TH1D*)fOutputContainer->At(counter++);
+  fParOut      = (TH1D*)fOutputContainer->At(counter++);
+  fXIn         = (TH1D*)fOutputContainer->At(counter++);
+  fXOut        = (TH1D*)fOutputContainer->At(counter++);
+  fAlpha[0]    = (TH1D*)fOutputContainer->At(counter++);
+  fAlpha[1]    = (TH1D*)fOutputContainer->At(counter++);
+  fAlpha[2]    = (TH1D*)fOutputContainer->At(counter++);
+  fAlpha[3]    = (TH1D*)fOutputContainer->At(counter++);
+
+  fSectorTRD   = (TH1D*)fOutputContainer->At(counter++);
+  const int nbits = 6;
+  for(int i=0; i<nbits; i++) {
+     fPt[i]      = (TH1D*)fOutputContainer->At(counter++);
+     fTheta[i]   = (TH1D*)fOutputContainer->At(counter++);
+     fSigmaY[i]  = (TH1D*)fOutputContainer->At(counter++);
+     fChi2[i]    = (TH1D*)fOutputContainer->At(counter++);
+     fPlaneYZ[i] = (TH2D*)fOutputContainer->At(counter++);
+  }   
+  fEffPt[0] = (TH1D*)fOutputContainer->At(counter++);
+  fEffPt[1] = (TH1D*)fOutputContainer->At(counter++);
+  fEffPt[2] = (TH1D*)fOutputContainer->At(counter++);
+  fEffPt[3] = (TH1D*)fOutputContainer->At(counter++);
+
+  fClustersTRD[0] = (TH1D*)fOutputContainer->At(counter++);
+  fClustersTRD[1] = (TH1D*)fOutputContainer->At(counter++);
+  fClustersTRD[2] = (TH1D*)fOutputContainer->At(counter++);
+  fTime      = (TH1D*)fOutputContainer->At(counter++);
+  fBudget    = (TH1D*)fOutputContainer->At(counter++);
+  fQuality   = (TH1D*)fOutputContainer->At(counter++);
+  fSignal    = (TH1D*)fOutputContainer->At(counter++);
+  fTrdSigMom = (TH2D*)fOutputContainer->At(counter++);
+  fTpcSigMom = (TH2D*)fOutputContainer->At(counter++);
+  for(int i=0; i<6; i++) {
+     fTpcPID[i]       = (TH1D*)fOutputContainer->At(counter++);
+     fTpcSigMomPID[i] = (TH2D*)fOutputContainer->At(counter++);
+     fTrdPID[i]       = (TH1D*)fOutputContainer->At(counter++);
+     fTrdSigMomPID[i] = (TH2D*)fOutputContainer->At(counter++);
+  }
 
   // create efficiency histograms
   
   CalculateEff();
-  PostData(0, fOutputContainer);
+//  PostData(0, fOutputContainer);
 
   DrawESD() ; 
   DrawGeoESD() ; 

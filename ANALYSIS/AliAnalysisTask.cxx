@@ -46,33 +46,55 @@
 // To connect a slot to a data container, the data types declared by both must
 // match.
 //
-// The method Init will be called once per session at the moment when the data is
-// available at all input slots. 
-// The method Init() has to be overloaded by the derived class in order to:
-// 1. Define objects that should be created only once per session (e.g. output
-//    histograms)
-// 2. Set the branch address or connect to a branch address in case the input
-//    slots are connected to trees.
-//
+// The method ConnectInputData() has to be overloaded by the derived class in order to
+// set the branch address or connect to a branch address in case the input
+// slots are connected to trees.
 // Example:
-// MyAnalysisTask::Init(Option_t *)
+// MyAnalysisTask::ConnectInputData(Option_t *)
 // {
-//    if (!fHist1) fHist1 = new TH1F("h1", ....);
-//    if (!fHist2) fHist2 = new TH1F("h2", ....);
-//    fESD = GetBranchAddress(islot=0, "ESD");
-//    if (!fESD) SetBranchAddress(islot=0, "ESD", &fESD);
+//  // One should first check if the branch address was taken by some other task
+//    char ** address = (char **)GetBranchAddress(0, "ESD");
+//    if (address) {
+//      fESD = (AliESD*)(*address);
+//    } else {
+//      fESD = new AliESD();
+//      SetBranchAddress(0, "ESD", &fESD);
+//    }
+// }
+// 
+// The method CreateOutputObjects() has to be overloaded an will contain the
+// objects that should be created only once per session (e.g. output
+// histograms)
+//
+// void MyAnalysisTask::CreateOutputObjects()
+//{
+  // create histograms 
+//  fhPt = new TH1F("fhPt","This is the Pt distribution",15,0.1,3.1);
+//  fhPt->SetStats(kTRUE);
+//  fhPt->GetXaxis()->SetTitle("P_{T} [GeV]");
+//  fhPt->GetYaxis()->SetTitle("#frac{dN}{dP_{T}}");
+//  fhPt->GetXaxis()->SetTitleColor(1);
+//  fhPt->SetMarkerStyle(kFullCircle);
 // }
 //
 // The method Terminate() will be called by the framework once at the end of
-// data processing. Overload this if needed.
+// data processing. Overload this if needed. DO NOT ASSUME that the pointers
+// to histograms defined in  CreateOutputObjects() are valid, since this is
+// not true in case of PROOF. Restore the pointer values like:
+//
+//void MyAnalysisTask::Terminate(Option_t *) 
+//{
+//  fhPt = (TH1F*)GetOutputData(0);
+// ...
+//}
+
 //
 //==============================================================================
 
 #include <Riostream.h>
-#include <TClass.h>
 #include <TDirectory.h>
+#include <TClass.h>
 
-//#include "AliLog.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
@@ -139,6 +161,7 @@ AliAnalysisTask::AliAnalysisTask(const AliAnalysisTask &task)
 AliAnalysisTask::~AliAnalysisTask()
 {
 // Dtor.
+   if (fTasks) fTasks->Clear();
    if (fInputs)  {fInputs->Delete(); delete fInputs;}
    if (fOutputs) {fOutputs->Delete(); delete fOutputs;}
 }   
@@ -177,8 +200,7 @@ Bool_t AliAnalysisTask::AreSlotsConnected()
    for (i=0; i<fNinputs; i++) {
       slot = (AliAnalysisDataSlot*)fInputs->At(i);
       if (!slot) {
-	cout<<"Input slot "<<i<<" of task "<<GetName()<<" not defined !"<<endl;
-	//AliError(Form("Input slot %i of task %s not defined !",i,GetName()));
+	      Error("AreSlotsConnected", "Input slot %d of task %s not defined !",i,GetName());
          return kFALSE;
       }   
       if (!slot->IsConnected()) return kFALSE;
@@ -186,8 +208,7 @@ Bool_t AliAnalysisTask::AreSlotsConnected()
    for (i=0; i<fNoutputs; i++) {
       slot = (AliAnalysisDataSlot*)fOutputs->At(i);
       if (!slot) {
-	cout<<"Output slot "<<i<<" of task "<<GetName()<<" not defined !"<<endl;
-	//AliError(Form("Output slot %i of task %s not defined !",i,GetName()));
+         Error("AreSlotsConnected", "Output slot %d of task %s not defined !",i,GetName());
          return kFALSE;
       }   
       if (!slot->IsConnected()) return kFALSE;
@@ -212,7 +233,7 @@ void AliAnalysisTask::CheckNotify(Bool_t init)
    SetActive(kTRUE);
    if (fInitialized) return;
    TDirectory *cursav = gDirectory;
-   Init();
+   ConnectInputData();
    if (cursav) cursav->cd();
    fInitialized = kTRUE;
 }
@@ -223,14 +244,12 @@ Bool_t AliAnalysisTask::ConnectInput(Int_t islot, AliAnalysisDataContainer *cont
 // Connect an input slot to a data container.
    AliAnalysisDataSlot *input = GetInputSlot(islot);
    if (!input) {
-     cout<<"Input slot "<<islot<<" not defined for analysis task "<<GetName()<<endl;
-     //AliError(Form("Input slot %i not defined for analysis task %s", islot, GetName()));
+      Error("ConnectInput","Input slot %i not defined for analysis task %s", islot, GetName());
       return kFALSE;
    }
    // Check type matching          
    if (!input->GetType()->InheritsFrom(cont->GetType())) {
-     cout<<"Data type "<<input->GetType()->GetName()<<" for input "<<islot<<" of task "<<GetName()<<" not matching container "<<cont->GetName()<<" of type "<<cont->GetType()->GetName()<<endl;
-     //AliError(Form("Data type %s for input %i of task %s not matching container %s of type %s",input->GetType()->GetName(), islot, GetName(), cont->GetName(), cont->GetType()->GetName()));
+      Error("ConnectInput","Data type %s for input %i of task %s not matching container %s of type %s",input->GetType()->GetName(), islot, GetName(), cont->GetName(), cont->GetType()->GetName());
       return kFALSE;
    }  
    // Connect the slot to the container as input          
@@ -247,14 +266,12 @@ Bool_t AliAnalysisTask::ConnectOutput(Int_t islot, AliAnalysisDataContainer *con
 // Connect an output slot to a data container.
    AliAnalysisDataSlot *output = GetOutputSlot(islot);
    if (!output) {
-     cout<<"Output slot "<<islot<<" not defined for analysis task "<<GetName()<<endl;
-     //AliError(Form("Output slot %i not defined for analysis task %s", islot, GetName()));
+      Error("ConnectOutput","Output slot %i not defined for analysis task %s", islot, GetName());
       return kFALSE;
    }
    // Check type matching          
    if (!output->GetType()->InheritsFrom(cont->GetType())) {
-     cout<<"Data type "<<output->GetType()->GetName()<<" for output "<<islot<<" of task "<<GetName()<<" not matching container "<<cont->GetName()<<" of type "<<cont->GetType()->GetName()<<endl;
-     //AliError(Form("Data type %s for output %i of task %s not matching container %s of type %s",output->GetType()->GetName(), islot, GetName(), cont->GetName(), cont->GetType()->GetName()));
+      Error("ConnectOutput","Data type %s for output %i of task %s not matching container %s of type %s",output->GetType()->GetName(), islot, GetName(), cont->GetName(), cont->GetType()->GetName());
       return kFALSE;
    }            
    // Connect the slot to the container as output         
@@ -278,11 +295,6 @@ void AliAnalysisTask::DefineInput(Int_t islot, TClass *type)
 void AliAnalysisTask::DefineOutput(Int_t islot, TClass *type)
 {
 // Define an output slot and its type.
-   if (islot<0) {
-     cout<<"Cannot define negative output slot number for task "<<GetName()<<endl;
-     //AliError(Form("Cannot define negative output slot number for task %s", GetName()));
-      return;
-   }   
    AliAnalysisDataSlot *output = new AliAnalysisDataSlot(type, this);
    if (fNoutputs<islot+1) {
       fNoutputs = islot+1;
@@ -299,8 +311,7 @@ TClass *AliAnalysisTask::GetInputType(Int_t islot) const
 // Retreive type of a given input slot.
    AliAnalysisDataSlot *input = GetInputSlot(islot);
    if (!input) {
-     cout<<"Input slot "<<islot<<" not defined for analysis task "<<GetName()<<endl;
-     //AliError(Form("Input slot %i not defined for analysis task %s", islot, GetName()));
+      Error("GetInputType","Input slot %d not defined for analysis task %s", islot, GetName());
       return NULL;
    }
    return (input->GetType());
@@ -312,8 +323,7 @@ TClass *AliAnalysisTask::GetOutputType(Int_t islot) const
 // Retreive type of a given output slot.
    AliAnalysisDataSlot *output = GetOutputSlot(islot);
    if (!output) {
-     cout<<"Output slot "<<islot<<" not defined for analysis task "<<GetName()<<endl;
-     //AliError(Form("Output slot %i not defined for analysis task %s", islot, GetName()));
+      Error("GetOutputType","Output slot %d not defined for analysis task %s", islot, GetName());
       return NULL;
    }
    return (output->GetType());
@@ -326,11 +336,23 @@ TObject *AliAnalysisTask::GetInputData(Int_t islot) const
 // the object has to be statically cast to the appropriate type.
    AliAnalysisDataSlot *input = GetInputSlot(islot);
    if (!input) {
-     cout<<"Input slot "<<islot<<" not defined for analysis task "<<GetName()<<endl;
-     //AliError(Form("Input slot %i not defined for analysis task %s", islot, GetName()));
+      Error("GetInputData","Input slot %d not defined for analysis task %s", islot, GetName());
       return NULL;
    }
    return (input->GetData()); 
+}
+
+//______________________________________________________________________________
+TObject *AliAnalysisTask::GetOutputData(Int_t islot) const
+{
+// Retreive output data for a slot. Normally called in UserTask::Terminate to
+// get a valid pointer to data even in case of Proof.
+   AliAnalysisDataSlot *output = GetOutputSlot(islot);
+   if (!output) {
+      Error("GetOutputData","Input slot %d not defined for analysis task %s", islot, GetName());
+      return NULL;
+   }
+   return (output->GetData()); 
 }
 
 //______________________________________________________________________________
@@ -350,9 +372,15 @@ Bool_t AliAnalysisTask::SetBranchAddress(Int_t islot, const char *branch, void *
 }   
 
 //______________________________________________________________________________
-void AliAnalysisTask::Init(Option_t *)
+void AliAnalysisTask::ConnectInputData(Option_t *)
 {
-// Branch address initialization.
+// Overload and connect your branches here.
+}
+
+//______________________________________________________________________________
+void AliAnalysisTask::CreateOutputObjects()
+{
+// Overload and create your output objects here.
 }
 
 //______________________________________________________________________________
@@ -360,13 +388,6 @@ void AliAnalysisTask::Terminate(Option_t *)
 {
 // Method called by the framework at the end of data processing.
 }
-
-//______________________________________________________________________________
-void AliAnalysisTask::OpenFile(Int_t iout, const char *name, Option_t *option) const
-{
-// Set data at output iout to be written in the specified file.
-   GetOutputSlot(iout)->GetContainer()->OpenFile(name, option);
-}   
 
 //______________________________________________________________________________
 Bool_t AliAnalysisTask::PostData(Int_t iout, TObject *data, Option_t *option)
@@ -378,13 +399,11 @@ Bool_t AliAnalysisTask::PostData(Int_t iout, TObject *data, Option_t *option)
    fPublishedData = 0;
    AliAnalysisDataSlot *output = GetOutputSlot(iout);
    if (!output) {
-     cout<<"Output slot "<<iout<<" not defined for analysis task "<<GetName()<<endl;
-     //AliError(Form("Output slot %i not defined for analysis task %s", iout, GetName()));
+      Error("PostData","Output slot %i not defined for analysis task %s", iout, GetName());
       return kFALSE;
    }
    if (!output->IsConnected()) {
-     cout<<"Output slot "<<iout<<" of analysis task "<<GetName()<<" not connected to any data container"<<endl;
-     //AliError(Form("Output slot %i of analysis task %s not connected to any data container", iout, GetName()));
+      Error("PostData","Output slot %i of analysis task %s not connected to any data container", iout, GetName());
       return kFALSE;
    }
    if (!fOutputReady) {

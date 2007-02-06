@@ -78,7 +78,7 @@ AliMUONQATask::~AliMUONQATask()
 }
 
 //______________________________________________________________________________
-void AliMUONQATask::Init(const Option_t*)
+void AliMUONQATask::ConnectInputData(const Option_t*)
 {
   // Initialisation of branch container and histograms 
     
@@ -91,23 +91,19 @@ void AliMUONQATask::Init(const Option_t*)
     return ;
   }
   
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
-  
+}
+
+//________________________________________________________________________
+void AliMUONQATask::CreateOutputObjects()
+{  
   // create histograms 
   fhMUONVertex = new TH1F("hMUONVertex","ITS Vertex"                ,100, -25., 25.);
   fhMUONMult   = new TH1F("hMUONMult"  ,"Multiplicity of ESD tracks",10,  -0.5, 9.5);
@@ -206,6 +202,9 @@ void AliMUONQATask::Terminate(Option_t *)
   // Processing when the event loop is ended
 
   AliInfo(Form("Terminate %s:", GetName())) ;
+  fOutputContainer = (TObjArray*)GetOutputData(0);
+  fhMUONVertex = (TH1F*)fOutputContainer->At(0);
+  fhMUONMult   = (TH1F*)fOutputContainer->At(1); 
   
   Int_t eff_match = -1 ; 
   if (ftracktot) 

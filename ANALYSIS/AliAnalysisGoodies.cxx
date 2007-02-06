@@ -443,7 +443,7 @@ const Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
   // Make tasks 
   // The top input must be common to all top tasks
   TClass * classIn = fTaskInType[0] ; 
-  AliAnalysisDataContainer * taskInput  = mgr->CreateContainer("Input  Container", classIn, AliAnalysisManager::kInputContainer) ;
+  AliAnalysisDataContainer * taskInput  = mgr->CreateContainer("InputContainer", classIn, AliAnalysisManager::kInputContainer) ;
   Int_t index ; 
   for (index = 0; index < fnumberOfTasks; index++) {
     AliAnalysisTask * task = fTaskList[index] ;
@@ -451,17 +451,19 @@ const Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
   
     // Create containers for input/output
     TClass * classOu = fTaskOuType[index] ; 
-    AliAnalysisDataContainer * taskOutput = mgr->CreateContainer("Output Container", classOu, AliAnalysisManager::kOutputContainer) ;
+    AliAnalysisDataContainer * taskOutput = mgr->CreateContainer(Form("OutputContainer%d",index), classOu, AliAnalysisManager::kOutputContainer,
+                                            Form("%s.root",task->GetName())) ;
     mgr->ConnectInput (task, 0, taskInput);
     mgr->ConnectOutput(task, 0, taskOutput);
   }
   
   // Open data
-  taskInput->SetData(chain);
+//  taskInput->SetData(chain);
 
   if (mgr->InitAnalysis()) {
     mgr->PrintStatus();
-    chain->Process(mgr);
+//    chain->Process(mgr);
+    mgr->StartAnalysis("local",chain);
   } else 
     rv = kFALSE ; 
   
