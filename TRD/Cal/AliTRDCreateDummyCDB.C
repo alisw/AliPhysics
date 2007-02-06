@@ -63,7 +63,7 @@ TObject *CreateGlobalsObject()
   AliTRDCalGlobals *object = new AliTRDCalGlobals("Globals"
                                                  ,"Global TRD calibration parameters");
 
-  object->SetNumberOfTimeBins(22);
+  object->SetNumberOfTimeBins(24);
 
   object->SetTailCancelationTau1(0);
   object->SetTailCancelationTau2(0);
@@ -223,17 +223,17 @@ void AliTRDCreateDummyCDB()
 
   metaData = CreateMetaObject("AliTRDCalPad");  
 
-  //obj = CreatePadObject("LocalVdrift"       ,"TRD drift velocities (local variations)",1);
-  //StoreObject("TRD/Calib/LocalVdrift"       ,obj,metaData);
+  obj = CreatePadObject("LocalVdrift"       ,"TRD drift velocities (local variations)",1);
+  StoreObject("TRD/Calib/LocalVdrift"       ,obj,metaData);
   
   obj = CreatePadObject("LocalT0"           ,"T0 (local variations)",0);
   StoreObject("TRD/Calib/LocalT0"           ,obj,metaData);
 
-  //obj = CreatePadObject("GainFactor"        ,"GainFactor (local variations)",1);
-  //StoreObject("TRD/Calib/LocalGainFactor"   ,obj,metaData);
+  obj = CreatePadObject("GainFactor"        ,"GainFactor (local variations)",1);
+  StoreObject("TRD/Calib/LocalGainFactor"   ,obj,metaData);
 
-  //obj = CreatePRFWidthObject();
-  //StoreObject("TRD/Calib/PRFWidth"          ,obj,metaData);
+  obj = CreatePRFWidthObject();
+  StoreObject("TRD/Calib/PRFWidth"          ,obj,metaData);
 
   //
   // Detector objects
@@ -241,14 +241,14 @@ void AliTRDCreateDummyCDB()
 
   metaData = CreateMetaObject("AliTRDCalDet");
   
-  //obj = CreateDetObject("ChamberVdrift"     ,"TRD drift velocities (detector value)", 1.5);
-  //StoreObject("TRD/Calib/ChamberVdrift"     ,obj,metaData);
+  obj = CreateDetObject("ChamberVdrift"     ,"TRD drift velocities (detector value)", 1.5);
+  StoreObject("TRD/Calib/ChamberVdrift"     ,obj,metaData);
   
   obj = CreateDetObject("ChamberT0"         ,"T0 (detector value)",0);
   StoreObject("TRD/Calib/ChamberT0"         ,obj,metaData);
   
-  //obj = CreateDetObject("ChamberGainFactor" ,"GainFactor (detector value)", 1);
-  //StoreObject("TRD/Calib/ChamberGainFactor" ,obj,metaData);
+  obj = CreateDetObject("ChamberGainFactor" ,"GainFactor (detector value)", 1);
+  StoreObject("TRD/Calib/ChamberGainFactor" ,obj,metaData);
   
   //
   // Global object
@@ -262,24 +262,24 @@ void AliTRDCreateDummyCDB()
   // Status objects
   //
 
-  //metaData = CreateMetaObject("AliTRDCalChamberStatus");
-  //obj = CreateChamberStatusObject();
-  //StoreObject("TRD/Calib/ChamberStatus"     ,obj,metaData);
+  metaData = CreateMetaObject("AliTRDCalChamberStatus");
+  obj = CreateChamberStatusObject();
+  StoreObject("TRD/Calib/ChamberStatus"     ,obj,metaData);
 
-  //metaData = CreateMetaObject("AliTRDCalPadStatus");
-  //obj = CreatePadStatusObject();
-  //StoreObject("TRD/Calib/PadStatus"         ,obj,metaData);
+  metaData = CreateMetaObject("AliTRDCalPadStatus");
+  obj = CreatePadStatusObject();
+  StoreObject("TRD/Calib/PadStatus"         ,obj,metaData);
 
-  //metaData = CreateMetaObject("AliTRDCalPIDLQ");
-  //obj = CreatePIDLQObject();
-  //StoreObject("TRD/Calib/PIDLQ"             ,obj,metaData);
+  metaData = CreateMetaObject("AliTRDCalPIDLQ");
+  obj = CreatePIDLQObject();
+  StoreObject("TRD/Calib/PIDLQ"             ,obj,metaData);
 
   //
   // Monitoring object
   //
 
-  //metaData = CreateMetaObject("AliTRDCalMonitoring");
-  //obj = CreateMonitoringObject();
-  //StoreObject("TRD/Calib/MonitoringData"    ,obj,metaData);
+  metaData = CreateMetaObject("AliTRDCalMonitoring");
+  obj = CreateMonitoringObject();
+  StoreObject("TRD/Calib/MonitoringData"    ,obj,metaData);
 
 }
