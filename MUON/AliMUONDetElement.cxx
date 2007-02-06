@@ -32,16 +32,16 @@
 #include "AliMUONHitForRec.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONClusterFinderAZ.h"
-#include "AliMUONGeometryModuleTransformer.h" //AZ
-#include "AliMUONVGeometryDESegmentation.h" //AZ
-#include "AliMpVSegmentation.h" //AZ
+#include "AliMUONGeometryModuleTransformer.h" 
+#include "AliMUONVGeometryDESegmentation.h" 
+#include "AliMpVSegmentation.h" 
 
 #include "AliRun.h"
 #include "AliLog.h"
 
 #include <TObjArray.h>
 #include <TClonesArray.h>
-#include <TVector2.h> //AZ
+#include <TVector2.h> 
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDetElement) // Class implementation in ROOT context
@@ -76,14 +76,17 @@ AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClust
     fChamber(idDE / 100 - 1),
     fZ(0.),
     fNHitsForRec(0),
-    fRawClus(0x0),
+    fRawClus(new TObjArray(10)),
     fHitsForRec(new TObjArray(10)),
     fRecModel(recModel)
 {
   /// Constructor
-  fDigits[0] = new TObjArray(10);
-  fDigits[1] = new TObjArray(10);
-  fRawClus = new TObjArray(10);
+  fRawClus->SetOwner(kTRUE);
+  fHitsForRec->SetOwner(kTRUE);
+  fDigits[0] = new TObjArray(20);
+  fDigits[1] = new TObjArray(20);
+  fDigits[0]->SetOwner(kTRUE);
+  fDigits[1]->SetOwner(kTRUE);
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON");
   AliMUONSegmentation *pSegmentation = pMUON->GetSegmentation();
   fSeg[0] = pSegmentation->GetModuleSegmentationByDEId(idDE, 0);
@@ -102,20 +105,16 @@ AliMUONDetElement::~AliMUONDetElement()
   /// Destructor
 
   for (Int_t i = 0; i < 2; i++) {
-    delete fHitMap[i]; fHitMap[i] = NULL; 
-    delete fDigits[i]; fDigits[i] = NULL; 
-    //fDigits[i]->Delete(); delete fDigits[i]; fDigits[i] = NULL; 
+    delete fHitMap[i]; 
+    delete fDigits[i]; 
   }
-  //fHitsForRec->Clear(); delete fHitsForRec; fHitsForRec = 0;
-  if (fRawClus) { fRawClus->Delete(); delete fRawClus; fRawClus = 0; }
-  //if (fRawClus) { delete fRawClus; fRawClus = 0; }
+  delete fRawClus;
   for (Int_t i = 0; i < fNHitsForRec; i++) {
     Int_t ntracks = ((AliMUONHitForRec*)fHitsForRec->UncheckedAt(i))->GetNTrackHits();
     //cout << ntracks << endl;
     if (ntracks) fHitsForRec->RemoveAt(i);
   }
-  //fHitsForRec->Delete(); 
-  delete fHitsForRec; fHitsForRec = 0;
+  delete fHitsForRec;
   //fHitsForRec->SetOwner(kFALSE);
   //fHitsForRec->Clear(); cout << " here " << fHitsForRec->GetEntriesFast() << endl; delete fHitsForRec; fHitsForRec = 0;
 }
