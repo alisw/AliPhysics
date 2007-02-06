@@ -56,9 +56,15 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     
     // factory methods  
     virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const;
+    virtual AliMpVPadIterator* CreateIterator() const;
+    
     AliMpVPadIterator* CreateIterator(const AliMpPad& centerPad,
-                                  Bool_t includeCenter=kFALSE) const;
+                                      Bool_t includeCenter=kFALSE) const;
 
+     Int_t GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
+                         Bool_t includeSelf = kFALSE,
+                         Bool_t includeVoid = kFALSE) const;
+    
     // methods  
     virtual AliMpPad PadByLocation(const AliMpIntPair& location,
                                Bool_t warning = kTRUE) const;

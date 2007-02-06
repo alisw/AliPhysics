@@ -282,10 +282,11 @@ AliMpSectorSegmentation::PadByXDirection(const TVector2& startPosition,
     pad = PadByPosition(position, false);
     position += TVector2(stepX, 0.);
   }   
-  while ( !pad.IsValid() && position.X() < maxX ); 
+  while ( !pad.IsValid() && 
+          position.X() - fkSector->GetMaxPadDimensions().X() < maxX ); 
   
   // Invalidate pad if it is outside limits
-  if ((pad.Position().X() - pad.Dimensions().X()) > maxX) 
+  if ( (pad.Position().X() - pad.Dimensions().X()) > maxX ) 
     pad = AliMpPad::Invalid();
 
   return pad;
@@ -309,7 +310,8 @@ AliMpSectorSegmentation::PadByYDirection(const TVector2& startPosition,
     pad = PadByPosition(position, false);
     position += TVector2(0., stepY);
   }   
-  while ( !pad.IsValid() && position.Y() < maxY ); 
+  while ( !pad.IsValid() && 
+          position.Y() - fkSector->GetMaxPadDimensions().Y()< maxY ); 
   
   // Invalidate pad if it is outside limits
   if ((pad.Position().Y() - pad.Dimensions().Y()) > maxY) 
@@ -321,6 +323,14 @@ AliMpSectorSegmentation::PadByYDirection(const TVector2& startPosition,
 //
 // public methods
 //
+
+//______________________________________________________________________________
+AliMpVPadIterator* 
+AliMpSectorSegmentation::CreateIterator() const
+{
+  /// Currently uses default implementation
+  return AliMpVSegmentation::CreateIterator();
+}
 
 //______________________________________________________________________________
 AliMpVPadIterator* 
@@ -341,11 +351,21 @@ AliMpSectorSegmentation::CreateIterator(const AliMpArea& area) const
 }   
   
 //______________________________________________________________________________
+Int_t 
+AliMpSectorSegmentation::GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
+                                       Bool_t includeSelf,
+                                       Bool_t includeVoid) const
+{
+  /// Uses default implementation
+  return AliMpVSegmentation::GetNeighbours(pad,neighbours,includeSelf,includeVoid);
+}
+
+//______________________________________________________________________________
 AliMpVPadIterator* 
 AliMpSectorSegmentation::CreateIterator(const AliMpPad& centerPad,
                                         Bool_t includeCenter) const
 {
-/// Create the neighbours pad iterator.
+  /// Create the neighbours pad iterator.
 
   return new AliMpNeighboursPadIterator(this, centerPad, includeCenter);
 }   
