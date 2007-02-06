@@ -43,6 +43,8 @@ class AliMpArea : public TObject
   TVector2  Dimensions() const;    
   Bool_t    IsValid() const;
   
+  void Print(Option_t* opt="") const;
+  
  private:
   // data members
   TVector2  fPosition;  ///<  position

@@ -24,6 +24,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpArea.h"
+#include "AliMpConstants.h"
 
 #include <Riostream.h>
 
@@ -41,8 +42,11 @@ AliMpArea::AliMpArea(const TVector2& position, const TVector2& dimensions)
 /// Standard constructor
 
   // Check dimensions
-  if (  fDimensions.X() < 0. || fDimensions.Y() < 0. ||
-      ( fDimensions.X() == 0 && fDimensions.Y() == 0.0 ) ) {
+  if (  fDimensions.X() < - AliMpConstants::LengthTolerance() || 
+        fDimensions.Y() < - AliMpConstants::LengthTolerance() || 
+      ( fDimensions.X() < AliMpConstants::LengthTolerance() && 
+        fDimensions.Y() < AliMpConstants::LengthTolerance() ) )
+  {
     fDimensions = TVector2();
     fValidity = false;
   }  
@@ -166,6 +170,13 @@ TVector2 AliMpArea::RightUpCorner() const
 }  
 
 //_____________________________________________________________________________
+void
+AliMpArea::Print(Option_t*) const
+{
+  cout << (*this) << endl;
+}
+
+//_____________________________________________________________________________
 ostream& operator<< (ostream &stream,const AliMpArea& area)
 {
 /// Output streaming
@@ -174,6 +185,7 @@ ostream& operator<< (ostream &stream,const AliMpArea& area)
          << area.Position().X() << ", " << area.Position().Y() << ") " 
 	 << " dimensions: (" 
          << area.Dimensions().X() << ", " << area.Dimensions().Y() << ") " 
+  << " valid: " << (area.IsValid()==true ? "YES":"NO")
 	 << endl;
   return stream;
 }
