@@ -144,7 +144,7 @@ AliMUONCalibParam1I::Print(Option_t* opt) const
     Int_t mean(0);
     Int_t v2(0);
     
-    Int_t N = Size();
+    Int_t n = Size();
     
     for ( Int_t i = 0; i < Size(); ++i )
     {
@@ -152,9 +152,9 @@ AliMUONCalibParam1I::Print(Option_t* opt) const
       mean += v;
       v2 += v*v;
     }
-    mean /= N;
+    mean /= n;
     float sigma = 0;
-    if ( N > 1 ) sigma = TMath::Sqrt( (v2-N*mean*mean)/(N-1) );
+    if ( n > 1 ) sigma = TMath::Sqrt( (v2-n*mean*mean)/(n-1) );
     cout << Form(" Mean=%d Sigma=%f",mean,sigma) << endl;
   }
 }
