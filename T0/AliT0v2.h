@@ -19,6 +19,7 @@ public:
   virtual       ~AliT0v2() {}
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
+  virtual void   DefineOpticalProperties();
   virtual void   DrawModule() const;
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}

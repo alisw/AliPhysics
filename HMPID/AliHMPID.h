@@ -22,6 +22,7 @@ public:
   virtual void  CreateGeometry  (                )=0;          //from AliModule invoked from AliMC::ConstructGeometry() to build detector for simulation
   virtual Int_t IsVersion       (                )const=0;     //from AliModule not used        
   virtual void  Init            (                )=0;          //from AliModule invoked from AliMC::InitGeometry() after CreateGeometry() to do VolID initialization
+  virtual void  DefineOpticalProperties() {}                   //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
           void  MakeBranch      (Option_t *opt="");            //from AliModule invokde from AliRun::Tree2Tree() to make requested HMPID branch
           void  SetTreeAddress  (                );            //from AliModule invoked from AliRun::GetEvent(), AliLoader::SetTAddrInDet()
   virtual void  StepManager     (                )=0;          //from AliModule invoked from AliMC

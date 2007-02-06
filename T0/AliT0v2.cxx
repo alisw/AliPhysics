@@ -245,16 +245,12 @@ void AliT0v2::DrawModule() const
   gMC->Gdopt ("hide", "off");
 }
 
-
 //////////////////////////////////////////////////////////////////////
-// Initialises version 2 of the Forward Multiplicity Detector
+// Definition of optical properties for the Forward Multiplicity Detector
 //////////////////////////////////////////////////////////////////////
-void AliT0v2::Init()
+void AliT0v2::DefineOpticalProperties()
 {
-//Int_t *idtmed  = gAlice->Idtmed();
-
-  AliT0::Init();
-  fIdSens1 = gMC->VolId ("0REG");
+// Optical properties definition.
 // Definition Cherenkov parameters
   const Int_t NUMENTRIES = 32;
 
@@ -303,7 +299,15 @@ void AliT0v2::Init()
 
    gMC->SetCerenkov (idtmed[6], NUMENTRIES, ppckov, absor_qwarz, effic_all, rindex_qwarz);
    gMC->SetCerenkov (idtmed[1], NUMENTRIES, ppckov, absor_air, effic_all, rindex_air);
+}
 
+//////////////////////////////////////////////////////////////////////
+// Initialises version 2 of the Forward Multiplicity Detector
+//////////////////////////////////////////////////////////////////////
+void AliT0v2::Init()
+{
+  AliT0::Init();
+  fIdSens1 = gMC->VolId ("0REG");
   printf ("*** T0 version 2 initialized ***\n");
 }
 

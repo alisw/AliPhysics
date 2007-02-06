@@ -263,6 +263,13 @@ void AliHMPIDv1::Init()
   fIdPc      = gMC->VolId("Rpc");
   fIdAmpGap  = gMC->VolId("Rgap");
   fIdProxGap = gMC->VolId("Rgap");
+
+  AliDebug(1,"Stop v1 HMPID.");    
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDv1::DefineOpticalProperties()
+{
+// Optical properties definition.
   const Int_t kNbins=30;       //number of photon energy points
   Float_t emin=5.5,emax=8.5;         //Photon energy range,[eV]
   Float_t aEckov [kNbins]; 
@@ -299,8 +306,6 @@ void AliHMPIDv1::Init()
   gMC->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet  , aQePc  , aIdxPc  ); //n=1 means convert photons    
   gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
   delete pRaAF;delete pWiAF;delete pGaAF; delete pRaIF; delete pWiIF; delete pGaIF; delete pQeF;
-
-  AliDebug(1,"Stop v1 HMPID.");    
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDv1::IsLostByFresnel()

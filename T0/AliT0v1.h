@@ -21,6 +21,7 @@ public:
   AliT0v1(const char *name, const char *title);
   virtual       ~AliT0v1();
   virtual void   CreateGeometry();
+  virtual void   DefineOpticalProperties();
   virtual void   AddAlignableVolumes() const;
   virtual void   CreateMaterials();
   virtual void   DrawDetector();

@@ -42,6 +42,7 @@ public:
    virtual void   DrawDetector(){}
    virtual Int_t  IsVersion()const {return 0;}
    virtual void   Init();
+   virtual void   DefineOpticalProperties(){}
    virtual void SetHitsAddressBranch(TBranch *b1)
      {b1->SetAddress(&fHits);}
    virtual void   MakeBranch(Option_t *opt=" ");

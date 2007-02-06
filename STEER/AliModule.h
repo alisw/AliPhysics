@@ -100,6 +100,7 @@ public:
   virtual void        Browse(TBrowser *) {} //PH Do we need it?
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
+  virtual void        DefineOpticalProperties() {}
   virtual void        AddAlignableVolumes() const;
   virtual void        Disable();
   virtual void        Enable();

@@ -179,6 +179,22 @@ void  AliMC::ConstructGeometry()
 }
 
 //_______________________________________________________________________
+void  AliMC::ConstructOpGeometry() 
+{
+  //
+  // Loop all detector modules and call DefineOpticalProperties() method 
+  //
+
+  TIter next(gAlice->Modules());
+  AliModule *detector;
+  AliInfo("Optical properties definition");
+  while((detector = dynamic_cast<AliModule*>(next()))) {
+    // Initialise detector optical properties
+    detector->DefineOpticalProperties();
+  }  
+}
+
+//_______________________________________________________________________
 void  AliMC::InitGeometry()
 { 
   //

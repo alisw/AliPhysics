@@ -249,7 +249,7 @@ void TFluka::Init() {
     }
 
     fApplication->InitGeometry();
-
+    fApplication->ConstructOpGeometry();
     //
     // Add ions to PDG Data base
     //

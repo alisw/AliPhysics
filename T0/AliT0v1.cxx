@@ -567,13 +567,9 @@ void AliT0v1::DrawDetector()
 }
 
 //-------------------------------------------------------------------
-void AliT0v1::Init()
+void AliT0v1::DefineOpticalProperties()
 {
-// Initialises version 0 of the Forward Multiplicity Detector
-//
-//Int_t *idtmed  = gAlice->Idtmed();
-  AliT0::Init();
-  fIdSens1=gMC->VolId("0REG");
+// Optical properties definition.
    Int_t *idtmed = fIdtmed->GetArray();
 // Definition Cherenkov parameters
    int i;
@@ -624,9 +620,17 @@ void AliT0v1::Init()
    gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2,efficAll , rindexSiO2 );
   gMC->SetCerenkov (idtmed[kOpAir], kNbins, aPckov,absorAir , efficAll,rindexAir );
    gMC->SetCerenkov (idtmed[kOpAirNext], kNbins, aPckov,absorbCathodeNext , efficAll, rindexCathodeNext);
+}
+
+//-------------------------------------------------------------------
+void AliT0v1::Init()
+{
+// Initialises version 0 of the Forward Multiplicity Detector
+//
+  AliT0::Init();
+  fIdSens1=gMC->VolId("0REG");
 
    AliDebug(1,Form("%s: *** T0 version 1 initialized ***\n",ClassName()));
-
 }
 
 //-------------------------------------------------------------------
