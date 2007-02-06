@@ -192,7 +192,6 @@ AliMpPCBPadIterator::GetNextPosition(Int_t& ix, Int_t& iy)
   
   if ( ix > fMaxIndices.GetFirst() )
   {
-    AliDebug(3,"Going back left and one step upper");
     // Go back leftmost position...
     ix = fMinIndices.GetFirst();
     // ... and up
