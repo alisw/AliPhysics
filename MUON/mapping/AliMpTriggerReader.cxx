@@ -39,7 +39,6 @@
 #include "TString.h"
 
 #include <sstream>
-#include <assert.h>
 
 /// 
 /// \class AliMpTriggerReader
@@ -634,7 +633,10 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       float pcbSizeX = 0.0;
       float pcbSizeY = 0.0;
       sin >> padSizeX >> padSizeY >> pcbSizeX >> pcbSizeY;
-      assert(pcb==0);
+      if (pcb)
+      {
+        AliError("pcb not null as expected");
+      }
       pcb = new AliMpPCB(&fMotifMap,pcbType,padSizeX*scale,padSizeY*scale,
                          pcbSizeX*scale,pcbSizeY*scale);
     }
@@ -675,8 +677,10 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       {
         AliDebug(1,Form("Got motifSpecial %s from motifMap",sMotifSpecial.Data()));
       }
-      
-      assert(pcb==0);      
+      if (pcb)
+      {
+        AliError("pcb not null as expected");
+      }
       pcb = new AliMpPCB(pcbType,specialMotif);
     }
     
@@ -701,7 +705,6 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
         AliDebug(1,Form("Got motifType %s from motifMap",sMotifType.Data()));        
       }
       
-      assert(pcb!=0);
       pcb->Add(motifType,ix,iy);
     }
   }
