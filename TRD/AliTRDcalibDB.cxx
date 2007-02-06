@@ -410,13 +410,29 @@ Float_t AliTRDcalibDB::GetT0Average(Int_t det)
   // Returns the average t0 for the given detector
   //
 
+  const AliTRDCalPad *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                   (GetCachedCDBObject(kIDT0Pad));
+  if (!calPad) {
+    return -1;
+  }
+
+  AliTRDCalROC       *roc        = calPad->GetCalROC(det);
+  if (!roc) {
+    return -1;
+  }
+
   const AliTRDCalDet *calDet     = dynamic_cast<const AliTRDCalDet *> 
                                    (GetCachedCDBObject(kIDT0Chamber));
   if (!calDet) {
     return -1;
   }
 
-  return calDet->GetValue(det);
+  Double_t mean = 0.0; 
+  for (Int_t channel = 0; channel < roc->GetNchannels(); ++channel) {
+    mean += (calDet->GetValue(det) + roc->GetValue(channel)) / roc->GetNchannels();
+  }
+
+  return mean;
 
 }
 

@@ -479,7 +479,7 @@ void AliTRDCalibra::Init()
   // How to fill the 2D
   fThresholdDigit       = 5;
   fThresholdClusterPRF1 = 2.0;
-  fThresholdClusterPRF2 = 20.0;
+  fThresholdClusterPRF2 = 3.0;
   
   // Store the Info
   fNumberBinCharge      = 100;
@@ -2114,7 +2114,7 @@ Bool_t AliTRDCalibra::UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *t)
           (((Float_t) signals[4]) > fThresholdClusterPRF2) && 
           (((Float_t) signals[1]) < fThresholdClusterPRF1) && 
           (((Float_t) signals[5]) < fThresholdClusterPRF1) && 
-          (q * correction > 130.0)) {
+          ((((Float_t) signals[2])*((Float_t) signals[4])/(((Float_t) signals[3])*((Float_t) signals[3]))) < 0.06)) {
 	// Col correspond to signals[3]
 	if (fCenterOfflineCluster) {
           xcenter = cl->GetCenter();
@@ -2138,8 +2138,7 @@ Bool_t AliTRDCalibra::UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *t)
                             / (((Float_t) signals[2]) + ((Float_t) signals[3]) + (((Float_t) signals[4]))));
 	  ymax    = (Float_t) (((Float_t) signals[4]) 
                             / (((Float_t) signals[2]) + ((Float_t) signals[3]) + (((Float_t) signals[4]))));
-	  if ((ycenter > 0.485) && 
-              (TMath::Abs(((Float_t) signals[2]) + ((Float_t) signals[3]) + (((Float_t) signals[4])) - q) < 8.0)) {
+	  if ((TMath::Abs(((Float_t) signals[2]) + ((Float_t) signals[3]) + (((Float_t) signals[4])) - q) < 10.0)) {
             echec = kTRUE;
 	  }
 	}
@@ -2300,7 +2299,7 @@ Bool_t AliTRDCalibra::UpdateHistogramcm(AliTRDmcmTracklet *trk)
 	if ((amp[0] > fThresholdClusterPRF2) && 
             (amp[1] > fThresholdClusterPRF2) && 
             (amp[2] > fThresholdClusterPRF2) && 
-            ((amp[0]+amp[1]+amp[2]) > 130.0)) {
+            ((amp[0]*amp[2]/(amp[1]*amp[1])) < 0.06)) {
 	  // Security of the denomiateur is 0
 	  if ((((Float_t) (((Float_t) amp[1]) * ((Float_t) amp[1]))) 
              / ((Float_t) (((Float_t) amp[0]) * ((Float_t) amp[2])))) != 1.0) {
@@ -2308,8 +2307,7 @@ Bool_t AliTRDCalibra::UpdateHistogramcm(AliTRDmcmTracklet *trk)
                                   / (TMath::Log((amp[1]*amp[1]) / (amp[0]*amp[2])));
 	    Float_t ycenter = amp[1] / (amp[0] + amp[1] + amp[2]);
 	    if ((xcenter > -0.5) && 
-                (xcenter <  0.5) && 
-                (ycenter >  0.485)) {
+                (xcenter <  0.5)) {
 	      Float_t yminus = amp[0] / (amp[0]+amp[1]+amp[2]);
 	      Float_t ymax   = amp[2] / (amp[0]+amp[1]+amp[2]);
 	      // Fill only if it is in the drift region!
@@ -2634,7 +2632,8 @@ AliTRDCalDet *AliTRDCalibra::CreateDetObjectTree(TTree *tree, Int_t i)
     }
     else {
       for (Int_t k = 0; k < nto; k++) {
-	mean += values[k] / nto;  
+	if(k == 0) mean = values[k];
+	if(mean > values[k]) mean = values[k];
       }
     }
     object->SetValue(detector,mean);
@@ -2694,7 +2693,7 @@ TObject *AliTRDCalibra::CreatePadObjectTree(TTree *tree, Int_t i
     tree->GetEntry(det);
     AliTRDCalROC *calROC = object->GetCalROC(detector);
     mean = detobject->GetValue(detector);
-    if (mean == 0) {
+    if ((mean == 0) && (i != 3)) {
       continue;
     }
     Int_t rowMax = calROC->GetNrows();
@@ -2702,7 +2701,7 @@ TObject *AliTRDCalibra::CreatePadObjectTree(TTree *tree, Int_t i
     for (Int_t row = 0; row < rowMax; ++row) {
       for (Int_t col = 0; col < colMax; ++col) {
 	if(i != 3) calROC->SetValue(col,row,TMath::Abs(values[(Int_t) (col*rowMax+row)])/mean);
-	else calROC->SetValue(col,row,values[(Int_t) (col*rowMax+row)]/mean);
+	else calROC->SetValue(col,row,values[(Int_t) (col*rowMax+row)]-mean);
 	
       } // Col
     } // Row
