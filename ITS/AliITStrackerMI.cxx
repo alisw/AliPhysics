@@ -3245,7 +3245,8 @@ Int_t    AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* c
     track->SetdEdxMismatch(track->GetdEdxMismatch()+(0.5-track->GetNormQ(layer)/track->GetExpQ())*10.);
   }
 
-  if (!track->PropagateTo(cl->GetX(),0.,0.)) return 0; // Alignment
+  if (cl->GetQ()>0)  // ingore the "virtual" clusters
+     if (!track->PropagateTo(cl->GetX(),0.,0.)) return 0; // Alignment
 
   return track->UpdateMI(cl->GetY(),cl->GetZ(),track->GetSigmaY(layer),track->GetSigmaZ(layer),chi2,index);
 }
