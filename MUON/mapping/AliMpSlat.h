@@ -86,11 +86,7 @@ class AliMpSlat : public TObject
   /// Find the PCB containing location (x,y).
   AliMpPCB* FindPCB(Double_t x, Double_t y) const;
 
-	/** Find the index of the PCB containing the pad at location (x,y).
-   Should not be needed except to comply with Sector(), Dpx(), Dpy()
-	 interface of old AliMUONVGeometrySegmentation.
-	 FIXME: Remove me when VGeometrySegmentation dies at last.
-	 */
+	/// Find the index of the PCB containing the pad at location (x,y).
 	Int_t FindPCBIndex(Double_t x, Double_t y) const;
 
   /// Returns the i-th PCB of this slat.

@@ -295,11 +295,17 @@ AliMpSlat::FindPCB(Double_t x, Double_t y) const
   for ( Size_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
-		if ( x >= pcb->Xmin() && x < pcb->Xmax() &&
-				 y >= pcb->Ymin() && y < pcb->Ymax() )
-		{
-			return pcb;
-		}
+//		if ( x >= pcb->Xmin() && x < pcb->Xmax() &&
+//				 y >= pcb->Ymin() && y < pcb->Ymax() )
+//		{
+//			return pcb;
+//		}
+    if ( x < pcb->Xmin() || x >= pcb->Xmax() ||
+         y < pcb->Ymin() || y >= pcb->Ymax() )
+    {
+      continue;
+    }
+    return pcb;
 	}
   return 0;
 }
