@@ -26,6 +26,7 @@
 
 #include <Riostream.h>
 #include <TArrayD.h>
+#include <TMath.h>
 #include <TRandom.h>
 
 #include "AliGausCorr.h"

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------
 //   Implementation of the derived class for track residuals
 //   based on linear chi2 minimization (in approximation of
@@ -20,6 +22,7 @@
 //
 //-----------------------------------------------------------------
 
+#include <TMath.h>
 #include <TMinuit.h>
 #include <TGeoMatrix.h>
 

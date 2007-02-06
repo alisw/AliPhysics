@@ -1,6 +1,11 @@
 #ifndef AliHMPIDParam_h
 #define AliHMPIDParam_h
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
+#include <TMath.h>
 #include <TNamed.h>        //base class
 #include <TGeoManager.h>   //Instance()
 #include <TVector3.h>      //Lors2Mars() Mars2Lors()

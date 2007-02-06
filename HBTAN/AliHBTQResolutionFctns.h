@@ -17,6 +17,7 @@
 //                                                                //
 ////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
 
 class AliHBTKtResolVsQInvFctn;  //Kt Res   Vs   QInvLCMS 
 

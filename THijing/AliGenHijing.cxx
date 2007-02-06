@@ -22,6 +22,7 @@
 // Andreas Morsch    (andreas.morsch@cern.ch)
 //
 
+#include <TClonesArray.h>
 #include <TGraph.h>
 #include <THijing.h>
 #include <TLorentzVector.h>

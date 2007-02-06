@@ -26,6 +26,7 @@
 ///////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TMath.h>
 #include <TMatrixD.h>
 
 #include "AliMUONTrackParam.h"

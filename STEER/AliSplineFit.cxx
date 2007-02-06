@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-------------------------------------------------------------------------
 //                Implementation of the AliSplineFit class
 //   The class performs a spline fit on an incoming TGraph. The graph is 
@@ -24,6 +26,7 @@
 //   Adjustments by Haavard Helstrup,  Haavard.Helstrup@cern.ch
 //-------------------------------------------------------------------------
 
+#include <TMath.h>
 
 #include "AliSplineFit.h"
  

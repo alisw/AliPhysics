@@ -41,9 +41,10 @@
 // neglecting error of xi, and supposing  xi>>yi    sigmai ~ sigmaVi ~ 2*sigmay*t  
 
 
-#include "TMatrixDSym.h"
-//#include "TDecompChol.h"
-#include "TMatrixD.h"
+#include <TMatrixDSym.h>
+#include <TMath.h>
+#include <TMatrixD.h>
+
 #include "AliRieman.h"
 
 ClassImp(AliRieman)

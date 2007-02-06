@@ -1,8 +1,13 @@
 #ifndef AliHMPIDHelix_h
 #define AliHMPIDHelix_h
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 #include <TObject.h>              //base class
 #include <TVector3.h>             //used extensively
+#include <TMath.h>
 
 class AliHMPIDHelix: public TObject
 {

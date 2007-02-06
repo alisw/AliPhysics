@@ -8,7 +8,7 @@
 #include <Reve/Line.h>
 
 #include <TPolyMarker3D.h>
-// #include <TPolyLine3D.h>
+#include <TQObject.h>
 
 namespace Reve {
 

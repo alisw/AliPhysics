@@ -12,10 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  */
 
-/* $Log:
- */
+/* $Id$ */
+
 //*-- Author: Boris Polichtchouk, IHEP
 //////////////////////////////////////////////////////////////////////////////
 // Reconstructed point operations for the Clusterization class for IHEP reconstruction.
@@ -23,11 +22,12 @@
 // It differs from AliPHOSClusterizerv1 in neighbour definition only
 
 // ---- ROOT system ---
-#include "TDirectory.h"
-#include "TBranch.h"
-#include "TTree.h"
-#include "TROOT.h"
-#include "TFolder.h"
+#include <TMath.h>
+#include <TDirectory.h>
+#include <TBranch.h>
+#include <TTree.h>
+#include <TROOT.h>
+#include <TFolder.h>
 
 // --- AliRoot header files ---
 #include "AliLog.h"

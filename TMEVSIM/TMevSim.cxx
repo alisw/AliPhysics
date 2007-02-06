@@ -392,10 +392,11 @@
 
 
 #include <Riostream.h>
+#include <TParticle.h>
+#include <TClonesArray.h>
 
 #include "TMevSim.h"
-#include"TMevSimPartTypeParams.h"
-#include "TParticle.h"
+#include "TMevSimPartTypeParams.h"
 
 #ifndef WIN32
 # define multgen multgen_

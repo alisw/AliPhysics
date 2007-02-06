@@ -24,6 +24,7 @@
 
 #include <TClass.h>
 #include <TFile.h>
+#include <TMath.h>
 #include <TSystem.h>
 
 #include "AliLog.h"
