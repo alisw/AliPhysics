@@ -30,6 +30,7 @@
 #include "AliMpMotifType.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotif.h"
+#include "AliMpSlatMotifMap.h"
 #include "TVector2.h"
 #include "TCanvas.h"
 #endif
@@ -63,7 +64,7 @@ void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = T
 //220000N
 //122000NR1
 //112200NR2
-void testGraphicsSlat(AliMpPlaneType planeType = AliMp::kBendingPlane, 
+void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane, 
 	              Option_t* option = "PMCI",
 		      Bool_t saveJPG = false)
 {
@@ -80,18 +81,19 @@ void testGraphicsSlat(AliMpPlaneType planeType = AliMp::kBendingPlane,
   TCanvas *c1[19];
   Char_t c1Name[255];
   Char_t c1NameJpg[255];
-
+  
   for (Int_t i = 0; i < 19; i++) {
     sprintf(c1Name, "%s%d", "c1", i);
     c1[i]= new TCanvas(c1Name,slatName[i],10,10,1200,800);     
 
     Char_t* slatType = slatName[i];
-    AliMpSt345Reader* reader = new AliMpSt345Reader();
+    AliMpSlatMotifMap* smm = new AliMpSlatMotifMap;
+    AliMpSt345Reader* reader = new AliMpSt345Reader(*smm);
     AliMpSlat* slat = reader->ReadSlat(slatType, planeType);
     AliMpVPainter* painter = AliMpVPainter::CreatePainter(slat);
     painter->Draw(option);
   
-    if (planeType == kNonBendingPlane)
+    if (planeType == AliMp::kNonBendingPlane)
       sprintf(c1NameJpg, "%s%s", slatName[i], "_NonBending.jpg");
     else 
       sprintf(c1NameJpg, "%s%s", slatName[i], "_Bending.jpg");
