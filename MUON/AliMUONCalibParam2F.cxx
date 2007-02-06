@@ -137,21 +137,41 @@ void
 AliMUONCalibParam2F::Print(Option_t* opt) const
 {
 /// Output this object to stdout.
-/// If opt=="full", then all channels are printed, otherwise
-/// only the general characteristics are printed.
+/// If opt=="full", then all channels are printed, 
+/// if opt=="mean", only the mean and sigma value are printed,
+/// otherwise only the general characteristics are printed.
 
   TString sopt(opt);
   sopt.ToUpper();
   cout << "AliMUONCalibParam2F - Size=" << Size()
-    << " Dimension=" << Dimension()
-    << endl;
+    << " Dimension=" << Dimension();
   if ( sopt.Contains("FULL") )
   {
+    cout << endl;
     for ( Int_t i = 0; i < Size(); ++i )
     {
-      cout << setw(6) << ValueAsFloat(i,0) << "," << ValueAsFloat(i,1) << endl;
+      cout << Form("CH %3d %e %e",i,ValueAsFloat(i,0),ValueAsFloat(i,1)) << endl;
     }
   }
+  if ( sopt.Contains("MEAN") )
+  {
+    Float_t mean(0);
+    Float_t v2(0);
+    
+    Int_t N = Size();
+    
+    for ( Int_t i = 0; i < Size(); ++i )
+    {
+      Float_t v = ValueAsFloat(i);
+      mean += v;
+      v2 += v*v;
+    }
+    mean /= N;
+    float sigma = 0;
+    if ( N > 1 ) sigma = TMath::Sqrt( (v2-N*mean*mean)/(N-1) );
+    cout << Form(" Mean=%f Sigma=%f",mean,sigma) << endl;
+  }
+  
 }
 
 //_____________________________________________________________________________
