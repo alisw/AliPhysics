@@ -238,7 +238,7 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
       {
         TObjArray neighbours;
         neighbours.SetOwner(kTRUE);
-        Int_t n = fSegmentation->GetNeighbours(pad,neighbours,true,true);
+        fSegmentation->GetNeighbours(pad,neighbours,true,true);
         statusMapValue = ComputeStatusMap(neighbours,detElemId);      
       }
       else

@@ -415,7 +415,7 @@ AliMUONHVNamer::ManuId2PCBIndex(Int_t detElemId, Int_t manuId) const
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONHVNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
+AliMUONHVNamer::ManuId2Sector(Int_t /*detElemId*/, Int_t /*manuId*/) const
 {
   /// Return the HV-sector number (within a St12 quadrant) for a given manu number.
   
