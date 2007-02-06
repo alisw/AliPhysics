@@ -30,7 +30,11 @@
 #include "TH1.h"
 #include "TFile.h"
 #include "AliRawReader.h"
-#include "AliCaloRawStream.h"
+#include "AliPHOSDigit.h"
+#include "AliPHOSRawDecoder.h"
+#include "AliPHOSRawDigiProducer.h"
+#include "AliPHOSGeometry.h"
+#include "TClonesArray.h"
 
 ClassImp(AliPHOSCalibHistoProducer)
 
@@ -79,89 +83,58 @@ void AliPHOSCalibHistoProducer::Run()
   // Reads raw data stream and fills amplitude histograms
   // The histograms are written to file every fUpdatingRate events
 
-  TH1F* gHighGain = 0;
-  TH1F* gLowGain = 0;
-  Int_t iBin = 0;
   Int_t iEvent = 0;
-  Int_t runNum = 0;
+  Int_t runNum = -111;
+  Int_t relId[4];
+  AliPHOSDigit* digit;
+  Double_t energy;
 
-  AliCaloRawStream in(fRawReader,"PHOS");
+  TClonesArray *digits = new TClonesArray("AliPHOSDigit",100);
+  AliPHOSGeometry* geo = AliPHOSGeometry::GetInstance("IHEP");
+
+  AliPHOSRawDecoder dc(fRawReader);
   if(fIsOldRCUFormat)
-    in.SetOldRCUFormat(kTRUE);
+    dc.SetOldRCUFormat(kTRUE);
 
   // Read raw data event by event
 
   while (fRawReader->NextEvent()) {
     runNum = fRawReader->GetRunNumber();
 
-    while ( in.Next() ) { 
-       
-      if(!gHighGain) gHighGain = new TH1F("gHighGain","High gain",
-					  in.GetTimeLength(),0,in.GetTimeLength());
-      else
-	if(gHighGain->GetNbinsX() != in.GetTimeLength()) {
-	  delete gHighGain;
-	  gHighGain = new TH1F("gHighGain","High gain",in.GetTimeLength(),0,in.GetTimeLength());
-	}
+    AliPHOSRawDigiProducer producer;
+    producer.MakeDigits(digits,&dc);
+    
+    for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
+      digit = (AliPHOSDigit*)digits->At(iDigit);
+      energy = digit->GetEnergy(); // no pedestal subtraction!
+      geo->AbsToRelNumbering(digit->GetId(),relId);	    
+      Int_t mod = relId[0];
+      Int_t col = relId[3];
+      Int_t row = relId[2];
 
-      if(!gLowGain)  gLowGain = new TH1F("gLowGain","Low gain",
-					 in.GetTimeLength(),0,in.GetTimeLength());
-      else
-	if(gLowGain->GetNbinsX() != in.GetTimeLength()) {
-	  delete gLowGain;
-	  gLowGain = new TH1F("gLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
-	}
-
-      Bool_t lowGainFlag = in.IsLowGain();
-      
-      if(lowGainFlag) 
-	gLowGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+      if(fAmpHisto[mod][col][row]) {
+	fAmpHisto[mod][col][row]->Fill(energy);
+      }
       else {
-	gHighGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+	char hname[128];
+	sprintf(hname,"mod%dcol%drow%d",mod,col,row);
+	fAmpHisto[mod][col][row] = new TH1F(hname,hname,100,0.,1000.);
       }
 
-      iBin++;
-
-      if(iBin==in.GetTimeLength()) {
-	iBin=0;
-
-	Double_t energy;
-
-	if(!lowGainFlag) {
-	  energy = gHighGain->GetMaximum(); // no pedestal subtraction!
-	}
-	else {
-	  energy = gLowGain->GetMaximum(); // no pedestal subtraction!
-	}
-	    
-	Int_t mod = in.GetModule();
-	Int_t col = in.GetColumn();
-	Int_t row = in.GetRow();
-
-	if(fAmpHisto[mod][col][row]) {
-	  if(!lowGainFlag) {
-	    fAmpHisto[mod][col][row]->Fill(energy);
-	  }
-	}
-	else {
-	  char hname[128];
-	  sprintf(hname,"mod%dcol%drow%d",mod,col,row);
-	  fAmpHisto[mod][col][row] = new TH1F(hname,hname,100,0.,1000.);
-	}
-
-
-      }
+      // update histograms in local file every 100th event
+      if(iEvent%fUpdatingRate == 0) {
+	AliInfo(Form("Updating histo file, event %d, run %d\n",iEvent,runNum));
+	UpdateHistoFile();
+      } 
     }
 
-    // update histograms in local file every 100th event
-    if(iEvent%fUpdatingRate == 0) {
-      AliInfo(Form("Updating histo file, event %d, run %d\n",iEvent,runNum));
-      UpdateHistoFile();
-    } 
     iEvent++;
   }
 
-  UpdateHistoFile(); 
+  UpdateHistoFile();
+  digits->Delete();
+  delete digits;
+  delete geo;
   AliInfo(Form("%d events of run %d processed.",iEvent,runNum));
 }
 

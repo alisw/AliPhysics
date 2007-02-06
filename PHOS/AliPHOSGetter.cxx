@@ -69,6 +69,7 @@
 #include "AliCDBLocal.h"
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
+#include "AliPHOSRawDigiProducer.h"
 
 ClassImp(AliPHOSGetter)
   
@@ -744,73 +745,9 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   dc.SetOldRCUFormat(isOldRCUFormat);
   dc.SubtractPedestals(kTRUE);
 
-  Int_t relId[4], absId =0;
-  Bool_t lowGainFlag = kFALSE ; 
-
   TClonesArray * digits = Digits() ;
-  digits->Clear() ;
-
-  Int_t    iDigit   = 0 ; 
-  Double_t time     = 0. ;
-  Int_t    iOldDigit;
-  Bool_t   seen;    
-
-  while (dc.NextDigit()) {  
-
-    lowGainFlag = dc.IsLowGain();
-    time = dc.GetTime();
-
-    relId[0] = dc.GetModule();
-    relId[1] = 0;
-    relId[2] = dc.GetRow();
-    relId[3] = dc.GetColumn();
-
-    if(!PHOSGeometry()) AliFatal("Couldn't find PHOSGeometry!");
-    PHOSGeometry()->RelToAbsNumbering(relId, absId);
-    AliDebug(2,Form("relId=(mod,row,col)=(%d,%d,%d), absId=%d\n\n",
-		    relId[0],relId[2],relId[3],absId));
-
-    // Add low gain digit only 
-    //if the high gain digit does not exist in the digits array
-
-    seen = kFALSE;
-    
-    if(lowGainFlag) {
-      for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
-	if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
-	  seen = kTRUE;
-	  break;
-	}
-      }
-      if (!seen) {
-	new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)dc.GetEnergy(),time);
-	iDigit++;
-      }
-    }
-
-    // Add high gain digit only if it is not saturated;
-    // replace low gain digit by a high gain one
-    else {
-      if (dc.GetEnergy() >= 1023) continue;
-      for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
-	if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
-	  digits->RemoveAt(iOldDigit);
-	  new((*digits)[iOldDigit]) AliPHOSDigit(-1,absId,(Float_t)dc.GetEnergy(),time);
-	  seen = kTRUE;
-	  break;
-	}
-      }
-      if (!seen) {
-	new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)dc.GetEnergy(),time);
-	iDigit++;
-      }
-    }
-    
-    
-  }
-  
-  digits->Compress() ;
-  digits->Sort() ;
+  AliPHOSRawDigiProducer pr;
+  pr.MakeDigits(digits,&dc);
 
   //!!!!for debug!!!
   Int_t modMax=-111;
@@ -819,7 +756,8 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   Float_t eMax=-333;
   //!!!for debug!!!
 
-  for(iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
+  Int_t relId[4];
+  for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
     AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(iDigit);
     if(digit->GetEnergy()>eMax) {
       PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
