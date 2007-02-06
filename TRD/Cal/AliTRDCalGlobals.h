@@ -29,7 +29,6 @@ class AliTRDCalGlobals : public TNamed {
   void    SetTailCancelationAmp(Int_t amp)   { fTailCancelationAmp  = amp;   }
   void    SetPedestal(Int_t ped)             { fPedestal            = ped;   }
   void    SetADCClockphase(Float_t cp)       { fADCClockphase       = cp;    }
-  void    SetT0Offset(Float_t t0)            { fT0Offset            = t0;    }
   void    SetConfigID(TString id)            { fConfigID            = id;    }
   void    SetGainTableID(TString id)         { fGainTableID         = id;    }
   void    SetPretriggerConf(TString conf)    { fPretriggerConf      = conf;  }
@@ -40,7 +39,6 @@ class AliTRDCalGlobals : public TNamed {
   Int_t   GetTailCancelationAmp() const      { return fTailCancelationAmp;   }
   Int_t   GetPedestal() const                { return fPedestal;             }
   Float_t GetADCClockphase() const           { return fADCClockphase;        }
-  Float_t GetT0Offset() const                { return fT0Offset;             }
   TString GetConfigID() const                { return fConfigID;             }
   TString GetGainTableID() const             { return fGainTableID;          }
   TString GetPretriggerConf() const          { return fPretriggerConf;       }
@@ -57,13 +55,11 @@ class AliTRDCalGlobals : public TNamed {
 
   Float_t fADCClockphase;          //  ADC clockphase in respect to TTC
 
-  Float_t fT0Offset;               //  Global offset on t0
-
   TString fConfigID;               //  Configuration ID
   TString fGainTableID;            //  Gain table ID
   TString fPretriggerConf;         //  Pretrigger configuration
 
-  ClassDef(AliTRDCalGlobals,3)     //  TRD calibration class for global TRD parameters
+  ClassDef(AliTRDCalGlobals,4)     //  TRD calibration class for global TRD parameters
 
 };
 #endif

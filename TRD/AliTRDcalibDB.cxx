@@ -382,12 +382,6 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
   // Returns t0 for the given pad.
   //
   
-  const AliTRDCalGlobals *calGlobal  = dynamic_cast<const AliTRDCalGlobals *> 
-                                       (GetCachedCDBObject(kIDGlobals));
-  if (!calGlobal) {
-    return -1;
-  }
-
   const AliTRDCalPad     *calPad     = dynamic_cast<const AliTRDCalPad *> 
                                        (GetCachedCDBObject(kIDT0Pad));
   if (!calPad) {
@@ -405,9 +399,7 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
     return -1;
   }
 
-  return calGlobal->GetT0Offset() 
-       + calChamber->GetValue(det) 
-       + roc->GetValue(col,row);
+  return calChamber->GetValue(det) + roc->GetValue(col,row);
 
 }
 
