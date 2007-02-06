@@ -25,7 +25,7 @@
 
 #include "AliMpNeighboursPadIterator.h"
 #include "AliMpIntPair.h"
-#include "AliMpSectorSegmentation.h"
+#include "AliMpVSegmentation.h"
 #include "AliMpRow.h"
 #include "AliMpConstants.h"
 
@@ -53,7 +53,7 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator()
 
 //______________________________________________________________________________
 AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
-                                 const AliMpSectorSegmentation* segmentation,
+                                 const AliMpVSegmentation* segmentation,
                                  const AliMpPad& centerPad,
                                  Bool_t includeCenter)
   : AliMpVPadIterator(),

@@ -27,7 +27,7 @@
 #include <set>
 #endif
 
-class AliMpSectorSegmentation;
+class AliMpVSegmentation;
 class AliMpIntPair;
 
 class AliMpNeighboursPadIterator : public AliMpVPadIterator
@@ -45,7 +45,7 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
 
   public:
     AliMpNeighboursPadIterator();
-    AliMpNeighboursPadIterator(const AliMpSectorSegmentation* segmentation,
+    AliMpNeighboursPadIterator(const AliMpVSegmentation* segmentation,
                                const AliMpPad& centerPad,
                                Bool_t includeCenter=kFALSE);
     AliMpNeighboursPadIterator(const AliMpNeighboursPadIterator& right);
@@ -82,7 +82,7 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
     Bool_t    IsValid() const;
 
     // private data members
-    const AliMpSectorSegmentation* fkSegmentation; ///< \brief The sector
+    const AliMpVSegmentation* fkSegmentation; ///< \brief The segmentation
                            ///  segmentation over which to iterate
     AliMpPad   fCenterPad; ///< Pad arround which we iterate
     PadVector  fPads;      ///< The list of pad arround fCenterIndices
