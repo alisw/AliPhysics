@@ -62,7 +62,8 @@ ClassImp(AliMUON2DStoreValidator)
 AliMUON2DStoreValidator::AliMUON2DStoreValidator() 
 : TObject(),
   fManuList(0x0),
-  fChambers(0x0)
+  fChambers(0x0),
+  fStatus(0x0)
 {
     /// ctor
 }
@@ -73,6 +74,7 @@ AliMUON2DStoreValidator::~AliMUON2DStoreValidator()
   /// dtor
   delete fManuList;
   delete fChambers;
+  delete fStatus;
 }
 
 //_____________________________________________________________________________
@@ -191,7 +193,7 @@ AliMUON2DStoreValidator::AddMissingManu(Int_t detElemId, Int_t manuId)
 
 //_____________________________________________________________________________
 void
-AliMUON2DStoreValidator::ReportManu(AliMUONCheckItem& manu)
+AliMUON2DStoreValidator::ReportManu(TList& lines, AliMUONCheckItem& manu)
 {  
   /// Report list of missing channels from this manu
   
@@ -202,20 +204,21 @@ AliMUON2DStoreValidator::ReportManu(AliMUONCheckItem& manu)
   
   while ( ( channel = static_cast<TObjString*>(it.Next()) ) )
   {
-    cout << Form("\t\t\tChannel %s is missing",channel->GetString().Data()) << endl;
+    lines.Add(new TObjString(Form("\t\t\tChannel %s is missing or dead",
+                                  channel->GetString().Data())));
   }
   
 }
 
 //_____________________________________________________________________________
 void
-AliMUON2DStoreValidator::ReportDE(AliMUONCheckItem& de)
+AliMUON2DStoreValidator::ReportDE(TList& lines, AliMUONCheckItem& de)
 {  
   /// Report list of missing manus from this de
   AliMUONCheckItem* manu(0x0);
   AliMUONCheckItemIterator it(de);
   
-  cout << Form("\tDE %4d",de.GetID()) << endl;
+  lines.Add(new TObjString(Form("DE %5d",de.GetID())));
   
   it.First();
   
@@ -223,18 +226,18 @@ AliMUON2DStoreValidator::ReportDE(AliMUONCheckItem& de)
   {
     if ( manu->IsDead() )
     {
-      cout << Form("\t\tManu %4d is missing",manu->GetID()) << endl;
+      lines.Add(new TObjString(Form("\t\tManu %4d is missing or dead",manu->GetID())));
     }
     else
     {
-      ReportManu(*manu);
+      ReportManu(lines,*manu);
     }
   }
 }
 
 //_____________________________________________________________________________
 void
-AliMUON2DStoreValidator::ReportChamber(AliMUONCheckItem& chamber)
+AliMUON2DStoreValidator::ReportChamber(TList& lines, AliMUONCheckItem& chamber)
 {  
   /// Report list of missing de from this chamber
   
@@ -247,18 +250,29 @@ AliMUON2DStoreValidator::ReportChamber(AliMUONCheckItem& chamber)
   {
     if ( de->IsDead() )
     {
-      cout << Form("\tDE %4d is missing",de->GetID()) << endl;
+      lines.Add(new TObjString(Form("\tDE %4d is missing or dead",de->GetID())));
     }
     else
     {
-      ReportDE(*de);
+      ReportDE(lines,*de);
     }
   }
 }
 
 //_____________________________________________________________________________
 void
-AliMUON2DStoreValidator::Report(const TObjArray& chambers)
+AliMUON2DStoreValidator::Report(TList& lines) const
+{ 
+  /// 
+  if (fChambers) 
+  {
+    Report(lines,*fChambers); 
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUON2DStoreValidator::Report(TList& lines, const TObjArray& chambers)
 {
   /// Reports what is missing, trying to be as concise as possible.
   
@@ -269,15 +283,63 @@ AliMUON2DStoreValidator::Report(const TObjArray& chambers)
     {
       if ( chamber->IsDead() )
       {
-        cout << Form("Chamber %2d is missing",iChamber) << endl;
+        lines.Add(new TObjString(Form("Chamber %2d is missing or dead",iChamber)));
       }
       else
       {
-        ReportChamber(*chamber);
+        ReportChamber(lines,*chamber);
       }
     }
   }
 }
+
+//_____________________________________________________________________________
+TObjArray* 
+AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store,
+                                  Bool_t (*check)(const AliMUONVCalibParam&,Int_t))
+{
+  /// Validate the store. 
+  /// The check method is used to decide if a store content value
+  /// is valid or not.
+  
+  delete fChambers;
+  fChambers = 0x0;
+  
+  if (!fManuList) fManuList = AliMpManuList::ManuList();
+  
+  // Now checks if some full manus are missing
+  TIter next(fManuList);
+  AliMpIntPair* p;
+  
+  while ( ( p = (AliMpIntPair*)next() ) )
+  {
+    Int_t detElemId = p->GetFirst();
+    Int_t manuId = p->GetSecond();
+    AliMUONVCalibParam* test = 
+      static_cast<AliMUONVCalibParam*>(store.Get(detElemId,manuId));
+    if (!test)
+    {
+      // completely missing manu
+      AddMissingManu(detElemId,manuId);
+    }
+    else
+    {
+      if (!check) continue;
+      // manu is there, check all its channels
+      for ( Int_t manuChannel = 0 ; manuChannel < test->Size(); ++manuChannel )
+      {
+        if ( AliMpManuList::DoesChannelExist(detElemId,manuId,manuChannel) &&
+             !check(*test,manuChannel) )             
+        {
+          AddMissingChannel(detElemId,manuId,manuChannel);
+        }
+      }
+    }
+  }
+  return fChambers;
+  
+}
+
 
 //_____________________________________________________________________________
 TObjArray* 

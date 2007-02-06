@@ -21,6 +21,7 @@ class AliMUONV2DStore;
 class TList;
 class TObjArray;
 class AliMUONCheckItem;
+class AliMUONVCalibParam;
 
 class AliMUON2DStoreValidator : public TObject
 {
@@ -29,9 +30,15 @@ public:
   virtual ~AliMUON2DStoreValidator();
   
   TObjArray* Validate(const AliMUONV2DStore& store, Float_t invalidFloatValue);
-  void Report() const { Report(*fChambers); }
 
-  static void Report(const TObjArray& chambers);
+  TObjArray* Validate(const AliMUONV2DStore& store, 
+                      Bool_t (*check)(const AliMUONVCalibParam&,Int_t));
+
+  AliMUONV2DStore* GetStatus() const { return fStatus; }
+  
+  void Report(TList& lines) const;
+
+  static void Report(TList& lines, const TObjArray& chambers);
 
 private:
     
@@ -46,15 +53,16 @@ private:
   AliMUONCheckItem* GetDE(Int_t detElemId);
   AliMUONCheckItem* GetManu(Int_t detElemId, Int_t manuId);
   
-  static void ReportChamber(AliMUONCheckItem& chamber);
-  static void ReportDE(AliMUONCheckItem& de);
-  static void ReportManu(AliMUONCheckItem& manu);
+  static void ReportChamber(TList& list, AliMUONCheckItem& chamber);
+  static void ReportDE(TList& list, AliMUONCheckItem& de);
+  static void ReportManu(TList& list, AliMUONCheckItem& manu);
   
 private:
   TList* fManuList; //! List of (DE,manuID) pairs.
   TObjArray* fChambers; //! Array of AliMUONCheckItem.
+  AliMUONV2DStore* fStatus; //! Statuses
   
-  ClassDef(AliMUON2DStoreValidator,1) // Validator of 2DStore
+  ClassDef(AliMUON2DStoreValidator,2) // Validator of 2DStore
 };
 
 #endif
