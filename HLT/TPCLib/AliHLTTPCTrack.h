@@ -1,20 +1,57 @@
+// XEmacs -*-C++-*-
 // @(#) $Id$
 // Original: AliHLTTrack.h,v 1.18 2005/03/31 04:48:58 cvetan 
+
 #ifndef ALIHLTTPCTRACK_H
 #define ALIHLTTPCTRACK_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCTrack.h
+    @author Anders Vestbo, Uli Frankenfeld, Matthias Richter
+    @date   
+    @brief  HLT TPC track base class (conformal mapping)
+*/
+
+#include "AliTPCtrack.h"
 
 class AliHLTTPCVertex;
 class AliHLTTPCSpacePointData;
 
-class AliHLTTPCTrack {
+/**
+ * @class AliHLTTPCTrack
+ * This class implements the representation of a TPC track, used by the
+ * HLT conformal mapping track finder. <br>
+ * It was originally separated from the offline TPC track class, but in
+ * order to adjust the output format to the offline ESD, AliHLTTPCTrack
+ * now inherits from AliHLTtrack.
+ */
+class AliHLTTPCTrack : public AliTPCtrack {
 
  public:
   
   AliHLTTPCTrack();
   virtual ~AliHLTTPCTrack();
   
-  virtual void Set(AliHLTTPCTrack* track);
+  /**
+   * Copy track parameters.
+   * @param track   pointer to source track
+   */
+  virtual void Copy(AliHLTTPCTrack* track);
+
+  /**
+   * Compare two tracks by the number of hits
+   * @return 0 if equal number of hits, 
+   *         1 if this > track
+   *        -1 if this < track
+   */
   virtual Int_t Compare(const AliHLTTPCTrack *track) const;
+
+  /**
+   * Fit the assigned spacepoints to a helix.
+   * The function sets teh track parameters.
+   */
   virtual void CalculateHelix();
   
   Bool_t CalculateReferencePoint(Double_t angle,Double_t radius=132);//Calculate Reference Point
@@ -109,6 +146,15 @@ class AliHLTTPCTrack {
   void SetCharge(Int_t f) {fQ = f;}
   void ComesFromMainVertex(Bool_t f) {fFromMainVertex = f;}
 
+  /**
+   * Convert all track parameters to the format of AliKalmanTrack
+   * The AliKalmanTrack class implements the track parametrization for offline ITS, TPC
+   * and TRD tracking. The function calculates and sets the parameters of the
+   * parent class (Note: AliHLTTPCTrack inherits from AliTPCtrack and thus
+   * AliKalmanTrack).
+   */
+  int Convert2AliKalmanTrack();
+
  private:
 
   Int_t fNHits; //Number of hits
@@ -154,6 +200,6 @@ class AliHLTTPCTrack {
 
   Bool_t IsPoint(Bool_t ispoint) {fIsPoint = ispoint;return fIsPoint;}
   
-  ClassDef(AliHLTTPCTrack,1) //Base track class
+  ClassDef(AliHLTTPCTrack,2) //Base track class
 };
 #endif

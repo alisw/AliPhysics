@@ -3,6 +3,8 @@
 
 MODULE 				= AliHLTPHOS
 
+EXTRA_DIST			= AliHLTPHOSLinkDef.h
+
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@ \
 				  -I$(top_srcdir)/BASE
 

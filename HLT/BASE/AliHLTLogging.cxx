@@ -28,6 +28,7 @@ using namespace std;
 
 #include "AliHLTStdIncludes.h"
 #include "AliHLTLogging.h"
+#include "TString.h"
 
 // global logging buffer
 #define LOG_BUFFER_SIZE 100
@@ -105,10 +106,14 @@ int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity, con
   default:
     break;
   }
-  cout << "HLT Log " << strSeverity << ": " << origin << " " << message;
-  if (strcmp(keyword, HLT_DEFAULT_LOG_KEYWORD)!=0)
-    cout << " (" << keyword << ")";
-  cout << endl;
+  TString out="HLT Log ";
+  out+=strSeverity;
+  if (origin) {out+=": "; out+=origin;}
+  out+=" "; out+=message;
+  if (keyword!=NULL && strcmp(keyword, HLT_DEFAULT_LOG_KEYWORD)!=0) {
+    out+=" ("; out+=keyword; out +=")";
+  }
+  cout << out.Data() << endl;
   return iResult;
 }
 

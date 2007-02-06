@@ -36,7 +36,8 @@ ClassImp(AliHLTComponent)
 AliHLTComponent::AliHLTComponent()
   :
   fEnvironment(),
-  fCurrentEvent(0)
+  fCurrentEvent(0),
+  fEventCount(-1)
 { 
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   if (fpComponentHandler)
@@ -71,6 +72,7 @@ int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environ_pa
     fEnvironment.fParam=environ_param;
   }
   iResult=DoInit(argc, argv);
+  if (iResult>=0) fEventCount=0;
   return iResult;
 }
 
@@ -104,12 +106,21 @@ void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char o
 string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type )
 {
   string out("");
+  
   if (type==kAliHLTVoidDataType) {
     out="VOID:VOID";
   } else {
-    out.append(type.fOrigin, kAliHLTComponentDataTypefOriginSize);
+    // some gymnastics in order to avoid a '0' which is part of either or both
+    // ID and origin terminating the whole string. Unfortunately, string doesn't
+    // stop appending at the '0' if the number of elements to append was 
+    // explicitely specified
+    string tmp("");
+    tmp.append(type.fOrigin, kAliHLTComponentDataTypefOriginSize);
+    out.append(tmp.c_str());
     out.append(":");
-    out.append(type.fID, kAliHLTComponentDataTypefIDsize);
+    tmp="";
+    tmp.append(type.fID, kAliHLTComponentDataTypefIDsize);
+    out.append(tmp.c_str());
   }
   return out;
 }
@@ -237,6 +248,32 @@ void AliHLTComponent::PrintComponentDataTypeInfo(const AliHLTComponentDataType& 
    else msg+="\\0";
   }
   msg+="\"";
-  HLTMessage(msg.Data());
+  AliHLTLogging::Message(NULL, kHLTLogNone, NULL , NULL, msg.Data());
 }
 
+int AliHLTComponent::GetEventCount()
+{
+  return fEventCount;
+}
+
+int AliHLTComponent::IncrementEventCounter()
+{
+  if (fEventCount>=0) fEventCount++;
+  return fEventCount;
+}
+
+int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
+				   const AliHLTComponentBlockData* blocks, 
+				   AliHLTComponentTriggerData& trigData,
+				   AliHLTUInt8_t* outputPtr, 
+				   AliHLTUInt32_t& size,
+				   AliHLTUInt32_t& outputBlockCnt, 
+				   AliHLTComponentBlockData*& outputBlocks,
+				   AliHLTComponentEventDoneData*& edd )
+{
+  int iResult=0;
+  fCurrentEvent=evtData.fEventID;
+  iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, outputBlockCnt, outputBlocks, edd);
+  IncrementEventCounter();
+  return iResult;
+}

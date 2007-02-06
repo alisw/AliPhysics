@@ -52,7 +52,7 @@ void AliHLTDataSink::GetOutputDataSize( unsigned long& constBase, double& inputM
   inputMultiplier=0;
 }
 
-int AliHLTDataSink::ProcessEvent( const AliHLTComponentEventData& evtData,
+int AliHLTDataSink::DoProcessing( const AliHLTComponentEventData& evtData,
 				    const AliHLTComponentBlockData* blocks, 
 				    AliHLTComponentTriggerData& trigData,
 				    AliHLTUInt8_t* outputPtr, 

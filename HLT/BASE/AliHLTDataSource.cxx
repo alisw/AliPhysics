@@ -43,7 +43,7 @@ void AliHLTDataSource::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 }
 
 
-int AliHLTDataSource::ProcessEvent( const AliHLTComponentEventData& evtData,
+int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
 				    const AliHLTComponentBlockData* blocks, 
 				    AliHLTComponentTriggerData& trigData,
 				    AliHLTUInt8_t* outputPtr, 

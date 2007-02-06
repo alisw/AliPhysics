@@ -94,6 +94,28 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Processing of one event.
+   * The method is the entrance of the event processing. The parameters are
+   * cached for uses with the high-level interface and the DoProcessing
+   * implementation is called.
+   *
+   * @param evtData
+   * @param blocks
+   * @param trigData
+   * @param outputPtr
+   * @param size
+   * @param outputBlockCnt  out: size of the output block array, set by the component
+   * @param outputBlocks    out: the output block array is allocated internally
+   * @param edd
+   * @return neg. error code if failed
+   */
+  int ProcessEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
+			    AliHLTComponentBlockData*& outputBlocks,
+			    AliHLTComponentEventDoneData*& edd );
+
+  /**
+   * Internal processing of one event.
    * The method is pure virtual and implemented by the child classes 
    * - @ref AliHLTProcessor
    * - @ref AliHLTDataSource
@@ -109,7 +131,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param edd
    * @return neg. error code if failed
    */
-  virtual int ProcessEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+  virtual int DoProcessing( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
 			    AliHLTComponentBlockData*& outputBlocks,
@@ -293,7 +315,21 @@ class AliHLTComponent : public AliHLTLogging {
    */
   void DataType2Text(const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2]);
 
+  /**
+   * Get event number.
+   * @return value of the internal event counter
+   */
+  int GetEventCount();
+
  private:
+  /**
+   * Increment the internal event counter.
+   * To be used by the friend classes AliHLTProcessor, AliHLTDataSource
+   * and AliHLTDataSink.
+   * @return new value of the internal event counter
+   */
+  int IncrementEventCounter();
+
   /** The global component handler instance */
   static AliHLTComponentHandler* fpComponentHandler;
   /** The environment where the component is running in */
@@ -305,6 +341,9 @@ class AliHLTComponent : public AliHLTLogging {
    */
   AliHLTEventID_t fCurrentEvent;
 
-  ClassDef(AliHLTComponent, 0)
+  /** internal event no */
+  int fEventCount;
+
+  ClassDef(AliHLTComponent, 1)
 };
 #endif

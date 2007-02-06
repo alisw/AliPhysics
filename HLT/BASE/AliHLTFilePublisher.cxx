@@ -104,6 +104,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
   int bMissingParam=0;
   for (int i=0; i<argc && iResult>=0; i++) {
     argument=argv[i];
+    if (argument.IsNull()) continue;
 
     // -datafile
     if (argument.CompareTo("-datafile")==0) {
@@ -124,21 +125,23 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
     } else if (argument.CompareTo("-datatype")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       memcpy(&fDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
+      if ((bMissingParam=(++i>=argc))) break;
+      memcpy(&fDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize, (Int_t)strlen(argv[i])));
 
       // -dataspec
     } else if (argument.CompareTo("-dataspec")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       TString parameter(argv[i]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
       if (parameter.IsDigit()) {
 	fSpecification=(AliHLTUInt32_t)parameter.Atoi();
+      } else if (parameter.BeginsWith("0x") &&
+		 parameter.Replace(0,2,"",0).IsHex()) {
+	sscanf(parameter.Data(),"%x", &fSpecification);
       } else {
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
-      // -dataorigin
-    } else if (argument.CompareTo("-dataorigin")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      memcpy(&fDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize,(Int_t)strlen(argv[i])));
     } else {
       if ((iResult=ScanArgument(argc-i, &argv[i]))==-EINVAL) {
 	HLTError("unknown argument %s", argument.Data());

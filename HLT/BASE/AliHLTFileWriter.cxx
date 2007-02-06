@@ -25,6 +25,7 @@ using namespace std;
 #endif
 
 #include "AliHLTFileWriter.h"
+#include <TObjArray.h>
 #include <TObjString.h>
 #include <TMath.h>
 #include <TFile.h>
@@ -35,18 +36,20 @@ ClassImp(AliHLTFileWriter)
 AliHLTFileWriter::AliHLTFileWriter()
   :
   fBaseName(""),
+  fExtension(""),
   fDirectory(""),
-  fEnumeration(""),
-  fbSeparate(0)
+  fCurrentFileName(""),
+  fMode(0)
 {
 }
 
 AliHLTFileWriter::AliHLTFileWriter(const AliHLTFileWriter&)
   :
   fBaseName(""),
+  fExtension(""),
   fDirectory(""),
-  fEnumeration(""),
-  fbSeparate(0)
+  fCurrentFileName(""),
+  fMode(0)
 {
   HLTFatal("copy constructor untested");
 }
@@ -86,11 +89,25 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
   int bMissingParam=0;
   for (int i=0; i<argc && iResult>=0; i++) {
     argument=argv[i];
+    if (argument.IsNull()) continue;
 
     // -basename
     if (argument.CompareTo("-datafile")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       fBaseName=argv[i];
+      TObjArray* pTokens=fBaseName.Tokenize(".");
+      if (pTokens) {
+	int iEntries=pTokens->GetEntries();
+	if (iEntries>1) {
+	  int i=0;
+	  fBaseName=((TObjString*)pTokens->At(i++))->GetString();
+	  while (i<iEntries-1) {
+	    fBaseName+="." + ((TObjString*)pTokens->At(i++))->GetString();
+	  }
+	  fExtension=((TObjString*)pTokens->At(i))->GetString();
+	}
+	delete pTokens;
+      }
 
       // -directory
     } else if (argument.CompareTo("-directory")==0) {
@@ -98,18 +115,16 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       fDirectory=argv[i];
 
       // -enumeration
-    } else if (argument.CompareTo("-enumeration")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      fEnumeration=argv[i];
+    } else if (argument.CompareTo("-enumerate")==0) {
+      SetMode(kEnumerate);
 
-      // -separate
-    } else if (argument.CompareTo("-enumeration")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      TString parameter(argv[i]);
-      fbSeparate=parameter.Atoi();
-      if (fbSeparate < 0 || fbSeparate > 1) {
-	HLTError("invalid parameter for argument %s", argument.Data());
-      }
+      // -concatenate-blocks
+    } else if (argument.CompareTo("-concatenate-blocks")==0) {
+      SetMode(kConcatenateBlocks);
+
+      // -concatenate-events
+    } else if (argument.CompareTo("-concatenate-events")==0) {
+      SetMode(kConcatenateEvents);
 
     } else {
       if ((iResult=ScanArgument(argc-i, &argv[i]))==-EINVAL) {
@@ -128,7 +143,16 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
   }
+  if (iResult>=0) {
+    iResult=InitWriter();
+  }
+
   return iResult;
+}
+
+int AliHLTFileWriter::InitWriter()
+{
+  return 0; // note: this doesn't mean 'error'
 }
 
 int AliHLTFileWriter::ScanArgument(int argc, const char** argv)
@@ -139,8 +163,15 @@ int AliHLTFileWriter::ScanArgument(int argc, const char** argv)
 
 int AliHLTFileWriter::DoDeinit()
 {
-  int iResult=0;
+  HLTDebug("");
+  int iResult=CloseWriter();
+  ClearMode(kEnumerate);
   return iResult;
+}
+
+int AliHLTFileWriter::CloseWriter()
+{
+  return 0; // note: this doesn't mean 'error'
 }
 
 int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
@@ -148,15 +179,33 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
 			 AliHLTComponentTriggerData& trigData )
 {
   int iResult=0;
+  if (CheckMode(kConcatenateEvents)==0) {
+    // reset the current file name in order to open a new file
+    // for the first block. If events are concatenated, the current
+    // file name stays in order to be opended in append mode.
+    fCurrentFileName="";
+  }
   for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
     //HLTDebug("block %d out of %d", n, evtData.fBlockCnt);
     TString filename;
+    HLTDebug("dataspec 0x%x", blocks[n].fSpecification);
     iResult=BuildFileName(evtData.fEventID, n, blocks[n].fDataType, filename);
+    ios::openmode filemode=(ios::openmode)0;
+    if (fCurrentFileName.CompareTo(filename)==0) {
+      // append to the file
+      filemode=ios::app;
+    } else {
+      // store the file for the next block
+      fCurrentFileName=filename;
+    }
     if (iResult>=0) {
-      ofstream dump(filename.Data());
+      ofstream dump(filename.Data(), filemode);
       if (dump.good()) {
 	dump.write((const char*)blocks[n].fPtr, blocks[n].fSize);
 	HLTDebug("wrote %d byte(s) to file %s", blocks[n].fSize, filename.Data());
+      } else {
+	HLTError("can not open file %s for writing", filename.Data());
+	iResult=-EBADF;
       }
       dump.close();
     }
@@ -168,7 +217,54 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
 {
   int iResult=0;
   //HLTDebug("build file name for event %d block %d", eventID, blockID);
-  filename.Form("event_%#08x_0x%x_", eventID, blockID);
-  filename+=AliHLTComponent::DataType2Text(dataType).data();
+  filename="";
+  if (!fDirectory.IsNull()) {
+    filename+=fDirectory;
+    if (!fDirectory.EndsWith("/"))
+      filename+="/";
+  }
+  if (!fBaseName.IsNull())
+    filename+=fBaseName;
+  else
+    filename+="event";
+  if (!CheckMode(kConcatenateEvents)) {
+    if (!CheckMode(kEnumerate)) {
+      if (eventID!=kAliHLTVoidEventID) {
+	filename+=Form("_0x%08x", eventID);
+      }
+    } else {
+      filename+=Form("_%d", GetEventCount());
+    }
+  }
+  if (blockID>=0 && !CheckMode(kConcatenateBlocks)) {
+    filename+=Form("_0x%x", blockID);
+    if (dataType!=kAliHLTVoidDataType) {
+      filename+="_";
+      filename+=AliHLTComponent::DataType2Text(dataType).data();
+    }
+  }
+  if (!fExtension.IsNull())
+    filename+="." + fExtension;
+  filename.ReplaceAll(" ", "");
   return iResult;
+}
+
+int AliHLTFileWriter::SetMode(Short_t mode) 
+{
+  fMode|=mode;
+  //HLTDebug("mode set to 0x%x", fMode);
+  return fMode;
+}
+
+int AliHLTFileWriter::ClearMode(Short_t mode)
+{
+  fMode&=~mode;
+  //HLTDebug("mode set to 0x%x", fMode);
+  return fMode;
+}
+
+int AliHLTFileWriter::CheckMode(Short_t mode)
+{
+  //HLTDebug("check mode 0x%x for flag 0x%x: %d", fMode, mode, (fMode&mode)!=0);
+  return (fMode&mode)!=0;
 }

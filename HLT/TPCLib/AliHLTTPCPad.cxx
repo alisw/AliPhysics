@@ -163,12 +163,12 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
 	    if (fpRawData[i]>=0) AddBaseLineValue(i, fpRawData[i]);
 	  if (fCount>0 && fCount>=reqMinCount && fCount>=fTotal/2) {
 	    fAverage=fSum/fCount;
-	    HLTDebug("new average %d", fAverage);
+	    //HLTDebug("new average %d", fAverage);
 	  } else {
-	    HLTDebug("baseline re-eveluation skipped because of to few "
-		       "contributing bins: total=%d, contributing=%d, req=%d"
-		       "\ndata might be already zero suppressed"
-		       , fTotal, fCount, reqMinCount);
+// 	    HLTDebug("baseline re-eveluation skipped because of to few "
+// 		       "contributing bins: total=%d, contributing=%d, req=%d"
+// 		       "\ndata might be already zero suppressed"
+// 		       , fTotal, fCount, reqMinCount);
 	    iResult=-ENODATA;
 	  }
 	  fCount=0;fSum=-1;
@@ -188,9 +188,9 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
       fAverage=avBackup;
     }
   } else {
-    HLTDebug("baseline calculation skipped because of to few contributing "
-	       "bins: total=%d, contributing=%d, required=%d \ndata might be "
-	       "already zero suppressed", fTotal, fCount, reqMinCount);
+//     HLTDebug("baseline calculation skipped because of to few contributing "
+// 	       "bins: total=%d, contributing=%d, required=%d \ndata might be "
+// 	       "already zero suppressed", fTotal, fCount, reqMinCount);
   }
 
   return iResult;
@@ -249,9 +249,9 @@ Int_t AliHLTTPCPad::AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value)
 	fBLMinBin=bin;
       }
     } else {
-      HLTDebug("ignoring value %d (bin %d) for base line calculation "
-	       "(current average is %d)",
-	       value, bin, fAverage);
+//       HLTDebug("ignoring value %d (bin %d) for base line calculation "
+// 	       "(current average is %d)",
+// 	       value, bin, fAverage);
     }
   }
   return iResult;

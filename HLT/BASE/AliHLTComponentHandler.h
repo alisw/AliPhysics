@@ -35,6 +35,8 @@ class AliHLTComponentHandler : public AliHLTLogging {
  public:
   /** standard constructor */
   AliHLTComponentHandler();
+  /** constructor */
+  AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv);
   /** destructor */
   virtual ~AliHLTComponentHandler();
 

@@ -57,7 +57,9 @@ class AliHLTTPCTrackArray {
   void AddTracks(AliHLTTPCTrackArray *newtrack,Bool_t remove_old=kTRUE,Int_t slice=-1);//add all Tracks to this 
   void AddLast(AliHLTTPCTrack *track);
 
-  ClassDef(AliHLTTPCTrackArray,1) //Track array class
+  AliHLTTPCTrack* operator[](int index);
+
+  ClassDef(AliHLTTPCTrackArray,2) //Track array class
 };
 
 #endif

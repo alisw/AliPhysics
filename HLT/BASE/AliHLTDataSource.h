@@ -42,7 +42,7 @@ class AliHLTDataSource : public AliHLTComponent {
    * preparation of data structures. The call is redirected to GetEvent.
    * @return neg. error code if failed
    */
-  int ProcessEvent( const AliHLTComponentEventData& evtData,
+  int DoProcessing( const AliHLTComponentEventData& evtData,
 		    const AliHLTComponentBlockData* blocks, 
 		    AliHLTComponentTriggerData& trigData,
 		    AliHLTUInt8_t* outputPtr, 

@@ -22,6 +22,7 @@ SUBDIRS 		= BASE \
 
 EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTSample.pkg \
+			  libAliHLTPHOS.pkg \
 			  hlt.conf
 
 DIST_SUBDIRS		= $(SUBDIRS)

@@ -1,11 +1,22 @@
+2007-02-05
+	- improvements in AliHLTFilePublisher/Writer
+	- small fix in component handler to pipe log messages during registration
+	  of standard components into right log channel
+	- the ProcessEvent method is now a method of the component base class,
+	  the actual processing method to implement is DoProcessing
+	- new standard component AliHLTRootFileWriterComponent added
+	- TPCLib: AliHLTTPCEsdWriterComponent added, conversion of AliHLTTPCTrack
+	  to AliTPCtrack implemented (not finished)
+	- small fixes in stand-alone build system (libAliHLTPHOS.pkg, *LinkDef.h)
+	
 2007-01-19
 	- AliHLTFileWriter added, handling of standard components in libHLT
 	  added to ComponentHandler
 	- several fixes in the HLT offline framework
 2007-01-05
 	- changes according to coding conventions and documentation
-	- AliHLTTPCDigitReaderRaw: HAVE_TPC_MAPPING dependend implementation
-	  fixed in order to make class definition independend
+	- AliHLTTPCDigitReaderRaw: HAVE_TPC_MAPPING dependent implementation
+	  fixed in order to make class definition independent
 	- helper functions for data structure handling added
 	- libHLTbase.pkg and libAliHLTSample.pkg included to the stand-alone
 	  build system

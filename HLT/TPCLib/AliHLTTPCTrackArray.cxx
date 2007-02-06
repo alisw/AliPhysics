@@ -433,7 +433,7 @@ void AliHLTTPCTrackArray::AddLast(AliHLTTPCTrack *track)
 {
   //add track to last position
   AliHLTTPCTrack *tpt = NextTrack();
-  tpt->Set(track);
+  tpt->Copy(track);
   
 }
 
@@ -454,7 +454,7 @@ void AliHLTTPCTrackArray::AddTracks(AliHLTTPCTrackArray *newtrack,Bool_t remove_
     if(remove_old)
       newtrack->Remove(i);
     AliHLTTPCTrack *track = NextTrack();
-    track->Set(tpt);
+    track->Copy(tpt);
     if(slice>=0)
       track->Rotate(slice); //Rotate track to global coordinates
     /*
@@ -465,7 +465,7 @@ void AliHLTTPCTrackArray::AddTracks(AliHLTTPCTrackArray *newtrack,Bool_t remove_
       else
 #endif
       track = NextTrack();
-      track->Set(tpt);
+      track->Copy(tpt);
     */
   }
 }
@@ -570,4 +570,8 @@ Int_t AliHLTTPCTrackArray::TrackCompare(AliHLTTPCTrack *a, AliHLTTPCTrack *b) co
   */
 }
 
-
+AliHLTTPCTrack* AliHLTTPCTrackArray::operator[](int index)
+{
+  if (index<fNTracks) return fTrack[index];
+  return NULL;
+}

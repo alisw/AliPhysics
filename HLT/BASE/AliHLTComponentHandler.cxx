@@ -40,6 +40,7 @@ using namespace std;
 // the standard components
 #include "AliHLTFilePublisher.h"
 #include "AliHLTFileWriter.h"
+#include "AliHLTRootFileWriterComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponentHandler)
@@ -53,6 +54,22 @@ AliHLTComponentHandler::AliHLTComponentHandler()
   fStandardList()
 {
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
+  AddStandardComponents();
+}
+
+AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
+  :
+  fComponentList(),
+  fScheduleList(),
+  fLibraryList(),
+  fEnvironment(),
+  fStandardList()
+{
+  if (pEnv) {
+    memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
+    AliHLTLogging::Init(pEnv->fLoggingFunc);
+  }  else
+    memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   AddStandardComponents();
 }
 
@@ -274,6 +291,7 @@ int AliHLTComponentHandler::AddStandardComponents()
   AliHLTComponent::SetGlobalComponentHandler(this);
   fStandardList.push_back(new AliHLTFilePublisher);
   fStandardList.push_back(new AliHLTFileWriter);
+  fStandardList.push_back(new AliHLTRootFileWriterComponent);
   AliHLTComponent::UnsetGlobalComponentHandler();
   iResult=RegisterScheduledComponents();
   return iResult;

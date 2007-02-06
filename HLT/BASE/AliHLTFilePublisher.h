@@ -19,18 +19,24 @@
  * @class AliHLTFilePublisher
  * An HLT data source component which publishes data from one or a sequence
  * of files.<br>
+ *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -datafile     <i> filename      </i>
- * \li -datafilelist <i> file pattern  </i>
- * \li -datatype     <i> data type     </i>
- * \li -dataspec     <i> specification </i>
- * \li -dataorigin   <i> origin        </i>
+ * \li -datafilelist <i> file pattern  </i> <br>
+ *      not yet implemented
+ * \li -datatype     <i> datatype   dataorigin </i> <br>
+ *      data type ID and origin, e.g. <tt>-datatype CLUSTERS TPC </tt>
+ * \li -dataspec     <i> specification </i> <br>
+ *      data specification treated as decimal number or hex number if
+ *      prepended by '0x'
  *
  * Optional arguments:<br>
  *
  * The component needs at least one argument \em -datafile or \em -datafilelist.
- * Both can occur multiple times.
+ * Both can occur multiple times. The \em -datatype and \em -dataspec
+ * parameters are valid for all files until the next occurrence of
+ * \em -datatype/spec
  * @ingroup alihlt_component
  */
 class AliHLTFilePublisher : public AliHLTDataSource  {

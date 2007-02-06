@@ -104,10 +104,10 @@ private:
   static  AliHLTComponentLogSeverity fGlobalLogFilter;
   AliHLTComponentLogSeverity fLocalLogFilter;
   static AliHLTfctLogging fLoggingFunc;
-  const char* fpDefaultKeyword;
-  const char* fpCurrentKeyword;
+  const char* fpDefaultKeyword; //!
+  const char* fpCurrentKeyword; //!
 
-  ClassDef(AliHLTLogging, 0)
+  ClassDef(AliHLTLogging, 1)
 };
 
 /* the class AliHLTKeyword is a simple helper class used by the HLTLogKeyword macro

@@ -40,10 +40,9 @@ int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* environ )
     {
       return EINPROGRESS;
     }
-  gComponentHandler_C = new AliHLTComponentHandler();
+  gComponentHandler_C = new AliHLTComponentHandler(environ);
   if ( !gComponentHandler_C )
     return EFAULT;
-  gComponentHandler_C->SetEnvironment( environ );
   gComponentHandler_C->AnnounceVersion();
   return 0;
 }
@@ -86,7 +85,10 @@ void AliHLT_C_DestroyComponent( AliHLTComponentHandle handle )
 {
   if ( !handle )
     return;
-  delete reinterpret_cast<AliHLTComponent*>( handle );
+  
+  AliHLTComponent* pComp=reinterpret_cast<AliHLTComponent*>( handle );
+  pComp->Deinit();
+  delete pComp;
 }
 
 int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponent_EventData* evtData, const AliHLTComponent_BlockData* blocks, 

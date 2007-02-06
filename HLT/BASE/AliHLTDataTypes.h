@@ -36,6 +36,7 @@ extern "C" {
     AliHLTUInt32_t fBlockCnt;
   };
 
+  const AliHLTEventID_t kAliHLTVoidEventID=~(AliHLTEventID_t)0;
   struct AliHLTComponentShmData
   {
     AliHLTUInt32_t fStructSize;

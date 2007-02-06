@@ -57,7 +57,8 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCClusterFinderComponent.cxx \
 				  AliHLTTPCVertexFinderComponent.cxx \
 				  AliHLTTPCSliceTrackerComponent.cxx \
-				  AliHLTTPCGlobalMergerComponent.cxx
+				  AliHLTTPCGlobalMergerComponent.cxx \
+				  AliHLTTPCEsdWriterComponent.cxx
 
 
 #				  AliHLTTPCClustFinderNew.cxx \
@@ -109,7 +110,8 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCClusterFinderComponent.h \
 				  AliHLTTPCVertexFinderComponent.h \
 				  AliHLTTPCSliceTrackerComponent.h \
-				  AliHLTTPCGlobalMergerComponent.h
+				  AliHLTTPCGlobalMergerComponent.h \
+				  AliHLTTPCEsdWriterComponent.h
 
 #				  AliHLTTPCClustFinderNew.h \
 #				  AliHLTTPC.h

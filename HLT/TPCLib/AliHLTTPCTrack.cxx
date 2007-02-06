@@ -1,8 +1,27 @@
 // @(#) $Id$
 // Original: AliHLTTrack.cxx,v 1.32 2005/06/14 10:55:21 cvetan 
 
-// Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCTrack.cxx
+    @author Anders Vestbo, Uli Frankenfeld, Matthias Richter
+    @date   
+    @brief  HLT TPC track implementation (conformal mapping) */
+
 
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTrack.h"
@@ -13,18 +32,6 @@
 #if __GNUC__ >= 3
 using namespace std;
 #endif
-
-/** \class AliHLTTPCTrack
-//<pre>
-//_____________________________________________________________
-// AliHLTTPCTrack
-//
-// Track base class
-//Begin_Html
-//<img src="track_coordinates.gif">
-//End_Html
-</pre>
-*/
 
 ClassImp(AliHLTTPCTrack)
 
@@ -64,7 +71,7 @@ AliHLTTPCTrack::AliHLTTPCTrack()
   fPointPsi=0;
 }
 
-void AliHLTTPCTrack::Set(AliHLTTPCTrack *tpt)
+void AliHLTTPCTrack::Copy(AliHLTTPCTrack *tpt)
 {
   //setter
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
@@ -617,4 +624,57 @@ void AliHLTTPCTrack::Print() const
 #endif
 
 // END ################################################# MODIFIY JMT
+}
+
+int AliHLTTPCTrack::Convert2AliKalmanTrack()
+{
+  int iResult=0;
+  // The method has been copied from AliHLTHoughKalmanTrack and adapted
+  // to the TPC conformal mapping track parametrization
+
+  SetChi2(0.);
+  SetNumberOfClusters(GetLastRow()-GetFirstRow());
+  SetLabel(GetMCid());
+  SetFakeRatio(0.);
+  SetMass(0.13957); // just a guess
+
+  fdEdx=0;
+  Double_t alpha = fmod((GetSector()+0.5)*(2*TMath::Pi()/18),2*TMath::Pi());
+  if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+  else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
+
+  Double_t xhit=GetFirstPointX();
+  Double_t yhit=GetFirstPointY();
+  Double_t zhit=GetFirstPointZ();
+  Double_t psi = GetPsi();
+  Double_t kappa = GetKappa();
+  Double_t radius = GetRadius();
+  Double_t centerx = GetCenterX();
+
+  Double_t tanl = GetTgl();
+
+  Double_t cnv=1.;
+  // TODO: think about how to get the magnetic field
+  //Double_t cnv=1./(GetBz()*kB2C);
+
+  //covariance matrix
+  Double_t cov[15]={
+    0.,
+    0.,  0.,
+    0.,  0.,  0.,
+    0.,  0.,  0.,  0.,
+    0.,  0.,  0.,  0.,  0.
+  };
+
+  Double_t xx[5];
+  xx[0] = yhit;
+  xx[1] = zhit;
+  xx[2] = (xhit-centerx)/radius;
+  xx[3] = tanl;
+  xx[4] = kappa*cnv;
+  // the Set function was not available in earlier versions, check required in
+  // configure.ac
+  //Set(xhit,alpha,xx,cov);
+
+  return iResult;
 }

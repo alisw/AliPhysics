@@ -53,7 +53,7 @@ int AliHLTProcessor::Deinit()
   return iResult;
 }
 
-int AliHLTProcessor::ProcessEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
 			    AliHLTComponentBlockData*& outputBlocks,
