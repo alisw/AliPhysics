@@ -119,11 +119,11 @@ void AliTRDSimParam::Init()
   // The default parameter for the digitization
   fGasGain           = 4000.0;
   fChipGain          =   12.4;
-  fNoise             = 1000.0;
+  fNoise             = 1250.0;
   fADCoutRange       = 1023.0;          // 10-bit ADC
   fADCinRange        = 2000.0;          // 2V input range
   fADCthreshold      =    3;
-  fADCbaseline       =    0;
+  fADCbaseline       =   10;
 
   // Diffusion on
   fDiffusionOn       = kTRUE;
