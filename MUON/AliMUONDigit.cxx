@@ -53,7 +53,8 @@ fNtracks(0),
 fTcharges(0x0),
 fTracks(0x0),
 fPhysics(0.0),
-fHit(0)
+fHit(0),
+fStatusMap(0)
 {
   /// Default constructor
 }
@@ -74,7 +75,8 @@ fNtracks(0),
 fTcharges(0x0),
 fTracks(0x0),
 fPhysics(0.0),
-fHit(0)
+fHit(0),
+fStatusMap(0)
 {
   /// Copy constructor
 
@@ -227,6 +229,7 @@ AliMUONDigit::Copy(TObject& obj) const
   
   digit.fPhysics = fPhysics;
   digit.fHit = fHit;
+  digit.fStatusMap = fStatusMap;
 }
 
 //_____________________________________________________________________________
@@ -309,6 +312,9 @@ AliMUONDigit::Print(Option_t* opt) const
   cout << " ADC=" << setw(4) << ADC();
   cout << " Flags=0x" << setw(4) << hex << setfill('0') << fFlags << dec
     << setfill(' ');
+  cout << " StatusMap=0x" << setw(4) << hex << setfill('0') << StatusMap() << dec
+    << setfill(' ');
+
   TString options(opt);
   options.ToLower();
   if ( options.Contains("tracks") )

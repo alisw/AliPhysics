@@ -45,6 +45,7 @@ class AliMUONDigit : public TObject
     virtual Int_t ManuChannel() const { return fManuChannel; } ///< Return Channel within the MANU chip
     virtual Bool_t IsSaturated() const;
     virtual Bool_t IsNoiseOnly() const;
+    virtual UInt_t StatusMap() const { return fStatusMap; }
     
     virtual void NoiseOnly(Bool_t value=kTRUE);
     virtual void Saturated(Bool_t saturated=kTRUE);
@@ -59,6 +60,7 @@ class AliMUONDigit : public TObject
     virtual void SetHit(Int_t n)           {fHit = n;}         ///< Set MC hit number
     virtual void SetCathode(Int_t c)       {fCathode = c;}     ///< Set cathode number
     virtual void SetPhysicsSignal(Float_t q) {fPhysics = q; }    ///< Set MC physics contribution to signal
+    virtual void SetStatusMap(UInt_t statusMap) { fStatusMap = statusMap; }
     
     virtual void Print(Option_t* opt="") const;
     
@@ -96,9 +98,11 @@ private:
     Float_t fPhysics;       ///< MC physics contribution to signal 
     Int_t fHit;           ///< MC hit number - temporary solution
   
+    UInt_t fStatusMap; ///< Neighbouring pad status (whether ped, gains, hv were ok or not)
+    
     static const UInt_t fgkSaturatedMask = 0x1; ///< the mask (part of fFlags) to indicate this digit is saturated
     static const UInt_t fgkNoiseOnlyMask = 0x1000; ///< indicate a simulated digit due to noise only
     
-    ClassDef(AliMUONDigit,5)  //Digits for MUON
+    ClassDef(AliMUONDigit,6)  //Digits for MUON
 };
 #endif
