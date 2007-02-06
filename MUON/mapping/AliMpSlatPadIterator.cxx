@@ -133,7 +133,7 @@ AliMpSlatPadIterator::Prepare(const AliMpArea& area)
 		}
 	}
   AliDebug(3,Form("Number of delegates = %d",fDelegates.GetEntries()));
-  StdoutToAliDebug(3,fDelegates.Print(););
+//  StdoutToAliDebug(3,fDelegates.Print(););
   return fDelegates.GetLast()>=0;
 }
 

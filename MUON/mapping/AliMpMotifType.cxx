@@ -133,7 +133,7 @@ AliMpMotifType::~AliMpMotifType()
 #endif  
   
   AliDebug(1,Form("this=%p",this));
-  StdoutToAliDebug(1,this->Print(););
+//  StdoutToAliDebug(1,this->Print(););
 }
 
 //______________________________________________________________________________
