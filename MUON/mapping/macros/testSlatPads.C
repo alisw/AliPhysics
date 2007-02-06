@@ -97,9 +97,7 @@ Int_t Iterate(const AliMpSlat& slat)
 {
   AliMpSlatSegmentation seg(&slat);
   
-  AliMpArea area(TVector2(0.0,0.0),slat.Dimensions());
-  
-  AliMpVPadIterator* it = seg.CreateIterator(area);
+  AliMpVPadIterator* it = seg.CreateIterator();
   
   it->First();
   
@@ -168,9 +166,7 @@ void XCheck(const AliMpSlat& slat)
     }
   }
   
-  AliMpArea area(TVector2(0.0,0.0),slat.Dimensions());
-  
-  AliMpVPadIterator* it = seg.CreateIterator(area);
+  AliMpVPadIterator* it = seg.CreateIterator();
   
   it->First();
     
