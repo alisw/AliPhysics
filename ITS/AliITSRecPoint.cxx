@@ -37,6 +37,7 @@ ClassImp(AliITSRecPoint)
 
 //_____________________________________________________________
 AliITSRecPoint::AliITSRecPoint(): AliCluster(),
+fX(0),
 fXloc(0),
 fZloc(0),
 fdEdX(0),
@@ -54,6 +55,7 @@ fGeom(0){
 
 //_____________________________________________________________
 AliITSRecPoint::AliITSRecPoint(AliITSgeom* geom): AliCluster(),
+fX(0),
 fXloc(0),
 fZloc(0),
 fdEdX(0),
@@ -72,6 +74,7 @@ fGeom(geom) {
 
 //________________________________________________________________________
 AliITSRecPoint::AliITSRecPoint(Int_t module,AliITSgeom* geom,Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit),
+fX(0),
 fXloc(0),
 fZloc(0),
 fdEdX(0),
@@ -103,6 +106,7 @@ fGeom(geom)
 }
 //_______________________________________________________________________
 AliITSRecPoint::AliITSRecPoint(const AliITSRecPoint& pt):AliCluster(pt),
+fX(pt.fX),
 fXloc(pt.fXloc),
 fZloc(pt.fZloc),
 fdEdX(pt.fdEdX),
@@ -131,6 +135,7 @@ AliITSRecPoint& AliITSRecPoint::operator=(const AliITSRecPoint& source){
 
 //________________________________________________________________________
 AliITSRecPoint::AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit),
+fX(0),
 fXloc(0),
 fZloc(0),
 fdEdX(0),

@@ -119,7 +119,7 @@ class AliITSRecPoint : public AliCluster {
     
   AliITSgeom* fGeom;     //!pointer to ITS geometry
 
-  ClassDef(AliITSRecPoint,2)  // AliITSRecPoint class
+  ClassDef(AliITSRecPoint,3)  // AliITSRecPoint class
 };
 // Input and output function for standard C++ input/output.
 ostream& operator<<(ostream &os,AliITSRecPoint &source);
