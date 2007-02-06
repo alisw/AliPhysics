@@ -23,193 +23,39 @@
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliDCSValue.h"
 #include "AliMUON1DArray.h"
 #include "AliMUON2DMap.h"
+#include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParam1I.h"
 #include "AliMUONCalibParam2F.h"
 #include "AliMUONConstants.h"
+#include "AliMUONHVNamer.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
 #include "AliMUONV2DStore.h"
+#include "AliMUONVCalibParam.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDataIterator.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpManuList.h"
 #include "AliMpSegmentation.h"
-#include "AliMpVSegmentation.h"
 #include "AliMpStationType.h"
+#include "AliMpVSegmentation.h"
 #include "Riostream.h"
+#include "TArrayI.h"
 #include "TH1F.h"
 #include "TList.h"
+#include "TMap.h"
+#include "TObjString.h"
 #include "TRandom.h"
 #include "TStopwatch.h"
 #include "TSystem.h"
+#include <map>
+
 #endif
-
-//_____________________________________________________________________________
-Int_t countChannels(const AliMpVSegmentation& seg)
-{
-  Int_t n(0);
-  
-  for ( Int_t ix = 0; ix < seg.MaxPadIndexX(); ++ix )
-  {
-    for ( Int_t iy = 0; iy < seg.MaxPadIndexY(); ++iy )
-    {
-      if ( seg.HasPad(AliMpIntPair(ix,iy)) ) ++n;
-    }
-  }
-  return n;
-}
-
-//_____________________________________________________________________________
-void countChannels()
-{
-  AliMpDEIterator it;
-  Int_t ntotal(0);
-  Int_t ntracker(0);
-  Int_t ntrigger(0);
-  
-  for ( Int_t station = 0; station < AliMUONConstants::NCh(); ++station )
-  {
-    Int_t n(0);
-    it.First(station);
-    while (!it.IsDone())
-    {
-      Int_t de = it.CurrentDE();
-      for ( Int_t cathode = 0; cathode < 2; ++cathode )
-      {
-        const AliMpVSegmentation* seg 
-	  = AliMpSegmentation::Instance()->GetMpSegmentation(de,cathode);
-        n += countChannels(*seg);
-      }
-      it.Next();
-    }
-    cout << "Station " << station << " has " << n << " channels" << endl;
-    if ( station < AliMUONConstants::NTrackingCh() )
-    {
-      ntracker += n;
-    }
-    else
-    {
-      ntrigger += n;
-    }
-    ntotal += n;
-  }
-  cout << "Tracker channels = " << ntracker << endl;
-  cout << "Trigger channels = " << ntrigger << endl;
-  cout << "Total channels =" << ntotal << endl;
-}
-
-//_____________________________________________________________________________
-AliMUONV2DStore* read2D(const char* calibType, Int_t runNumber)
-{
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage(CDBPath);
-
-  AliCDBEntry* entry = man->Get(calibType,runNumber);
-
-  if (entry)
-    {
-      return (AliMUONV2DStore*)entry->GetObject();
-    }
-  return 0;
-}
-
-//_____________________________________________________________________________
-AliMUONV1DStore* read1D(const char* calibType, Int_t runNumber)
-{
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage(CDBPath);
-  
-  AliCDBEntry* entry = man->Get(calibType,runNumber);
-  
-  if (entry)
-  {
-    return (AliMUONV1DStore*)entry->GetObject();
-  }
-  return 0;
-}
-
-//_____________________________________________________________________________
-void checkCDB(const char* calibType)
-{
-  TString c(calibType);
-  Float_t refValue(0);
-  
-  if ( c == "MUON/Calib/DeadChannels" )
-  {
-    refValue=5;
-  }
-   
-  AliMUONV2DStore* store = read2D(calibType);
-  if (!store) return;
-  
-  TList* list = AliMpManuList::ManuList();
-  TIter next(list);
-  AliMpIntPair* p;
-  
-  while ( ( p = (AliMpIntPair*)next() ) )
-  {
-    Int_t detElemId = p->GetFirst();
-    Int_t manuId = p->GetSecond();
-    
-    AliMUONVCalibParam* value = 
-      dynamic_cast<AliMUONVCalibParam*>(store->Get(detElemId,manuId));
-    
-    if (value)
-    {
-      for ( Int_t manuChannel = 0; manuChannel < value->Size(); ++manuChannel )
-      {
-        Float_t testValue = value->ValueAsFloat(manuChannel,0);
-        if ( testValue && testValue != refValue )
-        {
-          cout << "Got a strange value for DE=" << detElemId << " manuId="
-          << manuId << " manuChannel=" << manuChannel << " was expecting "
-          << refValue << " and I got " << testValue << endl;
-        }
-      }
-    }
-    else
-    {
-      cout << "Got a null value for DE=" << detElemId << " manuId="
-      << manuId << endl;
-    }
-  }
-  
-  delete list;
-  delete store;
-}
-
-//_____________________________________________________________________________
-//void testDump(AliMUONV2DStore& store, int n)
-//{  
-//  AliMUONObjectPair* p;
-//  
-//  Int_t c(0);
-//  
-//  for ( Int_t i = 0; i < n; ++i )
-//  {
-//    AliMUONVDataIterator* it = store.Iterator();
-//    
-//    while ( ( p = dynamic_cast<AliMUONObjectPair*>(it->Next() ) ) )
-//    {
-//      AliMpIntPair* dm = dynamic_cast<AliMpIntPair*>(p->Key());
-//      if (dm)
-//      {
-//        Int_t a(dm->GetFirst()+dm->GetSecond());
-//        a=2;
-//        ++c;
-//        AliMUONVCalibParam* param = dynamic_cast<AliMUONVCalibParam*>(p->Value());
-//      }
-//      delete p;
-//    }
-//    delete it;
-//  }
-//    
-//  cout << c << endl;
-//}
 
 //_____________________________________________________________________________
 AliMUONV2DStore* diff(AliMUONV2DStore& store1, AliMUONV2DStore& store2, 
@@ -382,20 +228,6 @@ void plot(const AliMUONV2DStore& store, const char* name, Int_t nbins)
 }
 
 //_____________________________________________________________________________
-void plotCDB(const char* calibType, Int_t runNumber)
-{
-  AliMUONV2DStore* store = read2D(calibType,runNumber);
-  if (!store) return;
-
-  TString c(calibType);
-  c.ReplaceAll("/","_");
-  
-  plot(*store,c.Data());
-  
-  delete store;
-}
-
-//_____________________________________________________________________________
 void testReadStore(const AliMUONV2DStore& store, Int_t n)
 {
   TList* list = AliMpManuList::ManuList();
@@ -411,6 +243,66 @@ void testReadStore(const AliMUONV2DStore& store, Int_t n)
   }
   delete list;
 } 
+
+//_____________________________________________________________________________
+Int_t makeHVStore(TMap& aliasMap, Bool_t defaultValues)
+{
+  AliMUONHVNamer hvNamer;
+  TRandom random;
+  
+  TObjArray* aliases = hvNamer.GenerateAliases();
+  
+  Int_t nSwitch(0);
+  Int_t nChannels(0);
+  
+  for ( Int_t i = 0; i < aliases->GetEntries(); ++i ) 
+  {
+    TObjString* alias = static_cast<TObjString*>(aliases->At(i));
+    TString& aliasName = alias->String();
+    if ( aliasName.Contains("sw") ) 
+    {
+      // HV Switch (St345 only)
+      TObjArray* valueSet = new TObjArray;
+      valueSet->SetOwner(kTRUE);
+      
+      Bool_t value = kTRUE;
+      
+      if (!defaultValues)
+      {
+        Float_t r = random.Uniform();
+        if ( r < 0.007 ) value = kFALSE;      
+      } 
+      
+      for ( UInt_t timeStamp = 0; timeStamp < 60*3; timeStamp += 60 )
+      {
+        AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
+        valueSet->Add(dcsValue);
+      }
+      aliasMap.Add(new TObjString(*alias),valueSet);
+      ++nSwitch;
+    }
+    else
+    {
+      TObjArray* valueSet = new TObjArray;
+      valueSet->SetOwner(kTRUE);
+      for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
+      {
+        Float_t value = 1500;
+        if (!defaultValues) value = random.Gaus(1750,62.5);
+        AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
+        valueSet->Add(dcsValue);
+      }
+      aliasMap.Add(new TObjString(*alias),valueSet);
+      ++nChannels;
+    }
+  }
+  
+  delete aliases;
+  
+  cout << nChannels << " HV channels and " << nSwitch << " switches" << endl;
+  
+  return nChannels+nSwitch;
+}
 
 //_____________________________________________________________________________
 Int_t makePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValues)
@@ -558,70 +450,10 @@ Int_t makeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues)
 }
 
 //_____________________________________________________________________________
-Int_t makeDeadStore(AliMUONV2DStore& deadStore, Bool_t defaultValues)
-{  
-  TList* list = AliMpManuList::ManuList();
-  TIter next(list);
-  
-  AliMpIntPair* p;
-  
-  Int_t nchannels(0);
-  Int_t nmanus(0);
-  
-  Bool_t replace = kFALSE;
-  
-  const Int_t nChannels(64);
-  const Double_t deadProba = 1.0; // 1%
-  
-  while ( ( p = (AliMpIntPair*)next() ) )
-  {
-    ++nmanus;
-    AliMUONVCalibParam* dead = new AliMUONCalibParam1I(nChannels,-9999);
-    
-    Int_t detElemId = p->GetFirst();
-    Int_t manuId = p->GetSecond();
-    
-    const AliMpVSegmentation* seg = 
-      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
-    
-    for ( Int_t manuChannel = 0; manuChannel < nChannels; ++manuChannel )
-    {
-      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
-      if (!pad.IsValid()) continue;
-      
-      ++nchannels;
-            
-      if (!defaultValues)
-      {
-        // probability that this channel is dead ~ 1%
-        if ( gRandom->Uniform(100.0) < deadProba ) 
-        {
-          Int_t reason = 5; // that value could be used to distinguish
-                            // why the channel is dead or how it was flagged bad (online,
-                            // offline, by chance...). 5 is of course a fake number.
-          dead->SetValueAsInt(manuChannel,0,reason);
-        }
-      }
-    }
-    Bool_t ok = deadStore.Set(detElemId,manuId,dead,replace);
-    if (!ok)
-    {
-      cout << "Could not set DetElemId=" << detElemId << " manuId="
-      << manuId << endl;
-    }
-  }
-  
-  delete list;
-  cout << nmanus << " Manus and " << nchannels << " channels." << endl;
-  return nchannels;
-}
-
-//_____________________________________________________________________________
 void testMakeStores(Int_t readLoop)
 {
   AliMUONV2DStore* pedestalStore = new AliMUON2DMap;
   AliMUONV2DStore* gainStore = new AliMUON2DMap;
-  AliMUONV2DStore* deadStore = new AliMUON2DMap;
   
   TStopwatch timer;
   
@@ -632,20 +464,17 @@ void testMakeStores(Int_t readLoop)
   timer.Start(kTRUE);
   makePedestalStore(*pedestalStore,defaultValues);
   makeGainStore(*gainStore,defaultValues);
-  makeDeadStore(*deadStore,defaultValues);
   timer.Print();
   
   cout << "Reading..." << endl;
   timer.Start(kTRUE);
   testReadStore(*pedestalStore,readLoop);
   testReadStore(*gainStore,readLoop);
-  testReadStore(*deadStore,readLoop);
   cout << timer.CpuTime()/readLoop << " CPUs (mean of " << readLoop 
     <<" samples." << endl;
   
   delete pedestalStore;
   delete gainStore;
-  delete deadStore;
 }
 
 //_____________________________________________________________________________
@@ -768,36 +597,193 @@ void writeToCDB(const char* cdbpath, const char* calibpath, TObject* object,
 }
 
 //_____________________________________________________________________________
+void writeHV(const char* cdbpath, Bool_t defaultValues,
+             Int_t startRun, Int_t endRun)
+{
+  /// generate HV values (either cste = 1500 V) if defaultValues=true or random
+  /// if defaultValues=false, see makeHVStore) and
+  /// store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
+  TMap* hvStore = new TMap;
+  Int_t ngenerated = makeHVStore(*hvStore,defaultValues);
+  cout << "Ngenerated = " << ngenerated << endl;
+  
+  writeToCDB(cdbpath,"MUON/Calib/HV",hvStore,startRun,endRun,defaultValues);
+  
+  delete hvStore;
+}
+
+//_____________________________________________________________________________
 void writePedestals(const char* cdbpath, Bool_t defaultValues,
                     Int_t startRun, Int_t endRun)
 {
+  /// generate pedestal values (either 0 if defaultValues=true or random
+  /// if defaultValues=false, see makePedestalStore) and
+  /// store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
   AliMUONV2DStore* pedestalStore = new AliMUON2DMap;
   Int_t ngenerated = makePedestalStore(*pedestalStore,defaultValues);
   cout << "Ngenerated = " << ngenerated << endl;
   
   writeToCDB(cdbpath,"MUON/Calib/Pedestals",pedestalStore,startRun,endRun,defaultValues);
+  delete pedestalStore;
 }
 
 //_____________________________________________________________________________
 void writeGains(const char* cdbpath, Bool_t defaultValues,
                     Int_t startRun, Int_t endRun)
 {
+  /// generate gain values (either 1 if defaultValues=true or random
+  /// if defaultValues=false, see makePedestalStore) and
+  /// store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
   AliMUONV2DStore* gainStore = new AliMUON2DMap;
   Int_t ngenerated = makeGainStore(*gainStore,defaultValues);
   cout << "Ngenerated = " << ngenerated << endl;
   
   writeToCDB(cdbpath,"MUON/Calib/Gains",gainStore,startRun,endRun,defaultValues);
+  delete gainStore;
 }
 
 //_____________________________________________________________________________
-void writeDeadChannels(const char* cdbpath, Bool_t defaultValues,
-                       Int_t startRun, Int_t endRun)
+Bool_t check1I(const AliMUONVCalibParam& calib, Int_t channel)
 {
-  AliMUONV2DStore* deadStore = new AliMUON2DMap;
-  Int_t ngenerated = makeDeadStore(*deadStore,defaultValues);
-  cout << "Ngenerated = " << ngenerated << endl;
+  /// 
   
-  writeToCDB(cdbpath,"MUON/Calib/DeadChannels",deadStore,startRun,endRun,defaultValues);
+  return ( calib.ValueAsInt(channel) == 0);
+}
+
+//_____________________________________________________________________________
+void validate1I(const AliMUONV2DStore& store)
+{
+  AliMUON2DStoreValidator validator;
+  
+  TObjArray* a = validator.Validate(store,check1I);
+  
+  if (a) a->Print();
+  
+  TList lines;
+  
+  validator.Report(lines);
+  
+  lines.Print();
+}
+
+//_____________________________________________________________________________
+void validate2F(const AliMUONV2DStore& store)
+{
+  AliMUON2DStoreValidator validator;
+  
+  TObjArray* a = validator.Validate(store,AliMUONCalibParam2F::InvalidFloatValue());
+  
+  if (a) a->Print();
+  
+  TList lines;
+  
+  validator.Report(lines);
+  
+  lines.Print();
+}
+
+//_____________________________________________________________________________
+void dump(const TArrayI& a, const char* what)
+{
+  cout << what << " " << a.GetSize() << " manus" << endl;
+  for ( Int_t i = 0; i < a.GetSize(); ++i ) 
+  {
+    cout << Form(" %5d ",a[i]);
+  }
+  cout << endl;
+}
+
+//_____________________________________________________________________________
+void countManus()
+{
+  AliMpDEIterator it;
+  
+  it.First();
+  
+  Int_t b(0);
+  Int_t nb(0);
+  
+  while (!it.IsDone())
+  {
+    Int_t detElemId = it.CurrentDEId();
+    AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
+    if ( stationType != AliMp::kStationTrigger ) 
+    {
+      const AliMpVSegmentation* seg0 = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
+      const AliMpVSegmentation* seg1 = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath1);
+      TArrayI a1;
+      TArrayI a0;
+      seg0->GetAllElectronicCardIDs(a0);
+      seg1->GetAllElectronicCardIDs(a1);
+      
+      cout << Form("DE %5d B %4d NB %4d Total %5d",detElemId,
+                   a0.GetSize(),a1.GetSize(),a0.GetSize()+a1.GetSize())            
+        << endl;
+      
+      b += a0.GetSize();
+      nb += a1.GetSize();
+      
+      if ( detElemId == 500 ) 
+      {
+        dump(a0,"B");
+        dump(a1,"NB");
+      }
+    }
+    it.Next();
+  }
+  
+  cout << Form("B %5d NB %5d Total %5d",b,nb,b+nb) << endl;
+}
+
+//_____________________________________________________________________________
+void count(const AliMUONV2DStore& store)
+{
+  AliMUONVDataIterator* it = store.Iterator();
+  AliMUONObjectPair* pair;
+  std::map<int,std::pair<int,int> > demap;
+  
+  while ( ( pair = static_cast<AliMUONObjectPair*>(it->Next()) ) )
+  {
+    AliMpIntPair* ip = static_cast<AliMpIntPair*>(pair->First());
+    
+    Int_t detElemId = ip->GetFirst();
+    
+    Int_t manuId = ip->GetSecond();
+    
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
+    
+    if ( seg->PlaneType() == AliMp::kNonBendingPlane ) 
+    {
+      demap[detElemId].second++;
+    }
+    else
+    {
+      demap[detElemId].first++;
+    }    
+  }
+  
+  std::map<int,std::pair<int,int> >::const_iterator mit;
+  
+  Int_t b(0);
+  Int_t nb(0);
+  
+  for ( mit = demap.begin(); mit != demap.end(); ++mit ) 
+  {
+    cout << Form("DE %5d B %4d NB %4d Total %5d",mit->first,
+                 mit->second.first,mit->second.second,
+                 mit->second.first+mit->second.second) << endl;
+    b += mit->second.first;
+    nb += mit->second.second;    
+  }
+  
+  cout << Form("B %5d NB %5d Total %5d",b,nb,b+nb) << endl;  
 }
 
 
