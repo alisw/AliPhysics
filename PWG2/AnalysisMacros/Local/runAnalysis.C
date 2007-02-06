@@ -44,9 +44,9 @@ void runAnalysis() {
   gSystem->Load("libESD.so");
 
   //_____________________________________________________________//
-  //_____________Setting up ANALYSIS_NEW.par_____________________//
+  //_____________Setting up ANALYSIS.par_____________________//
   //_____________________________________________________________//
-  const char* pararchivename2 = "ANALYSIS_NEW";
+  const char* pararchivename2 = "ANALYSIS";
   //////////////////////////////////////////
   // Libraries required to load
   //////////////////////////////////////////
@@ -81,7 +81,7 @@ void runAnalysis() {
     
     gSystem->ChangeDirectory("../");
   }
-  gSystem->Load("libANALYSIS_NEW.so");
+  gSystem->Load("libANALYSIS.so");
 
   gROOT->LoadMacro("AliAnalysisTaskPt.cxx+");  
   gROOT->LoadMacro("demoLocal.C");

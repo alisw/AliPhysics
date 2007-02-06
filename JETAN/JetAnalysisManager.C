@@ -5,7 +5,7 @@ void JetAnalysisManager()
     //
     gSystem->Load("libEG.so");
     gSystem->Load("libGeom.so");
-    gSystem->Load("libANALYSIS_NEW.so");
+    gSystem->Load("libANALYSIS.so");
     gSystem->Load("libESD.so"); 
     gSystem->Load("libJETAN.so");
     //
@@ -40,7 +40,7 @@ void JetAnalysisManager()
     
     mgr->ConnectInput (jetana,0,cinput1);
     mgr->ConnectOutput(jetana,0,coutput1);
-    cinput1->SetData(chain1);
+//    cinput1->SetData(chain1);
 
 //
 // Run the analysis
@@ -48,6 +48,7 @@ void JetAnalysisManager()
 
     if (mgr->InitAnalysis()) {
 	mgr->PrintStatus();
-	chain1->Process(mgr);
+//	chain1->Process(mgr);
+   mgr->StartAnalysis("local",chain1);
     }
 }
