@@ -98,27 +98,27 @@ AliMpVSegmentation::GetNeighbours(const AliMpPad& pad,
   // were we'll try to get a neighbouring pad, by getting a little
   // bit outside the pad itself.
   // Note that it's not symmetric as we assume that pad density
-  // can always decrease when going from left to right.
+  // can always decrease when going from left to right (or from bottom to top)
   //
-  // L-T-T-R
+  // L--T--R
   // |     |
   // L     |
   // |  O  R
   // L     |
   // |     |
-  // L--B--R
+  // L-B-B-R
   //
   // The order in which we actually test the positions has some importance,
   // i.e. when using this information to compute status map later on. Here's
   // the sequence :
   //
-  // 4-5-6- 7
-  // |      |
-  // 3      |
-  // |  0   8
-  // 2      |
-  // |      |
-  // 1--10--9
+  // 4-- 5-- 6
+  // |       |
+  // 3       |
+  // |   0   7
+  // 2       |
+  // |       |
+  // 1-10- 9-8
   
   neighbours.Delete();
   neighbours.SetOwner(kTRUE);
@@ -133,19 +133,19 @@ AliMpVSegmentation::GetNeighbours(const AliMpPad& pad,
     centerIndex = 0;
     testPositions[n++] = TVector2(0,0); // O (pad center)
     // then left column (L), starting from bottom
-    testPositions[n++] = TVector2(-1,-1);
-    testPositions[n++] = TVector2(-1,-1/3.0);
-    testPositions[n++] = TVector2(-1,1/3.0);
-    testPositions[n++] = TVector2(-1,1);
-    // top (T), starting from left
-    testPositions[n++] = TVector2(-1/3.0,1);
-    testPositions[n++] = TVector2(1/3.0,1);
+    testPositions[n++] = TVector2(-1,-1); // 1
+    testPositions[n++] = TVector2(-1,-1/3.0); // 2 
+    testPositions[n++] = TVector2(-1,1/3.0); // 3
+    testPositions[n++] = TVector2(-1,1); // 4
+    // top (T)
+    testPositions[n++] = TVector2(0,1); // 5
     // right column (R), starting from top
-    testPositions[n++] = TVector2(1,1);
-    testPositions[n++] = TVector2(1,0);
-    testPositions[n++] = TVector2(1,-1);
-    // bottom (B)
-    testPositions[n++] = TVector2(0,-1);
+    testPositions[n++] = TVector2(1,1); // 6
+    testPositions[n++] = TVector2(1,0); // 7
+    testPositions[n++] = TVector2(1,-1); // 8
+    // bottom (B), starting from right
+    testPositions[n++] = TVector2(1/3.0,-1); // 9 
+    testPositions[n++] = TVector2(-1/3.0,-1); // 10
     // pad center
     if ( n != kNofTestPositions ) {
       AliError("Test on number of test positions failed.");
