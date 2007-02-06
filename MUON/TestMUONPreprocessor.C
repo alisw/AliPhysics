@@ -17,17 +17,22 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
-// This macro runs the test preprocessor
-// It uses AliTestShuttle to simulate a full Shuttle process
-
-// The input data is created in the functions
-//   CreateDCSAliasMap() creates input that would in the same way come from DCS
-//   ReadDCSAliasMap() reads from a file
-//   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
-//
-// According to SHUTTLE/TestShuttle/TestPreprocessor.C
+/// This macro runs the test preprocessor for MUON.
+/// It uses AliTestShuttle to simulate a full Shuttle process
+///
+/// The input data has to be created first by other processes (or is created
+/// here by CreateDCSAliasMap() for tracker HV).
+///
+/// To play with it, you'll have to set/modify several lines, to
+/// a) select input files, using shuttle->AddInputFile()
+/// b) select run type, using shuttle->AddInputRunParameter() (the run type
+///    dictates which task is really performed by the MUONPreprocessor
+///
+/// For more information on usage, please see READMEshuttle.
+///
 // By Laurent Aphecetche, SUBATECH Nantes
 
+#include "TestMUONPreprocessor.h"
 #include "AliCDBManager.h"
 #include "AliShuttleInterface.h"
 #include "AliCDBId.h"
@@ -45,9 +50,10 @@
 #include "TRandom.h"
 #include "AliMUONPreprocessor.h"
 #include "AliCDBEntry.h"
+#include "AliMUONHVNamer.h"
 #endif
 
-void TestMUONPreprocessor()
+void TestMUONPreprocessor(Int_t runNumber=1500)
 {
   // load library
   gSystem->Load("../SHUTTLE/TestShuttle/libTestShuttle.so");
@@ -58,31 +64,15 @@ void TestMUONPreprocessor()
 
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
-  AliTestShuttle* shuttle = new AliTestShuttle(800, 0, 1);
+  AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
 
-  // TODO(1)
-  //
-  // The shuttle can read DCS data, if the preprocessor should be tested to process DCS data,
-  // some fake data has to be created.
-  //
-  // The "fake" input data can be taken using either (a) or (b):
-  // (a) data from a file: Use ReadDCSAliasMap()
-  //     the format of the file is explained in ReadDCSAliasMap()
-  //     To use it uncomment the following line:
-  //
-// TMap* dcsAliasMap = ReadDCSAliasMap();
-  //
-  // (b) generated in this macro: Use CreateDCSAliasMap() and its documentation
-  //     To use it uncomment the following line:
-  //
-// TMap* dcsAliasMap = CreateDCSAliasMap();
+  // Create DCS HV aliases
+  TMap* dcsAliasMap = CreateDCSAliasMap();
 
   // now give the alias map to the shuttle
-  // shuttle->SetDCSInput(dcsAliasMap);
+  shuttle->SetDCSInput(dcsAliasMap);
 
-  // TODO(2)
-  //
-  // The shuttle can also process files that originate from DCS, DAQ and HLT.
+  // The shuttle can process files that originate from DCS, DAQ and HLT.
   // To test it, we provide some local files and locations where these would be found when
   // the online machinery would be there.
   // In real life this functions would be produces by the sub-detectors
@@ -90,45 +80,95 @@ void TestMUONPreprocessor()
   //
   // Files are added with the function AliTestShuttle::AddInputFile. The syntax is:
   // AddInputFile(<system>, <detector>, <id>, <source>, <local-file>)
-  // In this example we add a file originating from the GDC with the id PEDESTALS
-  // Three files originating from different LDCs but with the same id are also added
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "PEDESTALS", "GDC", "file1.root");
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC0", "file2a.root");
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC1", "file2b.root");
-//  shuttle->AddInputFile(AliTestShuttle::kDAQ, "DET", "DRIFTVELOCITY", "LDC2", "file2b.root");
+  // In this example we add 4 files originating from different LDCs but with the same id (PEDESTALS)
 
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC0","$ALICE_ROOT/MUON/data/LDC0.ped");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1","$ALICE_ROOT/MUON/data/LDC1.ped");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
   
+  // and GMS file
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
 
-  // TODO(3)
+  // The shuttle can read run parameters stored in the DAQ run logbook.
+  // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
+  // using GetRunParameter function.
+  // In real life the parameters will be retrieved automatically from the run logbook;
+  shuttle->AddInputRunParameter("RunType", "PEDESTAL_RUN"); 
+//  shuttle->AddInputRunParameter("RunType", "PHYSICS"); 
+  // PEDESTAL_RUN -> pedestals
+  // ELECTRONICS_CALIBRATION_RUN -> gains
+  // PHYSICS ? -> HV
+  
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
-//  AliPreprocessor* pp = new AliTestPreprocessor("DET", shuttle);
   new AliMUONPreprocessor("MCH", shuttle);
 
   shuttle->Print();
   
   // Test the preprocessor
   shuttle->Process();
-
-  // TODO(4)
-  // In the preprocessor AliShuttleInterface::Store should be called to put the final
-  // data to the CDB. To check if all went fine have a look at the files produced in
-  // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
-  //
-  // Check the file which should have been created
-//  AliCDBEntry* entry = AliCDBManager::Instance()->Get("DET/SHUTTLE/Data", 7);
-//  if (!entry)
-//  {
-//    printf("The file is not there. Something went wrong.\n");
-//    return;
-//  }
-//
-//  AliTestDataDCS* output = dynamic_cast<AliTestDataDCS*> (entry->GetObject());
-//  // If everything went fine, draw the result
-//  if (output)
-//    output->Draw();
 }
+
+TMap* CreateDCSAliasMap()
+{
+  /// Creates a DCS structure for MUON Tracker HV
+  ///
+  /// The structure is the following:
+  ///   TMap (key --> value)
+  ///     <DCSAlias> --> <valueList>
+  ///     <DCSAlias> is a string
+  ///     <valueList> is a TObjArray of AliDCSValue
+  ///     An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
+  
+  TMap* aliasMap = new TMap;
+  aliasMap->SetOwner(kTRUE);
+  
+  TRandom random(0);
+  
+  AliMUONHVNamer hvNamer;
+  
+  TObjArray* aliases = hvNamer.GenerateAliases();
+  
+  for ( Int_t i = 0; i < aliases->GetEntries(); ++i ) 
+  {
+    TObjString* alias = static_cast<TObjString*>(aliases->At(i));
+    TString& aliasName = alias->String();
+    if ( aliasName.Contains("sw") ) 
+    {
+      // HV Switch (St345 only)
+      TObjArray* valueSet = new TObjArray;
+      valueSet->SetOwner(kTRUE);
+      Bool_t value = kTRUE;
+//      Float_t r = random.Uniform();
+//      if ( r < 0.007 ) value = kFALSE;      
+//      if ( aliasName.Contains("DE513sw2") ) value = kFALSE;
+      
+      for ( UInt_t timeStamp = 0; timeStamp < 60*3; timeStamp += 60 )
+      {
+        AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
+        valueSet->Add(dcsValue);
+      }
+      aliasMap->Add(new TObjString(*alias),valueSet);
+    }
+    else
+    {
+      TObjArray* valueSet = new TObjArray;
+      valueSet->SetOwner(kTRUE);
+      for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
+      {
+        Float_t value = random.Gaus(1750,62.5);
+        if ( aliasName == "MchHvLvLeft/Chamber01Left/Quad3Sect2.actual.vMon") value = 500;
+//        if ( aliasName == "MchHvLvLeft/Chamber05Left/Slat07.actual.vMon") value = 1300;
+//        if ( aliasName == "MchHvLvLeft/Chamber05Left/Slat03.actual.vMon") value = 2500;
+        AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
+        valueSet->Add(dcsValue);
+      }
+      aliasMap->Add(new TObjString(*alias),valueSet);
+    }
+  }
+  
+  delete aliases;
+    
+  return aliasMap;
+}
+
