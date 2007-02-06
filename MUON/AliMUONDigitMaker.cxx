@@ -291,7 +291,7 @@ Int_t AliMUONDigitMaker::GetMapping(Int_t busPatchId, UShort_t manuId,
   
   AliDebug(3,Form("detElemId: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady %d\n",
 		  detElemId, busPatchId, manuId, channelId, padX, padY));
-  StdoutToAliDebug(3,digit->Print(););
+//  StdoutToAliDebug(3,digit->Print(););
   
   fMappingTimer.Stop();
   return kFALSE;
