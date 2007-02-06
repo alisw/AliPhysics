@@ -106,26 +106,34 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
   
   if (!fPedestals) return 0;
   
-  AliInfo("Validating pedestals");
+  Master()->Log("Validating pedestals");
   AliMUON2DStoreValidator validator;
   TObjArray* missing =
     validator.Validate(*fPedestals,AliMUONCalibParam2F::InvalidFloatValue());  
   
   if (missing)  
   {
-    validator.Report(*missing);
-//    AliError("Will not write into CDB as some pieces are missing...");
-//    return 0;
+    TList lines;
+    lines.SetOwner(kTRUE);
+    validator.Report(lines,*missing);
+    TIter next(&lines);
+    TObjString* l;
+    while ( ( l = static_cast<TObjString*>(next())) )
+    {
+      Master()->Log(l->GetName());
+    }
+    return 0;
   }
   
-  AliInfo("Storing pedestals");
+  Master()->Log("Storing pedestals");
   
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("MUON TRK");
 	metaData.SetComment("Computed by AliMUONPedestalSubprocessor $Id$");
   
-	UInt_t result = Master()->Store("Calib", "Pedestals", fPedestals, &metaData, 0, 0);
+  Bool_t validToInfinity = kTRUE;
+	UInt_t result = Master()->Store("Calib", "Pedestals", fPedestals, &metaData, 0, validToInfinity);
   
   return result;  
 }
