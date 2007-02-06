@@ -12,7 +12,8 @@
 /// conversion between pad indices, pad location, pad position;
 /// finding pad neighbour.
 ///
-/// \author David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova, IPN Orsay;
+///         Laurent Aphecetche, SUBATECH
 
 #ifndef ALI_MP_V_SEGMENTATION_H
 #define ALI_MP_V_SEGMENTATION_H
@@ -29,6 +30,7 @@ class AliMpArea;
 
 class TArrayI;
 class TVector2;
+class TObjArray;
 
 class AliMpVSegmentation : public TObject
 {
@@ -36,8 +38,18 @@ class AliMpVSegmentation : public TObject
     AliMpVSegmentation();
     virtual ~AliMpVSegmentation();
   
-    // factory method 
+    // factory methods
+    /// Create a pad iterator over the given area
     virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const = 0;
+    
+    /// Create a pad iterator over the whole area
+    virtual AliMpVPadIterator* CreateIterator() const = 0;
+    
+    /** Fills the array with the pads that are neighbours of pad. Returns
+        the number of neighbours. */
+    virtual Int_t GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
+                                Bool_t includeSelf=kFALSE,
+                                Bool_t includeVoid=kFALSE) const = 0;
 
     // methods  
     virtual AliMpPad PadByLocation(const AliMpIntPair& location, 

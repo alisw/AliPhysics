@@ -26,9 +26,16 @@
 //
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//         Laurent Aphecetche, SUBATECH
 
 #include "AliMpVSegmentation.h"
+#include "AliMpArea.h"
 #include "AliMpConstants.h"
+
+#include "AliLog.h"
+
+#include "TVector2.h"
+#include "TObjArray.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMpVSegmentation)
@@ -47,9 +54,17 @@ AliMpVSegmentation::~AliMpVSegmentation()
 /// Destructor 
 }
 
-//
-// private methods
-//
+//_____________________________________________________________________________
+AliMpVPadIterator* 
+AliMpVSegmentation::CreateIterator() const
+{
+  /// This is a default implementation, that *might* be used
+  /// by child classes. But if they come up with better options,
+  /// let it be ;-)
+  
+  AliMpArea area(TVector2(0.0,0.0),Dimensions());
+  return CreateIterator(area);
+}
 
 //_____________________________________________________________________________
 AliMpPadPair AliMpVSegmentation::FindPads(const TVector2& position1, 
@@ -65,6 +80,114 @@ AliMpPadPair AliMpVSegmentation::FindPads(const TVector2& position1,
 
   return AliMpPadPair(pad1, pad2);
 }  
+
+//_____________________________________________________________________________
+Int_t 
+AliMpVSegmentation::GetNeighbours(const AliMpPad& pad, 
+                                  TObjArray& neighbours,
+                                  Bool_t includeSelf,
+                                  Bool_t includeVoid) const
+{
+  /// Returns the list of neighbours of pad
+  static TVector2* testPositions(0x0);
+  static const Int_t kNofTestPositions(11);
+  static const Double_t kEpsilon(AliMpConstants::LengthTolerance()*2.0);
+  static Int_t centerIndex(-1);
+  
+  // testPositions are the positions (L,T,R,B) relative to pad's center (O)
+  // were we'll try to get a neighbouring pad, by getting a little
+  // bit outside the pad itself.
+  // Note that it's not symmetric as we assume that pad density
+  // can always decrease when going from left to right.
+  //
+  // L-T-T-R
+  // |     |
+  // L     |
+  // |  O  R
+  // L     |
+  // |     |
+  // L--B--R
+  //
+  // The order in which we actually test the positions has some importance,
+  // i.e. when using this information to compute status map later on. Here's
+  // the sequence :
+  //
+  // 4-5-6- 7
+  // |      |
+  // 3      |
+  // |  0   8
+  // 2      |
+  // |      |
+  // 1--10--9
+  
+  neighbours.Delete();
+  neighbours.SetOwner(kTRUE);
+  
+  if (!pad.IsValid()) return 0;
+  
+  if (!testPositions)
+  {
+    testPositions = new TVector2[kNofTestPositions];
+    Int_t n(0); 
+    // starting center
+    centerIndex = 0;
+    testPositions[n++] = TVector2(0,0); // O (pad center)
+    // then left column (L), starting from bottom
+    testPositions[n++] = TVector2(-1,-1);
+    testPositions[n++] = TVector2(-1,-1/3.0);
+    testPositions[n++] = TVector2(-1,1/3.0);
+    testPositions[n++] = TVector2(-1,1);
+    // top (T), starting from left
+    testPositions[n++] = TVector2(-1/3.0,1);
+    testPositions[n++] = TVector2(1/3.0,1);
+    // right column (R), starting from top
+    testPositions[n++] = TVector2(1,1);
+    testPositions[n++] = TVector2(1,0);
+    testPositions[n++] = TVector2(1,-1);
+    // bottom (B)
+    testPositions[n++] = TVector2(0,-1);
+    // pad center
+    if ( n != kNofTestPositions ) {
+      AliError("Test on number of test positions failed.");
+    }  
+  }
+  
+  Int_t n(0);
+  
+  AliMpPad previous(AliMpPad::Invalid());
+  
+  for ( Int_t i = 0; i < kNofTestPositions; ++i ) 
+  {
+    if ( i == centerIndex && !includeSelf )
+    {
+      if ( includeVoid ) 
+      {
+        previous = AliMpPad::Invalid();
+        neighbours.Add(new AliMpPad(previous));
+        ++n;
+      }
+      continue;
+    }
+    
+    TVector2 shift = testPositions[i];
+    TVector2 pos = pad.Position();
+    pos += TVector2((pad.Dimensions().X()+kEpsilon)*shift.X(),
+                    (pad.Dimensions().Y()+kEpsilon)*shift.Y());
+
+    
+    AliMpPad p = PadByPosition(pos,kFALSE);
+    
+    if ( !p.IsValid() && !includeVoid ) continue;
+    
+    if ( p != previous || !previous.IsValid() ) 
+    {
+      previous = p;
+      neighbours.Add(new AliMpPad(p));
+      ++n;
+    }
+  }
+  return n;
+}
 
 //
 // public methods
