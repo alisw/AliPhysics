@@ -1,5 +1,5 @@
-void MakeEMCALResMisAlignment(){
-  // Create TClonesArray of residual misalignment objects for EMCAL
+void MakeEMCALZeroMisAlignment(){
+  // Create TClonesArray of zero misalignment objects for EMCAL
   //
   TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
   TClonesArray &alobj = *array;
@@ -9,9 +9,9 @@ void MakeEMCALResMisAlignment(){
 
   AliAlignObjAngles a;
 
-  Double_t dx, dy, dz, dpsi, dtheta, dphi;
+  Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
-  const TString basepath = "EMCAL/FullSupermodule";
+  const TString fbasepath = "EMCAL/FullSupermodule";
   const TString hbasepath = "EMCAL/HalfSupermodule";
   TString pathstr;
 
@@ -22,32 +22,13 @@ void MakeEMCALResMisAlignment(){
   Int_t i;
   Int_t j=0;
 
-  // RS = local
-  // sigma translation = 1mm
-  // sigma rotation = 0.1 degree
-  TRandom *rnd   = new TRandom(4321);
-  Double_t sigmatr = 0.1; // max shift in cm w.r.t. local RS
-  Double_t sigmarot = 0.1; // max rot in degrees w.r.t. local RS
-
   for(i=0; i<10; i++){
-    dx = rnd->Gaus(0.,sigmatr);
-    dy = rnd->Gaus(0.,sigmatr);
-    dz = rnd->Gaus(0.,sigmatr);
-    dpsi = rnd->Gaus(0.,sigmarot);
-    dtheta = rnd->Gaus(0.,sigmarot);
-    dphi = rnd->Gaus(0.,sigmarot);
-    pathstr=basepath;
+    pathstr=fbasepath;
     pathstr+=(i+1);
-    new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+    new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   for(i=0; i<2; i++){
-    dx = rnd->Gaus(0.,sigmatr);
-    dy = rnd->Gaus(0.,sigmatr);
-    dz = rnd->Gaus(0.,sigmatr);
-    dpsi = rnd->Gaus(0.,sigmarot);
-    dtheta = rnd->Gaus(0.,sigmarot);
-    dphi = rnd->Gaus(0.,sigmarot);
     pathstr=hbasepath;
     pathstr+=(i+1);
     new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
@@ -55,10 +36,10 @@ void MakeEMCALResMisAlignment(){
 
   if(!gSystem->Getenv("$TOCDB")){
     // save on file
-    TFile f("EMCALresidualMisalignment.root","RECREATE");
+    TFile f("EMCALzeroMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
     f.cd();
-    f.WriteObject(array,"T0ResidualObjs ","kSingleKey");
+    f.WriteObject(array,"EMCALAlignObjs","kSingleKey");
     f.Close();
   }else{
     // save in CDB storage
@@ -67,7 +48,7 @@ void MakeEMCALResMisAlignment(){
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Jennifer Clay");
-    md->SetComment("Residual misalignment for EMCAL, produced with sigmatr=0.05 and sigmarot=0.3 in the local RS");
+    md->SetComment("Zero misalignment for EMCAL");
     md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
     AliCDBId id("EMCAL/Align/Data",0,9999999);
     storage->Put(array,id,md);

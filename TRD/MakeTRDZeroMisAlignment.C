@@ -1,5 +1,5 @@
-void MakeTRDResMisAlignment(){
-  // Create TClonesArray of residual misalignment objects for TRD
+void MakeTRDZeroMisAlignment(){
+  // Create TClonesArray of zero misalignment objects for TRD
   //
   TClonesArray *array = new TClonesArray("AliAlignObjAngles",1000);
   TClonesArray &alobj = *array;
@@ -9,42 +9,24 @@ void MakeTRDResMisAlignment(){
 
   AliAlignObjAngles a;
 
-  // sigmas for the chambers
-  Double_t chdx=0.002; // 20 microns
-  Double_t chdy=0.003; // 30 microns
-  Double_t chdz=0.007; // 70 microns
-  Double_t chrx=0.3/1000/TMath::Pi()*180; // 0.3 mrad
-  Double_t chry=0.3/1000/TMath::Pi()*180; // 0.3 mrad
-  Double_t chrz=0.1/1000/TMath::Pi()*180; // 0.1 mrad
-
-  Double_t dx,dy,dz,rx,ry,rz;
+  Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
 
   Int_t j=0;
-  TRandom *ran = new TRandom(4357);
   UShort_t volid;
-  const char *path;
+  const char *symname;
 
   // create the chambers' alignment objects
   for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
-      ran.Rannor(dx,rx);
-      ran.Rannor(dy,ry);
-      ran.Rannor(dz,rz);
-      dx*=chdx;
-      dy*=chdy;
-      dz*=chdz;
-      rx*=chrx;
-      ry*=chry;
-      rz*=chrz;
       volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
       symname = AliAlignObj::SymName(volid);
-      new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kTRUE);
     }
   }
 
   if(!gSystem->Getenv("$TOCDB")){
     // save on file
-    TFile f("TRDresidualMisalignment.root","RECREATE");
+    TFile f("TRDzeroMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
     f.cd();
     f.WriteObject(array,"TRDAlignObjs","kSingleKey");
@@ -56,7 +38,7 @@ void MakeTRDResMisAlignment(){
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Dariusz Miskowiec");
-    md->SetComment("Residual misalignment for TRD");
+    md->SetComment("Zero misalignment for TRD");
     md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
     AliCDBId id("TRD/Align/Data",0,9999999);
     storage->Put(array,id,md);

@@ -10,25 +10,27 @@ void MakeTPCFullMisAlignment(){
   TRandom *rnd   = new TRandom(4357);
   AliAlignObjAngles o;
   Int_t j = 0;
+  Double_t dx, dy, dz, dpsi, dtheta, dphi;
+
   // RS = local
-  // sigma translation = 1mm
-  // sigma rotation = 1mrad
+  // sigma translation = 0.1 mm
+  // sigma rotation = 0.1 mrad
   Float_t sigmatr=0.01;
-  Float_t sigmarot = 0.06;
+  Float_t sigmarot = 0.006;
+
   for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
 
-      Double_t dx = (rnd->Uniform()-0.5)*sigmatr;
-      Double_t dy = (rnd->Uniform()-0.5)*sigmatr;
-      Double_t dz = (rnd->Uniform()-0.5)*sigmatr;
-      Double_t dpsi = (rnd->Uniform()-0.5)*sigmarot;
-      Double_t dtheta = (rnd->Uniform()-0.5)*sigmarot;
-      Double_t dphi = (rnd->Uniform()-0.5)*sigmarot;
+      dx = (rnd->Uniform()-0.5)*sigmatr;
+      dy = (rnd->Uniform()-0.5)*sigmatr;
+      dz = (rnd->Uniform()-0.5)*sigmatr;
+      dpsi = (rnd->Uniform()-0.5)*sigmarot;
+      dtheta = (rnd->Uniform()-0.5)*sigmarot;
+      dphi = (rnd->Uniform()-0.5)*sigmarot;
 
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
       const char *symname = AliAlignObj::SymName(volid);
-      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
-      j++;
+      new(alobj[j++]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
     }
   }
 

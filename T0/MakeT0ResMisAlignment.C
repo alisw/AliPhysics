@@ -1,7 +1,7 @@
 void MakeT0ResMisAlignment(){
   // Create TClonesArray of residual misalignment objects for T0
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjAngles",30);
   TClonesArray &alobj = *array;
 
   if(!gGeoManager) TGeoManager::Import("geometry.root");
@@ -14,30 +14,32 @@ void MakeT0ResMisAlignment(){
   Double_t sigmatr = 0.05; // max shift in cm
   Double_t sigmarot = 0.3; // max rot in degrees
 
-  const char *T0right="/ALIC_1/0STR_1";
-  const char *T0left="/ALIC_1/0STL_1";
+  TString symName, sn;
 
   Int_t iIndex=0;
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
 
-  dx = rnd->Gaus(0.,sigmatr);
-  dy = rnd->Gaus(0.,sigmatr);
-  dz = rnd->Gaus(0.,sigmatr);
-  dpsi = rnd->Gaus(0.,sigmarot);
-  dtheta = rnd->Gaus(0.,sigmarot);
-  dphi = rnd->Gaus(0.,sigmarot);
-  cout<<dx<<"  "<<dy<<"  "<<dz<<"  "<<dpsi<<"  "<<dtheta<<"  "<<dphi<<"\n";
-  new(alobj[0]) AliAlignObjAngles(T0right, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
-  dx = rnd->Gaus(0.,sigmatr);
-  dy = rnd->Gaus(0.,sigmatr);
-  dz = rnd->Gaus(0.,sigmatr);
-  dpsi = rnd->Gaus(0.,sigmarot);
-  dtheta = rnd->Gaus(0.,sigmarot);
-  dphi = rnd->Gaus(0.,sigmarot);
-  cout<<dx<<"  "<<dy<<"  "<<dz<<"  "<<dpsi<<"  "<<dtheta<<"  "<<dphi<<"\n";
-  new(alobj[1]) AliAlignObjAngles(T0left, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
-
+  Int_t j=0;
+  for (Int_t imod=0; imod<24; imod++){
+    if (imod < 12){
+      sn="T0/C/PMT";
+    }else{
+      sn="T0/A/PMT";
+    }
+    symName = sn;
+    symName += imod+1;
+    
+    dx = rnd->Gaus(0.,sigmatr);
+    dy = rnd->Gaus(0.,sigmatr);
+    dz = rnd->Gaus(0.,sigmatr);
+    dpsi = rnd->Gaus(0.,sigmarot);
+    dtheta = rnd->Gaus(0.,sigmarot);
+    dphi = rnd->Gaus(0.,sigmarot);
+    
+    new(alobj[j++]) AliAlignObjAngles(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  }
+  
   if(!gSystem->Getenv("$TOCDB")){
     // save on file
     TFile f("T0residualMisalignment.root","RECREATE");

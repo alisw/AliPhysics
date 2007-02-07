@@ -1,11 +1,8 @@
-void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
-  // Make residual misalignment objects for all detectors
+void MakeAllDETsZeroMisAlignment(Char_t* CDBstorage = "local://$HOME/Zero"){
+  // Make zero misalignment objects for all detectors
   // Pass different "CDBstorage" argument if needed (e.g. to fill
   // conditions' data base on alien) or set it to null string to have
   // the objects saved locally on file 
-  // This macro defines the default name and place for the detector-macros
-  // in charge of producing the full misalignment objects as 
-  // $ALICE_ROOT/DET/MakeDETResidualMisAlignment.C
   //
   TString strStorage(CDBstorage);
   if(strStorage.IsNull()){
@@ -25,7 +22,7 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
     TGeoManager::Import("geometry.root");
   }
 
-  TString dets="EMCAL,FMD,HMPID,ITS,MUON,PHOS,PMD,T0,TOF,TPC,TRD,VZERO,ZDC";
+  TString dets="EMCAL,FMD,HMPID,ITS,MUON,PMD,PHOS,T0,TRD,TPC,TOF,VZERO,ZDC";
   TObjArray *detArray = dets.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;
@@ -37,7 +34,7 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
     exec_det_macro+=str;
     exec_det_macro+="/Make";
     exec_det_macro+=str;
-    exec_det_macro+="ResMisAlignment.C";
+    exec_det_macro+="ZeroMisAlignment.C";
     
     gSystem->Exec(exec_det_macro.Data());
   }

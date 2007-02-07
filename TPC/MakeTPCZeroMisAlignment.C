@@ -1,5 +1,5 @@
-void MakeTPCResMisAlignment(){
-  // Create TClonesArray of residual misalignment objects for TPC
+void MakeTPCZeroMisAlignment(){
+  // Create TClonesArray of zero misalignment objects for TPC
   //
   if(!gGeoManager) TGeoManager::Import("geometry.root");
   // needed for the constructors with local coordinates not to fail
@@ -7,29 +7,17 @@ void MakeTPCResMisAlignment(){
   TClonesArray *array = new TClonesArray("AliAlignObjAngles",100);
   TClonesArray &alobj = *array;
   
-  TRandom *rnd   = new TRandom(4357);
   AliAlignObjAngles o;
-  Double_t dx, dy, dz, dpsi, dtheta, dphi;
+  Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   Int_t j = 0;
 
   // RS = local
-  // sigma translation = 0.1 mm
-  // sigma rotation = 0.1 mrad
-  Float_t sigmatr=0.01;
-  Float_t sigmarot = 0.006;
   for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
 
-      dx = (rnd->Uniform()-0.5)*sigmatr;
-      dy = (rnd->Uniform()-0.5)*sigmatr;
-      dz = (rnd->Uniform()-0.5)*sigmatr;
-      dpsi = (rnd->Uniform()-0.5)*sigmarot;
-      dtheta = (rnd->Uniform()-0.5)*sigmarot;
-      dphi = (rnd->Uniform()-0.5)*sigmarot;
-
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
       const char *symname = AliAlignObj::SymName(volid);
-      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
       j++;
     }
   }
@@ -37,7 +25,7 @@ void MakeTPCResMisAlignment(){
 
   if(!gSystem->Getenv("$TOCDB")){
     // save on file
-    TFile f("TPCresidualMisalignment.root","RECREATE");
+    TFile f("TPCzeroMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
     f.cd();
     f.WriteObject(array,"TPCAlignObjs","kSingleKey");
@@ -49,7 +37,7 @@ void MakeTPCResMisAlignment(){
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Marian Ivanov");
-    md->SetComment("Residual misalignment for TPC, sigmatr=0.01 and sigmarot=0.6 in the local RS");
+    md->SetComment("Zero misalignment for TPC");
     md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
     AliCDBId id("TPC/Align/Data",0,9999999);
     storage->Put(array,id,md);

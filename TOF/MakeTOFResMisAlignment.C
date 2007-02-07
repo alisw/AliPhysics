@@ -4,7 +4,7 @@ void MakeTOFResMisAlignment(){
   TClonesArray *array = new TClonesArray("AliAlignObjAngles",2000);
   TClonesArray &alobj = *array;
    
-  if(!gGeoManager) TGeoManager::Import("geometry.root");
+  if(!gGeoManager) TGeoManager::Import("/home/rgrosso/Prove/AliRoot/geometry.root");
   // needed for the constructors with local coordinates not to fail
 
   AliAlignObjAngles a;

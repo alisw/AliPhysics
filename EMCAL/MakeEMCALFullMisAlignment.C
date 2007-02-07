@@ -17,15 +17,16 @@ void MakeEMCALFullMisAlignment(){
   // null shifts and rotations
 
   const TString basepath = "EMCAL/FullSupermodule";
+  const TString hbasepath = "EMCAL/HalfSupermodule";
   TString pathstr;
 
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity
   Int_t i;
+  Int_t j=0;
 
   for(i=0; i<10; i++){
-
     dx = rnd->Gaus(0.,sigmatr);
     dy = rnd->Gaus(0.,sigmatr);
     dz = rnd->Gaus(0.,sigmatr);
@@ -35,7 +36,19 @@ void MakeEMCALFullMisAlignment(){
     pathstr=basepath;
     pathstr+=(i+1);
     cout<<pathstr<<"  "<<dx<<"  "<<dy<<"  "<<dz<<"  "<<dpsi<<"  "<<dtheta<<"  "<<dphi<<"\n";
-    new(alobj[i]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+    new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+  }
+
+  for(i=0; i<2; i++){
+    dx = rnd->Gaus(0.,sigmatr);
+    dy = rnd->Gaus(0.,sigmatr);
+    dz = rnd->Gaus(0.,sigmatr);
+    dpsi = rnd->Gaus(0.,sigmarot);
+    dtheta = rnd->Gaus(0.,sigmarot);
+    dphi = rnd->Gaus(0.,sigmarot);
+    pathstr=hbasepath;
+    pathstr+=(i+1);
+    new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   if(!gSystem->Getenv("$TOCDB")){

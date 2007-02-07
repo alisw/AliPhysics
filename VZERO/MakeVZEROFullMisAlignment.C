@@ -11,13 +11,13 @@ void MakeVZEROFullMisAlignment(){
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
-  Double_t sigmatr = 0.1; // max shift in cm w.r.t. RS
-  Double_t sigmarot = 0.5; // max rot in degrees w.r.t. RS
+  Double_t sigmatr = 0.1; // max shift in cm
+  Double_t sigmarot = 0.5; // max rot in degrees
 
   // null shifts and rotations
 
-  const char *V0right="/ALIC_1/VZERO_1/V0RI_1";
-  const char *V0left="/ALIC_1/VZERO_1/V0LE_1";
+  const char *V0right="VZERO/V0C";
+  const char *V0left="VZERO/V0A";
 
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;

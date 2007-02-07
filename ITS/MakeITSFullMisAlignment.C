@@ -27,6 +27,8 @@ void MakeITSFullMisAlignment(){
 
   Int_t j = 0;
   new(alobj[j++]) AliAlignObjAngles("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
+  AliAlignObjAngles* its_alobj = (AliAlignObjAngles*) array->UncheckedAt(0);
+  its_alobj->ApplyToGeometry();
 
   for ( Int_t l = AliAlignObj::kSPD1; l <= AliAlignObj::kSSD2; l++) {
     

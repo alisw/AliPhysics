@@ -42,10 +42,10 @@ void MakePMDFullMisAlignment(){
   Float_t max_rot=0.1;
 
   TString path;
-  const char *Sector1="/ALIC_1/EPM1_1"; 
-  const char *Sector2="/ALIC_1/EPM2_1"; 
-  const char *Sector3="/ALIC_1/EPM3_1"; 
-  const char *Sector4="/ALIC_1/EPM4_1"; 
+  const char *Sector1="PMD/Sector1"; 
+  const char *Sector2="PMD/Sector2"; 
+  const char *Sector3="PMD/Sector3"; 
+  const char *Sector4="PMD/Sector4"; 
   
   
   //Sectors 1 and 4

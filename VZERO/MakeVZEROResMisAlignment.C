@@ -14,8 +14,8 @@ void MakeVZEROResMisAlignment(){
   Double_t sigmatr = 0.1; // max shift in cm
   Double_t sigmarot = 0.5; // max rot in degrees
 
-  const char *V0right="/ALIC_1/VZERO_1/V0RI_1";
-  const char *V0left="/ALIC_1/VZERO_1/V0LE_1";
+  const char *V0right="VZERO/V0C";
+  const char *V0left="VZERO/V0A";
 
   Int_t iIndex=0;
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
