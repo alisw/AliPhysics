@@ -36,6 +36,7 @@
 // Standard headers 
 #include <Riostream.h>
 // Root headers
+#include <TMath.h>
 #include <TMatrixD.h>
 #include <TArrayD.h>
 #include <TArrayI.h>
