@@ -1,5 +1,10 @@
 #ifndef AliAODPair_H
 #define AliAODPair_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 //_________________________________________________________________________
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -11,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
 #include <TObject.h>
-#include "AliVAODParticle.h"
 
+#include "AliVAODParticle.h"
 
 class AliAODPair: public TObject
 {

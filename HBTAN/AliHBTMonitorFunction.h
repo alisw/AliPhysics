@@ -1,5 +1,10 @@
 #ifndef ALIHBTMONITORFUNCTION_H
 #define ALIHBTMONITORFUNCTION_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 //__________________________________________________________________
 ////////////////////////////////////////////////////////////////////
 //
@@ -43,6 +48,7 @@ Zbigniew.Chajecki@cern.ch
 
 #include "AliAODParticleCut.h"
 
+#include <TMath.h>
 #include <TH2.h>
 #include <TH3.h>
 

@@ -1,5 +1,10 @@
 #ifndef ALIHBTMONDISTRIBUTIONFCTNS_H
 #define ALIHBTMONDISTRIBUTIONFCTNS_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 //______________________________________________________________
 ////////////////////////////////////////////////////////////////
 //
@@ -41,6 +46,8 @@ class AliHBTMonRDistributionFctn;
 
 class AliHBTMonVyDistributionVsVxFctn;
 class AliHBTMonRtDistributionVsVzFctn;
+
+#include <TMath.h>
 
 #include "AliHBTMonitorFunction.h"
 /***********************************************************************/

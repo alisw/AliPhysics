@@ -20,16 +20,17 @@
 // The main Herwig options are accessable for the user through this interface.
 // Uses the THerwig implementation of TGenerator.
 
+
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TParticle.h>
+
+#include <THerwig6.h>
+
 #include "AliGenHerwig.h"
 #include "AliHerwigRndm.h"
-#include "AliRun.h"
-
-#include <TParticle.h>
-#include "THerwig6.h"
-
-#include "Riostream.h"
 #include "AliMC.h"
-
+#include "AliRun.h"
 #include "driver.h"
 
 ClassImp(AliGenHerwig)

@@ -1,4 +1,9 @@
 #include "THBTprocessor.h"
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 //_____________________________________________________________________________
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -19,11 +24,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include <TParticle.h>
+#include <Riostream.h>
+#include <TClonesArray.h>
 #include <TMath.h>
+#include <TParticle.h>
+
 #include "HBTprocCOMMON.h"
 
-#include <Riostream.h>
 #ifndef WIN32
 # define hbtprocessor hbtprocessor_
 # define ctest ctest_

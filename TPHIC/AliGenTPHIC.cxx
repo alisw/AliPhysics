@@ -56,6 +56,8 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
+#include <TClonesArray.h>
+
 #include "AliPythia.h"
 #include "AliRun.h"
 #include <AliGenTPHIC.h>

@@ -30,6 +30,7 @@
 //
 
 #include <Riostream.h>
+#include <TList.h>
 
 #include "TFluka.h"
 #include "TFlukaCodes.h"
