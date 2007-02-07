@@ -55,18 +55,6 @@ AliMpVSegmentation::~AliMpVSegmentation()
 }
 
 //_____________________________________________________________________________
-AliMpVPadIterator* 
-AliMpVSegmentation::CreateIterator() const
-{
-  /// This is a default implementation, that *might* be used
-  /// by child classes. But if they come up with better options,
-  /// let it be ;-)
-  
-  AliMpArea area(TVector2(0.0,0.0),Dimensions());
-  return CreateIterator(area);
-}
-
-//_____________________________________________________________________________
 AliMpPadPair AliMpVSegmentation::FindPads(const TVector2& position1, 
                                           const TVector2& position2) const
 {
