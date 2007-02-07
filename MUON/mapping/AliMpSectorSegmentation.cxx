@@ -39,6 +39,7 @@
 #include "AliMpNeighboursPadIterator.h"
 #include "AliMpSectorAreaHPadIterator.h"
 #include "AliMpSectorAreaVPadIterator.h"
+#include "AliMpSectorPadIterator.h"
 #include "AliMpIntPair.h"
 #include "AliMpArea.h"
 #include "AliMpConstants.h"
@@ -328,8 +329,9 @@ AliMpSectorSegmentation::PadByYDirection(const TVector2& startPosition,
 AliMpVPadIterator* 
 AliMpSectorSegmentation::CreateIterator() const
 {
-  /// Currently uses default implementation
-  return AliMpVSegmentation::CreateIterator();
+/// Create the sector iterator
+
+  return new AliMpSectorPadIterator(fkSector);
 }
 
 //______________________________________________________________________________
