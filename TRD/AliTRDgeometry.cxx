@@ -260,7 +260,7 @@ void AliTRDgeometry::Init()
   // The rotation matrix elements
   Float_t phi = 0.0;
   for (isect = 0; isect < fgkNsect; isect++) {
-    phi = -2.0 * TMath::Pi() /  (Float_t) fgkNsect * ((Float_t) isect + 0.5);
+    phi = 2.0 * TMath::Pi() /  (Float_t) fgkNsect * ((Float_t) isect + 0.5);
     fRotA11[isect] = TMath::Cos(phi);
     fRotA12[isect] = TMath::Sin(phi);
     fRotA21[isect] = TMath::Sin(phi);

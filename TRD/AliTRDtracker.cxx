@@ -192,7 +192,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile)
   savedir->cd();  
 
   for (Int_t geomS = 0; geomS < kTrackingSectors; geomS++) {
-    Int_t trS   = CookSectorIndex(geomS);
+    Int_t trS   = geomS;
     fTrSec[trS] = new AliTRDtrackingSector(fGeom,geomS);
     for (Int_t icham = 0; icham < AliTRDgeometry::kNcham; icham++) {
       fHoles[icham][trS] = fGeom->IsHole(0,icham,geomS);
@@ -1457,7 +1457,7 @@ Int_t AliTRDtracker::LoadClusters(TTree *cTree)
     Int_t localTimeBin   = c->GetLocalTimeBin();
     Int_t sector         = fGeom->GetSector(detector);
     Int_t plane          = fGeom->GetPlane(detector);
-    Int_t trackingSector = CookSectorIndex(sector);
+    Int_t trackingSector = sector;
 
     //if (c->GetLabel(0) > 0) {
     if (c->GetQ() > 10) {

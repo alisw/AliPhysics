@@ -99,7 +99,6 @@ class AliTRDtracker : public AliTracker {
   Int_t    RefitInward(AliESD *event);
   
   virtual void     CookLabel(AliKalmanTrack *t, Float_t wrong) const;
-  Int_t    CookSectorIndex(Int_t gs) const        { return kTrackingSectors - 1 - gs;                    }
   
   Int_t    LocalToGlobalID(Int_t lid);
   Int_t    GlobalToLocalID(Int_t gid);
