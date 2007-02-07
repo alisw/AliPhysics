@@ -33,6 +33,7 @@
 
 #ifdef WITH_STL
 #include <map>
+#include <iterator>
 #endif
 
 class AliMpVMotif;
@@ -86,7 +87,9 @@ class AliMpMotifMap : public TObject
     AliMpMotifPosition*  FindMotifPosition(Int_t motifPositionID) const;
 
     /// Find all motifPositionsIDs (=electronicCardNumbers) handled by this map
-    void  GetAllMotifPositionsIDs(TArrayI& enc) const;
+    void    GetAllMotifPositionsIDs(TArrayI& enc) const;
+    UInt_t  GetNofMotifPositions() const;
+    AliMpMotifPosition* GetMotifPosition(UInt_t index) const;
 
     /// Calculate total number of pads defined in the map
     Int_t CalculateNofPads() const;

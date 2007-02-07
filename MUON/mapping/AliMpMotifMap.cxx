@@ -259,6 +259,41 @@ AliMpMotifMap::GetAllMotifPositionsIDs(TArrayI& ecn) const
 }
 
 //_____________________________________________________________________________
+UInt_t  AliMpMotifMap::GetNofMotifPositions() const
+{
+/// Return the number of all motif positions IDs (electronic card numbers)
+
+#ifdef WITH_STL
+  return fMotifPositions.size();  
+#endif
+  
+#ifdef WITH_ROOT  
+  return fMotifPositions.GetSize();
+#endif 
+} 
+
+//_____________________________________________________________________________
+AliMpMotifPosition* AliMpMotifMap::GetMotifPosition(UInt_t index) const
+{
+/// Return the motif position which is in the map on the index-th position
+
+  if ( index >= GetNofMotifPositions() ) {
+    AliErrorStream() << "Index " << index << " outside limits." << endl;
+    return 0;
+  }   
+
+#ifdef WITH_STL
+  MotifPositionMapIterator it = fMotifPositions.begin();
+  std::advance(it, index);
+  return it->second;
+#endif
+  
+#ifdef WITH_ROOT  
+  return (AliMpMotifPosition*)fMotifPositions.GetObject(index);
+#endif 
+}
+
+//_____________________________________________________________________________
 Int_t AliMpMotifMap::CalculateNofPads() const 
 {
 /// Calculate total number of pads in the map
