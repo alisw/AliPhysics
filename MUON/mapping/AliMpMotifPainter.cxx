@@ -161,7 +161,6 @@ void AliMpMotifPainter::Paint(Option_t *option)
     {
       //PaintWholeBox(kFALSE);
       AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
-//      StdoutToAliDebug(1,motifType->Print("G"););
       for (Int_t j=motifType->GetNofPadsY()-1;j>=0;j--){
         for (Int_t i=0;i<motifType->GetNofPadsX();i++){
           AliMpIntPair indices(i,j);
@@ -176,19 +175,18 @@ void AliMpMotifPainter::Paint(Option_t *option)
                           padPadPos,padPadDim);
             TVector2 bl = padPadPos - padPadDim;
             TVector2 ur = padPadPos + padPadDim;
-            
-            
+
             Style_t sty = gVirtualX->GetFillStyle();
             gVirtualX->SetFillStyle(1);
             gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
             gVirtualX->SetFillStyle(0);
             gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
             gVirtualX->SetFillStyle(sty);
+
             if (option[1]=='T'){
               Float_t textSize =   gVirtualX->GetTextSize();
               gVirtualX->SetTextSize(10);
               gVirtualX->SetTextAlign(22);
-              //	         gPad->PaintText(padPadPos.X()-0.01,padPadPos.Y()-0.01,
               gPad->PaintText((bl.X()+ur.X())/2.0,(bl.Y()+ur.Y())/2.0,
                               Form("%d",connect->GetGassiNum()));
               
@@ -225,6 +223,7 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
   Float_t xl = 0;
   Float_t yl = 0;
   Int_t manuId = 0;
+  Int_t searchMotif = -1;
   TVector2 bl0 = TVector2(999, 999);
   TVector2 ur0 = TVector2(0,0); 
   TVector2 padPadPos,padPadDim;
@@ -247,9 +246,13 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
   }
   
   Width_t lineW = gPad->GetLineWidth();
-  Width_t lw = lineW*4;
-  Double_t xlw = gPad->AbsPixeltoX(lw/2);
+  Width_t lw = lineW*3;
+  Double_t xlw = gPad->PixeltoX(lw/2);
   
+
+  if (option[1] == 'I' && option[2] == ':')
+      searchMotif = atoi(&option[3]);
+
   gVirtualX->SetLineWidth(lw);
     
     for (Int_t i = 0; i < motifType->GetNofPadsX(); i++){
@@ -258,6 +261,7 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
         
         AliMpIntPair indices = AliMpIntPair(i,j);
         AliMpConnection* connect =  motifType->FindConnectionByLocalIndices(indices);
+
         if (connect){
           TVector2 realPadPos = 
           GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
@@ -266,23 +270,26 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
           
           TVector2 bl = padPadPos - padPadDim;
           TVector2 ur = padPadPos + padPadDim;
+
           if (bl0.X() > bl.X())
             bl0 = bl;
           
           if (ur0.Y() < ur.Y())
             ur0 = ur;
           
-          
           if ( fill )
           {
-            Style_t sty = gVirtualX->GetFillStyle();
-            gVirtualX->SetFillStyle(1);
-            gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
-            gVirtualX->SetFillStyle(0);
+	    Style_t csty = gVirtualX->GetFillColor();
+	    Style_t sty = gVirtualX->GetFillStyle();
+	    gVirtualX->SetFillStyle(1);
+	    if (manuId == searchMotif) 
+		gVirtualX->SetFillColor(5); // yellow
+	    gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
             gVirtualX->SetFillStyle(sty);
-          }
-          
-          if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j-1)))
+            gVirtualX->SetFillColor(csty);
+          } 
+
+	  if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j-1)))
           {
             gPad->PaintLine(bl.X()-xlw, bl.Y(), bl.X()+ padPadDim.X()*2 + xlw, bl.Y());
           }
@@ -291,7 +298,6 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
           {
             gPad->PaintLine(bl.X()-xlw, bl.Y() + padPadDim.Y()*2, bl.X()+ padPadDim.X()*2+xlw, bl.Y() +  padPadDim.Y()*2);
           }
-          
           if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i-1,j)))
           {
             gPad->PaintLine(bl.X(), bl.Y(), bl.X(), bl.Y()+ padPadDim.Y()*2);                  
@@ -299,10 +305,10 @@ void AliMpMotifPainter::PaintContour(Option_t* option, Bool_t fill)
 
           if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i+1,j)))
           {
-            gPad->PaintLine(bl.X()+padPadDim.X()*2, bl.Y(), bl.X()+padPadDim.X()*2, bl.Y()+ padPadDim.Y()*2);                  
-          }          
-          
+            gPad->PaintLine(bl.X()+padPadDim.X()*2, bl.Y(), bl.X()+padPadDim.X()*2, bl.Y()+ padPadDim.Y()*2);  
+          } 
         }
+
       }
     }
     
