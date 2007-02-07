@@ -76,7 +76,8 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 
 	// return Store(valueMap, &metaData);
 
-	TList* filesources = GetFileSources(AliShuttleInterface::kDAQ, "thresholds.txt");
+	// DAQ
+	TList* filesources = GetFileSources(AliShuttleInterface::kDAQ, "DAQFile");
 
 	if(!filesources) {
 		AliError(Form("No sources found for thresholds.txt for run %d !", fRun));
@@ -93,23 +94,72 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 	while((source=dynamic_cast<TObjString*> (iter.Next()))){
 		printf("\n\n Getting file #%d\n",++i);
 		//if(i==1) continue;
-		TString filename = GetFile(AliShuttleInterface::kDAQ, "thresholds.txt", source->GetName());
+		TString filename = GetFile(AliShuttleInterface::kDAQ, "DAQFile", source->GetName());
 		if(!filename.Length()) {
 			AliError(Form("Error: retrieval of file from source %s failed!", source->GetName()));
 			delete filesources;
 			return 0;
 		}
-		TString command = Form("more $ALICE_ROOT/SHUTTLE/temp/%s",filename.Data());
+		TString command = Form("more %s",filename.Data());
 		gSystem->Exec(command.Data());
 
 		// STORAGE! The First file name will be stored into CDB, the second into reference storage
 		TObjString filenameObj(filename);
 		AliCDBMetaData metaData;
-		if(i==1) result = Store("Calib", "Data", &filenameObj, &metaData);
+		if(i==1) result = Store("Calib", "DAQData", &filenameObj, &metaData);
 		if(i==2) result = StoreReferenceData("Calib", "RefData", &filenameObj, &metaData);
 
 	}
 	delete filesources;
+	
+	// DCS
+	TString filename = GetFile(AliShuttleInterface::kDCS, "DCSFile", 0);
+	if(!filename.Length()) {
+		AliError(Form("Error: retrieval of file from DCS failed!"));
+		return 0;
+	}
+	TString command = Form("more %s", filename.Data());
+	gSystem->Exec(command.Data());
+
+	// STORAGE! The First file name will be stored into CDB, the second into reference storage
+	TObjString filenameObj(filename);
+	AliCDBMetaData metaData;
+	result = Store("Calib", "DCSData", &filenameObj, &metaData);
+
+	// HLT
+	filesources = GetFileSources(AliShuttleInterface::kHLT, "HLTFile");
+
+	if(!filesources) {
+		Log(Form("No sources found for HLTFile for run %d !", fRun));
+		return 0;
+	}
+
+	AliInfo("Here's the list of sources for HLTFile");
+	filesources->Print();
+
+	TIter iter2(filesources);
+	i = 0;
+	while((source=dynamic_cast<TObjString*> (iter2.Next()))){
+		printf("\n\n Getting file #%d\n",++i);
+		//if(i==1) continue;
+		TString filename = GetFile(AliShuttleInterface::kHLT, "HLTFile", source->GetName());
+		if(!filename.Length()) {
+			AliError(Form("Error: retrieval of file from source %s failed!", source->GetName()));
+			delete filesources;
+			return 0;
+		}
+		TString command = Form("more %s",filename.Data());
+		gSystem->Exec(command.Data());
+
+		// STORAGE! The First file name will be stored into CDB, the second into reference storage
+		TObjString filenameObj(filename);
+		AliCDBMetaData metaData;
+		if(i==1) result = Store("Calib", "HLTData", &filenameObj, &metaData);
+		if(i==2) result = StoreReferenceData("Calib", "RefHLTData", &filenameObj, &metaData);
+
+	}
+	delete filesources;
+	
 
 	return result;
 }
