@@ -44,10 +44,8 @@ class AliMpSectorPadIterator : public AliMpVPadIterator
     Bool_t IsValid() const;
 
     // private data members
-    const AliMpSector*  fkSector; ///< the sector over which to iterate
-    Int_t  fCurrentRow;       ///< the current row number
-    Int_t  fCurrentSeg;       ///< the current Row Segment number in fCurrentRow
-    Int_t  fCurrentMotif;     ///< the current motif number in fCurrentSeg
+    const AliMpSector*  fkSector;  ///< the sector over which to iterate
+    UInt_t              fCurrentIndex; ///< the current motif position index
     AliMpMotifPosition* fMotifPos; ///< the current motif position
     AliMpMotifPositionPadIterator  fIterator; ///< iterator over the current motif type
 

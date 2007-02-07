@@ -41,9 +41,7 @@ ClassImp(AliMpSectorPadIterator)
 AliMpSectorPadIterator::AliMpSectorPadIterator()
   : AliMpVPadIterator(),
     fkSector(0),
-    fCurrentRow(0),
-    fCurrentSeg(0),
-    fCurrentMotif(0),
+    fCurrentIndex(0),
     fMotifPos(0),
     fIterator()
 {
@@ -54,9 +52,7 @@ AliMpSectorPadIterator::AliMpSectorPadIterator()
 AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* const sector)
   : AliMpVPadIterator(),
     fkSector(sector),
-    fCurrentRow(0),
-    fCurrentSeg(0),
-    fCurrentMotif(0),
+    fCurrentIndex(0),
     fMotifPos(0),
     fIterator()
 {
@@ -67,9 +63,7 @@ AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* const sector)
 AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSectorPadIterator& right)
   : AliMpVPadIterator(right),
     fkSector(0),
-    fCurrentRow(0),
-    fCurrentSeg(0),
-    fCurrentMotif(0),
+    fCurrentIndex(0),
     fMotifPos(0),
     fIterator()
 {
@@ -101,9 +95,8 @@ AliMpSectorPadIterator::operator = (const AliMpSectorPadIterator& right)
   AliMpVPadIterator::operator=(right);
 
   fkSector      = right.fkSector;
-  fCurrentRow   = right.fCurrentRow;
-  fCurrentSeg   = right.fCurrentSeg;
-  fCurrentMotif = right.fCurrentMotif;
+  fCurrentIndex = right.fCurrentIndex,
+  fMotifPos     = right.fMotifPos;
   fIterator     = right.fIterator;
 
   return *this;
@@ -117,33 +110,15 @@ AliMpMotifPosition* AliMpSectorPadIterator::ResetToCurrentMotifPosition()
 /// Find the AliMpMotifType object associated with the triplet
 /// (fCurrentRow, fCurrentSeg, fCurrentMotif),
 /// place it in the private fMotifType member and return it.
-  
-  fMotifPos =0;
-  
-  if (fkSector){
-    AliMpRow* row;
-    if ((fCurrentRow >= 0) && (fCurrentRow < fkSector->GetNofRows())){
-      row= fkSector->GetRow(fCurrentRow);
 
-      AliMpVRowSegment* seg;
-      if (fCurrentSeg<row->GetNofRowSegments()){
-        seg = row->GetRowSegment(fCurrentSeg);
-
-        if (fCurrentMotif<seg->GetNofMotifs()){
-          fMotifPos = 
-           fkSector->GetMotifMap()->FindMotifPosition(
-                seg->GetMotifPositionId(fCurrentMotif));
-        }
-      }
-    }
-  }
-  
-  if (fMotifPos) {
-    fIterator = AliMpMotifPositionPadIterator(fMotifPos);
-    fIterator.First();
-  }
-  else
+  if ( fCurrentIndex == fkSector->GetMotifMap()->GetNofMotifPositions() ) {
     Invalidate();
+    return 0;
+  }  
+    
+  fMotifPos = fkSector->GetMotifMap()->GetMotifPosition(fCurrentIndex);
+  fIterator = AliMpMotifPositionPadIterator(fMotifPos);
+  fIterator.First();
 
   return fMotifPos;
 }
@@ -170,10 +145,7 @@ void AliMpSectorPadIterator::First()
         Invalidate();
         return;
     }
-    fCurrentRow =0;
-    fCurrentSeg=0;
-    fCurrentMotif=0;
-    
+    fCurrentIndex =0;
     ResetToCurrentMotifPosition();
 
     return;
@@ -184,7 +156,6 @@ void AliMpSectorPadIterator::Next()
 {
 /// Move the iterator to the next valid pad.
 
-  //if (!IsValid()) return *this;
   if (!IsValid()) return;
 
   fIterator.Next();
@@ -192,23 +163,10 @@ void AliMpSectorPadIterator::Next()
   if (!fIterator.IsDone()) return;
   
 
-  // Go to ne next motif, in the current segment
-  ++fCurrentMotif;
+  // Go to the next motif, in the current segment
+  ++fCurrentIndex;
   if (ResetToCurrentMotifPosition()) return;
 
-
-  // if motif number is too big, set it to 0 and pass to the next row segment
-  fCurrentMotif=0;
-  ++fCurrentSeg;
-  if (ResetToCurrentMotifPosition()) return;
-
-
-  // if row segment number is too big, pass to the next row
-  fCurrentSeg=0;
-  ++fCurrentRow;
-  if (ResetToCurrentMotifPosition()) return;
-  
-  // if row number is too big, the invalidate the iterator (==End())
   Invalidate();
   return;
 
@@ -219,7 +177,7 @@ Bool_t AliMpSectorPadIterator::IsDone() const
 {
 /// Is the iterator in the end? 
 
-  return !IsValid();
+  return ! IsValid();
 }
 
 //______________________________________________________________________________
@@ -232,7 +190,6 @@ AliMpPad AliMpSectorPadIterator::CurrentItem () const
       
 
   // no more verification, since IsValid() is TRUE here.
-
   return fIterator.CurrentItem();
 }
 
