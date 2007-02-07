@@ -128,4 +128,5 @@
 #pragma link C++ class  AliMpZonePainter+;
 #pragma link C++ class  AliMpSlatPainter+;
 #pragma link C++ class  AliMpPCBPainter+;
+#pragma link C++ class  AliMpDEVisu+;
 

@@ -6,6 +6,30 @@
  
  See detailed description in ALICE-INT-2003-025.
 
+ Graphical User Interface
+ ========================
+  
+  To use the GUI to plot DE segmentation run:
+  
+  new AliMpDEVisu();
+  or 
+  
+  new AliMpDEVisu(w, h);
+  
+  if you want to change the size of the GUI window.
+  Typical value are:
+    w = 1200, h = 600 for PC
+    w = 1000, h = 550 for laptop
+
+  The GUI allows:
+  - drawing motif of a slat/quadrant
+  - search of a given manu (motif) number
+  - draw the channel number for a given manu number by clicking of the motif in canvas
+  - write down in log message informations about the given detection element
+    * DE Id, DE name, 
+    * number of buspatches, manus, manu serials
+  - option to save log message onto disc
+
  Test macros
  ============
    cd ../mapping/macro
