@@ -18,6 +18,11 @@
  * @class AliHLTFileWriter
  * An HLT data sink component which writes data to file(s).
  *
+ * Component ID: \b FileWriter <br>
+ * Library: \b libHLTBase (in order to use the component from the external
+ * interface, it might be necessary to specify a dummy library with the
+ * \em -componentlibrary argument).
+ *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  *

@@ -20,6 +20,11 @@
  * An HLT data source component which publishes data from one or a sequence
  * of files.<br>
  *
+ * Component ID: \b FilePublisher <br>
+ * Library: \b libHLTBase (in order to use the component from the external
+ * interface, it might be necessary to specify a dummy library with the
+ * \em -componentlibrary argument).
+ *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -datafile     <i> filename      </i>
