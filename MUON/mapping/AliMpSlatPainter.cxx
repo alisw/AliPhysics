@@ -100,8 +100,8 @@ AliMpSlatPainter::Draw(Option_t* option)
   gr->Push();
   InitGraphContext();
 
-  GetPosition().Print();
-  GetDimensions().Print();
+//   GetPosition().Print();
+//   GetDimensions().Print();
 
   switch (option[0])
     {
