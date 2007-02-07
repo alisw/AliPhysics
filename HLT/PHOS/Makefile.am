@@ -41,14 +41,15 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSRawAnalyzerComponent.h \
 				  AliHLTPHOSRawAnalyzerCrudeComponent.h \
 				  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
-			          AliHLTPHOSDefinitions.h \
 				  AliHLTPHOSModuleMergerComponent.h \
-				  AliHLTPHOSRcuCellEnergyDataStruct.h \
-				  AliHLTPHOSModuleCellEnergyDataStruct.h\
-                                  AliHLTPHOSFileWriterComponent.h \
-#				  AliHLTPHOSValidCellDataStruct.h
+                                  AliHLTPHOSFileWriterComponent.h
+
 pkginclude_HEADERS		= $(CLASS_HDRS) \
-				  AliHLTPHOSCommonDefs.h
+				  AliHLTPHOSCommonDefs.h \
+			          AliHLTPHOSDefinitions.h \
+				  AliHLTPHOSModuleCellEnergyDataStruct.h\
+				  AliHLTPHOSRcuCellEnergyDataStruct.h \
+				  AliHLTPHOSValidCellDataStruct.h
 
 # version info and linking flags for the library
 libAliHLTPHOS_la_LDFLAGS	= -L@ROOTLIBDIR@ \
