@@ -126,6 +126,8 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
     for (int i=0; i<pTracks->GetNTracks() && iResult>=0; i++) {
       AliHLTTPCTrack* pTrack=(*pTracks)[i];
       if (pTrack) {
+	//HLTDebug("convert track %d", i);
+	//pTrack->Print();
 	int iLocal=pTrack->Convert2AliKalmanTrack();
 	if (iLocal>=0) {
 	AliESDtrack iotrack;

@@ -184,6 +184,20 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING(for AliRawReader classes in RAWData libraries)
   AC_MSG_RESULT($have_alirawdata)
 
+  dnl
+  dnl Check for the interface of AliExternalTrackParam which has been changed
+  dnl in revision 1.17 of AliExternalTrackParam.h (AliRoot version v4-05-04
+  dnl or higher)
+  externaltrackparam_version=1
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliExternalTrackParam.h>], 
+                                  [AliExternalTrackParam trackparam;
+				   Double_t param[[5]]; Double_t covar[[15]];
+ 				   trackparam.Set(0., 0., param, covar);])],
+                                  [externaltrackparam_version=2],
+ 				  [AC_DEFINE(EXTERNALTRACKPARAM_V1)])
+  AC_MSG_CHECKING(for version of AliExternalTrackParam)
+  AC_MSG_RESULT($externaltrackparam_version)
+
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEER
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
@@ -236,7 +250,7 @@ if test ! "x$have_aliroot" = "xno" ; then
 
   have_tpc_mapping=no
   if test ! "x$have_aliroot" = "xno" ; then
-    # the TPCLib/AliHLTTPCRawReader needs the actual Pad layot of the TPC 
+    # the TPCLib/AliHLTTPCRawReader needs the actual Pad layout of the TPC 
     # which is stored in the TPC/mapping/Patchx.data files from
     # AliRoot version v4-04-Release (May 2006)
     AH_TEMPLATE([HAVE_TPC_MAPPING],[TPC pad mapping available])
@@ -251,7 +265,24 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([for TPC mapping layout])
   AM_CONDITIONAL(USE_TPC_MAPPING, test x$have_tpc_mapping = xyes)
   AC_MSG_RESULT([$have_tpc_mapping])
-  
+
+  dnl
+  dnl required header files and libraries for the AliHLTPHOS library  
+  dnl
+  have_alicalorawstream=no
+  if test ! "x$have_aliroot" = "xno" ; then
+    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
+    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
+    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
+  				     #include <AliCaloRawStream.h>], 
+                                    [int i])],
+                                    [AC_DEFINE(HAVE_ALICALORAWSTREAM)
+				     have_alicalorawstream=yes], 
+  				    [])
+    AC_MSG_RESULT([$have_alicalorawstream])
+  fi
+
   if test "x$have_aliroot" = "xno" ; then
     ALIROOT_CPPFLAGS=
     ALIROOT_LDFLAGS=
@@ -406,6 +437,8 @@ AC_ARG_ENABLE(phos,
   [],[enable_phos=yes])
 if test "x$have_aliroot" = "xno" ; then
    enable_phos="no...requires.AliRoot"
+elif ! test "x$have_alicalorawstream" = "xyes"; then
+   enable_phos="no...requires.AliRoot>v4-05-07"
 fi
 if test "x$enable_phos" = "xyes" ; then 
   AC_DEFINE(HLT_PHOS)

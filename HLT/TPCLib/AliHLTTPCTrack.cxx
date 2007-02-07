@@ -632,28 +632,28 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   // The method has been copied from AliHLTHoughKalmanTrack and adapted
   // to the TPC conformal mapping track parametrization
 
-  SetChi2(0.);
-  SetNumberOfClusters(GetLastRow()-GetFirstRow());
-  SetLabel(GetMCid());
-  SetFakeRatio(0.);
-  SetMass(0.13957); // just a guess
+//   SetChi2(0.);
+//   SetNumberOfClusters(GetLastRow()-GetFirstRow());
+//   SetLabel(GetMCid());
+//   SetFakeRatio(0.);
+//   SetMass(0.13957); // just a guess
 
-  fdEdx=0;
+//   fdEdx=0;
   Double_t alpha = fmod((GetSector()+0.5)*(2*TMath::Pi()/18),2*TMath::Pi());
   if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
   else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
 
-  Double_t xhit=GetFirstPointX();
-  Double_t yhit=GetFirstPointY();
-  Double_t zhit=GetFirstPointZ();
-  Double_t psi = GetPsi();
-  Double_t kappa = GetKappa();
-  Double_t radius = GetRadius();
-  Double_t centerx = GetCenterX();
+//   Double_t xhit=GetFirstPointX();
+//   Double_t yhit=GetFirstPointY();
+//   Double_t zhit=GetFirstPointZ();
+//   Double_t psi = GetPsi();
+//   Double_t kappa = GetKappa();
+//   Double_t radius = GetRadius();
+//   Double_t centerx = GetCenterX();
 
-  Double_t tanl = GetTgl();
+//   Double_t tanl = GetTgl();
 
-  Double_t cnv=1.;
+//   Double_t cnv=1.;
   // TODO: think about how to get the magnetic field
   //Double_t cnv=1./(GetBz()*kB2C);
 
@@ -666,15 +666,22 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
     0.,  0.,  0.,  0.,  0.
   };
 
+  const Double_t xhit = 82.97;
   Double_t xx[5];
-  xx[0] = yhit;
-  xx[1] = zhit;
-  xx[2] = (xhit-centerx)/radius;
-  xx[3] = tanl;
-  xx[4] = kappa*cnv;
+  xx[0] = GetFirstPointY();
+  xx[1] = GetFirstPointZ();
+  xx[2] = GetPsi();
+  xx[3] = GetTgl();
+  xx[4] = GetPt();
   // the Set function was not available in earlier versions, check required in
   // configure.ac
-  //Set(xhit,alpha,xx,cov);
+#ifdef EXTERNALTRACKPARAM_V1
+#warning track conversion to ESD format needs AliRoot version > v4-05-04
+  //TODO (Feb 07): make this a real warning when logging system is adapted
+  //HLTWarning("track conversion to ESD format needs AliRoot version > v4-05-04");
+#else
+  Set(xhit,alpha,xx,cov);
+#endif
 
   return iResult;
 }
