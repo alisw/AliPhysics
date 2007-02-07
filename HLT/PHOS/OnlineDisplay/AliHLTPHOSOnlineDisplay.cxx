@@ -62,9 +62,9 @@ AliHLTPHOSOnlineDisplay::Instance()
 AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay()
 {
   this->MapWindow();
-  this->SetWindowName("GetEvent");
+  this->SetWindowName("online display");
   this->MoveResize(100,100,1000,720);
-  fgEventButtPtr = new  AliHLTPHOSGetEventButton(this, "online display");
+  fgEventButtPtr = new  AliHLTPHOSGetEventButton(this, "get event");
   this->MapSubwindows();  
   homerReaderPtr = new  HOMERReader("mixing", 42001);
   std::vector<unsigned> blockList;
