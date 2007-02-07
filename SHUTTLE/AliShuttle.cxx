@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2007/01/30 17:52:42  jgrosseo
+adding monalisa monitoring
+
 Revision 1.26  2007/01/23 19:20:03  acolla
 Removed old ldif files, added TOF, MCH ldif files. Added some options in
 AliShuttleConfig::Print. Added in Ali Shuttle: SetShuttleTempDir and
@@ -627,7 +630,6 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 
 	// Initialization
 	Bool_t hasError = kFALSE;
-	for(Int_t iSys=0;iSys<3;iSys++) fFXSCalled[iSys]=kFALSE;
 
 	AliCDBStorage *mainCDBSto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
 	if(mainCDBSto) mainCDBSto->QueryCDB(GetCurrentRun());
@@ -646,6 +648,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 
 		AliInfo(Form("\n\n \t\t\t****** run %d - %s: START  ******",
 						GetCurrentRun(), aDetector->GetName()));
+
+		for(Int_t iSys=0;iSys<3;iSys++) fFXSCalled[iSys]=kFALSE;
 
 		Log(fCurrentDetector.Data(), "Starting processing");
 
@@ -729,23 +733,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			if (result > 0)
 			{
 				// Process successful: Update time_processed field in FXS logbooks!
-				if (fFXSCalled[kDAQ])
-				{
-					if (UpdateDAQTable() == kFALSE)
-					returnCode = 1;
-					fFXSlist[kDAQ].Clear();
-				}
-				//if(fFXSCalled[kDCS]) {
-				//  if (UpdateDCSTable(aDetector->GetName()) == kFALSE)
-				//    returnCode = 1;
-				//  fFXSlist[kDCS].Clear();
-				//}
-				if (fFXSCalled[kHLT])
-				{
-					if (UpdateHLTTable() == kFALSE)
-					returnCode = 1;
-					fFXSlist[kHLT].Clear();
-				}
+				if (UpdateTable() == kFALSE) returnCode = 1;
 			}
 
 			AliInfo(Form("Client process of %d - %s is exiting now with %d.",
@@ -755,6 +743,11 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			gSystem->Exit(returnCode);
 
 			AliError("We should never get here!!!");
+		}
+
+		for (UInt_t iSys=0; iSys<3; iSys++)
+		{
+			if (fFXSCalled[iSys]) fFXSlist[iSys].Clear();
 		}
 	}
 
@@ -1228,46 +1221,277 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		const char* id, const char* source)
 {
 // Get calibration file from file exchange servers
-// calls specific getter according to system index (kDAQ, kDCS, kHLT)
+// First queris the FXS database for the file name, using the run, detector, id and source info
+// then calls RetrieveFile(filename) for actual copy to local disk
+// run: current run being processed (given by Logbook entry fLogbookEntry)
+// detector: the Preprocessor name
+// id: provided as a parameter by the Preprocessor
+// source: provided by the Preprocessor through GetFileSources function
 
-	switch(system){
-		case kDAQ:
-			return GetDAQFileName(detector, id, source);
-			break;
-		case kDCS:
-			return GetDCSFileName(detector, id, source);
-			break;
-		case kHLT:
-			return GetHLTFileName(detector, id, source);
-			break;
-		default:
-			AliError(Form("No valid system index: %d",system));
+	// check connection, in case connect
+	if (!Connect(system))
+	{
+		Log(detector, Form("GetFile - Couldn't connect to %s FXS database", GetSystemName(system)));
+		return 0;
 	}
 
-	return 0;
+	// Query preparation
+	TString sqlQueryStart;
+	TString whereClause;
+	TString sourceName(source);
+	Int_t nFields = 0;
+	if (system == kDAQ)
+	{
+		sqlQueryStart = Form("select filePath,size from %s where", fConfig->GetFXSdbTable(system));
+		whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\"",
+				GetCurrentRun(), detector, id, source);
+		nFields = 2;
+
+	}
+	else if (system == kDCS)
+	{
+		sqlQueryStart = Form("select filePath,size from %s where", fConfig->GetFXSdbTable(system));
+		whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
+				GetCurrentRun(), detector, id);
+		nFields = 2;
+		sourceName="none";
+	}
+	else if (system == kHLT)
+	{
+		sqlQueryStart = Form("select filePath,fileSize,fileChecksum from %s where",
+										fConfig->GetFXSdbTable(system));
+		whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DDLnumbers=\"%s\"",
+				GetCurrentRun(), detector, id, source);
+		nFields = 3;
+	}
+
+	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
+
+	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
+
+	// Query execution
+	TSQLResult* aResult = 0;
+	aResult = dynamic_cast<TSQLResult*> (fServer[system]->Query(sqlQuery));
+	if (!aResult) {
+		Log(detector, Form("GetFileName - Can't execute SQL query to %s database for: id = %s, source = %s",
+				GetSystemName(system), id, sourceName.Data()));
+		return 0;
+	}
+
+	if(aResult->GetRowCount() == 0)
+	{
+		Log(detector,
+			Form("GetFileName - No entry in %s FXS db for: id = %s, source = %s",
+				GetSystemName(system), id, sourceName.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	if (aResult->GetRowCount() > 1) {
+		Log(detector,
+			Form("GetFileName - More than one entry in %s FXS db for: id = %s, source = %s",
+				GetSystemName(system), id, sourceName.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	if (aResult->GetFieldCount() != nFields) {
+		Log(detector,
+			Form("GetFileName - Wrong field count in %s FXS db for: id = %s, source = %s",
+				GetSystemName(system), id, sourceName.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	TSQLRow* aRow = dynamic_cast<TSQLRow*> (aResult->Next());
+
+	if (!aRow){
+		Log(detector, Form("GetFileName - Empty set result in %s FXS db from query: id = %s, source = %s",
+				GetSystemName(system), id, sourceName.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	TString filePath(aRow->GetField(0), aRow->GetFieldLength(0));
+	TString fileSize(aRow->GetField(1), aRow->GetFieldLength(1));
+	TString fileMd5Sum;
+	if(system == kHLT) fileMd5Sum = aRow->GetField(2);
+
+	delete aResult;
+	delete aRow;
+
+	AliDebug(2, Form("filePath = %s",filePath.Data()));
+
+	// retrieved file is renamed to make it unique
+	TString localFileName = Form("%s_%s_%d_%s_%s.shuttle",
+					GetSystemName(system), detector, GetCurrentRun(), id, sourceName.Data());
+
+
+	// file retrieval from FXS
+	Bool_t result = RetrieveFile(system, filePath.Data(), localFileName.Data());
+	if(!result)
+	{
+		Log(detector, Form("GetFileName - Copy of file %s from %s FXS failed",
+					filePath.Data(), GetSystemName(system)));
+		return 0;
+	} else {
+		AliInfo(Form("File %s copied from %s FXS into %s/%s",
+			filePath.Data(), GetSystemName(system), GetShuttleTempDir(), localFileName.Data()));
+	}
+
+	if (system == kHLT)
+	{
+		// compare md5sum of local file with the one stored in the FXS DB
+		Int_t md5Comp = gSystem->Exec(Form("md5sum %s/%s |grep %s 2>&1 > /dev/null",
+						GetShuttleTempDir(), localFileName.Data(), fileMd5Sum.Data()));
+
+		if (md5Comp != 0)
+		{
+			Log(detector, Form("GetFileName - md5sum of file %s does not match with local copy!",
+						filePath.Data()));
+			return 0;
+		}
+	}
+
+	fFXSCalled[system]=kTRUE;
+	TObjString *fileParams = new TObjString(Form("%s#!?!#%s", id, sourceName.Data()));
+	fFXSlist[system].Add(fileParams);
+
+	static TString fullLocalFileName;
+	fullLocalFileName = TString::Format("%s/%s", GetShuttleTempDir(), localFileName.Data());
+
+	AliInfo(Form("fullLocalFileName = %s", fullLocalFileName.Data()));
+
+	return fullLocalFileName.Data();
+
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const char* localFileName)
+{
+// Copies file from FXS to local Shuttle machine
+
+	// check temp directory: trying to cd to temp; if it does not exist, create it
+	AliDebug(2, Form("Copy file %s from %s FXS into %s/%s",
+			GetSystemName(system), fxsFileName, GetShuttleTempDir(), localFileName));
+
+	void* dir = gSystem->OpenDirectory(GetShuttleTempDir());
+	if (dir == NULL) {
+		if (gSystem->mkdir(GetShuttleTempDir(), kTRUE)) {
+			AliError(Form("Can't open directory <%s>", GetShuttleTempDir()));
+			return kFALSE;
+		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
+	}
+
+	TString baseFXSFolder;
+	if (system == kDAQ)
+	{
+		baseFXSFolder = "FES/";
+	}
+	else if (system == kDCS)
+	{
+		baseFXSFolder = "";
+	}
+	else if (system == kHLT)
+	{
+		baseFXSFolder = "~/";
+	}
+
+
+	TString command = Form("scp -oPort=%d -2 %s@%s:%s%s %s/%s",
+		fConfig->GetFXSPort(system),
+		fConfig->GetFXSUser(system),
+		fConfig->GetFXSHost(system),
+		baseFXSFolder.Data(),
+		fxsFileName,
+		GetShuttleTempDir(),
+		localFileName);
+
+	AliDebug(2, Form("%s",command.Data()));
+
+	UInt_t nRetries = 0;
+	UInt_t maxRetries = 3;
+
+	// copy!! if successful TSystem::Exec returns 0
+	while(nRetries++ < maxRetries) {
+		AliDebug(2, Form("Trying to copy file. Retry # %d", nRetries));
+		if(gSystem->Exec(command.Data()) == 0) return kTRUE;
+	}
+
+	return kFALSE;
 }
 
 //______________________________________________________________________________________________
 TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char* id)
 {
 // Get sources producing the condition file Id from file exchange servers
-// calls specific getter according to system index (kDAQ, kDCS, kHLT)
 
-	switch(system){
-		case kDAQ:
-			return GetDAQFileSources(detector, id);
-			break;
-		case kDCS:
-			return GetDCSFileSources(detector, id);
-			break;
-		case kHLT:
-			return GetHLTFileSources(detector, id);
-			break;
-		default:
-			AliError(Form("No valid system index: %d",system));
+	if (system == kDCS)
+	{
+		AliError("DCS system has only one source of data!");
+		return NULL;
+
 	}
 
-	return NULL;
+	// check connection, in case connect
+	if (!Connect(system))
+	{
+		Log(detector, Form("GetFile - Couldn't connect to %s FXS database", GetSystemName(system)));
+		return NULL;
+	}
+
+	TString sourceName = 0;
+	if (system == kDAQ)
+	{
+		sourceName = "DAQsource";
+	} else if (system == kHLT)
+	{
+		sourceName = "DDLnumbers";
+	}
+
+	TString sqlQueryStart = Form("select %s from %s where", sourceName.Data(), fConfig->GetFXSdbTable(kDAQ));
+	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
+				GetCurrentRun(), detector, id);
+	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
+
+	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
+
+	// Query execution
+	TSQLResult* aResult;
+	aResult = fServer[system]->Query(sqlQuery);
+	if (!aResult) {
+		Log(detector, Form("GetFileSources - Can't execute SQL query to %s database for id: %s",
+				GetSystemName(system), id));
+		return 0;
+	}
+
+	if (aResult->GetRowCount() == 0)
+	{
+		Log(detector,
+			Form("GetFileSources - No entry in %s FXS table for id: %s", GetSystemName(system), id));
+		delete aResult;
+		return 0;
+	}
+
+	TSQLRow* aRow;
+	TList *list = new TList();
+	list->SetOwner(1);
+
+	while ((aRow = aResult->Next()))
+	{
+
+		TString source(aRow->GetField(0), aRow->GetFieldLength(0));
+		AliDebug(2, Form("%s = %s", sourceName.Data(), source.Data()));
+		list->Add(new TObjString(source));
+		delete aRow;
+	}
+
+	delete aResult;
+
+	return list;
 }
 
 //______________________________________________________________________________________________
@@ -1309,14 +1533,13 @@ Bool_t AliShuttle::Connect(Int_t system)
 	}
 
 	// Get tables
-	// TODO in the configuration should the table name be there too?
 	TSQLResult* aResult=0;
 	switch(system){
 		case kDAQ:
 			aResult = fServer[kDAQ]->GetTables(dbName.Data());
 			break;
 		case kDCS:
-			//aResult = fServer[kDCS]->GetTables(dbName.Data());
+			aResult = fServer[kDCS]->GetTables(dbName.Data());
 			break;
 		case kHLT:
 			aResult = fServer[kHLT]->GetTables(dbName.Data());
@@ -1331,524 +1554,83 @@ Bool_t AliShuttle::Connect(Int_t system)
 }
 
 //______________________________________________________________________________________________
-const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, const char* source)
+Bool_t AliShuttle::UpdateTable()
 {
-// Retrieves a file from the DAQ FXS.
-// First queris the DAQ FXS database for the DAQ file name, using the run, detector, id and source info
-// then calls RetrieveDAQFile(DAQfilename) for actual copy to local disk
-// run: current run being processed (given by Logbook entry fLogbookEntry)
-// detector: the Preprocessor name
-// id: provided as a parameter by the Preprocessor
-// source: provided by the Preprocessor through GetFileSources function
+// Update FXS table filling time_processed field in all rows corresponding to current run and detector
 
-	// check connection, in case connect
-	if (!Connect(kDAQ))
+	Bool_t result = kTRUE;
+
+	for (UInt_t system=0; system<3; system++)
 	{
-		Log(detector, "GetDAQFileName - Couldn't connect to DAQ FXS database");
-		return 0;
-	}
+		if(!fFXSCalled[system]) continue;
 
-	// Query preparation
-	TString sqlQueryStart = Form("select filePath from %s where", fConfig->GetFXSdbTable(kDAQ));
-	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\"",
-				GetCurrentRun(), detector, id, source);
-	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
-
-	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
-
-	// Query execution
-	TSQLResult* aResult = 0;
-	aResult = dynamic_cast<TSQLResult*> (fServer[kDAQ]->Query(sqlQuery));
-	if (!aResult) {
-		Log(detector, Form("GetDAQFileName - Can't execute SQL query for: id = %s, source = %s",
-				id, source));
-		return 0;
-	}
-
-	if(aResult->GetRowCount() == 0)
-	{
-		Log(detector,
-			Form("GetDAQFileName - No entry in FXS table for: id = %s, source = %s",
-				id, source));
-		delete aResult;
-		return 0;
-	}
-
-	if (aResult->GetRowCount() > 1) {
-		Log(detector,
-			Form("GetDAQFileName - More than one entry in FXS table for: id = %s, source = %s",
-				id, source));
-		delete aResult;
-		return 0;
-	}
-
-	TSQLRow* aRow = dynamic_cast<TSQLRow*> (aResult->Next());
-
-	if (!aRow){
-		Log(detector, Form("GetDAQFileName - Empty set result from query: id = %s, source = %s",
-				id, source));
-		delete aResult;
-		return 0;
-	}
-
-	TString filePath(aRow->GetField(0), aRow->GetFieldLength(0));
-
-	delete aResult;
-	delete aRow;
-
-	AliDebug(2, Form("filePath = %s",filePath.Data()));
-
-	// retrieved file is renamed to make it unique
-	TString localFileName = Form("DAQ_%s_%d_%s_%s.shuttle",
-					detector, GetCurrentRun(), id, source);
-
-	// file retrieval from DAQ FXS
-	Bool_t result = RetrieveDAQFile(filePath.Data(), localFileName.Data());
-	if(!result) {
-		Log(detector, Form("GetDAQFileName - Copy of file %s from DAQ FXS failed", filePath.Data()));
-		return 0;
-	} else {
-		AliInfo(Form("File %s copied from DAQ FXS into %s/%s",
-			filePath.Data(), GetShuttleTempDir(), localFileName.Data()));
-	}
-
-	fFXSCalled[kDAQ]=kTRUE;
-	TObjString *fileParams = new TObjString(Form("%s#!?!#%s", id, source));
-	fFXSlist[kDAQ].Add(fileParams);
-
-	static TString fullLocalFileName;
-	fullLocalFileName = TString::Format("%s/%s", GetShuttleTempDir(), localFileName.Data());
-
-	AliInfo(Form("fullLocalFileName = %s", fullLocalFileName.Data()));
-
-	return fullLocalFileName.Data();
-
-}
-
-//______________________________________________________________________________________________
-Bool_t AliShuttle::RetrieveDAQFile(const char* daqFileName, const char* localFileName)
-{
-// Copies file from DAQ FXS to local Shuttle machine
-
-	// check temp directory: trying to cd to temp; if it does not exist, create it
-	AliDebug(2, Form("Copy file %s from DAQ FXS into %s/%s",
-			daqFileName, GetShuttleTempDir(), localFileName));
-
-	void* dir = gSystem->OpenDirectory(GetShuttleTempDir());
-	if (dir == NULL) {
-		if (gSystem->mkdir(GetShuttleTempDir(), kTRUE)) {
-			AliError(Form("Can't open directory <%s>", GetShuttleTempDir()));
-			return kFALSE;
+		// check connection, in case connect
+		if (!Connect(system))
+		{
+			Log(fCurrentDetector, Form("UpdateTable - Couldn't connect to %s FXS database", GetSystemName(system)));
+			result = kFALSE;
+			continue;
 		}
 
-	} else {
-		gSystem->FreeDirectory(dir);
-	}
+		TTimeStamp now; // now
 
-	TString baseDAQFXSFolder = "FES";
-	TString command = Form("scp -oPort=%d -2 %s@%s:%s/%s %s/%s",
-		fConfig->GetFXSPort(kDAQ),
-		fConfig->GetFXSUser(kDAQ),
-		fConfig->GetFXSHost(kDAQ),
-		baseDAQFXSFolder.Data(),
-		daqFileName,
-		GetShuttleTempDir(),
-		localFileName);
+		// Loop on FXS list entries
+		TIter iter(&fFXSlist[system]);
+		TObjString *aFXSentry=0;
+		while ((aFXSentry = dynamic_cast<TObjString*> (iter.Next())))
+		{
+			TString aFXSentrystr = aFXSentry->String();
+			TObjArray *aFXSarray = aFXSentrystr.Tokenize("#!?!#");
+			if (!aFXSarray || aFXSarray->GetEntries() != 2 )
+			{
+				Log(fCurrentDetector, Form("UpdateTable - error updating %s FXS entry. Check string: <%s>",
+					GetSystemName(system), aFXSentrystr.Data()));
+				if(aFXSarray) delete aFXSarray;
+				result = kFALSE;
+				continue;
+			}
+			const char* fileId = ((TObjString*) aFXSarray->At(0))->GetName();
+			const char* source = ((TObjString*) aFXSarray->At(1))->GetName();
 
-	AliDebug(2, Form("%s",command.Data()));
+			TString whereClause;
+			if (system == kDAQ)
+			{
+				whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\";",
+							GetCurrentRun(), fCurrentDetector.Data(), fileId, source);
+			}
+			else if (system == kDCS)
+			{
+				whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\";",
+							GetCurrentRun(), fCurrentDetector.Data(), fileId);
+			}
+			else if (system == kHLT)
+			{
+				whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\" and DDLnumbers=\"%s\";",
+							GetCurrentRun(), fCurrentDetector.Data(), fileId, source);
+			}
 
-	UInt_t nRetries = 0;
-	UInt_t maxRetries = 3;
+			delete aFXSarray;
 
-	// copy!! if successful TSystem::Exec returns 0
-	while(nRetries++ < maxRetries) {
-		AliDebug(2, Form("Trying to copy file. Retry # %d", nRetries));
-		if(gSystem->Exec(command.Data()) == 0) return kTRUE;
-	}
+			TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(system),
+								now.GetSec(), whereClause.Data());
 
-	return kFALSE;
+			AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
-}
-
-//______________________________________________________________________________________________
-TList* AliShuttle::GetDAQFileSources(const char* detector, const char* id)
-{
-// Retrieves list of DAQ sources of file Id
-
-	// check connection, in case connect
-	if(!Connect(kDAQ)){
-		Log(detector, "GetDAQFileSources - Couldn't connect to DAQ FXS database");
-		return 0;
-	}
-
-	// Query preparation
-	TString sqlQueryStart = Form("select DAQsource from %s where", fConfig->GetFXSdbTable(kDAQ));
-	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
-				GetCurrentRun(), detector, id);
-	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
-
-	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
-
-	// Query execution
-	TSQLResult* aResult;
-	aResult = fServer[kDAQ]->Query(sqlQuery);
-	if (!aResult) {
-		Log(detector, Form("GetDAQFileSources - Can't execute SQL query for id: %s", id));
-		return 0;
-	}
-
-	if (aResult->GetRowCount() == 0) {
-		Log(detector,
-			Form("GetDAQFileSources - No entry in FXS table for id: %s", id));
-		delete aResult;
-		return 0;
-	}
-
-	TSQLRow* aRow;
-	TList *list = new TList();
-	list->SetOwner(1);
-
-	while((aRow = aResult->Next())){
-
-		TString daqSource(aRow->GetField(0), aRow->GetFieldLength(0));
-		AliDebug(2, Form("daqSource = %s", daqSource.Data()));
-		list->Add(new TObjString(daqSource));
-		delete aRow;
-	}
-	delete aResult;
-
-	return list;
-
-}
-
-//______________________________________________________________________________________________
-const char* AliShuttle::GetDCSFileName(const char* /*detector*/, const char* /*id*/, const char* /*source*/){
-// Retrieves a file from the DCS FXS.
-
-return "You're in DCS";
-
-}
-
-//______________________________________________________________________________________________
-TList* AliShuttle::GetDCSFileSources(const char* /*detector*/, const char* /*id*/){
-// Retrieves file sources from the DCS FXS.
-
-return NULL;
-
-}
-
-//______________________________________________________________________________________________
-const char* AliShuttle::GetHLTFileName(const char* detector, const char* id, const char* source){
-// Retrieves a file from the HLT FXS.
-// First queris the HLT FXS database for the HLT file name, using the run, detector, id and source info
-// then calls RetrieveDAQFile(DAQfilename) for actual copy to local disk
-// run: current run being processed (given by Logbook entry fLogbookEntry)
-// detector: the Preprocessor name
-// id: provided as a parameter by the Preprocessor
-// source: provided by the Preprocessor through GetFileSources function
-
-	// check connection, in case connect
-	if (!Connect(kHLT))
-	{
-		Log(detector, "GetHLTFileName - Couldn't connect to HLT FXS database");
-		return 0;
-	}
-
-	// Query preparation
-	TString sqlQueryStart = Form("select filePath,fileSize,fileChecksum from %s where",
-										fConfig->GetFXSdbTable(kHLT));
-	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DDLnumbers=\"%s\"",
-				GetCurrentRun(), detector, id, source);
-	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
-
-	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
-
-	// Query execution
-	TSQLResult* aResult = 0;
-	aResult = dynamic_cast<TSQLResult*> (fServer[kHLT]->Query(sqlQuery));
-	if (!aResult) {
-		Log(detector, Form("GetHLTFileName - Can't execute SQL query for: id = %s, source = %s",
-				id, source));
-		return 0;
-	}
-
-	if(aResult->GetRowCount() == 0)
-	{
-		Log(detector,
-			Form("GetHLTFileName - No entry in FXS table for: id = %s, source = %s",
-				id, source));
-		delete aResult;
-		return 0;
-	}
-
-	if (aResult->GetRowCount() > 1) {
-		Log(detector,
-			Form("GetHLTFileName - More than one entry in FXS table for: id = %s, source = %s",
-				id, source));
-		delete aResult;
-		return 0;
-	}
-
-	if (aResult->GetFieldCount() != 3) {
-		Log(detector,
-			Form("GetHLTFileName - Wrong field count in FXS table for: id = %s, source = %s",
-				id, source));
-		delete aResult;
-		return 0;
-	}
-
-	TSQLRow* aRow = dynamic_cast<TSQLRow*> (aResult->Next());
-
-	if (!aRow){
-		Log(detector, Form("GetHLTFileName - Empty set result from query: id = %s, source = %s",
-				id, source));
-		delete aResult;
-		return 0;
-	}
-
-	TString filePath(aRow->GetField(0), aRow->GetFieldLength(0));
-	TString fileSize(aRow->GetField(1), aRow->GetFieldLength(1));
-	TString fileMd5Sum(aRow->GetField(2), aRow->GetFieldLength(2));
-
-	delete aResult;
-	delete aRow;
-
-	AliDebug(2, Form("filePath = %s",filePath.Data()));
-
-	// The full file path in HLT FXS is runNb/DET/DDLnumber/filePath
-//	TString fullFilePath = Form("%d/%s/%s/%s", GetCurrentRun(), detector, source, filePath.Data());
-
-	// retrieved file is renamed to make it unique
-	TString localFileName = Form("HLT_%s_%d_%s_%s.shuttle",
-					detector, GetCurrentRun(), id, source);
-
-	// file retrieval from HLT FXS
-	Bool_t result = RetrieveHLTFile(filePath.Data(), localFileName.Data());
-	if(!result)
-	{
-		Log(detector, Form("GetHLTFileName - Copy of file %s from HLT FXS failed", filePath.Data()));
-		return 0;
-	} else {
-		AliInfo(Form("File %s copied from HLT FXS into %s/%s",
-			filePath.Data(), GetShuttleTempDir(), localFileName.Data()));
-	}
-
-	// compare md5sum of local file with the one stored in the HLT DB
-	Int_t md5Comp = gSystem->Exec(Form("md5sum %s/%s |grep %s 2>&1 > /dev/null",
-						GetShuttleTempDir(), localFileName.Data(), fileMd5Sum.Data()));
-
-	if (md5Comp != 0)
-	{
-		Log(detector, Form("GetHLTFileName - md5sum of file %s does not match with local copy!", filePath.Data()));
-		return 0;
-	}
-
-	fFXSCalled[kHLT]=kTRUE;
-	TObjString *fileParams = new TObjString(Form("%s#!?!#%s", id, source));
-	fFXSlist[kHLT].Add(fileParams);
-
-	static TString fullLocalFileName;
-	fullLocalFileName = TString::Format("%s/%s", GetShuttleTempDir(), localFileName.Data());
-
-	AliInfo(Form("fullLocalFileName = %s", fullLocalFileName.Data()));
-
-	return fullLocalFileName.Data();
-
-}
-
-//______________________________________________________________________________________________
-Bool_t AliShuttle::RetrieveHLTFile(const char* hltFileName, const char* localFileName)
-{
-// Copies file from HLT FXS to local Shuttle machine
-
-	// check temp directory: trying to cd to temp; if it does not exist, create it
-	AliDebug(2, Form("Copy file %s from HLT FXS into %s/%s",
-			hltFileName, GetShuttleTempDir(), localFileName));
-
-	void* dir = gSystem->OpenDirectory(GetShuttleTempDir());
-	if (dir == NULL) {
-		if (gSystem->mkdir(GetShuttleTempDir(), kTRUE)) {
-			AliError(Form("Can't open directory <%s>", GetShuttleTempDir()));
-			return kFALSE;
+			// Query execution
+			TSQLResult* aResult;
+			aResult = dynamic_cast<TSQLResult*> (fServer[system]->Query(sqlQuery));
+			if (!aResult)
+			{
+				Log(fCurrentDetector, Form("UpdateTable - %s db: can't execute SQL query <%s>",
+								GetSystemName(system), sqlQuery.Data()));
+				result = kFALSE;
+				continue;
+			}
+			delete aResult;
 		}
-
-	} else {
-		gSystem->FreeDirectory(dir);
 	}
 
-	TString baseHLTFXSFolder = "~";
-	TString command = Form("scp -oPort=%d %s@%s:%s/%s %s/%s",
-		fConfig->GetFXSPort(kHLT),
-		fConfig->GetFXSUser(kHLT),
-		fConfig->GetFXSHost(kHLT),
-		baseHLTFXSFolder.Data(),
-		hltFileName,
-		GetShuttleTempDir(),
-		localFileName);
-
-	AliDebug(2, Form("%s",command.Data()));
-
-	UInt_t nRetries = 0;
-	UInt_t maxRetries = 3;
-
-	// copy!! if successful TSystem::Exec returns 0
-	while(nRetries++ < maxRetries) {
-		AliDebug(2, Form("Trying to copy file. Retry # %d", nRetries));
-		if(gSystem->Exec(command.Data()) == 0) return kTRUE;
-	}
-
-	return kFALSE;
-
-}
-
-//______________________________________________________________________________________________
-TList* AliShuttle::GetHLTFileSources(const char* detector, const char* id){
-// Retrieves list of HLT sources (DDLnumbers) of file Id
-
-	// check connection, in case connect
-	if(!Connect(kHLT)){
-		Log(detector, "GetHLTFileSources - Couldn't connect to HLT FXS database");
-		return 0;
-	}
-
-	// Query preparation
-	TString sqlQueryStart = Form("select DDLnumbers from %s where", fConfig->GetFXSdbTable(kHLT));
-	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
-				GetCurrentRun(), detector, id);
-	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
-
-	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
-
-	// Query execution
-	TSQLResult* aResult;
-	aResult = fServer[kHLT]->Query(sqlQuery);
-	if (!aResult) {
-		Log(detector, Form("GetHLTFileSources - Can't execute SQL query for id: %s", id));
-		return 0;
-	}
-
-	if (aResult->GetRowCount() == 0) {
-		Log(detector,
-			Form("GetHLTFileSources - No entry in FXS table for id: %s", id));
-		delete aResult;
-		return 0;
-	}
-
-	TSQLRow* aRow;
-	TList *list = new TList();
-	list->SetOwner(1);
-
-	while((aRow = aResult->Next())){
-
-		TString ddlNumbers(aRow->GetField(0), aRow->GetFieldLength(0));
-		AliDebug(2, Form("DDLnumbers = %s", ddlNumbers.Data()));
-		list->Add(new TObjString(ddlNumbers));
-		delete aRow;
-	}
-	delete aResult;
-
-	return list;
-
-}
-
-//______________________________________________________________________________________________
-Bool_t AliShuttle::UpdateDAQTable()
-{
-// Update DAQ table filling time_processed field in all rows corresponding to current run and detector
-
-	// check connection, in case connect
-	if(!Connect(kDAQ)){
-		Log(fCurrentDetector, "UpdateDAQTable - Couldn't connect to DAQ FXS database");
-		return kFALSE;
-	}
-
-	TTimeStamp now; // now
-
-	// Loop on FXS list entries
-	TIter iter(&fFXSlist[kDAQ]);
-	TObjString *aFXSentry=0;
-	while((aFXSentry = dynamic_cast<TObjString*> (iter.Next()))){
-		TString aFXSentrystr = aFXSentry->String();
-		TObjArray *aFXSarray = aFXSentrystr.Tokenize("#!?!#");
-		if(!aFXSarray || aFXSarray->GetEntries() != 2 ) {
-			Log(fCurrentDetector, Form("UpdateDAQTable - error updating FXS entry. Check string: <%s>",
-				aFXSentrystr.Data()));
-			if(aFXSarray) delete aFXSarray;
-			return kFALSE;
-		}
-		const char* fileId = ((TObjString*) aFXSarray->At(0))->GetName();
-		const char* daqSource = ((TObjString*) aFXSarray->At(1))->GetName();
-		TString whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\";",
-			GetCurrentRun(), fCurrentDetector.Data(), fileId, daqSource);
-
-		delete aFXSarray;
-
-		TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(kDAQ),
-							now.GetSec(), whereClause.Data());
-
-		AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
-
-		// Query execution
-		TSQLResult* aResult;
-		aResult = dynamic_cast<TSQLResult*> (fServer[kDAQ]->Query(sqlQuery));
-		if (!aResult) {
-			Log(fCurrentDetector, Form("UpdateDAQTable - Can't execute SQL query <%s>", sqlQuery.Data()));
-			return kFALSE;
-		}
-		delete aResult;
-	}
-
-	return kTRUE;
-}
-
-//______________________________________________________________________________________________
-Bool_t AliShuttle::UpdateHLTTable()
-{
-// Update HLT table filling time_processed field in all rows corresponding to current run and detector
-
-	// check connection, in case connect
-	if(!Connect(kHLT)){
-		Log(fCurrentDetector, "UpdateHLTTable - Couldn't connect to HLT FXS database");
-		return kFALSE;
-	}
-
-	TTimeStamp now; // now
-
-	// Loop on FXS list entries
-	TIter iter(&fFXSlist[kHLT]);
-	TObjString *aFXSentry=0;
-	while((aFXSentry = dynamic_cast<TObjString*> (iter.Next()))){
-		TString aFXSentrystr = aFXSentry->String();
-		TObjArray *aFXSarray = aFXSentrystr.Tokenize("#!?!#");
-		if(!aFXSarray || aFXSarray->GetEntries() != 2 ) {
-			Log(fCurrentDetector, Form("UpdateHLTTable - error updating FXS entry. Check string: <%s>",
-				aFXSentrystr.Data()));
-			if(aFXSarray) delete aFXSarray;
-			return kFALSE;
-		}
-		const char* fileId = ((TObjString*) aFXSarray->At(0))->GetName();
-		const char* hltSource = ((TObjString*) aFXSarray->At(1))->GetName();
-		TString whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\" and DDLnumbers=\"%s\";",
-			GetCurrentRun(), fCurrentDetector.Data(), fileId, hltSource);
-
-		delete aFXSarray;
-
-		TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(kHLT),
-							now.GetSec(), whereClause.Data());
-
-		AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
-
-		// Query execution
-		TSQLResult* aResult;
-		aResult = dynamic_cast<TSQLResult*> (fServer[kHLT]->Query(sqlQuery));
-		if (!aResult) {
-			Log(fCurrentDetector, Form("UpdateHLTTable - Can't execute SQL query <%s>", sqlQuery.Data()));
-			return kFALSE;
-		}
-		delete aResult;
-	}
-
-	return kTRUE;
+	return result;
 }
 
 //______________________________________________________________________________________________
@@ -2199,7 +1981,7 @@ Bool_t AliShuttle::SendMail()
   	mailBody.close();
   	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
 
-	TString logFileName = Form("%s/%s.log", GetShuttleLogDir(), fCurrentDetector.Data());
+	TString logFileName = Form("%s/%s_%d.log", GetShuttleLogDir(), fCurrentDetector.Data(), GetCurrentRun());
 	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
 	if (gSystem->Exec(tailCommand.Data()))
 	{

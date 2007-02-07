@@ -96,20 +96,9 @@ private:
 	Bool_t GetValueSet(const char* host, Int_t port, const char* alias,
 				TObjArray* result, DCSType type);
 
-	const char* GetDAQFileName(const char* detector, const char* id, const char* source);
-	Bool_t RetrieveDAQFile(const char* daqFileName, const char* localFileName);
-	TList* GetDAQFileSources(const char* detector, const char* id);
-	Bool_t UpdateDAQTable();
+	Bool_t RetrieveFile(UInt_t system, const char* daqFileName, const char* localFileName);
 
-	const char* GetDCSFileName(const char* detector, const char* id, const char* source);
-//	Bool_t RetrieveDCSFile(const char* daqFileName const char* localFileName);
-	TList* GetDCSFileSources(const char* detector, const char* id);
-//	Bool_t UpdateDCSTable();
-
-	const char* GetHLTFileName(const char* detector, const char* id, const char* source);
-	Bool_t RetrieveHLTFile(const char* hltFileName, const char* localFileName);
-	TList* GetHLTFileSources(const char* detector, const char* id);
-	Bool_t UpdateHLTTable();
+	Bool_t UpdateTable();
 
 	UInt_t WriteToCDB(const char* mainUri, const char* localUri,
 				const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
