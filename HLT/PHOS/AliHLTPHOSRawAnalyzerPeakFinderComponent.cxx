@@ -21,6 +21,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderCompone
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
 {
+  /*
   Double_t tmpAVector[70];
   Double_t tmpTVector[70]; 
   analyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
@@ -54,7 +55,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
       //   cout <<"AliHLTPHOSRawAnalyzerPeakFinderComponent, ERROR: could not  open PF vector file" << endl;
     }
   
-
+  */
 } 
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::~AliHLTPHOSRawAnalyzerPeakFinderComponent()
