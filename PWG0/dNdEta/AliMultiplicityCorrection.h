@@ -52,7 +52,7 @@ class AliMultiplicityCorrection : public TNamed {
     void SetCorrelation(Int_t i, TH3F* hist) { fCorrelation[i] = hist; }
 
     void SetGenMeasFromFunc(TF1* inputMC, Int_t id);
-    TH2F* CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap);
+    TH2F* CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap, Bool_t normalized = kFALSE);
 
     TH1F* GetMultiplicityESDCorrected(Int_t i) { return fMultiplicityESDCorrected[i]; }
 
