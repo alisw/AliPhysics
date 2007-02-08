@@ -50,7 +50,7 @@
 #include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
-ClassImp(AliFlowWeighter) ;
+ClassImp(AliFlowWeighter) 
 //-----------------------------------------------------------------------
 AliFlowWeighter::AliFlowWeighter(const AliFlowSelection* flowSelect)
 {
