@@ -10,5 +10,6 @@
 #pragma link C++ class  AliAnalysisManager+;
 
 #pragma link C++ class  AliAnalysisGoodies+;
+#pragma link C++ class  AliAnalysisSelector+;
 
 #endif

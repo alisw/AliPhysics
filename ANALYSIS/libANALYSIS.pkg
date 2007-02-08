@@ -1,6 +1,6 @@
 SRCS = AliAnalysisDataContainer.cxx AliAnalysisDataSlot.cxx \
-       AliAnalysisManager.cxx AliAnalysisTask.cxx AliAnalysisGoodies.cxx
-
+       AliAnalysisManager.cxx AliAnalysisTask.cxx AliAnalysisGoodies.cxx \
+       AliAnalysisSelector.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
