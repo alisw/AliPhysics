@@ -30,12 +30,16 @@
 // The parameter AssociationChoice allows to control if two clusters 
 // in layer 2 can be associated to the same cluster in layer 1 or not.
 //
+// Two methods return the number of traklets and the number of clusters 
+// in the first SPD layer (GetNTracklets GetNSingleClusters)
+//
 // -----------------------------------------------------------------
 // 
 // NOTE: The cuts on phi and zeta depends on the interacting system (p-p  
 //  or Pb-Pb). Please, check the file AliITSMultReconstructor.h and be 
 //  sure that SetPhiWindow and SetZetaWindow are defined accordingly.
 // 
+//  Author :  Tiziano Virgili 
 //  
 //  
 //
@@ -61,10 +65,12 @@ fGeometry(0),
 fClustersLay1(0),
 fClustersLay2(0),
 fTracklets(0),
+fSClusters(0),
 fAssociationFlag(0),
 fNClustersLay1(0),
 fNClustersLay2(0),
 fNTracklets(0),
+fNSingleCluster(0),
 fPhiWindow(0),
 fZetaWindow(0),
 fOnlyOneTrackletPerC2(0),
@@ -96,12 +102,14 @@ fhphiClustersLay1(0){
   fClustersLay1       = new Float_t*[300000];
   fClustersLay2       = new Float_t*[300000];
   fTracklets          = new Float_t*[300000];
+  fSClusters          = new Float_t*[300000];
   fAssociationFlag    = new Bool_t[300000];
 
   for(Int_t i=0; i<300000; i++) {
     fClustersLay1[i]       = new Float_t[3];
     fClustersLay2[i]       = new Float_t[3];
     fTracklets[i]          = new Float_t[3];
+    fSClusters[i]           = new Float_t[2];
     fAssociationFlag[i]    = kFALSE;
   }
 
@@ -143,10 +151,12 @@ fGeometry(mr.fGeometry),
 fClustersLay1(mr.fClustersLay1),
 fClustersLay2(mr.fClustersLay2),
 fTracklets(mr.fTracklets),
+fSClusters(mr.fSClusters),
 fAssociationFlag(mr.fAssociationFlag),
 fNClustersLay1(mr.fNClustersLay1),
 fNClustersLay2(mr.fNClustersLay2),
 fNTracklets(mr.fNTracklets),
+fNSingleCluster(mr.fNSingleCluster),
 fPhiWindow(mr.fPhiWindow),
 fZetaWindow(mr.fZetaWindow),
 fOnlyOneTrackletPerC2(mr.fOnlyOneTrackletPerC2),
@@ -202,10 +212,12 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
     delete [] fClustersLay1[i];
     delete [] fClustersLay2[i];
     delete [] fTracklets[i];
+    delete [] fSClusters[i];
   }
   delete [] fClustersLay1;
   delete [] fClustersLay2;
   delete [] fTracklets;
+  delete [] fSClusters;
 
   delete [] fAssociationFlag;
 }
@@ -227,7 +239,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
   fNClustersLay1 = 0;
   fNClustersLay2 = 0;
   fNTracklets = 0; 
-
+  fNSingleCluster = 0; 
   // loading the clusters 
   LoadClusterArrays(clusterTree);
 
@@ -365,14 +377,11 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 
       // store the cluster
        
-      fTracklets[fNTracklets][0] = fClustersLay1[iC1][0];
-      fTracklets[fNTracklets][1] = fClustersLay1[iC1][1];
-      // Store a flag. This will indicate that the "tracklet" 
-      // was indeed a single cluster! 
-      fTracklets[fNTracklets][2] = -999999.;       
+      fSClusters[fNSingleCluster][0] = fClustersLay1[iC1][0];
+      fSClusters[fNSingleCluster][1] = fClustersLay1[iC1][1];
       AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)", 
-		      fNTracklets, iC1));
-      fNTracklets++;
+		      fNSingleCluster, iC1));
+      fNSingleCluster++;
     }
 
   } // end of loop over clusters in layer 1

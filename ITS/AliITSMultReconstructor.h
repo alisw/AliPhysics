@@ -47,10 +47,12 @@ public:
   Int_t GetNClustersLayer1() const {return fNClustersLay1;}
   Int_t GetNClustersLayer2() const {return fNClustersLay2;}
   Int_t GetNTracklets() const {return fNTracklets;}
+  Int_t GetNSingleClusters() const {return fNSingleCluster;}
 
   Float_t* GetClusterLayer1(Int_t n) {return fClustersLay1[n];}
   Float_t* GetClusterLayer2(Int_t n) {return fClustersLay2[n];}
   Float_t* GetTracklet(Int_t n) {return fTracklets[n];}
+  Float_t* GetCluster(Int_t n) {return fSClusters[n];}
 
   void SetHistOn(Bool_t b=kFALSE) {fHistOn=b;}
   void SaveHists();
@@ -64,11 +66,13 @@ protected:
   Float_t**     fClustersLay1;        // clusters in the 1st layer of ITS 
   Float_t**     fClustersLay2;        // clusters in the 2nd layer of ITS 
   Float_t**     fTracklets;           // tracklets 
+  Float_t**     fSClusters;           // single clusters (unassociated)
   Bool_t*       fAssociationFlag;     // flag for the associations 
   
   Int_t         fNClustersLay1; // Number of clusters (Layer1)
   Int_t         fNClustersLay2; // Number of clusters (Layer2)
   Int_t         fNTracklets;    // Number of tracklets
+  Int_t         fNSingleCluster;    // Number of unassociated clusters
 
   Float_t       fPhiWindow;     // Search window in phi
   Float_t       fZetaWindow;    // SEarch window in eta
@@ -98,7 +102,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,1)
+  ClassDef(AliITSMultReconstructor,2)
 };
 
 #endif

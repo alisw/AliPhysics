@@ -88,21 +88,28 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
   for(Int_t i=0;i<3;i++)vtxf[i]=vtx[i];
   multReco->SetHistOn(kFALSE);
   multReco->Reconstruct(itsClusterTree,vtxf,vtxf);
-  cout<<"======================================================="<<endl;
-  cout<<"Event number "<<evnumber<<"; tracklets= "<<multReco->GetNTracklets()<<endl;
   Int_t notracks=multReco->GetNTracklets();
-  Float_t *trk = new Float_t [notracks];
+  Float_t *tht = new Float_t [notracks];
   Float_t *phi = new Float_t [notracks];
   Float_t *dphi = new Float_t [notracks];
   for(Int_t i=0;i<multReco->GetNTracklets();i++){
-    trk[i] = multReco->GetTracklet(i)[0];
+    tht[i] = multReco->GetTracklet(i)[0];
     phi[i] =  multReco->GetTracklet(i)[1];
     dphi[i] = multReco->GetTracklet(i)[2];
   }
-  fMult = new AliMultiplicity(notracks,trk,phi, dphi);
-  delete [] trk;
+  Int_t nosingleclus=multReco->GetNSingleClusters();
+  Float_t *ths = new Float_t [nosingleclus];
+  Float_t *phs = new Float_t [nosingleclus];
+  for(Int_t i=0;i<nosingleclus;i++){
+    ths[i] = multReco->GetCluster(i)[0];
+    phs[i] =  multReco->GetCluster(i)[1];
+  }
+  fMult = new AliMultiplicity(notracks,tht,phi,dphi,nosingleclus,ths,phs);
+  delete [] tht;
   delete [] phi;
   delete [] dphi;
+  delete [] ths;
+  delete [] phs;
   itsLoader->UnloadRecPoints();
   delete multReco;
   return;

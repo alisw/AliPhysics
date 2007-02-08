@@ -4,12 +4,12 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
+#include <TGeoManager.h>
 
 #include "AliRunLoader.h"
 #include "AliESD.h"
 #include "AliRun.h"
 
-#include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITSMultReconstructor.h"
@@ -28,7 +28,7 @@ void testITSMultReco(Char_t* dir = ".") {
   AliESD* esd = 0;
 
   // #########################################################
-  // setup galice and runloader
+  // get runloader
 
   if (gAlice) {
     delete gAlice->GetRunLoader();
@@ -42,11 +42,16 @@ void testITSMultReco(Char_t* dir = ".") {
     cout << "Can not open session"<<endl;
     return;
   }
-  runLoader->LoadgAlice();
+  // get geometry (here geometry.root is used, change it if needed)
+  if (!gGeoManager) {
+    sprintf(str,"%s/geometry.root",dir);
+    TGeoManager::Import(str);
+    if(!gGeoManager) {
+      cout << "Can not access the geometry file"<<endl;
+      return;
+    }
+  }
 
-  gAlice = runLoader->GetAliRun();
-  runLoader->LoadKinematics();
-  runLoader->LoadHeader();
 
   // #########################################################
   // open esd file and get the tree
@@ -66,21 +71,12 @@ void testITSMultReco(Char_t* dir = ".") {
   // #########################################################
   // setup its stuff
 
-  AliITS* its=(AliITS*)runLoader->GetAliRun()->GetDetector("ITS");
-  if (!its) {
-    cout << " Can't get the ITS!" << endl;
-    return ;
-  }
-  AliITSgeom* itsGeo=its->GetITSgeom();
-  if (!itsGeo) {
-    cout << " Can't get the ITS geometry!" << endl;
-    return ;
-  }
   AliITSLoader* itsLoader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
     cout << " Can't get the ITS loader!" << endl;
     return ;
   }
+  AliITSgeom* itsGeo=itsLoader->GetITSgeom();
   itsLoader->LoadRecPoints("read");
 
   // #########################################################
@@ -129,12 +125,20 @@ void testITSMultReco(Char_t* dir = ".") {
     multReco->SetHistOn(kTRUE);
     multReco->Reconstruct(itsClusterTree, esdVtx, esdVtx);
 
-    
+    cout <<" >>>> Number of tracklets: "<<multReco->GetNTracklets()<<endl;     
     for (Int_t t=0; t<multReco->GetNTracklets(); t++) {
       
       cout << "  tracklet " << t 
 	   << " , theta = " << multReco->GetTracklet(t)[0]
-	   << " , phi = " << multReco->GetTracklet(t)[1] << endl; 
+	   << " , phi = " << multReco->GetTracklet(t)[1] 
+           << " , DeltaPhi = " << multReco->GetTracklet(t)[2]<< endl; 
+    }
+    cout <<" >>>> Number of single layer 1 clusters: "<<multReco->GetNSingleClusters()<<endl;     
+    for (Int_t t=0; t<multReco->GetNSingleClusters(); t++) {
+      
+      cout << "  cluster " << t 
+	   << " , theta = " << multReco->GetCluster(t)[0]
+	   << " , phi = " << multReco->GetCluster(t)[1] << endl; 
     }
 
   }
