@@ -83,7 +83,8 @@ const char* const AliMDC::fgkFilterName[kNFilters] = {"AliHoughFilter"};
 
 //______________________________________________________________________________
 AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode, 
-	       Double_t maxSizeTagDB, const char* fileNameTagDB) :
+	       Double_t maxSizeTagDB, const char* fileNameTagDB,
+	       const char *guidFileFolder) :
   fEvent(new AliRawEvent),
   fESD(NULL),
   fStats(NULL),
@@ -97,7 +98,8 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   fStop(kFALSE),
   fIsTagDBCreated(kFALSE),
   fMaxSizeTagDB(maxSizeTagDB),
-  fFileNameTagDB(fileNameTagDB)
+  fFileNameTagDB(fileNameTagDB),
+  fGuidFileFolder(guidFileFolder)
 {
   // Create MDC processor object.
   // compress is the file compression mode.
@@ -111,6 +113,9 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   // tag DB and then fileNameTagDB is the directory name for the tag DB.
   // Otherwise fileNameTagDB is the file name of the tag DB. If it is NULL
   // no tag DB will be created.
+  // Optional 'guidFileFolder' specifies the folder in which *.guid files
+  // will be stored. In case this option is not given, the *.guid files
+  // will be written to the same folder as the raw-data files.
  
 
   if (fFilterMode != kFilterOff) {
@@ -129,6 +134,15 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
 //       fTagDB = new AliTagDB(fEvent->GetHeader(), fileNameTagDB);
 //     }
 //   }
+
+  // Create the guid files folder if it does not exist
+  if (fGuidFileFolder) {
+    gSystem->ResetErrno();
+    gSystem->MakeDirectory(fGuidFileFolder);
+    if (gSystem->GetErrno() && gSystem->GetErrno() != EEXIST) {
+      SysError("AliMDC", "mkdir %s", fGuidFileFolder);
+    }
+  }
 
   // install SIGUSR1 handler to allow clean interrupts
   gSystem->AddSignalHandler(new AliMDCInterruptHandler(this));
@@ -189,6 +203,8 @@ Int_t AliMDC::Open(EWriteMode mode, const char* fileName,
     fRawDB->SetFS(fs1, fs2);
     fRawDB->Create();
   }
+
+  if (fGuidFileFolder) fRawDB->SetGuidFileFolder(fGuidFileFolder);
 
   if (fRawDB->IsZombie()) {
     delete fRawDB;

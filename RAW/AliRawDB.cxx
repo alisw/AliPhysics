@@ -34,6 +34,8 @@
 #include <TSystem.h>
 #include <TKey.h>
 
+#include <TObjString.h>
+
 #include "AliESD.h"
 #include "AliRawEvent.h"
 #include "AliRawEventHeaderBase.h"
@@ -61,7 +63,8 @@ AliRawDB::AliRawDB(AliRawEvent *event,
   fFS1(""),
   fFS2(""),
   fDeleteFiles(kFALSE),
-  fStop(kFALSE)
+  fStop(kFALSE),
+  fGuidFileFolder(NULL)
 {
    // Create a new raw DB
 
@@ -286,12 +289,8 @@ Int_t AliRawDB::Close()
    }
 
    // Write a text file with file GUID
-   TString guidFileName = fRawDB->GetName();
-   guidFileName += ".guid";
-   ofstream fguid(guidFileName.Data());
-   TString guid = fRawDB->GetUUID().AsString();
-   fguid << "guid: \t" << guid.Data();
-   fguid.close();
+   // in the specified folder
+   WriteGuidFile();
 
    delete fRawDB;
    fRawDB = 0;
@@ -419,4 +418,32 @@ const char *AliRawDB::GetAliRootTag()
   version.ReplaceAll("Name","AliRoot version");
 
   return version.Data();
+}
+
+//______________________________________________________________________________
+void AliRawDB::WriteGuidFile()
+{
+  // Write the guid file
+  // in the specified folder
+
+   TString guidFileName;
+   if (fGuidFileFolder) {
+     guidFileName = fGuidFileFolder;
+
+     TString pathStr = fRawDB->GetName();
+     TObjArray *pathArr = pathStr.Tokenize('/');
+     guidFileName.Append("/");
+     guidFileName.Append(((TObjString *)pathArr->Last())->String());
+     pathArr->Delete();
+     delete pathArr;
+   }
+   else
+     guidFileName = fRawDB->GetName();
+
+   guidFileName += ".guid";
+
+   ofstream fguid(guidFileName.Data());
+   TString guid = fRawDB->GetUUID().AsString();
+   fguid << "guid: \t" << guid.Data();
+   fguid.close();
 }

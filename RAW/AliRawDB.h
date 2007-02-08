@@ -56,6 +56,8 @@ public:
    void         SetMaxSize(Double_t maxSize) { fMaxSize = maxSize; }
    void         SetFS(const char* fs1, const char* fs2 = NULL);
    void         SetDeleteFiles(Bool_t deleteFiles = kTRUE) { fDeleteFiles = deleteFiles; }
+   void         SetGuidFileFolder(const char* guidFileFolder)
+     { fGuidFileFolder = guidFileFolder; }
 
    Bool_t       NextFile(const char* fileName = NULL);
 
@@ -81,12 +83,14 @@ protected:
    TString        fFS2;           // second raw DB file system location
    Bool_t         fDeleteFiles;   // flag for deletion of files
    Bool_t         fStop;          // stop execution (triggered by SIGUSR1)
-
+   const char *fGuidFileFolder;   // folder which contains guid files
    static const char  *fgkAliRootTag; // string with the aliroot tag id
 
    virtual const char *GetFileName() const;
    virtual Bool_t      FSHasSpace(const char *fs) const;
    virtual void        MakeTree();
+
+   void WriteGuidFile();
 
 private:
    AliRawDB(const AliRawDB& rawDB);

@@ -53,7 +53,8 @@ public:
 
    AliMDC(Int_t compress, Bool_t deleteFiles, 
 	  EFilterMode filterMode = kFilterTransparent, 
-	  Double_t maxSizeTagDB = -1, const char* fileNameTagDB = NULL);
+	  Double_t maxSizeTagDB = -1, const char* fileNameTagDB = NULL,
+	  const char* guidFileFolder = NULL);
    virtual ~AliMDC();
 
    Int_t      Open(EWriteMode mode, const char* fileName,
@@ -98,6 +99,7 @@ private:
    Bool_t       fIsTagDBCreated; // is tag db already created
    Double_t     fMaxSizeTagDB;// max size of the tag DB
    const char*  fFileNameTagDB;// tag DB file name
+   const char*  fGuidFileFolder; // guid files folder
 
    // Filter names
    enum {kNFilters = 1};
