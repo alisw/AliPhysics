@@ -7,7 +7,7 @@
 #include "../CreateESDChain.C"
 #include "../PWG0Helper.C"
 
-void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
+void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* option = "")
 {
   if (aProof)
     connectProof("proof01@lxb6046");
@@ -38,7 +38,7 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
   TList inputList;
   inputList.Add(esdTrackCuts);
 
-  TChain* chain = CreateESDChain(data, nRuns, offset);
+  TChain* chain = CreateESDChain(data, nRuns, offset, kFALSE, kFALSE, "check");
 
   TString selectorName = ((aMC == kFALSE) ? "AliMultiplicityESDSelector" : "AliMultiplicityMCSelector");
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
@@ -48,7 +48,7 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
   if (aDebug != kFALSE)
     selectorName += "g";
 
-  Int_t result = executeQuery(chain, &inputList, selectorName);
+  Int_t result = executeQuery(chain, &inputList, selectorName, option);
 
   if (result != 0)
   {
