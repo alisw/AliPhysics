@@ -87,16 +87,16 @@ void AliMultiplicityMCSelector::Init(TTree* tree)
 
   AliSelectorRL::Init(tree);
 
-  // TODO Enable only the needed branches
-  /*if (tree)
+  // enable only the needed branches
+  if (tree)
   {
     tree->SetBranchStatus("*", 0);
     tree->SetBranchStatus("fTriggerMask", 1);
     tree->SetBranchStatus("fSPDVertex*", 1);
-    tree->SetBranchStatus("fTracks.fLabel", 1);
+    tree->SetBranchStatus("fSPDMult*", 1);
 
-    AliESDtrackCuts::EnableNeededBranches(tree);
-  }*/
+    //AliESDtrackCuts::EnableNeededBranches(tree);
+  }
 }
 
 Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
