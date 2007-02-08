@@ -43,6 +43,7 @@ public:
     void   UpdateComboDE();
     Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
     void   DrawDE();
+    void   NextDE();
     void   DrawManuMotif(Bool_t popup = kFALSE);
     void   DrawQuadrant(Option_t* option, Bool_t popup = kFALSE);
     void   DrawSlat(Option_t* option, Bool_t popup = kFALSE);
@@ -51,6 +52,8 @@ public:
     void   UpdateNameView();
     void   PopUpManuMotif(AliMpSlat* slat);
     void   PopUpManuMotif(AliMpSector* sector);
+
+    void   ClosedPopUpMotif(Int_t id);
     void   InfoDE();
     void   DeletePopUp();
     void   SaveLogMessage();
@@ -81,6 +84,8 @@ private:
 
     const AliMpVSegmentation* fSegmentation; //!< segmentation instance
     AliMpDDLStore*            fDDLStore;     //!< DDL Store
+
+    Int_t            fNumberOfPopUp;   //!< number of manu motif popup window open    
 
     enum {kChamberCombo, kDECombo, kPlaneType, kDEName, kManuEntries, kLogMessage};
 

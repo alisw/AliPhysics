@@ -70,7 +70,8 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
       fCurrentDetElem(100),
       fCurrentDEName(),
       fSegmentation(),
-      fDDLStore(AliMpDDLStore::Instance())
+      fDDLStore(AliMpDDLStore::Instance()),
+      fNumberOfPopUp(0)
 
 {
 
@@ -126,6 +127,9 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
     fDECombo->Associate(this);
     hframe->AddFrame(fDECombo, new TGLayoutHints(kLHintsLeft, 10, 0, 9, 0));
 
+    TGTextButton *next = new TGTextButton(hframe,"&Next");
+    next->Connect("Clicked()","AliMpDEVisu",this,"NextDE()");
+    hframe->AddFrame(next, new TGLayoutHints(kLHintsLeft | kLHintsCenterY,5,5,3,4));
 
 // DE name
     TGLabel*  detElemName = new TGLabel(hframe, "Name :");
@@ -242,7 +246,7 @@ void AliMpDEVisu::HandleMovement(Int_t eventType, Int_t eventX, Int_t eventY, TO
 {
 /// handle cursor mouvement
 
-    if (eventType == 11) {// 61) {// double click
+    if (eventType == kButton1Down) {
 	
       TCanvas *canvas = fEcanvas->GetCanvas();
       canvas->cd(1);
@@ -446,20 +450,21 @@ void AliMpDEVisu::ResetManu()
 void AliMpDEVisu::DeletePopUp() 
 {
 /// delete motif popup windows 
-  
+
     if (fTrashList.GetEntries() > 0) {
       fLogMessage->AddLine("Delete Motif PopUp Windows:");
       fLogMessage->ShowBottom();
 
-//       for (Int_t i = 0; i < fTrashList.GetEntries(); ++i) {
+      for (Int_t i = 0; i < fTrashList.GetEntries(); ++i) {
 
-// 	TGTransientFrame* trans = (TGTransientFrame*)fTrashList.At(i);
-// 	if (trans)
-// 	    delete trans;
-//       }
+	TGTransientFrame* trans = (TGTransientFrame*)fTrashList.At(i);
+	if (trans) 
+	    trans->CloseWindow();
+      }
 
-      fTrashList.Delete();
-    }
+      fTrashList.Clear();
+      fNumberOfPopUp = 0;
+    } 
 }
 
 //__________________________________________________________
@@ -564,6 +569,21 @@ Bool_t AliMpDEVisu::ProcessMessage(Long_t msg, Long_t parm1, Long_t /*parm2*/)
 }
 
 //__________________________________________________________
+void AliMpDEVisu::NextDE()
+{
+/// select next DE
+ 
+    Int_t next = fDECombo->GetSelected() + 1;
+
+    if (next < fDECombo->GetNumberOfEntries())
+	fDECombo->Select(fDECombo->GetSelected() + 1);
+    else 
+	fDECombo->Select(0);
+
+    UpdateNameView();
+}
+
+//__________________________________________________________
 void AliMpDEVisu::UpdateComboDE()
 {
 /// update DE in respect to selected chamber
@@ -572,6 +592,7 @@ void AliMpDEVisu::UpdateComboDE()
 
     AliMpDEIterator it;
     Int_t i = 0;
+    fDEComboIdx.Reset();
     Char_t text[20];
 
     for ( it.First(fChamberCombo->GetSelected()); ! it.IsDone(); it.Next() ) {
@@ -604,8 +625,11 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSlat* slat)
 
 // Create transient frame
     TGTransientFrame* trans = new TGTransientFrame(fkMainWindow, fMain, 400, 400);
-    trans->DontCallClose();
-    trans->CenterOnParent();
+
+    Char_t slot[255];
+    sprintf(slot, "ClosedPopUpMotif(=%d)", fNumberOfPopUp++);
+
+     trans->Connect("CloseWindow()", "AliMpDEVisu", this, slot);
 
 // fill trash
     fTrashList.Add(trans);
@@ -616,16 +640,20 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSlat* slat)
 
 // Create canvas widget
     TRootEmbeddedCanvas* eTransCanvas = 
-	new TRootEmbeddedCanvas("ETransCanvas",trans,400,400);
+	new TRootEmbeddedCanvas("ETransCanvas", trans, 400, 400);
 
-    trans->AddFrame(eTransCanvas, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 10,10,1,10));
+    trans->AddFrame(eTransCanvas, new TGLayoutHints(kLHintsCenterX,
+						5,5,5,5));
 
+    trans->CenterOnParent();
+    trans->Layout();
+
+    TCanvas* canvas = eTransCanvas->GetCanvas();
+    canvas->Clear();
  
 // motif painter
     AliMpMotifPosition* motifPosFound = 0x0;
-
-    TCanvas *canvas = eTransCanvas->GetCanvas();
-    canvas->Clear();
+    AliMpMotifPosition* motifPos = 0x0;
 
     for ( AliMpSlat::Size_t i = 0; i < slat->GetSize(); ++i ) {
 
@@ -634,7 +662,7 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSlat* slat)
 
     for ( AliMpPCB::Size_t j = 0; j < slat->GetPCB(i)->GetSize(); ++j ) {
       
-      AliMpMotifPosition*motifPos = pcb->GetMotifPosition(j);
+      motifPos = pcb->GetMotifPosition(j);
       
       Int_t manuId = motifPos->GetID();
       if (manuId == (Int_t)fNumberEntry->GetIntNumber()) {
@@ -646,31 +674,44 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSlat* slat)
 	break;
     delete pcbPainter;
   }  
-
-  if(motifPosFound) {
+    
+    if(motifPosFound) {
 // maps
-    trans->MapSubwindows();
-    trans->MapWindow();
+      trans->MapSubwindows();
+      trans->MapWindow();
 // painter
-    AliMpVPainter* painter = AliMpVPainter::CreatePainter(motifPosFound);
-    painter->Draw("ZT");
+      AliMpVPainter* painter = AliMpVPainter::CreatePainter(motifPosFound);
+      painter->Draw("ZT");
 // canvas
-    canvas->Update();
-
+      canvas->Update();
   }
- 
+    TVector2 dimension(motifPos->Dimensions());
 
+    Char_t log[255];
+ 
+    sprintf(log, "PopupManuMotif: motif dimension: %5.2f, %5.2f", dimension.X()*2., dimension.Y()*2.);
+    fLogMessage->AddLine(log);
+
+   sprintf(log, "PopupManuMotif: pad dimension: %4.2f, %4.2f", 
+	   motifPos->GetMotif()->GetPadDimensions(0).X()*2.,  
+	   motifPos->GetMotif()->GetPadDimensions(0).Y()*2. );
+
+    fLogMessage->AddLine(log);
+
+    fLogMessage->ShowBottom();
 }
 //__________________________________________________________
 void AliMpDEVisu::PopUpManuMotif(AliMpSector* sector)
 {
-
 /// pop up manu window motif painter for sector
 
 // Create transient frame
     TGTransientFrame* trans = new TGTransientFrame(fkMainWindow, fMain, 400, 400);
-    trans->DontCallClose();
-    trans->CenterOnParent();
+
+    Char_t slot[255];
+    sprintf(slot, "ClosedPopUpMotif(=%d)", fNumberOfPopUp++);
+
+     trans->Connect("CloseWindow()", "AliMpDEVisu", this, slot);
 
 // fill trash
     fTrashList.Add(trans);
@@ -681,18 +722,22 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSector* sector)
 
 // Create canvas widget
     TRootEmbeddedCanvas* eTransCanvas = 
-	new TRootEmbeddedCanvas("ETransCanvas",trans,400,400);
+	new TRootEmbeddedCanvas("ETransCanvas", trans, 400, 400);
 
-    trans->AddFrame(eTransCanvas, new TGLayoutHints(kLHintsLeft | kLHintsCenterY,
-						10,10,1,10));
+    trans->AddFrame(eTransCanvas, new TGLayoutHints(kLHintsCenterX,
+						5,5,5,5));
+
+    trans->CenterOnParent();
+    trans->Layout();
+
+    TCanvas* canvas = eTransCanvas->GetCanvas();
+    canvas->Clear();
 
 // motif painter
     AliMpMotifPosition* motifPosFound = 0x0;
+    AliMpMotifPosition* motifPos = 0x0;
 
-    TCanvas *canvas = eTransCanvas->GetCanvas();
-    canvas->Clear();
-
-    for (Int_t iRow = 0; iRow < sector->GetNofRows(); ++iRow) {
+     for (Int_t iRow = 0; iRow < sector->GetNofRows(); ++iRow) {
 
       AliMpRow* row = sector->GetRow(iRow);
       AliMpRowPainter* rowPainter = new  AliMpRowPainter(row);
@@ -705,7 +750,7 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSector* sector)
 	  for (Int_t iMotif = 0; iMotif < rowSegment->GetNofMotifs(); ++iMotif){
 
 	    Int_t motifPositionId = rowSegment->GetMotifPositionId(iMotif);
-	    AliMpMotifPosition *motifPos = rowSegment->GetRow()
+	    motifPos = rowSegment->GetRow()
 		->GetMotifMap()->FindMotifPosition(motifPositionId);
 		
 	    Int_t manuId = motifPos->GetID();
@@ -733,4 +778,29 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSector* sector)
 // canvas
       canvas->Update();
     }
+
+    TVector2 dimension(motifPos->Dimensions());
+
+    Char_t log[255];
+ 
+    sprintf(log, "PopupManuMotif: motif dimension: %5.2f, %5.2f", dimension.X()*2., dimension.Y()*2.);
+    fLogMessage->AddLine(log);
+
+    sprintf(log, "PopupManuMotif: pad dimension: %4.2f, %4.2f", 
+	   motifPos->GetMotif()->GetPadDimensions(0).X()*2.,  
+	   motifPos->GetMotif()->GetPadDimensions(0).Y()*2. );
+
+    fLogMessage->AddLine(log);
+
+    fLogMessage->ShowBottom();
+
+}
+
+//__________________________________________________________
+void AliMpDEVisu::ClosedPopUpMotif(Int_t id)
+{
+/// close signal
+
+    TGTransientFrame* trans = (TGTransientFrame*)fTrashList.At(id);
+    fTrashList.Remove(trans);
 }
