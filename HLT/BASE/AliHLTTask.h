@@ -254,24 +254,24 @@ class AliHLTTask : public TObject, public AliHLTLogging {
 
  private:
   /** the configuration descriptor (external pointer) */
-  AliHLTConfiguration* fpConfiguration;
-  /** the component described by this task (created and deleted by the task object) */
-  AliHLTComponent* fpComponent;
+  AliHLTConfiguration* fpConfiguration;                           //! transient
+  /** the component described by this task (created and deleted internally) */
+  AliHLTComponent* fpComponent;                                   //! transient
   /** the data buffer for the component processing */
-  AliHLTDataBuffer* fpDataBuffer;
+  AliHLTDataBuffer* fpDataBuffer;                                 //! transient
   /** the list of targets (tasks which depend upon the current one) */
-  TList fListTargets;
+  TList fListTargets;                                             // see above
   /** the list of sources (tasks upon which the current one depends) */ 
-  TList fListDependencies;
+  TList fListDependencies;                                        // see above
 
   /**
    * block data array to be passed as argument to the 
    * @ref AliHLTComponent::ProcessEvent method. 
    * Filled through subscription to source tasks (@ref Subscribe).
    */
-  AliHLTComponentBlockData* fpBlockDataArray;
+  AliHLTComponentBlockData* fpBlockDataArray;                     //! transient
   /** size of the block data array */
-  int fBlockDataArraySize;
+  int fBlockDataArraySize;                                        // see above
 
   ClassDef(AliHLTTask, 1);
 };

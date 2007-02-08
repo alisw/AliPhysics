@@ -108,12 +108,18 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   virtual int ScanArgument(int argc, const char** argv);
 
  private:
-  TList                   fFileNames;
-  TList                   fFiles;
-  TObjLink*               fpCurrent; //! transient value
-  AliHLTComponentDataType fDataType;
-  AliHLTUInt32_t          fSpecification;
-  Int_t                   fMaxSize;
+  /** list of file names */
+  TList                   fFileNames;                              // see above
+  /** list of opened files */
+  TList                   fFiles;                                  // see above
+  /** current positions in the file list */
+  TObjLink*               fpCurrent;                               //! transient
+  /** data type */
+  AliHLTComponentDataType fDataType;                               // see above
+  /** data specification */
+  AliHLTUInt32_t          fSpecification;                          // see above
+  /** the maximum buffer size i.e. size of the biggest file */
+  Int_t                   fMaxSize;                                // see above
 
   ClassDef(AliHLTFilePublisher, 0)
 };

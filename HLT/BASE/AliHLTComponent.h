@@ -22,7 +22,6 @@
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
-#include "TObject.h"
 
 /* Matthias Dec 2006
  * The names have been changed for Aliroot's coding conventions sake
@@ -63,6 +62,10 @@ class AliHLTComponent : public AliHLTLogging {
  public:
   /** standard constructor */
   AliHLTComponent();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTComponent(const AliHLTComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTComponent& operator=(const AliHLTComponent&);
   /** standard destructor */
   virtual ~AliHLTComponent();
 
@@ -77,12 +80,12 @@ class AliHLTComponent : public AliHLTLogging {
    * During Init also the environment structure is passed to the component.
    * @param environ        environment pointer with environment dependend function
    *                       calls
-   * @param environ_param  additionel parameter for function calls, the pointer
+   * @param environParam   additionel parameter for function calls, the pointer
    *                       is passed as it is
    * @param argc           size of the argument array
    * @param argv           agument array for component initialization
    */
-  virtual int Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv );
+  virtual int Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv );
 
   /**
    * Clean-up function to terminate data processing.
@@ -231,19 +234,19 @@ class AliHLTComponent : public AliHLTLogging {
    * Fill AliHLTComponentBlockData structure with default values.
    * @param blockData   reference to data structure
    */
-  void FillBlockData( AliHLTComponentBlockData& blockData );
+  void FillBlockData( AliHLTComponentBlockData& blockData ) const;
 
   /**
    * Fill AliHLTComponentShmData structure with default values.
    * @param shmData   reference to data structure
    */
-  void FillShmData( AliHLTComponentShmData& shmData );
+  void FillShmData( AliHLTComponentShmData& shmData ) const;
 
   /**
    * Fill AliHLTComponentDataType structure with default values.
    * @param dataType   reference to data structure
    */
-  void FillDataType( AliHLTComponentDataType& dataType );
+  void FillDataType( AliHLTComponentDataType& dataType ) const;
   
   /**
    * Copy data type structure
@@ -313,13 +316,13 @@ class AliHLTComponent : public AliHLTLogging {
   /**
    * Helper function to convert the data type to a string.
    */
-  void DataType2Text(const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2]);
+  void DataType2Text(const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2]) const;
 
   /**
    * Get event number.
    * @return value of the internal event counter
    */
-  int GetEventCount();
+  int GetEventCount() const;
 
  private:
   /**
@@ -331,18 +334,19 @@ class AliHLTComponent : public AliHLTLogging {
   int IncrementEventCounter();
 
   /** The global component handler instance */
-  static AliHLTComponentHandler* fpComponentHandler;
+  static AliHLTComponentHandler* fgpComponentHandler;  //! transient
+
   /** The environment where the component is running in */
-  AliHLTComponentEnvironment fEnvironment;
+  AliHLTComponentEnvironment fEnvironment; // see above
 
   /** 
    * Set by ProcessEvent before the processing starts (e.g. before calling 
    * @ref AliHLTProcessor::DoEvent)
    */
-  AliHLTEventID_t fCurrentEvent;
+  AliHLTEventID_t fCurrentEvent; // see above
 
   /** internal event no */
-  int fEventCount;
+  int fEventCount; // see above
 
   ClassDef(AliHLTComponent, 1)
 };

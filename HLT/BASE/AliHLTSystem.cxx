@@ -56,6 +56,11 @@ AliHLTSystem::AliHLTSystem()
   fpConfigurationHandler(new AliHLTConfigurationHandler()),
   fTaskList()
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
@@ -87,17 +92,20 @@ AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
   fpConfigurationHandler(NULL),
   fTaskList()
 {
+  // see header file for class documentation
   HLTFatal("copy constructor untested");
 }
 
 AliHLTSystem& AliHLTSystem::operator=(const AliHLTSystem&)
 { 
+  // see header file for class documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
 
 AliHLTSystem::~AliHLTSystem()
 {
+  // see header file for class documentation
   CleanTaskList();
   AliHLTConfiguration::GlobalDeinit();
   if (fpConfigurationHandler) {
@@ -113,6 +121,7 @@ AliHLTSystem::~AliHLTSystem()
 
 int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
 {
+  // see header file for class documentation
   int iResult=0;
   if (pConf) {
   } else {
@@ -123,6 +132,7 @@ int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
 
 int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec)
 {
+  // see header file for class documentation
   int iResult=0;
   if (pConf) {
     if (pPrec) {
@@ -136,6 +146,7 @@ int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfigur
 
 int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
 {
+  // see header file for class documentation
   int iResult=0;
   if (pConf) {
   } else {
@@ -146,6 +157,7 @@ int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
 
 int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 {
+  // see header file for class documentation
   int iResult=0;
   if (pConf) {
     AliHLTTask* pTask=NULL;
@@ -208,6 +220,7 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 
 int AliHLTSystem::CleanTaskList()
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink* lnk=NULL;
   while ((lnk=fTaskList.FirstLink())!=NULL) {
@@ -219,6 +232,7 @@ int AliHLTSystem::CleanTaskList()
 
 int AliHLTSystem::InsertTask(AliHLTTask* pTask)
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink *lnk = NULL;
   if ((iResult=pTask->CheckDependencies())>0)
@@ -256,6 +270,7 @@ int AliHLTSystem::InsertTask(AliHLTTask* pTask)
 
 AliHLTTask* AliHLTSystem::FindTask(const char* id)
 {
+  // see header file for class documentation
   AliHLTTask* pTask=NULL;
   if (id) {
     pTask=(AliHLTTask*)fTaskList.FindObject(id); 
@@ -265,6 +280,7 @@ AliHLTTask* AliHLTSystem::FindTask(const char* id)
 
 void AliHLTSystem::PrintTaskList()
 {
+  // see header file for class documentation
   HLTLogKeyword("task list");
   TObjLink *lnk = NULL;
   HLTMessage("Task List");
@@ -283,6 +299,7 @@ void AliHLTSystem::PrintTaskList()
 
 int AliHLTSystem::Run(Int_t iNofEvents) 
 {
+  // see header file for class documentation
   int iResult=0;
   if ((iResult=InitTasks())>=0) {
     if ((iResult=StartTasks())>=0) {
@@ -312,6 +329,7 @@ int AliHLTSystem::Run(Int_t iNofEvents)
 
 int AliHLTSystem::InitTasks()
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {
@@ -330,6 +348,7 @@ int AliHLTSystem::InitTasks()
 
 int AliHLTSystem::StartTasks()
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {
@@ -348,6 +367,7 @@ int AliHLTSystem::StartTasks()
 
 int AliHLTSystem::ProcessTasks(Int_t eventNo)
 {
+  // see header file for class documentation
   int iResult=0;
   HLTDebug("processing event no %d", eventNo);
   TObjLink *lnk=fTaskList.FirstLink();
@@ -366,6 +386,7 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
 
 int AliHLTSystem::StopTasks()
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {
@@ -382,6 +403,7 @@ int AliHLTSystem::StopTasks()
 
 int AliHLTSystem::DeinitTasks()
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {
@@ -398,5 +420,6 @@ int AliHLTSystem::DeinitTasks()
 
 void* AliHLTSystem::AllocMemory( void* param, unsigned long size )
 {
+  // see header file for class documentation
   return (void*)new char[size];
 }

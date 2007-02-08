@@ -33,6 +33,7 @@ using namespace std;
 #include "AliHLTComponentHandler.h"
 #include <iostream>
 #include <string>
+#include "TList.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTConfiguration)
@@ -49,6 +50,7 @@ AliHLTConfiguration::AliHLTConfiguration()
   fArgc(-1),
   fArgv(NULL)
 { 
+  // see header file for function documentation
   fListSrcElement=fListSources.begin();
 }
 
@@ -64,10 +66,11 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
   fArgc(-1),
   fArgv(NULL)
 {
+  // see header file for function documentation
   fListSrcElement=fListSources.begin();
   if (id && component) {
-    if (fConfigurationHandler) {
-      fConfigurationHandler->RegisterConfiguration(this);
+    if (fgConfigurationHandler) {
+      fgConfigurationHandler->RegisterConfiguration(this);
     } else {
       HLTError("no configuration handler set, abort registration");
     }
@@ -88,21 +91,24 @@ AliHLTConfiguration::AliHLTConfiguration(const AliHLTConfiguration&)
   fArgc(-1),
   fArgv(NULL)
 { 
+  // see header file for function documentation
   fListSrcElement=fListSources.begin();
   HLTFatal("copy constructor untested");
 }
 
 AliHLTConfiguration& AliHLTConfiguration::operator=(const AliHLTConfiguration&)
 { 
+  // see header file for function documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
 
 AliHLTConfiguration::~AliHLTConfiguration()
 {
-  if (fConfigurationHandler) {
-    if (fConfigurationHandler->FindConfiguration(fID)!=NULL) {
-      fConfigurationHandler->RemoveConfiguration(this);
+  // see header file for function documentation
+  if (fgConfigurationHandler) {
+    if (fgConfigurationHandler->FindConfiguration(fID)!=NULL) {
+      fgConfigurationHandler->RemoveConfiguration(this);
     }
   }
   if (fArgv != NULL) {
@@ -118,26 +124,30 @@ AliHLTConfiguration::~AliHLTConfiguration()
 
 /* the global configuration handler which is used to automatically register the configuration
  */
-AliHLTConfigurationHandler* AliHLTConfiguration::fConfigurationHandler=NULL;
+AliHLTConfigurationHandler* AliHLTConfiguration::fgConfigurationHandler=NULL;
 
 int AliHLTConfiguration::GlobalInit(AliHLTConfigurationHandler* pHandler)
 {
+  // see header file for function documentation
   int iResult=0;
-  if (fConfigurationHandler!=NULL) {
-    fConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalInit", HLT_DEFAULT_LOG_KEYWORD, "configuration handler already initialized, overriding object %p", fConfigurationHandler);
+  if (fgConfigurationHandler!=NULL) {
+    fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalInit", HLT_DEFAULT_LOG_KEYWORD, "configuration handler already initialized, overriding object %p", fgConfigurationHandler);
   }
-  fConfigurationHandler=pHandler;
+  fgConfigurationHandler=pHandler;
   return iResult;
 }
 
 int AliHLTConfiguration::GlobalDeinit()
 {
+  // see header file for function documentation
   int iResult=0;
-  fConfigurationHandler=NULL;
+  fgConfigurationHandler=NULL;
   return iResult;
 }
 
-const char* AliHLTConfiguration::GetName() const {
+const char* AliHLTConfiguration::GetName() const 
+{
+  // see header file for function documentation
   if (fID)
     return fID;
   return TObject::GetName();
@@ -145,6 +155,7 @@ const char* AliHLTConfiguration::GetName() const {
 
 AliHLTConfiguration* AliHLTConfiguration::GetSource(const char* id)
 {
+  // see header file for function documentation
   AliHLTConfiguration* pSrc=NULL;
   if (id) {
     // first check the current element
@@ -166,6 +177,7 @@ AliHLTConfiguration* AliHLTConfiguration::GetSource(const char* id)
 
 AliHLTConfiguration* AliHLTConfiguration::GetFirstSource()
 {
+  // see header file for function documentation
   AliHLTConfiguration* pSrc=NULL;
   if (fNofSources>=0 || ExtractSources()) {
     fListSrcElement=fListSources.begin();
@@ -176,6 +188,7 @@ AliHLTConfiguration* AliHLTConfiguration::GetFirstSource()
 
 AliHLTConfiguration* AliHLTConfiguration::GetNextSource()
 {
+  // see header file for function documentation
   AliHLTConfiguration* pSrc=NULL;
   if (fNofSources>0) {
     if (fListSrcElement!=fListSources.end() && (++fListSrcElement)!=fListSources.end()) 
@@ -186,6 +199,7 @@ AliHLTConfiguration* AliHLTConfiguration::GetNextSource()
 
 int AliHLTConfiguration::SourcesResolved(int bAuto) 
 {
+  // see header file for function documentation
   int iResult=0;
   if (fNofSources>=0 || bAuto && (iResult=ExtractSources())>=0) {
     //HLTDebug("fNofSources=%d", fNofSources);
@@ -197,6 +211,7 @@ int AliHLTConfiguration::SourcesResolved(int bAuto)
 
 int AliHLTConfiguration::InvalidateSource(AliHLTConfiguration* pConf)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConf) {
     vector<AliHLTConfiguration*>::iterator element=fListSources.begin();
@@ -219,6 +234,7 @@ int AliHLTConfiguration::InvalidateSource(AliHLTConfiguration* pConf)
 
 void AliHLTConfiguration::PrintStatus()
 {
+  // see header file for function documentation
   HLTLogKeyword("configuration status");
   HLTMessage("status of configuration \"%s\" (%p)", GetName(), this);
   if (fComponent) HLTMessage("  - component: \"%s\"", fComponent);
@@ -236,6 +252,7 @@ void AliHLTConfiguration::PrintStatus()
 
 int AliHLTConfiguration::GetArguments(const char*** pArgv)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pArgv) {
     if (fArgc==-1) {
@@ -259,6 +276,7 @@ int AliHLTConfiguration::GetArguments(const char*** pArgv)
 
 int AliHLTConfiguration::ExtractSources()
 {
+  // see header file for function documentation
   int iResult=0;
   fNofSources=0;
   if (fStringSources!=NULL) {
@@ -268,8 +286,8 @@ int AliHLTConfiguration::ExtractSources()
       fNofSources=tgtList.size();
       vector<char*>::iterator element=tgtList.begin();
       while ((element=tgtList.begin())!=tgtList.end()) {
-	if (fConfigurationHandler) {
-	  AliHLTConfiguration* pConf=fConfigurationHandler->FindConfiguration(*element);
+	if (fgConfigurationHandler) {
+	  AliHLTConfiguration* pConf=fgConfigurationHandler->FindConfiguration(*element);
 	  if (pConf) {
 	    HLTDebug("source \"%s\" inserted", pConf->GetName());
 	    fListSources.push_back(pConf);
@@ -292,6 +310,7 @@ int AliHLTConfiguration::ExtractSources()
 
 int AliHLTConfiguration::ExtractArguments()
 {
+  // see header file for function documentation
   int iResult=0;
   if (fArguments!=NULL) {
     vector<char*> tgtList;
@@ -322,6 +341,7 @@ int AliHLTConfiguration::ExtractArguments()
 
 int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argList)
 {
+  // see header file for function documentation
   int iResult=0;
   if (arg) {
     //HLTDebug("interprete \"%s\"", arg);
@@ -350,6 +370,7 @@ int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argLis
 
 int AliHLTConfiguration::FollowDependency(const char* id, TList* pTgtList)
 {
+  // see header file for function documentation
   int iResult=0;
   if (id) {
     AliHLTConfiguration* pDep=NULL;
@@ -387,6 +408,7 @@ AliHLTTask::AliHLTTask()
   fpBlockDataArray(NULL),
   fBlockDataArraySize(0)
 {
+  // see header file for function documentation
 }
 
 AliHLTTask::AliHLTTask(AliHLTConfiguration* pConf)
@@ -399,6 +421,7 @@ AliHLTTask::AliHLTTask(AliHLTConfiguration* pConf)
   fpBlockDataArray(NULL),
   fBlockDataArraySize(0)
 {
+  // see header file for function documentation
 }
 
 AliHLTTask::AliHLTTask(const AliHLTTask&)
@@ -418,6 +441,7 @@ AliHLTTask::AliHLTTask(const AliHLTTask&)
 
 AliHLTTask& AliHLTTask::operator=(const AliHLTTask&)
 { 
+  // see header file for function documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
@@ -432,6 +456,7 @@ AliHLTTask::~AliHLTTask()
 
 int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 {
+  // see header file for function documentation
   int iResult=0;
   if (fpConfiguration!=NULL && pConf!=NULL && fpConfiguration!=pConf) {
     HLTWarning("overriding existing reference to configuration object %p (%s) by %p",
@@ -468,6 +493,7 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 
 int AliHLTTask::Deinit()
 {
+  // see header file for function documentation
   int iResult=0;
   AliHLTComponent* pComponent=GetComponent();
   fpComponent=NULL;
@@ -482,6 +508,7 @@ int AliHLTTask::Deinit()
 
 const char *AliHLTTask::GetName() const
 {
+  // see header file for function documentation
   if (fpConfiguration)
     return fpConfiguration->GetName();
   return TObject::GetName();
@@ -489,16 +516,19 @@ const char *AliHLTTask::GetName() const
 
 AliHLTConfiguration* AliHLTTask::GetConf() const
 {
+  // see header file for function documentation
   return fpConfiguration;
 }
 
 AliHLTComponent* AliHLTTask::GetComponent() const
 {
+  // see header file for function documentation
   return fpComponent;
 }
 
 AliHLTTask* AliHLTTask::FindDependency(const char* id)
 {
+  // see header file for function documentation
   AliHLTTask* pTask=NULL;
   if (id) {
     pTask=(AliHLTTask*)fListDependencies.FindObject(id);
@@ -508,6 +538,7 @@ AliHLTTask* AliHLTTask::FindDependency(const char* id)
 
 int AliHLTTask::FollowDependency(const char* id, TList* pTgtList)
 {
+  // see header file for function documentation
   int iResult=0;
   if (id) {
     AliHLTTask* pDep=NULL;
@@ -537,6 +568,7 @@ int AliHLTTask::FollowDependency(const char* id, TList* pTgtList)
 
 void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
 {
+  // see header file for function documentation
   HLTLogKeyword("task dependencies");
   int iResult=0;
   TList tgtList;
@@ -569,6 +601,7 @@ void AliHLTTask::PrintDependencyTree(const char* id, int bFromConfiguration)
 
 int AliHLTTask::SetDependency(AliHLTTask* pDep)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pDep) {
     if (FindDependency(pDep->GetName())==NULL) {
@@ -584,6 +617,7 @@ int AliHLTTask::SetDependency(AliHLTTask* pDep)
 
 int AliHLTTask::CheckDependencies()
 {
+  // see header file for function documentation
   int iResult=0;
   AliHLTConfiguration* pSrc=fpConfiguration->GetFirstSource();
   while (pSrc) {
@@ -599,6 +633,7 @@ int AliHLTTask::CheckDependencies()
 
 int AliHLTTask::Depends(AliHLTTask* pTask)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pTask) {
     if (fpConfiguration) {
@@ -619,6 +654,7 @@ int AliHLTTask::Depends(AliHLTTask* pTask)
 
 AliHLTTask* AliHLTTask::FindTarget(const char* id)
 {
+  // see header file for function documentation
   AliHLTTask* pTask=NULL;
   if (id) {
     pTask=(AliHLTTask*)fListTargets.FindObject(id);
@@ -628,6 +664,7 @@ AliHLTTask* AliHLTTask::FindTarget(const char* id)
 
 int AliHLTTask::SetTarget(AliHLTTask* pTgt)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pTgt) {
     if (FindTarget(pTgt->GetName())==NULL) {
@@ -643,6 +680,7 @@ int AliHLTTask::SetTarget(AliHLTTask* pTgt)
 
 int AliHLTTask::StartRun()
 {
+  // see header file for function documentation
   int iResult=0;
   int iNofInputDataBlocks=0;
   AliHLTComponent* pComponent=GetComponent();
@@ -719,6 +757,7 @@ int AliHLTTask::StartRun()
 
 int AliHLTTask::EndRun()
 {
+  // see header file for function documentation
   int iResult=0;
   if (fpBlockDataArray) {
     fBlockDataArraySize=0;
@@ -737,6 +776,7 @@ int AliHLTTask::EndRun()
 
 int AliHLTTask::ProcessTask(Int_t eventNo)
 {
+  // see header file for function documentation
   int iResult=0;
   AliHLTComponent* pComponent=GetComponent();
   if (pComponent && fpDataBuffer) {
@@ -863,6 +903,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 
 int AliHLTTask::GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask) const
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumerTask) {
     if (fpDataBuffer) {
@@ -879,6 +920,7 @@ int AliHLTTask::GetNofMatchingDataBlocks(const AliHLTTask* pConsumerTask) const
 
 int AliHLTTask::GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask) const
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumerTask) {
     AliHLTComponent* pComponent=GetComponent();
@@ -899,6 +941,7 @@ int AliHLTTask::GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask) const
 
 int AliHLTTask::Subscribe(const AliHLTTask* pConsumerTask, AliHLTComponentBlockData* pBlockDesc, int iArraySize)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumerTask) {
     if (fpDataBuffer) {
@@ -915,6 +958,7 @@ int AliHLTTask::Subscribe(const AliHLTTask* pConsumerTask, AliHLTComponentBlockD
 
 int AliHLTTask::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTTask* pConsumerTask)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumerTask && pBlockDesc) {
     if (fpDataBuffer) {
@@ -929,16 +973,9 @@ int AliHLTTask::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTTask* 
   return iResult;
 }
 
-/* this function is most likely depricated
-int AliHLTTask::ClearSourceBlocks()
-{
-  int iResult=0;
-  return iResult;
-}
-*/
-
 void AliHLTTask::PrintStatus()
 {
+  // see header file for function documentation
   HLTLogKeyword("task properties");
   AliHLTComponent* pComponent=GetComponent();
   if (pComponent) {
@@ -968,22 +1005,24 @@ void AliHLTTask::PrintStatus()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TList AliHLTConfigurationHandler::fListConfigurations;
-TList AliHLTConfigurationHandler::fListDynamicConfigurations;
+TList AliHLTConfigurationHandler::fgListConfigurations;
+TList AliHLTConfigurationHandler::fgListDynamicConfigurations;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTConfigurationHandler)
 
 AliHLTConfigurationHandler::AliHLTConfigurationHandler()
 {
+  // see header file for function documentation
 }
 
 AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
 {
-  TObjLink* lnk=fListDynamicConfigurations.FirstLink();
+  // see header file for function documentation
+  TObjLink* lnk=fgListDynamicConfigurations.FirstLink();
   while (lnk) {
     TObject* obj=lnk->GetObject();
-    if (fListConfigurations.FindObject(obj->GetName())==NULL) {
+    if (fgListConfigurations.FindObject(obj->GetName())==NULL) {
       HLTDebug("delete dynamic configuration \"%s\"", obj->GetName());
       delete obj;
     }
@@ -993,14 +1032,15 @@ AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
 
 int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConf) {
     if (FindConfiguration(pConf->GetName()) == NULL) {
-      fListConfigurations.Add(pConf);
+      fgListConfigurations.Add(pConf);
       //HLTDebug("configuration \"%s\" registered", pConf->GetName());
 
       // mark all configurations with unresolved dependencies for re-evaluation
-      TObjLink* lnk=fListConfigurations.FirstLink();
+      TObjLink* lnk=fgListConfigurations.FirstLink();
       while (lnk) {
 	AliHLTConfiguration* pSrc=(AliHLTConfiguration*)lnk->GetObject();
 	if (pSrc && pSrc!=pConf && pSrc->SourcesResolved()!=1) {
@@ -1020,6 +1060,7 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
 
 int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* component, const char* sources, const char* arguments)
 {
+  // see header file for function documentation
   int iResult=0;
   AliHLTConfiguration* pConf= new AliHLTConfiguration(id, component, sources, arguments);
   if (pConf) {
@@ -1030,7 +1071,7 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
       pConf=NULL;
       iResult=-EEXIST;
     } else {
-      fListDynamicConfigurations.Add(pConf);
+      fgListDynamicConfigurations.Add(pConf);
     }
   } else {
     HLTError("system error: object allocation failed");
@@ -1041,9 +1082,10 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
 
 void AliHLTConfigurationHandler::PrintConfigurations()
 {
+  // see header file for function documentation
   HLTLogKeyword("configuration listing");
   HLTMessage("registered configurations:");
-  TObjLink *lnk = fListConfigurations.FirstLink();
+  TObjLink *lnk = fgListConfigurations.FirstLink();
   while (lnk) {
     TObject *obj = lnk->GetObject();
     HLTMessage("  %s", obj->GetName());
@@ -1053,6 +1095,7 @@ void AliHLTConfigurationHandler::PrintConfigurations()
 
 int AliHLTConfigurationHandler::RemoveConfiguration(const char* id)
 {
+  // see header file for function documentation
   int iResult=0;
   if (id) {
     AliHLTConfiguration* pConf=NULL;
@@ -1070,13 +1113,14 @@ int AliHLTConfigurationHandler::RemoveConfiguration(const char* id)
 
 int AliHLTConfigurationHandler::RemoveConfiguration(AliHLTConfiguration* pConf)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConf) {
     // remove the configuration from the list
     HLTDebug("remove configuration \"%s\"", pConf->GetName());
-    fListConfigurations.Remove(pConf);
+    fgListConfigurations.Remove(pConf);
     // remove cross links in the remaining configurations
-    TObjLink* lnk=fListConfigurations.FirstLink();
+    TObjLink* lnk=fgListConfigurations.FirstLink();
     while (lnk && iResult>=0) {
       AliHLTConfiguration* pRem=(AliHLTConfiguration*)lnk->GetObject();
       if (pRem) {
@@ -1092,9 +1136,10 @@ int AliHLTConfigurationHandler::RemoveConfiguration(AliHLTConfiguration* pConf)
 
 AliHLTConfiguration* AliHLTConfigurationHandler::FindConfiguration(const char* id)
 {
+  // see header file for function documentation
   AliHLTConfiguration* pConf=NULL;
   if (id) {
-    pConf=(AliHLTConfiguration*)fListConfigurations.FindObject(id); 
+    pConf=(AliHLTConfiguration*)fgListConfigurations.FindObject(id); 
   }
   return pConf;
 }

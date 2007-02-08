@@ -200,15 +200,15 @@ class AliHLTComponentHandler : public AliHLTLogging {
   int UnloadLibraries();
 
   /** list of registered components */
-  vector<AliHLTComponent*> fComponentList;
+  vector<AliHLTComponent*> fComponentList;                         // see above 
   /** list of scheduled components */
-  vector<AliHLTComponent*> fScheduleList;
+  vector<AliHLTComponent*> fScheduleList;                          // see above 
   /** list of libraries */
-  vector<AliHLTLibHandle> fLibraryList;
+  vector<AliHLTLibHandle> fLibraryList;                            // see above 
   /** running environment for the component */
-  AliHLTComponentEnvironment fEnvironment;
+  AliHLTComponentEnvironment fEnvironment;                         // see above 
   /** list of standard components */
-  vector<AliHLTComponent*> fStandardList;  
+  vector<AliHLTComponent*> fStandardList;                          // see above 
 
   ClassDef(AliHLTComponentHandler, 0);
 

@@ -18,7 +18,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
 #include "TObject.h"
-#include "TList.h"
+//#include "TList.h"
 
 class AliHLTComponent;
 /* @name internal data structures
@@ -49,13 +49,13 @@ struct AliHLTDataSegment {
     memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
   }
   /** the data type of this segment */
-  AliHLTComponentDataType fDataType;
+  AliHLTComponentDataType fDataType;                               // see above
   /** offset in byte within the data buffer */
-  AliHLTUInt32_t fSegmentOffset;
+  AliHLTUInt32_t fSegmentOffset;                                   // see above
   /** size of the actual content */
-  AliHLTUInt32_t fSegmentSize;
+  AliHLTUInt32_t fSegmentSize;                                     // see above
   /** data specification */
-  AliHLTUInt32_t fSpecification;
+  AliHLTUInt32_t fSpecification;                                   // see above
 };
 
 /**
@@ -65,30 +65,27 @@ struct AliHLTDataSegment {
  */
 struct AliHLTRawBuffer {
   /** size of the currently occupied partition of the buffer */
-  AliHLTUInt32_t fSize;
+  AliHLTUInt32_t fSize;                                            // see above
   /** total size of the buffer, including safety margin */
-  AliHLTUInt32_t fTotalSize;
+  AliHLTUInt32_t fTotalSize;                                       // see above
   /** the buffer */
-  void* fPtr;
+  void* fPtr;                                                      //! transient
 };
 
 /**
  * @class AliHLTConsumerDescriptor
  * @brief Helper class to describe a consumer component.
  *
- * There is unfortunately no unique determination of the data type from the component
- * itself possible, thats why both component and data type have to be initialized
- * and are stored in a compound. The class is intended to make bookkeeping easier.
+ * There is unfortunately no unique determination of the data type from the
+ * component itself possible, thats why both component and data type have to
+ * be initialized and are stored in a compound. The class is intended to make
+ * bookkeeping easier.
  *
  * @note This class is only used for the @ref alihlt_system.
  *
  * @ingroup alihlt_system
  */
 class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
- private:
-  AliHLTComponent* fpConsumer;
-  vector<AliHLTDataSegment> fSegments;
-
  public:
   /** standard constructur */
   AliHLTConsumerDescriptor();
@@ -104,14 +101,15 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
   ~AliHLTConsumerDescriptor();
 
   /**
-   * Get the component of this descriptor
+   * Get the component of this descriptor.
    * @return pointer to the component
    */
   AliHLTComponent* GetComponent() {return fpConsumer;}
 
   /**
-   * Set an active data segment
-   * the pointer will be handled in a container, no allocation, copy or cleanup
+   * Set an active data segment.
+   * the pointer will be handled in a container, no allocation, copy or
+   * cleanup.
    * @param offset  offset of the segment in the buffer
    * @param size    size of the segment in the buffer
    * @return >=0 if succeeded
@@ -119,7 +117,8 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
   int SetActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
 
   /**
-   * check whether there is an active data segment of certain size with certain offset
+   * Check whether there is an active data segment of certain size with
+   * certain offset.
    * @param offset  offset of the data segment in the data buffer
    * @param size    size of the data segment in the data buffer
    * @return > if existend, 0 if not
@@ -143,6 +142,13 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
    */
   int ReleaseActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
 
+ private:
+  /** consumer object */
+  AliHLTComponent* fpConsumer;                                     //! transient
+
+  /** list of data segments */
+  vector<AliHLTDataSegment> fSegments;                             // see above
+
   //ClassDef(AliHLTConsumerDescriptor, 0)
 };
 
@@ -150,15 +156,15 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
  * @class AliHLTDataBuffer
  * @brief  Handling of data buffers for the HLT.
  * 
- * The class provides handling of data buffers for HLT tasks. Each task gets its
- * own Data Buffer instance. The buffer is grouped into different data segments according
- * to the output of the component.<br>
- * The Data Buffer keeps control over the data requests of the 'child' components. Each 
- * component can subscribe to a certain segment of the data buffer. It's state is then 
- * changed from 'reserved' to 'active'. After the data processing, the component has to 
- * release the segment and it's state is set to 'processed'.
- * If all components have requested and released their data, the Raw Buffer is released
- * and pushed back in the list of available buffers.
+ * The class provides handling of data buffers for HLT tasks. Each task gets
+ * its own Data Buffer instance. The buffer is grouped into different data
+ * segments according to the output of the component.<br>
+ * The Data Buffer keeps control over the data requests of the 'child'
+ * components. Each component can subscribe to a certain segment of the data
+ * buffer. It's state is then changed from 'reserved' to 'active'. After the
+ * data processing, the component has to release the segment and it's state is
+ * set to 'processed'. If all components have requested and released their data,
+ * the Raw Buffer is released and pushed back in the list of available buffers.
  *
  * @note This class is only used for the @ref alihlt_system.
  *
@@ -166,7 +172,7 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
  */
 class AliHLTDataBuffer : public TObject, public AliHLTLogging {
  public:
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
   // condtructors and destructors
 
   /* standard constructor
@@ -179,7 +185,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
   /** destructor */
   virtual ~AliHLTDataBuffer();
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
   // initialization
 
   /**
@@ -188,39 +194,44 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    */
   int SetConsumer(AliHLTComponent* pConsumer);
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
   // component to component communication
 
   /**
-   * Determine the number of matching data blocks for the component and a consumer
-   * component. <br>
-   * The first approach will support only one output data type for processing components.
+   * Determine the number of matching data blocks for the component and a
+   * consumer component. <br>
+   * The first approach will support only one output data type for processing
+   * components.
    * @param pConsumer       the component which subscribes to the buffer
    * @param tgtList         (optional) the list to receive the data types
    * @return: number of data blocks which match the input data types 
    *          of the consumer, neg. error code if failed <br>
    *          -EINVAL       invalid parameter <br>
    */
-  int FindMatchingDataBlocks(const AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList=NULL);
+  int FindMatchingDataBlocks(const AliHLTComponent* pConsumer,
+			     vector<AliHLTComponentDataType>* tgtList=NULL);
 
   /**
    * Subscribe to a segment of the data buffer.
-   * The function prepares the block descriptor for subsequent use with the AliHLTComponent::ProcessEvent
-   * method, the method can prepare several block descriptors up to the array size specified by
-   * iArraySize. The return value is independent from the array size the number of block descriptors 
-   * which would have been prepared if there was enough space in the array<br>
+   * The function prepares the block descriptor for subsequent use with the
+   * AliHLTComponent::ProcessEvent method, the method can prepare several block
+   * descriptors up to the array size specified by iArraySize. The return value
+   * is independent from the array size the number of block descriptors which
+   * would have been prepared if there was enough space in the array<br>
    * The method is used by the consumer component.
    * @param pConsumer       the component which subscribes to the buffer
    * @param arrayBlockDesc  pointer to block descriptor to be filled
    * @param iArraySize      size of the block descriptor array
-   * @return: number of matching data blocks if success, negative error code if failed<br>
-   *          -EACCESS      the state of the consumer can not be changed (activated)
+   * @return: number of matching data blocks, neg. error code if failed<br>
+   *          -EACCESS      the consumer state can't be changed (activated)
    *          -EBADF        unresolved data segments <br>
    *          -ENOENT       consumer component not found <br>
    *          -ENODATA      data buffer does not have raw data <br>
    *          -EINVAL       invalid parameter <br>
    */
-  int Subscribe(const AliHLTComponent* pConsumer, AliHLTComponentBlockData* arrayBlockDesc, int iArraySize);
+  int Subscribe(const AliHLTComponent* pConsumer,
+		AliHLTComponentBlockData* arrayBlockDesc,
+		int iArraySize);
 
   /**
    * Release an instance of the data buffer.
@@ -231,8 +242,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    * @param pBlockDesc      descriptor of the data segment
    * @param pConsumer       the component which subscribes to the buffer
    * @return: >0 if success, negative error code if failed <br>
-   *          -EACCESS      the state of the consumer can not be changed (de-activated)
-   *          -ENOENT       consumer component has not subscribed to the buffer <br>
+   *          -EACCESS      the consumer state can not be changed (de-activated)
+   *          -ENOENT       consumer has not subscribed to the buffer <br>
    *          -EINVAL       invalid parameter <br>
    */
   int Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTComponent* pConsumer);
@@ -252,8 +263,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    * which was requested by the @ref GetTargetBuffer method. The component might
    * produce different types of data, for each type a segment has to be defined
    * which describes the data inside the buffer.<br>
-   * The @ref AliHLTComponentBlockData segment descriptor comes directly from the
-   * @ref AliHLTComponent::ProcessEvent method.
+   * The @ref AliHLTComponentBlockData segment descriptor comes directly from
+   * the @ref AliHLTComponent::ProcessEvent method.
    * @param pTgt            the target buffer which the segments refer to
    * @param arraySegments   the output block descriptors of the component
    * @param iSize           size of the array
@@ -328,26 +339,27 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    */
   int ResetDataBuffer();
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+
   // the data description
 
   // the data segments within this buffer
-  vector<AliHLTDataSegment> fSegments;
+  vector<AliHLTDataSegment> fSegments;                             // see above
 
   // the list of all consumers which are going to subscribe to the buffer
-  vector<AliHLTConsumerDescriptor*> fConsumers;
+  vector<AliHLTConsumerDescriptor*> fConsumers;                    // see above
   // the list of all consumers which are currently subscribed to the buffer
-  vector<AliHLTConsumerDescriptor*> fActiveConsumers;
+  vector<AliHLTConsumerDescriptor*> fActiveConsumers;              // see above
   // the list of all consumers which are already released for the current event
-  vector<AliHLTConsumerDescriptor*> fReleasedConsumers;
+  vector<AliHLTConsumerDescriptor*> fReleasedConsumers;            // see above
 
   // the buffer instance
-  AliHLTRawBuffer* fpBuffer;
+  AliHLTRawBuffer* fpBuffer;                                       //! transient
 
   // flags indicating the state of the buffer
-  AliHLTUInt32_t fFlags;
+  AliHLTUInt32_t fFlags;                                           // see above
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
   // global buffer handling, internal use only
 
   /**
@@ -362,8 +374,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
 
   /**
    * Mark a buffer as free.
-   * After the Data Buffer has finnished using the raw buffer, it is released and
-   * added to the list of available buffers.
+   * After the Data Buffer has finnished using the raw buffer, it is released
+   * and added to the list of available buffers.
    * @param pBuffer         the raw buffer to release
    * @return >=0 if succeeded, neg. error code if failed
    */
@@ -371,47 +383,53 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
 
   /**
    * Deletes all the raw buffers.
-   * When the last Data Buffer object is destructed, all raw data buffers are relesed.
+   * When the last Data Buffer object is destructed, all raw data buffers are
+   * relesed.
    */
   static int DeleteRawBuffers();
 
   /**
    * Number of instances of AliHLTDataBuffer.
-   * The statice variable is incremented and decremented in the constructor/destructor.
-   * All internal data structures are cleaned up when the last instance is exiting.
+   * The statice variable is incremented and decremented in the constructor/
+   * destructor. All internal data structures are cleaned up when the last
+   * instance is exiting.
    */
-  static int fNofInstances;
+  static int fgNofInstances;                                       // see above
   /** global list of free raw buffers */
-  static vector<AliHLTRawBuffer*> fFreeBuffers;
+  static vector<AliHLTRawBuffer*> fgFreeBuffers;                   // see above
   /** global list of currently active raw buffers */
-  static vector<AliHLTRawBuffer*> fActiveBuffers;
+  static vector<AliHLTRawBuffer*> fgActiveBuffers;                 // see above
   /** determines the raw buffer size margin at buffer requests */
-  static AliHLTUInt32_t fMargin;
+  static AliHLTUInt32_t fgMargin;                                  // see above
 
   /** global instance to HLT logging class for static methods */
-  static AliHLTLogging fgLogging;
+  static AliHLTLogging fgLogging;                                  // see above
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
   // internal helper functions
 
   /**
    * Find the consumer descriptor for a certain component and data type in 
    * a list of consumers.<br>
-   * <b>Note:</b> There are three lists which contain the consumers in the different states.
+   * <b>Note:</b> There are three lists which contain the consumers in the
+   * different states.
    * @param pConsumer       pointer to consumer component
    * @param list            list where to search for the consumer
    */
-  AliHLTConsumerDescriptor* FindConsumer(const AliHLTComponent* pConsumer, vector<AliHLTConsumerDescriptor*> &list);
+  AliHLTConsumerDescriptor* FindConsumer(const AliHLTComponent* pConsumer,
+					 vector<AliHLTConsumerDescriptor*> &list) const;
 
   /**
    * Change the state of a consumer.
-   * The state of a consumer is determined by the list it is strored in, the method moves a consumer from 
-   * the source to the target list.
+   * The state of a consumer is determined by the list it is strored in, the
+   * method moves a consumer from the source to the target list.
    * @param pDesc           pointer to consumer descriptor
    * @param srcList         list where the consumer is currently to be found
    * @param tgtList         list where to move the consumer
    */
-  int ChangeConsumerState(AliHLTConsumerDescriptor* pDesc, vector<AliHLTConsumerDescriptor*> &srcList, vector<AliHLTConsumerDescriptor*> &tgtList);
+  int ChangeConsumerState(AliHLTConsumerDescriptor* pDesc,
+			  vector<AliHLTConsumerDescriptor*> &srcList,
+			  vector<AliHLTConsumerDescriptor*> &tgtList);
 
   /**
    * Cleanup a consumer list.

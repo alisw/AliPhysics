@@ -37,7 +37,7 @@
 #define HLTFatal( ... )     LoggingVarargs(kHLTLogFatal,     this->Class_Name() , __func__ ,  __VA_ARGS__ )
 
 // helper macro to set the keyword
-#define HLTLogKeyword(a)    AliHLTKeyword __hltlog_tmpkey__LINE__(this, a)
+#define HLTLogKeyword(a)    AliHLTKeyword hltlogTmpkey__LINE__(this, a)
 
 #define HLT_DEFAULT_LOG_KEYWORD "no key"
 

@@ -174,16 +174,16 @@ class AliHLTFileWriter : public AliHLTDataSink  {
 
  private:
   /** the basename of the output file */
-  TString    fBaseName;
+  TString    fBaseName;                                            // see above
   /** the extension of the output file */
-  TString    fExtension;
+  TString    fExtension;                                           // see above
   /** target directory */
-  TString    fDirectory;
+  TString    fDirectory;                                           // see above
   /** enumeration format string */
-  TString    fCurrentFileName;
+  TString    fCurrentFileName;                                     // see above
 
   /** mode specifier, see @ref TWriterMode */
-  Short_t    fMode;
+  Short_t    fMode;                                                // see above
 
   ClassDef(AliHLTFileWriter, 1)
 };

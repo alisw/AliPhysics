@@ -28,7 +28,7 @@ using namespace std;
 #include "AliHLTStdIncludes.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
-#include "AliHLTSystem.h"
+#include "TString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent)
@@ -38,38 +38,65 @@ AliHLTComponent::AliHLTComponent()
   fEnvironment(),
   fCurrentEvent(0),
   fEventCount(-1)
-{ 
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
-  if (fpComponentHandler)
-    fpComponentHandler->ScheduleRegister(this);
+  if (fgpComponentHandler)
+    fgpComponentHandler->ScheduleRegister(this);
+}
+
+AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
+  :
+  fEnvironment(),
+  fCurrentEvent(0),
+  fEventCount(-1)
+{
+  // see header file for class documentation
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTComponent& AliHLTComponent::operator=(const AliHLTComponent&)
+{ 
+  // see header file for class documentation
+  HLTFatal("assignment operator untested");
+  return *this;
 }
 
 AliHLTComponent::~AliHLTComponent()
 {
+  // see header file for function documentation
 }
 
-AliHLTComponentHandler* AliHLTComponent::fpComponentHandler=NULL;
+AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
 
 int AliHLTComponent::SetGlobalComponentHandler(AliHLTComponentHandler* pCH, int bOverwrite) 
 {
+  // see header file for function documentation
   int iResult=0;
-  if (fpComponentHandler==NULL || bOverwrite!=0)
-    fpComponentHandler=pCH;
+  if (fgpComponentHandler==NULL || bOverwrite!=0)
+    fgpComponentHandler=pCH;
   else
     iResult=-EPERM;
   return iResult;
 }
 
-int AliHLTComponent::UnsetGlobalComponentHandler() {
+int AliHLTComponent::UnsetGlobalComponentHandler() 
+{
+  // see header file for function documentation
   return SetGlobalComponentHandler(NULL,1);
 }
 
-int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv )
+int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv )
 {
+  // see header file for function documentation
   int iResult=0;
   if (environ) {
     memcpy(&fEnvironment, environ, sizeof(AliHLTComponentEnvironment));
-    fEnvironment.fParam=environ_param;
+    fEnvironment.fParam=environParam;
   }
   iResult=DoInit(argc, argv);
   if (iResult>=0) fEventCount=0;
@@ -78,6 +105,7 @@ int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environ_pa
 
 int AliHLTComponent::Deinit()
 {
+  // see header file for function documentation
   int iResult=0;
   iResult=DoDeinit();
   return iResult;
@@ -85,6 +113,7 @@ int AliHLTComponent::Deinit()
 
 int AliHLTComponent::DoInit( int argc, const char** argv )
 {
+  // see header file for function documentation
   if (argc==0 && argv==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
   }
@@ -93,10 +122,13 @@ int AliHLTComponent::DoInit( int argc, const char** argv )
 
 int AliHLTComponent::DoDeinit()
 {
+  // see header file for function documentation
   return 0;
 }
 
-void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) {
+void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) const
+{
+  // see header file for function documentation
   memset( output, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2 );
   strncat( output, type.fOrigin, kAliHLTComponentDataTypefOriginSize );
   strcat( output, ":" );
@@ -105,6 +137,7 @@ void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char o
 
 string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type )
 {
+  // see header file for function documentation
   string out("");
   
   if (type==kAliHLTVoidDataType) {
@@ -126,7 +159,9 @@ string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type )
 }
 
 
-void* AliHLTComponent::AllocMemory( unsigned long size ) {
+void* AliHLTComponent::AllocMemory( unsigned long size ) 
+{
+  // see header file for function documentation
   if (fEnvironment.fAllocMemoryFunc)
     return (*fEnvironment.fAllocMemoryFunc)(fEnvironment.fParam, size );
   HLTFatal("no memory allocation handler registered");
@@ -134,7 +169,9 @@ void* AliHLTComponent::AllocMemory( unsigned long size ) {
 }
 
 int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockData>& blocks, AliHLTUInt32_t* blockCount,
-					      AliHLTComponentBlockData** outputBlocks ) {
+					      AliHLTComponentBlockData** outputBlocks ) 
+{
+  // see header file for function documentation
     if ( blockCount==NULL || outputBlocks==NULL )
 	return -EFAULT;
     AliHLTUInt32_t count = blocks.size();
@@ -159,7 +196,9 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockD
 
 }
 
-int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd ) {
+int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd ) 
+{
+  // see header file for function documentation
   if (fEnvironment.fGetEventDoneDataFunc)
     return (*fEnvironment.fGetEventDoneDataFunc)(fEnvironment.fParam, fCurrentEvent, size, edd );
   return -ENOSYS;
@@ -167,6 +206,7 @@ int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventD
 
 int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList) 
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
     vector<AliHLTComponentDataType> ctlist;
@@ -188,7 +228,9 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<Al
   return iResult;
 }
 
-void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) {
+void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) const
+{
+  // see header file for function documentation
   blockData.fStructSize = sizeof(blockData);
   FillShmData( blockData.fShmKey );
   blockData.fOffset = ~(AliHLTUInt32_t)0;
@@ -198,22 +240,30 @@ void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) {
   blockData.fSpecification = ~(AliHLTUInt32_t)0;
 }
 
-void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) {
+void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) const
+{
+  // see header file for function documentation
   shmData.fStructSize = sizeof(shmData);
   shmData.fShmType = gkAliHLTComponentInvalidShmType;
   shmData.fShmID = gkAliHLTComponentInvalidShmID;
 }
 
-void AliHLTComponent::FillDataType( AliHLTComponentDataType& dataType ) {
+void AliHLTComponent::FillDataType( AliHLTComponentDataType& dataType ) const
+{
+  // see header file for function documentation
   dataType=kAliHLTAnyDataType;
 }
 
-void AliHLTComponent::CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt) {
+void AliHLTComponent::CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt) 
+{
+  // see header file for function documentation
   memcpy(&tgtdt.fID[0], &srcdt.fID[0], kAliHLTComponentDataTypefIDsize);
   memcpy(&tgtdt.fOrigin[0], &srcdt.fOrigin[0], kAliHLTComponentDataTypefOriginSize);
 }
 
-void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin) {
+void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin) 
+{
+  // see header file for function documentation
   tgtdt.fStructSize = sizeof(AliHLTComponentDataType);
   memset(&tgtdt.fID[0], 0, kAliHLTComponentDataTypefIDsize);
   memset(&tgtdt.fOrigin[0], 0, kAliHLTComponentDataTypefOriginSize);
@@ -231,11 +281,14 @@ void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id
 
 void AliHLTComponent::FillEventData(AliHLTComponentEventData& evtData)
 {
+  // see header file for function documentation
   memset(&evtData, 0, sizeof(AliHLTComponentEventData));
   evtData.fStructSize=sizeof(AliHLTComponentEventData);
 }
 
-void AliHLTComponent::PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt) {
+void AliHLTComponent::PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt) 
+{
+  // see header file for function documentation
   TString msg;
   msg.Form("AliHLTComponentDataType(%d): ID=\"", dt.fStructSize);
   for ( int i = 0; i < kAliHLTComponentDataTypefIDsize; i++ ) {
@@ -251,13 +304,15 @@ void AliHLTComponent::PrintComponentDataTypeInfo(const AliHLTComponentDataType& 
   AliHLTLogging::Message(NULL, kHLTLogNone, NULL , NULL, msg.Data());
 }
 
-int AliHLTComponent::GetEventCount()
+int AliHLTComponent::GetEventCount() const
 {
+  // see header file for function documentation
   return fEventCount;
 }
 
 int AliHLTComponent::IncrementEventCounter()
 {
+  // see header file for function documentation
   if (fEventCount>=0) fEventCount++;
   return fEventCount;
 }
@@ -271,6 +326,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 				   AliHLTComponentBlockData*& outputBlocks,
 				   AliHLTComponentEventDoneData*& edd )
 {
+  // see header file for function documentation
   int iResult=0;
   fCurrentEvent=evtData.fEventID;
   iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, outputBlockCnt, outputBlocks, edd);

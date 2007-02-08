@@ -31,14 +31,21 @@ ClassImp(AliHLTDataSink)
 
 AliHLTDataSink::AliHLTDataSink()
 { 
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTDataSink::~AliHLTDataSink()
 { 
+  // see header file for class documentation
 }
 
 AliHLTComponentDataType AliHLTDataSink::GetOutputDataType()
 {
+  // see header file for class documentation
   AliHLTComponentDataType dt =
     {sizeof(AliHLTComponentDataType),
      kAliHLTVoidDataTypeID,
@@ -48,6 +55,7 @@ AliHLTComponentDataType AliHLTDataSink::GetOutputDataType()
 
 void AliHLTDataSink::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  // see header file for class documentation
   constBase=0;
   inputMultiplier=0;
 }
@@ -61,6 +69,7 @@ int AliHLTDataSink::DoProcessing( const AliHLTComponentEventData& evtData,
 				    AliHLTComponentBlockData*& outputBlocks,
 				    AliHLTComponentEventDoneData*& edd )
 {
+  // see header file for class documentation
   int iResult=0;
   if (outputPtr==NULL
       && size==0 

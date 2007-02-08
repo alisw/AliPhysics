@@ -35,6 +35,11 @@ AliHLTConsumerDescriptor::AliHLTConsumerDescriptor()
   fpConsumer(NULL),
   fSegments()
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   fSegments.clear();
 }
 
@@ -43,6 +48,7 @@ AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(AliHLTComponent* pConsumer)
   fpConsumer(pConsumer),
   fSegments()
 {
+  // see header file for function documentation
   fSegments.clear();
 }
 
@@ -53,12 +59,16 @@ AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(const AliHLTConsumerDescripto
   fpConsumer(desc.fpConsumer),
   fSegments()
 {
+  // see header file for function documentation
+
   // we can simply transfer the pointer to th new object since there are no
   // release actions in the destructor
 }
 
 AliHLTConsumerDescriptor& AliHLTConsumerDescriptor::operator=(const AliHLTConsumerDescriptor& desc)
 { 
+  // see header file for function documentation
+
   // we can simply transfer the pointer to th new object since there are no
   // release actions in the destructor
   fpConsumer=desc.fpConsumer;
@@ -67,6 +77,7 @@ AliHLTConsumerDescriptor& AliHLTConsumerDescriptor::operator=(const AliHLTConsum
 
 AliHLTConsumerDescriptor::~AliHLTConsumerDescriptor()
 {
+  // see header file for function documentation
   if (fSegments.size()>0) {
     //HLTWarning("unreleased data segments found");
   }
@@ -74,6 +85,7 @@ AliHLTConsumerDescriptor::~AliHLTConsumerDescriptor()
 
 int AliHLTConsumerDescriptor::SetActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size)
 {
+  // see header file for function documentation
   int iResult=0;
   AliHLTDataSegment segment(offset, size);
   fSegments.push_back(segment);
@@ -83,6 +95,7 @@ int AliHLTConsumerDescriptor::SetActiveDataSegment(AliHLTUInt32_t offset, AliHLT
 
 int AliHLTConsumerDescriptor::CheckActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size)
 {
+  // see header file for function documentation
   int iResult=0;
   if (fSegments.size()>0) {
     vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
@@ -101,6 +114,7 @@ int AliHLTConsumerDescriptor::CheckActiveDataSegment(AliHLTUInt32_t offset, AliH
 
 int AliHLTConsumerDescriptor::ReleaseActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size)
 {
+  // see header file for function documentation
   int iResult=0;
   if (fSegments.size()>0) {
     vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
@@ -134,11 +148,16 @@ AliHLTDataBuffer::AliHLTDataBuffer()
   fpBuffer(NULL),
   fFlags(0)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   fSegments.empty();
   fConsumers.empty();
   fActiveConsumers.empty();
   fReleasedConsumers.empty();
-  fNofInstances++;
+  fgNofInstances++;
 }
 
 AliHLTDataBuffer::AliHLTDataBuffer(const AliHLTDataBuffer&)
@@ -152,24 +171,27 @@ AliHLTDataBuffer::AliHLTDataBuffer(const AliHLTDataBuffer&)
   fpBuffer(NULL),
   fFlags(0)
 {
+  // see header file for function documentation
   HLTFatal("copy constructor untested");
 }
 
 AliHLTDataBuffer& AliHLTDataBuffer::operator=(const AliHLTDataBuffer&)
 { 
+  // see header file for function documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
 
-int AliHLTDataBuffer::fNofInstances=0;
-vector<AliHLTRawBuffer*> AliHLTDataBuffer::fFreeBuffers;
-vector<AliHLTRawBuffer*> AliHLTDataBuffer::fActiveBuffers;
-AliHLTUInt32_t AliHLTDataBuffer::fMargin=1024;
+int AliHLTDataBuffer::fgNofInstances=0;
+vector<AliHLTRawBuffer*> AliHLTDataBuffer::fgFreeBuffers;
+vector<AliHLTRawBuffer*> AliHLTDataBuffer::fgActiveBuffers;
+AliHLTUInt32_t AliHLTDataBuffer::fgMargin=1024;
 AliHLTLogging AliHLTDataBuffer::fgLogging;
 
 AliHLTDataBuffer::~AliHLTDataBuffer()
 {
-  if (--fNofInstances<=0) {
+  // see header file for function documentation
+  if (--fgNofInstances<=0) {
     DeleteRawBuffers();
   }
   CleanupConsumerList();
@@ -177,6 +199,7 @@ AliHLTDataBuffer::~AliHLTDataBuffer()
 
 int AliHLTDataBuffer::SetConsumer(AliHLTComponent* pConsumer)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
     if (FindConsumer(pConsumer)) {
@@ -199,6 +222,7 @@ int AliHLTDataBuffer::SetConsumer(AliHLTComponent* pConsumer)
 
 int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
     vector<AliHLTDataSegment> segments;
@@ -220,6 +244,7 @@ int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, v
 
 int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer, vector<AliHLTDataSegment>& tgtList)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
     vector<AliHLTComponentDataType> dtlist;
@@ -246,6 +271,7 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
 
 int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponentBlockData* arrayBlockDesc, int iArraySize)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pConsumer && arrayBlockDesc) {
     if (fpBuffer) {
@@ -306,6 +332,7 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 
 int AliHLTDataBuffer::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTComponent* pConsumer)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pBlockDesc && pConsumer) {
     AliHLTConsumerDescriptor* pDesc=FindConsumer(pConsumer, fActiveConsumers);
@@ -344,6 +371,7 @@ int AliHLTDataBuffer::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLT
 
 AliHLTUInt8_t* AliHLTDataBuffer::GetTargetBuffer(int iMinSize)
 {
+  // see header file for function documentation
   AliHLTUInt8_t* pTargetBuffer=NULL;
   fpBuffer=CreateRawBuffer(iMinSize);
   if (fpBuffer) {
@@ -356,6 +384,7 @@ AliHLTUInt8_t* AliHLTDataBuffer::GetTargetBuffer(int iMinSize)
 
 int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData* arrayBlockData, int iSize)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pTgt && arrayBlockData && iSize>=0) {
     if (fpBuffer) {
@@ -391,40 +420,45 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 
 int AliHLTDataBuffer::IsEmpty()
 {
+  // see header file for function documentation
   int iResult=fpBuffer==NULL || GetNofSegments()==0;
   return iResult;
 }
 
 int AliHLTDataBuffer::GetNofSegments()
 {
+  // see header file for function documentation
   int iResult=fSegments.size();
   return iResult;
 }
 
 int AliHLTDataBuffer::GetNofConsumers()
 {
+  // see header file for function documentation
   int iResult=fConsumers.size() + GetNofActiveConsumers() + fReleasedConsumers.size();
   return iResult;
 }
 
 int AliHLTDataBuffer::GetNofActiveConsumers()
 {
+  // see header file for function documentation
   int iResult=fActiveConsumers.size();
   return iResult;
 }
 
 AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt32_t size)
 {
+  // see header file for function documentation
   AliHLTRawBuffer* pRawBuffer=NULL;
-  vector<AliHLTRawBuffer*>::iterator buffer=fFreeBuffers.begin();
-  while (buffer!=fFreeBuffers.end() && pRawBuffer==NULL) {
-    if ((*buffer)->fTotalSize>=size && ((*buffer)->fTotalSize-size)<fMargin) {
+  vector<AliHLTRawBuffer*>::iterator buffer=fgFreeBuffers.begin();
+  while (buffer!=fgFreeBuffers.end() && pRawBuffer==NULL) {
+    if ((*buffer)->fTotalSize>=size && ((*buffer)->fTotalSize-size)<fgMargin) {
       // assign this element
       pRawBuffer=*buffer;
       pRawBuffer->fSize=size;
-      fFreeBuffers.erase(buffer);
+      fgFreeBuffers.erase(buffer);
       fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "raw buffer container %p provided for request of %d bytes (total %d available in buffer %p)", pRawBuffer, size, pRawBuffer->fTotalSize, pRawBuffer->fPtr);
-      fActiveBuffers.push_back(pRawBuffer);
+      fgActiveBuffers.push_back(pRawBuffer);
       break;
     }
     buffer++;
@@ -438,7 +472,7 @@ AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt32_t size)
       if (pRawBuffer->fPtr) {
 	pRawBuffer->fSize=size;
 	pRawBuffer->fTotalSize=size;
-	fActiveBuffers.push_back(pRawBuffer);
+	fgActiveBuffers.push_back(pRawBuffer);
 	fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "new raw buffer %p of size %d created (container %p)", pRawBuffer->fPtr, pRawBuffer->fTotalSize, pRawBuffer);
       } else {
 	delete pRawBuffer;
@@ -454,16 +488,17 @@ AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt32_t size)
 
 int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pBuffer) {
-    vector<AliHLTRawBuffer*>::iterator buffer=fActiveBuffers.begin();
-    while (buffer!=fActiveBuffers.end() && (*buffer)!=pBuffer) {
+    vector<AliHLTRawBuffer*>::iterator buffer=fgActiveBuffers.begin();
+    while (buffer!=fgActiveBuffers.end() && (*buffer)!=pBuffer) {
       buffer++;
     }
-    if (buffer!=fActiveBuffers.end()) {
+    if (buffer!=fgActiveBuffers.end()) {
       (*buffer)->fSize=0;
-      fFreeBuffers.push_back(*buffer);
-      fActiveBuffers.erase(buffer);
+      fgFreeBuffers.push_back(*buffer);
+      fgActiveBuffers.erase(buffer);
     } else {
       fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "can not find raw buffer container %p in the list of active containers", pBuffer);
       iResult=-ENOENT;
@@ -478,27 +513,29 @@ int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
 
 int AliHLTDataBuffer::DeleteRawBuffers() 
 {
+  // see header file for function documentation
   int iResult=0;
-  vector<AliHLTRawBuffer*>::iterator buffer=fFreeBuffers.begin();
-  while (buffer!=fFreeBuffers.end()) {
+  vector<AliHLTRawBuffer*>::iterator buffer=fgFreeBuffers.begin();
+  while (buffer!=fgFreeBuffers.end()) {
     free((*buffer)->fPtr);
     delete *buffer;
-    fFreeBuffers.erase(buffer);
-    buffer=fFreeBuffers.begin();
+    fgFreeBuffers.erase(buffer);
+    buffer=fgFreeBuffers.begin();
   }
-  buffer=fActiveBuffers.begin();
-  while (buffer!=fActiveBuffers.end()) {
+  buffer=fgActiveBuffers.begin();
+  while (buffer!=fgActiveBuffers.end()) {
     fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", (*buffer)->fPtr, (*buffer)->fTotalSize);
     free((*buffer)->fPtr);
     delete *buffer;
-    fActiveBuffers.erase(buffer);
-    buffer=fActiveBuffers.begin();
+    fgActiveBuffers.erase(buffer);
+    buffer=fgActiveBuffers.begin();
   }
   return iResult;
 }
 
-AliHLTConsumerDescriptor* AliHLTDataBuffer::FindConsumer(const AliHLTComponent* pConsumer, vector<AliHLTConsumerDescriptor*> &list)
+AliHLTConsumerDescriptor* AliHLTDataBuffer::FindConsumer(const AliHLTComponent* pConsumer, vector<AliHLTConsumerDescriptor*> &list) const
 {
+  // see header file for function documentation
   AliHLTConsumerDescriptor* pDesc=NULL;
   vector<AliHLTConsumerDescriptor*>::iterator desc=list.begin();
   while (desc!=list.end() && pDesc==NULL) {
@@ -512,6 +549,7 @@ AliHLTConsumerDescriptor* AliHLTDataBuffer::FindConsumer(const AliHLTComponent* 
 
 int AliHLTDataBuffer::ResetDataBuffer() 
 {
+  // see header file for function documentation
   int iResult=0;
   AliHLTRawBuffer* pBuffer=fpBuffer;
   fpBuffer=NULL;
@@ -549,6 +587,7 @@ int AliHLTDataBuffer::ResetDataBuffer()
 
 int AliHLTDataBuffer::Reset()
 {
+  // see header file for function documentation
   return ResetDataBuffer();
 }
 
@@ -579,6 +618,7 @@ int AliHLTDataBuffer::Reset()
 
 int AliHLTDataBuffer::ChangeConsumerState(AliHLTConsumerDescriptor* pDesc, vector<AliHLTConsumerDescriptor*> &srcList, vector<AliHLTConsumerDescriptor*> &tgtList)
 {
+  // see header file for function documentation
   int iResult=-ENOENT;
   if (pDesc) {
     vector<AliHLTConsumerDescriptor*>::iterator desc=srcList.begin();
@@ -601,7 +641,9 @@ int AliHLTDataBuffer::ChangeConsumerState(AliHLTConsumerDescriptor* pDesc, vecto
   return iResult;
 }
 
-int AliHLTDataBuffer::CleanupConsumerList() {
+int AliHLTDataBuffer::CleanupConsumerList() 
+{
+  // see header file for function documentation
   int iResult=0;
   ResetDataBuffer();
   vector<AliHLTConsumerDescriptor*>::iterator desc=fConsumers.begin();
@@ -613,7 +655,9 @@ int AliHLTDataBuffer::CleanupConsumerList() {
   return iResult;
 }
 
-int AliHLTDataBuffer::FindConsumer(AliHLTComponent* pConsumer, int bAllLists) {
+int AliHLTDataBuffer::FindConsumer(AliHLTComponent* pConsumer, int bAllLists)
+{
+  // see header file for function documentation
   vector<AliHLTConsumerDescriptor*>::iterator desc=fConsumers.begin();
   while (desc!=fConsumers.end()) {
     if ((*desc)->GetComponent()==pConsumer)

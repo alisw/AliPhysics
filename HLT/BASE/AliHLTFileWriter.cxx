@@ -41,6 +41,11 @@ AliHLTFileWriter::AliHLTFileWriter()
   fCurrentFileName(""),
   fMode(0)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTFileWriter::AliHLTFileWriter(const AliHLTFileWriter&)
@@ -51,39 +56,47 @@ AliHLTFileWriter::AliHLTFileWriter(const AliHLTFileWriter&)
   fCurrentFileName(""),
   fMode(0)
 {
+  // see header file for class documentation
   HLTFatal("copy constructor untested");
 }
 
 AliHLTFileWriter& AliHLTFileWriter::operator=(const AliHLTFileWriter&)
 { 
+  // see header file for class documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
 
 AliHLTFileWriter::~AliHLTFileWriter()
 {
+  // see header file for class documentation
+
   // file list and file name list are owner of their objects and
   // delete all the objects
 }
 
 const char* AliHLTFileWriter::GetComponentID()
 {
+  // see header file for class documentation
   return "FileWriter";
 }
 
 void AliHLTFileWriter::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
+  // see header file for class documentation
   list.clear();
   list.push_back(kAliHLTAnyDataType);
 }
 
 AliHLTComponent* AliHLTFileWriter::Spawn()
 {
+  // see header file for class documentation
   return new AliHLTFileWriter;
 }
 
 int AliHLTFileWriter::DoInit( int argc, const char** argv )
 {
+  // see header file for class documentation
   int iResult=0;
   TString argument="";
   int bMissingParam=0;
@@ -152,18 +165,21 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
 
 int AliHLTFileWriter::InitWriter()
 {
+  // see header file for class documentation
   return 0; // note: this doesn't mean 'error'
 }
 
 int AliHLTFileWriter::ScanArgument(int argc, const char** argv)
 {
+  // see header file for class documentation
+
   // there are no other arguments than the standard ones
   return -EINVAL;
 }
 
 int AliHLTFileWriter::DoDeinit()
 {
-  HLTDebug("");
+  // see header file for class documentation
   int iResult=CloseWriter();
   ClearMode(kEnumerate);
   return iResult;
@@ -171,6 +187,7 @@ int AliHLTFileWriter::DoDeinit()
 
 int AliHLTFileWriter::CloseWriter()
 {
+  // see header file for class documentation
   return 0; // note: this doesn't mean 'error'
 }
 
@@ -178,6 +195,7 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
 			 const AliHLTComponentBlockData* blocks, 
 			 AliHLTComponentTriggerData& trigData )
 {
+  // see header file for class documentation
   int iResult=0;
   if (CheckMode(kConcatenateEvents)==0) {
     // reset the current file name in order to open a new file
@@ -215,6 +233,7 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
 
 int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blockID, const AliHLTComponentDataType& dataType, TString& filename)
 {
+  // see header file for class documentation
   int iResult=0;
   //HLTDebug("build file name for event %d block %d", eventID, blockID);
   filename="";
@@ -251,6 +270,7 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
 
 int AliHLTFileWriter::SetMode(Short_t mode) 
 {
+  // see header file for class documentation
   fMode|=mode;
   //HLTDebug("mode set to 0x%x", fMode);
   return fMode;
@@ -258,6 +278,7 @@ int AliHLTFileWriter::SetMode(Short_t mode)
 
 int AliHLTFileWriter::ClearMode(Short_t mode)
 {
+  // see header file for class documentation
   fMode&=~mode;
   //HLTDebug("mode set to 0x%x", fMode);
   return fMode;
@@ -265,6 +286,8 @@ int AliHLTFileWriter::ClearMode(Short_t mode)
 
 int AliHLTFileWriter::CheckMode(Short_t mode)
 {
+  // see header file for class documentation
+
   //HLTDebug("check mode 0x%x for flag 0x%x: %d", fMode, mode, (fMode&mode)!=0);
   return (fMode&mode)!=0;
 }

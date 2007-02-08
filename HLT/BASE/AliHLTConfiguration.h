@@ -102,7 +102,7 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * The id is a unique string.
    * @return id of the component
    */
-  const char* GetComponentID() {return fComponent;}
+  const char* GetComponentID() const {return fComponent;}
 
   /**
    * Print status info.
@@ -183,23 +183,26 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    */
   int ExtractArguments();
 
-  /* helper function to build a vector from an argument string
+  /**
+   * Helper function to build a vector from an argument string
+   * @param arg       pointer to argument string
+   * @param argList   target to receive the argument list
    */
   int InterpreteString(const char* arg, vector<char*>& argList);
 
   /** id of this configuration */
-  const char* fID;
+  const char* fID;                                                 //! transient
   /** component id of this configuration */
-  const char* fComponent;
+  const char* fComponent;                                          //! transient
 
   /** the <i>sources</i> string as passed to the constructor */
-  const char* fStringSources;
+  const char* fStringSources;                                      //! transient
   /** number of resolved sources, -1 indicates re-evaluation */
-  int fNofSources;
+  int fNofSources;                                                 // see above
   /** list of sources */
-  vector<AliHLTConfiguration*> fListSources;
+  vector<AliHLTConfiguration*> fListSources;                       // see above
   /** iterator for the above list */
-  vector<AliHLTConfiguration*>::iterator fListSrcElement;
+  vector<AliHLTConfiguration*>::iterator fListSrcElement;          // see above
 
   /**
    * The argument string as passed to the constructor.
@@ -207,13 +210,14 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * be parsed and the separated arguments stored in the @ref fArgv array
    * and @ref fArgc member.
    */
-  const char* fArguments;
+  const char* fArguments;                                          // see above
   /** number of arguments */
-  int fArgc;
+  int fArgc;                                                       // see above
   /** argument array */
-  char** fArgv;
+  char** fArgv;                                                    // see above
 
-  static AliHLTConfigurationHandler* fConfigurationHandler;
+  /** the instance of the global configuration handler */
+  static AliHLTConfigurationHandler* fgConfigurationHandler;       //! transient
 
   ClassDef(AliHLTConfiguration, 0);
 };

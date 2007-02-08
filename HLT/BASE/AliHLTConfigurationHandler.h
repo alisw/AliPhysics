@@ -11,12 +11,7 @@
     @brief  Global handling of HLT configurations.
 */
 
-/* #include <cerrno> */
-#include <TObject.h>
 #include <TList.h>
-/* #include "AliHLTDataTypes.h" */
-/* #include "AliHLTLogging.h" */
-/* #include "AliHLTDataBuffer.h" */
 
 /**
  * @class AliHLTConfigurationHandler
@@ -86,9 +81,9 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
 
  private:
   /** the list of registered configurations */
-  static TList fListConfigurations;
+  static TList fgListConfigurations;                              // see above
   /** the list of dynamic configurations (for proper cleanup) */
-  static TList fListDynamicConfigurations;
+  static TList fgListDynamicConfigurations;                       // see above
 
   ClassDef(AliHLTConfigurationHandler, 0);
 };

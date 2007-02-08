@@ -49,12 +49,12 @@ class AliHLTSystem : public AliHLTLogging {
   /**
    * Pointer to an instance of @ref AliHLTComponentHandler.
    */
-  AliHLTComponentHandler* fpComponentHandler;
+  AliHLTComponentHandler* fpComponentHandler;                      //! transient
 
   /**
    * Pointer to an instance of @ref AliHLTConfigurationHandler.
    */
-  AliHLTConfigurationHandler* fpConfigurationHandler;
+  AliHLTConfigurationHandler* fpConfigurationHandler;              //! transient
 
   /**
    * Add a configuration to the end of the list.
@@ -63,7 +63,8 @@ class AliHLTSystem : public AliHLTLogging {
   int AddConfiguration(AliHLTConfiguration* pConf);
 
   /**
-   * Insert a configuration to the end of the list after the specified configuration.
+   * Insert a configuration to the end of the list after the specified
+   * configuration.
    * @param pConf    pointer to configuration to insert
    * @param pPrec    pointer to configuration to insert the new one after
    */
@@ -96,9 +97,9 @@ class AliHLTSystem : public AliHLTLogging {
   /**
    * Insert a task to the task list.
    * The method first checks whether all dependencies are resolved (i.e. exist 
-   * already in the task list). During this iteration the cross links between the 
-   * tasks are set as well. If all dependencies are resolved, the task is added
-   * at the end of the list.
+   * already in the task list). During this iteration the cross links between
+   * the tasks are set as well. If all dependencies are resolved, the task is
+   * added at the end of the list.
    * @param pTask    pointer to task to add
    */
   int InsertTask(AliHLTTask* pTask);
@@ -135,8 +136,8 @@ class AliHLTSystem : public AliHLTLogging {
 
   /**
    * Start task list.
-   * The @ref AliHLTTask::StartRun method is called for each task, the components
-   * will be prepared for event processing.
+   * The @ref AliHLTTask::StartRun method is called for each task, the
+   * components will be prepared for event processing.
    * @return neg error code if failed
    */
   int StartTasks();
@@ -171,16 +172,12 @@ class AliHLTSystem : public AliHLTLogging {
   static void* AllocMemory( void* param, unsigned long size );
 
  protected:
-  int ProcessTask();
-  int StartEvent();
-  int ProcessEvent();
-  int StopEvent();
  
  private:
 /*   TList fConfList; */
 /*   int fbListChanged; */
 
-  TList fTaskList;
+  TList fTaskList;                                                 // see above
 
  private:
   ClassDef(AliHLTSystem, 1);

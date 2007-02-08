@@ -41,6 +41,12 @@ AliHLTFilePublisher::AliHLTFilePublisher()
   fSpecification(~(AliHLTUInt32_t)0),
   fMaxSize(0)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
   // make the lists owners of their objects in order to automatically
   // de-allocate the objects
   fFileNames.SetOwner();
@@ -56,28 +62,34 @@ AliHLTFilePublisher::AliHLTFilePublisher(const AliHLTFilePublisher&)
   fSpecification(0),
   fMaxSize(0)
 {
+  // see header file for class documentation
   HLTFatal("copy constructor untested");
 }
 
 AliHLTFilePublisher& AliHLTFilePublisher::operator=(const AliHLTFilePublisher&)
 { 
+  // see header file for class documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
 
 AliHLTFilePublisher::~AliHLTFilePublisher()
 {
+  // see header file for class documentation
+
   // file list and file name list are owner of their objects and
   // delete all the objects
 }
 
 const char* AliHLTFilePublisher::GetComponentID()
 {
+  // see header file for class documentation
   return "FilePublisher";
 }
 
 AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 {
+  // see header file for class documentation
   AliHLTComponentDataType dt =
     {sizeof(AliHLTComponentDataType),
      kAliHLTVoidDataTypeID,
@@ -87,17 +99,21 @@ AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 
 void AliHLTFilePublisher::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  // see header file for class documentation
   constBase=fMaxSize;
   inputMultiplier=1.0;
 }
 
 AliHLTComponent* AliHLTFilePublisher::Spawn()
 {
+  // see header file for class documentation
   return new AliHLTFilePublisher;
 }
 
 int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 {
+  // see header file for class documentation
+
   //HLTDebug("%d %s", argc, argv[0]);
   int iResult=0;
   TString argument="";
@@ -172,12 +188,15 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 
 int AliHLTFilePublisher::ScanArgument(int argc, const char** argv)
 {
+  // see header file for class documentation
+
   // there are no other arguments than the standard ones
   return -EINVAL;
 }
 
 int AliHLTFilePublisher::OpenFiles()
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fFileNames.FirstLink();
   while (lnk && iResult>=0) {
@@ -204,6 +223,7 @@ int AliHLTFilePublisher::OpenFiles()
 
 int AliHLTFilePublisher::DoDeinit()
 {
+  // see header file for class documentation
   int iResult=0;
   fFileNames.Clear();
   fFiles.Clear();

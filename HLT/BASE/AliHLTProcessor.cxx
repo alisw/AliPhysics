@@ -33,14 +33,21 @@ ClassImp(AliHLTProcessor)
 
 AliHLTProcessor::AliHLTProcessor()
 { 
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTProcessor::~AliHLTProcessor()
 { 
+  // see header file for class documentation
 }
 
 int AliHLTProcessor::Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv )
 {
+  // see header file for class documentation
   int iResult=0;
   iResult=AliHLTComponent::Init(environ, environ_param, argc, argv);
   return iResult;
@@ -48,6 +55,7 @@ int AliHLTProcessor::Init( AliHLTComponentEnvironment* environ, void* environ_pa
 
 int AliHLTProcessor::Deinit()
 {
+  // see header file for class documentation
   int iResult=0;
   iResult=AliHLTComponent::Deinit();
   return iResult;
@@ -59,6 +67,7 @@ int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, cons
 			    AliHLTComponentBlockData*& outputBlocks,
 			    AliHLTComponentEventDoneData*& edd )
 {
+  // see header file for class documentation
   int iResult=0;
   vector<AliHLTComponentBlockData> blockData;
   iResult=DoEvent(evtData, blocks, trigData, outputPtr, size, blockData);

@@ -53,6 +53,11 @@ AliHLTComponentHandler::AliHLTComponentHandler()
   fEnvironment(),
   fStandardList()
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   AddStandardComponents();
 }
@@ -65,6 +70,7 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
   fEnvironment(),
   fStandardList()
 {
+  // see header file for class documentation
   if (pEnv) {
     memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
     AliHLTLogging::Init(pEnv->fLoggingFunc);
@@ -75,12 +81,14 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
 
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {
+  // see header file for class documentation
   UnloadLibraries();
   DeleteStandardComponents();
 }
 
 int AliHLTComponentHandler::AnnounceVersion()
 {
+  // see header file for class documentation
   int iResult=0;
 #ifdef PACKAGE_STRING
   void HLTbaseCompileInfo( char*& date, char*& time);
@@ -98,6 +106,7 @@ int AliHLTComponentHandler::AnnounceVersion()
 
 Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (pSample) {
     if (FindComponent(pSample->GetComponentID())==NULL) {
@@ -118,6 +127,7 @@ Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
 
 int AliHLTComponentHandler::DeregisterComponent( const char* componentID )
 {
+  // see header file for class documentation
   int iResult=0;
   if (componentID) {
   } else {
@@ -128,6 +138,7 @@ int AliHLTComponentHandler::DeregisterComponent( const char* componentID )
 
 Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (pSample) {
     fScheduleList.push_back(pSample);
@@ -139,6 +150,7 @@ Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
 
 int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvParam, int argc, const char** argv, AliHLTComponent*& component )
 {
+  // see header file for class documentation
   int iResult=0;
   if (componentID) {
     AliHLTComponent* pSample=FindComponent(componentID);
@@ -167,6 +179,7 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvP
 
 Int_t AliHLTComponentHandler::FindComponentIndex(const char* componentID)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (componentID) {
     vector<AliHLTComponent*>::iterator element=fComponentList.begin();
@@ -186,6 +199,7 @@ Int_t AliHLTComponentHandler::FindComponentIndex(const char* componentID)
 
 AliHLTComponent* AliHLTComponentHandler::FindComponent(const char* componentID)
 {
+  // see header file for class documentation
   AliHLTComponent* pSample=NULL;
   Int_t index=FindComponentIndex(componentID);
   if (index>=0) {
@@ -196,6 +210,7 @@ AliHLTComponent* AliHLTComponentHandler::FindComponent(const char* componentID)
 
 Int_t AliHLTComponentHandler::InsertComponent(AliHLTComponent* pSample)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (pSample!=NULL) {
     fComponentList.push_back(pSample);
@@ -205,7 +220,9 @@ Int_t AliHLTComponentHandler::InsertComponent(AliHLTComponent* pSample)
   return iResult;
 }
 
-void AliHLTComponentHandler::List() {
+void AliHLTComponentHandler::List() 
+{
+  // see header file for class documentation
   vector<AliHLTComponent*>::iterator element=fComponentList.begin();
   int index=0;
   while (element!=fComponentList.end()) {
@@ -213,7 +230,9 @@ void AliHLTComponentHandler::List() {
   }
 }
 
-void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv) {
+void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv) 
+{
+  // see header file for class documentation
   if (pEnv) {
     memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
     AliHLTLogging::Init(fEnvironment.fLoggingFunc);
@@ -222,6 +241,7 @@ void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv) {
 
 int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
 {
+  // see header file for class documentation
   int iResult=0;
   if (libraryPath) {
     AliHLTComponent::SetGlobalComponentHandler(this);
@@ -260,6 +280,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
 
 int AliHLTComponentHandler::UnloadLibrary( const char* libraryPath )
 {
+  // see header file for class documentation
   int iResult=0;
   if (libraryPath) {
   } else {
@@ -270,6 +291,7 @@ int AliHLTComponentHandler::UnloadLibrary( const char* libraryPath )
 
 int AliHLTComponentHandler::UnloadLibraries()
 {
+  // see header file for class documentation
   int iResult=0;
   vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
   while (element!=fLibraryList.end()) {
@@ -287,6 +309,7 @@ int AliHLTComponentHandler::UnloadLibraries()
 
 int AliHLTComponentHandler::AddStandardComponents()
 {
+  // see header file for class documentation
   int iResult=0;
   AliHLTComponent::SetGlobalComponentHandler(this);
   fStandardList.push_back(new AliHLTFilePublisher);
@@ -299,6 +322,7 @@ int AliHLTComponentHandler::AddStandardComponents()
 
 int AliHLTComponentHandler::RegisterScheduledComponents()
 {
+  // see header file for class documentation
   int iResult=0;
   vector<AliHLTComponent*>::iterator element=fScheduleList.begin();
   int iLocalResult=0;
@@ -313,6 +337,7 @@ int AliHLTComponentHandler::RegisterScheduledComponents()
 
 int AliHLTComponentHandler::DeleteStandardComponents()
 {
+  // see header file for class documentation
   int iResult=0;
   vector<AliHLTComponent*>::iterator element=fStandardList.begin();
   while (element!=fStandardList.end()) {

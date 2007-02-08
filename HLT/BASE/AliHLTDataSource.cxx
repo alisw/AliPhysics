@@ -31,14 +31,21 @@ ClassImp(AliHLTDataSource)
 
 AliHLTDataSource::AliHLTDataSource()
 { 
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTDataSource::~AliHLTDataSource()
 { 
+  // see header file for class documentation
 }
 
 void AliHLTDataSource::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
+  // see header file for class documentation
   list.clear(); // there are no input data types
 }
 
@@ -52,6 +59,7 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
 				    AliHLTComponentBlockData*& outputBlocks,
 				    AliHLTComponentEventDoneData*& edd )
 {
+  // see header file for class documentation
   int iResult=0;
   if (blocks) {
     // this is currently just to get rid of the warning "unused parameter"
