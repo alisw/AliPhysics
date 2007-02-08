@@ -6,7 +6,7 @@ void SETUP()
 
    // Set the Include paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IAnalysisCheck");
-   gROOT->ProcessLine(".include PWG4");
+   gROOT->ProcessLine(".include AnalysisCheck");
 
    // Set our location, so that other packages can find us
    gSystem->Setenv("AnalysisCheck_INCLUDE", "AnalysisCheck");
