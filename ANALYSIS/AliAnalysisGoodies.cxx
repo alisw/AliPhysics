@@ -321,7 +321,6 @@ const Bool_t AliAnalysisGoodies::Process(TChain * chain)
 {
   // process events starting from a chain of esd Trees
   Bool_t rv = kFALSE ; 
-
   fTimer.Start() ;
 
   rv = ProcessChain(chain) ; 
@@ -436,9 +435,9 @@ const Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
     AliError("No tasks defined") ; 
     return kFALSE ;
   }
-
+  
   // Make the analysis manager
-  AliAnalysisManager * mgr = new AliAnalysisManager() ;
+  AliAnalysisManager * mgr = new AliAnalysisManager("Goodies Manager", "Analysis manager created by AliAnalysisGoodies") ;
 
   // Make tasks 
   // The top input must be common to all top tasks
