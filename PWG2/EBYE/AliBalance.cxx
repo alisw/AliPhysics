@@ -68,7 +68,9 @@ AliBalance::AliBalance(Double_t p2Start, Double_t p2Stop, Int_t p2Bins) :
 //____________________________________________________________________//
 AliBalance::AliBalance(const AliBalance& balance):
   TObject(balance),
+  fCharge(0),
   fNtrack(balance.fNtrack),
+  fV(0),
   fNumberOfBins(balance.fNumberOfBins),
   fAnalysisType(balance.fAnalysisType),
   fAnalyzedEvents(balance.fAnalyzedEvents),
@@ -76,9 +78,7 @@ AliBalance::AliBalance(const AliBalance& balance):
   fP2Stop(balance.fP2Stop),
   fP2Step(balance.fP2Step),
   fNn(balance.fNn),
-  fNp(balance.fNp),
-  fCharge(0),
-  fV(0)
+  fNp(balance.fNp)
 {
   //copy constructor
 
