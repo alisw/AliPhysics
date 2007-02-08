@@ -54,7 +54,7 @@
 #include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
-ClassImp(AliFlowMaker) ;
+ClassImp(AliFlowMaker) 
 //-----------------------------------------------------------------------
 AliFlowMaker::AliFlowMaker()
 {

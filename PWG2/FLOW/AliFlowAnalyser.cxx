@@ -82,7 +82,7 @@
 #include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
-ClassImp(AliFlowAnalyser) ;
+ClassImp(AliFlowAnalyser) 
 //-----------------------------------------------------------------------
 AliFlowAnalyser::AliFlowAnalyser(const AliFlowSelection* flowSelect)
 {
