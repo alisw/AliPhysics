@@ -35,24 +35,30 @@ AliHLTSampleComponent2 gAliHLTSampleComponent2;
 
 ClassImp(AliHLTSampleComponent2)
 
-const AliHLTComponentDataType AliHLTSampleComponent2::inputDataTypes[]={kAliHLTVoidDataType,
+const AliHLTComponentDataType AliHLTSampleComponent2::fgInputDataTypes[]={kAliHLTVoidDataType,
 									{0,"",""}}; //'zero' terminated array
-const AliHLTComponentDataType AliHLTSampleComponent2::outputDataType=kAliHLTVoidDataType;
 
 AliHLTSampleComponent2::AliHLTSampleComponent2()
 {
+  // see header file for class documentation
 }
 
 AliHLTSampleComponent2::~AliHLTSampleComponent2()
 {
+  // see header file for class documentation
 }
 
 int AliHLTSampleComponent2::DoInit( int argc, const char** argv ){
+  // see header file for class documentation
   Logging(kHLTLogInfo, "HLT", "Sample", "Sample component2, DoInit");
+  if (argc==0 && argv==NULL) {
+    // this is just to get rid of the warning "unused parameter"
+  }
   return 0;
 }
 
 int AliHLTSampleComponent2::DoDeinit(){
+  // see header file for class documentation
   Logging(kHLTLogInfo, "HLT", "Sample", "Sample component2, DoDeinit");
   return 0;
 }
@@ -60,6 +66,13 @@ int AliHLTSampleComponent2::DoDeinit(){
 int AliHLTSampleComponent2::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 				      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 				      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ) {
+  // see header file for class documentation
   Logging(kHLTLogInfo, "HLT", "Sample", "Sample component2, DoEvent");
+  if (evtData.fStructSize==0 && blocks==NULL && trigData.fStructSize==0 &&
+      outputPtr==0 && size==0)
+  {
+    outputBlocks.clear();
+    // this is just to get rid of the warning "unused parameter"
+  }
   return 0;
 }

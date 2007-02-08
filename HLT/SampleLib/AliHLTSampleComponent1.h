@@ -24,13 +24,13 @@ public:
 
   const char* GetComponentID() { return "Sample-component1";}
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
-    const AliHLTComponentDataType* pType=inputDataTypes;
+    const AliHLTComponentDataType* pType=fgInputDataTypes;
     while (pType->fID!=0) {
       list.push_back(*pType);
       pType++;
     }
   }
-  AliHLTComponentDataType GetOutputDataType() {return outputDataType;}
+  AliHLTComponentDataType GetOutputDataType() {return kAliHLTVoidDataType;}
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {constBase = 0;inputMultiplier = 0;};
 
   // Spawn function, return new class instance
@@ -45,8 +45,8 @@ public:
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 
 private:
-  static const AliHLTComponentDataType inputDataTypes[];
-  static const AliHLTComponentDataType outputDataType;
+  /** array of input data types */
+  static const AliHLTComponentDataType fgInputDataTypes[]; // see above
 
   ClassDef(AliHLTSampleComponent1, 0)
 };

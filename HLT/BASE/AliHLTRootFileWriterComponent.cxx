@@ -16,37 +16,71 @@ ClassImp(AliHLTRootFileWriterComponent)
 
 AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent()
   :
+  AliHLTFileWriter(),
   fEventID(kAliHLTVoidEventID),
   fCurrentFile(NULL)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
   // all blocks of one event go into the same file
   SetMode(kConcatenateBlocks);
 }
 
+AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent(const AliHLTRootFileWriterComponent&)
+  :
+  AliHLTFileWriter(),
+  fEventID(kAliHLTVoidEventID),
+  fCurrentFile(NULL)
+{
+  // see header file for class documentation
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTRootFileWriterComponent& AliHLTRootFileWriterComponent::operator=(const AliHLTRootFileWriterComponent&)
+{
+  // see header file for class documentation
+  HLTFatal("assignment operator untested");
+  return *this;
+}
+
 AliHLTRootFileWriterComponent::~AliHLTRootFileWriterComponent()
 {
+  // see header file for class documentation
 }
 
 int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
 					    const AliHLTComponentBlockData* blocks, 
 					    AliHLTComponentTriggerData& trigData )
 {
+  // see header file for class documentation
   int iResult=0;
   // this function will be implemented in conjunction with the high-level
   // component interface
   HLTWarning("not yet implemented");
+  if (evtData.fStructSize==0 && blocks==NULL && trigData.fStructSize==0) {
+    // this is just to get rid of the warning "unused parameter"
+  }
   return iResult;
 }
 
 int AliHLTRootFileWriterComponent::ScanArgument(int argc, const char** argv)
 {
+  // see header file for class documentation
   // no other arguments known
+  if (argc==0 && argv==NULL) {
+    // this is just to get rid of the warning "unused parameter"
+  }
   int iResult=-EPROTO;
   return iResult;
 }
 
 int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, TObject *pOb)
 {
+  // see header file for class documentation
   int iResult=0;
   if (pOb) {
     HLTDebug("write object %p (%s)", pOb, pOb->GetName());
@@ -71,6 +105,7 @@ int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, TO
 
 TFile* AliHLTRootFileWriterComponent::OpenFile(const AliHLTEventID_t eventID, const int blockID, const char* option)
 {
+  // see header file for class documentation
   TFile* pFile=NULL;
   TString filename("");
   if ((BuildFileName(eventID, blockID, kAliHLTVoidDataType, filename))>=0 && filename.IsNull()==0) {

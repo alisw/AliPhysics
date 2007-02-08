@@ -35,6 +35,7 @@ ClassImp(AliHLTFileWriter)
 
 AliHLTFileWriter::AliHLTFileWriter()
   :
+  AliHLTDataSink(),
   fBaseName(""),
   fExtension(""),
   fDirectory(""),
@@ -50,6 +51,7 @@ AliHLTFileWriter::AliHLTFileWriter()
 
 AliHLTFileWriter::AliHLTFileWriter(const AliHLTFileWriter&)
   :
+  AliHLTDataSink(),
   fBaseName(""),
   fExtension(""),
   fDirectory(""),
@@ -174,6 +176,9 @@ int AliHLTFileWriter::ScanArgument(int argc, const char** argv)
   // see header file for class documentation
 
   // there are no other arguments than the standard ones
+  if (argc==0 && argv==NULL) {
+    // this is just to get rid of the warning "unused parameter"
+  }
   return -EINVAL;
 }
 
@@ -227,6 +232,9 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
       }
       dump.close();
     }
+  }
+  if (trigData.fStructSize==0) {
+    // this is just to get rid of the warning "unused parameter"
   }
   return iResult;
 }

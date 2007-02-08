@@ -25,6 +25,10 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
  public:
   /** standard constructor */
   AliHLTRootFileWriterComponent();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTRootFileWriterComponent(const AliHLTRootFileWriterComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTRootFileWriterComponent& operator=(const AliHLTRootFileWriterComponent&);
   /** destructor */
   ~AliHLTRootFileWriterComponent();
 
@@ -87,7 +91,7 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
   TFile* OpenFile(const AliHLTEventID_t eventID, const int blockID=-1, const char* option="recreate");
 
   /** the event ID associated with the current file */
-  AliHLTEventID_t fEventID;
+  AliHLTEventID_t fEventID; // see above
 
   /** the name of the current file */
   TFile* fCurrentFile; //! transient value
