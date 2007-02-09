@@ -132,6 +132,7 @@ Double_t AliFlowEvent::Weight(Int_t selN, Int_t harN, AliFlowTrack* pFlowTrack) 
 { 
  // Weight for enhancing the resolution (eta gives sign +/- for Odd Harmonics)
 
+ if(selN>Flow::nSels) { selN = 0 ; }
  bool oddHar = (harN+1) % 2 ;
  Double_t phiWgt = 1. ;
  if(PtWgt()) 
@@ -841,7 +842,7 @@ Int_t AliFlowEvent::UncorrPosMult(Float_t eta)  const
  // Positive multiplicity in the interval (-eta..eta)
  // (default is  Flow::fEetaGood = 0.9)
  
- Int_t posMult ;
+ Int_t posMult = 0 ;
  for(Int_t itr=0;itr<TrackCollection()->GetEntries();itr++) 
  {
   AliFlowTrack* pFlowTrack ;

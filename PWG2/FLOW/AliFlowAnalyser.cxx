@@ -2081,7 +2081,7 @@ void AliFlowAnalyser::FillEventHistograms(AliFlowEvent* fFlowEvent)
     } 
     else if(k==1) 
     {
-     float psi1 ; float psi2 ;
+     float psi1 = 0. ; float psi2 = 0. ;
      if (j==0)     { psi1 = fPsi[0][0] ; psi2 = fPsi[1][1] ; }  
      else if(j==1) { psi1 = fPsi[0][0] ; psi2 = fPsi[0][1] ; }
      float diff = psi1 - psi2 ;
@@ -2109,7 +2109,7 @@ void AliFlowAnalyser::FillEventHistograms(AliFlowEvent* fFlowEvent)
 
    if(j < Flow::nHars - 1) // subevents of different harmonics
    {
-    int j1, j2;
+    int j1 = 0 ; int j2 = 0 ;
     float psiSubCorrDiff;
     if(j==0)	  { j1 = 1, j2 = 2 ; } 
     else if(j==1) { j1 = 1, j2 = 3 ; } 
@@ -2559,7 +2559,7 @@ Int_t AliFlowAnalyser::HarmonicsLoop(AliFlowTrack* fFlowTrack)
    bool oddHar = (j+1) % 2;
    fFlowSelect->SetHarmonic(j);
    double order  = (double)(j+1);
-   float psi_i, psi_2;
+   float psi_i = 0. ; float psi_2 = 0. ;
    if(fFlowEvent->EtaSubs())	       // particles with the opposite subevent
    {
     if(eta > 0) { psi_i = fPsiSub[1][k][j] ; }     //check

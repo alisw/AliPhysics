@@ -36,10 +36,6 @@
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
 #include "AliKalmanTrack.h"
-//#include "AliRun.h"
-//#include "AliRunLoader.h"
-//#include "AliMagFMaps.h"
-//#include "AliITStrackV2.h"
 
 // Flow things
 #include "AliFlowEvent.h"
@@ -49,6 +45,7 @@
 #include "AliFlowMaker.h"
 
 // ANSI things
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -434,6 +431,8 @@ Bool_t AliFlowMaker::CheckTrack(AliESDtrack* fTrack)
 Bool_t AliFlowMaker::CheckV0(AliESDv0* fV0)
 {
  // applies v0 cuts (dummy)
+ 
+ if(!fV0) { return kFALSE ; }
 
  return kTRUE ;
 }
@@ -441,6 +440,8 @@ Bool_t AliFlowMaker::CheckV0(AliESDv0* fV0)
 Bool_t AliFlowMaker::CheckEvent(AliESD* fESD)
 {
  // applies event cuts (dummy)
+ 
+ if(!fESD) { return kFALSE ; }
 
  return kTRUE ;
 }

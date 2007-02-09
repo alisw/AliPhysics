@@ -132,6 +132,7 @@ Bool_t AliFlowSelection::Select(AliFlowV0* pFlowV0)
 {
  // Returns kTRUE if the v0 is selected. (dummy) 
 
+ if(!pFlowV0) { return kFALSE ; }
  return kTRUE ;
 }
 //-----------------------------------------------------------------------
