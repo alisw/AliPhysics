@@ -57,7 +57,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   Double_t fMaxValues[5][64][56][2];
   AliCaloRawStream *fPHOSRawStream;
   AliRawReaderMemory *fRawMemoryReader;
-  AliHLTPHOSRcuCellEnergyDataStruct* outPtr;
+  AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;
   static const AliHLTComponentDataType inputDataTypes[];
 };
 #endif
