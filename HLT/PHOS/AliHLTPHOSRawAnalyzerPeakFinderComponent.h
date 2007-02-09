@@ -11,20 +11,17 @@ class AliHLTPHOSRawAnalyzerPeakFinderComponent: public AliHLTPHOSRawAnalyzerComp
  public:
   AliHLTPHOSRawAnalyzerPeakFinderComponent();
   ~AliHLTPHOSRawAnalyzerPeakFinderComponent();
-  AliHLTPHOSRawAnalyzerPeakFinderComponent(const AliHLTPHOSRawAnalyzerPeakFinderComponent & );
-
-  AliHLTPHOSRawAnalyzerPeakFinderComponent & operator = (const AliHLTPHOSRawAnalyzerPeakFinderComponent)
-  {
-    return *this;
-  };
-  
-  
-  
-  
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn();
-  //ClassDef(AliHLTPHOSRawAnalyzerPeakFinderComponent, 2) 
-  };
+
+ private:
+  AliHLTPHOSRawAnalyzerPeakFinderComponent(const AliHLTPHOSRawAnalyzerPeakFinderComponent & ); 
+  AliHLTPHOSRawAnalyzerPeakFinderComponent & operator = (const AliHLTPHOSRawAnalyzerPeakFinderComponent)
+    {
+      return *this;
+    };
+
+};
 
 
 

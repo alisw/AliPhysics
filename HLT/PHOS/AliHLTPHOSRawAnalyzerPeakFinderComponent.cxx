@@ -18,13 +18,13 @@
 #include <cstdlib>
 #include "AliHLTPHOSCommonDefs.h"
 
-//ClassImp(AliHLTPHOSRawAnalyzerPeakFinderComponent) 
+
 AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
 {
   char tmpPFPath[PF_MAX_PATH_LENGTH];
-  cout <<"ALICE_ROOT ="<<getenv("ALICE_ROOT") << endl;
+  //  cout <<"ALICE_ROOT ="<<getenv("ALICE_ROOT") << endl;
 
   Double_t tmpAVector[PF_DEFAULT_N_SAMPLES];
   Double_t tmpTVector[PF_DEFAULT_N_SAMPLES]; 
@@ -64,7 +64,6 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
   else
     {
       HLTFatal("ERROR: could not  open PF vector file");
-       //         cout <<"AliHLTPHOSRawAnalyzerPeakFinderComponent, ERROR: could not  open PF vector file" << endl;
     }
   
   
@@ -86,7 +85,6 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
 const char* 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::GetComponentID()
 {
-  //cout << "AliHLTPHOSRawAnalyzerPeakFinderComponent returning ID" << endl;
   return "PhosRawPeakFinder";
 }
 
@@ -94,7 +92,6 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::GetComponentID()
 AliHLTComponent*
 AliHLTPHOSRawAnalyzerPeakFinderComponent::Spawn()
 {
-  //  cout << "AliHLTPHOSRawAnalyzerPeakFinderComponent spawning new instance" << endl;
   return new AliHLTPHOSRawAnalyzerPeakFinderComponent;
 }
 
