@@ -31,7 +31,7 @@ using namespace std;
 #include "TString.h"
 
 // global logging buffer
-#define LOG_BUFFER_SIZE 100
+#define LOG_BUFFER_SIZE 512
 char gAliHLTLoggingBuffer[LOG_BUFFER_SIZE]="";
 char gAliHLTLoggingOriginBuffer[LOG_BUFFER_SIZE]="";
 
