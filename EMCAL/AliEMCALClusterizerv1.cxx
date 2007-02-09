@@ -96,7 +96,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1()
   // default ctor (to be used mainly by Streamer)
   
   InitParameters() ; 
-  fGeom = AliEMCALGeometry::GetInstance();
+  fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
   fGeom->GetTransformationForSM(); // Global <-> Local
 }
 
@@ -171,18 +171,6 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t AbsId)
   // or from digitizer parameters for simulated data.
 
   if(fCalibData){
-
-    //JLK 13-Mar-2006
-    //We now get geometry at a higher level
-    //
-    // Loader
-    //    AliRunLoader *rl = AliRunLoader::GetRunLoader();
-    
-    // Load EMCAL Geomtry
-    //    rl->LoadgAlice(); 
-    //AliRun   * gAlice = rl->GetAliRun(); 
-    //AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
-    //AliEMCALGeometry * geom = emcal->GetGeometry();
     
     if (fGeom==0)
       AliFatal("Did not get geometry from EMCALLoader") ;
@@ -200,11 +188,13 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t AbsId)
       Error("Calibrate()"," Wrong cell id number : %i", AbsId);
       assert(0);
     }
+
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 
     fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
     fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
-    return -fADCpedestalECA + amp * fADCchannelECA ;        
+  
+   return -fADCpedestalECA + amp * fADCchannelECA ;        
  
   }
   else //Return energy with default parameters if calibration is not available
@@ -372,17 +362,16 @@ void AliEMCALClusterizerv1::GetCalibrationParameters()
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
   //Check if calibration is stored in data base
-   if(AliCDBManager::Instance()->IsDefaultStorageSet()){
-     AliCDBEntry *entry = (AliCDBEntry*) 
-     AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
-     if (entry) fCalibData = (AliEMCALCalibData*) entry->GetObject();
-   }
+
+  AliEMCALLoader *emcalLoader = 
+    dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));  
+
+  fCalibData =emcalLoader->CalibData();
+
    if(!fCalibData)
      {
        //If calibration is not available use default parameters
        //Loader
-       AliEMCALLoader *emcalLoader = 
-	 dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
        if ( !emcalLoader->Digitizer() ) 
 	 emcalLoader->LoadDigitizer();
        AliEMCALDigitizer * dig = dynamic_cast<AliEMCALDigitizer*>(emcalLoader->Digitizer());
