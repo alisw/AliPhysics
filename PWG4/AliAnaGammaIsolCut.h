@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/01/25 17:24:20  schutz
+ * new class
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -43,9 +46,11 @@ public:
   AliAnaGammaIsolCut(const AliAnaGammaIsolCut & g) ; // cpy ctor
   virtual ~AliAnaGammaIsolCut() ; //virtual dtor
   virtual void Exec(Option_t * opt = "") ;
-  virtual void Init(Option_t * opt = "");
+  virtual void ConnectInputData(Option_t *);
+  virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "");
 
+  void InitParameters();
   void Print(const Option_t * opt)const;
 
   Int_t    GetNCones()                  const {return fNCones ; }

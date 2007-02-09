@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/01/25 17:24:20  schutz
+ * new class
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -111,22 +114,63 @@ AliAnaGammaIsolCut::~AliAnaGammaIsolCut()
 
 }
 
+//______________________________________________________________________________
+void AliAnaGammaIsolCut::ConnectInputData(const Option_t*)
+{
+  // Initialisation of branch container and histograms 
+  AliAnaGammaDirect::ConnectInputData("");
 
+}
+
+//____________________________________________________
+void AliAnaGammaIsolCut::CreateOutputObjects()
+{  
+
+  // Init parameteres and create histograms to be saved in output file and 
+  // stores them in fOutputContainer
+  InitParameters();
+
+  fOutputContainer = new TObjArray(100) ; 
+
+  //Isolation cut histograms
+  fhPtCandidate  = new TH1F
+    ("PtCandidate","p_{T} of candidate particles for isolation",240,0,120); 
+  fhPtCandidate->SetXTitle("p_{T} (GeV/c)");
+  fOutputContainer->Add(fhPtCandidate) ;
+  
+  char name[128];
+  char title[128];
+  for(Int_t icone = 0; icone<fNCones; icone++){
+    sprintf(name,"PtSumIsolated_Cone_%d",icone);
+    sprintf(title,"Candidate cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
+    fhPtSumIsolated[icone]  = new TH2F(name, title,240,0,120,120,0,10);
+    fhPtSumIsolated[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
+    fhPtSumIsolated[icone]->SetXTitle("p_{T} (GeV/c)");
+    fOutputContainer->Add(fhPtSumIsolated[icone]) ; 
+    
+    for(Int_t ipt = 0; ipt<fNPtThres;ipt++){ 
+      sprintf(name,"PtThresIsol_Cone_%d_Pt%d",icone,ipt);
+      sprintf(title,"Isolated candidate p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+      fhPtThresIsolated[icone][ipt]  = new TH1F(name, title,240,0,120);
+      fhPtThresIsolated[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+      fOutputContainer->Add(fhPtThresIsolated[icone][ipt]) ; 
+    }//icone loop
+  }//ipt loop
+
+}
 
 //____________________________________________________________________________
 void AliAnaGammaIsolCut::Exec(Option_t *) 
 {
   
   // Processing of one event
-    
   //Get ESDs
+
   Long64_t entry = GetChain()->GetReadEntry() ;
-  
   if (!GetESD()) {
     AliError("fESD is not connected to the input!") ; 
     return ; 
   }
-  
   if (GetPrintInfo()) 
     AliInfo(Form("%s ----> Processing event # %lld",  (dynamic_cast<TChain *>(GetChain()))->GetFile()->GetName(), entry)) ; 
 
@@ -197,55 +241,16 @@ void AliAnaGammaIsolCut::Exec(Option_t *)
 }    
 
   //____________________________________________________________________________
-void AliAnaGammaIsolCut::Init(const Option_t * )
+void AliAnaGammaIsolCut::InitParameters()
 {
   // Initialisation of branch container 
-  AliAnaGammaDirect::Init();
+  AliAnaGammaDirect::InitParameters();
 
   fNCones           = 4 ; 
   fNPtThres         = 4 ; 
   fConeSizes[0] = 0.1; fConeSizes[0] = 0.2; fConeSizes[2] = 0.3; fConeSizes[3] = 0.4;
   fPtThresholds[0]=1.; fPtThresholds[0]=2.; fPtThresholds[0]=3.; fPtThresholds[0]=4.;
-
-  //Initialization of histograms 
-  MakeHistos() ;
 }
-
-//___________________________________________________________________
-void AliAnaGammaIsolCut::MakeHistos()
-{
-  // Create histograms to be saved in output file and 
-  // stores them in fOutputContainer
-  
-  fOutputContainer = new TObjArray(10000) ; 
-
-  //Isolation cut histograms
-  fhPtCandidate  = new TH1F
-    ("PtCandidate","p_{T} of candidate particles for isolation",240,0,120); 
-  fhPtCandidate->SetXTitle("p_{T} (GeV/c)");
-  fOutputContainer->Add(fhPtCandidate) ;
-  
-  char name[128];
-  char title[128];
-  for(Int_t icone = 0; icone<fNCones; icone++){
-    sprintf(name,"PtSumIsolated_Cone_%d",icone);
-    sprintf(title,"Candidate cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
-    fhPtSumIsolated[icone]  = new TH2F(name, title,240,0,120,120,0,10);
-    fhPtSumIsolated[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
-    fhPtSumIsolated[icone]->SetXTitle("p_{T} (GeV/c)");
-    fOutputContainer->Add(fhPtSumIsolated[icone]) ; 
-    
-    for(Int_t ipt = 0; ipt<fNPtThres;ipt++){ 
-      sprintf(name,"PtThresIsol_Cone_%d_Pt%d",icone,ipt);
-      sprintf(title,"Isolated candidate p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
-      fhPtThresIsolated[icone][ipt]  = new TH1F(name, title,240,0,120);
-      fhPtThresIsolated[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
-      fOutputContainer->Add(fhPtThresIsolated[icone][ipt]) ; 
-    }//icone loop
-  }//ipt loop
-
-}
-
 
 void AliAnaGammaIsolCut::Print(const Option_t * opt) const
 {

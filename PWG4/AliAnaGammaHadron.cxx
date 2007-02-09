@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/01/23 17:17:29  schutz
+ * New Gamma package
+ *
  *
  */
 
@@ -127,14 +130,181 @@ AliAnaGammaHadron::~AliAnaGammaHadron()
 
 }
 
+//______________________________________________________________________________
+void AliAnaGammaHadron::ConnectInputData(const Option_t*)
+{
+  // Initialisation of branch container and histograms 
+  AliAnaGammaDirect::ConnectInputData("");  
+}
 
+//________________________________________________________________________
+void AliAnaGammaHadron::CreateOutputObjects()
+{  
+
+  // Init parameteres and create histograms to be saved in output file and 
+  // stores them in fOutputContainer
+  InitParameters();
+  AliAnaGammaDirect::CreateOutputObjects();
+
+  fOutputContainer = new TObjArray(100) ;
+  
+  //Use histograms in AliAnaGammaDirect
+  TObjArray  * outputContainer =GetOutputContainer();
+  for(Int_t i = 0; i < outputContainer->GetEntries(); i++ )
+    fOutputContainer->Add(outputContainer->At(i)) ;
+  
+  fhPhiCharged  = new TH2F
+    ("PhiCharged","#phi_{#pi^{#pm}}  vs p_{T #gamma}",
+     120,0,120,120,0,7); 
+  fhPhiCharged->SetYTitle("#phi_{#pi^{#pm}} (rad)");
+  fhPhiCharged->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhPhiCharged) ;
+  
+  fhPhiNeutral  = new TH2F
+    ("PhiNeutral","#phi_{#pi^{0}}  vs p_{T #gamma}",
+     120,0,120,120,0,7); 
+  fhPhiNeutral->SetYTitle("#phi_{#pi^{0}} (rad)");
+  fhPhiNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhPhiNeutral) ;  
+  
+  fhEtaCharged  = new TH2F
+    ("EtaCharged","#eta_{#pi^{#pm}}  vs p_{T #gamma}",
+     120,0,120,120,-1,1); 
+  fhEtaCharged->SetYTitle("#eta_{#pi^{#pm}} (rad)");
+  fhEtaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhEtaCharged) ;
+
+  fhEtaNeutral  = new TH2F
+    ("EtaNeutral","#eta_{#pi^{0}}  vs p_{T #gamma}",
+     120,0,120,120,-1,1); 
+  fhEtaNeutral->SetYTitle("#eta_{#pi^{0}} (rad)");
+  fhEtaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhEtaNeutral) ;  
+
+  fhDeltaPhiGammaCharged  = new TH2F
+    ("DeltaPhiGammaCharged","#phi_{#gamma} - #phi_{charged #pi} vs p_{T #gamma}",
+     200,0,120,200,0,6.4); 
+  fhDeltaPhiGammaCharged->SetYTitle("#Delta #phi");
+  fhDeltaPhiGammaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhDeltaPhiGammaCharged) ; 
+  
+  fhDeltaEtaGammaCharged  = new TH2F
+    ("DeltaEtaGammaCharged","#eta_{#gamma} - #eta_{#pi^{#pm}} vs p_{T #gamma}",
+     200,0,120,200,-2,2); 
+  fhDeltaEtaGammaCharged->SetYTitle("#Delta #eta");
+  fhDeltaEtaGammaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhDeltaEtaGammaCharged) ; 
+
+  fhDeltaPhiGammaNeutral  = new TH2F
+    ("DeltaPhiGammaNeutral","#phi_{#gamma} - #phi_{#pi^{0}} vs p_{T #gamma}",
+     200,0,120,200,0,6.4); 
+  fhDeltaPhiGammaNeutral->SetYTitle("#Delta #phi");
+  fhDeltaPhiGammaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhDeltaPhiGammaNeutral) ; 
+  
+  fhDeltaEtaGammaNeutral  = new TH2F
+    ("DeltaEtaGammaNeutral","#eta_{#gamma} - #eta_{#pi^{#pm}} vs p_{T #gamma}",
+     200,0,120,200,-2,2); 
+  fhDeltaEtaGammaNeutral->SetYTitle("#Delta #eta");
+  fhDeltaEtaGammaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhDeltaEtaGammaNeutral) ; 
+  
+  //
+  fhAnglePairAccepted  = new TH2F
+    ("AnglePairAccepted",
+     "Angle between #pi^{0} #gamma pair vs p_{T  #pi^{0}}, both #gamma in eta<0.7, inside window",
+     200,0,50,200,0,0.2); 
+  fhAnglePairAccepted->SetYTitle("Angle (rad)");
+  fhAnglePairAccepted->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+  fOutputContainer->Add(fhAnglePairAccepted) ; 
+  
+  fhAnglePairNoCut  = new TH2F
+    ("AnglePairNoCut",
+     "Angle between all #gamma pair vs p_{T  #pi^{0}}",200,0,50,200,0,0.2); 
+  fhAnglePairNoCut->SetYTitle("Angle (rad)");
+  fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+  fOutputContainer->Add(fhAnglePairNoCut) ; 
+  
+  fhAnglePairAzimuthCut  = new TH2F
+    ("AnglePairAzimuthCut",
+     "Angle between all #gamma pair that have a good phi and pt vs p_{T  #pi^{0}}",
+     200,0,50,200,0,0.2); 
+  fhAnglePairAzimuthCut->SetYTitle("Angle (rad)");
+  fhAnglePairAzimuthCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+  fOutputContainer->Add(fhAnglePairAzimuthCut) ; 
+  
+    fhAnglePairOpeningAngleCut  = new TH2F
+      ("AnglePairOpeningAngleCut",
+       "Angle between all #gamma pair (opening angle + azimuth cut) vs p_{T  #pi^{0}}"
+       ,200,0,50,200,0,0.2); 
+    fhAnglePairOpeningAngleCut->SetYTitle("Angle (rad)");
+    fhAnglePairOpeningAngleCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairOpeningAngleCut) ;
+    
+    fhAnglePairAllCut  = new TH2F
+      ("AnglePairAllCut",
+       "Angle between all #gamma pair (opening angle + inv mass cut+azimuth) vs p_{T  #pi^{0}}"
+       ,200,0,50,200,0,0.2); 
+    fhAnglePairAllCut->SetYTitle("Angle (rad)");
+    fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairAllCut) ; 
+    
+    
+    //
+    fhInvMassPairNoCut  = new TH2F
+      ("InvMassPairNoCut","Invariant Mass of all #gamma pair vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairNoCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairNoCut) ; 
+    
+    fhInvMassPairAzimuthCut  = new TH2F
+      ("InvMassPairAzimuthCut",
+       "Invariant Mass of #gamma pair (azimuth cuts) vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairAzimuthCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairAzimuthCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairAzimuthCut) ; 
+    
+    fhInvMassPairOpeningAngleCut  = new TH2F
+      ("InvMassPairOpeningAngleCut",
+       "Invariant Mass of #gamma pair (angle cut) vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairOpeningAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairOpeningAngleCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairOpeningAngleCut) ; 
+    
+    fhInvMassPairAllCut  = new TH2F
+      ("InvMassPairAllCut",
+       "Invariant Mass of #gamma pair (opening angle+invmass cut+azimuth) vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairAllCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairAllCut) ; 
+ 
+    //   
+    fhCorrelationGammaCharged  = 
+      new TH2F("CorrelationGammaCharged","z_{#gamma #pi} = p_{T #pi^{#pm}} / p_{T #gamma}",
+	       240,0.,120.,1000,0.,1.2); 
+    fhCorrelationGammaCharged->SetYTitle("z_{#gamma #pi}");
+    fhCorrelationGammaCharged->SetXTitle("p_{T #gamma}");
+    fOutputContainer->Add(fhCorrelationGammaCharged) ;
+
+    fhCorrelationGammaNeutral  = 
+      new TH2F("CorrelationGammaNeutral","z_{#gamma #pi} = p_{T #pi^{0}} / p_{T #gamma}",
+	       240,0.,120.,1000,0.,1.2); 
+    fhCorrelationGammaNeutral->SetYTitle("z_{#gamma #pi}");
+    fhCorrelationGammaNeutral->SetXTitle("p_{T #gamma}");
+    fOutputContainer->Add(fhCorrelationGammaNeutral) ;
+
+}
 
 //____________________________________________________________________________
 void AliAnaGammaHadron::Exec(Option_t *) 
 {
   
   // Processing of one event
-    
+
   //Get ESDs
   Long64_t entry = GetChain()->GetReadEntry() ;
   
@@ -362,10 +532,10 @@ void  AliAnaGammaHadron::MakeGammaNeutralCorrelation(TClonesArray * pl, TParticl
 }
 
   //____________________________________________________________________________
-void AliAnaGammaHadron::Init(const Option_t * )
+void AliAnaGammaHadron::InitParameters()
 {
   // Initialisation of branch container 
-  AliAnaGammaDirect::Init();
+  //AliAnaGammaDirect::InitParameters();
  
   //Initialize the parameters of the analysis.
   //fCalorimeter="PHOS";
@@ -387,10 +557,6 @@ void AliAnaGammaHadron::Init(const Option_t * )
   // fEMCALPID = kFALSE;
   // fPHOSPID = kFALSE;
 
-  //Initialization of histograms 
-
-  MakeHistos() ; 
-
 }
 
 //__________________________________________________________________________-
@@ -411,165 +577,6 @@ Bool_t AliAnaGammaHadron::IsAngleInWindow(const Float_t angle,const Float_t e) {
     result = kTRUE;
  
   return result;
-}
-
-//____________________________________________________________________________
-void AliAnaGammaHadron::MakeHistos()
-{
-  // Create histograms to be saved in output file and 
-  // stores them in fOutputContainer
-  
-  fOutputContainer = new TObjArray(10000) ;
-
-  //Use histograms in AliAnaGammaDirect
-  TObjArray  * outputContainer =GetOutputContainer();
-  for(Int_t i = 0; i < outputContainer->GetEntries(); i++ )
-    fOutputContainer->Add(outputContainer->At(i)) ;
-    
-  fhPhiCharged  = new TH2F
-    ("PhiCharged","#phi_{#pi^{#pm}}  vs p_{T #gamma}",
-     120,0,120,120,0,7); 
-  fhPhiCharged->SetYTitle("#phi_{#pi^{#pm}} (rad)");
-  fhPhiCharged->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhPhiCharged) ;
-  
-  fhPhiNeutral  = new TH2F
-    ("PhiNeutral","#phi_{#pi^{0}}  vs p_{T #gamma}",
-     120,0,120,120,0,7); 
-  fhPhiNeutral->SetYTitle("#phi_{#pi^{0}} (rad)");
-  fhPhiNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhPhiNeutral) ;  
-  
-  fhEtaCharged  = new TH2F
-    ("EtaCharged","#eta_{#pi^{#pm}}  vs p_{T #gamma}",
-     120,0,120,120,-1,1); 
-  fhEtaCharged->SetYTitle("#eta_{#pi^{#pm}} (rad)");
-  fhEtaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhEtaCharged) ;
-
-  fhEtaNeutral  = new TH2F
-    ("EtaNeutral","#eta_{#pi^{0}}  vs p_{T #gamma}",
-     120,0,120,120,-1,1); 
-  fhEtaNeutral->SetYTitle("#eta_{#pi^{0}} (rad)");
-  fhEtaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhEtaNeutral) ;  
-
-  fhDeltaPhiGammaCharged  = new TH2F
-    ("DeltaPhiGammaCharged","#phi_{#gamma} - #phi_{charged #pi} vs p_{T #gamma}",
-     200,0,120,200,0,6.4); 
-  fhDeltaPhiGammaCharged->SetYTitle("#Delta #phi");
-  fhDeltaPhiGammaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhDeltaPhiGammaCharged) ; 
-  
-  fhDeltaEtaGammaCharged  = new TH2F
-    ("DeltaEtaGammaCharged","#eta_{#gamma} - #eta_{#pi^{#pm}} vs p_{T #gamma}",
-     200,0,120,200,-2,2); 
-  fhDeltaEtaGammaCharged->SetYTitle("#Delta #eta");
-  fhDeltaEtaGammaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhDeltaEtaGammaCharged) ; 
-
-  fhDeltaPhiGammaNeutral  = new TH2F
-    ("DeltaPhiGammaNeutral","#phi_{#gamma} - #phi_{#pi^{0}} vs p_{T #gamma}",
-     200,0,120,200,0,6.4); 
-  fhDeltaPhiGammaNeutral->SetYTitle("#Delta #phi");
-  fhDeltaPhiGammaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhDeltaPhiGammaNeutral) ; 
-  
-  fhDeltaEtaGammaNeutral  = new TH2F
-    ("DeltaEtaGammaNeutral","#eta_{#gamma} - #eta_{#pi^{#pm}} vs p_{T #gamma}",
-     200,0,120,200,-2,2); 
-  fhDeltaEtaGammaNeutral->SetYTitle("#Delta #eta");
-  fhDeltaEtaGammaNeutral->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhDeltaEtaGammaNeutral) ; 
-  
-  //
-  fhAnglePairAccepted  = new TH2F
-    ("AnglePairAccepted",
-     "Angle between #pi^{0} #gamma pair vs p_{T  #pi^{0}}, both #gamma in eta<0.7, inside window",
-     200,0,50,200,0,0.2); 
-  fhAnglePairAccepted->SetYTitle("Angle (rad)");
-  fhAnglePairAccepted->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-  fOutputContainer->Add(fhAnglePairAccepted) ; 
-  
-  fhAnglePairNoCut  = new TH2F
-    ("AnglePairNoCut",
-     "Angle between all #gamma pair vs p_{T  #pi^{0}}",200,0,50,200,0,0.2); 
-  fhAnglePairNoCut->SetYTitle("Angle (rad)");
-  fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-  fOutputContainer->Add(fhAnglePairNoCut) ; 
-  
-  fhAnglePairAzimuthCut  = new TH2F
-    ("AnglePairAzimuthCut",
-     "Angle between all #gamma pair that have a good phi and pt vs p_{T  #pi^{0}}",
-     200,0,50,200,0,0.2); 
-  fhAnglePairAzimuthCut->SetYTitle("Angle (rad)");
-  fhAnglePairAzimuthCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-  fOutputContainer->Add(fhAnglePairAzimuthCut) ; 
-  
-    fhAnglePairOpeningAngleCut  = new TH2F
-      ("AnglePairOpeningAngleCut",
-       "Angle between all #gamma pair (opening angle + azimuth cut) vs p_{T  #pi^{0}}"
-       ,200,0,50,200,0,0.2); 
-    fhAnglePairOpeningAngleCut->SetYTitle("Angle (rad)");
-    fhAnglePairOpeningAngleCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairOpeningAngleCut) ;
-    
-    fhAnglePairAllCut  = new TH2F
-      ("AnglePairAllCut",
-       "Angle between all #gamma pair (opening angle + inv mass cut+azimuth) vs p_{T  #pi^{0}}"
-       ,200,0,50,200,0,0.2); 
-    fhAnglePairAllCut->SetYTitle("Angle (rad)");
-    fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairAllCut) ; 
-    
-    
-    //
-    fhInvMassPairNoCut  = new TH2F
-      ("InvMassPairNoCut","Invariant Mass of all #gamma pair vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairNoCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairNoCut) ; 
-    
-    fhInvMassPairAzimuthCut  = new TH2F
-      ("InvMassPairAzimuthCut",
-       "Invariant Mass of #gamma pair (azimuth cuts) vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairAzimuthCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairAzimuthCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairAzimuthCut) ; 
-    
-    fhInvMassPairOpeningAngleCut  = new TH2F
-      ("InvMassPairOpeningAngleCut",
-       "Invariant Mass of #gamma pair (angle cut) vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairOpeningAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairOpeningAngleCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairOpeningAngleCut) ; 
-    
-    fhInvMassPairAllCut  = new TH2F
-      ("InvMassPairAllCut",
-       "Invariant Mass of #gamma pair (opening angle+invmass cut+azimuth) vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairAllCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairAllCut) ; 
- 
-    //   
-    fhCorrelationGammaCharged  = 
-      new TH2F("CorrelationGammaCharged","z_{#gamma #pi} = p_{T #pi^{#pm}} / p_{T #gamma}",
-	       240,0.,120.,1000,0.,1.2); 
-    fhCorrelationGammaCharged->SetYTitle("z_{#gamma #pi}");
-    fhCorrelationGammaCharged->SetXTitle("p_{T #gamma}");
-    fOutputContainer->Add(fhCorrelationGammaCharged) ;
-
-    fhCorrelationGammaNeutral  = 
-      new TH2F("CorrelationGammaNeutral","z_{#gamma #pi} = p_{T #pi^{0}} / p_{T #gamma}",
-	       240,0.,120.,1000,0.,1.2); 
-    fhCorrelationGammaNeutral->SetYTitle("z_{#gamma #pi}");
-    fhCorrelationGammaNeutral->SetXTitle("p_{T #gamma}");
-    fOutputContainer->Add(fhCorrelationGammaNeutral) ;
-
 }
 
 //____________________________________________________________________________
