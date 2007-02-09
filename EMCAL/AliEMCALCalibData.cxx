@@ -63,7 +63,7 @@ AliEMCALCalibData::AliEMCALCalibData(const AliEMCALCalibData& calibda) :
   Int_t nRow2 = 12; //Modules 11 and 12 are half modules
 
   for(Int_t supermodule=0; supermodule<nSMod; supermodule++) {
-    if(supermodule > 10)
+    if(supermodule >= 10)
       nRow = nRow2;
     for(Int_t column=0; column<nCol; column++) {
       for(Int_t row=0; row<nRow; row++) {
@@ -91,7 +91,7 @@ AliEMCALCalibData &AliEMCALCalibData::operator =(const AliEMCALCalibData& calibd
   Int_t nRow2 = 12; //Modules 11 and 12 are half modules
 
   for(Int_t supermodule=0; supermodule<nSMod; supermodule++) {
-    if(supermodule > 10)
+    if(supermodule >= 10)
       nRow = nRow2;
     for(Int_t column=0; column<nCol; column++) {
       for(Int_t row=0; row<nRow; row++) {
@@ -131,7 +131,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   if (strstr(option,"ped")) {
     printf("\n	----	Pedestal values	----\n\n");
     for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      if(supermodule > 10)
+      if(supermodule >= 10)
 	nRow = nRow2;
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
@@ -147,7 +147,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   if (strstr(option,"gain")) {
     printf("\n	----	ADC channel values	----\n\n");
     for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      if(supermodule > 10) 
+      if(supermodule >= 10) 
 	nRow = nRow2;
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
