@@ -2,36 +2,18 @@
 // Digitize and decalibrate events assuming that SDigits 
 // have been already produced.
 // Decalibration coefficients are located in the local file
-// DeCalibDB/EMCAL/Calib/GainFactors_and_Pedestals/Run_xxx.root
+// DeCalibDB/EMCAL/Calib/Data/Run_xxx.root
 // Author: Boris Polichtchouk (Boris.Polichtchouk@cern.ch)
 // Modified from PHOS script for EMCAL by Gustavo Conesa
 
 void AliEMCALDecalibrate(Int_t nevents=3)
 {
+  //Use "decalibration" database to simulate decalibrated EMCAL.
 
-  //Load (de)calibration database into aliroot session
-  //and set it to AliEMCALGetter.
-  
-  AliEMCALCalibData* deCal  = (AliEMCALCalibData*)(AliCDBManager::Instance()
-    ->GetStorage("local://DeCalibDB")->Get("EMCAL/Calib/GainFactors_and_Pedestals",1)
-    ->GetObject());
-  
-  //Loader  
-  AliRunLoader* rl=0x0;
-  
-  rl = AliRunLoader::Open("galice.root",
-			  AliConfig::GetDefaultEventFolderName(),
-			  "update");
-  if (rl == 0x0)
-    {
-      gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
-      return;
-    }
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetSpecificStorage("EMCAL","local://DeCalibDB");
 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
-    (rl->GetDetectorLoader("EMCAL"));
-  //  rl->LoadSDigits("EMCAL");
-  emcalLoader->SetCalibData(deCal);
+  //Make digitization, calibration parameters will be taken from CDB
 
   AliSimulation sim ; 
   sim.SetRunGeneration(kFALSE) ;
