@@ -89,8 +89,6 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
     }
 }
 
-
-
 /**
 * Extraction of timing and energy using the Peakfinde Algorithm.
 * The. The parameters "start" and "length" defines a sub array  of the data array
