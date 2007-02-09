@@ -27,7 +27,7 @@ class AliHLTPHOSFileWriter
 
  private:
   AliHLTPHOSFileWriter(const AliHLTPHOSFileWriter & );           /**<Never to be called*/
-  AliHLTPHOSFileWriter & operator = (const AliHLTPHOSFileWriter) /**<Never to be called*/
+  AliHLTPHOSFileWriter & operator = (const AliHLTPHOSFileWriter &) /**<Never to be called*/
     {
       return *this;
     };
