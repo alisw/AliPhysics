@@ -15,36 +15,47 @@
 
 #include "AliHLTPHOSRawAnalyzerPeakFinderComponent.h"
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
+#include <cstdlib>
+#include "AliHLTPHOSCommonDefs.h"
 
 //ClassImp(AliHLTPHOSRawAnalyzerPeakFinderComponent) 
 AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
 {
-  /*
-  Double_t tmpAVector[70];
-  Double_t tmpTVector[70]; 
+  char tmpPFPath[PF_MAX_PATH_LENGTH];
+  cout <<"ALICE_ROOT ="<<getenv("ALICE_ROOT") << endl;
+
+  Double_t tmpAVector[PF_DEFAULT_N_SAMPLES];
+  Double_t tmpTVector[PF_DEFAULT_N_SAMPLES]; 
   analyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
-  analyzerPtr->SetStartIndex(0);
+  analyzerPtr->SetStartIndex(PF_DEFAULT_STARTINDEX);
+
+  sprintf(tmpPFPath,"%s%s/start%dN%dtau%dfs%d.txt", getenv("ALICE_ROOT"), PF_VECTOR_DIR, PF_DEFAULT_STARTINDEX,  PF_DEFAULT_N_SAMPLES, DEFAULT_TAU, DEFAULT_FS);
+
+  cout <<"PF PATH =" << tmpPFPath << endl;
+
   FILE *fp;
-  fp = fopen("/home/perthi/cern/aliroot/AliRoot_head/HLT/PHOS/PFVectors/start0N70tau2fs10.txt", "r");
+
+  fp = fopen(tmpPFPath, "r");
   
   if(fp != 0)
     {
-      for(int i=0; i < 70; i++)
+      for(int i=0; i <  PF_DEFAULT_N_SAMPLES; i++)
 	{
 	  fscanf(fp, "%lf", &tmpAVector[i]);
 	}
 
+
       fscanf(fp, "\n");
 
-      for(int i=0; i < 70; i++)
+      for(int i=0; i < PF_DEFAULT_N_SAMPLES; i++)
 	{
 	  	  fscanf(fp, "%lf", &tmpTVector[i]);
 	}
 
-      analyzerPtr->SetAVector(tmpAVector, 70);
-      analyzerPtr->SetTVector(tmpTVector, 70);
+      analyzerPtr->SetAVector(tmpAVector,  PF_DEFAULT_N_SAMPLES);
+      analyzerPtr->SetTVector(tmpTVector,  PF_DEFAULT_N_SAMPLES);
 
       fclose(fp);
 
@@ -52,10 +63,11 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
   
   else
     {
-      //   cout <<"AliHLTPHOSRawAnalyzerPeakFinderComponent, ERROR: could not  open PF vector file" << endl;
+      HLTFatal("ERROR: could not  open PF vector file");
+       //         cout <<"AliHLTPHOSRawAnalyzerPeakFinderComponent, ERROR: could not  open PF vector file" << endl;
     }
   
-  */
+  
 } 
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::~AliHLTPHOSRawAnalyzerPeakFinderComponent()
