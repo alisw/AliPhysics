@@ -51,6 +51,7 @@
 #include "AliCDBLocal.h"
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliEMCALHit.h"
 
 ClassImp(AliEMCALLoader)
@@ -129,10 +130,18 @@ AliEMCALLoader::~AliEMCALLoader()
 //____________________________________________________________________________ 
 AliEMCALCalibData* AliEMCALLoader::CalibData()
 { 
-  // Check if the instance of AliEMCALCalibData exists, and return it
+  // Check if the instance of AliEMCALCalibData exists, if not, create it if 
+  // the OCDB is available, and finally return it.
 
-  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) 
-    fgCalibData=0x0;
+  if(!fgCalibData && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+    {
+      AliCDBEntry *entry = (AliCDBEntry*) 
+	AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+      if (entry) fgCalibData =  (AliEMCALCalibData*) entry->GetObject();
+    }
+  
+  if(!fgCalibData)
+    AliFatal("Calibration parameters not found in CDB!");
   
   return fgCalibData;
   
