@@ -17,6 +17,7 @@ class TObjArray;
 class TClonesArray;
 class AliMUONDigit;
 class AliMUONHitMapA1;
+class AliMUONSegmentation;
 class AliMUONGeometrySegmentation;
 class AliMUONData;
 class AliMUONRawCluster;
@@ -27,7 +28,8 @@ class AliMUONDetElement : public TObject
  public:
 
   AliMUONDetElement();
-  AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClusterFinderAZ *recModel); // constructor
+  AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, 
+                    AliMUONClusterFinderAZ *recModel, AliMUONSegmentation* segmentation); // constructor
   virtual ~AliMUONDetElement(); // Destructor
 
   Int_t IdDE(void) const { return fidDE; } // det. elem. ID
@@ -56,7 +58,6 @@ class AliMUONDetElement : public TObject
   Int_t Compare(const TObject* detElem) const; // "Compare" function for sorting
 
  private:
- 
   Int_t fidDE; ///< det. elem. ID
   Int_t fIndex; ///< det. elem. position index in container
   Int_t fChamber; ///< chamber No

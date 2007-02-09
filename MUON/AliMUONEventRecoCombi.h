@@ -18,13 +18,14 @@ class AliMUONDetElement;
 class AliMUONTrackReconstructorK;
 class AliMUONClusterFinderAZ;
 class AliMUONHitForRec;
+class AliMUONSegmentation;
 class AliLoader;
 
 class AliMUONEventRecoCombi : public TObject 
 {
  public:
     virtual ~AliMUONEventRecoCombi();
-    static AliMUONEventRecoCombi* Instance();
+    static AliMUONEventRecoCombi* Instance(AliMUONSegmentation* segmentation = 0);
     void FillEvent(AliMUONData *data, AliMUONClusterFinderAZ *recModel); // fill event info
     void FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructorK *recoTrack) const; // fill used rec. points from det. elems
 
@@ -35,10 +36,11 @@ class AliMUONEventRecoCombi : public TObject
     Int_t IZfromHit(AliMUONHitForRec *hit) const; // IZ from Hit
 
  protected:
-    AliMUONEventRecoCombi();
+    AliMUONEventRecoCombi(AliMUONSegmentation* segmentation = 0);
 
  private:
     static AliMUONEventRecoCombi* fgRecoCombi; //!< singleton instance
+    AliMUONSegmentation*  fSegmentation;  //!< Segmentation
     TClonesArray *fDetElems; //!< array of Det. Elem. objects
     TArrayD *fZ; //!< array of det. elem. Z-coordinates
     Int_t fNZ; //!< number of different Z's

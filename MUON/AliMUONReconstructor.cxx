@@ -42,6 +42,8 @@
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
+#include "AliMUONSegFactory.h"
+#include "AliMUONSegmentation.h"
 
 #include "AliMpSegmentation.h"
 
@@ -68,7 +70,8 @@ AliMUONReconstructor::AliMUONReconstructor()
     fCalibrationData(0x0),
     fCrateManager(new AliMUONTriggerCrateStore()),
     fTriggerCircuit(new TClonesArray("AliMUONTriggerCircuit", 234)),
-    fTransformer(new AliMUONGeometryTransformer(kTRUE))
+    fTransformer(new AliMUONGeometryTransformer(kTRUE)),
+    fSegmentation(0x0)
 
 {
 /// Default constructor
@@ -82,6 +85,11 @@ AliMUONReconstructor::AliMUONReconstructor()
 
     // transformater
     fTransformer->ReadGeometryData("volpath.dat", "geometry.root");
+    
+    // create segmentation and pass it to EventRecoCombi
+    AliMUONSegFactory factory(fTransformer);
+    fSegmentation = factory.CreateSegmentation();
+    AliMUONEventRecoCombi::Instance(fSegmentation); 
 
     // trigger circuit
     for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
@@ -107,6 +115,7 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fCrateManager;
   delete fTriggerCircuit;
   delete fTransformer;
+  delete fSegmentation;
 }
 
 //_____________________________________________________________________________

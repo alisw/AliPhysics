@@ -47,8 +47,9 @@ ClassImp(AliMUONEventRecoCombi)
 AliMUONEventRecoCombi* AliMUONEventRecoCombi::fgRecoCombi = 0; 
 
 //_________________________________________________________________________
-AliMUONEventRecoCombi::AliMUONEventRecoCombi() 
+AliMUONEventRecoCombi::AliMUONEventRecoCombi(AliMUONSegmentation* segmentation) 
   : TObject(),
+    fSegmentation(segmentation),
     fDetElems(0x0),
     fZ(new TArrayD(20)),
     fNZ(0),
@@ -60,12 +61,12 @@ AliMUONEventRecoCombi::AliMUONEventRecoCombi()
 }
 
 //_________________________________________________________________________
-AliMUONEventRecoCombi* AliMUONEventRecoCombi::Instance()
+AliMUONEventRecoCombi* AliMUONEventRecoCombi::Instance(AliMUONSegmentation* segmentation)
 {
 /// Return pointer to the singleton instance
 
   if (fgRecoCombi == 0) {
-    fgRecoCombi = new AliMUONEventRecoCombi();
+    fgRecoCombi = new AliMUONEventRecoCombi(segmentation);
   }
   return fgRecoCombi;
 }
@@ -101,7 +102,7 @@ void AliMUONEventRecoCombi::FillEvent(AliMUONData *data, AliMUONClusterFinderAZ 
       AliMUONDigit *dig = (AliMUONDigit*) digs->UncheckedAt(i);
       if (dig->DetElemId() != idDE) {
 	idDE = dig->DetElemId();
-	new ((*fDetElems)[nDetElem++]) AliMUONDetElement(idDE, dig, recModel);
+	new ((*fDetElems)[nDetElem++]) AliMUONDetElement(idDE, dig, recModel, fSegmentation);
       }
       else ((AliMUONDetElement*)fDetElems->UncheckedAt(nDetElem-1))->AddDigit(dig);
     }

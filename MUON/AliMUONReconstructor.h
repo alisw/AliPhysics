@@ -14,12 +14,14 @@
 
 class AliMUONCalibrationData;
 class AliMUONData;
-class TTask;
 class AliMUONDigitMaker;
 class AliMUONTriggerCrateStore;
-class TClonesArray;
 class AliMUONGeometryTransformer;
 class AliMUONClusterReconstructor;
+class AliMUONSegmentation;
+
+class TTask;
+class TClonesArray;
 
 class AliMUONReconstructor: public AliReconstructor 
 {
@@ -66,6 +68,7 @@ private:
     TClonesArray* fTriggerCircuit;   //!< trigger circuit
  
     AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
+    AliMUONSegmentation*        fSegmentation; //!< pointer to segmentation
 
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };

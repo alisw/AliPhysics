@@ -33,6 +33,7 @@
 #include "AliMUONClusterInput.h"
 #include "AliMUONClusterFinderAZ.h"
 #include "AliMUONGeometryModuleTransformer.h" 
+#include "AliMUONSegmentation.h"
 #include "AliMUONVGeometryDESegmentation.h" 
 #include "AliMpVSegmentation.h" 
 
@@ -69,7 +70,8 @@ AliMUONDetElement::AliMUONDetElement()
 } 
 
 //_________________________________________________________________________
-AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClusterFinderAZ *recModel) 
+AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClusterFinderAZ *recModel,
+                                     AliMUONSegmentation* segmentation) 
   : TObject(),
     fidDE(idDE),
     fIndex(0),
@@ -87,10 +89,11 @@ AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClust
   fDigits[1] = new TObjArray(20);
   fDigits[0]->SetOwner(kTRUE);
   fDigits[1]->SetOwner(kTRUE);
-  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON");
-  AliMUONSegmentation *pSegmentation = pMUON->GetSegmentation();
-  fSeg[0] = pSegmentation->GetModuleSegmentationByDEId(idDE, 0);
-  fSeg[1] = pSegmentation->GetModuleSegmentationByDEId(idDE, 1);
+
+  // Segmentations
+  fSeg[0] = segmentation->GetModuleSegmentationByDEId(idDE, 0);
+  fSeg[1] = segmentation->GetModuleSegmentationByDEId(idDE, 1);
+  
   /*
   Float_t x, y, z;
   fSeg[dig->Cathode()]->GetPadC(fidDE, dig->PadX(), dig->PadY(), x, y, z);
@@ -103,7 +106,6 @@ AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClust
 AliMUONDetElement::~AliMUONDetElement()
 {
   /// Destructor
-
   for (Int_t i = 0; i < 2; i++) {
     delete fHitMap[i]; 
     delete fDigits[i]; 
