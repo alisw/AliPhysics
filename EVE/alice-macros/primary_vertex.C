@@ -19,7 +19,7 @@ TPolyMarker3D* make_vertex_marker(AliESDVertex* v, const Text_t* name)
 Reve::BoxSet* make_vertex_boxes(AliESDVertex* v)
 {
   Double_t x[3], e[3];
-  v->GetTruePos(x);
+  v->GetXYZ(x);
   v->GetSigmaXYZ(e);
 
   Reve::BoxSet* bs;
