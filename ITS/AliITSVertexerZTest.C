@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
+#include <TGeoManager.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TTree.h>
@@ -7,7 +8,7 @@
 #include <AliRun.h>
 #include <AliHeader.h>
 #include <AliGenEventHeader.h>
-#include <AliITSVertexerPPZ.h>
+#include <AliITSVertexerZ.h>
 #include <AliRunLoader.h>
 #include <AliITSLoader.h>
 
@@ -37,6 +38,7 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
     cerr<<"AliITSVertexerZTest.C : LoadKinematics returned error"<<endl;
     return;
   }
+  TGeoManager::Import("geometry.root");
   AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
 
   if(!ITSloader){
