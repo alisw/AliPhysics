@@ -62,32 +62,42 @@ AliMUONPreprocessor::AliMUONPreprocessor(const TString& detName,
   /// - masks
   /// - lut
   
-  if ( detName == fgkTrackerDetName ) { 
+  if ( detName == fgkTrackerDetName ) 
+  { 
     TString runType = shuttle->GetRunParameter("RunType");
     if ( runType == "PEDESTAL_RUN" ) // FIXME : check the name 
     {
       fSubprocessors->Add(new AliMUONPedestalSubprocessor(this)); // to be called only for pedestal runs
+      Log("INFO-Will run Pedestal subprocessor");
     }
     else if ( runType == "ELECTRONICS_CALIBRATION_RUN" ) // FIXME : check the name 
     {  
-      AliError("Not implemented yet");
+      Log("WARNING-Subprocessor for gains not yet implemented");
       //fSubprocessors->Add(new AliMUONGainSubprocessor(this)); // to be called only for gain runs
     }
     else if ( runType == "GMS" ) // FIXME : check the name 
     {
       fSubprocessors->Add(new AliMUONGMSSubprocessor(this));
+      Log("INFO-Will run GMS subprocessor");
     }
     else if ( runType == "PHYSICS" ) // FIXME : check the name
     {
       fSubprocessors->Add(new AliMUONHVSubprocessor(this)); // to be called only for physics runs
+      Log("INFO-Will run HV subprocessor");
+    }
+    else
+    {
+      Log(Form("ERROR-Unknown RunType=%",runType.Data()));
     }
   }
-  else if ( detName == fgkTriggerDetName ) {
-    AliWarningStream() << "Trigger subprocessors not yet implemented." << endl;
+  else if ( detName == fgkTriggerDetName ) 
+  {
+    Log("WARNING-Trigger subprocessors not yet implemented.");
   }  
-  else { 
+  else 
+  { 
     // Wrong detector name
-    AliErrorStream() << "Wrong detector name." << endl;
+    Log("ERROR-Wrong detector name.");
   }  
 }
 

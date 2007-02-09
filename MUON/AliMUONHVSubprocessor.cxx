@@ -125,14 +125,14 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
     TPair* hvPair = static_cast<TPair*>(dcsAliasMap->FindObject(aliasName.Data()));
     if (!hvPair)
     {
-      AliError(Form("Did not find expected alias (%s)",aliasName.Data()));
+      Master()->Log(Form("Did not find expected alias (%s)",aliasName.Data()));
     }
     else
     {
       TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
       if (!values)
       {
-        AliError(Form("Could not get values for alias (%s)",aliasName.Data()));
+        Master()->Log(Form("Could not get values for alias (%s)",aliasName.Data()));
       }
       else
       {
@@ -142,6 +142,8 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
       }
     }
   }
+  
+  Master()->Log("Aliases successfully read in");
   
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
