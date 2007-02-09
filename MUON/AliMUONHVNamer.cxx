@@ -129,6 +129,9 @@ AliMUONHVNamer::DCS2DE(Int_t chamberId, Int_t side, Int_t dcsNumber) const
   Int_t nofDE = AliMpDEManager::GetNofDEInChamber(chamberId);
   
   Int_t half = nofDE/2;
+  
+  dcsNumber = half + 1 - dcsNumber;
+  
   Int_t quarter = nofDE/4;
   Int_t threeQuarter = half + quarter;
   
@@ -206,22 +209,24 @@ AliMUONHVNamer::DetElemId2DCS(Int_t detElemId, Int_t& side) const
         dcsNumber += quarter + 1 ;
         side = 1; // right
       }
-        else if ( dcsNumber <= threeQuarter )
-        {
-          dcsNumber = ( threeQuarter - dcsNumber + 1 );
-          side = 0; // left
-        }
-        else if ( dcsNumber > threeQuarter ) 
-        {
-          dcsNumber = dcsNumber - threeQuarter;
-          side = 1; // right
-        }
-        else
-        {
-          AliFatal("oups");
-        }  
+      else if ( dcsNumber <= threeQuarter )
+      {
+        dcsNumber = ( threeQuarter - dcsNumber + 1 );
+        side = 0; // left
+      }
+      else if ( dcsNumber > threeQuarter ) 
+      {
+        dcsNumber = dcsNumber - threeQuarter;
+        side = 1; // right
+      }
+      else
+      {
+        AliFatal("oups");
+      }  
+      // dcs convention change : numbering from top, not from bottom
+      dcsNumber = half+1-dcsNumber;
     }
-        break;
+      break;
     default:
       break;
   }
