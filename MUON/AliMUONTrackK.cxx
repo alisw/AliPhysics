@@ -18,7 +18,7 @@
 // ---------------------
 // Class AliMUONTrackK
 // ---------------------
-// Reconstructed track in the muons system based on the extended 
+// Reconstructed track in the muon system based on the extended 
 // Kalman filter approach
 // Author: Alexander Zinchenko, JINR Dubna
 
@@ -37,6 +37,7 @@
 
 #include "AliLog.h"
 #include "AliMagF.h"
+#include "AliRunLoader.h"
 
 #include <Riostream.h>
 #include <TClonesArray.h>
@@ -963,7 +964,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  //    TMath::Abs((*fTrackParNew)(1,0)-x) <= windowNonB &&
 	  //  hit->GetTrackRefSignal() == 1) { // just for test
 	  // Vector of measurements and covariance matrix
-	  //fprintf(lun1,"%3d %3d %10.4f %10.4f \n", gAlice->GetEvNumber(), ichamb, x, y);
+	  //fprintf(lun1,"%3d %3d %10.4f %10.4f \n", AliRunLoader::GetRunLoader()->GetEventNumber(), ichamb, x, y);
 	  if (TMath::Abs(hit->GetZ()-zEnd) > 0.05) {
 	    // Adjust position: for multiple hits in the chamber or misalignment (Z as a function of X or Y)
 	    //AliWarning(Form(" *** adjust %f %f ", zEnd, hit->GetZ()));
@@ -2240,7 +2241,7 @@ void AliMUONTrackK::Print(FILE *lun) const
 	tid[j] = clus->GetTrack(j+1) - 1;
 	if (clus->GetTrack(j+1) < 0) { sig[j] = 0; tid[j] = 999; }
       }
-//      fprintf(lun,"%3d %3d %10.4f", gAlice->GetEvNumber(), hit->GetChamberNumber(), GetChi2PerPoint(i1));
+      //fprintf(lun,"%3d %3d %10.4f", AliRunLoader::GetRunLoader()->GetEventNumber(), hit->GetChamberNumber(), GetChi2PerPoint(i1));
       if (!(clus->GetTrack(2))) fprintf(lun, "%3d %3d", sig[0], tid[0]); // simple cluster
       else { // track overlap
 	fprintf(lun, "%3d %3d", TMath::Max(sig[0],sig[1]), TMath::Min(tid[0],tid[1]));
