@@ -74,6 +74,8 @@
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCAL.h"
 #include "AliEMCALLoader.h"
@@ -110,7 +112,7 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fFirstEvent(0),
     fLastEvent(0),
     fControlHists(0),
-    fHists(0)
+    fHists(0),fCalibData(0x0)
 {
   // ctor
   InitParameters() ; 
@@ -173,7 +175,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fFirstEvent(d.fFirstEvent),
     fLastEvent(d.fLastEvent),
     fControlHists(d.fControlHists),
-    fHists(d.fHists)
+    fHists(d.fHists),fCalibData(d.fCalibData)
 {
   // copyy ctor 
  }
@@ -449,16 +451,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
 { 
   // Returns digitized value of the energy in a cell absId
-  // Loader
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
-    (rl->GetDetectorLoader("EMCAL"));
-  
-  // Load EMCAL Geometry
-  rl->LoadgAlice(); 
-  AliRun * gAlice = rl->GetAliRun(); 
-  AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
-  AliEMCALGeometry * geom = emcal->GetGeometry();
+
+  // Load Geometry
+  const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
 
   if (geom==0)
     AliFatal("Did not get geometry from EMCALLoader");
@@ -476,11 +471,9 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
     Error("DigitizeEnergy","Wrong cell id number : AbsId %i ", AbsId) ;
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
-  if(emcalLoader->CalibData()) {
-    fADCpedestalEC = emcalLoader->CalibData()
-      ->GetADCpedestal(iSupMod,ieta,iphi);
-    fADCchannelEC = emcalLoader->CalibData()
-      ->GetADCchannel(iSupMod,ieta,iphi);
+  if(fCalibData) {
+    fADCpedestalEC = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
+    fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
   }
   
   channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
@@ -611,7 +604,8 @@ Bool_t AliEMCALDigitizer::Init()
   emcalLoader->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
 
   //PH  Print();
-  
+  //Calibration instance
+  fCalibData = emcalLoader->CalibData();
   return fInit ;    
 }
 

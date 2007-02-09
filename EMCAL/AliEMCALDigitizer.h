@@ -27,6 +27,7 @@ class TBrowser;
 // --- AliRoot header files ---
 #include "AliDigitizer.h"
 #include "AliConfig.h"
+#include "AliEMCALCalibData.h"
 class AliEMCALSDigitizer ;
 class AliRunDigitizer ;
 
@@ -116,8 +117,9 @@ private:
   // Control hists
   Int_t   fControlHists;          //!
   TList  *fHists;                 //!
+  AliEMCALCalibData * fCalibData; //Calibration data pointer
 
-  ClassDef(AliEMCALDigitizer,5)  // description 
+  ClassDef(AliEMCALDigitizer,6)  // description 
 };
 
 
