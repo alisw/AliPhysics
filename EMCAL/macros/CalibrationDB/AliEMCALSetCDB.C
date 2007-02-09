@@ -85,11 +85,11 @@ void SetCC(Int_t flag=0)
   Int_t nRow   = 24;
   Int_t nRow2  = 12; //Modules 11 and 12 are half modules
 
-  for(Int_t supermodule=1; supermodule < nSMod+1; supermodule++) {
-    for(Int_t column=1; column< nCol+1; column++) {
-      if(supermodule > 10)
+  for(Int_t supermodule=0; supermodule < nSMod; supermodule++) {
+    for(Int_t column=0; column< nCol; column++) {
+      if(supermodule >= 10)
  	nRow = nRow2;
-      for(Int_t row=1; row< nRow+1; row++) {
+      for(Int_t row=0; row< nRow; row++) {
 	if (flag == 1) {
 	  // Decalibration:
 	  // Spread calibration coefficients uniformly with
@@ -99,9 +99,9 @@ void SetCC(Int_t flag=0)
 	  fADCpedestal=rn.Uniform(0.0045,0.0055);
 	}
 	calibda->SetADCchannel (supermodule,column,row,fADCchannel);
-// 	cout<<"Set SM: "<<supermodule<<" col "<<column<<" row "<<row
-// 	    <<" chan "<<fADCchannel<<endl;
 	calibda->SetADCpedestal(supermodule,column,row,fADCpedestal);
+ 	cout<<"Set SM: "<<supermodule<<" col "<<column<<" row "<<row
+ 	    <<" chan "<<fADCchannel<<" ped fADCpedestal"<<endl;
       }
     }
   }
@@ -113,7 +113,7 @@ void SetCC(Int_t flag=0)
   md.SetBeamPeriod(beamPeriod);
   md.SetResponsible("Boris Polichtchouk");
   
-  AliCDBId id("EMCAL/Calib/GainFactors_and_Pedestals",firstRun,lastRun);
+  AliCDBId id("EMCAL/Calib/Data",firstRun,lastRun);
 
   AliCDBManager* man = AliCDBManager::Instance();  
   AliCDBStorage* loc = man->GetStorage(DBFolder.Data());
@@ -142,7 +142,7 @@ void GetCC(Int_t flag=0)
   AliEMCALCalibData* clb  = (AliEMCALCalibData*)
     (AliCDBManager::Instance()
      ->GetStorage(DBFolder.Data())
-     ->Get("EMCAL/Calib/GainFactors_and_Pedestals",
+     ->Get("EMCAL/Calib/Data",
 	   gAlice->GetRunNumber())->GetObject());
 
   static const Int_t nSMod = 12;
@@ -159,45 +159,45 @@ void GetCC(Int_t flag=0)
   cGain  ->Divide(2,3);
   cPed2  ->Divide(2,3);
   cGain2 ->Divide(2,3);
-  for (Int_t supermodule=1; supermodule<=nSMod; supermodule++) {
+  for (Int_t supermodule=0; supermodule<nSMod; supermodule++) {
 
-    if(supermodule > 10)
+    if(supermodule >= 10)
       nRow = nRow2;
 
     TString namePed="hPed";
     namePed+=supermodule;
     TString titlePed="Pedestals in supermodule ";
     titlePed+=supermodule;
-    hPed[supermodule-1] = new TH2F(namePed.Data(),titlePed.Data(),
+    hPed[supermodule] = new TH2F(namePed.Data(),titlePed.Data(),
 			    nCol,1.,1.*nCol,nRow,1.,1.*nRow);
 
     TString nameGain="hGain";
     nameGain+=supermodule;
     TString titleGain="Gain factors in supermodule ";
     titleGain+=supermodule;
-    hGain[supermodule-1] = new TH2F(nameGain.Data(),titleGain.Data(),
+    hGain[supermodule] = new TH2F(nameGain.Data(),titleGain.Data(),
 				    nCol,1.,1.*nCol,nRow,1.,1.*nRow);
-    for (Int_t column=1; column<=nCol; column++) {
-      for (Int_t row=1; row<=nRow; row++) {
+    for (Int_t column=0; column<nCol; column++) {
+      for (Int_t row=0; row<nRow; row++) {
 	Float_t ped  = clb->GetADCpedestal(supermodule,column,row);
 	Float_t gain = clb->GetADCchannel (supermodule,column,row);
 	//cout<<"Get SM: "<<supermodule<<" col "<<column<<" row "<<row
 	//  <<" chan "<<gain<<endl;
-	hPed[supermodule-1] ->SetBinContent(column,row,ped);
-	hGain[supermodule-1]->SetBinContent(column,row,gain);
+	hPed[supermodule] ->SetBinContent(column,row,ped);
+	hGain[supermodule]->SetBinContent(column,row,gain);
       }
     }
     if(supermodule < 7){
       cPed ->cd(supermodule);
-      hPed[supermodule-1] ->Draw("lego2");
+      hPed[supermodule] ->Draw("lego2");
       cGain->cd(supermodule);
-      hGain[supermodule-1]->Draw("lego2");
+      hGain[supermodule]->Draw("lego2");
     }
     else{
       cPed2 ->cd(supermodule-6);
-      hPed[supermodule-1] ->Draw("lego2");
+      hPed[supermodule] ->Draw("lego2");
       cGain2->cd(supermodule-6);
-      hGain[supermodule-1]->Draw("lego2");
+      hGain[supermodule]->Draw("lego2");
     }
 
   }
