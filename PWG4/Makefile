@@ -1,5 +1,5 @@
 
-include $(ROOTSYS)/test/Makefile.arch
+include Makefile.arch
 
 default-target: libPWG4Gamma.so
 

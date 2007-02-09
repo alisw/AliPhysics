@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/01/23 17:17:29  schutz
+ * New Gamma package
+ *
  *
  */
 
@@ -15,9 +18,10 @@
 // Class for the analysis of gamma  (gamma-jet, 
 // gamma-hadron(Arleo, TODO))
 // This class only contains 3 methods: one to fill lists of particles (ESDs) comming 
-//  from the CTS (ITS+TPC) and the calorimeters: The other search in the 
+//  from the CTS (ITS+TPC) and the calorimeters; the other search in the 
 //  corresponing calorimeter for the highest energy cluster, identify it as 
-//  prompt photon(Shower Shape (done) and Isolation Cut (TODO in new class?)).
+//  prompt photon(Shower Shape and Isolation Cut), the last method does the 
+//  isolation selection
 //
 //  Class created from old AliPHOSGammaJet
 //  (see AliRoot versions previous Release 4-09)
@@ -25,15 +29,11 @@
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
-#include <TROOT.h>
-#include <TChain.h>
-#include "TTask.h"
-#include "TArrayD.h"
-#include "TChain.h"
-#include <TH2F.h>
-#include <TTree.h> 
 #include <TParticle.h> 
+#include <TClonesArray.h> 
+#include <TTree.h> 
 #include "AliAnalysisTask.h" 
+#include <TH2F.h>
 
 class AliESD ; 
  
@@ -44,10 +44,13 @@ public:
   AliAnaGammaDirect(const char *name) ; // default ctor
   AliAnaGammaDirect(const AliAnaGammaDirect & g) ; // cpy ctor
   virtual ~AliAnaGammaDirect() ; //virtual dtor
+
   virtual void Exec(Option_t * opt = "") ;
-  virtual void Init(Option_t * opt = "");
+  virtual void ConnectInputData(Option_t *);
+  virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "");
   
+  void InitParameters();
   TTree *     GetChain()                const {return fChain ; }
   AliESD *    GetESD()                  const {return fESD ; }
   TObjArray * GetOutputContainer()      const {return fOutputContainer ; }
@@ -72,9 +75,6 @@ public:
   void SetPtSumThreshold(Float_t pt) {fPtSumThreshold = pt; };
   void SetICMethod(Int_t i )          {fMakeICMethod = i ; }
   
-  void SetConeSizes(Int_t i, Float_t r)              {fConeSizes[i] = r ; }
-  void SetPtThresholds(Int_t i, Float_t pt)        {fPtThresholds[i] = pt; };
-
   void SetEMCALPIDOn(Bool_t pid){ fEMCALPID= pid ; }
   void SetPHOSPIDOn(Bool_t pid){ fPHOSPID= pid ; }
 
@@ -105,22 +105,14 @@ public:
   Float_t      fConeSize ; //Size of the isolation cone 
   Float_t      fPtThreshold ; //Mimium pt of the particles in the cone to set isolation
   Float_t      fPtSumThreshold ; //Mimium pt sum of the particles in the cone to set isolation  
-  Int_t         fNCones   ; //Number of cone sizes to test
-  Int_t         fNPtThres ; //Number of ptThres to test
-  Float_t     fConeSizes[10] ; // Arrat with cones to test
-  Float_t     fPtThresholds[10] ; // Array with pt thresholds to test
   Int_t        fMakeICMethod ; //Isolation cut method to be used
                                            // 0: No isolation
                                            // 1: Pt threshold method
                                            // 2: Cone pt sum method
-                                           // 3: Study both methods for several cones and pt.
   //Histograms  
   TH1F * fhNGamma    ; 
   TH2F * fhPhiGamma    ; 
   TH2F * fhEtaGamma    ; 
-  TH1F * fhPtCandidate ;
-  TH1F* fhPtThresIsolated[10][10] ;
-  TH2F* fhPtSumIsolated[10] ;
 
   ClassDef(AliAnaGammaDirect,0)
 } ;

@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/01/23 17:17:29  schutz
+ * New Gamma package
+ *
  *
  */
 
@@ -41,7 +44,7 @@
 #include <TFile.h>
 #include <TParticle.h>
 #include <TH2.h>
-
+#include <TChain.h>
 #include "AliAnaGammaDirect.h" 
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -58,7 +61,7 @@ ClassImp(AliAnaGammaDirect)
     fPrintInfo(0), fMinGammaPt(0.),
     fCalorimeter(""), fEMCALPID(0),fPHOSPID(0),
     fConeSize(0.),fPtThreshold(0.),fPtSumThreshold(0), 
-    fNCones(0),fNPtThres(0),fMakeICMethod(0)
+    fMakeICMethod(0)
 {
   //Ctor        
   TList * list = gDirectory->GetListOfKeys() ; 
@@ -69,11 +72,6 @@ ClassImp(AliAnaGammaDirect)
     //-1 to avoid GammaJet Task
     h = dynamic_cast<TH2F*>(gDirectory->Get(list->At(index)->GetName())) ; 
     fOutputContainer->Add(h) ; 
-  }
-  
-  for(Int_t i = 0; i < 10 ; i++){
-    fConeSizes[i]=0;
-    fPtThresholds[i]=0;
   }
   
   // Input slot #0 works with an Ntuple
@@ -93,17 +91,11 @@ AliAnaGammaDirect::AliAnaGammaDirect(const AliAnaGammaDirect & g) :
   fConeSize(g.fConeSize),
   fPtThreshold(g.fPtThreshold),
   fPtSumThreshold(g.fPtSumThreshold), 
-  fNCones(g.fNCones),fNPtThres(g.fNPtThres),
   fMakeICMethod(g.fMakeICMethod)
 {
   // cpy ctor
   SetName (g.GetName()) ; 
   SetTitle(g.GetTitle()) ; 
-
-  for(Int_t i = 0; i < 10 ; i++){
-    fConeSizes[i]=  g.fConeSizes[i];
-    fPtThresholds[i]=   g.fPtThresholds[i];
-  }
 }
 
 //____________________________________________________________________________
@@ -115,9 +107,61 @@ AliAnaGammaDirect::~AliAnaGammaDirect()
   delete fhNGamma    ;  
   delete fhPhiGamma  ; 
   delete fhEtaGamma   ;  
-  delete fhPtCandidate ;
-  delete [] fhPtThresIsolated ;
-  delete [] fhPtSumIsolated ;
+
+}
+
+//______________________________________________________________________________
+void AliAnaGammaDirect::ConnectInputData(const Option_t*)
+{
+  // Initialisation of branch container and histograms 
+    
+  AliInfo(Form("*** Initialization of %s", GetName())) ; 
+  
+  // Get input data
+  fChain = dynamic_cast<TChain *>(GetInputData(0)) ;
+  if (!fChain) {
+    AliError(Form("Input 0 for %s not found\n", GetName()));
+    return ;
+  }
+  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  } else {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
+  }
+
+}
+
+//________________________________________________________________________
+void AliAnaGammaDirect::CreateOutputObjects()
+{  
+
+  // Init parameteres and create histograms to be saved in output file and 
+  // stores them in fOutputContainer
+  InitParameters();
+
+  fOutputContainer = new TObjArray(3) ;
+
+  //Histograms of highest gamma identified in Event
+  fhNGamma  = new TH1F("NGamma","Number of #gamma over PHOS",240,0,120); 
+  fhNGamma->SetYTitle("N");
+  fhNGamma->SetXTitle("p_{T #gamma}(GeV/c)");
+  fOutputContainer->Add(fhNGamma) ; 
+  
+  fhPhiGamma  = new TH2F
+    ("PhiGamma","#phi_{#gamma}",200,0,120,200,0,7); 
+  fhPhiGamma->SetYTitle("#phi");
+  fhPhiGamma->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhPhiGamma) ; 
+  
+  fhEtaGamma  = new TH2F
+    ("EtaGamma","#phi_{#gamma}",200,0,120,200,-0.8,0.8); 
+  fhEtaGamma->SetYTitle("#eta");
+  fhEtaGamma->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhEtaGamma) ;
 
 }
 
@@ -287,7 +331,7 @@ void AliAnaGammaDirect::Exec(Option_t *)
 {
   
   // Processing of one event
-    
+
   //Get ESDs
   Long64_t entry = fChain->GetReadEntry() ;
   
@@ -308,92 +352,53 @@ void AliAnaGammaDirect::Exec(Option_t *)
   TClonesArray * plEMCAL   = new TClonesArray("TParticle",1000);  // All particles measured in EMCAL as Gamma calorimeter
 
   TParticle *pGamma = new TParticle(); //It will contain the kinematics of the found prompt gamma
-  TParticle *pLeading = new TParticle(); //It will contain the kinematics of the found leading particle
-  
+ 
   //Fill lists with photons, neutral particles and charged particles
   //look for the highest energy photon in the event inside fCalorimeter
-
+  
   AliDebug(2, "Fill particle lists, get prompt gamma");
-
+  
   //Fill particle lists 
   CreateParticleList(particleList, plCTS,plEMCAL,plPHOS); 
-
+  
   if(fCalorimeter == "PHOS")
     plNe = plPHOS;
   if(fCalorimeter == "EMCAL")
     plNe = plEMCAL;
-
-
-  //_______________Analysis 1__________________________
-  //Look for the prompt photon in the selected calorimeter
-  if(fMakeICMethod < 3){
+  
+  
+  Bool_t iIsInPHOSorEMCAL = kFALSE ; //To check if Gamma was in any calorimeter
+  //Search highest energy prompt gamma in calorimeter
+  GetPromptGamma(plNe,  plCTS, pGamma, iIsInPHOSorEMCAL) ; 
+  
+  AliDebug(1, Form("Is Gamma in %s? %d",fCalorimeter.Data(),iIsInPHOSorEMCAL));
+  
+  //If there is any photon candidate in fCalorimeter
+  if(iIsInPHOSorEMCAL){
+    if (fPrintInfo)
+      AliInfo(Form("Prompt Gamma: pt %f, phi %f, eta %f", pGamma->Pt(),pGamma->Phi(),pGamma->Eta())) ;
     
-    Bool_t iIsInPHOSorEMCAL = kFALSE ; //To check if Gamma was in any calorimeter
-    //Search highest energy prompt gamma in calorimeter
-    GetPromptGamma(plNe,  plCTS, pGamma, iIsInPHOSorEMCAL) ; 
-    
-    AliDebug(1, Form("Is Gamma in %s? %d",fCalorimeter.Data(),iIsInPHOSorEMCAL));
-    
-    //If there is any photon candidate in fCalorimeter
-    if(iIsInPHOSorEMCAL){
-      if (fPrintInfo)
-	AliInfo(Form("Prompt Gamma: pt %f, phi %f, eta %f", pGamma->Pt(),pGamma->Phi(),pGamma->Eta())) ;
-      
-    }//Gamma in Calo
-    
-  }//Analysis 1
-
-
-  //_______________Analysis 2__________________________
-  //Look for the prompt photon in the selected calorimeter
-  //Isolation Cut Analysis for both methods and different pt cuts and cones
-  if(fMakeICMethod == 3){
-    
-    for(Int_t ipr = 0; ipr < plNe->GetEntries() ; ipr ++ ){
-      TParticle * pCandidate = dynamic_cast<TParticle *>(plNe->At(ipr)) ;
-      
-      if(pCandidate->Pt() > fMinGammaPt){
-	
-	Bool_t  icPtThres   = kFALSE;
-	Bool_t  icPtSum     = kFALSE;
-	
-	Float_t ptC             = pCandidate->Pt() ;
-	
-	fhPtCandidate->Fill(ptC);
-	
-	for(Int_t icone = 0; icone<fNCones; icone++){
-	  fConeSize  = fConeSizes[icone] ;
-	  Float_t coneptsum = 0 ;
-	  for(Int_t ipt = 0; ipt<fNPtThres;ipt++){ 
-	    fPtThreshold   =  fPtThresholds[ipt] ;
-	    MakeIsolationCut(plCTS,plNe, pCandidate, ipr, icPtThres, icPtSum,coneptsum);
-	    AliDebug(4,Form("Candidate pt %f, pt in cone %f, Isolated? ICPt %d, ICSum %d",
-			    pCandidate->Pt(), coneptsum, icPtThres, icPtSum));
-	    
-	    fhPtThresIsolated[icone][ipt]->Fill(ptC); 
-	  }//pt thresh loop
-	  fhPtSumIsolated[icone]->Fill(ptC,coneptsum) ;
-	}//cone size loop
-      }//min pt candidate
-    }//candidate loop
-  }//Analysis 2
+  }//Gamma in Calo
   
   AliDebug(2, "End of analysis, delete pointers");
   
   particleList->Delete() ; 
   plCTS->Delete() ;
   plNe->Delete() ;
+  plEMCAL->Delete() ;
   plPHOS->Delete() ;
-  pLeading->Delete();
   pGamma->Delete();
+ 
+  PostData(0, fOutputContainer);
 
-  delete plNe ;
+ delete plNe ;
   delete plCTS ;
+  //delete plPHOS ;
+  //delete plEMCAL ;
   delete particleList ;
-  //  delete pLeading;
+
   //  delete pGamma;
 
-  PostData(0, fOutputContainer);
 }    
 
 
@@ -443,40 +448,13 @@ void AliAnaGammaDirect::GetPromptGamma(TClonesArray * pl, TClonesArray * plCTS, 
 }
 
   //____________________________________________________________________________
-void AliAnaGammaDirect::Init(const Option_t * )
+void AliAnaGammaDirect::InitParameters()
 {
-  // Initialisation of branch container 
  
-  AliDebug(2,Form("*** Initialization of %s", GetName())) ; 
-  
-  // Get input data
-  fChain = dynamic_cast<TChain *>(GetInputData(0)) ;
-  if (!fChain) {
-    AliError(Form("Input 0 for %s not found\n", GetName()));
-    return ;
-  }
-  
-  if (!fESD) {
-    // One should first check if the branch address was taken by some other task
-    char ** address = (char **)GetBranchAddress(0, "ESD") ;
-    if (address) 
-      fESD = (AliESD *)(*address) ; 
-    if (!fESD) 
-      fChain->SetBranchAddress("ESD", &fESD) ;  
-  }
-  // The output objects will be written to 
-  TDirectory * cdir = gDirectory ; 
-  // Open a file for output #0
-  char outputName[1024] ; 
-  sprintf(outputName, "%s.root", GetName() ) ; 
-  OpenFile(0, outputName , "RECREATE") ; 
-  if (cdir) 
-    cdir->cd() ; 
-
- //  //Initialize the parameters of the analysis.
+  //Initialize the parameters of the analysis.
   fCalorimeter="PHOS";
   fPrintInfo           = kTRUE;
-  fMinGammaPt  = 10. ;
+  fMinGammaPt  = 5. ;
 
   //Fill particle lists when PID is ok
   fEMCALPID = kFALSE;
@@ -486,15 +464,7 @@ void AliAnaGammaDirect::Init(const Option_t * )
   fPtThreshold         = 2.0; 
   fPtSumThreshold  = 1.; 
 
-  fNCones           = 4 ; 
-  fNPtThres         = 4 ; 
-  fConeSizes[0] = 0.1; fConeSizes[0] = 0.2; fConeSizes[2] = 0.3; fConeSizes[3] = 0.4;
-  fPtThresholds[0]=1.; fPtThresholds[0]=2.; fPtThresholds[0]=3.; fPtThresholds[0]=4.;
-
-  fMakeICMethod = 1; // 0 don't isolate, 1 pt thresh method, 2 cone pt sum method, 3 make isolation study
-
-  //Initialization of histograms 
-  MakeHistos() ;
+  fMakeICMethod = 1; // 0 don't isolate, 1 pt thresh method, 2 cone pt sum method
 }
 
 //__________________________________________________________________
@@ -562,61 +532,6 @@ void  AliAnaGammaDirect::MakeIsolationCut(TClonesArray * plCTS,
 
 }
 
-//___________________________________________________________________
-void AliAnaGammaDirect::MakeHistos()
-{
-  // Create histograms to be saved in output file and 
-  // stores them in fOutputContainer
-  
-  fOutputContainer = new TObjArray(10000) ;
-
-  //Histograms of highest gamma identified in Event
-  fhNGamma  = new TH1F("NGamma","Number of #gamma over PHOS",240,0,120); 
-  fhNGamma->SetYTitle("N");
-  fhNGamma->SetXTitle("p_{T #gamma}(GeV/c)");
-  fOutputContainer->Add(fhNGamma) ; 
-  
-  fhPhiGamma  = new TH2F
-    ("PhiGamma","#phi_{#gamma}",200,0,120,200,0,7); 
-  fhPhiGamma->SetYTitle("#phi");
-  fhPhiGamma->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhPhiGamma) ; 
-  
-  fhEtaGamma  = new TH2F
-    ("EtaGamma","#phi_{#gamma}",200,0,120,200,-0.8,0.8); 
-  fhEtaGamma->SetYTitle("#eta");
-  fhEtaGamma->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhEtaGamma) ;
-
-  if( fMakeICMethod== 3 ){
-
-    //Isolation cut histograms
-    fhPtCandidate  = new TH1F
-      ("PtCandidate","p_{T} of candidate particles for isolation",240,0,120); 
-    fhPtCandidate->SetXTitle("p_{T} (GeV/c)");
-    fOutputContainer->Add(fhPtCandidate) ;
-    
-    char name[128];
-    char title[128];
-    for(Int_t icone = 0; icone<fNCones; icone++){
-      sprintf(name,"PtSumIsolated_Cone_%d",icone);
-      sprintf(title,"Candidate cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
-      fhPtSumIsolated[icone]  = new TH2F(name, title,240,0,120,120,0,10);
-      fhPtSumIsolated[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
-      fhPtSumIsolated[icone]->SetXTitle("p_{T} (GeV/c)");
-      fOutputContainer->Add(fhPtSumIsolated[icone]) ; 
-      
-      for(Int_t ipt = 0; ipt<fNPtThres;ipt++){ 
-	sprintf(name,"PtThresIsol_Cone_%d_Pt%d",icone,ipt);
-	sprintf(title,"Isolated candidate p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
-	fhPtThresIsolated[icone][ipt]  = new TH1F(name, title,240,0,120);
-	fhPtThresIsolated[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
-	fOutputContainer->Add(fhPtThresIsolated[icone][ipt]) ; 
-      }//icone loop
-  }//ipt loop
-  }
-}
-
 void AliAnaGammaDirect::Print(const Option_t * opt) const
 {
 
@@ -625,10 +540,11 @@ void AliAnaGammaDirect::Print(const Option_t * opt) const
     return;
 
   Info("Print", "%s %s", GetName(), GetTitle() ) ;
+  printf("IC method               =     %d\n", fMakeICMethod) ; 
   printf("Cone Size               =     %f\n", fConeSize) ; 
   printf("pT threshold           =     %f\n", fPtThreshold) ;
   printf("pT sum threshold   =     %f\n", fPtSumThreshold) ; 
-  printf("Min Gamma pT      =     %f\n", fMinGammaPt) ; 
+  printf("Min Gamma pT      =     %f\n",  fMinGammaPt) ; 
   printf("Calorimeter            =     %s\n", fCalorimeter.Data()) ; 
 } 
 

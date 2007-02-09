@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/01/23 17:17:29  schutz
+ * New Gamma package
+ *
  *
  */
 
@@ -227,13 +230,368 @@ Double_t AliAnaGammaJet::CalculateJetRatioLimit(const Double_t ptg,
   return rat ;
 }
 
+//______________________________________________________________________________
+void AliAnaGammaJet::ConnectInputData(const Option_t*)
+{
+  // Initialisation of branch container and histograms 
+  AliAnaGammaDirect::ConnectInputData("");    
+
+}
+
+//________________________________________________________________________
+void AliAnaGammaJet::CreateOutputObjects()
+{  
+
+  // Init parameteres and create histograms to be saved in output file and 
+  // stores them in fOutputContainer
+  InitParameters();
+  AliAnaGammaDirect::CreateOutputObjects();
+  
+  fOutputContainer = new TObjArray(100) ;
+ 
+  TObjArray  * outputContainer =GetOutputContainer();
+  for(Int_t i = 0; i < outputContainer->GetEntries(); i++ )
+    fOutputContainer->Add(outputContainer->At(i)) ;
+
+  //
+  fhChargeRatio  = new TH2F
+    ("ChargeRatio","p_{T leading charge} /p_{T #gamma} vs p_{T #gamma}",
+     120,0,120,120,0,1); 
+  fhChargeRatio->SetYTitle("p_{T lead charge} /p_{T #gamma}");
+  fhChargeRatio->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhChargeRatio) ;
+  
+  fhDeltaPhiCharge  = new TH2F
+    ("DeltaPhiCharge","#phi_{#gamma} - #phi_{charge} vs p_{T #gamma}",
+     200,0,120,200,0,6.4); 
+  fhDeltaPhiCharge->SetYTitle("#Delta #phi");
+  fhDeltaPhiCharge->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhDeltaPhiCharge) ; 
+  
+  fhDeltaEtaCharge  = new TH2F
+    ("DeltaEtaCharge","#eta_{#gamma} - #eta_{charge} vs p_{T #gamma}",
+     200,0,120,200,-2,2); 
+  fhDeltaEtaCharge->SetYTitle("#Delta #eta");
+  fhDeltaEtaCharge->SetXTitle("p_{T #gamma} (GeV/c)");
+  fOutputContainer->Add(fhDeltaEtaCharge) ; 
+  
+  //
+  if(!fJetsOnlyInCTS){
+    fhPi0Ratio  = new TH2F
+      ("Pi0Ratio","p_{T leading  #pi^{0}} /p_{T #gamma} vs p_{T #gamma}",
+       120,0,120,120,0,1); 
+    fhPi0Ratio->SetYTitle("p_{T lead  #pi^{0}} /p_{T #gamma}");
+    fhPi0Ratio->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhPi0Ratio) ; 
+    
+    fhDeltaPhiPi0  = new TH2F
+      ("DeltaPhiPi0","#phi_{#gamma} - #phi_{ #pi^{0}} vs p_{T #gamma}",
+       200,0,120,200,0,6.4); 
+    fhDeltaPhiPi0->SetYTitle("#Delta #phi");
+    fhDeltaPhiPi0->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhDeltaPhiPi0) ; 
+    
+    fhDeltaEtaPi0  = new TH2F
+      ("DeltaEtaPi0","#eta_{#gamma} - #eta_{ #pi^{0}} vs p_{T #gamma}",
+       200,0,120,200,-2,2); 
+    fhDeltaEtaPi0->SetYTitle("#Delta #eta");
+    fhDeltaEtaPi0->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhDeltaEtaPi0) ; 
+ 
+    //
+    fhAnglePair  = new TH2F
+      ("AnglePair",
+       "Angle between #pi^{0} #gamma pair vs p_{T  #pi^{0}}",
+       200,0,50,200,0,0.2); 
+    fhAnglePair->SetYTitle("Angle (rad)");
+    fhAnglePair->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePair) ; 
+    
+    fhAnglePairAccepted  = new TH2F
+      ("AnglePairAccepted",
+       "Angle between #pi^{0} #gamma pair vs p_{T  #pi^{0}}, both #gamma in eta<0.7, inside window",
+       200,0,50,200,0,0.2); 
+    fhAnglePairAccepted->SetYTitle("Angle (rad)");
+    fhAnglePairAccepted->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairAccepted) ; 
+    
+    fhAnglePairNoCut  = new TH2F
+      ("AnglePairNoCut",
+       "Angle between all #gamma pair vs p_{T  #pi^{0}}",200,0,50,200,0,0.2); 
+    fhAnglePairNoCut->SetYTitle("Angle (rad)");
+    fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairNoCut) ; 
+    
+    fhAnglePairLeadingCut  = new TH2F
+      ("AnglePairLeadingCut",
+       "Angle between all #gamma pair that have a good phi and pt vs p_{T  #pi^{0}}",
+       200,0,50,200,0,0.2); 
+    fhAnglePairLeadingCut->SetYTitle("Angle (rad)");
+    fhAnglePairLeadingCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairLeadingCut) ; 
+    
+    fhAnglePairAngleCut  = new TH2F
+      ("AnglePairAngleCut",
+       "Angle between all #gamma pair (angle + leading cut) vs p_{T  #pi^{0}}"
+       ,200,0,50,200,0,0.2); 
+    fhAnglePairAngleCut->SetYTitle("Angle (rad)");
+    fhAnglePairAngleCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairAngleCut) ;
+    
+    fhAnglePairAllCut  = new TH2F
+      ("AnglePairAllCut",
+       "Angle between all #gamma pair (angle + inv mass cut+leading) vs p_{T  #pi^{0}}"
+       ,200,0,50,200,0,0.2); 
+    fhAnglePairAllCut->SetYTitle("Angle (rad)");
+    fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairAllCut) ; 
+    
+    fhAnglePairLeading  = new TH2F
+      ("AnglePairLeading",
+       "Angle between all #gamma pair finally selected vs p_{T  #pi^{0}}",
+       200,0,50,200,0,0.2); 
+    fhAnglePairLeading->SetYTitle("Angle (rad)");
+    fhAnglePairLeading->SetXTitle("E_{ #pi^{0}} (GeV/c)");
+    fOutputContainer->Add(fhAnglePairLeading) ; 
+    
+    //
+    fhInvMassPairNoCut  = new TH2F
+      ("InvMassPairNoCut","Invariant Mass of all #gamma pair vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairNoCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairNoCut) ; 
+    
+    fhInvMassPairLeadingCut  = new TH2F
+      ("InvMassPairLeadingCut",
+       "Invariant Mass of #gamma pair (leading cuts) vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairLeadingCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairLeadingCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairLeadingCut) ; 
+    
+    fhInvMassPairAngleCut  = new TH2F
+      ("InvMassPairAngleCut",
+       "Invariant Mass of #gamma pair (angle cut) vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairAngleCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairAngleCut) ; 
+    
+    fhInvMassPairAllCut  = new TH2F
+      ("InvMassPairAllCut",
+       "Invariant Mass of #gamma pair (angle+invmass cut+leading) vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairAllCut->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairAllCut) ; 
+    
+    fhInvMassPairLeading  = new TH2F
+      ("InvMassPairLeading",
+       "Invariant Mass of #gamma pair selected vs p_{T #gamma}",
+       120,0,120,360,0,0.5); 
+    fhInvMassPairLeading->SetYTitle("Invariant Mass (GeV/c^{2})");
+    fhInvMassPairLeading->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhInvMassPairLeading) ; 
+  }
+  
+  
+  if(!fSeveralConeAndPtCuts){
+    
+    //Count
+    fhNBkg = new TH1F("NBkg","bkg multiplicity",9000,0,9000); 
+    fhNBkg->SetYTitle("counts");
+    fhNBkg->SetXTitle("N");
+    fOutputContainer->Add(fhNBkg) ; 
+    
+    fhNLeading  = new TH2F
+      ("NLeading","Accepted Jet Leading", 240,0,120,240,0,120); 
+    fhNLeading->SetYTitle("p_{T charge} (GeV/c)");
+    fhNLeading->SetXTitle("p_{T #gamma}(GeV/c)");
+    fOutputContainer->Add(fhNLeading) ; 
+    
+    fhNJet  = new TH1F("NJet","Accepted jets",240,0,120); 
+    fhNJet->SetYTitle("N");
+    fhNJet->SetXTitle("p_{T #gamma}(GeV/c)");
+    fOutputContainer->Add(fhNJet) ; 
+    
+    //Ratios and Pt dist of reconstructed (not selected) jets
+    //Jet
+    fhJetRatio  = new TH2F
+      ("JetRatio","p_{T jet lead}/p_{T #gamma} vs p_{T #gamma}",
+       240,0,120,200,0,10);
+    fhJetRatio->SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
+    fhJetRatio->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhJetRatio) ; 
+    
+    fhJetPt  = new TH2F
+      ("JetPt", "p_{T jet lead} vs p_{T #gamma}",240,0,120,400,0,200);
+    fhJetPt->SetYTitle("p_{T jet}");
+    fhJetPt->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhJetPt) ; 
+    
+    //Bkg
+    
+    fhBkgRatio  = new TH2F
+      ("BkgRatio","p_{T bkg lead}/p_{T #gamma} vs p_{T #gamma}",
+       240,0,120,200,0,10);
+    fhBkgRatio->SetYTitle("p_{T bkg lead charge}/p_{T #gamma}");
+    fhBkgRatio->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhBkgRatio) ;
+    
+    fhBkgPt  = new TH2F
+      ("BkgPt","p_{T jet lead} vs p_{T #gamma}",240,0,120,400,0,200);
+    fhBkgPt->SetYTitle("p_{T jet lead charge}/p_{T #gamma}");
+    fhBkgPt->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhBkgPt) ;
+    
+    //Jet Distributions
+    
+    fhJetFragment  = 
+      new TH2F("JetFragment","x = p_{T i charged}/p_{T #gamma}",
+	       240,0.,120.,1000,0.,1.2); 
+    fhJetFragment->SetYTitle("x_{T}");
+    fhJetFragment->SetXTitle("p_{T #gamma}");
+    fOutputContainer->Add(fhJetFragment) ;
+    
+    fhBkgFragment  = new TH2F
+      ("BkgFragment","x = p_{T i charged}/p_{T #gamma}",
+       240,0.,120.,1000,0.,1.2);
+    fhBkgFragment->SetYTitle("x_{T}");
+    fhBkgFragment->SetXTitle("p_{T #gamma}");
+    fOutputContainer->Add(fhBkgFragment) ;
+    
+    fhJetPtDist  = 
+      new TH2F("JetPtDist","x = p_{T i charged}",240,0.,120.,400,0.,200.); 
+    fhJetPtDist->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhJetPtDist) ;
+    
+    fhBkgPtDist  = new TH2F
+      ("BkgPtDist","x = p_{T i charged}",240,0.,120.,400,0.,200.); 
+    fhBkgPtDist->SetXTitle("p_{T #gamma} (GeV/c)");
+    fOutputContainer->Add(fhBkgPtDist) ;
+
+  }
+  else{
+    //If we want to study the jet for different cones and pt
+    
+    for(Int_t icone = 0; icone<fNCone; icone++){
+      for(Int_t ipt = 0; ipt<fNPt;ipt++){ 
+	
+	//Jet
+	
+	fhJetRatios[icone][ipt]  = new TH2F
+	  ("JetRatioCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
+	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
+	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
+	   240,0,120,200,0,10);
+	fhJetRatios[icone][ipt]->
+	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
+	fhJetRatios[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
+	fOutputContainer->Add(fhJetRatios[icone][ipt]) ; 
+	
+	
+	fhJetPts[icone][ipt]  = new TH2F
+	  ("JetPtCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
+	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
+	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
+	   240,0,120,400,0,200);
+	fhJetPts[icone][ipt]->
+	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
+	fhJetPts[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
+	fOutputContainer->Add(fhJetPts[icone][ipt]) ; 
+	
+	//Bkg
+	fhBkgRatios[icone][ipt]  = new TH2F
+	  ("BkgRatioCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
+	   "p_{T bkg lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
+	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
+	   240,0,120,200,0,10);
+	fhBkgRatios[icone][ipt]->
+	  SetYTitle("p_{T bkg lead #pi^{0}}/p_{T #gamma}");
+	fhBkgRatios[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
+	fOutputContainer->Add(fhBkgRatios[icone][ipt]) ; 
+	
+	fhBkgPts[icone][ipt]  = new TH2F
+	  ("BkgPtCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
+	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
+	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
+	   240,0,120,400,0,200);
+	fhBkgPts[icone][ipt]->
+	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
+	fhBkgPts[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
+	fOutputContainer->Add(fhBkgPts[icone][ipt]) ; 
+	
+	//Counts
+	fhNBkgs[icone][ipt]  = new TH1F
+	  ("NBkgCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
+	   "bkg multiplicity cone ="+fNameCones[icone]+", pt>" 
+	   +fNamePtThres[ipt]+" GeV/c",9000,0,9000); 
+	fhNBkgs[icone][ipt]->SetYTitle("counts");
+	fhNBkgs[icone][ipt]->SetXTitle("N");
+	fOutputContainer->Add(fhNBkgs[icone][ipt]) ; 
+	
+	fhNLeadings[icone][ipt]  = new TH2F
+	  ("NLeadingCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
+	   "p_{T #gamma} vs p_{T #pi^{0}} cone ="+fNameCones[icone]+", pt>" 
+	   +fNamePtThres[ipt]+" GeV/c",120,0,120,120,0,120); 
+	fhNLeadings[icone][ipt]->SetYTitle("p_{T #pi^{0}}(GeV/c)");
+	fhNLeadings[icone][ipt]->SetXTitle("p_{T #gamma}(GeV/c)");
+	fOutputContainer->Add(fhNLeadings[icone][ipt]) ; 
+	
+	fhNJets[icone][ipt]  = new TH1F
+	  ("NJetCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
+	   "Number of neutral jets, cone ="+fNameCones[icone]+", pt>" 
+	   +fNamePtThres[ipt]+" GeV/c",120,0,120); 
+	fhNJets[icone][ipt]->SetYTitle("N");
+	fhNJets[icone][ipt]->SetXTitle("p_{T #gamma}(GeV/c)");
+	fOutputContainer->Add(fhNJets[icone][ipt]) ; 
+	
+	//Fragmentation Function
+	fhJetFragments[icone][ipt]  = new TH2F
+	  ("JetFragmentCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
+	   "x_{T} = p_{T i}/p_{T #gamma}, cone ="+fNameCones[icone]+", pt>" 
+	   +fNamePtThres[ipt]+" GeV/c",120,0.,120.,240,0.,1.2); 
+	fhJetFragments[icone][ipt]->SetYTitle("x_{T}");
+	fhJetFragments[icone][ipt]->SetXTitle("p_{T #gamma}");
+	fOutputContainer->Add(fhJetFragments[icone][ipt]) ; 
+	
+	fhBkgFragments[icone][ipt]  = new TH2F
+	  ("BkgFragmentCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
+	   "x_{T} = p_{T i}/p_{T #gamma}, cone ="+fNameCones[icone]+", pt>" 
+	   +fNamePtThres[ipt]+" GeV/c",120,0.,120.,240,0.,1.2); 
+	fhBkgFragments[icone][ipt]->SetYTitle("x_{T}");
+	fhBkgFragments[icone][ipt]->SetXTitle("p_{T #gamma}");
+	fOutputContainer->Add(fhBkgFragments[icone][ipt]) ; 
+	
+	//Jet particle distribution
+	
+	fhJetPtDists[icone][ipt]  = new TH2F
+	  ("JetPtDistCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
+	   "p_{T i}, cone ="+fNameCones[icone]+", pt>" +fNamePtThres[ipt]+
+	   " GeV/c",120,0.,120.,120,0.,120.); 
+	fhJetPtDists[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
+	fOutputContainer->Add(fhJetPtDists[icone][ipt]) ; 
+	
+	fhBkgPtDists[icone][ipt]  = new TH2F
+	  ("BkgPtDistCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
+	   "p_{T i}, cone ="+fNameCones[icone]+", pt>" +fNamePtThres[ipt]+
+	   " GeV/c",120,0.,120.,120,0.,120.); 
+	fhBkgPtDists[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
+	fOutputContainer->Add(fhBkgPtDists[icone][ipt]) ; 
+	
+      }//ipt
+    } //icone
+  }//If we want to study any cone or pt threshold
+}
+
 
 //____________________________________________________________________________
 void AliAnaGammaJet::Exec(Option_t *) 
 {
   
   // Processing of one event
-  
+
   //Get ESDs
   Long64_t entry = GetChain()->GetReadEntry() ;
   
@@ -613,10 +971,10 @@ Bool_t  AliAnaGammaJet::GetLeadingParticle(TClonesArray * plCTS, TClonesArray * 
 }
 
   //____________________________________________________________________________
-void AliAnaGammaJet::Init(const Option_t * )
+void AliAnaGammaJet::InitParameters()
 {
 //   // Initialisation of branch container 
-  AliAnaGammaDirect::Init();
+  //AliAnaGammaDirect::InitParameters();
  
   //Initialize the parameters of the analysis.
   //fCalorimeter="PHOS";
@@ -703,10 +1061,6 @@ void AliAnaGammaJet::Init(const Option_t * )
   //Fill particle lists when PID is ok
   // fEMCALPID = kFALSE;
   // fPHOSPID = kFALSE;
-
-  //Initialization of histograms 
-
-  MakeHistos() ; 
 
 }
 
@@ -809,350 +1163,6 @@ Bool_t AliAnaGammaJet::IsJetSelected(const Double_t ptg, const Double_t ptj){
   else
     return kFALSE;
 
-}
-
-//____________________________________________________________________________
-void AliAnaGammaJet::MakeHistos()
-{
-  // Create histograms to be saved in output file and 
-  // stores them in fOutputContainer
-  
-  fOutputContainer = new TObjArray(10000) ;
- 
-  TObjArray  * outputContainer =GetOutputContainer();
-  for(Int_t i = 0; i < outputContainer->GetEntries(); i++ )
-    fOutputContainer->Add(outputContainer->At(i)) ;
-
-  //
-  fhChargeRatio  = new TH2F
-    ("ChargeRatio","p_{T leading charge} /p_{T #gamma} vs p_{T #gamma}",
-     120,0,120,120,0,1); 
-  fhChargeRatio->SetYTitle("p_{T lead charge} /p_{T #gamma}");
-  fhChargeRatio->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhChargeRatio) ;
-  
-  fhDeltaPhiCharge  = new TH2F
-    ("DeltaPhiCharge","#phi_{#gamma} - #phi_{charge} vs p_{T #gamma}",
-     200,0,120,200,0,6.4); 
-  fhDeltaPhiCharge->SetYTitle("#Delta #phi");
-  fhDeltaPhiCharge->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhDeltaPhiCharge) ; 
-  
-  fhDeltaEtaCharge  = new TH2F
-    ("DeltaEtaCharge","#eta_{#gamma} - #eta_{charge} vs p_{T #gamma}",
-     200,0,120,200,-2,2); 
-  fhDeltaEtaCharge->SetYTitle("#Delta #eta");
-  fhDeltaEtaCharge->SetXTitle("p_{T #gamma} (GeV/c)");
-  fOutputContainer->Add(fhDeltaEtaCharge) ; 
-  
-  //
-  if(!fJetsOnlyInCTS){
-    fhPi0Ratio  = new TH2F
-      ("Pi0Ratio","p_{T leading  #pi^{0}} /p_{T #gamma} vs p_{T #gamma}",
-       120,0,120,120,0,1); 
-    fhPi0Ratio->SetYTitle("p_{T lead  #pi^{0}} /p_{T #gamma}");
-    fhPi0Ratio->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhPi0Ratio) ; 
-    
-    fhDeltaPhiPi0  = new TH2F
-      ("DeltaPhiPi0","#phi_{#gamma} - #phi_{ #pi^{0}} vs p_{T #gamma}",
-       200,0,120,200,0,6.4); 
-    fhDeltaPhiPi0->SetYTitle("#Delta #phi");
-    fhDeltaPhiPi0->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhDeltaPhiPi0) ; 
-    
-    fhDeltaEtaPi0  = new TH2F
-      ("DeltaEtaPi0","#eta_{#gamma} - #eta_{ #pi^{0}} vs p_{T #gamma}",
-       200,0,120,200,-2,2); 
-    fhDeltaEtaPi0->SetYTitle("#Delta #eta");
-    fhDeltaEtaPi0->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhDeltaEtaPi0) ; 
- 
-    //
-    fhAnglePair  = new TH2F
-      ("AnglePair",
-       "Angle between #pi^{0} #gamma pair vs p_{T  #pi^{0}}",
-       200,0,50,200,0,0.2); 
-    fhAnglePair->SetYTitle("Angle (rad)");
-    fhAnglePair->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePair) ; 
-    
-    fhAnglePairAccepted  = new TH2F
-      ("AnglePairAccepted",
-       "Angle between #pi^{0} #gamma pair vs p_{T  #pi^{0}}, both #gamma in eta<0.7, inside window",
-       200,0,50,200,0,0.2); 
-    fhAnglePairAccepted->SetYTitle("Angle (rad)");
-    fhAnglePairAccepted->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairAccepted) ; 
-    
-    fhAnglePairNoCut  = new TH2F
-      ("AnglePairNoCut",
-       "Angle between all #gamma pair vs p_{T  #pi^{0}}",200,0,50,200,0,0.2); 
-    fhAnglePairNoCut->SetYTitle("Angle (rad)");
-    fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairNoCut) ; 
-    
-    fhAnglePairLeadingCut  = new TH2F
-      ("AnglePairLeadingCut",
-       "Angle between all #gamma pair that have a good phi and pt vs p_{T  #pi^{0}}",
-       200,0,50,200,0,0.2); 
-    fhAnglePairLeadingCut->SetYTitle("Angle (rad)");
-    fhAnglePairLeadingCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairLeadingCut) ; 
-    
-    fhAnglePairAngleCut  = new TH2F
-      ("AnglePairAngleCut",
-       "Angle between all #gamma pair (angle + leading cut) vs p_{T  #pi^{0}}"
-       ,200,0,50,200,0,0.2); 
-    fhAnglePairAngleCut->SetYTitle("Angle (rad)");
-    fhAnglePairAngleCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairAngleCut) ;
-    
-    fhAnglePairAllCut  = new TH2F
-      ("AnglePairAllCut",
-       "Angle between all #gamma pair (angle + inv mass cut+leading) vs p_{T  #pi^{0}}"
-       ,200,0,50,200,0,0.2); 
-    fhAnglePairAllCut->SetYTitle("Angle (rad)");
-    fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairAllCut) ; 
-    
-    fhAnglePairLeading  = new TH2F
-      ("AnglePairLeading",
-       "Angle between all #gamma pair finally selected vs p_{T  #pi^{0}}",
-       200,0,50,200,0,0.2); 
-    fhAnglePairLeading->SetYTitle("Angle (rad)");
-    fhAnglePairLeading->SetXTitle("E_{ #pi^{0}} (GeV/c)");
-    fOutputContainer->Add(fhAnglePairLeading) ; 
-    
-    //
-    fhInvMassPairNoCut  = new TH2F
-      ("InvMassPairNoCut","Invariant Mass of all #gamma pair vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairNoCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairNoCut) ; 
-    
-    fhInvMassPairLeadingCut  = new TH2F
-      ("InvMassPairLeadingCut",
-       "Invariant Mass of #gamma pair (leading cuts) vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairLeadingCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairLeadingCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairLeadingCut) ; 
-    
-    fhInvMassPairAngleCut  = new TH2F
-      ("InvMassPairAngleCut",
-       "Invariant Mass of #gamma pair (angle cut) vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairAngleCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairAngleCut) ; 
-    
-    fhInvMassPairAllCut  = new TH2F
-      ("InvMassPairAllCut",
-       "Invariant Mass of #gamma pair (angle+invmass cut+leading) vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairAllCut->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairAllCut) ; 
-    
-    fhInvMassPairLeading  = new TH2F
-      ("InvMassPairLeading",
-       "Invariant Mass of #gamma pair selected vs p_{T #gamma}",
-       120,0,120,360,0,0.5); 
-    fhInvMassPairLeading->SetYTitle("Invariant Mass (GeV/c^{2})");
-    fhInvMassPairLeading->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhInvMassPairLeading) ; 
-  }
-  
-  
-  if(!fSeveralConeAndPtCuts){
-    
-    //Count
-    fhNBkg = new TH1F("NBkg","bkg multiplicity",9000,0,9000); 
-    fhNBkg->SetYTitle("counts");
-    fhNBkg->SetXTitle("N");
-    fOutputContainer->Add(fhNBkg) ; 
-    
-    fhNLeading  = new TH2F
-      ("NLeading","Accepted Jet Leading", 240,0,120,240,0,120); 
-    fhNLeading->SetYTitle("p_{T charge} (GeV/c)");
-    fhNLeading->SetXTitle("p_{T #gamma}(GeV/c)");
-    fOutputContainer->Add(fhNLeading) ; 
-    
-    fhNJet  = new TH1F("NJet","Accepted jets",240,0,120); 
-    fhNJet->SetYTitle("N");
-    fhNJet->SetXTitle("p_{T #gamma}(GeV/c)");
-    fOutputContainer->Add(fhNJet) ; 
-    
-    //Ratios and Pt dist of reconstructed (not selected) jets
-    //Jet
-    fhJetRatio  = new TH2F
-      ("JetRatio","p_{T jet lead}/p_{T #gamma} vs p_{T #gamma}",
-       240,0,120,200,0,10);
-    fhJetRatio->SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-    fhJetRatio->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhJetRatio) ; 
-    
-    fhJetPt  = new TH2F
-      ("JetPt", "p_{T jet lead} vs p_{T #gamma}",240,0,120,400,0,200);
-    fhJetPt->SetYTitle("p_{T jet}");
-    fhJetPt->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhJetPt) ; 
-    
-    //Bkg
-    
-    fhBkgRatio  = new TH2F
-      ("BkgRatio","p_{T bkg lead}/p_{T #gamma} vs p_{T #gamma}",
-       240,0,120,200,0,10);
-    fhBkgRatio->SetYTitle("p_{T bkg lead charge}/p_{T #gamma}");
-    fhBkgRatio->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhBkgRatio) ;
-    
-    fhBkgPt  = new TH2F
-      ("BkgPt","p_{T jet lead} vs p_{T #gamma}",240,0,120,400,0,200);
-    fhBkgPt->SetYTitle("p_{T jet lead charge}/p_{T #gamma}");
-    fhBkgPt->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhBkgPt) ;
-    
-    //Jet Distributions
-    
-    fhJetFragment  = 
-      new TH2F("JetFragment","x = p_{T i charged}/p_{T #gamma}",
-	       240,0.,120.,1000,0.,1.2); 
-    fhJetFragment->SetYTitle("x_{T}");
-    fhJetFragment->SetXTitle("p_{T #gamma}");
-    fOutputContainer->Add(fhJetFragment) ;
-    
-    fhBkgFragment  = new TH2F
-      ("BkgFragment","x = p_{T i charged}/p_{T #gamma}",
-       240,0.,120.,1000,0.,1.2);
-    fhBkgFragment->SetYTitle("x_{T}");
-    fhBkgFragment->SetXTitle("p_{T #gamma}");
-    fOutputContainer->Add(fhBkgFragment) ;
-    
-    fhJetPtDist  = 
-      new TH2F("JetPtDist","x = p_{T i charged}",240,0.,120.,400,0.,200.); 
-    fhJetPtDist->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhJetPtDist) ;
-    
-    fhBkgPtDist  = new TH2F
-      ("BkgPtDist","x = p_{T i charged}",240,0.,120.,400,0.,200.); 
-    fhBkgPtDist->SetXTitle("p_{T #gamma} (GeV/c)");
-    fOutputContainer->Add(fhBkgPtDist) ;
-
-  }
-  else{
-    //If we want to study the jet for different cones and pt
-    
-    for(Int_t icone = 0; icone<fNCone; icone++){
-      for(Int_t ipt = 0; ipt<fNPt;ipt++){ 
-	
-	//Jet
-	
-	fhJetRatios[icone][ipt]  = new TH2F
-	  ("JetRatioCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
-	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
-	   240,0,120,200,0,10);
-	fhJetRatios[icone][ipt]->
-	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-	fhJetRatios[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	fOutputContainer->Add(fhJetRatios[icone][ipt]) ; 
-	
-	
-	fhJetPts[icone][ipt]  = new TH2F
-	  ("JetPtCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
-	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
-	   240,0,120,400,0,200);
-	fhJetPts[icone][ipt]->
-	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-	fhJetPts[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	fOutputContainer->Add(fhJetPts[icone][ipt]) ; 
-	
-	//Bkg
-	fhBkgRatios[icone][ipt]  = new TH2F
-	  ("BkgRatioCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
-	   "p_{T bkg lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
-	   240,0,120,200,0,10);
-	fhBkgRatios[icone][ipt]->
-	  SetYTitle("p_{T bkg lead #pi^{0}}/p_{T #gamma}");
-	fhBkgRatios[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	fOutputContainer->Add(fhBkgRatios[icone][ipt]) ; 
-	
-	fhBkgPts[icone][ipt]  = new TH2F
-	  ("BkgPtCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt], 
-	   "p_{T jet lead #pi^{0}}/p_{T #gamma} vs p_{T #gamma}, cone ="
-	   +fNameCones[icone]+", pt>" +fNamePtThres[ipt]+" GeV/c",
-	   240,0,120,400,0,200);
-	fhBkgPts[icone][ipt]->
-	  SetYTitle("p_{T jet lead #pi^{0}}/p_{T #gamma}");
-	fhBkgPts[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	fOutputContainer->Add(fhBkgPts[icone][ipt]) ; 
-	
-	//Counts
-	fhNBkgs[icone][ipt]  = new TH1F
-	  ("NBkgCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
-	   "bkg multiplicity cone ="+fNameCones[icone]+", pt>" 
-	   +fNamePtThres[ipt]+" GeV/c",9000,0,9000); 
-	fhNBkgs[icone][ipt]->SetYTitle("counts");
-	fhNBkgs[icone][ipt]->SetXTitle("N");
-	fOutputContainer->Add(fhNBkgs[icone][ipt]) ; 
-	
-	fhNLeadings[icone][ipt]  = new TH2F
-	  ("NLeadingCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
-	   "p_{T #gamma} vs p_{T #pi^{0}} cone ="+fNameCones[icone]+", pt>" 
-	   +fNamePtThres[ipt]+" GeV/c",120,0,120,120,0,120); 
-	fhNLeadings[icone][ipt]->SetYTitle("p_{T #pi^{0}}(GeV/c)");
-	fhNLeadings[icone][ipt]->SetXTitle("p_{T #gamma}(GeV/c)");
-	fOutputContainer->Add(fhNLeadings[icone][ipt]) ; 
-	
-	fhNJets[icone][ipt]  = new TH1F
-	  ("NJetCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
-	   "Number of neutral jets, cone ="+fNameCones[icone]+", pt>" 
-	   +fNamePtThres[ipt]+" GeV/c",120,0,120); 
-	fhNJets[icone][ipt]->SetYTitle("N");
-	fhNJets[icone][ipt]->SetXTitle("p_{T #gamma}(GeV/c)");
-	fOutputContainer->Add(fhNJets[icone][ipt]) ; 
-	
-	//Fragmentation Function
-	fhJetFragments[icone][ipt]  = new TH2F
-	  ("JetFragmentCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
-	   "x_{T} = p_{T i}/p_{T #gamma}, cone ="+fNameCones[icone]+", pt>" 
-	   +fNamePtThres[ipt]+" GeV/c",120,0.,120.,240,0.,1.2); 
-	fhJetFragments[icone][ipt]->SetYTitle("x_{T}");
-	fhJetFragments[icone][ipt]->SetXTitle("p_{T #gamma}");
-	fOutputContainer->Add(fhJetFragments[icone][ipt]) ; 
-	
-	fhBkgFragments[icone][ipt]  = new TH2F
-	  ("BkgFragmentCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
-	   "x_{T} = p_{T i}/p_{T #gamma}, cone ="+fNameCones[icone]+", pt>" 
-	   +fNamePtThres[ipt]+" GeV/c",120,0.,120.,240,0.,1.2); 
-	fhBkgFragments[icone][ipt]->SetYTitle("x_{T}");
-	fhBkgFragments[icone][ipt]->SetXTitle("p_{T #gamma}");
-	fOutputContainer->Add(fhBkgFragments[icone][ipt]) ; 
-	
-	//Jet particle distribution
-	
-	fhJetPtDists[icone][ipt]  = new TH2F
-	  ("JetPtDistCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
-	   "p_{T i}, cone ="+fNameCones[icone]+", pt>" +fNamePtThres[ipt]+
-	   " GeV/c",120,0.,120.,120,0.,120.); 
-	fhJetPtDists[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	fOutputContainer->Add(fhJetPtDists[icone][ipt]) ; 
-	
-	fhBkgPtDists[icone][ipt]  = new TH2F
-	  ("BkgPtDistCone"+fNameCones[icone]+"Pt"+fNamePtThres[ipt],
-	   "p_{T i}, cone ="+fNameCones[icone]+", pt>" +fNamePtThres[ipt]+
-	   " GeV/c",120,0.,120.,120,0.,120.); 
-	fhBkgPtDists[icone][ipt]->SetXTitle("p_{T #gamma} (GeV/c)");
-	fOutputContainer->Add(fhBkgPtDists[icone][ipt]) ; 
-	
-      }//ipt
-    } //icone
-  }//If we want to study any cone or pt threshold
 }
 
 //____________________________________________________________________________

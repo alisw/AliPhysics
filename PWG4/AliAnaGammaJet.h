@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/01/23 17:17:29  schutz
+ * New Gamma package
+ *
  *
  */
 
@@ -40,9 +43,11 @@ public:
   AliAnaGammaJet(const AliAnaGammaJet & gj) ; // cpy ctor
   virtual ~AliAnaGammaJet() ; //virtual dtor
   virtual void Exec(Option_t * opt = "") ;
-  virtual void Init(Option_t * opt = "");
+  virtual void ConnectInputData(Option_t *);
+  virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "");
 
+  void InitParameters();
   Bool_t     AreJetOnlyInCTS() const {return fJetsOnlyInCTS ; } 
   Double_t GetAngleMaxParam(Int_t i) const {return fAngleMaxParam.At(i) ; }
   Double_t GetEtaEMCALCut() const {return fEtaEMCALCut;}
