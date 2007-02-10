@@ -31,10 +31,9 @@
 class TNtuple;
 class TObjArray;
 class AliPMDcluster;
-
+class AliPMDcludata;
 class AliPMDClusteringV1: public AliPMDClustering
 {
-
  public:
   AliPMDClusteringV1();
   virtual ~AliPMDClusteringV1();
@@ -50,45 +49,31 @@ class AliPMDClusteringV1: public AliPMDClustering
 		    Double_t &yc, Double_t &zc, Double_t &rc);
   Double_t Distance(Double_t x1, Double_t y1,
 		    Double_t x2, Double_t y2);
-  Double_t Ranmar() const;
   void     SetEdepCut(Float_t decut);
   
  protected:
-
+  
+  TObjArray *pmdclucont;
+  AliPMDcludata *pmdcludata;
+  
   static const Double_t fgkSqroot3by2;  // fgkSqroot3by2 = sqrt(3.)/2.
   
   enum {
-    kNMX    = 11424,
-    kNDIMX  = 119,
-    kNDIMY  = 96
+    kNMX    = 11424,     // no. of cells in a module
+    kNDIMX  = 119,       // max no. of cells along x direction
+    kNDIMY  = 96         // max no. of cells along axis at 60 deg with x axis
   };
-  
-  /*
-    kNMX   : # of cells in a supermodule
-    kNDIMX : maximum number of cells along x direction (origin at one corner)
-    kNDIMY : maximum number of cells along axis at 60 degrees with x axis
-  */
 
   Double_t fEdepCell[kNDIMX][kNDIMY]; //energy(ADC) in each cell
-  Double_t fClusters[5][5000];        // Cluster informations
-  Int_t    fClno;                     // number of clusters in a supermodule
-
-  /*
-    clusters[0][i] --- x position of the cluster center
-    clusters[1][i] --- y position of the cluster center
-    clusters[2][i] --- total energy in the cluster
-    clusters[3][i] --- number of cells forming the cluster
-                       ( possibly fractional )
-    clusters[4][i] --- cluster radius
-  */
-
+ 
   //Variables for association
-  Int_t fCellTrNo[kNDIMX][kNDIMY];     //id x-y value of cells
+  Int_t fCellTrNo[kNDIMX][kNDIMY];     // id x-y value of cells
   Int_t fClTr[15][5000];               // 1d x-y cell info of attached cells
 
   Int_t    fIord[2][kNMX];             // ordered list of i and j according
                                        // to decreasing energy dep.
-  Int_t    fInfocl[2][kNDIMX][kNDIMY]; // cellwise information on the cluster to which the cell
+  Int_t    fInfocl[2][kNDIMX][kNDIMY]; // cellwise information on the 
+                                       // cluster to which the cell
   Int_t    fInfcl[3][kNMX];            // cluster information [0][i]
                                        // -- cluster number
   Double_t fCoord[2][kNDIMX][kNDIMY];
@@ -106,6 +91,6 @@ class AliPMDClusteringV1: public AliPMDClustering
 
   Float_t fCutoff; // Energy(ADC) cutoff per cell before clustering
 
-  ClassDef(AliPMDClusteringV1,2) // Does clustering for PMD
+  ClassDef(AliPMDClusteringV1,3) // Does clustering for PMD
 };
 #endif
