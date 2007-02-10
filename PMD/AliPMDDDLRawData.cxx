@@ -359,6 +359,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   UInt_t mcmno, chno;
   UInt_t adc;
   Int_t  det, smn, irow, icol;
+  Int_t  parity;
 
   const Int_t kMaxBus = 50;
   Int_t totPatchBus, bPatchBus, ePatchBus;
@@ -483,7 +484,8 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
       AliBitPacking::PackWord(chno,baseword,12,17);
       AliBitPacking::PackWord(mcmno,baseword,18,28);
       AliBitPacking::PackWord(0,baseword,29,30);
-      AliBitPacking::PackWord(1,baseword,31,31);
+      parity = ComputeParity(baseword);      // generate the parity bit
+      AliBitPacking::PackWord(parity,baseword,31,31);
 
       Int_t jj = contentsBus[busno];
       busPatch[busno][jj] = baseword;
@@ -674,5 +676,21 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
     }
   
 }
+//____________________________________________________________________________
+
+Int_t AliPMDDDLRawData::ComputeParity(UInt_t baseword)
+{
+  // Generate the parity bit
+
+  Int_t count = 0;
+  for(Int_t j=0; j<29; j++)
+    {
+      if (baseword & 0x01 ) count++;
+      baseword >>= 1;
+    }
+  Int_t parity = count%2;
+  return parity;
+}
+
 //____________________________________________________________________________
 

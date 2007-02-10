@@ -37,6 +37,7 @@ class AliPMDRawStream: public TObject {
     void             ConvertDDL2SMN(Int_t iddl, Int_t imodule,
 				    Int_t &smn, Int_t &detector) const;
     void             TransformH2S(Int_t smn, Int_t &row, Int_t &col) const;
+    int              ComputeParity(Int_t data);
 
     AliRawReader*    fRawReader;    // object for reading the raw data
 

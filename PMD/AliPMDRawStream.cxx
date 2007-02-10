@@ -92,7 +92,6 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   Int_t  iddl  = fRawReader->GetDDLID();
   Int_t dataSize = fRawReader->GetDataSize();
   Int_t totaldataword = dataSize/4;
-  Int_t equipId = fRawReader->GetEquipmentId();
 
   if (dataSize <= 0) return kFALSE;
   if (indexDDL != iddl)
@@ -203,7 +202,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   const Int_t kdspHLen  = dspHeader.GetHeaderLength();
   const Int_t kpbusHLen = pbusHeader.GetHeaderLength();
   
-
+  Int_t parity;
   Int_t idet, ismn;
   Int_t irow = -1;
   Int_t icol = -1;
@@ -277,6 +276,11 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 		  Int_t imcm = (data >> 18) & 0x07FF;
 		  Int_t ibit = (data >> 31) & 0x0001;
 
+		  parity = ComputeParity(data);
+		  if (ibit != parity)
+		    {
+		      AliWarning("ComputeParity:: Parity Error");
+		    }
 		  GetRowCol(iddl, pbusid, imcm, ich, 
 			    startRowBus, endRowBus,
 			    startColBus, endColBus,
@@ -498,4 +502,23 @@ void AliPMDRawStream::TransformH2S(Int_t smn, Int_t &row, Int_t &col) const
   row = irownew;
   col = icolnew;
 }
+
+//_____________________________________________________________________________
+
+int AliPMDRawStream::ComputeParity(Int_t data)
+{
+// Calculate the parity bit
+
+  Int_t count = 0;
+  for(Int_t j = 0; j<29; j++)
+    {
+      if (data & 0x01 ) count++;
+      data >>= 1;
+    }
+  
+  Int_t parity = count%2;
+
+  return parity;
+}
+
 //_____________________________________________________________________________

@@ -38,12 +38,14 @@ class AliPMDDDLRawData:public TObject
 		Int_t *endRowBus, Int_t *endColBus,
 		Int_t & busno, UInt_t &mcmno, UInt_t &chno);
 
+
  protected:
 
-  TClonesArray *fDigits;    //! List of digits
-  //  AliPMDdigit  *fPMDdigit;  //! Pointer to digits
+  Int_t ComputeParity(UInt_t baseword);
 
-  ClassDef(AliPMDDDLRawData,6)    // To make RAW Data
+  TClonesArray *fDigits;    //! List of digits
+
+  ClassDef(AliPMDDDLRawData,7)    // To make RAW Data
 };
 #endif
 
