@@ -117,7 +117,8 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 {
   // Execute digitization
 
-  Float_t pm[5][5]; // !!! 2nd ZDC set added (needed for trigger purposes!)
+  // ------------------------------------------------------------
+  // !!! 2nd ZDC set added (needed for trigger purposes!)
   // *** 1st 3 arrays are digits from REAL (simulated) hits
   // *** last 2 are copied from simulated digits
   // --- pm[0][...] = light in ZN right  [C, Q1, Q2, Q3, Q4]
@@ -125,10 +126,21 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // --- pm[2][...] = light in ZEM [x, 1, 2, x, x]
   // --- pm[3][...] = light in ZN left [C, Q1, Q2, Q3, Q4] ->NEW!
   // --- pm[4][...] = light in ZP left [C, Q1, Q2, Q3, Q4] ->NEW!
-  
+  // ------------------------------------------------------------
+  Float_t pm[5][5]; 
   for (Int_t iSector1=0; iSector1<5; iSector1++) 
     for (Int_t iSector2=0; iSector2<5; iSector2++){
       pm[iSector1][iSector2] = 0;
+    }
+    
+  // ------------------------------------------------------------
+  // ### Out of time ADC added (22 channels)
+  // --- same codification as for signal PTMs (see above)
+  // ------------------------------------------------------------
+  Float_t pmoot[5][5];
+  for (Int_t iSector1=0; iSector1<5; iSector1++) 
+    for (Int_t iSector2=0; iSector2<5; iSector2++){
+      pmoot[iSector1][iSector2] = 0;
     }
 
   // impact parameter and number of spectators
@@ -186,7 +198,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     specP = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
     AliDebug(2, Form("\n AliZDCDigitizer -> b = %f fm, Nspecn = %d, Nspecp = %d\n",
                      impPar, specN, specP));
-    printf("\n\t AliZDCDigitizer -> b = %f fm, Nspecn = %d, Nspecp = %d\n", impPar, specN, specP);
+    printf("\n\t AliZDCDigitizer -> b = %f fm, NSpecn = %d, NSpecp = %d\n", impPar, specN, specP);
   }
 
   // add spectators
@@ -222,7 +234,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 
   // Create digits
   Int_t sector[2], sectorL[2];
-  Int_t digi[2], digiL[2];
+  Int_t digi[2], digiL[2], digioot[2];
   for(sector[0]=1; sector[0]<=3; sector[0]++){
     for(sector[1]=0; sector[1]<5; sector[1]++){
         if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
@@ -232,7 +244,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
       	}
 	/*printf("\t DIGIT added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
 	     sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
-        */
+	*/
 	//
 	new(pdigit) AliZDCDigit(sector, digi);
         treeD->Fill();
@@ -251,6 +263,38 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 	   */
 	   //
 	   new(pdigit) AliZDCDigit(sectorL, digiL);
+           treeD->Fill();
+	}
+	//
+        //printf("\t AliZDCDigitizer -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
+    }
+  }
+  //
+  // --- Adding digits for out-of-time channels after signal digits
+  for(sector[0]=1; sector[0]<=3; sector[0]++){
+    for(sector[1]=0; sector[1]<5; sector[1]++){
+        if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
+        for (Int_t res=0; res<2; res++){
+           digioot[res] = Pedestal(sector[0], sector[1], res); // out-of-time ADCs
+      	}
+	/*printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+	     sector[0], sector[1], digioot[0], digioot[1]); // Chiara debugging!
+	*/
+	//
+	new(pdigit) AliZDCDigit(sector, digioot);
+        treeD->Fill();
+	//
+	if(sector[0]==1 || sector[0]==2){
+	   sectorL[0] = sector[0]+3;
+	   sectorL[1] = sector[1];
+           for (Int_t res=0; res<2; res++){
+             digioot[res] = Pedestal(sectorL[0], sectorL[1], res); // out-of-time ADCs
+      	   }
+	   /*printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+	         sectorL[0], sectorL[1], digioot[0], digioot[1]); // Chiara debugging!
+	   */
+	   //
+	   new(pdigit) AliZDCDigit(sectorL, digioot);
            treeD->Fill();
 	}
 	//
