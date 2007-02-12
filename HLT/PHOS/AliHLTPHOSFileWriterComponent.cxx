@@ -202,8 +202,8 @@ AliHLTPHOSFileWriterComponent::DoInit( int argc, const char** argv )
   string dataType="";
   int bMissingParam=0;
 
-
-  fFilename.assign(256,0);
+  //  fFilename.assign(256,0);
+  //   fFilename.assign(256,0);
 
   for(int i=0; i<argc; i++)
     {
