@@ -736,6 +736,11 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				if (UpdateTable() == kFALSE) returnCode = 1;
 			}
 
+			for (UInt_t iSys=0; iSys<3; iSys++)
+			{
+				if (fFXSCalled[iSys]) fFXSlist[iSys].Clear();
+			}
+
 			AliInfo(Form("Client process of %d - %s is exiting now with %d.",
 							GetCurrentRun(), aDetector->GetName(), returnCode));
 
@@ -743,11 +748,6 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			gSystem->Exit(returnCode);
 
 			AliError("We should never get here!!!");
-		}
-
-		for (UInt_t iSys=0; iSys<3; iSys++)
-		{
-			if (fFXSCalled[iSys]) fFXSlist[iSys].Clear();
 		}
 	}
 
@@ -1328,30 +1328,43 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 
 
 	// file retrieval from FXS
-	Bool_t result = RetrieveFile(system, filePath.Data(), localFileName.Data());
-	if(!result)
-	{
-		Log(detector, Form("GetFileName - Copy of file %s from %s FXS failed",
-					filePath.Data(), GetSystemName(system)));
-		return 0;
-	} else {
-		AliInfo(Form("File %s copied from %s FXS into %s/%s",
-			filePath.Data(), GetSystemName(system), GetShuttleTempDir(), localFileName.Data()));
-	}
+	UInt_t nRetries = 0;
+	UInt_t maxRetries = 3;
+	Bool_t result = kFALSE;
 
-	if (system == kHLT)
-	{
-		// compare md5sum of local file with the one stored in the FXS DB
-		Int_t md5Comp = gSystem->Exec(Form("md5sum %s/%s |grep %s 2>&1 > /dev/null",
+	// copy!! if successful TSystem::Exec returns 0
+	while(nRetries++ < maxRetries) {
+		AliDebug(2, Form("Trying to copy file. Retry # %d", nRetries));
+		result = RetrieveFile(system, filePath.Data(), localFileName.Data());
+		if(!result)
+		{
+			Log(detector, Form("GetFileName - Copy of file %s from %s FXS failed",
+					filePath.Data(), GetSystemName(system)));
+			continue;
+		} else {
+			AliInfo(Form("File %s copied from %s FXS into %s/%s",
+						filePath.Data(), GetSystemName(system),
+						GetShuttleTempDir(), localFileName.Data()));
+		}
+
+		if (system == kHLT)
+		{
+			// compare md5sum of local file with the one stored in the FXS DB
+			Int_t md5Comp = gSystem->Exec(Form("md5sum %s/%s |grep %s 2>&1 > /dev/null",
 						GetShuttleTempDir(), localFileName.Data(), fileMd5Sum.Data()));
 
-		if (md5Comp != 0)
-		{
-			Log(detector, Form("GetFileName - md5sum of file %s does not match with local copy!",
-						filePath.Data()));
-			return 0;
+			if (md5Comp != 0)
+			{
+				Log(detector, Form("GetFileName - md5sum of file %s does not match with local copy!",
+							filePath.Data()));
+				result = kFALSE;
+				continue;
+			}
 		}
+		if (result) break;
 	}
+
+	if(!result) return 0;
 
 	fFXSCalled[system]=kTRUE;
 	TObjString *fileParams = new TObjString(Form("%s#!?!#%s", id, sourceName.Data()));
@@ -1412,16 +1425,9 @@ Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const ch
 
 	AliDebug(2, Form("%s",command.Data()));
 
-	UInt_t nRetries = 0;
-	UInt_t maxRetries = 3;
+	Bool_t result = (gSystem->Exec(command.Data()) == 0);
 
-	// copy!! if successful TSystem::Exec returns 0
-	while(nRetries++ < maxRetries) {
-		AliDebug(2, Form("Trying to copy file. Retry # %d", nRetries));
-		if(gSystem->Exec(command.Data()) == 0) return kTRUE;
-	}
-
-	return kFALSE;
+	return result;
 }
 
 //______________________________________________________________________________________________
@@ -1855,6 +1861,10 @@ Bool_t AliShuttle::RetrieveConditionsData(const TObjArray& dateEntries)
 		if (!Process(anEntry)){
 			hasError = kTRUE;
 		}
+
+		// clean SHUTTLE temp directory
+		TString command = Form("rm -f %s/*.shuttle", GetShuttleTempDir());
+		gSystem->Exec(command.Data());
 	}
 
 	return hasError == kFALSE;
