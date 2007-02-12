@@ -34,7 +34,8 @@ const AliHLTComponentDataType AliHLTPHOSFileWriterComponent::fInputDataTypes[]={
 
 AliHLTPHOSFileWriterComponent gAliHLTPHOSFileWriterComponent;
 
-AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(0),fFilename(0), fEventCount(0)
+AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
+  //AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():AliHLTDataSink()
 {
   for(int i=0; i<N_DATATYPES; i++)
     {
@@ -53,7 +54,8 @@ AliHLTPHOSFileWriterComponent::~AliHLTPHOSFileWriterComponent()
 }
 
 
-AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ):AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(0),fFilename(0), fEventCount(0)
+AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ):AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
+  //AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ):AliHLTDataSink()
 {
 
 }
@@ -199,6 +201,7 @@ AliHLTPHOSFileWriterComponent::DoInit( int argc, const char** argv )
   Bool_t dataSet = kFALSE;
   string dataType="";
   int bMissingParam=0;
+
 
   fFilename.assign(256,0);
 

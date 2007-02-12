@@ -5,7 +5,7 @@
 using std::string;
 
 
-AliHLTPHOSFileWriter::AliHLTPHOSFileWriter():fCurrentEvntCnt(0), fCurrentFile(0), fDirectory(0), fCurrentFilename(0)
+AliHLTPHOSFileWriter::AliHLTPHOSFileWriter():fCurrentEvntCnt(0), fCurrentFile(0), fDirectory(""), fCurrentFilename("")
 {
 
 }
