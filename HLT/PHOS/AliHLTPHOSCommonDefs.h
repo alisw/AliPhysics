@@ -24,6 +24,11 @@
 #define PF_DEFAULT_N_SAMPLES 70
 #define PF_DEFAULT_STARTINDEX 0
 
+//analysis constatnts
+#define LOW_GAIN 1
+#define HIGH_GAIN 0
+
+
 //general altro signal constatnts
 #define DEFAULT_TAU 2    /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
 #define DEFAULT_FS  10   /**<Assume that the signal is samples with 10 MHZ samle rate*/
