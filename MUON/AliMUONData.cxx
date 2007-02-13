@@ -934,7 +934,9 @@ void AliMUONData::SetDataContainer(Option_t* option)
         fNrawclusters[i]=0;
       }
     }
-    ResetRawClusters();
+    // ResetRawClusters(); 
+    // It breaks the correct functioning of the combined reconstruction (AZ)
+    
   }
   if (cTC ) {
     if (fLocalTrigger == 0x0) {
@@ -946,7 +948,8 @@ void AliMUONData::SetDataContainer(Option_t* option)
     if (fGlobalTrigger== 0x0) {
       fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
     }
-    //    ResetTrigger(); This is not necessary here since trigger info ins copied from digits info on flight to RecPoint output
+    // ResetTrigger(); 
+    // This is not necessary here since trigger info ins copied from digits info on flight to RecPoint output
   }
 
   //
