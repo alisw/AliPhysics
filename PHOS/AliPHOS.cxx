@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.109  2007/02/05 10:43:25  hristov
+ * Changes for correct initialization of Geant4 (Mihaela)
+ *
  * Revision 1.108  2007/02/01 10:34:47  hristov
  * Removing warnings on Solaris x86
  *
@@ -118,6 +121,8 @@ class TFile;
 #include "AliPHOSCalibData.h"
 #include "AliPHOSPulseGenerator.h"
 #include "AliDAQ.h"
+#include "AliPHOSRawDecoder.h"
+#include "AliPHOSRawDigiProducer.h"
 
 ClassImp(AliPHOS)
 
@@ -620,3 +625,35 @@ void AliPHOS::SetTreeAddress()
   }
 }
 
+//____________________________________________________________________________
+Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader)
+{
+
+  AliPHOSLoader * loader = dynamic_cast<AliPHOSLoader*>(fLoader) ;
+
+  TTree * tree = 0 ;
+  tree = loader->TreeS() ;
+  if ( !tree ) {
+    loader->MakeTree("S");
+    tree = loader->TreeS() ;
+  }
+
+  TClonesArray * sdigits = loader->SDigits() ;
+  if(!sdigits) { 
+    loader->MakeSDigitsArray();
+    sdigits = loader->SDigits();
+  }
+  sdigits->Clear();
+
+  AliPHOSRawDecoder dc(rawReader);
+  AliPHOSRawDigiProducer pr;
+  pr.MakeDigits(sdigits,&dc);
+
+  Int_t bufferSize = 32000 ;
+  TBranch * sdigitsBranch = tree->Branch("PHOS",&sdigits,bufferSize);
+  tree->Fill();
+
+  fLoader->WriteSDigits("OVERWRITE");
+  return kTRUE;
+    
+}

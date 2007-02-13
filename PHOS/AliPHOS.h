@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.71  2007/02/05 10:43:25  hristov
+ * Changes for correct initialization of Geant4 (Mihaela)
+ *
  * Revision 1.70  2007/01/17 17:28:56  kharlov
  * Extract ALTRO sample generation to a separate class AliPHOSPulseGenerator
  *
@@ -76,6 +79,7 @@ public:
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;            
   virtual void  Digits2Raw();
+  virtual Bool_t Raw2SDigits(AliRawReader* rawReader);
   virtual void  FinishRun() {;}
   virtual AliPHOSGeometry * GetGeometry() const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
