@@ -22,34 +22,36 @@ ClassImp(AliPMDcludata)
 AliPMDcludata::AliPMDcludata()
 {
   // Default constructor
-  for (Int_t i = 0; i < 6; i++)
+  for (Int_t i = 0; i < 15; i++)
     {
-      fClusData[i] = 0.;
+      if(i < 6) fClusData[i] = 0.;
+      fClXY[i] = 0;
+
     }
 }
 // --------------------------------------------------------------------- //
-AliPMDcludata::AliPMDcludata(Float_t *clusdata)
+AliPMDcludata::AliPMDcludata(Float_t *clusdata, Int_t *clxy)
 {
   // Constructor
   for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = clusdata[i];
     }
+  for (Int_t i = 0; i < 15; i++)
+    {
+      fClXY[i] = clxy[i];
+    }
+  
 }
 // --------------------------------------------------------------------- //
-AliPMDcludata::AliPMDcludata(AliPMDcludata *pmdcludata)
-{
-  *this = *pmdcludata;
-}
-// --------------------------------------------------------------------- //
-
 AliPMDcludata::AliPMDcludata(const AliPMDcludata &pmdcludata):
   TObject(pmdcludata)
 {
   //Copy Constructor 
-  for(Int_t i=0; i<6; i++)
+  for(Int_t i=0; i<15; i++)
     {
-      this->fClusData[i] = pmdcludata.fClusData[i];
+      if (i < 6) this->fClusData[i] = pmdcludata.fClusData[i];
+      this->fClXY[i] = pmdcludata.fClXY[i];
     }
 }
 // --------------------------------------------------------------------- //
@@ -59,9 +61,10 @@ AliPMDcludata & AliPMDcludata::operator=(const AliPMDcludata &pmdcludata)
   // Assignment operator 
   if(this != &pmdcludata)
     {
-      for(Int_t i=0; i<6; i++)
+      for(Int_t i=0; i<15; i++)
 	{
-	  this->fClusData[i] = pmdcludata.fClusData[i];
+	  if (i < 6) this->fClusData[i] = pmdcludata.fClusData[i];
+	  this->fClXY[i] = pmdcludata.fClXY[i];
 	}
     }
   return *this;
@@ -101,5 +104,10 @@ Float_t AliPMDcludata::GetClusSigmaX() const
 Float_t AliPMDcludata::GetClusSigmaY() const
 {
   return fClusData[5];
+}
+// --------------------------------------------------------------------- //
+Int_t AliPMDcludata::GetCellXY(Int_t i) const
+{
+  return fClXY[i];
 }
 // --------------------------------------------------------------------- //

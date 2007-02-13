@@ -21,10 +21,9 @@ class AliPMDcludata : public TObject
 {
  public:
   AliPMDcludata();
-  AliPMDcludata( Float_t *clusdata);
-  AliPMDcludata(AliPMDcludata *pmdcludata);
-  AliPMDcludata (const AliPMDcludata &pmdcludata);  // copy constructor
-  AliPMDcludata &operator=(const AliPMDcludata &pmdcludata); // assignment op
+  AliPMDcludata( Float_t *clusdata, Int_t *clxy);
+  AliPMDcludata (const AliPMDcludata &pmdcludata);  //copy constructor
+  AliPMDcludata &operator=(const AliPMDcludata &pmdcludata); //assignment op
   
   virtual ~AliPMDcludata();
 
@@ -34,18 +33,14 @@ class AliPMDcludata : public TObject
   Float_t GetClusCells() const;
   Float_t GetClusSigmaX() const;
   Float_t GetClusSigmaY() const;
-
+  Int_t   GetCellXY(Int_t i) const;
+  
  protected:
 
 
   Float_t fClusData[6];       // Array containing cluster information
-  /*
-    fClusData[0] : Cluster x         , fClusData[1] : Cluster y
-    fClusData[2] : Cluster adc       , fClusData[3] : Cluster Cells
-    fClusData[4] : Cluster SigmaX    , fClusData[5] : Cluster SigmaY
-  */
+  Int_t   fClXY[15];          // Array containing cell information 
   
-  ClassDef(AliPMDcludata,1) // Keep Cluster information
+  ClassDef(AliPMDcludata,2) // Keep Cluster information
 };
-
 #endif
