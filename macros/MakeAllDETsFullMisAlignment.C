@@ -9,11 +9,11 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/Full"){
   //
   TString strStorage(CDBstorage);
   if(strStorage.IsNull()){
-    gSystem->Setenv("$TOCDB","kFALSE");
+    gSystem->Setenv("TOCDB","kFALSE");
   }else{  
-    gSystem->Setenv("$TOCDB","kTRUE");
-    gSystem->Setenv("$STORAGE",strStorage.Data());
-    gSystem->Setenv("$ARVERSION","v4-04-Release");
+    gSystem->Setenv("TOCDB","kTRUE");
+    gSystem->Setenv("STORAGE",strStorage.Data());
+    gSystem->Setenv("ARVERSION","v4-05-08");
   }
 
   // if not already present, create geometry file needed by those detectors
@@ -26,7 +26,6 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/Full"){
   }
 
   TString dets = "EMCAL,FMD,ITS,MUON,PHOS,PMD,HMPID,T0,TOF,TPC,TRD,VZERO,ZDC";
-//   TString dets = "ABSO,DIPO,FMD,FRAME,HALL,ITS,MAG,MUON,PHOS,PIPE,PMD,HMPID,SHIL,T0,TOF,TPC,TRD,ZDC,EMCAL,ACORDE,VZERO";
   TObjArray *detArray = dets.Tokenize(',');
   TIter iter(detArray);
   TObjString *ostr;

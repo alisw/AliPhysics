@@ -20,12 +20,12 @@ void MakeTPCResMisAlignment(){
   for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
 
-      dx = (rnd->Uniform()-0.5)*sigmatr;
-      dy = (rnd->Uniform()-0.5)*sigmatr;
-      dz = (rnd->Uniform()-0.5)*sigmatr;
-      dpsi = (rnd->Uniform()-0.5)*sigmarot;
-      dtheta = (rnd->Uniform()-0.5)*sigmarot;
-      dphi = (rnd->Uniform()-0.5)*sigmarot;
+      dx = rnd->Gaus(0,sigmatr);
+      dy = rnd->Gaus(0,sigmatr);
+      dz = rnd->Gaus(0,sigmatr);
+      dpsi = rnd->Gaus(0,sigmarot);
+      dtheta = rnd->Gaus(0,sigmarot);
+      dphi = rnd->Gaus(0,sigmarot);
 
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
       const char *symname = AliAlignObj::SymName(volid);
@@ -35,7 +35,7 @@ void MakeTPCResMisAlignment(){
   }
 
 
-  if(!gSystem->Getenv("$TOCDB")){
+  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     TFile f("TPCresidualMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
@@ -44,13 +44,13 @@ void MakeTPCResMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager* cdb = AliCDBManager::Instance();
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Marian Ivanov");
     md->SetComment("Residual misalignment for TPC, sigmatr=0.01 and sigmarot=0.6 in the local RS");
-    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("TPC/Align/Data",0,9999999);
     storage->Put(array,id,md);
   }

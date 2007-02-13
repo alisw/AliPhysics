@@ -4,16 +4,16 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
   // conditions' data base on alien) or set it to null string to have
   // the objects saved locally on file 
   // This macro defines the default name and place for the detector-macros
-  // in charge of producing the full misalignment objects as 
+  // in charge of producing the residual misalignment objects as 
   // $ALICE_ROOT/DET/MakeDETResidualMisAlignment.C
   //
   TString strStorage(CDBstorage);
   if(strStorage.IsNull()){
-    gSystem->Setenv("$TOCDB","kFALSE");
+    gSystem->Setenv("TOCDB","kFALSE");
   }else{  
-    gSystem->Setenv("$TOCDB","kTRUE");
-    gSystem->Setenv("$STORAGE",strStorage.Data());
-    gSystem->Setenv("$ARVERSION","v4-04-Release");
+    gSystem->Setenv("TOCDB","kTRUE");
+    gSystem->Setenv("STORAGE",strStorage.Data());
+    gSystem->Setenv("ARVERSION","v4-05-08");
   }
 
   // if not already present, create geometry file needed by those detectors

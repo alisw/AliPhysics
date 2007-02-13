@@ -36,7 +36,7 @@ void MakeVZEROResMisAlignment(){
   dphi = rnd->Gaus(0.,sigmarot);
   new(alobj[1]) AliAlignObjAngles(V0left, volid, dx, dy, dz, dpsi, dtheta, dphi,kFALSE);
 
-  if(!gSystem->Getenv("$TOCDB")){
+  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     TFile f("V0residualMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
@@ -45,13 +45,13 @@ void MakeVZEROResMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager* cdb = AliCDBManager::Instance();
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Brigitte Cheynis");
     md->SetComment("Alignment objects for V0 residual misalignment");
-    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("VZERO/Align/Data",0,9999999);
     storage->Put(array,id,md);
   }

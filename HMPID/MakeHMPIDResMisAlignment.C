@@ -20,7 +20,7 @@ void MakeHMPIDResMisAlignment(){
 
 //   pCA->Print();
   
-  if(!gSystem->Getenv("$TOCDB")){
+  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     TFile f("HMPIDresidualMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
@@ -29,13 +29,13 @@ void MakeHMPIDResMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager* cdb = AliCDBManager::Instance();
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData *pMeta= new AliCDBMetaData();  
     pMeta->SetResponsible("HMPID Expert");
     pMeta->SetComment("Residual alignment objects for HMPID produced with sigmaTrans=1mm and sigmaRot=1mrad");
-    pMeta->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    pMeta->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("HMPID/Align/Data",0,9999999);
     storage->Put(pCA,id,pMeta);
   }

@@ -40,16 +40,16 @@ void MakeMUONZeroMisAlignment(Bool_t volpaths = false,
     builder->WriteSVMaps();
   }  
 
-  cout << "Generating residual misalignment data in  MUON/ZeroMisAlignCDB/Data..." << endl;
+  cout << "Generating zero misalignment data in  MUON/ZeroMisAlignCDB/Data..." << endl;
   
   AliMUONGeometryMisAligner misAligner(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   AliMUONGeometryTransformer* newTransform 
     = misAligner.MisAlign(builder->GetTransformer(), true);
   TClonesArray* array = newTransform->GetMisAlignmentData();
 
-  if(!gSystem->Getenv("$TOCDB")){
+  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // Create a File to store the alignment data
-    TFile f("MUONresidualMisalignment.root","RECREATE");
+    TFile f("MUONzeroMisalignment.root","RECREATE");
     if(!f) {cerr<<"cannot open file for output\n";}
     
     f.cd();
@@ -57,13 +57,13 @@ void MakeMUONZeroMisAlignment(Bool_t volpaths = false,
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager* cdbManager = AliCDBManager::Instance();
     AliCDBStorage* storage = cdbManager->GetStorage(Storage);
     AliCDBMetaData* cdbData = new AliCDBMetaData();
     cdbData->SetResponsible("Dimuon Offline project");
-    cdbData->SetComment("MUON alignment objects with residual misalignment");
-    cdbData->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    cdbData->SetComment("MUON alignment objects with zero misalignment");
+    cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("MUON/Align/Data", 0, 9999999); 
     storage->Put(array, id, cdbData);
   }

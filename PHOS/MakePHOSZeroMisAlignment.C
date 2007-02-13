@@ -41,7 +41,7 @@ void MakePHOSZeroMisAlignment(){
 	volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
 
 
-  if(!gSystem->Getenv("$TOCDB")){
+  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     TFile f("PHOSzeroMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
@@ -50,13 +50,13 @@ void MakePHOSZeroMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager *CDB = AliCDBManager::Instance();
     AliCDBStorage* storage = CDB->GetStorage(Storage);
     AliCDBMetaData *md= new AliCDBMetaData();
     md->SetResponsible("Yuri Kharlov");
     md->SetComment("Zero misalignment objects");
-    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PHOS/Align/Data",0,9999999);
     storage->Put(array,id, md);
   }

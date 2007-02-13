@@ -34,7 +34,7 @@ void MakeEMCALZeroMisAlignment(){
     new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
-  if(!gSystem->Getenv("$TOCDB")){
+  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     TFile f("EMCALzeroMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
@@ -43,13 +43,13 @@ void MakeEMCALZeroMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager* cdb = AliCDBManager::Instance();
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Jennifer Clay");
     md->SetComment("Zero misalignment for EMCAL");
-    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("EMCAL/Align/Data",0,9999999);
     storage->Put(array,id,md);
   }

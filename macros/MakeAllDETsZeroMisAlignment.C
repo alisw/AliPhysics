@@ -6,11 +6,11 @@ void MakeAllDETsZeroMisAlignment(Char_t* CDBstorage = "local://$HOME/Zero"){
   //
   TString strStorage(CDBstorage);
   if(strStorage.IsNull()){
-    gSystem->Setenv("$TOCDB","kFALSE");
+    gSystem->Setenv("TOCDB","kFALSE");
   }else{  
-    gSystem->Setenv("$TOCDB","kTRUE");
-    gSystem->Setenv("$STORAGE",strStorage.Data());
-    gSystem->Setenv("$ARVERSION","v4-04-Release");
+    gSystem->Setenv("TOCDB","kTRUE");
+    gSystem->Setenv("STORAGE",strStorage.Data());
+    gSystem->Setenv("ARVERSION","v4-05-08");
   }
 
   // if not already present, create geometry file needed by those detectors

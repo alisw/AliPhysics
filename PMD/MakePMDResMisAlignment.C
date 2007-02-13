@@ -101,7 +101,7 @@ void MakePMDResMisAlignment(){
   new(alobj[2]) AliAlignObjAngles(Sector3, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
   new(alobj[3]) AliAlignObjAngles(Sector4, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
   
-  if(!gSystem->Getenv("$TOCDB")){
+  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // Create a File to store the alignment data
     TFile f("PMDresidualMisalignment.root","RECREATE");
     if(!f) {cerr<<"cannot open file for output\n";}
@@ -111,13 +111,13 @@ void MakePMDResMisAlignment(){
     f.Close();
   }else{
   // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager* cdb = AliCDBManager::Instance();
     AliCDBStorage* storage = cdb->GetStorage(Storage);
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("");
     md->SetComment("Residual misalignment for PMD, produced with sigmatr=0.1 and sigmarot=0.1 in the local RS");
-    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PMD/Align/Data",0,9999999);
     storage->Put(array,id,md);
   }
