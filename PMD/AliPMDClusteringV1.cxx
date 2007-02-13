@@ -186,7 +186,6 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 		  kNMX,ave));
   
   incr = CrClust(ave, cutoff, nmx1,iord1, edepcell );
-  
   RefClust(incr,edepcell);
   Int_t nentries1 = fPMDclucont->GetEntries();
   AliDebug(1,Form("Detector Plane = %d  Serial Module No = %d Number of clusters = %d",idet, ismn, nentries1));
@@ -379,24 +378,23 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
   // Takes the big patch and does gaussian fitting and
   // finds out the more refined clusters
   //
+  
+
 
   AliPMDcludata *pmdcludata = 0;
 
-  const Int_t kdim = 4500;
-
-  Int_t i, j, k, i1, i2, id, icl,  itest,ihld, ig, nsupcl,clno;
-  Int_t lev1[20], lev2[20];
-  Int_t ncl[kdim], iord[kdim], t[kdim];
-  Int_t clxy[15];
-
   Int_t *cellCount;
   Int_t **cellXY;
+  const Int_t kdim = 4500;
 
+  Int_t    i, j, k, i1, i2, id, icl,  itest,ihld, ig, nsupcl,clno;
+  Int_t    t[kdim];
+  Int_t    ncl[kdim], iord[kdim], lev1[20], lev2[20];
+  Int_t    clxy[15];
   Float_t  clusdata[6];
   Double_t x1, y1, z1, x2, y2, z2, dist,rr,sum;
   Double_t x[kdim], y[kdim], z[kdim];
   Double_t xc[kdim], yc[kdim], zc[kdim], cells[kdim], rc[kdim];
-  
 
   // Initialisation  
   for(i = 0; i<kdim; i++)
