@@ -406,7 +406,7 @@ void AliZDC::Digits2Raw()
   TTree* treeD = fLoader->TreeD();
   if (!treeD) return;
   treeD->SetBranchAddress("ZDC", &pdigit);
-  printf("\t AliZDC::Digits2raw -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
+  //printf("\t AliZDC::Digits2raw -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
 
   // Fill data array
   // ADC header
@@ -470,9 +470,9 @@ void AliZDC::Digits2Raw()
         lADCDataChannel = 5 + (digit.GetSector(1)-1)*8;
       }
       //
-      printf("\t AliZDC::Digits2raw -> det %d, quad %d, index = %d, ADCch = %d\n",
+      /*printf("\t AliZDC::Digits2raw -> det %d, quad %d, index = %d, ADCch = %d\n",
 		digit.GetSector(0),digit.GetSector(1),index1,lADCDataChannel);// Ch. debug
-      
+      */
       //
       if(iDigit<22){
         lADCDataValue1[index1] = digit.GetADCValue(0); 	// High gain ADC ch.	
@@ -502,9 +502,9 @@ void AliZDC::Digits2Raw()
       index2 = (digit.GetSector(0)-4) + digit.GetSector(1)*4; // ZN2 or ZP2
       lADCDataChannel = (digit.GetSector(0)-4)*8 + digit.GetSector(1);
       //
-      printf("\t AliZDC::Digits2raw -> det %d, quad %d, index = %d, ADCch = %d\n",
+      /*printf("\t AliZDC::Digits2raw -> det %d, quad %d, index = %d, ADCch = %d\n",
 		digit.GetSector(0),digit.GetSector(1),index1,lADCDataChannel); // Ch. debug
-      
+      */
       //
       if(iDigit<22){
         lADCDataValue2[index2] = digit.GetADCValue(0);
@@ -542,10 +542,11 @@ void AliZDC::Digits2Raw()
     
     
   }
-  for(Int_t i=0;i<24;i++) printf("\t ADCData1[%d] = %x\n",i,lADCData1[i]);
+  /*  for(Int_t i=0;i<24;i++) printf("\t ADCData1[%d] = %x\n",i,lADCData1[i]);
   for(Int_t i=0;i<20;i++) printf("\t ADCData2[%d] = %x\n",i,lADCData2[i]);
   for(Int_t i=0;i<24;i++) printf("\t ADCData3[%d] = %x\n",i,lADCData3[i]);
   for(Int_t i=0;i<20;i++) printf("\t ADCData4[%d] = %x\n",i,lADCData4[i]);
+  */
  
   // End of Block
   UInt_t lADCEndBlockGEO = lADCHeaderGEO;
@@ -553,7 +554,7 @@ void AliZDC::Digits2Raw()
   
   lADCEndBlock = lADCEndBlockGEO << 27 | 0x1 << 26 | lADCEndBlockEvCount;
   
-  printf("\t ADCEndBlock = %d\n",lADCEndBlock);
+  //printf("\t ADCEndBlock = %d\n",lADCEndBlock);
 
 
   // open the output file
