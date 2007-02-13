@@ -1,53 +1,45 @@
-void MakeMUONResMisAlignment(Bool_t volpaths = true,
-                             Bool_t transforms = true, 
-                             Bool_t svmaps = true)
-// Macro for generating the geometry data files:
-// (volpath.dat, transform.dat, svmap.dat)
-// and local CDB storage with zero, residual and full misalignment
-//
-// The generated files do not replace the existing ones
-// but have different names (with extension ".out").
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+// $Id$
+
+// Macro for generating the residual misalignment data.
+// The macro is triggered from AliRoot/macros/MakeAllDETsResMisAlignment.C
 //
 //  Author: I. Hrivnacova, IPN Orsay
-//
+
+void MakeMUONResMisAlignment()
 {
-  // Initialize
-  gAlice->Init("$ALICE_ROOT/MUON/Config.C");
-  cout << "Init done " << endl;
-
-  // Get MUON detector
-  AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
-  if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return 0;
+  // Check first if geometry is loaded,
+  // if not loaded try to load it from galice.root file
+  if ( ! gGeoManager && ! TGeoManager::Import("geometry.root") )  {
+    cerr << "Loading geometry failed." << endl;
+    return;
   }  
 
-  // Get geometry builder
-  AliMUONGeometryBuilder* builder = muon ->GetGeometryBuilder();
-  
-  if (volpaths) {
-    cout << "Generating volpath file ..." << endl;
-    builder->GetTransformer()->WriteVolumePaths("volpath.dat.out");
-  }  
-
-  if (transforms) {
-    cout << "Generating transformation file ..." << endl;
-    builder->GetTransformer()->WriteTransformations("transform.dat.out");
-  }  
-
-  if (svmaps) {
-    cout << "Generating svmaps file ..." << endl;
-    builder->WriteSVMaps();
-  }  
-
-  cout << "Generating residual misalignment data in  MUON/ResMisAlignCDB/Data..." << endl;
+  AliMUONGeometryTransformer transformer(true);
+  transformer.ReadGeometryData("volpath.dat", gGeoManager);
   
   AliMUONGeometryMisAligner misAligner(0.0, 0.004, 0.0, 0.003, 0.0, 0.0023);
   AliMUONGeometryTransformer* newTransform 
-    = misAligner.MisAlign(builder->GetTransformer(), true);
+    = misAligner.MisAlign(&transformer, true);
   TClonesArray* array = newTransform->GetMisAlignmentData();
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
+    cout << "Generating residual misalignment data in a file" << endl;
+  
     // Create a File to store the alignment data
     TFile f("MUONresidualMisalignment.root","RECREATE");
     if(!f) {cerr<<"cannot open file for output\n";}
@@ -55,7 +47,9 @@ void MakeMUONResMisAlignment(Bool_t volpaths = true,
     f.cd();
     f.WriteObject(array,"MUONAlignObjs ","kSingleKey");
     f.Close();
-  }else{
+  }
+  else {
+    cout << "Generating residual misalignment data in CDB" << endl;
     // save in CDB storage
     const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager* cdbManager = AliCDBManager::Instance();
@@ -67,7 +61,6 @@ void MakeMUONResMisAlignment(Bool_t volpaths = true,
     AliCDBId id("MUON/Align/Data", 0, 9999999); 
     storage->Put(array, id, cdbData);
   }
-  
   delete newTransform;
 }   
 
