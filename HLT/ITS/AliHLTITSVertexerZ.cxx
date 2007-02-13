@@ -79,8 +79,7 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   // fITS->SetTreeAddress();
   rl->CdGAFile();
 
-  // AliITSgeom *geom = fITS->GetITSgeom();
-  AliITSgeom *geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  AliITSgeom* geom=itsLoader->GetITSgeom();
   TTree *tR = itsLoader->TreeR();
   
   return FindVertexForCurrentEvent(geom,tR);
