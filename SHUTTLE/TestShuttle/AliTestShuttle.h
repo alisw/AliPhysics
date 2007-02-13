@@ -39,23 +39,9 @@ class AliTestShuttle : public AliShuttleInterface
     virtual const char* GetRunParameter(const char* key);
     virtual void Log(const char* detector, const char* message);
 
-    static TString GetMainCDB () {return fgkMainCDB;}
-    static void SetMainCDB (TString mainCDB) {fgkMainCDB = mainCDB;}
-    static TString GetMainRefStorage() {return fgkMainRefStorage;}
-    static void SetMainRefStorage (TString mainRefStorage) {fgkMainRefStorage = mainRefStorage;}
-
-    static void SetShuttleTempDir (const char* tmpDir);
-    static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
-    static void SetShuttleLogDir (const char* logDir);
-    static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
-
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
 
   protected:
-    static TString 	    fgkMainCDB;		// URI of the main (Grid) CDB storage
-    static TString 	    fgkMainRefStorage;	// URI of the main (Grid) REFERENCE storage
-    static TString 	    fgkShuttleTempDir;	// base path of SHUTTLE temp folder
-    static TString 	    fgkShuttleLogDir;	// path of SHUTTLE log folder
 
     Int_t fRun;         // run that is simulated with the AliTestShuttle
     UInt_t fStartTime;  // starttime that is simulated with the AliTestShuttle

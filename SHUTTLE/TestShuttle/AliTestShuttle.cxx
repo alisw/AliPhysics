@@ -87,12 +87,6 @@ some docs added
 
 ClassImp(AliTestShuttle)
 
-TString AliTestShuttle::fgkMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-TString AliTestShuttle::fgkMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
-
-TString AliTestShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/TestShuttle/temp");
-TString AliTestShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/TestShuttle/log");
-
 //______________________________________________________________________________________________
 AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fRun(run),
@@ -324,21 +318,5 @@ const char* AliTestShuttle::GetRunParameter(const char* key){
 		return 0;
 	}
 	return value->GetName();
-}
-
-//______________________________________________________________________________________________
-void AliTestShuttle::SetShuttleTempDir(const char* tmpDir)
-{
-// sets Shuttle temp directory
-
-	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
-}
-
-//______________________________________________________________________________________________
-void AliTestShuttle::SetShuttleLogDir(const char* logDir)
-{
-// sets Shuttle log directory
-
-	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }
 

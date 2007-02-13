@@ -15,19 +15,19 @@ void TestPreprocessor()
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  // AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  // AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliShuttleInterface::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliShuttleInterface::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
 
-  printf("Test OCDB storage Uri: %s\n", AliTestShuttle::GetMainCDB().Data());
-  printf("Test Reference storage Uri: %s\n", AliTestShuttle::GetMainRefStorage().Data());
+  printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
+  printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
 
   // TODO if needed, change location of temp and log folders (however they are not explicitly used here)
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/temp and log
-  // AliTestShuttle::SetShuttleTempDir("local://$ALICE_ROOT/SHUTTLE/TestShuttle/temp");
-  // AliTestShuttle::SetShuttleLogDir("local://$ALICE_ROOT/SHUTTLE/TestShuttle/log");
+  AliShuttleInterface::SetShuttleTempDir("$ALICE_ROOT/SHUTTLE/TestShuttle/temp");
+  AliShuttleInterface::SetShuttleLogDir("$ALICE_ROOT/SHUTTLE/TestShuttle/log");
 
-  printf("Test Shuttle temp dir: %s\n", AliTestShuttle::GetShuttleTempDir());
-  printf("Test Shuttle log dir: %s\n", AliTestShuttle::GetShuttleLogDir());
+  printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
+  printf("Test Shuttle log dir: %s\n", AliShuttleInterface::GetShuttleLogDir());
 
 
   // create AliTestShuttle instance
@@ -68,10 +68,10 @@ void TestPreprocessor()
   // Three files originating from different LDCs but with the same id are also added
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "PEDESTALS", "GDC", "file1.root");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "DRIFTVELOCITY", "LDC0", "file2a.root");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "DRIFTVELOCITY", "LDC1", "file2b.root");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "TPC", "DRIFTVELOCITY", "LDC2", "file2b.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "PEDESTALS", "GDC", "file1.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC0", "file2a.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC1", "file2b.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC2", "file2b.root");
 
   // TODO(3)
   //
@@ -95,7 +95,7 @@ void TestPreprocessor()
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
-  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
+  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("TPC/SHUTTLE/Data", 7);
   if (!entry)
   {
@@ -156,8 +156,7 @@ TMap* ReadDCSAliasMap()
   // The file contains an AliCDBEntry that contains a TMap with the DCS structure.
   // An explanation of the structure can be found in CreateDCSAliasMap()
 
-  AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
-  AliCDBEntry *entry = AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
+  AliCDBEntry *entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("DET/DCS/Data", 0);
   return dynamic_cast<TMap*> (entry->GetObject());
 }
@@ -177,6 +176,6 @@ void WriteDCSAliasMap()
 
   // look into AliTestShuttle's CDB main folder
 
-  AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
+  AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Put(dcsAliasMap, id, &metaData);
 }
