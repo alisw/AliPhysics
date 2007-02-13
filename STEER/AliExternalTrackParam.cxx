@@ -770,7 +770,7 @@ void AliExternalTrackParam::GetDirection(Double_t d[3]) const {
   //----------------------------------------------------------------
   Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
   Double_t snp=fP[2];
-  Double_t csp =TMath::Sqrt(1.- snp*snp);
+  Double_t csp =TMath::Sqrt((1.- snp)*(1.+snp));
   Double_t norm=TMath::Sqrt(1.+ fP[3]*fP[3]);
   d[0]=(csp*cs - snp*sn)/norm; 
   d[1]=(snp*cs + csp*sn)/norm; 
@@ -817,7 +817,7 @@ Bool_t AliExternalTrackParam::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
   }
   Double_t pt=1./TMath::Abs(fP[4]);
   Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
-  Double_t r=TMath::Sqrt(1-fP[2]*fP[2]);
+  Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
 
   Double_t m00=-sn, m10=cs;
   Double_t m23=-pt*(sn + fP[2]*cs/r), m43=-pt*pt*(r*cs - fP[2]*sn);
