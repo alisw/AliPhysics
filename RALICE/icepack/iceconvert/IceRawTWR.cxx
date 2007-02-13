@@ -169,7 +169,7 @@ void IceRawTWR::SetOutputFile(TString name)
 {
 // Create the output file for the ROOT data.
  if (fOutfile) delete fOutfile;
- fOutfile=new TFile(name.Data(),"RECREATE","F2K data in IceEvent structure");
+ fOutfile=new TFile(name.Data(),"RECREATE","TWR raw data in IceEvent structure");
 }
 ///////////////////////////////////////////////////////////////////////////
 TFile* IceRawTWR::GetOutputFile()
@@ -328,8 +328,8 @@ void IceRawTWR::Exec(Option_t* opt)
 
    // The GPS telegram info
    gps=fEvent.gps;
-   gpslow=gps.seconds;            // The low 24 bits of the seconds count
-   gpshigh=gps.info.bits.seconds; // The high 8 bits of the seconds count
+   gpslow=gps.seconds & 0x00FFFFFF; // The low 24 bits of the seconds count
+   gpshigh=gps.info.bits.seconds;   // The high 8 bits of the seconds count
    gpssecs=gpshigh<<24;
    gpssecs+=gpslow;
 

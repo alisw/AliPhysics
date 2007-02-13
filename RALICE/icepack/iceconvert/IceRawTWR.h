@@ -29,7 +29,7 @@ class IceRawTWR : public AliJob
   void SetPrintFreq(Int_t f);       // Set printfrequency to provide info every f events
   void SetSplitLevel(Int_t split);  // Set split level for the produced ROOT data file
   void SetBufferSize(Int_t bsize);  // Set buffersize for the produced ROO data file
-  void AddInputFile(TString name);  // Add name of F2K input file to the list
+  void AddInputFile(TString name);  // Add name of TWR raw input file to the list
   void SetOutputFile(TFile* ofile); // Set output file for the ROOT data structures       
   void SetOutputFile(TString name); // Create output file for the ROOT data structures
   TFile* GetOutputFile();           // Provide pointer to the ROOT output file

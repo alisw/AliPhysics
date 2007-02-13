@@ -85,5 +85,8 @@
                 event structures.
 11-jan-2007 NvE IceRawTWR.cxx updated to prevent gcc compiler warnings about unused
                 variables.
+13-feb-2007 NvE IceRawTWR.cxx updated to ensure padding zeros in gps time word.
+                Also old "F2K" comments corrected into "TWR raw" in IceRawTWR.cxx
+                and IceRawTWR.h. 
 
 
