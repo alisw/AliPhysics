@@ -43,8 +43,8 @@ TString AliShuttleInterface::fgkLocalCDB("local://LocalShuttleCDB");
 TString AliShuttleInterface::fgkMainRefStorage("alien://folder=ShuttleReference");
 TString AliShuttleInterface::fgkLocalRefStorage("local://LocalReferenceStorage");
 
-TString AliShuttleInterface::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/temp");
-TString AliShuttleInterface::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/log");
+TString AliShuttleInterface::fgkShuttleTempDir("/tmp");
+TString AliShuttleInterface::fgkShuttleLogDir("/tmp");
 
 //______________________________________________________________________________________________
 const char* AliShuttleInterface::GetOfflineDetName(const char* detName){
