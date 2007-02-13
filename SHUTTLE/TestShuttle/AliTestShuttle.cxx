@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2006/11/06 14:22:47  jgrosseo
+major update (Alberto)
+o) reading of run parameters from the logbook
+o) online offline naming conversion
+o) standalone DCSclient package
+
 Revision 1.5  2006/10/02 12:58:52  jgrosseo
 Small interface change in StoreReferenceData
 
@@ -77,11 +83,15 @@ some docs added
 #include <TMap.h>
 #include <TList.h>
 #include <TObjString.h>
+#include <TSystem.h>
 
 ClassImp(AliTestShuttle)
 
-TString AliTestShuttle::fgkOCDBUri("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-TString AliTestShuttle::fgkRefUri("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+TString AliTestShuttle::fgkMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+TString AliTestShuttle::fgkMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+
+TString AliTestShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/TestShuttle/temp");
+TString AliTestShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/TestShuttle/log");
 
 //______________________________________________________________________________________________
 AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
@@ -143,7 +153,7 @@ UInt_t AliTestShuttle::Store(const AliCDBPath& path, TObject* object, AliCDBMeta
 
   AliCDBId id(path, startRun, endRun);
 
-  return AliCDBManager::Instance()->GetStorage(fgkOCDBUri)->Put(object, id, metaData);
+  return AliCDBManager::Instance()->GetStorage(fgkMainCDB)->Put(object, id, metaData);
 }
 
 //______________________________________________________________________________________________
@@ -157,7 +167,7 @@ UInt_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* objec
 
   AliCDBId id(path, fRun, fRun);
 
-  return AliCDBManager::Instance()->GetStorage(fgkRefUri)->Put(object, id, metaData);
+  return AliCDBManager::Instance()->GetStorage(fgkMainRefStorage)->Put(object, id, metaData);
 }
 
 //______________________________________________________________________________________________
@@ -315,3 +325,20 @@ const char* AliTestShuttle::GetRunParameter(const char* key){
 	}
 	return value->GetName();
 }
+
+//______________________________________________________________________________________________
+void AliTestShuttle::SetShuttleTempDir(const char* tmpDir)
+{
+// sets Shuttle temp directory
+
+	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
+}
+
+//______________________________________________________________________________________________
+void AliTestShuttle::SetShuttleLogDir(const char* logDir)
+{
+// sets Shuttle log directory
+
+	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
+}
+

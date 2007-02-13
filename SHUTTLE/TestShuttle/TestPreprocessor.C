@@ -15,11 +15,20 @@ void TestPreprocessor()
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  // AliTestShuttle::SetOCDBStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  // AliTestShuttle::SetReferenceStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  // AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  // AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
 
-  printf("Test OCDB storage Uri: %s\n", AliTestShuttle::GetOCDBStorage().Data());
-  printf("Test Reference storage Uri: %s\n", AliTestShuttle::GetReferenceStorage().Data());
+  printf("Test OCDB storage Uri: %s\n", AliTestShuttle::GetMainCDB().Data());
+  printf("Test Reference storage Uri: %s\n", AliTestShuttle::GetMainRefStorage().Data());
+
+  // TODO if needed, change location of temp and log folders (however they are not explicitly used here)
+  // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/temp and log
+  // AliTestShuttle::SetShuttleTempDir("local://$ALICE_ROOT/SHUTTLE/TestShuttle/temp");
+  // AliTestShuttle::SetShuttleLogDir("local://$ALICE_ROOT/SHUTTLE/TestShuttle/log");
+
+  printf("Test Shuttle temp dir: %s\n", AliTestShuttle::GetShuttleTempDir());
+  printf("Test Shuttle log dir: %s\n", AliTestShuttle::GetShuttleLogDir());
+
 
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
@@ -86,7 +95,7 @@ void TestPreprocessor()
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
-  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetOCDBStorage())
+  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
   			->Get("TPC/SHUTTLE/Data", 7);
   if (!entry)
   {
@@ -147,7 +156,9 @@ TMap* ReadDCSAliasMap()
   // The file contains an AliCDBEntry that contains a TMap with the DCS structure.
   // An explanation of the structure can be found in CreateDCSAliasMap()
 
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("DET/DCS/Data", 0);
+  AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
+  AliCDBEntry *entry = AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
+  			->Get("DET/DCS/Data", 0);
   return dynamic_cast<TMap*> (entry->GetObject());
 }
 
@@ -164,8 +175,8 @@ void WriteDCSAliasMap()
 
   AliCDBId id("DET/DCS/Data", 0, 0);
 
-  // initialize location of CDB
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  // look into AliTestShuttle's CDB main folder
 
-  AliCDBManager::Instance()->Put(dcsAliasMap, id, &metaData);
+  AliCDBManager::Instance()->GetStorage(AliTestShuttle::GetMainCDB())
+  			->Put(dcsAliasMap, id, &metaData);
 }
