@@ -11,6 +11,7 @@
 //
 
 #include <TObject.h>
+#include <TString.h>
 
 class TList;
 class AliCDBMetaData;
@@ -40,10 +41,33 @@ class AliShuttleInterface : public TObject
     static const Int_t GetDetPos(const char* detName);
     static const UInt_t NDetectors() {return kNDetectors;}
 
+    static TString GetMainCDB () {return fgkMainCDB;}
+    static void SetMainCDB (TString mainCDB) {fgkMainCDB = mainCDB;}
+    static TString GetLocalCDB () {return fgkLocalCDB;}
+    static void SetLocalCDB (TString localCDB) {fgkLocalCDB = localCDB;}
+
+    static TString GetMainRefStorage() {return fgkMainRefStorage;}
+    static void SetMainRefStorage (TString mainRefStorage) {fgkMainRefStorage = mainRefStorage;}
+    static TString GetLocalRefStorage() {return fgkLocalRefStorage;}
+    static void SetLocalRefStorage (TString localRefStorage) {fgkLocalRefStorage = localRefStorage;}
+
+    static void SetShuttleTempDir (const char* tmpDir);
+    static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
+    static void SetShuttleLogDir (const char* logDir);
+    static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
+
   protected:
     static const char* fkSystemNames[3];  		// names of the systems providing data to the shuttle
-    static const char* fgkDetName[kNDetectors]; 	//! names of detectors' preprocessors (3-letter code convention)
-    static const char* fgkOfflineDetName[kNDetectors];  //! names of detectors in OCDB (AliRoot naming convention)
+    static const char* fgkDetName[kNDetectors]; 	// names of detectors' preprocessors (3-letter code convention)
+    static const char* fgkOfflineDetName[kNDetectors];  // names of detectors in OCDB (AliRoot naming convention)
+
+    static TString fgkMainCDB;		// URI of the main (Grid) CDB storage
+    static TString fgkLocalCDB;		// URI of the local backup CDB storage
+    static TString fgkMainRefStorage;	// URI of the main (Grid) REFERENCE storage
+    static TString fgkLocalRefStorage;	// URI of the local REFERENCE storage
+
+    static TString fgkShuttleTempDir;	// path of SHUTTLE temp folder
+    static TString fgkShuttleLogDir;	// path of SHUTTLE log folder
 
   private:
     ClassDef(AliShuttleInterface, 0);
