@@ -182,15 +182,7 @@ some docs added
 
 ClassImp(AliShuttle)
 
-TString AliShuttle::fgkMainCDB("alien://folder=ShuttleCDB");
-TString AliShuttle::fgkLocalCDB("local://LocalShuttleCDB");
-TString AliShuttle::fgkMainRefStorage("alien://folder=ShuttleReference");
-TString AliShuttle::fgkLocalRefStorage("local://LocalReferenceStorage");
-
-Bool_t AliShuttle::fgkProcessDCS(kTRUE); 
-
-TString AliShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/temp");
-TString AliShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/log");
+Bool_t AliShuttle::fgkProcessDCS(kTRUE);
 
 //______________________________________________________________________________________________
 AliShuttle::AliShuttle(const AliShuttleConfig* config,
@@ -384,7 +376,7 @@ AliShuttleStatus* AliShuttle::ReadShuttleStatus()
 		fStatusEntry = 0;
 	}
 
-	fStatusEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalCDB())
+	fStatusEntry = AliCDBManager::Instance()->GetStorage(GetLocalCDB())
 		->Get(Form("/SHUTTLE/STATUS/%s", fCurrentDetector.Data()), GetCurrentRun());
 
 	if (!fStatusEntry) return 0;
@@ -2020,20 +2012,4 @@ Bool_t AliShuttle::SendMail()
 	Bool_t result = gSystem->Exec(mailCommand.Data());
 
 	return result == 0;
-}
-
-//______________________________________________________________________________________________
-void AliShuttle::SetShuttleTempDir(const char* tmpDir)
-{
-// sets Shuttle temp directory
-
-	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
-}
-
-//______________________________________________________________________________________________
-void AliShuttle::SetShuttleLogDir(const char* logDir)
-{
-// sets Shuttle log directory
-
-	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }
