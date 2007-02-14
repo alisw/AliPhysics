@@ -128,6 +128,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
   UInt_t mysize           = 0;
   UInt_t tSize            = 0;
   Int_t tmpChannelCnt     = 0;
+  Int_t tmpStartIndex     = 0;
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
@@ -172,15 +173,15 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 		{
 		  analyzerPtr->SetData(fTmpChannelData);
 		  analyzerPtr->Evaluate(0, sampleCnt);
-		  fOutPtr->fCellEnergies[tmpRow][tmpCol][tmpGain] =  analyzerPtr->GetEnergy();
 		  sampleCnt = 0;
 		  fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
 		  fOutPtr->fValidData[tmpChannelCnt].fRow  = tmpRow;
 		  fOutPtr->fValidData[tmpChannelCnt].fCol  = tmpCol; 
+		  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = analyzerPtr->GetEnergy();
+		  fOutPtr->fValidData[tmpChannelCnt].fTime    = analyzerPtr->GetTiming();
 		  tmpChannelCnt ++;
-		  ResetDataPtr();
+		  ResetDataPtr(tmpStartIndex, sampleCnt);
 		  sampleCnt = 0;
-
 		}
 
 	      tmpMod  =  fPHOSRawStream->GetModule() ;
@@ -189,6 +190,12 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	      tmpGain =  fPHOSRawStream->IsLowGain(); 
 	      processedChannels ++;
 	    }
+	  
+	  if(sampleCnt == 0)
+	    {
+	      tmpStartIndex = fPHOSRawStream->GetTime();
+	    }
+	  
 	  fTmpChannelData[fPHOSRawStream->GetTime()] =  fPHOSRawStream->GetSignal();
 	  sampleCnt ++;
 
@@ -238,22 +245,29 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 }
 
 void
-AliHLTPHOSRawAnalyzerComponent::DumpData()
+AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
 {
-  for(int mod = 0; mod <5; mod ++)
+  for(int mod = 0; mod < N_MODULES; mod ++)
     {
       printf("\n ***********  MODULE %d ************\n", mod);
-      for(int row = 0; row < 64; row ++)
+      for(int row = 0; row <  N_ROWS_MOD; row ++)
 	{
-	  for(int col = 0; col < 56; col ++)
+	  for(int col = 0; col <  N_COLUMNS_MOD; col ++)
 	    {
 	      if( fMaxValues[mod][row][col][0] != 0)
 		{ 
-		  cout << fMaxValues[mod][row][col][0] << "\t";
+		  cout << fMaxValues[mod][row][col][gain] << "\t";
 		}
 	    }
 	} 
     }
+}
+
+
+void
+AliHLTPHOSRawAnalyzerComponent::DumpData()
+{
+  DumpData(0);
 }
 
 void
@@ -261,7 +275,7 @@ AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
 {
       cout << endl;
       
-      for(int i=0; i< 1008; i++)
+      for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
 	{
 	  if (data[i] != 0)
 	    {
@@ -270,7 +284,7 @@ AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
 	}
       cout << endl;
       
-      for(int i=0; i< 1008; i++)
+      for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
 	{
 	  if (data[i] != 0)
 	    {
@@ -286,13 +300,13 @@ AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
 void
 AliHLTPHOSRawAnalyzerComponent::Reset()
 {
-  for(int mod = 0; mod <5; mod ++)
+  for(int mod = 0; mod < N_MODULES; mod ++)
     {
-      for(int row = 0; row < 64; row ++)
+      for(int row = 0; row < N_ROWS_MOD; row ++)
 	{
-	  for(int col = 0; col < 56; col ++)
+	  for(int col = 0; col < N_COLUMNS_MOD; col ++)
 	    {
-	      for(int gain = 0; gain <2; gain ++ )
+	      for(int gain = 0; gain < N_GAINS; gain ++ )
 		{
 		  fMaxValues[mod][row][col][gain] = 0;
 		}
@@ -300,16 +314,34 @@ AliHLTPHOSRawAnalyzerComponent::Reset()
 	}
     }
 
-  for(int i = 0 ; i< 1008; i++)
-    {
-      fTmpChannelData[i] = 0;
-    }
+  ResetDataPtr();
+
 } // end Reset
+
+
 
 void
 AliHLTPHOSRawAnalyzerComponent::ResetDataPtr()
 {
-  for(int i = 0 ; i< 1008; i++)
+  for(int i = 0 ; i< ALTRO_MAX_SAMPLES; i++)
+    {
+      fTmpChannelData[i] = 0;
+    }
+}
+
+void
+AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int sampleCnt)
+{
+  for(int i = 0 ; i< sampleCnt; i++)
+    {
+      fTmpChannelData[i] = 0;
+    }
+}
+
+void
+AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
+{
+  for(int i = startindex ; i< sampleCnt; i++)
     {
       fTmpChannelData[i] = 0;
     }
