@@ -6,8 +6,8 @@ default-target: libPWG4Gamma.so
 ALICEINC      = -I.
 
 ### define include dir for local case and par case
-ifneq ($(ANALYSIS_NEW_INCLUDE),)
-  ALICEINC += -I../$(ESD_INCLUDE) -I../$(ANALYSIS_NEW_INCLUDE)
+ifneq ($(ANALYSIS_INCLUDE),)
+  ALICEINC += -I../$(ESD_INCLUDE) -I../$(ANALYSIS_INCLUDE)
 else
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
