@@ -32,8 +32,8 @@ public:
   void SetBinWidthFine(Float_t bw=0.0005){fStepFine = bw;}
 
  protected:
-  AliHLTITSVertexerZ::AliHLTITSVertexerZ(const AliHLTITSVertexerZ &vtxr);
-  AliHLTITSVertexerZ& AliHLTITSVertexerZ::operator=(const AliHLTITSVertexerZ&  vtxr );
+  AliHLTITSVertexerZ(const AliHLTITSVertexerZ &vtxr);
+  AliHLTITSVertexerZ& operator=(const AliHLTITSVertexerZ&  vtxr );
 
   TH1F *fZCombf;           //! histogram with fine z distribution
   Float_t fStepFine;       // bin width for fZCombf histogram
