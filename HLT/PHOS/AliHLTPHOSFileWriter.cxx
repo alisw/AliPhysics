@@ -52,7 +52,7 @@ AliHLTPHOSFileWriter::MakeFilename(int eventNr, const AliHLTComponentDataType& d
   charPos+= kAliHLTComponentDataTypefOriginSize;
   fCurrentFilename.insert(charPos, tmpID);
   charPos = fCurrentFilename.size();
-  sprintf(tmpEvntNr,"%.16d", eventNr);
+  sprintf(tmpEvntNr,"_%.16d", eventNr);
   fCurrentFilename.insert(charPos, tmpEvntNr);
   cout <<"AliHLTPHOSFileWriterComponent::MakeFilename, filename = " << fCurrentFilename <<endl;
   
