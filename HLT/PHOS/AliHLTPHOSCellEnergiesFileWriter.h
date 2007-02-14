@@ -5,6 +5,7 @@
 #include "AliHLTPHOSFileWriter.h"
 #include <string>
 #include "AliHLTDataTypes.h"
+#include <iostream>
 
 
 using std::string;
@@ -16,13 +17,13 @@ class AliHLTPHOSCellEnergiesFileWriter: public AliHLTPHOSFileWriter
   AliHLTPHOSCellEnergiesFileWriter();
   ~AliHLTPHOSCellEnergiesFileWriter();
 
-  virtual int WriteFile(const AliHLTComponentEventData& evtData, 
-			const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData, int evntCnt);
+  //  virtual int WriteFile(const AliHLTComponentEventData& evtData, 
+  //			const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData,AliHLTComponentDataType dataType, int evntCnt);
+
 
  private:
-  //  int fCurrentEvntCnt;
-  //  FILE *fCurrentFile;
-  //  char fCurrentFileName[256];
+  int fCurrentEvntCnt;
+  //  ofstream fCurrentFile;
 };
 
 
