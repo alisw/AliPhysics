@@ -42,7 +42,6 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t GetLowLimit() const {return fLowLim;}
   Float_t GetHighLimit() const {return fHighLim;}
   void SetBinWidthCoarse(Float_t bw=0.01){fStepCoarse = bw;}
-  void SetBinWidthFine(Float_t bw=0.0005){fStepFine = bw;}
   void SetPPsetting(Float_t cl2=250., Float_t coarsebin=0.02){fPPsetting[0]=cl2; fPPsetting[1]=coarsebin;}
   Int_t GetPeakRegion(TH1F*h, Int_t &binmin, Int_t &binmax) const;
   Float_t GetBinWidthCoarse() const {return fStepCoarse;}
@@ -68,18 +67,16 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t fZFound;         //! found value for the current event
   Float_t fZsig;           //! RMS of Z
   TH1F *fZCombc;           //! histogram with coarse z distribution
-  TH1F *fZCombf;           //! used by HLT vertexer
   Float_t fLowLim;         // low limit for fZComb histograms
   Float_t fHighLim;        // high limit for fZComb histograms
   Float_t fStepCoarse;     // bin width for fZCombc
-  Float_t fStepFine;       // used by HLT vertexer
   Float_t fTolerance;      // tolerance on the symmetry of the Z interval 
   Float_t fPPsetting[2];   // [0] is the max. number of clusters on L2 to use [1] as fStepCoarse
   Int_t fMaxIter;            // Maximum number of iterations (<=5)
   Float_t fPhiDiffIter[5];   // Delta phi used in iterations
   Float_t fWindowWidth;      // Z window width for symmetrization
 
-  ClassDef(AliITSVertexerZ,5);
+  ClassDef(AliITSVertexerZ,6);
 };
 
 #endif

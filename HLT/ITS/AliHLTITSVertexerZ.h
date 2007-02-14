@@ -24,11 +24,21 @@ class AliHLTITSVertexerZ : public AliITSVertexerZ {
 public:
   AliHLTITSVertexerZ();
   AliHLTITSVertexerZ(TString filename,Float_t x0=0., Float_t y0=0.);
+  virtual ~AliHLTITSVertexerZ();
 
   AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
   AliESDVertex* FindVertexForCurrentEvent(AliITSgeom *geom,TTree *tR);
 
-  ClassDef(AliHLTITSVertexerZ,1)   //HLT ITS vertexer
+  void SetBinWidthFine(Float_t bw=0.0005){fStepFine = bw;}
+
+ protected:
+  AliHLTITSVertexerZ::AliHLTITSVertexerZ(const AliHLTITSVertexerZ &vtxr);
+  AliHLTITSVertexerZ& AliHLTITSVertexerZ::operator=(const AliHLTITSVertexerZ&  vtxr );
+
+  TH1F *fZCombf;           //! histogram with fine z distribution
+  Float_t fStepFine;       // bin width for fZCombf histogram
+
+  ClassDef(AliHLTITSVertexerZ,2)   //HLT ITS vertexer
 };
 
 typedef AliHLTITSVertexerZ AliL3ITSVertexerZ; // for backward compatibility

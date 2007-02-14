@@ -51,11 +51,9 @@ fY0(0.),
 fZFound(0),
 fZsig(0.),
 fZCombc(0),
-fZCombf(0),
 fLowLim(0.),
 fHighLim(0.),
 fStepCoarse(0),
-fStepFine(0),
 fTolerance(0.),
 fMaxIter(0),
 fWindowWidth(0) {
@@ -84,11 +82,9 @@ fY0(y0),
 fZFound(0),
 fZsig(0.),
 fZCombc(0),
-fZCombf(0),
 fLowLim(0.),
 fHighLim(0.),
 fStepCoarse(0),
-fStepFine(0),
 fTolerance(0.),
 fMaxIter(0),
 fWindowWidth(0) {
@@ -96,7 +92,6 @@ fWindowWidth(0) {
   SetDiffPhiMax();
   SetFirstLayerModules();
   SetSecondLayerModules();
-  SetBinWidthFine();
   SetLowLimit();
   SetHighLimit();
   SetBinWidthCoarse();
@@ -119,11 +114,9 @@ fY0(vtxr.fY0),
 fZFound(vtxr.fZFound),
 fZsig(vtxr.fZsig),
 fZCombc(vtxr.fZCombc),
-fZCombf(vtxr.fZCombf),
 fLowLim(vtxr.fLowLim),
 fHighLim(vtxr.fHighLim),
 fStepCoarse(vtxr.fStepCoarse),
-fStepFine(vtxr.fStepFine),
 fTolerance(vtxr.fTolerance),
 fMaxIter(vtxr.fMaxIter),
 fWindowWidth(vtxr.fWindowWidth){

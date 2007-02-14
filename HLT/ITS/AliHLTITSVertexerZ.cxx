@@ -31,32 +31,51 @@
 
 ClassImp(AliHLTITSVertexerZ)
 
-AliHLTITSVertexerZ::AliHLTITSVertexerZ():AliITSVertexerZ(){
+AliHLTITSVertexerZ::AliHLTITSVertexerZ():
+  AliITSVertexerZ(),
+  fZCombf(0),
+  fStepFine(0)
+{
   // Constructor in case that there is no runloader
-
-  SetDiffPhiMax();
-  fX0 = 0;
-  fY0 = 0;
-  SetFirstLayerModules();
-  SetSecondLayerModules();
-  fZFound = 0;
-  fZsig = 0.;
-  //fITS = 0;
-  fZCombc = 0;
-  fZCombf = 0;
-  SetLowLimit();
-  SetHighLimit();
-  SetBinWidthCoarse();
   SetBinWidthFine();
-  SetTolerance();
-  SetDebug();
 }
 
-AliHLTITSVertexerZ::AliHLTITSVertexerZ(TString filename,Float_t x0, Float_t y0):AliITSVertexerZ(filename,x0,y0)
+AliHLTITSVertexerZ::AliHLTITSVertexerZ(TString filename,Float_t x0, Float_t y0):
+  AliITSVertexerZ(filename,x0,y0),
+  fZCombf(0),
+  fStepFine(0)
 {
   // Standard Constructor
+  SetBinWidthFine();
 }
 
+AliHLTITSVertexerZ::~AliHLTITSVertexerZ()
+{
+  // Destructor
+  if (fZCombf) delete fZCombf;
+}
+
+//______________________________________________________________________
+AliHLTITSVertexerZ::AliHLTITSVertexerZ(const AliHLTITSVertexerZ &vtxr) :
+  AliITSVertexerZ(vtxr),
+  fZCombf(vtxr.fZCombf),
+  fStepFine(vtxr.fStepFine)
+{
+  // Copy constructor
+
+}
+
+//______________________________________________________________________
+AliHLTITSVertexerZ& AliHLTITSVertexerZ::operator=(const AliHLTITSVertexerZ&  vtxr )
+{
+  // Assignment operator
+  this->~AliHLTITSVertexerZ();
+  new(this) AliHLTITSVertexerZ(vtxr);
+  fZCombf = vtxr.fZCombf;
+  fStepFine = vtxr.fStepFine;
+
+  return *this;
+}
 //______________________________________________________________________
 AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   // Defines the AliESDVertex for the current event
