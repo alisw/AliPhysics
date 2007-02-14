@@ -16,10 +16,7 @@
  * provided "as is" without express or implied warranty.                   *
  **************************************************************************/
 
-//#include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTDataTypes.h"
-//#include "Rtypes.h"
-
 
 
 struct AliHLTPHOSValidCellDataStruct
@@ -27,6 +24,8 @@ struct AliHLTPHOSValidCellDataStruct
   AliHLTUInt16_t fRow;
   AliHLTUInt16_t fCol;
   AliHLTUInt16_t fGain;
+  Float_t fEnergy;
+  Float_t fTime;
 };
 
 
