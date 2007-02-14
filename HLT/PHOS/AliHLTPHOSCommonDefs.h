@@ -7,6 +7,7 @@
 #define N_FEECS           14      /**<Number of Frontend cards per branch*/
 #define N_ALTROS           4      /**<Number of ALTROs per frontend card*/
 #define N_ALTROCHANNELS   16      /**<Number of readout channles per ALTRO*/
+#define ALTRO_MAX_SAMPLES 1008    /**<The maximum number of samples of the ALTRO*/
 
 //Geometry constants
 #define N_MODULES          5      /**<Number of modules of the PHOS detector*/
