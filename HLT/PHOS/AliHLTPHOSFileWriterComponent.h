@@ -12,21 +12,24 @@
 #include "AliHLTPHOSCellEnergiesFileWriter.h"
 #include "AliHLTPHOSDDLPackedFileWriter.h"  
 #include "Rtypes.h"
+#include "AliHLTFileWriter.h"
+
 
 using std::string;
 
 class AliHLTPHOSRcuCellEnergyDataStruct;
  
-class AliHLTPHOSFileWriterComponent:public AliHLTDataSink
+//class AliHLTPHOSFileWriterComponent:public AliHLTDataSink
+class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
 {
  public:
   AliHLTPHOSFileWriterComponent();
   virtual ~AliHLTPHOSFileWriterComponent();
   int AddDataType(string dataType);
-  virtual int DoInit( int argc, const char** argv );
+  //  virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
   virtual int DoDeinit();
-  virtual int DumpEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData );
+  //  virtual int DumpEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData );
   virtual const char* GetComponentID();
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
@@ -36,6 +39,7 @@ class AliHLTPHOSFileWriterComponent:public AliHLTDataSink
  protected:
 
  private:
+  Bool_t IsRegisteredDataType(const AliHLTComponentDataType&);
   AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & );  
   AliHLTPHOSFileWriterComponent & operator = (const AliHLTPHOSFileWriterComponent)
     {
@@ -46,7 +50,6 @@ class AliHLTPHOSFileWriterComponent:public AliHLTDataSink
   string  fDirectory; /**<target directory for files*/
   string  fFilename;  /**<the basename of the output file*/
   AliHLTComponentDataType fDataTypesToFile[N_DATATYPES];
-  Bool_t IsRegisteredDataType(const AliHLTComponentDataType&);
   int fEventCount;
   static const AliHLTComponentDataType fInputDataTypes[];
 };

@@ -34,8 +34,8 @@ const AliHLTComponentDataType AliHLTPHOSFileWriterComponent::fInputDataTypes[]={
 
 AliHLTPHOSFileWriterComponent gAliHLTPHOSFileWriterComponent;
 
-AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
-  //AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():AliHLTDataSink()
+//AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
+AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():  AliHLTFileWriter(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
 {
   for(int i=0; i<N_DATATYPES; i++)
     {
@@ -54,8 +54,8 @@ AliHLTPHOSFileWriterComponent::~AliHLTPHOSFileWriterComponent()
 }
 
 
-AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ):AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
-  //AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ):AliHLTDataSink()
+//AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ):AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
+AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ): AliHLTFileWriter(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
 {
 
 }
@@ -77,8 +77,6 @@ AliHLTPHOSFileWriterComponent::AddDataType(string dataType)
 
   if(dataType.compare("gkCellEnergyDataType") == 0)
     {
-      cout << "!!!!!!!!!!!!!!AliHLTPHOSFileWriterComponent::AddDataType"<< dataType << endl;
-      //    fDataTypesToFilePtr[N_DATATYPES] = new AliHLTPHOSDefinitions::gkCellEnergyDataType;
       fDataTypesToFile[tmpCnt] = AliHLTPHOSDefinitions::gkCellEnergyDataType; 
       cout <<"regsitring dataType for filewriting: fDataTypesToFile[" << tmpCnt <<"]"<<endl; 
     } 
@@ -144,6 +142,7 @@ AliHLTPHOSFileWriterComponent::GetOutputDataSize(unsigned long& constBase, doubl
   inputMultiplier = 0.1;
 }
 
+/*
 int 
 AliHLTPHOSFileWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData )
 {
@@ -172,14 +171,14 @@ AliHLTPHOSFileWriterComponent::DumpEvent( const AliHLTComponentEventData& evtDat
 	  if(*tmpDataType == AliHLTPHOSDefinitions::gkCellEnergyDataType)
 	    {
 
-	      fCellEnergiesFileWriterPtr->WriteFile(evtData, blocks, trigData, fEventCount); 
-	      cout <<"AliHLTPHOSFileWriterComponen: data type = is  gkCellEnergyDataType. block index = "<< ndx\
-		   <<" EventCount =" << fEventCount  << "Event ID"<<evtData.fEventID << endl;
+	      fCellEnergiesFileWriterPtr->WriteFile(evtData, blocks, trigData, *tmpDataType,  fEventCount); 
+	      //	      cout <<"AliHLTPHOSFileWriterComponen: data type = is  gkCellEnergyDataType. block index = "<< ndx\
+		//		   <<" EventCount =" << fEventCount  << "Event ID"<<evtData.fEventID << endl;
 	    }
 	  else if(*tmpDataType == AliHLTPHOSDefinitions::gkDDLPackedRawDataType)
 	    {
 
-	       fDDLPackedFileWriterPtr->WriteFile(evtData, blocks, trigData, fEventCount); 
+	      fDDLPackedFileWriterPtr->WriteFile(evtData, blocks, trigData, *tmpDataType, fEventCount); 
 	    }
 	}
 
@@ -190,20 +189,21 @@ AliHLTPHOSFileWriterComponent::DumpEvent( const AliHLTComponentEventData& evtDat
     } 
   return 0;
 }//end DumpEvent
+*/
 
 
+/*
 int
 AliHLTPHOSFileWriterComponent::DoInit( int argc, const char** argv )
 {
+
+
   int iResult=0;
   TString argument="";
   Bool_t dirSet = kFALSE;
   Bool_t dataSet = kFALSE;
   string dataType="";
   int bMissingParam=0;
-
-  //  fFilename.assign(256,0);
-  //   fFilename.assign(256,0);
 
   for(int i=0; i<argc; i++)
     {
@@ -218,10 +218,8 @@ AliHLTPHOSFileWriterComponent::DoInit( int argc, const char** argv )
 	  fDirectory.assign(argv[i]);
 	  fCellEnergiesFileWriterPtr->SetDirectory(fDirectory);
 	  fDDLPackedFileWriterPtr->SetDirectory(fDirectory) ;
-
 	  fFilename.insert(0, fDirectory);
 	  dirSet = kTRUE;
-	  
 	  cout << "fDirectory=" << fDirectory << endl;
 	}
 
@@ -239,21 +237,24 @@ AliHLTPHOSFileWriterComponent::DoInit( int argc, const char** argv )
 
     }
 
-  /*
-   * We dont start the component if we don know what data to write
-   * or where to store it
-   */
-  if((dataSet != kTRUE || dataSet != kTRUE))
-    {
-      iResult = -1;
-      HLTFatal(" either direcory or datatype is not set, usage -datatype <datatype>  -driectory <directory>");
-    }
-  else
-    {
-      iResult = 0;
-    }
-  return iResult;
-}
+*/  
+ 
+    //  /*
+    //  * We dont start the component if we don know what data to write
+    //  * or where to store it
+    //  */
+//  if((dataSet != kTRUE || dataSet != kTRUE))
+//    {
+//      iResult = -1;
+//      HLTFatal(" either direcory or datatype is not set, usage -datatype <datatype>  -driectory <directory>");
+//    }
+//  else
+//    {
+//      iResult = 0;
+//    }
+//  return iResult;
+//}
+
 
 
 Bool_t 
