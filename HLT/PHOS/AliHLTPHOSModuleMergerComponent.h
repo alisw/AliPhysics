@@ -6,9 +6,11 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSDefinitions.h"
+#include "AliHLTPHOSCommonDefs.h"
 
 
-class AliHLTPHOSModuleMergerComponent: public AliHLTProcessor
+
+class AliHLTPHOSModuleMergerComponent:public AliHLTProcessor
 {
  public:
   AliHLTPHOSModuleMergerComponent();
@@ -18,42 +20,32 @@ class AliHLTPHOSModuleMergerComponent: public AliHLTProcessor
    {
       return *this;
    };
-
-
-
   virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
   virtual int DoDeinit();
-  void DumpData();
-  void SetEquippmentId(int id);
-  int GetEquippmentId();
-  //  virtual const char* GetComponentID() = 0;
-  virtual const char* GetComponentID();
-
-  virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
+  
+ void DumpData(int gain);
+ 
+ int GetEquippmentId();
+ virtual const char* GetComponentID();
+ virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-  //  virtual AliHLTComponent* Spawn() = 0;
-
-  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
+  void SetEquippmentId(int id);
   virtual AliHLTComponent* Spawn();
+
  protected:
-  //  AliHLTPHOSRawAnalyzer *analyzerPtr; 
   void Reset();
   void ResetDataPtr();
 
  private:
   int fEventCount;
   AliHLTUInt32_t fEquippmentID;
-  Double_t fTmpChannelData[1008];
-  Double_t fMaxValues[5][64][56][2];
-  //  TH2S *legoPlotPtr;
-
-  //  AliCaloRawStream *fPHOSRawStream;
-  //  AliRawReaderMemory *fRawMemoryReader;
+  Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];
+  Double_t fMaxValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
   static const AliHLTComponentDataType inputDataTypes[];
   static const AliHLTComponentDataType outputDataType;
-  
 };
 
 #endif

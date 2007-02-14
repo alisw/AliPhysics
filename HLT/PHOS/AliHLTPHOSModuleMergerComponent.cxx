@@ -32,12 +32,14 @@ AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent():AliHLTProces
 
 } 
 
+
 AliHLTPHOSModuleMergerComponent::~ AliHLTPHOSModuleMergerComponent()
 {
 
 }
 
-AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
+
+AliHLTPHOSModuleMergerComponent::AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
 {
 
 }
@@ -49,6 +51,7 @@ AliHLTPHOSModuleMergerComponent::Deinit()
   return 0;
 }
 
+
 int 
 AliHLTPHOSModuleMergerComponent::DoDeinit()
 {
@@ -57,21 +60,25 @@ AliHLTPHOSModuleMergerComponent::DoDeinit()
 
 }
 
+
 const char* 
 AliHLTPHOSModuleMergerComponent::GetComponentID()
 {
   return "ModuleMerger";
 }
 
+
 void
  AliHLTPHOSModuleMergerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   const AliHLTComponentDataType* pType=inputDataTypes;
-  while (pType->fID!=0) {
-    list.push_back(*pType);
-    pType++;
-  }
+  while (pType->fID!=0) 
+    {
+      list.push_back(*pType);
+      pType++;
+    }
 }
+
 
 AliHLTComponentDataType 
 AliHLTPHOSModuleMergerComponent::GetOutputDataType()
@@ -79,9 +86,9 @@ AliHLTPHOSModuleMergerComponent::GetOutputDataType()
   return AliHLTPHOSDefinitions::gkCellEnergyDataType;
 }
 
+
 void
 AliHLTPHOSModuleMergerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
-
 {
   constBase = 30;
   inputMultiplier = 1;
@@ -92,6 +99,7 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  
   unsigned long ndx;
   const AliHLTComponentBlockData* iter = NULL;   
   AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr;
@@ -103,32 +111,34 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
       int tmpModuleID = 0;
       int tmpRcuX = 0;
       int tmpRcuZ = 0;
-
+      int tmpCnt =  cellDataPtr->fCnt;
       iter = blocks+ndx;
       AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)( iter->fPtr);
-
       tmpModuleID = cellDataPtr->fModuleID;
       tmpRcuX     = cellDataPtr->fRcuX ;
       tmpRcuZ     = cellDataPtr->fRcuZ;
 
-      for(int row = 0; row<32; row ++)
+      for(int i= 0; i< tmpCnt; tmpCnt ++)
 	{
-	  for(int col = 0; col < 28; col ++)
+	  if(cellDataPtr->fValidData[i].fGain == HIGH_GAIN)
 	    {
-	      for(int gain=0; gain <2; gain++)
-		{
-		  fMaxValues[tmpModuleID][row + 32*tmpRcuX][col + 28*tmpRcuZ][gain] =  cellDataPtr->fCellEnergies[row][col][gain];  
-	 	}	  
+	      fMaxValues[tmpModuleID][ cellDataPtr->fValidData[i].fRow +  N_ROWS_RCU*tmpRcuX][ cellDataPtr->fValidData[i].fCol + N_COLUMNS_RCU*tmpRcuZ][HIGH_GAIN] =  cellDataPtr->fValidData[i].fEnergy;
+	      //   fMaxValues[0][0][0][0] = 0;
+	    }
+	  else if(cellDataPtr->fValidData[i].fGain == LOW_GAIN)
+	    {
+	           fMaxValues[tmpModuleID][ cellDataPtr->fValidData[i].fRow +  N_ROWS_RCU*tmpRcuX][ cellDataPtr->fValidData[i].fCol +N_COLUMNS_RCU*tmpRcuZ][LOW_GAIN] =  cellDataPtr->fValidData[i].fEnergy;
+	      //    fMaxValues[0][0][0][0]=0;
 	    }
 	}
-
+      
     }
 
-  DumpData();
+  DumpData(1);
   fEventCount++; 
   return 0;
+  
 }//end DoEvent
-
 
 
 int
@@ -142,19 +152,34 @@ AliHLTPHOSModuleMergerComponent::DoInit( int argc, const char** argv )
   return 0;
 }
 
+
 void
-AliHLTPHOSModuleMergerComponent::DumpData()
+AliHLTPHOSModuleMergerComponent::DumpData(int gain)
 {
-  for(int mod = 0; mod <5; mod ++)
+
+  if(gain < 0 || gain >  N_GAINS)
     {
-      printf("\n ***********  MODULE %d ************\n", mod);
-      for(int row = 0; row < 64; row ++)
+      cout <<"AliHLTPHOSModuleMergerComponent::DumpDat: Error, gain must be between " << 0 << "and" << N_GAINS << endl;
+    }
+  
+  for(int mod = 0; mod < N_MODULES; mod ++)
+    {
+      if(gain == HIGH_GAIN)
 	{
-	  for(int col = 0; col < 56; col ++)
+	  cout << endl <<" ***********  MODULE" << mod << "****HIGH_GAIN" <<"************" << endl;
+	}
+      else if(gain == LOW_GAIN)
+	{
+	  cout << endl <<" ***********  MODULE" << mod << "****LOW_GAIN" <<"************" << endl;
+	}
+      
+      for(int row = 0; row < N_ROWS_MOD; row ++)
+	{
+	  for(int col = 0; col < N_COLUMNS_MOD; col ++)
 	    {
-	      if( fMaxValues[mod][row][col][0] != 0)
+	     	      if( fMaxValues[mod][row][col][0] != 0)
 		{ 
-		  cout << fMaxValues[mod][row][col][0] << "\t";
+		 		  cout << fMaxValues[mod][row][col][0] << "\t";
 		}
 	    }
 	} 
@@ -162,24 +187,26 @@ AliHLTPHOSModuleMergerComponent::DumpData()
 }
 
 
+
 void
 AliHLTPHOSModuleMergerComponent::Reset()
 {
-  for(int mod = 0; mod <5; mod ++)
+  for(int mod = 0; mod < N_MODULES; mod ++)
     {
-      for(int row = 0; row < 64; row ++)
+      for(int row = 0; row <  N_ROWS_MOD; row ++)
 	{
-	  for(int col = 0; col < 56; col ++)
+	  for(int col = 0; col < N_COLUMNS_MOD; col ++)
 	    {
-	      for(int gain = 0; gain <2; gain ++ )
-		{
+	      for(int gain = 0; gain < N_GAINS; gain ++ )
+		{ 
+
 		  fMaxValues[mod][row][col][gain] = 0;
 		}
 	    }
 	}
     }
 
-  for(int i = 0 ; i< 1008; i++)
+  for(int i = 0 ; i<  ALTRO_MAX_SAMPLES; i++)
     {
       fTmpChannelData[i] = 0;
     }
@@ -188,7 +215,7 @@ AliHLTPHOSModuleMergerComponent::Reset()
 void
 AliHLTPHOSModuleMergerComponent::ResetDataPtr()
 {
-  for(int i = 0 ; i< 1008; i++)
+  for(int i = 0 ; i<  ALTRO_MAX_SAMPLES; i++)
     {
       fTmpChannelData[i] = 0;
     }
