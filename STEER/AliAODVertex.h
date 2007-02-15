@@ -57,7 +57,8 @@ class AliAODVertex : public TObject {
   Double_t  GetX() const { return fPosition[0]; }
   Double_t  GetY() const { return fPosition[1]; }
   Double_t  GetZ() const { return fPosition[2]; }
-  template <class T> void GetPosition(T *position) const;
+  template <class T> void GetPosition(T *pos) const
+    {pos[0]=fPosition[0]; pos[1]=fPosition[1]; pos[2]=fPosition[2];}
 
   template <class T> void SetCovMatrix(const T *covMatrix) {
     if(!fCovMatrix) fCovMatrix=new AliAODVtxCov();
@@ -72,7 +73,8 @@ class AliAODVertex : public TObject {
   template <class T> void     GetSigmaXYZ(T *sigma) const;
 
   Double_t  GetChi2() const { return fChi2; }
-  Double_t  GetChi2perNDF() const;
+  Double_t  GetChi2perNDF() const
+    { return fChi2/(2.*fDaughters.GetEntriesFast()-3.); }
 
   Char_t    GetVtxType() const { return fType; }
   void      GetVtxType(Char_t vtype) { fType=vtype; }
@@ -125,7 +127,7 @@ class AliAODVertex : public TObject {
 
    private:
    Double32_t   fDiag[3];  // Diagonal elements
-   Double32_t   fODia[3]; // [-1, 1,8] 8 bit precision for off diagonal elements
+   Double32_t   fODia[3];  // [-1, 1,8] 8 bit precision for off diagonal elements
 
    ClassDef(AliAODVertex::AliAODVtxCov,1)
    
@@ -133,30 +135,14 @@ class AliAODVertex : public TObject {
 
  private :
 
+  Double32_t    fPosition[3]; // vertex position
+  Double32_t    fChi2;        // chi2 of vertex fit
   AliAODVtxCov *fCovMatrix;   // vertex covariance matrix; values of and below the diagonal
-  Double32_t  fPosition[3]; // vertex position
-  Double32_t  fChi2;        // chi2 of vertex fit
-  Char_t      fType;        // Vertex type
-
-  TRef      fParent;        // reference to the parent particle
-  TRefArray fDaughters;     // references to the daughter particles
+  TRef          fParent;      // reference to the parent particle
+  TRefArray     fDaughters;   // references to the daughter particles
+  Char_t        fType;        // Vertex type
 
   ClassDef(AliAODVertex,1);
 };
-
-//______________________________________________________________________________
-template <class T> inline void AliAODVertex::GetPosition(T *position) const 
-{
-  position[0]=fPosition[0];
-  position[1]=fPosition[1];
-  position[2]=fPosition[2];
-}
-
-//______________________________________________________________________________
-inline Double_t AliAODVertex::GetChi2perNDF() const 
-{
-  // return the chi^2 per degree of freedom
-  return fChi2/(2.*fDaughters.GetEntriesFast()-3.);
-}
 
 #endif
