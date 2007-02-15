@@ -132,7 +132,7 @@ AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
   for (int i = 0; i < 3; i++) 
     fPosition[i] = vtx.fPosition[i];
 
-  if (vtx.fCovMatrix) fCovMatrix=new AliAODVtxCov(*vtx.fCovMatrix);
+  if (vtx.fCovMatrix) fCovMatrix=new AliAODRedCov<3>(*vtx.fCovMatrix);
 }
 
 //______________________________________________________________________________
@@ -153,7 +153,7 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
     //covariance matrix
     delete fCovMatrix;
     fCovMatrix = NULL;   
-    if (vtx.fCovMatrix) fCovMatrix=new AliAODVtxCov(*vtx.fCovMatrix);
+    if (vtx.fCovMatrix) fCovMatrix=new AliAODRedCov<3>(*vtx.fCovMatrix);
     
     //other stuff
     fParent = vtx.fParent;
@@ -464,45 +464,3 @@ void AliAODVertex::Print(Option_t* /*option*/) const
   printf(" Chi^2 = %f\n", fChi2);
 }
 
-//-------------------------------------------------------------------------
-//     AOD track cov matrix base class
-//-------------------------------------------------------------------------
-
-ClassImp(AliAODVertex::AliAODVtxCov)
-
-//______________________________________________________________________________
-template <class T> void AliAODVertex::AliAODVtxCov::GetCovMatrix(T *cmat) const
-{
-  //
-  // Returns the external cov matrix
-  //
-  cmat[ 0] = fDiag[ 0]*fDiag[ 0];
-  cmat[ 2] = fDiag[ 1]*fDiag[ 1];
-  cmat[ 5] = fDiag[ 2]*fDiag[ 2];
-
-  //
-  cmat[ 1] = fODia[ 0]*fDiag[ 0]*fDiag[ 1];
-  cmat[ 3] = fODia[ 1]*fDiag[ 0]*fDiag[ 2];
-  cmat[ 4] = fODia[ 2]*fDiag[ 1]*fDiag[ 2];
-}
-
-
-//______________________________________________________________________________
-template <class T> void AliAODVertex::AliAODVtxCov::SetCovMatrix(T *cmat)
-{
-  //
-  // Sets the external cov matrix
-  //
-  if(cmat) {
-    fDiag[ 0] = TMath::Sqrt(cmat[ 0]);
-    fDiag[ 1] = TMath::Sqrt(cmat[ 2]);
-    fDiag[ 2] = TMath::Sqrt(cmat[ 5]);
-    //
-    fODia[ 0] = cmat[ 1]/(fDiag[ 0]*fDiag[ 1]);
-    fODia[ 1] = cmat[ 3]/(fDiag[ 0]*fDiag[ 2]);
-    fODia[ 2] = cmat[ 4]/(fDiag[ 1]*fDiag[ 2]);
-  } else {
-    for(Int_t i=0; i< 3; ++i) {
-      fDiag[i]=-999.; fODia[i]=0.;}
-  }
-}

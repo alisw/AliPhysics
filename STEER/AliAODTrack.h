@@ -14,6 +14,7 @@
 
 #include "AliVirtualParticle.h"
 #include "AliAODVertex.h"
+#include "AliAODRedCov.h"
 
 class AliAODTrack : public AliVirtualParticle {
 
@@ -107,7 +108,7 @@ class AliAODTrack : public AliVirtualParticle {
     return TestBit(kIsDCA);}
 
   template <class T> void SetCovMatrix(const T *covMatrix) {
-    if(!fCovMatrix) fCovMatrix=new AliAODTrkCov();
+    if(!fCovMatrix) fCovMatrix=new AliAODRedCov<6>();
     fCovMatrix->SetCovMatrix(covMatrix);}
 
   template <class T> Bool_t GetCovMatrix(T *covMatrix) const {
@@ -147,41 +148,6 @@ class AliAODTrack : public AliVirtualParticle {
   // name and title
   void SetType(AODTrk_t ttype) { fType=ttype; }
 
-
-   class AliAODTrkCov {
-
-   //
-   //  Class containing the covariance matrix for the track
-   //
-   //       X          Y          Z         Px        Py        Pz
-   //
-   // X  fDiag[ 0]  
-   //
-   // Y  fOdia[ 0]  fDiag[ 1]
-   //
-   // Z  fOdia[ 1]  fOdia[ 2]  fDiag[ 2]
-   //
-   // Px fOdia[ 3]  fOdia[ 4]  fOdia[ 5]  fDiag[ 3]
-   //
-   // Py fOdia[ 6]  fOdia[ 7]  fOdia[ 8]  fOdia[ 9]  fDiag[ 4]
-   //
-   // Pz fOdia[10]  fOdia[11]  fOdia[12]  fOdia[13]  fOdia[14]  fDiag[ 5]
-   //
-
-   public:
-   AliAODTrkCov() {}
-   virtual ~AliAODTrkCov() {}
-   template <class T> void GetCovMatrix(T *cmat) const;
-   template <class T> void SetCovMatrix(T *cmat);
-
-   private:
-   Double32_t   fDiag[6];  // Diagonal elements
-   Double32_t   fODia[15]; // [-1, 1,8] 8 bit precision for off diagonal elements
-
-   ClassDef(AliAODTrack::AliAODTrkCov,1)
-
- };
-
  private :
 
   // Momentum & position
@@ -194,7 +160,7 @@ class AliAODTrack : public AliVirtualParticle {
   Int_t         fID;             // unique track ID, points back to the ESD track
   Int_t         fLabel;          // track label, points back to MC track
   
-  AliAODTrkCov *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
+  AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
   TRef          fProdVertex;     // vertex of origin
 
   Char_t        fCharge;         // particle charge

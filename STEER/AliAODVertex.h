@@ -15,6 +15,8 @@
 #include <TRefArray.h>
 #include <TMath.h>
 
+#include "AliAODRedCov.h"
+
 class AliAODVertex : public TObject {
 
  public :
@@ -61,7 +63,7 @@ class AliAODVertex : public TObject {
     {pos[0]=fPosition[0]; pos[1]=fPosition[1]; pos[2]=fPosition[2];}
 
   template <class T> void SetCovMatrix(const T *covMatrix) {
-    if(!fCovMatrix) fCovMatrix=new AliAODVtxCov();
+    if(!fCovMatrix) fCovMatrix=new AliAODRedCov<3>();
     fCovMatrix->SetCovMatrix(covMatrix);}
 
   template <class T> Bool_t GetCovMatrix(T *covMatrix) const {
@@ -104,40 +106,11 @@ class AliAODVertex : public TObject {
   void     PrintIndices() const;
   void     Print(Option_t* option = "") const;
 
-   class AliAODVtxCov {
-
-   //
-   //  Class containing the covariance matrix for the vertex
-   //
-   //       X          Y          Z 
-   //
-   // X  fDiag[ 0]  
-   //
-   // Y  fOdia[ 0]  fDiag[ 1]
-   //
-   // Z  fOdia[ 1]  fOdia[ 2]  fDiag[ 2]
-   //
-   //
-
-   public:
-   AliAODVtxCov() {}
-   virtual ~AliAODVtxCov() {}
-   template <class T> void GetCovMatrix(T *cmat) const;
-   template <class T> void SetCovMatrix(T *cmat);
-
-   private:
-   Double32_t   fDiag[3];  // Diagonal elements
-   Double32_t   fODia[3];  // [-1, 1,8] 8 bit precision for off diagonal elements
-
-   ClassDef(AliAODVertex::AliAODVtxCov,1)
-   
- };
-
  private :
 
   Double32_t    fPosition[3]; // vertex position
   Double32_t    fChi2;        // chi2 of vertex fit
-  AliAODVtxCov *fCovMatrix;   // vertex covariance matrix; values of and below the diagonal
+  AliAODRedCov<3> *fCovMatrix;   // vertex covariance matrix; values of and below the diagonal
   TRef          fParent;      // reference to the parent particle
   TRefArray     fDaughters;   // references to the daughter particles
   Char_t        fType;        // Vertex type

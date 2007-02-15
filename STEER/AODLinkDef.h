@@ -14,12 +14,11 @@
 #pragma link C++ class AliVirtualParticle+;
 #pragma link C++ class AliAODHeader+;
 #pragma link C++ class AliAODTrack+;
-#pragma link C++ class AliAODTrack::AliAODTrkCov+;
 #pragma link C++ class AliAODVertex+;
-#pragma link C++ class AliAODVertex::AliAODVtxCov+;
 #pragma link C++ class AliAODNeutral+;
-#pragma link C++ class AliAODNeutral::AliAODNeuCov+;
 #pragma link C++ class AliAODJet+;
+#pragma link C++ class AliAODRedCov<3>+;
+#pragma link C++ class AliAODRedCov<4>+;
 #pragma link C++ class AliAODRedCov<6>+;
 
 #endif

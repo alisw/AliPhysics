@@ -83,7 +83,7 @@ class AliAODNeutral : public AliVirtualParticle {
     return TestBit(kIsDCA);}
 
   template <class T> void SetCovMatrix(const T *covMatrix) {
-    if(!fCovMatrix) fCovMatrix=new AliAODNeuCov();
+    if(!fCovMatrix) fCovMatrix=new AliAODRedCov<4>();
     fCovMatrix->SetCovMatrix(covMatrix);}
 
   template <class T> Bool_t GetCovMatrix(T *covMatrix) const {
@@ -121,36 +121,6 @@ class AliAODNeutral : public AliVirtualParticle {
   virtual Double_t Eta() const {return 0.;}
   virtual Short_t Charge() const {return 0.;}
 
-   class AliAODNeuCov {
-
-   //
-   //  Class containing the covariance matrix for the cluster
-   //
-   //       X          Y          Z         E
-   //
-   // X  fDiag[ 0]  
-   //
-   // Y  fOdia[ 0]  fDiag[ 1]
-   //
-   // Z  fOdia[ 1]  fOdia[ 2]  fDiag[ 2]
-   //
-   // E  fOdia[ 3]  fOdia[ 4]  fOdia[ 5]  fDiag[ 3]
-   //
-
-   public:
-   AliAODNeuCov() {}
-   virtual ~AliAODNeuCov() {}
-   template <class T> void GetCovMatrix(T *cmat) const;
-   template <class T> void SetCovMatrix(T *cmat);
-
-   private:
-   Double32_t   fDiag[4];  // Diagonal elements
-   Double32_t   fODia[6];  // [-1, 1,8] 8 bit precision for off diagonal elements
-
-   ClassDef(AliAODNeutral::AliAODNeuCov,1)
-
- };
-
  private :
 
   // Energy & position
@@ -163,7 +133,7 @@ class AliAODNeutral : public AliVirtualParticle {
   Int_t         fID;             // unique track ID, points back to the ESD track
   Int_t         fLabel;          // particle label, points back to MC track
   
-  AliAODNeuCov *fCovMatrix;      // covariance matrix (x, y, z, E)
+  AliAODRedCov<4> *fCovMatrix;      // covariance matrix (x, y, z, E)
   TRef          fProdVertex;     // vertex of origin
   TRef          fPrimTrack;      // primary track number associated with this cluster
 

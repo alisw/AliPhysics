@@ -124,7 +124,7 @@ AliAODNeutral::AliAODNeutral(const AliAODNeutral& trk) :
   // Copy constructor
 
   trk.GetPosition(fPosition);
-  if(trk.fCovMatrix) fCovMatrix=new AliAODNeuCov(*trk.fCovMatrix);
+  if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*trk.fCovMatrix);
   SetPID(trk.fPID);
 
 }
@@ -147,7 +147,7 @@ AliAODNeutral& AliAODNeutral::operator=(const AliAODNeutral& trk)
     fLabel = trk.fLabel;    
     
     delete fCovMatrix;
-    if(trk.fCovMatrix) fCovMatrix=new AliAODNeuCov(*trk.fCovMatrix);
+    if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*trk.fCovMatrix);
     else fCovMatrix=NULL;
     fProdVertex = trk.fProdVertex;
     fPrimTrack = trk.fPrimTrack;
@@ -207,54 +207,3 @@ void AliAODNeutral::Print(Option_t* /* option */) const
   printf(" PID object: %p\n", PID());
 }
 
-//-------------------------------------------------------------------------
-//     AOD track cov matrix base class
-//-------------------------------------------------------------------------
-
-ClassImp(AliAODNeutral::AliAODNeuCov)
-
-//______________________________________________________________________________
-template <class T> void AliAODNeutral::AliAODNeuCov::GetCovMatrix(T *cmat) const
-{
-  //
-  // Returns the external cov matrix
-  //
-  cmat[ 0] = fDiag[ 0]*fDiag[ 0];
-  cmat[ 2] = fDiag[ 1]*fDiag[ 1];
-  cmat[ 5] = fDiag[ 2]*fDiag[ 2];
-  cmat[ 9] = fDiag[ 3]*fDiag[ 3];
-  //
-  cmat[ 1] = fODia[ 0]*fDiag[ 0]*fDiag[ 1];
-  cmat[ 3] = fODia[ 1]*fDiag[ 0]*fDiag[ 2];
-  cmat[ 4] = fODia[ 2]*fDiag[ 1]*fDiag[ 2];
-  cmat[ 6] = fODia[ 3]*fDiag[ 0]*fDiag[ 3];
-  cmat[ 7] = fODia[ 4]*fDiag[ 1]*fDiag[ 3];
-  cmat[ 8] = fODia[ 5]*fDiag[ 2]*fDiag[ 3];
-
-}
-
-
-//______________________________________________________________________________
-template <class T> void AliAODNeutral::AliAODNeuCov::SetCovMatrix(T *cmat)
-{
-  //
-  // Sets the external cov matrix
-  //
-  if(cmat) {
-    fDiag[ 0] = TMath::Sqrt(cmat[ 0]);
-    fDiag[ 1] = TMath::Sqrt(cmat[ 2]);
-    fDiag[ 2] = TMath::Sqrt(cmat[ 5]);
-    fDiag[ 3] = TMath::Sqrt(cmat[ 9]);
-
-    //
-    fODia[ 0] = cmat[ 1]/(fDiag[ 0]*fDiag[ 1]);
-    fODia[ 1] = cmat[ 3]/(fDiag[ 0]*fDiag[ 2]);
-    fODia[ 2] = cmat[ 4]/(fDiag[ 1]*fDiag[ 2]);
-    fODia[ 3] = cmat[ 6]/(fDiag[ 0]*fDiag[ 3]);
-    fODia[ 4] = cmat[ 7]/(fDiag[ 1]*fDiag[ 3]);
-    fODia[ 5] = cmat[ 8]/(fDiag[ 2]*fDiag[ 3]);
-  } else {
-    for(Int_t i=0; i< 4; ++i) fDiag[i]=-999.;
-    for(Int_t i=0; i<6; ++i) fODia[i]=0.;
-  }
-}
