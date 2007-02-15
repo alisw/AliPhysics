@@ -199,7 +199,7 @@ class AliAODTrack : public AliVirtualParticle {
 
   Char_t        fCharge;         // particle charge
   UChar_t       fITSClusterMap;  // map of ITS cluster, one bit per layer
-  UChar_t       fType;           // Track Type
+  Char_t        fType;           // Track Type
 
 
   ClassDef(AliAODTrack,1);
