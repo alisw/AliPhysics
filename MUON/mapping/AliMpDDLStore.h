@@ -19,6 +19,7 @@
 
 #include <TObject.h>
 #include <TObjArray.h>
+#include <TArrayI.h>
 
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"
@@ -27,6 +28,7 @@ class AliMpDDL;
 class AliMpDetElement;
 class AliMpBusPatch;
 class AliMpDEStore;
+class TArrayI;
 
 class AliMpDDLStore : public  TObject {
 
@@ -44,7 +46,8 @@ class AliMpDDLStore : public  TObject {
 
     Int_t  GetDEfromBus(Int_t busPatchId) const;
     Int_t  GetDDLfromBus(Int_t busPatchId) const;
-    //void   GetDspInfo(Int_t iDDL, Int_t& iDspMax, Int_t* iBusPerDSP) const;
+    Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
+
     
     AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
 
@@ -54,17 +57,21 @@ class AliMpDDLStore : public  TObject {
     AliMpDDLStore& operator=(const AliMpDDLStore& rhs);
 
     // methods
+    Int_t  GetManuListIndex(Int_t detElemId) const;
+    Int_t  GetBusPatchIndex(Int_t detElemId, Int_t manuId) const;
     Bool_t ReadDDLs();
+    Bool_t SetManus();
 
     // static data members	
     static AliMpDDLStore* fgInstance; ///< Singleton instance
     static const Int_t    fgkNofDDLs; ///< Total number of DDLs
 
     // data members	
-    TObjArray     fDDLs;        ///< Array of DDL objects
-    AliMpDEStore* fDetElements; ///< Detection element store
-    AliMpExMap    fBusPatches;  ///< The map of bus patches per their IDs
-      
+    TObjArray     fDDLs;           ///< Array of DDL objects
+    AliMpDEStore* fDetElements;    ///< Detection element store
+    AliMpExMap    fBusPatches;     ///< The map of bus patches per their IDs
+    TArrayI       fManuList12[16]; ///< Arrays of 1st manu in bus
+
   ClassDef(AliMpDDLStore,1)  // The manager class for definition of detection element types
 };
 
