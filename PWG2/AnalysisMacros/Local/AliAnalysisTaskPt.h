@@ -9,7 +9,8 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   AliAnalysisTaskPt(const char *name);
   virtual ~AliAnalysisTaskPt() {}
   
-  virtual void   Init(Option_t *);
+  virtual void   ConnectInputData(Option_t *);
+  virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
   

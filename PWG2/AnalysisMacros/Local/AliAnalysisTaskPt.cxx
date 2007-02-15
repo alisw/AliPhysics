@@ -22,10 +22,11 @@ AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name) :AliAnalysisTask(name,"")
   DefineOutput(0, TH1F::Class());
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskPt::Init(Option_t *) {
-  printf("   Init %s\n", GetName());
-
+//______________________________________________________________________________
+void AliAnalysisTaskPt::ConnectInputData(Option_t *)
+{
+  // Initialize branches.
+   printf("   ConnectInputData of task %s\n", GetName());
   if (!fESD) {
     char ** address = (char **)GetBranchAddress(0, "ESD");
     if (address) fESD = (AliESD*)(*address);
@@ -33,10 +34,12 @@ void AliAnalysisTaskPt::Init(Option_t *) {
       fESD = new AliESD();
       SetBranchAddress(0, "ESD", &fESD);
     }
-
-    OpenFile(0,"Pt.ESD.1.root","RECREATE");
   }
+}
 
+//______________________________________________________________________________
+void AliAnalysisTaskPt::CreateOutputObjects() {
+  printf("   CreateOutputObjects of task %s\n", GetName());
   if (!fHistPt) {
     fHistPt = new TH1F("fHistPt","This is the Pt distribution",15,0.1,3.1);
     fHistPt->SetStats(kTRUE);
