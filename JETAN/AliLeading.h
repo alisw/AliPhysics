@@ -4,6 +4,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
+/* $Id$ */
+
 //---------------------------------------------------------------------
 // Class to find and store the leading particle in event and
 // store its correlation to associated particles
