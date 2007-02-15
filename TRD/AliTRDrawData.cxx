@@ -490,7 +490,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
   // Write end of tracklet marker
   if (nw < maxSize) {
-    buf[nw++] = end_of_tracklet_marker;
+    buf[nw++] = endoftrackletmarker;
   } 
   else {
     of++;
@@ -592,7 +592,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
   // Write end of raw data marker
   if (nw < maxSize) {
-    buf[nw++] = end_of_event_marker; 
+    buf[nw++] = endofeventmarker; 
   }
   else {
     of++;

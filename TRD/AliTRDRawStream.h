@@ -19,8 +19,8 @@ class AliTRDdigitsManager;
 class AliTRDdataArrayI;
 
 // Some constants:
-const UInt_t end_of_tracklet_marker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
-const UInt_t end_of_event_marker    = 0x00000000; /*This marks the end of half-chamber-data*/
+const UInt_t endoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
+const UInt_t endofeventmarker    = 0x00000000; /*This marks the end of half-chamber-data*/
 
 class AliTRDRawStream: public TObject {
 
@@ -57,10 +57,24 @@ class AliTRDRawStream: public TObject {
     Bool_t               SetRawVersion(Int_t rv);
     Int_t                GetRawVersion() const                      { return fRawVersion;     };
 
+    // Get Filter settings:
+    Int_t                TRAPfilterTCon() const                     { return fTCon;           };
+    Int_t                TRAPfilterPEDon() const                    { return fPEDon;          };
+    Int_t                TRAPfilterGAINon() const                   { return fGAINon;         };
+    Int_t                TRAPsendsFilterdData() const               { return fFiltered;       };
+
+    // Get Tracklet parameters:
+    Float_t              GetTrackletPID() const                     { return fTracklPID;      };
+    Float_t              GetTrackletDeflLength() const              { return fTracklDefL;     };
+    Float_t              GetTrackletPadPos() const                  { return fTracklPadPos;   };
+    Int_t                getTrackletPadRow() const                  { return fTracklPadRow;   };
+
     // Check if the link has optical power (HC sends data)
     Bool_t               IsGTULinkActive(Int_t sm, Int_t la, Int_t sta, Int_t side)
-                                  { return ( ((fGTUlinkMask[sm][sta]) >> (2*la+side)) & 0x1 ); };
+      { return ( ((fGTUlinkMask[sm][sta]) >> (2*la+side)) & 0x1 ); };
 
+
+  private :
 
     Int_t    fSig[3];                         //  Signals in the three time bins from Data Word
     Int_t    fADC;                            //  MCM ADC channel and Time Bin of word 1
@@ -103,14 +117,12 @@ class AliTRDRawStream: public TObject {
 
     UShort_t fGTUlinkMask[18][5];             //  Mask with active links
 
-  private :
-
     AliTRDRawStream(const AliTRDRawStream &stream);
     AliTRDRawStream &operator=(const AliTRDRawStream &stream);
 
     AliRawReader *fRawReader;              //  Object for reading the raw data
 
-    // The following is used by V0 (from Bogdan, offline use only):
+    // The following is used for v0:
     Int_t    fCount;                       //  Counter of bytes to be read for current detector
     Int_t    fDetector;                    //  Index of current detector
     Int_t    fPrevDetector;                //  Index of previous detector
@@ -136,10 +148,10 @@ class AliTRDRawStream: public TObject {
     AliTRDgeometry *fGeo;                  //  TRD geometry
 
     AliTRDdigitsManager *fDigitsManager;   //! Manager for the output digits
-    AliTRDdataArrayI    *fDigits;          //! The Output digits
-    AliTRDdataArrayI    *fTrack0;          //! The track dictionary
-    AliTRDdataArrayI    *fTrack1;          //! The track dictionary
-    AliTRDdataArrayI    *fTrack2;          //! The track dictionary
+    AliTRDdataArrayI    *fDigits;          //! Output digits
+    AliTRDdataArrayI    *fTrack0;          //! Track dictionary
+    AliTRDdataArrayI    *fTrack1;          //! Track dictionary
+    AliTRDdataArrayI    *fTrack2;          //! Track dictionary
 
     void  DecodeHCheader(Int_t timeBins);
     void  DecodeHCheaderV1();              // Valid for fRawversion = 1
