@@ -20,7 +20,7 @@
 #pragma link C++ class AliAODNeutral+;
 #pragma link C++ class AliAODNeutral::AliAODNeuCov+;
 #pragma link C++ class AliAODJet+;
-#pragma link C++ class AliRedCov<6>+;
+#pragma link C++ class AliAODRedCov<6>+;
 
 #endif
 

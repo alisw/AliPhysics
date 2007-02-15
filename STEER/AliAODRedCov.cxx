@@ -17,12 +17,12 @@
 
 #include <TMath.h>
 
-#include "AliRedCov.h"
+#include "AliAODRedCov.h"
 
-templateClassImp(AliRedCov)
+templateClassImp(AliAODRedCov)
 
 //______________________________________________________________________________
-template <Int_t N> template <class T> void AliRedCov<N>::GetCovMatrix(T *cmat) const
+template <Int_t N> template <class T> void AliAODRedCov<N>::GetCovMatrix(T *cmat) const
 {
   //
   // Returns the external cov matrix
@@ -44,7 +44,7 @@ template <Int_t N> template <class T> void AliRedCov<N>::GetCovMatrix(T *cmat) c
 
 
 //______________________________________________________________________________
-template <Int_t N> template <class T> void AliRedCov<N>::SetCovMatrix(T *cmat)
+template <Int_t N> template <class T> void AliAODRedCov<N>::SetCovMatrix(T *cmat)
 {
   //
   // Sets the external cov matrix

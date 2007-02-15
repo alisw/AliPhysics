@@ -1,5 +1,5 @@
-#ifndef AliRedCov_H
-#define AliRedCov_H
+#ifndef AliAODRedCov_H
+#define AliAODRedCov_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -12,7 +12,7 @@
 
 #include <Rtypes.h>
 
-template <Int_t N> class AliRedCov {
+template <Int_t N> class AliAODRedCov {
 
 
    //
@@ -34,8 +34,8 @@ template <Int_t N> class AliRedCov {
    //
 
    public:
-   AliRedCov() {}
-   virtual ~AliRedCov() {}
+   AliAODRedCov() {}
+   virtual ~AliAODRedCov() {}
    template <class T> void GetCovMatrix(T *cmat) const;
    template <class T> void SetCovMatrix(T *cmat);
 
@@ -43,7 +43,7 @@ template <Int_t N> class AliRedCov {
    Double32_t   fDiag[N];         // Diagonal elements
    Double32_t   fODia[N*(N-1)/2]; // [-1, 1,8] 8 bit precision for off diagonal elements
 
-   ClassDef(AliRedCov,1)
+   ClassDef(AliAODRedCov,1)
 
  };
 
