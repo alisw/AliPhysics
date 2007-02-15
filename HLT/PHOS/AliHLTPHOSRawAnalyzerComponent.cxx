@@ -136,7 +136,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 
   if((fEventCount % 100) == 0)
     {
-      cout << "analyzing event: " << fEventCount << endl;
+      //      cout << "analyzing event: " << fEventCount << endl;
     }
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
@@ -147,7 +147,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 
       if ( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
 	{
-	  cout << "Warning: data type = is nOT gkDDLPackedRawDataType " << endl;
+	  //	  cout << "Warning: data type = is nOT gkDDLPackedRawDataType " << endl;
 	  continue;
 	}
 
@@ -162,7 +162,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
  
       if(fEventCount%100 ==0)
 	{
-	  cout <<"Analyzing event: " << fEventCount << endl; 
+	  //	  cout <<"Analyzing event: " << fEventCount << endl; 
 	}
  
       while(fPHOSRawStream->Next())
