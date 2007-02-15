@@ -317,6 +317,12 @@ Float_t AliESDv0::GetV0CosineOfPointingAngle(Double_t& refPointX, Double_t& refP
 
 // **** The following functions need to be revised
 
+void AliESDv0::GetPosCov(Double_t cov[6]) const {
+
+  for (Int_t i=0; i<6; ++i) cov[i] = fPosCov[i];
+
+}
+
 Double_t AliESDv0::GetSigmaY(){
   //
   // return sigmay in y  at vertex position  using covariance matrix 

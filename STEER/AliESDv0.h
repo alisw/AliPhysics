@@ -54,6 +54,7 @@ public:
 
   // **** The following member functions need to be revised ***
 
+  void GetPosCov(Double_t cov[6])const ; // getter for the covariance matrix of the V0 position 
   Double_t GetSigmaY();     // sigma of y coordinate at vertex posistion
   Double_t GetSigmaZ();     // sigma of z coordinate at vertex posistion
   Double_t GetSigmaAP0();   // calculate sigma of Point angle resolution at vertex pos.

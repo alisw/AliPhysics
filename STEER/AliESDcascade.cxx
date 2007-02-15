@@ -282,3 +282,8 @@ Double_t AliESDcascade::GetCascadeCosineOfPointingAngle(Double_t& refPointX, Dou
   
   return cosinePointingAngle;
 }
+
+void AliESDcascade::GetPosCovXi(Double_t cov[6]) const {
+
+  for (Int_t i=0; i<6; ++i) cov[i] = fPosCovXi[i];
+}

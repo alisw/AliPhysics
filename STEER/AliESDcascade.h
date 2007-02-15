@@ -50,6 +50,8 @@ public:
   Double_t GetDcaXiDaughters() const {return fDcaXiDaughters;}
   Double_t GetCascadeCosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;
 
+  void GetPosCovXi(Double_t cov[6]) const;
+
 protected: 
   Int_t    fPdgCode;        // reconstructed cascade type (PDG code)
   Double_t fEffMass;        // reconstructed cascade effective mass
