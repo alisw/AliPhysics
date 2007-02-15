@@ -1,0 +1,116 @@
+/**************************************************************************
+ * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//-------------------------------------------------------------------------
+//     AOD base class
+//     Author: Markus Oldenburg, CERN
+//-------------------------------------------------------------------------
+
+#include "AliAODEvent.h"
+#include "AliAODHeader.h"
+#include "AliAODTrack.h"
+
+ClassImp(AliAODEvent)
+
+//______________________________________________________________________________
+AliAODEvent::AliAODEvent() :
+  fAODObjects(new TList()),
+  fHeader((AliAODHeader*)fAODObjects->At(0)),
+  fTracks((TClonesArray*)fAODObjects->At(1)),
+  fVertices((TClonesArray*)fAODObjects->At(2)),
+  fNeutrals((TClonesArray*)fAODObjects->At(3)),
+  fJets((TClonesArray*)fAODObjects->At(4))
+{
+  // default constructor
+}
+
+//______________________________________________________________________________
+AliAODEvent::~AliAODEvent() 
+{
+  // destructor
+
+  delete fAODObjects;
+}
+
+//______________________________________________________________________________
+void AliAODEvent::AddObject(TObject* obj) 
+{
+  // Add an object to the list of object.
+  // Please be aware that in order to increase performance you should
+  // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
+  
+  fAODObjects->AddLast(obj);
+}
+
+//______________________________________________________________________________
+TObject *AliAODEvent::GetObject(const char *objName) const 
+{
+  // Return the pointer to the object with the given name.
+
+  return fAODObjects->FindObject(objName);
+}
+
+//______________________________________________________________________________
+void AliAODEvent::CreateStdContent() 
+{
+  // create the standard AOD content and set pointers
+
+  // create standard objects and add them to the TList of objects
+  AddObject(new AliAODHeader());
+  AddObject(new TClonesArray("AliAODTrack", 0));
+  AddObject(new TClonesArray("AliAODVertex", 0));
+  AddObject(new TClonesArray("AliAODNeutral", 0));
+  AddObject(new TClonesArray("AliAODJet", 0));
+
+  // read back pointers
+  GetStdContent();
+
+  // set names
+  fTracks->SetName("tracks");
+  fVertices->SetName("vertices");
+  fNeutrals->SetName("neutrals");
+  fJets->SetName("jets");
+
+}
+
+//______________________________________________________________________________
+void AliAODEvent::GetStdContent() const
+{
+  // set pointers for standard content
+
+  fHeader   = (AliAODHeader*)fAODObjects->At(0);
+  fTracks   = (TClonesArray*)fAODObjects->At(1);
+  fVertices = (TClonesArray*)fAODObjects->At(2);
+  fNeutrals = (TClonesArray*)fAODObjects->At(3);
+  fJets     = (TClonesArray*)fAODObjects->At(4);
+}
+
+//______________________________________________________________________________
+void AliAODEvent::ResetStd(Int_t trkArrSize, Int_t vtxArrSize)
+{
+  // deletes content of standard arrays and resets size
+  fTracks->Delete();
+  if (trkArrSize > fTracks->GetSize()) 
+    fTracks->Expand(trkArrSize);
+
+  fVertices->Delete();
+  if (vtxArrSize > fVertices->GetSize()) 
+    fVertices->Expand(vtxArrSize);
+}
+
+
+
