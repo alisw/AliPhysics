@@ -6,7 +6,7 @@ void ReadAOD(const char *fileName = "AliAOD.root") {
 
   AliAODEvent *aod = aodTree->GetUserInfo()->FindObject("AliAODEvent");
   TIter next(aod->GetList());
-  TNamed *el;
+  TObject *el;
   while(el=(TNamed*)next()) 
     aodTree->SetBranchAddress(el->GetName(),aod->GetList()->GetObjectRef(el));
 
