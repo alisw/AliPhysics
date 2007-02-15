@@ -25,12 +25,12 @@ class AliITSOnlineCalibrationSPDhandler {
 
   void    WriteToFile();
   void    WriteToFile(Char_t* fileName);
-  void    ReadFromFile();
-  void    ReadDeadFromFile();
-  void    ReadNoisyFromFile();
-  void    ReadFromFile(Char_t* fileName);
-  void    ReadDeadFromFile(Char_t* fileName);
-  void    ReadNoisyFromFile(Char_t* fileName);
+  Bool_t  ReadFromFile();
+  Bool_t  ReadDeadFromFile();
+  Bool_t  ReadNoisyFromFile();
+  Bool_t  ReadFromFile(Char_t* fileName);
+  Bool_t  ReadDeadFromFile(Char_t* fileName);
+  Bool_t  ReadNoisyFromFile(Char_t* fileName);
   void    SetModuleNr(UInt_t mod) {fModuleNr=mod;}
   UInt_t  GetModuleNr() const {return fModuleNr;}
   void    SetFileLocation(Char_t* loc) {sprintf(fFileLocation,"%s",loc);}

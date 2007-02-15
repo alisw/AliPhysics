@@ -92,31 +92,31 @@ void AliITSOnlineCalibrationSPDhandler::WriteToFile(Char_t* fileName) {
   delete calib;
 }
 
-void AliITSOnlineCalibrationSPDhandler::ReadFromFile() {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadFromFile() {
   // read dead and noisy from default file
   Char_t fileName[200];
   sprintf(fileName,"%s/SPD_DeadNoisy_%d.root",fFileLocation,fModuleNr);
-  ReadFromFile(fileName);
+  return ReadFromFile(fileName);
 }
-void AliITSOnlineCalibrationSPDhandler::ReadDeadFromFile() {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromFile() {
   // read dead from default file
   Char_t fileName[200];
   sprintf(fileName,"%s/SPD_DeadNoisy_%d.root",fFileLocation,fModuleNr);
-  ReadDeadFromFile(fileName);
+  return ReadDeadFromFile(fileName);
 }
-void AliITSOnlineCalibrationSPDhandler::ReadNoisyFromFile() {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromFile() {
   // read noisy from default file
   Char_t fileName[200];
   sprintf(fileName,"%s/SPD_DeadNoisy_%d.root",fFileLocation,fModuleNr);
-  ReadNoisyFromFile(fileName);
+  return ReadNoisyFromFile(fileName);
 }
 
-void AliITSOnlineCalibrationSPDhandler::ReadFromFile(Char_t* fileName) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadFromFile(Char_t* fileName) {
   // read dead and noisy from file fileName (clear the previous list of dead and noisy pixels)
   ClearMaps();
   AliITSOnlineCalibrationSPD* calib;
   FILE* fp0 = fopen(fileName, "r");
-  if (fp0 == NULL) {}
+  if (fp0 == NULL) {return kFALSE;}
   else {
     fclose(fp0);
     TFile file(fileName, "READ");
@@ -140,13 +140,14 @@ void AliITSOnlineCalibrationSPDhandler::ReadFromFile(Char_t* fileName) {
       }
     }
   }
+  return kTRUE;
 }
-void AliITSOnlineCalibrationSPDhandler::ReadDeadFromFile(Char_t* fileName) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromFile(Char_t* fileName) {
   // read dead from file fileName (clear the previous list of dead pixels)
   ResetDead();
   AliITSOnlineCalibrationSPD* calib;
   FILE* fp0 = fopen(fileName, "r");
-  if (fp0 == NULL) {}
+  if (fp0 == NULL) {return kFALSE;}
   else {
     fclose(fp0);
     TFile file(fileName, "READ");
@@ -164,13 +165,14 @@ void AliITSOnlineCalibrationSPDhandler::ReadDeadFromFile(Char_t* fileName) {
       }
     }
   }
+  return kTRUE;
 }
-void AliITSOnlineCalibrationSPDhandler::ReadNoisyFromFile(Char_t* fileName) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromFile(Char_t* fileName) {
   // read noisy from file fileName (clear the previous list of noisy pixels)
   ResetNoisy();
   AliITSOnlineCalibrationSPD* calib;
   FILE* fp0 = fopen(fileName, "r");
-  if (fp0 == NULL) {}
+  if (fp0 == NULL) {return kFALSE;}
   else {
     fclose(fp0);
     TFile file(fileName, "READ");
@@ -188,6 +190,7 @@ void AliITSOnlineCalibrationSPDhandler::ReadNoisyFromFile(Char_t* fileName) {
       }
     }
   }
+  return kTRUE;
 }
 
 TArrayI AliITSOnlineCalibrationSPDhandler::GetDeadArray() {

@@ -18,7 +18,7 @@ AliITSIntMap::AliITSIntMap(const AliITSIntMap& imap):
   fFirst(0)
 {
   // copy constructor
-  for (Int_t index=0; index<imap.fNrEntries; index++) {
+  for (UInt_t index=0; index<imap.fNrEntries; index++) {
     this->Insert(imap.GetKey(index),imap.GetVal(index));
   }
 }
@@ -30,7 +30,7 @@ AliITSIntMap& AliITSIntMap::operator=(const AliITSIntMap& imap) {
   // assignment operator
   if (this!=&imap) {
     this->Clear();
-    for (Int_t index=0; index<imap.fNrEntries; index++) {
+    for (UInt_t index=0; index<imap.fNrEntries; index++) {
       this->Insert(imap.GetKey(index),imap.GetVal(index));
     }
   }
