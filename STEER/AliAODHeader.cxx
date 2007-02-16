@@ -26,7 +26,7 @@ ClassImp(AliAODHeader)
 
 //______________________________________________________________________________
 AliAODHeader::AliAODHeader() : 
-  TNamed("header",""),
+  TNamed("header.",""),
   fMagneticField(-999.),
   fCentrality(-999.),
   fTriggerMask(0),
@@ -73,7 +73,7 @@ AliAODHeader::AliAODHeader(Int_t nEvt,
 			   UChar_t trigClus,
 			   UInt_t evttype,
 			   Char_t *title) :
-  TNamed("header",title),
+  TNamed("header.",title),
   fMagneticField(magField),
   fCentrality(cent),
   fTriggerMask(trigMask),
