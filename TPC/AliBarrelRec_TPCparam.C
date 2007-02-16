@@ -14,7 +14,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   //
 
   Int_t  collcode = 1; // pp collisions
-  Bool_t useMeanVtx = kTRUE;
+  Bool_t useMeanVtx = kFALSE;
   
   
   if (gAlice) {
@@ -100,7 +100,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   
   /***** The TREE for ESD is born *****/
   TTree *esdTree=new TTree("esdTree","Tree with ESD objects");
-  AliESD *event=0;
+  AliESD *event=0; AliESD *eventTPCin=0;
   esdTree->Branch("ESD","AliESD",&event);
   
   if(firstEvent>rl->GetNumberOfEvents()) firstEvent=rl->GetNumberOfEvents()-1;
@@ -119,7 +119,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   Int_t trc;
   for(Int_t i=firstEvent; i<=lastEvent; i++) { 
     
-    cerr<<" Processing event number : "<<i<<endl;
+    cout<<" Processing event number : "<<i<<endl;
     AliESD *event = new AliESD(); 
     event->SetRunNumber(gAlice->GetRunNumber());
     event->SetEventNumber(i);
@@ -144,6 +144,9 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
       continue;
     }
 
+    // make a copy of the ESD at this stage
+    eventTPCin = event;
+
     //***** ITS tracking
     itsTracker.AliTracker::SetVertex(vtx,sigmavtx);
     TTree *itsTree=itsl->TreeR();
@@ -159,9 +162,15 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
       esdTree->Fill(); delete event;
       continue;
     }
+
+    // Bring kTPCin-tracks back to the TPC inner wall
+    BackToTPCInnerWall(event,eventTPCin);
+
+    // refit inward in ITS:
+    // - refit without vertex constraint
+    // - propagate through beam pipe to local x = 0
+    itsTracker.RefitInward(event);
     
-    //***** Propagate kITSin tracks to local x = 0 (through beam pipe)
-    ToLocalX0(event);
 
     //***** Vertex from ESD tracks
     if(collcode==1) { // pp
@@ -180,7 +189,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   TFile *ef = TFile::Open("AliESDs.root","RECREATE"); 
   if (!ef || !ef->IsOpen()) {cerr<<"Can't open AliESDs.root !\n"; return;}
 
-  //Write the TREE and close everything
+  //Write the tree and close everything
   esdTree->Write();
   delete esdTree;
   ef->Close();
@@ -191,33 +200,54 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   return;
 }
 //--------------------------------------------------------------------------
-void ToLocalX0(AliESD *esd) {
+void BackToTPCInnerWall(AliESD *event,AliESD *eventTPC) {
 
-  Int_t ntracks = esd->GetNumberOfTracks();
+  Int_t ntracks = eventTPC->GetNumberOfTracks();
+  AliESDtrack *esdTrackTPC = 0;
+
+  // create relation between event and eventTPC
+  Int_t labelsTPC[100000000];
+  for(Int_t tr = 0; tr<ntracks; tr++) {
+    esdTrackTPC = (AliESDtrack*)event->GetTrack(tr);
+    labelsTPC[TMath::Abs(esdTrackTPC->GetLabel())] = tr;
+  }
+
+  ntracks = event->GetNumberOfTracks();
   AliESDtrack *esdTrack = 0;
+  esdTrackTPC = 0;
+  Int_t indexTPC;
 
   // loop on tracks
-  for(Int_t tr = 0; tr<ntracks; tr++) {
-    esdTrack = (AliESDtrack*)esd->GetTrack(tr);
-    // ask for kITSin
+  for(tr = 0; tr<ntracks; tr++) {
+    esdTrack = (AliESDtrack*)event->GetTrack(tr);
+    // set to kITSout the tracks that don't have kTPCin
+    // (they've been found by AliITStrackerSA)
+    if(!(esdTrack->GetStatus()&AliESDtrack::kTPCin)) {
+      esdTrack->SetStatus(AliESDtrack::kITSout);
+      continue;
+    }
+
+    // skip tracks that don't have kITSin
     if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) continue;
-    AliITStrackV2 *itsTrack = 0;
+
+    indexTPC = labelsTPC[TMath::Abs(esdTrack->GetLabel())];
+    esdTrackTPC = (AliESDtrack*)eventTPC->GetTrack(indexTPC);
+
+    AliITStrackMI *itsTrack = 0;
     try {
-      itsTrack = new AliITStrackV2(*esdTrack);
+      itsTrack = new AliITStrackMI(*esdTrackTPC);
       esdTrack = 0;
     }
     catch (const Char_t *msg) {
-        Warning("FindPrimaryVertexForCurrentEvent",msg);
+        Warning("ToTPCInnerWall",msg);
         continue;
     }
-    // propagate track to beam pipe (0.8 mm of Be) 
-    if(itsTrack->GetX()>3.) itsTrack->PropagateTo(3.,0.0023,65.19);
-    // propagate track to (0,0)
-    itsTrack->PropagateTo(0.,0.,0.);
-    itsTrack->UpdateESDtrack(AliESDtrack::kITSin);
+    itsTrack->UpdateESDtrack(AliESDtrack::kITSout);
     esdTrack = new AliESDtrack(*(itsTrack->GetESDtrack()));
+
     delete itsTrack;
   } // end loop on tracks
 
   return;
 }
+//--------------------------------------------------------------------------
