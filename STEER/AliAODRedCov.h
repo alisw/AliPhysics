@@ -48,9 +48,13 @@ template <Int_t N> class AliAODRedCov {
 
  };
 
+//Cint craps out here, we protect this part
 #if !defined(__CINT__) && !defined(__MAKECINT__)
+
+#define DEBUG
+
 //______________________________________________________________________________
-template <Int_t N> template <class T> void AliAODRedCov<N>::GetCovMatrix(T *cmat) const
+template <Int_t N> template <class T> inline void AliAODRedCov<N>::GetCovMatrix(T *cmat) const
 {
   //
   // Returns the external cov matrix
@@ -59,20 +63,24 @@ template <Int_t N> template <class T> void AliAODRedCov<N>::GetCovMatrix(T *cmat
   for(Int_t i=0; i<N; ++i) {
     // Off diagonal elements
     for(Int_t j=0; j<i; ++j) {
+#ifdef DEBUG
       printf("cmat[%2d] = fODia[%2d]*fDiag[%2d]*fDiag[%2d];\n",
 	     i*(i+1)/2+j,(i-1)*i/2+j,j,i);
+#endif
       cmat[i*(i+1)/2+j] = fODia[(i-1)*i/2+j]*fDiag[j]*fDiag[i];}
 
     // Diagonal elements
+#ifdef DEBUG
     printf("cmat[%2d] = fDiag[%2d]*fDiag[%2d];\n",
 	   i*(i+1)/2+i,i,i);
+#endif
     cmat[i*(i+1)/2+i] = fDiag[i]*fDiag[i];
   }
 }
 
 
 //______________________________________________________________________________
-template <Int_t N> template <class T> void AliAODRedCov<N>::SetCovMatrix(T *cmat)
+template <Int_t N> template <class T> inline void AliAODRedCov<N>::SetCovMatrix(T *cmat)
 {
   //
   // Sets the external cov matrix
@@ -81,16 +89,20 @@ template <Int_t N> template <class T> void AliAODRedCov<N>::SetCovMatrix(T *cmat
   if(cmat) {
     // Diagonal elements first
     for(Int_t i=0; i<N; ++i) {
+#ifdef DEBUG
       printf("fDiag[%2d] = TMath::Sqrt(cmat[%2d]);\n",
 	     i,i*(i+1)/2+i);
+#endif
       fDiag[i] = TMath::Sqrt(cmat[i*(i+1)/2+i]);}
 
   // ... then the ones off diagonal
   for(Int_t i=0; i<N; ++i) 
     // Off diagonal elements
     for(Int_t j=0; j<i; ++j) {
+#ifdef DEBUG
       printf("fODia[%2d] = cmat[%2d]/(fDiag[%2d]*fDiag[%2d]);\n",
 	     (i-1)*i/2+j,i*(i+1)/2+j,j,i);
+#endif
       fODia[(i-1)*i/2+j] = cmat[i*(i+1)/2+j]/(fDiag[j]*fDiag[i]);
     }
   } else {
@@ -98,6 +110,8 @@ template <Int_t N> template <class T> void AliAODRedCov<N>::SetCovMatrix(T *cmat
     for(Int_t i=0; i< N*(N-1)/2; ++i) fODia[i]=0.;
   }
 }
+
+#undef DEBUG
 
 #endif
 #endif
