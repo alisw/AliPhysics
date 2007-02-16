@@ -65,6 +65,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 			   Double_t  chi2,
 			   TObject  *parent,
 			   Char_t vtype) :
+
   TObject(),
   fChi2(chi2),
   fCovMatrix(NULL),
