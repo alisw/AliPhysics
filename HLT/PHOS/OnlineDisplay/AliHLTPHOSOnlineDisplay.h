@@ -21,10 +21,11 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
 {
  public:
   AliHLTPHOSOnlineDisplay();
+ AliHLTPHOSOnlineDisplay(char *hosname, int port);
   ~AliHLTPHOSOnlineDisplay();
   static int GetNextEvent();
-  static AliHLTPHOSOnlineDisplay* Instance();  
-
+  //  static AliHLTPHOSOnlineDisplay* Instance();  
+  static AliHLTPHOSOnlineDisplay* Instance(char *hostname, int port);  
  private:
   static AliHLTPHOSGetEventButton* fgEventButtPtr; 
   static AliHLTPHOSOnlineDisplay* fgInstancePtr;

@@ -55,9 +55,9 @@ using namespace std;
 
 
 AliHLTPHOSOnlineDisplay*
-AliHLTPHOSOnlineDisplay::Instance() 
+AliHLTPHOSOnlineDisplay::Instance(char *hostname, int port) 
 {
-  if (!fgInstancePtr) fgInstancePtr = new AliHLTPHOSOnlineDisplay;
+  if (!fgInstancePtr) fgInstancePtr = new AliHLTPHOSOnlineDisplay(hostname, port);
   return fgInstancePtr;
 }
 
@@ -71,7 +71,27 @@ AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay()
   MoveResize(100,100,1000,720);
   fgEventButtPtr = new  AliHLTPHOSGetEventButton(this, "get event");
   MapSubwindows();
-  fgHomerReaderPtr = new  HOMERReader("mixing", 42001);
+  //  fgHomerReaderPtr = new  HOMERReader("mixing", 42001);
+  fgHomerReaderPtr = new  HOMERReader("alice13", 42001);
+  std::vector<unsigned> blockList;
+  cout << "creating new PHOS Onlinedisplay" << endl;
+  int ret = 0;
+  Bool_t nextSwitch=kTRUE;
+}
+
+AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(char *hostname, int port)
+{
+  legoPlotLGPtr  = 0;
+  legoPlotHGPtr  = 0;
+  MapWindow();
+  SetWindowName("online display");
+  MoveResize(100,100,1000,720);
+  fgEventButtPtr = new  AliHLTPHOSGetEventButton(this, "get event");
+  MapSubwindows();
+  //  fgHomerReaderPtr = new  HOMERReader("mixing", 42001);
+  //  fgHomerReaderPtr = new  HOMERReader("alice13", 42001);
+  fgHomerReaderPtr = new  HOMERReader(hostname, port);
+
   std::vector<unsigned> blockList;
   cout << "creating new PHOS Onlinedisplay" << endl;
   int ret = 0;
