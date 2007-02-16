@@ -9,6 +9,10 @@
 #pragma link off all functions;
  
 #pragma link C++ enum   AliAODVertex::AODVtx_t;
+#pragma link C++ enum   AliAODTrack::AODTrk_t;
+#pragma link C++ enum   AliAODTrack::AODTrkPID_t;
+#pragma link C++ enum   AliAODNeutral::AODNeu_t;
+#pragma link C++ enum   AliAODNeutral::AODNeuPID_t;
 
 #pragma link C++ class AliAODEvent+;
 #pragma link C++ class AliVirtualParticle+;
