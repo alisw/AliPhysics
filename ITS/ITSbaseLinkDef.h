@@ -22,6 +22,7 @@
 #pragma link C++ class  AliITSTransientDigit+;
 #pragma link C++ class  AliITSInitGeometry+;
 #pragma link C++ class  AliITSgeom+;
+#pragma link C++ class  AliITSgeomTGeo+;
 #pragma link C++ class  AliITSgeomMatrix-;
 #pragma link C++ class  AliITSgeomSPD+;
 #pragma link C++ class  AliITSgeomSDD+;
