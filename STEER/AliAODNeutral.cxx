@@ -47,8 +47,7 @@ AliAODNeutral::AliAODNeutral(Int_t id,
 			     Int_t label, 
 			     Double_t energy,
 			     Double_t x[3],
-			     Bool_t isDCA,
-			     Double_t covMatrix[21],
+			     Double_t covMatrix[10],
 			     Double_t pid[10],
 			     AliAODVertex *prodVertex,
 			     AliAODTrack *primTrack,
@@ -65,7 +64,7 @@ AliAODNeutral::AliAODNeutral(Int_t id,
 {
   // constructor
  
-  SetPosition(x, isDCA);
+  SetPosition(x);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
 
@@ -76,8 +75,7 @@ AliAODNeutral::AliAODNeutral(Int_t id,
 			     Int_t label, 
 			     Float_t energy,
 			     Float_t x[3],
-			     Bool_t isDCA,
-			     Float_t covMatrix[21],
+			     Float_t covMatrix[10],
 			     Float_t pid[10],
 			     AliAODVertex *prodVertex,
 			     AliAODTrack *primTrack,
@@ -94,7 +92,7 @@ AliAODNeutral::AliAODNeutral(Int_t id,
 {
   // constructor
  
-  SetPosition(x, isDCA);
+  SetPosition(x);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
 
@@ -159,41 +157,20 @@ AliAODNeutral& AliAODNeutral::operator=(const AliAODNeutral& trk)
 }
 
 //______________________________________________________________________________
-template <class T> void AliAODNeutral::SetPosition(const T *x, const Bool_t dca) 
+template <class T> void AliAODNeutral::SetPosition(const T *x) 
 {
   // set the position
 
   if (x) {
-    if (!dca) {
-      ResetBit(kIsDCA);
-
       fPosition[0] = x[0];
       fPosition[1] = x[1];
       fPosition[2] = x[2];
-    } else {
-      SetBit(kIsDCA);
-      // don't know any better yet
-      fPosition[0] = -999.;
-      fPosition[1] = -999.;
-      fPosition[2] = -999.;
-    }
   } else {
-    ResetBit(kIsDCA);
 
     fPosition[0] = -999.;
     fPosition[1] = -999.;
     fPosition[2] = -999.;
   }
-}
-
-//______________________________________________________________________________
-void AliAODNeutral::SetDCA(Double_t d, Double_t z) 
-{
-  // set the dca
-  fPosition[0] = d;
-  fPosition[1] = z;
-  fPosition[2] = 0.;
-  SetBit(kIsDCA);
 }
 
 //______________________________________________________________________________

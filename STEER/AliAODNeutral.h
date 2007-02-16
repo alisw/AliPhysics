@@ -20,13 +20,9 @@ class AliAODNeutral : public AliVirtualParticle {
 
  public:
   
-  enum AODTrk_t {kUndef=-1, kPrimary, kSecondary, kOrphan};
+  enum AODNeu_t {kUndef=-1, kPHOSCluster,kEMCALPseudoCluster, kEMCALClusterv1};
 
-  enum AODTrkBits_t {
-    kIsDCA=BIT(14)   // set if fPosition is the DCA and not the position of the first point
-  };
-
-  enum AODNeuTrkPID_t {
+  enum AODNeuPID_t {
     kUnknown=0, kPhoton, kPi0, kNeutron, kKaon0, kEleCon, kOther};
 
   AliAODNeutral();
@@ -34,8 +30,7 @@ class AliAODNeutral : public AliVirtualParticle {
 		Int_t label,
 		Double_t energy,
 		Double_t x[3],
-		Bool_t dca,
-		Double_t covMatrix[21],
+		Double_t covMatrix[10],
 		Double_t pid[10],
 		AliAODVertex *prodVertex,
 		AliAODTrack *primTrack,
@@ -45,8 +40,7 @@ class AliAODNeutral : public AliVirtualParticle {
 		 Int_t label,
 		 Float_t energy,
 		 Float_t x[3],
-		 Bool_t dca,
-		 Float_t covMatrix[21],
+		 Float_t covMatrix[10],
 		 Float_t pid[10],
 		 AliAODVertex *prodVertex,
 		 AliAODTrack *primTrack,
@@ -80,7 +74,7 @@ class AliAODNeutral : public AliVirtualParticle {
 
   template <class T> Bool_t GetPosition(T *x) const {
     x[0]=fPosition[0]; x[1]=fPosition[1]; x[2]=fPosition[2];
-    return TestBit(kIsDCA);}
+    return kTRUE;}
 
   template <class T> void SetCovMatrix(const T *covMatrix) {
     if(!fCovMatrix) fCovMatrix=new AliAODRedCov<4>();
@@ -102,8 +96,7 @@ class AliAODNeutral : public AliVirtualParticle {
   void SetID(const Int_t id) { fID = id; }
   void SetLabel(const Int_t label) {fLabel = label; }
 
-  template <class T> void SetPosition(const T *x, const Bool_t isDCA = kFALSE);
-  void SetDCA(Double_t d, Double_t z);
+  template <class T> void SetPosition(const T *x);
 
   void SetChi2(const Double_t chi2) { fChi2 = chi2; }
 
@@ -125,7 +118,7 @@ class AliAODNeutral : public AliVirtualParticle {
 
   // Energy & position
   Double32_t    fEnergy;         // energy
-  Double32_t    fPosition[3];    // position of first point on track or dca
+  Double32_t    fPosition[3];    // position of the cluster
 
   Double32_t    fPID[10];        // [0.,1.,8] pointer to PID object
   Double32_t    fChi2;           // chi2 of mometum fit
