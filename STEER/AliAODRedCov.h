@@ -51,7 +51,7 @@ template <Int_t N> class AliAODRedCov {
 //Cint craps out here, we protect this part
 #if !defined(__CINT__) && !defined(__MAKECINT__)
 
-#define DEBUG
+//#define DEBUG
 
 //______________________________________________________________________________
 template <Int_t N> template <class T> inline void AliAODRedCov<N>::GetCovMatrix(T *cmat) const
