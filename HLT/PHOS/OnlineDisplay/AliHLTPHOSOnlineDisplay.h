@@ -14,6 +14,8 @@
 
 
 class TCanvas;
+class AliHLTPHOSRcuCellEnergyDataStruct;
+
 
 class AliHLTPHOSOnlineDisplay : public  TGMainFrame
 {
@@ -22,17 +24,19 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
   ~AliHLTPHOSOnlineDisplay();
   static int GetNextEvent();
   static AliHLTPHOSOnlineDisplay* Instance();  
+
  private:
-  static AliHLTPHOSGetEventButton* fgEventButtPtr;
+  static AliHLTPHOSGetEventButton* fgEventButtPtr; 
   static AliHLTPHOSOnlineDisplay* fgInstancePtr;
-  static HOMERReader* homerReaderPtr;
+  static HOMERReader* fgHomerReaderPtr;
   static TH2S *legoPlotLGPtr;
   static TH2S *legoPlotHGPtr;
-  static char *fgDefaultDet;         //= "SOHP"; //PHOS written backwards
-  static char *fgDefaultDataType;   //= "RENELLEC"; //CELLENER written backwards  
-  static TCanvas *fgCanvasHGPtr[100];
-  static TCanvas *fgCanvasLGPtr[100];
+  static char *fgDefaultDet;        
+  static char *fgDefaultDataType;   
   static int fgEvntCnt;
+  static TCanvas *fgCanvasHGPtr;
+  static TCanvas *fgCanvasLGPtr;
+  static Bool_t fgAccumulate;
 };
 
 

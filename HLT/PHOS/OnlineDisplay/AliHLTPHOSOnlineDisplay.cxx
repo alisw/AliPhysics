@@ -8,6 +8,7 @@
 #include <errno.h>
 #include "TH2.h"
 #include "TCanvas.h"
+#include "AliHLTPHOSCommonDefs.h"
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -34,18 +35,20 @@
 #endif
 #include <iostream>
 
+#define MAX_BIN_VALUE 1023
 
-AliHLTPHOSOnlineDisplay*   AliHLTPHOSOnlineDisplay::fgInstancePtr      = 0;
-HOMERReader*               AliHLTPHOSOnlineDisplay::homerReaderPtr     = 0;
-TH2S*                      AliHLTPHOSOnlineDisplay::legoPlotLGPtr      = 0;
-TH2S*                      AliHLTPHOSOnlineDisplay::legoPlotHGPtr      = 0;
-AliHLTPHOSGetEventButton*  AliHLTPHOSOnlineDisplay::fgEventButtPtr     = 0;
-char*                      AliHLTPHOSOnlineDisplay::fgDefaultDet       = "SOHP";      //PHOS written backwards
-char*                      AliHLTPHOSOnlineDisplay::fgDefaultDataType  = "RENELLEC";  //CELLENER (Celle energy) written backwards  
-int                        AliHLTPHOSOnlineDisplay::fgEvntCnt          = 0;           //CELLENER (Celle energy) written backwards
-TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasHGPtr[100];
-TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasLGPtr[100];
 
+AliHLTPHOSGetEventButton*  AliHLTPHOSOnlineDisplay::fgEventButtPtr     = 0;           /**<Button to get a new event from the HLT online stream*/
+AliHLTPHOSOnlineDisplay*   AliHLTPHOSOnlineDisplay::fgInstancePtr      = 0;           /**<The one an only instance of PhosOnlineDisplay*/
+HOMERReader*               AliHLTPHOSOnlineDisplay::fgHomerReaderPtr   = 0;           /**<Homer reader that fetches events from the HLT online stream*/
+TH2S*                      AliHLTPHOSOnlineDisplay::legoPlotLGPtr      = 0;           /**<2D histogram for low gain channels*/
+TH2S*                      AliHLTPHOSOnlineDisplay::legoPlotHGPtr      = 0;           /**<2D histogram for high gain channels*/
+char*                      AliHLTPHOSOnlineDisplay::fgDefaultDet       = "SOHP";      /**<PHOS written backwards*/
+char*                      AliHLTPHOSOnlineDisplay::fgDefaultDataType  = "RENELLEC";  /**<CELLENER (Celle energy) written backwards*/  
+int                        AliHLTPHOSOnlineDisplay::fgEvntCnt          = 0;           /**<Event Counter*/
+TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasHGPtr      = 0;           /**<Canvas to plot legoplot for High gain channels*/ 
+TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasLGPtr      = 0;           /**<Canvas to plot legoplot for Low gain channels*/ 
+Bool_t                     AliHLTPHOSOnlineDisplay::fgAccumulate       = kFALSE ;     /**<If set to kFALSE reset legoplot between event, kTRUE adds current energies to previous plot*/
 
 
 using namespace std;
@@ -61,12 +64,14 @@ AliHLTPHOSOnlineDisplay::Instance()
 
 AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay()
 {
-  this->MapWindow();
-  this->SetWindowName("online display");
-  this->MoveResize(100,100,1000,720);
+  legoPlotLGPtr  = 0;
+  legoPlotHGPtr  = 0;
+  MapWindow();
+  SetWindowName("online display");
+  MoveResize(100,100,1000,720);
   fgEventButtPtr = new  AliHLTPHOSGetEventButton(this, "get event");
-  this->MapSubwindows();  
-  homerReaderPtr = new  HOMERReader("mixing", 42001);
+  MapSubwindows();
+  fgHomerReaderPtr = new  HOMERReader("mixing", 42001);
   std::vector<unsigned> blockList;
   cout << "creating new PHOS Onlinedisplay" << endl;
   int ret = 0;
@@ -79,27 +84,53 @@ AliHLTPHOSOnlineDisplay::~AliHLTPHOSOnlineDisplay()
 
 }
 
+
 int
 AliHLTPHOSOnlineDisplay::GetNextEvent()
 {
+  if(fgEvntCnt == 0)
+    {
+      fgCanvasLGPtr    = new TCanvas();
+      fgCanvasHGPtr    = new TCanvas();
+      legoPlotHGPtr   = new TH2S("Homer","HLT:HOMER: #pi^{0} 5 - 30Gev, High gain",  N_COLUMNS_MOD* N_MODULES , 0,  N_COLUMNS_MOD* N_MODULES ,  N_ROWS_MOD, 0,  N_ROWS_MOD);
+      legoPlotHGPtr->SetMaximum( MAX_BIN_VALUE);
+      legoPlotLGPtr   = new TH2S("Homer","HLT:HOMER: #pi^{0} 5 - 30Gev, Low gain",  N_COLUMNS_MOD* N_MODULES , 0,  N_COLUMNS_MOD* N_MODULES ,  N_ROWS_MOD, 0,  N_ROWS_MOD);
+      legoPlotLGPtr->SetMaximum( MAX_BIN_VALUE);
+    }  
+
+
+  if(fgAccumulate == kFALSE)
+    {
+      if(legoPlotHGPtr !=0)
+	{
+	  legoPlotHGPtr->Reset(); 
+	}
+
+      if(legoPlotLGPtr !=0)
+	{
+	  legoPlotLGPtr->Reset();
+	}  
+    }
+
+
   int ret = 0;
   unsigned long ndx;
   const AliHLTComponentBlockData* iter = NULL;   
   Bool_t nextSwitch=kTRUE; 
-  cout << "homerreader connectionstatus =" << homerReaderPtr->GetConnectionStatus() << endl;;
+  cout << "homerreader connectionstatus =" <<fgHomerReaderPtr->GetConnectionStatus() << endl;;
 
-  ret = homerReaderPtr->ReadNextEvent();  
+  ret =fgHomerReaderPtr->ReadNextEvent();  
       
   if( ret ) 
     {
-      int ndx =  homerReaderPtr->GetErrorConnectionNdx();
+      int ndx = fgHomerReaderPtr->GetErrorConnectionNdx();
       printf( "------------ TRY AGAIN --------------->Error reading event from source %d: %s (%d)\n", ndx, strerror(ret), ret );
       return ret; 
   }
       
-  unsigned long blockCnt =  homerReaderPtr->GetBlockCnt();
+  unsigned long blockCnt = fgHomerReaderPtr->GetBlockCnt();
 
-  printf( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t) homerReaderPtr->GetEventID(), (ULong64_t) homerReaderPtr->GetEventID(), blockCnt );
+  printf( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)fgHomerReaderPtr->GetEventID(), (ULong64_t)fgHomerReaderPtr->GetEventID(), blockCnt );
       
   for ( unsigned long i = 0; i < blockCnt; i++ ) 
     {
@@ -108,58 +139,61 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
       memset( tmp2, 0, 5);
       void *tmp11 = tmp1;
       ULong64_t* tmp12 = (ULong64_t*)tmp11;
-      *tmp12 = homerReaderPtr->GetBlockDataType( i );
+      *tmp12 =fgHomerReaderPtr->GetBlockDataType( i );
       void *tmp21 = tmp2;
       ULong_t* tmp22 = (ULong_t*)tmp21;
-      *tmp22 = homerReaderPtr->GetBlockDataOrigin( i );
-      printf( "Block %lu length: %lu - type: %s - origin: %s\n",ndx, homerReaderPtr->GetBlockDataLength( i ), tmp1, tmp2 );
+      *tmp22 =fgHomerReaderPtr->GetBlockDataOrigin( i );
+      printf( "Block %lu length: %lu - type: %s - origin: %s\n",ndx,fgHomerReaderPtr->GetBlockDataLength( i ), tmp1, tmp2 );
 	  
     }
-  unsigned long blk =  homerReaderPtr->FindBlockNdx( fgDefaultDataType, fgDefaultDet, 0xFFFFFFFF );    
-
-
-  fgCanvasHGPtr[fgEvntCnt] = new TCanvas();
-  fgCanvasHGPtr[fgEvntCnt]->cd();
-  legoPlotHGPtr   = new TH2S("Lego plot 1","Phi0 10 - 20Gev, High gain", 56*5, 0, 56*5, 64, 0, 64);
-  
-  fgCanvasLGPtr[fgEvntCnt] = new TCanvas();
-  fgCanvasLGPtr[fgEvntCnt]->cd();
-  legoPlotLGPtr   = new TH2S("Lego plot 1","Phi0 10 - 20Gev, Low gain", 56*5, 0, 56*5, 64, 0, 64);
-
+  unsigned long blk = fgHomerReaderPtr->FindBlockNdx( fgDefaultDataType, fgDefaultDet, 0xFFFFFFFF );    
 
 
   while ( blk != ~(unsigned long)0 ) 
     {
       AliHLTUInt16_t moduleID;
-      //      printf( "Found Cell Energy block %lu\n", blk );
-      const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*) homerReaderPtr->GetBlockData( blk );  
+      const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*)fgHomerReaderPtr->GetBlockData( blk );  
       moduleID = cellEnergiesPtr->fModuleID ;
-      //      cout << endl;
- 
-      int tmp = cellEnergiesPtr->fCnt;
+      int tmpCount = cellEnergiesPtr->fCnt;
       int tmpRow;
       int tmpCol;
- 
-  
-      for(int i= 0; i<tmp; i++)
+      int tmpGain;
+      Int_t tmpBin;
+
+      for(int i= 0; i<tmpCount; i++)
 	{
 	  tmpRow = cellEnergiesPtr->fValidData[i].fRow;
 	  tmpCol = cellEnergiesPtr->fValidData[i].fCol;
-	  legoPlotHGPtr->SetBinContent(moduleID*56 + tmpCol + 28*cellEnergiesPtr->fRcuZ,  tmpRow + 32*cellEnergiesPtr->fRcuX , cellEnergiesPtr->fCellEnergies[tmpRow][tmpCol][0]);
-	  legoPlotLGPtr->SetBinContent(moduleID*56 + tmpCol + 28*cellEnergiesPtr->fRcuZ,  tmpRow + 32*cellEnergiesPtr->fRcuX , cellEnergiesPtr->fCellEnergies[tmpRow][tmpCol][1]);
+	  tmpGain =  cellEnergiesPtr->fValidData[i].fGain;
+	  
+	  if(tmpGain == HIGH_GAIN)
+	    {
+	        tmpBin = legoPlotHGPtr->GetBin(moduleID*N_COLUMNS_MOD + tmpCol +  N_COLUMNS_RCU*cellEnergiesPtr->fRcuZ,  tmpRow + N_ROWS_RCU*cellEnergiesPtr->fRcuX );
+		legoPlotHGPtr->AddBinContent(tmpBin, cellEnergiesPtr->fValidData[i].fEnergy);
+	
+	    }
+
+	  else if(tmpGain == LOW_GAIN)
+	    {
+	      tmpBin = legoPlotLGPtr->GetBin(moduleID*N_COLUMNS_MOD + tmpCol +  N_COLUMNS_RCU*cellEnergiesPtr->fRcuZ,  tmpRow + N_ROWS_RCU*cellEnergiesPtr->fRcuX );
+	      legoPlotLGPtr->AddBinContent(tmpBin ,cellEnergiesPtr->fValidData[i].fEnergy);
+	    }
+
 	}
 
-      blk =  homerReaderPtr->FindBlockNdx( fgDefaultDataType, fgDefaultDet, 0xFFFFFFFF, blk+1);  
+      blk = fgHomerReaderPtr->FindBlockNdx( fgDefaultDataType, fgDefaultDet, 0xFFFFFFFF, blk+1);  
     }
   
-  //  cout << "event count =" << fgEvntCnt<<endl;
-
-  fgCanvasLGPtr[fgEvntCnt]->cd();
-  legoPlotLGPtr->Draw("LEGO2");
-
-  fgCanvasHGPtr[fgEvntCnt]->cd();
+  fgCanvasHGPtr->cd();
   legoPlotHGPtr->Draw("LEGO2");
-
+  fgCanvasHGPtr->Update();
+  fgCanvasLGPtr->cd();
+  legoPlotLGPtr->Draw("LEGO2");
+  fgCanvasLGPtr->Update();
 
   fgEvntCnt ++;
 }
+
+
+
+
