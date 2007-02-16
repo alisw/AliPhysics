@@ -1,3 +1,5 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
 #include <Riostream.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -14,6 +16,8 @@
 #include "AliESDv0.h"
 #include "AliESDCascade.h"
 #include "AliESDCaloCluster.h"
+
+#endif
 
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root") {
