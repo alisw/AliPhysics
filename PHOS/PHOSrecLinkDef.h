@@ -28,5 +28,8 @@
 #pragma link C++ class AliPHOSGammaJet+;
 #pragma link C++ class AliPHOSGridFile+;
 #pragma link C++ class AliPHOSTracker+;
+#pragma link C++ class AliPHOSRecoParam+;
+#pragma link C++ class AliPHOSRecoParamEmc+;
+#pragma link C++ class AliPHOSRecoParamCpv+;
 
 #endif

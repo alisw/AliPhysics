@@ -14,7 +14,10 @@ SRCS          =  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
                  AliPHOSFastGlobalReconstruction.cxx \
 	         AliPHOSGammaJet.cxx \
 		 AliPHOSGridFile.cxx \
-		 AliPHOSTracker.cxx 
+		 AliPHOSTracker.cxx \
+		 AliPHOSRecoParam.cxx \
+		 AliPHOSRecoParamEmc.cxx \
+		 AliPHOSRecoParamCpv.cxx
                 
            
 HDRS:= $(SRCS:.cxx=.h) 
