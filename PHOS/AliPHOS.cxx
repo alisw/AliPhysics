@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.110  2007/02/13 10:52:08  policheh
+ * Raw2SDigits() implemented
+ *
  * Revision 1.109  2007/02/05 10:43:25  hristov
  * Changes for correct initialization of Geant4 (Mihaela)
  *
@@ -472,6 +475,8 @@ void AliPHOS::Digits2Raw()
   Int_t *adcValuesLow = new Int_t[pulse->GetRawFormatTimeBins()];
   Int_t *adcValuesHigh= new Int_t[pulse->GetRawFormatTimeBins()];
 
+  AliAltroMapping* mapping = 0;
+
   //!!!!for debug!!!
   Int_t modMax=-111;
   Int_t colMax=-111;
@@ -522,6 +527,7 @@ void AliPHOS::Digits2Raw()
 	buffer->Flush();
 	buffer->WriteDataHeader(kFALSE, kFALSE);
 	delete buffer;
+	if (mapping) delete mapping;
       }
 
       // open new file and write dummy header
@@ -532,8 +538,8 @@ void AliPHOS::Digits2Raw()
       path += iRCU;
       path += ".data";
 
-      AliAltroMapping* mapping = new AliCaloAltroMapping(path.Data());
-      buffer = new AliAltroBuffer(fileName.Data(),mapping);
+      mapping = new AliCaloAltroMapping(path.Data());
+      buffer  = new AliAltroBuffer(fileName.Data(),mapping);
       buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
 
       prevDDL = iDDL;
@@ -577,6 +583,7 @@ void AliPHOS::Digits2Raw()
     buffer->Flush();
     buffer->WriteDataHeader(kFALSE, kFALSE);
     delete buffer;
+    if (mapping) delete mapping;
   }
   
   AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n",
