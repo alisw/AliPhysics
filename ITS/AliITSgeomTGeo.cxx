@@ -22,6 +22,7 @@
 //    15/02/2007                                                         //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TClass.h>
 #include <TString.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
