@@ -1,3 +1,14 @@
+2007-02-19  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* alice-macros/clusters_from_index.C:
+	Throw exception if a track does not have a valid index.
+	
+	* alice-macros/kine_tracks.C:
+	Import path marks from stack and track references. 
+	
+	* reve-genclass.pl:
+	Fix capitalization of the top-directory names.
+	
 2007-01-30  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/geom_t0.C:

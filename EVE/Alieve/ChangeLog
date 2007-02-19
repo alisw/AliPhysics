@@ -1,8 +1,8 @@
 2007-02-19  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 	
-	* Alieve/LinkDef.h:
-	* Alieve/KineTools.cxx:
-	* Alieve/KineTools.h:
+	* LinkDef.h:
+	* KineTools.cxx:
+	* KineTools.h:
 	New files: used in alice-macros/kine_tracks.C to set path marks in
 	imported tracks.
 
