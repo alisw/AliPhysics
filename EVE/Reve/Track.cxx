@@ -2,6 +2,7 @@
 
 #include "Track.h"
 #include "MCHelixLine.hi"
+#include "PointSet.h"
 
 #include <TPolyLine3D.h>
 #include <TPolyMarker3D.h>
@@ -28,7 +29,8 @@ Track::Track() :
   fP(),
   fBeta(0),
   fCharge(0),
-  fLabel(0),
+  fLabel(-1),
+  fIndex(-1),
   fPathMarks(),
 
   fRnrStyle(0)
@@ -42,6 +44,7 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   fBeta(t->P()/t->Energy()),
   fCharge(0),
   fLabel(label),
+  fIndex(-1),
   fPathMarks(),
 
   fRnrStyle(rs)
@@ -117,7 +120,7 @@ void Track::Reset(Int_t n_points)
 }
 */
 
-/**************************************************************************/
+ /**************************************************************************/
 
 void Track::MakeTrack()
 {
@@ -147,34 +150,49 @@ void Track::MakeTrack()
     MCHelix helix(fRnrStyle, &mc_v0, TMath::C()*fBeta, &track_points, a); //m->cm
     helix.Init(TMath::Sqrt(px*px+py*py), pz);
    
-    if(!fPathMarks.empty()){
-      for(std::vector<Reve::PathMark*>::iterator i=fPathMarks.begin(); i!=fPathMarks.end(); ++i) {
+    if(!fPathMarks.empty())
+    {
+      for(std::vector<Reve::PathMark*>::iterator i=fPathMarks.begin(); i!=fPathMarks.end(); ++i)
+      {
 	Reve::PathMark* pm = *i;
         
-	if(RS.fFitDaughters &&  pm->type == Reve::PathMark::Daughter){
+	if (RS.fFitReferences && pm->type == Reve::PathMark::Reference)
+	{
 	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
 
-          //printf("%s fit daughter  \n", fName.Data()); 
-	  helix.LoopToVertex(fP.x, fP.y, fP.z, pm->V.x, pm->V.y, pm->V.z);
-	  fP.x -=  pm->P.x;
-	  fP.y -=  pm->P.y;
-	  fP.z -=  pm->P.z;
+	  // printf("%s fit reference  \n", fName.Data()); 
+	  helix.LoopToVertex(px, py, pz, pm->V.x, pm->V.y, pm->V.z);
+	  px =  pm->P.x;
+	  py =  pm->P.y;
+	  pz =  pm->P.z;
 	}
-	if(RS.fFitDecay &&  pm->type == Reve::PathMark::Decay){
-	  
+	else if(RS.fFitDaughters &&  pm->type == Reve::PathMark::Daughter)
+	{
 	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
 	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
-	  helix.LoopToVertex(fP.x, fP.y, fP.z, pm->V.x, pm->V.y, pm->V.z);
+
+          // printf("%s fit daughter  \n", fName.Data()); 
+	  helix.LoopToVertex(px, py, pz, pm->V.x, pm->V.y, pm->V.z);
+	  px -=  pm->P.x;
+	  py -=  pm->P.y;
+	  pz -=  pm->P.z;
+	}
+	else if(RS.fFitDecay &&  pm->type == Reve::PathMark::Decay)
+	{
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
+	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
+	    goto helix_bounds;
+	  helix.LoopToVertex(px, py, pz, pm->V.x, pm->V.y, pm->V.z);
           decay = true;
           break;
 	}
       }
     }
   helix_bounds:
-    //go to bounds
+    // go to bounds
     if(!decay || RS.fFitDecay == kFALSE){
       helix.LoopToBounds(px,py,pz);
       // printf("%s loop to bounds  \n",fName.Data() );
@@ -238,6 +256,11 @@ void Track::ImportClusters()
 
 void Track::ImportClustersFromIndex()
 {
+  static const Exc_t eH("Track::ImportClustersFromIndex ");
+
+  if (fIndex < 0)
+    throw(eH + "index not set.");
+
   Reve::LoadMacro("clusters_from_index.C");
   gROOT->ProcessLine(Form("clusters_from_index(%d);", fIndex));
 }
@@ -283,10 +306,14 @@ TrackRnrStyle::TrackRnrStyle() :
   fMinAng  (45),
   fDelta   (0.1),
 
-  fFitDaughters(kTRUE),
-  fFitDecay    (kTRUE)
-{}
+  fFitDaughters  (kTRUE),
+  fFitReferences (kTRUE),
+  fFitDecay      (kTRUE),
 
+  fRnrDaughters  (kTRUE),
+  fRnrReferences (kTRUE),
+  fRnrDecay      (kTRUE)
+{}
 /**************************************************************************/
 /**************************************************************************/
 
@@ -298,7 +325,7 @@ ClassImp(Reve::TrackList)
 
 void TrackList::Init()
 {
-  fMarkerStyle = 6;
+  fMarkerStyle = 5;
   fMarkerColor = 5;
   // fMarker->SetMarkerSize(0.05);
 
@@ -312,9 +339,9 @@ TrackList::TrackList(Int_t n_tracks, TrackRnrStyle* rs) :
 
   fTitle(),
 
-  fRnrStyle   (rs),
-  fRnrMarkers (kTRUE),
-  fRnrTracks  (kTRUE)
+  fRnrStyle      (rs),
+  fRnrTracks     (kTRUE),
+  fEditPathMarks (kFALSE)
 {
   Init();
 }
@@ -326,7 +353,6 @@ TrackList::TrackList(const Text_t* name, Int_t n_tracks, TrackRnrStyle* rs) :
   fTitle(),
 
   fRnrStyle   (rs),
-  fRnrMarkers (kTRUE),
   fRnrTracks  (kTRUE)
 {
   Init();
@@ -367,21 +393,6 @@ void TrackList::AddElement(RenderElement* el)
   if (dynamic_cast<Track*>(el)  == 0)
     throw(eH + "new element not a Track.");
   RenderElementListBase::AddElement(el);
-}
-
-/**************************************************************************/
-
-void TrackList::SetRnrMarkers(Bool_t rnr)
-{
-  fRnrMarkers = rnr;
-  gReve->Redraw3D();
-}
-
-void TrackList::SetRnrTracks(Bool_t rnr)
-{
-
-  fRnrTracks = rnr;
-  gReve->Redraw3D();
 }
 
 /**************************************************************************/
@@ -458,10 +469,47 @@ void TrackList::SetFitDaughters(Bool_t x)
   MakeTracks();
 }
 
+void TrackList::SetFitReferences(Bool_t x)
+{
+  fRnrStyle->fFitReferences = x;
+  MakeTracks();
+}
+
 void TrackList::SetFitDecay(Bool_t x)
 {
   fRnrStyle->fFitDecay = x;
   MakeTracks();
+}
+
+void TrackList::SetRnrDecay(Bool_t rnr)
+{
+  fRnrStyle->fRnrDecay = rnr;
+  MakeTracks();
+}
+
+void TrackList::SetRnrDaughters(Bool_t rnr)
+{
+  fRnrStyle->fRnrDaughters = rnr;
+  MakeTracks();
+}
+
+void TrackList::SetRnrReferences(Bool_t rnr)
+{
+  fRnrStyle->fRnrReferences = rnr;
+  MakeTracks();
+}
+ 
+void TrackList::SetRnrMarkers(Bool_t rnr)
+{
+  fRnrMarkers = rnr;
+  gReve->Redraw3D();
+}
+
+void TrackList::SetRnrTracks(Bool_t rnr)
+{
+
+  fRnrTracks = rnr;
+  gReve->Redraw3D();
 }
 
 /**************************************************************************/
