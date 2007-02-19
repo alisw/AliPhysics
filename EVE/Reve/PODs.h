@@ -85,9 +85,10 @@ inline Float_t Vector::CosTheta() const
 class PathMark
 {
  public:
-  enum Type_e { Reference, Daughter, Decay };
+  enum Type_e       { Reference, Daughter, Decay }; 
 
   Vector V, P;
+  Float_t time;
   Type_e type;
 
   PathMark(Type_e t=Reference) : V(), P(), type(t) {}
