@@ -19,10 +19,15 @@ private:
   TrackGL& operator=(const TrackGL&); // Not implemented
 
 protected:
+  Track* fTrack; // fModel dynamic-casted to LineGL
+
+  virtual void DirectDraw(const TGLDrawFlags & flags) const;
 
 public:
   TrackGL();
   virtual ~TrackGL();
+
+  virtual Bool_t SetModel(TObject* obj);
 
   // To support two-level selection
   // virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
