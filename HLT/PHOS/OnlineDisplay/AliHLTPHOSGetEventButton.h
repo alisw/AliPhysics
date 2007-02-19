@@ -5,6 +5,7 @@
 
 #include <TGButton.h>
 #include <TGFrame.h>
+
 class AliHLTPHOSOnlineDisplay;
 
 class AliHLTPHOSGetEventButton : public TGTextButton
@@ -12,7 +13,8 @@ class AliHLTPHOSGetEventButton : public TGTextButton
  public:
   AliHLTPHOSGetEventButton();
   AliHLTPHOSGetEventButton(TGGroupFrame *gfPtr, char *name);
-  AliHLTPHOSGetEventButton(AliHLTPHOSOnlineDisplay *gfPtr, char *name); 
+  AliHLTPHOSGetEventButton(TGCompositeFrame *gfPtr, char *name);
+  //  AliHLTPHOSGetEventButton(AliHLTPHOSOnlineDisplay *gfPtr, char *name); 
   virtual Bool_t HandleButton(Event_t* event);
  private:
   AliHLTPHOSOnlineDisplay* onlineDisplayPtr;

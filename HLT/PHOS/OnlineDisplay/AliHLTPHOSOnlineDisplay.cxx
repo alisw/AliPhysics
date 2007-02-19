@@ -9,6 +9,7 @@
 #include "TH2.h"
 #include "TCanvas.h"
 #include "AliHLTPHOSCommonDefs.h"
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -27,13 +28,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #ifndef __CINT__
 # include <stdexcept>
 # include <TSystem.h>
 # include <TApplication.h>
+# include "TStyle.h" 
 #endif
 #include <iostream>
+
 
 #define MAX_BIN_VALUE 1023
 
@@ -48,9 +50,17 @@ char*                      AliHLTPHOSOnlineDisplay::fgDefaultDataType  = "RENELL
 int                        AliHLTPHOSOnlineDisplay::fgEvntCnt          = 0;           /**<Event Counter*/
 TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasHGPtr      = 0;           /**<Canvas to plot legoplot for High gain channels*/ 
 TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasLGPtr      = 0;           /**<Canvas to plot legoplot for Low gain channels*/ 
-Bool_t                     AliHLTPHOSOnlineDisplay::fgAccumulate       = kFALSE ;     /**<If set to kFALSE reset legoplot between event, kTRUE adds current energies to previous plot*/
-
-
+Bool_t                     AliHLTPHOSOnlineDisplay::fgAccumulate       = kTRUE ;     /**<If set to kFALSE reset legoplot between event, kTRUE adds current energies to previous plot*/
+Bool_t                     AliHLTPHOSOnlineDisplay::test[17920][2];
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fFrame1            = 0; 
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fF1                = 0;         
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fF2                = 0;
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fF3                = 0;
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fF4                = 0;
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fF5                = 0;
+TGTab*                     AliHLTPHOSOnlineDisplay::fTab               = 0;
+TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc1               = 0; 
+TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc2               = 0; 
 using namespace std;
 
 
@@ -64,36 +74,17 @@ AliHLTPHOSOnlineDisplay::Instance(char *hostname, int port)
 
 AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay()
 {
-  legoPlotLGPtr  = 0;
-  legoPlotHGPtr  = 0;
-  MapWindow();
-  SetWindowName("online display");
-  MoveResize(100,100,1000,720);
-  fgEventButtPtr = new  AliHLTPHOSGetEventButton(this, "get event");
-  MapSubwindows();
-  //  fgHomerReaderPtr = new  HOMERReader("mixing", 42001);
-  fgHomerReaderPtr = new  HOMERReader("alice13", 42001);
-  std::vector<unsigned> blockList;
-  cout << "creating new PHOS Onlinedisplay" << endl;
-  int ret = 0;
-  Bool_t nextSwitch=kTRUE;
+  cout << "ERROR: You canot create Onlinedisplay without parameters" << endl;
+  cout << "Usage: AliHLTPHOSOnlineDisplay(char *hostname, int port)" << endl;
 }
 
 AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(char *hostname, int port)
 {
+  cout << "creating new PHOS Onlinedisplay" << endl;
   legoPlotLGPtr  = 0;
   legoPlotHGPtr  = 0;
-  MapWindow();
-  SetWindowName("online display");
-  MoveResize(100,100,1000,720);
-  fgEventButtPtr = new  AliHLTPHOSGetEventButton(this, "get event");
-  MapSubwindows();
-  //  fgHomerReaderPtr = new  HOMERReader("mixing", 42001);
-  //  fgHomerReaderPtr = new  HOMERReader("alice13", 42001);
   fgHomerReaderPtr = new  HOMERReader(hostname, port);
-
-  std::vector<unsigned> blockList;
-  cout << "creating new PHOS Onlinedisplay" << endl;
+  InitDisplay();
   int ret = 0;
   Bool_t nextSwitch=kTRUE;
 }
@@ -104,14 +95,53 @@ AliHLTPHOSOnlineDisplay::~AliHLTPHOSOnlineDisplay()
 
 }
 
+void
+AliHLTPHOSOnlineDisplay::InitDisplay()
+{
+  gStyle->SetPalette(1);
+
+  fTab = new TGTab(this, 100, 100);
+  TGCompositeFrame *tf = fTab->AddTab("Tab 1");
+  fF1 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
+  TGLayoutHints *fL1 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
+					 kLHintsExpandY, 2, 2, 15, 1);
+  fEc1 = new TRootEmbeddedCanvas("ec1", fF1, 100, 100);
+  fgCanvasHGPtr = fEc1->GetCanvas();
+  fF1->AddFrame(fEc1, fL1);
+  fEc2 = new TRootEmbeddedCanvas("ec2", fF1, 100, 100);
+  fgCanvasLGPtr = fEc2->GetCanvas();
+  fF1->AddFrame(fEc2, fL1);
+  tf->AddFrame(fF1, fL1);
+
+  tf = fTab->AddTab("Tab 2");
+  fF2 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
+  tf->AddFrame(fF2, fL1);
+
+  tf = fTab->AddTab("Tab 3");
+  fF3 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
+  tf->AddFrame(fF3, fL1);
+
+  tf = fTab->AddTab("Tab 4");
+  fF4 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
+  tf->AddFrame(fF4, fL1);
+
+  AddFrame(fTab, fL1);
+  fgEventButtPtr = new  AliHLTPHOSGetEventButton(fF1, "get event");
+  MapSubwindows();
+  Resize();
+  SetWindowName("online display");
+  MapWindow();
+  MoveResize(100,100,1200,1000);
+}
+
 
 int
 AliHLTPHOSOnlineDisplay::GetNextEvent()
 {
+  int whileCnt = 0;
+
   if(fgEvntCnt == 0)
     {
-      fgCanvasLGPtr    = new TCanvas();
-      fgCanvasHGPtr    = new TCanvas();
       legoPlotHGPtr   = new TH2S("Homer","HLT:HOMER: #pi^{0} 5 - 30Gev, High gain",  N_COLUMNS_MOD* N_MODULES , 0,  N_COLUMNS_MOD* N_MODULES ,  N_ROWS_MOD, 0,  N_ROWS_MOD);
       legoPlotHGPtr->SetMaximum( MAX_BIN_VALUE);
       legoPlotLGPtr   = new TH2S("Homer","HLT:HOMER: #pi^{0} 5 - 30Gev, Low gain",  N_COLUMNS_MOD* N_MODULES , 0,  N_COLUMNS_MOD* N_MODULES ,  N_ROWS_MOD, 0,  N_ROWS_MOD);
@@ -121,6 +151,7 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
 
   if(fgAccumulate == kFALSE)
     {
+      cout <<"restting legoplot" << endl;
       if(legoPlotHGPtr !=0)
 	{
 	  legoPlotHGPtr->Reset(); 
@@ -137,7 +168,7 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
   unsigned long ndx;
   const AliHLTComponentBlockData* iter = NULL;   
   Bool_t nextSwitch=kTRUE; 
-  cout << "homerreader connectionstatus =" <<fgHomerReaderPtr->GetConnectionStatus() << endl;;
+  //  cout << "homerreader connectionstatus =" <<fgHomerReaderPtr->GetConnectionStatus() << endl;;
 
   ret =fgHomerReaderPtr->ReadNextEvent();  
       
@@ -150,8 +181,6 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
       
   unsigned long blockCnt = fgHomerReaderPtr->GetBlockCnt();
 
-  printf( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)fgHomerReaderPtr->GetEventID(), (ULong64_t)fgHomerReaderPtr->GetEventID(), blockCnt );
-      
   for ( unsigned long i = 0; i < blockCnt; i++ ) 
     {
       char tmp1[9], tmp2[5];
@@ -163,12 +192,10 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
       void *tmp21 = tmp2;
       ULong_t* tmp22 = (ULong_t*)tmp21;
       *tmp22 =fgHomerReaderPtr->GetBlockDataOrigin( i );
-      printf( "Block %lu length: %lu - type: %s - origin: %s\n",ndx,fgHomerReaderPtr->GetBlockDataLength( i ), tmp1, tmp2 );
-	  
     }
   unsigned long blk = fgHomerReaderPtr->FindBlockNdx( fgDefaultDataType, fgDefaultDet, 0xFFFFFFFF );    
 
-
+  
   while ( blk != ~(unsigned long)0 ) 
     {
       AliHLTUInt16_t moduleID;
@@ -185,35 +212,45 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
 	  tmpRow = cellEnergiesPtr->fValidData[i].fRow;
 	  tmpCol = cellEnergiesPtr->fValidData[i].fCol;
 	  tmpGain =  cellEnergiesPtr->fValidData[i].fGain;
-	  
+
 	  if(tmpGain == HIGH_GAIN)
 	    {
-	        tmpBin = legoPlotHGPtr->GetBin(moduleID*N_COLUMNS_MOD + tmpCol +  N_COLUMNS_RCU*cellEnergiesPtr->fRcuZ,  tmpRow + N_ROWS_RCU*cellEnergiesPtr->fRcuX );
-		legoPlotHGPtr->AddBinContent(tmpBin, cellEnergiesPtr->fValidData[i].fEnergy);
-	
+	      legoPlotHGPtr->Fill(moduleID*N_COLUMNS_MOD + tmpCol +  N_COLUMNS_RCU*cellEnergiesPtr->fRcuZ,  tmpRow + N_ROWS_RCU*cellEnergiesPtr->fRcuX, cellEnergiesPtr->fValidData[i].fEnergy);
 	    }
 
 	  else if(tmpGain == LOW_GAIN)
 	    {
-	      tmpBin = legoPlotLGPtr->GetBin(moduleID*N_COLUMNS_MOD + tmpCol +  N_COLUMNS_RCU*cellEnergiesPtr->fRcuZ,  tmpRow + N_ROWS_RCU*cellEnergiesPtr->fRcuX );
-	      legoPlotLGPtr->AddBinContent(tmpBin ,cellEnergiesPtr->fValidData[i].fEnergy);
+	      legoPlotLGPtr->Fill(moduleID*N_COLUMNS_MOD + tmpCol +  N_COLUMNS_RCU*cellEnergiesPtr->fRcuZ, tmpRow + N_ROWS_RCU*cellEnergiesPtr->fRcuX,    cellEnergiesPtr->fValidData[i].fEnergy);
 	    }
 
 	}
 
       blk = fgHomerReaderPtr->FindBlockNdx( fgDefaultDataType, fgDefaultDet, 0xFFFFFFFF, blk+1);  
+      
+      whileCnt ++;
+
     }
-  
-  fgCanvasHGPtr->cd();
-  legoPlotHGPtr->Draw("LEGO2");
-  fgCanvasHGPtr->Update();
-  fgCanvasLGPtr->cd();
-  legoPlotLGPtr->Draw("LEGO2");
-  fgCanvasLGPtr->Update();
+ 
+  UpdateDisplay();
 
   fgEvntCnt ++;
 }
 
 
+void
+AliHLTPHOSOnlineDisplay::UpdateDisplay()
+{
+  fgCanvasHGPtr->cd();
+  //  fEc1->cd();
+  legoPlotHGPtr->Draw("LEGO2");
+  //  legoPlotHGPtr->Draw("COLZ");
+  legoPlotHGPtr->SetMarkerColor(4);
+  fgCanvasHGPtr->Update();
+  fgCanvasLGPtr->cd();
+  legoPlotLGPtr->Draw("LEGO2");
 
+  //  legoPlotLGPtr->Draw("COLZ");
+  fgCanvasLGPtr->Update();
+
+}
 

@@ -11,22 +11,29 @@
 #include <TGFrame.h>
 #include "TH2.h"
 #include "AliHLTPHOSGetEventButton.h" 
-
+#include "TGTab.h"
+#include <TRootEmbeddedCanvas.h>
+#include "TGFrame.h"
 
 class TCanvas;
 class AliHLTPHOSRcuCellEnergyDataStruct;
-
 
 class AliHLTPHOSOnlineDisplay : public  TGMainFrame
 {
  public:
   AliHLTPHOSOnlineDisplay();
- AliHLTPHOSOnlineDisplay(char *hosname, int port);
+  AliHLTPHOSOnlineDisplay(char *hosname, int port);
   ~AliHLTPHOSOnlineDisplay();
-  static int GetNextEvent();
-  //  static AliHLTPHOSOnlineDisplay* Instance();  
+  //  static int GetNextEvent();
+  int GetNextEvent();
+  void InitDisplay();
+  void UpdateDisplay();
   static AliHLTPHOSOnlineDisplay* Instance(char *hostname, int port);  
+
  private:
+  static TGCompositeFrame    *fFrame1, *fF1, *fF2, *fF3, *fF4, *fF5;
+  static TGTab               *fTab;
+  static TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6;
   static AliHLTPHOSGetEventButton* fgEventButtPtr; 
   static AliHLTPHOSOnlineDisplay* fgInstancePtr;
   static HOMERReader* fgHomerReaderPtr;
@@ -38,6 +45,7 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
   static TCanvas *fgCanvasHGPtr;
   static TCanvas *fgCanvasLGPtr;
   static Bool_t fgAccumulate;
+  static Bool_t test[17920][2];
 };
 
 
