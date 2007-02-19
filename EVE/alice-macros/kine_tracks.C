@@ -21,24 +21,37 @@ Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100)
   gReve->AddRenderElement(cont);
 
   Int_t count = 0;
-  Int_t     N = stack->GetNtrack();
-  for (Int_t i=0; i<N; ++i) {
-    TParticle* p = stack->Particle(i);
-    Double_t  pT = p->Pt();
-    if (pT<min_pt || pT>max_pt) continue;
+  Int_t N = stack->GetNtrack();
+  for (Int_t i=0; i<N; ++i) 
+  {
+    if(stack->IsPhysicalPrimary(i)) 
+    {
+      TParticle* p = stack->Particle(i);
+      Double_t  pT = p->Pt();
+      if (pT<min_pt || pT>max_pt) continue;
 
-    ++count;
-    Reve::Track* track = new Reve::Track(p, i, rnrStyle);
-    //PH The line below is replaced waiting for a fix in Root
-    //PH which permits to use variable siza arguments in CINT
-    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-    //PH    track->SetName(Form("%s [%d]", p->GetName(), i));
-    char form[1000];
-    sprintf(form,"%s [%d]", p->GetName(), i);
-    track->SetName(form);
-    gReve->AddRenderElement(cont, track);
+      ++count;
+      Reve::Track* track = new Reve::Track(p, i, rnrStyle);
+  
+      //PH The line below is replaced waiting for a fix in Root
+      //PH which permits to use variable siza arguments in CINT
+      //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+      //PH    track->SetName(Form("%s [%d]", p->GetName(), i));
+      char form[1000];
+      sprintf(form,"%s [%d]", p->GetName(), i);
+      track->SetName(form);
+      track->SetRnrStyle(rnrStyle);
+      gReve->AddRenderElement(cont, track);
+    }
   }
   
+  // set path marks
+  Alieve::KineTools kt; 
+  rl->LoadTrackRefs();
+  kt.SetPathMarks(cont,stack, rl->TreeTR());
+  cont->SetEditPathMarks(kTRUE);
+
+
   //PH  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
   char tooltip[1000];
   sprintf(tooltip,"pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
