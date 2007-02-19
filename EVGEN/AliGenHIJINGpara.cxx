@@ -281,6 +281,13 @@ void AliGenHIJINGpara::Init()
 //
     if (fPi0Decays && gMC)
 	fDecayer = gMC->GetDecayer();
+
+    if (fPi0Decays)
+    {
+	fDecayer->SetForceDecay(kNeutralPion);
+	fDecayer->Init();
+    }
+    
 }
 
 
