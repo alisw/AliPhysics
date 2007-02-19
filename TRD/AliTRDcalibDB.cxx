@@ -404,6 +404,49 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
 }
 
 //_____________________________________________________________________________
+AliTRDCalROC *AliTRDcalibDB::GetT0ROC(Int_t det)
+{
+  //
+  // Returns the t0 calibration object for a given ROC
+  // containing one number per pad 
+  //
+  
+  const AliTRDCalPad     *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                       (GetCachedCDBObject(kIDT0Pad));
+  if (!calPad) {
+    return 0;
+  }
+
+  AliTRDCalROC           *roc        = calPad->GetCalROC(det);
+  if (!roc) {
+    return 0;
+  }
+  else {
+    return roc;
+  }
+
+}
+
+//_____________________________________________________________________________
+const AliTRDCalDet *AliTRDcalibDB::GetT0Det()
+{
+  //
+  // Returns the t0 calibration object
+  // containing one number per detector
+  //
+  
+  const AliTRDCalDet     *calChamber = dynamic_cast<const AliTRDCalDet *> 
+                                       (GetCachedCDBObject(kIDT0Chamber));
+  if (!calChamber) {
+    return 0;
+  }
+  else {
+    return calChamber;
+  }
+
+}
+
+//_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetT0Average(Int_t det)
 {
   //
@@ -450,8 +493,9 @@ Float_t AliTRDcalibDB::GetGainFactor(Int_t det, Int_t col, Int_t row)
   }
 
   AliTRDCalROC       *roc        = calPad->GetCalROC(det);
-  if (!roc)
+  if (!roc) {
     return -1;
+  }
 
   const AliTRDCalDet *calChamber = dynamic_cast<const AliTRDCalDet *> 
                                    (GetCachedCDBObject(kIDGainFactorChamber));
@@ -460,6 +504,49 @@ Float_t AliTRDcalibDB::GetGainFactor(Int_t det, Int_t col, Int_t row)
   }
 
   return calChamber->GetValue(det) * roc->GetValue(col,row);
+
+}
+
+//_____________________________________________________________________________
+AliTRDCalROC *AliTRDcalibDB::GetGainFactorROC(Int_t det)
+{
+  //
+  // Returns the gain factor calibration object for a given ROC
+  // containing one number per pad 
+  //
+  
+  const AliTRDCalPad *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                   (GetCachedCDBObject(kIDGainFactorPad));
+  if (!calPad) {
+    return 0;
+  }
+
+  AliTRDCalROC       *roc        = calPad->GetCalROC(det);
+  if (!roc) {
+    return 0;
+  }
+  else {
+    return roc;
+  }
+
+}
+
+//_____________________________________________________________________________
+const AliTRDCalDet *AliTRDcalibDB::GetGainFactorDet()
+{
+  //
+  // Returns the gain factor calibration object
+  // containing one number per detector
+  //
+
+  const AliTRDCalDet *calChamber = dynamic_cast<const AliTRDCalDet *> 
+                                   (GetCachedCDBObject(kIDGainFactorChamber));
+  if (!calChamber) {
+    return 0;
+  }
+  else {
+    return calChamber;
+  }
 
 }
 
@@ -876,6 +963,8 @@ Int_t AliTRDcalibDB::PadResponse(Double_t signal, Double_t dist
 {
   //
   // Applies the pad response
+  // So far this is the fixed parametrization and should be replaced by
+  // something dependent on calibration values
   //
 
   Int_t iBin  = ((Int_t) (( - dist - fPRFlo) / fPRFwid));

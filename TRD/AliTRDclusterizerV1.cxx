@@ -45,6 +45,9 @@
 #include "AliTRDCommonParam.h"
 #include "AliTRDcluster.h"
 
+#include "Cal/AliTRDCalROC.h"
+#include "Cal/AliTRDCalDet.h"
+
 ClassImp(AliTRDclusterizerV1)
 
 //_____________________________________________________________________________
@@ -209,6 +212,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   // Threshold value for the digit signal
   Float_t sigThresh      = recParam->GetClusSigThresh();
 
+  // Detector wise calibration object for t0
+  const AliTRDCalDet *calT0Det = calibration->GetT0Det();
+
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
   const Int_t   kNclus   = 3;  
@@ -260,6 +266,11 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	Int_t nColMax = commonParam->GetColMax(iplan);
 
         AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
+
+	// Calibration object with pad wise values for t0
+        AliTRDCalROC *calT0ROC      = calibration->GetT0ROC(idet);
+        // Calibration value for chamber wise t0
+        Float_t       calT0DetValue = calT0Det->GetValue(idet);
 
         Int_t nClusters      = 0;
         Int_t nClusters2pad  = 0;
@@ -452,8 +463,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                 // Calculate the position and the error
 		//		
 
-                // Correct for t0
-		Int_t    clusterTimeBin = TMath::Nint(time - calibration->GetT0(idet,col,row));
+                // Correct for t0 (sum of chamber and pad wise values !!!)
+                Float_t  calT0ROCValue  = calT0ROC->GetValue(col,row);
+		Int_t    clusterTimeBin = TMath::Nint(time - (calT0DetValue + calT0ROCValue));
                 Double_t colSize        = padPlane->GetColSize(col);
                 Double_t rowSize        = padPlane->GetRowSize(row);
 
@@ -684,18 +696,25 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI *digitsIn
   AliDebug(1,Form("Tail cancellation (nExp = %d) for detector %d.\n"
 	         ,recParam->GetTCnexp(),idet));
 
+  // Calibration object with chamber wise values for the gain factor
+  const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();
+  // Calibration object with pad wise values for the gain factor
+  AliTRDCalROC       *calGainFactorROC      = calibration->GetGainFactorROC(idet);
+  // Calibration value for chamber wise gain factors
+  Float_t             calGainFactorDetValue = calGainFactorDet->GetValue(idet);
+
   for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
     for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
+
+      Float_t  calGainFactorROCValue = calGainFactorROC->GetValue(iCol,iRow);
+      Double_t gain                  = calGainFactorDetValue 
+                                     * calGainFactorROCValue;
 
       for (iTime = 0; iTime < nTimeTotal; iTime++) {
 
 	//
 	// Add gain
 	//
-	Double_t gain = calibration->GetGainFactor(idet,iCol,iRow);
-	if (gain == 0.0) {
-	  AliError("Not a valid gain\n");
-	}
 	inADC[iTime]   = digitsIn->GetDataUnchecked(iRow,iCol,iTime);
         inADC[iTime]  /= gain;
         outADC[iTime]  = inADC[iTime];
