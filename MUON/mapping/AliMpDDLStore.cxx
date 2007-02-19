@@ -454,3 +454,40 @@ AliMpIntPair  AliMpDDLStore::GetDetElemIdManu(Int_t manuSerial) const
 
   return fDetElements->GetDetElemIdManu(manuSerial);
 }  
+
+//______________________________________________________________________________
+void AliMpDDLStore::PrintAllManu() const
+{
+/// Print all manu Ids and their serial numbers sorted by detection element
+/// and bus patch.                                                            \n
+/// As serial manu numbers are filled in a different way than manu Ids this
+/// printing allows to check that both ways are consistent
+
+  // Loop over DE
+  AliMpDEIterator it;
+  for ( it.First(); ! it.IsDone(); it.Next() ) {
+     AliMpDetElement* de = it.CurrentDE();
+     cout << "DE: " << de->GetId() << endl; 
+     
+     // Loop over bus patches in this DE
+     for ( Int_t i=0; i< de->GetNofBusPatches(); ++i ) {
+
+       AliMpBusPatch* busPatch = GetBusPatch(de->GetBusPatchId(i));    
+       cout << "  busPatch: " << busPatch->GetId() << endl; 
+
+       cout << "    Manu       : ";
+       for ( Int_t j=0; j<busPatch->GetNofManus(); ++j ) {
+         cout << std::setw(6) << busPatch->GetManuId(j) << " ";
+       }
+       cout << endl;
+       
+       cout << "    Manu serial: ";
+       for ( Int_t k=0; k<busPatch->GetNofManus(); ++k ) {
+         cout << std::setw(6) << de->GetManuSerialFromId(busPatch->GetManuId(k)) << " ";
+       }        
+       cout << endl;
+     }
+  }
+}  
+
+

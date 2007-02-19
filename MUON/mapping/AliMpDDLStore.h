@@ -47,9 +47,10 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetDEfromBus(Int_t busPatchId) const;
     Int_t  GetDDLfromBus(Int_t busPatchId) const;
     Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
-
     
     AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
+
+    void PrintAllManu() const;
 
   private:
     AliMpDDLStore();
