@@ -25,6 +25,8 @@ class AliTOFGeometryV5: public AliTOFGeometry {
   Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos) const; 
   Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0) const;
   void    GetVolumePath(Int_t *ind, Char_t *path );
+  void    GetVolumePath(Int_t sector, Char_t *path );
+  void    GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_t *path );
   Int_t   GetPlate(Float_t *pos) const;
   Int_t   GetStrip(Float_t *pos) const;
   Int_t   GetSector(Float_t *pos) const;
@@ -54,6 +56,8 @@ class AliTOFGeometryV5: public AliTOFGeometry {
   void Translation(Float_t *xyz, Float_t translationVector[3]) const;
   void Rotation(Float_t *xyz, Double_t rotationAngles[6]) const;
   void InverseRotation(Float_t *xyz, Double_t rotationAngles[6]) const;
+
+  void DetToSectorRF(Int_t vol[5], Double_t **coord);
 
   protected:
 

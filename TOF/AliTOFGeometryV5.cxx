@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.17.1  2006/12/15
+         Added methods:
+            DetToSectorRF(...) to get pad corners
+          coordinates in its sector reference frame;
+            GetVolumePath(Int_t sector, Char_t *path)
+          to get the volume path for a sector
+            GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_t *path)
+          to get the volume path for a strip
+         (A.De Caro, M.Di Stefano)
+Revision 1.7  2006/07/12 16:03:59  arcelli
+updates to match the new numbering of the TOF/TRD mother volumes in FRAME (ALICE convention)
+
 Revision 1.6  2006/05/04 19:41:42  hristov
 Possibility for partial TOF geometry (S.Arcelli)
 
@@ -1280,7 +1292,7 @@ Float_t AliTOFGeometryV5::GetPadDx(Float_t *pos)
 Float_t AliTOFGeometryV5::GetPadDy(Float_t *pos)
 {
   //
-  // Returns the x coordinate in the Pad reference frame
+  // Returns the y coordinate in the Pad reference frame
   //
 
   Float_t ypad = -2.;
@@ -1381,7 +1393,7 @@ Float_t AliTOFGeometryV5::GetPadDy(Float_t *pos)
 Float_t AliTOFGeometryV5::GetPadDz(Float_t *pos)
 {
   //
-  // Returns the x coordinate in the Pad reference frame
+  // Returns the z coordinate in the Pad reference frame
   //
 
   Float_t zpad = -2.;
@@ -1598,6 +1610,57 @@ void AliTOFGeometryV5::GetVolumePath(Int_t *ind, Char_t *path ) {
 
 }
 //_____________________________________________________________________________
+void AliTOFGeometryV5::GetVolumePath(Int_t sector, Char_t *path ){
+  //--------------------------------------------------------------------
+  // This function returns the colume path of a given sector 
+  //--------------------------------------------------------------------
+
+  Char_t string[100];
+
+  Int_t icopy = sector;
+  // Old 6h convention
+  // if(sector<13){
+  //    icopy=sector+5;}  
+  // else{ icopy=sector-13;}
+
+  sprintf(string,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
+  sprintf(path,"%s",string);
+
+}
+//_____________________________________________________________________________
+void AliTOFGeometryV5::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_t *path ) {
+  //--------------------------------------------------------------------
+  // This function returns the colume path of a given strip 
+  //--------------------------------------------------------------------
+
+  Char_t string1[100];
+  Char_t string2[100];
+  Char_t string3[100];
+  
+  Int_t icopy = sector;
+  // Old 6h convention
+  // if(sector<13){
+  //    icopy=sector+5;}  
+  // else{ icopy=sector-13;}
+  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",icopy,icopy);
+  
+  if(plate==0) icopy=strip; 
+  if(plate==1) icopy=strip+NStripC(); 
+  if(plate==2) icopy=strip+NStripC()+NStripB(); 
+  if(plate==3) icopy=strip+NStripC()+NStripB()+NStripA(); 
+  if(plate==4) icopy=strip+NStripC()+2*NStripB()+NStripA(); 
+  icopy++;
+  sprintf(string2,"FSTR_%i",icopy);
+  if(fHoles && (sector==11 || sector==12)) {
+    if(plate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
+    if(plate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
+  }
+
+  sprintf(string3,"FPCB_1/FSEN_1");
+  sprintf(path,"%s/%s/%s",string1,string2,string3); 
+
+}
+//_____________________________________________________________________________
 void AliTOFGeometryV5::GetPos(Int_t *det, Float_t *pos) 
 {
 //
@@ -1619,3 +1682,68 @@ void AliTOFGeometryV5::GetPos(Int_t *det, Float_t *pos)
   pos[2]=tr[2];
 }
 //_____________________________________________________________________________
+
+void AliTOFGeometryV5::DetToSectorRF(Int_t vol[5], Double_t **coord)
+{
+  //
+  // Returns the local coordinates (x, y, z) in sector reference frame
+  // for the 4 corners of each sector pad (vol[1], vol[2], vol[3], vol[4])
+  //
+
+  if (!gGeoManager) printf("ERROR: no TGeo\n");
+
+  // ALICE -> TOF Sector
+  Char_t path1[100]="";
+  GetVolumePath(vol[0],path1);
+  gGeoManager->cd(path1);
+  TGeoHMatrix aliceToSector;
+  aliceToSector = *gGeoManager->GetCurrentMatrix();
+
+  // TOF Sector -> ALICE
+  //TGeoHMatrix sectorToALICE = aliceToSector.Inverse();
+
+  // ALICE -> TOF Pad
+  Char_t path2[100]="";
+  GetVolumePath(vol,path2);
+  gGeoManager->cd(path2);
+  TGeoHMatrix aliceToPad;
+  aliceToPad = *gGeoManager->GetCurrentMatrix();
+
+  // TOF Pad -> ALICE
+  TGeoHMatrix padToALICE = aliceToPad.Inverse();
+
+  // TOF Pad -> TOF Sector
+  TGeoHMatrix padToSector = padToALICE*aliceToSector;
+
+  // TOF Sector -> TOF Pad
+  //TGeoHMatrix sectorToPad = sectorToALICE*aliceToPad;
+
+  // coordinates of the pad bottom corner
+  Double_t **cornerPad = new Double_t*[4];
+  for (Int_t ii=0; ii<4; ii++) cornerPad[ii] = new Double_t[3];
+
+  cornerPad[0][0] = -fgkXPad/2.;
+  cornerPad[0][1] =  0.;
+  cornerPad[0][2] = -fgkZPad/2.;
+
+  cornerPad[1][0] =  fgkXPad/2.;
+  cornerPad[1][1] =  0.;
+  cornerPad[1][2] = -fgkZPad/2.;
+
+  cornerPad[2][0] =  fgkXPad/2.;
+  cornerPad[2][1] =  0.;
+  cornerPad[2][2] =  fgkZPad/2.;
+
+  cornerPad[3][0] = -fgkXPad/2.;
+  cornerPad[3][1] =  0.;
+  cornerPad[3][2] =  fgkZPad/2.;
+
+  for(Int_t aa=0; aa<4; aa++) for(Int_t bb=0; bb<3; bb++) coord[aa][bb]=0.;
+
+  for (Int_t jj=0; jj<4; jj++) padToSector.MasterToLocal(&cornerPad[jj][0], &coord[jj][0]);
+
+  delete cornerPad;
+
+  //sectorToPad.LocalToMaster(cornerPad, coord);
+
+}

@@ -30,6 +30,8 @@ class AliTOFGeometry: public TObject{
   static  Int_t NpadXStrip()  { return kNpadX*kNpadZ;};
   static  Int_t NSectors()    { return kNSectors;};
   static  Int_t NPlates()     { return kNPlates;};
+  virtual Int_t NStripXSector() const { return (kNStripA + 2*kNStripB +
+						2*fNStripC);};
   virtual Int_t NPadXSector() const { return (kNStripA + 2*kNStripB +
 					2*fNStripC)*kNpadX*kNpadZ;};
 
@@ -63,7 +65,7 @@ class AliTOFGeometry: public TObject{
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / kNSectors; }; 
  
   static Float_t TdcBinWidth() {return fgkTdcBin;};
-
+  static Float_t ToTBinWidth() {return fgkToTBin;};
 
   virtual void    Init();
   virtual void    ImportGeometry() {};
@@ -74,6 +76,8 @@ class AliTOFGeometry: public TObject{
   virtual Bool_t  IsInsideThePad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/) const {return kFALSE;};
   virtual Float_t DistanceToPad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/, Float_t *dist3d=0) const {return dist3d[0];};
   virtual void    GetVolumePath(Int_t */*ind*/, Char_t */*path*/ ){};
+  virtual void    GetVolumePath(Int_t /*sector*/, Char_t */*path*/ ){};
+  virtual void    GetVolumePath(Int_t /*sector*/, Int_t /*plate*/, Int_t /*strip*/, Char_t */*path*/ ){};
   virtual void    GetPos(Int_t */*det*/,Float_t */*pos*/){};
   virtual void    GetPosPar(Int_t *det,Float_t *pos) const;
   virtual void    GetDetID(Float_t *pos,Int_t *det) const;
@@ -85,6 +89,9 @@ class AliTOFGeometry: public TObject{
   virtual Float_t GetX(Int_t */*det*/) const {return -500.;};
   virtual Float_t GetY(Int_t */*det*/) const {return -500.;};
   virtual Float_t GetZ(Int_t */*det*/) const {return -500.;};
+  virtual void    DetToStripRF(Int_t nPadX, Int_t nPadZ,
+			       Float_t &x,  Float_t &z) const;
+  virtual void    DetToSectorRF(Int_t /*vol*/[5], Double_t ** /*coord*/) { };
 
   Float_t GetAngles(Int_t iplate, Int_t istrip)  const {return fAngles[iplate][istrip];};
   Float_t GetHeights(Int_t iplate, Int_t istrip) const {return fHeights[iplate][istrip];};
@@ -144,7 +151,8 @@ class AliTOFGeometry: public TObject{
 
   Float_t fPhiSec; //sector Phi width (deg)
 
-  static const Float_t fgkTdcBin;   // time-window for the TDC bins [ps]
+  static const Float_t fgkTdcBin;   // time-of-flight bin width [ps]
+  static const Float_t fgkToTBin;   // time-over-threshold bin width [ps]
 
   ClassDef(AliTOFGeometry,4) // TOF Geometry base class
 };

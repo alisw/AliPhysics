@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.17.1  2006/12/15 
+         Added method DetToStripRF(...) to get
+         a pad corner coordinates in its strip reference frame
+         (A.De Caro, M.Di Stefano)
+Revision 1.17  2006/08/22 13:30:02  arcelli
+removal of effective c++ warnings (C.Zampolli)
+
 Revision 1.16  2006/04/20 22:30:50  hristov
 Coding conventions (Annalisa)
 
@@ -103,7 +110,8 @@ const Float_t AliTOFGeometry::fgkStripLength = 122.;// Strip Length (rho X phi d
 const Float_t AliTOFGeometry::fgkSigmaForTail1= 2.; //Sig1 for simulation of TDC tails 
 const Float_t AliTOFGeometry::fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC tails
 
-const Float_t AliTOFGeometry::fgkTdcBin = 24.4;     // time-window for the TDC bins [ps]
+const Float_t AliTOFGeometry::fgkTdcBin = 24.4;     // time-of-flight bin width [ps]
+const Float_t AliTOFGeometry::fgkToTBin = 48.8;     // time-over-threshold  bin width [ps]
 
 //_____________________________________________________________________________
 AliTOFGeometry::AliTOFGeometry():
@@ -220,5 +228,30 @@ void AliTOFGeometry::GetDetID( Float_t *pos, Int_t *det) const
   det[3]=GetPadZ(pos);
   det[4]=GetPadX(pos);
   
+}
+//_____________________________________________________________________________
+
+void AliTOFGeometry::DetToStripRF(Int_t nPadX, Int_t nPadZ, Float_t &x,  Float_t &z) const
+{
+  //
+  // Returns the local coordinates (x, z) in strip reference frame
+  // for the bottom corner of the pad number (nPadX, nPadZ)
+  //
+  /*
+  const Float_t xCenterStrip = kNpadX * fgkXPad / 2.;
+  const Float_t zCenterStrip = kNpadZ * fgkZPad / 2.;
+
+  const Float_t xCenterPad = nPadX*fgkXPad + fgkXPad / 2.;
+  const Float_t zCenterPad = nPadZ*fgkZPad + fgkZPad / 2.;
+
+  x = xCenterPad - xCenterStrip;
+  z = zCenterPad - zCenterStrip;
+  */
+
+
+  x = (nPadX - kNpadX*0.5) * fgkXPad;
+  z = (nPadZ - kNpadZ*0.5) * fgkZPad;
+
+
 }
 //_____________________________________________________________________________
