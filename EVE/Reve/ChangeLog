@@ -1,3 +1,25 @@
+2007-02-19  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+		
+	* PODs.h:
+	Add member time to class PathMark. Set values in enum
+	PathMark::Type_e.
+	
+	* Track.cxx:
+	Add callbacks to set path marks. In Track::MakeTrack() implement
+	fitting of track references and daughter particles.
+
+	* Track.h:
+	Add Getters and Setters in TrackRnrStyle and TrackList to define
+	rendering of path marks.
+
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Add widgets to control rendering and fiting of pathmarks.
+
+	* TrackGL.cxx:
+	* TrackGL.h:
+	Override LineGL::DirectDraw() to draw path marks.
+
 2007-01-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RGTopFrame.h:
