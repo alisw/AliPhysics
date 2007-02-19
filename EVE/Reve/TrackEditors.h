@@ -5,6 +5,7 @@
 
 #include <TGedFrame.h>
 
+class TGButton;
 class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
@@ -41,8 +42,13 @@ protected:
   TGCheckButton*     fRnrTracks;
   TGCheckButton*     fRnrMarkers;
 
-  TGCheckButton*     fFitDaughters;
-  TGCheckButton*     fFitDecay;
+  TGHorizontalFrame* fPMFrame;
+  TGButton*          fFitDaughters;
+  TGButton*          fFitReferences;
+  TGButton*          fFitDecay;
+  TGButton*          fRnrDaughters;
+  TGButton*          fRnrReferences;
+  TGButton*          fRnrDecay;
 
   RGDoubleValuator*  fPtRange;
 
@@ -64,8 +70,8 @@ public:
   void DoRnrTracks();
   void DoRnrMarkers();
 
-  void DoFitDaughters();
-  void DoFitDecay();
+  void DoFitPM();
+  void DoRnrPM();
 
   void DoPtRange();
 
