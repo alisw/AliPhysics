@@ -128,51 +128,39 @@ void AliZDCCalibData::PrepHistos()
 void  AliZDCCalibData::Print(Option_t *) const
 {
    // Printing of calibration object
-   printf("\n	#######	Mean pedestal values	####### \n");
-   for(int t=0; t<47; t++){
-     if(t==0 || t==24) printf("\n\t  ZN HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n\t  ZN LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n\t  ZP HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n\t  ZP LowRes -------- \n");
-     else if(t==20) printf("\n\t  ZEM1 HighRes -------- ");
-     else if(t==21) printf("\n\t  ZEM1 LowRes -------- ");
-     else if(t==22) printf("\n\t  ZEM2 HighRes -------- ");
-     else if(t==23) printf("\n\t  ZEM2 LowRes -------- ");
-     printf("   MeanPed[ADC%d] = %.1f   ",t,fMeanPedestal[t]);
-   }
-   printf("\n\n\n	#######	Pedestal width values	####### \n");
-   for(int t=0; t<47; t++){
-     if(t==0 || t==24) printf("\n\t  ZN HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n\t  ZN LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n\t  ZP HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n\t  ZP LowRes -------- \n");
-     else if(t==20) printf("\n\t  ZEM1 HighRes -------- ");
-     else if(t==21) printf("\n\t  ZEM1 LowRes -------- ");
-     else if(t==22) printf("\n\t  ZEM2 HighRes -------- ");
-     else if(t==23) printf("\n\t  ZEM2 LowRes -------- ");
-     printf("   MeanPed[ADC%d] = %.1f   ",t,fMeanPedWidth[t]);
-   }
-   
-   printf("\n\n\n	#######	Out Of Time pedestal values	####### \n");
+   printf("\n #######	In-time pedestal values (mean value, sigma)	####### \n");
    for(int t=0; t<44; t++){
-     if(t==0 || t==24) printf("\n\t  ZN HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n\t  ZN LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n\t  ZP HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n\t  ZP LowRes -------- \n");
-     else if(t==20) printf("\n\t  ZEM1 HighRes -------- ");
-     else if(t==21) printf("\n\t  ZEM1 LowRes -------- ");
-     else if(t==22) printf("\n\t  ZEM2 HighRes -------- ");
-     else if(t==23) printf("\n\t  ZEM2 LowRes -------- ");
-     printf("   OOTPed[ADC%d] = %.1f   ",t,fOOTPedestal[t]);
+     if(t==0 || t==24) printf("\n-------- ZN HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n-------- ZN LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n-------- ZP HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n-------- ZP LowRes -------- \n");
+     else if(t==20) printf("\n-------- ZEM1 HighRes --------  \n");
+     else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
+     else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
+     else if(t==23) printf("\n-------- ZEM2 LowRes --------  \n");
+     printf("ADC%d (%.1f, %.1f)\t",t,fMeanPedestal[t],fMeanPedWidth[t]);
+   }
+   //
+   printf("\n\n\n #######	Out-of-time pedestal values (mean value, sigma)	####### \n");
+   for(int t=0; t<44; t++){
+     if(t==0 || t==24) printf("\n-------- ZN HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n-------- ZN LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n-------- ZP HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n-------- ZP LowRes -------- \n");
+     else if(t==20) printf("\n-------- ZEM1 HighRes --------  \n");
+     else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
+     else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
+     else if(t==23) printf("\n-------- ZEM2 LowRes --------  \n");
+     printf("ADC%d (%.1f, %.1f)\t",t,fOOTPedestal[t],fOOTPedWidth[t]);
    }
  
-   printf("\n\n\n	#######	Energy calibration coefficients #######	\n");
-   printf("	ZN1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
-   printf("	ZP1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
-   printf("	ZN2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
-   printf("	ZP2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
-   printf("	ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
-   printf("	ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
+   printf("\n\n\n #######	Energy calibration coefficients #######	\n");
+   printf("  ZN1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
+   printf("  ZP1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
+   printf("  ZN2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
+   printf("  ZP2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
+   printf("  ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
+   printf("  ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
 } 
 
 //________________________________________________________________
