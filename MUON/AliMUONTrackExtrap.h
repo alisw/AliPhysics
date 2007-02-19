@@ -45,15 +45,20 @@ class AliMUONTrackExtrap : public TObject
   
   
  private:
-  static const AliMagF* fgkField;	  //!< field map
-  static const Int_t    fgkMaxStepNumber; //!< Maximum number of steps for track extrapolation
-  static const Double_t fgkStepLength;	  //!< Step lenght for track extrapolation
-
+  static const AliMagF* fgkField;		//!< field map
+  static const Bool_t   fgkUseHelix;		//!< Tell whether to use Helix or not (default is Runge-Kutta)
+  static const Int_t    fgkMaxStepNumber;	//!< Maximum number of steps for track extrapolation
+  static const Double_t fgkHelixStepLength;	//!< Step lenght for track extrapolation (used in Helix)
+  static const Double_t fgkRungeKuttaMaxResidue;//!< Maximal distance (in Z) to destination to stop the track extrapolation (used in Runge-Kutta)
+  
   // Functions
   AliMUONTrackExtrap(const AliMUONTrackExtrap& trackExtrap);
   AliMUONTrackExtrap& operator=(const AliMUONTrackExtrap& trackExtrap);
 
-  static void ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t *v3, Double_t forwardBackward);
+  static void ExtrapToZHelix(AliMUONTrackParam *trackParam, Double_t Z);
+  static void ExtrapToZRungekutta(AliMUONTrackParam *trackParam, Double_t Z);
+  
+  static void ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t forwardBackward, Double_t *v3);
   static void RecoverTrackParam(Double_t *v3, Double_t Charge, AliMUONTrackParam* trackParam);
   
   static void BransonCorrection(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);

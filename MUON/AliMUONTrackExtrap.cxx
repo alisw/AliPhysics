@@ -42,8 +42,10 @@
 ClassImp(AliMUONTrackExtrap) // Class implementation in ROOT context
 
 const AliMagF* AliMUONTrackExtrap::fgkField = 0x0;
+const Bool_t   AliMUONTrackExtrap::fgkUseHelix = kFALSE;
 const Int_t    AliMUONTrackExtrap::fgkMaxStepNumber = 5000;
-const Double_t AliMUONTrackExtrap::fgkStepLength = 6.;
+const Double_t AliMUONTrackExtrap::fgkHelixStepLength = 6.;
+const Double_t AliMUONTrackExtrap::fgkRungeKuttaMaxResidue = 0.002;
 
   //__________________________________________________________________________
 Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingMomentum)
@@ -94,7 +96,16 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
   //__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
-  /// Track parameter extrapolation to the plane at "Z".
+  /// Interface to track parameter extrapolation to the plane at "Z" using Helix or Rungekutta algorithm.
+  /// On return, the track parameters resulting from the extrapolation are updated in trackParam.
+  if (fgkUseHelix) AliMUONTrackExtrap::ExtrapToZHelix(trackParam,zEnd);
+  else AliMUONTrackExtrap::ExtrapToZRungekutta(trackParam,zEnd);
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackExtrap::ExtrapToZHelix(AliMUONTrackParam* trackParam, Double_t zEnd)
+{
+  /// Track parameter extrapolation to the plane at "Z" using Helix algorithm.
   /// On return, the track parameters resulting from the extrapolation are updated in trackParam.
   if (trackParam->GetZ() == zEnd) return; // nothing to be done if same Z
   Double_t forwardBackward; // +1 if forward, -1 if backward
@@ -104,7 +115,7 @@ void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
   Int_t i3, stepNumber;
   // For safety: return kTRUE or kFALSE ????
   // Parameter vector for calling EXTRAP_ONESTEP
-  ConvertTrackParamForExtrap(trackParam, v3, forwardBackward);
+  ConvertTrackParamForExtrap(trackParam, forwardBackward, v3);
   // sign of charge (sign of fInverseBendingMomentum if forward motion)
   // must be changed if backward extrapolation
   Double_t chargeExtrap = forwardBackward * TMath::Sign(Double_t(1.0), trackParam->GetInverseBendingMomentum());
@@ -112,9 +123,7 @@ void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
   stepNumber = 0;
   while (((-forwardBackward * (v3[2] - zEnd)) <= 0.0) && (stepNumber < fgkMaxStepNumber)) { // spectro. z<0
     stepNumber++;
-    // Option for switching between helix and Runge-Kutta ???? 
-    //ExtrapOneStepRungekutta(chargeExtrap, fgkStepLength, v3, v3New);
-    ExtrapOneStepHelix(chargeExtrap, fgkStepLength, v3, v3New);
+    ExtrapOneStepHelix(chargeExtrap, fgkHelixStepLength, v3, v3New);
     if ((-forwardBackward * (v3New[2] - zEnd)) > 0.0) break; // one is beyond Z spectro. z<0
     // better use TArray ????
     for (i3 = 0; i3 < 7; i3++) {v3[i3] = v3New[i3];}
@@ -140,15 +149,58 @@ void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
     v3[3] = xPrimeI * v3[5]; // PX/PTOT
     v3[4] = yPrimeI * v3[5]; // PY/PTOT
   } else {
-    cout<<"W-AliMUONTrackExtrap::ExtrapToZ: Extrap. to Z not reached, Z = "<<zEnd<<endl;
+    cout<<"W-AliMUONTrackExtrap::ExtrapToZHelix: Extrap. to Z not reached, Z = "<<zEnd<<endl;
   }
-  // Track parameters from 3 parameters,
-  // with charge back for forward motion
+  // Recover track parameters (charge back for forward motion)
   RecoverTrackParam(v3, chargeExtrap * forwardBackward, trackParam);
 }
 
   //__________________________________________________________________________
-void AliMUONTrackExtrap::ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t *v3, Double_t forwardBackward)
+void AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Double_t zEnd)
+{
+  /// Track parameter extrapolation to the plane at "Z" using Rungekutta algorithm.
+  /// On return, the track parameters resulting from the extrapolation are updated in trackParam.
+  if (trackParam->GetZ() == zEnd) return; // nothing to be done if same Z
+  Double_t forwardBackward; // +1 if forward, -1 if backward
+  if (zEnd < trackParam->GetZ()) forwardBackward = 1.0; // spectro. z<0 
+  else forwardBackward = -1.0;
+  // sign of charge (sign of fInverseBendingMomentum if forward motion)
+  // must be changed if backward extrapolation
+  Double_t chargeExtrap = forwardBackward * TMath::Sign(Double_t(1.0), trackParam->GetInverseBendingMomentum());
+  Double_t v3[7], v3New[7];
+  Double_t dZ, step;
+  Int_t stepNumber = 0;
+  
+  // Extrapolation loop (until within tolerance)
+  Double_t residue = zEnd - trackParam->GetZ();
+  while (TMath::Abs(residue) > fgkRungeKuttaMaxResidue && stepNumber <= fgkMaxStepNumber) {
+    dZ = zEnd - trackParam->GetZ();
+    // step lenght assuming linear trajectory
+    step = dZ * TMath::Sqrt(1.0 + trackParam->GetBendingSlope()*trackParam->GetBendingSlope() +
+    			    trackParam->GetNonBendingSlope()*trackParam->GetNonBendingSlope());
+    ConvertTrackParamForExtrap(trackParam, forwardBackward, v3);
+    do { // reduce step lenght while zEnd oversteped
+      if (stepNumber > fgkMaxStepNumber) {
+        cout<<"W-AliMUONTrackExtrap::ExtrapToZRungekutta: Too many trials: "<<stepNumber<<endl;
+	break;
+      }
+      stepNumber ++;
+      step = TMath::Abs(step);
+      AliMUONTrackExtrap::ExtrapOneStepRungekutta(chargeExtrap,step,v3,v3New);
+      residue = zEnd - v3New[2];
+      step *= dZ/(v3New[2]-trackParam->GetZ());
+    } while (residue*dZ < 0 && TMath::Abs(residue) > fgkRungeKuttaMaxResidue);
+    RecoverTrackParam(v3New, chargeExtrap * forwardBackward, trackParam);
+  }
+  
+  // terminate the extropolation with a straight line up to the exact "zEnd" value
+  trackParam->SetNonBendingCoor(trackParam->GetNonBendingCoor() + residue * trackParam->GetNonBendingSlope());
+  trackParam->SetBendingCoor(trackParam->GetBendingCoor() + residue * trackParam->GetBendingSlope());
+  trackParam->SetZ(zEnd);
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackExtrap::ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t forwardBackward, Double_t *v3)
 {
   /// Set vector of Geant3 parameters pointed to by "v3" from track parameters in trackParam.
   /// Since AliMUONTrackParam is only geometry, one uses "forwardBackward"
