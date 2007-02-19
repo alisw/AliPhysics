@@ -12,6 +12,8 @@
 #pragma link C++ class  Alieve::Event+;
 #pragma link C++ global Alieve::gEvent;
 
+#pragma link C++ class Alieve::KineTools+;
+
 #pragma link C++ class Alieve::VSDCreator+;
 
 //================================
