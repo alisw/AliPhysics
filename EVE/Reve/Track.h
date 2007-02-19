@@ -24,6 +24,7 @@ class Track : public Line, public TQObject
 {
   friend class TrackList;
   friend class TrackCounter;
+  friend class TrackGL;
 
   Track(const Track&);            // Not implemented
   Track& operator=(const Track&); // Not implemented
@@ -102,8 +103,17 @@ public:
   Float_t                  fMinAng;  // Minimal angular step between two helix points.
   Float_t                  fDelta;   // Maximal error at the mid-point of the line connecting to helix points.
 
+  Color_t                  fPMColor;
+  Style_t                  fPMStyle;
+  Size_t                   fPMSize;
+
   Bool_t                   fFitDaughters;   
+  Bool_t                   fFitReferences;   
   Bool_t                   fFitDecay;   
+
+  Bool_t                   fRnrDaughters;
+  Bool_t                   fRnrReferences;
+  Bool_t                   fRnrDecay;
 
   TrackRnrStyle();
 
@@ -141,6 +151,7 @@ protected:
 
   Bool_t               fRnrMarkers;
   Bool_t               fRnrTracks;
+  Bool_t               fEditPathMarks;
 
 public:
   TrackList(Int_t n_tracks=0, TrackRnrStyle* rs=0);
@@ -148,8 +159,8 @@ public:
 
   void Reset(Int_t n_tracks=0);
 
-  virtual const Text_t* GetTitle() const { return fTitle; }
-  virtual void SetTitle(const Text_t* t) { fTitle = t; }
+  virtual const Text_t* GetTitle() const  { return fTitle; }
+  virtual void  SetTitle(const Text_t* t) { fTitle = t; }
 
   virtual Bool_t CanEditMainColor()  { return kTRUE; }
 
@@ -157,11 +168,26 @@ public:
 
   virtual void AddElement(RenderElement* el);
 
-  void  SetRnrStyle(TrackRnrStyle* rst) { fRnrStyle= rst; }
-  TrackRnrStyle* GetRnrStyle()          { return fRnrStyle; } 
+  virtual void SetMarkerColor(Color_t c) {TAttMarker::SetMarkerColor(c); if(fRnrStyle) fRnrStyle->fPMColor =c;}
+  virtual void SetMarkerStyle(Style_t s){TAttMarker::SetMarkerStyle(s); if(fRnrStyle) fRnrStyle->fPMStyle = s;}
+  virtual void SetMarkerSize(Size_t s){TAttMarker::SetMarkerSize(s); if(fRnrStyle) fRnrStyle->fPMSize = s;}
+
+  TrackRnrStyle* GetRnrStyle()           { fRnrStyle->fPMColor = GetMarkerColor();fRnrStyle->fPMStyle = GetMarkerStyle();fRnrStyle->fPMSize = GetMarkerSize(); return fRnrStyle;  } 
+  void   SetRnrStyle(TrackRnrStyle* rst) { fRnrStyle= rst; }
+
+  Bool_t GetEditPathMarks() const   { return fEditPathMarks; }
+  void   SetEditPathMarks(Bool_t x) { fEditPathMarks = x; }
 
   Bool_t GetRnrTracks() const { return fRnrTracks; }
   void   SetRnrTracks(Bool_t);
+
+  Bool_t GetRnrDaughters() const { return fRnrStyle->fRnrDaughters; }
+  Bool_t GetRnrReferences() const { return fRnrStyle->fRnrReferences; }
+  Bool_t GetRnrDecay() const { return fRnrStyle->fRnrDecay; }
+
+  void   SetRnrDaughters(Bool_t x);
+  void   SetRnrReferences(Bool_t x);
+  void   SetRnrDecay(Bool_t x);
 
   Bool_t GetRnrMarkers() const { return fRnrMarkers; }
   void   SetRnrMarkers(Bool_t);
@@ -170,24 +196,27 @@ public:
   void   MakeMarkers();
 
   Width_t GetWidth() const { return fRnrStyle->fWidth; }
-  void SetWidth(Width_t w);
+  void  SetWidth(Width_t w);
 
   Float_t GetMaxR()         const { return fRnrStyle->fMaxZ; }
   Float_t GetMaxZ()         const { return fRnrStyle->fMaxR; }
   Float_t GetMaxOrbs()      const { return fRnrStyle->fMaxOrbs; }
   Float_t GetMinAng()       const { return fRnrStyle->fMinAng; }
   Float_t GetDelta()        const { return fRnrStyle->fDelta; }
-  Bool_t  GetFitDaughters() const { return fRnrStyle->fFitDaughters; }
-  Bool_t  GetFitDecay()     const { return fRnrStyle->fFitDecay; }
+
+  Bool_t  GetFitDaughters()  const { return fRnrStyle->fFitDaughters; }
+  Bool_t  GetFitReferences() const { return fRnrStyle->fFitReferences; }
+  Bool_t  GetFitDecay()      const { return fRnrStyle->fFitDecay; }
+
+  void SetFitDaughters(Bool_t x);
+  void SetFitReferences(Bool_t x);
+  void SetFitDecay(Bool_t x);
 
   void SetMaxR(Float_t x);
   void SetMaxZ(Float_t x);
   void SetMaxOrbs(Float_t x);
   void SetMinAng(Float_t x);
   void SetDelta(Float_t x);
-  void SetFitDaughters(Bool_t x);
-  void SetFitDecay(Bool_t x);
-
 
   // void  UpdateBounds();
   Int_t   GetNTracks() { return fN; }
