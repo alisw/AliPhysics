@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2006/10/17 15:33:14  arcelli
+Moving some printout from Info to Debug level
+
 Revision 1.13  2006/10/12 16:35:43  arcelli
 definition of the alignable volumes symbolic names added
 
@@ -104,6 +107,7 @@ Revision 0.1 2004 November G. Cara Romeo and A. De Caro
 
 extern TDirectory *gDirectory;
 extern TVirtualMC *gMC;
+extern TGeoManager *gGeoManager;
 
 extern AliRun *gAlice;
 

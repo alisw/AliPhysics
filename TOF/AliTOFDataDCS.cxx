@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2007/01/24 11:19:58  arcelli
+Modify ProcessData to return a logical (CZ)
+
 Revision 1.2  2006/12/18 18:17:38  arcelli
 Updated Aliases for DCS TOF datapoints (C.Zampolli)
 
@@ -28,7 +31,7 @@ Class for handling the TOF DCS data in the Shuttle (C.Zampolli)
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
-#include "TString.h"
+//#include "TString.h"
 #include "AliTOFFormatDCS.h"
 #include "TF1.h"
 #include "TCanvas.h"
@@ -339,6 +342,8 @@ Float_t* AliTOFDataDCS::GetP() const{
 
 //---------------------------------------------------------------
 Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
+
+  // method to process the data
 
   if(!(fAliasNames[0])) Init();
 
@@ -765,7 +770,7 @@ void AliTOFDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
 }
 
 //---------------------------------------------------------------
-void AliTOFDataDCS::Draw(const Option_t* /*option*/)
+void AliTOFDataDCS::Draw(const Option_t* /*option*/) const
 {
 // Draw all histos and graphs
 

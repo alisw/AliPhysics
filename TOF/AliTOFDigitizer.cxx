@@ -25,12 +25,12 @@
 //                                                                         //
 //_________________________________________________________________________//
 
-#include <Riostream.h>
+#include "Riostream.h"
 
-#include <TFile.h>
-#include <TH1F.h>
-#include <TTree.h>
-#include <TRandom.h>
+#include "TFile.h"
+#include "TH1F.h"
+#include "TTree.h"
+#include "TRandom.h"
 
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -47,6 +47,13 @@
 #include "AliTOFGeometryV5.h"
 #include "AliTOFSDigit.h"
 #include "AliTOF.h"
+
+extern TDirectory *gDirectory;
+extern TFile *gFile;
+extern TRandom *gRandom;
+
+extern AliRun *gAlice;
+
 
 ClassImp(AliTOFDigitizer)
 
@@ -248,9 +255,9 @@ void AliTOFDigitizer::CreateDigits()
     
     //------------------- Dump section ----------------------
     if(k<ndump){
-      cout << k << "-th | " << "Sector " << sector << " | Plate " << plate << " | Strip " << strip << " | PadZ " << padz << " | PadX " << padx << endl;
-      cout << k << "-th sdigit" << endl;
-      cout << "----------------------------------------------------"<< endl;
+      AliInfo(Form("%2i-th | Sector %2i | Plate %1i | Strip %2i | PadZ %1i | PadX %2i ", k, sector, plate, strip, padz, padx));
+      AliInfo(Form("%2i-th", k));
+      AliInfo("----------------------------------------------------");
     }
     // ------------------------------------------------------
     

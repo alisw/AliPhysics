@@ -165,7 +165,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 
 	else{
           Log("The input data file from DAQ (run-level) was not found, still going on with Cumulative data file (please check!) "); 
-	} 
+        }
       }
     }
   else{
@@ -196,18 +196,18 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	    return 0;
 	  }
 	  else {
-	    static const Int_t size=fh2->GetNbinsX();
-	    static const Int_t nbins=fh2->GetNbinsY();
-	    static const Double_t xbinmin=fh2->GetYaxis()->GetBinLowEdge(1);
+	    static const Int_t kSize=fh2->GetNbinsX();
+	    static const Int_t kNBins=fh2->GetNbinsY();
+	    static const Double_t kXBinmin=fh2->GetYaxis()->GetBinLowEdge(1);
 	    Int_t npads = fCal->NPads();
-	    if (size != npads){
+	    if (kSize != npads){
 	      Log(" number of bins along x different from number of pads, found only a subset of the histograms, TOF exiting from Shuttle");
 	      delete daqFile;
-	      return 0;
+              return 0;
 	    }
-	    for (Int_t ich=0;ich<size;ich++){
-	      TH1S *h1 = new TH1S("h1","h1",nbins,xbinmin-0.5,nbins*1.+xbinmin-0.5);
-	      for (Int_t ibin=0;ibin<nbins;ibin++){
+	    for (Int_t ich=0;ich<kSize;ich++){
+	      TH1S *h1 = new TH1S("h1","h1",kNBins,kXBinmin-0.5,kNBins*1.+kXBinmin-0.5);
+	      for (Int_t ibin=0;ibin<kNBins;ibin++){
 		h1->SetBinContent(ibin+1,fh2->GetBinContent(ich+1,ibin+1));
 	      }
 	      Bool_t found=kFALSE; 

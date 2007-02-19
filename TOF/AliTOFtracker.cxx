@@ -355,7 +355,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       if (TMath::Abs(dph)>dphi) continue;
 
       {
-      Double_t maxChi2=150.; // "calibration constant". Needs to be tuned.
+	//Double_t maxChi2=150.; // "calibration constant". Needs to be tuned.
       Double_t yc=(c->GetPhi() - trackTOFin->GetAlpha())*c->GetR();
       Double_t p[2]={yc, c->GetZ()};
       Double_t cov[3]={fDy*fDy/12., 0., fDz*fDz/12.};

@@ -88,7 +88,7 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
 }
 
 //_____________________________________________________________________________
-AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* runLoader) const
+AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* /*runLoader*/) const
 {
 // create a TOF tracker
 

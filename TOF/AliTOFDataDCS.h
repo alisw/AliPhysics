@@ -14,6 +14,7 @@ class TClonesArray;
 class TH2F;
 class TGraph;
 class TF1;
+//class TString;
 class AliTOFFormatDCS;
 
 // AliTOFDataDCS class
@@ -65,7 +66,7 @@ public:
   void SetInterceptP(Float_t interceptP) {fP[1]=interceptP;}
   void SetMaxP(Float_t maxP) {fP[2]=maxP;}
   
-  void Draw(const Option_t* option);
+  void Draw(const Option_t* option) const;
   
   AliTOFFormatDCS* GetHVvp(Int_t pos) const
     {return pos<kNHV ? fHVvp[pos] : 0;}
