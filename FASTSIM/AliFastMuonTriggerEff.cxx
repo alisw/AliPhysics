@@ -23,6 +23,8 @@
 // There is increased granularity in the pT region below 3 GeV. Although
 // it does not seem to be necessary it is also possible to interpolate
 // between pT bins using SetInt().
+// Author: Pietro Cortese (Universita' del Piemonte Orientale - Alessandria 
+// and INFN of Torino)
 
 
 #include "AliFastMuonTriggerEff.h"
@@ -353,6 +355,10 @@ void AliFastMuonTriggerEff::Init()
     fnptb=fhEffLPt->GetNbinsZ();
     fDpt      = (fPtMax-fPtMin)/fnptb;
 
+    printf("***** This version of AliFastMuonTriggerEff can use both *****\n");
+    printf("***** new and old ALICE reference frames depending on    *****\n");
+    printf("***** which LUT has been loaded. You can find below some *****\n");
+    printf("***** information on the current parametrization:        *****\n");
     printf("%4d bins in theta [%f:%f]\n",fnthetab,fThetaMin,fThetaMax);
     printf("%4d bins in phi [%f:%f]\n",fnphib,fPhiMin,fPhiMax);
     printf("%4d bins in pt [%f:%f]\n",fnptb,fPtMin,fPtMax);

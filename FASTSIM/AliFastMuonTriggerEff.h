@@ -14,6 +14,8 @@
 // There is increased granularity in the pT region below 3 GeV. Although
 // it does not seem to be necessary it is also possible to interpolate
 // between pT bins using SetInt().
+// Author: Pietro Cortese (Universita' del Piemonte Orientale - Alessandria 
+// and INFN of Torino)
 
 #include <AliFastResponse.h>
 #include <TString.h>
