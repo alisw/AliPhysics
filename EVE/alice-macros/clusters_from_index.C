@@ -4,8 +4,13 @@ Reve::PointSet* clusters_from_index(Int_t index=0)
 {
   AliESD* esd = Alieve::Event::AssertESD();
 
-  if (index < 0 || index >= esd->GetNumberOfTracks()) {
-    Warning("clusters_from_index", "index out of range.");
+  if (index < 0) {
+    Warning("clusters_from_index", "index not set.");
+    return 0;
+  }
+
+  if (index >= esd->GetNumberOfTracks()) {
+    Warning("clusters_from_index", "index out of range");
     return 0;
   }
 
