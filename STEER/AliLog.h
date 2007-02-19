@@ -143,8 +143,8 @@ class AliLog: public TObject {
 
 
 // module name
-#ifdef __MODULE__
-#define MODULENAME() __MODULE__
+#ifdef _MODULE_
+#define MODULENAME() _MODULE_
 #else
 #define MODULENAME() "NoModule"
 #endif

@@ -67,7 +67,7 @@ endif
 
 #Extra include,libs, defines etc.
 
-@PACKAGE@DEFINE:=$(EDEFINE) -D__MODULE__=\"@MODULE@\"
+@PACKAGE@DEFINE:=$(EDEFINE) -D_MODULE_=\"@MODULE@\"
 
 @PACKAGE@INC:=$(patsubst %,-I%,$(EINCLUDE)) -I@MODULE@
 
