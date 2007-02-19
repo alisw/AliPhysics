@@ -38,6 +38,7 @@
 #include <TClass.h>
 #include <TSystem.h>
 #include <TObjString.h>
+#include <TObjArray.h>
 #include <TMap.h>
 
 /// \cond CLASSIMP
@@ -168,7 +169,8 @@ Bool_t AliMpDEStore::ReadManuToSerialNbs(AliMpDetElement* detElement,
                                        AliMp::StationType stationType)
 {
 /// Read manu serial numbers for the given detection element
-  
+  static Int_t manuMask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
+
   TString deName = detElement->GetDEName();
 
   TString infile = AliMpFiles::ManuToSerialPath(deName, stationType);
@@ -188,18 +190,20 @@ Bool_t AliMpDEStore::ReadManuToSerialNbs(AliMpDetElement* detElement,
 
     TString tmp(AliMpHelper::Normalize(line));
 
-    Int_t blankPos  = tmp.First(' ');
+    TObjArray* stringList = tmp.Tokenize(TString(" "));
 
-    TString sManuId(tmp(0, blankPos));
-
-    Int_t manuId = atoi(sManuId.Data());
-
-    TString sManuSerial(tmp(blankPos + 1, tmp.Length()-blankPos));
-
-    Int_t manuSerial = atoi(sManuSerial.Data());
+    Int_t manuId     = atoi( ((TObjString*)stringList->At(0))->GetName());
+    Int_t manuSerial = atoi( ((TObjString*)stringList->At(2))->GetName());
       
+    TString sPlane = ((TObjString*)stringList->At(1))->GetString();
+
     // filling manuId <> manuSerial
-    detElement->AddManuSerial(manuId, manuSerial); 
+    if (!sPlane.CompareTo(PlaneTypeName(AliMp::kBendingPlane)))
+	detElement->AddManuSerial(manuId, manuSerial);
+    else 
+	detElement->AddManuSerial(manuId + manuMask, manuSerial);
+
+    delete stringList;
   }
    
   in.close();
