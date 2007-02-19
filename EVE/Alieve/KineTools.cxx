@@ -5,6 +5,8 @@
 #include <TObject.h>
 #include <TTree.h>
 #include <TBranchElement.h>
+#include <TClonesArray.h>
+
 #include <AliStack.h>
 #include <AliTrackReference.h>
 
@@ -12,6 +14,7 @@
 #include "Reve/RenderElement.h"
 
 #include <algorithm>
+#include <map>
 
 //______________________________________________________________________
 // KineTools
