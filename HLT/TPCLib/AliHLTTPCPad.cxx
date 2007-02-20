@@ -156,8 +156,8 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
       fCount=0;fSum=-1;
       if (fBLMax>ALIHLTPAD_BASELINE_MARGIN) {
 	// calculate again
-	HLTDebug("maximum value %d exceeds margin for base line (%d) "
-		 "-> re-evaluate base line", fBLMax, ALIHLTPAD_BASELINE_MARGIN);
+	//HLTDebug("maximum value %d exceeds margin for base line (%d) "
+	//	 "-> re-evaluate base line", fBLMax, ALIHLTPAD_BASELINE_MARGIN);
 	if (fpRawData) {
 	  for (Int_t i=fFirstBLBin; i<fNofBins; i++)
 	    if (fpRawData[i]>=0) AddBaseLineValue(i, fpRawData[i]);

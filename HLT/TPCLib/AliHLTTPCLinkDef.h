@@ -39,6 +39,8 @@
 /* #pragma link C++ class AliHLTTPCRawDataFileHandler; */
 /* #pragma link C++ class AliHLTTPCTPCBeamTestMemHandler; */
 #pragma link C++ class AliHLTTPCModelTrack;
+#pragma link C++ class AliHLTTPCCATracker;
+#pragma link C++ class AliHLTTPCCATrackerComponent;
 
 
 

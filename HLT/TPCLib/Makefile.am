@@ -51,6 +51,7 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCTrackMerger.cxx \
 				  AliHLTTPCGlobalMerger.cxx \
 				  AliHLTTPCInterMerger.cxx \
+				  AliHLTTPCCATracker.cxx \
 				  AliHLTTPCPad.cxx \
 				  AliHLTTPCDefinitions.cxx \
 				  AliHLTTPCRawDataUnpackerComponent.cxx \
@@ -58,6 +59,7 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCVertexFinderComponent.cxx \
 				  AliHLTTPCSliceTrackerComponent.cxx \
 				  AliHLTTPCGlobalMergerComponent.cxx \
+				  AliHLTTPCCATrackerComponent.cxx \
 				  AliHLTTPCEsdWriterComponent.cxx
 
 
@@ -103,6 +105,7 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCTrackMerger.h \
 				  AliHLTTPCGlobalMerger.h \
 				  AliHLTTPCInterMerger.h \
+				  AliHLTTPCCATracker.h \
 				  AliHLTTPCPad.h \
 				  AliHLTTPCSpacePointData.h \
 				  AliHLTTPCDefinitions.h \
@@ -111,6 +114,7 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCVertexFinderComponent.h \
 				  AliHLTTPCSliceTrackerComponent.h \
 				  AliHLTTPCGlobalMergerComponent.h \
+				  AliHLTTPCCATrackerComponent.h \
 				  AliHLTTPCEsdWriterComponent.h
 
 #				  AliHLTTPCClustFinderNew.h \

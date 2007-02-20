@@ -301,10 +301,20 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
       track->SetSector(trs->fSector);
 #endif // INCLUDE_TPC_HOUGH
     }
-// BEGINN ############################################## MODIFIY JMT
-// this we have to check
-//  track->CalculateHelix();
-// END ################################################# MODIFIY JMT
+
+    // this is currently a quick hack for straight lines of the first version 
+    // of the CA tracker.
+    // we have to think about a more general way of treating straight and curved
+    // tracks
+    if ( trs->fPt == -9876.0 ||  trs->fPt == -1.0) {
+      track->SetPhi0(atan2(first[1],first[0]));
+      track->SetKappa(1.0);
+      track->SetRadius(999999.0);
+    } else {
+      // this we have to check
+      //track->CalculateHelix();
+    }
+
 #ifdef INCLUDE_TPC_HOUGH
 #ifdef ROWHOUGHPARAMS
     if(GetTrackType()=='h') {
