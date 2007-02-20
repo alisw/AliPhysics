@@ -22,9 +22,6 @@
 
 #include "AliMUONReconstructor.h"
 
-#include "AliESD.h"
-#include "AliESDMuonTrack.h"
-#include "AliLog.h"
 #include "AliMUONConstants.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONClusterFinderAZ.h"
@@ -44,17 +41,18 @@
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONSegFactory.h"
 #include "AliMUONSegmentation.h"
-
-#include "AliMpSegmentation.h"
-
 #include "AliMUONPreClusterFinder.h"
 #include "AliMUONClusterFinderCOG.h"
 #include "AliMUONClusterFinderSimpleFit.h"
 #include "AliMUONClusterFinderMLEM.h"
-  
+
+#include "AliESD.h"
+#include "AliESDMuonTrack.h"
+#include "AliLog.h"
 #include "AliRawReader.h"
-#include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliCDBManager.h"
+
 #include "TTask.h"
 #include "TStopwatch.h"
 
@@ -65,7 +63,6 @@ ClassImp(AliMUONReconstructor)
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor()
   : AliReconstructor(), 
-    fRunLoader(0x0),
     fDigitMaker(new AliMUONDigitMaker()), 
     fCalibrationData(0x0),
     fCrateManager(new AliMUONTriggerCrateStore()),
@@ -124,10 +121,11 @@ AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
 {
 /// Create the calibration task(s). 
   
-  const AliRun* run = fRunLoader->GetAliRun();
-
+  //const AliRun* run = fRunLoader->GetAliRun();
+  //Int_t runNumber = run->GetRunNumber();     
+  Int_t runNumber = AliCDBManager::Instance()->GetRun();
   AliInfo("Calibration will occur.");
-  Int_t runNumber = run->GetRunNumber();     
+ 
   fCalibrationData = new AliMUONCalibrationData(runNumber);
   if ( !fCalibrationData->IsValid() )
     {
@@ -141,15 +139,6 @@ AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
   //FIXME: calibration->Add(something about dead channels should go here).
   return calibration;
 
-}
-
-//_____________________________________________________________________________
-void
-AliMUONReconstructor::Init(AliRunLoader* runLoader)
-{
-/// Initialize
-
-  fRunLoader = runLoader;
 }
 
 //_____________________________________________________________________________
@@ -339,6 +328,10 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   // passing loader as argument.
   fDigitMaker->SetMUONData(&data);
+
+  // disable trigger rawdata reading
+  if (strstr(GetOption(),"TriggerDisable"))
+      fDigitMaker->DisableTrigger();
 
   AliMUONClusterReconstructor* recoCluster = CreateClusterReconstructor(&data);
 
