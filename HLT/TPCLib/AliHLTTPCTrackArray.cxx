@@ -285,8 +285,11 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     track->SetHits( trs->fNPoints, trs->fPointIDs );
 
     if (slice>=0 && bTransform!=0)  {
-      // as everything is now in global coordinates we set the sector to 0
-      track->SetSector(0);
+      // Matthias Feb07: as everything is now in global coordinates, sector should
+      // be set to 0. But as the display does a check on the sector, we have to set
+      // it to the slice no. I suspect, that the transformation is done twice.
+      //track->SetSector(0);
+      track->SetSector(slice);
     } else {
       // the parameters are in local coordinates, set the sector no
 #ifndef INCLUDE_TPC_HOUGH
@@ -311,8 +314,9 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
       track->SetKappa(1.0);
       track->SetRadius(999999.0);
     } else {
-      // this we have to check
-      //track->CalculateHelix();
+      // Matthias Feb07: just tried to take this away, but this causes the tracks
+      // in the display not to be drawn. But we still have to tink about this.
+      track->CalculateHelix();
     }
 
 #ifdef INCLUDE_TPC_HOUGH
