@@ -110,7 +110,8 @@ void AliHLTTPCDisplayPadRow::Save(){
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
+//void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
+void AliHLTTPCDisplayPadRow::Fill(){
     // Fill PadRow Histogram
     
 #if defined(HAVE_TPC_MAPPING)
@@ -122,9 +123,11 @@ void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLe
     Int_t padRow = fDisplay->GetPadRow();
     Int_t slice = fDisplay->GetSlicePadRow();
 
+#if 0
     // Initialize RAW DATA
     Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
     Int_t lastRow = AliHLTTPCTransform::GetLastRow(patch);
+
 
     // Outer sector, patches 2, 3, 4, 5 -  start counting in patch 2 with row 0
     if ( patch >= 2 ) rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
@@ -139,7 +142,7 @@ void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplayPadRow::Fill","Read first value") << "No value in data block" << ENDLOG;
 	return;
     }
-
+#endif
     if ( fDisplay->GetZeroSuppression() ){
       for (Int_t pad=0; pad < AliHLTTPCTransform::GetNPads(padRow); pad++){
 	//	for (Int_t timeBin=fDisplay->GetTimeBinMin(); timeBin <= fDisplay->GetTimeBinMax(); timeBin++){
@@ -160,7 +163,7 @@ void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLe
       }  // end pad
     }  // end - else of if ( fDisplay->GetZeroSuppression() ){
 
-
+#if 0 
     // FILL PADROW 3D --- Initialize the colorbins
     if ( fDisplay->Get3DSwitchPadRow() ){
 	for (UInt_t ii=0;ii < 20;ii++){
@@ -243,7 +246,9 @@ void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	//Check where to stop:
 	if(!readValue) break; //No more value
     } 
-    
+
+#endif
+#if 0    
      if (fDisplay->ExistsClusterData()){
 	AliHLTTPCSpacePointData *points = fDisplay->GetSpacePointDataPointer(slice,patch);
 	if(!points) return;
@@ -261,6 +266,7 @@ void AliHLTTPCDisplayPadRow::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	    }
 	}
      } // END if (fDisplay->ExistsClusterData()){
+#endif
 #else //! defined(HAVE_TPC_MAPPING)
       HLTFatal("DigitReaderRaw not available - check your build");
 #endif //defined(HAVE_TPC_MAPPING)

@@ -105,7 +105,7 @@ void AliHLTTPCDisplayFront::Save(){
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayFront::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
+void AliHLTTPCDisplayFront::Fill() {
   // Fill Pad Histogram
 
   Int_t timeSwitch = fDisplay->GetFrontDataSwitch();
@@ -253,8 +253,9 @@ void AliHLTTPCDisplayFront::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen
   } // end - else of  if ( fDisplay->GetZeroSuppression() ){
 
 
+#if 0
   if (fDisplay->ExistsClusterData()){
-    for (patch=0; patch < 6; patch++){
+    for (Int_t patch=0; patch < 6; patch++){
       AliHLTTPCSpacePointData *points = fDisplay->GetSpacePointDataPointer(fDisplay->GetSlicePadRow(),patch);
       if(!points) return;
 
@@ -276,12 +277,13 @@ void AliHLTTPCDisplayFront::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen
       }
     }
   } // END if (fDisplay->ExistsClusterData()){
-
+#endif
 
 }
 
 //____________________________________________________________________________________________________
 void AliHLTTPCDisplayFront::Draw(){
+
     fDisplay->GetCanvasFront()->cd();
     fDisplay->GetCanvasFront()->Clear();
 
@@ -316,8 +318,6 @@ void AliHLTTPCDisplayFront::Draw(){
 	fHistfrontcl->SetMarkerSize(2);
 	fHistfrontcl->SetMarkerColor(1);
 	fHistfrontcl->Draw("psame");
-
-	cout << "draw" << endl;
     }
 
     if (fDisplay->GetSplitFront()){

@@ -25,7 +25,8 @@ class AliHLTTPCDisplayPadRow : public AliHLTLogging  {
     AliHLTTPCDisplayPadRow(AliHLTTPCDisplayMain* display) ;
     virtual ~AliHLTTPCDisplayPadRow();  
 
-    void Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen);
+  //  void Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen);
+    void Fill();
     void Draw();
     void Reset();
     void Save();

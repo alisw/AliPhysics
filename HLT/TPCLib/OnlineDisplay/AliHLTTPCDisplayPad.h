@@ -29,7 +29,7 @@ class AliHLTTPCDisplayPad : public AliHLTLogging {
     AliHLTTPCDisplayPad(AliHLTTPCDisplayMain* display) ;
     virtual ~AliHLTTPCDisplayPad();
     
-    void Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen);
+    void Fill();
     void Draw();
     void Reset();
     void Save();

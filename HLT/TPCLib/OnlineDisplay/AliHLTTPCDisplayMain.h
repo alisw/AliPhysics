@@ -3,16 +3,15 @@
 
 #ifndef ALIHLTTPCDISPLAYMAIN_H
 #define ALIHLTTPCDISPLAYMAIN_H
-/** \class AliHLTTPCDisplayMain
-<pre>
-//_____________________________________________________________
-// AliHLTTPCDisplayMain
-//
-// Display class for the HLT events.
-</pre>
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCDisplayMain.h
+    @author Jochen Thaeder
+    @date   
+    @brief  Interface class for ALICE HLT Online Display
 */
-// Author: Jochen Thaeder <mailto:thaeder@kip.uni-heidelberg.de>
-//*-- Copyright &copy ALICE HLT Group 
 
 #include <TGeometry.h>
 #include <TObject.h>
@@ -30,37 +29,179 @@ class AliHLTTPCDisplay3D;
 class AliHLTTPCDisplayResiduals;
 class AliHLTTPCDisplayFront;
 
+/**
+ * @class AliHLTTPCDisplayMain
+ * The class handels the interface between the graphical user interface (@ref AliLHLTGUI) 
+ * and the worker classes for the ALICE HLT online display. It also handles the interface
+ * to the AnalysisChain via HOMER reader class. Furthermore all relavant global variables 
+ * are stored here via get and set functions.
+ * @ingroup alihlt_tpc
+ */
+
 class AliHLTTPCDisplayMain : public TObject , public AliHLTLogging {
 
- public:
+ public:  
+  /** standard constructor */
+  //  AliHLTTPCDisplayMain();
+
+  /**
+   * Constructor
+   * @param pt2GUI          Pointer to class AliHLTGUI
+   * @param pt2Dunction     Pointer to callback Function class AliHLTGUI
+   */
   AliHLTTPCDisplayMain(void* pt2GUI, void (*pt2Function)(void*, Int_t));
+
+  /** not a valid copy constructor, defined according to effective C++ style */
+  //  AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  //  AliHLTTPCDisplayMain& operator=(const AliHLTTPCDisplayMain&);
+
+  /** standard destructor */
   virtual ~AliHLTTPCDisplayMain();
-  
-  Int_t Connect( unsigned int cnt, const char** hostnames, unsigned short* ports,Char_t *gfile="$(ALIHLT_BASEDIR)/geo/alice.geom" );
+
+  /** Methods for connecting to data sources, reading data and writeing data */
+  /** ---------------------------------------------------------------------- */
+
+  //-->   TODO check this file location
+  /** Connect to Analysis Chain via hosts and Ports specified in @ref AliHLTGUI 
+   *  @param cnt          Number hosts
+   *  @param hostnames    Array of hostnames of the TDS
+   *  @param ports        Array of ports of the TDS
+   *  @param gfile        Path to the TPC geometry file
+   */
+  Int_t Connect( unsigned int cnt, const char** hostnames, unsigned short* ports,Char_t *gfile="$(ALIHLT_TOPDIR)/build/share/alice-hlt/alice.geom" );
+
+  /** Disconnet from the Analysis Chain */
   Int_t Disconnect();
   
+  /** Reads next event and call reader for raw, clsuter and track data 
+   *  @param nextSwitch  Switch for reading the next event.<br> 
+                         Standard is KTRUE.
+   */
   Int_t ReadData(Bool_t nextSwitch = kTRUE);
+
+  /** Read raw data,do zero suppression and check for occupancy limit. Afterwards fill in two arrays (raw and zerosuppressed). */
   void ReadRawData();
+
+  /** Read cluster data and fill cluster structure. */
   void ReadClusterData();
+
+  /** Read track data and fill in track structure. */
   void ReadTrackData();
 
+  /** Main working function. Calls worker classes and handles displaying 
+   *  @param newrawSlice   If set to kTRUE, raw data from a new slice is read and zero suppression is applied.<br>
+   *                       Standard is kFALSE.
+   */
   void DisplayEvent(Bool_t newRawSlice = kFALSE);
+
+  /** Save all histograms as eps files **/
   void SaveHistograms();
 
-  /*
-   * **********************************
-   *              SETUP
-   * **********************************
+
+
+  /** Setup methods */
+  /** ------------- */
+
+  /** Fill cluster data in structure
+   *  @param slice         Slice ID of datablock where data is in.
+   *  @param patch         Patch ID of datablock where data is in.
+   *  @param nofClusters   Number of clusters.in data block.
+   *  @param data          Pointer to structure where cluster data is written.
    */
-  void SetupCluster(Int_t slice, Int_t patch, UInt_t nofClusters, AliHLTTPCSpacePointData* data);
+   void SetupCluster(Int_t slice, Int_t patch, UInt_t nofClusters, AliHLTTPCSpacePointData* data);
+
+  /** Fill track data in structure */
   void SetupTracks();
 
+  /** Register methods */
+  /** ---------------- */
 
-  /*
-   * **********************************
-   *              SETTER
-   * **********************************
+  /** Canvas types
    */
+  enum AliHLTTPCDisplayCanvasType_t {
+    Ccharge,
+    Cpadrow,
+    Cpad,
+    CthreeD,
+    Cresiduals,
+    Cfront,
+    Chits_s,
+    Cq_track,
+    Cq_s,
+    Cpadrow_pad,
+    nCanvasTypes
+  };
+
+  /** Worker types
+   */
+  enum AliHLTTPCDisplayWorkerType_t {
+    Wcharge,
+    Wpadrow,
+    Wpad,
+    WthreeD,
+    Wresiduals,
+    Wfront,
+    nWorkerTypes
+  };
+
+
+  /** Register canvas 
+   *  @param canvasType    @ref AliHLTTPCDisplayCanvasType_t  
+   *  @param canvas        Pointer to TCanvas.
+   */
+  void RegisterCanvas(AliHLTTPCDisplayCanvasType_t canvasType, TCanvas * canvas ){
+    fCanvasArray[canvasType] = canvas;
+  }
+
+  /** Register worker
+   *  @param workerType    @ref AliHLTTPCDisplayWorkerType_t  
+   *  @param worker        Pointer to worker class.
+   */
+  void RegisterWorker(AliHLTTPCDisplayWorkerType_t workerType, void * worker ){
+    fWorkerArray[workerType] = worker;
+  }
+
+  /** Get pointer to canvas 
+   *  @param  canvasType    @ref AliHLTTPCDisplayCanvasType_t 
+   *  @return Returns pointer to "canvasType" (@ref AliHLTTPCDisplayCanvasType_t) or NULL if fails.
+   */
+  TCanvas * GetCanvas(AliHLTTPCDisplayCanvasType_t canvasType){
+    if ( !fCanvasArray[canvasType] )
+      return NULL;
+    else
+      return fCanvasArray[canvasType];
+  }
+
+  /** Get pointer to worker 
+   *  @param  workerType    @ref AliHLTTPCDisplayWorkerType_t 
+   *  @return Returns pointer to "workerType" (@ref AliHLTTPCDisplayWorkerType_t) or NULL if fails.
+   */
+  void * GetWorker(AliHLTTPCDisplayWorkerType_t workerType){
+    if ( !fWorkerArray[workerType] )
+      return NULL;
+    else
+      return fWorkerArray[workerType];
+  }
+
+
+
+  void SetRawReaderMode(Int_t f) {fRawReaderMode = f;}
+  void SetZeroSuppressionThreshold(Int_t f) {fZeroSuppressionThreshold = f;}
+  void SetOccupancyLimit(Float_t f) {fOccupancyLimit = f;}
+  void SetBField(Float_t f) {fBField = f;}
+  void SetNTimeBins(Int_t f) {fNTimeBins = f;}
+
+  Int_t GetRawReaderMode(){return fRawReaderMode;}
+  Int_t GetZeroSuppressionThreshold(){return fZeroSuppressionThreshold;}
+  Float_t GetOccupancyLimit() {return fOccupancyLimit;}
+  Float_t GetBField(){return fBField;}
+  Int_t GetNTimeBins() {return fNTimeBins;}
+
+  /** Set methods */
+  /** ----------- */
+
+
   void SetConnectionStatus(Bool_t f) {fConnect = f;}
 
   // canvas ----
@@ -172,7 +313,7 @@ class AliHLTTPCDisplayMain : public TObject , public AliHLTLogging {
     Int_t GetSlicePadRow(){return fSlicePadRow;}
     Bool_t GetSplitPadRow(){return fSplitPadRow;}
     //     -- front
-    Int_t GetNTimeBins(){return fgNTimeBins;}
+  //    Int_t GetNTimeBins(){return fgNTimeBins;}
     Int_t GetFrontDataSwitch(){return fFrontDataSwitch;}
     Int_t GetTimeBinMin(){return fTimeBinMin;}
     Int_t GetTimeBinMax(){return fTimeBinMax;}
@@ -242,15 +383,25 @@ Char_t GetTrackParamBfield());
 
     AliHLTTPCTrackParameter fTrackParam;
 
+  TCanvas **fCanvasArray;
+  void **fWorkerArray;
+
+
 // ---------------------------------------------------
  private:
-    AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain &/*d*/):TObject(){;}
-    AliHLTTPCDisplayMain& operator=(const AliHLTTPCDisplayMain &/*d*/){return *this;}
+  //    AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain &/*d*/):TObject(){;}
+  //    AliHLTTPCDisplayMain& operator=(const AliHLTTPCDisplayMain &/*d*/){return *this;}
       
     void SetSliceArray();          // Fill Array with slices which 
 
-    // ** global constants **
-    Int_t fgNTimeBins;             // Number of TimeBins 
+  // ** global constants **
+  Int_t fgNTimeBins;             // Number of TimeBins
+  Int_t fRawReaderMode;           // raw reader mode
+  Int_t fZeroSuppressionThreshold;
+  Float_t fOccupancyLimit;
+  Float_t fBField;
+  Int_t fNTimeBins;
+
 
     // **  HOMER parameter / connection / data exist **
     ULong64_t fEventID;            // Event ID

@@ -50,7 +50,6 @@ class AliHLTTPCDisplay3D : public AliHLTLogging {
 // ---------------------------------------------------
  private:
     void LoadGeometrie(Char_t *gfile);
-    void DrawGeomSector(Int_t sector);
 
     AliHLTTPCDisplayMain* fDisplay;
 

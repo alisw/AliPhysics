@@ -108,7 +108,7 @@ void AliHLTTPCDisplayPad::Save(){
 }
 
 //____________________________________________________________________________________________________
-void AliHLTTPCDisplayPad::Fill(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
+void AliHLTTPCDisplayPad::Fill(){
   // Fill Pad Histogram
 
   Int_t padRow = fDisplay->GetPadRow();
