@@ -52,6 +52,8 @@ public:
   void           SetEquipmentIdMap(const char *mapFile) {fEquipIdMap = mapFile;};
   void           SetEventRange(Int_t firstEvent = 0, Int_t lastEvent = -1) 
     {fFirstEvent = firstEvent; fLastEvent = lastEvent;};
+  void           SetNumberOfEventsPerFile(UInt_t nEvents)
+    {fNumberOfEventsPerFile = nEvents;};
   void           SetOption(const char* detector, const char* option);
 
   void           SetRunLocalReconstruction(const char* detectors) {
@@ -143,6 +145,7 @@ private:
   TString        fEquipIdMap;         // name of file with equipment id map
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
+  UInt_t         fNumberOfEventsPerFile; // number of events per file in case of raw-data reconstruction
   Int_t          fCheckPointLevel;    // level of ESD check points
   TObjArray      fOptions;            // options for reconstructor objects
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not

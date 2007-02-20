@@ -47,6 +47,15 @@
 // The index -1 (default) can be used for the last event to indicate no      //
 // upper limit of the event range.                                           //
 //                                                                           //
+// In case of raw-data reconstruction the user can modify the default        //
+// number of events per digits/clusters/tracks file. In case the option      //
+// is not used the number is set 1. In case the user provides 0, than        //
+// the number of events is equal to the number of events inside the          //
+// raw-data file (i.e. one digits/clusters/tracks file):                     //
+//                                                                           //
+//   rec.SetNumberOfEventsPerFile(...);                                      //
+//                                                                           //
+//                                                                           //
 // The name of the galice file can be changed from the default               //
 // "galice.root" by passing it as argument to the AliReconstruction          //
 // constructor or by                                                         //
@@ -177,6 +186,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fEquipIdMap(""),
   fFirstEvent(0),
   fLastEvent(-1),
+  fNumberOfEventsPerFile(1),
   fCheckPointLevel(0),
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
@@ -222,6 +232,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fEquipIdMap(rec.fEquipIdMap),
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
+  fNumberOfEventsPerFile(rec.fNumberOfEventsPerFile),
   fCheckPointLevel(0),
   fOptions(),
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
@@ -1410,6 +1421,10 @@ Bool_t AliReconstruction::InitRunLoader()
       iEvent++;
     }
     fRawReader->RewindEvents();
+    if (fNumberOfEventsPerFile > 0)
+      fRunLoader->SetNumberOfEventsPerFile(fNumberOfEventsPerFile);
+    else
+      fRunLoader->SetNumberOfEventsPerFile(iEvent);
     fRunLoader->WriteHeader("OVERWRITE");
     fRunLoader->CdGAFile();
     fRunLoader->Write(0, TObject::kOverwrite);
