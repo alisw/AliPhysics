@@ -385,7 +385,7 @@ Bool_t AliTRDrawData::Digits2RawVx(AliTRDdigitsManager *digitsManager)
 
     // GTU common data header (5x4 bytes per super module, shows link mask)
     for( Int_t cham = 0; cham < fGeo->Ncham(); cham++ ) {
-      UInt_t GtuCdh = (0xe << 28);
+      UInt_t GtuCdh = (UInt_t)(0xe << 28);
       for( Int_t plan = 0; plan < fGeo->Nplan(); plan++) {
 	Int_t iDet = fGeo->GetDetector(plan, cham, sect);
 	// If chamber status is ok, we assume that the optical link is also OK.

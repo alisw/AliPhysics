@@ -728,7 +728,7 @@ Bool_t AliTRDRawStream::ReadAll()
 
 	fMCMHctr2 = 0;
 
-	fChamberDone[iDET]++;
+	fChamberDone[iDET] = kTRUE;
 
       }
     
