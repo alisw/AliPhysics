@@ -16,8 +16,8 @@
 ClassImp(AliPMDPreprocessor)
 
 //______________________________________________________________________________________________
-AliPMDPreprocessor::AliPMDPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
-  AliPreprocessor(detector, shuttle)
+AliPMDPreprocessor::AliPMDPreprocessor(AliShuttleInterface* shuttle) :
+  AliPreprocessor("PMD", shuttle)
 {
   // constructor
 }
@@ -57,7 +57,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
         TList* filesources = GetFileSources(kDAQ, "PMDGAINS");
 
         if(!filesources) {
-                AliError(Form("No sources found for PMDGAINS for run %d !", fRun));
+                Log(Form("No sources found for PMDGAINS!"));
                 return 0;
         }
 
@@ -70,18 +70,29 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
         UInt_t result = 0;
 	TString filename;
         while((source=dynamic_cast<TObjString*> (iter.Next()))){
-                AliInfo(Form("\n\n Getting file #%d\n",++i));
                 filename = GetFile(kDAQ, "PMDGAINS", source->GetName());
-                if(!filename.Data()) {
-                        AliError(Form("Error retrieving file from source %s failed!", source->GetName()));
+                if(filename.Length() == 0) {
+                        Log(Form("Error retrieving file from source %s failed!", source->GetName()));
                         delete filesources;
                         return 0;
                 }
 
+                Log(Form("File with id PMDGAINS got from %s", source->GetName()));
 		Int_t DET,SM,ROW,COL;
 		Float_t GAIN;
 		TFile *f= new TFile(filename.Data());
-		TTree *tree = (TTree*)f->Get("ic");
+		if(!f || !f->IsOpen()) 
+		{
+			Log(Form("Error opening file with Id PMDGAINS from source %s!", source->GetName()));
+			return 0;
+		} 
+		TTree *tree = dynamic_cast<TTree *> (f->Get("ic"));
+		if (!tree) 
+		{
+			Log("Could not find object \"ic\" in DAQ file!");
+			return 0;
+		}
+		
    		tree->SetBranchAddress("DET",       &DET);
   		tree->SetBranchAddress("SM",        &SM);
   		tree->SetBranchAddress("ROW",        &ROW);

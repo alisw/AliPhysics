@@ -9,7 +9,7 @@
 class AliPMDPreprocessor : public AliPreprocessor
 {
   public:
-    AliPMDPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+    AliPMDPreprocessor(AliShuttleInterface* shuttle);
     virtual ~AliPMDPreprocessor();
 
   protected:
@@ -19,7 +19,7 @@ class AliPMDPreprocessor : public AliPreprocessor
   private:
 //    AliPMDDataDAQ *fData;    // CDB class that stores the data
 
-    ClassDef(AliPMDPreprocessor, 0);
+    ClassDef(AliPMDPreprocessor, 1);
 };
 
 #endif
