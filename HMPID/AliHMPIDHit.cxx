@@ -16,8 +16,20 @@
 #include "AliHMPIDHit.h"  //class header
 #include "AliHMPIDDigit.h"
 #include <TPDGCode.h>    
+#include <TMarker.h>
  
 ClassImp(AliHMPIDHit)
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDHit::Draw(Option_t*)
+{
+  Int_t iMark;
+  switch(Pid()){
+    case 50000050:   iMark=4;  break;
+    case 50000051:   iMark=27; break;
+    default:         iMark=26; break;
+  }    
+  TMarker *pMark=new TMarker(LorsX(),LorsY(),iMark); pMark->SetMarkerColor(kRed); pMark->Draw();
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDHit::Print(Option_t*)const
 {
@@ -38,8 +50,8 @@ void AliHMPIDHit::Print(Option_t*)const
     case 50000051:     sPart="feed";break;
   }
 
-  Printf(" ch=%i                 (%7.3f,%7.3f) Q=%8.3f TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
-           Ch(),                LorsX(),LorsY(), Q(),  Tid(),         X(),  Y(),  Z(),   sPart, 
+  Printf("HIT:(%7.3f,%7.3f) Q=%8.3f ch=%i                   TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
+              LorsX(),LorsY(), Q(), Ch(),                  Tid(),         X(),  Y(),  Z(),   sPart, 
                         (AliHMPIDDigit::IsInDead(LorsX(),LorsY()))? "IN DEAD ZONE":"");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

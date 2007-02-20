@@ -48,7 +48,7 @@ void AliHMPIDParam::Print(Option_t* opt) const
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDParam::Stack(Int_t evt,Int_t tid)
 {
-// Prints some usefull info from stack
+// Prints some useful info from stack
 // Arguments: evt - event number. if not -1 print info only for that event
 //            tid - track id. if not -1 then print it and all it's mothers if any   
 //   Returns: mother tid of the given tid if any

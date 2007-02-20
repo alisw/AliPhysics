@@ -88,13 +88,13 @@ Int_t AliHMPIDTracker::Recon(AliESD *pESD,TObjArray *pCluAll)
     
     AliHMPIDCluster *pMipClu=(AliHMPIDCluster*)pCluLst->At(iMip);                            //take mip cluster 
     
-                   pTrk->SetHMPIDmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q());          //store mip info 
+                   pTrk->SetHMPIDmip      ((Float_t)pMipClu->X(),(Float_t)pMipClu->Y(),(Int_t)pMipClu->Q());          //store mip info 
     if(dMin>1)    {pTrk->SetHMPIDsignal   (kMipDistCut); continue;}                          //closest cluster with enough charge is still too far 
                    pTrk->SetHMPIDcluIdx   (iCh,iMip);                                        //set mip cluster index
   recon.SetTrack(th,ph,xRa,yRa); Int_t iNphot=0;                                            //initialize track parameters  
                    pTrk->SetHMPIDsignal   (recon.CkovAngle(pCluLst,iNphot));                 //search for Cerenkov angle for this track
                    pTrk->SetHMPIDchi2     (recon.CkovSigma2());                              //error squared 
-                   pTrk->SetHMPIDmip      (pMipClu->X(),pMipClu->Y(),pMipClu->Q(),iMip);     //info on mip cluster + n. phot.
+                   pTrk->SetHMPIDmip      ((Float_t)pMipClu->X(),(Float_t)pMipClu->Y(),(Int_t)pMipClu->Q(),iMip);     //info on mip cluster + n. phot.
  }//ESD tracks loop
   AliDebugClass(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;

@@ -20,6 +20,7 @@ public:
           void  BuildGeometry   (                ) {}          //from AliModule invoked from AliMC::InitGeometry() to build geometry for old event display
   virtual void  CreateMaterials (                )=0;          //from AliModule invoked from AliMC::ConstructGeometry() to define detector materials
   virtual void  CreateGeometry  (                )=0;          //from AliModule invoked from AliMC::ConstructGeometry() to build detector for simulation
+
   virtual Int_t IsVersion       (                )const=0;     //from AliModule not used        
   virtual void  Init            (                )=0;          //from AliModule invoked from AliMC::InitGeometry() after CreateGeometry() to do VolID initialization
   virtual void  DefineOpticalProperties() {}                   //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties

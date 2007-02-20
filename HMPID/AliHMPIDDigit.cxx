@@ -14,15 +14,16 @@
 //  **************************************************************************
 
 #include "AliHMPIDDigit.h" //class header
-#include "AliHMPIDHit.h"   //Hit2Sdi() 
-#include <TClonesArray.h> //Hit2Sdi() 
-#include <TCanvas.h>      //TestSeg()
-#include <TLine.h>        //TestSeg()
-#include <TLatex.h>       //TestSeg()
-#include <TPolyLine.h>    //DrawPc() 
-#include <TGStatusBar.h>  //Zoom()
-#include <TRootCanvas.h>  //Zoom() 
+#include <TClonesArray.h>  //Hit2Sdi() 
+#include <TMarker.h>       //Draw() 
 ClassImp(AliHMPIDDigit)
+
+const Float_t AliHMPIDDigit::fMinPcX[]={0,SizePcX() + SizeDead(),0,SizePcX() + SizeDead(),       0,SizePcX() + SizeDead()};
+const Float_t AliHMPIDDigit::fMinPcY[]={0,                     0,SizePcY()+SizeDead(),SizePcY() + SizeDead(),2*(SizePcY()+SizeDead()),2*(SizePcY()+SizeDead())};
+
+const Float_t AliHMPIDDigit::fMaxPcX[]={SizePcX(),SizeAllX(),SizePcX(),SizeAllX(),SizePcX(),SizeAllX()};
+const Float_t AliHMPIDDigit::fMaxPcY[]={SizePcY(),SizePcY(),SizeAllY() - SizePcY(),SizeAllY() - SizePcY(),SizeAllY(),SizeAllY()};
+
 
 /*
 Preface: all geometrical information (like left-right sides) is reported as seen from electronic side.
@@ -72,6 +73,11 @@ HMPID raw word is 32 bits with the structure:
  5 bits zero  5 bits row number (1..24)  4 bits DILOGIC chip number (1..10) 6 bits DILOGIC address (0..47)  12 bits QDC value (0..4095)
 */
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDDigit::Draw(Option_t*)
+{
+  TMarker *pMark=new TMarker(LorsX(),LorsY(),25); pMark->SetMarkerColor(kGreen); pMark->Draw();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Hit2Sdi(AliHMPIDHit *pHit,TClonesArray *pSdiLst)
 {
 // Creates a list of sdigits out of provided hit
@@ -93,8 +99,10 @@ void AliHMPIDDigit::Print(Option_t*)const
 // Arguments: option string not used
 //   Returns: none    
   UInt_t w32; Raw(w32);
-  Printf("(ch=%1i,pc=%1i,x=%2i,y=%2i) (%7.3f,%7.3f) Q=%8.3f TID=(%5i,%5i,%5i) ddl=%i raw=0x%x (r=%2i,d=%2i,a=%2i) %s",
-               A2C(fPad),A2P(fPad),A2X(fPad),A2Y(fPad),LorsX(),LorsY(), Q(),  fTracks[0],fTracks[1],fTracks[2],DdlIdx(),w32,Row(),Dilogic(),Addr(), (IsOverTh(Q()))?"":"below thr");
+  Printf("DIG:(%7.3f,%7.3f) Q=%8.3f (ch=%1i,pc=%1i,x=%2i,y=%2i)  TID=(%5i,%5i,%5i) ddl=%i raw=0x%x (r=%2i,d=%2i,a=%2i) %s",
+              LorsX(),LorsY(),Q(), A2C(fPad),A2P(fPad),A2X(fPad),A2Y(fPad),   
+              fTracks[0],fTracks[1],fTracks[2],DdlIdx(),w32,Row(),Dilogic(),Addr(), 
+              (IsOverTh(Q()))?"":"!!!");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::PrintSize()
@@ -109,105 +117,6 @@ void AliHMPIDDigit::PrintSize()
                SizePcX() ,SizePcY() ,kPadPcX ,kPadPcY,
                SizeAllX(),SizeAllY(),kPadAllX,kPadAllY);
 }
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::DrawSeg()
-{
-// Draws the picture of segmentation   
-// Arguments: none
-//   Returns: none     
-  TCanvas *pC=new TCanvas("pads","View from electronics side, IP is behind the picture.",1000,900);pC->ToggleEventStatus();
-  gPad->AddExec("test","AliHMPIDDigit::DrawZoom()");
-  DrawPc();  
-}//TestSeg()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::DrawZoom()
-{
-// Show info about current cursur position in status bar of the canvas
-// Arguments: none
-//   Returns: none     
-  TCanvas *pC=(TCanvas*)gPad; 
-  TRootCanvas *pRC= (TRootCanvas*)pC->GetCanvasImp();
-  TGStatusBar *pBar=pRC->GetStatusBar();
-  pBar->SetParts(5);
-  Float_t x=gPad->AbsPixeltoX(gPad->GetEventX());
-  Float_t y=gPad->AbsPixeltoY(gPad->GetEventY());
-  AliHMPIDDigit dig;dig.Manual1(1,x,y); UInt_t w32=0; 
-  if(IsInDead(x,y))
-    pBar->SetText("Out of sensitive area",4);    
-  else{
-    Int_t ddl=dig.Raw(w32);
-    pBar->SetText(Form("(p%i,x%i,y%i) ddl=%i 0x%x (r%i,d%i,a%i) (%.2f,%.2f)",
-        dig.Pc(),dig.PadPcX(),dig.PadPcY(),
-        ddl,w32,
-        dig.Row(),dig.Dilogic(),dig.Addr(),
-        dig.LorsX(),dig.LorsY()                            ),4);
-  }    
-  if(gPad->GetEvent()==1){
-    new TCanvas("zoom",Form("Row %i DILOGIC %i",dig.Row(),dig.Dilogic()));  
-  }
-}//Zoom()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::DrawPc(Bool_t isFill) 
-{ 
-// Utility methode draws HMPID chamber PCs on event display.
-// Arguments: none
-//   Returns: none      
-//  y6  ----------  ----------
-//      |        |  |        |
-//      |    4   |  |    5   |
-//  y5  ----------  ----------
-//
-//  y4  ----------  ----------
-//      |        |  |        |
-//      |    2   |  |    3   |   view from electronics side
-//  y3  ----------  ----------
-//          
-//  y2  ----------  ----------
-//      |        |  |        |
-//      |    0   |  |    1   |
-//  y1  ----------  ----------
-//      x1      x2  x3       x4
-  gPad->Range(-5,-5,SizeAllX()+5,SizeAllY()+5); 
-  Float_t x1=0,x2=SizePcX(),x3=SizePcX()+SizeDead(),                                                  x4=SizeAllX();
-  Float_t y1=0,y2=SizePcY(),y3=SizePcY()+SizeDead(),y4=2*SizePcY()+SizeDead(),y5=SizeAllY()-SizePcY(),y6=SizeAllY();
-
-  Float_t xL[5]={x1,x1,x2,x2,x1}; //clockwise
-  Float_t xR[5]={x3,x3,x4,x4,x3};  
-  Float_t yD[5]={y1,y2,y2,y1,y1};
-  Float_t yC[5]={y3,y4,y4,y3,y3};  
-  Float_t yU[5]={y5,y6,y6,y5,y5};
-    
-  TLatex txt; txt.SetTextSize(0.01);
-  Int_t iColLeft=29,iColRight=41;
-  TPolyLine *pc=0;  TLine *pL;
-  AliHMPIDDigit dig;
-  for(Int_t iPc=0;iPc<kPcAll;iPc++){
-    if(iPc==4) pc=new TPolyLine(5,xL,yU); if(iPc==5) pc=new TPolyLine(5,xR,yU); //draw PCs
-    if(iPc==2) pc=new TPolyLine(5,xL,yC); if(iPc==3) pc=new TPolyLine(5,xR,yC);
-    if(iPc==0) pc=new TPolyLine(5,xL,yD); if(iPc==1) pc=new TPolyLine(5,xR,yD);
-    (iPc%2)? pc->SetFillColor(iColLeft): pc->SetFillColor(iColRight);
-    if(isFill) pc->Draw("f"); else pc->Draw();
-    if(iPc%2) {dig.Manual2(0,iPc,79,25); txt.DrawText(dig.LorsX()+2,dig.LorsY(),Form("PC%i",dig.Pc()));}//print PC#    
-    
-    txt.SetTextAlign(32);
-    for(Int_t iRow=0;iRow<8 ;iRow++){//draw row lines (horizontal)
-      dig.Manual2(0,iPc,0,iRow*6);   //set digit to the left-down pad of this row
-      if(iPc%2) txt.DrawText(dig.LorsX()-1           ,dig.LorsY(),Form("%i",dig.PadPcY())); //print PadY#    
-                txt.DrawText(dig.LorsX()-1+(iPc%2)*67,dig.LorsY()+2,Form("r%i",dig.Row())); //print Row#    
-      pL=new TLine(dig.LorsX()-0.5*SizePadX(),dig.LorsY()-0.5*SizePadY(),dig.LorsX()+SizePcX()-0.5*SizePadX(),dig.LorsY()-0.5*SizePadY()); 
-      if(iRow!=0) pL->Draw(); 
-    }//row loop  
-    
-    txt.SetTextAlign(13);
-    for(Int_t iDil=0;iDil<10;iDil++){//draw dilogic lines (vertical)
-      dig.Manual2(0,iPc,iDil*8,0);       //set this digit to the left-down pad of this dilogic        
-                           txt.DrawText(dig.LorsX()  ,dig.LorsY()-1,Form("%i",dig.PadPcX()));   //print PadX# 
-      if(iPc==4 || iPc==5) txt.DrawText(dig.LorsX()+2,dig.LorsY()+42,Form("d%i",dig.Dilogic())); //print Dilogic#    
-      pL=new TLine(dig.LorsX()-0.5*SizePadX(),dig.LorsY()-0.5*SizePadY(),dig.LorsX()-0.5*SizePadX(),dig.LorsY()+SizePcY()-0.5*SizePadY()); 
-      if(iDil!=0)pL->Draw();
-    }//dilogic loop        
-  }//PC loop      
-}//DrawPc()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Test()
 {

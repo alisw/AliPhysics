@@ -1,4 +1,4 @@
-red()
+Hdisp()
 {
   gSystem->Load("libMinuit.so");
   gSystem->Load("libVMC.so");

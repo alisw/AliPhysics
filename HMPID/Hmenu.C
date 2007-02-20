@@ -10,7 +10,7 @@ void GetParam()
   if(isGeomType) g=TGeoManager::Import("geometry.root");
   else           g=TGeoManager::Import("misaligned_geometry.root");
   rp=AliHMPIDParam::Instance();
-}
+}//GetParam()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hmenu()
 {   
@@ -30,45 +30,44 @@ void Hmenu()
   
   TControlBar *pMenu = new TControlBar("horizontal",status.Data(),0,0);
     pMenu->AddButton("                     ","","");
-    pMenu->AddButton(" General  "           ,"General()"  ,"general items which do not depend on any files");
+    pMenu->AddButton("       General       ","General()"  ,"general items which do not depend on any files");
     pMenu->AddButton("                     ",""           ,"");
-    pMenu->AddButton(" Sim data "           ,"SimData()"  ,"items which expect to have simulated files"    );
+    pMenu->AddButton("       Sim data      ","SimData()"  ,"items which expect to have simulated files"    );
     pMenu->AddButton("                     ",""           ,"");
-    pMenu->AddButton(" Raw data "           ,"RawData()"  ,"items which expect to have raw files"          );
+    pMenu->AddButton("       Raw data      ","RawData()"  ,"items which expect to have raw files"          );
     pMenu->AddButton("                     ","print()"    ,"");
-    pMenu->AddButton("Test"                 ,"Test()"     ,"all test utilities");
+    pMenu->AddButton("         Test        ","Test()"     ,"all test utilities");
     pMenu->AddButton("                     ","GetParam()" ,"");
-    pMenu->AddButton("Quit"                 ,".q"         ,"close session"                                 );
+    pMenu->AddButton("         Quit        ",".q"         ,"close session"                                 );
   pMenu->Show();
-}
+}//Menu()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void General()
 {         
-  TControlBar *pMenu = new TControlBar("vertical","Sim data",60,50);  
-    pMenu->AddButton("Debug ON"           ,"don();"                    ,"Switch debug on-off"                        );   
-    pMenu->AddButton("Debug OFF"          ,"doff();"                   ,"Switch debug on-off"                        );   
-    pMenu->AddButton("Geo GUI"            ,"geo();"                    ,"Shows geometry"                             ); 
-    pMenu->AddButton("Browser"            ,"new TBrowser;"             ,"Start ROOT TBrowser"                        );
+  TControlBar *pMenu = new TControlBar("vertical","General purpose",100,50);  
+    pMenu->AddButton("       Debug ON      ","don();"                    ,"Switch debug on-off"                        );   
+    pMenu->AddButton("       Debug OFF     ","doff();"                   ,"Switch debug on-off"                        );   
+    pMenu->AddButton("        Geo GUI      ","geo();"                    ,"Shows geometry"                             ); 
+    pMenu->AddButton("        Browser      ","new TBrowser;"             ,"Start ROOT TBrowser"                        );
   pMenu->Show();  
-}//menu()
+}//General()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimData()
 {
-  TControlBar *pMenu = new TControlBar("vertical","Sim",190,50);  
-    pMenu->AddButton("Display ALL chambers"            ,"ed();"     , "Display Fast");
-    pMenu->AddButton("HITS QA"                         ,"hqa()"     ,"QA plots for hits: hqa()");
-    
-    pMenu->AddButton("Print hits"                      ,"hp();"      ,"To print hits:     hp(evt)");
-    pMenu->AddButton("Print sdigits"                   ,"sp();"      ,"To print sdigits:  sp(evt)");
-    pMenu->AddButton("Print digits"                    ,"dp();"      ,"To print digits:   dp(evt)");
-    pMenu->AddButton("Print clusters"                  ,"cp();"      ,"To print clusters: cp(evt)");
-    
+  TControlBar *pMenu = new TControlBar("vertical","Sim data",340,50);  
+    pMenu->AddButton("Display ALL chambers ","ed();"      ,"Display Fast");
+    pMenu->AddButton("      HITS QA        ","hqa()"      ,"QA plots for hits: hqa()");
+    pMenu->AddButton("     Print Stack     ","stack();"   ,"To print hits:     hp(evt)");
+    pMenu->AddButton("     Print hits      ","hp();"      ,"To print hits:     hp(evt)");
+    pMenu->AddButton("    Print sdigits    ","sp();"      ,"To print sdigits:  sp(evt)");
+    pMenu->AddButton("    Print digits     ","dp();"      ,"To print digits:   dp(evt)");
+    pMenu->AddButton("   Print clusters    ","cp();"      ,"To print clusters: cp(evt)");
   pMenu->Show();         
-}
+}//SimData()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RawData()
 {
-  TControlBar *pMenu = new TControlBar("vertical","Raw",350,50);  
+  TControlBar *pMenu = new TControlBar("vertical","Raw data",580,50);  
     pMenu->AddButton("ESD print"                       ,"ep();"                  ,"To print ESD info: ep()"         );  
     pMenu->AddButton("ESD QA"                          ,"eq();"                  ,"To draw ESD hists: eq()"         );  
     pMenu->AddButton("Clusters print"                  ,"cp();"                  ,"To print clusters: cp()"         );  
@@ -77,11 +76,11 @@ void RawData()
     pMenu->AddButton("Print occupancy"                 ,"r->OccupancyPrint(-1);" ,"To print occupancy"              );  
     pMenu->AddButton("Print event summary  "           ,"r->SummaryOfEvent();"   ,"To print a summary of the event" );  
   pMenu->Show();         
-}//RawData
+}//RawData()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Test()
 {         
-  TControlBar *pMenu = new TControlBar("vertical","Test",400,50);  
+  TControlBar *pMenu = new TControlBar("vertical","Test",820,50);  
     pMenu->AddButton("Hits->Digits"       ,"thd();"                    ,"test hits->sdigits->digits"                 );   
     pMenu->AddButton("Segmentation"       ,"ts()"                      ,"test segmentation methods"                  );
     pMenu->AddButton("Test response"      ,"AliHMPIDParam::TestResp();","Test AliHMPIDParam response methods"         );
@@ -113,59 +112,83 @@ void eq  (                       ) {AliHMPIDTracker::EsdQA();             }
 void mp  (Double_t probCut=0.7   ) {AliHMPIDTracker::MatrixPrint(probCut);}                   
 
 
-void t   (Int_t evt=0          )   {AliHMPIDParam::Stack(evt);}    
-void tid (Int_t tid,Int_t evt=0)   {AliHMPIDParam::Stack(evt,tid);} 
+void stack(                     )   {AliHMPIDParam::Stack();}    
+void tid  (Int_t tid,Int_t evt=0)   {AliHMPIDParam::Stack(evt,tid);} 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void tst()
 {
-//create all lists  
-  TClonesArray hit("AliHMPIDHit"),sdi("AliHMPIDDigit");
-  TObjArray    dig,clu,cog;      for(Int_t i=0;i<7;i++) {dig.AddAt(new TClonesArray("AliHMPIDDigit"),i); 
-                                                         clu.AddAt(new TClonesArray("AliHMPIDCluster"),i);
-                                                         cog.AddAt(new TClonesArray("AliHMPIDCluster"),i);}
-//simulate track  
-  TLorentzVector mom; mom.SetPtEtaPhiM(3,0,30*TMath::DegToRad(),0.938);                                                                    
-  TLorentzVector vtx; vtx.SetXYZT(0,0,0,0);                                                                 
+  TCanvas *pC=new TCanvas("pads","View from electronics side, IP is behind the picture.",1000,900);  pC->ToggleEventStatus();
+  SimEvt();
+}//tst()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SimEvt()
+{
+//sample track         
+  Int_t ch=1;
+  Float_t th=8*TMath::DegToRad();                     
+  Float_t ph=gRandom->Rndm()*TMath::TwoPi(); 
+  Float_t radx=gRandom->Rndm()*AliHMPIDDigit::SizeAllX(); 
+  Float_t rady=gRandom->Rndm()*AliHMPIDDigit::SizeAllY();
+  Float_t simCkov=0.63,simErr=0; Int_t simN=8,recN=0;
+  
+  AliHMPIDRecon rec; rec.SetTrack(th,ph,radx,rady);                                                                
+//sample list of hits  
+  TClonesArray hl("AliHMPIDHit"); Int_t hc=0;  
+  TVector2 pc;//tmp position
+  
+  Int_t kCerenkov=50000050,kFeedback=50000051;
+  Int_t tn=0;
+                                                                                   new(hl[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,tn++,radx  ,rady    );   //mip hit
+  for(int i=0;i<simN;i++){rec.TracePhot(simCkov,gRandom->Rndm()*TMath::TwoPi(),pc);new(hl[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,tn++,pc.X(),pc.Y());}  //photon hits
+  for(int i=0;i<10;i++)  { Float_t x=gRandom->Rndm()*130,y=gRandom->Rndm()*126;    new(hl[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,tn++,   x  ,   y  );}  //bkg hits
+//do reconstruction
+                                                        TClonesArray sl("AliHMPIDDigit");              AliHMPIDv1::Hit2Sdi(&hl,&sl);                               
+  TObjArray dl(7);  for(Int_t i=0;i<7;i++) dl.AddAt(new TClonesArray("AliHMPIDDigit"),i);       AliHMPIDDigitizer::Sdi2Dig(&sl,&dl);     
+  TObjArray cl(7);  for(Int_t i=0;i<7;i++) cl.AddAt(new TClonesArray("AliHMPIDCluster"),i); AliHMPIDReconstructor::Dig2Clu(&dl,&cl);
+  
+  
+                             TClonesArray* pDigLst=(TClonesArray*)dl.At(ch);
+                             TClonesArray* pCluLst=(TClonesArray*)cl.At(ch);
+                    
+          Int_t recN=0;  Float_t recCkov=rec.CkovAngle(pCluLst,recN);    //reconstruct the ring
+  
+  AliESDtrack trk; trk.SetHMPIDtrk(radx,rady,th,ph);  trk.SetHMPIDmip(radx,rady,340,recN); trk.SetHMPIDsignal(recCkov); trk.SetHMPIDchi2(rec.CkovSigma2());
+  
+  Printf("Start of EVENT\n");                 
+  Printf("SDI------SDI---------SDI--------SDI------SDI------SDI");sl.Print();Printf("");
+  Printf("DIG------DIG---------DIG--------DIG------DIG------DIG");dl.Print();Printf("");                   
+  Printf("HIT------HIT---------HIT--------HIT------HIT------HIT");hl.Print();Printf("");
+  Printf("CLU------CLU---------CLU--------CLU------CLU------CLU");cl.Print();Printf("");                     
+  Printf("End of EVENT\n");                 
+  
+  
+  DrawEvt(&hl,pDigLst,pCluLst,&trk);  
+}//SimEvt()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawEvt(TClonesArray *pHitLst,TClonesArray *pDigLst,TClonesArray *pCluLst,AliESDtrack *pTrk)
+{
+//visualization  
+  TPolyLine    *pRing  =new TPolyLine;     pRing->SetLineColor(kMagenta);     
+  
+  Float_t recCkov=pTrk->GetHMPIDsignal();  Float_t recErr=TMath::Sqrt(pTrk->GetHMPIDchi2());
+  
+  Float_t trkTh,trkPh,trkX,trkY,mipX,mipY; pTrk->GetHMPIDtrk(trkX,trkY,trkTh,trkPh);  Int_t mipQ,recN; pTrk->GetHMPIDmip(mipX,mipY,mipQ,recN);
+  AliHMPIDRecon rec; rec.SetTrack(trkTh,trkPh,trkX,trkY);
 
-  AliESD *pESD=new AliESD;  pESD->SetMagneticField(0.2);
-  pESD->AddTrack(new AliESDtrack(new TParticle(kProton,0,-1,-1,-1,-1,mom,vtx)));
-  pESD->Print();
+  TVector2 pos;    for(int j=0;j<100;j++){rec.TracePhot(recCkov,j*0.0628,pos); pRing->SetNextPoint(pos.X(),pos.Y());}  
   
-  AliTracker::SetFieldMap(new AliMagF,1);
-  AliHMPIDTracker *pTracker=new AliHMPIDTracker;
+  gPad->Clear(); TButton *pBtn=new TButton("Next","SimEvt()",0,0,0.07,0.05);   pBtn->Draw(); DrawPc(0);
   
-        
-  return;                                                                      
-  Double_t th=8*TMath::DegToRad();                              //gRandom->Rndm()*TMath::PiOver4();
-  Double_t ph=gRandom->Rndm()*TMath::TwoPi(); 
-  Double_t radx=gRandom->Rndm()*AliHMPIDDigit::SizeAllX(); 
-  Double_t rady=gRandom->Rndm()*AliHMPIDDigit::SizeAllY();
-  
-  Int_t iHitCnt=0;  
-  
-  
-  
-  
-      
-                                                                      
-             AliHMPIDv1::Hit2Sdi(&hitLst,&sdiLst);                               
-      AliHMPIDDigitizer::Sdi2Dig(&sdiLst,&digLst);     
-  AliHMPIDReconstructor::Dig2Clu(&digLst,&cluLst);   AliHMPIDReconstructor::Dig2Clu(&digLst,&cogLst,0);  
-  
-  
-  Int_t iDigN=0,iCluN=0,iCogN=0; for(Int_t i=0;i<7;i++){ iDigN+=((TClonesArray*)digLst.At(i))->GetEntries();                  
-                                                         iCluN+=((TClonesArray*)cluLst.At(i))->GetEntries();
-                                                         iCogN+=((TClonesArray*)cogLst.At(i))->GetEntries(); }                   
-  
-  Printf("SDI------SDI---------SDI--------SDI------SDI------SDI #%i",sdiLst.GetEntries());sdiLst.Print();Printf("");
-  Printf("DIG------DIG---------DIG--------DIG------DIG------DIG #%i",iDigN              );digLst.Print();Printf("");                   
-  Printf("HIT------HIT---------HIT--------HIT------HIT------HIT #%i",hitLst.GetEntries());hitLst.Print();Printf("");
-  Printf("CLU------CLU---------CLU--------CLU------CLU------CLU #%i",iCluN              );cluLst.Print();Printf("");                     
-  Printf("COG------COG---------COG--------COG------COG------COG #%i",iCogN              );cogLst.Print();Printf("");                     
-}
-
-
-
+  pRing->Draw();
+  pDigLst->Draw();
+  pCluLst->Draw();
+  pHitLst->Draw();  
+  TLatex txt; txt.SetTextSize(0.02);
+//  txt.DrawLatex(20,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,simCkov,simErr,simN));
+  txt.DrawLatex(25,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,recCkov,recErr,recN));
+//  txt.DrawLatex(0 ,127,Form("#theta=%.2f#circ   #phi=%.2f#circ @(%.2f,%.2f) ",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),radx,rady));
+}//DrawEvt()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void PrintMap()
 {
  
@@ -224,74 +247,7 @@ void PrintMap()
   
   
 }//PrintMap()
-
-
-void rec()
-{
-  
-  
-  Double_t ckovMax=0.75,ckovSim;
-  Int_t nSim=0;
-  while(nSim<3){
-    ckovSim=gRandom->Rndm()*ckovMax;//0.6468;
-    nSim=20*TMath::Power(TMath::Sin(ckovSim)/TMath::Sin(ckovMax),2); //scale number of photons 
-  }
-  
-  
-  TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster");
-  TPolyMarker  *pMipMap=new TPolyMarker();   pMipMap->SetMarkerStyle(8);  pMipMap->SetMarkerColor(kRed); 
-  TPolyMarker  *pPhoMap=new TPolyMarker();   pPhoMap->SetMarkerStyle(4);  pPhoMap->SetMarkerColor(kRed);
-  TPolyMarker  *pBkgMap=new TPolyMarker();   pBkgMap->SetMarkerStyle(25); pBkgMap->SetMarkerColor(kRed);
-  TPolyLine    *pRing  =new TPolyLine;                                    pRing->SetLineColor(kGreen);     
-  TPolyLine    *pOld   =new TPolyLine;                                    pOld->SetLineColor(kBlue);     
-  
-  Int_t iCluCnt=0; pMipMap->SetPoint(iCluCnt,x,y); new((*pCluLst)[iCluCnt++])   AliHMPIDCluster(1,x,y,200); //add mip cluster
-  
-//  for(int j=0;j<30;j++){                                                                                   //add bkg photons  
-//    Float_t bkgX=gRandom->Rndm()*AliHMPIDDigit::SizeAllX();
-//    Float_t bkgY=gRandom->Rndm()*AliHMPIDDigit::SizeAllY();
-//    pBkgMap->SetPoint(iCluCnt,bkgX,bkgY); new((*pCluLst)[iCluCnt++]) AliHMPIDCluster(1,bkgX,bkgY,35);
-//  }   
-
-  
-  
-  
-  AliHMPIDRecon    rec; rec.SetTrack(th,ph,x,y);                                                                
-  
-  TVector2 pos;
-  for(int i=0;i<nSim;i++){
-    rec.TracePhot(ckovSim,gRandom->Rndm()*2*TMath::Pi(),pos);                                   //add photons 
-    if(AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) continue; 
-    pPhoMap->SetPoint(iCluCnt,pos.X(),pos.Y());    new((*pCluLst)[iCluCnt++]) AliHMPIDCluster(1,pos.X(),pos.Y(),35); 
-  }  
-
-  
-  Int_t nRec=0,nOld=0;
-  Double_t ckovRec=rec.CkovAngle(pCluLst,nRec); Double_t err=TMath::Sqrt(rec.CkovSigma2());   
-  Double_t ckovOld=old.CkovAngle(pCluLst,nOld);
-  
-  Printf("---------------- Now reconstructed --------------------");
-  
-  
-  for(int j=0;j<100;j++){rec.TracePhot(ckovRec,j*0.0628,pos); pRing->SetPoint(j,pos.X(),pos.Y());}  
-  for(int j=0;j<100;j++){rec.TracePhot(ckovOld,j*0.0628,pos); pOld->SetPoint(j,pos.X(),pos.Y());}  
-    
-  new TCanvas;  AliHMPIDDigit::DrawPc();  pMipMap->Draw(); pPhoMap->Draw(); pBkgMap->Draw(); pRing->Draw();  pOld->Draw(); 
-  
-  TLatex txt; txt.SetTextSize(0.03);
-  txt.DrawLatex(65,127,Form("#theta=%.4f#pm%.5f with %2i #check{C}"                             ,ckovSim, 0.,nSim             ));
-  txt.DrawLatex(65,122,Form("#theta=%.4f#pm%.5f with %2i #check{C} Old=%.4f with %i #check{C}"  ,ckovRec,err,nRec,ckovOld,nOld));
-  txt.DrawLatex(0 ,127,Form("#theta=%.2f#circ   #phi=%.2f#circ @(%.2f,%.2f) ",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),x,y));
-                   
-//  for(int i=0;i<35;i++){
-//    Double_t ckov=0.1+i*0.02;
-//    Printf("Ckov=%.2f Old=%.3f New=%.3f",ckov,old.FindRingArea(ckov),rec.FindRingArea(ckov));
-//  }
-  
-  
-}//rec()
-
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HitQA(Double_t cut,Double_t cutele,Double_t cutR)
 {
 // Provides a set of control plots intended primarily for charged particle flux analisys
@@ -313,8 +269,8 @@ void HitQA(Double_t cut,Double_t cutele,Double_t cutR)
   Double_t cutPproton        =cut;
                        
 
-  TH2F *pEleHitRZ    =new TH2F("EleHitRZ"    ,Form("e^{+} e^{-} hit %s;z[cm];R[cm]" ,GetName())     , 400,-300,300 ,400,-500,500);   //R-z plot 0cm<R<550cm -300cm<z<300cm  
-  TH2F *pEleHitRP    =new TH2F("EleHitRP"    ,Form("e^{+} e^{-} hit %s;p[GeV];R[cm]",GetName())     ,1000,-1  ,1   ,400,   0,550);   //R-p plot 0cm<R<550cm -1GeV<p<1GeV 
+  TH2F *pEleHitRZ    =new TH2F("EleHitRZ"    ,Form("e^{+} e^{-} hit %s;z[cm];R[cm]" ,GetName())     , 400,-300,300 ,400,-500,500);   //R-z
+  TH2F *pEleHitRP    =new TH2F("EleHitRP"    ,Form("e^{+} e^{-} hit %s;p[GeV];R[cm]",GetName())     ,1000,-1  ,1   ,400,   0,550);   //R-p
   TH1F *pEleAllP     =new TH1F("EleAllP"     ,     "e^{+} e^{-} all;p[GeV]"                         ,1000,-1  ,1                );  
   TH1F *pEleHitP     =new TH1F("EleHitP"     ,Form("e^{+} e^{-} hit %s;p[GeV]"      ,GetName())     ,1000,-1  ,1                );   
   TH1F *pMuoHitP     =new TH1F("MuoHitP"     ,Form("#mu^{-} #mu^{+} hit %s;p[GeV]"  ,GetName())     ,1000,-4  ,4                ); 
@@ -447,8 +403,7 @@ void HitQA(Double_t cut,Double_t cutele,Double_t cutR)
   
   gBenchmark->Show("HitsPlots");
 }//HitQA()
-
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RecWithStack()
 {
   al->LoadHeader();al->LoadKinematics();
@@ -468,10 +423,9 @@ void RecWithStack()
   t.LoadClusters(rl->TreeR()); 
   t.PropagateBack(pEsd);
   rl->UnloadRecPoints();
-}
-
-
-void AliHMPIDReconstructor::CluQA(AliRunLoader *pAL)
+}//RecWithStack()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void CluQA(AliRunLoader *pAL)
 {
 // Quality assesment plots for clusters. 
 // This methode takes list of digits and form list of clusters again in order to 
@@ -485,17 +439,17 @@ void AliHMPIDReconstructor::CluQA(AliRunLoader *pAL)
   TH1::AddDirectory(kFALSE);
   
         
-  TH1F*    pQ=new TH1F("RiAllQ"  ,"Charge All"           ,4000 ,0  ,4000);// Q hists
-  TH1F* pCerQ=new TH1F("RiCerQ"  ,"Charge Ckov"          ,4000 ,0  ,4000);
-  TH1F* pMipQ=new TH1F("RiMipQ"  ,"Charge MIP"           ,4000 ,0  ,4000);
+  TH1F*    pQ=new TH1F("HmpAllQ"  ,"Charge All"           ,4000 ,0  ,4000);// Q hists
+  TH1F* pCerQ=new TH1F("HmpCerQ"  ,"Charge Ckov"          ,4000 ,0  ,4000);
+  TH1F* pMipQ=new TH1F("HmpMipQ"  ,"Charge MIP"           ,4000 ,0  ,4000);
   
-  TH1F*    pS=new TH1F("RichCluSize"    ,"Cluster size;size"         ,100  ,0  ,100 );// size hists
-  TH1F* pCerS=new TH1F("RichCluCerSize" ,"Ckov size;size"            ,100  ,0  ,100 );
-  TH1F* pMipS=new TH1F("RichCluMipSize" ,"MIP size;size"             ,100  ,0  ,100 );
+  TH1F*    pS=new TH1F("HmpCluSize"    ,"Cluster size;size"         ,100  ,0  ,100 );// size hists
+  TH1F* pCerS=new TH1F("HmpCluCerSize" ,"Ckov size;size"            ,100  ,0  ,100 );
+  TH1F* pMipS=new TH1F("HmpCluMipSize" ,"MIP size;size"             ,100  ,0  ,100 );
   
-  TH2F*    pM=new TH2F("RichCluMap"     ,"Cluster map;x [cm];y [cm]" ,1000 ,0  ,AliHMPIDDigit::SizePcX(),1000,0,AliHMPIDDigit::SizePcY()); // maps
-  TH2F* pMipM=new TH2F("RichCluMipMap"  ,"MIP map;x [cm];y [cm]"     ,1000 ,0  ,AliHMPIDDigit::SizePcX(),1000,0,AliHMPIDDigit::SizePcY());
-  TH2F* pCerM=new TH2F("RichCluCerMap"  ,"Ckov map;x [cm];y [cm]"    ,1000 ,0  ,AliHMPIDDigit::SizePcX(),1000,0,AliHMPIDDigit::SizePcY());
+  TH2F*    pM=new TH2F("HmpCluMap"     ,"Cluster map;x [cm];y [cm]" ,1000 ,0  ,AliHMPIDDigit::SizeAllX(),1000,0,AliHMPIDDigit::SizeAllY()); // maps
+  TH2F* pMipM=new TH2F("HmpCluMipMap"  ,"MIP map;x [cm];y [cm]"     ,1000 ,0  ,AliHMPIDDigit::SizeAllX(),1000,0,AliHMPIDDigit::SizeAllY());
+  TH2F* pCerM=new TH2F("HmpCluCerMap"  ,"Ckov map;x [cm];y [cm]"    ,1000 ,0  ,AliHMPIDDigit::SizeAllX(),1000,0,AliHMPIDDigit::SizeAllY());
  
   
   
@@ -504,14 +458,14 @@ void AliHMPIDReconstructor::CluQA(AliRunLoader *pAL)
     pRL->TreeD()->GetEntry(0); 
     TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster");//tmp list of clusters for this event
     
-    for(Int_t iCh=0;iCh<7;iCh++) Dig2Clu(pRich->DigLst(iCh),pCluLst,kFALSE);//cluster finder for all chamber if any digits present
+    for(Int_t iCh=0;iCh<7;iCh++) AliHMPIDReconstructor::Dig2Clu(pRich->DigLst(iCh),pCluLst,kFALSE);//cluster finder for all chamber if any digits present
     
     for(Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){
       AliHMPIDCluster *pClu = (AliHMPIDCluster*)pCluLst->At(iClu);
       Int_t cfm=0; for(Int_t iDig=0;iDig<pClu->Size();iDig++)  cfm+=pClu->Dig(iDig)->Ch(); //collect ckov-fee-mip structure of current cluster ?????
       Int_t iNckov=cfm/1000000;      Int_t iNfee =cfm%1000000/1000;      Int_t iNmip =cfm%1000000%1000; 
 
-                                             pQ   ->Fill(pClu->Q()) ; pS   ->Fill(pClu->Size()) ; pM    ->Fill(pClu->X(),pClu->Y()); //all clusters                                      
+                                             pQ   ->Fill(pClu->Q()) ; pS   ->Fill(pClu->Size()) ; pM    ->Fill(pClu->X(),pClu->Y()); //all clusters  
       if(iNckov!=0 && iNfee==0 && iNmip==0) {pCerQ->Fill(pClu->Q()) ; pCerS->Fill(pClu->Size()) ; pCerM ->Fill(pClu->X(),pClu->Y());}//ckov only cluster
       if(iNckov==0 && iNfee==0 && iNmip!=0) {pMipQ->Fill(pClu->Q()) ; pMipS->Fill(pClu->Size()) ; pMipM ->Fill(pClu->X(),pClu->Y());}//mip only cluster
                                        
@@ -525,10 +479,8 @@ void AliHMPIDReconstructor::CluQA(AliRunLoader *pAL)
   pC->cd(4); pMipM->Draw();          pC->cd(5); pMipQ->Draw();       pC->cd(6); pMipS->Draw();        
   pC->cd(7); pCerM->Draw();          pC->cd(8); pCerQ->Draw();       pC->cd(9); pCerS->Draw();        
 }//CluQA()
-
-
-
-void AliHMPID::OccupancyPrint(Int_t iEvtNreq)
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void OccupancyPrint(Int_t iEvtNreq)
 {
 //prints occupancy for each chamber in a given event
   Int_t iEvtNmin,iEvtNmax;
@@ -582,9 +534,7 @@ void AliHMPID::OccupancyPrint(Int_t iEvtNreq)
   GetLoader()->UnloadDigits();
   GetLoader()->GetRunLoader()->UnloadHeader();    
   GetLoader()->GetRunLoader()->UnloadKinematics();    
-}
-
-
+}//OccupancyPrint()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPID::SummaryOfEvent(Int_t iEvtN) const
 {
@@ -609,5 +559,170 @@ void AliHMPID::SummaryOfEvent(Int_t iEvtN) const
   AliInfo(Form("Total n. of tracks in stack(+sec) %i",pStack->GetNtrack()));
   GetLoader()->GetRunLoader()->UnloadHeader();
   GetLoader()->GetRunLoader()->UnloadKinematics();
-}
+}//SummaryOfEvent()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawZoom()
+{
+// Show info about current cursur position in status bar of the canvas
+// Arguments: none
+//   Returns: none     
+  TCanvas *pC=(TCanvas*)gPad; 
+  TRootCanvas *pRC= (TRootCanvas*)pC->GetCanvasImp();
+  TGStatusBar *pBar=pRC->GetStatusBar();
+  pBar->SetParts(5);
+  Float_t x=gPad->AbsPixeltoX(gPad->GetEventX());
+  Float_t y=gPad->AbsPixeltoY(gPad->GetEventY());
+  AliHMPIDDigit dig;dig.Manual1(1,x,y); UInt_t w32=0; 
+  if(IsInDead(x,y))
+    pBar->SetText("Out of sensitive area",4);    
+  else{
+    Int_t ddl=dig.Raw(w32);
+    pBar->SetText(Form("(p%i,x%i,y%i) ddl=%i 0x%x (r%i,d%i,a%i) (%.2f,%.2f)",
+        dig.Pc(),dig.PadPcX(),dig.PadPcY(),
+        ddl,w32,
+        dig.Row(),dig.Dilogic(),dig.Addr(),
+        dig.LorsX(),dig.LorsY()                            ),4);
+  }    
+  if(gPad->GetEvent()==1){
+    new TCanvas("zoom",Form("Row %i DILOGIC %i",dig.Row(),dig.Dilogic()));  
+  }
+}//DrawZoom()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawPc(Bool_t isFill) 
+{ 
+// Utility methode draws HMPID chamber PCs on event display.
+// Arguments: none
+//   Returns: none      
+//  y6  ----------  ----------
+//      |        |  |        |
+//      |    4   |  |    5   |
+//  y5  ----------  ----------
+//
+//  y4  ----------  ----------
+//      |        |  |        |
+//      |    2   |  |    3   |   view from electronics side
+//  y3  ----------  ----------
+//          
+//  y2  ----------  ----------
+//      |        |  |        |
+//      |    0   |  |    1   |
+//  y1  ----------  ----------
+//      x1      x2  x3       x4
+  gPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5); 
+  Float_t x1=0,
+          x2=AliHMPIDDigit::SizePcX(),
+          x3=AliHMPIDDigit::SizePcX()+AliHMPIDDigit::SizeDead(),   
+          x4=AliHMPIDDigit::SizeAllX();
+  Float_t y1=0,
+          y2=  AliHMPIDDigit::SizePcY(),
+          y3=  AliHMPIDDigit::SizePcY()+AliHMPIDDigit::SizeDead(),
+          y4=2*AliHMPIDDigit::SizePcY()+AliHMPIDDigit::SizeDead(),
+          y5=  AliHMPIDDigit::SizeAllY()-AliHMPIDDigit::SizePcY(),
+          y6=  AliHMPIDDigit::SizeAllY();
+
+  Float_t xL[5]={x1,x1,x2,x2,x1}; //clockwise
+  Float_t xR[5]={x3,x3,x4,x4,x3};  
+  Float_t yD[5]={y1,y2,y2,y1,y1};
+  Float_t yC[5]={y3,y4,y4,y3,y3};  
+  Float_t yU[5]={y5,y6,y6,y5,y5};
+    
+  Float_t dX2=0.5*AliHMPIDDigit::SizePadX(),
+          dY2=0.5*AliHMPIDDigit::SizePadY() ;
+  
+  TLatex txt; txt.SetTextSize(0.01);
+  Int_t iColLeft=29,iColRight=41;
+  TPolyLine *pc=0;  TLine *pL;
+  AliHMPIDDigit dig;
+  for(Int_t iPc=0;iPc<AliHMPIDDigit::kPcAll;iPc++){
+    if(iPc==4) pc=new TPolyLine(5,xL,yU); if(iPc==5) pc=new TPolyLine(5,xR,yU); //draw PCs
+    if(iPc==2) pc=new TPolyLine(5,xL,yC); if(iPc==3) pc=new TPolyLine(5,xR,yC);
+    if(iPc==0) pc=new TPolyLine(5,xL,yD); if(iPc==1) pc=new TPolyLine(5,xR,yD);
+    (iPc%2)? pc->SetFillColor(iColLeft): pc->SetFillColor(iColRight);
+    if(!isFill){ pc->Draw();continue;}
+    
+    pc->Draw("f");
+    if(iPc%2) {dig.Manual2(0,iPc,79,25); txt.DrawText(dig.LorsX()+2,dig.LorsY(),Form("PC%i",dig.Pc()));}//print PC#    
+    
+    txt.SetTextAlign(32);
+    for(Int_t iRow=0;iRow<8 ;iRow++){//draw row lines (horizontal)
+      dig.Manual2(0,iPc,0,iRow*6);   //set digit to the left-down pad of this row
+      if(iPc%2) txt.DrawText(dig.LorsX()-1           ,dig.LorsY(),Form("%i",dig.PadPcY()));                  //print PadY#    
+                txt.DrawText(dig.LorsX()-1+(iPc%2)*67,dig.LorsY()+2,Form("r%i",dig.Row()));                  //print Row#    
+      pL=new TLine(dig.LorsX()-dX2,dig.LorsY()-dY2,dig.LorsX()+AliHMPIDDigit::SizePcX()-dX2,dig.LorsY()-dY2);//draw horizontal line 
+      if(iRow!=0) pL->Draw(); 
+    }//row loop  
+    
+    txt.SetTextAlign(13);
+    for(Int_t iDil=0;iDil<10;iDil++){//draw dilogic lines (vertical)
+      dig.Manual2(0,iPc,iDil*8,0);       //set this digit to the left-down pad of this dilogic        
+                           txt.DrawText(dig.LorsX()  ,dig.LorsY()-1,Form("%i",dig.PadPcX()));                 //print PadX# 
+      if(iPc==4 || iPc==5) txt.DrawText(dig.LorsX()+2,dig.LorsY()+42,Form("d%i",dig.Dilogic()));              //print Dilogic#    
+      pL=new TLine(dig.LorsX()-dX2,dig.LorsY()-dY2,dig.LorsX()-dX2,dig.LorsY()+AliHMPIDDigit::SizePcY()-dY2); //draw vertical line
+      if(iDil!=0)pL->Draw();
+    }//dilogic loop        
+  }//PC loop      
+}//DrawPc()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void ReadEvt() 
+{
+// Display digits, reconstructed tracks intersections and HMPID rings if available 
+// Arguments: none
+//   Returns: none    
+  TFile *pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pEsdFl->IsOpen()) return;//open AliESDs.root
+  TTree *pEsdTr=(TTree*) pEsdFl->Get("esdTree"); if(!pEsdTr)                      return;//get ESD tree
+                                                                 
+  AliESD *pEsd=0;  pEsdTr->SetBranchAddress("ESD", &pEsd);
+  
+  for(Int_t iEvt=0;iEvt<pEsdTr->GetEntries();iEvt++) {                //events loop
+    
+    
+    
+    pEsdTr->GetEntry(iEvt);                                       //get ESD for this event   
+    for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//ESD tracks loop
+      AliESDtrack *pTrk = pEsd->GetTrack(iTrk);             //
+    }//ESD tracks loop
+    
+    al->GetEvent(iEvt);   rl->TreeD()->GetEntry(0); //get digits list
+    
+    
+  }//events loop
+  delete pEsd;  pEsdFl->Close();//close AliESDs.root
+//  rl->UnloadDigits();
+}//ReadEvt()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void t1(Int_t case=1)
+{
+  AliHMPIDDigit *d[10]; for(Int_t i=0;i<10;i++) d[i]=new AliHMPIDDigit;
+  
+  
+  Int_t iNdig;
+  
+  if(case==1){
+    iNdig=9;  
+  
+                                                              d[0]->Manual2(1,2,67,26, 33); 
+                                d[1]->Manual2(1,2,66,25,431); d[2]->Manual2(1,2,67,25, 21);
+  d[3]->Manual2(1,2,65,24,127); d[4]->Manual2(1,2,66,24, 54); d[5]->Manual2(1,2,67,24,  5);
+  d[6]->Manual2(1,2,65,23, 20); d[7]->Manual2(1,2,66,23,  5); d[8]->Manual2(1,2,67,23,  6);
+  }else if(case==2){
+    iNdig=3;
+    d[0]->Manual2(0,0,36,14,  8); 
+    d[1]->Manual2(0,0,36,13, 33); d[2]->Manual2(0,0,37,13, 22);
+  }
+  
+  AliHMPIDCluster c;
+  for(int i=0;i<iNdig;i++) c.DigAdd(d[i]);  c.Print();
+  
+  
+  TClonesArray *cl=new TClonesArray("AliHMPIDCluster");
+  
+  c.Solve(cl,kTRUE);
+  Printf("");
+  
+  cl->Print();  
+}//t1()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+

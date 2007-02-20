@@ -11,16 +11,18 @@
 class AliHMPIDHit : public AliHit //   TObject-AliHit-AliHMPIDHit
 {
 public:
-  AliHMPIDHit(                                                                             ):AliHit(     ),fCh(-1),fPid(-1  ),fQ(-1),fLorsX(-1),fLorsY(-1) {} //default ctor
-  AliHMPIDHit(Int_t c,Float_t e,Int_t pid,Int_t tid,Float_t xl,Float_t yl,const TVector3 &p):AliHit(0,tid),fCh(c ),fPid(pid ),fQ(-1),fLorsX(xl),fLorsY(yl) {QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}           
-  AliHMPIDHit(Int_t c,Int_t q  ,                    Float_t xl,Float_t yl                  ):              fCh(c ),fPid(2212),fQ(q ),fLorsX(xl),fLorsY(yl) {fTrack=Int_t(1000*gRandom->Rndm());}//manual ctor           
-  virtual ~AliHMPIDHit()                                                                                                {}
+  AliHMPIDHit(                                                                         ):AliHit(    ),fCh(-1),fPid(-1),fQ(-1),fLx(0),fLy(0){} //default ctor
+  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y,const TVector3 &p):AliHit(0,tn),fCh(c ),fPid(id),fQ(-1),fLx(x),fLy(y){QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
+  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y                  ):             fCh(c ),fPid(id),fQ(-1),fLx(x),fLy(y){QdcTot(e);fTrack=tn;}//manual ctor 
+  virtual ~AliHMPIDHit()                                                                                                                                 {}
 //framework part
-  void     Print(Option_t *option="")const;                                    //from TObject to print current status
+         void    Print(Option_t *opt="")const;                                                 //from TObject to print current status
+         void    Draw (Option_t *opt="");                                                      //from TObject to Draw this hit in current canvas
 //private part  
          Int_t   Ch    (         )const{return fCh;                                    }       //Chamber
-         Float_t LorsX (         )const{return fLorsX;                                 }       //hit X position in LORS, [cm]
-         Float_t LorsY (         )const{return fLorsY;                                 }       //hit Y position in LORS, [cm]
+         //clm: hit LorsX and Y were changed for simulation hits
+         Float_t LorsX (         )const{return fLx;                                    }       //hit X position in LORS, [cm]
+         Float_t LorsY (         )const{return fLy;                                    }       //hit Y position in LORS, [cm]
          Int_t   Pid   (         )const{return fPid;                                   }       //PID
          Float_t Q     (         )const{return fQ;                                     }       //Eloss for MIP hit or Etot for photon hit, [GeV]
   inline Float_t QdcTot(Float_t e);                                                            //calculate total charge of the hit          
@@ -30,8 +32,8 @@ protected:                                                                     /
   Int_t    fCh;                                                                //Chamber
   Int_t    fPid;                                                               //PID
   Float_t  fQ;                                                                 //total charge [QDC]
-  Float_t  fLorsX;                                                             //hit X position in chamber LORS, [cm]
-  Float_t  fLorsY;                                                             //hit Y position in chamber LORS, [cm]
+  Float_t  fLx;                                                                //hit X position in chamber LORS, [cm]
+  Float_t  fLy;                                                                //hit Y position in chamber LORS, [cm]
   ClassDef(AliHMPIDHit,5)                                                      //HMPID hit class 
 };//class AliHMPIDhit
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
@@ -47,9 +49,8 @@ Float_t AliHMPIDHit::QdcTot(Float_t e)
   for(Int_t i=1;i<=iNele;i++) fQ-=qdcEle*TMath::Log(gRandom->Rndm()+1e-6);                           //1e-6 is a protection against 0 from rndm  
   return fQ;
 }  
-  
-  
-  
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
 typedef AliHMPIDHit AliRICHHit; // for backward compatibility
     
 #endif

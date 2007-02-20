@@ -135,8 +135,10 @@ void AliHMPID::DigPrint(Int_t iEvt)const
   
   GetLoader()->TreeD()->GetEntry(0);
   DigLst()->Print();
+  Int_t totDigs=0;
+  for(Int_t i=0;i<7;i++) {totDigs+=DigLst(i)->GetEntries();}
+  Printf("totally %i Digits",totDigs);
   GetLoader()->UnloadDigits();
-  Printf("totally %i Digits",DigLst()->GetEntries());
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPID::CluPrint(Int_t iEvtN)const

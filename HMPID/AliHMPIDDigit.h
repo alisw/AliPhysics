@@ -7,7 +7,7 @@
 #include <TMath.h>         //Mathieson()
 #include <TRandom.h>       //IsOverTh()  
 #include <AliBitPacking.h> //Raw()
-#include "AliHMPIDHit.h"   //Hit2Sdi(), ctor()
+#include "AliHMPIDHit.h"   //Set()
 
 class TClonesArray;        //Hit2Sdi()
   
@@ -18,12 +18,13 @@ public:
   enum ERawData{kNddls=14};                                                      //RAW data structure
   enum EPadData{kPcX=2,kPcY=3,kPadPcX=80,kPadPcY=48,kPadAllX=kPadPcX*kPcX,kPadAllY=kPadPcY*kPcY,kPcAll=kPcX*kPcY,kPadAll=kPadAllX*kPadAllY};   //Segmentation structure 
 //ctor&dtor    
-           AliHMPIDDigit(                                      ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  {}                                      //default ctor
-           AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t            ):AliDigit(t),fPad(pad             ),fQ(q )  {}                                      //ctor used in digitizer
-  virtual ~AliHMPIDDigit(                                      )                                            {}                                      //dtor
+           AliHMPIDDigit(                                      ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  {}                         //default ctor
+           AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t            ):AliDigit(t),fPad(pad             ),fQ(q )  {}                         //ctor used in digitizer
+  virtual ~AliHMPIDDigit(                                      )                                            {}                         //dtor
 //framework part    
          Bool_t  IsSortable  (                               )const{return kTRUE;}                                                     //provision to use TObject::Sort() 
   inline Int_t   Compare     (const TObject *pObj            )const;                                                                   //provision to use TObject::Sort()
+         void    Draw        (Option_t *opt=""               );                                                                        //TObject::Draw() overloaded
          void    Print       (Option_t *opt=""               )const;                                                                   //TObject::Print() overloaded
 //private part  
   static Int_t   Abs         (Int_t c,Int_t s,Int_t x,Int_t y)     {return c*kChAbs+s*kPcAbs+x*kPadAbsX+y*kPadAbsY; }                  //(ch,pc,padx,pady)-> abs pad
@@ -35,19 +36,18 @@ public:
          void    AddTidOffset(Int_t offset                   )     {for (Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;};  //needed for merging
          Int_t   Ch          (                               )const{return A2C(fPad);                               }                  //chamber number
          Int_t   Dilogic     (                               )const{return 1+PadPcX()/8;                            }                  //DILOGIC# 1..10
-  static void    DrawPc      (Bool_t isFill=kTRUE            );                                                                        //draw PCs
-  static void    DrawSeg     (                               );                                                                        //draw segmentation
-         void    DrawZoom    (                               ); 
          Int_t   DdlIdx      (                               )const{return 2*Ch()+Pc()%2;                           }                  //DDL# 0..13
          Int_t   DdlId       (                               )const{return (6<<8)+DdlIdx();                         }                  //DDL ID 0x600..0x60d
   static void    Hit2Sdi     (AliHMPIDHit *pHit,TClonesArray*);                                                                        //hit -> 9 sdigits  
-  static Bool_t  IsOverTh    (Float_t q                      )     {return q > 6;                                   }                  //is digit over threshold????
-  static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();    }                  //is point inside pc boundary?
+  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= 6;                                  }                  //is digit over threshold????
+  static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();    }                  //is point inside chamber boundary?
   inline static Bool_t IsInDead  (Float_t x,Float_t y        );                                                                        //is point in dead area?
          Float_t LorsX       (                               )const{return (PadPcX()+0.5)*SizePadX()+(Pc()%2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
+  static Float_t LorsX       (Int_t pc,Int_t padx            )     {return (padx    +0.5)*SizePadX()+(pc  %2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
          Float_t LorsY       (                               )const{return (PadPcY()+0.5)*SizePadY()+(Pc()/2)*(SizePcY()+SizeDead());} //center of the pad y, [cm]
-         void    Manual1     (Int_t c,Float_t x,Float_t y,Int_t q=33){AliHMPIDHit h(c,q,x,y); Set(&h,0);}                              //manual creation
-         void    Manual2     (Int_t c,Int_t p,Int_t x,Int_t y)     {fPad=Abs(c,p,x,y);}                                                //manual creation 
+  static Float_t LorsY       (Int_t pc,Int_t pady            )     {return (pady    +0.5)*SizePadY()+(pc  /2)*(SizePcY()+SizeDead());} //center of the pad y, [cm]
+         void    Manual1     (Int_t c,Float_t x,Float_t y    )     {AliHMPIDHit h(c,200e-9,2212,3,x,y); Set(&h,0);}                    //manual from hit
+         void    Manual2     (Int_t c,Int_t p,Int_t x,Int_t y,Float_t q=0)     {fPad=Abs(c,p,x,y);fQ=q;}                               //manual creation 
   inline Float_t Mathieson   (Float_t x,Float_t y            )const;                                                                   //Mathieson distribution 
          Int_t   PadPcX      (                               )const{return A2X(fPad);}                                                 //pad pc x # 0..79
          Int_t   PadPcY      (                               )const{return A2Y(fPad);}                                                 //pad pc y # 0..47
@@ -78,6 +78,12 @@ public:
   static Float_t SizeWin     (                               )     {return 0.5;}                                                       //Quartz window width
   static Float_t SizeRad     (                               )     {return 1.5;}                                                       //Rad width   
   static void    Test        (                               );                                                                        //Test conversions
+  static const Float_t fMinPcX[6];
+  static const Float_t fMinPcY[6];
+  static const Float_t fMaxPcX[6];
+  static const Float_t fMaxPcY[6];
+  
+  
 protected:                  //AliDigit has fTracks[3]
   Int_t    fPad;            //absolute pad number
   Float_t  fQ;              //QDC value, fractions are permitted for summable procedure  
