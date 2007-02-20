@@ -258,7 +258,7 @@ Double_t AliTPCmapper::GetPadLengthS(Int_t row) const
 }
 
 //______________________________________________________________
-Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t row,const Int_t pad) const
+Int_t AliTPCmapper::GetAltroAddrwPatch(Int_t row, Int_t pad) const
 {
   //
   // :GetAltroAddrwPatch
@@ -271,7 +271,7 @@ Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t row,const Int_t pad) const
 }
 
 //______________________________________________________________
-Int_t AliTPCmapper::GetAltroAddrwPatch(const Int_t padsector) const
+Int_t AliTPCmapper::GetAltroAddrwPatch(Int_t padsector) const
 {
   //
   // GetAltroAddrwPatch

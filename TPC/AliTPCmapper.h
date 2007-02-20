@@ -74,9 +74,9 @@ public:
     void PrintAddressArray(Int_t row, Int_t pad);
 
 
-    Int_t GetAltroAddrwPatch(const Int_t row, const Int_t pad) const;
+    Int_t GetAltroAddrwPatch(Int_t row, Int_t pad) const;
 
-    Int_t GetAltroAddrwPatch(const Int_t padsector) const;
+    Int_t GetAltroAddrwPatch(Int_t padsector) const;
 
     //for aliroot compatibility (sector == roc)
     Int_t GetPadsInRowS(Int_t row, Int_t sector) const {

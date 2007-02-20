@@ -158,9 +158,9 @@ void AliEMCALQATask::Exec(Option_t *)
     AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(emcalCluster) ;
     if (caloCluster) {
       Float_t pos[3] ;
-      fhEMCALPos->Fill(pos[0],pos[1],pos[2]) ;
       if(caloCluster->GetClusterType() == AliESDCaloCluster::kClusterv1) {  
 	caloCluster->GetGlobalPosition(pos) ;
+	fhEMCALPos->Fill(pos[0],pos[1],pos[2]) ;
 	fhEMCALEnergy->Fill(caloCluster->GetClusterEnergy()) ;
 	fhEMCALDigits->Fill(entry, caloCluster->GetNumberOfDigits()) ;
 	numberOfEmcalClustersv1++ ;
