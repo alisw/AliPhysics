@@ -95,22 +95,22 @@ void AliPHOSCalibHistoProducer::Run()
   AliPHOSRawDecoder dc(fRawReader);
   if(fIsOldRCUFormat)
     dc.SetOldRCUFormat(kTRUE);
+  
+  AliPHOSRawDigiProducer producer;
 
   // Read raw data event by event
-
+  
   while (fRawReader->NextEvent()) {
     runNum = fRawReader->GetRunNumber();
-
-    AliPHOSRawDigiProducer producer;
     producer.MakeDigits(digits,&dc);
     
     for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
       digit = (AliPHOSDigit*)digits->At(iDigit);
       energy = digit->GetEnergy(); // no pedestal subtraction!
       geo->AbsToRelNumbering(digit->GetId(),relId);	    
-      Int_t mod = relId[0];
-      Int_t col = relId[3];
-      Int_t row = relId[2];
+      Int_t mod = relId[0]-1;
+      Int_t col = relId[3]-1;
+      Int_t row = relId[2]-1;
 
       if(fAmpHisto[mod][col][row]) {
 	fAmpHisto[mod][col][row]->Fill(energy);
