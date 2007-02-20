@@ -64,7 +64,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   calibdata->SetDCSCalibData(DCSValues);
 
   const char* PedFileName = GetFile(kDAQ, "PEDESTALS", "LDC0");
-  Int_t NZDCch = 44;
+  const Int_t NZDCch = 44;
   if(PedFileName){
     char *filename = "/home/oppedisa/alirun/Calib/ZDCPedestal.dat";
     FILE *file;
