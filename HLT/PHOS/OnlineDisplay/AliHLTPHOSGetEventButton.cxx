@@ -53,6 +53,7 @@ AliHLTPHOSGetEventButton::HandleButton(Event_t* event)
 {
   if(event->fType == kButtonPress) 
     {
+      //      onlineDisplayPtr->GetNextEvent2();
       onlineDisplayPtr->GetNextEvent();
     }
 }

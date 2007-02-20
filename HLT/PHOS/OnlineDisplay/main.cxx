@@ -16,7 +16,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliHLTPHOSOnlineDisplay.h"
 #ifndef __CINT__
 # include <stdexcept>
@@ -27,88 +26,34 @@
 #endif
 
 
-
-
 int
 main(int argc, char** argv) 
 {
-  Bool_t hostnameIsSet = kFALSE;
-  Bool_t portIsSet = kFALSE;
 
-  int iResult=0;
-  TString argument="";
-  //  TString    hostname;  
-  char *hostname;
-  //  char *port;
-  int port;
-
-  int bMissingParam=0;
-  printf("Main: the number of argumnets is %d \n", argc);
-  for (int i=0; i<argc && iResult>=0; i++) 
-    {
-      argument=argv[i];
-      if (argument.IsNull()) 
-	{
-	  continue;
-	}
-
-      if (argument.CompareTo("-hostname")==0) 
-	{
-	  if ((bMissingParam=(++i>=argc))) 
-	    {
-	      break;
-	    }
-	  hostname = argv[i];
-	  hostnameIsSet = kTRUE;
-	  printf("\nsetting host to: %s \n", hostname);
-	} 
-	  
-      if (argument.CompareTo("-port")==0) 
-	{
-	  if ((bMissingParam=(++i>=argc))) 
-	    {
-	      break;
-	    }
-	  port = atoi(argv[i]);
-	  portIsSet = kTRUE;
-	  printf("\nsetting port to: %d \n", port);
-	}
-   }
-
-  if(hostnameIsSet != kTRUE ||  portIsSet != kTRUE)
-    {
-      if(hostnameIsSet == kFALSE)
-	{
-	  printf("\nERROR: no hostname is specified\n");
-	}
-      
-      if( portIsSet == kFALSE)
-	{
-	  printf("ERROR: no port spcified\n");
-	}
-      printf("\nYou must specify hostname & port as command line arguments\n\n");
-      printf("*****************************************************************\n");
-      printf("\nUsage: ./onlinedisplay  -hostname  <hostname>   -port  <port>\n\n");
-      printf("*****************************************************************\n\n\n");
-    }
-  else
-    {
-
-
-      try {
+  //  AliHLTPHOSOnlineDisplay* onlineDisplay = new AliHLTPHOSOnlineDisplay("alice3", 42001); 
+  
+  if(!AliHLTPHOSOnlineDisplay::ScanArguments(argc, argv))
+  {
+    
+    try 
+      {
 	TApplication app("app", 0, 0);
-	AliHLTPHOSOnlineDisplay* phosDisplayPtr = AliHLTPHOSOnlineDisplay::Instance(hostname, port);
+	AliHLTPHOSOnlineDisplay* phosDisplayPtr = AliHLTPHOSOnlineDisplay::Instance();
 	app.Run();
       }
-  
-      catch (std::exception& e) {
+    
+    catch (std::exception& e)
+      {
 	//   std::cerr << e.what() << std::endl;
 	return 1;
       }
       return 0;
-      
-    }
-
+  }
+    else
+      {
+	return -1;
+      }
+  
 }
 
 
