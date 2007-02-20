@@ -27,7 +27,7 @@ public:
 
   void Run();
   void UpdateHistoFile();
-  void SetUpdatingRate(const Int_t rate) {fUpdatingRate = rate;}
+  void SetUpdatingRate(Int_t rate) {fUpdatingRate = rate;}
   void SetOldRCUFormat(Bool_t isOldRCUFormat) { fIsOldRCUFormat = isOldRCUFormat; }
 
 protected:

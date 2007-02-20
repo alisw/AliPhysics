@@ -32,7 +32,7 @@ AliAODTrack::AliAODTrack() :
   fLabel(-999),
   fCovMatrix(NULL),
   fProdVertex(0x0),
-  fCharge(-999),
+  fCharge(-99),
   fITSClusterMap(0),
   fType(kUndef)
 {

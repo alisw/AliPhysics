@@ -125,23 +125,23 @@ class AliAODTrack : public AliVirtualParticle {
   void  Print(const Option_t *opt = "") const;
 
   // setters
-  void SetID(const Int_t id) { fID = id; }
-  void SetLabel(const Int_t label) {fLabel = label; }
+  void SetID(Int_t id) { fID = id; }
+  void SetLabel(Int_t label) {fLabel = label; }
 
-  template <class T> void SetPosition(const T *x, const Bool_t isDCA = kFALSE);
+  template <class T> void SetPosition(const T *x, Bool_t isDCA = kFALSE);
   void SetDCA(Double_t d, Double_t z);
 
-  void SetOneOverPt(const Double_t oneOverPt) { fMomentum[0] = oneOverPt; }
-  void SetPt(const Double_t pt) { fMomentum[0] = 1./pt; };
-  void SetPhi(const Double_t phi) { fMomentum[1] = phi; }
-  void SetTheta(const Double_t theta) { fMomentum[2] = theta; }
-  template <class T> void SetP(const T *p, const Bool_t cartesian = kTRUE);
+  void SetOneOverPt(Double_t oneOverPt) { fMomentum[0] = oneOverPt; }
+  void SetPt(Double_t pt) { fMomentum[0] = 1./pt; };
+  void SetPhi(Double_t phi) { fMomentum[1] = phi; }
+  void SetTheta(Double_t theta) { fMomentum[2] = theta; }
+  template <class T> void SetP(const T *p, Bool_t cartesian = kTRUE);
   void SetP() {fMomentum[0]=fMomentum[1]=fMomentum[2]=-999.;}
 
-  void SetCharge(const Short_t q) { fCharge = q; }
-  void SetChi2(const Double_t chi2) { fChi2 = chi2; }
+  void SetCharge(Short_t q) { fCharge = q; }
+  void SetChi2(Double_t chi2) { fChi2 = chi2; }
 
-  void SetITSClusterMap(const UChar_t itsClusMap) { fITSClusterMap = itsClusMap; }
+  void SetITSClusterMap(UChar_t itsClusMap) { fITSClusterMap = itsClusMap; }
 
   void SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
 

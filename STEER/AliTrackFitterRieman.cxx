@@ -306,7 +306,7 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
       fPTrack->GetPoint(pFit,ipoint);
       pFitlocal= pFit.Rotate(lAngle);
       //
-      Float_t xyz[3], cov[3];
+      Float_t xyz[3], cov[6];
       xyz[0] = pFitlocal.GetX();
       xyz[1] = pFitlocal.GetY();
       xyz[2] = pFitlocal.GetZ();

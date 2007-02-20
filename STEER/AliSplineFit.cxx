@@ -301,7 +301,7 @@ TH1F * AliSplineFit::MakeDiffHisto(TGraph * graph0) const {
   //
 
   Int_t npoints=graph0->GetN();
-  Float_t min=1e+39,max=-1e+39;
+  Float_t min=1e+33,max=-1e+33;
   for (Int_t ip=0; ip<npoints; ip++){
     Double_t x = graph0->GetX()[ip];
     Double_t y = Eval(x,0)-graph0->GetY()[ip];

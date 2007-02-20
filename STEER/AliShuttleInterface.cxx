@@ -72,7 +72,7 @@ const char* AliShuttleInterface::GetDetName(UInt_t detPos){
 }
 
 //______________________________________________________________________________________________
-const Int_t AliShuttleInterface::GetDetPos(const char* detName){
+Int_t AliShuttleInterface::GetDetPos(const char* detName){
 // Return detector position in the detector code array
 
 	for(UInt_t iDet=0; iDet < kNDetectors; iDet++){

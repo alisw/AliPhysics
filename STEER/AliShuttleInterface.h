@@ -38,8 +38,8 @@ class AliShuttleInterface : public TObject
 
     static const char* GetOfflineDetName(const char* detName);
     static const char* GetDetName(UInt_t detPos);
-    static const Int_t GetDetPos(const char* detName);
-    static const UInt_t NDetectors() {return kNDetectors;}
+    static Int_t GetDetPos(const char* detName);
+    static UInt_t NDetectors() {return kNDetectors;}
 
     static TString GetMainCDB () {return fgkMainCDB;}
     static void SetMainCDB (TString mainCDB) {fgkMainCDB = mainCDB;}

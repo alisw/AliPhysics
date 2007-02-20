@@ -93,12 +93,12 @@ class AliAODNeutral : public AliVirtualParticle {
   void  Print(const Option_t *opt = "") const;
 
   // setters
-  void SetID(const Int_t id) { fID = id; }
-  void SetLabel(const Int_t label) {fLabel = label; }
+  void SetID(Int_t id) { fID = id; }
+  void SetLabel(Int_t label) {fLabel = label; }
 
   template <class T> void SetPosition(const T *x);
 
-  void SetChi2(const Double_t chi2) { fChi2 = chi2; }
+  void SetChi2(Double_t chi2) { fChi2 = chi2; }
 
   void SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
   void SetPrimTrack(TObject *ptrack) { fPrimTrack = ptrack; }
@@ -130,7 +130,7 @@ class AliAODNeutral : public AliVirtualParticle {
   TRef          fProdVertex;     // vertex of origin
   TRef          fPrimTrack;      // primary track number associated with this cluster
 
-  UChar_t       fType;
+  Char_t       fType;
 
 
   ClassDef(AliAODNeutral,1);
