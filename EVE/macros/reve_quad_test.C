@@ -97,7 +97,7 @@ Reve::QuadSet* reve_quad_test_hex(Float_t x=0, Float_t y=0, Float_t z=0,
 }
 
 Reve::QuadSet* reve_quad_test_hexid(Float_t x=0, Float_t y=0, Float_t z=0,
-				    Int_t num=100)
+				    Int_t num=100, Bool_t register=kTRUE)
 {
   TRandom r(0);
 
@@ -118,9 +118,42 @@ Reve::QuadSet* reve_quad_test_hexid(Float_t x=0, Float_t y=0, Float_t z=0,
     Reve::ZTrans& t = q->RefHMTrans();
     t.SetPos(x, y, z);
 
-    gReve->AddRenderElement(q);
-    gReve->Redraw3D();
+    if (register)
+    {
+      gReve->AddRenderElement(q);
+      gReve->Redraw3D();
+    }
   }
 
   return q;
+}
+
+void reve_quad_test_hierarchy(Int_t n=4)
+{
+  gStyle->SetPalette(1, 0);
+
+  Reve::RGBAPalette* pal = new RGBAPalette(20, 100);
+  pal->SetLimits(0, 120);
+
+  Reve::FrameBox*    box = new FrameBox();
+  box->SetAABox(-10, -10, -10, 20, 20, 20);
+  box->SetFrameColor((Color_t) 33);
+
+  Reve::RenderElementList* l = new Reve::RenderElementList("Parent/Dir");
+  l->SetTitle("Tooltip");
+  //  l->SetMainColor((Color_t)3);
+  gReve->AddRenderElement(l);
+
+  // PMD: obtain digit-tree from run-loader, loop over entries.
+
+  for (Int_t i=0; i<n; ++i)
+  {
+    Reve::QuadSet* qs = reve_quad_test_hexid(0, 0, 50*i, 50, kFALSE);
+    // PMD: loop over clones-array, create hexagons above threshold.
+    qs->SetPalette(pal);
+    qs->SetFrame(box);
+    gReve->AddRenderElement(l, qs);
+  }
+
+  gReve->Redraw3D();
 }
