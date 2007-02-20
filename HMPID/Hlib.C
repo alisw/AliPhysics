@@ -6,11 +6,15 @@ void Hlib()
   gSystem->Load("libSTEER.so");
   gSystem->Load("libCDB.so");
 
+  gSystem->Load("libEVGEN.so");
+  gSystem->Load("libSTRUCT.so");
+
   gSystem->Load("libRAWDatasim.so");
   
   gSystem->Load("libHMPIDbase.so");
   gSystem->Load("libHMPIDsim.so");
   gSystem->Load("libHMPIDrec.so");
-  
+
+ 
   gROOT->LoadMacro("Hmenu.C");
 }
