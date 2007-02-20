@@ -249,7 +249,7 @@ void AliT0v1::CreateGeometry()
     TGeoTube*hole = new TGeoTube("hole", 0, 1.61, 6.5);
     TGeoTranslation *tr [12];
     Float_t angle  = 2 * TMath::Pi() / 12;
-    Char_t nameTr[4];
+    Char_t nameTr[40];
     for (Int_t itr=0; itr<12; itr++) {
       sprintf (nameTr,"tr%i",itr+1);
       x = 6.5 * TMath::Sin(itr * angle);
