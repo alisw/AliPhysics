@@ -21,9 +21,9 @@ public:
 	void SetRun(Int_t run) {fRun = run;}
 	void SetStartTime(Int_t startTime) {fStartTime = startTime;}
 	void SetEndTime(Int_t endTime) {fEndTime = endTime;}
-	const Int_t GetRun() {return fRun;}
-	const Int_t GetStartTime() {return fStartTime;}
-	const Int_t GetEndTime() {return fEndTime;}
+	Int_t GetRun() {return fRun;}
+	Int_t GetStartTime() {return fStartTime;}
+	Int_t GetEndTime() {return fEndTime;}
 
 	void ProcessData(TMap& aliasMap, Float_t *CalibData);
 
