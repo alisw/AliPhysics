@@ -456,6 +456,7 @@ void AliZDC::Digits2Raw()
   for(Int_t iDigit=0; iDigit<treeD->GetEntries(); iDigit++){
     treeD->GetEntry(iDigit);
     if(!pdigit) continue;
+    //digit.Print("");
     
     // *** ADC data
     Int_t index1=0, index2=0;

@@ -66,11 +66,6 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   const char* PedFileName = GetFile(kDAQ, "PEDESTALS", "LDC0");
   const Int_t NZDCch = 44;
   if(PedFileName){
-    char *filename = "/home/oppedisa/alirun/Calib/ZDCPedestal.dat";
-    FILE *file;
-    if((file = fopen(filename,"r")) == NULL){
-     printf("Cannot open file %s \n",PedFileName);
-    }
     AliInfo(Form("File %s connected to analyze pedestal events", PedFileName));
     Float_t PedVal[(3*NZDCch)][2];
     for(Int_t i=0; i<(3*NZDCch); i++){
@@ -95,11 +90,6 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
 
   const char* EMDFileName = GetFile(kDAQ, "EMDCALIB", "LDC0");
   if(EMDFileName){
-    char *filename = "/home/oppedisa/alirun/Calib/ZDCEMDCalib.dat";
-    FILE *file;
-    if((file = fopen(filename,"r")) == NULL){
-     printf("Cannot open file %s \n",EMDFileName);
-    }
     AliInfo(Form("File %s connected to analyze EM dissociation events", EMDFileName));
     Float_t EMDFitVal[2];
     for(Int_t j=0; j<2; j++){          
