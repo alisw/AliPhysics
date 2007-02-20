@@ -1,6 +1,8 @@
 #ifdef __APPLE__
+#ifndef __INTEL_COMPILER
 #define STOP CALL EXIT !
 #define stop CALL EXIT !
+#endif
 #endif
       subroutine ah
       STOP
