@@ -36,7 +36,7 @@ class AliHLTProcessor : public AliHLTComponent {
   virtual ~AliHLTProcessor();
 
   /* depricated */
-  int Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv );
+  int Init( AliHLTComponentEnvironment* environ, void* environParam, int argc, const char** argv );
   /* depricated */
   int Deinit();
 

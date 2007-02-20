@@ -365,7 +365,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
   /**
    * Create a raw buffer of a certain size.
    * The function tries to find a buffer of the given size (or a bit bigger by a 
-   * certain margin @ref fMargin) from the list of free buffers.
+   * certain margin @ref fgMargin) from the list of free buffers.
    * If no buffer is available, a new one is created and added to the buffer handling.
    * @param size            min. size of the requested buffer
    * @return pointer to raw buffer
