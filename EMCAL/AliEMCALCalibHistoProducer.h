@@ -7,7 +7,10 @@
 
 /* History of cvs commits:
  *
- * $Log$ 
+ * $Log$
+ * Revision 1.1  2006/12/07 16:32:16  gustavo
+ * First shuttle code, online calibration histograms producer, EMCAL preprocessor
+ * 
  *
 */
 
@@ -36,10 +39,10 @@ public:
   void Init();
   void Run();
   void UpdateHistoFile();
-  void SetUpdatingRate(const Int_t rate) {fUpdatingRate = rate;}
+  void SetUpdatingRate(Int_t rate) {fUpdatingRate = rate;}
   void SetOldRCUFormat(Bool_t isOldRCUFormat) { fIsOldRCUFormat = isOldRCUFormat; }
-  void SetCalibHistoFileName(const Int_t name) {fHistoFileName = name;}
-  void SetSMInstalled(const Int_t nsm, Bool_t bsm) {fSMInstalled[nsm] = bsm;}
+  void SetCalibHistoFileName(Int_t name) {fHistoFileName = name;}
+  void SetSMInstalled(Int_t nsm, Bool_t bsm) {fSMInstalled[nsm] = bsm;}
 
 protected:
 

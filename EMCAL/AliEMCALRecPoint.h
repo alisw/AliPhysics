@@ -32,7 +32,7 @@ class AliEMCALRecPoint : public AliRecPoint {
   
   virtual ~AliEMCALRecPoint();
   virtual void    AddDigit(AliDigitNew &){ Fatal("AddDigit", "use AddDigit(AliEMCALDigit & digit, Float_t Energy )") ; }
-  virtual void    AddDigit(AliEMCALDigit & digit, const Float_t Energy); 
+  virtual void    AddDigit(AliEMCALDigit & digit, Float_t Energy); 
   virtual Int_t   Compare(const TObject * obj) const;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
