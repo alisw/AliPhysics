@@ -883,9 +883,9 @@ void AliVZEROv7::StepManager()
   static    Int_t   vol[4];
   static    Float_t hits[21];
   static    Float_t eloss, tlength;
-  static    Int_t   nPhotonsInStep;
-  static    Int_t   nPhotons; 
-  static    Int_t   numStep;
+  static    Int_t   nPhotonsInStep = 0;
+  static    Int_t   nPhotons = 0; 
+  static    Int_t   numStep = 0;
   Int_t     ringNumber;
   Float_t   destep, step;
   numStep += 1; 
