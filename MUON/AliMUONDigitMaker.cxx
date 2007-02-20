@@ -87,6 +87,7 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
     fMUONData(0x0),
     fScalerEvent(kFALSE),
     fDigitFlag(flag),
+    fTriggerFlag(kTRUE),
     fRawStreamTracker(new AliMUONRawStreamTracker()),    
     fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
     fDigit(new AliMUONDigit()),
@@ -145,7 +146,10 @@ Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader)
   ReadTrackerDDL(rawReader);
 
   // generate trigger
-  ReadTriggerDDL(rawReader);
+  if( fTriggerFlag)
+      ReadTriggerDDL(rawReader);
+  else
+      AliInfo("Reading trigger rawdata disable");
 
   return kTRUE;
 

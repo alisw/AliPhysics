@@ -54,6 +54,9 @@ class AliMUONDigitMaker : public TObject
         /// Set flag to generates scaler event
   void  SetScalerEvent() {fScalerEvent = kTRUE;}
 
+      /// Disable trigger rawdata reading
+  void  DisableTrigger() {fTriggerFlag = kFALSE;}
+
         /// Set Crate array
   void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
 
@@ -64,6 +67,8 @@ class AliMUONDigitMaker : public TObject
   Bool_t           fScalerEvent;       //!< flag to generates scaler event
 
   Bool_t           fDigitFlag;        //!< true for Digit, false for SDigit
+
+  Bool_t           fTriggerFlag;       //!< true for reading also trigger rawdata
 
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
