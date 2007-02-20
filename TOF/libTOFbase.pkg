@@ -5,6 +5,8 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFGeometryV4.cxx  \
 	AliTOFGeometryV5.cxx  \
         AliTOFdigit.cxx  \
+        AliTOFRawMap.cxx\
+        AliTOFrawData.cxx\
         AliTOFRawStream.cxx\
 	AliTOFChannel.cxx  \
 	AliTOFChannelOnline.cxx  \

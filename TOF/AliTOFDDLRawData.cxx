@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2006/08/22 13:29:42  arcelli
+removal of effective c++ warnings (C.Zampolli)
+
 Revision 1.11  2006/08/10 14:46:54  decaro
 TOF raw data format: updated version
 
@@ -71,6 +74,7 @@ ClassImp(AliTOFDDLRawData)
 AliTOFDDLRawData::AliTOFDDLRawData():
   fVerbose(0),
   fIndex(-1),
+  fPackedAcquisition(kTRUE),
   fTOFgeometry(0),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFdigitArray(0x0),
@@ -83,6 +87,7 @@ AliTOFDDLRawData::AliTOFDDLRawData():
 AliTOFDDLRawData::AliTOFDDLRawData(AliTOFGeometry *tofGeom):
   fVerbose(0),
   fIndex(-1),
+  fPackedAcquisition(kTRUE),
   fTOFgeometry(tofGeom),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFdigitArray(0x0),
@@ -97,6 +102,7 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   TObject(source),
   fVerbose(0),
   fIndex(-1),
+  fPackedAcquisition(kTRUE),
   fTOFgeometry(0),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFdigitArray(0x0),
@@ -105,6 +111,7 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   //Copy Constructor
   this->fIndex=source.fIndex;
   this->fVerbose=source.fVerbose;
+  this->fPackedAcquisition=source.fPackedAcquisition;
   this->fTOFgeometry=source.fTOFgeometry;
   this->fTOFdigitMap=source.fTOFdigitMap;
   this->fTOFdigitArray=source.fTOFdigitArray;
@@ -117,6 +124,7 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
   //Assigment operator
   this->fIndex=source.fIndex;
   this->fVerbose=source.fVerbose;
+  this->fPackedAcquisition=source.fPackedAcquisition;
   this->fTOFgeometry=source.fTOFgeometry;
   this->fTOFdigitMap=source.fTOFdigitMap;
   this->fTOFdigitArray=source.fTOFdigitArray;
@@ -667,7 +675,11 @@ void AliTOFDDLRawData::MakeTRMheader(Int_t nTRM, UInt_t *buf)
   AliBitPacking::PackWord(word,baseWord, 0, 3);
   word = 0; // event words
   AliBitPacking::PackWord(word,baseWord, 4,16);
-  word = 0; // ACQuisition mode: [0;3] see document
+
+  if (fPackedAcquisition)
+    word = 0; // ACQuisition mode: [0;3] see document
+  else
+    word = 3; // ACQuisition mode: [0;3] see document
   AliBitPacking::PackWord(word,baseWord,17,18);
   word = 0; // description of a SEU inside LUT tables for INL compensation;
             // the data are unaffected
@@ -835,6 +847,9 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
   // TRM TDC digit
   //
 
+  const Double_t kOneMoreFilledCell = 1./(fTOFgeometry->NPadXSector()*fTOFgeometry->NSectors());
+  Double_t percentFilledCells = Double_t(fTOFdigitMap->GetFilledCellNumber())/(fTOFgeometry->NPadXSector()*fTOFgeometry->NSectors());
+
   if (nDDL<0 || nDDL>71) {
     AliWarning(Form(" DDL number is out of the right range [0;71] (nDDL = %3i", nDDL));
     return;
@@ -850,6 +865,10 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
     return;
   }
   
+  Int_t psArray[1000];
+  UInt_t localBuffer[1000];
+  Int_t localIndex = -1;
+
   Int_t iDDL = nDDL%AliTOFGeometry::NDDL();
 
   Int_t volume[5] = {-1, -1, -1, -1, -1};
@@ -857,6 +876,9 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
   Int_t totCharge = -1;
   Int_t timeOfFlight = -1;
+
+  Int_t trailingSpurious = -1;
+  Int_t leadingSpurious = -1;
 
   AliTOFdigit *digs;
 
@@ -887,13 +909,79 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	
       if (volume[0]==-1 || volume[1]==-1 || volume[2]==-1 ||
 	  volume[3]==-1 || volume[4]==-1) continue;
-      //AliInfo(Form(" sector = %2i plate = %1i strip = %2i
-      //padX = %2i padZ = %1i", volume[0], volume[1], volume[2],
-      //volume[3], volume[4]));
 
       for (jj=0; jj<3; jj++) indexDigit[jj] = -1;
 
       fTOFdigitMap->GetDigitIndex(volume, indexDigit);
+
+      if (indexDigit[0]<0) {
+
+	trailingSpurious = Int_t(8192*gRandom->Rndm()) + Int_t(Int_t(256*gRandom->Rndm())*AliTOFGeometry::ToTBinWidth()/AliTOFGeometry::TdcBinWidth());
+	leadingSpurious = Int_t(8192*gRandom->Rndm());
+
+	if ( ( fPackedAcquisition && percentFilledCells<0.12 && gRandom->Rndm()<(0.12-percentFilledCells)) ||
+	     (!fPackedAcquisition && percentFilledCells<0.24 && gRandom->Rndm()<(0.24-percentFilledCells)) ) {
+
+	  percentFilledCells+=kOneMoreFilledCell;
+
+	  Int_t dummyPS = 0;
+
+	  if (HeadOrTail()) {
+	    word = trailingSpurious; // trailing edge measurement
+	    dummyPS = 2;
+	  }
+	  else {
+	    word = leadingSpurious; // leading edge measurement
+	    dummyPS = 1;
+	  }
+
+	  if (fVerbose==2) {
+	    if (nDDL<10) ftxt << "  " << nDDL;
+	    else         ftxt << " " << nDDL;
+	    if (nTRM<10) ftxt << "  " << nTRM;
+	    else         ftxt << " " << nTRM;
+	    ftxt << "  " << iChain;
+	    if (nTDC<10) ftxt << "  " << nTDC;
+	    else         ftxt << " " << nTDC;
+	    ftxt << "  " << iCH;
+	    if (volume[0]<10) ftxt  << "  ->  " << volume[0];
+	    else              ftxt  << "  -> " << volume[0];
+	    ftxt << "  " << volume[1];
+	    if (volume[2]<10) ftxt << "  " << volume[2];
+	    else              ftxt << " " << volume[2];
+	    ftxt << "  " << volume[4];
+	    if (volume[3]<10) ftxt << "  " << volume[3];
+	    else              ftxt << " " << volume[3];
+	    ftxt << "       " << -1;
+	    if (word<10)                     ftxt << "      " << word;// << endl;
+	    else if (word>=10 && word<100)   ftxt << "     " << word;// << endl;
+	    else if (word>=100 && word<1000) ftxt << "    " << word;// << endl;
+	    else                             ftxt << "   " << word;// << endl;
+	    ftxt << "       " << dummyPS << endl;
+	  }
+
+	  AliBitPacking::PackWord(word,baseWord, 0,20);
+	  word = iCH; // TDC channel ID [0;7]
+	  AliBitPacking::PackWord(word,baseWord,21,23);
+	  word = nTDC; // TDC ID [0;14]
+	  AliBitPacking::PackWord(word,baseWord,24,27);
+	  word = 0; // error flag
+	  AliBitPacking::PackWord(word,baseWord,28,28);
+	  word = dummyPS; // Packing Status [0;3]
+	  AliBitPacking::PackWord(word,baseWord,29,30);
+	  word = 1; // TRM TDC digit ID
+	  AliBitPacking::PackWord(word,baseWord,31,31);
+
+	  localIndex++;
+	  localBuffer[localIndex]=baseWord;
+	  psArray[localIndex]=dummyPS;
+
+	  nWordsPerTRM++;
+	  baseWord=0;
+
+	} // if (fPackedAcquisition && percentFilledCells<0.12 && gRandom->Rndm()<(0.12-percentFilledCells))  or ...
+
+      } // if (indexDigit[0]<0)
 
       for (jj=0; jj<3;jj++) {
 
@@ -911,6 +999,8 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	// temporary control
 	if (totCharge<0) totCharge = TMath::Abs(totCharge);
 	if (totCharge>=256) totCharge = 255;
+
+	if (fPackedAcquisition) {
 
 	if (fVerbose==2) {
 	  if (nDDL<10) ftxt << "  " << nDDL;
@@ -950,15 +1040,292 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	AliBitPacking::PackWord(word,baseWord,24,27);
 	word = 0; // error flag
 	AliBitPacking::PackWord(word,baseWord,28,28);
-	word = 0; // Packing Status [0;5]
+	word = 0; // Packing Status [0;3]
 	AliBitPacking::PackWord(word,baseWord,29,30);
 	word = 1; // TRM TDC digit ID
 	AliBitPacking::PackWord(word,baseWord,31,31);
-	fIndex++;
-	buf[fIndex]=baseWord;
+
+	localIndex++;
+	localBuffer[localIndex]=baseWord;
 
 	nWordsPerTRM++;
 	baseWord=0;
+
+	if (percentFilledCells<0.12 && gRandom->Rndm()<(0.12-percentFilledCells)) {
+
+	  percentFilledCells+=kOneMoreFilledCell;
+
+	  trailingSpurious = Int_t(8192*gRandom->Rndm()) + Int_t(Int_t(256*gRandom->Rndm())*AliTOFGeometry::ToTBinWidth()/AliTOFGeometry::TdcBinWidth());
+	  leadingSpurious = Int_t(8192*gRandom->Rndm());
+
+	  Int_t dummyPS = 0;
+
+	  if (HeadOrTail()) {
+	    word = trailingSpurious; // trailing edge measurement
+	    dummyPS = 2;
+	  }
+	  else {
+	    word = leadingSpurious; // leading edge measurement
+	    dummyPS = 1;
+	  }
+
+	  if (fVerbose==2) {
+	    if (nDDL<10) ftxt << "  " << nDDL;
+	    else         ftxt << " " << nDDL;
+	    if (nTRM<10) ftxt << "  " << nTRM;
+	    else         ftxt << " " << nTRM;
+	    ftxt << "  " << iChain;
+	    if (nTDC<10) ftxt << "  " << nTDC;
+	    else         ftxt << " " << nTDC;
+	    ftxt << "  " << iCH;
+	    if (volume[0]<10) ftxt  << "  ->  " << volume[0];
+	    else              ftxt  << "  -> " << volume[0];
+	    ftxt << "  " << volume[1];
+	    if (volume[2]<10) ftxt << "  " << volume[2];
+	    else              ftxt << " " << volume[2];
+	    ftxt << "  " << volume[4];
+	    if (volume[3]<10) ftxt << "  " << volume[3];
+	    else              ftxt << " " << volume[3];
+	    ftxt << "       " << -1;
+	    if (word<10)                     ftxt << "      " << word;
+	    else if (word>=10 && word<100)   ftxt << "     " << word;
+	    else if (word>=100 && word<1000) ftxt << "    " << word;
+	    else                             ftxt << "   " << word;
+	    ftxt << "       " << dummyPS << endl;
+	  }
+
+	  AliBitPacking::PackWord(word,baseWord, 0,20);
+	  word = iCH; // TDC channel ID [0;7]
+	  AliBitPacking::PackWord(word,baseWord,21,23);
+	  word = nTDC; // TDC ID [0;14]
+	  AliBitPacking::PackWord(word,baseWord,24,27);
+	  word = 0; // error flag
+	  AliBitPacking::PackWord(word,baseWord,28,28);
+	  word = dummyPS; // Packing Status [0;3]
+	  AliBitPacking::PackWord(word,baseWord,29,30);
+	  word = 1; // TRM TDC digit ID
+	  AliBitPacking::PackWord(word,baseWord,31,31);
+
+	  localIndex++;
+	  localBuffer[localIndex]=baseWord;
+	  psArray[localIndex]=dummyPS;
+
+	  nWordsPerTRM++;
+	  baseWord=0;
+
+	} // if (percentFilledCells<0.12 && gRandom->Rndm()<(0.12-percentFilledCells))
+
+
+	} // if (fPackedAcquisition)
+	else { // if (!fPackedAcquisition)
+
+	if (percentFilledCells<0.24 && gRandom->Rndm()<(0.24-percentFilledCells) && HeadOrTail()) {
+
+	  percentFilledCells+=kOneMoreFilledCell;
+
+	  trailingSpurious = Int_t(8192*gRandom->Rndm()) + Int_t(Int_t(256*gRandom->Rndm())*AliTOFGeometry::ToTBinWidth()/AliTOFGeometry::TdcBinWidth());
+	  word = trailingSpurious;
+	  Int_t dummyPS = 2;
+
+	  if (fVerbose==2) {
+	    if (nDDL<10) ftxt << "  " << nDDL;
+	    else         ftxt << " " << nDDL;
+	    if (nTRM<10) ftxt << "  " << nTRM;
+	    else         ftxt << " " << nTRM;
+	    ftxt << "  " << iChain;
+	    if (nTDC<10) ftxt << "  " << nTDC;
+	    else         ftxt << " " << nTDC;
+	    ftxt << "  " << iCH;
+	    if (volume[0]<10) ftxt  << "  ->  " << volume[0];
+	    else              ftxt  << "  -> " << volume[0];
+	    ftxt << "  " << volume[1];
+	    if (volume[2]<10) ftxt << "  " << volume[2];
+	    else              ftxt << " " << volume[2];
+	    ftxt << "  " << volume[4];
+	    if (volume[3]<10) ftxt << "  " << volume[3];
+	    else              ftxt << " " << volume[3];
+	    ftxt << "       " << -1;
+	    if (word<10)                     ftxt << "      " << word;
+	    else if (word>=10 && word<100)   ftxt << "     " << word;
+	    else if (word>=100 && word<1000) ftxt << "    " << word;
+	    else                             ftxt << "   " << word;
+	    ftxt << "       " << dummyPS << endl;
+	  }
+
+	  AliBitPacking::PackWord(word,baseWord, 0,20);
+	  word = iCH; // TDC channel ID [0;7]
+	  AliBitPacking::PackWord(word,baseWord,21,23);
+	  word = nTDC; // TDC ID [0;14]
+	  AliBitPacking::PackWord(word,baseWord,24,27);
+	  word = 0; // error flag
+	  AliBitPacking::PackWord(word,baseWord,28,28);
+	  word = dummyPS; // Packing Status [0;3]
+	  AliBitPacking::PackWord(word,baseWord,29,30);
+	  word = 1; // TRM TDC digit ID
+	  AliBitPacking::PackWord(word,baseWord,31,31);
+
+	  localIndex++;
+	  localBuffer[localIndex]=baseWord;
+	  psArray[localIndex]=dummyPS;
+
+	  nWordsPerTRM++;
+	  baseWord=0;
+
+	} // if (percentFilledCells<0.24 && gRandom->Rndm()<(0.24-percentFilledCells))
+
+
+	word = timeOfFlight + Int_t(totCharge*AliTOFGeometry::ToTBinWidth()/AliTOFGeometry::TdcBinWidth()); // trailing edge measurement
+
+	if (fVerbose==2) {
+	  if (nDDL<10) ftxt << "  " << nDDL;
+	  else         ftxt << " " << nDDL;
+	  if (nTRM<10) ftxt << "  " << nTRM;
+	  else         ftxt << " " << nTRM;
+	  ftxt << "  " << iChain;
+	  if (nTDC<10) ftxt << "  " << nTDC;
+	  else         ftxt << " " << nTDC;
+	  ftxt << "  " << iCH;
+	  if (volume[0]<10) ftxt  << "  ->  " << volume[0];
+	  else              ftxt  << "  -> " << volume[0];
+	  ftxt << "  " << volume[1];
+	  if (volume[2]<10) ftxt << "  " << volume[2];
+	  else              ftxt << " " << volume[2];
+	  ftxt << "  " << volume[4];
+	  if (volume[3]<10) ftxt << "  " << volume[3];
+	  else              ftxt << " " << volume[3];
+	  ftxt << "       " << -1;
+	  if (word<10)                     ftxt << "      " << word;
+	  else if (word>=10 && word<100)   ftxt << "     " << word;
+	  else if (word>=100 && word<1000) ftxt << "    " << word;
+	  else                             ftxt << "   " << word;
+	  ftxt << "       " << 2 << endl;
+	}
+
+	AliBitPacking::PackWord(word,baseWord, 0,20);
+
+	word = iCH; // TDC channel ID [0;7]
+	AliBitPacking::PackWord(word,baseWord,21,23);
+	word = nTDC; // TDC ID [0;14]
+	AliBitPacking::PackWord(word,baseWord,24,27);
+	word = 0; // error flag
+	AliBitPacking::PackWord(word,baseWord,28,28);
+	word = 2; // Packing Status [0;3]
+	AliBitPacking::PackWord(word,baseWord,29,30);
+	word = 1; // TRM TDC digit ID
+	AliBitPacking::PackWord(word,baseWord,31,31);
+
+	localIndex++;
+	localBuffer[localIndex]=baseWord;
+	psArray[localIndex]=2;
+
+	nWordsPerTRM++;
+	baseWord=0;
+
+
+
+	word = timeOfFlight; // leading edge measurement
+
+	if (fVerbose==2) {
+	  if (nDDL<10) ftxt << "  " << nDDL;
+	  else         ftxt << " " << nDDL;
+	  if (nTRM<10) ftxt << "  " << nTRM;
+	  else         ftxt << " " << nTRM;
+	  ftxt << "  " << iChain;
+	  if (nTDC<10) ftxt << "  " << nTDC;
+	  else         ftxt << " " << nTDC;
+	  ftxt << "  " << iCH;
+	  if (volume[0]<10) ftxt  << "  ->  " << volume[0];
+	  else              ftxt  << "  -> " << volume[0];
+	  ftxt << "  " << volume[1];
+	  if (volume[2]<10) ftxt << "  " << volume[2];
+	  else              ftxt << " " << volume[2];
+	  ftxt << "  " << volume[4];
+	  if (volume[3]<10) ftxt << "  " << volume[3];
+	  else              ftxt << " " << volume[3];
+	  ftxt << "       " << -1;
+	  if (word<10)                   ftxt << "      " << word;
+	  else if (word>=10 && word<100) ftxt << "     " << word;
+	  else                           ftxt << "    " << word;
+	  ftxt << "       " << 1 << endl;
+	}
+
+	AliBitPacking::PackWord(word,baseWord, 0,20);
+
+	word = iCH; // TDC channel ID [0;7]
+	AliBitPacking::PackWord(word,baseWord,21,23);
+	word = nTDC; // TDC ID [0;14]
+	AliBitPacking::PackWord(word,baseWord,24,27);
+	word = 0; // error flag
+	AliBitPacking::PackWord(word,baseWord,28,28);
+	word = 1; // Packing Status [0;3]
+	AliBitPacking::PackWord(word,baseWord,29,30);
+	word = 1; // TRM TDC digit ID
+	AliBitPacking::PackWord(word,baseWord,31,31);
+
+	localIndex++;
+	localBuffer[localIndex]=baseWord;
+	psArray[localIndex]=1;
+
+	nWordsPerTRM++;
+	baseWord=0;
+
+
+	if (percentFilledCells<0.24 && gRandom->Rndm()<(0.24-percentFilledCells) && !HeadOrTail()) {
+
+	  percentFilledCells+=kOneMoreFilledCell;
+
+	  leadingSpurious = Int_t(8192*gRandom->Rndm());
+	  word = leadingSpurious;
+	  Int_t dummyPS = 1;
+
+	  if (fVerbose==2) {
+	    if (nDDL<10) ftxt << "  " << nDDL;
+	    else         ftxt << " " << nDDL;
+	    if (nTRM<10) ftxt << "  " << nTRM;
+	    else         ftxt << " " << nTRM;
+	    ftxt << "  " << iChain;
+	    if (nTDC<10) ftxt << "  " << nTDC;
+	    else         ftxt << " " << nTDC;
+	    ftxt << "  " << iCH;
+	    if (volume[0]<10) ftxt  << "  ->  " << volume[0];
+	    else              ftxt  << "  -> " << volume[0];
+	    ftxt << "  " << volume[1];
+	    if (volume[2]<10) ftxt << "  " << volume[2];
+	    else              ftxt << " " << volume[2];
+	    ftxt << "  " << volume[4];
+	    if (volume[3]<10) ftxt << "  " << volume[3];
+	    else              ftxt << " " << volume[3];
+	    ftxt << "       " << -1;
+	    if (word<10)                     ftxt << "      " << word;// << endl;
+	    else if (word>=10 && word<100)   ftxt << "     " << word;// << endl;
+	    else if (word>=100 && word<1000) ftxt << "    " << word;// << endl;
+	    else                             ftxt << "   " << word;// << endl;
+	    ftxt << "       " << dummyPS << endl;
+	  }
+
+	  AliBitPacking::PackWord(word,baseWord, 0,20);
+	  word = iCH; // TDC channel ID [0;7]
+	  AliBitPacking::PackWord(word,baseWord,21,23);
+	  word = nTDC; // TDC ID [0;14]
+	  AliBitPacking::PackWord(word,baseWord,24,27);
+	  word = 0; // error flag
+	  AliBitPacking::PackWord(word,baseWord,28,28);
+	  word = dummyPS; // Packing Status [0;3]
+	  AliBitPacking::PackWord(word,baseWord,29,30);
+	  word = 1; // TRM TDC digit ID
+	  AliBitPacking::PackWord(word,baseWord,31,31);
+
+	  localIndex++;
+	  localBuffer[localIndex]=baseWord;
+	  psArray[localIndex]=dummyPS;
+
+	  nWordsPerTRM++;
+	  baseWord=0;
+
+	} // if (percentFilledCells<0.24 && gRandom->Rndm()<(0.24-percentFilledCells))
+
+
+	} // if (!fPackedAcquisition)
 
       } //end loop on digits in the same volume
 
@@ -966,6 +1333,30 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
   } // end loop on TDC number
 
+  if (fPackedAcquisition) {
+
+    for (Int_t jj=0; jj<=localIndex; jj++) {
+      fIndex++;
+      buf[fIndex] = localBuffer[jj];
+    }
+
+  }
+  else {
+
+    for (Int_t jj=0; jj<=localIndex; jj++) {
+      if (psArray[jj]==2) {
+	fIndex++;
+	buf[fIndex] = localBuffer[jj];
+      }
+    }
+    for (Int_t jj=0; jj<=localIndex; jj++) {
+      if (psArray[jj]==1) {
+	fIndex++;
+	buf[fIndex] = localBuffer[jj];
+      }
+    }
+
+  }
 
   if (fVerbose==2) ftxt.close();
 
@@ -987,5 +1378,19 @@ void AliTOFDDLRawData::ReverseArray(UInt_t a[], Int_t n) const
   }
 
   return;
+
+}
+
+//----------------------------------------------------------------------------
+Bool_t AliTOFDDLRawData::HeadOrTail() const
+{
+  //
+  // Returns the result of a 'pitch and toss'
+  //
+
+  Double_t dummy = gRandom->Rndm();
+
+  if (dummy<0.5) return kFALSE;
+  else return kTRUE;
 
 }

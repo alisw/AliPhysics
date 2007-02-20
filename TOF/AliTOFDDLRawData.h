@@ -33,6 +33,8 @@ class AliTOFDDLRawData:public TObject {
 
   Int_t RawDataTOF(TBranch* branch); 
 
+  void SetAcquisitionMode(Bool_t mode) {fPackedAcquisition=mode;};
+
  private:
 
   void  GetDigits();
@@ -53,8 +55,11 @@ class AliTOFDDLRawData:public TObject {
 
   UInt_t  MakeFiller();
 
+  Bool_t HeadOrTail() const;
+
   Int_t fVerbose;                 //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Int_t fIndex;                   //number of 32-bit words to be stored into the output file
+  Bool_t fPackedAcquisition;      //flag for packed/no packed acquisition
 
   AliTOFGeometry *fTOFgeometry;   //Pointer to the TOF geometry
 

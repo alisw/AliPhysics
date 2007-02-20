@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2006/12/15 14:01:38  cvetan
+Memory leak fixed
+
 Revision 1.9  2006/10/13 11:22:27  arcelli
 remove warnings due to uninitialized AliTOFtdcDigit data members
 
@@ -58,11 +61,17 @@ Revision 0.01  2005/07/22 A. De Caro
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
+
+#include "TClonesArray.h"
+
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliRawReader.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFGeometryV5.h"
+#include "AliTOFrawData.h"
+#include "AliTOFRawMap.h"
 #include "AliTOFRawStream.h"
 
 
@@ -251,6 +260,13 @@ TRM DATA FORMAT
 #define TRM_PS_BITS_MASK 0x60000000
 #define TRM_PS_BITS_POSITION 29
 
+#define TRM_FIRST_SLOT_ID 3
+
+//define hptdc time bin width
+#define TIME_BIN_WIDTH 24.4e-3 //ns
+
+//define hptdc tot bin width
+#define TOT_BIN_WIDTH 48.4e-3 //ns
 
 //TRM errors
 
@@ -365,184 +381,134 @@ ClassImp(AliTOFRawStream)
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
-  fRawReader(0x0),
+  fRawReader(rawReader),
+  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fDDL(-1),
   fTRM(-1),
-  fTDC(-1),
   fTRMchain(-1),
+  fTDC(-1),
   fTDCchannel(-1),
-  fTof(-1),
+  fTime(-1),
   fToT(-1),
+  fLeadingEdge(-1),
+  fTrailingEdge(-1),
   fErrorFlag(-1),
-
   fSector(-1),
   fPlate(-1),
   fStrip(-1),
   fPadX(-1),
   fPadZ(-1),
   fTOFGeometry(new AliTOFGeometryV5()),
+  fPackedDigits(0),
   fWordType(-1),
   fSlotID(-1),
   fACQ(-1),
   fPSbit(-1),
-  fTime(-1),
   fTDCerrorFlag(-1),
   fInsideDRM(kFALSE),
   fInsideTRM(kFALSE),
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
-  fInsideTRMchain1(kFALSE),
-  fLeadingOrphane(kFALSE)
+  fInsideTRMchain1(kFALSE)
 {
   //
   // create an object to read TOF raw digits
   //
 
-  fRawReader = rawReader;
-  /*
-  fDDL = -1;
-  fTRM = -1;
-  fTDC = -1;
-  fTRMchain = -1;
-  fTDCchannel = -1;
-  fTof = -1;
-  fToT = -1;
-  fErrorFlag = -1;
-
-  fSector = -1;
-  fPlate = -1;
-  fStrip = -1;
-  fPadX = -1;
-  fPadZ = -1;
-  fTOFGeometry = new AliTOFGeometryV5();
-  */
+  fRawReader->Reset();
   fRawReader->Select("TOF");
-  /*
-  fWordType = -1;
-  fSlotID = -1;
-  fACQ = -1;
-  fPSbit = -1;
-  fTime = -1;
-  fTDCerrorFlag = -1;
-  fInsideDRM = kFALSE;
-  fInsideTRM = kFALSE;
-  fInsideLTM = kFALSE;
-  fInsideTRMchain0 = kFALSE;
-  fInsideTRMchain1 = kFALSE;
-  fLeadingOrphane = kFALSE;
-  */
+
 }
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream():
   fRawReader(0x0),
+  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fDDL(-1),
   fTRM(-1),
-  fTDC(-1),
   fTRMchain(-1),
+  fTDC(-1),
   fTDCchannel(-1),
-  fTof(-1),
+  fTime(-1),
   fToT(-1),
+  fLeadingEdge(-1),
+  fTrailingEdge(-1),
   fErrorFlag(-1),
-
   fSector(-1),
   fPlate(-1),
   fStrip(-1),
   fPadX(-1),
   fPadZ(-1),
   fTOFGeometry(new AliTOFGeometryV5()),
+  fPackedDigits(0),
   fWordType(-1),
   fSlotID(-1),
   fACQ(-1),
   fPSbit(-1),
-  fTime(-1),
   fTDCerrorFlag(-1),
   fInsideDRM(kFALSE),
   fInsideTRM(kFALSE),
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
-  fInsideTRMchain1(kFALSE),
-  fLeadingOrphane(kFALSE)
+  fInsideTRMchain1(kFALSE)
 {
   //
   // default ctr
   //
-  /*
-  fRawReader = 0x0;
-  fDDL = -1;
-  fTRM = -1;
-  fTDC = -1;
-  fTRMchain = -1;
-  fTDCchannel = -1;
-  fTof = -1;
-  fToT = -1;
-  fErrorFlag = -1;
 
-  fSector = -1;
-  fPlate = -1;
-  fStrip = -1;
-  fPadX = -1;
-  fPadZ = -1;
-  fTOFGeometry = new AliTOFGeometryV5();
-  fWordType = -1;
-  fSlotID = -1;
-  fACQ = -1;
-  fPSbit = -1;
-  fTime = -1;
-  fTDCerrorFlag = -1;
-  fInsideDRM = kFALSE;
-  fInsideTRM = kFALSE;
-  fInsideLTM = kFALSE;
-  fInsideTRMchain0 = kFALSE;
-  fInsideTRMchain1 = kFALSE;
-  fLeadingOrphane = kFALSE;
-  */
 }
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   TObject(stream),
   fRawReader(0x0),
+  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fDDL(-1),
   fTRM(-1),
-  fTDC(-1),
   fTRMchain(-1),
+  fTDC(-1),
   fTDCchannel(-1),
-  fTof(-1),
+  fTime(-1),
   fToT(-1),
+  fLeadingEdge(-1),
+  fTrailingEdge(-1),
   fErrorFlag(-1),
-
   fSector(-1),
   fPlate(-1),
   fStrip(-1),
   fPadX(-1),
   fPadZ(-1),
   fTOFGeometry(new AliTOFGeometryV5()),
+  fPackedDigits(0),
   fWordType(-1),
   fSlotID(-1),
   fACQ(-1),
   fPSbit(-1),
-  fTime(-1),
   fTDCerrorFlag(-1),
   fInsideDRM(kFALSE),
   fInsideTRM(kFALSE),
   fInsideLTM(kFALSE),
   fInsideTRMchain0(kFALSE),
-  fInsideTRMchain1(kFALSE),
-  fLeadingOrphane(kFALSE)
+  fInsideTRMchain1(kFALSE)
 {
   //
   // copy constructor
   //
 
   fRawReader = stream.fRawReader;
+
+  fTOFrawData = stream.fTOFrawData;
+
   fDDL = stream.fDDL;
   fTRM = stream.fTRM;
-  fTDC = stream.fTDC;
   fTRMchain = stream.fTRMchain;
+  fTDC = stream.fTDC;
   fTDCchannel = stream.fTDCchannel;
-  fTof = stream.fTof;
+  fTime = stream.fTime;
   fToT = stream.fToT;
+  fLeadingEdge = stream.fLeadingEdge;
+  fTrailingEdge = stream.fTrailingEdge;
+
   fErrorFlag = stream.fErrorFlag;
 
   fSector = stream.fSector;
@@ -553,18 +519,18 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
 
   fTOFGeometry = stream.fTOFGeometry;
 
+  fPackedDigits = stream.fPackedDigits;
+
   fWordType = stream.fWordType;
   fSlotID = stream.fSlotID;
   fACQ = stream.fACQ;
   fPSbit = stream.fPSbit;
-  fTime = stream.fTime;
   fTDCerrorFlag = stream.fTDCerrorFlag;
   fInsideDRM = stream.fInsideDRM;
   fInsideTRM = stream.fInsideTRM;
   fInsideLTM = stream.fInsideLTM;
   fInsideTRMchain0 = stream.fInsideTRMchain0;
   fInsideTRMchain1 = stream.fInsideTRMchain1;
-  fLeadingOrphane = stream.fLeadingOrphane;
 
 }
 
@@ -576,13 +542,18 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
   //
 
   fRawReader = stream.fRawReader;
+
+  fTOFrawData = stream.fTOFrawData;
+
   fDDL = stream.fDDL;
   fTRM = stream.fTRM;
-  fTDC = stream.fTDC;
   fTRMchain = stream.fTRMchain;
+  fTDC = stream.fTDC;
   fTDCchannel = stream.fTDCchannel;
-  fTof = stream.fTof;
+  fTime = stream.fTime;
   fToT = stream.fToT;
+  fLeadingEdge = stream.fLeadingEdge;
+  fTrailingEdge = stream.fTrailingEdge;
   fErrorFlag = stream.fErrorFlag;
 
   fSector = stream.fSector;
@@ -593,18 +564,18 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
 
   fTOFGeometry = stream.fTOFGeometry;
 
+  fPackedDigits = stream.fPackedDigits;
+
   fWordType = stream.fWordType;
   fSlotID = stream.fSlotID;
   fACQ = stream.fACQ;
   fPSbit = stream.fPSbit;
-  fTime = stream.fTime;
   fTDCerrorFlag = stream.fTDCerrorFlag;
   fInsideDRM = stream.fInsideDRM;
   fInsideTRM = stream.fInsideTRM;
   fInsideLTM = stream.fInsideLTM;
   fInsideTRMchain0 = stream.fInsideTRMchain0;
   fInsideTRMchain1 = stream.fInsideTRMchain1;
-  fLeadingOrphane = stream.fLeadingOrphane;
 
   return *this;
 
@@ -615,10 +586,119 @@ AliTOFRawStream::~AliTOFRawStream()
 {
 // destructor
 
+  fPackedDigits = 0;
+
   delete fTOFGeometry;
+
+  delete fTOFrawData;
 
 }
 
+
+//_____________________________________________________________________________
+
+void AliTOFRawStream::LoadRawData(Int_t indexDDL)
+{
+
+  /*
+    for (Int_t indexDDL = 0;
+    indexDDL < AliDAQ::NumberOfDdls("TOF");
+    indexDDL++) {
+  */
+
+  fTOFrawData->Clear();
+  fPackedDigits = 0;
+
+  // create raw data map
+  AliTOFRawMap *rawMap = new AliTOFRawMap(fTOFrawData);
+  rawMap->Clear();
+
+  Int_t slot[4] = {-1, -1, -1, -1};
+
+  fRawReader->Reset();
+  fRawReader->Select("TOF", indexDDL, indexDDL);
+    
+  Bool_t signal = kFALSE;
+
+  while(Next()) {
+
+    signal = (fSector!=-1 && fPlate!=-1 && fStrip!=-1 && fPadZ!=-1 && fPadX!=-1);
+    if (signal) {
+      //printf("  %2i  %1i  %2i  %1i  %2i  \n", fSector, fPlate, fStrip, fPadZ, fPadX);
+
+      slot[0] = fTRM;
+      slot[1] = fTRMchain;
+      slot[2] = fTDC;
+      slot[3] = fTDCchannel;
+
+      if (rawMap->TestHit(slot) != kEmpty) {
+
+	AliTOFrawData *rawDigit = static_cast<AliTOFrawData*>(rawMap->GetHit(slot));
+
+	if (rawDigit->GetLeading()!=-1 && rawDigit->GetTrailing()==-1 &&
+	    fLeadingEdge==-1 && fTrailingEdge!=-1) {
+
+	  rawDigit->Update(fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
+	}
+	else if ( ((rawDigit->GetTOF()!=-1 || rawDigit->GetLeading()!=-1 || rawDigit->GetTrailing()!=-1) &&
+		   (fLeadingEdge!=-1 || fTrailingEdge!=-1 || fTime!=-1) )
+
+/*	else if ( ((rawDigit->GetTOF()!=-1 || rawDigit->GetLeading()!=-1 || rawDigit->GetTrailing()!=-1) &&
+		   (fTime!=-1 || fLeadingEdge!=-1 || fTrailingEdge!=-1))*/  /*||
+		  (rawDigit->GetLeading()==-1 && rawDigit->GetTrailing()!=-1 &&
+		  fLeadingEdge!=-1 && fTrailingEdge==-1) */)
+	  {
+
+	  TClonesArray &arrayTofRawData =  *fTOFrawData;
+	  new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
+
+	rawMap->SetHit(slot);
+
+	}
+
+
+      }
+      else {
+
+	TClonesArray &arrayTofRawData =  *fTOFrawData;
+	new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
+
+	rawMap->SetHit(slot);
+
+      } // else if (rawMap->TestHit(slot) == kEmpty)
+
+    } // if (signal)
+
+  } // closed -> while (Next())
+
+    /*
+      fDDL  = fRawReader->GetDDLID();
+
+      for (Int_t ii=0; ii<fTOFrawData->GetEntriesFast(); ii++) {
+
+      AliTOFrawData *dummy = (AliTOFrawData*)fTOFrawData->UncheckedAt(ii);
+
+      fTRM = dummy->GetTRM();
+      fTRMchain = dummy->GetTRMchain();
+      fTDC = dummy->GetTDC();
+      fTDCchannel = dummy->GetTDCchannel();
+
+      SetSector();
+      SetPlate();
+      SetStrip();
+      SetPadZ();
+      SetPadX();
+
+      printf("  %2i, %2i %1i, %2i, %1i  -->  %2i, %1i, %2i, %1i, %2i  \n",
+	     fDDL, fTRM, fTRMchain, fTDC, fTDCchannel,
+	     fSector, fPlate, fStrip, fPadZ, fPadX);
+
+	     } // closed loop on TOF raw data TClonesArray
+    */
+
+    //} // closed loop on indexDDL
+
+}
 
 //_____________________________________________________________________________
 Bool_t AliTOFRawStream::Next()
@@ -634,17 +714,17 @@ Bool_t AliTOFRawStream::Next()
 
   if (fSector!=-1 && fPlate!=-1 && fStrip!=-1 && fPadZ!=-1 && fPadX!=-1) {
     fSector = -1;
-    fPlate = -1;
-    fStrip = -1;
-    fPadZ = -1;
-    fPadX = -1;
+    fPlate  = -1;
+    fStrip  = -1;
+    fPadZ   = -1;
+    fPadX   = -1;
+    fTime   = -1;
+    fToT    = -1;
+    fLeadingEdge  = -1;
+    fTrailingEdge = -1;
   }
 
-
   fDDL  = fRawReader->GetDDLID();
-
-  // orphane digits
-  AliTOFtdcDigit orphaneLeadingDigit={0,0,0,0,0,0,0};
 
   fWordType = GetField(data,WORD_TYPE_MASK,WORD_TYPE_POSITION);
 
@@ -711,23 +791,23 @@ Bool_t AliTOFRawStream::Next()
       fInsideLTM = kFALSE;
       fInsideTRMchain0 = kFALSE;
       fInsideTRMchain1 = kFALSE;
-      fLeadingOrphane = kFALSE;
       fSector = -1;
-      fPlate = -1;
-      fStrip = -1;
-      fPadZ = -1;
-      fPadX = -1;
-      fDDL = -1;
-      fTRM = -1;
-      fTDC = -1;
-      fTRMchain = -1;
+      fPlate  = -1;
+      fStrip  = -1;
+      fPadZ   = -1;
+      fPadX   = -1;
+      fDDL        = -1;
+      fTRM        = -1;
+      fTDC        = -1;
+      fTRMchain   = -1;
       fTDCchannel = -1;
-      fTof = -1;
-      fToT = -1;
-      fErrorFlag = -1;
-      fACQ = -1;
-      fPSbit = -1;
       fTime = -1;
+      fToT  = -1;
+      fLeadingEdge  = -1;
+      fTrailingEdge = -1;
+      fErrorFlag = -1;
+      fACQ   = -1;
+      fPSbit = -1;
       fTDCerrorFlag = -1;
       break;
     case LTM_ID_NUMBER: // LTM global trailer
@@ -751,7 +831,7 @@ Bool_t AliTOFRawStream::Next()
 
 
   case ERROR_TYPE: // TDC error
-    fTDC = GetField(data,TRM_TDC_ERROR_TDC_ID_MASK,TRM_TDC_ERROR_TDC_ID_POSITION);
+    fTDC          = GetField(data,TRM_TDC_ERROR_TDC_ID_MASK,TRM_TDC_ERROR_TDC_ID_POSITION);
     fTDCerrorFlag = GetField(data,TRM_TDC_ERROR_FLAGS_MASK,TRM_TDC_ERROR_FLAGS_POSITION);
     break;
 
@@ -803,83 +883,49 @@ Bool_t AliTOFRawStream::Next()
 	&& fWordType!=TRM_CHAIN0_HEADER_TYPE && fWordType!=TRM_CHAIN0_TRAILER_TYPE
 	&& fWordType!=TRM_CHAIN1_HEADER_TYPE && fWordType!=TRM_CHAIN1_TRAILER_TYPE
 	){ // inside TRM chains
-      fPSbit = GetField(data,TRM_PS_BITS_MASK,TRM_PS_BITS_POSITION);
-      fTDC = GetField(data,TRM_TDC_ID_MASK,TRM_TDC_ID_POSITION);
+
+      fPSbit      = GetField(data,TRM_PS_BITS_MASK,TRM_PS_BITS_POSITION);
+      fTDC        = GetField(data,TRM_TDC_ID_MASK,TRM_TDC_ID_POSITION);
       fTDCchannel = GetField(data,TRM_CHAN_MASK,TRM_CHAN_POSITION);
+      fErrorFlag  = GetField(data,TRM_E_BIT_MASK,TRM_E_BIT_POSITION);
+
+      SetSector();
+      SetPlate();
+      SetStrip();
+      SetPadZ();
+      SetPadX();
+
 
       switch (fPSbit) { // switch fPSbit bits inside TRM chains
-      case 0: // packing ok, digit time and tot
-	fToT = GetField(data,TRM_TOT_WIDTH_MASK,TRM_TOT_WIDTH_POSITION);
+
+      case 0: // packing ok, digit time and TOT
+	fToT  = GetField(data,TRM_TOT_WIDTH_MASK, TRM_TOT_WIDTH_POSITION);
 	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION);
-	fTof = fTime;
-	SetSector();
-	SetPlate();
-	SetStrip();
-	SetPadZ();
-	SetPadX();
 	break;
 
       case 1: // leading edge digit, long digit time, no TOT
-	fToT = -1;
-	fTime = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION);
-	fTof = fTime;
-	SetSector();
-	SetPlate();
-	SetStrip();
-	SetPadZ();
-	SetPadX();
-	// always set it as orphane leading
-	fLeadingOrphane=1;
-	orphaneLeadingDigit.fSlotID = fSlotID;
-	orphaneLeadingDigit.fChain = fTRMchain;
-	orphaneLeadingDigit.fPS = fPSbit;
-	orphaneLeadingDigit.fTDC = fTDC;
-	orphaneLeadingDigit.fChannel = fTDCchannel;
-	orphaneLeadingDigit.fTOT = fToT;
-	orphaneLeadingDigit.fTime = fTime;
+	//fToT  = -1;
+	//fTime  = -1;
+	fLeadingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION);
 	break;
 
       case 2: // trailing edge digit, long digit time, no TOT
-	fToT = -1;
-	fTime = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION);
-	fTof = fTime;
-	SetSector();
-	SetPlate();
-	SetStrip();
-	SetPadZ();
-	SetPadX();
-	if (fACQ!=3) // check if packing is disabled
-	  break;
-	if (!fLeadingOrphane) // check for a orphane leading edge
-	  break;
-	if (orphaneLeadingDigit.fSlotID != fSlotID ||
-	    orphaneLeadingDigit.fChain != fTRMchain ||
-	    orphaneLeadingDigit.fTDC != fTDC ||
-	    orphaneLeadingDigit.fChannel != fTDCchannel) // check leading edge compatibility (fSlotID, fTRMchain, fTDC, fTDCchannel)
-	  break;
-	fLeadingOrphane = 0; // orphane leading is no longer orphane
-	SetSector();
-	SetPlate();
-	SetStrip();
-	SetPadZ();
-	SetPadX();
+	//fToT  = -1;
+	//fTime  = -1;
+	fTrailingEdge = GetField(data,TRM_LONG_DIGIT_TIME_MASK,TRM_LONG_DIGIT_TIME_POSITION);
 	break;
-      case 3: // TOT overflow
-	fToT = GetField(data,TRM_TOT_WIDTH_MASK,TRM_TOT_WIDTH_POSITION);
-	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION);
-	fTof = fTime;
-	SetSector();
-	SetPlate();
-	SetStrip();
-	SetPadZ();
-	SetPadX();
-	break;
-      } // end switch fPSbit bits inside TRM chains
 
+      case 3: // TOT overflow
+	fToT  = GetField(data,TRM_TOT_WIDTH_MASK, TRM_TOT_WIDTH_POSITION);
+	fTime = GetField(data,TRM_DIGIT_TIME_MASK,TRM_DIGIT_TIME_POSITION);
+	break;
+
+      } // end switch PS bits inside TRM chains
 
     } // end if is inside TRM chains
 
   } // end switch on fWordType
+
 
   return kTRUE;
 
@@ -893,7 +939,7 @@ void AliTOFRawStream::SetSector()
   // corresponding to the TOF equipment IDs:
   //                                  fDDL        -> [ 0;71]
   //                                  fTRM        -> [ 3;12]
-  //                                  fTRMchain   -> [0;  1]
+  //                                  fTRMchain   -> [ 0; 1]
   //                                  fTDC        -> [ 0;14]
   //                                  fTDCchannel -> [ 0; 7]
   //
@@ -915,7 +961,7 @@ void AliTOFRawStream::SetPlate()
   // corresponding to the TOF equipment IDs:
   //                                  fDDL        -> [ 0;71]
   //                                  fTRM        -> [ 3;12]
-  //                                  fTRMchain   -> [0;  1]
+  //                                  fTRMchain   -> [ 0; 1]
   //                                  fTDC        -> [ 0;14]
   //                                  fTDCchannel -> [ 0; 7]
   //
@@ -937,7 +983,7 @@ void AliTOFRawStream::SetStrip()
   // corresponding to the TOF equipment IDs:
   //                                  fDDL        -> [ 0;71]
   //                                  fTRM        -> [ 3;12]
-  //                                  fTRMchain   -> [0;  1]
+  //                                  fTRMchain   -> [ 0; 1]
   //                                  fTDC        -> [ 0;14]
   //                                  fTDCchannel -> [ 0; 7]
   //
@@ -960,7 +1006,7 @@ void AliTOFRawStream::SetPadZ()
   // corresponding to the TOF equipment IDs:
   //                                  fDDL        -> [ 0;71]
   //                                  fTRM        -> [ 3;12]
-  //                                  fTRMchain   -> [0;  1]
+  //                                  fTRMchain   -> [ 0; 1]
   //                                  fTDC        -> [ 0;14]
   //                                  fTDCchannel -> [ 0; 7]
   //
@@ -987,7 +1033,7 @@ void AliTOFRawStream::SetPadX()
   // corresponding to the TOF equipment IDs:
   //                                  fDDL        -> [ 0;71]
   //                                  fTRM        -> [ 3;12]
-  //                                  fTRMchain   -> [0;  1]
+  //                                  fTRMchain   -> [ 0; 1]
   //                                  fTDC        -> [ 0;14]
   //                                  fTDCchannel -> [ 0; 7]
   //

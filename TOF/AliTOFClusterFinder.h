@@ -42,6 +42,7 @@ class AliTOFClusterFinder : public TObject
   void LoadClusters();
   void UnLoad();
   void UnLoadClusters();
+  void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level
 
  protected:
   AliRunLoader *fRunLoader;      // Pointer to Run Loader
@@ -66,6 +67,7 @@ class AliTOFClusterFinder : public TObject
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   void  CalibrateRecPoint(); // Apply calibration pars to Clusters
 
+  Int_t fVerbose;  //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
 
   ClassDef(AliTOFClusterFinder,1) // To run TOF clustering
 };

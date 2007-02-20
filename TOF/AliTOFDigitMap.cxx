@@ -13,6 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/*
+$Log$
+*/
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -219,4 +222,34 @@ AliTOFDigitMap & AliTOFDigitMap::operator = (const AliTOFDigitMap & /*rhs*/)
 {
 // Dummy assignment operator
     return *this;
+}
+////////////////////////////////////////////////////////////////////////
+Int_t AliTOFDigitMap::GetFilledCellNumber() const
+{
+  //
+  // Returns the number of filled cells of the TOF digit map
+  //
+
+  Int_t volume[5] = {-1, -1, -1, -1, -1};
+  Int_t counter = 0;
+
+  for (Int_t iSector=0; iSector<fNSector; iSector++)
+    for (Int_t iPlate=0; iPlate<fNplate; iPlate++)
+      for (Int_t iStrip=0; iStrip<fNstrip; iStrip++)
+	for (Int_t iPadX=0; iPadX<fNpx; iPadX++)
+	  for (Int_t iPadZ=0; iPadZ<fNpz; iPadZ++)
+	    {
+
+	      volume[0] = iSector;
+	      volume[1] = iPlate;
+	      volume[2] = iStrip;
+	      volume[3] = iPadX;
+	      volume[4] = iPadZ;
+
+	      //if (CheckedIndex(volume)!=-1) counter++;
+	      if (GetDigitIndex(volume, 0)>0) counter++;
+	    }
+
+  return counter;
+
 }

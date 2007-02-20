@@ -66,7 +66,7 @@ public:
   void SetInterceptP(Float_t interceptP) {fP[1]=interceptP;}
   void SetMaxP(Float_t maxP) {fP[2]=maxP;}
   
-  void Draw(const Option_t* option) const;
+  void Draw(const Option_t* option) /*const*/;
   
   AliTOFFormatDCS* GetHVvp(Int_t pos) const
     {return pos<kNHV ? fHVvp[pos] : 0;}

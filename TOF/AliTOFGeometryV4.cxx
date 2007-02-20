@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/04/20 22:30:50  hristov
+Coding conventions (Annalisa)
+
 Revision 1.4  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -837,6 +840,99 @@ void AliTOFGeometryV4::GetVolumePath(Int_t *ind, Char_t *path ) {
   }
   sprintf(string4,"FSEN_0/FSEZ_%i/FSEX_%i",padz,padx);
   sprintf(path,"%s/%s/%s/%s",string1,string2,string3,string4); 
+
+}
+
+//_____________________________________________________________________________
+void AliTOFGeometryV4::GetVolumePath(Int_t sector, Char_t *path ) {
+  //--------------------------------------------------------------------
+  // This function returns the colume path of a given sector 
+  //--------------------------------------------------------------------
+  Char_t string[100];
+  
+  Int_t icopy=-1;
+  
+  if(sector<3){
+    icopy=sector+1;
+    sprintf(string,"/ALIC_1/B077_1/B075_%i/BTO3_1",icopy);
+  }
+  else if(sector<11){
+    //	icopy=sector-2;
+    icopy=sector+3;
+    sprintf(string,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+  }
+  else if(sector==11 || sector==12){
+    icopy=sector-10;
+    sprintf(string,"/ALIC_1/B077_1/B074_%i/BTO2_1",icopy);
+  }
+  else {
+    //	icopy=sector-4;
+    icopy=sector-12;
+    sprintf(string,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+  }
+  
+  sprintf(path,"%s",string); 
+
+}
+//_____________________________________________________________________________
+void AliTOFGeometryV4::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_t *path ) {
+  //--------------------------------------------------------------------
+  // This function returns the colume path of a given strip 
+  //--------------------------------------------------------------------
+  Char_t string1[100];
+  Char_t string2[100];
+  Char_t string3[100];
+  Int_t nstrB = NStripB();
+  Int_t nstrC = NStripC();
+  
+  Int_t icopy=-1;
+  
+  if(sector<3){
+    icopy=sector+1;
+    sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1",icopy);
+  }
+  else if(sector<11){
+    //	icopy=sector-2;
+    icopy=sector+3;
+    sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+  }
+  else if(sector==11 || sector==12){
+    icopy=sector-10;
+    sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1",icopy);
+  }
+  else {
+    //	icopy=sector-4;
+    icopy=sector-12;
+    sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+  }
+  
+  if( plate ==0){
+    sprintf(string2,"FTOC_1/FLTC_0");
+    icopy = nstrC - strip;
+    sprintf(string3,"FSTR_%i",icopy);
+  }    
+  else if( plate ==1){
+    sprintf(string2,"FTOB_1/FLTB_0");
+    icopy = nstrB - strip;
+      sprintf(string3,"FSTR_%i",icopy);
+  }
+  else if( plate ==2){
+    sprintf(string2,"FTOA_0/FLTA_0");
+    icopy = strip+1;
+    sprintf(string3,"FSTR_%i",icopy);
+  }
+  else if( plate ==3){
+    sprintf(string2,"FTOB_2/FLTB_0");
+    icopy = strip+1;
+    sprintf(string3,"FSTR_%i",icopy);
+  }
+  else if( plate ==4){
+    sprintf(string2,"FTOC_2/FLTC_0");
+    icopy = strip+1;
+    sprintf(string3,"FSTR_%i",icopy);
+  }
+
+  sprintf(path,"%s/%s/%s/FSEN_0",string1,string2,string3); 
 
 }
 

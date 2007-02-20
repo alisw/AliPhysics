@@ -47,6 +47,8 @@ class AliTOFDigitMap : public TObject
     // Assignment operator
     AliTOFDigitMap& operator = (const AliTOFDigitMap& rhs);
     
+    Int_t GetFilledCellNumber() const;
+
  private:
     // Check index
     Int_t CheckedIndex(Int_t *vol) const;

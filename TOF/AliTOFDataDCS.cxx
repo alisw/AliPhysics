@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2007/02/19 15:41:55  decaro
+Coding convention: few corrections
+
 Revision 1.3  2007/01/24 11:19:58  arcelli
 Modify ProcessData to return a logical (CZ)
 
@@ -770,7 +773,7 @@ void AliTOFDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
 }
 
 //---------------------------------------------------------------
-void AliTOFDataDCS::Draw(const Option_t* /*option*/) const
+void AliTOFDataDCS::Draw(const Option_t* /*option*/) /*const*/
 {
 // Draw all histos and graphs
 
