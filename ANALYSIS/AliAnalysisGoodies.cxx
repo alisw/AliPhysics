@@ -90,7 +90,7 @@ void AliAnalysisGoodies::Help() const
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, const TString localDir)
+Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, const TString localDir)
 {
   // copy files ESD files listed in an xml collection from AliEn catalog to local storage and creates a local xml collection
   // usage: Alien2Local(in, out)
@@ -151,7 +151,7 @@ const Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, con
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Make(AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const  
+Bool_t AliAnalysisGoodies::Make(AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const  
 {
   // makes esd collection from tags 
   // usage Make(tags, esds)
@@ -179,7 +179,7 @@ const Bool_t AliAnalysisGoodies::Make(AliRunTagCuts *runCuts, AliEventTagCuts *e
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagFile(AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const 
+Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagFile(AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const 
 {
   // Makes an esd collection from a root tag file 
   Bool_t rv = kTRUE ; 
@@ -200,7 +200,7 @@ const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagFile(AliRunTagCuts *run
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCuts * runCuts, AliEventTagCuts * evtCuts, const char * in, const char * out) const 
+Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCuts * runCuts, AliEventTagCuts * evtCuts, const char * in, const char * out) const 
 {
   // Makes an esd collection from a xml tag collection 
   Bool_t rv = kTRUE ; 
@@ -225,7 +225,7 @@ const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCut
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char * runCuts, const char * evtCuts, const char * in, const char * out) const 
+Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char * runCuts, const char * evtCuts, const char * in, const char * out) const 
 {
   // Makes an esd collection from a xml tag collection 
   
@@ -252,7 +252,7 @@ const Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char *
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char * subFile, const char * outFile) 
+Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char * subFile, const char * outFile) 
 {
   // merges files listed in a xml collection 
   // usage Merge(collection, outputFile))
@@ -317,7 +317,7 @@ const Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char *
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Process(TChain * chain) 
+Bool_t AliAnalysisGoodies::Process(TChain * chain) 
 {
   // process events starting from a chain of esd Trees
   Bool_t rv = kFALSE ; 
@@ -332,7 +332,7 @@ const Bool_t AliAnalysisGoodies::Process(TChain * chain)
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Process(const char * inFile) 
+Bool_t AliAnalysisGoodies::Process(const char * inFile) 
 { 
   // process the events with an Analysis Task 
   // usage Process(esdFile)
@@ -347,7 +347,7 @@ const Bool_t AliAnalysisGoodies::Process(const char * inFile)
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Process(const char * inFile, AliRunTagCuts *runCuts, AliEventTagCuts * evtCuts ) 
+Bool_t AliAnalysisGoodies::Process(const char * inFile, AliRunTagCuts *runCuts, AliEventTagCuts * evtCuts ) 
 {
   // process the events with an Analysis Task 
   // usage Process(esdFile, runtagCuts, evtTagCuts)
@@ -386,7 +386,7 @@ const Bool_t AliAnalysisGoodies::Process(const char * inFile, AliRunTagCuts *run
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Process(const char * inFile, const char * runCuts, const char * evtCuts) 
+Bool_t AliAnalysisGoodies::Process(const char * inFile, const char * runCuts, const char * evtCuts) 
 {
   // process the events with an Analysis Task 
   // usage Process(esdFile, runtagCuts, evtTagCuts)
@@ -425,7 +425,7 @@ const Bool_t AliAnalysisGoodies::Process(const char * inFile, const char * runCu
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
+Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
 {
   // Procees a TChain. 
 
@@ -470,7 +470,7 @@ const Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
 }
  
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::ProcessEsdFile(const char * esdFile) const   
+Bool_t AliAnalysisGoodies::ProcessEsdFile(const char * esdFile) const   
 {
   // process the events in a single ESD file with an Analysis Task 
   // usage ProcessLocalEsdFile(esdFile)
@@ -494,7 +494,7 @@ const Bool_t AliAnalysisGoodies::ProcessEsdFile(const char * esdFile) const
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts) const   
+Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts) const   
 {
   // process the events in a single Tag file with an Analysis Task 
   // usage ProcessLocalEsdFile(tagFile)
@@ -527,7 +527,7 @@ const Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, AliRunTagC
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, const char * runCuts, const char * evtCuts) const   
+Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, const char * runCuts, const char * evtCuts) const   
 {
   // process the events in a single Tag file with an Analysis Task 
   // usage ProcessLocalEsdFile(tagFile)
@@ -561,7 +561,7 @@ const Bool_t AliAnalysisGoodies::ProcessTagFile(const char * tagFile, const char
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const   
+Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const   
 {
   // process the events in a xml ESD collection  with an Analysis Task 
   // usage ProcessLocalEsdFile(xmlFile)
@@ -599,7 +599,7 @@ const Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) c
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, AliRunTagCuts *runCuts, AliEventTagCuts * evtCuts) const   
+Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, AliRunTagCuts *runCuts, AliEventTagCuts * evtCuts) const   
 {
   // process the events in a xml ESD collection  with an Analysis Task 
   // usage ProcessLocalEsdFile(xmlFile)
@@ -646,7 +646,7 @@ const Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, A
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const char * runCuts, const char * evtCuts) const   
+Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const char * runCuts, const char * evtCuts) const   
 {
   // process the events in a xml ESD collection  with an Analysis Task 
   // usage ProcessLocalEsdFile(xmlFile)
@@ -693,7 +693,7 @@ const Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, c
 }
 
 //______________________________________________________________________
-const Bool_t AliAnalysisGoodies::Register( const char * lfndir, const char * pfndir, const char * file) 
+Bool_t AliAnalysisGoodies::Register( const char * lfndir, const char * pfndir, const char * file) 
 {
   // register files already stored in a MSS into the AliEn catalog
   // usage: Register(lfndir, pfndir, pfnFileName)
