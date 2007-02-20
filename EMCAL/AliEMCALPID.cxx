@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.8  2006/12/19 08:49:35  gustavo
+ * New PID class for EMCAL, bayesian analysis done with ESD data, PID information filled when calling AliEMCALPID in AliEMCALReconstructor::FillESD()
+ *
  *
  */
 //    to compute PID for all the clusters in ESDs.root file
@@ -325,7 +328,6 @@ void AliEMCALPID::ComputePID(Double_t energy, Double_t lambda0)
 	fPIDFinal[8]  = fPIDWeight[2]/8;
 	fPIDFinal[9]  = fPIDWeight[2]/8;
 	fPIDFinal[10] = fPIDWeight[2]/8;
-	fPIDFinal[11] = 0;
 }
 //
 //

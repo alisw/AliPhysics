@@ -5,6 +5,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2006/12/19 08:49:35  gustavo
+ * New PID class for EMCAL, bayesian analysis done with ESD data, PID information filled when calling AliEMCALPID in AliEMCALReconstructor::FillESD()
+ *
  *
  */
 
@@ -50,7 +53,7 @@ public:
   
   Float_t fPID[3];
   
-  Float_t fPIDFinal[AliPID::kSPECIESN];  // final PID format
+  Float_t fPIDFinal[AliPID::kSPECIESN+1];  // final PID format
   Float_t fPIDWeight[3];                 // order: gamma, pi0, hadrons,
   Double_t fProbGamma;	                // probility to be a Gamma
   Double_t fProbPiZero;	                // probility to be a PiO
