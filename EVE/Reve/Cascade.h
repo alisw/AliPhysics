@@ -124,44 +124,44 @@ public:
 
   void SetDecayLength(Float_t primx, Float_t primy, Float_t primz);
 
-  Int_t   const GetESDIndex() {return fESDIndex;};
-  virtual const Text_t* GetName() const    { return Form("ESDcascade_%i",fESDIndex); }
-  virtual const Text_t* GetTitle() const   { return Form("ESDcascade_%i",fESDIndex); }
+  Int_t   GetESDIndex() const { return fESDIndex; }
+  virtual const Text_t* GetName()  const { return Form("ESDcascade_%i",fESDIndex); }
+  virtual const Text_t* GetTitle() const { return Form("ESDcascade_%i",fESDIndex); }
 
-  Float_t const GetDCA_v0_Bach();
-  Float_t const GetCasCosPointingAngle();
-  Float_t const GetRadius();
-  Float_t const GetPseudoRapidity();
-  Float_t const GetPt2();
-  Float_t const GetPt();
-  Float_t const GetP2();
-  Float_t const GetMomentum();
-  Float_t const GetPx();
-  Float_t const GetPy();
-  Float_t const GetPz();
-  Float_t const GetCasAlphaArmenteros();
-  Float_t const GetCasPtArmenteros();
-  Float_t const GetPosP2();
-  Float_t const GetPosP();
-  Float_t const GetPosPt();
-  Float_t const GetPosPseudoRapidity();
-  Float_t const GetNegP2();
-  Float_t const GetNegP();
-  Float_t const GetNegPt();
-  Float_t const GetNegPseudoRapidity();
-  Float_t const GetBachP2();
-  Float_t const GetBachP();
-  Float_t const GetBachPt();
-  Float_t const GetBachPseudoRapidity();
+  Float_t GetDCA_v0_Bach() const;
+  Float_t GetCasCosPointingAngle() const;
+  Float_t GetRadius() const;
+  Float_t GetPseudoRapidity() const;
+  Float_t GetPt2() const;
+  Float_t GetPt() const;
+  Float_t GetP2() const;
+  Float_t GetMomentum() const;
+  Float_t GetPx() const;
+  Float_t GetPy() const;
+  Float_t GetPz() const;
+  Float_t GetCasAlphaArmenteros() const;
+  Float_t GetCasPtArmenteros() const;
+  Float_t GetPosP2() const;
+  Float_t GetPosP() const;
+  Float_t GetPosPt() const;
+  Float_t GetPosPseudoRapidity() const;
+  Float_t GetNegP2() const;
+  Float_t GetNegP() const;
+  Float_t GetNegPt() const;
+  Float_t GetNegPseudoRapidity() const;
+  Float_t GetBachP2() const;
+  Float_t GetBachP() const;
+  Float_t GetBachPt() const;
+  Float_t GetBachPseudoRapidity() const;
 
-  Float_t const GetV0P2();
-  Float_t const GetLambdaE();
-  Float_t const GetXiE();
-  Float_t const GetOmegaE();
-  Float_t const GetXiMass();
-  Float_t const GetAntiXiMass();
-  Float_t const GetOmegaMass();
-  Float_t const GetAntiOmegaMass();
+  Float_t GetV0P2() const;
+  Float_t GetLambdaE() const;
+  Float_t GetXiE() const;
+  Float_t GetOmegaE() const;
+  Float_t GetXiMass() const;
+  Float_t GetAntiXiMass() const;
+  Float_t GetOmegaMass() const;
+  Float_t GetAntiOmegaMass() const;
 
   ClassDef(Cascade, 1)
 }; // endclass Cascade
@@ -179,154 +179,154 @@ inline void Cascade::SetBeta(Float_t betaNeg, Float_t betaPos, Float_t betaBach)
 
 //______________________________________________________________________
 
-inline Float_t const Cascade::GetV0P2() {
+inline Float_t Cascade::GetV0P2() const {
   Float_t px = fP_neg.x + fP_pos.x, py = fP_neg.y + fP_pos.y,
     pz = fP_neg.z+fP_pos.z;
   return px*px + py*py + pz*pz;
 }
 
 
-inline Float_t const Cascade::GetLambdaE() {
+inline Float_t Cascade::GetLambdaE() const {
   return sqrt(fgkMassLambda2+GetV0P2());
 }
 
-inline Float_t const Cascade::GetXiE() {
+inline Float_t Cascade::GetXiE() const {
   Float_t e = GetLambdaE() +
     sqrt(fgkMassPion2 + fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y +
 	 fP_bach.z*fP_bach.z);
   return e;
 }
 
-inline Float_t const Cascade::GetOmegaE() {
+inline Float_t Cascade::GetOmegaE() const {
   Float_t e = GetLambdaE() +
     sqrt(fgkMassKaon2 + fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y +
 	 fP_bach.z*fP_bach.z);
   return e;
 }
 
-inline Float_t const Cascade::GetXiMass() {
+inline Float_t Cascade::GetXiMass() const {
   Float_t e = GetXiE();
   return sqrt(e*e - GetP2());
 }
 
-inline Float_t const Cascade::GetAntiXiMass() { return GetXiMass();}
+inline Float_t Cascade::GetAntiXiMass() const { return GetXiMass();}
 
-inline Float_t const Cascade::GetOmegaMass() {
+inline Float_t Cascade::GetOmegaMass() const {
   Float_t e = GetOmegaE();
   return sqrt(e*e - GetP2());
 }
 
-inline Float_t const Cascade::GetAntiOmegaMass() { return GetOmegaMass();}
+inline Float_t Cascade::GetAntiOmegaMass() const { return GetOmegaMass();}
 
 
 //______________________________________________________________________
 
-inline Float_t const Cascade::GetDCA_v0_Bach() {
-return fDCA_v0_Bach;
+inline Float_t Cascade::GetDCA_v0_Bach() const {
+  return fDCA_v0_Bach;
 }
 
-inline Float_t const Cascade::GetCasCosPointingAngle() {
+inline Float_t Cascade::GetCasCosPointingAngle() const {
 return fCasCosPointingAngle;
 }
 
-inline Float_t const Cascade::GetRadius() {
+inline Float_t Cascade::GetRadius() const {
   return sqrt(fV_birth.x*fV_birth.x + fV_birth.y*fV_birth.y);
 }
 
-//inline Float_t const Cascade::GetDecayLength() {
+//inline Float_t Cascade::GetDecayLength() const {
 //return fDecayLength;
 //}
 
-inline Float_t const Cascade::GetPseudoRapidity() {
+inline Float_t Cascade::GetPseudoRapidity() const {
   Float_t theta = acos( GetPz()/GetMomentum() );
   return ( -log(tan(theta/2.)) );
 }
 
 
 //______________________________________________________________________
-inline Float_t const Cascade::GetPt2() {
+inline Float_t Cascade::GetPt2() const {
   Float_t px = GetPx(), py = GetPy();
   return (px*px+py*py);
 }
 
-inline Float_t const Cascade::GetP2() {
+inline Float_t Cascade::GetP2() const {
 
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
   return (px*px+py*py+pz*pz);
 }
 
-inline Float_t const Cascade::GetPt() {
+inline Float_t Cascade::GetPt() const {
   return sqrt(GetPt2());
 }
 
-inline Float_t const Cascade::GetMomentum() {
+inline Float_t Cascade::GetMomentum() const {
   return sqrt(GetP2());
 }
 
-inline Float_t const Cascade::GetPx() {
+inline Float_t Cascade::GetPx() const {
   return (fP_neg.x + fP_pos.x + fP_bach.x);
 }
 
-inline Float_t const Cascade::GetPy() {
+inline Float_t Cascade::GetPy() const {
   return (fP_neg.y + fP_pos.y + fP_bach.y);
 }
 
-inline Float_t const Cascade::GetPz() {
+inline Float_t Cascade::GetPz() const {
   return (fP_neg.z + fP_pos.z + fP_bach.z);
 }
 
 //______________________________________________________________________
 
-inline Float_t const Cascade::GetPosP2() {
+inline Float_t Cascade::GetPosP2() const {
   return (fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y + fP_pos.z*fP_pos.z);
 }
 
-inline Float_t const Cascade::GetPosP() {
+inline Float_t Cascade::GetPosP() const {
   return sqrt(GetPosP2());
 }
 
-inline Float_t const Cascade::GetPosPt() {
+inline Float_t Cascade::GetPosPt() const {
   return sqrt(fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y);
 }
 
-inline Float_t const Cascade::GetPosPseudoRapidity() {
+inline Float_t Cascade::GetPosPseudoRapidity() const {
   Float_t theta = acos( fP_pos.z/GetPosP() );
   return ( -log(tan(theta/2.)) );
 }
 
 //______________________________________________________________________
-inline Float_t const Cascade::GetNegP2() {
+inline Float_t Cascade::GetNegP2() const {
   return (fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y + fP_neg.z*fP_neg.z);
 }
 
-inline Float_t const Cascade::GetNegP() {
+inline Float_t Cascade::GetNegP() const {
   return sqrt(GetNegP2());
 }
 
-inline Float_t const Cascade::GetNegPt() {
+inline Float_t Cascade::GetNegPt() const {
   return sqrt(fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y);
 }
 
-inline Float_t const Cascade::GetNegPseudoRapidity() {
+inline Float_t Cascade::GetNegPseudoRapidity() const {
   Float_t theta = acos( fP_neg.z/GetNegP() );
   return ( -log(tan(theta/2.)) );
 }
 
 
 //______________________________________________________________________
-inline Float_t const Cascade::GetBachP2() {
+inline Float_t Cascade::GetBachP2() const {
   return (fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y + fP_bach.z*fP_bach.z);
 }
 
-inline Float_t const Cascade::GetBachP() {
+inline Float_t Cascade::GetBachP() const {
   return sqrt(GetBachP2());
 }
 
-inline Float_t const Cascade::GetBachPt() {
+inline Float_t Cascade::GetBachPt() const {
   return sqrt(fP_bach.x*fP_bach.x + fP_bach.y*fP_bach.y);
 }
 
-inline Float_t const Cascade::GetBachPseudoRapidity() {
+inline Float_t Cascade::GetBachPseudoRapidity() const {
   Float_t theta = acos( fP_bach.z/GetBachP() );
   return ( -log(tan(theta/2.)) );
 }

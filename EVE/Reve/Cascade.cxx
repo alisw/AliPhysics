@@ -346,8 +346,8 @@ void Cascade::MakeCascade()
 
 
 //______________________________________________________________________
-Float_t const Cascade::GetCasAlphaArmenteros() {
-
+Float_t Cascade::GetCasAlphaArmenteros() const
+{
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
   Float_t posXcas, negXcas;
 
@@ -366,8 +366,8 @@ Float_t const Cascade::GetCasAlphaArmenteros() {
 
 
 //______________________________________________________________________
-Float_t const Cascade::GetCasPtArmenteros() {
-
+Float_t Cascade::GetCasPtArmenteros() const
+{
   Float_t px = GetPx(), py = GetPy(), pz = GetPz();
   Float_t p2 = px*px + py*py + pz*pz;
   if (p2 < 1.e-39) return  -999;

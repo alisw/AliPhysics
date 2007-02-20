@@ -290,8 +290,8 @@ void V0::MakeV0()
 
 
 //______________________________________________________________________
-Float_t const V0::GetAlphaArmenteros() {
-
+Float_t V0::GetAlphaArmenteros() const
+{
   Float_t  posXv0 = fP_pos.x*GetPx() + fP_pos.y*GetPy() + fP_pos.z*GetPz();
   Float_t  negXv0 = fP_neg.x*GetPx() + fP_neg.y*GetPy() + fP_neg.z*GetPz();
 
@@ -301,8 +301,8 @@ Float_t const V0::GetAlphaArmenteros() {
 }
 
 //______________________________________________________________________
-  Float_t const V0::GetPtArmenteros() {
-
+Float_t V0::GetPtArmenteros() const
+{
   Float_t  posXv0 = fP_pos.x*GetPx() + fP_pos.y*GetPy() + fP_pos.z*GetPz();
   Float_t  v0mom2  = GetP2();
 
@@ -310,8 +310,6 @@ Float_t const V0::GetAlphaArmenteros() {
     return  TMath::Sqrt( GetPosP2() - posXv0*posXv0/v0mom2 ) ;
   else return -999;
 }
-
-
 
 
 

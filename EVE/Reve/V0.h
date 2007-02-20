@@ -72,46 +72,46 @@ public:
   void          SetDecayLength(Float_t len);
   void          SetDecayLength(Float_t primx, Float_t primy, Float_t primz);
 
-  Float_t const GetDaughterDCA();
-  Float_t const GetCosPointingAngle();
-  Float_t const GetRadius();
-  Float_t const GetDecayLength();
+  Float_t GetDaughterDCA() const;
+  Float_t GetCosPointingAngle() const;
+  Float_t GetRadius() const;
+  Float_t GetDecayLength() const;
 
-  Float_t const GetP2();
-  Float_t const GetMomentum();
-  Float_t const GetPt();
-  Float_t const GetPt2();
-  Float_t const GetPx();
-  Float_t const GetPy();
-  Float_t const GetPz();
-  Float_t const GetPseudoRapidity();
-  Float_t const GetAlphaArmenteros();
-  Float_t const GetPtArmenteros();
+  Float_t GetP2() const;
+  Float_t GetMomentum() const;
+  Float_t GetPt() const;
+  Float_t GetPt2() const;
+  Float_t GetPx() const;
+  Float_t GetPy() const;
+  Float_t GetPz() const;
+  Float_t GetPseudoRapidity() const;
+  Float_t GetAlphaArmenteros() const;
+  Float_t GetPtArmenteros() const;
 
-  Float_t const GetK0sE() {return 0;};
-  Float_t const GetLamE() {return 0;};
-  Float_t const GetAntiLamE() {return 0;};
-  Float_t const GetK0mass();
-  Float_t const GetLamMass();
-  Float_t const GetAntiLamMass();
+  Float_t GetK0sE() const {return 0;};
+  Float_t GetLamE() const {return 0;};
+  Float_t GetAntiLamE() const {return 0;};
+  Float_t GetK0mass() const;
+  Float_t GetLamMass() const;
+  Float_t GetAntiLamMass() const;
 
-  Float_t const GetPionMinusE();
-  Float_t const GetPionPlusE();
-  Float_t const GetProtonE();
-  Float_t const GetPBarE();
+  Float_t GetPionMinusE() const;
+  Float_t GetPionPlusE() const;
+  Float_t GetProtonE() const;
+  Float_t GetPBarE() const;
 
-  Float_t const GetPosDCAtoPrim();
-  Float_t const GetPosP2();
-  Float_t const GetPosP();
-  Float_t const GetPosPt();
-  Float_t const GetPosPseudoRapidity();
+  Float_t GetPosDCAtoPrim() const;
+  Float_t GetPosP2() const;
+  Float_t GetPosP() const;
+  Float_t GetPosPt() const;
+  Float_t GetPosPseudoRapidity() const;
 
-  Float_t const GetNegDCAtoPrim();
-  Float_t const GetNegP2();
-  Float_t const GetNegP();
-  Float_t const GetNegPt();
-  Float_t const GetNegPseudoRapidity();
-  Int_t   const GetESDIndex() {return fESDIndex;};
+  Float_t GetNegDCAtoPrim() const;
+  Float_t GetNegP2() const;
+  Float_t GetNegP() const;
+  Float_t GetNegPt() const;
+  Float_t GetNegPseudoRapidity() const;
+  Int_t   GetESDIndex() const {return fESDIndex;};
 
   virtual const Text_t* GetName() const    { return Form("ESDv0_%i",fESDIndex); }
   virtual const Text_t* GetTitle() const   { return Form("ESDv0_%i",fESDIndex); }
@@ -174,135 +174,135 @@ inline void V0::SetDecayLength(Float_t len) {
 
 
 //______________________________________________________________________
-inline Float_t const V0::GetPt2() {
+inline Float_t V0::GetPt2() const {
   Float_t px = fP_neg.x+fP_pos.x, py = fP_neg.y+fP_pos.y;
   return (px*px+py*py);
 }
 
-inline Float_t const V0::GetP2() {
+inline Float_t V0::GetP2() const {
 
   Float_t px = fP_neg.x+fP_pos.x, py = fP_neg.y+fP_pos.y, pz = fP_neg.z+fP_pos.z;
   return (px*px+py*py+pz*pz);
 }
 
-inline Float_t const V0::GetPt() {
+inline Float_t V0::GetPt() const {
   return sqrt(GetPt2());
 }
 
-inline Float_t const V0::GetMomentum() {
+inline Float_t V0::GetMomentum() const {
   return sqrt(GetP2());
 }
 
-inline Float_t const V0::GetPx() {
+inline Float_t V0::GetPx() const {
   return (fP_neg.x+fP_pos.x);
 }
 
-inline Float_t const V0::GetPy() {
+inline Float_t V0::GetPy() const {
   return (fP_neg.y+fP_pos.y);
 }
 
-inline Float_t const V0::GetPz() {
+inline Float_t V0::GetPz() const {
   return (fP_neg.z+fP_pos.z);
 }
 
 //______________________________________________________________________
 
-inline Float_t const V0::GetDaughterDCA() {
-return fDaughterDCA;
+inline Float_t V0::GetDaughterDCA() const {
+  return fDaughterDCA;
 }
 
-inline Float_t const V0::GetCosPointingAngle() {
+inline Float_t V0::GetCosPointingAngle() const {
 return fCosPointingAngle;
 }
 
-inline Float_t const V0::GetRadius() {
+inline Float_t V0::GetRadius() const {
   return sqrt(fV_v0.x*fV_v0.x + fV_v0.y*fV_v0.y);
 }
 
-inline Float_t const V0::GetDecayLength() {
+inline Float_t V0::GetDecayLength() const {
 return fDecayLength;
 }
 
-inline Float_t const V0::GetPseudoRapidity() {
+inline Float_t V0::GetPseudoRapidity() const {
   Float_t theta = acos( GetPz()/GetMomentum() );
   return ( -log(tan(theta/2.)) );
 }
 
 //______________________________________________________________________
 
-inline Float_t const V0::GetPionMinusE() {
+inline Float_t V0::GetPionMinusE() const {
   return sqrt(fgkMassPion2+GetNegP2());
 }
 
-inline Float_t const V0::GetPionPlusE() {
+inline Float_t V0::GetPionPlusE() const {
   return sqrt(fgkMassPion2+GetPosP2());
 }
-inline Float_t const V0::GetProtonE() {
+inline Float_t V0::GetProtonE() const {
   return sqrt(fgkMassProton2+GetPosP2());
 
 }
-inline Float_t const V0::GetPBarE() {
+inline Float_t V0::GetPBarE() const {
   return sqrt(fgkMassProton2+GetNegP2());
 }
 
 //______________________________________________________________________
 
-inline Float_t const V0::GetPosP2() {
+inline Float_t V0::GetPosP2() const {
   return (fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y + fP_pos.z*fP_pos.z);
 }
 
-inline Float_t const V0::GetPosP() {
+inline Float_t V0::GetPosP() const {
   return sqrt(GetPosP2());
 }
 
-inline Float_t const V0::GetPosPt() {
+inline Float_t V0::GetPosPt() const {
   return sqrt(fP_pos.x*fP_pos.x + fP_pos.y*fP_pos.y);
 }
 
-inline Float_t const V0::GetPosPseudoRapidity() {
+inline Float_t V0::GetPosPseudoRapidity() const {
   Float_t theta = acos( fP_pos.z/GetPosP() );
   return ( -log(tan(theta/2.)) );
 }
 
-inline Float_t const V0::GetPosDCAtoPrim() {
+inline Float_t V0::GetPosDCAtoPrim() const {
   return 0;
 }
 
 //______________________________________________________________________
-inline Float_t const V0::GetNegP2() {
+inline Float_t V0::GetNegP2() const {
   return (fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y + fP_neg.z*fP_neg.z);
 }
 
-inline Float_t const V0::GetNegP() {
+inline Float_t V0::GetNegP() const {
   return sqrt(GetNegP2());
 }
 
-inline Float_t const V0::GetNegPt() {
+inline Float_t V0::GetNegPt() const {
   return sqrt(fP_neg.x*fP_neg.x + fP_neg.y*fP_neg.y);
 }
 
-inline Float_t const V0::GetNegPseudoRapidity() {
+inline Float_t V0::GetNegPseudoRapidity() const {
   Float_t theta = acos( fP_neg.z/GetNegP() );
   return ( -log(tan(theta/2.)) );
 }
 
-inline Float_t const V0::GetNegDCAtoPrim() {
+inline Float_t V0::GetNegDCAtoPrim() const {
   return 0;
 }
 
 //______________________________________________________________________
 
-inline Float_t const V0::GetK0mass() {
+inline Float_t V0::GetK0mass() const {
   Float_t energy = GetPionMinusE() + GetPionPlusE();
   return sqrt( energy*energy - GetP2() );
 }
 
-inline Float_t const V0::GetLamMass() {
+inline Float_t V0::GetLamMass() const {
   Float_t energy = GetPionMinusE() + GetProtonE();
   return sqrt( energy*energy - GetP2() );
 }
 
-inline Float_t const V0::GetAntiLamMass() {
+inline Float_t V0::GetAntiLamMass() const {
   Float_t energy = GetPionPlusE() + GetPBarE();
   return sqrt( energy*energy - GetP2() );
 }
