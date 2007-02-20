@@ -29,8 +29,6 @@ class AliMUONReconstructor: public AliReconstructor
     AliMUONReconstructor();
     virtual ~AliMUONReconstructor();
 
-    virtual void         Init(AliRunLoader* runLoader);
-
     virtual void         Reconstruct(TTree* /*digitsTree*/, 
 				     TTree* /*clustersTree*/) const {return;}
     virtual void         Reconstruct(AliRawReader* /*rawReader*/, 
@@ -58,7 +56,6 @@ private:
     AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
 
 private:
-    AliRunLoader* fRunLoader;       //!< pointer to runloader
     AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
 
     mutable AliMUONCalibrationData* fCalibrationData; //!< pointer to calibration data
