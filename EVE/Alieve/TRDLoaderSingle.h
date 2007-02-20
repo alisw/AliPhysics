@@ -20,7 +20,7 @@ namespace Alieve {
 		TRDLoaderSingle(const Text_t* n="TRDLoaderSingle", const Text_t* t=0);
 
 //	protected:
-		Bool_t			GoToEvent(const int ev);
+		Bool_t			GoToEvent(int ev);
 		Bool_t			Open(const char *file, const char *dir=".");
 
 		ClassDef(TRDLoaderSingle, 1) // Alieve sigle event loader class for the TRD detector

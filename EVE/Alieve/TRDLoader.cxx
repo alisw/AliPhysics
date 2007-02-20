@@ -69,14 +69,14 @@ template<class T>
 class ID
 {
 public:
-	ID( const int value ) : id(value) {}
+	ID( int value ) : id(value) {}
 	bool operator()(const T &t) const {
 		return ((dynamic_cast<TRDModule*>(t))->GetID() == id);
 	}
 private:
 	const int id;
 };
-void	TRDLoader::AddChambers(const int sm, const int stk, const int ly)
+void	TRDLoader::AddChambers(int sm, int stk, int ly)
 {
 	Int_t ism_start = (sm == -1) ?  0 : sm;
 	Int_t ism_stop  = (sm == -1) ? 18 : sm+1;
@@ -129,7 +129,7 @@ void	TRDLoader::AddChambers(const int sm, const int stk, const int ly)
 }
 
 //________________________________________________________
-TRDChamber*	TRDLoader::GetChamber(const int d)
+TRDChamber*	TRDLoader::GetChamber(int d)
 {
 	List_i ism, istack, ichmb;
 	
@@ -143,7 +143,7 @@ TRDChamber*	TRDLoader::GetChamber(const int d)
 }
 
 //________________________________________________________
-Bool_t	TRDLoader::GoToEvent(const int ev)
+Bool_t	TRDLoader::GoToEvent(int ev)
 {
 	Info("GoToEvent", Form("Event = %d", ev));
 	fEvent = ev;

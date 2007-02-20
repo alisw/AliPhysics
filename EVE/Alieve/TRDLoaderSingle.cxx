@@ -27,7 +27,7 @@ TRDLoaderSingle::TRDLoaderSingle(const Text_t* n, const Text_t* t) : TRDLoader(n
 
 
 //________________________________________________________
-Bool_t	TRDLoaderSingle::GoToEvent(const int ev)
+Bool_t	TRDLoaderSingle::GoToEvent(int ev)
 {
 	fEvent = ev;
 

@@ -20,7 +20,7 @@ ClassImp(TRDModule)
 ClassImp(TRDModuleEditor)
 
 //________________________________________________________
-TRDModule::TRDModule(const char *typ, const Int_t det) :
+TRDModule::TRDModule(const char *typ, Int_t det) :
   TNamed(Form("%s%03d", typ, det), ""), fDet(det)
 {
 	fLoadHits = kFALSE;

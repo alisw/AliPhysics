@@ -29,7 +29,7 @@ ClassImp(TRDChamber)
 ClassImp(TRDNode)
 
 //________________________________________________________
-TRDNode::TRDNode(const char *typ, const Int_t det) :
+TRDNode::TRDNode(const char *typ, Int_t det) :
   Reve::RenderElementListBase(), TRDModule(typ, det)
 {
 }
@@ -203,7 +203,7 @@ void TRDNode::UpdateNode()
 ///////////////////////////////////////////////////////////
 
 //________________________________________________________
-TRDChamber::TRDChamber(const Int_t det) :
+TRDChamber::TRDChamber(Int_t det) :
   Reve::RenderElement(), TRDModule("Chmb", det), rowMax(-1), colMax(-1), timeMax(22), fX0(0.), fPla(-1)
 {
   //

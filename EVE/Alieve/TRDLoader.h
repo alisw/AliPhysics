@@ -54,9 +54,9 @@ namespace Alieve {
 		~TRDLoader();
 
 	protected:
-		virtual void		AddChambers(const int sm=-1, const int stk=-1, const int ly=-1);
-		virtual TRDChamber*	GetChamber(const int d);
-		virtual Bool_t	GoToEvent(const int ev);
+		virtual void		AddChambers(int sm=-1, int stk=-1, int ly=-1);
+		virtual TRDChamber*	GetChamber(int d);
+		virtual Bool_t	GoToEvent(int ev);
 		virtual Bool_t	LoadClusters(TTree *tC);
 		virtual Bool_t	LoadDigits(TTree *tD);
 		virtual Bool_t	LoadHits(TTree *tH);

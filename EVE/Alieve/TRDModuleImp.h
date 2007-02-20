@@ -39,7 +39,7 @@ namespace Alieve {
 	friend class TRDDigits;
 	public:
 	
-		TRDChamber(const Int_t det=0);
+		TRDChamber(Int_t det=0);
 		virtual ~TRDChamber() {}
 	
 		TRDChamber(const TRDChamber&);
@@ -76,7 +76,7 @@ namespace Alieve {
 	class TRDNode : public Reve::RenderElementListBase, public TRDModule
 	{
 	public:
-		TRDNode(const char *typ, const Int_t det=0);
+		TRDNode(const char *typ, Int_t det=0);
 		void	Paint(Option_t* option="");
 		void	Reset();
 

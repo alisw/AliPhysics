@@ -33,7 +33,7 @@ namespace Alieve {
 	friend class TRDNode;
 	friend class TRDChamber;
 	public:
-		TRDModule(const char *typ="XXX", const Int_t id=0);
+		TRDModule(const char *typ="XXX", Int_t id=0);
 		virtual ~TRDModule() {}
 	
 		virtual Bool_t GetDigitsBox(){return fDigitsBox;}
