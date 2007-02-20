@@ -9,7 +9,7 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTPCTrack.h
-    @author Anders Vestbo, Uli Frankenfeld, Matthias Richter
+    @author Anders Vestbo, Uli Frankenfeld, maintained by Matthias Richter
     @date   
     @brief  HLT TPC track base class (conformal mapping)
 */

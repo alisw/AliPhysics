@@ -4,8 +4,8 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
+ * Authors: Anders Vestbo, Uli Frankenfeld                                *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          for The ALICE Off-line Project.                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -18,7 +18,7 @@
  **************************************************************************/
 
 /** @file   AliHLTTPCTrack.cxx
-    @author Anders Vestbo, Uli Frankenfeld, Matthias Richter
+    @author Anders Vestbo, Uli Frankenfeld, maintained by Matthias Richter
     @date   
     @brief  HLT TPC track implementation (conformal mapping) */
 
@@ -37,38 +37,45 @@ ClassImp(AliHLTTPCTrack)
 
 
 AliHLTTPCTrack::AliHLTTPCTrack()
+  :
+  fNHits(0),
+  fMCid(-1),
+  fKappa(0),
+  fRadius(0),
+  fCenterX(0),
+  fCenterY(0),
+  fFromMainVertex(0),
+  fQ(0),
+  fPhi0(0),
+  fPsi(0),
+  fR0(0),
+  fTanl(0),
+  fZ0(0),
+  fPt(0),
+  fLength(0),
+  fIsLocal(true),
+  //  fRowRange({0,0}),
+  fPID(0),
+
+  fSector(0),
+  fPterr(0),
+  fPsierr(0),
+  fZ0err(0),
+  fTanlerr(0),
+  //  fPoint({0,0,0}),
+  fPointPsi(0)
 {
   //Constructor
-  fNHits = 0;
-  fMCid = -1;
-  fKappa=0;
-  fRadius=0;
-  fCenterX=0;
-  fCenterY=0;
-  ComesFromMainVertex(false);
-  fQ = 0;
-  fPhi0=0;
-  fPsi=0;
-  fR0=0;
-  fTanl=0;
-  fZ0=0;
-  fPt=0;
-  fLength=0;
-  fIsLocal=true;
   fRowRange[0]=0;
   fRowRange[1]=0;
+  fPoint[0]=0;
+  fPoint[1]=0;
+  fPoint[2]=0;
+
+
   SetFirstPoint(0,0,0);
   SetLastPoint(0,0,0);
   memset(fHitNumbers,0,159*sizeof(UInt_t));
-  fPID = 0;
-
-  fSector=0;
-  fPterr=0;
-  fPsierr=0;
-  fZ0err=0;
-  fTanlerr=0;
-  fPoint[0]=fPoint[1]=fPoint[2]=0;
-  fPointPsi=0;
 }
 
 void AliHLTTPCTrack::Copy(AliHLTTPCTrack *tpt)
@@ -187,6 +194,7 @@ void AliHLTTPCTrack::Rotate(Int_t slice,Bool_t tolocal)
 
 void AliHLTTPCTrack::CalculateHelix()
 {
+  // fit assigned clusters to helix
 // #### -B0-CHANGE-START == JMT
     // for straight line fit
     if (AliHLTTPCTransform::GetBFieldValue() == 0.0 ){
@@ -605,8 +613,8 @@ void AliHLTTPCTrack::Print() const
     <<"NH="<<fNHits<<" "<<fMCid<<" K="<<fKappa<<" R="<<fRadius<<" Cx="<<fCenterX<<" Cy="<<fCenterY<<" MVT="
     <<fFromMainVertex<<" Row0="<<fRowRange[0]<<" Row1="<<fRowRange[1]<<" Sector="<<fSector<<" Q="<<fQ<<" TgLam="
     <<fTanl<<" psi="<<fPsi<<" pt="<<fPt<<" L="<<fLength<<" "<<fPterr<<" "<<fPsierr<<" "<<fZ0err<<" "
-    <<fTanlerr<<" phi0="<<fPhi0<<" R0="<<fR0<<" Z0"<<fZ0<<" X0"<<fFirstPoint[0]<<" Y0"<<fFirstPoint[1]<<" Z0"
-    <<fFirstPoint[2]<<" XL"<<fLastPoint[0]<<" YL"<<fLastPoint[1]<<" ZL"<<fLastPoint[2]<<" "
+    <<fTanlerr<<" phi0="<<fPhi0<<" R0="<<fR0<<" Z0="<<fZ0<<" X0="<<fFirstPoint[0]<<" Y0="<<fFirstPoint[1]<<" Z0="
+    <<fFirstPoint[2]<<" XL="<<fLastPoint[0]<<" YL="<<fLastPoint[1]<<" ZL="<<fLastPoint[2]<<" "
     <<fPoint[0]<<" "<<fPoint[1]<<" "<<fPoint[2]<<" "<<fPointPsi<<" "<<fIsPoint<<" local="
     <<fIsLocal<<" "<<fPID<<ENDLOG; 
 
@@ -628,34 +636,17 @@ void AliHLTTPCTrack::Print() const
 
 int AliHLTTPCTrack::Convert2AliKalmanTrack()
 {
-  int iResult=0;
   // The method has been copied from AliHLTHoughKalmanTrack and adapted
   // to the TPC conformal mapping track parametrization
+  int iResult=0;
 
-//   SetChi2(0.);
-//   SetNumberOfClusters(GetLastRow()-GetFirstRow());
-//   SetLabel(GetMCid());
-//   SetFakeRatio(0.);
-//   SetMass(0.13957); // just a guess
-
-//   fdEdx=0;
-  Double_t alpha = fmod((GetSector()+0.5)*(2*TMath::Pi()/18),2*TMath::Pi());
+  // sector A00 starts at 3 o'clock, sectors are counted counterclockwise
+  // median of sector 00 is at 10 degrees, median of sector A04 at 90
+  //
+  Double_t alpha = 0;
+  alpha = fmod((2*GetSector()+1)*(TMath::Pi()/18),2*TMath::Pi());
   if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
   else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
-
-//   Double_t xhit=GetFirstPointX();
-//   Double_t yhit=GetFirstPointY();
-//   Double_t zhit=GetFirstPointZ();
-//   Double_t psi = GetPsi();
-//   Double_t kappa = GetKappa();
-//   Double_t radius = GetRadius();
-//   Double_t centerx = GetCenterX();
-
-//   Double_t tanl = GetTgl();
-
-//   Double_t cnv=1.;
-  // TODO: think about how to get the magnetic field
-  //Double_t cnv=1./(GetBz()*kB2C);
 
   //covariance matrix
   Double_t cov[15]={
@@ -666,13 +657,16 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
     0.,  0.,  0.,  0.,  0.
   };
 
-  const Double_t xhit = 82.97;
+  Double_t xhit = GetFirstPointX();
   Double_t xx[5];
   xx[0] = GetFirstPointY();
   xx[1] = GetFirstPointZ();
-  xx[2] = GetPsi();
+  xx[2] = TMath::Sin(GetPsi());
   xx[3] = GetTgl();
   xx[4] = GetPt();
+  //cout << "xhit=" << xhit << " y=" << xx[0] << " z=" << xx[1] << endl;
+  //cout << "alpha=" << alpha << endl;
+
   // the Set function was not available in earlier versions, check required in
   // configure.ac
 #ifdef EXTERNALTRACKPARAM_V1

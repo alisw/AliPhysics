@@ -76,32 +76,34 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
       AliESD* pESD=fESD;
 
       const AliHLTComponentBlockData* iter = NULL;
-      AliHLTTPCTrackArray* tracks=NULL;
       AliHLTTPCTrackletData* inPtr=NULL;
  
       for (int ndx=0; ndx<evtData.fBlockCnt && iResult>=0; ndx++) {
 	iter = blocks+ndx;
 	if ( iter->fDataType == AliHLTTPCDefinitions::gkTrackSegmentsDataType ) {
-	  if (tracks==NULL) {
-	    tracks=new AliHLTTPCTrackArray;
-	    if (tracks) {
-	      inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
-	      HLTDebug("reading block %d: %d tracklets", ndx, inPtr->fTrackletCnt);
-	      tracks->FillTracks(inPtr->fTrackletCnt, inPtr->fTracklets);
-	      if ((iResult=Tracks2ESD(tracks, pESD))>=0) {
-		pTree->Fill();
-	      }
-	    } else {
-	      iResult=-ENOMEM;
+	  Int_t minslice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
+	  Int_t maxslice=AliHLTTPCDefinitions::GetMaxSliceNr(iter->fSpecification);
+	  //HLTDebug("dataspec %#x minslice %d", iter->fSpecification, minslice);
+	  if (minslice >=0 && minslice<36) {
+	    if (minslice!=maxslice) {
+	      HLTWarning("data from multiple sectors in one block: "
+			 "possible missmatch in treatment of local coordinate system");
+	    }
+	    AliHLTTPCTrackArray tracks;
+	    inPtr=(AliHLTTPCTrackletData*)iter->fPtr;
+	    HLTDebug("reading block %d (slice %d): %d tracklets", ndx, minslice, inPtr->fTrackletCnt);
+	    tracks.FillTracks(inPtr->fTrackletCnt, inPtr->fTracklets, minslice, 0/*don't rotate*/);
+	    if ((iResult=Tracks2ESD(&tracks, pESD))>=0) {
 	    }
 	  } else {
-	    HLTWarning("can not process more than one track segment data block, "
-		       "please put a track merger in between");
-	    break; // don't print the warning again
+	    HLTError("invalid sector number");
+	    iResult=-EBADF;
 	  }
 	}
       }
-
+      if (iResult>=0) {
+	pTree->Fill();
+      }
 
       fESD=NULL;
       delete pESD;

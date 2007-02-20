@@ -1,8 +1,26 @@
 // @(#) $Id$
 // Original: AliHLTTrackArray.cxx,v 1.21 2005/06/14 10:55:21 cvetan 
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Uli Frankenfeld                                               *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCTrackArray.cxx
+    @author Uli Frankenfeld, maintained by Matthias Richter
+    @date   
+    @brief  Array of AliHLTTPCTracks */
 
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTrackArray.h"
@@ -15,16 +33,6 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCConfMapPoint.h"
 
-/** \class AliHLTTPCTrackArray
-<pre>
-//_____________________________________________________________
-// AliHLTTPCTrackArray
-//
-// Track array class 
-//
-</pre>
-*/
-
 #if __GNUC__ >= 3
 using namespace std;
 #endif
@@ -32,32 +40,57 @@ using namespace std;
 ClassImp(AliHLTTPCTrackArray)
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray()
+  :
+  fSize(0),
+  fNTracks(0),
+  fNAbsent(0),
+  fTrackType('t')
 {
   //Default constructor
-  fSize = 0;
-  fNTracks=0;
-  fNAbsent=0;
-  fTrackType='t';
   SetSize();
 }
 
 
-AliHLTTPCTrackArray::AliHLTTPCTrackArray(Int_t ntrack)
+AliHLTTPCTrackArray::AliHLTTPCTrackArray(const AliHLTTPCTrackArray&)
+  :
+  fSize(0),
+  fNTracks(0),
+  fNAbsent(0),
+  fTrackType('t')
 {
-  //Constructor.
-  fSize = 0;
+  //constructor
+  SetSize();
+}
+
+AliHLTTPCTrackArray& AliHLTTPCTrackArray::operator=(const AliHLTTPCTrackArray&)
+{
+  //assignment
+  fSize=0;
   fNTracks=0;
   fNAbsent=0;
   fTrackType='t';
+  SetSize();
+  return *this;
+}
+
+AliHLTTPCTrackArray::AliHLTTPCTrackArray(Int_t ntrack)
+  :
+  fSize(0),
+  fNTracks(0),
+  fNAbsent(0),
+  fTrackType('t')
+{
+  //Constructor.
   SetSize(ntrack);
 }
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype,Int_t ntrack)
+  :
+  fSize(0),
+  fNTracks(0),
+  fNAbsent(0)
 {
   //Constructor.
-  fSize = 0;
-  fNTracks=0;
-  fNAbsent=0;
   if(strcmp(tracktype,"AliHLTTPCTrack")==0) fTrackType='t';
   if(strcmp(tracktype,"AliHLTTPCConfMapTrack")==0) fTrackType='c';
 #ifdef INCLUDE_TPC_HOUGH
@@ -68,11 +101,12 @@ AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype,Int_t ntrack)
 }
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype)
+  :
+  fSize(0),
+  fNTracks(0),
+  fNAbsent(0)
 {
   //Constructor.
-  fSize = 0;
-  fNTracks=0;
-  fNAbsent=0;
   if(strcmp(tracktype,"AliHLTTPCTrack")==0) fTrackType='t';
   if(strcmp(tracktype,"AliHLTTPCConfMapTrack")==0) fTrackType='c';
 #ifdef INCLUDE_TPC_HOUGH
@@ -214,41 +248,7 @@ void AliHLTTPCTrackArray::Remove(Int_t track)
   }
 }
 
-void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr){
-  //Read tracks from shared memory (or memory)
-  AliHLTTPCTrackSegmentData *trs = tr;
-   for(Int_t i=0; i<ntracks; i++){
-    AliHLTTPCTrack *track = NextTrack(); 
-    track->SetPt(trs->fPt);
-    track->SetPsi(trs->fPsi);
-    track->SetTgl(trs->fTgl);
-    track->SetPterr(trs->fPterr);
-    track->SetPsierr(trs->fPsierr);
-    track->SetTglerr(trs->fTglerr);
-    track->SetNHits(trs->fNPoints);
-    track->SetCharge(trs->fCharge);
-    track->SetFirstPoint(trs->fX,trs->fY,trs->fZ);
-    track->SetLastPoint(trs->fLastX,trs->fLastY,trs->fLastZ);
-    track->SetHits( trs->fNPoints, trs->fPointIDs );
-#ifdef INCLUDE_TPC_HOUGH
-#ifdef ROWHOUGHPARAMS
-    if(GetTrackType()=='h') {
-      ((AliHLTTPCHoughTrack *)track)->SetWeight(trs->fWeight);
-      ((AliHLTTPCHoughTrack *)track)->SetBinXY(trs->fBinX,trs->fBinY,trs->fBinXSize,trs->fBinYSize);
-    }
-    track->SetMCid(trs->fTrackID);
-    track->SetRowRange(trs->fRowRange1,trs->fRowRange2);
-    track->SetSector(trs->fSector);
-    track->SetPID(trs->fPID);
-#endif
-#endif // INCLUDE_TPC_HOUGH
-    UChar_t *tmpP = (UChar_t*)trs;
-    tmpP += sizeof(AliHLTTPCTrackSegmentData)+trs->fNPoints*sizeof(UInt_t);
-    trs = (AliHLTTPCTrackSegmentData*)tmpP;
-  }
-}
-
-void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr,Int_t slice)
+void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* tr,Int_t slice, Int_t bTransform)
 {
   //Read tracks from shared memory (or memory)
   AliHLTTPCTrackSegmentData *trs = tr;
@@ -258,7 +258,10 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     track->SetPterr(trs->fPterr);
     Float_t psi[1];
     psi[0]=trs->fPsi;
-    AliHLTTPCTransform::Local2GlobalAngle(psi,slice);
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2GlobalAngle(psi,slice);
+    }
+    //cout << "psi " << psi[0] << endl;
     track->SetPsi(psi[0]);
     track->SetTgl(trs->fTgl);
     track->SetPsierr(trs->fPsierr);
@@ -267,16 +270,40 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     track->SetCharge(trs->fCharge);
     Float_t first[3];
     first[0]=trs->fX;first[1]=trs->fY;first[2]=trs->fZ;
-    AliHLTTPCTransform::Local2Global(first,slice);
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2Global(first,slice);
+    }
+    //cout << "first point: " << first[0] << " " << first[1] << " " << first[3] << endl;
     track->SetFirstPoint(first[0],first[1],first[2]);
     Float_t last[3];
     last[0]=trs->fLastX;last[1]=trs->fLastY;last[2]=trs->fLastZ;
-    AliHLTTPCTransform::Local2Global(last,slice);
+    if (slice>=0 && bTransform!=0)  {
+      AliHLTTPCTransform::Local2Global(last,slice);
+    }
+    //cout << "last point: " << last[0] << " " << last[1] << " " << last[3] << endl;
     track->SetLastPoint(last[0],last[1],last[2]);
     track->SetHits( trs->fNPoints, trs->fPointIDs );
+
+    if (slice>=0 && bTransform!=0)  {
+      // as everything is now in global coordinates we set the sector to 0
+      track->SetSector(0);
+    } else {
+      // the parameters are in local coordinates, set the sector no
+#ifndef INCLUDE_TPC_HOUGH
+      if (slice<0) track->SetSector(0);
+      else track->SetSector(slice);
+#else 
+      // Matthias Feb 2007: this is some kind of legacy ...
+      // the INCLUDE_TPC_HOUGH has never been switched on in the new TPCLib
+      // and this line was below in the corresponding block. As the slice
+      // parameter is very useful but not available if the define is off
+      // we distinguish the two cases here. Should be cleaned up.
+      track->SetSector(trs->fSector);
+#endif // INCLUDE_TPC_HOUGH
+    }
 // BEGINN ############################################## MODIFIY JMT
-    track->SetSector(slice);
-    track->CalculateHelix();
+// this we have to check
+//  track->CalculateHelix();
 // END ################################################# MODIFIY JMT
 #ifdef INCLUDE_TPC_HOUGH
 #ifdef ROWHOUGHPARAMS
@@ -286,7 +313,6 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     }
     track->SetMCid(trs->fTrackID);
     track->SetRowRange(trs->fRowRange1,trs->fRowRange2);
-    track->SetSector(slice);
     track->SetPID(trs->fPID);
 #endif
 #endif // INCLUDE_TPC_HOUGH
@@ -572,6 +598,7 @@ Int_t AliHLTTPCTrackArray::TrackCompare(AliHLTTPCTrack *a, AliHLTTPCTrack *b) co
 
 AliHLTTPCTrack* AliHLTTPCTrackArray::operator[](int index)
 {
+  // access operator
   if (index<fNTracks) return fTrack[index];
   return NULL;
 }

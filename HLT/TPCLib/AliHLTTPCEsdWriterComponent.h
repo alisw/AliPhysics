@@ -20,8 +20,18 @@ class AliESD;
 class AliHLTTPCTrackArray;
 
 /**
- * @class AliHLTRootFileWriterComponent
- * @see AliHLTFileWriter for parameters
+ * @class AliHLTTPCEsdWriterComponent
+ * This class translates incoming track segments structures from the TPC
+ * conformal mapping tracker into the ESD fromat and writes it to a ROOT
+ * file. 
+ * Arguments: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li -datafile     <i> filename   </i> <br>
+ *      file name base
+ * \li -directory    <i> directory  </i> <br>
+ *      target directory
+ *
+ * @see AliHLTFileWriter and AliHLTRootFileWriterComponent for more parameters
  */
 class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
 {
