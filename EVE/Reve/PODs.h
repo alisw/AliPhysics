@@ -94,6 +94,8 @@ class PathMark
   PathMark(Type_e t=Reference) : V(), P(), type(t) {}
   virtual ~PathMark() {}
 
+  const char* type_name();
+
   ClassDef(PathMark, 1);
 };
 

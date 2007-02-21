@@ -26,7 +26,7 @@ void Reve::DisablePODTObjectStreamers()
 }
 
 //______________________________________________________________________
-// Point
+// Vector
 //
 
 ClassImp(Reve::Vector)
@@ -41,6 +41,23 @@ Float_t Vector::Eta() const
 
 /**************************************************************************/
 /**************************************************************************/
+
+//______________________________________________________________________
+// PathMark
+//
+
+ClassImp(Reve::PathMark)
+
+const char* PathMark::type_name()
+{
+  switch (type)
+  {
+    case Daughter:  return "Daughter";
+    case Reference: return "Reference";
+    case Decay:     return "Decay";
+    default:        return "Unknown";
+  }
+}
 
 //ClassImp(Hit)
 //ClassImp(RecTrack)
