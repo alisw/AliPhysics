@@ -380,7 +380,7 @@ void AliEMCALv0::CreateGeometry()
 void AliEMCALv0::Init(void)
 {
     // Just prints an information message
-  
+  AliEMCAL::Init();
   if(AliLog::GetGlobalDebugLevel()>0) { 
     TString message("\n") ; 
     message += "*****************************************\n" ;
