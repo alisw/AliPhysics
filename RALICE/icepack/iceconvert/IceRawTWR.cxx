@@ -333,9 +333,14 @@ void IceRawTWR::Exec(Option_t* opt)
    gpssecs=gpshigh<<24;
    gpssecs+=gpslow;
 
+   cout << " GPS year in hex : " << hex << gps.info.bits.year << dec << endl;
+
    // Seconds and nanoseconds since the start of the UT year
    seconds=gpssecs;
    nsecs=100*gps.count_10MHz;
+
+   // Correction for GPS telegram interpretation in the TWR Daq
+   if (year<2007) seconds-=24*3600;
    
    // Reset the complete Event structure
    evt->Reset();
@@ -404,6 +409,7 @@ void IceRawTWR::PutWaveforms(Int_t year)
  TString hname;
  IceAOM om;
  IceAOM* omx=0;
+ Int_t twrid;
  Int_t omid;
  Int_t omidmax=680;
  Int_t error;
@@ -412,7 +418,10 @@ void IceRawTWR::PutWaveforms(Int_t year)
  {
   if (!fEvent.wfm_filled[i]) continue;
 
-  omid=fEvent.twr_id_of_om[i];
+  twrid=fEvent.twr_id_of_om[i];
+  if (!twrid) continue;
+
+  omid=i+1;
   if (omid<=0 || omid>omidmax) continue; // Skip trigger channels
 
   // Get corresponding device from the current event structure  

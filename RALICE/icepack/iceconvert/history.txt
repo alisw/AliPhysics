@@ -88,5 +88,12 @@
 13-feb-2007 NvE IceRawTWR.cxx updated to ensure padding zeros in gps time word.
                 Also old "F2K" comments corrected into "TWR raw" in IceRawTWR.cxx
                 and IceRawTWR.h. 
+21-feb-2007 NvE IceRawTWR.cxx updated to subtract 1 day from the GPS timestamp for all
+                data taken before 2007. This is to correct an interpretation error
+                in the TWR daq hardware design.
+                Also OM identifier set to loop index instead of twr_id in the memberfunction
+                PutWaveforms. This will now provide the correct number of fired OMs and
+                corresponding waveforms.
+               
 
 
