@@ -24,10 +24,11 @@ class AliRsnDaughter;
 class AliRsnEvent : public TObject
 {
 public:
-	               AliRsnEvent();
-	               AliRsnEvent(const AliRsnEvent& copy);
-				   AliRsnEvent& operator=(const AliRsnEvent& copy);
-			 
+	
+	AliRsnEvent();
+	AliRsnEvent(const AliRsnEvent& copy);
+	AliRsnEvent& operator=(const AliRsnEvent& copy);
+	
 	virtual       ~AliRsnEvent() {Clear("DELETE");}
 	
 	void           AddTrack(AliRsnDaughter track);
@@ -46,9 +47,9 @@ public:
 
 private:
 
-	Double_t       fPVx;  			          // position of
-	Double_t       fPVy;  			          // primary
-	Double_t       fPVz;  			          // vertex
+	Double_t       fPVx;                      // position of
+	Double_t       fPVy;                      // primary
+	Double_t       fPVz;                      // vertex
 	
 	Int_t          fMultiplicity;             // global event multiplicity
 

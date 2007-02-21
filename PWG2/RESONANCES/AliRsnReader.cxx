@@ -52,7 +52,14 @@
 ClassImp(AliRsnReader)
 
 //--------------------------------------------------------------------------------------------------------
-AliRsnReader::AliRsnReader()
+AliRsnReader::AliRsnReader() :
+  TObject(),
+  fPIDMethod(kESDPID),
+  fPtLimit4PID(4.0),
+  fProbThreshold(0.0),
+  fMaxRadius(3.0),
+  fUseKineInfo(kFALSE),
+  fEvents(0x0)
 {
 //
 // Constructor.
@@ -61,35 +68,26 @@ AliRsnReader::AliRsnReader()
 // - rejection of non-ITS-refitted tracks
 // - maximum distance allowed from primary vertex = 3.0 cm (beam pipe)
 //
-	fPIDMethod = kESDPID;
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = 1.0;
-	fPtLimit4PID = 4.0;    
-	fProbThreshold = 0.0;
-	fMaxRadius = 3.0;      // the beam pipe
-
-	fUseKineInfo = kFALSE;
-
-	fEvents = 0;
 }
 //--------------------------------------------------------------------------------------------------------
-AliRsnReader::AliRsnReader(const AliRsnReader &copy) : TObject(copy)
+AliRsnReader::AliRsnReader(const AliRsnReader &copy) : 
+  TObject(copy),
+  fPIDMethod(copy.fPIDMethod),
+  fPtLimit4PID(copy.fPtLimit4PID),
+  fProbThreshold(copy.fProbThreshold),
+  fMaxRadius(copy.fMaxRadius),
+  fUseKineInfo(copy.fUseKineInfo),
+  fEvents(0x0)
 {
 //
 // Copy constructor.
 // Initializes all working parameters to same values of another simlar object.
 // TTree data member is not created.
 //
-	fPIDMethod = copy.fPIDMethod;
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = copy.fPrior[i];
-	fPtLimit4PID = copy.fPtLimit4PID;
-	fProbThreshold = copy.fProbThreshold;
-	fMaxRadius = copy.fMaxRadius;
-	
-	fUseKineInfo = copy.fUseKineInfo;
-
-	fEvents = 0;
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnReader& AliRsnReader::operator=(const AliRsnReader &copy)

@@ -33,11 +33,11 @@ class AliRsnAnalysis : public TObject
 public:
 
 	         AliRsnAnalysis();
-			 AliRsnAnalysis(const AliRsnAnalysis &copy) : TObject(copy) { }
+			 AliRsnAnalysis(const AliRsnAnalysis &copy);
 			 AliRsnAnalysis& operator=(const AliRsnAnalysis & /*copy*/) { return (*this); }
 	virtual ~AliRsnAnalysis() {Clear();}
 	
-	void     AddCutPair(AliRsnDaughterCut *cut);
+	void     AddCutPair(AliRsnDaughterCutPair *cut);
 	void     AddCutSingle(AliPID::EParticleType type, AliRsnDaughterCut *cut);
 	void     AddMixPairDef(AliPID::EParticleType p1, Char_t s1, AliPID::EParticleType p2, Char_t s2);
 	void     AddPairDef(AliPID::EParticleType p1, Char_t s1, AliPID::EParticleType p2, Char_t s2, Bool_t onlyTrue = kFALSE);

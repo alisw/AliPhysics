@@ -23,53 +23,24 @@ class AliRsnDaughterCut : public TObject
 public:
 			       AliRsnDaughterCut() {  }
 	virtual       ~AliRsnDaughterCut() {  }
-	
-	        Bool_t IsPairCut() const {return fPairCut;}
-	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2 = 0) const;
-	
-protected:
-
-	Bool_t  fPairCut;  // this flag is TRUE for all pair cuts
-	
+	virtual Bool_t Pass(AliRsnDaughter *track) const;
+private:
 	ClassDef(AliRsnDaughterCut,1)
 };
-
+//
 //-------------------------------------------------------------------------
-
-class AliRsnDaughterCutPtSingle : public AliRsnDaughterCut
+//
+class AliRsnDaughterCutPt : public AliRsnDaughterCut
 {
 public:
-			       AliRsnDaughterCutPtSingle(Double_t min, Double_t max) {fPairCut=kFALSE;fPtMin=min;fPtMax=max;}
-	virtual       ~AliRsnDaughterCutPtSingle()                           { }
-	
-	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2 = 0) const;
-
-protected:
-
+			       AliRsnDaughterCutPt(Double_t min, Double_t max) : fPtMin(min),fPtMax(max) {}
+	virtual       ~AliRsnDaughterCutPt() {}
+	virtual Bool_t Pass(AliRsnDaughter *track) const;
+private:
 	Double_t fPtMin; // smallest allowed Pt
 	Double_t fPtMax; // largest allowed Pt
 	
-	ClassDef(AliRsnDaughterCutPtSingle,1)
+	ClassDef(AliRsnDaughterCutPt,1)
 };
-	
-//-------------------------------------------------------------------------
-
-class AliRsnDaughterCutPtPair : public AliRsnDaughterCut
-{
-public:
-			       AliRsnDaughterCutPtPair(Double_t min, Double_t max) {fPairCut=kTRUE;fPtMin=min;fPtMax=max;}
-	virtual       ~AliRsnDaughterCutPtPair()                           { }
-	
-	virtual Bool_t Pass(AliRsnDaughter *track1, AliRsnDaughter *track2) const;
-
-protected:
-
-	Double_t fPtMin; // smallest allowed Pt
-	Double_t fPtMax; // largest allowed Pt
-	
-	ClassDef(AliRsnDaughterCutPtPair,1)
-};
-
-//-------------------------------------------------------------------------
 
 #endif

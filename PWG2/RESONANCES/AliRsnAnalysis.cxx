@@ -33,42 +33,65 @@
 
 #include "AliRsnDaughter.h"
 #include "AliRsnDaughterCut.h"
+#include "AliRsnDaughterCutPair.h"
 #include "AliRsnEvent.h"
 #include "AliRsnAnalysis.h"
 
 ClassImp(AliRsnAnalysis)
 
 //--------------------------------------------------------------------------------------------------------
-AliRsnAnalysis::AliRsnAnalysis() 
+AliRsnAnalysis::AliRsnAnalysis() :
+  TObject(),
+  fRejectFakes(kFALSE),
+  fNBins(0),
+  fHistoMin(0.0),
+  fHistoMax(0.0),
+  fTrueMotherPDG(0),
+  fMixPairDefs(0x0),
+  fMixHistograms(0x0),
+  fPairDefs(0x0),
+  fHistograms(0x0),
+  fPairCuts(0x0),
+  fEventsTree(0x0)
 {
 //
 // Constructor
 // Initializes all pointers and collections to NULL.
 //
-	fMixHistograms = 0;
-	fHistograms = 0;
-	fEventsTree = 0;
-	fMixPairDefs = 0;
-	fPairDefs = 0;
-	fPairCuts = 0;
-	
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) fCuts[i] = 0;
 }
 //--------------------------------------------------------------------------------------------------------
-void AliRsnAnalysis::AddCutPair(AliRsnDaughterCut *cut)
+AliRsnAnalysis::AliRsnAnalysis(const AliRsnAnalysis &copy) : 
+  TObject(copy),
+  fRejectFakes(copy.fRejectFakes),
+  fNBins(copy.fNBins),
+  fHistoMin(copy.fHistoMin),
+  fHistoMax(copy.fHistoMax),
+  fTrueMotherPDG(copy.fTrueMotherPDG),
+  fMixPairDefs(0x0),
+  fMixHistograms(0x0),
+  fPairDefs(0x0),
+  fHistograms(0x0),
+  fPairCuts(0x0),
+  fEventsTree(0x0)
+{
+//
+// Copy constructor
+// Initializes all pointers and collections to NULL anyway,
+// but copies some settings from the argument.
+//
+	Int_t i;
+	for (i = 0; i < AliPID::kSPECIES; i++) fCuts[i] = 0;
+}
+//--------------------------------------------------------------------------------------------------------
+void AliRsnAnalysis::AddCutPair(AliRsnDaughterCutPair *cut)
 {
 //
 // Add a cut on pairs.
 // This cut is global for all pairs.
 //
-	if (!cut->IsPairCut()) {
-		Warning("AddCutPair", "This is a single cut, cannot be added");
-		return;
-	}
-	
 	if (!fPairCuts) fPairCuts = new TObjArray(0);
-
 	fPairCuts->AddLast(cut);
 }
 //--------------------------------------------------------------------------------------------------------
@@ -78,11 +101,6 @@ void AliRsnAnalysis::AddCutSingle(AliPID::EParticleType type, AliRsnDaughterCut 
 // Add a cut on single particles.
 // This cut must be specified for each particle type.
 //
-	if (cut->IsPairCut()) {
-		Warning("AddCutSingle", "This is a pair cut, cannot be added");
-		return;
-	}
-	
 	if (type >= AliPID::kElectron && type <= AliPID::kProton) {
 		if (!fCuts[type]) fCuts[type] = new TObjArray(0);
 		fCuts[type]->AddLast(cut);
@@ -436,8 +454,8 @@ Bool_t AliRsnAnalysis::PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *trac
 	if (!fPairCuts) return kTRUE;
 	
 	TObjArrayIter iter(fPairCuts);
-	AliRsnDaughterCut *cut = 0;
-	while ( (cut = (AliRsnDaughterCut*)iter.Next()) ) {
+	AliRsnDaughterCutPair *cut = 0;
+	while ( (cut = (AliRsnDaughterCutPair*)iter.Next()) ) {
 		if (!cut->Pass(track1, track2)) return kFALSE;
 	}
 	
@@ -445,22 +463,22 @@ Bool_t AliRsnAnalysis::PairCutCheck(AliRsnDaughter *track1, AliRsnDaughter *trac
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnAnalysis::AliPairDef::AliPairDef
-(AliPID::EParticleType p1, Char_t sign1, 
- AliPID::EParticleType p2, Char_t sign2, Int_t pdgMother, Bool_t onlyTrue)
+(AliPID::EParticleType p1, Char_t sign1, AliPID::EParticleType p2, Char_t sign2, Int_t pdgMother, Bool_t onlyTrue) :
+  TNamed(),
+  fOnlyTrue(onlyTrue),
+  fTrueMotherPDG(pdgMother),
+  fMass1(0.0),
+  fSign1(sign1),
+  fParticle1(p1),
+  fMass2(0.0),
+  fSign2(sign2),
+  fParticle2(p2)
 {
 //
 // Constructor for nested class
 //
-	fOnlyTrue = onlyTrue;
-	fTrueMotherPDG = 0;
-	if (fOnlyTrue) fTrueMotherPDG = pdgMother;
-	
-	fSign1 = sign1;
-	fParticle1 = p1;
-	
-	fSign2 = sign2;
-	fParticle2 = p2;
-	
+	if (!fOnlyTrue) fTrueMotherPDG = 0;
+		
 	// instance a PDG database to recovery true masses of particles
 	TDatabasePDG *db = TDatabasePDG::Instance();
 	Int_t pdg1 = AliPID::ParticleCode((Int_t)p1);
