@@ -265,10 +265,46 @@ void Track::ImportClustersFromIndex()
   gROOT->ProcessLine(Form("clusters_from_index(%d);", fIndex));
 }
 
+void Track::ImportDaughters()
+{
+  static const Exc_t eH("Track::ImportDaughters ");
+
+  if (fLabel < 0)
+    throw(eH + "label not set.");
+
+  Reve::LoadMacro("daughters_from_label.C");
+  gROOT->ProcessLine(Form("daughters_from_label(%d);", fLabel));
+}
+
+/**************************************************************************/
+
 void Track::PrintKineStack()
 {
   Reve::LoadMacro("print_kine_from_label.C");
   gROOT->ProcessLine(Form("print_kine_from_label(%d);", fLabel));
+}
+
+
+void Track::PrintPathMarks()
+{
+  static const Exc_t eH("Track::PrintPathMarks ");
+
+  if (fLabel < 0)
+    throw(eH + "label not set.");
+
+  printf("Number of path marks %d label %d\n",
+	 fPathMarks.size(), fLabel);
+
+  PathMark* pm;
+  for(vpPathMark_i i=fPathMarks.begin(); i!=fPathMarks.end(); i++) 
+  {
+    pm = *i;
+    printf("Reve::PathMark: %-9s  p: %8f %8f %8f Vertex: %8e %8e %8e %g \n",
+	   pm->type_name(),
+	   pm->P.x,  pm->P.y, pm->P.z,
+	   pm->V.x,  pm->V.y, pm->V.z,
+	   pm->time);
+  }
 }
 
 /**************************************************************************/
@@ -690,6 +726,5 @@ void TrackCounter::OutputEventTracks(FILE* out)
       }
       ++i;
     }
-
   }
 }

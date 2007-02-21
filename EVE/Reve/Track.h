@@ -29,10 +29,10 @@ class Track : public Line, public TQObject
   Track(const Track&);            // Not implemented
   Track& operator=(const Track&); // Not implemented
 
-protected:
+public:
   typedef std::vector<Reve::PathMark*>           vpPathMark_t;
   typedef std::vector<Reve::PathMark*>::iterator vpPathMark_i;
-
+protected:
   Reve::Vector      fV;
   Reve::Vector      fP;
   Double_t          fBeta;
@@ -66,8 +66,10 @@ public:
 
   void ImportHits();              // *MENU*
   void ImportClusters();          // *MENU*
-  void ImportClustersFromIndex(); // *MENU*
+  void ImportClustersFromIndex(); // *MENU*  
+  void ImportDaughters();         // *MENU*
   void PrintKineStack();          // *MENU*
+  void PrintPathMarks();          // *MENU*
 
   //--------------------------------
 
