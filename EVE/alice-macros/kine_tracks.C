@@ -1,7 +1,18 @@
 // Import tracks from kinematics-tree / particle-stack.
 // Preliminary/minimal solution.
+#include "TParticlePDG.h"
 
-Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100)
+// PDG color indices
+static Color_t DefCol = 30;
+static Color_t ECol = 5;
+static Color_t MuCol = 6;
+static Color_t GamaCol = 7; 
+static Color_t MesCol1 = 3;
+static Color_t MesCol2 = 38;
+static Color_t BarCol = 10;
+
+
+Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
 {
   AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
   rl->LoadKinematics();
@@ -40,7 +51,8 @@ Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100)
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), i);
       track->SetName(form);
-      track->SetRnrStyle(rnrStyle);
+      TParticlePDG* pdgp = p->GetPDG();
+      track->SetMainColor(get_pdg_color(pdgp->PdgCode()));
       gReve->AddRenderElement(cont, track);
     }
   }
@@ -63,4 +75,41 @@ Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100)
   gReve->Redraw3D();
 
   return cont;
+}
+
+
+Color_t get_pdg_color(Int_t pdg){
+  Int_t pdga = TMath::Abs(pdg);
+  Color_t col = Reve::DefCol;
+
+  // elementary  particles
+  if (pdga < 100) {
+    switch (pdga) {
+      case 11:  
+	col = ECol; break; 
+      case 12:
+	col = MuCol; break;
+      case 22:
+	col = GammaCol; break;
+    }
+  }
+  else if (pdga < 100000){ 
+    Int_t i  = pdga;
+    Int_t i0 = i%10; i /= 10;
+    Int_t i1 = i%10; i /= 10; 
+    Int_t i2 = i%10; i /= 10; 
+    Int_t i3 = i%10; i /= 10; 
+    Int_t i4 = i%10;
+    //printf("pdg(%d) quark indices (%d,%d,%d,%d,%d) \n",pdg, i4,i3,i2, i1, i0);
+    // meson
+    if ((i3 == 0) && ( i4 < 2)){
+      col = MesCol1; // quarks: i1,i2 (spin = i0)
+      if(i1 == 3 || i2 == 3)
+	col = MesCol2;
+    } // barion
+    else if ( i2 >= i1 && i3 >= i2 ) {
+      col = BarCol; // quarks: i1,i2, i3 (spin = i0))
+    }
+  }
+  return col;
 }
