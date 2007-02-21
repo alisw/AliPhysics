@@ -418,12 +418,16 @@ void RenderElementListBase::EnableListElements()
 {
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
     (*i)->SetRnrElement(kTRUE);
+
+  gReve->Redraw3D();
 }
 
 void RenderElementListBase::DisableListElements()
 {
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
     (*i)->SetRnrElement(kFALSE);
+
+  gReve->Redraw3D();
 }
 
 /**************************************************************************/
