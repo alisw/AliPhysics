@@ -30,22 +30,11 @@ AliHLTPHOSGetEventButton::AliHLTPHOSGetEventButton()
 }
 
 
-//AliHLTPHOSGetEventButton::AliHLTPHOSGetEventButton(TGGroupFrame *gfPtr, char *name):TGTextButton(gfPtr, name)
-//{
-//  onlineDisplayPtr = (AliHLTPHOSOnlineDisplay *)gfPtr;
-//}
-
 AliHLTPHOSGetEventButton::AliHLTPHOSGetEventButton(TGCompositeFrame *gfPtr, char *name):TGTextButton(gfPtr, name)
 {
   onlineDisplayPtr = (AliHLTPHOSOnlineDisplay *)gfPtr;
 
 }
-
-//AliHLTPHOSGetEventButton::AliHLTPHOSGetEventButton(AliHLTPHOSOnlineDisplay *gfPtr, char *name):TGTextButton(gfPtr, name)
-//{
-//  onlineDisplayPtr = gfPtr;
-//}
-
 
 
 Bool_t
@@ -53,7 +42,6 @@ AliHLTPHOSGetEventButton::HandleButton(Event_t* event)
 {
   if(event->fType == kButtonPress) 
     {
-      //      onlineDisplayPtr->GetNextEvent2();
       onlineDisplayPtr->GetNextEvent();
     }
 }
