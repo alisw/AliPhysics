@@ -77,7 +77,7 @@ void KineTools::SetPathMarks(TrackList* cont, AliStack* stack , TTree* treeTR)
     return;
   }
 
-  map<Int_t, vector<PathMark*> > refs;
+  map<Int_t, Track::vpPathMark_t > refs;
 
   Int_t nPrimaries = (Int_t) treeTR->GetEntries();
   TIter next(treeTR->GetListOfBranches());
@@ -115,7 +115,7 @@ void KineTools::SetPathMarks(TrackList* cont, AliStack* stack , TTree* treeTR)
 	    pm->P.Set(atr->Px(),atr->Py(), atr->Pz());  
 	    pm->time = atr->GetTime();
 
-	    vector<PathMark*>& v = refs[track];
+	    Track::vpPathMark_t& v = refs[track];
             v.push_back(pm);
 	  }
 	  else
@@ -144,16 +144,16 @@ void KineTools::SetPathMarks(TrackList* cont, AliStack* stack , TTree* treeTR)
 	pm->V.Set(dp->Vx(),dp->Vy(), dp->Vz());
 	pm->P.Set(dp->Px(),dp->Py(), dp->Pz()); 
 	pm->time = dp->T();
-	vector<PathMark*>& v = refs[track->GetLabel()];
+	Track::vpPathMark_t& v = refs[track->GetLabel()];
 	v.push_back(pm);
       }
     }
     
-    map<Int_t, vector<PathMark*> > ::iterator ri = refs.find(track->GetLabel());
-    if(ri != refs.end()) {
-      vector<PathMark*>& v = ri->second;
+    map<Int_t, Track::vpPathMark_t > ::iterator mi = refs.find(track->GetLabel());
+    if(mi != refs.end()) {
+      Track::vpPathMark_t& v = mi->second;
       sort(v.begin(), v.end(), cmp_pathmark());
-      for(vector<PathMark*>::iterator i=v.begin(); i!=v.end(); ++i){
+      for(Track::vpPathMark_i i=v.begin(); i!=v.end(); ++i){
 	track->AddPathMark(*i);
       }
     }
