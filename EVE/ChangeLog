@@ -3,7 +3,7 @@
 	* alice-macros/kine_tracks.C:
 	Add option to color tracks according to PDG code.
 
-	* alice_macros/kine_daughter_tracks.C:
+	* alice-macros/kine_daughter_tracks.C:
 	New file.
 
 2007-02-20  Matevz Tadel  <matevz.tadel@cern.ch>
