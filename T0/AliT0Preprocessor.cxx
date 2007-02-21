@@ -7,14 +7,15 @@
 
 #include <TTimeStamp.h>
 #include <TFile.h>
+#include <TObjString.h>
 #include <TNamed.h>
 #include "AliT0Dqclass.h"
 
 ClassImp(AliT0Preprocessor)
 
 //____________________________________________________
-AliT0Preprocessor::AliT0Preprocessor(const char* detector, AliShuttleInterface* shuttle) :
-  AliPreprocessor(detector, shuttle)
+AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) :
+  AliPreprocessor("T00", shuttle)
 {
 
 }
@@ -52,27 +53,46 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 
 	AliT0Calc *calibdata = new AliT0Calc();	
 	
-	const char* TimefileName = GetFile(kDAQ, "TIME", "LDC0");
-	
-	
-	if(TimefileName){
-		TFile *file = TFile::Open(TimefileName);
-		if(!file || !file->IsOpen()) 
+        TList* list = GetFileSources(kDAQ, "TIME");
+        if (list)
+        {
+		TIter iter(list);
+      		TObjString *source;
+      		while ((source = dynamic_cast<TObjString *> (iter.Next()))) 
 		{
-		  printf("File from DAQ does not exist.");
-		  return 0;
+			const char* TimefileName = GetFile(kDAQ, "TIME", source->GetName());
+	
+			if (TimefileName)
+			{
+				Log(Form("File with Id TIME found in source %s!", source->GetName()));
+				TFile *file = TFile::Open(TimefileName);
+				if(!file || !file->IsOpen()) 
+				{
+		  			Log(Form("Error opening file with Id TIME from source %s!", source->GetName()));
+		 			return 0;
+				} 
+				AliT0Dqclass *tempdata = dynamic_cast<AliT0Dqclass*> (file->Get("Time"));
+				if (!tempdata) 
+				{
+					Log("Could not find key \"Time\" in DAQ file!");
+					return 0;
+				}
+				for(Int_t i=0;i<24;i++){
+					numbers[i] = tempdata->GetTime(i);
+					//	printf("\nnumbers: %f\n",numbers[i]);
+				}
+        			file->Close();
+				delete tempdata;
+			} else {
+		  		Log(Form("Could not find file with Id TIME in source %s!", source->GetName()));
+				return 0;
+			}
+			calibdata->SetTime(numbers, hv);
+			calibdata->Print();
 		} 
-		AliT0Dqclass *tempdata = dynamic_cast<AliT0Dqclass*> (file->Get("Time"));
-		for(Int_t i=0;i<24;i++){
-			numbers[i] = tempdata->GetTime(i);
-		//	printf("\nnumbers: %f\n",numbers[i]);
-		}
-        	file->Close();
-		delete tempdata;
-	}
-	else {return 0;}
-	calibdata->SetTime(numbers, hv);
-	calibdata->Print();        
+	} else {
+		Log("No sources for Id TIME found!");
+	}        
 
 	AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);

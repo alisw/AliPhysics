@@ -10,7 +10,8 @@
 class AliT0Preprocessor: public AliPreprocessor 
 {
   public:
-        AliT0Preprocessor(const char* detector, AliShuttleInterface* shuttle);
+        AliT0Preprocessor(): AliPreprocessor("T00",0) { }
+        AliT0Preprocessor(AliShuttleInterface* shuttle);
 	virtual ~AliT0Preprocessor();
   
   protected:
