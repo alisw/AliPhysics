@@ -333,8 +333,6 @@ void IceRawTWR::Exec(Option_t* opt)
    gpssecs=gpshigh<<24;
    gpssecs+=gpslow;
 
-   cout << " GPS year in hex : " << hex << gps.info.bits.year << dec << endl;
-
    // Seconds and nanoseconds since the start of the UT year
    seconds=gpssecs;
    nsecs=100*gps.count_10MHz;
