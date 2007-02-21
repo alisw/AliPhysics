@@ -1,6 +1,8 @@
-SRCS= RESONANCES/AliRsnDaughter.cxx RESONANCES/AliRsnDaughterCut.cxx \
+SRCS= RESONANCES/AliRsnDaughter.cxx \
+      RESONANCES/AliRsnDaughterCut.cxx RESONANCES/AliRsnDaughterCutPair.cxx \
       RESONANCES/AliRsnEvent.cxx \
-      RESONANCES/AliRsnReader.cxx RESONANCES/AliRsnAnalysis.cxx
+      RESONANCES/AliRsnReader.cxx RESONANCES/AliRsnSelectorRL.cxx \
+      RESONANCES/AliRsnAnalysis.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
