@@ -693,10 +693,11 @@ void AliVZEROv7::CreateGeometry()
     rot->RotateZ(180);
     v0LE->AddNode(v0ABasis,1,rot);
 
-  // Adding detectors to top volume
+    // Adding detectors to top volume
     TGeoVolume *vZERO = new TGeoVolumeAssembly("VZERO");
     vZERO->AddNode(v0RI,1,new TGeoTranslation(0, 0, -zdet));
-    vZERO->AddNode(v0LE,1,new TGeoTranslation(0, 0, +340));
+    // V0A position according to TB decision 13/12/2005 
+    vZERO->AddNode(v0LE,1,new TGeoTranslation(0, 0, +327.5));
     top->AddNode(vZERO,1);
 }
 
