@@ -1,3 +1,20 @@
+2007-02-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* PODs.cxx:
+	* PODs.h:
+	Add function to return PathMark type-name.
+
+	* RenderElement.cxx:
+	Call redraw after Enable/DisableListElements.
+	
+	* Track.cxx:
+	* Track.h:
+	Two new items for context menu: PrintPathMarks and
+	ImportDaughters.
+
+	* TrackGL.cxx:
+	Make consistent alignment.
+
 2007-02-20  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Cascade.cxx:
