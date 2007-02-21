@@ -9,7 +9,7 @@ SrcSim   	:=$(SRCS)
 include	lib$(Module)rec.pkg
 SrcRec   	:=$(SRCS)
 
-RootTarget      :=$(shell root-config --arch)
+RootTarget      :=$(shell $(ROOTSYS)/bin/root-config --arch)
 DirOut	        :=/tmp/$(USER)_$(Module)_obj
 LibBase		:=$(LIB_MY)/lib$(Module)base.so
 LibSim		:=$(LIB_MY)/lib$(Module)sim.so
@@ -40,11 +40,11 @@ DepFile	      := $(DirOut)/$(Module).depend
 
 ifeq ($(RootTarget),linuxicc)
  Compiler    :=icc
- CompilerOpt :=-fpstkchk -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ CompilerOpt :=-fpstkchk -I$(shell $(ROOTSYS)/bin/root-config --incdir) -I$(ALICE_ROOT)/include
  LibOpt      :=-g -shared -Wl
 else
  Compiler    :=g++
- CompilerOpt :=-g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ CompilerOpt :=-g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` -I$(shell $(ROOTSYS)/bin/root-config --incdir) -I$(ALICE_ROOT)/include
  LibOpt      :=-g -shared -Wl
 endif
 
@@ -74,19 +74,19 @@ $(DepFile):	$(HdrBase) $(HdrSim) $(HdrRec)
 	@[ -d $(LIB_MY) ] || mkdir -p $(LIB_MY)
 	@touch $(DepFile)
 	@echo "Generating dependency $@"
-	$(Mute)rmkdepend -f$(DepFile) -p$(DirOut)/ -- $(CompilerOpt) -- $(SrcBase) $(SrcSim) $(SrcRec) 2>/dev/null
+	$(Mute)$(ROOTSYS)/bin/rmkdepend -f$(DepFile) -p$(DirOut)/ -- $(CompilerOpt) -- $(SrcBase) $(SrcSim) $(SrcRec) 2>/dev/null
 
 $(DictSrcBase):  $(HdrBase)
 	@echo "Generating $@"
-	$(Mute)rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
+	$(Mute)$(ROOTSYS)/bin/rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
         
 $(DictSrcSim):  $(HdrSim)
 	@echo "Generating $@"
-	$(Mute)rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
+	$(Mute)$(ROOTSYS)/bin/rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
         
 $(DictSrcRec):  $(HdrRec)
 	@echo "Generating $@"
-	$(Mute)rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
+	$(Mute)$(ROOTSYS)/bin/rootcint -f $@ -c $(filter -I%,$(CompilerOpt)) $^
 
 $(DictObjBase) : $(DictSrcBase)
 	@echo "Compiling $^"        
