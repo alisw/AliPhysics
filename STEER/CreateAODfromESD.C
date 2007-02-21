@@ -8,7 +8,7 @@
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
-#include "AliAODNeutral.h"
+#include "AliAODCluster.h"
 
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -636,7 +636,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
 
     // Access to the AOD container of vertices
-    TClonesArray &clusters = *(aod->GetNeutrals());
+    TClonesArray &clusters = *(aod->GetClusters());
     Int_t jClusters=0;
 
     // Clusters
@@ -655,19 +655,19 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       Float_t * pid = NULL; 
       AliAODVertex *prodVertex = primary;
       AliAODTrack *primTrack = NULL;
-      Char_t ttype=AliAODNeutral::kUndef;
+      Char_t ttype=AliAODCluster::kUndef;
 
-      if (cluster->IsPHOS()) ttype=AliAODNeutral::kPHOSCluster;
+      if (cluster->IsPHOS()) ttype=AliAODCluster::kPHOSNeutral;
       else if (cluster->IsEMCAL()) {
 
 	if (cluster->GetClusterType() == AliESDCaloCluster::kPseudoCluster)
-	  ttype = AliAODNeutral::kEMCALPseudoCluster;
+	  ttype = AliAODCluster::kEMCALPseudoCluster;
 	else
-	  ttype = AliAODNeutral::kEMCALClusterv1;
+	  ttype = AliAODCluster::kEMCALClusterv1;
 
       }
       
-      new(clusters[jClusters++]) AliAODNeutral(id,
+      new(clusters[jClusters++]) AliAODCluster(id,
 					       label,
 					       energy,
 					       x,

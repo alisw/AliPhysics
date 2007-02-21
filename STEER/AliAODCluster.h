@@ -1,12 +1,12 @@
-#ifndef AliAODNeutral_H
-#define AliAODNeutral_H
+#ifndef AliAODCluster_H
+#define AliAODCluster_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//     AOD track base class
+//     AOD cluster base class
 //     Author: Markus Oldenburg, CERN
 //-------------------------------------------------------------------------
 
@@ -16,17 +16,19 @@
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 
-class AliAODNeutral : public AliVirtualParticle {
+class AliAODCluster : public AliVirtualParticle {
 
  public:
   
-  enum AODNeu_t {kUndef=-1, kPHOSCluster,kEMCALPseudoCluster, kEMCALClusterv1};
+  enum AODClu_t {kUndef=-1, kPHOSNeutral,kPHOSCharged,
+		 kEMCALPseudoCluster, kEMCALClusterv1,
+                 kPMDNeutral, kPMDCharged};
 
-  enum AODNeuPID_t {
-    kUnknown=0, kPhoton, kPi0, kNeutron, kKaon0, kEleCon, kOther};
+  enum AODCluPID_t {
+    kUnknown=0, kPhoton, kPi0, kNeutron, kKaon0, kEleCon, kCharged, kOther};
 
-  AliAODNeutral();
-  AliAODNeutral(Int_t id,
+  AliAODCluster();
+  AliAODCluster(Int_t id,
 		Int_t label,
 		Double_t energy,
 		Double_t x[3],
@@ -36,7 +38,7 @@ class AliAODNeutral : public AliVirtualParticle {
 		AliAODTrack *primTrack,
 		Char_t ttype=kUndef);
 
-   AliAODNeutral(Int_t id,
+   AliAODCluster(Int_t id,
 		 Int_t label,
 		 Float_t energy,
 		 Float_t x[3],
@@ -46,9 +48,9 @@ class AliAODNeutral : public AliVirtualParticle {
 		 AliAODTrack *primTrack,
 		 Char_t ttype=kUndef);
 
-  virtual ~AliAODNeutral();
-  AliAODNeutral(const AliAODNeutral& trk); 
-  AliAODNeutral& operator=(const AliAODNeutral& trk);
+  virtual ~AliAODCluster();
+  AliAODCluster(const AliAODCluster& trk); 
+  AliAODCluster& operator=(const AliAODCluster& trk);
 
   Double_t Chi2() const { return fChi2; }
 
@@ -133,7 +135,7 @@ class AliAODNeutral : public AliVirtualParticle {
   Char_t       fType;
 
 
-  ClassDef(AliAODNeutral,1);
+  ClassDef(AliAODCluster,1);
 };
 
 #endif

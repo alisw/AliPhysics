@@ -18,7 +18,7 @@
 #include "AliAODHeader.h"
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
-#include "AliAODNeutral.h"
+#include "AliAODCluster.h"
 #include "AliAODJet.h"
 
 class AliAODEvent : public TObject {
@@ -53,12 +53,12 @@ class AliAODEvent : public TObject {
   void          AddVertex(const AliAODVertex* vtx)
     {new((*fVertices)[fVertices->GetEntries()]) AliAODVertex(*vtx);}
 
-  // -- Neutral
-  TClonesArray *GetNeutrals()            const { return fNeutrals; }
-  Int_t         GetNNeutrals()           const { return fNeutrals->GetEntriesFast(); }
-  AliAODNeutral *GetNeutral(Int_t nNeutral) const { return (AliAODNeutral*)fNeutrals->At(nNeutral); }
-  void          AddNeutral(const AliAODNeutral* vtx)
-    {new((*fNeutrals)[fNeutrals->GetEntries()]) AliAODNeutral(*vtx);}
+  // -- Cluster
+  TClonesArray *GetClusters()            const { return fClusters; }
+  Int_t         GetNClusters()           const { return fClusters->GetEntriesFast(); }
+  AliAODCluster *GetCluster(Int_t nCluster) const { return (AliAODCluster*)fClusters->At(nCluster); }
+  void          AddCluster(const AliAODCluster* vtx)
+    {new((*fClusters)[fClusters->GetEntries()]) AliAODCluster(*vtx);}
 
   // -- Jet
   TClonesArray *GetJets()            const { return fJets; }
@@ -83,7 +83,7 @@ class AliAODEvent : public TObject {
   mutable AliAODHeader  *fHeader;   //! event information
   mutable TClonesArray  *fTracks;   //! charged tracks
   mutable TClonesArray  *fVertices; //! vertices
-  mutable TClonesArray  *fNeutrals; //! neutral particles
+  mutable TClonesArray  *fClusters; //! neutral particles
   mutable TClonesArray  *fJets;     //! jets
 
   ClassDef(AliAODEvent,1);

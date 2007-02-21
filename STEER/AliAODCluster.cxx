@@ -16,16 +16,16 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//     AOD track base class
+//     AOD cluster base class
 //     Author: Markus Oldenburg, CERN
 //-------------------------------------------------------------------------
 
-#include "AliAODNeutral.h"
+#include "AliAODCluster.h"
 
-ClassImp(AliAODNeutral)
+ClassImp(AliAODCluster)
 
 //______________________________________________________________________________
-AliAODNeutral::AliAODNeutral() : 
+AliAODCluster::AliAODCluster() : 
   AliVirtualParticle(),
   fEnergy(0),
   fChi2(-999.),
@@ -43,7 +43,7 @@ AliAODNeutral::AliAODNeutral() :
 }
 
 //______________________________________________________________________________
-AliAODNeutral::AliAODNeutral(Int_t id,
+AliAODCluster::AliAODCluster(Int_t id,
 			     Int_t label, 
 			     Double_t energy,
 			     Double_t x[3],
@@ -71,7 +71,7 @@ AliAODNeutral::AliAODNeutral(Int_t id,
 }
 
 //______________________________________________________________________________
-AliAODNeutral::AliAODNeutral(Int_t id,
+AliAODCluster::AliAODCluster(Int_t id,
 			     Int_t label, 
 			     Float_t energy,
 			     Float_t x[3],
@@ -100,7 +100,7 @@ AliAODNeutral::AliAODNeutral(Int_t id,
 
 
 //______________________________________________________________________________
-AliAODNeutral::~AliAODNeutral() 
+AliAODCluster::~AliAODCluster() 
 {
   // destructor
   delete fCovMatrix;
@@ -108,7 +108,7 @@ AliAODNeutral::~AliAODNeutral()
 
 
 //______________________________________________________________________________
-AliAODNeutral::AliAODNeutral(const AliAODNeutral& trk) :
+AliAODCluster::AliAODCluster(const AliAODCluster& trk) :
   AliVirtualParticle(trk),
   fEnergy(trk.fEnergy),
   fChi2(trk.fChi2),
@@ -128,7 +128,7 @@ AliAODNeutral::AliAODNeutral(const AliAODNeutral& trk) :
 }
 
 //______________________________________________________________________________
-AliAODNeutral& AliAODNeutral::operator=(const AliAODNeutral& trk)
+AliAODCluster& AliAODCluster::operator=(const AliAODCluster& trk)
 {
   // Assignment operator
   if(this!=&trk) {
@@ -157,7 +157,7 @@ AliAODNeutral& AliAODNeutral::operator=(const AliAODNeutral& trk)
 }
 
 //______________________________________________________________________________
-template <class T> void AliAODNeutral::SetPosition(const T *x) 
+template <class T> void AliAODCluster::SetPosition(const T *x) 
 {
   // set the position
 
@@ -174,11 +174,11 @@ template <class T> void AliAODNeutral::SetPosition(const T *x)
 }
 
 //______________________________________________________________________________
-void AliAODNeutral::Print(Option_t* /* option */) const
+void AliAODCluster::Print(Option_t* /* option */) const
 {
-  // prints information about AliAODNeutral
+  // prints information about AliAODCluster
 
-  printf("Object name: %s   Neutral type: %s\n", GetName(), GetTitle()); 
+  printf("Object name: %s   Cluster type: %s\n", GetName(), GetTitle()); 
   printf("    energy = %f\n", E());
   printf("      chi2 = %f\n", Chi2());
   printf(" PID object: %p\n", PID());

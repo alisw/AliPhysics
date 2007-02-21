@@ -32,7 +32,7 @@ AliAODEvent::AliAODEvent() :
   fHeader((AliAODHeader*)fAODObjects->At(0)),
   fTracks((TClonesArray*)fAODObjects->At(1)),
   fVertices((TClonesArray*)fAODObjects->At(2)),
-  fNeutrals((TClonesArray*)fAODObjects->At(3)),
+  fClusters((TClonesArray*)fAODObjects->At(3)),
   fJets((TClonesArray*)fAODObjects->At(4))
 {
   // default constructor
@@ -73,7 +73,7 @@ void AliAODEvent::CreateStdContent()
   AddObject(new AliAODHeader());
   AddObject(new TClonesArray("AliAODTrack", 0));
   AddObject(new TClonesArray("AliAODVertex", 0));
-  AddObject(new TClonesArray("AliAODNeutral", 0));
+  AddObject(new TClonesArray("AliAODCluster", 0));
   AddObject(new TClonesArray("AliAODJet", 0));
 
   // read back pointers
@@ -82,7 +82,7 @@ void AliAODEvent::CreateStdContent()
   // set names
   fTracks->SetName("tracks");
   fVertices->SetName("vertices");
-  fNeutrals->SetName("neutrals");
+  fClusters->SetName("neutrals");
   fJets->SetName("jets");
 
 }
@@ -95,7 +95,7 @@ void AliAODEvent::GetStdContent() const
   fHeader   = (AliAODHeader*)fAODObjects->At(0);
   fTracks   = (TClonesArray*)fAODObjects->At(1);
   fVertices = (TClonesArray*)fAODObjects->At(2);
-  fNeutrals = (TClonesArray*)fAODObjects->At(3);
+  fClusters = (TClonesArray*)fAODObjects->At(3);
   fJets     = (TClonesArray*)fAODObjects->At(4);
 }
 

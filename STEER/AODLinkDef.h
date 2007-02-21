@@ -11,15 +11,15 @@
 #pragma link C++ enum   AliAODVertex::AODVtx_t;
 #pragma link C++ enum   AliAODTrack::AODTrk_t;
 #pragma link C++ enum   AliAODTrack::AODTrkPID_t;
-#pragma link C++ enum   AliAODNeutral::AODNeu_t;
-#pragma link C++ enum   AliAODNeutral::AODNeuPID_t;
+#pragma link C++ enum   AliAODCluster::AODClu_t;
+#pragma link C++ enum   AliAODCluster::AODCluPID_t;
 
 #pragma link C++ class AliAODEvent+;
 #pragma link C++ class AliVirtualParticle+;
 #pragma link C++ class AliAODHeader+;
 #pragma link C++ class AliAODTrack+;
 #pragma link C++ class AliAODVertex+;
-#pragma link C++ class AliAODNeutral+;
+#pragma link C++ class AliAODCluster+;
 #pragma link C++ class AliAODJet+;
 #pragma link C++ class AliAODRedCov<3>+;
 #pragma link C++ class AliAODRedCov<4>+;
