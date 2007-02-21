@@ -24,70 +24,70 @@
 // author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //-------------------------------------------------------------------------
 
-#include <Riostream.h>
-
 #include <TParticle.h>
 #include <TString.h>
 
+#include "AliLog.h"
 #include "AliESDtrack.h"
 #include "AliRsnDaughter.h"
 
 ClassImp(AliRsnDaughter)
 
 //--------------------------------------------------------------------------------------------------------
-AliRsnDaughter::AliRsnDaughter()
+AliRsnDaughter::AliRsnDaughter() :
+  TObject(),
+  fSign((Char_t)0),
+  fPDG((UShort_t)0),
+  fIndex((UShort_t)0),
+  fMass(0.0),
+  fLabel(-1),
+  fTruePDG((Short_t)0),
+  fMother(-1),
+  fMotherPDG((Short_t)0)
 {
 // 
 // Default constructor.
 // Its unique argument defines how many PID weights are allowed. 
 // Actually, it should be the same as AliESDtrack::kSPECIES (=5).
 // 
-	fSign = (Char_t)0;
-	fPDG = (UShort_t)0;
-	fIndex = (UShort_t)0;
-	
-	fP[0] = fP[1] = fP[2] = 0.0;
-	fV[0] = fV[1] = fV[2] = 0.0;
-	fMass = 0.0;
 	
 	Int_t i;
 	for (i = 0; i < AliPID::kSPECIES; i++) {
+		if (i < 3) {
+			fP[i] = 0.0;
+			fV[i] = 0.0;
+		}
 		fPIDwgt[i] = 0.0;
 	}
-			
-	fLabel = -1;
-	fTruePDG = 0;
-	fMother = -1;
-	fMotherPDG = 0;
 }
 //--------------------------------------------------------------------------------------------------------
-AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) : TObject(copy)
+AliRsnDaughter::AliRsnDaughter(Int_t label, UShort_t index, Double_t *p, Double_t *v, Char_t sign) :
+  TObject(),
+  fSign(sign),
+  fPDG((UShort_t)0),
+  fIndex(index),
+  fMass(0.0),
+  fLabel(label),
+  fTruePDG((Short_t)0),
+  fMother(-1),
+  fMotherPDG((Short_t)0)
 {
 //
-// Copy constructor
+// [PRIVATE]
+// Constructor with arguments.
+// To create an object with all its standard data members filled (the ones coming from ESD)
 //
-	fSign = copy.fSign;
-	fPDG = copy.fPDG;
-	fIndex = copy.fIndex;
-	
 	Int_t i;
-	for (i = 0; i < 3; i++) {
-		fP[i] = copy.fP[i];
-		fV[i] = copy.fV[i];
-	}
-	fMass = copy.fMass;
-	
 	for (i = 0; i < AliPID::kSPECIES; i++) {
-		fPIDwgt[i] = copy.fPIDwgt[i];
+		if (i < 3) {
+			fP[i] = p[i];
+			fV[i] = v[i];
+		}
+		fPIDwgt[i] = 0.0;
 	}
-		
-	fLabel = copy.fLabel;
-	fTruePDG = copy.fTruePDG;
-	fMother = copy.fMother;
-	fMotherPDG = copy.fMotherPDG;
 }
 //--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnDaughter::Adopt(const AliESDtrack* esdTrack, Bool_t checkITSRefit)
+AliRsnDaughter * AliRsnDaughter::Adopt(AliESDtrack* esdTrack, Int_t index)
 {
 //
 // Copies reconstructed data from an AliESDtrack:
@@ -97,47 +97,28 @@ Bool_t AliRsnDaughter::Adopt(const AliESDtrack* esdTrack, Bool_t checkITSRefit)
 // - point of closest approach to primary vertex
 // - ESD pid weights
 // - track label (AliESDtrack::GetLabel())
-// 
-// Makes the following checks:
 //
-// - if argument 'checkITSRefit' is TRUE and the "ITS refit" flag is FALSE
-//   in the track, the "fIsOK" flag of (this) is set to "false" (track should be rejected)
-// - if the passed label is negative, track is considered as "fake", and 
-//   this info is kept to allow fake tracks exclusion when doing analysis
+// Given that it happened that tracks have exactly zero momentum and DCA point,
+// these quantities are checked and skipped when caught.
 //
-	// check for refit in the ITS (if requested)
-	if (checkITSRefit) {
-		if ( !(esdTrack->GetStatus() & AliESDtrack::kITSrefit) ) {
-			return kFALSE;
-		}
-	}
+	Double_t p[3], v[3], pid[AliPID::kSPECIES];
 	
-	// get sign and number of species allowed for PID
-	fSign = (Char_t)esdTrack->GetSign();
+	esdTrack->GetPxPyPz(p);
+	esdTrack->GetXYZ(v);
+	esdTrack->GetESDpid(pid);
 	
-	// get (and check) momentum
-	esdTrack->GetPxPyPz(fP);
-	if (fP[0] == 0.0 || fP[1] == 0.0 || fP[2] == 0.0) {
-		return kFALSE;
-	}
+	if (p[0] == 0.0 || p[1] == 0.0 || p[2] == 0.0) return 0x0;
+	if (v[0] == 0.0 || v[1] == 0.0 || v[2] == 0.0) return 0x0;
+		
+	AliRsnDaughter *out = new AliRsnDaughter(esdTrack->GetLabel(), (UShort_t)index, p, v, (Char_t)esdTrack->GetSign());
 	
-	// get (and check) vertex
-	esdTrack->GetXYZ(fV);
-	if (fV[0] == 0.0 || fV[1] == 0.0 || fV[2] == 0.0) {
-		return kFALSE;
-	}
+	// store PID weights
+	out->SetPIDweights(pid);
 	
-	// get label 
-	// (other kinematics informations are set to default and meaningless values)
-	fLabel = esdTrack->GetLabel();
-	
-	// get PID weights
-	esdTrack->GetESDpid(fPIDwgt);
-	
-	return kTRUE;
+	return out;
 }
 //--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnDaughter::Adopt(TParticle* particle)
+AliRsnDaughter * AliRsnDaughter::Adopt(TParticle* particle, Int_t label)
 {
 //
 // Copies data from a generated particle:
@@ -148,34 +129,38 @@ Bool_t AliRsnDaughter::Adopt(TParticle* particle)
 // - production vertex
 // - GEANT label of mother track
 //
-// When an AliRsnDaughter is copied from a TParticle, it is 
-// considered always good for analysis and never fake.
-//
+	Int_t    pdg;
+	Char_t   sign;
+	Double_t p[3], v[3];
+	
 	// get particle sign form the sign of PDG code
-	Int_t pdg = particle->GetPdgCode();
+	pdg = particle->GetPdgCode();
 	if (TMath::Abs(pdg) < 20) {
-		if (pdg > 0) fSign = -1; else fSign = 1;
+		if (pdg > 0) sign = -1; else sign = 1;
 	}
 	else if (TMath::Abs(pdg) < 3000) {
-		if (pdg > 0) fSign = 1; else fSign = -1;
+		if (pdg > 0) sign = 1; else sign = -1;
+	}
+	else {
+		return 0x0;
 	}
 	
-	// get momentum
-	fP[0] = particle->Px();
-	fP[1] = particle->Py();
-	fP[2] = particle->Pz();
+	p[0] = particle->Px();
+	p[1] = particle->Py();
+	p[2] = particle->Pz();
 	
-	// get vertex
-	fV[0] = particle->Vx();
-	fV[1] = particle->Vy();
-	fV[2] = particle->Vz();
+	v[0] = particle->Vx();
+	v[1] = particle->Vy();
+	v[2] = particle->Vz();
+	
+	AliRsnDaughter *out = new AliRsnDaughter(label, (UShort_t)TMath::Abs(label), p, v, sign);
 	
 	// set simulation data
-	fPDG = fTruePDG = (Short_t)particle->GetPdgCode();
-	fMother = particle->GetFirstMother();
-	fMotherPDG = 0;
+	out->SetPDG(TMath::Abs(pdg));
+	out->SetTruePDG(TMath::Abs(pdg));
+	out->SetMother(particle->GetFirstMother());
 	
-	return kTRUE;
+	return out;
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnDaughter::Print(Option_t *option) const
@@ -226,7 +211,7 @@ void AliRsnDaughter::Print(Option_t *option) const
 		output.Append(Form("PID wgts (e, mu, pi, K, p) = %f, %f, %f, %f, %f", fPIDwgt[0], fPIDwgt[1], fPIDwgt[2], fPIDwgt[3], fPIDwgt[4]));
 	}
 	
-	cout << output.Data() << endl;
+	AliInfo(output.Data());
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnDaughter AliRsnDaughter::Sum(AliRsnDaughter t1, AliRsnDaughter t2)
@@ -256,14 +241,6 @@ AliRsnDaughter AliRsnDaughter::Sum(AliRsnDaughter t1, AliRsnDaughter t2)
 	Double_t pyTot = t1.GetPy() + t2.GetPy();
 	Double_t pzTot = t1.GetPz() + t2.GetPz();
 	Double_t mass  = TMath::Sqrt(etot*etot - pxTot*pxTot - pyTot*pyTot - pzTot*pzTot);
-	
-	//TLorentzVector v1 = track1.Get4Momentum();
-	//TLorentzVector v2 = track2.Get4Momentum();
-	//TLorentzVector sm = v1 + v2;
-	//Double_t pxTot = sum.X();
-	//Double_t pyTot = sum.Y();
-	//Double_t pzTot = sum.Z();
-	//Double_t mass = sm.M();
 	
 	out.SetPxPyPz(pxTot, pyTot, pzTot);
 	out.SetMass(mass);

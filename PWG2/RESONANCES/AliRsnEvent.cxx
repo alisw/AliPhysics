@@ -40,7 +40,9 @@ AliRsnEvent::AliRsnEvent() :
  fPVx(0.0),
  fPVy(0.0),
  fPVz(0.0),
- fMultiplicity(-1)
+ fMultiplicity(-1),
+ fPosNoPID(0x0),
+ fNegNoPID(0x0)
 {
 //
 // Default constructor
@@ -50,16 +52,16 @@ AliRsnEvent::AliRsnEvent() :
 		fPos[i] = NULL;
 		fNeg[i] = NULL;
 	}
-	fPosNoPID = NULL;
-	fNegNoPID = NULL;
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
  TObject((TObject)event),
- fPVx(event.fPVx), 
- fPVy(event.fPVy), 
+ fPVx(event.fPVx),
+ fPVy(event.fPVy),
  fPVz(event.fPVz),
- fMultiplicity(event.fMultiplicity)
+ fMultiplicity(event.fMultiplicity),
+ fPosNoPID(0x0),
+ fNegNoPID(0x0)
 {
 //
 // Copy constructor.
@@ -83,8 +85,8 @@ AliRsnEvent& AliRsnEvent::operator=(const AliRsnEvent &event)
 // Assignment operator.
 // Creates new instances of all collections to store a copy of all objects.
 //
-	fPVx = event.fPVx; 
-	fPVy = event.fPVy; 
+	fPVx = event.fPVx;
+	fPVy = event.fPVy;
 	fPVz = event.fPVz;
 	fMultiplicity = event.fMultiplicity;
 
@@ -101,14 +103,14 @@ AliRsnEvent& AliRsnEvent::operator=(const AliRsnEvent &event)
 	
 	return (*this);
 }
-//--------------------------------------------------------------------------------------------------------//--------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------
 void AliRsnEvent::AddTrack(AliRsnDaughter track)
 {
 //
 // Stores a track into the correct array
 //
 	// if sign is zero, track is not stored
-	Int_t sign = (Int_t)track.GetSign();
+	Char_t sign = track.GetSign();
 	if (!sign) return;
 	
 	// if PDG code is assigned, track is stored in the corresponding collection
@@ -183,6 +185,9 @@ TClonesArray* AliRsnEvent::GetTracks(Char_t sign, AliPID::EParticleType type)
 	Int_t itype = (Int_t)type;
 	if (itype >= 0 && itype < AliPID::kSPECIES) {
 		if (sign == '+') return fPos[type]; else return fNeg[type];
+	}
+	else if (type == AliPID::kUnknown) {
+		if (sign == '+') return fPosNoPID; else return fNegNoPID;
 	}
 	else {
 		return NULL;

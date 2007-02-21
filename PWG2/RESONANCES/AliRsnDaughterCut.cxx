@@ -32,39 +32,24 @@
 ClassImp(AliRsnDaughterCut)
 
 //--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnDaughterCut::Pass(AliRsnDaughter* /*track1*/, AliRsnDaughter* /*track2*/) const
+Bool_t AliRsnDaughterCut::Pass(AliRsnDaughter *track) const
 {
 // 
 // Virtual method for cut passing.
-// This function must be overridden and return kTRUE when cut is passed.
+// This function checks that passed argument is not NULL.
 // 
-	TObject::Error("Pass", "This method must be overridden!");
-	return kFALSE;
+	if (!track) return kFALSE;
+	return kTRUE;
 }
 //--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnDaughterCutPtSingle::Pass(AliRsnDaughter *track1, AliRsnDaughter* /*track2*/) const
+Bool_t AliRsnDaughterCutPt::Pass(AliRsnDaughter *track) const
 {
 // 
 // Cut on single track momentum.
 //
-	if (!track1) return kFALSE;
-	if (track1->GetPt() < fPtMin) return kFALSE;
-	if (track1->GetPt() > fPtMax) return kFALSE;
-	
-	return kTRUE;
-}
-//--------------------------------------------------------------------------------------------------------
-Bool_t AliRsnDaughterCutPtPair::Pass(AliRsnDaughter *track1, AliRsnDaughter *track2) const
-{
-// 
-// Cut on single track momentum.
-// 
-	if (!track1 || !track2) return kFALSE;
-	
-	AliRsnDaughter sum = AliRsnDaughter::Sum(*track1, *track2);
-	
-	if (sum.GetPt() < fPtMin) return kFALSE;
-	if (sum.GetPt() > fPtMax) return kFALSE;
+	if (!AliRsnDaughterCut::Pass(track)) return kFALSE;
+	if (track->GetPt() < fPtMin) return kFALSE;
+	if (track->GetPt() > fPtMax) return kFALSE;
 	
 	return kTRUE;
 }

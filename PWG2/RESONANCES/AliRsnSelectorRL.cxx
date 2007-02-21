@@ -59,7 +59,11 @@ AliRsnSelectorRL::AliRsnSelectorRL(TTree*) :
   fIsRunLoaderOpen(0),
   fRsnEventTree(0),
   fRsnEvent(0),
-  fRsnEventBranch(0)
+  fRsnEventBranch(0),
+  fPIDMethod(kESDPID),
+  fPtLimit4PID(4.0),
+  fProbThreshold(0.0),
+  fMaxRadius(3.0)
 {
 //
 // Constructor.
@@ -68,11 +72,8 @@ AliRsnSelectorRL::AliRsnSelectorRL(TTree*) :
 // - rejection of non-ITS-refitted tracks
 // - maximum distance allowed from primary vertex = 3.0 cm (beam pipe)
 //
-	fPIDMethod = kESDPID;
-	for (Int_t i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = 1.0;
-	fPtLimit4PID = 4.0;
-	fProbThreshold = 0.0;
-	fMaxRadius = 3.0;      // the beam pipe
+	Int_t i;
+	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = 1.0;
 }
 
 AliRsnSelectorRL::~AliRsnSelectorRL() {
@@ -90,16 +91,17 @@ AliRsnSelectorRL::AliRsnSelectorRL(const AliRsnSelectorRL& obj) :
   fIsRunLoaderOpen(obj.fIsRunLoaderOpen),
   fRsnEventTree(obj.fRsnEventTree),
   fRsnEvent(obj.fRsnEvent),
-  fRsnEventBranch(obj.fRsnEventBranch)
+  fRsnEventBranch(obj.fRsnEventBranch),
+  fPIDMethod(obj.fPIDMethod),
+  fPtLimit4PID(obj.fPtLimit4PID),
+  fProbThreshold(obj.fProbThreshold),
+  fMaxRadius(obj.fMaxRadius)
 {
 //
 // Copy constructor
 //
-	fPIDMethod = obj.fPIDMethod;
-	for (Int_t i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = obj.fPrior[i];
-	fPtLimit4PID = obj.fPtLimit4PID;
-	fProbThreshold = obj.fProbThreshold;
-	fMaxRadius = obj.fMaxRadius;
+	Int_t i;
+	for (i = 0; i < AliPID::kSPECIES; i++) fPrior[i] = obj.fPrior[i];
 }
 //--------------------------------------------------------------------------------------------------------
 AliRsnSelectorRL& AliRsnSelectorRL::operator=(const AliRsnSelectorRL& obj) 
