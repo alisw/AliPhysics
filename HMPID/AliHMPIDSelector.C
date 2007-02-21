@@ -68,18 +68,14 @@ void AliHMPIDSelector::SlaveBegin(TTree *tree)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDSelector::Init(TTree *pTr)
 {
-   // The Init() function is called when the selector needs to initialize
-   // a new tree or chain. Typically here the branch addresses of the tree
-   // will be set. It is normaly not necessary to make changes to the
-   // generated code, but the routine can be extended by the user if needed.
-   // Init() will be called many times when running with PROOF.
+// Called when the selector needs to initialize a new tree of chain. Typically here the branch addresses of the tree is set
+// Init() will be called many times when running with PROOF.
 
-   // Set branch addresses
-   if ( !pTr )  return ;
-   fChain = pTr ;
-   fChain->SetBranchAddress("ESD", &fEsd) ;
-   fChain->SetBranchStatus("*", 0);
-   fChain->SetBranchStatus("fTracks.*", 1);
+  if ( !pTr )  return ;
+  fChain = pTr ;
+  fChain->SetBranchAddress("ESD", &fEsd) ;
+  fChain->SetBranchStatus("*", 0);
+  fChain->SetBranchStatus("fTracks.*", 1);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDSelector::Process(Long64_t entry)
@@ -95,8 +91,8 @@ Bool_t AliHMPIDSelector::Process(Long64_t entry)
      fCkovP->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal()) ; 
      fSigP ->Fill(pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
      
-//     Float_t xm,ym; Int_t q,np;  pTrk->GetHMPIDmip(xm,ym,q,np);  fMipXY->Fill(xm,ym); //mip info
-//     Float_t xd,yd,th,ph;        pTrk->GetHMPIDtrk(xd,yd,th,ph); fDifXY->Fill(xd,yd); //track info 
+//   Float_t xm,ym; Int_t q,np;  pTrk->GetHMPIDmip(xm,ym,q,np);  fMipXY->Fill(xm,ym); //mip info
+//   Float_t xd,yd,th,ph;        pTrk->GetHMPIDtrk(xd,yd,th,ph); fDifXY->Fill(xd,yd); //track info 
      
      Double_t pid[5];  pTrk->GetHMPIDpid(pid); for(Int_t i =0;i<5;i++) fProb[i]->Fill(pid[i]);
   }//tracks loop 
@@ -122,10 +118,8 @@ void AliHMPIDSelector::SlaveTerminate()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDSelector::Terminate()
 {
-   // The Terminate() function is the last function to be called during
-   // a query. It always runs on the client, it can be used to present
-   // the results graphically or save the results to file.
-  
+// The last function to be called. It always runs on the client, it can be used to present
+// the results graphically or save the results to file.
   fCkovP   = dynamic_cast<TH2F*>(fOutput->FindObject("CkovP")) ;
   fSigP    = dynamic_cast<TH2F*>(fOutput->FindObject("SigP")) ; 
   fMipXY   = dynamic_cast<TH2F*>(fOutput->FindObject("MipXY")) ;
@@ -146,16 +140,11 @@ void AliHMPIDSelector::Terminate()
   TCanvas *pC=new TCanvas("c1","ESD QA");pC->SetFillColor(10); pC->SetHighLightColor(10); pC->Divide(3,2);
   pC->cd(1); fCkovP->Draw(); pPi->Draw("same"); pK->Draw("same"); pP->Draw("same");   pC->cd(2); fMipXY->Draw();   pC->cd(3); fProb[0]->Draw(); fProb[1]->Draw("same"); 
   pC->cd(4); fSigP ->Draw();                                                          pC->cd(5); fDifXY->Draw();   pC->cd(6); fProb[2]->Draw(); fProb[3]->Draw("same"); fProb[4]->Draw("same"); 
-  
-}
+}//Terminate()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-
 void loc()
 {
-  TChain* pChain =new TChain("esdTree");
-  pChain->Add("AliESDs.root");
+  TChain* pChain =new TChain("esdTree");  pChain->Add("AliESDs.root");
 
   pChain->Process("AliHMPIDSelector.C+");	
 }
@@ -351,4 +340,3 @@ void cosmic()
   pC->cd(5); gPad->SetLogy(); pDigO->Draw(); pC->cd(6); gPad->SetLogy(); pCluO->Draw();
 }//cosmic()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
