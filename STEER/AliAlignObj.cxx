@@ -811,32 +811,30 @@ Bool_t AliAlignObj::GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m)
     return kFALSE;
   }
 
-  TString pathStr = path;
-  TObjArray *pathArr = pathStr.Tokenize('/');
-  TIter iter(pathArr);
-  TString nodeStr = "";
   m.Clear();
 
-  TObjString *str = NULL;
-  while((str = (TObjString*) iter.Next())){
-    nodeStr.Append("/");
-    nodeStr.Append(str->String());
+  TIter next(gGeoManager->GetListOfPhysicalNodes());
+  gGeoManager->cd(path);
+
+  while(gGeoManager->GetLevel()){
+
+    TGeoPhysicalNode *physNode = NULL;
+    next.Reset();
+    TGeoNode *node = gGeoManager->GetCurrentNode();
+    while ((physNode=(TGeoPhysicalNode*)next())) 
+      if (physNode->GetNode() == node) break;
 
     TGeoMatrix *lm = NULL;
-    TGeoPhysicalNode *physNode = NULL;
-    if ((physNode = (TGeoPhysicalNode *)gGeoManager->GetListOfPhysicalNodes()->FindObject(nodeStr.Data()))) {
+    if (physNode) {
         lm = physNode->GetOriginalMatrix();
-	if (!lm) lm = physNode->GetNode()->GetMatrix();
-    } else {
-      gGeoManager->cd(nodeStr.Data());
-      TGeoNode *node = gGeoManager->GetCurrentNode();
+	if (!lm) lm = node->GetMatrix();
+    } else
       lm = node->GetMatrix();
-    }
-    m.Multiply(lm);
-  }
 
-  pathArr->Delete();
-  delete pathArr;
+    m.MultiplyLeft(lm);
+
+    gGeoManager->CdUp();
+  }
 
   return kTRUE;
 }
