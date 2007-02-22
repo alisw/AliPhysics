@@ -1,0 +1,106 @@
+#-*- Mode: Makefile -*-
+# $Id: 
+
+include $(MODDIR)/hlt.conf
+
+MODULE_SRCS= 	AliHLTTPCLog.cxx \
+		AliHLTTPCTransform.cxx \
+		AliHLTTPCMemHandler.cxx \
+		AliHLTTPCDataCompressorHelper.cxx \
+		AliHLTTPCFitter.cxx \
+		AliHLTTPCFileHandler.cxx \
+		AliHLTTPCBenchmark.cxx \
+		AliHLTTPCDDLDataFileHandler.cxx \
+		AliHLTTPCClusterFinder.cxx \
+		AliHLTTPCDigitReader.cxx \
+		AliHLTTPCDigitReaderPacked.cxx \
+		AliHLTTPCDigitReaderUnpacked.cxx \
+		AliHLTTPCDigitReaderRaw.cxx \
+		AliHLTTPCVertex.cxx \
+		AliHLTTPCVertexArray.cxx \
+		AliHLTTPCVertexFinder.cxx \
+		AliHLTTPCTrackArray.cxx \
+		AliHLTTPCTrack.cxx \
+		AliHLTTPCConfMapFit.cxx \
+		AliHLTTPCConfMapTrack.cxx \
+		AliHLTTPCConfMapPoint.cxx \
+		AliHLTTPCConfMapper.cxx \
+		AliHLTTPCModelTrack.cxx \
+		AliHLTTPCMerger.cxx \
+		AliHLTTPCTrackMerger.cxx \
+		AliHLTTPCGlobalMerger.cxx \
+		AliHLTTPCInterMerger.cxx \
+		AliHLTTPCCATracker.cxx \
+		AliHLTTPCPad.cxx \
+		AliHLTTPCDefinitions.cxx \
+		AliHLTTPCRawDataUnpackerComponent.cxx \
+		AliHLTTPCClusterFinderComponent.cxx \
+		AliHLTTPCVertexFinderComponent.cxx \
+		AliHLTTPCSliceTrackerComponent.cxx \
+		AliHLTTPCGlobalMergerComponent.cxx \
+		AliHLTTPCCATrackerComponent.cxx \
+		AliHLTTPCEsdWriterComponent.cxx
+
+CLASS_HDRS:=  	AliHLTTPCLog.h \
+		AliHLTTPCTransform.h \
+		AliHLTTPCMemHandler.h \
+		AliHLTTPCDataCompressorHelper.h \
+		AliHLTTPCFitter.h \
+		AliHLTTPCFileHandler.h \
+		AliHLTTPCBenchmark.h \
+		AliHLTTPCDDLDataFileHandler.h \
+		AliHLTTPCClusterFinder.h \
+		AliHLTTPCDigitReader.h \
+		AliHLTTPCDigitReaderPacked.h \
+		AliHLTTPCDigitReaderUnpacked.h \
+		AliHLTTPCDigitReaderRaw.h \
+		AliHLTTPCVertex.h \
+		AliHLTTPCVertexArray.h \
+		AliHLTTPCVertexFinder.h \
+		AliHLTTPCTrackArray.h \
+		AliHLTTPCTrack.h \
+		AliHLTTPCConfMapFit.h \
+		AliHLTTPCConfMapTrack.h \
+		AliHLTTPCConfMapPoint.h \
+		AliHLTTPCConfMapper.h \
+		AliHLTTPCModelTrack.h \
+		AliHLTTPCMerger.h \
+		AliHLTTPCTrackMerger.h \
+		AliHLTTPCGlobalMerger.h \
+		AliHLTTPCInterMerger.h \
+		AliHLTTPCCATracker.h \
+		AliHLTTPCPad.h \
+		AliHLTTPCSpacePointData.h \
+		AliHLTTPCDefinitions.h \
+		AliHLTTPCRawDataUnpackerComponent.h \
+		AliHLTTPCClusterFinderComponent.h \
+		AliHLTTPCVertexFinderComponent.h \
+		AliHLTTPCSliceTrackerComponent.h \
+		AliHLTTPCGlobalMergerComponent.h \
+		AliHLTTPCCATrackerComponent.h \
+		AliHLTTPCEsdWriterComponent.h
+
+MODULE_HDRS:= 	$(CLASS_HDRS) \
+		AliHLTTPCLogging.h \
+		AliHLTTPCRootTypes.h \
+		AliHLTTPCDigitData.h \
+		AliHLTTPCTrackSegmentData.h \
+		AliHLTTPCVertexData.h \
+		AliHLTTPCTrackletDataFormat.h \
+		AliHLTTPCRawDataFormat.h \
+		AliHLTTPCClusterDataFormat.h \
+		AliHLTTPCModels.h
+
+DHDR:= 		TPCLib/AliHLTTPCLinkDef.h
+CINTAUTOLINK:=
+
+SRCS:=$(patsubst %,TPCLib/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,TPCLib/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,TPCLib/%,$(MODULE_HDRS))
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := HLT/TPCLib HLT/BASE TPC RAW

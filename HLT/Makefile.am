@@ -14,15 +14,21 @@ if EN_HLT_PHOS
 PHOS_DIR=PHOS
 endif
 
+if EN_HLT_TRD
+TRD_DIR=TRD
+endif
+
 SUBDIRS 		= BASE \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
 			  $(PHOS_DIR) \
+			  $(TRD_DIR) \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTSample.pkg \
 			  libAliHLTPHOS.pkg \
+			  libAliHLTTRD.pkg \
 			  hlt.conf
 
 DIST_SUBDIRS		= $(SUBDIRS)

@@ -263,7 +263,6 @@ if test ! "x$have_aliroot" = "xno" ; then
     
   fi
   AC_MSG_CHECKING([for TPC mapping layout])
-  AM_CONDITIONAL(USE_TPC_MAPPING, test x$have_tpc_mapping = xyes)
   AC_MSG_RESULT([$have_tpc_mapping])
 
   dnl
@@ -298,6 +297,7 @@ AC_SUBST([ALIROOT_LDFLAGS])
 AC_SUBST([ALIROOTBINDIR])
 AC_SUBST([ALIROOTLIBDIR])
 AC_SUBST([ALIROOT_LIBS])
+AM_CONDITIONAL(USE_TPC_MAPPING, test x$have_tpc_mapping = xyes)
 
 HLTBASE_CPPFLAGS='-I${top_srcdir}/BASE'
 HLTBASE_LDFLAGS=
@@ -447,6 +447,22 @@ AM_CONDITIONAL(EN_HLT_PHOS, test x$enable_phos = xyes)
 AC_MSG_RESULT([$enable_phos])
 
 dnl ------------------------------------------------------------------
+AC_MSG_CHECKING([whether to compile trd library])
+AH_TEMPLATE([HLT_TRD],[hlt trd library])
+AC_ARG_ENABLE(trd,
+  [AC_HELP_STRING([--enable-trd],
+      [compile the trd library ])],
+  [],[enable_trd=yes])
+if test "x$have_aliroot" = "xno" ; then
+   enable_trd="no...requires.AliRoot"
+fi
+if test "x$enable_trd" = "xyes" ; then 
+  AC_DEFINE(HLT_TRD)
+fi
+AM_CONDITIONAL(EN_HLT_TRD, test x$enable_trd = xyes)
+AC_MSG_RESULT([$enable_trd])
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable HLT logging])
 AH_TEMPLATE([NOLOGGING],[disable hlt logging])
 AC_ARG_ENABLE(logging,
@@ -530,6 +546,7 @@ AC_CONFIG_FILES([Makefile
 		 TPCLib/mapping2array.cxx
 		 TPCLib/OnlineDisplay/Makefile
 		 PHOS/Makefile
+		 TRD/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
 
