@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // @(#) $Id$
 
 #ifndef ALIHLTDATASINK_H
@@ -24,8 +25,6 @@
  * - @ref DumpEvent
  * - @ref GetComponentID
  * - @ref GetInputDataTypes
- * - @ref GetOutputDataType
- * - @ref GetOutputDataSize
  * - @ref Spawn
  *
  * @ingroup alihlt_component
@@ -48,8 +47,7 @@ class AliHLTDataSink : public AliHLTComponent {
 		    AliHLTComponentTriggerData& trigData,
 		    AliHLTUInt8_t* outputPtr, 
 		    AliHLTUInt32_t& size,
-		    AliHLTUInt32_t& outputBlockCnt, 
-		    AliHLTComponentBlockData*& outputBlocks,
+		    vector<AliHLTComponentBlockData>& outputBlocks,
 		    AliHLTComponentEventDoneData*& edd );
 
   // Information member functions for registration.
@@ -73,16 +71,29 @@ class AliHLTDataSink : public AliHLTComponent {
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
  private:
+
   /**
-   * Data processing method for the component.
+   * The low-level data processing method for the component.
+   * This is the custom processing method and can be overloaded by 
+   * the component.
    * @param evtData       event data structure
    * @param blocks        input data block descriptors
    * @param trigData	  trigger data structure
    */
   virtual int DumpEvent( const AliHLTComponentEventData& evtData,
-			 const AliHLTComponentBlockData* blocks, 
-			 AliHLTComponentTriggerData& trigData ) = 0;
+		 const AliHLTComponentBlockData* blocks, 
+		 AliHLTComponentTriggerData& trigData );
 
-  ClassDef(AliHLTDataSink, 0)
+  /**
+   * The high-level data processing method.
+   * This is the default processing method; the method is called
+   * if no low level @ref DumpEvent method is overloaded by the component.
+   * @param evtData       event data structure
+   * @param trigData	  trigger data structure
+   */
+  virtual int DumpEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+
+
+  ClassDef(AliHLTDataSink, 1)
 };
 #endif

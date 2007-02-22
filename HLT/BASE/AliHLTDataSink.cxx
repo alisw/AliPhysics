@@ -61,24 +61,36 @@ void AliHLTDataSink::GetOutputDataSize( unsigned long& constBase, double& inputM
 }
 
 int AliHLTDataSink::DoProcessing( const AliHLTComponentEventData& evtData,
-				    const AliHLTComponentBlockData* blocks, 
-				    AliHLTComponentTriggerData& trigData,
-				    AliHLTUInt8_t* outputPtr, 
-				    AliHLTUInt32_t& size,
-				    AliHLTUInt32_t& outputBlockCnt, 
-				    AliHLTComponentBlockData*& outputBlocks,
-				    AliHLTComponentEventDoneData*& edd )
+				  const AliHLTComponentBlockData* blocks, 
+				  AliHLTComponentTriggerData& trigData,
+				  AliHLTUInt8_t* outputPtr, 
+				  AliHLTUInt32_t& size,
+				  vector<AliHLTComponentBlockData>& outputBlocks,
+				  AliHLTComponentEventDoneData*& edd )
 {
   // see header file for class documentation
   int iResult=0;
   if (outputPtr==NULL
       && size==0 
-      && outputBlockCnt==0 
-      && outputBlocks==NULL
       && edd==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
   }
-  vector<AliHLTComponentBlockData> blockData;
+  outputBlocks.clear();
   iResult=DumpEvent(evtData, blocks, trigData);
   return iResult;
+}
+
+int AliHLTDataSink::DumpEvent( const AliHLTComponentEventData& evtData,
+			       const AliHLTComponentBlockData* blocks, 
+			       AliHLTComponentTriggerData& trigData )
+{
+  // we just forward to the high level method, all other parameters already
+  // have been stored internally
+  return DumpEvent(evtData, trigData);
+}
+
+int AliHLTDataSink::DumpEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+{
+  HLTFatal("no processing method implemented");
+  return -ENOSYS;
 }

@@ -55,8 +55,7 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
 				    AliHLTComponentTriggerData& trigData,
 				    AliHLTUInt8_t* outputPtr, 
 				    AliHLTUInt32_t& size,
-				    AliHLTUInt32_t& outputBlockCnt, 
-				    AliHLTComponentBlockData*& outputBlocks,
+				    vector<AliHLTComponentBlockData>& outputBlocks,
 				    AliHLTComponentEventDoneData*& edd )
 {
   // see header file for class documentation
@@ -64,18 +63,28 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
   if (blocks) {
     // this is currently just to get rid of the warning "unused parameter"
   }
-  vector<AliHLTComponentBlockData> blockData;
   if (evtData.fBlockCnt > 0) {
     HLTWarning("Data source component skips input data blocks");
   }
-  iResult=GetEvent(evtData, trigData, outputPtr, size, blockData);
+  iResult=GetEvent(evtData, trigData, outputPtr, size, outputBlocks);
   HLTDebug("component %s (%p) GetEvent finished (%d)", GetComponentID(), this, iResult);
-  if (iResult>=0) {
-    iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
-    if (iResult<0) {
-      HLTFatal("component %s (%p): can not convert output block descriptor list", GetComponentID(), this);
-    }
-  }
   edd = NULL;
   return iResult;
+}
+
+int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& evtData,
+				   AliHLTComponentTriggerData& trigData,
+				   AliHLTUInt8_t* outputPtr, 
+				   AliHLTUInt32_t& size,
+				   vector<AliHLTComponentBlockData>& outputBlocks )
+{
+  // we just forward to the high level method, all other parameters already
+  // have been stored internally
+  return GetEvent(evtData, trigData);
+}
+
+int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+{
+  HLTFatal("no processing method implemented");
+  return -ENOSYS;
 }

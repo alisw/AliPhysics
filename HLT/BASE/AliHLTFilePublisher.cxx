@@ -196,7 +196,7 @@ int AliHLTFilePublisher::ScanArgument(int argc, const char** argv)
   if (argc==0 && argv==NULL) {
     // this is just to get rid of the warning "unused parameter"
   }
-  return -EINVAL;
+  return -EPROTO;
 }
 
 int AliHLTFilePublisher::OpenFiles()
@@ -280,4 +280,14 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
     // this is just to get rid of the warning "unused parameter"
   }
   return iResult;
+}
+
+AliHLTComponentDataType AliHLTFilePublisher::GetCurrentDataType() const
+{
+  return fDataType;
+}
+
+AliHLTUInt32_t          AliHLTFilePublisher::GetCurrentSpecification() const
+{
+  return fSpecification;
 }

@@ -18,7 +18,7 @@ bin_SCRIPTS			= setenv.sh setenv.csh
 lib_LTLIBRARIES			=  libHLTbase.la
 
 # version info for the library
-LIBRARY_VERSION			= '1:1:0'
+LIBRARY_VERSION			= '2:0:0'
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libHLTbase.pkg

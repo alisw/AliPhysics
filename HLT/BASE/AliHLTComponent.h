@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // @(#) $Id$
 
 #ifndef ALIHLTCOMPONENT_H
@@ -37,6 +38,7 @@ typedef AliHLTComponentTriggerData AliHLTComponent_TriggerData;
 typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
 
 class AliHLTComponentHandler;
+class TObjArray;
 
 /**
  * @class AliHLTComponent
@@ -44,19 +46,149 @@ class AliHLTComponentHandler;
  * The class provides a common interface for HLT data processing components.
  * The interface can be accessed from the online HLT framework or the AliRoot
  * offline analysis framework.
- * Components can be of type 
- * - @ref AliHLTComponent::kSource:    components which only produce data 
- * - @ref AliHLTComponent::kProcessor: components which consume and produce data
- * - @ref AliHLTComponent::kSink:      components which only consume data
+ * @section alihltcomponent-properties Component identification and properties
+ * Each component must provide a unique ID, input and output data type indications,
+ * and a spawn function.
+ * @subsection alihltcomponent-req-methods Required property methods
+ * - @ref GetComponentID
+ * - @ref GetInputDataTypes (see @ref alihltcomponent-type for default
+ *   implementations.)
+ * - @ref GetOutputDataType (see @ref alihltcomponent-type for default
+ *   implementations.)
+ * - @ref GetOutputDataSize (see @ref alihltcomponent-type for default
+ *   implementations.)
+ * - @ref Spawn
  *
- * where data production and consumption refer to the analysis data stream.<br>
+ * @subsection alihltcomponent-opt-mehods Optional handlers
+ * - @ref DoInit
+ * - @ref DoDeinit
+ *
+ * @subsection alihltcomponent-processing-mehods Data processing
+ * 
+ * 
+ * @subsection alihltcomponent-type Component type
+ * Components can be of type
+ * - @ref kSource:    components which only produce data 
+ * - @ref kProcessor: components which consume and produce data
+ * - @ref kSink:      components which only consume data
+ *
+ * where data production and consumption refer to the analysis data stream. In
+ * order to indicate the type, a child component can overload the
+ * @ref GetComponentType function.
+ * @subsubsection alihltcomponent-type-std Standard implementations
+ * Components in general do not need to implement this function, standard
+ * implementations of the 3 types are available:
+ * - AliHLTDataSource for components of type @ref kSource <br>
+ *   All types of data sources can inherit from AliHLTDataSource and must
+ *   implement the @ref AliHLTDataSource::GetEvent method. The class
+ *   also implements a standard method for @ref GetInputDataTypes.
+ *   
+ * - AliHLTProcessor for components of type @ref kProcessor <br>
+ *   All types of data processors can inherit from AliHLTDataSource and must
+ *   implement the @ref AliHLTProcessor::DoEvent method.
+ *
+ * - AliHLTDataSink for components of type @ref kSink <br>
+ *   All types of data processors can inherit from AliHLTDataSource and must
+ *   implement the @ref AliHLTDataSink::DumpEvent method. The class
+ *   also implements a standard method for @ref GetOutputDataType and @ref
+ *   GetOutputDataSize.
+ *
+ * @subsection alihltcomponent-environment Running environment
  *
  * In order to adapt to different environments (on-line/off-line), the component
  * gets an environment structure with function pointers. The base class provides
  * member functions for those environment dependend functions. The member 
  * functions are used by the component implementation and are re-mapped to the
  * corresponding functions.
+ * @section alihltcomponent-interfaces Component interfaces
+ * Each of the 3 standard component base classes AliHLTProcessor, AliHLTDataSource
+ * and AliHLTDataSink provides it's own processing method (see
+ * @ref alihltcomponent-type-std), which splits into a high and a low-level
+ * method. For the @ref alihltcomponent-low-level-interface, all parameters are
+ * shipped as function arguments, the component is supposed to dump data to the
+ * output buffer and handle all block descriptors. 
+ * The @ref alihltcomponent-high-level-interface is the standard processing
+ * method and will be used whenever the low-level method is not overloaded.
+ *
+ * @subsection alihltcomponent-high-level-interface High-level interface
+ * The high-level component interface provides functionality to exchange ROOT
+ * structures between components. In contrast to the 
+ * @ref alihltcomponent-low-level-interface, a couple of functions can be used
+ * to access data blocks of the input stream
+ * and send data blocks or ROOT TObject's to the output stream. The functionality
+ * is hidden from the user and is implemented by using ROOT's TMessage class.
+ *
+ * @subsubsection alihltcomponent-high-level-int-methods Interface methods
+ * The interface provides a couple of methods in order to get objects from the
+ * input, data blocks (non TObject) from the input, and to push back objects and
+ * data blocks to the output. For convenience there are several functions of 
+ * identical name (and similar behavior) with different parameters defined.
+ * Please refer to the function documentation.
+ * - @ref GetNumberOfInputBlocks <br>
+ *        return the number of data blocks in the input stream
+ * - @ref GetFirstInputObject <br>
+ *        get the first object of a specific data type
+ * - @ref GetNextInputObject <br>
+ *        get the next object of same data type as last GetFirstInputObject/Block call
+ * - @ref GetFirstInputBlock <br>
+ *        get the first block of a specific data type
+ * - @ref GetNextInputBlock <br>
+ *        get the next block of same data type as last GetFirstInputBlock/Block call
+ * - @ref PushBack <br>
+ *        insert an object or data buffer into the output
+ * - @ref CreateEventDoneData <br>
+ *        add event information to the output
+ * 
+ * In addition, the processing methods are simplified a bit by cutting out most of
+ * the parameters. The component implementation 
+ * @see AliHLTProcessor AliHLTDataSource AliHLTDataSink
+ *
+ * @subsubsection alihltcomponent-high-level-int-guidelines High-level interface guidelines
+ * - Structures must inherit from the ROOT object base class TObject in order be 
+ * transported by the transportation framework.
+ * - all pointer members must be transient (marked <tt>//!</tt> behind the member
+ * definition), i.e. will not be stored/transported, or properly marked
+ * (<tt>//-></tt>) in order to call the streamer of the object the member is pointing
+ * to. The latter is not recomended. Structures to be transported between components
+ * should be streamlined.
+ * - no use of stl vectors/strings, use appropriate ROOT classes instead 
+ * 
+ * @subsection alihltcomponent-low-level-interface Low-level interface
+ * The low-level component interface consists of the specific data processing
+ * methods for @ref AliHLTProcessor, @ref AliHLTDataSource, and @ref AliHLTDataSink.
+ * - @ref AliHLTProcessor::DoEvent
+ * - @ref AliHLTDataSource::GetEvent
+ * - @ref AliHLTDataSink::DumpEvent
+ * 
+ * 
+ * @section alihltcomponent-handling Component handling 
+ * The handling of HLT analysis components is carried out by the AliHLTComponentHandler.
+ * Component are registered automatically at load-time of the component shared library
+ * under the following suppositions:
+ * - the component library has to be loaded from the AliHLTComponentHandler using the
+ *   @ref AliHLTComponentHandler::LoadLibrary method.
+ * - the component implementation defines one global object (which is generated
+ *   when the library is loaded)
+ *
+ * @subsection alihltcomponent-design-rules General design considerations
+ * The analysis code should be implemented in one or more destict class(es). A 
+ * \em component should be implemented which interface the destict analysis code to the
+ * component interface. This component generates the analysis object dynamically. <br>
+ *
+ * Assume you have an implemetation <tt> AliHLTDetMyAnalysis </tt>, another class <tt>
+ * AliHLTDetMyAnalysisComponent </tt> contains:
+ * <pre>
+ * private:
+ *   AliHLTDetMyAnalysis* fMyAnalysis;  //!
+ * </pre>
+ * The object should then be instantiated in the DoInit handler of 
+ * <tt>AliHLTDetMyAnalysisComponent </tt>, and cleaned in the DoDeinit handler.
+ *
+ * Further rules:
+ * - avoid big static arrays in the component, allocate the memory at runtime
+ *
  * @ingroup alihlt_component
+ * @section alihltcomponent-members Class members
  */
 class AliHLTComponent : public AliHLTLogging {
  public:
@@ -129,15 +261,14 @@ class AliHLTComponent : public AliHLTLogging {
    * @param trigData
    * @param outputPtr
    * @param size
-   * @param outputBlockCnt  out: size of the output block array, set by the component
    * @param outputBlocks    out: the output block array is allocated internally
    * @param edd
    * @return neg. error code if failed
    */
   virtual int DoProcessing( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
-			    AliHLTComponentBlockData*& outputBlocks,
+			    AliHLTUInt32_t& size,
+			    vector<AliHLTComponentBlockData>& outputBlocks,
 			    AliHLTComponentEventDoneData*& edd ) = 0;
 
   // Information member functions for registration.
@@ -227,6 +358,7 @@ class AliHLTComponent : public AliHLTLogging {
    * structur.
    */
   void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
+
 
  protected:
 
@@ -324,29 +456,297 @@ class AliHLTComponent : public AliHLTLogging {
    */
   int GetEventCount() const;
 
+  /**
+   * Get the number of input blocks.
+   * @return number of input blocks
+   */
+  int GetNumberOfInputBlocks();
+
+  /**
+   * Get the first object of a specific data type from the input data.
+   * The hight-level methods provide functionality to transfer ROOT data
+   * structures which inherit from TObject.
+   * The method looks for the first ROOT object of type dt in the input stream.
+   * If also the class name is provided, the object is checked for the right
+   * class type. The input data block needs a certain structure, namely the 
+   * buffer size as first word. If the cross check fails, the retrieval is
+   * silently abondoned, unless the \em bForce parameter is set.
+   * @param dt          data type of the object
+   * @param classname   class name of the object
+   * @param bForce      force the retrieval of an object, error messages
+   *                    are suppressed if \em bForce is not set
+   * @return pointer to @ref TObject, NULL if no objects of specified type
+   *         available
+   */
+  const TObject* GetFirstInputObject(const AliHLTComponentDataType& dt=kAliHLTAnyDataType,
+				     const char* classname=NULL,
+				     int bForce=0);
+
+  /**
+   * Get the first object of a specific data type from the input data.
+   * The hight-level methods provide functionality to transfer ROOT data
+   * structures which inherit from TObject.
+   * The method looks for the first ROOT object of type specified by the ID and 
+   * Origin strings in the input stream.
+   * If also the class name is provided, the object is checked for the right
+   * class type. The input data block needs a certain structure, namely the 
+   * buffer size as first word. If the cross check fails, the retrieval is
+   * silently abondoned, unless the \em bForce parameter is set.
+   * @param dtID        data type ID of the object
+   * @param dtOrigin    data type origin of the object
+   * @param classname   class name of the object
+   * @param bForce      force the retrieval of an object, error messages
+   *                    are suppressed if \em bForce is not set
+   * @return pointer to @ref TObject, NULL if no objects of specified type
+   *         available
+   */
+  const TObject* GetFirstInputObject(const char* dtID, 
+				     const char* dtOrigin,
+				     const char* classname=NULL,
+				     int bForce=0);
+
+  /**
+   * Get the next object of a specific data type from the input data.
+   * The hight-level methods provide functionality to transfer ROOT data
+   * structures which inherit from TObject.
+   * The method looks for the next ROOT object of type and class specified
+   * to the previous @ref GetFirstInputObject call.
+   * @param bForce      force the retrieval of an object, error messages
+   *                    are suppressed if \em bForce is not set
+   * @return pointer to @ref TObject, NULL if no more objects available
+   */
+  const TObject* GetNextInputObject(int bForce=0);
+
+  /**
+   * Get data type of an input block.
+   * Get data type of the object previously fetched via
+   * GetFirstInputObject/NextInputObject or the last one if no object
+   * specified.
+   * @param pObject     pointer to TObject
+   * @return data specification, kAliHLTVoidDataSpec if failed
+   */
+  AliHLTComponentDataType GetDataType(const TObject* pObject=NULL);
+
+  /**
+   * Get data specification of an input block.
+   * Get data specification of the object previously fetched via
+   * GetFirstInputObject/NextInputObject or the last one if no object
+   * specified.
+   * @param pObject     pointer to TObject
+   * @return data specification, kAliHLTVoidDataSpec if failed
+   */
+  AliHLTUInt32_t GetSpecification(const TObject* pObject=NULL);
+
+  /**
+   * Get the first block of a specific data type from the input data.
+   * The method looks for the first block of type dt in the input stream. It is intended
+   * to be used within the high-level interface.
+   * @param dt          data type of the block
+   * @return pointer to @ref AliHLTComponentBlockData
+   */
+  const AliHLTComponentBlockData* GetFirstInputBlock(const AliHLTComponentDataType& dt=kAliHLTAnyDataType);
+
+  /**
+   * Get the first block of a specific data type from the input data.
+   * The method looks for the first block of type specified by the ID and 
+   * Origin strings in the input stream.  It is intended
+   * to be used within the high-level interface.
+   * @param dtID        data type ID of the block
+   * @param dtOrigin    data type origin of the block
+   * @return pointer to @ref AliHLTComponentBlockData
+   */
+  const AliHLTComponentBlockData* GetFirstInputBlock(const char* dtID, 
+						      const char* dtOrigin);
+
+  /**
+   * Get input block by index
+   * @return pointer to AliHLTComponentBlockData, NULL if index out of range
+   */
+  const AliHLTComponentBlockData* GetInputBlock(int index);
+
+  /**
+   * Get the next block of a specific data type from the input data.
+   * The method looks for the next block  of type and class specified
+   * to the previous @ref GetFirstInputBlock call.
+   * To be used within the high-level interface.
+   */
+  const AliHLTComponentBlockData* GetNextInputBlock();
+
+  /**
+   * Get data specification of an input block.
+   * Get data specification of the input bblock previously fetched via
+   * GetFirstInputObject/NextInputObject or the last one if no block
+   * specified.
+   * @param pBlock     pointer to input block
+   * @return data specification, kAliHLTVoidDataSpec if failed
+   */
+  AliHLTUInt32_t GetSpecification(const AliHLTComponentBlockData* pBlock=NULL);
+
+  /**
+   * Insert an object into the output.
+   * @param pObject     pointer to root object
+   * @param dt          data type of the object
+   * @param spec        data specification
+   * @return neg. error code if failed 
+   */
+  int PushBack(TObject* pObject, const AliHLTComponentDataType& dt, 
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+
+  /**
+   * Insert an object into the output.
+   * @param pObject     pointer to root object
+   * @param dtID        data type ID of the object
+   * @param dtOrigin    data type origin of the object
+   * @param spec        data specification
+   * @return neg. error code if failed 
+   */
+  int PushBack(TObject* pObject, const char* dtID, const char* dtOrigin,
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+
+  /**
+   * Insert an object into the output.
+   * @param pBuffer     pointer to buffer
+   * @param iSize       size of the buffer
+   * @param dt          data type of the object
+   * @param spec        data specification
+   * @return neg. error code if failed 
+   */
+  int PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt,
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+
+  /**
+   * Insert an object into the output.
+   * @param pBuffer     pointer to buffer
+   * @param iSize       size of the buffer
+   * @param dtID        data type ID of the object
+   * @param dtOrigin    data type origin of the object
+   * @param spec        data specification
+   * @return neg. error code if failed 
+   */
+  int PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin,
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+
+  /**
+   * Insert event-done data information into the output.
+   * @param edd          event-done data information
+   */
+  int CreateEventDoneData(AliHLTComponentEventDoneData edd);
+
  private:
   /**
    * Increment the internal event counter.
    * To be used by the friend classes AliHLTProcessor, AliHLTDataSource
    * and AliHLTDataSink.
    * @return new value of the internal event counter
+   * @internal
    */
   int IncrementEventCounter();
 
+  /**
+   * Find the first input block of specified data type beginning at index.
+   * @param dt          data type
+   * @param startIdx    index to start the search
+   * @return index of the block, -ENOENT if no block found
+   *
+   * @internal
+   */
+  int FindInputBlock(const AliHLTComponentDataType& dt, int startIdx=-1);
+
+  /**
+   * Get index in the array of input bocks.
+   * Calculate index and check integrety of a block data structure pointer.
+   * @param pBlock      pointer to block data
+   * @return index of the block, -ENOENT if no block found
+   *
+   * @internal
+   */
+  int FindInputBlock(const AliHLTComponentBlockData* pBlock);
+
+  /**
+   * Create an object from a specified input block.
+   * @param idx         index of the input block
+   * @param bForce      force the retrieval of an object, error messages
+   *                    are suppressed if \em bForce is not set
+   * @return pointer to TObject, caller must delete the object after use
+   *
+   * @internal
+   */
+  TObject* CreateInputObject(int idx, int bForce=0);
+
+  /**
+   * Get input object
+   * Get object from the input block list
+   * @param idx         index in the input block list
+   * @param classname   name of the class, object is checked for correct class
+   *                    name if set
+   * @param bForce      force the retrieval of an object, error messages
+   *                    are suppressed if \em bForce is not set
+   * @return pointer to TObject
+   *
+   * @internal
+   */
+  TObject* GetInputObject(int idx, const char* classname=NULL, int bForce=0);
+
+  /**
+   * Insert a buffer into the output block stream.
+   * This is the only method to insert blocks into the output stream, called
+   * from all types of the Pushback method. The actual data might have been
+   * written to the output buffer already. In that case NULL can be provided
+   * as buffer, only the block descriptor will be build.
+   * @param pBuffer     pointer to buffer
+   * @param iSize       size of the buffer in byte
+   * @param dt          data type
+   * @param spec        data specification
+   */
+  int InsertOutputBlock(void* pBuffer, int iSize,
+			const AliHLTComponentDataType& dt,
+			AliHLTUInt32_t spec);
+
+
   /** The global component handler instance */
-  static AliHLTComponentHandler* fgpComponentHandler;  //! transient
+  static AliHLTComponentHandler* fgpComponentHandler;              //! transient
 
   /** The environment where the component is running in */
-  AliHLTComponentEnvironment fEnvironment; // see above
+  AliHLTComponentEnvironment fEnvironment;                         // see above
 
-  /** 
-   * Set by ProcessEvent before the processing starts (e.g. before calling 
-   * @ref AliHLTProcessor::DoEvent)
-   */
-  AliHLTEventID_t fCurrentEvent; // see above
+  /** Set by ProcessEvent before the processing starts */
+  AliHLTEventID_t fCurrentEvent;                                   // see above
 
   /** internal event no */
-  int fEventCount; // see above
+  int fEventCount;                                                 // see above
+
+  /** the number of failed events */
+  int fFailedEvents;                                               // see above
+
+  /** event data struct of the current event under processing */
+  AliHLTComponentEventData fCurrentEventData;                      // see above
+
+  /** array of input data blocks of the current event */
+  const AliHLTComponentBlockData* fpInputBlocks;                   //! transient
+
+  /** index of the current input block */
+  int fCurrentInputBlock;                                          // see above
+
+  /** data type of the last block search */
+  AliHLTComponentDataType fSearchDataType;                         // see above
+
+  /** name of the class for the object to search for */
+  string fClassName;                                               // see above
+
+  /** array of generated input objects */
+  TObjArray* fpInputObjects;                                       //! transient
+ 
+  /** the output buffer */
+  AliHLTUInt8_t* fpOutputBuffer;                                   //! transient
+
+  /** size of the output buffer */
+  AliHLTUInt32_t fOutputBufferSize;                                // see above
+
+  /** size of data written to output buffer */
+  AliHLTUInt32_t fOutputBufferFilled;                              // see above
+
+  /** list of ouput block data descriptors */
+  vector<AliHLTComponentBlockData> fOutputBlocks;                  // see above
 
   ClassDef(AliHLTComponent, 1)
 };

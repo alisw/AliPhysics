@@ -29,7 +29,7 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
 	AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 	AliHLTComponent* Spawn();
-	
+
     protected:
 	
 	void SetMergerParameters(Double_t maxy=2.0,Double_t maxz=3.0,Double_t maxkappa=0.003,

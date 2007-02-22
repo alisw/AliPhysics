@@ -62,6 +62,7 @@ extern "C" {
 # define kAliHLTAnyDataOrigin "***"
   const AliHLTComponentDataType kAliHLTVoidDataType = {sizeof(AliHLTComponentDataType), kAliHLTVoidDataTypeID, kAliHLTVoidDataOrigin};
   const AliHLTComponentDataType kAliHLTAnyDataType  = {sizeof(AliHLTComponentDataType), kAliHLTAnyDataTypeID, kAliHLTAnyDataOrigin};
+  const AliHLTUInt32_t kAliHLTVoidDataSpec = ~(AliHLTUInt32_t)0;
   
   struct AliHLTComponentBlockData
   {

@@ -58,12 +58,21 @@ int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& ev
 {
   // see header file for class documentation
   int iResult=0;
-  // this function will be implemented in conjunction with the high-level
-  // component interface
-  HLTWarning("not yet implemented");
   if (evtData.fStructSize==0 && blocks==NULL && trigData.fStructSize==0) {
     // this is just to get rid of the warning "unused parameter"
   }
+  const TObject* pObj=GetFirstInputObject(kAliHLTAnyDataType);
+  HLTDebug("got first object %p", pObj);
+  int count=0;
+  while (pObj && iResult>=0) {
+    iResult=WriteObject(evtData.fEventID, pObj);
+    if (iResult) {
+      count++;
+      HLTDebug("wrote object of class %s, data type %s", pObj->ClassName(), (DataType2Text(GetDataType(pObj)).c_str())); 
+    }
+    pObj=GetNextInputObject();
+  }
+  HLTDebug("wrote %d of %d object(s) to file", count, GetNumberOfInputBlocks());
   return iResult;
 }
 
@@ -78,7 +87,7 @@ int AliHLTRootFileWriterComponent::ScanArgument(int argc, const char** argv)
   return iResult;
 }
 
-int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, TObject *pOb)
+int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, const TObject *pOb)
 {
   // see header file for class documentation
   int iResult=0;

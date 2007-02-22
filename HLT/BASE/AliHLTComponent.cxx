@@ -28,7 +28,10 @@ using namespace std;
 #include "AliHLTStdIncludes.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
+#include "AliHLTMessage.h"
 #include "TString.h"
+#include "TObjArray.h"
+#include "TClass.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent)
@@ -37,7 +40,18 @@ AliHLTComponent::AliHLTComponent()
   :
   fEnvironment(),
   fCurrentEvent(0),
-  fEventCount(-1)
+  fEventCount(-1),
+  fFailedEvents(0),
+  fCurrentEventData(),
+  fpInputBlocks(NULL),
+  fCurrentInputBlock(-1),
+  fSearchDataType(kAliHLTVoidDataType),
+  fClassName(),
+  fpInputObjects(NULL),
+  fpOutputBuffer(NULL),
+  fOutputBufferSize(0),
+  fOutputBufferFilled(0),
+  fOutputBlocks()
 {
   // see header file for class documentation
   // or
@@ -53,7 +67,18 @@ AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
   :
   fEnvironment(),
   fCurrentEvent(0),
-  fEventCount(-1)
+  fEventCount(-1),
+  fFailedEvents(0),
+  fCurrentEventData(),
+  fpInputBlocks(NULL),
+  fCurrentInputBlock(-1),
+  fSearchDataType(kAliHLTVoidDataType),
+  fClassName(),
+  fpInputObjects(NULL),
+  fpOutputBuffer(NULL),
+  fOutputBufferSize(0),
+  fOutputBufferFilled(0),
+  fOutputBlocks()
 {
   // see header file for class documentation
   HLTFatal("copy constructor untested");
@@ -237,7 +262,7 @@ void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) const
   blockData.fPtr = NULL;
   blockData.fSize = 0;
   FillDataType( blockData.fDataType );
-  blockData.fSpecification = ~(AliHLTUInt32_t)0;
+  blockData.fSpecification = kAliHLTVoidDataSpec;
 }
 
 void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) const
@@ -317,6 +342,331 @@ int AliHLTComponent::IncrementEventCounter()
   return fEventCount;
 }
 
+int AliHLTComponent::GetNumberOfInputBlocks()
+{
+  // see header file for function documentation
+  if (fpInputBlocks!=NULL) {
+    return fCurrentEventData.fBlockCnt;
+  }
+  return 0;
+}
+
+const TObject* AliHLTComponent::GetFirstInputObject(const AliHLTComponentDataType& dt,
+						    const char* classname,
+						    int bForce)
+{
+  // see header file for function documentation
+  fSearchDataType=dt;
+  if (classname) fClassName=classname;
+  else fClassName.clear();
+  int idx=FindInputBlock(fSearchDataType, 0);
+  //HLTDebug("found block %d when searching for data type %s", idx, DataType2Text(dt).c_str());
+  TObject* pObj=NULL;
+  if (idx>=0) {
+    if ((pObj=GetInputObject(idx, fClassName.c_str(), bForce))!=NULL) {
+      fCurrentInputBlock=idx;
+    } else {
+    }
+  }
+  return pObj;
+}
+
+const TObject* AliHLTComponent::GetFirstInputObject(const char* dtID, 
+						    const char* dtOrigin,
+						    const char* classname,
+						    int         bForce)
+{
+  // see header file for function documentation
+  AliHLTComponentDataType dt;
+  SetDataType(dt, dtID, dtOrigin);
+  return GetFirstInputObject(dt, classname, bForce);
+}
+
+const TObject* AliHLTComponent::GetNextInputObject(int bForce)
+{
+  // see header file for function documentation
+  int idx=FindInputBlock(fSearchDataType, fCurrentInputBlock+1);
+  //HLTDebug("found block %d when searching for data type %s", idx, DataType2Text(fSearchDataType).c_str());
+  TObject* pObj=NULL;
+  if (idx>=0) {
+    if ((pObj=GetInputObject(idx, fClassName.c_str(), bForce))!=NULL) {
+      fCurrentInputBlock=idx;
+    }
+  }
+  return pObj;
+}
+
+int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int startIdx)
+{
+  // see header file for function documentation
+  int iResult=-ENOENT;
+  if (fpInputBlocks!=NULL) {
+    int idx=startIdx<0?0:startIdx;
+    for ( ; idx<fCurrentEventData.fBlockCnt && iResult==-ENOENT; idx++) {
+      if (dt == kAliHLTAnyDataType || fpInputBlocks[idx].fDataType == dt) {
+	iResult=idx;
+      }
+    }
+  }
+  return iResult;
+}
+
+TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
+{
+  // see header file for function documentation
+  TObject* pObj=NULL;
+  if (fpInputBlocks!=NULL) {
+    if (idx<fCurrentEventData.fBlockCnt) {
+      if (fpInputBlocks[idx].fPtr) {
+	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
+	if (firstWord==fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) {
+	  //HLTDebug("create object from block %d size %d", idx, fpInputBlocks[idx].fSize);
+	  AliHLTMessage msg(fpInputBlocks[idx].fPtr, fpInputBlocks[idx].fSize);
+	  pObj=msg.ReadObject(msg.GetClass());
+	  if (pObj && msg.GetClass()) {
+	    //HLTDebug("object %p type %s created", pObj, msg.GetClass()->GetName());
+	  } else {
+	  }
+	} else {
+	  //	} else if (bForce!=0) {
+	  HLTError("size missmatch: block size %d, indicated %d", fpInputBlocks[idx].fSize, firstWord+sizeof(AliHLTUInt32_t));
+	}
+      } else {
+	HLTFatal("block descriptor empty");
+      }
+    } else {
+      HLTError("index %d out of range %d", idx, fCurrentEventData.fBlockCnt);
+    }
+  } else {
+    HLTError("no input blocks available");
+  }
+  
+  return pObj;
+}
+
+TObject* AliHLTComponent::GetInputObject(int idx, const char* classname, int bForce)
+{
+  // see header file for function documentation
+  if (fpInputObjects==NULL) {
+    fpInputObjects=new TObjArray(fCurrentEventData.fBlockCnt);
+  }
+  TObject* pObj=NULL;
+  if (fpInputObjects) {
+    pObj=fpInputObjects->At(idx);
+    if (pObj==NULL) {
+      pObj=CreateInputObject(idx, bForce);
+      if (pObj) {
+	fpInputObjects->AddAt(pObj, idx);
+      }
+    }
+  } else {
+    HLTFatal("memory allocation failed: TObjArray of size %d", fCurrentEventData.fBlockCnt);
+  }
+  return pObj;
+}
+
+AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
+{
+  // see header file for function documentation
+  AliHLTComponentDataType dt=kAliHLTVoidDataType;
+  int idx=fCurrentInputBlock;
+  if (pObject) {
+    if (fpInputObjects==NULL || (idx=fpInputObjects->IndexOf(pObject))>=0) {
+    } else {
+      HLTError("unknown object %p", pObject);
+    }
+  }
+  if (idx>=0) {
+    if (idx<fCurrentEventData.fBlockCnt) {
+      dt=fpInputBlocks[idx].fDataType;
+    } else {
+      HLTFatal("severe internal error, index out of range");
+    }
+  }
+  return dt;
+}
+
+AliHLTUInt32_t AliHLTComponent::GetSpecification(const TObject* pObject)
+{
+  // see header file for function documentation
+  AliHLTUInt32_t iSpec=kAliHLTVoidDataSpec;
+  int idx=fCurrentInputBlock;
+  if (pObject) {
+    if (fpInputObjects==NULL || (idx=fpInputObjects->IndexOf(pObject))>=0) {
+    } else {
+      HLTError("unknown object %p", pObject);
+    }
+  }
+  if (idx>=0) {
+    if (idx<fCurrentEventData.fBlockCnt) {
+      iSpec=fpInputBlocks[idx].fSpecification;
+    } else {
+      HLTFatal("severe internal error, index out of range");
+    }
+  }
+  return iSpec;
+}
+
+const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const AliHLTComponentDataType& dt)
+{
+  // see header file for function documentation
+  fSearchDataType=dt;
+  fClassName.clear();
+  int idx=FindInputBlock(fSearchDataType, 0);
+  const AliHLTComponentBlockData* pBlock=NULL;
+  if (idx>=0) {
+    // check for fpInputBlocks pointer done in FindInputBlock
+    pBlock=&fpInputBlocks[idx];
+  }
+  return pBlock;
+}
+
+const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const char* dtID, 
+								    const char* dtOrigin)
+{
+  // see header file for function documentation
+  AliHLTComponentDataType dt;
+  SetDataType(dt, dtID, dtOrigin);
+  return GetFirstInputBlock(dt);
+}
+
+const AliHLTComponentBlockData* AliHLTComponent::GetNextInputBlock()
+{
+  // see header file for function documentation
+  int idx=FindInputBlock(fSearchDataType, fCurrentInputBlock+1);
+  const AliHLTComponentBlockData* pBlock=NULL;
+  if (idx>=0) {
+    // check for fpInputBlocks pointer done in FindInputBlock
+    pBlock=&fpInputBlocks[idx];
+  }
+  return pBlock;
+}
+
+int AliHLTComponent::FindInputBlock(const AliHLTComponentBlockData* pBlock)
+{
+  // see header file for function documentation
+  int iResult=-ENOENT;
+  if (fpInputBlocks!=NULL) {
+    if (pBlock) {
+      if (pBlock>=fpInputBlocks && pBlock<fpInputBlocks+fCurrentEventData.fBlockCnt) {
+	iResult=reinterpret_cast<int>(pBlock-fpInputBlocks);
+      }
+    } else {
+      iResult=-EINVAL;
+    }
+  }
+  return iResult;
+}
+
+AliHLTUInt32_t AliHLTComponent::GetSpecification(const AliHLTComponentBlockData* pBlock)
+{
+  // see header file for function documentation
+  AliHLTUInt32_t iSpec=kAliHLTVoidDataSpec;
+  int idx=fCurrentInputBlock;
+  if (pBlock) {
+    if (fpInputObjects==NULL || (idx=FindInputBlock(pBlock))>=0) {
+    } else {
+      HLTError("unknown Block %p", pBlock);
+    }
+  }
+  if (idx>=0) {
+    // check for fpInputBlocks pointer done in FindInputBlock
+    iSpec=fpInputBlocks[idx].fSpecification;
+  }
+  return iSpec;
+}
+
+int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
+{
+  // see header file for function documentation
+  int iResult=0;
+  if (pObject) {
+    AliHLTMessage msg(kMESS_OBJECT);
+    msg.WriteObject(pObject);
+    Int_t iMsgLength=msg.Length();
+    if (iMsgLength>0) {
+      msg.SetLength(); // sets the length to the first (reserved) word
+      iResult=InsertOutputBlock(msg.Buffer(), iMsgLength, dt, spec);
+      if (iResult>=0) {
+	//HLTDebug("object %s (%p) inserted to output", pObject->ClassName(), pObject);
+      }
+    } else {
+      HLTError("object serialization failed for object %p", pObject);
+      iResult=-ENOMSG;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec)
+{
+  // see header file for function documentation
+  AliHLTComponentDataType dt;
+  SetDataType(dt, dtID, dtOrigin);
+  return PushBack(pObject, dt, spec);
+}
+
+int AliHLTComponent::PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
+{
+  // see header file for function documentation
+  return InsertOutputBlock(pBuffer, iSize, dt, spec);
+}
+
+int AliHLTComponent::PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec)
+{
+  // see header file for function documentation
+  AliHLTComponentDataType dt;
+  SetDataType(dt, dtID, dtOrigin);
+  return PushBack(pBuffer, iSize, dt, spec);
+}
+
+int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
+{
+  // see header file for function documentation
+  int iResult=0;
+  if (pBuffer) {
+    if (fpOutputBuffer && (fOutputBufferSize-fOutputBufferFilled)) {
+      AliHLTUInt8_t* pTgt=fpOutputBuffer+fOutputBufferFilled;
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      bd.fOffset        = fOutputBufferFilled;
+      bd.fPtr           = pTgt;
+      bd.fSize          = iSize;
+      bd.fDataType      = dt;
+      bd.fSpecification = spec;
+      if (pBuffer!=NULL && pBuffer!=pTgt) {
+	memcpy(pTgt, pBuffer, iSize);
+	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);	
+	//HLTDebug("copy %d bytes from %p to output buffer %p, first word %#x", iSize, pBuffer, pTgt, firstWord);
+      }
+      fOutputBufferFilled+=bd.fSize;
+      fOutputBlocks.push_back( bd );
+      //HLTDebug("buffer inserted to output: size %d data type %s spec %#x", iSize, DataType2Text(dt).c_str(), spec);
+    } else {
+      if (fpOutputBuffer) {
+	HLTError("too little space in output buffer: %d, required %d", fOutputBufferSize-fOutputBufferFilled, iSize);
+      } else {
+	HLTError("output buffer not available");
+      }
+      iResult=-ENOSPC;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData edd)
+{
+  // see header file for function documentation
+  int iResult=-ENOSYS;
+  //#warning  function not yet implemented
+  HLTWarning("function not yet implemented");
+  return iResult;
+}
+
 int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 				   const AliHLTComponentBlockData* blocks, 
 				   AliHLTComponentTriggerData& trigData,
@@ -329,7 +679,39 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // see header file for function documentation
   int iResult=0;
   fCurrentEvent=evtData.fEventID;
-  iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, outputBlockCnt, outputBlocks, edd);
+  fCurrentEventData=evtData;
+  fpInputBlocks=blocks;
+  fCurrentInputBlock=-1;
+  fSearchDataType=kAliHLTAnyDataType;
+  fpOutputBuffer=outputPtr;
+  fOutputBufferSize=size;
+  fOutputBufferFilled=0;
+  fOutputBlocks.clear();
+  
+  vector<AliHLTComponentBlockData> blockData;
+  iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, blockData, edd);
+  if (iResult>=0) {
+    if (fOutputBlocks.size()>0) {
+      //HLTDebug("got %d block(s) via high level interface", fOutputBlocks.size());
+      if (blockData.size()>0) {
+	HLTError("low level and high interface must not be mixed; use PushBack methods to insert data blocks");
+	iResult=-EFAULT;
+      } else {
+	iResult=MakeOutputDataBlockList(fOutputBlocks, &outputBlockCnt, &outputBlocks);
+	size=fOutputBufferFilled;
+      }
+    } else {
+      iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
+    }
+    if (iResult<0) {
+      HLTFatal("component %s (%p): can not convert output block descriptor list", GetComponentID(), this);
+    }
+  }
+  if (iResult<0) {
+    outputBlockCnt=0;
+    outputBlocks=NULL;
+  }
   IncrementEventCounter();
   return iResult;
 }
+

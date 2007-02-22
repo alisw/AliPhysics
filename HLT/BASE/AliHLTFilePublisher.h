@@ -107,6 +107,17 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
    */
   virtual int ScanArgument(int argc, const char** argv);
 
+ protected:
+  /**
+   * Get the data type which is set for the current file
+   */
+  AliHLTComponentDataType GetCurrentDataType() const;
+
+  /**
+   * Get the data specification which is set for the current file
+   */
+  AliHLTUInt32_t          GetCurrentSpecification() const;
+  
  private:
   /** list of file names */
   TList                   fFileNames;                              // see above

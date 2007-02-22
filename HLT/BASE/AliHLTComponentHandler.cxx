@@ -40,6 +40,7 @@ using namespace std;
 // the standard components
 #include "AliHLTFilePublisher.h"
 #include "AliHLTFileWriter.h"
+#include "AliHLTRootFilePublisherComponent.h"
 #include "AliHLTRootFileWriterComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -314,6 +315,7 @@ int AliHLTComponentHandler::AddStandardComponents()
   AliHLTComponent::SetGlobalComponentHandler(this);
   fStandardList.push_back(new AliHLTFilePublisher);
   fStandardList.push_back(new AliHLTFileWriter);
+  fStandardList.push_back(new AliHLTRootFilePublisherComponent);
   fStandardList.push_back(new AliHLTRootFileWriterComponent);
   AliHLTComponent::UnsetGlobalComponentHandler();
   iResult=RegisterScheduledComponents();

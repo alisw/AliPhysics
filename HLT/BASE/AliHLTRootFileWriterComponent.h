@@ -18,6 +18,9 @@ class TFile;
 
 /**
  * @class AliHLTRootFileWriterComponent
+ * The RootFileWriter provides a stand alone component to write incoming
+ * TObject like structures into a Root file. Furthermore it functions as
+ * base class for customized writers.
  * @see AliHLTFileWriter for parameters
  */
 class AliHLTRootFileWriterComponent : public AliHLTFileWriter
@@ -48,7 +51,11 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
   /**
    * Data processing method for the component.
    * The function can be overloaded by specific ROOT file writer
-   * components.
+   * components. The RootFileWriter processes only TObject like data
+   * structures of the input blocks and uses the
+   * @ref alihltcomponent-high-level-interface. Despite of that it implements
+   * the lox-level DumpEvent method in order to allow child classes to use the
+   * low-level method.
    * @param evtData       event data structure
    * @param blocks        input data block descriptors
    * @param trigData	  trigger data structure
@@ -77,7 +84,7 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
    * @param pOb        pointer to ROOT object
    * @return neg. error code if failed
    */
-  int WriteObject(const AliHLTEventID_t eventID, TObject *pOb);
+  int WriteObject(const AliHLTEventID_t eventID, const TObject *pOb);
 
   /**
    * Open a ROOT file.

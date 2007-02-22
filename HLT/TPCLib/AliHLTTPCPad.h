@@ -86,7 +86,7 @@ class AliHLTTPCPad : public AliHLTLogging {
    * Calculate the base line from the current event data.
    * Only available within an event cycle. <br>
    * The calculation requires a minimum number of bins which contribute
-   * to the sum, which can be specified by @param reqMinCount. The base line
+   * to the sum, which can be specified by \e reqMinCount. The base line
    * calculation will also be skipped if the number of contributing bins is 
    * less than half of the total number of time bins. 
    * @param reqMinCount    the minimum number of bins contributing to the sum

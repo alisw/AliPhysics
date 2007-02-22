@@ -55,7 +55,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 	AliHLTComponent* Spawn();
-	
+
     protected:
 	
 	// Protected functions to implement AliHLTComponent's interface.

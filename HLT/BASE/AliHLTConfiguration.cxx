@@ -925,7 +925,9 @@ int AliHLTTask::GetNofMatchingDataTypes(const AliHLTTask* pConsumerTask) const
   if (pConsumerTask) {
     AliHLTComponent* pComponent=GetComponent();
     if (!pComponent) {
-      // init
+      // init ?
+      HLTError("component not initialized");
+      iResult=-EFAULT;
     }
     if (pComponent) {
       iResult=pComponent->FindMatchingDataTypes(pConsumerTask->GetComponent(), NULL);

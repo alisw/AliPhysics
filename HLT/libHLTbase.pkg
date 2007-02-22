@@ -14,8 +14,10 @@ MODULE_SRCS= 	AliHLTComponent.cxx \
 		AliHLTDataSource.cxx \
 		AliHLTDataSink.cxx \
 		AliHLTFilePublisher.cxx \
+		AliHLTRootFilePublisherComponent.cxx \
 		AliHLTRootFileWriterComponent.cxx \
-		AliHLTFileWriter.cxx
+		AliHLTFileWriter.cxx \
+		AliHLTMessage.cxx
 
 CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTComponentHandler.h \
@@ -29,8 +31,10 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTDataSource.h \
 		AliHLTDataSink.h \
 		AliHLTFilePublisher.h \
+		AliHLTRootFilePublisherComponent.h \
 		AliHLTRootFileWriterComponent.h \
-		AliHLTFileWriter.h
+		AliHLTFileWriter.h \
+		AliHLTMessage.h
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDataTypes.h \

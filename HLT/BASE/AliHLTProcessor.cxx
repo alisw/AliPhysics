@@ -63,17 +63,31 @@ int AliHLTProcessor::Deinit()
 
 int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-			    AliHLTUInt32_t& size, AliHLTUInt32_t& outputBlockCnt, 
-			    AliHLTComponentBlockData*& outputBlocks,
+			    AliHLTUInt32_t& size,
+			    vector<AliHLTComponentBlockData>& outputBlocks,
 			    AliHLTComponentEventDoneData*& edd )
 {
   // see header file for class documentation
   int iResult=0;
-  vector<AliHLTComponentBlockData> blockData;
-  iResult=DoEvent(evtData, blocks, trigData, outputPtr, size, blockData);
-  if (iResult>=0) {
-    iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);
-  }
+  iResult=DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
   edd = NULL;
   return iResult;
+}
+
+int AliHLTProcessor::DoEvent( const AliHLTComponentEventData& evtData,
+	       const AliHLTComponentBlockData* blocks, 
+	       AliHLTComponentTriggerData& trigData,
+	       AliHLTUInt8_t* outputPtr, 
+	       AliHLTUInt32_t& size,
+	       vector<AliHLTComponentBlockData>& outputBlocks )
+{
+  // we just forward to the high level method, all other parameters already
+  // have been stored internally
+  return DoEvent(evtData, trigData);
+}
+
+int AliHLTProcessor::DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+{
+  HLTFatal("no processing method implemented");
+  return -ENOSYS;
 }

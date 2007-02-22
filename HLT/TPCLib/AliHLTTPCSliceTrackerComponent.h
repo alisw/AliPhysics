@@ -29,7 +29,7 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 	AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 	AliHLTComponent* Spawn();
-	
+
     protected:
 	
 	void SetTrackerParam(Int_t phi_segments=50,Int_t eta_segments=100,
