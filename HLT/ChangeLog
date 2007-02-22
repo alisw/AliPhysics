@@ -1,6 +1,13 @@
+2007-02-20 version HLT-v0-5 tagged
+	
+2007-02-20
+	- Cellular Automaton tracker added to TPC Lib
+	- TPC OnlineDisplay updated to the lates version of the CERN HLT cluster
+	  libAliHLTTPCDisplay version for the AliHLTGUI v 1.5.2
+	- TPC ESD writer component finalized
 2007-02-05
 	- improvements in AliHLTFilePublisher/Writer
-	- small fix in component handler to pipe log messages during registration
+	- minor fix in component handler to pipe log messages during registration
 	  of standard components into right log channel
 	- the ProcessEvent method is now a method of the component base class,
 	  the actual processing method to implement is DoProcessing
