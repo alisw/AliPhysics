@@ -31,6 +31,21 @@ class AliHLTTPCTrackArray;
  * \li -directory    <i> directory  </i> <br>
  *      target directory
  *
+ * <pre>
+ * Example usage (HLT configuration file):
+ *         \<Proc ID="EsdWriter" type="prc">
+ *             \<Cmd>AliRootWrapperSubscriber -eventmodulo 1
+ *                 -componentid TPCEsdWriter
+ *                 -componentlibrary libAliHLTTPC.so
+ *                 -componentargs "-datafile AliESDs.root"
+ *            \</Cmd>
+ *
+ *            \<Parent>TR0-SC\</Parent>
+ *            \<Node>master\</Node>
+ *            \<Shm blocksize="1k" blockcount="1" type="sysv"/>
+ *        \</Proc>
+ * </pre>
+ *
  * @see AliHLTFileWriter and AliHLTRootFileWriterComponent for more parameters
  */
 class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
