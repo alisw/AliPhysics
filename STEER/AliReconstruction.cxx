@@ -176,6 +176,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fStopOnError(kFALSE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
+  fWriteAOD(kFALSE),
   fFillTriggerESD(kTRUE),
 
   fRunLocalReconstruction("ALL"),
@@ -222,6 +223,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fStopOnError(rec.fStopOnError),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
+  fWriteAOD(rec.fWriteAOD),
   fFillTriggerESD(rec.fFillTriggerESD),
 
   fRunLocalReconstruction(rec.fRunLocalReconstruction),
@@ -809,6 +811,10 @@ Bool_t AliReconstruction::Run(const char* input)
     tree->SetBranchStatus("ESDfriend*",0);
   tree->Write();
   hlttree->Write();
+
+  if (fWriteAOD) {
+    CreateAOD(file);
+  }
 
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
@@ -1942,6 +1948,15 @@ void AliReconstruction::CreateTag(TFile* file)
   delete tag;
   delete evTag;
 }
+
+//_____________________________________________________________________________
+void AliReconstruction::CreateAOD(TFile* esdFile)
+{
+  // do nothing for now
+
+  return;
+}
+
 
 void AliReconstruction::WriteAlignmentData(AliESD* esd)
 {

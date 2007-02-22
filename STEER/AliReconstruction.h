@@ -77,6 +77,7 @@ public:
   void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
+  void SetWriteAOD(Bool_t flag=kTRUE){fWriteAOD=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
 		   
@@ -124,6 +125,7 @@ private:
   //===========================================//
   void           CreateTag(TFile* file);
   //==========================================//
+  void           CreateAOD(TFile* file);
 
   void           WriteAlignmentData(AliESD* esd);
 
@@ -135,6 +137,7 @@ private:
   Bool_t         fStopOnError;        // stop or continue on errors
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
+  Bool_t         fWriteAOD;           // write AOD flag
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
 
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
