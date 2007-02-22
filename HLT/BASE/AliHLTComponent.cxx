@@ -549,7 +549,7 @@ int AliHLTComponent::FindInputBlock(const AliHLTComponentBlockData* pBlock)
   if (fpInputBlocks!=NULL) {
     if (pBlock) {
       if (pBlock>=fpInputBlocks && pBlock<fpInputBlocks+fCurrentEventData.fBlockCnt) {
-	iResult=reinterpret_cast<int>(pBlock-fpInputBlocks);
+	iResult=(int)(pBlock-fpInputBlocks);
       }
     } else {
       iResult=-EINVAL;
