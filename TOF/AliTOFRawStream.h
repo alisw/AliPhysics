@@ -41,6 +41,7 @@ class AliTOFRawStream: public TObject {
   Int_t GetStrip()  const {return fStrip;};
   Int_t GetPadZ()   const {return fPadZ;};
   Int_t GetPadX()   const {return fPadX;};
+  Int_t GetIndex(Int_t *detId); // Get channel index for Online Calibration 
   
   Int_t GetTofBin() const {return fTime;};
   Int_t GetToTbin() const {return fToT;};
