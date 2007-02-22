@@ -407,19 +407,15 @@ void IceRawTWR::PutWaveforms(Int_t year)
  TString hname;
  IceAOM om;
  IceAOM* omx=0;
- Int_t twrid;
  Int_t omid;
- Int_t omidmax=680;
+ Int_t omidmax=677;
  Int_t error;
  Float_t baseline;
  for (Int_t i=0; i<N_OF_CHANNELS; i++)
  {
   if (!fEvent.wfm_filled[i]) continue;
 
-  twrid=fEvent.twr_id_of_om[i];
-  if (!twrid) continue;
-
-  omid=i+1;
+  omid=i;
   if (omid<=0 || omid>omidmax) continue; // Skip trigger channels
 
   // Get corresponding device from the current event structure  

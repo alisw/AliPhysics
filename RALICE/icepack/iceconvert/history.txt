@@ -91,9 +91,9 @@
 21-feb-2007 NvE IceRawTWR.cxx updated to subtract 1 day from the GPS timestamp for all
                 data taken before 2007. This is to correct an interpretation error
                 in the TWR daq hardware design.
-                Also OM identifier set to loop index instead of twr_id in the memberfunction
+                Also OM identifier set to loop index+1 instead of twr_id in the memberfunction
                 PutWaveforms. This will now provide the correct number of fired OMs and
                 corresponding waveforms.
-               
-
-
+22-feb-2007 NvE IceRawTWR.cxx updated to set OM identifier equal to loop index in PutWaveforms
+                to match the internal TWR config convention. Also test on non-zero twrid
+                removed, since twrid=0 is allowed in TWR config system.
