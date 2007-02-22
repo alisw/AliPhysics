@@ -52,6 +52,8 @@ class AliAODEvent : public TObject {
   AliAODVertex *GetVertex(Int_t nVertex) const { return (AliAODVertex*)fVertices->At(nVertex); }
   void          AddVertex(const AliAODVertex* vtx)
     {new((*fVertices)[fVertices->GetEntries()]) AliAODVertex(*vtx);}
+  virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
+  
 
   // -- Cluster
   TClonesArray *GetClusters()            const { return fClusters; }

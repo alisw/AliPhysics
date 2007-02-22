@@ -79,7 +79,7 @@ class AliAODVertex : public TObject {
     { return fChi2/(2.*fDaughters.GetEntriesFast()-3.); }
 
   Char_t    GetVtxType() const { return fType; }
-  void      GetVtxType(Char_t vtype) { fType=vtype; }
+  void      SetVtxType(Char_t vtype) { fType=vtype; }
 
   TObject* GetParent() const   { return fParent.GetObject(); }
   Bool_t   HasParent(TObject *parent) const { return (fParent.GetObject() == parent) ? kTRUE : kFALSE; }
@@ -87,6 +87,7 @@ class AliAODVertex : public TObject {
   void     AddDaughter(TObject *daughter) { fDaughters.Add(daughter);}
   void     RemoveDaughter(TObject *daughter) { fDaughters.Remove(daughter); }
   Bool_t   HasDaughter(TObject *daughter) const;
+  Int_t    GetNDaughters() const { return fDaughters.GetEntriesFast(); }
 
   // covariance matrix elements after rotation by phi around z-axis 
   // and, then, by theta around new y-axis
