@@ -42,6 +42,8 @@ using namespace std;
 #include <errno.h>
 
 // this is a global object used for automatic component registration, do not use this
+// use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
+// use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
 AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentPacked(true);
 AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(false);
 
@@ -49,38 +51,43 @@ ClassImp(AliHLTTPCClusterFinderComponent)
 
 AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
   :
-  // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
-  // use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
-  fPackedSwitch(packed),
-
   fClusterFinder(NULL),
   fReader(NULL),
   fClusterDeconv(true),
   fXYClusterError(-1),
-  fZClusterError(-1)
+  fZClusterError(-1),
+  fPackedSwitch(packed)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(const AliHLTTPCClusterFinderComponent&)
   :
-  fPackedSwitch(0),
   fClusterFinder(NULL),
   fReader(NULL),
   fClusterDeconv(true),
   fXYClusterError(-1),
-  fZClusterError(-1)
+  fZClusterError(-1),
+  fPackedSwitch(0)
 {
+  // see header file for class documentation
   HLTFatal("copy constructor untested");
 }
 
 AliHLTTPCClusterFinderComponent& AliHLTTPCClusterFinderComponent::operator=(const AliHLTTPCClusterFinderComponent&)
 { 
+  // see header file for class documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
 
 AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()
     {
+  // see header file for class documentation
     }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -88,12 +95,14 @@ AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()
 
 const char* AliHLTTPCClusterFinderComponent::GetComponentID()
     {
+  // see header file for class documentation
       if (fPackedSwitch) return "TPCClusterFinderPacked";
       else return "TPCClusterFinderUnpacked";
     }
 
 void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
+  // see header file for class documentation
     list.clear(); 
     if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::gkDDLPackedRawDataType );
     else list.push_back( AliHLTTPCDefinitions::gkUnpackedRawDataType );
@@ -102,11 +111,13 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
 
 AliHLTComponentDataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
     {
+  // see header file for class documentation
     return AliHLTTPCDefinitions::gkClustersDataType;
     }
 
 void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
     {
+  // see header file for class documentation
     // XXX TODO: Find more realistic values.  
     constBase = 0;
     if (fPackedSwitch)  inputMultiplier = (6 * 0.4);
@@ -115,11 +126,13 @@ void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBas
 
 AliHLTComponent* AliHLTTPCClusterFinderComponent::Spawn()
     {
+  // see header file for class documentation
     return new AliHLTTPCClusterFinderComponent(fPackedSwitch);
     }
 	
 int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     {
+  // see header file for class documentation
     if ( fClusterFinder )
 	return EINPROGRESS;
 
@@ -247,6 +260,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
 int AliHLTTPCClusterFinderComponent::DoDeinit()
     {
+  // see header file for class documentation
 
     if ( fClusterFinder )
 	delete fClusterFinder;
@@ -265,6 +279,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 					      AliHLTUInt32_t& size, 
 					      vector<AliHLTComponentBlockData>& outputBlocks )
     {
+  // see header file for class documentation
 
     //  == init iter (pointer to datablock)
     const AliHLTComponentBlockData* iter = NULL;

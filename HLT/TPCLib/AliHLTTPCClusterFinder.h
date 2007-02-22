@@ -28,10 +28,10 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   typedef struct AliClusterData AliClusterData; //!
 
  private: 
-  AliHLTTPCSpacePointData *fSpacePointData; //!
-  AliHLTTPCDigitReader *fDigitReader;
+  AliHLTTPCSpacePointData *fSpacePointData; //! array of space points
+  AliHLTTPCDigitReader *fDigitReader;       //! reader instance
 
-  UChar_t* fPtr;   //pointer to packed block
+  UChar_t* fPtr;   //! pointer to packed block
   unsigned long fSize; //packed block size
   Bool_t fDeconvTime; //deconv in time direction
   Bool_t fDeconvPad;  //deconv in pad direction

@@ -1,8 +1,27 @@
 // @(#) $Id$
 // Original: AliHLTConfMapTrack.cxx,v 1.16 2005/06/14 10:55:21 cvetan 
 
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group 
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Anders Vestbo                                                 *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCConfMapTrack.cxx
+    @author Anders Vestbo, maintained by Matthias Richter
+    @date   
+    @brief  Track class for conformal mapper
+*/
 
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
@@ -12,15 +31,6 @@
 #include "AliHLTTPCConfMapTrack.h"
 #include "AliHLTTPCTransform.h"
 //#include "AliHLTTPC.h"
-
-/** \class AliHLTTPCConfMapTrack
-<pre>
-//_____________________________________________________________
-// AliHLTTPCConfMapTrack
-//
-// Track class for conformal mapper
-</pre>
-*/
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -34,6 +44,19 @@ AliHLTTPCConfMapTrack::AliHLTTPCConfMapTrack()
   //Constructor
   fChiSq[0] = 0.;
   fChiSq[1] = 0.;
+}
+
+AliHLTTPCConfMapTrack::AliHLTTPCConfMapTrack(const AliHLTTPCConfMapTrack&)
+{
+  // dummy copy constructor
+  //HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCConfMapTrack& AliHLTTPCConfMapTrack::operator=(const AliHLTTPCConfMapTrack&)
+{ 
+  // dummy assignment operator
+  //HLTFatal("assignment operator untested");
+  return *this;
 }
 
 AliHLTTPCConfMapTrack::~AliHLTTPCConfMapTrack()

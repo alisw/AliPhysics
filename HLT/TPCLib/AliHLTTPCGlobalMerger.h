@@ -4,21 +4,27 @@
 #ifndef ALIHLTTPC_GLOBALMERGER_H
 #define ALIHLTTPC_GLOBALMERGER_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCGlobalMerger.h
+    @author Uli Frankenfeld, maintained by Matthias Richter
+    @date   
+    @brief  The HLT TPC slice merger
+*/
+
 #ifndef  __CINT__
 #include "AliHLTTPCMerger.h"
 #endif
 
 #include "AliHLTTPCRootTypes.h"
 
+/** 
+ * @class AliHLTTPCGlobalMerger
+ * The HLTTPC Slice merger
+ */
 class AliHLTTPCGlobalMerger : public AliHLTTPCMerger{
 
- private:
-  Int_t fNSlices;
-  Int_t fFirst;
-  Int_t fLast;
-
-  Double_t CheckTracks(AliHLTTPCTrack *innertrack,AliHLTTPCTrack *outertrack,Int_t slice);
-  
  public:
   AliHLTTPCGlobalMerger();
   virtual ~AliHLTTPCGlobalMerger();
@@ -27,6 +33,13 @@ class AliHLTTPCGlobalMerger : public AliHLTTPCMerger{
   void InitSlice(Int_t slice);
   void SlowMerge(Char_t *path="./");
   void Merge();  //Loop over tracks from different sectors
+
+ private:
+  Double_t CheckTracks(AliHLTTPCTrack *innertrack,AliHLTTPCTrack *outertrack,Int_t slice);
+  
+  Int_t fNSlices; // no of slices
+  Int_t fFirst;   // first slice?
+  Int_t fLast;    // last slice?
 
   ClassDef(AliHLTTPCGlobalMerger,1) //Slice merger
 };

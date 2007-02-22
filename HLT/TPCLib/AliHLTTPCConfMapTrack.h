@@ -1,8 +1,17 @@
 // @(#) $Id$
 // Original: AliHLTConfMapTrack.h,v 1.4 2004/06/16 11:25:06 loizides 
 
-#ifndef ALIHLTTPC_ConfMapTrack
-#define ALIHLTTPC_ConfMapTrack
+#ifndef ALIHLTTPCCONFMAPTRACK_H
+#define ALIHLTTPCCONFMAPTRACK_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCConfMapTrack.h
+    @author Anders Vestbo, maintained by Matthias Richter
+    @date   
+    @brief  Track class for conformal mapper
+*/
 
 #include <string.h>
 
@@ -13,11 +22,21 @@
 
 class AliHLTTPCVertex;
 
+/** 
+ * @class AliHLTTPCConfMapTrack
+ * Track class for conformal mapper
+ *
+ */
 class AliHLTTPCConfMapTrack :public AliHLTTPCTrack {
 
  public:
   
   AliHLTTPCConfMapTrack();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCConfMapTrack(const AliHLTTPCConfMapTrack&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCConfMapTrack& operator=(const AliHLTTPCConfMapTrack&);
+  /** destructor */
   virtual ~AliHLTTPCConfMapTrack();
   void Fill(AliHLTTPCVertex *vertex,Double_t max_Dca);
   void Reset();
@@ -90,5 +109,5 @@ class AliHLTTPCConfMapTrack :public AliHLTTPCTrack {
   ClassDef(AliHLTTPCConfMapTrack,1) //Conformal mapping track class
 };
     
-#endif
+#endif // ALIHLTTPCCONFMAPTRACK_H
     

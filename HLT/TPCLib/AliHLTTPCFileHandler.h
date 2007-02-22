@@ -30,27 +30,6 @@ class AliHLTTPCTrackArray;
  */
 class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
 
- protected:
-  AliRunLoader *fInAli;//!
-  Bool_t fUseRunLoader; //use runloader
-
-  AliTPCParam *fParam;//!
-  AliSimDigits *fDigits;//!
-
-  TTree *fDigitsTree;//!
-  FILE *fMC;//!
-  
-  Bool_t fIndexCreated;   //is index created
-  Int_t  fIndex[36][159]; //stores index over digitstree 
-                          //for faster access w/o ASVVERSION
-  Bool_t fUseStaticIndex; //take static index
-  static Bool_t fgStaticIndexCreated;   //global index created
-  static Int_t  fgStaticIndex[36][159]; //global index
-
-  virtual Bool_t SetAliInput();
-  Bool_t GetDigitsTree(Int_t event);
-  Bool_t CreateIndex();  //create the index
-
  public:
   /** standard constructor */
   AliHLTTPCFileHandler(Bool_t b=kFALSE);
@@ -86,6 +65,27 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
   //Point IO
   Bool_t AliPoints2Binary(Int_t eventn=0);
   AliHLTTPCSpacePointData *AliPoints2Memory(UInt_t & npoint,Int_t eventn=0);//Allocates Memory
+
+ protected:
+  AliRunLoader *fInAli;//!
+  Bool_t fUseRunLoader; //use runloader
+
+  AliTPCParam *fParam;//!
+  AliSimDigits *fDigits;//!
+
+  TTree *fDigitsTree;//!
+  FILE *fMC;//!
+  
+  Bool_t fIndexCreated;   //is index created
+  Int_t  fIndex[36][159]; //stores index over digitstree 
+                          //for faster access w/o ASVVERSION
+  Bool_t fUseStaticIndex; //take static index
+  static Bool_t fgStaticIndexCreated;   //global index created
+  static Int_t  fgStaticIndex[36][159]; //global index
+
+  virtual Bool_t SetAliInput();
+  Bool_t GetDigitsTree(Int_t event);
+  Bool_t CreateIndex();  //create the index
 
   ClassDef(AliHLTTPCFileHandler,1)   //Filehandler class
 };

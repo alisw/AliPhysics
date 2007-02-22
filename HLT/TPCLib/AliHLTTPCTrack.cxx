@@ -45,25 +45,31 @@ AliHLTTPCTrack::AliHLTTPCTrack()
   fCenterX(0),
   fCenterY(0),
   fFromMainVertex(0),
+  fSector(0),
   fQ(0),
-  fPhi0(0),
-  fPsi(0),
-  fR0(0),
+
   fTanl(0),
-  fZ0(0),
+  fPsi(0),
   fPt(0),
   fLength(0),
-  fIsLocal(true),
-  //  fRowRange({0,0}),
-  fPID(0),
 
-  fSector(0),
   fPterr(0),
   fPsierr(0),
   fZ0err(0),
   fTanlerr(0),
+
+  fPhi0(0),
+  fR0(0),
+  fZ0(0),
+
   //  fPoint({0,0,0}),
-  fPointPsi(0)
+  fPointPsi(0),
+
+  fIsPoint(0),
+  fIsLocal(true),
+  //  fRowRange({0,0}),
+
+  fPID(0)
 {
   //Constructor
   fRowRange[0]=0;
@@ -71,7 +77,6 @@ AliHLTTPCTrack::AliHLTTPCTrack()
   fPoint[0]=0;
   fPoint[1]=0;
   fPoint[2]=0;
-
 
   SetFirstPoint(0,0,0);
   SetLastPoint(0,0,0);
@@ -560,7 +565,7 @@ void AliHLTTPCTrack::UpdateToFirstPoint()
 // #### -B0-CHANGE-END == JMT
 }
 
-void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestx,Double_t &closesty,Double_t &closestz)
+void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestX,Double_t &closestY,Double_t &closestZ)
 {
   //Calculate the point of closest approach to the vertex
   //This function calculates the minimum distance from the helix to the vertex, and choose 
@@ -580,32 +585,33 @@ void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestx,
   //Choose the closest:
   if(distance1 < distance2)
     {
-      closestx = distx1 + vertex->GetX();
-      closesty = disty1 + vertex->GetY();
+      closestX = distx1 + vertex->GetX();
+      closestY = disty1 + vertex->GetY();
     }
   else
     {
-      closestx = distx2 + vertex->GetX();
-      closesty = disty2 + vertex->GetY();
+      closestX = distx2 + vertex->GetX();
+      closestY = disty2 + vertex->GetY();
     }
   
   //Get the z coordinate:
-  Double_t angle1 = atan2((closesty-GetCenterY()),(closestx-GetCenterX()));
+  Double_t angle1 = atan2((closestY-GetCenterY()),(closestX-GetCenterX()));
   if(angle1 < 0) angle1 = angle1 + AliHLTTPCTransform::TwoPi();
  
   Double_t angle2 = atan2((GetFirstPointY()-GetCenterY()),(GetFirstPointX()-GetCenterX()));
   if(angle2 < 0) angle2 = angle2 + AliHLTTPCTransform::TwoPi();
   
-  Double_t diff_angle = angle1 - angle2;
-  diff_angle = fmod(diff_angle,AliHLTTPCTransform::TwoPi());
+  Double_t diffAngle = angle1 - angle2;
+  diffAngle = fmod(diffAngle,AliHLTTPCTransform::TwoPi());
   
-  if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*AliHLTTPCTransform::TwoPi();
-  Double_t stot = fabs(diff_angle)*GetRadius();
-  closestz = GetFirstPointZ() - stot*GetTgl();
+  if((GetCharge()*diffAngle) < 0) diffAngle = diffAngle + GetCharge()*AliHLTTPCTransform::TwoPi();
+  Double_t stot = fabs(diffAngle)*GetRadius();
+  closestZ = GetFirstPointZ() - stot*GetTgl();
 }
 
 void AliHLTTPCTrack::Print() const
-{ //print out parameters of track
+{ 
+//print out parameters of track
 // BEGINN ############################################## MODIFIY JMT
 
 #if 1

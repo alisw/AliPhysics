@@ -76,9 +76,9 @@ AliHLTTPCFileHandler::AliHLTTPCFileHandler(Bool_t b)
   fInAli(NULL),
   fUseRunLoader(kFALSE),
   fParam(NULL),
-  fMC(NULL),
   fDigits(NULL),
   fDigitsTree(NULL),
+  fMC(NULL),
   fIndexCreated(kFALSE),
   fUseStaticIndex(b)
 {
@@ -96,9 +96,9 @@ AliHLTTPCFileHandler::AliHLTTPCFileHandler(const AliHLTTPCFileHandler& ref)
   fInAli(NULL),
   fUseRunLoader(kFALSE),
   fParam(NULL),
-  fMC(NULL),
   fDigits(NULL),
   fDigitsTree(NULL),
+  fMC(NULL),
   fIndexCreated(kFALSE),
   fUseStaticIndex(ref.fUseStaticIndex)
 {

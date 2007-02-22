@@ -1,8 +1,27 @@
 // @(#) $Id$
 // Original: AliHLTConfMapPoint.cxx,v 1.10 2005/06/23 17:46:55 hristov 
 
-// Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Anders Vestbo                                                 *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCConfMapPoint.cxx
+    @author Anders Vestbo, maintained by Matthias Richter
+    @date   
+    @brief  Hit class for conformal mapper
+*/
 
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCConfMapPoint.h"
@@ -48,10 +67,22 @@ AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint()
   SetMCTrackID(0,0,0);
 }
 
+AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&)
+{
+  // dummy copy constructor
+  //HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCConfMapPoint& AliHLTTPCConfMapPoint::operator=(const AliHLTTPCConfMapPoint&)
+{ 
+  // dummy assignment operator
+  //HLTFatal("assignment operator untested");
+  return *this;
+}
+
 AliHLTTPCConfMapPoint::~AliHLTTPCConfMapPoint()
 {
   // Destructor.
-  ;
 }
 
 Bool_t AliHLTTPCConfMapPoint::ReadHits(AliHLTTPCSpacePointData* hits )

@@ -1,8 +1,27 @@
 // @(#) $Id$
 // Original: AliHLTConfMapFit.cxx,v 1.14 2005/06/14 10:55:21 cvetan 
 
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Anders Vestbo                                                 *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCConfMapFit.cxx
+    @author Anders Vestbo, maintained by Matthias Richter
+    @date   
+    @brief  Fit class for conformal mapping tracking.
+*/
 
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
@@ -12,15 +31,6 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCConfMapFit.h"
 
-/** \class AliHLTTPCConfMapFit
-<pre>
-//_____________________________________________________________
-// AliHLTTPCConfMapFit
-//
-// Fit class for conformal mapping tracking
-</pre>
-*/
-
 #if __GNUC__ >= 3
 using namespace std;
 #endif
@@ -28,11 +38,42 @@ using namespace std;
 ClassImp(AliHLTTPCConfMapFit)
 
 
-AliHLTTPCConfMapFit::AliHLTTPCConfMapFit(AliHLTTPCConfMapTrack *track,AliHLTTPCVertex *vertex)
+AliHLTTPCConfMapFit::AliHLTTPCConfMapFit()
+  :
+  fTrack(NULL),
+  fVertex(NULL)
 {
   //constructor
-  fTrack = track;
-  fVertex = vertex;
+}
+
+AliHLTTPCConfMapFit::AliHLTTPCConfMapFit(AliHLTTPCConfMapTrack *track,AliHLTTPCVertex *vertex)
+  :
+  fTrack(track),
+  fVertex(vertex)
+
+{
+  //constructor
+}
+
+AliHLTTPCConfMapFit::AliHLTTPCConfMapFit(const AliHLTTPCConfMapFit&)
+  :
+  fTrack(NULL),
+  fVertex(NULL)
+{
+  // dummy copy constructor
+  //HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCConfMapFit& AliHLTTPCConfMapFit::operator=(const AliHLTTPCConfMapFit&)
+{ 
+  // dummy assignment operator
+  //HLTFatal("assignment operator untested");
+  return *this;
+}
+
+AliHLTTPCConfMapFit::~AliHLTTPCConfMapFit()
+{
+  // destructor
 }
 
 Int_t AliHLTTPCConfMapFit::FitHelix()

@@ -23,13 +23,13 @@
 #pragma link C++ class AliHLTTPCTrackMerger;
 #pragma link C++ class AliHLTTPCGlobalMerger;
 #pragma link C++ class AliHLTTPCInterMerger;
-#pragma link C++ class AliHLTTPC;
+/* #pragma link C++ class AliHLTTPC; */
 #pragma link C++ class AliHLTTPCTrackArray;
 /* #pragma link C++ class AliHLTTPCLogger; */
 #pragma link C++ class AliHLTTPCMemHandler;
 #pragma link C++ class AliHLTTPCDataCompressorHelper;
-#pragma link C++ class AliHLTTPCDisplay;
-#pragma link C++ class AliHLTTPCClustFinderNew;
+/* #pragma link C++ class AliHLTTPCDisplay; */
+/* #pragma link C++ class AliHLTTPCClustFinderNew; */
 #pragma link C++ class AliHLTTPCClusterFinder;
 #pragma link C++ class AliHLTTPCDigitReader;
 #pragma link C++ class AliHLTTPCDigitReaderRaw;
@@ -39,6 +39,10 @@
 /* #pragma link C++ class AliHLTTPCRawDataFileHandler; */
 /* #pragma link C++ class AliHLTTPCTPCBeamTestMemHandler; */
 #pragma link C++ class AliHLTTPCModelTrack;
+#pragma link C++ class AliHLTTPCPad;
+#pragma link C++ class AliHLTTPCDigitReaderRaw;
+#pragma link C++ class AliHLTTPCDefinitions;
+#pragma link C++ class AliHLTTPCEsdWriterComponent;
 #pragma link C++ class AliHLTTPCCATracker;
 #pragma link C++ class AliHLTTPCCATrackerComponent;
 
@@ -48,8 +52,8 @@
 #pragma link C++ class AliHLTTPCFileHandler;
 /* #pragma link C++ class AliHLTTPCEvaluate;  */
 #ifdef use_reconstruction
-#pragma link C++ class AliHLTReconstructor;
-#pragma link C++ class AliHLTTPCTPCtracker;
+/* #pragma link C++ class AliHLTReconstructor; */
+/* #pragma link C++ class AliHLTTPCTPCtracker; */
 #endif
 #endif
 

@@ -2,6 +2,15 @@
 // Original: AliHLTMerger.h,v 1.8 2004/06/11 16:06:33 loizides 
 #ifndef ALIHLTTPCMERGER_H
 #define ALIHLTTPCMERGER_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCMerger.h
+    @author Uli Frankenfeld, maintained by Matthias Richter
+    @date   
+    @brief  The HLT TPC merger base class
+*/
+
 //#define PI 3.14159265358979312
 
 #include "AliHLTTPCRootTypes.h"
@@ -11,33 +20,18 @@ class AliHLTTPCTrackSegmentData;
 class AliHLTTPCVertex;
 class AliHLTTPCTrackArray;
 
+/** 
+ * @class AliHLTTPCMerger
+ * The HLTTPC merger base class
+*/
 class AliHLTTPCMerger {
- private:
-  Double_t fMaxY;    //maxy
-  Double_t fMaxZ;    //maxz
-  Double_t fMaxKappa;//maxkappa
-  Double_t fMaxPsi;  //maxpsi
-  Double_t fMaxTgl;  //maxtgl
-  Char_t fTrackType; //track type to merge
-  
-  AliHLTTPCTrackArray **fInTrack;//!
-  Int_t fNIn; //ntracks
-
-  AliHLTTPCTrackArray *fOutTrack;//!
-
-  void SetArray(Int_t nin);
-  void DeleteArray();
-
- protected:
-  Int_t fCurrentTracks; //current number
-  Int_t fSlice;         //slice
-  AliHLTTPCVertex *fVertex; //!
-  Bool_t f2Global; //global
-  Bool_t Is2Global(Bool_t is){f2Global=is;return f2Global;}
-  void InitMerger(Int_t ntrackarrays,Char_t *tracktype="AliHLTTPCTrack");
-  
  public:
   AliHLTTPCMerger();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCMerger(const AliHLTTPCMerger&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCMerger& operator=(const AliHLTTPCMerger&);
+  /** destructor */
   virtual ~AliHLTTPCMerger();
 
   Int_t GetNIn() const {return fNIn;}
@@ -68,6 +62,30 @@ class AliHLTTPCMerger {
   void PrintDiff(AliHLTTPCTrack *innertrack,AliHLTTPCTrack *outertrack);
   void PrintTrack(AliHLTTPCTrack *track);
   
+ protected:
+  Int_t fCurrentTracks; //current number
+  Int_t fSlice;         //slice
+  AliHLTTPCVertex *fVertex; //!
+  Bool_t f2Global; //global
+  Bool_t Is2Global(Bool_t is){f2Global=is;return f2Global;}
+  void InitMerger(Int_t ntrackarrays,Char_t *tracktype="AliHLTTPCTrack");
+  
+ private:
+  void SetArray(Int_t nin);
+  void DeleteArray();
+
+  Double_t fMaxY;    //maxy
+  Double_t fMaxZ;    //maxz
+  Double_t fMaxKappa;//maxkappa
+  Double_t fMaxPsi;  //maxpsi
+  Double_t fMaxTgl;  //maxtgl
+  Char_t fTrackType; //track type to merge
+  
+  AliHLTTPCTrackArray **fInTrack;//!
+  Int_t fNIn; //ntracks
+
+  AliHLTTPCTrackArray *fOutTrack;//!
+
   ClassDef(AliHLTTPCMerger,1) //Merging base class
 };
 

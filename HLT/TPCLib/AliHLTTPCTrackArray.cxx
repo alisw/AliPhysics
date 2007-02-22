@@ -41,10 +41,12 @@ ClassImp(AliHLTTPCTrackArray)
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray()
   :
+  fTrackType('t'),
   fSize(0),
-  fNTracks(0),
+  fIsPresent(NULL),
   fNAbsent(0),
-  fTrackType('t')
+  fTrack(NULL),
+  fNTracks(0)
 {
   //Default constructor
   SetSize();
@@ -53,10 +55,12 @@ AliHLTTPCTrackArray::AliHLTTPCTrackArray()
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray(const AliHLTTPCTrackArray&)
   :
+  fTrackType('t'),
   fSize(0),
-  fNTracks(0),
+  fIsPresent(NULL),
   fNAbsent(0),
-  fTrackType('t')
+  fTrack(NULL),
+  fNTracks(0)
 {
   //constructor
   SetSize();
@@ -75,10 +79,12 @@ AliHLTTPCTrackArray& AliHLTTPCTrackArray::operator=(const AliHLTTPCTrackArray&)
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray(Int_t ntrack)
   :
+  fTrackType('t'),
   fSize(0),
-  fNTracks(0),
+  fIsPresent(NULL),
   fNAbsent(0),
-  fTrackType('t')
+  fTrack(NULL),
+  fNTracks(0)
 {
   //Constructor.
   SetSize(ntrack);
@@ -86,9 +92,12 @@ AliHLTTPCTrackArray::AliHLTTPCTrackArray(Int_t ntrack)
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype,Int_t ntrack)
   :
+  fTrackType('t'),
   fSize(0),
-  fNTracks(0),
-  fNAbsent(0)
+  fIsPresent(NULL),
+  fNAbsent(0),
+  fTrack(NULL),
+  fNTracks(0)
 {
   //Constructor.
   if(strcmp(tracktype,"AliHLTTPCTrack")==0) fTrackType='t';
@@ -102,9 +111,12 @@ AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype,Int_t ntrack)
 
 AliHLTTPCTrackArray::AliHLTTPCTrackArray(char* tracktype)
   :
+  fTrackType('t'),
   fSize(0),
-  fNTracks(0),
-  fNAbsent(0)
+  fIsPresent(NULL),
+  fNAbsent(0),
+  fTrack(NULL),
+  fNTracks(0)
 {
   //Constructor.
   if(strcmp(tracktype,"AliHLTTPCTrack")==0) fTrackType='t';

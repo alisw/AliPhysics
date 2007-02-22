@@ -42,14 +42,13 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
   fPatch(-1),
   fSlice(-1),
   fDataFormatVersion(formatVersion),
+  fVerify(false),
+  
   fCurrentRow(0),
   fCurrentPad(0),
   fCurrentBin(-1),
-  fVerify(false),
-  
-  // For sorting
-  fNRows(0),
   fRowOffset(0),
+  fNRows(0),
   fNMaxRows(0),
   fNMaxPads(0),
   fNTimeBins(0),
@@ -96,14 +95,13 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& 
   fPatch(-1),
   fSlice(-1),
   fDataFormatVersion(src.fDataFormatVersion),
+  fVerify(false),
+  
   fCurrentRow(0),
   fCurrentPad(0),
   fCurrentBin(-1),
-  fVerify(false),
-  
-  // For sorting
-  fNRows(0),
   fRowOffset(0),
+  fNRows(0),
   fNMaxRows(0),
   fNMaxPads(0),
   fNTimeBins(0),
@@ -674,7 +672,7 @@ Int_t AliHLTTPCDigitReaderRaw::GetPad( unsigned patch, unsigned hwAddr )
 
 unsigned AliHLTTPCDigitReaderRaw::GetMaxHWA( unsigned patch )
 {
-  if ( patch>=fNofPatches )
+  if ( (int)patch>=fNofPatches )
     return 0;
   return fMaxHWA[patch];
 }
@@ -739,6 +737,7 @@ Int_t AliHLTTPCDigitReaderRaw::DecodeMode(const Char_t *mode) {
 #include "mapping_array_out.inc"
 #else
 // dummy definitions in case of missing mapping
+unsigned AliHLTTPCDigitReaderRaw::fMaxHWA[fNofPatches];
 Int_t AliHLTTPCDigitReaderRaw::fMapping0[fMapping0Size][fMappingDimension];
 Int_t AliHLTTPCDigitReaderRaw::fMapping1[fMapping1Size][fMappingDimension];
 Int_t AliHLTTPCDigitReaderRaw::fMapping2[fMapping2Size][fMappingDimension];

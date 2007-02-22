@@ -1,8 +1,17 @@
 // @(#) $Id$
 // Original: AliHLTConfMapPoint.h,v 1.8 2005/06/23 17:46:55 hristov 
 
-#ifndef ALIHLTTPCConfMapPointH
-#define ALIHLTTPCConfMapPointH
+#ifndef ALIHLTTPCCONFMAPPOINT_H
+#define ALIHLTTPCCONFMAPPOINT_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCConfMapPoint.h
+    @author Anders Vestbo, maintained by Matthias Richter
+    @date   
+    @brief  Hit class for conformal mapper
+*/
 
 #include "AliHLTTPCRootTypes.h"
 
@@ -10,74 +19,21 @@ class AliHLTTPCSpacePointData;
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCVertex;
 
+/**
+ * @class AliHLTTPCConfMapPoint
+ * Hit class for conformal mapper
+ *
+ */
 class AliHLTTPCConfMapPoint {
-
- private:
-
-  Int_t fHitNumber;     //hit number
-  Int_t fTrackNumber;   //track number
-  Int_t fNextHitNumber; //next hit number
-  Bool_t fUsed;         //flag is used
-  Int_t fPadrow;        //padrow
-  Int_t fSector;        //sector
-
-  //global coordinates and their errors
-  Double_t fx;    //glob x
-  Double_t fy;    //glob y
-  Double_t fz;    //glob z
-  Double_t fxerr; //glob xerr
-  Double_t fyerr; //glob yerr
-  Double_t fzerr; //glob zerr
-
-  Double_t fWxy;  // x-y weight on x-y
-  Double_t fWz;   // z weight on z
-  Float_t fs;      //track trajectory
-  
-   // Interaction point
-  Double_t   fXt;          // x-value of the interaction point
-  Double_t   fYt;          // y-value of the interaction point
-  Double_t   fZt;          // z-value of the interaction point
-  
-  Double_t   fXterr;       // error of mXt
-  Double_t   fYterr;       // error of mYt
-  Double_t   fZterr;       // error of mZt
-  
-  // conformal mapping coordinates
-  Double_t   fXprime;      // transformed x
-  Double_t   fYprime;      // transformed y  
-  
-  Double_t   fXprimeerr;   // error of mXprime
-  Double_t   fYprimeerr;   // error of mYprime
-  
-  // coordinates with respect to the vertex
-  
-  // cartesian coordinates
-  Double_t   fXv;          // x with respect to vertex
-  Double_t   fYv;          // y with respect to vertex
-  Double_t   fZv;          // z with respect to vertex
-  
-  Double_t   fXverr;       // error of mXv
-  Double_t   fYverr;       // error of mYv
-  Double_t   fZverr;       // error of mZv
-  
-  // spherical coordinates
-  Double_t   fPhi;         // angle phi
-  Double_t   fEta;         // pseudorapidity
-  
-  AliHLTTPCConfMapPoint *fNextVolumeHit; //!
-  AliHLTTPCConfMapPoint *fNextRowHit;    //!
-  AliHLTTPCConfMapPoint *fNextTrackHit;  //! Linked chain of points in a track
-  Short_t fPhiIndex; //phi index
-  Short_t fEtaIndex; //eta index
-  Double_t fXYChi2; //xy chi
-  Double_t fSZChi2; //z chi
-  Int_t fMCTrackID[3]; //MClabel of tracks, may overlap
-
-  static Bool_t fgDontMap; //flag to switch off mapping  
 
  public:
 
   AliHLTTPCConfMapPoint();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCConfMapPoint& operator=(const AliHLTTPCConfMapPoint&);
+  /** destructor */
   virtual ~AliHLTTPCConfMapPoint();
   
   void Reset();
@@ -192,7 +148,70 @@ class AliHLTTPCConfMapPoint {
   void SetAllCoord(const AliHLTTPCConfMapPoint *hit);// set conformal mapping coordinates in respect to given hit
   void SetConfCoord();// conformal mapping
 
+ private:
+
+  Int_t fHitNumber;     //hit number
+  Int_t fTrackNumber;   //track number
+  Int_t fNextHitNumber; //next hit number
+  Bool_t fUsed;         //flag is used
+  Int_t fPadrow;        //padrow
+  Int_t fSector;        //sector
+
+  //global coordinates and their errors
+  Double_t fx;    //glob x
+  Double_t fy;    //glob y
+  Double_t fz;    //glob z
+  Double_t fxerr; //glob xerr
+  Double_t fyerr; //glob yerr
+  Double_t fzerr; //glob zerr
+
+  Double_t fWxy;  // x-y weight on x-y
+  Double_t fWz;   // z weight on z
+  Float_t fs;      //track trajectory
+  
+   // Interaction point
+  Double_t   fXt;          // x-value of the interaction point
+  Double_t   fYt;          // y-value of the interaction point
+  Double_t   fZt;          // z-value of the interaction point
+  
+  Double_t   fXterr;       // error of mXt
+  Double_t   fYterr;       // error of mYt
+  Double_t   fZterr;       // error of mZt
+  
+  // conformal mapping coordinates
+  Double_t   fXprime;      // transformed x
+  Double_t   fYprime;      // transformed y  
+  
+  Double_t   fXprimeerr;   // error of mXprime
+  Double_t   fYprimeerr;   // error of mYprime
+  
+  // coordinates with respect to the vertex
+  
+  // cartesian coordinates
+  Double_t   fXv;          // x with respect to vertex
+  Double_t   fYv;          // y with respect to vertex
+  Double_t   fZv;          // z with respect to vertex
+  
+  Double_t   fXverr;       // error of mXv
+  Double_t   fYverr;       // error of mYv
+  Double_t   fZverr;       // error of mZv
+  
+  // spherical coordinates
+  Double_t   fPhi;         // angle phi
+  Double_t   fEta;         // pseudorapidity
+  
+  AliHLTTPCConfMapPoint *fNextVolumeHit; //!
+  AliHLTTPCConfMapPoint *fNextRowHit;    //!
+  AliHLTTPCConfMapPoint *fNextTrackHit;  //! Linked chain of points in a track
+  Short_t fPhiIndex; //phi index
+  Short_t fEtaIndex; //eta index
+  Double_t fXYChi2; //xy chi
+  Double_t fSZChi2; //z chi
+  Int_t fMCTrackID[3]; //MClabel of tracks, may overlap
+
+  static Bool_t fgDontMap; //flag to switch off mapping  
+
   ClassDef(AliHLTTPCConfMapPoint, 1)   //Conformal mapping hit class.
 };
 
-#endif
+#endif // ALIHLTTPCCONFMAPPOINT_H

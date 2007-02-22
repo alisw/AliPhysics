@@ -70,14 +70,19 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	
     private:
 	/** the cluster finder object */
-	AliHLTTPCClusterFinder* fClusterFinder;
+	AliHLTTPCClusterFinder* fClusterFinder;                                      //!transient
 	/** the reader object for data decoding */
-	AliHLTTPCDigitReader* fReader;
+	AliHLTTPCDigitReader* fReader;                                               //!transient
 
       bool fClusterDeconv;
       float fXYClusterError;
       float fZClusterError;
-      Int_t fPackedSwitch;
+      /**
+       * switch to indicated the reader
+       * use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
+       * use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
+       */
+      Int_t fPackedSwitch;                                                           // see above
       
       ClassDef(AliHLTTPCClusterFinderComponent, 0)
 

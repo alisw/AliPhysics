@@ -1,8 +1,8 @@
 // @(#) $Id$
 // Original: AliHLTBenchmark.h,v 1.6 2004/06/26 11:39:40 loizides 
 
-#ifndef AliHLTTPCBenchmarkH
-#define AliHLTTPCBenchmarkH
+#ifndef ALIHLTTPCBENCHMARK_H
+#define ALIHLTTPCBENCHMARK_H
 
 //_____________________________________________________________
 //
@@ -43,18 +43,18 @@ private:
    Int_t      fNbench;          //Number of active benchmarks
    Int_t      fNmax;            //Maximum number of benchmarks initialized
 #ifndef no_root
-   TString    *fNames;          //Names of benchmarks
-   TStopwatch *fTimer;          //Timers
+   TString    *fNames;          //! Names of benchmarks
+   TStopwatch *fTimer;          //! Timers
 #else
-   Char_t **fNames;             //Names of benchmarks
-   AliHLTTPCStopwatch *fTimer;      //Timers
+   Char_t **fNames;             //! Names of benchmarks
+   AliHLTTPCStopwatch *fTimer;  //! Timers
 #endif
-   Float_t    *fSum;  //sum of time
-   Float_t    *fMin;  //min of time
-   Float_t    *fMax;  //max of time
-   Int_t      *fCount;// counter
+   Float_t    *fSum;  //! sum of time
+   Float_t    *fMin;  //! min of time
+   Float_t    *fMax;  //! max of time
+   Int_t      *fCount;//! counter
 
    ClassDef(AliHLTTPCBenchmark,0)  //HLTTPC benchmark
 };
 
-#endif
+#endif // ALIHLTTPCBENCHMARK_H

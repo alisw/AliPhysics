@@ -24,13 +24,18 @@ class AliHLTTPCConfMapper {
 
   AliHLTTPCConfMapper();
   //  AliHLTTPCConfMapper(AliTPCParam *param,AliHLTTPCVertex *vertex,Bool_t bench=(Bool_t)false);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCConfMapper(const AliHLTTPCConfMapper&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCConfMapper& operator=(const AliHLTTPCConfMapper&);
+  /** destructor */
   virtual ~AliHLTTPCConfMapper();
   
   void InitVolumes();
   void InitSector(Int_t sector,Int_t *rowrange=0,Float_t *etarange=0);
   void SetVertex(AliHLTTPCVertex *vertex){fVertex = vertex;}
-  void MainVertexTracking_a();
-  void MainVertexTracking_b();
+  void MainVertexTrackingA();
+  void MainVertexTrackingB();
   void MainVertexTracking();
   void NonVertexTracking();
   void MainVertexSettings(Int_t trackletlength, Int_t tracklength, 

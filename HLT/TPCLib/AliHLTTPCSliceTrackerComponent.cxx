@@ -599,14 +599,14 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     fTracker->SetPointers();
     if ( fmainvertextracking == kTRUE && fnonvertextracking == kFALSE){	
 	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
-	fTracker->MainVertexTracking_a();
-	fTracker->MainVertexTracking_b();
+	fTracker->MainVertexTrackingA();
+	fTracker->MainVertexTrackingB();
 	fTracker->FillTracks();
     }
     else if ( fmainvertextracking == kTRUE && fnonvertextracking == kTRUE){	
 	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
-	fTracker->MainVertexTracking_a();
-	fTracker->MainVertexTracking_b();
+	fTracker->MainVertexTrackingA();
+	fTracker->MainVertexTrackingB();
 	fTracker->FillTracks();	
 	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---NONVERTEXTRACKING---");
 	fTracker->NonVertexTracking();

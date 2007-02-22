@@ -1,8 +1,27 @@
 //$Id$
 // Original: AliHLTMerger.cxx,v 1.16 2005/06/14 10:55:21 cvetan 
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy Uli 
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Uli Frankenfeld                                               *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCMerger.cxx
+    @author Uli Frankenfeld, maintained by Matthias Richter
+    @date   
+    @brief  The HLT TPC merger base class
+*/
 
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCMerger.h"
@@ -17,16 +36,6 @@
 #include <TFile.h>
 #endif
 
-/** \class AliHLTTPCMerger
-<pre>
-//_____________________________________________________________
-// AliHLTTPCMerger
-//
-// The HLTTPC merger base class
-//
-</pre>
-*/
-
 #if __GNUC__ >= 3
 using namespace std;
 #endif
@@ -40,6 +49,19 @@ AliHLTTPCMerger::AliHLTTPCMerger()
   fOutTrack=0;
   fCurrentTracks=0;
   fNIn=0;
+}
+
+AliHLTTPCMerger::AliHLTTPCMerger(const AliHLTTPCMerger&)
+{
+  // dummy copy constructor
+  //HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCMerger& AliHLTTPCMerger::operator=(const AliHLTTPCMerger&)
+{ 
+  // dummy assignment operator
+  //HLTFatal("assignment operator untested");
+  return *this;
 }
 
 AliHLTTPCMerger::~AliHLTTPCMerger()

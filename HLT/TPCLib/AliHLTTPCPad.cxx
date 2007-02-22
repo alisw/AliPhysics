@@ -1,3 +1,5 @@
+// @(#) $Id$
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -41,17 +43,22 @@ AliHLTTPCPad::AliHLTTPCPad()
   fAverage(-1),
   fNofEvents(0),
   fSum(0),
+  fCount(0),
+  fTotal(0),
   fBLMax(-1),
   fBLMaxBin(-1),
   fBLMin(-1),
   fBLMinBin(-1),
-  fCount(0),
-  fTotal(0),
-  fpRawData(NULL),
   fFirstBLBin(0),
   fNofBins(0),
-  fReadPos(0)
+  fReadPos(0),
+  fpRawData(NULL)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
@@ -62,17 +69,18 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fAverage(-1),
   fNofEvents(0),
   fSum(0),
+  fCount(0),
+  fTotal(0),
   fBLMax(-1),
   fBLMaxBin(-1),
   fBLMin(-1),
   fBLMinBin(-1),
-  fCount(0),
-  fTotal(0),
-  fpRawData(NULL),
   fFirstBLBin(offset),
   fNofBins(nofBins),
-  fReadPos(0)
+  fReadPos(0),
+  fpRawData(NULL)
 {
+  // see header file for class documentation
 }
 
 AliHLTTPCPad::AliHLTTPCPad(const AliHLTTPCPad& srcPad)
@@ -83,28 +91,31 @@ AliHLTTPCPad::AliHLTTPCPad(const AliHLTTPCPad& srcPad)
   fAverage(-1),
   fNofEvents(0),
   fSum(0),
+  fCount(0),
+  fTotal(0),
   fBLMax(-1),
   fBLMaxBin(-1),
   fBLMin(-1),
   fBLMinBin(-1),
-  fCount(0),
-  fTotal(0),
-  fpRawData(NULL),
   fFirstBLBin(0),
   fNofBins(0),
-  fReadPos(0)
+  fReadPos(0),
+  fpRawData(NULL)
 {
+  // see header file for class documentation
   HLTFatal("copy constructor not implemented");
 }
 
 AliHLTTPCPad& AliHLTTPCPad::operator=(const AliHLTTPCPad&)
 {
+  // see header file for class documentation
   HLTFatal("assignment operator not implemented");
   return (*this);
 }
 
 AliHLTTPCPad::~AliHLTTPCPad()
 {
+  // see header file for class documentation
   if (fpRawData) {
     HLTWarning("event data acquisition not stopped");
     StopEvent();
@@ -113,12 +124,15 @@ AliHLTTPCPad::~AliHLTTPCPad()
 
 Int_t AliHLTTPCPad::SetID(Int_t rowno, Int_t padno)
 {
+  // see header file for class documentation
   fRowNo=rowno;
   fPadNo=padno;
+  return 0;
 }
 
 Int_t AliHLTTPCPad::StartEvent()
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (fpRawData==NULL) {
     fBLMax=-1;
@@ -146,6 +160,7 @@ Int_t AliHLTTPCPad::StartEvent()
 
 Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   AliHLTTPCSignal_t avBackup=fAverage;
   //HLTDebug("reqMinCount=%d fCount=%d fTotal=%d fSum=%d fBLMax=%d fBLMin=%d", reqMinCount, fCount, fTotal, fSum, fBLMax, fBLMin);
@@ -198,6 +213,7 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
 
 Int_t AliHLTTPCPad::StopEvent()
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (fpRawData) {
     AliHLTTPCSignal_t* pData=fpRawData;
@@ -215,6 +231,7 @@ Int_t AliHLTTPCPad::StopEvent()
 
 Int_t AliHLTTPCPad::ResetHistory()
 {
+  // see header file for class documentation
   Int_t iResult=0;
   fAverage=-1;
   fNofEvents=0;
@@ -223,6 +240,7 @@ Int_t AliHLTTPCPad::ResetHistory()
 
 Int_t AliHLTTPCPad::SetThreshold(AliHLTTPCSignal_t thresh)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   fThreshold=thresh;
   return iResult;
@@ -230,6 +248,7 @@ Int_t AliHLTTPCPad::SetThreshold(AliHLTTPCSignal_t thresh)
 
 Int_t AliHLTTPCPad::AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (bin>=fFirstBLBin) {
     if (fAverage<0 || value<ALIHLTPAD_BASELINE_MARGIN) {
@@ -259,6 +278,7 @@ Int_t AliHLTTPCPad::AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value)
 
 Int_t AliHLTTPCPad::SetRawData(Int_t bin, AliHLTTPCSignal_t value)
 {
+  // see header file for class documentation
   Int_t iResult=0;
   if (fpRawData) {
     if (bin<fNofBins) {
@@ -287,6 +307,7 @@ Int_t AliHLTTPCPad::SetRawData(Int_t bin, AliHLTTPCSignal_t value)
 
 Int_t AliHLTTPCPad::Next(Int_t bZeroSuppression) 
 {
+  // see header file for class documentation
   if (fpRawData==NULL) return 0;
   Int_t iResult=fReadPos<fNofBins;
   if (iResult>0 && (iResult=(++fReadPos<fNofBins))>0) {
@@ -301,12 +322,14 @@ Int_t AliHLTTPCPad::Next(Int_t bZeroSuppression)
 
 Int_t AliHLTTPCPad::Rewind(Int_t bZeroSuppression)
 {
+  // see header file for class documentation
   fReadPos=(bZeroSuppression>0?0:fFirstBLBin)-1;
   return Next(bZeroSuppression);
 }
 
 AliHLTTPCSignal_t AliHLTTPCPad::GetRawData(Int_t bin) const
 {
+  // see header file for class documentation
   AliHLTTPCSignal_t data=0;
   if (fpRawData) {
     if (bin<fNofBins) {
@@ -322,6 +345,7 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetRawData(Int_t bin) const
 
 AliHLTTPCSignal_t AliHLTTPCPad::GetCorrectedData(Int_t bin) const
 {
+  // see header file for class documentation
   AliHLTTPCSignal_t data=GetRawData(bin)-GetBaseLine(bin);
   AliHLTTPCSignal_t prev=0;
   if (bin>1) prev=GetRawData(bin-1)-GetBaseLine(bin-1);
@@ -351,13 +375,14 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetCorrectedData(Int_t bin) const
 
 AliHLTTPCSignal_t AliHLTTPCPad::GetBaseLine(Int_t bin) const
 {
+  // see header file for class documentation
   AliHLTTPCSignal_t val=0;
   if (fAverage>0) {
     // we take the minumum value as the base line if it doesn't differ from
     // the average to much
-    const AliHLTTPCSignal_t kMaxDifference=15;
     val=fAverage;
 #ifdef KEEP_NOISE
+    const AliHLTTPCSignal_t kMaxDifference=15;
     if ((fAverage-fBLMin)<=kMaxDifference) val=fBLMin;
     else val>kMaxDifference?val-=kMaxDifference:0;
 #endif
@@ -372,11 +397,13 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetBaseLine(Int_t bin) const
 
 AliHLTTPCSignal_t AliHLTTPCPad::GetAverage() const
 {
+  // see header file for class documentation
   return fAverage>0?fAverage:0;
 }
 
 Float_t AliHLTTPCPad::GetOccupancy() const
 {
+  // see header file for class documentation
   Float_t occupancy=0;
   if (fpRawData && fNofBins>0) {
     for (Int_t i=fFirstBLBin; i<fNofBins; i++) {
@@ -390,6 +417,8 @@ Float_t AliHLTTPCPad::GetOccupancy() const
 
 Float_t AliHLTTPCPad::GetAveragedOccupancy() const
 {
+  // see header file for class documentation
+
   // history is not yet implemented
   return GetOccupancy();
 }

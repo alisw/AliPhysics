@@ -62,7 +62,7 @@ class AliHLTTPCTrack : public AliTPCtrack {
   Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   Double_t GetDistance(Double_t /*x0*/,Double_t /*x1*/){return 0;}
   void UpdateToFirstPoint();
-  void GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z);
+  void GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestX,Double_t &closestY,Double_t &closestZ);
   void Rotate(Int_t slice,Bool_t tolocal=kFALSE);
   Bool_t IsLocal() const {return fIsLocal;}
   void Print() const;

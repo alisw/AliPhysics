@@ -15,6 +15,8 @@
 class AliHLTTPCDefinitions
     {
     public:
+      AliHLTTPCDefinitions();
+      virtual ~AliHLTTPCDefinitions();
 
 	static AliHLTUInt8_t GetMinSliceNr( const AliHLTComponentBlockData& block )
 		{

@@ -4,18 +4,27 @@
 #ifndef ALIHLTTPCINTERMERGER_H
 #define ALIHLTTPCINTERMERGER_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCInterMerger.h
+    @author Uli Frankenfeld, maintained by Matthias Richter
+    @date   
+    @brief  The HLT TPC track segment merger
+*/
+
 #ifndef __CINT__ 
 #include "AliHLTTPCMerger.h"
 #endif
 
 #include "AliHLTTPCRootTypes.h"
 
+/** 
+ * @class AliHLTTPCInterMerger
+ * The HLTTPC track segment merger
+ */
 class AliHLTTPCInterMerger : public AliHLTTPCMerger {
 
- private:
-  Int_t fPatch;
-  Int_t fRowMin;
-  Int_t fRowMax;
  public:
   AliHLTTPCInterMerger();
   virtual ~AliHLTTPCInterMerger();
@@ -25,6 +34,11 @@ class AliHLTTPCInterMerger : public AliHLTTPCMerger {
   Int_t Merge();
   void MMerge();  //Loop over tracks from different subsectors
   
+ private:
+  Int_t fPatch;  // current patch
+  Int_t fRowMin; // min row
+  Int_t fRowMax; // max row
+
   ClassDef(AliHLTTPCInterMerger,1) //Intermerging class
 };
 

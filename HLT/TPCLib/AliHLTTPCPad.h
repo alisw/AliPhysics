@@ -1,3 +1,4 @@
+// -*- Mode: C++ -*-
 // @(#) $Id$
 
 #ifndef ALIHLTPAD_H
@@ -235,39 +236,39 @@ class AliHLTTPCPad : public AliHLTLogging {
   Int_t AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value);
 
   /** The row number of the pad */
-  Int_t fRowNo;
+  Int_t fRowNo;                                                    // see above
   /** The pad number of the pad */
-  Int_t fPadNo;
+  Int_t fPadNo;                                                    // see above
   /** Threshold for zero suppression */
-  AliHLTTPCSignal_t fThreshold;
+  AliHLTTPCSignal_t fThreshold;                                    // see above
   /** The average base line value */
-  AliHLTTPCSignal_t fAverage;
+  AliHLTTPCSignal_t fAverage;                                      // see above
   /** Number of events included in the base line calculation*/
-  Int_t fNofEvents;
+  Int_t fNofEvents;                                                // see above
   /** The sum within one event */
-  AliHLTTPCSignal_t fSum;
+  AliHLTTPCSignal_t fSum;                                          // see above
   /** The number of bins contributing to the sum */
-  Int_t fCount;
+  Int_t fCount;                                                    // see above
   /** The total number of bins already set during the event */
-  Int_t fTotal;
+  Int_t fTotal;                                                    // see above
   /** The maximum base line value within one event */
-  AliHLTTPCSignal_t fBLMax;
+  AliHLTTPCSignal_t fBLMax;                                        // see above
   /** The bin for the maximum bl value within one event */
-  Int_t fBLMaxBin;
+  Int_t fBLMaxBin;                                                 // see above
   /** The minimum base line value within one event */
-  AliHLTTPCSignal_t fBLMin;
+  AliHLTTPCSignal_t fBLMin;                                        // see above
   /** The bin for the minimum bl value within one event */
-  Int_t fBLMinBin;
+  Int_t fBLMinBin;                                                 // see above
   /** The first bin included in the base line calculation */
-  Int_t fFirstBLBin;
+  Int_t fFirstBLBin;                                               // see above
   /** Number of bins */
-  Int_t fNofBins;
+  Int_t fNofBins;                                                  // see above
 
   /** The current read position */
-  Int_t fReadPos;
+  Int_t fReadPos;                                                  // see above
 
   /** The raw data history */
-  AliHLTTPCSignal_t* fpRawData;
+  AliHLTTPCSignal_t* fpRawData;                                    //! transient
 
   ClassDef(AliHLTTPCPad, 0)
 };

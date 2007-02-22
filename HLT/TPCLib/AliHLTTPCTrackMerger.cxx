@@ -1,17 +1,26 @@
 // @(#) $Id$
 // Original: AliHLTTrackMerger.cxx,v 1.12 2005/06/14 10:55:21 cvetan 
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Uli Frankenfeld                                               *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-/** \class AliHLTTPCTrackMerger
-<pre>
-//_____________________________________________________________
-// AliHLTTPCTrackMerger
-//
-// The HLTTPC track segment merger
-//
-</pre
+/** @file   AliHLTTPCTrackMerger.cxx
+    @author Uli Frankenfeld, maintained by Matthias Richter
+    @date   
+    @brief  The HLT TPC track segment merger
 */
 
 #include "AliHLTTPCLogging.h"
@@ -48,6 +57,19 @@ AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(Int_t nsubsectors) : AliHLTTPCMerger(
   fRowMin = new Int_t[nsubsectors];
   fRowMax = new Int_t[nsubsectors];
   
+}
+
+AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(const AliHLTTPCTrackMerger&)
+{
+  // dummy copy constructor
+  //HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCTrackMerger& AliHLTTPCTrackMerger::operator=(const AliHLTTPCTrackMerger&)
+{ 
+  // dummy assignment operator
+  //HLTFatal("assignment operator untested");
+  return *this;
 }
 
 AliHLTTPCTrackMerger::~AliHLTTPCTrackMerger(){

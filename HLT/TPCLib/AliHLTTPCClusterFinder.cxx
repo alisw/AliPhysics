@@ -111,40 +111,56 @@ ClassImp(AliHLTTPCClusterFinder)
 
 AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   :
-  fMatch(1),
-  fThreshold(10),
-  fSignalThreshold(-1),
-  fOccupancyLimit(1.0),
-  fXYErr(0.2),
-  fZErr(0.3),
-  fDeconvPad(kTRUE),
+  fSpacePointData(NULL),
+  fDigitReader(NULL),
+  fPtr(NULL),
+  fSize(0),
   fDeconvTime(kTRUE),
+  fDeconvPad(kTRUE),
   fStdout(kFALSE),
   fCalcerr(kTRUE),
   fRawSP(kFALSE),
   fFirstRow(0),
   fLastRow(0),
-  fDigitReader(NULL)
+  fCurrentRow(0),
+  fCurrentSlice(0),
+  fCurrentPatch(0),
+  fMatch(1),
+  fThreshold(10),
+  fSignalThreshold(-1),
+  fNClusters(0),
+  fMaxNClusters(0),
+  fXYErr(0.2),
+  fZErr(0.3),
+  fOccupancyLimit(1.0)
 {
   //constructor
 }
 
 AliHLTTPCClusterFinder::AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder& src)
   :
-  fMatch(src.fMatch),
-  fThreshold(src.fThreshold),
-  fSignalThreshold(src.fSignalThreshold),
-  fOccupancyLimit(src.fOccupancyLimit),
-  fXYErr(src.fXYErr),
-  fZErr(src.fZErr),
-  fDeconvPad(src.fDeconvPad),
+  fSpacePointData(NULL),
+  fDigitReader(src.fDigitReader),
+  fPtr(NULL),
+  fSize(src.fSize),
   fDeconvTime(src.fDeconvTime),
+  fDeconvPad(src.fDeconvPad),
   fStdout(src.fStdout),
   fCalcerr(src.fCalcerr),
   fRawSP(src.fRawSP),
   fFirstRow(src.fFirstRow),
   fLastRow(src.fLastRow),
-  fDigitReader(src.fDigitReader)
+  fCurrentRow(src.fCurrentRow),
+  fCurrentSlice(src.fCurrentSlice),
+  fCurrentPatch(src.fCurrentPatch),
+  fMatch(src.fMatch),
+  fThreshold(src.fThreshold),
+  fSignalThreshold(src.fSignalThreshold),
+  fNClusters(src.fNClusters),
+  fMaxNClusters(src.fMaxNClusters),
+  fXYErr(src.fXYErr),
+  fZErr(src.fZErr),
+  fOccupancyLimit(src.fOccupancyLimit)
 {
 }
 
@@ -236,8 +252,8 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   fCurrentRow += rowOffset;
 
   UInt_t lastpad = 123456789;
-  const Int_t kPadArraySize=5000;
-  const Int_t kClusterListSize=10000;
+  const UInt_t kPadArraySize=5000;
+  const UInt_t kClusterListSize=10000;
   AliClusterData *pad1[kPadArraySize]; //2 lists for internal memory=2pads
   AliClusterData *pad2[kPadArraySize]; //2 lists for internal memory=2pads
   AliClusterData clusterlist[kClusterListSize]; //Clusterlist
@@ -289,7 +305,8 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
     Bool_t newcluster = kTRUE;
     UInt_t seqcharge=0,seqaverage=0,seqerror=0;
-    UInt_t lastcharge=0,lastwas_falling=0;
+    AliHLTTPCSignal_t lastcharge=0;
+    UInt_t bLastWasFalling=0;
     Int_t newbin=-1;
 
 
@@ -302,7 +319,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
       }
 	  
       lastcharge=0;
-      lastwas_falling = 0;
+      bLastWasFalling = 0;
     }
 
     while(1){ //Loop over time bins of current pad
@@ -367,12 +384,12 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
 	//Check if the last pixel in the sequence is smaller than this
 	if(charge > lastcharge){
-	  if(lastwas_falling){
+	  if(bLastWasFalling){
 	    newbin = 1;
 	    break;
 	  }
 	}
-	else lastwas_falling = 1; //last pixel was larger than this
+	else bLastWasFalling = 1; //last pixel was larger than this
 	lastcharge = charge;
       }
 	  

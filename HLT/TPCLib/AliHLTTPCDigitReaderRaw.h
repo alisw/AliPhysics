@@ -176,29 +176,29 @@ public:
 protected:
 
   AliHLTUInt8_t* fBuffer; //! transient value
-    unsigned long fBufferSize;
+  unsigned long fBufferSize;
     /*
     Int_t fFirstRow;
     Int_t fLastRow;
     */
-    Int_t fPatch;
-    Int_t fSlice;
-    Int_t fRow;
-    Int_t fPad;
+  Int_t fPatch;
+  Int_t fSlice;
+  Int_t fRow;
+  Int_t fPad;
 
-    unsigned fAltroBlockPositionBytes;
-    unsigned fAltroBlockLengthBytes;
+  unsigned fAltroBlockPositionBytes;
+  unsigned fAltroBlockLengthBytes;
+  
+  AliHLTUInt16_t fAltroBlockHWAddress;
+  AliHLTUInt16_t fAltroBlock10BitWordCnt;
+  AliHLTUInt16_t fAltroBlock10BitFillWordCnt;
 
-    AliHLTUInt16_t fAltroBlockHWAddress;
-    AliHLTUInt16_t fAltroBlock10BitWordCnt;
-    AliHLTUInt16_t fAltroBlock10BitFillWordCnt;
-
-    unsigned fDataFormatVersion;
-
-    unsigned fBunchPosition;
-    unsigned fBunchTimebinStart;
-    unsigned fBunchLength;
-    unsigned fWordInBunch;
+  unsigned fDataFormatVersion;
+  
+  unsigned fBunchPosition;
+  unsigned fBunchTimebinStart;
+  unsigned fBunchLength;
+  unsigned fWordInBunch;
 
   bool fVerify;
 
@@ -234,24 +234,32 @@ private:
   /** mapping array for patch 5 */
   static Int_t fMapping5[fMapping5Size][fMappingDimension];
 
-    static unsigned fMaxHWA[fNofPatches];
+  static unsigned fMaxHWA[fNofPatches];
 
   // For reordering
-    Int_t fCurrentRow;
-    Int_t fCurrentPad;
-    Int_t fCurrentBin;
+  /** current row */
+  Int_t fCurrentRow;                                               // see above
+  /** current pad */
+  Int_t fCurrentPad;                                               // see above
+  /** current bin */
+  Int_t fCurrentBin;                                               // see above
  
-    Int_t fRowOffset;
-    Int_t fNRows;
+  /** ofsset of the first row */
+  Int_t fRowOffset;                                                // see above
+  /** nimber of rows */
+  Int_t fNRows;                                                    // see above
+  
+  /** max number of rows */
+  Int_t fNMaxRows;                                                 // see above
+  /** max number of pads */
+  Int_t fNMaxPads;                                                 // see above
+  /** number of time bins */
+  Int_t fNTimeBins;                                                // see above
 
-    Int_t fNMaxRows;
-    Int_t fNMaxPads;
-    Int_t fNTimeBins;
-
-  Int_t *fData; //! transient value
+  Int_t *fData;                                                    //! transient
 
   /** indicate a virgin object and throw the warnig only once */
-  Int_t fMapErrThrown; //! transient value
+  Int_t fMapErrThrown;                                             //! transient 
 
   ClassDef(AliHLTTPCDigitReaderRaw, 1)
     

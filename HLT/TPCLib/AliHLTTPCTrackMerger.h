@@ -3,11 +3,14 @@
 #ifndef ALIHLTTPCTRACKMERGER_H
 #define ALIHLTTPCTRACKMERGER_H
 
-//-------------------------------------------------------------------------
-//                Class AliHLTTPCTrackMerger
-//   This class is responsible for the merging of the HLT tracks
-//   between TPC sectors and readout patches
-//-------------------------------------------------------------------------
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCTrackMerger.h
+    @author Uli Frankenfeld, maintained by Matthias Richter
+    @date   
+    @brief  The HLT TPC track segment merger
+*/
 
 #ifndef __CINT__ 
 #include "AliHLTTPCMerger.h"
@@ -17,11 +20,23 @@
 
 class AliHLTTPCMerger;
 
+/** 
+ * @class AliHLTTPCTrackMerger
+ * The HLTTPC track segment merger
+ *
+ *   This class is responsible for the merging of the HLT tracks
+ *   between TPC sectors and readout patches
+ */
 class AliHLTTPCTrackMerger : public AliHLTTPCMerger {
 
  public:
   AliHLTTPCTrackMerger();
   AliHLTTPCTrackMerger(Int_t nsubsectors);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCTrackMerger(const AliHLTTPCTrackMerger&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCTrackMerger& operator=(const AliHLTTPCTrackMerger&);
+  /** destructor */
   virtual ~AliHLTTPCTrackMerger();
 
   void SetRows(Int_t *row);
