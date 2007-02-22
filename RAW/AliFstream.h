@@ -30,10 +30,11 @@ private:
   AliFstream(const AliFstream &source);
   AliFstream &operator =(const AliFstream& source);
 
+  UInt_t Swap(UInt_t x);
+
   fstream *fFile;       // Output file stream
-  UChar_t *fBuffer;     // Pointer to the internal buffer
+  UInt_t  *fBuffer;     // Pointer to the internal buffer
   UInt_t   fBufferSize; // Internal buffer size
-  Bool_t   fSwap;       // Big or little endian
 
   ClassDef(AliFstream,0)
 };

@@ -26,9 +26,10 @@
 
 #include <unistd.h>
 #include <Riostream.h>
-
+#include <stdio.h>
 #include "AliFstream.h"
 #include "AliLog.h"
+
 
 ClassImp(AliFstream)
 
@@ -36,20 +37,16 @@ ClassImp(AliFstream)
 AliFstream::AliFstream():
   fFile(0x0),
   fBuffer(0x0),
-  fBufferSize(0),
-  fSwap(kFALSE)
+  fBufferSize(0)
 {
   // Default constructor
-
-  for (Int_t i = 0; i < 8; i++) fBuffer[i] = 0;
 }
 
 //______________________________________________________________________________
 AliFstream::AliFstream(const char *fileName):
   fFile(0x0),
   fBuffer(0x0),
-  fBufferSize(0),
-  fSwap(kFALSE)
+  fBufferSize(0)
 {
   // Constructor
   // Takes the input filename and
@@ -60,11 +57,6 @@ AliFstream::AliFstream(const char *fileName):
 #else
   fFile = new fstream(fileName, ios::out);
 #endif
-
-  // Check endianess
-  UInt_t temp = 1;
-  UChar_t *ptemp = (UChar_t *)&temp;
-  if (!ptemp[0]) fSwap = kTRUE;
 }
 
 //______________________________________________________________________________
@@ -98,6 +90,15 @@ UInt_t AliFstream::Tellp()
 }
 
 //______________________________________________________________________________
+UInt_t AliFstream::Swap(UInt_t x)
+{
+   // Swap the endianess of the integer value 'x'
+
+   return (((x & 0x000000ffU) << 24) | ((x & 0x0000ff00U) <<  8) |
+           ((x & 0x00ff0000U) >>  8) | ((x & 0xff000000U) >> 24));
+}
+
+//______________________________________________________________________________
 void AliFstream::WriteBuffer(const char *buffer, UInt_t size, Bool_t force)
 {
   // Write the buffer to a file
@@ -110,26 +111,32 @@ void AliFstream::WriteBuffer(const char *buffer, UInt_t size, Bool_t force)
 
   // The raw data payload size is always
   // 4 bytes aligned
-  if ((size % 4) != 0)
+  
+  if ((size % sizeof(UInt_t)) != 0)
     AliFatal(Form("Size of the buffer is not multiple of 4 (size = %d) !",size));
-
+  
   if (force) {
     fFile->write(buffer,size);
   }
   else {
-    if (!fSwap) {
-      // Little endian - do nothing
-      fFile->write(buffer,size);
+#ifdef R__BYTESWAP
+    fFile->write(buffer,size);
+#else
+    size /= sizeof(UInt_t);
+
+    if (size > fBufferSize) {
+      if (fBuffer) delete [] fBuffer;
+      fBuffer = new UInt_t[size];
+      fBufferSize = size;
     }
-    else {
-      // Big endian - swap the buffer contents
-      if (size > fBufferSize) {
-	if (fBuffer) delete [] fBuffer;
-	fBuffer = new UChar_t[size];
-	fBufferSize = size;
-      }
-      swab(buffer,fBuffer,size);
-      fFile->write((const char *)fBuffer,size);
+
+    UInt_t *buf = (UInt_t *)buffer;
+    for (UInt_t i = 0; i < size; i++, buf++) {
+      UInt_t value = Swap(*buf);
+      memcpy(fBuffer+i, &value, sizeof(UInt_t));
     }
+
+    fFile->write((const char *)fBuffer,size*sizeof(UInt_t));
+#endif
   }
 }
