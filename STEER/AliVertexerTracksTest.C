@@ -1,16 +1,17 @@
-//------------------------------------------------------------------------
-// Test macro for AliVertexerTracks.
-// Contains several functions. 
-//
-// A. Dainese - INFN Legnaro
-//------------------------------------------------------------------------
 void AliVertexerTracksTest(Double_t nSigma=3.,
-			   Bool_t useMeanVtx=kTRUE,
-			   TString outname="AliVertexerTracksTest.root") {
+			   Bool_t useMeanVtx=kFALSE,
+			   Int_t itsin=1,
+			   Int_t itsrefit=1,
+			   Double_t maxd0z0=0.5,
+			   Int_t minitscls=5,
+			   Int_t mintracks=1,
+			   TString outname="AliVertexerTracksTest.root",
+			   Bool_t onlyfit=kFALSE) {
 //------------------------------------------------------------------------
 // Run vertex reconstruction and store results in histos and ntuple
 //------------------------------------------------------------------------
-
+// WITHOUT Kinematics.root
+//
   if (gAlice) {
     delete gAlice->GetRunLoader();
     delete gAlice; 
@@ -35,7 +36,9 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     return;
   }
   gAlice=rl->GetAliRun();
-  rl->LoadKinematics();
+
+  //rl->LoadKinematics();
+
   // Get field from galice.root
   AliMagF *fiel = (AliMagF*)gAlice->Field();
   // Set the conversion constant between curvature and Pt
@@ -51,8 +54,11 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
   Double_t errvtx[3]; 
   Double_t diffX,diffY,diffZ;
   Double_t diffXerr,diffYerr,diffZerr;
-  Double_t multiplicity;
+  Float_t multiplicity;
+  Float_t chi2red;
+  Int_t ntracklets;
   Int_t nc;
+  Int_t triggered;
 
   // Histograms
   TH1F *hdiffX = new TH1F("hdiffX","x_{found} - x_{true} [#mum]",1000,-5000,5000);
@@ -64,7 +70,7 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
   TH1F *hdiffZerr = new TH1F("hdiffZerr","#Delta z/#sigma_{z}",100,-5,5);
 
   //TNtple
-  TNtuple *ntVtxRes = new TNtuple("ntVtxRes","Vertex Resolution's Ntupla with multiplicity","ntracks:nitstracks5or6:nitstracksFromStrange:nitstracksFromStrange5or6:diffX:diffY:diffZ:diffXerr:diffYerr:diffZerr:multiplicity:nc");
+  TNtuple *ntVtxRes = new TNtuple("ntVtxRes","Vertex Resolution's Ntupla with multiplicity","triggered:ntracks:nitstracks:nitstracks5or6:diffX:diffY:diffZ:diffXerr:diffYerr:diffZerr:multiplicity:nc:zMC:chi2red");
 
 
 
@@ -82,14 +88,20 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     initVertex = new AliESDVertex(pos,err);
   }
   AliVertexerTracks *vertexer = new AliVertexerTracks();
-  vertexer->SetITSrefitNotRequired();
-  vertexer->SetVtxStart(initVertex);
-  vertexer->SetMinTracks(2);
-  vertexer->SetNSigmad0(nSigma);
-  //cout<<" Nsigma:  "<<vertexer->GetNSigmad0()<<endl;
   vertexer->SetDebug(1); // set to 1 to see what it does
+  vertexer->SetVtxStart(initVertex);
+  if(!useMeanVtx) vertexer->SetNoConstraint();
+  if(onlyfit) vertexer->SetOnlyFitter();
+  vertexer->SetNSigmad0(nSigma);
+  if(!itsrefit) vertexer->SetITSrefitNotRequired();
+  if(!itsin) vertexer->SetITSNotRequired();
+  vertexer->SetMinTracks(mintracks);
+  vertexer->SetMinITSClusters(minitscls);
+  vertexer->SetMaxd0z0(maxd0z0);
+  //cout<<" Nsigma:  "<<vertexer->GetNSigmad0()<<endl;
   //----------------------------------------------------------
  
+
   if(gSystem->AccessPathName("AliESDs.root",kFileExists)) {
     printf("AliESDs.root not found!\n"); 
     return;
@@ -131,8 +143,6 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     Double_t dNchdy = 0.;
     multiplicity=0.;
     Int_t nitstracks = 0;
-    Int_t nitstracksFromStrange = 0;
-    Int_t nitstracksFromStrange5or6 = 0;
     Int_t nitstracks1 = 0;
     Int_t nitstracks2 = 0;
     Int_t nitstracks3 = 0;
@@ -140,42 +150,38 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     Int_t nitstracks5 = 0;
     Int_t nitstracks6 = 0;
     Int_t nitstracks5or6 = 0;
-  
-    // loop on particles
-    for(Int_t pa=0; pa<npart; pa++) {   
-      TParticle *part = (TParticle*)gAlice->GetMCApp()->Particle(pa); 
-      Int_t pdg = part->GetPdgCode();      
-      Int_t apdg = TMath::Abs(pdg);
-      Double_t energy  = part->Energy();
-      if(energy>6900.) continue; // reject incoming protons
-      Double_t pz = part->Pz();
-      Double_t y = 0.5*TMath::Log((energy+pz+1.e-13)/(energy-pz+1.e-13)); 
-                                                 
-      // consider charged pi,K,p,el,mu       
-      if(apdg!=11 && apdg!=13 && apdg!=211 && apdg!=321 && apdg!=2212) continue;
-      // reject secondaries
-      if(TMath::Sqrt((part->Vx()-o[0])*(part->Vx()-o[0])+(part->Vy()-o[1])*(part->Vy()-o[1]))>0.0010) continue;
-      if(TMath::Abs(y)<1.0) dNchdy += 0.5; // count 1/2 of particles in |y|<1
-    } // end loop on particles
-    multiplicity=(Double_t)dNchdy;
-
-    printf(" dNch/dy = %f\n",dNchdy);
-    //===============================================================
 
 
     esdTree->GetEvent(iev);
+    triggered=0;
+    chi2red=0.;
+    ULong64_t triggerMask = esd->GetTriggerMask();
+    if(triggerMask&32 && ((triggerMask&1) || (triggerMask&2))) triggered=1;
+
+    // get # of tracklets
+    AliMultiplicity *alimult = esd->GetMultiplicity();
+    if(alimult) {
+      ntracklets = alimult->GetNumberOfTracklets();
+      for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++) 
+	if(alimult->GetDeltaPhi(l)<-9998.) ntracklets--;
+    } else {
+      ntracklets = 0;
+    }
+    printf("Number of SPD tracklets in ESD %d  :  %d\n",iev,ntracklets);
+    multiplicity = (Float_t)ntracklets;
+
     Int_t ntracks = esd->GetNumberOfTracks();
     printf("Number of tracks in ESD %d   :   %d\n",iev,ntracks);
     if(ntracks==0) { 
-      ntVtxRes->Fill(ntracks,nitstracks5or6,nitstracksFromStrange,nitstracksFromStrange5or6,diffX,diffY,diffZ,diffXerr,diffYerr,diffZerr,multiplicity,nc); 
+      ntVtxRes->Fill(triggered,ntracks,nitstracks,nitstracks5or6,diffX,diffY,diffZ,diffXerr,diffYerr,diffZerr,multiplicity,nc,truevtx[2],chi2red); 
       continue; 
     }
     
     // VERTEX    
     AliESDVertex *vertex = (AliESDVertex*)vertexer->FindPrimaryVertex(esd);
-    //AliESDVertex *vertex = (AliESDVertex*)vertexer->FindPrimaryVertexOld(esd);
 
     nc = (Int_t)vertex->GetNContributors();
+    if(nc>=2) chi2red = vertex->GetChi2toNDF(); 
     printf("nc = %d\n",nc);
 
 
@@ -193,15 +199,6 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
       if(npts==3) nitstracks3++;
       if(npts==2) nitstracks2++;
       if(npts==1) nitstracks1++;
-      TParticle *part = (TParticle*)gAlice->GetMCApp()->Particle(TMath::Abs(esdtrack->GetLabel()));
-      if(part->GetFirstMother()>=0) {
-	Int_t mpdg = TMath::Abs(gAlice->GetMCApp()->Particle(part->GetFirstMother())->GetPdgCode());
-	//cout<<TMath::Abs(esdtrack->GetLabel())<<"   "<<mpdg<<endl;
-	if(mpdg==321||mpdg==311||mpdg==310||mpdg==3122||mpdg==3312||mpdg==3334) {
-	  nitstracksFromStrange++;
-	  if(npts>=5) nitstracksFromStrange5or6++;
-	}
-      }
     }
     printf("Number of kITSin tracks in ESD %d   :   %d\n",iev,nitstracks);
     printf("           6 pts: %d\n",nitstracks6);
@@ -210,10 +207,9 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     printf("           3 pts: %d\n",nitstracks3);
     printf("           2 pts: %d\n",nitstracks2);
     printf("           1 pts: %d\n",nitstracks1);
-    printf("Number of kITSin tracks from s:   %d\n",nitstracksFromStrange);
 
 
-    if(nc>=2) {
+    if(nc>=1) {
       vertex->GetXYZ(vtx);
       vertex->GetSigmaXYZ(errvtx); 
       diffX = 10000.* (vtx[0] - truevtx[0]);
@@ -230,7 +226,7 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
       hdiffZerr->Fill(diffZerr);
     } 
 
-    ntVtxRes->Fill(nitstracks,nitstracks5or6,nitstracksFromStrange,nitstracksFromStrange5or6,diffX,diffY,diffZ,diffXerr,diffYerr,diffZerr,multiplicity,(Float_t)nc);   
+    ntVtxRes->Fill(triggered,ntracks,nitstracks,nitstracks5or6,diffX,diffY,diffZ,diffXerr,diffYerr,diffZerr,multiplicity,(Float_t)nc,truevtx[2],chi2red);   
 
   } // END LOOP ON EVENTS
 
@@ -254,6 +250,154 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
   return;
 } 
 //----------------------------------------------------------------------------
+//------------------------------------------------------------------------
+void VertexForOneEvent(Int_t iev=0,
+		       Double_t nSigma=3.,
+		       Bool_t useMeanVtx=kFALSE) {
+//------------------------------------------------------------------------
+// Run vertex reconstruction for event iev
+//------------------------------------------------------------------------
+
+  if (gAlice) {
+    delete gAlice->GetRunLoader();
+    delete gAlice; 
+    gAlice=0;
+  }
+  
+  AliRunLoader *rl = AliRunLoader::Open("galice.root");
+  if (rl == 0x0) {
+    cerr<<"Can not open session"<<endl;
+    return;
+  }
+  Int_t retval = rl->LoadgAlice();
+  if (retval) {
+    cerr<<"LoadgAlice returned error"<<endl;
+    delete rl;
+    return;
+  }
+  retval = rl->LoadHeader();
+  if (retval) {
+    cerr<<"LoadHeader returned error"<<endl;
+    delete rl;
+    return;
+  }
+  gAlice=rl->GetAliRun();
+  //rl->LoadKinematics();
+  // Get field from galice.root
+  AliMagF *fiel = (AliMagF*)gAlice->Field();
+  // Set the conversion constant between curvature and Pt
+  AliTracker::SetFieldMap(fiel,kTRUE);
+ 
+  Double_t truevtx[3];
+  Double_t vtx[3]; 
+  Double_t errvtx[3]; 
+  Double_t diffX,diffY,diffZ;
+  Double_t diffXerr,diffYerr,diffZerr;
+  Double_t multiplicity;
+  Int_t nc;
+
+  // -----------   Create vertexer --------------------------
+  AliESDVertex *initVertex = 0;
+  if(useMeanVtx) {
+    // open the mean vertex
+    TFile *invtx = new TFile("AliESDVertexMean.root");
+    initVertex = (AliESDVertex*)invtx->Get("vtxmean");
+    invtx->Close();
+    delete invtx;
+  } else {
+    Double_t pos[3]={0.,-0.,0.}; 
+    Double_t err[3]={3.,3.,5.};
+    initVertex = new AliESDVertex(pos,err);
+  }
+  AliVertexerTracks *vertexer = new AliVertexerTracks();
+  //vertexer->SetITSrefitNotRequired();
+  vertexer->SetVtxStart(initVertex);
+  if(!useMeanVtx) vertexer->SetNoConstraint();
+  //vertexer->SetMinTracks(2);
+  //vertexer->SetNSigmad0(nSigma);
+  //cout<<" Nsigma:  "<<vertexer->GetNSigmad0()<<endl;
+  //vertexer->SetFinderAlgorithm(2);
+  //vertexer->SetDCAcut(0.1); // 1 mm
+  vertexer->SetDebug(1); // set to 1 to see what it does
+  //----------------------------------------------------------
+ 
+  if(gSystem->AccessPathName("AliESDs.root",kFileExists)) {
+    printf("AliESDs.root not found!\n"); 
+    return;
+  }
+  TFile *fin = TFile::Open("AliESDs.root");
+  TTree *esdTree = (TTree*)fin->Get("esdTree");
+  if(!esdTree) return;
+  AliESD *esd = 0;
+  esdTree->SetBranchAddress("ESD",&esd);
+
+  TArrayF o;
+
+  nc=0;
+
+  //=================================================
+  //         LOOK IN THE SIMULATION
+  // true vertex position
+  Int_t npart = (Int_t)gAlice->GetEvent(iev);
+  printf("particles  %d\n",npart);
+  AliHeader *header = (AliHeader*)rl->GetHeader();
+  AliGenPythiaEventHeader *pyheader = (AliGenPythiaEventHeader*)header->GenEventHeader();
+  pyheader->PrimaryVertex(o);
+  truevtx[0] = o[0];
+  truevtx[1] = o[1];
+  truevtx[2] = o[2];
+  printf("True Vertex: (%f, %f, %f)\n",o[0],o[1],o[2]);
+
+  esdTree->GetEvent(iev);
+  Int_t ntracks = esd->GetNumberOfTracks();
+  printf("Number of tracks in ESD %d   :   %d\n",iev,ntracks);
+    
+  // VERTEX    
+  AliESDVertex *vertex = (AliESDVertex*)vertexer->FindPrimaryVertex(esd);
+  nc = (Int_t)vertex->GetNContributors();
+
+
+  Int_t nitstracks = 0;
+  Int_t nitstracks1 = 0;
+  Int_t nitstracks2 = 0;
+  Int_t nitstracks3 = 0;
+  Int_t nitstracks4 = 0;
+  Int_t nitstracks5 = 0;
+  Int_t nitstracks6 = 0;
+  Int_t nitstracks5or6 = 0;
+
+  // count ITS tracks
+  for(Int_t itrk=0; itrk<ntracks; itrk++) {
+    AliESDtrack *esdtrack = (AliESDtrack*)esd->GetTrack(itrk);
+    UInt_t status = esdtrack->GetStatus();
+    // only tracks found also in ITS
+    if(! (status&AliESDtrack::kITSrefit) ) continue;      
+    nitstracks++;
+    Int_t npts = (Int_t)esdtrack->GetNcls(0);
+    if(npts==6) {nitstracks6++;nitstracks5or6++;}
+    if(npts==5) {nitstracks5++;nitstracks5or6++;}
+    if(npts==4) nitstracks4++;
+    if(npts==3) nitstracks3++;
+    if(npts==2) nitstracks2++;
+    if(npts==1) nitstracks1++;
+  }
+  printf("Number of kITSrefit tracks in ESD %d   :   %d\n",iev,nitstracks);
+  printf("           6 pts: %d\n",nitstracks6);
+  printf("           5 pts: %d\n",nitstracks5);
+  printf("           4 pts: %d\n",nitstracks4);
+  printf("           3 pts: %d\n",nitstracks3);
+  printf("           2 pts: %d\n",nitstracks2);
+  printf("           1 pts: %d\n",nitstracks1);
+  
+
+  delete esdTree;
+  delete fin;
+  delete vertexer;
+  delete initVertex;
+
+  return;
+} 
+//----------------------------------------------------------------------------
 Double_t FitFunc(Double_t *x,Double_t *par) {
   return par[0]+par[1]/TMath::Sqrt(x[0]);
 }
@@ -265,11 +409,41 @@ Int_t GetBin(Float_t mult) {
   if(mult<22.) return 4;
   return 5;
 }
-void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
+Int_t GetBinTracklets(Float_t tracklets) {
+  if(tracklets<2.*5.)  return 0;
+  if(tracklets<2.*7.)  return 1;
+  if(tracklets<2.*12.) return 2;
+  if(tracklets<2.*15.) return 3;
+  if(tracklets<2.*22.) return 4;
+  return 5;
+}
+Int_t GetBinZ(Float_t z) {
+  if(z<-13.) return 0;
+  if(z<-11.) return 1;
+  if(z<-9.) return 2;
+  if(z<-7.) return 3;
+  if(z<-5.) return 4;
+  if(z<-3.) return 5;
+  if(z<-1.) return 6;
+  if(z<1.) return 7;
+  if(z<3.) return 8;
+  if(z<5.) return 9;
+  if(z<7.) return 10;
+  if(z<9.) return 11;
+  if(z<11.) return 12;
+  if(z<13.) return 13;
+  return 14;
+}
+//----------------------------------------------------------------------------
+void PlotVtxRes(TString inname="AliVertexerTracksTest.root") {
   //---------------------------------------------------------------------
   // Plot efficiency, resolutions, pulls 
   // [at least 10k pp events are needed]
   //---------------------------------------------------------------------
+
+  Float_t zMCmin=0.;
+  Float_t zMCmax=20.;
+  Float_t ncminforzshift=1.;
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(10001);
@@ -277,8 +451,10 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   Int_t   nEvVtx=0;
   Int_t   nEvNoVtx=0;
   Int_t   ev,nUsedTrks;
-  Float_t nTrks,nTrksFromStrange,nTrks5or6,nTrksFromStrange5or6,dNchdy;
-  Float_t diffX,diffY,diffZ,diffXerr,diffYerr,diffZerr;
+  Float_t nESDTrks,nTrks,nTrks5or6,ntracklets;
+  Float_t diffX,diffY,diffZ,diffXerr,diffYerr,diffZerr,zMC,nc;
+  Float_t triggered;
+
 
   //
   // HISTOGRAMS
@@ -291,9 +467,27 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   hdy->SetXTitle("#Delta y [#mu m]");
   hdy->SetYTitle("events");
   //
-  TH1F *hdz = new TH1F("hdz","",50,-600,600);
+  TH1F *hdz = new TH1F("hdz","",200,-600,600);
   hdz->SetXTitle("#Delta z [#mu m]");
   hdz->SetYTitle("events");
+  //
+  TH1F *hzMCVtx = new TH1F("hzMCVtx","events w/ vertex",30,-15,15);
+  hzMCVtx->SetXTitle("z_{true} [cm]");
+  hzMCVtx->SetYTitle("events");
+  hzMCVtx->Sumw2();
+  //
+  TH1F *hzMCNoVtx = new TH1F("hzMCNoVtx","events w/o vertex",30,-15,15);
+  hzMCNoVtx->SetXTitle("z_{true} [cm]");
+  hzMCNoVtx->SetYTitle("events");
+  hzMCNoVtx->Sumw2();
+  //
+  TH1F *hTrackletsVtx = new TH1F("hTrackletsVtx","events w/ vertex",51,-0.5,50.5);
+  hTrackletsVtx->SetXTitle("SPD tracklets");
+  hTrackletsVtx->SetYTitle("events");
+  //
+  TH1F *hTrackletsNoVtx = new TH1F("hTrackletsNoVtx","events w/o vertex",51,-0.5,50.5);
+  hTrackletsNoVtx->SetXTitle("SPD tracklets");
+  hTrackletsNoVtx->SetYTitle("events");
   //
   TH1F *hTracksVtx = new TH1F("hTracksVtx","events w/ vertex",51,-0.5,50.5);
   hTracksVtx->SetXTitle("Number of reco tracks in TPC&ITS");
@@ -304,20 +498,12 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   hTracksNoVtx->SetYTitle("events");
   //
   TH1F *hTracksVtx5or6 = new TH1F("hTracksVtx5or6","events w/ vertex",51,-0.5,50.5);
-  hTracksVtx5or6->SetXTitle("Number of reco tracks in TPC&ITS(pts>=5)");
+  hTracksVtx5or6->SetXTitle("Number of reco tracks in TPC&ITS(cls>=5)");
   hTracksVtx5or6->SetYTitle("events");
   //
   TH1F *hTracksNoVtx5or6 = new TH1F("hTracksNoVtx5or6","events w/o vertex",51,-0.5,50.5);
-  hTracksNoVtx5or6->SetXTitle("Number of reco tracks in TPC&ITS(pts>=5)");
+  hTracksNoVtx5or6->SetXTitle("Number of reco tracks in TPC&ITS(cls>=5)");
   hTracksNoVtx5or6->SetYTitle("events");
-  //
-  TH1F *hTracksVtx5or6nonS = new TH1F("hTracksVtx5or6nonS","events w/ vertex",51,-0.5,50.5);
-  hTracksVtx5or6nonS->SetXTitle("Number of reco tracks in TPC&ITS(pts>=5) NOT from s");
-  hTracksVtx5or6nonS->SetYTitle("events");
-  //
-  TH1F *hTracksNoVtx5or6nonS = new TH1F("hTracksNoVtx5or6nonS","events w/o vertex",51,-0.5,50.5);
-  hTracksNoVtx5or6nonS->SetXTitle("Number of reco tracks in TPC&ITS(pts>=5) NOT from s");
-  hTracksNoVtx5or6nonS->SetYTitle("events");
   //
   TH1F *hPullsx = new TH1F("hPullsx","",50,-7.,7.);
   hPullsx->SetXTitle("#Delta x/#sqrt{<x,x>}");
@@ -331,6 +517,17 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   hPullsz->SetXTitle("#Delta z/#sqrt{<z,z>}");
   hPullsz->SetYTitle("events");
   //
+  TProfile *hntrackletsVSzMC = new TProfile("hntrackletsVSzMC","",30,-15,15,0,30);
+  hntrackletsVSzMC->SetXTitle("z_{true} [cm]");
+  hntrackletsVSzMC->SetYTitle("<SPD tracklets>");
+  //
+  TProfile *hnitstracksVSzMC = new TProfile("hnitstracksVSzMC","",30,-15,15,0,30);
+  hnitstracksVSzMC->SetXTitle("z_{true} [cm]");
+  hnitstracksVSzMC->SetYTitle("<tracks TPC&ITS>");
+  //
+  TProfile *hnitstracks5or6VSzMC = new TProfile("hnitstracks5or6VSzMC","",30,-15,15,0,30);
+  hnitstracks5or6VSzMC->SetXTitle("z_{true} [cm]");
+  hnitstracks5or6VSzMC->SetYTitle("<tracks TPC&ITS(cls>=5)>");
 
   Double_t mult[6]={0,0,0,0,0,0};
   Double_t mult2[6]={0,0,0,0,0,0};
@@ -358,7 +555,7 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   Int_t    all[6]={0,0,0,0,0,0};
   Double_t probVtx[6]={0,0,0,0,0,0};
   Double_t eprobVtx[6]={0,0,0,0,0,0};
-  Int_t    bin;
+  Int_t    bin,zbin;
   //
   // OTHER HISTOGRAMS
   //
@@ -380,6 +577,10 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   TH1F *hdz3 = new TH1F("hdz3","z resolution - bin 3",50,-600,600);
   TH1F *hdz4 = new TH1F("hdz4","z resolution - bin 4",50,-500,500);
   TH1F *hdz5 = new TH1F("hdz5","z resolution - bin 5",50,-500,500);
+  //
+  TH1F *hdz_z = NULL; hdz_z = new TH1F[15];
+  for(Int_t l=0;l<15;l++) hdz_z[l] = *hdz;
+
 
   TH1F *hpx0 = new TH1F("hpx0","x pull - bin 0",50,-7,7);
   TH1F *hpx1 = new TH1F("hpx1","x pull - bin 1",50,-7,7);
@@ -403,31 +604,42 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
 
   TH1F *hmult = new TH1F("hmult","hmult",50,-0.5,49.5);
 
-  TFile *in = new TFile(inname);
+  TFile *in = new TFile(inname.Data());
   TNtuple *nt = (TNtuple*)in->Get("ntVtxRes");
-  nt->SetBranchAddress("ntracks",&nTrks);
+  nt->SetBranchAddress("triggered",&triggered);
+  nt->SetBranchAddress("ntracks",&nESDTrks);
+  nt->SetBranchAddress("nitstracks",&nTrks);
   nt->SetBranchAddress("nitstracks5or6",&nTrks5or6);
-  nt->SetBranchAddress("nitstracksFromStrange",&nTrksFromStrange);
-  nt->SetBranchAddress("nitstracksFromStrange5or6",&nTrksFromStrange5or6);
   nt->SetBranchAddress("diffX",&diffX);
   nt->SetBranchAddress("diffY",&diffY);
   nt->SetBranchAddress("diffZ",&diffZ);
   nt->SetBranchAddress("diffXerr",&diffXerr);
   nt->SetBranchAddress("diffYerr",&diffYerr);
   nt->SetBranchAddress("diffZerr",&diffZerr);
-  nt->SetBranchAddress("multiplicity",&dNchdy);
+  nt->SetBranchAddress("multiplicity",&ntracklets);
+  nt->SetBranchAddress("zMC",&zMC);
+  nt->SetBranchAddress("nc",&nc);
   Int_t entries = (Int_t)nt->GetEntries();
   Int_t nbytes=0;
 
   for(Int_t i=0; i<entries; i++) {
     nbytes += nt->GetEvent(i);
-    bin = GetBin(dNchdy);
-    mult[bin] += dNchdy;
-    hmult->Fill(dNchdy);
+    // only triggered events
+    if(triggered<0.5) continue;
+    // consider only events with zMCmin<|zMC|<zMCmax
+    if(TMath::Abs(zMC)<zMCmin || TMath::Abs(zMC)>zMCmax) continue;
+    //
+    bin = GetBinTracklets(ntracklets);
+    zbin = GetBinZ(zMC);
+    mult[bin] += ntracklets;
+    hmult->Fill(ntracklets);
     totevts[bin]++;
-    if(diffX < 90000.) { // vtx found
+    hntrackletsVSzMC->Fill(zMC,ntracklets);
+    hnitstracksVSzMC->Fill(zMC,nTrks);
+    hnitstracks5or6VSzMC->Fill(zMC,nTrks5or6);
+    if(TMath::Abs(diffX) < 1000.) { // vtx found - closer than 1 mm
       nEvVtx++;
-      mult2[bin] += dNchdy;
+      mult2[bin] += ntracklets;
       vtx[bin]++;
       tottracks[bin] += nTrks;
       evts[bin]++;
@@ -452,9 +664,11 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
       hdx->Fill(diffX);
       hdy->Fill(diffY);
       hdz->Fill(diffZ);
+      if(nc>=ncminforzshift) hdz_z[zbin].Fill(diffZ);
+      hzMCVtx->Fill(zMC);
+      hTrackletsVtx->Fill(ntracklets);
       hTracksVtx->Fill(nTrks);
       hTracksVtx5or6->Fill(nTrks5or6);
-      hTracksVtx5or6nonS->Fill(nTrks5or6-nTrksFromStrange5or6);
       hPullsx->Fill(diffXerr);
       hPullsy->Fill(diffYerr);
       hPullsz->Fill(diffZerr);
@@ -478,9 +692,10 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
       if(bin==5) hpz5->Fill(diffZerr);
     } else {
       nEvNoVtx++;
+      hzMCNoVtx->Fill(zMC);
+      hTrackletsNoVtx->Fill(ntracklets);
       hTracksNoVtx->Fill(nTrks);
       hTracksNoVtx5or6->Fill(nTrks5or6);
-      hTracksNoVtx5or6nonS->Fill(nTrks5or6-nTrksFromStrange5or6);
     }
     all[bin]++;
   }
@@ -498,9 +713,9 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   // calculate spread in multiplicity
   for(Int_t i=0; i<entries; i++) {
     nbytes += nt->GetEvent(i);
-    bin = GetBin(dNchdy);
-    sigmamult[bin] += (dNchdy-mult[bin])*(dNchdy-mult[bin])/totevts[bin];
-    if(diffX < 90000.) sigmamult2[bin] += (dNchdy-mult2[bin])*(dNchdy-mult2[bin])/evts[bin];
+    bin = GetBinTracklets(ntracklets);
+    sigmamult[bin] += (ntracklets-mult[bin])*(ntracklets-mult[bin])/totevts[bin];
+    if(diffX < 90000.) sigmamult2[bin] += (ntracklets-mult2[bin])*(ntracklets-mult2[bin])/evts[bin];
   }
 
   for(Int_t k=0;k<6;k++) {
@@ -518,7 +733,7 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   g->SetLineWidth(3);
   TF1 *line = new TF1("line","pol1");
   line->SetLineWidth(3);
-  TF1 *func = new TF1("func",FitFunc,2,35,2);
+  TF1 *func = new TF1("func",FitFunc,2,80,2);
   func->SetLineWidth(1);
 
   Double_t x1,y1,sigmafit;
@@ -529,6 +744,23 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   //
   gStyle->SetOptFit(1111);
   
+  // tracks VS zMC
+  TCanvas *c0 = new TCanvas("c0","c0",0,0,1000,400);
+  c0->Divide(3,1);
+  c0->cd(1); 
+  hntrackletsVSzMC->SetMinimum(0);
+  hntrackletsVSzMC->SetMaximum(14);
+  hntrackletsVSzMC->Draw("profs");
+  c0->cd(2); 
+  hnitstracksVSzMC->SetMinimum(0);
+  hnitstracksVSzMC->SetMaximum(14);
+  hnitstracksVSzMC->Draw("profs");
+  c0->cd(3); 
+  hnitstracks5or6VSzMC->SetMinimum(0);
+  hnitstracks5or6VSzMC->SetMaximum(14);
+  hnitstracks5or6VSzMC->Draw("profs");
+
+
   // Tracks in ITS for events w/ and w/o vertex
   TCanvas *c1 = new TCanvas("c1","c1",0,0,1000,500);
   c1->Divide(2,1);
@@ -536,6 +768,16 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   hTracksVtx->Draw();
   c1->cd(2); 
   hTracksNoVtx->Draw();
+
+  // probability vs ntracklets
+  TCanvas *c1a = new TCanvas("c1a","c1a",0,0,500,500);
+  TH1F *hTotTracklets = (TH1F*)hTrackletsVtx->Clone("hTotTracklets");
+  hTotTracklets->Add(hTrackletsNoVtx);
+  TH1F *hProbTracklets = (TH1F*)hTrackletsVtx->Clone("hProbTracklets");
+  hProbTracklets->Divide(hTotTracklets);
+  hProbTracklets->SetYTitle("Probability");
+  hProbTracklets->SetTitle("Probability to find the vertex");
+  hProbTracklets->Draw();
 
   // probability vs ntracks
   TCanvas *c1b = new TCanvas("c1b","c1b",0,0,500,500);
@@ -556,14 +798,16 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   hProbTracks5or6->SetTitle("Probability to find the vertex");
   hProbTracks5or6->Draw();
 
-  TCanvas *c1d = new TCanvas("c1d","c1d",0,0,500,500);
-  TH1F *hTotTracks5or6nonS = (TH1F*)hTracksVtx5or6nonS->Clone("hTotTracks5or6nonS");
-  hTotTracks5or6nonS->Add(hTracksNoVtx5or6nonS);
-  TH1F *hProbTracks5or6nonS = (TH1F*)hTracksVtx5or6nonS->Clone("hProbTracks5or6nonS");
-  hProbTracks5or6nonS->Divide(hTotTracks5or6nonS);
-  hProbTracks5or6nonS->SetYTitle("Probability");
-  hProbTracks5or6nonS->SetTitle("Probability to find the vertex");
-  hProbTracks5or6nonS->Draw();
+
+  // probability vs zMC
+  TCanvas *c1e = new TCanvas("c1e","c1e",0,0,500,500);
+  TH1F *hTotzMC = (TH1F*)hzMCVtx->Clone("hTotzMC");
+  hTotzMC->Add(hzMCNoVtx);
+  TH1F *hProbzMC = (TH1F*)hzMCVtx->Clone("hProbzMC");
+  hProbzMC->Divide(hTotzMC);
+  hProbzMC->SetYTitle("Probability");
+  hProbzMC->SetTitle("Probability to find the vertex");
+  hProbzMC->Draw();
 
   // Global resolutions
   TCanvas *c2 = new TCanvas("c2","c2",0,0,1000,400);
@@ -599,8 +843,8 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   
   // probability VS multiplicity
   TCanvas *c5 = new TCanvas("c5","c5",0,0,600,500);
-  TH2F *fr5 = new TH2F("fr5","",2,0,35,2,0,1.1); 
-  fr5->SetXTitle("dN_{ch}/dy");
+  TH2F *fr5 = new TH2F("fr5","",2,0,80,2,0,1.1); 
+  fr5->SetXTitle("SPD tracklets");
   fr5->SetYTitle("Probability");
   fr5->Draw();
   TGraphErrors *gr5 = new TGraphErrors(6,mult,probVtx,sigmamult,eprobVtx);
@@ -852,21 +1096,21 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
 
   gStyle->SetOptFit(0);
 
-  // res VS dNchdy
+  // res VS ntracklets
   TCanvas *c6 = new TCanvas("c6","c6",0,0,600,500);
-  TH2F *fr6 = new TH2F("fr6","",2,0,35,2,0,200); 
-  fr6->SetXTitle("dN_{ch}/dy");
+  TH2F *fr6 = new TH2F("fr6","",2,0,80,2,0,240); 
+  fr6->SetXTitle("SPD tracklets");
   fr6->SetYTitle("#sigma [#mu m]");
   fr6->Draw();
   sigmamult2[0]=sigmamult2[1]=sigmamult2[2]=sigmamult2[3]=sigmamult2[4]=sigmamult2[5]=0.;
   TGraphErrors *gr6x = new TGraphErrors(6,mult2,xres,sigmamult2,exres);
   gr6x->Draw("p");
   gr6x->SetMarkerStyle(22);
-  gr6x->Fit("func","E,R");
+  //gr6x->Fit("func","E,R");
   TGraphErrors *gr6z = new TGraphErrors(6,mult2,zres,sigmamult2,ezres);
   gr6z->Draw("p");
   gr6z->SetMarkerStyle(26);
-  gr6z->Fit("func","E,R");
+  //gr6z->Fit("func","E,R");
   TLegend *leg6 = new TLegend(0.6,0.75,0.9,0.9);
   leg6->AddEntry(gr6x,"x/y coordinate","p");
   leg6->AddEntry(gr6z,"z coordinate","p");
@@ -874,10 +1118,10 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   leg6->SetBorderSize(0);
   leg6->Draw();
 
-  // pull VS dNchdy
+  // pull VS ntracklets
   TCanvas *c8 = new TCanvas("c8","c8",0,0,600,500);
-  TH2F *fr8 = new TH2F("fr8","",2,0,35,2,0,2.); 
-  fr8->SetXTitle("dN_{ch}/dy");
+  TH2F *fr8 = new TH2F("fr8","",2,0,80,2,0,2.); 
+  fr8->SetXTitle("SPD tracklets");
   fr8->SetYTitle("pull");
   fr8->Draw();
   TGraphErrors *gr8x = new TGraphErrors(6,mult2,xpull,sigmamult2,expull);
@@ -892,12 +1136,372 @@ void PlotVtxRes(const Char_t *inname="AliVertexerTracksTest.root") {
   leg8->SetFillStyle(0);
   leg8->SetBorderSize(0);
   leg8->Draw();
-  TLine *l8 = new TLine(0,1,35,1);
+  TLine *l8 = new TLine(0,1,80,1);
   l8->SetLineStyle(2);
   l8->Draw();
 
+
+  // mean z res VS zMC
+  Float_t zmc[15]={-14,-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14};
+  Float_t ezmc[15]; 
+  Float_t dzmean[15],edzmean[15];
+  Int_t dummy;
+  TCanvas *zz = new TCanvas("zz","zz",0,0,1000,1000);
+  zz->Divide(5,3);
+  for(l=0;l<15;l++) {
+    zz->cd(l+1);
+    hdz_z[l].Draw(); 
+    g->SetRange(-3.*hdz_z[l].GetRMS(),+3.*hdz_z[l].GetRMS());
+    hdz_z[l].Fit("g","Q"); 
+    dzmean[l]=g->GetParameter(1);
+    edzmean[l]=g->GetParError(1);
+    ezmc[l]=1.;
+  }
+  TCanvas *zzz = new TCanvas("zzz","zzz",0,0,600,500);
+  TH2F *fr9 = new TH2F("fr9","",2,-15,15,2,-50,50); 
+  fr9->SetXTitle("z_{true} [cm]");
+  fr9->SetYTitle("<z_{rec} - z_{true}> [#mu m]");
+  fr9->Draw();
+  TGraphErrors *grz = new TGraphErrors(15,zmc,dzmean,ezmc,edzmean);
+  grz->Draw("pz");
+  grz->SetMarkerStyle(20);
+
+
   return;
 }
+//----------------------------------------------------------------------------
+void SaveFigures(TString name="dummy") {
+
+  TString namefull;
+
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsx_");
+  namefull.Append(".gif");
+  ax->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsx_");
+  namefull.Append(".ps");
+  ax->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsx_");
+  namefull.Append(".eps");
+  ax->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsx_");
+  namefull.Append(".root");
+  ax->Print(namefull.Data());
+
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsx_");
+  namefull.Append(".gif");
+  bx->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsx_");
+  namefull.Append(".ps");
+  bx->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsx_");
+  namefull.Append(".eps");
+  bx->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsx_");
+  namefull.Append(".root");
+  bx->Print(namefull.Data());
+
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsz_");
+  namefull.Append(".gif");
+  az->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsz_");
+  namefull.Append(".ps");
+  az->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsz_");
+  namefull.Append(".eps");
+  az->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/residualsz_");
+  namefull.Append(".root");
+  az->Print(namefull.Data());
+
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsz_");
+  namefull.Append(".gif");
+  bz->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsz_");
+  namefull.Append(".ps");
+  bz->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsz_");
+  namefull.Append(".eps");
+  bz->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsz_");
+  namefull.Append(".root");
+  bz->Print(namefull.Data());
+
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets_");
+  namefull.Append(".gif");
+  c1a->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets_");
+  namefull.Append(".ps");
+  c1a->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets_");
+  namefull.Append(".eps");
+  c1a->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets_");
+  namefull.Append(".root");
+  c1a->Print(namefull.Data());
+
+
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks_");
+  namefull.Append(".gif");
+  c1b->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks_");
+  namefull.Append(".ps");
+  c1b->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks_");
+  namefull.Append(".eps");
+  c1b->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks_");
+  namefull.Append(".root");
+  c1b->Print(namefull.Data());
+
+
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks5or6_");
+  namefull.Append(".gif");
+  c1c->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks5or6_");
+  namefull.Append(".ps");
+  c1c->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks5or6_");
+  namefull.Append(".eps");
+  c1c->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSnitstracks5or6_");
+  namefull.Append(".root");
+  c1c->Print(namefull.Data());
+
+
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSzMC_");
+  namefull.Append(".gif");
+  c1e->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSzMC_");
+  namefull.Append(".ps");
+  c1e->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSzMC_");
+  namefull.Append(".eps");
+  c1e->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSzMC_");
+  namefull.Append(".root");
+  c1e->Print(namefull.Data());
+
+
+
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets2_");
+  namefull.Append(".gif");
+  c5->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets2_");
+  namefull.Append(".ps");
+  c5->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets2_");
+  namefull.Append(".eps");
+  c5->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/effVSntracklets2_");
+  namefull.Append(".root");
+  c5->Print(namefull.Data());
+
+
+  namefull = name.Data();
+  namefull.Prepend("plots/sigmaVSntracklets_");
+  namefull.Append(".gif");
+  c6->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/sigmaVSntracklets_");
+  namefull.Append(".ps");
+  c6->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/sigmaVSntracklets_");
+  namefull.Append(".eps");
+  c6->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/sigmaVSntracklets_");
+  namefull.Append(".root");
+  c6->Print(namefull.Data());
+
+
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsVSntracklets_");
+  namefull.Append(".gif");
+  c8->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsVSntracklets_");
+  namefull.Append(".ps");
+  c8->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsVSntracklets_");
+  namefull.Append(".eps");
+  c8->Print(namefull.Data());
+  namefull = name.Data();
+  namefull.Prepend("plots/pullsVSntracklets_");
+  namefull.Append(".root");
+  c8->Print(namefull.Data());
+
+
+  return;
+}
+//----------------------------------------------------------------------------
+void TestRmTracks(Int_t iev=0) {
+
+  if (gAlice) {
+    delete gAlice->GetRunLoader();
+    delete gAlice; 
+    gAlice=0;
+  }
+  
+  AliRunLoader *rl = AliRunLoader::Open("galice.root");
+  if (rl == 0x0) {
+    cerr<<"Can not open session"<<endl;
+    return;
+  }
+  Int_t retval = rl->LoadgAlice();
+  if (retval) {
+    cerr<<"LoadgAlice returned error"<<endl;
+    delete rl;
+    return;
+  }
+  retval = rl->LoadHeader();
+  if (retval) {
+    cerr<<"LoadHeader returned error"<<endl;
+    delete rl;
+    return;
+  }
+  gAlice=rl->GetAliRun();
+  // Get field from galice.root
+  AliMagF *fiel = (AliMagF*)gAlice->Field();
+  // Set the conversion constant between curvature and Pt
+  AliTracker::SetFieldMap(fiel,kTRUE);
+ 
+  Double_t truevtx[3];
+  Double_t vtx[3]; 
+  Double_t errvtx[3]; 
+  Double_t diffX,diffY,diffZ;
+  Double_t diffXerr,diffYerr,diffZerr;
+  Double_t multiplicity;
+  Int_t nc;
+
+  // -----------   Create vertexer --------------------------
+  AliESDVertex *initVertex = 0;
+  TFile *invtx = new TFile("AliESDVertexMean.root");
+  initVertex = (AliESDVertex*)invtx->Get("vtxmean");
+  invtx->Close();
+  delete invtx;
+
+  AliVertexerTracks *vertexer = new AliVertexerTracks();
+  vertexer->SetVtxStart(initVertex);
+  vertexer->SetOnlyFitter();
+  vertexer->SetDebug(0); // set to 1 to see what it does
+
+  Float_t diamondxy[2];
+  diamondxy[0]=initVertex->GetXv();
+  diamondxy[1]=initVertex->GetYv();
+  //----------------------------------------------------------
+ 
+  if(gSystem->AccessPathName("AliESDs.root",kFileExists)) {
+    printf("AliESDs.root not found!\n"); 
+    return;
+  }
+  TFile *fin = TFile::Open("AliESDs.root");
+  TTree *esdTree = (TTree*)fin->Get("esdTree");
+  if(!esdTree) return;
+  AliESD *esd = 0;
+  esdTree->SetBranchAddress("ESD",&esd);
+
+  TArrayF o;
+
+  nc=0;
+
+
+  esdTree->GetEvent(iev);
+  Int_t ntracks = esd->GetNumberOfTracks();
+  printf("Number of tracks in ESD %d   :   %d\n",iev,ntracks);
+  
+  // example: do vertex without tracks 1 and 2 (AliESDtrack::GetID())
+  //
+  // 1: tell vertexer to skip those two tracks
+  //
+  Int_t nskip=2;
+  Int_t skipped[2];
+  skipped[0]=1;
+  skipped[1]=2;
+  vertexer->SetSkipTracks(nskip,skipped);  
+  AliESDVertex *vertex1 = (AliESDVertex*)vertexer->FindPrimaryVertex(esd);
+  vertex1->PrintStatus();
+  vertex1->PrintIndices();
+  delete vertex1;
+  vertex1 = 0;
+  //
+  // 2: do vertex with all tracks
+  //
+  skipped[0]=-99;
+  skipped[1]=-99;
+  vertexer->SetSkipTracks(nskip,skipped);  
+  AliESDVertex *vertex2 = (AliESDVertex*)vertexer->FindPrimaryVertex(esd);
+  vertex2->PrintStatus();
+  vertex2->PrintIndices();
+  //
+  // 3: now remove those two tracks from vertex2
+  //
+  TTree *trksTree = new TTree("trksTree","tree with tracks to be removed");
+  AliESDtrack *esdTrack = 0;
+  trksTree->Branch("tracks","AliESDtrack",&esdTrack);
+  AliESDtrack *et = esd->GetTrack(1);
+  esdTrack = new AliESDtrack(*et);
+  trksTree->Fill();
+  delete esdTrack;
+  AliESDtrack *et = esd->GetTrack(2);
+  esdTrack = new AliESDtrack(*et);
+  trksTree->Fill();
+  delete esdTrack;
+  AliVertexerTracks vt;
+  AliESDVertex *vertex3 = vt.RemoveTracksFromVertex(vertex2,trksTree,diamondxy);
+  vertex3->PrintStatus();
+  vertex3->PrintIndices();
+  delete vertex2;
+  vertex2 = 0;
+  delete vertex3;
+  vertex3 = 0;
+
+
+  delete esdTree;
+  delete fin;
+  vertexer =0;
+  delete vertexer;
+  delete initVertex;
+
+  return;
+} 
 //----------------------------------------------------------------------------
 void AliComputeVtxMeanFromESD(TString file="AliESDs.root",  
 			      Int_t mincontr=20) {
