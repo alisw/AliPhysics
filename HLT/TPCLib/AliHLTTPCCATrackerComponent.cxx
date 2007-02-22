@@ -39,7 +39,7 @@ using namespace std;
 #include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
-#include "AliHLTTPC.h"
+//#include "AliHLTTPC.h"
 #include <stdlib.h>
 #include <iostream>
 #include <errno.h>
