@@ -402,7 +402,7 @@ int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int start
   int iResult=-ENOENT;
   if (fpInputBlocks!=NULL) {
     int idx=startIdx<0?0:startIdx;
-    for ( ; idx<fCurrentEventData.fBlockCnt && iResult==-ENOENT; idx++) {
+    for ( ; (UInt_t)idx<fCurrentEventData.fBlockCnt && iResult==-ENOENT; idx++) {
       if (dt == kAliHLTAnyDataType || fpInputBlocks[idx].fDataType == dt) {
 	iResult=idx;
       }
@@ -416,7 +416,7 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
   // see header file for function documentation
   TObject* pObj=NULL;
   if (fpInputBlocks!=NULL) {
-    if (idx<fCurrentEventData.fBlockCnt) {
+    if ((UInt_t)idx<fCurrentEventData.fBlockCnt) {
       if (fpInputBlocks[idx].fPtr) {
 	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
 	if (firstWord==fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) {
@@ -477,7 +477,7 @@ AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
     }
   }
   if (idx>=0) {
-    if (idx<fCurrentEventData.fBlockCnt) {
+    if ((UInt_t)idx<fCurrentEventData.fBlockCnt) {
       dt=fpInputBlocks[idx].fDataType;
     } else {
       HLTFatal("severe internal error, index out of range");
@@ -498,7 +498,7 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const TObject* pObject)
     }
   }
   if (idx>=0) {
-    if (idx<fCurrentEventData.fBlockCnt) {
+    if ((UInt_t)idx<fCurrentEventData.fBlockCnt) {
       iSpec=fpInputBlocks[idx].fSpecification;
     } else {
       HLTFatal("severe internal error, index out of range");
@@ -638,7 +638,7 @@ int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iSize, const AliHLTCom
       bd.fSpecification = spec;
       if (pBuffer!=NULL && pBuffer!=pTgt) {
 	memcpy(pTgt, pBuffer, iSize);
-	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);	
+	//AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);	
 	//HLTDebug("copy %d bytes from %p to output buffer %p, first word %#x", iSize, pBuffer, pTgt, firstWord);
       }
       fOutputBufferFilled+=bd.fSize;
