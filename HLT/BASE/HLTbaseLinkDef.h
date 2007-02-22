@@ -21,6 +21,7 @@
 #pragma link C++ class AliHLTFileWriter;
 #pragma link C++ class AliHLTRootFileWriterComponent;
 #pragma link C++ class AliHLTRootFilePublisherComponent;
+#pragma link C++ class AliHLTMessage;
 
 #endif
 
