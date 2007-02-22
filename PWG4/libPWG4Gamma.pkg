@@ -1,4 +1,4 @@
-SRCS = AliAnaGammaDirect.cxx AliAnaGammaIsolCut.cxx AliAnaGammaHadron.cxx AliAnaGammaJet.cxx
+SRCS = AliAnaGammaDirect.cxx AliAnaGammaIsolCut.cxx AliAnaGammaHadron.cxx AliAnaGammaJet.cxx AliTriggerPHOS.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
