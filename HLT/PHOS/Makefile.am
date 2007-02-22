@@ -45,8 +45,9 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSRawAnalyzerCrudeComponent.h \
 				  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
 				  AliHLTPHOSModuleMergerComponent.h \
-                                  AliHLTPHOSFileWriterComponent.h
-				  AliHLTPHOSDDLPackedFileWriter.h\
+                                  AliHLTPHOSFileWriterComponent.h \
+				  AliHLTPHOSFileWriter.h \
+				  AliHLTPHOSDDLPackedFileWriter.h \
 				  AliHLTPHOSCellEnergiesFileWriter.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \
