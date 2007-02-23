@@ -7,14 +7,21 @@ SRCS = AliESD.cxx AliESDfriend.cxx\
        AliKalmanTrack.cxx AliExternalTrackParam.cxx \
        AliLog.cxx AliPID.cxx AliESDV0Params.cxx \
        AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
-       AliTagCreator.cxx AliTagAnalysis.cxx AliEventTagCuts.cxx AliRunTagCuts.cxx\
+       AliTagCreator.cxx AliEventTagCuts.cxx AliRunTagCuts.cxx\
        AliTrackPointArray.cxx \
        AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx \
        AliESDMultITS.cxx \
        AliESDVZERO.cxx \
-       AliMultiplicity.cxx AliXMLCollection.cxx \
+       AliMultiplicity.cxx \
        AliSelector.cxx \
        AliRawDataErrorLog.cxx
+
+CHECKXML = $(shell root-config --has-xml)
+ifeq (yes,$(CHECKXML))
+PACKCXXFLAGS := $(CXXFLAGS) -DWITHXML
+CINTFLAGS += -DWITHXML
+SRCS += AliTagAnalysis.cxx AliXMLCollection.cxx 
+endif
 
 
 HDRS:= $(SRCS:.cxx=.h) 
