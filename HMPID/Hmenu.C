@@ -2,6 +2,8 @@ AliRun     *a; AliRunLoader *al;   TGeoManager *g; //globals for easy manual man
 AliHMPID   *h; AliLoader    *hl; AliHMPIDParam *hp;
 Bool_t isGeomType=kFALSE;
 
+Int_t nEvent=0;
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void GetParam()
 {
@@ -27,7 +29,6 @@ void Hmenu()
     status+="No galice.root";
   
   GetParam();
-  
   TControlBar *pMenu = new TControlBar("horizontal",status.Data(),0,0);
     pMenu->AddButton("                     ","","");
     pMenu->AddButton("       General       ","General()"  ,"general items which do not depend on any files");
@@ -35,10 +36,11 @@ void Hmenu()
     pMenu->AddButton("       Sim data      ","SimData()"  ,"items which expect to have simulated files"    );
     pMenu->AddButton("                     ",""           ,"");
     pMenu->AddButton("       Raw data      ","RawData()"  ,"items which expect to have raw files"          );
-    pMenu->AddButton("                     ","print()"    ,"");
+    pMenu->AddButton("                     ","       "    ,"");
     pMenu->AddButton("         Test        ","Test()"     ,"all test utilities");
-    pMenu->AddButton("                     ","GetParam()" ,"");
-    pMenu->AddButton("         Quit        ",".q"         ,"close session"                                 );
+    pMenu->AddButton("      PREV EVENT     ","PrevEvent()" ,"Set the previous event"             );
+    pMenu->AddButton("      NEXT EVENT     ","NextEvent()","Set the next event"                  );
+    pMenu->AddButton("         Quit        ",".q"         ,"close session"                       );
   pMenu->Show();
 }//Menu()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -99,22 +101,23 @@ void geo (                       ) {gGeoManager->GetTopVolume()->Draw("ogl");}
   
 void du  (                       ) {h->Dump         (   );}                //utility display 
 
-void hp  (Int_t evt=0            ) {h->HitPrint  (evt);}   //print hits for requested event
+void hp  (                       ) {h->HitPrint  (nEvent);}   //print hits for requested event
 void hq  (                       ) {h->HitQA     (   );}   //hits QA plots for all events 
-void sp  (Int_t evt=0            ) {h->SdiPrint  (evt);}   //print sdigits for requested event
-void sq  (Int_t evt=0            ) {h->SdiPrint  (evt);}   //print sdigits for requested event
-void dp  (Int_t evt=0            ) {h->DigPrint  (evt);}   //print digits for requested event
+void sp  (                       ) {h->SdiPrint  (nEvent);}   //print sdigits for requested event
+void sq  (                       ) {h->SdiPrint  (nEvent);}   //print sdigits for requested event
+void dp  (                       ) {h->DigPrint  (nEvent);}   //print digits for requested event
 void dq  (                       ) {AliHMPIDReconstructor::DigQA     (al );}   //digits QA plots for all events
-void cp  (Int_t evt=0            ) {h->CluPrint  (evt);                   }   //print clusters for requested event
+void cp  (                       ) {h->CluPrint  (nEvent);                 }   //print clusters for requested event
 void cq  (                       ) {AliHMPIDReconstructor::CluQA     (al );}   //clusters QA plots for all events
 
 void ep  (                       ) {AliHMPIDTracker::EsdQA(1);            } 
 void eq  (                       ) {AliHMPIDTracker::EsdQA();             }                   
 void mp  (Double_t probCut=0.7   ) {AliHMPIDTracker::MatrixPrint(probCut);}                   
 
-
-void stack(                     )   {AliHMPIDParam::Stack();}    
-void tid  (Int_t tid,Int_t evt=0)   {AliHMPIDParam::Stack(evt,tid);} 
+void PrevEvent()                   {nEvent--;if(nEvent<0)nEvent=0;Printf("Current event is %i",nEvent);}
+void NextEvent()                   {nEvent++;Printf("Current event is %i",nEvent);}
+void stack(                     )  {AliHMPIDParam::Stack();}    
+void tid  (Int_t tid,Int_t evt=0)  {AliHMPIDParam::Stack(evt,tid);} 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void PrintMap()
