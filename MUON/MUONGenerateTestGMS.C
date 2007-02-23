@@ -26,7 +26,7 @@
 #include "AliMpConstants.h"
 #endif
 
-MUONGenerateTestGMS()
+MUONGenerateTestGMS(Bool_t print = kFALSE)
 {
   TFile f("data/GMS.root", "RECREATE");
   TClonesArray* array = new TClonesArray("TGeoHMatrix",100);
@@ -36,6 +36,8 @@ MUONGenerateTestGMS()
     m->SetUniqueID(i);
     /// rotate by small angle
     m->RotateX(i*0.01);
+    
+    if (print) m->Print();
   }
   
   f.WriteObject(array,"GMSarray");
