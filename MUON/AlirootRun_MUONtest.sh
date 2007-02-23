@@ -48,7 +48,7 @@ MuonRec.SetFillESD("MUON");
 MuonRec.SetLoadAlignData("MUON");
 // Uncoment following line to run reconstruction with the orginal tracking method
 // instead of the kalman one (default)
-// MuonRec.SetOption("MUON","Original");
+//MuonRec.SetOption("MUON","Original");
 // Use the following to change clustering method
 //MuonRec.SetOption("MUON","MLEM"); // new scheme AZ's clustering
 //MuonRec.SetOption("MUON","SIMPLEFIT"); // new scheme simple fitting
@@ -56,6 +56,9 @@ MuonRec.SetLoadAlignData("MUON");
 MuonRec.Run();
 .q
 EOF
+
+#echo "Moving Digits files back ..."
+mv MUON.Digits/MUON.Digits.root . 
 
 echo "Running Trigger efficiency  ..."
 aliroot -b >& testTriggerResults.out << EOF
@@ -73,20 +76,27 @@ MUONefficiency();
 .q
 EOF
 
-if [ "$NEVENTS" -le 20 ]; then
+echo "Running check ..."
 
-echo "Running dumps ..."
-
-aliroot -b << EOF
+aliroot -b >& testCheck.out << EOF
+gSystem->Load("libMUONevaluation");
 .L $ALICE_ROOT/MUON/MUONCheck.C+
-MUONdigits(); > check.digits
-MUONrecpoints(); > check.recpoints
-MUONrectracks(); > check.rectracks
-MUONrectrigger(); > check.rectrigger
+MUONCheck(0, 9); 
 .q
 EOF
 
-fi
+echo "Running dumps for selected event (5) ..."
+
+aliroot -b << EOF
+AliMUONData data("galice.root");
+data.DumpKine(5);       > dump.kine
+data.DumpHits(5);       > dump.hits
+data.DumpDigits(5);     > dump.digits
+data.DumpSDigits(5);    > dump.sdigits
+data.DumpRecPoints(5);  > dump.recpoints
+data.DumpRecTrigger(5); > dump.rectrigger
+.q
+EOF
 
 echo "Finished"  
 echo "... see results in test_out"
