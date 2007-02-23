@@ -27,7 +27,6 @@
 #include "AliMUONData.h"
 #include "AliMUONConstants.h"
 
-#include "AliRun.h" // for gAlice
 #include "AliLoader.h" 
 #include "AliRunLoader.h" 
 #include "AliHeader.h"
