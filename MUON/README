@@ -74,38 +74,24 @@ for hits, you have to do the following before:
 root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/test/\" , \"box\" );"); 
 
 ============================================================
- How to run MUONCheck macro
+ How to dump the content of Root data files 
 ============================================================
-To check the content of a root data file, the MUONCheck
-provides a ascii output on screen.
+To check the content of Root data files, the AliMUONData class
+provides the functions to produce an ASCII output on the screen
+which can be redirected on the file:
 
-To compile MUONCheck.C
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.includepath $ALICE_ROOT/MUON/mapping
-.L $ALICE_ROOT/MUON/MUONCheck.C++
-To Load
-gSystem->Load("$ALICE_ROOT/MUON/MUONCheck_C.so")
+aliroot
+root [0] AliMUONData data("galice.root");
+root [1] data.DumpKine(5);       > dump.kine
+root [2] data.DumpHits(5);       > dump.hits
+root [3] data.DumpDigits(5);     > dump.digits
+root [4] data.DumpSDigits(5);    > dump.sdigits
+root [5] data.DumpRecPoints(5);  > dump.recpoints
+root [6] data.DumpRecTrigger(5); > dump.rectrigger
 
-To print Kine : (default file is galice.root )
-MUONkine() or MUONkine(##,"galice.root") for the event number ##
+If the event number in the function argument is not specified,
+data are dumped for all events.
 
-To print hits : (default file is galice.root if not MUONhits("toto.root""); )
-MUONhits()  or MUONhits(##,"galice.root") for the event number ##
-
-To print digits : (default file is galice.root)
-MUONdigits()  or MUONdigits(##,"galice.root") for the event number ##
-
-To print sdigits : (default file is galice.root)
-MUONsdigits()  or MUONsdigits(##,"galice.root") for the event number ##
-
-To print rawcluster : (default file is galice.root)
-MUONrecpoints() or MUONrecpoints(##,"galice.root") for the event number ##
-
-To print trigger : (default file is galice.root)
-MUONrectrigger() or MUONrectrigger(##,"galice.root") for the event number ##
-
-....
 
 ============================================================
  How to check the Geometry with the new Geometrical modeler
