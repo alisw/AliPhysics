@@ -57,9 +57,6 @@
 #pragma link C++ class AliMUONRawStreamTracker+;
 #pragma link C++ class AliMUONRawStreamTrigger+;
 
-// debug
-#pragma link C++ class AliMUONCheck+;
-
 #endif
 
 

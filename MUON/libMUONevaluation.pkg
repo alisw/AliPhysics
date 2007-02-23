@@ -1,6 +1,9 @@
 # $Id$
 
-SRCS:= AliMUONPairLight.cxx AliMUONTrackLight.cxx      
+SRCS:= AliMUONPairLight.cxx \
+       AliMUONTrackLight.cxx \
+       AliMUONCheck.cxx
+            
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONevaluationLinkDef.h

@@ -5,6 +5,7 @@
 
 #pragma link C++ class AliMUONPairLight+;
 #pragma link C++ class AliMUONTrackLight+;
+#pragma link C++ class AliMUONCheck+;
 
 #endif
 
