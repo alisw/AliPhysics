@@ -33,6 +33,9 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
 
   private:
     AliMUONGMSSubprocessor(const AliMUONGMSSubprocessor&); // Not implemented
+
+    UInt_t ProcessFile(const TString& filename);
+
     // static data members
     static const Int_t    fgkSystem;           ///< The data system
     static const TString  fgkDataId;           ///< The data Id

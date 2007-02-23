@@ -30,6 +30,7 @@
 #include <TTimeStamp.h>
 #include <TFile.h>
 #include <TClonesArray.h>
+#include <TObjString.h>
 #include <Riostream.h>
 
 ClassImp(AliMUONGMSSubprocessor)
@@ -38,7 +39,7 @@ const Int_t    AliMUONGMSSubprocessor::fgkSystem = AliPreprocessor::kDAQ;
 const TString  AliMUONGMSSubprocessor::fgkDataId = "GMS";
 const TString  AliMUONGMSSubprocessor::fgkMatrixArrayName = "GMSarray";
 
-//______________________________________________________________________________________________
+//______________________________________________________________________________
 AliMUONGMSSubprocessor::AliMUONGMSSubprocessor(AliMUONPreprocessor* master) 
   : AliMUONVSubprocessor(master, "GMS", "Upload GMS matrices to OCDB"),
     fTransformer(true)
@@ -47,31 +48,36 @@ AliMUONGMSSubprocessor::AliMUONGMSSubprocessor(AliMUONPreprocessor* master)
   fTransformer.ReadGeometryData("volpath.dat", "transform.dat");
 }
 
-//______________________________________________________________________________________________
+//______________________________________________________________________________
 AliMUONGMSSubprocessor::~AliMUONGMSSubprocessor()
 {
 /// Destructor
 }
 
-//______________________________________________________________________________________________
-UInt_t AliMUONGMSSubprocessor::Process(TMap* /*dcsAliasMap*/)
+
+//
+// private methods
+//
+
+
+//______________________________________________________________________________
+UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
 {
 /// Convert TGeoHMatrix to AliAlignObjMatrix and fill them into AliTestDataDCS object
 
-  const char* fileName 
-    = Master()->GetFile(fgkSystem, fgkDataId, fgkDataId);
-  if ( ! fileName) {
-    AliErrorStream() << "File not found" << endl;
-    return 1;
-  }  
+  AliInfoStream() << "Processing file " << fileName << endl;
 
   // Open root file
-  TFile f(fileName);
+  TFile f(fileName.Data());
+  if ( ! f.IsOpen() ) {
+    AliErrorStream() << "Cannot open file " << fileName << endl;
+    return 1;
+  }  
   
   // Get array with matrices
   TClonesArray* array = (TClonesArray*)f.Get(fgkMatrixArrayName);
   if ( ! array ) {
-    AliErrorStream() << "TClonesArray with not found in file " 
+    AliErrorStream() << "TClonesArray not found in file " 
        << fileName << endl;
     return 1;
   }  
@@ -93,6 +99,29 @@ UInt_t AliMUONGMSSubprocessor::Process(TMap* /*dcsAliasMap*/)
 
   // Clear MisAlignArray in transformer
   fTransformer.ClearMisAlignmentData();
+
+  return result;
+}  
+
+//
+// public methods
+//
+
+
+//______________________________________________________________________________
+UInt_t AliMUONGMSSubprocessor::Process(TMap* /*dcsAliasMap*/)
+{
+/// Process GMS alignment files
+
+  UInt_t result = 0;
+  TList* sources = Master()->GetFileSources(fgkSystem, fgkDataId);
+  TIter next(sources);
+  TObjString* o(0x0);
+  while ( ( o = static_cast<TObjString*>(next()) ) ) {
+    TString fileName(Master()->GetFile(fgkSystem, fgkDataId, o->GetName()));
+    result += ProcessFile(fileName);
+  }
+  delete sources;
 
   return result;
 }
