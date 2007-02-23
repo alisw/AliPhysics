@@ -16,7 +16,9 @@
 #include <TTask.h>        //base class
 #include <TVector3.h>     //fields 
 
-class TClonesArray;
+class TClonesArray; //CkovAngle()
+class AliESDtrack;  //CkovAngle()
+
 class AliHMPIDRecon : public TTask 
 {
 public : 
@@ -24,8 +26,7 @@ public :
     virtual ~AliHMPIDRecon()                                                          {}
 
   
-  Double_t CkovAngle    (TClonesArray *pCluLst,Int_t &iNaccepted);                                                         //reconstructed Theta Cerenkov
-  Double_t CkovSigma2   (                                                                   )const{ return fCkovSigma2;} //track ckov angle error squared
+  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst                            );                           //reconstructed Theta Cerenkov
   Double_t FindPhotCkov (Double_t cluX,Double_t cluY                                        );     //find ckov angle for single photon candidate
   Double_t FindPhotPhi  (Double_t cluX,Double_t cluY                                        );     //find phi angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
@@ -35,11 +36,12 @@ public :
   void     Propagate    (const TVector3 &dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
   void     Refract      (      TVector3 &dir,                    Double_t n1,    Double_t n2)const;//refract photon on the boundary
   Double_t TracePhot    (Double_t ckovTh,Double_t ckovPh,TVector2 &pos                      )const;//trace photon created by track to PC 
-  void     SetTrack     (Double_t th,Double_t ph,Double_t x,Double_t y                      ){fTrkDir.SetMagThetaPhi(1,th,ph);  fTrkPos.Set(x,y);}//set track
+  void     SetTrack     (Double_t x,Double_t y,Double_t th,Double_t ph                      ){fTrkDir.SetMagThetaPhi(1,th,ph);  fTrkPos.Set(x,y);}//set track
   Double_t SigLoc       (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to cathode segmetation
   Double_t SigGeom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknown photon origin
   Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
   Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma
+  enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
 protected:
   static const Double_t fgkRadThick;                      //radiator thickness
   static const Double_t fgkWinThick;                      //window thickness

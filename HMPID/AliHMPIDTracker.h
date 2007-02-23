@@ -5,8 +5,8 @@
 #include "AliHMPID.h"   //Recon()
 #include <AliRun.h>     //Recon()
 
-class AliESD;           
-
+class AliESD;      //Recon()     
+class AliESDtrack; //IntTrkCha()
 class AliHMPIDTracker : public AliTracker
 {
 public:
@@ -21,8 +21,8 @@ public:
          Int_t       RefitInward    (AliESD *                   )       {return 0;} //pure virtual from AliTracker 
          void        UnloadClusters (                           )       {         } //pure virtual from AliTracker 
 //private part  
-  enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5};
-  static Int_t       Recon(AliESD *pEsd,TObjArray *pCluAll);                        //do actual job 
+  static Int_t       IntTrkCha(AliESDtrack *pTrk,Float_t &x,Float_t &y);                    //find track-chamber intersection, retuns chamber ID
+  static Int_t       Recon    (AliESD *pEsd,TObjArray *pCluAll        );                    //do actual job, returns status code  
 protected:
   ClassDef(AliHMPIDTracker,0)
 };//class AliHMPIDTracker

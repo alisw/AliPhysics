@@ -1,15 +1,15 @@
-AliRun *a;     AliRunLoader *al;   TGeoManager *g; //globals for easy manual manipulations
-AliHMPID   *r; AliLoader    *rl; AliHMPIDParam *rp;
+AliRun     *a; AliRunLoader *al;   TGeoManager *g; //globals for easy manual manipulations
+AliHMPID   *h; AliLoader    *hl; AliHMPIDParam *hp;
 Bool_t isGeomType=kFALSE;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void GetParam()
 {
   isGeomType=!isGeomType;
-  if(g) delete g;  if(rp) delete rp; //delete current TGeoManager and AliHMPIDParam
+  if(g) delete g;  if(hp) delete hp; //delete current TGeoManager and AliHMPIDParam
   if(isGeomType) g=TGeoManager::Import("geometry.root");
   else           g=TGeoManager::Import("misaligned_geometry.root");
-  rp=AliHMPIDParam::Instance();
+  hp=AliHMPIDParam::Instance();
 }//GetParam()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hmenu()
@@ -20,9 +20,9 @@ void Hmenu()
     al=AliRunLoader::Open();                                                //try to open galice.root from current dir 
     if(gAlice) delete gAlice;                                               //in case we execute this in aliroot delete default AliRun object 
     al->LoadgAlice(); a=al->GetAliRun();                                    //take new AliRun object from galice.root   
-    rl=al->GetDetectorLoader("HMPID");  r=(AliHMPID*)a->GetDetector("HMPID");  //get HMPID object from galice.root
+    hl=al->GetDetectorLoader("HMPID");  h=(AliHMPID*)a->GetDetector("HMPID");  //get HMPID object from galice.root
     
-    status+=Form(" with %i event(s)",al->GetNumberOfEvents()); status+=(r)? " with HMPID": " without HMPID";
+    status+=Form(" with %i event(s)",al->GetNumberOfEvents()); status+=(h)? " with HMPID": " without HMPID";
   }else  
     status+="No galice.root";
   
@@ -45,23 +45,24 @@ void Hmenu()
 void General()
 {         
   TControlBar *pMenu = new TControlBar("vertical","General purpose",100,50);  
-    pMenu->AddButton("       Debug ON      ","don();"                    ,"Switch debug on-off"                        );   
-    pMenu->AddButton("       Debug OFF     ","doff();"                   ,"Switch debug on-off"                        );   
-    pMenu->AddButton("        Geo GUI      ","geo();"                    ,"Shows geometry"                             ); 
-    pMenu->AddButton("        Browser      ","new TBrowser;"             ,"Start ROOT TBrowser"                        );
+    pMenu->AddButton("Debug ON","don();"                    ,"Switch debug on-off"                        );   
+    pMenu->AddButton("Debug OFF","doff();"                   ,"Switch debug on-off"                        );   
+    pMenu->AddButton("Geo GUI","geo();"                    ,"Shows geometry"                             ); 
+    pMenu->AddButton("Browser","new TBrowser;"             ,"Start ROOT TBrowser"                        );
   pMenu->Show();  
 }//General()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimData()
 {
-  TControlBar *pMenu = new TControlBar("vertical","Sim data",340,50);  
-    pMenu->AddButton("Display ALL chambers ","ed();"      ,"Display Fast");
-    pMenu->AddButton("      HITS QA        ","hqa()"      ,"QA plots for hits: hqa()");
-    pMenu->AddButton("     Print Stack     ","stack();"   ,"To print hits:     hp(evt)");
-    pMenu->AddButton("     Print hits      ","hp();"      ,"To print hits:     hp(evt)");
-    pMenu->AddButton("    Print sdigits    ","sp();"      ,"To print sdigits:  sp(evt)");
-    pMenu->AddButton("    Print digits     ","dp();"      ,"To print digits:   dp(evt)");
-    pMenu->AddButton("   Print clusters    ","cp();"      ,"To print clusters: cp(evt)");
+  TControlBar *pMenu = new TControlBar("vertical","Sim data",310,50);  
+    pMenu->AddButton("Display from files","hed();"    ,"Display Fast");
+    pMenu->AddButton("Display simulated" ,"sed();"    ,"Display Fast");
+    pMenu->AddButton("HITS QA"           ,"hqa()"     ,"QA plots for hits: hqa()");
+    pMenu->AddButton("Print stack"       ,"stack();"  ,"To print hits:     hp(evt)");
+    pMenu->AddButton("Print hits"        ,"hp();"     ,"To print hits:     hp(evt)");
+    pMenu->AddButton("Print sdigits"     ,"sp();"     ,"To print sdigits:  sp(evt)");
+    pMenu->AddButton("Print digits"      ,"dp();"     ,"To print digits:   dp(evt)");
+    pMenu->AddButton("Print clusters"    ,"cp();"     ,"To print clusters: cp(evt)");
   pMenu->Show();         
 }//SimData()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -96,15 +97,15 @@ void don() {  Printf("DebugON");   AliLog::SetGlobalDebugLevel(AliLog::kDebug);}
 
 void geo (                       ) {gGeoManager->GetTopVolume()->Draw("ogl");}
   
-void du  (                       ) {r->Dump         (   );}                //utility display 
+void du  (                       ) {h->Dump         (   );}                //utility display 
 
-void hp  (Int_t evt=0            ) {r->HitPrint  (evt);}   //print hits for requested event
-void hq  (                       ) {r->HitQA     (   );}   //hits QA plots for all events 
-void sp  (Int_t evt=0            ) {r->SdiPrint  (evt);}   //print sdigits for requested event
-void sq  (Int_t evt=0            ) {r->SdiPrint  (evt);}   //print sdigits for requested event
-void dp  (Int_t evt=0            ) {r->DigPrint  (evt);}   //print digits for requested event
+void hp  (Int_t evt=0            ) {h->HitPrint  (evt);}   //print hits for requested event
+void hq  (                       ) {h->HitQA     (   );}   //hits QA plots for all events 
+void sp  (Int_t evt=0            ) {h->SdiPrint  (evt);}   //print sdigits for requested event
+void sq  (Int_t evt=0            ) {h->SdiPrint  (evt);}   //print sdigits for requested event
+void dp  (Int_t evt=0            ) {h->DigPrint  (evt);}   //print digits for requested event
 void dq  (                       ) {AliHMPIDReconstructor::DigQA     (al );}   //digits QA plots for all events
-void cp  (Int_t evt=0            ) {r->CluPrint  (evt);                   }   //print clusters for requested event
+void cp  (Int_t evt=0            ) {h->CluPrint  (evt);                   }   //print clusters for requested event
 void cq  (                       ) {AliHMPIDReconstructor::CluQA     (al );}   //clusters QA plots for all events
 
 void ep  (                       ) {AliHMPIDTracker::EsdQA(1);            } 
@@ -115,79 +116,6 @@ void mp  (Double_t probCut=0.7   ) {AliHMPIDTracker::MatrixPrint(probCut);}
 void stack(                     )   {AliHMPIDParam::Stack();}    
 void tid  (Int_t tid,Int_t evt=0)   {AliHMPIDParam::Stack(evt,tid);} 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void tst()
-{
-  TCanvas *pC=new TCanvas("pads","View from electronics side, IP is behind the picture.",1000,900);  pC->ToggleEventStatus();
-  SimEvt();
-}//tst()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimEvt()
-{
-//sample track         
-  Int_t ch=1;
-  Float_t th=8*TMath::DegToRad();                     
-  Float_t ph=gRandom->Rndm()*TMath::TwoPi(); 
-  Float_t radx=gRandom->Rndm()*AliHMPIDDigit::SizeAllX(); 
-  Float_t rady=gRandom->Rndm()*AliHMPIDDigit::SizeAllY();
-  Float_t simCkov=0.63,simErr=0; Int_t simN=8,recN=0;
-  
-  AliHMPIDRecon rec; rec.SetTrack(th,ph,radx,rady);                                                                
-//sample list of hits  
-  TClonesArray hl("AliHMPIDHit"); Int_t hc=0;  
-  TVector2 pc;//tmp position
-  
-  Int_t kCerenkov=50000050,kFeedback=50000051;
-  Int_t tn=0;
-                                                                                   new(hl[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,tn++,radx  ,rady    );   //mip hit
-  for(int i=0;i<simN;i++){rec.TracePhot(simCkov,gRandom->Rndm()*TMath::TwoPi(),pc);new(hl[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,tn++,pc.X(),pc.Y());}  //photon hits
-  for(int i=0;i<10;i++)  { Float_t x=gRandom->Rndm()*130,y=gRandom->Rndm()*126;    new(hl[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,tn++,   x  ,   y  );}  //bkg hits
-//do reconstruction
-                                                        TClonesArray sl("AliHMPIDDigit");              AliHMPIDv1::Hit2Sdi(&hl,&sl);                               
-  TObjArray dl(7);  for(Int_t i=0;i<7;i++) dl.AddAt(new TClonesArray("AliHMPIDDigit"),i);       AliHMPIDDigitizer::Sdi2Dig(&sl,&dl);     
-  TObjArray cl(7);  for(Int_t i=0;i<7;i++) cl.AddAt(new TClonesArray("AliHMPIDCluster"),i); AliHMPIDReconstructor::Dig2Clu(&dl,&cl);
-  
-  
-                             TClonesArray* pDigLst=(TClonesArray*)dl.At(ch);
-                             TClonesArray* pCluLst=(TClonesArray*)cl.At(ch);
-                    
-          Int_t recN=0;  Float_t recCkov=rec.CkovAngle(pCluLst,recN);    //reconstruct the ring
-  
-  AliESDtrack trk; trk.SetHMPIDtrk(radx,rady,th,ph);  trk.SetHMPIDmip(radx,rady,340,recN); trk.SetHMPIDsignal(recCkov); trk.SetHMPIDchi2(rec.CkovSigma2());
-  
-  Printf("Start of EVENT\n");                 
-  Printf("SDI------SDI---------SDI--------SDI------SDI------SDI");sl.Print();Printf("");
-  Printf("DIG------DIG---------DIG--------DIG------DIG------DIG");dl.Print();Printf("");                   
-  Printf("HIT------HIT---------HIT--------HIT------HIT------HIT");hl.Print();Printf("");
-  Printf("CLU------CLU---------CLU--------CLU------CLU------CLU");cl.Print();Printf("");                     
-  Printf("End of EVENT\n");                 
-  
-  
-  DrawEvt(&hl,pDigLst,pCluLst,&trk);  
-}//SimEvt()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawEvt(TClonesArray *pHitLst,TClonesArray *pDigLst,TClonesArray *pCluLst,AliESDtrack *pTrk)
-{
-//visualization  
-  TPolyLine    *pRing  =new TPolyLine;     pRing->SetLineColor(kMagenta);     
-  
-  Float_t recCkov=pTrk->GetHMPIDsignal();  Float_t recErr=TMath::Sqrt(pTrk->GetHMPIDchi2());
-  
-  Float_t trkTh,trkPh,trkX,trkY,mipX,mipY; pTrk->GetHMPIDtrk(trkX,trkY,trkTh,trkPh);  Int_t mipQ,recN; pTrk->GetHMPIDmip(mipX,mipY,mipQ,recN);
-  AliHMPIDRecon rec; rec.SetTrack(trkTh,trkPh,trkX,trkY);
-
-  TVector2 pos;    for(int j=0;j<100;j++){rec.TracePhot(recCkov,j*0.0628,pos); pRing->SetNextPoint(pos.X(),pos.Y());}  
-  
-  gPad->Clear(); TButton *pBtn=new TButton("Next","SimEvt()",0,0,0.07,0.05);   pBtn->Draw(); DrawPc(0);
-  
-  pRing->Draw();
-  pDigLst->Draw();
-  pCluLst->Draw();
-  pHitLst->Draw();  
-  TLatex txt; txt.SetTextSize(0.02);
-//  txt.DrawLatex(20,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,simCkov,simErr,simN));
-  txt.DrawLatex(25,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,recCkov,recErr,recN));
-//  txt.DrawLatex(0 ,127,Form("#theta=%.2f#circ   #phi=%.2f#circ @(%.2f,%.2f) ",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),radx,rady));
-}//DrawEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void PrintMap()
 {
@@ -404,26 +332,6 @@ void HitQA(Double_t cut,Double_t cutele,Double_t cutR)
   gBenchmark->Show("HitsPlots");
 }//HitQA()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void RecWithStack()
-{
-  al->LoadHeader();al->LoadKinematics();
-  AliStack *pStk=al->Stack();  
-  
-  AliESD *pEsd=new AliESD;
-  for(Int_t iTrk=0;iTrk<pStk->GetNtrack();iTrk++){//stack loop
-    TParticle *pPart=pStk->Particle(iTrk);
-    if(pPart->GetPDG()->Charge()==0) continue; //neutral particles are not reconstructed
-    pEsd->AddTrack(new AliESDtrack(pPart));
-  }//stack loop
-  
-  pEsd->Print();
-  AliTracker::SetFieldMap(new AliMagF,1);
-  AliHMPIDTracker t; 
-  rl->LoadRecPoints(); 
-  t.LoadClusters(rl->TreeR()); 
-  t.PropagateBack(pEsd);
-  rl->UnloadRecPoints();
-}//RecWithStack()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CluQA(AliRunLoader *pAL)
 {
@@ -663,32 +571,120 @@ void DrawPc(Bool_t isFill)
   }//PC loop      
 }//DrawPc()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void ReadEvt() 
-{
-// Display digits, reconstructed tracks intersections and HMPID rings if available 
-// Arguments: none
-//   Returns: none    
-  TFile *pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pEsdFl->IsOpen()) return;//open AliESDs.root
-  TTree *pEsdTr=(TTree*) pEsdFl->Get("esdTree"); if(!pEsdTr)                      return;//get ESD tree
-                                                                 
-  AliESD *pEsd=0;  pEsdTr->SetBranchAddress("ESD", &pEsd);
+void hed()
+{//event display from files
+  static TCanvas *pC=0;
+  static Int_t iEvt=0;
+  static Int_t iEvtTot=0;
+  static TFile *pEsdFl=0;
+  static TTree *pEsdTr=0;
+  static AliESD *pEsd=0;
   
-  for(Int_t iEvt=0;iEvt<pEsdTr->GetEntries();iEvt++) {                //events loop
+  if(!pC){
+    if(hl==0) {Printf("hed: no HMPID loader");return;}
+    Printf("Opening session");
+    pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pEsdFl->IsOpen()) return;//open AliESDs.root
+    pEsdTr=(TTree*) pEsdFl->Get("esdTree"); if(!pEsdTr)                      return;//get ESD tree
+    pEsdTr->SetBranchAddress("ESD", &pEsd);
+    hl->LoadDigits(); hl->LoadRecPoints();
+    iEvtTot=pEsdTr->GetEntries();
+    pC=new TCanvas("hed","View from electronics side, IP is behind the picture.",1000,900);  pC->ToggleEventStatus(); pC->Divide(3,3);
+    pC->cd(7); TButton *pBtn=new TButton("Next","hed()",0,0,0.2,0.1);   pBtn->Draw(); 
+  }
+ 
+  if(iEvt<iEvtTot){
+    pEsdTr->GetEntry(iEvt); al->GetEvent(iEvt); hl->TreeD()->GetEntry(0); hl->TreeR()->GetEntry(0);
+    TLatex txt;   pC->cd(3);  txt.DrawLatex(0.2,0.2,Form("Event %i Total %i",iEvt,iEvtTot));
+    DrawEvt(pC,h->DigLst(),h->CluLst(),pEsd);
+    iEvt++;
+  }else{
+    Printf("Last event");
+    pC->Clear();
+  }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void sed()
+{
+
+  static TCanvas *pC=0;
+  
+  if(!pC){
+    pC=new TCanvas("hed","Simulated evets-View from electronics side, IP is behind the picture.",1000,900); pC->Divide(3,3);
+    pC->cd(7); TButton *pBtn=new TButton("Next","sed()",0,0,0.2,0.1);   pBtn->Draw(); 
+  }
+
+
+  
+  AliHMPIDRecon rec;  
+
+  TClonesArray lh("AliHMPIDHit"); 
+  TClonesArray ls("AliHMPIDDigit"); 
+  TObjArray    ld(7); for(Int_t i=0;i<7;i++) ld.AddAt(new TClonesArray("AliHMPIDDigit"),i);
+  TObjArray    lc(7); for(Int_t i=0;i<7;i++) lc.AddAt(new TClonesArray("AliHMPIDCluster"),i);
+  AliESD esd;
+  
+  
+  EsdFromStack(&esd);
+  HitsFromEsd(&esd,&lh);
+  
+
+
+
+             AliHMPIDv1::Hit2Sdi(&lh,&ls);                               
+      AliHMPIDDigitizer::Sdi2Dig(&ls,&ld);     
+  AliHMPIDReconstructor::Dig2Clu(&ld,&lc);
+//        AliHMPIDTracker::Recon(&esd,&cl);
+  
+  DrawEvt(pC,&ld,&lc,&esd);  
+}//SimEvt()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
+{//draws all the objects of current event
+
+  AliHMPIDRecon rec;  
+  TPolyMarker *pTxC[7];  TPolyMarker *pRin[7]; //intesections and rings
+  for(Int_t ch=0;ch<7;ch++){
+    pTxC[ch]=new TPolyMarker; pTxC[ch]->SetMarkerStyle(2); pTxC[ch]->SetMarkerColor(kRed); pTxC[ch]->SetMarkerSize(3);
+    pRin[ch]=new TPolyMarker; pRin[ch]->SetMarkerStyle(6); pRin[ch]->SetMarkerColor(kMagenta);
+  }
+  
+  
+  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop to collect cerenkov rings and intersection points
+    AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
+    Int_t ch=pTrk->GetHMPIDcluIdx();
+    if(ch<0) continue; //this track does not hit HMPID
+    ch/=1000000; 
+    Float_t th,ph,xPc,yPc; pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  //get info on current track
+    pTxC[ch]->SetNextPoint(xPc,yPc);                          //add new intersection point
     
+    Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
     
-    
-    pEsdTr->GetEntry(iEvt);                                       //get ESD for this event   
-    for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//ESD tracks loop
-      AliESDtrack *pTrk = pEsd->GetTrack(iTrk);             //
-    }//ESD tracks loop
-    
-    al->GetEvent(iEvt);   rl->TreeD()->GetEntry(0); //get digits list
-    
-    
-  }//events loop
-  delete pEsd;  pEsdFl->Close();//close AliESDs.root
-//  rl->UnloadDigits();
-}//ReadEvt()
+    if(ckov>0){
+      rec.SetTrack(xPc,yPc,th,ph);
+     TVector2 pos;  for(int j=0;j<100;j++){rec.TracePhot(ckov,j*0.0628,pos); pRin[ch]->SetNextPoint(pos.X(),pos.Y());}      
+    }
+  }//tracks loop
+      
+  for(Int_t iCh=0;iCh<7;iCh++){//chambers loop    
+    switch(iCh){
+      case 6: pC->cd(1); break; case 5: pC->cd(2); break;
+      case 4: pC->cd(4); break; case 3: pC->cd(5); break; case 2: pC->cd(6); break;
+                                case 1: pC->cd(8); break; case 0: pC->cd(9); break;
+    }
+    gPad->SetEditable(kTRUE); gPad->Clear();
+    DrawPc(0);
+    ((TClonesArray*)pDigLst->At(iCh))->Draw();  //draw digits
+    ((TClonesArray*)pCluLst->At(iCh))->Draw();  //draw clusters
+                            pTxC[iCh]->Draw();  //draw intersections
+                            pRin[iCh]->Draw();  //draw rings
+    gPad->SetEditable(kFALSE);
+  }//chambers loop
+//  TLatex txt; txt.SetTextSize(0.02);
+//  txt.DrawLatex(20,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,simCkov,simErr,simN));
+//  txt.DrawLatex(25,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,recCkov,recErr,recN));
+//  txt.DrawLatex(0 ,127,Form("#theta=%.2f#circ   #phi=%.2f#circ @(%.2f,%.2f) ",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),radx,rady));
+//  Printf("DIG------DIG---------DIG--------DIG------DIG------DIG");pDigLst->Print();Printf("");                   
+}//DrawEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void t1(Int_t case=1)
 {
@@ -722,7 +718,38 @@ void t1(Int_t case=1)
   cl->Print();  
 }//t1()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void EsdFromStack(AliESD *pEsd)
+{
+  al->LoadHeader();al->LoadKinematics();
+  AliStack *pStk=al->Stack();  
+  
+  for(Int_t iTrk=0;iTrk<pStk->GetNtrack();iTrk++){//stack loop
+    TParticle *pPart=pStk->Particle(iTrk);
+    if(pPart->GetPDG()->Charge()==0) continue; //neutral particles are not reconstructed
+    if(pPart->GetFirstMother()>0)    continue; //do not consider secondaries
+    AliESDtrack trk(pPart);
+    pEsd->AddTrack(&trk);
+  }//stack loop  
+}//EsdFromStack()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void HitsFromEsd(AliESD *pEsd, TClonesArray *pHitLst)
+{
+  AliHMPIDRecon rec;
+  const Int_t kCerenkov=50000050,kFeedback=50000051;
+  Int_t hc=0; TVector2 pos;
+  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop
+    AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
+    Float_t xRa,yRa;
+    Int_t ch=AliHMPIDTracker::IntTrkCha(pTrk,xRa,yRa);
+    if(ch<0) continue; //this track does not hit HMPID
+    Float_t ckov=0.63;
 
-
-
-
+    Float_t th,ph,xPc,yPc,; pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  
+                          new((*pHitLst)[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,iTrk,xPc                ,yPc);                 //mip hit
+    for(int i=0;i<4;i++)  new((*pHitLst)[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,iTrk,gRandom->Rndm()*130,gRandom->Rndm()*126); //bkg hits 4 per track
+    for(int i=0;i<16;i++){
+      rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi(),pos);
+                          new((*pHitLst)[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,iTrk,pos.X(),pos.Y());}                      //photon hits  
+  }//tracks loop    
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

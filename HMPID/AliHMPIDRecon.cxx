@@ -26,14 +26,7 @@
 #include <TRotation.h>     //TracePhoton()
 #include <TH1D.h>          //HoughResponse()
 #include <TClonesArray.h>  //CkovAngle()
-
-#include <TTree.h>         //Display()
-#include <TFile.h>         //Display()
-#include <AliESD.h>        //Display()
-#include <TPolyMarker.h>   //Display()
-#include <TLatex.h>        //Display()
-#include <TCanvas.h>       //Display()
-
+#include <AliESDtrack.h>   //CkovAngle()
 
 const Double_t AliHMPIDRecon::fgkRadThick=1.5;
 const Double_t AliHMPIDRecon::fgkWinThick=0.5;
@@ -61,29 +54,46 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::CkovAngle(TClonesArray *pCluLst,Int_t &iNaccepted)
+void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst)
 {
 // Pattern recognition method based on Hough transform
-// Arguments: pCluLst  - list of clusters for this chamber   
-//   Returns:          - track ckov angle, [rad], 
+// Arguments:   pTrk     - track for which Ckov angle is to be found
+//              pCluLst  - list of clusters for this chamber   
+//   Returns:            - track ckov angle, [rad], 
   
   if(pCluLst->GetEntries()>200) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
   else                          fIsWEIGHT = kFALSE;
 
   // Photon Flag:  Flag = 0 initial set; Flag = 1 good candidate (charge compatible with photon); Flag = 2 photon used for the ring;
+  Float_t xPc,yPc,th,ph;      pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  SetTrack(xPc,yPc,th,ph); //initialize this track            
 
+  
+  
+  Float_t dMin=999,mipX=-1,mipY=-1;Int_t chId=-1,mipId=-1,mipQ=-1;                                                                           
   fPhotCnt=0;                                                      
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
-    if(pClu->Q()>100) continue;                                                             //avoid MIP clusters from bkg
-    
-    fPhotCkov[fPhotCnt]=FindPhotCkov(pClu->X(),pClu->Y());                                  //find ckov angle for this  photon candidate
-    fPhotCnt++;         //increment counter of photon candidates
+    chId=pClu->Ch();
+    if(pClu->Q()>100){                                                                        //charge compartible with MIP clusters      
+      Float_t dX=xPc-pClu->X(),dY=yPc-pClu->Y(),d =TMath::Sqrt(dX*dX+dY*dY);                  //distance between current cluster and intersection point
+      if( d < dMin) {mipId=iClu; dMin=d;mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();}//current cluster is closer, overwrite data for min cluster
+    }else{                                                                                    //charge compartible with photon cluster
+      fPhotCkov[fPhotCnt]=FindPhotCkov(pClu->X(),pClu->Y());                                  //find ckov angle for this  photon candidate
+      fPhotCnt++;         //increment counter of photon candidates
+    }
   }//clusters loop
+  Int_t iNacc=FlagPhot(HoughResponse());                                   //flag photons according to individual theta ckov with respect to most probable
 
-  iNaccepted=FlagPhot(HoughResponse()); //flag photons according to individual theta ckov with respect to most probable track theta ckov
-  if(iNaccepted<1) return -11; 
-  else             return FindRingCkov(pCluLst->GetEntries());  //find best Theta ckov for ring i.e. track
+                 pTrk->SetHMPIDmip      (mipX,mipY,mipQ,iNacc);                 //store mip info 
+
+  if(mipId==-1) {pTrk->SetHMPIDsignal   (kMipQdcCut);  return;}                 //no clusters with QDC more the threshold at all
+  if(dMin>1)    {pTrk->SetHMPIDsignal   (kMipDistCut); return;}                 //closest cluster with enough charge is still too far from intersection
+                 pTrk->SetHMPIDcluIdx(chId,mipId); 
+  if(iNacc<1)    pTrk->SetHMPIDsignal(kNoPhotAccept);                         //no photon candidates is accepted  
+  else           pTrk->SetHMPIDsignal(FindRingCkov(pCluLst->GetEntries()));   //find best Theta ckov for ring i.e. track
+  
+                 pTrk->SetHMPIDchi2(fCkovSigma2);                              //error squared 
+
 }//ThetaCerenkov()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliHMPIDRecon::FindPhotCkov(Double_t cluX,Double_t cluY)
