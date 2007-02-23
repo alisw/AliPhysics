@@ -272,8 +272,8 @@ void Track::ImportDaughters()
   if (fLabel < 0)
     throw(eH + "label not set.");
 
-  Reve::LoadMacro("daughters_from_label.C");
-  gROOT->ProcessLine(Form("daughters_from_label(%d);", fLabel));
+  Reve::LoadMacro("kine_daughter_tracks.C");
+  gROOT->ProcessLine(Form("kine_daughter_tracks(%d);", fLabel));
 }
 
 /**************************************************************************/
