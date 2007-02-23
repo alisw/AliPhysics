@@ -18,15 +18,7 @@
 
 #include <TNamed.h>
 
-class TArrayI;
-
 #include "AliLoader.h"
-
-class TClonesArray;
-class TNamed;
-class TObjArray;
-class TTree;
-class TIterator;
 
 class AliMUONConstants;
 class AliMUONRawCluster;
@@ -37,6 +29,16 @@ class AliMUONHit;
 class AliMUONLocalTrigger;
 class AliMUONRegionalTrigger;
 class AliMUONGlobalTrigger;
+
+class AliRunLoader;
+
+class TClonesArray;
+class TNamed;
+class TObjArray;
+class TTree;
+class TIterator;
+class TArrayI;
+
 
 //__________________________________________________________________
 /////////////////////////////////////////////////////////////////////
@@ -53,6 +55,7 @@ class AliMUONData : public TNamed
   
     AliMUONData();
     AliMUONData(AliLoader * loader, const char* name, const char* title);
+    AliMUONData(const char* galiceFile);
     virtual ~AliMUONData();  
     virtual void   AddDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
     virtual void   AddSDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
@@ -85,46 +88,17 @@ class AliMUONData : public TNamed
                    /// Return reconstructed trigger tracks
     TClonesArray*  RecTriggerTracks() {return fRecTriggerTracks;}
 
-                   /// Load hits for \a i th entry in hits three
-    void           GetTrack(Int_t it) const  {
-      if (fLoader && fLoader->TreeH())
-	fLoader->TreeH()->GetEvent(it);
-    }
+    void           GetTrack(Int_t it) const;
     Int_t          GetNtracks() const;
     void           GetDigits() const;
-    
-                   /// Load sdigits tree
-    void           GetSDigits() const {
-      if (fLoader && fLoader->TreeS())
-	fLoader->TreeS()->GetEvent(0);
-    }
-                   /// Load raw clusters tree
-    void           GetRawClusters() const {
-      if (fLoader && fLoader->TreeR())
-	fLoader->TreeR()->GetEvent(0);
-    }
-                   /// Load trigger tree
-    void           GetTrigger() const {
-      if (fLoader && fLoader->TreeR())
-	fLoader->TreeR()->GetEvent(0);
-    }
-                   /// Load trigger D tree
-    void           GetTriggerD() const {
-      if (fLoader && fLoader->TreeD())
-	fLoader->TreeD()->GetEvent(0);
-    }
-                   /// Return split level
+    void           GetSDigits() const;
+    void           GetRawClusters() const;
+    void           GetTrigger() const;
+    void           GetTriggerD() const;
+    void           GetRecTracks() const;
+    void           GetRecTriggerTracks() const;
+
     Int_t          GetSplitLevel() const {return fSplitLevel;}
-                   /// Return reconstructed tracks
-    void           GetRecTracks() const {
-      if (fLoader && fLoader->TreeT())
-	fLoader->TreeT()->GetEvent(0);
-    }
-                   /// Return reconstructed trigger tracks
-    void           GetRecTriggerTracks() const {
-      if (fLoader && fLoader->TreeT())
-	fLoader->TreeT()->GetEvent(0);
-    }
 
     Bool_t        IsRawClusterBranchesInTree();
     Bool_t        IsDigitsBranchesInTree();
@@ -169,12 +143,19 @@ class AliMUONData : public TNamed
                    /// Return tree with particles
     TTree*         TreeP() {return fLoader->TreeP(); }
 
-    //    TIterator* CreateDigitIterator(AliMUONData::EChamberIteration type);
+                   // Methods to dump data
+    void DumpKine(Int_t event2Check=0);
+    void DumpHits(Int_t event2Check=0, Option_t* opt="full");
+    void DumpDigits(Int_t event2Check=0, Option_t* opt="tracks");
+    void DumpSDigits(Int_t event2Check=0, Option_t* opt="tracks");
+    void DumpRecPoints(Int_t event2Check=0, Option_t* opt="full");
+    void DumpRecTrigger(Int_t event2Check=0, Int_t write = 0, Bool_t readFromRP = kTRUE);
     
   protected: 
     AliMUONData(const AliMUONData& rhs);
     AliMUONData& operator=(const AliMUONData& rhs);
 
+    AliRunLoader*   fRunLoader; //!< Run loader pointer
     AliLoader*      fLoader;  //!< Detector Loader pointer
     TClonesArray*   fHits;    ///< One event in treeH per primary track
     TObjArray*      fDigits;  ///< One event in treeD and one branch per detection plane
@@ -205,6 +186,51 @@ private:
   ClassDef(AliMUONData,3) // Data accessor for MUON module
       
 };
+// inline functions
+
+
+/// Load hits for \a i th entry in hits three
+inline void AliMUONData::GetTrack(Int_t it) const  {
+  if (fLoader && fLoader->TreeH())
+    fLoader->TreeH()->GetEvent(it);
+}
+
+/// Load sdigits tree
+inline void AliMUONData::GetSDigits() const {
+  if (fLoader && fLoader->TreeS())
+    fLoader->TreeS()->GetEvent(0);
+}
+
+/// Load raw clusters tree
+inline void AliMUONData::GetRawClusters() const {
+  if (fLoader && fLoader->TreeR())
+    fLoader->TreeR()->GetEvent(0);
+}
+
+/// Load trigger tree
+inline void AliMUONData::GetTrigger() const {
+  if (fLoader && fLoader->TreeR())
+    fLoader->TreeR()->GetEvent(0);
+}
+
+/// Load trigger D tree
+inline void AliMUONData::GetTriggerD() const {
+  if (fLoader && fLoader->TreeD())
+    fLoader->TreeD()->GetEvent(0);
+}
+
+/// Return reconstructed tracks
+inline void AliMUONData::GetRecTracks() const {
+  if (fLoader && fLoader->TreeT())
+    fLoader->TreeT()->GetEvent(0);
+}
+
+/// Return reconstructed trigger tracks
+inline void AliMUONData::GetRecTriggerTracks() const {
+  if (fLoader && fLoader->TreeT())
+    fLoader->TreeT()->GetEvent(0);
+}
+
 
 
 #endif

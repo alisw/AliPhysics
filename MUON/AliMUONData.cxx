@@ -24,20 +24,31 @@
 ///
 
 #include "AliMUONData.h"
-
-#include "AliLog.h"
+#include "AliMUONDataIterator.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHit.h"
 #include "AliMUONDigit.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRegionalTrigger.h"
+#include "AliMUONTriggerCrateStore.h"
+#include "AliMUONTriggerCircuit.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliMUONRawCluster.h"
+
+// This is from rec, classes in base should not depend on rec !!!
 #include "AliMUONTrack.h"
 #include "AliMUONTriggerTrack.h"
+
 #include "AliRunLoader.h"
-#include "TArrayI.h"
-#include "TString.h"
+#include "AliStack.h"
+#include "AliLog.h"
+
+#include <TString.h>
+#include <TParticle.h>
+#include <TNtuple.h>
+#include <Riostream.h>
+#include <TFile.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONData)
@@ -46,6 +57,7 @@ ClassImp(AliMUONData)
 //_____________________________________________________________________________
   AliMUONData::AliMUONData():
     TNamed(),
+    fRunLoader(0x0),
     fLoader(0x0),
     fHits(0x0),
     fDigits(0x0),
@@ -73,6 +85,7 @@ ClassImp(AliMUONData)
 //_____________________________________________________________________________
 AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title):
   TNamed(name,title),
+    fRunLoader(0x0),
     fLoader(loader),
     fHits(0x0),
     fDigits(0x0),
@@ -96,6 +109,47 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
     fCurrentEvent(-1)
 {
 /// Standard constructor
+}
+
+//_____________________________________________________________________________
+AliMUONData::AliMUONData(const char* galiceFile):
+  TNamed("MUON", "MUON"),
+    fRunLoader(0x0),
+    fLoader(0x0),
+    fHits(0x0),
+    fDigits(0x0),
+    fSDigits(0x0),
+    fRawClusters(0x0),
+    fGlobalTrigger(0x0),
+    fLocalTrigger(0x0),
+    fRegionalTrigger(0x0),
+    fRecTracks(0x0),
+    fRecTriggerTracks(0x0),
+    fNhits(0),
+    fNdigits(0x0),
+    fNSdigits(0x0),
+    fNrawclusters(0x0),
+    fNglobaltrigger(0),
+    fNlocaltrigger(0),
+    fNregionaltrigger(0),
+    fNrectracks(0),
+    fNrectriggertracks(0),
+    fSplitLevel(0),
+    fCurrentEvent(-1)
+{
+/// Constructor for loading data from gAlice file
+
+  fRunLoader = AliRunLoader::Open(galiceFile, "MUONFolder", "READ");
+  if (!fRunLoader) {
+    AliError(Form("Error opening %s file \n", galiceFile));
+    return;
+  }  
+
+  fLoader = fRunLoader->GetLoader("MUONLoader");
+  if ( ! fLoader ) {
+    AliError(Form("Could get MUONLoader"));
+    return;
+  }  
 }
 
 //_____________________________________________________________________________
@@ -139,6 +193,11 @@ AliMUONData::~AliMUONData()
     fRecTriggerTracks->Delete();
     delete fRecTriggerTracks;
   }
+
+  if (fRunLoader) {
+    fRunLoader->UnloadAll();
+    delete fRunLoader;
+  }  
 }
 //____________________________________________________________________________
 void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t detElemId, 
@@ -1141,5 +1200,326 @@ AliMUONData::Print(Option_t* opt) const
       }
     }
   }
+  
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONData::DumpKine(Int_t event2Check)
+{
+  // Load kinematics
+  fRunLoader->LoadKinematics("READ");
+
+  Int_t nevents = fRunLoader->GetNumberOfEvents();
+  for (Int_t ievent=0; ievent<nevents; ievent++) {  // Event loop
+    if ( event2Check != 0 ) ievent=event2Check;
+
+    // Getting event ievent
+    fRunLoader->GetEvent(ievent); 
+
+    // Stack of particle for this event
+    AliStack* stack = fRunLoader->Stack();
+
+    Int_t nparticles = (Int_t) fRunLoader->Stack()->GetNtrack();
+    printf(">>> Event %d, Number of particles is %d \n", ievent, nparticles);
+
+    for (Int_t iparticle=0; iparticle<nparticles; iparticle++) {
+      stack->Particle(iparticle)->Print("");  
+    }
+    if (event2Check!=0) ievent=nevents;
+  }
+  fRunLoader->UnloadKinematics();
+}
+
+
+//_____________________________________________________________________________
+void 
+AliMUONData::DumpHits(Int_t event2Check, Option_t* opt)
+{
+  // Loading data
+  fLoader->LoadHits("READ");
+
+  // Event loop
+  Int_t nevents = fRunLoader->GetNumberOfEvents();
+  for (Int_t ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
+    printf(">>> Event %d \n",ievent);
+
+    // Getting event ievent
+    fRunLoader->GetEvent(ievent); 
+    SetTreeAddress("H");
+
+    // Track loop
+    Int_t ntracks = (Int_t) GetNtracks();
+    for (Int_t itrack=0; itrack<ntracks; itrack++) {
+      //Getting List of Hits of Track itrack
+      GetTrack(itrack);
+
+      Int_t nhits = (Int_t) Hits()->GetEntriesFast();
+      printf(">>> Track %d, Number of hits %d \n",itrack,nhits);
+      for (Int_t ihit=0; ihit<nhits; ihit++) {
+	AliMUONHit* mHit = static_cast<AliMUONHit*>(Hits()->At(ihit));
+	mHit->Print(opt);
+      }
+      ResetHits();
+    }
+    if (event2Check!=0) ievent=nevents;
+  }
+  fLoader->UnloadHits();
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONData::DumpDigits(Int_t event2Check, Option_t* opt)
+{
+  // Loading data
+  fLoader->LoadDigits("READ");
+  
+  // Event loop
+  Int_t firstEvent = 0;
+  Int_t lastEvent = fRunLoader->GetNumberOfEvents()-1;
+  if ( event2Check != 0 ) {
+    firstEvent = event2Check;
+    lastEvent = event2Check;
+  }  
+  
+  for ( Int_t ievent = firstEvent; ievent <= lastEvent; ++ievent ) {
+    printf(">>> Event %d \n",ievent);
+    fRunLoader->GetEvent(ievent);
+
+    AliMUONDataIterator it(this, "digit", AliMUONDataIterator::kTrackingChambers);
+    AliMUONDigit* digit;
+ 
+     while ( ( digit = (AliMUONDigit*)it.Next() ) )
+     {
+       digit->Print(opt);
+     }
+  } 
+  fLoader->UnloadDigits();
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONData::DumpSDigits(Int_t event2Check, Option_t* opt)
+{
+  // Loading data
+  fLoader->LoadSDigits("READ");
+  
+  // Event loop
+  Int_t nevents = fRunLoader->GetNumberOfEvents();
+  for (Int_t ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
+    printf(">>> Event %d \n",ievent);
+
+    // Getting event ievent
+    fRunLoader->GetEvent(ievent);
+    SetTreeAddress("S");
+    GetSDigits();
+
+    // Loop on chambers
+    Int_t nchambers = AliMUONConstants::NCh(); ;
+    for (Int_t ichamber=0; ichamber<nchambers; ichamber++) {
+      TClonesArray* digits = SDigits(ichamber);
+
+      // Loop on Sdigits
+      Int_t ndigits = (Int_t)digits->GetEntriesFast();
+      for (Int_t idigit=0; idigit<ndigits; idigit++) {
+        AliMUONDigit* mDigit = static_cast<AliMUONDigit*>(digits->At(idigit));
+        mDigit->Print(opt);
+      }
+    }
+    ResetSDigits();
+    if (event2Check!=0) ievent=nevents;
+  }
+  fLoader->UnloadSDigits();
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONData::DumpRecPoints(Int_t event2Check, Option_t* opt) 
+{
+  // Loading data
+  fLoader->LoadRecPoints("READ");
+
+  // Event loop
+  Int_t nevents = fRunLoader->GetNumberOfEvents();
+  for (Int_t ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
+    printf(">>> Event %d \n",ievent);
+
+    // Getting event ievent
+    fRunLoader->GetEvent(ievent);
+    Int_t nchambers = AliMUONConstants::NTrackingCh();
+    SetTreeAddress("RC,TC"); 
+    GetRawClusters();
+
+    // Loop on chambers
+    for (Int_t ichamber=0; ichamber<nchambers; ichamber++) {
+      char branchname[30];    
+      sprintf(branchname,"MUONRawClusters%d",ichamber+1);
+      //printf(">>>  branchname %s\n",branchname);
+
+      // Loop on rec points
+      Int_t nrecpoints = (Int_t) RawClusters(ichamber)->GetEntriesFast();
+      // printf(">>> Chamber %2d, Number of recpoints = %6d \n",ichamber+1, nrecpoints);
+      for (Int_t irecpoint=0; irecpoint<nrecpoints; irecpoint++) {
+	AliMUONRawCluster* mRecPoint = static_cast<AliMUONRawCluster*>(RawClusters(ichamber)->At(irecpoint));
+	mRecPoint->Print(opt);
+      }
+    }
+    ResetRawClusters();
+    if (event2Check!=0) ievent=nevents;
+  }
+  fLoader->UnloadRecPoints();
+}
+
+
+//_____________________________________________________________________________
+void 
+AliMUONData::DumpRecTrigger(Int_t event2Check, 
+                            Int_t write, Bool_t readFromRP)
+{
+/// Reads and dumps trigger objects from MUON.RecPoints.root
+
+  TClonesArray * globalTrigger;
+  TClonesArray * localTrigger;
+  
+  // Do NOT print out all the info if the loop runs over all events 
+  Int_t printout = (event2Check == 0 ) ? 0 : 1 ;  
+
+  // Book a ntuple for more detailled studies
+  TNtuple *tupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:slpt:shpt:uplpt:uphpt:lplpt:lplpt");
+  TNtuple *tupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","ev:LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:y11:y21:x11");
+
+  // counters
+  Int_t sLowpt=0,sHighpt=0;
+  Int_t uSLowpt=0,uSHighpt=0;
+  Int_t lSLowpt=0,lSHighpt=0;
+
+  AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();   
+  crateManager->ReadFromFile();
+
+  AliMUONGeometryTransformer* transformer = new AliMUONGeometryTransformer(kFALSE);
+  transformer->ReadGeometryData("volpath.dat", "geometry.root");
+
+  TClonesArray*  triggerCircuit = new TClonesArray("AliMUONTriggerCircuit", 234);
+
+  for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
+      AliMUONTriggerCircuit* c = new AliMUONTriggerCircuit();
+      c->SetTransformer(transformer);
+      c->Init(i,*crateManager);
+      TClonesArray& circuit = *triggerCircuit;
+      new(circuit[circuit.GetEntriesFast()])AliMUONTriggerCircuit(*c);
+      delete c;
+  }
+  
+  Char_t fileName[30];
+  if (!readFromRP) {
+      AliInfoStream() << " reading from digits \n";
+      fLoader->LoadDigits("READ");
+      sprintf(fileName,"TriggerCheckFromDigits.root");
+  } else {
+      AliInfoStream() << " reading from RecPoints \n";
+      fLoader->LoadRecPoints("READ");
+      sprintf(fileName,"TriggerCheckFromRP.root");
+  }
+
+  
+  AliMUONGlobalTrigger *gloTrg(0x0);
+  AliMUONLocalTrigger *locTrg(0x0);
+
+  Int_t nevents = fRunLoader->GetNumberOfEvents();
+  for (Int_t ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
+    if (ievent%100==0 || event2Check) 
+      AliInfoStream() << "Processing event " << ievent << endl;
+    fRunLoader->GetEvent(ievent);
+    
+    if (!readFromRP) {
+	SetTreeAddress("D,GLT"); 
+	GetTriggerD();
+    } else {    
+	SetTreeAddress("RC,TC"); 
+	GetTrigger();
+    }
+
+    globalTrigger = GlobalTrigger();
+    localTrigger = LocalTrigger();
+    
+    Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
+    Int_t nlocals  = (Int_t) localTrigger->GetEntriesFast(); // up to 234
+    if (printout) printf("###################################################\n");
+    if (printout) printf("event %d nglobal %d nlocal %d \n",ievent,nglobals,nlocals);
+
+    for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
+      gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
+      
+      sLowpt+=gloTrg->SingleLpt() ;
+      sHighpt+=gloTrg->SingleHpt() ;
+      uSLowpt+=gloTrg->PairUnlikeLpt(); 
+      uSHighpt+=gloTrg->PairUnlikeHpt();
+      lSLowpt+=gloTrg->PairLikeLpt(); 
+      lSHighpt+=gloTrg->PairLikeHpt();
+      
+      if (printout) gloTrg->Print("full");
+
+    } // end of loop on Global Trigger
+
+    for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
+      locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
+
+      if (locTrg->LoLpt()!=0) { // board is fired
+
+      if (printout) locTrg->Print("full");
+      
+      AliMUONTriggerCircuit* circuit = (AliMUONTriggerCircuit*)triggerCircuit->At(locTrg->LoCircuit()-1); 
+      
+      tupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
+      }
+      
+    } // end of loop on Local Trigger
+
+    // fill ntuple
+    tupleGlo->Fill(ievent,nglobals,gloTrg->SingleLpt(),gloTrg->SingleHpt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairLikeLpt(),gloTrg->PairLikeHpt());
+
+    ResetTrigger();
+    if (event2Check!=0) ievent=nevents;
+  } // end loop on event  
+  
+  // Print out summary if loop ran over all event
+  if (!event2Check){
+
+    printf("\n");
+    printf("=============================================\n");
+    printf("================  SUMMARY  ==================\n");
+    printf("\n");
+    printf("Total number of events processed %d \n", (event2Check==0) ? nevents : 1);
+    printf("\n");
+    printf(" Global Trigger output       Low pt  High pt\n");
+    printf(" number of Single           :\t");
+    printf("%i\t%i\t",sLowpt,sHighpt);
+    printf("\n");
+    printf(" number of UnlikeSign pair  :\t"); 
+    printf("%i\t%i\t",uSLowpt,uSHighpt);
+    printf("\n");
+    printf(" number of LikeSign pair    :\t");  
+    printf("%i\t%i\t",lSLowpt,lSHighpt);
+    printf("\n");
+    printf("=============================================\n");
+    fflush(stdout);
+  }
+  
+  if (write){
+      TFile *myFile = new TFile(fileName, "RECREATE");
+      tupleGlo->Write();
+      tupleLoc->Write();
+      myFile->Close();
+  }
+
+  fLoader->UnloadRecPoints();
+
+  delete crateManager;
+  delete transformer;
+  delete triggerCircuit;
   
 }
