@@ -145,7 +145,7 @@ void AliHMPID::CluPrint(Int_t iEvtN)const
 {
 //prints a list of HMPID clusters  for a given event
   Printf("List of HMPID clusters for event %i",iEvtN);
-  GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+  if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
   if(GetLoader()->LoadRecPoints()) return;
   
   Int_t iCluCnt=0;
