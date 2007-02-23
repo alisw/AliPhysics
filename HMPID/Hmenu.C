@@ -55,8 +55,7 @@ void General()
 void SimData()
 {
   TControlBar *pMenu = new TControlBar("vertical","Sim data",310,50);  
-    pMenu->AddButton("Display from files","hed();"    ,"Display Fast");
-    pMenu->AddButton("Display simulated" ,"sed();"    ,"Display Fast");
+    pMenu->AddButton("Display ","hed();"    ,"Display Fast");
     pMenu->AddButton("HITS QA"           ,"hqa()"     ,"QA plots for hits: hqa()");
     pMenu->AddButton("Print stack"       ,"stack();"  ,"To print hits:     hp(evt)");
     pMenu->AddButton("Print hits"        ,"hp();"     ,"To print hits:     hp(evt)");
@@ -82,6 +81,7 @@ void RawData()
 void Test()
 {         
   TControlBar *pMenu = new TControlBar("vertical","Test",820,50);  
+    pMenu->AddButton("TEST Display "      ,"sed();"    ,"Display Fast");
     pMenu->AddButton("Hits->Digits"       ,"thd();"                    ,"test hits->sdigits->digits"                 );   
     pMenu->AddButton("Segmentation"       ,"ts()"                      ,"test segmentation methods"                  );
     pMenu->AddButton("Test response"      ,"AliHMPIDParam::TestResp();","Test AliHMPIDParam response methods"         );
@@ -600,17 +600,18 @@ void hed()
   }else{
     Printf("Last event");
     pC->Clear();
+    delete pC;pC=0x0;
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void sed()
 {
 
-  static TCanvas *pC=0;
+  static TCanvas *pC1=0;
   
-  if(!pC){
-    pC=new TCanvas("hed","Simulated evets-View from electronics side, IP is behind the picture.",1000,900); pC->Divide(3,3);
-    pC->cd(7); TButton *pBtn=new TButton("Next","sed()",0,0,0.2,0.1);   pBtn->Draw(); 
+  if(!pC1){
+    pC1=new TCanvas("hed","Simulated evets-View from electronics side, IP is behind the picture.",1000,900); pC1->Divide(3,3);
+    pC1->cd(7); TButton *pBtn=new TButton("Next","sed()",0,0,0.2,0.1);   pBtn->Draw(); 
   }
 
 
@@ -635,7 +636,7 @@ void sed()
   AliHMPIDReconstructor::Dig2Clu(&ld,&lc);
 //        AliHMPIDTracker::Recon(&esd,&cl);
   
-  DrawEvt(pC,&ld,&lc,&esd);  
+  DrawEvt(pC1,&ld,&lc,&esd);  
 }//SimEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
