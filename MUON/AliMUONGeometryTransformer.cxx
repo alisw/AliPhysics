@@ -870,7 +870,7 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
 //_____________________________________________________________________________
 void AliMUONGeometryTransformer::AddAlignableVolumes() const
 {
-/// Set symbolic names to alignable objects to TGeo
+/// Set symbolic names and matrices to alignable objects to TGeo
 
   if ( ! gGeoManager ) {
     AliWarning("TGeoManager not defined.");
@@ -883,8 +883,13 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
 
     // Set module symbolic name
-    gGeoManager->SetAlignableEntry(GetModuleSymName(module->GetModuleId()), 
-                                   module->GetVolumePath());
+    TGeoPNEntry* pnEntry
+      = gGeoManager->SetAlignableEntry(GetModuleSymName(module->GetModuleId()), 
+                                       module->GetVolumePath());
+    // Set module matrix
+    pnEntry->SetMatrix(new TGeoHMatrix(*module->GetTransformation()));  
+       // the matrix will be deleted via TGeoManager                                    
+
     //cout << "Module sym name: " << GetModuleSymName(module->GetModuleId()) 
     //     << "  volPath: " << module->GetVolumePath() << endl;
 
@@ -896,8 +901,13 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
         = (AliMUONGeometryDetElement*)detElements->GetObject(j);
 	
       // Set detection element symbolic name
-      gGeoManager->SetAlignableEntry(GetDESymName(detElement->GetId()), 
-                                     detElement->GetVolumePath());
+      TGeoPNEntry* pnEntry
+        = gGeoManager->SetAlignableEntry(GetDESymName(detElement->GetId()), 
+                                         detElement->GetVolumePath());
+      // Set detection element matrix
+      pnEntry->SetMatrix(new TGeoHMatrix(*detElement->GetGlobalTransformation()));                                      
+       // the matrix will be deleted via TGeoManager                                    
+
       //cout << "DE name: " << GetDESymName(detElement->GetId()) 
       //     << "  volPath: " << detElement->GetVolumePath() << endl;
     }  
