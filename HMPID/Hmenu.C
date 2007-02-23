@@ -636,10 +636,10 @@ void sed()
   AliHMPIDReconstructor::Dig2Clu(&ld,&lc);
 //        AliHMPIDTracker::Recon(&esd,&cl);
   
-  DrawEvt(pC1,&ld,&lc,&esd);  
+  DrawEvt(pC1,&lh,&ld,&lc,&esd);  
 }//SimEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
+void DrawEvt(TCanvas *pC,TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
 {//draws all the objects of current event
 
   AliHMPIDRecon rec;  
@@ -678,6 +678,10 @@ void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
     ((TClonesArray*)pCluLst->At(iCh))->Draw();  //draw clusters
                             pTxC[iCh]->Draw();  //draw intersections
                             pRin[iCh]->Draw();  //draw rings
+    for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++) {
+      AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);
+      if(pHit->Ch()==iCh)pHit->Draw();
+    }
     gPad->SetEditable(kFALSE);
   }//chambers loop
 //  TLatex txt; txt.SetTextSize(0.02);
