@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.41  2007/02/05 10:43:25  hristov
+ * Changes for correct initialization of Geant4 (Mihaela)
+ *
  * Revision 1.40  2006/12/05 17:19:26  gustavo
  * Updated AliEMCAL::Digits2Raw, reads first provisional RCU mapping files to make Raw data with new AliCaloAltroMapping and AliCaloRawStream
  *
@@ -47,7 +50,6 @@ class AliEMCAL : public AliDetector {
   }
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;   
-  //  virtual void  
   virtual void  Digits2Raw();
   
   using AliDetector::Raw2Digits;
@@ -57,7 +59,7 @@ class AliEMCAL : public AliDetector {
   virtual AliEMCALGeometry * GetGeometry() const 
     {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
   virtual void    Hits2SDigits();
-  virtual void    Init(); 
+  //  virtual void    Init(); 
   virtual Int_t   IsVersion(void) const = 0 ;   
   
   virtual AliTriggerDetector* CreateTriggerDetector() const 
@@ -90,6 +92,7 @@ protected:
   void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ;
 
   void InitConstants();  //initializes some params
+  void DefineMediumParameters();  // define tracking medium parameters 
 
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation

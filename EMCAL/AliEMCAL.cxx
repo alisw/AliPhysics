@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.50  2007/02/05 10:43:25  hristov
+ * Changes for correct initialization of Geant4 (Mihaela)
+ *
  * Revision 1.49  2007/01/22 17:29:12  pavlinov
  * EMCAL geometry can be created independently form anything now
  *
@@ -89,7 +92,6 @@ AliEMCAL::AliEMCAL()
   // Default ctor 
   fName = "EMCAL" ;
   InitConstants();
-
 }
 
 //____________________________________________________________________________
@@ -129,9 +131,11 @@ void AliEMCAL::InitConstants()
 }
 
 //____________________________________________________________________________
-void AliEMCAL::Init()
+void AliEMCAL::DefineMediumParameters()
 {
-  //EMCAL cuts
+  //
+  // EMCAL cuts (Geant3) 
+  // 
   Int_t * idtmed = fIdtmed->GetArray() - 1599 ; 
 // --- Set decent energy thresholds for gamma and electron tracking
 
@@ -259,7 +263,7 @@ void AliEMCAL::CreateMaterials()
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
  // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
-  float deemax = 0.1; // maximum fractional energy loss in one step (0 < DEEMAX â¤ 1);i
+  float deemax = 0.1; // maximum fractional energy loss in one step (0 < DEEMAX â?¤ 1);i
   AliMedium(2, "Scintillator$", 2, 1,
             isxfld, sxmgmx, 10.0, 0.001, deemax, 0.001, 0.001, 0, 0) ;
 
@@ -277,6 +281,8 @@ void AliEMCAL::CreateMaterials()
   fBirkC1 =  0.013/dP;
   fBirkC2 =  9.6e-6/(dP * dP);
 
+  // Call just in case of Geant3; What to do in case of Geant4 ?
+  if(gMC->InheritsFrom("TGeant3")) DefineMediumParameters(); // Feb 20, 2007
 }
  //____________________________________________________________________________
 void AliEMCAL::Digits2Raw()
