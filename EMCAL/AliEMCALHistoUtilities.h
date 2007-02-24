@@ -15,6 +15,7 @@
 
 #include <TNamed.h>
 class TList;
+class TH1;
 
 class AliEMCALHistoUtilities: public TNamed {
   public:
@@ -30,6 +31,8 @@ class AliEMCALHistoUtilities: public TNamed {
   static void FillH2(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t y=-99999., Double_t w=1.);
   static int  SaveListOfHists(TList *mylist=0, const char* name="test", Bool_t kSingleKey=kFALSE,
   const char* opt="RECREATE");
+  static void AddToNameAndTitle(TH1   *h=0, const char *name=0, const char *title=0);
+  static void AddToNameAndTitleToList(TList *l=0, const char *name=0, const char *title=0);
   // 
   static int ParseString(const TString &topt, TObjArray &Opt); 
 

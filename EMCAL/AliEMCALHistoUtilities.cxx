@@ -123,6 +123,27 @@ int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_
   return save;
 }
 
+void AliEMCALHistoUtilities::AddToNameAndTitle(TH1 *h, const char *name, const char *title)
+{
+  if(h==0) return;
+  if(name  && strlen(name))  h->SetName(Form("%s%s",h->GetName(),name));
+  if(title && strlen(title)) h->SetTitle(Form("%s%s",h->GetTitle(),title));
+}
+
+void AliEMCALHistoUtilities::AddToNameAndTitleToList(TList *l, const char *name, const char *title)
+{
+  if(l==0) return;
+  if(name || title) {
+    for(int i=0; i<l->GetSize(); i++) {
+      TObject *o = l->At(i);
+      if(o->InheritsFrom("TH1")) {
+        TH1 *h = (TH1*)o;
+        AddToNameAndTitle(h, name, title);
+      }
+    }
+  }
+}
+
 int AliEMCALHistoUtilities::ParseString(const TString &topt, TObjArray &Opt)
 { 
   // Moved from AliEMCALGeometry
