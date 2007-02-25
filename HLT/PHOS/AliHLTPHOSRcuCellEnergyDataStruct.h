@@ -17,13 +17,25 @@
  **************************************************************************/
 #include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSValidCellDataStruct.h"
+#include "Rtypes.h"
 
 struct AliHLTPHOSRcuCellEnergyDataStruct
 {
-  AliHLTUInt16_t fModuleID;
-  AliHLTUInt16_t fRcuX;
-  AliHLTUInt16_t fRcuZ;
-  AliHLTUInt16_t fCnt;
+  //  AliHLTUInt16_t fModuleID;
+  //  AliHLTUInt16_t fRcuX;
+  //  AliHLTUInt16_t fRcuZ;
+  // AliHLTUInt16_t fCnt;
+
+  //  int fModuleID;
+  //  int fRcuX;
+  //  int fRcuZ;
+  //  int fCnt;
+
+  Int_t fModuleID;
+  Int_t fRcuX;
+  Int_t fRcuZ;
+  Int_t fCnt;
+
   AliHLTPHOSValidCellDataStruct fValidData[N_ROWS_RCU*N_COLUMNS_RCU*N_GAINS];
   
 };
