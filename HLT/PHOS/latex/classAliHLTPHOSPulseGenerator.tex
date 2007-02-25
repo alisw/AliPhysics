@@ -287,7 +287,7 @@ Referenced by Ali\-HLTPHOSPulse\-Generator().
 \footnotesize\begin{verbatim}184 {
 185 for(int i=0; i<fNSamples; i++)
 186   {
-187     dtaPtr[i]=fAmplitude*exp(2)*pow((i*fDT-fTZero)/fTau, 2)*exp(-2*(i*fDT-fTZero)/fTau);
+187     dtaPtr[i]=fAmplitude*exp((Double_t)2)*pow((i*fDT-fTZero)/fTau, 2)*exp(-2*(i*fDT-fTZero)/fTau);
 188   }  
 189 }
 \end{verbatim}\normalsize 

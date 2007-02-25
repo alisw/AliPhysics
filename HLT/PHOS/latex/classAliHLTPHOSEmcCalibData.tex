@@ -32,13 +32,13 @@ void {\bf Make\-ADCpedestal\-Correction\-Table} ()
 \subsection*{Protected Attributes}
 \begin{CompactItemize}
 \item 
-Float\_\-t {\bf f\-ADCchannel\-Energy} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+Float\_\-t {\bf f\-ADCchannel\-Energy} [N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]
 \item 
-Float\_\-t {\bf f\-ADCpedestal\-Emc\-Measured} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+Float\_\-t {\bf f\-ADCpedestal\-Emc\-Measured} [N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]
 \item 
-Int\_\-t {\bf f\-ADCpedestal\-Altro\-Reg} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+Int\_\-t {\bf f\-ADCpedestal\-Altro\-Reg} [N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]
 \item 
-Float\_\-t {\bf f\-ADCpedestal\-Correction\-Table} [PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]
+Float\_\-t {\bf f\-ADCpedestal\-Correction\-Table} [N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]
 \end{CompactItemize}
 
 
@@ -89,11 +89,11 @@ References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
 58   SetTitle(calibda.GetName());
 59 
 60 
-61   //  for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
-62   for(Int_t module=0; module<PHOS_MODULES; module++) {
-63     for(Int_t column=0; column< PHOS_COLUMNS; column++) {
-64       for(Int_t row=0; row<PHOS_ROWS; row++) {
-65         for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+61   //  for(Int_t gain = 0; gain < N_GAINS; gain ++){
+62   for(Int_t module=0; module<N_MODULES; module++) {
+63     for(Int_t column=0; column< N_COLUMNS_MOD; column++) {
+64       for(Int_t row=0; row<N_ROWS_MOD; row++) {
+65         for(Int_t gain = 0; gain < N_GAINS; gain ++){
 66           fADCchannelEnergy[module][column][row][gain] =  calibda.fADCchannelEnergy[module][column][row][gain];
 67           fADCpedestalEmcMeasured[module][column][row][gain] = calibda.fADCpedestalEmcMeasured[module][column][row][gain];
 68         }
@@ -177,11 +177,11 @@ Definition at line 162 of file Ali\-HLTPHOSEmc\-Calib\-Data.cxx.
 References f\-ADCpedestal\-Altro\-Reg, f\-ADCpedestal\-Correction\-Table, and f\-ADCpedestal\-Emc\-Measured.
 
 \footnotesize\begin{verbatim}163 {
-164   for (Int_t module=0; module<PHOS_MODULES; module++){
+164   for (Int_t module=0; module<N_MODULES; module++){
 165     printf("============== Module %d\n",module+1);
-166     for (Int_t column=0; column< PHOS_COLUMNS; column++){
-167       for (Int_t row=0; row<PHOS_ROWS; row++){
-168         for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){ 
+166     for (Int_t column=0; column< N_COLUMNS_MOD; column++){
+167       for (Int_t row=0; row<N_ROWS_MOD; row++){
+168         for(Int_t gain = 0; gain < N_GAINS; gain ++){ 
 169           fADCpedestalCorrectionTable[module][column][row][gain] = fADCpedestalEmcMeasured[module][column][row][gain] - fADCpedestalAltroReg[module][column][row][gain];
 170           //      printf("%4.1f",fADCchannelEnergy[module][column][row][gain]);
 171           //
@@ -212,11 +212,11 @@ References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
 80 
 81     SetName(calibda.GetName());
 82     SetTitle(calibda.GetName());
-83     //    for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
-84     for(Int_t module=0; module<PHOS_MODULES; module++) {
-85       for(Int_t column=0; column< PHOS_COLUMNS; column++) {
-86         for(Int_t row=0; row<PHOS_ROWS; row++) {
-87           for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+83     //    for(Int_t gain = 0; gain < N_GAINS; gain ++){
+84     for(Int_t module=0; module<N_MODULES; module++) {
+85       for(Int_t column=0; column< N_COLUMNS_MOD; column++) {
+86         for(Int_t row=0; row<N_ROWS_MOD; row++) {
+87           for(Int_t gain = 0; gain < N_GAINS; gain ++){
 88             fADCchannelEnergy[module][column][row][gain] = calibda.fADCchannelEnergy[module][column][row][gain];
 89             fADCpedestalEmcMeasured[module][column][row][gain] = calibda.fADCpedestalEmcMeasured[module][column][row][gain];
 90           }
@@ -245,12 +245,12 @@ References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
 126 
 127   if (strstr(option,"ped")) {
 128     printf("\n  ----    EMC Pedestal values     ----\n\n");
-129     //    for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
-130       for (Int_t module=0; module<PHOS_MODULES; module++){
+129     //    for(Int_t gain = 0; gain < N_GAINS; gain ++){
+130       for (Int_t module=0; module<N_MODULES; module++){
 131         printf("============== Module %d\n",module+1);
-132         for (Int_t column=0; column< PHOS_COLUMNS; column++){
-133           for (Int_t row=0; row<PHOS_ROWS; row++){
-134             for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+132         for (Int_t column=0; column< N_COLUMNS_MOD; column++){
+133           for (Int_t row=0; row<N_ROWS_MOD; row++){
+134             for(Int_t gain = 0; gain < N_GAINS; gain ++){
 135             printf("%4.1f",fADCpedestalEmcMeasured[module][column][row][gain]);
 136           }
 137           printf("\n");
@@ -261,12 +261,12 @@ References f\-ADCchannel\-Energy, and f\-ADCpedestal\-Emc\-Measured.
 142 
 143   if (strstr(option,"gain")) {
 144     printf("\n  ----    EMC ADC channel values  ----\n\n");
-145     //   for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){ 
-146     for (Int_t module=0; module<PHOS_MODULES; module++){
+145     //   for(Int_t gain = 0; gain < N_GAINS; gain ++){ 
+146     for (Int_t module=0; module<N_MODULES; module++){
 147       printf("============== Module %d\n",module+1);
-148       for (Int_t column=0; column< PHOS_COLUMNS; column++){
-149         for (Int_t row=0; row<PHOS_ROWS; row++){
-150           for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){ 
+148       for (Int_t column=0; column< N_COLUMNS_MOD; column++){
+149         for (Int_t row=0; row<N_ROWS_MOD; row++){
+150           for(Int_t gain = 0; gain < N_GAINS; gain ++){ 
 151             printf("%4.1f",fADCchannelEnergy[module][column][row][gain]);
 152           }
 153           printf("\n");
@@ -295,10 +295,10 @@ Referenced by Ali\-HLTPHOSEmc\-Calib\-Data().
 107   // Set all pedestals and all ADC channels to its ideal values = 1.
 108 
 109   //  for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
-110     for (Int_t module=0; module<PHOS_MODULES; module++){
-111       for (Int_t column=0; column< PHOS_COLUMNS; column++){
-112         for (Int_t row=0; row<PHOS_ROWS; row++){
-113           for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
+110     for (Int_t module=0; module<N_MODULES; module++){
+111       for (Int_t column=0; column< N_COLUMNS_MOD; column++){
+112         for (Int_t row=0; row<N_ROWS_MOD; row++){
+113           for(Int_t gain = 0; gain < N_GAINS; gain ++){
 114           fADCpedestalEmcMeasured[module][column][row][gain] = 0.;
 115           fADCchannelEnergy[module][column][row][gain]  = 1.;
 116         }
@@ -355,39 +355,39 @@ References f\-ADCpedestal\-Emc\-Measured.
 \subsection{Member Data Documentation}
 \index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCchannelEnergy@{fADCchannelEnergy}}
 \index{fADCchannelEnergy@{fADCchannelEnergy}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCchannel\-Energy}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCchannel\-Energy}[N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap0}
 
 
 width of one EMC ADC channel in Ge\-V 
 
-Definition at line 31 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+Definition at line 32 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
 
 Referenced by Ali\-HLTPHOSEmc\-Calib\-Data(), Get\-ADCchannel\-Energy(), operator=(), Print(), Reset(), and Set\-ADCchannel\-Energy().\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalAltroReg@{fADCpedestalAltroReg}}
 \index{fADCpedestalAltroReg@{fADCpedestalAltroReg}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Altro\-Reg}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Altro\-Reg}[N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap2}
 
 
 value of the EMC ADC pedestal subtraction values stored in the ALTRO registers 
 
-Definition at line 33 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+Definition at line 34 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
 
 Referenced by Make\-ADCpedestal\-Correction\-Table().\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalCorrectionTable@{fADCpedestalCorrectionTable}}
 \index{fADCpedestalCorrectionTable@{fADCpedestalCorrectionTable}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Correction\-Table}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap3}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Correction\-Table}[N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap3}
 
 
 value of the EMC ADC pedestal values to be subtracted form the decoed cahnnel data (= f\-ADCpedestal\-Emc\-Measured - f\-ADCpedestal\-Altro\-Reg) 
 
-Definition at line 34 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+Definition at line 35 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
 
 Referenced by Make\-ADCpedestal\-Correction\-Table().\index{AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}!fADCpedestalEmcMeasured@{fADCpedestalEmcMeasured}}
 \index{fADCpedestalEmcMeasured@{fADCpedestalEmcMeasured}!AliHLTPHOSEmcCalibData@{Ali\-HLTPHOSEmc\-Calib\-Data}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Emc\-Measured}[PHOS\_\-MODULES][PHOS\_\-COLUMNS][PHOS\_\-ROWS][PHOS\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Float\_\-t {\bf Ali\-HLTPHOSEmc\-Calib\-Data::f\-ADCpedestal\-Emc\-Measured}[N\_\-MODULES][N\_\-COLUMNS\_\-MOD][N\_\-ROWS\_\-MOD][N\_\-GAINS]\hspace{0.3cm}{\tt  [protected]}}\label{classAliHLTPHOSEmcCalibData_AliHLTPHOSEmcCalibDatap1}
 
 
 value of the EMC ADC pedestal measured from calibration run 
 
-Definition at line 32 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
+Definition at line 33 of file Ali\-HLTPHOSEmc\-Calib\-Data.h.
 
 Referenced by Ali\-HLTPHOSEmc\-Calib\-Data(), Get\-ADCpedestal\-Emc\-Measured(), Make\-ADCpedestal\-Correction\-Table(), operator=(), Print(), Reset(), and Set\-ADCpedestal\-Emc\-Measured().
 

@@ -35,14 +35,22 @@ void {\bf Set\-Data} (double $\ast$data)
 \item 
 void {\bf Set\-Sample\-Freq} (double freq)
 \item 
+void {\bf Set\-Start\-Index} (int start\-Index)
+\item 
 void {\bf Make\-Initial\-Guess} ()
 \item 
 void {\bf Make\-Initial\-Guess} (int treshold)
+\item 
+virtual void {\bf Set\-TVector} (Double\_\-t $\ast$t\-Vector, Int\_\-t size)
+\item 
+virtual void {\bf Set\-AVector} (Double\_\-t $\ast$a\-Vector, Int\_\-t size)
+\item 
+Double\_\-t {\bf Get\-Max\-Value} (Double\_\-t $\ast$dta, Int\_\-t size)
 \end{CompactItemize}
 \subsection*{Protected Attributes}
 \begin{CompactItemize}
 \item 
-double $\ast$ {\bf f\-Float\-Data\-Ptr}
+Double\_\-t $\ast$ {\bf f\-Float\-Data\-Ptr}
 \item 
 double {\bf f\-Sample\-Frequency}
 \item 
@@ -56,7 +64,7 @@ double {\bf f\-DTof}
 \item 
 double {\bf f\-DAmpl}
 \item 
-int {\bf n}
+int {\bf f\-Start\-Index}
 \end{CompactItemize}
 \subsection*{Private Attributes}
 \begin{CompactItemize}
@@ -110,22 +118,22 @@ Definition at line 44 of file Ali\-HLTPHOSRaw\-Analyzer\-KLevel.cxx.
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Baseline\-Correction (double $\ast$ {\em data\-Ptr}, double {\em baseline\-Value})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera8}
 
 
-Shifts the basline with the amount given by baseline\-Value If pretrigger samples are not present then the basline correction will be incorrect. \begin{Desc}
+Shifts the baseline with the amount given by baseline\-Value If pretrigger samples are not present then the basline correction will be incorrect. \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em data\-Ptr}]array for wich to correct the basline \item[{\em Basline\-Value}]the basline value to subtract.. \end{description}
 \end{Desc}
 
 
-Definition at line 60 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 75 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
 References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr.
 
-\footnotesize\begin{verbatim}61 {
-62   fFloatDataPtr = dataPtr;   
-63   printf("\nbaselineValue = %f\n", baselineValue);
-64   cout << "Baseline correction not yet implemeted" << endl;
-65 } //end BaslineCorrection
+\footnotesize\begin{verbatim}76 {
+77   fFloatDataPtr = dataPtr;   
+78   printf("\nbaselineValue = %f\n", baselineValue);
+79   cout << "Baseline correction not yet implemeted" << endl;
+80 } //end BaslineCorrection
 \end{verbatim}\normalsize 
 
 
@@ -141,15 +149,15 @@ Attemps to level the basline to zero. The baseline will be calculated from the p
 \end{Desc}
 
 
-Definition at line 45 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 60 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
-References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr, and Ali\-HLTPHOSRaw\-Analyzer::n.
+References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr.
 
-\footnotesize\begin{verbatim}46 {
-47   fFloatDataPtr = dataPtr;  
-48   n=N;
-49   cout << "Baseline correction not yet implemeted" << endl;
-50 } //end BaselineCorrection
+\footnotesize\begin{verbatim}61 {
+62   fFloatDataPtr = dataPtr;  
+63   //  n=N;
+64   cout << "Baseline correction not yet implemeted" << endl;
+65 } //end BaselineCorrection
 \end{verbatim}\normalsize 
 
 
@@ -165,7 +173,7 @@ Extraction of timing and energy using the Peakfinde Algorithm. The. The paramete
 \end{Desc}
 
 
-Implements {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzera14})}.
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera17})}.
 
 Definition at line 63 of file Ali\-HLTPHOSRaw\-Analyzer\-KLevel.cxx.
 
@@ -182,13 +190,13 @@ Definition at line 63 of file Ali\-HLTPHOSRaw\-Analyzer\-KLevel.cxx.
 
 
 
-Definition at line 109 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 124 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
-\footnotesize\begin{verbatim}110 {
-111   printf("\ntreshold = %f \n", treshold);
-112   cout << "Find Start index not yet implemented" << endl;
-113   return 0;
-114 } //end FindStartIndex
+\footnotesize\begin{verbatim}125 {
+126   printf("\ntreshold = %f \n", treshold);
+127   cout << "Find Start index not yet implemented" << endl;
+128   return 0;
+129 } //end FindStartIndex
 \end{verbatim}\normalsize 
 
 
@@ -199,11 +207,41 @@ Definition at line 109 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
 Gives the time in entities of ADC channels (quantization levels). Absolute enrgy is found by multiplying with offline calibration constants. 
 
-Definition at line 84 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 99 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
-\footnotesize\begin{verbatim}85 {
-86   return fDAmpl;
-87 } //end GetEnergy
+Referenced by main().
+
+\footnotesize\begin{verbatim}100 {
+101   return fDAmpl;
+102 } //end GetEnergy
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!GetMaxValue@{GetMaxValue}}
+\index{GetMaxValue@{GetMaxValue}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t Ali\-HLTPHOSRaw\-Analyzer::Get\-Max\-Value (Double\_\-t $\ast$ {\em dta}, Int\_\-t {\em size})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera18}
+
+
+
+
+Definition at line 176 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+
+\footnotesize\begin{verbatim}177 {
+178 
+179   Double_t tmpMax = 0;
+180 
+181   for(int i = 0; i < size; i++)
+182     {
+183       if(dta[i] > tmpMax)
+184         {
+185           tmpMax = dta[i];
+186         }
+187 
+188     }
+189   
+190   return tmpMax;
+191 
+192 }
 \end{verbatim}\normalsize 
 
 
@@ -214,17 +252,19 @@ Definition at line 84 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
 Gives the timing in entities of sample indexes Physical time is found by multiplying with the sampling intervall (Ts). 
 
-Definition at line 73 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 88 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
-\footnotesize\begin{verbatim}74 {
-75   return fDTof;
-76 } //end GetTiming
+Referenced by main().
+
+\footnotesize\begin{verbatim}89 {
+90   return fDTof;
+91 } //end GetTiming
 \end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!MakeInitialGuess@{MakeInitialGuess}}
 \index{MakeInitialGuess@{MakeInitialGuess}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Make\-Initial\-Guess (int {\em treshold})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera15}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Make\-Initial\-Guess (int {\em treshold})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera16}
 
 
 This function applies only to the Chi and Least mean square fit. An initial guess is made based on the average of the first 5 samples and the first value exeeding threshold + this value. \begin{Desc}
@@ -234,27 +274,27 @@ This function applies only to the Chi and Least mean square fit. An initial gues
 \end{Desc}
 
 
-Definition at line 134 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 149 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
-\footnotesize\begin{verbatim}135 {
-136   printf("\ntreshold = %d\n", treshold);
-137   cout << "Make initial guess not yet implemeted" << endl;  
-138 }
+\footnotesize\begin{verbatim}150 {
+151   printf("\ntreshold = %d\n", treshold);
+152   cout << "Make initial guess not yet implemeted" << endl;  
+153 }
 \end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!MakeInitialGuess@{MakeInitialGuess}}
 \index{MakeInitialGuess@{MakeInitialGuess}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Make\-Initial\-Guess ()\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera14}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Make\-Initial\-Guess ()\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera15}
 
 
 This function applies only to the Chi and Least mean square fit. An initial guess is made based on the average of the first 5 samples and the first value exeeding this value. 
 
-Definition at line 122 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 137 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
-\footnotesize\begin{verbatim}123 {
-124   cout << "Make initial guess not yet implemeted" << endl;
-125 }
+\footnotesize\begin{verbatim}138 {
+139   cout << "Make initial guess not yet implemeted" << endl;
+140 }
 \end{verbatim}\normalsize 
 
 
@@ -273,6 +313,25 @@ Definition at line 15 of file Ali\-HLTPHOSRaw\-Analyzer\-KLevel.h.
 \end{verbatim}\normalsize 
 
 
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!SetAVector@{SetAVector}}
+\index{SetAVector@{SetAVector}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Set\-AVector (Double\_\-t $\ast$ {\em a\-Vector}, Int\_\-t {\em size})\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerLMSa17}
+
+
+
+
+Reimplemented in {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera5})}.
+
+Definition at line 169 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+
+Referenced by Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder\-Component::Load\-PFVector().
+
+\footnotesize\begin{verbatim}170 {
+171  cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetAVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
+172 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!SetData@{SetData}}
 \index{SetData@{SetData}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Set\-Data (double $\ast$ {\em data})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera12}
@@ -280,16 +339,18 @@ Definition at line 15 of file Ali\-HLTPHOSRaw\-Analyzer\-KLevel.h.
 
 Set data array. Overrides data data array set in the constructor. 
 
-Definition at line 94 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 109 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
 References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr.
 
-\footnotesize\begin{verbatim}95 {
-96   //  double *dta;
-97   //  dta = data;
-98   fFloatDataPtr = data;
-99   //  cout << "Set data not yet implemented" << endl;
-100 }
+Referenced by main().
+
+\footnotesize\begin{verbatim}110 {
+111   //  double *dta;
+112   //  dta = data;
+113   fFloatDataPtr = data;
+114   //  cout << "Set data not yet implemented" << endl;
+115 }
 \end{verbatim}\normalsize 
 
 
@@ -300,11 +361,51 @@ References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr.
 
 
 
-Definition at line 103 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Definition at line 118 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
-\footnotesize\begin{verbatim}104 {
-105 
-106 }
+References Ali\-HLTPHOSRaw\-Analyzer::f\-Sample\-Frequency.
+
+Referenced by main().
+
+\footnotesize\begin{verbatim}119 {
+120   fSampleFrequency = freq;
+121 }
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!SetStartIndex@{SetStartIndex}}
+\index{SetStartIndex@{SetStartIndex}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Set\-Start\-Index (int {\em start\-Index})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera14}
+
+
+
+
+Definition at line 156 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+
+References Ali\-HLTPHOSRaw\-Analyzer::f\-Start\-Index.
+
+\footnotesize\begin{verbatim}157 {
+158   fStartIndex = index;
+159 }
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!SetTVector@{SetTVector}}
+\index{SetTVector@{SetTVector}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Set\-TVector (Double\_\-t $\ast$ {\em t\-Vector}, Int\_\-t {\em size})\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerLMSa16}
+
+
+
+
+Reimplemented in {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera4})}.
+
+Definition at line 162 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+
+Referenced by Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder\-Component::Load\-PFVector().
+
+\footnotesize\begin{verbatim}163 {
+164   cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetTVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
+165 }
 \end{verbatim}\normalsize 
 
 
@@ -318,35 +419,35 @@ Definition at line 103 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
 
 Amplitude in entities of ADC levels 
 
-Definition at line 38 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fDAmplGuess@{fDAmplGuess}}
+Definition at line 44 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fDAmplGuess@{fDAmplGuess}}
 \index{fDAmplGuess@{fDAmplGuess}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-DAmpl\-Guess}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp3}
 
 
 Initial guess for amplitude 
 
-Definition at line 35 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fDTof@{fDTof}}
+Definition at line 41 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fDTof@{fDTof}}
 \index{fDTof@{fDTof}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-DTof}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp5}
 
 
 Time of flight in entities of sample intervals 
 
-Definition at line 37 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fDTofGuess@{fDTofGuess}}
+Definition at line 43 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fDTofGuess@{fDTofGuess}}
 \index{fDTofGuess@{fDTofGuess}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-DTof\-Guess}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp2}
 
 
 Initial guess for t0 
 
-Definition at line 34 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fFloatDataPtr@{fFloatDataPtr}}
+Definition at line 40 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fFloatDataPtr@{fFloatDataPtr}}
 \index{fFloatDataPtr@{fFloatDataPtr}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp0}
 
 
 Float representation of data that should be fitted 
 
-Definition at line 32 of file Ali\-HLTPHOSRaw\-Analyzer.h.
+Definition at line 38 of file Ali\-HLTPHOSRaw\-Analyzer.h.
 
 Referenced by Ali\-HLTPHOSRaw\-Analyzer::Ali\-HLTPHOSRaw\-Analyzer(), Ali\-HLTPHOSRaw\-Analyzer::Baseline\-Correction(), and Ali\-HLTPHOSRaw\-Analyzer::Set\-Data().\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fSampleFrequency@{fSampleFrequency}}
 \index{fSampleFrequency@{fSampleFrequency}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
@@ -355,25 +456,25 @@ Referenced by Ali\-HLTPHOSRaw\-Analyzer::Ali\-HLTPHOSRaw\-Analyzer(), Ali\-HLTPH
 
 The ADC sample frequency in MHz used under data taking 
 
-Definition at line 33 of file Ali\-HLTPHOSRaw\-Analyzer.h.
+Definition at line 39 of file Ali\-HLTPHOSRaw\-Analyzer.h.
 
-Referenced by Ali\-HLTPHOSRaw\-Analyzer::Ali\-HLTPHOSRaw\-Analyzer().\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fTau@{fTau}}
+Referenced by Ali\-HLTPHOSRaw\-Analyzer::Ali\-HLTPHOSRaw\-Analyzer(), and Ali\-HLTPHOSRaw\-Analyzer::Set\-Sample\-Freq().\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fStartIndex@{fStartIndex}}
+\index{fStartIndex@{fStartIndex}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Start\-Index}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp7}
+
+
+
+
+Definition at line 46 of file Ali\-HLTPHOSRaw\-Analyzer.h.
+
+Referenced by Ali\-HLTPHOSRaw\-Analyzer::Set\-Start\-Index().\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!fTau@{fTau}}
 \index{fTau@{fTau}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Tau}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp4}
 
 
 The risetime in micro seconds 
 
-Definition at line 36 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!n@{n}}
-\index{n@{n}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int {\bf Ali\-HLTPHOSRaw\-Analyzer::n}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp7}
-
-
-
-
-Definition at line 39 of file Ali\-HLTPHOSRaw\-Analyzer.h.
-
-Referenced by Ali\-HLTPHOSRaw\-Analyzer::Baseline\-Correction().\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!tKLevel@{tKLevel}}
+Definition at line 42 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}!tKLevel@{tKLevel}}
 \index{tKLevel@{tKLevel}!AliHLTPHOSRawAnalyzerKLevel@{Ali\-HLTPHOSRaw\-Analyzer\-KLevel}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel::t\-KLevel}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerKLevel_AliHLTPHOSRawAnalyzerKLevelr0}
 

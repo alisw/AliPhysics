@@ -29,11 +29,23 @@ virtual int {\bf Deinit} ()
 \item 
 virtual int {\bf Do\-Deinit} ()
 \item 
+void {\bf Dump\-Data} (int gain)
+\item 
+void {\bf Dump\-Data} ()
+\item 
+void {\bf Dump\-Channel\-Data} (Double\_\-t $\ast$data)
+\item 
+void {\bf Set\-Equippment\-ID} (Ali\-HLTUInt32\_\-t id)
+\item 
+int {\bf Get\-Equippment\-ID} ()
+\item 
+void {\bf Set\-Coordinates} (Ali\-HLTUInt32\_\-t equippment\-ID)
+\item 
 virtual void {\bf Get\-Input\-Data\-Types} (std::vector$<$ Ali\-HLTComponent\-Data\-Type, std::allocator$<$ Ali\-HLTComponent\-Data\-Type $>$ $>$ \&)
 \item 
 virtual Ali\-HLTComponent\-Data\-Type {\bf Get\-Output\-Data\-Type} ()
 \item 
-virtual void {\bf Get\-Output\-Data\-Size} (long unsigned int \&, double \&)
+virtual void {\bf Get\-Output\-Data\-Size} (unsigned long \&const\-Base, double \&input\-Multiplier)
 \item 
 virtual int {\bf Do\-Event} (const Ali\-HLTComponent\-Event\-Data \&, const Ali\-HLTComponent\-Block\-Data $\ast$, Ali\-HLTComponent\-Trigger\-Data \&, Ali\-HLTUInt8\_\-t $\ast$, Ali\-HLTUInt32\_\-t \&, std::vector$<$ Ali\-HLTComponent\-Block\-Data, std::allocator$<$ Ali\-HLTComponent\-Block\-Data $>$ $>$ \&)
 \end{CompactItemize}
@@ -96,73 +108,158 @@ Definition at line 34 of file Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component.cxx.
 \subsection{Member Function Documentation}
 \index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!Deinit@{Deinit}}
 \index{Deinit@{Deinit}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Deinit ()\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Deinit ()\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta5}
 
 
 
 
-Definition at line 42 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+Definition at line 76 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
 
-\footnotesize\begin{verbatim}43 {
-44   return 0;
-45 }
+\footnotesize\begin{verbatim}77 {
+78   return 0;
+79 }
 \end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!DoDeinit@{DoDeinit}}
 \index{DoDeinit@{DoDeinit}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Deinit ()\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Deinit ()\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta6}
 
 
 
 
-Definition at line 48 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+Definition at line 87 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
 
-\footnotesize\begin{verbatim}49 {
-50  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen DoDeinit");
-51   return 0;
-52 
-53 }
+References Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-PHOSRaw\-Stream, and Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Raw\-Memory\-Reader.
+
+\footnotesize\begin{verbatim}88 {
+89   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen DoDeinit");
+90 
+91   if(fRawMemoryReader !=0)
+92     {
+93       delete fRawMemoryReader;
+94     }
+95     
+96   if(fPHOSRawStream != 0)
+97     {
+98       delete fPHOSRawStream;
+99     }
+100   return 0;
+101 
+102 }
 \end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!DoEvent@{DoEvent}}
 \index{DoEvent@{DoEvent}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Event (const Ali\-HLTComponent\-Event\-Data \&, const Ali\-HLTComponent\-Block\-Data $\ast$, Ali\-HLTComponent\-Trigger\-Data \&, Ali\-HLTUInt8\_\-t $\ast$, Ali\-HLTUInt32\_\-t \&, std::vector$<$ Ali\-HLTComponent\-Block\-Data, std::allocator$<$ Ali\-HLTComponent\-Block\-Data $>$ $>$ \&)\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta12}
-
-
-
-
-Definition at line 84 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
-
-References Ali\-HLTPHOSRaw\-Analyzer\-Component::event\-Count.
-
-\footnotesize\begin{verbatim}85 {
-86   Logging(kHLTLogInfo, "HLT", "Sample", "PhosHLTRawAnalyzerComonent, DoEvent");
-87   printf("\nPHOSHLT DoEvent: processing event: %d\n", eventCount);
-88   //  printf("\nPHOSHLT DoEvent, not yet implemented\n");
-89   eventCount++;
-90   return 0;
-91 }
-\end{verbatim}\normalsize 
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Event (const Ali\-HLTComponent\-Event\-Data \&, const Ali\-HLTComponent\-Block\-Data $\ast$, Ali\-HLTComponent\-Trigger\-Data \&, Ali\-HLTUInt8\_\-t $\ast$, Ali\-HLTUInt32\_\-t \&, std::vector$<$ Ali\-HLTComponent\-Block\-Data, std::allocator$<$ Ali\-HLTComponent\-Block\-Data $>$ $>$ \&)\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta16}
 
 
 \index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!DoInit@{DoInit}}
 \index{DoInit@{DoInit}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Init (int {\em argc}, const char $\ast$$\ast$ {\em argv})\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Init (int {\em argc}, const char $\ast$$\ast$ {\em argv})\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta4}
 
 
 
 
-Definition at line 95 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+Definition at line 263 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
 
-\footnotesize\begin{verbatim}96 {
-97   printf("\nInside AliHLTPHOSRawAnalyzerComponent:DoInit\n");
-98   if (argc==0 && argv==NULL) {
-99     // this is currently just to get rid of the warning "unused parameter"
-100   }
-101   return 0;
-102 }
+References Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-PHOSRaw\-Stream, Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Raw\-Memory\-Reader, Ali\-HLTPHOSRaw\-Analyzer\-Component::Reset(), Ali\-HLTPHOSRaw\-Analyzer\-Component::Set\-Coordinates(), and Ali\-HLTPHOSRaw\-Analyzer\-Component::Set\-Equippment\-ID().
+
+\footnotesize\begin{verbatim}264 {
+265   int equippmentID = atoi(argv[6]);
+266   cout << "AliHLTPHOSRawAnalyzerComponent::DoIni  Setting EquipmentID to" << equippmentID << endl;
+267   Reset();
+268   fRawMemoryReader = new AliRawReaderMemory();
+269   fPHOSRawStream = new  AliCaloRawStream(fRawMemoryReader,"PHOS");
+270   fPHOSRawStream->SetOldRCUFormat(kFALSE);
+271   fRawMemoryReader->SetEquipmentID(equippmentID); 
+272   SetEquippmentID(equippmentID);
+273   SetCoordinates(equippmentID);
+274   if (argc==0 && argv==NULL) {
+275     // this is currently just to get rid of the warning "unused parameter"
+276   }
+277   return 0;
+278 }
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!DumpChannelData@{DumpChannelData}}
+\index{DumpChannelData@{DumpChannelData}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Component::Dump\-Channel\-Data (Double\_\-t $\ast$ {\em data})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta9}
+
+
+
+
+Definition at line 307 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+
+\footnotesize\begin{verbatim}308 {
+309       cout << endl;
+310       
+311       for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
+312         {
+313           if (data[i] != 0)
+314             {
+315               cout <<i <<"\t";
+316             }
+317         }
+318       cout << endl;
+319       
+320       for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
+321         {
+322           if (data[i] != 0)
+323             {
+324               cout <<data[i] <<"\t";
+325             }
+326         }
+327       
+328       cout << endl;
+329 }
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!DumpData@{DumpData}}
+\index{DumpData@{DumpData}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Component::Dump\-Data ()\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta8}
+
+
+
+
+Definition at line 301 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+
+\footnotesize\begin{verbatim}302 {
+303   DumpData(0);
+304 }
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!DumpData@{DumpData}}
+\index{DumpData@{DumpData}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Component::Dump\-Data (int {\em gain})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta7}
+
+
+
+
+Definition at line 281 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+
+References Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Max\-Values.
+
+\footnotesize\begin{verbatim}282 {
+283   for(int mod = 0; mod < N_MODULES; mod ++)
+284     {
+285       printf("\n ***********  MODULE %d ************\n", mod);
+286       for(int row = 0; row <  N_ROWS_MOD; row ++)
+287         {
+288           for(int col = 0; col <  N_COLUMNS_MOD; col ++)
+289             {
+290               if( fMaxValues[mod][row][col][0] != 0)
+291                 { 
+292                   cout << fMaxValues[mod][row][col][gain] << "\t";
+293                 }
+294             }
+295         } 
+296     }
+297 }
 \end{verbatim}\normalsize 
 
 
@@ -173,7 +270,7 @@ Definition at line 95 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
 
 
 
-Implements {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerComponenta7})}.
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerComponenta13})}.
 
 Definition at line 40 of file Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component.cxx.
 
@@ -183,28 +280,54 @@ Definition at line 40 of file Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component.cxx.
 \end{verbatim}\normalsize 
 
 
+\index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!GetEquippmentID@{GetEquippmentID}}
+\index{GetEquippmentID@{GetEquippmentID}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Equippment\-ID ()\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta11}
+
+
+
+
+Definition at line 391 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+
+\footnotesize\begin{verbatim}392 {
+393   return  fEquippmentID;
+394 }
+\end{verbatim}\normalsize 
+
+
 \index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!GetInputDataTypes@{GetInputDataTypes}}
 \index{GetInputDataTypes@{GetInputDataTypes}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Input\-Data\-Types (std::vector$<$ Ali\-HLTComponent\-Data\-Type, std::allocator$<$ Ali\-HLTComponent\-Data\-Type $>$ $>$ \&)\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta9}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Input\-Data\-Types (std::vector$<$ Ali\-HLTComponent\-Data\-Type, std::allocator$<$ Ali\-HLTComponent\-Data\-Type $>$ $>$ \&)\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta13}
 
 
 \index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!GetOutputDataSize@{GetOutputDataSize}}
 \index{GetOutputDataSize@{GetOutputDataSize}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Output\-Data\-Size (long unsigned int \&, double \&)\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta11}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Output\-Data\-Size (unsigned long \& {\em const\-Base}, double \& {\em input\-Multiplier})\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta15}
+
+
+
+
+Definition at line 132 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+
+\footnotesize\begin{verbatim}134 {
+135   constBase = 30;
+136   inputMultiplier = 0.1;
+137 }
+\end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!GetOutputDataType@{GetOutputDataType}}
 \index{GetOutputDataType@{GetOutputDataType}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTComponent\-Data\-Type Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Output\-Data\-Type ()\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta10}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTComponent\-Data\-Type Ali\-HLTPHOSRaw\-Analyzer\-Component::Get\-Output\-Data\-Type ()\hspace{0.3cm}{\tt  [virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta14}
 
 
 
 
-Definition at line 72 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+Definition at line 126 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
 
-\footnotesize\begin{verbatim}73 {
-74   return outputDataType;
-75 }
+\footnotesize\begin{verbatim}127 {
+128   return AliHLTPHOSDefinitions::gkCellEnergyDataType;
+129 }
 \end{verbatim}\normalsize 
 
 
@@ -215,13 +338,79 @@ Definition at line 72 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
 
 
 
-Reimplemented from {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerComponenta3})}.
-
 Definition at line 16 of file Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component.h.
 
 \footnotesize\begin{verbatim}17   {
 18     return *this;
 19   };
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!SetCoordinates@{SetCoordinates}}
+\index{SetCoordinates@{SetCoordinates}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Component::Set\-Coordinates (Ali\-HLTUInt32\_\-t {\em equippment\-ID})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta12}
+
+
+
+
+Definition at line 397 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+
+References Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Equippment\-ID, Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Module\-ID, Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Rcu\-Col\-Offeset, Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Rcu\-Row\-Offeset, Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Rcu\-X, and Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Rcu\-Z.
+
+Referenced by Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Init().
+
+\footnotesize\begin{verbatim}398 {
+399   int rcuIndex =  (fEquippmentID - 1792)%4;
+400   fModuleID = (fEquippmentID  -1792 -rcuIndex)/5;
+401 
+402   if(rcuIndex == 0)
+403     {
+404       fRcuX = 0; 
+405       fRcuZ = 0;
+406     }
+407 
+408   if(rcuIndex == 1)
+409     {
+410       fRcuX = 0; 
+411       fRcuZ = 1;
+412     }
+413  
+414   if(rcuIndex == 2)
+415     {
+416       fRcuX = 1; 
+417       fRcuZ = 0;
+418     }
+419 
+420 
+421   if(rcuIndex == 3)
+422     {
+423       fRcuX = 1; 
+424       fRcuZ = 1;
+425     }
+426 
+427   fRcuRowOffeset = 32*fRcuX;
+428   fRcuColOffeset = 28*fRcuZ;
+429 
+430 }
+\end{verbatim}\normalsize 
+
+
+\index{AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}!SetEquippmentID@{SetEquippmentID}}
+\index{SetEquippmentID@{SetEquippmentID}!AliHLTPHOSRawAnalyzerCrudeComponent@{Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Component::Set\-Equippment\-ID (Ali\-HLTUInt32\_\-t {\em id})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerPeakFinderComponenta10}
+
+
+
+
+Definition at line 385 of file Ali\-HLTPHOSRaw\-Analyzer\-Component.cxx.
+
+References Ali\-HLTPHOSRaw\-Analyzer\-Component::f\-Equippment\-ID.
+
+Referenced by Ali\-HLTPHOSRaw\-Analyzer\-Component::Do\-Init().
+
+\footnotesize\begin{verbatim}386 {
+387   fEquippmentID = id;
+388 }
 \end{verbatim}\normalsize 
 
 
@@ -232,7 +421,7 @@ Definition at line 16 of file Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component.h.
 
 
 
-Implements {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerComponenta11})}.
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer\-Component} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerComponent_AliHLTPHOSRawAnalyzerComponenta17})}.
 
 Definition at line 46 of file Ali\-HLTPHOSRaw\-Analyzer\-Crude\-Component.cxx.
 
