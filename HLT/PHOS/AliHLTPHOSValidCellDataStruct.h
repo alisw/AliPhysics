@@ -17,13 +17,31 @@
  **************************************************************************/
 
 #include "AliHLTDataTypes.h"
-
+#include "Rtypes.h"
 
 struct AliHLTPHOSValidCellDataStruct
 {
-  AliHLTUInt16_t fRow;
-  AliHLTUInt16_t fCol;
-  AliHLTUInt16_t fGain;
+  //  AliHLTUInt16_t fRow;
+  //  AliHLTUInt16_t fCol;
+
+  //  AliHLTUInt16_t fZ;
+  // AliHLTUInt16_t fX;
+
+  //  AliHLTUInt16_t fGain;
+
+  //  int fZ;
+  //  int fX;
+
+  //  Int_t fZ;
+  //  Int_t fX;
+  AliHLTUInt8_t fZ;
+  AliHLTUInt8_t fX;
+
+  //  AliHLTUInt16_t fGain;
+  ///  int fGain;
+  //  Int_t fGain;
+  AliHLTUInt8_t fGain;
+
   Float_t fEnergy;
   Float_t fTime;
 };
