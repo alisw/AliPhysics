@@ -17,6 +17,11 @@ class AliHLTPHOSDefinitions
     public:
       static const AliHLTComponentDataType gkCellEnergyDataType;    /**<Reconstructed cell/crystal energies*/
       static const AliHLTComponentDataType gkDDLPackedRawDataType;  /**<DDL raw data on the RCU data format*/
+      static const AliHLTComponentDataType gkCellEnergyHistogramDataType;  /**<Histogram for per cell/gain energy distribution*/
+      static const AliHLTComponentDataType gkCellAverageEnergyDataType;  /**<Histogram for per cell/gain energy distribution*/
+      static const AliHLTComponentDataType gkCellAccumulatedEnergyDataType;  /**<Histogram for per cell/gain energy distribution*/
+      static const AliHLTComponentDataType gkCellTimingHistogramDataType;  /**<Histogram for per cell/gain time distribution*/      
+      static const AliHLTComponentDataType gkCellTimingAverageDataType;  /**<Histogram for per cell/gain time distribution*/  
     };
 
 #endif

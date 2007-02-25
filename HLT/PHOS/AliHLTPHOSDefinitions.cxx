@@ -29,8 +29,10 @@
 #include "AliHLTPHOSDefinitions.h"
 
 
-const AliHLTComponentDataType AliHLTPHOSDefinitions::gkDDLPackedRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','_','R','W','P','K'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellEnergyDataType = { sizeof(AliHLTComponentDataType),   {'C','E','L','L','E','N','E','R'},{'P','H','O','S'}};;
-
-
-    
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkDDLPackedRawDataType          = { sizeof(AliHLTComponentDataType),       {'D','D','L','_','R','W','P','K'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellEnergyDataType            = { sizeof(AliHLTComponentDataType),       {'C','E','L','L','E','N','E','R'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellEnergyHistogramDataType   = { sizeof(AliHLTComponentDataType),       {'E','N','E','R','H','I','S','T'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellAverageEnergyDataType     = { sizeof(AliHLTComponentDataType),       {'E','N','E','R','A','V','E','R'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellAccumulatedEnergyDataType = { sizeof(AliHLTComponentDataType),       {'E','N','E','R','A','C','C','U'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellTimingHistogramDataType   = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','H','I','S','T'},{'P','H','O','S'}};;    
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellTimingAverageDataType     = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','A','V','E','R'},{'P','H','O','S'}};;
