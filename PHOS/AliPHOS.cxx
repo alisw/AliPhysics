@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.111  2007/02/18 15:21:47  kharlov
+ * Corrections for memory leak in Digits2Raw due to AliAltroMapping
+ *
  * Revision 1.110  2007/02/13 10:52:08  policheh
  * Raw2SDigits() implemented
  *
@@ -466,16 +469,22 @@ void AliPHOS::Digits2Raw()
   const Float_t    kThreshold = 0.001; // skip digits below 1 MeV
   const Int_t      kAdcThreshold = 1;  // Lower ADC threshold to write to raw data
 
-  AliAltroBuffer* buffer = NULL;
   Int_t prevDDL = -1;
 
   // Create a shaper pulse object
   AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
-
+  
   Int_t *adcValuesLow = new Int_t[pulse->GetRawFormatTimeBins()];
   Int_t *adcValuesHigh= new Int_t[pulse->GetRawFormatTimeBins()];
+  
+  const Int_t maxDDL = 20;
+  AliAltroBuffer  *buffer[maxDDL];
+  AliAltroMapping *mapping[maxDDL];
 
-  AliAltroMapping* mapping = 0;
+  for(Int_t jDDL=0; jDDL<maxDDL; jDDL++) {
+    buffer[jDDL]=0;
+    mapping[jDDL]=0;
+  }
 
   //!!!!for debug!!!
   Int_t modMax=-111;
@@ -522,26 +531,19 @@ void AliPHOS::Digits2Raw()
 
     // new DDL
     if (iDDL != prevDDL) {
-      // write real header and close previous file
-      if (buffer) {
-	buffer->Flush();
-	buffer->WriteDataHeader(kFALSE, kFALSE);
-	delete buffer;
-	if (mapping) delete mapping;
+      if (buffer[iDDL] == 0) {
+	// open new file and write dummy header
+	TString fileName = AliDAQ::DdlFileName("PHOS",iDDL);
+
+	TString path = gSystem->Getenv("ALICE_ROOT");
+	path += "/PHOS/mapping/RCU";
+	path += iRCU;
+	path += ".data";
+
+	mapping[iDDL] = new AliCaloAltroMapping(path.Data());
+	buffer[iDDL]  = new AliAltroBuffer(fileName.Data(),mapping[iDDL]);
+	buffer[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
       }
-
-      // open new file and write dummy header
-      TString fileName = AliDAQ::DdlFileName("PHOS",iDDL);
-
-      TString path = gSystem->Getenv("ALICE_ROOT");
-      path += "/PHOS/mapping/RCU";
-      path += iRCU;
-      path += ".data";
-
-      mapping = new AliCaloAltroMapping(path.Data());
-      buffer  = new AliAltroBuffer(fileName.Data(),mapping);
-      buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
-
       prevDDL = iDDL;
     }
 
@@ -551,10 +553,10 @@ void AliPHOS::Digits2Raw()
     // if a signal is out of time range, write only trailer
     if (digit->GetTimeR() > pulse->GetRawFormatTimeMax()*0.5 ) {
       AliInfo("Signal is out of time range.\n");
-      buffer->FillBuffer(0);
-      buffer->FillBuffer(pulse->GetRawFormatTimeBins() );  // time bin
-      buffer->FillBuffer(3);                               // bunch length
-      buffer->WriteTrailer(3, relId[3]-1, relId[2]-1, 0);  // trailer
+      buffer[iDDL]->FillBuffer(0);
+      buffer[iDDL]->FillBuffer(pulse->GetRawFormatTimeBins() );  // time bin
+      buffer[iDDL]->FillBuffer(3);                               // bunch length
+      buffer[iDDL]->WriteTrailer(3, relId[3]-1, relId[2]-1, 0);  // trailer
       
     // calculate the time response function
     } else {
@@ -571,19 +573,21 @@ void AliPHOS::Digits2Raw()
       pulse->SetTZero(digit->GetTimeR());
       pulse->MakeSamples();
       pulse->GetSamples(adcValuesHigh, adcValuesLow) ; 
-      buffer->WriteChannel(relId[3]-1, relId[2]-1, 0, 
+      buffer[iDDL]->WriteChannel(relId[3]-1, relId[2]-1, 0, 
 			   pulse->GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
-      buffer->WriteChannel(relId[3]-1, relId[2]-1, 1, 
+      buffer[iDDL]->WriteChannel(relId[3]-1, relId[2]-1, 1, 
 			   pulse->GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
     }
   }
   
   // write real header and close last file
-  if (buffer) {
-    buffer->Flush();
-    buffer->WriteDataHeader(kFALSE, kFALSE);
-    delete buffer;
-    if (mapping) delete mapping;
+  for (Int_t iDDL=0; iDDL<maxDDL; iDDL++) {
+    if (buffer[iDDL]) {
+      buffer[iDDL]->Flush();
+      buffer[iDDL]->WriteDataHeader(kFALSE, kFALSE);
+      delete buffer[iDDL];
+      if (mapping[iDDL]) delete mapping[iDDL];
+    }
   }
   
   AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n",
