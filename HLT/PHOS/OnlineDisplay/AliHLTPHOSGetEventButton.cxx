@@ -30,10 +30,10 @@ AliHLTPHOSGetEventButton::AliHLTPHOSGetEventButton()
 }
 
 
-AliHLTPHOSGetEventButton::AliHLTPHOSGetEventButton(TGCompositeFrame *gfPtr, char *name):TGTextButton(gfPtr, name)
+AliHLTPHOSGetEventButton::AliHLTPHOSGetEventButton(TGCompositeFrame *gfPtr, char *name, char opt):TGTextButton(gfPtr, name)
 {
+  fOption = opt;
   onlineDisplayPtr = (AliHLTPHOSOnlineDisplay *)gfPtr;
-
 }
 
 
@@ -42,6 +42,18 @@ AliHLTPHOSGetEventButton::HandleButton(Event_t* event)
 {
   if(event->fType == kButtonPress) 
     {
-      onlineDisplayPtr->GetNextEvent();
+      switch (fOption)
+	{
+	case 'e':
+	  onlineDisplayPtr->GetNextEvent();
+	  cout << "updating Eventdisplay" << endl;
+	  break;
+
+	case 'h':
+	  onlineDisplayPtr->GetHistogram();
+	  cout << "updating Histograms" << endl;
+	  break;
+	}
+   //     onlineDisplayPtr->GetNextEvent();
     }
 }

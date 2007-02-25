@@ -12,12 +12,13 @@ class AliHLTPHOSGetEventButton : public TGTextButton
 {
  public:
   AliHLTPHOSGetEventButton();
-  AliHLTPHOSGetEventButton(TGGroupFrame *gfPtr, char *name);
-  AliHLTPHOSGetEventButton(TGCompositeFrame *gfPtr, char *name);
+  AliHLTPHOSGetEventButton(TGGroupFrame *gfPtr, char *name, char opt ='e');
+  AliHLTPHOSGetEventButton(TGCompositeFrame *gfPtr, char *name, char opt='e');
   //  AliHLTPHOSGetEventButton(AliHLTPHOSOnlineDisplay *gfPtr, char *name); 
   virtual Bool_t HandleButton(Event_t* event);
  private:
   AliHLTPHOSOnlineDisplay* onlineDisplayPtr;
+  char fOption;
 };
 
 #endif
