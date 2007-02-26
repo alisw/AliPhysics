@@ -1,3 +1,8 @@
+2007-02-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* KineTools.cxx:
+	Enable all branches in TreeTR after reading of path-marks.
+
 2007-02-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* LinkDef.h:
