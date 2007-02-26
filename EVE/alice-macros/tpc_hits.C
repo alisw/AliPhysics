@@ -25,7 +25,7 @@ tpc_hits(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ"
   ps.Select();
 
   if (points->Size() == 0) {
-    Warning("tpc_hits", Form("No hits match %s %s", varexp, selection));
+    Warning("tpc_hits", Form("No hits match '%s'", selection));
     delete points;
     return 0;
   }

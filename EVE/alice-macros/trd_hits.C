@@ -21,7 +21,7 @@ trd_hits(const char *varexp    = "fX:fY:fZ",
   ps.Select();
 
   if (points->Size() == 0) {
-    Warning("trd_hits", Form("No hits match %s %s", varexp, selection));
+    Warning("trd_hits", Form("No hits match '%s'", selection));
     delete points;
     return 0;
   }

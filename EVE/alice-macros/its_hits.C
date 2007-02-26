@@ -21,7 +21,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   ps.Select();
 
   if( points->Size() == 0) {
-    Warning("its_hits", Form("No hits match %s %s", varexp, selection));
+    Warning("its_hits", Form("No hits match '%s'", selection));
     delete points;
     return 0;
   }
