@@ -45,7 +45,7 @@ QuadSetEditor::QuadSetEditor(const TGWindow *p, Int_t width, Int_t height,
   fPalette->Connect("Changed", "Reve::QuadSetEditor", this, "Update()");
   AddFrame(fPalette, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
 
-  MakeTitle("QuadSet");
+  // MakeTitle("QuadSet");
 
   // Create widgets
   // fXYZZ = new TGSomeWidget(this, ...);
