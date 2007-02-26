@@ -20,6 +20,12 @@ trd_hits(const char *varexp    = "fX:fY:fZ",
   TPointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
+  if (points->Size() == 0) {
+    Warning("trd_hits", Form("No hits match %s %s", varexp, selection));
+    delete points;
+    return 0;
+  }
+
   //PH  points->SetTitle(Form("N=%d", points->Size()));
   sprintf(form,"N=%d", points->Size());
   points->SetTitle(form);

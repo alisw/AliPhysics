@@ -24,6 +24,12 @@ tpc_hits(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ"
   TPointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
+  if (points->Size() == 0) {
+    Warning("tpc_hits", Form("No hits match %s %s", varexp, selection));
+    delete points;
+    return 0;
+  }
+
   //PH  points->SetTitle(Form("N=%d", points->Size()));
   sprintf(form,"N=%d", points->Size());
   points->SetTitle(form);
