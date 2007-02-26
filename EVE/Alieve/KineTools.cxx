@@ -120,7 +120,7 @@ void KineTools::SetPathMarks(TrackList* cont, AliStack* stack , TTree* treeTR)
 	  }
 	  else
 	    throw(eH + Form("negative label for entry %d in branch %s.",
-			    iTrackRef, el->GetName());
+			    iTrackRef, el->GetName()));
 	}
       } // loop track refs 
       treeTR->SetBranchAddress(el->GetName(), 0);
