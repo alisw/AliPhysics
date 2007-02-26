@@ -105,6 +105,9 @@ public:
   Float_t                  fMinAng;  // Minimal angular step between two helix points.
   Float_t                  fDelta;   // Maximal error at the mid-point of the line connecting to helix points.
 
+  Float_t                  fMinPt;
+  Float_t                  fMaxPt;
+
   Color_t                  fPMColor;
   Style_t                  fPMStyle;
   Size_t                   fPMSize;
@@ -183,9 +186,9 @@ public:
   Bool_t GetRnrTracks() const { return fRnrTracks; }
   void   SetRnrTracks(Bool_t);
 
-  Bool_t GetRnrDaughters() const { return fRnrStyle->fRnrDaughters; }
+  Bool_t GetRnrDaughters()  const { return fRnrStyle->fRnrDaughters; }
   Bool_t GetRnrReferences() const { return fRnrStyle->fRnrReferences; }
-  Bool_t GetRnrDecay() const { return fRnrStyle->fRnrDecay; }
+  Bool_t GetRnrDecay()      const { return fRnrStyle->fRnrDecay; }
 
   void   SetRnrDaughters(Bool_t x);
   void   SetRnrReferences(Bool_t x);
@@ -205,6 +208,9 @@ public:
   Float_t GetMaxOrbs()      const { return fRnrStyle->fMaxOrbs; }
   Float_t GetMinAng()       const { return fRnrStyle->fMinAng; }
   Float_t GetDelta()        const { return fRnrStyle->fDelta; }
+  
+  Float_t GetMinPt()        const { return fRnrStyle->fMinPt; }
+  Float_t GetMaxPt()        const { return fRnrStyle->fMaxPt; }
 
   Bool_t  GetFitDaughters()  const { return fRnrStyle->fFitDaughters; }
   Bool_t  GetFitReferences() const { return fRnrStyle->fFitReferences; }

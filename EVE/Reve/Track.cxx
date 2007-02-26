@@ -342,6 +342,9 @@ TrackRnrStyle::TrackRnrStyle() :
   fMinAng  (45),
   fDelta   (0.1),
 
+  fMinPt   (0.1),
+  fMaxPt   (10),
+
   fFitDaughters  (kTRUE),
   fFitReferences (kTRUE),
   fFitDecay      (kTRUE),
@@ -553,6 +556,9 @@ void TrackList::SetRnrTracks(Bool_t rnr)
 
 void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 {
+  fRnrStyle->fMinPt = min_pt;
+  fRnrStyle->fMaxPt = max_pt;
+
   Float_t minptsq = min_pt*min_pt;
   Float_t maxptsq = max_pt*max_pt;
   Float_t ptsq;

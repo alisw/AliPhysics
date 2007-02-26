@@ -26,31 +26,31 @@ using namespace Reve;
 
 ClassImp(TrackListEditor)
 
-  TrackListEditor::TrackListEditor(const TGWindow *p,
-				   Int_t width, Int_t height,
-				   UInt_t options, Pixel_t back) :
-    TGedFrame(p, width, height, options | kVerticalFrame, back),
+TrackListEditor::TrackListEditor(const TGWindow *p,
+				 Int_t width, Int_t height,
+				 UInt_t options, Pixel_t back) :
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
 
-    fTC (0),
+  fTC (0),
 
-    fMaxR(0),
-    fMaxZ(0),
-    fMaxOrbits(0),
-    fMinAng(0),
-    fDelta(0),
+  fMaxR(0),
+  fMaxZ(0),
+  fMaxOrbits(0),
+  fMinAng(0),
+  fDelta(0),
 
-    fRnrTracks(0),
-    fRnrMarkers(0),
+  fRnrTracks(0),
+  fRnrMarkers(0),
 
-    fPMFrame(0),
-    fFitDaughters(0),
-    fFitReferences(0),
-    fFitDecay(0),
-    fRnrDaughters(0),
-    fRnrReferences(0),
-    fRnrDecay(0),
+  fPMFrame(0),
+  fFitDaughters(0),
+  fFitReferences(0),
+  fFitDecay(0),
+  fRnrDaughters(0),
+  fRnrReferences(0),
+  fRnrDecay(0),
 
-    fPtRange(0)
+  fPtRange(0)
 {
   MakeTitle("TrackList");
   Int_t labelW = 67;
@@ -123,7 +123,7 @@ ClassImp(TrackListEditor)
   fPtRange->SetNELength(6);
   fPtRange->Build();
   fPtRange->GetSlider()->SetWidth(224);
-  fPtRange->SetLimits(0.1, 10, TGNumberFormat::kNESRealTwo);
+  fPtRange->SetLimits(0, 10, TGNumberFormat::kNESRealTwo);
   fPtRange->Connect("ValueSet()",
 		    "Reve::TrackListEditor", this, "DoPtRange()");
   AddFrame(fPtRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
@@ -234,7 +234,7 @@ void TrackListEditor::SetModel(TObject* obj)
     ShowFrame(fRnrMarkers);
     fRnrMarkers->SetState(fTC->GetRnrMarkers() ? kButtonDown : kButtonUp);
   }
-  fPtRange->SetValues(0.1, 10);
+  fPtRange->SetValues(fTC->GetMinPt(), fTC->GetMaxPt());
 }
 
 /**************************************************************************/
