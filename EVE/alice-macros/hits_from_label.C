@@ -25,5 +25,10 @@ void hits_from_label(Int_t label=0)
   h = trd_hits("fX:fY:fZ", form);
   if(h) h->SetMarkerSize(1);
 
+  Reve::LoadMacro("tof_hits.C");
+  sprintf(form,"TOF.fTrack==%d", label);
+  h = tof_hits("fX:fY:fZ", form);
+  if(h) h->SetMarkerSize(1);
+
   gReve->Redraw3D();
 }
