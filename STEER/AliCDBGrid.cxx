@@ -525,8 +525,9 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 
 	TDirectory* saveDir = gDirectory;
 
+	TString fullFilename = Form("/alien%s", filename.Data());
 	// specify SE to filename
-	TString fullFilename = Form("/alien%s?se=%s", filename.Data(), fSE.Data());
+	if (fSE != "default") fullFilename += Form("?se=%s",fSE.Data());
 
 	// open file
 	TFile *file = TFile::Open(fullFilename,"CREATE");
@@ -550,7 +551,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 
 	if(result) {
 		AliInfo(Form("CDB object stored into file %s", filename.Data()));
-		AliInfo(Form("using S.E. %s", fSE.Data()));
+		AliInfo(Form("using S.E.: %s", fSE.Data()));
 
 		if(!TagFileId(filename, &id)){
 			AliInfo(Form("CDB tagging failed. Deleting file %s!",filename.Data()));
@@ -862,7 +863,7 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
  	TString gridUrl 	= "alien://";
 	TString user 		= "";
 	TString dbFolder 	= "DBGrid";
-	TString se		= "ALICE::CERN::se01";
+	TString se		= "default";
 
 	TObjArray *arr = buffer.Tokenize('?');
 	TIter iter(arr);
