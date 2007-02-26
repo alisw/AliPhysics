@@ -23,13 +23,14 @@
 #include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 
 
+
 const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::outputDataType=kAliHLTVoidDataType;
 
 
 AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
 
-AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTProcessor(), fEnergyHistograms(0), fTimingHistogram(0), fEventCount(0),  fEquippmentID(0)
+AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTProcessor(), fEventCount(0),  fEquippmentID(0)
 {
   Reset();
 } 
@@ -41,7 +42,7 @@ AliHLTPHOSHistogramProducerComponent::~ AliHLTPHOSHistogramProducerComponent()
 }
 
 
-AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent(const  AliHLTPHOSHistogramProducerComponent & ) : AliHLTProcessor(),  fEnergyHistograms(0), fTimingHistogram(0), fEventCount(0),  fEquippmentID(0)
+AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent(const  AliHLTPHOSHistogramProducerComponent & ) : AliHLTProcessor(), fEventCount(0),  fEquippmentID(0)
 {
 
 }

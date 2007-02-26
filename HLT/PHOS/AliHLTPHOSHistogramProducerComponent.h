@@ -44,12 +44,13 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   void Reset();
   void ResetDataPtr();
 
+
  private:
   //  TH2F fEnergyHistograms[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
   //  TH2F fTimingHistograms[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
 
-  TH2F *fEnergyHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
-  TH2F *fTimingHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
+  // TH2F *fEnergyHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
+  //  TH2F *fTimingHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
 
   //  Double_t fEnergyAverageValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];  
   //  Double_t fTimingAverageValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];  
