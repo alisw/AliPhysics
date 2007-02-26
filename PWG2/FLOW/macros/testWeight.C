@@ -22,7 +22,7 @@
 
 using namespace std; //required for resolving the 'cout' symbol
 
-void testWeight(TString wgts = "pFlowPhiWgt.root")
+void testWeight(TString wgts = "flowPhiWgt.root")
 {
  cout << " . Here the new flow Weighter (2007) ... " << endl ;
  cout << endl ;
@@ -49,7 +49,7 @@ void testWeight(TString wgts = "pFlowPhiWgt.root")
  select->SetRunIdCut(-1) ;
 
  // R.P. calculation cuts
- for(int j=0;j<Flow::nHars;j++)
+ for(int j=0;j<AliFlowConstants::kHars;j++)
  {
   select->SetEtaCut(0., 1.1, j, 1) ;
   select->SetPtCut(0.1, 10. , j, 1);
@@ -79,7 +79,7 @@ void testWeight(TString wgts = "pFlowPhiWgt.root")
  
  // flowEvents chain (imput) //
 
- TString input = "pFlowEvts.root" ;
+ TString input = "flowEvts.root" ;
  TFile* flowEventsFile = new TFile(input.Data(), "READ") ; // flowEventsFile->ls() ;
  Int_t nEvts = flowEventsFile->GetNkeys() ; 
  cout << " . Found  " << nEvts << " AliFlowEvents in file " << input.Data() << endl ;

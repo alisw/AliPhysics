@@ -170,7 +170,7 @@ void AliSelectorFoF::Begin(TTree*)
   fFlowSelect->SetCentralityCut(-1) ;
   fFlowSelect->SetRunIdCut(-1) ;
   // R.P. calculation cuts
-  for(int j=0;j<Flow::nHars;j++)
+  for(int j=0;j<AliFlowConstants::kHars;j++)
   {
    fFlowSelect->SetEtaCut(0., 1.1, j, 1) ;
    fFlowSelect->SetPtCut(0.1, 10. , j, 1);

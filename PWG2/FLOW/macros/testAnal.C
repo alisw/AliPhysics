@@ -22,7 +22,7 @@
 
 using namespace std; //required for resolving the 'cout' symbol
 
-void testAnal(TString output = "pFlowEvtsAnal.root")
+void testAnal(TString output = "flowEvtsAnal.root")
 {
  cout << " . Here the new flow analysis (2007) ... " << endl ;
  cout << endl ;
@@ -50,7 +50,7 @@ void testAnal(TString output = "pFlowEvtsAnal.root")
  select->SetRunIdCut(-1) ;
 
  // R.P. calculation cuts
- for(int j=0;j<Flow::nHars;j++)
+ for(int j=0;j<AliFlowConstants::kHars;j++)
  {
   select->SetEtaCut(0., 1.1, j, 1) ;
   select->SetPtCut(0.1, 10. , j, 1);
@@ -107,7 +107,7 @@ void testAnal(TString output = "pFlowEvtsAnal.root")
  cout << " . Writing Histograms on  : " << flow->GetHistFileName()   << "  . " << endl ;
 
  // Wgt file
- TString wgtFileName = "pFlowPhiWgt.root" ;
+ TString wgtFileName = "flowPhiWgt.root" ;
  TFile* wgtFile = new TFile(wgtFileName.Data(),"READ");
  flow->FillWgtArrays(wgtFile) ; // fix this !!!
  cout << " . Weights from  : " << flow->GetWgtFileName() << "  . " << endl ;
@@ -130,7 +130,7 @@ void testAnal(TString output = "pFlowEvtsAnal.root")
  
  // flowEvents chain (imput) //
 
- TString fFlowFileName = "pFlowEvts.root" ;
+ TString fFlowFileName = "flowEvts.root" ;
 
  // organizing event loop
  TFile* flowEventsFile = new TFile(fFlowFileName.Data(), "READ") ; // flowEventsFile->ls() ;
