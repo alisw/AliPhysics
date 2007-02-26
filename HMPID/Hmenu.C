@@ -583,6 +583,8 @@ void hed()
   static TTree *pEsdTr=0;
   static AliESD *pEsd=0;
   if(!pC&&iEvt<iEvtTot){
+    iEvt=0;
+    iEvtTot=999;
     if(hl==0) {Printf("hed: no HMPID loader");return;}
     Printf("Opening session");
     pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pEsdFl->IsOpen()) return;//open AliESDs.root
@@ -591,7 +593,8 @@ void hed()
     hl->LoadDigits(); hl->LoadRecPoints();
     iEvtTot=pEsdTr->GetEntries();
     pC=new TCanvas("hed","View from electronics side, IP is behind the picture.",1000,900);  pC->ToggleEventStatus(); pC->Divide(3,3);
-    pC->cd(7); TButton *pBtn=new TButton("Next","hed()",0,0,0.2,0.1);   pBtn->Draw(); 
+    pC->cd(7); TButton *pBtn=new TButton("Next","hed()",0,0,0.2,0.1);   pBtn->Draw();
+    pC->cd(7); TButton *pBtn=new TButton("Quit","Close_hed()",0.2,0,0.4,0.1);   pBtn->Draw(); 
   }
  
   if(iEvt<iEvtTot){
@@ -603,7 +606,17 @@ void hed()
   }else{
     Printf("--- No more events available...Bye.");
     pC->Close();
+    pC=0x0;
+    iEvt=0;
+    iEvtTot=999;
   }
+}//hed()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void Close_hed()
+{
+  TCanvas *pC = ((TCanvas*)gROOT->FindObject("hed"));if(!pC) return;
+  pC->Close();
+  pC=0x0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void sed()
