@@ -29,7 +29,7 @@ const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::outputDataT
 
 AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
 
-AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
+AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTProcessor(), fEnergyHistograms(0), fTimingHistogram(0), fEventCount(0),  fEquippmentID(0)
 {
   Reset();
 } 
@@ -41,7 +41,7 @@ AliHLTPHOSHistogramProducerComponent::~ AliHLTPHOSHistogramProducerComponent()
 }
 
 
-AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent(const  AliHLTPHOSHistogramProducerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
+AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent(const  AliHLTPHOSHistogramProducerComponent & ) : AliHLTProcessor(),  fEnergyHistograms(0), fTimingHistogram(0), fEventCount(0),  fEquippmentID(0)
 {
 
 }
@@ -58,6 +58,8 @@ int
 AliHLTPHOSHistogramProducerComponent::DoDeinit()
 {
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSHistogramProducer DoDeinit");
+
+
   return 0;
 
 }

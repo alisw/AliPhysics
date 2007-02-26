@@ -17,7 +17,9 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
 {
  public:
   AliHLTPHOSHistogramProducerComponent();
-  ~AliHLTPHOSHistogramProducerComponent();
+
+  //  ~AliHLTPHOSHistogramProducerComponent();
+  virtual ~AliHLTPHOSHistogramProducerComponent();
   AliHLTPHOSHistogramProducerComponent(const AliHLTPHOSHistogramProducerComponent & );
   AliHLTPHOSHistogramProducerComponent & operator = (const AliHLTPHOSHistogramProducerComponent &)
    {
@@ -46,8 +48,9 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   //  TH2F fEnergyHistograms[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
   //  TH2F fTimingHistograms[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
 
-  TH2F fEnergyHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
-  TH2F fTimingHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
+  TH2F *fEnergyHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
+  TH2F *fTimingHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
+
   //  Double_t fEnergyAverageValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];  
   //  Double_t fTimingAverageValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];  
 
