@@ -3,6 +3,10 @@ PACKAGE = invalid-only-for-proof
 include $(ROOTSYS)/test/Makefile.arch
 include lib$(PACKAGE).pkg
 
+ifndef PACKCXXFLAGS
+PACKCXXFLAGS = $(CXXFLAGS)
+endif
+
 SRCS         += G__$(PACKAGE).cxx
 OBJS          = $(SRCS:.cxx=.o)
 
@@ -18,12 +22,12 @@ endif
 	@echo "done"
 
 %.o:    %.cxx %.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(PACKCXXFLAGS) -c $< -o $@
 
 clean:
 	@rm -f $(OBJS) *.so G__$(PACKAGE).*
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionary ..."
-	rootcint -f $@ -c $(ALICEINC) $^
+	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
 
