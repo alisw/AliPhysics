@@ -1,3 +1,10 @@
+2007-02-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	* TrackEditors.cxx:
+	TrackRnrStyle: add pt-range memebers.
+
 2007-02-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* PODs.cxx:
