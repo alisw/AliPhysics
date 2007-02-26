@@ -27,14 +27,14 @@ using namespace std;
 ClassImp(KineTools)
 
 KineTools::KineTools()
-{
-
-}
+{}
 
 /**************************************************************************/
-void KineTools::SetDaughterPathMarks(TrackList* cont,  AliStack* stack )
+
+void KineTools::SetDaughterPathMarks(TrackList* cont,  AliStack* stack)
 {
-  // import daughters birth points 
+  // Import daughters birth points.
+
   RenderElement::List_i  iter = cont->BeginChildren();
 
   while(iter != cont->EndChildren())
@@ -83,7 +83,7 @@ void KineTools::SetPathMarks(TrackList* cont, AliStack* stack , TTree* treeTR)
   TIter next(treeTR->GetListOfBranches());
   TBranchElement* el;
   Bool_t isRef = kTRUE;
-  treeTR->SetBranchStatus("*",0);
+  treeTR->SetBranchStatus("*", 0);
 
   while ((el = (TBranchElement*) next()))
   {
@@ -119,14 +119,15 @@ void KineTools::SetPathMarks(TrackList* cont, AliStack* stack , TTree* treeTR)
             v.push_back(pm);
 	  }
 	  else
-	    throw(eH + "negative label for entry " + Form("%d",iTrackRef) + " in branch " + el->GetName()+ ".");
+	    throw(eH + Form("negative label for entry %d in branch %s.",
+			    iTrackRef, el->GetName());
 	}
       } // loop track refs 
       treeTR->SetBranchAddress(el->GetName(), 0);
     } // loop primaries, clones arrays
     treeTR->SetBranchStatus(Form("%s*", el->GetName()), 0);
   } // end loop through top branches
-
+  treeTR->SetBranchStatus("*", 1);
 
   // sort references and add it to tracks
   RenderElement::List_i  cit = cont->BeginChildren();
