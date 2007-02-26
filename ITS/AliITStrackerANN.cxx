@@ -72,7 +72,7 @@ fGeom(0){
 }
 //__________________________________________________________________________________
 AliITStrackerANN::AliITStrackerANN(const AliITSgeom *geom, Int_t msglev) 
-: AliITStrackerV2(geom), 
+: AliITStrackerV2(0), 
 fVertexX(0.0),
 fVertexY(0.0),
 fVertexZ(0.0),

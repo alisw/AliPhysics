@@ -28,7 +28,7 @@
 #include <TRandom.h>
 #include <TGeoMatrix.h>
 
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliAlignObj.h"
 #include "AliITSRecPoint.h"
 #include "AliESD.h"
@@ -87,7 +87,7 @@ AliITStrackerV2::AliITStrackerV2(const AliITStrackerV2 &t):
 
 }
 
-AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : 
+AliITStrackerV2::AliITStrackerV2(const AliITSgeomTGeo *geom) : 
   AliTracker(), 
   fI(kMaxLayer),
   fBestTrack(),
@@ -98,23 +98,25 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) :
   //--------------------------------------------------------------------
   //This is the AliITStrackerV2 constructor
   //--------------------------------------------------------------------
-  AliITSgeom *g=(AliITSgeom*)geom;
+  if (geom) {
+    AliWarning("\"geom\" is actually a dummy argument !");
+  }
 
-  Float_t x,y,z;  Int_t i;
-  for (i=1; i<kMaxLayer+1; i++) {
-    Int_t nlad=g->GetNladders(i);
-    Int_t ndet=g->GetNdetectors(i);
+  for (Int_t i=1; i<kMaxLayer+1; i++) {
+    Int_t nlad=AliITSgeomTGeo::GetNLadders(i);
+    Int_t ndet=AliITSgeomTGeo::GetNDetectors(i);
 
-    g->GetTrans(i,1,1,x,y,z); 
+    Double_t xyz[3], &x=xyz[0], &y=xyz[1], &z=xyz[2];
+    AliITSgeomTGeo::GetOrigTranslation(i,1,1,xyz); 
     Double_t poff=TMath::ATan2(y,x);
     Double_t zoff=z;
     Double_t r=TMath::Sqrt(x*x + y*y);
 
-    g->GetTrans(i,1,2,x,y,z);
+    AliITSgeomTGeo::GetOrigTranslation(i,1,2,xyz);
     r += TMath::Sqrt(x*x + y*y);
-    g->GetTrans(i,2,1,x,y,z);
+    AliITSgeomTGeo::GetOrigTranslation(i,2,1,xyz);
     r += TMath::Sqrt(x*x + y*y);
-    g->GetTrans(i,2,2,x,y,z);
+    AliITSgeomTGeo::GetOrigTranslation(i,2,2,xyz);
     r += TMath::Sqrt(x*x + y*y);
     r*=0.25;
 
@@ -122,8 +124,9 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) :
 
     for (Int_t j=1; j<nlad+1; j++) {
       for (Int_t k=1; k<ndet+1; k++) { //Fill this layer with detectors
-        Float_t x,y,zshift; g->GetTrans(i,j,k,x,y,zshift); 
-        Double_t rot[9]; g->GetRotMatrix(i,j,k,rot);
+        TGeoHMatrix m; AliITSgeomTGeo::GetOrigMatrix(i,j,k,m);
+        Double_t *xyz=m.GetTranslation(), x=xyz[0], y=xyz[1];
+        Double_t *rot=m.GetRotationMatrix(); 
 
         Double_t phi=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
         phi+=TMath::Pi()/2;
@@ -188,9 +191,11 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
         Int_t idx=c->GetDetectorIndex();
         AliITSdetector &det=fgLayers[i].GetDetector(idx);
    
-        //Shift the cluster to the misaligned position
-        Double_t x=det.GetR(); //y=...;      z=...;
-        c->SetX(x);            //c->SetY(y); c->SetZ(z); 
+        //Shift the cluster to the misaligned position (temporary solution)
+        Double_t x=det.GetR();
+        if      (i==0) x-=0.0075; 
+        else if (i==1) x+=0.0075;
+        c->SetX(x);           
 
         Double_t y=r*det.GetPhi()+c->GetY();
         if (y>circ) y-=circ; else if (y<0) y+=circ;

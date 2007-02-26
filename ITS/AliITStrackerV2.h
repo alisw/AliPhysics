@@ -14,7 +14,7 @@
 
 class AliITSRecPoint;
 class AliESD;
-class AliITSgeom;
+class AliITSgeomTGeo;
 class TTree;
 
 
@@ -22,7 +22,7 @@ class TTree;
 class AliITStrackerV2 : public AliTracker {
 public:
   AliITStrackerV2();
-  AliITStrackerV2(const AliITSgeom *geom);
+  AliITStrackerV2(const AliITSgeomTGeo *geom);
   ~AliITStrackerV2(){}
   AliCluster *GetCluster(Int_t index) const;
   AliITSRecPoint *GetCluster(Int_t l, Int_t c) const {

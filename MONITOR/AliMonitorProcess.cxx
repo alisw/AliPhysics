@@ -653,7 +653,7 @@ Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader, AliESD* esd)
 
   // track finder
   AliDebug(1, "reconstructing tracks...");
-  AliITStrackerV2 tracker(fITSgeom);
+  AliITStrackerV2 tracker(0);
   tracker.LoadClusters(itsLoader->TreeR());
   tracker.Clusters2Tracks(esd);
   tracker.UnloadClusters();

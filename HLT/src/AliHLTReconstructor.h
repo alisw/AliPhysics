@@ -8,8 +8,6 @@
 #ifdef use_reconstruction
 #include "AliReconstructor.h"
 
-class AliITSgeom;
-
 class AliHLTReconstructor: public AliReconstructor {
 public:
   AliHLTReconstructor();
@@ -49,8 +47,6 @@ private:
   void ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const;
   void FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const;
   void FillESDforHoughTransform(AliESD* esd,Int_t iEvent) const;
-
-  AliITSgeom*          GetITSgeom(AliRunLoader* runLoader) const;
 
   Bool_t fDoHough;   //do the hough transform
   Bool_t fDoTracker; //do the standard conformal tracker

@@ -66,7 +66,7 @@ fCluCoord(0){
  
 }
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerMI(geom),
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom):AliITStrackerMI(0),
 fPhiEstimate(0),
 fLambdac(0),
 fPhic(0),
@@ -93,7 +93,7 @@ fCluCoord(0)
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerMI(geom),
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerMI(0),
 fPhiEstimate(0),
 fLambdac(0),
 fPhic(0),
@@ -119,7 +119,7 @@ fCluCoord(0)
 }
 
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):AliITStrackerMI(geom),
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertexer *vertexer):AliITStrackerMI(0),
 fPhiEstimate(0),
 fLambdac(0),
 fPhic(0),

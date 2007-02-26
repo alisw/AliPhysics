@@ -20,14 +20,14 @@
 #include "AliITStrackerV2.h"
 
 class AliESD;
-class AliITSgeom;
+class AliITSgeomTGeo;
 class AliHLTITStrack;
 
 //-------------------------------------------------------------------------
 class AliHLTITStracker : public AliITStrackerV2 {
 public:
   AliHLTITStracker():AliITStrackerV2(){ fConstraint[0]=1; fConstraint[1]=0; }
-  AliHLTITStracker(const AliITSgeom *geom) : AliITStrackerV2(geom){ fConstraint[0]=1; fConstraint[1]=0; }
+  AliHLTITStracker(const AliITSgeomTGeo *geom) : AliITStrackerV2(geom){ fConstraint[0]=1; fConstraint[1]=0; }
 
   Int_t Clusters2Tracks(AliESD *event);
   Int_t PropagateBack(AliESD *event);

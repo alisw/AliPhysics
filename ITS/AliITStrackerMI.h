@@ -15,7 +15,7 @@ class TTree;
 class TTreeSRedirector;
 class AliESD;
 class AliHelix;
-class AliITSgeom;
+class AliITSgeomTGeo;
 
 #include <TObjArray.h>
 #include "AliITSRecPoint.h"
@@ -26,7 +26,7 @@ class AliITSgeom;
 class AliITStrackerMI : public AliTracker {
 public:
   AliITStrackerMI();
-  AliITStrackerMI(const AliITSgeom *geom);
+  AliITStrackerMI(const AliITSgeomTGeo *geom);
   virtual ~AliITStrackerMI();
   AliCluster *GetCluster(Int_t index) const;
   virtual Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;

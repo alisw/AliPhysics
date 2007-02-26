@@ -169,7 +169,7 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
   TString selectedTracker = GetOption();
   AliTracker* tracker;    
   if (selectedTracker.Contains("MI")) {
-    tracker = new AliITStrackerMI(geom);
+    tracker = new AliITStrackerMI(0);
   }
   else {
     tracker =  new AliITStrackerSA(geom);  // inherits from AliITStrackerMI

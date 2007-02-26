@@ -228,7 +228,7 @@ void AliHoughFilter::RunITStracking(AliESD* esd, TTree *treeClusters)
   const AliESDVertex *vertex = esd->GetVertex();
   vertex->GetXYZ(vtxPos);
 
-  AliHLTITStracker itsTracker(fITSgeom);
+  AliHLTITStracker itsTracker(0);
   itsTracker.SetVertex(vtxPos,vtxErr);
 
   itsTracker.LoadClusters(treeClusters);

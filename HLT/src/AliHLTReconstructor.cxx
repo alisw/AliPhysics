@@ -34,7 +34,6 @@
 
 #include "AliRun.h"
 #include "AliITS.h"
-#include "AliITSgeom.h"
 #include "AliHLTITStracker.h"
 #include "AliHLTTPCtracker.h"
 #include "MUON/src/AliRoot/AliHLTMUONTracker.h"
@@ -326,37 +325,13 @@ AliTracker* AliHLTReconstructor::CreateTracker(AliRunLoader* runLoader) const
   }
   if(!opt.CompareTo("ITS")) {
     // Create ITS tracker
-    AliITSgeom* geom = GetITSgeom(runLoader);
-    if (!geom) return NULL;
-    return new AliHLTITStracker(geom);
+    return new AliHLTITStracker(0);
   }
   if(!opt.CompareTo("MUON")) {
     return new AliHLTMUONTracker(runLoader);
   }
 
   return NULL;
-}
-
-//_____________________________________________________________________________
-AliITSgeom* AliHLTReconstructor::GetITSgeom(AliRunLoader* runLoader) const
-{
-// get the ITS geometry
-
-  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
-  if (!runLoader->GetAliRun()) {
-    Error("GetITSgeom", "couldn't get AliRun object");
-    return NULL;
-  }
-  AliITS* its = (AliITS*) runLoader->GetAliRun()->GetDetector("ITS");
-  if (!its) {
-    Error("GetITSgeom", "couldn't get ITS detector");
-    return NULL;
-  }
-  if (!its->GetITSgeom()) {
-    Error("GetITSgeom", "no ITS geometry available");
-    return NULL;
-  }
-  return its->GetITSgeom();
 }
 
 void AliHLTReconstructor::FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEvent, Int_t dcCut = 0) const
