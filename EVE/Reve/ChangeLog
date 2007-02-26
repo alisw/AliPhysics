@@ -1,3 +1,10 @@
+2007-02-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	In class Track: renamed ImportDaughters() to ImportKine(), added
+	ImportKineWithArgs(), both accessible from ctx-menu.
+
 2007-02-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* Track.cxx:
