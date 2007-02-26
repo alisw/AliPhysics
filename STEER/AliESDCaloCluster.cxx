@@ -44,6 +44,8 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fM11(0),
   fNExMax(0),
   fEmcCpvDistance(9999),
+  fNumberOfPrimaries(-1),
+  fListOfPrimaries(0x0),
   fNumberOfDigits(0),
   fDigitAmplitude(0x0),
   fDigitTime(0x0),
@@ -72,6 +74,8 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fM11(clus.fM11),
   fNExMax(clus.fNExMax),
   fEmcCpvDistance(clus.fEmcCpvDistance),
+  fNumberOfPrimaries(clus.fNumberOfPrimaries),
+  fListOfPrimaries(0x0),
   fNumberOfDigits(clus.fNumberOfDigits),
   fDigitAmplitude(0x0),
   fDigitTime(0x0),
@@ -102,6 +106,11 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
       for (Int_t i=0; i<clus.fNumberOfDigits; i++)
 	fDigitIndex[i]=clus.fDigitIndex[i];
     }
+   if (clus.fListOfPrimaries) {
+      fListOfPrimaries = new UShort_t[clus.fNumberOfPrimaries];
+      for (Int_t i=0; i<clus.fNumberOfPrimaries; i++)
+	fListOfPrimaries[i]=clus.fListOfPrimaries[i];
+    }
   }
 }
 
@@ -125,6 +134,10 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fM11 = source.fM11;
   fNExMax = source.fNExMax;
   fEmcCpvDistance = source.fEmcCpvDistance;
+
+  fNumberOfPrimaries = source.fNumberOfPrimaries;
+  delete fListOfPrimaries; fListOfPrimaries=0x0;
+
   fNumberOfDigits = source.fNumberOfDigits;
   delete fDigitAmplitude; fDigitAmplitude=0x0;
   delete fDigitTime; fDigitTime = 0x0;
@@ -152,6 +165,11 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
       for (Int_t i=0; i<source.fNumberOfDigits; i++)
 	fDigitIndex[i]=source.fDigitIndex[i];
     }
+   if (source.fListOfPrimaries) {
+      fListOfPrimaries = new UShort_t[source.fNumberOfPrimaries];
+      for (Int_t i=0; i<source.fNumberOfPrimaries; i++)
+	fListOfPrimaries[i]=source.fListOfPrimaries[i];
+    }
   }
 
   return *this;
@@ -166,7 +184,7 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   //
   // AliESDCaloCluster is the owner of the arrays
   // even if they are created outside
-
+  delete[] fListOfPrimaries;
   delete[] fDigitAmplitude;
   delete[] fDigitTime;
   delete[] fDigitIndex;

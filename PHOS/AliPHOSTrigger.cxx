@@ -20,9 +20,9 @@
 //  Digits are grouped in TRU's (Trigger Units). A TRU consist of 16x28 
 //  crystals ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 
 //  2x2 and nxn (n multiple of 4) crystal combinations per each TRU, adding the 
-//  digits amplitude and  finding the maximum. Maxima are transformed in ADC 
-//  time samples. Each time bin is compared to the trigger threshold until it is larger 
-//  and then, triggers are set. Thresholds need to be fixed. 
+//  digits amplitude and  finding the maximum. Iti is found is maximum is isolated.
+//  Maxima are transformed in ADC time samples. Each time bin is compared to the trigger 
+//  threshold until it is larger and then, triggers are set. Thresholds need to be fixed. 
 //  Usage:
 //
 //  //Inside the event loop
@@ -30,9 +30,10 @@
 //  tr->SetL0Threshold(100);
 //  tr->SetL1JetLowPtThreshold(1000);
 //  tr->SetL1JetHighPtThreshold(20000);
+//  ....
 //  tr->Trigger(); //Execute Trigger
-//  tr->Print(""); //Print result, with "deb" option all data members 
-//  //are printed
+//  tr->Print(""); //Print data members after calculation.
+//  
 //
 //*-- Author: Gustavo Conesa & Yves Schutz (IFIC, CERN) 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,7 +61,14 @@ AliPHOSTrigger::AliPHOSTrigger()
     fADCValuesHighnxn(0), fADCValuesLownxn(0),
     fADCValuesHigh2x2(0), fADCValuesLow2x2(0), fDigitsList(0),
     fL0Threshold(50), fL1JetLowPtThreshold(200), fL1JetHighPtThreshold(500),
-    fNTRU(8), fNTRUZ(2), fNTRUPhi(4),  fPatchSize(1), fSimulation(kTRUE)
+    fNTRU(8), fNTRUZ(2), fNTRUPhi(4), 
+    fNCrystalsPhi(16),
+    fNCrystalsZ(28),
+    fPatchSize(1), fIsolPatchSize(1), 
+    f2x2AmpOutOfPatch(-1), fnxnAmpOutOfPatch(-1), 
+    f2x2AmpOutOfPatchThres(2),  fnxnAmpOutOfPatchThres(2), //2 GeV out of patch 
+    fIs2x2Isol(kFALSE), fIsnxnIsol(kFALSE),  
+    fSimulation(kTRUE)
 {
   //ctor
   fADCValuesHighnxn = 0x0; //new Int_t[fTimeBins];
@@ -96,7 +104,17 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   fNTRU(trig.fNTRU),
   fNTRUZ(trig.fNTRUZ),
   fNTRUPhi(trig.fNTRUPhi),
-  fPatchSize(trig.fPatchSize), fSimulation(trig.fSimulation)
+  fNCrystalsPhi(trig.fNCrystalsPhi),
+  fNCrystalsZ(trig. fNCrystalsZ),
+  fPatchSize(trig.fPatchSize),
+  fIsolPatchSize(trig.fIsolPatchSize), 
+  f2x2AmpOutOfPatch(trig.f2x2AmpOutOfPatch), 
+  fnxnAmpOutOfPatch(trig.fnxnAmpOutOfPatch), 
+  f2x2AmpOutOfPatchThres(trig.f2x2AmpOutOfPatchThres),  
+  fnxnAmpOutOfPatchThres(trig.fnxnAmpOutOfPatchThres), 
+  fIs2x2Isol(trig.fIs2x2Isol),
+  fIsnxnIsol(trig.fIsnxnIsol),  
+  fSimulation(trig.fSimulation)
 {
   // cpy ctor
 }
@@ -136,8 +154,6 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 
   //Initilize and declare variables
   Int_t nModules     = geom->GetNModules();
-  Int_t nCrystalsPhi = geom->GetNPhi()/fNTRUPhi ;// 64/4=16
-  Int_t nCrystalsZ   = geom->GetNZ()/fNTRUZ ;// 56/2=28
   Int_t relid[4] ; 
   Float_t amp   = -1;
   Float_t timeR = -1;
@@ -145,10 +161,10 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 
   //List of TRU matrices initialized to 0.
   for(Int_t k = 0; k < fNTRU*nModules ; k++){
-    TMatrixD  * amptrus   = new TMatrixD(nCrystalsPhi,nCrystalsZ) ;
-    TMatrixD  * timeRtrus = new TMatrixD(nCrystalsPhi,nCrystalsZ) ;
-    for(Int_t i = 0; i < nCrystalsPhi; i++){
-      for(Int_t j = 0; j < nCrystalsZ; j++){
+    TMatrixD  * amptrus   = new TMatrixD(fNCrystalsPhi,fNCrystalsZ) ;
+    TMatrixD  * timeRtrus = new TMatrixD(fNCrystalsPhi,fNCrystalsZ) ;
+    for(Int_t i = 0; i < fNCrystalsPhi; i++){
+      for(Int_t j = 0; j < fNCrystalsZ; j++){
 	(*amptrus)(i,j)   = 0.0;
 	(*timeRtrus)(i,j) = 0.0;
       }
@@ -179,12 +195,12 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       //Check to which TRU in the supermodule belongs the crystal. 
       //Supermodules are divided in a TRU matrix of dimension 
       //(fNTRUPhi,fNTRUZ).
-      //Each TRU is a crystal matrix of dimension (nCrystalsPhi,nCrystalsZ)
+      //Each TRU is a crystal matrix of dimension (fNCrystalsPhi,fNCrystalsZ)
       
       //First calculate the row and column in the supermodule 
       //of the TRU to which the crystal belongs.
-      Int_t col   = (relid[3]-1)/nCrystalsZ+1; 
-      Int_t row   = (relid[2]-1)/nCrystalsPhi+1;
+      Int_t col   = (relid[3]-1)/fNCrystalsZ+1; 
+      Int_t row   = (relid[2]-1)/fNCrystalsPhi+1;
  
       //Calculate label number of the TRU  
       Int_t itru  = (row-1) + (col-1)*fNTRUPhi + (relid[0]-1)*fNTRU ;
@@ -194,8 +210,8 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrix->At(itru)) ;
 
       //Calculate row and column of the crystal inside the TRU with number itru
-      Int_t irow = (relid[2]-1) - (row-1) *  nCrystalsPhi;	
-      Int_t icol = (relid[3]-1) - (col-1) *  nCrystalsZ;
+      Int_t irow = (relid[2]-1) - (row-1) *  fNCrystalsPhi;	
+      Int_t icol = (relid[3]-1) - (col-1) *  fNCrystalsZ;
       
       (*amptrus)(irow,icol)   = amp ;
       (*timeRtrus)(irow,icol) = timeR ;
@@ -204,7 +220,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 }
 
 //______________________________________________________________________
-void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,const Int_t iphitru,const Int_t ietatru,Int_t &iphiMod,Int_t &ietaMod,const AliPHOSGeometry* geom) const 
+void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,const Int_t iphitru,const Int_t ietatru,Int_t &iphiMod,Int_t &ietaMod) const 
 {
   // This method transforms the (eta,phi) index of a crystals in a 
   // TRU matrix into Super Module (eta,phi) index.
@@ -215,22 +231,89 @@ void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,
   Int_t row = itru - (col-1)*fNTRUPhi + 1;
   
   //Calculate the (eta,phi) index in SM
-  Int_t nCrystalsPhi = geom->GetNPhi()/fNTRUPhi;
-  Int_t nCrystalsZ   = geom->GetNZ()/fNTRUZ;
   
-  iphiMod = nCrystalsPhi*(row-1) + iphitru + 1 ;
-  ietaMod = nCrystalsZ*(col-1) + ietatru + 1 ;
+  iphiMod = fNCrystalsPhi*(row-1) + iphitru + 1 ;
+  ietaMod = fNCrystalsZ*(col-1) + ietatru + 1 ;
 
 }
+
 //____________________________________________________________________________
-void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t imod, TMatrixD *ampmax2, TMatrixD *ampmaxn, const AliPHOSGeometry *geom){
+Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * amptrus, const Int_t mtru, const Int_t imod, const Float_t *maxarray) {
+
+  //Calculate if the maximum patch found is isolated, find amplitude around maximum (2x2 or nxn) patch, 
+  //inside isolation patch . iPatchType = 0 means calculation for 2x2 patch, 
+  //iPatchType = 1 means calculation for nxn patch.
+  //In the next table there is an example of the different options of patch size and isolation patch size:
+  //                                                                                 Patch Size (fPatchSize)
+  //                                                             0                          1                                  2
+  //          fIsolPatchSize                 2x2 (not overlap)   4x4 (overlapped)        6x6(overlapped) ...
+  //                   1                                       4x4                      8x8                              10x10
+  //                   2                                       6x6                     12x12                           14x14    
+  //                   3                                       8x8                     16x16                           18x18
+                          
+  Bool_t b = kFALSE;
+  Float_t amp = 0;
+ 
+ //Get matrix of TRU with maximum amplitude patch.
+  Int_t itru = mtru+imod*fNTRU ; //number of tru, min 0 max 8*5.
+  TMatrixD * amptru   = dynamic_cast<TMatrixD *>(amptrus->At(itru)) ;
+ 
+  //Define patch cells
+  Int_t isolcells = fIsolPatchSize*(1+iPatchType);
+  Int_t ipatchcells = 2*(1+fPatchSize*iPatchType);
+  Int_t minrow =  static_cast<Int_t>(maxarray[1]) - isolcells;
+  Int_t mincol =  static_cast<Int_t>(maxarray[2]) - isolcells;
+  Int_t maxrow =  static_cast<Int_t>(maxarray[1]) + isolcells + ipatchcells;
+  Int_t maxcol =  static_cast<Int_t>(maxarray[2]) +  isolcells + ipatchcells;
+
+  AliDebug(2,Form("Number of added Isol Cells %d, Patch Size %d",isolcells, ipatchcells));
+  AliDebug(2,Form("Patch: minrow %d, maxrow %d, mincol %d, maxcol %d",minrow,maxrow,mincol,maxcol));
+
+  if(minrow < 0 || mincol < 0 || maxrow > fNCrystalsPhi || maxcol > fNCrystalsZ){
+    AliDebug(1,Form("Out of TRU range, cannot isolate patch"));
+    return kFALSE;
+  }
+
+  //Add amplitudes in all isolation patch
+  for(Int_t irow = minrow ; irow <  maxrow; irow ++)
+    for(Int_t icol = mincol ; icol < maxcol ; icol ++)
+      amp += (*amptru)(irow,icol);
+
+  AliDebug(2,Form("Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxarray[0], amp));
+
+  if(amp < maxarray[0]){
+    AliError(Form("Bad sum: Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxarray[0], amp));
+    return kFALSE;
+  }
+  else
+    amp-=maxarray[0]; //Calculate energy in isolation patch that do not comes from maximum patch.
+  
+  AliDebug(2, Form("Maximum amplitude %f, Out of patch %f",maxarray[0], amp));
+
+  //Fill isolation amplitude data member and say if patch is isolated.
+  if(iPatchType == 0){ //2x2 case
+    f2x2AmpOutOfPatch = amp;   
+    if(amp < f2x2AmpOutOfPatchThres)
+      b=kTRUE;
+  }
+  else  if(iPatchType == 1){ //nxn case
+    fnxnAmpOutOfPatch = amp;   
+    if(amp < fnxnAmpOutOfPatchThres)
+      b=kTRUE;
+  }
+
+  return b;
+
+}
+
+
+//____________________________________________________________________________
+void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t imod, TMatrixD *ampmax2, TMatrixD *ampmaxn){
   //Sums energy of all possible 2x2 (L0) and nxn (L1) crystals per each TRU. 
   //Fast signal in the experiment is given by 2x2 crystals, 
   //for this reason we loop inside the TRU crystals by 2. 
  
   //Declare and initialize varibles
-  Int_t nCrystalsPhi = geom->GetNPhi()/fNTRUPhi ;// 64/4=16
-  Int_t nCrystalsZ   = geom->GetNZ()/fNTRUZ ;// 56/2=28
   Float_t amp2 = 0 ;
   Float_t ampn = 0 ; 
   for(Int_t i = 0; i < 4; i++){
@@ -242,23 +325,22 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
 
   //Create matrix that will contain 2x2 amplitude sums
   //used to calculate the nxn sums
-  TMatrixD  * tru2x2 = new TMatrixD(nCrystalsPhi/2,nCrystalsZ/2) ;
-  for(Int_t i = 0; i < nCrystalsPhi/2; i++)
-    for(Int_t j = 0; j < nCrystalsZ/2; j++)
-      (*tru2x2)(i,j) = 0.0;
+  TMatrixD  * tru2x2 = new TMatrixD(fNCrystalsPhi/2,fNCrystalsZ/2) ;
+  for(Int_t i = 0; i < fNCrystalsPhi/2; i++)
+    for(Int_t j = 0; j < fNCrystalsZ/2; j++)
+      (*tru2x2)(i,j) = -1.;
     
   //Loop over all TRUS in a module
-  for(Int_t itru = 0 + (imod - 1) * fNTRU ; itru < imod*fNTRU ; itru++){
+  for(Int_t itru = 0 + imod  * fNTRU ; itru < (imod+1)*fNTRU ; itru++){
     TMatrixD * amptru   = dynamic_cast<TMatrixD *>(amptrus->At(itru)) ;
     TMatrixD * timeRtru = dynamic_cast<TMatrixD *>(timeRtrus->At(itru)) ;
-    Int_t mtru = itru-(imod-1)*fNTRU ; //Number of TRU in Module
+    Int_t mtru = itru-imod*fNTRU ; //Number of TRU in Module
     
     //Sliding 2x2, add 2x2 amplitudes (NOT OVERLAP)
-    for(Int_t irow = 0 ; irow <  nCrystalsPhi; irow += 2){ 
-      for(Int_t icol = 0 ; icol < nCrystalsZ ; icol += 2){
+    for(Int_t irow = 0 ; irow <  fNCrystalsPhi; irow += 2){ 
+      for(Int_t icol = 0 ; icol < fNCrystalsZ ; icol += 2){
 	amp2 = (*amptru)(irow,icol)+(*amptru)(irow+1,icol)+
 	  (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
-	
 	//Fill new matrix with added 2x2 crystals for use in nxn sums
 	(*tru2x2)(irow/2,icol/2) = amp2 ;
 	//Select 2x2 maximum sums to select L0 
@@ -285,10 +367,10 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
 
     //Sliding nxn, add nxn amplitudes (OVERLAP)
     if(fPatchSize > 0){
-      for(Int_t irow = 0 ; irow <  nCrystalsPhi/2; irow++){ 
-	for(Int_t icol = 0 ; icol < nCrystalsZ/2 ; icol++){
+      for(Int_t irow = 0 ; irow <  fNCrystalsPhi/2; irow++){ 
+	for(Int_t icol = 0 ; icol < fNCrystalsZ/2 ; icol++){
 	  ampn = 0;
-	  if( (irow+fPatchSize) < nCrystalsPhi/2 && (icol+fPatchSize) < nCrystalsZ/2){//Avoid exit the TRU
+	  if( (irow+fPatchSize) < fNCrystalsPhi/2 && (icol+fPatchSize) < fNCrystalsZ/2){//Avoid exit the TRU
 	    for(Int_t i = 0 ; i <= fPatchSize ; i++)
 	      for(Int_t j = 0 ; j <= fPatchSize ; j++)
 		ampn += (*tru2x2)(irow+i,icol+j);
@@ -308,7 +390,7 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
       Int_t coln =  static_cast <Int_t> ((*ampmaxn)(2,mtru));
       for(Int_t i = 0; i<4*fPatchSize; i++){
 	for(Int_t j = 0; j<4*fPatchSize; j++){
-	  if( (rown+i) < nCrystalsPhi && (coln+j) < nCrystalsZ/2){//Avoid exit the TRU
+	  if( (rown+i) < fNCrystalsPhi && (coln+j) < fNCrystalsZ/2){//Avoid exit the TRU
 	    if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
 	      if((*timeRtru)(rown+i,coln+j) <  (*ampmaxn)(3,mtru)  )
 		(*ampmaxn)(3,mtru) =  (*timeRtru)(rown+i,coln+j);
@@ -325,6 +407,8 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
       }
   }
 }
+
+
 //____________________________________________________________________________
 void AliPHOSTrigger::Print(const Option_t * opt) const 
 {
@@ -339,12 +423,15 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
   printf( "               -2x2 crystals sum (not overlapped): %10.2f, in Super Module %d\n",
 	  f2x2MaxAmp,f2x2SM) ; 
   printf( "               -2x2 from row %d to row %d and from column %d to column %d\n", f2x2CrystalPhi, f2x2CrystalPhi+2, f2x2CrystalEta, f2x2CrystalEta+2) ; 
-
+  printf( "               -2x2 Isolation Patch %d x %d, Amplitude out of 2x2 patch is %f, threshold %f, Isolated? %d \n", 
+  	  2*fIsolPatchSize+2, 2*fIsolPatchSize+2,  f2x2AmpOutOfPatch,  f2x2AmpOutOfPatchThres,static_cast<Int_t> (fIs2x2Isol)) ; 
   if(fPatchSize > 0){
-    printf( "             Patch Size, n x n: %d x %d cells\n",4*fPatchSize, 4*fPatchSize);
+    printf( "             Patch Size, n x n: %d x %d cells\n",2*(fPatchSize+1), 2*(fPatchSize+1));
     printf( "               -nxn crystals sum (overlapped)    : %10.2f, in Super Module %d\n",
 	    fnxnMaxAmp,fnxnSM) ; 
     printf( "               -nxn from row %d to row %d and from column %d to column %d\n", fnxnCrystalPhi, fnxnCrystalPhi+4, fnxnCrystalEta, fnxnCrystalEta+4) ; 
+    printf( "               -nxn Isolation Patch %d x %d, Amplitude out of nxn patch is %f, threshold %f, Isolated? %d \n", 
+	    4*fIsolPatchSize+2*(fPatchSize+1),4*fIsolPatchSize+2*(fPatchSize+1) ,  fnxnAmpOutOfPatch,  fnxnAmpOutOfPatchThres,static_cast<Int_t> (fIsnxnIsol) ) ; 
   }
   printf( "             Threshold for LO %10.1f\n", 
 	  fL0Threshold) ;  
@@ -367,16 +454,16 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, const TMatrixD * ampmaxn, const AliPHOSGeometry *geom)  
+void AliPHOSTrigger::SetTriggers(const TClonesArray * amptrus, const Int_t iMod, const TMatrixD * ampmax2, const TMatrixD * ampmaxn)  
 {
   //Checks the 2x2 and nxn maximum amplitude per each TRU and compares 
-  //with the different L0 and L1 triggers thresholds
+  //with the different L0 and L1 triggers thresholds. It finds if maximum amplitudes are isolated.
 
   //Initialize variables
   Float_t max2[] = {-1,-1,-1,-1} ;
   Float_t maxn[] = {-1,-1,-1,-1} ;
-  Int_t   itru2  = -1 ;
-  Int_t   itrun  = -1 ;
+  Int_t   mtru2  = -1 ;
+  Int_t   mtrun  = -1 ;
 
 
   //Find maximum summed amplitude of all the TRU 
@@ -387,14 +474,14 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
       max2[1] =  (*ampmax2)(1,i) ; // corresponding phi position in TRU
       max2[2] =  (*ampmax2)(2,i) ; // corresponding eta position in TRU
       max2[3] =  (*ampmax2)(3,i) ; // corresponding most recent time
-      itru2   = i ; // TRU number
+      mtru2   = i ; // TRU number in module
     }
     if(maxn[0] < (*ampmaxn)(0,i) ){
       maxn[0] =  (*ampmaxn)(0,i) ; // nxn summed max amplitude
       maxn[1] =  (*ampmaxn)(1,i) ; // corresponding phi position in TRU
       maxn[2] =  (*ampmaxn)(2,i) ; // corresponding eta position in TRU
       maxn[3] =  (*ampmaxn)(3,i) ; // corresponding most recent time
-      itrun   = i ; // TRU number
+      mtrun   = i ; // TRU number in module
     }
   }
   
@@ -410,11 +497,14 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
     f2x2MaxAmp  = max2[0] ;
     f2x2SM      = iMod ;
     maxtimeR2   = max2[3] ;
-    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itru2,
+    GetCrystalPhiEtaIndexInModuleFromTRUIndex(mtru2,
 					      static_cast<Int_t>(max2[1]),
 					      static_cast<Int_t>(max2[2]),
-					      f2x2CrystalPhi,f2x2CrystalEta,geom) ;
+					      f2x2CrystalPhi,f2x2CrystalEta) ;
     
+    //Isolated patch?
+    fIs2x2Isol =  IsPatchIsolated(0, amptrus, mtru2, iMod, max2) ;
+
     //Transform digit amplitude in Raw Samples
     fADCValuesLow2x2  = new Int_t[nTimeBins];
     fADCValuesHigh2x2 = new Int_t[nTimeBins];
@@ -435,15 +525,18 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
   }
 
   //Set max nxn amplitude and select L1 triggers
-  if(maxn[0] > fnxnMaxAmp ){
+  if(maxn[0] > fnxnMaxAmp  && fPatchSize > 0){
     fnxnMaxAmp  = maxn[0] ;
     fnxnSM      = iMod ;
     maxtimeRn   = maxn[3] ;
-    GetCrystalPhiEtaIndexInModuleFromTRUIndex(itrun,
+    GetCrystalPhiEtaIndexInModuleFromTRUIndex(mtrun,
 					      static_cast<Int_t>(maxn[1]),
 					      static_cast<Int_t>(maxn[2]),
-					      fnxnCrystalPhi,fnxnCrystalEta,geom) ; 
+					      fnxnCrystalPhi,fnxnCrystalEta) ; 
     
+    //Isolated patch?
+    fIsnxnIsol =  IsPatchIsolated(1, amptrus, mtrun, iMod, maxn) ;
+
     //Transform digit amplitude in Raw Samples
     fADCValuesHighnxn = new Int_t[nTimeBins];
     fADCValuesLownxn  = new Int_t[nTimeBins];
@@ -486,6 +579,8 @@ void AliPHOSTrigger::Trigger()
    
   //Define parameters
   Int_t nModules     = geom->GetNModules();
+  fNCrystalsPhi = geom->GetNPhi()/fNTRUPhi ;// 64/4=16
+  fNCrystalsZ   = geom->GetNZ()/fNTRUZ ;// 56/2=28
 
   //Intialize data members each time the trigger is called in event loop
   f2x2MaxAmp = -1; f2x2CrystalPhi = -1;  f2x2CrystalEta = -1;
@@ -509,10 +604,14 @@ void AliPHOSTrigger::Trigger()
   TMatrixD  * ampmax2 = new TMatrixD(4,fNTRU) ;
   TMatrixD  * ampmaxn = new TMatrixD(4,fNTRU) ;
 
-  for(Int_t imod = 1 ; imod <= nModules ; imod++) {
+  for(Int_t imod = 0 ; imod < nModules ; imod++) {
+
     //Do 2x2 and nxn sums, select maximums. 
-    MakeSlidingCell(amptrus, timeRtrus, imod, ampmax2, ampmaxn, geom);
+    MakeSlidingCell(amptrus, timeRtrus, imod, ampmax2, ampmaxn);
     //Set the trigger
-    SetTriggers(imod,ampmax2,ampmaxn, geom) ;
+    SetTriggers(amptrus,imod,ampmax2,ampmaxn) ;
   }
+
+  //Print();
+
 }

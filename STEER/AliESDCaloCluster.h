@@ -81,6 +81,12 @@ public:
   void SetEmcCpvDistance(Float_t dEmcCpv) { fEmcCpvDistance = dEmcCpv; }
   Float_t GetEmcCpvDistance() const       { return fEmcCpvDistance; }
 
+  void SetNumberOfPrimaries(Int_t nprim)      { fNumberOfPrimaries = nprim; }
+  Int_t GetNumberOfPrimaries() const         { return fNumberOfPrimaries; }
+  
+  void SetListOfPrimaries(UShort_t *prim)       { fListOfPrimaries = prim;}
+  UShort_t *GetListOfPrimaries() const          { return fListOfPrimaries;}
+  
   void SetNumberOfDigits(Int_t ndig)      { fNumberOfDigits = ndig; }
   Int_t GetNumberOfDigits() const         { return fNumberOfDigits; }
   
@@ -113,7 +119,8 @@ protected:
   UShort_t  fNExMax ;          // number of (Ex-)maxima before unfolding
   Float_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
 
-
+  Int_t     fNumberOfPrimaries;   // number of primaries that generated the cluster
+  UShort_t*   fListOfPrimaries;   //[ fNumberOfPrimaries] list of primaries that generated the cluster
 
   Int_t     fNumberOfDigits;   // number of calorimeter digits in cluster
                                // Very important! The streamer needs to

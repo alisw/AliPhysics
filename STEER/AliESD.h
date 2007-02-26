@@ -16,6 +16,7 @@
 
 #include <TClonesArray.h>
 #include <TObject.h>
+#include <TArrayF.h>
 
 #include "AliESDMuonTrack.h"
 #include "AliESDPmdTrack.h"
@@ -121,6 +122,11 @@ public:
     return fCaloClusters.GetEntriesFast()-1;
   }
     
+  void AddPHOSTriggerPosition(TArrayF array)   { fPHOSTriggerPosition    = new TArrayF(array) ; }
+  void AddPHOSTriggerAmplitudes(TArrayF array) { fPHOSTriggerAmplitudes  = new TArrayF(array) ; }
+  void AddEMCALTriggerPosition(TArrayF array)  { fEMCALTriggerPosition   = new TArrayF(array) ; }
+  void AddEMCALTriggerAmplitudes(TArrayF array){ fEMCALTriggerAmplitudes = new TArrayF(array) ; }
+
   void SetVertex(const AliESDVertex *vertex) {
      new (&fSPDVertex) AliESDVertex(*vertex);
   }
@@ -158,11 +164,16 @@ public:
   void  SetNumberOfEMCALClusters(Int_t clus) {fEMCALClusters = clus;}
   Int_t GetFirstEMCALCluster() const {return fFirstEMCALCluster;}
   void  SetFirstEMCALCluster(Int_t index) {fFirstEMCALCluster = index;}
+  TArrayF *GetEMCALTriggerPosition() const {return  fEMCALTriggerPosition;}
+  TArrayF *GetEMCALTriggerAmplitudes() const {return  fEMCALTriggerAmplitudes;}
 
   Int_t GetNumberOfPHOSClusters() const {return fPHOSClusters;}
   void  SetNumberOfPHOSClusters(Int_t part) { fPHOSClusters = part ; }
   void  SetFirstPHOSCluster(Int_t index) { fFirstPHOSCluster = index ; } 
   Int_t GetFirstPHOSCluster() const  { return fFirstPHOSCluster ; }
+  TArrayF *GetPHOSTriggerPosition() const {return  fPHOSTriggerPosition;}
+  TArrayF *GetPHOSTriggerAmplitudes() const {return  fPHOSTriggerAmplitudes;}
+
 
   Float_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
@@ -242,10 +253,14 @@ protected:
   TClonesArray fCaloClusters;    // Calorimeter clusters for PHOS/EMCAL
   Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
   Int_t        fFirstEMCALCluster; // First EMCAL cluster in the fCaloClusters list 
+  TArrayF   *fEMCALTriggerPosition; ///(x,y,z of 2x2 and x,y,z of nxn) not position of centroid but of patch corner
+  TArrayF   *fEMCALTriggerAmplitudes; //(2x2 max ampl, 2x2 amp out of patch,  nxn max ampl, nxn amp out of patch)
 
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
- 
+  TArrayF   *fPHOSTriggerPosition; //(x,y,z of 2x2 and x,y,z of nxn), not position of centroid but of patch corner
+  TArrayF   *fPHOSTriggerAmplitudes; //(2x2 max ampl, 2x2 amp out of patch,  nxn max ampl, nxn amp out of patch)
+
   AliESDFMD   *fESDFMD;   // FMD object containing rough multiplicity
   AliESDVZERO *fESDVZERO; // VZERO object containing rough multiplicity
 

@@ -60,10 +60,15 @@ AliESD::AliESD():
   fCaloClusters("AliESDCaloCluster",10000),
   fEMCALClusters(0), 
   fFirstEMCALCluster(-1),
+  fEMCALTriggerPosition(0x0),
+  fEMCALTriggerAmplitudes(0x0),
   fPHOSClusters(0), 
   fFirstPHOSCluster(-1),
+  fPHOSTriggerPosition(0x0),
+  fPHOSTriggerAmplitudes(0x0),
   fESDFMD(0x0),
   fESDVZERO(0x0)
+
 {
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = 0;
@@ -104,8 +109,12 @@ AliESD::AliESD(const AliESD& esd):
   fCaloClusters(*((TClonesArray*)esd.fCaloClusters.Clone())),
   fEMCALClusters(esd.fEMCALClusters), 
   fFirstEMCALCluster(esd.fFirstEMCALCluster),
+  fEMCALTriggerPosition(esd. fEMCALTriggerPosition),
+  fEMCALTriggerAmplitudes(esd.fEMCALTriggerAmplitudes),
   fPHOSClusters(esd.fPHOSClusters), 
   fFirstPHOSCluster(esd.fFirstPHOSCluster),
+  fPHOSTriggerPosition(esd.fPHOSTriggerPosition),
+  fPHOSTriggerAmplitudes(esd.fPHOSTriggerAmplitudes),
   fESDFMD(esd.fESDFMD),
   fESDVZERO(esd.fESDVZERO)
 {
@@ -157,7 +166,11 @@ AliESD & AliESD::operator=(const AliESD& source) {
   fFirstPHOSCluster = source.fFirstPHOSCluster;
   fESDFMD = source.fESDFMD;
   fESDVZERO = source.fESDVZERO;
-
+  fEMCALTriggerPosition=source. fEMCALTriggerPosition;
+  fEMCALTriggerAmplitudes=source.fEMCALTriggerAmplitudes;
+  fPHOSTriggerPosition=source.fPHOSTriggerPosition;
+  fPHOSTriggerAmplitudes=source.fPHOSTriggerAmplitudes;
+  
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = source.fT0time[i];
     fT0amplitude[i] = source.fT0amplitude[i];
@@ -186,6 +199,15 @@ AliESD::~AliESD()
   fCaloClusters.Delete();
   delete fESDFMD;
   delete fESDVZERO;
+//   fEMCALTriggerPosition->Delete();
+//   fEMCALTriggerAmplitudes->Delete();
+//   fPHOSTriggerPosition->Delete();
+//   fPHOSTriggerAmplitudes->Delete();
+//   delete fEMCALTriggerPosition;
+//   delete fEMCALTriggerAmplitudes;
+//   delete fPHOSTriggerPosition;
+//   delete fPHOSTriggerAmplitudes;
+
 }
 
 //______________________________________________________________________________
@@ -224,6 +246,10 @@ void AliESD::Reset()
   fPHOSClusters=0; 
   fFirstPHOSCluster=-1; 
   if (fESDFMD) fESDFMD->Clear();
+//   fEMCALTriggerPosition->Clear();
+//   fEMCALTriggerAmplitudes->Clear();
+//   fPHOSTriggerPosition->Clear();
+//   fPHOSTriggerAmplitudes->Clear();
 }
 
 Int_t AliESD::AddV0(const AliESDv0 *v) {

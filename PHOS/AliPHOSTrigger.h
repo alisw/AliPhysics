@@ -8,24 +8,26 @@
 
 //____________________________________________________________
 //  Class for trigger analysis.
+
+//
+//*-- Author: Gustavo Conesa & Yves Schutz (IFIC, SUBATECH, CERN)
 //  Digits are grouped in TRU's (Trigger Units). A TRU consist of 16x28 
 //  crystals ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 
-//  2x2 and nxn  (n multiple of 4) crystal combinations per each TRU, adding the 
-//  digits amplitude and finding the maximum. Maxima are transformed in ADC 
-//  time samples.  Each time bin is compared to the trigger threshold until it is larger 
-//  and then, triggers are set. Thresholds need to be fixed. 
+//  2x2 and nxn (n multiple of 4) crystal combinations per each TRU, adding the 
+//  digits amplitude and  finding the maximum. Iti is found is maximum is isolated.
+//  Maxima are transformed in ADC time samples. Each time bin is compared to the trigger 
+//  threshold until it is larger and then, triggers are set. Thresholds need to be fixed. 
 //  Usage:
 //
 //  //Inside the event loop
-//  AliPHOSTrigger *tr = new AliPHOSTrigger();//Init Trigger
+//  AliEMCALTrigger *tr = new AliEMCALTrigger();//Init Trigger
 //  tr->SetL0Threshold(100);
 //  tr->SetL1JetLowPtThreshold(1000);
 //  tr->SetL1JetHighPtThreshold(20000);
+//  ....
 //  tr->Trigger(); //Execute Trigger
-//  tr->Print("");  //Print results
-//
-//*-- Author: Gustavo Conesa & Yves Schutz (IFIC, SUBATECH, CERN)
-     
+//  tr->Print(""); //Print data members after calculation.
+//     
 // --- ROOT system ---
 
 class TClonesArray ;
@@ -64,7 +66,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t *  GetADCValuesLowGainMaxnxnSum()  {return fADCValuesLownxn; }
   Int_t *  GetADCValuesHighGainMaxnxnSum() {return fADCValuesHighnxn; }
 
-  void GetCrystalPhiEtaIndexInModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru,Int_t &ietaMod,Int_t &iphiMod, const AliPHOSGeometry *geom) const ;
+  void GetCrystalPhiEtaIndexInModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru,Int_t &ietaMod,Int_t &iphiMod) const ;
 
   Float_t  GetL0Threshold()          const {return fL0Threshold ; } 
   Float_t  GetL1JetLowPtThreshold()  const {return fL1JetLowPtThreshold ; }
@@ -74,7 +76,16 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t    GetNTRUZ()   const  {return fNTRUZ ; }
   Int_t    GetNTRUPhi() const  {return fNTRUPhi ; }
   
-  Float_t  GetPatchSize() const  {return fPatchSize ; }
+  Int_t  GetPatchSize() const  {return fPatchSize ; }
+  Int_t  GetIsolPatchSize() const  {return fIsolPatchSize ; }
+
+  Float_t  Get2x2AmpOutOfPatch() const  {return  f2x2AmpOutOfPatch; }
+  Float_t  GetnxnAmpOutOfPatch() const  {return  fnxnAmpOutOfPatch; }
+  Float_t  Get2x2AmpOutOfPatchThres() const  {return  f2x2AmpOutOfPatchThres; }
+  Float_t  GetnxnAmpOutOfPatchThres() const  {return  fnxnAmpOutOfPatchThres; }
+  Bool_t   Is2x2Isol()  const  {return  fIs2x2Isol; }
+  Bool_t   IsnxnIsol()  const  {return  fIsnxnIsol; }
+
   Bool_t   IsSimulation() const {return fSimulation ; }
 
   //Setters
@@ -95,6 +106,9 @@ class AliPHOSTrigger : public AliTriggerDetector {
     {fL1JetHighPtThreshold = amp ; }
 
   void SetPatchSize(Int_t ps)                {fPatchSize = ps ; }
+  void SetIsolPatchSize(Int_t ps)          {fIsolPatchSize = ps ; }
+  void Set2x2AmpOutOfPatchThres(Float_t th) { f2x2AmpOutOfPatchThres = th; }
+  void SetnxnAmpOutOfPatchThres(Float_t th) { fnxnAmpOutOfPatchThres = th; }
   void SetSimulation(Bool_t sim )          {fSimulation = sim ; }
 
  private:
@@ -103,9 +117,11 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * amptru, TClonesArray * timeRtru) const ;
 
-  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmaxn, const AliPHOSGeometry *geom) ;
+  Bool_t IsPatchIsolated(Int_t iPatchType, const TClonesArray * amptrus, const Int_t mtru, const Int_t imod, const Float_t *maxarray) ;
 
-  void SetTriggers(Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmaxn, const AliPHOSGeometry *geom) ;
+  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmaxn) ;
+
+ void SetTriggers(const TClonesArray * amptrus, Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmaxn) ;
 
  private: 
 
@@ -129,11 +145,26 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Float_t fL1JetLowPtThreshold ;  //! L1 Low  pT trigger threshold
   Float_t fL1JetHighPtThreshold ; //! L1 High pT trigger threshold
 
-  Int_t   fNTRU ;                 //! Number of TRUs per module
+  Int_t   fNTRU ;                  //! Number of TRUs per module
   Int_t   fNTRUZ ;                //! Number of crystal rows per Z in one TRU
-  Int_t   fNTRUPhi ;              //! Number of crystal rows per Phi in one TRU
+  Int_t   fNTRUPhi ;             //! Number of crystal rows per Phi in one TRU
+  Int_t   fNCrystalsPhi;       //!Number of rows in a TRU
+  Int_t   fNCrystalsZ;          //!Number of columns in a TRU
+  
   Int_t fPatchSize;               //! Trigger patch factor, to be multiplied to 2x2 cells
-                                          // 0 means 2x2, 1 means nxn, 2 means 8x8 ...
+                                          // 0 means 2x2, 1 means 4x4, 2 means 6x6 ...
+  Int_t fIsolPatchSize ;      //Isolation patch size, number of rows or columns to add to 
+                                           //the 2x2 or nxn maximum amplitude patch. 
+                                           //1 means a patch around max amplitude of 2x2 of 4x4 and around         
+                                           //max ampl patch of 4x4 of 8x8 
+    
+  Float_t f2x2AmpOutOfPatch; //Amplitude in isolation cone minus maximum amplitude of the reference patch
+  Float_t fnxnAmpOutOfPatch; 
+  Float_t f2x2AmpOutOfPatchThres; //Threshold to select a trigger as isolated on f2x2AmpOutOfPatch value
+  Float_t fnxnAmpOutOfPatchThres; 
+  Float_t fIs2x2Isol; //Patch is isolated if f2x2AmpOutOfPatchThres threshold is passed
+  Float_t fIsnxnIsol ; 
+  
   Bool_t  fSimulation ;           //! Flag to do the trigger during simulation or reconstruction
   ClassDef(AliPHOSTrigger,4)
 } ;
