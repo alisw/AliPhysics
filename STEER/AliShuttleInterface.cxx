@@ -44,7 +44,7 @@ TString AliShuttleInterface::fgkMainRefStorage("alien://folder=ShuttleReference"
 TString AliShuttleInterface::fgkLocalRefStorage("local://LocalReferenceStorage");
 
 TString AliShuttleInterface::fgkShuttleTempDir("/tmp");
-TString AliShuttleInterface::fgkShuttleLogDir("/tmp");
+TString AliShuttleInterface::fgkShuttleLogDir("/tmp/log");
 
 //______________________________________________________________________________________________
 const char* AliShuttleInterface::GetOfflineDetName(const char* detName){
@@ -72,27 +72,11 @@ const char* AliShuttleInterface::GetDetName(UInt_t detPos){
 }
 
 //______________________________________________________________________________________________
-Int_t AliShuttleInterface::GetDetPos(const char* detName){
+const Int_t AliShuttleInterface::GetDetPos(const char* detName){
 // Return detector position in the detector code array
 
 	for(UInt_t iDet=0; iDet < kNDetectors; iDet++){
 		if(!strcmp(fgkDetName[iDet], detName)) return iDet;
 	}
 	return -1;
-}
-
-//______________________________________________________________________________________________
-void AliShuttleInterface::SetShuttleTempDir(const char* tmpDir)
-{
-// sets Shuttle temp directory
-
-	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
-}
-
-//______________________________________________________________________________________________
-void AliShuttleInterface::SetShuttleLogDir(const char* logDir)
-{
-// sets Shuttle log directory
-
-	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }

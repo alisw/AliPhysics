@@ -14,9 +14,10 @@
 #include <TString.h>
 
 class TList;
-class AliCDBMetaData;
 class AliPreprocessor;
+class AliCDBMetaData;
 class AliCDBPath;
+class AliCDBEntry;
 
 class AliShuttleInterface : public TObject
 {
@@ -30,6 +31,7 @@ class AliShuttleInterface : public TObject
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source) = 0;
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id) = 0;
     virtual const char* GetRunParameter(const char* lbEntry) = 0;
+    virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path) = 0;
     virtual void Log(const char* detector, const char* message) = 0;
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor) = 0;
@@ -38,25 +40,20 @@ class AliShuttleInterface : public TObject
 
     static const char* GetOfflineDetName(const char* detName);
     static const char* GetDetName(UInt_t detPos);
-    static Int_t GetDetPos(const char* detName);
-    static UInt_t NDetectors() {return kNDetectors;}
+    static const Int_t GetDetPos(const char* detName);
+    static const UInt_t NDetectors() {return kNDetectors;}
 
     static TString GetMainCDB () {return fgkMainCDB;}
-    static void SetMainCDB (TString mainCDB) {fgkMainCDB = mainCDB;}
     static TString GetLocalCDB () {return fgkLocalCDB;}
-    static void SetLocalCDB (TString localCDB) {fgkLocalCDB = localCDB;}
 
     static TString GetMainRefStorage() {return fgkMainRefStorage;}
-    static void SetMainRefStorage (TString mainRefStorage) {fgkMainRefStorage = mainRefStorage;}
     static TString GetLocalRefStorage() {return fgkLocalRefStorage;}
-    static void SetLocalRefStorage (TString localRefStorage) {fgkLocalRefStorage = localRefStorage;}
 
-    static void SetShuttleTempDir (const char* tmpDir);
     static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
-    static void SetShuttleLogDir (const char* logDir);
     static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
 
   protected:
+
     static const char* fkSystemNames[3];  		// names of the systems providing data to the shuttle
     static const char* fgkDetName[kNDetectors]; 	// names of detectors' preprocessors (3-letter code convention)
     static const char* fgkOfflineDetName[kNDetectors];  // names of detectors in OCDB (AliRoot naming convention)

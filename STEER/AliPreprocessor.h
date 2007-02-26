@@ -19,6 +19,7 @@ class TList;
 class TMap;
 
 class AliCDBMetaData;
+class AliCDBEntry;
 class AliShuttleInterface;
 
 class AliPreprocessor : public TNamed
@@ -41,6 +42,7 @@ class AliPreprocessor : public TNamed
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id);
     const char* GetRunParameter(const char* param);
+    AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3);
     void Log(const char* message);
 
     Int_t fRun;         // current run

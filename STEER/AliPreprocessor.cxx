@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.7  2006/11/06 14:24:21  jgrosseo
+reading of run parameters from the logbook
+online offline naming conversion
+
 Revision 1.6  2006/10/02 12:57:48  jgrosseo
 Small interface change of function StoreReferenceData in Shuttle
 
@@ -92,6 +96,7 @@ some docs added
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
 #include "AliCDBPath.h"
+#include "AliCDBEntry.h"
 #include "AliShuttleInterface.h"
 
 ClassImp(AliPreprocessor)
@@ -225,4 +230,18 @@ const char* AliPreprocessor::GetRunParameter(const char* param)
   // The call is delegated to AliShuttleInterface
 
   return fShuttle->GetRunParameter(param);
+}
+
+//______________________________________________________________________________________________
+AliCDBEntry* AliPreprocessor::GetFromOCDB(const char* pathLevel2, const char* pathLevel3)
+{
+  // Return object from OCDB valid for current run
+  //
+  // The call is delegated to AliShuttleInterface
+
+  const char* offlineDetName = AliShuttleInterface::GetOfflineDetName(GetName());
+  if (!offlineDetName) return 0;
+
+  return dynamic_cast<AliCDBEntry*>
+  	(fShuttle->GetFromOCDB(AliCDBPath(offlineDetName, pathLevel2, pathLevel3)));
 }
