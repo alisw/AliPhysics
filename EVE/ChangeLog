@@ -1,3 +1,18 @@
+2007-02-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* alice-macros/hits_from_label.C:
+	* alice-macros/its_hits.C:
+	* alice-macros/tpc_hits.C:
+	* alice-macros/trd_hits.C:
+	Check if any hits are selected before creating Reve::PointSet.
+
+	* alice-macros/kine_tracks.C:
+	Added function kine_track() to import a track with given label and
+	its daughters.
+
+	* alice-macros/kine_daughter_tracks.C:
+	Set path marks in track container.
+
 2007-02-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Reve/QuadSetEditor.cxx:
