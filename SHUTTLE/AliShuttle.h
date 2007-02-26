@@ -25,10 +25,7 @@ class TObject;
 class AliShuttleConfig;
 class AliShuttleLogbookEntry;
 class AliPreprocessor;
-class AliCDBMetaData;
 class TSQLServer;
-class AliCDBEntry;
-class AliCDBPath;
 class TMutex;
 class TMonaLisaWriter;
 
@@ -60,6 +57,7 @@ public:
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
 	virtual const char* GetRunParameter(const char* lbEntry);
+	virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path);
 	virtual void Log(const char* detector, const char* message);
 
 	//TODO Test only, remove later !
@@ -67,6 +65,15 @@ public:
 	void SetLogbookEntry(AliShuttleLogbookEntry* entry) {fLogbookEntry=entry;}
 
 	Bool_t Connect(Int_t system);
+
+	static void SetMainCDB (TString mainCDB) {fgkMainCDB = mainCDB;}
+	static void SetLocalCDB (TString localCDB) {fgkLocalCDB = localCDB;}
+
+	static void SetMainRefStorage (TString mainRefStorage) {fgkMainRefStorage = mainRefStorage;}
+	static void SetLocalRefStorage (TString localRefStorage) {fgkLocalRefStorage = localRefStorage;}
+
+	static void SetShuttleTempDir (const char* tmpDir);
+	static void SetShuttleLogDir (const char* logDir);
 
 private:
 	AliShuttle(const AliShuttle& other);

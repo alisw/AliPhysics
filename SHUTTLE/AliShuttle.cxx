@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.30  2007/02/13 11:23:21  acolla
+Moved getters and setters of Shuttle's main OCDB/Reference, local
+OCDB/Reference, temp and log folders to AliShuttleInterface
+
 Revision 1.27  2007/01/30 17:52:42  jgrosseo
 adding monalisa monitoring
 
@@ -1228,32 +1232,24 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	}
 
 	// Query preparation
-	TString sqlQueryStart;
-	TString whereClause;
 	TString sourceName(source);
-	Int_t nFields = 0;
+	Int_t nFields = 3;
+	TString sqlQueryStart = Form("select filePath,size,fileChecksum from %s where",
+								fConfig->GetFXSdbTable(system));
+	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
+								GetCurrentRun(), detector, id);
+
 	if (system == kDAQ)
 	{
-		sqlQueryStart = Form("select filePath,size from %s where", fConfig->GetFXSdbTable(system));
-		whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\"",
-				GetCurrentRun(), detector, id, source);
-		nFields = 2;
-
+		whereClause += Form(" and DAQsource=\"%s\"", source);
 	}
 	else if (system == kDCS)
 	{
-		sqlQueryStart = Form("select filePath,size from %s where", fConfig->GetFXSdbTable(system));
-		whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
-				GetCurrentRun(), detector, id);
-		nFields = 2;
 		sourceName="none";
 	}
 	else if (system == kHLT)
 	{
-		sqlQueryStart = Form("select filePath,fileSize,fileChecksum from %s where",
-										fConfig->GetFXSdbTable(system));
-		whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DDLnumbers=\"%s\"",
-				GetCurrentRun(), detector, id, source);
+		whereClause += Form(" and DDLnumbers=\"%s\"", source);
 		nFields = 3;
 	}
 
@@ -1306,13 +1302,13 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 
 	TString filePath(aRow->GetField(0), aRow->GetFieldLength(0));
 	TString fileSize(aRow->GetField(1), aRow->GetFieldLength(1));
-	TString fileMd5Sum;
-	if(system == kHLT) fileMd5Sum = aRow->GetField(2);
+	TString fileChecksum(aRow->GetField(2), aRow->GetFieldLength(2));
 
 	delete aResult;
 	delete aRow;
 
-	AliDebug(2, Form("filePath = %s",filePath.Data()));
+	AliDebug(2, Form("filePath = %s; size = %s, fileChecksum = %s",
+				filePath.Data(), fileSize.Data(), fileChecksum.Data()));
 
 	// retrieved file is renamed to make it unique
 	TString localFileName = Form("%s_%s_%d_%s_%s.shuttle",
@@ -1339,11 +1335,11 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 						GetShuttleTempDir(), localFileName.Data()));
 		}
 
-		if (system == kHLT)
+		if (fileChecksum.Length()>0)
 		{
 			// compare md5sum of local file with the one stored in the FXS DB
 			Int_t md5Comp = gSystem->Exec(Form("md5sum %s/%s |grep %s 2>&1 > /dev/null",
-						GetShuttleTempDir(), localFileName.Data(), fileMd5Sum.Data()));
+						GetShuttleTempDir(), localFileName.Data(), fileChecksum.Data()));
 
 			if (md5Comp != 0)
 			{
@@ -1352,6 +1348,9 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 				result = kFALSE;
 				continue;
 			}
+		} else {
+			Log(fCurrentDetector, Form("GetFile - md5sum of file %s not set in %s database, skipping comparison",
+							filePath.Data(), GetSystemName(system)));
 		}
 		if (result) break;
 	}
@@ -1450,7 +1449,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 		sourceName = "DDLnumbers";
 	}
 
-	TString sqlQueryStart = Form("select %s from %s where", sourceName.Data(), fConfig->GetFXSdbTable(kDAQ));
+	TString sqlQueryStart = Form("select %s from %s where", sourceName.Data(), fConfig->GetFXSdbTable(system));
 	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
 				GetCurrentRun(), detector, id);
 	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
@@ -1919,6 +1918,21 @@ const char* AliShuttle::GetRunParameter(const char* param)
 }
 
 //______________________________________________________________________________________________
+AliCDBEntry* AliShuttle::GetFromOCDB(const AliCDBPath& path)
+{
+// returns obiect from OCDB valid for current run
+
+	AliCDBStorage *sto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
+	if (!sto)
+	{
+		Log("SHUTTLE", "GetFromOCDB - Cannot activate main OCDB for query!");
+		return 0;
+	}
+
+	return dynamic_cast<AliCDBEntry*> (sto->Get(path, GetCurrentRun()));
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttle::SendMail()
 {
 // sends a mail to the subdetector expert in case of preprocessor error
@@ -2012,4 +2026,20 @@ Bool_t AliShuttle::SendMail()
 	Bool_t result = gSystem->Exec(mailCommand.Data());
 
 	return result == 0;
+}
+
+//______________________________________________________________________________________________
+void AliShuttle::SetShuttleTempDir(const char* tmpDir)
+{
+// sets Shuttle temp directory
+
+	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
+}
+
+//______________________________________________________________________________________________
+void AliShuttle::SetShuttleLogDir(const char* logDir)
+{
+// sets Shuttle log directory
+
+	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }
