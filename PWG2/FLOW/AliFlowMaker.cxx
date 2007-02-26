@@ -21,21 +21,14 @@
 // ROOT things
 #include <TROOT.h>
 #include <TFile.h>
-#include <TTree.h>
-#include <TChain.h>
 #include <TString.h>
-#include <TObject.h>
-#include <TObjArray.h>
-#include <TParticle.h>
-#include <TParticlePDG.h>
-#include <TDatabasePDG.h>
 
 // AliRoot things
 #include "AliESD.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
-#include "AliKalmanTrack.h"
+//#include "AliKalmanTrack.h"
 
 // Flow things
 #include "AliFlowEvent.h"
@@ -45,10 +38,7 @@
 #include "AliFlowMaker.h"
 
 // ANSI things
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliFlowMaker) 
@@ -122,9 +112,9 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
  // Run information (fixed - ???)
  fMagField = fESD->GetMagneticField() ; // cout << " *fMagField " << fMagField << endl ;
  fFlowEvent->SetMagneticField(fMagField) ;	
- fFlowEvent->SetCenterOfMassEnergy(Flow::fCenterOfMassEnergy) ;	
- fFlowEvent->SetBeamMassNumberEast(Flow::fBeamMassNumberEast) ;	
- fFlowEvent->SetBeamMassNumberWest(Flow::fBeamMassNumberWest) ;	
+ fFlowEvent->SetCenterOfMassEnergy(AliFlowConstants::fgCenterOfMassEnergy) ;	
+ fFlowEvent->SetBeamMassNumberEast(AliFlowConstants::fgBeamMassNumberEast) ;	
+ fFlowEvent->SetBeamMassNumberWest(AliFlowConstants::fgBeamMassNumberWest) ;	
 
  // Trigger information (now is: ULon64_t - some trigger mask)
  fFlowEvent->SetL0TriggerWord((Int_t)fESD->GetTriggerMask()); 
@@ -235,8 +225,8 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
   Float_t eta = (Float_t)Eta(cD) ; 
   fFlowTrack->SetEta(eta) ; 				
  
-  // number of constrainable tracks with |eta| < Flow::fEtaGood (0.9)
-  if(TMath::Abs(eta) < Flow::fEtaGood)  { fGoodTracksEta++ ; }
+  // number of constrainable tracks with |eta| < AliFlowConstants::fgEtaGood (0.9)
+  if(TMath::Abs(eta) < AliFlowConstants::fgEtaGood)  { fGoodTracksEta++ ; }
  }
  else  // in case Constriction impossible for track, fill the UnConstrained (global)
  {
@@ -247,10 +237,10 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  }	     
 
  // positive - negative tracks
- Int_t trk_sign = (Int_t)fTrack->GetSign() ; 
- fFlowTrack->SetCharge(trk_sign) ;		
- if(trk_sign>0) 	{ fPosiTracks++ ; }
- else if(trk_sign<0) 	{ fNegaTracks++ ; }
+ Int_t trkSign = (Int_t)fTrack->GetSign() ; 
+ fFlowTrack->SetCharge(trkSign) ;		
+ if(trkSign>0) 	{ fPosiTracks++ ; }
+ else if(trkSign<0) 	{ fNegaTracks++ ; }
  else 			{ return 0 ; }
 
  // Tracking parameters (fit , TPC , ITS , dE/dx)
@@ -266,8 +256,8 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  for(Int_t gg=0;gg<3;gg++) { pVecAt[gg] = gD[gg] ; }
  Bool_t boh ; Float_t pAt = 0 ; 			// to get p at each detector
  // -
- if(fNewAli) { boh = fTrack->GetPxPyPzAt(Flow::fTPCx, fMagField, pVecAt) ; }
- else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(Flow::fTPCx, fMagField, pVecAt) ; }
+ if(fNewAli) { boh = fTrack->GetPxPyPzAt(AliFlowConstants::fgTPCx, fMagField, pVecAt) ; }
+ else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(AliFlowConstants::fgTPCx, fMagField, pVecAt) ; }
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
  nClus = fTrack->GetTPCclusters(idXt) ;
  fNFound = fTrack->GetTPCNclsF() ;  // was 160
@@ -277,8 +267,8 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  fFlowTrack->SetChi2TPC((Float_t)(fTrack->GetTPCchi2())) ; 	
  fFlowTrack->SetPatTPC(pAt) ; 					
  // -
- if(fNewAli) { boh = fTrack->GetPxPyPzAt(Flow::fITSx, fMagField, pVecAt) ; }
- else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(Flow::fITSx, fMagField, pVecAt) ; }
+ if(fNewAli) { boh = fTrack->GetPxPyPzAt(AliFlowConstants::fgITSx, fMagField, pVecAt) ; }
+ else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(AliFlowConstants::fgITSx, fMagField, pVecAt) ; }
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
  nClus = fTrack->GetITSclusters(idX) ;
  fNFound = 6 ;
@@ -288,8 +278,8 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  fFlowTrack->SetChi2ITS((Float_t)(fTrack->GetITSchi2())) ; 	
  fFlowTrack->SetPatITS(pAt) ; 					
  // -
- if(fNewAli) { boh = fTrack->GetPxPyPzAt(Flow::fTRDx, fMagField, pVecAt) ; } 
- else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(Flow::fTRDx, fMagField, pVecAt) ; } 
+ if(fNewAli) { boh = fTrack->GetPxPyPzAt(AliFlowConstants::fgTRDx, fMagField, pVecAt) ; } 
+ else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(AliFlowConstants::fgTRDx, fMagField, pVecAt) ; } 
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
  fNFound = fTrack->GetTRDncls() ;  // was 130
  nClus = fTrack->GetTRDclusters(idxr) ;
@@ -299,8 +289,8 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  fFlowTrack->SetChi2TRD((Float_t)fTrack->GetTRDchi2()) ; 	
  fFlowTrack->SetPatTRD(pAt) ; 					
  // -
- if(fNewAli) { boh = fTrack->GetPxPyPzAt(Flow::fTOFx, fMagField, pVecAt) ; }
- else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(Flow::fTOFx, fMagField, pVecAt) ; }
+ if(fNewAli) { boh = fTrack->GetPxPyPzAt(AliFlowConstants::fgTOFx, fMagField, pVecAt) ; }
+ else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(AliFlowConstants::fgTOFx, fMagField, pVecAt) ; }
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
  fNFound = 0 ; if(fTrack->GetTOFCalChannel() > 0) { fNFound = 1 ; }
  nClus = fTrack->GetTOFcluster() ;
@@ -315,26 +305,26 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  // -
  fTrack->GetInnerXYZ(rIn) ;			 		
  fFlowTrack->SetZFirstPoint(rIn[2]) ; 
- //fTrack->GetXYZAt(Flow::fTPCx,fMagField,rOut) ;		
+ //fTrack->GetXYZAt(AliFlowConstants::fgTPCx,fMagField,rOut) ;		
  fTrack->GetOuterXYZ(rOut) ;			 		
  fFlowTrack->SetZLastPoint(rOut[2]) ; 
  
  // ESD-P.Id. = 5-vector of Best detectors probabilities for [e , mu , pi , K , p] 
  Double_t trkPid[5] ; fTrack->GetESDpid(trkPid) ;		
- Double_t trkPid6[Flow::nPid] ; 
+ Double_t trkPid6[AliFlowConstants::kPid] ; 
  for(Int_t bb=0;bb<5;bb++) { trkPid6[bb] = trkPid[bb] ; } 
  trkPid6[5] = 0. ;						// *!* implement P.Id. for Deuterim
 
  // Bayesian P.Id. method (weighted probabilities for [e , mu , pi , K , p , d])
- Double_t Bsum = 0 ; 
- Double_t bayePid[Flow::nPid] ;    // normalized P.id
- Double_t storedPid[Flow::nPid] ;  // stored P.id
- for(Int_t nB=0;nB<Flow::nPid;nB++)  { Bsum += trkPid6[nB]*Flow::fBayesian[nB] ; }
- if(Bsum)
+ Double_t bsum = 0 ; 
+ Double_t bayePid[AliFlowConstants::kPid] ;    // normalized P.id
+ Double_t storedPid[AliFlowConstants::kPid] ;  // stored P.id
+ for(Int_t nB=0;nB<AliFlowConstants::kPid;nB++)  { bsum += trkPid6[nB]*AliFlowConstants::fgBayesian[nB] ; }
+ if(bsum)
  {
-  for(Int_t nB=0;nB<Flow::nPid;nB++) 
+  for(Int_t nB=0;nB<AliFlowConstants::kPid;nB++) 
   { 
-   bayePid[nB] = trkPid6[nB]*Flow::fBayesian[nB] / Bsum ; 
+   bayePid[nB] = trkPid6[nB]*AliFlowConstants::fgBayesian[nB] / bsum ; 
    storedPid[nB] = trkPid6[nB] ; 
   }
  }
@@ -348,17 +338,17 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  fFlowTrack->SetDeuteriumAntiDeuteriumProb(storedPid[5]); 	// *!* implement P.Id. for Deuterim
 
  // P.id. label given via the weighted prob.
- const Int_t code[]   =  {11,13,211,321,2212,10010020} ;
+ const Int_t kCode[]   =  {11,13,211,321,2212,10010020} ;
  Int_t kkk = 2 ; 			// if No id. -> then is a Pi
- Float_t pid_max = bayePid[2] ; 	// (if all equal, Pi probability get's the advantage to be the first)
+ Float_t pidMax = bayePid[2] ; 	// (if all equal, Pi probability get's the advantage to be the first)
  for(Int_t iii=0; iii<5; iii++) 
  {
-  if(bayePid[iii]>pid_max) { kkk = iii ; pid_max = bayePid[iii] ; }  // !!! Bayesian as well !!!
+  if(bayePid[iii]>pidMax) { kkk = iii ; pidMax = bayePid[iii] ; }  // !!! Bayesian as well !!!
  }
  fBayesianAll[kkk]++ ; fSumAll++ ; 	// goes on filling the vector of observed abundance 
  //-
- Int_t pdg_code = trk_sign*code[kkk] ;
- fFlowTrack->SetMostLikelihoodPID(pdg_code);
+ Int_t pdgCode = trkSign*kCode[kkk] ;
+ fFlowTrack->SetMostLikelihoodPID(pdgCode);
  
  return fFlowTrack ; 
 }
@@ -371,14 +361,14 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  fFlowV0 = new AliFlowV0(name.Data()) ;
  //cout << " -v0- " << name.Data() << endl ;
 
- Double_t Pxyz[3] ; 		// reconstructed momentum of the V0
- fV0->GetPxPyPz(Pxyz[0],Pxyz[1],Pxyz[2]) ;
+ Double_t pxyz[3] ; 		// reconstructed momentum of the V0
+ fV0->GetPxPyPz(pxyz[0],pxyz[1],pxyz[2]) ;
 
- Float_t phi = (Float_t)Phi(Pxyz) ; if(phi<0) { phi += 2*TMath::Pi() ; }
+ Float_t phi = (Float_t)Phi(pxyz) ; if(phi<0) { phi += 2*TMath::Pi() ; }
  fFlowV0->SetPhi(phi) ;		
- Float_t pt = (Float_t)Pt(Pxyz) ; 
+ Float_t pt = (Float_t)Pt(pxyz) ; 
  fFlowV0->SetPt(pt) ;		
- Float_t eta = (Float_t)Eta(Pxyz) ; 
+ Float_t eta = (Float_t)Eta(pxyz) ; 
  fFlowV0->SetEta(eta) ; 	
 
  Double_t xyz[3] ; 		// reconstructed position of the V0 
@@ -396,8 +386,8 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  fFlowV0->SetSigma(1.); 
 
  // P.id. 
- Int_t pdg_code = fV0->GetPdgCode() ;
- fFlowV0->SetMostLikelihoodPID(pdg_code); 	
+ Int_t pdgCode = fV0->GetPdgCode() ;
+ fFlowV0->SetMostLikelihoodPID(pdgCode); 	
 
  // mass 
  fFlowV0->SetVmass((Float_t)fV0->GetEffMass()) ; 
@@ -411,24 +401,24 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  return fFlowV0 ;
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowMaker::CheckTrack(AliESDtrack* fTrack)
+Bool_t AliFlowMaker::CheckTrack(AliESDtrack* fTrack) const
 {
- // applies track cuts (E , nHits , label)
+ // applies track cuts (pE , nHits , label)
 
  Int_t idXt[180] ;  // used for Cluster Map ( see AliESDtrack::GetTPCclusters() )
  Int_t   nHits = fTrack->GetTPCclusters(idXt) ;
- Float_t E     = fTrack->GetP() ;
+ Float_t pE    = fTrack->GetP() ;
  Int_t   label = fTrack->GetLabel() ;
  
  if(fNHits && (nHits<=fNHits)) 						 { return kFALSE ; }
- if((fElow < fEup) && ((E<fElow) || (E>fEup)))				 { return kFALSE ; }
+ if((fElow < fEup) && ((pE<fElow) || (pE>fEup)))			 { return kFALSE ; }
  if((fLabel[0] < fLabel[1]) && ((label<fLabel[0]) || (label>fLabel[1]))) { return kFALSE ; }
  //if(fPrimary && ...) 							 { return kFALSE ; }
 
  return kTRUE ;
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowMaker::CheckV0(AliESDv0* fV0)
+Bool_t AliFlowMaker::CheckV0(AliESDv0* fV0) const
 {
  // applies v0 cuts (dummy)
  
@@ -437,7 +427,7 @@ Bool_t AliFlowMaker::CheckV0(AliESDv0* fV0)
  return kTRUE ;
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowMaker::CheckEvent(AliESD* fESD)
+Bool_t AliFlowMaker::CheckEvent(AliESD* fESD) const
 {
  // applies event cuts (dummy)
  

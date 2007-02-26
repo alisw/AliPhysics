@@ -7,6 +7,8 @@
 //////////////////////////////////////////////////////////////////////
 //
 // Description: parser class from AliESD to AliFlowEvent . 
+//  nothing else to say, but those 3 lines need to be filled somehow,
+//  I hope now is ok!
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -40,23 +42,23 @@ class AliFlowMaker  {
     Double_t	   Eta(Double_t nu[3]) ;		    // eta of a non-vector 3 array	 
 
   // Cut METHODS
-    Bool_t         CheckTrack(AliESDtrack* fTrack) ; 	    // checks track (applies track cuts)
-    Bool_t         CheckV0(AliESDv0* fV0) ; 	    	    // checks v0 (dummy)
-    Bool_t         CheckEvent(AliESD* fESD) ; 	    	    // checks event (dummy)
+    Bool_t         CheckTrack(AliESDtrack* fTrack) const ;  // checks track (applies track cuts)
+    Bool_t         CheckV0(AliESDv0* fV0) const ; 	    // checks v0 (dummy)
+    Bool_t         CheckEvent(AliESD* fESD) const ; 	    // checks event (dummy)
     void 	   PrintCutList() ;			    // prints the list of cuts
     void 	   SetNHitsCut(Int_t nHits) 	            { fNHits = nHits ; }			// exclude tracks with less than .. TPC hits 
     void 	   SetECut(Float_t eLow, Float_t eUp)       { fElow = eLow ; fEup = eUp ; }		// exclude tracks below and above .. GeV 
     void 	   SetLabelCut(Int_t labLo, Int_t labHi)    { fLabel[0] = labLo ; fLabel[1] = labHi ; } // exclude tracks outside label interval
 
   // Get METHODS
-    Int_t          GetNgoodTracks()         		    { return fGoodTracks ; }	  
-    Int_t          GetNgoodV0s()            		    { return fGoodV0s ; }	  
-    Int_t          GetNgoodTracksEta()      		    { return fGoodTracksEta ; } 
-    Int_t          GetNposiTracks()         		    { return fPosiTracks ; }	
-    Int_t          GetNnegaTracks() 	    		    { return fNegaTracks ; }	
-    Int_t          GetNunconstrained()      		    { return fUnconstrained ; } 
-    Int_t          GetBayesian(Int_t i = 2)     	    { return fBayesianAll[i] ; }
-    Float_t        GetBayesianNorm(Int_t i = 2) 	    { return (Float_t)fBayesianAll[i] / (Float_t)fSumAll ; }
+    Int_t          GetNgoodTracks() const         	    { return fGoodTracks ; }	  
+    Int_t          GetNgoodV0s() const            	    { return fGoodV0s ; }	  
+    Int_t          GetNgoodTracksEta() const      	    { return fGoodTracksEta ; } 
+    Int_t          GetNposiTracks() const         	    { return fPosiTracks ; }	
+    Int_t          GetNnegaTracks() const 	    	    { return fNegaTracks ; }	
+    Int_t          GetNunconstrained()  const		    { return fUnconstrained ; } 
+    Int_t          GetBayesian(Int_t i = 2) const     	    { return fBayesianAll[i] ; }
+    Float_t        GetBayesianNorm(Int_t i = 2) const 	    { return (Float_t)fBayesianAll[i] / (Float_t)fSumAll ; }
 
  protected:
  
@@ -86,6 +88,9 @@ class AliFlowMaker  {
     Int_t 	     fCounter ;        	  		    //! number of processed events
 
  private:
+
+   //AliFlowMaker(const AliFlowMaker &flowMak) 		    { flowMak.fCounter ; } // Copy Constructor (dummy)
+   //AliFlowMaker &operator=(const AliFlowMaker &flowMak)   { return *this ; }	  // Assignment Operator
 
   // ESDs
     AliESD*          fESD;      	  		    //! "ESD" branch in fChain

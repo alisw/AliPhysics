@@ -27,17 +27,23 @@
 //
 
 #include "AliFlowSelection.h"
+#include "AliFlowEvent.h"
+#include "AliFlowTrack.h"
+#include "AliFlowV0.h"
 #include "AliFlowConstants.h"
+
 #include <iostream>
+#include <stdlib.h>
+#include <string.h>
 using namespace std; //required for resolving the 'cout' symbol
 
 // - 1st selection (both harmonic) is Disabled ! - the 2 following are the same (basic cuts, no P.id)
-Float_t  AliFlowSelection::fEtaTpcCuts[2][Flow::nHars][Flow::nSels] = {{{1.0,0.0},{1.0,0.0}},{{0.0,1.1},{0.0,1.1}}} ;
-Float_t  AliFlowSelection::fPtTpcCuts[2][Flow::nHars][Flow::nSels]  = {{{1.0,0.1},{1.0,0.1}},{{0.0,10.0},{0.0,10.0}}} ;
-Float_t  AliFlowSelection::fDcaGlobalCuts[2] 	 = { 0. , 1. } ;
-Char_t   AliFlowSelection::fPid[10]              = { '\0' } ;
-Bool_t   AliFlowSelection::fConstrainable        = kTRUE ;
-Int_t    AliFlowSelection::fTPChits[Flow::nSels] = { 0 , 1 } ;
+Float_t  AliFlowSelection::fgEtaTpcCuts[2][AliFlowConstants::kHars][AliFlowConstants::kSels] = {{{1.0,0.0},{1.0,0.0}},{{0.0,1.1},{0.0,1.1}}} ;
+Float_t  AliFlowSelection::fgPtTpcCuts[2][AliFlowConstants::kHars][AliFlowConstants::kSels]  = {{{1.0,0.1},{1.0,0.1}},{{0.0,10.0},{0.0,10.0}}} ;
+Float_t  AliFlowSelection::fgDcaGlobalCuts[2] 	  = { 0. , 1. } ;
+Char_t   AliFlowSelection::fgPid[10]              = { '\0' } ;
+Bool_t   AliFlowSelection::fgConstrainable        = kTRUE ;
+Int_t    AliFlowSelection::fgTPChits[AliFlowConstants::kSels] = { 0 , 1 } ;
 
 ClassImp(AliFlowSelection)
 //-----------------------------------------------------------------------
@@ -96,7 +102,7 @@ AliFlowSelection::AliFlowSelection()
  fV0Mass[0]	       = 1 ;
  fV0Mass[1]	       = 0 ;
  // -
- fPtBinsPart 	       = Flow::nPtBinsPart ;  
+ fPtBinsPart 	       = AliFlowConstants::kPtBinsPart ;  
  // -		        
  fHarmonic  = -1 ;   // harmonic
  fSelection = -1 ;   // selection
@@ -108,7 +114,7 @@ AliFlowSelection::~AliFlowSelection()
  // default destructor (dummy)
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowSelection::Select(AliFlowEvent* pFlowEvent) 
+Bool_t AliFlowSelection::Select(AliFlowEvent* pFlowEvent) const 
 {
  // Returns kTRUE if the event is selected. 
 
@@ -119,7 +125,7 @@ Bool_t AliFlowSelection::Select(AliFlowEvent* pFlowEvent)
  return kTRUE ;
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowSelection::Select(AliFlowTrack* pFlowTrack)
+Bool_t AliFlowSelection::Select(AliFlowTrack* pFlowTrack) const 
 {
  // Selects particles for event plane determination.
  // Returns kTRUE if the track is selected.
@@ -128,7 +134,7 @@ Bool_t AliFlowSelection::Select(AliFlowTrack* pFlowTrack)
  return kTRUE ;
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowSelection::Select(AliFlowV0* pFlowV0) 
+Bool_t AliFlowSelection::Select(AliFlowV0* pFlowV0) const  
 {
  // Returns kTRUE if the v0 is selected. (dummy) 
 
@@ -136,7 +142,7 @@ Bool_t AliFlowSelection::Select(AliFlowV0* pFlowV0)
  return kTRUE ;
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowSelection::SelectPart(AliFlowTrack* pFlowTrack) 
+Bool_t AliFlowSelection::SelectPart(AliFlowTrack* pFlowTrack) const  
 {
  // Make track selection for Correlation Analysis & Vn (charged particles 
  // to correlate with the event plane).  
@@ -203,13 +209,13 @@ Bool_t AliFlowSelection::SelectPart(AliFlowTrack* pFlowTrack)
  if (fDcaGlobalPart[1] > fDcaGlobalPart[0] && (globdca < fDcaGlobalPart[0] || globdca > fDcaGlobalPart[1])) return kFALSE;
 
  // Rapidity
- float Y = pFlowTrack->Y();
- if (fYPart[1] > fYPart[0] && (Y < fYPart[0] || Y > fYPart[1])) return kFALSE;
+ float y = pFlowTrack->Y();
+ if (fYPart[1] > fYPart[0] && (y < fYPart[0] || y > fYPart[1])) return kFALSE;
 
  return kTRUE;
 }
 //-----------------------------------------------------------------------
-Bool_t AliFlowSelection::SelectPart(AliFlowV0* pFlowV0) 
+Bool_t AliFlowSelection::SelectPart(AliFlowV0* pFlowV0) const 
 {
  // Make v0 selection for Correlation Analysis & Vn (neutral particles 
  // to correlate with the event plane).  
@@ -276,13 +282,13 @@ Bool_t AliFlowSelection::SelectPart(AliFlowV0* pFlowV0)
  }
 
  // Rapidity
- float Y = pFlowV0->Y();
- if (fV0Y[1] > fV0Y[0] && (Y < fV0Y[0] || Y > fV0Y[1])) return kFALSE;
+ float y = pFlowV0->Y();
+ if (fV0Y[1] > fV0Y[0] && (y < fV0Y[0] || y > fV0Y[1])) return kFALSE;
 
  return kTRUE;
 }
 //-----------------------------------------------------------------------
-Bool_t  AliFlowSelection::SelectV0Part(AliFlowV0* pFlowV0)
+Bool_t  AliFlowSelection::SelectV0Part(AliFlowV0* pFlowV0) const 
 { 
  // selects v0s in the invariant Mass window
  
@@ -294,9 +300,10 @@ Bool_t  AliFlowSelection::SelectV0Part(AliFlowV0* pFlowV0)
  return kTRUE;
 }
 //-----------------------------------------------------------------------
-Bool_t  AliFlowSelection::SelectV0Side(AliFlowV0* pFlowV0)
+Bool_t  AliFlowSelection::SelectV0Side(AliFlowV0* pFlowV0) const 
 { 
  // selects v0s in the sidebands of the Mass window
+ 
  float mass = pFlowV0->Mass() ;
  if(fV0Mass[1]>fV0Mass[0])
  { 
@@ -307,18 +314,20 @@ Bool_t  AliFlowSelection::SelectV0Side(AliFlowV0* pFlowV0)
  return kTRUE;
 }
 //-----------------------------------------------------------------------
-Bool_t  AliFlowSelection::SelectV0sxSide(AliFlowV0* pFlowV0)
+Bool_t  AliFlowSelection::SelectV0sxSide(AliFlowV0* pFlowV0) const 
 { 
  // selects v0s in the left hand sideband
+ 
  float mass = pFlowV0->Mass() ;
  float massMin = fV0Mass[0]-fV0SideBand ;
  if((mass >= massMin) && (mass < fV0Mass[0])) 	{ return kTRUE ; }
  else 						{ return kFALSE ; }
 }
 //-----------------------------------------------------------------------
-Bool_t  AliFlowSelection::SelectV0dxSide(AliFlowV0* pFlowV0)
+Bool_t  AliFlowSelection::SelectV0dxSide(AliFlowV0* pFlowV0) const 
 { 
  // selects v0s in the right hand sideband
+ 
  float mass = pFlowV0->Mass() ;
  float massMax = fV0Mass[1]+fV0SideBand ;
  if((mass > fV0Mass[1]) && (mass <= massMax)) 	{ return kTRUE ; }
@@ -404,9 +413,9 @@ void AliFlowSelection::PrintSelectionList() const
   cout << "#######################################################" << endl;
   cout << "# Event centrality: " << endl ; 
   float lowC, hiC ;
-  if(fCent==0)      { lowC=0 ; hiC=Flow::fCentNorm[0] * Flow::fMaxMult ; }
-  else if(fCent>8)  { lowC=Flow::fCentNorm[8] * Flow::fMaxMult ; hiC=99999 ; }
-  else              { lowC=Flow::fCentNorm[fCent-1] * Flow::fMaxMult ; hiC=Flow::fCentNorm[fCent] * Flow::fMaxMult ; }
+  if(fCent==0)      { lowC=0 ; hiC=AliFlowConstants::fgCentNorm[0] * AliFlowConstants::fgMaxMult ; }
+  else if(fCent>8)  { lowC=AliFlowConstants::fgCentNorm[8] * AliFlowConstants::fgMaxMult ; hiC=99999 ; }
+  else              { lowC=AliFlowConstants::fgCentNorm[fCent-1] * AliFlowConstants::fgMaxMult ; hiC=AliFlowConstants::fgCentNorm[fCent] * AliFlowConstants::fgMaxMult ; }
   cout << "#  - Centrality Class = " << fCent << " ( " << (int)lowC << " < mult < " << (int)hiC << " ) . " << endl ; 
  }
  else      
@@ -417,15 +426,15 @@ void AliFlowSelection::PrintSelectionList() const
 
  cout << "#######################################################" << endl;
  cout << "# Tracks used for the event plane: " << endl ; 
- cout << "#  - Selection[0]    (for all " << Flow::nHars << " Harmonics) :  " << endl ; 
+ cout << "#  - Selection[0]    (for all " << AliFlowConstants::kHars << " Harmonics) :  " << endl ; 
  cout << "#   NO CUTS " << endl ; 
- cout << "#  - Selection[1+]   (for all " << Flow::nHars << " Harmonics) : " << endl ; 
+ cout << "#  - Selection[1+]   (for all " << AliFlowConstants::kHars << " Harmonics) : " << endl ; 
  if(Pid()[0] != '\0') 			{ cout << "#   Particle ID =  " << Pid() << endl ; } 
  if(ConstrainCut())     		{ cout << "#   Constrainable Tracks " << endl ; }
  if(DcaGlobalCutHi()>DcaGlobalCutLo()) 	{ cout << "#   Global Dca Tpc cuts =  " << DcaGlobalCutLo() << " , " << DcaGlobalCutHi() << endl ; }
- for (int k = 1; k < Flow::nSels; k++) 
+ for (int k = 1; k < AliFlowConstants::kSels; k++) 
  {
-  for (int j = 0; j < Flow::nHars ; j++) 
+  for (int j = 0; j < AliFlowConstants::kHars ; j++) 
   {
    cout << "#  - Selection[" << k << "] , Harmonic[" << j+1 << "] :" << endl ;
    if(NhitsCut(k)) 			{ cout << "#   Minimum TPC hits =  " << NhitsCut(k) << endl ; }
@@ -438,7 +447,9 @@ void AliFlowSelection::PrintSelectionList() const
 //-----------------------------------------------------------------------
 void AliFlowSelection::SetHarmonic(const Int_t& harN) 
 {
- if (harN < 0 || harN >= Flow::nHars) 
+ // sets the Harmonic #
+
+ if (harN < 0 || harN >= AliFlowConstants::kHars) 
  {
   cout << "### Harmonic " << harN << " not valid" << endl;
   fHarmonic = 0;
@@ -448,7 +459,9 @@ void AliFlowSelection::SetHarmonic(const Int_t& harN)
 //-----------------------------------------------------------------------
 void AliFlowSelection::SetSelection(const Int_t& selN) 
 {
- if (selN < 0 || selN >= Flow::nSels) 
+ // sets the Selection #
+
+ if (selN < 0 || selN >= AliFlowConstants::kSels) 
  {
   cout << "### Selection " << selN << " not valid" << endl;
   fSelection = 0;
@@ -458,7 +471,9 @@ void AliFlowSelection::SetSelection(const Int_t& selN)
 //-----------------------------------------------------------------------
 void AliFlowSelection::SetSubevent(const Int_t& subN) 
 {
- if (subN < -1 || subN > Flow::nSubs) 
+ // sets the Sub-Event # (-1 for the full-event)
+
+ if (subN < -1 || subN > AliFlowConstants::kSubs) 
  {
   cout << "### Subevent " << subN << " not valid" << endl;
   fSubevent = -1;
@@ -466,42 +481,10 @@ void AliFlowSelection::SetSubevent(const Int_t& subN)
  else { fSubevent = subN; } 
 }
 //-----------------------------------------------------------------------
-void AliFlowSelection::SetEtaCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN) 
-{ 
- fEtaTpcCuts[0][harN][selN] = lo ; 
- fEtaTpcCuts[1][harN][selN] = hi ; 
-}
-//-----------------------------------------------------------------------
-void AliFlowSelection::SetPtCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN)  
-{ 
- fPtTpcCuts[0][harN][selN] = lo  ; 
- fPtTpcCuts[1][harN][selN] = hi ; 
-}
-//-----------------------------------------------------------------------
-void AliFlowSelection::SetDcaGlobalCut(Float_t lo, Float_t hi)      
-{ 
- fDcaGlobalCuts[0] = lo ; 
- fDcaGlobalCuts[1] = hi ; 
-}
-//-----------------------------------------------------------------------
-void AliFlowSelection::SetPidCut(const Char_t* pid)  	       
-{ 
- strncpy(fPid, pid, 9) ; 
- fPid[9] = '\0' ; 
-}
-//-----------------------------------------------------------------------
-void AliFlowSelection::SetConstrainCut(Bool_t tf) 
-{ 
- fConstrainable = tf ; 
-}
-//-----------------------------------------------------------------------
-void AliFlowSelection::SetNhitsCut(Int_t hits,Int_t selN)
-{ 
- fTPChits[selN] = hits; 
-}
-//-----------------------------------------------------------------------
-Float_t AliFlowSelection::PtMaxPart() const			       
-{ 
+Float_t AliFlowSelection::PtMaxPart() const		       
+{
+ // Returns the upper pT cut for particle used in correlation analysis
+ 
  if(fPtPart[1]>fPtPart[0]) { return fPtPart[1] ; } 
  else { return 0. ; } 
 }

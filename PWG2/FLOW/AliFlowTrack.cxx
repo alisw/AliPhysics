@@ -52,7 +52,7 @@ AliFlowTrack::AliFlowTrack()
  fTrackLength = 0. ;
  fMostLikelihoodPID = 0 ;		      
  for(Int_t ii=0;ii<2;ii++) 	    { fDcaSigned[ii] = 0 ; }			      
- for(Int_t ii=0;ii<Flow::nPid;ii++) { fPidProb[ii] = 0. ; }
+ for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++) { fPidProb[ii] = 0. ; }
  for(Int_t ii=0;ii<4;ii++)
  {
   fFitPts[4]  = 0  ; fMaxPts[4]  = 0  ; 
@@ -196,9 +196,9 @@ void AliFlowTrack::PrintSelection()
  // Prints a short string of 0 & 1 to visualize the selections' flags
  // [har1][sel0],[har1][sel1],[har1][sel2],...,[har2][sel0],...
  
- for(int i=0;i<Flow::nHars;i++)
+ for(int i=0;i<AliFlowConstants::kHars;i++)
  {
-  for(int j=0;j<Flow::nSels;j++)
+  for(int j=0;j<AliFlowConstants::kSels;j++)
   {
    if(Select(i,j)) { cout << 1 ; }
    else    	   { cout << 0 ; }
@@ -212,9 +212,9 @@ void AliFlowTrack::ResetSelection()
  // Re-sets all the selection/sub-event flags to 0 
  // (track won't be used in any R.P. calculation)
 
- for(Int_t ii=0;ii<Flow::nHars;ii++)
+ for(Int_t ii=0;ii<AliFlowConstants::kHars;ii++)
  {
-  for(Int_t jj=0;jj<Flow::nSels;jj++)
+  for(Int_t jj=0;jj<AliFlowConstants::kSels;jj++)
   {
    fSelection[ii][jj] = kFALSE ; 
    fSubevent[ii][jj] = -1 ; 
@@ -247,17 +247,17 @@ const char* AliFlowTrack::Pid() const
  return p_id.Data() ; 
 }
 //////////////////////////////////////////////////////////////////////////////
-void AliFlowTrack::PidProbs(Float_t pidN[Flow::nPid]) const 
+void AliFlowTrack::PidProbs(Float_t pidN[AliFlowConstants::kPid]) const 
 { 
  // Returns the normalized probability for the given track to be [e,mu,pi,k,p,d] 
  // The detector response is weighted by the bayesian vector of particles 
- // abundances, stored in Flow::fBayesian[] .
+ // abundances, stored in AliFlowConstants::fgBayesian[] .
 
  Double_t sum = 0 ; 
- for(Int_t n=0;n<Flow::nPid;n++)  { sum += fPidProb[n] * Flow::fBayesian[n] ; }
+ for(Int_t n=0;n<AliFlowConstants::kPid;n++)  { sum += fPidProb[n] * AliFlowConstants::fgBayesian[n] ; }
  if(sum)
  {
-  for(Int_t n=0;n<Flow::nPid;n++) { pidN[n] = fPidProb[n] * Flow::fBayesian[n] / sum ; }
+  for(Int_t n=0;n<AliFlowConstants::kPid;n++) { pidN[n] = fPidProb[n] * AliFlowConstants::fgBayesian[n] / sum ; }
  }
  else { cout << " ERROR - Empty Bayesian Vector !!! " << endl ; }
 } 
@@ -266,7 +266,7 @@ Float_t  AliFlowTrack::PidProb(Int_t nn)	const
 {
  // Returns the normalized probability of the track to be [nn] (e,mu,pi,k,pi,d).
 
- Float_t pidN[Flow::nPid] ; 
+ Float_t pidN[AliFlowConstants::kPid] ; 
  PidProbs(pidN) ;
  return pidN[nn] ;
 }
@@ -276,19 +276,19 @@ TVector AliFlowTrack::PidProbs()  		const
  // Returns the normalized probability for the given track to be [e,mu,pi,k,p,d] 
  // as a TVector.
 
- TVector pidNvec(Flow::nPid) ;
- Float_t pidN[Flow::nPid] ; 
+ TVector pidNvec(AliFlowConstants::kPid) ;
+ Float_t pidN[AliFlowConstants::kPid] ; 
  PidProbs(pidN) ;
- for(Int_t n=0;n<Flow::nPid;n++)  { pidNvec[n] = pidN[n] ; }
+ for(Int_t n=0;n<AliFlowConstants::kPid;n++)  { pidNvec[n] = pidN[n] ; }
 
  return pidNvec ;
 }
 //////////////////////////////////////////////////////////////////////////////
-void AliFlowTrack::RawPidProbs(Float_t pidV[Flow::nPid]) const 
+void AliFlowTrack::RawPidProbs(Float_t pidV[AliFlowConstants::kPid]) const 
 { 
  // Returns the array of probabilities for the track to be [e,mu,pi,k,pi,d].
 
- for(Int_t ii=0;ii<Flow::nPid;ii++) { pidV[ii] = fPidProb[ii] ; }
+ for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++) { pidV[ii] = fPidProb[ii] ; }
 } 
 //////////////////////////////////////////////////////////////////////////////
 Float_t AliFlowTrack::MostLikelihoodProb()   	    const 

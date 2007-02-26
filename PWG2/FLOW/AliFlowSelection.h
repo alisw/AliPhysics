@@ -6,7 +6,9 @@
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Description: class for selections in flow study, adapted from STAR 
+// Description: class for selections in flow study, adapted from STAR
+//  it is applied to AliFlowEvent during the analysis loop . 
+//                             ... I really hate the code checker !!!
 // Original Authors:                Raimond Snellings & Art Poskanzer
 //
 //////////////////////////////////////////////////////////////////////
@@ -14,24 +16,15 @@
 #ifndef AliFlowSelection_h
 #define AliFlowSelection_h
 
-#include <iostream>
-#include <stdlib.h>
-#include <string.h>
-
 #include "TObject.h"
-#include "TVector.h"
 #include "TMath.h"
-#include <TROOT.h>
 
-#include "AliFlowSelection.h"
-#include "AliFlowEvent.h"
-#include "AliFlowTrack.h"
-#include "AliFlowV0.h"
 #include "AliFlowConstants.h"
 
 class AliFlowTrack ;
+class AliFlowV0 ;
 class AliFlowEvent ;
-class Flow ;
+class AliFlowConstants ;
 
 class AliFlowSelection : public TObject {
 
@@ -42,15 +35,15 @@ class AliFlowSelection : public TObject {
   virtual ~AliFlowSelection();
 
  // Selection Methods for ... 
-  Bool_t  Select(AliFlowEvent*);		       // (dummy)
-  Bool_t  Select(AliFlowTrack*);		       // selection for R.P.[nSel][nHar]
-  Bool_t  Select(AliFlowV0*);    		       // (dummy) 
-  Bool_t  SelectPart(AliFlowTrack*);		       // track selection for Correlation Analysis
-  Bool_t  SelectPart(AliFlowV0*);    		       // v0 selection for Correlation Analysis (mass window + sidebands)
-  Bool_t  SelectV0Part(AliFlowV0*);    		       // v0 mass window for Correlation Analysis 
-  Bool_t  SelectV0Side(AliFlowV0*);    		       // v0 sidebands for Correlation Analysis 
-  Bool_t  SelectV0sxSide(AliFlowV0*);		       // selects v0s in the left hand sideband
-  Bool_t  SelectV0dxSide(AliFlowV0*);		       // selects v0s in the right hand sideband
+  Bool_t  Select(AliFlowEvent* pFlowEvent) const ;     // (dummy)
+  Bool_t  Select(AliFlowTrack* pFlowTrack) const ;     // selection for R.P.[nSel][nHar]
+  Bool_t  Select(AliFlowV0* pFlowV0) const ;           // (dummy) 
+  Bool_t  SelectPart(AliFlowTrack* pFlowTrack) const ; // track selection for Correlation Analysis
+  Bool_t  SelectPart(AliFlowV0* pFlowV0) const ;       // v0 selection for Correlation Analysis (mass window + sidebands)
+  Bool_t  SelectV0Part(AliFlowV0* pFlowV0) const ;     // v0 mass window for Correlation Analysis 
+  Bool_t  SelectV0Side(AliFlowV0* pFlowV0) const ;     // v0 sidebands for Correlation Analysis 
+  Bool_t  SelectV0sxSide(AliFlowV0* pFlowV0) const ;   // selects v0s in the left hand sideband
+  Bool_t  SelectV0dxSide(AliFlowV0* pFlowV0) const ;   // selects v0s in the right hand sideband
 
  // Gets (Harmonic, Selection, Sub-event)
   Int_t   Sel() const				       { return fSelection; }	  	       // Returns the Harmonic 
@@ -58,15 +51,15 @@ class AliFlowSelection : public TObject {
   Int_t   Sub() const				       { return fSubevent; }	  	       // Returns the Sub-Event
 
  // Gets (R.P. cuts) and CutList
-  Float_t EtaCutLo(Int_t harN, Int_t selN) const       { return fEtaTpcCuts[0][harN][selN] ; } // Returns lower eta cut for R.P.[harN][selN] calculation (absolute values)
-  Float_t EtaCutHi(Int_t harN, Int_t selN) const       { return fEtaTpcCuts[1][harN][selN] ; } // Returns upper eta cut for R.P.[harN][selN] calculation (absolute values)
-  Float_t PtCutLo(Int_t harN, Int_t selN) const        { return fPtTpcCuts[0][harN][selN] ; }  // Returns lower pT cut for R.P.[harN][selN] calculation 
-  Float_t PtCutHi(Int_t harN, Int_t selN) const        { return fPtTpcCuts[1][harN][selN] ; }  // Returns upper pT cut for R.P.[harN][selN] calculation
-  Float_t DcaGlobalCutLo() const		       { return fDcaGlobalCuts[0] ; }	       // Returns lower DCA cut for R.P. calculation
-  Float_t DcaGlobalCutHi() const		       { return fDcaGlobalCuts[1] ; }	       // Returns upper DCA cut for R.P. calculation
-  Bool_t  ConstrainCut() const  		       { return fConstrainable ; }	       // Returns kTRUE/kFalse if the cut over un-constrainable tracks is enabled
-  Int_t   NhitsCut(Int_t selN) const		       { return fTPChits[selN] ; }	       // Returns the minimum number of TPC hits for R.P.[selN] calculation
-  Char_t* Pid() const				       { return fPid; } 		       // Returns particle specie used in R.P. calculation
+  Float_t EtaCutLo(Int_t harN, Int_t selN) const       { return fgEtaTpcCuts[0][harN][selN] ; } // Returns lower eta cut for R.P.[harN][selN] calculation (absolute values)
+  Float_t EtaCutHi(Int_t harN, Int_t selN) const       { return fgEtaTpcCuts[1][harN][selN] ; } // Returns upper eta cut for R.P.[harN][selN] calculation (absolute values)
+  Float_t PtCutLo(Int_t harN, Int_t selN) const        { return fgPtTpcCuts[0][harN][selN] ; }  // Returns lower pT cut for R.P.[harN][selN] calculation 
+  Float_t PtCutHi(Int_t harN, Int_t selN) const        { return fgPtTpcCuts[1][harN][selN] ; }  // Returns upper pT cut for R.P.[harN][selN] calculation
+  Float_t DcaGlobalCutLo() const		       { return fgDcaGlobalCuts[0] ; }	       // Returns lower DCA cut for R.P. calculation
+  Float_t DcaGlobalCutHi() const		       { return fgDcaGlobalCuts[1] ; }	       // Returns upper DCA cut for R.P. calculation
+  Bool_t  ConstrainCut() const  		       { return fgConstrainable ; }	       // Returns kTRUE/kFalse if the cut over un-constrainable tracks is enabled
+  Int_t   NhitsCut(Int_t selN) const		       { return fgTPChits[selN] ; }	       // Returns the minimum number of TPC hits for R.P.[selN] calculation
+  Char_t* Pid() const				       { return fgPid; } 		       // Returns particle specie used in R.P. calculation
 
  // Gets (Event cuts)
   Int_t   CentralityCut() const			       { return fCent ; } 		       // Returns Event Centrality class
@@ -83,17 +76,17 @@ class AliFlowSelection : public TObject {
   void    PrintV0List() const ;								       // Prints the v0s cut-list (for correlation analysis)
 
  // Harmonic & Selection set (R.P.)
-  void    SetHarmonic(const Int_t&);							       // Sets the Harmonic
-  void    SetSelection(const Int_t&);							       // Sets the Selection
-  void    SetSubevent(const Int_t&);							       // Sets the Sub-Event
+  void    SetHarmonic(const Int_t& harN);							       // Sets the Harmonic
+  void    SetSelection(const Int_t& selN);							       // Sets the Selection
+  void    SetSubevent(const Int_t& subN);							       // Sets the Sub-Event
   
  // Cuts set (Reaction Plane)
-  static void  SetPidCut(const Char_t* pid);				   		       // Sets the particle specie used in R.P. calculation
-  static void  SetEtaCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN);  		       // Sets |eta| cut for R.P.[harN][selN] calculation
-  static void  SetPtCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN);   		       // Sets pT cut for R.P.[harN][selN] calculation
-  static void  SetDcaGlobalCut(Float_t lo, Float_t hi); 		   		       // Sets DCA cut for R.P. calculation
-  static void  SetConstrainCut(Bool_t tf = kTRUE) ;			   		       // Sets the cut over un-constrainable tracks
-  static void  SetNhitsCut(Int_t hits, Int_t selN) ; 			   		       // Sets the minimum number of TPC hits for R.P.[selN] calculation
+  static void SetEtaCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN) { fgEtaTpcCuts[0][harN][selN] = lo ; fgEtaTpcCuts[1][harN][selN] = hi ; } // Sets the particle specie used in R.P. calculation
+  static void SetPtCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN)  { fgPtTpcCuts[0][harN][selN] = lo  ; fgPtTpcCuts[1][harN][selN] = hi ; }  // Sets |eta| cut for R.P.[harN][selN] calculation
+  static void SetDcaGlobalCut(Float_t lo, Float_t hi) 			{ fgDcaGlobalCuts[0] = lo ; fgDcaGlobalCuts[1] = hi ; } 		  // Sets pT cut for R.P.[harN][selN] calculation
+  static void SetPidCut(const Char_t* pid)	      			{ strncpy(fgPid, pid, 9) ; fgPid[9] = '\0' ; }				  // Sets DCA cut for R.P. calculation
+  static void SetConstrainCut(Bool_t tf = kTRUE)	      		{ fgConstrainable = tf ; }						  // Sets the cut over un-constrainable tracks
+  static void SetNhitsCut(Int_t hits,Int_t selN)      			{ fgTPChits[selN] = hits; }						  // Sets the minimum number of TPC hits for R.P.[selN] calculation
 
  // Sets (Event cuts)
   void    SetCentralityCut(Int_t cent)		       { fCent = cent ; }		       // Sets Event Centrality class
@@ -174,12 +167,12 @@ class AliFlowSelection : public TObject {
   Bool_t  fConstrainablePart;			    		// constrainability for parts. wrt plane 
 
  // Cuts for Tracks used in determining the Raction Plane (in STAR this selection was done inside the AliFlowEvent class)
-  static Float_t  fEtaTpcCuts[2][Flow::nHars][Flow::nSels]; 	//! eta range (absolute values)
-  static Float_t  fPtTpcCuts[2][Flow::nHars][Flow::nSels];  	//! pT range
-  static Float_t  fDcaGlobalCuts[2];			    	//! DCA cuts
-  static Char_t   fPid[10];				    	//! h+, h-, pi-, pi+, pi, k+, k-, k, pr+, pr-, pr, e+, e-, e, d+, d-, d
-  static Int_t    fTPChits[Flow::nSels];		    	//! minimum number of TPC hits
-  static Bool_t   fConstrainable;			    	//! cut un-constrainable tracks 
+  static Float_t  fgEtaTpcCuts[2][AliFlowConstants::kHars][AliFlowConstants::kSels]; 	// eta range (absolute values)
+  static Float_t  fgPtTpcCuts[2][AliFlowConstants::kHars][AliFlowConstants::kSels];  	// pT range
+  static Float_t  fgDcaGlobalCuts[2];			    	// DCA cuts
+  static Char_t   fgPid[10];				    	// h+, h-, pi-, pi+, pi, k+, k-, k, pr+, pr-, pr, e+, e-, e, d+, d-, d
+  static Int_t    fgTPChits[AliFlowConstants::kSels];		    	// minimum number of TPC hits
+  static Bool_t   fgConstrainable;			    	// cut un-constrainable tracks 
 
 
   ClassDef(AliFlowSelection,1)               			// macro for rootcint

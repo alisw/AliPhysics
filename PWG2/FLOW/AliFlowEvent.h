@@ -33,7 +33,6 @@
 class AliFlowTrack ;
 class AliFlowV0 ;
 class AliFlowSelection ;
-class Flow ;
 
 class AliFlowEvent : public TNamed {
 
@@ -54,9 +53,9 @@ public:
   UInt_t         OrigMult() 		const;					// Returns the original number of tracks (maybe some were trown away)
   Int_t    	 V0Mult() 		const;					// Returns the number of V0s 
   Int_t          FlowEventMult() 	const;					// Returns number of tracks stored in the event
-  Int_t          UncorrNegMult(Float_t eta = Flow::fEtaGood) const ;	        // Returns number of - tracks in eta (-eta;eta)
-  Int_t          UncorrPosMult(Float_t eta = Flow::fEtaGood) const ;	        // Returns number of + tracks in eta (-eta;eta)
-  Int_t          MultEta() ;							// Returns multiplicity in |eta|<Flow::fEetaMid
+  Int_t          UncorrNegMult(Float_t eta = AliFlowConstants::fgEtaGood) const ; // Returns number of - tracks in eta (-eta;eta)
+  Int_t          UncorrPosMult(Float_t eta = AliFlowConstants::fgEtaGood) const ; // Returns number of + tracks in eta (-eta;eta)
+  Int_t          MultEta() ;							// Returns multiplicity in |eta|<AliFlowConstants::fgEetaMid
   Double_t       CenterOfMassEnergy() 	const;					// Returns center of mass energy (5.5 TeV)
   Double_t       MagneticField() 	const;					// Returns magnetic field value
   Short_t        BeamMassNumberEast() 	const;					// Returns beam mass (Pb = 208)
@@ -120,7 +119,7 @@ public:
   Double_t       PhiWeight(Int_t selN,Int_t harN,AliFlowTrack* pFlowTrack) const ; 	// Returns PhiWeightRaw()*Weight()  
   Double_t       PhiWeightRaw(Int_t selN,Int_t harN,AliFlowTrack* pFlowTrack) const ;	// Returns weights for making the R.P. isotropic in the lab
   Double_t       Weight(Int_t selN,Int_t harN,AliFlowTrack* pFlowTrack) const ; 	// Returns weights for enhancing the resolution (+/-Sign(eta) for odd harmonics)
-  void  	 Bayesian(Double_t bayes[Flow::nPid]) ; 			// Returns the stored particles' abundances
+  void  	 Bayesian(Double_t bayes[AliFlowConstants::kPid]) ; 			// Returns the stored particles' abundances
   TVector   	 Bayesian() ; 	 						// Returns the stored particles' abundances as a TVector
  // -
   static void 	 SetPtWgt(Bool_t PtWgt = kTRUE);
@@ -129,12 +128,12 @@ public:
   static void 	 SetFirstLastPhiWgt();
   static void 	 SetNoWgt(Bool_t nowgt = kTRUE) ;
  // -
-  void  	 SetBayesian(Double_t bayes[Flow::nPid]) ; 			// Set the Bayesian vector of particles' abundances
+  void  	 SetBayesian(Double_t bayes[AliFlowConstants::kPid]) ; 			// Set the Bayesian vector of particles' abundances
 #ifndef __CINT__		
-  void     	 SetPhiWeight(const Flow::PhiWgt_t &pPhiWgt);		    	// Fills Weights from Arrays (from file: flowPhiWgt.hist.root)
-  void  	 SetPhiWeightPlus(const Flow::PhiWgt_t &pPhiWgtPlus);
-  void  	 SetPhiWeightMinus(const Flow::PhiWgt_t &pPhiWgtMinus);
-  void  	 SetPhiWeightCross(const Flow::PhiWgt_t &pPhiWgtCross);
+  void     	 SetPhiWeight(const AliFlowConstants::PhiWgt_t &pPhiWgt);		    	// Fills Weights from Arrays (from file: flowPhiWgt.hist.root)
+  void  	 SetPhiWeightPlus(const AliFlowConstants::PhiWgt_t &pPhiWgtPlus);
+  void  	 SetPhiWeightMinus(const AliFlowConstants::PhiWgt_t &pPhiWgtMinus);
+  void  	 SetPhiWeightCross(const AliFlowConstants::PhiWgt_t &pPhiWgtCross);
 #endif
 
  // Analysis flags
@@ -156,19 +155,19 @@ private:
   Int_t               fCentrality;                               //! Centrality Class (calculated from mult.)
 
  // extension
-  //Float_t 	      fExtPsi[Flow::nHars] ;			 // external RP angle (should be an input)
-  //Float_t 	      fExtRes[Flow::nHars] ;			 // external RP resolution (should be an input as well)
+  //Float_t 	      fExtPsi[AliFlowConstants::kHars] ;			 // external RP angle (should be an input)
+  //Float_t 	      fExtRes[AliFlowConstants::kHars] ;			 // external RP resolution (should be an input as well)
 
  // Tracks & V0s
   TObjArray*	      fTrackCollection ;			 // collection of Flow Tracks
   TObjArray*	      fV0Collection ;				 // collection of Flow V0s
 
  // Weights
-  Flow::PhiWgt_t      fPhiWgt;                                   //! flattening weights (single hist)
-  Flow::PhiWgt_t      fPhiWgtPlus;                               //! flattening weights (3 hist) - plus Z
-  Flow::PhiWgt_t      fPhiWgtMinus;                              //! flattening weights (3 hist) - minus Z
-  Flow::PhiWgt_t      fPhiWgtCross;                              //! flattening weights (3 hist) - cross Z
-  //Double_t     	fBayesianCs[Flow::nPid] ;        	 //! expected particles abundance (see Bayesian P.Id.)
+  AliFlowConstants::PhiWgt_t      fPhiWgt;                       //! flattening weights (single hist)
+  AliFlowConstants::PhiWgt_t      fPhiWgtPlus;                   //! flattening weights (3 hist) - plus Z
+  AliFlowConstants::PhiWgt_t      fPhiWgtMinus;                  //! flattening weights (3 hist) - minus Z
+  AliFlowConstants::PhiWgt_t      fPhiWgtCross;                  //! flattening weights (3 hist) - cross Z
+  //Double_t     	fBayesianCs[AliFlowConstants::kPid] ;    //! expected particles abundance (see Bayesian P.Id.)
 
  // Weighting & Settings
   static Bool_t       fPtWgt;                                    //! flag for pt weighting
@@ -179,12 +178,12 @@ private:
 
 #ifndef __CINT__
  // shortcuts (to speed up the execution)
-  Bool_t   fDone ;						//! flag setted kTRUE when the loop is done
-  TVector2 fQ[Flow::nSels][Flow::nHars];			//! flow vector
-  UInt_t   fMult[Flow::nSels][Flow::nHars];                  	//! multiplicity
-  Float_t  fSumOfWeightSqr[Flow::nSels][Flow::nHars];           //! Sqrt(Sum(wgt)) ~ Sqrt(Mult)
-  TVector2 fQSub[Flow::nSubs][Flow::nSels][Flow::nHars];      	//! flow vector subs
-  UInt_t   fMultSub[Flow::nSubs][Flow::nSels][Flow::nHars];   	//! multiplicity subs
+  Bool_t   fDone ;											//! flag setted kTRUE when the loop is done
+  TVector2 fQ[AliFlowConstants::kSels][AliFlowConstants::kHars];					//! flow vector
+  UInt_t   fMult[AliFlowConstants::kSels][AliFlowConstants::kHars];                  			//! multiplicity
+  Float_t  fSumOfWeightSqr[AliFlowConstants::kSels][AliFlowConstants::kHars];          			//! Sqrt(Sum(wgt)) ~ Sqrt(Mult)
+  TVector2 fQSub[AliFlowConstants::kSubs][AliFlowConstants::kSels][AliFlowConstants::kHars];      	//! flow vector subs
+  UInt_t   fMultSub[AliFlowConstants::kSubs][AliFlowConstants::kSels][AliFlowConstants::kHars];   	//! multiplicity subs
 #endif /*__CINT__*/
 
   ClassDef(AliFlowEvent,2) ;                    // macro for rootcint

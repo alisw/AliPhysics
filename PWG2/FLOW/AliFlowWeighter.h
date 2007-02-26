@@ -7,25 +7,27 @@
 //////////////////////////////////////////////////////////////////////
 //
 // Description: generates phi-weights and counts particle abundances .
+//  So, in fact, you should run this thing before the analysis,
+//  if you want to use phi-weight.
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef ALIFLOWEIGHTER_H
-#define ALIFLOWEIGHTER_H
+#ifndef ALIFLOWWEIGHTER_H
+#define ALIFLOWWEIGHTER_H
 
-#include <TVector2.h>
 #include <TFile.h>
 #include "AliFlowConstants.h"
 
 class TH1F;
 class TH1D;
 class TOrdCollection;
+class TVector2;
 
 class AliFlowTrack;
 class AliFlowV0;
 class AliFlowEvent;
 class AliFlowSelection;
-class Flow;
+class AliFlowConstants;
 
 class AliFlowWeighter {
 
@@ -47,7 +49,7 @@ class AliFlowWeighter {
   void	   SetWgtFile(TFile* file) 				{ fWgtFile = file ; fWgtFileName = fWgtFile->GetName() ; }  // Sets output file
   TString  GetWgtFileName() const				{ return fWgtFileName ; }
 
-  void 	   PrintBayesian(Int_t selN = 0) ; 			// Prints normalized particle abundance (selN)
+  void 	   PrintBayesian(Int_t selN = 0) const ; 		// Prints normalized particle abundance (selN)
 
 
  protected:
@@ -59,15 +61,18 @@ class AliFlowWeighter {
 
  private:
 
+  //AliFlowWeighter(const AliFlowWeighter &flowWgt) 		{ flowWgt.fPhiBins ; }  // Copy Constructor (dummy)
+  //AliFlowWeighter &operator=(const AliFlowWeighter &flowAnal) { return *this ; }	// Assignment Operator
+
  // enumerators etc.			    
   Int_t            fEventNumber ;	  		    	//! progressive enumeration of AliFlowEvents
   Int_t            fTrackNumber ;	  		    	//! progressive enumeration of AliFlowTracks
   Int_t            fNumberOfV0s ;	  		        //! total number of V0s in the current event
   Int_t 	   fNumberOfTracks ;			    	//! total number of tracks in the current event
 
-  Int_t            fPhiBins ;     
-  Float_t 	   fPhiMin ;
-  Float_t  	   fPhiMax ; 
+  Int_t            fPhiBins ;   			    	//! phi bins   
+  Float_t 	   fPhiMin ;			    		//! i.e. 0
+  Float_t  	   fPhiMax ; 			    		//! i.e. 2 Pi
 
  // Internal pointers
   AliFlowEvent*     fFlowEvent ;      				//! pointer to AliFlowEvent
@@ -82,30 +87,28 @@ class AliFlowWeighter {
 
  // Histograms
   TOrdCollection*   fPhiWgtHistList ;     			//! Weights:  histogram list
-  struct fHistFullHars 
+  struct AliHistFullHars 
   {
-    TH1D*       fHistPhiPlus;
-    TH1D*       fHistPhiMinus;
-    TH1D*       fHistPhiAll;
-    TH1D*       fHistPhi;
-    TH1D*       fHistPhiWgtPlus;
-    TH1D*       fHistPhiWgtMinus;
-    TH1D*       fHistPhiWgtAll;
-    TH1D*       fHistPhiWgt;
-    TH1D*       fHistPhiFlatPlus;
-    TH1D*       fHistPhiFlatMinus;
-    TH1D*       fHistPhiFlatAll;
-    TH1D*       fHistPhiFlat;
+    TH1D*       fHistPhiPlus;					//! histogram ...
+    TH1D*       fHistPhiMinus;					//! histogram ...
+    TH1D*       fHistPhiAll;					//! histogram ...
+    TH1D*       fHistPhi;					//! histogram ...
+    TH1D*       fHistPhiWgtPlus;				//! histogram ...
+    TH1D*       fHistPhiWgtMinus;				//! histogram ...
+    TH1D*       fHistPhiWgtAll; 				//! histogram ...
+    TH1D*       fHistPhiWgt;					//! histogram ...
+    TH1D*       fHistPhiFlatPlus;				//! histogram ...
+    TH1D*       fHistPhiFlatMinus;				//! histogram ...
+    TH1D*       fHistPhiFlatAll;				//! histogram ...
+    TH1D*       fHistPhiFlat;					//! histogram ...
   };
   
-  struct fHistFulls;	
-  friend struct fHistFulls;
-  struct fHistFulls 
+  struct AliHistFulls 
   {
-   TH1F*     	fHistBayPidMult;
-   struct fHistFullHars fHistFullHar[Flow::nHars];		// wgt, evts, trks, v0s (as defined above)
+   TH1F*     	fHistBayPidMult ;				//! histogram ...
+   struct AliHistFullHars fHistFullHar[AliFlowConstants::kHars];		//! structure wgt, evts, trks, v0s (as defined above)
   };
-  struct fHistFulls fHistFull[Flow::nSels];                     //!
+  struct AliHistFulls fHistFull[AliFlowConstants::kSels];                   //! structure array ...
 
   ClassDef(AliFlowWeighter,0)              			// macro for rootcint
 };

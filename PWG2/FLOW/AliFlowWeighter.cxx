@@ -1,4 +1,4 @@
-	//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 //
 // $Id$
 //
@@ -21,8 +21,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef ALIFLOWANALYSER_CXX
-#define ALIFLOWANALYSER_CXX
+#ifndef ALIFLOWWEIGHTER_CXX
+#define ALIFLOWWEIGHTER_CXX
 
 // ROOT things
 #include <TROOT.h>
@@ -91,22 +91,22 @@ Bool_t AliFlowWeighter::Init()
  //for(Int_t ii=0;ii<3;ii++) { fVertex[ii] = 0 ; }
 
  // Histogram settings
- fPhiBins = Flow::nPhiBins ;     
+ fPhiBins = AliFlowConstants::kPhiBins ;     
  fPhiMin  = 0.;
  fPhiMax  = 2*TMath::Pi() ; 
 
  TString* histTitle ;
- for(int k = 0; k < Flow::nSels; k++)
+ for(int k = 0; k < AliFlowConstants::kSels; k++)
  {
   histTitle = new TString("Flow_BayPidMult_Sel");
   *histTitle += k+1;
-  fHistFull[k].fHistBayPidMult = new TH1F(histTitle->Data(), histTitle->Data(),Flow::nPid,-0.5,((Float_t)Flow::nPid-0.5));
+  fHistFull[k].fHistBayPidMult = new TH1F(histTitle->Data(), histTitle->Data(),AliFlowConstants::kPid,-0.5,((Float_t)AliFlowConstants::kPid-0.5));
   fHistFull[k].fHistBayPidMult->Sumw2() ;
   fHistFull[k].fHistBayPidMult->SetXTitle("e+/-  ,  mu+/-  ,  pi+/-  ,  K+/-  ,  p+/-  ,  d+/- ");
   fHistFull[k].fHistBayPidMult->SetYTitle("Counts");
   delete histTitle;
 
-  for(int j = 0; j < Flow::nHars; j++) 
+  for(int j = 0; j < AliFlowConstants::kHars; j++) 
   {
    // Tpc - Phi lab
    histTitle = new TString("Flow_Phi_TPC_Sel");
@@ -204,7 +204,7 @@ Bool_t AliFlowWeighter::Finish()
  delete fPhiWgtHistList ;
  
  // Write Bayesian Weights for P.Id.
- for(int k=0;k<Flow::nSels;k++) { fHistFull[k].fHistBayPidMult->Write() ; }
+ for(int k=0;k<AliFlowConstants::kSels;k++) { fHistFull[k].fHistBayPidMult->Write() ; }
 
  // Write the AliFlowSelection object
  fFlowSelect->Write();
@@ -279,10 +279,10 @@ void AliFlowWeighter::TracksLoop(TObjArray* fFlowTracks)
   else if(strstr(pid,"d"))  { fPidId = 5 ; }
 
   // Looping over Selections and Harmonics
-  for (int k = 0; k < Flow::nSels; k++) 
+  for (int k = 0; k < AliFlowConstants::kSels; k++) 
   {
    fFlowSelect->SetSelection(k) ;
-   for (int j = 0; j < Flow::nHars; j++) 
+   for (int j = 0; j < AliFlowConstants::kHars; j++) 
    {
     fFlowSelect->SetHarmonic(j);
     if(fFlowSelect->Select(fFlowTrack))
@@ -324,13 +324,13 @@ Bool_t AliFlowWeighter::Weightening()
  cout << " AliFlowWeighter::Weightening() " << endl ; cout << endl ;
  
  // PhiWgt histogram collection
- fPhiWgtHistList = new TOrdCollection(4*Flow::nSels*Flow::nHars) ;
+ fPhiWgtHistList = new TOrdCollection(4*AliFlowConstants::kSels*AliFlowConstants::kHars) ;
  
  // Creates PhiWgt Histograms
  TString* histTitle ;
- for(Int_t k = 0; k < Flow::nSels; k++)
+ for(Int_t k = 0; k < AliFlowConstants::kSels; k++)
  {
-  for(Int_t j = 0; j < Flow::nHars; j++) 
+  for(Int_t j = 0; j < AliFlowConstants::kHars; j++) 
   {
    // Tpc plus
    histTitle = new TString("Flow_Phi_Weight_TPCplus_Sel");
@@ -411,19 +411,19 @@ Bool_t AliFlowWeighter::Weightening()
  return kTRUE ;
 }
 //-----------------------------------------------------------------------
-void AliFlowWeighter::PrintBayesian(Int_t selN)  
+void AliFlowWeighter::PrintBayesian(Int_t selN) const
 {
  // Prints the normalized particle abundance of all events (selection selN).
  // Call this at the end of the loop, just before Finish() .
 
- if(selN>Flow::nSels) { selN = 0 ; } 
- Char_t* names[Flow::nPid] = {"e","mu","pi","k","p","d"} ;
+ if(selN>AliFlowConstants::kSels) { selN = 0 ; } 
+ Char_t* names[AliFlowConstants::kPid] = {"e","mu","pi","k","p","d"} ;
  Double_t bayes = 0. ;
  Double_t totCount = (fHistFull[selN].fHistBayPidMult)->GetSumOfWeights() ;
  if(totCount) 
  { 
   cout << " Sel." << selN << " particles normalized abundance (tot. " << totCount << " tracks) : " ;
-  for(Int_t ii=0;ii<Flow::nPid;ii++)
+  for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++)
   {
    bayes = (fHistFull[selN].fHistBayPidMult->GetBinContent(ii+1) / totCount) ; 
    cout << bayes << "_" << names[ii] << " ; " ;

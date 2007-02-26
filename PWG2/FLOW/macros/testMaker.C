@@ -20,7 +20,7 @@
 
 using namespace std; //required for resolving the 'cout' symbol
 
-void testMaker(TString output = "pFlowEvts.root")
+void testMaker(TString output = "flowEvts.root")
 {
  cout << " . Here the new flow maker (2007) ... " << endl ;
  cout << endl ;
@@ -54,6 +54,12 @@ void testMaker(TString output = "pFlowEvts.root")
   pESDchain->Add("1/AliESDs.root") ; // nFiles++ ;
   pESDchain->Add("2/AliESDs.root") ; // nFiles++ ;
   pESDchain->Add("3/AliESDs.root") ; // nFiles++ ;
+  pESDchain->Add("4/AliESDs.root") ; // nFiles++ ;
+  pESDchain->Add("5/AliESDs.root") ; // nFiles++ ;
+  pESDchain->Add("6/AliESDs.root") ; // nFiles++ ;
+  pESDchain->Add("7/AliESDs.root") ; // nFiles++ ;
+  pESDchain->Add("8/AliESDs.root") ; // nFiles++ ;
+  pESDchain->Add("9/AliESDs.root") ; // nFiles++ ;
  }
 
  Int_t fNumberOfEvents = (Int_t)pESDchain->GetEntries() ;

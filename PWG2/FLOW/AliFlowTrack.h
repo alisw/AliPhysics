@@ -12,8 +12,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef AliFlowTrack_h
-#define AliFlowTrack_h
+#ifndef ALIFLOWTRACK_h
+#define ALIFLOWTRACK_h
 
 #include <string.h>
 #include <stdio.h>
@@ -27,8 +27,6 @@
 #include "TVector.h"
 
 #include "AliFlowConstants.h"
-
-class Flow ;
 
 class AliFlowTrack : public TNamed {
 
@@ -73,10 +71,10 @@ public:
   Float_t       KaonPlusMinusProb()     	const;
   Float_t       ProtonPbarProb()        	const;
   Float_t       DeuteriumAntiDeuteriumProb() 	const;
-  Float_t       PidProb(Int_t nn)   		const;          // normalized detector response (using Flow::fBayesian[] )
+  Float_t       PidProb(Int_t nn)   		const;          // normalized detector response (using AliFlowConstants::fgBayesian[] )
   TVector 	PidProbs() 			const; 
-  void          PidProbs(Float_t pidN[Flow::nPid])    const; 
-  void          RawPidProbs(Float_t pidV[Flow::nPid]) const; 	// raw ESD detector responses
+  void          PidProbs(Float_t pidN[AliFlowConstants::kPid])    const; 
+  void          RawPidProbs(Float_t pidV[AliFlowConstants::kPid]) const; 	// raw ESD detector responses
  // Gets - Detector response
   Float_t       Chi2TPC()     const;
   Int_t         FitPtsTPC()   const;
@@ -175,7 +173,7 @@ private:
   Float_t  fPtGlobal;				// transverse momentum of the unconstrained track 
   Int_t    fLabel ;			       	// Label of the track (link: KineTree-ESD) 
  // -
-  Float_t  fPidProb[Flow::nPid] ;		// Array of probability to be   (e,mu,pi,k,p,d)
+  Float_t  fPidProb[AliFlowConstants::kPid] ;		// Array of probability to be   (e,mu,pi,k,p,d)
   Int_t    fFitPts[4] ; 			// Array of Fit Points 		(in: TPC,ITS,TRD,TOF)
   Int_t    fMaxPts[4] ; 			// Array of Foundable Clusters  (in: TPC,ITS,TRD,TOF)
   Float_t  fFitChi2[4] ;			// Array of Chi2                (in: TPC,ITS,TRD,TOF)
@@ -183,8 +181,8 @@ private:
   Float_t  fMom[4] ;		 		// Array of momentum at the entrance of TPC,ITS,TRD,TOF     
 
  // Selection's array for R.P. & sub-event selection (not stored)  
-  Bool_t   fSelection[Flow::nHars][Flow::nSels]; //! 
-  Short_t  fSubevent[Flow::nHars][Flow::nSels];	 //! 
+  Bool_t   fSelection[AliFlowConstants::kHars][AliFlowConstants::kSels]; //! 
+  Short_t  fSubevent[AliFlowConstants::kHars][AliFlowConstants::kSels];	 //! 
 
   ClassDef(AliFlowTrack,4) ;                  	// macro for rootcint
 };

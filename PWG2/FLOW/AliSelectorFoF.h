@@ -2,8 +2,8 @@
 /* derived from AliSelector.h,v 1.10 2006/08/15 jgrosseo Exp */
 
 // This selector is only dependent on the ESD library, if you need the whole of AliROOT use AliSelectorRL
-#ifndef ALISELECTORF_H
-#define ALISELECTORF_H
+#ifndef ALISELECTORFOF_H
+#define ALISELECTORFOF_H
 
 #include <TSelector.h>
 
@@ -12,6 +12,7 @@ class AliFlowSelection;
 class AliFlowMaker;
 class AliFlowAnalyser; 
 class AliFlowWeighter;
+class AliFlowConstants;
 
 class AliESD;
 class AliESDtrack;
