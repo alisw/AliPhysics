@@ -125,13 +125,13 @@ void AliTriggerPHOS::Exec(Option_t *)
   const Float_t aNNO   = static_cast<Float_t>(triggerAmplitudes->At(3)) ; 
 
   // trigger position
-  const TArrayI * triggerCells      = fESD->GetPHOSTriggerCells();
-  const Float_t p22    =  static_cast<Float_t>(triggerCells->At(0)) ; 
-  const Float_t phi22  =  static_cast<Float_t>(triggerCells->At(1)) ;
-  const Float_t eta22  =  static_cast<Float_t>(triggerCells->At(2)) ;
-  const Float_t pNN    =  static_cast<Float_t>(triggerCells->At(3)) ; 
-  const Float_t phiNN  =  static_cast<Float_t>(triggerCells->At(4)) ;
-  const Float_t etaNN  =  static_cast<Float_t>(triggerCells->At(5)) ; 
+  const TArrayF * triggerPosition      = fESD->GetPHOSTriggerPosition();
+  const Float_t p22    =  static_cast<Float_t>(triggerPosition->At(0)) ; 
+  const Float_t phi22  =  static_cast<Float_t>(triggerPosition->At(1)) ;
+  const Float_t eta22  =  static_cast<Float_t>(triggerPosition->At(2)) ;
+  const Float_t pNN    =  static_cast<Float_t>(triggerPosition->At(3)) ; 
+  const Float_t phiNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
+  const Float_t etaNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
   
   Int_t       firstPhosCluster       = fESD->GetFirstPHOSCluster() ;
   const Int_t numberOfPhosClusters   = fESD->GetNumberOfPHOSClusters() ;
