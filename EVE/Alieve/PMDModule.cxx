@@ -5,6 +5,8 @@
 #include "AliPMDdigit.h"
 #include "AliPMDddldata.h"
 
+#include <TClonesArray.h>
+
 using namespace Reve;
 using namespace Alieve;
 
