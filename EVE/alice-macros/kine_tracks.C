@@ -3,16 +3,17 @@
 #include "TParticlePDG.h"
 
 // PDG color indices
-static Color_t DefCol = 30;
-static Color_t ECol = 5;
-static Color_t MuCol = 6;
+static Color_t DefCol  = 30;
+static Color_t ECol    = 5;
+static Color_t MuCol   = 6;
 static Color_t GamaCol = 7; 
 static Color_t MesCol1 = 3;
 static Color_t MesCol2 = 38;
-static Color_t BarCol = 10;
+static Color_t BarCol  = 10;
 
 
-Reve::TrackList* kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
+Reve::TrackList*
+kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
 {
   AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
   rl->LoadKinematics();
@@ -118,9 +119,11 @@ Color_t get_pdg_color(Int_t pdg){
 // Create mother and daughters tracks with given label.
 
 Reve::TrackList*
-kine_track(Int_t label, Bool_t create_mother = kTRUE, Reve::TrackList* cont = 0)
+kine_track(Int_t  label,
+	   Bool_t import_mother    = kTRUE,
+	   Bool_t import_daughters = kTRUE,
+	   Reve::TrackList*   cont = 0)
 {
-  gSystem->IgnoreSignal(kSigSegmentationViolation, true);
   if (label < 0) {
     Warning("kine_track", "label not set.");
     return 0;
@@ -131,26 +134,27 @@ kine_track(Int_t label, Bool_t create_mother = kTRUE, Reve::TrackList* cont = 0)
   AliStack* stack = rl->Stack();
   TParticle* p = stack->Particle(label);
 
-  if (create_mother | p->GetNDaughters())
+  if (import_mother || (import_daughters && p->GetNDaughters()))
   {
-    if(cont == 0) {
-      cont =  
-	new TrackList(Form("%d kine_tracks %d", p->GetNDaughters(), label));
+    if (cont == 0)
+    {
+      cont = new TrackList(Form("Kinematics of %d", label, p->GetNDaughters()));
 
       Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
       // !!! Watch the '-', apparently different sign convention then for ESD.
       rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
       char tooltip[1000];
-      sprintf(tooltip,"%d, mother %d", p->GetNDaughters(), label);
+      sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
       cont->SetTitle(tooltip);  
       cont->SelectByPt(0.2, 100);
-      rnrStyle->fColor = 8;  
+      rnrStyle->fColor   = 8;  
       rnrStyle->fMaxOrbs = 8;  
       cont->SetEditPathMarks(kTRUE);
       gReve->AddRenderElement(cont);
     }
    
-    if(create_mother){
+    if (import_mother)
+    {
       Track* track = new Reve::Track(p, label, cont->GetRnrStyle());  
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), label);
@@ -158,7 +162,7 @@ kine_track(Int_t label, Bool_t create_mother = kTRUE, Reve::TrackList* cont = 0)
       gReve->AddRenderElement(cont, track);
     }
 
-    if (p->GetNDaughters()) 
+    if (import_daughters && p->GetNDaughters()) 
     {
       for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
       {	
@@ -172,16 +176,20 @@ kine_track(Int_t label, Bool_t create_mother = kTRUE, Reve::TrackList* cont = 0)
     }
   }
 
-  // set path marks
-  if(cont->GetEditPathMarks()) {
-    Alieve::KineTools kt; 
-    rl->LoadTrackRefs();
-    kt.SetPathMarks(cont,stack, rl->TreeTR());
+  if (cont)
+  {
+    // set path marks
+    if(cont->GetEditPathMarks())
+    {
+      Alieve::KineTools kt; 
+      rl->LoadTrackRefs();
+      kt.SetPathMarks(cont, stack, rl->TreeTR());
+    }
+    // update list tree
+    cont->UpdateItems();
+    cont->MakeTracks();
+    cont->MakeMarkers();
   }
-
-  cont->UpdateItems(); // update list tree
-  cont->MakeTracks();
-  cont->MakeMarkers();
 
   gReve->Redraw3D();
   return cont;
