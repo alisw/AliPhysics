@@ -18,7 +18,7 @@ public:
   enum ERawData{kNddls=14};                                                      //RAW data structure
   enum EPadData{kPcX=2,kPcY=3,kPadPcX=80,kPadPcY=48,kPadAllX=kPadPcX*kPcX,kPadAllY=kPadPcY*kPcY,kPcAll=kPcX*kPcY,kPadAll=kPadAllX*kPadAllY};   //Segmentation structure 
 //ctor&dtor    
-           AliHMPIDDigit(                                      ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  {}                         //default ctor
+           AliHMPIDDigit(                                      ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(0)   {}                         //default ctor
            AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t            ):AliDigit(t),fPad(pad             ),fQ(q )  {}                         //ctor used in digitizer
   virtual ~AliHMPIDDigit(                                      )                                            {}                         //dtor
 //framework part    
@@ -39,7 +39,7 @@ public:
          Int_t   DdlIdx      (                               )const{return 2*Ch()+Pc()%2;                           }                  //DDL# 0..13
          Int_t   DdlId       (                               )const{return (6<<8)+DdlIdx();                         }                  //DDL ID 0x600..0x60d
   static void    Hit2Sdi     (AliHMPIDHit *pHit,TClonesArray*);                                                                        //hit -> 9 sdigits  
-  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= 6;                                  }                  //is digit over threshold????
+  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= 4;                                  }                  //is digit over threshold????
   static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();    }                  //is point inside chamber boundary?
   inline static Bool_t IsInDead  (Float_t x,Float_t y        );                                                                        //is point in dead area?
          Float_t LorsX       (                               )const{return (PadPcX()+0.5)*SizePadX()+(Pc()%2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
@@ -100,7 +100,7 @@ Bool_t AliHMPIDDigit::Set(AliHMPIDHit *pHit,Int_t pad)
 //            pad - for which pad to create
 //   Returns: none    
   
-  fPad=Abs(-1,-1,-1,-1); fQ=-1; //reset
+  fPad=Abs(-1,-1,-1,-1); fQ=0; //reset
   Int_t pc,px,py;
   Float_t x=pHit->LorsX(),y=pHit->LorsY();
   

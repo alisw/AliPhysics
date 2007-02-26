@@ -15,7 +15,7 @@
 
 #include "AliHMPIDDigit.h" //class header
 #include <TClonesArray.h>  //Hit2Sdi() 
-#include <TMarker.h>       //Draw() 
+#include <TBox.h>       //Draw() 
 ClassImp(AliHMPIDDigit)
 
 const Float_t AliHMPIDDigit::fMinPcX[]={0,SizePcX() + SizeDead(),0,SizePcX() + SizeDead(),       0,SizePcX() + SizeDead()};
@@ -75,7 +75,10 @@ HMPID raw word is 32 bits with the structure:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Draw(Option_t*)
 {
-  TMarker *pMark=new TMarker(LorsX(),LorsY(),25); pMark->SetMarkerColor(kGreen); pMark->Draw();
+//  TMarker *pMark=new TMarker(LorsX(),LorsY(),25); pMark->SetMarkerColor(kGreen);pMark->Draw();
+  TBox *pad = new TBox(LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY(),LorsX()+0.5*SizePadX(),LorsY()+0.5*SizePadY());
+  pad->SetFillStyle(0);pad->SetLineColor(kGreen);
+  pad->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Hit2Sdi(AliHMPIDHit *pHit,TClonesArray *pSdiLst)

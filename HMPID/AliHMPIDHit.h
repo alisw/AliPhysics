@@ -11,9 +11,9 @@
 class AliHMPIDHit : public AliHit //   TObject-AliHit-AliHMPIDHit
 {
 public:
-  AliHMPIDHit(                                                                         ):AliHit(    ),fCh(-1),fPid(-1),fQ(-1),fLx(0),fLy(0){} //default ctor
-  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y,const TVector3 &p):AliHit(0,tn),fCh(c ),fPid(id),fQ(-1),fLx(x),fLy(y){QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
-  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y                  ):             fCh(c ),fPid(id),fQ(-1),fLx(x),fLy(y){QdcTot(e);fTrack=tn;}//manual ctor 
+  AliHMPIDHit(                                                                         ):AliHit(    ),fCh(-1),fPid(-1),fQ(0),fLx(0),fLy(0){} //default ctor
+  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y,const TVector3 &p):AliHit(0,tn),fCh(c ),fPid(id),fQ(0),fLx(x),fLy(y){QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
+  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y                  ):             fCh(c ),fPid(id),fQ(0),fLx(x),fLy(y){QdcTot(e);fTrack=tn;}//manual ctor 
   virtual ~AliHMPIDHit()                                                                                                                                 {}
 //framework part
          void    Print(Option_t *opt="")const;                                                 //from TObject to print current status

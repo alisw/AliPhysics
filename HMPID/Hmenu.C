@@ -578,12 +578,11 @@ void hed()
 {//event display from files
   static TCanvas *pC=0;
   static Int_t iEvt=0;
-  static Int_t iEvtTot=0;
+  static Int_t iEvtTot=999;
   static TFile *pEsdFl=0;
   static TTree *pEsdTr=0;
   static AliESD *pEsd=0;
-  
-  if(!pC){
+  if(!pC&&iEvt<iEvtTot){
     if(hl==0) {Printf("hed: no HMPID loader");return;}
     Printf("Opening session");
     pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pEsdFl->IsOpen()) return;//open AliESDs.root
@@ -597,13 +596,13 @@ void hed()
  
   if(iEvt<iEvtTot){
     pEsdTr->GetEntry(iEvt); al->GetEvent(iEvt); hl->TreeD()->GetEntry(0); hl->TreeR()->GetEntry(0);
-    TLatex txt;   pC->cd(3);  txt.DrawLatex(0.2,0.2,Form("Event %i Total %i",iEvt,iEvtTot));
+    TLatex txt; pC->cd(3);  gPad->Clear(); 
+    txt.SetTextSize(0.1);txt.DrawLatex(0.2,0.2,Form("Event %i (total %i)",iEvt,iEvtTot));
     DrawEvt(pC,h->DigLst(),h->CluLst(),pEsd);
     iEvt++;
   }else{
-    Printf("Last event");
-    pC->Clear();
-    delete pC;pC=0x0;
+    Printf("--- No more events available...Bye.");
+    pC->Close();
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -639,10 +638,10 @@ void sed()
   AliHMPIDReconstructor::Dig2Clu(&ld,&lc);
 //        AliHMPIDTracker::Recon(&esd,&cl);
   
-  DrawEvt(pC1,&lh,&ld,&lc,&esd);  
+  DrawEvt(pC1,&ld,&lc,&esd);  
 }//SimEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawEvt(TCanvas *pC,TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
+void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
 {//draws all the objects of current event
 
   AliHMPIDRecon rec;  
@@ -681,10 +680,6 @@ void DrawEvt(TCanvas *pC,TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCl
     ((TClonesArray*)pCluLst->At(iCh))->Draw();  //draw clusters
                             pTxC[iCh]->Draw();  //draw intersections
                             pRin[iCh]->Draw();  //draw rings
-    for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++) {
-      AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);
-      if(pHit->Ch()==iCh)pHit->Draw();
-    }
     gPad->SetEditable(kFALSE);
   }//chambers loop
 //  TLatex txt; txt.SetTextSize(0.02);
