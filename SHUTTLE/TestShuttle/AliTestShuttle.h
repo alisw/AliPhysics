@@ -17,6 +17,7 @@ class TMap;
 class TList;
 class AliCDBMetaData;
 class AliCDBPath;
+class AliCDBPath;
 
 class AliTestShuttle : public AliShuttleInterface
 {
@@ -27,6 +28,7 @@ class AliTestShuttle : public AliShuttleInterface
     void AddInputFile(Int_t system, const char* detector, const char* id, const char* source, const char* fileName);
     void SetDCSInput(TMap* dcsAliasMap) { fDcsAliasMap = dcsAliasMap; }
     void AddInputRunParameter(const char* key, const char* value);
+    Bool_t AddInputCDBEntry(AliCDBEntry* entry);
 
     void Process();
 
@@ -37,9 +39,19 @@ class AliTestShuttle : public AliShuttleInterface
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source);
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
     virtual const char* GetRunParameter(const char* key);
+    virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path);
     virtual void Log(const char* detector, const char* message);
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
+
+    static void SetMainCDB (TString mainCDB) {fgkMainCDB = mainCDB;}
+    static void SetLocalCDB (TString localCDB) {fgkLocalCDB = localCDB;}
+
+    static void SetMainRefStorage (TString mainRefStorage) {fgkMainRefStorage = mainRefStorage;}
+    static void SetLocalRefStorage (TString localRefStorage) {fgkLocalRefStorage = localRefStorage;}
+
+    static void SetShuttleTempDir (const char* tmpDir);
+    static void SetShuttleLogDir (const char* logDir);
 
   protected:
 

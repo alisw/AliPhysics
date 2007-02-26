@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2007/02/13 11:22:25  acolla
+Shuttle getters and setters of main/local OCDB/Reference storages, temp and log
+folders moved to AliShuttleInterface
+
 Revision 1.6  2006/11/06 14:22:47  jgrosseo
 major update (Alberto)
 o) reading of run parameters from the logbook
@@ -263,6 +267,36 @@ void AliTestShuttle::AddInputFile(Int_t system, const char* detector, const char
 }
 
 //______________________________________________________________________________________________
+Bool_t AliTestShuttle::AddInputCDBEntry(AliCDBEntry* entry)
+{
+  // This function adds an object in the OCDB to be later retrieved with GetFromOCDB
+
+	AliCDBStorage *sto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
+	if (!sto)
+	{
+		Log("SHUTTLE", "GetFromOCDB - Cannot activate main OCDB for query!");
+		return 0;
+	}
+
+	return sto->Put(entry);
+}
+
+//______________________________________________________________________________________________
+AliCDBEntry* AliTestShuttle::GetFromOCDB(const AliCDBPath& path)
+{
+// returns obiect from OCDB valid for current run
+
+	AliCDBStorage *sto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
+	if (!sto)
+	{
+		Log("SHUTTLE", "GetFromOCDB - Cannot activate main OCDB for query!");
+		return 0;
+	}
+
+	return (AliCDBEntry*) sto->Get(path, fRun);
+}
+
+//______________________________________________________________________________________________
 void AliTestShuttle::Process()
 {
   // This function tests all preprocessors that are registered to it
@@ -318,5 +352,21 @@ const char* AliTestShuttle::GetRunParameter(const char* key){
 		return 0;
 	}
 	return value->GetName();
+}
+
+//______________________________________________________________________________________________
+void AliTestShuttle::SetShuttleTempDir(const char* tmpDir)
+{
+// sets Shuttle temp directory
+
+	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
+}
+
+//______________________________________________________________________________________________
+void AliTestShuttle::SetShuttleLogDir(const char* logDir)
+{
+// sets Shuttle log directory
+
+	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }
 

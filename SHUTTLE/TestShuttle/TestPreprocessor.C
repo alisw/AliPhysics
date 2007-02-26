@@ -13,26 +13,21 @@ void TestPreprocessor()
   // load library
   gSystem->Load("libTestShuttle.so");
 
+   // create AliTestShuttle instance
+  // The parameters are run, startTime, endTime
+  AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);
+
+
+  printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
+
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  AliShuttleInterface::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  AliShuttleInterface::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetTestShuttleCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetTestShuttleRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
 
-  // TODO if needed, change location of temp and log folders (however they are not explicitly used here)
-  // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/temp and log
-  AliShuttleInterface::SetShuttleTempDir("$ALICE_ROOT/SHUTTLE/TestShuttle/temp");
-  AliShuttleInterface::SetShuttleLogDir("$ALICE_ROOT/SHUTTLE/TestShuttle/log");
-
-  printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
-  printf("Test Shuttle log dir: %s\n", AliShuttleInterface::GetShuttleLogDir());
-
-
-  // create AliTestShuttle instance
-  // The parameters are run, startTime, endTime
-  AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);
 
   // TODO(1)
   //
@@ -83,27 +78,41 @@ void TestPreprocessor()
   shuttle->AddInputRunParameter("NumberOfGDCs", "15");
 
   // TODO(4)
+  //
+  // The shuttle can query condition parameters valid from the current run from the OCDB
+  // To test it, we must first store the object into the OCDB. It will be retrieved in the preprocessor
+  // using GetFromOCDB function.
+
+  TObjString obj("This is a condition parameter stored in OCDB");
+  AliCDBId id("TPC/Calib/Data", 0, AliCDBRunRange::Infinity());
+  AliCDBMetaData md;
+  AliCDBEntry entry(&obj, id, &md);
+
+  shuttle->AddInputCDBEntry(&entry);
+
+
+  // TODO(5)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   AliPreprocessor* test = new AliTestPreprocessor(shuttle);
 
   // Test the preprocessor
   shuttle->Process();
 
-  // TODO(5)
+  // TODO(6)
   // In the preprocessor AliShuttleInterface::Store should be called to put the final
   // data to the CDB. To check if all went fine have a look at the files produced in
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
-  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("TPC/SHUTTLE/Data", 7);
-  if (!entry)
+  if (!chkEntry)
   {
     printf("The file is not there. Something went wrong.\n");
     return;
   }
 
-  AliTestDataDCS* output = dynamic_cast<AliTestDataDCS*> (entry->GetObject());
+  AliTestDataDCS* output = dynamic_cast<AliTestDataDCS*> (chkEntry->GetObject());
   // If everything went fine, draw the result
   if (output)
     output->Draw();

@@ -1,11 +1,13 @@
 #include "AliTestPreprocessor.h"
 
 #include "AliCDBMetaData.h"
+#include "AliCDBEntry.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliTestDataDCS.h"
 
 #include <TTimeStamp.h>
+#include <TObjString.h>
 
 //
 // This class is an example for a simple preprocessor.
@@ -79,6 +81,17 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   	Log(Form("Number of events for run %d: %s",fRun, nEvents));
   } else {
 	Log(Form("Number of events not put in logbook!"));
+  }
+
+  // Example of how to retrieve a condition object from OCDB
+
+  AliCDBEntry *entry = GetFromOCDB("Calib", "Data");
+  if (!entry)
+  {
+	Log("No object found in OCDB!");
+  } else {
+	TObjString *obj = dynamic_cast<TObjString*> (entry->GetObject());
+	Log(Form("Got TPC/Calib/Data object from OCDB. The object says: %s",obj->GetName()));
   }
 
 
