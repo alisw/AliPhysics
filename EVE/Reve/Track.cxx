@@ -120,11 +120,10 @@ void Track::Reset(Int_t n_points)
 }
 */
 
- /**************************************************************************/
+/**************************************************************************/
 
 void Track::MakeTrack()
 {
-  
   TrackRnrStyle& RS((fRnrStyle != 0) ? *fRnrStyle : TrackRnrStyle::fgDefStyle);
 
   Float_t px = fP.x, py = fP.y, pz = fP.z;  
@@ -265,15 +264,29 @@ void Track::ImportClustersFromIndex()
   gROOT->ProcessLine(Form("clusters_from_index(%d);", fIndex));
 }
 
-void Track::ImportDaughters()
+/**************************************************************************/
+
+void Track::ImportKine()
 {
-  static const Exc_t eH("Track::ImportDaughters ");
+  static const Exc_t eH("Track::ImportKine ");
 
   if (fLabel < 0)
     throw(eH + "label not set.");
 
-  Reve::LoadMacro("kine_daughter_tracks.C");
-  gROOT->ProcessLine(Form("kine_daughter_tracks(%d);", fLabel));
+  Reve::LoadMacro("kine_tracks.C");
+  gROOT->ProcessLine(Form("kine_track(%d, kTRUE, kFALSE);", fLabel));
+}
+
+void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
+{
+  static const Exc_t eH("Track::ImportKineWithArgs ");
+
+  if (fLabel < 0)
+    throw(eH + "label not set.");
+
+  Reve::LoadMacro("kine_tracks.C");
+  gROOT->ProcessLine(Form("kine_track(%d, %d, %d);",
+			  fLabel, importMother, importDaugters));
 }
 
 /**************************************************************************/

@@ -67,7 +67,9 @@ public:
   void ImportHits();              // *MENU*
   void ImportClusters();          // *MENU*
   void ImportClustersFromIndex(); // *MENU*  
-  void ImportDaughters();         // *MENU*
+  void ImportKine();              // *MENU*
+  void ImportKineWithArgs(Bool_t importMother=kTRUE,
+			  Bool_t impDaugters =kTRUE); // *MENU*
   void PrintKineStack();          // *MENU*
   void PrintPathMarks();          // *MENU*
 
