@@ -50,14 +50,17 @@ MuonRec.SetLoadAlignData("MUON");
 // instead of the kalman one (default)
 //MuonRec.SetOption("MUON","Original");
 // Use the following to change clustering method
-//MuonRec.SetOption("MUON","MLEM"); // new scheme AZ's clustering
+//MuonRec.SetOption("MUON","MLEM"); // new scheme AZs clustering
 //MuonRec.SetOption("MUON","SIMPLEFIT"); // new scheme simple fitting
 //MuonRec.SetOption("MUON","COG"); // new scheme basic center-of-gravity only
+// Use the following to disconnect the status map creation (only for debug!)
+// as this speeds up startup a bit...
+//MuonRec.SetOption("MUON","NOSTATUSMAP");
 MuonRec.Run();
 .q
 EOF
 
-#echo "Moving Digits files back ..."
+echo "Moving Digits files back ..."
 mv MUON.Digits/MUON.Digits.root . 
 
 echo "Running Trigger efficiency  ..."

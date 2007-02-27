@@ -135,10 +135,18 @@ AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
       return 0x0;
     }    
   TTask* calibration = new TTask("MUONCalibrator","MUON Digit calibrator");
-  calibration->Add(new AliMUONDigitCalibrator(data,fCalibrationData));
-  //FIXME: calibration->Add(something about dead channels should go here).
+  
+  TString opt(GetOption());
+  opt.ToUpper();
+  Bool_t statusMap(kTRUE);
+  
+  if ( strstr(opt,"NOSTATUSMAP") )
+  {
+    AliWarning("Disconnecting status map : SHOULD BE USED FOR DEBUG ONLY. NOT FOR PRODUCTION !!!");
+    statusMap = kFALSE; 
+  }
+  calibration->Add(new AliMUONDigitCalibrator(data,fCalibrationData,statusMap));
   return calibration;
-
 }
 
 //_____________________________________________________________________________
