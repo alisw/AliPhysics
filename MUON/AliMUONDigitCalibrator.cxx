@@ -52,7 +52,8 @@ ClassImp(AliMUONDigitCalibrator)
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
-                                               AliMUONCalibrationData* calib)
+                                               AliMUONCalibrationData* calib,
+                                               Bool_t createAndUseStatusMap)
 : TTask("AliMUONDigitCalibrator","Raw digit calibration"),
   fData(muonData),
   fCalibrationData(calib),
@@ -63,28 +64,36 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
     
     if (!calib) throw;
     
-    AliMUONPadStatusMaker maker(*calib);
-    
-    // this is here that we decide on our "goodness" policy, i.e.
-    // what do we call an invalid pad (a pad maybe bad because it's HV
-    // was too low, or its pedestals too high, etc..)
-    //
-    maker.SetHVSt12Limits(1300,1600);
-    maker.SetHVSt345Limits(1500,2000);
-    maker.SetPedMeanLimits(50,200);
-    maker.SetPedSigmaLimits(0.1,3);
-    
-    // From this set of limits, compute the status of all tracker pads.
-    AliMUONV2DStore* status = maker.MakeStatus();
-    
-    AliMUONPadStatusMapMaker mapMaker;
-    
-    Int_t mask(0x8000000); 
+    if (createAndUseStatusMap) 
+    {
+      AliMUONPadStatusMaker maker(*calib);
+      
+      // this is here that we decide on our "goodness" policy, i.e.
+      // what do we call an invalid pad (a pad maybe bad because it's HV
+      // was too low, or its pedestals too high, etc..)
+      //
+      maker.SetHVSt12Limits(1300,1600);
+      maker.SetHVSt345Limits(1500,2000);
+      maker.SetPedMeanLimits(50,200);
+      maker.SetPedSigmaLimits(0.1,3);
+      
+      // From this set of limits, compute the status of all tracker pads.
+      AliMUONV2DStore* status = maker.MakeStatus();
+      
+      AliMUONPadStatusMapMaker mapMaker;
+      
+      Int_t mask(0x8000000); 
       //FIXME: fake one (consider dead only if ped mean too high or hv switch off)
-    
-    fStatusMap = mapMaker.MakePadStatusMap(*status,mask);
-    
-    delete status;
+      
+      fStatusMap = mapMaker.MakePadStatusMap(*status,mask);
+      
+      delete status;
+    }
+    else
+    {
+      // make a fake (empty) status map
+      fStatusMap = AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap();
+    }
 }
 
 //_____________________________________________________________________________

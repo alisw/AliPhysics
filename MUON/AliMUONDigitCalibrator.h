@@ -23,7 +23,9 @@ class AliMUONV2DStore;
 class AliMUONDigitCalibrator : public TTask
 {
 public:
-  AliMUONDigitCalibrator(AliMUONData* data, AliMUONCalibrationData* calib);
+  AliMUONDigitCalibrator(AliMUONData* data, 
+                         AliMUONCalibrationData* calib,
+                         Bool_t createAndUseStatusMap=kTRUE);
   virtual ~AliMUONDigitCalibrator();
   
   virtual void Exec(Option_t*);
