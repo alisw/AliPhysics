@@ -51,7 +51,6 @@ private:
     void AddData(const AliMUONBusStruct& event);
 
   Int_t GetBusPatch(const AliMUONDigit& digit) const;
-  Int_t GetBusPatch(Int_t detElemId, Int_t manuId) const;
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
 
@@ -67,18 +66,13 @@ private:
   AliMUONRegHeader*   fRegHeader;    //!< DDL regional header class pointers
   AliMUONLocalStruct* fLocalStruct;  //!< DDL local structure class pointers
 
-  AliMpDDLStore*            fBusPatchManager; //!< buspatch versus DE's & DDL
-  AliMUONTriggerCrateStore* fCrateManager;    //!< Crate array
+  AliMpDDLStore*            fDDLStore;     //!< DDL store pointer
+  AliMUONTriggerCrateStore* fCrateManager; //!< Crate array
 
   Bool_t fScalerEvent;               ///< flag to generates scaler event
 
   AliRawDataHeader    fHeader;           ///< header of DDL
 
-  static Int_t fgManuPerBusSwp1B[12];   //!< array containing the first manuId for each buspatch st1, Bending
-  static Int_t fgManuPerBusSwp1NB[12];  //!< array containing the first manuId for each buspatch st1, NBending
-
-  static Int_t fgManuPerBusSwp2B[12];   //!< array containing the first manuId for each buspatch st2, Bending
-  static Int_t fgManuPerBusSwp2NB[12];  //!< array containing the first manuId for each buspatch st2, NBending
   
   TStopwatch* fTimers;             //!< time watchers
   

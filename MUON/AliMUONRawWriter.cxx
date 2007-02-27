@@ -17,7 +17,7 @@
 
 /// \class AliMUONRawWriter
 /// MUON Raw Data generaton in ALICE-MUON
-/// This class version 3 (further details could be found in Alice-note)
+/// Raw data structure could be found in Alice-note.
 ///
 /// Implemented non-constant buspatch numbers for tracking
 /// with correct DDL id (first guess)
@@ -37,6 +37,9 @@
 /// Using informations from AliMUONTriggerCrateStore for 
 /// empty slots and non-notified cards in trigger crates.
 /// Ch. Finck, August 06.
+/// Using AliMpDDLStore::GetBusPatchId.
+/// Ch. Finck, Feb. 07.
+
 
 #include "AliMUONRawWriter.h"
 
@@ -80,12 +83,6 @@
 ClassImp(AliMUONRawWriter) // Class implementation in ROOT context
 /// \endcond
 
-Int_t AliMUONRawWriter::fgManuPerBusSwp1B[12]  = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 224, 232};
-Int_t AliMUONRawWriter::fgManuPerBusSwp1NB[12] = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 225, 233};
-
-Int_t AliMUONRawWriter::fgManuPerBusSwp2B[12]  = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 226, 246};
-Int_t AliMUONRawWriter::fgManuPerBusSwp2NB[12] = {1, 27, 53, 79, 105, 131, 157, 183, 201, 214, 227, 245};
-
 namespace 
 {
   enum ETimer { kWriteTracker, kWriteTrigger, kDigitLoop, kGetBusPatch, kTest, kLast };
@@ -100,7 +97,7 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
     fDarcHeader(new AliMUONDarcHeader()),
     fRegHeader(new AliMUONRegHeader()),
     fLocalStruct(new AliMUONLocalStruct()),
-    fBusPatchManager(AliMpDDLStore::Instance()),
+    fDDLStore(AliMpDDLStore::Instance()),
     fCrateManager(new AliMUONTriggerCrateStore()),
     fScalerEvent(kFALSE),
     fHeader(),
@@ -138,7 +135,7 @@ AliMUONRawWriter::AliMUONRawWriter()
     fDarcHeader(0),
     fRegHeader(0),
     fLocalStruct(0),
-    fBusPatchManager(0),
+    fDDLStore(0),
     fCrateManager(0x0),
     fScalerEvent(kFALSE),
     fHeader(),
@@ -431,7 +428,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   // open DDL files, 4 per station
   for (Int_t iDDL = iSt*4; iDDL < 4 + iSt*4; ++iDDL) {
 
-    AliMpDDL* ddl = fBusPatchManager->GetDDL(iDDL);
+    AliMpDDL* ddl = fDDLStore->GetDDL(iDDL);
     iDspMax = ddl->GetMaxDsp();
     ddl->GetBusPerDsp(iBusPerDSP);
     Int_t busIter = 0;
@@ -545,94 +542,11 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 }
 
 //____________________________________________________________________
-Int_t AliMUONRawWriter::GetBusPatch(Int_t detElemId, Int_t manuId) const
-{
-  /// Determine the BusPatch this digit belongs to.
-  
-  Int_t* ptr = 0;
-    
-  AliMp::PlaneType plane = 
-    (manuId & AliMpConstants::ManuMask(AliMp::kNonBendingPlane)) ? 
-    AliMp::kNonBendingPlane : AliMp::kBendingPlane; 
-  
-  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
-  
-  if ( stationType == AliMp::kStation1)
-  {
-    if (plane == AliMp::kBendingPlane) 
-    {
-      ptr = &fgManuPerBusSwp1B[0];
-    }
-    else 
-    {
-      ptr = &fgManuPerBusSwp1NB[0];
-    }
-  }
-  else if ( stationType == AliMp::kStation2)
-  {
-    if (plane == AliMp::kBendingPlane)
-    {
-      ptr = &fgManuPerBusSwp2B[0];
-    }
-    else
-    {
-      ptr = &fgManuPerBusSwp2NB[0];
-    }
-  }
-  
-  // Getting buspatch id
-  AliMpDetElement* detElement = fBusPatchManager->GetDetElement(detElemId);
-  Int_t pos = 0;
-  
-  Int_t m = ( manuId & 0x3FF ); // remove bit 10
-                                        //FIXME : how can we remove that condition
-                                        // on the 10-th bit ? All the rest need not any knowledge about it,
-                                        // can't we find a way to get manu<->buspatch transparent to this too ?
-  
-  if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 )
-  {
-    for (pos = 11; pos >=0 ; --pos)
-    {
-      if (m >= ptr[pos]) break;
-    }
-  }
-  else 
-  {
-    // offset of 100 in manuId for following bus patch
-    pos = m/100;
-  }
-  
-  
-  if (pos > detElement->GetNofBusPatches())
-  {
-    AliError(Form("pos greater %d than size %d manuId %d detElemId %d \n", 
-    //              pos, (Int_t)vec->GetSize(), manuId, detElemId));
-                   pos, detElement->GetNofBusPatches(), manuId, detElemId));
-    AliError(Form("Chamber %s Plane %s manuId %d m %d",
-                  AliMp::StationTypeName(stationType).Data(),
-                  AliMp::PlaneTypeName(plane).Data(),
-                  manuId,
-                  m));
-    return -1;
-  }
-  
-  Int_t busPatchId = detElement->GetBusPatchId(pos); // ???? CHECK
-  
-  if ( ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) &&
-       ( plane == AliMp::kNonBendingPlane ) )
-  {
-    busPatchId += 12;
-  }
-  
-  return busPatchId;
-}
-
-//____________________________________________________________________
 Int_t AliMUONRawWriter::GetBusPatch(const AliMUONDigit& digit) const
 {
   /// Determine the BusPatch this digit belongs to.
 
-  return GetBusPatch(digit.DetElemId(),digit.ManuId());
+    return fDDLStore->GetBusPatchId(digit.DetElemId(),digit.ManuId());
 }
 
 //____________________________________________________________________
