@@ -33,6 +33,7 @@
 #include "TPaveText.h"
 #include "TEllipse.h"
 #include "TText.h"
+#include "TROOT.h"
 
 #include <iostream>
 
