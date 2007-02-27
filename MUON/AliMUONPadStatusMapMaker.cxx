@@ -50,6 +50,7 @@
 #include "AliMUONPadStatusMapMaker.h"
 
 #include "AliLog.h"
+#include "AliMUON2DMap.h"
 #include "AliMUONCalibParam1I.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONV2DStore.h"
@@ -58,16 +59,17 @@
 #include "AliMpArea.h"
 #include "AliMpConstants.h"
 #include "AliMpDEManager.h"
+#include "AliMpManuList.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpVSegmentation.h"
-#include "Riostream.h"
-#include "TMath.h"
-#include "TObjArray.h"
-#include "TStopwatch.h"
-
+#include <Riostream.h>
+#include <TMath.h>
+#include <TObjArray.h>
+#include <TStopwatch.h>
+#include <TList.h>
 #include <map>
 #include <utility>
 
@@ -162,6 +164,30 @@ AliMUONPadStatusMapMaker::IsValid(const AliMpPad& pad,
   TVector2 testPos = pad.Position() - pad.Dimensions() + shift;
   AliMpPad p = fSegmentation->PadByPosition(testPos,kFALSE);
   return p.IsValid();
+}
+
+//_____________________________________________________________________________
+AliMUONV2DStore*
+AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap()
+{
+  AliMUONV2DStore* padStatusMap = new AliMUON2DMap(kTRUE);
+  
+  TList* list = AliMpManuList::ManuList();
+  
+  AliMpIntPair* pair;
+  
+  TIter next(list);
+  
+  while ( ( pair = static_cast<AliMpIntPair*>(next()) ) ) 
+  {
+    Int_t detElemId = pair->GetFirst();
+    Int_t manuId = pair->GetSecond();
+    padStatusMap->Set(detElemId,manuId,new AliMUONCalibParam1I(64,0),kFALSE);
+  }
+  
+  delete list;
+  
+  return padStatusMap;
 }
 
 //_____________________________________________________________________________

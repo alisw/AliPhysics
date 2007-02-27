@@ -33,6 +33,9 @@ public:
   
   AliMUONV2DStore* MakePadStatusMap(const AliMUONV2DStore& status,
                                     Int_t mask);
+  
+  static AliMUONV2DStore* MakeEmptyPadStatusMap();
+
 
 private:
   AliMUONPadStatusMapMaker(const AliMUONPadStatusMapMaker&);
