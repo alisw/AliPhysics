@@ -121,14 +121,13 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   rl->GetEvent(eventNumber);
   TObjArray *clusters = emcalLoader->RecPoints();
   Int_t nClusters = clusters->GetEntries(), nClustersNew=0;
+  Int_t nRP=0, nPC=0; // in input
   esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
   //  esd->SetNumberOfEMCALClusters(nClusters); // have to be change - Feb 25, 2007; some cluster may be discard
 
-  printf(" %i : nClusters %i \n", eventNumber, nClusters);
-  assert(0);
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);
-
+    if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1) nRP++; else nPC++;
     if (Debug()) clust->Print();
     // Get information from EMCAL reconstruction points
     Float_t xyz[3];
@@ -208,6 +207,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
         delete [] digiList;
     }
   } // cycle on clusters
+  //  printf(" %i : nClusters %i : RP %i PC %i \n", eventNumber, nClusters, nRP, nPC);
   esd->SetNumberOfEMCALClusters(nClustersNew);
   if(nClustersNew != nClusters) 
   printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );
