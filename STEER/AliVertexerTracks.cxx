@@ -121,6 +121,8 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
 
   // read tracks from ESD
   Int_t nTrksTot = (Int_t)esdEvent->GetNumberOfTracks();
+  if (nTrksTot<=0) return fCurrentVertex;
+
   TTree *trkTree = new TTree("TreeT","tracks");
   AliESDtrack *esdTrack = 0;
   trkTree->Branch("tracks","AliESDtrack",&esdTrack);
