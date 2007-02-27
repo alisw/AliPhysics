@@ -120,16 +120,17 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   rl->LoadHits();       // To get the primary label
   rl->GetEvent(eventNumber);
   TObjArray *clusters = emcalLoader->RecPoints();
-  Int_t nClusters = clusters->GetEntries();
-  esd->SetNumberOfEMCALClusters(nClusters) ; 
-  esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()) ; 
+  Int_t nClusters = clusters->GetEntries(), nClustersNew=0;
+  esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
+  //  esd->SetNumberOfEMCALClusters(nClusters); // have to be change - Feb 25, 2007; some cluster may be discard
 
+  printf(" %i : nClusters %i \n", eventNumber, nClusters);
+  assert(0);
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);
 
     if (Debug()) clust->Print();
-    AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
-    // fills the ESDCaloCluster
+    // Get information from EMCAL reconstruction points
     Float_t xyz[3];
     TVector3 gpos;
     clust->GetGlobalPosition(gpos);
@@ -146,44 +147,75 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     Float_t elipAxis[2];
     clust->GetElipsAxis(elipAxis);
 
-   // Convert Float_t* and Int_t* to UShort_t* to save memory
-    Int_t newdigitMult = digitMult ;
+    // Convert Float_t* and Int_t* to UShort_t* to save memory
+    // Problem : we should recalculate a cluster characteristics when discard digit(s)
+    Int_t newdigitMult = 0;
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-      if(timeFloat[iDigit] < 65536/1e9*100){
-	amplList[iDigit] = (UShort_t)(amplFloat[iDigit]*500);
-	timeList[iDigit] = (UShort_t)(timeFloat[iDigit]*1e9*100); //Time in units of 100 ns = 0.1 ps
-	digiList[iDigit] = (UShort_t)(digitInts[iDigit]);
+      if(timeFloat[iDigit] < 65536/1e9*100) {
+	amplList[newdigitMult] = (UShort_t)(amplFloat[iDigit]*500);
+        if(amplList[newdigitMult] > 0) { // accept digit if poztive amplitude
+	  timeList[newdigitMult] = (UShort_t)(timeFloat[iDigit]*1e9*100); // Time in units of 100 ns = 0.1 ps
+	  digiList[newdigitMult] = (UShort_t)(digitInts[iDigit]);
+          newdigitMult++;
+	}
       }
-      else
-	newdigitMult = 	newdigitMult - 1 ;
-    } 
- 
-    ec->SetClusterType(clust->GetClusterType());
-    ec->SetGlobalPosition(xyz);
-    ec->SetClusterEnergy(clust->GetEnergy());
-    ec->SetDigitAmplitude(amplList); //energies
-    ec->SetDigitTime(timeList);      //times
-    ec->SetDigitIndex(digiList);     //indices
-    ec->SetNumberOfDigits(newdigitMult);
-    if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1){
-      ec->SetClusterDisp(clust->GetDispersion());
-      ec->SetClusterChi2(-1); //not yet implemented
-      ec->SetM02(elipAxis[0]*elipAxis[0]) ;
-      ec->SetM20(elipAxis[1]*elipAxis[1]) ;
-      ec->SetM11(-1) ;        //not yet implemented
-      ec->SetPrimaryIndex(clust->GetPrimaryIndex());
     }
+
+    if(newdigitMult > 0) { // accept cluster if it has some digit
+      nClustersNew++;
+      if(newdigitMult != digitMult) { // some digits were deleted
+        UShort_t *amplListNew = new UShort_t[newdigitMult];
+        UShort_t *timeListNew = new UShort_t[newdigitMult];
+        UShort_t *digiListNew = new UShort_t[newdigitMult];
+        for (Int_t iDigit=0; iDigit<newdigitMult; iDigit++) {
+          amplListNew[iDigit] = amplList[iDigit];
+          timeListNew[iDigit] = timeList[iDigit];
+          digiListNew[iDigit] = digiList[iDigit];
+        }
+
+        delete [] amplList;
+        delete [] timeList;
+        delete [] digiList;
+
+        amplList = amplListNew;
+        timeList = timeListNew;
+        digiList = digiListNew;
+      }
+      // fills the ESDCaloCluster
+      AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
+      ec->SetClusterType(clust->GetClusterType());
+      ec->SetGlobalPosition(xyz);
+      ec->SetClusterEnergy(clust->GetEnergy());
+
+      ec->SetNumberOfDigits(newdigitMult);
+      ec->SetDigitAmplitude(amplList); //energies
+      ec->SetDigitTime(timeList);      //times
+      ec->SetDigitIndex(digiList);     //indices
+      if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1){
+        ec->SetClusterDisp(clust->GetDispersion());
+        ec->SetClusterChi2(-1); //not yet implemented
+        ec->SetM02(elipAxis[0]*elipAxis[0]) ;
+        ec->SetM20(elipAxis[1]*elipAxis[1]) ;
+        ec->SetM11(-1) ;        //not yet implemented
+        ec->SetPrimaryIndex(clust->GetPrimaryIndex());
+      } 
     // add the cluster to the esd object
-    esd->AddCaloCluster(ec);
+      esd->AddCaloCluster(ec);
+      delete ec;
+    } else { // no new ESD cluster
+        delete [] amplList;
+        delete [] timeList;
+        delete [] digiList;
+    }
+  } // cycle on clusters
+  esd->SetNumberOfEMCALClusters(nClustersNew);
+  if(nClustersNew != nClusters) 
+  printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );
 
-   delete ec;
-  }
   //Fill ESDCaloCluster with PID weights
-
   AliEMCALPID *pid = new AliEMCALPID;
   //pid->SetPrintInfo(kTRUE);
   pid->SetReconstructor(kTRUE);
   pid->RunPID(esd);
-
 }
 
