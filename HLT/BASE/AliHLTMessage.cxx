@@ -40,7 +40,14 @@ const Int_t kMAXBUF = 0xffffff;
 ClassImp(AliHLTMessage)
 
 //______________________________________________________________________________
-AliHLTMessage::AliHLTMessage(UInt_t what) : TBuffer(kWrite)
+AliHLTMessage::AliHLTMessage(UInt_t what) 
+  :
+# ifdef ROOT_TBufferFile
+  TBufferFile(kWrite),
+# else
+  TBuffer(kWrite),
+# endif
+  AliHLTLogging()
 {
    // Create a AliHLTMessage object for storing objects. The "what" integer
    // describes the type of message. Predifined ROOT system message types
@@ -67,7 +74,14 @@ AliHLTMessage::AliHLTMessage(UInt_t what) : TBuffer(kWrite)
 }
 
 //______________________________________________________________________________
-AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize) : TBuffer(kRead, bufsize, buf, 0)
+AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
+  :
+# if defined(ROOT_TBufferFile) || defined(HAVE_TBUFFERFILE_H)
+  TBufferFile(kRead, bufsize, buf, 0),
+# else
+  TBuffer(kRead, bufsize, buf, 0),
+# endif
+  AliHLTLogging()
 {
    // Create a AliHLTMessage object for reading objects. The objects will be
    // read from buf. Use the What() method to get the message type.

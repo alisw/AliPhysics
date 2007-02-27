@@ -24,16 +24,24 @@
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-// TMessage                                                        //
+// TMessage                                                             //
 //                                                                      //
 // Message buffer class used for serializing objects and sending them   //
 // over the network.                                                    //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef ROOT_TBuffer
-#include "TBuffer.h"
+// TBuffer has been made pure virtual in root version v5-15-02, this
+// requires to inherit from TBufferFile instead of TBuffer.
+// TMessage is not really used by this class but by including it we also get
+// TBufferFile if this exists. The define ROOT_TBufferFile can than be used
+// to differentiate between the usage of TBuffer or TBufferFile.
+#include "TMessage.h"
+
+#if defined(HAVE_TBUFFERFILE_H)
+#include "TBufferFile.h"
 #endif
+
 #ifndef ROOT_MessageTypes
 #include "MessageTypes.h"
 #endif
@@ -48,7 +56,14 @@
  * - the AliHLTMessage(void *buf, Int_t bufsize) constructor has been made
  *   public in order to be used externally.
  */
-class AliHLTMessage : public TBuffer, public AliHLTLogging {
+class AliHLTMessage 
+:
+# if defined(ROOT_TBufferFile) || defined(HAVE_TBUFFERFILE_H)
+public TBufferFile,
+#else
+public TBuffer,
+#endif
+public AliHLTLogging {
 
 public:
    AliHLTMessage(UInt_t what = kMESS_ANY);

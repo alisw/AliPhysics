@@ -44,7 +44,15 @@ AC_SUBST([ROOTSYS])
 ROOTBINDIR=`dirname $ROOTEXEC`
 AC_SUBST([ROOTBINDIR])
 
-dnl test for additional required root libraries
+dnl test for additional required root libraries and headers
+LIBS='-ldl'
+if test "x$have_root" = "x1"; then
+  AC_LANG_PUSH(C++)
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  CPPFLAGS=`echo $save_CPPFLAGS; for i in ${ROOTINCDIR}; do echo -n "-I$i " ; done`
+  
   # we check for the libSTEER library which is linked to
   # - the ROOT libs libGeom libMinuit libVMC libEG
   # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
@@ -52,23 +60,21 @@ dnl test for additional required root libraries
   # - from Nov 1 2006 TTreeFormula is needed by AliTagAnalysis and requires
   #   libTreePlayer.so
   # - from Jan 07 libESD also depends on libXMLIO
-LIBS='-ldl'
-if test "x$have_root" = "x1"; then
-  save_CPPFLAGS=$CPPFLAGS
-  save_LDFLAGS=$LDFLAGS
-  save_LIBS=$LIBS
-  
   ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO'
   for CHECKLIB in $ROOT_CHECKLIBS ; do
-    CPPFLAGS="$save_CPPFLAGS"
     LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR}"
     LIBS="$save_LIBS $ROOTLIBS $ADD_ROOTLIBS"
     AC_CHECK_LIB([$CHECKLIB],[_init], [ADD_ROOTLIBS="$ADD_ROOTLIBS -l$CHECKLIB"])
   done
-  
+
+  # TBuffer.h has been made pure virtual in root v5-15-02 and one
+  # has to derive from TBufferFile.h (needed for BASE/AliHLTMessage.h)
+  AC_CHECK_HEADERS([TBufferFile.h])
+
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
   LIBS=$save_LIBS
+  AC_LANG_POP(C++)
 fi
 
 dnl ------------------------------------------------------------------
