@@ -60,7 +60,7 @@ endif
 
 ifdef DATE_ROOT
 DATEFLAGS  = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} \
-             -Dlong64='${DATE_LONG64}' -DdatePointer=${DATE_POINTER} -I${DATE_COMMON_DEFS}
+             -Dlong64='${DATE_LONG64}' -DdatePointer=${DATE_POINTER} -I${DATE_COMMON_DEFS} -I${DATE_MONITOR_DIR}
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
@@ -244,6 +244,9 @@ alimdc-static: $(LIBPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB)
 	 $(MUTE)rm -rf $(LIBPATH)/libAliMDC.a
 	 $(MUTE)rm -rf junk
 	 mkdir junk && cd junk && ar x ../$(RAWDatabaseALIB) && ar x ../$(MDCALIB) && ar x ../$(ESDALIB) && ar r ../$(LIBPATH)/libAliMDC.a *.o && cd .. && rm -rf junk
+
+
+include  build/MakefileDA
 
 #-------------------------------------------------------------------------------
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
