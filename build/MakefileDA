@@ -1,5 +1,7 @@
 #-*- Mode: Makefile -*-
 
+ifdef DAMODULE
+
 ifdef ALIROOTMODULES
 
 CXXFLAGS+=-I${ALICE_ROOT}/RAW
@@ -40,7 +42,7 @@ LIBPATH=
 
 endif
 
-SYSLIBS="-ldl"
+SYSLIBS=-ldl
 MONITORLIBS=$(shell date-config --monitorlibs=noshift)
 
 ALIROOTALIBS=$(RAWDatabaseALIB) $(RAWDatarecALIB) $(RAWDatasimALIB) $(STEERALIB) $(CDBALIB) $(ESDALIB)
@@ -58,14 +60,14 @@ static-DA: $(DAEXE)
 $(DAEXE): $(LIBPATH) $(DAOBJ) $(DALIB) $(DAQDALIB)
 
 	$(LD) $(LDFLAGS) -o $@ $(DAOBJ) $(DALIB) \
-    	$(SYSLIBS) \
-    	$(ROOTLIBDIR)/libRoot.a \
-    	$(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a \
-    	$(MONITORLIBS) $(DAQDALIB)
+	$(SYSLIBS) \
+	$(ROOTLIBDIR)/libRoot.a \
+	$(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a \
+	$(MONITORLIBS) $(DAQDALIB)
 
 $(DAOBJ): $(DASRC) $(DAQDADIR) $(DADEP)
 	$(CXX) -c $(CXXFLAGS) -I$(DAQDADIR) $< -o $@
-	
+
 $(DADEP): $(DASRC) $(DAQDADIR)
 	$(CPP) -MM $(CXXFLAGS) -I$(DAQDADIR) $< > $@
 
@@ -97,3 +99,21 @@ tar-DA: $(DASRC) $(DALIB) $(DAQDADIR) $(DADEP)
 	cd junk && \
 	tar cvf ../$(DAMODULE)da.tar * && \
 	cd .. && rm -rf junk
+
+else
+
+static-DA: clean-DA
+clean-DA: tar-DA
+tar-DA:
+	@echo
+	@echo "****************************************************************************************************"
+	@echo "* In order to build a detector-algorithm package you have to set the environment variable DAMODULE *"
+	@echo "* For example: setenv DAMODULE TOF                                                                 *"
+	@echo "*          or  export DAMODULE=TOF                                                                 *"
+	@echo "* If the detector algorithm uses data from another sub-detector you can specify this by setting    *"
+	@echo "* the environment variable EXTRADAMODULE                                                           *"
+	@echo "****************************************************************************************************"
+	@echo
+
+
+endif
