@@ -178,13 +178,14 @@ TGeoHMatrix* AliITSgeomTGeo::GetMatrix(Int_t index)
   TGeoPNEntry *pne = GetPNEntry(index);
   if (!pne) return NULL;
 
-  const char* path = pne->GetTitle();
+  TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
+  if (pnode) return pnode->GetMatrix();
 
+  const char* path = pne->GetTitle();
   if (!gGeoManager->cd(path)) {
     AliErrorClass(Form("Volume path %s not valid!",path));
     return NULL;
   }
-
   return gGeoManager->GetCurrentMatrix();
 }
 
