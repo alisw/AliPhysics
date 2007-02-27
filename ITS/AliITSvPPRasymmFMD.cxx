@@ -155,7 +155,6 @@ AliITSvPPRasymmFMD::~AliITSvPPRasymmFMD() {
     // Return:
     //   none.
 }
-
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 {
@@ -179,10 +178,7 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
   if( !gGeoManager->SetAlignableEntry("ITS","ALIC_1/ITSV_1") )
     AliFatal("Unable to set alignable entry!!");    
 
-  AliITSgeom *geom = GetITSgeom();
-  if( !geom )  AliFatal("Unable to find AliITSgeom!!");    
-  Int_t iLay, iLad, iMod, ind;
-  Double_t al, trans[3], rotMatrix[9];
+  Double_t al, *gtrans, rotMatrix[9];
 
   TString strSPD = "ITS/SPD";
   TString strSDD = "ITS/SDD";
@@ -242,26 +238,33 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
 
 	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  iLay = 1;
-	  iLad = (c1-1)*2+c2;
-	  iMod = c3;
-	  ind = geom->GetModuleIndex(iLay, iLad, iMod);
-	  geom->GetTrans(ind, trans);
-	  geom->GetRotMatrix(ind, rotMatrix);
-	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
+	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName3.Data());
+	  const char *path = alignableEntry->GetTitle();
+	  if (!gGeoManager->cd(path))
+	    AliFatal(Form("Volume path %s not valid!",path));
+	  TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	  gtrans = globMatrix->GetTranslation();
+	  memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]);
 	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx(-trans[0]*TMath::Cos(al)-trans[1]*TMath::Sin(al) ); // translation
-	  matLtoT->SetDy(fChip1*0.0001/2.); //shift in y, only for SPD
-	  matLtoT->SetDz(-trans[2]);
+	  matLtoT->SetDx( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) ); // translation
+	  al += TMath::Pi()/2;
+	  //	  matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
+	  // Not taking into account the shift w.r.t. sensitive volume
+	  // correction with fChip1*0.0001/2. is due to the fact
+	  // that the alignable volume is not the sensitive volume
+	  //	  matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) - fChip1*0.0001/2.);
+	  matLtoT->SetDy(-fChip1*0.0001/2.);
+	  matLtoT->SetDz(-gtrans[2]);
+	  rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
+	  rotMatrix[3]=-1;  rotMatrix[4]= 0;  rotMatrix[5]= 0; // ! flip in y for the SPD1 only
+	  rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
 	  TGeoRotation rot;
-	  rotMatrix[0]= 0;  rotMatrix[1]=1;  rotMatrix[2]=0; // + rotation
-	  rotMatrix[3]=-1;  rotMatrix[4]=0;  rotMatrix[5]=0; // ! flip in y for the SPD1 only
-	  rotMatrix[6]= 0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
 	  rot.SetMatrix(rotMatrix);
 	  matLtoT->MultiplyLeft(&rot);
-	  // .. and stores it in the alignable entry
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName3.Data());
-	  alignableEntry->SetMatrix(matLtoT);
+	  TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	  delete matLtoT;
+	  alignableEntry->SetMatrix(matTtoL);
 	}
       }
     }
@@ -314,27 +317,31 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
 
 	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  iLay = 2;
-	  iLad = (c1-1)*4+c2;
-	  iMod = c3;
-	  ind = geom->GetModuleIndex(iLay, iLad, iMod);
-	  geom->GetTrans(ind, trans);
-	  geom->GetRotMatrix(ind, rotMatrix);
+	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName3.Data());
+	  const char *path = alignableEntry->GetTitle();
+	  if (!gGeoManager->cd(path))
+	    AliFatal(Form("Volume path %s not valid!",path));
+	  TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	  gtrans = globMatrix->GetTranslation();
+	  memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
 	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
 	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx(-trans[0]*TMath::Cos(al)-trans[1]*TMath::Sin(al) ); // translation
-	  matLtoT->SetDy(fChip2*0.0001/2.); //shift in y, only for SPD
-	  matLtoT->SetDz(-trans[2]);
+	  matLtoT->SetDx(-gtrans[0]*TMath::Cos(al)-gtrans[1]*TMath::Sin(al) ); // translation
+	  al += TMath::Pi()/2;
+	  //matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
+	  // not taking into account the shift w.r.t. sensitive volume
+	  //	  matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) + fChip2*0.0001/2.);
+	  matLtoT->SetDy(-fChip2*0.0001/2.);
+	  matLtoT->SetDz(-gtrans[2]);
+	  rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
+	  rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
+	  rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
 	  TGeoRotation rot;
-	  //rotMatrix = {0.,1.,0.,  1.,0.,0.,  0.,0.,-1.}; // + rotation
-	  rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0;
-	  rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
-	  rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
 	  rot.SetMatrix(rotMatrix);
 	  matLtoT->MultiplyLeft(&rot);
-	  // .. and stores it in the alignable entry
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName3.Data());
-	  alignableEntry->SetMatrix(matLtoT);
+	  TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	  delete matLtoT;
+	  alignableEntry->SetMatrix(matTtoL);
 	}
       }
     }
@@ -372,27 +379,30 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
-	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  iLay = 3;
-	  iLad = c1;
-	  iMod = c2;
-	  ind = geom->GetModuleIndex(iLay, iLad, iMod);
-	  geom->GetTrans(ind, trans);
-	  geom->GetRotMatrix(ind, rotMatrix);
-	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
-	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx(-trans[0]*TMath::Cos(al)-trans[1]*TMath::Sin(al) ); // translation
-	  matLtoT->SetDz(-trans[2]);
-	  TGeoRotation rot;
-	  //rotMatrix = {0.,1.,0.,  1.,0.,0.,  0.,0.,-1.}; // + rotation
-	  rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0;
-	  rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
-	  rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
-	  rot.SetMatrix(rotMatrix);
-	  matLtoT->MultiplyLeft(&rot);
-	  // .. and stores it in the alignable entry
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	  alignableEntry->SetMatrix(matLtoT);
+	// Creates the TGeo Local to Tracking transformation matrix ...
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
+	const char *path = alignableEntry->GetTitle();
+	if (!gGeoManager->cd(path))
+	  AliFatal(Form("Volume path %s not valid!",path));
+	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	gtrans = globMatrix->GetTranslation();
+	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
+	TGeoHMatrix *matLtoT = new TGeoHMatrix;
+	matLtoT->SetDx(-gtrans[0]*TMath::Cos(al)-gtrans[1]*TMath::Sin(al) ); // translation
+	al += TMath::Pi()/2;
+	//	matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
+	matLtoT->SetDy( 0 );
+	matLtoT->SetDz(-gtrans[2]);
+	rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0; // + rotation
+	rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
+	rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
+	TGeoRotation rot;
+	rot.SetMatrix(rotMatrix);
+	matLtoT->MultiplyLeft(&rot);
+	TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	delete matLtoT;
+	alignableEntry->SetMatrix(matTtoL);
       }
     }
   }
@@ -429,27 +439,30 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
-	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  iLay = 4;
-	  iLad = c1;
-	  iMod = c2;
-	  ind = geom->GetModuleIndex(iLay, iLad, iMod);
-	  geom->GetTrans(ind, trans);
-	  geom->GetRotMatrix(ind, rotMatrix);
-	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
-	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx(-trans[0]*TMath::Cos(al)-trans[1]*TMath::Sin(al) ); // translation
-	  matLtoT->SetDz(-trans[2]);
-	  TGeoRotation rot;
-	  //rotMatrix = {0.,1.,0.,  1.,0.,0.,  0.,0.,-1.}; // + rotation
-	  rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0;
-	  rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
-	  rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
-	  rot.SetMatrix(rotMatrix);
-	  matLtoT->MultiplyLeft(&rot);
-	  // .. and stores it in the alignable entry
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	  alignableEntry->SetMatrix(matLtoT);
+	// Creates the TGeo Local to Tracking transformation matrix ...
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
+	const char *path = alignableEntry->GetTitle();
+	if (!gGeoManager->cd(path))
+	  AliFatal(Form("Volume path %s not valid!",path));
+	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	gtrans = globMatrix->GetTranslation();
+	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
+	TGeoHMatrix *matLtoT = new TGeoHMatrix;
+	matLtoT->SetDx(-gtrans[0]*TMath::Cos(al)-gtrans[1]*TMath::Sin(al) ); // translation
+	al += TMath::Pi()/2;
+	//	matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
+	matLtoT->SetDy( 0 );
+	matLtoT->SetDz(-gtrans[2]);
+	rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0; // + rotation
+	rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
+	rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
+	TGeoRotation rot;
+	rot.SetMatrix(rotMatrix);
+	matLtoT->MultiplyLeft(&rot);
+	TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	delete matLtoT;
+	alignableEntry->SetMatrix(matTtoL);
       }
     }
   }
@@ -486,27 +499,30 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
-	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  iLay = 5;
-	  iLad = c1;
-	  iMod = c2;
-	  ind = geom->GetModuleIndex(iLay, iLad, iMod);
-	  geom->GetTrans(ind, trans);
-	  geom->GetRotMatrix(ind, rotMatrix);
-	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
-	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx(-trans[0]*TMath::Cos(al)-trans[1]*TMath::Sin(al) ); // translation
-	  matLtoT->SetDz(-trans[2]);
-	  TGeoRotation rot;
-	  //rotMatrix = {0.,1.,0.,  1.,0.,0.,  0.,0.,-1.}; // + rotation
-	  rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0;
-	  rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
-	  rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
-	  rot.SetMatrix(rotMatrix);
-	  matLtoT->MultiplyLeft(&rot);
-	  // .. and stores it in the alignable entry
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	  alignableEntry->SetMatrix(matLtoT);
+	// Creates the TGeo Local to Tracking transformation matrix ...
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
+	const char *path = alignableEntry->GetTitle();
+	if (!gGeoManager->cd(path))
+	  AliFatal(Form("Volume path %s not valid!",path));
+	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	gtrans = globMatrix->GetTranslation();
+	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
+	TGeoHMatrix *matLtoT = new TGeoHMatrix;
+	matLtoT->SetDx(-gtrans[0]*TMath::Cos(al)-gtrans[1]*TMath::Sin(al) ); // translation
+	al += TMath::Pi()/2;
+	//	matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
+	matLtoT->SetDy( 0 );
+	matLtoT->SetDz(-gtrans[2]);
+	rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0; // + rotation
+	rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
+	rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
+	TGeoRotation rot;
+	rot.SetMatrix(rotMatrix);
+	matLtoT->MultiplyLeft(&rot);
+	TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	delete matLtoT;
+	alignableEntry->SetMatrix(matTtoL);
       }
     }
   }
@@ -543,32 +559,34 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
-	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  iLay = 6;
-	  iLad = c1;
-	  iMod = c2;
-	  ind = geom->GetModuleIndex(iLay, iLad, iMod);
-	  geom->GetTrans(ind, trans);
-	  geom->GetRotMatrix(ind, rotMatrix);
-	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
-	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx(-trans[0]*TMath::Cos(al)-trans[1]*TMath::Sin(al) ); // translation
-	  matLtoT->SetDz(-trans[2]);
-	  TGeoRotation rot;
-	  //rotMatrix = {0.,1.,0.,  1.,0.,0.,  0.,0.,-1.}; // + rotation
-	  rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0;
-	  rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
-	  rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
-	  rot.SetMatrix(rotMatrix);
-	  matLtoT->MultiplyLeft(&rot);
-	  // .. and stores it in the alignable entry
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
-	  alignableEntry->SetMatrix(matLtoT);
+	// Creates the TGeo Local to Tracking transformation matrix ...
+	TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName2.Data());
+	const char *path = alignableEntry->GetTitle();
+	if (!gGeoManager->cd(path))
+	  AliFatal(Form("Volume path %s not valid!",path));
+	TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	gtrans = globMatrix->GetTranslation();
+	memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+	al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
+	TGeoHMatrix *matLtoT = new TGeoHMatrix;
+	matLtoT->SetDx(-gtrans[0]*TMath::Cos(al)-gtrans[1]*TMath::Sin(al) ); // translation
+	al += TMath::Pi()/2;
+	//	matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
+	matLtoT->SetDy( 0 );
+	matLtoT->SetDz(-gtrans[2]);
+	rotMatrix[0]=0;  rotMatrix[1]=1;  rotMatrix[2]=0; // + rotation
+	rotMatrix[3]=1;  rotMatrix[4]=0;  rotMatrix[5]=0;
+	rotMatrix[6]=0;  rotMatrix[7]=0;  rotMatrix[8]=-1;
+	TGeoRotation rot;
+	rot.SetMatrix(rotMatrix);
+	matLtoT->MultiplyLeft(&rot);
+	TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	delete matLtoT;
+	alignableEntry->SetMatrix(matTtoL);
       }
     }
   }
-
-} 
+}
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::BuildGeometry(){
     //    Geometry builder for the ITS version 10. Event Display geometry.
