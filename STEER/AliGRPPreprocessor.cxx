@@ -75,6 +75,11 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   // process data retrieved by the Shuttle
   const char* timeStart = GetRunParameter("time_start");
   const char* timeEnd = GetRunParameter("time_end");
+  const char* beamEnergy = GetRunParameter("beamEnergy");
+  const char* beamType = GetRunParameter("beamType");
+  const char* numberOfDetectors = GetRunParameter("numberOfDetectors");
+  const char* detectorMask = GetRunParameter("detectorMask");
+
   TObjArray *alias1 = (TObjArray *)valueMap->GetValue("SFTTemp1.FloatValue");
   if(!alias1) {
     Log(Form("SFTTemp1.FloatValue not found!!!"));
@@ -91,6 +96,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("DCSAlias1 not put in TMap!"));
   }
+
+  //DAQ logbook
   if (timeStart) {
     Log(Form("Start time for run %d: %s",fRun, timeStart));
   } else {
@@ -101,25 +108,63 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("End time not put in logbook!"));
   }
-  
+  if (beamEnergy) {
+    Log(Form("Beam energy for run %d: %s",fRun, beamEnergy));
+  } else {
+    Log(Form("Beam energy not put in logbook!"));
+  }
+  if (beamType) {
+    Log(Form("Beam type for run %d: %s",fRun, beamType));
+  } else {
+    Log(Form("Beam type not put in logbook!"));
+  }
+  if (numberOfDetectors) {
+    Log(Form("Number of active detectors for run %d: %s",fRun, numberOfDetectors));
+  } else {
+    Log(Form("Number of active detectors not put in logbook!"));
+  }
+  if (detectorMask) {
+    Log(Form("Detector mask for run %d: %s",fRun, detectorMask));
+  } else {
+    Log(Form("Detector mask not put in logbook!"));
+  }
+
   TList *values = new TList();
   values->SetOwner(1);
   
-  TMap *map1 = new TMap();
-  map1->Add(new TObjString("histoDCS1"),h1);
-  values->Add(map1);
+  //DAQ logbook
+  TMap *mapDAQ1 = new TMap();
+  mapDAQ1->Add(new TObjString("fAliceStartTime"),new TObjString(timeStart));
+  values->Add(mapDAQ1);
 
-  TMap *map2 = new TMap();
-  map2->Add(new TObjString("DCS1"),new TObjString(sAlias1Mean));
-  values->Add(map2);
+  TMap *mapDAQ2 = new TMap();
+  mapDAQ2->Add(new TObjString("fAliceStopTime"),new TObjString(timeEnd));
+  values->Add(mapDAQ2);
 
-  TMap *map3 = new TMap();
-  map3->Add(new TObjString("fAliceStartTime"),new TObjString(timeStart));
-  values->Add(map3);
+  TMap *mapDAQ3 = new TMap();
+  mapDAQ3->Add(new TObjString("fAliceBeamEnergy"),new TObjString(beamEnergy));
+  values->Add(mapDAQ3);
 
-  TMap *map4 = new TMap();
-  map4->Add(new TObjString("fAliceStopTime"),new TObjString(timeEnd));
-  values->Add(map4);
+  TMap *mapDAQ4 = new TMap();
+  mapDAQ4->Add(new TObjString("fAliceBeamType"),new TObjString(beamType));
+  values->Add(mapDAQ4);
+
+  TMap *mapDAQ5 = new TMap();
+  mapDAQ5->Add(new TObjString("fNumberOfDetectors"),new TObjString(numberOfDetectors));
+  values->Add(mapDAQ5);
+
+  TMap *mapDAQ6 = new TMap();
+  mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString(detectorMask));
+  values->Add(mapDAQ6);
+
+  //DCS dp
+  TMap *mapDCS1 = new TMap();
+  mapDCS1->Add(new TObjString("histoDCS1"),h1);
+  values->Add(mapDCS1);
+
+  TMap *mapDCS2 = new TMap();
+  mapDCS2->Add(new TObjString("DCS1"),new TObjString(sAlias1Mean));
+  values->Add(mapDCS2);
 
   AliCDBMetaData md;
   md.SetResponsible("Panos");
