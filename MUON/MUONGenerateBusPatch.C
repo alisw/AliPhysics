@@ -22,8 +22,9 @@ void MUONGenerateBusPatch()
   // the number of bus patches per slat (and also number of Translator and Bridge Boards).
   // Generates an output file DetElemIdToBusPatch.dat.out, preserve from overwriting
   // (Ch. Finck, July 05)
-  // (Nov. 05,  added DDL)
+  // (Nov. 05, added DDL)
   // (June 06, correction for St123)
+  // (Feb. 07, add 1st manu list for St12 (starting on NB !) and new ddl sharing for station 3)
 
 
   TString dirPath2 = gSystem->Getenv("ALICE_ROOT");
@@ -52,9 +53,19 @@ void MUONGenerateBusPatch()
 		    300, 301, 302, 303,
 		    400, 401, 402, 403};
 
-  Int_t idSt3swp1 = 5; // 1/4 chamber for DDL on horizontal
-  Int_t idSt3swp2 = 9; // 1/4 chamber for DDL on horizontal
-  Int_t idSt3swp3 = 14; // 1/4 chamber for DDL on horizontal
+  Char_t manuListSt1[] 
+      = " 1,27,53,79,105,131,157,183,201,214,224,232,1025,1051,1077,1103,1129,1155,1181,1207,1225,1238,1249,1257";
+
+  Char_t manuListSt2[] 
+      = " 1,27,53,79,105,131,157,183,201,214,226,246,1025,1051,1077,1103,1129,1155,1181,1207,1225,1238,1251,1269";
+
+  Int_t idCh5swp1 = 5; // 1/4 chamber for DDL on horizontal
+  Int_t idCh5swp2 = 10; // 1/4 chamber for DDL on horizontal
+  Int_t idCh5swp3 = 14; // 1/4 chamber for DDL on horizontal
+
+  Int_t idCh6swp1 = 5; // 1/4 chamber for DDL on horizontal
+  Int_t idCh6swp2 = 9; // 1/4 chamber for DDL on horizontal
+  Int_t idCh6swp3 = 14; // 1/4 chamber for DDL on horizontal
 
   Int_t idSt45swp1 = 7; // half chamber for DDL in vertical cutting twice the official numbering
   Int_t idSt45swp2 = 20;
@@ -62,8 +73,9 @@ void MUONGenerateBusPatch()
   Int_t iDDL = 0;
   // station 1 & 2
   nbBusPatch = 24;
+  Int_t nbHalfBusPatch =  nbBusPatch/2;
   cout << "#DE BusPatch DDL SlatName" << endl;
-  out << "#DE BusPatch DDL " << endl;
+  out << "#DE BusPatch DDL  1st manu in buspatch" << endl;
 
   for (Int_t j = 0; j < 16; j++) {
 
@@ -78,15 +90,26 @@ void MUONGenerateBusPatch()
       iDDL++;
       begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
     }
+   
     if (idDE % 100 == 3) {
       iDDL--;
       begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1) + nbBusPatch;
     }
+
     end[cursor]     = begin[cursor] + nbBusPatch - 1;
     begin[++cursor] = end[cursor] + 1;
 
-    cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1]  <<" " << iDDL-1 << endl;
-    out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1  <<endl;
+    cout << idDE << " " << begin[cursor-1] + nbHalfBusPatch << "-" <<end[cursor-1] << ";" <<
+	begin[cursor-1]	<< "-" << end[cursor-1] - nbHalfBusPatch << " " << iDDL-1 << endl;
+
+    if (idDE < 300 )
+	out << idDE  << " " << begin[cursor-1] + nbHalfBusPatch << "-" <<end[cursor-1] << ";" <<
+	    begin[cursor-1]	<< "-" << end[cursor-1] - nbHalfBusPatch << " " << iDDL-1 <<
+	    manuListSt1 << endl;
+    else
+	out << idDE  << " " << begin[cursor-1] + nbHalfBusPatch << "-" <<end[cursor-1] << ";" <<
+	    begin[cursor-1]	<< "-" << end[cursor-1] - nbHalfBusPatch << " " <<  iDDL-1 <<
+	    manuListSt2  << endl;
     if (idDE % 100 == 3) iDDL++;
 
   }
@@ -110,6 +133,10 @@ void MUONGenerateBusPatch()
 
   Int_t nbBusSt45Tot = 0;
   Int_t nbBusSt45Swap = 0;
+
+  Int_t nbBus500 = 4; // number of buspatch in DE 500
+  Int_t nbDDL500 = 11; // DDL number for DE 500
+  Int_t offsetBus500 = 13; // number of buspatches in DDL 11 before DE 500
 
   // reads from file
   while ( in.getline(line,80) ) {
@@ -150,10 +177,11 @@ void MUONGenerateBusPatch()
     // station 3
     // for buspatch length reasons, one ddl connects one 1/4 of two chambers
     // really messy isn't it ? 
+    // much more with the new DDL sharing for station 3
 
     if (idDE < 700 ) {
 
-      if (idDE == 500) {
+      if (idDE == 501) {
 	iDDL++;
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
       	nbBusSt3Tot1 = 0; 
@@ -164,10 +192,21 @@ void MUONGenerateBusPatch()
 	out  << "# Chamber " << idDE/100 << endl;
       }
 
+      // taking into account that idDE = 500 is connected to ddl = 11;
+      if (idDE == 500) {
+	cout << idDE << " " << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500)<<"-"
+	     << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500) + nbBus500 -1
+	     << " " << nbDDL500 << " " <<nameSlat <<endl;
+
+       	out << idDE << " " << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500)<<"-"
+	    << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500) + nbBus500 -1
+	     << " " << nbDDL500 <<endl;
+	continue;
+      }
       nbBusSt3Tot1 +=  nbBusPatch;
 
       // second 1/4 for chamber 5
-      if (idDE == 500+idSt3swp1) {
+      if (idDE == 500+idCh5swp1) {
 	iDDLSt3Swap1 =  iDDL++;
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
 	nbBusSt3Swap1 = nbBusSt3Tot1 - nbBusPatch;
@@ -181,7 +220,7 @@ void MUONGenerateBusPatch()
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap1, iDDL-1);
       }
       // third 1/4 for chamber 5
-      if (idDE == 500+idSt3swp2) {
+      if (idDE == 500+idCh5swp2) {
 	iDDL = iDDLSt3Swap1+1;
 	iDDLSt3Swap2 =  iDDL++;
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
@@ -192,13 +231,13 @@ void MUONGenerateBusPatch()
       nbBusSt3Tot2 +=  nbBusPatch;
 
       // second 1/4 chamber 6
-     if (idDE == 600 +idSt3swp1) {
+     if (idDE == 600 +idCh6swp1) {
 	iDDL = iDDLSt3Swap2;
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap2, iDDL-1);
       }
     
      // fourth 1/4 chamber 5
-     if (idDE == 500+idSt3swp3) {
+     if (idDE == 500+idCh5swp3) {
 	iDDL = iDDLSt3Swap2+1;
 	iDDLSt3Swap3 =  iDDL++;
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
@@ -213,7 +252,7 @@ void MUONGenerateBusPatch()
      if (idDE == 600)
        nbBusSt3Swap4 = nbBusSt3Tot4;
 
-     if (idDE == 600 +idSt3swp2) {
+     if (idDE == 600 +idCh6swp2) {
 	iDDL = iDDLSt3Swap3;
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap3, iDDL-1);
 	nbBusSt3Tot4 +=  nbBusPatch;
@@ -221,9 +260,9 @@ void MUONGenerateBusPatch()
       nbBusSt3Tot4 +=  nbBusPatch;
 
      // fourth 1/4 chamber 6
-    if (idDE == 600 +idSt3swp3) {
+    if (idDE == 600 +idCh6swp3) {
 	iDDL = iDDLSt3Swap3+1;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap4, iDDL-1);
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap4 + nbBus500, iDDL-1);
       }
 
       end[cursor]     = begin[cursor] + nbBusPatch - 1;
