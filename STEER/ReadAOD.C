@@ -1,13 +1,27 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <Riostream.h>
+#include "TFile.h"
+#include "TTree.h"
+
+#include "AliAODEvent.h"
+#include "AliAODHeader.h"
+#include "AliAODVertex.h"
+#include "AliAODTrack.h"
+#include "AliAODCluster.h"
+
+#endif
+
 void ReadAOD(const char *fileName = "AliAOD.root") {
 
   // open input file and get the TTree
   TFile inFile(fileName, "READ");
   TTree *aodTree = (TTree*)inFile.Get("AOD");
 
-  AliAODEvent *aod = aodTree->GetUserInfo()->FindObject("AliAODEvent");
+  AliAODEvent *aod = (AliAODEvent*)aodTree->GetUserInfo()->FindObject("AliAODEvent");
   TIter next(aod->GetList());
   TObject *el;
-  while(el=(TNamed*)next()) 
+  while((el=(TNamed*)next())) 
     aodTree->SetBranchAddress(el->GetName(),aod->GetList()->GetObjectRef(el));
 
   // loop over events
@@ -28,8 +42,14 @@ void ReadAOD(const char *fileName = "AliAOD.root") {
     Int_t nTracks = aod->GetNTracks();
     for (Int_t nTr = 0; nTr < nTracks; nTr++) {
       
+      AliAODTrack *tr = aod->GetTrack(nTr);
+
       // print track info
-      cout << nTr+1 << "/" << nTracks << ": track pt: " << aod->GetTrack(nTr)->Pt() << ", vertex x of this track: " << aod->GetTrack(nTr)->GetProdVertex()->GetX() << endl;
+      cout << nTr+1 << "/" << nTracks << ": track pt: " << tr->Pt();
+      if (tr->GetProdVertex()) {
+	cout << ", vertex z of this track: " << tr->GetProdVertex()->GetZ();
+      }
+      cout << endl;
     }
 
     // loop over vertices

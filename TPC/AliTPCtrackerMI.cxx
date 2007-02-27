@@ -2713,10 +2713,11 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
       Float_t dedx  = seed->GetdEdx();
       esd->SetTPCsignal(dedx, sdedx, ndedx);
       ntracks++;
-      Int_t eventnumber = event->GetEventNumber();// patch 28 fev 06
+      Int_t eventnumber = event->GetEventNumberInFile();// patch 28 fev 06
+      // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number      
       (*fDebugStreamer)<<"Cback"<<
 	"Tr0.="<<seed<<
-	"EventNr="<<eventnumber<<
+	"EventNrInFile="<<eventnumber<<
 	"\n"; // patch 28 fev 06   
     }
   }
@@ -4960,7 +4961,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
       tpcv0s->AddLast(new AliESDv0(vertex));      
       ncandidates++;
       {
-	Int_t eventNr = esd->GetEventNumber();
+	Int_t eventNr = esd->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number
 	Double_t radiusm= (delta[0]<delta[1])? TMath::Sqrt(radius[0]):TMath::Sqrt(radius[1]);  
 	Double_t deltam= (delta[0]<delta[1])? TMath::Sqrt(delta[0]):TMath::Sqrt(delta[1]);  
 	if (AliTPCReconstructor::StreamLevel()>0) {
@@ -5074,7 +5075,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
       naccepted++;
     }
     {
-      Int_t eventNr = esd->GetEventNumber();
+      Int_t eventNr = esd->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number
       if (AliTPCReconstructor::StreamLevel()>0) {
 	Int_t lab0=track0->GetLabel();
 	Int_t lab1=track1->GetLabel();

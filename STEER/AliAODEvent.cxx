@@ -82,7 +82,7 @@ void AliAODEvent::CreateStdContent()
   // set names
   fTracks->SetName("tracks");
   fVertices->SetName("vertices");
-  fClusters->SetName("neutrals");
+  fClusters->SetName("clusters");
   fJets->SetName("jets");
 
 }

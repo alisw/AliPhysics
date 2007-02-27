@@ -16,27 +16,29 @@
 class AliAODHeader : public TNamed {
 
  public :
-   AliAODHeader();
+  AliAODHeader();
  
- AliAODHeader(Int_t nEvt, Int_t nRun, Char_t *title="");
- AliAODHeader(Int_t nEvt, 
-	      Int_t nRun,
-	      Int_t refMult,
-	      Int_t refMultPos,
-	      Int_t refMultNeg,
-	      Double_t magField,
-	      Double_t cent, 
-	      ULong64_t fTriggerMask,
-	      UChar_t   fTriggerCluster,
-	      UInt_t    fEventType,
-	      Char_t *title="");
-
+  AliAODHeader(Int_t nRun, UShort_t nBunchX, UInt_t nOrbit,Char_t *title="");
+  AliAODHeader(Int_t nRun, 
+	       UShort_t nBunchX,
+	       UInt_t nOrbit,
+	       Int_t refMult,
+	       Int_t refMultPos,
+	       Int_t refMultNeg,
+	       Double_t magField,
+	       Double_t cent, 
+	       ULong64_t fTriggerMask,
+	       UChar_t   fTriggerCluster,
+	       UInt_t    fEventType,
+	       Char_t *title="");
+  
   virtual ~AliAODHeader();
   AliAODHeader(const AliAODHeader& evt); 
   AliAODHeader& operator=(const AliAODHeader& evt);
 
-  Int_t     GetEventNumber()        const { return fEventNumber; }
   Int_t     GetRunNumber()          const { return fRunNumber; }
+  UShort_t  GetBunchCrossNumber()   const { return fBunchCrossNumber; }
+  UInt_t    GetOrbitNumber()        const { return fOrbitNumber; }
   ULong64_t GetTriggerMask()        const { return fTriggerMask; }
   UChar_t   GetTriggerCluster()     const { return fTriggerCluster; }
   UInt_t    GetEventType()          const { return fEventType; }
@@ -47,8 +49,9 @@ class AliAODHeader : public TNamed {
   Int_t     GetRefMultiplicityPos() const { return fRefMultPos; }
   Int_t     GetRefMultiplicityNeg() const { return fRefMultNeg; }
 
-  void SetEventNumber(Int_t nEvt)              { fEventNumber = nEvt; }
   void SetRunNumber(Int_t nRun)                { fRunNumber = nRun; }
+  void SetBunchCrossNumber(UShort_t nBx)       { fBunchCrossNumber = nBx; }
+  void SetOrbitNumber(Int_t nOr)               { fOrbitNumber = nOr; }
   void SetTriggerMask(ULong64_t trigMsk)       { fTriggerMask = trigMsk; }
   void SetTriggerCluster(UChar_t trigClus)     { fTriggerCluster = trigClus; }
   void SetEventType(UInt_t evttype)            { fEventType = evttype; }
@@ -68,7 +71,8 @@ class AliAODHeader : public TNamed {
    Double32_t  fCentrality;          // Centrality
    ULong64_t   fTriggerMask;         // Trigger Type (mask)
    UInt_t      fEventType;           // Type of Event
-   Int_t       fEventNumber;         // Event Number
+   UInt_t      fOrbitNumber;         // Orbit Number
+   UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
    Int_t       fRunNumber;           // Run Number
    Int_t       fRefMult;             // reference multiplicity
    Int_t       fRefMultPos;          // reference multiplicity of positive particles

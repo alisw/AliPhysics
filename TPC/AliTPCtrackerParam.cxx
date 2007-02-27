@@ -348,7 +348,7 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(AliESD *event) {
   Int_t        nParticles,nSeeds,arrentr;
   //Int_t nSel=0,nAcc=0;
 
-  Int_t evt=event->GetEventNumber();
+  Int_t evt=event->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
   
   tracks=0;
 

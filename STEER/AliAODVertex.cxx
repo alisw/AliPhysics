@@ -42,7 +42,7 @@ AliAODVertex::AliAODVertex() :
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const Double_t position[3], 
-			   const Double_t  covMatrix[6],
+			   const Double_t covMatrix[6],
 			   Double_t  chi2,
 			   TObject  *parent,
 			   Char_t vtype) :

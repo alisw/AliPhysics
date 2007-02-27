@@ -702,8 +702,8 @@ Bool_t AliReconstruction::Run(const char* input)
     esd = new AliESD; hltesd = new AliESD;
     esd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     hltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
-    esd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
-    hltesd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
+    esd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
+    hltesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
 
     // Set magnetic field from the tracker
     esd->SetMagneticField(AliTracker::GetBz());
@@ -1319,12 +1319,16 @@ Bool_t AliReconstruction::FillRawEventHeaderESD(AliESD*& esd)
   // 
 
   AliInfo("Filling information from RawReader Header");
+  esd->SetBunchCrossNumber(0);
+  esd->SetOrbitNumber(0);
   esd->SetTimeStamp(0);
   esd->SetEventType(0);
   const AliRawEventHeaderBase * eventHeader = fRawReader->GetEventHeader();
   if (eventHeader){
+    esd->SetBunchCrossNumber((eventHeader->GetP("Id")[0]));
+    esd->SetOrbitNumber((eventHeader->GetP("Id")[1]));
     esd->SetTimeStamp((eventHeader->Get("Timestamp")));  
-    esd->SetEventType((eventHeader->Get("Type")));  
+    esd->SetEventType((eventHeader->Get("Type")));
   }
 
   return kTRUE;
@@ -1619,7 +1623,7 @@ Bool_t AliReconstruction::ReadESD(AliESD*& esd, const char* recStep) const
   if (!esd) return kFALSE;
   char fileName[256];
   sprintf(fileName, "ESD_%d.%d_%s.root", 
-	  esd->GetRunNumber(), esd->GetEventNumber(), recStep);
+	  esd->GetRunNumber(), esd->GetEventNumberInFile(), recStep);
   if (gSystem->AccessPathName(fileName)) return kFALSE;
 
   AliInfo(Form("reading ESD from file %s", fileName));
@@ -1647,7 +1651,7 @@ void AliReconstruction::WriteESD(AliESD* esd, const char* recStep) const
   if (!esd) return;
   char fileName[256];
   sprintf(fileName, "ESD_%d.%d_%s.root", 
-	  esd->GetRunNumber(), esd->GetEventNumber(), recStep);
+	  esd->GetRunNumber(), esd->GetEventNumberInFile(), recStep);
 
   AliDebug(1, Form("writing ESD to file %s", fileName));
   TFile* file = TFile::Open(fileName, "recreate");

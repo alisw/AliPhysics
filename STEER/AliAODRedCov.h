@@ -63,18 +63,19 @@ template <Int_t N> template <class T> inline void AliAODRedCov<N>::GetCovMatrix(
   for(Int_t i=0; i<N; ++i) {
     // Off diagonal elements
     for(Int_t j=0; j<i; ++j) {
+      cmat[i*(i+1)/2+j] = (fDiag[j] >= 0. && fDiag[i] >= 0.) ? fODia[(i-1)*i/2+j]*fDiag[j]*fDiag[i]: -999.;
 #ifdef DEBUG
-      printf("cmat[%2d] = fODia[%2d]*fDiag[%2d]*fDiag[%2d];\n",
-	     i*(i+1)/2+j,(i-1)*i/2+j,j,i);
+      printf("cmat[%2d] = fODia[%2d]*fDiag[%2d]*fDiag[%2d] = %f\n",
+	     i*(i+1)/2+j,(i-1)*i/2+j,j,i,cmat[i*(i+1)/2+j]);
 #endif
-      cmat[i*(i+1)/2+j] = fODia[(i-1)*i/2+j]*fDiag[j]*fDiag[i];}
+    }
 
     // Diagonal elements
+    cmat[i*(i+1)/2+i] = (fDiag[i] >= 0.) ? fDiag[i]*fDiag[i] : -999.;
 #ifdef DEBUG
-    printf("cmat[%2d] = fDiag[%2d]*fDiag[%2d];\n",
-	   i*(i+1)/2+i,i,i);
+    printf("cmat[%2d] = fDiag[%2d]*fDiag[%2d] = %f\n",
+	   i*(i+1)/2+i,i,i,cmat[i*(i+1)/2+i]);
 #endif
-    cmat[i*(i+1)/2+i] = fDiag[i]*fDiag[i];
   }
 }
 
@@ -87,28 +88,51 @@ template <Int_t N> template <class T> inline void AliAODRedCov<N>::SetCovMatrix(
   //
 
   if(cmat) {
+    
+#ifdef DEBUG
+    for (Int_t i=0; i<(N*(N+1))/2; i++) {
+      printf("cmat[%d] = %f\n", i, cmat[i]);
+    }
+#endif
+    
     // Diagonal elements first
     for(Int_t i=0; i<N; ++i) {
+      fDiag[i] = (cmat[i*(i+1)/2+i] >= 0.) ? TMath::Sqrt(cmat[i*(i+1)/2+i]) : -999.;
 #ifdef DEBUG
-      printf("fDiag[%2d] = TMath::Sqrt(cmat[%2d]);\n",
-	     i,i*(i+1)/2+i);
+	printf("fDiag[%2d] = TMath::Sqrt(cmat[%2d]) = %f\n",
+	       i,i*(i+1)/2+i, fDiag[i]);
 #endif
-      fDiag[i] = TMath::Sqrt(cmat[i*(i+1)/2+i]);}
-
+  }
+  
   // ... then the ones off diagonal
   for(Int_t i=0; i<N; ++i) 
     // Off diagonal elements
     for(Int_t j=0; j<i; ++j) {
+      fODia[(i-1)*i/2+j] = (fDiag[i] > 0. && fDiag[j] > 0.) ? cmat[i*(i+1)/2+j]/(fDiag[j]*fDiag[i]) : 0.;
+      // check for division by zero (due to diagonal element of 0) and for fDiag != -999. (due to negative input diagonal element).
+      if (fODia[(i-1)*i/2+j]>1.) { // check upper boundary
 #ifdef DEBUG
-      printf("fODia[%2d] = cmat[%2d]/(fDiag[%2d]*fDiag[%2d]);\n",
-	     (i-1)*i/2+j,i*(i+1)/2+j,j,i);
+	printf("out of bounds: %f\n", fODia[(i-1)*i/2+j]);
 #endif
-      fODia[(i-1)*i/2+j] = cmat[i*(i+1)/2+j]/(fDiag[j]*fDiag[i]);
+	fODia[(i-1)*i/2+j] = 1.;
+      }
+      if (fODia[(i-1)*i/2+j]<-1.) { // check lower boundary
+#ifdef DEBUG
+	printf("out of bounds: %f\n", fODia[(i-1)*i/2+j]);
+#endif
+	fODia[(i-1)*i/2+j] = -1.; 
+      }
+#ifdef DEBUG
+	printf("fODia[%2d] = cmat[%2d]/(fDiag[%2d]*fDiag[%2d]) = %f\n",
+	       (i-1)*i/2+j,i*(i+1)/2+j,j,i,fODia[(i-1)*i/2+j]); 
+#endif
     }
   } else {
     for(Int_t i=0; i< N; ++i) fDiag[i]=-999.;
     for(Int_t i=0; i< N*(N-1)/2; ++i) fODia[i]=0.;
   }
+
+  return;
 }
 
 #undef DEBUG

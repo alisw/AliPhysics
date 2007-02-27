@@ -193,7 +193,7 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
   for(Int_t iEvent = evFirst; iEvent < tree->GetEntries(); iEvent++) {
     if(iEvent > evLast) break;
     tree->GetEvent(iEvent);
-    Int_t ev = (Int_t)event->GetEventNumber();
+    Int_t ev = (Int_t)event->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
     printf("--- Finding D0 -> Kpi in event %d\n",ev);
     // count the total number of events
     nTotEv++;
@@ -521,7 +521,7 @@ void AliD0toKpiAnalysis::MakeTracksRefFile(AliRun *gAlice,
   for(Int_t iEvent=evFirst; iEvent<tree->GetEntries(); iEvent++) {
     if(iEvent>evLast) break;
     tree->GetEvent(iEvent);
-    Int_t ev = (Int_t)event->GetEventNumber();
+    Int_t ev = (Int_t)event->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
 
     gAlice->GetEvent(ev);
 

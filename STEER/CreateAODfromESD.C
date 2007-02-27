@@ -6,6 +6,7 @@
 #include <TMath.h>
 
 #include "AliAODEvent.h"
+#include "AliAODHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 #include "AliAODCluster.h"
@@ -14,7 +15,7 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
-#include "AliESDCascade.h"
+#include "AliESDcascade.h"
 #include "AliESDCaloCluster.h"
 
 #endif
@@ -53,8 +54,9 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       if (esd->GetTrack(iTrack)->GetSign()> 0) nPosTracks++;
 
     // create the header
-    aod->AddHeader(new AliAODHeader(esd ->GetEventNumber(), 
-				    esd->GetRunNumber(),
+    aod->AddHeader(new AliAODHeader(esd->GetRunNumber(),
+				    esd->GetBunchCrossNumber(),
+				    esd->GetOrbitNumber(),
 				    nTracks,
 				    nPosTracks,
 				    nTracks-nPosTracks,
@@ -105,11 +107,11 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       
     Double_t pos[3];
     vtx->GetXYZ(pos); // position
-    Double_t cov[6];
-    vtx->GetCovMatrix(cov); //covariance matrix
+    Double_t covVtx[6]; // We have to give changing names to the variables (like cov?, x?, and p?) because CINT doesn't recognize blocks correctly.
+    vtx->GetCovMatrix(covVtx); //covariance matrix
 
     AliAODVertex * primary = new(vertices[jVertices++])
-      AliAODVertex(pos, cov, vtx->GetChi2(), NULL, AliAODVertex::kPrimary);
+      AliAODVertex(pos, covVtx, vtx->GetChi2(), NULL, AliAODVertex::kPrimary);
          
     // Create vertices starting from the most complex objects
       
@@ -145,10 +147,10 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       for (Int_t iV0=0; iV0<nV0s; ++iV0) {
 
 	v0 = esd->GetV0(iV0);
-	Int_t pos = v0->GetPindex();
-	Int_t neg = v0->GetNindex();
+	Int_t posV0 = v0->GetPindex();
+	Int_t negV0 = v0->GetNindex();
 
-	if (pos==posFromV0 && neg==negFromV0) {
+	if (posV0==posFromV0 && negV0==negFromV0) {
 	  indV0 = iV0;
 	  break;
 	}
@@ -164,11 +166,11 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	
 	Double_t posV0[3];
 	v0->GetXYZ(posV0[0], posV0[1], posV0[2]);
-	Double_t covV0[6];
-	v0->GetPosCov(covV0);
+	Double_t covV0_1[6];
+	v0->GetPosCov(covV0_1);
 	
 	vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(posV0,
-								 covV0,
+								 covV0_1,
 								 v0->GetChi2V0(),
 								 vcascade,
 								 AliAODVertex::kV0);
@@ -179,13 +181,13 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	     << " The V0 " << indV0 
 	     << " doesn't exist in the array of V0s or was used!" << endl;
 
-	Double_t posV0[3];
-	cascade->GetXYZ(posV0[0], posV0[1], posV0[2]);
-	Double_t covV0[6];
-	cascade->GetPosCov(covV0);
+	Double_t posV0_2[3];
+	cascade->GetXYZ(posV0_2[0], posV0_2[1], posV0_2[2]);
+	Double_t covV0_2[6];
+	cascade->GetPosCov(covV0_2);
       
-	vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(posV0,
-								 covV0,
+	vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(posV0_2,
+								 covV0_2,
 								 v0->GetChi2V0(),
 								 vcascade,
 								 AliAODVertex::kV0);
@@ -200,28 +202,29 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
 	AliESDtrack *esdTrack = esd->GetTrack(posFromV0);
 	
-	Double_t p[3];
-	esdTrack->GetPxPyPz(p);
+	Double_t p1[3];
+	esdTrack->GetPxPyPz(p1);
 	
-	Double_t x[3];
-	esdTrack->GetXYZ(x);
+	Double_t x1[3];
+	esdTrack->GetXYZ(x1);
 	
-	Double_t cov[21];
-	esdTrack->GetCovarianceXYZPxPyPz(cov);
+	Double_t covV0PosTr[21];
+	esdTrack->GetCovarianceXYZPxPyPz(covV0PosTr);
 	
-	Double_t pid[10];
-	esdTrack->GetESDpid(pid);
+	Double_t pid1[10];
+	esdTrack->GetESDpid(pid1);
 	
 	vV0FromCascade->AddDaughter(
 				    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(), 
-					   p, kTRUE,
-					   x,
+					   p1, 
+					   kTRUE,
+					   x1,
 					   kFALSE,
-					   cov, 
+					   covV0PosTr, 
 					   (Short_t)esdTrack->GetSign(),
 					   esdTrack->GetITSClusterMap(), 
-					   pid,
+					   pid1,
 					   vV0FromCascade,
 					   AliAODTrack::kSecondary)
 		);
@@ -239,29 +242,29 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	
 	AliESDtrack *esdTrack = esd->GetTrack(negFromV0);
 	
-	Double_t p[3];
-	esdTrack->GetPxPyPz(p);
+	Double_t p2[3];
+	esdTrack->GetPxPyPz(p2);
 	
-	Double_t x[3];
-	esdTrack->GetXYZ(x);
+	Double_t x2[3];
+	esdTrack->GetXYZ(x2);
 	
-	Double_t cov[21];
-	esdTrack->GetCovarianceXYZPxPyPz(cov);
+	Double_t covV0NegTr[21];
+	esdTrack->GetCovarianceXYZPxPyPz(covV0NegTr);
 	
-	Double_t pid[10];
-	esdTrack->GetESDpid(pid);
+	Double_t pid2[10];
+	esdTrack->GetESDpid(pid2);
 	
 	vV0FromCascade->AddDaughter(
                 new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(),
-					   p,
+					   p2,
 					   kTRUE,
-					   x,
+					   x2,
 					   kFALSE,
-					   cov, 
+					   covV0NegTr, 
 					   (Short_t)esdTrack->GetSign(),
 					   esdTrack->GetITSClusterMap(), 
-					   pid,
+					   pid2,
 					   vV0FromCascade,
 					   AliAODTrack::kSecondary)
 		);
@@ -281,29 +284,29 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	
 	AliESDtrack *esdTrack = esd->GetTrack(bachelor);
 	
-	Double_t p[3];
-	esdTrack->GetPxPyPz(p);
+	Double_t p3[3];
+	esdTrack->GetPxPyPz(p3);
 	
-	Double_t x[3];
-	esdTrack->GetXYZ(x);
+	Double_t x3[3];
+	esdTrack->GetXYZ(x3);
 	
-	Double_t cov[21];
-	esdTrack->GetCovarianceXYZPxPyPz(cov);
+	Double_t covXiTr[21];
+	esdTrack->GetCovarianceXYZPxPyPz(covXiTr);
 	
-	Double_t pid[10];
-	esdTrack->GetESDpid(pid);
+	Double_t pid3[10];
+	esdTrack->GetESDpid(pid3);
 
 	vcascade->AddDaughter(
         	new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(),
-					   p,
+					   p3,
 					   kTRUE,
-					   x,
+					   x3,
 					   kFALSE,
-					   cov, 
+					   covXiTr, 
 					   (Short_t)esdTrack->GetSign(),
 					   esdTrack->GetITSClusterMap(), 
-					   pid,
+					   pid3,
 					   vcascade,
 					   AliAODTrack::kSecondary)
 		);
@@ -325,14 +328,14 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
       AliESDv0 *v0 = esd->GetV0(nV0);
       
-      Double_t posV0[3];
-      v0->GetXYZ(posV0[0], posV0[1], posV0[2]);
-      Double_t covV0[6];
-      v0->GetPosCov(covV0);
+      Double_t posV0_3[3];
+      v0->GetXYZ(posV0_3[0], posV0_3[1], posV0_3[2]);
+      Double_t covV0_3[6];
+      v0->GetPosCov(covV0_3);
 
       AliAODVertex * vV0 = 
-	new(vertices[jVertices++]) AliAODVertex(posV0,
-						covV0,
+	new(vertices[jVertices++]) AliAODVertex(posV0_3,
+						covV0_3,
 						v0->GetChi2V0(),
 						primary,
 						AliAODVertex::kV0);
@@ -340,7 +343,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
       Int_t posFromV0 = v0->GetPindex();
       Int_t negFromV0 = v0->GetNindex();
-
+      
       // Add the positive tracks from the V0
 
       if (!usedTrack[posFromV0]) {
@@ -349,28 +352,29 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
 	AliESDtrack *esdTrack = esd->GetTrack(posFromV0);
       
-	Double_t p[3];
-	esdTrack->GetPxPyPz(p);
+	Double_t p4[3];
+	esdTrack->GetPxPyPz(p4);
 	
-	Double_t x[3];
-	esdTrack->GetXYZ(x);
+	Double_t x4[3];
+	esdTrack->GetXYZ(x4);
 	
-	Double_t cov[21];
-	esdTrack->GetCovarianceXYZPxPyPz(cov);
+	Double_t covV0PosTr_2[21];
+	esdTrack->GetCovarianceXYZPxPyPz(covV0PosTr_2);
 	
-	Double_t pid[10];
-	esdTrack->GetESDpid(pid);
+	Double_t pid4[10];
+	esdTrack->GetESDpid(pid4);
 	
 	vV0->AddDaughter(
         	new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(), 
-					   p, kTRUE,
-					   x,
+					   p4, 
+					   kTRUE,
+					   x4,
 					   kFALSE,
-					   cov, 
+					   covV0PosTr_2, 
 					   (Short_t)esdTrack->GetSign(),
 					   esdTrack->GetITSClusterMap(), 
-					   pid,
+					   pid4,
 					   vV0,
 					   AliAODTrack::kSecondary)
 		);
@@ -388,29 +392,29 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
 	AliESDtrack *esdTrack = esd->GetTrack(negFromV0);
       
-	Double_t p[3];
-	esdTrack->GetPxPyPz(p);
+	Double_t p5[3];
+	esdTrack->GetPxPyPz(p5);
 	
-	Double_t x[3];
-	esdTrack->GetXYZ(x);
+	Double_t x5[3];
+	esdTrack->GetXYZ(x5);
 	
-	Double_t cov[21];
-	esdTrack->GetCovarianceXYZPxPyPz(cov);
+	Double_t covV0NegTr_2[21];
+	esdTrack->GetCovarianceXYZPxPyPz(covV0NegTr_2);
 	
-	Double_t pid[10];
-	esdTrack->GetESDpid(pid);
+	Double_t pid5[10];
+	esdTrack->GetESDpid(pid5);
 
 	vV0->AddDaughter(
                 new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(),
-					   p,
+					   p5,
 					   kTRUE,
-					   x,
+					   x5,
 					   kFALSE,
-					   cov, 
+					   covV0NegTr_2, 
 					   (Short_t)esdTrack->GetSign(),
 					   esdTrack->GetITSClusterMap(), 
-					   pid,
+					   pid5,
 					   vV0,
 					   AliAODTrack::kSecondary)
 		);
@@ -480,30 +484,29 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	
 	      AliESDtrack *esdTrack = esd->GetTrack(imother);
 	
-	      Double_t p[3];
-	      esdTrack->GetPxPyPz(p);
+	      Double_t p6[3];
+	      esdTrack->GetPxPyPz(p6);
 	      
-	      Double_t x[3];
-	      esdTrack->GetXYZ(x);
+	      Double_t x6[3];
+	      esdTrack->GetXYZ(x6);
 	      
-	      Double_t cov[21];
-	      esdTrack->GetCovarianceXYZPxPyPz(cov);
+	      Double_t covKinkMother[21];
+	      esdTrack->GetCovarianceXYZPxPyPz(covKinkMother);
 	      
-	      Double_t pid[10];
-	      esdTrack->GetESDpid(pid);
-	      
-	      
+	      Double_t pid6[10];
+	      esdTrack->GetESDpid(pid6);
+
 	      mother = 
 		new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(),
-					   p,
+					   p6,
 					   kTRUE,
-					   x,
+					   x6,
 					   kFALSE,
-					   cov, 
+					   covKinkMother, 
 					   (Short_t)esdTrack->GetSign(),
 					   esdTrack->GetITSClusterMap(), 
-					   pid,
+					   pid6,
 					   primary,
 					   AliAODTrack::kPrimary);
 	      primary->AddDaughter(mother);
@@ -532,30 +535,29 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	
 	      AliESDtrack *esdTrack = esd->GetTrack(idaughter);
 	
-	      Double_t p[3];
-	      esdTrack->GetPxPyPz(p);
+	      Double_t p7[3];
+	      esdTrack->GetPxPyPz(p7);
 	      
-	      Double_t x[3];
-	      esdTrack->GetXYZ(x);
+	      Double_t x7[3];
+	      esdTrack->GetXYZ(x7);
 	      
-	      Double_t cov[21];
-	      esdTrack->GetCovarianceXYZPxPyPz(cov);
+	      Double_t covKinkDaughter[21];
+	      esdTrack->GetCovarianceXYZPxPyPz(covKinkDaughter);
 	      
-	      Double_t pid[10];
-	      esdTrack->GetESDpid(pid);
-	      
-	      
+	      Double_t pid7[10];
+	      esdTrack->GetESDpid(pid7);
+
 	      daughter = 
 		new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(),
-					   p,
+					   p7,
 					   kTRUE,
-					   x,
+					   x7,
 					   kFALSE,
-					   cov, 
+					   covKinkDaughter, 
 					   (Short_t)esdTrack->GetSign(),
 					   esdTrack->GetITSClusterMap(), 
-					   pid,
+					   pid7,
 					   vkink,
 					   AliAODTrack::kPrimary);
 	      vkink->AddDaughter(daughter);
@@ -583,17 +585,17 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
       AliESDtrack *esdTrack = esd->GetTrack(nTrack);
       
-      Double_t p[3];
-      esdTrack->GetPxPyPz(p);
+      Double_t p8[3];
+      esdTrack->GetPxPyPz(p8);
       
-      Double_t x[3];
-      esdTrack->GetXYZ(x);
+      Double_t x8[3];
+      esdTrack->GetXYZ(x8);
       
-      Double_t cov[21];
-      esdTrack->GetCovarianceXYZPxPyPz(cov);
-	
-      Double_t pid[10];
-      esdTrack->GetESDpid(pid);
+      Double_t covTr[21];
+      esdTrack->GetCovarianceXYZPxPyPz(covTr);
+ 	
+      Double_t pid8[10];
+      esdTrack->GetESDpid(pid8);
 
       Float_t impactXY, impactZ;
 
@@ -605,14 +607,14 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	primary->AddDaughter(
 	    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					 esdTrack->GetLabel(),
-					 p,
+					 p8,
 					 kTRUE,
-					 x,
+					 x8,
 					 kFALSE,
-					 cov, 
+					 covTr, 
 					 (Short_t)esdTrack->GetSign(),
 					 esdTrack->GetITSClusterMap(), 
-					 pid,
+					 pid8,
 					 primary,
 					 AliAODTrack::kPrimary)
 	    );
@@ -621,14 +623,14 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	// outside the beam pipe: orphan track
 	    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					 esdTrack->GetLabel(),
-					 p,
+					 p8,
 					 kTRUE,
-					 x,
+					 x8,
 					 kFALSE,
-					 cov, 
+					 covTr, 
 					 (Short_t)esdTrack->GetSign(),
 					 esdTrack->GetITSClusterMap(), 
-					 pid,
+					 pid8,
 					 NULL,
 					 AliAODTrack::kOrphan);
       }	
@@ -649,10 +651,10 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       Int_t id = cluster->GetID();
       Int_t label = -1;
       Float_t energy = cluster->GetClusterEnergy();
-      Float_t x[3];
-      cluster->GetGlobalPosition(x);
+      Float_t x9[3];
+      cluster->GetGlobalPosition(x9);
       Float_t * covMatrix = NULL;
-      Float_t * pid = NULL; 
+      Float_t * pid9 = NULL; 
       AliAODVertex *prodVertex = primary;
       AliAODTrack *primTrack = NULL;
       Char_t ttype=AliAODCluster::kUndef;
@@ -670,9 +672,9 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       new(clusters[jClusters++]) AliAODCluster(id,
 					       label,
 					       energy,
-					       x,
+					       x9,
 					       covMatrix,
-					       pid,
+					       pid9,
 					       prodVertex,
 					       primTrack,
 					       ttype);

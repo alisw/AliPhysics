@@ -41,7 +41,7 @@ AliAODevent::AliAODevent(AliESD* e) {
   fV0s      = new TClonesArray("AliAODv0");
   fCascades = new TClonesArray("AliAODxi");
   fRunNumber        = (UInt_t)e->GetRunNumber();
-  fEventNumber      = (UInt_t)e->GetEventNumber();
+  fEventNumber      = (UInt_t)e->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
   fNumberOfTracks   = (UInt_t)e->GetNumberOfTracks();
 
   const AliESDVertex* esdVertex = e->GetVertex();

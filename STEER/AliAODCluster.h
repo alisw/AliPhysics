@@ -114,7 +114,7 @@ class AliAODCluster : public AliVirtualParticle {
   virtual Double_t Phi() const {return 0.;}
   virtual Double_t Theta() const {return 0.;}
   virtual Double_t Eta() const {return 0.;}
-  virtual Short_t Charge() const {return 0.;}
+  virtual Short_t Charge() const {return 0;}
 
  private :
 
@@ -128,7 +128,7 @@ class AliAODCluster : public AliVirtualParticle {
   Int_t         fID;             // unique track ID, points back to the ESD track
   Int_t         fLabel;          // particle label, points back to MC track
   
-  AliAODRedCov<4> *fCovMatrix;      // covariance matrix (x, y, z, E)
+  AliAODRedCov<4> *fCovMatrix;   // covariance matrix (x, y, z, E)
   TRef          fProdVertex;     // vertex of origin
   TRef          fPrimTrack;      // primary track number associated with this cluster
 

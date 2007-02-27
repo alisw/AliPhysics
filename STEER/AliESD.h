@@ -42,7 +42,9 @@ public:
   void SetESDfriend(const AliESDfriend *f);
   void GetESDfriend(AliESDfriend *f) const;
 
-  void SetEventNumber(Int_t n) {fEventNumber=n;}
+  void SetEventNumberInFile(Int_t n) {fEventNumberInFile=n;}
+  void SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
+  void SetOrbitNumber(UInt_t n) {fOrbitNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}
   void SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
   void SetEventType(UInt_t eventType){fEventType = eventType;}
@@ -142,7 +144,9 @@ public:
   }
   const AliESDVertex *GetPrimaryVertex() const {return &fPrimaryVertex;}
 
-  Int_t  GetEventNumber() const {return fEventNumber;}
+  Int_t  GetEventNumberInFile() const {return fEventNumberInFile;}
+  UShort_t GetBunchCrossNumber() const {return fBunchCrossNumber;}
+  UInt_t GetOrbitNumber() const {return fOrbitNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
   UInt_t    GetTimeStamp()  const { return fTimeStamp;}
   UInt_t    GetEventType()  const { return fEventType;}
@@ -216,7 +220,9 @@ protected:
   AliESD &operator=(const AliESD& source);
 
   // Event Identification
-  Int_t        fEventNumber;     // Event Number
+  Int_t        fEventNumberInFile;// running Event count in the file
+  UShort_t     fBunchCrossNumber;// Bunch Crossing Number
+  UInt_t       fOrbitNumber;     // Orbit Number
   Int_t        fRunNumber;       // Run Number
   UInt_t       fTimeStamp;       // Time stamp
   UInt_t       fEventType;       // Type of Event
@@ -264,7 +270,7 @@ protected:
   AliESDFMD   *fESDFMD;   // FMD object containing rough multiplicity
   AliESDVZERO *fESDVZERO; // VZERO object containing rough multiplicity
 
-  ClassDef(AliESD,16)  //ESD class 
+  ClassDef(AliESD,18)  //ESD class 
 };
 #endif 
 

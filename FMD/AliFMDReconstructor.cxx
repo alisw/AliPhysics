@@ -490,7 +490,7 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
 
   if (!fDiagnostics || !esd) return;
   static bool first = true;
-  Int_t evno = esd->GetEventNumber();
+  Int_t evno = esd->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
   AliDebug(1, Form("Writing diagnostics histograms to FMD.Diag.root/%03d",
 		   evno));
   TFile f("FMD.Diag.root", (first ? "RECREATE" : "UPDATE"));

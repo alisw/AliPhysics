@@ -26,12 +26,13 @@ ClassImp(AliAODHeader)
 
 //______________________________________________________________________________
 AliAODHeader::AliAODHeader() : 
-  TNamed("header.",""),
+  TNamed("header",""),
   fMagneticField(-999.),
   fCentrality(-999.),
   fTriggerMask(0),
   fEventType(0),
-  fEventNumber(-999),
+  fBunchCrossNumber(0),
+  fOrbitNumber(0),
   fRunNumber(-999),  
   fRefMult(-999),
   fRefMultPos(-999),
@@ -43,15 +44,17 @@ AliAODHeader::AliAODHeader() :
 }
 
 //______________________________________________________________________________
-AliAODHeader::AliAODHeader(Int_t nEvt, 
-			   Int_t nRun, 
+AliAODHeader::AliAODHeader(Int_t nRun, 
+			   UShort_t nBunchX,
+			   UInt_t nOrbit,
 			   Char_t *title) :
   TNamed("header", title),
   fMagneticField(-999.),
   fCentrality(-999.),
   fTriggerMask(0),
   fEventType(0),
-  fEventNumber(nEvt),
+  fBunchCrossNumber(nBunchX),
+  fOrbitNumber(nOrbit),
   fRunNumber(nRun),
   fRefMult(-999),
   fRefMultPos(-999),
@@ -62,8 +65,9 @@ AliAODHeader::AliAODHeader(Int_t nEvt,
 }
 
 //______________________________________________________________________________
-AliAODHeader::AliAODHeader(Int_t nEvt, 
-			   Int_t nRun,
+AliAODHeader::AliAODHeader(Int_t nRun, 
+			   UShort_t nBunchX,
+			   UInt_t nOrbit,
 			   Int_t refMult,
 			   Int_t refMultPos,
 			   Int_t refMultNeg,
@@ -73,12 +77,13 @@ AliAODHeader::AliAODHeader(Int_t nEvt,
 			   UChar_t trigClus,
 			   UInt_t evttype,
 			   Char_t *title) :
-  TNamed("header.",title),
+  TNamed("header",title),
   fMagneticField(magField),
   fCentrality(cent),
   fTriggerMask(trigMask),
   fEventType(evttype),
-  fEventNumber(nEvt),
+  fOrbitNumber(nOrbit),
+  fBunchCrossNumber(nBunchX),
   fRunNumber(nRun),  
   fRefMult(refMult),
   fRefMultPos(refMultPos),
@@ -102,7 +107,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fCentrality(hdr.fCentrality),
   fTriggerMask(hdr.fTriggerMask),
   fEventType(hdr.fEventType),
-  fEventNumber(hdr.fEventNumber),
+  fOrbitNumber(hdr.fOrbitNumber),
+  fBunchCrossNumber(hdr.fBunchCrossNumber),
   fRunNumber(hdr.fRunNumber),  
   fRefMult(hdr.fRefMult), 
   fRefMultPos(hdr.fRefMultPos), 
@@ -121,16 +127,17 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     // TObject
     TNamed::operator=(hdr);
     
-    fMagneticField  = hdr.fMagneticField;
-    fCentrality     = hdr.fCentrality;
-    fTriggerMask    = hdr.fTriggerMask;
-    fEventType      = hdr.fEventType;
-    fEventNumber    = hdr.fEventNumber;
-    fRunNumber      = hdr.fRunNumber;
-    fRefMult        = hdr.fRefMult;
-    fRefMultPos     = hdr.fRefMultPos;
-    fRefMultNeg     = hdr.fRefMultNeg;
-    fTriggerCluster = hdr.fTriggerCluster;
+    fMagneticField    = hdr.fMagneticField;
+    fCentrality       = hdr.fCentrality;
+    fTriggerMask      = hdr.fTriggerMask;
+    fEventType        = hdr.fEventType;
+    fOrbitNumber      = hdr.fOrbitNumber;
+    fBunchCrossNumber = hdr.fBunchCrossNumber;
+    fRunNumber        = hdr.fRunNumber;
+    fRefMult          = hdr.fRefMult;
+    fRefMultPos       = hdr.fRefMultPos;
+    fRefMultNeg       = hdr.fRefMultNeg;
+    fTriggerCluster   = hdr.fTriggerCluster;
   }
 
   return *this;
@@ -141,8 +148,9 @@ void AliAODHeader::Print(Option_t* /*option*/) const
 {
   // prints event information
 
-  printf("Event #                 : %d\n", fEventNumber);
   printf("Run #                   : %d\n", fRunNumber);
+  printf("Bunch Crossing  #       : %d\n", fBunchCrossNumber);
+  printf("Orbit Number #          : %d\n", fOrbitNumber);
   printf("Trigger mask            : %lld\n", fTriggerMask);
   printf("Trigger cluster         : %d\n", fTriggerCluster);
   printf("Event Type              : %d\n", fEventType);

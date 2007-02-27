@@ -791,11 +791,11 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
     /**/
     // Debug part of tracking
     TTreeSRedirector &cstream = *fDebugStreamer;
-    Int_t eventNr = event->GetEventNumber();
+    Int_t eventNrInFile = event->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
     if (AliTRDReconstructor::StreamLevel() > 0) {
       if (track->GetBackupTrack()) {
 	cstream << "Tracks"
-	        << "EventNr="  << eventNr
+	        << "EventNrInFile="  << eventNrInFile
 	        << "ESD.="     << seed
 	        << "trd.="     << track
 	        << "trdback.=" << track->GetBackupTrack()
@@ -803,7 +803,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD *event)
       }
       else {
 	cstream << "Tracks"
-	        << "EventNr="  << eventNr
+	        << "EventNrInFile="  << eventNrInFile
 	        << "ESD.="     << seed
 	        << "trd.="     << track
 	        << "trdback.=" << track
@@ -2624,7 +2624,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	  }
 	}
 
-	Int_t eventNr = esd->GetEventNumber();
+	Int_t eventNrInFile = esd->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
 	TTreeSRedirector &cstream = *fDebugStreamer;
 
 	//
@@ -2643,7 +2643,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 	  TTreeSRedirector &cstream = *fDebugStreamer;
 	  if (AliTRDReconstructor::StreamLevel() > 0) {
 	    cstream << "Tracks"
-		    << "EventNr="  << eventNr
+		    << "EventNrInFile="  << eventNrInFile
 		    << "ESD.="     << &esdtrack
 		    << "trd.="     << track
 		    << "trdback.=" << track
@@ -2673,7 +2673,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
 		  << "Findable="  << findable
 		  << "NUsed="     << nused
 		  << "sLayer="    << sLayer
-		  << "EventNr="   << eventNr
+		  << "EventNrInFile="   << eventNrInFile
 		  << "\n";
 	}
 

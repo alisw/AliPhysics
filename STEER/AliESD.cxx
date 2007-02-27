@@ -29,7 +29,9 @@ ClassImp(AliESD)
 
 //______________________________________________________________________________
 AliESD::AliESD():
-  fEventNumber(0),
+  fEventNumberInFile(0),
+  fBunchCrossNumber(0),
+  fOrbitNumber(0),
   fRunNumber(0),
   fTimeStamp(0),
   fEventType(0),
@@ -78,7 +80,9 @@ AliESD::AliESD():
 //______________________________________________________________________________
 AliESD::AliESD(const AliESD& esd):
   TObject(esd),
-  fEventNumber(esd.fEventNumber),
+  fEventNumberInFile(esd.fEventNumberInFile),
+  fBunchCrossNumber(esd.fBunchCrossNumber),
+  fOrbitNumber(esd.fOrbitNumber),
   fRunNumber(esd.fRunNumber),
   fTimeStamp(esd.fTimeStamp),
   fEventType(esd.fEventType),
@@ -131,7 +135,9 @@ AliESD & AliESD::operator=(const AliESD& source) {
 
   if(&source == this) return *this;
 
-  fEventNumber = source.fEventNumber;
+  fEventNumberInFile = source.fEventNumberInFile;
+  fBunchCrossNumber = source.fBunchCrossNumber;
+  fOrbitNumber = source.fOrbitNumber;
   fRunNumber = source.fRunNumber;
   fTimeStamp   = source.fTimeStamp;
   fEventType   = source.fEventType;
@@ -213,7 +219,9 @@ AliESD::~AliESD()
 //______________________________________________________________________________
 void AliESD::Reset()
 {
-  fEventNumber=0;
+  fEventNumberInFile=0;
+  fBunchCrossNumber=0;
+  fOrbitNumber=0;
   fRunNumber=0;
   fTimeStamp = 0;
   fEventType = 0;
@@ -268,8 +276,10 @@ void AliESD::Print(Option_t *) const
   // Print header information of the event
   //
   printf("ESD run information\n");
-  printf("Event # %d Run # %d Trigger %lld Magnetic field %f \n",
-	 GetEventNumber(),
+  printf("Event # in file %d Bunch crossing # %d Orbit # %d Run # %d Trigger %lld Magnetic field %f \n",
+	 GetEventNumberInFile(),
+	 GetBunchCrossNumber(),
+	 GetOrbitNumber(),
 	 GetRunNumber(),
 	 GetTriggerMask(),
 	 GetMagneticField() );
