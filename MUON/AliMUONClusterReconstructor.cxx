@@ -136,7 +136,6 @@ AliMUONClusterReconstructor::ClusterizeOneDEV2(Int_t detElemId)
       rawCluster.SetZ(cathode,zg);      
     }
     fMUONData->AddRawCluster(chamber,rawCluster);
-    delete cluster;
   }
 }
 
