@@ -26,115 +26,10 @@ using namespace std;
 #endif
 
 #include "AliHLTDataBuffer.h"
+#include "AliHLTConsumerDescriptor.h"
 #include "AliHLTComponent.h"
 #include <string>
 #include "AliHLTSystem.h"
-
-AliHLTConsumerDescriptor::AliHLTConsumerDescriptor()
-  :
-  fpConsumer(NULL),
-  fSegments()
-{
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  fSegments.clear();
-}
-
-AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(AliHLTComponent* pConsumer)
-  :
-  fpConsumer(pConsumer),
-  fSegments()
-{
-  // see header file for function documentation
-  fSegments.clear();
-}
-
-AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor& desc)
-  :
-  TObject(),
-  AliHLTLogging(),
-  fpConsumer(desc.fpConsumer),
-  fSegments()
-{
-  // see header file for function documentation
-
-  // we can simply transfer the pointer to th new object since there are no
-  // release actions in the destructor
-}
-
-AliHLTConsumerDescriptor& AliHLTConsumerDescriptor::operator=(const AliHLTConsumerDescriptor& desc)
-{ 
-  // see header file for function documentation
-
-  // we can simply transfer the pointer to th new object since there are no
-  // release actions in the destructor
-  fpConsumer=desc.fpConsumer;
-  return *this;
-}
-
-AliHLTConsumerDescriptor::~AliHLTConsumerDescriptor()
-{
-  // see header file for function documentation
-  if (fSegments.size()>0) {
-    //HLTWarning("unreleased data segments found");
-  }
-}
-
-int AliHLTConsumerDescriptor::SetActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size)
-{
-  // see header file for function documentation
-  int iResult=0;
-  AliHLTDataSegment segment(offset, size);
-  fSegments.push_back(segment);
-  //HLTDebug("set active segment (%d:%d) for consumer %p", offset, size, this);
-  return iResult;
-}
-
-int AliHLTConsumerDescriptor::CheckActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size)
-{
-  // see header file for function documentation
-  int iResult=0;
-  if (fSegments.size()>0) {
-    vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
-    while (segment!=fSegments.end()) {
-      if ((iResult=((*segment).fSegmentOffset==offset && (*segment).fSegmentSize==size))>0) {
-	break;
-      }
-      segment++;
-    }
-  } else {
-    //HLTWarning("no data segment active for consumer %p", this);
-    iResult=-ENODATA;
-  }
-  return iResult;
-}
-
-int AliHLTConsumerDescriptor::ReleaseActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size)
-{
-  // see header file for function documentation
-  int iResult=0;
-  if (fSegments.size()>0) {
-    vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
-    while (segment!=fSegments.end()) {
-      if ((iResult=((*segment).fSegmentOffset==offset && (*segment).fSegmentSize==size))>0) {
-	fSegments.erase(segment);
-	break;
-      }
-      segment++;
-    }
-    if (iResult==0) {
-      //HLTWarning("no data segment (%d:%d) active for consumer %p", offset, size, this);
-      iResult=-ENOENT;
-    }
-  } else {
-    //HLTWarning("no data segment active for consumer %p", this);
-    iResult=-ENODATA;
-  }
-  return iResult;
-}
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataBuffer)
@@ -183,8 +78,8 @@ AliHLTDataBuffer& AliHLTDataBuffer::operator=(const AliHLTDataBuffer&)
 }
 
 int AliHLTDataBuffer::fgNofInstances=0;
-vector<AliHLTRawBuffer*> AliHLTDataBuffer::fgFreeBuffers;
-vector<AliHLTRawBuffer*> AliHLTDataBuffer::fgActiveBuffers;
+vector<AliHLTDataBuffer::AliHLTRawBuffer*> AliHLTDataBuffer::fgFreeBuffers;
+vector<AliHLTDataBuffer::AliHLTRawBuffer*> AliHLTDataBuffer::fgActiveBuffers;
 AliHLTUInt32_t AliHLTDataBuffer::fgMargin=1024;
 AliHLTLogging AliHLTDataBuffer::fgLogging;
 
@@ -225,10 +120,10 @@ int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, v
   // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
-    vector<AliHLTDataSegment> segments;
+    vector<AliHLTDataBuffer::AliHLTDataSegment> segments;
     if ((iResult=FindMatchingDataSegments(pConsumer, segments))>=0) {
       if (tgtList) {
-	vector<AliHLTDataSegment>::iterator segment=segments.begin();
+	vector<AliHLTDataBuffer::AliHLTDataSegment>::iterator segment=segments.begin();
 	while (segment!=segments.end()) {
 	  tgtList->push_back((*segment).fDataType);
 	  segment++;
@@ -242,14 +137,14 @@ int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, v
   return iResult;
 }
 
-int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer, vector<AliHLTDataSegment>& tgtList)
+int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer, vector<AliHLTDataBuffer::AliHLTDataSegment>& tgtList)
 {
   // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
     vector<AliHLTComponentDataType> dtlist;
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(dtlist);
-    vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
+    vector<AliHLTDataBuffer::AliHLTDataSegment>::iterator segment=fSegments.begin();
     while (segment!=fSegments.end()) {
       vector<AliHLTComponentDataType>::iterator type=dtlist.begin();
       while (type!=dtlist.end()) {
@@ -277,14 +172,14 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
     if (fpBuffer) {
       AliHLTConsumerDescriptor* pDesc=FindConsumer(pConsumer, fConsumers);
       if (pDesc) {
-	vector<AliHLTDataSegment> tgtList;
+	vector<AliHLTDataBuffer::AliHLTDataSegment> tgtList;
 	/* TODO: think about a good policy for this check
 	 * is it enough that at least one segment is available, or have all to be available?
 	 * or is it possible to have optional segments?
 	 */
 	if ((iResult=FindMatchingDataSegments(pConsumer, tgtList))>0) {
 	  int i =0;
-	  vector<AliHLTDataSegment>::iterator segment=tgtList.begin();
+	  vector<AliHLTDataBuffer::AliHLTDataSegment>::iterator segment=tgtList.begin();
 	  while (segment!=tgtList.end() && i<iArraySize) {
 	    // fill the block data descriptor
 	    arrayBlockDesc[i].fStructSize=sizeof(AliHLTComponentBlockData);
@@ -389,8 +284,8 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
   if (pTgt && arrayBlockData && iSize>=0) {
     if (fpBuffer) {
       if (fpBuffer->fPtr==(void*)pTgt) {
-	AliHLTDataSegment segment;
-	memset(&segment, 0, sizeof(AliHLTDataSegment));
+	AliHLTDataBuffer::AliHLTDataSegment segment;
+	memset(&segment, 0, sizeof(AliHLTDataBuffer::AliHLTDataSegment));
 	for (int i=0; i<iSize; i++) {
 	  if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->fSize) {
 	    segment.fSegmentOffset=arrayBlockData[i].fOffset;
@@ -446,7 +341,7 @@ int AliHLTDataBuffer::GetNofActiveConsumers()
   return iResult;
 }
 
-AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt32_t size)
+AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt32_t size)
 {
   // see header file for function documentation
   AliHLTRawBuffer* pRawBuffer=NULL;
@@ -572,7 +467,7 @@ int AliHLTDataBuffer::ResetDataBuffer()
   }
 
   // cleanup segments
-  vector<AliHLTDataSegment>::iterator segment=fSegments.begin();
+  vector<AliHLTDataBuffer::AliHLTDataSegment>::iterator segment=fSegments.begin();
   while (segment!=fSegments.end()) {
     fSegments.erase(segment);
     segment=fSegments.begin();

@@ -11,6 +11,7 @@ MODULE_SRCS= 	AliHLTComponent.cxx \
 		AliHLTConfiguration.cxx \
 		AliHLTLogging.cxx \
 		AliHLTDataBuffer.cxx \
+		AliHLTConsumerDescriptor.cxx \
 		AliHLTDataSource.cxx \
 		AliHLTDataSink.cxx \
 		AliHLTFilePublisher.cxx \
@@ -28,6 +29,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTTask.h \
 		AliHLTLogging.h \
 		AliHLTDataBuffer.h \
+		AliHLTConsumerDescriptor.h \
 		AliHLTDataSource.h \
 		AliHLTDataSink.h \
 		AliHLTFilePublisher.h \

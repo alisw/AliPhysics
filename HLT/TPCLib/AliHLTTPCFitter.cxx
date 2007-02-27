@@ -1,16 +1,26 @@
 // @(#) $Id$
 // Original: AliHLTFitter.cxx,v 1.14 2005/06/14 10:55:21 cvetan 
 
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group 
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Anders Vestbo                                                 *
+ *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-/** \class AliHLTTPCFitter
-<pre>
-//_____________________________________________________________
-// AliHLTTPCFitter
-//
-// Fit class HLT for helix
-</pre>
+/** @file   AliHLTTPCFitter.cxx
+    @author Anders Vestbo, maintained by Matthias Richter
+    @date   
+    @brief  Fit class HLT for helix
 */
 
 #include <math.h>
@@ -31,11 +41,31 @@ ClassImp(AliHLTTPCFitter)
 
 
 AliHLTTPCFitter::AliHLTTPCFitter()
+  :
+  fTrack(NULL),
+  fVertex(NULL),
+  fVertexConstraint(0)
 {
   //constructor
-  fTrack=0;
-  fVertex=0;
   memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
+  memset(fNcl,0,36*6*sizeof(UInt_t));
+}
+
+AliHLTTPCFitter::AliHLTTPCFitter(const AliHLTTPCFitter& src)
+  :
+  fTrack(NULL),
+  fVertex(NULL),
+  fVertexConstraint(0)
+{
+  // dummy copy constructor according to eff C++
+  memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
+  memset(fNcl,0,36*6*sizeof(UInt_t));
+}
+
+AliHLTTPCFitter& AliHLTTPCFitter::operator=(const AliHLTTPCFitter& src)
+{ 
+  // dummy assignment operator according to eff C++
+  return *this;
 }
 
 AliHLTTPCFitter::AliHLTTPCFitter(AliHLTTPCVertex *vertex,Bool_t vertexconstraint)

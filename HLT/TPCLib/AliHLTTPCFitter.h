@@ -3,22 +3,31 @@
 
 #ifndef ALIHLTTPCFITTER_H
 #define ALIHLTTPCFITTER_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-//_____________________________________________________________
-// AliHLTTPCFitter
-//
-// Fit class HLT
-//
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+/** @file   AliHLTTPCFitter.h
+    @author Anders Vestbo, maintained by Matthias Richter
+    @date   
+    @brief  Fit class HLT for helix
+*/
 
 class AliHLTTPCTrack;
 class AliHLTTPCVertex;
 class AliHLTTPCSpacePointData;
 
+/** 
+ * @class AliHLTTPCFitter
+ * Fit class HLT for helix
+ */
 class AliHLTTPCFitter {
 
   public:
   AliHLTTPCFitter();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCFitter(const AliHLTTPCFitter& src);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCFitter& operator=(const AliHLTTPCFitter& src);
   AliHLTTPCFitter(AliHLTTPCVertex *vertex,Bool_t vertexconstraint=kTRUE);
   virtual ~AliHLTTPCFitter();
   

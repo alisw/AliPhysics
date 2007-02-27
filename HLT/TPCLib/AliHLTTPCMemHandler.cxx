@@ -79,23 +79,54 @@ using namespace std;
 ClassImp(AliHLTTPCMemHandler)
   
 AliHLTTPCMemHandler::AliHLTTPCMemHandler()
+  :
+  fRowMin(0),
+  fRowMax(0),
+  fSlice(0),
+  fPatch(0),
+  fInBinary(NULL),
+  fOutBinary(NULL),
+  fPt(NULL),
+  fSize(0),
+  fIsRandom(kFALSE),
+  fNRandom(0),
+  fNGenerate(0),
+  fNUsed(0),
+  fNDigits(0),
+  fDPt(NULL),
+  fRandomDigits(NULL),
+  fDummy(0)
 { 
   //Constructor
-  fPt = 0;
-  fSize =0;
-  fInBinary = 0;
-  fOutBinary = 0;
-  fNRandom = 0;
   Init(0,0);
-  fIsRandom = kFALSE;
-  fRandomDigits = 0;
-  fDPt =0;
-  fNGenerate = 0;
-  fNUsed = 0;
-  fNDigits = 0;
   ResetROI();
 }
 
+AliHLTTPCMemHandler::AliHLTTPCMemHandler(const AliHLTTPCMemHandler& src)
+  :
+  fRowMin(0),
+  fRowMax(0),
+  fSlice(0),
+  fPatch(0),
+  fInBinary(NULL),
+  fOutBinary(NULL),
+  fPt(NULL),
+  fSize(0),
+  fIsRandom(kFALSE),
+  fNRandom(0),
+  fNGenerate(0),
+  fNUsed(0),
+  fNDigits(0),
+  fDPt(NULL),
+  fRandomDigits(NULL),
+  fDummy(0)
+{
+}
+
+AliHLTTPCMemHandler& AliHLTTPCMemHandler::operator=(const AliHLTTPCMemHandler& src)
+{
+  return (*this);
+}
 
 AliHLTTPCMemHandler::~AliHLTTPCMemHandler()
 {

@@ -21,136 +21,7 @@
 //#include "TList.h"
 
 class AliHLTComponent;
-/* @name internal data structures
- */
-
-/**
- * @struct AliHLTDataSegment
- * @brief  Descriptor of a data segment within the buffer.
- * @ingroup alihlt_system
- */
-struct AliHLTDataSegment {
-  AliHLTDataSegment()
-    :
-    fDataType(),
-    fSegmentOffset(0),
-    fSegmentSize(0),
-    fSpecification(0)
-  {
-    memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
-  }
-  AliHLTDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size) 
-    :
-    fDataType(),
-    fSegmentOffset(offset),
-    fSegmentSize(size),
-    fSpecification(0)
-  {
-    memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
-  }
-  /** the data type of this segment */
-  AliHLTComponentDataType fDataType;                               // see above
-  /** offset in byte within the data buffer */
-  AliHLTUInt32_t fSegmentOffset;                                   // see above
-  /** size of the actual content */
-  AliHLTUInt32_t fSegmentSize;                                     // see above
-  /** data specification */
-  AliHLTUInt32_t fSpecification;                                   // see above
-};
-
-/**
- * @struct AliHLTRawBuffer
- * @brief  Descriptor of the raw data buffer which can host several segments.
- * @ingroup alihlt_system
- */
-struct AliHLTRawBuffer {
-  /** size of the currently occupied partition of the buffer */
-  AliHLTUInt32_t fSize;                                            // see above
-  /** total size of the buffer, including safety margin */
-  AliHLTUInt32_t fTotalSize;                                       // see above
-  /** the buffer */
-  void* fPtr;                                                      //! transient
-};
-
-/**
- * @class AliHLTConsumerDescriptor
- * @brief Helper class to describe a consumer component.
- *
- * There is unfortunately no unique determination of the data type from the
- * component itself possible, thats why both component and data type have to
- * be initialized and are stored in a compound. The class is intended to make
- * bookkeeping easier.
- *
- * @note This class is only used for the @ref alihlt_system.
- *
- * @ingroup alihlt_system
- */
-class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
- public:
-  /** standard constructur */
-  AliHLTConsumerDescriptor();
-  /** constructur 
-   * @param pConsumer pointer to the consumer component
-   */
-  AliHLTConsumerDescriptor(AliHLTComponent* pConsumer);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTConsumerDescriptor& operator=(const AliHLTConsumerDescriptor&);
-  /** destructor */
-  ~AliHLTConsumerDescriptor();
-
-  /**
-   * Get the component of this descriptor.
-   * @return pointer to the component
-   */
-  AliHLTComponent* GetComponent() {return fpConsumer;}
-
-  /**
-   * Set an active data segment.
-   * the pointer will be handled in a container, no allocation, copy or
-   * cleanup.
-   * @param offset  offset of the segment in the buffer
-   * @param size    size of the segment in the buffer
-   * @return >=0 if succeeded
-   */
-  int SetActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
-
-  /**
-   * Check whether there is an active data segment of certain size with
-   * certain offset.
-   * @param offset  offset of the data segment in the data buffer
-   * @param size    size of the data segment in the data buffer
-   * @return > if existend, 0 if not
-   */
-  int CheckActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
-
-  /** find an active data segment of certain size with certain offset
-   * will see if this is necessary
-   * @param offset  offset of the data segment in the data buffer
-   * @param size    size of the data segment in the data buffer
-   * @return offset of the data segment
-   */
-  //AliHLTUInt32_t FindActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
-
-  /** get the number of active segments for this consumer
-   * @return number of active segments
-   */
-  int GetNofActiveSegments() {return fSegments.size();};
-
-  /**
-   */
-  int ReleaseActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
-
- private:
-  /** consumer object */
-  AliHLTComponent* fpConsumer;                                     //! transient
-
-  /** list of data segments */
-  vector<AliHLTDataSegment> fSegments;                             // see above
-
-  //ClassDef(AliHLTConsumerDescriptor, 0)
-};
+class AliHLTConsumerDescriptor;
 
 /**
  * @class AliHLTDataBuffer
@@ -170,10 +41,11 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
  *
  * @ingroup alihlt_system
  */
-class AliHLTDataBuffer : public TObject, public AliHLTLogging {
+class AliHLTDataBuffer : public TObject, public AliHLTLogging 
+{
  public:
   //////////////////////////////////////////////////////////////////////////////
-  // condtructors and destructors
+  // constructors and destructors
 
   /* standard constructor
    */
@@ -317,9 +189,55 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
    */
   int Reset();
 
+  /**
+   * @struct AliHLTDataSegment
+   * @brief  Descriptor of a data segment within the buffer.
+   */
+  struct AliHLTDataSegment {
+    AliHLTDataSegment()
+      :
+      fDataType(),
+      fSegmentOffset(0),
+      fSegmentSize(0),
+      fSpecification(0)
+    {
+      memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
+    }
+    AliHLTDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size) 
+      :
+      fDataType(),
+      fSegmentOffset(offset),
+      fSegmentSize(size),
+      fSpecification(0)
+    {
+      memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
+    }
+    /** the data type of this segment */
+    AliHLTComponentDataType fDataType;                             // see above
+    /** offset in byte within the data buffer */
+    AliHLTUInt32_t fSegmentOffset;                                 // see above
+    /** size of the actual content */
+    AliHLTUInt32_t fSegmentSize;                                   // see above
+    /** data specification */
+    AliHLTUInt32_t fSpecification;                                 // see above
+  };
+
+  /**
+   * @struct AliHLTRawBuffer
+   * @brief  Descriptor of the raw data buffer which can host several segments.
+   */
+  struct AliHLTRawBuffer {
+    /** size of the currently occupied partition of the buffer */
+    AliHLTUInt32_t fSize;                                          // see above
+    /** total size of the buffer, including safety margin */
+    AliHLTUInt32_t fTotalSize;                                     // see above
+    /** the buffer */
+    void* fPtr;                                                    //! transient
+  };
+
  private:
   /* lets see if this is needed
-  AliHLTDataSegment* FindDataSegment(AliHLTComponentDataType datatype);
+     AliHLTDataSegment* FindDataSegment(AliHLTComponentDataType datatype);
   */
 
   /**
@@ -439,4 +357,5 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging {
 
   ClassDef(AliHLTDataBuffer, 0)
 };
+
 #endif // ALIHLTDATABUFFER_H

@@ -32,9 +32,8 @@ class AliHLTTPCMemHandler {
  public:
   AliHLTTPCMemHandler();
   virtual ~AliHLTTPCMemHandler();
-  AliHLTTPCMemHandler(const AliHLTTPCMemHandler& /*m*/){};
-  AliHLTTPCMemHandler& operator=(const AliHLTTPCMemHandler& /*&m*/)
-    {return (*this);}
+  AliHLTTPCMemHandler(const AliHLTTPCMemHandler& src);
+  AliHLTTPCMemHandler& operator=(const AliHLTTPCMemHandler& src);
    
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
   void Init(Int_t s,Int_t p, Int_t *r=0);

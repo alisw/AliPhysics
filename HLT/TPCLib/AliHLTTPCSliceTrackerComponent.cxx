@@ -47,61 +47,92 @@ AliHLTTPCSliceTrackerComponent gAliHLTTPCSliceTrackerComponent;
 ClassImp(AliHLTTPCSliceTrackerComponent)
 
 AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
-    {
-    fTracker = NULL;
-    fVertex = NULL;
-    fEta[0] = 0.;
-    fEta[1] = 1.1;
-    fDoNonVertex = false;
-    fMultiplicity = 4000;
-    fBField = 0.4;
-    fDoPP = false;
+  :
+  fTracker(NULL),
+  fVertex(NULL),
+  fDoNonVertex(false),
+  fMultiplicity(4000),
+  fBField(0.4),
+  fDoPP(false),
 // BEGINN ############################################## MODIFIY JMT
-    fnonvertextracking = kFALSE;   // enable NONVERTEX Tracking
-    fmainvertextracking = kTRUE;   // enable MAINVERTEX Tracking
+  fnonvertextracking(kFALSE),
+  fmainvertextracking(kTRUE)
 // END ################################################# MODIFIY JMT
-    }
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  fEta[0] = 0.;
+  fEta[1] = 1.1;
+}
+
+AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent(const AliHLTTPCSliceTrackerComponent& src)
+  :
+  fTracker(NULL),
+  fVertex(NULL),
+  fDoNonVertex(false),
+  fMultiplicity(4000),
+  fBField(0.4),
+  fDoPP(false),
+// BEGINN ############################################## MODIFIY JMT
+  fnonvertextracking(kFALSE),
+  fmainvertextracking(kTRUE)
+// END ################################################# MODIFIY JMT
+{
+  // see header file for class documentation
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCSliceTrackerComponent& AliHLTTPCSliceTrackerComponent::operator=(const AliHLTTPCSliceTrackerComponent& src)
+{ 
+  // see header file for class documentation
+  HLTFatal("assignment operator untested");
+  return *this;
+}
 
 AliHLTTPCSliceTrackerComponent::~AliHLTTPCSliceTrackerComponent()
-    {
-    }
+{
+}
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process
 
 const char* AliHLTTPCSliceTrackerComponent::GetComponentID()
-    {
-    return "TPCSliceTracker";
-    }
+{
+
+  return "TPCSliceTracker";
+}
 
 void AliHLTTPCSliceTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
-    {
-    list.clear();
-    list.push_back( AliHLTTPCDefinitions::gkClustersDataType );
-    list.push_back( AliHLTTPCDefinitions::gkVertexDataType );
-    }
+{
+  list.clear();
+  list.push_back( AliHLTTPCDefinitions::gkClustersDataType );
+  list.push_back( AliHLTTPCDefinitions::gkVertexDataType );
+}
 
 AliHLTComponentDataType AliHLTTPCSliceTrackerComponent::GetOutputDataType()
-    {
-    return AliHLTTPCDefinitions::gkTrackSegmentsDataType;
-    }
+{
+  return AliHLTTPCDefinitions::gkTrackSegmentsDataType;
+}
 
 void AliHLTTPCSliceTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-    {
-    // XXX TODO: Find more realistic values.
-    constBase = 0;
-    inputMultiplier = 0.2;
-    }
+{
+  // XXX TODO: Find more realistic values.
+  constBase = 0;
+  inputMultiplier = 0.2;
+}
 
 AliHLTComponent* AliHLTTPCSliceTrackerComponent::Spawn()
-    {
-    return new AliHLTTPCSliceTrackerComponent;
-    }
+{
+  return new AliHLTTPCSliceTrackerComponent;
+}
 
-void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
+void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t etaSegments,
 				   Int_t trackletlength, Int_t tracklength,
 				   Int_t rowscopetracklet, Int_t rowscopetrack,
-				   Double_t min_pt_fit, Double_t maxangle,
+				   Double_t minPtFit, Double_t maxangle,
 				   Double_t goodDist, Double_t hitChi2Cut,
 				   Double_t goodHitChi2, Double_t trackChi2Cut,
 				   Int_t maxdist, Double_t maxphi,Double_t maxeta, bool vertexConstraints )
@@ -110,8 +141,8 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
     //Set parameters input to the tracker
     //If no arguments are given, default parameters will be used
     
-    fTracker->SetNSegments(phi_segments,eta_segments);
-    fTracker->SetMaxDca(min_pt_fit);
+    fTracker->SetNSegments(phiSegments,etaSegments);
+    fTracker->SetMaxDca(minPtFit);
     //   fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
 
 // BEGINN ############################################## MODIFIY JMT

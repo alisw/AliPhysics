@@ -41,6 +41,8 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
   fBufferSize(0),
   fPatch(-1),
   fSlice(-1),
+  fRow(-1),
+  fPad(-1),
   fDataFormatVersion(formatVersion),
   fVerify(false),
   
@@ -55,13 +57,18 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
   fData(NULL),
   fMapErrThrown(0)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 #ifndef HAVE_TPC_MAPPING
-  memset(fMapping0, 0, fMapping0Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping1, 0, fMapping1Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping2, 0, fMapping2Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping3, 0, fMapping3Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping4, 0, fMapping4Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping5, 0, fMapping5Size*fMappingDimension*sizeof(Int_t));
+  memset(fgMapping0, 0, fgkMapping0Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping1, 0, fgkMapping1Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping2, 0, fgkMapping2Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping3, 0, fgkMapping3Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping4, 0, fgkMapping4Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping5, 0, fgkMapping5Size*fgkMappingDimension*sizeof(Int_t));
 #endif //#ifndef HAVE_TPC_MAPPING
 
     if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
@@ -94,6 +101,8 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& 
   fBufferSize(0),
   fPatch(-1),
   fSlice(-1),
+  fRow(-1),
+  fPad(-1),
   fDataFormatVersion(src.fDataFormatVersion),
   fVerify(false),
   
@@ -108,31 +117,35 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& 
   fData(NULL),
   fMapErrThrown(0)
 {
+  // see header file for class documentation
 #ifndef HAVE_TPC_MAPPING
-  memset(fMapping0, 0, fMapping0Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping1, 0, fMapping1Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping2, 0, fMapping2Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping3, 0, fMapping3Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping4, 0, fMapping4Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping5, 0, fMapping5Size*fMappingDimension*sizeof(Int_t));
+  memset(fgMapping0, 0, fgkMapping0Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping1, 0, fgkMapping1Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping2, 0, fgkMapping2Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping3, 0, fgkMapping3Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping4, 0, fgkMapping4Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping5, 0, fgkMapping5Size*fgkMappingDimension*sizeof(Int_t));
 #endif //#ifndef HAVE_TPC_MAPPING
   HLTFatal("copy constructor not for use");
 }
 
 AliHLTTPCDigitReaderRaw& AliHLTTPCDigitReaderRaw::operator=(const AliHLTTPCDigitReaderRaw& src)
 {
+  // see header file for class documentation
 #ifndef HAVE_TPC_MAPPING
-  memset(fMapping0, 0, fMapping0Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping1, 0, fMapping1Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping2, 0, fMapping2Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping3, 0, fMapping3Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping4, 0, fMapping4Size*fMappingDimension*sizeof(Int_t));
-  memset(fMapping5, 0, fMapping5Size*fMappingDimension*sizeof(Int_t));
+  memset(fgMapping0, 0, fgkMapping0Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping1, 0, fgkMapping1Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping2, 0, fgkMapping2Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping3, 0, fgkMapping3Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping4, 0, fgkMapping4Size*fgkMappingDimension*sizeof(Int_t));
+  memset(fgMapping5, 0, fgkMapping5Size*fgkMappingDimension*sizeof(Int_t));
 #endif //#ifndef HAVE_TPC_MAPPING
   fBuffer=NULL;
   fBufferSize=0;
   fPatch=-1;
   fSlice=-1;
+  fRow=-1;
+  fPad=-1;
   fDataFormatVersion=src.fDataFormatVersion;
   fCurrentRow=0;
   fCurrentPad=0;
@@ -151,7 +164,9 @@ AliHLTTPCDigitReaderRaw& AliHLTTPCDigitReaderRaw::operator=(const AliHLTTPCDigit
   return (*this);
 }
 
-AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw(){
+AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw()
+{
+  // see header file for class documentation
   if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       if ( fData )
@@ -160,11 +175,15 @@ AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw(){
     }
 }
 
-int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice) {
+int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice) 
+{
+  // see header file for class documentation
   return AliHLTTPCDigitReader::InitBlock(ptr, size, firstrow, lastrow, patch, slice);
 }
 
-int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
+int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice)
+{
+  // see header file for class documentation
 
     fBuffer = (AliHLTUInt8_t*) ptr;
     if (fBuffer==NULL) {
@@ -208,7 +227,7 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
 	// Init array with -1
 	memset( fData, 0xFF, sizeof(Int_t)*(fNMaxRows*fNMaxPads*fNTimeBins) );
 
-	const Int_t maxErrorPrintout=20;
+	const Int_t kMaxErrorPrintout=20;
 	Int_t errorCount=0;
 	Int_t entryCount=0;
 	// read data and fill in array
@@ -224,7 +243,7 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
 
 	  if ( row < firstrow || row > lastrow || pad > AliHLTTPCTransform::GetNPads(row + offset) || bin > fNTimeBins || pad<0 || bin<0){
 //	  if ( row < firstrow || row > lastrow || pad > AliHLTTPCTransform::GetNPads(row + offset) || bin > fNTimeBins){
-	    if (errorCount++<maxErrorPrintout) {
+	    if (errorCount++<kMaxErrorPrintout) {
 	      HLTFatal("Index out of range. Probably wrong patch! slice %d - patch %d", slice, patch);
 	      HLTFatal("PAD=%d out of %d ||| ROW=%d (%d to %d)  ||| BIN=%d out of %d  ||| OFFSET=%d ||| ROWOFFSET=%d",
 		       pad, AliHLTTPCTransform::GetNPads(row + offset), row, firstrow, lastrow, bin, fNTimeBins,
@@ -242,7 +261,7 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
 	    //continue;
 	    break;
 	  } else if ((row-fRowOffset)*fNMaxPads*fNTimeBins+ pad*fNTimeBins + bin >=  fNMaxRows*fNMaxPads*fNTimeBins ) {
-	    if (errorCount++<maxErrorPrintout) {
+	    if (errorCount++<kMaxErrorPrintout) {
 	      HLTFatal("index out of range: PAD=%d ||| ROW=%d ||| BIN=%d ||| OFFSET=%d ||| ROWOFFSET=%d", pad, row, bin, offset, fRowOffset);
 	    }
 	    // stop at the fist error message in order to avoid endless messages and
@@ -261,7 +280,10 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
     return 0;
 }
 
-bool AliHLTTPCDigitReaderRaw::Next(){
+bool AliHLTTPCDigitReaderRaw::Next()
+{
+  // see header file for class documentation
+
   if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       Bool_t readvalue = kTRUE;
@@ -296,7 +318,10 @@ bool AliHLTTPCDigitReaderRaw::Next(){
     return RealNext();
 }
 
-int AliHLTTPCDigitReaderRaw::GetRow(){
+int AliHLTTPCDigitReaderRaw::GetRow()
+{
+  // see header file for class documentation
+
   if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return (fCurrentRow + fRowOffset);
@@ -304,7 +329,11 @@ int AliHLTTPCDigitReaderRaw::GetRow(){
   else
     return GetRealRow();
 }
-int AliHLTTPCDigitReaderRaw::GetPad(){
+
+int AliHLTTPCDigitReaderRaw::GetPad()
+{
+  // see header file for class documentation
+
   if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return fCurrentPad;
@@ -312,7 +341,11 @@ int AliHLTTPCDigitReaderRaw::GetPad(){
   else
     return GetRealPad();
 }
-int AliHLTTPCDigitReaderRaw::GetSignal(){
+
+int AliHLTTPCDigitReaderRaw::GetSignal()
+{
+  // see header file for class documentation
+
   if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return fData[ fCurrentRow*fNMaxPads*fNTimeBins+ fCurrentPad*fNTimeBins + fCurrentBin ];
@@ -320,7 +353,11 @@ int AliHLTTPCDigitReaderRaw::GetSignal(){
   else
     return GetRealSignal();
 }
-int AliHLTTPCDigitReaderRaw::GetTime(){
+
+int AliHLTTPCDigitReaderRaw::GetTime()
+{
+  // see header file for class documentation
+
   if ( fDataFormatVersion==0 || fDataFormatVersion==2 || fDataFormatVersion==4 )
     {
       return fCurrentBin;
@@ -329,8 +366,10 @@ int AliHLTTPCDigitReaderRaw::GetTime(){
     return GetRealTime();
 }
 
+bool AliHLTTPCDigitReaderRaw::RealNext()
+{
+  // see header file for class documentation
 
-bool AliHLTTPCDigitReaderRaw::RealNext(){
 //    printf( "%u %u %u %u %u\n", fBunchPosition, fBunchLength, fBunchTimebinStart, fWordInBunch, (unsigned)fAltroBlock10BitWordCnt );
     fWordInBunch++; // use next word in bunch
     if ( fWordInBunch==fBunchLength ) { // we have a bunch at all but have reached its end (or do not have an altro block yet)
@@ -349,21 +388,35 @@ bool AliHLTTPCDigitReaderRaw::RealNext(){
     //HLTDebug( "%u %u %u %u %u\n", fBunchPosition, fBunchLength, fBunchTimebinStart, fWordInBunch, (unsigned)fAltroBlock10BitWordCnt );
     return true;
 }
-int AliHLTTPCDigitReaderRaw::GetRealRow(){
+
+int AliHLTTPCDigitReaderRaw::GetRealRow() const
+{
+  // see header file for class documentation
     return fRow;
 }
-int AliHLTTPCDigitReaderRaw::GetRealPad(){
+
+int AliHLTTPCDigitReaderRaw::GetRealPad() const
+{
+  // see header file for class documentation
     return fPad;
 }
-int AliHLTTPCDigitReaderRaw::GetRealSignal(){
+
+int AliHLTTPCDigitReaderRaw::GetRealSignal()
+{
+  // see header file for class documentation
     return GetAltroBlock10BitWord( fBunchPosition+fWordInBunch );
 }
-int AliHLTTPCDigitReaderRaw::GetRealTime(){
+
+int AliHLTTPCDigitReaderRaw::GetRealTime() const
+{
+  // see header file for class documentation
   //HLTDebug( "GetRealTime: %u - %u\n", fBunchTimebinStart, fWordInBunch );
     return fBunchTimebinStart-(fWordInBunch-2);
 }
 
-AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetRCUTrailer( unsigned offset ){
+AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetRCUTrailer( unsigned offset ) const
+{
+  // see header file for class documentation
   if (fBufferSize<=0) return 0;
   unsigned rcuDataBlockLen = GetRCUDataBlockLength(); 
   if ( offset >= rcuDataBlockLen ) return 0;
@@ -371,7 +424,8 @@ AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetRCUTrailer( unsigned offset ){
 }
 
 bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
-    {
+{
+  // see header file for class documentation
     if (fBufferSize<=0) return 0;
     bool first = false;
     if ( !fAltroBlockLengthBytes )
@@ -430,7 +484,7 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
       if (!ApplyMapping())
 	{
 	  HLTFatal("Mapping failed Patch %d HWA %#x (%d) - maxHWA %#x (%d)",
-		   fPatch, fAltroBlockHWAddress, fAltroBlockHWAddress, fMaxHWA[fPatch], fMaxHWA[fPatch]);
+		   fPatch, fAltroBlockHWAddress, fAltroBlockHWAddress, fgMaxHWA[fPatch], fgMaxHWA[fPatch]);
 
 	}
 
@@ -457,15 +511,23 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
 	  }
       }
     return true;
-    }
+}
 
-AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetAltroBlockHWaddr(){
-return fAltroBlockHWAddress;
+AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetAltroBlockHWaddr() const
+{
+  // see header file for class documentation
+  return fAltroBlockHWAddress;
 }
-unsigned AliHLTTPCDigitReaderRaw::GetAltroBlock10BitWordCnt(){
-return fAltroBlock10BitWordCnt;
+
+unsigned AliHLTTPCDigitReaderRaw::GetAltroBlock10BitWordCnt() const
+{
+  // see header file for class documentation
+  return fAltroBlock10BitWordCnt;
 }
-AliHLTUInt64_t AliHLTTPCDigitReaderRaw::GetAltroBlock40BitWord( unsigned long ndx ){
+
+AliHLTUInt64_t AliHLTTPCDigitReaderRaw::GetAltroBlock40BitWord( unsigned long ndx ) const
+{
+  // see header file for class documentation
 AliHLTUInt64_t val=0;
 unsigned wordOffset32Bit = (ndx / 4)*5;
 switch ( ndx % 4 ) // 40 bit word index in a 4*40 bit=5*32 bit group
@@ -493,7 +555,10 @@ switch ( ndx % 4 ) // 40 bit word index in a 4*40 bit=5*32 bit group
     }
 return val;
 }
-AliHLTUInt16_t AliHLTTPCDigitReaderRaw::GetAltroBlock10BitWord( unsigned long ndx ){
+
+AliHLTUInt16_t AliHLTTPCDigitReaderRaw::GetAltroBlock10BitWord( unsigned long ndx )
+{
+  // see header file for class documentation
 unsigned long realNdx = ndx+fAltroBlock10BitFillWordCnt;
 unsigned long word40BitNdx = (realNdx / 4)+1;
 AliHLTUInt64_t word40Bit = GetAltroBlock40BitWord( word40BitNdx );
@@ -512,7 +577,9 @@ switch ( realNdx % 4 )
  return 0xFFFF; 
 }
 
-AliHLTUInt16_t AliHLTTPCDigitReaderRaw::GetAltroBlockReal10BitWord( unsigned long ndx ){
+AliHLTUInt16_t AliHLTTPCDigitReaderRaw::GetAltroBlockReal10BitWord( unsigned long ndx )
+{
+  // see header file for class documentation
 unsigned long word40BitNdx = (ndx / 4)+1;
 AliHLTUInt64_t word40Bit = GetAltroBlock40BitWord( word40BitNdx );
 switch ( ndx % 4 )
@@ -530,9 +597,10 @@ switch ( ndx % 4 )
  return 0xFFFF; 
 }
 
-// Return length of trailing RCU data block in bytes
 unsigned AliHLTTPCDigitReaderRaw::GetRCUDataBlockLength() const
-    {
+{
+  // see header file for class documentation
+  // Return length of trailing RCU data block in bytes
     switch ( fDataFormatVersion )
 	{
 	case 0:
@@ -550,15 +618,18 @@ unsigned AliHLTTPCDigitReaderRaw::GetRCUDataBlockLength() const
 	default:
 	    return fBufferSize;
 	}
-    }
+}
 
 unsigned AliHLTTPCDigitReaderRaw::GetCommonDataHeaderSize() const
-    {
-    return 32;
-    }
+{
+  // see header file for class documentation
+  return 32;
+}
 
 
-Bool_t AliHLTTPCDigitReaderRaw::ApplyMapping(){
+Bool_t AliHLTTPCDigitReaderRaw::ApplyMapping()
+{
+  // see header file for class documentation
 
 #ifndef HAVE_TPC_MAPPING
   if (fMapErrThrown++==0) {
@@ -566,7 +637,7 @@ Bool_t AliHLTTPCDigitReaderRaw::ApplyMapping(){
   }
   return -1;
 #endif //#ifndef HAVE_TPC_MAPPING
-    if ( (unsigned)fAltroBlockHWAddress > fMaxHWA[fPatch]){
+    if ( (unsigned)fAltroBlockHWAddress > fgMaxHWA[fPatch]){
 	fPad = -1;
 	fRow = -1;
 	return kFALSE;
@@ -574,33 +645,33 @@ Bool_t AliHLTTPCDigitReaderRaw::ApplyMapping(){
 
     switch(fPatch){
 	case 0:
-	    fRow = fMapping0[(unsigned)fAltroBlockHWAddress][0];
-	    fPad = fMapping0[(unsigned)fAltroBlockHWAddress][1];
+	    fRow = fgMapping0[(unsigned)fAltroBlockHWAddress][0];
+	    fPad = fgMapping0[(unsigned)fAltroBlockHWAddress][1];
 	    break;
         case 1:
-	    fRow = AliHLTTPCDigitReaderRaw::fMapping1[(unsigned)fAltroBlockHWAddress][0];
-	    fPad = AliHLTTPCDigitReaderRaw::fMapping1[(unsigned)fAltroBlockHWAddress][1];
+	    fRow = AliHLTTPCDigitReaderRaw::fgMapping1[(unsigned)fAltroBlockHWAddress][0];
+	    fPad = AliHLTTPCDigitReaderRaw::fgMapping1[(unsigned)fAltroBlockHWAddress][1];
 #if 0
-	    printf ("pad %d # row %d (hwa: %u / 0x%08X\n", fMapping1[(unsigned)fAltroBlockHWAddress][0],fMapping1[(unsigned)fAltroBlockHWAddress][1], (unsigned)fAltroBlockHWAddress, (unsigned)fAltroBlockHWAddress);
-	    printf ("pad %d # row %d (hwa: %u / 0x%08X\n", fMapping1[(unsigned)fAltroBlockHWAddress-1][0],fMapping1[(unsigned)fAltroBlockHWAddress-1][1], (unsigned)fAltroBlockHWAddress-1, (unsigned)fAltroBlockHWAddress-1);
-	    printf ("pad %d # row %d (hwa: %u / 0x%08X\n", fMapping1[(unsigned)fAltroBlockHWAddress+1][0],fMapping1[(unsigned)fAltroBlockHWAddress+1][1], (unsigned)fAltroBlockHWAddress+1, (unsigned)fAltroBlockHWAddress+1);
+	    printf ("pad %d # row %d (hwa: %u / 0x%08X\n", fgMapping1[(unsigned)fAltroBlockHWAddress][0],fgMapping1[(unsigned)fAltroBlockHWAddress][1], (unsigned)fAltroBlockHWAddress, (unsigned)fAltroBlockHWAddress);
+	    printf ("pad %d # row %d (hwa: %u / 0x%08X\n", fgMapping1[(unsigned)fAltroBlockHWAddress-1][0],fgMapping1[(unsigned)fAltroBlockHWAddress-1][1], (unsigned)fAltroBlockHWAddress-1, (unsigned)fAltroBlockHWAddress-1);
+	    printf ("pad %d # row %d (hwa: %u / 0x%08X\n", fgMapping1[(unsigned)fAltroBlockHWAddress+1][0],fgMapping1[(unsigned)fAltroBlockHWAddress+1][1], (unsigned)fAltroBlockHWAddress+1, (unsigned)fAltroBlockHWAddress+1);
 #endif
 	    break;
 	case 2:
-	    fRow = fMapping2[(unsigned)fAltroBlockHWAddress][0];
-	    fPad = fMapping2[(unsigned)fAltroBlockHWAddress][1];
+	    fRow = fgMapping2[(unsigned)fAltroBlockHWAddress][0];
+	    fPad = fgMapping2[(unsigned)fAltroBlockHWAddress][1];
 	    break;
         case 3:
-	    fRow = fMapping3[(unsigned)fAltroBlockHWAddress][0];
-	    fPad = fMapping3[(unsigned)fAltroBlockHWAddress][1];
+	    fRow = fgMapping3[(unsigned)fAltroBlockHWAddress][0];
+	    fPad = fgMapping3[(unsigned)fAltroBlockHWAddress][1];
 	    break;
 	case 4:
-	    fRow = fMapping4[(unsigned)fAltroBlockHWAddress][0];
-	    fPad = fMapping4[(unsigned)fAltroBlockHWAddress][1];
+	    fRow = fgMapping4[(unsigned)fAltroBlockHWAddress][0];
+	    fPad = fgMapping4[(unsigned)fAltroBlockHWAddress][1];
 	    break;
         case 5:
-	    fRow = fMapping5[(unsigned)fAltroBlockHWAddress][0];
-	    fPad = fMapping5[(unsigned)fAltroBlockHWAddress][1];
+	    fRow = fgMapping5[(unsigned)fAltroBlockHWAddress][0];
+	    fPad = fgMapping5[(unsigned)fAltroBlockHWAddress][1];
 	    break;
 	default:
 	    fRow = -1;
@@ -613,71 +684,81 @@ Bool_t AliHLTTPCDigitReaderRaw::ApplyMapping(){
 
 Int_t AliHLTTPCDigitReaderRaw::GetRow( unsigned patch, unsigned hwAddr )
 {
+  // see header file for class documentation
+
 #ifndef HAVE_TPC_MAPPING
   if (fMapErrThrown++==0) {
     HLTFatal("mapping not available, you must compile with HAVE_TPC_MAPPING");
   }
   return -1;
 #endif //#ifndef HAVE_TPC_MAPPING
-    if ( (unsigned)hwAddr > fMaxHWA[fPatch]){
+    if ( (unsigned)hwAddr > fgMaxHWA[fPatch]){
 	return -1;
     }
 
     switch(fPatch){
 	case 0:
-	    return fMapping0[hwAddr][0];
+	    return fgMapping0[hwAddr][0];
         case 1:
-	    return fMapping1[hwAddr][0];
+	    return fgMapping1[hwAddr][0];
 	case 2:
-	    return fMapping2[hwAddr][0];
+	    return fgMapping2[hwAddr][0];
         case 3:
-	    return fMapping3[hwAddr][0];
+	    return fgMapping3[hwAddr][0];
 	case 4:
-	    return fMapping4[hwAddr][0];
+	    return fgMapping4[hwAddr][0];
         case 5:
-	    return fMapping5[hwAddr][0];
+	    return fgMapping5[hwAddr][0];
 	default:
 	  return -1;
     }
 }
+
 Int_t AliHLTTPCDigitReaderRaw::GetPad( unsigned patch, unsigned hwAddr )
 {
+  // see header file for class documentation
+
 #ifndef HAVE_TPC_MAPPING
   if (fMapErrThrown++==0) {
     HLTFatal("mapping not available, you must compile with HAVE_TPC_MAPPING");
   }
   return -1;
 #endif //#ifndef HAVE_TPC_MAPPING
-    if ( (unsigned)hwAddr > fMaxHWA[fPatch]){
+    if ( (unsigned)hwAddr > fgMaxHWA[fPatch]){
 	return -1;
     }
 
     switch(fPatch){
 	case 0:
-	    return fMapping0[hwAddr][1];
+	    return fgMapping0[hwAddr][1];
         case 1:
-	    return fMapping1[hwAddr][1];
+	    return fgMapping1[hwAddr][1];
 	case 2:
-	    return fMapping2[hwAddr][1];
+	    return fgMapping2[hwAddr][1];
         case 3:
-	    return fMapping3[hwAddr][1];
+	    return fgMapping3[hwAddr][1];
 	case 4:
-	    return fMapping4[hwAddr][1];
+	    return fgMapping4[hwAddr][1];
         case 5:
-	    return fMapping5[hwAddr][1];
+	    return fgMapping5[hwAddr][1];
 	default:
 	  return -1;
     }
 }
 
-unsigned AliHLTTPCDigitReaderRaw::GetMaxHWA( unsigned patch )
+unsigned AliHLTTPCDigitReaderRaw::GetMaxHWA( unsigned patch ) const
 {
-  if ( (int)patch>=fNofPatches )
+  // see header file for class documentation
+
+  if ( (int)patch>=fgkNofPatches )
     return 0;
-  return fMaxHWA[patch];
+  return fgMaxHWA[patch];
 }
 
-Int_t AliHLTTPCDigitReaderRaw::DecodeMode(Int_t mode) {
+Int_t AliHLTTPCDigitReaderRaw::DecodeMode(Int_t mode) 
+{
+  // see header file for class documentation
+
   Int_t decodedMode;
 
   if ( mode >= kNofRawReaderModes ) 
@@ -688,7 +769,10 @@ Int_t AliHLTTPCDigitReaderRaw::DecodeMode(Int_t mode) {
   return decodedMode;
 }
 
-Int_t AliHLTTPCDigitReaderRaw::DecodeMode(const Char_t *mode) {
+Int_t AliHLTTPCDigitReaderRaw::DecodeMode(const Char_t *mode) 
+{
+  // see header file for class documentation
+
   Int_t decodedMode;
   Char_t *cpErr;
 
@@ -737,11 +821,11 @@ Int_t AliHLTTPCDigitReaderRaw::DecodeMode(const Char_t *mode) {
 #include "mapping_array_out.inc"
 #else
 // dummy definitions in case of missing mapping
-unsigned AliHLTTPCDigitReaderRaw::fMaxHWA[fNofPatches];
-Int_t AliHLTTPCDigitReaderRaw::fMapping0[fMapping0Size][fMappingDimension];
-Int_t AliHLTTPCDigitReaderRaw::fMapping1[fMapping1Size][fMappingDimension];
-Int_t AliHLTTPCDigitReaderRaw::fMapping2[fMapping2Size][fMappingDimension];
-Int_t AliHLTTPCDigitReaderRaw::fMapping3[fMapping3Size][fMappingDimension];
-Int_t AliHLTTPCDigitReaderRaw::fMapping4[fMapping4Size][fMappingDimension];
-Int_t AliHLTTPCDigitReaderRaw::fMapping5[fMapping5Size][fMappingDimension];
+unsigned AliHLTTPCDigitReaderRaw::fgMaxHWA[fgkNofPatches];
+Int_t AliHLTTPCDigitReaderRaw::fgMapping0[fgkMapping0Size][fgkMappingDimension];
+Int_t AliHLTTPCDigitReaderRaw::fgMapping1[fgkMapping1Size][fgkMappingDimension];
+Int_t AliHLTTPCDigitReaderRaw::fgMapping2[fgkMapping2Size][fgkMappingDimension];
+Int_t AliHLTTPCDigitReaderRaw::fgMapping3[fgkMapping3Size][fgkMappingDimension];
+Int_t AliHLTTPCDigitReaderRaw::fgMapping4[fgkMapping4Size][fgkMappingDimension];
+Int_t AliHLTTPCDigitReaderRaw::fgMapping5[fgkMapping5Size][fgkMappingDimension];
 #endif //#if defined(HAVE_TPC_MAPPING)

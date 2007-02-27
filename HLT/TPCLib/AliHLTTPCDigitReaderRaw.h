@@ -67,9 +67,9 @@ public:
    */
   AliHLTTPCDigitReaderRaw( unsigned formatVersion );
   /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw&);
+  AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& src);
   /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCDigitReaderRaw& operator=(const AliHLTTPCDigitReaderRaw&);
+  AliHLTTPCDigitReaderRaw& operator=(const AliHLTTPCDigitReaderRaw& src);
   /** destructor */
   virtual ~AliHLTTPCDigitReaderRaw();
     
@@ -119,36 +119,58 @@ public:
     return fVerify;
   }
 
+  //
   // Deliver values unsorted
-    bool RealNext();
-    int GetRealRow();
-    int GetRealPad();
-    int GetRealSignal();
-    int GetRealTime();
+  //
+  /** unsorted next value */
+  bool RealNext();
+  /** row of current value */
+  int GetRealRow() const;
+  /** pad of current value */
+  int GetRealPad() const;
+  /** signal of current value */
+  int GetRealSignal();
+  /** time of current value */
+  int GetRealTime() const;
 
+  //
   // Low level methods for accessing the data
-    AliHLTUInt32_t GetRCUTrailer( unsigned offset=0 );
-    bool NextAltroBlock();
-    AliHLTUInt32_t GetAltroBlockHWaddr();
-    unsigned GetAltroBlock10BitWordCnt();
-    AliHLTUInt64_t GetAltroBlock40BitWord( unsigned long ndx ); // ndx counts from end, 0 is last
-    AliHLTUInt16_t GetAltroBlock10BitWord( unsigned long ndx );
-    AliHLTUInt16_t GetAltroBlockReal10BitWord( unsigned long ndx );
+  //
+  /** get rcu trailer word of the raw data */
+  AliHLTUInt32_t GetRCUTrailer( unsigned offset=0 ) const;
+
+  /** move to next altro block and set internal variables */
+  bool NextAltroBlock();
+
+  /** hardware address of the current altro block */
+  AliHLTUInt32_t GetAltroBlockHWaddr() const;
+
+  /** get no of 10bit words in the current altro block */
+  unsigned GetAltroBlock10BitWordCnt() const;
+
+  /** ndx counts from end, 0 is last */
+  AliHLTUInt64_t GetAltroBlock40BitWord( unsigned long ndx ) const;
+
+  /** ndx counts from end, 0 is last */
+  AliHLTUInt16_t GetAltroBlock10BitWord( unsigned long ndx );
+
+  /** ndx counts from end, 0 is last */
+  AliHLTUInt16_t GetAltroBlockReal10BitWord( unsigned long ndx );
 
     unsigned GetAltroBlockPositionBytes() const
 	{return fAltroBlockPositionBytes;}
     unsigned GetAltroBlockLengthBytes() const
 	{return fAltroBlockLengthBytes;}
 
-    // Return length of trailing RCU data block in bytes
+    /** Return length of trailing RCU data block in bytes */
     unsigned GetRCUDataBlockLength() const;
     unsigned GetCommonDataHeaderSize() const;
 	
     Bool_t ApplyMapping();
 
-  Int_t GetRow( unsigned patch, unsigned hw_addr );
-  Int_t GetPad( unsigned patch, unsigned hw_addr );
-  unsigned GetMaxHWA( unsigned patch );
+  Int_t GetRow( unsigned patch, unsigned hwAddr );
+  Int_t GetPad( unsigned patch, unsigned hwAddr );
+  unsigned GetMaxHWA( unsigned patch ) const;
 
   /**
    * This function decodes the rawreadermode set in HLT***Components
@@ -175,66 +197,91 @@ public:
 
 protected:
 
-  AliHLTUInt8_t* fBuffer; //! transient value
-  unsigned long fBufferSize;
+  /** the raw data buffer (external buffer) */
+  AliHLTUInt8_t* fBuffer;                                          //! transient
+  /** size of the raw data buffer */
+  unsigned long fBufferSize;                                       // see above
     /*
     Int_t fFirstRow;
     Int_t fLastRow;
     */
-  Int_t fPatch;
-  Int_t fSlice;
-  Int_t fRow;
-  Int_t fPad;
 
-  unsigned fAltroBlockPositionBytes;
-  unsigned fAltroBlockLengthBytes;
+  /** patch (readout partition) specification of the raw data buffer */
+  Int_t fPatch;                                                    // see above
+
+  /** slice (sector) specification of the raw data buffer */
+  Int_t fSlice;                                                    // see above
+
+  /** the current row no */
+  Int_t fRow;                                                      // see above
+
+  /** the current pad no */
+  Int_t fPad;                                                      // see above
+
+
+  /** position of the current ALTRO block*/
+  unsigned fAltroBlockPositionBytes;                               // see above
+
+  /** length of the current ALTRO block*/
+  unsigned fAltroBlockLengthBytes;                                 // see above
   
-  AliHLTUInt16_t fAltroBlockHWAddress;
-  AliHLTUInt16_t fAltroBlock10BitWordCnt;
-  AliHLTUInt16_t fAltroBlock10BitFillWordCnt;
+  /** hardware of the current ALTRO block*/
+  AliHLTUInt16_t fAltroBlockHWAddress;                             // see above
 
-  unsigned fDataFormatVersion;
-  
-  unsigned fBunchPosition;
-  unsigned fBunchTimebinStart;
-  unsigned fBunchLength;
-  unsigned fWordInBunch;
+  /** no of 10 bit words in the current ALTRO block*/
+  AliHLTUInt16_t fAltroBlock10BitWordCnt;                          // see above
 
-  bool fVerify;
+  /** no of additional 10 bit fill words in the current ALTRO block*/
+  AliHLTUInt16_t fAltroBlock10BitFillWordCnt;                      // see above
+
+  /** version of data format */
+  unsigned fDataFormatVersion;                                     // see above
+
+  /** position of the current bunch of timebins */  
+  unsigned fBunchPosition;                                         // see above
+  /** first timebin of current bunch */  
+  unsigned fBunchTimebinStart;                                     // see above
+  /** length of current bunch */  
+  unsigned fBunchLength;                                           // see above
+  /** word counter in bunch */  
+  unsigned fWordInBunch;                                           // see above
+
+  /** verify the consistency of the Altro blocks */
+  bool fVerify;                                                    // see above
 
 private:
   /** number of patches */ 
-  static const Int_t fNofPatches=6;
+  static const Int_t fgkNofPatches=6;                              // see above
   /** dimension of each mapping array */ 
-  static const Int_t fMappingDimension=2;
+  static const Int_t fgkMappingDimension=2;                        // see above
 
   /** size of mapping arrays */
-  static const Int_t fMapping0Size=3200;
+  static const Int_t fgkMapping0Size=3200;                         // see above
   /** size of mapping array for patch 1 */
-  static const Int_t fMapping1Size=3584;
+  static const Int_t fgkMapping1Size=3584;                         // see above
   /** size of mapping array for patch 2 */
-  static const Int_t fMapping2Size=3200;
+  static const Int_t fgkMapping2Size=3200;                         // see above
   /** size of mapping array for patch 3 */
-  static const Int_t fMapping3Size=3328;
+  static const Int_t fgkMapping3Size=3328;                         // see above
   /** size of mapping array for patch 4 */
-  static const Int_t fMapping4Size=3328;
+  static const Int_t fgkMapping4Size=3328;                         // see above
   /** size of mapping array for patch 5 */
-  static const Int_t fMapping5Size=3328;
+  static const Int_t fgkMapping5Size=3328;                         // see above
 
   /** mapping array for patch 0 */
-  static Int_t fMapping0[fMapping0Size][fMappingDimension];
+  static Int_t fgMapping0[fgkMapping0Size][fgkMappingDimension];   // see above
   /** mapping array for patch 1 */
-  static Int_t fMapping1[fMapping1Size][fMappingDimension];
+  static Int_t fgMapping1[fgkMapping1Size][fgkMappingDimension];   // see above
   /** mapping array for patch 2 */
-  static Int_t fMapping2[fMapping2Size][fMappingDimension];
+  static Int_t fgMapping2[fgkMapping2Size][fgkMappingDimension];   // see above
   /** mapping array for patch 3 */
-  static Int_t fMapping3[fMapping3Size][fMappingDimension];
+  static Int_t fgMapping3[fgkMapping3Size][fgkMappingDimension];   // see above
   /** mapping array for patch 4 */
-  static Int_t fMapping4[fMapping4Size][fMappingDimension];
+  static Int_t fgMapping4[fgkMapping4Size][fgkMappingDimension];   // see above
   /** mapping array for patch 5 */
-  static Int_t fMapping5[fMapping5Size][fMappingDimension];
+  static Int_t fgMapping5[fgkMapping5Size][fgkMappingDimension];   // see above
 
-  static unsigned fMaxHWA[fNofPatches];
+  static unsigned fgMaxHWA[fgkNofPatches];                         // see above
 
   // For reordering
   /** current row */

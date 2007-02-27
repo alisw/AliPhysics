@@ -16,10 +16,16 @@ class AliHLTTPCConfMapper;
 class AliHLTTPCVertex;
 
 class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
-    {
-    public:
-	AliHLTTPCSliceTrackerComponent();
-	virtual ~AliHLTTPCSliceTrackerComponent();
+{
+public:
+  /** default constructor */
+  AliHLTTPCSliceTrackerComponent();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCSliceTrackerComponent(const AliHLTTPCSliceTrackerComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCSliceTrackerComponent& operator=(const AliHLTTPCSliceTrackerComponent&);
+  /** destructor */
+  virtual ~AliHLTTPCSliceTrackerComponent();
 
 	// Public functions to implement AliHLTComponent's interface.
 	// These functions are required for the registration process
@@ -30,12 +36,12 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 	AliHLTComponent* Spawn();
 
-    protected:
+protected:
 	
-	void SetTrackerParam(Int_t phi_segments=50,Int_t eta_segments=100,
+	void SetTrackerParam(Int_t phiSegments=50,Int_t etaSegments=100,
 			     Int_t trackletlength=3,Int_t tracklength=5,
 			     Int_t rowscopetracklet=2,Int_t rowscopetrack=3,
-			     Double_t min_pt_fit=0,Double_t maxangle=1.31,
+			     Double_t minPtFit=0,Double_t maxangle=1.31,
 			     Double_t goodDist=5,Double_t hitChi2Cut=10,
 			     Double_t goodHitChi2=20,Double_t trackChi2Cut=50,
 			     Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1,
@@ -59,22 +65,29 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
-    private:
+private:
 
-	AliHLTTPCConfMapper* fTracker;
-	AliHLTTPCVertex* fVertex;
-	Float_t fEta[2];
-	Bool_t fDoNonVertex;
-	Bool_t  fDoPP;
-	Int_t fMultiplicity;
-	Double_t fBField;
+  /** instance of the tracker */
+  AliHLTTPCConfMapper* fTracker;                                   //! transient
+  /** vertex object */
+  AliHLTTPCVertex* fVertex;                                        //! transient
+  /** eta range */
+  Float_t fEta[2];                                                 //  see above
+  /** switch for subsequent non-vertex tracking */
+  Bool_t fDoNonVertex;                                             //  see above
+  /** */
+  Bool_t  fDoPP;                                                   //  see above
+  /** multiplicity estimate */
+  Int_t fMultiplicity;                                             //  see above
+  /** magnetic field */
+  Double_t fBField;                                                //  see above
 
 // BEGINN ############################################## MODIFIY JMT
-	Bool_t fnonvertextracking;   // enable NONVERTEX Tracking
-	Bool_t fmainvertextracking;  // enable MAINVERTEX Tracking
+  Bool_t fnonvertextracking;   // enable NONVERTEX Tracking
+  Bool_t fmainvertextracking;  // enable MAINVERTEX Tracking
 // END ################################################# MODIFIY JMT
 
-	ClassDef(AliHLTTPCSliceTrackerComponent, 0)
+  ClassDef(AliHLTTPCSliceTrackerComponent, 0);
 
-    };
+};
 #endif
