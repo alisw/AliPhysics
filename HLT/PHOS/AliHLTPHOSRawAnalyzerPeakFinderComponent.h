@@ -13,7 +13,7 @@ class AliHLTPHOSRawAnalyzerPeakFinderComponent: public AliHLTPHOSRawAnalyzerComp
   ~AliHLTPHOSRawAnalyzerPeakFinderComponent();
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn();
-  static AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
+  //static AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
  private:
   Bool_t LoadPFVector(); 
   Bool_t LoadPFVector(int startindex, int Nsamples, int tau, int fs);
