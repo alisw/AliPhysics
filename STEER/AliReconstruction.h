@@ -106,6 +106,7 @@ private:
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESD*& esd);
   Bool_t         RunHLTTracking(AliESD*& esd);
+  Bool_t         RunMuonTracking();
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
   Bool_t         FillTriggerESD(AliESD*& esd);
@@ -134,6 +135,7 @@ private:
   Bool_t         fUniformField;       // uniform field tracking flag
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunHLTTracking;     // run the HLT tracking
+  Bool_t         fRunMuonTracking;     // run the HLT tracking
   Bool_t         fStopOnError;        // stop or continue on errors
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag

@@ -173,6 +173,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fUniformField(kTRUE),
   fRunVertexFinder(kTRUE),
   fRunHLTTracking(kFALSE),
+  fRunMuonTracking(kFALSE),
   fStopOnError(kFALSE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
@@ -220,6 +221,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fUniformField(rec.fUniformField),
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunHLTTracking(rec.fRunHLTTracking),
+  fRunMuonTracking(rec.fRunMuonTracking),
   fStopOnError(rec.fStopOnError),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
@@ -729,16 +731,26 @@ Bool_t AliReconstruction::Run(const char* input)
       }
     }
 
-    // barrel tracking
+    // Muon tracking
     if (!fRunTracking.IsNull()) {
-      if (!ReadESD(esd, "tracking")) {
-	if (!RunTracking(esd)) {
+      if (fRunMuonTracking) {
+	if (!RunMuonTracking()) {
 	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
 	}
-	if (fCheckPointLevel > 0) WriteESD(esd, "tracking");
       }
     }
 
+    // barrel tracking
+    if (!fRunTracking.IsNull()) {
+      if (!fRunMuonTracking) {
+	if (!ReadESD(esd, "tracking")) {
+	  if (!RunTracking(esd)) {
+	    if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
+	  }
+	  if (fCheckPointLevel > 0) WriteESD(esd, "tracking");
+	}
+      }
+    }
     // fill ESD
     if (!fFillESD.IsNull()) {
       if (!FillESD(esd, fFillESD)) {
@@ -1074,6 +1086,62 @@ Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
 
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::RunMuonTracking()
+{
+// run the muon spectrometer tracking
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  if (!fRunLoader) {
+    AliError("Missing runLoader!");
+    return kFALSE;
+  }
+  Int_t iDet = 7; // for MUON
+
+  AliInfo("is running...");
+
+  // Get a pointer to the MUON reconstructor
+  AliReconstructor *reconstructor = GetReconstructor(iDet);
+  if (!reconstructor) return kFALSE;
+
+  
+  TString detName = fgkDetectorName[iDet];
+  AliDebug(1, Form("%s tracking", detName.Data()));
+  AliTracker *tracker =  reconstructor->CreateTracker(fRunLoader);
+  if (!tracker) {
+    AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
+    return kFALSE;
+  }
+     
+  // create Tracks
+  fLoader[iDet]->LoadTracks("update");
+  fLoader[iDet]->CleanTracks();
+  fLoader[iDet]->MakeTracksContainer();
+
+  // read RecPoints
+  fLoader[iDet]->LoadRecPoints("read");
+
+  if (!tracker->Clusters2Tracks(0x0)) {
+    AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
+    return kFALSE;
+  }
+  fLoader[iDet]->UnloadRecPoints();
+
+  fLoader[iDet]->WriteTracks("OVERWRITE");
+  fLoader[iDet]->UnloadTracks();
+
+  delete tracker;
+  
+
+  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
+
+  return kTRUE;
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliReconstruction::RunTracking(AliESD*& esd)
@@ -1569,6 +1637,11 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
       fRunHLTTracking = kTRUE;
       continue;
     }
+    if (detName == "MUON") {
+      fRunMuonTracking = kTRUE;
+      continue;
+    }
+
 
     fTracker[iDet] = reconstructor->CreateTracker(fRunLoader);
     if (!fTracker[iDet] && (iDet < 7)) {
