@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.16  2007/02/20 15:57:00  decaro
+Raw data update: to read the TOF raw data defined in UNPACKED mode
+
 
 Revision 0.03  2005/07/28 A. De Caro
          Implement public method
@@ -739,7 +742,9 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   AliInfo(" Calibrating TOF Clusters: ")
   AliTOFcalib *calib = new AliTOFcalib(fTOFGeometry);
   // calib->ReadParFromCDB("TOF/Calib",0); // original
-  calib->ReadParFromCDB("TOF/Calib",-1); // Use AliCDBManager's run number
+  // Use AliCDBManager's run number
+ if(!calib->ReadParFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+  
   AliTOFCal *calTOFArray = calib->GetTOFCalArray();  
 
   for (ii=0; ii<fNumberOfTofClusters; ii++) {
