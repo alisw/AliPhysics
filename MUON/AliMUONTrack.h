@@ -71,8 +71,12 @@ class AliMUONTrack : public TObject
   void                       SetFitFMin(Double_t chi2) { fFitFMin = chi2; }
 	/// return kTrue if track matches with trigger track, kFalse if not
   Bool_t                     GetMatchTrigger(void) const {return fMatchTrigger;}
+  /// returns the local trigger number corresponding to the trigger track 
+  Int_t                      GetLoTrgNum(void) const {return floTrgNum;}
 	/// set the flag telling whether track matches with trigger track or not
-  void			     SetMatchTrigger(Bool_t matchTrigger) {fMatchTrigger = matchTrigger;}
+   void			     SetMatchTrigger(Bool_t matchTrigger) {fMatchTrigger = matchTrigger;}
+   /// set the local trigger number corresponding to the trigger track
+   void			     SetLoTrgNum(Int_t loTrgNum) {floTrgNum = loTrgNum;}
 	/// return the chi2 of trigger/track matching 
   Double_t                   GetChi2MatchTrigger(void) const {return fChi2MatchTrigger;}
 	/// set the chi2 of trigger/track matching 
@@ -110,6 +114,7 @@ class AliMUONTrack : public TObject
   
   Double_t fFitFMin; ///< minimum value of the function minimized by the fit
   Bool_t fMatchTrigger; ///< 1 if track matches with trigger track, 0 if not
+  Int_t floTrgNum; ///< the number of the corresponding loTrg, -1 if no matching
   Double_t fChi2MatchTrigger; ///< chi2 of trigger/track matching 
   
   Int_t fTrackID; ///< track ID = track number in TrackRefs

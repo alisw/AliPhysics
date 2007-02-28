@@ -29,7 +29,6 @@
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTrackReconstructor.h" 
 
-
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack()
   : TObject(),
@@ -37,18 +36,20 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
     fy11(0),
     fthetax(0),
     fthetay(0),
+    floTrgNum(0),
     fGTPattern(0)
 
 {
   /// default ctr
 }
 //__________________________________________________________________________
-AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Long_t theGTPattern)
+AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t loTrgNum, Long_t theGTPattern)
     : TObject(),
       fx11(x11),
       fy11(y11),
       fthetax(thetax),
       fthetay(thetay),
+      floTrgNum(loTrgNum),
       fGTPattern(theGTPattern)
 {
 /// ctor from local trigger output
@@ -69,6 +70,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTrig
       fy11(theMUONTriggerTrack.fy11),
       fthetax(theMUONTriggerTrack.fthetax),
       fthetay(theMUONTriggerTrack.fthetay),
+      floTrgNum(theMUONTriggerTrack.floTrgNum),
       fGTPattern(theMUONTriggerTrack.fGTPattern)    
 {
 ///
@@ -93,7 +95,9 @@ theMUONTriggerTrack)
     fy11 = theMUONTriggerTrack.fy11;
     fthetax = theMUONTriggerTrack.fthetax;
     fthetay = theMUONTriggerTrack.fthetay;
+    floTrgNum = theMUONTriggerTrack.floTrgNum;
     fGTPattern = theMUONTriggerTrack.fGTPattern;
 
     return *this;
 }
+

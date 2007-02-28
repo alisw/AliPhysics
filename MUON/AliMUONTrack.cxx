@@ -59,6 +59,7 @@ AliMUONTrack::AliMUONTrack()
     fVertex(0x0),
     fFitFMin(-1.),
     fMatchTrigger(kFALSE),
+    floTrgNum(-1),
     fChi2MatchTrigger(0.),
     fTrackID(0)
 {
@@ -77,6 +78,7 @@ AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitFo
     fVertex(0x0),
     fFitFMin(-1.),
     fMatchTrigger(kFALSE),
+    floTrgNum(-1),    
     fChi2MatchTrigger(0.),
     fTrackID(0)
 {
@@ -166,6 +168,7 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
     fVertex(0x0),
     fFitFMin(theMUONTrack.fFitFMin),
     fMatchTrigger(theMUONTrack.fMatchTrigger),
+    floTrgNum(theMUONTrack.floTrgNum),    
     fChi2MatchTrigger(theMUONTrack.fChi2MatchTrigger),
     fTrackID(theMUONTrack.fTrackID)
 {
@@ -253,6 +256,7 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   fFitWithVertex      =  theMUONTrack.fFitWithVertex;
   fFitFMin            =  theMUONTrack.fFitFMin;
   fMatchTrigger       =  theMUONTrack.fMatchTrigger;
+  floTrgNum           =  theMUONTrack.floTrgNum;
   fChi2MatchTrigger   =  theMUONTrack.fChi2MatchTrigger;
   fTrackID            =  theMUONTrack.fTrackID;
 
@@ -555,6 +559,7 @@ void AliMUONTrack::Print(Option_t* opt) const
       //", NonBendSlope=" << setw(8) << setprecision(5)  << GetNonBendingSlope()*180./TMath::Pi() <<
       //", BendSlope=" << setw(8) << setprecision(5)     << GetBendingSlope()*180./TMath::Pi() <<
       ", Match2Trig=" << setw(1) << GetMatchTrigger()  << 
+      ", LoTrgNum=" << setw(3) << GetLoTrgNum()  << 
       ", Chi2-tracking-trigger=" << setw(8) << setprecision(5) <<  GetChi2MatchTrigger() << endl ;
     GetTrackParamAtHit()->First()->Print("full");
   }

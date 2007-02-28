@@ -310,6 +310,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
   TClonesArray *recTriggerTracks = fMUONData->RecTriggerTracks();
   
   Bool_t matchTrigger;
+  Int_t loTrgNum;
   Double_t distTriggerTrack[3];
   Double_t xTrack, yTrack, ySlopeTrack, chi2MatchTrigger, minChi2MatchTrigger, chi2;
   
@@ -317,7 +318,8 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
   while (track) {
     matchTrigger = kFALSE;
     chi2MatchTrigger = 0.;
-    
+    loTrgNum = -1;
+
     trackParam = *((AliMUONTrackParam*) (track->GetTrackParamAtHit()->Last()));
     AliMUONTrackExtrap::ExtrapToZ(&trackParam, AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
     
@@ -331,6 +333,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
       distTriggerTrack[0] = (triggerTrack->GetX11()-xTrack)/kDistSigma[0];
       distTriggerTrack[1] = (triggerTrack->GetY11()-yTrack)/kDistSigma[1];
       distTriggerTrack[2] = (TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack)/kDistSigma[2];
+      loTrgNum=triggerTrack->GetLoTrgNum();
       chi2 = 0.;
       for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
       chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)
@@ -343,6 +346,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
     }
     
     track->SetMatchTrigger(matchTrigger);
+    track->SetLoTrgNum(loTrgNum);
     track->SetChi2MatchTrigger(chi2MatchTrigger);
     
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
@@ -426,6 +430,7 @@ Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
     fTriggerTrack->SetThetax(thetax);
     fTriggerTrack->SetThetay(thetay);
     fTriggerTrack->SetGTPattern(gloTrigPat);
+    fTriggerTrack->SetLoTrgNum(i);
  	  
     fMUONData->AddRecTriggerTrack(*fTriggerTrack);
   } // end of loop on Local Trigger

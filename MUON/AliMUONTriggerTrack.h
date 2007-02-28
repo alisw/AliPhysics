@@ -21,20 +21,21 @@ class AliMUONTriggerTrack : public TObject
     virtual ~AliMUONTriggerTrack(); // Destructor
     AliMUONTriggerTrack (const AliMUONTriggerTrack& AliMUONTriggerTrack); // copy constructor
     AliMUONTriggerTrack& operator=(const AliMUONTriggerTrack& AliMUONTriggerTrack); // assignment operator
-    AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay,
-                        Long_t theGTPattern); 
-
+    AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t iloTrg, Long_t theGTPattern); 
+    
     // getter
     Float_t GetX11()    const {return fx11;}
     Float_t GetY11()    const {return fy11;}
     Float_t GetThetax() const {return fthetax;}
-    Float_t GetThetay() const {return fthetay;}    
+    Float_t GetThetay() const {return fthetay;}
+    Int_t   GetLoTrgNum() const {return floTrgNum;}    
 
     // setter
     void SetX11(Float_t x)     {fx11 = x;}
     void SetY11(Float_t y)     {fy11 = y;}
     void SetThetax(Float_t tx) {fthetax = tx;}
-    void SetThetay(Float_t ty) {fthetay = ty;}    
+    void SetThetay(Float_t ty) {fthetay = ty;}
+    void SetLoTrgNum(Int_t loTrgNum) {floTrgNum = loTrgNum;}    
 
     void SetGTPattern(UChar_t pat) {fGTPattern = pat;}    
     UChar_t GetGTPattern() const {return fGTPattern;}    
@@ -45,9 +46,10 @@ protected:
   Float_t fy11;    ///< y position of fired X strip in MC11
   Float_t fthetax; ///< track theta angle in X   
   Float_t fthetay; ///< track theta angle in Y
+  Int_t   floTrgNum; ///< local trigger number
   UChar_t fGTPattern; ///< Global trigger pattern  (do not work with static statement) 
 
-  ClassDef(AliMUONTriggerTrack, 3) // Reconstructed trigger track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTriggerTrack, 4) // Reconstructed trigger track in ALICE dimuon spectrometer
     };
 	
 #endif
