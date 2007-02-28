@@ -80,24 +80,142 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   const char* numberOfDetectors = GetRunParameter("numberOfDetectors");
   const char* detectorMask = GetRunParameter("detectorMask");
 
-  TObjArray *alias1 = (TObjArray *)valueMap->GetValue("SFTTemp1.FloatValue");
-  if(!alias1) {
-    Log(Form("SFTTemp1.FloatValue not found!!!"));
+  //===========//
+  //DCS data points
+  //===========//
+  TObjArray *aliasLHCState = (TObjArray *)valueMap->GetValue("LHCState");
+  if(!aliasLHCState) {
+    Log(Form("LHCState not found!!!"));
     return 0;
   }
-  AliGRPDCS *dcs = new AliGRPDCS(alias1);
-  TH1F *h1 = new TH1F("alias1","",100,15,25);
-  TString sAlias1Mean = dcs->ProcessDCS(h1);  
-  
-  Int_t result=0;
-  
-  if (sAlias1Mean) {
-    Log(Form("<alias1> for run %d: %s",fRun, sAlias1Mean.Data()));
+  AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState);
+  TString sLHCState = dcs1->ProcessDCS(3);  
+  if (sLHCState) {
+    Log(Form("<LHCState> for run %d: %s",fRun, sLHCState.Data()));
   } else {
-    Log(Form("DCSAlias1 not put in TMap!"));
+    Log(Form("LHCState not put in TMap!"));
   }
 
+  TObjArray *aliasLHCPeriod = (TObjArray *)valueMap->GetValue("LHCPeriod");
+  if(!aliasLHCPeriod) {
+    Log(Form("LHCPeriod not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs2 = new AliGRPDCS(aliasLHCPeriod);
+  TString sLHCPeriod = dcs2->ProcessDCS(3);  
+  if (sLHCPeriod) {
+    Log(Form("<LHCPeriod> for run %d: %s",fRun, sLHCPeriod.Data()));
+  } else {
+    Log(Form("LHCPeriod not put in TMap!"));
+  }
+
+  TObjArray *aliasLHCLuminosity = (TObjArray *)valueMap->GetValue("LHCLuminosity");
+  if(!aliasLHCLuminosity) {
+    Log(Form("LHCLuminosity not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity);
+  TString sMeanLHCLuminosity = dcs3->ProcessDCS(2);  
+  if (sMeanLHCLuminosity) {
+    Log(Form("<LHCLuminosity> for run %d: %s",fRun, sMeanLHCLuminosity.Data()));
+  } else {
+    Log(Form("LHCLuminosity not put in TMap!"));
+  }
+
+  TObjArray *aliasBeamIntensity = (TObjArray *)valueMap->GetValue("BeamIntensity");
+  if(!aliasBeamIntensity) {
+    Log(Form("BeamIntensity not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity);
+  TString sMeanBeamIntensity = dcs4->ProcessDCS(2);  
+  if (sMeanBeamIntensity) {
+    Log(Form("<BeamIntensity> for run %d: %s",fRun, sMeanBeamIntensity.Data()));
+  } else {
+    Log(Form("BeamIntensity not put in TMap!"));
+  }
+
+  TObjArray *aliasL3Current = (TObjArray *)valueMap->GetValue("L3Current");
+  if(!aliasL3Current) {
+    Log(Form("L3Current not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current);
+  TString sMeanL3Current = dcs5->ProcessDCS(2);  
+  if (sMeanL3Current) {
+    Log(Form("<L3Current> for run %d: %s",fRun, sMeanL3Current.Data()));
+  } else {
+    Log(Form("L3Current not put in TMap!"));
+  }
+
+  TObjArray *aliasL3Polarity = (TObjArray *)valueMap->GetValue("L3Polarity");
+  if(!aliasL3Polarity) {
+    Log(Form("L3Polarity not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity);
+  TString sL3Polarity = dcs6->ProcessDCS(4);  
+  if (sL3Polarity) {
+    Log(Form("<L3Polarity> for run %d: %s",fRun, sL3Polarity.Data()));
+  } else {
+    Log(Form("L3Polarity not put in TMap!"));
+  }
+
+  TObjArray *aliasDipoleCurrent = (TObjArray *)valueMap->GetValue("DipoleCurrent");
+  if(!aliasDipoleCurrent) {
+    Log(Form("DipoleCurrent not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent);
+  TString sMeanDipoleCurrent = dcs7->ProcessDCS(2);  
+  if (sMeanDipoleCurrent) {
+    Log(Form("<DipoleCurrent> for run %d: %s",fRun, sMeanDipoleCurrent.Data()));
+  } else {
+    Log(Form("DipoleCurrent not put in TMap!"));
+  }
+
+  TObjArray *aliasDipolePolarity = (TObjArray *)valueMap->GetValue("DipolePolarity");
+  if(!aliasDipolePolarity) {
+    Log(Form("DipolePolarity not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity);
+  TString sDipolePolarity = dcs8->ProcessDCS(4);  
+  if (sDipolePolarity) {
+    Log(Form("<DipolePolarity> for run %d: %s",fRun, sDipolePolarity.Data()));
+  } else {
+    Log(Form("DipolePolarity not put in TMap!"));
+  }
+
+  TObjArray *aliasCavernTemperature = (TObjArray *)valueMap->GetValue("CavernTemperature");
+  if(!aliasCavernTemperature) {
+    Log(Form("CavernTemperature not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature);
+  TString sMeanCavernTemperature = dcs9->ProcessDCS(2);  
+  if (sMeanCavernTemperature) {
+    Log(Form("<CavernTemperature> for run %d: %s",fRun, sMeanCavernTemperature.Data()));
+  } else {
+    Log(Form("CavernTemperature not put in TMap!"));
+  }
+
+  TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue("CavernPressure");
+  if(!aliasCavernPressure) {
+    Log(Form("CavernPressure not found!!!"));
+    return 0;
+  }
+  AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure);
+  TString sMeanCavernPressure = dcs10->ProcessDCS(2);  
+  if (sMeanCavernPressure) {
+    Log(Form("<CavernPressure> for run %d: %s",fRun, sMeanCavernPressure.Data()));
+  } else {
+    Log(Form("CavernPressure not put in TMap!"));
+  }
+
+  //===========//
   //DAQ logbook
+  //===========//
   if (timeStart) {
     Log(Form("Start time for run %d: %s",fRun, timeStart));
   } else {
@@ -159,16 +277,49 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
 
   //DCS dp
   TMap *mapDCS1 = new TMap();
-  mapDCS1->Add(new TObjString("histoDCS1"),h1);
+  mapDCS1->Add(new TObjString("fLHCState"),new TObjString(sLHCState));
   values->Add(mapDCS1);
 
   TMap *mapDCS2 = new TMap();
-  mapDCS2->Add(new TObjString("DCS1"),new TObjString(sAlias1Mean));
+  mapDCS2->Add(new TObjString("fLHCPeriod"),new TObjString(sLHCPeriod));
   values->Add(mapDCS2);
+
+  TMap *mapDCS3 = new TMap();
+  mapDCS3->Add(new TObjString("fLHCLuminosity"),new TObjString(sMeanLHCLuminosity));
+  values->Add(mapDCS3);
+
+  TMap *mapDCS4 = new TMap();
+  mapDCS4->Add(new TObjString("fBeamIntensity"),new TObjString(sMeanBeamIntensity));
+  values->Add(mapDCS4);
+
+  TMap *mapDCS5 = new TMap();
+  mapDCS5->Add(new TObjString("fL3Current"),new TObjString(sMeanL3Current));
+  values->Add(mapDCS5);
+
+  TMap *mapDCS6 = new TMap();
+  mapDCS6->Add(new TObjString("fL3Polarity"),new TObjString(sL3Polarity));
+  values->Add(mapDCS6);
+
+  TMap *mapDCS7 = new TMap();
+  mapDCS7->Add(new TObjString("fDipoleCurrent"),new TObjString(sMeanDipoleCurrent));
+  values->Add(mapDCS7);
+
+  TMap *mapDCS8 = new TMap();
+  mapDCS8->Add(new TObjString("fDipolePolarity"),new TObjString(sDipolePolarity));
+  values->Add(mapDCS8);
+
+  TMap *mapDCS9 = new TMap();
+  mapDCS9->Add(new TObjString("fCavernTemperature"),new TObjString(sMeanCavernTemperature));
+  values->Add(mapDCS9);
+
+  TMap *mapDCS10 = new TMap();
+  mapDCS10->Add(new TObjString("fCavernPressure"),new TObjString(sMeanCavernPressure));
+  values->Add(mapDCS10);
 
   AliCDBMetaData md;
   md.SetResponsible("Panos");
   
+  Int_t result=0;
   result = Store("GRP", "Values", values, &md);
   
   delete values;

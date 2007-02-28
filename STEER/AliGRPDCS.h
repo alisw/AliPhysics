@@ -21,8 +21,6 @@
 
 #include "TObject.h"
 
-class TH1;
-
 class AliGRPDCS: public TObject {
  public:
   AliGRPDCS();
@@ -30,12 +28,17 @@ class AliGRPDCS: public TObject {
   AliGRPDCS(const AliGRPDCS& grpDcs);
 
   void SetObjArray(TObjArray *dcsSArray) {fDCSArray = dcsSArray;}
-  const char *ProcessDCS(TH1 *h);  
+  const char *ProcessDCS(Int_t iType);  
   
  private:
   
   TObjArray *fDCSArray; //TObjArray for a dcs data point
   
+  const char *ProcessInt();
+  const char *ProcessUInt();
+  const char *ProcessFloat();
+  const char *ProcessString();
+  const char *ProcessBoolean();
   AliGRPDCS & operator=(const AliGRPDCS & ) {return *this;}
 
   ClassDef(AliGRPDCS, 0);
