@@ -141,7 +141,7 @@ class AliTRDRawStream: public TObject {
 
     Int_t    fRowMax;                      //  Maximum number of pad rows and columns
     Int_t    fColMax;                      //  Maximum number of pad rows and columns
-    Bool_t   fChamberDone[540];            //  Chamber was processed already?
+    UShort_t fChamberDone[540];            //  Chamber was processed already?
 
  protected:
 
@@ -166,7 +166,7 @@ class AliTRDRawStream: public TObject {
     void  DecodeGTUlinkMask();
     void  DecodeGTUlinkMaskV1();           // Valid for fRawversion = 1,2,3,4
 
-    ClassDef(AliTRDRawStream, 2)           // Class for reading TRD raw digits
+    ClassDef(AliTRDRawStream, 3)           // Class for reading TRD raw digits
 
 };
 #endif
