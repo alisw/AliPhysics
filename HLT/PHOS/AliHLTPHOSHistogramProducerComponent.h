@@ -12,7 +12,6 @@
 #include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 
 
-
 class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
 {
  public:
@@ -46,26 +45,16 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
 
 
  private:
-  //  TH2F fEnergyHistograms[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
-  //  TH2F fTimingHistograms[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
-
   // TH2F *fEnergyHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
-  //  TH2F *fTimingHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
-
-  //  Double_t fEnergyAverageValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];  
-  //  Double_t fTimingAverageValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];  
-
+  // TH2F *fTimingHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
   Double_t fEnergyAverageValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];  
   Double_t fAccumulatedValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
   Double_t fTimingAverageValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; 
   AliHLTUInt32_t fHits[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
- 
   int fEventCount;
   AliHLTUInt32_t fEquippmentID;
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];
-  //  Double_t fAccumulatedValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
   AliHLTPHOSModuleCellAccumulatedEnergyDataStruct*  fOutPtr;
-
   static const AliHLTComponentDataType inputDataTypes[];
   static const AliHLTComponentDataType outputDataType;
 };

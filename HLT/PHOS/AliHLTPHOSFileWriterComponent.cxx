@@ -13,9 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//#include "AliHLTPHOSFileWriterComponent.h"
-
-
 #include "AliHLTPHOSFileWriterComponent.h"
 #include <iostream>
 #include "stdio.h"
@@ -34,8 +31,8 @@ const AliHLTComponentDataType AliHLTPHOSFileWriterComponent::fInputDataTypes[]={
 
 AliHLTPHOSFileWriterComponent gAliHLTPHOSFileWriterComponent;
 
-//AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
-AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():  AliHLTFileWriter(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
+AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():  AliHLTFileWriter(), fCellEnergiesFileWriterPtr(0) \
+  , fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
 {
   for(int i=0; i<N_DATATYPES; i++)
     {
@@ -54,8 +51,9 @@ AliHLTPHOSFileWriterComponent::~AliHLTPHOSFileWriterComponent()
 }
 
 
-//AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ):AliHLTDataSink(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
-AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ): AliHLTFileWriter(), fCellEnergiesFileWriterPtr(0), fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
+
+AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent(const AliHLTPHOSFileWriterComponent & ): AliHLTFileWriter(), fCellEnergiesFileWriterPtr(0), \
+  fDDLPackedFileWriterPtr(0), fDirectory(""),fFilename(""), fEventCount(0)
 {
 
 }

@@ -17,16 +17,11 @@
  **************************************************************************/
 
 #include "AliHLTPHOSCommonDefs.h"
-//#include "AliHLTPHOSValidCellDataStruct.h"
 
 struct AliHLTPHOSModuleCellAverageEnergyDataStruct
 {
   AliHLTUInt8_t fModuleID;
-  //  AliHLTUInt16_t fCnt;
-  //  AliHLTUInt16_t fValidData[N_ROWS_MOD*N_COLUMNS_MOD*N_GAINS];
-  
   AliHLTPHOSValidCellDataStruct fValidData[N_MODULES*N_ROWS_MOD*N_COLUMNS_MOD*N_GAINS]; 
-
   Double_t fAverageEnergies[N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
 };
 

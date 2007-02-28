@@ -123,12 +123,10 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
 	  if(cellDataPtr->fValidData[i].fGain == HIGH_GAIN)
 	    {
 	      fMaxValues[tmpModuleID][ cellDataPtr->fValidData[i].fZ +  N_ZROWS_RCU*tmpRcuZ][ cellDataPtr->fValidData[i].fX + N_XCOLUMNS_RCU*tmpRcuX][HIGH_GAIN] =  cellDataPtr->fValidData[i].fEnergy;
-	      //   fMaxValues[0][0][0][0] = 0;
 	    }
 	  else if(cellDataPtr->fValidData[i].fGain == LOW_GAIN)
 	    {
-	           fMaxValues[tmpModuleID][ cellDataPtr->fValidData[i].fZ +  N_ROWS_RCU*tmpRcuZ][ cellDataPtr->fValidData[i].fX +N_COLUMNS_RCU*tmpRcuX][LOW_GAIN] =  cellDataPtr->fValidData[i].fEnergy;
-	      //    fMaxValues[0][0][0][0]=0;
+	      fMaxValues[tmpModuleID][ cellDataPtr->fValidData[i].fZ +  N_ROWS_RCU*tmpRcuZ][ cellDataPtr->fValidData[i].fX +N_COLUMNS_RCU*tmpRcuX][LOW_GAIN] =  cellDataPtr->fValidData[i].fEnergy;
 	    }
 	}
       

@@ -105,11 +105,9 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
 void 
 AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
 {
-  //  printf("\n AliHLTPHOSRawAnalyzerPeakFinder::Evaluat from index %d to %d\n", start, start + length);
   fDTof = 0;
   fDAmpl = 0;
   Int_t tmpLength;
-
 
   if(fTVectorPtr == 0 || fAVectorPtr == 0)
     {

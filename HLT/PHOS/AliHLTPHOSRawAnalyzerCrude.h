@@ -2,7 +2,6 @@
 #define ALIHLTPHOSRAWANALYZERCRUDE_H
 #include <Rtypes.h>
 #include "TObject.h"
-//         "AliHLTPHOSRawAnalyzer"
 #include "AliHLTPHOSRawAnalyzer.h"
 
 

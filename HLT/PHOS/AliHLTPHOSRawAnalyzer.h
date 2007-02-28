@@ -42,7 +42,6 @@ class AliHLTPHOSRawAnalyzer
   double     fTau;	       /**<The risetime in micro seconds*/		 
   double     fDTof;            /**<Time of flight in entities of sample intervals */
   double     fDAmpl;           /**<Amplitude in entities of ADC levels*/
-  //  int        n;
   int        fStartIndex;
 };
 

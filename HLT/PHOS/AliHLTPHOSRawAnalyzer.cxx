@@ -19,8 +19,6 @@
 using std::cout;
 using std::endl;
 
-
-
 AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer():fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999)
 {
   fFloatDataPtr = new double[1008];
@@ -60,7 +58,6 @@ void
 AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, int N)
 {
   fFloatDataPtr = dataPtr;  
-  //  n=N;
   cout << "Baseline correction not yet implemeted" << endl;
 } //end BaselineCorrection
 
@@ -108,10 +105,7 @@ AliHLTPHOSRawAnalyzer::GetEnergy()
 void 
 AliHLTPHOSRawAnalyzer::SetData(double *data)
 {
-  //  double *dta;
-  //  dta = data;
   fFloatDataPtr = data;
-  //  cout << "Set data not yet implemented" << endl;
 }
 
 void 
@@ -123,7 +117,6 @@ AliHLTPHOSRawAnalyzer::SetSampleFreq(double freq)
 int 
 AliHLTPHOSRawAnalyzer::FindStartIndex(double treshold)
 {
-  printf("\ntreshold = %f \n", treshold);
   cout << "Find Start index not yet implemented" << endl;
   return 0;
 } //end FindStartIndex
@@ -148,7 +141,6 @@ AliHLTPHOSRawAnalyzer::MakeInitialGuess()
 void 
 AliHLTPHOSRawAnalyzer::MakeInitialGuess(int treshold)
 {
-  printf("\ntreshold = %d\n", treshold);
   cout << "Make initial guess not yet implemeted" << endl;  
 }
 
@@ -184,7 +176,6 @@ AliHLTPHOSRawAnalyzer::GetMaxValue(Double_t *dta, Int_t size)
 	{
 	  tmpMax = dta[i];
 	}
-
     }
   
   return tmpMax;

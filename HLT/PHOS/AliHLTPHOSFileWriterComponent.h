@@ -14,22 +14,20 @@
 #include "Rtypes.h"
 #include "AliHLTFileWriter.h"
 
-
 using std::string;
+
 
 class AliHLTPHOSRcuCellEnergyDataStruct;
  
-//class AliHLTPHOSFileWriterComponent:public AliHLTDataSink
+
 class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
 {
  public:
   AliHLTPHOSFileWriterComponent();
   virtual ~AliHLTPHOSFileWriterComponent();
   int AddDataType(string dataType);
-  //  virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
   virtual int DoDeinit();
-  //  virtual int DumpEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData );
   virtual const char* GetComponentID();
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();

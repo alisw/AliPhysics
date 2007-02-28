@@ -1,7 +1,6 @@
 #ifndef ALIHLTPHOSDDLPACKEDFILEWRITER_H
 #define ALIHLTPHOSDDLPACKEDFILEWRITER_H
 
-//#include "AliHLTPHOSFileWriterDescriptorStruct.h"
 #include "AliHLTPHOSFileWriter.h"
 #include <string>
 #include "AliHLTDataTypes.h"

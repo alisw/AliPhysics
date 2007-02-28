@@ -1,7 +1,6 @@
 #ifndef ALIHLTPHOSCELLENERGIESFILEWRITER_H
 #define ALIHLTPHOSCELLENERGIESFILEWRITER_H
 
-//#include "AliHLTPHOSFileWriterDescriptorStruct.h"
 #include "AliHLTPHOSFileWriter.h"
 #include <string>
 #include "AliHLTDataTypes.h"
@@ -20,10 +19,8 @@ class AliHLTPHOSCellEnergiesFileWriter: public AliHLTPHOSFileWriter
   //  virtual int WriteFile(const AliHLTComponentEventData& evtData, 
   //			const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData,AliHLTComponentDataType dataType, int evntCnt);
 
-
  private:
   int fCurrentEvntCnt;
-  //  ofstream fCurrentFile;
 };
 
 

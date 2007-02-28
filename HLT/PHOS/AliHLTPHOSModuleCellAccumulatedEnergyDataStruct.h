@@ -22,15 +22,6 @@
 struct AliHLTPHOSModuleCellAccumulatedEnergyDataStruct
 {
   AliHLTUInt8_t fModuleID;
-
-  //  Int_t fModuleID;
-
-  //  AliHLTUInt16_t fCnt;
-  //  AliHLTUInt16_t fValidData[N_ROWS_MOD*N_COLUMNS_MOD*N_GAINS];
-  
-  //  AliHLTPHOSValidCellDataStruct fValidData[N_MODULES*N_ROWS_MOD*N_COLUMNS_MOD*N_GAINS]; 
-
-  //  Double_t fAccumulatedEnergies[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
   Float_t fAccumulatedEnergies[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
   AliHLTUInt32_t fHits[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
 };

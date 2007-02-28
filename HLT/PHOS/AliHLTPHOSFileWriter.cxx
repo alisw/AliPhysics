@@ -26,9 +26,7 @@ AliHLTPHOSFileWriter::SetDirectory(string& directory)
 void
 AliHLTPHOSFileWriter::MakeFilename(int eventNr, const AliHLTComponentDataType& dataType)
 {
-
   int charPos =fDirectory.size() +1;
-  cout <<"charPos.size() = "<< charPos << endl;
 
   fCurrentFilename.erase(charPos);
 

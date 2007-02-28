@@ -17,7 +17,6 @@
 #include "AliHLTPHOSRawAnalyzerCrudeComponent.h"
 #include "AliHLTPHOSRawAnalyzerCrude.h"
 
-//ClassImp(AliHLTPHOSRawAnalyzerCrudeComponent) 
 AliHLTPHOSRawAnalyzerCrudeComponent gAliHLTPHOSRawAnalyzerCrudeComponent;
 
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent()

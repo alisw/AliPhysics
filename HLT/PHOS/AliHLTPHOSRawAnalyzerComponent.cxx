@@ -141,16 +141,10 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-  //  Int_t tmpMod            = 0;
-  //  Int_t tmpZ            = 0;
-  //  Int_t tmpX            = 0;
-  //  Int_t tmpGain           = 0;
-
   AliHLTUInt8_t tmpMod            = 0;
   AliHLTUInt8_t tmpZ            = 0;
   AliHLTUInt8_t tmpX            = 0;
   AliHLTUInt8_t tmpGain           = 0;
-
   Int_t sampleCnt         = 0;
   Int_t processedChannels = 0;
   UInt_t offset           = 0; 
@@ -163,11 +157,6 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
 
-  if((fEventCount % 100) == 0)
-    {
-      //      cout << "analyzing event: " << fEventCount << endl;
-    }
-
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
@@ -176,7 +165,6 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 
       if ( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
 	{
-	  //	  cout << "Warning: data type = is nOT gkDDLPackedRawDataType " << endl;
 	  continue;
 	}
 
@@ -188,11 +176,6 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
       fOutPtr->fRcuZ = fRcuZ;
       fOutPtr->fModuleID = fModuleID;
       tmpChannelCnt = 0;
- 
-      if(fEventCount%100 ==0)
-	{
-	  //	  cout <<"Analyzing event: " << fEventCount << endl; 
-	}
  
       while(fPHOSRawStream->Next())
 	{
@@ -214,37 +197,8 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 		}
 
 	      tmpMod  = (AliHLTUInt8_t)fPHOSRawStream->GetModule() ;
-
 	      tmpX  =(AliHLTUInt8_t)fPHOSRawStream->GetRow() - fRcuXOffset;
 	      tmpZ  =(AliHLTUInt8_t)fPHOSRawStream->GetColumn() - fRcuZOffset;
-
-	      //	      if(tmpZ < 0)
-
-	      /*
-		{
-		  cout << endl << endl;
-		  cout << "RCUZ = " <<fRcuZ <<"\t";
-		  cout << "Equippment ID ="<< fRawMemoryReader->GetEquipmentId() << "\t";
-		  cout << "fPHOSRawStream->GetrOW() = " <<  fPHOSRawStream->GetRow() <<"\t";  
-		  cout << "fRcuZOffset = "<< fRcuZOffset  <<"\t";
-		  cout << " fPHOSRawStream->GetRow() - fRcuZOffset =  " << fPHOSRawStream->GetRow() - fRcuZOffset << "\t";
-		  cout << " AliHLTPHOSRawAnalyzerComponent::DoEven:   tmpZ  =" << tmpZ<< "\t";
-		}		
-
-		//	      if(tmpX < 0)
-		{
-		  cout << endl;
-		  cout << "RCUX = " <<fRcuX <<"\t";
-		  cout << "Equippment ID ="<< fRawMemoryReader->GetEquipmentId() << "\t";
-		  cout << "fPHOSRawStream->GetColumn() = " <<  fPHOSRawStream->GetColumn() << "\t";  
-		  cout << "fRcuXOffset = "<< fRcuXOffset  <<"\t";
-		  cout << " fPHOSRawStream->GetColumn() - fRcuXOffset =  " << fPHOSRawStream->GetColumn() - fRcuXOffset << "\t";
-		  cout << " AliHLTPHOSRawAnalyzerComponent::DoEven:   tmpX  =" << tmpX<< "\t";
-		}	      
-
-	      */
-
-
 	      tmpGain =  fPHOSRawStream->IsLowGain(); 
 	      processedChannels ++;
 	    }
@@ -285,7 +239,6 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 }//end DoEvent
 
 
-
 int
 AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 {
@@ -302,6 +255,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
   }
   return 0;
 }
+
 
 void
 AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
@@ -355,7 +309,6 @@ AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
 }
 
 
-
 void
 AliHLTPHOSRawAnalyzerComponent::Reset()
 {
@@ -376,7 +329,6 @@ AliHLTPHOSRawAnalyzerComponent::Reset()
   ResetDataPtr();
 
 } // end Reset
-
 
 
 void
@@ -406,13 +358,12 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
     }
 }
 
-
 void 
-//AliHLTPHOSRawAnalyzerComponent::SetEquippmentID(AliHLTUInt32_t id)
 AliHLTPHOSRawAnalyzerComponent::SetEquippmentID(AliHLTUInt16_t id)
 {
   fEquippmentID = id;
 }
+
 
 AliHLTUInt16_t
 AliHLTPHOSRawAnalyzerComponent::GetEquippmentID()
@@ -420,13 +371,11 @@ AliHLTPHOSRawAnalyzerComponent::GetEquippmentID()
   return  fEquippmentID;
 }
 
+
 void 
-//AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt32_t equippmentID)
 AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt16_t equippmentID)
 {
-  //  int rcuIndex =  (fEquippmentID - 1792)%N_RCUS_PER_MODULE;
   int rcuIndex =  (fEquippmentID - 1792)%N_RCUS_PER_MODULE;
-
   fModuleID = (fEquippmentID  -1792 -rcuIndex)/N_RCUS_PER_MODULE;
   
   if(rcuIndex == 0)
@@ -447,14 +396,11 @@ AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt16_t equippmentID)
       fRcuZ = 0;
     }
 
-
   if(rcuIndex == 3)
     {
       fRcuX = 1; 
       fRcuZ = 1;
     }
-  
-
 
   fRcuZOffset =  N_ZROWS_RCU*fRcuZ;
   fRcuXOffset =  N_XCOLUMNS_RCU*fRcuX;

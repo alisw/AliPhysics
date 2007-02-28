@@ -59,10 +59,7 @@ int
 AliHLTPHOSHistogramProducerComponent::DoDeinit()
 {
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSHistogramProducer DoDeinit");
-
-
   return 0;
-
 }
 
 
@@ -113,15 +110,9 @@ int  AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventDa
   AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr;
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
-
   fOutPtr =  (AliHLTPHOSModuleCellAccumulatedEnergyDataStruct*)outBPtr;
-  //  cout << "evtData.fBlockCnt="  << evtData.fBlockCnt << endl;
 
-  //  int tmpModuleID;
-  //  int tmpRcuX;
-  //  int tmpRcuZ;
   int tmpCnt;
-
   AliHLTUInt8_t tmpModuleID;
   AliHLTUInt8_t tmpRcuX;
   AliHLTUInt8_t tmpRcuZ;
@@ -133,28 +124,14 @@ int  AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventDa
       tmpCnt =  cellDataPtr->fCnt;
 
       tmpModuleID = cellDataPtr->fModuleID;
-      cout << " AliHLTPHOSHistogramProducerComponent::DoEven: ModuleID =" << tmpModuleID << endl;
-
       tmpRcuX     = cellDataPtr->fRcuX ;
       tmpRcuZ     = cellDataPtr->fRcuZ;
 
-      cout << endl << endl;
-      cout << " AliHLTPHOSHistogramProducerComponen::RCU coordnates are (X,Z) = ("<< tmpRcuX<<","<< tmpRcuZ<<")"<< endl;
       fOutPtr->fModuleID = tmpModuleID;
- 
-      //       int tmpRow;
-      //          int tmpCol;
+
       int tmpGain;
       int tmpZ;
       int tmpX;
- 
-
-      //     AliHLTUInt8_t tmpZ;
-      //    AliHLTUInt8_t tmpX;
-
-      //  AliHLTUInt8_t tmpGain;
-      //     int tmpGain;
-
 
       for(int i= 0; i< tmpCnt; i ++)
 	{
@@ -209,7 +186,6 @@ int  AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventDa
       return EMSGSIZE;
     }
 
-  //    cout << "AliHLTPHOSHistogramProducerComponent::DoEvent TP10" <<endl;
   fEventCount++; 
   return 0;
 }//end DoEvent
@@ -311,7 +287,6 @@ AliHLTPHOSHistogramProducerComponent::GetEquippmentId()
 AliHLTComponent*
 AliHLTPHOSHistogramProducerComponent::Spawn()
 {
-  //  cout << "AliHLTPHOSHistogramProducerComponent:: Spawn()" << endl;
   return new AliHLTPHOSHistogramProducerComponent;
 }
 

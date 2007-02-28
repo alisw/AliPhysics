@@ -10,7 +10,6 @@
 #include "TCanvas.h"
 #include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSCommonDefs.h"
-//#include AliHLTPHOSCommonDefs.h 
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -47,17 +46,10 @@ AliHLTPHOSOnlineDisplay*   AliHLTPHOSOnlineDisplay::fgInstancePtr      = 0;     
 HOMERReader*               AliHLTPHOSOnlineDisplay::fgHomerReaderPtr   = 0;           /**<Homer reader that fetches events from the HLT online stream*/
 HOMERReader*               AliHLTPHOSOnlineDisplay::fgHomerReadersPtr[MAX_HOSTS];     /**<Homer reader that fetches events from the HLT online stream*/
 HOMERReader*               AliHLTPHOSOnlineDisplay::fgCalibReadersPtr[MAX_HOSTS];     /**<Homer reader that fetches histograms from the HLT online stream*/
-
-//TH2S*                      AliHLTPHOSOnlineDisplay::fgLegoPlotLGPtr      = 0;           /**<2D histogram for low gain channels*/
-//TH2S*                      AliHLTPHOSOnlineDisplay::fgLegoPlotHGPtr      = 0;           /**<2D histogram for high gain channels*/
-
 TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotLGPtr      = 0;         /**<2D histogram for low gain channels*/
 TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotHGPtr      = 0;         /**<2D histogram for high gain channels*/
-
 TH2D*                      AliHLTPHOSOnlineDisplay::fgCalibHistPtr[N_GAINS];          /**<2D histogram for low gain channels*/
 TH2I*                      AliHLTPHOSOnlineDisplay::fgHitsHistPtr[N_GAINS];           /**<2D histogram for low gain channels*/
-
-
 char*                      AliHLTPHOSOnlineDisplay::fgDefaultDet       = "SOHP";      /**<PHOS written backwards*/
 char*                      AliHLTPHOSOnlineDisplay::fgDefaultDataType  = "RENELLEC";  /**<CELLENER (Celle energy) written backwards*/  
 int                        AliHLTPHOSOnlineDisplay::fgEvntCnt          = 0;           /**<Event Counter*/
@@ -124,7 +116,6 @@ AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay()
   for(int i = 0; i <fgNHosts; i++)
     {
       fgHomerReadersPtr[i] =  new  HOMERReader(fgHosts[i], fgPorts[i]); 
-      //     fgCalibReadersPtr[i] =  new  HOMERReader(fgHosts[i], DEFAULT_HISTO_PORT);
       fgCalibReadersPtr[i] =  new  HOMERReader(fgHosts[i], fgPorts[i]);
     }
  
@@ -141,25 +132,11 @@ AliHLTPHOSOnlineDisplay::~AliHLTPHOSOnlineDisplay()
 void
 AliHLTPHOSOnlineDisplay::InitDisplay()
 {
-  /*
-  fgLegoPlotHGPtr = new TH2S("Homer","HLT: #pi^{0} 5 - 30Gev, High gain",  
-			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
-                             N_ZROWS_MOD,               0, N_ZROWS_MOD);
-  fgLegoPlotHGPtr->SetMaximum( MAX_BIN_VALUE);
-
-  fgLegoPlotLGPtr = new TH2S("Homer","HLT: #pi^{0} 5 - 30Gev, Low gain",  
-			     N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
-			     N_ZROWS_MOD,          0, N_ZROWS_MOD);
-  fgLegoPlotLGPtr->SetMaximum( MAX_BIN_VALUE); 
-  */
-
-
   fgLegoPlotHGPtr = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev, High gain",  
 			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
                              N_ZROWS_MOD,               0, N_ZROWS_MOD);
   fgLegoPlotHGPtr->SetMaximum( MAX_BIN_VALUE);
   fgLegoPlotHGPtr->Reset();
-
 
   fgLegoPlotLGPtr = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev, Low gain",  
 			     N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
@@ -167,30 +144,19 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
   fgLegoPlotLGPtr->SetMaximum( MAX_BIN_VALUE); 
   fgLegoPlotLGPtr->Reset();
 
-
-  //  fgHitsHistPtr = new TH2I("Homer","HLT: #pi^{0} 5 - 30Gev, Low gain",  
-  //		     N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
-  //			     N_ZROWS_MOD,          0, N_ZROWS_MOD);
-  //fgHitsHistPtr->SetMaximum( MAX_BIN_VALUE); 
-  // fgHitsHistPtr->Reset();
-
-
-
   for(int gain = 0; gain< N_GAINS; gain ++)
     {
-     fgCalibHistPtr[gain] = new TH2D("Homer","HLT:",  
+      fgCalibHistPtr[gain] = new TH2D("Homer","HLT:",  
 				      N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES , 
 				      N_ZROWS_MOD,         0, N_ZROWS_MOD);
-     fgCalibHistPtr[gain]->Reset(); 
-
-     fgHitsHistPtr[gain] = new TH2I("Homer","HLT: #pi^{0} 5 - 30Gev, Low gain",  
+      fgCalibHistPtr[gain]->Reset(); 
+     
+      fgHitsHistPtr[gain] = new TH2I("Homer","HLT: #pi^{0} 5 - 30Gev, Low gain",  
 				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
-     fgHitsHistPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
-     fgHitsHistPtr[gain]->Reset();
+      fgHitsHistPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
+      fgHitsHistPtr[gain]->Reset();
     }
-
-
 
   gStyle->SetPalette(1);
   fTab = new TGTab(this, 100, 100);
@@ -199,7 +165,6 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 
   TGCompositeFrame *tf = fTab->AddTab("Event display");
            fSubTab1 = new TGTab(tf, 100, 100);
-
            TGCompositeFrame *tf2 = fSubTab1->AddTab("FGLEGO");  
 	   fSubF1 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
 	   fEc1 = new TRootEmbeddedCanvas("ec1", fSubF1, 100, 100);
@@ -208,7 +173,6 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   fSubF1->AddFrame(fEc2, fL1);
 	   tf2->AddFrame(fSubF1, fL1);
 
-
 	   tf2 = fSubTab1->AddTab("SCAT"); 
 	   fSubF2 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
 	   tf2->AddFrame(fSubF2, fL1);
@@ -216,7 +180,6 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   fSubF2->AddFrame(fEc3, fL1);
 	   fEc4 = new TRootEmbeddedCanvas("ec4", fSubF2, 100, 100);
 	   fSubF2->AddFrame(fEc4, fL1);
-
 
 	   tf2 = fSubTab1->AddTab("SURF"); 
 	   fSubF3 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
@@ -385,8 +348,6 @@ AliHLTPHOSOnlineDisplay::ScanArguments(int argc, char** argv)
 }//end ScanArguments
 
 
-
-
 int
 AliHLTPHOSOnlineDisplay::GetNextEvent()
 {
@@ -511,7 +472,6 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
   for(int reader = 0; reader <  fgNHosts; reader ++)
     {
       ret =fgCalibReadersPtr[reader]->ReadNextEvent(); ;  
-      //      cout << "Event ID for reader " << reader <<" = "<< fgCalibReadersPtr[reader]->GetEventID() << endl;;
       if( ret ) 
 	{
 	  int ndx = fgCalibReadersPtr[reader]->GetErrorConnectionNdx();
@@ -519,9 +479,8 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
 	  cout << "HOMER getconncetioNdx  status = " << ndx << endl;
 	  return ret; 
 	}
-  
-      unsigned long blockCnt = fgCalibReadersPtr[reader]->GetBlockCnt();
       
+      unsigned long blockCnt = fgCalibReadersPtr[reader]->GetBlockCnt();
       cout << "AliHLTPHOSOnlineDisplay::GetHistogram():  blockCnt  = " << blockCnt << endl;
 
       for ( unsigned long i = 0; i < blockCnt; i++ ) 
@@ -536,21 +495,17 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
 	  ULong_t* tmp22 = (ULong_t*)tmp21;
 	  *tmp22 = fgCalibReadersPtr[reader]->GetBlockDataOrigin( i );
 	  cout << "Dataype is: "<< tmp1<<"   "<<tmp2 <<endl;
-	  	}
+	}
       
       unsigned long blk = fgCalibReadersPtr[reader]->FindBlockNdx("UCCARENE","SOHP", 0xFFFFFFFF );
-	  int tmpWhileCnt = 0;
+      int tmpWhileCnt = 0;
   
-    while ( blk != ~(unsigned long)0 ) 
+      while ( blk != ~(unsigned long)0 ) 
 	{
 	  cout << "GetHistogram: updating block " << endl;
 	  AliHLTUInt16_t moduleID;
 	  const AliHLTPHOSModuleCellAccumulatedEnergyDataStruct* accCellEnergiesPtr = (const AliHLTPHOSModuleCellAccumulatedEnergyDataStruct*)fgCalibReadersPtr[reader]->GetBlockData( blk );  
 	  moduleID = accCellEnergiesPtr->fModuleID ;
-	  
-	  cout << "Module ID = " << moduleID<< endl;
-
-	  cout << "GetHistogram: TP1 " << endl;
 
 	  for(int z = 0; z <N_ZROWS_MOD; z ++)
 	    {
@@ -565,12 +520,10 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
 	    }
 
 	  blk = fgCalibReadersPtr[reader]->FindBlockNdx("UCCARENE","SOHP", 0xFFFFFFFF, blk+1);
-
 	  tmpWhileCnt ++;
-
 	} 
     }
-
+  
   UpdateHistograms();
   fgEvntCnt ++;
 }
@@ -619,15 +572,6 @@ AliHLTPHOSOnlineDisplay::UpdateHistograms()
   fgCalibHistPtr[LOW_GAIN]->Draw("LEGO2Z");
   fgCanvasLGPtr->Update();
 
-  //  fgCanvasHGPtr =  fEc9->GetCanvas();
-  //  fgCanvasHGPtr->cd();
-  //  fgCalibHistPtr[HIGH_GAIN]->Draw("SCAT");
-  //  fgCanvasHGPtr->Update();
-  //  fgCanvasLGPtr = fEc10->GetCanvas();
-  //  fgCanvasLGPtr->cd();
-  //  fgCalibHistPtr[LOW_GAIN]->Draw("SCAT");
-  //  fgCanvasLGPtr->Update();
-
   fgCanvasHGPtr =  fEc9->GetCanvas();
   fgCanvasHGPtr->cd();
   fgHitsHistPtr[HIGH_GAIN]->Draw("SCAT");
@@ -638,15 +582,16 @@ AliHLTPHOSOnlineDisplay::UpdateHistograms()
   fgHitsHistPtr[LOW_GAIN]->Draw("SCAT (Hits)");
   fgCanvasLGPtr->Update();
 
-
-
   fgCanvasHGPtr =  fEc11->GetCanvas();
   fgCanvasHGPtr->cd();
-  fgCalibHistPtr[HIGH_GAIN]->Draw("CONTZ");
+
+  fgCalibHistPtr[HIGH_GAIN]->Draw("COLZ");
+
   fgCanvasHGPtr->Update();
   fgCanvasLGPtr = fEc12->GetCanvas();
   fgCanvasLGPtr->cd();
-  fgCalibHistPtr[LOW_GAIN]->Draw("CONTZ");
-  fgCanvasLGPtr->Update();
 
+  fgCalibHistPtr[LOW_GAIN]->Draw("COLZ");
+
+  fgCanvasLGPtr->Update();
 }

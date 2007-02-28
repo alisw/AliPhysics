@@ -11,17 +11,15 @@ class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponent
 {
  public:
   AliHLTPHOSRawAnalyzerCrudeComponent();
-  ~AliHLTPHOSRawAnalyzerCrudeComponent();
+  virtual ~AliHLTPHOSRawAnalyzerCrudeComponent();
   AliHLTPHOSRawAnalyzerCrudeComponent(const AliHLTPHOSRawAnalyzerCrudeComponent & );
   AliHLTPHOSRawAnalyzerCrudeComponent & operator = (const AliHLTPHOSRawAnalyzerCrudeComponent)
   {
     return *this;
   };
 
-  //ClassDef(AliHLTPHOSRawAnalyzerCrudeComponent, 2) 
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn();
-
-  };
+};
 
 #endif

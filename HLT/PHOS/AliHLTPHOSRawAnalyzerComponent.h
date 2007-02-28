@@ -31,13 +31,9 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   void DumpData(int gain);
   void DumpData();
   void DumpChannelData(Double_t *data); 
-  //  void SetEquippmentID(AliHLTUInt32_t id);
   void SetEquippmentID(AliHLTUInt16_t id);
-  //  int GetEquippmentID();
   AliHLTUInt16_t  GetEquippmentID();
-  //  void SetCoordinates( AliHLTUInt32_t equippmentID);
   void SetCoordinates(AliHLTUInt16_t equippmentID);
-
   virtual const char* GetComponentID() = 0;
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
@@ -54,32 +50,12 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   void ResetDataPtr(int sampleCnt);
   void ResetDataPtr(int startindex, int sampleCnt);
   static int fEventCount;
-
-
-  //  AliHLTUInt32_t fEquippmentID;
-  //  AliHLTUInt16_t fRcuX;
-  //  AliHLTUInt16_t fRcuZ;
-  //  AliHLTUInt16_t fRcuZOffset;
-  //  AliHLTUInt16_t fRcuXOffset;
-  //  AliHLTUInt16_t fModuleID;
-
-  // Int_t fEquippmentID;
-
-  //  Int_t fRcuX;
-  //  Int_t fRcuZ;
-  //  Int_t fRcuZOffset;
-  //  Int_t fRcuXOffset;
-  //  Int_t fModuleID;
   AliHLTUInt16_t fEquippmentID;
-
   AliHLTUInt8_t  fRcuX;
   AliHLTUInt8_t  fRcuZ;
   AliHLTUInt8_t  fRcuZOffset;
   AliHLTUInt8_t  fRcuXOffset;
   AliHLTUInt8_t  fModuleID;
-
-
-
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];
   Double_t fMaxValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
   AliCaloRawStream *fPHOSRawStream;
@@ -88,3 +64,4 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   static const AliHLTComponentDataType inputDataTypes[];
 };
 #endif
+

@@ -13,17 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliHLTPHOSPulseGenerator.h"
-//#include <stdio.h>
 #include <cmath>
 #include <iostream>
 
-
-
 using std::cout;
 using std::endl; 
-
 
 ClassImp(AliHLTPHOSPulseGenerator) 
 
@@ -55,19 +50,13 @@ AliHLTPHOSPulseGenerator::~AliHLTPHOSPulseGenerator()
  **/
 AliHLTPHOSPulseGenerator::AliHLTPHOSPulseGenerator(double a, double t0, int N, double t, double fs): fAmplitude(a), fNSamples(N),fTau(0), fSampleFreq(fs), fTZero(0), fDataPtr(0), fDT(0), fEvent(0)
 {
-
   fDataPtr = new double[100];
-
-
-
   SetAmplitude(a);
   SetDT(fs);
   SetTZero(t0);
   fNSamples=N;
   fTau=t;
   fSampleFreq=fs;
-  //  dT=tau/fs;   //Function values are calculated at intervals dT
-  //  fDT=1/fs;   //Function values are calculated at intervals dT
   MakePulse(fDataPtr);
 }
 

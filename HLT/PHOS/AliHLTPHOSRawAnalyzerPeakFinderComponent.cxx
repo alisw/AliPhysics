@@ -20,9 +20,6 @@
 
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;
-//AliHLTPHOSRawAnalyzerPeakFinderComponen    
-//AliHLTPHOSRawAnalyzerPeakFinderComponent AliHLTPHOSRawAnalyzerPeakFinderComponent::gAliHLTPHOSRawAnalyzerPeakFinderComponent;
-
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
 {
@@ -36,14 +33,13 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderCompone
     {
       //    cout << "Loaded PF vectors" << endl;
     }
-
 } 
+
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::~AliHLTPHOSRawAnalyzerPeakFinderComponent()
 {
 
 }
-
 
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent(const AliHLTPHOSRawAnalyzerPeakFinderComponent & ) : AliHLTPHOSRawAnalyzerComponent()
@@ -72,10 +68,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamp
   Double_t tmpAVector[nSamples];
   Double_t tmpTVector[nSamples]; 
   sprintf(tmpPFPath,"%s%s/start%dN%dtau%dfs%d.txt", getenv("ALICE_ROOT"), PF_VECTOR_DIR, startIndex, nSamples, tau, fs);
-  //  cout <<"PF PATH =" << tmpPFPath << endl;
-
   FILE *fp;
-
   fp = fopen(tmpPFPath, "r");
   
   if(fp != 0)
@@ -85,20 +78,16 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamp
 	  fscanf(fp, "%lf", &tmpAVector[i]);
 	}
 
-
       fscanf(fp, "\n");
 
       for(int i=0; i < nSamples; i++)
 	{
 	  	  fscanf(fp, "%lf", &tmpTVector[i]);
 	}
-
       analyzerPtr->SetAVector(tmpAVector,  nSamples);
       analyzerPtr->SetTVector(tmpTVector,  nSamples);
-
       fclose(fp);
       return kTRUE;
-
     }
   
   else
@@ -107,7 +96,6 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamp
       return kFALSE;
     }
 }
-
 
 
 AliHLTComponent*

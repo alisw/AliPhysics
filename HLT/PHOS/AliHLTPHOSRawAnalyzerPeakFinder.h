@@ -7,7 +7,6 @@
 #include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"
 
-
 class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
 {
  public:
