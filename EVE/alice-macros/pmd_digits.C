@@ -1,9 +1,7 @@
 // ---------------------------------------------------------------------- //
-void pmd_digits()
+void pmd_digits(Int_t mode = 0)
 {
   gStyle->SetPalette(1, 0);
-
-  gReve->DisableRedraw();
 
 
   TString spl;
@@ -18,30 +16,61 @@ void pmd_digits()
 
   //  cout << pmdt->GetEntries() << endl;
 
+  gReve->DisableRedraw();
+
   Reve::RenderElementList* l = new Reve::RenderElementList("PMD");
   // l->SetTitle("tooltip");
   // l->SetMainColor((Color_t)3);
   gReve->AddRenderElement(l);
   
-  Int_t istartDDL = 0;
-  Int_t iendDDL    = 0;
-  Int_t modnumber = 0;
-  Int_t NSM       = 0;
+  Int_t NSM         = 0;
+  Int_t istartDDL   = 0;
+  Int_t iendDDL     = 0;
+  Int_t modnumber   = 0;
+  Int_t istartPlane = 0;
+  Int_t iendPlane   = 0;
+  Float_t zpos      = 0;
 
-  for (Int_t ipl = 0; ipl < 1; ipl++)
+  switch(mode)
+    {
+    case 0:
+      istartPlane = 0;
+      iendPlane   = 1;
+      printf("--- Visualization is set for PREshower Plane ---\n");
+      break;
+
+    case 1:
+      istartPlane = 1;
+      iendPlane   = 2;
+      printf("--- Visualization is set for CPV Plane ---\n");
+      break;
+
+    case 2:
+      istartPlane = 0;
+      iendPlane   = 2;
+      printf("--- Visualization is set for both Planes ---\n");
+      break;
+
+    default:
+      printf("--- Not set for any Plane ---\n");
+    }
+
+  for (Int_t ipl = istartPlane; ipl < iendPlane; ipl++)
     {
 
       if (ipl == 0)
 	{
-	  spl = "PRE";
+	  spl       = "PRE";
 	  istartDDL = 0;
 	  iendDDL   = 4;
+	  zpos      = 365.;
 	}
       if (ipl == 1)
 	{
-	  spl = "CPV";
+	  spl       = "CPV";
 	  istartDDL = 4;
 	  iendDDL   = 6;
+	  zpos      = 360.;
 	}
       
       Reve::RenderElementList* lplane = new Reve::RenderElementList(spl.Data());
@@ -71,7 +100,7 @@ void pmd_digits()
 	    {
 	      
 	      Alieve::PMDModule *lmodule = new Alieve::PMDModule();
-	      lmodule->SetPosition(0.,0.,360.);
+	      lmodule->SetPosition(0.,0.,zpos);
 	      lmodule->DisplayDigitsData(modnumber, pmdt);
 	      gReve->AddRenderElement(lddl, lmodule);
 	      modnumber++;
@@ -81,12 +110,6 @@ void pmd_digits()
 	}
 
     }
-
-
-
-
-
-
 
 
   gReve->EnableRedraw();

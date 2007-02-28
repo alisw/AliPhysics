@@ -1,9 +1,8 @@
 // ---------------------------------------------------------------------- //
-void pmd_raw()
+void pmd_raw(Int_t mode = 0)
 {
   gStyle->SetPalette(1, 0);
 
-  gReve->DisableRedraw();
 
   TObjArray *pmdddlcont = new TObjArray();
 
@@ -16,31 +15,61 @@ void pmd_raw()
   AliRawReaderRoot reader("raw.root",ievt);
   AliPMDRawStream stream(&reader);
 
+  gReve->DisableRedraw();
 
-  Reve::RenderElementList* l = new Reve::RenderElementList("Parent Dir");
-  l->SetTitle("PMD");
+  Reve::RenderElementList* l = new Reve::RenderElementList("PMD");
+  //  l->SetTitle("PMD");
   //  l->SetMainColor((Color_t)3);
   gReve->AddRenderElement(l);
   
+  Int_t NSM       = 0;
   Int_t istartDDL = 0;
   Int_t iendDDL    = 0;
   Int_t modnumber = 0;
-  Int_t NSM       = 0;
+  Int_t istartPlane = 0;
+  Int_t iendPlane   = 0;
+  Float_t zpos      = 0;
 
-  for (Int_t ipl = 1; ipl < 2; ipl++)
+  switch(mode)
+    {
+    case 0:
+      istartPlane = 0;
+      iendPlane   = 1;
+      printf("--- Visualization is set for PREshower Plane ---\n");
+      break;
+      
+    case 1:
+      istartPlane = 1;
+      iendPlane   = 2;
+      printf("--- Visualization is set for CPV Plane ---\n");
+      break;
+
+    case 2:
+      istartPlane = 0;
+      iendPlane   = 2;
+      printf("--- Visualization is set for both the Plane ---\n");
+      break;
+      
+    default:
+      printf("--- Not set for any Plane ---\n");
+    }
+
+  for (Int_t ipl = istartPlane; ipl < iendPlane; ipl++)
     {
 
       if (ipl == 0)
 	{
-	  spl = "PRE";
+	  spl       = "PRE";
 	  istartDDL = 0;
 	  iendDDL   = 4;
+	  zpos      = 365.;
 	}
       if (ipl == 1)
 	{
 	  spl = "CPV";
 	  istartDDL = 4;
 	  iendDDL   = 6;
+	  zpos      = 360.;
 	}
       
       Reve::RenderElementList* lplane = new Reve::RenderElementList(spl.Data());
@@ -71,10 +100,9 @@ void pmd_raw()
 	  Bool_t junk = stream.DdlData(iddl,pmdddlcont);
 
 	  for (Int_t ism = 0; ism < NSM; ism++)
-	  //for (Int_t ism = 0; ism < 1; ism++)
 	    {
 	      Alieve::PMDModule *lmodule = new Alieve::PMDModule();
-	      lmodule->SetPosition(0.,0.,360.);
+	      lmodule->SetPosition(0.,0.,zpos);
 	      lmodule->DisplayRawData(modnumber,pmdddlcont);
 	      gReve->AddRenderElement(lddl, lmodule);
 	      modnumber++;
