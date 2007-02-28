@@ -1,15 +1,23 @@
 SRCS = AliAnalysisDataContainer.cxx AliAnalysisDataSlot.cxx \
-       AliAnalysisManager.cxx AliAnalysisTask.cxx AliAnalysisGoodies.cxx \
+       AliAnalysisManager.cxx AliAnalysisTask.cxx \
        AliAnalysisSelector.cxx
-
-HDRS:= $(SRCS:.cxx=.h) 
-
-DHDR= ANALYSISLinkDef.h
 
 CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
 PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
 endif
+
+CHECKXML = $(shell root-config --has-xml)
+ifeq (yes,$(CHECKXML))
+PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
+CINTFLAGS += -DWITHXML
+SRCS += AliAnalysisGoodies.cxx
+endif
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= ANALYSISLinkDef.h
+
 EXPORT:=$(SRCS:.cxx=.h)
 
 

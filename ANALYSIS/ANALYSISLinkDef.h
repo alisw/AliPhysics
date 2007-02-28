@@ -9,7 +9,10 @@
 #pragma link C++ class  AliAnalysisDataSlot+;
 #pragma link C++ class  AliAnalysisManager+;
 
-#pragma link C++ class  AliAnalysisGoodies+;
 #pragma link C++ class  AliAnalysisSelector+;
+
+#ifdef WITHXML
+#pragma link C++ class  AliAnalysisGoodies+;
+#endif
 
 #endif
