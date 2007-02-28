@@ -2,8 +2,6 @@
 
 ifdef DAMODULE
 
-ifdef ALIROOTMODULES
-
 CXXFLAGS+=-I${ALICE_ROOT}/RAW
 
 ifneq ($(EXTRADAMODULE),) 
@@ -16,33 +14,15 @@ DAOBJ=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}da.o
 DALIB=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/lib${DAMODULE}DA.a
 DAEXE=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}/${DAMODULE}da.exe
 
+DAMAKEFILE=${DAMODULE}/${DAMODULE}da.make
+
 DAQDADIR=${ALICE}/daqDAlib
 DAQDALIB=$(DAQDADIR)/libdaqDA.a
 
 ROOTLIBDIR=$(shell root-config --libdir)
 
-else
-
-CXXFLAGS+=$(shell date-config --cflags)
-CXXFLAGS+=-Iinclude
-LD=$(CXX)
-
-DASRC=./${DAMODULE}da.cxx
-DADEP=./${DAMODULE}da.d
-DAOBJ=./${DAMODULE}da.o
-DALIB=./lib${DAMODULE}DA.a
-DAEXE=./${DAMODULE}da.exe
-
-DAQDADIR=./daqDAlib
-DAQDALIB=$(DAQDADIR)/libdaqDA.a
-
-ROOTLIBDIR=.
-
-LIBPATH=
-
-endif
-
 SYSLIBS=-ldl
+
 MONITORLIBS=$(shell date-config --monitorlibs=noshift)
 
 ALIROOTALIBS=$(RAWDatabaseALIB) $(RAWDatarecALIB) $(RAWDatasimALIB) $(STEERALIB) $(CDBALIB) $(ESDALIB)
@@ -84,20 +64,38 @@ clean-DA:
 	@rm -f $(DAEXE)
 	@rm -f $(DAOBJ)
 	@rm -f $(DADEP)
-ifdef ALIROOTMODULES
+	@rm -f $(DAMAKEFILE)
 	@rm -f $(DALIB)
 	@rm -f $(ALIROOTALIBS)
-endif
 
-tar-DA: $(DASRC) $(DALIB) $(DAQDADIR) $(DADEP)
+$(DAMAKEFILE):
+	@echo "CXXFLAGS+=""$$""(shell date-config --cflags)" > $@
+	@echo "CXXFLAGS+=-Iinclude" >> $@
+	@echo "DAQDADIR=daqDAlib" >> $@
+	@echo "DAQDALIB=""$$""(DAQDADIR)/libdaqDA.a" >> $@
+	@echo "MONITORLIBS=""$$""(shell date-config --monitorlibs=noshift)" >> $@
+	@echo "${DAMODULE}da.exe: ${DAMODULE}da.o" >> $@
+	@echo "		""$$""(CXX) ""$$""(LDFLAGS) -o ""$$""@ ""$$""< \\" >> $@
+	@echo "		lib/lib${DAMODULE}DA.a \\" >> $@
+	@echo "		$(SYSLIBS) \\" >> $@
+	@echo "		lib/libRoot.a \\" >> $@
+	@echo "		lib/libfreetype.a lib/libpcre.a \\" >> $@
+	@echo "		""$$""(MONITORLIBS) ""$$""(DAQDALIB)" >> $@
+	@echo "${DAMODULE}da.o: ${DAMODULE}da.cxx" >> $@
+	@echo "		""$$""(CXX) -c ""$$""(CXXFLAGS) -I""$$""(DAQDADIR) ""$$""< -o ""$$""@" >> $@
+	@echo "clean:" >> $@
+	@echo "		@rm -f ${DAMODULE}da.exe ${DAMODULE}da.o" >> $@
+
+tar-DA: $(DASRC) $(DALIB) $(DAQDADIR) $(DADEP) $(DAMAKEFILE)
 	@rm -rf $(DAMODULE)da.tar
 	@rm -rf junk
-	mkdir junk && mkdir junk/include && \
-	cp -a $(DASRC) $(DALIB) $(ROOTLIBDIR)/libRoot.a $(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a $(DAQDADIR) junk && \
+	@mkdir junk && mkdir junk/lib && mkdir junk/include && \
+	cp -a $(DASRC) $(DAQDADIR) junk && \
+	cp -a $(DALIB) $(ROOTLIBDIR)/libRoot.a $(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a junk/lib && \
 	$(foreach daincfile,$(DAINCLUDES), cp -a $(daincfile) junk/include &&) \
-	cp -a build/MakefileDA junk/Makefile && \
+	cp -a $(DAMAKEFILE) junk/Makefile && \
 	cd junk && \
-	tar cvf ../$(DAMODULE)da.tar * && \
+	tar cf ../$(DAMODULE)da.tar * && \
 	cd .. && rm -rf junk
 
 else
