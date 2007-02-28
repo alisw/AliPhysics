@@ -146,9 +146,9 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iCrystalPhi2x2, iCrystalEta2x2));
   AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",  maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCrystalPhinxn, iCrystalEtanxn));
 
-  Int_t iRelId2x2 []= {iSM2x2,0,iCrystalPhi2x2,iCrystalEta2x2};
+  Int_t iRelId2x2 []= {iSM2x2+1,0,iCrystalPhi2x2,iCrystalEta2x2};// PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
   Int_t iAbsId2x2 =-1;
-  Int_t iRelIdnxn []= {iSMnxn,0,iCrystalPhinxn,iCrystalEtanxn};
+  Int_t iRelIdnxn []= {iSMnxn+1,0,iCrystalPhinxn,iCrystalEtanxn};// PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
   Int_t iAbsIdnxn =-1;
   TVector3    pos2x2(-1,-1,-1);
   TVector3    posnxn(-1,-1,-1);
