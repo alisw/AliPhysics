@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2006/08/22 13:30:49  arcelli
+removal of effective c++ warnings (C.Zampolli)
+
 Revision 1.9  2006/04/20 22:30:50  hristov
 Coding conventions (Annalisa)
 
@@ -775,7 +778,7 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFC
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
@@ -784,8 +787,14 @@ void AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliError(Form("Failed to get entry: %s",out));
+    return kFALSE; 
+  }
   AliTOFCal *cal =(AliTOFCal*)entry->GetObject();
   fTOFCal = cal;
+  return kTRUE; 
+  
 }
 //_____________________________________________________________________________
 void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)

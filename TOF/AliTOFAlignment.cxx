@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2006/09/19 14:31:26  cvetan
+Bugfixes and clean-up of alignment object classes. Introduction of so called symbolic names used to identify the alignable volumes (Raffaele and Cvetan)
+
 Revision 1.10  2006/08/22 13:26:05  arcelli
 removal of effective c++ warnings (C.Zampolli)
 
@@ -200,6 +203,10 @@ void AliTOFAlignment::ReadParFromCDB(Char_t *sel, Int_t nrun)
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliError(Form("Failed to get entry: %s",out));
+    return; 
+  }
   fTOFAlignObjArray=(TObjArray*)entry->GetObject();
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes from CDB: %d",fNTOFAlignObj));

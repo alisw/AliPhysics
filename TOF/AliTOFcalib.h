@@ -51,7 +51,7 @@ public:
   void ReadSimParFromCDB(Char_t *sel, Int_t nrun);
   void WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFCal *cal);
   void WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
-  void ReadParFromCDB(Char_t *sel, Int_t nrun);
+  Bool_t ReadParFromCDB(Char_t *sel, Int_t nrun);
   Int_t GetIndex(Int_t *detId); // Get channel index for Calibration 
 
  public: 
