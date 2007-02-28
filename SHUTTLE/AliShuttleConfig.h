@@ -35,6 +35,8 @@ public:
 	const char* GetDAQlbPass() const {return fDAQlbPass.Data();}
 	const char* GetDAQlbDB() const {return fDAQlbDB.Data();}
 	const char* GetDAQlbTable() const {return fDAQlbTable.Data();}
+	const char* GetShuttlelbTable() const {return fShuttlelbTable.Data();}
+	const char* GetRunTypelbTable() const {return fRunTypelbTable.Data();}
 
 	const char* GetFXSHost(Int_t system) const {return fFXSHost[system].Data();}
 	UInt_t 	    GetFXSPort(Int_t system) const {return fFXSPort[system];}
@@ -120,7 +122,9 @@ private:
 	TString fDAQlbUser;  		//! username of the DAQ logbook MySQL Server
 	TString fDAQlbPass; 		//! password of the DAQ logbook MySQL Server
 	TString fDAQlbDB; 		//! DB name of the DAQ logbook MySQL Server
-	TString fDAQlbTable; 		//! Table name of the DAQ logbook MySQL Server
+	TString fDAQlbTable; 		//! Table name of the DAQ logbook 
+	TString fShuttlelbTable; 	//! Table name of the Shuttle logbook
+	TString fRunTypelbTable; 	//! Table name of the Run typr logbook
 
 	TString fFXSHost[3]; 		//! Host of the [DAQ, DCS, HLT] File eXchange Server
 	UInt_t  fFXSPort[3]; 		//! Port of the [DAQ, DCS, HLT] File eXchange Server

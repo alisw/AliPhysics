@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.18  2007/01/23 19:20:03  acolla
+Removed old ldif files, added TOF, MCH ldif files. Added some options in
+AliShuttleConfig::Print. Added in Ali Shuttle: SetShuttleTempDir and
+SetShuttleLogDir
+
 Revision 1.17  2007/01/18 11:17:47  jgrosseo
 changing spaces to tabs ;-)
 
@@ -309,7 +314,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
 	fIsValid(kFALSE), fConfigHost(host),
 	fDAQlbHost(""), fDAQlbPort(), fDAQlbUser(""), fDAQlbPass(""),
-	fDAQlbDB(""), fDAQlbTable(""),
+	fDAQlbDB(""), fDAQlbTable(""), fShuttlelbTable(""), fRunTypelbTable(""),
 	fMaxRetries(0), fPPTimeOut(0), fDetectorMap(), fDetectorList(),
 	fShuttleInstanceHost(""), fProcessedDetectors(), fProcessAll(kFALSE)
 {
@@ -475,6 +480,21 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 	fDAQlbTable = anAttribute->GetValue();
 
+	anAttribute = anEntry->GetAttribute("ShuttleLogbookTable");
+	if (!anAttribute) {
+		AliError("Can't find ShuttleLogbookTable attribute!");
+		delete aResult; delete anEntry;
+		return;
+	}
+	fShuttlelbTable = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("RunTypeLogbookTable");
+	if (!anAttribute) {
+		AliError("Can't find RunTypeLogbookTable attribute!");
+		delete aResult; delete anEntry;
+		return;
+	}
+	fRunTypelbTable = anAttribute->GetValue();
 
 	anAttribute = anEntry->GetAttribute("MaxRetries");
 	if (!anAttribute) {
@@ -789,8 +809,8 @@ void AliShuttleConfig::Print(Option_t* option) const
 
 //	result += "Password: ";
 //	result.Append('*', fDAQlbPass.Length());
-	result += Form("\tDB: %s; \tTable: %s",
-		fDAQlbDB.Data(), fDAQlbTable.Data());
+	result += Form("\tDB: %s; \tTables: %s, %s, %s",
+		fDAQlbDB.Data(), fDAQlbTable.Data(), fShuttlelbTable.Data(), fRunTypelbTable.Data());
 
 	result += "\n\n";
 

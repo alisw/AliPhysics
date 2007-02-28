@@ -98,6 +98,7 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fEndTime(endTime),
   fInputFiles(0),
   fRunParameters(0),
+  fRunTypeMap(0),
   fPreprocessors(0),
   fDcsAliasMap(0)
 {
@@ -105,7 +106,13 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
 
   fInputFiles = new TMap;
   fRunParameters = new TMap;
+  fRunTypeMap = new TMap;
   fPreprocessors = new TObjArray;
+
+  fInputFiles->SetOwner(1);
+  fRunParameters->SetOwner(1);
+  fRunTypeMap->SetOwner(1);
+  fPreprocessors->SetOwner(1);
 }
 
 //______________________________________________________________________________________________
@@ -118,6 +125,9 @@ AliTestShuttle::~AliTestShuttle()
 
   delete fRunParameters;
   fRunParameters = 0;
+
+  delete fRunTypeMap;
+  fRunTypeMap = 0;
 
   delete fPreprocessors;
   fPreprocessors = 0;
@@ -322,7 +332,7 @@ void AliTestShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
 	if(strcmp("DET", detName) != 0) {
 		if(GetDetPos(detName) < 0)
 			AliFatal(Form("********** !!!!! Invalid detector name: %s !!!!! **********", detName));
-		}
+	}
 
   	fPreprocessors->Add(preprocessor);
 }
@@ -340,6 +350,40 @@ void AliTestShuttle::AddInputRunParameter(const char* key, const char* value){
 	fRunParameters->Add(keyObj, new TObjString(value));
 	AliDebug(2, Form("Number of parameters: %d", fRunParameters->
 	GetEntries()));
+}
+
+//______________________________________________________________________________________________
+void AliTestShuttle::AddInputRunType(const char* detCode, const char* runType){
+// set a run type (in reality it will be read from the "run type" logbook)
+
+	if (strcmp("DET", detCode) != 0)
+	{
+		if (GetDetPos(detCode) < 0)
+		{
+			AliError(Form("Invalid detector name: %s", detCode));
+			return;
+		}
+	}
+	TObjString* detObj = new TObjString(detCode);
+	if (fRunTypeMap->Contains(detCode)) {
+		AliWarning(Form("Detector %s already inserted: it will be replaced.", detCode));
+		delete fRunTypeMap->Remove(detObj);
+
+	}
+	fRunTypeMap->Add(detObj, new TObjString(runType));
+	AliDebug(2, Form("Number of detectors: %d", fRunTypeMap->GetEntries()));
+}
+
+//______________________________________________________________________________________________
+const char* AliTestShuttle::GetRunType(const char* detCode){
+// get a run parameter
+
+	TObjString* value = dynamic_cast<TObjString*> (fRunTypeMap->GetValue(detCode));
+	if(!value) {
+		AliError(Form("Input run type not set for detector %s!", detCode));
+		return 0;
+	}
+	return value->GetName();
 }
 
 //______________________________________________________________________________________________

@@ -37,6 +37,10 @@ fRunParameters(0)
 
 	const UInt_t nDet = AliShuttleInterface::NDetectors();
 	memset(fDetectorStatus, kUnprocessed, nDet*sizeof(Status));
+        for (UInt_t i=0;i<nDet;i++)
+	{
+		fRunType[i]="";
+	}
 	fRunParameters.SetOwner(1);
 }
 
@@ -51,6 +55,10 @@ fRunParameters(0)
 	const UInt_t nDet = AliShuttleInterface::NDetectors();
 	memset(fDetectorStatus, kUnprocessed, nDet*sizeof(Status));
 	if(status) SetDetectorStatus(status);
+        for (UInt_t i=0;i<nDet;i++)
+	{
+		fRunType[i]="";
+	}
 	fRunParameters.SetOwner(1);
 }
 
@@ -78,6 +86,10 @@ fRunParameters(0)
 		fRunParameters.Add(aKey->Clone(), aValue->Clone());
 	}
 
+	for (UInt_t i=0;i<AliShuttleInterface::NDetectors();i++)
+	{
+		fRunType[i]=c.GetRunType(i);
+	}
 }
 
 //______________________________________________________________________________________________
@@ -108,14 +120,10 @@ void AliShuttleLogbookEntry::Copy(TObject& c) const
 	}
 
 	target.SetDetectorStatus(GetDetectorStatus());
-}
-
-//______________________________________________________________________________________________
-AliShuttleLogbookEntry::Status AliShuttleLogbookEntry::GetDetectorStatus(const char* detName) const
-{
-// get detector status from detector code
-
-	return GetDetectorStatus(AliShuttleInterface::GetDetPos(detName));
+	for (UInt_t i=0;i<AliShuttleInterface::NDetectors();i++)
+	{
+		target.SetRunType(i, fRunType[i]);
+	}
 }
 
 //______________________________________________________________________________________________
@@ -195,6 +203,52 @@ void AliShuttleLogbookEntry::SetDetectorStatus(UInt_t detPos, const char* status
 	}
 }
 
+
+
+//______________________________________________________________________________________________
+const char* AliShuttleLogbookEntry::GetRunType(Int_t detPos) const
+{
+// get detector status from detector code
+
+	if(detPos < 0 || detPos >= (Int_t) AliShuttleInterface::NDetectors()) {
+		AliError(Form("Invalid parameter: %d", detPos));
+		return 0;
+	}
+	return (fRunType[detPos].Length() > 0) ? fRunType[detPos].Data() : 0;
+}
+
+//______________________________________________________________________________________________
+void AliShuttleLogbookEntry::SetRunType(const char* detName, const char* runType)
+{
+// set detector status from detector code
+
+	Int_t detPos = AliShuttleInterface::GetDetPos(detName);
+	if(detPos<0) return;
+	SetRunType(detPos, runType);
+}
+
+//______________________________________________________________________________________________
+void AliShuttleLogbookEntry::SetRunType(const TString* runType)
+{
+// set detector status from detector code
+
+	for (UInt_t i=0; i < AliShuttleInterface::NDetectors(); i++) {
+		fRunType[i] = runType[i];
+	}
+}
+
+//______________________________________________________________________________________________
+void AliShuttleLogbookEntry::SetRunType(UInt_t detPos, const char* runType)
+{
+// set detector status from detector code
+
+	if(detPos >= AliShuttleInterface::NDetectors()) {
+		AliError(Form("Shuttle has only %d subdetectors!", AliShuttleInterface::NDetectors()));
+		return;
+	}
+	fRunType[detPos] = runType;
+}
+
 //______________________________________________________________________________________________
 Bool_t AliShuttleLogbookEntry::IsDone() const{
 // return TRUE if all subdetectors are in status DONE, FAILED or INACTIVE
@@ -233,9 +287,17 @@ void AliShuttleLogbookEntry::Print(Option_t* option) const
 	message += Form("\tFinished \t%s\n", endTimeStamp.AsString("s"));
 	message += "\n*** Detector status ***\n";
 
-	for(UInt_t i=0; i < AliShuttleInterface::NDetectors(); i++)
-		message += Form("\t%2d - %s: %s\n", i, AliShuttleInterface::GetDetName(i),
+	for (UInt_t i=0; i < AliShuttleInterface::NDetectors(); i++)
+	{
+		message += Form("\t%2d - %s: %s ", i, AliShuttleInterface::GetDetName(i),
 					GetDetectorStatusName(fDetectorStatus[i]));
+		if (fDetectorStatus[i] == kUnprocessed && fRunType[i].Length()>0)
+		{
+			message += Form("\t Run type: %s \n", GetRunType(i));
+		} else {
+			message += "\n";
+		}
+	}
 
 	AliInfo(Form("option: %s",option));
 	TString optionStr(option);

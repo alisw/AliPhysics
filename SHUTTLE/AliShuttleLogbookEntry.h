@@ -44,7 +44,8 @@ public:
 	void SetRunParameter(const char* key, const char* value);
 	const char* GetRunParameter(const char* key) const;
 
-	Status GetDetectorStatus(const char* detCode) const;
+	Status GetDetectorStatus(const char* detCode) const
+			{return GetDetectorStatus(AliShuttleInterface::GetDetPos(detCode));}
 	Status GetDetectorStatus(Int_t detPos) const;
 	Status* GetDetectorStatus() const {return (Status*) fDetectorStatus;}
 
@@ -53,6 +54,16 @@ public:
 	void SetDetectorStatus(UInt_t detPos, Status status);
 	void SetDetectorStatus(const char* detCode, const char* statusName);
 	void SetDetectorStatus(UInt_t detPos, const char* statusName);
+
+	const char* 	GetRunType(const char* detCode) const
+				{return GetRunType(AliShuttleInterface::GetDetPos(detCode));}
+	const char*  	GetRunType(Int_t detPos) const;
+	TString* 	GetRunType() const {return (TString*) fRunType;}
+
+	void SetRunType(const char* detCode, const char* runType);
+	void SetRunType(UInt_t detPos, const char* runType);
+	void SetRunType(const TString* runType);
+
 
 	Bool_t IsDone() const;
 
@@ -64,6 +75,7 @@ private:
 	Int_t fRun;   			// Run number
 	TMap fRunParameters;		// run parameters written in DAQ logbook
 	Status fDetectorStatus[AliShuttleInterface::kNDetectors]; 	// Detector status array
+	TString fRunType[AliShuttleInterface::kNDetectors]; 		// Run type array
 
 	ClassDef(AliShuttleLogbookEntry, 0)
 };

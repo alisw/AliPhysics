@@ -22,8 +22,8 @@ void TestPreprocessor()
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  AliTestShuttle::SetTestShuttleCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  AliTestShuttle::SetTestShuttleRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
@@ -70,14 +70,21 @@ void TestPreprocessor()
 
   // TODO(3)
   //
+  // The shuttle can read run type for each detector stored in the "run type" logbook.
+  // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
+  // using GetRunType function.
+  shuttle->AddInputRunType("TPC", "PHYSICS");
+  shuttle->AddInputRunType("PHS", "PEDESTALS");
+
+  // TODO(4)
+  //
   // The shuttle can read run parameters stored in the DAQ run logbook.
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
-  // In real life the parameters will be retrieved automatically from the run logbook;
   shuttle->AddInputRunParameter("totalEvents", "30000");
   shuttle->AddInputRunParameter("NumberOfGDCs", "15");
 
-  // TODO(4)
+  // TODO(5)
   //
   // The shuttle can query condition parameters valid from the current run from the OCDB
   // To test it, we must first store the object into the OCDB. It will be retrieved in the preprocessor
@@ -91,21 +98,21 @@ void TestPreprocessor()
   shuttle->AddInputCDBEntry(&entry);
 
 
-  // TODO(5)
+  // TODO(6)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   AliPreprocessor* test = new AliTestPreprocessor(shuttle);
 
   // Test the preprocessor
   shuttle->Process();
 
-  // TODO(6)
+  // TODO(7)
   // In the preprocessor AliShuttleInterface::Store should be called to put the final
   // data to the CDB. To check if all went fine have a look at the files produced in
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
   AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("TPC/SHUTTLE/Data", 7);
+  			->Get("TPC/Calib/Data", 7);
   if (!chkEntry)
   {
     printf("The file is not there. Something went wrong.\n");

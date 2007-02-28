@@ -28,6 +28,7 @@ class AliTestShuttle : public AliShuttleInterface
     void AddInputFile(Int_t system, const char* detector, const char* id, const char* source, const char* fileName);
     void SetDCSInput(TMap* dcsAliasMap) { fDcsAliasMap = dcsAliasMap; }
     void AddInputRunParameter(const char* key, const char* value);
+    void AddInputRunType(const char* detCode, const char* runType);
     Bool_t AddInputCDBEntry(AliCDBEntry* entry);
 
     void Process();
@@ -40,6 +41,7 @@ class AliTestShuttle : public AliShuttleInterface
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
     virtual const char* GetRunParameter(const char* key);
     virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path);
+    virtual const char* GetRunType(const char* detCode);
     virtual void Log(const char* detector, const char* message);
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
@@ -60,7 +62,8 @@ class AliTestShuttle : public AliShuttleInterface
     UInt_t fEndTime;    // endtime that is simulated with the AliTestShuttle
 
     TMap* fInputFiles;      // files for GetFile, GetFileSources
-    TMap* fRunParameters;    // run parameters
+    TMap* fRunParameters;   // run parameters
+    TMap* fRunTypeMap; 	    // run type
     TObjArray* fPreprocessors; // list of preprocessors that are to be tested
     TMap* fDcsAliasMap; // DCS data for testing
 

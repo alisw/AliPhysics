@@ -55,11 +55,17 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
     return 0;
 
   // The processing of the DCS input data is forwarded to AliTestDataDCS
-	fData->ProcessData(*dcsAliasMap);
+  fData->ProcessData(*dcsAliasMap);
 
-  const char* fileName = GetFile(kDAQ, "PEDESTALS", "GDC");
-  if (fileName)
-    AliInfo(Form("Got the file %s, now we can extract some values.", fileName));
+  // Example of how to retrieve the run type from the Shuttle, using GetRunType() function
+  // TODO Here the run type for the "DET" detector must be set manually with SetInputRunType function,
+  // in reality it will be read from the "run type" logbook!
+  TString runType = GetRunType();
+  AliInfo(Form("Run type for run %d: %s", fRun, runType.Data()));
+
+  TString fileName = GetFile(kDAQ, "PEDESTALS", "GDC");
+  if (fileName.Length() > 0)
+    AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
   //TODO here the file could be opened, some values extracted and  written to e.g. fData
 
   TList* list = GetFileSources(kDAQ, "DRIFTVELOCITY");
@@ -98,10 +104,10 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   //Now we have to store the final CDB file
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
-	metaData.SetResponsible("Alberto Colla");
+	metaData.SetResponsible("TPC expert");
 	metaData.SetComment("This preprocessor fills an AliTestDataDCS object.");
 
-	UInt_t result = Store("SHUTTLE", "Data", fData, &metaData, 0, 0);
+	UInt_t result = Store("Calib", "Data", fData, &metaData, 0, 0);
 	delete fData;
 	fData = 0;
 

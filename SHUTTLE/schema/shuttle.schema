@@ -48,14 +48,17 @@ attributetype ( GLOBAL_CONFIG:3 NAME 'DAQLogbookUser'      DESC ''    EQUALITY c
 attributetype ( GLOBAL_CONFIG:4 NAME 'DAQLogbookPassword'  DESC ''    EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( GLOBAL_CONFIG:5 NAME 'DAQLogbookDB'        DESC ''    EQUALITY caseIgnoreMatch    SUP name )
 attributetype ( GLOBAL_CONFIG:6 NAME 'DAQLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:7 NAME 'MaxRetries'          DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:8 NAME 'PPTimeOut'           DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:7 NAME 'ShuttleLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:8 NAME 'RunTypeLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:9 NAME 'MaxRetries'          DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:10 NAME 'PPTimeOut'           DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'AliShuttleGlobalConfig'
         DESC 'ALICE: Access to DAQ logbook settings'
         SUP top
-        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ DAQLogbookDB $ DAQLogbookTable $ MaxRetries $ PPTimeOut)
+        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ DAQLogbookDB $ DAQLogbookTable $
+	ShuttleLogbookTable $ RunTypeLogbookTable $ MaxRetries $ PPTimeOut)
         MAY ( DAQLogbookPort ) )
 
 

@@ -613,6 +613,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	AliInfo(Form("\n\n \t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^* \n",
 					GetCurrentRun()));
 
+	// Set run type from run type logbook into current fLogbookEntry
+	SetRunType();
 
 	// Send the information to ML
 	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
@@ -918,7 +920,7 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	if(!Connect(3)) return kFALSE;
 
 	TString sqlQuery;
-	sqlQuery = Form("select * from logbook_shuttle %s order by run", whereClause);
+	sqlQuery = Form("select * from %s %s order by run", fConfig->GetShuttlelbTable(), whereClause);
 
 	TSQLResult* aResult = fServer[3]->Query(sqlQuery);
 	if (!aResult) {
@@ -1672,8 +1674,8 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 
 	TString whereClause = Form("where run=%d", GetCurrentRun());
 
-	TString sqlQuery = Form("update logbook_shuttle %s %s",
-					setClause.Data(), whereClause.Data());
+	TString sqlQuery = Form("update %s %s %s",
+					fConfig->GetShuttlelbTable(), setClause.Data(), whereClause.Data());
 
 	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
@@ -2026,6 +2028,58 @@ Bool_t AliShuttle::SendMail()
 	Bool_t result = gSystem->Exec(mailCommand.Data());
 
 	return result == 0;
+}
+
+//______________________________________________________________________________________________
+void AliShuttle::SetRunType()
+{
+// Gets run type from logbook and fills current Shuttle logbook entry
+
+	// check connection, in case connect
+	if(!Connect(3)){
+		Log("SHUTTLE", "GetRunType - Couldn't connect to DAQ Logbook.");
+		return;
+	}
+
+	TString sqlQuery = Form("select detector,run_type from %s where run_number=%d",
+					fConfig->GetRunTypelbTable(), GetCurrentRun());
+
+	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
+
+	// Query execution
+	TSQLResult* aResult;
+	aResult = dynamic_cast<TSQLResult*> (fServer[3]->Query(sqlQuery));
+	if (!aResult) {
+		Log("SHUTTLE", Form("GetRunType - Can't execute query <%s>", sqlQuery.Data()));
+		return;
+	}
+
+	TSQLRow* aRow;
+	while ((aRow = aResult->Next())) {
+		TString det(aRow->GetField(0), aRow->GetFieldLength(0));
+		TString runType(aRow->GetField(1), aRow->GetFieldLength(1));
+
+		fLogbookEntry->SetRunType(det, runType);
+		delete aRow;
+	}
+
+	delete aResult;
+
+	return;
+
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetRunType(const char* detCode)
+{
+// returns run type read from "run type" logbook
+
+	if(!fLogbookEntry) {
+		AliError("No logbook entry!");
+		return 0;
+	}
+
+	return fLogbookEntry->GetRunType(detCode);
 }
 
 //______________________________________________________________________________________________

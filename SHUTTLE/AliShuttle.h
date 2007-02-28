@@ -58,6 +58,7 @@ public:
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
 	virtual const char* GetRunParameter(const char* lbEntry);
 	virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path);
+	virtual const char* GetRunType(const char* detCode);
 	virtual void Log(const char* detector, const char* message);
 
 	//TODO Test only, remove later !
@@ -109,6 +110,8 @@ private:
 	void SetLastAction(const char* action);
 	
 	void SendMLInfo();
+
+	void SetRunType();
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
 
