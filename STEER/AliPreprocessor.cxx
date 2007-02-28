@@ -245,3 +245,13 @@ AliCDBEntry* AliPreprocessor::GetFromOCDB(const char* pathLevel2, const char* pa
   return dynamic_cast<AliCDBEntry*>
   	(fShuttle->GetFromOCDB(AliCDBPath(offlineDetName, pathLevel2, pathLevel3)));
 }
+
+//______________________________________________________________________________________________
+const char* AliPreprocessor::GetRunType()
+{
+  // Return run type string read from "run type" logbook
+  //
+  // The call is delegated to AliShuttleInterface
+
+  return fShuttle->GetRunType(GetName());
+}

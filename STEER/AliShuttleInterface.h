@@ -32,6 +32,7 @@ class AliShuttleInterface : public TObject
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id) = 0;
     virtual const char* GetRunParameter(const char* lbEntry) = 0;
     virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path) = 0;
+    virtual const char* GetRunType(const char* detCode) = 0;
     virtual void Log(const char* detector, const char* message) = 0;
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor) = 0;

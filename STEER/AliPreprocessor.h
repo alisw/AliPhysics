@@ -43,6 +43,7 @@ class AliPreprocessor : public TNamed
     TList* GetFileSources(Int_t system, const char* id);
     const char* GetRunParameter(const char* param);
     AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3);
+    const char* GetRunType();
     void Log(const char* message);
 
     Int_t fRun;         // current run
