@@ -97,3 +97,6 @@
 22-feb-2007 NvE IceRawTWR.cxx updated to set OM identifier equal to loop index in PutWaveforms
                 to match the internal TWR config convention. Also test on non-zero twrid
                 removed, since twrid=0 is allowed in TWR config system.
+28-feb-2007 NvE IceRawTWR.cxx updated to include latest bugfix of Wolfgang in memberfunction
+                update_system and also various waveform fragments of a certain OM stored as
+                separate histos in memberfunction PutWaveforms.

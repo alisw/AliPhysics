@@ -411,6 +411,8 @@ void IceRawTWR::PutWaveforms(Int_t year)
  Int_t omidmax=677;
  Int_t error;
  Float_t baseline;
+ Int_t nfrags;
+ Int_t firstbin,lastbin;
  for (Int_t i=0; i<N_OF_CHANNELS; i++)
  {
   if (!fEvent.wfm_filled[i]) continue;
@@ -435,33 +437,42 @@ void IceRawTWR::PutWaveforms(Int_t year)
 
   if (error) continue;
 
-  baseline=fWform.frag_mean[0];
+  nfrags=fWform.n_frag;
 
-  hname="BASELINE-WF";
-  hname+=omx->GetNwaveforms()+1;
-  omx->AddNamedSlot(hname);
-  omx->SetSignal(baseline,hname);
-
-  // Fill the waveform histogram
-  hname="OM";
-  hname+=omid;
-  hname+="-WF";
-  hname+=omx->GetNwaveforms()+1;
-
-  histo.Reset();
-  histo.SetName(hname.Data());
-  nbins=fWform.n_point;
-  xlow=fWform.wfm_x[0];
-  xup=fWform.wfm_x[nbins-1];
-  histo.SetBins(nbins,xlow,xup);
-
-  for (Int_t jbin=1; jbin<=nbins; jbin++)
+  for (Int_t ifrag=0; ifrag<nfrags; ifrag++)
   {
-   histo.SetBinContent(jbin,baseline-fWform.wfm_y[jbin-1]);
-  }
+   baseline=fWform.frag_mean[ifrag];
 
-  omx->SetWaveform(&histo,omx->GetNwaveforms()+1);
- }
+   hname="BASELINE-WF";
+   hname+=omx->GetNwaveforms()+1;
+   omx->AddNamedSlot(hname);
+   omx->SetSignal(baseline,hname);
+
+   // Fill the waveform histogram with this fragment
+   hname="OM";
+   hname+=omid;
+   hname+="-WF";
+   hname+=omx->GetNwaveforms()+1;
+
+   histo.Reset();
+   histo.SetName(hname.Data());
+   nbins=fWform.frag_n_points[ifrag];
+   firstbin=fWform.frag_begin[ifrag];
+   lastbin=fWform.frag_end[ifrag];
+
+   xlow=fWform.wfm_x[firstbin];
+   xup=fWform.wfm_x[lastbin];
+
+   histo.SetBins(nbins,xlow,xup);
+
+   for (Int_t jbin=1; jbin<=nbins; jbin++)
+   {
+    histo.SetBinContent(jbin,baseline-fWform.wfm_y[firstbin+jbin-1]);
+   }
+
+   omx->SetWaveform(&histo,omx->GetNwaveforms()+1);
+  } // End of loop over fragments of this OM
+ } // End of loop over channels
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceRawTWR::PutTrigger(Int_t year)
@@ -768,7 +779,7 @@ Int_t IceRawTWR::update_system(sys_config_t* sys,Int_t run_number)
 {
   Int_t i_crate, i_twr, i_channel;
 
-  /* Data for bug fix 1 */
+  // Data for bug fix 1 by Andreas 
   UInt_t om_no_r1[CHANNELS_PER_TWR] 
     = {111, 112, 113, 114, 115, 116, 39, 118}; 
   UInt_t om_is_optical_r1[CHANNELS_PER_TWR] 
@@ -776,6 +787,7 @@ Int_t IceRawTWR::update_system(sys_config_t* sys,Int_t run_number)
   UInt_t threshold_r1[CHANNELS_PER_TWR]
     = {50, 50, 50, 50, 50, 50, 80, 50};
 
+  // Data for bugfix 2 by Timo
   UInt_t om_no_r2[CHANNELS_PER_TWR] 
     = {473, 484, 485, 486, 487, 475, 490, 491}; 
   UInt_t om_is_optical_r2[CHANNELS_PER_TWR] 
@@ -783,81 +795,101 @@ Int_t IceRawTWR::update_system(sys_config_t* sys,Int_t run_number)
   UInt_t threshold_r2[CHANNELS_PER_TWR]
     = {15, 50, 55, 40, 15, 23, 15, 15};
 
+  // Data for bugfix 3 by Wolfgang
+  // Old (=incorrect) OM config : {183, 184, 185, 38, 187, 188, 189, 190} 
+  UInt_t om_no_r3[CHANNELS_PER_TWR]={345, 184, 185, 38, 187, 188, 189, 190}; 
+  UInt_t om_is_optical_r3[CHANNELS_PER_TWR]={1, 0, 0, 0, 0, 0, 0, 0};
+  UInt_t threshold_r3[CHANNELS_PER_TWR]={20, 50, 50, 80, 50, 50, 50, 50};
+
+  // Old (=incorrect) OM config : {345, 346, 454, 450, 635, 10000, 10000, 10000} 
+  UInt_t om_no_r4[CHANNELS_PER_TWR]={183, 346, 454, 450, 635, 10000, 10000, 10000}; 
+  UInt_t om_is_optical_r4[CHANNELS_PER_TWR]={0, 1, 1, 1, 1, 1, 1, 1};
+  UInt_t threshold_r4[CHANNELS_PER_TWR]={50, 20, 20, 20, 20, 500, 500, 500};
   
-  /* Bugfix 1 Andreas Bug */ 
+  // Bugfix 1 Andreas Bug
 
-  /*
-    By accident this TWR was counted twice in TWR.cnf
-    as Crate 0 TWR 7 and Crate 4 TWR 7
-    from run up to run
-    TWR_OM          639     642     1       9       10      11      12      30
-    OPTICAL         0       0       0       0       0       0       0       0
-    TWR_BASELINE    110     120     110     140     150     160     170     180
-    TWR_THRESHOLD   50      50      80      80      80      80      80      80
+  //  By accident this TWR was counted twice in TWR.cnf
+  //  as Crate 0 TWR 7 and Crate 4 TWR 7
+  //  from run 9153 up to run 9841 (incl.)
+  //  TWR_OM          639     642     1       9       10      11      12      30
+  //  OPTICAL         0       0       0       0       0       0       0       0
+  //  TWR_BASELINE    110     120     110     140     150     160     170     180
+  //  TWR_THRESHOLD   50      50      80      80      80      80      80      80
 
-    Crate 4 TWR 7 should be replaced with this TWR
-    TWR_OM          111     112     113     114     115     116     39      118
-    OPTICAL         0       0       0       0       0       0       0       0
-    TWR_BASELINE    110     120     130     140     150     160     170     180
-    TWR_THRESHOLD   50      50      50      50      50      50      80      50
-  */
+  //  Crate 4 TWR 7 should be replaced with this TWR
+  //  TWR_OM          111     112     113     114     115     116     39      118
+  //  OPTICAL         0       0       0       0       0       0       0       0
+  //  TWR_BASELINE    110     120     130     140     150     160     170     180
+  //  TWR_THRESHOLD   50      50      50      50      50      50      80      50
 
-  if( 
-     (run_number >= 9153 )  /* Begin season 2005 13.2.05 */  
-     && (run_number < 9800) /* Timo corrected TWR.cnf on after run ??? */
-     /* Need to find exact date */
-     )
-    {
-      i_crate = 4;
-      i_twr = 7;
-      for(i_channel = 0; i_channel < CHANNELS_PER_TWR; i_channel++)
-	{
-	  sys->crate[i_crate]->twr[i_twr]->om_no[i_channel]         
-	    = om_no_r1[i_channel]; 
-	  sys->crate[i_crate]->twr[i_twr]->om_is_optical[i_channel] 
-	    = om_is_optical_r1[i_channel]; 
-	  sys->crate[i_crate]->twr[i_twr]->threshold[i_channel]     
-	    = threshold_r1[i_channel];
-	}
-    }
+  // Begin season 2005 13-feb-2005
+  // Timo corrected TWR.cnf on 05-apr-2006 after run 9841
+  if (run_number>=9153 && run_number<=9841)
+  {
+   i_crate = 4;
+   i_twr = 7;
+   for(i_channel = 0; i_channel < CHANNELS_PER_TWR; i_channel++)
+   {
+    sys->crate[i_crate]->twr[i_twr]->om_no[i_channel]=om_no_r1[i_channel]; 
+    sys->crate[i_crate]->twr[i_twr]->om_is_optical[i_channel]=om_is_optical_r1[i_channel]; 
+    sys->crate[i_crate]->twr[i_twr]->threshold[i_channel]=threshold_r1[i_channel];
+   }
+  }
 
-  /* Bugfix 2 Timos Bug */ 
+  // Bugfix 2 Timos Bug
 
-  /*
-    By accident this TWR was counted twice in TWR.cnf
-    as Crate 0 TWR 1 and Crate 5 TWR b
-    from run 9153 up to run 9188
+  //  By accident this TWR was counted twice in TWR.cnf
+  //  as Crate 0 TWR 1 and Crate 5 TWR b
+  //  from run 9153 up to run 9188 (incl.)
 
-    TWR_OM          492     493     495     496     497     499     500     501
-    OPTICAL         1       1       1       1       1       1       1       1
-    TWR_BASELINE    110     120     130     140     150     160     170     180
-    TWR_THRESHOLD   16      45      25      42      35      46      15      15
+  //  TWR_OM          492     493     495     496     497     499     500     501
+  //  OPTICAL         1       1       1       1       1       1       1       1
+  //  TWR_BASELINE    110     120     130     140     150     160     170     180
+  //  TWR_THRESHOLD   16      45      25      42      35      46      15      15
 
-    Crate 5 TWR b should be corrected to 
-    TWR_OM          473     484     485     486     487     475     490     491
-    OPTICAL         1       1       1       1       1       1       1       1
-    TWR_BASELINE    4000    120     130     140     150     4000    170     180
-    TWR_THRESHOLD   15      50      55      40      15      23      15      15
-  */
+  //  Crate 5 TWR b should be corrected to 
+  //  TWR_OM          473     484     485     486     487     475     490     491
+  //  OPTICAL         1       1       1       1       1       1       1       1
+  //  TWR_BASELINE    4000    120     130     140     150     4000    170     180
+  //  TWR_THRESHOLD   15      50      55      40      15      23      15      15
 
-  if( 
-     (run_number >= 9153 )  /* Begin season 2005 = Feb 2nd 05 */  
-     && (run_number < 9189) /* Timo corrected TWR.cnf on      */
-     /* Mar 15th 05 = day 74 after run 9188                   */
-     )
-    {
-      i_crate = 5;
-      i_twr = 0xb;
-      for(i_channel = 0; i_channel < CHANNELS_PER_TWR; i_channel++)
-	{
-	  sys->crate[i_crate]->twr[i_twr]->om_no[i_channel]         
-	    = om_no_r2[i_channel]; 
-	  sys->crate[i_crate]->twr[i_twr]->om_is_optical[i_channel] = 
-	    om_is_optical_r2[i_channel]; 
-	  sys->crate[i_crate]->twr[i_twr]->threshold[i_channel]     = 
-	    threshold_r2[i_channel];
-	}
-    }
+ // Begin season 2005 : 13-feb-2005
+ // Timo corrected TWR.cnf on 15-mar-2005 (= day 74) after run 9188
+  if (run_number>=9153 && run_number<=9188)
+  {
+   i_crate = 5;
+   i_twr = 0xb;
+   for(i_channel=0; i_channel<CHANNELS_PER_TWR; i_channel++)
+   {
+    sys->crate[i_crate]->twr[i_twr]->om_no[i_channel]=om_no_r2[i_channel]; 
+    sys->crate[i_crate]->twr[i_twr]->om_is_optical[i_channel]=om_is_optical_r2[i_channel]; 
+    sys->crate[i_crate]->twr[i_twr]->threshold[i_channel]=threshold_r2[i_channel];
+   }
+  }
+
+ // Bugfix 3 by Wolfgang Wagner : Mismatch of OM 345 and 183
+ // Begin season 2005 : 13-feb-2005
+ // Wolfgang corrected TWR.cnf on 15-aug-2005 after run 9988
+ if (run_number>=9153 && run_number<=9988)
+ {
+  i_crate=5;
+  i_twr=4;
+  for(i_channel=0; i_channel<CHANNELS_PER_TWR; i_channel++)
+  {
+   sys->crate[i_crate]->twr[i_twr]->om_no[i_channel]=om_no_r3[i_channel]; 
+   sys->crate[i_crate]->twr[i_twr]->om_is_optical[i_channel]=om_is_optical_r3[i_channel]; 
+   sys->crate[i_crate]->twr[i_twr]->threshold[i_channel]=threshold_r3[i_channel];
+  }
+
+  i_twr=5;
+  for(i_channel=0; i_channel<CHANNELS_PER_TWR; i_channel++)
+  {
+   sys->crate[i_crate]->twr[i_twr]->om_no[i_channel]=om_no_r4[i_channel]; 
+   sys->crate[i_crate]->twr[i_twr]->om_is_optical[i_channel]=om_is_optical_r4[i_channel]; 
+   sys->crate[i_crate]->twr[i_twr]->threshold[i_channel]=threshold_r4[i_channel];
+  }
+ }
+
  return(0);
 }
 ///////////////////////////////////////////////////////////////////////////
