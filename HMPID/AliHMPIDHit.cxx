@@ -14,9 +14,9 @@
 //  **************************************************************************
 
 #include "AliHMPIDHit.h"  //class header
-#include "AliHMPIDDigit.h"
-#include <TPDGCode.h>    
-#include <TMarker.h>
+#include <TPDGCode.h>     //Draw() Print()
+#include <TMarker.h>      //Draw()
+#include <TClonesArray.h> //Hit2Sdi()
  
 ClassImp(AliHMPIDHit)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -28,10 +28,30 @@ void AliHMPIDHit::Draw(Option_t*)
     case 50000051:   iMark=27; break;
     default:         iMark=26; break;
   }    
-  TMarker *pMark=new TMarker(LorsX(),LorsY(),iMark); pMark->SetMarkerColor(kRed); pMark->Draw();
+  TMarker *pMark=new TMarker(fLx,fLy,iMark); pMark->SetMarkerColor(kRed); pMark->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDHit::Print(Option_t*)const
+void AliHMPIDHit::Hit2Sdi(TClonesArray *pSdiLst,Int_t iHow)const
+{
+// Adds  sdigits of this hit to the list
+// Arguments: pSdiLst- sigits list where to add new sdgits
+//            iHow- how many pads to check 
+//   Returns: none
+  Int_t pc,px,py;
+  AliHMPIDDigit::Lors2Pad(fLx,fLy,pc,px,py); if(pc<0) return; //check if the hit in dead zone. Should never happen during trasport!
+
+  AliHMPIDDigit dig;
+  Int_t iSdiCnt=pSdiLst->GetEntries();                       //list of sdigits contains sdigits from previous ivocations of Hit2Sdi, do not override them
+
+  for(Int_t i=-iHow;i<=iHow;i++){                            //horizontal loop
+    for(Int_t j=-iHow;j<=iHow;j++){                          //vertical loop
+      if(dig.Set(fCh,pc,px+i,py+j,fQ*dig.Mathieson(fLx,fLy),fTrack)) continue;
+      new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(dig);
+    }
+  }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDHit::Print(Option_t *opt)const
 {
 //Print hit
   char *sPart=Form("pid=%i",Pid());
@@ -50,8 +70,8 @@ void AliHMPIDHit::Print(Option_t*)const
     case 50000051:     sPart="feed";break;
   }
 
-  Printf("HIT:(%7.3f,%7.3f) Q=%8.3f ch=%i                   TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
-              LorsX(),LorsY(), Q(), Ch(),                  Tid(),         X(),  Y(),  Z(),   sPart, 
+  Printf("%sHIT: ch=%i                 (%7.3f,%7.3f) Q=%8.3f TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
+         opt,  Ch(),                    fLx,fLy,  fQ,     fTrack,         X(),  Y(),  Z(),   sPart, 
                         (AliHMPIDDigit::IsInDead(LorsX(),LorsY()))? "IN DEAD ZONE":"");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

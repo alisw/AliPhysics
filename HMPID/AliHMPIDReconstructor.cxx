@@ -32,7 +32,7 @@ void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t
 //            pCluAll     - list of clusters for all chambers
 //            isTryUnfold - flag to choose between CoG and Mathieson fitting  
 //  Returns: none    
-  TMatrixF padMap(AliHMPIDDigit::kPadAllX,AliHMPIDDigit::kPadAllY);                   //pads map for single chamber 0..159 x 0..143 
+  TMatrixF padMap(AliHMPIDDigit::kMaxPadChX,AliHMPIDDigit::kMaxPadChY);                       //pads map for single chamber 0..159 x 0..143 
   
   for(Int_t iCh=0;iCh<7;iCh++){                                                           //chambers loop 
     TClonesArray *pDigCur=(TClonesArray*)pDigAll->At(iCh);                                //get list of digits for current chamber
@@ -129,7 +129,7 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)cons
       UInt_t w32=0;
       while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-        dig.Raw(ddl,w32);  
+        dig.Raw(w32,ddl);  
         AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
         new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
       }//raw records loop

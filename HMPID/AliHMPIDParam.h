@@ -29,7 +29,8 @@ public:
                 Double_t   MeanIdxWin              () {return 1.57819;}//???????????
   static        Int_t      Stack(Int_t evt=-1,Int_t tid=-1);              //Print stack info for event and tid
   static        Int_t      StackCount(Int_t pid,Int_t evt);               //Counts stack particles of given sort in given event  
-//trasformation methodes
+  static        void       IdealPosition(Int_t iCh,TGeoHMatrix *m);       //ideal position of given chamber 
+  //trasformation methodes
   void     Lors2Mars   (Int_t c,Float_t x,Float_t y,Double_t *m,Int_t pl=kPc)const{Double_t z=0; switch(pl){case kPc:z=8.0;break; case kAnod:z=7.806;break; case kRad:z=-1.25; break;}   Double_t l[3]={x-fX,y-fY,z};  fM[c]->LocalToMaster(l,m); }    
   TVector3 Lors2Mars   (Int_t c,Float_t x,Float_t y,            Int_t pl=kPc)const{Double_t m[3];Lors2Mars(c,x,y,m,pl); return TVector3(m);    }//MRS->LRS  
   void     Mars2Lors   (Int_t c,Double_t *m,Float_t &x,Float_t &y           )const{Double_t l[3];fM[c]->MasterToLocal(m,l);x=l[0]+fX;y=l[1]+fY;}//MRS->LRS
@@ -55,11 +56,10 @@ AliHMPIDParam* AliHMPIDParam::Instance()
 // Return pointer to the AliHMPIDParam singleton. 
 // Arguments: none
 //   Returns: pointer to the instance of AliHMPIDParam or 0 if no geometry       
-  if(!fgInstance)
-    if(gGeoManager) new AliHMPIDParam; 
-    else            Printf("AliHMPIDParam> Error:: No geometry defined!");
+  if(!fgInstance) new AliHMPIDParam; 
   return fgInstance;  
 }//Instance()    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 #endif

@@ -15,12 +15,10 @@
 
 
 #include "AliHMPIDv1.h"     //class header
-#include "AliHMPIDParam.h"  //CreateMaterials()
+#include "AliHMPIDParam.h"  //StepManager()
 #include "AliHMPIDHit.h"    //Hits2SDigs(),StepManager()
-#include "AliHMPIDDigit.h"  //CreateMaterials()
+#include "AliHMPIDDigit.h"  //Digits2Raw(), Raw2SDigits()
 #include "AliRawReader.h"  //Raw2SDigits()
-#include <TParticle.h>     //Hits2SDigits()
-#include <TRandom.h> 
 #include <TVirtualMC.h>    //StepManager() for gMC
 #include <TPDGCode.h>      //StepHistory() 
 #include <AliStack.h>      //StepManager(),Hits2SDigits()
@@ -29,16 +27,12 @@
 #include <AliConst.h>
 #include <AliPDG.h>
 #include <AliMC.h>            //StepManager()      
-#include <AliRawDataHeader.h> //Digits2Raw()
-#include <AliDAQ.h>           //Digits2Raw()
 #include <AliRun.h>           //CreateMaterials()    
 #include <AliMagF.h>          //CreateMaterials()
 #include <TGeoManager.h>      //CreateGeometry()
-#include <TMultiGraph.h>      //Optics() 
-#include <TGraph.h>           //Optics() 
-#include <TLegend.h>          //Optics() 
-#include <TCanvas.h>          //Optics() 
-#include <TF2.h>              //CreateMaterials()
+#include <TF1.h>              //DefineOpticalProperties()
+#include <TF2.h>              //DefineOpticalProperties()
+#include <TLorentzVector.h>   //IsLostByFresnel() 
 #include <AliCDBManager.h>    //CreateMaterials()
 #include <AliCDBEntry.h>      //CreateMaterials()
  
@@ -46,10 +40,10 @@ ClassImp(AliHMPIDv1)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv1::AddAlignableVolumes()const
 {
-// Associates the symbolic volume name with the corresponding volume path. Interface methode from AliModule ivoked from AliMC
+// Associates the symbolic volume name with the corresponding volume path. Interface method from AliModule invoked from AliMC
 // Arguments: none
 //   Returns: none   
-  for(Int_t i=0;i<7;i++)
+  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++)
     gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/HMPID_%i",i));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -91,60 +85,7 @@ void AliHMPIDv1::CreateMaterials()
     AliMaterial(++matId,"W"   ,aW   ,zW   ,dW   ,radW   ,absW   );  AliMedium(kW   ,"W"   , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     
-    
     DefineOpticalProperties();
-    
-    AliDebug(1,"Stop v1 HMPID.");
-
-  TString ttl=GetTitle(); if(!ttl.Contains("ShowOptics")) return;              //user didn't aks to plot optical curves
-  
-  const Double_t kWidth=0.25,kHeight=0.2;  
-  const Int_t kRadM=24 , kRadC=kRed;  
-  const Int_t kWinM=26 , kWinC=kBlue;  
-  const Int_t kGapM=25 , kGapC=kGreen;  
-  const Int_t kPcM = 2 , kPcC =kMagenta;  
-  const Int_t kNbins=30;       //number of photon energy points
-
-  Float_t aEckov [kNbins]; 
-  Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins];
-  Float_t aIdxRad[kNbins], aIdxWin[kNbins], aIdxGap[kNbins]; 
-  Float_t aQePc [kNbins];  
-  Float_t aTraRad[kNbins],aTraWin[kNbins],aTraGap[kNbins],aTraTot[kNbins];
-  for(Int_t i=0;i<kNbins;i++){//calculate probability for photon to survive during transversing a volume of material with absorption length  
-    aTraRad[i]=TMath::Exp(-AliHMPIDDigit::SizeRad()/ (aAbsRad[i]+0.0001)); //radiator
-    aTraWin[i]=TMath::Exp(-AliHMPIDDigit::SizeWin()/ (aAbsWin[i] +0.0001)); //window
-    aTraGap[i]=TMath::Exp(-AliHMPIDDigit::SizeGap()/ (aAbsGap[i]  +0.0001)); //from window to PC   
-    aTraTot[i]=aTraRad[i]*aTraWin[i]*aTraGap[i]*aQePc[i];
-  }
-  
-  TGraph *pRaAG=new TGraph(kNbins,aEckov,aAbsRad);pRaAG->SetMarkerStyle(kRadM);pRaAG->SetMarkerColor(kRadC);
-  TGraph *pRaIG=new TGraph(kNbins,aEckov,aIdxRad);pRaIG->SetMarkerStyle(kRadM);pRaIG->SetMarkerColor(kRadC);
-  TGraph *pRaTG=new TGraph(kNbins,aEckov,aTraRad);pRaTG->SetMarkerStyle(kRadM);pRaTG->SetMarkerColor(kRadC);  
-  
-  TGraph *pWiAG=new TGraph(kNbins,aEckov,aAbsWin);pWiAG->SetMarkerStyle(kWinM);pWiAG->SetMarkerColor(kWinC);
-  TGraph *pWiIG=new TGraph(kNbins,aEckov,aIdxWin);pWiIG->SetMarkerStyle(kWinM);pWiIG->SetMarkerColor(kWinC);  
-  TGraph *pWiTG=new TGraph(kNbins,aEckov,aTraWin);pWiTG->SetMarkerStyle(kWinM);pWiTG->SetMarkerColor(kWinC);  
-  
-  TGraph *pGaAG=new TGraph(kNbins,aEckov,aAbsGap);pGaAG->SetMarkerStyle(kGapM);pGaAG->SetMarkerColor(kGapC);
-  TGraph *pGaIG=new TGraph(kNbins,aEckov,aIdxGap);pGaIG->SetMarkerStyle(kGapM);pGaIG->SetMarkerColor(kGapC);
-  TGraph *pGaTG=new TGraph(kNbins,aEckov,aTraGap);pGaTG->SetMarkerStyle(kGapM);pGaTG->SetMarkerColor(kGapC);   
-  
-  TGraph *pQeG =new TGraph(kNbins,aEckov,aQePc);  pQeG  ->SetMarkerStyle(kPcM );pQeG->SetMarkerColor(kPcC);
-  TGraph *pToG =new TGraph(kNbins,aEckov,aTraTot);pToG  ->SetMarkerStyle(30)   ;pToG->SetMarkerColor(kYellow);  
-  
-  TMultiGraph *pIdxMG=new TMultiGraph("idx","Ref index;E_{#check{C}} [GeV]");       
-  TMultiGraph *pAbsMG=new TMultiGraph("abs","Absorption [cm];E_{#check{C}} [GeV]"); 
-  TMultiGraph *pTraMG=new TMultiGraph("tra","Transmission;E_{#check{C}} [GeV]");    TLegend *pTraLe=new TLegend(0.2,0.4,0.2+kWidth,0.4+kHeight);
-  pAbsMG->Add(pRaAG);  pIdxMG->Add(pRaIG);     pTraMG->Add(pRaTG);     pTraLe->AddEntry(pRaTG, "Rad", "p");           
-  pAbsMG->Add(pWiAG);  pIdxMG->Add(pWiIG);     pTraMG->Add(pWiTG);     pTraLe->AddEntry(pWiTG, "Win", "p");               
-  pAbsMG->Add(pGaAG);  pIdxMG->Add(pGaIG);     pTraMG->Add(pGaTG);     pTraLe->AddEntry(pGaTG, "Gap", "p");               
-                                               pTraMG->Add(pToG);      pTraLe->AddEntry(pToG,  "Tot", "p");          
-                                               pTraMG->Add(pQeG);      pTraLe->AddEntry(pQeG,   "QE" , "p");  
-  TCanvas *pC=new TCanvas("c1","HMPID optics to check",1100,900);  pC->Divide(2,2);           
-  pC->cd(1);                    pIdxMG->Draw("AP"); 
-  pC->cd(2);  gPad->SetLogy();  pAbsMG->Draw("AP"); 
-  pC->cd(3);                    pTraLe->Draw();    
-  pC->cd(4);                    pTraMG->Draw("AP");
 }//void AliHMPID::CreateMaterials()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv1::CreateGeometry()
@@ -158,24 +99,9 @@ void AliHMPIDv1::CreateGeometry()
   TGeoVolume *pRich=gGeoManager->MakeBox("HMPID",gGeoManager->GetMedium("HMPID_CH4"),dx=(6*mm+1681*mm+6*mm)/2,  //main HMPID volume
                                                                                    dy=(6*mm+1466*mm+6*mm)/2,
                                                                                    dz=(80*mm+40*mm)*2/2);     //x,y taken from 2033P1  z from p84 TDR  
-  const Double_t kAngHor=19.5; //  horizontal angle between chambers  19.5 grad
-  const Double_t kAngVer=20;   //  vertical angle between chambers    20   grad     
-  const Double_t kAngCom=30;   //  common HMPID rotation with respect to x axis  30   grad     
-  const Double_t trans[3]={490,0,0}; //center of the chamber is on window-gap surface
-  for(Int_t iCh=0;iCh<7;iCh++){//place 7 chambers
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//place 7 chambers
     TGeoHMatrix *pMatrix=new TGeoHMatrix;
-    pMatrix->RotateY(90);           //rotate around y since initial position is in XY plane -> now in YZ plane
-    pMatrix->SetTranslation(trans); //now plane in YZ is shifted along x 
-    switch(iCh){
-      case 0:                pMatrix->RotateY(kAngHor);  pMatrix->RotateZ(-kAngVer);  break; //right and down 
-      case 1:                                            pMatrix->RotateZ(-kAngVer);  break; //down              
-      case 2:                pMatrix->RotateY(kAngHor);                               break; //right 
-      case 3:                                                                         break; //no rotation
-      case 4:                pMatrix->RotateY(-kAngHor);                              break; //left   
-      case 5:                                            pMatrix->RotateZ(kAngVer);   break; //up
-      case 6:                pMatrix->RotateY(-kAngHor); pMatrix->RotateZ(kAngVer);   break; //left and up 
-    }
-    pMatrix->RotateZ(kAngCom);     //apply common rotation  in XY plane    
+    AliHMPIDParam::IdealPosition(iCh,pMatrix);
     gGeoManager->GetVolume("ALIC")->AddNode(pRich,iCh,pMatrix);
   }
 
@@ -329,13 +255,13 @@ Bool_t AliHMPIDv1::IsLostByFresnel()
     return kFALSE;
 }//IsLostByFresnel()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDv1::GenFee(Int_t iCh,Float_t eloss)
+void AliHMPIDv1::GenFee(Float_t qtot)
 {
 // Generate FeedBack photons for the current particle. To be invoked from StepManager().
-// eloss=0 means photon so only pulse height distribution is to be analysed. This one is done in AliHMPIDParam::TotQdc()
+// eloss=0 means photon so only pulse height distribution is to be analysed.
   TLorentzVector x4;
   gMC->TrackPosition(x4); 
-  Int_t iNphotons=gMC->GetRandom()->Poisson(0.02*200); eloss++; iCh++;   //??????????????????????
+  Int_t iNphotons=gMC->GetRandom()->Poisson(0.02*qtot);  //# of feedback photons is proportional to the charge of hit
   AliDebug(1,Form("N photons=%i",iNphotons));
   Int_t j;
   Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
@@ -403,7 +329,7 @@ void AliHMPIDv1::GenFee(Int_t iCh,Float_t eloss)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv1::Hits2SDigits()
 {
-// Interface methode ivoked from AliSimulation to create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
+// Interface method ivoked from AliSimulation to create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
 // Arguments: none
 //   Returns: none   
   AliDebug(1,"Start.");
@@ -413,8 +339,8 @@ void AliHMPIDv1::Hits2SDigits()
     if(!GetLoader()->TreeH()) {GetLoader()->LoadHits();                    }
     if(!GetLoader()->TreeS()) {GetLoader()->MakeTree("S"); MakeBranch("S");}//to
           
-    for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
-      GetLoader()->TreeH()->GetEntry(iPrimN);
+    for(Int_t iEnt=0;iEnt<GetLoader()->TreeH()->GetEntries();iEnt++){//prims loop
+      GetLoader()->TreeH()->GetEntry(iEnt);
       Hit2Sdi(Hits(),SdiLst());
     }//prims loop
     GetLoader()->TreeS()->Fill();
@@ -428,23 +354,19 @@ void AliHMPIDv1::Hits2SDigits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv1::Hit2Sdi(TClonesArray *pHitLst,TClonesArray *pSdiLst)
 {
-// Converts list of hits to list of sdigits.  For each hit in a loop the following steps are done:
-// - calcultion of the total charge induced by the hit
-// - determination of the pad contaning the hit and shifting hit y position to the nearest anod wire y
-// - defining a set of pads affected (up to 9 including the hitted pad)    
-// - calculating charge induced to all those pads using integrated Mathieson distribution and creating sdigit  
+// Converts list of hits to list of sdigits. 
 // Arguments: pHitLst  - list of hits provided not empty
 //            pSDigLst - list of sdigits where to store the results
 //   Returns: none         
   for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){         //hits loop
-    AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);           //get pointer to current hit   
-    AliHMPIDDigit::Hit2Sdi(pHit,pSdiLst);                       //convert this hit to list of sdigits     
+    AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);         //get pointer to current hit   
+    pHit->Hit2Sdi(pSdiLst);                                    //convert this hit to list of sdigits     
   }//hits loop loop
-}//Hits2SDigs() for TVector2
+}//Hits2Sdi()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv1::Digits2Raw()
 {
-// Creates raw data files in DDL format. Invoked by AliSimulation where loop over events is done
+// Interface method invoked by AliSimulation to create raw data streams from digits. Events loop is done in AliSimulation
 // Arguments: none
 //   Returns: none    
   AliDebug(1,"Start.");
@@ -456,31 +378,8 @@ void AliHMPIDv1::Digits2Raw()
   }
   treeD->GetEntry(0);
   
-  ofstream file[AliHMPIDDigit::kNddls];   //output streams
-  Int_t    cnt[AliHMPIDDigit::kNddls];        //data words counters for DDLs
-  AliRawDataHeader header; //empty DDL header
-  UInt_t w32=0;            //32 bits data word 
-  
-  for(Int_t i=0;i<AliHMPIDDigit::kNddls;i++){        
-    file[i].open(AliDAQ::DdlFileName(GetName(),i)); //open all 14 DDL in parallel
-    file[i].write((char*)&header,sizeof(header));   //write dummy header as place holder, actual will be written later when total size of DDL is known
-    cnt[i]=0;                                       //reset counters
-  }
-  
-  for(Int_t iCh=0;iCh<7;iCh++)
-    for(Int_t iDig=0;iDig<DigLst(iCh)->GetEntriesFast();iDig++){//digits loop for a given chamber
-      AliHMPIDDigit *pDig=(AliHMPIDDigit*)DigLst(iCh)->At(iDig);
-      Int_t ddl=pDig->Raw(w32);                             //ddl is 0..13 
-      file[ddl].write((char*)&w32,sizeof(w32));  cnt[ddl]++;//write formated digit to the propriate file (as decided in Dig2Raw) and increment corresponding counter
-    }//digits 
+  AliHMPIDDigit::WriteRaw(DigLst());
     
-    
-  for(Int_t i=0;i<AliHMPIDDigit::kNddls;i++){
-    header.fSize=sizeof(header)+cnt[i]*sizeof(w32);                //now calculate total number of bytes for each DDL file  
-    header.SetAttribute(0); 
-    file[i].seekp(0); file[i].write((char*)&header,sizeof(header));//rewrite DDL header with fSize field properly set
-    file[i].close();                                               //close DDL file
-  }
   GetLoader()->UnloadDigits();
   AliDebug(1,"Stop.");      
 }//Digits2Raw()
@@ -638,31 +537,31 @@ void AliHMPIDv1::StepManager()
       Int_t   pid=     gMC->TrackPid();                                                          //take PID
       Float_t etot=    gMC->Etot();                                                              //total hpoton energy, [GeV] 
       Double_t x[3];   gMC->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
-      Float_t xl,yl;   AliHMPIDParam::Instance()->Mars2Lors(copy,x,xl,yl);                        //take LORS position
-      new((*fHits)[fNhits++])AliHMPIDHit(copy,etot,pid,tid,xl,yl,x);                              //HIT for photon, position at PC
-      GenFee(copy);                                                                              //generate feedback photons
+      Float_t xl,yl;   AliHMPIDParam::Instance()->Mars2Lors(copy,x,xl,yl);                       //take LORS position
+      new((*fHits)[fNhits++])AliHMPIDHit(copy,etot,pid,tid,xl,yl,x);                             //HIT for photon, position at P, etot will be set to Q
+      GenFee(etot);                                                                              //generate feedback photons etot is modified in hit ctor to Q of hit
     }//photon hit PC and DE >0 
   }//photon hit PC
   
 //Treat charged particles  
-  static Double_t dEdX;                                                                           //need to store mip parameters between different steps    
+  static Float_t eloss;                                                                           //need to store mip parameters between different steps    
   static Double_t in[3];
   if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==fIdAmpGap){                                   //charged particle in amplification gap (fIdAmpGap)
     if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {                                               //entering or newly created
-      dEdX=0;                                                                                     //reset dEdX collector                         
+      eloss=0;                                                                                    //reset Eloss collector                         
       gMC->TrackPosition(in[0],in[1],in[2]);                                                      //take position at the entrance
     }else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){               //exiting or disappeared
-      dEdX              +=gMC->Edep();                                                            //take into account last step dEdX
+      eloss              +=gMC->Edep();                                                            //take into account last step Eloss
                           gMC->CurrentVolOffID(1,copy);                                           //take current chamber since geometry tree is HMPID-Rgap
       Int_t tid=          gMC->GetStack()->GetCurrentTrackNumber();                               //take TID
       Int_t pid=          gMC->TrackPid();                                                        //take PID
       Double_t out[3];    gMC->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
       out[0]=0.5*(out[0]+in[0]); out[1]=0.5*(out[1]+in[1]); out[1]=0.5*(out[1]+in[1]);            //take hit position at the anod plane
-      Float_t xl,yl;AliHMPIDParam::Instance()->Mars2Lors(copy,out,xl,yl);                          //take LORS position
-      new((*fHits)[fNhits++])AliHMPIDHit(copy,dEdX,pid,tid,xl,yl,out);                             //HIT for MIP, position near anod plane 
-      GenFee(copy,dEdX);                                                                          //generate feedback photons
+      Float_t xl,yl;AliHMPIDParam::Instance()->Mars2Lors(copy,out,xl,yl);                         //take LORS position
+      new((*fHits)[fNhits++])AliHMPIDHit(copy,eloss,pid,tid,xl,yl,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
+      GenFee(eloss);                                                                              //generate feedback photons 
     }else                                                                                         //just going inside
-      dEdX          += gMC->Edep();                                                               //collect this step dEdX 
+      eloss          += gMC->Edep();                                                              //collect this step eloss 
   }//MIP in GAP
 }//StepManager()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

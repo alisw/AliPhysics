@@ -63,8 +63,9 @@ void AliHMPIDCluster::CorrSin()
 // Correction of cluster x position due to sinoid, see HMPID TDR  page 30
 // Arguments: none
 //   Returns: none
-  AliHMPIDDigit dig;dig.Manual1(Ch(),fX,fY);                                               //tmp digit to get it center
-  Float_t x=fX-dig.LorsX();  
+  Int_t pc,px,py;
+  AliHMPIDDigit::Lors2Pad(fX,fY,pc,px,py);             //tmp digit to get it center
+  Float_t x=fX-AliHMPIDDigit::LorsX(pc,px);                    //diff between cluster x and center of the pad contaning this cluster   
   fX+=3.31267e-2*TMath::Sin(2*TMath::Pi()/0.8*x)-2.66575e-3*TMath::Sin(4*TMath::Pi()/0.8*x)+2.80553e-3*TMath::Sin(6*TMath::Pi()/0.8*x)+0.0070;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -117,7 +118,7 @@ void AliHMPIDCluster::Print(Option_t* opt)const
   }
   Double_t ratio=0;
   if(Q()>0&&QRaw()>0) ratio = Q()/QRaw()*100;
-  Printf("%sCLU:(%7.3f,%7.3f) Qfitted=%8.3f QRaw=%8.3f(%3.0f%%) ch=%i  Npads=%2i  DimBox %i  NlocMax %i Chi2 %f   %s",
+  Printf("%sCLU: ch=%i                 (%7.3f,%7.3f) Q=%8.3f Qraw=%8.3f(%3.0f%%) Size=%2i DimBox=%i LocMax=%i Chi2=%7.3f   %s",
          opt,X(),Y(),Q(),QRaw(),ratio,Ch(),Size(),fBox,fNlocMax,fChi2,status);
   if(fDigs) fDigs->Print();    
 }//Print()

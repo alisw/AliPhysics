@@ -13,19 +13,40 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 
-#include "AliHMPIDDigit.h" //class header
-#include <TClonesArray.h>  //Hit2Sdi() 
-#include <TBox.h>       //Draw() 
+#include "AliHMPIDDigit.h"    //class header
+#include <TClonesArray.h>     //WriteRaw() 
+#include <TBox.h>             //Draw() 
+#include <AliRawDataHeader.h> //WriteRaw()
+#include <AliDAQ.h>           //WriteRaw()
+#include <Riostream.h>        //WriteRaw()
 ClassImp(AliHMPIDDigit)
 
-const Float_t AliHMPIDDigit::fMinPcX[]={0,SizePcX() + SizeDead(),0,SizePcX() + SizeDead(),       0,SizePcX() + SizeDead()};
-const Float_t AliHMPIDDigit::fMinPcY[]={0,                     0,SizePcY()+SizeDead(),SizePcY() + SizeDead(),2*(SizePcY()+SizeDead()),2*(SizePcY()+SizeDead())};
+const Float_t AliHMPIDDigit::fMinPcX[]={ 0.00 ,  66.60 ,   0.00 ,  66.60 ,  0.00 ,  66.60};
+const Float_t AliHMPIDDigit::fMaxPcX[]={64.00 , 130.60 ,  64.00 , 130.60 , 64.00 , 130.60};
 
-const Float_t AliHMPIDDigit::fMaxPcX[]={SizePcX(),SizeAllX(),SizePcX(),SizeAllX(),SizePcX(),SizeAllX()};
-const Float_t AliHMPIDDigit::fMaxPcY[]={SizePcY(),SizePcY(),SizeAllY() - SizePcY(),SizeAllY() - SizePcY(),SizeAllY(),SizeAllY()};
+const Float_t AliHMPIDDigit::fMinPcY[]={ 0.00 , 42.92 ,  85.84,   0.00 , 42.92 ,  85.84};
+const Float_t AliHMPIDDigit::fMaxPcY[]={40.32 , 83.24 , 126.16,  40.32 , 83.24 , 126.16};
 
 
 /*
+
+  y6  ----------  ----------   126.16
+      |        |  |        |
+      |    4   |  |    5   |
+  y5  ----------  ----------    85.84 
+
+  y4  ----------  ----------    83.24  
+      |        |  |        |
+      |    2   |  |    3   |             view from electronics side
+  y3  ----------  ----------    42.92
+          
+  y2  ----------  ----------    40.32
+      |        |  |        |
+      |    0   |  |    1   |
+  y1  ----------  ----------    0      
+      x1      x2  x3       x4
+
+      0    64.00   66.60    130.60 
 Preface: all geometrical information (like left-right sides) is reported as seen from electronic side.
 
 
@@ -81,59 +102,46 @@ void AliHMPIDDigit::Draw(Option_t*)
   pad->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::Hit2Sdi(AliHMPIDHit *pHit,TClonesArray *pSdiLst)
-{
-// Creates a list of sdigits out of provided hit
-// Arguments: pHit- hit
-//   Returns: none
-  
-  Int_t iSdiCnt=pSdiLst->GetEntries(); //list of sdigits contains sdigits from previous ivocations of Hit2Sdi, do not override them
-  AliHMPIDDigit dig;
-  for(Int_t i=0;i<9;i++){                                      //affected pads loop
-    dig.Set(pHit,i); //c,q,tid,x,y   create tmp sdigit for pad i around hit position
-    if(dig.PadPcX()==-1) continue;
-    new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(dig);
-  }
-}//Hit2Sdi()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::Print(Option_t*)const
+void AliHMPIDDigit::Print(Option_t *opt)const
 {
 // Print current digit  
 // Arguments: option string not used
 //   Returns: none    
-  UInt_t w32; Raw(w32);
-  Printf("DIG:(%7.3f,%7.3f) Q=%8.3f (ch=%1i,pc=%1i,x=%2i,y=%2i)  TID=(%5i,%5i,%5i) ddl=%i raw=0x%x (r=%2i,d=%2i,a=%2i) %s",
-              LorsX(),LorsY(),Q(), A2C(fPad),A2P(fPad),A2X(fPad),A2Y(fPad),   
-              fTracks[0],fTracks[1],fTracks[2],DdlIdx(),w32,Row(),Dilogic(),Addr(), 
-              (IsOverTh(Q()))?"":"!!!");
+  UInt_t w32; Int_t ddl,r,d,a;
+  Raw(w32,ddl,r,d,a);
+  Printf("%sDIG:(ch=%1i,pc=%1i,x=%2i,y=%2i) (%7.3f,%7.3f) Q=%8.3f TID=(%5i,%5i,%5i) raw=0x%x (ddl=%2i,r=%2i,d=%2i,a=%2i) %s",
+          opt,  A2C(fPad),A2P(fPad),A2X(fPad),A2Y(fPad),LorsX(),LorsY(), Q(),  fTracks[0],fTracks[1],fTracks[2],w32,ddl,r,d,a, (IsOverTh(Q()))?"":"below thr");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::PrintSize()
+void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
 {
-// Print all segmentaion related sizes
-// Arguments: none
-//   Returns: none    
-  Printf("-->pad    =(%6.2f,%6.2f) cm dead zone %.2f cm\n"
-         "-->PC     =(%6.2f,%6.2f) cm (%3i,%3i) pads\n"
-         "-->all PCs=(%6.2f,%6.2f) cm (%3i,%3i) pads",
-               SizePadX(),SizePadY(),SizeDead(),
-               SizePcX() ,SizePcY() ,kPadPcX ,kPadPcY,
-               SizeAllX(),SizeAllY(),kPadAllX,kPadAllY);
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::Test()
-{
-  AliHMPIDDigit d1,d2; Int_t ddl;UInt_t w32;
-  for(Int_t i=0;i<10000;i++){
-    Int_t ch=Int_t(gRandom->Rndm()*7);
-    Int_t pc=Int_t(gRandom->Rndm()*6);
-    Int_t px=Int_t(gRandom->Rndm()*80);
-    Int_t py=Int_t(gRandom->Rndm()*48);
-    d1.Manual2(ch,pc,px,py);                
-    ddl=d1.Raw(w32);    d2.Raw(ddl,w32);
-    if(d1.Compare(&d2)) Printf("Problem!!!");
-  }
-  Printf("OK");
-}//Test()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Write a list of digits for a given chamber in raw data stream
+// Arguments: pDigAll- list of digits 
+//   Returns: none      
+  ofstream ddlL,ddlR;                               //output streams, 2 per chamber
+  Int_t    cntL=0,cntR=0;                           //data words counters for DDLs
+  AliRawDataHeader header; header.SetAttribute(0);  //empty DDL header
 
+  UInt_t w32=0; Int_t ddl,r,d,a;            //32 bits data word 
+  for(Int_t iCh=kMinCh;iCh<=kMaxCh;iCh++){//chambers loop
+    ddlL.open(AliDAQ::DdlFileName("HMPID",2*iCh)); 
+    ddlR.open(AliDAQ::DdlFileName("HMPID",2*iCh+1));      //open both DDL of this chamber in parallel
+    ddlL.write((char*)&header,sizeof(header));            //write dummy header as place holder, actual 
+    ddlR.write((char*)&header,sizeof(header));            //will be rewritten later when total size of DDL is known
+  
+    TClonesArray *pDigCh=(TClonesArray *)pDigAll->At(iCh); //list of digits for current chamber 
+    for(Int_t iDig=0;iDig<pDigCh->GetEntriesFast();iDig++){//digits loop
+      AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigCh->At(iDig);
+      pDig->Raw(w32,ddl,r,d,a);                             
+      if(ddl%2){
+        ddlL.write((char*)&w32,sizeof(w32));  cntL++;
+      }else{
+        ddlR.write((char*)&w32,sizeof(w32));  cntR++;
+      }
+    }//digits  loop
+
+    header.fSize=sizeof(header)+cntL*sizeof(w32); ddlL.seekp(0); ddlL.write((char*)&header,sizeof(header)); ddlL.close(); //rewrite header with size set to
+    header.fSize=sizeof(header)+cntR*sizeof(w32); ddlR.seekp(0); ddlR.write((char*)&header,sizeof(header)); ddlR.close(); //number of bytes and close file
+  }//chambers loop
+}//WriteRaw()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

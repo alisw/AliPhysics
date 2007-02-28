@@ -6,29 +6,30 @@
 #include <AliHit.h>           //base class
 #include <TVector3.h>         //ctor
 #include <TRandom.h>          //QdcTot()
-#include <TMath.h>
+#include "AliHMPIDDigit.h"    //QdcTot() 
 
 class AliHMPIDHit : public AliHit //   TObject-AliHit-AliHMPIDHit
 {
 public:
-  AliHMPIDHit(                                                                         ):AliHit(    ),fCh(-1),fPid(-1),fQ(0),fLx(0),fLy(0){} //default ctor
-  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y,const TVector3 &p):AliHit(0,tn),fCh(c ),fPid(id),fQ(0),fLx(x),fLy(y){QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
-  AliHMPIDHit(Int_t c,Float_t e,Int_t id,Int_t tn,Float_t x,Float_t y                  ):             fCh(c ),fPid(id),fQ(0),fLx(x),fLy(y){QdcTot(e);fTrack=tn;}//manual ctor 
+  AliHMPIDHit(                                                                           ):AliHit(     ),fCh(-1),fPid(-1 ),fQ(-1),fLx(0),fLy(0){} //default ctor
+  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y,const TVector3 &p):AliHit(0,tid),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y){QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
+  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y                  ):AliHit(     ),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y){QdcTot(e);fTrack=tid;}//manual ctor 
+  AliHMPIDHit(const AliHMPIDHit &h):AliHit(h),fCh(h.fCh),fPid(h.fPid),fQ(h.fQ),fLx(h.fLx),fLy(h.fLy) {}//copy ctor
   virtual ~AliHMPIDHit()                                                                                                                                 {}
 //framework part
-         void    Print(Option_t *opt="")const;                                                 //from TObject to print current status
-         void    Draw (Option_t *opt="");                                                      //from TObject to Draw this hit in current canvas
+         void    Print(Option_t *opt="")const;                                                    //from TObject to print current status
+         void    Draw (Option_t *opt="");                                                         //from TObject to Draw this hit
 //private part  
-         Int_t   Ch    (         )const{return fCh;                                    }       //Chamber
-         //clm: hit LorsX and Y were changed for simulation hits
-         Float_t LorsX (         )const{return fLx;                                    }       //hit X position in LORS, [cm]
-         Float_t LorsY (         )const{return fLy;                                    }       //hit Y position in LORS, [cm]
-         Int_t   Pid   (         )const{return fPid;                                   }       //PID
-         Float_t Q     (         )const{return fQ;                                     }       //Eloss for MIP hit or Etot for photon hit, [GeV]
-  inline Float_t QdcTot(Float_t e);                                                            //calculate total charge of the hit          
-         Int_t   Tid   (         )const{return fTrack;                                 }       //TID
+         Int_t   Ch     (                               )const{return fCh;                                    }       //Chamber
+         void    Hit2Sdi(TClonesArray *pSdiLst,Int_t n=1)const;                                                       //add sdigits of this hit to the list 
+         Float_t LorsX  (                               )const{return fLx;                                    }       //hit X position in LORS, [cm]
+         Float_t LorsY  (                               )const{return fLy;                                    }       //hit Y position in LORS, [cm]
+         Int_t   Pid    (                               )const{return fPid;                                   }       //PID
+         Float_t Q      (                               )const{return fQ;                                     }       //total charge, [QDC]
+  inline Float_t QdcTot (Float_t &e                     );                                                            //calculate total charge of the hit          
+         Int_t   Tid    (                               )const{return fTrack;                                 }       //TID
          
-protected:                                                                     //AliHit has fTid,fX,fY,fZ 
+protected:                                                                     //AliHit has fTrack,fX,fY,fZ 
   Int_t    fCh;                                                                //Chamber
   Int_t    fPid;                                                               //PID
   Float_t  fQ;                                                                 //total charge [QDC]
@@ -37,20 +38,30 @@ protected:                                                                     /
   ClassDef(AliHMPIDHit,5)                                                      //HMPID hit class 
 };//class AliHMPIDhit
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-Float_t AliHMPIDHit::QdcTot(Float_t e)
+Float_t AliHMPIDHit::QdcTot(Float_t &e)
 {
 // Samples total charge of the hit
-// Arguments: e- hit energy [GeV]; for mip Eloss for photon Etot   
+// Arguments: e- hit energy [GeV] for mip Eloss for photon Etot   
 //   Returns: total QDC
-  Float_t  x=(LorsX() > 66.6)? LorsX()-66.6:LorsX();                                                 //sagita is for PC (0-64) and not for chamber   
+  Int_t pc,px,py;
+  AliHMPIDDigit::Lors2Pad(fLx,fLy,pc,px,py); 
+  Float_t y=AliHMPIDDigit::LorsY(pc,py);  
+  fLy=((y-fLy)>0)?y-0.2:y+0.2;                                                                       //shift to the nearest anod wire   
+  
+  Float_t  x=(fLx > 66.6)? fLx-66.6:fLx;                                                             //sagita is for PC (0-64) and not for chamber   
   Float_t  qdcEle=34.06311+0.2337070*x+5.807476e-3*x*x-2.956471e-04*x*x*x+2.310001e-06*x*x*x*x;      //reparametrised from DiMauro
   
   Int_t iNele=Int_t(e/26e-9);  if(iNele<1) iNele=1;                                                  //number of electrons created by hit
-  for(Int_t i=1;i<=iNele;i++) fQ-=qdcEle*TMath::Log(gRandom->Rndm()+1e-6);                           //1e-6 is a protection against 0 from rndm  
+  fQ=0;
+  for(Int_t i=1;i<=iNele;i++){
+    Double_t rnd=gRandom->Rndm(); if(rnd==0) rnd=1e-12;                                              //1e-12 is a protection against 0 from rndm  
+    fQ-=qdcEle*TMath::Log(rnd);                
+  }
+  e=fQ;
   return fQ;
 }  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    
+      
 typedef AliHMPIDHit AliRICHHit; // for backward compatibility
     
 #endif

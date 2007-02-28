@@ -27,7 +27,7 @@ public:
           Bool_t  Raw2SDigits      (AliRawReader *                   );                                        //from AliMOdule invoked from AliSimulation  
           void    StepManager      (                                 );                                        //from AliModule invoked from AliMC::Stepping()
 //private part++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-          void    GenFee           (Int_t iCh,Float_t eloss=0        );                                        //generates feedback photons; eloss=0 for photon
+          void    GenFee           (Float_t qtot                     );                                        //generates feedback photons
   static  Float_t Fresnel          (Float_t geV,Float_t p, Bool_t pl );                                        //deals with Fresnel absorption on PC          
   static  void    Hit2Sdi          (TClonesArray *pH,TClonesArray *pS); 
           Bool_t  IsLostByFresnel  (                                 );                                        //checks if the photon lost on Fresnel reflection  

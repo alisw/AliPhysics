@@ -166,7 +166,7 @@ void caf()
   
   pChain->GetListOfFiles()->Print();
   
-  TVirtualProof *pProof=TProof::Open("kir@lxb6046.cern.ch");	
+  TProof *pProof=TProof::Open("kir@lxb6046.cern.ch");	
   pProof->UploadPackage("ESD.par");
   pProof->EnablePackage("ESD");
   
@@ -323,7 +323,7 @@ void cosmic()
       pDigQ->Fill(pDig->Q());
       pDigM->Fill(pDig->LorsX(),pDig->LorsY());
     }//digits loop
-    Int_t qmax=0;    
+    Float_t qmax=0;    
     for(Int_t iClu=0;iClu<pCluCh->GetEntriesFast();iClu++){//clusters loop
       AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluCh->UncheckedAt(iClu);
       pCluQ->Fill(pClu->Q());

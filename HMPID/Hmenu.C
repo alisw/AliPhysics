@@ -2,8 +2,9 @@ AliRun     *a; AliRunLoader *al;   TGeoManager *g; //globals for easy manual man
 AliHMPID   *h; AliLoader    *hl; AliHMPIDParam *hp;
 Bool_t isGeomType=kFALSE;
 
-Int_t nEvent=0;
-
+Int_t nCurEvt=0;
+Int_t nMaxEvt=0;
+TControlBar *pMenu=0;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void GetParam()
 {
@@ -18,18 +19,21 @@ void Hmenu()
 {   
   TString status="Status: ";
   if(gSystem->IsFileInIncludePath("galice.root")){
-    status+="galice.root found";
+    status+="galice.root: ";
     al=AliRunLoader::Open();                                                //try to open galice.root from current dir 
     if(gAlice) delete gAlice;                                               //in case we execute this in aliroot delete default AliRun object 
     al->LoadgAlice(); a=al->GetAliRun();                                    //take new AliRun object from galice.root   
     hl=al->GetDetectorLoader("HMPID");  h=(AliHMPID*)a->GetDetector("HMPID");  //get HMPID object from galice.root
     
-    status+=Form(" with %i event(s)",al->GetNumberOfEvents()); status+=(h)? " with HMPID": " without HMPID";
+    status+=(h)? "HMPID": "PROBLEM PROBLEM PROBLEM- no HMPID";
+    nMaxEvt=al->GetNumberOfEvents()-1;
+    status+=Form(" Event(s) 0-%i",nMaxEvt); 
   }else  
-    status+="No galice.root";
+    status+="PROBLEM PROBLEM PROBLEM no galice.root";
   
+  status+=Form(" curent event %i",nCurEvt);
   GetParam();
-  TControlBar *pMenu = new TControlBar("horizontal",status.Data(),0,0);
+  pMenu = new TControlBar("horizontal",status.Data(),0,0);
     pMenu->AddButton("                     ","","");
     pMenu->AddButton("       General       ","General()"  ,"general items which do not depend on any files");
     pMenu->AddButton("                     ",""           ,"");
@@ -47,8 +51,8 @@ void Hmenu()
 void General()
 {         
   TControlBar *pMenu = new TControlBar("vertical","General purpose",100,50);  
-    pMenu->AddButton("Debug ON","don();"                    ,"Switch debug on-off"                        );   
-    pMenu->AddButton("Debug OFF","doff();"                   ,"Switch debug on-off"                        );   
+    pMenu->AddButton("Debug ON","don();"                   ,"Switch debug on-off"                        );   
+    pMenu->AddButton("Debug OFF","doff();"                 ,"Switch debug on-off"                        );   
     pMenu->AddButton("Geo GUI","geo();"                    ,"Shows geometry"                             ); 
     pMenu->AddButton("Browser","new TBrowser;"             ,"Start ROOT TBrowser"                        );
   pMenu->Show();  
@@ -56,15 +60,15 @@ void General()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimData()
 {
-  TControlBar *pMenu = new TControlBar("vertical","Sim data",310,50);  
-    pMenu->AddButton("Display ","hed();"    ,"Display Fast");
-    pMenu->AddButton("HITS QA"           ,"hqa()"     ,"QA plots for hits: hqa()");
-    pMenu->AddButton("Print stack"       ,"stack();"  ,"To print hits:     hp(evt)");
-    pMenu->AddButton("Print hits"        ,"hp();"     ,"To print hits:     hp(evt)");
-    pMenu->AddButton("Print sdigits"     ,"sp();"     ,"To print sdigits:  sp(evt)");
-    pMenu->AddButton("Print digits"      ,"dp();"     ,"To print digits:   dp(evt)");
-    pMenu->AddButton("Print clusters"    ,"cp();"     ,"To print clusters: cp(evt)");
-  pMenu->Show();         
+  TControlBar *pSim = new TControlBar("vertical","Sim data",310,50);  
+    pSim->AddButton("Display ","hed();"    ,"Display Fast");
+    pSim->AddButton("HITS QA"           ,"hqa()"     ,"QA plots for hits: hqa()");
+    pSim->AddButton("Print stack"       ,"stack();"  ,"To print hits:     hp(evt)");
+    pSim->AddButton("Print hits"        ,"hp(nCurEvt);"     ,"To print hits:     hp(evt)");
+    pSim->AddButton("Print sdigits"     ,"sp(nCurEvt);"     ,"To print sdigits:  sp(evt)");
+    pSim->AddButton("Print digits"      ,"dp(nCurEvt);"     ,"To print digits:   dp(evt)");
+    pSim->AddButton("Print clusters"    ,"cp(nCurEvt);"     ,"To print clusters: cp(evt)");
+  pSim->Show();         
 }//SimData()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RawData()
@@ -82,14 +86,14 @@ void RawData()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Test()
 {         
-  TControlBar *pMenu = new TControlBar("vertical","Test",820,50);  
-    pMenu->AddButton("TEST Display "      ,"sed();"    ,"Display Fast");
-    pMenu->AddButton("Hits->Digits"       ,"thd();"                    ,"test hits->sdigits->digits"                 );   
-    pMenu->AddButton("Segmentation"       ,"ts()"                      ,"test segmentation methods"                  );
-    pMenu->AddButton("Test response"      ,"AliHMPIDParam::TestResp();","Test AliHMPIDParam response methods"         );
-    pMenu->AddButton("Print map"          ,"PrintMap();"               ,"Test AliHMPIDParam transformation methods"   );
-    pMenu->AddButton("Test Recon"         ,"rec();"                    ,"Test AliHMPIDRecon"                          );
-  pMenu->Show();  
+  TControlBar *pTst = new TControlBar("vertical","Test",625,50);  
+    pTst->AddButton("TEST Display "      ,"sed();"                    ,"Display Fast");
+    pTst->AddButton("Test all"           ,"tst();"                   ,"test hits->sdigits->digits"                 );   
+    pTst->AddButton("Segmentation"       ,"ts()"                      ,"test segmentation methods"                  );
+    pTst->AddButton("Test response"      ,"AliHMPIDParam::TestResp();","Test AliHMPIDParam response methods"         );
+    pTst->AddButton("Print map"          ,"PrintMap();"               ,"Test AliHMPIDParam transformation methods"   );
+    pTst->AddButton("Test Recon"         ,"rec();"                    ,"Test AliHMPIDRecon"                          );
+  pTst->Show();  
 }//Test()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -101,24 +105,10 @@ void geo (                       ) {gGeoManager->GetTopVolume()->Draw("ogl");}
   
 void du  (                       ) {h->Dump         (   );}                //utility display 
 
-void hp  (                       ) {h->HitPrint  (nEvent);}   //print hits for requested event
-void hq  (                       ) {h->HitQA     (   );}   //hits QA plots for all events 
-void sp  (                       ) {h->SdiPrint  (nEvent);}   //print sdigits for requested event
-void sq  (                       ) {h->SdiPrint  (nEvent);}   //print sdigits for requested event
-void dp  (                       ) {h->DigPrint  (nEvent);}   //print digits for requested event
-void dq  (                       ) {AliHMPIDReconstructor::DigQA     (al );}   //digits QA plots for all events
-void cp  (                       ) {h->CluPrint  (nEvent);                 }   //print clusters for requested event
-void cq  (                       ) {AliHMPIDReconstructor::CluQA     (al );}   //clusters QA plots for all events
-
-void ep  (                       ) {AliHMPIDTracker::EsdQA(1);            } 
-void eq  (                       ) {AliHMPIDTracker::EsdQA();             }                   
-void mp  (Double_t probCut=0.7   ) {AliHMPIDTracker::MatrixPrint(probCut);}                   
-
-void PrevEvent()                   {nEvent--;if(nEvent<0)nEvent=0;Printf("Current event is %i",nEvent);}
-void NextEvent()                   {nEvent++;Printf("Current event is %i",nEvent);}
+void PrevEvent()                   {nCurEvt--;if(nCurEvt<0       )nCurEvt=0      ;pMenu->SetTitle(Form("Event(s): 0-%i Current event %i",nMaxEvt,nCurEvt));}
+void NextEvent()                   {nCurEvt++;if(nCurEvt>=nMaxEvt)nCurEvt=nMaxEvt;pMenu->SetTitle(Form("Event(s): 0-%i Current event %i",nMaxEvt,nCurEvt));}
 void stack(                     )  {AliHMPIDParam::Stack();}    
 void tid  (Int_t tid,Int_t evt=0)  {AliHMPIDParam::Stack(evt,tid);} 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void PrintMap()
 {
@@ -130,7 +120,8 @@ void PrintMap()
   Printf("\n\n\n");                                       
   
   for(int ch=6;ch>=0;ch--){
-    AliHMPIDDigit dL(ch,0,1,0,0),dR(ch,0,1,67,0);
+    AliHMPIDDigit dL,dR; dL.Manual2(ch,2,0 ,24);
+                         dR.Manual2(ch,3,79,24);
     TVector3 lt=rp->Lors2Mars(ch,0,y);                                              TVector3 rt=rp->Lors2Mars(ch,x,y);
                                        TVector3 ce=rp->Lors2Mars(ch,x/2,y/2);
     TVector3 lb=rp->Lors2Mars(ch,0,0);                                              TVector3 rb=rp->Lors2Mars(ch,x,0);
@@ -175,399 +166,80 @@ void PrintMap()
   Printf("(ch=%i,pc=%i,x=%2i,y=%2i) ddl=%i raw=0x%h (r=%2i,d=%2i,a=%2i)",
            ch,   pc,  px,   py,     ddl,   raw,      r,    d,    a); dd.Print(); 
   ddl=7;raw=0x592e000;r=22;d=4;a=46;ch=3;pc=1;
-  
-  
 }//PrintMap()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void HitQA(Double_t cut,Double_t cutele,Double_t cutR)
+void DrawSeg()
 {
-// Provides a set of control plots intended primarily for charged particle flux analisys
-// Arguments: cut (GeV)    - cut on momentum of any charged particles but electrons, 
-//            cetele (GeV) - the same for electrons-positrons
-//            cutR (cm)    - cut on production vertex radius (cylindrical system)        
-  gBenchmark->Start("HitsAna");
-  
-  Double_t cutPantiproton    =cut;
-  Double_t cutPkaonminus     =cut;
-  Double_t cutPpionminus     =cut;
-  Double_t cutPmuonminus     =cut;
-  Double_t cutPpositron      =cutele;
-                    
-  Double_t cutPelectron      =cutele;
-  Double_t cutPmuonplus      =cut;
-  Double_t cutPpionplus      =cut;
-  Double_t cutPkaonplus      =cut;
-  Double_t cutPproton        =cut;
-                       
-
-  TH2F *pEleHitRZ    =new TH2F("EleHitRZ"    ,Form("e^{+} e^{-} hit %s;z[cm];R[cm]" ,GetName())     , 400,-300,300 ,400,-500,500);   //R-z
-  TH2F *pEleHitRP    =new TH2F("EleHitRP"    ,Form("e^{+} e^{-} hit %s;p[GeV];R[cm]",GetName())     ,1000,-1  ,1   ,400,   0,550);   //R-p
-  TH1F *pEleAllP     =new TH1F("EleAllP"     ,     "e^{+} e^{-} all;p[GeV]"                         ,1000,-1  ,1                );  
-  TH1F *pEleHitP     =new TH1F("EleHitP"     ,Form("e^{+} e^{-} hit %s;p[GeV]"      ,GetName())     ,1000,-1  ,1                );   
-  TH1F *pMuoHitP     =new TH1F("MuoHitP"     ,Form("#mu^{-} #mu^{+} hit %s;p[GeV]"  ,GetName())     ,1000,-4  ,4                ); 
-  TH1F *pPioHitP     =new TH1F("PioHitP"     ,Form("#pi^{-} #pi^{+} hit %s;p[GeV]"  ,GetName())     ,1000,-4  ,4                ); 
-  TH1F *pKaoHitP     =new TH1F("KaoHitP"     ,Form("K^{-} K^{+} hit %s;p[GeV]"      ,GetName())     ,1000,-4  ,4                ); 
-  TH1F *pProHitP     =new TH1F("ProHitP"     ,Form("p^{-} p^{+} hit %s;p[GeV]"      ,GetName())     ,1000,-4  ,4                ); 
-  TH2F *pFlux        =new TH2F("flux"        ,Form("%s flux with Rvertex<%.1fcm"    ,GetName(),cutR),10  ,-5  ,5   , 10,0    ,10); //special text hist
-  TH2F *pVertex      =new TH2F("vertex"      ,Form("%s 2D vertex of HMPID hit;x;y"   ,GetName())     ,120 ,0   ,600 ,120,0    ,600); //special text hist
-  TH1F *pRho         =new TH1F("rho"         ,Form("%s r of HMPID hit"               ,GetName())     ,600 ,0   ,600); //special text hist
-  pFlux->SetStats(0);
-  pFlux->GetXaxis()->SetBinLabel(1 ,Form("p^{-}>%.3fGeV/c"   ,cutPantiproton));        
-  pFlux->GetXaxis()->SetBinLabel(2 ,Form("K^{-}>%.3fGeV/c"   ,cutPkaonminus ));        
-  pFlux->GetXaxis()->SetBinLabel(3 ,Form("#pi^{-}>%.3fGeV/c" ,cutPpionminus ));      
-  pFlux->GetXaxis()->SetBinLabel(4 ,Form("#mu^{-}>%.3fGeV/c" ,cutPmuonminus ));      
-  pFlux->GetXaxis()->SetBinLabel(5 ,Form("e^{+}>%.3fGeV/c"   ,cutPpositron  ));        
-  
-  pFlux->GetXaxis()->SetBinLabel(6 ,Form("e^{-}>%.3fGeV/c"   ,cutPelectron  ));        
-  pFlux->GetXaxis()->SetBinLabel(7 ,Form("#mu^{+}>%.3fGeV/c" ,cutPmuonplus  ));      
-  pFlux->GetXaxis()->SetBinLabel(8 ,Form("#pi^{+}>%.3fGeV/c" ,cutPpionplus  ));      
-  pFlux->GetXaxis()->SetBinLabel(9 ,Form("K^{+}>%.3fGeV/c"   ,cutPkaonplus  ));        
-  pFlux->GetXaxis()->SetBinLabel(10,Form("p^{+}>%.3fGeV/c"   ,cutPproton    ));        
-  
-  pFlux->GetYaxis()->SetBinLabel(1,"sum");  
-  pFlux->GetYaxis()->SetBinLabel(2,"ch1");  
-  pFlux->GetYaxis()->SetBinLabel(3,"ch2");  
-  pFlux->GetYaxis()->SetBinLabel(4,"ch3");  
-  pFlux->GetYaxis()->SetBinLabel(5,"ch4");  
-  pFlux->GetYaxis()->SetBinLabel(6,"ch5");  
-  pFlux->GetYaxis()->SetBinLabel(7,"ch6");  
-  pFlux->GetYaxis()->SetBinLabel(8,"ch7");  
-  pFlux->GetYaxis()->SetBinLabel(9,"prim"); 
-  pFlux->GetYaxis()->SetBinLabel(10,"tot");  
-  
-//end of hists definition
-   
-  Int_t iNevents=fLoader->GetRunLoader()->GetAliRun()->GetEventsPerRun(),iCntPrimParts=0,iCntTotParts=0;
-//load all needed trees   
-  fLoader->LoadHits(); 
-  fLoader->GetRunLoader()->LoadHeader(); 
-  fLoader->GetRunLoader()->LoadKinematics();  
-  
-  for(Int_t iEvtN=0;iEvtN < iNevents;iEvtN++){//events loop
-    fLoader->GetRunLoader()->GetEvent(iEvtN);
-    AliInfo(Form(" %i event processes",fLoader->GetRunLoader()->GetEventNumber()));
-    AliStack *pStack= fLoader->GetRunLoader()->Stack(); 
-    
-    for(Int_t iParticleN=0;iParticleN<pStack->GetNtrack();iParticleN++){//stack loop
-      TParticle *pPart=pStack->Particle(iParticleN);
-
-      if(iParticleN%10000==0) AliInfo(Form(" %i particles read",iParticleN));
-    
-      switch(pPart->GetPdgCode()){
-        case kProtonBar: pFlux->Fill(-4.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-4.5,8); break;
-        case kKMinus:    pFlux->Fill(-3.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-3.5,8); break;
-        case kPiMinus:   pFlux->Fill(-2.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-2.5,8); break;
-        case kMuonMinus: pFlux->Fill(-1.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-1.5,8); break;
-        case kPositron:  pFlux->Fill(-0.5,9); if(pPart->Rho()<0.01) pFlux->Fill(-0.5,8); pEleAllP->Fill(-pPart->P()); break;
-      
-        case kElectron:  pFlux->Fill( 0.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 0.5,8); pEleAllP->Fill( pPart->P()); break;      
-        case kMuonPlus:  pFlux->Fill( 1.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 1.5,8); break;      
-        case kPiPlus:    pFlux->Fill( 2.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 2.5,8); break;      
-        case kKPlus:     pFlux->Fill( 3.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 3.5,8); break;      
-        case kProton:    pFlux->Fill( 4.5,9); if(pPart->Rho()<0.01) pFlux->Fill( 4.5,8); break;            
-      }//switch
-    }//stack loop
-//now hits analiser        
-    for(Int_t iEntryN=0;iEntryN < fLoader->TreeH()->GetEntries();iEntryN++){//TreeH loop
-      fLoader->TreeH()->GetEntry(iEntryN);                                  //get current entry (prim)                
-      for(Int_t iHitN=0;iHitN < Hits()->GetEntries();iHitN++){//hits loop
-        AliHMPIDHit *pHit = (AliHMPIDHit*)Hits()->At(iHitN);            //get current hit
-        TParticle  *pPart=pStack->Particle(pHit->GetTrack());      //get stack particle which produced the current hit
-        
-        if(pPart->GetPDG()->Charge()!=0&&pPart->Rho()>0.1) pVertex->Fill(pPart->Vx(),pPart->Vy()); //safe margin for sec.
-        if(pPart->GetPDG()->Charge()!=0) pRho->Fill(pPart->Rho()); //safe margin for sec.
-        if(pPart->R()>cutR) continue;                                   //cut on production radius (cylindrical system) 
-      
-        switch(pPart->GetPdgCode()){
-          case kProtonBar: if(pPart->P()>cutPantiproton) {pProHitP->Fill(-pPart->P()); pFlux->Fill(-4.5,pHit->Ch());}break;
-          case kKMinus   : if(pPart->P()>cutPkaonminus)  {pKaoHitP->Fill(-pPart->P()); pFlux->Fill(-3.5,pHit->Ch());}break;
-          case kPiMinus  : if(pPart->P()>cutPpionminus)  {pPioHitP->Fill(-pPart->P()); pFlux->Fill(-2.5,pHit->Ch());}break;
-          case kMuonMinus: if(pPart->P()>cutPmuonminus)  {pMuoHitP->Fill(-pPart->P()); pFlux->Fill(-1.5,pHit->Ch());}break;        
-          case kPositron : if(pPart->P()>cutPpositron)   {pEleHitP->Fill(-pPart->P()); pFlux->Fill(-0.5,pHit->Ch()); 
-               pEleHitRP->Fill(-pPart->P(),pPart->R());  pEleHitRZ->Fill(pPart->Vz(),pPart->R()); }break;
-          
-          case kElectron : if(pPart->P()>cutPelectron)   {pEleHitP->Fill( pPart->P()); pFlux->Fill( 0.5,pHit->Ch()); 
-               pEleHitRP->Fill( pPart->P(),pPart->R());  pEleHitRZ->Fill(pPart->Vz(),pPart->R()); }break;
-          case kMuonPlus : if(pPart->P()>cutPmuonplus)   {pMuoHitP->Fill( pPart->P()); pFlux->Fill( 1.5,pHit->Ch());}break;                     
-          case kPiPlus   : if(pPart->P()>cutPpionplus)   {pPioHitP->Fill( pPart->P()); pFlux->Fill( 2.5,pHit->Ch());}break;           
-          case kKPlus    : if(pPart->P()>cutPkaonplus)   {pKaoHitP->Fill( pPart->P()); pFlux->Fill( 3.5,pHit->Ch());}break;           
-          case kProton   : if(pPart->P()>cutPproton)     {pProHitP->Fill( pPart->P()); pFlux->Fill( 4.5,pHit->Ch());}break;
-        }
-      }//hits loop      
-    }//TreeH loop
-    iCntPrimParts +=pStack->GetNprimary();
-    iCntTotParts  +=pStack->GetNtrack();
-  }//events loop                        
-//unload all loaded staff  
-  fLoader->UnloadHits();  
-  fLoader->GetRunLoader()->UnloadHeader(); 
-  fLoader->GetRunLoader()->UnloadKinematics();  
-//Calculater some sums
-  Stat_t sum=0;
-//sum row, sum over rows  
-  for(Int_t i=1;i<=pFlux->GetNbinsX();i++){
-    sum=0; for(Int_t j=2;j<=8;j++)    sum+=pFlux->GetBinContent(i,j);    
-    pFlux->SetBinContent(i,1,sum);
-  }
-    
-//display everything  
-  new TCanvas("canvas1",Form("Events %i Nprims=%i Nparticles=%i",iNevents,iCntPrimParts,iCntTotParts),1000,900); pFlux->Draw("text");  gPad->SetGrid();  
-//total prims and particles
-  TLatex latex; latex.SetTextSize(0.02);
-  sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,10);    latex.DrawLatex(5.1,9.5,Form("%.0f",sum));
-  sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,9);     latex.DrawLatex(5.1,8.5,Form("%.0f",sum));
-  for(Int_t iCh=0;iCh<7;iCh++) {
-    sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,iCh+2);latex.DrawLatex(5.1,iCh+1.5,Form("%.0f",sum));
-  }  
-  sum=0; for(Int_t i=1;i<=pFlux->GetNbinsX();i++) sum+=pFlux->GetBinContent(i,1);    latex.DrawLatex(5.1,0.5,Form("%.0f",sum));
-  
-  new TCanvas("cEleAllP"   ,"e" ,200,100); pEleAllP->Draw();
-  new TCanvas("cEleHitRP"  ,"e" ,200,100); pEleHitRP->Draw();
-  new TCanvas("cEleHitRZ"  ,"e" ,200,100); pEleHitRZ->Draw();
-  new TCanvas("cEleHitP"   ,"e" ,200,100); pEleHitP->Draw();
-  new TCanvas("cMuoHitP"   ,"mu",200,100); pMuoHitP->Draw();
-  new TCanvas("cPioHitP"   ,"pi",200,100); pPioHitP->Draw();
-  new TCanvas("cKaoHitP"   ,"K" ,200,100); pKaoHitP->Draw();
-  new TCanvas("cProHitP"   ,"p" ,200,100); pProHitP->Draw();
-  new TCanvas("cVertex"    ,"2d vertex" ,200,100); pVertex->Draw();
-  new TCanvas("cRho"    ,"Rho of sec" ,200,100); pRho->Draw();
-  
-  gBenchmark->Show("HitsPlots");
-}//HitQA()
+  TCanvas *pC=new TCanvas("seg","Segmentation as seen from electronics side");
+  DrawPc(1);
+  new TGedEditor(pC);
+  pC->ToggleEventStatus();
+  pC->SetEditable(0);
+  pC->AddExec("status","DrawStatus()");
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void CluQA(AliRunLoader *pAL)
-{
-// Quality assesment plots for clusters. 
-// This methode takes list of digits and form list of clusters again in order to 
-// calculate cluster shape and cluster particle mixture    
-  AliLoader *pRL=pAL->GetDetectorLoader("HMPID");  AliHMPID *pRich=(AliHMPID*)pAL->GetAliRun()->GetDetector("HMPID");//get pointers for HMPID and HMPID loader
-  Int_t iNevt=pAL->GetNumberOfEvents();  if(iNevt==0)             {AliInfoClass("No events");return;}   
-                                         if(pRL->LoadDigits())    {AliInfoClass("No digits file");return;}
-                                            pAL->LoadHeader();
-                                            pAL->LoadKinematics(); 
-//                                            AliStack *pStack=pAL->Stack();
-  TH1::AddDirectory(kFALSE);
-  
-        
-  TH1F*    pQ=new TH1F("HmpAllQ"  ,"Charge All"           ,4000 ,0  ,4000);// Q hists
-  TH1F* pCerQ=new TH1F("HmpCerQ"  ,"Charge Ckov"          ,4000 ,0  ,4000);
-  TH1F* pMipQ=new TH1F("HmpMipQ"  ,"Charge MIP"           ,4000 ,0  ,4000);
-  
-  TH1F*    pS=new TH1F("HmpCluSize"    ,"Cluster size;size"         ,100  ,0  ,100 );// size hists
-  TH1F* pCerS=new TH1F("HmpCluCerSize" ,"Ckov size;size"            ,100  ,0  ,100 );
-  TH1F* pMipS=new TH1F("HmpCluMipSize" ,"MIP size;size"             ,100  ,0  ,100 );
-  
-  TH2F*    pM=new TH2F("HmpCluMap"     ,"Cluster map;x [cm];y [cm]" ,1000 ,0  ,AliHMPIDDigit::SizeAllX(),1000,0,AliHMPIDDigit::SizeAllY()); // maps
-  TH2F* pMipM=new TH2F("HmpCluMipMap"  ,"MIP map;x [cm];y [cm]"     ,1000 ,0  ,AliHMPIDDigit::SizeAllX(),1000,0,AliHMPIDDigit::SizeAllY());
-  TH2F* pCerM=new TH2F("HmpCluCerMap"  ,"Ckov map;x [cm];y [cm]"    ,1000 ,0  ,AliHMPIDDigit::SizeAllX(),1000,0,AliHMPIDDigit::SizeAllY());
- 
-  
-  
-  for(Int_t iEvt=0;iEvt<iNevt;iEvt++){
-    pAL->GetEvent(iEvt);               
-    pRL->TreeD()->GetEntry(0); 
-    TClonesArray *pCluLst=new TClonesArray("AliHMPIDCluster");//tmp list of clusters for this event
-    
-    for(Int_t iCh=0;iCh<7;iCh++) AliHMPIDReconstructor::Dig2Clu(pRich->DigLst(iCh),pCluLst,kFALSE);//cluster finder for all chamber if any digits present
-    
-    for(Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){
-      AliHMPIDCluster *pClu = (AliHMPIDCluster*)pCluLst->At(iClu);
-      Int_t cfm=0; for(Int_t iDig=0;iDig<pClu->Size();iDig++)  cfm+=pClu->Dig(iDig)->Ch(); //collect ckov-fee-mip structure of current cluster ?????
-      Int_t iNckov=cfm/1000000;      Int_t iNfee =cfm%1000000/1000;      Int_t iNmip =cfm%1000000%1000; 
-
-                                             pQ   ->Fill(pClu->Q()) ; pS   ->Fill(pClu->Size()) ; pM    ->Fill(pClu->X(),pClu->Y()); //all clusters  
-      if(iNckov!=0 && iNfee==0 && iNmip==0) {pCerQ->Fill(pClu->Q()) ; pCerS->Fill(pClu->Size()) ; pCerM ->Fill(pClu->X(),pClu->Y());}//ckov only cluster
-      if(iNckov==0 && iNfee==0 && iNmip!=0) {pMipQ->Fill(pClu->Q()) ; pMipS->Fill(pClu->Size()) ; pMipM ->Fill(pClu->X(),pClu->Y());}//mip only cluster
-                                       
-    }//clusters loop   
-    pCluLst->Clear();delete pCluLst;
-  }//events loop
-  
-  pRL->UnloadDigits(); pAL->UnloadKinematics(); pAL->UnloadHeader();
-  TCanvas *pC=new TCanvas("RichCluQA",Form("QA for cluster from %i events",iNevt),1000,900); pC->Divide(3,3);
-  pC->cd(1);    pM->Draw();          pC->cd(2);    pQ->Draw();       pC->cd(3);    pS->Draw();        
-  pC->cd(4); pMipM->Draw();          pC->cd(5); pMipQ->Draw();       pC->cd(6); pMipS->Draw();        
-  pC->cd(7); pCerM->Draw();          pC->cd(8); pCerQ->Draw();       pC->cd(9); pCerS->Draw();        
-}//CluQA()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void OccupancyPrint(Int_t iEvtNreq)
-{
-//prints occupancy for each chamber in a given event
-  Int_t iEvtNmin,iEvtNmax;
-  if(iEvtNreq==-1){
-    iEvtNmin=0;
-    iEvtNmax=gAlice->GetEventsPerRun();
-  } else { 
-    iEvtNmin=iEvtNreq;iEvtNmax=iEvtNreq+1;
-  }
-    
-  if(GetLoader()->GetRunLoader()->LoadHeader()) return;    
-  if(GetLoader()->GetRunLoader()->LoadKinematics()) return;    
-  
-//  Info("Occupancy","for event %i",iEvtN);
-  if(GetLoader()->LoadHits()) return;
-  if(GetLoader()->LoadDigits()) return;
-
-  
-  for(Int_t iEvtN=iEvtNmin;iEvtN<iEvtNmax;iEvtN++){    
-    Int_t nDigCh[7]={0,0,0,0,0,0,0};  
-    Int_t iChHits[7]={0,0,0,0,0,0,0};
-    Int_t nPrim[7]={0,0,0,0,0,0,0};
-    Int_t nSec[7]={0,0,0,0,0,0,0};
-    AliInfo(Form("events processed %i",iEvtN));
-    if(GetLoader()->GetRunLoader()->GetEvent(iEvtN)) return;    
-    AliStack *pStack = GetLoader()->GetRunLoader()->Stack();
-    for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
-      GetLoader()->TreeH()->GetEntry(iPrimN);      
-      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){
-        AliHMPIDHit *pHit = (AliHMPIDHit*)Hits()->At(iHitN);
-        if(pHit->E()>0){
-          iChHits[pHit->Ch()]++;
-          if(pStack->Particle(pHit->GetTrack())->Rho()<0.01) nPrim[pHit->Ch()]++;else nSec[pHit->Ch()]++;
-        }
-      }
-    }
-    
-    GetLoader()->TreeD()->GetEntry(0);
-    for(Int_t iCh=0;iCh<7;iCh++){
-      for(Int_t iDig=0;iDig<DigLst(iCh)->GetEntries();iDig++){
-        AliHMPIDDigit *pDig=(AliHMPIDDigit*)DigLst(iCh)->At(iDig);
-        nDigCh[pDig->Ch()]++;
-      }
-      Printf("Occupancy for chamber %i = %4.2f %% and charged prim tracks %i and sec. tracks %i with total %i",
-        iCh,Float_t(nDigCh[iCh])*100/AliHMPIDDigit::kPadAll,nPrim[iCh],nSec[iCh],iChHits[iCh]);
-    }      
-    
-    
-  }//events loop
-  GetLoader()->UnloadHits();
-  GetLoader()->UnloadDigits();
-  GetLoader()->GetRunLoader()->UnloadHeader();    
-  GetLoader()->GetRunLoader()->UnloadKinematics();    
-}//OccupancyPrint()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPID::SummaryOfEvent(Int_t iEvtN) const
-{
-//prints a summary for a given event
-  AliInfo(Form("Summary of event %i",iEvtN));
-  GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
-  if(GetLoader()->GetRunLoader()->LoadHeader()) return;
-  if(GetLoader()->GetRunLoader()->LoadKinematics()) return;
-  AliStack *pStack=GetLoader()->GetRunLoader()->Stack();
-  
-  AliGenEventHeader* pGenHeader =  gAlice->GetHeader()->GenEventHeader();
-  if(pGenHeader->InheritsFrom("AliGenHijingEventHeader")) {
-    AliInfo(Form(" Hijing event with impact parameter b = %.2f (fm)",((AliGenHijingEventHeader*) pGenHeader)->ImpactParameter()));
-  }
-  Int_t nChargedPrimaries=0;
-  for(Int_t i=0;i<pStack->GetNtrack();i++) {
-    TParticle *pParticle = pStack->Particle(i);
-    if(pParticle->IsPrimary()&&pParticle->GetPDG()->Charge()!=0) nChargedPrimaries++;
-    }
-  AliInfo(Form("Total number of         primaries %i",pStack->GetNprimary()));
-  AliInfo(Form("Total number of charged primaries %i",nChargedPrimaries));
-  AliInfo(Form("Total n. of tracks in stack(+sec) %i",pStack->GetNtrack()));
-  GetLoader()->GetRunLoader()->UnloadHeader();
-  GetLoader()->GetRunLoader()->UnloadKinematics();
-}//SummaryOfEvent()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawZoom()
-{
-// Show info about current cursur position in status bar of the canvas
-// Arguments: none
-//   Returns: none     
-  TCanvas *pC=(TCanvas*)gPad; 
+void DrawStatus()
+{// Show info about current cursur position in status bar of the canvas
+//  Printf("event %i",gPad->GetEvent()); return;
+  TPad *pad=gPad;
+  TCanvas *pC=(TCanvas*)pad; 
   TRootCanvas *pRC= (TRootCanvas*)pC->GetCanvasImp();
   TGStatusBar *pBar=pRC->GetStatusBar();
   pBar->SetParts(5);
-  Float_t x=gPad->AbsPixeltoX(gPad->GetEventX());
-  Float_t y=gPad->AbsPixeltoY(gPad->GetEventY());
-  AliHMPIDDigit dig;dig.Manual1(1,x,y); UInt_t w32=0; 
-  if(IsInDead(x,y))
+  Float_t x=pad->AbsPixeltoX(pad->GetEventX()); Float_t y=pad->AbsPixeltoY(pad->GetEventY());
+  if(AliHMPIDDigit::IsInDead(x,y))
     pBar->SetText("Out of sensitive area",4);    
   else{
-    Int_t ddl=dig.Raw(w32);
-    pBar->SetText(Form("(p%i,x%i,y%i) ddl=%i 0x%x (r%i,d%i,a%i) (%.2f,%.2f)",
-        dig.Pc(),dig.PadPcX(),dig.PadPcY(),
-        ddl,w32,
-        dig.Row(),dig.Dilogic(),dig.Addr(),
-        dig.LorsX(),dig.LorsY()                            ),4);
+    Int_t pc,px,py,w32,ddl,r,d,a;  AliHMPIDDigit::Lors2Pad(x,y,pc,px,py); AliHMPIDDigit dig; dig.Set(1,pc,px,py); dig.Raw(w32,ddl,r,d,a);
+    pBar->SetText(Form("(pc%i,px%i,py%i) (r%i,d%i,a%i) (%.2f,%.2f)",
+                         pc  ,px  ,py,    r  ,d  ,a   ,dig.LorsX(),dig.LorsY()),4);
   }    
-  if(gPad->GetEvent()==1){
-    new TCanvas("zoom",Form("Row %i DILOGIC %i",dig.Row(),dig.Dilogic()));  
-  }
-}//DrawZoom()
+//  if(pad->GetEvent()==1){
+//    new TCanvas("zoom",Form("Row %i DILOGIC %i",dig.Row(),dig.Dilogic()));  
+//  }
+}//DrawStatus()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawPc(Bool_t isFill) 
 { 
-// Utility methode draws HMPID chamber PCs on event display.
-// Arguments: none
-//   Returns: none      
-//  y6  ----------  ----------
-//      |        |  |        |
-//      |    4   |  |    5   |
-//  y5  ----------  ----------
-//
-//  y4  ----------  ----------
-//      |        |  |        |
-//      |    2   |  |    3   |   view from electronics side
-//  y3  ----------  ----------
-//          
-//  y2  ----------  ----------
-//      |        |  |        |
-//      |    0   |  |    1   |
-//  y1  ----------  ----------
-//      x1      x2  x3       x4
   gPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5); 
-  Float_t x1=0,
-          x2=AliHMPIDDigit::SizePcX(),
-          x3=AliHMPIDDigit::SizePcX()+AliHMPIDDigit::SizeDead(),   
-          x4=AliHMPIDDigit::SizeAllX();
-  Float_t y1=0,
-          y2=  AliHMPIDDigit::SizePcY(),
-          y3=  AliHMPIDDigit::SizePcY()+AliHMPIDDigit::SizeDead(),
-          y4=2*AliHMPIDDigit::SizePcY()+AliHMPIDDigit::SizeDead(),
-          y5=  AliHMPIDDigit::SizeAllY()-AliHMPIDDigit::SizePcY(),
-          y6=  AliHMPIDDigit::SizeAllY();
-
-  Float_t xL[5]={x1,x1,x2,x2,x1}; //clockwise
-  Float_t xR[5]={x3,x3,x4,x4,x3};  
-  Float_t yD[5]={y1,y2,y2,y1,y1};
-  Float_t yC[5]={y3,y4,y4,y3,y3};  
-  Float_t yU[5]={y5,y6,y6,y5,y5};
+  
     
   Float_t dX2=0.5*AliHMPIDDigit::SizePadX(),
           dY2=0.5*AliHMPIDDigit::SizePadY() ;
   
   TLatex txt; txt.SetTextSize(0.01);
-  Int_t iColLeft=29,iColRight=41;
-  TPolyLine *pc=0;  TLine *pL;
-  AliHMPIDDigit dig;
-  for(Int_t iPc=0;iPc<AliHMPIDDigit::kPcAll;iPc++){
-    if(iPc==4) pc=new TPolyLine(5,xL,yU); if(iPc==5) pc=new TPolyLine(5,xR,yU); //draw PCs
-    if(iPc==2) pc=new TPolyLine(5,xL,yC); if(iPc==3) pc=new TPolyLine(5,xR,yC);
-    if(iPc==0) pc=new TPolyLine(5,xL,yD); if(iPc==1) pc=new TPolyLine(5,xR,yD);
-    (iPc%2)? pc->SetFillColor(iColLeft): pc->SetFillColor(iColRight);
-    if(!isFill){ pc->Draw();continue;}
+  TLine *pL;
+  
+  AliHMPIDDigit dig;   UInt_t w32; Int_t ddl,r,d,a;    
+  
+  for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++){
+    TBox *pBox=new TBox(AliHMPIDDigit::fMinPcX[iPc],AliHMPIDDigit::fMinPcY[iPc],
+                        AliHMPIDDigit::fMaxPcX[iPc],AliHMPIDDigit::fMaxPcY[iPc]);
     
-    pc->Draw("f");
-    if(iPc%2) {dig.Manual2(0,iPc,79,25); txt.DrawText(dig.LorsX()+2,dig.LorsY(),Form("PC%i",dig.Pc()));}//print PC#    
+    if(iPc==0||iPc==2||iPc==4) pBox->SetFillColor(29);
+    else                       pBox->SetFillColor(41);
+    pBox->Draw();
     
+    if(!isFill)  continue;
+    
+//    if(iPc%2) {dig.Set(0,iPc,79,25); txt.DrawText(dig.LorsX()+2,dig.LorsY(),Form("PC%i",dig.Pc()));}//print PC#    
+
     txt.SetTextAlign(32);
     for(Int_t iRow=0;iRow<8 ;iRow++){//draw row lines (horizontal)
-      dig.Manual2(0,iPc,0,iRow*6);   //set digit to the left-down pad of this row
+      dig.Set(0,iPc,0,iRow*6); dig.Raw(w32,ddl,r,d,a);  //set digit to the left-down pad of this row
+      
       if(iPc%2) txt.DrawText(dig.LorsX()-1           ,dig.LorsY(),Form("%i",dig.PadPcY()));                  //print PadY#    
-                txt.DrawText(dig.LorsX()-1+(iPc%2)*67,dig.LorsY()+2,Form("r%i",dig.Row()));                  //print Row#    
+                txt.DrawText(dig.LorsX()-1+(iPc%2)*67,dig.LorsY()+2,Form("r%i",r));                          //print Row#    
       pL=new TLine(dig.LorsX()-dX2,dig.LorsY()-dY2,dig.LorsX()+AliHMPIDDigit::SizePcX()-dX2,dig.LorsY()-dY2);//draw horizontal line 
       if(iRow!=0) pL->Draw(); 
     }//row loop  
     
     txt.SetTextAlign(13);
     for(Int_t iDil=0;iDil<10;iDil++){//draw dilogic lines (vertical)
-      dig.Manual2(0,iPc,iDil*8,0);       //set this digit to the left-down pad of this dilogic        
+      dig.Set(0,iPc,iDil*8,0); dig.Raw(w32,ddl,r,d,a);       //set this digit to the left-down pad of this dilogic        
+      
                            txt.DrawText(dig.LorsX()  ,dig.LorsY()-1,Form("%i",dig.PadPcX()));                 //print PadX# 
-      if(iPc==4 || iPc==5) txt.DrawText(dig.LorsX()+2,dig.LorsY()+42,Form("d%i",dig.Dilogic()));              //print Dilogic#    
+      if(iPc==4 || iPc==5) txt.DrawText(dig.LorsX()+2,dig.LorsY()+42,Form("d%i",d));              //print Dilogic#    
       pL=new TLine(dig.LorsX()-dX2,dig.LorsY()-dY2,dig.LorsX()-dX2,dig.LorsY()+AliHMPIDDigit::SizePcY()-dY2); //draw vertical line
       if(iDil!=0)pL->Draw();
     }//dilogic loop        
@@ -582,6 +254,10 @@ void hed()
   static TFile *pEsdFl=0;
   static TTree *pEsdTr=0;
   static AliESD *pEsd=0;
+  
+  
+
+  
   if(!pC&&iEvt<iEvtTot){
     iEvt=0;
     iEvtTot=999;
@@ -590,18 +266,25 @@ void hed()
     pEsdFl=TFile::Open("AliESDs.root");     if(!pEsdFl || !pEsdFl->IsOpen()) return;//open AliESDs.root
     pEsdTr=(TTree*) pEsdFl->Get("esdTree"); if(!pEsdTr)                      return;//get ESD tree
     pEsdTr->SetBranchAddress("ESD", &pEsd);
-    hl->LoadDigits(); hl->LoadRecPoints();
+    hl->LoadHits(); hl->LoadDigits(); hl->LoadRecPoints();
     iEvtTot=pEsdTr->GetEntries();
     pC=new TCanvas("hed","View from electronics side, IP is behind the picture.",1000,900);  pC->ToggleEventStatus(); pC->Divide(3,3);
     pC->cd(7); TButton *pBtn=new TButton("Next","hed()",0,0,0.2,0.1);   pBtn->Draw();
     pC->cd(7); TButton *pBtn=new TButton("Quit","Close_hed()",0.2,0,0.4,0.1);   pBtn->Draw(); 
+    new TGedEditor(pC);
   }
  
+  TLatex txt; txt.SetTextSize(0.1);
+  TClonesArray hits("AliHMPIDHit");
+      
   if(iEvt<iEvtTot){
-    pEsdTr->GetEntry(iEvt); al->GetEvent(iEvt); hl->TreeD()->GetEntry(0); hl->TreeR()->GetEntry(0);
-    TLatex txt; pC->cd(3);  gPad->Clear(); 
-    txt.SetTextSize(0.1);txt.DrawLatex(0.2,0.2,Form("Event %i (total %i)",iEvt,iEvtTot));
-    DrawEvt(pC,h->DigLst(),h->CluLst(),pEsd);
+    pEsdTr->GetEntry(iEvt); al->GetEvent(iEvt); 
+    hl->TreeD()->GetEntry(0); hl->TreeR()->GetEntry(0);
+    ReadHits(&hits); 
+     
+    pC->cd(3);  gPad->Clear(); txt.DrawLatex(0.2,0.2,Form("Event %i (total %i)",iEvt,iEvtTot));
+    DrawEvt(pC,&hits,h->DigLst(),h->CluLst(),pEsd);
+    
     iEvt++;
   }else{
     Printf("--- No more events available...Bye.");
@@ -618,6 +301,19 @@ void Close_hed()
   pC->Close();
   pC=0x0;
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void ReadHits(TClonesArray *pHitLst)
+{
+  pHitLst->Delete();  Int_t cnt=0;
+  for(Int_t iEnt=0;iEnt<hl->TreeH()->GetEntries();iEnt++){       //TreeH loop
+    hl->TreeH()->GetEntry(iEnt);                                 //get current entry (prim)                
+    for(Int_t iHit=0;iHit<h->Hits()->GetEntries();iHit++){       //hits loop
+      AliHMPIDHit *pHit = (AliHMPIDHit*)h->Hits()->At(iHit);     //get current hit        
+      new((*pHitLst)[cnt++]) AliHMPIDHit(*pHit);
+    }//hits loop for this entry
+  }//tree entries loop
+  
+}//ReadHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void sed()
 {
@@ -640,7 +336,7 @@ void sed()
   AliESD esd;
   
   
-  EsdFromStack(&esd);
+  SimEsd(&esd);
   HitsFromEsd(&esd,&lh);
   
 
@@ -651,10 +347,10 @@ void sed()
   AliHMPIDReconstructor::Dig2Clu(&ld,&lc);
 //        AliHMPIDTracker::Recon(&esd,&cl);
   
-  DrawEvt(pC1,&ld,&lc,&esd);  
+  DrawEvt(pC1,&lh,&ld,&lc,&esd);  
 }//SimEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
+void DrawEvt(TCanvas *pC,TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
 {//draws all the objects of current event
 
   AliHMPIDRecon rec;  
@@ -689,12 +385,19 @@ void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
     }
     gPad->SetEditable(kTRUE); gPad->Clear();
     DrawPc(0);
+    for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){
+      AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);
+      if(pHit->Ch()==iCh)        pHit->Draw();  //draw hits
+    }
     ((TClonesArray*)pDigLst->At(iCh))->Draw();  //draw digits
     ((TClonesArray*)pCluLst->At(iCh))->Draw();  //draw clusters
                             pTxC[iCh]->Draw();  //draw intersections
                             pRin[iCh]->Draw();  //draw rings
     gPad->SetEditable(kFALSE);
+//    gPad->AddExec("zoom","DrawZoom()");
   }//chambers loop
+  
+  
 //  TLatex txt; txt.SetTextSize(0.02);
 //  txt.DrawLatex(20,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,simCkov,simErr,simN));
 //  txt.DrawLatex(25,-5,Form("#theta=%.4f#pm%.5f with %2i #check{C}"          ,recCkov,recErr,recN));
@@ -702,6 +405,15 @@ void DrawEvt(TCanvas *pC,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
 //  Printf("DIG------DIG---------DIG--------DIG------DIG------DIG");pDigLst->Print();Printf("");                   
 }//DrawEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawZoom()
+{
+  TPad *pad=gPad;  Float_t x=gPad->AbsPixeltoX(pad->GetEventX()); Float_t y=gPad->AbsPixeltoY(pad->GetEventY());
+  TCanvas *zoom = (TCanvas*)gROOT->GetListOfCanvases()->FindObject("zoom");
+  if(!zoom) zoom=new TCanvas("zoom","");
+  zoom->SetTitle(Form("Zoom view around %.2f %.2f",x,y));
+  gPad->Range(x-20,y-20,x+20,y+20);
+  zoom->Update();
+}
 void t1(Int_t case=1)
 {
   AliHMPIDDigit *d[10]; for(Int_t i=0;i<10;i++) d[i]=new AliHMPIDDigit;
@@ -734,6 +446,21 @@ void t1(Int_t case=1)
   cl->Print();  
 }//t1()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SimEsd(AliESD *pEsd)
+{
+  TParticle part; TLorentzVector mom;
+  for(Int_t iTrk=0;iTrk<25;iTrk++){//stack loop
+    part.SetPdgCode(kProton);
+    part.SetProductionVertex(0,0,0,0);  
+    Double_t eta= -0.4+gRandom->Rndm()*0.8; //rapidity is random [-0.4,+0.4]
+    Double_t phi= gRandom->Rndm()*1.4;      //phi is random      [ 0  , 80 ] degrees    
+    mom.SetPtEtaPhiM(2,eta,phi,part.GetMass());
+    part.SetMomentum(mom);
+    AliESDtrack trk(&part);
+    pEsd->AddTrack(&trk);
+  }//stack loop  
+}//EsdFromStack()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void EsdFromStack(AliESD *pEsd)
 {
   al->LoadHeader();al->LoadKinematics();
@@ -760,12 +487,231 @@ void HitsFromEsd(AliESD *pEsd, TClonesArray *pHitLst)
     if(ch<0) continue; //this track does not hit HMPID
     Float_t ckov=0.63;
 
-    Float_t th,ph,xPc,yPc,; pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  
-                          new((*pHitLst)[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,iTrk,xPc                ,yPc);                 //mip hit
-    for(int i=0;i<4;i++)  new((*pHitLst)[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,iTrk,gRandom->Rndm()*130,gRandom->Rndm()*126); //bkg hits 4 per track
-    for(int i=0;i<16;i++){
-      rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi(),pos);
-                          new((*pHitLst)[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,iTrk,pos.X(),pos.Y());}                      //photon hits  
+    Float_t th,ph,xPc,yPc,; pTrk->GetHMPIDtrk(xPc,yPc,th,ph); rec.SetTrack(xRa,yRa,th,ph); 
+    
+    if(!AliHMPIDDigit::IsInDead(xPc,yPc)) new((*pHitLst)[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,iTrk,xPc,yPc);                 //mip hit
+//    for(int i=0;i<4;i++)  new((*pHitLst)[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,iTrk,gRandom->Rndm()*130,gRandom->Rndm()*126); //bkg hits 4 per track
+//    for(int i=0;i<16;i++){
+//      rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi(),pos);
+//                          new((*pHitLst)[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,iTrk,pos.X(),pos.Y());}                      //photon hits  
   }//tracks loop    
+}//HitsFromEsd()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void tst(Int_t nEvts=10000,Int_t type=999)
+{
+  
+  TLegend *lQ=new TLegend(0.5,0.5,0.9,0.9);
+
+  TH1F *hQ7  =new TH1F("hQ7"  ,"" ,300,-50,2000);     hQ7  ->SetLineColor(kRed);      lQ->AddEntry(hQ7  ,"Ckov 7 eV");  hQ7->SetStats(0);
+  TH1F *hQ200=new TH1F("hQ200","" ,300,-50,2000);     hQ200->SetLineColor(kBlack);    lQ->AddEntry(hQ200,"mip 200 eV");
+  TH1F *hQ500=new TH1F("hQ500","" ,300,-50,2000);     hQ500->SetLineColor(kCyan);     lQ->AddEntry(hQ500,"mip 500 eV");
+  TH1F *hQ900=new TH1F("hQ900","" ,300,-50,2000);     hQ900->SetLineColor(kGreen);    lQ->AddEntry(hQ900,"mip 900 eV");
+  
+  TH1F *hCluPerEvt=new TH1F("hCluPerEvt","# clusters per event",11,-0.5,10.5);
+  TH1F *hCluChi2  =new TH1F("hChi2","Chi2 ",1000,0,100);
+  TH1F *hCluFlg   =new TH1F("hCluFlg","Cluster flag",14,-1.5,12.5);                       hCluFlg->SetFillColor(5);
+  TH1F *hCluRawSize= new TH1F("hCluRawSize","Raw cluster size ",100,0,100);
+  
+  TH2F *pCluMapSi1=new TH2F("cluMSi1","Size 1 map",1700,-10,160,1700,-10,160);           
+  TH2F *pCluMapLo1=new TH2F("cluMLo1","Loc Max 1 map",1700,-10,160,1700,-10,160);        
+  TH2F *pCluMapEmp=new TH2F("cluMEmp","Should be empty",1700,-10,160,1700,-10,160);      
+  TH2F *pCluMapUnf=new TH2F("cluMUnf","Unfolded map",1700,-10,160,1700,-10,160);         
+  TH2F *pCluMapMax=new TH2F("cluMMax","Max Loc Max map",1700,-10,160,1700,-10,160);     
+  TH2F *pCluMapAbn=new TH2F("cluMAbn","Fit failed map",1700,-10,160,1700,-10,160);      
+  TH2F *pCluMapEdg=new TH2F("cluMEdg","On edge map",1700,-10,160,1700,-10,160);         
+  TH2F *pCluMapNoLoc=new TH2F("cluMNoLoc","No Loc  map",1700,-10,160,1700,-10,160);     
+  TH2F *pCluMapCoG=new TH2F("cluMCoG","CoG  map",1700,-10,160,1700,-10,160);            
+
+  TH1F *hHitCluDifX = new TH1F("hHitCluDifX" ,";entries;x_{Hit}-x_{Clu} [cm]"   ,2000,-2,2);          hHitCluDifX->Sumw2();    hHitCluDifX->SetFillColor(kYellow);
+  TH1F *hHitCluDifY = new TH1F("hHitCluDifY" ,";entries;y_{Hit}-y_{Clu} [cm]"   ,2000,-2,2);          hHitCluDifY->Sumw2();    hHitCluDifY->SetFillColor(kYellow);
+  TH2F *hHitCluDifXY= new TH2F("hHitCluDifXY",";x_{Hit}-x_{Clu};y_{Hit}-y_{Clu}",2000,-2,2,2000,-2,2);hHitCluDifXY->Sumw2();  
+  TH1F *hHitCluDifQ = new TH1F("hHitCluDifQ" ,";entries;Q_{Hit}-Q_{Clu}"        ,200 ,-100,100);      hHitCluDifQ->Sumw2();    hHitCluDifQ->SetFillColor(kYellow);
+ 
+  Float_t e200=200e-9,e500=500e-9,e900=900e-9,e7=7e-9;//predefined  Eloss
+  
+  AliHMPIDHit hit(0,0,kProton,0,0,0);
+  TClonesArray hits("AliHMPIDHit");  TClonesArray sdigs("AliHMPIDDigit");
+  TObjArray digs(7); for(Int_t i=0;i<7;i++) digs.AddAt(new TClonesArray("AliHMPIDDigit"),i);
+  TObjArray clus(7); for(Int_t i=0;i<7;i++) clus.AddAt(new TClonesArray("AliHMPIDCluster"),i);
+  
+    
+  for(Int_t iEvt=0;iEvt<nEvts;iEvt++){//events loop
+    Printf("============> iEvt = %d ",iEvt);
+    Int_t nHits=(type==999)?1:40;
+    Int_t ch,pid; Float_t e,hitx,hity,hitq;
+    for(Int_t iHit=0;iHit<nHits;iHit++){//hits loop for the current event
+      Printf("In loop");
+      switch(iHit){
+        case 0:  ch=0;pid=kProton;e=e200;hitx=16.0+gRandom->Rndm()*0.8;hity= 16.8+gRandom->Rndm()*0.84;break; //mip ramdomly distributed in one pad in the middle
+        case 1:  ch=0;pid=kProton;e=e200;hitx=0.4;hity=0.42;break; //mip in left-hand bottom coner of chamber 0
+        case 2:  ch=0;pid=kProton;e=e200;hitx=0.4;hity=30  ;break; //mip on left edge of chamber 0
+        case 3:  ch=0;pid=kProton;e=e200;hitx=40; hity=0.42;break; //mip on bottom edge of chamber 0
+        default: ch=gRandom->Rndm()*6; pid=(gRandom->Rndm()>0.9)? kProton:kCerenkov;
+                  if(pid==kProton) 
+                    e=gRandom->Rndm()*900e-9; 
+                  else
+                    e=5.5e-9+3e-9*gRandom->Rndm();
+                  x=gRandom->Rndm()*AliHMPIDDigit::SizeAllX(); y=gRandom->Rndm()*AliHMPIDDigit::SizeAllY();break; //random hit
+      }
+      new(hits[iHit]) AliHMPIDHit(ch,e,pid,iHit,hitx,hity);                          
+      hitq=e;
+      hQ200->Fill(hit.QdcTot(e200));
+      hQ500->Fill(hit.QdcTot(e500));
+      hQ900->Fill(hit.QdcTot(e900));
+      hQ7  ->Fill(hit.QdcTot(e7));
+    }//hits loop
+    
+    hits.Print();
+                
+    AliHMPIDv1::Hit2Sdi(&hits,&sdigs);
+    AliHMPIDDigitizer::Sdi2Dig(&sdigs,&digs);     
+    AliHMPIDReconstructor::Dig2Clu(&digs,&clus);
+          
+    for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//chambers loop
+      TClonesArray *pDigs=(TClonesArray *)digs.UncheckedAt(iCh);
+      TClonesArray *pClus=(TClonesArray *)clus.UncheckedAt(iCh);
+        
+      hCluPerEvt->Fill(pClus->GetEntriesFast());
+      for(Int_t iClu=0;iClu<pClus->GetEntriesFast();iClu++){//clusters loop
+        AliHMPIDCluster *pClu=(AliHMPIDCluster*)pClus->UncheckedAt(iClu);
+        Float_t clux=pClu->X(); Float_t cluy=pClu->Y(); Float_t cluq=pClu->Q();
+        hCluFlg->Fill(pClu->Status());
+        hCluChi2->Fill(pClu->Chi2());
+        hCluRawSize->Fill(pClu->Size());
+	 
+        switch(pClu->Status()){
+            case AliHMPIDCluster::kSi1:   pCluMapSi1->Fill(clux,cluy); break;
+            case AliHMPIDCluster::kLo1:   pCluMapLo1->Fill(clux,cluy); break;
+            case AliHMPIDCluster::kUnf:   pCluMapUnf->Fill(clux,cluy); break; 
+            case AliHMPIDCluster::kAbn:   pCluMapAbn->Fill(clux,cluy); break;
+            case AliHMPIDCluster::kMax:   pCluMapMax->Fill(clux,cluy); break;
+            case AliHMPIDCluster::kEdg:   pCluMapEdg->Fill(clux,cluy); break;
+            case AliHMPIDCluster::kCoG:   pCluMapCoG->Fill(clux,cluy); break;
+            case AliHMPIDCluster::kNoLoc: pCluMapNoLoc->Fill(clux,cluy); break;
+            default:     pCluMapEmp->Fill(clux,cluy); break; 		
+        }
+        
+        hHitCluDifX->Fill(hitx-clux); hHitCluDifY->Fill(hity-cluy); hHitCluDifXY->Fill(hitx-clux,hity-cluy); hHitCluDifQ->Fill(hitq-cluq);
+        
+      }//clusters loop
+      
+    }//chambers loop
+      
+    hits.Delete();  sdigs.Delete();  for(int i = 0;i<7;i++){((TClonesArray*)digs.At(i))->Delete();((TClonesArray*)clus.At(i))->Delete();}
+  }//events loop      
+      
+  gStyle->SetPalette(1);
+  TCanvas *pC2=new TCanvas("Digit canvas","Digit canvas",1280,800); pC2->Divide(3,3);
+  pC2->cd(1);gPad->SetLogy(1);hHitCluDifX->Draw("hist");
+  pC2->cd(2);gPad->SetLogy(1);hHitCluDifY->Draw("hist");
+  pC2->cd(3);gPad->SetLogz(1);hHitCluDifXY->Draw("colz");
+  pC2->cd(4);gPad->SetLogy(1);hHitCluDifQ->Draw("hist");
+  pC2->cd(5);gPad->SetLogy(1);hCluFlg->Draw();
+  pC2->cd(6);gPad->SetLogy(1);hCluChi2->Draw();
+  pC2->cd(7);                 hCluRawSize->Draw();
+  pC2->cd(8);                 hCluPerEvt->Draw("colz");
+  pC2->cd(9);                 hQckov->Draw(); hQm200->Draw("same"); hQm500->Draw("same"); hQm900->Draw("same"); lQ->Draw();
+  TCanvas *pC1=new TCanvas("ClusterMaps","Cluster maps",1280,800); pC1->Divide(3,3);
+  pC1->cd(1);  pCluMapSi1->Draw();  DrawPc(kFALSE);
+  pC1->cd(2);  pCluMapLo1->Draw();  DrawPc(kFALSE);
+  pC1->cd(3);  pCluMapUnf->Draw();  DrawPc(kFALSE);
+  pC1->cd(4);  pCluMapAbn->Draw();  DrawPc(kFALSE);
+  pC1->cd(5);  pCluMapMax->Draw();  DrawPc(kFALSE);
+  pC1->cd(6);  pCluMapEdg->Draw(); DrawPc(kFALSE);
+  pC1->cd(7);  pCluMapCoG->Draw(); DrawPc(kFALSE);
+  pC1->cd(8);  pCluMapNoLoc->Draw();DrawPc(kFALSE);
+  pC1->cd(9);  pCluMapEmp->Draw(); DrawPc(kFALSE);
+   
+  pC1->SaveAs("$HOME/HitMaps.png");  //?????
+  pC2->SaveAs("$HOME/HitCluDif.gif");  
+  
+  Printf("Digits - raw -digits conversion...");  
+  
+  AliHMPIDDigit d1,d2; Int_t ddl,r,d,a;UInt_t w32;
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)
+  for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++)
+  for(Int_t iPx=AliHMPIDDigit::kMinPx;iPx<=AliHMPIDDigit::kMaxPx;iPx++)
+  for(Int_t iPy=AliHMPIDDigit::kMinPy;iPy<=AliHMPIDDigit::kMaxPy;iPy++){
+    d1.Set(iCh,iPc,iPx,iPy,3040);   //set digit               
+    d1.Raw(w32,ddl,r,d,a);          //get raw word for this digit 
+    d2.Raw(w32,ddl);                //set another digit from that raw word
+    if(d1.Compare(&d2)) {d1.Print(); d2.Print(); Printf("");}//compare them
+  }
+  Printf("OK");
+}//tst()
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void hp(Int_t iEvt=0)
+{
+//Prints a list of HMPID hits for a given event. Default is event number 0.
+  Printf("List of HMPID hits for event %i",iEvt);
+  if(al->GetEvent(iEvt)) return;    
+  if(hl->LoadHits()) return;
+  
+  Int_t iTotHits=0;
+  for(Int_t iPrim=0;iPrim<hl->TreeH()->GetEntries();iPrim++){//prims loop
+    hl->TreeH()->GetEntry(iPrim);      
+    h->Hits()->Print();
+    iTotHits+=h->Hits()->GetEntries();
+  }
+  hl->UnloadHits();
+  Printf("totally %i hits for event %i",iTotHits,iEvt);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void sp(Int_t iEvt=0)
+{
+//prints a list of HMPID sdigits  for a given event
+  Printf("List of HMPID sdigits for event %i",iEvt);
+  if(al->GetEvent(iEvt)) return;    
+  if(hl->LoadSDigits()) return;
+  
+  hl->TreeS()->GetEntry(0);
+  h->SdiLst()->Print();
+  hl->UnloadSDigits();
+  Printf("totally %i sdigits for event %i",h->SdiLst()->GetEntries(),iEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void dp(Int_t iEvt=0)
+{
+//prints a list of HMPID digits  for a given event
+  Printf("List of HMPID digits for event %i",iEvt);
+  if(al->GetEvent(iEvt)) return;    
+  if(hl->LoadDigits()) return;
+  
+  hl->TreeD()->GetEntry(0);
+  h->DigLst()->Print();
+  Int_t totDigs=0;
+  for(Int_t i=0;i<7;i++) {totDigs+=h->DigLst(i)->GetEntries();}
+  hl->UnloadDigits();
+  Printf("totally %i digits for event %i",totDigs,iEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void cp(Int_t iEvt=0)
+{//prints a list of HMPID clusters  for a given event
+  Printf("List of HMPID clusters for event %i",iEvt);
+  if(al->GetEvent(iEvt)) return;    
+  if(hl->LoadRecPoints()) return;
+  
+  hl->TreeR()->GetEntry(0);
+  h->CluLst()->Print();
+  
+  Int_t iCluCnt=0; for(Int_t iCh=0;iCh<7;iCh++) iCluCnt+=h->CluLst(iCh)->GetEntries();
+  
+  hl->UnloadRecPoints();
+  Printf("totally %i clusters for event %i",iCluCnt,iEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void Gui()
+{
+  TGMainFrame   *pMF     =new TGMainFrame(gClient->GetRoot(),300,400);//main frame
+//1 level widgets: button and 2 horizontal frames  
+  TGedFrame *pGedF;
+  pMF->AddFrame(pGedF=new TGedFrame(pMF),new TGLayoutHints(kLHintsExpandY));
+  pMF->AddFrame(pDis1=new TGEmbeddedCanvas(pMF,kSunkenFrame));
+  
+  pMF->Layout();
+  pMF->MapSubwindows();
+  pMF->Resize(pMF->GetDefaultSize());
+  pMF->MapWindow();
+}                                                                      
