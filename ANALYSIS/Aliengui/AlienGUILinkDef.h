@@ -9,12 +9,14 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisGUI+;
+#ifdef WITHXML
+#pragma link C++ class AliAlienBrowser+;
 #pragma link C++ class AliLoginFrame+;
 #pragma link C++ class AliFileListFrame+;
 #pragma link C++ class AliPackageFrame+;
-#pragma link C++ class AliAlienBrowser+;
+#pragma link C++ class AliSelectorFrame+;
 #pragma link C++ class AliTagFrame+;
 #pragma link C++ class AliTagAnalysisFrame+;
-#pragma link C++ class AliSelectorFrame+;
+#endif
 
 #endif

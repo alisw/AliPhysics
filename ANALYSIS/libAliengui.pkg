@@ -1,5 +1,20 @@
-ORGSRCS  := $(wildcard ANALYSIS/Aliengui/*.cxx)
-SRCS     := $(patsubst ANALYSIS/%, %, ${ORGSRCS})
+
+CHECKXML = $(shell root-config --has-xml)
+ifeq (yes,$(CHECKXML))
+PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
+CINTFLAGS += -DWITHXML
+SRCS := Aliengui/AliAlienBrowser.cxx \
+	Aliengui/AliAnalysisGUI.cxx \
+	Aliengui/AliSelectorFrame.cxx \
+	Aliengui/AliFileListFrame.cxx \
+	Aliengui/AliLoginFrame.cxx \
+	Aliengui/AliPackageFrame.cxx \
+	Aliengui/AliTagAnalysisFrame.cxx \
+	Aliengui/AliTagFrame.cxx
+else
+SRCS := Aliengui/AliAnalysisGUIdummy.cxx
+endif
+
 HDRS     := $(SRCS:.cxx=.h)
 
 DHDR:=Aliengui/AlienGUILinkDef.h

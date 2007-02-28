@@ -1,7 +1,10 @@
 #include <TSystem.h>
 #include <TApplication.h>
+#ifdef WITHXML
 #include <Aliengui/AliAnalysisGUI.h>
-
+#else
+#include <Aliengui/AliAnalysisGUIdummy.h>
+#endif
 int main(int argc, char **argv) {
   // main
   
