@@ -10,9 +10,15 @@
 using namespace Reve;
 using namespace Alieve;
 
-const Float_t PMDModule::fgkRad     = 0.25;
-const Float_t PMDModule::fgkSqRoot3 = 1.732050808;
-const Float_t PMDModule::fgkZpos    = 0.;
+const Float_t PMDModule::fgkRad        = 0.25;
+const Float_t PMDModule::fgkSqRoot3    = 1.732050808;
+const Float_t PMDModule::fgkZpos       = 0.;
+Int_t         PMDModule::fPreTotPads   = 0;
+Int_t         PMDModule::fCpvTotPads   = 0;
+Int_t         PMDModule::fPreTotAdc    = 0;
+Int_t         PMDModule::fCpvTotAdc    = 0;
+
+
 //______________________________________________________________________
 // PMDModule
 //
@@ -21,10 +27,12 @@ const Float_t PMDModule::fgkZpos    = 0.;
 ClassImp(PMDModule)
 
 PMDModule::PMDModule():
+  fH1(0),
   fX(0.),
   fY(0.),
   fZ(0.),
-  fNPads(0)
+  fNPads(0),
+  fAdc(0)
 {
 
 }
@@ -46,7 +54,6 @@ void PMDModule::DisplayInit(Int_t ism)
   Reve::RGBAPalette *pmdModPalette  = new RGBAPalette(20, 1000);
   pmdModPalette->SetLimits(0, 1000);
 
-  //  Reve::QuadSet* q = this;
   SetName(smodule.Data());
   SetOwnIds(kTRUE);
   Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
@@ -54,11 +61,15 @@ void PMDModule::DisplayInit(Int_t ism)
   SetFrame(pmdModBox);
   SetPalette(pmdModPalette);
 
+  fH1 = new TH1F("fH1", smodule.Data(), 100, 0., 1000.);
+  fH1->SetDirectory(0);
+  fH1->GetXaxis()->SetTitle("Single Cell Edep (adc)");
 }
+
 // -------------------------------------------------------------------- //
+
 void PMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
 {
-
   DisplayInit(ism);
 
   Int_t det, smn, irow, icol, adc;
@@ -108,6 +119,20 @@ void PMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
       //  "This title is not confusing."));
 
       ++fNPads;
+      fAdc += adc;
+
+      if (det == 0)
+	{
+	  fPreTotAdc += (Int_t) adc;
+	  ++fPreTotPads;
+	}
+      if (det == 1)
+	{
+	  fCpvTotAdc += (Int_t) adc;
+	  ++fCpvTotPads;
+	}
+      fH1->Fill((Float_t)adc);
+
     }
 
   RefitPlex();
@@ -116,14 +141,14 @@ void PMDModule::DisplayDigitsData(Int_t ism, TTree *pmdt)
 
   delete digits;
 }
+
 // -------------------------------------------------------------------- //
 
 void PMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
 {
+  DisplayInit(ism);
 
   if (ism > 23) ism -= 24;
-
-  DisplayInit(ism);
 
   Int_t det, smn, irow, icol, adc;
   Int_t xpad = 0, ypad = 0;
@@ -165,6 +190,20 @@ void PMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
       //  "This title is not confusing."));
 
       ++fNPads;
+      fAdc += adc;
+
+      if (det == 0)
+	{
+	  fPreTotAdc += (Int_t) adc;
+	  ++fPreTotPads;
+	}
+      if (det == 1)
+	{
+	  fCpvTotAdc += (Int_t) adc;
+	  ++fCpvTotPads;
+	}
+
+      fH1->Fill((Float_t) adc);
     }
 
   RefitPlex();
@@ -172,6 +211,7 @@ void PMDModule::DisplayRawData(Int_t ism, TObjArray *ddlcont)
   fHMTrans.SetPos(fX, fY, fZ);
   
 }
+
 // -------------------------------------------------------------------- //
 
 void PMDModule::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
@@ -262,7 +302,9 @@ void PMDModule::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
     }
 
 }
+
 // -------------------------------------------------------------------- //
+
 void PMDModule::GenerateBox(Int_t ism, Float_t &xism, Float_t &yism,
 			    Float_t &dxism, Float_t &dyism)
 {

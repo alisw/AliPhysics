@@ -22,7 +22,14 @@ private:
 protected:
   PMDModule* fM; // fModel dynamic-casted to PMDModuleEditor
 
-  TGLabel*   fInfoLabel;
+  TGLabel*   fInfoLabel0;
+  TGLabel*   fInfoLabel1;
+  TGLabel*   fInfoLabel2;
+  TGLabel*   fInfoLabel3;
+  TGLabel*   fInfoLabel4;
+  TGLabel*   fInfoLabel5;
+
+
   // Declare widgets
   // TGSomeWidget*   fXYZZ;
 
@@ -31,6 +38,10 @@ public:
   virtual ~PMDModuleEditor();
 
   virtual void SetModel(TObject* obj);
+  void DisplayHistos();
+  //  void PrintADC();
+
+
 
   // Declare callback/slot methods
   // void DoXYZZ();

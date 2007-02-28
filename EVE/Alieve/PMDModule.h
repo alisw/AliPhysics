@@ -9,6 +9,7 @@
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TTree.h>
+#include <TH1F.h>
 
 namespace Alieve {
 
@@ -24,19 +25,32 @@ private:
 		   Float_t &dxism, Float_t &dyism);
 
 protected:
-  Float_t       fX, fY, fZ;
-  Int_t         fNPads;
+  TH1F*                fH1;
+  Float_t              fX, fY, fZ;
+  Int_t                fNPads;
+  Int_t                fAdc;
 
   static const Float_t fgkRad;
   static const Float_t fgkSqRoot3;
   static const Float_t fgkZpos;
 
+  static Int_t         fPreTotPads;
+  static Int_t         fCpvTotPads;
+  static Int_t         fPreTotAdc;
+  static Int_t         fCpvTotAdc;
+
 
 public:
   PMDModule();
-  virtual ~PMDModule() {}
+  virtual ~PMDModule() { delete fH1; }
 
-  Int_t GetNPads() const { return fNPads; }
+  Int_t GetPRETotPads() const { return fPreTotPads; }
+  Int_t GetCPVTotPads() const { return fCpvTotPads; }
+  Int_t GetNPads()      const { return fNPads; }
+  Int_t GetPRETotAdc()  const { return fPreTotAdc; }
+  Int_t GetCPVTotAdc()  const { return fCpvTotAdc; }
+  Int_t GetAdc()        const { return fAdc; }
+  TH1F *GetHisto()      const { return fH1;}
 
   void DisplayInit(Int_t ism);
   void DisplayDigitsData(Int_t ism, TTree *pmdt);
