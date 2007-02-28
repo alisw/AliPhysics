@@ -1,3 +1,12 @@
+2007-02-28  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* PMDModule.cxx:
+	* PMDModule.h:
+	* PMDModuleEditor.cxx:
+	* PMDModuleEditor.h:
+	From Basanta: new version of PMD visualization; added better
+	per-module statistics and an adc-histogram.
+
 2007-02-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* KineTools.cxx:
