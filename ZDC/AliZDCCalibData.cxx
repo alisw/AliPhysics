@@ -244,24 +244,3 @@ void AliZDCCalibData::SetPMTHVVal(Float_t* HVVal)
   else for(int t=0; t<22; t++) fPMTHVVal[t] = 0.;
 }
  
-//________________________________________________________________
-void AliZDCCalibData::SetZDCTablePos(Float_t* ZDCTablePos)
-{
-  // Set ZDC table vertical positions
-  if(ZDCTablePos) for(int t=0; t<4; t++) fZDCTablePos[t] = ZDCTablePos[t];
-  else for(int t=0; t<4; t++) fZDCTablePos[t] = 0.;
-}
-
-//________________________________________________________________
-void  AliZDCCalibData::SetDCSCalibData(Float_t* DCSData)
-{
-  // Set all DCS data simultaneously
-  if(DCSData){
-    for(int t=0; t<4; t++) fZDCTablePos[t] = DCSData[t];
-    for(int t=4; t<26; t++) fPMTHVVal[t] = DCSData[t]; 
-  }
-  else{
-    for(int t=0; t<4; t++) fZDCTablePos[t] = 0.;
-    for(int t=4; t<26; t++) fPMTHVVal[t] = 0.; 
-  }
-}

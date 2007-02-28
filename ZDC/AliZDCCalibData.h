@@ -42,9 +42,6 @@ class AliZDCCalibData: public TNamed {
   //
   Float_t  GetPMTHVVal(Int_t channel)   const {return fPMTHVVal[channel];}
   Float_t* GetPMTHVVal()		  const {return (float*)fPMTHVVal;}
-   //
-  Float_t  GetZDCTablePos(Int_t channel) const {return fZDCTablePos[channel];}
-  Float_t* GetZDCTablePos()	         const {return (float*)fZDCTablePos;}
  
   //
   void  SetMeanPed(Int_t channel, Float_t val) {fMeanPedestal[channel]=val;}
@@ -65,12 +62,7 @@ class AliZDCCalibData: public TNamed {
   //
   void 	SetPMTHVVal(Int_t channel, Float_t val) {fPMTHVVal[channel]=val;}
   void 	SetPMTHVVal(Float_t* HVVal);
-  //
-  void 	SetZDCTablePos(Int_t channel, Float_t val) {fZDCTablePos[channel]=val;}
-  void 	SetZDCTablePos(Float_t* ZDCTablePos);
-  //
-  void  SetDCSCalibData(Float_t* DCSData);
-
+  
  protected:
   // --- Pedestals
   Float_t  fMeanPedestal[47];	 // Mean pedestal values 
@@ -82,10 +74,8 @@ class AliZDCCalibData: public TNamed {
   Float_t  fEnCalibration[6];	 // Coeff. for energy calibration
   // --- PMTs HV values
   Float_t  fPMTHVVal[22];	 // PMTs HV values
-  // --- Values for alignement
-  Float_t  fZDCTablePos[4];	 // Vertical value for ZDC tables
   //
-  ClassDef(AliZDCCalibData,4)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,5)    // ZDC  Calibration data
 };
 
 #endif
