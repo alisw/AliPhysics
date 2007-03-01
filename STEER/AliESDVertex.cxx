@@ -152,7 +152,7 @@ void AliESDVertex::SetToZero() {
 //--------------------------------------------------------------------------
 void AliESDVertex::GetSigmaXYZ(Double_t sigma[3]) const {
 //
-// Return errors on vertex position in thrust frame
+// Return errors on vertex position
 //
   sigma[0] = TMath::Sqrt(fCovXX);
   sigma[1] = TMath::Sqrt(fCovYY);
