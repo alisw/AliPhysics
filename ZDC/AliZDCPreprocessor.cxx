@@ -214,7 +214,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   metaData.SetComment("Filling AliZDCCalibData object");
 
   UInt_t resultCal = 0;
-  resultCal = Store("Calib","Data",calibdata, &metaData, 0, 0);
+  resultCal = Store("Calib","Data",calibdata, &metaData, 0, 1);
  
   UInt_t result = 0;
   if(resultAl!=0 && resultCal!=0){
