@@ -75,10 +75,11 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   TClonesArray &alobj = *array;
   AliAlignObjAngles a;
   Double_t dx=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
-  Double_t dyZN1 = (Double_t) DCSValues[0];
-  Double_t dyZP1 = (Double_t) DCSValues[1];
-  Double_t dyZN2 = (Double_t) DCSValues[2];
-  Double_t dyZP2 = (Double_t) DCSValues[3];
+  // Vertical table position in mm from DCS
+  Double_t dyZN1 = (Double_t) (DCSValues[0]/10.);
+  Double_t dyZP1 = (Double_t) (DCSValues[1]/10.);
+  Double_t dyZN2 = (Double_t) (DCSValues[2]/10.);
+  Double_t dyZP2 = (Double_t) (DCSValues[3]/10.);
   const char *ZDCn1="ZDC/NeutronZDC1";
   const char *ZDCp1="ZDC/ProtonZDC1";
   const char *ZDCn2="ZDC/NeutronZDC2";
@@ -95,7 +96,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");
   md.SetComment("Alignment object for ZDC");
-  Store("Align","Data", array, &md, 0, 0);
+  UInt_t resultAl = 0;
+  resultAl = Store("Align","Data", array, &md, 0, 0);
   
   // --- Writing ZDC PTMs HV values into calibration object
   AliZDCCalibData *calibdata = new AliZDCCalibData("ZDC");
@@ -105,22 +107,25 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   
   // *************** From DAQ ******************
   // [a] PEDESTALS
-  TList* Pedfilesources = GetFileSources(kDAQ, "PEDESTALS");
-  if(!Pedfilesources){
-    AliError(Form("No PEDESTALS file source for run %d !", fRun));
+  TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
+  if(!daqSources){
+    Log(Form("No source for PEDESTALS run %d !", fRun));
     return 0;
   }
   Log("\t List of sources for PEDESTALS");
-  Pedfilesources->Print();
+  daqSources->Print();
   //
-  TIter iter(Pedfilesources);
-  TObjString* source;
+  TIter iter(daqSources);
+  TObjString* source = 0;
   Int_t i=0;
-  UInt_t result = 0;
-  while((source=dynamic_cast<TObjString*> (iter.Next()))){
+  while((source = dynamic_cast<TObjString*> (iter.Next()))){
        Log(Form("\n\t Getting file #%d\n",++i));
-       TString stringp = GetFile(kDAQ, "PEDESTALS", source->GetName());
-       const char * PedFileName = stringp.Data();
+       TString stringPedFileName = GetFile(kDAQ, "PEDESTALS", source->GetName());
+       if(stringPedFileName.Length() <= 0){
+          Log(Form("No PEDESTAL file from source %s!", source->GetName()));
+	  return 0;
+       }
+       const char* PedFileName = stringPedFileName.Data();
        const Int_t NZDCch = 44;
        if(PedFileName){
          FILE *file;
@@ -155,23 +160,28 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
        //
       //calibdata->Print("");
   }
+  delete daqSources; daqSources = 0;
 
   // [a] EMD EVENTS
-  TList* EMDfilesources = GetFileSources(kDAQ, "EMDCALIB");
-  if(!EMDfilesources){
-    AliError(Form("No EMDCALIB file source for run %d !", fRun));
+  daqSources = GetFileSources(kDAQ, "EMDCALIB");
+  if(!daqSources){
+    AliError(Form("No sources for EMDCALIB run %d !", fRun));
     return 0;
   }
   Log("\t List of sources for EMDCALIB");
-  EMDfilesources->Print();
+  daqSources->Print();
   //
-  TIter iter2(EMDfilesources);
-  TObjString* source2;
+  TIter iter2(daqSources);
+  source = 0;
   Int_t j=0;
-  while((source2=dynamic_cast<TObjString*> (iter2.Next()))){
+  while((source = dynamic_cast<TObjString*> (iter2.Next()))){
        Log(Form("\n\t Getting file #%d\n",++j));
-       TString stringe = GetFile(kDAQ, "EMDCALIB", source2->GetName());
-       const char* EMDFileName = stringe.Data();
+       TString stringEMDFileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
+       if(stringEMDFileName.Length() <= 0){
+         Log(Form("No EMDCALIB file from source %s!", source->GetName()));
+	 return 0;
+       }
+       const char* EMDFileName = stringEMDFileName.Data();
        if(EMDFileName){
     	 FILE *file;
     	 if((file = fopen(EMDFileName,"r")) == NULL){
@@ -203,8 +213,16 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   metaData.SetResponsible("Chiara");
   metaData.SetComment("Filling AliZDCCalibData object");
 
-  result = Store("Calib","Data",calibdata, &metaData, 0, 0);
+  UInt_t resultCal = 0;
+  resultCal = Store("Calib","Data",calibdata, &metaData, 0, 0);
  
+  UInt_t result = 0;
+  if(resultAl!=0 && resultCal!=0){
+    if(resultAl==1 && resultCal==1) result = 1;
+    else result = 2;
+  }
+  
   return result;
+  
 }
 
