@@ -17,6 +17,7 @@ class AliMUONData;
 class AliMUONDigitMaker;
 class AliMUONTriggerCrateStore;
 class AliMUONGeometryTransformer;
+class AliTracker;
 class AliMUONClusterReconstructor;
 class AliMUONSegmentation;
 
@@ -44,13 +45,15 @@ class AliMUONReconstructor: public AliReconstructor
     virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
     virtual void         FillESD(AliRunLoader* runLoader, 
 				 AliRawReader* /*rawReader*/, AliESD* esd) const;
-     
+
+    AliTracker*          CreateTracker(AliRunLoader* runLoader) const;
+ 
     enum {kNone, kOriginal, kKalman, kCombi};
 
 private:
 
-    TTask* GetCalibrationTask(AliMUONData* data) const;
-    AliMUONClusterReconstructor* CreateClusterReconstructor(AliMUONData*) const;
+    TTask* GetCalibrationTask() const;
+    AliMUONClusterReconstructor* CreateClusterReconstructor() const;
     
     AliMUONReconstructor(const AliMUONReconstructor& right);
     AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
@@ -66,6 +69,8 @@ private:
  
     AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
     AliMUONSegmentation*        fSegmentation; //!< pointer to segmentation
+
+    AliMUONData* fMUONData;                    //!< pointer to container
 
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };

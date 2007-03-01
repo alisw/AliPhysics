@@ -50,6 +50,7 @@ class AliMUONVTrackReconstructor : public TObject {
   
           /// Return MUON data
   AliMUONData*  GetMUONData() {return fMUONData;}
+  void SetMUONData(AliMUONData* data) {fMUONData = data;}
 
           /// Set trigger circuit
   void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}

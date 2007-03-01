@@ -41,9 +41,9 @@ AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5k
 AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root");
 MuonRec.SetInput("$FULLPATH/");
-MuonRec.SetRunTracking("");
 MuonRec.SetRunVertexFinder(kFALSE);
 MuonRec.SetRunLocalReconstruction("MUON");
+MuonRec.SetRunTracking("MUON");
 MuonRec.SetFillESD("MUON");
 MuonRec.SetLoadAlignData("MUON");
 // Uncoment following line to run reconstruction with the orginal tracking method

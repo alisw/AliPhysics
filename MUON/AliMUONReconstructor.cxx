@@ -33,6 +33,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONTracker.h"
 #include "AliMUONVTrackReconstructor.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
@@ -68,8 +69,8 @@ AliMUONReconstructor::AliMUONReconstructor()
     fCrateManager(new AliMUONTriggerCrateStore()),
     fTriggerCircuit(new TClonesArray("AliMUONTriggerCircuit", 234)),
     fTransformer(new AliMUONGeometryTransformer(kTRUE)),
-    fSegmentation(0x0)
-
+    fSegmentation(0x0),
+    fMUONData(new AliMUONData(0x0,"MUON","MUON"))
 {
 /// Default constructor
 
@@ -113,11 +114,12 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTriggerCircuit;
   delete fTransformer;
   delete fSegmentation;
+  delete fMUONData;
 }
 
 //_____________________________________________________________________________
 TTask* 
-AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
+AliMUONReconstructor::GetCalibrationTask() const
 {
 /// Create the calibration task(s). 
   
@@ -145,13 +147,13 @@ AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
     AliWarning("Disconnecting status map : SHOULD BE USED FOR DEBUG ONLY. NOT FOR PRODUCTION !!!");
     statusMap = kFALSE; 
   }
-  calibration->Add(new AliMUONDigitCalibrator(data,fCalibrationData,statusMap));
+  calibration->Add(new AliMUONDigitCalibrator(fMUONData,fCalibrationData,statusMap));
   return calibration;
 }
 
 //_____________________________________________________________________________
 AliMUONClusterReconstructor*
-AliMUONReconstructor::CreateClusterReconstructor(AliMUONData* data) const
+AliMUONReconstructor::CreateClusterReconstructor() const
 {
 /// Create cluster reconstructor
 
@@ -187,7 +189,7 @@ AliMUONReconstructor::CreateClusterReconstructor(AliMUONData* data) const
   }
   
   AliMUONClusterReconstructor* clusterReco = 
-    new AliMUONClusterReconstructor(data,clusterFinder,fTransformer);
+    new AliMUONClusterReconstructor(fMUONData,clusterFinder,fTransformer);
   return clusterReco;
 }
 
@@ -201,17 +203,17 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   Int_t nEvents     = runLoader->GetNumberOfEvents();
   Int_t evtNumber   = runLoader->GetEventNumber();
 
-  AliMUONData* data = new AliMUONData(loader,"MUON","MUON");
+  fMUONData->SetLoader(loader);
 
 // passing loader as argument.
   AliMUONVTrackReconstructor* recoEvent;
-  if (strstr(GetOption(),"Original")) recoEvent = new AliMUONTrackReconstructor(data);
-  else if (strstr(GetOption(),"Combi")) recoEvent = new AliMUONTrackReconstructorK(data,"Combi");
-  else recoEvent = new AliMUONTrackReconstructorK(data,"Kalman");
+  if (strstr(GetOption(),"Original")) recoEvent = new AliMUONTrackReconstructor(fMUONData);
+  else if (strstr(GetOption(),"Combi")) recoEvent = new AliMUONTrackReconstructorK(fMUONData,"Combi");
+  else recoEvent = new AliMUONTrackReconstructorK(fMUONData,"Kalman");
   
   recoEvent->SetTriggerCircuit(fTriggerCircuit);
 
-  AliMUONClusterReconstructor* recoCluster = CreateClusterReconstructor(data);
+  AliMUONClusterReconstructor* recoCluster = CreateClusterReconstructor();
   
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
 
@@ -226,7 +228,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   loader->LoadRecPoints("RECREATE");
   loader->LoadTracks("RECREATE");
   
-  TTask* calibration = GetCalibrationTask(data);
+  TTask* calibration = GetCalibrationTask();
   
   Int_t chBeg = (strstr(GetOption(),"Combi") ? 6 : 0);
 
@@ -242,17 +244,17 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
      
     // tracking branch
     if (!strstr(GetOption(),"Combi")) {
-      data->MakeBranch("RC");
-      data->SetTreeAddress("D,RC");
+      fMUONData->MakeBranch("RC");
+      fMUONData->SetTreeAddress("D,RC");
     } else {
-      data->SetTreeAddress("D");
-      data->SetTreeAddress("RCC");
+      fMUONData->SetTreeAddress("D");
+      fMUONData->SetTreeAddress("RCC");
     }
     // Important for avoiding a memory leak when reading digits ( to be investigated more in detail)
     // In any case the reading of GLT is needed for the Trigger2Tigger method below
-    data->SetTreeAddress("GLT");
+    fMUONData->SetTreeAddress("GLT");
 
-    data->GetDigits();
+    fMUONData->GetDigits();
     
     if ( calibration ) 
     {
@@ -263,16 +265,16 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     
     if (strstr(GetOption(),"Combi")) {
       // Combined cluster / track finder
-      AliMUONEventRecoCombi::Instance()->FillEvent(data, (AliMUONClusterFinderAZ*)recModel);
+      AliMUONEventRecoCombi::Instance()->FillEvent(fMUONData, (AliMUONClusterFinderAZ*)recModel);
       ((AliMUONClusterFinderAZ*) recModel)->SetReco(2); 
     }
-    else data->Fill("RC"); 
+    else fMUONData->Fill("RC"); 
 
     // trigger branch
-    data->MakeBranch("TC");
-    data->SetTreeAddress("TC");
+    fMUONData->MakeBranch("TC");
+    fMUONData->SetTreeAddress("TC");
     recoCluster->Trigger2Trigger(); 
-    data->Fill("TC");
+    fMUONData->Fill("TC");
 
     //AZ loader->WriteRecPoints("OVERWRITE");
 
@@ -280,35 +282,35 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
     if (!loader->TreeT()) loader->MakeTracksContainer();
 
     // trigger branch
-    data->MakeBranch("RL"); //trigger track
-    data->SetTreeAddress("RL");
+    fMUONData->MakeBranch("RL"); //trigger track
+    fMUONData->SetTreeAddress("RL");
     recoEvent->EventReconstructTrigger();
-    data->Fill("RL");
+    fMUONData->Fill("RL");
 
     // tracking branch
-    data->MakeBranch("RT"); //track
-    data->SetTreeAddress("RT");
+    fMUONData->MakeBranch("RT"); //track
+    fMUONData->SetTreeAddress("RT");
     recoEvent->EventReconstruct();
-    data->Fill("RT");
+    fMUONData->Fill("RT");
 
     loader->WriteTracks("OVERWRITE"); 
   
     if (strstr(GetOption(),"Combi")) { 
       // Combined cluster / track
       ((AliMUONClusterFinderAZ*) recModel)->SetReco(1);
-      data->MakeBranch("RC");
-      data->SetTreeAddress("RC");
-      AliMUONEventRecoCombi::Instance()->FillRecP(data, (AliMUONTrackReconstructorK*)recoEvent); 
-      data->Fill("RC"); 
+      fMUONData->MakeBranch("RC");
+      fMUONData->SetTreeAddress("RC");
+      AliMUONEventRecoCombi::Instance()->FillRecP(fMUONData, (AliMUONTrackReconstructorK*)recoEvent); 
+      fMUONData->Fill("RC"); 
     }
     loader->WriteRecPoints("OVERWRITE"); 
 
     //--------------------------- Resetting branches -----------------------
-    data->ResetDigits();
-    data->ResetRawClusters();
-    data->ResetTrigger();
-    data->ResetRecTracks();  
-    data->ResetRecTriggerTracks();
+    fMUONData->ResetDigits();
+    fMUONData->ResetRawClusters();
+    fMUONData->ResetTrigger();
+    fMUONData->ResetRecTracks();  
+    fMUONData->ResetRecTriggerTracks();
 
   }
   loader->UnloadDigits();
@@ -317,7 +319,6 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   delete recoCluster;
   delete recoEvent;
-  delete data;
   delete calibration;
 }
 
@@ -332,23 +333,16 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
   Int_t evtNumber   = runLoader->GetEventNumber();
  
-  AliMUONData data(loader,"MUON","MUON");
+  fMUONData->SetLoader(loader);
 
   // passing loader as argument.
-  fDigitMaker->SetMUONData(&data);
+  fDigitMaker->SetMUONData(fMUONData);
 
   // disable trigger rawdata reading
   if (strstr(GetOption(),"TriggerDisable"))
       fDigitMaker->DisableTrigger();
 
-  AliMUONClusterReconstructor* recoCluster = CreateClusterReconstructor(&data);
-
-  AliMUONVTrackReconstructor *recoEvent;
-  if (strstr(GetOption(),"Original")) recoEvent = new AliMUONTrackReconstructor(&data);
-  else if (strstr(GetOption(),"Combi")) recoEvent = new AliMUONTrackReconstructorK(&data,"Combi");
-  else recoEvent = new AliMUONTrackReconstructorK(&data,"Kalman");
-
-  recoEvent->SetTriggerCircuit(fTriggerCircuit);
+  AliMUONClusterReconstructor* recoCluster = CreateClusterReconstructor();
 
   AliMUONClusterFinderVS *recModel = recoCluster->GetRecoModel();
 
@@ -360,12 +354,11 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
   recModel->SetGhostChi2Cut(10);
   recModel->SetEventNumber(evtNumber);
 
-  TTask* calibration = GetCalibrationTask(&data);
+  TTask* calibration = GetCalibrationTask();
   
   loader->LoadRecPoints("RECREATE");
-  loader->LoadTracks("RECREATE");
  
-  //  Digits are not stored on disk and created on flight from rawdata.
+  // Digits are not stored on disk and created on flight from rawdata.
   // In order to write digits on disk the following line should be uncommented
   // loader->LoadDigits("RECREATE"); 
 
@@ -376,12 +369,10 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
   TStopwatch rawTimer;
   TStopwatch calibTimer;
   TStopwatch clusterTimer;
-  TStopwatch trackingTimer;
   
   rawTimer.Start(kTRUE); rawTimer.Stop();
   calibTimer.Start(kTRUE); calibTimer.Stop();
   clusterTimer.Start(kTRUE); clusterTimer.Stop();
-  trackingTimer.Start(kTRUE); trackingTimer.Stop();
   
   totalTimer.Start(kTRUE);
   
@@ -392,16 +383,16 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     runLoader->GetEvent(iEvent++);
 
     //----------------------- raw2digits & raw2trigger-------------------
-//     if (!loader->TreeD()) 
-//     {
-//       AliDebug(1,Form("Making Digit Container for event %d",iEvent));
-//       loader->MakeDigitsContainer();
-//     }
-  //  Digits are not stored on disk and created on flight from rawdata.
-  //  In order to write digits on disk the following lines should be uncommented
-  //  data.MakeBranch("D,GLT");
-  //  data.SetTreeAddress("D,GLT");
-    data.SetDataContainer("D, GLT");
+    //  if (!loader->TreeD()) 
+    //  {
+    //    AliDebug(1,Form("Making Digit Container for event %d",iEvent));
+    //    loader->MakeDigitsContainer();
+    //  }
+    //  Digits are not stored on disk and created on flight from rawdata.
+    //  In order to write digits on disk the following lines should be uncommented
+    //  fMUONData->MakeBranch("D,GLT");
+    //  fMUONData->SetTreeAddress("D,GLT");
+    fMUONData->SetDataContainer("D, GLT");
     rawTimer.Start(kFALSE);
     fDigitMaker->Raw2Digits(rawReader);
     rawTimer.Stop();
@@ -414,7 +405,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     }
     // Digits are not stored on disk and created on flight from rawdata.
     // In order to write digits on disk the following lines should be uncommented
-    // data.Fill("D,GLT");
+    // fMUONData->Fill("D,GLT");
     // loader->WriteDigits("OVERWRITE");
     //----------------------- digit2cluster & Trigger2Trigger -------------------
     clusterTimer.Start(kFALSE);
@@ -422,56 +413,32 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
      
     // tracking branch
-    data.MakeBranch("RC");
-    data.SetTreeAddress("RC");
+    fMUONData->MakeBranch("RC");
+    fMUONData->SetTreeAddress("RC");
     recoCluster->Digits2Clusters(); 
-    data.Fill("RC"); 
+    fMUONData->Fill("RC"); 
 
     // trigger branch
-    data.MakeBranch("TC");
-    data.SetTreeAddress("TC");
-    data.Fill("TC");
+    fMUONData->MakeBranch("TC");
+    fMUONData->SetTreeAddress("TC");
+    fMUONData->Fill("TC");
     
     loader->WriteRecPoints("OVERWRITE");
 
     clusterTimer.Stop();
 
-    //---------------------------- Track & TriggerTrack ---------------------
-    trackingTimer.Start(kFALSE);
-    if (!loader->TreeT()) loader->MakeTracksContainer();
-
-    // trigger branch
-    data.MakeBranch("RL"); //trigger track
-    data.SetTreeAddress("RL");
-    recoEvent->EventReconstructTrigger();
-    data.Fill("RL");
-
-    // tracking branch
-    data.MakeBranch("RT"); //track
-    data.SetTreeAddress("RT");
-    recoEvent->EventReconstruct();
-    data.Fill("RT");
-
-    loader->WriteTracks("OVERWRITE");  
-    trackingTimer.Stop();
     
     //--------------------------- Resetting branches -----------------------
-    data.ResetDigits();
-    data.ResetRawClusters();
-    data.ResetTrigger();
-    data.ResetRecTracks();
-    data.ResetRecTriggerTracks();
-  
+    fMUONData->ResetDigits();
+    fMUONData->ResetRawClusters();
+    fMUONData->ResetTrigger();
   }
   
   totalTimer.Stop();
   
   loader->UnloadRecPoints();
-  loader->UnloadTracks();
   loader->UnloadDigits();
   
-  delete recoEvent;
-
   delete recoCluster;
   
   AliInfo(Form("Execution time for converting RAW data to digits in MUON : R:%.2fs C:%.2fs",
@@ -480,8 +447,6 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
                calibTimer.RealTime(),calibTimer.CpuTime()));
   AliInfo(Form("Execution time for clusterizing MUON : R:%.2fs C:%.2fs",
                clusterTimer.RealTime(),clusterTimer.CpuTime()));
-  AliInfo(Form("Execution time for tracking MUON : R:%.2fs C:%.2fs",
-               trackingTimer.RealTime(),trackingTimer.CpuTime()));
   AliInfo(Form("Total Execution time for Reconstruct(from raw) MUON : R:%.2fs C:%.2fs",
                totalTimer.RealTime(),totalTimer.CpuTime()));
 }
@@ -497,7 +462,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
   loader->LoadTracks("READ");
-  AliMUONData* muonData = new AliMUONData(loader,"MUON","MUON");
+  fMUONData->SetLoader(loader);
 
    // declaration  
   Int_t iEvent;// nPart;
@@ -521,16 +486,16 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   const AliESDVertex *esdVert = esd->GetVertex(); 
   if (esdVert->GetNContributors()) {
     esdVert->GetXYZ(vertex);
-    printf("find vertex\n");
+    AliDebug(1, "find vertex\n");
   }
   // setting ESD MUON class
   AliESDMuonTrack* theESDTrack = new  AliESDMuonTrack() ;
 
   //-------------------- trigger tracks-------------
   Long_t trigPat = 0;
-  muonData->SetTreeAddress("RL");
-  muonData->GetRecTriggerTracks();
-  recTrigTracksArray = muonData->RecTriggerTracks();
+  fMUONData->SetTreeAddress("RL");
+  fMUONData->GetRecTriggerTracks();
+  recTrigTracksArray = fMUONData->RecTriggerTracks();
 
   // ready global trigger pattern from first track
   if (recTrigTracksArray) 
@@ -540,9 +505,9 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   //printf(">>> Event %d Number of Recconstructed tracks %d \n",iEvent, nrectracks);
  
   // -------------------- tracks-------------
-  muonData->SetTreeAddress("RT");
-  muonData->GetRecTracks();
-  recTracksArray = muonData->RecTracks();
+  fMUONData->SetTreeAddress("RT");
+  fMUONData->GetRecTracks();
+  recTracksArray = fMUONData->RecTracks();
         
   Int_t nRecTracks = 0;
   if (recTracksArray)
@@ -589,15 +554,16 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   } // end loop tracks
 
   // reset muondata
-  muonData->ResetRecTracks();
-  muonData->ResetRecTriggerTracks();
+  fMUONData->ResetRecTracks();
+  fMUONData->ResetRecTriggerTracks();
 
   //} // end loop on event  
   loader->UnloadTracks(); 
 
   delete theESDTrack;
-  delete muonData;
-}//_____________________________________________________________________________
+}
+
+//_____________________________________________________________________________
 void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliRawReader* /*rawReader*/, AliESD* esd) const
 {
 /// Fill ESD
@@ -605,4 +571,23 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliRawReader* /*rawR
 
   // don't need rawReader ???
   FillESD(runLoader, esd);
+}
+
+//_____________________________________________________________________________
+AliTracker* AliMUONReconstructor::CreateTracker(AliRunLoader* runLoader) const
+{
+  /// create tracker for MUON
+  /// go into the tracking framework finally (Ch.F)
+ 
+  AliLoader* loader = runLoader->GetLoader("MUONLoader");
+
+  fMUONData->SetLoader(loader);
+
+  AliMUONTracker* tracker = new AliMUONTracker();
+  tracker->SetMUONData(fMUONData);
+  tracker->SetTriggerCircuit(fTriggerCircuit);
+  tracker->SetOption(GetOption());
+
+  return tracker;
+
 }
