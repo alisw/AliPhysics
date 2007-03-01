@@ -40,6 +40,7 @@ using namespace std;
 #include "AliHLTTPCTransform.h"
 #include <stdlib.h>
 #include <errno.h>
+#include "TString.h"
 
 // this is a global object used for automatic component registration, do not use this
 // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
@@ -197,6 +198,21 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	occulimit = strtof( argv[i+1], &cpErr);
 	if ( *cpErr ) {
 	  HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
+	  return EINVAL;
+	}
+	i+=2;
+	continue;
+      }
+
+      // -- number of timebins (default 1024)
+      if ( !strcmp( argv[i], "timebins" ) ) {
+	TString parameter(argv[i+1]);
+	parameter.Remove(TString::kLeading, ' '); // remove all blanks
+	if (parameter.IsDigit()) {
+	  AliHLTTPCTransform::SetNTimeBins(parameter.Atoi());
+	  HLTInfo("number of timebins set to %d", AliHLTTPCTransform::GetNTimeBins());
+	} else {
+	  HLTError("Cannot timebin specifier '%s'.", argv[i+1]);
 	  return EINVAL;
 	}
 	i+=2;

@@ -63,7 +63,10 @@ class AliHLTTPCDefinitions
 	static const AliHLTComponentDataType gkPackedRawDataType;
 	static const AliHLTComponentDataType gkUnpackedRawDataType;
 	static const AliHLTComponentDataType gkClustersDataType;
+      /** track segments in local coordinates */
 	static const AliHLTComponentDataType gkTrackSegmentsDataType;
+      /** tracks in global koordinates */
+	static const AliHLTComponentDataType gkTracksDataType;
 	static const AliHLTComponentDataType gkVertexDataType;
 
 	ClassDef(AliHLTTPCDefinitions, 0)

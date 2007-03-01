@@ -63,6 +63,12 @@
 using namespace std;
 #endif
 
+// -- input datatypes , reverse
+const Char_t* spptID   = "SRETSULC";   // CLUSTERS
+const Char_t* trksegID = "SGESKART";   // TRAKSEGS
+const Char_t* trkID    = "  SKCART";   // TRACKS
+const Char_t* padrowID = "KPWR_LDD";   // DDL_RWPK
+
 ClassImp(AliHLTTPCDisplayMain)
 
 //____________________________________________________________________________________________________
@@ -248,10 +254,6 @@ Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, u
       return -EINVAL;
     }
 #if defined(HAVE_HOMERREADER) 
-  // -- input datatypes , reverse
-  Char_t* spptID="SRETSULC";       // CLUSTERS
-  Char_t* trkID = "SGESKART";      // TRAKSEGS
-  Char_t* padrowID = "KPWR_LDD";   // DDL_RWPK
   
   Int_t ret;
   
@@ -334,6 +336,7 @@ Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, u
 
       if (!strcmp(tmp1,padrowID)) fExistsRawData = kTRUE;
       else if (!strcmp(tmp1,spptID)) fExistsClusterData = kTRUE;
+      else if (!strcmp(tmp1,trksegID)) fExistsTrackData = kTRUE;   	  
       else if (!strcmp(tmp1,trkID)) fExistsTrackData = kTRUE;   	  
     }
   
@@ -399,9 +402,6 @@ Int_t AliHLTTPCDisplayMain::ReadData(Bool_t nextSwitch){
 
 #if defined(HAVE_HOMERREADER) 
   HOMERReader* reader = (HOMERReader*)fReader;
-
-  Char_t* spptID="SRETSULC";       // CLUSTERS
-  Char_t* trkID = "SGESKART";      // TRAKSEGS
 
   // -- reset TracksPerSlice Array
   for(Int_t ii=0;ii<36;ii++) fTracksPerSlice[ii] = 0;
@@ -799,8 +799,7 @@ void AliHLTTPCDisplayMain::ReadClusterData(){
   HOMERReader* reader = (HOMERReader*)fReader;
 
   ULong_t blk;
-  Char_t* spptID="SRETSULC";       // CLUSTERS
-  blk = reader->FindBlockNdx( spptID, " CPT",0xFFFFFFFF );
+  blk = reader->FindBlockNdx( (char*)spptID, " CPT",0xFFFFFFFF );
    
   while ( blk != ~(ULong_t)0 ) {	    
     HLTDebug( "Found clusters block %lu\n", blk );
@@ -808,7 +807,7 @@ void AliHLTTPCDisplayMain::ReadClusterData(){
     const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*)reader->GetBlockData( blk );
     if ( !clusterData ) {
       HLTError( "No track data for block %lu\n", blk );
-      blk = reader->FindBlockNdx( spptID, " CPT", 0xFFFFFFFF, blk+1 );
+      blk = reader->FindBlockNdx( (char*)spptID, " CPT", 0xFFFFFFFF, blk+1 );
       continue;
     }
 	
@@ -829,7 +828,7 @@ void AliHLTTPCDisplayMain::ReadClusterData(){
 	
     SetupCluster( slice, patch, clusterData->fSpacePointCnt, tmp32 );
     
-    blk = reader->FindBlockNdx( spptID, " CPT", 0xFFFFFFFF, blk+1 );
+    blk = reader->FindBlockNdx( (char*)spptID, " CPT", 0xFFFFFFFF, blk+1 );
   }
   
 #else
@@ -846,19 +845,26 @@ void AliHLTTPCDisplayMain::ReadTrackData(){
 #if defined(HAVE_HOMERREADER) 
   HOMERReader* reader = (HOMERReader*)fReader;
   
-  ULong_t blk;
-  Char_t* trkID = "SGESKART";      // TRAKSEGS
-  blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF );
-  
-  while ( blk != ~(ULong_t)0 ) {
+  ULong_t blk=~(ULong_t)0;
+  const Char_t* searchIDs[]={trksegID, trkID, NULL};
+  const Char_t** currentID=searchIDs;
+  do {
+    blk = reader->FindBlockNdx( (char*)*currentID, " CPT", 0xFFFFFFFF );
+  } while (blk==~(ULong_t)0 && *(++currentID)!=NULL);
 
-    HLTDebug( "Found tracks in block %lu\n", blk );
+  while ( blk != ~(ULong_t)0 || (*currentID!=NULL && *(++currentID)!=NULL )) {
+    if (blk == ~(ULong_t)0) {
+      blk = reader->FindBlockNdx( (char*)*currentID, " CPT", 0xFFFFFFFF );
+      continue;
+    }
+
+    HLTDebug( "Found tracks in block %lu type %s\n", blk, *currentID );
 
     const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*)reader->GetBlockData( blk );
 
     if ( !trackData ) {
       HLTError( "No track data for block %lu\n", blk );
-      blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF, blk+1 );
+      blk = reader->FindBlockNdx( (char*)*currentID, " CPT", 0xFFFFFFFF, blk+1 );
       continue;
     }
     
@@ -872,9 +878,9 @@ void AliHLTTPCDisplayMain::ReadTrackData(){
     fTracksPerSlice[slice] = trackData->fTrackletCnt; // Fill number if tracks per slice
 	
     AliHLTTPCTrackSegmentData* tmp42 = (AliHLTTPCTrackSegmentData*) &(trackData->fTracklets[0]);
-    fTracks->FillTracks( trackData->fTrackletCnt, tmp42, slice );
+    fTracks->FillTracks( trackData->fTrackletCnt, tmp42, slice, (*currentID==trksegID?1:0) );
     
-    blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF, blk+1 );	
+    blk = reader->FindBlockNdx( (char*)*currentID, " CPT", 0xFFFFFFFF, blk+1 );	
   }
     
   SetupTracks(); 

@@ -37,6 +37,8 @@ using namespace std;
 #include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
+#include "AliHLTTPCInterMerger.h"
+#include "AliHLTTPCMemHandler.h"
 //#include "AliHLTTPC.h"
 #include <stdlib.h>
 #include <errno.h>
@@ -51,13 +53,14 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
   fTracker(NULL),
   fVertex(NULL),
   fDoNonVertex(false),
+  fDoPP(false),
   fMultiplicity(4000),
   fBField(0.4),
-  fDoPP(false),
 // BEGINN ############################################## MODIFIY JMT
   fnonvertextracking(kFALSE),
-  fmainvertextracking(kTRUE)
+  fmainvertextracking(kTRUE),
 // END ################################################# MODIFIY JMT
+  fpInterMerger(NULL)
 {
   // see header file for class documentation
   // or
@@ -73,13 +76,14 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent(const AliHLTTPCSl
   fTracker(NULL),
   fVertex(NULL),
   fDoNonVertex(false),
+  fDoPP(false),
   fMultiplicity(4000),
   fBField(0.4),
-  fDoPP(false),
 // BEGINN ############################################## MODIFIY JMT
   fnonvertextracking(kFALSE),
-  fmainvertextracking(kTRUE)
+  fmainvertextracking(kTRUE),
 // END ################################################# MODIFIY JMT
+  fpInterMerger(NULL)
 {
   // see header file for class documentation
   HLTFatal("copy constructor untested");
@@ -207,10 +211,29 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
     if ( doPP )
 	{
 	//tracker->SetClusterFinderParam(xyerror,zerror,kTRUE); // ??
-	SetTrackerParam( 50, 100, 3, 10,
-			 2, 2,
-			 0, 0.1745, 5, 100,
-			 5, 50, 50, 0.1, 0.1, kTRUE);
+	/* the old setup used during TPC
+  	SetTrackerParam( 50, 100, 3, 10,
+	                 2, 2,
+	  	         0, 0.1745, 5, 100,
+	  	         5, 50, 50, 0.1, 0.1, kTRUE);
+	*/
+	  SetTrackerParam( 50,        // phi_segments:     Devide the space into phi_segments                                      
+			   100,       // ets_segments:     Devide the space into eta_segments                                       
+			   3,         // trackletlength:   Number of hits a tracklet has to have                                   
+			   10,         // tracklength:      Number of hits a track has to have                                      
+			   6,         // rowscopetracklet: Search range of rows for a tracklet                                     
+			   6,         // rowscopetrack:    Search range of rows for a track                                       
+			   0,         // min_pt_fit:       Cut for moment fit, use:SetMaxDca(min_pt_fit)                           
+			   AliHLTTPCTransform::Deg2Rad(10),
+			   // maxangle:         AliHLTTPCTransform::Deg2Rad(10), max angle for the three point look aheand         
+			   5,         // goodDist:         Threshold distancs between two hits when building tracklets             
+			   100,        // hitChi2Cut:       Max chi2 of added hit to track                                         
+			   5,         // goodHitChi2:      Stop looking for next hit to add if chi2 is less then goodHitChi2       
+			   50,        // trackChi2Cut:     Max chi2 for track after final fit                                      
+			   50,        // maxdist:          Maximum distance between two clusters when forming segments             
+			   0.1,       // maxphi:           Max phi difference for neighboring hits                                
+			   0.1,       // maxeta:           Max eta difference for neighboring hits                                 
+			   kTRUE);    // vertexConstrain:  False if one want to look for secondary vertex track 	  
 	}
     else
 	{
@@ -348,6 +371,7 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     fEta[0] = 0.;
     fEta[1] = 1.1;
     fDoNonVertex = false;
+    Bool_t bDoMerger=kTRUE;
     fMultiplicity = 4000;
     fBField = 0.4;
     fDoPP = false;
@@ -356,6 +380,12 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     char* cpErr;
     while ( i < argc )
 	{
+	if ( !strcmp( argv[i], "disable-merger" ) ){
+	    bDoMerger = kFALSE;
+	    i++;
+	    continue;	    
+	}
+
 	if ( !strcmp( argv[i], "pp-run" ) )
 	    {
 	    fDoPP = true;
@@ -435,20 +465,27 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     }
 // #### -B0-CHANGE-END == JMT
 
+    if (bDoMerger)
+      fpInterMerger = new AliHLTTPCInterMerger();
+
     SetTrackerParam( fDoPP, fMultiplicity, fBField );
     return 0;
     }
 
 int AliHLTTPCSliceTrackerComponent::DoDeinit()
-    {
-    if ( fTracker )
-	delete fTracker;
-    fTracker = NULL;
-    if ( fVertex )
-	delete fVertex;
-    fVertex = NULL;
-    return 0;
-    }
+{
+  if ( fTracker )
+    delete fTracker;
+  fTracker = NULL;
+  if ( fVertex )
+    delete fVertex;
+  fVertex = NULL;
+  if (fpInterMerger) {
+    delete fpInterMerger;
+  }
+  fpInterMerger=NULL;
+  return 0;
+}
 
 int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
@@ -656,12 +693,22 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	fTracker->NonVertexTracking();//Do a second pass for nonvertex tracks
 #endif
 // END ################################################# MODIFIY JMT
-    // XXX Do track merging??
     
-    UInt_t ntracks0=0;
+    UInt_t ntracks0 =0;
+    if(fpInterMerger){
+      AliHLTTPCMemHandler memory;
+      AliHLTTPCTrackSegmentData *trackdata0  = 
+	(AliHLTTPCTrackSegmentData *) memory.Allocate(fTracker->GetTracks());
+      memory.TrackArray2Memory(ntracks0,trackdata0,fTracker->GetTracks());
+      fpInterMerger->Reset();
+      fpInterMerger->Init(row,patch);
+      fpInterMerger->FillTracks(ntracks0,trackdata0);
+      fpInterMerger->Merge();
+    } 
+    ntracks0=0;
     mysize = fTracker->GetTracks()->WriteTracks( ntracks0, outPtr->fTracklets );
     outPtr->fTrackletCnt = ntracks0;
-    
+
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracks",
 	     "Input: Number of tracks: %lu Slice/MinPatch/MaxPatch/RowMin/RowMax: %lu/%lu/%lu/%lu/%lu.", 
 	     ntracks0, slice, minPatch, maxPatch, row[0], row[1] );

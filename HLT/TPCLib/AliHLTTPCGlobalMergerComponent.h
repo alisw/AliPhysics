@@ -6,8 +6,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTTPCGlobalMergerComponent
- */
+/** @file   AliHLTTPCGlobalMergerComponent.h
+    @author Timm Steinbeck, Matthias Richter
+    @date   
+    @brief  HLT TPC global merger component.
+*/
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"

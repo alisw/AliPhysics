@@ -16,11 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// a TPC sector tracker processing component for the HLT                     //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTTPCGlobalMergerComponent.h
+    @author Timm Steinbeck, Matthias Richter
+    @date   
+    @brief  HLT TPC global merger component.
+*/
 
 #if __GNUC__== 3
 using namespace std;
@@ -71,7 +71,7 @@ void AliHLTTPCGlobalMergerComponent::GetInputDataTypes( vector<AliHLTComponentDa
 
 AliHLTComponentDataType AliHLTTPCGlobalMergerComponent::GetOutputDataType()
     {
-    return AliHLTTPCDefinitions::gkTrackSegmentsDataType;
+    return AliHLTTPCDefinitions::gkTracksDataType;
     }
 
 void AliHLTTPCGlobalMergerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -240,6 +240,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 
     // Now we can really merge
     fGlobalMerger->Merge();
+    fGlobalMerger->AddAllTracks();
 
     UInt_t ntracks0=0;
     outPtr = (AliHLTTPCTrackletData*)(outputPtr);

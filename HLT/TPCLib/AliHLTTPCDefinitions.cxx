@@ -33,6 +33,7 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::gkUnpackedRawDataType = { si
 const AliHLTComponentDataType AliHLTTPCDefinitions::gkClustersDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'T','P','C',' '}};;
 const AliHLTComponentDataType AliHLTTPCDefinitions::gkVertexDataType = { sizeof(AliHLTComponentDataType), {'V','E','R','T','E','X',' ',' '},{'T','P','C',' '}};;
 const AliHLTComponentDataType AliHLTTPCDefinitions::gkTrackSegmentsDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','K','S','E','G','S'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::gkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S',' ',' '},{'T','P','C',' '}};;
 
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
 {

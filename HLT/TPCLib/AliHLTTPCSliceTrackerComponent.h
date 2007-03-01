@@ -14,6 +14,7 @@
 
 class AliHLTTPCConfMapper;
 class AliHLTTPCVertex;
+class AliHLTTPCInterMerger;
 
 class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 {
@@ -86,6 +87,9 @@ private:
   Bool_t fnonvertextracking;   // enable NONVERTEX Tracking
   Bool_t fmainvertextracking;  // enable MAINVERTEX Tracking
 // END ################################################# MODIFIY JMT
+
+  /** merger object */
+  AliHLTTPCInterMerger *fpInterMerger;                             //! transient
 
   ClassDef(AliHLTTPCSliceTrackerComponent, 0);
 
