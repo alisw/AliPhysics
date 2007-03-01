@@ -411,6 +411,7 @@ void AliITSOnlineSPDscan::SetRouterNr(UInt_t val) {
 }
 void AliITSOnlineSPDscan::SetTriggers(UInt_t nsi, UInt_t val) {
   // set nr of triggers
+  SwitchToStep(nsi);
   fScanInfo->SetTriggers(nsi,val);
   fInfoModified=kTRUE;
 }
@@ -446,6 +447,7 @@ void AliITSOnlineSPDscan::SetDacStep(UInt_t val){
 }
 void AliITSOnlineSPDscan::IncrementTriggers(UInt_t nsi) {
   // increment nr of triggers
+  SwitchToStep(nsi);
   fScanInfo->IncrementTriggers(nsi); 
   fInfoModified=kTRUE;
 }

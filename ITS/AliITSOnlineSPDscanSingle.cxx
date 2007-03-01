@@ -25,12 +25,9 @@ AliITSOnlineSPDscanSingle::AliITSOnlineSPDscanSingle(Char_t *fileName) {
     fclose(fp0);
     fFile = new TFile(fFileName, "READ");
     fWrite=kFALSE;
-    fFile->GetObject("SPDscanInfo", fScanInfo);
+    fFile->GetObject("AliITSOnlineSPDscanInfo", fScanInfo);
   }
   Init();
-  if (GetNSteps()==0) {
-    AddScanStep(); // this is supposedly the only step for this object
-  }
 }
 AliITSOnlineSPDscanSingle::~AliITSOnlineSPDscanSingle() {}
 
