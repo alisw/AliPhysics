@@ -6,8 +6,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTTPCClusterFinderComponent
- */
+/** @file   AliHLTTPCClusterFinderComponent.h
+    @author Timm Steinbeck, Matthias Richter, Jochen Thaeder
+    @date   
+    @brief  The TPC cluster finder component.
+*/
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"
@@ -22,6 +25,10 @@ class AliHLTTPCClusterFinder;
  * Implementation of the cluster finder component.
  * The component implements the interface methods of the @ref AliHLTProcessor.
  * The actual cluster finding algorithm is implemented in @ref AliHLTTPCClusterFinder.
+ * The component can handle unpacked and packed data of different formats via the
+ * AliHLTTPCDigitReader implementations. Two components are registered, the
+ * TPCClusterFinderUnpacked and the TPCClusterFinderPacked. The latter one can
+ * instantiate different digit readers depending on the arguments.
  * 
  * The component has the following component arguments:
  * - rawreadermode   the mode for the @ref AliHLTTPCDigitReaderRaw

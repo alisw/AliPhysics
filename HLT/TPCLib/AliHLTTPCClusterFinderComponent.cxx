@@ -17,13 +17,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// a TPC cluster finder processing component for the HLT                     //
-// useable for packed data or unpacked data                                  //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
+/** @file   AliHLTTPCSliceTrackerComponent.cxx
+    @author Timm Steinbeck, Matthias Richter, Jochen Thaeder
+    @date   
+    @brief  The TPC cluster finder processing component
+*/
 
 #if __GNUC__>= 3
 using namespace std;

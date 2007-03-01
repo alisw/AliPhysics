@@ -16,11 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// a TPC sector tracker processing component for the HLT                     //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTTPCSliceTrackerComponent.cxx
+    @author Timm Steinbeck, Matthias Richter
+    @date   
+    @brief  The TPC conformal mapping tracker component.
+*/
 
 #if __GNUC__>= 3
 using namespace std;

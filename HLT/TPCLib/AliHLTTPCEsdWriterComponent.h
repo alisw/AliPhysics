@@ -22,8 +22,14 @@ class AliHLTTPCTrackArray;
 /**
  * @class AliHLTTPCEsdWriterComponent
  * This class translates incoming track segments structures from the TPC
- * conformal mapping tracker into the ESD fromat and writes it to a ROOT
- * file. 
+ * conformal mapping tracker (datatype TRAKSEGS/TPC) or tracks in global 
+ * coordinates from the AliHLTTPCGlobalMergerComponent (TRACKS/TPC) into
+ * the ESD fromat and writes it to a ROOT file. In case of TRAKSEGS, the
+ * component can only process data block containing data of one slice, but
+ * it can read an unlimeted number of data blocks.
+ *
+ * componentid: TPCEsdWriter <br>
+ * componentlibrary libAliHLTTPC.so <br>
  * Arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -datafile     <i> filename   </i> <br>

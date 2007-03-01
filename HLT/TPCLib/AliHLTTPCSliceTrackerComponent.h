@@ -6,8 +6,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTTPCSliceTrackerComponent
- */
+/** @file   AliHLTTPCSliceTrackerComponent.h
+    @author Timm Steinbeck, Matthias Richter
+    @date   
+    @brief  The TPC conformal mapping tracker component.
+*/
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCDefinitions.h"
@@ -16,6 +19,18 @@ class AliHLTTPCConfMapper;
 class AliHLTTPCVertex;
 class AliHLTTPCInterMerger;
 
+/**
+ * @class AliHLTTPCSliceTrackerComponent
+ * The TPC conformal mapping tracker component.
+ * 
+ * The component has the following component arguments:
+ * - disable-merger  disable merging of track segments
+ * - pp-run          parameter set for pp run
+ * - multiplicity    multiplicity to choose parameter set for
+ * - bfield          magnatic field
+ * 
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 {
 public:
