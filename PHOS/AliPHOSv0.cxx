@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.84  2006/12/20 16:56:43  kharlov
+ * Optional geometry without CPV
+ *
  * Revision 1.83  2006/11/14 17:11:15  hristov
  * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
  *
@@ -429,9 +432,12 @@ void AliPHOSv0::CreateGeometryforEMC()
       y = -splate[1] ;
       Float_t* acel = emcg->GetAirCellHalfSize() ;
       Int_t icel ;
-      for(icel = 1; icel <= emcg->GetNCellsInStrip(); icel++){
-	Float_t x = (2*icel - 1 - emcg->GetNCellsInStrip())* acel[0] ;
-	gMC->Gspos("PCEL", icel, "PSTR", x, y, 0.0, 0, "ONLY") ;
+
+      for(Int_t lev = 2, icel = 1; icel <= emcg->GetNCellsXInStrip()*emcg->GetNCellsZInStrip(); icel += 2, lev += 2){
+         Float_t x = (2*(lev / 2) - 1 - emcg->GetNCellsXInStrip())* acel[0] ;
+         Float_t z = acel[2];
+         gMC->Gspos("PCEL", icel, "PSTR", x, y, +z, 0, "ONLY") ;
+         gMC->Gspos("PCEL", icel + 1, "PSTR", x, y, -z, 0, "ONLY") ;
       }
 
       // --- define the support plate, hole in it and position it in strip ----
@@ -930,8 +936,38 @@ void AliPHOSv0::AddAlignableVolumes() const
     gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
   }
 
-  // Alignable strip units are not implemented yet (27.09.2006)
+  //Physical strip path is a combination of: physModulePath + module number + 
+  //physStripPath + strip number == ALIC_1/PHOS_N/..../PSTR_M
+  const Int_t nStripsX = GetGeometry()->GetEMCAGeometry()->GetNStripX();
+  const Int_t nStripsZ = GetGeometry()->GetEMCAGeometry()->GetNStripZ();
+  TString partialPhysStripName(100);
+  TString fullPhysStripName(100);
+  TString partialSymbStripName(100);
+  TString fullSymbStripName(100);
 
+  for(Int_t module = 1; module <= nModules; ++module){
+    partialPhysStripName  = physModulePath;
+    partialPhysStripName += module;
+    partialPhysStripName += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_";
+
+    partialSymbStripName  = symbModuleName;
+    partialSymbStripName += module;
+    partialSymbStripName += "/Strip_";
+
+    for(Int_t i = 0, ind1D = 1; i < nStripsX; ++i){//ind1D starts from 1 (PSTR_1...PSTR_224...)
+      for(Int_t j = 0; j < nStripsZ; ++j, ++ind1D){
+         fullPhysStripName = partialPhysStripName;
+         fullPhysStripName += ind1D;
+         
+         fullSymbStripName  = partialSymbStripName;
+         fullSymbStripName += i;//ind1D;
+         fullSymbStripName += '_';
+         fullSymbStripName += j;
+
+         gGeoManager->SetAlignableEntry(fullSymbStripName.Data(), fullPhysStripName.Data());
+      }
+    }
+  }
 }
 
 //____________________________________________________________________________

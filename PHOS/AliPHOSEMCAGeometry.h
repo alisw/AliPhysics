@@ -75,14 +75,13 @@ public:
     return fIPtoOuterCoverDistance ; }
   Float_t    GetCrystalSize(Int_t index)  const {return 2.*fCrystalHalfSize[index] ; }
 
-  
-  Int_t     GetNCellsInStrip() const { return fNCellsInStrip;}
-  Int_t     GetNStripX()       const { return fNStripX ; }
-  Int_t     GetNStripZ()       const { return fNStripZ ; }
-  Int_t     GetNTSuppots()     const { return fNTSupports; }
-  Int_t     GetNPhi(void)      const { return fNPhi ; }
-  Int_t     GetNZ(void)        const { return fNZ ; }
-
+  Int_t     GetNCellsXInStrip() const { return fNCellsXInStrip;}
+  Int_t     GetNCellsZInStrip() const { return fNCellsZInStrip;}
+  Int_t     GetNStripX()        const { return fNStripX ; }
+  Int_t     GetNStripZ()        const { return fNStripZ ; }
+  Int_t     GetNTSuppots()      const { return fNTSupports; }
+  Int_t     GetNPhi()           const { return fNPhi ; }
+  Int_t     GetNZ()             const { return fNZ ; }
  
 private:
 
@@ -168,7 +167,8 @@ private:
 
   Float_t fSupportPlateThickness ;        // Thickness of the Aluminium support plate for Strip   
 
-  Int_t  fNCellsInStrip ;              // Number of cells in a strip unit
+  Int_t  fNCellsXInStrip ;              // Number of cells in a strip unit in X
+  Int_t  fNCellsZInStrip ;              // Number of cells in a strip unit in Z
   Int_t  fNStripX ;                    // Number of strip units in X
   Int_t  fNStripZ ;                    // Number of strip units in Z
   Int_t  fNTSupports ;                 // geometry parameter

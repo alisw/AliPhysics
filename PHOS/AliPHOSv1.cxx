@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.108  2007/02/02 09:40:50  alibrary
+ * Includes required by ROOT head
+ *
  * Revision 1.107  2007/02/01 10:34:47  hristov
  * Removing warnings on Solaris x86
  *
@@ -354,12 +357,16 @@ void AliPHOSv1::StepManager(void)
       Int_t cell ;
       gMC->CurrentVolOffID(2, cell);
       
-      Int_t row = 1 + GetGeometry()->GetNZ() - strip % GetGeometry()->GetNZ() ;
-      Int_t col = (Int_t) TMath::Ceil((Double_t) strip/GetGeometry()->GetNZ()) -1 ;
-      
+      //Old formula for row is wrong. For example, I have strip 56 (28 for 2 x 8), row must be 1.
+      //But row == 1 + 56 - 56 % 56 == 57 (row == 1 + 28 - 28 % 28 == 29)
+      //Int_t row = 1 + GetGeometry()->GetEMCAGeometry()->GetNStripZ() - strip % (GetGeometry()->GetEMCAGeometry()->GetNStripZ()) ;
+      Int_t row = GetGeometry()->GetEMCAGeometry()->GetNStripZ() - (strip - 1) % (GetGeometry()->GetEMCAGeometry()->GetNStripZ()) ;
+      Int_t col = (Int_t) TMath::Ceil((Double_t) strip/(GetGeometry()->GetEMCAGeometry()->GetNStripZ())) -1 ;
+
+      // Absid for 8x2-strips. Looks nice :) 
       absid = (moduleNumber-1)*GetGeometry()->GetNCristalsInModule() + 
-	row + (col*GetGeometry()->GetEMCAGeometry()->GetNCellsInStrip() + cell-1)*GetGeometry()->GetNZ() ;
-      
+	            row * 2 + (col*GetGeometry()->GetEMCAGeometry()->GetNCellsXInStrip() + (cell - 1) / 2)*GetGeometry()->GetNZ() - (cell & 1 ? 1 : 0);
+
       gMC->Gmtod(global, local, 1) ;
       
       //Calculates the light yield, the number of photons produced in the

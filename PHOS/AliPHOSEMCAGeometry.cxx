@@ -75,7 +75,8 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
                      fIPtoOuterCoverDistance(0.f),
                      fIPtoCrystalSurface(0.f),
                      fSupportPlateThickness(0.f),
-                     fNCellsInStrip(0),
+                     fNCellsXInStrip(0),
+                     fNCellsZInStrip(0),
                      fNStripX(0),
                      fNStripZ(0),
                      fNTSupports(0),
@@ -113,16 +114,17 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
   fPreampHalfSize[1] = 0.5 / 2 ;
   fPreampHalfSize[2] = 1.5 / 2 ;
 
-  //STRIP
+  //Strip unit (8x2 crystals)
 
-  fNCellsInStrip = 8 ;     //Number of crystals in strip
-  fNStripX = 8 ;           //Number of strips acros beam
-  fNStripZ = 56 ;          //Number of strips along beam
+  fNCellsXInStrip =  8 ;       //Number of crystals in strip unit along x-axis
+  fNCellsZInStrip =  2 ;       //Number of crystals in strip unit along z-axis
+  fNStripX        =  8 ;       //Number of strip units across along x-axis
+  fNStripZ        = 28 ;       //Number of strips along z-axis
 
-  fStripWallWidthOut = 0.01 ;     // Side to another strip  
-  fStripWallWidthIn  = 0.02 ;     // Side betveen crystals in one strip
+  fStripWallWidthOut = 0.01 ;  // Side to another strip  
+  fStripWallWidthIn  = 0.02 ;  // Side betveen crystals in one strip
 
-  fTyvecThickness = 0.01 ;        //Thickness of the tyvec
+  fTyvecThickness = 0.01 ;     //Thickness of the tyvec
 
   fAirGapLed = 1.5 - 2 * fPreampHalfSize[1] - 2 * fPinDiodeHalfSize[1] ; // Air gap before crystalls for LED system
                                            // Note, that Cell in Strip 1.5 longer then crystall
@@ -138,10 +140,11 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
                          2*fPinDiodeHalfSize[1] + 2*fWrappedHalfSize[1])/2 ;  //in strip
   fAirCellHalfSize[2] = fWrappedHalfSize[2]  ;                    //
 
-  fSupportPlateHalfSize[0] = ( (fNCellsInStrip-1)*fStripWallWidthIn + 2* fStripWallWidthOut + 
-                  fNCellsInStrip * (2 * fTyvecThickness + 2*fCrystalHalfSize[0]) )/2 ;
+  fSupportPlateHalfSize[0] = ( (fNCellsXInStrip-1)*fStripWallWidthIn + 2*fStripWallWidthOut + 
+			       fNCellsXInStrip * (2*fTyvecThickness + 2*fCrystalHalfSize[0]) )/2 ;
   fSupportPlateHalfSize[1] =  6.0  /2 ;
-  fSupportPlateHalfSize[2] =  ( 2 * fTyvecThickness + 2*fCrystalHalfSize[0] + 2*fStripWallWidthOut )/2 ;
+  fSupportPlateHalfSize[2] = ( (fNCellsZInStrip-1)*fStripWallWidthIn + 2*fStripWallWidthOut +
+			       fNCellsZInStrip * (2*fTyvecThickness + 2*fCrystalHalfSize[2]) )/2;
 
   fSupportPlateThickness = 0.3 ;  
   fSupportPlateInHalfSize[0] = fSupportPlateHalfSize[0] ;                         //Half-sizes of the air
@@ -362,7 +365,7 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
                  + fAlCoverParams[0]  ; //Lower size across the beam
   fEMCParams[2] = fWarmAlCoverHalfSize[1] ;                     // Size along the beam
 
-  fNPhi = fNStripX * fNCellsInStrip ;    //Number of crystalls across beam
-  fNZ   = fNStripZ ;                     //number of crystals along beam
+  fNPhi = fNStripX * fNCellsXInStrip ;    //number of crystals across the beam
+  fNZ   = fNStripZ * fNCellsZInStrip ;    //number of crystals along the beam
 }
 
