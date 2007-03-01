@@ -7,6 +7,7 @@
 	- new component argument to ClusterFinderComponent: timebins <n> specifies
 	  the number of timebins to overcome the discrepancy between simulated
 	  and real data
+	- TPCEsdWriter adapted to new TRACKS/TPC data type
 2007-02-21
 	- high-level component interface added
 	- libHLTbase version 2:0:0
