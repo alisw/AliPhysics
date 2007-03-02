@@ -4162,7 +4162,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
       if (TMath::Abs(1./track1->GetC())>200) continue;
       if (track1->Get1Pt()*track0->Get1Pt()>0)      continue;
       if (track1->GetTgl()*track0->GetTgl()>0)      continue;
-      if (max(TMath::Abs(1./track0->GetC()),TMath::Abs(1./track1->GetC()))>190) continue;
+      if (TMath::Max(TMath::Abs(1./track0->GetC()),TMath::Abs(1./track1->GetC()))>190) continue;
       if (track0->GetBConstrain()&&TMath::Abs(track1->Get1Pt())<TMath::Abs(track0->Get1Pt())) continue; //returning - lower momenta
       if (track1->GetBConstrain()&&TMath::Abs(track0->Get1Pt())<TMath::Abs(track1->Get1Pt())) continue; //returning - lower momenta
       //

@@ -98,10 +98,10 @@ AliMpSlatPadIterator::Intersect(const AliMpArea& a, const AliMpArea& b) const
 									a.LeftBorder(),a.DownBorder(),a.RightBorder(),a.UpBorder(),
 									b.LeftBorder(),b.DownBorder(),b.RightBorder(),b.UpBorder()));
 	
-	Double_t xmin = std::max(a.LeftBorder(),b.LeftBorder());
-  Double_t xmax = std::min(a.RightBorder(),b.RightBorder());
-  Double_t ymin = std::max(a.DownBorder(),b.DownBorder());
-  Double_t ymax = std::min(a.UpBorder(),b.UpBorder());
+	Double_t xmin = TMath::Max(a.LeftBorder(),b.LeftBorder());
+  Double_t xmax = TMath::Min(a.RightBorder(),b.RightBorder());
+  Double_t ymin = TMath::Max(a.DownBorder(),b.DownBorder());
+  Double_t ymax = TMath::Min(a.UpBorder(),b.UpBorder());
   AliMpArea c( TVector2( (xmin+xmax)/2.0, (ymin+ymax)/2.0 ),
 							 TVector2( (xmax-xmin)/2.0, (ymax-ymin)/2.0 ) );
 	

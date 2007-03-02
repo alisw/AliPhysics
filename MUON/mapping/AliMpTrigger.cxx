@@ -137,9 +137,9 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
   // the slat segmentation will be the owner of the slat, and will delete
   // it when it'll be deleted itself
   fSlatSegmentations.Add(new AliMpSlatSegmentation(slat,owner));
-  fMaxNofPadsY = std::max(slat->GetMaxNofPadsY(),fMaxNofPadsY);
-  fDX = std::max(fDX,slat->DX());
-  fDY = std::max(fDY,slat->DY());
+  fMaxNofPadsY = TMath::Max(slat->GetMaxNofPadsY(),fMaxNofPadsY);
+  fDX = TMath::Max(fDX,slat->DX());
+  fDY = TMath::Max(fDY,slat->DY());
   return kTRUE;
 }
 

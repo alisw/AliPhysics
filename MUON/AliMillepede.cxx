@@ -1132,7 +1132,7 @@ int AliMillepede::SpmInv(double matV[][fgkMaxGloPC], double vecB[], int nGlo)
     iPivot = -1;
     
     for (Int_t j=0; j<nGlo; j++) { // First look for the pivot, ie max unused diagonal element       
-      if (bUnUsed[j] && (TMath::Abs(matV[j][j])>std::max(TMath::Abs(vPivot),eps*diagV[j]))) {    
+      if (bUnUsed[j] && (TMath::Abs(matV[j][j])>TMath::Max(TMath::Abs(vPivot),eps*diagV[j]))) {    
 	vPivot = matV[j][j];
 	iPivot = j;
       }

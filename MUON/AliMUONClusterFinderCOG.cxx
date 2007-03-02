@@ -134,10 +134,10 @@ AliMUONClusterFinderCOG::ComputePosition(AliMUONCluster& cluster)
       AliMUONPad* pad = cluster.Pad(i);
       TVector2 padPosition = pad->Position();
       AliMpArea area(pad->Position(),pad->Dimensions());
-      xmin = std::min(area.LeftBorder(),xmin);
-      xmax = std::max(area.RightBorder(),xmax);
-      ymin = std::min(area.DownBorder(),ymin);
-      ymax = std::max(area.UpBorder(),ymax);
+      xmin = TMath::Min(area.LeftBorder(),xmin);
+      xmax = TMath::Max(area.RightBorder(),xmax);
+      ymin = TMath::Min(area.DownBorder(),ymin);
+      ymax = TMath::Max(area.UpBorder(),ymax);
       if ( cathode == pad->Cathode() )
       {
         x[cathode] += padPosition.X()*pad->Charge();

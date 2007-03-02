@@ -136,7 +136,7 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
   fDY = TMath::Max(pcb->DY(),fDY);
   fDX += pcb->DX();
   fNofPadsX += pcb->GetNofPadsX();
-  fMaxNofPadsY = std::max(fMaxNofPadsY,pcb->GetNofPadsY());
+  fMaxNofPadsY = TMath::Max(fMaxNofPadsY,pcb->GetNofPadsY());
   for ( AliMpPCB::Size_t i = 0; i < pcb->GetSize(); ++i )
 	{
 		AliMpMotifPosition* mp = pcb->GetMotifPosition(i);

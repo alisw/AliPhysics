@@ -108,10 +108,10 @@ AliMpPCBPadIterator::CropArea(const AliMpArea& area)
   
   AliDebug(3,Form("xleft,xright=%e,%e",xleft,xright));
   
-  Double_t xmin = std::max(area.LeftBorder(),xleft);
-  Double_t xmax = std::min(area.RightBorder(),xright);
-  Double_t ymin = std::max(area.DownBorder(),0.0);
-  Double_t ymax = std::min(area.UpBorder(),first->DY()*2.0-kEpsilon);
+  Double_t xmin = TMath::Max(area.LeftBorder(),xleft);
+  Double_t xmax = TMath::Min(area.RightBorder(),xright);
+  Double_t ymin = TMath::Max(area.DownBorder(),0.0);
+  Double_t ymax = TMath::Min(area.UpBorder(),first->DY()*2.0-kEpsilon);
   
   AliDebug(3,Form("Cropped area (%e,%e)->(%e,%e)",
                   xmin,ymin,xmax,ymax));

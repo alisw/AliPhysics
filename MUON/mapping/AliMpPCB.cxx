@@ -313,10 +313,10 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
   fMotifPositions.push_back(mp);
 #endif
 
-  fIxmin = std::min(fIxmin,ixmin);
-  fIxmax = std::max(fIxmax,ixmax);
-  fIymin = std::min(fIymin,iymin);
-  fIymax = std::max(fIymax,iymax);
+  fIxmin = TMath::Min(fIxmin,ixmin);
+  fIxmax = TMath::Max(fIxmax,ixmax);
+  fIymin = TMath::Min(fIymin,iymin);
+  fIymax = TMath::Max(fIymax,iymax);
 
   fActiveXmin = fIxmin*PadSizeX();
   fActiveXmax = (fIxmax+1)*PadSizeX();
