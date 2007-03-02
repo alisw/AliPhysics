@@ -24,6 +24,8 @@ class AliITSgeomTGeo : public TObject {
   AliITSgeomTGeo() { } // Default constructor
   virtual ~AliITSgeomTGeo() { } // Destructor
 
+  // This function returns the total number of ITS modules 
+  static Int_t GetNModules() {return fgkNModules;}
   // This function returns the number of detectors/ladder for a given layer 
   static Int_t GetNDetectors(Int_t lay) {return fgkNDetectors[lay-1];}
   // This function returns the number of ladders for a given layer
