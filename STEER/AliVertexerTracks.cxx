@@ -121,7 +121,11 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
 
   // read tracks from ESD
   Int_t nTrksTot = (Int_t)esdEvent->GetNumberOfTracks();
-  if (nTrksTot<=0) return fCurrentVertex;
+  if (nTrksTot<=0) {
+    if(fDebug) printf("TooFewTracks\n");
+    TooFewTracks(esdEvent);
+    return fCurrentVertex;
+  } 
 
   TTree *trkTree = new TTree("TreeT","tracks");
   AliESDtrack *esdTrack = 0;
@@ -494,9 +498,9 @@ Int_t AliVertexerTracks::PrepareTracks(TTree &trkTree,Int_t optImpParCut)
     } else {              // optImpParCut==2
       fCurrentVertex->GetSigmaXYZ(sigmaCurr);
       normdistx = TMath::Abs(fCurrentVertex->GetXv()-fNominalPos[0])/TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0]);
-      normdisty = TMath::Abs(fCurrentVertex->GetYv()-fNominalPos[1])/TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[1]);
+      normdisty = TMath::Abs(fCurrentVertex->GetYv()-fNominalPos[1])/TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2]);
       if(normdistx < 3. && normdisty < 3. &&
-	 (sigmaCurr[0]+sigmaCurr[1])<(TMath::Sqrt(fNominalCov[0])+TMath::Sqrt(fNominalCov[1]))) {
+	 (sigmaCurr[0]+sigmaCurr[1])<(TMath::Sqrt(fNominalCov[0])+TMath::Sqrt(fNominalCov[2]))) {
 	track->RelateToVertex(fCurrentVertex,field,100.);
       } else {
 	track->RelateToVertex(initVertex,field,100.);
@@ -512,9 +516,9 @@ Int_t AliVertexerTracks::PrepareTracks(TTree &trkTree,Int_t optImpParCut)
 
     if(fDebug) printf("trk %d; lab %d; |d0| = %f;  d0 cut = %f; |z0| = %f; |d0|oplus|z0| = %f; d0z0 cut = %f\n",i,track->GetLabel(),TMath::Abs(d0z0[0]),maxd0rphi,TMath::Abs(d0z0[1]),TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1]),maxd0z0);
 
-    // during iteration 1, if fConstraint=kFALSE,
+    // during iterations 1 and 2, if fConstraint=kFALSE,
     // select tracks with d0oplusz0 < maxd0z0
-    if(optImpParCut==1 && !fConstraint && nEntries>=3 && 
+    if(optImpParCut>=1 && !fConstraint && nEntries>=3 && 
        fVert.GetNContributors()>0) {
       if(TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1]) > maxd0z0) { 
 	if(fDebug) printf("     rejected\n");
