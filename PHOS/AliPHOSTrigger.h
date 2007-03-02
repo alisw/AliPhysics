@@ -87,6 +87,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Bool_t   IsnxnIsol()  const  {return  fIsnxnIsol; }
 
   Bool_t   IsSimulation() const {return fSimulation ; }
+  Bool_t   IsIsolatedInModule() const {return fIsolateInModule ; }
 
   //Setters
 
@@ -110,14 +111,15 @@ class AliPHOSTrigger : public AliTriggerDetector {
   void Set2x2AmpOutOfPatchThres(Float_t th) { f2x2AmpOutOfPatchThres = th; }
   void SetnxnAmpOutOfPatchThres(Float_t th) { fnxnAmpOutOfPatchThres = th; }
   void SetSimulation(Bool_t sim )          {fSimulation = sim ; }
+  void SetIsolateInModule(Bool_t isol )          {fIsolateInModule = isol ; }
 
  private:
 
   AliPHOSTrigger & operator = (const AliPHOSTrigger & trig) ;//cpy assignment
 
-  void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * amptru, TClonesArray * timeRtru) const ;
+  void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * amptru, TClonesArray * ampmod, TClonesArray * timeRtru) const ;
 
-  Bool_t IsPatchIsolated(Int_t iPatchType, const TClonesArray * amptrus, const Int_t mtru, const Int_t imod, const Float_t *maxarray) ;
+  Bool_t IsPatchIsolated(Int_t iPatchType, const TClonesArray * ampmods, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) ;
 
   void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmaxn) ;
 
@@ -166,6 +168,8 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Float_t fIsnxnIsol ; 
   
   Bool_t  fSimulation ;           //! Flag to do the trigger during simulation or reconstruction
+  Bool_t  fIsolateInModule;  //! Flag to isolate trigger patch in Module or in TRU acceptance
+
   ClassDef(AliPHOSTrigger,4)
 } ;
 

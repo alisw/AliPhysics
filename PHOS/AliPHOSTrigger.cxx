@@ -68,7 +68,7 @@ AliPHOSTrigger::AliPHOSTrigger()
     f2x2AmpOutOfPatch(-1), fnxnAmpOutOfPatch(-1), 
     f2x2AmpOutOfPatchThres(2),  fnxnAmpOutOfPatchThres(2), //2 GeV out of patch 
     fIs2x2Isol(kFALSE), fIsnxnIsol(kFALSE),  
-    fSimulation(kTRUE)
+    fSimulation(kTRUE), fIsolateInModule(kTRUE)
 {
   //ctor
   fADCValuesHighnxn = 0x0; //new Int_t[fTimeBins];
@@ -114,7 +114,7 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   fnxnAmpOutOfPatchThres(trig.fnxnAmpOutOfPatchThres), 
   fIs2x2Isol(trig.fIs2x2Isol),
   fIsnxnIsol(trig.fIsnxnIsol),  
-  fSimulation(trig.fSimulation)
+  fSimulation(trig.fSimulation), fIsolateInModule(trig.fIsolateInModule)
 {
   // cpy ctor
 }
@@ -140,7 +140,7 @@ void AliPHOSTrigger::CreateInputs()
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * ampmatrix, TClonesArray * timeRmatrix) const {
+void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * ampmatrixtru, TClonesArray * ampmatrixmod, TClonesArray * timeRmatrixtru) const {
 
   //Orders digits ampitudes list and times in fNTRU TRUs (28x16 crystals) 
   //per module. Each TRU is a TMatrixD, and they are kept in TClonesArrays. 
@@ -169,8 +169,22 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 	(*timeRtrus)(i,j) = 0.0;
       }
     }
-    new((*ampmatrix)[k])   TMatrixD(*amptrus) ;
-    new((*timeRmatrix)[k]) TMatrixD(*timeRtrus) ; 
+    new((*ampmatrixtru)[k])   TMatrixD(*amptrus) ;
+    new((*timeRmatrixtru)[k]) TMatrixD(*timeRtrus) ; 
+  }
+
+  //List of Modules matrices initialized to 0.
+  Int_t nmodphi = geom->GetNPhi();
+  Int_t nmodz = geom->GetNZ();
+  
+  for(Int_t k = 0; k < nModules ; k++){
+    TMatrixD  * ampmods   = new TMatrixD(nmodphi,nmodz) ;
+    for(Int_t i = 0; i < nmodphi; i++){
+      for(Int_t j = 0; j < nmodz; j++){
+	(*ampmods)(i,j)   = 0.0;
+      }
+    }
+    new((*ampmatrixmod)[k])   TMatrixD(*ampmods) ;
   }
   
   AliPHOSDigit * dig ;
@@ -191,7 +205,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
     //relid[3] = column <= 56 (fNZ)
     
     if(relid[1] == 0){//Not CPV, Only EMC digits
-     
+      //############# TRU ###################
       //Check to which TRU in the supermodule belongs the crystal. 
       //Supermodules are divided in a TRU matrix of dimension 
       //(fNTRUPhi,fNTRUZ).
@@ -206,8 +220,8 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       Int_t itru  = (row-1) + (col-1)*fNTRUPhi + (relid[0]-1)*fNTRU ;
 
       //Fill TRU matrix with crystal values
-      TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrix->At(itru)) ;
-      TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrix->At(itru)) ;
+      TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrixtru->At(itru)) ;
+      TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrixtru->At(itru)) ;
 
       //Calculate row and column of the crystal inside the TRU with number itru
       Int_t irow = (relid[2]-1) - (row-1) *  fNCrystalsPhi;	
@@ -215,6 +229,10 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       
       (*amptrus)(irow,icol)   = amp ;
       (*timeRtrus)(irow,icol) = timeR ;
+
+      //####################MODULE##################
+      TMatrixD * ampmods   = dynamic_cast<TMatrixD *>(ampmatrixmod->At(relid[0]-1)) ;
+      (*ampmods)(relid[2]-1,relid[3]-1)   = amp ;
     }
   }
 }
@@ -238,7 +256,7 @@ void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * amptrus, const Int_t mtru, const Int_t imod, const Float_t *maxarray) {
+Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * ampmatrixes, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) {
 
   //Calculate if the maximum patch found is isolated, find amplitude around maximum (2x2 or nxn) patch, 
   //inside isolation patch . iPatchType = 0 means calculation for 2x2 patch, 
@@ -254,41 +272,57 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * am
   Bool_t b = kFALSE;
   Float_t amp = 0;
  
- //Get matrix of TRU with maximum amplitude patch.
+ //Get matrix of TRU or Module with maximum amplitude patch.
   Int_t itru = mtru+imod*fNTRU ; //number of tru, min 0 max 8*5.
-  TMatrixD * amptru   = dynamic_cast<TMatrixD *>(amptrus->At(itru)) ;
- 
+  TMatrixD * ampmatrix   = 0x0;
+  Int_t colborder = 0;
+  Int_t rowborder = 0;
+
+  if(fIsolateInModule){
+    ampmatrix = dynamic_cast<TMatrixD *>(ampmatrixes->At(imod)) ;
+    rowborder = fNCrystalsPhi*fNTRUPhi;
+    colborder = fNCrystalsZ*fNTRUZ;
+    AliDebug(2,"Isolate trigger in Module");
+  }
+  else{
+    ampmatrix = dynamic_cast<TMatrixD *>(ampmatrixes->At(itru)) ;
+    rowborder = fNCrystalsPhi;
+    colborder = fNCrystalsZ;
+    AliDebug(2,"Isolate trigger in TRU");
+  }
+
+
   //Define patch cells
   Int_t isolcells = fIsolPatchSize*(1+iPatchType);
   Int_t ipatchcells = 2*(1+fPatchSize*iPatchType);
-  Int_t minrow =  static_cast<Int_t>(maxarray[1]) - isolcells;
-  Int_t mincol =  static_cast<Int_t>(maxarray[2]) - isolcells;
-  Int_t maxrow =  static_cast<Int_t>(maxarray[1]) + isolcells + ipatchcells;
-  Int_t maxcol =  static_cast<Int_t>(maxarray[2]) +  isolcells + ipatchcells;
+  Int_t minrow =  maxphi - isolcells;
+  Int_t mincol =  maxeta - isolcells;
+  Int_t maxrow =  maxphi + isolcells + ipatchcells;
+  Int_t maxcol = maxeta +  isolcells + ipatchcells;
 
   AliDebug(2,Form("Number of added Isol Cells %d, Patch Size %d",isolcells, ipatchcells));
   AliDebug(2,Form("Patch: minrow %d, maxrow %d, mincol %d, maxcol %d",minrow,maxrow,mincol,maxcol));
-
-  if(minrow < 0 || mincol < 0 || maxrow > fNCrystalsPhi || maxcol > fNCrystalsZ){
-    AliDebug(1,Form("Out of TRU range, cannot isolate patch"));
+  
+  if(minrow < 0 || mincol < 0 || maxrow > rowborder || maxcol > colborder){
+    AliDebug(1,Form("Out of Module range, cannot isolate patch"));
     return kFALSE;
   }
 
   //Add amplitudes in all isolation patch
   for(Int_t irow = minrow ; irow <  maxrow; irow ++)
     for(Int_t icol = mincol ; icol < maxcol ; icol ++)
-      amp += (*amptru)(irow,icol);
+      amp += (*ampmatrix)(irow,icol);
 
-  AliDebug(2,Form("Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxarray[0], amp));
+  AliDebug(2,Form("Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxamp, amp));
 
-  if(amp < maxarray[0]){
-    AliError(Form("Bad sum: Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxarray[0], amp));
+  if(amp < maxamp){
+    AliError(Form("Bad sum: Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxamp, amp));
     return kFALSE;
   }
   else
-    amp-=maxarray[0]; //Calculate energy in isolation patch that do not comes from maximum patch.
+    amp-=maxamp; //Calculate energy in isolation patch that do not comes from maximum patch.
   
-  AliDebug(2, Form("Maximum amplitude %f, Out of patch %f",maxarray[0], amp));
+  AliDebug(2, Form("Maximum amplitude %f, Out of patch %f",maxamp, amp));
 
   //Fill isolation amplitude data member and say if patch is isolated.
   if(iPatchType == 0){ //2x2 case
@@ -433,6 +467,10 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
     printf( "               -nxn Isolation Patch %d x %d, Amplitude out of nxn patch is %f, threshold %f, Isolated? %d \n", 
 	    4*fIsolPatchSize+2*(fPatchSize+1),4*fIsolPatchSize+2*(fPatchSize+1) ,  fnxnAmpOutOfPatch,  fnxnAmpOutOfPatchThres,static_cast<Int_t> (fIsnxnIsol) ) ; 
   }
+
+  printf( "             Isolate in Module? %d\n",  
+          fIsolateInModule) ;  
+
   printf( "             Threshold for LO %10.1f\n", 
 	  fL0Threshold) ;  
   
@@ -454,7 +492,7 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::SetTriggers(const TClonesArray * amptrus, const Int_t iMod, const TMatrixD * ampmax2, const TMatrixD * ampmaxn)  
+void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMod, const TMatrixD * ampmax2, const TMatrixD * ampmaxn)  
 {
   //Checks the 2x2 and nxn maximum amplitude per each TRU and compares 
   //with the different L0 and L1 triggers thresholds. It finds if maximum amplitudes are isolated.
@@ -503,7 +541,10 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * amptrus, const Int_t iMod,
 					      f2x2CrystalPhi,f2x2CrystalEta) ;
     
     //Isolated patch?
-    fIs2x2Isol =  IsPatchIsolated(0, amptrus, mtru2, iMod, max2) ;
+    if(fIsolateInModule)
+      fIs2x2Isol =  IsPatchIsolated(0, ampmatrix, iMod, mtru2,  f2x2MaxAmp, f2x2CrystalPhi,f2x2CrystalEta) ;
+    else
+      fIs2x2Isol =  IsPatchIsolated(0, ampmatrix, iMod, mtru2,  f2x2MaxAmp,  static_cast<Int_t>(max2[1]), static_cast<Int_t>(max2[2])) ;
 
     //Transform digit amplitude in Raw Samples
     fADCValuesLow2x2  = new Int_t[nTimeBins];
@@ -535,7 +576,10 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * amptrus, const Int_t iMod,
 					      fnxnCrystalPhi,fnxnCrystalEta) ; 
     
     //Isolated patch?
-    fIsnxnIsol =  IsPatchIsolated(1, amptrus, mtrun, iMod, maxn) ;
+    if(fIsolateInModule)
+      fIsnxnIsol =  IsPatchIsolated(1, ampmatrix, iMod, mtrun,  fnxnMaxAmp, fnxnCrystalPhi, fnxnCrystalEta) ;
+    else
+      fIsnxnIsol =  IsPatchIsolated(1, ampmatrix, iMod, mtrun,  fnxnMaxAmp,  static_cast<Int_t>(maxn[1]), static_cast<Int_t>(maxn[2])) ;
 
     //Transform digit amplitude in Raw Samples
     fADCValuesHighnxn = new Int_t[nTimeBins];
@@ -595,8 +639,9 @@ void AliPHOSTrigger::Trigger()
   
   //Fill TRU Matrix  
   TClonesArray * amptrus   = new TClonesArray("TMatrixD",1000);
+  TClonesArray * ampmods   = new TClonesArray("TMatrixD",1000);
   TClonesArray * timeRtrus = new TClonesArray("TMatrixD",1000);
-  FillTRU(fDigitsList,geom,amptrus, timeRtrus) ;
+  FillTRU(fDigitsList,geom,amptrus, ampmods,timeRtrus) ;
 
   //Do Crystal Sliding and select Trigger
   //Initialize varible that will contain maximum amplitudes and 
@@ -609,7 +654,10 @@ void AliPHOSTrigger::Trigger()
     //Do 2x2 and nxn sums, select maximums. 
     MakeSlidingCell(amptrus, timeRtrus, imod, ampmax2, ampmaxn);
     //Set the trigger
-    SetTriggers(amptrus,imod,ampmax2,ampmaxn) ;
+    if(fIsolateInModule)
+      SetTriggers(ampmods,imod,ampmax2,ampmaxn) ;
+    if(!fIsolateInModule)
+      SetTriggers(amptrus,imod,ampmax2,ampmaxn) ;
   }
 
   //Print();
