@@ -43,7 +43,7 @@
 #include <AliHLTHough.h>
 #include <AliHLTBenchmark.h>
 #include <AliKalmanTrack.h>
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliMagF.h"
 #include "AliMagFMaps.h"
 #include <AliHLTITSclusterer.h>
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
   //  AliKalmanTrack::SetConvConst(
   //     1000/0.299792458/AliHLTTransform::GetSolenoidField()
   //  );
-  AliITSgeom *geom = new AliITSgeom();
+  AliITSgeomTGeo *geom = new AliITSgeomTGeo();
   geom->ReadNewFile("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det");
   if (!geom) return 1;
   Int_t sfield = 0;
