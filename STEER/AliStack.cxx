@@ -87,26 +87,25 @@ AliStack::AliStack(Int_t size, const char* evfoldname):
 
 //_______________________________________________________________________
 AliStack::AliStack(const AliStack& st):
-  TVirtualMCStack(st),
-  fParticles(0),
-  fParticleMap(0),
-  fParticleFileMap(0),
-  fParticleBuffer(0),
-  fCurrentTrack(0),
-  fTreeK(0),
-  fNtrack(0),
-  fNprimary(0),
-  fCurrent(-1),
-  fCurrentPrimary(-1),
-  fHgwmk(0),
-  fLoadPoint(0),
-  fEventFolderName()
+    TVirtualMCStack(st),
+    fParticles(new TClonesArray("TParticle",1000)),
+    fParticleMap(new TObjArray(*st.Particles())),
+    fParticleFileMap(st.fParticleFileMap),
+    fParticleBuffer(0),
+    fCurrentTrack(0),
+    fTreeK((TTree*)(st.fTreeK->Clone())),
+    fNtrack(st.GetNtrack()),
+    fNprimary(st.GetNprimary()),
+    fCurrent(-1),
+    fCurrentPrimary(-1),
+    fHgwmk(0),
+    fLoadPoint(0),
+    fEventFolderName(0)
 {
-  //
-  // Copy constructor
-  //
-  st.Copy(*this);
+    // Copy constructor
+    ConnectTree();
 }
+
 
 //_______________________________________________________________________
 void AliStack::Copy(TObject&) const
