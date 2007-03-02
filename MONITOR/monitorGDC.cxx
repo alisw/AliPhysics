@@ -44,6 +44,7 @@
 #include <AliHLTBenchmark.h>
 #include <AliKalmanTrack.h>
 #include "AliITSgeomTGeo.h"
+#include "AliITSgeom.h"
 #include "AliMagF.h"
 #include "AliMagFMaps.h"
 #include <AliHLTITSclusterer.h>
