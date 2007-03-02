@@ -123,7 +123,9 @@ void AliTRDSimParam::Init()
   fADCoutRange       = 1023.0;          // 10-bit ADC
   fADCinRange        = 2000.0;          // 2V input range
   fADCthreshold      =    3;
-  fADCbaseline       =   10;
+  // Go back to 0 again, just to be consistent with reconstruction
+  fADCbaseline       =    0;
+  //fADCbaseline       =   10;
 
   // Diffusion on
   fDiffusionOn       = kTRUE;
