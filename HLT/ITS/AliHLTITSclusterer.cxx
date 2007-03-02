@@ -23,8 +23,8 @@
 //-------------------------------------------------------------------------
 
 #include "AliHLTITSclusterer.h"
+#include "AliITSgeomTGeo.h"
 #include "AliRawReader.h"
-#include "AliITSgeom.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
@@ -33,9 +33,9 @@
 
 ClassImp(AliHLTITSclusterer)
 
-AliHLTITSclusterer::AliHLTITSclusterer(const AliITSgeom *geom):AliITSclustererV2(geom)
+AliHLTITSclusterer::AliHLTITSclusterer(const Char_t *geom):AliITSclustererV2(geom)
 {
-fNModule = geom->GetIndexMax();
+fNModule = AliITSgeomTGeo::GetNModules();
 }
 
 void AliHLTITSclusterer::Digits2Clusters(AliRawReader* rawReader,TTree *cTree)

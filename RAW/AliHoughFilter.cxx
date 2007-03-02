@@ -113,9 +113,7 @@ void AliHoughFilter::RunITSclusterer(AliRawEvent* event, TTree *treeClusters)
   TStopwatch timer;
   timer.Start();
 
-  if(!fITSgeom)
-    AliError("ITS geometry not created!");
-  AliHLTITSclusterer clusterer(fITSgeom);
+  AliHLTITSclusterer clusterer(0);
   AliRawReader *itsrawreader=new AliRawReaderRoot(event);
   clusterer.Digits2Clusters(itsrawreader,treeClusters);
   delete itsrawreader;

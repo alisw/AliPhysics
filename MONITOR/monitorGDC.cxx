@@ -170,7 +170,7 @@ int main(int argc, char** argv)
 
 	// ITS clusterer and vertexer
 	fBenchmark->Start("ITS Clusterer");
-	AliHLTITSclusterer clusterer(geom);
+	AliHLTITSclusterer clusterer(0);
 	AliRawReader *itsrawreader=new AliRawReaderDate(ptr);
 	TTree* treeClusters = new TTree("TreeL3ITSclusters"," "); //make a tree
 	clusterer.Digits2Clusters(itsrawreader,treeClusters);

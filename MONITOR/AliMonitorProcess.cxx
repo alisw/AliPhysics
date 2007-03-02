@@ -647,7 +647,7 @@ Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader, AliESD* esd)
   // cluster finder
   AliDebug(1, "reconstructing clusters...");
   itsLoader->LoadRecPoints("recreate");
-  AliITSclustererV2 clusterer(fITSgeom);
+  AliITSclustererV2 clusterer(0);
   itsLoader->MakeRecPointsContainer();
   clusterer.Digits2Clusters(rawReader);
 

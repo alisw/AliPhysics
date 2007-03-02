@@ -15,14 +15,13 @@
 #include "AliITSclustererV2.h"
 
 class TTree;
-class AliITSgeom;
 class AliRawReader;
 
 //-------------------------------------------------------------------------
 class AliHLTITSclusterer : public AliITSclustererV2 {
 public:
   AliHLTITSclusterer():AliITSclustererV2(){fNModule = 0;}
-  AliHLTITSclusterer(const AliITSgeom *geom);
+  AliHLTITSclusterer(const Char_t *geom);
 
   void Digits2Clusters(AliRawReader* rawReader,TTree *cTree);
 

@@ -19,7 +19,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSdigitSPD.h"
 #include "AliITSdigitSDD.h"
 #include "AliITSdigitSSD.h"
@@ -56,11 +56,11 @@ fTanP(0),
 fTanN(0){
    //default constructor
  }
-AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom):
-fNModules(0),
+AliITSclustererV2::AliITSclustererV2(const Char_t *geom):
+fNModules(AliITSgeomTGeo::GetNModules()),
 fEvent(0),
 fI(0),
-fLastSPD1(0),
+fLastSPD1(AliITSgeomTGeo::GetModuleIndex(2,1,1)-1),
 fNySPD(256),
 fNzSPD(160),
 fYpitchSPD(0.0050),
@@ -75,7 +75,7 @@ fZpitchSDD(0.02940),
 fHwSDD(3.5085),
 fHlSDD(3.7632),
 fYoffSDD(0.0425),
-fLastSSD1(0),
+fLastSSD1(AliITSgeomTGeo::GetModuleIndex(6,1,1)-1),
 fYpitchSSD(0.0095),
 fHwSSD(3.65),
 fHlSSD(2.00),
@@ -84,28 +84,20 @@ fTanN(0.0075) {
   //------------------------------------------------------------
   // Standard constructor
   //------------------------------------------------------------
-  AliITSgeom *g=(AliITSgeom*)geom;
-
-  Int_t mmax=geom->GetIndexMax();
-  if (mmax>2200) {
-     Fatal("AliITSclustererV2","Too many ITS subdetectors !"); 
+  if (geom) {
+    AliWarning("\"geom\" is actually a dummy argument !");
   }
   Int_t m;
-  for (m=0; m<mmax; m++) {
-     Int_t lay,lad,det; g->GetModuleId(m,lay,lad,det);
-     Float_t x,y,z;     g->GetTrans(lay,lad,det,x,y,z); 
-     Double_t rot[9];   g->GetRotMatrix(lay,lad,det,rot);
-     Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-     Double_t ca=TMath::Cos(alpha), sa=TMath::Sin(alpha);
-     fYshift[m] = x*ca + y*sa;
-     fZshift[m] = (Double_t)z;
-     fNdet[m] = (lad-1)*g->GetNdetectors(lay) + (det-1);
+  for (m=0; m<fNModules; m++) {
+     Int_t lay,lad,det; AliITSgeomTGeo::GetModuleId(m,lay,lad,det);
+     const TGeoHMatrix *tm=AliITSgeomTGeo::GetTracking2LocalMatrix(m);
+     fYshift[m] = (tm->Inverse()).GetTranslation()[1];
+     fZshift[m] = (tm->Inverse()).GetTranslation()[2];
+     fNdet[m] = (lad-1)*AliITSgeomTGeo::GetNDetectors(lay) + (det-1);
      fNlayer[m] = lay-1;
   }
-  fNModules = g->GetIndexMax();
 
   //SPD geometry  
-  fLastSPD1=g->GetModuleIndex(2,1,1)-1;
   fYSPD[0]=0.5*fYpitchSPD;
   for (m=1; m<fNySPD; m++) fYSPD[m]=fYSPD[m-1]+fYpitchSPD; 
   fZSPD[0]=fZ1pitchSPD;
@@ -121,9 +113,6 @@ fTanN(0.0075) {
         m==127 || m==128) dz=0.5*fZ2pitchSPD; 
     fZSPD[m]-=dz;
   }
-
-  //SSD geometry
-  fLastSSD1=g->GetModuleIndex(6,1,1)-1;
 
 }
 

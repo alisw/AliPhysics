@@ -15,7 +15,6 @@ class TFile;
 class TTree;
 class TClonesArray;
 
-class AliITSgeom;
 class AliITSclusterV2;
 class AliRawReader;
 class AliITSRawStream;
@@ -23,7 +22,7 @@ class AliITSRawStream;
 class AliITSclustererV2 : public TObject {
 public:
   AliITSclustererV2();
-  AliITSclustererV2(const AliITSgeom *geom);
+  AliITSclustererV2(const Char_t *geom);
 
   void SetEvent(Int_t event) { fEvent=event; }
   Int_t Digits2Clusters(TTree *in, TTree *out);
