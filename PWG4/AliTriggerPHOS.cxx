@@ -86,8 +86,8 @@ void AliTriggerPHOS::CreateOutputObjects()
 {  
 
   // create histograms 
-  fNtTrigger22 = new TNtuple("PHOStrigger22", "Trigger data 2x2 patch", "a22:a220:enMax:phEnMax:p22:eta22:phi22:etaMax:phiMax:phEtaMax:phPhiMax");
-  fNtTriggerNN = new TNtuple("PHOStriggerNN", "Trigger data NxN patch", "aNN:aNN0:enMax:phEnMax:pNN:etaNN:phiNN:etaMax:phiMax:phEtaMax:phPhiMax");
+  fNtTrigger22 = new TNtuple("PHOStrigger22", "Trigger data 2x2 patch", "a22:a220:enMax:phEnMax:eta22:phi22:etaMax:phiMax:phEtaMax:phPhiMax");
+  fNtTriggerNN = new TNtuple("PHOStriggerNN", "Trigger data NxN patch", "aNN:aNN0:enMax:phEnMax:etaNN:phiNN:etaMax:phiMax:phEtaMax:phPhiMax");
 
   // create output container
   
@@ -126,22 +126,29 @@ void AliTriggerPHOS::Exec(Option_t *)
 
   // trigger position
   const TArrayF * triggerPosition      = fESD->GetPHOSTriggerPosition();
-  const Float_t p22    =  static_cast<Float_t>(triggerPosition->At(0)) ; 
-  const Float_t phi22  =  static_cast<Float_t>(triggerPosition->At(1)) ;
-  const Float_t eta22  =  static_cast<Float_t>(triggerPosition->At(2)) ;
-  const Float_t pNN    =  static_cast<Float_t>(triggerPosition->At(3)) ; 
-  const Float_t phiNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
-  const Float_t etaNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
+  const Float_t x22  =  static_cast<Float_t>(triggerPosition->At(0)) ; 
+  const Float_t y22  =  static_cast<Float_t>(triggerPosition->At(1)) ;
+  const Float_t z22  =  static_cast<Float_t>(triggerPosition->At(2)) ;
+  const Float_t xNN  =  static_cast<Float_t>(triggerPosition->At(3)) ; 
+  const Float_t yNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
+  const Float_t zNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
   
   Int_t       firstPhosCluster       = fESD->GetFirstPHOSCluster() ;
   const Int_t numberOfPhosClusters   = fESD->GetNumberOfPHOSClusters() ;
    
   Float_t enMax       = 0. ;
   Float_t phEnMax     = 0. ;
-  Float_t etaMax      = 999. ;
-  Float_t phiMax      = 999. ; 
-  Float_t phEtaMax    = 999. ;
-  Float_t phPhiMax    = 999. ; 
+  Float_t etaMax      = 0.5 ;
+  Float_t phiMax      = 0. ; 
+  Float_t phEtaMax    = 0.5 ;
+  Float_t phPhiMax    = 0. ; 
+  
+  TVector3 vpos22(x22, y22, z22) ;
+  TVector3 vposNN(xNN, yNN, zNN) ;
+  Float_t eta22 = vpos22.Eta() ; 
+  Float_t phi22 = vpos22.Phi() * TMath::RadToDeg() + 360. ; 
+  Float_t etaNN = vposNN.Eta() ; 
+  Float_t phiNN = vposNN.Phi() * TMath::RadToDeg() + 360. ; 
 
   Int_t      phosCluster ; 
   
@@ -176,8 +183,8 @@ void AliTriggerPHOS::Exec(Option_t *)
       }
     }
     
-    fNtTrigger22->Fill(a22, a22O, enMax, phEnMax, p22, eta22, phi22, etaMax, phiMax, phEtaMax, phPhiMax );
-    fNtTriggerNN->Fill(aNN, aNNO, enMax, phEnMax, pNN, etaNN, phiNN, etaMax, phiMax, phEtaMax, phPhiMax );
+    fNtTrigger22->Fill(a22, a22O, enMax, phEnMax, eta22, phi22, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
+    fNtTriggerNN->Fill(aNN, aNNO, enMax, phEnMax, etaNN, phiNN, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
  }
   
   
