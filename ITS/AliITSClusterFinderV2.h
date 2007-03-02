@@ -11,7 +11,6 @@
 
 class AliITSRecPoint;
 class AliRawReader;
-class AliITSgeom;
 
 class AliITSClusterFinderV2 : public AliITSClusterFinder {
 public:

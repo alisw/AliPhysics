@@ -87,7 +87,7 @@ AliITStrackerV2::AliITStrackerV2(const AliITStrackerV2 &t):
 
 }
 
-AliITStrackerV2::AliITStrackerV2(const AliITSgeomTGeo *geom) : 
+AliITStrackerV2::AliITStrackerV2(const Char_t *geom) : 
   AliTracker(), 
   fI(kMaxLayer),
   fBestTrack(),
@@ -125,18 +125,15 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeomTGeo *geom) :
     for (Int_t j=1; j<nlad+1; j++) {
       for (Int_t k=1; k<ndet+1; k++) { //Fill this layer with detectors
         TGeoHMatrix m; AliITSgeomTGeo::GetOrigMatrix(i,j,k,m);
-        Double_t *xyz=m.GetTranslation(), x=xyz[0], y=xyz[1];
-        Double_t *rot=m.GetRotationMatrix(); 
-
-        Double_t phi=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-        phi+=TMath::Pi()/2;
-        if (i==1) phi+=TMath::Pi();
+        const TGeoHMatrix *tm=AliITSgeomTGeo::GetTracking2LocalMatrix(i,j,k);
+        m.Multiply(tm);
+        Double_t txyz[3]={0.}, xyz[3]={0.};
+        m.LocalToMaster(txyz,xyz);
+        Double_t r=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+        Double_t phi=TMath::ATan2(xyz[1],xyz[0]);
 
         if (phi<0) phi+=TMath::TwoPi();
         else if (phi>=TMath::TwoPi()) phi-=TMath::TwoPi();
-
-        Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
-        Double_t r=x*cp+y*sp;
 
         AliITSdetector &det=fgLayers[i-1].GetDetector((j-1)*ndet + k-1); 
         new(&det) AliITSdetector(r,phi); 
@@ -185,18 +182,34 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
     for (; j<jmax; j++) {           
       if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
+ 
+      //*** The Delta transformation
+      TGeoHMatrix delta; 
+      AliITSgeomTGeo::GetTrackingMatrix(j,delta);
+      TGeoHMatrix m;
+      AliITSgeomTGeo::GetOrigMatrix(j,m);
+      delta.MultiplyLeft(&(m.Inverse()));
+      const TGeoHMatrix *tm = AliITSgeomTGeo::GetTracking2LocalMatrix(j);
+      delta.MultiplyLeft(&(tm->Inverse())); 
+      //***
+
       while (ncl--) {
         AliITSRecPoint *c=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
+
+        //*** Shift the cluster to the misaligned position
+        Double_t  xyz[3]={c->GetX(),c->GetY(),c->GetZ()};
+        Double_t mxyz[3]={0.};                    
+        
+        delta.LocalToMaster(xyz,mxyz);
+
+        c->SetX(mxyz[0]);
+        c->AliCluster::SetY(mxyz[1]);
+        c->AliCluster::SetZ(mxyz[2]);
+	//***
 
         Int_t idx=c->GetDetectorIndex();
         AliITSdetector &det=fgLayers[i].GetDetector(idx);
    
-        //Shift the cluster to the misaligned position (temporary solution)
-        Double_t x=det.GetR();
-        if      (i==0) x-=0.0075; 
-        else if (i==1) x+=0.0075;
-        c->SetX(x);           
-
         Double_t y=r*det.GetPhi()+c->GetY();
         if (y>circ) y-=circ; else if (y<0) y+=circ;
         c->SetPhiR(y);
@@ -609,7 +622,10 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
 
   if (!cc) return 0;
 
-  if (!fTrackToFollow.PropagateTo(cc->GetX(),0.,0.)) return 0; // Alignment
+  {// Take into account the mis-alignment
+    Double_t x = fTrackToFollow.GetX() + cc->GetX();
+    if (!fTrackToFollow.PropagateTo(x,0.,0.)) return 0;
+  }
   if (!fTrackToFollow.Update(cc,chi2,(fI<<28)+cci)) {
      //Warning("TakeNextProlongation","filtering failed !\n");
      return 0;
@@ -1062,7 +1078,9 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
      }
  
      if (cl) {
-       if (!t->PropagateTo(cl->GetX(),0.,0.)) return kFALSE; //Alignment
+       // Take into account the mis-alignment
+       Double_t x=t->GetX()+cl->GetX();
+       if (!t->PropagateTo(x,0.,0.)) return kFALSE;
        if (!t->Update(cl,maxchi2,idx)) {
           return kFALSE;
        }

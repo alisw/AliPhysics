@@ -19,7 +19,6 @@ class AliITSMap;
 class AliITSresponse;
 class AliITSsegmentation;
 class AliITSRawCluster;
-class AliITSgeom;
 class AliITSdigit;
 class AliITSRecPoint;
 class AliITSDetTypeRec;

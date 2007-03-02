@@ -25,6 +25,7 @@
 #include "AliITSdigit.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSMap.h"
+#include "AliITSgeomTGeo.h"
 
 ClassImp(AliITSClusterFinder)
 
@@ -152,27 +153,16 @@ AliITSClusterFinder::~AliITSClusterFinder(){
 }
 //__________________________________________________________________________
 void AliITSClusterFinder::InitGeometry(){
-
-
- //Initialisation of ITS geometry
-  if(!fDetTypeRec->GetITSgeom()) {
-    Error("InitGeometry","ITS geom is null!");
-    return;
-  }
-  Int_t mmax=fDetTypeRec->GetITSgeom()->GetIndexMax();
-  if (mmax>2200) {
-    Fatal("AliITSClusterFinder","Too many ITS subdetectors !"); 
-  }
-  Int_t m;
-  for (m=0; m<mmax; m++) {
-    Int_t lay,lad,det; fDetTypeRec->GetITSgeom()->GetModuleId(m,lay,lad,det);
-    Float_t x,y,z;     fDetTypeRec->GetITSgeom()->GetTrans(lay,lad,det,x,y,z); 
-    Double_t rot[9];   fDetTypeRec->GetITSgeom()->GetRotMatrix(lay,lad,det,rot);
-    Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-    Double_t ca=TMath::Cos(alpha), sa=TMath::Sin(alpha);
-    fYshift[m] = x*ca + y*sa;
-    fZshift[m] = (Double_t)z;
-    fNdet[m] = (lad-1)*fDetTypeRec->GetITSgeom()->GetNdetectors(lay) + (det-1);
+ //
+ // Initialisation of ITS geometry
+ //
+  Int_t mmax=AliITSgeomTGeo::GetNModules();
+  for (Int_t m=0; m<mmax; m++) {
+    Int_t lay,lad,det; AliITSgeomTGeo::GetModuleId(m,lay,lad,det);
+    const TGeoHMatrix *tm=AliITSgeomTGeo::GetTracking2LocalMatrix(m);
+    fYshift[m] = (tm->Inverse()).GetTranslation()[1];
+    fZshift[m] = (tm->Inverse()).GetTranslation()[2];
+    fNdet[m] = (lad-1)*AliITSgeomTGeo::GetNDetectors(lay) + (det-1);
     fNlayer[m] = lay-1;
   }
 }

@@ -22,6 +22,7 @@
 
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
@@ -30,10 +31,8 @@
 
 ClassImp(AliITSClusterFinderV2SPD)
 
-extern AliRun *gAlice;
-
 AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
-fLastSPD1(0),
+fLastSPD1(AliITSgeomTGeo::GetModuleIndex(2,1,1)-1),
 fNySPD(256),
 fNzSPD(160),
 fYpitchSPD(0.0050),
@@ -44,7 +43,6 @@ fHlSPD(3.48){
 
   //Default constructor
 
-  fLastSPD1=fDetTypeRec->GetITSgeom()->GetModuleIndex(2,1,1)-1;
   fYSPD[0]=0.5*fYpitchSPD;
   for (Int_t m=1; m<fNySPD; m++) fYSPD[m]=fYSPD[m-1]+fYpitchSPD; 
   fZSPD[0]=fZ1pitchSPD;
@@ -190,8 +188,10 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	y -= fHwSPD;
 	z -= fHlSPD;
 	Float_t hit[5]; //y,z,sigma(y)^2, sigma(z)^2, charge
-	hit[0] = -(-y+fYshift[iModule]);
-	if(iModule <= fLastSPD1) hit[0] = -hit[0];
+
+	if (iModule <= fLastSPD1) hit[0] = -y+fYshift[iModule];
+        else hit[0] = y+fYshift[iModule];
+
 	hit[1] = -z+fZshift[iModule];
 	hit[2] = fYpitchSPD*fYpitchSPD/12.;
 	hit[3] = fZ1pitchSPD*fZ1pitchSPD/12.;

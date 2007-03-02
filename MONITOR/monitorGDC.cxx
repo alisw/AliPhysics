@@ -269,7 +269,7 @@ int main(int argc, char** argv)
 	nglobaltracks += hough2->FillESD(esd);
 
 	// ITS tracker
-	AliHLTITStracker itsTracker((AliITSgeomTGeo *)0x0);
+	AliHLTITStracker itsTracker(0);
 	itsTracker.SetVertex(vtxPos,vtxErr);
 
 	itsTracker.LoadClusters(treeClusters);

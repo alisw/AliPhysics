@@ -14,7 +14,6 @@
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
-class AliITSgeom;
 
 class AliITSClusterFinderV2SPD : public AliITSClusterFinderV2 {
 public:
