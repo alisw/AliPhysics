@@ -107,7 +107,7 @@ int main(int argc, char** argv)
   //  AliKalmanTrack::SetConvConst(
   //     1000/0.299792458/AliHLTTransform::GetSolenoidField()
   //  );
-  AliITSgeomTGeo *geom = new AliITSgeomTGeo();
+  AliITSgeom *geom = new AliITSgeom();
   geom->ReadNewFile("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det");
   if (!geom) return 1;
   Int_t sfield = 0;
@@ -268,7 +268,7 @@ int main(int argc, char** argv)
 	nglobaltracks += hough2->FillESD(esd);
 
 	// ITS tracker
-	AliHLTITStracker itsTracker(geom);
+	AliHLTITStracker itsTracker((AliITSgeomTGeo *)0x0);
 	itsTracker.SetVertex(vtxPos,vtxErr);
 
 	itsTracker.LoadClusters(treeClusters);
