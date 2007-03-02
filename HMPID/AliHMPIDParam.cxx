@@ -22,7 +22,6 @@
 #include <AliRunLoader.h>  //Stack()
 #include <AliStack.h>      //Stack()
 #include <TParticle.h>     //Stack()    
-#include "AliHMPIDHelix.h"  //TestTrans()
 
 ClassImp(AliHMPIDParam)
 

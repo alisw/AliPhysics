@@ -15,7 +15,7 @@
 
 #include "AliHMPIDReconstructor.h" //class header
 #include "AliHMPID.h"              //Reconstruct() 
-#include "AliHMPIDCluster.h"       //CluQA() 
+#include "AliHMPIDCluster.h"       //Dig2Clu()
 #include "AliHMPIDParam.h"         //FillEsd() 
 #include <AliESD.h>               //FillEsd()
 #include <AliRunLoader.h>         //Reconstruct() for simulated digits
@@ -32,9 +32,9 @@ void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t
 //            pCluAll     - list of clusters for all chambers
 //            isTryUnfold - flag to choose between CoG and Mathieson fitting  
 //  Returns: none    
-  TMatrixF padMap(AliHMPIDDigit::kMaxPadChX,AliHMPIDDigit::kMaxPadChY);                       //pads map for single chamber 0..159 x 0..143 
+  TMatrixF padMap(AliHMPIDDigit::kMinPx,AliHMPIDDigit::kMaxPcx,AliHMPIDDigit::kMinPy,AliHMPIDDigit::kMaxPcy);  //pads map for single chamber 0..159 x 0..143 
   
-  for(Int_t iCh=0;iCh<7;iCh++){                                                           //chambers loop 
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){                  //chambers loop 
     TClonesArray *pDigCur=(TClonesArray*)pDigAll->At(iCh);                                //get list of digits for current chamber
     if(pDigCur->GetEntriesFast()==0) continue;                                            //no digits for current chamber
   
@@ -61,22 +61,21 @@ void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void  AliHMPIDReconstructor::FormClu(AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pDigMap)
 {
-// Forms the initial cluster as a combination of all adjascent digits. Starts from the given digit
-// then calls itself recursevly  for all possible neighbours.
+// Forms the initial cluster as a combination of all adjascent digits. Starts from the given digit then calls itself recursevly  for all neighbours.
 // Arguments: pClu - pointer to cluster being formed
-//  Returns: none   
+//   Returns: none   
   pClu->DigAdd(pDig);//take this digit in cluster
 
   Int_t cnt=0,cx[4],cy[4];
   
-  if(pDig->PadPcX() != 0                       ){cx[cnt]=pDig->PadChX()-1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //left
-  if(pDig->PadPcX() != AliHMPIDDigit::kPadPcX-1){cx[cnt]=pDig->PadChX()+1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //right
-  if(pDig->PadPcY() != 0                       ){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()-1;cnt++;}       //down
-  if(pDig->PadPcY() != AliHMPIDDigit::kPadPcY-1){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()+1;cnt++;}       //up
+  if(pDig->PadPcX() != AliHMPIDDigit::kMinPx){cx[cnt]=pDig->PadChX()-1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //left
+  if(pDig->PadPcX() != AliHMPIDDigit::kMaxPx){cx[cnt]=pDig->PadChX()+1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //right
+  if(pDig->PadPcY() != AliHMPIDDigit::kMinPy){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()-1;cnt++;}       //down
+  if(pDig->PadPcY() != AliHMPIDDigit::kMaxPy){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()+1;cnt++;}       //up
   
-  for (Int_t i=0;i<cnt;i++)
+  for (Int_t i=0;i<cnt;i++){//neighbours loop
     if((pDig=UseDig(cx[i],cy[i],pDigLst,pDigMap))) FormClu(pClu,pDig,pDigLst,pDigMap);   //check if this neighbour pad fired and mark it as taken  
-  
+  }//neighbours loop  
 }//FormClu()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL)const
@@ -106,7 +105,7 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL)const
     
   AliDebug(1,"Stop.");      
 }//Reconstruct(for simulated digits)
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)const
 {
 //Invoked  by AliReconstruction to convert raw digits from DDL files to clusters
@@ -146,7 +145,6 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)cons
   pRL->UnloadRecPoints();  
 }//Reconstruct raw data
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESD *pESD) const
 {
 // Calculates probability to be a electron-muon-pion-kaon-proton
@@ -168,9 +166,8 @@ void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESD *pESD) const
     for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
       Double_t mass = AliPID::ParticleMass(iPart);
       Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(AliHMPIDParam::Instance()->MeanIdxRad()*pmod);
-      if(cosThetaTh<1) //calculate the height of theortical theta ckov on the gaus of experimental one
-        h[iPart] =TMath::Gaus(TMath::ACos(cosThetaTh),pTrk->GetHMPIDsignal(),TMath::Sqrt(pTrk->GetHMPIDchi2()),kTRUE);
-      
+      if(cosThetaTh<1) //calculate the height of theoretical theta ckov on the gaus of experimental one
+        h[iPart] =TMath::Gaus(TMath::ACos(cosThetaTh),pTrk->GetHMPIDsignal(),TMath::Sqrt(pTrk->GetHMPIDchi2()),kTRUE);      
       else             //beta < 1/ref. idx. => no light at all  
         h[iPart] =0 ;       
       hTot    +=h[iPart]; //total height of all theoretical heights for normalization
@@ -185,6 +182,5 @@ void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESD *pESD) const
         pid[iPart]=1.0/AliPID::kSPECIES; 
     pTrk->SetHMPIDpid(pid);
   }//ESD tracks loop
-  //last line is to check if the nearest thetacerenkov to the teorethical one is within 5 sigma, otherwise no response (equal prob to every particle
-}//FillESD
+}//FillESD()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

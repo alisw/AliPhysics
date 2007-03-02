@@ -14,9 +14,9 @@ class TClonesArray;        //Hit2Sdi()
 class AliHMPIDDigit :public AliDigit //TObject-AliDigit-AliHMPIDDigit
 {
 public:
-  enum EChamberData{kMinCh=0,kMaxCh=6,kMinPc=0,kMaxPc=5};  
-  enum EPadxData{kPadPcX=80,kMinPx=0,kMaxPx=kPadPcX-1,kMaxPadChX=159};   //Segmentation structure along x
-  enum EPadyData{kPadPcY=48,kMinPy=0,kMaxPy=kPadPcY-1,kMaxPadChY=143};   //Segmentation structure along y
+  enum EChamberData{kMinCh=0,kMaxCh=6,kMinPc=0,kMaxPc=5};      //Segmenation     
+  enum EPadxData{kPadPcX=80,kMinPx=0,kMaxPx=79,kMaxPcx=159};   //Segmentation structure along x
+  enum EPadyData{kPadPcY=48,kMinPy=0,kMaxPy=47,kMaxPcy=143};   //Segmentation structure along y
 //ctor&dtor    
   AliHMPIDDigit(                          ):AliDigit( ),fPad(Abs(-1,-1,-1,-1)),fQ(-1)  {}                         //default ctor
   AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t):AliDigit(t),fPad(pad             ),fQ(q )  {}                         //digit ctor
