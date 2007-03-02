@@ -23,6 +23,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include <RVersion.h>
 #include <TArc.h>
 #include <TButton.h>
 #include <TCanvas.h>
@@ -34,7 +35,11 @@
 #include <TSlider.h>
 #include <TSliderBox.h>
 //#include <TTree.h>
+#if ROOT_VERSION_CODE>= 331523
+#include <TView3D.h>
+#else
 #include <TView.h>
+#endif
 #include <TVirtualX.h>
 
 #include "AliLog.h"
@@ -671,7 +676,13 @@ void AliDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
    gPad->Clear();
 
    Int_t iret;
+#if ROOT_VERSION_CODE>= 331523
+   Double_t rmin[]={-1,-1,-1};
+   Double_t rmax[]={ 1, 1, 1};
+   TView *view = new TView3D(1,rmin,rmax);
+#else
    TView *view = new TView(1);
+#endif
    Float_t range = fRrange*fRangeSlider->GetMaximum();
    view->SetRange(-range,-range,-range,range, range, range);
    fZoomX0[0] = -1;

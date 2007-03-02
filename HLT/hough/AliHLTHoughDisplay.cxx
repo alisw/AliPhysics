@@ -5,7 +5,11 @@
 
 
 #include <TCanvas.h>
+#if ROOT_VERSION_CODE>= 331523
+#include <TView3D.h>
+#else
 #include <TView.h>
+#endif
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
 #include <TNode.h>
@@ -141,7 +145,13 @@ void AliHLTHoughDisplay::DisplayEvent()
   TCanvas *c1 = new TCanvas("c1","",700,700);
   c1->cd();
   
+#if ROOT_VERSION_CODE>= 331523
+   Double_t rmin[]={-1,-1,-1};
+   Double_t rmax[]={ 1, 1, 1};
+   TView *v = new TView3D(1,rmin,rmax);
+#else
   TView *v = new TView(1);
+#endif
   v->SetRange(-430,-560,-430,430,560,1710);
 
   c1->Clear();

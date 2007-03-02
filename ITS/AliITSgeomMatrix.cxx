@@ -31,7 +31,11 @@ $Id$
 #include <TMath.h>
 #include <TBuffer.h>
 #include <TCanvas.h>
+#if ROOT_VERSION_CODE>= 331523
+#include <TView3D.h>
+#else
 #include <TView.h>
+#endif
 #include <TPolyLine3D.h>
 #include <TNode.h>
 #include <TPCON.h>
@@ -1100,7 +1104,13 @@ void AliITSgeomMatrix::MakeFigures() const {
     Float_t l[5][3]={{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,0.0},
                       {0.0,0.0,1.0}};
     TCanvas *c = new TCanvas(kFALSE);// create a batch mode canvas.
+#if ROOT_VERSION_CODE>= 331523
+    Double_t rmin[]={-1,-1,-1};
+    Double_t rmax[]={ 1, 1, 1};
+    TView *view = new TView3D(1,rmin,rmax);
+#else
     TView   *view = new TView(1); // Create Cartesian coordiante view
+#endif
     TBRIK   *mother  = new TBRIK("Mother","Mother","void",kDx0,kDy0,kDz0);
     TBRIK   *det  = new TBRIK("Detector","","Si",kDx,kDy,kDz);
     TPolyLine3D *axis = new TPolyLine3D(5,&(l[0][0]));

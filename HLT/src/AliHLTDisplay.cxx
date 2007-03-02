@@ -13,7 +13,11 @@
 
 #include "AliHLTStandardIncludes.h"
 #include <TCanvas.h>
+#if ROOT_VERSION_CODE>= 331523
+#include <TView3D.h>
+#else
 #include <TView.h>
+#endif
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
 #include <TH2.h>
@@ -137,7 +141,13 @@ void AliHLTDisplay::DisplayTracks(Int_t minhits,Bool_t x3don,Float_t thr)
   TCanvas *c1 = new TCanvas("c1","",700,700);
   c1->cd();
   
-  TView *v = new TView(1);
+#if ROOT_VERSION_CODE>= 331523
+   Double_t rmin[]={-1,-1,-1};
+   Double_t rmax[]={ 1, 1, 1};
+   TView *v = new TView3D(1,rmin,rmax);
+#else
+ TView *v = new TView(1);
+#endif
   v->SetRange(-430,-560,-430,430,560,1710);
   c1->Clear();
   c1->SetFillColor(1);
@@ -239,7 +249,13 @@ void AliHLTDisplay::DisplayClusters(Bool_t x3don)
   TCanvas *c1 = new TCanvas("c1","",700,700);
   c1->cd();
 
+#if ROOT_VERSION_CODE>= 331523
+   Double_t rmin[]={-1,-1,-1};
+   Double_t rmax[]={ 1, 1, 1};
+   TView *v = new TView3D(1,rmin,rmax);
+#else
   TView *v = new TView(1);
+#endif
   v->SetRange(-430,-560,-430,430,560,1710);
   c1->Clear();
   c1->SetFillColor(1);
@@ -280,7 +296,13 @@ void AliHLTDisplay::DisplayAll(Int_t minhits,Bool_t x3don)
 
   TCanvas *c1 = new TCanvas("c1","",700,700);
   c1->cd();
+#if ROOT_VERSION_CODE>= 331523
+   Double_t rmin[]={-1,-1,-1};
+   Double_t rmax[]={ 1, 1, 1};
+   TView *v = new TView3D(1,rmin,rmax);
+#else
   TView *v = new TView(1);
+#endif
   v->SetRange(-430,-560,-430,430,560,1710);
   c1->Clear();
   c1->SetFillColor(1);

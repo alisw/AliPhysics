@@ -100,7 +100,11 @@
 #include <TButton.h>
 #include <TColor.h>
 #include <TCanvas.h>
+#if ROOT_VERSION_CODE>= 331523
+#include <TView3D.h>
+#else
 #include <TView.h>
+#endif
 #include <TText.h>
 #include <TPaveLabel.h>
 #include <TPaveText.h>
@@ -779,7 +783,13 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
   gPad->SetFillColor(1);
   
   Int_t iret=0;
+#if ROOT_VERSION_CODE>= 331523
+   Double_t rmin[]={-1,-1,-1};
+   Double_t rmax[]={ 1, 1, 1};
+   TView *view = new TView3D(1,rmin,rmax);
+#else
   TView *view = new TView(1);
+#endif
   
   Float_t range = fRrange*fRangeSlider->GetMaximum();
   view->SetRange(-range,-range,-range,range, range, range);
@@ -929,7 +939,13 @@ void AliMUONDisplay::DrawGlobalView(Float_t theta, Float_t phi, Float_t psi)
     
 
     Int_t iret=0;
+#if ROOT_VERSION_CODE>= 331523
+    Double_t rmin[]={-1,-1,-1};
+    Double_t rmax[]={ 1, 1, 1};
+    TView *view = new TView3D(1,rmin,rmax);
+#else
     TView *view = new TView(1);
+#endif
     
     Float_t range = fRrange*fRangeSlider->GetMaximum()*3.;
     view->SetRange(-range,-range,-range,range,range,range);
