@@ -360,7 +360,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   UInt_t adc;
   Int_t  det, smn, irow, icol;
   Int_t  parity;
-
+  
   const Int_t kMaxBus = 50;
   Int_t totPatchBus, bPatchBus, ePatchBus;
   Int_t ibus, totmcm, rows, cols, rowe, cole;
@@ -561,8 +561,8 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
   Int_t icolnew = col%4;
   
   chno  = kCh[irownew][icolnew];
-
-
+  
+  
   for (Int_t ibus = beginPatchBus; ibus <= endPatchBus; ibus++)
     {
       Int_t srow = startRowBus[ibus];
@@ -573,15 +573,29 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
       if ((row >= srow && row <= erow) && (col >= scol && col <= ecol))
 	{
 	  busno = ibus;
-
+	  
 	  // Find out the MCM Number
 	  //
-
+	  
 	  if (ddlno == 0 || ddlno == 1)
 	    {
 	      // PRE plane, SU Mod = 0, 1
-	      Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
-	      if(rowdiff > 16)
+	      mcmno = (col-scol)/4;
+	      
+	    } // end of ddl 0 and 1
+	  else if (ddlno == 2 || ddlno == 3)
+	    {
+	      // PRE plane,  SU Mod = 2, 3
+	      Int_t icolnew = (col - scol)/4;
+	      mcmno = tmcm - 1 - icolnew;
+	    }// end of ddl 2 and 3
+
+
+	  else if (ddlno == 4 ||ddlno == 5 )
+	    {
+	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
+	      
+	      if(ibus <= 17)
 		{
 		  Int_t midrow = srow + 16;
 		  if(row >= srow && row < midrow)
@@ -593,89 +607,37 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 		      mcmno = (col-scol)/4;
 		    }
 		}
-	      else
-		{
-		  mcmno = (col-scol)/4;
-		}
-	    } // end of ddl 0 and 1
-	  else if (ddlno == 2)
-	    {
-	      // PRE plane,  SU Mod = 2
 	      
-	      Int_t icolnew = (col - scol)/4;
-	      mcmno = tmcm - 1 - icolnew;
-	    }
-	  else if (ddlno == 3)
-	    {
-	      // PRE plane,  SU Mod = 3
-	      
-	      Int_t icolnew = (col - scol)/4;
-	      mcmno = tmcm - 1 - icolnew;
-	    }
-	  else if (ddlno == 4)
-	    {
-	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
-	      
-	      if(ibus <= 20)
+	      else if (ibus > 17)
 		{
 		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
 		  if(rowdiff > 16)
 		    {
 		      Int_t midrow = srow + 16;
-		      if(row >= srow && row < midrow)
+		      if (row >= midrow && row < erow)
 			{
-			  mcmno = 12 + (col-scol)/4;
+			  Int_t icolnew = (col - scol)/4;
+			  mcmno = 24 - 1 - icolnew;
+			  
 			}
-		      else if(row >= midrow && row < erow)
+		      else if (row >= srow && row < midrow)
 			{
-			  mcmno = (col-scol)/4;
+			  Int_t icolnew = (col - scol)/4;
+			  mcmno = 12 - 1 - icolnew; 
 			}
 		    }
-		  else
+		  else 
 		    {
-		      mcmno = (col-scol)/4;
-		    }
-		}
-	      else if (ibus > 20)
-		{
-		  Int_t icolnew = (col - scol)/4;
-		  mcmno = tmcm - 1 - icolnew;
+		      Int_t icolnew = (col - scol)/4;
+		      mcmno = 12 - 1 - icolnew;
+		    } 
 		}
 	    }
-	  else if (ddlno == 5)
-	    {
-	      // CPV plane,  SU Mod = 2, 1 : ddl = 5
-	      
-	      if(ibus <= 20)
-		{
-		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
-		  if(rowdiff > 16)
-		    {
-		      Int_t midrow = srow + 16;
-		      if(row >= srow && row < midrow)
-			{
-			  mcmno = 12 + (col-scol)/4;
-			}
-		      else if(row >= midrow && row < erow)
-			{
-			  mcmno = (col-scol)/4;
-			}
-		    }
-		  else
-		    {
-		      mcmno = (col-scol)/4;
-		    }
-		}
-	      else if (ibus > 20)
-		{
-		  Int_t icolnew = (col - scol)/4;
-		  mcmno = tmcm - 1 - icolnew;
-		}
-	    }
-	}  
+
+ 	}  
     }
-  
-}
+} 
+
 //____________________________________________________________________________
 
 Int_t AliPMDDDLRawData::ComputeParity(UInt_t baseword)
@@ -693,4 +655,3 @@ Int_t AliPMDDDLRawData::ComputeParity(UInt_t baseword)
 }
 
 //____________________________________________________________________________
-

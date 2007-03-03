@@ -275,7 +275,6 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 		  Int_t ich  = (data >> 12) & 0x003F;
 		  Int_t imcm = (data >> 18) & 0x07FF;
 		  Int_t ibit = (data >> 31) & 0x0001;
-
 		  parity = ComputeParity(data);
 		  if (ibit != parity)
 		    {
@@ -347,66 +346,32 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
   Int_t irownew = rowcol/4;
   Int_t icolnew = rowcol%4;
 
-  if (ddlno == 0)
+  if (ddlno == 0 )
     {
-      if (pbusid  <= 2)
-	{
-	  if (mcmno >= 12)
-	    {
-	      row = startRowBus[pbusid] + irownew;
-	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
-	    }
-	  else
-	    {
-	      // Add 16 to skip the 1st 15 rows
-	      row = startRowBus[pbusid] + irownew + 16;
-	      col = startColBus[pbusid] + mcmno*4 + icolnew;
-	    }
-	}
-      else if (pbusid > 2)
-	{
-	  row = startRowBus[pbusid] + irownew;
-	  col = startColBus[pbusid] + mcmno*4 + icolnew;
-	  
-	}
+      row = startRowBus[pbusid] + irownew;
+      col = startColBus[pbusid] + mcmno*4 + icolnew;
     }
   else if (ddlno == 1)
     {
-      if (pbusid  <= 2)
-	{
-	  if (mcmno >= 12)
-	    {
-	      row = endRowBus[pbusid] - (15 - irownew);
-	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
-	    }
-	  else
-	    {
-	      // Subtract 16 to skip the 1st 15 rows
-	      row = endRowBus[pbusid] - 16 - (15 - irownew) ;
-	      col = startColBus[pbusid] + mcmno*4 + icolnew;
-	    }
-	}
-      else if (pbusid > 2)
-	{
-	  row = endRowBus[pbusid] - (15 - irownew);
-	  col = startColBus[pbusid] + mcmno*4 + icolnew;
-	}
+    row = endRowBus[pbusid] - (15 - irownew);
+    col = startColBus[pbusid] + mcmno*4 + icolnew;
+    
     }
-  else if (ddlno == 2)
+  else if (ddlno == 2 )
     {
       row = startRowBus[pbusid] + irownew;
       col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
     }
   else if (ddlno == 3)
     {
-      row = endRowBus[pbusid] - (15 - irownew);
-      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+    row = endRowBus[pbusid] - (15 - irownew);
+    col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
     }
-  else if (ddlno == 4)
+  else if (ddlno == 4 )
     {
-      if (pbusid  <= 16)
+      if (pbusid  < 18)
 	{
-	  if (mcmno >= 12)
+	  if(mcmno > 11)
 	    {
 	      row = startRowBus[pbusid] + irownew;
 	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
@@ -415,48 +380,60 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
 	    {
 	      // Add 16 to skip the 1st 15 rows
 	      row = startRowBus[pbusid] + irownew + 16;
-	      col = startColBus[pbusid] + mcmno*4 + icolnew;
+	      col = startColBus[pbusid] + (mcmno)*4 + icolnew;
 	    }
 	}
-      else if (pbusid > 16 && pbusid <= 20)
+      else if(pbusid > 17)
 	{
-	  row = startRowBus[pbusid] + irownew;
-	  col = startColBus[pbusid] + mcmno*4 + icolnew;
-	  
-	}
-      else if(pbusid > 20)
-	{
-	  row = endRowBus[pbusid] - (15 - irownew);
-	  col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+	  if(mcmno > 11)
+	    {
+	      row = endRowBus[pbusid] - (15 - irownew)  ;
+	      col = endColBus[pbusid] - (mcmno - 12)*4 - (3 - icolnew);
+	    }
+	  else 
+	    {
+	      if(endRowBus[pbusid] - startRowBus[pbusid] > 16)
+		row = endRowBus[pbusid] - (15 - irownew) - 16 ;
+	      else
+		row = endRowBus[pbusid] - (15 - irownew) ;
+	      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew); 
+	    }
 	}
     }
+  
   else if (ddlno == 5)
     {
-      if (pbusid  <= 16)
+      if (pbusid  <= 17)
 	{
-	  if (mcmno >= 12)
+	  if (mcmno > 11)
 	    {
-	      row = endRowBus[pbusid] - (15 - irownew);
+	      // Subtract 16 to skip the 1st 15 rows
+	      row = endRowBus[pbusid] - 16 -(15 - irownew);
 	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
 	    }
 	  else
 	    {
-	      // Subtract 16 to skip the 1st 15 rows
-	      row = endRowBus[pbusid] - 16 - (15 - irownew) ;
+	      row = endRowBus[pbusid]  - (15 - irownew) ;
 	      col = startColBus[pbusid] + mcmno*4 + icolnew;
 	    }
 	}
-      else if (pbusid > 16 && pbusid <= 20)
+      
+      else if (pbusid > 17)
 	{
-	  row = endRowBus[pbusid] - (15 - irownew);
-	  col = startColBus[pbusid] + mcmno*4 + icolnew;
-	}
-      else if (pbusid > 20)
-	{
-	  row = startRowBus[pbusid] + irownew;
-	  col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+	  if(mcmno > 11)
+	    {
+	      // Add 16 to skip the 1st 15 rows
+	      row = startRowBus[pbusid] + irownew + 16;
+	      col = endColBus[pbusid] - (mcmno - 12)*4 - (3 - icolnew);
+	    }
+	  else 
+	    {
+	      row = startRowBus[pbusid] + irownew ;
+	      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew); 
+	    }
 	}
     }
+  
 }
 //_____________________________________________________________________________
 void AliPMDRawStream::ConvertDDL2SMN(Int_t iddl, Int_t imodule,
@@ -502,10 +479,8 @@ void AliPMDRawStream::TransformH2S(Int_t smn, Int_t &row, Int_t &col) const
   row = irownew;
   col = icolnew;
 }
-
 //_____________________________________________________________________________
-
-int AliPMDRawStream::ComputeParity(Int_t data)
+Int_t AliPMDRawStream::ComputeParity(Int_t data)
 {
 // Calculate the parity bit
 
