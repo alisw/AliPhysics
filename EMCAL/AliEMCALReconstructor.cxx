@@ -233,23 +233,34 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
         timeList = timeListNew;
         digiList = digiListNew;
       }
+
+      //Primaries
+      Int_t  primMult  = 0;
+      Int_t *primInts =  clust->GetPrimaries(primMult);
+      UShort_t *primList = new UShort_t[primMult];
+      for (Int_t ipr=0; ipr<primMult; ipr++) 
+	primList[ipr] = (UShort_t)(primInts[ipr]);	 
+
+
       // fills the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
       ec->SetClusterType(clust->GetClusterType());
       ec->SetGlobalPosition(xyz);
       ec->SetClusterEnergy(clust->GetEnergy());
-
+      
       ec->SetNumberOfDigits(newdigitMult);
       ec->SetDigitAmplitude(amplList); //energies
       ec->SetDigitTime(timeList);      //times
       ec->SetDigitIndex(digiList);     //indices
       if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1){
+        ec->SetPrimaryIndex(clust->GetPrimaryIndex());
+        ec->SetNumberOfPrimaries(primMult);           //primary multiplicity
+        ec->SetListOfPrimaries(primList);                  //primary List for a cluster  
         ec->SetClusterDisp(clust->GetDispersion());
         ec->SetClusterChi2(-1); //not yet implemented
         ec->SetM02(elipAxis[0]*elipAxis[0]) ;
         ec->SetM20(elipAxis[1]*elipAxis[1]) ;
         ec->SetM11(-1) ;        //not yet implemented
-        ec->SetPrimaryIndex(clust->GetPrimaryIndex());
       } 
     // add the cluster to the esd object
       esd->AddCaloCluster(ec);
