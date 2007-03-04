@@ -106,6 +106,7 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* r
 void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {
   // Called by AliReconstruct after Reconstruct() and global tracking and vertxing 
+  const double timeScale = 1.e+11; // transition constant from sec to 0.01ns (10ps)
 
   Int_t eventNumber = runLoader->GetEventNumber() ;
 
@@ -123,7 +124,6 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   Int_t nClusters = clusters->GetEntries(), nClustersNew=0;
   //  Int_t nRP=0, nPC=0; // in input
   esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
-  //  esd->SetNumberOfEMCALClusters(nClusters); // have to be change - Feb 25, 2007; some cluster may be discard
 
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);
@@ -148,12 +148,12 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
     // Convert Float_t* and Int_t* to UShort_t* to save memory
     // Problem : we should recalculate a cluster characteristics when discard digit(s)
-    Int_t newdigitMult = 0;
+    Int_t newdigitMult = 0; 
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-      if(timeFloat[iDigit] < 65536/1e9*100) {
+      if(timeFloat[iDigit] < 65536./timeScale) {
 	amplList[newdigitMult] = (UShort_t)(amplFloat[iDigit]*500);
         if(amplList[newdigitMult] > 0) { // accept digit if poztive amplitude
-	  timeList[newdigitMult] = (UShort_t)(timeFloat[iDigit]*1e9*100); // Time in units of 100 ns = 0.1 ps
+	  timeList[newdigitMult] = (UShort_t)(timeFloat[iDigit]*timeScale); // Time in units of 0.01 ns = 10 ps
 	  digiList[newdigitMult] = (UShort_t)(digitInts[iDigit]);
           newdigitMult++;
 	}

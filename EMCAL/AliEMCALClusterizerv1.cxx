@@ -18,6 +18,7 @@
 //*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 //  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
 //                           of new  IO (à la PHOS)
+//  Mar 2007, Aleksei Pavlinov - new algoritmh of pseudo clusters
 //////////////////////////////////////////////////////////////////////////////
 //  Clusterization class. Performs clusterization (collects neighbouring active cells) and 
 //  unfolds the clusters having several local maxima.  
@@ -563,94 +564,55 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
+  // Mar 03, 2007 by PAI
+
+  if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
 
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
-
   TObjArray * aECARecPoints = emcalLoader->RecPoints() ; 
-    
-  if (fGeom==0) 
-     AliFatal("Did not get geometry from EMCALLoader");
-
   aECARecPoints->Clear();
 
+  TClonesArray *digits = emcalLoader->Digits();
+  AliEMCALDigit *digit=0, *digitN=0;
+
   //Start with pseudoclusters, if option
-  if(strstr(option,"pseudo")) { // ?? Nov 3, 2006 
-    TClonesArray * digits  = emcalLoader->Digits() ; 
-    TClonesArray * digitsC =  dynamic_cast<TClonesArray*>(digits->Clone());
+  if(strstr(option,"pseudo")) { 
+    //
+    // New algorithm : will be created one pseudo cluster per module  
+    //
+    AliDebug(1,Form("Pseudo clustering #digits : %i ",digits->GetEntries()));
 
-    TIter nextdigit(digitsC) ;
-    AliEMCALDigit * digit;
-
-    AliEMCALRecPoint * recPoint = 0 ; 
-    int ineb=0;
+    AliEMCALRecPoint *recPoints[12]; // max size is 12 : see fGeom->GetNumberOfSuperModules();
+    for(int i=0; i<12; i++) recPoints[i] = 0;
+    TIter nextdigit(digits) ;
     nextdigit.Reset();
 
-    // PseudoClusterization starts  
+   // PseudoClusterization starts  
+    int nSM = 0; // # of SM
     while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // scan over the list of digitsC
-      recPoint = 0 ; 
-      TArrayI clusterECAdigitslist(1000); // what is this   
-
       if(fGeom->CheckAbsCellId(digit->GetId()) ) { //Is this an EMCAL digit? Just maing sure...
-	Int_t iDigitInECACluster = 0; // start a new Tower RecPoint
-	if(fNumberOfECAClusters >= aECARecPoints->GetSize()) aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
-	AliEMCALRecPoint * rp = new  AliEMCALRecPoint("") ; 
-	aECARecPoints->AddAt(rp, fNumberOfECAClusters) ;
-	recPoint = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
-	fNumberOfECAClusters++ ; 
-
-	recPoint->SetClusterType(AliESDCaloCluster::kPseudoCluster);
-
-	recPoint->AddDigit(*digit, digit->GetAmp()) ; 
-	clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
-	iDigitInECACluster++ ; 
-	digitsC->Remove(digit) ; 
-	AliDebug(1,Form("MakePseudoClusters: OK id = %d, adc = %f \n", digit->GetId(), digit->GetAmp()));
-	nextdigit.Reset(); // will start from beggining
-      
-	AliEMCALDigit * digitN = 0; // digi neighbor
-	Int_t index = 0 ;
-
-	// Find the neighbours
-	while (index < iDigitInECACluster){ // scan over digits already in cluster 
-	  digit =  (AliEMCALDigit*)digits->At(clusterECAdigitslist[index]);
-	  index++ ; 
-	  while ( (digitN = (AliEMCALDigit *)nextdigit())) { // scan over the reduced list of digits 
-	    ineb = AreInGroup(digit, digitN);       // call (digit,digitN) in THAT oder !!!!! 
-	    switch (ineb ) {
-              case 0 :   // not a neighbour
-	       break ;
-	      case 1 :   // are neighbours 
-	       recPoint->AddDigit(*digitN, digitN->GetAmp() ) ;
-	       clusterECAdigitslist[iDigitInECACluster] = digitN->GetIndexInList() ; 
-	       iDigitInECACluster++ ; 
-	       digitsC->Remove(digitN) ;
-	       break ;
-	      case 2 :   // different SM
-	       break ;
-              case 3 :   // different Tower group
-	       break ;
-	    } // switch
-	  } // scan over the reduced list of digits
-	} // scan over digits already in cluster
-	nextdigit.Reset() ;  // will start from beggining
+        nSM = fGeom->GetSuperModuleNumber(digit->GetId());
+        if(recPoints[nSM] == 0) {
+          recPoints[nSM] = new AliEMCALRecPoint(Form("PC%2.2i", nSM));
+          recPoints[nSM]->SetClusterType(AliESDCaloCluster::kPseudoCluster);
+	}
+        recPoints[nSM]->AddDigit(*digit, Calibrate(digit->GetAmp(), digit->GetId()));
       }
     }
-    if(recPoint)
-      AliDebug(1,Form("MakeClusters: cl.e %f \n", recPoint->GetEnergy())); 
-    //if(recPoint) cout << "cl.e " << recPoint->GetEnergy() << endl; 
-    delete digitsC ;
+    for(int i=0; i<fGeom->GetNumberOfSuperModules(); i++) { // put non empty rec.points to container
+      if(recPoints[i]) aECARecPoints->AddAt(recPoints[i], fNumberOfECAClusters++);
+    }
+    AliDebug(1,Form(" Number of PC %d ", fNumberOfECAClusters));
   }
 
-  //Now do real clusters
-  TClonesArray * digits  = emcalLoader->Digits() ; 
-  TClonesArray * digitsC =  dynamic_cast<TClonesArray*>(digits->Clone()); // will work with thic copy
+  //
+  // Now do real clusters
+  //
+  TClonesArray *digitsC = dynamic_cast<TClonesArray*>(digits->Clone()); // will work with thic copy
+  TIter nextdigitC(digitsC);
 
-  TIter nextdigitC(digitsC) ;
-  AliEMCALDigit * digit;
-
-  AliEMCALRecPoint * recPoint = 0 ; 
-  int ineb=0;
-  nextdigitC.Reset();
+  AliEMCALRecPoint *recPoint = 0; 
+  int ineb=0, iDigitInECACluster=0;
 
   double e = 0.0, ehs = 0.0;
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // clean up digits
@@ -660,22 +622,19 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
     if(e < fMinECut ) digitsC->Remove(digit);
     else              ehs += e;
   } 
+  nextdigitC.Reset();
+  digits = dynamic_cast<TClonesArray*>(digitsC->Clone());
+
   AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %d\n",
 		  digits->GetEntries(),fMinECut,ehs));
-  //cout << " Number of digits " << digits->GetEntries() << " -> (e>" <<fMinECut <<")";
-  //cout << digitsC->GetEntries()<< " ehs "<<ehs<<endl; 
-
-  // Clusterization starts    
-  //  cout << "Outer Loop" << endl;
   ineb=0;
   nextdigitC.Reset();
-  recPoint = 0 ; 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // scan over the list of digitsC
     recPoint = 0 ; 
-    TArrayI clusterECAdigitslist(1000); // what is this   
+    TArrayI clusterECAdigitslist(digits->GetEntries());
 
     if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp(), digit->GetId()) > fECAClusteringThreshold  ) ){
-      Int_t iDigitInECACluster = 0; // start a new Tower RecPoint
+      iDigitInECACluster = 0; // start a new Tower RecPoint
       if(fNumberOfECAClusters >= aECARecPoints->GetSize()) aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
       AliEMCALRecPoint * rp = new  AliEMCALRecPoint("") ; 
       aECARecPoints->AddAt(rp, fNumberOfECAClusters) ;
@@ -688,11 +647,12 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
       clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
       iDigitInECACluster++ ; 
       digitsC->Remove(digit) ; 
-      AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , thre = %f \n", digit->GetId(),
-      Calibrate(digit->GetAmp(),digit->GetId()), fECAClusteringThreshold));  
       nextdigitC.Reset(); // will start from beggining
+
+      AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , cell.th. = %f \n", digit->GetId(),
+      Calibrate(digit->GetAmp(),digit->GetId()), fECAClusteringThreshold));  
       
-      AliEMCALDigit * digitN = 0; // digi neighbor
+      digitN = 0; // digi neighbor
       Int_t index = 0 ;
 
       // Find the neighbours
@@ -708,9 +668,9 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
 	    clusterECAdigitslist[iDigitInECACluster] = digitN->GetIndexInList() ; 
 	    iDigitInECACluster++ ; 
 	    digitsC->Remove(digitN) ; 
+            nextdigitC.Reset() ; 
       // Have to start from begining for clusters digits too ; Nov 3,2006
             index = 0;
-            nextdigitC.Reset() ; 
             goto NEIGHBOURS;
 	  } // if(ineb==1)
 
@@ -723,15 +683,14 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
     AliDebug(1,Form("MakeClusters: cl.e %f \n", recPoint->GetEnergy())); 
   //if(recPoint) cout << "cl.e " << recPoint->GetEnergy() << endl; 
   delete digitsC ;
+  delete digits  ;
 
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,digits->GetEntriesFast())); 
 }
 
-//____________________________________________________________________________
 void AliEMCALClusterizerv1::MakeUnfolding() const
 {
   Fatal("AliEMCALClusterizerv1::MakeUnfolding", "--> Unfolding not implemented") ;
- 
 }
 
 //____________________________________________________________________________

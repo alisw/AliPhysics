@@ -90,7 +90,7 @@ public:
 protected:
 
   void           WriteRecPoints() ;
-  virtual void   MakeClusters(char* opt ) ;            
+  virtual void   MakeClusters(char* opt );            
   virtual void   MakeClusters() { Fatal("MakeClusters","not implemented"); }
             
 ///////////////////// 
