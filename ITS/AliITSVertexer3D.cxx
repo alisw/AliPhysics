@@ -39,14 +39,18 @@ AliITSVertexer3D::AliITSVertexer3D():AliITSVertexer(),
 fLines(),
 fVert3D(),
 fCoarseDiffPhiCut(0.),
+fCoarseMaxRCut(0.),
 fMaxRCut(0.),
 fZCutDiamond(0.),
+fMaxZCut(0.),
 fDCAcut(0.),
 fDiffPhiMax(0.) {
   // Default constructor
   SetCoarseDiffPhiCut();
+  SetCoarseMaxRCut();
   SetMaxRCut();
   SetZCutDiamond();
+  SetMaxZCut();
   SetDCAcut();
   SetDiffPhiMax();
 
@@ -56,16 +60,20 @@ fDiffPhiMax(0.) {
 AliITSVertexer3D::AliITSVertexer3D(TString fn): AliITSVertexer(fn),
 fLines(),
 fVert3D(),
-fCoarseDiffPhiCut(0.),
+fCoarseDiffPhiCut(0.),     
+fCoarseMaxRCut(0.),
 fMaxRCut(0.),
 fZCutDiamond(0.),
+fMaxZCut(0.),
 fDCAcut(0.),
 fDiffPhiMax(0.)  {
   // Standard constructor
   fLines = new TClonesArray("AliStrLine",1000);
   SetCoarseDiffPhiCut();
+  SetCoarseMaxRCut();
   SetMaxRCut();
   SetZCutDiamond();
+  SetMaxZCut();
   SetDCAcut();
   SetDiffPhiMax();
 }
@@ -90,13 +98,13 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t nolines = FindTracklets(evnumber,0);
   fCurrentVertex = 0;
   if(nolines<2)return fCurrentVertex;
-  Int_t rc=Prepare3DVertex();
+  Int_t rc=Prepare3DVertex(0);
   if(rc==0)Find3DVertex();
   if(fVert3D){
     if(fLines) fLines->Delete();
     nolines = FindTracklets(evnumber,1);
     if(nolines>=2){
-      rc=Prepare3DVertex();
+      rc=Prepare3DVertex(1);
       if(rc==0)Find3DVertex();
     }
   }
@@ -144,13 +152,18 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
 
   // Set values for cuts
   Float_t xbeam=0., ybeam=0.;
+  Float_t zvert=0.;
   Float_t deltaPhi=fCoarseDiffPhiCut;
+  Float_t deltaR=fCoarseMaxRCut;
+  Float_t dZmax=fZCutDiamond;
   if(optCuts){
     xbeam=fVert3D->GetXv();
     ybeam=fVert3D->GetYv();
+    zvert=fVert3D->GetZv();
     deltaPhi = fDiffPhiMax; 
+    deltaR=fMaxRCut;
+    dZmax=fMaxZCut;
   }
-
   Int_t nrpL1 = 0;    // number of rec points on layer 1
   Int_t nrpL2 = 0;    // number of rec points on layer 2
 
@@ -220,8 +233,9 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
 	  if(retcode<0)continue;
 	  Double_t dca = line.GetDCA(&zeta);
 	  if(dca<0.) continue;
-	  if(dca>fMaxRCut)continue;
-	  if(cp[2]>fZCutDiamond || cp[2]<-fZCutDiamond)continue;
+	  if(dca>deltaR)continue;
+	  Double_t deltaZ=cp[2]-zvert;
+	  if(TMath::Abs(deltaZ)>dZmax)continue;
 	  MakeTracklet(gc,gc2,nolines);
 	}
 	detTypeRec.ResetRecPoints();
@@ -306,7 +320,7 @@ void AliITSVertexer3D::Find3DVertex(){
 
     Double_t rvert=TMath::Sqrt(initPos[0]*initPos[0]+initPos[1]*initPos[1]);
     Double_t zvert=initPos[2];
-    if(rvert<fMaxRCut && TMath::Abs(zvert)<fZCutDiamond){
+    if(rvert<fCoarseMaxRCut && TMath::Abs(zvert)<fZCutDiamond){
       for(Int_t i=0; i<knacc; i++){
 	Double_t p0[3]={0,0,0},p1[3]={0,0,0};
 	for(Int_t ii=0;ii<3;ii++){
@@ -340,13 +354,26 @@ void AliITSVertexer3D::Find3DVertex(){
 
 
 //______________________________________________________________________
-Int_t  AliITSVertexer3D::Prepare3DVertex(){
+Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   // Finds the 3D vertex information using tracklets
   Int_t retcode = -1;
 
+  Float_t xbeam=0.;
+  Float_t ybeam=0.;
+  Float_t zvert=0.;
+  Float_t deltaR=fCoarseMaxRCut;
+  Float_t dZmax=fZCutDiamond;
+  if(optCuts){
+    xbeam=fVert3D->GetXv();
+    ybeam=fVert3D->GetYv();
+    zvert=fVert3D->GetZv();
+    deltaR=fMaxRCut;
+    dZmax=fMaxZCut;
+  }
+
   Int_t nbr=50;
-  Float_t rl=-fMaxRCut;
-  Float_t rh=fMaxRCut;
+  Float_t rl=-fCoarseMaxRCut;
+  Float_t rh=fCoarseMaxRCut;
   Int_t nbz=100;
   Float_t zl=-fZCutDiamond;
   Float_t zh=fZCutDiamond;
@@ -358,19 +385,24 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(){
   // cleanup of the TCLonesArray of tracklets (i.e. fakes are removed)
   Int_t *validate = new Int_t [fLines->GetEntriesFast()];
   for(Int_t i=0; i<fLines->GetEntriesFast();i++)validate[i]=0;
-  //  Int_t itot=fLines->GetEntriesFast()-1-1;
   for(Int_t i=0; i<fLines->GetEntriesFast()-1;i++){
-    //if(validate[i]==1)continue;
+    if(validate[i]==1)continue;
     AliStrLine *l1 = (AliStrLine*)fLines->At(i);
     for(Int_t j=i+1;j<fLines->GetEntriesFast();j++){
       AliStrLine *l2 = (AliStrLine*)fLines->At(j);
-      if(l1->GetDCA(l2) > fDCAcut) continue;
+      Float_t dca=l1->GetDCA(l2);
+      if(dca > fDCAcut || dca<0.00001) continue;
       Double_t point[3];
       Int_t retc = l1->Cross(l2,point);
       if(retc<0)continue;
       Double_t rad=TMath::Sqrt(point[0]*point[0]+point[1]*point[1]);
-      if(TMath::Abs(point[2])>fZCutDiamond)continue;
-      if(rad>fMaxRCut)continue;
+      if(rad>fCoarseMaxRCut)continue;
+      Double_t deltaX=point[0]-xbeam;
+      Double_t deltaY=point[1]-ybeam;
+      Double_t deltaZ=point[2]-zvert;
+      Double_t raddist=TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
+      if(TMath::Abs(deltaZ)>dZmax)continue;
+      if(raddist>deltaR)continue;
       validate[i]++;
       validate[j]++;
       h3d->Fill(point[0],point[1],point[2]);
@@ -378,23 +410,6 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(){
   }
 
 
-
-  for(Int_t i=0; i<fLines->GetEntriesFast()-1;i++){ // remove tracklets sharing one recpoint
-    if(validate[i]==0)continue;
-    AliStrLine *l1 = (AliStrLine*)fLines->At(i);
-    for(Int_t j=i+1;j<fLines->GetEntriesFast();j++){
-    if(validate[j]==0)continue;
-      AliStrLine *l2 = (AliStrLine*)fLines->At(j);
-      if(l1->GetDCA(l2) > 0.00001) continue;
-      Double_t point[3];
-      Int_t retc = l1->Cross(l2,point);
-      if(retc<0)continue;
-      Double_t rad=TMath::Sqrt(point[0]*point[0]+point[1]*point[1]);
-      if(rad<fMaxRCut)continue;
-      validate[i]--;
-      validate[j]--;
-    }
-  }
 
   Int_t numbtracklets=0;
   for(Int_t i=0; i<fLines->GetEntriesFast();i++)if(validate[i]>=1)numbtracklets++;
@@ -407,7 +422,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(){
   if (fDebug) cout<<"Number of tracklets (after compress) "<<fLines->GetEntriesFast()<<endl;
   delete [] validate;
 
-  // Finds peak in 3D histogram
+
+  // finds peak in histo
   TAxis *xax = h3d->GetXaxis();  
   TAxis *yax = h3d->GetYaxis();
   TAxis *zax = h3d->GetZaxis();
@@ -433,7 +449,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(){
 
   //         Second selection loop
   Float_t bs=(binsizer+binsizez)/2.;
-  for(Int_t i=0; i<fLines->GetEntriesFast()-1;i++){
+  for(Int_t i=0; i<fLines->GetEntriesFast();i++){
     AliStrLine *l1 = (AliStrLine*)fLines->At(i);
     if(l1->GetDistFromPoint(peak)>2.5*bs)fLines->RemoveAt(i);
   }
@@ -445,8 +461,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(){
     Find3DVertex();   //  find a first candidate for the primary vertex
     // make a further selection on tracklets based on this first candidate
     fVert3D->GetXYZ(peak);
-    if (fDebug) cout<<"FIRST V candidate: "<<peak[0]<<"; "<<peak[1]<<"; "<<peak[2]<<endl;
-    for(Int_t i=0; i<fLines->GetEntriesFast()-1;i++){
+    if (fDebug) cout<<"FIRSTgv Ma V candidate: "<<peak[0]<<"; "<<peak[1]<<"; "<<peak[2]<<endl;
+    for(Int_t i=0; i<fLines->GetEntriesFast();i++){
       AliStrLine *l1 = (AliStrLine*)fLines->At(i);
       if(l1->GetDistFromPoint(peak)> fDCAcut)fLines->RemoveAt(i);
     }
@@ -498,7 +514,8 @@ void AliITSVertexer3D::PrintStatus() const {
   // Print current status
   cout <<"=======================================================\n";
   cout << "Loose cut on Delta Phi "<<fCoarseDiffPhiCut<<endl;
-  cout << "Cut on tracklet DCA to Z axis "<<fMaxRCut<<endl;
+  cout << "Cut on tracklet DCA to Z axis "<<fCoarseMaxRCut<<endl;
+  cout << "Cut on tracklet DCA to beam axis "<<fMaxRCut<<endl;
   cout << "Cut on diamond (Z) "<<fZCutDiamond<<endl;
   cout << "Cut on DCA - tracklet to tracklet and to vertex "<<fDCAcut<<endl;
   cout <<" Max Phi difference: "<<fDiffPhiMax<<endl;
