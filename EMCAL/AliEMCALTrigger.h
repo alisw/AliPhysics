@@ -5,6 +5,9 @@
 
 /* $Id$ */
 /* $Log$ */
+/* Revision 1.5  2007/03/04 14:23:50  gustavo */
+/* Trigger maximum amplitude patch value and postion stored in ESDs, possibility to isolate patch in SuperModule or TRU acceptance implemented */
+/* */
 
 //___________________________________________________________
 //  Class for trigger analysis.
