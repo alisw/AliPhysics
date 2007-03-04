@@ -34,6 +34,7 @@
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
+#include "AliEMCALTrigger.h"
 #include "AliRawReader.h"
 
 
@@ -124,6 +125,58 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   Int_t nClusters = clusters->GetEntries(), nClustersNew=0;
   //  Int_t nRP=0, nPC=0; // in input
   esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
+
+  //#########Calculate trigger and set trigger info###########
+ 
+  AliEMCALTrigger tr ;
+  //   tr.SetPatchSize(1);//create 4x4 patches
+  tr.Trigger();
+  
+  Float_t maxAmp2x2  = tr.Get2x2MaxAmplitude();
+  Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
+  Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
+  Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
+
+  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+
+  Int_t iSM2x2      = tr.Get2x2SuperModule();
+  Int_t iSMnxn      = tr.GetnxnSuperModule();
+  Int_t iCellPhi2x2 = tr.Get2x2CellPhi();
+  Int_t iCellPhinxn = tr.GetnxnCellPhi();
+  Int_t iCellEta2x2 = tr.Get2x2CellEta();
+  Int_t iCellEtanxn = tr.GetnxnCellEta();
+
+  AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iCellPhi2x2, iCellEta2x2));
+  AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",  maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCellPhinxn, iCellEtanxn));
+
+  TVector3    pos2x2(-1,-1,-1);
+  TVector3    posnxn(-1,-1,-1);
+
+  Int_t iAbsId2x2 = geom->GetAbsCellIdFromCellIndexes( iSM2x2, iCellPhi2x2, iCellEta2x2) ;
+  Int_t iAbsIdnxn = geom->GetAbsCellIdFromCellIndexes( iSMnxn, iCellPhinxn, iCellEtanxn) ;
+  geom->GetGlobal(iAbsId2x2, pos2x2);
+  geom->GetGlobal(iAbsIdnxn, posnxn);
+  
+  TArrayF triggerPosition(6);
+  triggerPosition[0] = pos2x2(0) ;   
+  triggerPosition[1] = pos2x2(1) ;   
+  triggerPosition[2] = pos2x2(2) ;  
+  triggerPosition[3] = posnxn(0) ;   
+  triggerPosition[4] = posnxn(1) ;   
+  triggerPosition[5] = posnxn(2) ;  
+
+  TArrayF triggerAmplitudes(4);
+  triggerAmplitudes[0] = maxAmp2x2 ;   
+  triggerAmplitudes[1] = ampOutOfPatch2x2 ;    
+  triggerAmplitudes[2] = maxAmpnxn ;   
+  triggerAmplitudes[3] = ampOutOfPatchnxn ;   
+
+  esd->AddEMCALTriggerPosition(triggerPosition);
+  esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
+  
+  //######################################
+
+  //Fill CaloClusters 
 
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);

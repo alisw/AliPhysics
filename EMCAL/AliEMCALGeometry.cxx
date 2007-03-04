@@ -626,17 +626,15 @@ void AliEMCALGeometry::DefineSamplingFraction()
 }
 
 //____________________________________________________________________________
-void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * timeRmatrix) {
-
+void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * ampmatrixsmod, TClonesArray * timeRmatrix) {
 
 //  Orders digits ampitudes list in fNTRU TRUs (384 cells) per supermodule. 
 //  Each TRU is a TMatrixD, and they are kept in TClonesArrays. The number of 
 //  TRU in phi is fNTRUPhi, and the number of TRU in eta is fNTRUEta.
 //  Last 2 modules are half size in Phi, I considered that the number of TRU
 //  is maintained for the last modules but decision not taken. If different, 
-//  then this must be changed. 
+//  then this must be changed. Also fill a matrix with all amplitudes in supermodule for isolation studies. 
  
-
   //Check data members
 
   if(fNTRUEta*fNTRUPhi != fNTRU)
@@ -647,15 +645,16 @@ void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampma
   Int_t nCellsPhi  = fNPhi*2/fNTRUPhi;
   Int_t nCellsPhi2 = fNPhi/fNTRUPhi; //HalfSize modules
   Int_t nCellsEta  = fNZ*2/fNTRUEta;
-  Int_t id      = -1; 
-  Float_t amp   = -1;
-  Float_t timeR = -1;
-  Int_t iSupMod = -1;
+
+  Int_t id       = -1; 
+  Float_t amp    = -1;
+  Float_t timeR  = -1;
+  Int_t iSupMod  = -1;
   Int_t nModule  = -1;
-  Int_t nIphi   = -1;
-  Int_t nIeta   = -1;
-  Int_t iphi    = -1;
-  Int_t ieta    = -1;
+  Int_t nIphi    = -1;
+  Int_t nIeta    = -1;
+  Int_t iphi     = -1;
+  Int_t ieta     = -1;
 
   //List of TRU matrices initialized to 0.
   for(Int_t k = 0; k < fNTRU*fNumberOfSuperModules; k++){
@@ -671,6 +670,17 @@ void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampma
     new((*timeRmatrix)[k]) TMatrixD(*timeRtrus) ; 
   }
   
+  //List of Modules matrices initialized to 0.
+  for(Int_t k = 0; k < fNumberOfSuperModules ; k++){
+    TMatrixD  * ampsmods   = new TMatrixD( fNPhi*2, fNZ*2) ;
+    for(Int_t i = 0; i <  fNPhi*2; i++){
+      for(Int_t j = 0; j <  fNZ*2; j++){
+	(*ampsmods)(i,j)   = 0.0;
+      }
+    }
+    new((*ampmatrixsmod)[k])   TMatrixD(*ampsmods) ;
+  }
+
   AliEMCALDigit * dig ;
   
   //Digits loop to fill TRU matrices with amplitudes.
@@ -714,7 +724,11 @@ void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampma
     
     (*amptrus)(irow,icol) = amp ;
     (*timeRtrus)(irow,icol) = timeR ;
-
+    
+    //####################SUPERMODULE MATRIX ##################
+    TMatrixD * ampsmods   = dynamic_cast<TMatrixD *>(ampmatrixsmod->At(iSupMod)) ;
+    (*ampsmods)(iphi,ieta)   = amp ;
+    
   }
 }
 
