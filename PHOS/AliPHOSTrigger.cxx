@@ -13,22 +13,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/* $Log $ */
+/* $Log$ */
 
 //_________________________________________________________________________  
 //  Class for trigger analysis.
 //  Digits are grouped in TRU's (Trigger Units). A TRU consist of 16x28 
 //  crystals ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 
-//  2x2 and nxn (n multiple of 4) crystal combinations per each TRU, adding the 
-//  digits amplitude and  finding the maximum. Iti is found is maximum is isolated.
+//  2x2 and nxn (n multiple of 2) crystal combinations per each TRU, adding the 
+//  digits amplitude and  finding the maximum. If found, look if it is isolated.
 //  Maxima are transformed in ADC time samples. Each time bin is compared to the trigger 
 //  threshold until it is larger and then, triggers are set. Thresholds need to be fixed. 
 //  Usage:
 //
 //  //Inside the event loop
-//  AliEMCALTrigger *tr = new AliEMCALTrigger();//Init Trigger
+//  AliPHOSTrigger *tr = new AliPHOSTrigger();//Init Trigger
 //  tr->SetL0Threshold(100);
 //  tr->SetL1JetLowPtThreshold(1000);
+//  tr->SetL1JetMediumPtThreshold(10000);
 //  tr->SetL1JetHighPtThreshold(20000);
 //  ....
 //  tr->Trigger(); //Execute Trigger
@@ -40,7 +41,6 @@
 
 
 // --- ROOT system ---
-//#include "TMatrixD.h"
 
 // --- ALIROOT system ---
 #include "AliPHOS.h"
@@ -49,7 +49,7 @@
 #include "AliPHOSGetter.h" 
 #include "AliPHOSPulseGenerator.h" 
 #include "AliTriggerInput.h"
-//#include "AliLog.h"
+
 
 ClassImp(AliPHOSTrigger)
 
@@ -60,7 +60,8 @@ AliPHOSTrigger::AliPHOSTrigger()
     fnxnMaxAmp(-1), fnxnCrystalPhi(-1),  fnxnCrystalEta(-1), fnxnSM(0),
     fADCValuesHighnxn(0), fADCValuesLownxn(0),
     fADCValuesHigh2x2(0), fADCValuesLow2x2(0), fDigitsList(0),
-    fL0Threshold(50), fL1JetLowPtThreshold(200), fL1JetHighPtThreshold(500),
+    fL0Threshold(50), fL1JetLowPtThreshold(200),   fL1JetMediumPtThreshold(500),  
+    fL1JetHighPtThreshold(1000),
     fNTRU(8), fNTRUZ(2), fNTRUPhi(4), 
     fNCrystalsPhi(16),
     fNCrystalsZ(28),
@@ -100,6 +101,7 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   fDigitsList(trig.fDigitsList),
   fL0Threshold(trig.fL0Threshold),
   fL1JetLowPtThreshold(trig.fL1JetLowPtThreshold),
+  fL1JetMediumPtThreshold(trig.fL1JetMediumPtThreshold), 
   fL1JetHighPtThreshold(trig.fL1JetHighPtThreshold),
   fNTRU(trig.fNTRU),
   fNTRUZ(trig.fNTRUZ),
@@ -114,7 +116,8 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   fnxnAmpOutOfPatchThres(trig.fnxnAmpOutOfPatchThres), 
   fIs2x2Isol(trig.fIs2x2Isol),
   fIsnxnIsol(trig.fIsnxnIsol),  
-  fSimulation(trig.fSimulation), fIsolateInModule(trig.fIsolateInModule)
+  fSimulation(trig.fSimulation), 
+  fIsolateInModule(trig.fIsolateInModule)
 {
   // cpy ctor
 }
@@ -135,7 +138,8 @@ void AliPHOSTrigger::CreateInputs()
    
    fInputs.AddLast( new AliTriggerInput( "PHOS_L0",       "PHOS L0", 0x02 ) );
    fInputs.AddLast( new AliTriggerInput( "PHOS_JetHPt_L1","PHOS Jet High Pt L1", 0x04 ) );
-   fInputs.AddLast( new AliTriggerInput( "PHOS_JetLPt_L1","PHOS Jet Low Pt L1", 0x08 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_JetMPt_L1","PHOS Jet Medium Pt L1", 0x08 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_JetLPt_L1","PHOS Jet Low Pt L1", 0x016 ) );
  
 }
 
@@ -145,7 +149,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
   //Orders digits ampitudes list and times in fNTRU TRUs (28x16 crystals) 
   //per module. Each TRU is a TMatrixD, and they are kept in TClonesArrays. 
   //In a module, the number of TRU in phi is fNTRUPhi, and the number of 
-  //TRU in eta is fNTRUZ. 
+  //TRU in eta is fNTRUZ. Also fill a matrix with all amplitudes in module for isolation studies. 
 
   //Check data members
   
@@ -190,7 +194,6 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
   AliPHOSDigit * dig ;
  
   //Digits loop to fill TRU matrices with amplitudes.
-
   for(Int_t idig = 0 ; idig < digits->GetEntriesFast() ; idig++){
     
     dig    = static_cast<AliPHOSDigit *>(digits->At(idig)) ;
@@ -230,7 +233,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       (*amptrus)(irow,icol)   = amp ;
       (*timeRtrus)(irow,icol) = timeR ;
 
-      //####################MODULE##################
+      //####################MODULE MATRIX ##################
       TMatrixD * ampmods   = dynamic_cast<TMatrixD *>(ampmatrixmod->At(relid[0]-1)) ;
       (*ampmods)(relid[2]-1,relid[3]-1)   = amp ;
     }
@@ -251,7 +254,7 @@ void AliPHOSTrigger::GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,
   //Calculate the (eta,phi) index in SM
   
   iphiMod = fNCrystalsPhi*(row-1) + iphitru + 1 ;
-  ietaMod = fNCrystalsZ*(col-1) + ietatru + 1 ;
+  ietaMod = fNCrystalsZ*(col-1)   + ietatru + 1 ;
 
 }
 
@@ -291,7 +294,6 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * am
     AliDebug(2,"Isolate trigger in TRU");
   }
 
-
   //Define patch cells
   Int_t isolcells = fIsolPatchSize*(1+iPatchType);
   Int_t ipatchcells = 2*(1+fPatchSize*iPatchType);
@@ -304,7 +306,7 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * am
   AliDebug(2,Form("Patch: minrow %d, maxrow %d, mincol %d, maxcol %d",minrow,maxrow,mincol,maxcol));
   
   if(minrow < 0 || mincol < 0 || maxrow > rowborder || maxcol > colborder){
-    AliDebug(1,Form("Out of Module range, cannot isolate patch"));
+    AliDebug(1,Form("Out of Module/TRU range, cannot isolate patch"));
     return kFALSE;
   }
 
@@ -463,7 +465,7 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
     printf( "             Patch Size, n x n: %d x %d cells\n",2*(fPatchSize+1), 2*(fPatchSize+1));
     printf( "               -nxn crystals sum (overlapped)    : %10.2f, in Super Module %d\n",
 	    fnxnMaxAmp,fnxnSM) ; 
-    printf( "               -nxn from row %d to row %d and from column %d to column %d\n", fnxnCrystalPhi, fnxnCrystalPhi+4, fnxnCrystalEta, fnxnCrystalEta+4) ; 
+    printf( "               -nxn from row %d to row %d and from column %d to column %d\n", fnxnCrystalPhi, fnxnCrystalPhi+4*fPatchSize, fnxnCrystalEta, fnxnCrystalEta+4*fPatchSize) ; 
     printf( "               -nxn Isolation Patch %d x %d, Amplitude out of nxn patch is %f, threshold %f, Isolated? %d \n", 
 	    4*fIsolPatchSize+2*(fPatchSize+1),4*fIsolPatchSize+2*(fPatchSize+1) ,  fnxnAmpOutOfPatch,  fnxnAmpOutOfPatchThres,static_cast<Int_t> (fIsnxnIsol) ) ; 
   }
@@ -484,11 +486,16 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
   if(in->GetValue())
     printf( "             *** PHOS Jet Low Pt for L1 is set ***\n") ;
   
+  printf( "             Jet Medium Pt Threshold for L1 %10.2f\n", fL1JetMediumPtThreshold) ;
+  in = (AliTriggerInput*)fInputs.FindObject( "PHOS_JetMPt_L1" );
+  if(in->GetValue())
+    printf( "             *** PHOS Jet Medium Pt for L1 is set ***\n") ;
+  
   printf( "             Jet High Pt Threshold for L1 %10.2f\n", fL1JetHighPtThreshold) ;  
   in = (AliTriggerInput*) fInputs.FindObject( "PHOS_JetHPt_L1" );
   if(in->GetValue())
     printf( "              *** PHOS Jet High Pt for L1 is set ***\n") ;
- 
+  
 }
 
 //____________________________________________________________________________
@@ -595,6 +602,13 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
     for(Int_t i = 0 ; i < nTimeBins ; i++){
       if(fADCValuesHighnxn[i] >= fL1JetLowPtThreshold  || fADCValuesLownxn[i] >= fL1JetLowPtThreshold){
 	SetInput("PHOS_JetLPt_L1") ;
+	break; 
+      }
+    }
+    //SetL1 Medium
+    for(Int_t i = 0 ; i < nTimeBins ; i++){
+      if(fADCValuesHighnxn[i] >= fL1JetMediumPtThreshold  || fADCValuesLownxn[i] >= fL1JetMediumPtThreshold){
+	SetInput("PHOS_JetMPt_L1") ;
 	break; 
       }
     }

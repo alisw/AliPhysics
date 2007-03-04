@@ -3,16 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id $ */
-/* $Log $ */
+/* $Id$ */
+/* $Log$ */
 
 //____________________________________________________________
 //  Class for trigger analysis.
-
 //
-//*-- Author: Gustavo Conesa & Yves Schutz (IFIC, SUBATECH, CERN)
+//  -- Author: Gustavo Conesa & Yves Schutz (IFIC, SUBATECH, CERN)
 //  Digits are grouped in TRU's (Trigger Units). A TRU consist of 16x28 
-//  crystals ordered fNTRUPhi x fNTRUZ. The algorithm searches all possible 
+//  crystals ordered fNTRUPhi x fNTRUZ matrix. The algorithm searches all possible 
 //  2x2 and nxn (n multiple of 4) crystal combinations per each TRU, adding the 
 //  digits amplitude and  finding the maximum. Iti is found is maximum is isolated.
 //  Maxima are transformed in ADC time samples. Each time bin is compared to the trigger 
@@ -23,6 +22,7 @@
 //  AliEMCALTrigger *tr = new AliEMCALTrigger();//Init Trigger
 //  tr->SetL0Threshold(100);
 //  tr->SetL1JetLowPtThreshold(1000);
+//  tr->SetL1JetMediumPtThreshold(10000);
 //  tr->SetL1JetHighPtThreshold(20000);
 //  ....
 //  tr->Trigger(); //Execute Trigger
@@ -66,34 +66,34 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t *  GetADCValuesLowGainMaxnxnSum()  {return fADCValuesLownxn; }
   Int_t *  GetADCValuesHighGainMaxnxnSum() {return fADCValuesHighnxn; }
 
-  void GetCrystalPhiEtaIndexInModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru,Int_t &ietaMod,Int_t &iphiMod) const ;
+  void     GetCrystalPhiEtaIndexInModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru,Int_t &ietaMod,Int_t &iphiMod) const ;
 
-  Float_t  GetL0Threshold()          const {return fL0Threshold ; } 
-  Float_t  GetL1JetLowPtThreshold()  const {return fL1JetLowPtThreshold ; }
-  Float_t  GetL1JetHighPtThreshold() const {return fL1JetHighPtThreshold ; }
+  Float_t  GetL0Threshold()            const {return fL0Threshold ; } 
+  Float_t  GetL1JetLowPtThreshold()    const {return fL1JetLowPtThreshold ; }
+  Float_t  GetL1JetMediumPtThreshold() const {return fL1JetMediumPtThreshold ; }
+  Float_t  GetL1JetHighPtThreshold()   const {return fL1JetHighPtThreshold ; }
 
-  Int_t    GetNTRU()    const  {return fNTRU ; }
-  Int_t    GetNTRUZ()   const  {return fNTRUZ ; }
-  Int_t    GetNTRUPhi() const  {return fNTRUPhi ; }
+  Int_t    GetNTRU()                   const {return fNTRU ; }
+  Int_t    GetNTRUZ()                  const {return fNTRUZ ; }
+  Int_t    GetNTRUPhi()                const {return fNTRUPhi ; }
   
-  Int_t  GetPatchSize() const  {return fPatchSize ; }
-  Int_t  GetIsolPatchSize() const  {return fIsolPatchSize ; }
+  Int_t    GetPatchSize()              const {return fPatchSize ; }
+  Int_t    GetIsolPatchSize()          const {return fIsolPatchSize ; }
 
-  Float_t  Get2x2AmpOutOfPatch() const  {return  f2x2AmpOutOfPatch; }
-  Float_t  GetnxnAmpOutOfPatch() const  {return  fnxnAmpOutOfPatch; }
-  Float_t  Get2x2AmpOutOfPatchThres() const  {return  f2x2AmpOutOfPatchThres; }
-  Float_t  GetnxnAmpOutOfPatchThres() const  {return  fnxnAmpOutOfPatchThres; }
-  Bool_t   Is2x2Isol()  const  {return  fIs2x2Isol; }
-  Bool_t   IsnxnIsol()  const  {return  fIsnxnIsol; }
+  Float_t  Get2x2AmpOutOfPatch()       const {return  f2x2AmpOutOfPatch; }
+  Float_t  GetnxnAmpOutOfPatch()       const {return  fnxnAmpOutOfPatch; }
+  Float_t  Get2x2AmpOutOfPatchThres()  const {return  f2x2AmpOutOfPatchThres; }
+  Float_t  GetnxnAmpOutOfPatchThres()  const {return  fnxnAmpOutOfPatchThres; }
 
-  Bool_t   IsSimulation() const {return fSimulation ; }
-  Bool_t   IsIsolatedInModule() const {return fIsolateInModule ; }
+  Bool_t   Is2x2Isol()                 const {return  fIs2x2Isol; }
+  Bool_t   IsnxnIsol()                 const {return  fIsnxnIsol; }
+
+  Bool_t   IsSimulation()              const {return fSimulation ; }
+  Bool_t   IsIsolatedInModule()        const {return fIsolateInModule ; }
 
   //Setters
-
   void     SetDigitsList(TClonesArray * digits)          
    {fDigitsList  = digits ; }
-
 
   void     SetNTRU(Int_t ntru)             {fNTRU     = ntru ; }
   void     SetNTRUZ(Int_t ntru)            {fNTRUZ    = ntru ; }
@@ -103,15 +103,17 @@ class AliPHOSTrigger : public AliTriggerDetector {
     {fL0Threshold          = amp ; }
   void     SetL1JetLowPtThreshold(Int_t amp) 
     {fL1JetLowPtThreshold  = amp ; } 
+  void     SetL1JetMediumPtThreshold(Int_t amp) 
+    {fL1JetMediumPtThreshold = amp; } 
   void     SetL1JetHighPtThreshold(Int_t amp)
     {fL1JetHighPtThreshold = amp ; }
 
-  void SetPatchSize(Int_t ps)                {fPatchSize = ps ; }
-  void SetIsolPatchSize(Int_t ps)          {fIsolPatchSize = ps ; }
+  void SetPatchSize(Int_t ps)               { fPatchSize = ps ; }
+  void SetIsolPatchSize(Int_t ps)           { fIsolPatchSize = ps ; }
   void Set2x2AmpOutOfPatchThres(Float_t th) { f2x2AmpOutOfPatchThres = th; }
   void SetnxnAmpOutOfPatchThres(Float_t th) { fnxnAmpOutOfPatchThres = th; }
-  void SetSimulation(Bool_t sim )          {fSimulation = sim ; }
-  void SetIsolateInModule(Bool_t isol )          {fIsolateInModule = isol ; }
+  void SetSimulation(Bool_t sim )           { fSimulation = sim ; }
+  void SetIsolateInModule(Bool_t isol )     { fIsolateInModule = isol ; }
 
  private:
 
@@ -123,7 +125,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmaxn) ;
 
- void SetTriggers(const TClonesArray * amptrus, Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmaxn) ;
+  void SetTriggers(const TClonesArray * amptrus, Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmaxn) ;
 
  private: 
 
@@ -143,32 +145,33 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   TClonesArray* fDigitsList ;  //Array of digits 
  
-  Float_t fL0Threshold ;          //! L0 trigger energy threshold
-  Float_t fL1JetLowPtThreshold ;  //! L1 Low  pT trigger threshold
-  Float_t fL1JetHighPtThreshold ; //! L1 High pT trigger threshold
+  Float_t fL0Threshold ;             //! L0 trigger energy threshold
+  Float_t fL1JetLowPtThreshold ;     //! L1 Low  pT trigger threshold
+  Float_t fL1JetMediumPtThreshold ;  //! L1 Medium  pT trigger threshold
+  Float_t fL1JetHighPtThreshold ;    //! L1 High pT trigger threshold
 
-  Int_t   fNTRU ;                  //! Number of TRUs per module
-  Int_t   fNTRUZ ;                //! Number of crystal rows per Z in one TRU
+  Int_t   fNTRU ;                //! Number of TRUs per module
+  Int_t   fNTRUZ ;               //! Number of crystal rows per Z in one TRU
   Int_t   fNTRUPhi ;             //! Number of crystal rows per Phi in one TRU
-  Int_t   fNCrystalsPhi;       //!Number of rows in a TRU
-  Int_t   fNCrystalsZ;          //!Number of columns in a TRU
+  Int_t   fNCrystalsPhi;         //! Number of rows in a TRU
+  Int_t   fNCrystalsZ;           //! Number of columns in a TRU
   
-  Int_t fPatchSize;               //! Trigger patch factor, to be multiplied to 2x2 cells
-                                          // 0 means 2x2, 1 means 4x4, 2 means 6x6 ...
-  Int_t fIsolPatchSize ;      //Isolation patch size, number of rows or columns to add to 
-                                           //the 2x2 or nxn maximum amplitude patch. 
-                                           //1 means a patch around max amplitude of 2x2 of 4x4 and around         
-                                           //max ampl patch of 4x4 of 8x8 
+  Int_t fPatchSize;              //! Trigger patch factor, to be multiplied to 2x2 cells
+                                 //  0 means 2x2, 1 means 4x4, 2 means 6x6 ...
+  Int_t fIsolPatchSize ;         //  Isolation patch size, number of rows or columns to add to 
+                                 //  the 2x2 or nxn maximum amplitude patch. 
+                                 //  1 means a patch around max amplitude of 2x2 of 4x4 and around         
+                                 //  max ampl patch of 4x4 of 8x8 
     
-  Float_t f2x2AmpOutOfPatch; //Amplitude in isolation cone minus maximum amplitude of the reference patch
+  Float_t f2x2AmpOutOfPatch;      // Amplitude in isolation cone minus maximum amplitude of the reference patch
   Float_t fnxnAmpOutOfPatch; 
-  Float_t f2x2AmpOutOfPatchThres; //Threshold to select a trigger as isolated on f2x2AmpOutOfPatch value
+  Float_t f2x2AmpOutOfPatchThres; // Threshold to select a trigger as isolated on f2x2AmpOutOfPatch value
   Float_t fnxnAmpOutOfPatchThres; 
-  Float_t fIs2x2Isol; //Patch is isolated if f2x2AmpOutOfPatchThres threshold is passed
+  Float_t fIs2x2Isol;             //Patch is isolated if f2x2AmpOutOfPatchThres threshold is passed
   Float_t fIsnxnIsol ; 
   
   Bool_t  fSimulation ;           //! Flag to do the trigger during simulation or reconstruction
-  Bool_t  fIsolateInModule;  //! Flag to isolate trigger patch in Module or in TRU acceptance
+  Bool_t  fIsolateInModule;       //! Flag to isolate trigger patch in Module or in TRU acceptance
 
   ClassDef(AliPHOSTrigger,4)
 } ;
