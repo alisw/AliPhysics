@@ -442,16 +442,13 @@ AliMUONCluster::Print(Option_t* opt) const
   cout << "Cluster Id " << GetUniqueID() << " npads=" << Multiplicity() 
   << "(" << Multiplicity(0) << "," << Multiplicity(1) << ") RawCharge=" 
   << RawCharge() << " (" << RawCharge(0) << "," << RawCharge(1)
-  << " Charge=(" << Charge(0) << "," << Charge(1) <<")";
+  << ") Charge=(" << Charge(0) << "," << Charge(1) <<")";
   if ( HasPosition() )
   {
     cout << " (x,y)=(" << Position().X() << "," << Position().Y() << ")";
     cout << " (errX,errY)=(" << PositionError().X() << "," << PositionError().Y() << ")";
   }
-  AliMpArea a(Area());
-  cout << Form(" Area=(%e,%e,%e,%e)",a.LeftBorder(),a.RightBorder(),
-               a.DownBorder(),a.UpBorder());
-  cout << endl;
+  cout << " " << Area() << endl;
   if (fPads) 
   {
     fPads->Print("",opt);
