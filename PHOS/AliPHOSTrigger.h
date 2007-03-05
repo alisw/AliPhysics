@@ -4,7 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-/* $Log$ */
 
 //____________________________________________________________
 //  Class for trigger analysis.
