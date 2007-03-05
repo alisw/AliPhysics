@@ -14,6 +14,8 @@
 #include <TROOT.h>
 #include <TInterpreter.h>
 
+#include <TGClient.h>
+
 #include <iostream>
 
 //______________________________________________________________________
@@ -95,8 +97,18 @@ void SetupEnvironment()
     gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
   }
   gROOT->SetMacroPath(macPath);
+}
 
-  setupDone = kTRUE;
+void SetupGUI()
+{
+  TString fld( Form("%s/icons/", gSystem->Getenv("REVESYS")) );
+  // printf("foofoo %p %p %p %p\n",
+  //	 RenderElement::fgRnrIcons[0],RenderElement::fgRnrIcons[1],
+  //	 RenderElement::fgRnrIcons[2],RenderElement::fgRnrIcons[3]);
+  RenderElement::fgRnrIcons[0] = gClient->GetPicture(fld + "rnr00_t.xpm");
+  RenderElement::fgRnrIcons[1] = gClient->GetPicture(fld + "rnr01_t.xpm");
+  RenderElement::fgRnrIcons[2] = gClient->GetPicture(fld + "rnr10_t.xpm");
+  RenderElement::fgRnrIcons[3] = gClient->GetPicture(fld + "rnr11_t.xpm");
 }
 
 /**************************************************************************/

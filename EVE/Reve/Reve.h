@@ -55,6 +55,7 @@ void  WarnCaller(const TString& warning);
 /**************************************************************************/
 
 void   SetupEnvironment();
+void   SetupGUI();
 
 Bool_t CheckMacro(const Text_t* mac);
 void   AssertMacro(const Text_t* mac);
