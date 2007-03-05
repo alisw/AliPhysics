@@ -120,9 +120,9 @@ void Track::Reset(Int_t n_points)
 }
 */
 
-/**************************************************************************/
+ /**************************************************************************/
 
-void Track::MakeTrack()
+void Track::MakeTrack( Bool_t recurse)
 {
   TrackRnrStyle& RS((fRnrStyle != 0) ? *fRnrStyle : TrackRnrStyle::fgDefStyle);
 
@@ -237,6 +237,14 @@ make_polyline:
   Reset(track_points.size());
   for(std::vector<MCVertex>::iterator i=track_points.begin(); i!=track_points.end(); ++i)
     SetNextPoint(i->x, i->y, i->z);
+
+  if(recurse) {
+    Track* t;
+    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      t = dynamic_cast<Track*>(*i);
+      if(t)t->MakeTrack(recurse); 
+    }
+  }
 }
 
 /**************************************************************************/
@@ -244,13 +252,15 @@ make_polyline:
 void Track::ImportHits()
 {
   Reve::LoadMacro("hits_from_label.C");
-  gROOT->ProcessLine(Form("hits_from_label(%d);", fLabel));
+  gROOT->ProcessLine(Form("hits_from_label(%d, (Reve::RenderElement*)%p);", 
+			  fLabel, this));
 }
 
 void Track::ImportClusters()
 {
   Reve::LoadMacro("clusters_from_label.C");
-  gROOT->ProcessLine(Form("clusters_from_label(%d);", fLabel));
+  gROOT->ProcessLine(Form("clusters_from_label(%d, (Reve::RenderElement*)%p);", 
+			  fLabel, this));
 }
 
 void Track::ImportClustersFromIndex()
@@ -261,7 +271,8 @@ void Track::ImportClustersFromIndex()
     throw(eH + "index not set.");
 
   Reve::LoadMacro("clusters_from_index.C");
-  gROOT->ProcessLine(Form("clusters_from_index(%d);", fIndex));
+  gROOT->ProcessLine(Form("clusters_from_index(%d, (Reve::RenderElement*)%p);", 
+			  fIndex, this));
 }
 
 /**************************************************************************/
@@ -274,7 +285,9 @@ void Track::ImportKine()
     throw(eH + "label not set.");
 
   Reve::LoadMacro("kine_tracks.C");
-  gROOT->ProcessLine(Form("kine_track(%d, kTRUE, kFALSE);", fLabel));
+  gROOT->ProcessLine(Form("kine_track(%d, kFALSE, kTRUE, (Reve::RenderElement*)%p);", 
+			  fLabel, this));
+
 }
 
 void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
@@ -285,8 +298,9 @@ void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
     throw(eH + "label not set.");
 
   Reve::LoadMacro("kine_tracks.C");
-  gROOT->ProcessLine(Form("kine_track(%d, %d, %d);",
-			  fLabel, importMother, importDaugters));
+  gROOT->ProcessLine(Form("kine_track(%d, %d, %d, (Reve::RenderElement*)%p);", 
+			   fLabel, importMother, importDaugters, this));
+
 }
 
 /**************************************************************************/
@@ -386,7 +400,7 @@ void TrackList::Init()
 }
 
 TrackList::TrackList(Int_t n_tracks, TrackRnrStyle* rs) :
-  RenderElementListBase(),
+  RenderElement(),
   TPolyMarker3D(n_tracks),
 
   fTitle(),
@@ -399,7 +413,7 @@ TrackList::TrackList(Int_t n_tracks, TrackRnrStyle* rs) :
 }
 
 TrackList::TrackList(const Text_t* name, Int_t n_tracks, TrackRnrStyle* rs) :
-  RenderElementListBase(),
+  RenderElement(),
   TPolyMarker3D(n_tracks),
   
   fTitle(),
@@ -424,13 +438,13 @@ void TrackList::Reset(Int_t n_tracks)
 
 void TrackList::Paint(Option_t* option)
 {
-  if(fRnrElement) {
+  if(fRnrSelf) {
     if(fRnrMarkers) {
       TPolyMarker3D::Paint(option);
     }
-    if(fRnrTracks) {
+    if(fRnrTracks && fRnrChildren) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement())
+	if((*i)->GetRnrSelf())
 	  (*i)->GetObject()->Paint(option);
       }
     }
@@ -444,7 +458,7 @@ void TrackList::AddElement(RenderElement* el)
   static const Exc_t eH("TrackList::AddElement ");
   if (dynamic_cast<Track*>(el)  == 0)
     throw(eH + "new element not a Track.");
-  RenderElementListBase::AddElement(el);
+  RenderElement::AddElement(el);
 }
 
 /**************************************************************************/
@@ -578,7 +592,7 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ptsq = ((Track*)(*i))->fP.Perp2();
-    (*i)->SetRnrElement(ptsq >= minptsq && ptsq <= maxptsq);
+    (*i)->SetRnrSelf(ptsq >= minptsq && ptsq <= maxptsq);
   }
 }
 

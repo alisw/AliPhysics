@@ -50,7 +50,7 @@ public:
   Track(Reve::RecTrack* t, TrackRnrStyle* rs);
   virtual ~Track();
 
-  void MakeTrack();
+  void MakeTrack(Bool_t recurse = kTRUE);
 
   TrackRnrStyle* GetRnrStyle() const  { return fRnrStyle; }
   void SetRnrStyle(TrackRnrStyle* rs) { fRnrStyle = rs; }
@@ -142,7 +142,7 @@ public:
 // TrackList
 /**************************************************************************/
 
-class TrackList : public RenderElementListBase,
+class TrackList : public RenderElement,
 		  public TPolyMarker3D
 {
   TrackList(const TrackList&);            // Not implemented
