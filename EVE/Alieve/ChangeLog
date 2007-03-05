@@ -1,3 +1,15 @@
+2007-03-04  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* MUONChamber.cxx:
+	* TPCLoader.cxx:
+	* TPCSector2D.cxx:
+	* TPCSector3D.cxx:
+	* TRDLoader.cxx:
+	* TRDLoader.h:
+	* TRDModuleImp.cxx:
+	* TRDModuleImp.h:
+	Changes from Reve::RenderElement. 
+
 2007-02-28  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* PMDModule.cxx:

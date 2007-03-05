@@ -1,3 +1,22 @@
+2007-03-04  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* icons/rnr00_t.xpm:
+	* icons/rnr01_t.xpm:
+	* icons/rnr10_t.xpm:
+	* icons/rnr11_t.xpm:
+	New folder icons/ with improved check-box pictures. 
+
+	* alice-macros/clusters_from_index.C:
+	* alice-macros/clusters_from_label.C:
+	* alice-macros/geom_rich.C:
+	* alice-macros/hits_from_label.C:
+	* alice-macros/its_hits.C:
+	* alice-macros/kine_tracks.C:
+	* alice-macros/tof_hits.C:
+	* alice-macros/tpc_hits.C:
+	* alice-macros/trd_hits.C:
+	Changes from Reve::RenderElement.
+
 2007-03-02  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/primary_vertex_tracks.C:

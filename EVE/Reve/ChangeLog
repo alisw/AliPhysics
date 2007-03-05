@@ -1,3 +1,51 @@
+2007-03-04  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	* LinkDef.h:
+	Classes RenderElement and RenderElementListBase have been merged,
+	RenderElementListBase class is removed. 
+
+	Since RenderElement supports hierarchical structure fRnrElement is 
+	replaced to fRnrSelf and fRnrChildren. RnrSelf/RnrDaughters
+	callbacks from editor set check box picture according to the for
+	possible states. 
+
+	New class PadPrimitve. Objects of the classes enable recursive
+	rendering  as they are added in TPad fListOfPrimitives.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Changes from RenderElement. Added Bool_t fKeepEmptyCont
+	determining behaviour of zero-count rnr-element imports.
+
+	* Reve.cxx:
+	* Reve.h:
+	Added function to create 4 check box pictures which mark fRnrSelf
+	and fRnrChildren state of RenderElement.
+
+	* EventBase.cxx:
+	* EventBase.h:
+	Inherit from PadPrimitve instead of from RenderElementList.
+
+	* RenderElementEditor.cxx:
+	* RenderElementEditor.h:
+	* GeoNode.cxx:
+	* GeoNode.h:
+	* Cascade.cxx:
+	* Cascade.h:
+	* PointSet.cxx:
+	* PointSet.h:
+	* V0.cxx:
+	* V0.h:
+	* RGBrowser.cxx:
+	Changes from RenderElement.
+
+	* Track.cxx:
+	* Track.h:
+	Changes from RenderElement; change import functions to
+	add hits, clusters, kinematic to selected object.
+
 2007-02-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:
