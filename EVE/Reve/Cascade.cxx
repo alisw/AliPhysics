@@ -397,7 +397,7 @@ ClassImp(Reve::CascadeList)
 
 //______________________________________________________________________
 CascadeList::CascadeList(TrackRnrStyle* rs) :
-  RenderElementListBase(),
+  RenderElement(),
   fTitle(),
   fRnrStyle(rs),
   fRnrBach(kTRUE),
@@ -416,7 +416,7 @@ CascadeList::CascadeList(TrackRnrStyle* rs) :
 
 //______________________________________________________________________
 CascadeList::CascadeList(const Text_t* name, TrackRnrStyle* rs) :
-  RenderElementListBase(),
+  RenderElement(),
   fTitle(),
   fRnrStyle(rs),
   fRnrBach(kTRUE),
@@ -511,11 +511,11 @@ void CascadeList::Init()
 
 //______________________________________________________________________
 void CascadeList::Paint(Option_t* option) {
-  if(fRnrElement) {
+  if(fRnrSelf) {
 
     if(fRnrBach) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((Cascade*)(*i))->PaintBachelor(option);
 	}
       }
@@ -523,7 +523,7 @@ void CascadeList::Paint(Option_t* option) {
 
     if(fRnrV0Daughters) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((Cascade*)(*i))->PaintV0Daughters(option);
 	}
       }
@@ -531,7 +531,7 @@ void CascadeList::Paint(Option_t* option) {
 
     if(fRnrV0path) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((Cascade*)(*i))->PaintV0Path(option);
 	}
       }
@@ -539,7 +539,7 @@ void CascadeList::Paint(Option_t* option) {
 
     if(fRnrCasVtx) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((Cascade*)(*i))->Paint(option);
 	}
       }
@@ -547,13 +547,13 @@ void CascadeList::Paint(Option_t* option) {
 
     if(fRnrCasPath) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((Cascade*)(*i))->PaintCasPath(option);
 	}
       }
     }
 
-  } // end if(fRnrElement)
+  } // end if(fRnrSelf)
 }
 
 
@@ -564,7 +564,7 @@ void CascadeList::AddElement(RenderElement* el)
   static const Exc_t eH("CascadeList::AddElement ");
   if (dynamic_cast<Cascade*>(el)  == 0)
     throw(eH + "new element not a Cascade.");
-  RenderElementListBase::AddElement(el);
+  RenderElement::AddElement(el);
 }
 
 
@@ -735,7 +735,7 @@ void CascadeList::Filter(Cascade* cas) {
   Float_t bachEta = cas->GetBachPseudoRapidity();
   if ( (bachEta<fMin[13])||(bachEta>fMax[13]) ) return;
 
-  cas->SetRnrElement(kTRUE);
+  cas->SetRnrSelf(kTRUE);
   fHist[0]->Fill(xiMass);
   fHist[1]->Fill(omegaMass);
   fHist[2]->Fill(index);
@@ -807,13 +807,13 @@ void CascadeList::XiMassFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetXiMass();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -836,13 +836,13 @@ void CascadeList::OmegaMassFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetOmegaMass();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -865,13 +865,13 @@ void CascadeList::IndexFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetESDIndex();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -894,13 +894,13 @@ void CascadeList::CosPointingFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetCasCosPointingAngle();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -924,13 +924,13 @@ void CascadeList::BachV0DCAFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetDCA_v0_Bach();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -954,13 +954,13 @@ void CascadeList::RadiusFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetRadius();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -984,13 +984,13 @@ void CascadeList::PtFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPt();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -1014,13 +1014,13 @@ void CascadeList::PseudoRapFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPseudoRapidity();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -1044,13 +1044,13 @@ void CascadeList::NegPtFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetNegPt();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -1074,13 +1074,13 @@ void CascadeList::NegEtaFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetNegPseudoRapidity();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -1104,13 +1104,13 @@ void CascadeList::PosPtFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPosPt();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -1133,13 +1133,13 @@ void CascadeList::PosEtaFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetPosPseudoRapidity();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -1163,13 +1163,13 @@ void CascadeList::BachPtFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetBachPt();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);
@@ -1192,13 +1192,13 @@ void CascadeList::BachEtaFilter(Float_t min, Float_t max) {
 
     myCas = (Cascade*)(*i);
     val = myCas->GetBachPseudoRapidity();
-    wasSelected = myCas->GetRnrElement();
+    wasSelected = myCas->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myCas);
-	myCas->SetRnrElement(isSelected);
+	myCas->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myCas);

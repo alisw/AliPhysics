@@ -62,6 +62,7 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
 
   fCurrentEvent   (0),
   fGlobalStore    (0),
+  fKeepEmptyCont  (kFALSE),
 
   fRedrawDisabled (0),
   fResetCameras   (kFALSE),
@@ -165,7 +166,7 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
   /**************************************************************************/
   /**************************************************************************/
 
-  fGlobalStore = new RenderElementList("Geometry", "");
+  fGlobalStore = new PadPrimitive("Geometry", "");
   fGlobalStore->SetDenyDestroy(kTRUE);
   TGListTreeItem* glti = fGlobalStore->AddIntoListTree(GetListTree(), (TGListTreeItem*)0);
   GetListTree()->OpenItem(glti);
@@ -266,6 +267,7 @@ int RGTopFrame::SpawnGuiAndRun(int argc, char **argv)
 
   TRint theApp("App", &argc, argv);
 
+  Reve::SetupGUI();
   /* gReve = */ new RGTopFrame(gClient ? gClient->GetRoot() : 0, w, h, revemode);
 
  run_loop:
@@ -288,6 +290,7 @@ void RGTopFrame::SpawnGui(LookType_e revemode)
     w = 1024; h = 768;
   }
 
+  Reve::SetupGUI();
   /* gReve = */ new RGTopFrame(gClient->GetRoot(), w, h, revemode);
 }
 
@@ -318,9 +321,7 @@ TGListTreeItem* RGTopFrame::AddRenderElement(RenderElement* parent,
 
   // Here could route rnr-element to several browsers/pads.
 
-  RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(parent);
-  if(rel)
-    rel->AddElement(rnr_element);
+  parent->AddElement(rnr_element);
 
   TGListTreeItem* newitem =
     rnr_element->AddIntoListTree(GetListTree(), parent);
@@ -340,9 +341,7 @@ TGListTreeItem* RGTopFrame::AddGlobalRenderElement(RenderElement* parent,
 
   // Here could route rnr-element to several browsers/pads.
 
-  RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(parent);
-  if(rel)
-    rel->AddElement(rnr_element);
+  parent->AddElement(rnr_element);
 
   TGListTreeItem* newitem =
     rnr_element->AddIntoListTree(GetListTree(), parent);
@@ -355,11 +354,9 @@ TGListTreeItem* RGTopFrame::AddGlobalRenderElement(RenderElement* parent,
 void RGTopFrame::RemoveRenderElement(RenderElement* parent,
 				     RenderElement* rnr_element)
 {
-  rnr_element->RemoveFromListTree(GetListTree());
+  parent->RemoveFromListTree(GetListTree());
 
-  RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(parent);
-  if(rel)
-    rel->RemoveElement(rnr_element);
+  rnr_element->RemoveElement(rnr_element);
 }
 
 void RGTopFrame::PreDeleteRenderElement(RenderElement* rnr_element)
@@ -399,7 +396,12 @@ void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t state)
   // We recast it blindly back into the render element.
 
   RenderElement* rnrEl = (RenderElement*) obj;
-  rnrEl->SetRnrElement(state);
+  rnrEl->ToggleRnrState();
+
+  if(fEditor->GetModel() == rnrEl->GetObject()) {
+    fEditor->DisplayObject(rnrEl->GetObject());
+  }
+
   Redraw3D();
 }
 

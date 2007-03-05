@@ -20,7 +20,7 @@ using namespace Reve;
 ClassImp(GeoNodeRnrEl)
 
 GeoNodeRnrEl::GeoNodeRnrEl(TGeoNode* node) :
-  RenderElementListBase(),
+  RenderElement(),
   TObject(),
   fNode(node)
 {
@@ -28,7 +28,7 @@ GeoNodeRnrEl::GeoNodeRnrEl(TGeoNode* node) :
   char* l = (char*) dynamic_cast<TAttLine*>(node->GetVolume());
   SetMainColorPtr((Color_t*)(l + sizeof(void*)));
 
-  fRnrElement      = fNode->TGeoAtt::IsVisible();
+  fRnrSelf      = fNode->TGeoAtt::IsVisible();
 }
 
 const Text_t* GeoNodeRnrEl::GetName()  const { return fNode->GetName(); }
@@ -40,7 +40,7 @@ Int_t GeoNodeRnrEl::ExpandIntoListTree(TGListTree* ltree,
 				       TGListTreeItem* parent)
 {
   // Checks if child-nodes have been imported ... imports them if not.
-  // Then calls RenderElementListBase::ExpandIntoListTree.
+  // Then calls RenderElement::ExpandIntoListTree.
 
   if(fChildren.empty() && fNode->GetVolume()->GetNdaughters() > 0) {
     TIter next(fNode->GetVolume()->GetNodes());
@@ -50,20 +50,20 @@ Int_t GeoNodeRnrEl::ExpandIntoListTree(TGListTree* ltree,
       AddElement(node_re);
     }
   }
-  return RenderElementListBase::ExpandIntoListTree(ltree, parent);
+  return RenderElement::ExpandIntoListTree(ltree, parent);
 }
 
 /**************************************************************************/
 
 void GeoNodeRnrEl::UpdateItems()
 {
-  fRnrElement      = fNode->TGeoAtt::IsVisible(); 
-  RenderElementListBase::UpdateItems();
+  fRnrSelf      = fNode->TGeoAtt::IsVisible(); 
+  RenderElement::UpdateItems();
 }
 
 /**************************************************************************/
 
-void GeoNodeRnrEl::SetRnrElement(Bool_t rnr)
+void GeoNodeRnrEl::SetRnrSelf(Bool_t rnr)
 {
   fNode->SetVisibility(rnr);
   UpdateItems();
@@ -156,7 +156,7 @@ GeoTopNodeRnrEl::GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node,
   fUseNodeTrans(kFALSE),
   fVisOption(visopt), fVisLevel(vislvl)
 {
-  fRnrElement = true;
+  fRnrSelf = true;
 }
 
 GeoTopNodeRnrEl::~GeoTopNodeRnrEl()
@@ -195,17 +195,15 @@ void GeoTopNodeRnrEl::SetVisLevel(Int_t vislvl)
 
 void GeoTopNodeRnrEl::UpdateItems()
 {
-  RenderElementListBase::UpdateItems();
+  RenderElement::UpdateItems();
 }
 
 /**************************************************************************/
-
-void GeoTopNodeRnrEl::SetRnrElement(Bool_t rnr)
+void GeoTopNodeRnrEl::SetRnrSelf(Bool_t rnr)
 {
   // Revert from GeoNode to back to standard behaviour.
-  RenderElementListBase::SetRnrElement(rnr);
+  RenderElement::SetRnrSelf(rnr);
 }
-
 /**************************************************************************/
 
 void GeoTopNodeRnrEl::Draw(Option_t* option)
@@ -215,7 +213,7 @@ void GeoTopNodeRnrEl::Draw(Option_t* option)
 
 void GeoTopNodeRnrEl::Paint(Option_t* option)
 {
-  if(fRnrElement) {
+  if(fRnrSelf) {
     gGeoManager = fManager;
     TVirtualPad* pad = gPad;
     gPad = 0;

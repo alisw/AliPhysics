@@ -91,15 +91,15 @@ public:
   void  AddPathMarkBach(Reve::PathMark* pm) { fPathMarksBach.push_back(pm); }
 
   virtual void PaintV0Daughters(Option_t* option="") {
-    if(fRnrElement) {fPolyLineNeg.Paint(option);fPolyLinePos.Paint(option); } }
+    if(fRnrSelf) {fPolyLineNeg.Paint(option);fPolyLinePos.Paint(option); } }
   virtual void PaintBachelor(Option_t* option="") {
-    if(fRnrElement) fPolyLineBach.Paint(option); }
+    if(fRnrSelf) fPolyLineBach.Paint(option); }
   virtual void Paint(Option_t* option="") {
-    if(fRnrElement) TPolyMarker3D::Paint(option);}
+    if(fRnrSelf) TPolyMarker3D::Paint(option);}
   virtual void PaintV0Path(Option_t* option="") {
-    if(fRnrElement) fPolyLineV0.Paint(option);}
+    if(fRnrSelf) fPolyLineV0.Paint(option);}
   virtual void PaintCasPath(Option_t* option="") {
-    if(fRnrElement) fPolyLineCas.Paint(option);}
+    if(fRnrSelf) fPolyLineCas.Paint(option);}
 
   void Reset(TPolyLine3D* polyLine);
   void MakeTrack(vpPathMark_t& pathMark, Reve::Vector& vtx,  Reve::Vector& p,
@@ -338,7 +338,7 @@ inline Float_t Cascade::GetBachPseudoRapidity() const {
 *
 ************************************************************************/
 
-class CascadeList : public TNamed, public RenderElementListBase
+class CascadeList : public TNamed, public RenderElement
 {
   CascadeList(const CascadeList&);            // Not implemented
   CascadeList& operator=(const CascadeList&); // Not implemented

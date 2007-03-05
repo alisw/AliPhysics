@@ -86,7 +86,7 @@ Int_t PointSet::GrowFor(Int_t n_points)
 
 void PointSet::Paint(Option_t* option)
 {
-  if(fRnrElement == kFALSE) return;
+  if(fRnrSelf == kFALSE) return;
 
   TPointSet3D::Paint(option);
 }
@@ -139,7 +139,7 @@ ClassImp(PointSetArray)
 
 PointSetArray::PointSetArray(const Text_t* name,
 			     const Text_t* title) :
-  RenderElementListBase(fMarkerColor),
+  RenderElement(fMarkerColor),
   TNamed(name, title),
 
   fBins(0), fDefPointSetCapacity(128), fNBins(0),
@@ -151,10 +151,20 @@ PointSetArray::PointSetArray(const Text_t* name,
 PointSetArray::~PointSetArray()
 {
   // Destructor: deletes the fBins array. Actual removal of
-  // elements done by RenderElementListBase.
+  // elements done by RenderElement.
 
   // printf("PointSetArray::~PointSetArray()\n");
   delete [] fBins; fBins = 0;
+}
+
+void PointSetArray::Paint(Option_t* option)
+{
+  if(fRnrSelf) {
+    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      if((*i)->GetRnrSelf())
+	(*i)->GetObject()->Paint(option);
+    }
+  }
 }
 
 void PointSetArray::RemoveElementLocal(RenderElement* el)
@@ -165,13 +175,13 @@ void PointSetArray::RemoveElementLocal(RenderElement* el)
       break;
     }
   }
-  RenderElementListBase::RemoveElementLocal(el);
+  RenderElement::RemoveElementLocal(el);
 }
 
 void PointSetArray::RemoveElements()
 {
   delete [] fBins; fBins = 0;
-  RenderElementListBase::RemoveElements();
+  RenderElement::RemoveElements();
 }
 
 /**************************************************************************/
@@ -309,6 +319,6 @@ void PointSetArray::SetRange(Double_t min, Double_t max)
   Int_t high_b = (Int_t) Min(Double_t(fNBins-1), Ceil((max-fMin)/fBinWidth));
   for(Int_t i=0; i<fNBins; ++i) {
     if(fBins[i] != 0)
-      fBins[i]->SetRnrElement(i>=low_b && i<=high_b);
+      fBins[i]->SetRnrSelf(i>=low_b && i<=high_b);
   }
 }

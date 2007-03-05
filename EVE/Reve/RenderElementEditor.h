@@ -22,7 +22,8 @@ protected:
   RenderElement* fRE; // fModel dynamic-casted to RenderElementEditor
 
   TGHorizontalFrame* fHFrame;
-  TGCheckButton*     fRnrElement;
+  TGCheckButton*     fRnrSelf;
+  TGCheckButton*     fRnrChildren;
   TGColorSelect*     fMainColor;
 
 public:
@@ -32,7 +33,8 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  void DoRnrElement();
+  void DoRnrSelf();
+  void DoRnrChildren();
   void DoMainColor(Pixel_t color);
 
    ClassDef(RenderElementEditor, 1); // Editor for RenderElement

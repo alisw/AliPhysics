@@ -12,7 +12,7 @@ class TGeoManager;
 
 namespace Reve {
 
-class GeoNodeRnrEl : public RenderElementListBase,
+class GeoNodeRnrEl : public RenderElement,
                      public TObject
 {
   friend class GeoNodeRnrElEditor;
@@ -36,7 +36,7 @@ public:
   virtual void UpdateItems();
 
   virtual Bool_t CanEditRnrElement() { return false; }
-  virtual void SetRnrElement(Bool_t rnr);
+  virtual void SetRnrSelf(Bool_t rnr);
 
   virtual Bool_t CanEditMainColor()  { return true; }
   virtual void SetMainColor(Color_t color);
@@ -81,7 +81,7 @@ public:
   virtual void UpdateItems();
 
   virtual Bool_t CanEditRnrElement() { return true; }
-  virtual void SetRnrElement(Bool_t rnr);
+  virtual void SetRnrSelf(Bool_t rnr);
 
   virtual void Draw(Option_t* option="");
   virtual void Paint(Option_t* option="");

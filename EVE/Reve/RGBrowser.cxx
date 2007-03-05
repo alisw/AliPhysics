@@ -27,6 +27,7 @@
 #include <TGSplitter.h>
 #include <TGStatusBar.h>
 #include <TGMenu.h>
+#include <TGPicture.h>
 #include <TGToolBar.h>
 #include <TGLabel.h>
 #include <TGXYLayout.h>
@@ -127,7 +128,8 @@ RGBrowser::RGBrowser(const TGWindow *p, UInt_t w, UInt_t h) :
 
   // popup menu
   
-  fCtxMenu = new TContextMenu("Pepe", "Moroder");
+  fCtxMenu = new TContextMenu("", "");
+
 
   //-- CINT export now declared in RenderElement with *MENU*
   // SetupCintExport(PointSet::Class());
@@ -269,14 +271,7 @@ void RGBrowser::DbClickListItem(TGListTreeItem* item, Int_t btn)
   if (obj) {
     //	ListTreeHighlight(item);
 
-    {
-      RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(re);
-      if(rel != 0) {
-	//Int_t ni = 
-	rel->ExpandIntoListTree(fListTree, item);
-	// printf("%s expanded by %d\n", eH.Data(), ni);
-      }
-    }
+    re->ExpandIntoListTree(fListTree, item);
     
     // browse geonodes
     if(obj->IsA()->InheritsFrom("TGeoNode")){
@@ -325,3 +320,5 @@ void RGBrowser::UpdateListItems(TGListTreeItem* item, Int_t )
     }
   }
 }
+
+/**************************************************************************/

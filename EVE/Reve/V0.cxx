@@ -323,7 +323,7 @@ ClassImp(Reve::V0List)
 
 //______________________________________________________________________
 V0List::V0List() :
-  RenderElementListBase(),
+  RenderElement(),
   fTitle(),
   fRnrStyle(0),
   fRnrDaughters(kTRUE),
@@ -340,7 +340,7 @@ V0List::V0List() :
 
 //______________________________________________________________________
 V0List::V0List(TrackRnrStyle* rs) :
-  RenderElementListBase(),
+  RenderElement(),
   fTitle(),
   fRnrStyle(rs),
   fRnrDaughters(kTRUE),
@@ -354,7 +354,7 @@ V0List::V0List(TrackRnrStyle* rs) :
 
 //______________________________________________________________________
 V0List::V0List(const Text_t* name, TrackRnrStyle* rs) :
-  RenderElementListBase(),
+  RenderElement(),
   fTitle(),
   fRnrStyle(rs),
   fRnrDaughters(kTRUE),
@@ -450,11 +450,11 @@ V0List::~V0List() {
 
 //______________________________________________________________________
 void V0List::Paint(Option_t* option) {
-  if(fRnrElement) {
+  if(fRnrSelf) {
 
     if(fRnrV0vtx) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((V0*)(*i))->Paint(option);
 	}
       }
@@ -462,7 +462,7 @@ void V0List::Paint(Option_t* option) {
 
     if(fRnrDaughters) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((V0*)(*i))->PaintDaughters(option);
 	}
       }
@@ -470,7 +470,7 @@ void V0List::Paint(Option_t* option) {
 
     if(fRnrV0path) {
       for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-	if((*i)->GetRnrElement()) {
+	if((*i)->GetRnrSelf()) {
 	  ((V0*)(*i))->PaintPath(option);
 	}
       }
@@ -486,7 +486,7 @@ void V0List::AddElement(RenderElement* el) {
   static const Exc_t eH("V0List::AddElement ");
   if (dynamic_cast<V0*>(el)  == 0)
     throw(eH + "new element not a V0.");
-  RenderElementListBase::AddElement(el);
+  RenderElement::AddElement(el);
 }
 
 
@@ -639,7 +639,7 @@ void V0List::Filter(V0* v0) {
    Float_t ptArm = v0->GetPtArmenteros();
 //   if ( (ptArm<fMinY[0])||(ptArm>fMaxY[0]) ) return;
 
-  v0->SetRnrElement(kTRUE);
+  v0->SetRnrSelf(kTRUE);
   fHist[0]->Fill(pt);
   fHist[1]->Fill(k0sMass);
   fHist[2]->Fill(lamMass);
@@ -710,13 +710,13 @@ void V0List::PtFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPt();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -740,13 +740,13 @@ void V0List::K0sMFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetK0mass();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -769,13 +769,13 @@ void V0List::LamMFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetLamMass();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -800,13 +800,13 @@ void V0List::ALamMFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetAntiLamMass();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -829,13 +829,13 @@ void V0List::CosPointingFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetCosPointingAngle();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -858,13 +858,13 @@ void V0List::DaughterDCAFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetDaughterDCA();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -887,13 +887,13 @@ void V0List::RadiusFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetRadius();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -916,13 +916,13 @@ void V0List::EtaFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPseudoRapidity();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -945,13 +945,13 @@ void V0List::NegPtFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetNegPt();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -974,13 +974,13 @@ void V0List::NegEtaFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetNegPseudoRapidity();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -1003,13 +1003,13 @@ void V0List::PosPtFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPosPt();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -1032,13 +1032,13 @@ void V0List::PosEtaFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetPosPseudoRapidity();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);
@@ -1061,13 +1061,13 @@ void V0List::IndexFilter(Float_t min, Float_t max) {
 
     myV0 = (V0*)(*i);
     val = myV0->GetESDIndex();
-    wasSelected = myV0->GetRnrElement();
+    wasSelected = myV0->GetRnrSelf();
     isSelected = ( (val>=min) && (val<=max) );
 
     if (wasSelected) {
       if (! isSelected) {
 	UnFill(myV0);
-	myV0->SetRnrElement(isSelected);
+	myV0->SetRnrSelf(isSelected);
       }
     } else {
       if (isSelected) Filter(myV0);

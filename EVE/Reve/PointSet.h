@@ -47,7 +47,7 @@ public:
 
 /**************************************************************************/
 
-class PointSetArray : public RenderElementListBase,
+class PointSetArray : public RenderElement,
                       public TNamed,
                       public TAttMarker,
                       public TPointSelectorConsumer
@@ -73,7 +73,7 @@ public:
   virtual void RemoveElementLocal(RenderElement* el);
   virtual void RemoveElements();
 
-  virtual void Paint(Option_t* option="") { PaintElements(option); }
+  virtual void Paint(Option_t* option="");
 
   virtual void SetMarkerColor(Color_t tcolor=1);
   virtual void SetMarkerStyle(Style_t mstyle=1);

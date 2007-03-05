@@ -27,7 +27,7 @@ class RGBrowser;
 class RGEditor;
 
 class RenderElement;
-class RenderElementList;
+class PadPrimitive;
 
 class EventBase;
 
@@ -66,7 +66,8 @@ private:
   RGEditor            *fEditor;
 
   EventBase           *fCurrentEvent;
-  RenderElementList   *fGlobalStore;
+  PadPrimitive         *fGlobalStore;
+  Bool_t               fKeepEmptyCont;
 
   Int_t                fRedrawDisabled;
   Bool_t               fResetCameras;
@@ -93,9 +94,12 @@ public:
 
   TGListTree*        GetListTree() const;
   EventBase*         GetCurrentEvent() const { return fCurrentEvent; }
-  RenderElementList* GetGlobalStore()  const { return fGlobalStore; }
+  PadPrimitive*      GetGlobalStore()  const { return fGlobalStore; }
 
-  TFolder* GetMacroFolder() const { return fMacroFolder; }
+  Bool_t             GetKeepEmptyCont()      { return fKeepEmptyCont; } 
+  void               SetKeepEmptyCont(Bool_t keep) { fKeepEmptyCont=keep; }     
+
+  TFolder*  GetMacroFolder() const { return fMacroFolder; }
   TMacro*  GetMacro(const Text_t* name) const;
 
   RGEditor* GetEditor() const { return fEditor; }

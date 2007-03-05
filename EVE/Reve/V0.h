@@ -54,11 +54,11 @@ public:
   void MakeV0();
 
   virtual void PaintDaughters(Option_t* option="") {
-    if(fRnrElement) {fPolyLineNeg.Paint(option);fPolyLinePos.Paint(option);} }
+    if(fRnrSelf) {fPolyLineNeg.Paint(option);fPolyLinePos.Paint(option);} }
   virtual void Paint(Option_t* option="") {
-    if(fRnrElement) TPolyMarker3D::Paint(option);}
+    if(fRnrSelf) TPolyMarker3D::Paint(option);}
   virtual void PaintPath(Option_t* option="") {
-    if(fRnrElement) fPolyLineV0.Paint(option);}
+    if(fRnrSelf) fPolyLineV0.Paint(option);}
 
   virtual void  SetMainColor(Color_t col) {
     fMarkerColor = col; fMainColorPtr = &fMarkerColor;
@@ -314,7 +314,7 @@ inline Float_t V0::GetAntiLamMass() const {
 // V0List
 /**************************************************************************/
 
-class V0List : public TNamed, public RenderElementListBase
+class V0List : public TNamed, public RenderElement
 {
   V0List(const V0List&);            // Not implemented
   V0List& operator=(const V0List&); // Not implemented
