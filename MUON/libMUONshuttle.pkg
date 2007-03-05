@@ -9,7 +9,8 @@ AliMUON2DStoreValidator.cxx \
 AliMUONPedestalEventGenerator.cxx \
 AliMUONCheckItem.cxx \
 AliMUONCheckItemIterator.cxx \
-AliMUONHVSubprocessor.cxx
+AliMUONHVSubprocessor.cxx \
+AliMUONTrackerPreprocessor.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
