@@ -66,7 +66,8 @@ namespace
     
     f = 0.0;
     Float_t qTot = cluster->Charge();
-    Float_t chargeCorrel[] = { cluster->Charge(0)/qTot, cluster->Charge(1)/qTot };
+//    Float_t chargeCorrel[] = { cluster->Charge(0)/qTot, cluster->Charge(1)/qTot };
+//    Float_t qRatio[] = { 1.0/par[2], par[2] };
     
     for ( Int_t i = 0 ; i < cluster->Multiplicity(); ++i )
     {
@@ -75,15 +76,14 @@ namespace
       if ( pad->Status() ) continue; 
       TVector2 lowerLeft = TVector2(par[0],par[1]) - pad->Position() - pad->Dimensions();
       TVector2 upperRight(lowerLeft + pad->Dimensions()*2.0);
-      Float_t estimatedCharge = 
-        qTot*mathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
-                              upperRight.X(),upperRight.Y());
-      estimatedCharge *= chargeCorrel[pad->Cathode()];
-      Float_t actualCharge = pad->Charge();
+      Float_t estimatedCharge = mathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
+                                                 upperRight.X(),upperRight.Y());
+//      estimatedCharge *= 2/(1+qRatio[pad->Cathode()]);
+      Float_t actualCharge = pad->Charge()/qTot;
       
       Float_t delta = (estimatedCharge - actualCharge);
       
-      f += delta*delta/qTot;    
+      f += delta*delta;    
     }  
   }
 }
@@ -201,23 +201,30 @@ AliMUONClusterFinderSimpleFit::ComputePosition(AliMUONCluster& cluster)
   Float_t stepX = 0.01; // cm
   Float_t stepY = 0.01; // cm
   
-  Double_t arg(1);//0);
+  Double_t arg(-1); // disable printout
   
-  fitter->ExecuteCommand("SET PRINT",&arg,1); // disable printout
+  fitter->ExecuteCommand("SET PRINT",&arg,1);
   
   fitter->SetParameter(0,"cluster X position",xCOG,stepX,0,0);
   fitter->SetParameter(1,"cluster Y position",yCOG,stepY,0,0);
-//  fitter->SetParameter(2,"charge ratio",1.0,0.01,0.1,10);
   
   TObjArray userObjects;
   
   userObjects.Add(&cluster);
   userObjects.Add(fMathieson);
   
-//  fitter->SetUserFunc(&userObjects);
   fitter->SetObjectFit(&userObjects);
   
-  fitter->ExecuteCommand("MIGRAD",0,0);
+  Int_t val = fitter->ExecuteCommand("MIGRAD",0,0);
+  AliDebug(1,Form("ExecuteCommand returned value=%d",val));
+  if ( val ) 
+  {
+    // fit failed. Using COG results, with big errors
+    AliWarning("Fit failed. Using COG results for cluster=");
+    StdoutToAliWarning(cluster.Print());
+    cluster.SetPosition(TVector2(xCOG,yCOG),TVector2(TMath::Abs(xCOG),TMath::Abs(yCOG)));
+    cluster.SetChi2(1E3);
+  }
   
   Double_t results[] = { fitter->GetParameter(0),
     fitter->GetParameter(1) };
@@ -228,14 +235,17 @@ AliMUONClusterFinderSimpleFit::ComputePosition(AliMUONCluster& cluster)
   cluster.SetPosition(TVector2(results[0],results[1]),
                       TVector2(errors[0],errors[1]));
   
-  TF1* func = static_cast<TF1*>(fitter->GetUserFunc());
-  Double_t chi2 = 0;
-  if ( func ) chi2 = func->GetChisquare();
+  Double_t amin, edm, errdef;
+  Int_t nvpar, nparx;
   
-  AliDebug(1,Form("Cluster fitted to (x,y)=(%e,%e) (xerr,yerr)=(%e,%e) chi2=%e",
+  fitter->GetStats(amin, edm, errdef, nvpar, nparx);
+
+  Double_t chi2 = amin;
+  
+  AliDebug(1,Form("Cluster fitted to (x,y)=(%e,%e) (xerr,yerr)=(%e,%e) \n chi2=%e ndf=%d",
                   results[0],results[1],
-                  errors[0],errors[1],chi2));
-//  cluster.SetChi2(chi2/fitter->GetNumberFreeParameters());
+                  errors[0],errors[1],chi2,fitter->GetNumberFreeParameters()));
+  cluster.SetChi2(chi2);
 }
 
 
