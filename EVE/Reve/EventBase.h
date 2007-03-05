@@ -7,7 +7,7 @@
 
 namespace Reve {
 
-class EventBase : public RenderElementList
+class EventBase : public PadPrimitive
 {
 protected:
 

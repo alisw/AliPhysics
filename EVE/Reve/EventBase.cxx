@@ -11,5 +11,5 @@ using namespace Reve;
 ClassImp(EventBase)
 
 EventBase::EventBase(const Text_t* n, const Text_t* t) :
-  RenderElementList(n, t)
+  PadPrimitive(n, t)
 {}
