@@ -92,11 +92,7 @@ const char* AliHLTFilePublisher::GetComponentID()
 AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 {
   // see header file for class documentation
-  AliHLTComponentDataType dt =
-    {sizeof(AliHLTComponentDataType),
-     kAliHLTVoidDataTypeID,
-     kAliHLTVoidDataOrigin};
-  return dt;
+  return fDataType;
 }
 
 void AliHLTFilePublisher::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )

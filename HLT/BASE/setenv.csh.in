@@ -17,6 +17,7 @@ set bindir=@bindir@
 set libdir=@libdir@
 
 setenv ROOTSYS @ROOTSYS@
+setenv ALICE_ROOT @ALICE_ROOT@
 set ADD_LIBDIR=
 set ADD_LIBDIR="${libdir}       $ADD_LIBDIR"
 set ADD_LIBDIR="@ALIROOTLIBDIR@ $ADD_LIBDIR"

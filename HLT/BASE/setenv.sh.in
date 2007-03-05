@@ -17,6 +17,7 @@ bindir=@bindir@
 libdir=@libdir@
 
 export ROOTSYS=@ROOTSYS@ 
+export ALICE_ROOT=@ALICE_ROOT@
 ADD_LIBDIR="${libdir}       $ADD_LIBDIR"
 ADD_LIBDIR="@ALIROOTLIBDIR@ $ADD_LIBDIR"
 ADD_LIBDIR="@ROOTLIBDIR@    $ADD_LIBDIR"

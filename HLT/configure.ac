@@ -298,6 +298,7 @@ if test ! "x$have_aliroot" = "xno" ; then
   LIBS=$save_LIBS
 fi
 AC_LANG_POP(C++)
+AC_SUBST([ALICE_ROOT])
 AC_SUBST([ALIROOT_CPPFLAGS])
 AC_SUBST([ALIROOT_LDFLAGS])
 AC_SUBST([ALIROOTBINDIR])

@@ -93,6 +93,14 @@ public:
   //
   int CheckFilter(AliHLTComponentLogSeverity severity) const;
 
+  // set global logging level
+  //
+  static void SetGlobalLoggingLevel(AliHLTComponentLogSeverity level);
+
+  // set local logging level
+  //
+  void SetLocalLoggingLevel(AliHLTComponentLogSeverity level);
+
   static int Message(void * param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message);
 
   static const char* BuildLogString(const char *format, va_list ap);

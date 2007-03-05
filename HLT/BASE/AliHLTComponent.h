@@ -348,6 +348,11 @@ class AliHLTComponent : public AliHLTLogging {
   static string DataType2Text( const AliHLTComponentDataType& type );
 
   /**
+   * Helper function to print content of data type.
+   */
+  void PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format=NULL) const;
+
+  /**
    * helper function to initialize AliHLTComponentEventData structure
    */
   static void FillEventData(AliHLTComponentEventData& evtData);

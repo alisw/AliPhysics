@@ -347,8 +347,15 @@ int AliHLTConfiguration::InterpreteString(const char* arg, vector<char*>& argLis
     //HLTDebug("interprete \"%s\"", arg);
     int i=0;
     int prec=-1;
+    int bQuote=0;
     do {
-      if (arg[i]==0 || arg[i]==' ') {
+      //HLTDebug("%d %x", i, arg[i]);
+      if (arg[i]=='\'' && bQuote==0) {
+	bQuote=1;
+      } else if (arg[i]==0 || 
+		 (arg[i]==' ' && bQuote==0) ||
+		 (arg[i]=='\'' && bQuote==1)) {
+	bQuote=0;
 	if (prec>=0) {
 	  char* pEntry= new char[i-prec+1];
 	  if (pEntry) {

@@ -61,15 +61,16 @@ AliHLTSystem::AliHLTSystem()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+  // init logging function in AliHLTLogging
+  Init(AliHLTLogging::Message);
+  SetGlobalLoggingLevel(kHLTLogDefault);
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
     env.fAllocMemoryFunc=AliHLTSystem::AllocMemory;
     env.fLoggingFunc=AliHLTLogging::Message;
     fpComponentHandler->SetEnvironment(&env);
-
-    // init logging function in AliHLTLogging
-    Init(AliHLTLogging::Message);
   } else {
     HLTFatal("can not create Component Handler");
   }

@@ -45,6 +45,11 @@ AliHLTLogging::AliHLTLogging()
   fpDefaultKeyword(NULL),
   fpCurrentKeyword(NULL)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTLogging::AliHLTLogging(const AliHLTLogging&)
@@ -53,11 +58,13 @@ AliHLTLogging::AliHLTLogging(const AliHLTLogging&)
   fpDefaultKeyword(NULL),
   fpCurrentKeyword(NULL)
 {
+  // see header file for class documentation
   HLTFatal("copy constructor untested");
 }
 
 AliHLTLogging& AliHLTLogging::operator=(const AliHLTLogging&)
 { 
+  // see header file for class documentation
   HLTFatal("assignment operator untested");
   return *this;
 }
@@ -67,10 +74,12 @@ AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
 
 AliHLTLogging::~AliHLTLogging()
 {
+  // see header file for class documentation
 }
 
 int AliHLTLogging::Init(AliHLTfctLogging pFun) 
 { 
+  // see header file for class documentation
   if (fLoggingFunc!=NULL && fLoggingFunc!=pFun) {
     (*fLoggingFunc)(NULL/*fParam*/, kHLTLogWarning, "AliHLTLogging::Init", "no key", "overriding previously initialized logging function");    
   }
@@ -78,7 +87,9 @@ int AliHLTLogging::Init(AliHLTfctLogging pFun)
   return 0;
 }
 
-int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message) {
+int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message) 
+{
+  // see header file for class documentation
   int iResult=0;
   if (param==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
@@ -117,7 +128,9 @@ int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity, con
   return iResult;
 }
 
-const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) {
+const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) 
+{
+  // see header file for class documentation
   int tgtLen=0;
   int iBufferSize=LOG_BUFFER_SIZE;
   char* tgtBuffer=gAliHLTLoggingBuffer;
@@ -140,7 +153,9 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) {
   return gAliHLTLoggingBuffer;
 }
 
-int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) {
+int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) 
+{
+  // see header file for class documentation
   int iResult=CheckFilter(severity);
   if (iResult>0) {
     va_list args;
@@ -156,6 +171,8 @@ int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity, const char* orig
 
 int AliHLTLogging::LoggingVarargs( AliHLTComponentLogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const
 {
+  // see header file for class documentation
+
   int iResult=CheckFilter(severity);
   if (iResult>0) {
     int iMaxSize=LOG_BUFFER_SIZE-1;
@@ -198,6 +215,22 @@ int AliHLTLogging::LoggingVarargs( AliHLTComponentLogSeverity severity, const ch
 
 int AliHLTLogging::CheckFilter(AliHLTComponentLogSeverity severity) const
 {
+  // see header file for class documentation
+
   int iResult=severity==kHLTLogNone || (severity&fGlobalLogFilter)>0 && (severity&fLocalLogFilter)>0;
   return iResult;
+}
+
+void AliHLTLogging::SetGlobalLoggingLevel(AliHLTComponentLogSeverity level)
+{
+  // see header file for class documentation
+
+  fGlobalLogFilter=level;
+}
+
+void AliHLTLogging::SetLocalLoggingLevel(AliHLTComponentLogSeverity level)
+{
+  // see header file for class documentation
+
+  fLocalLogFilter=level;
 }

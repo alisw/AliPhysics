@@ -212,8 +212,14 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockD
     for ( unsigned long i = 0; i < count; i++ ) {
 	(*outputBlocks)[i] = blocks[i];
 	if (blocks[i].fDataType==kAliHLTAnyDataType) {
+	  (*outputBlocks)[i].fDataType=GetOutputDataType();
+	  /* data type was set to the output data type by the PubSub AliRoot
+	     Wrapper component, if data type of the block was ********:****.
+	     Now handled by the component base class in order to have same
+	     behavior when running embedded in AliRoot
 	  memset((*outputBlocks)[i].fDataType.fID, '*', kAliHLTComponentDataTypefIDsize);
 	  memset((*outputBlocks)[i].fDataType.fOrigin, '*', kAliHLTComponentDataTypefOriginSize);
+	  */
 	}
     }
     *blockCount = count;
@@ -237,7 +243,10 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<Al
     vector<AliHLTComponentDataType> ctlist;
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(ctlist);
     vector<AliHLTComponentDataType>::iterator type=ctlist.begin();
+    //AliHLTComponentDataType ouptdt=GetOutputDataType();
+    //PrintDataTypeContent(ouptdt, "publisher \'%s\'");
     while (type!=ctlist.end() && iResult==0) {
+      //PrintDataTypeContent((*type), "consumer \'%s\'");
       if ((*type)==GetOutputDataType() ||
 	  (*type)==kAliHLTAnyDataType) {
 	if (tgtList) tgtList->push_back(*type);
@@ -251,6 +260,26 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<Al
     iResult=-EINVAL;
   }
   return iResult;
+}
+
+void AliHLTComponent::PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format) const
+{
+  const char* fmt="publisher \'%s\'";
+  if (format) fmt=format;
+  HLTMessage(fmt, (DataType2Text(dt)).c_str());
+  HLTMessage("%x %x %x %x %x %x %x %x : %x %x %x %x", 
+	     dt.fID[0],
+	     dt.fID[1],
+	     dt.fID[2],
+	     dt.fID[3],
+	     dt.fID[4],
+	     dt.fID[5],
+	     dt.fID[6],
+	     dt.fID[7],
+	     dt.fOrigin[0],
+	     dt.fOrigin[1],
+	     dt.fOrigin[2],
+	     dt.fOrigin[3]);
 }
 
 void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) const
