@@ -80,8 +80,8 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   delete fPedestals;
   fPedestals = new AliMUON2DMap(kTRUE);
   
-  AliInfo(Form("Reading pedestal files for Run %d startTime %ld endTime %ld",
-               run,startTime,endTime));
+  Master()->Log(Form("Reading pedestal files for Run %d startTime %ld endTime %ld",
+                     run,startTime,endTime));
   
   TList* sources = Master()->GetFileSources(kSystem,kId);
   TIter next(sources);
@@ -92,7 +92,7 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
     Bool_t ok = ReadFile(fileName.Data());
     if (!ok)
     {
-      AliError(Form("Could not read file %s",fileName.Data()));
+      Master()->Log(Form("Could not read file %s",fileName.Data()));
     }
   }
   delete sources;
@@ -151,11 +151,15 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
   // Return kFALSE if reading was not successfull.
   //
   
-  AliInfo(Form("Reading %s",filename));
+  TString sFilename(gSystem->ExpandPathName(filename));
   
-  std::ifstream in(gSystem->ExpandPathName(filename));
-  if (!in.good()) return kFALSE;
+  Master()->Log(Form("Reading %s",sFilename.Data()));
   
+  std::ifstream in(sFilename.Data());
+  if (!in.good()) 
+  {
+    return kFALSE;
+  }
   char line[80];
   Int_t busPatchID, manuID, manuChannel;
   Float_t pedMean, pedSigma;
