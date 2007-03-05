@@ -1118,8 +1118,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
 // Replace the volume shape with a composite shape
 // with substracted overlap with beam shield (YMOT)
 
-  if ( gMC->IsRootGeometrySupported() &&
-       TString(gMC->ClassName()) != "TGeant4") { 
+  if ( gMC->IsRootGeometrySupported() ) { 
 
     // Get shape
     TGeoVolume* mlayer 

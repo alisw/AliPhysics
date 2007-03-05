@@ -529,8 +529,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
 {
 /// Construct geometry using geometry builders.
 
-  if ( gMC->IsRootGeometrySupported() && 
-       TString(gMC->ClassName()) != "TGeant4" ) {
+  if ( gMC->IsRootGeometrySupported() ) {
        
    CreateGeometryWithTGeo();
   } 
@@ -603,8 +602,7 @@ void AliMUONGeometryBuilder::WriteSVMaps(const TString& fileName,
         = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
 
       Bool_t writeEnvelopes = false;
-      if ( gMC->IsRootGeometrySupported() &&
-           TString(gMC->ClassName()) != "TGeant4") writeEnvelopes = true;
+      if ( gMC->IsRootGeometrySupported() ) writeEnvelopes = true;
 
       builder->RebuildSVMaps(writeEnvelopes);
     }  
