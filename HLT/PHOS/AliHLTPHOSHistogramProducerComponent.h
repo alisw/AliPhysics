@@ -16,7 +16,7 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
 {
  public:
   AliHLTPHOSHistogramProducerComponent();
-
+  
   //  ~AliHLTPHOSHistogramProducerComponent();
   virtual ~AliHLTPHOSHistogramProducerComponent();
   AliHLTPHOSHistogramProducerComponent(const AliHLTPHOSHistogramProducerComponent & );
@@ -29,11 +29,11 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   virtual int DoDeinit();
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
   
- void DumpData(int gain);
- 
- int GetEquippmentId();
- virtual const char* GetComponentID();
- virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  void DumpData(int gain);
+  
+  int GetEquippmentId();
+  virtual const char* GetComponentID();
+  virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   void SetEquippmentId(int id);

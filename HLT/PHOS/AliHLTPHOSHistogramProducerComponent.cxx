@@ -1,8 +1,9 @@
 /**************************************************************************
  * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
- * Author: Per Thomas Hille for the ALICE HLT Project.                    *
- * Contributors are mentioned in the code where appropriate.              *
+ * Authors: Boris Polichtchouk & Per Thomas Hille for the ALICE           *
+ * offline/HLT Project. Contributors are mentioned in the code where      *
+ * appropriate.                                                           *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -30,6 +31,13 @@ const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::outputDataT
 
 AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
 
+/*************************************************************************
+* Class AliHLTPHOSHistogramProducerComponent accumulating histograms     *
+* with amplitudes per PHOS channel                                       *
+* It is intended to run at the HLT farm                                  *
+* and it fills the histograms with amplitudes per channel.               * 
+* Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
+**************************************************************************/
 AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTProcessor(), fEventCount(0),  fEquippmentID(0)
 {
   Reset();
@@ -133,7 +141,8 @@ int  AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventDa
       int tmpZ;
       int tmpX;
 
-      for(int i= 0; i< tmpCnt; i ++)
+      //      for(int i= 0; i< tmpCnt; i ++)
+      for(int i= 0; i <= tmpCnt; i ++)
 	{
 	  tmpZ =  cellDataPtr->fValidData[i].fZ + N_ZROWS_RCU*tmpRcuZ;
 	  tmpX =  cellDataPtr->fValidData[i].fX + N_XCOLUMNS_RCU*tmpRcuX;
