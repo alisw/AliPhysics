@@ -3504,7 +3504,15 @@ void AliTRDtracker::CookdEdxTimBin(AliTRDtrack &TRDtrack)
     }
     Int_t detector  = pTRDcluster->GetDetector();
     Int_t iPlane    = fGeom->GetPlane(detector);
+    if (iPlane >= AliESDtrack::kNPlane) {
+      AliError(Form("Wrong plane %d",iPlane));
+      continue;
+    }
     Int_t iSlice    = tb * AliESDtrack::kNSlice / AliTRDtrack::kNtimeBins;
+    if (iSlice >= AliESDtrack::kNSlice) {
+      AliError(Form("Wrong slice %d",iSlice));
+      continue;
+    }
     clscharge[iPlane][iSlice] = clscharge[iPlane][iSlice] + charge;
     if (charge > maxclscharge[iPlane]) {
       maxclscharge[iPlane] = charge;
