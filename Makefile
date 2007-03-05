@@ -96,7 +96,7 @@ ALIROOTMODULES := STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
       JETAN HLT LHC ESDCheck
 
 ifneq ($(wildcard $(ROOTSYS)/include/TGLIncludes.h),)
-MODULES += EVE
+ALIROOTMODULES += EVE
 endif 
 
 ifeq ($(findstring TFluka,$(MAKECMDGOALS)),TFluka)
