@@ -711,6 +711,9 @@ Bool_t AliReconstruction::Run(const char* input)
     esd->SetMagneticField(AliTracker::GetBz());
     hltesd->SetMagneticField(AliTracker::GetBz());
 
+    // Fill raw-data error log into the ESD
+    if (fRawReader) FillRawDataErrorLog(iEvent,esd);
+
     // vertex finder
     if (fRunVertexFinder) {
       if (!ReadESD(esd, "vertex")) {
@@ -2085,4 +2088,26 @@ void AliReconstruction::WriteAlignmentData(AliESD* esd)
     fTracker[3]->UnloadClusters();
     fLoader[3]->UnloadRecPoints();
   }
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESD* esd)
+{
+  // The method reads the raw-data error log
+  // accumulated within the rawReader.
+  // It extracts the raw-data errors related to
+  // the current event and stores them into
+  // a TClonesArray inside the esd object.
+
+  if (!fRawReader) return;
+
+  for(Int_t i = 0; i < fRawReader->GetNumberOfErrorLogs(); i++) {
+
+    AliRawDataErrorLog *log = fRawReader->GetErrorLog(i);
+    if (!log) continue;
+    if (iEvent != log->GetEventNumber()) continue;
+
+    esd->AddRawDataErrorLog(log);
+  }
+
 }

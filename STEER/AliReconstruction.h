@@ -130,6 +130,7 @@ private:
 
   void           WriteAlignmentData(AliESD* esd);
 
+  void           FillRawDataErrorLog(Int_t iEvent, AliESD* esd);
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
