@@ -745,15 +745,14 @@ Bool_t AliReconstruction::Run(const char* input)
 
     // barrel tracking
     if (!fRunTracking.IsNull()) {
-      if (!fRunMuonTracking) {
-	if (!ReadESD(esd, "tracking")) {
-	  if (!RunTracking(esd)) {
-	    if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
-	  }
-	  if (fCheckPointLevel > 0) WriteESD(esd, "tracking");
+      if (!ReadESD(esd, "tracking")) {
+	if (!RunTracking(esd)) {
+	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
 	}
+	if (fCheckPointLevel > 0) WriteESD(esd, "tracking");
       }
     }
+
     // fill ESD
     if (!fFillESD.IsNull()) {
       if (!FillESD(esd, fFillESD)) {
