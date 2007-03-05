@@ -8,6 +8,6 @@
 #pragma link C++ class AliAnaGammaIsolCut+;
 #pragma link C++ class AliAnaGammaHadron+;
 #pragma link C++ class AliAnaGammaJet+;
-#pragma link C++ class AliTriggerPHOS+;
+#pragma link C++ class AliAnaCaloTrigger+;
 
 #endif
