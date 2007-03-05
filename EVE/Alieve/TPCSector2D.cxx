@@ -138,7 +138,7 @@ void TPCSector2D::PadSelected(Int_t row, Int_t pad)
 
 void TPCSector2D::Paint(Option_t* )
 {
-  if(fRnrElement == kFALSE)
+  if(fRnrSelf == kFALSE)
     return;
 
   TBuffer3D buffer(TBuffer3DTypes::kGeneric);

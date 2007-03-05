@@ -46,7 +46,7 @@ namespace Alieve {
 		kClusters = 2,
 		kESDs = 3 
 	};
-	class TRDLoader : public Reve::RenderElementListBase, public TNamed
+	class TRDLoader : public Reve::RenderElement, public TNamed
 	{
 	friend class TRDLoaderEditor;
 	public:
@@ -62,7 +62,6 @@ namespace Alieve {
 		virtual Bool_t	LoadHits(TTree *tH);
 		virtual Bool_t	LoadTracklets(TTree *tT);
 		virtual Bool_t	Open(const char *file, const char *dir = ".");
-		virtual void 		Paint(Option_t *option="");
 		virtual void		Unload();
 		
 	protected:

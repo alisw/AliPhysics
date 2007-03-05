@@ -118,11 +118,12 @@ Color_t get_pdg_color(Int_t pdg){
 
 // Create mother and daughters tracks with given label.
 
-Reve::TrackList*
+Reve::RenderElement*
 kine_track(Int_t  label,
 	   Bool_t import_mother    = kTRUE,
-	   Bool_t import_daughters = kTRUE,
-	   Reve::TrackList*   cont = 0)
+           Bool_t import_daughters = kTRUE,
+           Reve::RenderElement*    cont = 0)
+
 {
   if (label < 0) {
     Warning("kine_track", "label not set.");
@@ -136,6 +137,10 @@ kine_track(Int_t  label,
 
   if (import_mother || (import_daughters && p->GetNDaughters()))
   {
+    Track* toptrack = 0;
+    TrackList* tracklist = 0;  
+    TrackRnrStyle* rs = 0;
+
     if (cont == 0)
     {
       cont = new TrackList(Form("Kinematics of %d", label, p->GetNDaughters()));
@@ -145,21 +150,41 @@ kine_track(Int_t  label,
       rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
       char tooltip[1000];
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
-      cont->SetTitle(tooltip);  
+      cont->SetTitle(tooltip);
       cont->SelectByPt(0.2, 100);
-      rnrStyle->fColor   = 8;  
-      rnrStyle->fMaxOrbs = 8;  
+      rnrStyle->fColor   = 8;
+      rnrStyle->fMaxOrbs = 8;
       cont->SetEditPathMarks(kTRUE);
       gReve->AddRenderElement(cont);
+      rs = cont->GetRnrStyle();
     }
-   
+    else {
+      // check if argument is TrackList
+      Reve::Track* t = dynamic_cast<Reve::Track*>(cont);
+      if(t) 
+      {
+	rs = t->GetRnrStyle();
+      }
+      else {
+        Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(cont);
+        if(l)
+	{
+	  rs = l->GetRnrStyle();
+	}
+        else {
+	  Error("kine_tracks.C", "TrackRenderStyle not set.");
+	}
+      }
+    }
+
     if (import_mother)
     {
-      Track* track = new Reve::Track(p, label, cont->GetRnrStyle());  
+      Track* track = new Reve::Track(p, label, rs);  
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), label);
       track->SetName(form);
       gReve->AddRenderElement(cont, track);
+
     }
 
     if (import_daughters && p->GetNDaughters()) 
@@ -167,30 +192,18 @@ kine_track(Int_t  label,
       for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
       {	
 	TParticle* dp = stack->Particle(d);
-	Track* track = new Reve::Track(dp, d, cont->GetRnrStyle());  
+	Track* track = new Reve::Track(dp, d, rs);  
 	char form[1000];
 	sprintf(form,"%s [%d]", dp->GetName(), d);
 	track->SetName(form);
+        track->MakeTrack();
 	gReve->AddRenderElement(cont, track);
       }
     }
   }
 
-  if (cont)
-  {
-    // set path marks
-    if(cont->GetEditPathMarks())
-    {
-      Alieve::KineTools kt; 
-      rl->LoadTrackRefs();
-      kt.SetPathMarks(cont, stack, rl->TreeTR());
-    }
-    // update list tree
-    cont->UpdateItems();
-    cont->MakeTracks();
-    cont->MakeMarkers();
-  }
-
+  cont->UpdateItems();
   gReve->Redraw3D();
   return cont;
 }
+

@@ -30,7 +30,7 @@ ClassImp(TRDNode)
 
 //________________________________________________________
 TRDNode::TRDNode(const char *typ, Int_t det) :
-  Reve::RenderElementListBase(), TRDModule(typ, det)
+  Reve::RenderElement(), TRDModule(typ, det)
 {
 }
 
@@ -83,16 +83,16 @@ void TRDNode::Expand()
 //________________________________________________________
 void TRDNode::EnableListElements()
 {
-	SetRnrElement(kTRUE);
+	SetRnrSelf(kTRUE);
 	TRDNode *node = 0x0;
 	TRDChamber *chmb = 0x0;	
 	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<TRDNode*>(*iter))){
-			node->SetRnrElement(kTRUE);
+			node->SetRnrSelf(kTRUE);
 			node->EnableListElements();
 		}
-		if((chmb = dynamic_cast<TRDChamber*>(*iter))) chmb->SetRnrElement(kTRUE);
+		if((chmb = dynamic_cast<TRDChamber*>(*iter))) chmb->SetRnrSelf(kTRUE);
 		iter++;
 	}
 	gReve->Redraw3D();
@@ -101,16 +101,16 @@ void TRDNode::EnableListElements()
 //________________________________________________________
 void TRDNode::DisableListElements()
 {
-	SetRnrElement(kFALSE);
+	SetRnrSelf(kFALSE);
 	TRDNode *node = 0x0;
 	TRDChamber *chmb = 0x0;	
 	List_i iter = fChildren.begin();
 	while(iter != fChildren.end()){
 		if((node = dynamic_cast<TRDNode*>(*iter))){
-			node->SetRnrElement(kFALSE);
+			node->SetRnrSelf(kFALSE);
 			node->DisableListElements();
 		}
-		if((chmb = dynamic_cast<TRDChamber*>(*iter))) chmb->SetRnrElement(kFALSE);
+		if((chmb = dynamic_cast<TRDChamber*>(*iter))) chmb->SetRnrSelf(kFALSE);
 		iter++;
 	}
 	gReve->Redraw3D();
@@ -370,7 +370,7 @@ void TRDChamber::LoadTracklets(TObjArray *tracks)
 void	TRDChamber::Paint(Option_t* option)
 {
 /*	Info("Paint()", Form("%s", GetName()));*/
-	if(!fRnrElement) return;
+	if(!fRnrSelf) return;
 	if(fDigits && fRnrDigits){
 		if(kDigitsNeedRecompute){
 			fDigits->ComputeRepresentation();

@@ -77,7 +77,7 @@ void TPCSector3D::ComputeBBox()
 
 void TPCSector3D::Paint(Option_t* /*option*/)
 {
-  if(fRnrElement == kFALSE)
+  if(fRnrSelf == kFALSE)
     return;
 
   TBuffer3D buffer(TBuffer3DTypes::kGeneric);

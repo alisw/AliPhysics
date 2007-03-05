@@ -2,7 +2,8 @@
 
 Reve::PointSet*
 trd_hits(const char *varexp    = "fX:fY:fZ",
-	 const char *selection = "")
+	 const char *selection = "",
+	 RenderElement* cont = 0)
 {
   AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
   rl->LoadHits("TRD");
@@ -20,7 +21,7 @@ trd_hits(const char *varexp    = "fX:fY:fZ",
   TPointSelector ps(ht, points, varexp, selection);
   ps.Select();
 
-  if (points->Size() == 0) {
+  if (points->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
     Warning("trd_hits", Form("No hits match '%s'", selection));
     delete points;
     return 0;
@@ -32,7 +33,11 @@ trd_hits(const char *varexp    = "fX:fY:fZ",
   points->SetMarkerSize(.5);
   points->SetMarkerColor((Color_t)7);
 
-  gReve->AddRenderElement(points);
+  if(cont)
+    gReve->AddRenderElement(cont, points);
+  else 
+    gReve->AddRenderElement(points);
+
   gReve->Redraw3D();
 
   return points;

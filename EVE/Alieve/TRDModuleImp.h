@@ -73,7 +73,7 @@ namespace Alieve {
 	};
 
 	
-	class TRDNode : public Reve::RenderElementListBase, public TRDModule
+	class TRDNode : public Reve::RenderElement, public TRDModule
 	{
 	public:
 		TRDNode(const char *typ, Int_t det=0);

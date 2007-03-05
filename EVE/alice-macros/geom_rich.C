@@ -6,7 +6,7 @@ void geom_rich()
 
   gGeoManager = gReve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
-  Reve::RenderElementList* list = new Reve::RenderElementList("HMPID");
+  Reve::RenderElementList* list = new Reve::RenderElementList("RICH");
   gReve->AddGlobalRenderElement(list);
 
   for(Int_t i=1; i<=7; ++i) {
@@ -15,7 +15,7 @@ void geom_rich()
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     //PH TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(Form("HMPID_%d", i));
     char form[1000];
-    sprintf(form,"HMPID_%d", i);
+    sprintf(form,"RICH_%d", i);
     TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);
 
     Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);

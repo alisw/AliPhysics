@@ -87,7 +87,7 @@ void MUONChamber::Paint(Option_t*)
   // draw...
   //
 
-  if(fRnrElement == kFALSE)
+  if(fRnrSelf == kFALSE)
     return;
 
   TBuffer3D buffer(TBuffer3DTypes::kGeneric);

@@ -41,7 +41,7 @@ ClassImp(Alieve::TRDLoaderEditor)
 
 
 //________________________________________________________
-TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElementListBase(), TNamed(n,t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
+TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElement(), TNamed(n,t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
 {	
 	kLoadHits = kFALSE;
 	kLoadDigits = kFALSE;
@@ -88,7 +88,7 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 	List_i ichmb;
 	ichmb = fChildren.begin();
 	while(ichmb != fChildren.end()){
-		(*ichmb)->SetRnrElement(kFALSE);
+		(*ichmb)->SetRnrSelf(kFALSE);
 		ichmb++;
 	}
 
@@ -99,7 +99,7 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 		ichmb = find_if(fChildren.begin(), fChildren.end(), ID<RenderElement*>(ism));
 		if(ichmb != fChildren.end()){
 			SM = (TRDNode*)(*ichmb);
-			SM->SetRnrElement(kTRUE);
+			SM->SetRnrSelf(kTRUE);
 		}else{
 			gReve->AddRenderElement(this, SM = new TRDNode("SM", ism));
 			SM->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("Supermodule %2d", ism));
@@ -108,7 +108,7 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 			ichmb = find_if(SM->begin(), SM->end(), ID<RenderElement*>(istk));
 			if(ichmb != SM->end()){
 				STK = (TRDNode*)(*ichmb);
-				STK->SetRnrElement(kTRUE);
+				STK->SetRnrSelf(kTRUE);
 			}else{
 				gReve->AddRenderElement(SM, STK = new TRDNode("Stack", istk));
 				STK->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("SM %2d Stack %1d", ism, istk));
@@ -116,7 +116,7 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 			for(int ily=ily_start; ily<ily_stop; ily++){
 				det = fGeo->GetDetector(ily, istk, ism);
 				ichmb = find_if(STK->begin(), STK->end(), ID<RenderElement*>(det));
-				if(ichmb != STK->end()) (*ichmb)->SetRnrElement(kTRUE);
+				if(ichmb != STK->end()) (*ichmb)->SetRnrSelf(kTRUE);
 				else{
 					gReve->AddRenderElement(STK, CHMB = new TRDChamber(det));
 					CHMB->SetGeometry(fGeo);
@@ -303,16 +303,6 @@ Bool_t	TRDLoader::Open(const char *filename, const char *dir)
 	}
 	
 	return kTRUE;
-}
-
-//________________________________________________________
-void TRDLoader::Paint(Option_t *option)
-{
-	List_i ichmb = fChildren.begin();
-	while(ichmb != fChildren.end()){
-		(dynamic_cast<TRDModule*>(*ichmb))->Paint(option);
-		ichmb++;
-	}
 }
 
 //________________________________________________________

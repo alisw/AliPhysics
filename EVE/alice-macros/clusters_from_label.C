@@ -1,6 +1,6 @@
 // $Id$
 
-Reve::PointSet* clusters_from_label(Int_t label=0)
+Reve::PointSet* clusters_from_label(Int_t label=0, RenderElement* cont=0)
 {
   AliESD* esd = Alieve::Event::AssertESD();
   Reve::PointSet* clusters = new Reve::PointSet(64);
@@ -27,6 +27,13 @@ Reve::PointSet* clusters_from_label(Int_t label=0)
       }
     }
   }
+
+  if(clusters->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
+    Warning("clusters_from_label", Form("No clusters match label '%d'", label));
+    delete clusters;
+    return 0;
+  }
+
   clusters->SetMarkerStyle(2);
   clusters->SetMarkerSize(0.5);
   clusters->SetMarkerColor(4);
@@ -38,8 +45,15 @@ Reve::PointSet* clusters_from_label(Int_t label=0)
   sprintf(form,"Clusters lab=%d", label);
   clusters->SetName(form);
 
+  char tip[1000];
+  sprintf(tip,"N=%d", clusters->Size());
+  clusters->SetTitle(tip);
+
   using namespace Reve;
-  gReve->AddRenderElement(clusters);
+  if(cont)
+    gReve->AddRenderElement(cont, clusters);
+  else
+    gReve->AddRenderElement(clusters);
   gReve->Redraw3D();
 
   return clusters;
