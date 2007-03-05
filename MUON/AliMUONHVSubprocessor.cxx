@@ -57,15 +57,6 @@ AliMUONHVSubprocessor::~AliMUONHVSubprocessor()
 }
 
 //_____________________________________________________________________________
-void 
-AliMUONHVSubprocessor::Initialize(Int_t run, 
-                                  UInt_t startTime, UInt_t endTime)
-{
-  /// Initialisation for a given run
-  AliDebug(1,Form("run %d startTime %ld endtime %ld",run,startTime,endTime));
-}
-
-//_____________________________________________________________________________
 UInt_t
 AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
 {
@@ -118,6 +109,9 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
 
   TIter next(&aliases);
   TObjString* alias;
+  Bool_t kNoAliases(kTRUE);
+  Int_t aliasNotFound(0);
+  Int_t valueNotFound(0);
   
   while ( ( alias = static_cast<TObjString*>(next()) ) ) 
   {
@@ -125,14 +119,16 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
     TPair* hvPair = static_cast<TPair*>(dcsAliasMap->FindObject(aliasName.Data()));
     if (!hvPair)
     {
-      Master()->Log(Form("Did not find expected alias (%s)",aliasName.Data()));
+      ++aliasNotFound;
+//      Master()->Log(Form("WARNING Did not find expected alias (%s)",aliasName.Data()));
     }
     else
     {
       TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
       if (!values)
       {
-        Master()->Log(Form("Could not get values for alias (%s)",aliasName.Data()));
+        ++valueNotFound;
+//        Master()->Log(Form("WARNING Could not get values for alias (%s)",aliasName.Data()));
       }
       else
       {
@@ -141,9 +137,26 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
         hv.Add(new TObjString(aliasName.Data()),values);
       }
     }
+    kNoAliases = kFALSE;
   }
   
-  Master()->Log("Aliases successfully read in");
+  if ( kNoAliases ) 
+  {
+    Master()->Log("ERROR : no DCS values found");
+    return 1;
+  }
+  
+  if ( aliasNotFound ) 
+  {
+    Master()->Log(Form("WARNING %d aliases not found",aliasNotFound));
+  }
+  
+  if ( valueNotFound )
+  {
+    Master()->Log(Form("WARNING %d values not found",valueNotFound));
+  }
+  
+  Master()->Log("INFO Aliases successfully read in");
   
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
