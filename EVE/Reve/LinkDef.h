@@ -71,8 +71,8 @@
 #pragma link C++ class Reve::RenderElement+;
 #pragma link C++ class Reve::RenderElement::ListTreeInfo+;
 #pragma link C++ class Reve::RenderElementObjPtr+;
-#pragma link C++ class Reve::RenderElementListBase+;
 #pragma link C++ class Reve::RenderElementList+;
+#pragma link C++ class Reve::PadPrimitive+;
 #pragma link C++ class Reve::RenderElementEditor+;
 
 #pragma link C++ class std::list<Reve::RenderElement*>;

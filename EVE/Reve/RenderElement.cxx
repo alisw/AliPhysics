@@ -2,10 +2,12 @@
 
 #include "RenderElement.h"
 #include "RGTopFrame.h"
+#include "RGEditor.h"
 
 #include <TColor.h>
 #include <TCanvas.h>
 #include <TGListTree.h>
+#include <TGPicture.h>
 #include <THashList.h>
 
 #include <algorithm>
@@ -19,32 +21,41 @@ using namespace Reve;
 
 ClassImp(RenderElement)
 
+const TGPicture* RenderElement::fgRnrIcons[4] = { 0 };
+
 RenderElement::RenderElement() :
-  fRnrElement          (kTRUE),
+  fRnrSelf          (kTRUE),
+  fRnrChildren        (kTRUE),
   fMainColorPtr        (0),
   fItems               (),
   fParents             (),
   fDestroyOnZeroRefCnt (kTRUE),
-  fDenyDestroy         (kFALSE)
+  fDenyDestroy         (kFALSE),
+  fChildren(0)
 {}
 
 RenderElement::RenderElement(Color_t& main_color) :
-  fRnrElement          (kTRUE),
+  fRnrSelf          (kTRUE),
+  fRnrChildren        (kTRUE),
   fMainColorPtr        (&main_color),
   fItems               (),
   fParents             (),
   fDestroyOnZeroRefCnt (kTRUE),
-  fDenyDestroy         (kFALSE)
+  fDenyDestroy         (kFALSE),
+  fChildren(0)
 {}
 
 RenderElement::~RenderElement()
 {
   static const Exc_t _eh("RenderElement::RenderElement ");
 
+  for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
+    DestroyListSubTree(i->fTree, i->fItem);
+  }
+  RemoveElements();
+
   for(List_i p=fParents.begin(); p!=fParents.end(); ++p) {
-    RenderElementListBase* l = dynamic_cast<RenderElementListBase*>(*p);
-    if(l)
-      l->RemoveElementLocal(this);
+    (*p)->RemoveElementLocal(this);
   }
   fParents.clear();
 
@@ -52,18 +63,6 @@ RenderElement::~RenderElement()
     i->fTree->DeleteItem(i->fItem);
     gClient->NeedRedraw(i->fTree);
   }
-}
-
-void RenderElement::Destroy()
-{
-  static const Exc_t eH("RenderElement::Destroy ");
-
-  if(fDenyDestroy)
-    throw(eH + "this object is protected against destruction.");
-
-  gReve->PreDeleteRenderElement(this);
-  delete this;
-  gReve->Redraw3D();
 }
 
 /**************************************************************************/
@@ -88,16 +87,6 @@ void RenderElement::RemoveParent(RenderElement* re)
 
 /**************************************************************************/
 
-TObject* RenderElement::GetObject(Exc_t eh)
-{
-  TObject* obj = dynamic_cast<TObject*>(this);
-  if(obj == 0)
-    throw(eh + "not a TObject.");
-  return obj;
-}
-
-/**************************************************************************/
-
 TGListTreeItem* RenderElement::AddIntoListTree(TGListTree* ltree,
 					       TGListTreeItem* parent_lti)
 {
@@ -107,7 +96,7 @@ TGListTreeItem* RenderElement::AddIntoListTree(TGListTree* ltree,
   TGListTreeItem* item = ltree->AddItem(parent_lti, tobj->GetName(), this,
 					0, 0, kTRUE);
   gClient->NeedRedraw(ltree);
-  item->CheckItem(GetRnrElement());
+  item->CheckItem(GetRnrSelf());
   
   if(fMainColorPtr != 0) item->SetColor(GetMainColor());
   item->SetTipText(tobj->GetTitle());
@@ -150,6 +139,8 @@ Bool_t RenderElement::RemoveFromListTree(TGListTree* ltree,
     return kFALSE;
   }
 }
+
+/**************************************************************************/
 
 RenderElement::sLTI_i RenderElement::FindItem(TGListTree* ltree)
 {
@@ -195,13 +186,21 @@ void RenderElement::UpdateItems()
   for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
     i->fItem->Rename(tobj->GetName());
     i->fItem->SetTipText(tobj->GetTitle());
-    i->fItem->CheckItem(fRnrElement);
+    i->fItem->CheckItem(fRnrSelf);
     if(fMainColorPtr != 0) i->fItem->SetColor(GetMainColor());
     gClient->NeedRedraw(i->fTree);
   }
 }
 
 /**************************************************************************/
+
+TObject* RenderElement::GetObject(Exc_t eh)
+{
+  TObject* obj = dynamic_cast<TObject*>(this);
+  if(obj == 0)
+    throw(eh + "not a TObject.");
+  return obj;
+}
 
 void RenderElement::SpawnEditor()
 {
@@ -217,39 +216,87 @@ void RenderElement::ExportToCINT(Text_t* var_name)
 }
 
 /**************************************************************************/
-/*
-void RenderElement::DumpSourceObject()
+
+void RenderElement::PadPaint(Option_t* option)
 {
-  TObject* o = GetSourceObject();
-  if(o == 0) {
-    printf("Source object not set.\n");
-  } else {
-    o->Dump();
+  if ( GetRnrSelf() && GetObject() ) 
+    GetObject()->Paint(option);
+  
+
+  if (GetRnrChildren()) {
+    for(List_i i=BeginChildren(); i!=EndChildren(); ++i) {
+      (*i)->PadPaint(option);
+    }
   }
 }
 
-void RenderElement::InspectSourceObject()
-{
-  TObject* o = GetSourceObject();
-  if(o == 0) {
-    printf("Source object not set.\n");
-  } else {
-    o->Inspect();
-  }
-}
-*/
 /**************************************************************************/
 
-void RenderElement::SetRnrElement(Bool_t rnr)
+void RenderElement::SetRnrSelf(Bool_t rnr)
 {
-  if(rnr != fRnrElement) {
-    fRnrElement = rnr;
-    for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
+  if(rnr != fRnrSelf) {
+    fRnrSelf = rnr;
+    
+    for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
+    {
       if (i->fItem->IsChecked() != rnr) {
-        i->fItem->CheckItem(fRnrElement);
+        i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(1,fRnrChildren), GetCheckBoxPicture(0,fRnrChildren));
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,14,0)
+        // cover undesired behavior TGListTree::UpdateChecked
+	if(i->fItem->GetParent()) {
+	  RenderElement* p = (RenderElement*) i->fItem->GetParent()->GetUserData();
+	  if(p) 
+	    i->fItem->GetParent()->SetCheckBoxPictures(GetCheckBoxPicture(1, p->GetRnrChildren()),
+						       GetCheckBoxPicture(0, p->GetRnrChildren()));
+	}
+#endif
+        i->fItem->CheckItem(fRnrSelf);
         gClient->NeedRedraw(i->fTree);
       }
     }
+  }
+}
+
+void RenderElement::SetRnrChildren(Bool_t rnr)
+{
+  if(rnr != fRnrChildren) {
+    fRnrChildren = rnr; 
+
+    for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
+    {
+      i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(fRnrSelf, fRnrChildren), GetCheckBoxPicture(fRnrSelf,fRnrChildren ));
+      gClient->NeedRedraw(i->fTree);
+    }
+  }
+}
+
+void RenderElement::ToggleRnrState()
+{
+  if( fRnrSelf || fRnrChildren ) 
+  {
+    fRnrSelf = kFALSE;
+    fRnrChildren = kFALSE;  
+  }
+  else { 
+    fRnrSelf = kTRUE;
+    fRnrChildren = kTRUE; 
+  }
+
+  for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
+  {
+    i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(1,1), GetCheckBoxPicture(0,0));
+    i->fItem->CheckItem(fRnrSelf);
+
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,14,0)
+    // cover undesired behavior TGListTree::UpdateChecked
+    if(i->fItem->GetParent()) {
+      RenderElement* p = (RenderElement*) i->fItem->GetParent()->GetUserData();
+      if(p) 
+	i->fItem->GetParent()->SetCheckBoxPictures(GetCheckBoxPicture(1, p->GetRnrChildren()),
+						   GetCheckBoxPicture(0, p->GetRnrChildren()));
+    }
+#endif
+    gClient->NeedRedraw(i->fTree);
   }
 }
 
@@ -257,6 +304,11 @@ void RenderElement::SetRnrElement(Bool_t rnr)
 
 void RenderElement::SetMainColor(Color_t color)
 {
+  Color_t oldcol = GetMainColor();
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+    if((*i)->GetMainColor() == oldcol) (*i)->SetMainColor(color);
+  }
+
   if (fMainColorPtr) {
     *fMainColorPtr = color;
     for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
@@ -274,81 +326,25 @@ void RenderElement::SetMainColor(Pixel_t pixel)
 }
 
 /**************************************************************************/
-/**************************************************************************/
 
-ClassImp(RenderElementObjPtr)
-
-RenderElementObjPtr::RenderElementObjPtr(TObject* obj, Bool_t own) :
-  RenderElement(),
-  fObject(obj),
-  fOwnObject(own)
-{}
-
-RenderElementObjPtr::RenderElementObjPtr(TObject* obj, Color_t& mainColor, Bool_t own) :
-  RenderElement(mainColor),
-  fObject(obj),
-  fOwnObject(own)
-{}
-
-RenderElementObjPtr::~RenderElementObjPtr()
-{
-  if(fOwnObject)
-    delete fObject;
-}
-
-/**************************************************************************/
-
-TObject* RenderElementObjPtr::GetObject(Reve::Exc_t eh)
-{
-  if(fObject == 0)
-    throw(eh + "fObject not set.");
-  return fObject;
-}
-
-void RenderElementObjPtr::ExportToCINT(Text_t* var_name)
-{
-  static const Exc_t eH("RenderElementObjPtr::ExportToCINT ");
-
-  TObject* obj = GetObject(eH);
-  const char* cname = obj->IsA()->GetName();
-  gROOT->ProcessLine(Form("%s* %s = (%s*)0x%lx;", cname, var_name, cname, obj));
-}
-
-/**************************************************************************/
-/**************************************************************************/
-
-ClassImp(RenderElementListBase)
-
-RenderElementListBase::~RenderElementListBase()
-{
-  // Collapse all sub-trees
-  for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
-    DestroyListSubTree(i->fTree, i->fItem);
-    // My own items removed in ~RenderElement
-  }
-  RemoveElements();
-}
-
-/**************************************************************************/
-
-void RenderElementListBase::AddElement(RenderElement* el)
+void RenderElement::AddElement(RenderElement* el)
 {
   fChildren.push_back(el);
   el->AddParent(this);
 }
 
-void RenderElementListBase::RemoveElement(RenderElement* el)
+void RenderElement::RemoveElement(RenderElement* el)
 {
-  el->RemoveParent(this);
-  RemoveElementLocal(el);
+   el->RemoveParent(this);
+   RemoveElementLocal(el);
 }
 
-void RenderElementListBase::RemoveElementLocal(RenderElement* el)
+void RenderElement::RemoveElementLocal(RenderElement* el)
 {
   fChildren.remove(el);
 }
 
-void RenderElementListBase::RemoveElements()
+void RenderElement::RemoveElements()
 {
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     (*i)->RemoveParent(this);
@@ -358,25 +354,7 @@ void RenderElementListBase::RemoveElements()
 
 /**************************************************************************/
 
-void RenderElementListBase::DestroyElements()
-{
-  static const Exc_t eH("RenderElementListBase::DestroyElements ");
-
-  while( ! fChildren.empty()) {
-    RenderElement* c = fChildren.front();
-    try {
-      c->Destroy();
-    }
-    catch(Exc_t exc) {
-      Warning(eH.Data(), Form("element destruction failed: '%s'.", exc.Data()));
-      RemoveElement(c);
-    }
-  }
-}
-
-/**************************************************************************/
-
-Int_t RenderElementListBase::ExpandIntoListTree(TGListTree* ltree,
+Int_t RenderElement::ExpandIntoListTree(TGListTree* ltree,
 						TGListTreeItem* parent)
 {
   // Populates parent with elements.
@@ -398,7 +376,27 @@ Int_t RenderElementListBase::ExpandIntoListTree(TGListTree* ltree,
   return n;
 }
 
-Int_t RenderElementListBase::DestroyListSubTree(TGListTree* ltree,
+/**************************************************************************/
+
+void RenderElement::EnableListElements()
+{
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
+    (*i)->SetRnrSelf(kTRUE);
+
+  gReve->Redraw3D();
+}
+
+void RenderElement::DisableListElements()
+{
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
+    (*i)->SetRnrSelf(kFALSE);
+
+  gReve->Redraw3D();
+}
+
+/**************************************************************************/
+
+Int_t RenderElement::DestroyListSubTree(TGListTree* ltree,
 						TGListTreeItem* parent)
 {
   Int_t n = 0;
@@ -412,61 +410,87 @@ Int_t RenderElementListBase::DestroyListSubTree(TGListTree* ltree,
   return n;
 }
 
-/**************************************************************************/
-
-void RenderElementListBase::EnableListElements()
+void RenderElement::Destroy()
 {
-  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
-    (*i)->SetRnrElement(kTRUE);
+  static const Exc_t eH("RenderElement::Destroy ");
 
+  if(fDenyDestroy)
+    throw(eH + "this object is protected against destruction.");
+
+  gReve->PreDeleteRenderElement(this);
+  delete this;
   gReve->Redraw3D();
 }
 
-void RenderElementListBase::DisableListElements()
+void RenderElement::DestroyElements()
 {
-  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
-    (*i)->SetRnrElement(kFALSE);
+  static const Exc_t eH("RenderElement::DestroyElements ");
 
-  gReve->Redraw3D();
-}
-
-/**************************************************************************/
-
-void RenderElementListBase::SetMainColor(Color_t col)
-{
-  Color_t oldcol = GetMainColor();
-  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-    if((*i)->GetMainColor() == oldcol) (*i)->SetMainColor(col);
-  }
-  RenderElement::SetMainColor(col);
-}
-
-void RenderElementListBase::SetMainColor(Pixel_t pixel)
-{
-  // This one needed for proper calling via CINT (signals).
-
-  SetMainColor(Color_t(TColor::GetColor(pixel)));
-}
-
-/**************************************************************************/
-
-void RenderElementListBase::PaintElements(Option_t* option)
-{
-  if(fRnrElement) {
-    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-      if((*i)->GetRnrElement())
-	(*i)->GetObject()->Paint(option);
+  while( ! fChildren.empty()) {
+    RenderElement* c = fChildren.front();
+    try {
+      c->Destroy();
+    }
+    catch(Exc_t exc) {
+      Warning(eH.Data(), Form("element destruction failed: '%s'.", exc.Data()));
+      RemoveElement(c);
     }
   }
 }
 
+const TGPicture*  RenderElement::GetCheckBoxPicture(Bool_t rnrSelf, Bool_t rnrDaughters)
+{
+  Int_t idx = 0;
+  if(rnrSelf) idx = 2;
+  if( rnrDaughters ) idx ++;
+
+  return fgRnrIcons[idx];
+}
+
 /**************************************************************************/
+
+ClassImp(RenderElementObjPtr)
+
+RenderElementObjPtr::RenderElementObjPtr(TObject* obj, Bool_t own) :
+  RenderElement(),
+  fObject(obj),
+  fOwnObject(own)
+{}
+
+RenderElementObjPtr::RenderElementObjPtr(TObject* obj, Color_t& mainColor, Bool_t own) :
+  RenderElement(mainColor),
+  fObject(obj),
+  fOwnObject(own)
+{}
+
+TObject* RenderElementObjPtr::GetObject(Reve::Exc_t eh)
+{
+  if(fObject == 0)
+    throw(eh + "fObject not set.");
+  return fObject;
+}
+
+void RenderElementObjPtr::ExportToCINT(Text_t* var_name)
+{
+  static const Exc_t eH("RenderElementObjPtr::ExportToCINT ");
+
+  TObject* obj = GetObject(eH);
+  const char* cname = obj->IsA()->GetName();
+  gROOT->ProcessLine(Form("%s* %s = (%s*)0x%lx;", cname, var_name, cname, obj));
+}
+
+RenderElementObjPtr::~RenderElementObjPtr()
+{
+  if(fOwnObject)
+    delete fObject;
+}
+
 /**************************************************************************/
 
 ClassImp(RenderElementList)
 
 RenderElementList::RenderElementList(const Text_t* n, const Text_t* t, Bool_t doColor) :
-  RenderElementListBase(),
+  RenderElement(),
   TNamed(n, t),
   fColor(0),
   fDoColor(doColor)
@@ -475,3 +499,23 @@ RenderElementList::RenderElementList(const Text_t* n, const Text_t* t, Bool_t do
     SetMainColorPtr(&fColor);
   }
 }
+
+/**************************************************************************/
+
+ClassImp(PadPrimitive)
+
+PadPrimitive::PadPrimitive(const Text_t* n, const Text_t* t) :
+  RenderElement(),
+  TNamed(n, t)
+{
+}
+
+void PadPrimitive::Paint(Option_t* option)
+{
+  if(fRnrSelf) {
+    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+      (*i)->PadPaint(option);
+    }
+  }
+}
+
