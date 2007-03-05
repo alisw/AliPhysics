@@ -185,7 +185,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 		{
 		  analyzerPtr->SetData(fTmpChannelData);
 		  analyzerPtr->Evaluate(0, sampleCnt);
-		  sampleCnt = 0;
+		  //		  sampleCnt = 0;
 		  fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
 		  fOutPtr->fValidData[tmpChannelCnt].fZ  = tmpZ;
 		  fOutPtr->fValidData[tmpChannelCnt].fX  = tmpX; 
@@ -202,6 +202,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	      tmpGain =  fPHOSRawStream->IsLowGain(); 
 	      processedChannels ++;
 	    }
+
 	  
 	  if(sampleCnt == 0)
 	    {
@@ -213,6 +214,22 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 
 	}
    
+      tmpChannelCnt ++;
+      analyzerPtr->SetData(fTmpChannelData);
+      analyzerPtr->Evaluate(0, sampleCnt);
+      //		  sampleCnt = 0;
+      fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
+      fOutPtr->fValidData[tmpChannelCnt].fZ  = tmpZ;
+      fOutPtr->fValidData[tmpChannelCnt].fX  = tmpX; 
+      fOutPtr->fValidData[tmpChannelCnt].fEnergy  = analyzerPtr->GetEnergy();
+      fOutPtr->fValidData[tmpChannelCnt].fTime    = analyzerPtr->GetTiming();
+      //      tmpChannelCnt ++;
+   
+   ResetDataPtr(tmpStartIndex, sampleCnt);
+      sampleCnt = 0;
+
+
+
       fOutPtr->fCnt =  tmpChannelCnt;
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
@@ -402,15 +419,17 @@ AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt16_t equippmentID)
       fRcuZ = 1;
     }
 
+
+
   fRcuZOffset =  N_ZROWS_RCU*fRcuZ;
   fRcuXOffset =  N_XCOLUMNS_RCU*fRcuX;
 
   cout <<"********InitInfo************"<< endl;
   cout <<"AliHLTPHOSRawAnalyzerComponent::SetCoordinate"<< endl;
   cout <<"Equpippment ID =\t"<< fEquippmentID <<endl;
-  cout <<"Module ID =\t"<<  fModuleID<<endl;
-  cout <<"RCUX =\t\t" << fRcuX << endl;
-  cout <<"RCUZ =\t\t" << fRcuZ << endl;
-  cout <<"RcuZOffset = \t" <<  fRcuZOffset << endl;
-  cout <<"RcuXOffset = \t" <<  fRcuXOffset << endl << endl;
+  cout <<"Module ID =\t"<<  (int)fModuleID<<endl;
+  cout <<"RCUX =\t\t" << (int)fRcuX << endl;
+  cout <<"RCUZ =\t\t" << (int)fRcuZ << endl;
+  cout <<"RcuZOffset = \t" <<  (int)fRcuZOffset << endl;
+  cout <<"RcuXOffset = \t" <<  (int)fRcuXOffset << endl << endl;
 }
