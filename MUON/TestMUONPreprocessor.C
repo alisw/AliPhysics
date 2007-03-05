@@ -48,24 +48,30 @@
 #include "AliDCSValue.h"
 #include "TObjString.h"
 #include "TRandom.h"
-#include "AliMUONPreprocessor.h"
+#include "AliMUONTrackerPreprocessor.h"
 #include "AliCDBEntry.h"
 #include "AliMUONHVNamer.h"
 #endif
 
-void TestMUONPreprocessor(Int_t runNumber=1500)
+void TestMUONPreprocessor(Int_t runNumber=80)
 {
   // load library
   gSystem->Load("../SHUTTLE/TestShuttle/libTestShuttle.so");
   gSystem->Load("libMUONshuttle.so");
   
-  // initialize location of CDB
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
 
+  
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+
+  printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
+  printf("Test Shuttle log dir: %s\n", AliShuttleInterface::GetShuttleLogDir());
+  printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
+  printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
+  
   // Create DCS HV aliases
   TMap* dcsAliasMap = CreateDCSAliasMap();
 
@@ -94,14 +100,13 @@ void TestMUONPreprocessor(Int_t runNumber=1500)
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-  shuttle->AddInputRunParameter("RunType", "PEDESTAL_RUN"); 
-//  shuttle->AddInputRunParameter("RunType", "PHYSICS"); 
+  shuttle->AddInputRunType("MCH", "PEDESTAL_RUN"); 
   // PEDESTAL_RUN -> pedestals
   // ELECTRONICS_CALIBRATION_RUN -> gains
   // PHYSICS ? -> HV
   
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
-  new AliMUONPreprocessor("MCH", shuttle);
+  new AliMUONTrackerPreprocessor(shuttle);
 
   shuttle->Print();
   
