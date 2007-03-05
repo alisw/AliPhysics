@@ -39,66 +39,12 @@
 ClassImp(AliMUONPreprocessor)
 /// \endcond
 
-const TString  AliMUONPreprocessor::fgkTrackerDetName = "MCH";
-const TString  AliMUONPreprocessor::fgkTriggerDetName = "MTR";
-
 //_____________________________________________________________________________
-AliMUONPreprocessor::AliMUONPreprocessor(const TString& detName, 
-                                         AliShuttleInterface* shuttle) 
-: AliPreprocessor(detName.Data(),shuttle), 
-//  fSubprocessors(new TObjArray[kLast])
+AliMUONPreprocessor::AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle)
+: AliPreprocessor(detName, shuttle),
   fSubprocessors(new TObjArray())
 {
-  /// ctor. Builds the list of subtasks
-  /// Tests detector wrt to tracker or trigger to 
-  /// instantiate the correct list of subtasks, which should be : 
-  /// Tracker : 
-  /// - pedestals
-  /// - gains
-  /// - deadchannels
-  /// - gms
-  ///
-  /// Trigger : 
-  /// - masks
-  /// - lut
-  
-  if ( detName == fgkTrackerDetName ) 
-  { 
-    TString runType = shuttle->GetRunParameter("RunType");
-    if ( runType == "PEDESTAL_RUN" ) // FIXME : check the name 
-    {
-      fSubprocessors->Add(new AliMUONPedestalSubprocessor(this)); // to be called only for pedestal runs
-      Log("INFO-Will run Pedestal subprocessor");
-    }
-    else if ( runType == "ELECTRONICS_CALIBRATION_RUN" ) // FIXME : check the name 
-    {  
-      Log("WARNING-Subprocessor for gains not yet implemented");
-      //fSubprocessors->Add(new AliMUONGainSubprocessor(this)); // to be called only for gain runs
-    }
-    else if ( runType == "GMS" ) // FIXME : check the name 
-    {
-      fSubprocessors->Add(new AliMUONGMSSubprocessor(this));
-      Log("INFO-Will run GMS subprocessor");
-    }
-    else if ( runType == "PHYSICS" ) // FIXME : check the name
-    {
-      fSubprocessors->Add(new AliMUONHVSubprocessor(this)); // to be called only for physics runs
-      Log("INFO-Will run HV subprocessor");
-    }
-    else
-    {
-      Log(Form("ERROR-Unknown RunType=%",runType.Data()));
-    }
-  }
-  else if ( detName == fgkTriggerDetName ) 
-  {
-    Log("WARNING-Trigger subprocessors not yet implemented.");
-  }  
-  else 
-  { 
-    // Wrong detector name
-    Log("ERROR-Wrong detector name.");
-  }  
+  /// ctor
 }
 
 //_____________________________________________________________________________
@@ -106,6 +52,22 @@ AliMUONPreprocessor::~AliMUONPreprocessor()
 {
   /// dtor
   delete fSubprocessors;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPreprocessor::DeleteSubprocessors()
+{
+  /// Empty our subprocessor list
+  fSubprocessors->Delete();
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPreprocessor::Add(AliMUONVSubprocessor* sub)
+{
+  /// Add a subprocessor to our list of workers
+  fSubprocessors->Add(sub);
 }
 
 //_____________________________________________________________________________

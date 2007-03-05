@@ -21,10 +21,14 @@ class TObjArray;
 
 class AliMUONPreprocessor : public AliPreprocessor
 {
-public:
-  AliMUONPreprocessor(const TString& detName, AliShuttleInterface* shuttle);
+protected:
+  AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle);
   virtual ~AliMUONPreprocessor();
   
+  void Add(AliMUONVSubprocessor* subProcessor); 
+  void DeleteSubprocessors();
+  
+public:
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
   virtual UInt_t Process(TMap* dcsAliasMap);
   virtual void Print(Option_t* opt="") const;
@@ -48,16 +52,12 @@ public:
   }  
   
 private:
-  // enum ESubprocessors { kPedestal=0, kGMS=1, kLast };
-  
   AliMUONPreprocessor(const AliMUONPreprocessor& rhs);
   AliMUONPreprocessor& operator=(const AliMUONPreprocessor& rhs);
   
   AliMUONVSubprocessor* Subprocessor(Int_t i) const;
   
 private:
-  static const TString  fgkTrackerDetName;  ///< The tracker detector name
-  static const TString  fgkTriggerDetName;  ///< The trigger detector name
 
   TObjArray* fSubprocessors; ///!< sub processors to execute
   
