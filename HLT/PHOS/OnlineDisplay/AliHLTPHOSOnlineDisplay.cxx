@@ -151,7 +151,7 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 				      N_ZROWS_MOD,         0, N_ZROWS_MOD);
       fgCalibHistPtr[gain]->Reset(); 
      
-      fgHitsHistPtr[gain] = new TH2I("Homer","HLT: #pi^{0} 5 - 30Gev, Low gain",  
+      fgHitsHistPtr[gain] = new TH2I("Homer","HLT: #pi^{0} 5 - 30Gev",  
 				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
       fgHitsHistPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
@@ -432,7 +432,8 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
 	  Int_t tmpX;
 	  Int_t tmpGain;
 	  
-	  for(int i= 0; i<tmpCount; i++)
+	  //	  for(int i= 0; i<tmpCount; i++)
+	  for(int i= 0; i <= tmpCount; i++)
 	    {
 	      tmpZ = cellEnergiesPtr->fValidData[i].fZ;
 	      tmpX = cellEnergiesPtr->fValidData[i].fX;
