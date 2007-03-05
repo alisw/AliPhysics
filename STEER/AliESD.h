@@ -31,6 +31,7 @@
 #include "AliESDFMD.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
+#include "AliRawDataErrorLog.h"
 
 class AliESDfriend;
 
@@ -214,6 +215,14 @@ public:
    
   void SetVZEROData(AliESDVZERO * obj) { fESDVZERO = new AliESDVZERO(*obj); }
   AliESDVZERO *GetVZEROData(){ return fESDVZERO; }
+
+  AliRawDataErrorLog *GetErrorLog(Int_t i) const {
+    return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);
+  }
+  void  AddRawDataErrorLog(const AliRawDataErrorLog *log) {
+    new(fErrorLogs[fErrorLogs.GetEntriesFast()]) AliRawDataErrorLog(*log);
+  }
+  Int_t GetNumberOfErrorLogs()   const {return fErrorLogs.GetEntriesFast();}
    
 protected:
   AliESD(const AliESD&);
@@ -270,7 +279,9 @@ protected:
   AliESDFMD   *fESDFMD;   // FMD object containing rough multiplicity
   AliESDVZERO *fESDVZERO; // VZERO object containing rough multiplicity
 
-  ClassDef(AliESD,18)  //ESD class 
+  TClonesArray fErrorLogs;        // Raw-data reading error messages
+
+  ClassDef(AliESD,19)  //ESD class 
 };
 #endif 
 
