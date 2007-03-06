@@ -145,6 +145,23 @@ public:
   }
   const AliESDVertex *GetPrimaryVertex() const {return &fPrimaryVertex;}
 
+  void SetDiamond(const AliESDVertex *vertex) {
+    fDiamondXY[0]=vertex->GetXv();
+    fDiamondXY[1]=vertex->GetYv();
+    Double_t cov[6];
+    vertex->GetCovMatrix(cov);
+    fDiamondCovXY[0]=cov[0];
+    fDiamondCovXY[1]=cov[1];
+    fDiamondCovXY[2]=cov[2];
+  }
+  Float_t GetDiamondX() const {return fDiamondXY[0];}
+  Float_t GetDiamondY() const {return fDiamondXY[1];}
+  Float_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
+  Float_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
+  void GetDiamondCovXY(Float_t cov[3]) const {
+    for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
+  }
+
   Int_t  GetEventNumberInFile() const {return fEventNumberInFile;}
   UShort_t GetBunchCrossNumber() const {return fBunchCrossNumber;}
   UInt_t GetOrbitNumber() const {return fOrbitNumber;}
@@ -250,6 +267,8 @@ protected:
   Float_t      fT0zVertex;       // vertex z position estimated by the T0
   AliESDVertex fSPDVertex;       // Primary vertex estimated by the SPD
   AliESDVertex fPrimaryVertex;   // Primary vertex estimated using ESD tracks
+  Float_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
+  Float_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
   AliMultiplicity fSPDMult;      // SPD tracklet multiplicity
 
   Float_t      fT0timeStart;     // interaction time estimated by the T0
@@ -281,7 +300,7 @@ protected:
 
   TClonesArray fErrorLogs;        // Raw-data reading error messages
 
-  ClassDef(AliESD,19)  //ESD class 
+  ClassDef(AliESD,20)  //ESD class 
 };
 #endif 
 

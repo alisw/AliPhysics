@@ -77,6 +77,8 @@ AliESD::AliESD():
     fT0time[i] = 0;
     fT0amplitude[i] = 0;
   }
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
 }
 //______________________________________________________________________________
 AliESD::AliESD(const AliESD& esd):
@@ -128,6 +130,8 @@ AliESD::AliESD(const AliESD& esd):
     fT0time[i] = esd.fT0time[i];
     fT0amplitude[i] = esd.fT0amplitude[i];
   }
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
 }
 
 //______________________________________________________________________________
@@ -184,6 +188,8 @@ AliESD & AliESD::operator=(const AliESD& source) {
     fT0time[i] = source.fT0time[i];
     fT0amplitude[i] = source.fT0amplitude[i];
   }
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=source.fDiamondXY[i];
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=source.fDiamondCovXY[i];
 
   return *this;
 
@@ -292,6 +298,8 @@ void AliESD::Print(Option_t *) const
 	   fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),
 	   fPrimaryVertex.GetYv(), fPrimaryVertex.GetYRes(),
 	   fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
+    printf("Mean vertex in RUN: X=%.4f Y=%.4f cm\n",
+	   GetDiamondX(),GetDiamondY());
     printf("SPD Multiplicity. Number of tracklets %d \n",
            fSPDMult.GetNumberOfTracklets());
   printf("Event from reconstruction version %d \n",fRecoVersion);
