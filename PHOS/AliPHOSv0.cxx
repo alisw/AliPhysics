@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.85  2007/03/01 11:37:37  kharlov
+ * Strip units changed from 8x1 to 8x2 (T.Pocheptsov)
+ *
  * Revision 1.84  2006/12/20 16:56:43  kharlov
  * Optional geometry without CPV
  *
@@ -431,7 +434,6 @@ void AliPHOSv0::CreateGeometryforEMC()
       Float_t* splate = emcg->GetSupportPlateHalfSize();  
       y = -splate[1] ;
       Float_t* acel = emcg->GetAirCellHalfSize() ;
-      Int_t icel ;
 
       for(Int_t lev = 2, icel = 1; icel <= emcg->GetNCellsXInStrip()*emcg->GetNCellsZInStrip(); icel += 2, lev += 2){
          Float_t x = (2*(lev / 2) - 1 - emcg->GetNCellsXInStrip())* acel[0] ;
@@ -905,6 +907,19 @@ void AliPHOSv0::AddAlignableVolumes() const
     symname += iModule;
     gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
   }
+
+  //Aligning of CPV should be done for volume PCPV_1
+  symbModuleName="PHOS/Module";
+  for(Int_t iModule=1; iModule<=nModules; iModule++){
+    volpath = physModulePath;
+    volpath += iModule;
+    volpath += "/PCPV_1";
+    symname = symbModuleName;
+    symname += iModule;
+    symname += "/CPV";
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+  }
+ 
 
   // Alignable cradle walls
   // Volume path /ALIC_1/PCRA_<i> => symbolic name /PHOS/Cradle<i>, <i>=0,1
