@@ -13,38 +13,52 @@ void MakePHOSFullMisAlignment(){
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
 
+  Int_t i=0 ;
 
   // Alignment for 5 PHOS modules
-  new(alobj[0]) AliAlignObjAngles("PHOS/Module1",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module1",
 	  volid, -20., -10.,   0., dpsi, dtheta, 5, kTRUE);
-  new(alobj[1]) AliAlignObjAngles("PHOS/Module2",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module2",
 	  volid, -10.,   0., -10., dpsi, dtheta, 2, kTRUE);
-  new(alobj[2]) AliAlignObjAngles("PHOS/Module3",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module3",
 	  volid,   5., -10.,  10., dpsi, dtheta, 0, kTRUE);
-  new(alobj[3]) AliAlignObjAngles("PHOS/Module4",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module4",
 	  volid, +10.,  -0., -10., dpsi, dtheta, 2, kTRUE);
-  new(alobj[4]) AliAlignObjAngles("PHOS/Module5",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module5",
 	  volid, +20., -10.,   0., dpsi, dtheta, 5, kTRUE);
 
+  Double_t dx=0., dy=0., dz=0. ;
+  // Alignment of CPV modules
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module1/CPV",
+        volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module2/CPV",
+        volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module3/CPV",
+        volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module4/CPV",
+        volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Module5/CPV",
+        volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+ 
   // Alignment for PHOS cradle
-  new(alobj[5]) AliAlignObjAngles("PHOS/Cradle0",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Cradle0",
 	  volid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[6]) AliAlignObjAngles("PHOS/Cradle1",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Cradle1",
 	  volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // Alignment for cradle wheels
-  new(alobj[7]) AliAlignObjAngles("PHOS/Wheel0",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Wheel0",
 	  volid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[8]) AliAlignObjAngles("PHOS/Wheel1",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Wheel1",
 	  volid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[9]) AliAlignObjAngles("PHOS/Wheel2",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Wheel2",
 	  volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[10]) AliAlignObjAngles("PHOS/Wheel3",
+  new(alobj[i++]) AliAlignObjAngles("PHOS/Wheel3",
 	  volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // *************************    2nd step    ***************
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if(!gSystem->Getenv("$TOCDB")){
     // save on file
     TFile f("PHOSfullMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
@@ -53,13 +67,13 @@ void MakePHOSFullMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("STORAGE");
+    const char* Storage = gSystem->Getenv("$STORAGE");
     AliCDBManager *CDB = AliCDBManager::Instance();
     AliCDBStorage* storage = CDB->GetStorage(Storage);
     AliCDBMetaData *md= new AliCDBMetaData();
     md->SetResponsible("Yuri Kharlov");
     md->SetComment("Alignment objects for fully misaligned geometry");
-    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
+    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
     AliCDBId id("PHOS/Align/Data",0,9999999);
     storage->Put(array,id, md);
   }
