@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.34  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -42,7 +45,8 @@ public:
   virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;          // add a digit to the digits list  
   Int_t       Compare(const TObject * obj) const;                         // method for sorting  
 
-  virtual void  EvalAll(Float_t logWeight,TClonesArray * digits) ;
+  virtual void  EvalAll(Float_t logWeight, TClonesArray * digits) ; //Those tasks which can be done without vertex
+  virtual void  EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits) ;
 
   //in base class this functions is non-const
   virtual void  ExecuteEvent(Int_t event, Int_t px, Int_t py) /*const*/; 
@@ -81,10 +85,10 @@ public:
 
  protected:
           void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
-  virtual void  EvalLocalPosition(Float_t logWeight,TClonesArray * digits) ;// computes the position in the PHOS module 
-  virtual void  EvalDispersion(Float_t logWeight,TClonesArray * digits) ;   // computes the dispersion of the shower
-  virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits );   // computes the axis of shower ellipsoide
-          void  EvalMoments(Float_t logWeight, TClonesArray * digits );     // computes shower moments
+  virtual void  EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TClonesArray * digits, TVector3 &vInc) ;// computes the position in the PHOS module 
+  virtual void  EvalDispersion(Float_t logWeight, TClonesArray * digits, TVector3 &vInc) ;   // computes the dispersion of the shower
+  virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits, TVector3 &vInc );   // computes the axis of shower ellipsoide
+          void  EvalMoments(Float_t logWeight, TClonesArray * digits, TVector3 &vInc );     // computes shower moments
           void  EvalTime( TClonesArray * digits );
   virtual Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const ;
 

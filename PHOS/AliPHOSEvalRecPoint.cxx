@@ -244,7 +244,8 @@ void AliPHOSEvalRecPoint::Init()
     logWeight = clusterizer->GetCpvLogWeight();
   }
   
-  EvalLocalPosition(logWeight,digits); // evaluate initial position
+  TVector3 vtx(0.,0.,0.) ;
+  EvalLocalPosition(logWeight,vtx,digits); // evaluate initial position
 }
 
 
@@ -1022,7 +1023,8 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
   	    }
 	}
 
-      newRP->EvalLocalPosition(logWeight,digits);
+      TVector3 vtx(0.,0.,0.) ;
+      newRP->EvalLocalPosition(logWeight,vtx,digits);
       AliInfo(Form("======= Unfold: daughter rec point %d =================", 
 		   iMax)) ;
       newRP->Print();

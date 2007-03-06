@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.55  2007/01/19 20:31:19  kharlov
+ * Improved formatting for Print()
+ *
  * Revision 1.54  2006/08/28 10:01:56  kharlov
  * Effective C++ warnings fixed (Timur Pocheptsov)
  *
@@ -341,10 +344,11 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t) /*const*/
 }
 
 //____________________________________________________________________________
-void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits)
+void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits, TVector3 &vInc)
 {
   // Calculates the dispersion of the shower at the origine of the RecPoint
-
+  //DP: should we correct dispersion for non-perpendicular hit????????
+ 
   Float_t d    = 0. ;
   Float_t wtot = 0. ;
 
@@ -411,6 +415,7 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
   fDispersion = 0;
   if (d>=0)
     fDispersion = TMath::Sqrt(d) ;
+
  
 }
 //______________________________________________________________________________
@@ -420,6 +425,7 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits
   // i.e. within a radius rad = 3cm around the center. Beyond this radius
   // in accordance with shower profile the energy deposition 
   // should be less than 2%
+//DP: non-perpendicular incidence??????????????
 
   Float_t coreRadius = 3 ;
 
@@ -470,10 +476,11 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits
       fCoreEnergy += fEnergyList[iDigit] ;
   }
 
+
 }
 
 //____________________________________________________________________________
-void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
+void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits, TVector3 &vInc)
 {
   // Calculates the axis of the shower ellipsoid
 
@@ -525,7 +532,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 //   Double_t CosZ ;
 //   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
 //   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
-  //   Double_t DistanceToIP= (Double_t ) phosgeom->GetIPtoCrystalSurface() ;
+//   Double_t DistanceToIP= (Double_t ) phosgeom->GetIPtoCrystalSurface() ;
   
 //   CosX = DistanceToIP/TMath::Sqrt(DistanceToIP*DistanceToIP+x*x) ;
 //   CosZ = DistanceToIP/TMath::Sqrt(DistanceToIP*DistanceToIP+z*z) ;
@@ -552,7 +559,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 }
 
 //____________________________________________________________________________
-void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
+void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, TVector3 &vInc)
 {
   // Calculate the shower moments in the eigen reference system
   // M2x, M2z, M3x, M4z
@@ -701,17 +708,22 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
-  // Evaluates all shower parameters
-  EvalLocalPosition(logWeight, digits) ;
-  EvalElipsAxis(logWeight, digits) ;
-  EvalMoments(logWeight, digits) ;
-  EvalDispersion(logWeight, digits) ;
   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;
   AliPHOSRecPoint::EvalAll(digits) ;
 }
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)
+void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits )
+{
+  // Evaluates all shower parameters
+  TVector3 vInc ;
+  EvalLocalPosition(logWeight, vtx, digits,vInc) ;
+  EvalElipsAxis(logWeight, digits, vInc) ; //they are evaluated with momenta
+  EvalMoments(logWeight, digits, vInc) ;
+  EvalDispersion(logWeight, digits, vInc) ;
+}
+//____________________________________________________________________________
+void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TClonesArray * digits, TVector3 &vInc)
 {
   // Calculates the center of gravity in the local PHOS-module coordinates 
   Float_t wtot = 0. ;
@@ -754,30 +766,13 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   Float_t para = 0.925 ; 
   Float_t parb = 6.52 ; 
 
-  Float_t xo,yo,zo ; //Coordinates of the origin
-  //We should check all 3 possibilities to avoid seg.v.
-  if(gAlice && gAlice->GetMCApp() && gAlice->Generator())
-    gAlice->Generator()->GetOrigin(xo,yo,zo) ;
-  else{
-    xo=yo=zo=0.;
-  }
-  Float_t phi = phosgeom->GetPHOSAngle(relid[0]) ;
+  phosgeom->GetIncidentVector(vtx,GetPHOSMod(),x,z,vInc) ;
 
-  //Transform to the local ref.frame
-  Float_t xoL,yoL ;
-  xoL = xo*TMath::Cos(phi)-yo*TMath::Sin(phi) ;
-  yoL = xo*TMath::Sin(phi)+yo*TMath::Cos(phi) ;
-  
-  Float_t radius = phosgeom->GetIPtoCrystalSurface()-yoL;
- 
-  Float_t incidencephi = TMath::ATan((x-xoL ) / radius) ; 
-  Float_t incidencetheta = TMath::ATan((z-zo) / radius) ;
- 
   Float_t depthx = 0.; 
   Float_t depthz = 0.;
-  if (fAmp>0) {
-    depthx = ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencephi) ; 
-    depthz = ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencetheta) ; 
+  if (fAmp>0&&vInc.Y()!=0.) {
+    depthx = ( para * TMath::Log(fAmp) + parb ) * vInc.X()/vInc.Y() ;
+    depthz = ( para * TMath::Log(fAmp) + parb ) * vInc.Z()/vInc.Y() ;
   }
   else 
     AliError(Form("Wrong amplitude %f\n", fAmp));

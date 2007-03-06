@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.24  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.23  2005/12/20 14:28:47  hristov
  * Additional protection
  *
@@ -250,14 +253,19 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t, Int_t, Int_t ) /*const*/
 }
 
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
+void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits)
 {
-  // wraps other methods
   AliPHOSEmcRecPoint::EvalAll(logWeight,digits) ;
   EvalClusterLengths(digits) ;
 }
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight,TClonesArray * digits)
+void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray * digits)
+{
+  // wraps other methods
+  AliPHOSEmcRecPoint::EvalAll(logWeight,vtx,digits) ;
+}
+//____________________________________________________________________________
+void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 & /*vtx */, TClonesArray * digits)
 {
   // Calculates the center of gravity in the local PHOS-module coordinates 
 
@@ -352,8 +360,6 @@ void AliPHOSCpvRecPoint::EvalClusterLengths(TClonesArray * digits)
     }
   }
 }
-
-
 
 //____________________________________________________________________________
 void AliPHOSCpvRecPoint::Print(const Option_t *) const

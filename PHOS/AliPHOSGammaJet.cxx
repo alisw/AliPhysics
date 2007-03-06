@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.14  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.13  2006/04/26 07:32:37  hristov
  * Coding conventions, clean-up and related changes
  *
@@ -276,6 +279,9 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
 
+//DP. To be fixed: extract vertex position
+  Double_t vtx[3]={0.,0.,0.} ;
+
   if(!fOptFast){
     for (iParticle=0 ; iParticle < t->GetEntries() ; iParticle++) {
       t->GetEvent(iParticle) ;
@@ -304,7 +310,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 	  }
 	}
 	else if((charge == 0) && (particle->Pt() > fNeutralPtCut) ){
-	  geom->ImpactOnEmc(particle->Theta(),particle->Phi(), m,z,x);
+	  geom->ImpactOnEmc(vtx,particle->Theta(),particle->Phi(), m,z,x);
 	 
 	  if(m != 0)
 	    {//Is in PHOS
@@ -367,7 +373,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 	indexCh++ ;
       }
       else if(charge == 0){
-	geom->ImpactOnEmc(particle->Theta(),particle->Phi(), m,z,x);
+	geom->ImpactOnEmc(vtx,particle->Theta(),particle->Phi(), m,z,x);
 	if((particle->GetPdgCode() != 111) && (particle->Pt() > fNeutralPtCut) &&
 	   (TMath::Abs(particle->Eta())<fEtaCut) ){
 	  TLorentzVector part(particle->Px(),particle->Py(),
@@ -467,7 +473,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 		  TParticle * photon1 = 
 		    new TParticle(22,1,0,0,0,0,pGamma1.Px(),pGamma1.Py(),
 				  pGamma1.Pz(),pGamma1.E(),0,0,0,0);
-		  geom->ImpactOnEmc(photon1->Theta(),photon1->Phi(), m,z,x);
+		  geom->ImpactOnEmc(vtx,photon1->Theta(),photon1->Phi(), m,z,x);
 		  if( photon1->Phi()>fPhiEMCALCut[0] && photon1->Phi()<fPhiEMCALCut[1]
 		      && m == 0){
 		    if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
@@ -501,7 +507,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 		  TParticle * photon2 =
 		    new TParticle(22,1,0,0,0,0,pGamma2.Px(), pGamma2.Py(),
 				  pGamma2.Pz(),pGamma2.E(),0,0,0,0);
-		  geom->ImpactOnEmc(photon2->Theta(),photon2->Phi(), m,z,x);
+		  geom->ImpactOnEmc(vtx,photon2->Theta(),photon2->Phi(), m,z,x);
 		  if(photon2->Phi()>fPhiEMCALCut[0] && 
 		     photon2->Phi()<fPhiEMCALCut[1] && m == 0){
 		    if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
@@ -570,6 +576,8 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
   gime->Event(iEvent, "X") ;
 
+  //DP to be fixed: extract true vertex here
+  Double_t vtx[3]={0.,0.,0.} ;
 
   Int_t index = particleList->GetEntries() ; 
   Int_t indexCh     = plCh->GetEntries() ;
@@ -605,7 +613,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 	    new((*particleList)[index++]) TParticle(*particle) ;
 	  }
 	  else if((charge == 0) && (particle->Pt() > fNeutralPtCut)){
-	    geom->ImpactOnEmc(particle->Theta(),particle->Phi(), m,z,x);
+	    geom->ImpactOnEmc(vtx,particle->Theta(),particle->Phi(), m,z,x);
 	    if(m != 0)
 	      {//Is in PHOS
 		if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
@@ -654,7 +662,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 	    new((*particleList)[index++]) TParticle(*particle) ;
 	  }
 	  else if(charge == 0) {
-	    geom->ImpactOnEmc(particle->Theta(),particle->Phi(), m,z,x);
+	    geom->ImpactOnEmc(vtx,particle->Theta(),particle->Phi(), m,z,x);
 	    if((particle->GetPdgCode() != 111) && particle->Pt() > 0 &&
 	       (TMath::Abs(particle->Eta())<fEtaCut))
 	    {                
@@ -750,7 +758,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 		      TParticle * photon1 = 
 			new TParticle(22,1,0,0,0,0,pGamma1.Px(),pGamma1.Py(),
 				      pGamma1.Pz(),pGamma1.E(),0,0,0,0);
-		      geom->ImpactOnEmc(photon1->Theta(),photon1->Phi(), m,z,x);
+		      geom->ImpactOnEmc(vtx,photon1->Theta(),photon1->Phi(), m,z,x);
 		      if( photon1->Phi()>fPhiEMCALCut[0] && photon1->Phi()<fPhiEMCALCut[1]
 			  && m == 0){
 		      if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
@@ -777,7 +785,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 		      TParticle * photon2 =
 			new TParticle(22,1,0,0,0,0,pGamma2.Px(), pGamma2.Py(),
 				      pGamma2.Pz(),pGamma2.E(),0,0,0,0);
-		      geom->ImpactOnEmc(photon2->Theta(),photon2->Phi(), m,z,x);
+		      geom->ImpactOnEmc(vtx,photon2->Theta(),photon2->Phi(), m,z,x);
 		      if(photon2->Phi()>fPhiEMCALCut[0] && 
 			 photon2->Phi()<fPhiEMCALCut[1] && m == 0){
 			if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))

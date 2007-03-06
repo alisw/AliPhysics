@@ -204,6 +204,10 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
     recPhot->Delete() ;
   recPhot = new TH2F("recPhot","RecParticles with primary Photon",nx,-x,x,nz,-z,z);
   
+  //Get Vertex
+  Double_t vtx[3]={0.,0.,0.} ;  
+//DP: extract vertex either from Generator or from data
+
   
   //Plot Primary Particles
   
@@ -228,7 +232,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
       if( primaryType == 22 ) {
         Int_t moduleNumber ;
         Double_t primX, primZ ;
-        phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+        phosgeom->ImpactOnEmc(vtx,primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
         if(moduleNumber==Nmod) 
           phot->Fill(primZ,primX,primary->Energy()) ;
       }
@@ -332,7 +336,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
        recParticle = (AliPHOSRecParticle *) rp->At(iRecParticle) ;
        Int_t moduleNumberRec ;
        Double_t recX, recZ ;
-       phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+       phosgeom->ImpactOnEmc(vtx,recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
        if(moduleNumberRec == Nmod){
          
          Double_t minDistance = 5. ;
@@ -350,7 +354,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
            primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
            Int_t moduleNumber ;
            Double_t primX, primZ ;
-           phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+           phosgeom->ImpactOnEmc(vtx,primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
            if(moduleNumberRec == moduleNumber)
              distance = TMath::Sqrt((recX-primX)*(recX-primX)+(recZ-primZ)*(recZ-primZ) ) ;
            if(minDistance > distance)
@@ -690,6 +694,8 @@ void AliPHOSAnalyze::Ls(){
     //read the current event
     fRunLoader->GetEvent(ievent) ;
 
+    Double_t vtx[3]={0.,0.,0.} ;  
+
     const AliPHOSRecParticle * recParticle ;
     Int_t iRecParticle ;
     TClonesArray * rp = gime->RecParticles() ;
@@ -714,7 +720,7 @@ void AliPHOSAnalyze::Ls(){
       //find the closest primary
       Int_t moduleNumberRec ;
       Double_t recX, recZ ;
-      phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+      phosgeom->ImpactOnEmc(vtx,recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
       
       Double_t minDistance  = 100. ;
       Int_t closestPrimary = -1 ;
@@ -736,7 +742,7 @@ void AliPHOSAnalyze::Ls(){
 
        Int_t moduleNumber ;
        Double_t primX, primZ ;
-       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       phosgeom->ImpactOnEmc(vtx,primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
        if(moduleNumberRec == moduleNumber) {
          dX = recX - primX;
          dZ = recZ - primZ;
@@ -839,6 +845,10 @@ void AliPHOSAnalyze::PositionResolution()
     
     //read the current event
     fRunLoader->GetEvent(ievent) ;
+
+    //DP:Extract vertex position
+    Double_t vtx[3]={0.,0.,0.} ;  
+
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
       AliError(Form("Event %d,  Can't find RecParticles", ievent)) ;
@@ -864,7 +874,7 @@ void AliPHOSAnalyze::PositionResolution()
       //find the closest primary
       Int_t moduleNumberRec ;
       Double_t recX, recZ ;
-      phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+      phosgeom->ImpactOnEmc(vtx,recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
       
       Double_t minDistance  = 100. ;
       Int_t closestPrimary = -1 ;
@@ -885,7 +895,7 @@ void AliPHOSAnalyze::PositionResolution()
        primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
        Int_t moduleNumber ;
        Double_t primX, primZ ;
-       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       phosgeom->ImpactOnEmc(vtx,primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
        if(moduleNumberRec == moduleNumber) {
          dX = recX - primX;
          dZ = recZ - primZ;
@@ -1060,6 +1070,9 @@ void AliPHOSAnalyze::Contamination(){
     
     fRunLoader->GetEvent(ievent) ;
     
+    //DP:Extract vertex position
+    Double_t vtx[3]={0.,0.,0.} ;
+
     TClonesArray * rp = gime->RecParticles() ;
     if(!rp) {
       AliError(Form("Event %d,  Can't find RecParticles", ievent)) ;
@@ -1087,7 +1100,7 @@ void AliPHOSAnalyze::Contamination(){
        //check, if photons folls onto PHOS
        Int_t moduleNumber ;
        Double_t primX, primZ ;
-       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       phosgeom->ImpactOnEmc(vtx,primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
        if(moduleNumber)
          hPrimary->Fill(primary->Energy()) ;
        
@@ -1106,7 +1119,7 @@ void AliPHOSAnalyze::Contamination(){
       //==========find the closest primary       
       Int_t moduleNumberRec ;
       Double_t recX, recZ ;
-      phosgeom->ImpactOnEmc(recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
+      phosgeom->ImpactOnEmc(vtx,recParticle->Theta(), recParticle->Phi(), moduleNumberRec, recX, recZ) ;
       
       Double_t minDistance  = 100. ;
       Int_t closestPrimary = -1 ;
@@ -1125,7 +1138,7 @@ void AliPHOSAnalyze::Contamination(){
        primary = fRunLoader->Stack()->Particle(listofprimaries[index]) ;
        Int_t moduleNumber ;
        Double_t primX, primZ ;
-       phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+       phosgeom->ImpactOnEmc(vtx,primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
        if(moduleNumberRec == moduleNumber) {
          dX = recX - primX;
          dZ = recZ - primZ;
