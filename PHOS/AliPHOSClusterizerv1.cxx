@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.100  2007/01/10 11:07:26  kharlov
+ * Raw digits writing to file (B.Polichtchouk)
+ *
  * Revision 1.99  2006/11/07 16:49:51  kharlov
  * Corrections for next event switch in case of raw data (B.Polichtchouk)
  *
@@ -123,6 +126,7 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliRunLoader.h"
+#include "AliGenerator.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSClusterizerv1.h"
@@ -336,7 +340,6 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit **
   
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
   TClonesArray * digits = gime->Digits(); 
-  
 
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
@@ -623,22 +626,23 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * digits = gime->Digits() ; 
  
- 
   Int_t index ;
   //Evaluate position, dispersion and other RecPoint properties..
   Int_t nEmc = emcRecPoints->GetEntriesFast();
   for(index = 0; index < nEmc; index++){
     AliPHOSEmcRecPoint * rp = dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) );
     rp->Purify(fEmcMinE) ;
-    if(rp->GetMultiplicity()>0.) //If this RP is not empty
-      rp->EvalAll(fW0,digits) ;
-    else{
+    if(rp->GetMultiplicity()==0){
       emcRecPoints->RemoveAt(index) ;
       delete rp ;
     }
+
+// No vertex is available now, calculate only vertex-independent quantities and 
+// postpone cluster properties calculation to TrackSegmentMaker
+      rp->EvalAll(fW0,digits) ;
   }
   emcRecPoints->Compress() ;
-  emcRecPoints->Sort() ;
+//  emcRecPoints->Sort() ; //Can not sort until position is calculated!
   //  emcRecPoints->Expand(emcRecPoints->GetEntriesFast()) ;
   for(index = 0; index < emcRecPoints->GetEntries(); index++){
     dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) )->SetIndexInList(index) ;
@@ -649,7 +653,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
     AliPHOSCpvRecPoint * rp = dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(index) );
     rp->EvalAll(fW0CPV,digits) ;
   }
-  cpvRecPoints->Sort() ;
+//  cpvRecPoints->Sort() ;
   
   for(index = 0; index < cpvRecPoints->GetEntries(); index++)
     dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(index) )->SetIndexInList(index) ;
@@ -895,13 +899,16 @@ void AliPHOSClusterizerv1::MakeUnfolding()
 }
 
 //____________________________________________________________________________
-Double_t  AliPHOSClusterizerv1::ShowerShape(Double_t r)
+Double_t  AliPHOSClusterizerv1::ShowerShape(Double_t x, Double_t z)
 { 
   // Shape of the shower (see PHOS TDR)
   // If you change this function, change also the gradient evaluation in ChiSquare()
 
-  Double_t r4    = r*r*r*r ;
-  Double_t r295  = TMath::Power(r, 2.95) ;
+  //for the moment we neglect dependence on the incident angle.  
+
+  Double_t r2    = x*x + z*z ;
+  Double_t r4    = r2*r2 ;
+  Double_t r295  = TMath::Power(r2, 2.95/2.) ;
   Double_t shape = TMath::Exp( -r4 * (1. / (2.32 + 0.26 * r4) + 0.0316 / (1 + 0.0652 * r295) ) ) ;
   return shape ;
 }
@@ -939,11 +946,13 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
 
   Int_t nDigits = iniEmc->GetMultiplicity() ;  
   Float_t * efit = new Float_t[nDigits] ;
-  Float_t xDigit=0.,zDigit=0.,distance=0. ;
+  Float_t xDigit=0.,zDigit=0. ;
   Float_t xpar=0.,zpar=0.,epar=0.  ;
   Int_t relid[4] ;
   AliPHOSDigit * digit = 0 ;
   Int_t * emcDigits = iniEmc->GetDigitsList() ;
+
+  TVector3 vIncid ;
 
   Int_t iparam ;
   Int_t iDigit ;
@@ -959,9 +968,9 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
       zpar = fitparameters[iparam+1] ;
       epar = fitparameters[iparam+2] ;
       iparam += 3 ;
-      distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-      distance =  TMath::Sqrt(distance) ;
-      efit[iDigit] += epar * ShowerShape(distance) ;
+//      geom->GetIncidentVector(fVtx,relid[0],xpar,zpar,vIncid) ;
+//      efit[iDigit] += epar * ShowerShape(xDigit - xpar,zDigit - zpar,vIncid) ;
+      efit[iDigit] += epar * ShowerShape(xDigit - xpar,zDigit - zpar) ;
     }
   }
   
@@ -979,6 +988,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
     zpar = fitparameters[iparam+1] ;
     epar = fitparameters[iparam+2] ;
     iparam += 3 ;    
+//    geom->GetIncidentVector(fVtx,iniEmc->GetPHOSMod(),xpar,zpar,vIncid) ;
     
     AliPHOSEmcRecPoint * emcRP = 0 ;  
 
@@ -1006,9 +1016,8 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
       digit = dynamic_cast<AliPHOSDigit*>( digits->At( emcDigits[iDigit] ) ) ; 
       geom->AbsToRelNumbering(digit->GetId(), relid) ;
       geom->RelPosInModule(relid, xDigit, zDigit) ;
-      distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-      distance =  TMath::Sqrt(distance) ;
-      ratio = epar * ShowerShape(distance) / efit[iDigit] ; 
+//      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar,vIncid) / efit[iDigit] ; 
+      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ; 
       eDigit = emcEnergies[iDigit] * ratio ;
       emcRP->AddDigit( *digit, eDigit ) ;
     }        
@@ -1029,8 +1038,7 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 
   AliPHOSEmcRecPoint * emcRP = dynamic_cast<AliPHOSEmcRecPoint*>( toMinuit->At(0) )  ;
   TClonesArray * digits = dynamic_cast<TClonesArray*>( toMinuit->At(1) )  ;
-
-
+//  TVector3 * vtx = dynamic_cast<TVector3*>(toMinuit->At(2)) ;  //Vertex position
   
   //  AliPHOSEmcRecPoint * emcRP = dynamic_cast<AliPHOSEmcRecPoint *>( gMinuit->GetObjectFit() ) ; // EmcRecPoint to fit
 
@@ -1041,6 +1049,7 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
   Float_t * emcEnergies = emcRP->GetEnergiesList() ;
   
   const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ; 
+//  TVector3 vInc ;
   fret = 0. ;     
   Int_t iparam ;
 
@@ -1069,12 +1078,13 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
        Int_t iParam = 0 ;
        efit = 0 ;
        while(iParam < nPar ){
-         Double_t distance = (xDigit - x[iParam]) * (xDigit - x[iParam]) ;
+         Double_t dx = (xDigit - x[iParam]) ;
          iParam++ ; 
-         distance += (zDigit - x[iParam]) * (zDigit - x[iParam]) ; 
-         distance = TMath::Sqrt( distance ) ; 
+         Double_t dz = (zDigit - x[iParam]) ; 
          iParam++ ;          
-         efit += x[iParam] * ShowerShape(distance) ;
+//         geom->GetIncidentVector(*vtx,emcRP->GetPHOSMod(),x[iParam-2],x[iParam-1],vInc) ;
+//         efit += x[iParam] * ShowerShape(dx,dz,vInc) ;
+         efit += x[iParam] * ShowerShape(dx,dz) ;
          iParam++ ;
        }
        Double_t sum = 2. * (efit - emcEnergies[iDigit]) / emcEnergies[iDigit] ; // Here we assume, that sigma = sqrt(E) 
@@ -1083,8 +1093,11 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
          Double_t xpar = x[iParam] ;
          Double_t zpar = x[iParam+1] ;
          Double_t epar = x[iParam+2] ;
+//         geom->GetIncidentVector(*vtx,emcRP->GetPHOSMod(),xpar,zpar,vInc) ;
          Double_t dr = TMath::Sqrt( (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar) );
-         Double_t shape = sum * ShowerShape(dr) ;
+//         Double_t shape = sum * ShowerShape(xDigit - xpar,zDigit - zpar,vInc) ;
+         Double_t shape = sum * ShowerShape(xDigit - xpar,zDigit - zpar) ;
+//DP: No incident angle dependence in gradient yet!!!!!!
          Double_t r4 = dr*dr*dr*dr ;
          Double_t r295 = TMath::Power(dr,2.95) ;
          Double_t deriv =-4. * dr*dr * ( 2.32 / ( (2.32 + 0.26 * r4) * (2.32 + 0.26 * r4) ) +
@@ -1106,9 +1119,9 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
        Double_t zpar = x[iparam+1] ;
        Double_t epar = x[iparam+2] ;
        iparam += 3 ;
-       Double_t distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-       distance =  TMath::Sqrt(distance) ;
-       efit += epar * ShowerShape(distance) ;
+//       geom->GetIncidentVector(*vtx,emcRP->GetPHOSMod(),xpar,zpar,vInc) ;
+//       efit += epar * ShowerShape(xDigit - xpar,zDigit - zpar,vInc) ;
+       efit += epar * ShowerShape(xDigit - xpar,zDigit - zpar) ;
      }
 
      fret += (efit-emcEnergies[iDigit])*(efit-emcEnergies[iDigit])/emcEnergies[iDigit] ; 
@@ -1159,8 +1172,27 @@ void AliPHOSClusterizerv1::Print(const Option_t *)const
        fCpvLocMaxCut, 
        fW0CPV )) ; 
 }
+//____________________________________________________________________________
+//void AliPHOSClusterizerv1::GetVertex(void)
+//{ //Extracts vertex posisition
+//  
+  //ESD
+//DP - todo  if(){
+//
+//  }
 
-
+//  //MC Generator
+//  if(gAlice && gAlice->GetMCApp() && gAlice->Generator()){
+//    Float_t x,y,z ;
+//    gAlice->Generator()->GetOrigin(x,y,z) ;
+//    fVtx.SetXYZ(x,y,z) ;
+//    return ; 
+//  }
+//
+//  //No any source
+//  fVtx[0]=fVtx[1]=fVtx[2]=0. ;
+//
+//}
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
 {

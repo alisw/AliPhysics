@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.48  2006/08/30 16:12:52  kharlov
+ * Reconstruction of raw data from beam test 2006 (B.Polichtchouk)
+ *
  * Revision 1.47  2006/08/25 16:56:30  kharlov
  * Compliance with Effective C++
  *
@@ -36,6 +39,7 @@
 
 // --- ROOT system ---
 class TClonesArray ;
+class TVector3 ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -91,7 +95,7 @@ public:
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}
   //Switch to "on flyght" mode, without writing to TreeR and file  
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
-  static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
+  static Double_t ShowerShape(Double_t x, Double_t z) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passed to MINUIT
@@ -157,7 +161,7 @@ private:
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
 
   Bool_t  fIsOldRCUFormat;           // assume old RCU raw data format
-    
+
   ClassDef(AliPHOSClusterizerv1,4)   // Clusterizer implementation version 1
 
 };
