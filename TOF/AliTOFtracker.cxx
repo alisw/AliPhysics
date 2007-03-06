@@ -95,6 +95,7 @@ AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]):
 
   fDy=AliTOFGeometry::XPad(); 
   fDz=AliTOFGeometry::ZPad(); 
+  InitCheckHists();
 }
 //_____________________________________________________________________________
 AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):
