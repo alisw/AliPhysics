@@ -6,15 +6,15 @@ void LookupWrite(TChain* chain, const char* target) ;
 void testFoF(const Char_t* dataDir=".", Int_t nRuns = 10, Int_t offset = 0)
 {
  // load needed libraries
-  gSystem->Load("libESD");
-  gSystem->Load("libPhysics.so");
+ gSystem->Load("libESD");
+ gSystem->Load("libPhysics.so");
   
  // Flow libraries 
  gSystem->Load("libPWG2.so");
  gSystem->Load("libPWG2flow.so");
 
  // Selector
-  char *loadSelector = gSystem->ExpandPathName("/localstore/alice/alice_new/AliRoot/PWG2/FLOW/AliSelectorFoF.cxx+") ;
+  char *loadSelector = gSystem->ExpandPathName("$ALICE_ROOT/PWG2/FLOW/AliSelectorFoF.cxx+") ;
   //gInterpreter->AddIncludePath(inc) ;
 
  // create the TChain. CreateESDChain() is defined in CreateESDChain.C

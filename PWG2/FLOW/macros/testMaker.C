@@ -85,13 +85,16 @@ void testMaker(TString output = "flowEvts.root")
  {
   pESDchain->GetEntry(evtN,1) ;
 
-  Int_t evtNN = pEsd->GetEventNumber() ;
+  Int_t evtNN = -1 ;
+  //  Int_t evtNN = pEsd->GetEventNumber() ;
   Int_t nTrk = pEsd->GetNumberOfTracks() ;
   Int_t nV0s = pEsd->GetNumberOfV0s() ;
   cout << endl ; cout << " Event " << evtN << "  ( " << evtNN << " )  : " << nTrk << " tracks  &  " << nV0s << " v0s ." << endl ;
 
   flowEvt = flowMaker->FillFlowEvent(pEsd) ;
   cout << " Event filled " << flowEvt << " ... " << endl ;
+  // cout << endl ; cout << " trks : " << flowEvt->TrackCollection()->GetEntries() << endl ;
+  // flowEvt->Dump() ; cout << endl ;
 
   TString evtID = "" ; evtID += evtN ; 
   fFlowfile->cd() ; 
@@ -101,7 +104,8 @@ void testMaker(TString output = "flowEvts.root")
  }
  
  fFlowfile->Close() ; 
-
+ 
+ cout <<  endl ;
  cout << " Finished ... " << endl ;
  cout << "  nTracks:  " << flowMaker->GetNgoodTracks() << endl ;   
  cout << "  nV0s:  " << flowMaker->GetNgoodV0s()  << endl ;  	     
