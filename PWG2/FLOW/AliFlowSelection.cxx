@@ -76,6 +76,8 @@ AliFlowSelection::AliFlowSelection()
  fChiSqPart[1]         = 0 ; 		// = 100.
  fDcaGlobalPart[0]     = 1 ; 		// = 0.  
  fDcaGlobalPart[1]     = 0 ; 		// = 1.  
+ fDcaOverSigma[0]      = 1 ; 		// = 0. ;
+ fDcaOverSigma[1]      = 0 ; 		// = 1. ;
  fYPart[0]	       = 1 ; 		// = 0.  
  fYPart[1]	       = 0 ; 		// = 0.  
  // -
@@ -166,51 +168,56 @@ Bool_t AliFlowSelection::SelectPart(AliFlowTrack* pFlowTrack) const
  
  // PID probability
  float pidProb = pFlowTrack->MostLikelihoodProb() ;
- if (fPidProbPart[1] > fPidProbPart[0] &&  (pidProb < fPidProbPart[0] || pidProb > fPidProbPart[1])) return kFALSE;
+ if(fPidProbPart[1] > fPidProbPart[0] &&  (pidProb < fPidProbPart[0] || pidProb > fPidProbPart[1])) return kFALSE;
  
  // Constrainable
  bool constrainable = pFlowTrack->IsConstrainable() ;
- if (fConstrainablePart && !constrainable)  return kFALSE;
+ if(fConstrainablePart && !constrainable)  return kFALSE;
  
  // Pt
  float pt = pFlowTrack->Pt();
- if (fPtPart[1] > fPtPart[0] &&  (pt < fPtPart[0] || pt > fPtPart[1])) return kFALSE;
+ if(fPtPart[1] > fPtPart[0] &&  (pt < fPtPart[0] || pt > fPtPart[1])) return kFALSE;
  
  // P
  float totalp = pFlowTrack->P();
- if (fPPart[1] > fPPart[0] && (totalp < fPPart[0] || totalp > fPPart[1])) return kFALSE;
+ if(fPPart[1] > fPPart[0] && (totalp < fPPart[0] || totalp > fPPart[1])) return kFALSE;
  
  // Eta
  float eta = pFlowTrack->Eta();
- if (fEtaPart[1] > fEtaPart[0] && (eta < fEtaPart[0] || eta > fEtaPart[1])) return kFALSE;
+ if(fEtaPart[1] > fEtaPart[0] && (eta < fEtaPart[0] || eta > fEtaPart[1])) return kFALSE;
  
  // |Eta|
  float absEta = TMath::Abs(pFlowTrack->Eta());
- if (fEtaAbsPart[1] > fEtaAbsPart[0] && (absEta < fEtaAbsPart[0] || absEta > fEtaAbsPart[1])) return kFALSE;
+ if(fEtaAbsPart[1] > fEtaAbsPart[0] && (absEta < fEtaAbsPart[0] || absEta > fEtaAbsPart[1])) return kFALSE;
  
  // Fit Points (TPC)
  int fitPts = pFlowTrack->FitPtsTPC();
- if (fFitPtsPart[1] > fFitPtsPart[0] && (fitPts < fFitPtsPart[0] || fitPts > fFitPtsPart[1])) return kFALSE;
+ if(fFitPtsPart[1] > fFitPtsPart[0] && (fitPts < fFitPtsPart[0] || fitPts > fFitPtsPart[1])) return kFALSE;
  
  // Fit Points over Max Points (TPC)
  int maxPts = pFlowTrack->MaxPtsTPC();
  if(maxPts) 
  { 
   float fitOverMaxPts = (float)(fitPts)/(float)maxPts ;
-  if (fFitOverMaxPtsPart[1] > fFitOverMaxPtsPart[0] && (fitOverMaxPts < fFitOverMaxPtsPart[0] || fitOverMaxPts > fFitOverMaxPtsPart[1])) return kFALSE;
+  if(fFitOverMaxPtsPart[1] > fFitOverMaxPtsPart[0] && (fitOverMaxPts < fFitOverMaxPtsPart[0] || fitOverMaxPts > fFitOverMaxPtsPart[1])) return kFALSE;
  }
  
  // Chi Squared (main Vertex)
  float chiSq = pFlowTrack->Chi2();
- if (fChiSqPart[1] > fChiSqPart[0] && (chiSq < fChiSqPart[0] || chiSq > fChiSqPart[1])) return kFALSE;
+ if(fChiSqPart[1] > fChiSqPart[0] && (chiSq < fChiSqPart[0] || chiSq > fChiSqPart[1])) return kFALSE;
  
  // DCA Global
  float globdca = pFlowTrack->Dca();
- if (fDcaGlobalPart[1] > fDcaGlobalPart[0] && (globdca < fDcaGlobalPart[0] || globdca > fDcaGlobalPart[1])) return kFALSE;
+ if(fDcaGlobalPart[1] > fDcaGlobalPart[0] && (globdca < fDcaGlobalPart[0] || globdca > fDcaGlobalPart[1])) return kFALSE;
+ 
+ // DCA Global
+ float dcaSigma = 1. ;
+ if(pFlowTrack->TransDcaError() != 0) { dcaSigma = pFlowTrack->TransDca() / pFlowTrack->TransDcaError() ; }
+ if(fDcaOverSigma[1] > fDcaOverSigma[0] && (dcaSigma < fDcaOverSigma[0] || dcaSigma > fDcaOverSigma[1])) return kFALSE;
 
  // Rapidity
  float y = pFlowTrack->Y();
- if (fYPart[1] > fYPart[0] && (y < fYPart[0] || y > fYPart[1])) return kFALSE;
+ if(fYPart[1] > fYPart[0] && (y < fYPart[0] || y > fYPart[1])) return kFALSE;
 
  return kTRUE;
 }
@@ -247,43 +254,43 @@ Bool_t AliFlowSelection::SelectPart(AliFlowV0* pFlowV0) const
 
  // Pt
  float pt = pFlowV0->Pt();
- if (fV0Pt[1] > fV0Pt[0] &&  (pt < fV0Pt[0] || pt > fV0Pt[1])) return kFALSE;
+ if(fV0Pt[1] > fV0Pt[0] &&  (pt < fV0Pt[0] || pt > fV0Pt[1])) return kFALSE;
 
  // P
  float totalp = pFlowV0->P();
- if (fV0P[1] > fV0P[0] && (totalp < fV0P[0] || totalp > fV0P[1])) return kFALSE;
+ if(fV0P[1] > fV0P[0] && (totalp < fV0P[0] || totalp > fV0P[1])) return kFALSE;
 
  // Eta
  float eta = pFlowV0->Eta();
- if (fV0Eta[1] > fV0Eta[0] && (eta < fV0Eta[0] || eta > fV0Eta[1])) return kFALSE;
+ if(fV0Eta[1] > fV0Eta[0] && (eta < fV0Eta[0] || eta > fV0Eta[1])) return kFALSE;
  
  // |Eta|
  float absEta = TMath::Abs(pFlowV0->Eta());
- if (fV0EtaAbs[1] > fV0EtaAbs[0] && (absEta < fV0EtaAbs[0] || absEta > fV0EtaAbs[1])) return kFALSE;
+ if(fV0EtaAbs[1] > fV0EtaAbs[0] && (absEta < fV0EtaAbs[0] || absEta > fV0EtaAbs[1])) return kFALSE;
  
  // Chi Squared (main Vertex)
  float chiSq = pFlowV0->Chi2();
- if (fV0ChiSq[1] > fV0ChiSq[0] && (chiSq < fV0ChiSq[0] || chiSq > fV0ChiSq[1])) return kFALSE;
+ if(fV0ChiSq[1] > fV0ChiSq[0] && (chiSq < fV0ChiSq[0] || chiSq > fV0ChiSq[1])) return kFALSE;
 
  // DCA Cross
- float cdca = pFlowV0->CrossDca() ;
- if (fV0DcaCross[1] > fV0DcaCross[0] && (cdca < fV0DcaCross[0] || cdca > fV0DcaCross[1])) return kFALSE;
+ float cdca = pFlowV0->DaughtersDca() ;
+ if(fV0DcaCross[1] > fV0DcaCross[0] && (cdca < fV0DcaCross[0] || cdca > fV0DcaCross[1])) return kFALSE;
 
  // V0 lenght
  float lenght = pFlowV0->V0Lenght() ;
- if (fV0Lenght[1] > fV0Lenght[0] && (lenght < fV0Lenght[0] || lenght > fV0Lenght[1])) return kFALSE;
+ if(fV0Lenght[1] > fV0Lenght[0] && (lenght < fV0Lenght[0] || lenght > fV0Lenght[1])) return kFALSE;
 
  // V0 lenght
  float sigma  = pFlowV0->Sigma() ;
  if(sigma) 
  {
   float lenghtOverSigma = lenght/sigma ;
-  if (fV0LenghtOverSigma[1] > fV0LenghtOverSigma[0] && (lenghtOverSigma < fV0LenghtOverSigma[0] || lenghtOverSigma > fV0LenghtOverSigma[1])) return kFALSE;
+  if(fV0LenghtOverSigma[1] > fV0LenghtOverSigma[0] && (lenghtOverSigma < fV0LenghtOverSigma[0] || lenghtOverSigma > fV0LenghtOverSigma[1])) return kFALSE;
  }
 
  // Rapidity
  float y = pFlowV0->Y();
- if (fV0Y[1] > fV0Y[0] && (y < fV0Y[0] || y > fV0Y[1])) return kFALSE;
+ if(fV0Y[1] > fV0Y[0] && (y < fV0Y[0] || y > fV0Y[1])) return kFALSE;
 
  return kTRUE;
 }
@@ -342,27 +349,29 @@ void AliFlowSelection::PrintList() const
  cout << "# Selection List (particles correlated to the event plane):" << endl;
  cout << "# " << endl;
  if(fPidPart[0]!='\0') 
- { cout << "# P.id for particles correlated to the event plane: " << fPidPart << "  " <<endl ; }
+ { cout << "# P.id for particles correlated to the event plane: " << fPidPart << "  " << endl ; }
  if(fPtPart[1]>fPtPart[0]) 
- { cout << "# Pt for particles correlated to the event plane: " << fPtPart[0] << " to " << fPtPart[1] << " GeV/c" <<endl ; }
+ { cout << "# Pt for particles correlated to the event plane: " << fPtPart[0] << " to " << fPtPart[1] << " GeV/c" << endl ; }
  if(fPPart[1]>fPPart[0]) 
- { cout << "# P for particles correlated to the event plane: " << fPPart[0] << " to " << fPPart[1] << " GeV/c" <<endl ; }
+ { cout << "# P for particles correlated to the event plane: " << fPPart[0] << " to " << fPPart[1] << " GeV/c" << endl ; }
  if(fEtaPart[1]>fEtaPart[0]) 
- { cout << "# Eta for particles correlated to the event plane: " << fEtaPart[0] << " to " << fEtaPart[1] <<endl ; }
+ { cout << "# Eta for particles correlated to the event plane: " << fEtaPart[0] << " to " << fEtaPart[1] << endl ; }
  if(fEtaAbsPart[1]>fEtaAbsPart[0]) 
- { cout << "# |Eta| for V0s correlated to the event plane: " << fEtaAbsPart[0] << " to " << fEtaAbsPart[1] <<endl ; }
+ { cout << "# |Eta| for V0s correlated to the event plane: " << fEtaAbsPart[0] << " to " << fEtaAbsPart[1] << endl ; }
  if(fYPart[1]>fYPart[0]) 
- { cout << "# Y for particles correlated to the event plane: " << fYPart[0] << " to " << fYPart[1] <<endl ; }
+ { cout << "# Y for particles correlated to the event plane: " << fYPart[0] << " to " << fYPart[1] << endl ; }
  if(fFitPtsPart[1]>fFitPtsPart[0]) 
- { cout << "# Fit Points for particles correlated to the event plane: " << fFitPtsPart[0] << " to " << fFitPtsPart[1] <<endl ; }
+ { cout << "# Fit Points for particles correlated to the event plane: " << fFitPtsPart[0] << " to " << fFitPtsPart[1] << endl ; }
  if(fDedxPtsPart[1]>fDedxPtsPart[0]) 
  { cout << "# Dedx Points for particles correlated to the event plane: " << fDedxPtsPart[0] << " to " << fDedxPtsPart[1] << endl ; }
  if(fFitOverMaxPtsPart[1]>fFitOverMaxPtsPart[0]) 
- { cout << "# Fit/Max Points for particles correlated to the event plane: " << fFitOverMaxPtsPart[0] << " to " << fFitOverMaxPtsPart[1] <<endl ; }
+ { cout << "# Fit/Max Points for particles correlated to the event plane: " << fFitOverMaxPtsPart[0] << " to " << fFitOverMaxPtsPart[1] << endl ; }
  if(fChiSqPart[1]>fChiSqPart[0]) 
- { cout << "# Chi2 for particles correlated to the event plane: " << fChiSqPart[0] << " to " << fChiSqPart[1] <<endl ; }
+ { cout << "# Chi2 for particles correlated to the event plane: " << fChiSqPart[0] << " to " << fChiSqPart[1] << endl ; }
  if(fDcaGlobalPart[1]>fDcaGlobalPart[0]) 
- { cout << "# Global Dca for particles correlated with the event plane: " << fDcaGlobalPart[0] << " to " << fDcaGlobalPart[1] <<endl ; }
+ { cout << "# Global Dca for particles correlated with the event plane: " << fDcaGlobalPart[0] << " to " << fDcaGlobalPart[1] << endl ; }
+ if(fDcaOverSigma[1]>fDcaOverSigma[0])
+ { cout << "# Transverse Dca / Sigma for particles correlated with the event plane: " << fDcaOverSigma[0] << " to " << fDcaOverSigma[1] << endl ; }
  if(fConstrainablePart) 	 { cout << "# Constrainability cut:   Constrained  Tracks " << endl ; }
  cout << "#################################################################" << endl;
 }
@@ -375,7 +384,7 @@ void AliFlowSelection::PrintV0List() const
  cout << "# Selection List (V0s correlated with the event plane):" << endl;
  cout << "# " << endl;
  if(fV0Pid[0]!='\0') 
- { cout << "# P.id for V0s correlated to the event plane: " << fV0Pid << "  " <<endl ; }
+ { cout << "# P.id for V0s correlated to the event plane: " << fV0Pid << "  " << endl ; }
  if(fV0Mass[1]>fV0Mass[0]) 
  {
   if(!fV0SideBand)
@@ -384,23 +393,23 @@ void AliFlowSelection::PrintV0List() const
   { cout << "# Invariant Mass for V0-SideBands correlated to the event plane: " << fV0Mass[0]-fV0SideBand << " to " << fV0Mass[0]  << " & " << fV0Mass[1] << " to " << fV0Mass[1]+fV0SideBand << endl ; }
  }
  if(fV0Pt[1]>fV0Pt[0]) 
- { cout << "# Pt for V0s correlated to the event plane: " << fV0Pt[0] << " to " << fV0Pt[1] << " GeV/c" <<endl ; }
+ { cout << "# Pt for V0s correlated to the event plane: " << fV0Pt[0] << " to " << fV0Pt[1] << " GeV/c" << endl ; }
  if(fV0P[1]>fV0P[0]) 
- { cout << "# P for V0s correlated to the event plane: " << fV0P[0] << " to " << fV0P[1] << " GeV/c" <<endl ; }
+ { cout << "# P for V0s correlated to the event plane: " << fV0P[0] << " to " << fV0P[1] << " GeV/c" << endl ; }
  if(fV0Eta[1]>fV0Eta[0]) 
- { cout << "# Eta for V0s correlated to the event plane: " << fV0Eta[0] << " to " << fV0Eta[1] <<endl ; }
+ { cout << "# Eta for V0s correlated to the event plane: " << fV0Eta[0] << " to " << fV0Eta[1] << endl ; }
  if(fV0EtaAbs[1]>fV0EtaAbs[0]) 
- { cout << "# |Eta| for V0s correlated to the event plane: " << fV0EtaAbs[0] << " to " << fV0EtaAbs[1] <<endl ; }
+ { cout << "# |Eta| for V0s correlated to the event plane: " << fV0EtaAbs[0] << " to " << fV0EtaAbs[1] << endl ; }
  if(fV0Y[1]>fV0Y[0]) 
- { cout << "# Y for V0s correlated to the event plane: " << fV0Y[0] << " to " << fV0Y[1] <<endl ; }
+ { cout << "# Y for V0s correlated to the event plane: " << fV0Y[0] << " to " << fV0Y[1] << endl ; }
  if(fV0ChiSq[1]>fV0ChiSq[0]) 
- { cout << "# Chi2 for V0s correlated to the event plane: " << fV0ChiSq[0] << " to " << fV0ChiSq[1] <<endl ; }
+ { cout << "# Chi2 for V0s correlated to the event plane: " << fV0ChiSq[0] << " to " << fV0ChiSq[1] << endl ; }
  if(fV0DcaCross[1]>fV0DcaCross[0]) 
- { cout << "# Closest approach between the daughter tracks for V0s correlated to the event plane: " << fV0DcaCross[0] << " to " << fV0DcaCross[1] <<endl ; }
+ { cout << "# Closest approach between the daughter tracks for V0s correlated to the event plane: " << fV0DcaCross[0] << " to " << fV0DcaCross[1] << endl ; }
  if(fV0Lenght[1]>fV0Lenght[0]) 
- { cout << "# ... for V0s correlated to the event plane: " << fV0Lenght[0] << " to " << fV0Lenght[1] <<endl ; }
+ { cout << "# ... for V0s correlated to the event plane: " << fV0Lenght[0] << " to " << fV0Lenght[1] << endl ; }
  if(fV0LenghtOverSigma[1]>fV0LenghtOverSigma[0]) 
- { cout << "# ... for V0s correlated to the event plane: " << fV0LenghtOverSigma[0] << " to " << fV0LenghtOverSigma[1] <<endl ; }
+ { cout << "# ... for V0s correlated to the event plane: " << fV0LenghtOverSigma[0] << " to " << fV0LenghtOverSigma[1] << endl ; }
  cout << "#################################################################" << endl;
 }
 //-----------------------------------------------------------------------
@@ -449,7 +458,7 @@ void AliFlowSelection::SetHarmonic(const Int_t& harN)
 {
  // sets the Harmonic #
 
- if (harN < 0 || harN >= AliFlowConstants::kHars) 
+ if(harN < 0 || harN >= AliFlowConstants::kHars) 
  {
   cout << "### Harmonic " << harN << " not valid" << endl;
   fHarmonic = 0;
@@ -461,7 +470,7 @@ void AliFlowSelection::SetSelection(const Int_t& selN)
 {
  // sets the Selection #
 
- if (selN < 0 || selN >= AliFlowConstants::kSels) 
+ if(selN < 0 || selN >= AliFlowConstants::kSels) 
  {
   cout << "### Selection " << selN << " not valid" << endl;
   fSelection = 0;
@@ -473,7 +482,7 @@ void AliFlowSelection::SetSubevent(const Int_t& subN)
 {
  // sets the Sub-Event # (-1 for the full-event)
 
- if (subN < -1 || subN > AliFlowConstants::kSubs) 
+ if(subN < -1 || subN > AliFlowConstants::kSubs) 
  {
   cout << "### Subevent " << subN << " not valid" << endl;
   fSubevent = -1;

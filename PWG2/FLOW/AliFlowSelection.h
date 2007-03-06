@@ -50,7 +50,7 @@ class AliFlowSelection : public TObject {
   Int_t   Har() const				       { return fHarmonic; }	  	       // Returns the Selection
   Int_t   Sub() const				       { return fSubevent; }	  	       // Returns the Sub-Event
 
- // Gets (R.P. cuts) and CutList
+ // Gets (R.P. cuts)
   Float_t EtaCutLo(Int_t harN, Int_t selN) const       { return fgEtaTpcCuts[0][harN][selN] ; } // Returns lower eta cut for R.P.[harN][selN] calculation (absolute values)
   Float_t EtaCutHi(Int_t harN, Int_t selN) const       { return fgEtaTpcCuts[1][harN][selN] ; } // Returns upper eta cut for R.P.[harN][selN] calculation (absolute values)
   Float_t PtCutLo(Int_t harN, Int_t selN) const        { return fgPtTpcCuts[0][harN][selN] ; }  // Returns lower pT cut for R.P.[harN][selN] calculation 
@@ -75,16 +75,16 @@ class AliFlowSelection : public TObject {
   void    PrintSelectionList() const ;							       // Prints a summary of the selection criteria (for RP determination)
   void    PrintV0List() const ;								       // Prints the v0s cut-list (for correlation analysis)
 
- // Harmonic & Selection set (R.P.)
+ // Sets (Harmonic, Selection, Sub-event)
   void    SetHarmonic(const Int_t& harN);							       // Sets the Harmonic
   void    SetSelection(const Int_t& selN);							       // Sets the Selection
   void    SetSubevent(const Int_t& subN);							       // Sets the Sub-Event
   
- // Cuts set (Reaction Plane)
-  static void SetEtaCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN) { fgEtaTpcCuts[0][harN][selN] = lo ; fgEtaTpcCuts[1][harN][selN] = hi ; } // Sets the particle specie used in R.P. calculation
-  static void SetPtCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN)  { fgPtTpcCuts[0][harN][selN] = lo  ; fgPtTpcCuts[1][harN][selN] = hi ; }  // Sets |eta| cut for R.P.[harN][selN] calculation
-  static void SetDcaGlobalCut(Float_t lo, Float_t hi) 			{ fgDcaGlobalCuts[0] = lo ; fgDcaGlobalCuts[1] = hi ; } 		  // Sets pT cut for R.P.[harN][selN] calculation
-  static void SetPidCut(const Char_t* pid)	      			{ strncpy(fgPid, pid, 9) ; fgPid[9] = '\0' ; }				  // Sets DCA cut for R.P. calculation
+ // Sets (R.P. cuts)
+  static void SetEtaCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN) { fgEtaTpcCuts[0][harN][selN] = lo ; fgEtaTpcCuts[1][harN][selN] = hi ; } // Sets |eta| cut for R.P.[harN][selN] calculation
+  static void SetPtCut(Float_t lo, Float_t hi, Int_t harN, Int_t selN)  { fgPtTpcCuts[0][harN][selN] = lo  ; fgPtTpcCuts[1][harN][selN] = hi ; }  // Sets pT cut for R.P.[harN][selN] calculation
+  static void SetDcaGlobalCut(Float_t lo, Float_t hi) 			{ fgDcaGlobalCuts[0] = lo ; fgDcaGlobalCuts[1] = hi ; } 		  // Sets DCA cut for R.P. calculation
+  static void SetPidCut(const Char_t* pid)	      			{ strncpy(fgPid, pid, 9) ; fgPid[9] = '\0' ; }				  // Sets the particle specie used in R.P. calculation
   static void SetConstrainCut(Bool_t tf = kTRUE)	      		{ fgConstrainable = tf ; }						  // Sets the cut over un-constrainable tracks
   static void SetNhitsCut(Int_t hits,Int_t selN)      			{ fgTPChits[selN] = hits; }						  // Sets the minimum number of TPC hits for R.P.[selN] calculation
 
@@ -92,9 +92,7 @@ class AliFlowSelection : public TObject {
   void    SetCentralityCut(Int_t cent)		       { fCent = cent ; }		       // Sets Event Centrality class
   void    SetRunIdCut(Int_t run)  		       { fRun = run ; } 		       // Sets Run number 
 
- // Cuts set (correlation analysis cuts of tracks & V0s)
-  void    SetPtBinsPart(Int_t bins)		       { fPtBinsPart = bins; }						     // Sets N. of bins from fPtPart[0] to fPtPart[1]		     
-
+ // Sets (Correlation analysis cuts of tracks & V0s)
   void    SetPidPart(const Char_t* pid) 	       { strncpy(fPidPart, pid, 9); fPidPart[9] = '\0'; }		     // Sets PID for particles wrt Reaction plane 
   void    SetPidProbPart(Float_t lo, Float_t hi)       { fPidProbPart[0] = lo ; fPidProbPart[1] = hi; } 		     // Sets PID probability for particles wrt Reaction plane
   void    SetPtPart(Float_t lo, Float_t hi)	       { fPtPart[0] = lo; fPtPart[1] = hi; }				     // Sets pT for particles wrt Reaction plane 
@@ -107,8 +105,8 @@ class AliFlowSelection : public TObject {
   void    SetFitOverMaxPtsPart(Float_t lo, Float_t hi) { fFitOverMaxPtsPart[0] = lo; fFitOverMaxPtsPart[1] = hi; }	     // Sets FitPoints/MaxPoints for particles wrt Reaction plane 
   void    SetChiSqPart(Float_t lo, Float_t hi)         { fChiSqPart[0] = lo; fChiSqPart[1] = hi; }			     // Sets Chi^2 for particles wrt Reaction plane	     
   void    SetDcaGlobalPart(Float_t lo, Float_t hi)     { fDcaGlobalPart[0] = lo; fDcaGlobalPart[1] = hi; }		     // Sets d.c.a. for particles wrt Reaction plane	     
-  void    SetConstrainablePart(Bool_t constr)	       { fConstrainablePart = constr ; }				     // Sets constrainability for particles wrt Reaction plane      
-
+  void    SetDcaOverSigma(Float_t lo, Float_t hi)      { fDcaOverSigma[0] = lo; fDcaOverSigma[1] = hi; }		     // Sets d.c.a. for particles wrt Reaction plane	     
+  void    SetConstrainablePart(Bool_t constr)	       { fConstrainablePart = constr ; }				     // Sets constrainability for particles wrt Reaction plane
   void    SetV0Pid(const Char_t* pid)		       { strncpy(fV0Pid, pid, 9) ; fV0Pid[9] = '\0' ; } 		     // Sets PID for v0 wrt plane (...)
   void    SetV0Mass(Float_t lo, Float_t hi)	       { fV0Mass[0] = lo ; fV0Mass[1] = hi; }				     // Sets invariant mass cut for v0 wrt plane 
   void    SetV0Pt(Float_t lo, Float_t hi)	       { fV0Pt[0] = lo ; fV0Pt[1] = hi; }				     // Sets pT for v0 wrt plane 
@@ -122,6 +120,8 @@ class AliFlowSelection : public TObject {
   void    SetV0LenghtOverSigma(Float_t lo, Float_t hi) { fV0LenghtOverSigma[0] = lo ; fV0LenghtOverSigma[1] = hi; }	     // Sets closest approach (between the 2 daughter tracks) for v0 wrt plane  
   void    SetV0SideBands()			       { SetV0SideBands(TMath::Abs((fV0Mass[1]-fV0Mass[0])/2)) ; }	     // Includes the v0 sideband analysis wrt plane	     
   void    SetV0SideBands(Float_t sb)		       { fV0SideBand = sb ; }						     // Includes the v0 sideband analysis and a width		     
+
+  void    SetPtBinsPart(Int_t bins)		       { fPtBinsPart = bins; }						     // Sets N. of bins from fPtPart[0] to fPtPart[1]		     
 
 
  private:
@@ -164,6 +164,7 @@ class AliFlowSelection : public TObject {
   Float_t fFitOverMaxPtsPart[2];             			// FitPoints/MaxPoints for parts. wrt plane
   Float_t fChiSqPart[2];                     			// Chi^2 for parts. wrt plane
   Float_t fDcaGlobalPart[2];                 			// closest approach (to the main vertex) for parts. wrt plane
+  Float_t fDcaOverSigma[2];                 			// closest approach (to the main vertex) over its error
   Bool_t  fConstrainablePart;			    		// constrainability for parts. wrt plane 
 
  // Cuts for Tracks used in determining the Raction Plane (in STAR this selection was done inside the AliFlowEvent class)
@@ -171,7 +172,7 @@ class AliFlowSelection : public TObject {
   static Float_t  fgPtTpcCuts[2][AliFlowConstants::kHars][AliFlowConstants::kSels];  	// pT range
   static Float_t  fgDcaGlobalCuts[2];			    	// DCA cuts
   static Char_t   fgPid[10];				    	// h+, h-, pi-, pi+, pi, k+, k-, k, pr+, pr-, pr, e+, e-, e, d+, d-, d
-  static Int_t    fgTPChits[AliFlowConstants::kSels];		    	// minimum number of TPC hits
+  static Int_t    fgTPChits[AliFlowConstants::kSels];		// minimum number of TPC hits
   static Bool_t   fgConstrainable;			    	// cut un-constrainable tracks 
 
 

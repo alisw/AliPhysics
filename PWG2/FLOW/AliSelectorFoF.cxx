@@ -42,10 +42,10 @@
 #include <TObjArray.h>
 #include <TSelector.h>
 
-#include "AliLog.h"	 
-#include "AliESD.h"	 
+#include "AliLog.h"		  
+#include "AliESD.h"		  
 #include "AliESDtrack.h"  
-#include "AliESDv0.h"	  
+#include "AliESDv0.h"		   
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -138,7 +138,7 @@ void AliSelectorFoF::Begin(TTree*)
 
  // flags
  fDoNothing     = kFALSE ;  // kFALSE ;
- fOnFlyAnalysis = kTRUE ;  // kTRUE ;    
+ fOnFlyAnalysis = kTRUE ;   // kTRUE ;    
  fOnFlyWeight   = kFALSE ;  // kTRUE ;
  fSaveFlowEvents= kTRUE ;   // kTRUE ;
 
@@ -220,10 +220,10 @@ void AliSelectorFoF::Begin(TTree*)
    fFlowAnal = new AliFlowAnalyser(fFlowSelect) ;
 
   // Wgt file (read)
-   //TString wgtFileName = "fFlowPhiWgt.root" ;
-   //TFile* wgtFile = new TFile(wgtFileName.Data(),"READ");
-   //fFlowAnal->FillWgtArrays(wgtFile) ; // fix this !!!
-   //cout << " . Weights from  : " << fFlowAnal->GetWgtFileName() << "  . " << endl ;
+   TString wgtFileName = "fof_flowWgts.root" ;
+   TFile* wgtFile = new TFile(wgtFileName.Data(),"READ");
+   if(!wgtFile || wgtFile->IsZombie()) { cout << " . NO phi Weights . " << endl ;}
+   else { fFlowAnal->FillWgtArrays(wgtFile) ; cout << " . Weights from  : " << fFlowAnal->GetWgtFileName() << "  . " << endl ; }
 
   // analysis file (output)
    fFlowAnal->SetHistFileName(fFlowAnalysisFileName.Data()) ;
@@ -232,12 +232,12 @@ void AliSelectorFoF::Begin(TTree*)
   // Analysis settings
    fFlowAnal->SetFlowForV0(kFALSE) ;         // default kTRUE.
    fFlowAnal->SetEtaSub() ;            // default kFALSE
-   //fFlowAnal->SetV1Ep1Ep2() ;        // default kFALSE.
-   fFlowAnal->SetShuffle() ;           // default kFALSE. shuffles track array
-   //fFlowAnal->SetRedoWgt();      	  // default kFALSE. recalculates phiWgt (even if phiWgt file is already there)
-   fFlowAnal->SetUsePhiWgt(kFALSE) ;   // default kTRUE if phiWgt file is there, kFALSE if not (& phiWgt file is created)
+   //fFlowAnal->SetV1Ep1Ep2() ;          // default kFALSE.
+   //fFlowAnal->SetShuffle() ;           // default kFALSE. shuffles track array
+   //fFlowAnal->SetRedoWgt();      	 // default kFALSE. recalculates phiWgt (even if phiWgt file is already there)
+   fFlowAnal->SetUsePhiWgt(kFALSE) ;  // default kTRUE if phiWgt file is there, kFALSE if not (& phiWgt file is created)
    fFlowAnal->SetUseOnePhiWgt() ; // or // fFlowAnal->SetUseFirstLastPhiWgt() ; // uses 1 or 3 wgt histograms (default is 1)
-   fFlowAnal->SetUseBayWgt(kFALSE) ;   // default kFALSE. uses bayesian weights in P.id.
+   fFlowAnal->SetUseBayWgt(kFALSE) ;    // default kFALSE. uses bayesian weights in P.id.
    //fFlowAnal->SetUsePtWgt();	// default kFALSE. uses pT as a weight for RP determination
    //fFlowAnal->SetUseEtaWgt();	// default kFALSE. uses eta as a weight for RP determination
    fFlowAnal->Init() ;
@@ -357,7 +357,8 @@ Bool_t AliSelectorFoF::Process(Long64_t entry)
   cout << " event !!! " << entry << endl ;
 
   fRunID = fESD->GetRunNumber() ;
-  fEventNumber = fESD->GetEventNumber() ;
+  //  fEventNumber = fESD->GetEventNumber() ;
+  fEventNumber = -1 ;
   fNumberOfTracks = fESD->GetNumberOfTracks() ;
   fNumberOfV0s = fESD->GetNumberOfV0s() ;
 
@@ -370,8 +371,8 @@ Bool_t AliSelectorFoF::Process(Long64_t entry)
  // Instantiate a new AliFlowEvent
   cout << " filling the flow event :| " << endl ;
   fFlowEvent = fFlowMaker->FillFlowEvent(fESD) ;
-  if(!fFlowEvent) { cout << "!something bad occurred" << endl ; return kFALSE ; }
-  else 		  { cout << " event filled :) " << entry << "                # t.G. ! #       "<< endl ; }
+  if(!fFlowEvent) { cout << "! something bad occurred !" << endl ; return kFALSE ; }
+  else 		  { cout << "# event done :) " << entry << "                # ok ! #       " << endl ; }
 
  // Saves the AliFlowEvent
   if(fSaveFlowEvents)
@@ -379,7 +380,7 @@ Bool_t AliSelectorFoF::Process(Long64_t entry)
    cout << " saving flow event :| " << endl ;
    TString strID = "" ; strID += entry ; 
    fFlowfile->cd() ; fFlowEvent->Write(strID.Data()) ;
-   cout << " saved :) " << strID.Data() << "                # t.g. ! #       " << endl ; cout << endl ;  
+   cout << "# event saved :) " << strID.Data() << "                # ok ! #       " << endl ; cout << endl ;  
   }
 
  // Weights
@@ -387,7 +388,7 @@ Bool_t AliSelectorFoF::Process(Long64_t entry)
   { 
    cout << " weightening :| " << endl ;
    bool done = fFlowWeighter->WeightEvent(fFlowEvent) ;  
-   if(done) { cout << " weights done :) " << entry << "                # t.h.v. ! #       " << endl ; } 
+   if(done) { cout << "# weights done :) " << entry << "                # ok ! #       " << endl ; } 
   }
   
  // On-Fly Analysis
@@ -395,7 +396,8 @@ Bool_t AliSelectorFoF::Process(Long64_t entry)
   {
    cout << " doing analysis :| " << endl ;
    bool done = fFlowAnal->Analyse(fFlowEvent) ;
-   if(done) { cout << " analysis done :) " << entry << "                # t.h.v. ! #       " << endl ; } 
+   fFlowAnal->PrintEventQuantities() ;
+   if(done) { cout << "# analysis done :) " << entry << "                # ok ! #       " << endl ; } 
   }
    
   return kTRUE;
@@ -428,24 +430,25 @@ void AliSelectorFoF::Terminate()
 
   if(fDoNothing) { cout << "             ... & nothing was done ! " << endl ; cout << endl ; return ; }
 
+  cout << endl ;
   cout << "  nTracks:  " << fFlowMaker->GetNgoodTracks() << endl ;   
   cout << "  nV0s:  " << fFlowMaker->GetNgoodV0s()  << endl ;  	     
   cout << "  nTracks (|eta|<0.5):  " << fFlowMaker->GetNgoodTracksEta() << endl ; 
   cout << "  nTracks+:  " << fFlowMaker->GetNposiTracks() << endl ; 	     
   cout << "  nTracks-:  " << fFlowMaker->GetNnegaTracks() << endl ; 	     
   cout << "  nTracks unconstrained:  " << fFlowMaker->GetNunconstrained() << endl ; 	 
-  cout << "  Bayesian :  " ; 
+  cout << "  Bayesian (e,mu,pi,k,p) :  " ; 
   for(int ii=0;ii<5;ii++) { cout << fFlowMaker->GetBayesianNorm(ii) << "   " ; } 
-  cout << " . " << endl ; 
+  cout << " . " << endl ; cout << endl ;
 
   if(fOnFlyWeight) { fFlowWeighter->Finish() ; delete fFlowWeighter ; }
   
   if(fOnFlyAnalysis) 
   { 
-   cout << endl ; cout << "Particles normalized abundance:" << endl;  // shows the bayesian vector
    fFlowAnal->Resolution() ; cout << endl;
-   fFlowAnal->PrintRunBayesian() ; cout << endl;
    fFlowAnal->Finish() ;  cout << endl;
+   //cout << endl ; cout << "Particles normalized abundance:" << endl;  // shows the bayesian vector
+   //fFlowAnal->PrintRunBayesian() ; cout << endl;
    delete fFlowAnal ;
   }
      

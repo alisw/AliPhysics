@@ -15,7 +15,7 @@
 #ifndef ALIFLOWANALYSER_H
 #define ALIFLOWANALYSER_H
 
-// #include <TVector2.h>
+#include <TVector2.h>
 #include <TFile.h>
 #include "AliFlowConstants.h"
 
@@ -27,7 +27,8 @@ class TH3F;
 class TProfile;
 class TProfile2D;
 class TOrdCollection;
-class TVector2 ;
+
+class TClonesArray;
 
 class AliFlowTrack;
 class AliFlowV0;
@@ -96,8 +97,8 @@ public:
  // Internal methods to fill the histogram
   Bool_t   FillFromFlowEvent(AliFlowEvent* fFlowEvent) ;	// Fills internal variables and array from Flow Events
   void     FillEventHistograms(AliFlowEvent* fFlowEvent) ;	// Fills Events' histograms (from AliFlowEvent)
-  void     FillParticleHistograms(TObjArray* fFlowTracks) ;  	// Fills Tracks' histograms (from AliFlowTrack)
-  void     FillV0Histograms(TObjArray* fFlowV0s) ; 		// Fills V0s' histograms
+  void     FillParticleHistograms(TClonesArray* fFlowTracks) ;  	// Fills Tracks' histograms (from AliFlowTrack)
+  void     FillV0Histograms(TClonesArray* fFlowV0s) ; 		// Fills V0s' histograms
   Int_t    HarmonicsLoop(AliFlowTrack* fFlowTrack) ; 		// Harmonics & Selections histograms (from AliFlowTracks)
   //void     FillLabels() ;					// fills an histogram of Labels (the ones from ESD) 
 
@@ -115,8 +116,9 @@ public:
 
  private:
 
-  //AliFlowAnalyser(const AliFlowAnalyser &flowAnal) 		{ flowAnal.fPhiBins ; } // Copy Constructor (dummy)
-  //AliFlowAnalyser &operator=(const AliFlowAnalyser &flowAnal) { return *this ; }	// Assignment Operator
+ // to make the code checker happy
+  AliFlowAnalyser(const AliFlowAnalyser &flowAnal) ; 		// Copy Constructor (dummy)
+  AliFlowAnalyser &operator=(const AliFlowAnalyser &flowAnal) ; // Assignment Operator
 
  // Flags
   Bool_t   	   fTrackLoop ;		     			//! tracks main loop
@@ -146,14 +148,16 @@ public:
   Int_t 	   fNumberOfTracks ;			    	//! total number of tracks in the current event
   Int_t 	   fNumberOfV0s ;			    	//! total number of v0s in the current event
   Int_t            fPidId ;	  		    		//! Particle Id hypothesys of the track (0..4 for e,mu,pi,k,p)
+  Int_t            fSelParts ;	  		    		//! n. of tracks selected for correlation analysis
+  Int_t            fSelV0s ;	  		    		//! n. of v0s selected for correlation analysis
 
  // Internal pointers
   AliFlowEvent*     fFlowEvent ;      				//! pointer to AliFlowEvent
   AliFlowTrack*     fFlowTrack ;      				//! pointer to AliFlowTrack
   AliFlowV0*        fFlowV0 ;      				//! pointer to AliFlowV0
   AliFlowSelection* fFlowSelect ;     				//! selection object
-  TObjArray*        fFlowTracks ;     				//! pointer to the TrackCollection
-  TObjArray*        fFlowV0s ;     				//! pointer to the V0Collection
+  TClonesArray*     fFlowTracks ;			        //! pointer to the TrackCollection
+  TClonesArray*     fFlowV0s ;  			        //! pointer to the V0Collection
 
   Float_t           fVertex[3] ;				//! Event's Vertex position 
 
@@ -169,8 +173,6 @@ public:
 
  // For bayesian weights
   Double_t fBayesianWgt[AliFlowConstants::kSels][AliFlowConstants::kPid] ;  	//! Bayesian weights (expected particle abundance)
-
-#ifndef __CINT__
   TVector2 fQ[AliFlowConstants::kSels][AliFlowConstants::kHars];			//! flow vector
   Float_t  fPsi[AliFlowConstants::kSels][AliFlowConstants::kHars];			//! event plane angle
   UInt_t   fMult[AliFlowConstants::kSels][AliFlowConstants::kHars];                  	//! multiplicity
@@ -180,7 +182,6 @@ public:
   UInt_t   fMultSub[AliFlowConstants::kSubs][AliFlowConstants::kSels][AliFlowConstants::kHars];   	//! multiplicity subs
   Float_t  fRes[AliFlowConstants::kSels][AliFlowConstants::kHars];			//! event plane resolution
   Float_t  fResErr[AliFlowConstants::kSels][AliFlowConstants::kHars];			//! event plane resolution error
-#endif /*__CINT__*/
 
  // for Histograms
   TString           fLabel ;             			//! label axis : rapidity or pseudorapidity

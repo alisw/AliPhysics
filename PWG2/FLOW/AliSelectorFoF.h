@@ -99,6 +99,7 @@ class AliSelectorFoF : public TSelector {
     void 	      DeleteKinematicsFile();
     TFile*            fKineFile;          //! pointer to Kinematics.root if the file was opened
 
+  // to make the code checker happy
     AliSelectorFoF(const AliSelectorFoF&);
     AliSelectorFoF& operator=(const AliSelectorFoF&);
 

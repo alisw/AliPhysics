@@ -61,8 +61,9 @@ class AliFlowWeighter {
 
  private:
 
-  //AliFlowWeighter(const AliFlowWeighter &flowWgt) 		{ flowWgt.fPhiBins ; }  // Copy Constructor (dummy)
-  //AliFlowWeighter &operator=(const AliFlowWeighter &flowAnal) { return *this ; }	// Assignment Operator
+ // to make the code checker happy
+  AliFlowWeighter(const AliFlowWeighter &flowWgt) ; 		// Copy Constructor (dummy)
+  AliFlowWeighter &operator=(const AliFlowWeighter &flowAnal) ; // Assignment Operator
 
  // enumerators etc.			    
   Int_t            fEventNumber ;	  		    	//! progressive enumeration of AliFlowEvents

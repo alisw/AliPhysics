@@ -36,20 +36,28 @@
 //
 
 #include "AliFlowEvent.h"
+#include "AliFlowTrack.h"
+#include "AliFlowV0.h"
+#include "AliFlowSelection.h"
 #include "AliFlowConstants.h"
+
 #include "TVector.h"
 #include "TVector2.h"
 #include "TVector3.h"
+#include "TClonesArray.h"
+#include "TMath.h"
+#include "TRandom.h"
+#include "TString.h"
 #include <iostream>
 using namespace std; //required for resolving the 'cout' symbol
 
 // - Flags & Sets
-Bool_t  AliFlowEvent::fPtWgt	       = kFALSE ;  // gives pT-based weights
-Bool_t  AliFlowEvent::fEtaWgt	       = kFALSE ;  // gives eta-based weights
-Bool_t  AliFlowEvent::fOnePhiWgt       = kTRUE  ;  // kTRUE --> ENABLEs SINGLE WEIGHT ISTOGRAM , kFALSE --> ENABLEs 3 WEIGHT ISTOGRAMS
-Bool_t  AliFlowEvent::fNoWgt	       = kFALSE ;  // No Weight is used
+Bool_t  AliFlowEvent::fgPtWgt	       = kFALSE ;  // gives pT-based weights
+Bool_t  AliFlowEvent::fgEtaWgt	       = kFALSE ;  // gives eta-based weights
+Bool_t  AliFlowEvent::fgOnePhiWgt       = kTRUE  ;  // kTRUE --> ENABLEs SINGLE WEIGHT ISTOGRAM , kFALSE --> ENABLEs 3 WEIGHT ISTOGRAMS
+Bool_t  AliFlowEvent::fgNoWgt	       = kFALSE ;  // No Weight is used
 // - Eta Sub-Events (later used to calculate the resolution)
-Bool_t  AliFlowEvent::fEtaSubs 	       = kFALSE ;  // makes eta subevents
+Bool_t  AliFlowEvent::fgEtaSubs 	       = kFALSE ;  // makes eta subevents
 
 ClassImp(AliFlowEvent) 
 //-----------------------------------------------------------
@@ -61,14 +69,15 @@ AliFlowEvent::AliFlowEvent(Int_t lenght)
  fEventID = 0 ; 
  fRunID = 0 ;		       
  fOrigMult = 0 ;
- fL0TriggerWord = 0 ;			       
+ fL0Trigger = 0 ;			       
  fCentrality = -1 ;
  fZDCpart = 0 ;
  for(int zz=0;zz<3;zz++) { fZDCenergy[zz] = 0. ; }
+ for(int i=0;i<AliFlowConstants::kHars;i++) { fExtPsi[i] = 0. ; fExtRes[i] = 0.; }
  
  // Make a new track collection
- fTrackCollection =  new TObjArray(lenght) ;
- fV0Collection =  new TObjArray(0) ;
+ fTrackCollection =  new TClonesArray("AliFlowTrack",lenght) ; fTrackCollection->BypassStreamer(kTRUE) ;
+ fV0Collection    =  new TClonesArray("AliFlowV0",lenght)    ; fV0Collection->BypassStreamer(kTRUE)    ;
  
  // Set Weights Arrays to 1 (default)
  for(int nS=0;nS<AliFlowConstants::kSels;nS++)
@@ -152,10 +161,10 @@ Double_t AliFlowEvent::Weight(Int_t selN, Int_t harN, AliFlowTrack* pFlowTrack) 
 Double_t AliFlowEvent::PhiWeight(Int_t selN, Int_t harN, AliFlowTrack* pFlowTrack) const
 {
  // Weight for making the event plane isotropic in the lab and enhancing the resolution
- // (it simply rerurns PhiWeightRaw() * Weight()). If fNoWgt = kTRUE, returns +/-1 ,
+ // (it simply rerurns PhiWeightRaw() * Weight()). If fgNoWgt = kTRUE, returns +/-1 ,
  // basing on Sign(eta), for odd harmonics .
  
- if(fNoWgt) // no weights (but +/- according to eta)
+ if(fgNoWgt) // no weights (but +/- according to eta)
  { 
   bool oddHar = (harN+1) % 2 ;
   if(oddHar) { return TMath::Sign((Double_t)1.,(Double_t)pFlowTrack->Eta()) ; }
@@ -168,7 +177,7 @@ Double_t AliFlowEvent::PhiWeight(Int_t selN, Int_t harN, AliFlowTrack* pFlowTrac
  return phiWgtRaw * weight;
 }
 //-------------------------------------------------------------
-Int_t AliFlowEvent::Mult(AliFlowSelection* pFlowSelect)  	
+Int_t AliFlowEvent::Mult(AliFlowSelection* pFlowSelect) const	
 {
  // Multiplicity of tracks in the specified Selection 
  
@@ -190,7 +199,7 @@ Int_t AliFlowEvent::Mult(AliFlowSelection* pFlowSelect)
  return mult;
 }
 //-------------------------------------------------------------
-Float_t AliFlowEvent::MeanPt(AliFlowSelection* pFlowSelect)
+Float_t AliFlowEvent::MeanPt(AliFlowSelection* pFlowSelect) const
 {
  // Mean pt of tracks in the specified Selection 
 
@@ -213,7 +222,7 @@ Float_t AliFlowEvent::MeanPt(AliFlowSelection* pFlowSelect)
  return meanPt ;
 }
 //-------------------------------------------------------------
-TVector2 AliFlowEvent::Q(AliFlowSelection* pFlowSelect)
+TVector2 AliFlowEvent::Q(AliFlowSelection* pFlowSelect) const
 {
  // Event plane vector for the specified Selection 
 
@@ -249,7 +258,7 @@ TVector2 AliFlowEvent::Q(AliFlowSelection* pFlowSelect)
  return mQ;
 }
 //-------------------------------------------------------------
-Float_t AliFlowEvent::Psi(AliFlowSelection* pFlowSelect)
+Float_t AliFlowEvent::Psi(AliFlowSelection* pFlowSelect) const
 {
  // Event plane angle for the specified Selection 
 
@@ -266,22 +275,22 @@ Float_t AliFlowEvent::Psi(AliFlowSelection* pFlowSelect)
  return psi;
 }
 //-------------------------------------------------------------
-TVector2 AliFlowEvent::NormQ(AliFlowSelection* pFlowSelect)  	
+TVector2 AliFlowEvent::NormQ(AliFlowSelection* pFlowSelect) const  	
 {
  // Normalized Q = Q/sqrt(sum of weights^2) for the specified Selection 
 
  if(fDone) 
  {
   TVector2 mQ = fQ[pFlowSelect->Sel()][pFlowSelect->Har()] ;   
-  double SumOfWeightSqr = fSumOfWeightSqr[pFlowSelect->Sel()][pFlowSelect->Har()] ;
-  if(SumOfWeightSqr) { mQ /= TMath::Sqrt(SumOfWeightSqr) ; }
+  double sumOfWeightSqr = fSumOfWeightSqr[pFlowSelect->Sel()][pFlowSelect->Har()] ;
+  if(sumOfWeightSqr) { mQ /= TMath::Sqrt(sumOfWeightSqr) ; }
   else { mQ.Set(0.,0.) ; }
   return mQ ;
  }
  // -
  TVector2 mQ ;
  Double_t mQx=0. , mQy=0. ;
- double SumOfWeightSqr = 0 ;
+ double sumOfWeightSqr = 0 ;
  int selN     = pFlowSelect->Sel() ;
  int harN     = pFlowSelect->Har() ;
  double order = (double)(harN + 1) ;
@@ -293,20 +302,20 @@ TVector2 AliFlowEvent::NormQ(AliFlowSelection* pFlowSelect)
   if (pFlowSelect->Select(pFlowTrack)) 
   {
    double phiWgt = PhiWeight(selN, harN, pFlowTrack);
-   SumOfWeightSqr += phiWgt*phiWgt;
+   sumOfWeightSqr += phiWgt*phiWgt;
 
    float phi = pFlowTrack->Phi();
    mQx += phiWgt * cos(phi * order);
    mQy += phiWgt * sin(phi * order);
   }
  }
- if(SumOfWeightSqr) { mQ.Set(mQx/TMath::Sqrt(SumOfWeightSqr), mQy/TMath::Sqrt(SumOfWeightSqr)); }
+ if(sumOfWeightSqr) { mQ.Set(mQx/TMath::Sqrt(sumOfWeightSqr), mQy/TMath::Sqrt(sumOfWeightSqr)); }
  else { mQ.Set(0.,0.); }
   
  return mQ;
 }
 //-------------------------------------------------------------
-Float_t AliFlowEvent::q(AliFlowSelection* pFlowSelect) 
+Float_t AliFlowEvent::OldQ(AliFlowSelection* pFlowSelect) const 
 { 
  // Magnitude of normalized Q vector (without pt or eta weighting) for the specified Selection 
 
@@ -315,7 +324,7 @@ Float_t AliFlowEvent::q(AliFlowSelection* pFlowSelect)
  int selN     = pFlowSelect->Sel() ;
  int harN     = pFlowSelect->Har() ;
  double order = (double)(harN + 1) ;
- double SumOfWeightSqr = 0 ;
+ double sumOfWeightSqr = 0 ;
 
  Int_t itr ;
  for(itr=0;itr<TrackCollection()->GetEntries();itr++) 
@@ -325,19 +334,19 @@ Float_t AliFlowEvent::q(AliFlowSelection* pFlowSelect)
   if(pFlowSelect->Select(pFlowTrack)) 
   {
    double phiWgt = PhiWeightRaw(selN, harN, pFlowTrack); // Raw
-   SumOfWeightSqr += phiWgt*phiWgt;
+   sumOfWeightSqr += phiWgt*phiWgt;
    float phi = pFlowTrack->Phi();
    mQx += phiWgt * cos(phi * order);
    mQy += phiWgt * sin(phi * order);
   }
  }
- if(SumOfWeightSqr) { mQ.Set(mQx/TMath::Sqrt(SumOfWeightSqr), mQy/TMath::Sqrt(SumOfWeightSqr)); }
+ if(sumOfWeightSqr) { mQ.Set(mQx/TMath::Sqrt(sumOfWeightSqr), mQy/TMath::Sqrt(sumOfWeightSqr)); }
  else { mQ.Set(0.,0.); }
   
  return mQ.Mod();
 }
 //-----------------------------------------------------------------------
-Double_t AliFlowEvent::G_New(AliFlowSelection* pFlowSelect, Double_t Zx, Double_t Zy)
+Double_t AliFlowEvent::NewG(AliFlowSelection* pFlowSelect, Double_t Zx, Double_t Zy) const
 { 
  // Generating function for the new cumulant method. Eq. 3 in the Practical Guide 
 
@@ -363,29 +372,25 @@ Double_t AliFlowEvent::G_New(AliFlowSelection* pFlowSelect, Double_t Zx, Double_
  return theG;
 }
 //-----------------------------------------------------------------------
-Double_t AliFlowEvent::G_Old(AliFlowSelection* pFlowSelect, Double_t Zx, Double_t Zy) 
+Double_t AliFlowEvent::OldG(AliFlowSelection* pFlowSelect, Double_t Zx, Double_t Zy) const
 { 
  // Generating function for the old cumulant method (if expanded in Taylor
- // series, one recovers G_New() in new new cumulant method)
+ // series, one recovers NewG() in new new cumulant method)
 
- TVector2 normQ = NormQ(pFlowSelect);
+ TVector2 normQ = NormQ(pFlowSelect) ;
 
  return exp(2*Zx*normQ.X() + 2*Zy*normQ.Y());
 }
 //-----------------------------------------------------------------------
-Double_t AliFlowEvent::SumWeightSquare(AliFlowSelection* pFlowSelect)
+Double_t AliFlowEvent::SumWeightSquare(AliFlowSelection* pFlowSelect) const
 {
  // Return sum of weights^2 for the specified Selection (used for normalization)
 
- if(fDone) 
- { 
-  return fSumOfWeightSqr[pFlowSelect->Sel()][pFlowSelect->Har()] ; 
- }
- // -
+ if(fDone) { return fSumOfWeightSqr[pFlowSelect->Sel()][pFlowSelect->Har()] ; }
+
  int selN = pFlowSelect->Sel();
  int harN = pFlowSelect->Har();
- Double_t SumOfWeightSqr = 0;
-
+ Double_t sumOfWeightSqr = 0;
  Int_t itr ;
  for(itr=0;itr<TrackCollection()->GetEntries();itr++) 
  {
@@ -394,15 +399,15 @@ Double_t AliFlowEvent::SumWeightSquare(AliFlowSelection* pFlowSelect)
   if (pFlowSelect->Select(pFlowTrack)) 
   {
    double phiWgt = PhiWeight(selN, harN, pFlowTrack);
-   SumOfWeightSqr += phiWgt*phiWgt;
+   sumOfWeightSqr += phiWgt*phiWgt;
   }
  }
- if(SumOfWeightSqr < 0.) { return Mult(pFlowSelect) ; }
+ if(sumOfWeightSqr < 0.) { return Mult(pFlowSelect) ; }
 
- return SumOfWeightSqr;
+ return sumOfWeightSqr;
 }
 //-------------------------------------------------------------
-Double_t AliFlowEvent::WgtMult_q4(AliFlowSelection* pFlowSelect)
+Double_t AliFlowEvent::WgtMultQ4(AliFlowSelection* pFlowSelect) const 
 { 
  // Used only for the old cumulant method, for getting q4 when weight is on.
  // Replace multiplicity in Eq.(74b) by this quantity when weight is on.
@@ -438,7 +443,7 @@ Double_t AliFlowEvent::WgtMult_q4(AliFlowSelection* pFlowSelect)
  return (theSumOfWgtSqr*theSumOfWgtSqr)/(theMult*(-theMeanWj4+2*theMeanWj2*theMeanWj2));
 }
 //-------------------------------------------------------------
-Double_t AliFlowEvent::WgtMult_q6(AliFlowSelection* pFlowSelect)
+Double_t AliFlowEvent::WgtMultQ6(AliFlowSelection* pFlowSelect) const 
 { 
  // Used only for the old cumulant method. For getting q6 when weight is on.
  // Replace multiplicity in Eq.(74c) by this quantity when weight is on.
@@ -524,7 +529,7 @@ void AliFlowEvent::SetSelections(AliFlowSelection* pFlowSelect)
    }
   }
   double eta = (double)(pFlowTrack->Eta());      
-  float  Pt  = pFlowTrack->Pt();   		 
+  float  pt  = pFlowTrack->Pt();   		 
   float  gDca = pFlowTrack->Dca() ; 			
 
  // Global DCA - gets rid of the track with DCA outside the range
@@ -541,18 +546,22 @@ void AliFlowEvent::SetSelections(AliFlowSelection* pFlowSelect)
    // Eta - gets rid of the track with Eta outside the range
     if((pFlowSelect->EtaCutHi(harN%2,selN)>pFlowSelect->EtaCutLo(harN%2,selN)) && (TMath::Abs(eta)<pFlowSelect->EtaCutLo(harN%2,selN) || TMath::Abs(eta)>pFlowSelect->EtaCutHi(harN%2,selN))) continue ; 
    // Pt - gets rid of the track with Pt outside the range
-    if((pFlowSelect->PtCutHi(harN%2,selN)>pFlowSelect->PtCutLo(harN%2,selN)) && (Pt<pFlowSelect->PtCutLo(harN%2,selN) || Pt>pFlowSelect->PtCutHi(harN%2,selN))) continue ; 
+    if((pFlowSelect->PtCutHi(harN%2,selN)>pFlowSelect->PtCutLo(harN%2,selN)) && (pt<pFlowSelect->PtCutLo(harN%2,selN) || pt>pFlowSelect->PtCutHi(harN%2,selN))) continue ; 
   
     pFlowTrack->SetSelect(harN, selN) ;  // if cuts defined (low<high) && track is in the range -> Set [har][sel] Flag ON
 
     if(AliFlowConstants::fgDebug) 
     {
-     cout << " harN " << harN%2 << " ,  selN " << selN << " - si" << endl ;
-     if(pFlowSelect->Pid()[0] != '\0') { cout << " track:  pid  " << pFlowTrack->Pid() << " = "<< pFlowSelect->Pid() << endl ; } 
-     cout << " track:  dca  " << pFlowSelect->DcaGlobalCutLo() << " < " << gDca << " < " << pFlowSelect->DcaGlobalCutHi() << endl ;
-     cout << " track:  eta  " << pFlowSelect->EtaCutLo(harN,selN) << " < |" << eta << "| < " << pFlowSelect->EtaCutHi(harN,selN) << endl ;
-     cout << " track:  pT   " << pFlowSelect->PtCutLo(harN,selN) << " < " << Pt << " < " << pFlowSelect->PtCutHi(harN,selN) << endl ;
-     pFlowTrack->PrintSelection() ;
+     if(harN==1)
+     {
+      cout << " n. " << itr << " , pFlowTrack->PrintSelection() = " ; pFlowTrack->PrintSelection() ;
+      if(pFlowSelect->Pid()[0] != '\0') { cout << " track:  pid  " << pFlowTrack->Pid() << " = "<< pFlowSelect->Pid() << endl ; } 
+      cout << " track:  dca  " << pFlowSelect->DcaGlobalCutLo() << " < " << gDca << " < " << pFlowSelect->DcaGlobalCutHi() << endl ;
+      cout << " track:  eta  " << pFlowSelect->EtaCutLo(harN,selN) << " < |" << eta << "| < " << pFlowSelect->EtaCutHi(harN,selN) << endl ;
+      cout << " track:  pT   " << pFlowSelect->PtCutLo(harN,selN) << " < " << pt << " < " << pFlowSelect->PtCutHi(harN,selN) << endl ;
+      cout << " pFlowTrack->PrintSelection() = " ; pFlowTrack->PrintSelection() ;
+     }
+     // cout << " selN " << selN << " ,  harN " << harN%2 << " - si" << endl ;
     }
    }
   }
@@ -563,32 +572,32 @@ void AliFlowEvent::SetPids()
 {
  // Re-sets the tracks P.id. (using the current AliFlowConstants::fgBayesian[] array)
  
- const Int_t code[] = {11,13,211,321,2212,10010020} ;
+ const Int_t kCode[] = {11,13,211,321,2212,10010020} ;
  for(Int_t itr=0;itr<TrackCollection()->GetEntries();itr++) 
  {
   AliFlowTrack* pFlowTrack ;
   pFlowTrack = (AliFlowTrack*)TrackCollection()->At(itr) ;
   TVector bayPid = pFlowTrack->PidProbs() ;
   Int_t maxN = 2 ; 		   // if No id. -> then is a Pi
-  Float_t pid_max = bayPid[2] ;    // (if all equal, Pi probability get's the advantage to be the first)
+  Float_t pidMax = bayPid[2] ;    // (if all equal, Pi probability get's the advantage to be the first)
   for(Int_t nP=0;nP<AliFlowConstants::kPid;nP++)
   {
-   if(bayPid[nP]>pid_max) { maxN = nP ; pid_max = bayPid[nP] ; }
+   if(bayPid[nP]>pidMax) { maxN = nP ; pidMax = bayPid[nP] ; }
   }
-  Int_t pdg_code = TMath::Sign(code[maxN],pFlowTrack->Charge()) ;     
-  pFlowTrack->SetMostLikelihoodPID(pdg_code);			
+  Int_t pdgCode = TMath::Sign(kCode[maxN],pFlowTrack->Charge()) ;     
+  pFlowTrack->SetMostLikelihoodPID(pdgCode);			
  }
 }
 //-------------------------------------------------------------
-void AliFlowEvent::MakeSubEvents() 
+void AliFlowEvent::MakeSubEvents() const
 {
  // Make random or eta sub-events
  
- if(EtaSubs())  { MakeEtaSubEvents() ; }
+ if(fgEtaSubs)  { MakeEtaSubEvents() ; }
  else 		{ MakeRndSubEvents() ; }
 } 
 //-------------------------------------------------------------
-void AliFlowEvent::MakeRndSubEvents() 
+void AliFlowEvent::MakeRndSubEvents() const 
 {
  // Make random subevents
  
@@ -635,10 +644,10 @@ void AliFlowEvent::MakeRndSubEvents()
  return ; 
 }
 //-------------------------------------------------------------
-void AliFlowEvent::MakeEtaSubEvents() 
+void AliFlowEvent::MakeEtaSubEvents() const
 {
  // Make subevents for positive and negative eta 
- // (when done, fEtaSubs flag setted to kTRUE).
+ // (when done, fgEtaSubs flag setted to kTRUE).
  
  int harN, selN = 0;
  // loop to set the SubEvent member
@@ -667,34 +676,37 @@ void AliFlowEvent::RandomShuffle()
  // primary, the reference carried by the reconstructed mother (in 
  // the v0 array) is changed accordingly.
 
- Int_t tot = 0 ;
- UInt_t imax = TrackCollection()->GetEntries() ;
- TRandom* rnd = new TRandom(0) ; // SetSeed(0) ;
- TObjArray* newTrackCollection = new TObjArray(imax) ;
-
- // re-arranges the ObjArray (TrackCollection())
- for(UInt_t itr=0;itr<imax;itr++)
- {
-  AliFlowTrack* pFlowTrack ;
-  pFlowTrack = (AliFlowTrack*)TrackCollection()->At(itr) ;
-  
-  UInt_t rndNumber = rnd->Integer(imax) ;
-  Bool_t put = kFALSE ;
-  while(!put)
-  { 
-   if(!newTrackCollection->At(rndNumber)) 
-   { 
-    newTrackCollection->AddAt(pFlowTrack, rndNumber) ; 
-    put = kTRUE ; tot++ ;  		if(AliFlowConstants::fgDebug) { cout << "  " << itr << " --> " << rndNumber << endl ; } 
-   }
-   else 
-   {
-    rndNumber++ ; if(rndNumber>=imax) { rndNumber -= imax ; }
-   }
-  }
- }
- if(AliFlowConstants::fgDebug) { cout << "* RandomShuffle() :  " << tot << "/" << imax << " flow tracks have been shuffled " << endl ; }  
- fTrackCollection = newTrackCollection ;
+ return ; // ...at the moment is disabled ... // 
+ 
+//  Int_t tot = 0 ;
+//  UInt_t imax = fTrackCollection->GetEntries() ;
+//  TRandom* rnd = new TRandom(0) ; // SetSeed(0) ;
+//  TClonesArray* newTrackCollection = new TClonesArray("AliFlowTrack",imax) ;
+// 
+//  // re-arranges the ObjArray (TrackCollection())
+//  for(UInt_t itr=0;itr<imax;itr++)
+//  {
+//   AliFlowTrack* pFlowTrack ;
+//   pFlowTrack = (AliFlowTrack*)TrackCollection()->At(itr) ;
+//   
+//   UInt_t rndNumber = rnd->Integer(imax) ;
+//   Bool_t put = kFALSE ;
+//   while(!put)
+//   { 
+//    if(!newTrackCollection->AddrAt(rndNumber)) 
+//    { 
+//     ... new(newTrackCollection[rndNumber]) AliFlowTrack(*pFlowTrack)  ; 
+//     put = kTRUE ; tot++ ;  		
+//     if(AliFlowConstants::fgDebug) { cout << "  " << itr << " --> " << rndNumber << endl ; } 
+//    }
+//    else 
+//    {
+//     rndNumber++ ; if(rndNumber>=imax) { rndNumber -= imax ; }
+//    }
+//   }
+//  }
+//  if(AliFlowConstants::fgDebug) { cout << "* RandomShuffle() :  " << tot << "/" << imax << " flow tracks have been shuffled " << endl ; }  
+//  fTrackCollection = newTrackCollection ;
 }
 //-----------------------------------------------------------------------
 UInt_t AliFlowEvent::Centrality() 
@@ -703,13 +715,6 @@ UInt_t AliFlowEvent::Centrality()
 
  if(fCentrality < 0)  { SetCentrality() ; } 
  return fCentrality ;
-}
-//-----------------------------------------------------------------------
-void AliFlowEvent::SetCentrality(Int_t cent) 
-{
- // Set the Centrality Classes to "cent" .
-
- fCentrality = cent ; 
 }
 //-----------------------------------------------------------------------
 void AliFlowEvent::SetCentrality() 
@@ -737,7 +742,7 @@ void AliFlowEvent::SetCentrality()
  {
   cent = (Float_t*)AliFlowConstants::fgCent0 ;
  } 
- else // other definition of centrality are possible...
+ else // other definition of centrality are possible ...
  {
   cent = (Float_t*)AliFlowConstants::fgCent0 ;
  } 
@@ -755,15 +760,10 @@ void AliFlowEvent::SetCentrality()
  if(AliFlowConstants::fgDebug) { cout << " * Centrality Class :  " << fCentrality << " . " << endl ; }
 }
 //-----------------------------------------------------------------------
-void AliFlowEvent::Bayesian(Double_t bayes[AliFlowConstants::kPid]) 
-{
- // Returns bayesian array of particles' abundances (from AliFlowConstants::)
- 
- for(Int_t i=0;i<AliFlowConstants::kPid;i++) { bayes[i] = AliFlowConstants::fgBayesian[i] ; }
-}
-//-----------------------------------------------------------------------
-TVector AliFlowEvent::Bayesian() 
+TVector AliFlowEvent::Bayesian() const 
 { 
+ // Returns bayesian array of particle abundances (from AliFlowConstants::)
+ 
  TVector bayes(AliFlowConstants::kPid) ; 
  for(Int_t i=0;i<AliFlowConstants::kPid;i++) { bayes[i] = AliFlowConstants::fgBayesian[i] ; }
  return bayes ;
@@ -795,18 +795,7 @@ void AliFlowEvent::PrintFlagList() const
  cout << "#######################################################" << endl;  
 }
 //-----------------------------------------------------------------------
-void AliFlowEvent::SetEventID(const Int_t& id) 		  
-{ 
- // Sets Event ID and the Event name (name = evtNumber_runId)
- 
- fEventID = id ; 
- TString name = "" ;
- name += fEventID ;
- if(fRunID) { name += "_" ; name += fRunID ; }
- SetName(name) ;  // from TNamed::SetName
-}
-//-----------------------------------------------------------------------
-Int_t AliFlowEvent::MultEta()
+Int_t AliFlowEvent::MultEta() const
 {
  // Returns the multiplicity in the interval |eta|<(AliFlowConstants::fgEetaMid), used 
  // for centrality measurement (see centrality classes in fCentrality) .
@@ -853,27 +842,18 @@ Int_t AliFlowEvent::UncorrPosMult(Float_t eta)  const
  return posMult; 
 }
 //-----------------------------------------------------------------------
-void AliFlowEvent::VertexPos(Float_t vtx[3])  const	 	
-{ 
- for(Int_t ii=0;ii<3;ii++) { vtx[ii] = fVertexPos[ii] ; }
-}
-//-----------------------------------------------------------------------
 TVector3 AliFlowEvent::VertexPos() const
 {
+ // Returns primary vertex position as a TVector3
+
  Float_t vertex[3] ;
  VertexPos(vertex) ;
  return TVector3(vertex) ;
 }
 //-----------------------------------------------------------------------
-void AliFlowEvent::SetVertexPos(Float_t v1,Float_t v2,Float_t v3)
-{ 
- fVertexPos[0] = v1 ; fVertexPos[1] = v2 ; fVertexPos[2] = v3 ; 
-}
-//-----------------------------------------------------------------------
 void AliFlowEvent::MakeAll()
 { 
- // calculates all quantities in 1 shoot ...
- //  ...
+ // calculates all quantities in 1 shoot 
 
  Double_t mQx[AliFlowConstants::kSels][AliFlowConstants::kHars] ;
  Double_t mQy[AliFlowConstants::kSels][AliFlowConstants::kHars] ;
@@ -945,103 +925,4 @@ void AliFlowEvent::MakeAll()
 
  fDone = kTRUE ;
 }
-// //-----------------------------------------------------------------------
-// Float_t  AliFlowEvent::ExtPsi(Int_t harN) const 	
-// { 
-//  // external R.P. angle (check input source...)
-// 
-//  if(harN<AliFlowConstants::kHars) { return fExtPsi[harN] ; }
-//  else 
-//  { 
-//   cout << "AliFlowEvent::ExtPsi(" << harN << ") : harmonic " << harN+1 << " is not there !" << endl ; 
-//   return 0. ; 
-//  }
-// }
-// //-----------------------------------------------------------------------
-// Float_t  AliFlowEvent::ExtRes(Int_t harN) const
-// { 
-//  // external R.P. resolution (check input source...)
-// 
-//  if(harN<AliFlowConstants::kHars) { return fExtRes[harN] ; }
-//  else 
-//  { 
-//   cout << "AliFlowEvent::ExtRes(" << harN << ") : harmonic " << harN+1 << " is not there !" << endl ; 
-//   return 0. ; 
-//  }
-// }
-// //-----------------------------------------------------------------------
-// void AliFlowEvent::SetExtPsi(Int_t harN,Float_t psi)  	 
-// { 
-//  if(harN<AliFlowConstants::kHars) { fExtPsi[harN] = psi ; }
-// }
-// //-----------------------------------------------------------------------
-// void AliFlowEvent::SetExtRes(Int_t harN,Float_t res)  	 
-// { 
-//  if(harN<AliFlowConstants::kHars) { fExtRes[harN] = res ; }
-// }
-// //-----------------------------------------------------------------------
-
-
-
 //-----------------------------------------------------------------------
-// - those will go into the .h as inline functions ..................... 
-//-----------------------------------------------------------------------
-TObjArray* AliFlowEvent::TrackCollection() const 	{ return fTrackCollection; }
-TObjArray* AliFlowEvent::V0Collection() const 		{ return fV0Collection; }
-//-----------------------------------------------------------------------
-Int_t	 AliFlowEvent::EventID() const  	 	{ return fEventID; }
-Int_t	 AliFlowEvent::RunID() const		 	{ return fRunID; }
-Double_t AliFlowEvent::CenterOfMassEnergy() const 	{ return AliFlowConstants::fgCenterOfMassEnergy ; }
-Double_t AliFlowEvent::MagneticField() const 		{ return AliFlowConstants::fgMagneticField ; }
-Short_t  AliFlowEvent::BeamMassNumberEast() const 	{ return AliFlowConstants::fgBeamMassNumberEast ; }
-Short_t  AliFlowEvent::BeamMassNumberWest() const 	{ return AliFlowConstants::fgBeamMassNumberWest ; }
-UInt_t   AliFlowEvent::OrigMult() const 	 	{ return fOrigMult; }
-Long_t   AliFlowEvent::L0TriggerWord() const	 	{ return fL0TriggerWord; }
-Int_t    AliFlowEvent::V0Mult() const 	  		{ return V0Collection()->GetEntries() ; }
-Int_t    AliFlowEvent::FlowEventMult() const	 	{ return TrackCollection()->GetEntries() ; }
-Int_t    AliFlowEvent::ZDCpart() const		 	{ return fZDCpart; }
-Float_t  AliFlowEvent::ZDCenergy(Int_t npem) const	{ return fZDCenergy[npem]; }
-Float_t  AliFlowEvent::PtWgtSaturation() const   	{ return AliFlowConstants::fgPtWgtSaturation; }
-Bool_t   AliFlowEvent::PtWgt() const		 	{ return fPtWgt; }
-Bool_t   AliFlowEvent::EtaWgt() const		 	{ return fEtaWgt; }
-Bool_t   AliFlowEvent::FirstLastPhiWgt() const   	{ return !fOnePhiWgt ; }
-Bool_t   AliFlowEvent::OnePhiWgt() const    		{ return fOnePhiWgt ; }
-Bool_t   AliFlowEvent::NoWgt() const		 	{ return fNoWgt; }
-Bool_t   AliFlowEvent::EtaSubs() const  	 	{ return fEtaSubs ; }
-//-----------------------------------------------------------------------
-void   	 AliFlowEvent::SetEtaSubs(Bool_t etasub)  		      { fEtaSubs = etasub ; }
-void 	 AliFlowEvent::SetRunID(const Int_t& id)		      { fRunID = id; }
-void 	 AliFlowEvent::SetMagneticField(const Double_t& mf)	      { AliFlowConstants::fgMagneticField = mf; }
-void 	 AliFlowEvent::SetCenterOfMassEnergy(const Double_t& cms)     { AliFlowConstants::fgCenterOfMassEnergy = cms; }
-void 	 AliFlowEvent::SetBeamMassNumberEast(const Short_t& bme)      { AliFlowConstants::fgBeamMassNumberEast = bme; }
-void 	 AliFlowEvent::SetBeamMassNumberWest(const Short_t& bmw)      { AliFlowConstants::fgBeamMassNumberWest = bmw; }
-void 	 AliFlowEvent::SetOrigMult(const UInt_t& tracks)	      { fOrigMult = tracks; }
-void 	 AliFlowEvent::SetL0TriggerWord(const Long_t& trigger)        { fL0TriggerWord = trigger; }
-void 	 AliFlowEvent::SetZDCpart(Int_t zdcp)			      { fZDCpart = zdcp ; }
-void 	 AliFlowEvent::SetZDCenergy(Float_t n, Float_t p, Float_t em) { fZDCenergy[0] = n ; fZDCenergy[1] = p ; fZDCenergy[2] = em ; }
-//-----------------------------------------------------------------------
-void AliFlowEvent::SetBayesian(Double_t bayes[AliFlowConstants::kPid]) 	  
-{ 
- for(Int_t i=0;i<AliFlowConstants::kPid;i++) { AliFlowConstants::fgBayesian[i] = bayes[i] ; } 
-}
-//-----------------------------------------------------------------------
-void AliFlowEvent::SetNoWgt(Bool_t nowgt) 
-{ 
- // Sets no phi weightening, but Wgt = 1*sign(Eta) for odd harmonics .
- 
- fNoWgt = nowgt ; // cout << " Wgt = +1 (positive Eta) or -1 (negative Eta) . " << endl ;
-}
-//-----------------------------------------------------------------------
-void AliFlowEvent::SetOnePhiWgt()				  { fOnePhiWgt = kTRUE ; }
-void AliFlowEvent::SetFirstLastPhiWgt() 			  { fOnePhiWgt = kFALSE ; }
-void AliFlowEvent::SetPtWgt(Bool_t PtWgt)			  { fPtWgt = PtWgt; }
-void AliFlowEvent::SetEtaWgt(Bool_t EtaWgt)			  { fEtaWgt = EtaWgt; }
-//-----------------------------------------------------------------------
-#ifndef __CINT__
-void AliFlowEvent::SetPhiWeight(const AliFlowConstants::PhiWgt_t& pPhiWgt)  	     { memcpy (fPhiWgt, pPhiWgt, sizeof(AliFlowConstants::PhiWgt_t)); }
-void AliFlowEvent::SetPhiWeightPlus(const AliFlowConstants::PhiWgt_t& pPhiWgtPlus)   { memcpy (fPhiWgtPlus,  pPhiWgtPlus,  sizeof(AliFlowConstants::PhiWgt_t)); }
-void AliFlowEvent::SetPhiWeightMinus(const AliFlowConstants::PhiWgt_t& pPhiWgtMinus) { memcpy (fPhiWgtMinus, pPhiWgtMinus, sizeof(AliFlowConstants::PhiWgt_t)); }
-void AliFlowEvent::SetPhiWeightCross(const AliFlowConstants::PhiWgt_t& pPhiWgtCross) { memcpy (fPhiWgtCross, pPhiWgtCross, sizeof(AliFlowConstants::PhiWgt_t)); }
-#endif
-//-----------------------------------------------------------------------
-//////////////////////////////////////////////////////////////////////
