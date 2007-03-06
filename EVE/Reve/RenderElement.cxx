@@ -234,7 +234,8 @@ void RenderElement::PadPaint(Option_t* option)
 
 void RenderElement::SetRnrSelf(Bool_t rnr)
 {
-  if(rnr != fRnrSelf) {
+  if(rnr != fRnrSelf)
+  {
     fRnrSelf = rnr;
     
     for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
@@ -259,12 +260,13 @@ void RenderElement::SetRnrSelf(Bool_t rnr)
 
 void RenderElement::SetRnrChildren(Bool_t rnr)
 {
-  if(rnr != fRnrChildren) {
+  if(rnr != fRnrChildren)
+  {
     fRnrChildren = rnr; 
 
     for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
     {
-      i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(fRnrSelf, fRnrChildren), GetCheckBoxPicture(fRnrSelf,fRnrChildren ));
+      i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(fRnrSelf, fRnrChildren), GetCheckBoxPicture(fRnrSelf,fRnrChildren));
       gClient->NeedRedraw(i->fTree);
     }
   }
@@ -272,17 +274,12 @@ void RenderElement::SetRnrChildren(Bool_t rnr)
 
 void RenderElement::ToggleRnrState()
 {
-  if( fRnrSelf || fRnrChildren ) 
-  {
-    fRnrSelf = kFALSE;
-    fRnrChildren = kFALSE;  
-  }
-  else { 
-    fRnrSelf = kTRUE;
-    fRnrChildren = kTRUE; 
-  }
+  if (fRnrSelf || fRnrChildren)
+    fRnrSelf = fRnrChildren = kFALSE;  
+  else
+    fRnrSelf = fRnrChildren = kTRUE; 
 
-  for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
+  for (sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
   {
     i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(1,1), GetCheckBoxPicture(0,0));
     i->fItem->CheckItem(fRnrSelf);
@@ -507,15 +504,14 @@ ClassImp(PadPrimitive)
 PadPrimitive::PadPrimitive(const Text_t* n, const Text_t* t) :
   RenderElement(),
   TNamed(n, t)
-{
-}
+{}
 
 void PadPrimitive::Paint(Option_t* option)
 {
-  if(fRnrSelf) {
-    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  if (fRnrChildren)
+  {
+    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
       (*i)->PadPaint(option);
-    }
   }
 }
 
