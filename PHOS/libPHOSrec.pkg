@@ -4,6 +4,7 @@ SRCS          =  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
                  AliPHOSLink.cxx \
                  AliPHOSReconstructor.cxx  AliPHOSTrackSegment.cxx \
                  AliPHOSTrackSegmentMakerv1.cxx \
+                 AliPHOSTrackSegmentMakerv2.cxx \
                  AliPHOSRecParticle.cxx AliPHOSPIDv0.cxx \
                  AliPHOSAnalyze.cxx \
                  AliPHOSIhepAnalyze.cxx AliPHOSEvalRecPoint.cxx \

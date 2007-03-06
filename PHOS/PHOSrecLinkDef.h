@@ -12,6 +12,7 @@
 #pragma link C++ class AliPHOSEmcRecPoint+;
 #pragma link C++ class AliPHOSTrackSegment+;
 #pragma link C++ class AliPHOSTrackSegmentMakerv1+;
+#pragma link C++ class AliPHOSTrackSegmentMakerv2+;
 #pragma link C++ class AliPHOSRecParticle+;
 #pragma link C++ class AliPHOSPIDv0+;
 #pragma link C++ class AliPHOSAnalyze+;
