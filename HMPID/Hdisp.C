@@ -4,7 +4,7 @@ Int_t gEvt=0; Int_t gMaxEvt=0;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hdisp()
 {//display events from files if any in current directory or simulated events
-  pAll=new TCanvas("all","",1000,900); pAll->Divide(3,3,0,0);
+  pAll=new TCanvas("all","",1000,900); pAll->Divide(3,3,0,0);pAll->ToggleEditor();
   pAll->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,"","DoZoom(Int_t,Int_t,Int_t,TObject*)");
   
   if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
@@ -186,9 +186,10 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
  // Printf("evt=%i (%i,%i) %s",evt,px,py,obj->GetName());
     
   Float_t x=pPad->AbsPixeltoX(px); Float_t y=pPad->AbsPixeltoY(py); 
-             
-  if(evt==5){ zoom=zoom/2;     pPad->Range(x-zoom*2,y-zoom*2,x+zoom*2,y+zoom*2);}                               //zoom in
-  else      { zoom=minZoom;    pPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5);  } //zoom out 
+ 
+  if(evt==5){ zoom=zoom/2;     pPad->Range(x-zoom*2,y-zoom*2,x+zoom*2,y+zoom*2);} //zoom in
+  else      { zoom=zoom*2;     pPad->Range(x-zoom*2,y-zoom*2,x+zoom*2,y+zoom*2);} //zoom out 
+  if(zoom==minZoom) pPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5);
   ((TCanvas *)gTQSender)->SetTitle(Form("zoom x%i",minZoom/zoom));
   pPad->Modified();
   pPad->Update();                                              
