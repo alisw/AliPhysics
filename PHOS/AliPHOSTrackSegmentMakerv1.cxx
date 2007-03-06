@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.82  2007/03/06 06:54:48  kharlov
+ * DP:Calculation of cluster properties dep. on vertex added
+ *
  * Revision 1.81  2007/02/05 10:02:40  kharlov
  * Module numbering is corrected
  *
@@ -412,10 +415,12 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     if(emcExist[linkUp->GetEmc()-fEmcFirst] != -1){
 
       if(cpvExist[linkUp->GetCpv()-fCpvFirst]){ //CPV still exist
+         Float_t dx,dz ;
+         linkUp->GetXZ(dx,dz) ;
 	 new ((* trackSegments)[fNTrackSegments]) 
 	   AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(linkUp->GetEmc())) , 
 			       dynamic_cast<AliPHOSCpvRecPoint *>(cpvRecPoints->At(linkUp->GetCpv())) , 
-			       linkUp->GetTrack()) ;
+			       linkUp->GetTrack(),dx,dz) ;
 	 
        (dynamic_cast<AliPHOSTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++ ;
