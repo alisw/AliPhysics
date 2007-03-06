@@ -36,7 +36,8 @@ public:
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
   static AliPHOSGeometry * GetInstance() ; 
-  virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrixF & gmat) const ;
+  virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrixF & /* gmat */) const 
+                 {GetGlobal(RecPoint,gpos); }
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ;
   virtual Bool_t Impact(const TParticle * particle) const ;
 
@@ -54,20 +55,21 @@ public:
   Bool_t AbsToRelNumbering(Int_t AbsId, Int_t * RelId) const ; 
                                           // converts the absolute PHOS numbering to a relative 
 
-  void EmcModuleCoverage(Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, 
-			                  Double_t & pM, Option_t * opt = Radian() ) const ;
-                                         // calculates the angular coverage in theta and phi of a EMC module
-  void EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt = Radian() ) const ; 
-                                         // calculates the angular coverage in theta and phi of a  
-                                         // single crystal in a EMC module
-  void ImpactOnEmc(Double_t theta, Double_t phi, Int_t & ModuleNumber, 
-		         Double_t & z, Double_t & x) const ; 
-  void ImpactOnEmc(const TVector3& vec, Int_t & ModuleNumber, 
-		         Double_t & z, Double_t & x) const ; 
-  void ImpactOnEmc(const TParticle& p, Int_t & ModuleNumber, 
-		         Double_t & z, Double_t & x) const ; 
-                                        // calculates the impact coordinates of a neutral particle  
-                                         // emitted in direction theta and phi in ALICE
+//  void EmcModuleCoverage(Int_t m, Double_t & tm, Double_t & tM, Double_t & pm, 
+//			                  Double_t & pM, Option_t * opt = Radian() ) const ;
+//                                         // calculates the angular coverage in theta and phi of a EMC module
+//  void EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt = Radian() ) const ; 
+//                                         // calculates the angular coverage in theta and phi of a  
+//                                         // single crystal in a EMC module
+
+  void ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi, 
+		   Int_t & ModuleNumber, Double_t & z, Double_t & x) const ; 
+//  void ImpactOnEmc(const TVector3& vec, Int_t & ModuleNumber, 
+//		         Double_t & z, Double_t & x) const ; 
+//  void ImpactOnEmc(const TParticle& p, Int_t & ModuleNumber, 
+//		         Double_t & z, Double_t & x) const ; 
+//                                        // calculates the impact coordinates of a neutral particle  
+//                                         // emitted in direction theta and phi in ALICE
   Bool_t IsInEMC(Int_t id) const { if (id > GetNModules() *  GetNCristalsInModule() ) return kFALSE; return kTRUE; } 
   void RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) const ; 
                                          // gets the position of element (pad or Xtal) relative to 
@@ -78,6 +80,9 @@ public:
                                          // converts the absolute PHOS numbering to a relative 
   void  RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t & AbsId) const; 
                                          // converts local PHOS-module (x, z) coordinates to absId 
+  void  GetIncidentVector(TVector3 &vtx, Int_t module, Float_t x, Float_t z, TVector3& vInc) const ;
+                                         //calculates vector from vertex to current point in module local frame
+  void  Local2Global(Int_t module, Float_t x, Float_t z, TVector3 &globaPos) const ;
 
   Bool_t IsInitialized(void)                  const { return fgInit ; }  
                                                                        
@@ -97,7 +102,7 @@ public:
     return fModuleAngle[module][axis][angle];}
   
 
-  // Return EMCA geometry parameters
+  // Return ideal EMCA geometry parameters
 
   AliPHOSEMCAGeometry * GetEMCAGeometry()      const {return fGeometryEMCA ;}
   Float_t   GetIPtoCrystalSurface(void)        const { return fGeometryEMCA->GetIPtoCrystalSurface() ; }
@@ -106,7 +111,7 @@ public:
   Int_t     GetNZ(void)                        const { return fGeometryEMCA->GetNZ() ; }
   Int_t     GetNCristalsInModule(void)         const { return fGeometryEMCA->GetNPhi() * fGeometryEMCA->GetNZ() ; }
 
-  // Return CPV geometry parameters
+  // Return ideal CPV geometry parameters
   Int_t   GetNumberOfCPVLayers(void)           const { return fGeometryCPV ->GetNumberOfCPVLayers();      }
   Float_t GetCPVActiveSize(Int_t index)        const { return fGeometryCPV->GetCPVActiveSize(index);      }
   Int_t   GetNumberOfCPVChipsPhi(void)         const { return fGeometryCPV->GetNumberOfCPVChipsPhi();     }
@@ -124,6 +129,9 @@ public:
   Float_t GetCPVBoxSize(Int_t index)           const { return fGeometryCPV ->GetCPVBoxSize(index);        } 
   Float_t GetIPtoCPVDistance(void)             const { return  GetIPtoOuterCoverDistance() - 
 							       GetCPVBoxSize(1) - 1.0; }
+
+
+  // Return real CPV geometry parameters
   void GetModuleCenter(TVector3& center, const char *det, Int_t module) const;
   void Global2Local(TVector3& localPosition,
 		    const TVector3& globalPosition,
