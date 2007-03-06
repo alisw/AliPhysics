@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.30  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.29  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -50,6 +53,8 @@ AliPHOSTrackSegment::AliPHOSTrackSegment()
 			  fTrack(0)
 {
   //def ctor
+  fDcpv[0]=999. ;
+  fDcpv[1]=999. ;
 }
 
 //____________________________________________________________________________
@@ -75,6 +80,8 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc ,
   fTrack = -1 ; 
 
   fIndexInList = -1 ;
+  fDcpv[0]=999. ;
+  fDcpv[1]=999. ;
 }
 
 //____________________________________________________________________________
@@ -101,6 +108,37 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc ,
   fTrack = track ; 
 
   fIndexInList = -1 ;
+  fDcpv[0]=999. ;
+  fDcpv[1]=999. ;
+}
+
+//____________________________________________________________________________
+AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , 
+					  AliPHOSRecPoint * cpvrp1, 
+					  Int_t track, Float_t dx,Float_t dz)
+			: fEmcRecPoint(0),
+			  fIndexInList(0),
+			  fCpvRecPoint(0),
+			  fTrack(0)
+{
+  // ctor
+
+  if( emc )   
+    fEmcRecPoint =  emc->GetIndexInList() ;
+  else 
+    fEmcRecPoint = -1 ;
+
+  if( cpvrp1 )  
+    fCpvRecPoint = cpvrp1->GetIndexInList() ;
+ else 
+    fCpvRecPoint = -1 ;
+  
+  fTrack = track ; 
+
+  fIndexInList = -1 ;
+
+  fDcpv[0] = dx ;
+  fDcpv[1] = dz ;
 }
 
 //____________________________________________________________________________
@@ -127,6 +165,8 @@ void AliPHOSTrackSegment::Copy(TObject & obj) const
    ( (AliPHOSTrackSegment &)obj ).fCpvRecPoint     = fCpvRecPoint ; 
    ( (AliPHOSTrackSegment &)obj ).fIndexInList     = fIndexInList ; 
    ( (AliPHOSTrackSegment &)obj ).fTrack           = fTrack ;
+   ( (AliPHOSTrackSegment &)obj ).fDcpv[0]         = fDcpv[0] ;
+   ( (AliPHOSTrackSegment &)obj ).fDcpv[1]         = fDcpv[1] ;
 } 
 
 
@@ -147,6 +187,7 @@ void AliPHOSTrackSegment::Print(const Option_t *) const
     printf(" Charged track #     %d\n", fTrack) ;
   else
     printf(" No Charged track\n");
+  printf(" Distance to CPV: x=%f, z=%f\n",fDcpv[0],fDcpv[1]) ;
 }
 
 //____________________________________________________________________________
@@ -158,4 +199,12 @@ void AliPHOSTrackSegment::SetCpvRecPoint(AliPHOSRecPoint * cpvRecPoint)
  else 
     fCpvRecPoint = -1 ;
 }
+//____________________________________________________________________________
+Float_t AliPHOSTrackSegment::GetCpvDistance(const Option_t* dr) const
+{
+ if(strcmp(dr,"x")==0||strcmp(dr,"X")==0) return fDcpv[0] ; 
+ if(strcmp(dr,"z")==0||strcmp(dr,"Z")==0) return fDcpv[1] ; 
+ if(strcmp(dr,"r")==0||strcmp(dr,"R")==0) return TMath::Sqrt(fDcpv[0]*fDcpv[0]+fDcpv[1]*fDcpv[1]) ; 
+ return 999. ;
 
+}

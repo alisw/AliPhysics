@@ -32,16 +32,17 @@
 ClassImp(AliPHOSLink)
 //____________________________________________________________________________
   AliPHOSLink::AliPHOSLink() : 
-    fEmcN(-1), fCpvN(-1), fR(-1.), fTrack(-1)
+    fEmcN(-1), fCpvN(-1), fTrack(-1), fx(-1.), fz(-1.) 
 {
 }
 
 //____________________________________________________________________________
-AliPHOSLink::AliPHOSLink(Float_t r, Int_t emc, Int_t cpv, Int_t track):
+AliPHOSLink::AliPHOSLink(Float_t dx, Float_t dz, Int_t emc, Int_t cpv, Int_t track):
   fEmcN(emc),
   fCpvN(cpv),
-  fR(r),
-  fTrack(track)
+  fTrack(track),
+  fx(dx),
+  fz(dz)
 {
   // ctor
 }
@@ -55,7 +56,7 @@ Int_t AliPHOSLink::Compare(const TObject * obj) const
 
   AliPHOSLink * link = (AliPHOSLink *) obj ;
 
-  if(this->fR < link->GetR() ) 
+  if(fx*fx+fz*fz < link->fz*link->fz+link->fx*link->fx ) 
     rv = -1 ;
   else 
     rv = 1 ;
