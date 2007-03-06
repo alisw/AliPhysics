@@ -22,6 +22,8 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TString.h>
+#include <TMath.h>
+#include "TClonesArray.h"
 
 // AliRoot things
 #include "AliESD.h"
@@ -98,7 +100,8 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
  //cout << " -evt- " << fFlowEvent << endl ;
 
  fRunID = fESD->GetRunNumber() ;
- fEventNumber = fESD->GetEventNumber() ;
+ fEventNumber = -1 ;
+ // fEventNumber = fESD->GetEventNumber() ;
  fNumberOfTracks = fESD->GetNumberOfTracks() ;
  fNumberOfV0s = fESD->GetNumberOfV0s() ;
  //
@@ -112,9 +115,9 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
  // Run information (fixed - ???)
  fMagField = fESD->GetMagneticField() ; // cout << " *fMagField " << fMagField << endl ;
  fFlowEvent->SetMagneticField(fMagField) ;	
- fFlowEvent->SetCenterOfMassEnergy(AliFlowConstants::fgCenterOfMassEnergy) ;	
- fFlowEvent->SetBeamMassNumberEast(AliFlowConstants::fgBeamMassNumberEast) ;	
- fFlowEvent->SetBeamMassNumberWest(AliFlowConstants::fgBeamMassNumberWest) ;	
+ fFlowEvent->SetCenterOfMassEnergy(AliFlowConstants::fgCenterOfMassEnergy) ;  
+ fFlowEvent->SetBeamMassNumberEast(AliFlowConstants::fgBeamMassNumberEast) ;  
+ fFlowEvent->SetBeamMassNumberWest(AliFlowConstants::fgBeamMassNumberWest) ;  
 
  // Trigger information (now is: ULon64_t - some trigger mask)
  fFlowEvent->SetL0TriggerWord((Int_t)fESD->GetTriggerMask()); 
@@ -137,20 +140,19 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
  // Track loop
  if(fLoopTrks)
  {
-  Int_t badTrks = 0 ;
+  Int_t badTrks = 0 ;   
   for(fTrackNumber=0;fTrackNumber<fNumberOfTracks;fTrackNumber++) 
   {
    fTrack = fESD->GetTrack(fTrackNumber) ;
    if(CheckTrack(fTrack))
    {
-    fFlowTrack = FillFlowTrack(fTrack) ;   
-    fFlowEvent->TrackCollection()->Add(fFlowTrack) ;   
+    FillFlowTrack(fTrack) ;   
     fGoodTracks++ ;				      
    }
    else { badTrks++ ; continue ; }
   }
   fCutTrks += badTrks ;
- }
+ } // cout << " -track number- :  " << fTrackNumber << endl ;
 
  // V0 loop
  if(fLoopV0s)
@@ -161,14 +163,13 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
    fV0 = fESD->GetV0(fV0Number) ;			
    if(CheckV0(fV0))
    {
-    fFlowV0 =  FillFlowV0(fV0) ;
-    fFlowEvent->V0Collection()->Add(fFlowV0) ;
+    FillFlowV0(fV0) ;
     fGoodV0s++ ; 			
    }
    else { badV0s++ ; continue ; }
   }
   fCutV0s += badV0s ;
- }
+ } // cout << " -v0 number- :  " << fV0Number << endl ;
 
  // Evt setting stuff
  fFlowEvent->SetCentrality();	
@@ -182,9 +183,12 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  // From the AliESDtrack (input) fills the AliFlowTrack (output) .
 
  TString name = "" ; name += fTrackNumber ;
- fFlowTrack = new AliFlowTrack(name.Data()) ;
- //cout << " -tr- " << name.Data() << endl ;
+ Int_t idx = fFlowEvent->TrackCollection()->GetEntries() ;
+ fFlowTrack = (AliFlowTrack*)(fFlowEvent->TrackCollection()->New(idx)) ;
+ fFlowTrack->SetName(name.Data()) ;
  
+ // cout << " -tr- " << name.Data() << "(" << idx << ")"  << endl ;
+
  // ESD particle label (link: KineTree-ESD)
  Int_t label = TMath::Abs(fTrack->GetLabel());
  fFlowTrack->SetLabel(label) ; 			
@@ -194,6 +198,12 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  fTrack->GetImpactParameters(xy,z) ; 
  fFlowTrack->SetDcaSigned(xy,z) ; 		    
 
+ // error on the DCA
+ Float_t dcaBis[2] ; Float_t dcaCov[3] ; 
+ for(Int_t dd=0;dd<3;dd++) { dcaCov[dd] = 0. ; }
+ fTrack->GetImpactParameters(dcaBis, dcaCov) ;
+ fFlowTrack->SetDcaError(dcaCov[0],dcaCov[1],dcaCov[2]) ; 		    
+
  // UnConstrained (global) first
  Double_t gD[3] ; 				
  fTrack->GetPxPyPz(gD) ;			
@@ -201,7 +211,7 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  Float_t phiGl = (Float_t)Phi(gD) ;  
  if(phiGl<0) { phiGl += 2*TMath::Pi() ; }
  fFlowTrack->SetPhiGlobal(phiGl) ;		
- Float_t ptGl = (Float_t)Pt(gD) ; 
+ Float_t ptGl = (Float_t)Pt(gD) ;  if(ptGl<=0) { cout << " !!! ptGlobal = " << ptGl << endl ; }
  fFlowTrack->SetPtGlobal(ptGl) ;		
  Float_t etaGl = (Float_t)Eta(gD) ; 
  fFlowTrack->SetEtaGlobal(etaGl) ;		
@@ -220,7 +230,7 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
   Float_t phi = (Float_t)Phi(cD) ; 
   if(phi<0) { phi += 2*TMath::Pi() ; }
   fFlowTrack->SetPhi(phi) ;                 		
-  Float_t pt = (Float_t)Pt(cD) ; 
+  Float_t pt = (Float_t)Pt(cD) ;   if(pt<=0) { cout << " !!! pt = " << pt << endl ; }
   fFlowTrack->SetPt(pt) ;          			
   Float_t eta = (Float_t)Eta(cD) ; 
   fFlowTrack->SetEta(eta) ; 				
@@ -358,10 +368,18 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  // From the AliESDv0 (input) fills the AliFlowV0 (output) .
 
  TString name = "" ; name += fV0Number ;
- fFlowV0 = new AliFlowV0(name.Data()) ;
- //cout << " -v0- " << name.Data() << endl ;
+ Int_t idx = fFlowEvent->V0Collection()->GetEntries() ;
+ fFlowV0 = (AliFlowV0*)(fFlowEvent->V0Collection()->New(idx)) ;
+ fFlowV0->SetName(name.Data()) ;
+ 
+ // cout << " -v0- " << name.Data() << "(" << idx << ")"  << endl ;
 
- Double_t pxyz[3] ; 		// reconstructed momentum of the V0
+ // ESD particle label (link: KineTree-ESD)
+ Int_t label = -1 ; // TMath::Abs(fV0->GetLabel());
+ fFlowV0->SetLabel(label) ; 			
+
+ // reconstructed momentum of the V0
+ Double_t pxyz[3] ;
  fV0->GetPxPyPz(pxyz[0],pxyz[1],pxyz[2]) ;
 
  Float_t phi = (Float_t)Phi(pxyz) ; if(phi<0) { phi += 2*TMath::Pi() ; }
@@ -371,19 +389,24 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  Float_t eta = (Float_t)Eta(pxyz) ; 
  fFlowV0->SetEta(eta) ; 	
 
- Double_t xyz[3] ; 		// reconstructed position of the V0 
+ // reconstructed position of the V0 
+ Double_t xyz[3] ; 		
  fV0->GetXYZ(xyz[0],xyz[1],xyz[2]) ;	        
  fFlowV0->SetCrossPoint(xyz[0],xyz[1],xyz[2]) ;
 
- // // V0's impact parameter & error (chi2 , DCA , sigma)  
- // fFlowV0->SetDca((Float_t)fV0->GetDistNorm()) ;    // GetD()  
- // fFlowV0->SetSigma((Float_t)fV0->GetDistSigma()) ;
- // fFlowV0->SetChi2((Float_t)fV0->GetChi2V0()) ;     // AliRoot v4-04-Release (December 2006)	
- // fFlowV0->SetChi2((Float_t)fV0->GetChi2()) ;	      // AliRoot v4-04-Release (old)
- // // ...when they'll stop changing the methods I may enable the above lines. For now:
+ // V0's impact parameter & error (chi2 , DCA , sigma , pointing angle)  
+ //fFlowV0->SetDca((Float_t)fV0->GetD()) ;    // GetDistNorm 
+ //fFlowV0->SetSigma((Float_t)fV0->GetDistSigma()) ;
+ //fFlowV0->SetCosPointingAngle((Float_t)fV0->GetV0CosineOfPointingAngle()) ;  
+ //fFlowV0->SetDaughtersDCA(fV0->GetDcaV0Daughters()) ;
+ //fFlowV0->SetChi2((Float_t)fV0->GetChi2V0()) ;     // AliRoot v4-04-Release (December 2006)  
+ //fFlowV0->SetChi2((Float_t)fV0->GetChi2()) ;       // AliRoot v4-04-Release (old)
+ // ...when they'll stop changing the methods I'll enable the above lines. For now:
+ fFlowV0->SetDca(0.);
+ fFlowV0->SetSigma(0.1); 
+ fFlowV0->SetCosPointingAngle(1.) ;	
+ fFlowV0->SetDaughtersDca(0.) ;
  fFlowV0->SetChi2(1.) ;
- fFlowV0->SetDca(1.);      // GetD()
- fFlowV0->SetSigma(1.); 
 
  // P.id. 
  Int_t pdgCode = fV0->GetPdgCode() ;
@@ -392,6 +415,7 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  // mass 
  fFlowV0->SetVmass((Float_t)fV0->GetEffMass()) ; 
  
+ // daughters 
  Int_t pN = fV0->GetPindex() ;
  Int_t nN = fV0->GetNindex() ;
  AliFlowTrack* pos = (AliFlowTrack*)fFlowEvent->TrackCollection()->At(pN) ; 

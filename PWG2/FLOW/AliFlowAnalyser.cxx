@@ -55,7 +55,7 @@
 #include <TChain.h>
 #include <TString.h>
 #include <TObject.h>
-#include <TObjArray.h>
+#include <TClonesArray.h>
 #include <TOrdCollection.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -147,6 +147,8 @@ Bool_t AliFlowAnalyser::Init()
  fFlowV0     = 0 ;
  fFlowTracks = 0 ;
  fFlowV0s    = 0 ;
+ fSelParts = 0 ;
+ fSelV0s   = 0 ;
  for(Int_t ii=0;ii<3;ii++) { fVertex[ii] = 0 ; }
 
  // Check for Reading weights: if weight file is not there, wgt arrays are not used (phiwgt & bayesian)
@@ -1981,7 +1983,7 @@ Bool_t AliFlowAnalyser::Analyse(AliFlowEvent* flowEvent)
  else 
  {
   cout << " * 0 . Event " << fEventNumber << " (event ID = " << fFlowEvent->EventID() << ") discarded . " << endl ; 
-  delete fFlowEvent  ; fFlowEvent = 0 ; 
+  // delete fFlowEvent  ; fFlowEvent = 0 ; 
   return kFALSE ;
  }
  fEventNumber++ ;
@@ -2130,7 +2132,7 @@ void AliFlowAnalyser::FillEventHistograms(AliFlowEvent* fFlowEvent)
  return ;
 }
 //-----------------------------------------------------------------------
-void AliFlowAnalyser::FillParticleHistograms(TObjArray* fFlowTracks) 
+void AliFlowAnalyser::FillParticleHistograms(TClonesArray* fFlowTracks) 
 {
  // fills tracks histograms
 
@@ -2157,10 +2159,14 @@ void AliFlowAnalyser::FillParticleHistograms(TObjArray* fFlowTracks)
  float muonMinusN     = 0. ;
  float muonPlusN      = 0. ;
 
+ fSelParts = 0 ;
+ fSelV0s   = 0 ;
  for(fTrackNumber=0;fTrackNumber<fNumberOfTracks;fTrackNumber++) 
  {
-  fFlowTrack = (AliFlowTrack*)fFlowTracks->At(fTrackNumber) ;
-  //cout << "Track n. " << fTrackNumber << endl ; fFlowTrack->Dump() ; 
+  //fFlowTrack = (AliFlowTrack*)fFlowTracks->At(fTrackNumber) ;
+  
+  fFlowTrack = (AliFlowTrack*)(fFlowTracks->AddrAt(fTrackNumber)) ;
+  //cout << "Track n. " << fTrackNumber << endl ; // fFlowTrack->Dump() ; 
   
   bool constrainable = fFlowTrack->IsConstrainable() ;
   // int label = fFlowTrack->Label() ; 			
@@ -2211,41 +2217,35 @@ void AliFlowAnalyser::FillParticleHistograms(TObjArray* fFlowTracks)
   fHistTransDca->Fill(dcaSigned);
   fHistChi2->Fill(chi2);
   
+  // - here TPC   (chi2 & nHits)
+  fHistChi2TPC->Fill(chi2TPC);
+  if(fitPtsTPC>0) { fHistChi2normTPC->Fill(chi2TPC/((float)fitPtsTPC)) ; }
+  fHistFitPtsTPC->Fill((float)fitPtsTPC);
+  fHistMaxPtsTPC->Fill((float)maxPtsTPC);
+  if(maxPtsTPC>0) { fHistFitOverMaxTPC->Fill((float)(fitPtsTPC)/(float)maxPtsTPC) ; }
+
   // - here ITS   (chi2 & nHits)
   fHistChi2ITS->Fill(chi2ITS);
-  if (fitPtsITS>0)
-    fHistChi2normITS->Fill(chi2ITS/((float)fitPtsITS));
+  if(fitPtsITS>0) { fHistChi2normITS->Fill(chi2ITS/((float)fitPtsITS)) ; }
   fHistFitPtsITS->Fill((float)fitPtsITS);
   fHistMaxPtsITS->Fill((float)maxPtsITS);
 
-  // - here TPC   (chi2 & nHits)
-  fHistChi2TPC->Fill(chi2TPC);
-  if (fitPtsTPC>0)
-    fHistChi2normTPC->Fill(chi2TPC/((float)fitPtsTPC));
-  fHistFitPtsTPC->Fill((float)fitPtsTPC);
-  fHistMaxPtsTPC->Fill((float)maxPtsTPC);
-  if(maxPtsTPC>0)
-    fHistFitOverMaxTPC->Fill((float)(fitPtsTPC)/(float)maxPtsTPC);
-
-  // - here TRD  (chi2 & nHits)
+  // - here TRD   (chi2 & nHits)
   fHistChi2TRD->Fill(chi2TRD);
-  if (fitPtsTRD>0)
-    fHistChi2normTRD->Fill(chi2TRD/((float)fitPtsTRD));
+  if(fitPtsTRD>0) { fHistChi2normTRD->Fill(chi2TRD/((float)fitPtsTRD)) ; }
   fHistFitPtsTRD->Fill((float)fitPtsTRD);
   fHistMaxPtsTRD->Fill((float)maxPtsTRD);
 
   // - here TOF   (chi2 & nHits)
   fHistChi2TOF->Fill(chi2TOF);
-  if (fitPtsTOF>0)
-    fHistChi2normTOF->Fill(chi2TOF/((float)fitPtsTOF));
+  if(fitPtsTOF>0) { fHistChi2normTOF->Fill(chi2TOF/((float)fitPtsTOF)) ; }
   fHistFitPtsTOF->Fill((float)fitPtsTOF);
   fHistMaxPtsTOF->Fill((float)maxPtsTOF);
   
   // fit over max (all)
   int maxPts = maxPtsITS + maxPtsTPC + maxPtsTRD + maxPtsTOF ;
   int fitPts = fitPtsITS + fitPtsTPC + fitPtsTRD + fitPtsTOF ;
-  if(maxPts>0)
-    fHistFitOverMax->Fill((float)(fitPts)/(float)maxPts) ;
+  if(maxPts>0)    { fHistFitOverMax->Fill((float)(fitPts)/(float)maxPts) ; }
   
   // lenght
   fHistLenght->Fill(lenght) ;
@@ -2326,7 +2326,7 @@ void AliFlowAnalyser::FillParticleHistograms(TObjArray* fFlowTracks)
     fHistMeanTOFDeuteron->Fill(invMass, tof);
     fHistPidDeuteronPart->Fill(deuteron) ;
    }
-  } 
+  }
   else if(charge == -1) 
   {
    hMinusN++ ;
@@ -2430,6 +2430,8 @@ void AliFlowAnalyser::FillParticleHistograms(TObjArray* fFlowTracks)
   // fills selected part histograms
   if(fFlowSelect->SelectPart(fFlowTrack)) 
   {
+   fSelParts++ ;
+  
    if(strlen(fFlowSelect->PidPart()) != 0) 
    {
     float rapidity = fFlowTrack->Y();
@@ -2530,7 +2532,8 @@ void AliFlowAnalyser::FillParticleHistograms(TObjArray* fFlowTracks)
 
  // Multiplicity of particles correlated with the event planes
  corrMultN /= (float)(AliFlowConstants::kHars * AliFlowConstants::kSels) ; 
- fHistMultPart->Fill(corrMultN) ;
+ if(fSelParts == corrMultN) { fHistMultPart->Fill(corrMultN) ; } // crosscheck
+ else  			    { fHistMultPart->Fill(-1) ; }
  // ...in one unit rapidity
  corrMultUnit /= (float)(AliFlowConstants::kHars * AliFlowConstants::kSels) ; 
  fHistMultPartUnit->Fill(corrMultUnit) ;
@@ -2760,16 +2763,19 @@ Int_t AliFlowAnalyser::HarmonicsLoop(AliFlowTrack* fFlowTrack)
  return corrMultN ;
 }
 //-----------------------------------------------------------------------
-void AliFlowAnalyser::FillV0Histograms(TObjArray* fFlowV0s)
+void AliFlowAnalyser::FillV0Histograms(TClonesArray* fFlowV0s)
 {
  // v0s histograms
 
  cout << " V0s Loop . " << endl ;
 
- int corrMultV0 = 0 ;
+ fSelV0s = 0 ;
  for(fV0Number=0;fV0Number<fNumberOfV0s;fV0Number++) 
  {
-  fFlowV0 = (AliFlowV0*)fFlowV0s->At(fV0Number) ;	    
+  //fFlowV0 = (AliFlowV0*)fFlowV0s->At(fV0Number) ;	  
+  
+  fFlowV0 = (AliFlowV0*)(fFlowV0s->AddrAt(fV0Number)) ;
+  // cout << " looping v0 n. " << fV0Number << " * " << fFlowV0 << endl ;  
 
   float mass = fFlowV0->Mass() ;   	   	    
   float eta = fFlowV0->Eta() ;   	   	    
@@ -2805,7 +2811,7 @@ void AliFlowAnalyser::FillV0Histograms(TObjArray* fFlowV0s)
    bool inWin = fFlowSelect->SelectV0Part(fFlowV0) ;
    bool sx = fFlowSelect->SelectV0sxSide(fFlowV0) ;
    bool dx = fFlowSelect->SelectV0dxSide(fFlowV0) ;
-   corrMultV0++ ;
+   fSelV0s++ ;
 
    fHistV0YieldPart2D->Fill(eta, pt) ;
    if(inWin) 
@@ -2978,7 +2984,7 @@ void AliFlowAnalyser::FillV0Histograms(TObjArray* fFlowV0s)
   //delete daughterPlus ; daughterPlus = 0 ;  
   //delete daughterMinus ; daughterMinus = 0 ;  
  }
- fHistV0MultPart->Fill(corrMultV0) ;
+ fHistV0MultPart->Fill(fSelV0s) ;
 
  return ;
 }
@@ -3058,6 +3064,11 @@ void AliFlowAnalyser::PrintEventQuantities() const
   cout << endl ;
   cout << "		" ; 
  }
+ cout << endl ;
+
+ cout << " N. of selected tracks - SelPart(AliFlowTrack*) = " << fSelParts << endl ;	  		    		//! n. of tracks selected for correlation analysis
+ cout << " N. of selected V0s    - SelPart(AliFlowV0*)    = " << fSelV0s << endl ;	  		    		//! n. of v0s selected for correlation analysis
+
  cout << endl ;
 }
 //----------------------------------------------------------------------
@@ -3453,7 +3464,7 @@ Double_t AliFlowAnalyser::ResEventPlaneK4(Double_t chi)
 
  return res ;
 }
-//-------------------------------------------------------------
+//-----------------------------------------------------------------------
 // ###
 //-----------------------------------------------------------------------
 

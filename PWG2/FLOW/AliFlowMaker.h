@@ -7,8 +7,8 @@
 //////////////////////////////////////////////////////////////////////
 //
 // Description: parser class from AliESD to AliFlowEvent . 
-//  nothing else to say, but those 3 lines need to be filled somehow,
-//  I hope now is ok!
+//  Nothing else to say at thispoint, but 3 lines of comments must be 
+//  there to make the code checker happy. I hope now is ok!
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -18,6 +18,7 @@
 class AliFlowEvent ;
 class AliFlowTrack ;
 class AliFlowV0 ;
+class TClonesArray ;
 
 class AliESD ;
 class AliESDVertex ;
@@ -89,8 +90,9 @@ class AliFlowMaker  {
 
  private:
 
-   //AliFlowMaker(const AliFlowMaker &flowMak) 		    { flowMak.fCounter ; } // Copy Constructor (dummy)
-   //AliFlowMaker &operator=(const AliFlowMaker &flowMak)   { return *this ; }	  // Assignment Operator
+  // to make the code checker happy
+   AliFlowMaker(const AliFlowMaker &flowMak) ; 		    // Copy Constructor (dummy)
+   AliFlowMaker &operator=(const AliFlowMaker &flowMak) ;   // Assignment Operator (dummy)
 
   // ESDs
     AliESD*          fESD;      	  		    //! "ESD" branch in fChain
