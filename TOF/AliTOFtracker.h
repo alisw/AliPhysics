@@ -29,6 +29,8 @@ class AliESD;
 
 class AliTOFcluster;
 class AliTOFGeometry;
+class TH1F;
+class TH2F;
 
 class AliTOFtracker : public AliTracker {
 
@@ -40,7 +42,8 @@ public:
  AliTOFtracker(const AliTOFtracker &t); //Copy Ctor 
  AliTOFtracker& operator=(const AliTOFtracker &source); // ass. op.
 
-  virtual ~AliTOFtracker() {delete fTOFpid;}
+ virtual ~AliTOFtracker();
+  //  virtual ~AliTOFtracker() {delete fTOFpid; SaveCheckHists();}
   virtual Int_t Clusters2Tracks(AliESD* /*event*/) {return -1;};
   virtual Int_t PropagateBack(AliESD* event);
   virtual Int_t RefitInward(AliESD* /*event*/) {return -1;};
@@ -48,6 +51,8 @@ public:
   virtual void  UnloadClusters();// UnLoad Clusters
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
   Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
+  void InitCheckHists();
+  void SaveCheckHists();
 
 private:
 
@@ -78,6 +83,27 @@ private:
   Float_t fDyMax;        // Upper limit in y for the size of the search window 
   TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
   TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
+  //Digits/Reco QA histos
+
+  TH2F * fHDigClusMap; //Digits QA, Cluster Map 
+  TH1F * fHDigNClus;   //Digits QA, # of clusters on TOF/event
+  TH1F * fHDigClusTime;//Digits QA, Cluster Time (ns)
+  TH1F * fHDigClusToT; //Digits QA, Cluster ToT (ns)
+  TH1F * fHRecNClus; //Reco QA, cluster occupancy in search window
+  TH1F * fHRecDist;//Reco QA, track-TOF cluster closest distance (cm)
+  TH2F * fHRecSigYVsP;//Reco QA, track error in Y at TOF inner surface (cm)
+  TH2F * fHRecSigZVsP; //Reco QA, track error in Z at TOF inner surface (cm)
+  TH2F * fHRecSigYVsPWin;//Reco QA, search window size in Y (cm)
+  TH2F * fHRecSigZVsPWin;//Reco QA, search window size in X (cm)
+  TTree * fCalTree; // Tree for on-the-fly offline Calibration
+  // internal variables in tree for on-the-fly TOF Calibration
+
+  Int_t fIch; //TOF channel number
+  Float_t fToT; // Time over Threshold, ns
+  Float_t fTime; //TOF time, ps
+  Float_t fExpTimePi; // exp time, Pions
+  Float_t fExpTimeKa; // exp time, Kaons
+  Float_t fExpTimePr; // exp time, Protons
 
   ClassDef(AliTOFtracker, 1) // TOF tracker 
 };

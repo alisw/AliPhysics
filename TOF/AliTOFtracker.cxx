@@ -31,6 +31,8 @@
 #include "TClonesArray.h"
 #include "TGeoManager.h"
 #include "TTree.h"
+#include "TFile.h"
+#include "TH2F.h"
 
 #include "AliAlignObj.h"
 #include "AliESDtrack.h"
@@ -69,7 +71,24 @@ AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]):
   fDzMax(35.), 
   fDyMax(50.), 
   fTracks(0x0),
-  fSeeds(0x0)
+  fSeeds(0x0),
+  fHDigClusMap(0x0),
+  fHDigNClus(0x0),
+  fHDigClusTime(0x0),
+  fHDigClusToT(0x0),
+  fHRecNClus(0x0),
+  fHRecDist(0x0),
+  fHRecSigYVsP(0x0),
+  fHRecSigZVsP(0x0),
+  fHRecSigYVsPWin(0x0),
+  fHRecSigZVsPWin(0x0),
+  fCalTree(0x0),
+  fIch(-1),
+  fToT(-1.),
+  fTime(-1.),
+  fExpTimePi(-1.),
+  fExpTimeKa(-1.),
+  fExpTimePr(-1.)
  { 
   //AliTOFtracker main Ctor
 
@@ -98,7 +117,24 @@ AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):
   fDzMax(35.), 
   fDyMax(50.), 
   fTracks(0x0),
-  fSeeds(0x0)
+  fSeeds(0x0),
+  fHDigClusMap(0x0),
+  fHDigNClus(0x0),
+  fHDigClusTime(0x0),
+  fHDigClusToT(0x0),
+  fHRecNClus(0x0),
+  fHRecDist(0x0),
+  fHRecSigYVsP(0x0),
+  fHRecSigZVsP(0x0),
+  fHRecSigYVsPWin(0x0),
+  fHRecSigZVsPWin(0x0),
+  fCalTree(0x0),
+  fIch(-1),
+  fToT(-1.),
+  fTime(-1.),
+  fExpTimePi(-1.),
+  fExpTimeKa(-1.),
+  fExpTimePr(-1.)
  { 
   //AliTOFtracker copy Ctor
 
@@ -152,7 +188,25 @@ AliTOFtracker& AliTOFtracker::operator=(const AliTOFtracker &t)
   return *this;
 
 }
-
+//_____________________________________________________________________________
+AliTOFtracker::~AliTOFtracker() {
+  //
+  // Dtor
+  //
+  SaveCheckHists();
+  delete fTOFpid; 
+  delete fHDigClusMap;
+  delete fHDigNClus;
+  delete fHDigClusTime;
+  delete fHDigClusToT;
+  delete fHRecNClus;
+  delete fHRecDist;
+  delete fHRecSigYVsP;
+  delete fHRecSigZVsP;
+  delete fHRecSigYVsPWin;
+  delete fHRecSigZVsPWin;
+  delete fCalTree;
+}
 //_____________________________________________________________________________
 Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   //
@@ -520,7 +574,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     delete trackTOFin;
 
     //  Store quantities to be used in the TOF Calibration
-    Float_t tToT=c->GetToT(); // in ps
+    Float_t tToT=AliTOFGeometry::TdcBinWidth()*c->GetToT()*1E-3; // in ns
     t->SetTOFsignalToT(tToT);
     Int_t ind[5];
     ind[0]=c->GetDetInd(0);
@@ -554,7 +608,26 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     t->SetIntegratedLength(recL);
     t->SetIntegratedTimes(time);
     t->SetTOFLabel(tlab);
+    // Fill Reco-QA histos for Reconstruction
+    fHRecNClus->Fill(nc);
+    fHRecDist->Fill(mindist);
+    fHRecSigYVsP->Fill(mom,TMath::Sqrt(cov[0]));
+    fHRecSigZVsP->Fill(mom,TMath::Sqrt(cov[2]));
+    fHRecSigYVsPWin->Fill(mom,dphi*fR);
+    fHRecSigZVsPWin->Fill(mom,dz);
 
+    // Fill Tree for on-the-fly offline Calibration
+
+    if ( !((t->GetStatus() & AliESDtrack::kTIME)==0 )){    
+      Float_t rawtime=AliTOFGeometry::TdcBinWidth()*c->GetTDCRAW()+32; // RAW time,in ps
+      fIch=calindex;
+      fToT=tToT;
+      fTime=rawtime;
+      fExpTimePi=time[2];
+      fExpTimeKa=time[3];
+      fExpTimePr=time[4];
+      fCalTree->Fill();
+    }
     delete trackTOFout;
   }
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
@@ -567,6 +640,12 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
   //This function loads the TOF clusters
   //--------------------------------------------------------------------
 
+  Int_t npadX = fGeom->NpadX();
+  Int_t npadZ = fGeom->NpadZ();
+  Int_t nStripA = fGeom->NStripA();
+  Int_t nStripB = fGeom->NStripB();
+  Int_t nStripC = fGeom->NStripC();
+
   TBranch *branch=cTree->GetBranch("TOF");
   if (!branch) { 
     AliError("can't get the branch with the TOF clusters !");
@@ -578,11 +657,52 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
 
   cTree->GetEvent(0);
   Int_t nc=clusters->GetEntriesFast();
+  fHDigNClus->Fill(nc);
+
   AliInfo(Form("Number of clusters: %d",nc));
 
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
     fClusters[i]=new AliTOFcluster(*c); fN++;
+
+  // Fill Digits QA histos
+ 
+    Int_t isector = c->GetDetInd(0);
+    Int_t iplate = c->GetDetInd(1);
+    Int_t istrip = c->GetDetInd(2);
+    Int_t ipadX = c->GetDetInd(4);
+    Int_t ipadZ = c->GetDetInd(3);
+
+    Float_t time = (AliTOFGeometry::TdcBinWidth()*c->GetTDC())*1E-3; // in ns
+    Float_t tot = (AliTOFGeometry::TdcBinWidth()*c->GetToT())*1E-3;//in ns
+ 
+    Int_t stripOffset = 0;
+    switch (iplate) {
+    case 0:
+      stripOffset = 0;
+      break;
+    case 1:
+      stripOffset = nStripC;
+      break;
+    case 2:
+      stripOffset = nStripC+nStripB;
+      break;
+    case 3:
+      stripOffset = nStripC+nStripB+nStripA;
+      break;
+    case 4:
+      stripOffset = nStripC+nStripB+nStripA+nStripB;
+      break;
+    default:
+      AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+      break;
+    };
+    Int_t zindex=npadZ*(istrip+stripOffset)+(ipadZ+1);
+    Int_t phiindex=npadX*isector+ipadX+1;
+    fHDigClusMap->Fill(zindex,phiindex);
+    fHDigClusTime->Fill(time);
+    fHDigClusToT->Fill(tot);
+
     //AliInfo(Form("%4i %4i  %f %f %f  %f %f   %2i %1i %2i %1i %2i",i, fClusters[i]->GetIndex(),fClusters[i]->GetZ(),fClusters[i]->GetR(),fClusters[i]->GetPhi(), fClusters[i]->GetTDC(),fClusters[i]->GetADC(),fClusters[i]->GetDetInd(0),fClusters[i]->GetDetInd(1),fClusters[i]->GetDetInd(2),fClusters[i]->GetDetInd(3),fClusters[i]->GetDetInd(4)));
     //AliInfo(Form("%i %f",i, fClusters[i]->GetZ()));
   }
@@ -688,3 +808,88 @@ Bool_t AliTOFtracker::GetTrackPoint(Int_t index, AliTrackPoint& p) const
   p.SetVolumeID((UShort_t)volid);
   return kTRUE;
 }
+//_________________________________________________________________________
+void AliTOFtracker::InitCheckHists() {
+
+  //Init histos for Digits/Reco QA and Calibration
+
+
+  fCalTree = new TTree("CalTree", "Tree for TOF calibration");
+  fCalTree->Branch("TOFchannelindex",&fIch,"iTOFch/I");
+  fCalTree->Branch("ToT",&fToT,"TOFToT/F");
+  fCalTree->Branch("TOFtime",&fTime,"TOFtime/F");
+  fCalTree->Branch("PionExpTime",&fExpTimePi,"PiExpTime/F");
+  fCalTree->Branch("KaonExpTime",&fExpTimeKa,"KaExpTime/F");
+  fCalTree->Branch("ProtonExpTime",&fExpTimePr,"PrExpTime/F");
+
+  //Digits "QA" 
+  fHDigClusMap = new TH2F("TOFDig_ClusMap", "",182,0.5,182.5,864, 0.5,864.5);  
+  fHDigNClus = new TH1F("TOFDig_NClus", "",200,0.5,200.5);  
+  fHDigClusTime = new TH1F("TOFDig_ClusTime", "",2000,0.,200.);  
+  fHDigClusToT = new TH1F("TOFDig_ClusToT", "",500,0.,100);  
+
+  //Reco "QA"
+  fHRecNClus =new TH1F("TOFRec_NClusW", "",50,0.5,50.5);
+  fHRecDist=new TH1F("TOFRec_Dist", "",50,0.5,10.5);
+  fHRecSigYVsP=new TH2F("TOFDig_SigYVsP", "",40,0.,4.,100, 0.,5.);
+  fHRecSigZVsP=new TH2F("TOFDig_SigZVsP", "",40,0.,4.,100, 0.,5.);
+  fHRecSigYVsPWin=new TH2F("TOFDig_SigYVsPWin", "",40,0.,4.,100, 0.,50.);
+  fHRecSigZVsPWin=new TH2F("TOFDig_SigZVsPWin", "",40,0.,4.,100, 0.,50.);
+}
+
+//_________________________________________________________________________
+void AliTOFtracker::SaveCheckHists() {
+
+  //write histos for Digits/Reco QA and Calibration
+
+  TDirectory *dir = gDirectory;
+  TFile *logFile = 0;
+  TFile *logFileTOF = 0;
+
+  TSeqCollection *list = gROOT->GetListOfFiles();
+  int N = list->GetEntries();
+  for(int i=0; i<N; i++) {
+    logFile = (TFile*)list->At(i);
+    if (strstr(logFile->GetName(), "AliESDs.root")) break;
+  }
+
+  Bool_t isThere=kFALSE;
+  for(int i=0; i<N; i++) {
+    logFileTOF = (TFile*)list->At(i);
+    if (strstr(logFileTOF->GetName(), "TOFQA.root")){
+      isThere=kTRUE;
+      break;
+    } 
+  }
+   
+  logFile->cd();
+  fHDigClusMap->Write(fHDigClusMap->GetName(), TObject::kOverwrite);
+  fHDigNClus->Write(fHDigNClus->GetName(), TObject::kOverwrite);
+  fHDigClusTime->Write(fHDigClusTime->GetName(), TObject::kOverwrite);
+  fHDigClusToT->Write(fHDigClusToT->GetName(), TObject::kOverwrite);
+  fHRecNClus->Write(fHRecNClus->GetName(), TObject::kOverwrite);
+  fHRecDist->Write(fHRecDist->GetName(), TObject::kOverwrite);
+  fHRecSigYVsP->Write(fHRecSigYVsP->GetName(), TObject::kOverwrite);
+  fHRecSigZVsP->Write(fHRecSigZVsP->GetName(), TObject::kOverwrite);
+  fHRecSigYVsPWin->Write(fHRecSigYVsPWin->GetName(), TObject::kOverwrite);
+  fHRecSigZVsPWin->Write(fHRecSigZVsPWin->GetName(), TObject::kOverwrite);
+  fCalTree->Write(fCalTree->GetName(),TObject::kOverwrite);
+  logFile->Flush();  
+
+  if(!isThere)logFileTOF = new TFile( "TOFQA.root","RECREATE");
+  logFileTOF->cd(); 
+  fHDigClusMap->Write(fHDigClusMap->GetName(), TObject::kOverwrite);
+  fHDigNClus->Write(fHDigNClus->GetName(), TObject::kOverwrite);
+  fHDigClusTime->Write(fHDigClusTime->GetName(), TObject::kOverwrite);
+  fHDigClusToT->Write(fHDigClusToT->GetName(), TObject::kOverwrite);
+  fHRecNClus->Write(fHRecNClus->GetName(), TObject::kOverwrite);
+  fHRecDist->Write(fHRecDist->GetName(), TObject::kOverwrite);
+  fHRecSigYVsP->Write(fHRecSigYVsP->GetName(), TObject::kOverwrite);
+  fHRecSigZVsP->Write(fHRecSigZVsP->GetName(), TObject::kOverwrite);
+  fHRecSigYVsPWin->Write(fHRecSigYVsPWin->GetName(), TObject::kOverwrite);
+  fHRecSigZVsPWin->Write(fHRecSigZVsPWin->GetName(), TObject::kOverwrite);
+  fCalTree->Write(fCalTree->GetName(),TObject::kOverwrite);
+  logFileTOF->Flush();  
+
+  dir->cd();
+  }
