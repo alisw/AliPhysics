@@ -109,14 +109,14 @@ void testAnal(TString output = "flowEvtsAnal.root")
  // Wgt file
  TString wgtFileName = "flowPhiWgt.root" ;
  TFile* wgtFile = new TFile(wgtFileName.Data(),"READ");
- flow->FillWgtArrays(wgtFile) ; // fix this !!!
- cout << " . Weights from  : " << flow->GetWgtFileName() << "  . " << endl ;
+ if(!wgtFile || wgtFile->IsZombie()) { cout << " . NO phi Weights . " << endl ;}
+ else { flow->FillWgtArrays(wgtFile) ; cout << " . Weights from  : " << flow->GetWgtFileName() << "  . " << endl ; }
 
  // Analysis settings
  flow->SetFlowForV0() ;         // default kTRUE.
  flow->SetEtaSub() ;            // default kFALSE
  //flow->SetV1Ep1Ep2() ;        // default kFALSE.
- flow->SetShuffle() ;           // default kFALSE. shuffles track array
+ flow->SetShuffle(kFALSE) ;     // default kFALSE. shuffles track array
  //flow->SetRedoWgt();      	// default kFALSE. recalculates phiWgt (even if phiWgt file is already there)
  flow->SetUsePhiWgt(kFALSE) ;   // default kTRUE if phiWgt file is there, kFALSE if not (& phiWgt file is created)
  flow->SetUseOnePhiWgt() ; // or // flow->SetUseFirstLastPhiWgt() ; // uses 1 or 3 wgt histograms (default is 1)
@@ -146,6 +146,7 @@ void testAnal(TString output = "flowEvtsAnal.root")
   flowEventsFile->GetObject(evtName.Data(),flowEvt) ;
   // cout << "dumping event " << ie << " : " << endl ; flowEvt->Dump() ; cout << endl ; 
   Bool_t succ = flow->Analyse(flowEvt) ;  
+  flow->PrintEventQuantities() ;
   if(succ) { cout << ie << " done ... " << endl ; } 
  }
 
