@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2006/09/07 18:31:08  kharlov
+ * Effective c++ corrections (T.Pocheptsov)
+ *
  * Revision 1.10  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -63,7 +66,7 @@ public:
   
   virtual void Init() ;
   void     MakeRecParticles(void ) ;
-  Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance CPV-EMC
+//  Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance CPV-EMC
   TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void     PrintRecParticles(Option_t * option) ;
   virtual void WriteRecParticles(); 

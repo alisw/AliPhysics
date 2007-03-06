@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.58  2006/04/12 11:32:03  alibrary
+ * Simplification of Makefile and some small corrections
+ *
  * Revision 1.57  2006/01/23 17:51:48  hristov
  * Using the recommended way of forward declarations for TVector and TMatrix (see v5-08-00 release notes). Additional clean-up
  *
@@ -38,6 +41,7 @@ class TVector3 ;
 class AliPHOSClusterizerv1 ;
 class AliPHOSCpvRecPoint ;
 class AliPHOSEmcRecPoint ;
+class AliPHOSTrackSegment ;
 class AliPHOSTrackSegmentMakerv1 ;
 #include "AliPHOSPID.h"
 #include "AliPID.h"
@@ -121,8 +125,7 @@ private:
   Double_t LandauF(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence  a+b/(x*x)+c/x
   Double_t LandauPol2(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b*x+c*x*x
  // Relative Distance CPV-EMC
-  Float_t GetDistance     (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Option_t * axis)const ; 
-  Int_t   GetCPVBit       (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Int_t EffPur, Float_t e) const;
+  Int_t   GetCPVBit       (AliPHOSTrackSegment * ts, Int_t EffPur, Float_t e) const;
   Int_t   GetPrincipalBit (TString particle, const Double_t* P, Int_t EffPur, Float_t e)const ; //Principal cut
   Int_t   GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const;
   Int_t   GetHardPi0Bit   (AliPHOSEmcRecPoint * emc) const;

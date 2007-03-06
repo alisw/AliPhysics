@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.14  2006/09/07 18:31:08  kharlov
+ * Effective c++ corrections (T.Pocheptsov)
+ *
  * Revision 1.13  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -173,33 +176,34 @@ AliPHOSPIDv0::~AliPHOSPIDv0()
   //Empty dtor, fFormula leaks 
 }
 
-//____________________________________________________________________________
-Float_t  AliPHOSPIDv0::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  Axis)const
-{
-  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
- 
-  const AliPHOSGeometry * geom = AliPHOSLoader::GetPHOSGeometry() ; 
-  TVector3 vecEmc ;
-  TVector3 vecCpv ;
-  
-  emc->GetLocalPosition(vecEmc) ;
-  cpv->GetLocalPosition(vecCpv) ; 
-  if(emc->GetPHOSMod() == cpv->GetPHOSMod()){ 
-    
-    // Correct to difference in CPV and EMC position due to different distance to center.
-    // we assume, that particle moves from center
-    Float_t dCPV = geom->GetIPtoOuterCoverDistance();
-    Float_t dEMC = geom->GetIPtoCrystalSurface() ;
-    dEMC         = dEMC / dCPV ;
-    vecCpv = dEMC * vecCpv  - vecEmc ; 
-    if (Axis == "X") return vecCpv.X();
-    if (Axis == "Y") return vecCpv.Y();
-    if (Axis == "Z") return vecCpv.Z();
-    if (Axis == "R") return vecCpv.Mag();
-  } 
- 
-  return 100000000 ;
-}
+//DP
+////____________________________________________________________________________
+//Float_t  AliPHOSPIDv0::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  Axis)const
+//{
+//  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
+// 
+//  const AliPHOSGeometry * geom = AliPHOSLoader::GetPHOSGeometry() ; 
+//  TVector3 vecEmc ;
+//  TVector3 vecCpv ;
+//  
+//  emc->GetLocalPosition(vecEmc) ;
+//  cpv->GetLocalPosition(vecCpv) ; 
+//  if(emc->GetPHOSMod() == cpv->GetPHOSMod()){ 
+//    
+//    // Correct to difference in CPV and EMC position due to different distance to center.
+//    // we assume, that particle moves from center
+//    Float_t dCPV = geom->GetIPtoOuterCoverDistance();
+//    Float_t dEMC = geom->GetIPtoCrystalSurface() ;
+//    dEMC         = dEMC / dCPV ;
+//    vecCpv = dEMC * vecCpv  - vecEmc ; 
+//    if (Axis == "X") return vecCpv.X();
+//    if (Axis == "Y") return vecCpv.Y();
+//    if (Axis == "Z") return vecCpv.Z();
+//    if (Axis == "R") return vecCpv.Mag();
+//  } 
+// 
+//  return 100000000 ;
+//}
 
 //____________________________________________________________________________
 void  AliPHOSPIDv0::Exec(Option_t * option) 
@@ -375,7 +379,7 @@ void  AliPHOSPIDv0::MakeRecParticles()
     // Looking at the CPV detector
     Int_t cpvdetector= 0 ;  //1 hit and 0 no hit     
     if(cpv)
-      if(GetDistance(emc, cpv,  "R") < fCpvEmcDistance) 
+      if(ts->GetCpvDistance("R") < fCpvEmcDistance) 
 	cpvdetector = 1 ;  
     
     Int_t type = showerprofile + 2 * slow  + 4 * cpvdetector ;

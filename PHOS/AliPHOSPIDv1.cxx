@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.104  2006/12/15 10:46:26  hristov
+ * Using TMath::Abs instead of fabs
+ *
  * Revision 1.103  2006/09/07 18:31:08  kharlov
  * Effective c++ corrections (T.Pocheptsov)
  *
@@ -753,46 +756,49 @@ Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString 
 }
 
 
+//DP____________________________________________________________________________
+//Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Option_t *  axis)const
+//{
+//  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
+//  
+//  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ; 
+//  TVector3 vecEmc ;
+//  TVector3 vecCpv ;
+//  if(cpv){
+//    emc->GetLocalPosition(vecEmc) ;
+//    cpv->GetLocalPosition(vecCpv) ; 
+//    
+//    if(emc->GetPHOSMod() == cpv->GetPHOSMod()){      
+//      // Correct to difference in CPV and EMC position due to different distance to center.
+//      // we assume, that particle moves from center
+//      Float_t dCPV = geom->GetIPtoOuterCoverDistance();
+//      Float_t dEMC = geom->GetIPtoCrystalSurface() ;
+//      dEMC         = dEMC / dCPV ;
+//      vecCpv = dEMC * vecCpv  - vecEmc ; 
+//      if (axis == "X") return vecCpv.X();
+//      if (axis == "Y") return vecCpv.Y();
+//      if (axis == "Z") return vecCpv.Z();
+//      if (axis == "R") return vecCpv.Mag();
+//    }
+//    return 100000000 ;
+//  }
+//  return 100000000 ;
+//}
 //____________________________________________________________________________
-Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Option_t *  axis)const
-{
-  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
-  
-  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ; 
-  TVector3 vecEmc ;
-  TVector3 vecCpv ;
-  if(cpv){
-    emc->GetLocalPosition(vecEmc) ;
-    cpv->GetLocalPosition(vecCpv) ; 
-    
-    if(emc->GetPHOSMod() == cpv->GetPHOSMod()){      
-      // Correct to difference in CPV and EMC position due to different distance to center.
-      // we assume, that particle moves from center
-      Float_t dCPV = geom->GetIPtoOuterCoverDistance();
-      Float_t dEMC = geom->GetIPtoCrystalSurface() ;
-      dEMC         = dEMC / dCPV ;
-      vecCpv = dEMC * vecCpv  - vecEmc ; 
-      if (axis == "X") return vecCpv.X();
-      if (axis == "Y") return vecCpv.Y();
-      if (axis == "Z") return vecCpv.Z();
-      if (axis == "R") return vecCpv.Mag();
-    }
-    return 100000000 ;
-  }
-  return 100000000 ;
-}
-//____________________________________________________________________________
-Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Int_t effPur, Float_t e) const
+Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSTrackSegment * ts, Int_t effPur, Float_t e) const
 {
   //Calculates the pid bit for the CPV selection per each purity.
   if(effPur>2 || effPur<0)
     AliError(Form("Invalid Efficiency-Purity choice %d",effPur));
+
+  if(ts->GetCpvIndex()<0)
+    return 1 ; //no CPV cluster
   
   Float_t sigX = GetCpv2EmcDistanceCut("X",e);
   Float_t sigZ = GetCpv2EmcDistanceCut("Z",e);
   
-  Float_t deltaX = TMath::Abs(GetDistance(emc, cpv,  "X"));
-  Float_t deltaZ = TMath::Abs(GetDistance(emc, cpv,  "Z"));
+  Float_t deltaX = TMath::Abs(ts->GetCpvDistance("X"));
+  Float_t deltaZ = TMath::Abs(ts->GetCpvDistance("Z"));
   //Info("GetCPVBit"," xdist %f, sigx %f, zdist %f, sigz %f",deltaX, sigX, deltaZ,sigZ) ;
  
   //if(deltaX>sigX*(effPur+1))
@@ -1122,8 +1128,8 @@ void  AliPHOSPIDv1::MakePID()
     //########## CPV-EMC  Distance#######################
     //     Info("MakePID", "Distance");
 
-    Float_t x             = TMath::Abs(GetDistance(emc, cpv,  "X")) ;
-    Float_t z             = GetDistance(emc, cpv,  "Z") ;
+    Float_t x             = TMath::Abs(ts->GetCpvDistance("X")) ;
+    Float_t z             = ts->GetCpvDistance("Z") ;
    
     Double_t pcpv         = 0 ;
     Double_t pcpvneutral  = 0. ;
@@ -1402,7 +1408,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
       // Looking at the CPV detector. If RCPV greater than CpvEmcDistance, 
       // 1st,2nd or 3rd bit (depending on the efficiency-purity point )
       // is set to 1
-      if(GetCPVBit(emc, cpv, effPur,e) == 1 ){  
+      if(GetCPVBit(ts, effPur,e) == 1 ){  
 	rp->SetPIDBit(effPur) ;
 	//cout<<"CPV bit "<<effPur<<endl;
       }
