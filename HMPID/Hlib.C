@@ -15,6 +15,5 @@ void Hlib()
   gSystem->Load("libHMPIDsim.so");
   gSystem->Load("libHMPIDrec.so");
 
- 
-  gROOT->LoadMacro("Hmenu.C");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/HMPID"); 
 }
