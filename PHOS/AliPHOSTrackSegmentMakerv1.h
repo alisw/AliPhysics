@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.49  2007/02/01 13:59:11  hristov
+ * Forward declaration
+ *
  * Revision 1.48  2006/08/28 10:01:56  kharlov
  * Effective C++ warnings fixed (Timur Pocheptsov)
  *
@@ -77,14 +80,14 @@ public:
 private:
 
   const TString BranchName() const ; 
-  Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSCpvRecPoint * Cpv , Int_t & track ) const ; // see R0
-  void PropagateToPlane(TVector3& globalIntersection,
-			Double_t *x, Double_t *p,
-			const char *det, Int_t module) const;
+  void  GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSCpvRecPoint * Cpv, 
+                               Int_t & track, Float_t &dx, Float_t &dz ) const ; // see R0
   void    Init() ;
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
   virtual void   WriteTrackSegments() ;
+  void    GetVertex(void) ;
+  void    EvalRecPoints(void) ;
 
 private:  
 
@@ -95,6 +98,8 @@ private:
 
   Float_t fRcpv ;        // Maximum distance between a EMC RecPoint and a CPV RecPoint   
   Float_t fRtpc ;        // Maximum distance between a EMC RecPoint and extrapolation of a TPC track   
+  
+  TVector3 fVtx ;        //! Vertex in current position
 
   TClonesArray * fLinkUpArray  ;  //!
   Int_t fEmcFirst;     //! Index of first EMC RecPoint belonging to currect PHOS module

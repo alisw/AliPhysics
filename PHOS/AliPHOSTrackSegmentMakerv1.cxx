@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.81  2007/02/05 10:02:40  kharlov
+ * Module numbering is corrected
+ *
  * Revision 1.80  2006/08/28 10:01:56  kharlov
  * Effective C++ warnings fixed (Timur Pocheptsov)
  *
@@ -199,159 +202,103 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
 }
 
 //____________________________________________________________________________
-Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,AliPHOSCpvRecPoint * cpvClu, Int_t &trackindex) const
+void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,
+                                                         AliPHOSCpvRecPoint * cpvClu, 
+                                                         Int_t &trackindex, 
+                                                         Float_t &dx, Float_t &dz) const
 {
   // Calculates the distance between the EMC RecPoint and the CPV RecPoint
   // Clusters are sorted in "rows" and "columns" of width 1 cm
 
-  //Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
-                       // if you change this value, change it as well in xxxRecPoint::Compare()
-  Float_t distance2Cpv   = fRcpv ;
+//  Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
+//                       // if you change this value, change it as well in xxxRecPoint::Compare()
   Float_t distance2Track = fRtpc ; 
 
   trackindex = -1 ; // closest track within fRCpv 
 
   TVector3 vecEmc ;   // Local position of EMC recpoint
-  TVector3 vecCpv ;   // Local position of CPV recpoint propagated to EMC
-  TVector3 vecDist ;  // Distance between local positions of two points
+  TVector3 vecP ;     // Momentum direction at CPV plain
+  TVector3 vecPloc ;     // Momentum direction at CPV plain
   
-  emcClu->GetLocalPosition(vecEmc) ;
-  cpvClu->GetLocalPosition(vecCpv) ;
-
   //toofar = kTRUE ;
-  if(emcClu->GetPHOSMod() == cpvClu->GetPHOSMod()){ 
-
-    // Find EMC-CPV distance
-    distance2Cpv = (vecCpv - vecEmc).Mag() ;
-    
-    if (fESD != 0x0) {
-      AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-      const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
-
-      Double_t rPHOS = geom->GetIPtoCrystalSurface();
-
-      //PH Acceptance boundaries for each PHOS module
-      Int_t nModules = geom->GetNModules();
-      Double_t * thmin = new Double_t[nModules];// theta min
-      Double_t * thmax = new Double_t[nModules];// theta max
-      Double_t * phmin = new Double_t[nModules];// phi min
-      Double_t * phmax = new Double_t[nModules];// phi max
-      
-      for (Int_t imod=0; imod<nModules; imod++) {
-	// Modules are numbered from 1 to 5 in AliPHOSGeometry
-	geom->EmcModuleCoverage(imod+1,
-				thmin[imod],thmax[imod],
-				phmin[imod],phmax[imod]);
-      }
-
-      // Extrapolate the global track direction if any to CPV and find the closest track
-      Int_t nTracks = fESD->GetNumberOfTracks();
-      Int_t iClosestTrack = -1;
-      Double_t minDistance = 1e6;
-      Double_t pxyz[3], xyz[3];
-      TVector3 inPHOS; //PH Used to calculate theta and phi
-
-      //PH Loop on tracks
-      AliESDtrack *track;
-      for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-	track = fESD->GetTrack(iTrack);
-	if (!track->GetXYZAt(rPHOS, fESD->GetMagneticField(), xyz))
-           continue; //track coord on the cylinder of PHOS radius
-	if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
-	   continue;
-	//PH Here one has to cut out the tracks which are not inside the PHOS
-	//PH acceptance
-	inPHOS.SetXYZ(xyz[0],xyz[1],xyz[2]);
-	Double_t inPhi = inPHOS.Phi();
-	Double_t inTheta = inPHOS.Theta();
-
-	Bool_t skip = kTRUE;
-	for (Int_t imod=0; imod<nModules; imod++) {
-	  //PH Loop on modules to check if the track enters in the acceptance 
-	  if (thmin[imod] < inTheta && thmax[imod] > inTheta && 
-	      phmin[imod] < inPhi   && phmax[imod] > inPhi) {
-	    skip = kFALSE;
-	    break;
-	  }
-	}
-	if (skip) continue; //PH Skip, if not in the PHOS acceptance
-
-	if (!track->GetPxPyPzAt(rPHOS, fESD->GetMagneticField(), pxyz))
-           continue; // track momentum ibid.
-	PropagateToPlane(vecDist,xyz,pxyz,"CPV",cpvClu->GetPHOSMod());
-	// 	Info("GetDistanceInPHOSPlane","Track %d propagation to CPV = (%f,%f,%f)",
- 	//     iTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
-	vecDist -= vecCpv;
-	distance2Track = TMath::Sqrt(vecDist.X()*vecDist.X() + vecDist.Z()*vecDist.Z());
-	// Find the closest track to the EMC recpoint
-	if (distance2Track < minDistance) {
-	  minDistance = distance2Track;
-	  iClosestTrack = iTrack;
-	}
-      }
-
-      delete [] thmin;
-      delete [] thmax;
-      delete [] phmin;
-      delete [] phmax;
-
-      if (iClosestTrack != -1) {
-	track = fESD->GetTrack(iClosestTrack);
-	if (track->GetPxPyPzAt(rPHOS, fESD->GetMagneticField(), pxyz)) { // track momentum ibid.
-	TVector3 vecCpvGlobal; // Global position of the CPV recpoint
-	geom->GetGlobal((AliRecPoint*)cpvClu,vecCpvGlobal);
-	for (Int_t ixyz=0; ixyz<3; ixyz++)
-	  xyz[ixyz] = vecCpvGlobal[ixyz];
-	PropagateToPlane(vecDist,xyz,pxyz,"EMC",cpvClu->GetPHOSMod());
-// 	Info("GetDistanceInPHOSPlane","Track %d propagation to EMC = (%f,%f,%f)",
-// 	     iClosestTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
-	vecDist -= vecEmc;
-	distance2Track = TMath::Sqrt(vecDist.X()*vecDist.X() + vecDist.Z()*vecDist.Z());
-	}
-      }
-//     } else {
-//       // If no ESD exists, than simply find EMC-CPV distance
-//       distance = (vecCpv - vecEmc).Mag() ;
-    
-      //if(distance2Track < fRcpv + 2*delta )
-      if(distance2Track < fRtpc )
-	trackindex = iClosestTrack ; 
-      //      toofar = kFALSE ;
-    }
-    //     Info("GetDistanceInPHOSPlane","cpv-emc distance is %f cm",
-    // 	 distance);
+  if(emcClu->GetPHOSMod() != cpvClu->GetPHOSMod()){
+    dx=999. ;
+    dz=999. ;
+    return ;
   }
-  
-  return distance2Cpv ;
-}
 
-//____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::PropagateToPlane(TVector3& globalIntersection,
-						  Double_t *x,
-						  Double_t *p,
-						  const char *det,
-						  Int_t moduleNumber) const
-{
-  // Propagate a straight-line track from the origin point x
-  // along the direction p to the CPV or EMC module moduleNumber
-  // Returns a local position of such a propagation
+  emcClu->GetLocalPosition(vecEmc) ;
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
-  TVector3 moduleCenter;
-  geom->GetModuleCenter(moduleCenter,det,moduleNumber);
-  TVector3 vertex; vertex.SetXYZ(x[0],x[1],x[2]);
-  TVector3 direction; direction.SetXYZ(p[0],p[1],p[2]);
+    
+  Double_t xCPV,zCPV ; //EMC-projected coordinates of CPV cluster 
+  TVector3 cpvGlobal; // Global position of the CPV recpoint
+  geom->GetGlobal((AliRecPoint*)cpvClu,cpvGlobal);
+  Double_t vtxCPV[3]={cpvGlobal.X(),cpvGlobal.Y(),cpvGlobal.Z()} ;
 
-//   Info("PropagateToCPV","Center of the %s module %d is (%f,%f,%f)",
-//        det,moduleNumber,moduleCenter[0],moduleCenter[1],moduleCenter[2]);
+  if (fESD == 0x0) {
+     //if no track information available, assume straight line from IP to emcal
+     Int_t dummyMod ;
+     geom->ImpactOnEmc(vtxCPV,cpvGlobal.Theta(),cpvGlobal.Phi(),dummyMod,xCPV,zCPV) ;
+     dx=xCPV - vecEmc.X() ;
+     dz=zCPV - vecEmc.Z() ;
+     return ;
+  } 
 
-  Double_t time = (moduleCenter.Mag2() - vertex.Dot(moduleCenter)) /
-    (direction.Dot(moduleCenter));
-  vertex += direction*time;
-  geom->Global2Local(globalIntersection,vertex,moduleNumber);
+  //if there is ESD try to correct distance using TPC information on particle direct in CPV 
+  if (fESD != 0x0) {
+
+    Double_t rCPV = cpvGlobal.Pt() ;// Radius from IP to current point 
+
+    // Extrapolate the global track direction if any to CPV and find the closest track
+    Int_t nTracks = fESD->GetNumberOfTracks();
+    Int_t iClosestTrack = -1;
+    Double_t minDistance = 1.e6;
+    TVector3 inPHOS ; 
+
+    AliESDtrack *track;
+    Double_t xyz[3] ;
+    Double_t pxyz[3]; 
+    for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
+      track = fESD->GetTrack(iTrack);
+      if (!track->GetXYZAt(rCPV, fESD->GetMagneticField(), xyz))
+           continue; //track coord on the cylinder of PHOS radius
+      if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
+	   continue;
+      //Check if this track hits PHOS
+      inPHOS.SetXYZ(xyz[0],xyz[1],xyz[2]);
+      distance2Track = inPHOS.Angle(cpvGlobal) ;
+      // Find the closest track to the CPV recpoint
+      if (distance2Track < minDistance) {
+         minDistance = distance2Track;
+	 iClosestTrack = iTrack;
+      }
+    }
+
+    if (iClosestTrack != -1) {
+      track = fESD->GetTrack(iClosestTrack);
+      if (track->GetPxPyPzAt(rCPV, fESD->GetMagneticField(), pxyz)) { // track momentum ibid.
+        vecP.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
+        Int_t dummyMod ;
+	geom->ImpactOnEmc(vtxCPV,vecP.Theta(),vecP.Phi(),dummyMod,xCPV,zCPV) ;
+      }
+    }
+    
+    if(minDistance < fRtpc ){
+      trackindex = iClosestTrack ; 
+    }
+  }
+  if(trackindex!=-1){
+    dx=xCPV - vecEmc.X() ;
+    dz=zCPV - vecEmc.Z() ;
+  }
+  else{
+    dz=999. ;
+    dx=999. ;
+  }
+  return ;
 }
-
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::Init()
 {
@@ -412,11 +359,10 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
       
       cpv = dynamic_cast<AliPHOSCpvRecPoint *>(cpvRecPoints->At(iCpv)) ;
       Int_t track = -1 ; 
-      Float_t r = GetDistanceInPHOSPlane(emcclu, cpv, track) ;     
-      //      if(toofar)
-      //	continue ;	 
-      if(r < fRcpv) { 
-        new ((*fLinkUpArray)[iLinkUp++])  AliPHOSLink(r, iEmcRP, iCpv, track) ;
+      Float_t dx,dz ;
+      GetDistanceInPHOSPlane(emcclu, cpv, track,dx,dz) ;     
+      if(TMath::Sqrt(dx*dx+dz*dz) < fRcpv ){ 
+        new ((*fLinkUpArray)[iLinkUp++])  AliPHOSLink(dx, dz, iEmcRP, iCpv, track) ;
       }      
     }
   } 
@@ -525,7 +471,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
 
   Int_t ievent ; 
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent,"R") ;
+    gime->Event(ievent,"DR") ;
    //Make some initializations 
     fNTrackSegments = 0 ;
     fEmcFirst = 0 ;    
@@ -534,6 +480,9 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
     fCpvLast  = 0 ;   
     
     gime->TrackSegments()->Clear();
+
+    GetVertex() ;
+    EvalRecPoints() ;
 
     //    if(!ReadRecPoints(ievent))   continue; //reads RecPoints for event ievent
     
@@ -561,7 +510,50 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
   if(fWrite) //do not unload in "on flight" mode
     Unload();
 }
+//____________________________________________________________________________
+void AliPHOSTrackSegmentMakerv1::GetVertex(void)
+{ //extract vertex either using ESD or generator
+  
+  //Try to extract vertex from data
+  if(fESD){
+    const AliESDVertex *esdVtx = fESD->GetVertex() ;
+    if(esdVtx){
+      fVtx.SetXYZ(esdVtx->GetXv(),esdVtx->GetYv(),esdVtx->GetZv()) ;
+      return ;
+    }
+  }
+  
+  AliWarning("Can not read vertex from data, use fixed \n") ;
+  fVtx.SetXYZ(0.,0.,0.) ;
+ 
+}
+//____________________________________________________________________________
+void AliPHOSTrackSegmentMakerv1::EvalRecPoints(void)
+{ //calculate parameters of RecPoints using vertex and writing them
 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  TClonesArray * digits = gime->Digits() ;
+  AliPHOSClusterizer * cl = gime->Clusterizer() ;
+  Double_t w0=cl->GetEmcLogWeight() ;
+  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
+  for(Int_t i=0; i<emcRecPoints->GetEntriesFast() ; i++){
+    static_cast<AliPHOSEmcRecPoint*>(emcRecPoints->At(i))->EvalAll(w0,fVtx,digits) ;
+  }
+  emcRecPoints->Sort() ;
+
+  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
+  Double_t w0CPV=cl->GetCpvLogWeight() ;
+  for(Int_t i=0; i<emcRecPoints->GetEntriesFast() ; i++){
+    static_cast<AliPHOSCpvRecPoint*>(cpvRecPoints->At(i))->EvalAll(w0CPV,fVtx,digits) ;
+  }
+  cpvRecPoints->Sort() ;
+
+  //write recaculated RecPoints
+  gime->WriteRecPoints("OVERWRITE");
+  gime->WriteClusterizer("OVERWRITE");
+ 
+
+}
 //____________________________________________________________________________
 void AliPHOSTrackSegmentMakerv1::Unload() 
 {
