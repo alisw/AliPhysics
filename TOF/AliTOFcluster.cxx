@@ -44,6 +44,7 @@ AliTOFcluster::AliTOFcluster():
   fQuality(-100), 
   fToT(0),
   fTdcND(0),
+  fTdcRAW(0),
   fStatus(kTRUE) 
  {
   //
@@ -123,6 +124,7 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *ind):
   fQuality(-100), 
   fToT(0),
   fTdcND(0),
+  fTdcRAW(0),
   fStatus(kTRUE) 
 {
   //
@@ -151,6 +153,7 @@ AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster):
   fQuality(-100), 
   fToT(0),
   fTdcND(0),
+  fTdcRAW(0),
   fStatus(kTRUE) 
  {
   //
@@ -169,6 +172,7 @@ AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster):
   fQuality    = cluster.fQuality; 
   fToT    = cluster.fToT; 
   fTdcND    = cluster.fTdcND; 
+  fTdcRAW    = cluster.fTdcRAW; 
 }
 //-------------------------------------------------------------------------
 

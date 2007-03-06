@@ -29,6 +29,7 @@ class AliTOFcluster : public TObject {
   Double_t GetZ()   const {return fZ;}   // Cluster Z
   Double_t GetTDC() const {return fTDC;} // Cluster ToF
   Double_t GetTDCND() const {return fTdcND;} // Cluster ToF
+  Double_t GetTDCRAW() const {return fTdcRAW;} // Cluster Raw time
   Double_t GetADC() const {return TMath::Abs(fADC);}  // Cluster Charge
   Double_t GetToT() const {return fToT;}  // Cluster Charge
   Int_t    IsUsed() const {return (fADC<0) ? 1 : 0;}  // Flagging
@@ -43,6 +44,7 @@ class AliTOFcluster : public TObject {
   void     SetToT(Float_t ToT) {fToT = ToT;}
   void     SetTDC(Float_t Tdc) {fTDC = Tdc;}
   void     SetTDCND(Float_t Tdc) {fTdcND = Tdc;}
+  void     SetTDCRAW(Float_t Tdc) {fTdcRAW = Tdc;}
  private:
 
   Int_t fLab[3];      // track labels
@@ -56,9 +58,10 @@ class AliTOFcluster : public TObject {
   Double_t fQuality;  // quality of the best track 
   Float_t  fToT;       // ToT
   Double_t fTdcND;      // TDC count
+  Double_t fTdcRAW;      // RAW TDC count
   Bool_t   fStatus;      // cluster online status 
 
-  ClassDef(AliTOFcluster, 3) // TOF cluster
+  ClassDef(AliTOFcluster, 4) // TOF cluster
 };
 
 #endif

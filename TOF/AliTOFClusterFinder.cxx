@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.17  2007/02/28 18:09:11  arcelli
+Add protection against failed retrieval of the CDB cal object, now Reconstruction exits with AliFatal
+
 Revision 1.16  2007/02/20 15:57:00  decaro
 Raw data update: to read the TOF raw data defined in UNPACKED mode
 
@@ -248,6 +251,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     tTdcND = d->GetTdcND();
 
     AliTOFcluster *tofCluster = new AliTOFcluster(h,d->GetTracks(),dig,ii,tToT, tTdcND);
+    tofCluster->SetTDCRAW(d->GetTdc());
     InsertCluster(tofCluster);
 
   }
@@ -351,6 +355,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
       tofCluster->SetToT(tToT);
       tofCluster->SetTDCND(tTdcND);
+      tofCluster->SetTDCRAW(tofRawDatum->GetTOF());
       InsertCluster(tofCluster);
 
       if (fVerbose==2) {
@@ -523,6 +528,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
       AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
       tofCluster->SetToT(tToT);
       tofCluster->SetTDCND(tTdcND);
+      tofCluster->SetTDCRAW(tofRawDatum->GetTOF());
       InsertCluster(tofCluster);
 
       if (fVerbose==2) {
