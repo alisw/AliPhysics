@@ -63,7 +63,9 @@ void loadlibs ()
   gSystem->Load("libZDCbase");
   gSystem->Load("libZDCsim");
   gSystem->Load("libZDCrec");
-  gSystem->Load("libACORDE");
+  gSystem->Load("libACORDEbase");
+  gSystem->Load("libACORDEsim");
+  gSystem->Load("libACORDErec");
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROsim");
   gSystem->Load("libVZEROrec");

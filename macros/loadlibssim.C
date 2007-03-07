@@ -56,7 +56,8 @@ void loadlibssim ()
   gSystem->Load("libT0rec");
   gSystem->Load("libZDCbase");
   gSystem->Load("libZDCsim");
-  gSystem->Load("libACORDE");
+  gSystem->Load("libACORDEbase");
+  gSystem->Load("libACORDEsim");
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROsim");
   gSystem->Load("libEMCALbase");

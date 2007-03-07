@@ -1,6 +1,6 @@
 ALIROOT/module.mk:	 ALIROOT/binaliroot.pkg 
 ANALYSIS/module.mk:	 ANALYSIS/libANALYSIS.pkg ANALYSIS/libAnalysisOld.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
-ACORDE/module.mk:        ACORDE/libACORDE.pkg
+ACORDE/module.mk:        ACORDE/libACORDEbase.pkg  ACORDE/libACORDErec.pkg   ACORDE/libACORDEsim.pkg
 EMCAL/module.mk:	 EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg
 EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
 EVGEN/module.mk:	 EVGEN/libEVGEN.pkg
