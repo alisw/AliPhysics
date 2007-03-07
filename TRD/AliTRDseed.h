@@ -26,7 +26,7 @@ class AliTRDseed : public TObject {
 
   AliTRDseed      &operator=(const AliTRDseed &/*s*/)       { return *this;   } 
 
-  static  void     EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh);
+  //  static  void     EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh);
   static  Float_t  FitRiemanTilt(AliTRDseed *seed, Bool_t error);
           void     UseClusters();
           void     Update();
