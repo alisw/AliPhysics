@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.83  2007/03/06 21:07:37  kharlov
+ * DP: xz CPV-EMC distance filled to TS
+ *
  * Revision 1.82  2007/03/06 06:54:48  kharlov
  * DP:Calculation of cluster properties dep. on vertex added
  *
@@ -539,19 +542,37 @@ void AliPHOSTrackSegmentMakerv1::EvalRecPoints(void)
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   TClonesArray * digits = gime->Digits() ;
   AliPHOSClusterizer * cl = gime->Clusterizer() ;
-  Double_t w0=cl->GetEmcLogWeight() ;
   TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  for(Int_t i=0; i<emcRecPoints->GetEntriesFast() ; i++){
-    static_cast<AliPHOSEmcRecPoint*>(emcRecPoints->At(i))->EvalAll(w0,fVtx,digits) ;
+  if (!emcRecPoints) {
+    AliError("No CPV rec. points!");
   }
-  emcRecPoints->Sort() ;
+  else {
+    Double_t w0=cl->GetEmcLogWeight() ;
+    for(Int_t i=0; i<emcRecPoints->GetEntriesFast() ; i++){
+      AliPHOSEmcRecPoint * point = static_cast<AliPHOSEmcRecPoint*>(emcRecPoints->At(i));
+      if (point) point->EvalAll(w0,fVtx,digits) ;
+      else {
+	AliError(Form("No AliPHOSEmcRecPoint is found at %d",i));
+      }
+    }
+    emcRecPoints->Sort() ;
+  }
 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  Double_t w0CPV=cl->GetCpvLogWeight() ;
-  for(Int_t i=0; i<emcRecPoints->GetEntriesFast() ; i++){
-    static_cast<AliPHOSCpvRecPoint*>(cpvRecPoints->At(i))->EvalAll(w0CPV,fVtx,digits) ;
+  TObjArray * cpvRecPoints = gime->CpvRecPoints() ;
+  if (!cpvRecPoints) {
+    AliError("No CPV rec. points!");
   }
-  cpvRecPoints->Sort() ;
+  else {
+    Double_t w0CPV=cl->GetCpvLogWeight() ;
+    for(Int_t i=0; i<cpvRecPoints->GetEntriesFast() ; i++){
+      AliPHOSCpvRecPoint * point = static_cast<AliPHOSCpvRecPoint*>(cpvRecPoints->At(i));
+      if (point) point->EvalAll(w0CPV,fVtx,digits) ;
+      else {
+	AliError(Form("No AliPHOSCpvRecPoint is found at %d",i));
+      }
+    }
+    cpvRecPoints->Sort() ;
+  }
 
   //write recaculated RecPoints
   gime->WriteRecPoints("OVERWRITE");
