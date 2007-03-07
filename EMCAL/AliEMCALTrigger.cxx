@@ -519,7 +519,7 @@ void AliEMCALTrigger::Trigger()
   rl->LoadgAlice();  //Neede by calls to AliRun in SetTriggers
  
   //Load EMCAL Geometry
-  AliEMCALGeometry * geom =AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+  AliEMCALGeometry * geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 
   if (geom==0)
     AliFatal("Did not get geometry from EMCALLoader");
