@@ -51,7 +51,7 @@ clean:
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionary ..."
-	rootcint -f $@ -c $(ALICEINC) $^
+	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
 
 ### CREATE PAR FILE
 
