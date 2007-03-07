@@ -28,6 +28,8 @@
 // --- AliRoot header files ---
 #include "AliEMCALReconstructor.h"
 
+#include "AliRun.h"
+#include "AliEMCAL.h"
 #include "AliESD.h"
 #include "AliRunLoader.h"
 #include "AliEMCALLoader.h"
@@ -107,9 +109,12 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* r
 void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {
   // Called by AliReconstruct after Reconstruct() and global tracking and vertxing 
-  const double timeScale = 1.e+11; // transition constant from sec to 0.01ns (10ps)
+  static  Double_t timeScale = 1.e+11; // transition constant from sec to 0.01ns (10ps)
+
+  AliDebug(1," FillESD started ");
 
   Int_t eventNumber = runLoader->GetEventNumber() ;
+  AliEMCALGeometry * geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
@@ -136,8 +141,6 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
   Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
   Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
-
-  AliEMCALGeometry * geom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
 
   Int_t iSM2x2      = tr.Get2x2SuperModule();
   Int_t iSMnxn      = tr.GetnxnSuperModule();
@@ -244,18 +247,21 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
       // fills the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
+      ec->SetEMCAL(kTRUE);
       ec->SetClusterType(clust->GetClusterType());
-      ec->SetGlobalPosition(xyz);
-      ec->SetClusterEnergy(clust->GetEnergy());
-      
+
       ec->SetNumberOfDigits(newdigitMult);
       ec->SetDigitAmplitude(amplList); //energies
       ec->SetDigitTime(timeList);      //times
       ec->SetDigitIndex(digiList);     //indices
       if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1){
+        ec->SetClusterEnergy(clust->GetEnergy());
+        ec->SetGlobalPosition(xyz);
+
         ec->SetPrimaryIndex(clust->GetPrimaryIndex());
         ec->SetNumberOfPrimaries(primMult);           //primary multiplicity
         ec->SetListOfPrimaries(primList);                  //primary List for a cluster  
+
         ec->SetClusterDisp(clust->GetDispersion());
         ec->SetClusterChi2(-1); //not yet implemented
         ec->SetM02(elipAxis[0]*elipAxis[0]) ;
@@ -281,5 +287,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   //pid->SetPrintInfo(kTRUE);
   pid->SetReconstructor(kTRUE);
   pid->RunPID(esd);
+
+  AliDebug(1," FillESD ended ");
 }
 
