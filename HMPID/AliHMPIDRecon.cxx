@@ -31,13 +31,13 @@
 const Double_t AliHMPIDRecon::fgkRadThick=1.5;
 const Double_t AliHMPIDRecon::fgkWinThick=0.5;
 const Double_t AliHMPIDRecon::fgkGapThick=8.0;
-const Double_t AliHMPIDRecon::fgkRadIdx  =1.292;
 const Double_t AliHMPIDRecon::fgkWinIdx  =1.5787;
 const Double_t AliHMPIDRecon::fgkGapIdx  =1.0005;
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
+  fRadNmean(1.292),  
   fPhotCnt(-1),
   fCkovSigma2(0),
   fIsWEIGHT(kFALSE),
@@ -54,7 +54,7 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst)
+void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
 {
 // Pattern recognition method based on Hough transform
 // Arguments:   pTrk     - track for which Ckov angle is to be found
@@ -66,6 +66,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst)
 
   // Photon Flag:  Flag = 0 initial set; Flag = 1 good candidate (charge compatible with photon); Flag = 2 photon used for the ring;
   Float_t xPc,yPc,th,ph;      pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  SetTrack(xPc,yPc,th,ph); //initialize this track            
+  fRadNmean=nmean;
 
   
   
@@ -214,10 +215,10 @@ Double_t AliHMPIDRecon::TracePhot(Double_t ckovThe,Double_t ckovPhi,TVector2 &po
   TVector3  dirCkov;   dirCkov.SetMagThetaPhi(1,ckovThe,ckovPhi);                        //initially photon is directed according to requested ckov angle
                                                dirCkov=mrot*dirCkov;                     //now we know photon direction in LORS
                        dirCkov.SetPhi(ckovPhi);   
-  if(dirCkov.Theta() > TMath::ASin(1./fgkRadIdx)) return -999;//total refraction on WIN-GAP boundary
+  if(dirCkov.Theta() > TMath::ASin(1./fRadNmean)) return -999;//total refraction on WIN-GAP boundary
   
   Propagate(dirCkov,posCkov,-fgkWinThick-fgkGapThick); //go to RAD-WIN boundary  remeber that z=0 is PC plane
-  Refract  (dirCkov,         fgkRadIdx,fgkWinIdx    ); //RAD-WIN refraction
+  Refract  (dirCkov,         fRadNmean,fgkWinIdx    ); //RAD-WIN refraction
   Propagate(dirCkov,posCkov,-fgkGapThick           );  //go to WIN-GAP boundary
   Refract  (dirCkov,         fgkWinIdx,fgkGapIdx    ); //WIN-GAP refraction
   Propagate(dirCkov,posCkov,0                     );   //go to PC
@@ -309,7 +310,7 @@ Double_t AliHMPIDRecon::Sigma2(Double_t ckovTh, Double_t ckovPh)const
 //   Returns: absolute error on Cerenkov angle, [radians]    
   
   TVector3 v(-999,-999,-999);
-  Double_t trkBeta = 1./(TMath::Cos(ckovTh)*fgkRadIdx);
+  Double_t trkBeta = 1./(TMath::Cos(ckovTh)*fRadNmean);
 
   v.SetX(SigLoc (ckovTh,ckovPh,trkBeta));
   v.SetY(SigGeom(ckovTh,ckovPh,trkBeta));
@@ -329,7 +330,7 @@ Double_t AliHMPIDRecon::SigLoc(Double_t thetaC, Double_t phiC,Double_t betaM)con
   Double_t phiDelta = phiC - fTrkDir.Phi();
 
   Double_t alpha =TMath::Cos(fTrkDir.Theta())-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Theta());
-  Double_t k = 1.-fgkRadIdx*fgkRadIdx+alpha*alpha/(betaM*betaM);
+  Double_t k = 1.-fRadNmean*fRadNmean+alpha*alpha/(betaM*betaM);
   if (k<0) return 1e10;
 
   Double_t mu =TMath::Sin(fTrkDir.Theta())*TMath::Sin(fTrkDir.Phi())+TMath::Tan(thetaC)*(TMath::Cos(fTrkDir.Theta())*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Phi())+TMath::Sin(phiDelta)*TMath::Cos(fTrkDir.Phi()));
@@ -353,7 +354,7 @@ Double_t AliHMPIDRecon::SigCrom(Double_t thetaC, Double_t phiC,Double_t betaM)co
   Double_t phiDelta = phiC - fTrkDir.Phi();
   Double_t alpha =TMath::Cos(fTrkDir.Theta())-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Theta());
 
-  Double_t dtdn = TMath::Cos(fTrkDir.Theta())*fgkRadIdx*betaM*betaM/(alpha*TMath::Tan(thetaC));
+  Double_t dtdn = TMath::Cos(fTrkDir.Theta())*fRadNmean*betaM*betaM/(alpha*TMath::Tan(thetaC));
             
   Double_t f = 0.00928*(7.75-5.635)/TMath::Sqrt(12.);
 
@@ -372,7 +373,7 @@ Double_t AliHMPIDRecon::SigGeom(Double_t thetaC, Double_t phiC,Double_t betaM)co
   Double_t phiDelta = phiC - fTrkDir.Phi();
   Double_t alpha =TMath::Cos(fTrkDir.Theta())-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Theta());
 
-  Double_t k = 1.-fgkRadIdx*fgkRadIdx+alpha*alpha/(betaM*betaM);
+  Double_t k = 1.-fRadNmean*fRadNmean+alpha*alpha/(betaM*betaM);
   if (k<0) return 1e10;
 
   Double_t eTr = 0.5*1.5*betaM*TMath::Sqrt(k)/(8*alpha);

@@ -6,7 +6,11 @@
 #include <AliRun.h>              //GetTrackPoint(),PropagateBack()  
 #include <AliTrackPointArray.h>  //GetTrackPoint()
 #include <AliAlignObj.h>         //GetTrackPoint()
+#include <AliCDBManager.h>
+#include <AliCDBEntry.h>
+
 ClassImp(AliHMPIDTracker)
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
 Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
 {
@@ -35,20 +39,36 @@ Int_t AliHMPIDTracker::LoadClusters(TTree *pCluTree)
   AliDebug(1,"Start.");  pCluTree->GetEntry(0);  AliDebug(1,"Stop."); return 0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::Recon(AliESD *pESD,TObjArray *pCluAll)
+Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
+{
+// This method defined as pure virtual in AliTracker. It is invoked from AliReconstruction::RunTracking() after invocation of AliTracker::LoadClusters()
+// Agruments: pEsd - pointer to ESD
+//   Returns: error code    
+  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean",pEsd->GetRunNumber()); //contains TObjArray of 21 TF1
+  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthes",pEsd->GetRunNumber()); //contains TObjArray of 7 TF1
+  if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
+  if(!pQthreEnt) AliFatal("No Qthre");
+  
+  AliHMPID *pHmpid=((AliHMPID*)gAlice->GetDetector("HMPID"));  
+  return Recon(pEsd,pHmpid->CluLst(),(TObjArray*)pNmeanEnt->GetObject());  
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliHMPIDTracker::Recon(AliESD *pEsd,TObjArray *pCluAll,TObjArray *pNmean)
 {
 // Interface callback methode invoked by AliRecontruction::RunTracking() during tracking after TOF. It's done just once per event
-// Arguments: pESD - pointer to Event Summary Data class instance which contains a list of tracks
+// Arguments: pEsd - pointer to Event Summary Data class instance which contains a list of tracks
 //   Returns: error code, 0 if no errors   
-  Int_t iNtracks=pESD->GetNumberOfTracks();  AliDebugClass(1,Form("Start with %i tracks",iNtracks));
+  Int_t iNtracks=pEsd->GetNumberOfTracks();  AliDebugClass(1,Form("Start with %i tracks",iNtracks));
   
-  AliHMPIDRecon recon;                                                                           //instance of reconstruction class, nothing important in ctor
+  
+  AliHMPIDRecon recon;                                                                       //instance of reconstruction class, nothing important in ctor
   Float_t xRa,yRa;
   for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){                                                        //ESD tracks loop
-    AliESDtrack *pTrk = pESD->GetTrack(iTrk);                                                    //get next reconstructed track    
+    AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                    //get next reconstructed track    
     Int_t cham=IntTrkCha(pTrk,xRa,yRa);                                                          //get chamber intersected by thie track 
     if(cham<0) continue;                                                                         //no intersection at all, go after next track
-    recon.CkovAngle(pTrk,(TClonesArray *)pCluAll->At(cham));                                     //search for Cerenkov angle for this track
+    Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber   
+    recon.CkovAngle(pTrk,(TClonesArray *)pCluAll->At(cham),nmean);                               //search for Cerenkov angle for this track
   }                                                                                              //ESD tracks loop
   AliDebugClass(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;

@@ -26,7 +26,7 @@ public :
     virtual ~AliHMPIDRecon()                                                          {}
 
   
-  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst                            );                           //reconstructed Theta Cerenkov
+  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean             );                           //reconstructed Theta Cerenkov
   Double_t FindPhotCkov (Double_t cluX,Double_t cluY                                        );     //find ckov angle for single photon candidate
   Double_t FindPhotPhi  (Double_t cluX,Double_t cluY                                        );     //find phi angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
@@ -46,9 +46,9 @@ protected:
   static const Double_t fgkRadThick;                      //radiator thickness
   static const Double_t fgkWinThick;                      //window thickness
   static const Double_t fgkGapThick;                      //proximity gap thickness
-  static const Double_t fgkRadIdx;                        //mean refractive index of RAD material (C6F14)
   static const Double_t fgkWinIdx;                        //mean refractive index of WIN material (SiO2) 
   static const Double_t fgkGapIdx;                        //mean refractive index of GAP material (CH4)
+  Double_t fRadNmean;                          //C6F14 mean refractive index
   Int_t    fPhotCnt;                           // counter of photons candidate
   Int_t    fPhotFlag[3000];                    // flags of photon candidates
   Double_t fPhotCkov[3000];                    // Ckov angles of photon candidates, [rad]
