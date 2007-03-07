@@ -41,7 +41,7 @@ ClassImp(AliTRDpidESD)
 
   Bool_t AliTRDpidESD::fCheckTrackStatus = kTRUE;
   Bool_t AliTRDpidESD::fCheckKinkStatus  = kFALSE;
-  Int_t AliTRDpidESD::fMinPlane         = 0;
+  Int_t AliTRDpidESD::fMinPlane          = 0;
 
 //_____________________________________________________________________________
 AliTRDpidESD::AliTRDpidESD():TObject()
@@ -49,7 +49,6 @@ AliTRDpidESD::AliTRDpidESD():TObject()
   //
   // Default constructor
   //
-
 
 }
 
@@ -173,13 +172,15 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
 	  p[iSpecies] *= pd->GetProbabilityT(iSpecies,mom,timebin);
   	  p[iSpecies] *= 100.0; // ??????????????
 
-          probTotal   += p[iSpecies];
-
 	}
 
       }
 
-    } 
+    }
+
+    for (Int_t iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+      probTotal += p[iSpecies];
+    }
 
     for (Int_t iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
       if ((probTotal >       0.0) &&
