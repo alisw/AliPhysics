@@ -183,7 +183,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
   AliTRDcalibDB  *calibration    = AliTRDcalibDB::Instance();
   if (!calibration) {
-    AliError("No AliTRDcalibDB instance available\n");
+    AliFatal("No AliTRDcalibDB instance available\n");
     return kFALSE;  
   }
   

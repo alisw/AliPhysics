@@ -263,7 +263,7 @@ AliCDBEntry *AliTRDcalibDB::GetCDBEntry(const char *cdbPath)
     
   AliCDBEntry *entry = AliCDBManager::Instance()->Get(cdbPath,fRun);
   if (!entry) { 
-    AliError(Form("Failed to get entry: %s",cdbPath));
+    AliFatal(Form("Failed to get entry: %s",cdbPath));
     return 0; 
   }
   

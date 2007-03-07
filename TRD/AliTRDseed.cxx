@@ -24,6 +24,8 @@
 #include "TMath.h"
 #include "TLinearFitter.h"
 
+#include "AliMathBase.h"
+
 #include "AliTRDseed.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtracker.h"
@@ -79,45 +81,45 @@ AliTRDseed::AliTRDseed()
 //_____________________________________________________________________________
 AliTRDseed::AliTRDseed(const AliTRDseed &s)
   :TObject(s)
-  ,fTilt(0)
-  ,fPadLength(0)
-  ,fX0(0)
-  ,fSigmaY(0)
-  ,fSigmaY2(0)
-  ,fMeanz(0)
-  ,fZProb(0)
-  ,fN(0)
-  ,fN2(0)
-  ,fNUsed(0)
-  ,fFreq(0)
-  ,fNChange(0)
-  ,fMPads(0)
-  ,fC(0)
-  ,fCC(0)
-  ,fChi2(0)
-  ,fChi2Z(0)
+  ,fTilt(s.fTilt)
+  ,fPadLength(s.fPadLength)
+  ,fX0(s.fX0)
+  ,fSigmaY(s.fSigmaY)
+  ,fSigmaY2(s.fSigmaY2)
+  ,fMeanz(s.fMeanz)
+  ,fZProb(s.fZProb)
+  ,fN(s.fN)
+  ,fN2(s.fN2)
+  ,fNUsed(s.fNUsed)
+  ,fFreq(s.fFreq)
+  ,fNChange(s.fNChange)
+  ,fMPads(s.fMPads)
+  ,fC(s.fC)
+  ,fCC(s.fCC)
+  ,fChi2(s.fChi2)
+  ,fChi2Z(s.fChi2Z)
 {
   //
   // Copy constructor  
   //
 
   for (Int_t i = 0; i < 25; i++) {
-    fX[i]        = 0;   // x position
-    fY[i]        = 0;   // y position
-    fZ[i]        = 0;   // z position
-    fIndexes[i]  = 0;   // Indexes
-    fClusters[i] = 0x0; // Clusters
-    fUsable[i]   = 0;   // Indication  - usable cluster
+    fX[i]        = s.fX[i];        // x position
+    fY[i]        = s.fY[i];        // y position
+    fZ[i]        = s.fZ[i];        // z position
+    fIndexes[i]  = s.fIndexes[i];  // Indexes
+    fClusters[i] = s.fClusters[i]; // Clusters
+    fUsable[i]   = s.fUsable[i];   // Indication  - usable cluster
   }
 
   for (Int_t i = 0; i < 2; i++) {
-    fYref[i]     = 0;   // Reference y
-    fZref[i]     = 0;   // Reference z
-    fYfit[i]     = 0;   // Y fit position +derivation
-    fYfitR[i]    = 0;   // Y fit position +derivation
-    fZfit[i]     = 0;   // Z fit position
-    fZfitR[i]    = 0;   // Z fit position
-    fLabels[i]   = 0;   // Labels
+    fYref[i]     = s.fYref[i];     // Reference y
+    fZref[i]     = s.fZref[i];     // Reference z
+    fYfit[i]     = s.fYfit[i];     // Y fit position +derivation
+    fYfitR[i]    = s.fYfitR[i];    // Y fit position +derivation
+    fZfit[i]     = s.fZfit[i];     // Z fit position
+    fZfitR[i]    = s.fZfitR[i];    // Z fit position
+    fLabels[i]   = s.fLabels[i];   // Labels
   }
 
 }
@@ -341,7 +343,7 @@ void AliTRDseed::Update()
     fN2 = 0;
     return;
   }
-  EvaluateUni(fN2,yres2,mean,sigma,Int_t(fN2*kRatio-2));
+  AliMathBase::EvaluateUni(fN2,yres2,mean,sigma,Int_t(fN2*kRatio-2));
   if (sigma < sigmaexp * 0.8) {
     sigma = sigmaexp;
   }
@@ -436,67 +438,67 @@ void AliTRDseed::UpdateUsed()
 
 }
 
-//_____________________________________________________________________________
-void AliTRDseed::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
-                           , Double_t &sigma, Int_t hh)
-{
-  //
-  // Robust estimator in 1D case MI version
-  //
-  // For the univariate case
-  // estimates of location and scatter are returned in mean and sigma parameters
-  // the algorithm works on the same principle as in multivariate case -
-  // it finds a subset of size hh with smallest sigma, and then returns mean and
-  // sigma of this subset
-  //
+// //_____________________________________________________________________________
+// void AliTRDseed::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
+//                            , Double_t &sigma, Int_t hh)
+// {
+//   //
+//   // Robust estimator in 1D case MI version
+//   //
+//   // For the univariate case
+//   // estimates of location and scatter are returned in mean and sigma parameters
+//   // the algorithm works on the same principle as in multivariate case -
+//   // it finds a subset of size hh with smallest sigma, and then returns mean and
+//   // sigma of this subset
+//   //
 
-  if (hh == 0) {
-    hh = (nvectors + 2) / 2;
-  }
+//   if (hh == 0) {
+//     hh = (nvectors + 2) / 2;
+//   }
 
-  Double_t faclts[] = { 2.6477, 2.5092, 2.3826, 2.2662, 2.1587
-                      , 2.0589, 1.9660, 1.879,  1.7973, 1.7203
-                      , 1.6473 };
-  Int_t    *index   = new Int_t[nvectors];
-  TMath::Sort(nvectors, data, index, kFALSE);
+//   Double_t faclts[] = { 2.6477, 2.5092, 2.3826, 2.2662, 2.1587
+//                       , 2.0589, 1.9660, 1.879,  1.7973, 1.7203
+//                       , 1.6473 };
+//   Int_t    *index   = new Int_t[nvectors];
+//   TMath::Sort(nvectors, data, index, kFALSE);
   
-  Int_t    nquant = TMath::Min(Int_t(Double_t(((hh * 1.0 / nvectors) - 0.5) * 40)) + 1,11);
-  Double_t factor = faclts[nquant-1];
+//   Int_t    nquant = TMath::Min(Int_t(Double_t(((hh * 1.0 / nvectors) - 0.5) * 40)) + 1,11);
+//   Double_t factor = faclts[nquant-1];
   
-  Double_t sumx      = 0.0;
-  Double_t sumx2     = 0.0;
-  Int_t    bestindex = -1;
-  Double_t bestmean  = 0.0; 
-  Double_t bestsigma = data[index[nvectors-1]] - data[index[0]];   // Maximal possible sigma
-  for (Int_t i = 0; i < hh; i++) {
-    sumx  += data[index[i]];
-    sumx2 += data[index[i]]*data[index[i]];
-  }
+//   Double_t sumx      = 0.0;
+//   Double_t sumx2     = 0.0;
+//   Int_t    bestindex = -1;
+//   Double_t bestmean  = 0.0; 
+//   Double_t bestsigma = data[index[nvectors-1]] - data[index[0]];   // Maximal possible sigma
+//   for (Int_t i = 0; i < hh; i++) {
+//     sumx  += data[index[i]];
+//     sumx2 += data[index[i]]*data[index[i]];
+//   }
   
-  Double_t norm  = 1.0 / Double_t(hh);
-  Double_t norm2 = 1.0 / Double_t(hh - 1);
-  for (Int_t i = hh; i < nvectors; i++) {
+//   Double_t norm  = 1.0 / Double_t(hh);
+//   Double_t norm2 = 1.0 / Double_t(hh - 1);
+//   for (Int_t i = hh; i < nvectors; i++) {
 
-    Double_t cmean  = sumx*norm;
-    Double_t csigma = (sumx2 - hh*cmean*cmean) * norm2;
-    if (csigma < bestsigma) {
-      bestmean  = cmean;
-      bestsigma = csigma;
-      bestindex = i - hh;
-    }
+//     Double_t cmean  = sumx*norm;
+//     Double_t csigma = (sumx2 - hh*cmean*cmean) * norm2;
+//     if (csigma < bestsigma) {
+//       bestmean  = cmean;
+//       bestsigma = csigma;
+//       bestindex = i - hh;
+//     }
     
-    sumx  += data[index[i]] - data[index[i-hh]];
-    sumx2 += data[index[i]]*data[index[i]] - data[index[i-hh]]*data[index[i-hh]];
+//     sumx  += data[index[i]] - data[index[i-hh]];
+//     sumx2 += data[index[i]]*data[index[i]] - data[index[i-hh]]*data[index[i-hh]];
 
-  }
+//   }
   
-  Double_t bstd = factor * TMath::Sqrt(TMath::Abs(bestsigma));
-  mean  = bestmean;
-  sigma = bstd;
+//   Double_t bstd = factor * TMath::Sqrt(TMath::Abs(bestsigma));
+//   mean  = bestmean;
+//   sigma = bstd;
 
-  delete [] index;
+//   delete [] index;
 
-}
+// }
 
 //_____________________________________________________________________________
 Float_t AliTRDseed::FitRiemanTilt(AliTRDseed * cseed, Bool_t terror)
