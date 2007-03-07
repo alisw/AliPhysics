@@ -435,17 +435,17 @@ smell-@MODULE@: $(@PACKAGE@SMELL)
 @MODULE@/@PACKAGE@/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
 	@echo Copying $< to $@
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a $^ $@
+	@cp -pR $^ $@
 
 @MODULE@/@PACKAGE@/PROOF-INF: @MODULE@/PROOF-INF.@PACKAGE@
 	@echo Copying $< to $@
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a $^ $@
+	@cp -pR $^ $@
 
 @MODULE@/@PACKAGE@/%: @MODULE@/%
 	@echo Copying $< to $@
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a $< $@
+	@cp -pR $< $@
 
 test-@PACKAGE@.par: @PACKAGE@.par
 	@echo "INFO: The file $< is now tested, in case of an error check in par-tmp/@PACKAGE@."
