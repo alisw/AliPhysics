@@ -75,6 +75,11 @@ Char_t*            AliEMCALGeometry::fgDefaultGeometryName = "SHISH_77_TRD1_2X2_
 //  ..
 //  g = AliEMCALGeometry::GetInstance();                             // after first time
 //
+//  MC:   If you work with MC data you have to get geometry the next way: 
+//  ==                                      =============================
+//  AliRunLoader    *rl   = AliRunLoader::GetRunLoader();
+// AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+
 
 AliEMCALGeometry::AliEMCALGeometry() 
   : AliGeometry(),
