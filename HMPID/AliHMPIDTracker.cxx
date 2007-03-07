@@ -45,7 +45,7 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
 // Agruments: pEsd - pointer to ESD
 //   Returns: error code    
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean",pEsd->GetRunNumber()); //contains TObjArray of 21 TF1
-  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthes",pEsd->GetRunNumber()); //contains TObjArray of 7 TF1
+  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre",pEsd->GetRunNumber()); //contains TObjArray of 7 TF1
   if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
   if(!pQthreEnt) AliFatal("No Qthre");
   
