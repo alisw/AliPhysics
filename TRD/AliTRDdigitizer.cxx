@@ -763,7 +763,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    AliError("Could not get calibration object");  
+    AliFatal("Could not get calibration object");  
     return kFALSE;
   }
 
