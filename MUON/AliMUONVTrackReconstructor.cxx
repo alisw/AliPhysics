@@ -333,7 +333,6 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
       distTriggerTrack[0] = (triggerTrack->GetX11()-xTrack)/kDistSigma[0];
       distTriggerTrack[1] = (triggerTrack->GetY11()-yTrack)/kDistSigma[1];
       distTriggerTrack[2] = (TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack)/kDistSigma[2];
-      loTrgNum=triggerTrack->GetLoTrgNum();
       chi2 = 0.;
       for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
       chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)
@@ -341,6 +340,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
         minChi2MatchTrigger = chi2;
         matchTrigger = kTRUE;
         chi2MatchTrigger = chi2;
+	loTrgNum=triggerTrack->GetLoTrgNum();
       }
       triggerTrack = (AliMUONTriggerTrack*) recTriggerTracks->After(triggerTrack);
     }
@@ -348,7 +348,6 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
     track->SetMatchTrigger(matchTrigger);
     track->SetLoTrgNum(loTrgNum);
     track->SetChi2MatchTrigger(chi2MatchTrigger);
-    
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
   }
 
