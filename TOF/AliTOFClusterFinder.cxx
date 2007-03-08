@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.18  2007/03/06 16:31:20  arcelli
+Add Uncorrected TOF Time signal
+
 Revision 1.17  2007/02/28 18:09:11  arcelli
 Add protection against failed retrieval of the CDB cal object, now Reconstruction exits with AliFatal
 
@@ -79,6 +82,7 @@ Revision 0.01  2005/07/25 A. De Caro
 #include "AliTOFGeometryV5.h"
 #include "AliTOFrawData.h"
 #include "AliTOFRawStream.h"
+#include "Riostream.h"
 
 //extern TFile *gFile;
 
@@ -704,6 +708,7 @@ void AliTOFClusterFinder::FillRecPoint()
   Int_t digitIndex = -1;
   Float_t tToT=0.;
   Double_t tTdcND=0.;
+  Double_t tTdcRAW=0.;
   Bool_t cStatus = kTRUE;
 
   TClonesArray &lRecPoints = *fRecPoints;
@@ -721,8 +726,8 @@ void AliTOFClusterFinder::FillRecPoint()
     tToT = fTofClusters[ii]->GetToT();
     tTdcND = fTofClusters[ii]->GetTDCND();
     cStatus=fTofClusters[ii]->GetStatus();
-
-    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, tToT, tTdcND, cStatus);
+    tTdcRAW=fTofClusters[ii]->GetTDCRAW();
+    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, tToT, tTdcND, tTdcRAW,cStatus);
 
     //AliInfo(Form("%3i  %3i  %f %f %f %f %f  %2i %2i %2i %1i %2i",ii,digitIndex, cylindricalPosition[2],cylindricalPosition[0],cylindricalPosition[1],cylindricalPosition[3],cylindricalPosition[4],detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
 
