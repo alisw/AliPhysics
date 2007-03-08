@@ -56,6 +56,7 @@ void primary_vertex(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
   TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");
   pvm->SetMarkerStyle(5);
   pvm->SetMarkerColor(5);
+  pvm->SetMarkerSize(1.4);
   register_vertex_marker(pvm);
 
   if(showSPD) {
