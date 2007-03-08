@@ -61,7 +61,13 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 				    nPosTracks,
 				    nTracks-nPosTracks,
 				    esd->GetMagneticField(),
+				    -999., // fill muon magnetic field
 				    -999., // centrality; to be filled, still
+				    esd->GetZDCN1Energy(),
+				    esd->GetZDCP1Energy(),
+				    esd->GetZDCN2Energy(),
+				    esd->GetZDCP2Energy(),
+				    esd->GetZDCEMEnergy(),
 				    esd->GetTriggerMask(),
 				    esd->GetTriggerCluster(),
 				    esd->GetEventType()));
@@ -226,6 +232,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid1,
 					   vV0FromCascade,
+					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
       }
@@ -266,6 +273,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid2,
 					   vV0FromCascade,
+					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
       }
@@ -308,6 +316,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid3,
 					   vcascade,
+					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
       }
@@ -376,6 +385,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid4,
 					   vV0,
+					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
       }
@@ -416,6 +426,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid5,
 					   vV0,
+					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
       }
@@ -508,6 +519,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid6,
 					   primary,
+					   kTRUE, // check if this is right
 					   AliAODTrack::kPrimary);
 	      primary->AddDaughter(mother);
 	    }
@@ -559,6 +571,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid7,
 					   vkink,
+					   kTRUE, // check if this is right
 					   AliAODTrack::kPrimary);
 	      vkink->AddDaughter(daughter);
 	    }
@@ -616,6 +629,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					 esdTrack->GetITSClusterMap(), 
 					 pid8,
 					 primary,
+					 kTRUE, // check if this is right
 					 AliAODTrack::kPrimary)
 	    );
       }
@@ -632,16 +646,17 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					 esdTrack->GetITSClusterMap(), 
 					 pid8,
 					 NULL,
+					 kFALSE, // check if this is right
 					 AliAODTrack::kOrphan);
       }	
     } // end of loop on tracks
 
 
-    // Access to the AOD container of vertices
+    // Access to the AOD container of clusters
     TClonesArray &clusters = *(aod->GetClusters());
     Int_t jClusters=0;
 
-    // Clusters
+    // Calo Clusters
     Int_t nClusters    = esd->GetNumberOfCaloClusters();
 
     for (Int_t iClust=0; iClust<nClusters; ++iClust) {
@@ -679,7 +694,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					       primTrack,
 					       ttype);
 
-    } // end of loop on clusters
+    } // end of loop on calo clusters
 
 
     delete [] usedTrack;
