@@ -391,9 +391,9 @@ ClassImp(Reve::TrackList)
 
 void TrackList::Init()
 {
-  fMarkerStyle = 5;
-  fMarkerColor = 5;
-  // fMarker->SetMarkerSize(0.05);
+  fMarkerStyle = 4;
+  fMarkerColor = 4;
+  fMarkerSize  = 0.4;
 
   if (fRnrStyle== 0) fRnrStyle = new TrackRnrStyle;
   SetMainColorPtr(&fRnrStyle->fColor);
