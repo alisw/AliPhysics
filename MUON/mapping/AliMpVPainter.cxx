@@ -42,6 +42,10 @@
 #include "AliMpPCBPainter.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatPainter.h"
+#include "AliMpIteratorPainter.h"
+#include "AliMpVPadIterator.h"
+#include "AliMpSlatSegmentation.h"
+//#include "AliMpSectorSegmentation.h"
 
 #include <TList.h>
 #include <TVirtualX.h>
@@ -164,6 +168,22 @@ AliMpVPainter *AliMpVPainter::CreatePainter(TObject *object)
     painter = new AliMpPCBPainter((AliMpPCB *)object);
   else if (object->InheritsFrom(AliMpSlat::Class()))
     painter = new AliMpSlatPainter((AliMpSlat*)object);
+  else if (object->InheritsFrom(AliMpVPadIterator::Class()))
+    painter = new AliMpIteratorPainter((AliMpVPadIterator*)object);
+  else if (object->InheritsFrom(AliMpVSegmentation::Class()))
+  {
+ //   const AliMpSectorSegmentation* sectorSegmentation = dynamic_cast<const AliMpSectorSegmentation*>(object);
+//    if (sectorSegmentation)
+//    {
+//      return new AliMpSectorPainter(sectorSegmentation->GetSector());
+//    }
+
+    const AliMpSlatSegmentation* slatSegmentation = dynamic_cast<const AliMpSlatSegmentation*>(object);
+    if (slatSegmentation)
+    {
+      return new AliMpSlatPainter(slatSegmentation->Slat());
+    }
+  }
   return painter;
 }
 
