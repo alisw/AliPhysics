@@ -432,73 +432,15 @@ void AliTRDseed::UpdateUsed()
 
   fNUsed = 0;
   for (Int_t i = 0; i < 25; i++) {
-    if (!fClusters[i]) continue;
-    if ((fClusters[i]->IsUsed())) fNUsed++;
+    if (!fClusters[i]) {
+      continue;
+    }
+    if ((fClusters[i]->IsUsed())) {
+      fNUsed++;
+    }
   }
 
 }
-
-// //_____________________________________________________________________________
-// void AliTRDseed::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
-//                            , Double_t &sigma, Int_t hh)
-// {
-//   //
-//   // Robust estimator in 1D case MI version
-//   //
-//   // For the univariate case
-//   // estimates of location and scatter are returned in mean and sigma parameters
-//   // the algorithm works on the same principle as in multivariate case -
-//   // it finds a subset of size hh with smallest sigma, and then returns mean and
-//   // sigma of this subset
-//   //
-
-//   if (hh == 0) {
-//     hh = (nvectors + 2) / 2;
-//   }
-
-//   Double_t faclts[] = { 2.6477, 2.5092, 2.3826, 2.2662, 2.1587
-//                       , 2.0589, 1.9660, 1.879,  1.7973, 1.7203
-//                       , 1.6473 };
-//   Int_t    *index   = new Int_t[nvectors];
-//   TMath::Sort(nvectors, data, index, kFALSE);
-  
-//   Int_t    nquant = TMath::Min(Int_t(Double_t(((hh * 1.0 / nvectors) - 0.5) * 40)) + 1,11);
-//   Double_t factor = faclts[nquant-1];
-  
-//   Double_t sumx      = 0.0;
-//   Double_t sumx2     = 0.0;
-//   Int_t    bestindex = -1;
-//   Double_t bestmean  = 0.0; 
-//   Double_t bestsigma = data[index[nvectors-1]] - data[index[0]];   // Maximal possible sigma
-//   for (Int_t i = 0; i < hh; i++) {
-//     sumx  += data[index[i]];
-//     sumx2 += data[index[i]]*data[index[i]];
-//   }
-  
-//   Double_t norm  = 1.0 / Double_t(hh);
-//   Double_t norm2 = 1.0 / Double_t(hh - 1);
-//   for (Int_t i = hh; i < nvectors; i++) {
-
-//     Double_t cmean  = sumx*norm;
-//     Double_t csigma = (sumx2 - hh*cmean*cmean) * norm2;
-//     if (csigma < bestsigma) {
-//       bestmean  = cmean;
-//       bestsigma = csigma;
-//       bestindex = i - hh;
-//     }
-    
-//     sumx  += data[index[i]] - data[index[i-hh]];
-//     sumx2 += data[index[i]]*data[index[i]] - data[index[i-hh]]*data[index[i-hh]];
-
-//   }
-  
-//   Double_t bstd = factor * TMath::Sqrt(TMath::Abs(bestsigma));
-//   mean  = bestmean;
-//   sigma = bstd;
-
-//   delete [] index;
-
-// }
 
 //_____________________________________________________________________________
 Float_t AliTRDseed::FitRiemanTilt(AliTRDseed * cseed, Bool_t terror)
