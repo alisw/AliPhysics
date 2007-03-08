@@ -18,7 +18,7 @@
 //           for the Event Data Summary class
 //           This class contains the Primary Vertex
 //           of the event coming from reconstruction
-// Origin: A.Dainese, Padova, andrea.dainese@pd.infn.it
+// Origin: A.Dainese, andrea.dainese@lnl.infn.it
 //-----------------------------------------------------------------
 
 //---- standard headers ----
@@ -138,7 +138,54 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
   fSNR[2]        = snr[2];
 
 }
-
+//--------------------------------------------------------------------------
+AliESDVertex::AliESDVertex(const AliESDVertex &source):
+  AliVertex(source),
+  fCovXX(source.fCovXX),
+  fCovXY(source.fCovXY),
+  fCovYY(source.fCovYY),
+  fCovXZ(source.fCovXZ),
+  fCovYZ(source.fCovYZ),
+  fCovZZ(source.fCovZZ),
+  fChi2(source.fChi2)
+{
+  //
+  // Copy constructor
+  //
+  for(Int_t i=0;i<3;i++) {
+    fSNR[i] = source.fSNR[i];
+    fTruePos[i] = source.fTruePos[i];
+  }
+}
+//--------------------------------------------------------------------------
+AliESDVertex &AliESDVertex::operator=(const AliESDVertex &source){
+  //
+  // assignment operator
+  //
+  if(&source == this) return *this;
+  this->SetName(source.GetName());
+  this->SetTitle(source.GetTitle());
+  for(Int_t i=0;i<3;i++) {
+    fPosition[i] = source.fPosition[i];
+    fTruePos[i] = source.fTruePos[i];
+    fSNR[i] = source.fSNR[i];
+  }
+  fCovXX = source.fCovXX;
+  fCovXY = source.fCovXY;
+  fCovYY = source.fCovYY;
+  fCovXZ = source.fCovXZ;
+  fCovYZ = source.fCovYZ;
+  fCovZZ = source.fCovZZ;
+  fChi2 = source.fChi2;
+  fSigma = source.GetDispersion();
+  fNContributors = source.GetNContributors();
+  fNIndices = source.GetNIndices();
+  if(source.fNIndices>0) {
+    fIndices = new UShort_t[fNIndices];
+    memcpy(fIndices,source.fIndices,fNIndices*sizeof(UShort_t));
+  }
+  return *this;
+}
 //--------------------------------------------------------------------------
 void AliESDVertex::SetToZero() {
   //
@@ -151,9 +198,9 @@ void AliESDVertex::SetToZero() {
 }
 //--------------------------------------------------------------------------
 void AliESDVertex::GetSigmaXYZ(Double_t sigma[3]) const {
-//
-// Return errors on vertex position
-//
+  //
+  // Return errors on vertex position in thrust frame
+  //
   sigma[0] = TMath::Sqrt(fCovXX);
   sigma[1] = TMath::Sqrt(fCovYY);
   sigma[2] = TMath::Sqrt(fCovZZ);
@@ -162,9 +209,9 @@ void AliESDVertex::GetSigmaXYZ(Double_t sigma[3]) const {
 }
 //--------------------------------------------------------------------------
 void AliESDVertex::GetCovMatrix(Double_t covmatrix[6]) const {
-//
-// Return covariance matrix of the vertex
-//
+  //
+  // Return covariance matrix of the vertex
+  //
   covmatrix[0] = fCovXX;
   covmatrix[1] = fCovXY;
   covmatrix[2] = fCovYY;
@@ -177,18 +224,18 @@ void AliESDVertex::GetCovMatrix(Double_t covmatrix[6]) const {
 
 //--------------------------------------------------------------------------
 void AliESDVertex::GetSNR(Double_t snr[3]) const {
-//
-// Return S/N ratios
-//
+  //
+  // Return S/N ratios
+  //
   for(Int_t i=0;i<3;i++) snr[i] = fSNR[i];
 
   return;
 }
 //--------------------------------------------------------------------------
 void AliESDVertex::Print(Option_t* /*option*/) const {
-//
-// Print out information on all data members
-//
+  //
+  // Print out information on all data members
+  //
   printf("ESD vertex position:\n");
   printf("   x = %f +- %f\n",fPosition[0],TMath::Sqrt(fCovXX));
   printf("   y = %f +- %f\n",fPosition[1],TMath::Sqrt(fCovYY));

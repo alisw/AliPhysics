@@ -44,8 +44,10 @@ class AliESDVertex : public AliVertex {
 	       const Char_t *vtxName="Vertex");
   AliESDVertex(Double_t position[3],Double_t sigma[3],Double_t snr[3],
 	       const Char_t *vtxName="Vertex");
+  AliESDVertex(const AliESDVertex &source);
+  AliESDVertex &operator=(const AliESDVertex &source);
 
-  virtual ~AliESDVertex(){;}
+  virtual ~AliESDVertex() {}
 
 
   void     GetSigmaXYZ(Double_t sigma[3]) const;
@@ -65,11 +67,11 @@ class AliESDVertex : public AliVertex {
 
   void     Print(Option_t* option = "") const;
   void     PrintStatus() const {Print();}
-  void SetTruePos(Double_t *tp){for(Int_t i=0;i<3;i++)fTruePos[i]=tp[i];}
-  void GetTruePos(Double_t *tp) const 
-       {for(Int_t i=0;i<3;i++)tp[i]=fTruePos[i];}
+  void     SetTruePos(Double_t *tp){for(Int_t i=0;i<3;i++)fTruePos[i]=tp[i];}
+  void     GetTruePos(Double_t *tp) const 
+    {for(Int_t i=0;i<3;i++)tp[i]=fTruePos[i];}
 
-  void Reset() { SetToZero(); SetName("Vertex"); }
+  void     Reset() { SetToZero(); SetName("Vertex"); }
 
  protected:
 
