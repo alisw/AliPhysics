@@ -55,6 +55,7 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 UChar_t itsClusMap,
 			 Double_t pid[10],
 			 AliAODVertex *prodVertex,
+			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype) :
   AliVirtualParticle(),
   fChi2(-999.),
@@ -70,6 +71,7 @@ AliAODTrack::AliAODTrack(Int_t id,
  
   SetP(p, cartesian);
   SetPosition(x, isDCA);
+  SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
 
@@ -87,6 +89,7 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 UChar_t itsClusMap,
 			 Float_t pid[10],
 			 AliAODVertex *prodVertex,
+			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype) :
   AliVirtualParticle(),
   fChi2(-999.),
@@ -102,6 +105,7 @@ AliAODTrack::AliAODTrack(Int_t id,
  
   SetP(p, cartesian);
   SetPosition(x, isDCA);
+  SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
 
@@ -131,6 +135,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
 
   trk.GetP(fMomentum);
   trk.GetPosition(fPosition);
+  SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
   if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
   SetPID(trk.fPID);
 
@@ -160,6 +165,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 
     fCharge = trk.fCharge;
     fITSClusterMap = trk.fITSClusterMap;
+    SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
     fType = trk.fType;
   }
 

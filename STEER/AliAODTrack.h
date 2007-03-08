@@ -23,7 +23,8 @@ class AliAODTrack : public AliVirtualParticle {
   enum AODTrk_t {kUndef=-1, kPrimary, kSecondary, kOrphan};
 
   enum AODTrkBits_t {
-    kIsDCA=BIT(14)   // set if fPosition is the DCA and not the position of the first point
+    kIsDCA=BIT(14),   // set if fPosition is the DCA and not the position of the first point
+    kUsedForPrimVtxFit=BIT(15) // set if this track was used to fit the primary vertex
   };
 
   enum AODTrkPID_t {
@@ -41,9 +42,10 @@ class AliAODTrack : public AliVirtualParticle {
 	      UChar_t itsClusMap,
 	      Double_t pid[10],
 	      AliAODVertex *prodVertex,
+	      Bool_t usedForPrimVtxFit,
 	      AODTrk_t ttype=kUndef);
 
-   AliAODTrack(Int_t id,
+  AliAODTrack(Int_t id,
 	      Int_t label,
 	      Float_t p[3],
 	      Bool_t cartesian,
@@ -54,6 +56,7 @@ class AliAODTrack : public AliVirtualParticle {
 	      UChar_t itsClusMap,
 	      Float_t pid[10],
 	      AliAODVertex *prodVertex,
+	      Bool_t usedForPrimVtxFit,
 	      AODTrk_t ttype=kUndef);
 
   virtual ~AliAODTrack();
@@ -96,6 +99,7 @@ class AliAODTrack : public AliVirtualParticle {
   Int_t GetID() const { return fID; }
   Int_t GetLabel() const { return fLabel; } 
   Char_t GetType() const { return fType;}
+  Bool_t GetUsedForPrimVtxFit() const { return TestBit(kUsedForPrimVtxFit); }
 
   template <class T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
@@ -130,6 +134,7 @@ class AliAODTrack : public AliVirtualParticle {
 
   template <class T> void SetPosition(const T *x, Bool_t isDCA = kFALSE);
   void SetDCA(Double_t d, Double_t z);
+  void SetUsedForPrimVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForPrimVtxFit) : ResetBit(kUsedForPrimVtxFit); }
 
   void SetOneOverPt(Double_t oneOverPt) { fMomentum[0] = oneOverPt; }
   void SetPt(Double_t pt) { fMomentum[0] = 1./pt; };
