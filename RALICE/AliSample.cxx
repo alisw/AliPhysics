@@ -626,7 +626,8 @@ void AliSample::SetStoreMode(Int_t mode)
 // storage of entered data is not needed. This is the default mode
 // of operation and is the most efficient w.r.t. cpu time and memory.
 // However, when calculation of a median, minimum or maximum is required,
-// then the data storage mode has be activated.
+// then the data storage mode has be activated, unless the statistics
+// are obtained from a specified input histogram.
 //
 // Note : Activation of storage mode can only be performed before the
 //        first data item is entered. 
@@ -651,6 +652,10 @@ Float_t AliSample::GetMedian(Int_t i)
 {
 // Provide the median of a certain variable.
 // For this functionality the storage mode has to be activated.
+//
+// Note : For large datasets it is more efficient to determine the median
+//        via the specification of a histogram. 
+//        See the other GetMedian memberfunction for details.
 
  if (fDim < i)
  {
@@ -741,6 +746,10 @@ Float_t AliSample::GetSpread(Int_t i)
 // Provide the spread w.r.t. the median of a certain variable.
 // The spread is defined as the average of |median-val(i)|.
 // For this functionality the storage mode has to be activated.
+//
+// Note : For large datasets it is more efficient to determine the spread
+//        via the specification of a histogram. 
+//        See the other GetSpread memberfunction for details.
 
  if (fDim < i)
  {
@@ -843,5 +852,81 @@ Float_t AliSample::GetMaximum(Int_t i) const
  }
 
  return max;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliSample::GetMedian(TH1* histo,Int_t mode) const
+{
+// Provide the median from the specified 1D histogram.
+// For this functionality it is not needed to activate the storage mode.
+//
+// This facility uses TH1::GetQuantiles to determine the median, which
+// provides a median value which in general is different from any of the
+// central bin X values. The user may force the returned median to be
+// the corresponding central bin X value via the "mode" input argument.
+//
+// mode = 0 ==> The pure TH1::GetQuantiles median value is returned
+//        1 ==> The corresponding central bin X value is returned as median
+//
+// By default mode=1 will be used, to agree with the AliSample philosophy.
+
+ if (!histo) return 0;
+
+ Double_t median=0;
+
+ Double_t q[1];
+ Double_t p[1]={0.5};
+ Double_t integral=histo->ComputeIntegral();
+ Int_t nq=histo->GetQuantiles(1,q,p);
+
+ if (!nq) return 0;
+
+ median=q[0];
+ if (mode)
+ {
+  Int_t mbin=histo->FindBin(q[0]);
+  median=histo->GetBinCenter(mbin);
+ }
+
+ return median;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliSample::GetSpread(TH1* histo,Int_t mode) const
+{
+// Provide the spread w.r.t. the median for the specified 1D histogram.
+// The spread is defined as the average of |median-xval|.
+// For this functionality it is not needed to activate the storage mode.
+//
+// This facility uses TH1::GetQuantiles to determine the median, which
+// provides a median value which in general is different from any of the
+// central bin X values. The user may force the used median to be
+// the corresponding central bin X value via the "mode" input argument.
+//
+// mode = 0 ==> The pure TH1::GetQuantiles median value is used
+//        1 ==> The corresponding central bin X value is used as median
+//
+// By default mode=1 will be used, to agree with the AliSample philosophy.
+
+ if (!histo) return 0;
+
+ Double_t spread=0;
+
+ Double_t median=GetMedian(histo,mode);
+
+ Int_t nbins=histo->GetNbinsX();
+ Double_t x=0,y=0,ysum=0;
+ for (Int_t jbin=1; jbin<=nbins; jbin++)
+ {
+  x=histo->GetBinCenter(jbin);
+  y=histo->GetBinContent(jbin);
+  if (y>0)
+  {
+   spread+=fabs(x-median)*y;
+   ysum+=y;
+  }
+ }
+
+ if (ysum>0) spread=spread/ysum;
+
+ return spread;
 }
 ///////////////////////////////////////////////////////////////////////////

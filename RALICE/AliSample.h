@@ -9,6 +9,7 @@
 
 #include "Rtypes.h"
 #include "TArrayF.h"
+#include "TH1.h"
  
 class AliSample
 {
@@ -39,6 +40,8 @@ class AliSample
   void Data(Int_t i, Int_t j) const;            // Stat. info for i-th and j-th variable
   void SetStoreMode(Int_t mode=1);              // Set mode for storage of all entered data
   Int_t GetStoreMode() const;                   // Provide storage mode of all entered data
+  Double_t GetMedian(TH1* histo,Int_t mode=1) const; // Provide median from the specified 1D histogram
+  Double_t GetSpread(TH1* histo,Int_t mode=1) const; // Provide spread w.r.t. the median from the 1D histo
  
  private:
   Int_t fDim;                      // Dimension of the sample
