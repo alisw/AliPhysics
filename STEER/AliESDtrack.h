@@ -146,7 +146,7 @@ public:
   }
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Float_t GetTPCsignalSigma() const {return fTPCsignalS;}
-  Float_t GetTPCsignalN() const {return fTPCsignalN;}
+  UShort_t GetTPCsignalN() const {return fTPCsignalN;}
   Float_t GetTPCchi2() const {return fTPCchi2;}
   Int_t   GetTPCclusters(Int_t *idx) const;
   Float_t GetTPCdensity(Int_t row0, Int_t row1) const;
