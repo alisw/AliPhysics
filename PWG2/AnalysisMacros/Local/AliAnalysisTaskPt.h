@@ -3,9 +3,12 @@
 #include "AliESD.h"
 
 #include "AliAnalysisTask.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
 
 class AliAnalysisTaskPt : public AliAnalysisTask {
  public:
+  AliAnalysisTaskPt() : AliAnalysisTask(), fESD(0), fHistPt(0) {}
   AliAnalysisTaskPt(const char *name);
   virtual ~AliAnalysisTaskPt() {}
   
@@ -18,6 +21,5 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   AliESD *fESD; //ESD object
   TH1F   *fHistPt; //Pt spectrum
    
-  ClassDef(AliAnalysisTaskPt, 0); // example of analysis
+  ClassDef(AliAnalysisTaskPt, 1); // example of analysis
 };
-

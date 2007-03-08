@@ -1,5 +1,5 @@
 #define AliAnalysisTaskPt_cxx
-
+#include "TROOT.h"
 #include "TChain.h"
 #include "TH1.h"
 #include "TCanvas.h"
@@ -22,24 +22,22 @@ AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name) :AliAnalysisTask(name,"")
   DefineOutput(0, TH1F::Class());
 }
 
-//______________________________________________________________________________
-void AliAnalysisTaskPt::ConnectInputData(Option_t *)
-{
-  // Initialize branches.
-   printf("   ConnectInputData of task %s\n", GetName());
-  if (!fESD) {
-    char ** address = (char **)GetBranchAddress(0, "ESD");
-    if (address) fESD = (AliESD*)(*address);
-    if (!fESD) {
-      fESD = new AliESD();
-      SetBranchAddress(0, "ESD", &fESD);
-    }
+//________________________________________________________________________
+void AliAnalysisTaskPt::ConnectInputData(Option_t *) {
+  printf("   ConnectInputData %s\n", GetName());
+
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESD*)(*address);
+  }
+  else  {
+    fESD = new AliESD();
+    SetBranchAddress(0, "ESD", &fESD);
   }
 }
 
-//______________________________________________________________________________
+//________________________________________________________________________
 void AliAnalysisTaskPt::CreateOutputObjects() {
-  printf("   CreateOutputObjects of task %s\n", GetName());
   if (!fHistPt) {
     fHistPt = new TH1F("fHistPt","This is the Pt distribution",15,0.1,3.1);
     fHistPt->SetStats(kTRUE);
@@ -83,6 +81,7 @@ void AliAnalysisTaskPt::Terminate(Option_t *) {
     c1->cd(1)->SetLeftMargin(0.15);
     c1->cd(1)->SetBottomMargin(0.15);  
     c1->cd(1)->SetLogy();
-    fHistPt->DrawCopy("E");
+    //fHistPt = (TH1F*)GetOutputData(0);
+    if (fHistPt) fHistPt->DrawCopy("E");
   }
 }
