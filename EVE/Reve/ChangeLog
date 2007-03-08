@@ -1,3 +1,9 @@
+2007-03-08  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	Missing initialization; fiddle with the track marker-style a bit
+	more.
+
 2007-03-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RenderElement.cxx:
