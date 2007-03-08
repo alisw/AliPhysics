@@ -34,7 +34,7 @@ class AliAODCluster : public AliVirtualParticle {
 		Double_t x[3],
 		Double_t covMatrix[10],
 		Double_t pid[10],
-		AliAODVertex *prodVertex,
+		AliAODVertex *prodVertex, // not necessary for PMD
 		AliAODTrack *primTrack,
 		Char_t ttype=kUndef);
 
@@ -56,10 +56,10 @@ class AliAODCluster : public AliVirtualParticle {
 
   virtual Double_t E() const { return fEnergy; }
   // make a connection to the PID object, here!!!
-  virtual Double_t M() const { return -999.; }
+  virtual Double_t M() const { return (fType==AliAODCluster::kPHOSNeutral) ? 0. : -999.; }
   
   // make a connection to the PID object, here!!!
-  virtual Double_t Y() const { return -999.; }
+  virtual Double_t Y() const { return (fType==AliAODCluster::kPHOSNeutral) ? Eta() : -999.; }
 
   // PID
   virtual const Double_t *PID() const { return fPID; }
@@ -105,16 +105,16 @@ class AliAODCluster : public AliVirtualParticle {
   void SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
   void SetPrimTrack(TObject *ptrack) { fPrimTrack = ptrack; }
 
-  virtual Double_t Px() const {return 0.;}
-  virtual Double_t Py() const {return 0.;}
-  virtual Double_t Pz() const {return 0.;}
-  virtual Double_t Pt() const {return 0.;}
-  virtual Double_t P() const {return 0.;}
-  virtual Double_t OneOverPt() const {return 0.;}
-  virtual Double_t Phi() const {return 0.;}
-  virtual Double_t Theta() const {return 0.;}
-  virtual Double_t Eta() const {return 0.;}
-  virtual Short_t Charge() const {return 0;}
+  virtual Double_t Px() const {return (fType==AliAODCluster::kPHOSNeutral) ? fEnergy*fPosition[0] : 0.;}
+  virtual Double_t Py() const {return (fType==AliAODCluster::kPHOSNeutral) ? fEnergy*fPosition[1] : 0.;}
+  virtual Double_t Pz() const {return (fType==AliAODCluster::kPHOSNeutral) ? fEnergy*fPosition[2] : 0.;}
+  virtual Double_t Pt() const {return TMath::Sqrt(Px()*Px() + Py()*Py()); }
+  virtual Double_t P() const {return TMath::Sqrt(Px()*Px() + Py()*Py() + Pz()*Pz()); }
+  virtual Double_t OneOverPt() const {return Pt() ? 1./Pt(): -999.;}
+  virtual Double_t Phi() const {return (fType==AliAODCluster::kPHOSNeutral) ? TMath::ATan2(fPosition[1], fPosition[0]) : 0.;}
+  virtual Double_t Theta() const {return (fType==AliAODCluster::kPHOSNeutral) ? TMath::ATan2(Pt(), fPosition[2]) : 0.;}
+  virtual Double_t Eta() const {return (fType==AliAODCluster::kPHOSNeutral) ? -TMath::Log(TMath::Tan(0.5 * Theta())) : 0.;}
+  virtual Short_t  Charge() const {return (fType==AliAODCluster::kPHOSNeutral) ? 0 : -999;}
 
  private :
 
@@ -123,16 +123,17 @@ class AliAODCluster : public AliVirtualParticle {
   Double32_t    fPosition[3];    // position of the cluster
 
   Double32_t    fPID[10];        // [0.,1.,8] pointer to PID object
-  Double32_t    fChi2;           // chi2 of mometum fit
+  Double32_t    fChi2;           // chi2 (probably not necessary for PMD)
 
-  Int_t         fID;             // unique track ID, points back to the ESD track
+  Int_t         fID;             // unique cluster ID, points back to the ESD cluster
   Int_t         fLabel;          // particle label, points back to MC track
   
   AliAODRedCov<4> *fCovMatrix;   // covariance matrix (x, y, z, E)
-  TRef          fProdVertex;     // vertex of origin
-  TRef          fPrimTrack;      // primary track number associated with this cluster
+  TRef          fProdVertex;     // vertex of origin (not necessary for PMD)
+  TRef          fPrimTrack;      // primary track associated with this cluster (not necessary for PMD)
 
-  Char_t       fType;
+  // TRef      fAssocCluster;   // for PMD: cluster of other layer associated with this cluster
+  Char_t        fType;
 
 
   ClassDef(AliAODCluster,1);
