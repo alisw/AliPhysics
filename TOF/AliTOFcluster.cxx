@@ -68,6 +68,7 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float
   fQuality(-100), 
   fToT(ToT),
   fTdcND(TdcND),
+  fTdcRAW(0),
   fStatus(status) 
  {
   //
@@ -96,6 +97,66 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float
   fQuality(-100), 
   fToT(ToT),
   fTdcND(TdcND),
+  fTdcRAW(0),
+  fStatus(kTRUE) 
+ {
+  //
+  // constructor
+  //
+
+  Int_t ii;
+  fR   = h[0];
+  fPhi = h[1];
+  fZ   = h[2];
+  fTDC = h[3];
+  fADC = h[4];
+  for (ii=0; ii<3; ii++) fLab[ii]      = l[ii];
+  for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
+}
+
+//-------------------------------------------------------------------------
+
+AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND, Double_t TdcRAW, Bool_t status):
+  TObject(),
+  fIdx(idx),
+  fR(0),
+  fPhi(0),
+  fZ(0),
+  fTDC(0),
+  fADC(0),
+  fQuality(-100), 
+  fToT(ToT),
+  fTdcND(TdcND),
+  fTdcRAW(TdcRAW),
+  fStatus(status) 
+ {
+  //
+  // constructor
+  //
+
+  Int_t ii;
+  fR   = h[0];
+  fPhi = h[1];
+  fZ   = h[2];
+  fTDC = h[3];
+  fADC = h[4];
+  for (ii=0; ii<3; ii++) fLab[ii]      = l[ii];
+  for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
+}
+//-------------------------------------------------------------------------
+
+AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND, Double_t TdcRAW):
+  TObject(),
+  fIdx(idx),
+  fR(0),
+  fPhi(0),
+  fZ(0),
+  fTDC(0),
+  fADC(0),
+  fQuality(-100), 
+  fToT(ToT),
+  fTdcND(TdcND),
+  fTdcRAW(TdcRAW),
   fStatus(kTRUE) 
  {
   //

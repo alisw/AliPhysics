@@ -20,6 +20,8 @@ class AliTOFcluster : public TObject {
   AliTOFcluster(); // default ctor
   AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND, Bool_t status); // ctor
   AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND); // ctor
+  AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND, Double_t TdcRAW, Bool_t status); // ctor
+  AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND, Double_t TdcRAW); // ctor
   AliTOFcluster(Double_t *h, Int_t *ind); // new ctor
   AliTOFcluster(const AliTOFcluster & cluster); // copy ctor
   virtual ~AliTOFcluster(); // dtor
