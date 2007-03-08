@@ -14,7 +14,10 @@ o) Interactive
 o) Batch
    You can find the executable (that you should store under your $HOME/bin  AliEn directory), the jdl, the xml collection, as well as the macro runAnalysis.C. You should also use the AliAnalysisTaskPt.* from the Local directory. The macros will be updated slightly (I'll include the usage of the tags) once the new root version will be deployed in AliEn. Everybody who wants to use these files should change them accordingly!!!
 
-In order to run the examples you should use the ESD.par as well as the ANALYSIS_NEW.par. You can creat both par files by typing "make ESD.par" and "make ANALYSIS.par" respectively under $ALICE_ROOT.
+o) Proof
+   You can find the runAnalysis.C and the demoCAF.C macros to be used for CAF. Follow the instructions written in the first file for the correct env. variables and the additional files needed (CreateESDChain.C & the txt file containing the ESDs' location).
+
+In order to run the examples you should use the ESD.par as well as the ANALYSIS.par. You can creat both par files by typing "make ESD.par" and "make ANALYSIS.par" respectively under $ALICE_ROOT.
 
 ===========================================================
 For any questions send mails to: Panos.Christakoglou@cern.ch
