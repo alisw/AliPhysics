@@ -1,4 +1,5 @@
 # Id serial
+# missing serial for manuId 107 108
   1  bp 16067
   2  bp 16041
   3  bp 15803
@@ -32,8 +33,8 @@
 104  bp 16636
 105 nbp 16302
 106 nbp 16495
-107  bp   107
-108  bp   108
+107  bp 40000
+108  bp 40001
 109 nbp 16251
 110 nbp 15656
 111  bp 15470
