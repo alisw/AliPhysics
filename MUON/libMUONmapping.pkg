@@ -105,6 +105,7 @@ SRCS +=  \
 	 mapping/AliMpVPainter.cxx  \
 	 mapping/AliMpZonePainter.cxx  \
          mapping/AliMpDEVisu.cxx   \
+         mapping/AliMpIteratorPainter.cxx
 
 HDRS  = $(SRCS:.cxx=.h)
 #HDRS  = $(SRCS:.cxx=.h)
