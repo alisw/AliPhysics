@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * BNew version from Gustavo
+ *
  * Revision 1.1  2007/01/25 17:24:20  schutz
  * new class
  *
@@ -59,9 +62,13 @@ ClassImp(AliAnaGammaIsolCut)
   AliAnaGammaIsolCut::AliAnaGammaIsolCut(const char *name) : 
     AliAnaGammaDirect(name),
     fOutputContainer(new TObjArray(100)),  
-    fNCones(0),fNPtThres(0)
+    fNCones(0),fNPtThres(0),   fConeSizes(),  fPtThresholds(), fhPtCandidate(0), fhPtThresIsolated(), fhPtSumIsolated()
 {
-  //Ctor        
+  //Ctor
+
+  //Init parameters
+  InitParameters();
+        
   TList * list = gDirectory->GetListOfKeys() ; 
   TIter next(list) ; 
   TH2F * h = 0 ;
@@ -70,11 +77,6 @@ ClassImp(AliAnaGammaIsolCut)
     //-1 to avoid GammaJet Task
     h = dynamic_cast<TH2F*>(gDirectory->Get(list->At(index)->GetName())) ; 
     fOutputContainer->Add(h) ; 
-  }
-  
-  for(Int_t i = 0; i < 10 ; i++){
-    fConeSizes[i]=0;
-    fPtThresholds[i]=0;
   }
   
   // Input slot #0 works with an Ntuple
@@ -88,17 +90,51 @@ ClassImp(AliAnaGammaIsolCut)
 //____________________________________________________________________________
 AliAnaGammaIsolCut::AliAnaGammaIsolCut(const AliAnaGammaIsolCut & ic) : 
   AliAnaGammaDirect(ic),
-  fOutputContainer(ic. fOutputContainer), 
-  fNCones(ic.fNCones),fNPtThres(ic.fNPtThres)
+  fOutputContainer(ic.fOutputContainer), 
+  fNCones(ic.fNCones),fNPtThres(ic.fNPtThres), fConeSizes(),fPtThresholds(), 
+  fhPtCandidate(ic. fhPtCandidate), fhPtThresIsolated(), fhPtSumIsolated()
 {
   // cpy ctor
   SetName (ic.GetName()) ; 
   SetTitle(ic.GetTitle()) ; 
 
-  for(Int_t i = 0; i < 10 ; i++){
-    fConeSizes[i]=  ic.fConeSizes[i];
+  for(Int_t i = 0; i < fNCones ; i++){
+    fConeSizes[i] =  ic.fConeSizes[i];
+    fhPtSumIsolated[i] = ic.fhPtSumIsolated[i]; 
+      for(Int_t j = 0; j < fNPtThres ; j++)
+	fhPtThresIsolated[i][j] = ic.fhPtThresIsolated[i][j]; 
+    }
+
+  for(Int_t i = 0; i < fNPtThres ; i++)
     fPtThresholds[i]=   ic.fPtThresholds[i];
+  
+
+}
+
+//_________________________________________________________________________
+AliAnaGammaIsolCut & AliAnaGammaIsolCut::operator = (const AliAnaGammaIsolCut & source)
+{
+  //assignment operator
+  if(&source == this) return *this;
+
+  fOutputContainer = source.fOutputContainer ;
+  fNCones = source.fNCones ;
+  fNPtThres = source.fNPtThres ; 
+  fhPtCandidate = source. fhPtCandidate ;
+
+  for(Int_t i = 0; i < fNCones ; i++){
+    fConeSizes[i] =  source.fConeSizes[i];
+    fhPtSumIsolated[i] = source.fhPtSumIsolated[i] ;
+      for(Int_t j = 0; j < fNPtThres ; j++)
+	fhPtThresIsolated[i][j] = source.fhPtThresIsolated[i][j] ;
   }
+  
+  for(Int_t i = 0; i < fNPtThres ; i++)
+    fPtThresholds[i]=   source.fPtThresholds[i];
+  
+
+return *this;
+
 }
 
 //____________________________________________________________________________
@@ -126,9 +162,8 @@ void AliAnaGammaIsolCut::ConnectInputData(const Option_t*)
 void AliAnaGammaIsolCut::CreateOutputObjects()
 {  
 
-  // Init parameteres and create histograms to be saved in output file and 
-  // stores them in fOutputContainer
-  InitParameters();
+  // Create histograms to be saved in output file and 
+  // store them in fOutputContainer
 
   fOutputContainer = new TObjArray(100) ; 
 
@@ -248,8 +283,8 @@ void AliAnaGammaIsolCut::InitParameters()
 
   fNCones           = 4 ; 
   fNPtThres         = 4 ; 
-  fConeSizes[0] = 0.1; fConeSizes[0] = 0.2; fConeSizes[2] = 0.3; fConeSizes[3] = 0.4;
-  fPtThresholds[0]=1.; fPtThresholds[0]=2.; fPtThresholds[0]=3.; fPtThresholds[0]=4.;
+  fConeSizes[0] = 0.1; fConeSizes[1] = 0.2; fConeSizes[2] = 0.3; fConeSizes[3] = 0.4;
+  fPtThresholds[0]=1.; fPtThresholds[1]=2.; fPtThresholds[2]=3.; fPtThresholds[3]=4.;
 }
 
 void AliAnaGammaIsolCut::Print(const Option_t * opt) const

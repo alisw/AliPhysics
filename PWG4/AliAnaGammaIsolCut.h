@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * BNew version from Gustavo
+ *
  * Revision 1.1  2007/01/25 17:24:20  schutz
  * new class
  *
@@ -44,6 +47,8 @@ public:
 
   AliAnaGammaIsolCut(const char *name) ; // default ctor
   AliAnaGammaIsolCut(const AliAnaGammaIsolCut & g) ; // cpy ctor
+  AliAnaGammaIsolCut & operator = (const AliAnaGammaIsolCut & g) ;//cpy assignment
+
   virtual ~AliAnaGammaIsolCut() ; //virtual dtor
   virtual void Exec(Option_t * opt = "") ;
   virtual void ConnectInputData(Option_t *);
@@ -62,24 +67,21 @@ public:
   void SetNPtThres(Int_t npt)        {fNPtThres = npt; }
   void SetConeSizes(Int_t i, Float_t r)         {fConeSizes[i] = r ; }
   void SetPtThresholds(Int_t i, Float_t pt)   {fPtThresholds[i] = pt; }
-  
-  void MakeHistos() ;
-  
-  
+    
  private:
 
   TObjArray  *fOutputContainer ; //! output data container
 
   Int_t         fNCones   ; //Number of cone sizes to test
   Int_t         fNPtThres ; //Number of ptThres to test
-  Float_t     fConeSizes[10] ; // Arrat with cones to test
+  Float_t     fConeSizes[10] ; // Array with cones to test
   Float_t     fPtThresholds[10] ; // Array with pt thresholds to test
 
   //Histograms  
  
-  TH1F * fhPtCandidate ;
-  TH1F* fhPtThresIsolated[10][10] ;
-  TH2F* fhPtSumIsolated[10] ;
+  TH1F* fhPtCandidate ;
+  TH1F* fhPtThresIsolated[20][20]; //
+  TH2F* fhPtSumIsolated[20] ;  //
 
   ClassDef(AliAnaGammaIsolCut,0)
 } ;

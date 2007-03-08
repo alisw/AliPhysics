@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * BNew version from Gustavo
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -15,8 +18,7 @@
 
 //_________________________________________________________________________
 
-// Class for the analysis of gamma  (gamma-jet, 
-// gamma-hadron(Arleo, TODO))
+// Class for the analysis of gamma 
 // This class only contains 3 methods: one to fill lists of particles (ESDs) comming 
 //  from the CTS (ITS+TPC) and the calorimeters; the other search in the 
 //  corresponing calorimeter for the highest energy cluster, identify it as 
@@ -43,6 +45,7 @@ public:
 
   AliAnaGammaDirect(const char *name) ; // default ctor
   AliAnaGammaDirect(const AliAnaGammaDirect & g) ; // cpy ctor
+  AliAnaGammaDirect & operator = (const AliAnaGammaDirect & g) ;//cpy assignment
   virtual ~AliAnaGammaDirect() ; //virtual dtor
 
   virtual void Exec(Option_t * opt = "") ;
@@ -87,10 +90,7 @@ public:
   
   void MakeIsolationCut(TClonesArray * plCTS, TClonesArray * plNe, 
 			TParticle *pCandidate, Int_t index, 
-			Bool_t &imcpt, Bool_t &icms, Float_t &ptsum) const ;
-  
-  void MakeHistos() ;
-  
+			Bool_t &imcpt, Bool_t &icms, Float_t &ptsum) const ;  
   
  private:
 
