@@ -205,7 +205,10 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile)
     fNoTilt = kTRUE;
   }
 
-  fTimeBinsPerPlane =  AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  if (!AliTRDcalibDB::Instance()) {
+    AliFatal("Could not get calibration object");
+  }
+  fTimeBinsPerPlane = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
   fDebugStreamer    = new TTreeSRedirector("TRDdebug.root");
 
@@ -3508,7 +3511,8 @@ void AliTRDtracker::CookdEdxTimBin(AliTRDtrack &TRDtrack)
       AliError(Form("Wrong plane %d",iPlane));
       continue;
     }
-    Int_t iSlice    = tb * AliESDtrack::kNSlice / AliTRDtrack::kNtimeBins;
+    Int_t iSlice    = tb * AliESDtrack::kNSlice 
+                         / AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
     if (iSlice >= AliESDtrack::kNSlice) {
       AliError(Form("Wrong slice %d",iSlice));
       continue;

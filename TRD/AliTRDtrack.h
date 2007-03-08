@@ -30,8 +30,7 @@ class AliTRDtrack : public AliKalmanTrack {
        , kNplane    =   6
        , kNcham     =   5
        , kNsect     =  18
-       , kNslice    =   3
-       , kNtimeBins =  22 };
+       , kNslice    =   3 };
 
    AliTRDtrack();
    AliTRDtrack(const AliTRDcluster *c, Int_t index, const Double_t xx[5]
