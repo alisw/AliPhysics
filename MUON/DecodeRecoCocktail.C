@@ -74,25 +74,25 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root")
     for (Int_t itrRec = 0; itrRec<nTrackReco; itrRec++) { 
       // assign parameters concerning the reconstructed tracks
       AliMUONTrack *trackReco = (AliMUONTrack *)trackRecoArray->At(itrRec);
-      AliMUONTrackLight *muLight = new AliMUONTrackLight(); 
+      AliMUONTrackLight muLight; 
       AliMUONTrackParam *trPar = trackReco->GetTrackParamAtVertex(); 
-      muLight->SetCharge(Int_t(TMath::Sign(1.,trPar->GetInverseBendingMomentum())));
-      muLight->SetPxPyPz(trPar->Px(),trPar->Py(), trPar->Pz()); 
-      muLight->SetTriggered(trackReco->GetMatchTrigger()); 
+      muLight.SetCharge(Int_t(TMath::Sign(1.,trPar->GetInverseBendingMomentum())));
+      muLight.SetPxPyPz(trPar->Px(),trPar->Py(), trPar->Pz()); 
+      muLight.SetTriggered(trackReco->GetMatchTrigger()); 
       Double_t xyz[3] = { trPar->GetNonBendingCoor(), 
 			  trPar->GetBendingCoor(), 
 			  trPar->GetZ()};
-      muLight->SetVertex(xyz); 
+      muLight.SetVertex(xyz); 
       // find the reference track and store further information
-      TParticle *part = muLight->FindRefTrack(trackReco,trackRefArray,runLoader); 
+      TParticle *part = muLight.FindRefTrack(trackReco,trackRefArray,runLoader); 
       if (part) { 
 	v.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->Energy());
-	muLight->SetPGen(v); 
-	muLight->FillMuonHistory(runLoader, part);
-	muLight->PrintInfo("A");
+	muLight.SetPGen(v); 
+	muLight.FillMuonHistory(runLoader, part);
+	muLight.PrintInfo("A");
 	//store the referenced track in the muonArray:
 	TClonesArray &muons = *muonArray;
-	new (muons[nreftracks++]) AliMUONTrackLight(*muLight);
+	new (muons[nreftracks++]) AliMUONTrackLight(muLight);
       }
     }
     
@@ -103,18 +103,18 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root")
       AliMUONTrackLight* mu1 = (AliMUONTrackLight*) muonArray->At(itrRec1); 
       for(Int_t itrRec2 = itrRec1+1; itrRec2 < nmuons; itrRec2++){
 	AliMUONTrackLight* mu2 = (AliMUONTrackLight*) muonArray->At(itrRec2); 
-	AliMUONPairLight *dimuLight = new AliMUONPairLight(); 
-	dimuLight->SetMuons(*mu1, *mu2);
-	//     	if(dimuLight->GetCreationProcess() == 2){
+	AliMUONPairLight dimuLight; 
+	dimuLight.SetMuons(*mu1, *mu2);
+	//     	if(dimuLight.GetCreationProcess() == 2){
 	// 	  printf ("#dimuon = %d (%d, %d) \n", ndimuons, itrRec1, itrRec2);
-	// dimuLight->PrintInfo("A");
+	// dimuLight.PrintInfo("A");
 	//   	}
 	//store the referenced track in the dimuonArray:
 	TClonesArray &dimuons = *dimuonArray;
-	new (dimuons[ndimuons++]) AliMUONPairLight(*dimuLight);
+	new (dimuons[ndimuons++]) AliMUONPairLight(dimuLight);
       }
     }
-    Int_t ndimu2 = dimuonArray->GetEntriesFast(); 
+    //Int_t ndimu2 = dimuonArray->GetEntriesFast(); 
     //     printf ("dimuonArray has %d entries\n",ndimu2); 
     //    dimuonArray->Dump(); 
     //     printf ("filling tree\n"); 
@@ -126,4 +126,9 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root")
   fout->cd(); 
   treeOut->Write(); 
   gSystem->cd(startingDir); 
+  fout->Close();
+  delete fout;
+  delete rc;
+  delete muonArray;
+  delete dimuonArray;
 }

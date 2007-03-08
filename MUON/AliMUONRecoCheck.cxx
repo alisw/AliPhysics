@@ -119,14 +119,13 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
 /// Destructor
 
   delete fMuonTrackRef;
-
   if(fIsLoadConstructor){
     fRunLoader->UnloadKinematics();
     fRunLoader->UnloadTrackRefs();
     fRunLoader->UnloadTracks();
     delete fMUONData;
   }
-
+  delete fRunLoader;
 }
 
 //_____________________________________________________________________________
