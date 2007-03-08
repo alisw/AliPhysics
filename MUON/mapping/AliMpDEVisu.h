@@ -12,12 +12,14 @@
 #define ALI_MP_DE_VISU_H
 
 #include <TGFrame.h>
+
 #include "AliMpPlaneType.h"
+
+#include <TArrayI.h>
+#include <TObjArray.h>
 
 class TObject;
 class TString;
-class TList;
-class TArrayI;
 class TRootEmbeddedCanvas;
 class TGComboBox;
 class TGMainFrame;
@@ -31,9 +33,10 @@ class AliMpSector;
 class AliMpVSegmentation;
 class AliMpDDLStore;
 class TGTextEntry;
+class AliMpMotifPosition;
 
-class AliMpDEVisu : public TGFrame {
-
+class AliMpDEVisu : public TGFrame 
+{
 
 public:
     AliMpDEVisu(UInt_t w = 1200, UInt_t h = 600);
@@ -42,7 +45,7 @@ public:
 
     void   UpdateComboDE();
     Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
-    void   DrawDE();
+    void   DrawDE(Bool_t info = kTRUE);
     void   NextDE();
     void   DrawManuMotif(Bool_t popup = kFALSE);
     void   DrawQuadrant(Option_t* option, Bool_t popup = kFALSE);
@@ -52,15 +55,23 @@ public:
     void   UpdateNameView();
     void   PopUpManuMotif(AliMpSlat* slat);
     void   PopUpManuMotif(AliMpSector* sector);
-
-    void   ClosedPopUpMotif(Int_t id);
+    void   PopUpZoom(Int_t ix0, Int_t iy0, Int_t ix1, Int_t iy1);
+    
+    void   ClosePopupWindow(Int_t id);
     void   InfoDE();
+    void   InfoManuMotif(AliMpMotifPosition* motifPos);
     void   DeletePopUp();
     void   SaveLogMessage();
     void   ClearLogMessage();
 
     void   HandleMovement(Int_t eventType, Int_t eventX, Int_t eventY, TObject* select);
 
+private:
+    void EventToReal(Int_t eventX, Int_t eventY, Double_t& x, Double_t& y) const;
+    void CreatePopupWindow(Int_t w, Int_t h, const char* title,
+                           AliMpVPainter* painter,
+                           const char* option);
+    
 private:
 
     const TGWindow*    fkMainWindow; //!< main window
@@ -71,10 +82,11 @@ private:
     TGComboBox*    fDECombo;         //!< DE botton
     TGNumberEntry* fNumberEntry;     //!< manu id button
     TGCheckButton* fPlaneButton;     //!< check button for NB plane, defaultwise B plane
+    TGCheckButton* fZoomButton;      //!< check button to activate zoom mode, default wise disable
     TGTextView*    fNameDEView;      //!< name of the DE
     TGTextView*    fLogMessage;      //!< log message
     TGTextEntry*   fLogFile;         //!< text entry for log file name
-    TList          fTrashList;       //!< list of transient windows to delete
+    TObjArray      fTrashList;       //!< list of transient windows to delete
 
     TArrayI        fDEComboIdx;      //!< array for index vs DE id
 
@@ -85,10 +97,9 @@ private:
     const AliMpVSegmentation* fSegmentation; //!< segmentation instance
     AliMpDDLStore*            fDDLStore;     //!< DDL Store
 
-    Int_t            fNumberOfPopUp;   //!< number of manu motif popup window open    
+    Bool_t           fZoomMode;        //!< flag for zoom mode on canvas instead of click mode
 
-    enum {kChamberCombo, kDECombo, kPlaneType, kDEName, kManuEntries, kLogMessage};
-
+    enum {kChamberCombo, kDECombo, kPlaneType, kDEName, kManuEntries, kLogMessage, kZoomMode};
 
     AliMpDEVisu(const AliMpDEVisu& src);
     AliMpDEVisu& operator=(const AliMpDEVisu& src);
@@ -96,3 +107,4 @@ private:
     ClassDef(AliMpDEVisu,1)
 };
 #endif
+
