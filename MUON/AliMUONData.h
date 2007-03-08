@@ -222,13 +222,13 @@ inline void AliMUONData::GetTriggerD() const {
 /// Return reconstructed tracks
 inline void AliMUONData::GetRecTracks() const {
   if (fLoader && fLoader->TreeT())
-    fLoader->TreeT()->GetEvent(0);
+    fLoader->TreeT()->GetBranch("MUONTrack")->GetEvent(0);
 }
 
 /// Return reconstructed trigger tracks
 inline void AliMUONData::GetRecTriggerTracks() const {
   if (fLoader && fLoader->TreeT())
-    fLoader->TreeT()->GetEvent(0);
+    fLoader->TreeT()->GetBranch("MUONTriggerTrack")->GetEvent(0);
 }
 
 
