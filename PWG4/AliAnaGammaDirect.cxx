@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * BNew version from Gustavo
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -61,9 +64,13 @@ ClassImp(AliAnaGammaDirect)
     fPrintInfo(0), fMinGammaPt(0.),
     fCalorimeter(""), fEMCALPID(0),fPHOSPID(0),
     fConeSize(0.),fPtThreshold(0.),fPtSumThreshold(0), 
-    fMakeICMethod(0)
+    fMakeICMethod(0),fhNGamma(0),fhPhiGamma(0),fhEtaGamma(0)
 {
-  //Ctor        
+  //Ctor
+        
+  //Initialize parameters
+  InitParameters();
+
   TList * list = gDirectory->GetListOfKeys() ; 
   TIter next(list) ; 
   TH2F * h = 0 ;
@@ -91,11 +98,39 @@ AliAnaGammaDirect::AliAnaGammaDirect(const AliAnaGammaDirect & g) :
   fConeSize(g.fConeSize),
   fPtThreshold(g.fPtThreshold),
   fPtSumThreshold(g.fPtSumThreshold), 
-  fMakeICMethod(g.fMakeICMethod)
+  fMakeICMethod(g.fMakeICMethod),
+  fhNGamma(g.fhNGamma),fhPhiGamma(g.fhPhiGamma),fhEtaGamma(g.fhEtaGamma)
 {
   // cpy ctor
   SetName (g.GetName()) ; 
   SetTitle(g.GetTitle()) ; 
+}
+
+//_________________________________________________________________________
+AliAnaGammaDirect & AliAnaGammaDirect::operator = (const AliAnaGammaDirect & source)
+{
+  // assignment operator
+
+  if(&source == this) return *this;
+
+  fChain = source.fChain ; 
+  fESD = source.fESD ;
+  fOutputContainer = source.fOutputContainer ;
+  fPrintInfo = source.fPrintInfo ;
+  fMinGammaPt = source.fMinGammaPt ;   
+  fCalorimeter = source. fCalorimeter ;  
+  fEMCALPID = source.fEMCALPID ;
+  fPHOSPID = source.fPHOSPID ;
+  fConeSize = source.fConeSize ;
+  fPtThreshold = source.fPtThreshold ;
+  fPtSumThreshold = source.fPtSumThreshold ; 
+  fMakeICMethod = source.fMakeICMethod ;
+  fhNGamma = source.fhNGamma ; 
+  fhPhiGamma = source.fhPhiGamma ;
+  fhEtaGamma = source.fhEtaGamma ;
+
+  return *this;
+
 }
 
 //____________________________________________________________________________
@@ -139,9 +174,8 @@ void AliAnaGammaDirect::ConnectInputData(const Option_t*)
 void AliAnaGammaDirect::CreateOutputObjects()
 {  
 
-  // Init parameteres and create histograms to be saved in output file and 
-  // stores them in fOutputContainer
-  InitParameters();
+  // Create histograms to be saved in output file and 
+  // store them in fOutputContainer
 
   fOutputContainer = new TObjArray(3) ;
 
@@ -198,19 +232,12 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
 	AliESDCaloCluster * clus = fESD->GetCaloCluster(npar) ; // retrieve track from esd
 
 	//Create a TParticle to fill the particle list
-	
-	Float_t en = clus->GetClusterEnergy() ;
-	Float_t *p = new Float_t();
-	clus->GetGlobalPosition(p) ;
-	TVector3 pos(p[0],p[1],p[2]) ; 
-	Double_t phi  = pos.Phi();
-	Double_t theta= pos.Theta();
-	Double_t px = en*TMath::Cos(phi)*TMath::Sin(theta);;
-	Double_t py = en*TMath::Sin(phi)*TMath::Sin(theta);
-	Double_t pz = en*TMath::Cos(theta);
-
+	TLorentzVector momentum ;
+	clus->GetMomentum(momentum);
 	TParticle * particle = new TParticle() ;
-	particle->SetMomentum(px,py,pz,en) ;
+	//particle->SetMomentum(px,py,pz,en) ;
+	particle->SetMomentum(momentum) ;
+
 	AliDebug(4,Form("PHOS clusters: pt %f, phi %f, eta %f", particle->Pt(),particle->Phi(),particle->Eta()));
 	
 	//Select only photons
@@ -225,14 +252,41 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
     }
   }
 
+  //########## #####################
+  //Prepare bool array for EMCAL track matching
+
+  // step 1, set the flag in a way that it rejects all not-V1 clusters
+  // but at this point all V1 clusters are accepted
+  
+  Int_t begem = fESD->GetFirstEMCALCluster();  
+  Int_t endem = fESD->GetFirstEMCALCluster() + 
+    fESD->GetNumberOfEMCALClusters() ;  
+ 
+  if(endem < begem+12)
+    AliError("Number of pseudoclusters smaller than 12");
+  Bool_t *useCluster = new Bool_t[endem+1];
+  
+  for (npar =  0; npar <  endem; npar++){
+    if(npar < begem+12)
+      useCluster[npar] =kFALSE; //EMCAL Pseudoclusters and PHOS clusters
+    else
+      useCluster[npar] =kTRUE;   //EMCAL clusters 
+  }
+  
   //########### CTS (TPC+ITS) #####################
   Int_t begtpc   = 0 ;  
   Int_t endtpc   = fESD->GetNumberOfTracks() ;
   Int_t indexCh  = plCTS->GetEntries() ;
   AliDebug(3,Form("First CTS particle %d, last particle %d", begtpc,endtpc));
-  
+
+  Int_t iemcalMatch  = -1 ;
   for (npar =  begtpc; npar <  endtpc; npar++) {////////////// track loop
     AliESDtrack * track = fESD->GetTrack(npar) ; // retrieve track from esd
+
+    // step 2 for EMCAL matching, change the flag for all matched clusters found in tracks
+    iemcalMatch = track->GetEMCALcluster(); 
+    if(iemcalMatch > 0) useCluster[iemcalMatch] = kFALSE; // reject matched cluster
+    
     //We want tracks fitted in the detectors:
     ULong_t status=AliESDtrack::kTPCrefit;
     status|=AliESDtrack::kITSrefit;
@@ -253,7 +307,7 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
       Int_t pdg = 11; //Give any charged PDG code, in this case electron.
       //I just want to tag the particle as charged
        TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-						 px, py, pz, en, v[0], v[1], v[2], 0);
+					    px, py, pz, en, v[0], v[1], v[2], 0);
   
       //TParticle * particle = new TParticle() ;
       //particle->SetMomentum(px,py,pz,en) ;
@@ -265,9 +319,6 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
   
   //################ EMCAL ##############
   
-  Int_t begem = fESD->GetFirstEMCALCluster();  
-  Int_t endem = fESD->GetFirstEMCALCluster() + 
-    fESD->GetNumberOfEMCALClusters() ;  
   Int_t indexNe  = plEMCAL->GetEntries() ; 
   
   AliDebug(3,Form("First EMCAL particle %d, last particle %d",begem,endem));
@@ -275,22 +326,18 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
     for (npar =  begem; npar <  endem; npar++) {//////////////EMCAL track loop
       AliESDCaloCluster * clus = fESD->GetCaloCluster(npar) ; // retrieve track from esd
       Int_t clustertype= clus->GetClusterType();
-      if(clustertype == AliESDCaloCluster::kClusterv1){
-	Float_t en = clus->GetClusterEnergy() ;
-	Float_t *p = new Float_t();
-	clus->GetGlobalPosition(p) ;
-	TVector3 pos(p[0],p[1],p[2]) ;
-	Double_t phi  = pos.Phi();
-	Double_t theta= pos.Theta();
-	Double_t px = en*TMath::Cos(phi)*TMath::Sin(theta);;
-	Double_t py = en*TMath::Sin(phi)*TMath::Sin(theta);
-	Double_t pz = en*TMath::Cos(theta);
-
+      if(clustertype == AliESDCaloCluster::kClusterv1 && useCluster[npar] ){
+	TLorentzVector momentum ;
+	clus->GetMomentum(momentum);
+	TParticle * particle = new TParticle() ;
+	//particle->SetMomentum(px,py,pz,en) ;
+	particle->SetMomentum(momentum) ;
+	
 	pid=clus->GetPid();
 	if(fCalorimeter == "EMCAL")
 	  {
 	    TParticle * particle = new TParticle() ;
-	    particle->SetMomentum(px,py,pz,en) ;
+	    //particle->SetMomentum(px,py,pz,en) ;
 	    AliDebug(4,Form("EMCAL clusters: pt %f, phi %f, eta %f", particle->Pt(),particle->Phi(),particle->Eta()));
 	    if(!fEMCALPID) //Only identified particles
 	      new((*plEMCAL)[indexNe++])       TParticle(*particle) ;
@@ -299,27 +346,27 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
 	  }
 	else
 	  {
-	    Int_t pdg = 0;
-	    if(fEMCALPID) 
-	      {
-		if( pid[AliPID::kPhoton] > 0.75) //This has to be fixen.
-		  pdg = 22;
-		else if( pid[AliPID::kPi0] > 0.75)
-		  pdg = 111;
-	      }
-	    else
-	      pdg = 22; //No PID, assume all photons
-	    
-	    TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-						 px, py, pz, en, v[0], v[1], v[2], 0);
-	    AliDebug(4,Form("EMCAL clusters: pt %f, phi %f, eta %f", particle->Pt(),particle->Phi(),particle->Eta()));
-	    
-	    new((*plEMCAL)[indexNe++])       TParticle(*particle) ; 
-	    new((*pl)[index++])           TParticle(*particle) ;
+	      Int_t pdg = 0;
+	      if(fEMCALPID) 
+		{
+		  if( pid[AliPID::kPhoton] > 0.75) //This has to be fixen.
+		    pdg = 22;
+		  else if( pid[AliPID::kPi0] > 0.75)
+		    pdg = 111;
+		}
+	      else
+		pdg = 22; //No PID, assume all photons
+	      
+	      TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
+						   momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
+	      AliDebug(4,Form("EMCAL clusters: pt %f, phi %f, eta %f", particle->Pt(),particle->Phi(),particle->Eta()));
+	      
+	      new((*plEMCAL)[indexNe++])       TParticle(*particle) ; 
+	      new((*pl)[index++])           TParticle(*particle) ;
 	  }
       }
     }
-
+    
     AliDebug(3,"Particle lists filled");
     
 }

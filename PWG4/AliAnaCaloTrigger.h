@@ -20,6 +20,8 @@ class AliAnaCaloTrigger : public AliAnalysisTask {
 
 public:
   AliAnaCaloTrigger(const char *name) ;
+  AliAnaCaloTrigger(const AliAnaCaloTrigger & trig) ;
+  AliAnaCaloTrigger & operator=(const AliAnaCaloTrigger& source);
   virtual ~AliAnaCaloTrigger() ;
    
   virtual void Exec(Option_t * opt = "") ;

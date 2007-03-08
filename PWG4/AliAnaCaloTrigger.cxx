@@ -45,6 +45,36 @@ AliAnaCaloTrigger::AliAnaCaloTrigger(const char *name) :
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
 }
+//____________________________________________________________________________
+AliAnaCaloTrigger::AliAnaCaloTrigger(const AliAnaCaloTrigger & ct) : 
+  AliAnalysisTask(ct), fChain(ct.fChain), fESD(ct.fESD),
+  fOutputContainer(ct.fOutputContainer), fCalorimeter(ct. fCalorimeter),
+  fNtTrigger22(ct.fNtTrigger22), fNtTriggerNN(ct.fNtTriggerNN)
+{
+
+  // cpy ctor
+  SetName (ct.GetName()) ; 
+  SetTitle(ct.GetTitle()) ;
+ 
+}
+
+//_________________________________________________________________________
+AliAnaCaloTrigger & AliAnaCaloTrigger::operator = (const AliAnaCaloTrigger & source)
+{
+  // assignment operator
+  
+  if(&source == this) return *this;
+
+  fChain = source.fChain ; 
+  fESD = source.fESD ;
+  fOutputContainer = source.fOutputContainer ;
+  fCalorimeter = source. fCalorimeter ;
+  fNtTrigger22 = source.fNtTrigger22 ;
+  fNtTriggerNN = source.fNtTriggerNN ;
+
+  return *this;
+  
+}
 
 //______________________________________________________________________________
 AliAnaCaloTrigger::~AliAnaCaloTrigger()

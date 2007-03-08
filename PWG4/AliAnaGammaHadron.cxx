@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * New version from Gustavo
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -59,14 +62,26 @@ AliAnaGammaHadron::AliAnaGammaHadron(const char *name) :
   AliAnaGammaDirect(name), 
   fPhiMaxCut(0.), fPhiMinCut(0.), 
   fInvMassMaxCut(0.), fInvMassMinCut(0.),
-  fMinPtPion(0),
-  fAngleMaxParam()
+  fMinPtPion(0),  fOutputContainer(new TObjArray(100)),
+  fAngleMaxParam(),  
+  fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
+  fhDeltaPhiGammaCharged(0),  fhDeltaPhiGammaNeutral(0), 
+  fhDeltaEtaGammaCharged(0), fhDeltaEtaGammaNeutral(0), 
+  fhCorrelationGammaNeutral(0), fhCorrelationGammaCharged(0), 
+  fhAnglePairAccepted(0), fhAnglePairNoCut(0), fhAnglePairAzimuthCut(0), 
+  fhAnglePairOpeningAngleCut(0), fhAnglePairAllCut(0), 
+  fhInvMassPairNoCut(0), fhInvMassPairAzimuthCut(0), fhInvMassPairOpeningAngleCut(0), fhInvMassPairAllCut(0) 
+  
 {
 
   // ctor
   fAngleMaxParam.Set(4) ;
   fAngleMaxParam.Reset(0.);
-        
+
+  //Init Parameters        
+  InitParameters();
+
+
   TList * list = gDirectory->GetListOfKeys() ; 
   TIter next(list) ; 
   TH2F * h = 0 ;
@@ -86,18 +101,48 @@ AliAnaGammaHadron::AliAnaGammaHadron(const char *name) :
 
 
 //____________________________________________________________________________
-AliAnaGammaHadron::AliAnaGammaHadron(const AliAnaGammaHadron & gj) : 
-  AliAnaGammaDirect(gj), 
-  fPhiMaxCut(gj.fPhiMaxCut), fPhiMinCut(gj.fPhiMinCut), 
-  fInvMassMaxCut(gj.fInvMassMaxCut), fInvMassMinCut(gj.fInvMassMinCut),
-  fMinPtPion(gj.fMinPtPion),
-  fOutputContainer(0), fAngleMaxParam(gj.fAngleMaxParam)
+AliAnaGammaHadron::AliAnaGammaHadron(const AliAnaGammaHadron & gh) : 
+  AliAnaGammaDirect(gh), 
+  fPhiMaxCut(gh.fPhiMaxCut), fPhiMinCut(gh.fPhiMinCut), 
+  fInvMassMaxCut(gh.fInvMassMaxCut), fInvMassMinCut(gh.fInvMassMinCut),
+  fMinPtPion(gh.fMinPtPion),
+  fOutputContainer(gh.fOutputContainer), fAngleMaxParam(gh.fAngleMaxParam),
+  fhPhiCharged(gh.fhPhiCharged), fhPhiNeutral(gh.fhPhiNeutral), fhEtaCharged(gh.fhEtaCharged), fhEtaNeutral(gh.fhEtaNeutral), 
+  fhDeltaPhiGammaCharged(gh.fhDeltaPhiGammaCharged),  fhDeltaPhiGammaNeutral(gh.fhDeltaPhiGammaNeutral), 
+  fhDeltaEtaGammaCharged(gh.fhDeltaEtaGammaCharged), fhDeltaEtaGammaNeutral(gh.fhDeltaEtaGammaNeutral), 
+  fhCorrelationGammaNeutral(gh.fhCorrelationGammaNeutral), fhCorrelationGammaCharged(gh.fhCorrelationGammaCharged), 
+  fhAnglePairAccepted(gh.fhAnglePairAccepted), fhAnglePairNoCut(gh. fhAnglePairNoCut), fhAnglePairAzimuthCut(gh.fhAnglePairAzimuthCut), 
+  fhAnglePairOpeningAngleCut(gh. fhAnglePairOpeningAngleCut), fhAnglePairAllCut(gh. fhAnglePairAllCut), 
+  fhInvMassPairNoCut(gh.fhInvMassPairNoCut), fhInvMassPairAzimuthCut(gh.fhInvMassPairAzimuthCut), 
+  fhInvMassPairOpeningAngleCut(gh.fhInvMassPairOpeningAngleCut), fhInvMassPairAllCut(gh.fhInvMassPairAllCut) 
 
 {
   // cpy ctor
-  SetName (gj.GetName()) ; 
-  SetTitle(gj.GetTitle()) ; 
+  SetName (gh.GetName()) ; 
+  SetTitle(gh.GetTitle()) ; 
 
+}
+
+//_________________________________________________________________________
+AliAnaGammaHadron & AliAnaGammaHadron::operator = (const AliAnaGammaHadron & source)
+{
+  //assignment operator
+  if(&source == this) return *this;
+  
+  fPhiMaxCut = source.fPhiMaxCut ; fPhiMinCut = source.fPhiMinCut ; 
+  fInvMassMaxCut = source.fInvMassMaxCut ; fInvMassMinCut = source.fInvMassMinCut ;
+  fMinPtPion = source.fMinPtPion ;
+  fOutputContainer = source.fOutputContainer ; fAngleMaxParam = source.fAngleMaxParam ;
+  fhPhiCharged = source.fhPhiCharged ; fhPhiNeutral = source.fhPhiNeutral ; fhEtaCharged = source.fhEtaCharged ; fhEtaNeutral = source.fhEtaNeutral ; 
+  fhDeltaPhiGammaCharged = source.fhDeltaPhiGammaCharged ;  fhDeltaPhiGammaNeutral = source.fhDeltaPhiGammaNeutral ; 
+  fhDeltaEtaGammaCharged = source.fhDeltaEtaGammaCharged ; fhDeltaEtaGammaNeutral = source.fhDeltaEtaGammaNeutral ; 
+  fhCorrelationGammaNeutral = source.fhCorrelationGammaNeutral ; fhCorrelationGammaCharged = source.fhCorrelationGammaCharged ; 
+  fhAnglePairAccepted = source.fhAnglePairAccepted ; fhAnglePairNoCut = source. fhAnglePairNoCut ; fhAnglePairAzimuthCut = source.fhAnglePairAzimuthCut ; 
+  fhAnglePairOpeningAngleCut = source. fhAnglePairOpeningAngleCut ; fhAnglePairAllCut = source. fhAnglePairAllCut ; 
+  fhInvMassPairNoCut = source.fhInvMassPairNoCut ; fhInvMassPairAzimuthCut = source.fhInvMassPairAzimuthCut ; 
+  fhInvMassPairOpeningAngleCut = source.fhInvMassPairOpeningAngleCut ; fhInvMassPairAllCut = source.fhInvMassPairAllCut ; 
+
+  return *this;
 }
 
 //____________________________________________________________________________
@@ -141,9 +186,8 @@ void AliAnaGammaHadron::ConnectInputData(const Option_t*)
 void AliAnaGammaHadron::CreateOutputObjects()
 {  
 
-  // Init parameteres and create histograms to be saved in output file and 
+  // Create histograms to be saved in output file and 
   // stores them in fOutputContainer
-  InitParameters();
   AliAnaGammaDirect::CreateOutputObjects();
 
   fOutputContainer = new TObjArray(100) ;

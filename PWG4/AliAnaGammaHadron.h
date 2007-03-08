@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * BNew version from Gustavo
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -41,7 +44,9 @@ public:
 
   AliAnaGammaHadron(const char *name) ; // default ctor
   AliAnaGammaHadron(const AliAnaGammaHadron & gj) ; // cpy ctor
+  AliAnaGammaHadron & operator = (const AliAnaGammaHadron & g) ;//cpy assignment
   virtual ~AliAnaGammaHadron() ; //virtual dtor
+
   virtual void Exec(Option_t * opt = "") ;
   virtual void ConnectInputData(Option_t *);
   virtual void CreateOutputObjects();
@@ -70,26 +75,17 @@ public:
   Bool_t IsAngleInWindow(const Float_t angle, const Float_t e);
   void MakeGammaChargedCorrelation(TClonesArray * pl, TParticle *pGamma) const ;
   void MakeGammaNeutralCorrelation(TClonesArray * pl, TParticle *pGamma)  ;
-  void MakeHistos() ;
 
  private:
 
-  //  TTree       *fChain ;   //!pointer to the analyzed TTree or TChain
-  //AliESD       *fESD ;     //! Declaration of leave types
-
   Double_t   fPhiMaxCut ;      // 
   Double_t   fPhiMinCut ;      // 
-  // Double_t   fGammaPtCut ;  // Min pt in Calorimeter
   Double_t   fInvMassMaxCut ;  // Invariant Mass cut maximum
   Double_t   fInvMassMinCut ;  // Invariant Masscut minimun
  
   Double_t   fMinPtPion;       // Minimum pt of pion
   TObjArray  *fOutputContainer ; //! output data container
-  TString     fNamePtThres[10];   // String name of pt th to append to histos
   TArrayD    fAngleMaxParam ; //Max opening angle selection parameters
-  //TString     fCalorimeter ; //PHOS or EMCAL detects Gamma
-  //Bool_t      fEMCALPID ; //Fill EMCAL particle lists with particles with corresponding pid
-  //Bool_t      fPHOSPID;   //Fill PHOS particle lists with particles with corresponding pid
 
   //Histograms
 

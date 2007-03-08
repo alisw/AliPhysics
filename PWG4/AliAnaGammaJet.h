@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * BNew version from Gustavo
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -42,12 +45,15 @@ public:
   AliAnaGammaJet(const char *name) ; // default ctor
   AliAnaGammaJet(const AliAnaGammaJet & gj) ; // cpy ctor
   virtual ~AliAnaGammaJet() ; //virtual dtor
+  AliAnaGammaJet & operator = (const AliAnaGammaJet & gj) ;//cpy assignment
+
   virtual void Exec(Option_t * opt = "") ;
   virtual void ConnectInputData(Option_t *);
   virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "");
 
   void InitParameters();
+
   Bool_t     AreJetOnlyInCTS() const {return fJetsOnlyInCTS ; } 
   Double_t GetAngleMaxParam(Int_t i) const {return fAngleMaxParam.At(i) ; }
   Double_t GetEtaEMCALCut() const {return fEtaEMCALCut;}
@@ -121,19 +127,13 @@ public:
   void GetLeadingCharge(TClonesArray * pl, TParticle *pGamma, TParticle * pLeading) const ;
   void GetLeadingPi0   (TClonesArray * pl, TParticle *pGamma, TParticle * pLeading)  ;
   Bool_t GetLeadingParticle(TClonesArray * plCTS, TClonesArray * plNe, TParticle *pGamma, TParticle * pLeading) ;
-  void MakeHistos() ;
  
   void SetJet(TParticle * part, Bool_t & b, Float_t cone, Double_t eta, 
 	      Double_t phi);
 
  private:
 
-  //  TTree       *fChain ;   //!pointer to the analyzed TTree or TChain
-  //AliESD       *fESD ;     //! Declaration of leave types
- 
   Bool_t       fSeveralConeAndPtCuts;     //  To play with the jet cone size and pt th.
-  //Bool_t       fPrintInfo ;       //Print most interesting information on screen
-		               // and give interesting information
 
   Bool_t       fPbPb;          // PbPb event
   Bool_t       fJetsOnlyInCTS ;    // Jets measured only in TPC+ITS.
@@ -141,7 +141,6 @@ public:
   Double_t   fPhiEMCALCut[2] ; // Phi cut maximum
   Double_t   fPhiMaxCut ;      // Phi EMCAL maximum acceptance
   Double_t   fPhiMinCut ;      // Phi EMCAL minimum acceptance
-  // Double_t   fGammaPtCut ;  // Min pt in Calorimeter
   Double_t   fInvMassMaxCut ;  // Invariant Mass cut maximum
   Double_t   fInvMassMinCut ;  // Invariant Masscut minimun
   Double_t   fRatioMaxCut ;    // Leading particle/gamma Ratio cut maximum
@@ -173,15 +172,12 @@ public:
   TString     fNameCones[10];     // String name of cone to append to histos
   Double_t   fPtThreshold;       // Jet pT threshold under study(!fSeveralConeAndPtCuts)
   Double_t   fPtThres[10];       // Jet pT threshold under study(fSeveralConeAndPtCuts)
+  TString     fNamePtThres[10];   // String name of pt th to append to histos
   Double_t   fPtJetSelectionCut; // Jet pt to change to low pt jets analysis
   TObjArray  *fOutputContainer ; //! output data container
-  TString     fNamePtThres[10];   // String name of pt th to append to histos
   TArrayD    fAngleMaxParam ; //Max opening angle selection parameters
   UInt_t       fSelect  ;   //kTRUE: Selects all jets, no limits.
-  //TString     fCalorimeter ; //PHOS or EMCAL detects Gamma
-  //Bool_t      fEMCALPID ; //Fill EMCAL particle lists with particles with corresponding pid
-  //Bool_t      fPHOSPID;   //Fill PHOS particle lists with particles with corresponding pid
-
+ 
   //Histograms
 
   TH2F * fhChargeRatio  ; 

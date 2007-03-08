@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/02/09 18:40:40  schutz
+ * BNew version from Gustavo
+ *
  * Revision 1.1  2007/01/23 17:17:29  schutz
  * New Gamma package
  *
@@ -62,13 +65,22 @@ AliAnaGammaJet::AliAnaGammaJet(const char *name) :
   fJetsOnlyInCTS(0),
   fEtaEMCALCut(0.),fPhiMaxCut(0.),
   fPhiMinCut(0.), 
-  fInvMassMaxCut(0.), fInvMassMinCut(0.),
-  fJetCTSRatioMaxCut(0.),
-  fJetCTSRatioMinCut(0.), fJetRatioMaxCut(0.),
+  fInvMassMaxCut(0.), fInvMassMinCut(0.), fRatioMaxCut(0), fRatioMinCut(0),
+  fJetCTSRatioMaxCut(0.), fJetCTSRatioMinCut(0.), fJetRatioMaxCut(0.),
   fJetRatioMinCut(0.), fNCone(0),
   fNPt(0), fCone(0), fPtThreshold(0),
   fPtJetSelectionCut(0.0),
-  fAngleMaxParam(), fSelect(0)
+  fOutputContainer(new TObjArray(100)),  fAngleMaxParam(),  fSelect(0),
+  fhChargeRatio(0), fhPi0Ratio (0), 
+  fhDeltaPhiCharge(0),  fhDeltaPhiPi0 (0), fhDeltaEtaCharge(0), fhDeltaEtaPi0(0), 
+  fhAnglePair(0), fhAnglePairAccepted(0), fhAnglePairNoCut(0), fhAnglePairLeadingCut(0), 
+  fhAnglePairAngleCut (0), fhAnglePairAllCut (0), fhAnglePairLeading(0), 
+  fhInvMassPairNoCut  (0), fhInvMassPairLeadingCut(0), fhInvMassPairAngleCut(0), 
+  fhInvMassPairAllCut (0), fhInvMassPairLeading(0), 
+  fhNBkg (0), fhNLeading(0), fhNJet(0), fhJetRatio(0), fhJetPt (0), 
+  fhBkgRatio (0), fhBkgPt(0),  fhJetFragment(0), fhBkgFragment(0), 
+  fhJetPtDist(0),  fhBkgPtDist(0) 
+
 {
 
   // ctor
@@ -97,6 +109,9 @@ AliAnaGammaJet::AliAnaGammaJet(const char *name) :
     }
   }
         
+  //Init parameters
+  InitParameters();
+
   TList * list = gDirectory->GetListOfKeys() ; 
   TIter next(list) ; 
   TH2F * h = 0 ;
@@ -123,14 +138,26 @@ AliAnaGammaJet::AliAnaGammaJet(const AliAnaGammaJet & gj) :
   fEtaEMCALCut(gj.fEtaEMCALCut),
   fPhiMaxCut(gj.fPhiMaxCut), fPhiMinCut(gj.fPhiMinCut), 
   fInvMassMaxCut(gj.fInvMassMaxCut), fInvMassMinCut(gj.fInvMassMinCut),
-  fRatioMinCut(gj.fRatioMinCut), 
+  fRatioMaxCut(gj.fRatioMaxCut), fRatioMinCut(gj.fRatioMinCut), 
   fJetCTSRatioMaxCut(gj.fJetCTSRatioMaxCut),
   fJetCTSRatioMinCut(gj.fJetCTSRatioMinCut), fJetRatioMaxCut(gj.fJetRatioMaxCut),
   fJetRatioMinCut(gj.fJetRatioMinCut),  fNCone(gj.fNCone),
   fNPt(gj.fNPt), fCone(gj.fCone), fPtThreshold(gj.fPtThreshold),
   fPtJetSelectionCut(gj.fPtJetSelectionCut),
-  fOutputContainer(0), fAngleMaxParam(gj.fAngleMaxParam), 
-  fSelect(gj.fSelect)
+  fOutputContainer(gj.fOutputContainer), fAngleMaxParam(gj.fAngleMaxParam), 
+  fSelect(gj.fSelect),  fhChargeRatio(gj.fhChargeRatio), fhPi0Ratio(gj.fhPi0Ratio), 
+  fhDeltaPhiCharge(gj.fhDeltaPhiCharge),  fhDeltaPhiPi0(gj.fhDeltaPhiPi0), 
+  fhDeltaEtaCharge(gj.fhDeltaEtaCharge), fhDeltaEtaPi0(gj.fhDeltaEtaPi0), 
+  fhAnglePair(gj.fhAnglePair), fhAnglePairAccepted(gj.fhAnglePairAccepted), 
+  fhAnglePairNoCut(gj.fhAnglePairNoCut), fhAnglePairLeadingCut(gj.fhAnglePairLeadingCut), 
+  fhAnglePairAngleCut(gj.fhAnglePairAngleCut), fhAnglePairAllCut(gj.fhAnglePairAllCut), 
+  fhAnglePairLeading(gj.fhAnglePairLeading), 
+  fhInvMassPairNoCut(gj.fhInvMassPairNoCut), fhInvMassPairLeadingCut(gj.fhInvMassPairLeadingCut), 
+  fhInvMassPairAngleCut(gj.fhInvMassPairAngleCut), 
+  fhInvMassPairAllCut(gj. fhInvMassPairAllCut), fhInvMassPairLeading(gj.fhInvMassPairLeading), 
+  fhNBkg(gj. fhNBkg), fhNLeading(gj. fhNLeading), fhNJet(gj.fhNJet), fhJetRatio(gj.fhJetRatio), fhJetPt(gj.fhJetPt), 
+  fhBkgRatio (gj.fhBkgRatio), fhBkgPt(gj.fhBkgPt),  fhJetFragment(gj.fhJetFragment), fhBkgFragment(gj.fhBkgFragment), 
+  fhJetPtDist(gj.fhJetPtDist),  fhBkgPtDist(gj.fhBkgPtDist) 
 {
   // cpy ctor
   SetName (gj.GetName()) ; 
@@ -157,6 +184,63 @@ AliAnaGammaJet::AliAnaGammaJet(const AliAnaGammaJet & gj) :
       }
     }          
   } 
+}
+
+//_________________________________________________________________________
+AliAnaGammaJet & AliAnaGammaJet::operator = (const AliAnaGammaJet & source)
+{
+  //assignment operator
+  if(&source == this) return *this;
+
+  fOutputContainer = source.fOutputContainer ;
+  fSeveralConeAndPtCuts = source.fSeveralConeAndPtCuts ; 
+  fPbPb = source.fPbPb ; fJetsOnlyInCTS = source.fJetsOnlyInCTS ;
+  fEtaEMCALCut = source.fEtaEMCALCut ;
+  fPhiMaxCut = source.fPhiMaxCut ; fPhiMinCut = source.fPhiMinCut ; 
+  fInvMassMaxCut = source.fInvMassMaxCut ; fInvMassMinCut = source.fInvMassMinCut ;
+  fRatioMaxCut = source.fRatioMaxCut ; fRatioMinCut = source.fRatioMinCut ; 
+  fJetCTSRatioMaxCut = source.fJetCTSRatioMaxCut ;
+  fJetCTSRatioMinCut = source.fJetCTSRatioMinCut ; fJetRatioMaxCut = source.fJetRatioMaxCut ;
+  fJetRatioMinCut = source.fJetRatioMinCut ;  fNCone = source.fNCone ;
+  fNPt = source.fNPt ; fCone = source.fCone ; fPtThreshold = source.fPtThreshold ;
+  fPtJetSelectionCut = source.fPtJetSelectionCut ;
+  fAngleMaxParam = source.fAngleMaxParam ; 
+  fSelect = source.fSelect ;  fhChargeRatio = source.fhChargeRatio ; fhPi0Ratio = source.fhPi0Ratio ; 
+  fhDeltaPhiCharge = source.fhDeltaPhiCharge ;  fhDeltaPhiPi0 = source.fhDeltaPhiPi0 ; 
+  fhDeltaEtaCharge = source.fhDeltaEtaCharge ; fhDeltaEtaPi0 = source.fhDeltaEtaPi0 ; 
+  fhAnglePair = source.fhAnglePair ; fhAnglePairAccepted = source.fhAnglePairAccepted ; 
+  fhAnglePairNoCut = source.fhAnglePairNoCut ; fhAnglePairLeadingCut = source.fhAnglePairLeadingCut ; 
+  fhAnglePairAngleCut = source.fhAnglePairAngleCut ; fhAnglePairAllCut = source.fhAnglePairAllCut ; 
+  fhAnglePairLeading = source.fhAnglePairLeading ; 
+  fhInvMassPairNoCut = source.fhInvMassPairNoCut ; fhInvMassPairLeadingCut = source.fhInvMassPairLeadingCut ; 
+  fhInvMassPairAngleCut = source.fhInvMassPairAngleCut ; 
+  fhInvMassPairAllCut = source. fhInvMassPairAllCut ; fhInvMassPairLeading = source.fhInvMassPairLeading ; 
+  fhNBkg = source. fhNBkg ; fhNLeading = source. fhNLeading ; fhNJet = source.fhNJet ; fhJetRatio = source.fhJetRatio ; fhJetPt = source.fhJetPt ; 
+  fhBkgRatio  = source.fhBkgRatio ; fhBkgPt = source.fhBkgPt ;  fhJetFragment = source.fhJetFragment ; fhBkgFragment = source.fhBkgFragment ; 
+  fhJetPtDist = source.fhJetPtDist ;  fhBkgPtDist = source.fhBkgPtDist ;
+
+  for(Int_t i = 0; i<10; i++){
+    fCones[i]        = source.fCones[i] ;
+    fNameCones[i]    = source.fNameCones[i] ;
+    fPtThres[i]      = source.fPtThres[i] ;
+    fNamePtThres[i]  = source.fNamePtThres[i] ;
+    if( i < 6 ){
+      fJetXMin1[i]       = source.fJetXMin1[i] ;
+      fJetXMin2[i]       = source.fJetXMin2[i] ;
+      fJetXMax1[i]       = source.fJetXMax1[i] ;
+      fJetXMax2[i]       = source.fJetXMax2[i] ;
+      fBkgMean[i]        = source.fBkgMean[i] ;
+      fBkgRMS[i]         = source.fBkgRMS[i] ;
+      if( i < 2 ){
+	fJetE1[i]        = source.fJetE1[i] ;
+	fJetE2[i]        = source.fJetE2[i] ;
+	fJetSigma1[i]    = source.fJetSigma1[i] ;
+	fJetSigma2[i]    = source.fJetSigma2[i] ;
+	fPhiEMCALCut[i]  = source.fPhiEMCALCut[i] ;
+      }
+    }          
+  } 
+  return *this;
 }
 
 //____________________________________________________________________________
@@ -242,9 +326,9 @@ void AliAnaGammaJet::ConnectInputData(const Option_t*)
 void AliAnaGammaJet::CreateOutputObjects()
 {  
 
-  // Init parameteres and create histograms to be saved in output file and 
+  // Create histograms to be saved in output file and 
   // stores them in fOutputContainer
-  InitParameters();
+
   AliAnaGammaDirect::CreateOutputObjects();
   
   fOutputContainer = new TObjArray(100) ;
