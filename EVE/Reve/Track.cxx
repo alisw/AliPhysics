@@ -391,9 +391,9 @@ ClassImp(Reve::TrackList)
 
 void TrackList::Init()
 {
-  fMarkerStyle = 4;
+  fMarkerStyle = 2;
   fMarkerColor = 4;
-  fMarkerSize  = 0.4;
+  fMarkerSize  = 0.6;
 
   if (fRnrStyle== 0) fRnrStyle = new TrackRnrStyle;
   SetMainColorPtr(&fRnrStyle->fColor);
@@ -418,8 +418,9 @@ TrackList::TrackList(const Text_t* name, Int_t n_tracks, TrackRnrStyle* rs) :
   
   fTitle(),
 
-  fRnrStyle   (rs),
-  fRnrTracks  (kTRUE)
+  fRnrStyle      (rs),
+  fRnrTracks     (kTRUE),
+  fEditPathMarks (kFALSE)
 {
   Init();
   SetName(name);
