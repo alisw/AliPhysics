@@ -875,7 +875,7 @@ Double_t AliSample::GetMedian(TH1* histo,Int_t mode) const
 
  Double_t q[1];
  Double_t p[1]={0.5};
- Double_t integral=histo->ComputeIntegral();
+ histo->ComputeIntegral();
  Int_t nq=histo->GetQuantiles(1,q,p);
 
  if (!nq) return 0;
