@@ -24,6 +24,9 @@ class AliMUONStringIntMap : public TObject
     
     // methods
     Bool_t  Add(const TString& first, Int_t second);
+    Bool_t  Set(const TString& first, Int_t second);
+    Int_t Contains(const TString& first) const;
+    
     Int_t   Get(const TString& first) const;
     Int_t   GetNofItems() const;
     virtual void Clear(Option_t* /*option*/ ="");

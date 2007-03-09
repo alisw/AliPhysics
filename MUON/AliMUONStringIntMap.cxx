@@ -60,7 +60,7 @@ AliMUONStringIntMap::~AliMUONStringIntMap()
 Bool_t  AliMUONStringIntMap::Add(const TString& first, Int_t second)
 {
 /// Add map element if first not yet present
-
+  
   Int_t second2 = Get(first);
   if ( second2 > 0 ) {
     AliError(Form("%s is already present in the map", first.Data()));
@@ -76,6 +76,39 @@ Bool_t  AliMUONStringIntMap::Add(const TString& first, Int_t second)
    
   return true;
 }  
+
+//______________________________________________________________________________
+Bool_t  AliMUONStringIntMap::Set(const TString& first, Int_t second)
+{
+  /// Set map element
+
+  Int_t index = Contains(first);
+  if ( index < 0 )
+  {
+    return Add(first,second);
+  }
+    
+  fSecondArray.AddAt(second, index);
+  
+  return true;
+}  
+
+//______________________________________________________________________________
+Int_t 
+AliMUONStringIntMap::Contains(const TString& first) const
+{
+  /// Whether this map contains the string 'first' or not
+  
+  for (Int_t i=0; i<fNofItems; i++) 
+  {
+    if ( ((TObjString*)fFirstArray.At(i))->GetString() == first )
+    {
+      return i;
+    }
+  }
+  
+  return -1;
+}      
 
 //______________________________________________________________________________
 Int_t  AliMUONStringIntMap::Get(const TString& first) const
