@@ -23,6 +23,8 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
     return 0;
   }
 
+  gReve->DisableRedraw();
+ 
   Reve::TrackList* cont = new Reve::TrackList("Kine Tracks"); 
   cont->SetMainColor(Color_t(6));
   Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
@@ -31,7 +33,6 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
   rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
 
   gReve->AddRenderElement(cont);
-
   Int_t count = 0;
   Int_t N = stack->GetNtrack();
   for (Int_t i=0; i<N; ++i) 
@@ -57,13 +58,12 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
       gReve->AddRenderElement(cont, track);
     }
   }
-  
   // set path marks
   Alieve::KineTools kt; 
+  kt.SetDaughterPathMarks(cont, stack);
   rl->LoadTrackRefs();
-  kt.SetPathMarks(cont,stack, rl->TreeTR());
+  kt.SetTrackReferences(cont, rl->TreeTR());
   cont->SetEditPathMarks(kTRUE);
-
 
   //PH  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
   char tooltip[1000];
@@ -73,6 +73,8 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
 
   cont->MakeTracks();
   cont->MakeMarkers();
+
+  gReve->EnableRedraw();
   gReve->Redraw3D();
 
   return cont;
