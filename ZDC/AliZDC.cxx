@@ -32,9 +32,17 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TSystem.h>
+#include <TRandom.h>
 
 // --- AliRoot header files
 #include "AliDetector.h"
+#include "AliRawDataHeader.h"
+#include "AliRawReader.h"
+#include "AliLoader.h"
+#include "AliRun.h"
+#include "AliMC.h"
+#include "AliLog.h"
+#include "AliDAQ.h"
 #include "AliZDC.h"
 #include "AliZDCHit.h"
 #include "AliZDCSDigit.h"
@@ -43,12 +51,6 @@
 #include "AliZDCRawStream.h"
 #include "AliZDCCalibData.h"
 
-#include "AliRawDataHeader.h"
-#include "AliLoader.h"
-#include "AliRun.h"
-#include "AliMC.h"
-#include "AliLog.h"
-#include "AliDAQ.h"
  
 ClassImp(AliZDC)
 
@@ -259,7 +261,7 @@ void AliZDC::MakeBranch(Option_t *opt)
 
   const char *cH = strstr(opt,"H");
   
-  if (cH && fLoader->TreeH())
+  if(cH && fLoader->TreeH())
    fHits   = new TClonesArray("AliZDCHit",1000); 
   
   AliDetector::MakeBranch(opt);
@@ -279,9 +281,9 @@ void AliZDC::Hits2SDigits()
   AliZDCSDigit* psdigit = &sdigit;
 
   // Event loop
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+  for(Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
     Float_t pmCZN = 0, pmCZP = 0, pmQZN[4], pmQZP[4], pmZEM1 = 0, pmZEM2 = 0;
-    for (Int_t i = 0; i < 4; i++) pmQZN[i] = pmQZP[i] = 0;
+    for(Int_t i = 0; i < 4; i++) pmQZN[i] = pmQZP[i] = 0;
 
     runLoader->GetEvent(iEvent);
     TTree* treeH = fLoader->TreeH();
@@ -290,14 +292,14 @@ void AliZDC::Hits2SDigits()
 
     // Tracks loop
     Int_t sector[2];
-    for (Int_t itrack = 0; itrack < ntracks; itrack++) {
+    for(Int_t itrack = 0; itrack < ntracks; itrack++) {
       treeH->GetEntry(itrack);
-      for (AliZDCHit* zdcHit = (AliZDCHit*)FirstHit(-1); zdcHit;
+      for(AliZDCHit* zdcHit = (AliZDCHit*)FirstHit(-1); zdcHit;
                       zdcHit = (AliZDCHit*)NextHit()) { 
 		      
 	sector[0] = zdcHit->GetVolume(0);
 	sector[1] = zdcHit->GetVolume(1);
-	if ((sector[1] < 1) || (sector[1] > 4)) {
+	if((sector[1] < 1) || (sector[1] > 4)) {
 	  Error("Hits2SDigits", "sector[0] = %d, sector[1] = %d", 
 		sector[0], sector[1]);
 	  continue;
@@ -305,14 +307,14 @@ void AliZDC::Hits2SDigits()
 	Float_t lightQ = zdcHit->GetLightPMQ();
 	Float_t lightC = zdcHit->GetLightPMC();
      
-	if (sector[0] == 1) {          //ZN 
+	if(sector[0] == 1) {          //ZN 
 	  pmCZN += lightC;
 	  pmQZN[sector[1]-1] += lightQ;
-	} else if (sector[0] == 2) {   //ZP 
+	} else if(sector[0] == 2) {   //ZP 
 	  pmCZP += lightC;
 	  pmQZP[sector[1]-1] += lightQ;
-	} else if (sector[0] == 3) {   //ZEM 
-	  if (sector[1] == 1) pmZEM1 += lightC;
+	} else if(sector[0] == 3) {   //ZEM 
+	  if(sector[1] == 1) pmZEM1 += lightC;
 	  else                pmZEM2 += lightQ;
 	}
       }//Hits loop
@@ -324,36 +326,36 @@ void AliZDC::Hits2SDigits()
     const Int_t kBufferSize = 4000;
     treeS->Branch(GetName(), "AliZDCSDigit", &psdigit, kBufferSize);
 
-    // Create sdigits for ZN
-    sector[0] = 1; // Detector = ZN
+    // Create sdigits for ZN1
+    sector[0] = 1; // Detector = ZN1
     sector[1] = 0; // Common PM ADC
     new(psdigit) AliZDCSDigit(sector, pmCZN);
-    if (pmCZN > 0) treeS->Fill();
-    for (Int_t j = 0; j < 4; j++) {
+    if(pmCZN > 0) treeS->Fill();
+    for(Int_t j = 0; j < 4; j++) {
       sector[1] = j+1; // Towers PM ADCs
       new(psdigit) AliZDCSDigit(sector, pmQZN[j]);
-      if (pmQZN[j] > 0) treeS->Fill();
+      if(pmQZN[j] > 0) treeS->Fill();
     }
   
-    // Create sdigits for ZP
-    sector[0] = 2; // Detector = ZP
+    // Create sdigits for ZP1
+    sector[0] = 2; // Detector = ZP1
     sector[1] = 0; // Common PM ADC
     new(psdigit) AliZDCSDigit(sector, pmCZP);
-    if (pmCZP > 0) treeS->Fill();
-    for (Int_t j = 0; j < 4; j++) {
+    if(pmCZP > 0) treeS->Fill();
+    for(Int_t j = 0; j < 4; j++) {
       sector[1] = j+1; // Towers PM ADCs
       new(psdigit) AliZDCSDigit(sector, pmQZP[j]);
-      if (pmQZP[j] > 0) treeS->Fill();
+      if(pmQZP[j] > 0) treeS->Fill();
     }
 
     // Create sdigits for ZEM
     sector[0] = 3; 
     sector[1] = 1; // Detector = ZEM1
     new(psdigit) AliZDCSDigit(sector, pmZEM1);
-    if (pmZEM1 > 0) treeS->Fill();
+    if(pmZEM1 > 0) treeS->Fill();
     sector[1] = 2; // Detector = ZEM2
     new(psdigit) AliZDCSDigit(sector, pmZEM2);
-    if (pmZEM2 > 0) treeS->Fill();
+    if(pmZEM2 > 0) treeS->Fill();
 
     // write the output tree
     fLoader->WriteSDigits("OVERWRITE");
@@ -404,7 +406,7 @@ void AliZDC::Digits2Raw()
   AliZDCDigit digit;
   AliZDCDigit* pdigit = &digit;
   TTree* treeD = fLoader->TreeD();
-  if (!treeD) return;
+  if(!treeD) return;
   treeD->SetBranchAddress("ZDC", &pdigit);
   //printf("\t AliZDC::Digits2raw -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
 
@@ -509,9 +511,9 @@ void AliZDC::Digits2Raw()
       //
       if(iDigit<22){
         lADCDataValue2[index2] = digit.GetADCValue(0);
-        if (lADCDataValue2[index2] > 2047) lADCDataOvFlw2[index2] = 1; 
+        if(lADCDataValue2[index2] > 2047) lADCDataOvFlw2[index2] = 1; 
         lADCDataValue2[index2+2] = digit.GetADCValue(1);
-        if (lADCDataValue2[index2+2] > 2047) lADCDataOvFlw2[index2+2] = 1; 
+        if(lADCDataValue2[index2+2] > 2047) lADCDataOvFlw2[index2+2] = 1; 
         //
         lADCData2[index2] =   lADCDataGEO << 27 | lADCDataChannel << 17 | 
                         lADCDataOvFlw2[index2] << 12 | (lADCDataValue2[index2] & 0xfff); 
@@ -520,9 +522,9 @@ void AliZDC::Digits2Raw()
       }                 
       else{
         lADCDataValue4[index2] = digit.GetADCValue(0);
-        if (lADCDataValue4[index2] > 2047) lADCDataOvFlw4[index2] = 1; 
+        if(lADCDataValue4[index2] > 2047) lADCDataOvFlw4[index2] = 1; 
         lADCDataValue4[index2+2] = digit.GetADCValue(1);
-        if (lADCDataValue4[index2+2] > 2047) lADCDataOvFlw4[index2+2] = 1; 
+        if(lADCDataValue4[index2+2] > 2047) lADCDataOvFlw4[index2+2] = 1; 
         //
         lADCData4[index2] =   lADCDataGEO << 27 | lADCDataChannel << 17 | 
                         lADCDataOvFlw4[index2] << 12 | (lADCDataValue4[index2] & 0xfff); 
@@ -600,30 +602,118 @@ void AliZDC::Digits2Raw()
   fLoader->UnloadDigits();
 }
 
+//_____________________________________________________________________________
+Bool_t AliZDC::Raw2SDigits(AliRawReader* rawReader)
+{
+  // Convert ZDC raw data to Sdigits
+  
+  // Event loop
+//  Int_t iEvent = 0;
+  while(rawReader->NextEvent()){
+//    fLoader->GetEvent(iEvent++);
+    // Create the output digit tree
+    TTree* treeS = fLoader->TreeS();
+    if(treeS == 0x0){
+      fLoader->MakeTree("S");
+    }
+    //
+    AliZDCSDigit sdigit;
+    AliZDCSDigit* psdigit = &sdigit;
+    const Int_t kBufferSize = 4000;
+    treeS->Branch("ZDC", "AliZDCSDigit",  &psdigit, kBufferSize);
+    //
+    AliZDCRawStream rawStream(rawReader);
+    Int_t sector[2], ADCRes, ADCRaw, ADCPedSub, nPheVal;
+    Int_t jcount = 0;
+    while(rawStream.Next()){
+      if(rawStream.IsADCDataWord()){
+        //For the moment only in-time SDigits are foreseen (1st 44 raw values)
+        if(jcount%44 == 0){ 
+          for(Int_t j=0; j<2; j++) sector[j] = rawStream.GetSector(j);
+	  ADCRaw = rawStream.GetADCValue();
+	  ADCRes = rawStream.GetADCGain();
+	  //
+	  ADCPedSub = ADCRaw - Pedestal(sector[0], sector[1], ADCRes);
+	  nPheVal = ADCch2Phe(sector[0], sector[1], ADCPedSub, ADCRes);
+
+          new(psdigit) AliZDCSDigit(sector, (Float_t) nPheVal);
+          treeS->Fill();
+        }
+        jcount++;
+      }//IsADCDataWord
+    }//rawStream.Next
+    // write the output tree
+    fLoader->WriteSDigits("OVERWRITE");
+    fLoader->UnloadSDigits();
+  }//Event loop 
+   
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
+{
+  // Returns a pedestal for detector det, PM quad, channel with res.
+  //
+  Float_t PedValue;
+  
+  Float_t meanPed, Pedwidth;
+  Int_t index=0;
+  if(Det==1|| Det==2)	      index = 10*(Det-1)+Quad+5*Res;   // ZN1, ZP1
+  else if(Det==3)	      index = 10*(Det-1)+(Quad-1)+Res; // ZEM
+  else if(Det==4|| Det==5)    index = 10*(Det-2)+Quad+5*Res+4; // ZN2, ZP2
+  meanPed = fCalibData->GetMeanPed(index);
+  Pedwidth = fCalibData->GetMeanPedWidth(index);
+  PedValue = gRandom->Gaus(meanPed,Pedwidth);
+  //
+  /*printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
+      Det, Quad, index,(Int_t) PedValue); // Chiara debugging!
+  */
+  
+
+  return (Int_t) PedValue;
+}
+
+
+//_____________________________________________________________________________
+Int_t AliZDC::ADCch2Phe(Int_t Det, Int_t Quad, Float_t ADCVal, Int_t Res) const
+{
+  // Evaluation of the no. of phe produced
+  Float_t PMGain[6][5];
+  Float_t ADCRes[2];
+  for(Int_t j = 0; j < 5; j++){
+    PMGain[0][j] = 50000.;
+    PMGain[1][j] = 100000.;
+    PMGain[2][j] = 100000.;
+    PMGain[3][j] = 50000.;
+    PMGain[4][j] = 100000.;
+    PMGain[5][j] = 100000.;
+  }
+  // ADC Caen V965
+  ADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
+  ADCRes[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
+  //
+  Int_t nPhe = (Int_t) (ADCVal * PMGain[Det-1][Quad] * ADCRes[Res]);
+  //printf("\t ADCch2Phe -> det %d quad %d - ADC %d  phe %.0f\n", Det,Quad,ADCVal,ADCch);
+
+  return nPhe;
+}
+
 //______________________________________________________________________
 void AliZDC::SetTreeAddress(){
+
   // Set branch address for the Trees.
-  // Inputs:
-  //      none.
-  // Outputs:
-  //      none.
-  // Return:
-  //      none.
-  if (fLoader->TreeH() && (fHits == 0x0))
+  if(fLoader->TreeH() && (fHits == 0x0))
     fHits   = new TClonesArray("AliZDCHit",1000);
       
   AliDetector::SetTreeAddress();
 }
  
- 
-//Calibration methods (by Alberto Colla)
- 
- 
 //________________________________________________________________
 void AliZDC::CreateCalibData()
 {
   // 
-  //if (fCalibData) delete fCalibData; // delete previous version
+  //if(fCalibData) delete fCalibData; // delete previous version
   fCalibData = new AliZDCCalibData(GetName());
 }
 //________________________________________________________________
@@ -632,7 +722,7 @@ void AliZDC::WriteCalibData(Int_t option)
   //
   const int kCompressLevel = 9;
   char* fnam = GetZDCCalibFName();
-  if (!fnam || fnam[0]=='\0') {
+  if(!fnam || fnam[0]=='\0') {
     fnam = gSystem->ExpandPathName("$(ALICE_ROOT)/data/AliZDCCalib.root");
     Warning("WriteCalibData","No File Name is provided, using default %s",fnam);
   }
@@ -641,9 +731,9 @@ void AliZDC::WriteCalibData(Int_t option)
   // Writes Calibration Data to current directory. 
   // User MUST take care of corresponding file opening and ->cd()... !!!
   // By default, the object is overwritten. Use 0 option for opposite.
-  if (option) option = TObject::kOverwrite;
-  if (fCalibData) fCalibData->Write(0,option);
-  else if (fCalibData) fCalibData->Write(0,option);
+  if(option) option = TObject::kOverwrite;
+  if(fCalibData) fCalibData->Write(0,option);
+  else if(fCalibData) fCalibData->Write(0,option);
 
   cdfile->Close();
   delete cdfile;
@@ -654,8 +744,8 @@ void AliZDC::LoadCalibData()
 {
   //
   char* fnam = GetZDCCalibFName();
-  if (!fnam || fnam[0]=='\0') return; 
-  if (!gAlice->IsFileAccessible(fnam)) {
+  if(!fnam || fnam[0]=='\0') return; 
+  if(!gAlice->IsFileAccessible(fnam)) {
     Error("LoadCalibData","ZDC Calibration Data file is not accessible, %s",fnam);
     exit(1);
   }
@@ -664,11 +754,11 @@ void AliZDC::LoadCalibData()
   // Loads Calibration Data from current directory. 
   // User MUST take care of corresponding file opening and ->cd()...!!!
   //
-  if (fCalibData) delete fCalibData; // delete previous version
+  if(fCalibData) delete fCalibData; // delete previous version
   TString dtname = "Calib_";
   dtname += GetName();
   fCalibData = (AliZDCCalibData*) gDirectory->Get(dtname.Data());
-  if (!fCalibData) { 
+  if(!fCalibData) { 
     Error("LoadCalibData","No Calibration data found for %s",GetName());
     exit(1);
   }
@@ -677,5 +767,3 @@ void AliZDC::LoadCalibData()
   delete cdfile;
 }
 
-
-//Calibration methods (by Alberto Colla)

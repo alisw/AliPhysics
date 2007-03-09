@@ -36,6 +36,10 @@ public:
   virtual void  Hits2SDigits();
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  Digits2Raw();
+  virtual Bool_t Raw2SDigits(AliRawReader* rawReader);
+  Int_t   Pedestal(Int_t Detector, Int_t Quadrant, Int_t Res) const;
+  Int_t   ADCch2Phe(Int_t Detector, Int_t Quadrant, Float_t ADCVal, 
+                    Int_t Res) const;
   virtual void  StepManager() {}
     
   // Switching off the shower development in ZDCs
