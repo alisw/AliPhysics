@@ -46,7 +46,7 @@ void KineTools::SetDaughterPathMarks(TrackList* cont,  AliStack* stack)
       for(int d=d0; d>0 && d<=d1;++d) 
       {	
 	TParticle* dp = stack->Particle(d);
-	Reve::PathMark* pm = new PathMark( PathMark::Daughter);
+	Reve::PathMark* pm = new PathMark(PathMark::Daughter);
         pm->V.Set(dp->Vx(),dp->Vy(), dp->Vz());
 	pm->P.Set(dp->Px(),dp->Py(), dp->Pz()); 
         pm->time = dp->T();
@@ -66,98 +66,70 @@ struct cmp_pathmark {
 };
 }
 
-void KineTools::SetPathMarks(TrackList* cont, AliStack* stack , TTree* treeTR)
+void KineTools::SetTrackReferences(TrackList* cont, TTree* treeTR)
 {
   // set decay and reference points
 
   static const Exc_t eH("KineTools::ImportPathMarks");
 
-  if(treeTR == 0) {
-    SetDaughterPathMarks(cont, stack);
-    return;
+  // fill map
+  map<Int_t, Track* >      tracks;
+  RenderElement::List_i  citer = cont->BeginChildren();
+  while(citer != cont->EndChildren())
+  { 
+    Track* track = dynamic_cast<Track*>(*citer); 
+    tracks[track->GetLabel()] = track;
+    ++citer;
   }
-
-  map<Int_t, Track::vpPathMark_t > refs;
-
+ 
   Int_t nPrimaries = (Int_t) treeTR->GetEntries();
   TIter next(treeTR->GetListOfBranches());
   TBranchElement* el;
   Bool_t isRef = kTRUE;
-  treeTR->SetBranchStatus("*", 0);
 
   while ((el = (TBranchElement*) next()))
   {
     if (strcmp("AliRun",el->GetName()) == 0)
       isRef = kFALSE;
 
-    treeTR->SetBranchStatus(Form("%s*", el->GetName()), 1);
+    TClonesArray* arr = 0;
+    el->SetAddress(&arr);
     for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++) 
     {
-     
-      TClonesArray* arr = 0;
-      treeTR->SetBranchAddress(el->GetName(), &arr);
-      treeTR->GetEntry(iPrimPart);
-    
-      for (Int_t iTrackRef = 0; iTrackRef < arr->GetEntriesFast(); iTrackRef++) 
-      {
-	AliTrackReference* atr = (AliTrackReference*)arr->At(iTrackRef);
-	Int_t track = atr->GetTrack();
-        if(atr->TestBit(TObject::kNotDeleted)) {
-	  if(track > 0)
-	  { 
-            PathMark* pm;
-	    if(isRef) 
-	      pm = new PathMark(PathMark::Reference);
-	    else
- 	      pm = new PathMark(PathMark::Decay);
-	      
-	    pm->V.Set(atr->X(),atr->Y(), atr->Z());
-	    pm->P.Set(atr->Px(),atr->Py(), atr->Pz());  
-	    pm->time = atr->GetTime();
+      el->GetEntry(iPrimPart);
 
-	    Track::vpPathMark_t& v = refs[track];
-            v.push_back(pm);
-	  }
-	  else
-	    throw(eH + Form("negative label for entry %d in branch %s.",
-			    iTrackRef, el->GetName()));
+      Int_t last_label = -1;
+      map<Int_t, Track*>::iterator iter = tracks.end(); 
+      Int_t Nent =  arr->GetEntriesFast();
+      for (Int_t iTrackRef = 0; iTrackRef < Nent; iTrackRef++) 
+      {
+	AliTrackReference* atr = (AliTrackReference*)arr->UncheckedAt(iTrackRef);
+
+	Int_t label = atr->GetTrack();
+	if (label < 0)
+	  throw(eH + Form("negative label for entry %d in branch %s.",
+			  iTrackRef, el->GetName()));
+	
+        if(label != last_label) {
+	  iter = tracks.find(label);
+	  last_label = label;
+	}
+
+	if (iter != tracks.end()) {
+	  PathMark* pm = new PathMark(isRef ? PathMark::Reference : PathMark::Decay);
+	  pm->V.Set(atr->X(),atr->Y(), atr->Z());
+	  pm->P.Set(atr->Px(),atr->Py(), atr->Pz());  
+	  pm->time = atr->GetTime();
+          Track* track  = iter->second;
+          track->AddPathMark(pm);
 	}
       } // loop track refs 
-      treeTR->SetBranchAddress(el->GetName(), 0);
     } // loop primaries, clones arrays
-    treeTR->SetBranchStatus(Form("%s*", el->GetName()), 0);
+    delete arr;
   } // end loop through top branches
-  treeTR->SetBranchStatus("*", 1);
 
-  // sort references and add it to tracks
-  RenderElement::List_i  cit = cont->BeginChildren();
-  while(cit != cont->EndChildren())
-  {
-    Track* track = dynamic_cast<Track*>(*cit);
-
-    // add daughters path marks in the map 
-    TParticle* p = stack->Particle(track->GetLabel());
-    if(p->GetNDaughters()) {
-      for(int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter();++d) 
-      {	
-	TParticle* dp = stack->Particle(d);
-	Reve::PathMark* pm = new PathMark( PathMark::Daughter);
-	pm->V.Set(dp->Vx(),dp->Vy(), dp->Vz());
-	pm->P.Set(dp->Px(),dp->Py(), dp->Pz()); 
-	pm->time = dp->T();
-	Track::vpPathMark_t& v = refs[track->GetLabel()];
-	v.push_back(pm);
-      }
-    }
-    
-    map<Int_t, Track::vpPathMark_t > ::iterator mi = refs.find(track->GetLabel());
-    if(mi != refs.end()) {
-      Track::vpPathMark_t& v = mi->second;
-      sort(v.begin(), v.end(), cmp_pathmark());
-      for(Track::vpPathMark_i i=v.begin(); i!=v.end(); ++i){
-	track->AddPathMark(*i);
-      }
-    }
-    ++cit;
+  // sort 
+  for(map<Int_t, Track*>::iterator j=tracks.begin(); j!=tracks.end(); ++j) {
+    (j->second)->SortPathMarksByTime();
   }
 }
