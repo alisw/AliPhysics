@@ -35,7 +35,10 @@ public:
 
   AliMUONV2DStore* MakePedestalStatus(const AliMUONV2DStore& pedValues) const;
 
+  /// Produces a status store. Should not return 0x0.
   AliMUONV2DStore* MakeStatus() const;
+
+  static AliMUONV2DStore* GeneratePadStatus(Int_t value);
 
   TVector2 HVSt12Limits() const { return fHVSt12Limits; }
   TVector2 HVSt345Limits() const { return fHVSt345Limits; }
@@ -80,6 +83,11 @@ private:
   
 private:
   
+  enum EGeneralStatus
+  {
+    kMissing = (1<<7)
+  };
+  
   enum EPedestalStatus
   {
     kPedOK = 0,
@@ -87,7 +95,9 @@ private:
     kPedMeanTooLow = (1<<2),
     kPedMeanTooHigh = (1<<3),
     kPedSigmaTooLow = (1<<4),
-    kPedSigmaTooHigh = (1<<5)
+    kPedSigmaTooHigh = (1<<5),
+    
+    kPedMissing = kMissing // please always use last bit for meaning "missing"
   };
   
   enum EHVError 
@@ -97,8 +107,9 @@ private:
     kHVTooLow = (1<<1),
     kHVTooHigh = (1<<2),
     kHVChannelOFF = (1<<3),
-    kHVSwitchOFF = (1<<4)
-    
+    kHVSwitchOFF = (1<<4),
+
+    kHVMissing = kMissing // please always use last bit for meaning "missing"
   };
   
   const AliMUONCalibrationData& fCalibrationData; //!< helper class to get data access (not owner)

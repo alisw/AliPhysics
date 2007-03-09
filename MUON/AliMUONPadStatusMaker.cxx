@@ -48,7 +48,7 @@
 #include "AliMpSlatSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVPadIterator.h"
-
+#include "AliMUON2DStoreValidator.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliDCSValue.h"
@@ -103,31 +103,22 @@ AliMUONPadStatusMaker::Combine(const AliMUONV2DStore& store1,
     Int_t detElemId = ip->GetFirst();
     Int_t manuId = ip->GetSecond();
     AliMUONVCalibParam* param1 = static_cast<AliMUONVCalibParam*>(store1.Get(detElemId,manuId));
-    if (!param1)
-    {
-      AliError(Form("Oups. Could not get statuses for store1 for DE %d ManuId %d !!!",
-                    detElemId,manuId));
-      delete combined;
-      combined = 0x0;
-      break;
-    }
     AliMUONVCalibParam* param2 = static_cast<AliMUONVCalibParam*>(store2.Get(detElemId,manuId));
     if (!param2)
     {
-      AliError(Form("Oups. Could not get statuses for store2 for DE %d ManuId %d",
+      AliWarning(Form("Could not get statuses for store2 for DE %d ManuId %d. Marking as missing.",
                     detElemId,manuId));
-      delete combined;
-      combined = 0x0;
-      break;
+      param2 = static_cast<AliMUONVCalibParam*>(param1->Clone());
+      for ( Int_t manuChannel = 0; manuChannel < param2->Size(); ++manuChannel )
+      {
+        param2->SetValueAsInt(manuChannel,0,kMissing);
+      }      
     }
     AliMUONVCalibParam* paramCombined = static_cast<AliMUONVCalibParam*>(combined->Get(detElemId,manuId));
     if (!paramCombined)
     {
-      AliError(Form("Oups. Could not get statuses for combined for DE %d ManuId %d",
-                    detElemId,manuId));
-      delete combined;
-      combined = 0x0;
-      break;
+      paramCombined = static_cast<AliMUONVCalibParam*>(param2->Clone());
+      combined->Set(detElemId,manuId,paramCombined,kFALSE);
     }
     
     for ( Int_t manuChannel = 0; manuChannel < param1->Size(); ++manuChannel )
@@ -150,6 +141,18 @@ AliMUONPadStatusMaker::Combine(const AliMUONV2DStore& store1,
   StdoutToAliInfo(timer.Print(););
   
   return combined;
+}
+
+//_____________________________________________________________________________
+AliMUONV2DStore* 
+AliMUONPadStatusMaker::GeneratePadStatus(Int_t value)
+{
+  /// Generate a "fake" store, with all (detElemId,manuId) present,
+  /// and containing all the same value
+  
+  AliMUONCalibParam1I param(64,value);
+  
+  return AliMUON2DMap::Generate(param);
 }
 
 //_____________________________________________________________________________
@@ -487,32 +490,57 @@ AliMUONPadStatusMaker::MakeStatus() const
   /// a combined status for each pad.
 
   TMap* hvValues = fCalibrationData.HV();
+  AliMUONV2DStore* hvStatus(0x0);
   
   if (!hvValues)
   {
-    AliError("Could not get HV values from CDB");
-    return 0x0;
+    AliError("Could not get HV values from CDB. Will create dummy ones and mark those as missing");
+    AliMUONCalibParam1I param(64,kHVMissing);
+    hvStatus = AliMUON2DMap::Generate(param);
+  }
+  else
+  {
+    hvStatus = MakeHVStatus(*hvValues);
   }
   
   AliMUONV2DStore* pedValues = fCalibrationData.Pedestals();
+  AliMUONV2DStore* pedStatus(0x0);
 
   if (!pedValues)
   {
-    AliError("Could not get pedestals values from CDB");
-    return 0x0;
-
+    AliError("Could not get pedestals values from CDB. Will create dummy ones and mark those as missing");
+    AliMUONCalibParam1I param(64,kPedMissing);
+    pedStatus = AliMUON2DMap::Generate(param);
+  }
+  else
+  {
+    pedStatus = MakePedestalStatus(*pedValues);
   }
   
-//  AliMUONV2DStore* gainValues = fCalibrationData.Gains();
-    
-  AliMUONV2DStore* hvStatus = MakeHVStatus(*hvValues);
-  AliMUONV2DStore* pedStatus = MakePedestalStatus(*pedValues);
+  // FIXME: should do the same for gains as for hv and ped.    
   
   AliMUONV2DStore* status = Combine(*hvStatus,*pedStatus,8);
   
   delete hvStatus;
   delete pedStatus;
   
+  // Insure we get all channels there (some or even all can be bad, but they
+  // must be there somehow).
+  
+  AliMUON2DStoreValidator validator;
+        
+  TObjArray* a = validator.Validate(*status);
+    
+  if (a) 
+  {
+    // this should not happen.
+    AliError("Status store not complete. Crash to follow soon...");
+    StdoutToAliError(a->Print(););
+    AliFatal("this should not happen at all!");
+    delete status;
+    status = 0x0;
+  }
+    
   return status;
 }
 
