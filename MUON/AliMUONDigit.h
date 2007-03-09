@@ -45,10 +45,13 @@ class AliMUONDigit : public TObject
     virtual Int_t ManuChannel() const { return fManuChannel; } ///< Return Channel within the MANU chip
     virtual Bool_t IsSaturated() const;
     virtual Bool_t IsNoiseOnly() const;
+    virtual Bool_t IsEfficiencyApplied() const;
     virtual UInt_t StatusMap() const { return fStatusMap; }
     
     virtual void NoiseOnly(Bool_t value=kTRUE);
     virtual void Saturated(Bool_t saturated=kTRUE);
+    virtual void EfficiencyApplied(Bool_t value=kTRUE);
+    
     virtual void SetElectronics(Int_t manuId, Int_t manuChannel);
     virtual void SetADC(Int_t adc) { fADC=adc; }
     virtual void SetDetElemId(Int_t id)    {fDetElemId = id;}  ///< Set detection element ID
@@ -102,7 +105,8 @@ private:
     
     static const UInt_t fgkSaturatedMask = 0x1; ///< the mask (part of fFlags) to indicate this digit is saturated
     static const UInt_t fgkNoiseOnlyMask = 0x1000; ///< indicate a simulated digit due to noise only
+    static const UInt_t fgkEfficiencyMask = 0x2000; ///< indicate chamber efficiency has been applied to a simulated digit
     
-    ClassDef(AliMUONDigit,6)  //Digits for MUON
+    ClassDef(AliMUONDigit,7)  //Digits for MUON
 };
 #endif

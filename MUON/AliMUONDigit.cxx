@@ -251,6 +251,31 @@ AliMUONDigit::IsSaturated() const
 }
 
 //_____________________________________________________________________________
+Bool_t
+AliMUONDigit::IsEfficiencyApplied() const
+{
+  /// Whether this digit had efficiency applied or not
+  
+  return (fFlags & fgkEfficiencyMask );
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigit::EfficiencyApplied(Bool_t value)
+{
+  /// Set the EfficiencyApplied status of this digit.
+  
+  if ( value )
+  {
+    fFlags |= fgkEfficiencyMask;
+  }
+  else
+  {
+    fFlags ^= fgkEfficiencyMask;
+  }
+}
+
+//_____________________________________________________________________________
 void
 AliMUONDigit::NoiseOnly(Bool_t value)
 {
