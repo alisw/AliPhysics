@@ -17,7 +17,7 @@
 //
 //   		Class for ZDC digit 
 //   	      ADC Channels for each PM 
-//   	   5 for hadronic ZDCs 1 for EM ZDCs
+//   	   5 for hadronic ZDCs 2 for EM ZDCs
 //
 //**********************************************************************
 
@@ -31,10 +31,9 @@ ClassImp(AliZDCDigit)
 {
   // Default constructor 
   
-  fSector[0]   = 0;
-  fSector[1]   = 0;
-  fADCValue[0] = 0;  
-  fADCValue[1] = 0;  
+  Int_t i;
+  for(i=0; i<2; i++) fSector[i] = 0;
+  for(i=0; i<2; i++) fADCValue[i] = 0;  
 }
 
 //____________________________________________________________________________
