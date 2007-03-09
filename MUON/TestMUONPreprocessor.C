@@ -101,6 +101,7 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
   shuttle->AddInputRunType("MCH", "PEDESTAL_RUN"); 
+  // shuttle->AddInputRunType("MCH", "GMS"); 
   // PEDESTAL_RUN -> pedestals
   // ELECTRONICS_CALIBRATION_RUN -> gains
   // PHYSICS ? -> HV
