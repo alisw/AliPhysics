@@ -36,6 +36,11 @@ public:
   AliMUON2DMap(const AliMUON2DMap& other);
   AliMUON2DMap&  operator = (const AliMUON2DMap& other);
 
+  /// Build a complete (i.e. all detElemId,manuId couple will be there) store
+  /// but with identical values, given by object 
+  /// The returned store will be obviously optimized for DEManu.
+  static AliMUONV2DStore* Generate(const TObject& object);
+    
 private:
   void CopyTo(AliMUON2DMap& destination) const;
 

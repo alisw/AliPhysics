@@ -25,6 +25,7 @@
 #include "AliMpManuList.h"
 #include "AliMpDEManager.h"
 #include "AliMUONConstants.h"
+#include <TList.h>
 
 /// \class AliMUON2DMap
 /// \brief Basic implementation of AliMUONV2DStore container using
@@ -131,6 +132,34 @@ AliMUON2DMap::Iterator() const
     return new AliMUON2DMapIterator(*fMap);
   }
   return 0x0;
+}
+
+//_____________________________________________________________________________
+AliMUONV2DStore* 
+AliMUON2DMap::Generate(const TObject& object)
+{
+  /// Build a complete (i.e. all detElemId,manuId couple will be there) store
+  /// but with identical values, given by object 
+  /// The returned store will be obviously optimized for DEManu.
+
+  AliMUONV2DStore* store = new AliMUON2DMap(true);
+  
+  TList* list = AliMpManuList::ManuList();
+  
+  AliMpIntPair* pair;
+  
+  TIter next(list);
+  
+  while ( ( pair = static_cast<AliMpIntPair*>(next()) ) ) 
+  {
+    Int_t detElemId = pair->GetFirst();
+    Int_t manuId = pair->GetSecond();
+    store->Set(detElemId,manuId,object.Clone(),kFALSE);
+  }
+  
+  delete list;
+  
+  return store;
 }
 
 //_____________________________________________________________________________
