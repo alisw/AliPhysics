@@ -23,6 +23,7 @@
 class AliMUONCalibrationData;
 class AliMUONData;
 class AliMUONDigit;
+class AliMUONLogger;
 class AliMUONTriggerEfficiencyCells;
 class TClonesArray;
 class TF1;
@@ -50,10 +51,10 @@ private:
   void ApplyResponse();
 
   void ApplyResponseToTrackerDigit(AliMUONDigit& digit, Bool_t addNoise);
-  void ApplyResponseToTriggerDigit(AliMUONDigit& digit, AliMUONData* data);
+  void ApplyResponseToTriggerDigit(AliMUONDigit& digit);
 
 private:  
-  AliMUONDigit* FindCorrespondingDigit(AliMUONDigit& digit,AliMUONData* data) const;
+  AliMUONDigit* FindCorrespondingDigit(AliMUONDigit& digit) const;
   
   Int_t FindDigitIndex(TClonesArray& array, const AliMUONDigit& digit) const;
 
@@ -80,7 +81,8 @@ private:
   Bool_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker
   static const Double_t fgkNSigmas; ///< \brief number of sigmas above ped to use 
   /// for noise-only digit generation and zero-suppression
-
+  AliMUONLogger* fLogger; ///<! to keep track of messages
+  
   ClassDef(AliMUONDigitizerV3,3) // MUON Digitizer V3-3
 };
 
