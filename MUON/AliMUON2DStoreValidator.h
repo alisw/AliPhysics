@@ -31,6 +31,8 @@ public:
   
   TObjArray* Validate(const AliMUONV2DStore& store, Float_t invalidFloatValue);
 
+  TObjArray* Validate(const AliMUONV2DStore& store);
+  
   TObjArray* Validate(const AliMUONV2DStore& store, 
                       Bool_t (*check)(const AliMUONVCalibParam&,Int_t));
 

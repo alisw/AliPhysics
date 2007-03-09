@@ -295,6 +295,17 @@ AliMUON2DStoreValidator::Report(TList& lines, const TObjArray& chambers)
 
 //_____________________________________________________________________________
 TObjArray* 
+AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store)
+{                                  
+  /// Validate the store. Check only the presence of all manus (i.e.
+  /// check nothing about the values themselves)
+  
+  Bool_t (*kCheck)(const AliMUONVCalibParam&,Int_t) = 0x0;
+  return Validate(store,kCheck);
+}
+
+//_____________________________________________________________________________
+TObjArray* 
 AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store,
                                   Bool_t (*check)(const AliMUONVCalibParam&,Int_t))
 {
