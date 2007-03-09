@@ -25,14 +25,13 @@ private:
 
 protected:
   // data from TreeK
-  void SetDaughterPathMarks(Reve::TrackList* cont,  AliStack* stack);
-
 public:
   KineTools();
   virtual ~KineTools(){}
  
   // data from TreeTR
-  void SetPathMarks(Reve::TrackList* cont, AliStack* stack, TTree* treeTR = 0);
+  void SetDaughterPathMarks(Reve::TrackList* cont,  AliStack* stack);
+  void SetTrackReferences(Reve::TrackList* cont, TTree* treeTR = 0);
 
   ClassDef(KineTools, 1);
 }; // endclass KineTools
