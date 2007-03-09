@@ -98,7 +98,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
     
   TIter it(&lines);
   
-  StdoutToAliDebug(3,lines.Print(););
+//  StdoutToAliDebug(3,lines.Print(););
   
   TObjString* osline;
   while ( ( osline = (TObjString*)it.Next() ) )

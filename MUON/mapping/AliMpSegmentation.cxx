@@ -184,7 +184,7 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
 
   fMpSegmentations.Add(deSegName, mpSegmentation); 
   
-  StdoutToAliDebug(3, fSlatMotifMap.Print(););
+//  StdoutToAliDebug(3, fSlatMotifMap.Print(););
   
   return mpSegmentation;
 } 

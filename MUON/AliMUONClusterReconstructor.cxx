@@ -105,8 +105,8 @@ AliMUONClusterReconstructor::ClusterizeOneDEV2(Int_t detElemId)
   
   while ( ( cluster = fClusterFinder->NextCluster() ) )
   {
-    StdoutToAliDebug(1,cout << "From AliMUONClusterReconstructor::ClusterizeOneDEV2 : cluster->Print():" << endl;
-                     cluster->Print(););
+//    StdoutToAliDebug(1,cout << "From AliMUONClusterReconstructor::ClusterizeOneDEV2 : cluster->Print():" << endl;
+//                     cluster->Print(););
     
     // Converts cluster objects into ones suitable for output
     //
@@ -158,10 +158,10 @@ AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
       AliMUONClusterInput::Instance()->SetDigits(iChamber, detElemId,
                                                  fDigitsCath0,fDigitsCath1);
       AliDebug(3,Form("ClusterizeOneDE iChamber=%d DE=%d",iChamber,detElemId));
-      StdoutToAliDebug(3,cout << "DigitsCath0=" << endl;
-                       fDigitsCath0->Print();
-                       cout << "DigitsCath1=" << endl;
-                       fDigitsCath1->Print(););
+//      StdoutToAliDebug(3,cout << "DigitsCath0=" << endl;
+//                       fDigitsCath0->Print();
+//                       cout << "DigitsCath1=" << endl;
+//                       fDigitsCath1->Print(););
       fRecModel->FindRawClusters();
       
       // copy results into the output container
