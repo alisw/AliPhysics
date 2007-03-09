@@ -102,7 +102,7 @@ class AliMUONTrack : public TObject
   static const Double_t fgkMaxTrackingDistanceBending;    ///< Maximum distance to the track to search for compatible hitForRec(s) in bending direction
   static const Double_t fgkMaxTrackingDistanceNonBending; ///< Maximum distance to the track to search for compatible hitForRec(s) in non bending direction
   
-  AliMUONTrackParam fTrackParamAtVertex; ///< Track parameters at vertex
+  AliMUONTrackParam fTrackParamAtVertex; //!< Track parameters at vertex
   TClonesArray *fTrackParamAtHit; ///< Track parameters at hit
   TClonesArray *fHitForRecAtHit; ///< Cluster parameters at hit
   Int_t fNTrackHits; ///< Number of hits attached to the track
@@ -120,7 +120,7 @@ class AliMUONTrack : public TObject
   Int_t fTrackID; ///< track ID = track number in TrackRefs
   
   
-  ClassDef(AliMUONTrack, 3) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 4) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif

@@ -13,7 +13,6 @@
 /// MUON track reconstructor using kalman filter
 ////////////////////////////////////////////////
 
-#include <TObject.h>
 #include "AliMUONVTrackReconstructor.h"
 
 class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor {
@@ -36,7 +35,6 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor {
   virtual void MakeTrackCandidates(void);
   virtual void FollowTracks(void);
   virtual void RemoveDoubleTracks(void);
-  virtual void ExtrapTracksToVertex(void);
   virtual void FillMUONTrack(void);
   
 

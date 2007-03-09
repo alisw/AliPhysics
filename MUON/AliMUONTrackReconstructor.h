@@ -30,7 +30,6 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor {
   virtual void MakeTrackCandidates(void);
   virtual void FollowTracks(void);
   virtual void RemoveDoubleTracks(void);
-  virtual void ExtrapTracksToVertex(void);
   virtual void FillMUONTrack(void);
   
 

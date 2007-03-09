@@ -28,13 +28,6 @@
 ///
 ////////////////////////////////////
 
-#include <stdlib.h>
-#include <Riostream.h>
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TMatrixD.h>
-
-#include "AliMUONVTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONData.h"
 #include "AliMUONConstants.h"
@@ -42,9 +35,15 @@
 #include "AliMUONObjectPair.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrackK.h" 
+
 #include "AliLog.h"
 
+#include <Riostream.h>
+
+/// \cond CLASSIMP
 ClassImp(AliMUONTrackReconstructorK) // Class implementation in ROOT context
+ClassImp(AliMUONConstants)
+/// \endcond
 
 //__________________________________________________________________________
 AliMUONTrackReconstructorK::AliMUONTrackReconstructorK(AliMUONData* data, const Option_t* TrackMethod)
@@ -114,13 +113,12 @@ void AliMUONTrackReconstructorK::AddHitsForRecFromRawClusters()
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the raw cluster (cm)
       hitForRec->SetZ(clus->GetZ(0));
-      StdoutToAliDebug(3,
-                       cout << "Chamber " << ch <<
-                       " raw cluster  " << iclus << " : " << endl;
-                       clus->Print("full");
-                       cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
-                       hitForRec->Print("full");
-                       );
+      if (AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 3) {
+        cout << "Chamber " << ch <<" raw cluster  " << iclus << " : " << endl;
+        clus->Print("full");
+        cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
+        hitForRec->Print("full");
+      }
     } // end of cluster loop
   } // end of chamber loop
   SortHitsForRecWithIncreasingChamber(); 
@@ -157,8 +155,6 @@ void AliMUONTrackReconstructorK::MakeTracks(void)
   FollowTracks();
   // Remove double tracks
   RemoveDoubleTracks();
-  // Propagate tracks to the vertex through absorber
-  ExtrapTracksToVertex();
   // Fill AliMUONTrack data members
   FillMUONTrack();
 }
@@ -392,21 +388,6 @@ void AliMUONTrackReconstructorK::RemoveDoubleTracks(void)
 
   fNRecTracks = fRecTracksPtr->GetEntriesFast();
   if (debug >= 0) cout << " Number of Kalman tracks: " << fNRecTracks << endl;
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackReconstructorK::ExtrapTracksToVertex(void)
-{
-  /// Propagates track to the vertex thru absorber
-  /// (using Branson correction for now)
-  Double_t zVertex;
-  zVertex = 0;
-  for (Int_t i=0; i<fNRecTracks; i++) {
-    //((AliMUONTrackK*)(*fRecTracksPtr)[i])->Branson();
-    ((AliMUONTrackK*)(*fRecTracksPtr)[i])->SetTrackQuality(1); // compute Chi2
-    //((AliMUONTrackK*)(*fRecTracksPtr)[i])->GoToZ(zVertex); // w/out absorber
-    ((AliMUONTrackK*)(*fRecTracksPtr)[i])->GoToVertex(1); // with absorber
-  }
 }
 
   //__________________________________________________________________________

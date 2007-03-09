@@ -33,6 +33,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliTracker.h"
 
 Int_t TrackCheck( Bool_t *compTrack);
@@ -165,8 +166,9 @@ void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
 	p1  = trackParam->P();
 	
 // 	printf(" Ref. track at vertex: x,y,z: %f %f %f px,py,pz,p: %f %f %f %f \n",x1,y1,z1,pX1,pY1,pZ1,p1);
-	
-	trackParam = ((AliMUONTrack *)trackRecoArray->At(indexOK))->GetTrackParamAtVertex();
+	trackReco = (AliMUONTrack *)trackRecoArray->At(indexOK);
+	trackParam = new AliMUONTrackParam(*((AliMUONTrackParam*)(trackReco->GetTrackParamAtHit()->First())));
+	AliMUONTrackExtrap::ExtrapToVertex(trackParam,x1,y1,z1);
 	x2 = trackParam->GetNonBendingCoor();
 	y2 = trackParam->GetBendingCoor();
 	z2 = trackParam->GetZ();
@@ -174,6 +176,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
 	pY2 = trackParam->Py();
 	pZ2 = trackParam->Pz();
 	p2  = trackParam->P();
+	delete trackParam;
 // 	printf(" Reconst. track at vertex: x,y,z: %f %f %f px,py,pz: %f %f %f %f \n",x2,y2,z2,pX2,pY2,pZ2,p2);
 	
 	hResMomVertex->Fill(p2-p1);

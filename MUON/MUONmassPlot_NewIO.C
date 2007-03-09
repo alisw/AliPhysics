@@ -26,6 +26,7 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
 #include "AliESDMuonTrack.h"
 #endif
 //
@@ -152,7 +153,8 @@ void MUONmassPlot(char* filename="galice.root", Int_t FirstEvent = 0, Int_t Last
 
       rectrack = (AliMUONTrack*) recTracksArray->At(irectracks);
 
-      trackParam = rectrack->GetTrackParamAtVertex();
+      trackParam = (AliMUONTrackParam*)(rectrack->GetTrackParamAtHit()->First());
+      AliMUONTrackExtrap::ExtrapToVertex(trackParam,0.,0.,0.);
       bendingSlope   = trackParam->GetBendingSlope();
       nonBendingSlope = trackParam->GetNonBendingSlope();
 
@@ -198,7 +200,8 @@ void MUONmassPlot(char* filename="galice.root", Int_t FirstEvent = 0, Int_t Last
 
 	  rectrack = (AliMUONTrack*) recTracksArray->At(irectracks2);
 	 
-	  trackParam = rectrack->GetTrackParamAtVertex();
+          trackParam = (AliMUONTrackParam*)(rectrack->GetTrackParamAtHit()->First());
+          AliMUONTrackExtrap::ExtrapToVertex(trackParam,0.,0.,0.);
 	  bendingSlope    = trackParam->GetBendingSlope();
 	  nonBendingSlope = trackParam->GetNonBendingSlope();
 	  

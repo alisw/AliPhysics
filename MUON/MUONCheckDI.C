@@ -328,7 +328,7 @@ void MUONRecTracks (char * filename="galice.root")
       for(Int_t rectracki=0; rectracki < nrectracks;rectracki++)
 	{
 	  rectrack  = amdi.RecTrack(rectracki);
-	  trackparam = rectrack->GetTrackParamAtVertex();
+	  trackparam = rectrack->GetTrackParamAtVertex(); // meaningless since the vertex is not known at the tracking level
 	  x = trackparam->GetNonBendingCoor();
 	  y = trackparam->GetBendingCoor();
 	  z = trackparam->GetZ();

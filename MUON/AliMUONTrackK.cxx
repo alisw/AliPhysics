@@ -23,7 +23,7 @@
 // Author: Alexander Zinchenko, JINR Dubna
 
 #include "AliMUONTrackK.h"
-#include "AliMUON.h"
+#include "AliMUONData.h"
 #include "AliMUONConstants.h"
 
 #include "AliMUONTrackReconstructorK.h"
@@ -36,8 +36,6 @@
 #include "AliMUONDetElement.h"
 
 #include "AliLog.h"
-#include "AliMagF.h"
-#include "AliRunLoader.h"
 
 #include <Riostream.h>
 #include <TClonesArray.h>
@@ -1346,14 +1344,12 @@ void AliMUONTrackK::FillMUONTrack(void)
 /// Compute track parameters at hit positions (as for AliMUONTrack)
 
   // Set Chi2
+  SetTrackQuality(1); // compute Chi2
   SetFitFMin(fChi2);
 
-  // Set track parameters at vertex
+  // Set track parameters at hits
   AliMUONTrackParam trackParam;
   SetTrackParam(&trackParam, fTrackPar, fPosition);
-  SetTrackParamAtVertex(&trackParam);
-
-  // Set track parameters at hits
   for (Int_t i = fNmbTrackHits-1; i>=0; i--) {
     if ((*fChi2Smooth)[i] < 0) {
       // Propagate through last chambers
@@ -1379,280 +1375,6 @@ void AliMUONTrackK::SetTrackParam(AliMUONTrackParam *trackParam, TMatrixD *par, 
   trackParam->SetNonBendingSlope(TMath::Tan((*par)(3,0))/TMath::Cos((*par)(2,0)));
   trackParam->SetInverseBendingMomentum((*par)(4,0)/TMath::Cos((*par)(3,0)));
   trackParam->SetZ(z);
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackK::Branson(void)
-{
-/// Propagates track to the vertex thru absorber using Branson correction
-/// (makes use of the AliMUONTrackParam class)
- 
-  //AliMUONTrackParam *trackParam = new AliMUONTrackParam();
-  AliMUONTrackParam trackParam = AliMUONTrackParam();
-  /*
-  trackParam->SetBendingCoor((*fTrackPar)(0,0));
-  trackParam->SetNonBendingCoor((*fTrackPar)(1,0));
-  trackParam->SetBendingSlope(TMath::Tan((*fTrackPar)(2,0)));
-  trackParam->SetNonBendingSlope(TMath::Tan((*fTrackPar)(3,0))/TMath::Cos((*fTrackPar)(2,0)));
-  trackParam->SetInverseBendingMomentum((*fTrackPar)(4,0)/TMath::Cos((*fTrackPar)(3,0)));
-  trackParam->SetZ(fPosition);
-  */
-  SetTrackParam(&trackParam, fTrackPar, fPosition);
-
-  AliMUONTrackExtrap::ExtrapToVertex(&trackParam, Double_t(0.), Double_t(0.), Double_t(0.));
-
-  (*fTrackPar)(0,0) = trackParam.GetBendingCoor();
-  (*fTrackPar)(1,0) = trackParam.GetNonBendingCoor();
-  (*fTrackPar)(2,0) = TMath::ATan(trackParam.GetBendingSlope());
-  (*fTrackPar)(3,0) = TMath::ATan(TMath::Cos((*fTrackPar)(2,0))*trackParam.GetNonBendingSlope());
-  (*fTrackPar)(4,0) = TMath::Cos((*fTrackPar)(3,0))*trackParam.GetInverseBendingMomentum();
-  fPosition = trackParam.GetZ();
-  //delete trackParam;
-  if (fgDebug > 0) cout << 1/(*fTrackPar)(4,0) << " " << fPosition << " " << (*fTrackPar)(0,0) << endl;
-
-  // Get covariance matrix
-  *fCovariance = *fWeight;
-  if (fCovariance->Determinant() != 0) {
-    Int_t ifail;
-    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
-  } else {
-    AliWarning(" Determinant fCovariance=0:");
-  }
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackK::GoToZ(Double_t zEnd)
-{
-/// Propagates track to given Z
-
-  ParPropagation(zEnd);
-  MSThin(1); // multiple scattering in the chamber
-  WeightPropagation(zEnd, kFALSE);
-  fPosition = fPositionNew;
-  *fTrackPar = *fTrackParNew; 
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackK::GoToVertex(Int_t iflag)
-{
-/// Version 3.08
-/// Propagates track to the vertex
-/// All material constants are taken from AliRoot
-
-    static Double_t x01[5] = { 24.282,  // C
-  			       24.282,  // C
-  			       11.274,  // Concrete
-  			        1.758,  // Fe 
-  			        1.758}; // Fe (cm)
-  // inner part theta < 3 degrees
-    static Double_t x02[5] = { 30413,  // Air
-			       24.282, // C
-			       11.274, // Concrete
-			       1.758,  // Fe
-			       0.369}; // W (cm)
-  // z positions of the materials inside the absober outer part theta > 3 degres
-  static Double_t zPos[10] = {-90, -105, -315, -443, -468};
-
-  Double_t dZ, r0Norm, x0, deltaP, dChi2, pTotal, pOld;
-  AliMUONHitForRec *hit;
-  AliMUONRawCluster *clus;
-  TClonesArray *rawclusters;
-
-  // First step to the rear end of the absorber
-  Double_t zRear = -503;
-  GoToZ(zRear);
-  Double_t tan3 = TMath::Tan(3./180*TMath::Pi());
-
-  // Go through absorber
-  pOld = 1/(*fTrackPar)(4,0);
-  Double_t r0Rear = (*fTrackPar)(0,0)*(*fTrackPar)(0,0) + 
-                    (*fTrackPar)(1,0)*(*fTrackPar)(1,0);
-  r0Rear = TMath::Sqrt(r0Rear)/TMath::Abs(fPosition)/tan3;
-  r0Norm = r0Rear;
-  Double_t p0, cos25, cos60;
-  if (!iflag) goto vertex;
-
-  for (Int_t i=4; i>=0; i--) {
-    ParPropagation(zPos[i]);
-    WeightPropagation(zPos[i], kFALSE);
-    dZ = TMath::Abs (fPositionNew-fPosition);
-    if (r0Norm > 1) x0 = x01[i];
-    else x0 = x02[i];
-    MSLine(dZ,x0); // multiple scattering in the medium (linear approximation)
-    fPosition = fPositionNew;
-    *fTrackPar = *fTrackParNew; 
-    r0Norm = (*fTrackPar)(0,0)*(*fTrackPar)(0,0) + 
-             (*fTrackPar)(1,0)*(*fTrackPar)(1,0);
-    r0Norm = TMath::Sqrt(r0Norm)/TMath::Abs(fPosition)/tan3;
-  }
-  // Correct momentum for energy losses
-  pTotal = 1/TMath::Abs((*fTrackPar)(4,0));
-  p0 = pTotal;
-  cos25 = TMath::Cos(2.5/180*TMath::Pi());
-  cos60 = TMath::Cos(6.0/180*TMath::Pi());
-  for (Int_t j=0; j<1; j++) {
-    /*
-    if (r0Rear > 1) {
-      if (p0 < 20) {
-	deltaP = 2.164 + 0.145e-1*p0 - 0.417e-3*p0*p0;
-      } else {
-	deltaP = 2.275 + 0.102e-2*p0 - 0.674e-6*p0*p0;
-      }
-    } else {
-      if (p0 < 20) {
-	deltaP = 2.581 + 0.188e-1*p0 - 0.398e-3*p0*p0;
-      } else {
-	deltaP = 2.727 + 0.356e-2*p0 + 0.242e-5*p0*p0;
-      }
-    }
-    */
-    /*
-    if (r0Rear < 1) {
-      //W
-      if (p0<15) {
-	deltaP = 2.737 + 0.0494*p0 - 0.001123*p0*p0;
-      } else {
-	deltaP = 3.0643 + 0.01346*p0;
-      }
-      deltaP *= 0.95;
-    } else {
-      //Pb
-      if (p0<15) {
-	deltaP  = 2.1380 + 0.0351*p0 - 0.000853*p0*p0;
-      } else {
-	deltaP = 2.407 + 0.00702*p0;
-      }
-      deltaP *= 0.95;
-    }
-    */
-    /*
-    if (r0Rear < 1) {
-      //W
-      if (p0<18) {
-	deltaP = 2.439 + 0.806e-1*p0 - 0.500e-2*p0*p0 + 0.106e-3*p0*p0*p0;
-      } else {
-	deltaP = 2.767 + 0.742e-2*p0 - 0.196e-4*p0*p0 + 0.403e-7*p0*p0*p0;
-      }
-      //deltaP += 0.2;
-      deltaP *= cos25;
-    } else {
-      //Pb
-      if (p0<18) {
-	deltaP  = 2.209 + 0.800e-2*p0;
-      } else {
-	deltaP = 2.285 + 0.141e-2*p0 - 0.446e-6*p0*p0;
-      }
-      //deltaP += 0.2;
-      deltaP *= cos60;
-    }
-    deltaP *= 1.1;
-    */
-    //*
-    if (r0Rear  < 1) {
-      if (p0 < 20) {
-	deltaP = 2.5938 + 0.0570 * p0 - 0.001151 * p0 * p0;
-      } else {
-	deltaP = 3.0714 + 0.011767 * p0;
-      }
-      deltaP *= 0.75; 
-    } else {
-      if (p0 < 20) {
-	deltaP  = 2.1207 + 0.05478 * p0 - 0.00145079 * p0 * p0;
-      } else { 
-	deltaP = 2.6069 + 0.0051705 * p0;
-      }
-      deltaP *= 0.9; 
-    }
-    //*/
-
-    p0 = pTotal + deltaP/TMath::Abs(TMath::Cos((*fTrackPar)(2,0))/TMath::Cos((*fTrackPar)(3,0)));
-  }
-  (*fTrackPar)(4,0) = 1/p0*TMath::Sign((Double_t)1.,(*fTrackPar)(4,0));
-
-  // Go to the vertex
-vertex:
-  ParPropagation((Double_t)0.);
-  WeightPropagation((Double_t)0., kFALSE);
-  fPosition = fPositionNew;
-  //*fTrackPar = *fTrackParNew; 
-  // Add vertex as a hit
-  TMatrixD pointWeight(fgkSize,fgkSize);
-  TMatrixD point(fgkSize,1);
-  TMatrixD trackParTmp = point;
-  point(0,0) = 0; // vertex coordinate - should be taken somewhere
-  point(1,0) = 0; // vertex coordinate - should be taken somewhere
-  pointWeight(0,0) = 1/1.e-3/1.e-3; // 10 um error
-  pointWeight(1,1) = 1/1.e-3/1.e-3; // 10 um error
-  TryPoint(point,pointWeight,trackParTmp,dChi2);
-  *fTrackPar = trackParTmp;
-  *fWeight += pointWeight; 
-  fChi2 += dChi2; // Chi2
-  if (fgDebug < 0) return; // no output
-
-  cout << pOld << " " << 1/(*fTrackPar)(4,0) << " " << dChi2 << " " << fChi2 << " " << fNmbTrackHits << endl;
-  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
-    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
-    printf ("%5d", hit->GetChamberNumber()); 
-  }
-  cout << endl;
-  if (fgDebug > 0) {
-    for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
-      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
-      //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetHitNumber() << " ";
-      //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetZ() << " ";
-      printf ("%5d", fgHitForRec->IndexOf(hit)); 
-    }
-    cout << endl;
-  }
-
-  // from raw clusters
-  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
-    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
-    if (hit->GetHitNumber() < 0) { // combined cluster / track finder
-      Int_t index = -hit->GetHitNumber() / 100000;
-      Int_t iPos = -hit->GetHitNumber() - index * 100000;
-      clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
-    } else {
-      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
-      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
-    }
-    printf ("%5d", clus->GetTrack(1)%10000000); 
-  }    
-  cout << endl;
-  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
-    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i1]);
-    if (hit->GetHitNumber() < 0) { // combined cluster / track finder
-      Int_t index = -hit->GetHitNumber() / 100000;
-      Int_t iPos = -hit->GetHitNumber() - index * 100000;
-      clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
-    } else {
-      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
-      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
-    }
-    if (clus->GetTrack(2) != -1) printf ("%5d", clus->GetTrack(2)%10000000);
-    else printf ("%5s", "    ");
-  }
-  cout << endl;
-  for (Int_t i1=0; i1<fNmbTrackHits; i1++) {
-    //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetHitNumber() << " ";
-    cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetZ() << " ";
-    //cout << fgHitForRec->IndexOf(((AliMUONHitForRec*)((*fTrackHits)[i1]))) << " ";
-  }
-  cout << endl;
-  for (Int_t i1=0; i1<fNmbTrackHits; i1++) printf("%8.4f", (*fChi2Smooth)[i1]);
-  cout << endl;
-  cout << "---------------------------------------------------" << endl;
-
-  // Get covariance matrix
-  /* Not needed - covariance matrix is not interesting to anybody
-  *fCovariance = *fWeight;
-  if (fCovariance->Determinant() != 0) {
-    Int_t ifail;
-    mnvertLocal(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifail);
-  } else {
-    AliWarning(" Determinant fCovariance=0:" );
-  }
-  */
 }
 
   //__________________________________________________________________________

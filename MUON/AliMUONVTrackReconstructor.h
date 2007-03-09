@@ -103,7 +103,6 @@ class AliMUONVTrackReconstructor : public TObject {
   virtual void MakeTrackCandidates(void) = 0;
   virtual void FollowTracks(void) = 0;
   virtual void RemoveDoubleTracks(void) = 0;
-  virtual void ExtrapTracksToVertex(void) = 0;
   virtual void FillMUONTrack(void) = 0;
 
  private:

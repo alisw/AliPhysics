@@ -10,6 +10,7 @@
 #include "TParticle.h"
 #include "TTree.h"
 #include <Riostream.h>
+#include <TGeoManager.h>
 
 // STEER includes
 #include "AliRun.h"
@@ -40,6 +41,10 @@
 // using Invariant Mass for rapidity.
 
 // Arguments:
+//   ExtrapToVertex (default -1)
+//	<0: no extrapolation;
+//	=0: extrapolation to (0,0,0);
+//	>0: extrapolation to ESDVertex if available, else to (0,0,0)
 //   FirstEvent (default 0)
 //   LastEvent (default 0)
 //   ResType (default 553)
@@ -57,8 +62,8 @@
 
 // Add parameters and histograms for analysis 
 
-Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t LastEvent = 10000,
-		  char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
+Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", char* filename = "galice.root",
+		  Int_t FirstEvent = 0, Int_t LastEvent = 10000, char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
                   Float_t Chi2Cut = 100., Float_t PtCutMin = 1., Float_t PtCutMax = 10000.,
                   Float_t massMin = 9.17,Float_t massMax = 9.77)
 {
@@ -126,6 +131,15 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
  
   TLorentzVector fV1, fV2, fVtot;
 
+  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
+  if (!gGeoManager) {
+    TGeoManager::Import(geoFilename);
+    if (!gGeoManager) {
+      Error("MUONmass_ESD", "getting geometry from file %s failed", filename);
+      return kFALSE;
+    }
+  }
+  
   // set mag field
   // waiting for mag field in CDB 
   printf("Loading field map...\n");
@@ -135,8 +149,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   // open run loader and load gAlice, kinematics and header
   AliRunLoader* runLoader = AliRunLoader::Open(filename);
   if (!runLoader) {
-    Error("MUONmass_ESD", "getting run loader from file %s failed", 
-	    filename);
+    Error("MUONmass_ESD", "getting run loader from file %s failed", filename);
     return kFALSE;
   }
 
@@ -183,12 +196,10 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 
     // get the SPD reconstructed vertex (vertexer) and fill the histogram
     AliESDVertex* Vertex = (AliESDVertex*) esd->GetVertex();
-
     if (Vertex->GetNContributors()) {
       fZVertex = Vertex->GetZv();
       fYVertex = Vertex->GetYv();
       fXVertex = Vertex->GetXv();
-
     }
     hPrimaryVertex->Fill(fZVertex);
 
@@ -202,17 +213,22 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
     // loop over all reconstructed tracks (also first track of combination)
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
 
-      AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
+      AliESDMuonTrack* muonTrack = new AliESDMuonTrack(*(esd->GetMuonTrack(iTrack)));
 
-      if (!Vertex->GetNContributors()) {
-	//re-extrapolate to vertex, if not kown before.
-	trackParam.GetParamFrom(*muonTrack);
+      // extrapolate to vertex if required and available
+      if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
+        trackParam.GetParamFrom(*muonTrack);
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
-	trackParam.SetParamFor(*muonTrack);
+	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
+      } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
+        trackParam.GetParamFrom(*muonTrack);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
+	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       }
+
       thetaX = muonTrack->GetThetaX();
       thetaY = muonTrack->GetThetaY();
-
+      
       pYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
       fPzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
       fPxRec1  = fPzRec1 * TMath::Tan(thetaX);
@@ -258,28 +274,33 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 	// loop over second track of combination
 	for (Int_t iTrack2 = iTrack + 1; iTrack2 < nTracks; iTrack2++) {
 	  
-	  AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack2);
-
-	  if (!Vertex->GetNContributors()) {
-	    trackParam.GetParamFrom(*muonTrack);
+	  AliESDMuonTrack* muonTrack2 = new AliESDMuonTrack(*(esd->GetMuonTrack(iTrack2)));
+	  
+	  // extrapolate to vertex if required and available
+	  if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
+	    trackParam.GetParamFrom(*muonTrack2);
 	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
-	    trackParam.SetParamFor(*muonTrack);
+	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
+	  } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
+            trackParam.GetParamFrom(*muonTrack2);
+	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
+	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  }
+	  
+	  thetaX = muonTrack2->GetThetaX();
+	  thetaY = muonTrack2->GetThetaY();
 
-	  thetaX = muonTrack->GetThetaX();
-	  thetaY = muonTrack->GetThetaY();
-
-	  pYZ      =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
+	  pYZ      =  1./TMath::Abs(muonTrack2->GetInverseBendingMomentum());
 	  fPzRec2  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
 	  fPxRec2  = fPzRec2 * TMath::Tan(thetaX);
 	  fPyRec2  = fPzRec2 * TMath::Tan(thetaY);
-	  fCharge2 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
+	  fCharge2 = Int_t(TMath::Sign(1.,muonTrack2->GetInverseBendingMomentum()));
 
 	  fE2 = TMath::Sqrt(muonMass * muonMass + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
 	  fV2.SetPxPyPzE(fPxRec2, fPyRec2, fPzRec2, fE2);
 
-	  ntrackhits = muonTrack->GetNHit();
-	  fitfmin    = muonTrack->GetChi2();
+	  ntrackhits = muonTrack2->GetNHit();
+	  fitfmin    = muonTrack2->GetChi2();
 
 	  // transverse momentum
 	  Float_t pt2 = fV2.Pt();
@@ -310,7 +331,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 	      if (esd->GetTriggerMask() &  ptTrig) NbTrigger++; 
 	      if (invMass > massMin && invMass < massMax) {
 		EventInMass++;
-		if (muonTrack->GetMatchTrigger() && (esd->GetTriggerMask() & ptTrig))// match with trigger
+		if (muonTrack2->GetMatchTrigger() && (esd->GetTriggerMask() & ptTrig))// match with trigger
 		  EventInMassMatch++;
 
   		hRapResonance->Fill(fVtot.Rapidity());
@@ -319,8 +340,10 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 
 	    } // if (fCharge * fCharge2) == -1)
 	  } // if ((ch2 < Chi2Cut) && (pt2 > PtCutMin) && (pt2 < PtCutMax))
+	  delete muonTrack2;
 	} //  for (Int_t iTrack2 = iTrack + 1; iTrack2 < iTrack; iTrack2++)
       } // if (ch1 < Chi2Cut) && (pt1 > PtCutMin)&& (pt1 < PtCutMax) )
+      delete muonTrack;
     } // for (Int_t iTrack = 0; iTrack < nrectracks; iTrack++)
 
     hNumberOfTrack->Fill(nTracks);

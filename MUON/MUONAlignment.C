@@ -103,7 +103,9 @@ void MUONAlignment(Int_t nEvents = 100000, TString fileName = "galice.root", TSt
       Int_t iTrackOk=0;
       AliMUONTrack* track = amdi.RecTrack(iTrack);
       while(track) {   
-	Double_t invBenMom = track->GetTrackParamAtVertex()->GetInverseBendingMomentum();
+	AliMUONTrackParam trackParam(*((AliMUONTrackParam*)(track->GetTrackParamAtHit()->First())));
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam,0.,0.,0.);
+	Double_t invBenMom = trackParam.GetInverseBendingMomentum();
 	fInvBenMom->Fill(invBenMom);
 	fBenMom->Fill(1./invBenMom);
 	if (TMath::Abs(invBenMom)<=1.04) {

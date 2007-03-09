@@ -23,7 +23,6 @@ class TClonesArray;
 class TObjArray;
 
 #include <TMatrixD.h>
-#include <TObject.h>
 
 class AliMUONTrackK : public AliMUONTrack {
 
@@ -54,9 +53,6 @@ class AliMUONTrackK : public AliMUONTrack {
   void SetTrackQuality(Int_t iChi2); // compute track quality or Chi2
   Bool_t KeepTrack(AliMUONTrackK* track0) const; // keep or discard track 
   void Kill(void); // kill track candidate
-  void Branson(void); // Branson correction
-  void GoToZ(Double_t zEnd); // propagate track to given Z
-  void GoToVertex(Int_t iflag); // propagate track to the vertex
   Bool_t Smooth(void); // apply smoother
   Double_t GetChi2PerPoint(Int_t iPoint) const; // return Chi2 at point
   void Print(FILE *lun) const; // print track information

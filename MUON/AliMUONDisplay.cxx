@@ -1339,11 +1339,8 @@ void AliMUONDisplay::LoadTracks()
     Float_t yRec=0;
     Float_t zRec=0;
 
-    trackParam = recTrack->GetTrackParamAtVertex(); 
-    xRec  = trackParam->GetNonBendingCoor();
-    yRec  = trackParam->GetBendingCoor();
-    zRec  = trackParam->GetZ();
-    points->SetPoint(iPoint,xRec,yRec,zRec);
+    // vertex unknown at the tracking level -> put it at (0,0,0)
+    points->SetPoint(iPoint,0.,0.,0.);
     iPoint++;	
 
     for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
@@ -1365,13 +1362,13 @@ void AliMUONDisplay::LoadTracks()
 void AliMUONDisplay::PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack)
 {
 /// Print reconstructed track
-
+  
   AliMUONTrackParam *trackParam;
   Float_t vertex[3], momentum[3];
   Float_t pYZ, bendingSlope, nonBendingSlope, chi2dof;
   Int_t charge;
 
-  trackParam = recTrack->GetTrackParamAtVertex();
+  trackParam = recTrack->GetTrackParamAtVertex(); // meaningless since the vertex is not known at the tracking level
   vertex[0] = trackParam->GetNonBendingCoor();
   vertex[1] = trackParam->GetBendingCoor();
   vertex[2] = trackParam->GetZ();
@@ -1385,6 +1382,9 @@ void AliMUONDisplay::PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack)
   chi2dof = recTrack->GetFitFMin()/(2.0 * recTrack->GetNTrackHits() - 5.);
   
   printf("===================================================\n");
+  printf("//*****************************************************************//\n");
+  printf("// meaningless since the vertex is not known at the tracking level //\n");
+  printf("//*****************************************************************//\n");
   printf(" Reconstructed track # %d \n",iRecTracks);
   printf(" charge: %d \n",charge);
   printf(" vertex x,y,z (cm): %f %f %f \n",vertex[0],vertex[1],vertex[2]); 

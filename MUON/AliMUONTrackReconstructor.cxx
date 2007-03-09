@@ -111,13 +111,12 @@ void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters()
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the raw cluster (cm)
       hitForRec->SetZ(clus->GetZ(0));
-      StdoutToAliDebug(3,
-                       cout << "Chamber " << ch <<
-                       " raw cluster  " << iclus << " : " << endl;
-                       clus->Print("full");
-                       cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
-                       hitForRec->Print("full");
-                       );
+      if (AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 3) {
+        cout << "Chamber " << ch <<" raw cluster  " << iclus << " : " << endl;
+        clus->Print("full");
+        cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
+        hitForRec->Print("full");
+      }
     } // end of cluster loop
   } // end of chamber loop
   SortHitsForRecWithIncreasingChamber(); 
@@ -152,8 +151,6 @@ void AliMUONTrackReconstructor::MakeTracks(void)
   FollowTracks();
   // Remove double tracks
   RemoveDoubleTracks();
-  // Propagate tracks to the vertex through absorber
-  ExtrapTracksToVertex();
   // Fill out the AliMUONTrack's
   FillMUONTrack();
 }
@@ -189,7 +186,7 @@ void AliMUONTrackReconstructor::MakeTrackCandidates(void)
       fNRecTracks++;
       // Add MCS effects in parameter covariances
       trackParamAtFirstHit = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
-      AliMUONTrackExtrap::AddMCSEffectInTrackParamCov(trackParamAtFirstHit,AliMUONConstants::ChamberThicknessInX0(),1.);
+      AliMUONTrackExtrap::AddMCSEffect(trackParamAtFirstHit,AliMUONConstants::ChamberThicknessInX0(),1.);
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
         cout<<endl<<"Track parameter covariances at first hit with multiple Coulomb scattering effects:"<<endl;
@@ -348,7 +345,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
       }
       // Add MCS effects in parameter covariances
       trackParamAtFirstHit = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
-      AliMUONTrackExtrap::AddMCSEffectInTrackParamCov(trackParamAtFirstHit,AliMUONConstants::ChamberThicknessInX0(),1.);
+      AliMUONTrackExtrap::AddMCSEffect(trackParamAtFirstHit,AliMUONConstants::ChamberThicknessInX0(),1.);
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
         cout<<endl<<"Track parameter covariances at first hit with multiple Coulomb scattering effects:"<<endl;
@@ -634,6 +631,8 @@ void AliMUONTrackReconstructor::Fit(AliMUONTrack *track, Bool_t includeMCS, Bool
   Int_t npari, nparx;
   Int_t status, covStatus;
   
+  // Instantiate gMinuit if not already done
+  if (!gMinuit) gMinuit = new TMinuit(6);
   // Clear MINUIT parameters
   gMinuit->mncler();
   // Give the fitted track to MINUIT
@@ -674,7 +673,7 @@ void AliMUONTrackReconstructor::Fit(AliMUONTrack *track, Bool_t includeMCS, Bool
   
   // Calculate the covariance matrix more accurately if required
   if (calcCov) gMinuit->mnexcm("HESSE", arg, 0, status);
-  
+   
   // get results into "invBenP", "benC", "nonBenC" ("x", "y")
   gMinuit->GetParameter(0, x, errorParam);
   trackParam->SetNonBendingCoor(x);
@@ -936,40 +935,6 @@ Double_t MultipleScatteringAngle2(AliMUONTrackParam *param)
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::ExtrapTracksToVertex()
-{
-  /// propagate tracks to the vertex through the absorber (Branson)
-  AliMUONTrack *track;
-  AliMUONTrackParam trackParamVertex;
-  AliMUONHitForRec *vertex;
-  Double_t vX, vY, vZ;
-  
-  for (Int_t iRecTrack = 0; iRecTrack <fNRecTracks; iRecTrack++) {
-    track = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iRecTrack);
-    trackParamVertex = *((AliMUONTrackParam*)(track->GetTrackParamAtHit()->First()));
-    vertex = track->GetVertex();
-    if (vertex) { // if track as a vertex defined, use it
-      vX = vertex->GetNonBendingCoor();
-      vY = vertex->GetBendingCoor();
-      vZ = vertex->GetZ();
-    } else { // else vertex = (0.,0.,0.)
-      vX = 0.;
-      vY = 0.;
-      vZ = 0.;
-    }
-    AliMUONTrackExtrap::ExtrapToVertex(&trackParamVertex, vX, vY, vZ);
-    track->SetTrackParamAtVertex(&trackParamVertex);
-    
-    if (AliLog::GetGlobalDebugLevel() > 0) {
-      cout << "FollowTracks: track candidate(0..): " << iRecTrack
-  	   << " after extrapolation to vertex" << endl;
-      track->RecursiveDump();
-    }
-  }
-  
-}
-
-  //__________________________________________________________________________
 void AliMUONTrackReconstructor::FillMUONTrack()
 {
   /// Fill fHitForRecAtHit of AliMUONTrack's
@@ -993,7 +958,7 @@ void AliMUONTrackReconstructor::EventDump(void)
   /// Dump reconstructed event (track parameters at vertex and at first hit),
   /// and the particle parameters
   AliMUONTrack *track;
-  AliMUONTrackParam *trackParam, *trackParam1;
+  AliMUONTrackParam trackParam, *trackParam1;
   Double_t bendingSlope, nonBendingSlope, pYZ;
   Double_t pX, pY, pZ, x, y, z, c;
   Int_t trackIndex, nTrackHits;
@@ -1010,17 +975,18 @@ void AliMUONTrackReconstructor::EventDump(void)
     nTrackHits = track->GetNTrackHits();
     AliDebug(1, Form("Number of track hits: %d ", nTrackHits));
     // track parameters at Vertex
-    trackParam = track->GetTrackParamAtVertex();
-    x = trackParam->GetNonBendingCoor();
-    y = trackParam->GetBendingCoor();
-    z = trackParam->GetZ();
-    bendingSlope = trackParam->GetBendingSlope();
-    nonBendingSlope = trackParam->GetNonBendingSlope();
-    pYZ = 1/TMath::Abs(trackParam->GetInverseBendingMomentum());
+    trackParam = (*((AliMUONTrackParam*) track->GetTrackParamAtHit()->First()));
+    AliMUONTrackExtrap::ExtrapToVertex(&trackParam,0.,0.,0.);
+    x = trackParam.GetNonBendingCoor();
+    y = trackParam.GetBendingCoor();
+    z = trackParam.GetZ();
+    bendingSlope = trackParam.GetBendingSlope();
+    nonBendingSlope = trackParam.GetNonBendingSlope();
+    pYZ = 1/TMath::Abs(trackParam.GetInverseBendingMomentum());
     pZ = pYZ/TMath::Sqrt(1+bendingSlope*bendingSlope);
     pX = pZ * nonBendingSlope;
     pY = pZ * bendingSlope;
-    c = TMath::Sign(1.0, trackParam->GetInverseBendingMomentum());
+    c = TMath::Sign(1.0, trackParam.GetInverseBendingMomentum());
     AliDebug(1, Form("Track parameters at Vertex z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
 		     z, x, y, pX, pY, pZ, c));
 

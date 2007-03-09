@@ -353,7 +353,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
   }
   recModel->SetGhostChi2Cut(10);
   recModel->SetEventNumber(evtNumber);
-
+  
   TTask* calibration = GetCalibrationTask();
   
   loader->LoadRecPoints("RECREATE");
@@ -381,7 +381,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     AliDebug(1,Form("Event %d",iEvent));
     
     runLoader->GetEvent(iEvent++);
-
+    
     //----------------------- raw2digits & raw2trigger-------------------
     //  if (!loader->TreeD()) 
     //  {
@@ -411,7 +411,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     clusterTimer.Start(kFALSE);
 
     if (!loader->TreeR()) loader->MakeRecPointsContainer();
-     
+    
     // tracking branch
     fMUONData->MakeBranch("RC");
     fMUONData->SetTreeAddress("RC");
@@ -426,7 +426,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
     loader->WriteRecPoints("OVERWRITE");
 
     clusterTimer.Stop();
-
+    
     
     //--------------------------- Resetting branches -----------------------
     fMUONData->ResetDigits();
@@ -475,7 +475,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
   // setting pointer for tracks, triggertracks & trackparam at vertex
   AliMUONTrack* recTrack = 0;
-  AliMUONTrackParam* trackParam = 0;
+  AliMUONTrackParam trackParam;
   AliMUONTriggerTrack* recTriggerTrack = 0;
 
   iEvent = runLoader->GetEventNumber(); 
@@ -519,17 +519,23 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     // reading info from tracks
     recTrack = (AliMUONTrack*) recTracksArray->At(iRecTracks);
 
-    trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
+    trackParam = *((AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First());
    
-    if (esdVert->GetNContributors())
-      AliMUONTrackExtrap::ExtrapToVertex(trackParam, vertex[0],vertex[1],vertex[2]);
-
-    bendingSlope            = trackParam->GetBendingSlope();
-    nonBendingSlope         = trackParam->GetNonBendingSlope();
-    inverseBendingMomentum  = trackParam->GetInverseBendingMomentum();
-    xRec  = trackParam->GetNonBendingCoor();
-    yRec  = trackParam->GetBendingCoor();
-    zRec  = trackParam->GetZ();
+    // extrapolate to the vertex if required
+    //   if the vertex is not available, extrapolate to (0,0,0)
+    if (!strstr(GetOption(),"NoExtrapToVtx")) {
+      if (esdVert->GetNContributors())
+        AliMUONTrackExtrap::ExtrapToVertex(&trackParam, vertex[0],vertex[1],vertex[2]);
+      else
+        AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0.,0.,0.);
+    }
+    
+    bendingSlope            = trackParam.GetBendingSlope();
+    nonBendingSlope         = trackParam.GetNonBendingSlope();
+    inverseBendingMomentum  = trackParam.GetInverseBendingMomentum();
+    xRec  = trackParam.GetNonBendingCoor();
+    yRec  = trackParam.GetBendingCoor();
+    zRec  = trackParam.GetZ();
 
     nTrackHits       = recTrack->GetNTrackHits();
     fitFmin          = recTrack->GetFitFMin();

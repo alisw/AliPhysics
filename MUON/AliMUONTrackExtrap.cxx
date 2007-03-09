@@ -28,16 +28,16 @@
 //
 ///////////////////////////////////////////////////
 
-#include <Riostream.h>
-#include <TMath.h>
-#include <TMatrixD.h>
-
 #include "AliMUONTrackExtrap.h" 
 #include "AliMUONTrackParam.h"
 #include "AliMUONConstants.h"
+
 #include "AliMagF.h" 
-#include "AliLog.h" 
-#include "AliTracker.h"
+
+#include <Riostream.h>
+#include <TMath.h>
+#include <TMatrixD.h>
+#include <TGeoManager.h>
 
 ClassImp(AliMUONTrackExtrap) // Class implementation in ROOT context
 
@@ -335,9 +335,11 @@ void AliMUONTrackExtrap::ExtrapToStation(AliMUONTrackParam* trackParamIn, Int_t 
   //__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx)
 {
-  /// Extrapolation to the vertex (at the z position "zVtx") without Branson and Field correction.
+  /// Extrapolation to the vertex (at the z position "zVtx") without Branson and energy loss corrections.
   /// Returns the track parameters resulting from the extrapolation in the current TrackParam.
   /// Include multiple Coulomb scattering effects in trackParam covariances.
+  
+  if (trackParam->GetZ() == zVtx) return; // nothing to be done if already at vertex
   
   if (trackParam->GetZ() > zVtx) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertexUncorrected: Starting Z ("<<trackParam->GetZ()
@@ -345,47 +347,64 @@ void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam
     exit(-1);
   }
   
-  if (zVtx < AliMUONConstants::ZAbsorberEnd()) { // spectro. (z<0)
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertexUncorrected: Ending Z ("<<zVtx
-    	<<") downstream the front absorber (zAbsorberEnd = "<<AliMUONConstants::ZAbsorberEnd()<<")"<<endl;
-    
+  // Check whether the geometry is available and get absorber boundaries
+  if (!gGeoManager) {
+    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: no TGeo"<<endl;
+    return;
+  }
+  TGeoNode *absNode = gGeoManager->GetVolume("ALIC")->GetNode("ABSM_1");
+  if (!absNode) {
+    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: failed to get absorber node"<<endl;
+    return;
+  }
+  Double_t zAbsBeg, zAbsEnd;
+  absNode->GetVolume()->GetShape()->GetAxisRange(3,zAbsBeg,zAbsEnd);
+  const Double_t *absPos = absNode->GetMatrix()->GetTranslation();
+  zAbsBeg = absPos[2] - zAbsBeg; // spectro. (z<0)
+  zAbsEnd = absPos[2] - zAbsEnd; // spectro. (z<0)
+  
+  // Check the vertex position relatively to the absorber
+  if (zVtx < zAbsBeg && zVtx > zAbsEnd) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
+    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
+  } else if (zVtx < zAbsEnd ) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
+    	<<") downstream the front absorber (zAbsorberEnd = "<<zAbsEnd<<")"<<endl;
     ExtrapToZCov(trackParam,zVtx);
     return;
   }
   
-  // First Extrapolates track parameters upstream to the "Z" end of the front absorber
-  if (trackParam->GetZ() < AliMUONConstants::ZAbsorberEnd()) { // spectro. (z<0)
-    ExtrapToZCov(trackParam,AliMUONConstants::ZAbsorberEnd());
+  // Check the track position relatively to the absorber and extrapolate track parameters to the end of the absorber if needed
+  if (trackParam->GetZ() > zAbsBeg) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
+    	<<") upstream the front absorber (zAbsorberBegin = "<<zAbsBeg<<")"<<endl;
+    ExtrapToZCov(trackParam,zVtx);
+    return;
+  } else if (trackParam->GetZ() > zAbsEnd) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
+    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
   } else {
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertexUncorrected: Starting Z ("<<trackParam->GetZ()
-    	<<") upstream or inside the front absorber (zAbsorberEnd = "<<AliMUONConstants::ZAbsorberEnd()<<")"<<endl;
+    ExtrapToZCov(trackParam,zAbsEnd);
   }
   
-  // Then go through all the absorber layers
-  Double_t tan3 = TMath::Tan(3./180.*TMath::Pi());
-  Double_t r0Norm, x0, z, zElement, dZ, nonBendingCoor, bendingCoor;
-  for (Int_t iElement=AliMUONConstants::NAbsorberElements()-1; iElement>=0; iElement--) {
-    zElement = AliMUONConstants::ZAbsorberElement(iElement);
-    z = trackParam->GetZ();
-    if (z > zElement) continue; // spectro. (z<0)
-    nonBendingCoor = trackParam->GetNonBendingCoor();
-    bendingCoor = trackParam->GetBendingCoor();
-    r0Norm = nonBendingCoor * nonBendingCoor + bendingCoor * bendingCoor;
-    r0Norm  = TMath::Sqrt(r0Norm) / TMath::Abs(trackParam->GetZ()) / tan3;
-    if (r0Norm > 1.) x0 = AliMUONConstants::X0AbsorberOut(iElement); // outer part of the absorber
-    else x0 = AliMUONConstants::X0AbsorberIn(iElement); // inner part of the absorber
-    
-    if (zVtx > zElement) {
-      ExtrapToZCov(trackParam,zElement); // extrapolate to absorber element "iElement"
-      dZ = zElement - z;
-      AddMCSEffectInTrackParamCov(trackParam,dZ,x0); // include MCS effect in covariances
-    } else {
-      ExtrapToZCov(trackParam,zVtx); // extrapolate to zVtx
-      dZ = zVtx - z;
-      AddMCSEffectInTrackParamCov(trackParam,dZ,x0); // include MCS effect in covariances
-      break;
-    }
-  }
+  // Then add MCS effect in absorber to the parameters covariances
+  AliMUONTrackParam trackParamIn(*trackParam);
+  ExtrapToZ(&trackParamIn, TMath::Min(zVtx, zAbsBeg));
+  Double_t trackXYZIn[3];
+  trackXYZIn[0] = trackParamIn.GetNonBendingCoor();
+  trackXYZIn[1] = trackParamIn.GetBendingCoor();
+  trackXYZIn[2] = trackParamIn.GetZ();
+  Double_t trackXYZOut[3];
+  trackXYZOut[0] = trackParam->GetNonBendingCoor();
+  trackXYZOut[1] = trackParam->GetBendingCoor();
+  trackXYZOut[2] = trackParam->GetZ();
+  Double_t pathLength = 0.;
+  Double_t f0 = 0.;
+  Double_t f1 = 0.;
+  Double_t f2 = 0.;
+  Double_t meanRho = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pathLength,f0,f1,f2,meanRho);
+  AddMCSEffectInAbsorber(trackParam,pathLength,f0,f1,f2);
   
   // finally go to the vertex
   ExtrapToZCov(trackParam,zVtx);
@@ -393,7 +412,129 @@ void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam
 }
 
   //__________________________________________________________________________
-void AliMUONTrackExtrap::AddMCSEffectInTrackParamCov(AliMUONTrackParam *param, Double_t dZ, Double_t x0)
+void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2)
+{
+  /// Add to the track parameter covariances the effects of multiple Coulomb scattering
+  /// at the end of the front absorber using the absorber correction parameters
+  
+  // absorber related covariance parameters
+  Double_t bendingSlope = param->GetBendingSlope();
+  Double_t nonBendingSlope = param->GetNonBendingSlope();
+  Double_t inverseBendingMomentum = param->GetInverseBendingMomentum();
+  Double_t alpha2 = 0.0136 * 0.0136 * inverseBendingMomentum * inverseBendingMomentum * (1.0 + bendingSlope * bendingSlope) /
+  					(1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); // velocity = 1
+  Double_t varCoor = alpha2 * (pathLength * pathLength * f0 - 2. * pathLength * f1 + f2);
+  Double_t covCorrSlope = alpha2 * (pathLength * f0 - f1);
+  Double_t varSlop = alpha2 * f0;
+  
+  TMatrixD* paramCov = param->GetCovariances();
+  // Non bending plane
+  (*paramCov)(0,0) += varCoor;		(*paramCov)(0,1) += covCorrSlope;
+  (*paramCov)(1,0) += covCorrSlope;	(*paramCov)(1,1) += varSlop;
+  // Bending plane
+  (*paramCov)(2,2) += varCoor;		(*paramCov)(2,3) += covCorrSlope;
+  (*paramCov)(3,2) += covCorrSlope;	(*paramCov)(3,3) += varSlop;
+  
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t &pathLength,
+						    Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho)
+{
+  /// Parameters used to correct for Multiple Coulomb Scattering and energy loss in absorber
+  /// Calculated assuming a linear propagation between track positions trackXYZIn and trackXYZOut
+  // pathLength: path length between trackXYZIn and trackXYZOut (cm)
+  // f0:         0th moment of z calculated with the inverse radiation-length distribution
+  // f1:         1st moment of z calculated with the inverse radiation-length distribution
+  // f2:         2nd moment of z calculated with the inverse radiation-length distribution
+  // meanRho:    average density of crossed material (g/cm3)
+  
+  // Reset absorber's parameters
+  pathLength = 0.;
+  f0 = 0.;
+  f1 = 0.;
+  f2 = 0.;
+  meanRho = 0.;
+  
+  // Check whether the geometry is available
+  if (!gGeoManager) {
+    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: no TGeo"<<endl;
+    return;
+  }
+  
+  // Initialize starting point and direction
+  pathLength = TMath::Sqrt((trackXYZOut[0] - trackXYZIn[0])*(trackXYZOut[0] - trackXYZIn[0])+
+			   (trackXYZOut[1] - trackXYZIn[1])*(trackXYZOut[1] - trackXYZIn[1])+
+			   (trackXYZOut[2] - trackXYZIn[2])*(trackXYZOut[2] - trackXYZIn[2]));
+  if (pathLength < TGeoShape::Tolerance()) return;
+  Double_t b[3];
+  b[0] = (trackXYZOut[0] - trackXYZIn[0]) / pathLength;
+  b[1] = (trackXYZOut[1] - trackXYZIn[1]) / pathLength;
+  b[2] = (trackXYZOut[2] - trackXYZIn[2]) / pathLength;
+  TGeoNode *currentnode = gGeoManager->InitTrack(trackXYZIn, b);
+  if (!currentnode) {
+    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: start point out of geometry"<<endl;
+    return;
+  }
+  
+  // loop over absorber slices and calculate absorber's parameters
+  Double_t rho = 0.; // material density (g/cm3)
+  Double_t x0 = 0.;  // radiation-length (cm-1)
+  Double_t localPathLength = 0;
+  Double_t remainingPathLength = pathLength;
+  Double_t zB = trackXYZIn[2];
+  Double_t zE, dzB, dzE;
+  do {
+    // Get material properties
+    TGeoMaterial *material = currentnode->GetVolume()->GetMedium()->GetMaterial();
+    rho = material->GetDensity();
+    x0 = material->GetRadLen();
+    if (!material->IsMixture()) x0 /= rho; // different normalization in the modeler for mixture
+    
+    // Get path length within this material
+    gGeoManager->FindNextBoundary(remainingPathLength);
+    localPathLength = gGeoManager->GetStep() + 1.e-6;
+    // Check if boundary within remaining path length. If so, make sure to cross the boundary to prepare the next step
+    if (localPathLength >= remainingPathLength) localPathLength = remainingPathLength;
+    else {
+      currentnode = gGeoManager->Step();
+      if (!currentnode) {
+        cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: navigation failed"<<endl;
+	f0 = f1 = f2 = meanRho = 0.;
+	return;
+      }
+      if (!gGeoManager->IsEntering()) {
+        // make another small step to try to enter in new absorber slice
+        gGeoManager->SetStep(0.001);
+	currentnode = gGeoManager->Step();
+	if (!gGeoManager->IsEntering() || !currentnode) {
+          cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: navigation failed"<<endl;
+	  f0 = f1 = f2 = meanRho = 0.;
+	  return;
+	}
+        localPathLength += 0.001;
+      }
+    }
+    
+    // calculate absorber's parameters
+    zE = b[2] * localPathLength + zB;
+    dzB = zB - trackXYZIn[2];
+    dzE = zE - trackXYZIn[2];
+    f0 += localPathLength / x0;
+    f1 += (dzE*dzE - dzB*dzB) / b[2] / b[2] / x0 / 2.;
+    f2 += (dzE*dzE*dzE - dzB*dzB*dzB) / b[2] / b[2] / b[2] / x0 / 3.;
+    meanRho += localPathLength * rho;
+    
+    // prepare next step
+    zB = zE;
+    remainingPathLength -= localPathLength;
+  } while (remainingPathLength > TGeoShape::Tolerance());
+  
+  meanRho /= pathLength;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0)
 {
   /// Add to the track parameter covariances the effects of multiple Coulomb scattering
   /// through a material of thickness "dZ" and of radiation length "x0"
@@ -432,276 +573,130 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
 {
   /// Extrapolation to the vertex.
   /// Returns the track parameters resulting from the extrapolation in the current TrackParam.
-  /// Changes parameters according to Branson correction through the absorber 
+  /// Changes parameters according to Branson correction through the absorber and energy loss
   
-  // Extrapolates track parameters upstream to the "Z" end of the front absorber
-  ExtrapToZ(trackParam,AliMUONConstants::ZAbsorberEnd()); // !!!
-  // Makes Branson correction (multiple scattering + energy loss)
-  BransonCorrection(trackParam,xVtx,yVtx,zVtx);
-  // Makes a simple magnetic field correction through the absorber
-  FieldCorrection(trackParam,AliMUONConstants::ZAbsorberEnd());
-}
-
-
-//  Keep this version for future developments
-  //__________________________________________________________________________
-// void AliMUONTrackExtrap::BransonCorrection(AliMUONTrackParam* trackParam)
-// {
-//   /// Branson correction of track parameters
-//   // the entry parameters have to be calculated at the end of the absorber
-//   Double_t zEndAbsorber, zBP, xBP, yBP;
-//   Double_t  pYZ, pX, pY, pZ, pTotal, xEndAbsorber, yEndAbsorber, radiusEndAbsorber2, pT, theta;
-//   Int_t sign;
-//   // Would it be possible to calculate all that from Geant configuration ????
-//   // and to get the Branson parameters from a function in ABSO module ????
-//   // with an eventual contribution from other detectors like START ????
-//   // Radiation lengths outer part theta > 3 degres
-//   static Double_t x01[9] = { 18.8,    // C (cm)
-// 			     10.397,   // Concrete (cm)
-// 			     0.56,    // Plomb (cm)
-// 			     47.26,   // Polyethylene (cm)
-// 			     0.56,   // Plomb (cm)
-// 			     47.26,   // Polyethylene (cm)
-// 			     0.56,   // Plomb (cm)
-// 			     47.26,   // Polyethylene (cm)
-// 			     0.56 };   // Plomb (cm)
-//   // inner part theta < 3 degres
-//   static Double_t x02[3] = { 18.8,    // C (cm)
-// 			     10.397,   // Concrete (cm)
-// 			     0.35 };    // W (cm) 
-//   // z positions of the materials inside the absober outer part theta > 3 degres
-//   static Double_t z1[10] = { 90, 315, 467, 472, 477, 482, 487, 492, 497, 502 };
-//   // inner part theta < 3 degres
-//   static Double_t z2[4] = { 90, 315, 467, 503 };
-//   static Bool_t first = kTRUE;
-//   static Double_t zBP1, zBP2, rLimit;
-//   // Calculates z positions of the Branson's planes: zBP1 for outer part and zBP2 for inner part (only at the first call)
-//   if (first) {
-//     first = kFALSE;
-//     Double_t aNBP = 0.0;
-//     Double_t aDBP = 0.0;
-//     Int_t iBound;
-//     
-//     for (iBound = 0; iBound < 9; iBound++) {
-//       aNBP = aNBP +
-// 	(z1[iBound+1] * z1[iBound+1] * z1[iBound+1] -
-// 	 z1[iBound]   * z1[iBound]   * z1[iBound]    ) / x01[iBound];
-//       aDBP = aDBP +
-// 	(z1[iBound+1] * z1[iBound+1] - z1[iBound]   * z1[iBound]    ) / x01[iBound];
-//     }
-//     zBP1 = (2.0 * aNBP) / (3.0 * aDBP);
-//     aNBP = 0.0;
-//     aDBP = 0.0;
-//     for (iBound = 0; iBound < 3; iBound++) {
-//       aNBP = aNBP +
-// 	(z2[iBound+1] * z2[iBound+1] * z2[iBound+1] -
-// 	 z2[iBound]   * z2[iBound ]  * z2[iBound]    ) / x02[iBound];
-//       aDBP = aDBP +
-// 	(z2[iBound+1] * z2[iBound+1] - z2[iBound] * z2[iBound]) / x02[iBound];
-//     }
-//     zBP2 = (2.0 * aNBP) / (3.0 * aDBP);
-//     rLimit = z2[3] * TMath::Tan(3.0 * (TMath::Pi()) / 180.);
-//   }
-// 
-//   pYZ = TMath::Abs(1.0 / trackParam->GetInverseBendingMomentum());
-//   sign = 1;      
-//   if (trackParam->GetInverseBendingMomentum() < 0) sign = -1;     
-//   pZ = pYZ / (TMath::Sqrt(1.0 + trackParam->GetBendingSlope() * trackParam->GetBendingSlope())); 
-//   pX = pZ * trackParam->GetNonBendingSlope(); 
-//   pY = pZ * trackParam->GetBendingSlope(); 
-//   pTotal = TMath::Sqrt(pYZ *pYZ + pX * pX);
-//   xEndAbsorber = trackParam->GetNonBendingCoor(); 
-//   yEndAbsorber = trackParam->GetBendingCoor(); 
-//   radiusEndAbsorber2 = xEndAbsorber * xEndAbsorber + yEndAbsorber * yEndAbsorber;
-// 
-//   if (radiusEndAbsorber2 > rLimit*rLimit) {
-//     zEndAbsorber = z1[9];
-//     zBP = zBP1;
-//   } else {
-//     zEndAbsorber = z2[3];
-//     zBP = zBP2;
-//   }
-// 
-//   xBP = xEndAbsorber - (pX / pZ) * (zEndAbsorber - zBP);
-//   yBP = yEndAbsorber - (pY / pZ) * (zEndAbsorber - zBP);
-// 
-//   // new parameters after Branson and energy loss corrections
-//   pZ = pTotal * zBP / TMath::Sqrt(xBP * xBP + yBP * yBP + zBP * zBP);
-//   pX = pZ * xBP / zBP;
-//   pY = pZ * yBP / zBP;
-//   trackParam->SetBendingSlope(pY/pZ);
-//   trackParam->SetNonBendingSlope(pX/pZ);
-//   
-//   pT = TMath::Sqrt(pX * pX + pY * pY);      
-//   theta = TMath::ATan2(pT, pZ); 
-//   pTotal = TotalMomentumEnergyLoss(rLimit, pTotal, theta, xEndAbsorber, yEndAbsorber);
-// 
-//   trackParam->SetInverseBendingMomentum((sign / pTotal) *
-//     TMath::Sqrt(1.0 +
-// 		trackParam->GetBendingSlope() * trackParam->GetBendingSlope() +
-// 		trackParam->GetNonBendingSlope() * trackParam->GetNonBendingSlope()) /
-//     TMath::Sqrt(1.0 + trackParam->GetBendingSlope() * trackParam->GetBendingSlope()));
-// 
-//   // vertex position at (0,0,0)
-//   // should be taken from vertex measurement ???
-//   trackParam->SetBendingCoor(0.);
-//   trackParam->SetNonBendingCoor(0.);
-//   trackParam->SetZ(0.);
-// }
-
-void AliMUONTrackExtrap::BransonCorrection(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx)
-{
-  /// Branson correction of track parameters
-  // the entry parameters have to be calculated at the end of the absorber
-  // simplified version: the z positions of Branson's planes are no longer calculated
-  // but are given as inputs. One can use the macros MUONTestAbso.C and DrawTestAbso.C
-  // to test this correction. 
-  // Would it be possible to calculate all that from Geant configuration ????
-  // and to get the Branson parameters from a function in ABSO module ????
-  // with an eventual contribution from other detectors like START ????
-  // change to take into account the vertex postition (real, reconstruct,....)
-
-  Double_t  zBP, xBP, yBP;
-  Double_t  pYZ, pX, pY, pZ, pTotal, xEndAbsorber, yEndAbsorber, radiusEndAbsorber2, pT, theta;
-  Int_t sign;
-  static Bool_t first = kTRUE;
-  static Double_t zBP1, zBP2, rLimit, thetaLimit;
-  // zBP1 for outer part and zBP2 for inner part (only at the first call)
-  if (first) {
-    first = kFALSE;
+  if (trackParam->GetZ() == zVtx) return; // nothing to be done if already at vertex
   
-    thetaLimit = 3.0 * (TMath::Pi()) / 180.;
-    rLimit = TMath::Abs(AliMUONConstants::ZAbsorberEnd()) * TMath::Tan(thetaLimit);
-    zBP1 = -450; // values close to those calculated with EvalAbso.C
-    zBP2 = -480;
-  }
-
-  pYZ = TMath::Abs(1.0 / trackParam->GetInverseBendingMomentum());
-  sign = 1;      
-  if (trackParam->GetInverseBendingMomentum() < 0) sign = -1;  
-  pZ = trackParam->Pz();
-  pX = trackParam->Px(); 
-  pY = trackParam->Py(); 
-  pTotal = TMath::Sqrt(pYZ *pYZ + pX * pX);
-  xEndAbsorber = trackParam->GetNonBendingCoor(); 
-  yEndAbsorber = trackParam->GetBendingCoor(); 
-  radiusEndAbsorber2 = xEndAbsorber * xEndAbsorber + yEndAbsorber * yEndAbsorber;
-
-  if (radiusEndAbsorber2 > rLimit*rLimit) {
-    zBP = zBP1;
-  } else {
-    zBP = zBP2;
-  }
-
-  xBP = xEndAbsorber - (pX / pZ) * (AliMUONConstants::ZAbsorberEnd() - zBP);
-  yBP = yEndAbsorber - (pY / pZ) * (AliMUONConstants::ZAbsorberEnd() - zBP);
-
-  // new parameters after Branson and energy loss corrections
-//   Float_t zSmear = zBP - gRandom->Gaus(0.,2.);  // !!! possible smearing of Z vertex position
-
-  Float_t zSmear = zBP ;
-  
-  pZ = pTotal * (zSmear-zVtx) / TMath::Sqrt((xBP-xVtx) * (xBP-xVtx) + (yBP-yVtx) * (yBP-yVtx) +( zSmear-zVtx) * (zSmear-zVtx) );
-  pX = pZ * (xBP - xVtx)/ (zSmear-zVtx);
-  pY = pZ * (yBP - yVtx) / (zSmear-zVtx);
-  trackParam->SetBendingSlope(pY/pZ);
-  trackParam->SetNonBendingSlope(pX/pZ);
-
-  
-  pT = TMath::Sqrt(pX * pX + pY * pY);      
-  theta = TMath::ATan2(pT, TMath::Abs(pZ)); 
-  pTotal = TotalMomentumEnergyLoss(thetaLimit, pTotal, theta);
-
-  trackParam->SetInverseBendingMomentum((sign / pTotal) *
-    TMath::Sqrt(1.0 +
-		trackParam->GetBendingSlope() * trackParam->GetBendingSlope() +
-		trackParam->GetNonBendingSlope() * trackParam->GetNonBendingSlope()) /
-    TMath::Sqrt(1.0 + trackParam->GetBendingSlope() * trackParam->GetBendingSlope()));
-
-  // vertex position at (0,0,0)
-  // should be taken from vertex measurement ???
-
-  trackParam->SetBendingCoor(xVtx);
-  trackParam->SetNonBendingCoor(yVtx);
-  trackParam->SetZ(zVtx);
-
-}
-
-  //__________________________________________________________________________
-Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta)
-{
-  /// Returns the total momentum corrected from energy loss in the front absorber
-  // One can use the macros MUONTestAbso.C and DrawTestAbso.C
-  // to test this correction. 
-  // Momentum energy loss behaviour evaluated with the simulation of single muons (april 2002)
-  Double_t deltaP, pTotalCorrected;
-
-   // Parametrization to be redone according to change of absorber material ????
-  // See remark in function BransonCorrection !!!!
-  // The name is not so good, and there are many arguments !!!!
-  if (theta  < thetaLimit ) {
-    if (pTotal < 20) {
-      deltaP = 2.5938 + 0.0570 * pTotal - 0.001151 * pTotal * pTotal;
-    } else {
-      deltaP = 3.0714 + 0.011767 *pTotal;
-    }
-    deltaP *= 0.75; // AZ
-  } else {
-    if (pTotal < 20) {
-      deltaP  = 2.1207 + 0.05478 * pTotal - 0.00145079 * pTotal * pTotal;
-    } else { 
-      deltaP = 2.6069 + 0.0051705 * pTotal;
-    }
-    deltaP *= 0.9; // AZ
-  }
-  pTotalCorrected = pTotal + deltaP / TMath::Cos(theta);
-  return pTotalCorrected;
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackExtrap::FieldCorrection(AliMUONTrackParam *trackParam, Double_t zEnd)
-{
-  /// Correction of the effect of the magnetic field in the absorber
-  // Assume a constant field along Z axis.
-  Float_t b[3],x[3]; 
-  Double_t bZ;
-  Double_t pYZ,pX,pY,pZ,pT;
-  Double_t pXNew,pYNew;
-  Double_t c;
-
-  pYZ = TMath::Abs(1.0 / trackParam->GetInverseBendingMomentum());
-  c = TMath::Sign(1.0,trackParam->GetInverseBendingMomentum()); // particle charge 
- 
-  pZ = trackParam->Pz();
-  pX = trackParam->Px(); 
-  pY = trackParam->Py();
-  pT = TMath::Sqrt(pX*pX+pY*pY);
-
-  if (TMath::Abs(pZ) <= 0) return;
-  x[2] = zEnd/2;
-  x[0] = x[2]*trackParam->GetNonBendingSlope();  
-  x[1] = x[2]*trackParam->GetBendingSlope();
-
-  // Take magn. field value at position x.
-  if (fgkField) fgkField->Field(x,b);
-  else {
-    cout<<"F-AliMUONTrackExtrap::FieldCorrection: fgkField = 0x0"<<endl;
+  if (trackParam->GetZ() > zVtx) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
+    	<<") upstream the vertex (zVtx = "<<zVtx<<")"<<endl;
     exit(-1);
   }
-  bZ =  b[2];
- 
-  // Transverse momentum rotation
-  // Parameterized with the study of DeltaPhi = phiReco - phiGen as a function of pZ.
-  Double_t phiShift = c*0.436*0.0003*bZ*zEnd/pZ; 
- // Rotate momentum around Z axis.
-  pXNew = pX*TMath::Cos(phiShift) - pY*TMath::Sin(phiShift);
-  pYNew = pX*TMath::Sin(phiShift) + pY*TMath::Cos(phiShift);
- 
-  trackParam->SetBendingSlope(pYNew/pZ);
-  trackParam->SetNonBendingSlope(pXNew/pZ);
   
-  trackParam->SetInverseBendingMomentum(c/TMath::Sqrt(pYNew*pYNew+pZ*pZ));
- 
+  // Check whether the geometry is available and get absorber boundaries
+  if (!gGeoManager) {
+    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: no TGeo"<<endl;
+    return;
+  }
+  TGeoNode *absNode = gGeoManager->GetVolume("ALIC")->GetNode("ABSM_1");
+  if (!absNode) {
+    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: failed to get absorber node"<<endl;
+    return;
+  }
+  Double_t zAbsBeg, zAbsEnd;
+  absNode->GetVolume()->GetShape()->GetAxisRange(3,zAbsBeg,zAbsEnd);
+  const Double_t *absPos = absNode->GetMatrix()->GetTranslation();
+  zAbsBeg = absPos[2] - zAbsBeg; // spectro. (z<0)
+  zAbsEnd = absPos[2] - zAbsEnd; // spectro. (z<0)
+  
+  // Check the vertex position relatively to the absorber
+  if (zVtx < zAbsBeg && zVtx > zAbsEnd) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
+    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
+  } else if (zVtx < zAbsEnd ) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
+    	<<") downstream the front absorber (zAbsorberEnd = "<<zAbsEnd<<")"<<endl;
+    ExtrapToZ(trackParam,zVtx);
+    return;
+  }
+  
+  // Check the track position relatively to the absorber and extrapolate track parameters to the end of the absorber if needed
+  if (trackParam->GetZ() > zAbsBeg) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
+    	<<") upstream the front absorber (zAbsorberBegin = "<<zAbsBeg<<")"<<endl;
+    ExtrapToZ(trackParam,zVtx);
+    return;
+  } else if (trackParam->GetZ() > zAbsEnd) { // spectro. (z<0)
+    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
+    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
+  } else {
+    ExtrapToZ(trackParam,zAbsEnd);
+  }
+  
+  // Get absorber correction parameters assuming linear propagation from vertex to the track position
+  Double_t trackXYZOut[3];
+  trackXYZOut[0] = trackParam->GetNonBendingCoor();
+  trackXYZOut[1] = trackParam->GetBendingCoor();
+  trackXYZOut[2] = trackParam->GetZ();
+  Double_t trackXYZIn[3];
+  trackXYZIn[2] = TMath::Min(zVtx, zAbsBeg); // spectro. (z<0)
+  trackXYZIn[0] = trackXYZOut[0] + (xVtx - trackXYZOut[0]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
+  trackXYZIn[1] = trackXYZOut[1] + (yVtx - trackXYZOut[1]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
+  Double_t pathLength = 0.;
+  Double_t f0 = 0.;
+  Double_t f1 = 0.;
+  Double_t f2 = 0.;
+  Double_t meanRho = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pathLength,f0,f1,f2,meanRho);
+  
+  // Calculate energy loss
+  Double_t pTot = trackParam->P();
+  Double_t charge = TMath::Sign(Double_t(1.0), trackParam->GetInverseBendingMomentum());      
+  Double_t deltaP = TotalMomentumEnergyLoss(pTot,pathLength,meanRho);
+  
+  // Correct for half of energy loss
+  pTot += 0.5 * deltaP;
+  
+  // Position of the Branson plane (spectro. (z<0))
+  Double_t zB = (f1>0.) ? trackXYZIn[2] - f2/f1 : 0.;
+  
+  // Get track position in the Branson plane corrected for magnetic field effect
+  ExtrapToZ(trackParam,zVtx);
+  Double_t xB = trackParam->GetNonBendingCoor() + (zB - zVtx) * trackParam->GetNonBendingSlope();
+  Double_t yB = trackParam->GetBendingCoor()    + (zB - zVtx) * trackParam->GetBendingSlope();
+  
+  // Get track slopes corrected for multiple scattering (spectro. (z<0))
+  Double_t nonBendingSlope = (zB<0.) ? (xB - xVtx) / (zB - zVtx) : trackParam->GetNonBendingSlope();
+  Double_t bendingSlope    = (zB<0.) ? (yB - yVtx) / (zB - zVtx) : trackParam->GetBendingSlope();
+  
+  // Correct for second half of energy loss
+  pTot += 0.5 * deltaP;
+  
+  // Set track parameters at vertex
+  trackParam->SetNonBendingCoor(xVtx);
+  trackParam->SetBendingCoor(yVtx);
+  trackParam->SetZ(zVtx);
+  trackParam->SetNonBendingSlope(nonBendingSlope);
+  trackParam->SetBendingSlope(bendingSlope);
+  trackParam->SetInverseBendingMomentum(charge / pTot *
+	TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
+	TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
+  
+}
+
+  //__________________________________________________________________________
+Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(Double_t pTotal, Double_t pathLength, Double_t rho)
+{
+  /// Returns the total momentum energy loss in the front absorber
+  Double_t muMass = 0.10566;
+  Double_t p2=pTotal*pTotal;
+  Double_t beta2=p2/(p2 + muMass*muMass);
+  Double_t dE=ApproximateBetheBloch(beta2)*pathLength*rho;
+  
+  return dE;
+}
+
+  //__________________________________________________________________________
+Double_t AliMUONTrackExtrap::ApproximateBetheBloch(Double_t beta2) {
+  //------------------------------------------------------------------
+  // This is an approximation of the Bethe-Bloch formula with 
+  // the density effect taken into account at beta*gamma > 3.5
+  // (the approximation is reasonable only for solid materials) 
+  //------------------------------------------------------------------
+  if (beta2/(1-beta2)>3.5*3.5)
+     return 0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2);
+
+  return 0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2);
 }
 
  //__________________________________________________________________________
@@ -896,6 +891,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Doub
 
     return;
 }
+
  //__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout)
 {
@@ -1139,6 +1135,7 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 
     return;
 }
+
 //___________________________________________________________
  void  AliMUONTrackExtrap::GetField(Double_t *Position, Double_t *Field)
 {
@@ -1157,4 +1154,3 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 
   return;
 }
-

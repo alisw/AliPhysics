@@ -39,7 +39,7 @@ class AliMUONTrackExtrap : public TObject
   static void ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx);
   static void ExtrapToVertex(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
   
-  static void AddMCSEffectInTrackParamCov(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
+  static void AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
   
   static void ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout);
   
@@ -61,9 +61,12 @@ class AliMUONTrackExtrap : public TObject
   static void ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t forwardBackward, Double_t *v3);
   static void RecoverTrackParam(Double_t *v3, Double_t Charge, AliMUONTrackParam* trackParam);
   
-  static void BransonCorrection(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
-  static Double_t TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta);
-  static void FieldCorrection(AliMUONTrackParam *trackParam, Double_t Z);
+  static void AddMCSEffectInAbsorber(AliMUONTrackParam* trackParam, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2);
+  static void GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t &pathLength,
+  					 Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho);
+  
+  static Double_t TotalMomentumEnergyLoss(Double_t pTotal, Double_t pathLength, Double_t rho);
+  static Double_t ApproximateBetheBloch(Double_t beta2);
   
   static void ExtrapOneStepHelix(Double_t charge, Double_t step, Double_t *vect, Double_t *vout);
   static void ExtrapOneStepHelix3(Double_t field, Double_t step, Double_t *vect, Double_t *vout);
