@@ -117,7 +117,6 @@ ClassImp(AliMUONRecoCheck)
 AliMUONRecoCheck::~AliMUONRecoCheck()
 {
 /// Destructor
-
   delete fMuonTrackRef;
   if(fIsLoadConstructor){
     fRunLoader->UnloadKinematics();
@@ -270,7 +269,7 @@ void AliMUONRecoCheck::MakeTrackRef()
       
     } // end while isNewTrack
   }
-  
+  delete trackRefs;
   CleanMuonTrackRef();
   
   ReconstructibleTracks();
@@ -327,7 +326,7 @@ void AliMUONRecoCheck::ResetTracks() const
 {
 /// Reset tracks
 
-  if (fMuonTrackRef) fMuonTrackRef->Clear();
+  if (fMuonTrackRef) fMuonTrackRef->Delete();
 }
 //_____________________________________________________________________________
 void AliMUONRecoCheck::CleanMuonTrackRef()
@@ -447,7 +446,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
     
   } // end trackRef
 
-  fMuonTrackRef->Clear();
+  fMuonTrackRef->Delete();
   nTrackRef = newMuonTrackRef->GetEntriesFast();
   for (Int_t index = 0; index < nTrackRef; index++) {
     track = (AliMUONTrack*)newMuonTrackRef->At(index);
