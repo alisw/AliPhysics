@@ -56,10 +56,10 @@ AliMUONPreprocessor::~AliMUONPreprocessor()
 
 //_____________________________________________________________________________
 void
-AliMUONPreprocessor::DeleteSubprocessors()
+AliMUONPreprocessor::ClearSubprocessors()
 {
   /// Empty our subprocessor list
-  fSubprocessors->Delete();
+  fSubprocessors->Clear();
 }
 
 //_____________________________________________________________________________
