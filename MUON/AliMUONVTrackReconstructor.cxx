@@ -31,12 +31,6 @@
 ///
 ////////////////////////////////////
 
-#include <stdlib.h>
-#include <Riostream.h>
-#include <TClonesArray.h>
-#include <TMath.h>
-#include <TTree.h>
-
 #include "AliMUONVTrackReconstructor.h"
 #include "AliMUONData.h"
 #include "AliMUONConstants.h"
@@ -49,9 +43,13 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
-#include "AliMagF.h"
+
 #include "AliLog.h"
 #include "AliTracker.h"
+
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TMath.h>
 
 ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
 

@@ -25,10 +25,6 @@
 //
 ///////////////////////////////////////////////////
 
-#include <stdlib.h> // for exit()
-#include <Riostream.h>
-#include <TMatrixD.h>
-
 #include "AliMUONTrack.h"
 
 #include "AliMUONTrackParam.h" 
@@ -39,6 +35,8 @@
 #include "AliLog.h"
 
 #include <TMath.h>
+#include <Riostream.h>
+#include <TMatrixD.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrack) // Class implementation in ROOT context
