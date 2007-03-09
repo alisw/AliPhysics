@@ -9,6 +9,7 @@ mkdir $OUTDIR
 cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C $OUTDIR
 cd $OUTDIR
 
+RUN=0
 FULLPATH="$CURDIR/$OUTDIR"
 NEVENTS=100
 SEED=1234567
@@ -22,6 +23,7 @@ aliroot -b  >& testSim.out << EOF
 // man->SetDefaultStorage("local://$ALICE_ROOT");
 // man->SetSpecificStorage("MUON","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
 gRandom->SetSeed($SEED);
+AliCDBManager::Instance()->SetRun($RUN);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetMakeTrigger("MUON");
 MuonSim.SetWriteRawData("MUON");
@@ -36,6 +38,7 @@ mv MUON.Digits*.root MUON.Digits/
 echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF
+AliCDBManager::Instance()->SetRun($RUN);
 gRandom->SetSeed($SEED);
 AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
 AliTracker::SetFieldMap(field, kFALSE);
