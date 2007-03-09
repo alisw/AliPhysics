@@ -6,7 +6,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  			Zero Degree Calorimeter			             //
-// ZDC Preprocessor -> writes data to AliZDCDataDCS
+// ZDC Preprocessor -> DCS data are passed to AliZDCDataDCS class to be      //
+//      processed, DAQ output files are processed according to Run Type      //
+// 	1 alignment object with DCS data is written to OCDB                  //
+// 	1 calibration object with DAQ data is written to OCDB                //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 

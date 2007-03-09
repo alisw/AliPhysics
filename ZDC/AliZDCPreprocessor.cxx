@@ -107,6 +107,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   
   // *************** From DAQ ******************
   // [a] PEDESTALS
+TString runType = GetRunType();
+if(runType = "PEDESTALS") {
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for PEDESTALS run %d !", fRun));
@@ -161,9 +163,10 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
       //calibdata->Print("");
   }
   delete daqSources; daqSources = 0;
-
+}
   // [a] EMD EVENTS
-  daqSources = GetFileSources(kDAQ, "EMDCALIB");
+else if (runType = "EMD") {
+  TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
   if(!daqSources){
     AliError(Form("No sources for EMDCALIB run %d !", fRun));
     return 0;
@@ -172,7 +175,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   daqSources->Print();
   //
   TIter iter2(daqSources);
-  source = 0;
+  TObjString* source = 0;
   Int_t j=0;
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
        Log(Form("\n\t Getting file #%d\n",++j));
@@ -201,7 +204,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
        }
        //calibdata->Print("");
   }
-  
+}  
   // note that the parameters are returned as character strings!
   const char* nEvents = GetRunParameter("totalEvents");
   if(nEvents) Log(Form("Number of events for run %d: %s",fRun, nEvents));
