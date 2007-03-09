@@ -152,18 +152,10 @@ AliMUONCalibrationData::Gains(Int_t detElemId, Int_t manuId) const
   AliMUONV2DStore* gains = Gains();
   if (!gains)
   {
-    AliError("Could not get gains");
     return 0x0;
   }
   
-  AliMUONVCalibParam* g = 
-    static_cast<AliMUONVCalibParam*>(gains->Get(detElemId,manuId));
-  if (!g)
-  {
-    AliError(Form("Could not get gain for detElemId=%d manuId=%d ",
-                    detElemId,manuId));
-  }
-  return g;
+  return static_cast<AliMUONVCalibParam*>(gains->Get(detElemId,manuId));
 }
 
 //_____________________________________________________________________________
@@ -341,19 +333,10 @@ AliMUONCalibrationData::Pedestals(Int_t detElemId, Int_t manuId) const
   AliMUONV2DStore* pedestals = OnDemandPedestals();
   if (!pedestals) 
   {
-    AliError(Form("Did not find pedestals for DE %d manuId %d",
-                  detElemId,manuId));
     return 0x0;
   }
   
-  AliMUONVCalibParam* ped = 
-    static_cast<AliMUONVCalibParam*>(pedestals->Get(detElemId,manuId));
-  if (!ped)
-  {
-    AliError(Form("Could not get pedestal for detElemId=%d manuId=%d ",
-                  detElemId,manuId));
-  }
-  return ped;
+  return static_cast<AliMUONVCalibParam*>(pedestals->Get(detElemId,manuId));
 }
 
 //_____________________________________________________________________________
