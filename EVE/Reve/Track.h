@@ -61,7 +61,8 @@ public:
   void  SetIndex(Int_t idx) { fIndex = idx;  }
 
   void  AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
-
+  void  SortPathMarksByTime();
+ 
   //--------------------------------
 
   void ImportHits();              // *MENU*

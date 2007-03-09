@@ -248,6 +248,20 @@ make_polyline:
 }
 
 /**************************************************************************/
+namespace {
+struct cmp_pathmark {
+  bool operator()(PathMark* const & a, PathMark* const & b)
+  { return a->time < b->time; }
+};
+}
+
+void Track::SortPathMarksByTime()
+{
+ sort(fPathMarks.begin(), fPathMarks.end(), cmp_pathmark());
+}
+
+
+/**************************************************************************/
 
 void Track::ImportHits()
 {
