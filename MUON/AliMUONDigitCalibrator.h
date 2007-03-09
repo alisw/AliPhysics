@@ -18,6 +18,7 @@
 
 class AliMUONCalibrationData;
 class AliMUONData;
+class AliMUONLogger;
 class AliMUONV2DStore;
 
 class AliMUONDigitCalibrator : public TTask
@@ -37,6 +38,7 @@ private:
     AliMUONData* fData;                       //!< MUON data 
     AliMUONCalibrationData* fCalibrationData; //!< Calibration data
     AliMUONV2DStore* fStatusMap; //!< Channel status map
+    AliMUONLogger* fLogger; //!< to log repeated messages
     
   ClassDef(AliMUONDigitCalibrator,2) // Calibrate raw digit
 };

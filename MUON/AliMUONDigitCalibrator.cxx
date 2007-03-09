@@ -22,6 +22,7 @@
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
+#include "AliMUONLogger.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
 #include "AliMUONV2DStore.h"
@@ -57,12 +58,15 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
 : TTask("AliMUONDigitCalibrator","Raw digit calibration"),
   fData(muonData),
   fCalibrationData(calib),
-  fStatusMap(0x0)
+  fStatusMap(0x0),
+  fLogger(new AliMUONLogger(1000))
 {
     /// ctor. This class needs the muonData to get access to the digit,
     /// and the calibrationData to get access to calibration parameters.
     
-    if (!calib) throw;
+    if (!calib) {
+      AliFatal("No calibration data defined");
+    }   
     
     if (createAndUseStatusMap) 
     {
@@ -78,12 +82,17 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
       maker.SetPedSigmaLimits(0.1,3);
       
       // From this set of limits, compute the status of all tracker pads.
-      AliMUONV2DStore* status = maker.MakeStatus();
+      AliMUONV2DStore* status = maker.MakeStatus();      
+      // we do not check that status is != 0x0, as this is supposed to be
+      // the responsability of the padStatusMaker.
       
       AliMUONPadStatusMapMaker mapMaker;
       
-      Int_t mask(0x8000000); 
-      //FIXME: fake one (consider dead only if ped mean too high or hv switch off)
+      Int_t mask(0x8080); 
+      //FIXME: kind of fake one for the moment, we consider dead only 
+      // if ped and/or hv value missing.
+      //WARNING : getting this mask wrong is a very effective way of getting
+      //no digits at all out of this class ;-)
       
       fStatusMap = mapMaker.MakePadStatusMap(*status,mask);
       
@@ -101,6 +110,11 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
   /// dtor.
   delete fStatusMap;
+  
+  AliInfo("Summary of messages:");
+  fLogger->Print();
+
+  delete fLogger;
 }
 
 //_____________________________________________________________________________
@@ -129,8 +143,9 @@ AliMUONDigitCalibrator::Exec(Option_t*)
       if ( ( statusMap & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0 ) // pad itself is bad (not testing its neighbours at this stage)
       {
         digit->SetSignal(0);
-        AliWarning(Form("Channel detElemId %d manuId %d "
-                        "manuChannel %d is bad %x",digit->DetElemId(),digit->ManuId(),
+        fLogger->Log(Form("%s:%d:Channel detElemId %d manuId %d "
+                        "manuChannel %d is bad %x",__FILE__,__LINE__,
+                          digit->DetElemId(),digit->ManuId(),
                         digit->ManuChannel(),digit->StatusMap()));
         continue;
       }
