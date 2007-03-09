@@ -25,7 +25,6 @@
 #include "AliMUONPreprocessor.h"
 
 #include "AliCDBMetaData.h"
-#include "AliLog.h"
 
 #include <TTimeStamp.h>
 #include <TFile.h>
@@ -65,20 +64,19 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
 {
 /// Convert TGeoHMatrix to AliAlignObjMatrix and fill them into AliTestDataDCS object
 
-  AliInfoStream() << "Processing file " << fileName << endl;
+  Master()->Log(Form("Processing GMS file %s", fileName.Data()));
 
   // Open root file
   TFile f(fileName.Data());
   if ( ! f.IsOpen() ) {
-    AliErrorStream() << "Cannot open file " << fileName << endl;
+    Master()->Log(Form("Cannot open file %s",fileName.Data()));
     return 1;
   }  
   
   // Get array with matrices
   TClonesArray* array = (TClonesArray*)f.Get(fgkMatrixArrayName);
   if ( ! array ) {
-    AliErrorStream() << "TClonesArray not found in file " 
-       << fileName << endl;
+    Master()->Log(Form("TClonesArray not found in file %s",fileName.Data()));
     return 1;
   }  
   
@@ -90,6 +88,7 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
   TObject* data = const_cast< TClonesArray*>(fTransformer.GetMisAlignmentData());
   
   //Now we have to store the final CDB file
+  Master()->Log("Storing GMS");
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("");
