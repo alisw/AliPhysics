@@ -1,3 +1,8 @@
+2007-03-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* alice-macros/kine_tracks.C:
+	Disable redraw while adding Tracks/RenderElements.
+
 2007-03-04  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* icons/rnr00_t.xpm:

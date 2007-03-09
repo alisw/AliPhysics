@@ -1,3 +1,12 @@
+2007-03-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	Added method SortPathMarksByTime().
+
+	* TrackGL.cxx:
+	Fix for checking boundaries of path-marks.
+
 2007-03-08  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:

@@ -1,3 +1,8 @@
+2007-03-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* KineTools.cxx:
+	Optimize reading of track references.
+
 2007-03-04  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* MUONChamber.cxx:
