@@ -14,7 +14,10 @@
 
 #include "AliMUONPreprocessor.h"
 
-class AliMUONVSubprocessor;
+class AliMUONPedestalSubprocessor;
+class AliMUONGMSSubprocessor;
+class AliMUONHVSubprocessor;
+
 class TObjArray;
 
 class AliMUONTrackerPreprocessor : public AliMUONPreprocessor
@@ -30,6 +33,9 @@ private:
   AliMUONTrackerPreprocessor& operator=(const AliMUONTrackerPreprocessor& rhs);
   
 private:
+  AliMUONPedestalSubprocessor* fPedestalSubprocessor; ///< Pedestal subprocessor
+  AliMUONGMSSubprocessor*      fGMSSubprocessor;      ///< GMS subprocessor
+  AliMUONHVSubprocessor*       fHVSubprocessor;       ///< HV subprocessor
 
   ClassDef(AliMUONTrackerPreprocessor,1) // MUON Tracker Shuttle preprocessor
 };

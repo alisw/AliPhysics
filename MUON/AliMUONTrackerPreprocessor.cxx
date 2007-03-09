@@ -41,7 +41,10 @@ ClassImp(AliMUONTrackerPreprocessor)
 
 //_____________________________________________________________________________
 AliMUONTrackerPreprocessor::AliMUONTrackerPreprocessor(AliShuttleInterface* shuttle)
-: AliMUONPreprocessor("MCH",shuttle)
+: AliMUONPreprocessor("MCH",shuttle),
+  fPedestalSubprocessor(new AliMUONPedestalSubprocessor(this)),
+  fGMSSubprocessor(new AliMUONGMSSubprocessor(this)),    
+  fHVSubprocessor(new AliMUONHVSubprocessor(this))    
 {
   /// ctor. 
 }
@@ -50,18 +53,23 @@ AliMUONTrackerPreprocessor::AliMUONTrackerPreprocessor(AliShuttleInterface* shut
 AliMUONTrackerPreprocessor::~AliMUONTrackerPreprocessor()
 {
   /// dtor
+
+  delete fPedestalSubprocessor;
+  delete fGMSSubprocessor;
+  delete fHVSubprocessor;
 }
 
 //_____________________________________________________________________________
 void
 AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
-  DeleteSubprocessors();
+  ClearSubprocessors();
   
   TString runType = GetRunType();
+  
   if ( runType == "PEDESTAL_RUN" ) // FIXME : check the name
   {
-    Add(new AliMUONPedestalSubprocessor(this)); // to be called only for pedestal runs
+    Add(fPedestalSubprocessor); // to be called only for pedestal runs
     Log("INFO-Will run Pedestal subprocessor");
   }
   else if ( runType == "ELECTRONICS_CALIBRATION_RUN" ) // FIXME : check the name
@@ -71,12 +79,12 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   }
   else if ( runType == "GMS" ) // FIXME : check the name
   {
-    Add(new AliMUONGMSSubprocessor(this));
+    Add(fGMSSubprocessor);
     Log("INFO-Will run GMS subprocessor");
   }
   else if ( runType == "PHYSICS" ) // FIXME : check the name
   {
-    Add(new AliMUONHVSubprocessor(this)); // to be called only for physics runs
+    Add(fHVSubprocessor); // to be called only for physics runs
     Log("INFO-Will run HV subprocessor");
   }
   else
