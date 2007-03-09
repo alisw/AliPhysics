@@ -33,7 +33,7 @@ private:
   AliMUONPedestalSubprocessor(const AliMUONPedestalSubprocessor&);
   AliMUONPedestalSubprocessor& operator=(const AliMUONPedestalSubprocessor&);
   
-  Bool_t ReadFile(const char* filename);
+  Int_t ReadFile(const char* filename);
   void ReportMissing(const TObjArray& chambers);
   
 private:
