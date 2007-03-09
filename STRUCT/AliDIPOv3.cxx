@@ -24,6 +24,7 @@
 #include <TGeoTube.h>
 #include <TGeoCone.h>
 #include <TGeoPcon.h>
+#include <TGeoCompositeShape.h>
 
 #include "AliConst.h"
 #include "AliDIPOv3.h"
@@ -36,7 +37,7 @@ ClassImp(AliDIPOv3)
 AliDIPOv3::AliDIPOv3() 
 {
   //
-  // Last design of magnetic dipole version 2
+  // Last design of magnetic dipole version 3
   //
 }
  
@@ -45,7 +46,7 @@ AliDIPOv3::AliDIPOv3(const char *name, const char *title)
   : AliDIPOv2(name,title)
 {
   //
-  // Standard constructor for the magnetic dipole version 2    
+  // Standard constructor for the magnetic dipole version 3    
 }
 
 
@@ -54,6 +55,10 @@ void AliDIPOv3::CreateSpectrometerDipole()
 {
 // Detailed dipole geometry as built
 //
+// Drawing: ALIP2A__0026
+// Geometer measurements: EDMS 596079
+//                        EDMS 584963
+    
 //
 // The top volume
 //
@@ -61,16 +66,21 @@ void AliDIPOv3::CreateSpectrometerDipole()
 //
 // Media
 //
-    TGeoMedium* kMedSteel      = gGeoManager->GetMedium("DIPO_ST_C3");
-    TGeoMedium* kMedCoil       = gGeoManager->GetMedium("DIPO_Coil_C1");
-    TGeoMedium* kMedCoilSh     = gGeoManager->GetMedium("DIPO_Coil_C3");
-    TGeoMedium* kMedCable      = gGeoManager->GetMedium("DIPO_ALU_C2");
-    TGeoMedium* kMedAlu        = gGeoManager->GetMedium("DIPO_ALU_C2");
-    TGeoMedium* kMedAir        = gGeoManager->GetMedium("DIPO_AIR_MUON");
+    TGeoMedium* kMedSteel    = gGeoManager->GetMedium("DIPO_ST_C3");
+    TGeoMedium* kMedCoil     = gGeoManager->GetMedium("DIPO_Coil_C1");
+    TGeoMedium* kMedCoilSh   = gGeoManager->GetMedium("DIPO_Coil_C3");
+    TGeoMedium* kMedCable    = gGeoManager->GetMedium("DIPO_ALU_C2");
+    TGeoMedium* kMedAlu      = gGeoManager->GetMedium("DIPO_ALU_C2");
+    TGeoMedium* kMedAir      = gGeoManager->GetMedium("DIPO_AIR_MUON");
 //
-// Rotations
+// Rotations 
 // 
-    TGeoRotation* rotxz      = new TGeoRotation("rotxz",    90.,   0., 90.,  90.,  180.,   0.);
+    Float_t alhc = 0.794;
+    
+    TGeoRotation* rotxz      = new TGeoRotation("rotxz",     90.,   0., 90.,  90.,  180., 0.);
+    TGeoRotation* rotxzlhc   = new TGeoRotation("rotxzlhc", 180.,  180. + alhc, 0.);
+    TGeoRotation* rotlhc     = new TGeoRotation("rotlhc",   0.,  alhc, 0.);
+
     TGeoRotation* rotxz108   = new TGeoRotation("rotxz108", 90., 108., 90., 198.,  180.,   0.);
     TGeoRotation* rotxz180   = new TGeoRotation("rotxz180", 90., 180., 90., 270.,  180.,   0.);
     TGeoRotation* rotxz288   = new TGeoRotation("rotxz288", 90., 288., 90.,  18.,  180.,   0.);
@@ -79,36 +89,63 @@ void AliDIPOv3::CreateSpectrometerDipole()
     TGeoRotation* rotxy108   = new TGeoRotation("rotxy108", 90., 108., 90., 198.,    0.,   0.);
     TGeoRotation* rotxy288   = new TGeoRotation("rotxy288", 90., 288., 90.,  18.,    0.,   0.);
 
-    TGeoRotation* rot00   = new TGeoRotation("rot00",   180.,   0., 90., 151.,   90.,  61.);
-    TGeoRotation* rot01   = new TGeoRotation("rot01",   180.,   0., 90.,  29.,-  90., -61.);
-    TGeoRotation* rot02   = new TGeoRotation("rot02",     0.,   0., 90., 151.,   90.,  61.);
-    TGeoRotation* rot03   = new TGeoRotation("rot03",     0.,   0., 90.,  29.,-  90., -61.);
-    TGeoRotation* rot04   = new TGeoRotation("rot04",    90.,  61., 90., 151.,    0.,   0.);
-    TGeoRotation* rot05   = new TGeoRotation("rot05",    90., -61., 90.,-151.,    0.,   0.);
-    TGeoRotation* rot06   = new TGeoRotation("rot06",    90., 119., 90., 209.,    0.,   0.);
-    TGeoRotation* rot07   = new TGeoRotation("rot07",    90.,-119., 90.,-209.,    0.,   0.);
+    TGeoRotation* rot00      = new TGeoRotation("rot00",   180.,   0., 90., 151.,   90.,  61.);
+    TGeoRotation* rot01      = new TGeoRotation("rot01",   180.,   0., 90.,  29.,-  90., -61.);
+    TGeoRotation* rot02      = new TGeoRotation("rot02",     0.,   0., 90., 151.,   90.,  61.);
+    TGeoRotation* rot03      = new TGeoRotation("rot03",     0.,   0., 90.,  29.,-  90., -61.);
+    TGeoRotation* rot04      = new TGeoRotation("rot04",    90.,  61., 90., 151.,    0.,   0.);
+    TGeoRotation* rot05      = new TGeoRotation("rot05",    90., -61., 90.,-151.,    0.,   0.);
+    TGeoRotation* rot06      = new TGeoRotation("rot06",    90., 119., 90., 209.,    0.,   0.);
+    TGeoRotation* rot07      = new TGeoRotation("rot07",    90.,-119., 90.,-209.,    0.,   0.);
 
-    const Float_t kZDipole = 975.; 
+    const Float_t dipoleL       = 498.;
+    const Float_t kZDipoleR     = 1244.;
+    const Float_t kZDipole      = kZDipoleR - dipoleL/2.; 
+    const Float_t kZDipoleF     = kZDipoleR - dipoleL; 
+    const Float_t yokeLength    = 309.4;
+    const Float_t blockLength   = yokeLength / 7.;
+    const Float_t gapWidthFront = 297.6;
+    const Float_t gapWidthRear  = 395.4;
+    const Float_t dGap          = (gapWidthRear - gapWidthFront) / 12.;
+    const Float_t gapHeight     = 609.1;
+    const Float_t blockHeight   = 145.45;
+    const Float_t dzCoil        = 4.45;
+
     Float_t dx, dy, dz;
+    
+
     //
     // Mother volume
-    TGeoPcon* shDDIP = new TGeoPcon(0., 360., 4);
-    shDDIP->DefineSection(0, -250.55, 30.1, 570.);
-    shDDIP->DefineSection(1,   37.00, 30.1, 570.);
-    shDDIP->DefineSection(2,   37.00, ( 37.00 + kZDipole) * TMath::Tan(2. * kDegrad), 570.);
-    shDDIP->DefineSection(3,  260.55, (250.55 + kZDipole) * TMath::Tan(2. * kDegrad), 570.);
-    TGeoVolume* voDDIP = new TGeoVolume("DDIP", shDDIP, kMedAir);
+    Float_t rcD1 = kZDipole * TMath::Tan(9. * kDegrad);
+    TGeoPcon* shDDIP1 =  new TGeoPcon("shDDIP1", 0., 360., 4);
+    shDDIP1->DefineSection(0, -dipoleL/2. - 5., 0., (kZDipoleF -5.)  * TMath::Tan(9. * kDegrad));
+    shDDIP1->DefineSection(1,          0., 0., rcD1);
+    Float_t rcD2 = rcD1 + dipoleL/2. * TMath::Tan(10.1 * kDegrad);
+    shDDIP1->DefineSection(2, +dipoleL/2.,      0., rcD2);
+    shDDIP1->DefineSection(3, +dipoleL/2. + 5., 0., rcD2);
+
+    TGeoCombiTrans* trDDIP = new TGeoCombiTrans("trDDIP", 0., dipoleL/2. * TMath::Tan(alhc * kDegrad), 0., rotlhc);
+    trDDIP->RegisterYourself();
+     
+    TGeoBBox* shDDIP2 =  new TGeoBBox("shDDIP2", 164, 182., 25.);
+
+    TGeoPcon* shDDIP3 =  new TGeoPcon("shDDIP3", 0., 360., 5);
+    Float_t z30 =  825. - kZDipole;
+    Float_t zst = 1052. - kZDipole;
+    
+    
+    shDDIP3->DefineSection(0, -dipoleL/2. - 10., 0., (kZDipoleF - 10.)  * TMath::Tan(2. * kDegrad) + 0.2);
+    shDDIP3->DefineSection(1,              z30, 0.,  28.8 + 0.2);
+    shDDIP3->DefineSection(2,              zst, 0.,  28.8 + 0.2);
+    shDDIP3->DefineSection(3,              zst, 0.,  35.8);
+    shDDIP3->DefineSection(4, +dipoleL/2. + 10., 0.,   35.8 + (dipoleL/2. + 10. - zst) * TMath::Tan(2. * kDegrad));
+    
+    TGeoCompositeShape*  shDDIP = new TGeoCompositeShape("shDDIP", "(shDDIP2 + shDDIP1:trDDIP) - shDDIP3:trDDIP");
+
+    TGeoVolume*  voDDIP = new TGeoVolume("DDIP", shDDIP, kMedAir);
 //
 // Yoke
 // 
-    Float_t yokeLength    = 309.4;
-    Float_t blockLength   = yokeLength / 7.;
-    Float_t gapWidthFront = 297.6;
-    Float_t gapWidthRear  = 395.4;
-    Float_t dGap          = (gapWidthRear - gapWidthFront) / 12.;
-    Float_t gapHeight     = 609.1;
-    Float_t blockHeight   = 147.1;
-    
 
     TGeoVolumeAssembly* asYoke = new TGeoVolumeAssembly("DYoke");	
 // Base
@@ -147,15 +184,15 @@ void AliDIPOv3::CreateSpectrometerDipole()
 //    
 // Coils
 //
-    Float_t coilRi   = 207.;
+    Float_t coilRi   = 206.;
     Float_t coilD    =  70.;
     Float_t coilRo   = coilRi + coilD;
     Float_t coilH    =  77.;
     Float_t phiMin   = -61.;
     Float_t phiMax   =  61.;
-    Float_t lengthSt = 240. + 48.;    
+    Float_t lengthSt = 240. + 33.9;    
     Float_t phiKnee  = phiMax * kDegrad;
-    Float_t  rKnee   = 25.;
+    Float_t  rKnee   = 31.5;
     
 //  Circular sections
     TGeoVolumeAssembly* asCoil = new TGeoVolumeAssembly("DCoil");	
@@ -254,7 +291,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
     TGeoVolumeAssembly* asContactor = new TGeoVolumeAssembly("DContactor");
     dx = -5.;
     TGeoVolume* voDC10 = new TGeoVolume("DC10", 
-					new TGeoTubeSeg(coilRo + 3.5, coilRo + 83.5, 1., -20., 20.),
+					new TGeoTubeSeg(coilRo + 5.1, coilRo + 73.5, 1., -20., 20.),
 					kMedCable);
     asContactor->AddNode(voDC10, 1, new TGeoTranslation(dx, 0, -32.325));
     asContactor->AddNode(voDC10, 2, new TGeoTranslation(dx, 0, +32.325));
@@ -262,7 +299,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
 
 // Coil Support
 // 
-    Float_t sW = 89.;
+    Float_t sW = 83.;
     
     TGeoVolumeAssembly* asDCoilSupport = new TGeoVolumeAssembly("DCoilSupport");
 
@@ -273,7 +310,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
     
     // Steel on the coil
     TGeoVolume* voDCS02 = new TGeoVolume("DCS02", 
-					 new TGeoTubeSeg(coilRo, coilRo + 2., sW/2., 21., 51.),
+					 new TGeoTubeSeg(coilRo, coilRo + 3.125, sW/2., 21., 51.),
 					 kMedAlu);
     TGeoVolume* voDCS021 = new TGeoVolume("DCS021", 
 					 new TGeoConeSeg(sW/2., coilRo, 320., coilRo, coilRo + 2., 21., 21.4),
@@ -282,21 +319,18 @@ void AliDIPOv3::CreateSpectrometerDipole()
 
     // Sleeves
     TGeoVolume* voDCS03 = new TGeoVolume("DCS03", 
-					 new TGeoTubeSeg(coilRi - 2., coilRo + 2.,  1., 21., 51.),
+					 new TGeoTubeSeg(coilRi - 3.125, coilRo + 3.125,  3.125/2., 21., 51.),
 					 kMedAlu);
 
     TGeoVolume* voDCS04 = new TGeoVolume("DCS04", 
-					 new TGeoTubeSeg(coilRi - 2., coilRi,  coilH/2., 21., 51.),
+					 new TGeoTubeSeg(coilRi - 3.125, coilRi,  coilH/2., 21., 51.),
 					 kMedAlu);
     
 
     TGeoVolume* voDCS05 = new TGeoVolume("DCS05", 
-					 new TGeoTubeSeg(coilRi - 2., coilRo,  1., 21., 51.),
+					 new TGeoTubeSeg(coilRi - 3.125, coilRo,  3.125/2., 21., 51.),
 					 kMedAlu);
     // 
-    
-    
-
     asDCoilSupport->AddNode(voDCS02, 1, new TGeoTranslation(0., 0., -(sW - coilH)/2.));
     asDCoilSupport->AddNode(voDCS04, 1, gGeoIdentity);    
     for (Int_t i = 0; i < 9; i++) 
@@ -310,32 +344,105 @@ void AliDIPOv3::CreateSpectrometerDipole()
     
 
 
-    asDCoilSupport->AddNode(voDCS01, 1, new TGeoTranslation(0., 0., -sW/2. - (sW - coilH)/2. - 1.));    
-    asDCoilSupport->AddNode(voDCS03, 1, new TGeoTranslation(0., 0., +coilH/2. + 1.));    
-    asDCoilSupport->AddNode(voDCS05, 1, new TGeoTranslation(0., 0., -coilH/2. - 1.));    
+    asDCoilSupport->AddNode(voDCS01, 1, new TGeoTranslation(0., 0., -sW/2. - (sW - coilH)/2. - 3.125/2.));    
+    asDCoilSupport->AddNode(voDCS03, 1, new TGeoTranslation(0., 0., +coilH/2. + 3.125/2.));    
+    asDCoilSupport->AddNode(voDCS05, 1, new TGeoTranslation(0., 0., -coilH/2. - 3.125/2.));    
+
+
+    //
+    // SAA1 Support: Hanger 1
+    //
+    TGeoTranslation* trHanger = new TGeoTranslation("trHanger", 0., 250., 0.);
+    trHanger->RegisterYourself();
+    
+    Float_t rmin1, rmin2, rmax1, rmax2;
+
+    Float_t zHanger1 = 811.9;
+    TGeoBBox* shHanger11  = new TGeoBBox("shHanger11", 2.5/2., 250., 25./2.);
+
+    rmin1 = (zHanger1 - 13.) * TMath::Tan(2. * kDegrad);
+    rmin2 = rmin1 + 26. * TMath::Tan( 2.0 * kDegrad);
+    rmax1 = (zHanger1 - 13.) * TMath::Tan(9. * kDegrad);
+    rmax2 = rmax1 + 26. * TMath::Tan(9. * kDegrad);
+
+    TGeoCone* shHanger12  = new TGeoCone("shHanger12", 13., rmin1, rmax1, rmin2, rmax2);
+    TGeoCompositeShape*  shHanger1 = new TGeoCompositeShape("shHanger1", "shHanger12*shHanger11:trHanger");
+    TGeoVolume* voHanger1 = new TGeoVolume("DHanger1", shHanger1, kMedSteel);
+    //
+    // SAA1 Support: Hanger 2
+    //
+    Float_t zHanger2 = 1171.9;
+    TGeoBBox* shHanger21  = new TGeoBBox("shHanger21", 3.5/2., 250., 25./2.);
+
+
+    rmin1 = 35.8 + (zHanger2 - 13. - zst - kZDipole) * TMath::Tan(2. * kDegrad);
+    rmin2 = rmin1 + 26. * TMath::Tan( 2.0 * kDegrad);
+    rmax1 = rcD1 + (zHanger2 - 13. - kZDipole) * TMath::Tan(10.1 * kDegrad);
+    rmax2 = rmax1 + 26. * TMath::Tan(10.1 * kDegrad);
+    TGeoCone* shHanger22  = new TGeoCone("shHanger22", 13., rmin1, rmax1, rmin2, rmax2);
+    TGeoCompositeShape*  shHanger2 = new TGeoCompositeShape("shHanger2", "shHanger22*shHanger21:trHanger");
+    
+    TGeoVolume* voHanger2 = new TGeoVolume("DHanger2", shHanger2, kMedSteel);
+    //
+    // Hanger support
+    Float_t hsLength = yokeLength + (zHanger2 - kZDipole - yokeLength/2.) + 25./2.;
+    
+    TGeoVolume* voHS1 = new TGeoVolume("DHS1", new TGeoBBox( 1.5, 12.5, hsLength/2.), kMedSteel);
+    TGeoVolume* voHS2 = new TGeoVolume("DHS2", new TGeoBBox(12.5,  1.5, hsLength/2.), kMedSteel);
+    Float_t hsH = gapHeight/2. + blockHeight - (rmax1+rmax2)/2.;
+    
+    TGeoVolume* voHS3 = new TGeoVolume("DHS3", new TGeoBBox(3.5/2., hsH/2., 25./2.),    kMedSteel);
+
+    TGeoVolumeAssembly* asHS = new TGeoVolumeAssembly("asHS");
+    asHS->AddNode(voHS1, 1, gGeoIdentity);
+    asHS->AddNode(voHS2, 1, new TGeoTranslation(0., +14., 0.));
+    asHS->AddNode(voHS2, 2, new TGeoTranslation(0., -14., 0.));
+    asHS->AddNode(voHS3, 1, new TGeoTranslation(0., -hsH/2. - 14., hsLength/2. - 25./2.));
+    
+    
+
+    dz = zHanger1 - kZDipole;
+    dy = -(kZDipoleR - zHanger1) * TMath::Tan(alhc * kDegrad);
+    voDDIP->AddNode(voHanger1, 1, new TGeoCombiTrans(0., dy, dz, rotlhc));
+
+    dz = zHanger2 - kZDipole;
+    dy = -(kZDipoleR - zHanger2) * TMath::Tan(alhc * kDegrad);
+    voDDIP->AddNode(voHanger2, 1, new TGeoCombiTrans(0., dy, dz, rotlhc));
+    
+    
+    
+    
+    // Assembly everything
 
     TGeoVolumeAssembly* asDipole = new TGeoVolumeAssembly("Dipole");
-    
-    asDipole->AddNode(asYoke, 1, gGeoIdentity);
+    // Yoke
+    asDipole->AddNode(asYoke, 1, new TGeoTranslation(0., 0., -dzCoil));
     asDipole->AddNode(asCoil, 1, gGeoIdentity);
+    // Contactor
     dz = lengthSt / 2. + coilH / 2. + rKnee;
-    asDipole->AddNode(asContactor, 1, new TGeoTranslation(0., 0., dz));
-    asDipole->AddNode(asContactor, 2, new TGeoCombiTrans( 0., 0., dz, rotxy180));
-
+    asDipole->AddNode(asContactor, 1, new TGeoTranslation(0., 0., dz + dzCoil));
+    asDipole->AddNode(asContactor, 2, new TGeoCombiTrans( 0., 0., dz - dzCoil, rotxy180));
+    // Coil support
     asDipole->AddNode(asDCoilSupport, 1, new TGeoTranslation(0., 0., dz));
     asDipole->AddNode(asDCoilSupport, 2, new TGeoCombiTrans( 0., 0., dz, rotxy180));
     asDipole->AddNode(asDCoilSupport, 3, new TGeoCombiTrans( 0., 0., dz, rotxy108));
     asDipole->AddNode(asDCoilSupport, 4, new TGeoCombiTrans( 0., 0., dz, rotxy288));
-
+    
     asDipole->AddNode(asDCoilSupport, 5, new TGeoCombiTrans( 0., 0., -dz, rotxz));
     asDipole->AddNode(asDCoilSupport, 6, new TGeoCombiTrans( 0., 0., -dz, rotxz108));
     asDipole->AddNode(asDCoilSupport, 7, new TGeoCombiTrans( 0., 0., -dz, rotxz180));
     asDipole->AddNode(asDCoilSupport, 8, new TGeoCombiTrans( 0., 0., -dz, rotxz288));
-
-    voDDIP->SetVisContainers();
+    
+    // Hanger (Support)
+    dy = gapHeight/2. + blockHeight + 14.;
+    
+    asDipole->AddNode(asHS, 1, new TGeoTranslation(0., dy, ((zHanger2 - kZDipole - yokeLength/2.) + 25./2.)/2.));
+    
+    
+    asDipole->SetVisContainers(1);
     voDDIP->SetVisibility(0);
-    voDDIP->AddNode(asDipole, 1, new TGeoTranslation(0., 0., -0.55));
-    top->AddNode(voDDIP, 1, new TGeoCombiTrans(0., 0., -kZDipole, rotxz));
+    asDipole->AddNode(voDDIP, 1, gGeoIdentity);
+    top->AddNode(asDipole, 1, new TGeoCombiTrans(0., dipoleL / 2. * TMath::Tan(alhc * kDegrad), -kZDipole, rotxzlhc));
 
 }
 
