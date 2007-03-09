@@ -128,8 +128,8 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // --- pm[4][...] = light in ZP left [C, Q1, Q2, Q3, Q4] ->NEW!
   // ------------------------------------------------------------
   Float_t pm[5][5]; 
-  for (Int_t iSector1=0; iSector1<5; iSector1++) 
-    for (Int_t iSector2=0; iSector2<5; iSector2++){
+  for(Int_t iSector1=0; iSector1<5; iSector1++) 
+    for(Int_t iSector2=0; iSector2<5; iSector2++){
       pm[iSector1][iSector2] = 0;
     }
     
@@ -138,8 +138,8 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // --- same codification as for signal PTMs (see above)
   // ------------------------------------------------------------
   Float_t pmoot[5][5];
-  for (Int_t iSector1=0; iSector1<5; iSector1++) 
-    for (Int_t iSector2=0; iSector2<5; iSector2++){
+  for(Int_t iSector1=0; iSector1<5; iSector1++) 
+    for(Int_t iSector2=0; iSector2<5; iSector2++){
       pmoot[iSector1][iSector2] = 0;
     }
 
@@ -149,28 +149,28 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   Int_t specP = 0;
 
   // loop over input streams
-  for (Int_t iInput = 0; iInput<fManager->GetNinputs(); iInput++){
+  for(Int_t iInput = 0; iInput<fManager->GetNinputs(); iInput++){
 
     // get run loader and ZDC loader
     AliRunLoader* runLoader = 
       AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
     AliLoader* loader = runLoader->GetLoader("ZDCLoader");
-    if (!loader) continue;
+    if(!loader) continue;
 
     // load sdigits
     loader->LoadSDigits();
     TTree* treeS = loader->TreeS();
-    if (!treeS) continue;
+    if(!treeS) continue;
     AliZDCSDigit sdigit;
     AliZDCSDigit* psdigit = &sdigit;
     treeS->SetBranchAddress("ZDC", &psdigit);
 
     // loop over sdigits
-    for (Int_t iSDigit=0; iSDigit<treeS->GetEntries(); iSDigit++){
+    for(Int_t iSDigit=0; iSDigit<treeS->GetEntries(); iSDigit++){
       treeS->GetEntry(iSDigit);
       //
-      if (!psdigit) continue;
-      if ((sdigit.GetSector(1) < 0) || (sdigit.GetSector(1) > 4)){
+      if(!psdigit) continue;
+      if((sdigit.GetSector(1) < 0) || (sdigit.GetSector(1) > 4)){
 	AliError(Form("\nsector[0] = %d, sector[1] = %d\n", 
                       sdigit.GetSector(0), sdigit.GetSector(1)));
 	continue;
@@ -186,12 +186,12 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     loader->UnloadSDigits();
 
     // get the impact parameter and the number of spectators in case of hijing
-    if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+    if(!runLoader->GetAliRun()) runLoader->LoadgAlice();
     AliHeader* header = runLoader->GetAliRun()->GetHeader();
-    if (!header) continue;
+    if(!header) continue;
     AliGenEventHeader* genHeader = header->GenEventHeader();
-    if (!genHeader) continue;
-    if (!genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) continue;
+    if(!genHeader) continue;
+    if(!genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) continue;
     impPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
     // 
     specN = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
@@ -202,7 +202,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   }
 
   // add spectators
-  if (impPar >= 0) {
+  if(impPar >= 0) {
     Int_t freeSpecN, freeSpecP;
     Fragmentation(impPar, specN, specP, freeSpecN, freeSpecP);
     printf("\n\t AliZDCDigitizer ---- Adding signal for %d free spectator n\n",freeSpecN);
@@ -216,14 +216,14 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   AliRunLoader* runLoader = 
     AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   AliLoader* loader = runLoader->GetLoader("ZDCLoader");
-  if (!loader) {
+  if(!loader) {
     AliError("no ZDC loader found");
     return;
   }
 
   // create the output tree
   const char* mode = "update";
-  if (runLoader->GetEventNumber() == 0) mode = "recreate";
+  if(runLoader->GetEventNumber() == 0) mode = "recreate";
   loader->LoadDigits(mode);
   loader->MakeTree("D");
   TTree* treeD = loader->TreeD();
@@ -238,7 +238,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   for(sector[0]=1; sector[0]<=3; sector[0]++){
     for(sector[1]=0; sector[1]<5; sector[1]++){
         if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
-        for (Int_t res=0; res<2; res++){
+        for(Int_t res=0; res<2; res++){
            digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sector[0], sector[1], res);
       	}
@@ -254,7 +254,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 	if(sector[0]==1 || sector[0]==2){
 	   sectorL[0] = sector[0]+3;
 	   sectorL[1] = sector[1];
-           for (Int_t res=0; res<2; res++){
+           for(Int_t res=0; res<2; res++){
              digiL[res] = Phe2ADCch(sectorL[0], sectorL[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sectorL[0], sectorL[1], res);
       	   }
@@ -274,7 +274,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   for(sector[0]=1; sector[0]<=3; sector[0]++){
     for(sector[1]=0; sector[1]<5; sector[1]++){
         if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
-        for (Int_t res=0; res<2; res++){
+        for(Int_t res=0; res<2; res++){
            digioot[res] = Pedestal(sector[0], sector[1], res); // out-of-time ADCs
       	}
 	/*printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
@@ -287,7 +287,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 	if(sector[0]==1 || sector[0]==2){
 	   sectorL[0] = sector[0]+3;
 	   sectorL[1] = sector[1];
-           for (Int_t res=0; res<2; res++){
+           for(Int_t res=0; res<2; res++){
              digioot[res] = Pedestal(sectorL[0], sectorL[1], res); // out-of-time ADCs
       	   }
 	   /*printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
@@ -315,7 +315,7 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
 
   Int_t zz[100], nn[100];
   AliZDCFragment frag(impPar);
-  for (Int_t j=0; j<=99; j++){
+  for(Int_t j=0; j<=99; j++){
      zz[j] =0;
      nn[j] =0;
   }
@@ -342,12 +342,12 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
 // add signal of the spectators
  
   TFile* file = NULL;
-  if (SpecType == 1) {		// --- Signal for spectator neutrons
+  if(SpecType == 1) {		// --- Signal for spectator neutrons
     file = TFile::Open("$ALICE_ROOT/ZDC/ZNsignalntu.root");
-  } else if (SpecType == 2) {	// --- Signal for spectator protons
+  } else if(SpecType == 2) {	// --- Signal for spectator protons
     file = TFile::Open("$ALICE_ROOT/ZDC/ZPsignalntu.root");
   }
-  if (!file || !file->IsOpen()) {
+  if(!file || !file->IsOpen()) {
     AliError("Opening of file failed");
     return;
   }
@@ -358,7 +358,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
   Float_t *entry, hitsSpec[7];
   Int_t pl, i, j, k, iev=0, rnd[125], volume[2];
   for(pl=0;pl<125;pl++) rnd[pl] = 0;
-  if (numEvents > 125) {
+  if(numEvents > 125) {
     AliWarning(Form("numEvents (%d) is larger than 125", numEvents));
     numEvents = 125;
   }
@@ -383,14 +383,14 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
                            volume[0], volume[1], lightQ, lightC));
 	  //printf("\n   Volume = (%d, %d), lightQ = %.0f, lightC = %.0f",
           //                 volume[0], volume[1], lightQ, lightC);
-	  if (volume[0] < 3) {  // ZN or ZP
+	  if(volume[0] < 3) {  // ZN or ZP
             pm[volume[0]-1][0] += lightC;
             pm[volume[0]-1][volume[1]] += lightQ;
 	    //printf("\n   pm[%d][0] = %.0f, pm[%d][%d] = %.0f\n",(volume[0]-1),pm[volume[0]-1][0],
 	    //	(volume[0]-1),volume[1],pm[volume[0]-1][volume[1]]);
 	  } 
 	  else { 
-            if (volume[1] == 1) pm[2][1] += lightC; // ZEM 1
+            if(volume[1] == 1) pm[2][1] += lightC; // ZEM 1
             else                pm[2][2] += lightQ; // ZEM 2
 	    //printf("\n   pm[2][1] = %.0f, pm[2][2] = %.0f\n",pm[2][1],pm[2][2]);
 	  }
@@ -480,9 +480,10 @@ AliZDCCalibData* AliZDCDigitizer::GetCalibData() const
   // Getting calibration object for ZDC set
 
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Data");
+  if(!entry) AliFatal("No ZDC calibration found in OCDB!");
+  //
   AliZDCCalibData *calibdata = (AliZDCCalibData*) entry->GetObject();
-
-  if (!calibdata)  AliWarning("No calibration data from calibration database !");
+  if(!calibdata)  AliWarning("No calibration data from calibration database !");
 
   return calibdata;
 }
