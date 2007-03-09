@@ -31,9 +31,11 @@ ClassImp(AliMUONVDataIterator)
 //_____________________________________________________________________________
 AliMUONVDataIterator::AliMUONVDataIterator() : TObject()
 {
+/// Default ctor
 }
 
 //_____________________________________________________________________________
 AliMUONVDataIterator::~AliMUONVDataIterator()
 {
+/// Dtor
 }
