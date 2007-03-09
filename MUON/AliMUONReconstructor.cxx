@@ -136,6 +136,13 @@ AliMUONReconstructor::GetCalibrationTask() const
       fCalibrationData = 0x0;
       return 0x0;
     }    
+  // Check that we get all the calibrations we'll need
+  if ( !fCalibrationData->Pedestals() ||
+       !fCalibrationData->Gains() ||
+       !fCalibrationData->HV() )
+  {
+    AliFatal("Could not access all required calibration data");
+  }
   TTask* calibration = new TTask("MUONCalibrator","MUON Digit calibrator");
   
   TString opt(GetOption());
@@ -440,6 +447,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader,
   loader->UnloadDigits();
   
   delete recoCluster;
+  delete calibration;
   
   AliInfo(Form("Execution time for converting RAW data to digits in MUON : R:%.2fs C:%.2fs",
                rawTimer.RealTime(),rawTimer.CpuTime()));
