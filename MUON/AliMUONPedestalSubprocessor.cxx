@@ -25,7 +25,6 @@
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
-#include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParam2F.h"
 #include "AliMUONConstants.h"
 #include "AliMUONObjectPair.h"
@@ -86,14 +85,27 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   TList* sources = Master()->GetFileSources(kSystem,kId);
   TIter next(sources);
   TObjString* o(0x0);
+  Int_t n(0);
+  
   while ( ( o = static_cast<TObjString*>(next()) ) )
   {
     TString fileName(Master()->GetFile(kSystem,kId,o->GetName()));
-    Bool_t ok = ReadFile(fileName.Data());
+    Int_t ok = ReadFile(fileName.Data());
     if (!ok)
     {
       Master()->Log(Form("Could not read file %s",fileName.Data()));
     }
+    else
+    {
+      n += ok;
+    }
+  }
+  
+  if (!n)
+  {
+    Master()->Log("Failed to read any pedestals");
+    delete fPedestals;
+    fPedestals = 0;
   }
   delete sources;
 }
@@ -105,26 +117,7 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
   // Store the pedestals into the CDB
   
   if (!fPedestals) return 0;
-  
-  Master()->Log("Validating pedestals");
-  AliMUON2DStoreValidator validator;
-  TObjArray* missing =
-    validator.Validate(*fPedestals,AliMUONCalibParam2F::InvalidFloatValue());  
-  
-  if (missing)  
-  {
-    TList lines;
-    lines.SetOwner(kTRUE);
-    validator.Report(lines,*missing);
-    TIter next(&lines);
-    TObjString* l;
-    while ( ( l = static_cast<TObjString*>(next())) )
-    {
-      Master()->Log(l->GetName());
-    }
-    return 0;
-  }
-  
+    
   Master()->Log("Storing pedestals");
   
   AliCDBMetaData metaData;
@@ -139,7 +132,7 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
 }
 
 //_____________________________________________________________________________
-Bool_t
+Int_t
 AliMUONPedestalSubprocessor::ReadFile(const char* filename)
 {
   // Read the pedestals from an ASCII file.
@@ -158,13 +151,14 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
   std::ifstream in(sFilename.Data());
   if (!in.good()) 
   {
-    return kFALSE;
+    return 0;
   }
   char line[80];
   Int_t busPatchID, manuID, manuChannel;
   Float_t pedMean, pedSigma;
   static const Int_t kNchannels(64);
   static Bool_t replace(kFALSE);
+  Int_t n(0);
   
   while ( in.getline(line,80) )
   {
@@ -185,9 +179,10 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
     }
     ped->SetValueAsFloat(manuChannel,0,pedMean);
     ped->SetValueAsFloat(manuChannel,1,pedSigma);
+    ++n;
   }
   in.close();
-  return kTRUE;
+  return n;
 }
 
 
