@@ -536,6 +536,10 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
   }
 
   delete fAlignObjArray; fAlignObjArray=0;
+
+  // Update the TGeoPhysicalNodes
+  gGeoManager->RefreshPhysicalNodes();
+
   return kTRUE;
 }
 

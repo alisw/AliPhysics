@@ -583,6 +583,9 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
 
   if (delRunLoader) delete runLoader;
 
+  // Update the TGeoPhysicalNodes
+  gGeoManager->RefreshPhysicalNodes();
+
   return kTRUE;
 }
 
