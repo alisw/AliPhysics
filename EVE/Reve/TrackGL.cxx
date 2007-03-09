@@ -116,7 +116,7 @@ void TrackGL::DirectDraw(const TGLDrawFlags & flags) const
 	} 
 	if(accept)
 	{
-	  if((TMath::Abs((*i)->V.z) < rs->fMaxZ) && (*i)->V.Perp() < rs->fMaxR*rs->fMaxR)
+	  if((TMath::Abs((*i)->V.z) < rs->fMaxZ) && ((*i)->V.Perp() < rs->fMaxR))
 	    glVertex3f((*i)->V.x, (*i)->V.y,(*i)->V.z);
 	}
       } 
@@ -158,7 +158,7 @@ void TrackGL::DirectDraw(const TGLDrawFlags & flags) const
 	} 
 	if(accept)
 	{
-	  if((TMath::Abs((*i)->V.z) < rs->fMaxZ) && (*i)->V.Perp() < rs->fMaxR*rs->fMaxR)
+	  if((TMath::Abs((*i)->V.z) < rs->fMaxZ) && ((*i)->V.Perp() < rs->fMaxR))
 	  {
 	    p[0] = (*i)->V.x; p[1] = (*i)->V.y; p[2] = (*i)->V.z;
 	    glVertex3f(p[0]-d, p[1], p[2]); glVertex3f(p[0]+d, p[1], p[2]);
