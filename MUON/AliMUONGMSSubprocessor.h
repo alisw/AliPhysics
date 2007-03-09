@@ -32,7 +32,8 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
     virtual UInt_t Process(TMap* /*dcsAliasMap*/);
 
   private:
-    AliMUONGMSSubprocessor(const AliMUONGMSSubprocessor&); // Not implemented
+    AliMUONGMSSubprocessor(const AliMUONGMSSubprocessor&);
+    AliMUONGMSSubprocessor& operator=(const AliMUONGMSSubprocessor&);
 
     UInt_t ProcessFile(const TString& filename);
 
