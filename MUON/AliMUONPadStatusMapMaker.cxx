@@ -59,7 +59,6 @@
 #include "AliMpArea.h"
 #include "AliMpConstants.h"
 #include "AliMpDEManager.h"
-#include "AliMpManuList.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
@@ -69,7 +68,6 @@
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TStopwatch.h>
-#include <TList.h>
 #include <map>
 #include <utility>
 
@@ -170,24 +168,11 @@ AliMUONPadStatusMapMaker::IsValid(const AliMpPad& pad,
 AliMUONV2DStore*
 AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap()
 {
-  AliMUONV2DStore* padStatusMap = new AliMUON2DMap(kTRUE);
+  /// Make an empty (but complete) statusMap
   
-  TList* list = AliMpManuList::ManuList();
+  AliMUONCalibParam1I param(64,0);
   
-  AliMpIntPair* pair;
-  
-  TIter next(list);
-  
-  while ( ( pair = static_cast<AliMpIntPair*>(next()) ) ) 
-  {
-    Int_t detElemId = pair->GetFirst();
-    Int_t manuId = pair->GetSecond();
-    padStatusMap->Set(detElemId,manuId,new AliMUONCalibParam1I(64,0),kFALSE);
-  }
-  
-  delete list;
-  
-  return padStatusMap;
+  return AliMUON2DMap::Generate(param);
 }
 
 //_____________________________________________________________________________
