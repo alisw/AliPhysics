@@ -23,6 +23,7 @@
 #pragma link C++ class AliMUONChamberTrigger+; 
 #pragma link C++ class AliMUONTriggerCircuit+; 
 #pragma link C++ class AliMUONTriggerCrateStore+; 
+#pragma link C++ class AliMUONLogger+;
 
 // containers
 #pragma link C++ class AliMUONObjectPair+;

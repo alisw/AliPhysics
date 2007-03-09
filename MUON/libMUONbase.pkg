@@ -39,7 +39,8 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONRawStreamTrigger.cxx \
         AliMUONRawStreamTracker.cxx  \
         AliMUONDigitMaker.cxx \
-        AliMUONTriggerChamberEff.cxx
+        AliMUONTriggerChamberEff.cxx \
+        AliMUONLogger.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 
