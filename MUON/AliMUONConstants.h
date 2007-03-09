@@ -76,16 +76,6 @@ class AliMUONConstants : public TObject {
     static Double_t YokeZ() {return fgYokeZ;}
     /// Return yoke lenght
     static Double_t YokeL() {return fgYokeL;}
-    /// Return the z position of the end of the absorber
-    static Double_t ZAbsorberEnd() {return fgZAbsorberEnd;}
-    /// Return the number of elements making the absorber
-    static Int_t    NAbsorberElements() {return fgNAbsorberElements;}
-    /// Return the z position of the element "iElement" making the absorber
-    static Double_t ZAbsorberElement(Int_t iElement) {return ((iElement >= 0) && (iElement < fgNAbsorberElements)) ? fgZAbsorberElement[iElement] : 0.;}
-    /// Return the radiation lenght of the element "iElement" making the inner part of the absorber
-    static Double_t X0AbsorberIn(Int_t iElement) {return ((iElement >= 0) && (iElement < fgNAbsorberElements)) ? fgX0AbsorberIn[iElement] : -1.;}
-    /// Return the radiation lenght of the element "iElement" making the outer part of the absorber
-    static Double_t X0AbsorberOut(Int_t iElement) {return ((iElement >= 0) && (iElement < fgNAbsorberElements)) ? fgX0AbsorberOut[iElement] : -1.;}
     /// Return chamber thickness in X0
     static Double_t ChamberThicknessInX0() {return fgChamberThicknessInX0;}
     /// Return Trigger ToF Limit (75 ns)
@@ -132,12 +122,6 @@ class AliMUONConstants : public TObject {
     static Double_t fgYokeZ; ///< Yoke z-position
     static Double_t fgYokeL; ///< Yoke lenght
 
-    static Double_t fgZAbsorberEnd;		///< Z position of the end of the absorber
-    static Int_t    fgNAbsorberElements;	///< Number of elements making the absorber
-    static Double_t fgZAbsorberElement[5];	///< Z positions of elements making the absorber
-    static Double_t fgX0AbsorberIn[5];		///< Radiation lenght of materials in the inner part of the absorber (theta > 3 degrees)
-    static Double_t fgX0AbsorberOut[5];		///< Radiation lenght of materials in the outer part of the absorber (theta > 3 degrees)
-    
     static Int_t    fgMaxZoom;          ///< Maximum Zoom for event display
     static Float_t  fgkTriggerTofLimit; ///< Particle above this threshold are discarded in trigger algorithm
     
@@ -145,11 +129,4 @@ class AliMUONConstants : public TObject {
 };
 	
 #endif
-
-
-
-
-
-
-
 
