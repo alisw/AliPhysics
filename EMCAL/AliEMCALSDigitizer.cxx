@@ -268,12 +268,14 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 	  // Assign primary number only if deposited energy is significant
 	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
 					  hit->GetIparent(), hit->GetId(), 
-					  Digitize(energy), hit->GetTime() ) ;
+					  Digitize(energy), hit->GetTime(), 
+					  -1, energy ) ;
 	  else
 	    curSDigit =  new AliEMCALDigit( -1               , 
 					    -1               ,
 					    hit->GetId(), 
-					    Digitize(energy), hit->GetTime() ) ;
+					    Digitize(energy), hit->GetTime(), 
+					    -1, energy ) ;
       } else {
 	Warning("Exec"," abs id %i is bad \n", hit->GetId());
 	newsdigit = kFALSE;

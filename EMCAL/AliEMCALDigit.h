@@ -31,7 +31,7 @@ class AliEMCALDigit : public AliDigitNew {
  public:
   
   AliEMCALDigit() ;
-  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Float_t Time, Int_t index = -1) ;
+  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Float_t Time, Int_t index = -1, Float_t dE = 0) ;
   AliEMCALDigit(const AliEMCALDigit & digit) ;
   virtual ~AliEMCALDigit() ;
 
@@ -44,8 +44,10 @@ class AliEMCALDigit : public AliDigitNew {
   Float_t GetEta() const ; 
   Int_t   GetNprimary() const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
+  Float_t GetDEPrimary(Int_t index) const ; 
   Int_t   GetNiparent() const {return fNiparent;}
   Int_t   GetIparent(Int_t index) const ;
+  Float_t GetDEParent(Int_t index) const ; 
   Float_t GetPhi() const;
   Float_t GetTime(void) const {return fTime ;}
   Float_t GetTimeR(void) const {return fTimeR ;}
@@ -61,15 +63,17 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t fNprimary ;     // Number of primaries
   Int_t fNMaxPrimary ;  // Max Number of primaries
   Int_t *fPrimary ;     //[fNMaxPrimary]  Array of primaries       
+  Float_t *fDEPrimary;  //[fNMaxPrimary]  Array of primary energy contributions
     
   Int_t fNiparent ;     // Number of initial parents 
   Int_t fNMaxiparent ;  // Max Number of parents 
   Int_t *fIparent ;     //[fNMaxiparent] Array of parents       
+  Float_t *fDEParent;   //[fNMaxiparent]  Array of parent energy contributions
   Int_t fMaxIter  ;     // Number to Increment Maxiparent, and MaxPrimary if default is not sufficient
   Float_t fTime ;       // Calculated time  
   Float_t fTimeR ;      // Earliest time: to be used by Digits2Raw
  
-  ClassDef(AliEMCALDigit,2)   // Digit in EMCAL 
+  ClassDef(AliEMCALDigit,3)   // Digit in EMCAL 
 
 } ;
 

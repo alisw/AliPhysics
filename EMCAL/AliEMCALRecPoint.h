@@ -110,12 +110,14 @@ private:
           Int_t   *fAbsIdList;        //[fMulDigit] absId  of digits
 	  Float_t fTime ;             // Time of the digit with maximal energy deposition
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated
-          Int_t fMulParent;           // Multiplicity of the parents
+	  Float_t *fDETracksList ;    //[fMulTrack] list of tracks to which the point was assigned
+	  Int_t fMulParent;           // Multiplicity of the parents
           Int_t fMaxParent;           // Maximum number of parents allowed
           Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
+          Float_t * fDEParentsList;   // [fMulParent] list of the parents of the digits
           Int_t   fSuperModuleNumber; // number identifying supermodule containing recpoint
 
-  ClassDef(AliEMCALRecPoint,7) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,8) // RecPoint for EMCAL (Base Class)
  
 };
 

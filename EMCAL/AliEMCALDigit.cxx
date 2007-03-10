@@ -45,9 +45,11 @@ AliEMCALDigit::AliEMCALDigit() :
   fNprimary(0),
   fNMaxPrimary(5),
   fPrimary(0x0),
+  fDEPrimary(0x0),
   fNiparent(0),
   fNMaxiparent(5), 
   fIparent(0x0),
+  fDEParent(0x0),
   fMaxIter(0),
   fTime(0.), 
   fTimeR(0.) 
@@ -55,17 +57,29 @@ AliEMCALDigit::AliEMCALDigit() :
 {
   // default ctor 
 
+  // Need to initialise for reading old files
+  fDEPrimary = new Float_t[fNMaxPrimary] ;
+  fDEParent = new Float_t[fNMaxiparent] ; 
+  for ( Int_t i = 0; i < fNMaxPrimary ; i++) {
+    fDEPrimary[i]  = 0 ;
+  } 
+
+  for ( Int_t i = 0; i< fNMaxiparent ; i++) {
+    fDEParent[i] = 0 ;
+  }
 }
 
 //____________________________________________________________________________
-AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Float_t time, Int_t index) 
+AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Float_t time, Int_t index, Float_t dE) 
   : AliDigitNew(),
     fNprimary(0),
     fNMaxPrimary(25),
     fPrimary(0x0),
+    fDEPrimary(0x0),
     fNiparent(0),
     fNMaxiparent(150),
     fIparent(0x0),
+    fDEParent(0x0),
     fMaxIter(5),
     fTime(time),
     fTimeR(time)
@@ -79,26 +93,35 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 
   // data members
   fPrimary = new Int_t[fNMaxPrimary] ;
+  fDEPrimary = new Float_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
+  fDEParent = new Float_t[fNMaxiparent] ; 
   if( primary != -1){
     fNprimary    = 1 ; 
     fPrimary[0]  = primary ;  
+    fDEPrimary[0] = dE ;  
     fNiparent   = 1 ;
     fIparent[0] = iparent ;    
-}
+    fDEParent[0] = dE ;  
+  }
   else{  //If the contribution of this primary smaller than fDigitThreshold (AliEMCALv1)
     fNprimary    = 0 ; 
     fPrimary[0]  = -1 ;
+    fDEPrimary[0]  = 0 ;
     fNiparent   = 0 ;
-    fIparent[0] = -1 ;    
-
+    fIparent[0] = -1 ;  
+    fDEParent[0]  = 0 ;  
   }
   Int_t i ;
-  for ( i = 1; i < fNMaxPrimary ; i++)
+  for ( i = 1; i < fNMaxPrimary ; i++) {
     fPrimary[i]  = -1 ; 
+    fDEPrimary[i]  = 0 ;
+  } 
 
-  for ( i =1; i< fNMaxiparent ; i++)
+  for ( i = 1; i< fNMaxiparent ; i++) {
     fIparent[i] = -1 ;  
+    fDEParent[i] = 0 ;
+  }  
 }
 
 //____________________________________________________________________________
@@ -107,9 +130,11 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
     fNprimary(digit.fNprimary),
     fNMaxPrimary(digit.fNMaxPrimary),
     fPrimary(0x0),
+    fDEPrimary(0x0),
     fNiparent(digit.fNiparent),
     fNMaxiparent(digit.fNMaxiparent),
     fIparent(0x0),
+    fDEParent(0x0),
     fMaxIter(digit.fMaxIter),
     fTime(digit.fTime),
     fTimeR(digit.fTimeR)
@@ -122,14 +147,20 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   fIndexInList = digit.fIndexInList ; 
 
   // data members
-  fPrimary = new Int_t[fNMaxPrimary] ;
-  fIparent = new Int_t[fNMaxiparent] ; 
+  fPrimary = new Int_t[fNMaxPrimary] ;  
+  fDEPrimary = new Float_t[fNMaxPrimary] ;
+  fIparent = new Int_t[fNMaxiparent] ;
+  fDEParent = new Float_t[fNMaxiparent] ;
   Int_t i ;
-  for ( i = 0; i < fNMaxPrimary ; i++)
-  fPrimary[i]  = digit.fPrimary[i] ;
+  for ( i = 0; i < fNMaxPrimary ; i++) {
+    fPrimary[i]  = digit.fPrimary[i] ;
+    fDEPrimary[i]  = digit.fDEPrimary[i] ;
+  }
   Int_t j ;
-  for (j = 0; j< fNMaxiparent ; j++)
-  fIparent[j]  = digit.fIparent[j] ;
+  for (j = 0; j< fNMaxiparent ; j++) {
+    fIparent[j]  = digit.fIparent[j] ;
+    fDEParent[j]  = digit.fDEParent[j] ;
+  }
 }
 
 //____________________________________________________________________________
@@ -137,7 +168,9 @@ AliEMCALDigit::~AliEMCALDigit()
 {
   // Delete array of primiries if any
     delete [] fPrimary ;
+    delete [] fDEPrimary ;
     delete [] fIparent ; 
+    delete [] fDEParent ;
 }
 
 //____________________________________________________________________________
@@ -191,12 +224,23 @@ Float_t AliEMCALDigit::GetPhi() const
 Int_t AliEMCALDigit::GetPrimary(Int_t index) const
 {
   // retrieves the primary particle number given its index in the list 
-  Int_t rv = -1 ;
   if ( (index <= fNprimary) && (index > 0)){
-    rv = fPrimary[index-1] ;
+    return fPrimary[index-1] ;
   } 
 
-  return rv ; 
+  return -1 ; 
+}
+
+//____________________________________________________________________________
+Float_t AliEMCALDigit::GetDEPrimary(Int_t index) const
+{
+  // retrieves the primary particle energy contribution 
+  // given its index in the list 
+  if ( (index <= fNprimary) && (index > 0)){
+    return fDEPrimary[index-1] ;
+  } 
+
+  return 0 ; 
   
 }
 
@@ -204,13 +248,24 @@ Int_t AliEMCALDigit::GetPrimary(Int_t index) const
 Int_t AliEMCALDigit::GetIparent(Int_t index) const
 {
   // retrieves the primary particle number given its index in the list 
-  Int_t rv = -1 ;
-  if ( index <= fNiparent ){
-    rv = fIparent[index-1] ;
+  if ( index <= fNiparent && index > 0){
+    return fIparent[index-1] ;
   } 
 
-  return rv ; 
+  return -1 ; 
   
+}
+
+//____________________________________________________________________________
+Float_t AliEMCALDigit::GetDEParent(Int_t index) const
+{
+  // retrieves the parent particle energy contribution 
+  // given its index in the list 
+  if ( (index <= fNiparent) && (index > 0)){
+    return fDEParent[index-1] ;
+  } 
+
+  return 0; 
 }
 
 //____________________________________________________________________________
@@ -248,18 +303,23 @@ AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit)
   Int_t max2 = fNiparent ;  
   Int_t index ; 
   for (index = 0 ; index < digit.fNprimary  ; index++){
-    Bool_t deja = kTRUE ;
+    Bool_t newPrim = kTRUE ;
     Int_t old ;
-    for ( old = 0 ; (old < max1) && deja; old++) { //already have this primary?
-      if(fPrimary[old] == digit.fPrimary[index])
-	deja = kFALSE;
+    for ( old = 0 ; (old < max1) && newPrim; old++) { //already have this primary?
+      if(fPrimary[old] == digit.fPrimary[index]) {
+	newPrim = kFALSE;
+	fDEPrimary[old] += digit.fDEPrimary[index];
+      }
     }
-    if(deja){
-      if(max1<fNMaxPrimary){ fPrimary[max1] = digit.fPrimary[index] ; 
-      fNprimary++ ;
-      max1++;}
+    if (newPrim) {
+      if(max1<fNMaxPrimary){ 
+	fPrimary[max1] = digit.fPrimary[index] ; 
+	fDEPrimary[max1] = digit.fDEPrimary[index] ; 
+	fNprimary++ ;
+	max1++;
+      }
       if(fNprimary==fNMaxPrimary) {
-
+	
 	TString mess = " NMaxPrimary  =  " ; 
 	mess += fNMaxPrimary ; 
 	mess += " is too small" ; 
@@ -270,18 +330,23 @@ AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit)
   }
   
   for (index = 0 ; index < digit.fNiparent ; index++){
-    Bool_t dejavu = kTRUE ;
+    Bool_t newParent = kTRUE ;
     Int_t old ;
-    for ( old = 0 ; (old < max2) && dejavu; old++) { //already have this primary?
-      if(fIparent[old] == digit.fIparent[index])
-	dejavu = kFALSE;
+    for ( old = 0 ; (old < max2) && newParent; old++) { //already have this primary?
+      if(fIparent[old] == digit.fIparent[index]) {
+	newParent = kFALSE;
+	fDEParent[old] += digit.fDEParent[index];
+      }
     }
-    if(dejavu){
-     if(max2<fNMaxiparent){ fIparent[max2] = digit.fIparent[index] ; 
-      fNiparent++ ;
-      max2++;}
+    if(newParent){
+      if(max2<fNMaxiparent) { 
+	fIparent[max2] = digit.fIparent[index] ; 
+	fDEParent[max2] = digit.fDEParent[index] ; 
+	fNiparent++ ;
+	max2++;
+      }
       if(fNiparent==fNMaxiparent) {
-
+	
 	TString mess = " NMaxiparent  =  " ; 
 	mess += fNMaxiparent ; 
 	mess += " is too small" ; 
@@ -302,6 +367,11 @@ AliEMCALDigit AliEMCALDigit::operator*(Float_t factor)
   Float_t tempo = static_cast<Float_t>(fAmp) ; 
   tempo *= factor ; 
   fAmp = static_cast<Int_t>(TMath::Ceil(tempo)) ; 
+  for(Int_t i=0; i < fNprimary; i++) 
+    fDEPrimary[i] *= factor;
+  for(Int_t i=0; i < fNiparent; i++) 
+    fDEParent[i] *= factor;
+
   return *this ;
 }
 
@@ -312,12 +382,14 @@ ostream& operator << ( ostream& out , const AliEMCALDigit & digit)
   
   out << "ID " << digit.fId << " Energy = " << digit.fAmp <<  " Time = " << digit.fTime << endl ; 
   Int_t i,j ;
-  for(i=0;i<digit.fNprimary;i++)
-    out << "Primary " << i+1 << " = " << digit.fPrimary[i] << endl ;
+  for(i=0;i<digit.fNprimary;i++) 
+    out << "Primary " << i+1 << " = " << digit.fPrimary[i] 
+	<< " : DE " << digit.fDEPrimary[i] << endl ;
    
   for(j=0;j<digit.fNiparent;j++)
-    out << "Iparent " << j+1 << " = " << digit.fIparent[j] << endl ;
- out << "Position in list = " << digit.fIndexInList << endl ; 
+    out << "Iparent " << j+1 << " = " << digit.fIparent[j] 
+	<< " : DE " << digit.fDEParent[j] << endl ;
+  out << "Position in list = " << digit.fIndexInList << endl ; 
   return out ;
 }
 

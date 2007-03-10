@@ -56,20 +56,23 @@ AliEMCALRecPoint::AliEMCALRecPoint()
     fAbsIdList(0),
     fTime(0.),
     fCoreRadius(10),  //HG check this
+    fDETracksList(0),
     fMulParent(0),
     fMaxParent(0),
     fParentsList(0),
+    fDEParentsList(0),
     fSuperModuleNumber(0)
 {
   // ctor
   fMaxTrack = 0 ;
   fMulDigit = 0 ;
   fAmp   = 0. ;   
-  //  fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-  //fGeomPtr = AliEMCALGeometry::GetInstance();
+  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
+    fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  else
+    fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
   fGeomPtr->GetTransformationForSM(); // Global <-> Local
 }
 
@@ -85,21 +88,30 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt)
     fAbsIdList(0),
     fTime(-1.),
     fCoreRadius(10),  //HG check this
+    fDETracksList(0),
     fMulParent(0),
     fMaxParent(1000),
     fParentsList(0),
+    fDEParentsList(0),
     fSuperModuleNumber(0)
 {
   // ctor
   fMaxTrack = 1000 ;
   fMulDigit   = 0 ; 
   fAmp   = 0. ;   
+  fDETracksList = new Float_t[fMaxTrack];
   fParentsList = new Int_t[fMaxParent];
+  fDEParentsList = new Float_t[fMaxParent];
+  for (Int_t i = 0; i < fMaxTrack; i++)
+    fDETracksList[i] = 0;
+  for (Int_t i = 0; i < fMaxParent; i++)
+    fDEParentsList[i] = 0;
 
-  //fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
-  //fGeomPtr = AliEMCALGeometry::GetInstance();
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
+    fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  else
+    fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
   fGeomPtr->GetTransformationForSM(); // Global <-> Local
 }
 
@@ -115,25 +127,31 @@ AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp)
     fAbsIdList(0),
     fTime(rp.fTime),
     fCoreRadius(rp.fCoreRadius),
+    fDETracksList(0),
     fMulParent(rp.fMulParent),
     fMaxParent(rp.fMaxParent),
     fParentsList(0),
+    fDEParentsList(0),
     fSuperModuleNumber(rp.fSuperModuleNumber)
 {
   //copy ctor
   fLambda[0] = rp.fLambda[0];
   fLambda[1] = rp.fLambda[1];
 
-  fEnergyList = new Float_t[rp.fMulDigit];
-  fTimeList = new Float_t[rp.fMulDigit];
-  fAbsIdList = new Int_t[rp.fMulDigit];
+  fEnergyList = new Float_t[rp.fMaxDigit];
+  fTimeList = new Float_t[rp.fMaxDigit];
+  fAbsIdList = new Int_t[rp.fMaxDigit];
   for(Int_t i = 0; i < rp.fMulDigit; i++) {
     fEnergyList[i] = rp.fEnergyList[i];
     fTimeList[i] = rp.fTimeList[i];
     fAbsIdList[i] = rp.fAbsIdList[i];
   }
-  fParentsList = new Int_t[rp.fMulParent];
+  fDETracksList = new Float_t[rp.fMaxTrack];
+  for(Int_t i = 0; i < rp.fMulTrack; i++) fDETracksList[i] = rp.fDETracksList[i];
+  fParentsList = new Int_t[rp.fMaxParent];
   for(Int_t i = 0; i < rp.fMulParent; i++) fParentsList[i] = rp.fParentsList[i];
+  fDEParentsList = new Float_t[rp.fMaxParent];
+  for(Int_t i = 0; i < rp.fMulParent; i++) fDEParentsList[i] = rp.fDEParentsList[i];
 
 }
 //____________________________________________________________________________
@@ -146,8 +164,12 @@ AliEMCALRecPoint::~AliEMCALRecPoint()
     delete[] fTimeList ; 
   if ( fAbsIdList )
     delete[] fAbsIdList ; 
+   if ( fDETracksList)
+    delete[] fDETracksList;
    if ( fParentsList)
     delete[] fParentsList;
+   if ( fDEParentsList)
+    delete[] fDEParentsList;
 }
 
 //____________________________________________________________________________
@@ -409,7 +431,7 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
   // in cell units - Nov 16,2006
 
   Double_t d = 0., wtot = 0., w = 0.;
-  Int_t iDigit=0, nstat=0, i=0;
+  Int_t iDigit=0, nstat=0;
   AliEMCALDigit * digit ;
   
   // Calculates the dispersion in cell units 
@@ -479,8 +501,8 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
     fGeomPtr->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
     // printf(" Id %i : Local x,y,z %f %f %f \n", digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
 
-    if(logWeight > 0.0) w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ));
-    else                w = fEnergyList[iDigit]; // just energy
+    if(logWeight > 0.0)  w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ));
+    else  w = fEnergyList[iDigit]; // just energy
 
     if(w>0.0) {
       wtot += w ;
@@ -643,21 +665,19 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 //______________________________________________________________________________
 void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
 {
-  // Constructs the list of primary particles (tracks) which have contributed to this RecPoint
+  // Constructs the list of primary particles (tracks) which 
+  // have contributed to this RecPoint and calculate deposited energy 
+  // for each track
   
   AliEMCALDigit * digit ;
-  Int_t * tempo    = new Int_t[fMaxTrack] ;
+  Int_t * primArray = new Int_t[fMaxTrack] ;
+  Float_t * dEPrimArray = new Float_t[fMaxTrack] ;
 
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
     Int_t nprimaries = digit->GetNprimary() ;
     if ( nprimaries == 0 ) continue ;
-    Int_t * newprimaryarray = new Int_t[nprimaries] ;
-    Int_t ii ; 
-    for ( ii = 0 ; ii < nprimaries ; ii++)
-      newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
-
     Int_t jndex ;
     for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
       if ( fMulTrack > fMaxTrack ) {
@@ -665,29 +685,34 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
 	Error("GetNprimaries", "increase fMaxTrack ")  ;
 	break ;
       }
-      Int_t newprimary = newprimaryarray[jndex] ;
+      Int_t newPrimary = digit->GetPrimary(jndex+1);
+      Float_t dEPrimary = digit->GetDEPrimary(jndex+1);
       Int_t kndex ;
       Bool_t already = kFALSE ;
       for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
-	if ( newprimary == tempo[kndex] ){
+	if ( newPrimary == primArray[kndex] ){
 	  already = kTRUE ;
+	  dEPrimArray[kndex] += dEPrimary; 
 	  break ;
 	}
       } // end of check
       if ( !already && (fMulTrack < fMaxTrack)) { // store it
-	tempo[fMulTrack] = newprimary ; 
+	primArray[fMulTrack] = newPrimary ; 
+	dEPrimArray[fMulTrack] = dEPrimary ; 
 	fMulTrack++ ;
       } // store it
     } // all primaries in digit
-    delete [] newprimaryarray ; 
   } // all digits
 
-  
-  fTracksList = new Int_t[fMulTrack] ;
-  for(index = 0; index < fMulTrack; index++)
-   fTracksList[index] = tempo[index] ;
- 
-  delete [] tempo ;
+  Int_t *sortIdx = new Int_t[fMulTrack];
+  TMath::Sort(fMulTrack,dEPrimArray,sortIdx); 
+  for(index = 0; index < fMulTrack; index++) {
+    fTracksList[index] = primArray[sortIdx[index]] ;    
+    fDETracksList[index] = dEPrimArray[sortIdx[index]] ;
+  }
+  delete [] sortIdx;
+  delete [] primArray ;
+  delete [] dEPrimArray ;
 
 }
 
@@ -697,17 +722,14 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
   // Constructs the list of parent particles (tracks) which have contributed to this RecPoint
  
   AliEMCALDigit * digit ;
-  Int_t * tempo    = new Int_t[fMaxParent] ;
+  Int_t * parentArray = new Int_t[fMaxTrack] ;
+  Float_t * dEParentArray = new Float_t[fMaxTrack] ;
 
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
     Int_t nparents = digit->GetNiparent() ;
     if ( nparents == 0 ) continue ;
-    Int_t * newparentarray = new Int_t[nparents] ;
-    Int_t ii ; 
-    for ( ii = 0 ; ii < nparents ; ii++)
-      newparentarray[ii] = digit->GetIparent(ii+1) ; 
 
     Int_t jndex ;
     for ( jndex = 0 ; jndex < nparents ; jndex++ ) { // all primaries in digit
@@ -716,31 +738,37 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 	Error("GetNiparent", "increase fMaxParent")  ;
 	break ;
       }
-      Int_t newparent = newparentarray[jndex] ;
+      Int_t newParent = digit->GetIparent(jndex+1) ;
+      Float_t newdEParent = digit->GetDEParent(jndex+1) ;
       Int_t kndex ;
       Bool_t already = kFALSE ;
       for ( kndex = 0 ; kndex < fMulParent ; kndex++ ) { //check if not already stored
-	if ( newparent == tempo[kndex] ){
+	if ( newParent == parentArray[kndex] ){
+	  dEParentArray[kndex] += newdEParent;
 	  already = kTRUE ;
 	  break ;
 	}
       } // end of check
       if ( !already && (fMulTrack < fMaxTrack)) { // store it
-	tempo[fMulParent] = newparent ; 
+	parentArray[fMulParent] = newParent ; 
+	dEParentArray[fMulParent] = newdEParent ; 
 	fMulParent++ ;
       } // store it
     } // all parents in digit
-    delete [] newparentarray ; 
   } // all digits
 
   if (fMulParent>0) {
-    fParentsList = new Int_t[fMulParent] ;
-    for(index = 0; index < fMulParent; index++)
-      fParentsList[index] = tempo[index] ;
+    Int_t *sortIdx = new Int_t[fMulParent];
+    TMath::Sort(fMulParent,dEParentArray,sortIdx); 
+    for(index = 0; index < fMulParent; index++) {
+      fParentsList[index] = parentArray[sortIdx[index]] ;      
+      fDEParentsList[index] = dEParentArray[sortIdx[index]] ;
+    }
+    delete [] sortIdx;
   }
  
-  delete [] tempo ;
-
+  delete [] parentArray;
+  delete [] dEParentArray;
 }
 
 //____________________________________________________________________________
@@ -850,59 +878,11 @@ Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * 
 Int_t AliEMCALRecPoint::GetPrimaryIndex() const  
 {
   // Get the primary track index in TreeK which deposits the most energy 
-  // in Digits which forms RecPoint. Kinematics, Hits and Digits must be 
-  // loaded before the call of the method.
+  // in Digits which forms RecPoint. 
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader(); 
-  if (!rl) 
-    AliError(Form(" No Runloader ")) ; 
- 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
-    (rl->GetDetectorLoader("EMCAL"));
-
-  // Get the list of digits forming this RecPoint
-  Int_t  nDigits   = fMulDigit   ;
-  Int_t *digitList = fDigitsList ;
-  
-  // Find the digit with maximum amplitude
-  AliEMCALDigit *digit = 0;
-  TClonesArray *digits = emcalLoader->Digits();
-  Int_t maxAmp = 0;
-  Int_t bestDigitIndex = -1;
-  for (Int_t iDigit=0; iDigit<nDigits; iDigit++) {
-    digit = static_cast<AliEMCALDigit *>(digits->At(digitList[iDigit]));
-    if (digit->GetAmp() > maxAmp) {
-      maxAmp = digit->GetAmp();
-      bestDigitIndex = iDigit;
-    }
-  }
-
-  digit = static_cast<AliEMCALDigit *>(digits->At(digitList[bestDigitIndex]));  
-
-  // Get the list of hits producing this digit,
-  // find which hit has deposited more energy 
-  // and find the primary track.
-
-  AliEMCALHit *hit = 0;
-  TClonesArray *hits = emcalLoader->Hits();
-
-  Double_t maxedep  =  0;
-  Int_t    maxtrack = -1;
-  Int_t    nHits    = hits ->GetEntries();
-  Int_t    id       = digit->GetId();
-  for (Int_t iHit=0; iHit<nHits; iHit++) {
-    hit = static_cast<AliEMCALHit*> (hits->At(iHit)) ;
-    if(hit->GetId() == id){
-      Double_t edep  = hit->GetEnergy();
-      Int_t    track = hit->GetIparent();//Primary();
-      if(edep > maxedep){
-	maxedep  = edep;
-	maxtrack = track;
-      }
-    }
-  }
-  if (maxtrack != -1) return maxtrack; 
-  return -12345;                       // no track found :(
+  if (fMulTrack)
+    return fTracksList[0];
+  return -12345;
 }
 
 //____________________________________________________________________________
