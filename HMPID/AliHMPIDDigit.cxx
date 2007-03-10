@@ -24,8 +24,9 @@ ClassImp(AliHMPIDDigit)
 const Float_t AliHMPIDDigit::fMinPcX[]={ 0.00 ,  66.60 ,   0.00 ,  66.60 ,  0.00 ,  66.60};
 const Float_t AliHMPIDDigit::fMaxPcX[]={64.00 , 130.60 ,  64.00 , 130.60 , 64.00 , 130.60};
 
-const Float_t AliHMPIDDigit::fMinPcY[]={ 0.00 , 42.92 ,  85.84,   0.00 , 42.92 ,  85.84};
-const Float_t AliHMPIDDigit::fMaxPcY[]={40.32 , 83.24 , 126.16,  40.32 , 83.24 , 126.16};
+const Float_t AliHMPIDDigit::fMinPcY[]={ 0.00 , 0.00 , 42.92 ,  42.92,  85.84,  85.84};
+const Float_t AliHMPIDDigit::fMaxPcY[]={40.32 , 40.32, 83.24 ,  83.24, 126.16, 126.16};
+
 
 
 /*

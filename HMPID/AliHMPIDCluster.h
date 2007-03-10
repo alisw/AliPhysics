@@ -30,6 +30,7 @@ public:
          void           Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
   static void           FitFunc(Int_t &, Double_t *, Double_t &, Double_t *, Int_t);                       //fit function to be used by MINUIT
 //private part  
+         Int_t          Box      (                                         )const{return fBox;                                  }
          void           CoG      (                                         );                                                      //calculates center of gravity
          void           CorrSin  (                                         );                                                      //sinoidal correction   
          Int_t          Ch       (                                         )const{return fCh;                                    } //chamber number
