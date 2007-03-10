@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.109  2007/03/01 11:37:37  kharlov
+ * Strip units changed from 8x1 to 8x2 (T.Pocheptsov)
+ *
  * Revision 1.108  2007/02/02 09:40:50  alibrary
  * Includes required by ROOT head
  *
@@ -208,11 +211,12 @@ void AliPHOSv1::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  TString name      =  GetGeometry()->GetName() ; 
-
   Int_t moduleNumber ;
   
-  static Int_t idPCPQ = gMC->VolId("PCPQ");
+  static Int_t idPCPQ = -1;
+  if (strstr(fTitle.Data(),"noCPV") == 0) 
+    idPCPQ = gMC->VolId("PCPQ");
+
   if( gMC->CurrentVolID(copy) == idPCPQ &&
       (gMC->IsTrackEntering() ) &&
       gMC->TrackCharge() != 0) {      
