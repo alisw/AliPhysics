@@ -17,13 +17,9 @@ class TFile;
 class TH1F;
 
 class TBrowser;
-class AliEMCALGeometry;
 
 // --- AliRoot header files ---
 #include "AliEMCALv1.h"
-
-// for TRD2 case
-//#include "TGeant3.h"
 
 class AliEMCALv2 : public AliEMCALv1 {
   
@@ -56,7 +52,6 @@ public:
   void TestIndexTransition(int pri=0, int idmax=0); // *MENU*
 
  protected:
-  AliEMCALGeometry* fGeometry; //!
   TH1F*             fHDe;      //!
   TH1F*             fHNhits;      //!
 

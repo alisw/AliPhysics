@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.42  2007/02/24 20:42:35  pavlinov
+ * fixed error of Geant3 parameters initialisation
+ *
  * Revision 1.41  2007/02/05 10:43:25  hristov
  * Changes for correct initialization of Geant4 (Mihaela)
  *
@@ -20,7 +23,7 @@
 //  holds all geant information of
 //  materials, etc.
 //                  
-//*-- Author: Yves Schutz (SUBATECH)
+//*-- Author: Yves Schutz (SUBATECH) 
 
 // --- ROOT system ---
 
@@ -30,6 +33,7 @@ class TFolder ;
 class TRandom ; 
 class TGraph;
 class TF1;
+class AliEMCALGeometry;
 
 // --- AliRoot header files ---
 class AliRawReader;
@@ -109,8 +113,10 @@ protected:
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
   static Int_t fgThreshold;             // threshold
-  static Int_t fgDDLPerSuperModule;        // number of DDL per SuperModule
+  static Int_t fgDDLPerSuperModule;     // number of DDL per SuperModule
  
+  AliEMCALGeometry* fGeometry;          //!
+
 private:
   AliEMCAL(const AliEMCAL& emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);

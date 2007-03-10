@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.51  2007/02/24 20:42:35  pavlinov
+ * fixed error of Geant3 parameters initialisation
+ *
  * Revision 1.50  2007/02/05 10:43:25  hristov
  * Changes for correct initialization of Geant4 (Mihaela)
  *
@@ -87,11 +90,13 @@ AliEMCAL::AliEMCAL()
     fHighCharge(0.),
     fHighGain(0.),
     fHighLowGainFactor(0.),
-    fLowGainOffset(0)
+    fLowGainOffset(0),
+    fGeometry(0)
 {
   // Default ctor 
   fName = "EMCAL" ;
   InitConstants();
+  // Should call  AliEMCALGeometry::GetInstance(EMCAL->GetTitle(),"") for getting EMCAL geometry
 }
 
 //____________________________________________________________________________
@@ -103,11 +108,11 @@ AliEMCAL::AliEMCAL(const char* name, const char* title)
     fHighCharge(0.),
     fHighGain(0.),
     fHighLowGainFactor(0.),
-    fLowGainOffset(0)
+    fLowGainOffset(0),
+    fGeometry(0)
 {
   //   ctor : title is used to identify the layout
   InitConstants();
-
 }
 
 //____________________________________________________________________________

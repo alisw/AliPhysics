@@ -52,7 +52,6 @@ ClassImp(AliEMCALv2)
 //______________________________________________________________________
 AliEMCALv2::AliEMCALv2()
   : AliEMCALv1(), 
-    fGeometry(0),
     fHDe(0),
     fHNhits(0)
 {
@@ -62,7 +61,6 @@ AliEMCALv2::AliEMCALv2()
 //______________________________________________________________________
 AliEMCALv2::AliEMCALv2(const char *name, const char *title)
   : AliEMCALv1(name,title),
-    fGeometry(0),
     fHDe(0),
     fHNhits(0)
 {
