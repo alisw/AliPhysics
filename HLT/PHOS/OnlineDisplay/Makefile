@@ -2,12 +2,14 @@ ObjSuf		= o
 SrcSuf		= cxx
 HeadSuf		= h
 
-ROOTLIBS	= -L$(ROOTSYS)/lib -lNew -lCint \
-		-lGraf -lGraf3d -lHist -lHtml -lMatrix -lMinuit\
-		-lPostscript -lTree -lASImage \
-		-lCore -lEG -lFoam -lFumili -lGedOld -lGed \
-		-lGeom -lGpad -lGraf -lGuiBld -lGui -lMatrix\
-		-lRint -lRootAuth  -lThread -lVMC
+#ROOTLIBS	= -L$(ROOTSYS)/lib -lNew -lCint \
+#		-lGraf -lGraf3d -lHist -lHtml -lMatrix -lMinuit\
+#		-lPostscript -lTree -lASImage \
+#		-lCore -lEG -lFoam -lFumili -lGedOld -lGed \
+#		-lGeom -lGpad -lGraf -lGuiBld -lGui -lMatrix\
+#		-lRint -lRootAuth  -lThread -lVMC
+
+ROOTLIBS	= `root-config --libs --glibs`
 
 ###ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lESD -lSTEER -lRAWDatarec   -lRAWDatabase 
 ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  
