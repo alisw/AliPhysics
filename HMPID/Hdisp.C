@@ -13,10 +13,14 @@ void Hdisp()
     gAL->LoadgAlice();                                                                           //take new AliRun object from galice.root   
     gHL=gAL->GetDetectorLoader("HMPID");  gH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");  //get HMPID object from galice.root
     gMaxEvt=gAL->GetNumberOfEvents()-1;
-    gHL->LoadHits(); gHL->LoadDigits(); gHL->LoadRecPoints();
+    gHL->LoadHits(); gHL->LoadSDigits(); gHL->LoadDigits(); gHL->LoadRecPoints();
 
     TFile *pEsdFl=TFile::Open("AliESDs.root"); gEsdTr=(TTree*) pEsdFl->Get("esdTree"); gEsdTr->SetBranchAddress("ESD", &gEsd);
     pAll->cd(7); TButton *pBtn=new TButton("Next","ReadEvt()",0,0,0.2,0.1);   pBtn->Draw();
+                 TButton *pHitBtn=new TButton("Print hits","PrintHits()",0,0.2,0.3,0.3);   pHitBtn->Draw();
+                 TButton *pSdiBtn=new TButton("Print sdis","PrintSdis()",0,0.4,0.3,0.5);   pSdiBtn->Draw();
+                 TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0,0.6,0.3,0.7);   pDigBtn->Draw();
+                 TButton *pCluBtn=new TButton("Print clus","PrintClus()",0,0.8,0.3,0.9);   pCluBtn->Draw();  
     ReadEvt();
   }else{
     pAll->cd(7); TButton *pBtn=new TButton("Next","SimEvt()",0,0,0.2,0.1);   pBtn->Draw(); 
@@ -30,9 +34,9 @@ void ReadEvt()
   if(gEvt>gMaxEvt) gEvt=0; if(gEvt<0) gEvt=gMaxEvt;
   
   gEsdTr->GetEntry(gEvt); gAL->GetEvent(gEvt); 
-  ReadHits(&hits); gHL->TreeD()->GetEntry(0); gHL->TreeR()->GetEntry(0);
+  ReadHits(&hits); gHL->TreeS()->GetEntry(0); gHL->TreeD()->GetEntry(0); gHL->TreeR()->GetEntry(0);
   
-  pAll->cd(3);  gPad->Clear(); TLatex txt;txt.DrawLatex(0.2,0.2,Form("Event %i (total %i)",gEvt,gMaxEvt));
+  
   DrawEvt(&hits,gH->DigLst(),gH->CluLst(),gEsd);
   gEvt++;
 }
@@ -127,12 +131,16 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
 {//draws all the objects of current event in given canvas
 
   AliHMPIDRecon rec;  
-  TPolyMarker *pTxC[7];  TPolyMarker *pRin[7]; //intesections and rings
+  TPolyMarker *pTxC[7], *pRin[7]; TMarker *pMip,*pCko,*pFee,*pDig,*pClu;
+  pMip=new TMarker; pMip->SetMarkerColor(kRed);  pMip->SetMarkerStyle(kOpenTriangleUp);
+  pCko=new TMarker; pCko->SetMarkerColor(kRed);  pCko->SetMarkerStyle(kOpenCircle);
+  pFee=new TMarker; pFee->SetMarkerColor(kRed);  pFee->SetMarkerStyle(kOpenDiamond);
+  pDig=new TMarker; pDig->SetMarkerColor(kGreen);pDig->SetMarkerStyle(kOpenSquare);
+  pClu=new TMarker; pClu->SetMarkerColor(kBlue); pClu->SetMarkerStyle(kStar);
   for(Int_t ch=0;ch<7;ch++){
     pTxC[ch]=new TPolyMarker; pTxC[ch]->SetMarkerStyle(2); pTxC[ch]->SetMarkerColor(kRed); pTxC[ch]->SetMarkerSize(3);
     pRin[ch]=new TPolyMarker; pRin[ch]->SetMarkerStyle(6); pRin[ch]->SetMarkerColor(kMagenta);
   }
-  
   
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop to collect cerenkov rings and intersection points
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
@@ -143,14 +151,18 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     pTxC[ch]->SetNextPoint(xPc,yPc);                          //add new intersection point
     
     Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
-    
     if(ckov>0){
       rec.SetTrack(xPc,yPc,th,ph);
      TVector2 pos;  for(int j=0;j<100;j++){rec.TracePhot(ckov,j*0.0628,pos); pRin[ch]->SetNextPoint(pos.X(),pos.Y());}      
     }
   }//tracks loop
       
+  Int_t totHit=pHitLst->GetEntriesFast(),totDig=0,totClu=0,totTxC=0;  
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop    
+    totTxC+=pTxC[iCh]->GetN();
+    totDig+=((TClonesArray*)pDigLst->At(iCh))->GetEntriesFast();
+    totClu+=((TClonesArray*)pCluLst->At(iCh))->GetEntriesFast();
+    
     switch(iCh){
       case 6: pAll->cd(1); break; case 5: pAll->cd(2); break;
       case 4: pAll->cd(4); break; case 3: pAll->cd(5); break; case 2: pAll->cd(6); break;
@@ -158,16 +170,28 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     }
     gPad->SetEditable(kTRUE); gPad->Clear(); 
     DrawCh(iCh);
-    for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){
+                           
+    for(Int_t iHit=0;iHit<pHitLst->GetEntriesFast();iHit++){
       AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);
-      if(pHit->Ch()==iCh)        pHit->Draw();  //draw hits
-    }
+      if(pHit->Ch()==iCh) pHit->Draw();
+    }    
+           
     ((TClonesArray*)pDigLst->At(iCh))->Draw();  //draw digits
     ((TClonesArray*)pCluLst->At(iCh))->Draw();  //draw clusters
                             pTxC[iCh]->Draw();  //draw intersections
                             pRin[iCh]->Draw();  //draw rings
     gPad->SetEditable(kFALSE);
   }//chambers loop
+  
+  pAll->cd(3);  gPad->Clear(); TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
+                                        pLeg->SetHeader(Form("Event %i Total %i",gEvt,gMaxEvt+1));
+                                        pLeg->AddEntry(pTxC[0],Form("TRKxPC %i"     ,totTxC),"p");
+                                        pLeg->AddEntry(pMip   ,Form("Mip hits %i"   ,totHit),"p");    
+                                        pLeg->AddEntry(pCko   ,Form("Ckov hits %i"  ,totHit),"p");    
+                                        pLeg->AddEntry(pFee   ,Form("Feed hits %i"  ,totHit),"p");    
+                                        pLeg->AddEntry(pDig   ,Form("Digs %i"       ,totDig),"p");    
+                                        pLeg->AddEntry(pClu   ,Form("Clus %i"       ,totClu),"p");    
+                                        pLeg->Draw();
 }//DrawEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
@@ -179,8 +203,8 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
   if(evt==5&&zoom==maxZoom) return; 
   if(evt==6&&zoom==minZoom) return; 
   
-  if(!obj->IsA()->InheritsFrom("TPad")) return;  //current object is not pad
-  TPad *pPad=(TPad*)obj;
+ // if(!obj->IsA()->InheritsFrom("TPad")) return;  //current object is not pad
+  TVirtualPad *pPad=gROOT->GetSelectedPad();
   if(pPad->GetNumber()==3 || pPad->GetNumber()==7) return; //current pad is wrong
 
  // Printf("evt=%i (%i,%i) %s",evt,px,py,obj->GetName());
@@ -195,3 +219,43 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
   pPad->Update();                                              
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintHits()
+{
+//Prints a list of HMPID hits for a given event. Default is event number 0.
+  Printf("List of HMPID hits for event %i",gEvt);
+  
+  Int_t iTotHits=0;
+  for(Int_t iPrim=0;iPrim<gHL->TreeH()->GetEntries();iPrim++){//prims loop
+    gHL->TreeH()->GetEntry(iPrim);      
+    gH->Hits()->Print();
+    iTotHits+=gH->Hits()->GetEntries();
+  }
+  Printf("totally %i hits for event %i",iTotHits,gEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintSdis()
+{
+//prints a list of HMPID sdigits  for a given event
+  Printf("List of HMPID sdigits for event %i",gEvt);
+  gH->SdiLst()->Print();
+  Printf("totally %i sdigits for event %i",gH->SdiLst()->GetEntries(),gEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintDigs()
+{
+//prints a list of HMPID digits
+  Printf("List of HMPID digits for event %i",gEvt);  
+  gH->DigLst()->Print();
+  Int_t totDigs=0;  for(Int_t i=0;i<7;i++) {totDigs+=gH->DigLst(i)->GetEntries();}
+  Printf("totally %i digits for event %i",totDigs,gEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintClus()
+{//prints a list of HMPID clusters  for a given event
+  Printf("List of HMPID clusters for event %i",gEvt);
+  gH->CluLst()->Print();
+  
+  Int_t iCluCnt=0; for(Int_t iCh=0;iCh<7;iCh++) iCluCnt+=gH->CluLst(iCh)->GetEntries();
+  
+  Printf("totally %i clusters for event %i",iCluCnt,gEvt);
+}
