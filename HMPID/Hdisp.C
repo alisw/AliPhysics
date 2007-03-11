@@ -4,7 +4,8 @@ Int_t gEvt=0; Int_t gMaxEvt=0;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hdisp()
 {//display events from files if any in current directory or simulated events
-  pAll=new TCanvas("all","",1000,900); pAll->Divide(3,3,0,0);pAll->ToggleEditor();
+  pAll=new TCanvas("all","",1300,900); pAll->Divide(3,3,0,0);
+//  pAll->ToggleEditor();
   pAll->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,"","DoZoom(Int_t,Int_t,Int_t,TObject*)");
   
   if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
@@ -48,13 +49,14 @@ void SimEvt()
   TObjArray    digs(7); for(Int_t i=0;i<7;i++) digs.AddAt(new TClonesArray("AliHMPIDDigit"),i);
   TObjArray    clus(7); for(Int_t i=0;i<7;i++) clus.AddAt(new TClonesArray("AliHMPIDCluster"),i);
   AliESD esd;
-    
+  AliHMPIDDigit::fSigmas=3;
+  AliHMPIDDigitizer::DoNoise(kTRUE);
   SimEsd(&esd);
   SimHits(&esd,&hits);
              AliHMPIDv1::Hit2Sdi(&hits,&sdig);                               
       AliHMPIDDigitizer::Sdi2Dig(&sdig,&digs);     
-  AliHMPIDReconstructor::Dig2Clu(&digs,&clus);
-        AliHMPIDTracker::Recon(&esd,&clus);
+      AliHMPIDReconstructor::Dig2Clu(&digs,&clus);
+      AliHMPIDTracker::Recon(&esd,&clus,OpenCalib());
   
   pAll->cd(3);  gPad->Clear(); TLatex txt;txt.DrawLatex(0.2,0.2,Form("Simulated event %i",gEvt));
   DrawEvt(&hits,&digs,&clus,&esd);  
@@ -64,12 +66,12 @@ void SimEvt()
 void SimEsd(AliESD *pEsd)
 {
   TParticle part; TLorentzVector mom;
-  for(Int_t iTrk=0;iTrk<25;iTrk++){//stack loop
+  for(Int_t iTrk=0;iTrk<100;iTrk++){//stack loop
     part.SetPdgCode(kProton);
-    part.SetProductionVertex(0,0,0,0);  
-    Double_t eta= -0.4+gRandom->Rndm()*0.8; //rapidity is random [-0.4,+0.4]
-    Double_t phi= gRandom->Rndm()*1.4;      //phi is random      [ 0  , 80 ] degrees    
-    mom.SetPtEtaPhiM(2,eta,phi,part.GetMass());
+    part.SetProductionVertex(0,0,0,0);
+    Double_t eta= -0.2+gRandom->Rndm()*0.4; //rapidity is random [-0.2,+0.2]
+    Double_t phi= gRandom->Rndm()*60.*TMath::DegToRad();   //phi is random      [ 0  , 60 ] degrees    
+    mom.SetPtEtaPhiM(5,eta,phi,part.GetMass());
     part.SetMomentum(mom);
     AliESDtrack trk(&part);
     pEsd->AddTrack(&trk);
@@ -78,8 +80,8 @@ void SimEsd(AliESD *pEsd)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimHits(AliESD *pEsd, TClonesArray *pHits)
 {
-  const Int_t kCerenkov=AliHMPIDParam::CkovCode();
-  const Int_t kFeedback=AliHMPIDParam::FeedCode();
+  const Int_t kCerenkov=50000050;
+  const Int_t kFeedback=50000051;
   
   AliHMPIDRecon rec;
   
@@ -89,15 +91,24 @@ void SimHits(AliESD *pEsd, TClonesArray *pHits)
     Float_t xRa,yRa;
     Int_t ch=AliHMPIDTracker::IntTrkCha(pTrk,xRa,yRa);
     if(ch<0) continue; //this track does not hit HMPID
-    Float_t ckov=0.63;
+    Float_t beta = pTrk->GetP()/(TMath::Sqrt(pTrk->GetP()*pTrk->GetP()+0.938*0.938));
+    Float_t ckov=TMath::ACos(1./(beta*1.292));
 
-    Float_t th,ph,xPc,yPc,; pTrk->GetHMPIDtrk(xPc,yPc,th,ph); rec.SetTrack(xRa,yRa,th,ph); 
+    Float_t theta,phi,xPc,yPc,; 
+    pTrk->GetHMPIDtrk(xPc,yPc,theta,phi); 
+    rec.SetTrack(xRa,yRa,theta,phi); 
     
     if(!AliHMPIDDigit::IsInDead(xPc,yPc)) new((*pHits)[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,iTrk,xPc,yPc);                 //mip hit
-    for(int i=0;i<4;i++)  new((*pHits)[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,iTrk,gRandom->Rndm()*130,gRandom->Rndm()*126); //bkg hits 4 per track
-    for(int i=0;i<16;i++){
+    /*
+    for(int i=0;i<4;i++) { 
+      Float_t x=gRandom->Rndm()*130;Float_t y=gRandom->Rndm()*126;
+      if(!AliHMPIDDigit::IsInDead(x,y)) new((*pHits)[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,iTrk,x,y); //bkg hits 4 per track
+    }
+    */
+    Int_t nPhots = (Int_t)(20.*TMath::Power(TMath::Sin(ckov),2)/TMath::Power(TMath::Sin(TMath::ACos(1./1.292)),2));
+    for(int i=0;i<nPhots;i++){
       rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi(),pos);
-      new((*pHits)[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,iTrk,pos.X(),pos.Y());
+      if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) new((*pHits)[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,iTrk,pos.X(),pos.Y());
     }                      //photon hits  
   }//tracks loop    
 }//SimHits()
@@ -156,7 +167,11 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
     if(ckov>0){
       rec.SetTrack(xPc,yPc,th,ph);
-     TVector2 pos;  for(int j=0;j<100;j++){rec.TracePhot(ckov,j*0.0628,pos); pRin[ch]->SetNextPoint(pos.X(),pos.Y());}      
+      TVector2 pos;  
+      for(int j=0;j<100;j++){
+       rec.TracePhot(ckov,j*0.0628,pos); 
+       if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) pRin[ch]->SetNextPoint(pos.X(),pos.Y());
+      }      
     }
   }//tracks loop
       
@@ -182,7 +197,7 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     ((TClonesArray*)pDigLst->At(iCh))->Draw();  //draw digits
     ((TClonesArray*)pCluLst->At(iCh))->Draw();  //draw clusters
                             pTxC[iCh]->Draw();  //draw intersections
-                            pRin[iCh]->Draw();  //draw rings
+                            pRin[iCh]->Draw("CLP");  //draw rings
     gPad->SetEditable(kFALSE);
   }//chambers loop
   
@@ -207,7 +222,7 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
   if(evt==6&&zoom==minZoom) return; 
   
  // if(!obj->IsA()->InheritsFrom("TPad")) return;  //current object is not pad
-  TVirtualPad *pPad=gROOT->GetSelectedPad();
+  TVirtualPad *pPad=gPad->GetSelectedPad();
   if(pPad->GetNumber()==3 || pPad->GetNumber()==7) return; //current pad is wrong
 
  // Printf("evt=%i (%i,%i) %s",evt,px,py,obj->GetName());
@@ -261,4 +276,18 @@ void PrintClus()
   Int_t iCluCnt=0; for(Int_t iCh=0;iCh<7;iCh++) iCluCnt+=gH->CluLst(iCh)->GetEntries();
   
   Printf("totally %i clusters for event %i",iCluCnt,gEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TObjArray* OpenCalib()
+{
+  AliCDBManager* pCDB = AliCDBManager::Instance();
+  pCDB->SetDefaultStorage("local://$HOME");
+  AliCDBEntry *pQthreEnt=pCDB->Get("HMPID/Calib/Qthre",0);
+  AliCDBEntry *pNmeanEnt=pCDB->Get("HMPID/Calib/Nmean",0);
+  
+  if(!pQthreEnt || ! pNmeanEnt) return;
+  
+  TObjArray *pNmean=(TObjArray*)pNmeanEnt->GetObject(); 
+  TObjArray *pQthre=(TObjArray*)pQthreEnt->GetObject(); 
+  return pNmean;
 }

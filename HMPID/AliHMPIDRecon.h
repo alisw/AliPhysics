@@ -36,7 +36,7 @@ public :
   void     Propagate    (const TVector3 &dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
   void     Refract      (      TVector3 &dir,                    Double_t n1,    Double_t n2)const;//refract photon on the boundary
   Double_t TracePhot    (Double_t ckovTh,Double_t ckovPh,TVector2 &pos                      )const;//trace photon created by track to PC 
-  void     SetTrack     (Double_t x,Double_t y,Double_t th,Double_t ph                      ){fTrkDir.SetMagThetaPhi(1,th,ph);  fTrkPos.Set(x,y);}//set track
+  void     SetTrack     (Double_t x,Double_t y,Double_t theta,Double_t phi                  ){fTrkDir.SetMagThetaPhi(1,theta,phi);  fTrkPos.Set(x,y);}//set track
   Double_t SigLoc       (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to cathode segmetation
   Double_t SigGeom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknown photon origin
   Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
