@@ -75,6 +75,7 @@ fEquippmentID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),  fModuleID(
 int 
 AliHLTPHOSRawAnalyzerComponent::Deinit()
 {
+  cout <<  "Deinit" << endl;
   return 0;
 }
 
@@ -86,6 +87,7 @@ AliHLTPHOSRawAnalyzerComponent::Deinit()
 int 
 AliHLTPHOSRawAnalyzerComponent::DoDeinit()
 {
+  cout << "DoDeinit" << endl;
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen DoDeinit");
 
   if(fRawMemoryReader !=0)
@@ -141,10 +143,10 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-  AliHLTUInt8_t tmpMod            = 0;
-  AliHLTUInt8_t tmpZ            = 0;
-  AliHLTUInt8_t tmpX            = 0;
-  AliHLTUInt8_t tmpGain           = 0;
+  AliHLTUInt8_t tmpMod    = 0;
+  AliHLTUInt8_t tmpZ      = 0;
+  AliHLTUInt8_t tmpX      = 0;
+  AliHLTUInt8_t tmpGain   = 0;
   Int_t sampleCnt         = 0;
   Int_t processedChannels = 0;
   UInt_t offset           = 0; 
@@ -225,7 +227,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
       fOutPtr->fValidData[tmpChannelCnt].fTime    = analyzerPtr->GetTiming();
       //      tmpChannelCnt ++;
    
-   ResetDataPtr(tmpStartIndex, sampleCnt);
+      ResetDataPtr(tmpStartIndex, sampleCnt);
       sampleCnt = 0;
 
 
