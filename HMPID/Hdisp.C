@@ -78,8 +78,11 @@ void SimEsd(AliESD *pEsd)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimHits(AliESD *pEsd, TClonesArray *pHits)
 {
+  const Int_t kCerenkov=AliHMPIDParam::CkovCode();
+  const Int_t kFeedback=AliHMPIDParam::FeedCode();
+  
   AliHMPIDRecon rec;
-  const Int_t kCerenkov=50000050,kFeedback=50000051;
+  
   Int_t hc=0; TVector2 pos;
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
@@ -115,7 +118,7 @@ void ReadHits(TClonesArray *pHitLst)
 void DrawCh(Int_t iCh) 
 { 
   gPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5); 
-  TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));
+  if(iCh>=0){TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));}
   
   for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++){
     TBox *pBox=new TBox(AliHMPIDDigit::fMinPcX[iPc],AliHMPIDDigit::fMinPcY[iPc],

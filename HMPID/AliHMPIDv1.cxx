@@ -316,7 +316,7 @@ void AliHMPIDv1::GenFee(Float_t qtot)
     Int_t outputNtracksStored;    
     gAlice->GetMCApp()->PushTrack(1,                             //transport
                      gAlice->GetMCApp()->GetCurrentTrackNumber(),//parent track 
-                     kFeedback,                                  //PID
+                     50000051,                                   //PID
 		     mom[0],mom[1],mom[2],mom[3],                //track momentum  
                      x4.X(),x4.Y(),x4.Z(),x4.T(),                //track origin 
                      pol[0],pol[1],pol[2],                       //polarization
@@ -484,7 +484,7 @@ void AliHMPIDv1::StepHistory()
     case kProton:      sParticle="PROTON"    ;break;
     case kNeutron:     sParticle="neutron"   ;break;
     case kGamma:       sParticle="gamma"     ;break;
-    case kCerenkov:    sParticle="CKOV"    ;break;
+    case 50000050:     sParticle="CKOV"      ;break;
     case kPi0:         sParticle="Pi0"       ;break;  
     case kPiPlus:      sParticle="Pi+"       ;break;  
     case kPiMinus:     sParticle="Pi-"       ;break;  
@@ -529,7 +529,7 @@ void AliHMPIDv1::StepManager()
   Int_t   copy; //volume copy aka node
   
 //Treat photons    
-  if((gMC->TrackPid()==kCerenkov||gMC->TrackPid()==kFeedback)&&gMC->CurrentVolID(copy)==fIdPc){  //photon (Ckov or feedback) hit PC (fIdPc)
+  if((gMC->TrackPid()==50000050||gMC->TrackPid()==50000051)&&gMC->CurrentVolID(copy)==fIdPc){  //photon (Ckov or feedback) hit PC (fIdPc)
     if(gMC->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
       if(IsLostByFresnel()){ gMC->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC       
                        gMC->CurrentVolOffID(2,copy);                                             //current chamber since geomtry tree is HMPID-Rppf-Rpc

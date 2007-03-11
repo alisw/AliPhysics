@@ -10,9 +10,6 @@
 #include <TGeoManager.h>   //Instance()
 #include <TVector3.h>      //Lors2Mars() Mars2Lors()
  
-static const int kCerenkov=50000050;  //??? go to something more general like TPDGCode
-static const int kFeedback=50000051;  //??? go to something more general like TPDGCode
-
 // Class providing all the needed parametrised information
 // to construct the geometry, to define segmentation and to provide response model
 // In future will also provide all the staff needed for alignment and calibration
@@ -37,7 +34,7 @@ public:
   void     Mars2LorsVec(Int_t c,Double_t *m,Float_t &th,Float_t &ph         )const{Double_t l[3]; fM[c]->MasterToLocalVect(m,l); Float_t pt=TMath::Sqrt(l[0]*l[0]+l[1]*l[1]); th=TMath::ATan(l[2]/pt); ph=TMath::ATan(l[0]/pt);}    
   TVector3 Norm        (Int_t c                                             )const{Double_t n[3]; Norm(c,n); return TVector3(n);               }//norm 
   void     Norm        (Int_t c,Double_t *n                                 )const{Double_t l[3]={0,0,1};fM[c]->LocalToMasterVect(l,n);        }//norm
-
+  
   enum EPlaneId {kPc,kRad,kAnod};            //3 planes in chamber 
 protected:
          AliHMPIDParam();             //default ctor is protected to enforce it to be singleton

@@ -45,7 +45,8 @@ void AliHMPIDHit::Hit2Sdi(TClonesArray *pSdiLst,Int_t iHow)const
 
   for(Int_t i=-iHow;i<=iHow;i++){                            //horizontal loop
     for(Int_t j=-iHow;j<=iHow;j++){                          //vertical loop
-      if(dig.Set(fCh,pc,px+i,py+j,fQ*dig.IntMathieson(fLx,fLy),fTrack)) continue;
+      if(dig.Set(fCh,pc,px+i,py+j,fTrack)) continue;
+      dig.SetQ(fQ*dig.IntMathieson(fLx,fLy));
       new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(dig);
     }
   }

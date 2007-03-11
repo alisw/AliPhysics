@@ -51,7 +51,8 @@ public:
          Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
   inline void    Raw         (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;                                                 //digit->(w32,ddl,r,d,a)
   inline void    Raw         (UInt_t  w32,Int_t  ddl         );                                                                        //(w32,ddl)->digit
-  inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Float_t q=0,Int_t tid=0);                                                //manual creation 
+  inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Int_t tid=0);                                                            //manual creation 
+         void    SetQ        (Float_t q                      )     {fQ=q;}                                                             //manual creation 
   static void    WriteRaw    (TObjArray *pDigLst             );                                                                        //write as raw stream     
   
   static Float_t SizeAllX    (                               )     {return fMaxPcX[5];}                                                //all PCs size x, [cm]        
@@ -180,15 +181,16 @@ void AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl)
   fPad=Abs(ch,pc,px,py);fQ=q;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDDigit::Set(Int_t ch,Int_t pc,Int_t px,Int_t py,Float_t qdc,Int_t tid)
+Bool_t AliHMPIDDigit::Set(Int_t ch,Int_t pc,Int_t px,Int_t py,Int_t tid)
 {
 // Manual creation of digit
 // Arguments: ch,pc,px,py,qdc,tid  
-//   Returns: none  
+//   Returns: kTRUE if wrong digit
   if(px<kMinPx || px>kMaxPx) return kTRUE;
   if(py<kMinPy || py>kMaxPy) return kTRUE;
 
-  fPad=Abs(ch,pc,px,py);fQ=qdc;fTracks[0]=tid;
+  fPad=Abs(ch,pc,px,py);fTracks[0]=tid;
+  fQ=0;
   return kFALSE;
 }
 #endif
