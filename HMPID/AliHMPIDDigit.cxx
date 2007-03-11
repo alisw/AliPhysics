@@ -36,25 +36,26 @@ Int_t AliHMPIDDigit::fSigmas=4;
 
 
 /*
+ Preface: all geometrical information (like left-right sides) is reported as seen from electronic side.
+ 
+     d10          d1    d10          d1 
+      _______________    _______________          
+r24  |               |  |               |126.16   r1
+     |       4       |  |       5       | 
+     |               |  |               | 
+     |_______________|  |_______________|85.84 
+      _______________    _______________
+     |               |  |               |83.24  
+     |       2       |  |       3       |
+     |               |  |               |             
+     |_______________|  |_______________|42.92
+      _______________    _______________
+     |               |  |               |40.32
+     |       0       |  |       1       |
+     |               |  |               |
+r1   |_______________|  |_______________|0        r24
+      0           64.0  66.6        130.6 
 
-  y6  ----------  ----------   126.16
-      |        |  |        |
-      |    4   |  |    5   |
-  y5  ----------  ----------    85.84 
-
-  y4  ----------  ----------    83.24  
-      |        |  |        |
-      |    2   |  |    3   |             view from electronics side
-  y3  ----------  ----------    42.92
-          
-  y2  ----------  ----------    40.32
-      |        |  |        |
-      |    0   |  |    1   |
-  y1  ----------  ----------    0      
-      x1      x2  x3       x4
-
-      0    64.00   66.60    130.60 
-Preface: all geometrical information (like left-right sides) is reported as seen from electronic side.
 
 
 The DDL file starts with common header which size and structure is standartized and mandatory for all detectors. 
@@ -105,7 +106,19 @@ void AliHMPIDDigit::Draw(Option_t*)
 {
 //  TMarker *pMark=new TMarker(LorsX(),LorsY(),25); pMark->SetMarkerColor(kGreen);pMark->Draw();
   TBox *pad = new TBox(LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY(),LorsX()+0.5*SizePadX(),LorsY()+0.5*SizePadY());
-  pad->SetFillStyle(0);pad->SetLineColor(kGreen);
+  Int_t slice=(Int_t)fQ/20;
+  switch(slice){
+    case 0: pad->SetFillColor(kBlue); break;
+    case 1: pad->SetFillColor(kBlue+4); break;
+    case 2: pad->SetFillColor(kCyan); break;
+    case 3: pad->SetFillColor(kCyan+4); break;
+    case 4: pad->SetFillColor(kGreen); break;
+    case 5: pad->SetFillColor(kGreen+4); break;
+    case 6: pad->SetFillColor(kYellow); break;
+    case 7: pad->SetFillColor(kYellow+4); break;
+    default: pad->SetFillColor(kRed);      break;
+  }
+   pad->SetUniqueID((Int_t)fQ);
   pad->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
