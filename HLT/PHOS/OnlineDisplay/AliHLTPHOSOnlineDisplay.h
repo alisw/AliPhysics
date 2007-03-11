@@ -33,6 +33,7 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
   void InitDisplay();
   void UpdateDisplay();
   void UpdateHistograms();
+  void EvaluateAverage();
   static int ScanArguments(int argc, char** argv);
   static AliHLTPHOSOnlineDisplay* Instance();  
   
@@ -42,13 +43,14 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
   static TGTab               *fTab;
   static TGTab               *fSubTab1;
   static TGTab               *fSubTab2;
-  static TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6, *fEc7, *fEc8, *fEc9, *fEc10, *fEc11, *fEc12;
+  static TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6, *fEc7, *fEc8, *fEc9, *fEc10, *fEc11, *fEc12, *fEc13, *fEc14;
   static AliHLTPHOSGetEventButton* fgEventButtPtr; 
   static AliHLTPHOSOnlineDisplay* fgInstancePtr;
   static TH2D *fgLegoPlotLGPtr;
   static TH2D *fgLegoPlotHGPtr;
   static TH2D *fgCalibHistPtr[N_GAINS];
   static TH2I *fgHitsHistPtr[N_GAINS]; 
+  static TH2D *fgAveragePtr[N_GAINS]; 
   static char *fgDefaultDet;        
   static char *fgDefaultDataType;   
   static int fgEvntCnt;

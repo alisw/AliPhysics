@@ -8,7 +8,8 @@
 #include <errno.h>
 #include "TH2.h"
 #include "TCanvas.h"
-#include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
+//#include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
+#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSCommonDefs.h"
 
 /**************************************************************************
@@ -50,6 +51,7 @@ TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotLGPtr      = 0;   
 TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotHGPtr      = 0;         /**<2D histogram for high gain channels*/
 TH2D*                      AliHLTPHOSOnlineDisplay::fgCalibHistPtr[N_GAINS];          /**<2D histogram for low gain channels*/
 TH2I*                      AliHLTPHOSOnlineDisplay::fgHitsHistPtr[N_GAINS];           /**<2D histogram for low gain channels*/
+TH2D*                      AliHLTPHOSOnlineDisplay::fgAveragePtr[N_GAINS];           /**<Accumuated energy/hits*/
 char*                      AliHLTPHOSOnlineDisplay::fgDefaultDet       = "SOHP";      /**<PHOS written backwards*/
 char*                      AliHLTPHOSOnlineDisplay::fgDefaultDataType  = "RENELLEC";  /**<CELLENER (Celle energy) written backwards*/  
 int                        AliHLTPHOSOnlineDisplay::fgEvntCnt          = 0;           /**<Event Counter*/
@@ -93,7 +95,8 @@ TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc9               = 0;
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc10              = 0;
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc11              = 0; 
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc12              = 0;
-
+TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc13              = 0; 
+TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc14              = 0;
 using namespace std;
 
 
@@ -156,6 +159,13 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
       fgHitsHistPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
       fgHitsHistPtr[gain]->Reset();
+
+      fgAveragePtr[gain] = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev",  
+				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
+				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
+      fgAveragePtr[gain]->SetMaximum( MAX_BIN_VALUE); 
+      fgAveragePtr[gain]->Reset();
+
     }
 
   gStyle->SetPalette(1);
@@ -196,7 +206,7 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
      
            fSubTab2 = new TGTab(tf, 100, 100);
 
-	   tf2 = fSubTab2->AddTab("FGLEGO");   
+	   tf2 = fSubTab2->AddTab("Accumulated energy");   
 	   fSubF4 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
 	   fEc7 = new TRootEmbeddedCanvas("ec7", fSubF4, 100, 100);
 	   fSubF4->AddFrame(fEc7, fL1);
@@ -220,8 +230,22 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   fSubF6->AddFrame(fEc11, fL1);
 	   fEc12 = new TRootEmbeddedCanvas("ec12", fSubF6, 100, 100);
 	   fSubF6->AddFrame(fEc12, fL1);
+
+	   
+	   tf2 = fSubTab2->AddTab("acummulated energy / hits"); 
+	   fSubF7 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
+	   tf2->AddFrame(fSubF7, fL1);
+	   fEc13 = new TRootEmbeddedCanvas("ec13", fSubF7, 100, 100);
+	   fSubF7->AddFrame(fEc13, fL1);
+	   fEc14 = new TRootEmbeddedCanvas("ec14", fSubF7, 100, 100);
+	   fSubF7->AddFrame(fEc14, fL1);
+	   
+
 	   fSubTab2->Resize();
 	   tf->AddFrame(fSubTab2, fL1);
+
+
+
 
 
   tf = fTab->AddTab("Tab 3");
@@ -499,35 +523,74 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
 	}
       
       unsigned long blk = fgCalibReadersPtr[reader]->FindBlockNdx("UCCARENE","SOHP", 0xFFFFFFFF );
-      int tmpWhileCnt = 0;
+      //      int tmpWhileCnt = 0;
   
+
+
       while ( blk != ~(unsigned long)0 ) 
 	{
 	  cout << "GetHistogram: updating block " << endl;
 	  AliHLTUInt16_t moduleID;
-	  const AliHLTPHOSModuleCellAccumulatedEnergyDataStruct* accCellEnergiesPtr = (const AliHLTPHOSModuleCellAccumulatedEnergyDataStruct*)fgCalibReadersPtr[reader]->GetBlockData( blk );  
+	  const AliHLTPHOSRcuCellAccumulatedEnergyDataStruct* accCellEnergiesPtr = (const AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*)fgCalibReadersPtr[reader]->GetBlockData( blk ); 
 	  moduleID = accCellEnergiesPtr->fModuleID ;
+	  //	  int RcuXOffset = (accCellEnergiesPtr->fRcuX)*N_XCOLUMNS_RCU;
+	  //	  int RcuZOffset = (accCellEnergiesPtr->fRcuZ)*N_ZROWS_RCU;
+	  cout << "(X,Z) =" << "("<< (int)accCellEnergiesPtr->fRcuX <<" , " <<  (int)accCellEnergiesPtr->fRcuZ << ") " << endl;
+	  
+	  int tmpx;
+	  int tmpz;
 
-	  for(int z = 0; z <N_ZROWS_MOD; z ++)
-	    {
-	      for(int x = 0; x < N_XCOLUMNS_MOD; x ++)
+	  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+	    for(int z = 0; z <N_ZROWS_RCU; z ++)
+	      {
 		{
 		  for(int gain = 0; gain < N_GAINS; gain ++)
 		    {
-		      fgCalibHistPtr[gain]->Fill(moduleID*N_XCOLUMNS_MOD +x, z, accCellEnergiesPtr->fAccumulatedEnergies[z][x][gain] );
-		      fgHitsHistPtr[gain]->Fill(moduleID*N_XCOLUMNS_MOD +x, z, accCellEnergiesPtr->fHits[z][x][gain] );
+		      tmpx = moduleID*N_XCOLUMNS_MOD + (accCellEnergiesPtr->fRcuX)*N_XCOLUMNS_RCU + x;
+		      tmpz = (accCellEnergiesPtr->fRcuZ)*N_ZROWS_RCU +z;
+
+		      fgCalibHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fAccumulatedEnergies[x][z][gain] );
+		      fgHitsHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fHits[x][z][gain] );
+		      
+		      if(fgHitsHistPtr[gain]->GetBinContent(tmpx, tmpz) > 0)
+			{
+			  fgAveragePtr[gain]->SetBinContent(tmpx, tmpz, fgCalibHistPtr[gain]->GetBinContent(tmpx, tmpz)/fgHitsHistPtr[gain]->GetBinContent(tmpx, tmpz));
+			}
 		    }
 		}
-	    }
+	      }
 
 	  blk = fgCalibReadersPtr[reader]->FindBlockNdx("UCCARENE","SOHP", 0xFFFFFFFF, blk+1);
-	  tmpWhileCnt ++;
+	  //	  tmpWhileCnt ++;
 	} 
     }
   
   UpdateHistograms();
   fgEvntCnt ++;
 }
+
+/*
+void 
+AliHLTPHOSOnlineDisplay::EvaluateAverage()
+{
+  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+    for(int z = 0; z <N_ZROWS_RCU; z ++)
+      {
+	{
+	  for(int gain = 0; gain < N_GAINS; gain ++)
+	    {
+	      tmpx = moduleID*N_XCOLUMNS_MOD + (accCellEnergiesPtr->fRcuX)*N_XCOLUMNS_RCU + x;
+	      tmpz = (accCellEnergiesPtr->fRcuZ)*N_ZROWS_RCU +z;
+	      
+	      fgCalibHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fAccumulatedEnergies[x][z][gain] );
+	      fgHitsHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fHits[x][z][gain] );
+	      
+	    }
+	}
+      } 
+}
+*/
+
 
 
 void
@@ -580,19 +643,28 @@ AliHLTPHOSOnlineDisplay::UpdateHistograms()
 
   fgCanvasLGPtr = fEc10->GetCanvas();
   fgCanvasLGPtr->cd();
-  fgHitsHistPtr[LOW_GAIN]->Draw("SCAT (Hits)");
+  fgHitsHistPtr[LOW_GAIN]->Draw("SCAT");
   fgCanvasLGPtr->Update();
 
   fgCanvasHGPtr =  fEc11->GetCanvas();
   fgCanvasHGPtr->cd();
-
   fgCalibHistPtr[HIGH_GAIN]->Draw("COLZ");
-
   fgCanvasHGPtr->Update();
+
   fgCanvasLGPtr = fEc12->GetCanvas();
   fgCanvasLGPtr->cd();
-
   fgCalibHistPtr[LOW_GAIN]->Draw("COLZ");
-
   fgCanvasLGPtr->Update();
+
+
+  fgCanvasLGPtr = fEc13->GetCanvas();
+  fgCanvasLGPtr->cd();
+  fgAveragePtr[HIGH_GAIN]->Draw("COLZ");
+  fgCanvasLGPtr->Update();
+
+  fgCanvasHGPtr = fEc14->GetCanvas();
+  fgCanvasHGPtr->cd();
+  fgAveragePtr[LOW_GAIN]->Draw("COLZ");
+  fgCanvasHGPtr->Update();
+
 }
