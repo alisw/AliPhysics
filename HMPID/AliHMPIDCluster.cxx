@@ -95,7 +95,7 @@ void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t *, Double_t &chi2, Double_
       dQpadMath+=par[3*j+2]*pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);           // par[3*j+2] is charge par[3*j] is x par[3*j+1] is y of current Mathieson
     }
 //    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/dQpadMath;   //
-    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2);               //
+    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/pClu->Dig(i)->Q(); //
   }                                                                                    //loop on all pads of the cluster     
 }//FitFunction()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -144,11 +144,13 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
   } 
 //Phase 0. Initialise TMinuit  
   const Int_t kMaxLocMax=6;                                                              //max allowed number of loc max for fitting
-  TMinuit *pMinuit = new TMinuit(3*kMaxLocMax);                                          //init MINUIT with this number of parameters (3 params per mathieson)
-  pMinuit->SetObjectFit((TObject*)this);  pMinuit->SetFCN(AliHMPIDCluster::FitFunc);     //set fit function
-  Double_t aArg=-1;                                     Int_t iErrFlg;                   //tmp vars for TMinuit
-  pMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                            //suspend all printout from TMinuit 
-  pMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);                                            //suspend all warning printout from TMinuit
+  if(!gMinuit) gMinuit = new TMinuit(100);                                               //init MINUIT with this number of parameters (3 params per mathieson)
+  gMinuit->mncler();                                                                     // reset Minuit list of paramters
+  gMinuit->SetObjectFit((TObject*)this);  gMinuit->SetFCN(AliHMPIDCluster::FitFunc);     //set fit function
+  Double_t aArg=-1;                                                                    //tmp vars for TMinuit
+  Int_t iErrFlg;                   
+  gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit 
+  gMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);                                          //suspend all warning printout from TMinuit
 //Phase 1. Find number of local maxima. Strategy is to check if the current pad has QDC more then all neigbours. Also find the box contaning the cluster   
   fNlocMax=0;
 
@@ -168,9 +170,9 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
       Double_t xMax=xStart+AliHMPIDDigit::SizePadX();
       Double_t yMin=yStart-AliHMPIDDigit::SizePadY();
       Double_t yMax=yStart+AliHMPIDDigit::SizePadY();
-      pMinuit->mnparm(3*fNlocMax  ,Form("x%i",fNlocMax),xStart,0.1,xMin,xMax,iErrFlg);   // X,Y,Q initial values of the loc max pad
-      pMinuit->mnparm(3*fNlocMax+1,Form("y%i",fNlocMax),yStart,0.1,yMin,yMax,iErrFlg);   // X, Y constrained to be near the loc max
-      pMinuit->mnparm(3*fNlocMax+2,Form("q%i",fNlocMax),pDig1->Q(),0.1,0,100000,iErrFlg);// Q constrained to be positive
+      gMinuit->mnparm(3*fNlocMax  ,Form("x%i",fNlocMax),xStart,0.1,xMin,xMax,iErrFlg);   // X,Y,Q initial values of the loc max pad
+      gMinuit->mnparm(3*fNlocMax+1,Form("y%i",fNlocMax),yStart,0.1,yMin,yMax,iErrFlg);   // X, Y constrained to be near the loc max
+      gMinuit->mnparm(3*fNlocMax+2,Form("q%i",fNlocMax),pDig1->Q(),0.1,0,100000,iErrFlg);// Q constrained to be positive
       fNlocMax++;
     }//if this pad is local maximum
   }//first digits loop
@@ -178,9 +180,9 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
 //Phase 2. Fit loc max number of Mathiesons or add this current cluster to the list
 // case 1 -> no loc max found
  if ( fNlocMax == 0) {                                                                   // case of no local maxima found: pads with same charge...
-   pMinuit->mnparm(3*fNlocMax  ,Form("x%i",fNlocMax),fX,0.1,0,0,iErrFlg);                // Init values taken from CoG() -> fX,fY,fQRaw
-   pMinuit->mnparm(3*fNlocMax+1,Form("y%i",fNlocMax),fY,0.1,0,0,iErrFlg);                //
-   pMinuit->mnparm(3*fNlocMax+2,Form("q%i",fNlocMax),fQRaw,0.1,0,100000,iErrFlg);        //
+   gMinuit->mnparm(3*fNlocMax  ,Form("x%i",fNlocMax),fX,0.1,0,0,iErrFlg);                // Init values taken from CoG() -> fX,fY,fQRaw
+   gMinuit->mnparm(3*fNlocMax+1,Form("y%i",fNlocMax),fY,0.1,0,0,iErrFlg);                //
+   gMinuit->mnparm(3*fNlocMax+2,Form("q%i",fNlocMax),fQRaw,0.1,0,100000,iErrFlg);        //
    fNlocMax = 1;
    fSt=kNoLoc;
  }
@@ -192,24 +194,24 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
    }                                                                                     //or...
  else{                                                                                   //...resonable number of local maxima to fit and user requested it
    Double_t arglist[10];arglist[0] = 10000;arglist[1] = 1.;                              //number of steps and sigma on pads charges  
-   pMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);                                        //start fitting with Simplex
-   pMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                         //fitting improved by Migrad
+   gMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);                                        //start fitting with Simplex
+   gMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                         //fitting improved by Migrad
    if(iErrFlg) {
      Double_t strategy=2;
-     pMinuit->mnexcm("SET STR",&strategy,1,iErrFlg);                                     //change level of strategy 
+     gMinuit->mnexcm("SET STR",&strategy,1,iErrFlg);                                     //change level of strategy 
      if(!iErrFlg) {
-       pMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);                                    //start fitting with Simplex
-       pMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                     //fitting improved by Migrad
+       gMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);
+       gMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                     //fitting improved by Migrad
 //       Printf("Try to improve fit --> err %d",iErrFlg);
      }
    }        
    if(iErrFlg) fSt=kAbn;                                                                 //no convergence of the fit...
    Double_t dummy; TString sName;                                                        //vars to get results from Minuit
    for(Int_t i=0;i<fNlocMax;i++){                                                        //store the local maxima parameters
-      pMinuit->mnpout(3*i   ,sName,  fX, fErrX , dummy, dummy, iErrFlg);                 // X 
-      pMinuit->mnpout(3*i+1 ,sName,  fY, fErrY , dummy, dummy, iErrFlg);                 // Y
-      pMinuit->mnpout(3*i+2 ,sName,  fQ, fErrQ , dummy, dummy, iErrFlg);                 // Q
-      pMinuit->mnstat(fChi2,dummy,dummy,iErrFlg,iErrFlg,iErrFlg);                        // Chi2 of the fit
+      gMinuit->mnpout(3*i   ,sName,  fX, fErrX , dummy, dummy, iErrFlg);                 // X 
+      gMinuit->mnpout(3*i+1 ,sName,  fY, fErrY , dummy, dummy, iErrFlg);                 // Y
+      gMinuit->mnpout(3*i+2 ,sName,  fQ, fErrQ , dummy, dummy, iErrFlg);                 // Q
+      gMinuit->mnstat(fChi2,dummy,dummy,iErrFlg,iErrFlg,iErrFlg);                        // Chi2 of the fit
       if(fSt!=kAbn) {         
         if(fNlocMax!=1)fSt=kUnf;                                                           // if unfolded
         if(fNlocMax==1&&fSt!=kNoLoc) fSt=kLo1;                                             // if only 1 loc max
@@ -220,7 +222,6 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
    }
  }
 
- delete pMinuit;
  return fNlocMax;
  
 }//Solve()
