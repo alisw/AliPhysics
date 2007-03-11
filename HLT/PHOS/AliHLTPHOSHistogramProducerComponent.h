@@ -1,5 +1,6 @@
-#ifndef ALIHLTPHOSHISTOGRAMPRODUCER_H
-#define ALIHLTPHOSHISTOGRAMPRODUCER_H 
+#ifndef ALIHLTPHOSHISTOGRAMPRODUCERCOMPONENT_H
+#define ALIHLTPHOSHISTOGRAMPRODUCERCOMPONENT_H 
+
 
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice  */ 
@@ -28,9 +29,7 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   virtual int Deinit();
   virtual int DoDeinit();
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
-  
   void DumpData(int gain);
-  
   int GetEquippmentId();
   virtual const char* GetComponentID();
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
@@ -38,11 +37,10 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   void SetEquippmentId(int id);
   virtual AliHLTComponent* Spawn();
-
+  
  protected:
   void Reset();
   void ResetDataPtr();
-
 
  private:
   // TH2F *fEnergyHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
@@ -54,6 +52,7 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   int fEventCount;
   AliHLTUInt32_t fEquippmentID;
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];
+  //  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*  fOutPtr;
   AliHLTPHOSModuleCellAccumulatedEnergyDataStruct*  fOutPtr;
   static const AliHLTComponentDataType inputDataTypes[];
   static const AliHLTComponentDataType outputDataType;

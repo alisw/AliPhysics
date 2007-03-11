@@ -134,9 +134,7 @@ int  AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventDa
       tmpModuleID = cellDataPtr->fModuleID;
       tmpRcuX     = cellDataPtr->fRcuX ;
       tmpRcuZ     = cellDataPtr->fRcuZ;
-
       fOutPtr->fModuleID = tmpModuleID;
-
       int tmpGain;
       int tmpZ;
       int tmpX;
@@ -156,7 +154,6 @@ int  AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventDa
 	    {
 	      fAccumulatedValues[tmpZ][tmpX][LOW_GAIN] +=  cellDataPtr->fValidData[i].fEnergy;
 	      fHits[tmpZ][tmpX][LOW_GAIN] ++;
-
 	    }
 	}
     }
