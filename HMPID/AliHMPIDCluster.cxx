@@ -200,7 +200,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
      if(!iErrFlg) {
        pMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);                                    //start fitting with Simplex
        pMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                     //fitting improved by Migrad
-       Printf("Try to improve fit --> err %d",iErrFlg);
+//       Printf("Try to improve fit --> err %d",iErrFlg);
      }
    }        
    if(iErrFlg) fSt=kAbn;                                                                 //no convergence of the fit...
