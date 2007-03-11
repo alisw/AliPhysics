@@ -37,8 +37,6 @@ public:
   ClassDef(AliHMPIDReconstructor, 0)   //class for the HMPID reconstruction
 };
 
-typedef AliHMPIDReconstructor AliRICHReconstructor; // for backward compatibility
-
 //__________________________________________________________________________________________________
 AliHMPIDDigit* AliHMPIDReconstructor::UseDig(Int_t padX,Int_t padY,TClonesArray *pDigLst,TMatrixF *pPadMap)
 {

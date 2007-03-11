@@ -19,6 +19,4 @@ protected:
   ClassDef(AliHMPIDv0,1)  //HMPID coarse version for material budget study and debuging
 };
 
-typedef AliHMPIDv0 AliRICHv0; // for backward compatibility
-	
 #endif

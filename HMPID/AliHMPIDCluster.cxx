@@ -48,13 +48,13 @@ void AliHMPIDCluster::CoG()
   if ( fQRaw != 0 )   fX/=fQRaw;fY/=fQRaw;                  //final center of gravity
   
  
-  CorrSin();                                               //correct it by sinoid   
+  if(fDigs->GetEntriesFast()>1)CorrSin();                   //correct it by sinoid   
   
-  fQ  = fQRaw;                                             // Before starting fit procedure, Q and QRaw must be equal
-  fCh=pDig->Ch();                                          //initialize chamber number
-  fMaxQpad = maxQpad; fMaxQ=maxQ;                          //store max charge pad to the field
-  fChi2=0;                                                 // no Chi2 to find
-  fNlocMax=0;                                              // no maxima to find
+  fQ  = fQRaw;                                              // Before starting fit procedure, Q and QRaw must be equal
+  fCh=pDig->Ch();                                           //initialize chamber number
+  fMaxQpad = maxQpad; fMaxQ=maxQ;                           //store max charge pad to the field
+  fChi2=0;                                                  // no Chi2 to find
+  fNlocMax=0;                                               // proper status from this method
   fSt=kCoG;
 }//CoG()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -92,9 +92,10 @@ void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t *, Double_t &chi2, Double_
   for(Int_t i=0;i<pClu->Size();i++){                                                   //loop on all pads of the cluster
     Double_t dQpadMath = 0;                                                            //pad charge collector  
     for(Int_t j=0;j<iNshape;j++){                                                      //Mathiesons loop as all of them may contribute to this pad
-      dQpadMath+=par[3*j+2]*pClu->Dig(i)->Mathieson(par[3*j],par[3*j+1]);              // par[3*j+2] is charge par[3*j] is x par[3*j+1] is y of current Mathieson
+      dQpadMath+=par[3*j+2]*pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);           // par[3*j+2] is charge par[3*j] is x par[3*j+1] is y of current Mathieson
     }
-    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/dQpadMath;     //
+//    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/dQpadMath;   //
+    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2);               //
   }                                                                                    //loop on all pads of the cluster     
 }//FitFunction()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -113,6 +114,7 @@ void AliHMPIDCluster::Print(Option_t* opt)const
     case        kEdg  : status="edge     (fit)"   ;break;
     case 	kSi1  : status="size 1   (cog)"   ;break;
     case 	kNoLoc: status="no LocMax(fit)"   ;break;
+    case 	kAbn  : status="Abnormal fit  "   ;break;
     
     default:            status="??????"          ;break;   
   }
@@ -152,18 +154,23 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
 
  for(Int_t iDig1=0;iDig1<Size();iDig1++) {                                               //first digits loop
     AliHMPIDDigit *pDig1 = Dig(iDig1);                                                   //take next digit    
-    Int_t iHowManyMoreCnt = 0;                                                           //counts how many neighbouring pads has QDC more then current one
+    Int_t iCnt = 0;                                                                      //counts how many neighbouring pads has QDC more then current one
     for(Int_t iDig2=0;iDig2<Size();iDig2++) {                                            //loop on all digits again
       if(iDig1==iDig2) continue;                                                         //the same digit, no need to compare 
       AliHMPIDDigit *pDig2 = Dig(iDig2);                                                 //take second digit to compare with the first one
       Int_t dist = TMath::Sign(Int_t(pDig1->PadChX()-pDig2->PadChX()),1)+TMath::Sign(Int_t(pDig1->PadChY()-pDig2->PadChY()),1);//distance between pads
       if(dist==1)                                                                        //means dig2 is a neighbour of dig1
-         if(pDig2->Q()>=pDig1->Q()) iHowManyMoreCnt++;                                   //count number of pads with Q more then Q of current pad
+         if(pDig2->Q()>=pDig1->Q()) iCnt++;                                              //count number of pads with Q more then Q of current pad
     }//second digits loop
-    if(iHowManyMoreCnt==0&&fNlocMax<kMaxLocMax){                                         //this pad has Q more then any neighbour so it's local maximum
-      pMinuit->mnparm(3*fNlocMax  ,Form("x%i",fNlocMax),pDig1->LorsX(),0.1,0,0,iErrFlg); // X,Y,Q initial values of the loc max pad w
-      pMinuit->mnparm(3*fNlocMax+1,Form("y%i",fNlocMax),pDig1->LorsY(),0.1,0,0,iErrFlg); //
-      pMinuit->mnparm(3*fNlocMax+2,Form("q%i",fNlocMax),pDig1->Q(),0.1,0,100000,iErrFlg);// constrained to be positive
+    if(iCnt==0&&fNlocMax<kMaxLocMax){                                                    //this pad has Q more then any neighbour so it's local maximum
+      Double_t xStart=pDig1->LorsX();Double_t yStart=pDig1->LorsY();
+      Double_t xMin=xStart-AliHMPIDDigit::SizePadX();
+      Double_t xMax=xStart+AliHMPIDDigit::SizePadX();
+      Double_t yMin=yStart-AliHMPIDDigit::SizePadY();
+      Double_t yMax=yStart+AliHMPIDDigit::SizePadY();
+      pMinuit->mnparm(3*fNlocMax  ,Form("x%i",fNlocMax),xStart,0.1,xMin,xMax,iErrFlg);   // X,Y,Q initial values of the loc max pad
+      pMinuit->mnparm(3*fNlocMax+1,Form("y%i",fNlocMax),yStart,0.1,yMin,yMax,iErrFlg);   // X, Y constrained to be near the loc max
+      pMinuit->mnparm(3*fNlocMax+2,Form("q%i",fNlocMax),pDig1->Q(),0.1,0,100000,iErrFlg);// Q constrained to be positive
       fNlocMax++;
     }//if this pad is local maximum
   }//first digits loop
@@ -187,18 +194,28 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
    Double_t arglist[10];arglist[0] = 10000;arglist[1] = 1.;                              //number of steps and sigma on pads charges  
    pMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);                                        //start fitting with Simplex
    pMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                         //fitting improved by Migrad
-   
+   if(iErrFlg) {
+     Double_t strategy=2;
+     pMinuit->mnexcm("SET STR",&strategy,1,iErrFlg);                                     //change level of strategy 
+     if(!iErrFlg) {
+       pMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);                                    //start fitting with Simplex
+       pMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                     //fitting improved by Migrad
+       Printf("Try to improve fit --> err %d",iErrFlg);
+     }
+   }        
+   if(iErrFlg) fSt=kAbn;                                                                 //no convergence of the fit...
    Double_t dummy; TString sName;                                                        //vars to get results from Minuit
    for(Int_t i=0;i<fNlocMax;i++){                                                        //store the local maxima parameters
       pMinuit->mnpout(3*i   ,sName,  fX, fErrX , dummy, dummy, iErrFlg);                 // X 
       pMinuit->mnpout(3*i+1 ,sName,  fY, fErrY , dummy, dummy, iErrFlg);                 // Y
       pMinuit->mnpout(3*i+2 ,sName,  fQ, fErrQ , dummy, dummy, iErrFlg);                 // Q
       pMinuit->mnstat(fChi2,dummy,dummy,iErrFlg,iErrFlg,iErrFlg);                        // Chi2 of the fit
-
-      if(fNlocMax!=1)fSt=kUnf;                                                           //
-      if(fNlocMax==1&&fSt!=kNoLoc) fSt=kLo1;                                             //
-      if ( !IsInPc()) fSt = kEdg;                                                        //
-      if(fSt==kNoLoc) fNlocMax=0;                                                        //
+      if(fSt!=kAbn) {         
+        if(fNlocMax!=1)fSt=kUnf;                                                           // if unfolded
+        if(fNlocMax==1&&fSt!=kNoLoc) fSt=kLo1;                                             // if only 1 loc max
+        if ( !IsInPc()) fSt = kEdg;                                                        // if Out of Pc
+        if(fSt==kNoLoc) fNlocMax=0;                                                        // if with no loc max (pads with same charge..)
+      }
       new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);	                         //add new unfolded cluster
    }
  }

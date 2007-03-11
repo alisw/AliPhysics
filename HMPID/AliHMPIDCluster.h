@@ -10,7 +10,7 @@ class TClonesArray;        //Solve()
 class AliHMPIDCluster :public TObject
 {
 public:
-  enum EClusterStatus {kFrm,kCoG,kLo1,kUnf,kMax,kNot,kEdg,kSi1,kNoLoc,kEmp=-1};      //status flags    
+  enum EClusterStatus {kFrm,kCoG,kLo1,kUnf,kMax,kNot,kEdg,kSi1,kNoLoc,kAbn,kEmp=-1};      //status flags    
   AliHMPIDCluster():TObject( ),fCh(-1),fSi(-1),fSt(kEmp),fBox(-1),fNlocMax(-1),fMaxQpad(-1),fMaxQ(-1),fQRaw(0),fQ(0),fErrQ(-1),fX(0),fErrX(-1),fY(0),fErrY(-1),fChi2(-1),fDigs(0) {} //empty ctor
   
   
@@ -68,8 +68,6 @@ protected:
   TObjArray    *fDigs;        //! list of digits forming this cluster
   ClassDef(AliHMPIDCluster,6) //HMPID cluster class
 };//class AliHMPIDCluster
-
-typedef AliHMPIDCluster AliRICHCluster; // for backward compatibility
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::DigAdd(AliHMPIDDigit *pDig)

@@ -4,7 +4,7 @@ Double_t dx,dy,dz,r1,r2;//tmp vars for volume dimentions
 Double_t cm=1,m=100*cm,mm=0.1*cm,mkm=0.001*cm;//length units  
 TGeoManager *g=0;
 
-void RichGeom(Bool_t isOnlyChambers=kFALSE)
+void Hgeom(Bool_t isOnlyChambers=kFALSE)
 {
   
   g=new TGeoManager("HMPID","Private HMPID geometry");
@@ -12,11 +12,7 @@ void RichGeom(Bool_t isOnlyChambers=kFALSE)
   gGeoManager->MakeBox("ALIC",gGeoManager->GetMedium("Air"),dx=30*m/2,dy=30*m/2,dz=30*m/2); //arbitrary values  
   gGeoManager->SetTopVolume(gGeoManager->GetVolume("ALIC"));
     
-  Rich(isOnlyChambers);
-  
-//  RusGel();
-  
-//  Vhmpid();
+  Hmpid(isOnlyChambers);
   
   gGeoManager->CloseGeometry();
   
@@ -59,9 +55,21 @@ void Materials()
   new TGeoMaterial("HMPID_Apd"      ,a=0     ,z=0 ,den=0);                                   new TGeoMedium("HMPID_Apd"     ,22,gGeoManager->GetMaterial("HMPID_Apd"));
 }//Materials()
 //__________________________________________________________________________________________________
-void Rich(Bool_t isOnlyChambers)
+void Hmpid(Bool_t isOnlyChambers)
 {
-//Rich  chamber
+//HMPID  chamber
+//                                                         z ^
+//                                                           |
+//                                                           | 
+//    <-Y0-> X <--Y1--> X <--Y1--> X <--Y1--> X <-Y0->       |            cath wires: r 50mkm; shift Y0=1.05m;, pitch Y1=2.1; center to PC  4.45mm; material Cu
+//                                                         x *------->y            
+//        
+//    <--Y0--> x <-----------Y1-----------> x <--Y0-->                    anod wires: r 20mkm; shift Y0=2.2mm; pitch Y1=4.0mm; center to PC  2.04mm; material W
+//                                                                       
+//                                                                                                
+//   |________________________________________________|                   pad size y 8.4mm
+// 
+//
   TGeoVolume *pRich=gGeoManager->MakeBox("HMPID",gGeoManager->GetMedium("Air"),dx=(6*mm+1681*mm+6*mm)/2,  //main HMPID volume
                                                                               dy=(6*mm+1466*mm+6*mm)/2,
                                                                               dz=(80*mm+40*mm)*2/2);     //x,y taken from 2033P1  z from p84 TDR  
@@ -175,260 +183,12 @@ void Rich(Bool_t isOnlyChambers)
     pSandBox->AddNode(pSandCover ,copy=2,new TGeoTranslation(  0*mm,0*mm,    -25*mm)); 
 }//Rich()
 //__________________________________________________________________________________________________
-void Sr90(TGeoVolume *pTop)
-{
-    pSrc               =gGeoManager->MakeTube("Src"              ,gGeoManager->GetMedium("Air")        , 0 , 70*mm/2 ,  30*mm/2);       //top container
-      pAlGlass         =gGeoManager->MakeTube("SrcAlGlass"       ,gGeoManager->GetMedium("HMPID_Al")    , 0 , 38*mm/2 ,21.8*mm/2);       //Al glass wall        
-        pPerpexPlug    =gGeoManager->MakeTube("SrcPerpex"        ,gGeoManager->GetMedium("HMPID_Perpex"), 0 , 34*mm/2 ,  20*mm/2);       //Perpex plug         
-          pScrewCentral=gGeoManager->MakeTube("SrcScrewCentral"  ,gGeoManager->GetMedium("HMPID_Steel") , 0 ,  5*mm/2 ,  15*mm/2);       //Steel screw in the center        
-          pScrewSr90   =gGeoManager->MakeTube("SrcScrewSr90"     ,gGeoManager->GetMedium("HMPID_Steel") , 0 ,  2*mm/2 ,  10*mm/2);       //Steel screw to support Sr90 
-            pSr90      =gGeoManager->MakeTube("SrcSr90"          ,gGeoManager->GetMedium("HMPID_Sr90")  , 0 ,  1*mm/2 ,   1*mm/2);       //Sr90 source
-          pHolePerpex  =gGeoManager->MakeTube("SrcHolePerpex"    ,gGeoManager->GetMedium("Air")        , 0 ,  4*mm/2 ,  10*mm/2);       //Air hole in perpex plug      
-        pHoleAl        =gGeoManager->MakeTube("SrcHoleAl"        ,gGeoManager->GetMedium("Air")        , 0 ,  5*mm/2 , 1.8*mm/2);       //Air hole in Al glass bottom
-    pMylarFoil         =gGeoManager->MakeTube("SrcMylarFoil"     ,gGeoManager->GetMedium("HMPID_Mylar") , 0 , 30*mm/2 , 50*mkm/2);       //Mylar foil                
-                
-    pTop->AddNode(pSrc,1,new TGeoTranslation(30*cm,0,1*cm));
-      pSrc ->AddNode(pMylarFoil,1,new TGeoTranslation(0,0,21.8*mm/2+50*mkm/2));
-      pSrc ->AddNode(pAlGlass,1,new TGeoTranslation(0,0,0));                           //Al glass to fake Src volume
-        pAlGlass->AddNode(       pHoleAl      ,1,new TGeoTranslation(6*mm,0, -10*mm));
-        pAlGlass->AddNode(       pPerpexPlug  ,1,new TGeoTranslation(0*mm,0, 0.9*mm));
-          pPerpexPlug->AddNode(  pHolePerpex  ,1,new TGeoTranslation(6*mm,0,  -5*mm));      
-          pPerpexPlug->AddNode(  pScrewCentral,1,new TGeoTranslation(0   ,0, 2.5*mm));  
-          pPerpexPlug->AddNode(  pScrewSr90   ,1,new TGeoTranslation(6*mm,0,   5*mm));  
-            pScrewSr90->AddNode( pSr90        ,1,new TGeoTranslation(0   ,0,-4.5*mm));  
-}//Sr90()    
-//__________________________________________________________________________________________________
-void RusGel()
-{
-//Defines VHMPID aerogel option geometry. 
-//                 top view normal position                                   side view normal position
-//                                                                                                 ^ y
-//                  --------                                                                       | 
-//                  |      |                                                                       |
-//                  |      |          z<-----* y                                          z<-------* x  ----> MUON side
-//                  |      |                 |                                  ----                    
-//                  |      |                 |                                  |  | 
-//                  ________                 v x                                |  |
-//                                                                              |--|
-//                                                                              |  |
-//                                                                              ----       
-//Chamber consists from Al box filled with air where 4 aerogel blocks and APD wall are positioned.
-//  ------------------------------
-//  |-|           |-| |-| |-| |-||
-//  |-|           | | | | | | | ||  
-//  |-|           | | | | | | | ||
-//  |-| APD wall  | | | | | | | ||    z<---* y  top view   
-//  |-|           | | | | | | | ||         |
-//  |-|           | | | | | | | ||         | 
-//  |-|           |_| |_| |_| |_||         v x
-//  ------------------------------          
-// 
-//             ALIC
-//               |
-//             Vbox (Al)
-//               |
-//             Vair (Air) 
-//        _______|________
-//        |              |
-//       4*Vgel         Vwall
-//                       |
-//                      Vcolumn (division along X)
-//                       |
-//                      Vcell   (division along Y)
-//                       |
-//                      Vapd
-
-  Double_t cm=1 , m=100 , mm=0.1                                                     ;//dimentions, default is cm
-  
-  Int_t    iNapdsX        =10                                    ;//number of APDs along x
-  Int_t    iNapdsY        =16                                    ;//number of APDs along y
-  Double_t dCellX         =1.5*mm             *0.5                ;//cell X half size
-  Double_t dCellY         =1.5*mm             *0.5                ;//cell Y half size
-  Double_t dCellZ         =0.5*mm             *0.5                ;//APD wall thickness   
-  Double_t dWallX         =                         iNapdsX*dCellX;//APD wall X half size
-  Double_t dWallY         =                         iNapdsY*dCellY;//APD wall Y half size
-  Double_t dWallZ         =                                 dCellZ;//APD wall half thickness  
-  Double_t dApdR          =0.5*mm                                 ;//APD radius 
-  Double_t dApdZ          =                                 dCellZ;//APD Z half size
-  Double_t dGelX          =                                 dWallX;//gel block X half size
-  Double_t dGelY          =                                 dWallY;//gel block Y half size
-  Double_t dGelZ          =10*mm              *0.5                ;//gel block Z half size
-  Double_t dProxGap       =50*cm                                  ;//half distance between APD wall and last aerogel block
-  Double_t dAirX          =                                 dWallX;//internal air X hald size
-  Double_t dAirY          =                                 dWallY;//internal air Y hald size
-  Double_t dAirZ          =                dWallZ+dProxGap+7*dGelZ;//internal air Z hald size
-  Double_t dBoxWall       =2*mm               *0.5                ;//Al box walls thickness
-  Double_t dBoxX          =                         dAirX+dBoxWall;//Al box x half size 
-  Double_t dBoxY          =                         dAirY+dBoxWall;//Al box y half size 
-  Double_t dBoxZ          =                         dAirZ+dBoxWall;//Al box z half size
-  
-  Int_t copy;    Double_t rmin,rmax,dx,dy,dz;
-//make external Al box
-  TGeoVolume *pBox=gGeoManager->MakeBox("Gbox",gGeoManager->GetMedium("HMPID_Al"),dx=dBoxX,dy=dBoxY,dz=dBoxZ);
-  TGeoRotation *pRot=new TGeoRotation("GboxRot"); pRot->RotateX(90);
-  gGeoManager->GetVolume("ALIC")->AddNode(pBox,copy=1,new TGeoCombiTrans(0*m,-5.2*m,2.5*m,pRot));//normal position
-//position Air to Al box   
-  TGeoVolume *pAir=gGeoManager->MakeBox( "Gair",gGeoManager->GetMedium("Air"),dx=dAirX,dy=dAirY,dz=dAirZ);                   
-  pBox->AddNode(pAir,copy=1); 
-//position 4 gel blocks to Air
-  TGeoVolume *pGel24=gGeoManager->MakeBox( "Ggel24",gGeoManager->GetMedium("HMPID_Gel24"),dx=dGelX,dy=dGelY,dz=dGelZ);     
-    pAir->AddNode(pGel24,copy=1,new TGeoTranslation(0,0,-dAirZ+1*dGelZ)); 
-  TGeoVolume *pGel26=gGeoManager->MakeBox( "Ggel26",gGeoManager->GetMedium("HMPID_Gel26"),dx=dGelX,dy=dGelY,dz=dGelZ);     
-    pAir->AddNode(pGel26,copy=1,new TGeoTranslation(0,0,-dAirZ+5*dGelZ)); 
-  TGeoVolume *pGel28=gGeoManager->MakeBox( "Ggel28",gGeoManager->GetMedium("HMPID_Gel28"),dx=dGelX,dy=dGelY,dz=dGelZ);     
-    pAir->AddNode(pGel28,copy=1,new TGeoTranslation(0,0,-dAirZ+9*dGelZ)); 
-  TGeoVolume *pGel30=gGeoManager->MakeBox( "Ggel30",gGeoManager->GetMedium("HMPID_Gel30"),dx=dGelX,dy=dGelY,dz=dGelZ);     
-    pAir->AddNode(pGel30,copy=1,new TGeoTranslation(0,0,-dAirZ+13*dGelZ)); 
-//position APD wall to air
-  TGeoVolume   *pWall     =gGeoManager->MakeBox ("Gwall",gGeoManager->GetMedium("HMPID_Si"),dx=dWallX , dy=dWallY , dz=dWallZ );  
-  pAir->AddNode(pWall,copy=1,new TGeoTranslation(0,0,dAirZ-dWallZ)); 
-//divide wall into cells
-  Int_t axis,ndiv; Double_t start,step;
-  TGeoVolume *pWallCol =pWall      ->Divide("Gcol",axis=1,ndiv=iNapdsX,start=0,step=0);//divide VhGap along X by NpadsX columns
-  TGeoVolume *pWallCell=pWallCol   ->Divide("Gcel",axis=2,ndiv=iNapdsY,start=0,step=0);//divide VhGapCol along Y by NpadsY cells
-//position APD to wall cell
-  TGeoVolume *pApd=gGeoManager->MakeTube("Gapd",gGeoManager->GetMedium("HMPID_Apd"),rmin=0,rmax=dApdR,dz=dApdZ); pWallCell->AddNode(pApd,copy=1); 
-}//RusGel()
-//__________________________________________________________________________________________________
-void Vhmpid()
-{
-//Defines VHMPID geometry for TIC option.
-//                 top view normal position                                   side view normal position
-//                                                                                                 ^ y
-//                  --------                                                                       | 
-//                  |------|                                                                       |
-//                  |      |          z<-----* y                                          z<-------* x  ----> MUON side
-//                  |      |                 |                                  ----                    
-//                  |      |                 |                                  |  | 
-//                  ________                 v x                                |  |
-//                                                                              |--|
-//                                                                              |  |
-//                                                                              ----       
-//Chamber consists from Al box filled with radiator CF4 and C4F10 quartz window in between , Al mirror and MWPC.
-//  ---------------------------------------------------  top view chamber in test position
-//  |  -------------- MWPC     | quartz window        |
-//  |   . . . . . .            |                      |  
-//  |   \                      |                      |
-//  |    \             CF4     |    C4F10             |  z<-----* y   
-//  |     \ mirror             |                      |         |
-//  |      \                   |                      |         | 
-//  |       \                  |                      |         v x  
-//  ---------------------------------------------------    
-//                                                         z ^
-//                                                           |
-//                                                           | 
-//    <-Y0-> X <--Y1--> X <--Y1--> X <--Y1--> X <-Y0->       |            cath wires: r 50mkm; shift Y0=1.05m;, pitch Y1=2.1; center to PC  4.45mm; material Cu
-//                                                         x *------->y            
-//        
-//    <--Y0--> x <-----------Y1-----------> x <--Y0-->                    anod wires: r 20mkm; shift Y0=2.2mm; pitch Y1=4.0mm; center to PC  2.04mm; material W
-//                                                                       
-//                                                                                                
-//   |________________________________________________|                   pad size y 8.4mm
-// 
-//             ALIC
-//               |
-//             Vbox
-//        _______|______
-//       |       |      |
-//     Vc4f    Vwin   Vcf4
-//                 _____|________
-//                |              |
-//              Vmir             |
-//                               |
-//                             Vgap
-//                               |
-//                             Vcol (column of gap cells) X
-//                               |
-//                             Vcel  cell in the column   Y                  
-//                         ______|______
-//                        |      |      |
-//                      Vpad   Vano   Vcat
-  Double_t cm=1 , m=100 , mm=0.1 , um=1e-4                                                      ;//dimentions, default is cm
-  
-  Int_t    iNpadsX        =                                    AliHMPIDParam::NpadsX()           ;//number of pads along x parametrised
-  Int_t    iNpadsY        =                                    AliHMPIDParam::NpadsY()           ;//number of pads along y parametrised
-  Double_t wCathR         =50  *um                                                              ;//cathode wire radius defined by USER
-  Double_t wCathShift     =1.05*mm                                                              ;//cathode wire shift from pad edge defined by USER
-  Double_t wCathPitch     =2.1 *mm                                                              ;//cathode wire pitch defined by USER
-  Double_t wCathPc        =4.45*mm                                                              ;//distance from pc to cathode wire defined by USER
-  Double_t wAnodR         =20  *um                                                              ;//anod wire radius defined by USER
-  Double_t wAnodShift     =2.2 *mm                                                              ;//anod wire shift from pad edge defined by USER
-  Double_t wAnodPc        =2.04*mm                                                              ;//distance from anod wire center to pc defined by USER
-  Double_t dPadX          =                    0.5*                   AliHMPIDParam::PadSizeX()  ;//pad X half size parametrised
-  Double_t dPadY          =                    0.5*                   AliHMPIDParam::PadSizeY()  ;//pad Y half size parametrised
-  Double_t dPadZ          =1.0 *mm            *0.5                                              ;//CsI film thickness 
-  Double_t dGapX          =                    0.5*                          iNpadsX*2*dPadX    ;//gap x half size n. pads x * pad size
-  Double_t dGapY          =                    0.5*                          iNpadsY*2*dPadY    ;//gap y half size
-  Double_t dGapZ          =                    0.5*                    (2*dPadZ+wCathPc+wCathR) ;//gap half thickness
-  Double_t dMirX          =                    0.5*     2*dGapX/TMath::Cos(45*TMath::DegToRad());//Ag mirror x half size defined by gap size and angle 45 degrees
-  Double_t dMirY          =                    0.5*                           2*dGapY           ;//Ag mirror y half size defined by gap size
-  Double_t dMirZ          =1.0 *mm            *0.5                                              ;//Ag mirror z half size defined by USER
-  Double_t wBoxWall       =2.0 *mm                                                              ;//Al box walls thickness defined by USER
-  Double_t dBoxX          =                    0.5*                         (2*dGapX+2*cm)      ;//Al box x half size defined by gap size 2 cm for tolerance
-  Double_t dBoxY          =                    0.5*                         (2*dGapY+2*cm)      ;//Al box y half size defined by gap size 2 cm for tolerance 
-  Double_t dBoxZ          =1.8*m              *0.5                                              ;//Al box z half size defined by USER
-  Double_t dWinX          =                                                  (dBoxX-wBoxWall)   ;//SiO2 window x half size defined by box size
-  Double_t dWinY          =                                                  (dBoxY-wBoxWall)   ;//SiO2 window y half size defined by box size
-  Double_t dWinZ          =1.0*cm             *0.5                                              ;//SiO2 window z half size defined by USER
-  Double_t dCF4X          =                                                  (dBoxX-wBoxWall)   ;//CF4 radiator x half size defined by box size
-  Double_t dCF4Y          =                                                  (dBoxY-wBoxWall)   ;//CF4 radiator y half size defined by box size
-  Double_t dCF4Z          =                                                  0.4*dBoxZ          ;//CF4 radiator z half size defined by box size or by USER
-  Double_t dC4F10X        =                                                  (dBoxX-wBoxWall)   ;//C4F10 radiator x half size defined by box size
-  Double_t dC4F10Y        =                                                  (dBoxY-wBoxWall)   ;//C4F10 radiator y half size defined by box size
-  Double_t dC4F10Z        =                                      (dBoxZ-dWinZ-dCF4Z-wBoxWall)   ;//C4F10 radiator z half size defined by box, CF4 and window sizes
-  
-  Int_t copy;  
-  Double_t rmin,rmax,dx,dy,dz;
-  
-//make VHMPID type 2 volume  (2 radiators)
-  TGeoVolume *pBox=gGeoManager->MakeBox("Vbox",gGeoManager->GetMedium("HMPID_Al"),dx=dBoxX,dy=dBoxY,dz=dBoxZ);
-  
-  TGeoRotation *pRot=new TGeoRotation("VboxRot"); pRot->RotateX(90);//normal position
-  gGeoManager->GetVolume("ALIC")->AddNode(pBox,copy=1,new TGeoCombiTrans(0*m,-5.2*m,2.5*m,pRot));
-//position C4F10 radiator to Al box   
-  TGeoVolume *pC4F10=gGeoManager->MakeBox("Vc4f",gGeoManager->GetMedium("HMPID_C4F10"),dx=dC4F10X,dy=dC4F10Y,dz=dC4F10Z);      
-  pBox->AddNode(pC4F10,copy=1,new TGeoTranslation(0*cm,0*cm,-dBoxZ+wBoxWall+dC4F10Z)); 
-//position quartz window  to Al box  
-  TGeoVolume *pWindow=gGeoManager->MakeBox( "Vwin",gGeoManager->GetMedium("HMPID_SiO2"),dx=dWinX,dy=dWinY,dz=dWinZ); 
-  pBox->AddNode(pWindow,copy=1,new TGeoTranslation(0*cm,0*cm,-dBoxZ+wBoxWall+2*dCF4Z+dWinZ)); 
-//position CF4 radiator to Al box   
-  TGeoVolume *pCF4=gGeoManager->MakeBox( "Vcf4",gGeoManager->GetMedium("HMPID_CF4"),dx=dCF4X,dy=dCF4Y,dz=dCF4Z);                   
-  pBox->AddNode(pCF4,copy=1,new TGeoTranslation(0*cm,0*cm,dBoxZ-wBoxWall-dCF4Z)); 
-//position mirror to CF4 radiator   
-  TGeoVolume *pMirror=gGeoManager->MakeBox( "Vmir",gGeoManager->GetMedium("HMPID_Ag"),dx=dMirX,dy=dMirY,dz=dMirZ);     
-  TGeoRotation *pMirrorRot=new TGeoRotation("VmirRot"); pMirrorRot->RotateY(45);   
-  pCF4->AddNode(pMirror,copy=1,new TGeoCombiTrans(0*cm,0*cm,dCF4Z-1*cm-dGapX,pMirrorRot)); 
-//position gap to  CF4 radiator   
-  TGeoVolume   *pGap     =gGeoManager->MakeBox ("Vgap"     ,gGeoManager->GetMedium("HMPID_CF4"),dx=dGapX , dy=dGapY , dz=dGapZ );  
-  TGeoRotation *pMwpcRot=new TGeoRotation("VmpcRot"); pMwpcRot->RotateY(90);  
-  pCF4->AddNode(pGap,copy=1,new TGeoCombiTrans(-dBoxX+1*cm,0*cm,dCF4Z-1*cm-dGapX,pMwpcRot)); 
-//divide gap into 80x48 cells
-  Int_t axis,ndiv; Double_t start,step;
-  TGeoVolume *pGapCol =pGap      ->Divide("Vcol",axis=1,ndiv=iNpadsX,start=0,step=0);//divide VhGap along X by NpadsX columns
-  TGeoVolume *pGapCell=pGapCol   ->Divide("Vcel",axis=2,ndiv=iNpadsY,start=0,step=0);//divide VhGapCol along Y by NpadsY cells
-//position pad to gap cell
-  TGeoVolume *pPad=gGeoManager->MakeBox ("Vpad",gGeoManager->GetMedium("HMPID_CsI"),dx=dPadX,dy=dPadY,dz=dPadZ);      
-  pGapCell->AddNode(pPad,copy=1,new TGeoTranslation(0,0,-dGapZ+dPadZ)); 
-//define wire rotation common for both anod and cathode wires
-  TGeoRotation *pWireRot=new TGeoRotation("VwireRot"); pWireRot->RotateY(90); //rotate wires around Y to be along X (initially along Z)
-//position 2 anod  wires to gap cell
-  TGeoVolume *pAnodWire =gGeoManager->MakeTube("Vano",gGeoManager->GetMedium("HMPID_W")  ,rmin=0   , rmax=wAnodR   , dz=dPadX );  
-  pGapCell->AddNode(pAnodWire,copy=1,new TGeoCombiTrans (0, -dPadY+wAnodShift             , -dGapZ+wAnodPc+2*dPadZ , pWireRot)); 
-  pGapCell->AddNode(pAnodWire,copy=2,new TGeoCombiTrans (0,  dPadY-wAnodShift             , -dGapZ+wAnodPc+2*dPadZ , pWireRot)); 
-//position 4 cathode wires to gap cell  
-  TGeoVolume *pCathWire =gGeoManager->MakeTube("Vcat",gGeoManager->GetMedium("HMPID_Cu") ,rmin=0   , rmax=wCathR , dz=dPadX );
-  pGapCell->AddNode(pCathWire,copy=1,new TGeoCombiTrans (0, -dPadY+wCathShift            , -dGapZ+wCathPc+2*dPadZ , pWireRot)); 
-  pGapCell->AddNode(pCathWire,copy=2,new TGeoCombiTrans (0, -dPadY+wCathShift+wCathPitch , -dGapZ+wCathPc+2*dPadZ , pWireRot)); 
-  pGapCell->AddNode(pCathWire,copy=3,new TGeoCombiTrans (0,  dPadY-wCathShift-wCathPitch , -dGapZ+wCathPc+2*dPadZ , pWireRot)); 
-  pGapCell->AddNode(pCathWire,copy=4,new TGeoCombiTrans (0,  dPadY-wCathShift            , -dGapZ+wCathPc+2*dPadZ , pWireRot)); 
-}//Vhmpid()
-//__________________________________________________________________________________________________
 void Axis()
 {
-// Draw axises  on top of geometry    
-  Double_t X[6]={0,0,0,300,0,0};  Double_t Y[6]={0,0,0,0,300,0};  Double_t Z[6]={0,0,0,0,0,300};  
+// Draw axises  on top of geometry
+  Double_t X[6]={0,0,0,300,0,0};  Double_t Y[6]={0,0,0,0,300,0};  Double_t Z[6]={0,0,0,0,0,300};
   TPolyLine3D *pXaxis=new TPolyLine3D(2,X);pXaxis->SetLineColor(kRed);   pXaxis->Draw();
   TPolyLine3D *pYaxis=new TPolyLine3D(2,Y);pYaxis->SetLineColor(kGreen); pYaxis->Draw();
-  TPolyLine3D *pZaxis=new TPolyLine3D(2,Z);pZaxis->SetLineColor(kBlue);  pZaxis->Draw();  
+  TPolyLine3D *pZaxis=new TPolyLine3D(2,Z);pZaxis->SetLineColor(kBlue);  pZaxis->Draw();
 }
 //__________________________________________________________________________________________________

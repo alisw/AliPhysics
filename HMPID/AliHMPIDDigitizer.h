@@ -5,6 +5,7 @@
 
 
 #include <AliDigitizer.h>
+#include "AliHMPIDDigit.h"
 class AliRunDigitizer;
 class TClonesArray;
 class TObjArray;
@@ -16,12 +17,12 @@ public:
            AliHMPIDDigitizer(AliRunDigitizer *pRunDig):AliDigitizer(pRunDig)  {}
   virtual ~AliHMPIDDigitizer()                                                {}
   void     Exec(Option_t* option=0);                //virtual
+  void     DoNoise(Bool_t doNoise)                           {fDoNoise=doNoise;} // Set noise or not
 //   
   static void    Sdi2Dig(TClonesArray *pSDigLst,TObjArray *pDigLst);
 protected:
+  static  Bool_t fDoNoise;
   ClassDef(AliHMPIDDigitizer,0)
 };    
-
-typedef AliHMPIDDigitizer AliRICHDigitizer;  // for backward compatibility
 
 #endif

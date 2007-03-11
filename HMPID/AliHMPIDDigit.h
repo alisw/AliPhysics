@@ -28,20 +28,20 @@ public:
          void    Draw        (Option_t *opt=""               );                                                                        //TObject::Draw() overloaded
          void    Print       (Option_t *opt=""               )const;                                                                   //TObject::Print() overloaded
 //private part  
-  static Int_t   Abs         (Int_t c,Int_t s,Int_t x,Int_t y)     {return c*100000000+s*1000000+x*1000+y;                           } //(ch,pc,padx,pady)-> abs pad
+  static Int_t   Abs         (Int_t ch,Int_t pc,Int_t x,Int_t y)   {return ch*100000000+pc*1000000+x*1000+y;                         } //(ch,pc,padx,pady)-> abs pad
   static Int_t   A2C         (Int_t pad                      )     {return pad/100000000;                                            } //abs pad -> chamber
   static Int_t   A2P         (Int_t pad                      )     {return pad%100000000/1000000;                                    } //abs pad -> pc
   static Int_t   A2X         (Int_t pad                      )     {return pad%1000000/1000;                                         } //abs pad -> pad X 
   static Int_t   A2Y         (Int_t pad                      )     {return pad%1000;                                                 } //abs pad -> pad Y 
          void    AddTidOffset(Int_t offset                   )     {for (Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;  } //needed for merging
          Int_t   Ch          (                               )const{return A2C(fPad);                                                } //chamber number
-  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= 4;                                                   } //is digit over threshold????
+  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fSigmas;                                             } //is digit over threshold????
   static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();                     } //is point inside chamber boundary?
          Float_t LorsX       (                               )const{return LorsX(A2P(fPad),A2X(fPad));                               } //center of the pad x, [cm]
   static Float_t LorsX       (Int_t pc,Int_t padx            )     {return (padx    +0.5)*SizePadX()+(pc  %2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
          Float_t LorsY       (                               )const{return LorsY(A2P(fPad),A2Y(fPad));                               } //center of the pad y, [cm]
   static Float_t LorsY       (Int_t pc,Int_t pady            )     {return (pady    +0.5)*SizePadY()+(pc  /2)*(SizePcY()+SizeDead());} //center of the pad y, [cm]
-  inline Float_t Mathieson   (Float_t x,Float_t y            )const;                                                                   //Mathieson distribution 
+  inline Float_t IntMathieson(Float_t x,Float_t y            )const;                                                                   //Mathieson distribution 
          Int_t   PadPcX      (                               )const{return A2X(fPad);}                                                 //pad pc x # 0..79
          Int_t   PadPcY      (                               )const{return A2Y(fPad);}                                                 //pad pc y # 0..47
          Int_t   PadChX      (                               )const{return (Pc()%2)*kPadPcX+PadPcX();}                                 //pad ch x # 0..159
@@ -65,6 +65,7 @@ public:
   static Float_t SizePcY     (                               )     {return fMaxPcY[0];}                                                //PC size y, [cm]    
   static Float_t SizeWin     (                               )     {return 0.5;}                                                       //Quartz window width
   static Float_t SizeRad     (                               )     {return 1.5;}                                                       //Rad width   
+  static Float_t CathAnoCath (                               )     {return 0.445;}                                                     //Cathode-Anode-cathode pitch
   static const Float_t fMinPcX[6];
   static const Float_t fMinPcY[6];
   static const Float_t fMaxPcX[6];
@@ -72,14 +73,16 @@ public:
   
   inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                                        //is point in dead area?
   inline static void   Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py);                                                  //(x,y)->(pc,px,py) 
-  
-protected:                  //AliDigit has fTracks[3]
-  Int_t    fPad;            //absolute pad number
-  Float_t  fQ;              //QDC value, fractions are permitted for summable procedure  
-  ClassDef(AliHMPIDDigit,4) //HMPID digit class       
-};//class AliHMPIDDigitN
-
-typedef AliHMPIDDigit AliRICHDigit; // for backward compatibility
+  static Int_t fSigmas;                                                                                                              //sigma cut on charge 
+protected:                                                                   //AliDigit has fTracks[3]
+  static const Float_t k1;                                                   //Mathieson parameters
+  static const Float_t k2;                                                   //
+  static const Float_t kSqrtK3;                                              //
+  static const Float_t k4;                                                   //
+  Int_t    fPad;                                                             //absolute pad number
+  Float_t  fQ;                                                               //QDC value, fractions are permitted for summable procedure  
+  ClassDef(AliHMPIDDigit,4)                                                  //HMPID digit class       
+};//class AliHMPIDDigit
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py)
@@ -122,17 +125,21 @@ Bool_t AliHMPIDDigit::IsInDead(Float_t x,Float_t y)
   return kFALSE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Float_t AliHMPIDDigit::Mathieson(Float_t x,Float_t y)const
+Float_t AliHMPIDDigit::IntMathieson(Float_t x,Float_t y)const
 {
+// Integration of Mathieson.
 // This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
 // Arguments: x,y- position of the center of Mathieson distribution
 //  Returns: a charge fraction [0-1] imposed into the pad
-  const Float_t kSqrtK3=0.77459667,k2=0.962,k4=0.379;
+//  K1    =0.28278796
+//  K2    =0.96242952
+//  SqrtK3=0.77459667
+//  K4    =0.37932926
 
-  Float_t ux1=kSqrtK3*TMath::TanH(k2*(x-LorsX()+0.5*SizePadX())/0.425);
-  Float_t ux2=kSqrtK3*TMath::TanH(k2*(x-LorsX()-0.5*SizePadX())/0.425);
-  Float_t uy1=kSqrtK3*TMath::TanH(k2*(y-LorsY()+0.5*SizePadY())/0.425);
-  Float_t uy2=kSqrtK3*TMath::TanH(k2*(y-LorsY()-0.5*SizePadY())/0.425);
+  Float_t ux1=kSqrtK3*TMath::TanH(k2*(x-LorsX()+0.5*SizePadX())/CathAnoCath());
+  Float_t ux2=kSqrtK3*TMath::TanH(k2*(x-LorsX()-0.5*SizePadX())/CathAnoCath());
+  Float_t uy1=kSqrtK3*TMath::TanH(k2*(y-LorsY()+0.5*SizePadY())/CathAnoCath());
+  Float_t uy2=kSqrtK3*TMath::TanH(k2*(y-LorsY()-0.5*SizePadY())/CathAnoCath());
   return 4*k4*(TMath::ATan(ux2)-TMath::ATan(ux1))*k4*(TMath::ATan(uy2)-TMath::ATan(uy1));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

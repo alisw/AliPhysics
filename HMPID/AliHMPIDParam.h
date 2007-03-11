@@ -48,8 +48,6 @@ protected:
   ClassDef(AliHMPIDParam,0)           //HMPID main parameters class
 };
 
-typedef AliHMPIDParam AliRICHParam; // for backward compatibility
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDParam* AliHMPIDParam::Instance()
 {

@@ -15,7 +15,6 @@
 
 #include "AliHMPIDDigitizer.h"
 #include "AliHMPID.h"
-#include "AliHMPIDDigit.h"
 #include <AliRun.h>
 #include <AliRunLoader.h>
 #include "AliRunDigitizer.h"
@@ -25,6 +24,7 @@
 
 ClassImp(AliHMPIDDigitizer)
 
+Bool_t AliHMPIDDigitizer::fDoNoise=kTRUE;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigitizer::Exec(Option_t*)
 {
@@ -80,6 +80,15 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     pLst[i]=(TClonesArray*)(*pDigLst)[i];
     iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");         //in principle those lists should be empty                                                                       
   }
+
+  // make noise array
+  Float_t arrNoise[7][6][80][48];
+  if(fDoNoise) {
+    for (Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)
+      for (Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++)
+        for(Int_t iPx=AliHMPIDDigit::kMinPx;iPx<=AliHMPIDDigit::kMaxPx;iPx++)
+          for(Int_t iPy=AliHMPIDDigit::kMinPy;iPy<=AliHMPIDDigit::kMaxPy;iPy++) arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,1);
+  }  
   
   pSdiLst->Sort();  
                      
@@ -95,10 +104,22 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     iPad=pSdig->Pad(); iCh=AliHMPIDDigit::A2C(iPad);                                                            //new sdigit comes, reset collectors
     iNdigPad=1;
     aTids[0]=pSdig->GetTrack(0);aTids[1]=aTids[2]=-1; 
-    q=pSdig->Q();    
+    q=pSdig->Q();
+    if(fDoNoise) q+=arrNoise[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()];
+    arrNoise[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()]=0;
   }//sdigits loop (sorted)
   
   if(AliHMPIDDigit::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);           //add the last one, in case of empty sdigits list q=-1
-                                                                                                               //so digit is not created    
+// add noise pad above threshold with no signal merged...if any
+  if(!fDoNoise) return;
+  aTids[0]=aTids[1]=aTids[2]=-1;
+  for (Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)
+    for (Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++)
+      for(Int_t iPx=AliHMPIDDigit::kMinPx;iPx<=AliHMPIDDigit::kMaxPx;iPx++)
+        for(Int_t iPy=AliHMPIDDigit::kMinPy;iPy<=AliHMPIDDigit::kMaxPy;iPy++) {
+          Float_t q = arrNoise[iCh][iPc][iPx][iPy];
+          if(AliHMPIDDigit::IsOverTh(q)) new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(AliHMPIDDigit::Abs(iCh,iPc,iPx,iPy),(Int_t)q,aTids);
+        }
+        
 }//Sdi2Dig()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

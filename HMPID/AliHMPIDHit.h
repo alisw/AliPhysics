@@ -62,6 +62,4 @@ Float_t AliHMPIDHit::QdcTot(Float_t &e)
 }  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       
-typedef AliHMPIDHit AliRICHHit; // for backward compatibility
-    
 #endif

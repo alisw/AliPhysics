@@ -27,6 +27,12 @@ const Float_t AliHMPIDDigit::fMaxPcX[]={64.00 , 130.60 ,  64.00 , 130.60 , 64.00
 const Float_t AliHMPIDDigit::fMinPcY[]={ 0.00 , 0.00 , 42.92 ,  42.92,  85.84,  85.84};
 const Float_t AliHMPIDDigit::fMaxPcY[]={40.32 , 40.32, 83.24 ,  83.24, 126.16, 126.16};
 
+const Float_t  AliHMPIDDigit::k1      =0.28278796;
+const Float_t  AliHMPIDDigit::k2      =0.96242952;
+const Float_t  AliHMPIDDigit::kSqrtK3 =0.77459667;
+const Float_t  AliHMPIDDigit::k4      =0.37932926;
+
+Int_t AliHMPIDDigit::fSigmas=4;
 
 
 /*

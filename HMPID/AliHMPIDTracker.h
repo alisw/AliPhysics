@@ -29,6 +29,4 @@ protected:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-typedef AliHMPIDTracker AliRICHTracker; // for backward compatibility
-
 #endif//AliHMPIDTracker_h

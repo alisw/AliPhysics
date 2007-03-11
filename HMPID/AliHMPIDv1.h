@@ -40,6 +40,4 @@ protected:
   ClassDef(AliHMPIDv1,2)                                                                //HMPID full version for simulation
 };
 
-typedef AliHMPIDv1 AliRICHv1; // for backward compatibility
-		
 #endif
