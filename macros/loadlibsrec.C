@@ -30,6 +30,7 @@ void loadlibsrec ()
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
+  gSystem->Load("libMUONshuttle");
   gSystem->Load("libMUONraw");
   gSystem->Load("libMUONsim");
   gSystem->Load("libMUONrec");
