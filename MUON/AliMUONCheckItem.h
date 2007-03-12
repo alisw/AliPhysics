@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup shuttle
+/// \ingroup rec
 /// \class AliMUONCheckItem
 /// \brief A structure used to gather information at different levels (ch,manu,de,chamber)
 /// 

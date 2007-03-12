@@ -8,8 +8,5 @@
 #pragma link C++ class AliMUONGMSSubprocessor+;
 
 #pragma link C++ class AliMUONPedestalEventGenerator+;
-#pragma link C++ class AliMUONCheckItem+;
-#pragma link C++ class AliMUONCheckItemIterator+;
-#pragma link C++ class AliMUON2DStoreValidator+;
 
 #endif

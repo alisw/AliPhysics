@@ -36,7 +36,11 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONCluster.cxx \
        AliMUONPadStatusMaker.cxx \
        AliMUONPadStatusMapMaker.cxx \
-       AliMUONHVNamer.cxx
+       AliMUONHVNamer.cxx \
+       AliMUON2DStoreValidator.cxx \
+       AliMUONCheckItem.cxx \
+       AliMUONCheckItemIterator.cxx
+       
 
 HDRS:= $(SRCS:.cxx=.h)
 

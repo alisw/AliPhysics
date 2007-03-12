@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup shuttle
+/// \ingroup rec
 /// \class AliMUONCheckItemIterator
 /// \brief Iterator on CheckItem
 /// 
