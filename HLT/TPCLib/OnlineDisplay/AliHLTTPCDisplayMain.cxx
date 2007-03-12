@@ -577,6 +577,7 @@ void AliHLTTPCDisplayMain::ReadRawData(){
   while ( blk != ~(ULong_t)0 ) {
     HLTDebug( "Found raw data block %lu\n", blk );
 
+#if HOMER_VERSION >= 2
     // -- Check for corrupt data
     AliHLTUInt64_t corruptFlag = reader->GetBlockStatusFlags( blk );
     if (corruptFlag & 0x00000001) {
@@ -584,6 +585,7 @@ void AliHLTTPCDisplayMain::ReadRawData(){
       blk = reader->FindBlockNdx( rawID, " CPT", 0xFFFFFFFF, blk+1 );
       continue;
     }
+#endif
 
     void* rawDataBlock = (void*) reader->GetBlockData( blk );
     unsigned long rawDataLen = reader->GetBlockDataLength( blk );

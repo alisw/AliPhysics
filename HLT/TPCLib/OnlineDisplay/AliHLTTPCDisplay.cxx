@@ -23,7 +23,11 @@
 #define UNUSEDCLUSTERCOLOR
 
 #include "AliHLTStdIncludes.h"
+#if defined(HAVE_TVIEW3D_H)
+#include <TView3D.h>
+#else
 #include <TView.h>
+#endif
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>
 #include <TH2.h>
@@ -713,7 +717,16 @@ void AliHLTTPCDisplay::DrawHistCharge(){
 // #############################################################################
 void AliHLTTPCDisplay::Draw3D(){    	
     
+#if defined(HAVE_TVIEW3D_H)
+    TView3D *v = new TView3D();
+    if (v) v->SetSystem(1);
+#else
     TView *v = new TView(1);
+#endif
+    if (v==NULL) {
+      HLTFatal("can not create viewer");
+      return;
+    }
     v->SetRange(-800,-800,-800,800,800,800);
 
     Float_t* etaRange = NULL;   // ------  STILL TO FIX

@@ -71,6 +71,10 @@ if test "x$have_root" = "x1"; then
   # has to derive from TBufferFile.h (needed for BASE/AliHLTMessage.h)
   AC_CHECK_HEADERS([TBufferFile.h])
 
+  # TView.h has been made pure virtual right after root v5-15-02 and one
+  # has to derive from TView3D.h (needed for TPCLib/OnlineDisplay/AliHLTTPCDisplay3D)
+  AC_CHECK_HEADERS([TView3D.h])
+
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
   LIBS=$save_LIBS
