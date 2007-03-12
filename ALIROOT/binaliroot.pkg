@@ -7,7 +7,7 @@ ELIBSDIR:=
 
 
 
-ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping MUONshuttle \
+ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         TPCbase TPCsim TPCrec TPCfast \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
@@ -81,7 +81,6 @@ ARLIBS:= \
    PMD/tgt_$(ALICE_TARGET)/G__PMDbase.o $(LIBPATH)/libPMDbase.a \
    PMD/tgt_$(ALICE_TARGET)/G__PMDsim.o $(LIBPATH)/libPMDsim.a \
    PMD/tgt_$(ALICE_TARGET)/G__PMDrec.o $(LIBPATH)/libPMDrec.a \
-   MUON/tgt_$(ALICE_TARGET)/G__MUONshuttle.o $(LIBPATH)/libMUONshuttle.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONgeometry.o $(LIBPATH)/libMUONgeometry.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONmapping.o $(LIBPATH)/libMUONmapping.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONbase.o $(LIBPATH)/libMUONbase.a \
