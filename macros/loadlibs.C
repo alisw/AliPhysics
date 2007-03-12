@@ -46,7 +46,6 @@ void loadlibs ()
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONraw");
-  gSystem->Load("libMUONshuttle");
   gSystem->Load("libMUONsim");
   gSystem->Load("libMUONrec");
   gSystem->Load("libFMDbase");
