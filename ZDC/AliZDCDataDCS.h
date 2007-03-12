@@ -51,7 +51,7 @@ private:
 	TString fAliasNames[kNAliases];	// Name of the aliases provided by the DCS
 	TClonesArray fGraphs;		// Array containing PTM HV graphics
 	
-	Float_t fCalibData[kNAliases];	// Array containing calibration data
+	Float_t fCalibData[kNGraphs];	// Array containing calibration data
 
 	Bool_t fIsProcessed;		// Flag set when data are processed
 
