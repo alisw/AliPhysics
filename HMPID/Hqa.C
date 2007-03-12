@@ -5,7 +5,10 @@ void Hqa()
 }//Hqa()
 void HitQA()
 {
-  Int_t nEvts=100;
+  TFile *pFile = new TFile("Hqa.root","recreate");
+  AliHMPIDCluster::DoCorrSin(kFALSE);
+  AliHMPIDDigit::fSigmas=4;
+  Int_t nEvts=10000;
   TLegend *lQ=new TLegend(0.5,0.5,0.9,0.9);
 
   TH1F *hQ7eV  =new TH1F("hQ7eV"  ,"" ,300,-50,2000);     hQ7eV  ->SetLineColor(kRed);      lQ->AddEntry(hQ7eV  ,"Ckov 7 eV");  hQ7eV->SetStats(0);
@@ -31,9 +34,11 @@ void HitQA()
   TH2F *pCluMapNot  =new TH2F("cluMapNot","Raw Clusters"     ,1700,-10,160,1700,-10,160);      
   TH2F *pCluMapMax  =new TH2F("cluMapMax","N. locs excceds"  ,1700,-10,160,1700,-10,160);      
 
-  TH1F *hHitCluDifX = new TH1F("hHitCluDifX" ,";entries;x_{Hit}-x_{Clu} [cm]"   ,2000,-2,2);          hHitCluDifX->Sumw2();    hHitCluDifX->SetFillColor(kYellow);
-  TH1F *hHitCluDifY = new TH1F("hHitCluDifY" ,";entries;y_{Hit}-y_{Clu} [cm]"   ,2000,-2,2);          hHitCluDifY->Sumw2();    hHitCluDifY->SetFillColor(kYellow);
-  TH2F *hHitCluDifXY= new TH2F("hHitCluDifXY",";x_{Hit}-x_{Clu};y_{Hit}-y_{Clu}",2000,-2,2,2000,-2,2);hHitCluDifXY->Sumw2();  
+  TH1F *hHitCluDifX = new TH1F("hHitCluDifX" ,";entries;x_{Hit}-x_{Clu} [cm]"   ,1000,-1,1);          hHitCluDifX->Sumw2();    hHitCluDifX->SetFillColor(kYellow);
+//  TH2F *hHitCluDifXv= new TH2F("hHitCluDifXv",";x_{Hit};x_{Hit}-x_{Clu} [cm]"   ,500,-0.5,0.5,1000,-0.2,0.2);hHitCluDifXv->Sumw2();
+  TProfile *hHitCluDifXv= new TProfile("hHitCluDifXv",";x_{Hit};x_{Hit}-x_{Clu} [cm]"   ,500,-0.5,0.5);
+  TH1F *hHitCluDifY = new TH1F("hHitCluDifY" ,";entries;y_{Hit}-y_{Clu} [cm]"   ,1000,-1,1);          hHitCluDifY->Sumw2();    hHitCluDifY->SetFillColor(kYellow);
+  TH2F *hHitCluDifXY= new TH2F("hHitCluDifXY",";x_{Hit}-x_{Clu};y_{Hit}-y_{Clu}",1000,-1,1,1000,-1,1);hHitCluDifXY->Sumw2();  
   TH1F *hHitCluDifQ = new TH1F("hHitCluDifQ" ,";entries;(Q_{Clu}-Q_{Hit})/Q_{Hit}" ,200 ,-200,200);   hHitCluDifQ->Sumw2();    hHitCluDifQ->SetFillColor(kYellow);
   
   TH2F *hHitMap= new TH2F("hHitMap",";x_{Hit};y_{Hit}",1700,-10,160,1700,-10,160);  
@@ -50,14 +55,16 @@ void HitQA()
   
     
   for(Int_t iEvt=0;iEvt<nEvts;iEvt++){//events loop
-    if(iEvt%500==0)Printf("============> iEvt = %d ",iEvt);
+    if(iEvt%50==0)Printf("============> iEvt = %d ",iEvt);
     
     Int_t ch,pid; Float_t e,hitx,hity,hitq;
 //    Int_t nHits=(type==999)?1:40;
     Int_t nHits=1;
     for(Int_t iHit=0;iHit<nHits;iHit++){//hits loop for the current event
       switch(iHit){
-        case 0:  ch=0;pid=kProton;e=e200;hitx=16.0+gRandom->Rndm()*0.8;hity= 16.8+gRandom->Rndm()*0.84;break; //mip ramdomly distributed in one pad in the middle
+        case 0:  ch=0;pid=kProton;e=e200;
+                 hitx=AliHMPIDDigit::SizePadX()*(6+gRandom->Rndm());
+                 hity=AliHMPIDDigit::SizePadY()*(6+gRandom->Rndm());break; //mip ramdomly distributed in one pad
         case 1:  ch=0;pid=kProton;e=e200;hitx=0.4;hity=0.42;break; //mip in left-hand bottom coner of chamber 0
         case 2:  ch=0;pid=kProton;e=e200;hitx=0.4;hity=30  ;break; //mip on left edge of chamber 0
         case 3:  ch=0;pid=kProton;e=e200;hitx=40; hity=0.42;break; //mip on bottom edge of chamber 0
@@ -75,7 +82,7 @@ void HitQA()
     AliHMPIDv1::Hit2Sdi(&hits,&sdigs);
     AliHMPIDDigitizer::DoNoise(kFALSE);
     AliHMPIDDigitizer::Sdi2Dig(&sdigs,&digs);
-    AliHMPIDReconstructor::Dig2Clu(&digs,&clus,kFALSE);
+    AliHMPIDReconstructor::Dig2Clu(&digs,&clus,kTRUE);
 
 // From here normal procedure for QA
 
@@ -113,20 +120,25 @@ void HitQA()
     case 	kNoLoc: status="no LocMax(fit)"   ;break;
     case 	kAbn  : status="Abnormal fit  "   ;break;
 */
-            case AliHMPIDCluster::kSi1:   pCluMapSi1->Fill(clux,cluy); break;
-            case AliHMPIDCluster::kLo1:   pCluMapLo1->Fill(clux,cluy); break;
-            case AliHMPIDCluster::kUnf:   pCluMapUnf->Fill(clux,cluy); break; 
-            case AliHMPIDCluster::kMax:   pCluMapMax->Fill(clux,cluy); break;
-            case AliHMPIDCluster::kEdg:   pCluMapEdg->Fill(clux,cluy); break;
-            case AliHMPIDCluster::kCoG:   pCluMapCoG->Fill(clux,cluy); break;
-            case AliHMPIDCluster::kNoLoc: pCluMapNoLoc->Fill(clux,cluy); break;
-            case AliHMPIDCluster::kAbn:   pCluMapAbn->Fill(clux,cluy); break;
-            case AliHMPIDCluster::kNot:   pCluMapNot->Fill(clux,cluy); break;
+            case AliHMPIDCluster::kSi1:   pCluMapSi1->Fill(clux,cluy);  break;
+            case AliHMPIDCluster::kLo1:   pCluMapLo1->Fill(clux,cluy);  break;
+            case AliHMPIDCluster::kUnf:   pCluMapUnf->Fill(clux,cluy);  break; 
+            case AliHMPIDCluster::kMax:   pCluMapMax->Fill(clux,cluy);  break;
+            case AliHMPIDCluster::kEdg:   pCluMapEdg->Fill(clux,cluy);  break;
+            case AliHMPIDCluster::kCoG:   pCluMapCoG->Fill(clux,cluy);  break;
+            case AliHMPIDCluster::kNoLoc: pCluMapNoLoc->Fill(clux,cluy);break;
+            case AliHMPIDCluster::kAbn:   pCluMapAbn->Fill(clux,cluy);  break;
+            case AliHMPIDCluster::kNot:   pCluMapNot->Fill(clux,cluy);  break;
             default:     pCluMapEmp->Fill(clux,cluy); break; 		
         }
         
         hHitCluDifX->Fill(hitx-clux); hHitCluDifY->Fill(hity-cluy); hHitCluDifXY->Fill(hitx-clux,hity-cluy); hHitCluDifQ->Fill(100*(cluq-hitq)/hitq);
-        
+        // distorsion due to feedback photons
+        Int_t pc,px,py;
+        AliHMPIDDigit::Lors2Pad(hitx,hity,pc,px,py);
+        Float_t padCenterX = AliHMPIDDigit::LorsX(pc,px);
+        if(pClu->Size()>1)hHitCluDifXv->Fill(hitx-padCenterX,(hitx-clux));        
+        //
       }//clusters loop
     }//chambers loop
       
@@ -137,7 +149,17 @@ void HitQA()
   TCanvas *pC2=new TCanvas("Digit canvas","Digit canvas",1280,800); pC2->Divide(3,3);
   pC2->cd(1);hHitCluDifX->Draw("hist");
   pC2->cd(2);hHitCluDifY->Draw("hist");
-  pC2->cd(3);hHitCluDifXY->Draw("colz");
+//  pC2->cd(3);hHitCluDifXY->Draw("colz");
+  // Draw CorrSin
+  AliHMPIDCluster c;
+  TPolyLine *pLine = new TPolyLine(500);
+  for(Int_t i=0;i<500;i++) {
+    Double_t x = 0 + i*AliHMPIDDigit::SizePadX()/500.;
+    c.SetX(x);c.SetY(0);c.CorrSin();
+    pLine->SetPoint(i,x-0.5*AliHMPIDDigit::SizePadX(),c.X()-x);
+  }
+  pC2->cd(3);hHitCluDifXv->Draw("colz");pLine->Draw("C");
+  //
   pC2->cd(4);hHitCluDifQ->Draw("hist");
   pC2->cd(5);gPad->SetLogy(1);hCluFlg->Draw();
   pC2->cd(6);hCluChi2->Draw();
@@ -157,7 +179,8 @@ void HitQA()
    
   pC1->SaveAs("$HOME/HitMaps.png");  //?????
   pC2->SaveAs("$HOME/HitCluDif.gif");  
-  
+
+  pFile->Write();  
   Printf("Digits - raw -digits conversion...");  
   
   AliHMPIDDigit d1,d2; Int_t ddl,r,d,a;UInt_t w32;

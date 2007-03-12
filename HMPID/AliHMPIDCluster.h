@@ -36,19 +36,22 @@ public:
          Int_t          Ch       (                                         )const{return fCh;                                    } //chamber number
   inline void           DigAdd   (AliHMPIDDigit *pDig                      );                                                      //add new digit ot the cluster
          AliHMPIDDigit* Dig      (Int_t i                                  )const{return (AliHMPIDDigit*)fDigs->At(i);           } //pointer to i-th digi 
-  inline Bool_t         IsInPc   ();                                                                                        //check if is in the current PC
+  inline Bool_t         IsInPc   ();                                                                                               //check if is in the current PC
   inline void           Reset    (                                         );                                                      //cleans the cluster
          Int_t          Size     (                                         )const{return fSi;                                    } //returns number of pads in formed cluster 
          Int_t          Solve    (TClonesArray *pCluLst,Bool_t isUnfold    );                                                      //solve cluster: MINUIT fit or CoG
-         Int_t          Status  (                                          ) const{return fSt;}                                   //Status of cluster                                  
+         Int_t          Status   (                                         ) const{return fSt;}                                    //Status of cluster                                  
          Double_t       QRaw     (                                         )const{return fQRaw;                                  } //raw cluster charge in QDC channels 
          Double_t       Q        (                                         )const{return fQ;                                     } //given cluster charge in QDC channels 
          Double_t       Qe       (                                         )const{return fErrQ;                                  } //Error in cluster charge in QDC channels 
          Double_t       X        (                                         )const{return fX;                                     } //cluster x position in LRS
          Double_t       Xe       (                                         )const{return fErrX;                                  } //cluster charge in QDC channels 
          Double_t       Y        (                                         )const{return fY;                                     } //cluster y position in LRS 
-         Double_t       Ye       (                                         )const{return fErrY;                                    } //cluster charge in QDC channels 
-         Double_t       Chi2     (                                         )const{return fChi2;                                  } 
+         Double_t       Ye       (                                         )const{return fErrY;                                  } //cluster charge in QDC channels 
+         Double_t       Chi2     (                                         )const{return fChi2;                                  } //chi2 of the fit
+         void           DoCorrSin(Bool_t doCorrSin                         ){fDoCorrSin=doCorrSin;}                                // Set sinoidal correction
+         void           SetX     (Double_t x                               ){fX=x;}                                                // Setter
+         void           SetY     (Double_t y                               ){fY=y;}                                                // Setter
 protected:
   Int_t         fCh;          //chamber number
   Int_t         fSi;          //size of the formed cluster from which this cluster deduced
@@ -66,6 +69,7 @@ protected:
   Double_t      fErrY;        //error on y postion, [cm]
   Double_t      fChi2;        //some estimator of the fit quality
   TObjArray    *fDigs;        //! list of digits forming this cluster
+  static  Bool_t fDoCorrSin;  //
   ClassDef(AliHMPIDCluster,6) //HMPID cluster class
 };//class AliHMPIDCluster
 

@@ -24,7 +24,7 @@
 
 ClassImp(AliHMPIDDigitizer)
 
-Bool_t AliHMPIDDigitizer::fDoNoise=kTRUE;
+Bool_t AliHMPIDDigitizer::fDoNoise=kFALSE;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigitizer::Exec(Option_t*)
 {

@@ -7,7 +7,7 @@ public:
           HmpConfig(const char*sFileName);
          ~HmpConfig()                    {Info("ctor","");Cleanup();}
          
-  enum EVersOpts  {kNo=101,kVer0,kVer1,kVer2,kTest, kDeclust=301,kSagita,kFeedback,kSecRad,kQe0=400,kQeNorm,kOptics};
+  enum EVersOpts  {kNo=101,kVer0,kVer1,kVer2,kTest, kDeclust=301,kSagita,kFeedback,kElNoise,kQe0=400,kQeNorm,kOptics};
   enum EGenTypes  {kGunZ=1,kGun1,kGun7,kBox,kHijing,kHijingPara,kPythia,kHmpLib,kNotUsed=999};
   
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kACORDE,kHALL,kPHOS,kT0,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
@@ -76,12 +76,12 @@ void HmpConfig::GuiHmp(TGHorizontalFrame *pMainHF)
     new TGRadioButton(fVerBG,   "ver1"       ,kVer1     );  fVerBG->SetButton(kVer1);
     new TGRadioButton(fVerBG,   "ver2"       ,kVer2     );
   pHmpGF->AddFrame(fOptBG=new TGButtonGroup(pHmpGF,""));  fOptBG->Connect("Pressed(Int_t)" ,"HmpConfig",this,"HmpVerSlot(Int_t)");
-    new TGCheckButton(fOptBG,"Test beam position?"  ,kTest);       
-    new TGCheckButton(fOptBG,"Second radiator?"     ,kSecRad);       
-    new TGCheckButton(fOptBG,"Decluster?"           ,kDeclust);      fOptBG->SetButton(kDeclust);
-    new TGCheckButton(fOptBG,"Wire sagita?"         ,kSagita);       fOptBG->SetButton(kSagita);
-    new TGCheckButton(fOptBG,"Feedbacks?"           ,kFeedback);     fOptBG->SetButton(kFeedback); 
-    new TGCheckButton(fOptBG,"Plot optics?"         ,kOptics);     
+    new TGCheckButton(fOptBG,"Test run position"   ,kTest);       
+    new TGCheckButton(fOptBG,"Unfold cluster    "  ,kDeclust);      fOptBG->SetButton(kDeclust);
+    new TGCheckButton(fOptBG,"Wire sagitta      "  ,kSagita);       fOptBG->SetButton(kSagita);
+    new TGCheckButton(fOptBG,"Photon feedback   "  ,kFeedback);     fOptBG->SetButton(kFeedback); 
+    new TGCheckButton(fOptBG,"Electronic noise  "  ,kElNoise);     // fOptBG->SetButton(kElNoise); 
+    new TGCheckButton(fOptBG,"Plot optics       "  ,kOptics);     
   pHmpGF->AddFrame(fQeBG=new TGButtonGroup(pHmpGF,""));
     new TGRadioButton(fQeBG,"QE=0"                 ,kQe0);       
     new TGRadioButton(fQeBG,"QE normal"            ,kQeNorm);       fQeBG->SetButton(kQeNorm);
@@ -105,10 +105,11 @@ void HmpConfig::WriteHmp(FILE *pF)
 {
   if(!fVerBG->GetButton(kNo)->GetState()){
     TString title;
-    if( fOptBG->GetButton(kSecRad)->GetState())             title+=" Radiator2 ";
-    if(!fOptBG->GetButton(kSagita)->GetState())             fprintf(pF,"  AliHMPIDParam::fgIsWireSagita=kFALSE;\n");
-    if( fOptBG->GetButton(kTest)  ->GetState())             title+=" TestBeam ";
-    if( fOptBG->GetButton(kOptics)->GetState())             title+=" ShowOptics ";
+    if(!fOptBG->GetButton(kSagita)  ->GetState())             fprintf(pF,"  AliHMPIDParam::fgIsWireSagita=kFALSE;\n");
+    if(!fOptBG->GetButton(kFeedback)->GetState())             fprintf(pF,"  AliHMPIDv1::DoFeed(kFALSE);\n");
+    if( fOptBG->GetButton(kElNoise) ->GetState())             fprintf(pF,"  AliHMPIDDigitizer::DoNoise(kTRUE);\n");
+    if( fOptBG->GetButton(kTest)    ->GetState())             title+=" TestBeam ";
+    if( fOptBG->GetButton(kOptics)  ->GetState())             title+=" ShowOptics ";
     if(title.Length()==0) title="Default";
     
     if     (fVerBG->GetButton(kVer0)->GetState())           fprintf(pF,"  new AliHMPIDv0(\"Gel %s\");\n\n",title.Data());    

@@ -17,6 +17,9 @@
 #include <TMinuit.h>         //Solve()
 #include <TClonesArray.h>    //Solve()
 #include <TMarker.h>         //Draw()
+
+Bool_t AliHMPIDCluster::fDoCorrSin=kTRUE;
+
 ClassImp(AliHMPIDCluster)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::CoG()
@@ -46,9 +49,8 @@ void AliHMPIDCluster::CoG()
   fBox=(maxPadX-minPadX+1)*100+maxPadY-minPadY+1;           // dimension of the box: format Xdim*100+Ydim
   
   if ( fQRaw != 0 )   fX/=fQRaw;fY/=fQRaw;                  //final center of gravity
-  
- 
-  if(fDigs->GetEntriesFast()>1)CorrSin();                   //correct it by sinoid   
+   
+  if(fDigs->GetEntriesFast()>1&&fDoCorrSin)CorrSin();       //correct it by sinoid   
   
   fQ  = fQRaw;                                              // Before starting fit procedure, Q and QRaw must be equal
   fCh=pDig->Ch();                                           //initialize chamber number
