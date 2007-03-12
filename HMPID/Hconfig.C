@@ -106,7 +106,7 @@ void HmpConfig::WriteHmp(FILE *pF)
   if(!fVerBG->GetButton(kNo)->GetState()){
     TString title;
     if(!fOptBG->GetButton(kSagita)  ->GetState())             fprintf(pF,"  AliHMPIDParam::fgIsWireSagita=kFALSE;\n");
-    if(!fOptBG->GetButton(kFeedback)->GetState())             fprintf(pF,"  AliHMPIDv1::DoFeed(kFALSE);\n");
+    if(!fOptBG->GetButton(kFeedback)->GetState())             fprintf(pF,"  AliHMPID::DoFeed(kFALSE);\n");
     if( fOptBG->GetButton(kElNoise) ->GetState())             fprintf(pF,"  AliHMPIDDigitizer::DoNoise(kTRUE);\n");
     if( fOptBG->GetButton(kTest)    ->GetState())             title+=" TestBeam ";
     if( fOptBG->GetButton(kOptics)  ->GetState())             title+=" ShowOptics ";
