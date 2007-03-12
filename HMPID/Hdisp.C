@@ -189,15 +189,16 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     gPad->SetEditable(kTRUE); gPad->Clear(); 
     DrawCh(iCh);
                            
-    for(Int_t iHit=0;iHit<pHitLst->GetEntriesFast();iHit++){
+    ((TClonesArray*)pDigLst->At(iCh))->Draw();               //draw digits
+    
+    for(Int_t iHit=0;iHit<pHitLst->GetEntriesFast();iHit++){ // Draw hits
       AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);
       if(pHit->Ch()==iCh) pHit->Draw();
     }    
            
-    ((TClonesArray*)pDigLst->At(iCh))->Draw();  //draw digits
-    ((TClonesArray*)pCluLst->At(iCh))->Draw();  //draw clusters
-                            pTxC[iCh]->Draw();  //draw intersections
-                            pRin[iCh]->Draw("CLP");  //draw rings
+    ((TClonesArray*)pCluLst->At(iCh))->Draw();              //draw clusters
+                            pTxC[iCh]->Draw();              //draw intersections
+                            pRin[iCh]->Draw("CLP");         //draw rings
     gPad->SetEditable(kFALSE);
   }//chambers loop
   

@@ -16,6 +16,7 @@
 #include "AliHMPIDDigit.h"    //class header
 #include <TClonesArray.h>     //WriteRaw() 
 #include <TBox.h>             //Draw() 
+#include <TPolyLine.h>        //Draw() 
 #include <AliRawDataHeader.h> //WriteRaw()
 #include <AliDAQ.h>           //WriteRaw()
 #include <Riostream.h>        //WriteRaw()
@@ -106,6 +107,12 @@ void AliHMPIDDigit::Draw(Option_t*)
 {
 //  TMarker *pMark=new TMarker(LorsX(),LorsY(),25); pMark->SetMarkerColor(kGreen);pMark->Draw();
   TBox *pad = new TBox(LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY(),LorsX()+0.5*SizePadX(),LorsY()+0.5*SizePadY());
+  TPolyLine *line=new TPolyLine(5);
+  line->SetPoint(0,LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY());
+  line->SetPoint(1,LorsX()-0.5*SizePadX(),LorsY()+0.5*SizePadY());
+  line->SetPoint(2,LorsX()+0.5*SizePadX(),LorsY()+0.5*SizePadY());
+  line->SetPoint(3,LorsX()+0.5*SizePadX(),LorsY()-0.5*SizePadY());
+  line->SetPoint(4,LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY());
   Int_t slice=(Int_t)fQ/20;
   switch(slice){
     case 0: pad->SetFillColor(kBlue); break;
@@ -119,7 +126,7 @@ void AliHMPIDDigit::Draw(Option_t*)
     default: pad->SetFillColor(kRed);      break;
   }
    pad->SetUniqueID((Int_t)fQ);
-  pad->Draw();
+  pad->Draw();line->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Print(Option_t *opt)const
