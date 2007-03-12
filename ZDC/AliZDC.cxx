@@ -607,14 +607,21 @@ Bool_t AliZDC::Raw2SDigits(AliRawReader* rawReader)
 {
   // Convert ZDC raw data to Sdigits
   
-  // Event loop
-//  Int_t iEvent = 0;
+  AliLoader* loader = (gAlice->GetRunLoader())->GetLoader("ZDCLoader");
+  if(!loader) {
+    AliError("no ZDC loader found");
+    return kFALSE;
+  }
+
+//  // Event loop
+  Int_t iEvent = 0;
   while(rawReader->NextEvent()){
-//    fLoader->GetEvent(iEvent++);
+    (gAlice->GetRunLoader())->GetEvent(iEvent++);
     // Create the output digit tree
-    TTree* treeS = fLoader->TreeS();
-    if(treeS == 0x0){
-      fLoader->MakeTree("S");
+    TTree* treeS = loader->TreeS();
+    if(!treeS){
+      loader->MakeTree("S");
+      treeS = loader->TreeS();
     }
     //
     AliZDCSDigit sdigit;
@@ -628,18 +635,24 @@ Bool_t AliZDC::Raw2SDigits(AliRawReader* rawReader)
     while(rawStream.Next()){
       if(rawStream.IsADCDataWord()){
         //For the moment only in-time SDigits are foreseen (1st 44 raw values)
-        if(jcount%44 == 0){ 
+        if(jcount < 44){ 
           for(Int_t j=0; j<2; j++) sector[j] = rawStream.GetSector(j);
 	  ADCRaw = rawStream.GetADCValue();
 	  ADCRes = rawStream.GetADCGain();
+	  //printf("\t RAw2SDigits raw%d ->  RawADC[%d, %d, %d] read\n",
+	  //	jcount, sector[0], sector[1], ADCRaw);
 	  //
 	  ADCPedSub = ADCRaw - Pedestal(sector[0], sector[1], ADCRes);
+	  if(ADCPedSub<0) ADCPedSub=0;
 	  nPheVal = ADCch2Phe(sector[0], sector[1], ADCPedSub, ADCRes);
-
+          //
+	  //printf("\t \t ->  SDigit[%d, %d, %d] created\n",
+	  //	sector[0], sector[1], nPheVal);
+	  //
           new(psdigit) AliZDCSDigit(sector, (Float_t) nPheVal);
           treeS->Fill();
+          jcount++;
         }
-        jcount++;
       }//IsADCDataWord
     }//rawStream.Next
     // write the output tree
@@ -655,20 +668,32 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 {
   // Returns a pedestal for detector det, PM quad, channel with res.
   //
+  // Getting calibration object for ZDC set
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT");
+  man->SetRun(0);
+  AliCDBEntry  *entry = man->Get("ZDC/Calib/Data");
+  AliZDCCalibData *CalibData = (AliZDCCalibData*) entry->GetObject();
+  //
+  if(!CalibData){
+    printf("\t No calibration object found for ZDC!");
+    return -1;
+  }
+  //
   Float_t PedValue;
-  
   Float_t meanPed, Pedwidth;
   Int_t index=0;
   if(Det==1|| Det==2)	      index = 10*(Det-1)+Quad+5*Res;   // ZN1, ZP1
   else if(Det==3)	      index = 10*(Det-1)+(Quad-1)+Res; // ZEM
   else if(Det==4|| Det==5)    index = 10*(Det-2)+Quad+5*Res+4; // ZN2, ZP2
-  meanPed = fCalibData->GetMeanPed(index);
-  Pedwidth = fCalibData->GetMeanPedWidth(index);
+  //
+  //
+  meanPed = CalibData->GetMeanPed(index);
+  Pedwidth = CalibData->GetMeanPedWidth(index);
   PedValue = gRandom->Gaus(meanPed,Pedwidth);
   //
-  /*printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
-      Det, Quad, index,(Int_t) PedValue); // Chiara debugging!
-  */
+  //printf("\t AliZDC::Pedestal - det(%d, %d) - Ped[%d] = %d\n",Det, Quad, index,(Int_t) PedValue); // Chiara debugging!
+  
   
 
   return (Int_t) PedValue;
@@ -676,7 +701,7 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 
 
 //_____________________________________________________________________________
-Int_t AliZDC::ADCch2Phe(Int_t Det, Int_t Quad, Float_t ADCVal, Int_t Res) const
+Int_t AliZDC::ADCch2Phe(Int_t Det, Int_t Quad, Int_t ADCVal, Int_t Res) const
 {
   // Evaluation of the no. of phe produced
   Float_t PMGain[6][5];
@@ -694,7 +719,8 @@ Int_t AliZDC::ADCch2Phe(Int_t Det, Int_t Quad, Float_t ADCVal, Int_t Res) const
   ADCRes[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
   //
   Int_t nPhe = (Int_t) (ADCVal * PMGain[Det-1][Quad] * ADCRes[Res]);
-  //printf("\t ADCch2Phe -> det %d quad %d - ADC %d  phe %.0f\n", Det,Quad,ADCVal,ADCch);
+  //
+  //printf("\t AliZDC::ADCch2Phe -> det(%d, %d) - ADC %d  phe %d\n",Det,Quad,ADCVal,nPhe);
 
   return nPhe;
 }
