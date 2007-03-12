@@ -79,6 +79,31 @@ AliClusterTGeo::AliClusterTGeo(UShort_t volId,
 }
 
 //______________________________________________________________________________
+AliClusterTGeo::AliClusterTGeo(UShort_t volId,
+			       Float_t x, Float_t y, Float_t z,
+			       Float_t sy2, Float_t sz2, Float_t syz,
+			       const Int_t *lab):
+  TObject(),
+  fX(x),
+  fY(y),
+  fZ(z),
+  fSigmaY2(sy2),
+  fSigmaZ2(sz2),
+  fSigmaYZ(syz),
+  fVolumeId(volId),
+  fIsMisaligned(kFALSE)
+{
+  // Constructor
+  if (lab) {
+    fTracks[0] = lab[0];
+    fTracks[1] = lab[1];
+    fTracks[2] = lab[2];
+  }
+  else
+    fTracks[0]=fTracks[1]=fTracks[2]=-3141593; 
+}
+
+//______________________________________________________________________________
 AliClusterTGeo::AliClusterTGeo(const AliClusterTGeo& cluster):
   TObject(cluster),
   fX(cluster.fX),

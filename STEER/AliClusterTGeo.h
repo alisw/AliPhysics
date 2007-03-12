@@ -25,6 +25,12 @@ class AliClusterTGeo : public TObject {
  public:
   AliClusterTGeo();
   AliClusterTGeo(UShort_t volId, const Float_t *hit, Float_t x = 0, Float_t sigyz = 0, const Int_t *lab = NULL);
+  AliClusterTGeo(UShort_t volId,
+		 Float_t x, Float_t y, Float_t z,
+		 Float_t sy2, Float_t sz2, Float_t syz,
+		 const Int_t *lab = NULL);
+  AliClusterTGeo(const AliClusterTGeo& cluster);
+  AliClusterTGeo &operator=(const AliClusterTGeo& cluster);
   virtual ~AliClusterTGeo() {;}
 
   Int_t    GetLabel(Int_t i) const {return fTracks[i];}
@@ -33,6 +39,7 @@ class AliClusterTGeo : public TObject {
   Float_t  GetZ()            const {return fZ;}
   Float_t  GetSigmaY2()      const {return fSigmaY2;}
   Float_t  GetSigmaZ2()      const {return fSigmaZ2;}
+  Float_t  GetSigmaYZ()      const {return fSigmaYZ;}
   UShort_t GetVolumeId()     const {return fVolumeId;}
 
   virtual void Use(Int_t = 0) {;}
@@ -43,15 +50,20 @@ class AliClusterTGeo : public TObject {
 
   Bool_t   Misalign();
 
+  void     SetLabel(Int_t lab,Int_t i)
+  { if (i>0 && i<3) fTracks[i] = lab;}
+  void     SetY(Float_t y) {fY = y;}
+  void     SetZ(Float_t z) {fZ = z;}
+  void     SetSigmaY2(Float_t sigy2) {fSigmaY2 = sigy2;}
+  void     SetSigmaZ2(Float_t sigz2) {fSigmaZ2 = sigz2;}
+
  protected:
 
-  AliClusterTGeo(const AliClusterTGeo& cluster);
-  AliClusterTGeo &operator=(const AliClusterTGeo& cluster);
+  const TGeoHMatrix*   GetTracking2LocalMatrix() const;
 
  private:
 
   TGeoHMatrix*         GetMatrix(Bool_t original = kFALSE) const;
-  const TGeoHMatrix*   GetTracking2LocalMatrix() const;
   TGeoPNEntry*         GetPNEntry() const;
 
   Int_t    fTracks[3];//MC labels
