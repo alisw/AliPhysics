@@ -21,6 +21,8 @@ class AliLog: public TObject {
   static AliLog* Instance() {return fgInstance;}
 
   enum EType_t {kFatal = 0, kError, kWarning, kInfo, kDebug, kMaxType};
+  typedef void (*AliLogNotification)(EType_t type, const char* message );
+
 
   static void  EnableDebug(Bool_t enabled);
   static void  SetGlobalLogLevel(EType_t type);
@@ -38,6 +40,10 @@ class AliLog: public TObject {
   static void  SetErrorOutput(EType_t type);
   static void  SetFileOutput(const char* fileName);
   static void  SetFileOutput(EType_t type, const char* fileName);
+  static void  SetStreamOutput(ostream* stream);
+  static void  SetStreamOutput(EType_t type, ostream* stream);
+  static void  SetLogNotification(AliLogNotification pCallBack);
+  static void  SetLogNotification(EType_t type, AliLogNotification pCallBack);
   static void  Flush();
 
   static void  SetHandleRootMessages(Bool_t on);
@@ -96,6 +102,8 @@ class AliLog: public TObject {
                               const char* module, const char* className,
                               const char* function, 
                               const char* file, Int_t line);
+
+  void           PrintString(Int_t type, FILE* stream, const char* format, ...);
   void           PrintRepetitions();
 
   Int_t          RedirectTo(FILE* stream, EType_t type, UInt_t level,
@@ -120,7 +128,7 @@ class AliLog: public TObject {
   Int_t          fOutputTypes[kMaxType];     // types of output streams
   TString        fFileNames[kMaxType];       // file names
   FILE*          fOutputFiles[kMaxType];     //! log output files
-  ofstream*      fOutputStreams[kMaxType];   //! log output streams
+  ostream*       fOutputStreams[kMaxType];   //! log output streams
 
   Bool_t         fPrintType[kMaxType];       // print type on/off
   Bool_t         fPrintModule[kMaxType];     // print module on/off
@@ -137,6 +145,7 @@ class AliLog: public TObject {
   TString        fLastFunction;              //! function name of last message
   TString        fLastFile;                  //! file name of last message
   Int_t          fLastLine;                  //! line number of last message
+  AliLogNotification fCallBacks[kMaxType];   //! external notification callback
 
   ClassDef(AliLog, 1)   // class for logging debug, info and error messages
 };

@@ -37,6 +37,7 @@
 #include <TNamed.h>
 #include <TSystem.h>
 #include <TEnv.h>
+#include <TArrayC.h>
 
 #include "AliLog.h"
 
@@ -71,6 +72,7 @@ AliLog::AliLog() :
     fFileNames[iType] = "";
     fOutputFiles[iType] = NULL;
     fOutputStreams[iType] = NULL;
+    fCallBacks[iType]=NULL;
 
     fPrintType[iType] = kTRUE;
     fPrintModule[iType] = kFALSE;
@@ -517,7 +519,8 @@ void AliLog::CloseFile(Int_t type)
     }
     if (closeFile) {
       fclose(fOutputFiles[type]);
-      fOutputStreams[type]->close();
+      ofstream* stream=reinterpret_cast<ofstream*>(fOutputStreams[type]);
+      stream->close();
       delete fOutputStreams[type];
     }
   }
@@ -538,7 +541,7 @@ FILE* AliLog::GetOutputStream(Int_t type)
   else if (fOutputTypes[type] == 2) {
     if (!fOutputFiles[type]) {
       FILE* file = NULL;
-      ofstream* stream = NULL;
+      ostream* stream = NULL;
       if (!fFileNames[type].IsNull()) {
 	for (Int_t iType = kFatal; iType < kMaxType; iType++) {
 	  if ((iType != type) && 
@@ -774,27 +777,28 @@ void AliLog::PrintMessage(UInt_t type, const char* message,
     {"Fatal", "Error", "Warning", "Info", "Debug"};
 
   if (fPrintType[type]) {
-    fprintf(stream, "%c-", typeNames[type][0]);
+    PrintString(type, stream, "%c-", typeNames[type][0]);
   }
   if (fPrintModule[type] && module) {
-    fprintf(stream, "%s/", module);
+    PrintString(type, stream, "%s/", module);
   }
   if (fPrintScope[type] && className) {
-    fprintf(stream, "%s::", className);
+    PrintString(type, stream, "%s::", className);
   }
   if (message) {
-    fprintf(stream, "%s: %s", function, message);
+    PrintString(type, stream, "%s: %s", function, message);
   } else {
-    fprintf(stream, "%s", function);
+    PrintString(type, stream, "%s", function);
   }
   if (fPrintLocation[type] && file) {
-    fprintf(stream, " (%s:%.0d)", file, line);
+    PrintString(type, stream, " (%s:%.0d)", file, line);
   }
   if (message) {
-    fprintf(stream, "\n");
+    PrintString(type, stream, "\n");
   } else {
-    fprintf(stream, ": ");
+    PrintString(type, stream, ": ");
   }
+  if (fCallBacks[type]) (*(fCallBacks[type]))((EType_t)type, NULL);
 }
 
 //_____________________________________________________________________________
@@ -802,8 +806,9 @@ void AliLog::PrintRepetitions()
 {
 // print number of repetitions
 
-  fprintf(GetOutputStream(fLastType), " <message repeated %d time%s>\n", 
+  PrintString(fLastType, GetOutputStream(fLastType), " <message repeated %d time%s>\n", 
           fRepetitions, (fRepetitions > 1) ? "s" : "");
+  if (fCallBacks[fLastType]) (*(fCallBacks[fLastType]))((EType_t)fLastType, NULL);
 }
 
 //_____________________________________________________________________________
@@ -900,6 +905,8 @@ Int_t AliLog::RedirectTo(FILE* stream, EType_t type, UInt_t level,
     if (stream != stderr) dup2(fileno(stderr), fileno(stream));
   } else if (fOutputTypes[type] == 2) {         // file
     freopen(fFileNames[type], "a", stream);
+  } else if (fOutputTypes[type] == 3) {         // external C++ stream
+    // redirection is not possible for external C++ streams
   }
 
   // print information
@@ -968,8 +975,115 @@ ostream& AliLog::GetStream(EType_t type, UInt_t level,
     return cerr;
   } else if (fOutputTypes[type] == 2) {
     return *fOutputStreams[type];
+  } else if (fOutputTypes[type] == 3) {
+    return *fOutputStreams[type];
   }
 
   return nullStream;
 }
 
+void  AliLog::SetStreamOutput(ostream* stream)
+{
+  // set an external stream as target for log messages of all types
+  // the external stream is completely handled by the caller, the
+  // AliLog class just writes to it
+
+  for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+    SetStreamOutput((AliLog::EType_t)iType, stream);
+  }
+}
+
+void  AliLog::SetStreamOutput(EType_t type, ostream* stream)
+{
+  // set an external stream as target for log messages of the given type
+  // the external stream is completely handled by the caller, the
+  // AliLog class just writes to it
+
+  if ((type < kFatal) || (type >= kMaxType)) return;
+  if (!fgInstance) new AliLog;
+  if (fgInstance->fOutputTypes[type] == 2) {
+    fgInstance->CloseFile(type);
+  }
+  fgInstance->fOutputTypes[type] = 3;
+  fgInstance->fFileNames[type] = "";
+  fgInstance->fOutputFiles[type] = NULL;
+  fgInstance->fOutputStreams[type] = stream;
+}
+
+void  AliLog::SetLogNotification(AliLogNotification pCallBack)
+{
+  // set a notification callback function for log messages of all types
+
+  for (Int_t iType = kFatal; iType < kMaxType; iType++) {
+    SetLogNotification((AliLog::EType_t)iType, pCallBack);
+  }
+}
+
+void  AliLog::SetLogNotification(EType_t type, AliLogNotification pCallBack)
+{
+  // set a notifications call back function for log messages of all types
+  // the callback fuction is invoced whenever an output was written
+  // Note: does not work for c++ streamer classes, the external stream
+  // has to handle this diectly (e.g. custom implementation of endl)
+
+  if ((type < kFatal) || (type >= kMaxType)) return;
+  if (!fgInstance) new AliLog;
+  fgInstance->fCallBacks[type]=pCallBack;
+}
+
+void  AliLog::PrintString(Int_t type, FILE* stream, const char* format, ...)
+{
+  // this is the general method to print a log message using variadac args
+  // to the FILE* like (C - like) streams, e.g. stdout, stderr, or files
+  // opened by fopen.
+  // Only in case of an external c++ ostream type output, the message is
+  // written to that stream and the notifictaion callback is called.
+  // The message is printed by a normal vfprintf function otherwise
+
+  if (format==NULL) return;
+  
+  va_list ap;
+  va_start(ap, format);
+  if (fOutputTypes[type] != 3) {
+    if (stream!=NULL) {
+      vfprintf(stream, format, ap);
+    }
+  } else {
+    // build the string and write everthing to the corresponding ostream
+    TString fmt(format);
+    TArrayC tgt(fmt.Length()*10); // just take a number
+#ifdef R__VA_COPY
+    va_list bap;
+    R__VA_COPY(bap, ap);
+#endif //R__VA_COPY
+
+    Int_t iResult=0;
+    while (1) {
+      iResult=vsnprintf(tgt.GetArray(), tgt.GetSize(), format, ap);
+      if (iResult==-1) {
+	iResult=tgt.GetSize()*2;
+      } else if (iResult<tgt.GetSize()) {
+	break;
+      }
+#ifdef R__VA_COPY
+      if (iResult<10000) {
+	tgt.Set(iResult+1);
+	va_end(ap);
+	R__VA_COPY(ap, bap);
+      } else
+#endif //R__VA_COPY 
+      {
+	tgt[tgt.GetSize()-1]=0;
+	break;
+      }
+    }
+#ifdef R__VA_COPY
+    va_end(bap);
+#endif //R__VA_COPY
+
+    if (fOutputStreams[type]) {
+      *(fOutputStreams[type]) << tgt.GetArray();
+    }
+  }
+  va_end(ap);
+}
