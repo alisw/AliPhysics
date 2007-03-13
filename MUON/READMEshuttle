@@ -1,3 +1,5 @@
+$Id$
+
 How to test the Shuttle preprocessor(s) for MUON.
 
 We will get two "logical" MUON preprocessors : one for the tracker and one for the trigger.
