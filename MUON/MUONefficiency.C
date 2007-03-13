@@ -51,6 +51,7 @@
 #include "TString.h"
 #include <Riostream.h>
 #include <TGeoManager.h>
+#include <TROOT.h>
 
 // STEER includes
 #include "AliRun.h"
