@@ -1,11 +1,12 @@
 // $Id$
 // The class categories definitions for Doxygen
-// From STEERLinkDef.h revision 1.86 and ESDLinkDef.h revision 1.18
 
 /** @defgroup STEER STEER
  *  Category of AliRoot steering classes
  *  @{
  */
+// From STEERLinkDef.h revision 1.95
+
     class AliPDG {};
 
     class AliGenerator {};
@@ -92,10 +93,10 @@
     class AliAlignmentTracks {};
 
     class TTreeDataElement {};
-    class TTreeStream {};
-    class TTreeSRedirector {};
+    class  TTreeStream {};
+    class  TTreeSRedirector {};
 
-    class AliRieman {};
+    class  AliRieman;
 
     class AliExpression {};
     class AliVariableExpression {};
@@ -108,13 +109,17 @@
     class AliCTPRawStream {};
     class AliMathBase {};
     class AliSignalProcesor {};
-    class AliHelix {};
-    class AliCluster {};
-    class AliTracker {};
-    class AliV0 {};
-    class AliKink {};
+    class  AliHelix {};
+    class  AliCluster {};
+    class  AliClusterTGeo {};
+    class  AliTracker {};
+    class  AliV0 {};
+    class  AliKink {};
 
-    class AliSelectorRL {};
+    class  AliSelectorRL {};
+
+    class  AliSplineFit {};
+
 
 /** @} */
 
@@ -122,6 +127,9 @@
  *  Category of AliRoot event sumary data classes
  *  @{
  */
+// From ESDLinkDef.h revision 1.29
+
+    enum  AliLog::EType_t {};
 
     class  AliESD {};
     class  AliESDfriend {};
@@ -147,28 +155,30 @@
     class  AliTrackPointArray {};
     class  AliTrackPoint {};
 
-    class  AliRunTag {};
-    class  AliLHCTag {};
-    class  AliDetectorTag {};
-    class  AliEventTag {};
+    class AliRunTag {};
+    class AliLHCTag {};
+    class AliDetectorTag {};
+    class AliEventTag {};
 
-    class  AliTagCreator {};
-    class  AliTagAnalysis {};
-    class  AliRunTagCuts {};
-    class  AliEventTagCuts {};
-    class  AliXMLCollection {};
+    class AliTagCreator {};
+    class AliRunTagCuts {};
+    class AliEventTagCuts {};
 
-    class  AliTrackPointArray {};
-    class  AliTrackPoint {};
+    class AliTrackPointArray {};
+    class AliTrackPoint {};
 
     class  AliESDFMD {};
     class  AliFMDMap {};
     class  AliFMDFloatMap {};
 
+    class  AliESDVZERO {};
+
     class  AliESDMultITS {};
     class  AliMultiplicity {};
 
     class  AliSelector {};
+
+    class  AliRawDataErrorLog {};
 
 /** @} */
 
@@ -176,6 +186,7 @@
  *  Category of AliRoot Conditions database classes
  *  @{
  */
+// From CDBLinkDef.h revision 1.5
 
     class AliCDBPath {};
     class AliCDBRunRange {};
@@ -202,5 +213,30 @@
 
     class AliShuttleInterface {};
 
+    class AliGRPPreprocessor {};
+    class AliGRPDCS {};
+
 /** @} */
 
+/** @defgroup STEER_AOD STEER_AOD
+ *  Category of AliRoot AOD classes
+ *  @{
+ */
+// From AODLinkDef.h revision 1.5
+
+    enum   AliAODVertex::AODVtx_t {};
+    enum   AliAODTrack::AODTrk_t {};
+    enum   AliAODTrack::AODTrkPID_t {};
+    enum   AliAODCluster::AODClu_t {};
+    enum   AliAODCluster::AODCluPID_t {};
+
+    class  AliAODEvent {};
+    class  AliVirtualParticle {};
+    class  AliAODHeader {};
+    class  AliAODTrack {};
+    class  AliAODVertex {};
+    class  AliAODCluster {};
+    class  AliAODJet {};
+    class  AliAODRedCov<Int_t> {};
+
+/** @} */
