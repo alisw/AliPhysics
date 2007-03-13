@@ -179,8 +179,11 @@ class AliHLTSystem : public AliHLTLogging {
 
   TList fTaskList;                                                 // see above
 
+  /** the number of instances of AliHLTSystem */
+  static int fgNofInstances;                                       // see above
+
  private:
-  ClassDef(AliHLTSystem, 1);
+  ClassDef(AliHLTSystem, 2);
 };
 #endif
 

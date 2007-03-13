@@ -34,19 +34,6 @@ using namespace std;
 #include "AliHLTTask.h"
 #include "TString.h"
 
-// #include <sstream>
-// #include <iostream>
-// #include "AliLog.h"
-
-// ostringstream g_logstr;
-
-// void LogNotification(AliLog::EType_t level, const char* message)
-// {
-//   cout << "notification handler" << endl;
-//   cout << g_logstr.str() << endl;
-//   g_logstr.clear();
-// }
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
 
@@ -62,14 +49,15 @@ AliHLTSystem::AliHLTSystem()
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-  // init logging function in AliHLTLogging
-  Init(AliHLTLogging::Message);
+  if (fgNofInstances++>0)
+    HLTWarning("multiple instances of AliHLTSystem, you should not use more than one at a time");
+
   SetGlobalLoggingLevel(kHLTLogDefault);
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
     env.fAllocMemoryFunc=AliHLTSystem::AllocMemory;
-    env.fLoggingFunc=AliHLTLogging::Message;
+    env.fLoggingFunc=NULL;
     fpComponentHandler->SetEnvironment(&env);
   } else {
     HLTFatal("can not create Component Handler");
@@ -79,11 +67,6 @@ AliHLTSystem::AliHLTSystem()
   } else {
     HLTFatal("can not create Configuration Handler");
   }
-//   AliLog log;
-//   log.SetLogNotification(LogNotification);
-//   log.SetStreamOutput(&g_logstr);
-//   AliInfo("this is a printf message");
-//   AliInfoStream() << "this is a stream message" << endl;
 }
 
 AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
@@ -94,6 +77,9 @@ AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
   fTaskList()
 {
   // see header file for class documentation
+  if (fgNofInstances++>0)
+    HLTWarning("multiple instances of AliHLTSystem, you should not use more than one at a time");
+
   HLTFatal("copy constructor untested");
 }
 
@@ -107,8 +93,9 @@ AliHLTSystem& AliHLTSystem::operator=(const AliHLTSystem&)
 AliHLTSystem::~AliHLTSystem()
 {
   // see header file for class documentation
+  fgNofInstances--;
   CleanTaskList();
-  AliHLTConfiguration::GlobalDeinit();
+  AliHLTConfiguration::GlobalDeinit(fpConfigurationHandler);
   if (fpConfigurationHandler) {
     delete fpConfigurationHandler;
   }
@@ -119,6 +106,8 @@ AliHLTSystem::~AliHLTSystem()
   }
   fpComponentHandler=NULL;
 }
+
+int AliHLTSystem::fgNofInstances=0;
 
 int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
 {
@@ -322,7 +311,7 @@ int AliHLTSystem::Run(Int_t iNofEvents)
       HLTError("can not start task list");
     }
     DeinitTasks();
-  } else {
+  } else if (iResult!=-ENOENT) {
     HLTError("can not initialize task list");
   }
   return iResult;
@@ -333,6 +322,10 @@ int AliHLTSystem::InitTasks()
   // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fTaskList.FirstLink();
+  if (lnk==NULL) {
+    HLTWarning("Task list is empty, aborting ...");
+    return -ENOENT;
+  }
   while (lnk && iResult>=0) {
     TObject* obj=lnk->GetObject();
     if (obj) {

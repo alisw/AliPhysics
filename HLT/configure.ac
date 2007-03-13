@@ -474,16 +474,17 @@ AM_CONDITIONAL(EN_HLT_TRD, test x$enable_trd = xyes)
 AC_MSG_RESULT([$enable_trd])
 
 dnl ------------------------------------------------------------------
-AC_MSG_CHECKING([whether to enable HLT logging])
-AH_TEMPLATE([NOLOGGING],[disable hlt logging])
-AC_ARG_ENABLE(logging,
-  [AC_HELP_STRING([--enable-logging],
-      [enable logging])],
-  [],[enable_logging=yes])
-if test "x$enable_logging" != "xyes" ; then 
-  AC_DEFINE(NOLOGGING)
+AC_MSG_CHECKING([whether to disable AliRoot logging])
+AH_TEMPLATE([NOALIROOT_LOGGING],[disable AliRoot logging])
+AC_ARG_ENABLE(aliroot-logging,
+  [AC_HELP_STRING([--disable-aliroot-logging],
+      [disable logging through AliRoot logging methods])],
+  [],[enable_aliroot_logging=no])
+if test "x$enable_aliroot_logging" != "xno" ; then 
+  AC_DEFINE(NOALIROOT_LOGGING)
 fi
-AC_MSG_RESULT([$enable_logging])
+AM_CONDITIONAL(NOALIROOT_LOGGING, test x$enable_aliroot_logging != no)
+AC_MSG_RESULT([$enable_aliroot_logging])
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable saving MC data through the chain])

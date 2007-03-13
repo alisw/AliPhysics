@@ -77,29 +77,34 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
   }
 }
 
-AliHLTConfiguration::AliHLTConfiguration(const AliHLTConfiguration&)
+AliHLTConfiguration::AliHLTConfiguration(const AliHLTConfiguration& src)
   :
   TObject(),
   AliHLTLogging(),
-  fID(NULL),
-  fComponent(NULL),
-  fStringSources(NULL),
+  fID(src.fID),
+  fComponent(src.fComponent),
+  fStringSources(src.fStringSources),
   fNofSources(-1),
   fListSources(),
   fListSrcElement(),
-  fArguments(NULL),
+  fArguments(src.fArguments),
   fArgc(-1),
   fArgv(NULL)
 { 
   // see header file for function documentation
   fListSrcElement=fListSources.begin();
-  HLTFatal("copy constructor untested");
 }
 
-AliHLTConfiguration& AliHLTConfiguration::operator=(const AliHLTConfiguration&)
+AliHLTConfiguration& AliHLTConfiguration::operator=(const AliHLTConfiguration& src)
 { 
   // see header file for function documentation
-  HLTFatal("assignment operator untested");
+  fID=src.fID;
+  fComponent=src.fComponent;
+  fStringSources=src.fStringSources;
+  fNofSources=-1;
+  fArguments=src.fArguments;
+  fArgc=-1;
+  fArgv=NULL;
   return *this;
 }
 
@@ -131,16 +136,20 @@ int AliHLTConfiguration::GlobalInit(AliHLTConfigurationHandler* pHandler)
   // see header file for function documentation
   int iResult=0;
   if (fgConfigurationHandler!=NULL) {
-    fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalInit", HLT_DEFAULT_LOG_KEYWORD, "configuration handler already initialized, overriding object %p", fgConfigurationHandler);
+    fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalInit", HLT_DEFAULT_LOG_KEYWORD, "configuration handler already initialized, overriding object %p with %p", fgConfigurationHandler, pHandler);
   }
   fgConfigurationHandler=pHandler;
   return iResult;
 }
 
-int AliHLTConfiguration::GlobalDeinit()
+int AliHLTConfiguration::GlobalDeinit(AliHLTConfigurationHandler* pHandler)
 {
   // see header file for function documentation
   int iResult=0;
+  if (pHandler!=NULL && fgConfigurationHandler!=pHandler) {
+    fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalDeinit", HLT_DEFAULT_LOG_KEYWORD, "handler %p is not set, skip ...", pHandler);
+    return -EBADF;
+  }
   fgConfigurationHandler=NULL;
   return iResult;
 }
@@ -1014,25 +1023,23 @@ void AliHLTTask::PrintStatus()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TList AliHLTConfigurationHandler::fgListConfigurations;
-TList AliHLTConfigurationHandler::fgListDynamicConfigurations;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTConfigurationHandler)
 
 AliHLTConfigurationHandler::AliHLTConfigurationHandler()
 {
   // see header file for function documentation
+  SetLocalLogLevel(kHLTLogInfo);
 }
 
 AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
 {
   // see header file for function documentation
-  TObjLink* lnk=fgListDynamicConfigurations.FirstLink();
+  TObjLink* lnk=fgListConfigurations.FirstLink();
   while (lnk) {
     TObject* obj=lnk->GetObject();
     if (fgListConfigurations.FindObject(obj->GetName())==NULL) {
-      HLTDebug("delete dynamic configuration \"%s\"", obj->GetName());
+      HLTDebug("delete configuration \"%s\"", obj->GetName());
       delete obj;
     }
     lnk=lnk->Next();
@@ -1045,14 +1052,15 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
   int iResult=0;
   if (pConf) {
     if (FindConfiguration(pConf->GetName()) == NULL) {
-      fgListConfigurations.Add(pConf);
-      //HLTDebug("configuration \"%s\" registered", pConf->GetName());
+      AliHLTConfiguration* pClone=new AliHLTConfiguration(*pConf);
+      fgListConfigurations.Add(pClone);
+      HLTDebug("configuration \"%s\" registered", pClone->GetName());
 
       // mark all configurations with unresolved dependencies for re-evaluation
       TObjLink* lnk=fgListConfigurations.FirstLink();
       while (lnk) {
 	AliHLTConfiguration* pSrc=(AliHLTConfiguration*)lnk->GetObject();
-	if (pSrc && pSrc!=pConf && pSrc->SourcesResolved()!=1) {
+	if (pSrc && pSrc!=pClone && pSrc->SourcesResolved()!=1) {
 	  pSrc->InvalidateSources();
 	}
 	lnk=lnk->Next();
@@ -1079,8 +1087,6 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
       delete pConf;
       pConf=NULL;
       iResult=-EEXIST;
-    } else {
-      fgListDynamicConfigurations.Add(pConf);
     }
   } else {
     HLTError("system error: object allocation failed");
@@ -1110,6 +1116,8 @@ int AliHLTConfigurationHandler::RemoveConfiguration(const char* id)
     AliHLTConfiguration* pConf=NULL;
     if ((pConf=FindConfiguration(id))!=NULL) {
       iResult=RemoveConfiguration(pConf);
+      delete pConf;
+      pConf=NULL;
     } else {
       HLTWarning("can not find configuration \"%s\"", id);
       iResult=-ENOENT;

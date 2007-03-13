@@ -1,4 +1,14 @@
-2007-01-03 changes from Gaute (TPC)
+2007-03-09 logging system
+	- adapted to AliRoot logging system, messages printed out via AliRoot
+	  message channel
+	- AliRoot logging methods can be used in the same way as in AliRoot
+	- HLT TPC logging methods fixed to be redirected to the common logging
+	  channel
+	- handling of configurations corrected in order to cope with the
+	  Root CINT garbage collection.
+	- TPCLib stand-alone build system changed in order to use AliRoot package
+	  definition
+2007-03-01 changes by Gaute (TPC)
 	- added InterMerger to SliceTrackerComponent, can be switched off by
 	  component argument 'disable-merger'
 	- new data type 'TRACKS' defined for TPC describing tracks in global

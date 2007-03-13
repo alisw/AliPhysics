@@ -139,9 +139,9 @@ void AliHLTTPCConfMapper::InitVolumes()
   if(fVolume) delete [] fVolume;
   if(fRow) delete [] fRow;
   
-  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
+  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
     "Allocating "<<fBounds*sizeof(AliHLTTPCConfMapContainer)<<" Bytes to fVolume"<<ENDLOG;
-  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
+  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
     "Allocating "<<fNumRowSegmentPlusOne*sizeof(AliHLTTPCConfMapContainer)<<" Bytes to fRow"<<ENDLOG;
   
   fVolume = new AliHLTTPCConfMapContainer[fBounds];
@@ -221,7 +221,7 @@ Bool_t AliHLTTPCConfMapper::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits
     }
   fClustersUnused += nhit;
 
-  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::ReadHits","#hits")
+  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::ReadHits","#hits")
     <<AliHLTTPCLog::kDec<<"hit_counter: "<<nhit<<" count: "<<count<<ENDLOG;
   
   return true;
@@ -948,7 +948,7 @@ Int_t AliHLTTPCConfMapper::FillTracks()
       return 0;
     }
 
-  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::FillTracks","fNTracks")<<AliHLTTPCLog::kDec<<
+  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::FillTracks","fNTracks")<<AliHLTTPCLog::kDec<<
     "Number of found tracks: "<<fNTracks<<ENDLOG;
   
   //  fTrack->Sort();

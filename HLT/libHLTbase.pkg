@@ -1,5 +1,5 @@
 #-*- Mode: Makefile -*-
-# $Id: 
+# $Id$
 
 include $(MODDIR)/hlt.conf
 

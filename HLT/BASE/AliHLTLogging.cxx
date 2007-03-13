@@ -1,4 +1,4 @@
-// $Id: 
+// @(#) $Id$
 
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -26,14 +26,46 @@
 using namespace std;
 #endif
 
+#ifndef NOALIROOT_LOGGING
+#include "AliLog.h"
+#endif
 #include "AliHLTStdIncludes.h"
 #include "AliHLTLogging.h"
 #include "TString.h"
+#include "TArrayC.h"
+#include "Varargs.h"
+#include <string>
+#include <sstream>
+#include <iostream>
 
-// global logging buffer
-#define LOG_BUFFER_SIZE 512
-char gAliHLTLoggingBuffer[LOG_BUFFER_SIZE]="";
-char gAliHLTLoggingOriginBuffer[LOG_BUFFER_SIZE]="";
+/** target stream for AliRoot logging methods */
+ostringstream gLogstr;
+
+#ifndef NOALIROOT_LOGGING
+/**
+ * Notification callback for AliRoot logging methods
+ */
+void LogNotification(AliLog::EType_t level, const char* message)
+{
+  cout << "Notification handler: " << gLogstr.str() << endl;
+  AliHLTLogging hltlog;
+  hltlog.SwitchAliLog(0);
+  hltlog.Logging(kHLTLogInfo, "NotificationHandler", "AliLog", gLogstr.str().c_str());
+  gLogstr.clear();
+  string empty("");
+  gLogstr.str(empty);
+}
+#endif
+
+/**
+ * The global logging buffer.
+ * The buffer is created with an initial size and grown dynamically on
+ * demand.
+ */
+TArrayC gAliHLTLoggingTarget(200);
+
+/** the maximum size of the buffer */
+const int gALIHLTLOGGING_MAXBUFFERSIZE=10000;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTLogging)
@@ -71,6 +103,7 @@ AliHLTLogging& AliHLTLogging::operator=(const AliHLTLogging&)
 
 AliHLTComponentLogSeverity AliHLTLogging::fGlobalLogFilter=kHLTLogAll;
 AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
+int AliHLTLogging::fgUseAliLog=1;
 
 AliHLTLogging::~AliHLTLogging()
 {
@@ -83,17 +116,27 @@ int AliHLTLogging::Init(AliHLTfctLogging pFun)
   if (fLoggingFunc!=NULL && fLoggingFunc!=pFun) {
     (*fLoggingFunc)(NULL/*fParam*/, kHLTLogWarning, "AliHLTLogging::Init", "no key", "overriding previously initialized logging function");    
   }
-  fLoggingFunc=pFun; 
+  fLoggingFunc=pFun;
+#ifndef NOALIROOT_LOGGING
+  // to be activated when changes to AliLog have been committed
+//   AliLog* log=new AliLog;
+//   log->SetLogNotification(LogNotification);
+//   log->SetStreamOutput(&gLogstr);
+#endif
+  
   return 0;
 }
 
-int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message) 
+int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity,
+			   const char* origin, const char* keyword,
+			   const char* message) 
 {
   // see header file for class documentation
   int iResult=0;
   if (param==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
   }
+
   const char* strSeverity="";
   switch (severity) {
   case kHLTLogBenchmark: 
@@ -128,32 +171,84 @@ int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity, con
   return iResult;
 }
 
+#ifndef NOALIROOT_LOGGING
+int AliHLTLogging::AliMessage(AliHLTComponentLogSeverity severity, 
+			      const char* origin_class, const char* origin_func,
+			      const char* file, int line, const char* message) 
+{
+  // see header file for class documentation
+
+  switch (severity) {
+  case kHLTLogBenchmark: 
+    AliLog::Message(AliLog::kInfo, message, "HLT", origin_class, origin_func, file, line);
+    break;
+  case kHLTLogDebug:
+    AliLog::Message(AliLog::kDebug, message, "HLT", origin_class, origin_func, file, line);
+    break;
+  case kHLTLogInfo:
+    AliLog::Message(AliLog::kInfo, message, "HLT", origin_class, origin_func, file, line);
+    break;
+  case kHLTLogWarning:
+    AliLog::Message(AliLog::kWarning, message, "HLT", origin_class, origin_func, file, line);
+    break;
+  case kHLTLogError:
+    AliLog::Message(AliLog::kError, message, "HLT", origin_class, origin_func, file, line);
+    break;
+  case kHLTLogFatal:
+    AliLog::Message(AliLog::kWarning, message, "HLT", origin_class, origin_func, file, line);
+    break;
+  default:
+    break;
+  }
+  return 0;
+}
+#endif
+
 const char* AliHLTLogging::BuildLogString(const char *format, va_list ap) 
 {
   // see header file for class documentation
-  int tgtLen=0;
-  int iBufferSize=LOG_BUFFER_SIZE;
-  char* tgtBuffer=gAliHLTLoggingBuffer;
-  tgtBuffer[tgtLen]=0;
 
-#if (defined LOG_PREFIX)
-  tgtLen = snprintf(tgtBuffer, iBufferSize, LOG_PREFIX); // add logging prefix
-#endif
-  if (tgtLen>=0) {
-    tgtBuffer+=tgtLen; iBufferSize-=tgtLen;
-    tgtLen = vsnprintf(tgtBuffer, iBufferSize, format, ap);
-    if (tgtLen>0) {
-      tgtBuffer+=tgtLen;
-//       if (tgtLen<LOG_BUFFER_SIZE-1) {
-// 	*tgtBuffer++='\n'; // add newline if space in buffer
-//      }
-      *tgtBuffer=0; // terminate the buffer
+  int iResult=0;
+  va_list bap;
+  R__VA_COPY(bap, ap);
+
+  // take the first argument from the list as format string if no
+  // format was given
+  const char* fmt = format;
+  if (fmt==NULL) fmt=va_arg(ap, const char*);
+
+  gAliHLTLoggingTarget[0]=0;
+  while (fmt!=NULL) {
+    iResult=vsnprintf(gAliHLTLoggingTarget.GetArray(), gAliHLTLoggingTarget.GetSize(), fmt, ap);
+    if (iResult==-1)
+      // for compatibility with older version of vsnprintf
+      iResult=gAliHLTLoggingTarget.GetSize()*2;
+    else if (iResult<gAliHLTLoggingTarget.GetSize())
+      break;
+
+    // terminate if buffer is already at the limit
+    if (gAliHLTLoggingTarget.GetSize()>=gALIHLTLOGGING_MAXBUFFERSIZE) {
+      gAliHLTLoggingTarget[gAliHLTLoggingTarget.GetSize()-1]=0;
+      break;
     }
-  }
-  return gAliHLTLoggingBuffer;
+
+    // check limitation and grow the buffer
+    if (iResult>gALIHLTLOGGING_MAXBUFFERSIZE) iResult=gALIHLTLOGGING_MAXBUFFERSIZE;
+    gAliHLTLoggingTarget.Set(iResult+1);
+
+    // copy the original list and skip the first argument if this was the format string
+    va_end(ap);
+    R__VA_COPY(ap, bap);
+    if (format==NULL) va_arg(ap, const char*);
+  }     
+  va_end(bap);
+
+  return gAliHLTLoggingTarget.GetArray();
 }
 
-int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* format, ... ) 
+int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity,
+			   const char* origin, const char* keyword,
+			   const char* format, ... ) 
 {
   // see header file for class documentation
   int iResult=CheckFilter(severity);
@@ -163,50 +258,51 @@ int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity, const char* orig
     if (fLoggingFunc) {
       iResult = (*fLoggingFunc)(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
     } else {
-      iResult = Message(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
+#ifndef NOALIROOT_LOGGING
+      if (fgUseAliLog)
+	iResult=AliMessage(severity, NULL, origin, NULL, 0, AliHLTLogging::BuildLogString(format, args ));
+      else
+#endif
+        iResult=Message(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
     }
+    va_end(args);
   }
   return iResult;
 }
 
-int AliHLTLogging::LoggingVarargs( AliHLTComponentLogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const
+int AliHLTLogging::LoggingVarargs(AliHLTComponentLogSeverity severity, 
+				  const char* origin_class, const char* origin_func,
+				  const char* file, int line,  ... ) const
 {
   // see header file for class documentation
 
+  if (file==NULL && line==0) {
+    // this is currently just to get rid of the warning "unused parameter"
+  }
   int iResult=CheckFilter(severity);
   if (iResult>0) {
-    int iMaxSize=LOG_BUFFER_SIZE-1;
-    int iPos=0;
     const char* separator="";
-    gAliHLTLoggingOriginBuffer[iPos]=0;
+    TString origin;
     if (origin_class) {
-      if ((int)strlen(origin_class)<iMaxSize-iPos) {
-	strcpy(&gAliHLTLoggingOriginBuffer[iPos], origin_class);
-	iPos+=strlen(origin_class);
+	origin+=origin_class;
 	separator="::";
-      }
     }
     if (origin_func) {
-      if ((int)strlen(origin_func)+(int)strlen(separator)<iMaxSize-iPos) {
-	strcpy(&gAliHLTLoggingOriginBuffer[iPos], separator);
-	iPos+=strlen(separator);
-	strcpy(&gAliHLTLoggingOriginBuffer[iPos], origin_func);
-	iPos+=strlen(origin_func);
-      }
+	origin+=separator;
+	origin+=origin_func;
     }
     va_list args;
-    va_start(args, origin_func);
-    const char* format = va_arg(args, const char*);
+    va_start(args, line);
 
-    const char* message=format;
-    const char* qualifier=NULL;
-    if ((qualifier=strchr(format, '%'))!=NULL) {
-      message=AliHLTLogging::BuildLogString(format, args);
-    }
     if (fLoggingFunc) {
-      iResult=(*fLoggingFunc)(NULL/*fParam*/, severity, gAliHLTLoggingOriginBuffer, GetKeyword(), message);
+      iResult=(*fLoggingFunc)(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), AliHLTLogging::BuildLogString(NULL, args ));
     } else {
-      iResult=Message(NULL/*fParam*/, severity, gAliHLTLoggingOriginBuffer, GetKeyword(), message);
+#ifndef NOALIROOT_LOGGING
+      if (fgUseAliLog)
+	iResult=AliMessage(severity, origin_class, origin_func, file, line, AliHLTLogging::BuildLogString(NULL, args ));
+      else
+#endif
+	iResult=Message(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), AliHLTLogging::BuildLogString(NULL, args ));
     }
     va_end(args);
   }

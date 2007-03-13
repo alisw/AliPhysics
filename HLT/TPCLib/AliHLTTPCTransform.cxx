@@ -2138,10 +2138,4 @@ void AliHLTTPCTransform::PrintCompileOptions()
   cout << "NOT including any support for TPC Hough transformations." << endl;
 #endif // INCLUDE_TPC_HOUGH
 
-#ifdef use_logging
-  cout << "Using logging classes (MLUC): -Duse_logging was given." << endl;
-#else
-  cout << "NOT using logging classes (MLUC): -Duse_logging not was given." << endl;
-#endif
-
 }

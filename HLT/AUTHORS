@@ -26,10 +26,13 @@ SampleLib: Examples by Timm M. Steinbeck and Matthias Richter
 
 TPCLib: The original TPC code was written by Anders S Vestbo and Constantin
 Loizides and was checked in under HLT/src. The code has been adapted to the
-framework by Timm. Contributions by Cvetan Cheshkov, Jochen Theader and 
-Matthias Richter.
+framework by Timm Steinbeck and further developed by Matthias Richter.
+Contributions by Cvetan Cheshkov, Jochen Theader, Gaute Ovrebekk.
+
+PHOS: Per Thomas Hille, Yuri Kharlov, Boris Polichtchouk, Oystein Djuvsland
+
+TRD: Mateusz Ploskon
 
 Further author notice will be added in conjunction with new modules.
 
 Thanks to Christian H. Christensen for help with autotools and macros.
-

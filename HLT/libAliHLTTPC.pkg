@@ -1,5 +1,5 @@
 #-*- Mode: Makefile -*-
-# $Id: 
+# $Id$
 
 include $(MODDIR)/hlt.conf
 
@@ -41,8 +41,7 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCCATrackerComponent.cxx \
 		AliHLTTPCEsdWriterComponent.cxx
 
-CLASS_HDRS:=  	AliHLTTPCLog.h \
-		AliHLTTPCTransform.h \
+CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCMemHandler.h \
 		AliHLTTPCDataCompressorHelper.h \
 		AliHLTTPCFitter.h \
@@ -81,6 +80,7 @@ CLASS_HDRS:=  	AliHLTTPCLog.h \
 		AliHLTTPCEsdWriterComponent.h
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
+		AliHLTTPCLog.h \
 		AliHLTTPCLogging.h \
 		AliHLTTPCRootTypes.h \
 		AliHLTTPCDigitData.h \

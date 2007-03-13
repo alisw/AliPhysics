@@ -1,5 +1,5 @@
 #-*- Mode: Makefile -*-
-# $Id: 
+# $Id$
 
 # This files defines the source and header files for the
 # libAliHLTSample library and additional flags for the compilation

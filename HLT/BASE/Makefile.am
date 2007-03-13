@@ -10,7 +10,8 @@ MODULE				= HLTbase
 
 EXTRA_DIST			= HLTbaseLinkDef.h
 
-AM_CPPFLAGS			= -DMODULE=$(MODULE)
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  -I@ALICE_ROOT@/STEER
 
 bin_SCRIPTS			= setenv.sh setenv.csh
 
@@ -34,7 +35,11 @@ libHLTbase_la_SOURCES		= $(MODULE_SRCS)
 pkginclude_HEADERS		= $(MODULE_HDRS)
 
 # linker flags
-libHLTbase_la_LDFLAGS		=  -version-info $(LIBRARY_VERSION)
+libHLTbase_la_LDFLAGS		= -L@ROOTLIBDIR@ \
+				  @ROOTLIBS@ \
+				  @ALIROOT_LDFLAGS@ \
+				  @ALIROOT_LIBS@ \
+				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  HLTBaseCompileInfo.cxx

@@ -1,4 +1,4 @@
-// @(#) $Id: 
+// @(#) $Id$
 
 #ifndef ALIHLTLOGGING_H
 #define ALIHLTLOGGING_H
@@ -12,8 +12,8 @@
 */
 
 #include "AliHLTDataTypes.h"
-#include <TObject.h>
 #include "AliHLTStdIncludes.h"
+#include "TObject.h"
 
 //#define LOG_PREFIX ""       // logging prefix, for later extensions
 
@@ -22,19 +22,22 @@
  * AliHLTLogging
  */
 // HLTMessage is not filtered
-#define HLTMessage( ... )   LoggingVarargs(kHLTLogNone,      NULL , NULL ,  __VA_ARGS__ )
+#define HLTMessage( ... )   LoggingVarargs(kHLTLogNone,      NULL , NULL , __FILE__ , __LINE__ , __VA_ARGS__ )
 
-#ifndef __func__
-#define __func__ "???"
+// function name
+#if defined(__GNUC__) || defined(__ICC) || defined(__ECC) || defined(__APPLE__)
+#define FUNCTIONNAME() __FUNCTION__
+#else
+#define FUNCTIONNAME() "???"
 #endif
 
 // the following macros are filtered by the Global and Local Log Filter
-#define HLTBenchmark( ... ) LoggingVarargs(kHLTLogBenchmark, this->Class_Name() , __func__ ,  __VA_ARGS__ )
-#define HLTDebug( ... )     LoggingVarargs(kHLTLogDebug,     this->Class_Name() , __func__ ,  __VA_ARGS__ )
-#define HLTInfo( ... )      LoggingVarargs(kHLTLogInfo,      this->Class_Name() , __func__ ,  __VA_ARGS__ )
-#define HLTWarning( ... )   LoggingVarargs(kHLTLogWarning,   this->Class_Name() , __func__ ,  __VA_ARGS__ )
-#define HLTError( ... )     LoggingVarargs(kHLTLogError,     this->Class_Name() , __func__ ,  __VA_ARGS__ )
-#define HLTFatal( ... )     LoggingVarargs(kHLTLogFatal,     this->Class_Name() , __func__ ,  __VA_ARGS__ )
+#define HLTBenchmark( ... ) LoggingVarargs(kHLTLogBenchmark, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTDebug( ... )     LoggingVarargs(kHLTLogDebug,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTInfo( ... )      LoggingVarargs(kHLTLogInfo,      Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTWarning( ... )   LoggingVarargs(kHLTLogWarning,   Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTError( ... )     LoggingVarargs(kHLTLogError,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTFatal( ... )     LoggingVarargs(kHLTLogFatal,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 
 // helper macro to set the keyword
 #define HLTLogKeyword(a)    AliHLTKeyword hltlogTmpkey__LINE__(this, a)
@@ -87,7 +90,9 @@ public:
 
   // logging function with two origin parameters, used by the log macros
   //
-  int LoggingVarargs( AliHLTComponentLogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const;
+  int LoggingVarargs(AliHLTComponentLogSeverity severity, 
+		     const char* origin_class, const char* origin_func,
+		     const char* file, int line, ... ) const;
 
   // apply filter, return 1 if message should pass
   //
@@ -101,19 +106,51 @@ public:
   //
   void SetLocalLoggingLevel(AliHLTComponentLogSeverity level);
 
+  /**
+   * Print message to stdout
+   */
   static int Message(void * param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message);
 
+#ifndef NOALIROOT_LOGGING
+  /**
+   * Print message through AliRoot log channels.
+   */
+  static int AliMessage(AliHLTComponentLogSeverity severity,
+			const char* origin_class, const char* origin_func,
+			const char* file, int line, const char* message);
+#endif
+
+  /**
+   * Build the log string from format specifier and variadac arguments
+   * @param format     format string of printf style
+   * @param ap         opened and initialized argument list
+   * @return const char string with the formatted message 
+   */
   static const char* BuildLogString(const char *format, va_list ap);
 
   virtual void* GetParameter() {return NULL;}
+
+  /**
+   * Switch logging through AliLog on or off
+   * @param sw          1 = logging through AliLog
+   */
+  void SwitchAliLog(int sw) {fgUseAliLog=(sw!=0);}
+
 protected:
 
 private:
-  static  AliHLTComponentLogSeverity fGlobalLogFilter;
-  AliHLTComponentLogSeverity fLocalLogFilter;
-  static AliHLTfctLogging fLoggingFunc;
-  const char* fpDefaultKeyword; //!
-  const char* fpCurrentKeyword; //!
+  /** the global logging filter */
+  static  AliHLTComponentLogSeverity fGlobalLogFilter;             // see above
+  /** the local logging filter for one class */
+  AliHLTComponentLogSeverity fLocalLogFilter;                      // see above
+  /** logging callback from the framework */
+  static AliHLTfctLogging fLoggingFunc;                            // see above
+  /** default keyword */
+  const char* fpDefaultKeyword;                                    //! transient
+  /** current keyword */
+  const char* fpCurrentKeyword;                                    //! transient
+  /** switch for logging through AliLog, default on */
+  static int fgUseAliLog;                                          // see above
 
   ClassDef(AliHLTLogging, 1)
 };

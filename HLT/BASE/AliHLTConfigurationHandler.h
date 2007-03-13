@@ -81,11 +81,9 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
 
  private:
   /** the list of registered configurations */
-  static TList fgListConfigurations;                              // see above
-  /** the list of dynamic configurations (for proper cleanup) */
-  static TList fgListDynamicConfigurations;                       // see above
+  TList fgListConfigurations;                              // see above
 
-  ClassDef(AliHLTConfigurationHandler, 0);
+  ClassDef(AliHLTConfigurationHandler, 1);
 };
 
 #endif

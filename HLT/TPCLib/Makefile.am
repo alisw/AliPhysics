@@ -25,122 +25,28 @@ endif
 # library definition
 lib_LTLIBRARIES			=  libAliHLTTPC.la
 
-# library sources
-libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
-				  AliHLTTPCTransform.cxx \
-				  AliHLTTPCMemHandler.cxx \
-				  AliHLTTPCDataCompressorHelper.cxx \
-				  AliHLTTPCFitter.cxx \
-				  AliHLTTPCFileHandler.cxx \
-				  AliHLTTPCBenchmark.cxx \
-				  AliHLTTPCDDLDataFileHandler.cxx \
-				  AliHLTTPCClusterFinder.cxx \
-				  AliHLTTPCDigitReader.cxx \
-				  AliHLTTPCDigitReaderPacked.cxx \
-				  AliHLTTPCDigitReaderUnpacked.cxx \
-				  AliHLTTPCDigitReaderRaw.cxx \
-				  AliHLTTPCVertex.cxx \
-				  AliHLTTPCVertexArray.cxx \
-				  AliHLTTPCVertexFinder.cxx \
-				  AliHLTTPCTrackArray.cxx \
-				  AliHLTTPCTrack.cxx \
-				  AliHLTTPCConfMapFit.cxx \
-				  AliHLTTPCConfMapTrack.cxx \
-				  AliHLTTPCConfMapPoint.cxx \
-				  AliHLTTPCConfMapper.cxx \
-				  AliHLTTPCModelTrack.cxx \
-				  AliHLTTPCMerger.cxx \
-				  AliHLTTPCTrackMerger.cxx \
-				  AliHLTTPCGlobalMerger.cxx \
-				  AliHLTTPCInterMerger.cxx \
-				  AliHLTTPCCATracker.cxx \
-				  AliHLTTPCPad.cxx \
-				  AliHLTTPCDefinitions.cxx \
-				  AliHLTTPCRawDataUnpackerComponent.cxx \
-				  AliHLTTPCClusterFinderComponent.cxx \
-				  AliHLTTPCVertexFinderComponent.cxx \
-				  AliHLTTPCSliceTrackerComponent.cxx \
-				  AliHLTTPCGlobalMergerComponent.cxx \
-				  AliHLTTPCCATrackerComponent.cxx \
-				  AliHLTTPCEsdWriterComponent.cxx
-
-
-#				  AliHLTTPCClustFinderNew.cxx \
-#				  AliHLTTPC.cxx \
-# 				  AliHLTTPCDisplay.cxx \
-#				  AliRawReaderMemory.cxx
-
-
-#				  AliHLTTPCHoughTrack.cxx \
-#				  AliHLTTPCHistogram.cxx \
-#				  AliHLTTPCHistogramAdaptive.cxx \
-#				  AliHLTTPCHoughBaseTransformer.cxx \
-#				  AliHLTTPCHoughTransformerRow.cxx
-
-
-# class header files, the link definition for the root dictionary
-# will be created from the names of the header files
-CLASS_HDRS			= AliHLTTPCLog.h \
-				  AliHLTTPCTransform.h \
-				  AliHLTTPCMemHandler.h \
-				  AliHLTTPCDataCompressorHelper.h \
-				  AliHLTTPCFitter.h \
-				  AliHLTTPCFileHandler.h \
-				  AliHLTTPCBenchmark.h \
-				  AliHLTTPCDDLDataFileHandler.h \
-				  AliHLTTPCClusterFinder.h \
-				  AliHLTTPCDigitReader.h \
-				  AliHLTTPCDigitReaderPacked.h \
-				  AliHLTTPCDigitReaderUnpacked.h \
-				  AliHLTTPCDigitReaderRaw.h \
-				  AliHLTTPCVertex.h \
-				  AliHLTTPCVertexArray.h \
-				  AliHLTTPCVertexFinder.h \
-				  AliHLTTPCTrackArray.h \
-				  AliHLTTPCTrack.h \
-				  AliHLTTPCConfMapFit.h \
-				  AliHLTTPCConfMapTrack.h \
-				  AliHLTTPCConfMapPoint.h \
-				  AliHLTTPCConfMapper.h \
-				  AliHLTTPCModelTrack.h \
-				  AliHLTTPCMerger.h \
-				  AliHLTTPCTrackMerger.h \
-				  AliHLTTPCGlobalMerger.h \
-				  AliHLTTPCInterMerger.h \
-				  AliHLTTPCCATracker.h \
-				  AliHLTTPCPad.h \
-				  AliHLTTPCSpacePointData.h \
-				  AliHLTTPCDefinitions.h \
-				  AliHLTTPCRawDataUnpackerComponent.h \
-				  AliHLTTPCClusterFinderComponent.h \
-				  AliHLTTPCVertexFinderComponent.h \
-				  AliHLTTPCSliceTrackerComponent.h \
-				  AliHLTTPCGlobalMergerComponent.h \
-				  AliHLTTPCCATrackerComponent.h \
-				  AliHLTTPCEsdWriterComponent.h
-
-#				  AliHLTTPCClustFinderNew.h \
-#				  AliHLTTPC.h
-
-
-pkginclude_HEADERS		= $(CLASS_HDRS) \
-				  AliHLTTPCLogging.h \
-				  AliHLTTPCRootTypes.h \
-				  AliHLTTPCDigitData.h \
-				  AliHLTTPCTrackSegmentData.h \
-				  AliHLTTPCVertexData.h \
-				  AliHLTTPCTrackletDataFormat.h \
-				  AliHLTTPCRawDataFormat.h \
-				  AliHLTTPCClusterDataFormat.h \
-				  AliHLTTPCModels.h
-
-
 # version info for the library
+LIBRARY_VERSION			= '3:0:0'
+
+# MODDIR is set by the AliRoot build system and denotes the topdir
+# of the module, we must set it since the package definition libAliHLTTPC.pkg
+# includes another common configuration file
+MODDIR				= $(top_srcdir)
+PKGDEF				= $(MODDIR)/libHLTbase.pkg
+include $(top_srcdir)/libAliHLTTPC.pkg
+
+# library sources
+libAliHLTTPC_la_SOURCES		= $(MODULE_SRCS)
+
+# library headers
+pkginclude_HEADERS		= $(MODULE_HDRS)
+
+# linker flags
 libAliHLTTPC_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
-				  -version-info 3:0:0
+				  -version-info  $(LIBRARY_VERSION)
 
 # set the file name for the generated root dictionary
 DICTCPP				=  AliHLTTPC-DICT.cxx

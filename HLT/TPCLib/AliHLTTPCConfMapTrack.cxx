@@ -251,9 +251,11 @@ void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
 	    
 	    delete fit;
 	}
-	else if(GetPt() == 0)
+	else if(GetPt() == 0) 
+	{
 	    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","Tracks")<<AliHLTTPCLog::kDec<<
 		"Found track with Pt=0!!!"<<ENDLOG;
+	}
 	else
 	{
 	    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","Tracks")<<AliHLTTPCLog::kDec<<
