@@ -569,6 +569,12 @@ void HmpConfig::SlotBatch(Int_t id)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HmpConfig::WriteBatch()
 {//creates Batch.C file
+  TString det;
+  if(fDetBG->GetButton(kITS  )->GetState())  det+="ITS ";
+  if(fDetBG->GetButton(kTPC  )->GetState())  det+="TPC ";
+  if(fDetBG->GetButton(kTRD  )->GetState())  det+="TRD ";
+  if(fDetBG->GetButton(kTOF  )->GetState())  det+="TOF ";
+  if(!fVerBG->GetButton(kNo)->GetState())    det+="HMPID ";
   char *sBatchName="Hbatch";
   FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateBatch","Cannot open output file: %s.C",sBatchName);return;}
   
@@ -586,16 +592,16 @@ void HmpConfig::WriteBatch()
     else                                            fprintf(fp,"  pSim->SetRunSimulation(kFALSE);                //no transport and hits creation\n");
     
     if     (fSdiBG->GetButton(kNo )->GetState())    fprintf(fp,"  pSim->SetMakeSDigits(\"\");                      //no sdigits\n");
-    else if(fSdiBG->GetButton(kAll)->GetState())    fprintf(fp,"  pSim->SetMakeSDigits(\"ALL\");                   //sdigits for all\n");
+    else if(fSdiBG->GetButton(kAll)->GetState())    fprintf(fp,"  pSim->SetMakeSDigits(\"%s\");                   //sdigits for all\n",det.Data());
     else if(fSdiBG->GetButton(kHmp)->GetState())    fprintf(fp,"  pSim->SetMakeSDigits(\"HMPID\");                 //sdigits for HMPID\n");
     
     if     (fDigBG->GetButton(kNo )->GetState())    fprintf(fp,"  pSim->SetMakeDigits(\"\");                       //no digits\n");
-    else if(fDigBG->GetButton(kAll)->GetState())    fprintf(fp,"  pSim->SetMakeDigits(\"ALL\");                    //digits for all\n");
+    else if(fDigBG->GetButton(kAll)->GetState())    fprintf(fp,"  pSim->SetMakeDigits(\"%s\");                    //digits for all\n",det.Data());
     else if(fDigBG->GetButton(kHmp)->GetState())    fprintf(fp,"  pSim->SetMakeDigits(\"HMPID\");                  //digits for HMPID\n");
     
-    if     (fRawBG->GetButton(kDdl)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"ALL\");                  //raw data as DDL\n");
-    else if(fRawBG->GetButton(kDat)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"ALL\",\"raw.date\");     //raw data as DATE\n");
-    else if(fRawBG->GetButton(kRoo)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"ALL\",\"raw.root\");     //raw data as ROOT\n");
+    if     (fRawBG->GetButton(kDdl)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\");                  //raw data as DDL\n",det.Data());
+    else if(fRawBG->GetButton(kDat)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\",\"raw.date\");     //raw data as DATE\n",det.Data());
+    else if(fRawBG->GetButton(kRoo)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\",\"raw.root\");     //raw data as ROOT\n",det.Data());
   
                                                     fprintf(fp,"  pSim->Run(iNevt);                              //run iNevt events\n  delete pSim;\n\n");
   }//sim section
@@ -608,20 +614,20 @@ void HmpConfig::WriteBatch()
     else if(fInpBG->GetButton(kDat)->GetState())    fprintf(fp,"  pRec->SetInput(\"raw.root.date\");          //from raw data in DATE format\n");                                            
     else if(fInpBG->GetButton(kRoo)->GetState())    fprintf(fp,"  pRec->SetInput(\"raw.root\");               //from raw data in ROOT format\n");                                            
     
-    if     (fCluBG->GetButton(kAll) ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ALL\");   //clusters for all detectors\n");
+    if     (fCluBG->GetButton(kAll) ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"%s\");   //clusters for all detectors\n",det.Data());
     else if(fCluBG->GetButton(kHmp) ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"HMPID\"); //clusters for HMPID only\n");
     else if(fCluBG->GetButton(kNo)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"\");      //no clusters\n");
     
-    if     (fTrkBG->GetButton(kAln)->GetState())    fprintf(fp,"  pRec->SetLoadAlignData(\"ALL\");            //with misalignment\n");     
+    if     (fTrkBG->GetButton(kAln)->GetState())    fprintf(fp,"  pRec->SetLoadAlignData(\"%s\");            //with misalignment\n",det.Data());     
     else                                            fprintf(fp,"  pRec->SetLoadAlignData(\"\");               //no misalignment\n");     
   
     if     (fTrkBG->GetButton(kVtx)->GetState())    fprintf(fp,"  pRec->SetRunVertexFinder(kTRUE);          //primary vertex\n");
     else                                            fprintf(fp,"  pRec->SetRunVertexFinder(kFALSE);         //no primary vertex\n");    
     
-    if     (fTrkBG->GetButton(kTrk)   ->GetState()) fprintf(fp,"  pRec->SetRunTracking(\"ALL\");              //tracking\n");
+    if     (fTrkBG->GetButton(kTrk)   ->GetState()) fprintf(fp,"  pRec->SetRunTracking(\"%s\");              //tracking\n",det.Data());
     else                                            fprintf(fp,"  pRec->SetRunTracking(\"\");                 //no tracking\n");    
     
-    if     (fTrkBG->GetButton(kPid)   ->GetState()) fprintf(fp,"  pRec->SetFillESD(\"ALL\");                  //prob vect\n");      
+    if     (fTrkBG->GetButton(kPid)   ->GetState()) fprintf(fp,"  pRec->SetFillESD(\"%s\");                  //prob vect\n",det.Data());      
     else                                            fprintf(fp,"  pRec->SetFillESD(\"\");                     //no prob vect\n");
     
                                                     fprintf(fp,"  pRec->Run();delete pRec;\n\n");         

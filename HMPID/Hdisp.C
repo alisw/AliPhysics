@@ -175,7 +175,8 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     }
   }//tracks loop
       
-  Int_t totHit=pHitLst->GetEntriesFast(),totDig=0,totClu=0,totTxC=0;  
+  Int_t totHit=pHitLst->GetEntriesFast(),totDig=0,totClu=0,totTxC=0;
+  Int_t totCkov=0, totFeed=0,totMip=0;
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop    
     totTxC+=pTxC[iCh]->GetN();
     totDig+=((TClonesArray*)pDigLst->At(iCh))->GetEntriesFast();
@@ -191,9 +192,13 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
                            
     ((TClonesArray*)pDigLst->At(iCh))->Draw();               //draw digits
     
+    totCkov=0;totFeed=0;totMip=0;
     for(Int_t iHit=0;iHit<pHitLst->GetEntriesFast();iHit++){ // Draw hits
       AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);
       if(pHit->Ch()==iCh) pHit->Draw();
+      if(pHit->Pid()==50000050) totCkov++;
+      else if(pHit->Pid()==50000051) totFeed++;
+      else totMip++;
     }    
            
     ((TClonesArray*)pCluLst->At(iCh))->Draw();              //draw clusters
@@ -205,9 +210,9 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
   pAll->cd(3);  gPad->Clear(); TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
                                         pLeg->SetHeader(Form("Event %i Total %i",gEvt,gMaxEvt+1));
                                         pLeg->AddEntry(pTxC[0],Form("TRKxPC %i"     ,totTxC),"p");
-                                        pLeg->AddEntry(pMip   ,Form("Mip hits %i"   ,totHit),"p");    
-                                        pLeg->AddEntry(pCko   ,Form("Ckov hits %i"  ,totHit),"p");    
-                                        pLeg->AddEntry(pFee   ,Form("Feed hits %i"  ,totHit),"p");    
+                                        pLeg->AddEntry(pMip   ,Form("Mip hits %i"   ,totMip),"p");    
+                                        pLeg->AddEntry(pCko   ,Form("Ckov hits %i"  ,totCkov),"p");    
+                                        pLeg->AddEntry(pFee   ,Form("Feed hits %i"  ,totFeed),"p");    
                                         pLeg->AddEntry(pDig   ,Form("Digs %i"       ,totDig),"p");    
                                         pLeg->AddEntry(pClu   ,Form("Clus %i"       ,totClu),"p");    
                                         pLeg->Draw();
