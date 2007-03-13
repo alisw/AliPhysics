@@ -438,7 +438,7 @@ Int_t AliMillepede::SetLocalEquation(double dergb[], double derlc[], double lMea
 
 -----------------------------------------------------------
 */
-Int_t AliMillepede::LocalFit(int iFit, double localParams[], bool bSingleFit)
+Int_t AliMillepede::LocalFit(int iFit, double localParams[], Bool_t bSingleFit)
 {
   /// Perform local parameters fit once all the local equations have been set
 
@@ -1054,7 +1054,7 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
  
 -----------------------------------------------------------
 */ 
-Double_t AliMillepede::GetParError(Int_t iPar) const
+Double_t AliMillepede::GetParError(int iPar) const
 {
   /// return error for parameter iPar
   Double_t lErr = -1.;
