@@ -6,7 +6,8 @@
 /// \ingroup base
 /// \class AliMUONTriggerChamberEff
 /// \brief trigger chamber efficiency from data
-/// \author Diego Stocco
+///
+//  Author Diego Stocco
 
 #include <TObject.h>
 #include <TString.h>

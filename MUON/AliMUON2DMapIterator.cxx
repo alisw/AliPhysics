@@ -23,7 +23,7 @@
 #include "AliMUONObjectPair.h"
 
 /// \class AliMUON2DMapIterator
-/// \brief Implementation of AliMUONVDataIterator for 2Dmaps
+/// Implementation of AliMUONVDataIterator for 2Dmaps
 /// 
 /// A simple implementation of VDataIterator for 2Dmaps.
 ///

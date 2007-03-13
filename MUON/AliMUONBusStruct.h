@@ -9,7 +9,7 @@
 /// \class AliMUONBusStruct
 /// \brief MUON buspatch structure for tracker
 ///
-/// \author Christian Finck
+//  Author Christian Finck
 
 #include <TObject.h>
 

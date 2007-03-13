@@ -39,7 +39,7 @@
 ///
 /// \author Laurent Aphecetche
 
-/// \nocond CLASSIMP
+/// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderCOG)
 /// \endcond
 

@@ -38,7 +38,8 @@
 /// empty slots and non-notified cards in trigger crates.
 /// Ch. Finck, August 06.
 /// Using AliMpDDLStore::GetBusPatchId.
-/// Ch. Finck, Feb. 07.
+///
+/// \author Ch. Finck, Feb. 07.
 
 
 #include "AliMUONRawWriter.h"

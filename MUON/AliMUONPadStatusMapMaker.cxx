@@ -45,7 +45,7 @@
 /// If a pad is at a physical boundary, is will for sure have some bits at 1
 /// (i.e. a non-existing neighbour is considered = bad).
 ///
-// author Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #include "AliMUONPadStatusMapMaker.h"
 
@@ -71,7 +71,9 @@
 #include <map>
 #include <utility>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMapMaker)
+/// \endcond
 
 Int_t AliMUONPadStatusMapMaker::fgkSelfDead = 1;
 
@@ -182,7 +184,8 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
 {
   /// Given the status store for all pads, compute a status map store
   /// for all pads. 
-  /// @param mask is the status mask to be tested to tell if a pad is ok or not
+  /// \param status
+  /// \param mask is the status mask to be tested to tell if a pad is ok or not
   
   fStatus = &status;
   fMask = mask;

@@ -9,7 +9,7 @@
 /// \class AliMUONRawWriter
 /// \brief Raw data class for trigger and tracker chambers
 ///
-/// \author Christian Finck and Laurent Aphecetche, Subatech
+//  Author Christian Finck and Laurent Aphecetche, Subatech
 
 #include <TObject.h>
 #include "AliRawDataHeader.h"

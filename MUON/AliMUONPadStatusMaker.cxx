@@ -14,13 +14,13 @@
 **************************************************************************/
 
 // $Id$
+
 /// \class AliMUONPadStatusMaker
 ///
 /// Make a 2DStore of pad statuses, using different sources of information,
 /// like pedestal values, gain values, and HV values.
 ///
-///
-// Author Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #include "AliMUONPadStatusMaker.h"
 
@@ -61,7 +61,9 @@
 
 #include <cassert>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMaker)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData)

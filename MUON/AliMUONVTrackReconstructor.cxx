@@ -51,7 +51,9 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
+/// \endcond
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONVTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;

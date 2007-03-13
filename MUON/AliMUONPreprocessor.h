@@ -10,7 +10,7 @@
 /// \class AliMUONPreprocessor
 /// \brief Shuttle preprocessor for MUON subsystems (TRK and TRG)
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALI_PREPROCESSOR_H
 #  include "AliPreprocessor.h"

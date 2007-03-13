@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup
+/// \ingroup rec
 /// \class AliMUONClusterSplitterMLEM
 /// \brief
 /// 

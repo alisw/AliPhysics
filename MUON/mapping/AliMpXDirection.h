@@ -5,7 +5,7 @@
 // $MpId: AliMpXDirection.h,v 1.6 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
-/// \enum  AliMpDirection
+/// \enum  AliMp::XDirection
 /// Enumeration for the directions in a plane.
 ///
 /// \author David Guez, IPN Orsay

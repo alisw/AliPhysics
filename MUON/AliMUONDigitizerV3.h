@@ -7,7 +7,7 @@
 /// \class AliMUONDigitizerV3
 /// \brief Digitizer (from SDigit to Digit), performing digit de-calibration.
 ///
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONDIGITIZERV3_H
 #define ALIMUONDIGITIZERV3_H

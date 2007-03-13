@@ -24,7 +24,6 @@
 
 ///
 /// \class AliMUONCalibParam2F
-/// \brief Implementation of AliMUONVCalibParam for pair of floats.
 ///
 /// Handle the case of 2 floating point parameters per channel.
 /// Conceptually, this class is the equivalent of a vector or float pairs,

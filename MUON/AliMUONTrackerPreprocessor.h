@@ -10,7 +10,7 @@
 /// \class AliMUONTrackerPreprocessor
 /// \brief Shuttle preprocessor for MUON tracker
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #include "AliMUONPreprocessor.h"
 

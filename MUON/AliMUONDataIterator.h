@@ -7,7 +7,7 @@
 /// \class AliMUONDataIterator
 /// \brief An iterator on MUON data structures (so far only Digits).
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONDATAITERATOR_H
 #define ALIMUONDATAITERATOR_H

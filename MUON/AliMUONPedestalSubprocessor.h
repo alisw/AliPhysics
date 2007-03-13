@@ -10,7 +10,7 @@
 /// \class AliMUONPedestalSubprocessor
 /// \brief Implementation of AliMUONVSubprocessor for MUON TRK pedestals
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONVSUBPROCESSOR_H
 #  include "AliMUONVSubprocessor.h"

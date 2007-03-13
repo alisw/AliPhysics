@@ -39,7 +39,9 @@
 #include <TMatrixD.h>
 #include <TGeoManager.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTrackExtrap) // Class implementation in ROOT context
+/// \endcond
 
 const AliMagF* AliMUONTrackExtrap::fgkField = 0x0;
 const Bool_t   AliMUONTrackExtrap::fgkUseHelix = kFALSE;

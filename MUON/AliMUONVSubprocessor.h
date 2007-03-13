@@ -10,7 +10,7 @@
 /// \class AliMUONVSubprocessor
 /// \brief Base class for a shuttle sub-task for MUON (either TRK or TRG)
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TNamed
 #  include "TNamed.h"

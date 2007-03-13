@@ -11,7 +11,7 @@
 /// \brief Determine which channels, manus, DEs, stations are missing
 /// from a 2DStore.
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

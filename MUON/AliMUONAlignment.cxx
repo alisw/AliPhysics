@@ -45,7 +45,10 @@
 
 #include "TSystem.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONAlignment)
+/// \endcond
+
   Int_t AliMUONAlignment::fgNDetElem = 4*2+4*2+18*2+26*2+26*2;
   Int_t AliMUONAlignment::fgNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
   Int_t AliMUONAlignment::fgSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};

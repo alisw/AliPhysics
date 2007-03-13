@@ -7,9 +7,9 @@
 
 /// \ingroup base
 /// \class AliMUONDigitMaker
-/// \brief Raw data class for trigger and tracker chambers
+/// \brief Reading Raw data class for trigger and tracker chambers
 ///
-/// Readding Raw data class for trigger and tracker chambers
+//  Author: Ch, Finck
 
 #include <TObject.h>
 #include "TStopwatch.h"

@@ -41,7 +41,7 @@
 /// A utility class to manage HV DCS aliases names, in particular the
 /// two conventions used to number the detection elements within a detector.
 ///
-// Author: Laurent Aphecetche, Subatech
+/// \author: Laurent Aphecetche, Subatech
 
 /// \cond CLASSIMP
 ClassImp(AliMUONHVNamer)
@@ -120,9 +120,9 @@ AliMUONHVNamer::DCS2DE(Int_t chamberId, Int_t side, Int_t dcsNumber) const
 {
   /// Convert DCS "slat number" (old convention) to DE (new) convention.
   ///
-  /// @param chamberId : chamber number (starting at 1)
-  /// @param side : 0 for Left, 1 for Right
-  /// @param dcsNumber : slat number in DCS HV convention
+  /// \param chamberId : chamber number (starting at 1)
+  /// \param side : 0 for Left, 1 for Right
+  /// \param dcsNumber : slat number in DCS HV convention
   ///
   /// note that dcsNumber should be >=1 and <= number of DEs/2 in chamber
 
@@ -238,7 +238,8 @@ const char*
 AliMUONHVNamer::DCSHVChannelName(Int_t detElemId, Int_t sector) const
 {
   /// Return the alias name of the HV Channel for a given HV area 
-  /// @param sector=0,1 or 2 for St12, and is unused for st345
+  /// \param detElemId 
+  /// \param sector = 0,1 or 2 for St12, and is unused for st345
   
   Int_t chamberId = 1 + AliMpDEManager::GetChamberId(detElemId);
   if ( chamberId < 1 ) return 0x0;

@@ -7,15 +7,9 @@
 
 /// \ingroup raw
 /// \class AliMUONPayloadTracker
-/// \brief Class for decoding trackerrawdata 
+/// \brief Class for decoding the payload for tracker raw data 
 ///
-/// \author Christian Finck
-///
-///////////////////////////////////////////////////////////////////////////////
-///
-/// This class decode the payload for tracker raw data.
-///
-///////////////////////////////////////////////////////////////////////////////
+//  Author Christian Finck
 
 #include <TObject.h>
 

@@ -10,7 +10,7 @@
 /// \class AliMUON2DMapIterator
 /// \brief Implementation of AliMUONVDataIterator for 2D maps
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

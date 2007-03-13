@@ -7,15 +7,9 @@
 
 /// \ingroup raw
 /// \class AliMUONPayloadTrigger
-/// \brief Class for decoding trigger rawdata 
+/// \brief Class for decoding the payload for trigger raw data 
 ///
-/// \author Christian Finck
-///
-///////////////////////////////////////////////////////////////////////////////
-///
-/// This class decode the payload for trigger raw data.
-///
-///////////////////////////////////////////////////////////////////////////////
+//  Author Christian Finck
 
 #include <TObject.h>
 

@@ -28,7 +28,7 @@
 #include <TList.h>
 
 /// \class AliMUON2DMap
-/// \brief Basic implementation of AliMUONV2DStore container using
+/// Basic implementation of AliMUONV2DStore container using
 /// AliMpExMap internally.
 /// What we store is a "double" map : an AliMpExMap of AliMpExMaps
 ///

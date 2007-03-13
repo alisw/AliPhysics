@@ -10,7 +10,7 @@
 /// \class AliMUONPadStatusMaker
 /// \brief Make a 2DStore of pad statuses, using different sources of information
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

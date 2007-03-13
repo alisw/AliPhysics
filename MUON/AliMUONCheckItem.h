@@ -10,7 +10,7 @@
 /// \class AliMUONCheckItem
 /// \brief A structure used to gather information at different levels (ch,manu,de,chamber)
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TNamed
 #  include "TNamed.h"

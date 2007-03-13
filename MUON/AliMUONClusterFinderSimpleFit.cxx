@@ -45,7 +45,7 @@
 ///
 /// \author Laurent Aphecetche
 
-/// \nocond CLASSIMP
+/// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderSimpleFit)
 /// \endcond
 

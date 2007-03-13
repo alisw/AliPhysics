@@ -5,7 +5,7 @@
 // $MpId: AliMpPlaneType.h,v 1.8 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
-/// \enum AliMpPlaneType
+/// \enum AliMp::PlaneType
 /// Enumeration for refering to bending and non-bending planes.
 ///
 /// \author David Guez, Ivana Hrivnacova; IPN Orsay

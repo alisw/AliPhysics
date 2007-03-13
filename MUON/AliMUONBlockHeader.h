@@ -9,7 +9,7 @@
 /// \class AliMUONBlockHeader
 /// \brief MUON block (Crocus CRT)  header for tracker event
 ///
-/// \author Christian Finck
+//  Author Christian Finck
 
 #include <TObject.h>
 #include <TClonesArray.h>

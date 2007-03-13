@@ -10,7 +10,7 @@
 /// \class AliMUONHVNamer
 /// \brief Collection of methods usefull to HV subprocessor for MUON TRK
 /// 
-/// \author Laurent Aphecetche, Subtech
+//  Author Laurent Aphecetche, Subtech
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

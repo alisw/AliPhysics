@@ -10,7 +10,7 @@
 /// \class AliMUONLogger
 /// \brief A logger that keeps track of the number of times a message appeared
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

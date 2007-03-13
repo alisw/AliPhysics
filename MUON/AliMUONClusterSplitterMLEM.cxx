@@ -44,7 +44,9 @@
 #include <TROOT.h>
 #include <TRandom.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONClusterSplitterMLEM)
+/// \endcond
 
 const Double_t AliMUONClusterSplitterMLEM::fgkCouplMin = 1.e-3; // threshold on coupling 
 

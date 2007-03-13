@@ -10,7 +10,7 @@
 /// \class AliMpIteratorPainter
 /// \brief Painter for a group of pads defined by an iterator
 /// 
-/// Author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALI_MP_V_PAINTER_H
 #  include "AliMpVPainter.h"

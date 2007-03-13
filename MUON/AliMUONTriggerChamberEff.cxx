@@ -19,7 +19,8 @@
 /// implementation of the trigger chamber efficiency determination from
 /// data, and returns the
 /// efficiencyCells.dat with the calculated efficiencies
-/// Author: Diego Stocco (Torino)
+///
+/// \author Diego Stocco (Torino)
 
 #include "AliMUONTriggerChamberEff.h"
 #include "AliMUONDigit.h"

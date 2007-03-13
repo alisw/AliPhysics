@@ -20,6 +20,8 @@
 /// the X positions of the (doubled or not) Y strips.
 /// This is used to associate the global positions to the fired strips of the 
 /// local trigger output (see AliMUONTrackReconstructor::MakeTriggerTrack)
+///
+/// \author Philippe Crochet (LPCCFd)
 
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUON.h"

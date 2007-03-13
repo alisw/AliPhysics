@@ -7,7 +7,7 @@
 /// \class AliMUONDigitCalibrator
 /// \brief Class to calibrate the digits
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONDIGITCALIBRATOR_H
 #define ALIMUONDIGITCALIBRATOR_H

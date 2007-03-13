@@ -32,7 +32,9 @@
 #include <TObjString.h>
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGMSSubprocessor)
+/// \endcond
 
 const Int_t    AliMUONGMSSubprocessor::fgkSystem = AliPreprocessor::kDAQ;
 const TString  AliMUONGMSSubprocessor::fgkDataId = "GMS";

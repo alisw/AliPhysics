@@ -9,7 +9,7 @@
 /// \class AliMUONRegHeader
 /// \brief MUON regional header for trigger
 ///
-/// \author Christian Finck
+//  Author Christian Finck
 
 #include <TObject.h>
 

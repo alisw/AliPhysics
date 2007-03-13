@@ -10,7 +10,7 @@
 /// \class AliMpManuList
 /// \brief Cache of often used information
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

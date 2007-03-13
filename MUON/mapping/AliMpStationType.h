@@ -5,7 +5,7 @@
 // $MpId: AliMpStationType.h,v 1.9 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
-/// \enum AliMpStationType
+/// \enum AliMp::StationType
 /// Enumeration for refering to a MUON station
 ///
 /// \author David Guez, Ivana Hrivnacova; IPN Orsay

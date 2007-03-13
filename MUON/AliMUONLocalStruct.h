@@ -9,7 +9,7 @@
 /// \class AliMUONLocalStruct
 /// \brief rawdata local card structure for trigger
 ///
-/// \author Christian Finck
+//  Author Christian Finck
 
 #include <TObject.h>
 #include <TMath.h>

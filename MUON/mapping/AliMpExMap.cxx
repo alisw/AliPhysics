@@ -329,8 +329,8 @@ TObject*  AliMpExMap::GetValue(Int_t key) const
 //_____________________________________________________________________________
 void AliMpExMap::Streamer(TBuffer &R__b)
 {
-/// Customized streamer                                                     \n
-/// After the arrays are read, fill the transient map
+// Customized streamer                                                     \n
+// After the arrays are read, fill the transient map
 
   if (R__b.IsReading()) {
     AliMpExMap::Class()->ReadBuffer(R__b, this);

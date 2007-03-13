@@ -9,7 +9,7 @@
 /// \class AliMUONDDLTracker
 /// \brief MUON DDL tracker
 ///
-/// \author Christian Finck
+//  Author Christian Finck
 
 #include <TObject.h>
 #include <TClonesArray.h>

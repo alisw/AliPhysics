@@ -6,11 +6,11 @@
 
 // $Id$
 
-/// \ingroup
+/// \ingroup rec
 /// \class AliMUONPadStatusMapMaker
 /// \brief Convert a pad status container into a pad status *map* container
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

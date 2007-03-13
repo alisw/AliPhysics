@@ -10,7 +10,7 @@
 /// \class AliMUONPedestalEventGenerator
 /// \brief Generate pedestal events (only for tracker).
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TTask
 #  include "TTask.h"

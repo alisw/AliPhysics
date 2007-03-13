@@ -10,7 +10,7 @@
 /// \class AliMUONCheckItemIterator
 /// \brief Iterator on CheckItem
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

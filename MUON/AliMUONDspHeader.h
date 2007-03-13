@@ -9,7 +9,7 @@
 /// \class AliMUONDspHeader
 /// \brief MUON DSP header for tracker event
 ///
-/// \author Christian Finck
+//  Author Christian Finck
 
 #include <TObject.h>
 #include <TClonesArray.h>

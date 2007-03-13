@@ -21,7 +21,7 @@
 /// It simply creates a copy of the dcsAliasMap w/o information
 /// from the MUON TRK, and dumps this copy into the CDB
 ///
-// Author: Laurent Aphecetche, Subatech
+/// \author Laurent Aphecetche, Subatech
 
 #include "AliMUONHVSubprocessor.h"
 #include "AliMUONHVNamer.h"

@@ -9,7 +9,8 @@
 /// \ingroup shuttle
 /// \class AliMUONHVSubprocessor
 /// \brief A subprocessor to read HV values for one run
-/// \author Laurent Aphecetche
+///
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONVSUBPROCESSOR_H
 #  include "AliMUONVSubprocessor.h"

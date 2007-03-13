@@ -32,7 +32,7 @@
 /// are disabled, and this information is printed in a condensed form
 /// only once when DigitizerV3 is destroyed.
 ///
-//author Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 ClassImp(AliMUONLogger)
 

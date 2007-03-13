@@ -35,7 +35,8 @@
 ///
 /// Add (S)Digit maker tracker (for free)
 /// and for trigger. Create trigger inverse mapping.
-/// (Ch. Finck, oct 06) 
+///
+/// \author Ch. Finck, oct 06 
 
 #include "AliMUONDigitMaker.h"
 #include "AliMUONDigit.h"

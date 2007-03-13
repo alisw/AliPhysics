@@ -9,7 +9,7 @@
 /// \class AliMUONDarcHeader
 /// \brief MUON Darc header for Trigger
 ///
-/// \author Christian Finck
+//  Author Christian Finck
 
 #include <TObject.h>
 #include <TClonesArray.h>
