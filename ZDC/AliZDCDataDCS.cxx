@@ -88,7 +88,7 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap, Float_t *fCalibData)
       while((aValue = (AliDCSValue*) iterarray.Next())) {
    	val[ne] = aValue->GetFloat();
    	time[ne] = (Double_t) (aValue->GetTimeStamp());
-   	fCalibData[ne] = val[ne];
+   	if(j>=4) fCalibData[ne] = val[ne];
    	ne++;
       }
       //
@@ -152,7 +152,7 @@ void AliZDCDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)
 {
    // Getting array of DCS aliases
    
-   int entries=aliasArr->GetEntries();
+   int entries = aliasArr->GetEntries();
    AliInfo(Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
    AliInfo(Form("	   %d DP values collected",entries));
 

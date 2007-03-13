@@ -370,9 +370,10 @@ AliZDCCalibData* AliZDCReconstructor::GetCalibData() const
   // Getting calibration object for ZDC set
 
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Data");
-  AliZDCCalibData *calibdata = (AliZDCCalibData*) entry->GetObject();
+  if(!entry) AliFatal("No calibration data loaded!");  
 
-  if (!calibdata)  AliWarning("No calibration data from calibration database !");
+  AliZDCCalibData *calibdata = dynamic_cast<AliZDCCalibData*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;
 }
