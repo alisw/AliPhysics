@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup evaluation
 /// \class AliMUONCheck
 /// \brief Class for data quality control
 /// 
