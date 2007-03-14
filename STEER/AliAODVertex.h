@@ -78,8 +78,8 @@ class AliAODVertex : public TObject {
   Double_t  GetChi2perNDF() const
     { return fChi2/(2.*fDaughters.GetEntriesFast()-3.); }
 
-  Char_t    GetVtxType() const { return fType; }
-  void      SetVtxType(Char_t vtype) { fType=vtype; }
+  Char_t    GetType() const { return fType; }
+  void      SetType(AODVtx_t vtype) { fType=vtype; }
 
   TObject* GetParent() const   { return fParent.GetObject(); }
   Bool_t   HasParent(TObject *parent) const { return (fParent.GetObject() == parent) ? kTRUE : kFALSE; }
