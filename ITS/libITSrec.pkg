@@ -27,7 +27,6 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSPid.cxx \
 		AliITStrackV2Pid.cxx \
 		AliITSreconstruction.cxx \
-		AliITSFindClustersV2.cxx \
 		AliITSRiemannFit.cxx \
 		AliITSclusterTable.cxx \
 		AliITStrackSA.cxx \

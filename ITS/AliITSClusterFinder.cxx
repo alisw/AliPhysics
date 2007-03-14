@@ -400,38 +400,6 @@ void AliITSClusterFinder::Print(ostream *os) const{
     *os << fClusterSize<<",";
     *os << fNPeaks<<endl;
 }
-/*
-//______________________________________________________________________
-void AliITSClusterFinder::RecPoints2Clusters
-(const TClonesArray *points, Int_t idx, TClonesArray *clusters) {
-  //------------------------------------------------------------
-  // Conversion AliITSRecPoint -> AliITSclusterV2 for the ITS 
-  // subdetector indexed by idx 
-  //------------------------------------------------------------
-  if(!fDetTypeRec->GetITSgeom()) {
-    Error("RecPoints2Clusters","ITS geom is null!");
-    return;
-  }
-  Int_t lastSPD1=fDetTypeRec->GetITSgeom()->GetModuleIndex(2,1,1)-1;
-  TClonesArray &cl=*clusters;
-  Int_t ncl=points->GetEntriesFast();
-  for (Int_t i=0; i<ncl; i++) {
-    AliITSRecPoint *p = (AliITSRecPoint *)points->UncheckedAt(i);
-    Float_t lp[5];
-    lp[0]=-(-p->GetX()+fYshift[idx]); if (idx<=lastSPD1) lp[0]*=-1; //SPD1
-    lp[1]=  -p->GetZ()+fZshift[idx];
-    lp[2]=p->GetSigmaX2();
-    lp[3]=p->GetSigmaZ2();
-    lp[4]=p->GetQ()*36./23333.;  //electrons -> ADC
-    Int_t lab[4]; 
-    lab[0]=p->GetLabel(0); lab[1]=p->GetLabel(1); lab[2]=p->GetLabel(2);
-    lab[3]=fNdet[idx];
-    CheckLabels(lab);
-    Int_t dummy[3]={0,0,0};
-    new (cl[i]) AliITSclusterV2(lab,lp, dummy);
-  }  
-} 
-*/
 //______________________________________________________________________
 void AliITSClusterFinder::Read(istream *is)  {
     //Standard input for this class
@@ -479,29 +447,3 @@ istream &operator>>(istream &is,AliITSClusterFinder &source){
     source.Read(&is);
     return is;
 }
-/*
-void AliITSClusterFinder::RecPoints2Clusters
-(const TClonesArray *points, Int_t idx, TClonesArray *clusters) {
-  //------------------------------------------------------------
-  // Conversion AliITSRecPoint -> AliITSclusterV2 for the ITS 
-  // subdetector indexed by idx 
-  //------------------------------------------------------------
-  TClonesArray &cl=*clusters;
-  Int_t ncl=points->GetEntriesFast();
-  for (Int_t i=0; i<ncl; i++) {
-    AliITSRecPoint *p = (AliITSRecPoint *)points->UncheckedAt(i);
-    Float_t lp[5];
-    lp[0]=-(-p->GetX()+fYshift[idx]); if (idx<=fLastSPD1) lp[0]*=-1; //SPD1
-    lp[1]=  -p->GetZ()+fZshift[idx];
-    lp[2]=p->GetSigmaX2();
-    lp[3]=p->GetSigmaZ2();
-    lp[4]=p->GetQ()*36./23333.;  //electrons -> ADC
-    Int_t lab[4]; 
-    lab[0]=p->GetLabel(0); lab[1]=p->GetLabel(1); lab[2]=p->GetLabel(2);
-    lab[3]=fNdet[idx];
-    CheckLabels(lab);
-    Int_t dummy[3]={0,0,0};
-    new (cl[i]) AliITSclusterV2(lab,lp, dummy);
-  }  
-} 
-*/

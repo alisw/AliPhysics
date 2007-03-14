@@ -54,7 +54,6 @@
 #pragma link C++ class AliITStrackerANN+;
 // Tasks
 #pragma link C++ class AliITSreconstruction+;
-#pragma link C++ class AliITSFindClustersV2+;
 //#pragma link C++ class DisplayITSv11+;
 
 #pragma link C++ class AliITSclusterTable+;
