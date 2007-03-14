@@ -1,0 +1,13 @@
+SRCS = AliAnalysisTaskRL.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= ANALYSISRLLinkDef.h
+
+CHECKALIEN = $(shell root-config --has-alien)
+ifeq (yes,$(CHECKALIEN))
+PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
+endif
+EXPORT:=$(SRCS:.cxx=.h)
+
+
