@@ -983,9 +983,9 @@ void AliSHILv3::CreateGeometry()
       // Section 1
       z += dzSaa2PbComp1;
       shSaa2PbComp->DefineSection(  6,  z, rInSaa2PbComp1, rOuSaa2PbComp1);
+      shSaa2PbComp->DefineSection(  7,  z, rInSaa2PbComp1, rOuSaa2PbComp2);
       //
       // Section 2
-      shSaa2PbComp->DefineSection(  7,  z, rInSaa2PbComp2, rOuSaa2PbComp2);
       z += dzSaa2PbComp2;
       shSaa2PbComp->DefineSection(  8,  z, rInSaa2PbComp2, rOuSaa2PbComp2);
       //
@@ -1243,7 +1243,7 @@ void AliSHILv3::CreateGeometry()
 //  Mother volume for muon stations 1+2 and shielding material placed between the quadrants
 //
       // Position of the dipole
-      Float_t ziDipole = 724.45;
+      Float_t ziDipole = 741.;
       
       TGeoPcon* shYOUT1 = new TGeoPcon(0., 360., 25);
       Float_t eps = 1.e-2;
@@ -1279,7 +1279,7 @@ void AliSHILv3::CreateGeometry()
 //
 //  Mother volume for muon stations 4+5 and trigger stations.
 //
-      Float_t zoDipole = 1235.55;
+      Float_t zoDipole = 1249.;
       
       TGeoPcon* shYOUT2 = new TGeoPcon(0., 360., 14);
       z =  zoDipole;
