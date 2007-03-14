@@ -190,12 +190,12 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   int InterpreteString(const char* arg, vector<char*>& argList);
 
   /** id of this configuration */
-  const char* fID;                                                 //! transient
+  TString fID;                                                     // see above
   /** component id of this configuration */
-  const char* fComponent;                                          //! transient
+  TString fComponent;                                              // see above
 
   /** the <i>sources</i> string as passed to the constructor */
-  const char* fStringSources;                                      //! transient
+  TString fStringSources;                                          // see above
   /** number of resolved sources, -1 indicates re-evaluation */
   int fNofSources;                                                 // see above
   /** list of sources */
@@ -209,7 +209,7 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * be parsed and the separated arguments stored in the @ref fArgv array
    * and @ref fArgc member.
    */
-  const char* fArguments;                                          // see above
+  TString fArguments;                                              // see above
   /** number of arguments */
   int fArgc;                                                       // see above
   /** argument array */

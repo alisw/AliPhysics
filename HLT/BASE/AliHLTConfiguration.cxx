@@ -40,13 +40,13 @@ ClassImp(AliHLTConfiguration)
 
 AliHLTConfiguration::AliHLTConfiguration()
   :
-  fID(NULL),
-  fComponent(NULL),
-  fStringSources(NULL),
+  fID(""),
+  fComponent(""),
+  fStringSources(""),
   fNofSources(-1),
   fListSources(),
   fListSrcElement(),
-  fArguments(NULL),
+  fArguments(""),
   fArgc(-1),
   fArgv(NULL)
 { 
@@ -112,7 +112,7 @@ AliHLTConfiguration::~AliHLTConfiguration()
 {
   // see header file for function documentation
   if (fgConfigurationHandler) {
-    if (fgConfigurationHandler->FindConfiguration(fID)!=NULL) {
+    if (fgConfigurationHandler->FindConfiguration(fID.Data())!=NULL) {
       fgConfigurationHandler->RemoveConfiguration(this);
     }
   }
@@ -157,8 +157,8 @@ int AliHLTConfiguration::GlobalDeinit(AliHLTConfigurationHandler* pHandler)
 const char* AliHLTConfiguration::GetName() const 
 {
   // see header file for function documentation
-  if (fID)
-    return fID;
+  if (!fID.IsNull())
+    return fID.Data();
   return TObject::GetName();
 }
 
@@ -246,9 +246,9 @@ void AliHLTConfiguration::PrintStatus()
   // see header file for function documentation
   HLTLogKeyword("configuration status");
   HLTMessage("status of configuration \"%s\" (%p)", GetName(), this);
-  if (fComponent) HLTMessage("  - component: \"%s\"", fComponent);
+  if (!fComponent.IsNull()) HLTMessage("  - component: \"%s\"", fComponent.Data());
   else HLTMessage("  - component string invalid");
-  if (fStringSources) HLTMessage("  - sources: \"%s\"", fStringSources);
+  if (!fStringSources.IsNull()) HLTMessage("  - sources: \"%s\"", fStringSources.Data());
   else HLTMessage("  - no sources");
   if (SourcesResolved(1)<=0)
     HLTMessage("    there are unresolved sources");
@@ -288,10 +288,10 @@ int AliHLTConfiguration::ExtractSources()
   // see header file for function documentation
   int iResult=0;
   fNofSources=0;
-  if (fStringSources!=NULL) {
+  if (!fStringSources.IsNull()) {
     vector<char*> tgtList;
     fListSources.clear();
-    if ((iResult=InterpreteString(fStringSources, tgtList))>=0) {
+    if ((iResult=InterpreteString(fStringSources.Data(), tgtList))>=0) {
       fNofSources=tgtList.size();
       vector<char*>::iterator element=tgtList.begin();
       while ((element=tgtList.begin())!=tgtList.end()) {
@@ -321,7 +321,7 @@ int AliHLTConfiguration::ExtractArguments()
 {
   // see header file for function documentation
   int iResult=0;
-  if (fArguments!=NULL) {
+  if (!fArguments.IsNull()) {
     vector<char*> tgtList;
     if ((iResult=InterpreteString(fArguments, tgtList))>=0) {
       fArgc=tgtList.size();

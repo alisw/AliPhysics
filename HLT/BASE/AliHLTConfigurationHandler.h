@@ -13,6 +13,8 @@
 
 #include <TList.h>
 
+class AliHLTConfiguration;
+
 /**
  * @class AliHLTConfigurationHandler
  * @brief Global Handling of HLT configurations.
