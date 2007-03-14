@@ -58,10 +58,11 @@ class AliTRDgeometry : public AliGeometry {
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
 
-  virtual Int_t    GetPadRow(Int_t irob, Int_t imcm) const;
-  virtual Int_t    GetPadCol(Int_t irob, Int_t imcm, Int_t iadc) const;
-  virtual Int_t    GetMCM(Int_t irow, Int_t icol) const;
-  virtual Int_t    GetROB(Int_t irow, Int_t icol) const;
+  // Translation from MCM to Pad and vice versa
+  virtual Int_t    GetPadRowFromMCM(Int_t irob, Int_t imcm) const;
+  virtual Int_t    GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const;
+  virtual Int_t    GetMCMfromPad(Int_t irow, Int_t icol) const;
+  virtual Int_t    GetROBfromPad(Int_t irow, Int_t icol) const;
   virtual Int_t    GetRobSide(Int_t irob) const;
   virtual Int_t    GetColSide(Int_t icol) const;
 

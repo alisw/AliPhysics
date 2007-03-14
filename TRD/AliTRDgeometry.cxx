@@ -1414,9 +1414,8 @@ Int_t AliTRDgeometry::GetSector(Int_t d) const
 
 }
 
-//CL
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetPadRow(Int_t irob, Int_t imcm) const
+Int_t AliTRDgeometry::GetPadRowFromMCM(Int_t irob, Int_t imcm) const
 {
 
   // return on which row this mcm sits 
@@ -1427,21 +1426,32 @@ Int_t AliTRDgeometry::GetPadRow(Int_t irob, Int_t imcm) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetPadCol(Int_t irob, Int_t imcm, Int_t iadc) const
+Int_t AliTRDgeometry::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
 {
   //
-  // return which pad is connected to this adc channel. return -1 if it
-  // is one of the not directly connected adc channels (0, 1 20)
+  // return which pad is connected to this adc channel.
+  //
+  // ADC channels 2 to 19 are connected directly to a pad via PASA.
+  // ADC channels 0, 1 and 20 are not connected to the PASA on this MCM.
+  // So the mapping (for MCM 0 on ROB 0 at least) is
+  //
+  // ADC channel  :   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+  // Pad          :   x  x 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0  x
+  // Func. returns:  19 18 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0 -1
+  //
+  // Here we assume that 21 ADC channels are transmitted. Maybe it will only be
+  // 18 later on!!!
+  //
+  // This function maps also correctly the channels that cross from MCM to MCM
+  // (ADC channels 0, 1, 20).
   //
 
-  if (iadc < 2 || iadc > 19 ) return -1;
-
-  return (iadc-2) + (imcm%fgkMCMrow)*fgkPadmax + GetRobSide(irob)*fgkColmax/2;
+  return (17-(iadc-2)) + (imcm%fgkMCMrow)*fgkPadmax + GetRobSide(irob)*fgkColmax/2;
 
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetMCM(Int_t irow, Int_t icol) const
+Int_t AliTRDgeometry::GetMCMfromPad(Int_t irow, Int_t icol) const
 {
 
   // return on which mcm this pad is
@@ -1453,7 +1463,7 @@ Int_t AliTRDgeometry::GetMCM(Int_t irow, Int_t icol) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetROB(Int_t irow, Int_t icol) const
+Int_t AliTRDgeometry::GetROBfromPad(Int_t irow, Int_t icol) const
 {
 
   // return on which rob this pad is

@@ -19,8 +19,8 @@ class AliTRDdigitsManager;
 class AliTRDdataArrayI;
 
 // Some constants:
-const UInt_t endoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
-const UInt_t endofeventmarker    = 0x00000000; /*This marks the end of half-chamber-data*/
+const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
+const UInt_t kEndofrawdatamarker  = 0x00000000; /*This marks the end of half-chamber-data*/
 
 class AliTRDRawStream: public TObject {
 
@@ -32,20 +32,20 @@ class AliTRDRawStream: public TObject {
     virtual ~AliTRDRawStream();
 
     virtual Bool_t       Next();              // Next function (for fRawVersion = 0 (Bogdans first version))
-    virtual Bool_t       ReadAll();           // Read function (for fRawVersion > 0)
+    virtual Int_t        ReadAll();           // Read function (for fRawVersion > 0)
 
-    Int_t                GetDetector() const                        { return fDetector;       };
-    Int_t                GetPrevDetector() const                    { return fPrevDetector;   };
-    Bool_t               IsNewDetector() const                      { return fDetector != fPrevDetector; };
-    Int_t                GetNPads() const                           { return fNPads;          };
-    Int_t                GetRow() const                             { return fRow;            };
-    Int_t                GetPrevRow() const                         { return fPrevRow;        };
-    Bool_t               IsNewRow() const                           { return (fRow != fPrevRow) || IsNewDetector();  };
-    Int_t                GetColumn() const                          { return fColumn;         };
-    Int_t                GetPrevColumn() const                      { return fPrevColumn;     };
-    Bool_t               IsNewColumn() const                        { return (fColumn != fPrevColumn) || IsNewRow(); };
-    Int_t                GetTime() const                            { return fTime-1;         };
-    Int_t                GetSignal() const                          { return fSignal;         };
+    Int_t                GetDetectorV0() const     /* only for v0 */  { return fDetector;       };
+    Int_t                GetPrevDetectorV0() const /* only for v0 */  { return fPrevDetector;   };
+    Bool_t               IsNewDetectorV0() const   /* only for v0 */  { return fDetector != fPrevDetector; };
+    Int_t                GetNPadsV0() const        /* only for v0 */  { return fNPads;          };
+    Int_t                GetRowV0() const          /* only for v0 */  { return fRow;            };
+    Int_t                GetPrevRowV0() const      /* only for v0 */  { return fPrevRow;        };
+    Bool_t               IsNewRowV0() const        /* only for v0 */  { return (fRow != fPrevRow) || IsNewDetectorV0();  };
+    Int_t                GetColumnV0() const       /* only for v0 */  { return fColumn;         };
+    Int_t                GetPrevColumnV0() const   /* only for v0 */  { return fPrevColumn;     };
+    Bool_t               IsNewColumnV0() const     /* only for v0 */  { return (fColumn != fPrevColumn) || IsNewRowV0(); };
+    Int_t                GetTimeV0() const         /* only for v0 */  { return fTime-1;         };
+    Int_t                GetSignalV0() const       /* only for v0 */  { return fSignal;         };
 
     enum { kDDLOffset = 0x400 };              // Offset for DDL numbers
 
@@ -57,17 +57,17 @@ class AliTRDRawStream: public TObject {
     Bool_t               SetRawVersion(Int_t rv);
     Int_t                GetRawVersion() const                      { return fRawVersion;     };
 
-    // Get Filter settings:
+    // Get Filter settings (does not make a lot of sense):
     Int_t                TRAPfilterTCon() const                     { return fTCon;           };
     Int_t                TRAPfilterPEDon() const                    { return fPEDon;          };
     Int_t                TRAPfilterGAINon() const                   { return fGAINon;         };
-    Int_t                TRAPsendsFilterdData() const               { return fFiltered;       };
+    Int_t                TRAPsendsUnfilteredData() const            { return fBypass;         };
 
-    // Get Tracklet parameters:
+    // Get Tracklet parameters (does not make a lot of sense):
     Float_t              GetTrackletPID() const                     { return fTracklPID;      };
     Float_t              GetTrackletDeflLength() const              { return fTracklDefL;     };
     Float_t              GetTrackletPadPos() const                  { return fTracklPadPos;   };
-    Int_t                getTrackletPadRow() const                  { return fTracklPadRow;   };
+    Int_t                GetTrackletPadRow() const                  { return fTracklPadRow;   };
 
     // Check if the link has optical power (HC sends data)
     Bool_t               IsGTULinkActive(Int_t sm, Int_t la, Int_t sta, Int_t side)
@@ -98,10 +98,15 @@ class AliTRDRawStream: public TObject {
     Int_t    fRVminor;                        //  Raw version numbers and number of additional HC headerwords (>=V2)
     Int_t    fHCHWords;                       //  Raw version numbers and number of additional HC headerwords (>=V2)
     Int_t    fTBins;                          //  Number of time bins read from HC header (>=V2)
-    Int_t    fTCon;                           //  Filter settings read from HC header (>=V2)
-    Int_t    fPEDon;                          //  Filter settings read from HC header (>=V2)
-    Int_t    fGAINon;                         //  Filter settings read from HC header (>=V2)
-    Int_t    fFiltered;                       //  Filter settings read from HC header (>=V2)
+    Bool_t   fTCon;                           //  Filter settings read from HC header (>=V2)
+    Bool_t   fPEDon;                          //  Filter settings read from HC header (>=V2)
+    Bool_t   fGAINon;                         //  Filter settings read from HC header (>=V2)
+    Bool_t   fXTon;                           //  Filter settings read from HC header (>=V2)
+    Bool_t   fNonLinOn;                       //  Filter settings read from HC header (>=V2)
+    Bool_t   fBypass;                         //  Filter settings read from HC header (>=V2)
+    Int_t    fCommonAdditive;                 //  Common baseline additive read from HC header (>=V2)
+
+    Bool_t   fZeroSuppressed;                 // Data is zero suppressed
 
     Int_t    fHCHctr1;                        //  HC and MCM Header counter
     Int_t    fHCHctr2;                        //  HC and MCM Header counter
@@ -109,6 +114,7 @@ class AliTRDRawStream: public TObject {
     Int_t    fMCMHctr2;                       //  HC and MCM Header counter
     Int_t    fGTUctr1;                        //  GTU LinkMask Counter
     Int_t    fGTUctr2;                        //  GTU LinkMask Counter
+    Int_t    fHCdataCtr;                      //  Data Counter for half chamber
 
     Float_t  fTracklPID;                      //  Tracklet parameters
     Float_t  fTracklDefL;                     //  Tracklet parameters
@@ -137,36 +143,46 @@ class AliTRDRawStream: public TObject {
     // This is again new:
     Int_t    fRawVersion;                  //  Which version of raw data decoding is used
     UInt_t   fDataWord;                    //  The current 32 bit data word
-    Int_t    fStatus;                      //  Status of Raw data Reading
+    Int_t    fStatus;                      //  Status word used by some functions
+    UInt_t   fTbSwitch;                    //  Time Bin Switch for internal use
+    UInt_t   fTbSwitchCtr;                 //  Counter for internal use
+    UInt_t   fTimeWords;                   //  Number of Words needed to store the data of 1 ADC ch.
+    UInt_t   fWordCtr;                     //  Word Counter
 
     Int_t    fRowMax;                      //  Maximum number of pad rows and columns
     Int_t    fColMax;                      //  Maximum number of pad rows and columns
-    UShort_t fChamberDone[540];            //  Chamber was processed already?
+
+    Bool_t   fADCmask[21];                 //  Mask of active ADCs for zero suppression
+    UShort_t fChamberDone[540];            //  Chamber was processed already (1=1HC, 2=full chamber)
 
  protected:
 
     AliTRDgeometry *fGeo;                  //  TRD geometry
 
-    AliTRDdigitsManager *fDigitsManager;   //! Manager for the output digits
-    AliTRDdataArrayI    *fDigits;          //! Output digits
-    AliTRDdataArrayI    *fTrack0;          //! Track dictionary
-    AliTRDdataArrayI    *fTrack1;          //! Track dictionary
-    AliTRDdataArrayI    *fTrack2;          //! Track dictionary
+    AliTRDdigitsManager *fDigitsManager;   // Manager for the output digits
+    AliTRDdataArrayI    *fDigits;          // Output digits
+    AliTRDdataArrayI    *fTrack0;          // Track dictionary
+    AliTRDdataArrayI    *fTrack1;          // Track dictionary
+    AliTRDdataArrayI    *fTrack2;          // Track dictionary
 
     void  DecodeHCheader(Int_t timeBins);
-    void  DecodeHCheaderV1();              // Valid for fRawversion = 1
-    void  DecodeHCheaderV2(Int_t imeBins); // Valid for fRawversion = 2,3,4
+    void  DecodeHCheaderV1();                  // Valid for fRawversion = 1
+    void  DecodeHCheaderV2V3(Int_t timeBins);  // Valid for fRawversion = 2,3,?
 
     void  DecodeMCMheader();
-    void  DecodeMCMheaderV1();             // Valid for fRawversion = 1,2,3,4
+    void  DecodeMCMheaderVx();                 // So far valid for all fRawversion = 1,2,3, ...
 
     void  DecodeTracklet();
-    void  DecodeTrackletV1();              // Valid for fRawversion = 1,2,3,4
+    void  DecodeTrackletVx();                  // So far valid for all fRawversion = 1,2,3, ...
 
     void  DecodeGTUlinkMask();
-    void  DecodeGTUlinkMaskV1();           // Valid for fRawversion = 1,2,3,4
+    void  DecodeGTUlinkMaskVx();               // So far valid for all fRawversion = 1,2,3, ...
 
-    ClassDef(AliTRDRawStream, 3)           // Class for reading TRD raw digits
+    Int_t DecodeDataWord();
+    Int_t DecodeDataWordV1V2();                // Valid for fRawversion = 1, 2, ...
+    Int_t DecodeDataWordV3();                  // Valid for fRawversion = 3, ...
+
+    ClassDef(AliTRDRawStream, 3)               // Class for reading TRD raw digits
 
 };
 #endif

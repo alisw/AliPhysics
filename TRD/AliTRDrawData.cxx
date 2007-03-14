@@ -42,7 +42,7 @@ ClassImp(AliTRDrawData)
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData()
   :TObject()
-  ,fRawVersion(1)    // Default Raw Data version set here
+  ,fRawVersion(2)    // Default Raw Data version set here
   ,fCommonParam(0)
   ,fCalibration(0)
   ,fGeo(0)
@@ -57,7 +57,7 @@ AliTRDrawData::AliTRDrawData()
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   :TObject(r)
-  ,fRawVersion(1)    // Default Raw Data version set here
+  ,fRawVersion(2)    // Default Raw Data version set here
   ,fCommonParam(0)
   ,fCalibration(0)
   ,fGeo(0)
@@ -490,7 +490,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
   // Write end of tracklet marker
   if (nw < maxSize) {
-    buf[nw++] = endoftrackletmarker;
+    buf[nw++] = kEndoftrackletmarker;
   } 
   else {
     of++;
@@ -509,7 +509,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
     }
   } 
   else if ( fRawVersion == 2 ) {
-    // h[0] (there are 2 HC header)
+    // h[0] (there are 3 HC header)
     Int_t minorv = 0;      // The minor version number
     Int_t add    = 1;      // The number of additional header words to follow
     x = (1<<31) | (fRawVersion<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
@@ -524,6 +524,22 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
     Int_t pt_ctr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
     Int_t pt_phase = 11; // pretrigger phase. Here it is set to 11 always for no reason
     x = (bc_ctr<<16) | (pt_ctr<<12) | (pt_phase<<8) | ((nTBin-1)<<2) | 1;
+    if (nw < maxSize) {
+      buf[nw++] = x; 
+    }
+    else {
+      of++;
+    }
+    // h[2]
+    Int_t ped_setup       = 1;    // Pedestal filter setup (0:1). Here it is always 1 for no reason
+    Int_t gain_setup      = 1;    // Gain filter setup (0:1). Here it is always 1 for no reason
+    Int_t tail_setup      = 1;    // Tail filter setup (0:1). Here it is always 1 for no reason
+    Int_t xt_setup        = 0;    // Cross talk filter setup (0:1). Here it is always 0 for no reason
+    Int_t nonlin_setup    = 0;    // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
+    Int_t bypass_setup    = 0;    // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
+    Int_t common_additive = 10;   // Digital filter common additive (0:63). Here it is always 10 for no reason
+    x = (ped_setup<<31) | (gain_setup<<30) | (tail_setup<<29) | (xt_setup<<28) | (nonlin_setup<<27)
+      | (bypass_setup<<26) | (common_additive<<20) | 1;
     if (nw < maxSize) {
       buf[nw++] = x; 
     }
@@ -549,7 +565,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
       // ADC data
       for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
-	Int_t padcol = fGeo->GetPadCol(iRob, iMcm, iAdc);
+	Int_t padcol = fGeo->GetPadColFromADC(iRob, iMcm, iAdc);
 	UInt_t aa = !(iAdc & 1) + 2;
         UInt_t *a = new UInt_t[nTBin+2];
         // 3 timebins are packed into one 32 bits word
@@ -592,7 +608,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
   // Write end of raw data marker
   if (nw < maxSize) {
-    buf[nw++] = endofeventmarker; 
+    buf[nw++] = kEndofrawdatamarker; 
   }
   else {
     of++;
@@ -656,10 +672,10 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsV0(AliRawReader *rawReader)
   // Loop through the digits
   while (input.Next()) {
 
-    Int_t det    = input.GetDetector();
-    Int_t npads  = input.GetNPads();
+    Int_t det    = input.GetDetectorV0();
+    Int_t npads  = input.GetNPadsV0();
 
-    if (input.IsNewDetector()) {
+    if (input.IsNewDetectorV0()) {
 
       if (digits) digits->Compress(1,0);
       if (track0) track0->Compress(1,0);
@@ -693,14 +709,14 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsV0(AliRawReader *rawReader)
 
     }
 
-    digits->SetDataUnchecked(input.GetRow(),input.GetColumn(),
-			     input.GetTime(),input.GetSignal());
-    track0->SetDataUnchecked(input.GetRow(),input.GetColumn(),
-                             input.GetTime(),                0);
-    track1->SetDataUnchecked(input.GetRow(),input.GetColumn(),
-                             input.GetTime(),                0);
-    track2->SetDataUnchecked(input.GetRow(),input.GetColumn(),
-                             input.GetTime(),                0);
+    digits->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
+			     input.GetTimeV0(), input.GetSignalV0());
+    track0->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
+                             input.GetTimeV0(), 0);
+    track1->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
+                             input.GetTimeV0(), 0);
+    track2->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
+                             input.GetTimeV0(), 0);
 
   }
 
@@ -744,7 +760,13 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsVx(AliRawReader *rawReader)
 
   AliTRDRawStream input(rawReader, digitsManager, digits);
   input.SetRawVersion( fRawVersion );
-  input.ReadAll();     // Loop through the digits
+
+  Int_t ret = 0;
+
+  ret = input.ReadAll();      // Loop through the digits
+
+  if ( ret == 0 ) AliError("Reading of TRD data failed!");
+  if ( ret == 2 ) AliWarning("TRD data seems empty!");
 
   delete digits;
 
