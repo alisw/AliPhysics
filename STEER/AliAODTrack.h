@@ -27,8 +27,8 @@ class AliAODTrack : public AliVirtualParticle {
     kUsedForPrimVtxFit=BIT(15) // set if this track was used to fit the primary vertex
   };
 
-  enum AODTrkPID_t {
-    kUnknown=0, kElectron, kMuon, kPion, kProton, kDeuton, kTriton, kAlpha, kOther};
+  enum AODTrkPID_t { // not clear why this was introduced
+    kUnknown=0, kElectron, kMuon, kPion, kProton, kDeuteron, kTriton, kAlpha, kOther}; // Where is the Kaon, why the Triton? 
 
   AliAODTrack();
   AliAODTrack(Int_t id,
@@ -64,14 +64,14 @@ class AliAODTrack : public AliVirtualParticle {
   AliAODTrack& operator=(const AliAODTrack& trk);
 
   // kinematics
-  virtual Double_t OneOverPt() const { return fMomentum[0]; }
+  virtual Double_t OneOverPt() const { return (fMomentum[0] != 0.) ? 1./fMomentum[0] : -999.; }
   virtual Double_t Phi()       const { return fMomentum[1]; }
   virtual Double_t Theta()     const { return fMomentum[2]; }
   
-  virtual Double_t Px() const { return TMath::Cos(fMomentum[1])/fMomentum[0]; }
-  virtual Double_t Py() const { return TMath::Sin(fMomentum[1])/fMomentum[0]; }
-  virtual Double_t Pz() const { return 1./(fMomentum[0] * TMath::Tan(fMomentum[2])); }
-  virtual Double_t Pt() const { return 1./fMomentum[0]; }
+  virtual Double_t Px() const { return fMomentum[0] * TMath::Cos(fMomentum[1]); }
+  virtual Double_t Py() const { return fMomentum[0] * TMath::Sin(fMomentum[1]); }
+  virtual Double_t Pz() const { return fMomentum[0] / TMath::Tan(fMomentum[2]); }
+  virtual Double_t Pt() const { return fMomentum[0]; }
   virtual Double_t P()  const { return TMath::Sqrt(Pt()*Pt()+Pz()*Pz()); }
 
           Double_t Chi2() const { return fChi2; }
@@ -137,7 +137,7 @@ class AliAODTrack : public AliVirtualParticle {
   void SetUsedForPrimVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForPrimVtxFit) : ResetBit(kUsedForPrimVtxFit); }
 
   void SetOneOverPt(Double_t oneOverPt) { fMomentum[0] = oneOverPt; }
-  void SetPt(Double_t pt) { fMomentum[0] = 1./pt; };
+  void SetPt(Double_t pt) { fMomentum[0] = pt; };
   void SetPhi(Double_t phi) { fMomentum[1] = phi; }
   void SetTheta(Double_t theta) { fMomentum[2] = theta; }
   template <class T> void SetP(const T *p, Bool_t cartesian = kTRUE);
@@ -156,7 +156,7 @@ class AliAODTrack : public AliVirtualParticle {
  private :
 
   // Momentum & position
-  Double32_t    fMomentum[3];    // momemtum stored in 1/pt, phi, theta
+  Double32_t    fMomentum[3];    // momemtum stored in pt, phi, theta
   Double32_t    fPosition[3];    // position of first point on track or dca
 
   Double32_t    fPID[10];        // [0.,1.,8] pointer to PID object
