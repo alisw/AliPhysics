@@ -19,6 +19,9 @@ o) Proof
 
 In order to run the examples you should use the ESD.par as well as the ANALYSIS.par. You can creat both par files by typing "make ESD.par" and "make ANALYSIS.par" respectively under $ALICE_ROOT.
 
+o) Kine
+   You can find the runProcess.C and the demoLocal.C macros along with the AliAnalysisTaskRLPt class. Use the example to access the MC information. You have to run it with aliroot.
+
 ===========================================================
 For any questions send mails to: Panos.Christakoglou@cern.ch
 ===========================================================
