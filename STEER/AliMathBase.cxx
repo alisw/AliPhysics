@@ -59,7 +59,7 @@ void AliMathBase::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
   TMath::Sort(nvectors, data, index, kFALSE);
   
   Int_t    nquant = TMath::Min(Int_t(Double_t(((hh*1./nvectors)-0.5)*40))+1, 11);
-  Double_t factor = faclts[nquant-1];
+  Double_t factor = faclts[TMath::Max(0,nquant-1)];
   
   Double_t sumx  =0;
   Double_t sumx2 =0;

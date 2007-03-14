@@ -155,7 +155,9 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
   // found using the covariance matrix of the point
   // (assuming sigma(x)=0 at the reference coordinate system.
   Int_t debugLevel = AliLog::GetDebugLevel("","AliTrackFitterRieman");
-  Float_t debugRatio = 1./(1.+debugLevel);
+  
+  //  Float_t debugRatio = 1./(1.+debugLevel);
+  Float_t debugRatio = debugLevel? 1.0/debugLevel : 1.0;
 
   const Int_t kMinPoints =1;
   Int_t npoints = fPoints->GetNPoints();
@@ -490,9 +492,17 @@ Bool_t AliTrackFitterRieman::GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) c
   if (AliLog::GetDebugLevel("","AliTrackFitterRieman")>0 && gRandom->Rndm()<debugRatio){
     AliTrackPoint lp0(p);
     AliTrackPoint lp2(p2);
+    AliTrackPoint localp0(p);
+    AliTrackPoint localp2(p2);
+    Float_t lAngle = lp0.GetAngle();
+    localp0 = localp0.Rotate(lAngle);
+    localp2 = localp2.Rotate(lAngle);
+
     (*fDebugStream)<<"PCA"<<
-      "P0.="<<&lp0<<
+      "P0.="<<&lp0<<  //global position
       "P2.="<<&lp2<<
+      "LP0.="<<&localp0<<  //local position
+      "LP2.="<<&localp2<<
       "\n";
   }
   return kTRUE;
@@ -547,4 +557,3 @@ Double_t AliTrackFitterRieman::GetErrZ2at(Double_t x) const {
   }
   return TMath::Sqrt(error+correction);
 }
-

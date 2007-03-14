@@ -351,7 +351,7 @@ void AliAlignmentTracks::InitAlignObjs()
     fAlignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer+ AliAlignObj::kFirstLayer,iModule);
-      fAlignObjs[iLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0,kTRUE);
+      fAlignObjs[iLayer][iModule] = new AliAlignObjAngles(AliAlignObj::SymName(volid),volid,0,0,0,0,0,0,kTRUE);
     }
   }
 }
