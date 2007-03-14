@@ -607,7 +607,7 @@ void AliABSOv3::CreateGeometry()
       // 2nd section
       Float_t dzFaCompRing2  =  1.2;
       Float_t rInFaCompRing2 = 14.0/2.;
-      Float_t rOuFaCompRing2 = 34.3/2.;
+      Float_t rOuFaCompRing2 = 35.3/2.;
 
       TGeoPcon* shFaCompRing = new TGeoPcon(0., 360., 4);
       z = 0.;
