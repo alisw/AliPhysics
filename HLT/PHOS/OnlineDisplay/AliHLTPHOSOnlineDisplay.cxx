@@ -51,7 +51,7 @@ TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotLGPtr      = 0;   
 TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotHGPtr      = 0;         /**<2D histogram for high gain channels*/
 TH2D*                      AliHLTPHOSOnlineDisplay::fgCalibHistPtr[N_GAINS];          /**<2D histogram for low gain channels*/
 TH2I*                      AliHLTPHOSOnlineDisplay::fgHitsHistPtr[N_GAINS];           /**<2D histogram for low gain channels*/
-TH2D*                      AliHLTPHOSOnlineDisplay::fgAveragePtr[N_GAINS];           /**<Accumuated energy/hits*/
+TH2D*                      AliHLTPHOSOnlineDisplay::fgAveragePtr[N_GAINS];            /**<Accumuated energy/hits*/
 char*                      AliHLTPHOSOnlineDisplay::fgDefaultDet       = "SOHP";      /**<PHOS written backwards*/
 char*                      AliHLTPHOSOnlineDisplay::fgDefaultDataType  = "RENELLEC";  /**<CELLENER (Celle energy) written backwards*/  
 int                        AliHLTPHOSOnlineDisplay::fgEvntCnt          = 0;           /**<Event Counter*/
@@ -155,13 +155,13 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
       fgCalibHistPtr[gain]->Reset(); 
      
       fgHitsHistPtr[gain] = new TH2I("Homer","HLT: #pi^{0} 5 - 30Gev",  
-				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
+				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
       fgHitsHistPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
       fgHitsHistPtr[gain]->Reset();
 
       fgAveragePtr[gain] = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev",  
-				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
+				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
       fgAveragePtr[gain]->SetMaximum( MAX_BIN_VALUE); 
       fgAveragePtr[gain]->Reset();
@@ -357,8 +357,8 @@ AliHLTPHOSOnlineDisplay::ScanArguments(int argc, char** argv)
 	}
       printf("\nYou must specify at least one host \n\n");
       printf("*****************************************************************\n");
-      printf("\nUsage: ./onlinedisplay  -hostname  <hostname>   -port  <port>");
-      printf("\n-port is optional, if not set a default port will be assumed\n");
+      printf("\nUsage: ./onlinedisplay  -host  <hostname>   -port  <port>");
+      printf("\n-port is optional, if not set  port 42001 will be used\n");
       printf("*****************************************************************\n\n\n");
       iResult = -1;
     }
@@ -568,28 +568,6 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
   UpdateHistograms();
   fgEvntCnt ++;
 }
-
-/*
-void 
-AliHLTPHOSOnlineDisplay::EvaluateAverage()
-{
-  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
-    for(int z = 0; z <N_ZROWS_RCU; z ++)
-      {
-	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
-	    {
-	      tmpx = moduleID*N_XCOLUMNS_MOD + (accCellEnergiesPtr->fRcuX)*N_XCOLUMNS_RCU + x;
-	      tmpz = (accCellEnergiesPtr->fRcuZ)*N_ZROWS_RCU +z;
-	      
-	      fgCalibHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fAccumulatedEnergies[x][z][gain] );
-	      fgHitsHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fHits[x][z][gain] );
-	      
-	    }
-	}
-      } 
-}
-*/
 
 
 
