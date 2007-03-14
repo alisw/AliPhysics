@@ -20,10 +20,6 @@
     @date   
     @brief  HLT file publisher component implementation. */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTRootFilePublisherComponent.h"
 //#include <TObjString.h>
 //#include <TMath.h>
@@ -31,6 +27,9 @@ using namespace std;
 
 // temporary
 #include "TH1F.h"
+
+/** the global object for component registration */
+AliHLTRootFilePublisherComponent gAliHLTRootFilePublisherComponent;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootFilePublisherComponent)

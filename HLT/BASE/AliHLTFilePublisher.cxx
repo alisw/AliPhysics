@@ -29,6 +29,9 @@ using namespace std;
 #include <TMath.h>
 #include <TFile.h>
 
+/** the global object for component registration */
+AliHLTFilePublisher gAliHLTFilePublisher;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTFilePublisher)
 
