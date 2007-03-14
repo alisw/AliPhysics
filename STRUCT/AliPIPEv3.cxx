@@ -1943,19 +1943,22 @@ void AliPIPEv3::CreateGeometry()
 //    Vacuum Tube                //
 //    Drawing  LHCVC2A_0003      //
 /////////////////////////////////// 
-      const Float_t kRB26s3TubeL = 629.35 + 0.3; // 0.3 cm added for welding
+      const Float_t kRB26s3TubeL  = 629.35 + 0.3; // 0.3 cm added for welding
+      const Float_t kRB26s3TubeR1 =  12./2.;
+      const Float_t kRB26s3TubeR2 =  kRB26s3TubeR1 + 215.8 * TMath::Tan(0.829 / 180. * TMath::Pi());
+      
       
       TGeoPcon* shRB26s3Tube = new TGeoPcon(0., 360., 7);
       // Section 1: straight section
-      shRB26s3Tube->DefineSection(0,   0.00, 12.00/2., 12.30/2.);
-      shRB26s3Tube->DefineSection(1,   2.00, 12.00/2., 12.30/2.);      
+      shRB26s3Tube->DefineSection(0,   0.00, kRB26s3TubeR1, kRB26s3TubeR1 + 0.15);
+      shRB26s3Tube->DefineSection(1,   2.00, kRB26s3TubeR1, kRB26s3TubeR1 + 0.15);      
       // Section 2: 0.829 deg opening cone
-      shRB26s3Tube->DefineSection(2,   2.00, 12.00/2., 12.40/2.);
+      shRB26s3Tube->DefineSection(2,   2.00, kRB26s3TubeR1, kRB26s3TubeR1 + 0.20);
+      
+      shRB26s3Tube->DefineSection(3, 217.80, kRB26s3TubeR2, kRB26s3TubeR2 + 0.20);
+      shRB26s3Tube->DefineSection(4, 217.80, kRB26s3TubeR2, kRB26s3TubeR2 + 0.30);      
 
-      shRB26s3Tube->DefineSection(3, 217.80, 12.00/2., 12.40/2.);
-      shRB26s3Tube->DefineSection(4, 217.80, 12.00/2., 12.40/2.);      
-
-      shRB26s3Tube->DefineSection(5, 622.20, 30.00/2., 30.60/2.);      
+      shRB26s3Tube->DefineSection(5, 622.20,       30.00/2., 30.60/2.);      
       shRB26s3Tube->DefineSection(6, kRB26s3TubeL, 30.00/2., 30.60/2.); 
 
       TGeoVolume* voRB26s3Tube = new TGeoVolume("RB26s3Tube", shRB26s3Tube, kMedSteel);
