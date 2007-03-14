@@ -58,7 +58,7 @@ void AliHMPIDSelector::SlaveBegin(TTree *tree)
    fSigP     = new TH2F("SigP"  ,"#sigma_{#theta_c}"          , 150,   0,  7  ,100, 0, 1e20);
    fMipXY    = new TH2F("MipXY" ,"mip position"               , 260,   0,130  ,252,0,126); 
    fDifXY    = new TH2F("DifXY" ,"diff"                       , 260, -10, 10  ,252,-10,10); 
-
+      
    fProb[0] = new TH1F("PidE" ,"PID: e yellow #mu magenta"  ,100,0,1); fProb[0]->SetLineColor(kYellow);
    fProb[1] = new TH1F("PidMu","pid of #mu"                 ,100,0,1); fProb[1]->SetLineColor(kMagenta);
    fProb[2] = new TH1F("PidPi","PID: #pi red K green p blue",100,0,1); fProb[2]->SetLineColor(kRed);
@@ -80,19 +80,18 @@ void AliHMPIDSelector::Init(TTree *pTr)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDSelector::Process(Long64_t entry)
 {
-
   fChain->GetTree()->GetEntry(entry);
 
   for(Int_t iTrk=0;iTrk<fEsd->GetNumberOfTracks();iTrk++){
      AliESDtrack *pTrk=fEsd->GetTrack(iTrk);
      
-//     if(pTrk->GetHMPIDsignal()<0) continue;
+//     if(pTrk->GetHMPIDsignal()==-1) continue;
      
      fCkovP->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal()) ; 
      fSigP ->Fill(pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
      
-//   Float_t xm,ym; Int_t q,np;  pTrk->GetHMPIDmip(xm,ym,q,np);  fMipXY->Fill(xm,ym); //mip info
-//   Float_t xd,yd,th,ph;        pTrk->GetHMPIDtrk(xd,yd,th,ph); fDifXY->Fill(xd,yd); //track info 
+   Float_t xm,ym; Int_t q,np;  pTrk->GetHMPIDmip(xm,ym,q,np);  fMipXY->Fill(xm,ym); //mip info
+   Float_t xd,yd,th,ph;        pTrk->GetHMPIDtrk(xd,yd,th,ph); fDifXY->Fill(xd,yd); //track info 
      
      Double_t pid[5];  pTrk->GetHMPIDpid(pid); for(Int_t i =0;i<5;i++) fProb[i]->Fill(pid[i]);
   }//tracks loop 
