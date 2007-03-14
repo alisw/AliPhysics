@@ -25,14 +25,15 @@
 //
 ///////////////////////////////////////////////////
 
+#include "AliMUONTrackParam.h"
+#include "AliMUONHitForRec.h"
+
+#include "AliESDMuonTrack.h"
+#include "AliLog.h"
+
 #include <Riostream.h>
 #include <TMath.h>
 #include <TMatrixD.h>
-
-#include "AliMUONTrackParam.h"
-#include "AliESDMuonTrack.h"
-#include "AliLog.h"
-#include "AliMUONHitForRec.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
@@ -149,10 +150,34 @@ void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack)
   esdMuonTrack.SetNonBendingCoor(fNonBendingCoor);
 }
 
+  //_________________________________________________________________________
+void AliMUONTrackParam::GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack)
+{
+  /// assigned value form ESD track.
+  fInverseBendingMomentum 	=  esdMuonTrack.GetInverseBendingMomentumUncorrected();
+  fBendingSlope           	=  TMath::Tan(esdMuonTrack.GetThetaYUncorrected());
+  fNonBendingSlope        	=  TMath::Tan(esdMuonTrack.GetThetaXUncorrected());
+  fZ                     	=  esdMuonTrack.GetZUncorrected(); 
+  fBendingCoor            	=  esdMuonTrack.GetBendingCoorUncorrected(); 
+  fNonBendingCoor         	=  esdMuonTrack.GetNonBendingCoorUncorrected();
+}
+
+  //_________________________________________________________________________
+void AliMUONTrackParam::SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack)
+{
+  /// assigned value form ESD track.
+  esdMuonTrack.SetInverseBendingMomentumUncorrected(fInverseBendingMomentum);
+  esdMuonTrack.SetThetaXUncorrected(TMath::ATan(fNonBendingSlope));
+  esdMuonTrack.SetThetaYUncorrected(TMath::ATan(fBendingSlope));
+  esdMuonTrack.SetZUncorrected(fZ); 
+  esdMuonTrack.SetBendingCoorUncorrected(fBendingCoor); 
+  esdMuonTrack.SetNonBendingCoorUncorrected(fNonBendingCoor);
+}
+
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Px() const
 {
-  /// return px from track paramaters
+  /// return p_x from track parameters
   Double_t pYZ, pZ, pX;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )
@@ -165,7 +190,7 @@ Double_t AliMUONTrackParam::Px() const
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Py() const
 {
-  /// return px from track paramaters
+  /// return p_y from track parameters
   Double_t pYZ, pZ, pY;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )
@@ -178,7 +203,7 @@ Double_t AliMUONTrackParam::Py() const
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::Pz() const
 {
-  /// return px from track paramaters
+  /// return p_z from track parameters
   Double_t pYZ, pZ;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )
@@ -190,7 +215,7 @@ Double_t AliMUONTrackParam::Pz() const
   //__________________________________________________________________________
 Double_t AliMUONTrackParam::P() const
 {
-  /// return p from track paramaters
+  /// return p from track parameters
   Double_t  pYZ, pZ, p;
   pYZ = 0;
   if (  TMath::Abs(fInverseBendingMomentum) > 0 )

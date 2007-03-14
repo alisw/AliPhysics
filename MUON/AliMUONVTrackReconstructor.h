@@ -76,9 +76,6 @@ class AliMUONVTrackReconstructor : public TObject {
   Double_t fNonBendingVertexDispersion; ///< vextex dispersion (cm) in non bending plane
   Double_t fMaxNormChi2MatchTrigger; ///< maximum normalized chi2 of tracking/trigger track matching
   
-  Double_t* fSegmentMaxDistBending; ///< maximum distance (cm) for segments in bending plane
-  Double_t* fSegmentMaxDistNonBending; ///< maximum distance (cm) for segments in non bending plane
-  
   TClonesArray* fHitsForRecPtr; ///< pointer to the array of hits for reconstruction
   Int_t fNHitsForRec; ///< number of hits for reconstruction
   Int_t* fNHitsForRecPerChamber; ///< number of HitsForRec
@@ -112,8 +109,6 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray* fTriggerCircuit;      //!< trigger circuit array
   
   // Functions
-  void SetReconstructionParametersToDefaults(void);
-  
   void ResetTracks(void);
   void ResetHitsForRec(void);
   

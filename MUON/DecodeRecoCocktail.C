@@ -38,6 +38,7 @@
 #include <AliRunLoader.h>
 #include "AliMUONTrackLight.h"
 #include "AliMUONPairLight.h"
+#include "AliMUONTrackExtrap.h"
 
 void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root"){ 
   const char *startingDir = gSystem->pwd(); 
@@ -75,13 +76,14 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root")
       // assign parameters concerning the reconstructed tracks
       AliMUONTrack *trackReco = (AliMUONTrack *)trackRecoArray->At(itrRec);
       AliMUONTrackLight muLight; 
-      AliMUONTrackParam *trPar = trackReco->GetTrackParamAtVertex(); 
-      muLight.SetCharge(Int_t(TMath::Sign(1.,trPar->GetInverseBendingMomentum())));
-      muLight.SetPxPyPz(trPar->Px(),trPar->Py(), trPar->Pz()); 
+      AliMUONTrackParam trPar(*((AliMUONTrackParam*) (trackReco->GetTrackParamAtHit()->First())));
+      AliMUONTrackExtrap::ExtrapToVertex(&trPar,0.,0.,0.);
+      muLight.SetCharge(Int_t(TMath::Sign(1.,trPar.GetInverseBendingMomentum())));
+      muLight.SetPxPyPz(trPar.Px(),trPar.Py(), trPar.Pz()); 
       muLight.SetTriggered(trackReco->GetMatchTrigger()); 
-      Double_t xyz[3] = { trPar->GetNonBendingCoor(), 
-			  trPar->GetBendingCoor(), 
-			  trPar->GetZ()};
+      Double_t xyz[3] = { trPar.GetNonBendingCoor(), 
+			  trPar.GetBendingCoor(), 
+			  trPar.GetZ()};
       muLight.SetVertex(xyz); 
       // find the reference track and store further information
       TParticle *part = muLight.FindRefTrack(trackReco,trackRefArray,runLoader); 

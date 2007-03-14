@@ -175,7 +175,6 @@ Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t Fir
   Double_t fYVertex=0;
   Double_t fZVertex=0;
 
-  Double_t thetaX, thetaY, pYZ;
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
   Double_t fPxRec2, fPyRec2, fPzRec2, fE2;
   Int_t fCharge1, fCharge2;
@@ -342,11 +341,11 @@ Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t Fir
 
       // extrapolate to vertex if required and available
       if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
-        trackParam.GetParamFrom(*muonTrack);
+        trackParam.GetParamFromUncorrected(*muonTrack);
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
-        trackParam.GetParamFrom(*muonTrack);
+        trackParam.GetParamFromUncorrected(*muonTrack);
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       }
@@ -359,17 +358,9 @@ Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t Fir
       else 
 	track1TriggerChi2 = 0. ;
 
-      thetaX = muonTrack->GetThetaX();
-      thetaY = muonTrack->GetThetaY();
-
-      pYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-      fPzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
-      fPxRec1  = fPzRec1 * TMath::Tan(thetaX);
-      fPyRec1  = fPzRec1 * TMath::Tan(thetaY);
       fCharge1 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
       
-      fE1 = TMath::Sqrt(MUON_MASS * MUON_MASS + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
-      fV1.SetPxPyPzE(fPxRec1, fPyRec1, fPzRec1, fE1);
+      muonTrack->LorentzP(fV1);
 
       ntrackhits = muonTrack->GetNHit();
       fitfmin    = muonTrack->GetChi2();
@@ -386,7 +377,7 @@ Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t Fir
       // chi2 per d.o.f.
       
       Float_t ch1 =  fitfmin / (2.0 * ntrackhits - 5);
-      if (PRINTLEVEL > 5 ) printf(" px %f py %f pz %f pt %f NHits %d  Norm.chi2 %f charge %d\n",fPxRec1, fPyRec1, fPzRec1, pt1, ntrackhits, ch1, fCharge1);
+      if (PRINTLEVEL > 5 ) printf(" px %f py %f pz %f pt %f NHits %d  Norm.chi2 %f charge %d\n",fV1.Px(), fV1.Py(), fV1.Pz(), pt1, ntrackhits, ch1, fCharge1);
       
       
       if ((ch1 < Chi2Cut) && (pt1 > PtCutMin) && (pt1 < PtCutMax)) { // condition for good track (Chi2Cut and PtCut)
@@ -400,10 +391,10 @@ Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t Fir
 
 	if (fCharge1 > 0) {
 	  hPtMuonPlus->Fill(pt1);
-	  hThetaPhiPlus->Fill(TMath::ATan2(fPyRec1,fPxRec1)*180./TMath::Pi(),TMath::ATan2(pt1,fPzRec1)*180./3.1415);
+	  hThetaPhiPlus->Fill(fV1.Phi()*180./TMath::Pi(),fV1.Theta()*180./TMath::Pi());
 	} else {
 	  hPtMuonMinus->Fill(pt1);
-	  hThetaPhiMinus->Fill(TMath::ATan2(fPyRec1,fPxRec1)*180./TMath::Pi(),TMath::ATan2(pt1,fPzRec1)*180./3.1415);
+	  hThetaPhiMinus->Fill(fV1.Phi()*180./TMath::Pi(),fV1.Theta()*180./TMath::Pi());
 	}
 
 	// loop over second track of combination
@@ -413,11 +404,11 @@ Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t Fir
           
 	  // extrapolate to vertex if required and available
 	  if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
-	    trackParam.GetParamFrom(*muonTrack2);
+	    trackParam.GetParamFromUncorrected(*muonTrack2);
 	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
-            trackParam.GetParamFrom(*muonTrack2);
+            trackParam.GetParamFromUncorrected(*muonTrack2);
 	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  }
@@ -428,17 +419,9 @@ Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t Fir
 	  else 
 	    track2TriggerChi2 = 0. ;
 
-	  thetaX = muonTrack2->GetThetaX();
-	  thetaY = muonTrack2->GetThetaY();
-
-	  pYZ     =  1./TMath::Abs(muonTrack2->GetInverseBendingMomentum());
-	  fPzRec2  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
-	  fPxRec2  = fPzRec2 * TMath::Tan(thetaX);
-	  fPyRec2  = fPzRec2 * TMath::Tan(thetaY);
 	  fCharge2 = Int_t(TMath::Sign(1.,muonTrack2->GetInverseBendingMomentum()));
 
-	  fE2 = TMath::Sqrt(MUON_MASS * MUON_MASS + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
-	  fV2.SetPxPyPzE(fPxRec2, fPyRec2, fPzRec2, fE2);
+	  muonTrack2->LorentzP(fV2);
 
 	  ntrackhits = muonTrack2->GetNHit();
 	  fitfmin    = muonTrack2->GetChi2();

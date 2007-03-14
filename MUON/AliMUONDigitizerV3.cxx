@@ -708,8 +708,6 @@ AliMUONDigitizerV3::Init()
   }
   AliDebug(2,Form("fOutputData=%p",fOutputData));
   
-  AliRunLoader* runLoader = fOutputData->GetLoader()->GetRunLoader();
-  AliRun* galice = runLoader->GetAliRun();    
   Int_t runnumber = AliCDBManager::Instance()->GetRun();
   
   fCalibrationData = new AliMUONCalibrationData(runnumber);

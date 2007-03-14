@@ -475,15 +475,14 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
    // declaration  
   Int_t iEvent;// nPart;
   Int_t nTrackHits;// nPrimary;
-  Double_t fitFmin;
-
-  Double_t bendingSlope, nonBendingSlope, inverseBendingMomentum;
-  Double_t xRec, yRec, zRec, chi2MatchTrigger;
+  Double_t fitFmin, chi2MatchTrigger;
+  Double_t xRec, yRec, zRec, bendingSlope, nonBendingSlope, inverseBendingMomentum;
+  Double_t xVtx, yVtx, zVtx, bendingSlopeAtVtx, nonBendingSlopeAtVtx, inverseBendingMomentumAtVtx;
   Bool_t matchTrigger;
 
   // setting pointer for tracks, triggertracks & trackparam at vertex
   AliMUONTrack* recTrack = 0;
-  AliMUONTrackParam trackParam;
+  AliMUONTrackParam trackParamAtVtx;
   AliMUONTriggerTrack* recTriggerTrack = 0;
 
   iEvent = runLoader->GetEventNumber(); 
@@ -526,37 +525,53 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
     // reading info from tracks
     recTrack = (AliMUONTrack*) recTracksArray->At(iRecTracks);
-
-    trackParam = *((AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First());
+    AliMUONTrackParam *trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
+    trackParamAtVtx = *trackParam;
    
-    // extrapolate to the vertex if required
-    //   if the vertex is not available, extrapolate to (0,0,0)
-    if (!strstr(GetOption(),"NoExtrapToVtx")) {
-      if (esdVert->GetNContributors())
-        AliMUONTrackExtrap::ExtrapToVertex(&trackParam, vertex[0],vertex[1],vertex[2]);
-      else
-        AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0.,0.,0.);
-    }
+    // extrapolate to the vertex if available, else to (0,0,0)
+    if (esdVert->GetNContributors())
+      AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, vertex[0],vertex[1],vertex[2]);
+    else
+      AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, 0.,0.,0.);
     
-    bendingSlope            = trackParam.GetBendingSlope();
-    nonBendingSlope         = trackParam.GetNonBendingSlope();
-    inverseBendingMomentum  = trackParam.GetInverseBendingMomentum();
-    xRec  = trackParam.GetNonBendingCoor();
-    yRec  = trackParam.GetBendingCoor();
-    zRec  = trackParam.GetZ();
-
+    // Track parameters at first station
+    bendingSlope           = trackParam->GetBendingSlope();
+    nonBendingSlope        = trackParam->GetNonBendingSlope();
+    inverseBendingMomentum = trackParam->GetInverseBendingMomentum();
+    xRec = trackParam->GetNonBendingCoor();
+    yRec = trackParam->GetBendingCoor();
+    zRec = trackParam->GetZ();
+    
+    // Track parameters at vertex
+    bendingSlopeAtVtx           = trackParamAtVtx.GetBendingSlope();
+    nonBendingSlopeAtVtx        = trackParamAtVtx.GetNonBendingSlope();
+    inverseBendingMomentumAtVtx = trackParamAtVtx.GetInverseBendingMomentum();
+    xVtx = trackParamAtVtx.GetNonBendingCoor();
+    yVtx = trackParamAtVtx.GetBendingCoor();
+    zVtx = trackParamAtVtx.GetZ();
+    
+    // Global info
     nTrackHits       = recTrack->GetNTrackHits();
     fitFmin          = recTrack->GetFitFMin();
     matchTrigger     = recTrack->GetMatchTrigger();
     chi2MatchTrigger = recTrack->GetChi2MatchTrigger();
 
     // setting data member of ESD MUON
-    theESDTrack->SetInverseBendingMomentum(inverseBendingMomentum);
-    theESDTrack->SetThetaX(TMath::ATan(nonBendingSlope));
-    theESDTrack->SetThetaY(TMath::ATan(bendingSlope));
-    theESDTrack->SetZ(zRec);
-    theESDTrack->SetBendingCoor(yRec); // calculate vertex at ESD or Tracking level ?
-    theESDTrack->SetNonBendingCoor(xRec);
+    // at first station
+    theESDTrack->SetInverseBendingMomentumUncorrected(inverseBendingMomentum);
+    theESDTrack->SetThetaXUncorrected(TMath::ATan(nonBendingSlope));
+    theESDTrack->SetThetaYUncorrected(TMath::ATan(bendingSlope));
+    theESDTrack->SetZUncorrected(zRec);
+    theESDTrack->SetBendingCoorUncorrected(yRec);
+    theESDTrack->SetNonBendingCoorUncorrected(xRec);
+    // at vertex
+    theESDTrack->SetInverseBendingMomentum(inverseBendingMomentumAtVtx);
+    theESDTrack->SetThetaX(TMath::ATan(nonBendingSlopeAtVtx));
+    theESDTrack->SetThetaY(TMath::ATan(bendingSlopeAtVtx));
+    theESDTrack->SetZ(zVtx);
+    theESDTrack->SetBendingCoor(yVtx);
+    theESDTrack->SetNonBendingCoor(xVtx);
+    // global info
     theESDTrack->SetChi2(fitFmin);
     theESDTrack->SetNHit(nTrackHits);
     theESDTrack->SetMatchTrigger(matchTrigger);

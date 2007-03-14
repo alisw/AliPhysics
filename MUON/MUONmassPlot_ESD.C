@@ -118,10 +118,9 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 //   Float_t UpsilonMass = 9.46037;
 //   Float_t JPsiMass = 3.097;
 
-  Double_t thetaX, thetaY, pYZ;
+  Int_t fCharge1, fCharge2;
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
   Double_t fPxRec2, fPyRec2, fPzRec2, fE2;
-  Int_t fCharge, fCharge2;
 
   Int_t ntrackhits, nevents;
   Double_t fitfmin;
@@ -217,27 +216,19 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 
       // extrapolate to vertex if required and available
       if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
-        trackParam.GetParamFrom(*muonTrack);
+        trackParam.GetParamFromUncorrected(*muonTrack);
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
-        trackParam.GetParamFrom(*muonTrack);
+        trackParam.GetParamFromUncorrected(*muonTrack);
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       }
 
-      thetaX = muonTrack->GetThetaX();
-      thetaY = muonTrack->GetThetaY();
+      fCharge1 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
       
-      pYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-      fPzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
-      fPxRec1  = fPzRec1 * TMath::Tan(thetaX);
-      fPyRec1  = fPzRec1 * TMath::Tan(thetaY);
-      fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
-
-      fE1 = TMath::Sqrt(muonMass * muonMass + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
-      fV1.SetPxPyPzE(fPxRec1, fPyRec1, fPzRec1, fE1);
-
+      muonTrack->LorentzP(fV1);
+      
       ntrackhits = muonTrack->GetNHit();
       fitfmin    = muonTrack->GetChi2();
 
@@ -253,7 +244,7 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
       // chi2 per d.o.f.
       Float_t ch1 =  fitfmin / (2.0 * ntrackhits - 5);
 //      printf(" px %f py %f pz %f NHits %d  Norm.chi2 %f charge %d\n", 
-// 	     fPxRec1, fPyRec1, fPzRec1, ntrackhits, ch1, fCharge);
+// 	     fPxRec1, fPyRec1, fPzRec1, ntrackhits, ch1, fCharge1);
 
       // condition for good track (Chi2Cut and PtCut)
 
@@ -264,12 +255,12 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 	hPMuon->Fill(p1);
 	hChi2PerDof->Fill(ch1);
 	hRapMuon->Fill(rapMuon1);
-	if (fCharge > 0) {
+	if (fCharge1 > 0) {
 	  hPtMuonPlus->Fill(pt1);
-	  hThetaPhiPlus->Fill(TMath::ATan2(fPyRec1,fPxRec1)*180./TMath::Pi(),TMath::ATan2(pt1,fPzRec1)*180./3.1415);
+	  hThetaPhiPlus->Fill(fV1.Phi()*180./TMath::Pi(),fV1.Theta()*180./TMath::Pi());
 	} else {
 	  hPtMuonMinus->Fill(pt1);
-	  hThetaPhiMinus->Fill(TMath::ATan2(fPyRec1,fPxRec1)*180./TMath::Pi(),TMath::ATan2(pt1,fPzRec1)*180./3.1415);
+	  hThetaPhiMinus->Fill(fV1.Phi()*180./TMath::Pi(),fV1.Theta()*180./TMath::Pi());
 	}
 	// loop over second track of combination
 	for (Int_t iTrack2 = iTrack + 1; iTrack2 < nTracks; iTrack2++) {
@@ -278,26 +269,18 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 	  
 	  // extrapolate to vertex if required and available
 	  if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
-	    trackParam.GetParamFrom(*muonTrack2);
+	    trackParam.GetParamFromUncorrected(*muonTrack2);
 	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
-            trackParam.GetParamFrom(*muonTrack2);
+            trackParam.GetParamFromUncorrected(*muonTrack2);
 	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  }
 	  
-	  thetaX = muonTrack2->GetThetaX();
-	  thetaY = muonTrack2->GetThetaY();
-
-	  pYZ      =  1./TMath::Abs(muonTrack2->GetInverseBendingMomentum());
-	  fPzRec2  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
-	  fPxRec2  = fPzRec2 * TMath::Tan(thetaX);
-	  fPyRec2  = fPzRec2 * TMath::Tan(thetaY);
 	  fCharge2 = Int_t(TMath::Sign(1.,muonTrack2->GetInverseBendingMomentum()));
 
-	  fE2 = TMath::Sqrt(muonMass * muonMass + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
-	  fV2.SetPxPyPzE(fPxRec2, fPyRec2, fPzRec2, fE2);
+	  muonTrack2->LorentzP(fV2);
 
 	  ntrackhits = muonTrack2->GetNHit();
 	  fitfmin    = muonTrack2->GetChi2();
@@ -312,7 +295,7 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 	  if ((ch2 < Chi2Cut) && (pt2 > PtCutMin)  && (pt2 < PtCutMax)) {
 
 	    // condition for opposite charges
-	    if ((fCharge * fCharge2) == -1) {
+	    if ((fCharge1 * fCharge2) == -1) {
 
 	      // invariant mass
 	      fVtot = fV1 + fV2;
@@ -338,7 +321,7 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
   		hPtResonance->Fill(fVtot.Pt());
 	      }
 
-	    } // if (fCharge * fCharge2) == -1)
+	    } // if (fCharge1 * fCharge2) == -1)
 	  } // if ((ch2 < Chi2Cut) && (pt2 > PtCutMin) && (pt2 < PtCutMax))
 	  delete muonTrack2;
 	} //  for (Int_t iTrack2 = iTrack + 1; iTrack2 < iTrack; iTrack2++)

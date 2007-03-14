@@ -74,8 +74,6 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONData* data)
     fBendingVertexDispersion(fgkDefaultBendingVertexDispersion),
     fNonBendingVertexDispersion(fgkDefaultNonBendingVertexDispersion),
     fMaxNormChi2MatchTrigger(fgkDefaultMaxNormChi2MatchTrigger),
-    fSegmentMaxDistBending(0x0),
-    fSegmentMaxDistNonBending(0x0),
     fHitsForRecPtr(0x0),
     fNHitsForRec(0),
     fNHitsForRecPerChamber(0x0),
@@ -87,13 +85,9 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONData* data)
     fTriggerCircuit(0x0)
 {
   /// Constructor for class AliMUONVTrackReconstructor
-  fSegmentMaxDistBending = new Double_t[AliMUONConstants::NTrackingSt()];
-  fSegmentMaxDistNonBending = new Double_t[AliMUONConstants::NTrackingSt()];
   fNHitsForRecPerChamber = new Int_t[AliMUONConstants::NTrackingCh()];
   fIndexOfFirstHitForRecPerChamber = new Int_t[AliMUONConstants::NTrackingCh()];
 
-  SetReconstructionParametersToDefaults();
-  
   // Memory allocation for the TClonesArray of hits for reconstruction
   // Is 10000 the right size ????
   fHitsForRecPtr = new TClonesArray("AliMUONHitForRec", 10000);
@@ -108,8 +102,6 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONData* data)
 AliMUONVTrackReconstructor::~AliMUONVTrackReconstructor(void)
 {
   /// Destructor for class AliMUONVTrackReconstructor
-  delete [] fSegmentMaxDistBending;
-  delete [] fSegmentMaxDistNonBending;
   delete [] fNHitsForRecPerChamber;
   delete [] fIndexOfFirstHitForRecPerChamber;
   delete fTriggerTrack;
@@ -117,41 +109,11 @@ AliMUONVTrackReconstructor::~AliMUONVTrackReconstructor(void)
 }
 
   //__________________________________________________________________________
-void AliMUONVTrackReconstructor::SetReconstructionParametersToDefaults(void)
-{
-  /// Set reconstruction parameters for making segments to default values
-  // Would be much more convenient with a structure (or class) ????
-
-  // ******** Parameters for making segments
-  // should be parametrized ????
-  // according to interval between chambers in a station ????
-  // Maximum distance in non bending plane
-  // 5 * 0.22 just to remember the way it was made in TRACKF_STAT
-  // SIGCUT*DYMAX(IZ)
-  for (Int_t st = 0; st < AliMUONConstants::NTrackingSt(); st++)
-    fSegmentMaxDistNonBending[st] = 5. * 0.22;
-  // Maximum distance in bending plane:
-  // values from TRACKF_STAT, corresponding to (J psi 20cm),
-  // scaled to the real distance between chambers in a station
-  fSegmentMaxDistBending[0] = TMath::Abs( 1.5 *
-					  (AliMUONConstants::DefaultChamberZ(1) - AliMUONConstants::DefaultChamberZ(0)) / 20.0);
-  fSegmentMaxDistBending[1] = TMath::Abs( 1.5 *
-					  (AliMUONConstants::DefaultChamberZ(3) - AliMUONConstants::DefaultChamberZ(2)) / 20.0);
-  fSegmentMaxDistBending[2] = TMath::Abs( 3.0 *
-					  (AliMUONConstants::DefaultChamberZ(5) - AliMUONConstants::DefaultChamberZ(4)) / 20.0);
-  fSegmentMaxDistBending[3] = TMath::Abs( 6.0 *
-					  (AliMUONConstants::DefaultChamberZ(7) - AliMUONConstants::DefaultChamberZ(6)) / 20.0);
-  fSegmentMaxDistBending[4] = TMath::Abs( 6.0 *
-					  (AliMUONConstants::DefaultChamberZ(9) - AliMUONConstants::DefaultChamberZ(8)) / 20.0);
-
-  return;
-}
-
-  //__________________________________________________________________________
 void AliMUONVTrackReconstructor::EventReconstruct(void)
 {
-  // To reconstruct one event
+  /// To reconstruct one event
   AliDebug(1,"Enter EventReconstruct");
+  
   ResetTracks(); //AZ
   ResetHitsForRec(); //AZ
   AddHitsForRecFromRawClusters();
@@ -230,8 +192,7 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(Int_t station)
   
   AliMUONHitForRec *hit1Ptr, *hit2Ptr;
   AliMUONObjectPair *segment;
-  Double_t bendingSlope, distBend, distNonBend, extBendCoor, extNonBendCoor, extrapFact;
-  Double_t impactParam = 0., bendingMomentum = 0.; // to avoid compilation warning
+  Double_t bendingSlope = 0, impactParam = 0., bendingMomentum = 0.; // to avoid compilation warning
   // first and second chambers (0...) in the station
   Int_t ch1 = 2 * station;
   Int_t ch2 = ch1 + 1;
@@ -243,24 +204,14 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(Int_t station)
        hit1++) {
     // pointer to the HitForRec
     hit1Ptr = (AliMUONHitForRec*) ((*fHitsForRecPtr)[hit1]);
-    // extrapolation, on the straight line joining the HitForRec to the vertex (0,0,0),
-    // to the Z of the HitForRec in the second chamber of the station
     // Loop over HitsForRec's in the second chamber of the station
     for (Int_t hit2 = fIndexOfFirstHitForRecPerChamber[ch2];
 	 hit2 < fIndexOfFirstHitForRecPerChamber[ch2] + fNHitsForRecPerChamber[ch2];
 	 hit2++) {
       // pointer to the HitForRec
       hit2Ptr = (AliMUONHitForRec*) ((*fHitsForRecPtr)[hit2]);
-      // absolute values of distances, in bending and non bending planes,
-      // between the HitForRec in the second chamber
-      // and the previous extrapolation
-      extrapFact = hit2Ptr->GetZ()/ hit1Ptr->GetZ();
-      extBendCoor = extrapFact * hit1Ptr->GetBendingCoor();
-      extNonBendCoor = extrapFact * hit1Ptr->GetNonBendingCoor();
-      distBend = TMath::Abs(hit2Ptr->GetBendingCoor() - extBendCoor);
-      distNonBend = TMath::Abs(hit2Ptr->GetNonBendingCoor() - extNonBendCoor);
-      // bending slope
       if ( hit1Ptr->GetZ() - hit2Ptr->GetZ() != 0. ) {
+        // bending slope
         bendingSlope = (hit1Ptr->GetBendingCoor() - hit2Ptr->GetBendingCoor()) / (hit1Ptr->GetZ() - hit2Ptr->GetZ());
         // impact parameter
         impactParam = hit1Ptr->GetBendingCoor() - hit1Ptr->GetZ() * bendingSlope;
@@ -270,18 +221,12 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(Int_t station)
         AliWarning("hit1Ptr->GetZ() = hit2Ptr->GetZ(): no segment created");
         continue;
       }   
-      // check for distances not too large,
-      // and impact parameter not too big if stations downstream of the dipole.
-      // Conditions "distBend" and "impactParam" correlated for these stations ????
-      if ((distBend < fSegmentMaxDistBending[station]) && (distNonBend < fSegmentMaxDistNonBending[station]) &&
-	  (bendingMomentum < fMaxBendingMomentum) && (bendingMomentum > fMinBendingMomentum)) {
+      // check for bending momentum within tolerances
+      if ((bendingMomentum < fMaxBendingMomentum) && (bendingMomentum > fMinBendingMomentum)) {
 	// make new segment
 	segment = new ((*segments)[segments->GetLast()+1]) AliMUONObjectPair(hit1Ptr, hit2Ptr, kFALSE, kFALSE);
 	if (AliLog::GetGlobalDebugLevel() > 1) {
-	  cout << "segmentIndex(0...): " << segments->GetLast()
-	       << "  distBend: " << distBend
-	       << "  distNonBend: " << distNonBend
-	       << endl;
+	  cout << "segmentIndex(0...): " << segments->GetLast() << endl;
 	  segment->Dump();
 	  cout << "HitForRec in first chamber" << endl;
 	  hit1Ptr->Dump();

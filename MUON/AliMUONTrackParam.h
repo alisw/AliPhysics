@@ -31,6 +31,8 @@ class AliMUONTrackParam : public TObject
 
   void GetParamFrom(const AliESDMuonTrack& esdMuonTrack);
   void SetParamFor(AliESDMuonTrack& esdMuonTrack);
+  void GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack);
+  void SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack);
 
   // Get and Set methods for data
 	/// return inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
