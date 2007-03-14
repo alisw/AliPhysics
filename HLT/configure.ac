@@ -191,8 +191,19 @@ if test ! "x$have_aliroot" = "xno" ; then
  				       have_alirawdata=$CHECKLIB], 
  				      [have_alirawdata=no])
 	]) dnl AC_CHECK_LIB RAWDatabase
-  AC_MSG_CHECKING(for AliRawReader classes in RAWData libraries)
-  AC_MSG_RESULT($have_alirawdata)
+  AC_MSG_CHECKING([for AliRawReader classes in RAWData libraries])
+  AC_MSG_RESULT([$have_alirawdata])
+
+  dnl
+  dnl check whether AliLog supports notification callback
+  dnl
+  have_alilog_notification=no
+  AC_MSG_CHECKING([whether AliLog supports notification callback])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
+		                  [AliLog::AliLogNotification fct])],
+                                  [have_alilog_notification=yes], 
+				  [AC_DEFINE(NO_ALILOG_NOTIFICATION)])
+  AC_MSG_RESULT([$have_alilog_notification])
 
   dnl
   dnl Check for the interface of AliExternalTrackParam which has been changed

@@ -47,7 +47,6 @@ ostringstream gLogstr;
  */
 void LogNotification(AliLog::EType_t level, const char* message)
 {
-  cout << "Notification handler: " << gLogstr.str() << endl;
   AliHLTLogging hltlog;
   hltlog.SwitchAliLog(0);
   hltlog.Logging(kHLTLogInfo, "NotificationHandler", "AliLog", gLogstr.str().c_str());
@@ -111,18 +110,21 @@ AliHLTLogging::~AliHLTLogging()
 }
 
 int AliHLTLogging::Init(AliHLTfctLogging pFun) 
-{ 
+{
   // see header file for class documentation
   if (fLoggingFunc!=NULL && fLoggingFunc!=pFun) {
     (*fLoggingFunc)(NULL/*fParam*/, kHLTLogWarning, "AliHLTLogging::Init", "no key", "overriding previously initialized logging function");    
   }
   fLoggingFunc=pFun;
+  // older versions of AliLog does not support the notification callback and
+  // stringstreams, but they support the logging macros in general
 #ifndef NOALIROOT_LOGGING
-  // to be activated when changes to AliLog have been committed
-//   AliLog* log=new AliLog;
-//   log->SetLogNotification(LogNotification);
-//   log->SetStreamOutput(&gLogstr);
-#endif
+#ifndef NO_ALILOG_NOTIFICATION
+  AliLog* log=new AliLog;
+  log->SetLogNotification(LogNotification);
+  log->SetStreamOutput(&gLogstr);
+#endif // NO_ALILOG_NOTIFICATION
+#endif // NOALIROOT_LOGGING
   
   return 0;
 }

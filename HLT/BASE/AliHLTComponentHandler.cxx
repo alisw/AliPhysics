@@ -74,7 +74,13 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
   // see header file for class documentation
   if (pEnv) {
     memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
-    AliHLTLogging::Init(pEnv->fLoggingFunc);
+    if (pEnv->fLoggingFunc) {
+      // the AliHLTLogging::Init method also sets the stream output
+      // and notification handler to AliLog. This should only be done
+      // if the logging environment contains a logging function
+      // for redirection
+      AliHLTLogging::Init(pEnv->fLoggingFunc);
+    }
   }  else
     memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   AddStandardComponents();
@@ -236,7 +242,13 @@ void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv)
   // see header file for class documentation
   if (pEnv) {
     memcpy(&fEnvironment, pEnv, sizeof(AliHLTComponentEnvironment));
-    AliHLTLogging::Init(fEnvironment.fLoggingFunc);
+    if (fEnvironment.fLoggingFunc) {
+      // the AliHLTLogging::Init method also sets the stream output
+      // and notification handler to AliLog. This should only be done
+      // if the logging environment contains a logging function
+      // for redirection
+      AliHLTLogging::Init(fEnvironment.fLoggingFunc);
+    }
   }
 }
 
