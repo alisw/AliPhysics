@@ -25,8 +25,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #include "AliESDMuonTrack.h"
+
+#include <TLorentzVector.h>
+#include <TMath.h>
 
 ClassImp(AliESDMuonTrack)
 
@@ -39,6 +41,12 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fZ(0),
   fBendingCoor(0),
   fNonBendingCoor(0),
+  fInverseBendingMomentumUncorrected(0),
+  fThetaXUncorrected(0),
+  fThetaYUncorrected(0),
+  fZUncorrected(0),
+  fBendingCoorUncorrected(0),
+  fNonBendingCoorUncorrected(0),
   fChi2(0),
   fNHit(0),
   fMatchTrigger(0),
@@ -57,6 +65,12 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
   fZ(MUONTrack.fZ),
   fBendingCoor(MUONTrack.fBendingCoor),
   fNonBendingCoor(MUONTrack.fNonBendingCoor),
+  fInverseBendingMomentumUncorrected(MUONTrack.fInverseBendingMomentumUncorrected),
+  fThetaXUncorrected(MUONTrack.fThetaXUncorrected),
+  fThetaYUncorrected(MUONTrack.fThetaYUncorrected),
+  fZUncorrected(MUONTrack.fZUncorrected),
+  fBendingCoorUncorrected(MUONTrack.fBendingCoorUncorrected),
+  fNonBendingCoorUncorrected(MUONTrack.fNonBendingCoorUncorrected),
   fChi2(MUONTrack.fChi2),
   fNHit(MUONTrack.fNHit),
   fMatchTrigger(MUONTrack.fMatchTrigger),
@@ -79,12 +93,20 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
 
   fInverseBendingMomentum = MUONTrack.fInverseBendingMomentum; 
   fThetaX                 = MUONTrack.fThetaX;           
-  fThetaY                 = MUONTrack.fThetaY ;           
+  fThetaY                 = MUONTrack.fThetaY;           
   fZ                      = MUONTrack.fZ;                
   fBendingCoor            = MUONTrack.fBendingCoor;      
   fNonBendingCoor         = MUONTrack.fNonBendingCoor;   
+  
+  fInverseBendingMomentumUncorrected = MUONTrack.fInverseBendingMomentumUncorrected; 
+  fThetaXUncorrected                 = MUONTrack.fThetaXUncorrected;           
+  fThetaYUncorrected                 = MUONTrack.fThetaYUncorrected;           
+  fZUncorrected                      = MUONTrack.fZUncorrected;                
+  fBendingCoorUncorrected            = MUONTrack.fBendingCoorUncorrected;      
+  fNonBendingCoorUncorrected         = MUONTrack.fNonBendingCoorUncorrected;   
+  
   fChi2                   = MUONTrack.fChi2;             
-  fNHit                   = MUONTrack.fNHit ; 
+  fNHit                   = MUONTrack.fNHit; 
 
   fMatchTrigger           = MUONTrack.fMatchTrigger;  
   fChi2MatchTrigger       = MUONTrack.fChi2MatchTrigger; 
@@ -92,4 +114,115 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
   return *this;
 }
 
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::Px() const
+{
+  // return p_x from track parameters
+  Double_t nonBendingSlope = TMath::Tan(fThetaX);
+  Double_t bendingSlope    = TMath::Tan(fThetaY);
+  Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return pZ * nonBendingSlope;
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::Py() const
+{
+  // return p_y from track parameters
+  Double_t bendingSlope = TMath::Tan(fThetaY);
+  Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return pZ * bendingSlope;
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::Pz() const
+{
+  // return p_z from track parameters
+  Double_t bendingSlope = TMath::Tan(fThetaY);
+  Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : 0.;
+  return -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::P() const
+{
+  // return p from track parameters
+  Double_t nonBendingSlope = TMath::Tan(fThetaX);
+  Double_t bendingSlope    = TMath::Tan(fThetaY);
+  Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return -pZ * TMath::Sqrt(1.0 + bendingSlope*bendingSlope + nonBendingSlope*nonBendingSlope);
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::LorentzP(TLorentzVector& vP) const
+{
+  // return Lorentz momentum vector from track parameters
+  Double_t muonMass = 0.105658369;
+  Double_t nonBendingSlope = TMath::Tan(fThetaX);
+  Double_t bendingSlope    = TMath::Tan(fThetaY);
+  Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  Double_t pX  = pZ * nonBendingSlope;
+  Double_t pY  = pZ * bendingSlope;
+  Double_t e   = TMath::Sqrt(muonMass*muonMass + pX*pX + pY*pY + pZ*pZ);
+  vP.SetPxPyPzE(pX, pY, pZ, e);
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::PxUncorrected() const
+{
+  // return p_x from track parameters
+  Double_t nonBendingSlope = TMath::Tan(fThetaXUncorrected);
+  Double_t bendingSlope    = TMath::Tan(fThetaYUncorrected);
+  Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return pZ * nonBendingSlope;
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::PyUncorrected() const
+{
+  // return p_y from track parameters
+  Double_t bendingSlope = TMath::Tan(fThetaYUncorrected);
+  Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return pZ * bendingSlope;
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::PzUncorrected() const
+{
+  // return p_z from track parameters
+  Double_t bendingSlope = TMath::Tan(fThetaYUncorrected);
+  Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : 0.;
+  return -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::PUncorrected() const
+{
+  // return p from track parameters
+  Double_t nonBendingSlope = TMath::Tan(fThetaXUncorrected);
+  Double_t bendingSlope    = TMath::Tan(fThetaYUncorrected);
+  Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return -pZ * TMath::Sqrt(1.0 + bendingSlope*bendingSlope + nonBendingSlope*nonBendingSlope);
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::LorentzPUncorrected(TLorentzVector& vP) const
+{
+  // return Lorentz momentum vector from track parameters
+  Double_t muonMass = 0.105658369;
+  Double_t nonBendingSlope = TMath::Tan(fThetaXUncorrected);
+  Double_t bendingSlope    = TMath::Tan(fThetaYUncorrected);
+  Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  Double_t pX  = pZ * nonBendingSlope;
+  Double_t pY  = pZ * bendingSlope;
+  Double_t e   = TMath::Sqrt(muonMass*muonMass + pX*pX + pY*pY + pZ*pZ);
+  vP.SetPxPyPzE(pX, pY, pZ, e);
+}
 
