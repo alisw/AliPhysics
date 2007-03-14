@@ -1,3 +1,11 @@
+2007-03-14 aliroot integration
+	- AliHLTSystem interface methods to AliHLTReconstructor implemeted
+	- AliHLTModuleAgent introduced for each HLT module, sample
+	  agent added to libAliHLTSample
+	- AliHLTOfflineInterface base classes added
+	- AliHLTFilePublisher, AliHLTRootFileWriter/Publisher moved to 
+	  libAliHLTUtil (AliHLTFileWriter will follow when dep. to PHOS are
+	  cleared)
 2007-03-09 logging system
 	- adapted to AliRoot logging system, messages printed out via AliRoot
 	  message channel

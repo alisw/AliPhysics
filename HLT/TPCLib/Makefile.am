@@ -6,7 +6,8 @@ MODULE 				= AliHLTTPC
 EXTRA_DIST			= AliHLTTPCLinkDef.h
 
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
-				  -I$(top_srcdir)/BASE
+				  -I$(top_srcdir)/BASE       \
+				  -I$(top_srcdir)/BASE/util
 
 # generation of the TPC Pad mapping tables for the 
 # AliHLTTPCDigitReaderRaw reader
@@ -42,6 +43,7 @@ libAliHLTTPC_la_SOURCES		= $(MODULE_SRCS)
 pkginclude_HEADERS		= $(MODULE_HDRS)
 
 # linker flags
+libAliHLTTPC_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
 libAliHLTTPC_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

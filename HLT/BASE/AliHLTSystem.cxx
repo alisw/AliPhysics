@@ -32,7 +32,10 @@ using namespace std;
 #include "AliHLTConfiguration.h"
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTTask.h"
-#include "TString.h"
+#include "AliHLTModuleAgent.h"
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TString.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
@@ -41,7 +44,8 @@ AliHLTSystem::AliHLTSystem()
   :
   fpComponentHandler(new AliHLTComponentHandler()),
   fpConfigurationHandler(new AliHLTConfigurationHandler()),
-  fTaskList()
+  fTaskList(),
+  fState(0)
 {
   // see header file for class documentation
   // or
@@ -74,7 +78,8 @@ AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
   AliHLTLogging(),
   fpComponentHandler(NULL),
   fpConfigurationHandler(NULL),
-  fTaskList()
+  fTaskList(),
+  fState(0)
 {
   // see header file for class documentation
   if (fgNofInstances++>0)
@@ -291,6 +296,8 @@ int AliHLTSystem::Run(Int_t iNofEvents)
 {
   // see header file for class documentation
   int iResult=0;
+  int iCount=0;
+  SetStatusFlags(kRunning);
   if ((iResult=InitTasks())>=0) {
     if ((iResult=StartTasks())>=0) {
       for (int i=0; i<iNofEvents && iResult>=0; i++) {
@@ -298,6 +305,7 @@ int AliHLTSystem::Run(Int_t iNofEvents)
 	if (iResult>=0) {
 	  HLTInfo("Event %d successfully finished (%d)", i, iResult);
 	  iResult=0;
+	  iCount++;
 	} else {
 	  HLTError("Processing of event %d failed (%d)", i, iResult);
 	  // TODO: define different running modes to either ignore errors in
@@ -314,6 +322,8 @@ int AliHLTSystem::Run(Int_t iNofEvents)
   } else if (iResult!=-ENOENT) {
     HLTError("can not initialize task list");
   }
+  if (iResult>=0) iResult=iCount;
+  ClearStatusFlags(kRunning);
   return iResult;
 }
 
@@ -415,5 +425,191 @@ int AliHLTSystem::DeinitTasks()
 void* AliHLTSystem::AllocMemory( void* param, unsigned long size )
 {
   // see header file for class documentation
+  if (param==NULL) {
+    // get rid of 'unused parameter' warning
+  }
   return (void*)new char[size];
+}
+
+int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader, 
+			      AliRawReader* rawReader)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (runLoader) {
+    HLTInfo("Run Loader %p, Raw Reader %p , %d events", runLoader, rawReader, nofEvents);
+    if (CheckStatus(kReady)) {
+      iResult=Run(nofEvents);
+    } else {
+      HLTError("wrong state %#x, required flags %#x", GetStatusFlags(), kReady);
+    }
+  } else {
+    HLTError("missing run loader instance");
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTSystem::FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (runLoader) {
+    HLTInfo("Event %d: Run Loader %p, ESD %p", eventNo, runLoader, esd);
+  } else {
+    HLTError("missing run loader/ESD instance(s)");
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTSystem::LoadComponentLibraries(const char* libraries)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (libraries) {
+    if (fpComponentHandler) {
+      TString libs(libraries);
+      TObjArray* pTokens=libs.Tokenize(" ");
+      if (pTokens) {
+	int iEntries=pTokens->GetEntries();
+	for (int i=0; i<iEntries && iResult>=0; i++) {
+	  iResult=fpComponentHandler->LoadLibrary((((TObjString*)pTokens->At(i))->GetString()).Data());
+	}
+	delete pTokens;
+      }
+      if (iResult>=0) {
+	SetStatusFlags(kLibrariesLoaded);
+      } else {
+	// lets see if we need this, probably not
+	//fpComponentHandler->UnloadLibraries();
+	ClearStatusFlags(kLibrariesLoaded);
+      }
+    } else {
+      iResult=-EFAULT;
+      HLTFatal("no component handler available");
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTSystem::Configure(AliRunLoader* runloader)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (CheckStatus(kRunning)) {
+    HLTError("HLT system in running state, can not configure");
+    return -EBUSY;
+  }
+  ClearStatusFlags(kConfigurationLoaded|kTaskListCreated);
+  iResult=LoadConfigurations(runloader);
+  if (iResult>=0) {
+    SetStatusFlags(kConfigurationLoaded);
+    iResult=BuildTaskListsFromTopConfigurations(runloader);
+    if (iResult>=0) {
+      SetStatusFlags(kTaskListCreated);
+    }
+  }
+  if (iResult<0) SetStatusFlags(kError);
+  
+  return iResult;
+}
+
+int AliHLTSystem::Reset(int bForce)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (!bForce && CheckStatus(kRunning)) {
+    HLTError("HLT system in running state, can not configure");
+    return -EBUSY;
+  }
+  CleanTaskList();
+  ClearStatusFlags(~kUninitialized);
+  return iResult;
+}
+
+int AliHLTSystem::LoadConfigurations(AliRunLoader* runloader)
+{
+  // see header file for class documentation
+  if (CheckStatus(kRunning)) {
+    HLTError("HLT system in running state, can not configure");
+    return -EBUSY;
+  }
+  int iResult=0;
+  AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+  while (pAgent) {
+    HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
+    pAgent->CreateConfigurations(fpConfigurationHandler, runloader);
+    pAgent=AliHLTModuleAgent::GetNextAgent();
+  }
+  return iResult;
+}
+
+int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRunLoader* runloader)
+{
+  // see header file for class documentation
+  if (CheckStatus(kRunning)) {
+    HLTError("HLT system in running state, can not configure");
+    return -EBUSY;
+  }
+  if (!CheckStatus(kConfigurationLoaded)) {
+    HLTWarning("configurations not yet loaded");
+    return 0;
+  }
+
+  int iResult=0;
+  AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+  while (pAgent && iResult>=0) {
+    TString tops=pAgent->GetTopConfigurations(runloader);
+    HLTDebug("top configurations for agent %s (%p): %s", pAgent->GetName(), pAgent, tops.Data());
+    TObjArray* pTokens=tops.Tokenize(" ");
+    if (pTokens) {
+      int iEntries=pTokens->GetEntries();
+      for (int i=0; i<iEntries && iResult>=0; i++) {
+	const char* pCID=((TObjString*)pTokens->At(i))->GetString().Data();
+	AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(pCID);
+	if (pConf) {
+	  iResult=BuildTaskList(pConf);
+	} else {
+	  HLTWarning("can not find top configuration %s", pCID);
+	}
+      }
+      delete pTokens;
+    }
+    
+    pAgent=AliHLTModuleAgent::GetNextAgent();
+  }
+  if (iResult>=0) SetStatusFlags(kTaskListCreated);
+
+  return iResult;
+}
+
+int AliHLTSystem::CheckStatus(int flag)
+{
+  // see header file for class documentation
+  if (flag==kUninitialized && flag==fState) return 1;
+  if ((fState&flag)==flag) return 1;
+  return 0;
+}
+
+int AliHLTSystem::GetStatusFlags()
+{
+  // see header file for class documentation
+  return fState;
+}
+
+int AliHLTSystem::SetStatusFlags(int flags)
+{
+  // see header file for class documentation
+  fState|=flags;
+  return fState;
+}
+
+int AliHLTSystem::ClearStatusFlags(int flags)
+{
+  // see header file for class documentation
+  fState&=~flags;
+  return fState;
 }

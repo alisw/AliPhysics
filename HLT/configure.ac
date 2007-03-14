@@ -564,6 +564,7 @@ AC_CONFIG_FILES([Makefile
 		 BASE/Makefile
 		 BASE/setenv.sh
 		 BASE/setenv.csh
+		 BASE/util/Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx

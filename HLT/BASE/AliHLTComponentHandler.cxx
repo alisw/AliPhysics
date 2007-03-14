@@ -38,10 +38,10 @@ using namespace std;
 #include "AliHLTSystem.h"
 
 // the standard components
-#include "AliHLTFilePublisher.h"
+// #include "AliHLTFilePublisher.h"
 #include "AliHLTFileWriter.h"
-#include "AliHLTRootFilePublisherComponent.h"
-#include "AliHLTRootFileWriterComponent.h"
+// #include "AliHLTRootFilePublisherComponent.h"
+// #include "AliHLTRootFileWriterComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponentHandler)
@@ -325,10 +325,10 @@ int AliHLTComponentHandler::AddStandardComponents()
   // see header file for class documentation
   int iResult=0;
   AliHLTComponent::SetGlobalComponentHandler(this);
-  fStandardList.push_back(new AliHLTFilePublisher);
+//   fStandardList.push_back(new AliHLTFilePublisher);
   fStandardList.push_back(new AliHLTFileWriter);
-  fStandardList.push_back(new AliHLTRootFilePublisherComponent);
-  fStandardList.push_back(new AliHLTRootFileWriterComponent);
+//   fStandardList.push_back(new AliHLTRootFilePublisherComponent);
+//   fStandardList.push_back(new AliHLTRootFileWriterComponent);
   AliHLTComponent::UnsetGlobalComponentHandler();
   iResult=RegisterScheduledComponents();
   return iResult;

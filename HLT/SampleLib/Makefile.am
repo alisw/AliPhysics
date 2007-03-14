@@ -12,6 +12,8 @@ EXTRA_DIST			= AliHLTSampleLinkDef.h
 
 # include the pkg definition which actually contains the source
 # file definitions
+MODDIR				= $(top_srcdir)
+PKGDEF				= $(MODDIR)/libAliHLTSample.pkg
 include $(top_srcdir)/libAliHLTSample.pkg
 
 # library definition

@@ -26,6 +26,7 @@ SUBDIRS 		= BASE \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \
+			  libAliHLTUtil.pkg \
 			  libAliHLTSample.pkg \
 			  libAliHLTPHOS.pkg \
 			  libAliHLTTPC.pkg \
@@ -34,6 +35,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 
 DIST_SUBDIRS		= $(SUBDIRS)
 
+# this is a special target to create a stand-alone package from the SampleLib
 SampleLibPkg: Makefile $(top_srcdir)/SampleLib/*
 	@tmpdir=/tmp/$(USER)/$@ ; \
 	if test -d $@ ; then \

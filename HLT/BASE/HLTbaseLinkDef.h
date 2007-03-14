@@ -18,11 +18,15 @@
 #pragma link C++ class AliHLTConsumerDescriptor;
 #pragma link C++ class AliHLTDataSource;
 #pragma link C++ class AliHLTDataSink;
-#pragma link C++ class AliHLTFilePublisher;
+//#pragma link C++ class AliHLTFilePublisher;
 #pragma link C++ class AliHLTFileWriter;
-#pragma link C++ class AliHLTRootFileWriterComponent;
-#pragma link C++ class AliHLTRootFilePublisherComponent;
+//#pragma link C++ class AliHLTRootFileWriterComponent;
+//#pragma link C++ class AliHLTRootFilePublisherComponent;
 #pragma link C++ class AliHLTMessage;
+#pragma link C++ class AliHLTModuleAgent;
+#pragma link C++ class AliHLTOfflineInterface;
+#pragma link C++ class AliHLTOfflineDataSource;
+#pragma link C++ class AliHLTOfflineDataSink;
 
 #endif
 

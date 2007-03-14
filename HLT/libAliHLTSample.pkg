@@ -9,12 +9,14 @@
 # library sources
 MODULE_SRCS= 	AliHLTSampleComponent1.cxx \
 		AliHLTSampleComponent2.cxx \
+		AliHLTAgentSample.cxx \
 		AliHLTDummyComponent.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:=  	AliHLTSampleComponent1.h \
 		AliHLTSampleComponent2.h \
+		AliHLTAgentSample.h \
 		AliHLTDummyComponent.h
 
 # library headers
@@ -32,8 +34,8 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # classes. The *LinkDef.h must be added to DHDR in that case.
 # There might be an extension also in ALIROOT which allows to 
 # generate the LinkDef automatically.
-DHDR:= 		SampleLib/AliHLTSampleLinkDef.h		
-CINTAUTOLINK:=
+#DHDR:= 		SampleLib/AliHLTSampleLinkDef.h		
+CINTAUTOLINK:=1
 
 # extra defines and flags for the AliRoot build system. NOTE: include
 # directories and linking flags/options must be specified in 

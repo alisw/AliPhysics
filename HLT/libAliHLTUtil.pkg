@@ -1,0 +1,30 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include $(MODDIR)/hlt.conf
+
+MODULE_SRCS= 	AliHLTFilePublisher.cxx \
+		AliHLTRootFilePublisherComponent.cxx \
+		AliHLTRootFileWriterComponent.cxx \
+		AliHLTAgentUtil.cxx
+
+CLASS_HDRS:=  	AliHLTFilePublisher.h \
+		AliHLTRootFilePublisherComponent.h \
+		AliHLTRootFileWriterComponent.h \
+		AliHLTAgentUtil.h
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+DHDR:= 		
+CINTAUTOLINK:=  1
+
+SRCS:=$(patsubst %,BASE/util/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,BASE/util/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,BASE/util/%,$(MODULE_HDRS))
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := HLT/BASE HLT/BASE/util STEER RAW
