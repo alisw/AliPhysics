@@ -1,3 +1,24 @@
+2007-03-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Added static method AliMagF* AssertMagField().
+
+
+	The following changes are from Bogdan, for new MUON display.
+
+	* MUONChamberData.cxx:
+	* MUONData.cxx:
+	* MUONData.h:
+	From Bogdan: new version of MUON display.
+
+	* MUONTrack.cxx:
+	* MUONTrack.h:
+	* MUONTracks.cxx:
+	* MUONTracks.h:
+	* LinkDef.h:
+	From Bogdan: new classes MUONTrack and MUONTracks.
+
 2007-03-14  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* ITSDigitsInfo.cxx:

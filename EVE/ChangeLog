@@ -1,3 +1,20 @@
+2007-03-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	The following changes are from Bogdan, for new MUON display.
+
+	* alice-macros/MUON_digits.C:
+	From Bogdan: removed macro file.
+
+	* alice-macros/MUON_geom.C:
+	* alice-macros/MUON_geomAll.C:
+	* alice-macros/README_MUON:
+	From Bogdan: updates macros for MUON display.
+
+	* alice-macros/MUON_display.C:
+	* alice-macros/MUON_track_info.C:
+	* alice-macros/MUON_trigger_info.C:
+	From Bogdan: new macro files for MUON display.
+
 2007-03-14  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* reve-genclass.pl:
