@@ -124,6 +124,7 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
     }
     else
     {
+      kNoAliases = kFALSE;
       TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
       if (!values)
       {
@@ -137,7 +138,6 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
         hv.Add(new TObjString(aliasName.Data()),values);
       }
     }
-    kNoAliases = kFALSE;
   }
   
   if ( kNoAliases ) 
