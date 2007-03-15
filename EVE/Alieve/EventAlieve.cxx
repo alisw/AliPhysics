@@ -5,8 +5,10 @@
 #include <Reve/RGTopFrame.h>
 
 #include <AliRunLoader.h>
+#include <AliRun.h>
 #include <AliESD.h>
 #include <AliESDfriend.h>
+#include <AliMagFMaps.h>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -30,6 +32,9 @@ Event* Alieve::gEvent = 0;
 Bool_t Alieve::Event::fgUseRunLoader   = kTRUE;
 Bool_t Alieve::Event::fgUseESDTree     = kTRUE;
 Bool_t Alieve::Event::fgAvoidExcOnOpen = kTRUE;
+
+AliMagF* Alieve::Event::fgMagField = 0;
+
 
 void Event::Initialize(Bool_t use_runloader, Bool_t use_esd,
 		       Bool_t avoid_exc_on_open)
@@ -258,4 +263,16 @@ AliESDfriend* Event::AssertESDfriend()
   if(gEvent->fESDfriend == 0)
     throw(eH + "AliESDfriend not initialised.");
   return gEvent->fESDfriend;
+}
+
+AliMagF* Event::AssertMagField()
+{
+  if (fgMagField == 0)
+  {
+    if (gEvent && gEvent->fRunLoader && gEvent->fRunLoader->GetAliRun())
+      fgMagField = gEvent->fRunLoader->GetAliRun()->Field();
+    else
+      fgMagField = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+  }
+  return fgMagField;
 }

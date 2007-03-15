@@ -11,6 +11,8 @@ class AliRunLoader;
 class AliESD;
 class AliESDfriend;
 
+class AliMagF;
+
 class TFile;
 class TTree;
 
@@ -39,6 +41,8 @@ protected:
   static Bool_t fgUseRunLoader;
   static Bool_t fgUseESDTree;
   static Bool_t fgAvoidExcOnOpen;
+
+  static AliMagF* fgMagField;
 
 public:
   static void Initialize(Bool_t use_runloader=kTRUE, Bool_t use_esd=kTRUE,
@@ -69,6 +73,8 @@ public:
   static AliRunLoader* AssertRunLoader();
   static AliESD*       AssertESD();
   static AliESDfriend* AssertESDfriend();
+
+  static AliMagF*      AssertMagField();
 
   ClassDef(Event, 1);
 }; // endclass Event
