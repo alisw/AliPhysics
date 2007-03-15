@@ -44,6 +44,9 @@ public:
   Int_t GetID() const { return fID; }
   void  SetID(Int_t gid);
 
+  void GetFrameDimensions(Float_t& x, Float_t& y, Float_t& z){ 
+    x=fDx; y =fDy; z=fDz;}
+
   virtual void QuadSelected(Int_t idx);
 
   virtual void Print(Option_t* opt="") const;
