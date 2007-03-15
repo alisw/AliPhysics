@@ -38,10 +38,6 @@ class MUONData : public TObject, public Reve::ReferenceCount
   static AliMpSegFactory*         fgSegFactory;        // segmentation mapping
   static AliMpDDLStore*           fgBusPatchManager;   // bus mapping
 
-  Int_t    fNTracks;              // number of tracks
-  Float_t* fTrackPoints;          // array with track points coordinates
-  Int_t    fNPoints;              // total number of track points
-
   Int_t GetTrackerMapping(Int_t buspatchId, UShort_t manuId,
 			  UChar_t channelId, AliMUONDigit* digit );
 
@@ -61,7 +57,7 @@ class MUONData : public TObject, public Reve::ReferenceCount
   MUONData& operator=(const MUONData&);
 
   void LoadDigits(TTree* tree);
-  void LoadTracks(TTree* tree);
+  void LoadRecPoints(TTree* tree);
   void LoadRaw(TString fileName);
   void LoadRawTracker();
   void LoadRawTrigger();
@@ -72,10 +68,6 @@ class MUONData : public TObject, public Reve::ReferenceCount
   void DeleteAllChambers();
 
   MUONChamberData* GetChamberData(Int_t chamber);
-
-  Int_t    GetNTracks() { return fNTracks; };
-  Int_t    GetNPoints() { return fNPoints; };
-  Float_t* GetTrackPoints() { return fTrackPoints; };
 
   ClassDef(MUONData,1);           // Manages MUON data for one event
 

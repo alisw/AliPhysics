@@ -18,12 +18,8 @@
 #include <AliRawReaderDate.h>
 #include <AliRawReaderRoot.h>
 
-#include <AliTracker.h>
-#include <AliMagFMaps.h>
 #include <AliLog.h>
 
-#include <AliMUONTrack.h>
-#include <AliMUONTrackParam.h>
 #include <AliMUONDigit.h>
 #include <AliMUONRawStreamTracker.h>
 #include <AliMUONRawStreamTrigger.h>
@@ -47,7 +43,6 @@
 
 #include "TTree.h"
 #include "TString.h"
-#include "TMatrixD.h"
 #include "TClonesArray.h"
 
 using namespace Reve;
@@ -66,10 +61,7 @@ AliMpDDLStore*           MUONData::fgBusPatchManager  = 0;
 
 //______________________________________________________________________
 MUONData::MUONData() :
-  fChambers(14),
-  fNTracks(0),
-  fTrackPoints(0),
-  fNPoints(0)
+  fChambers(14)
 {
   //
   // Constructor
@@ -87,10 +79,6 @@ MUONData::~MUONData()
   //
 
   DeleteAllChambers();
-
-  delete [] fTrackPoints;
-
-  fTrackPoints = 0;
 
 }
 
@@ -177,191 +165,6 @@ void MUONData::DeleteAllChambers()
 }
 
 //______________________________________________________________________
-void MUONData::LoadTracks(TTree* tree)
-{
-  //
-  // load tracks from the TreeT and creates the track points array
-  // the structure of fTrackPoints:
-  // 0,  0,  0, - new track
-  // px, py, pz - from track param at vertex
-  // x, y, z    - track param at vertex
-  // x, y, z    - track param at hits
-  // ..........
-  //
-  // 0,  0,  0  - new track
-  // ..........
-  //
-
-  Int_t maxTrackHits = 1+2*10+4;
-
-  TClonesArray *tracks = 0;
-  tree->SetBranchAddress("MUONTrack",&tracks);
-  tree->GetEntry(0);
-
-  Int_t ntracks = tracks->GetEntriesFast();
-  printf("Found %d tracks. \n",ntracks);
-
-  fNTracks = ntracks;
-
-  Int_t maxTrackPoints = (3+3+3*maxTrackHits)*ntracks;
-  fTrackPoints = new Float_t [maxTrackPoints];
-
-  TMatrixD smatrix(2,2);
-  TMatrixD sums(2,1);
-  TMatrixD res(2,1);
-
-  Float_t xRec, xRec0;
-  Float_t yRec, yRec0;
-  Float_t zRec, zRec0;
-  Float_t px0, py0, pz0;
-  
-  Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
-
-  AliMUONTrack *mt;  
-  Int_t count = 0;
-  for (Int_t n = 0; n < ntracks; n++) {
-
-    if (count >= maxTrackPoints) continue;
-    fTrackPoints[3*count  ] = 0.0;
-    fTrackPoints[3*count+1] = 0.0;
-    fTrackPoints[3*count+2] = 0.0;
-    count++;
-
-    mt = (AliMUONTrack*) tracks->At(n);
-
-    printf("Match trigger %d \n",mt->GetMatchTrigger());
-
-    AliMUONTrackParam *trackParam = mt->GetTrackParamAtVertex(); 
-    xRec0  = trackParam->GetNonBendingCoor();
-    yRec0  = trackParam->GetBendingCoor();
-    zRec0  = trackParam->GetZ();
-
-    px0 = trackParam->Px();
-    py0 = trackParam->Py();
-    pz0 = trackParam->Pz();
-
-    if (count >= maxTrackPoints) continue;
-    fTrackPoints[3*count  ] = px0;
-    fTrackPoints[3*count+1] = py0;
-    fTrackPoints[3*count+2] = pz0;
-    count++;
-
-    if (count >= maxTrackPoints) continue;
-    fTrackPoints[3*count  ] = xRec0;
-    fTrackPoints[3*count+1] = yRec0;
-    fTrackPoints[3*count+2] = zRec0;
-    count++;
-    
-    Float_t xr[20], yr[20], zr[20];
-    for (Int_t i = 0; i < 10; i++) xr[i]=yr[i]=zr[i]=0.0;
-
-    Int_t nTrackHits = mt->GetNTrackHits();
-    printf("Nhits = %d \n",nTrackHits);
-    TClonesArray* trackParamAtHit;
-    for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
-      trackParamAtHit = mt->GetTrackParamAtHit();
-      trackParam = (AliMUONTrackParam*) trackParamAtHit->At(iHit); 
-      xRec  = trackParam->GetNonBendingCoor();
-      yRec  = trackParam->GetBendingCoor();
-      zRec  = trackParam->GetZ();
-
-      //printf("Hit %d x %f y %f z %f \n",iHit,xRec,yRec,zRec);
-
-      xr[iHit] = xRec;
-      yr[iHit] = yRec;
-      zr[iHit] = zRec;
-
-      if (count >= maxTrackPoints) continue;
-      fTrackPoints[3*count  ] = xRec;
-      fTrackPoints[3*count+1] = yRec;
-      fTrackPoints[3*count+2] = zRec;
-      count++;
-    
-    }
-
-    Float_t xrc[20], yrc[20], zrc[20];
-    Int_t nrc = 0;
-    if (mt->GetMatchTrigger() && 1) {
-
-      for (Int_t i = 0; i < nTrackHits; i++) {
-	if (TMath::Abs(zr[i]) > 1000.0) {
-	  //printf("Hit %d x %f y %f z %f \n",iHit,xr[i],yr[i],zr[i]);
-	  xrc[nrc] = xr[i];
-	  yrc[nrc] = yr[i];
-	  zrc[nrc] = zr[i];
-	  nrc++;
-	}
-      }
-
-      if (nrc < 2) continue;
-
-      Double_t xv, yv;
-      Float_t ax, bx, ay, by;
-      
-      // fit x-z
-      smatrix.Zero();
-      sums.Zero();
-      for (Int_t i = 0; i < nrc; i++) {
-	xv = (Double_t)zrc[i];
-	yv = (Double_t)xrc[i];
-	//printf("x-z: xv %f yv %f \n",xv,yv);
-	smatrix(0,0) += 1.0;
-	smatrix(1,1) += xv*xv;
-	smatrix(0,1) += xv;
-	smatrix(1,0) += xv;
-	sums(0,0)    += yv;
-	sums(1,0)    += xv*yv;
-      }
-      res = smatrix.Invert() * sums;
-      ax = res(0,0);
-      bx = res(1,0);
-
-      // fit y-z
-      smatrix.Zero();
-      sums.Zero();
-      for (Int_t i = 0; i < nrc; i++) {
-	xv = (Double_t)zrc[i];
-	yv = (Double_t)yrc[i];
-	//printf("y-z: xv %f yv %f \n",xv,yv);
-	smatrix(0,0) += 1.0;
-	smatrix(1,1) += xv*xv;
-	smatrix(0,1) += xv;
-	smatrix(1,0) += xv;
-	sums(0,0)    += yv;
-	sums(1,0)    += xv*yv;
-      }
-      res = smatrix.Invert() * sums;
-      ay = res(0,0);
-      by = res(1,0);
-
-      Float_t xtc, ytc, ztc;
-      for (Int_t ii = 0; ii < 4; ii++) {
-
-	ztc = zg[ii];
-	ytc = ay+by*zg[ii];
-	xtc = ax+bx*zg[ii];
-
-	//printf("tc: x %f y %f z %f \n",xtc,ytc,ztc);
-
-	if (count >= maxTrackPoints) continue;
-	fTrackPoints[3*count  ] = xtc;
-	fTrackPoints[3*count+1] = ytc;
-	fTrackPoints[3*count+2] = ztc;
-	count++;
-
-      }
-
-    }  // end match trigger
-
-  }
-
-  fNPoints = 3*count;
-
-  printf("MUONData found %d track points. \n",fNPoints);
-
-}
-
-//______________________________________________________________________
 void MUONData::LoadDigits(TTree* tree)
 {
   // 
@@ -401,6 +204,16 @@ void MUONData::LoadDigits(TTree* tree)
     } // end digits loop
 
   }
+
+}
+
+//______________________________________________________________________
+void MUONData::LoadRecPoints(TTree* tree)
+{
+  //
+  // load reconstructed points from the TreeR
+  // load local trigger information
+  //
 
 }
 

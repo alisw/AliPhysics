@@ -15,6 +15,8 @@
 #include <TMath.h>
 #include <TVector2.h>
 
+#include "Alieve/EventAlieve.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// MUONChamberData: geometry and digits
@@ -35,6 +37,11 @@ MUONChamberData::MUONChamberData(Int_t chamber)
   //
   // constructor
   //
+
+  Event *event = Alieve::gEvent;
+
+  TString dataPath = TString(event->GetTitle());
+  dataPath.Append("/geometry.root");
 
   fChamberID = chamber;
   fNDetElem  = 0;
@@ -57,7 +64,7 @@ MUONChamberData::MUONChamberData(Int_t chamber)
     AliMUONSegFactory segFactory("volpath.dat","transform.dat");
     fgSegmentation = segFactory.CreateSegmentation();
     fgTransformer = new AliMUONGeometryTransformer(true);
-    fgTransformer->ReadGeometryData("volpaths.dat","transform.dat");
+    fgTransformer->ReadGeometryData("volpath.dat",dataPath.Data());
   }
 
   Init(chamber);
