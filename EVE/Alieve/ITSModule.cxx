@@ -115,11 +115,22 @@ void ITSModule::SetID(Int_t gid)
 
   if (gid < fInfo->fGeom->GetStartSPD() || gid > fInfo->fGeom->GetLastSSD())
     throw(eH + Form("%d is not valid. ID range from %d to %d", gid,
-		     fInfo->fGeom->GetStartSPD(), fInfo->fGeom->GetLastSSD()));
+		    fInfo->fGeom->GetStartSPD(), fInfo->fGeom->GetLastSSD()));
 
   fID = gid;
 
-  if (!fgStaticInitDone) InitStatics(fInfo);
+  if (!fgStaticInitDone) {
+    InitStatics(fInfo);
+    
+    fgSPDFrameBox->IncRefCount(this);
+    fgSPDPalette->IncRefCount();
+  
+    fgSDDFrameBox->IncRefCount(this);
+    fgSDDPalette->IncRefCount();
+
+    fgSSDFrameBox->IncRefCount(this);
+    fgSSDPalette->IncRefCount();
+  }
 
   fInfo->fGeom->GetModuleId(fID, fLayer, fLadder, fDet);
   TString strLadder = "Ladder";
