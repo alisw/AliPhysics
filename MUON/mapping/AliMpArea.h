@@ -58,8 +58,11 @@ ostream& operator << (ostream &stream,const AliMpArea& area);
 
 // inline functions
 
+                 /// Return position
 inline TVector2  AliMpArea::Position() const   { return fPosition; }
+                 /// Return dimensions
 inline TVector2  AliMpArea::Dimensions() const { return fDimensions; }    
+                 /// Return validity
 inline Bool_t    AliMpArea::IsValid() const    { return fValidity; }
 
 #endif //ALI_MP_AREA_H

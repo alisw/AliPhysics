@@ -34,12 +34,17 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
 {
   public:
 #ifdef WITH_STL
+    /// Pad vector type
     typedef std::vector<AliMpPad>  PadVector;
+    /// Pad set type
     typedef std::set<AliMpPad>     PadSet;
+    /// Pad set iterator type
     typedef PadSet::const_iterator PadSetCIterator;
 #endif
 #ifdef WITH_ROOT
+    /// Pad vector type
     typedef TObjArray  PadVector;
+    /// Pad set type
     typedef TObjArray  PadSet;
 #endif
 
@@ -64,7 +69,7 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
 
   private:
     // static members
-    static const UInt_t   fgkInvalidIndex; // invalid index number
+    static const UInt_t   fgkInvalidIndex; ///< invalid index number
 
     // private methods
     Bool_t    IsNeighbour(const AliMpPad& pad) const;

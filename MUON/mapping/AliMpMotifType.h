@@ -35,17 +35,17 @@ class AliMpMotifType : public TObject
 {
   public:
 #ifdef WITH_STL
+    /// Connection map type
     typedef std::map< AliMpIntPair, AliMpConnection* > ConnectionMap;
+    /// Connection map iterator type
     typedef ConnectionMap::const_iterator     ConnectionMapCIterator;
 #endif    
 #ifdef WITH_ROOT
+    /// Connection map type
     typedef AliMpExMap ConnectionMap;
 #endif    
 
   public:
-      /** Please note that id should be of the form %s for station 1,2,
-        %s-%e-%e for station345 and %sx%e for stationTrigger
-      */
     AliMpMotifType(const TString &id);
     AliMpMotifType(const AliMpMotifType& rhs);
     AliMpMotifType& operator=(const AliMpMotifType& rhs);
@@ -73,11 +73,13 @@ class AliMpMotifType : public TObject
 
     // set methods
     void SetNofPads(Int_t nofPadsX, Int_t nofPadY);
-    void SetVerboseLevel(Int_t level){fVerboseLevel=level;}
     
     // get methods
+             /// Return unique motif ID
     TString  GetID() const        {return fID;}
+             /// Return number of pads in x direction
     Int_t    GetNofPadsX() const  {return fNofPadsX;}
+             /// Return number of pads in y direction
     Int_t    GetNofPadsY() const  {return fNofPadsY;}
     Int_t    GetNofPads() const;
     
@@ -104,7 +106,6 @@ class AliMpMotifType : public TObject
     TString   fID;              ///< unique motif ID
     Int_t     fNofPadsX;        ///< number of pads in x direction
     Int_t     fNofPadsY;        ///< number of pads in y direction
-    Int_t     fVerboseLevel;    ///< verbose level
     ConnectionMap fConnections; ///< Map (ix,iy) of connections
     
   ClassDef(AliMpMotifType,1)  // Motif type
@@ -112,6 +113,7 @@ class AliMpMotifType : public TObject
 
 // inline functions
 
+/// Return true if the motif conatins all pads
 inline Bool_t AliMpMotifType::IsFull() const 
 { return GetNofPads() == fNofPadsX*fNofPadsY; }
 

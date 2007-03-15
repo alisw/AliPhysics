@@ -30,7 +30,8 @@ class AliMpRowSegmentRSpecial : public AliMpVRowSegmentSpecial
     virtual ~AliMpRowSegmentRSpecial();
     
     // methods
-     virtual void  UpdatePadsOffset() {}
+                  /// Nothing to be done for outer segments
+    virtual void  UpdatePadsOffset() {}
     virtual Double_t  LeftBorderX() const;
     virtual Double_t  RightBorderX() const;
 

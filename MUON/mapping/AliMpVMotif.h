@@ -31,21 +31,29 @@ class AliMpVMotif : public TObject
   // Access methods
   AliMpMotifType  *GetMotifType() const;
   TString          GetID() const;
+                   /// Return the number of pad dimensions
   virtual Int_t    GetNofPadDimensions() const=0;
+                   /// Return the i-th pad dimensions
   virtual TVector2 GetPadDimensions(Int_t i) const=0;
+                   /// Return the dimensions of the pad specified by localIndices
   virtual TVector2 GetPadDimensions(const AliMpIntPair& localIndices) const=0;
 
   // Geometry
+                   /// Return dimensions
   virtual TVector2 Dimensions() const=0;
 
   // Other methods
   AliMpConnection *FindConnectionByLocalPos(const TVector2& localPos) const;
   virtual void Print(Option_t *option) const;
-  virtual TVector2     PadPositionLocal(const AliMpIntPair& localIndices) const=0;
+                   /// Return local position of the pad specified by local indices
+  virtual TVector2 PadPositionLocal(const AliMpIntPair& localIndices) const=0;
+                   /// Return local indices of the pad specified by local position
   virtual AliMpIntPair PadIndicesLocal(const TVector2& localPos) const=0;
 
  private:
+  /// Not implemented
   AliMpVMotif(const AliMpVMotif& right);
+  /// Not implemented
   AliMpVMotif&  operator = (const AliMpVMotif& right);
 
   // data members 
@@ -57,7 +65,10 @@ class AliMpVMotif : public TObject
 
 // inline functions
 
+/// Return the motif type
 inline  AliMpMotifType* AliMpVMotif::GetMotifType() const {return fMotifType;}
+
+/// Return the motif identifier
 inline  TString  AliMpVMotif::GetID() const {return fID;}
 
 #endif //ALI_MP_V_MOTIF_H

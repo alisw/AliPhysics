@@ -127,7 +127,7 @@ void AliMpStringObjMap::Print(const char* /*option*/) const
 //______________________________________________________________________________
 void AliMpStringObjMap::Print(const TString& key, ofstream& out) const
 {
-// Prints the map elements
+/// Special printing 
 
   for (Int_t i=0; i<fNofItems; i++) {
     out  << key << "  "

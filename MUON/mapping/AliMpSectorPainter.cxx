@@ -62,7 +62,7 @@ AliMpSectorPainter::~AliMpSectorPainter()
 //_______________________________________________________________________
 void AliMpSectorPainter::DumpObject()
 {
-//// Draw the owned object
+/// Draw the owned object
 
   fSector->Dump();
 }
@@ -70,7 +70,7 @@ void AliMpSectorPainter::DumpObject()
 //_______________________________________________________________________
 TVector2 AliMpSectorPainter::GetPosition() const
 {
-//// Get the owned object's position
+/// Get the owned object's position
 
   if (fSector->GetNofRows()<1) return TVector2(0.,0.);
   AliMpRow* row = fSector->GetRow(0);
@@ -99,7 +99,7 @@ TVector2 AliMpSectorPainter::GetPosition() const
 //_______________________________________________________________________
 TVector2 AliMpSectorPainter::GetDimensions() const
 {
-//// Get the owned object's dimensions
+/// Get the owned object's dimensions
 
   if (fSector->GetNofRows()<1) return TVector2(0.,0.);
   AliMpRow* row = fSector->GetRow(0);
@@ -197,7 +197,7 @@ void AliMpSectorPainter::Draw(Option_t *option)
 //_______________________________________________________________________
 void AliMpSectorPainter::Paint(Option_t* /*option*/)
 {
-//// Paint the object
+/// Paint the object
 
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fSector) return;

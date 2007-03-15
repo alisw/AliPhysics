@@ -41,11 +41,15 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 {
   public:
 #ifdef WITH_STL
+    /// Pad dimensions map type
     typedef std::map<Int_t, TVector2>         PadDimensionsMap;
+    /// Pad dimensions map iterator type
     typedef PadDimensionsMap::const_iterator  PadDimensionsMapCIterator;
 #endif
 #ifdef WITH_ROOT
+    /// Pad dimensions map type
     typedef  TExMap      PadDimensionsMap;
+    /// Pad dimensions map iterator type
     typedef  TExMapIter  PadDimensionsMapCIterator;
 #endif
 
@@ -99,12 +103,14 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     TVector2 Dimensions() const;
     
   private:
+    /// Not implemented
     AliMpSectorSegmentation(const AliMpSectorSegmentation& right);
+    /// Not implemented
     AliMpSectorSegmentation&  operator = (const AliMpSectorSegmentation& right);
 
 #ifdef WITH_ROOT
-    static const Double_t   fgkS1;  // the separators used for conversion
-    static const Double_t   fgkS2;  // of TVector2 to Long_t
+    static const Double_t   fgkS1;  ///< the separators used for conversion
+    static const Double_t   fgkS2;  ///< of TVector2 to Long_t
     
     // methods
     Long_t    GetIndex(const TVector2& vector2) const;
@@ -139,6 +145,7 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
 
 // inline functions
 
+/// Return the sector
 inline const AliMpSector* AliMpSectorSegmentation::GetSector() const
 { return fkSector; }
 

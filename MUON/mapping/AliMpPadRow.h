@@ -34,9 +34,11 @@ class AliMpPadRow : public TObject
 {
   public:
 #ifdef WITH_STL
+    /// Pad row segment vector type
     typedef std::vector<AliMpVPadRowSegment*>  PadRowSegmentVector;
 #endif
 #ifdef WITH_ROOT
+    /// Pad row segment vector type
     typedef TObjArray  PadRowSegmentVector;
 #endif
 

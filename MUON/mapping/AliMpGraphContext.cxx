@@ -115,8 +115,8 @@ void AliMpGraphContext::RealToPad(const TVector2 &position,
 			      TVector2 &padPosition,
 			      TVector2 &padDimensions) const
 {
-  // Transform the real area (position,dimensions) to
-  // its equivalent pad area
+  /// Transform the real area (position,dimensions) to
+  /// its equivalent pad area
 
   padPosition = RealToPad(position);
   padDimensions = 

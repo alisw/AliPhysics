@@ -31,10 +31,12 @@ class AliMpRowPainter : public AliMpVPainter
   virtual TVector2 GetDimensions() const;
 
  private: 
+  /// Not implemented
   AliMpRowPainter(const AliMpRowPainter& right);
+  /// Not implemented
   AliMpRowPainter&  operator = (const AliMpRowPainter& right);
 
-  AliMpRow *fRow;             ///< the row to paint
+  AliMpRow *fRow; ///< the row to paint
   
   ClassDef(AliMpRowPainter,1) // Row painter
 };

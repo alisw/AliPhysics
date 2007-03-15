@@ -63,8 +63,11 @@ class AliMpSegmentation : public  TObject {
 			         Bool_t warn = true) const;
     
   private:
+    /// Not implemented
     AliMpSegmentation();
+    /// Not implemented
     AliMpSegmentation(const AliMpSegmentation& rhs);
+    /// Not implemented
     AliMpSegmentation& operator=(const AliMpSegmentation& rhs);
 
     AliMpVSegmentation* CreateMpSegmentation(

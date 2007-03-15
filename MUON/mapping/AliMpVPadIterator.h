@@ -28,10 +28,15 @@ class AliMpVPadIterator : public TObject
     AliMpVPadIterator& operator = (const AliMpVPadIterator& right);
 
     // methods
+                 /// Set iterator to the first pad
     virtual void First() = 0;
+                 /// Set iterator to the next pad
     virtual void Next() = 0;
+                 /// Is iterator done
     virtual Bool_t IsDone() const = 0;
+                 /// Return current pad
     virtual AliMpPad CurrentItem() const = 0;
+                 /// Invalidate iterator (
     virtual void Invalidate() = 0;
  
   ClassDef(AliMpVPadIterator,1) // abstract pad iterator

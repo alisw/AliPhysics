@@ -29,22 +29,35 @@ class AliMpConnection : public TObject
 
     // methods
 
+    //
     // accessors
+    //
+          /// Return Berg connector number
     Int_t GetBergNum()   const {return fBergNum;}
+          /// Return kapton connector number
     Int_t GetKaptonNum() const {return fKaptonNum;}
+          /// Return Gassiplex channel number
     Int_t GetGassiNum()  const {return fGassiNum;}
+          /// Return pad number
     Int_t GetPadNum()  const {return fPadNum;}
+          /// Return the motif type which contains this connection
     AliMpMotifType *GetOwner() const {return fOwner;}
     
     void SetGassiNum(Int_t n) { fGassiNum = n; }
     
     AliMpIntPair LocalIndices() const;
     TString  PadName() const;
+    
+    //
     // modifiers
+    //
+          /// Set the motif type which contains this connection
     void SetOwner(AliMpMotifType *owner) {fOwner=owner;}
 
   private:
+    /// Not implemented
     AliMpConnection(const AliMpConnection& right);
+    /// Not implemented
     AliMpConnection& operator=(const AliMpConnection& right);
 
     // data members
@@ -59,9 +72,11 @@ class AliMpConnection : public TObject
 
 // inline functions
 
+          /// Return the pad number converted to a name
 inline TString AliMpConnection::PadName() const 
 { return fOwner->PadName(fPadNum); }
 
+          /// Return the local indices of this pad in the motif
 inline AliMpIntPair AliMpConnection::LocalIndices() const
 { return fOwner->FindLocalIndicesByConnection(this);}
 

@@ -50,9 +50,11 @@ class AliMpMotif : public AliMpVMotif
 
 // inline functions
 
+                            /// Return 1 as the number of pad dimensions 
 inline Int_t    AliMpMotif::GetNofPadDimensions() const 
 { return 1; }
 
+                            /// Return the pad dimensions 
 inline TVector2 AliMpMotif::GetPadDimensions(Int_t /*i*/) const 
 { return fPadDimensions; }  
 

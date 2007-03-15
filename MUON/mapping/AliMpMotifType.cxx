@@ -45,7 +45,6 @@ AliMpMotifType::AliMpMotifType(const TString &id)
     fID(id),
     fNofPadsX(0),   
     fNofPadsY(0),
-    fVerboseLevel(0),
 #ifdef WITH_STL
     fConnections()
 #endif
@@ -53,7 +52,10 @@ AliMpMotifType::AliMpMotifType(const TString &id)
     fConnections(true)
 #endif
 {
-  /// Standard constructor
+  /// Standard constructor                                                   \n
+  /// Please note that id should be of the form %s for station 1,2,
+  //  %s-%e-%e for station345 and %sx%e for stationTrigger
+      
       AliDebug(1,Form("this=%p id=%s",this,id.Data()));
 }
 
@@ -63,7 +65,6 @@ AliMpMotifType::AliMpMotifType()
     fID(""),
     fNofPadsX(0),   
     fNofPadsY(0),
-    fVerboseLevel(0),
     fConnections()
 {
   /// Default constructor
@@ -76,7 +77,6 @@ AliMpMotifType::AliMpMotifType(const AliMpMotifType& rhs)
   fID(""),
   fNofPadsX(0),   
   fNofPadsY(0),
-  fVerboseLevel(0),
   fConnections()
 {
   /// Copy constructor
@@ -115,7 +115,6 @@ AliMpMotifType::Copy(TObject& object) const
   mt.fID = fID;
   mt.fNofPadsX = fNofPadsX;
   mt.fNofPadsY = fNofPadsY;
-  mt.fVerboseLevel = fVerboseLevel;
   mt.fConnections = fConnections;
 }
 

@@ -49,19 +49,31 @@ class AliMpMotifMap : public TObject
 {
   public:
 #ifdef WITH_STL
+    /// Motif map type
     typedef std::map<TString, AliMpVMotif*> MotifMap;
+    /// Motif map iterator type
     typedef MotifMap::const_iterator        MotifMapIterator;
+    /// Motif type map type
     typedef std::map<TString, AliMpMotifType*> MotifTypeMap;
+    /// Motif type map iterator type
     typedef MotifTypeMap::const_iterator       MotifTypeMapIterator;
+    /// Motif position map to int type
     typedef std::map<Int_t, AliMpMotifPosition*>  MotiPositionMap;
+    /// Motif position map to int iterator type
     typedef MotiPositionMap::const_iterator       MotifPositionMapIterator;
+    /// Motif position map to int pair type
     typedef std::map<AliMpIntPair, AliMpMotifPosition*> MotifPositionMap2;
+    /// Motif position map to int pair iterator type
     typedef MotifPositionMap2::const_iterator           MotifPositionMap2Iterator;
 #endif    
 #ifdef WITH_ROOT
+    /// Motif map type
     typedef AliMpExMap MotifMap;
+    /// Motif type map type
     typedef AliMpExMap MotifTypeMap;
+    /// Motif position map to int type
     typedef AliMpExMap MotifPositionMap;
+    /// Motif position map to int pair iterator type
     typedef AliMpExMap MotifPositionMap2;
 #endif    
 

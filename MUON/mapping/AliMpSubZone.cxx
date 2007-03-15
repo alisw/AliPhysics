@@ -57,7 +57,7 @@ AliMpSubZone::AliMpSubZone()
 //_____________________________________________________________________________
 AliMpSubZone::~AliMpSubZone() 
 {
-// Destructor 
+/// Destructor 
 }
 
 //

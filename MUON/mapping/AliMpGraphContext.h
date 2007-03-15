@@ -33,9 +33,11 @@ class AliMpGraphContext : public TObject
 {
  public:
 #ifdef WITH_STL
+  /// GraphContextVector type
   typedef std::vector<AliMpGraphContext*> GraphContextVector;
 #endif
 #ifdef WITH_ROOT
+  /// GraphContextVector type
   typedef TObjArray GraphContextVector;
 #endif
 
@@ -44,19 +46,33 @@ class AliMpGraphContext : public TObject
   void Pop();
   static AliMpGraphContext *Instance();
 
+  //
   // set methods
-
+  //
+           /// Set position of the pad area where to draw
   void SetPadPosition(const TVector2 &position){fPadPosition=position;}
+           /// Set dimensions of the pad area where to draw
   void SetPadDimensions(const TVector2 &dimensions){fPadDimensions=dimensions;}
+           /// Set position of the real area where to draw
   void SetRealPosition(const TVector2 &position){fRealPosition=position;}
+           /// Set dimensions of the real area where to draw
   void SetRealDimensions(const TVector2 &dimensions){fRealDimensions=dimensions;}
+           /// Set color to use
   void SetColor(Int_t color){fColor=color;}
 
+  //
   // get methods
+  //
+
+           /// Return position of the pad area where to draw
   TVector2 GetPadPosition() const {return fPadPosition;}
+           /// Return dimensions of the pad area where to draw
   TVector2 GetPadDimensions() const {return fPadDimensions;}
+           /// Return position of the real area where to draw
   TVector2 GetRealPosition() const{return fRealPosition;}
+           /// Return dimensions of the real area where to draw
   TVector2 GetRealDimensions() const{return fRealDimensions;}
+           /// Return color to use
   Int_t GetColor() const {return fColor;}
 
   //methods

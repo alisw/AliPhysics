@@ -667,6 +667,8 @@ Bool_t AliMpSectorSegmentation::CircleTest(const AliMpIntPair& indices) const
 void
 AliMpSectorSegmentation::Print(Option_t* opt) const
 {
+/// Print the sector
+
   fkSector->Print(opt);
 }
 

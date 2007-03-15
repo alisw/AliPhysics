@@ -33,7 +33,9 @@ class AliMpSubZonePainter : public AliMpVPainter
   virtual Int_t DistancetoPrimitive(Int_t x, Int_t y);
 
  private: 
+  /// Not implemented
   AliMpSubZonePainter(const AliMpSubZonePainter& right);
+  /// Not implemented
   AliMpSubZonePainter&  operator = (const AliMpSubZonePainter& right);
 
   AliMpSubZone *fSubZone; ///< the subzone to draw

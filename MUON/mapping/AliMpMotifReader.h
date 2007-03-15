@@ -43,10 +43,13 @@ class AliMpMotifReader : public TObject
 {
   public:
 #ifdef WITH_STL
+    /// Map of int pair to string
     typedef std::map<std::string, std::pair<Int_t,Int_t> > PadMapType;
+    /// Map of int pair to string iterator
     typedef PadMapType::iterator PadMapTypeIterator;
 #endif    
 #ifdef WITH_ROOT
+    /// Map of int pair to string
     typedef TExMap PadMapType;
 #endif    
 
@@ -63,7 +66,9 @@ class AliMpMotifReader : public TObject
     TString MotifSpecialName(const TString& motifID, Double_t scale);
     
   private:
+    /// Not implemented
     AliMpMotifReader(const AliMpMotifReader& right);
+    /// Not implemented
     AliMpMotifReader&  operator = (const AliMpMotifReader& right);
 
     // data members  

@@ -25,23 +25,38 @@ class AliMpVPainter : public TObject
   virtual ~AliMpVPainter();
 
   void DumpObject() const; // *MENU*
+          /// Paint the associated object
   virtual void Paint(Option_t *option)=0;
   virtual TObject* Clone(const char* newname="") const;
   virtual TObject* DrawClone(Option_t* option) const; // *MENU*
 
+  //
   // get methods
+  //
+           /// Return the position inside the graphics pad
   TVector2 GetPadPosition() const {return fPadPosition;}
+           /// Return the dimensions inside the graphics pad
   TVector2 GetPadDimensions() const {return fPadDimensions;}
+           /// Return the color
   Int_t GetColor() const {return fColor;}
 
+  //
   // set methods
+  //
+           /// Set the position inside the graphics pad
   void SetPadPosition(const TVector2 &padPosition){fPadPosition=padPosition;}
+           /// Set the dimensions inside the graphics pad
   void SetPadDimension(const TVector2 &padDimensions){fPadDimensions=padDimensions;}
+           /// Set the color
   void SetColor(Int_t color){fColor=color;}
 
+  //
   // methods
+  //
   Bool_t IsInside(const TVector2 &point,const TVector2& pos,const TVector2& dim);
+          /// Return the owned object's position
   virtual TVector2 GetPosition() const=0;
+          /// Return the owned object's dimensions
   virtual TVector2 GetDimensions() const=0;
   void InitGraphContext();
   void PaintWholeBox(Bool_t fill=kTRUE);
@@ -51,11 +66,15 @@ class AliMpVPainter : public TObject
   static AliMpVPainter *CreatePainter(TObject *object);
 
  protected:
+  /// Not implemented
   void AddPainter(AliMpVPainter *painter);
+  /// Not implemented
   AliMpVPainter *DrawObject(TObject *object,Option_t *option="");
 
  private:
+  /// Not implemented
   AliMpVPainter(const AliMpVPainter& right);
+  /// Not implemented
   AliMpVPainter&  operator = (const AliMpVPainter& right);
 
   Int_t fColor;            ///< color

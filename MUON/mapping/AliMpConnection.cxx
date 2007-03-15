@@ -61,6 +61,6 @@ AliMpConnection::AliMpConnection()
 //_____________________________________________________________________________
 AliMpConnection::~AliMpConnection() 
 {
-//
+/// Destructor  
   AliDebug(1,Form("this=%p"));
 }

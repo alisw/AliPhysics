@@ -51,8 +51,11 @@ class AliMpDEManager : public  TObject {
     static Int_t GetNofDEInChamber(Int_t chamberId, Bool_t warn = true);
 
   private:
+    /// Not implemented
     AliMpDEManager();
+    /// Not implemented
     AliMpDEManager(const AliMpDEManager& rhs);
+    /// Not implemented
     AliMpDEManager& operator=(const AliMpDEManager& rhs);
       
     // static data members	

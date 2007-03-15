@@ -32,7 +32,9 @@ class AliMpMotifPainter : public AliMpVPainter
   virtual TVector2 GetDimensions() const;
 
  private:
+  /// Not implemented
   AliMpMotifPainter(const AliMpMotifPainter& right);
+  /// Not implemented
   AliMpMotifPainter&  operator = (const AliMpMotifPainter& right);
 
   void PaintContour(Option_t* option, Bool_t fill);

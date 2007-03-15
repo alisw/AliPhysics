@@ -94,7 +94,7 @@ Int_t AliMpSubZonePainter::DistancetoPrimitive(Int_t x, Int_t y)
 //_______________________________________________________________________
 void AliMpSubZonePainter::DumpObject()
 {
-  //// Draw the owned object
+  /// Draw the owned object
   
   fSubZone->Dump();
 }
@@ -102,7 +102,7 @@ void AliMpSubZonePainter::DumpObject()
 //_______________________________________________________________________
 TVector2 AliMpSubZonePainter::GetPosition() const
 {
-  //// Get the owned object's position
+  /// Get the owned object's position
 
   if (fSubZone->GetNofRowSegments()<1) return TVector2(0.,0.);
   AliMpVRowSegment* seg = fSubZone->GetRowSegment(0);
@@ -131,7 +131,7 @@ TVector2 AliMpSubZonePainter::GetPosition() const
 //_______________________________________________________________________
 TVector2 AliMpSubZonePainter::GetDimensions() const
 {
-  //// Get the owned object's dimensions
+  /// Get the owned object's dimensions
 
   if (fSubZone->GetNofRowSegments()<1) return TVector2(0.,0.);
   AliMpVRowSegment* seg = fSubZone->GetRowSegment(0);
@@ -199,7 +199,7 @@ void AliMpSubZonePainter::Draw(Option_t *option)
 //_______________________________________________________________________
 void AliMpSubZonePainter::Paint(Option_t *option)
 {
-//// Paint the object
+/// Paint the object
 
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fSubZone) return;

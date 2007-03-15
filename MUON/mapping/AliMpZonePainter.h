@@ -34,7 +34,9 @@ class AliMpZonePainter : public AliMpVPainter
   virtual Int_t DistancetoPrimitive(Int_t x, Int_t y);
 
  private: 
+  /// Not implemented
   AliMpZonePainter(const AliMpZonePainter& right);
+  /// Not implemented
   AliMpZonePainter&  operator = (const AliMpZonePainter& right);
 
   AliMpZone *fZone; ///< the zone to draw

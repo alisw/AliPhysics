@@ -75,8 +75,7 @@ Bool_t  AliMpConstants::IsEqual(const TVector2& v1, const TVector2& v2)
 Int_t
 AliMpConstants::ManuMask(AliMp::PlaneType planeType)
 {
-  //
-  // The manuIDs get an offset if they are in the non-bending plane
-  //
+/// The manuIDs get an offset if they are in the non-bending plane
+
   return ( planeType == AliMp::kNonBendingPlane ) ? fgkNonBendingManuMask : 0;
 }

@@ -31,9 +31,11 @@ class AliMpPad : public TObject
 {
  public:
 #ifdef WITH_STL
+  /// Int pair vector type
   typedef std::vector<AliMpIntPair> IntPairVector;
 #endif
 #ifdef WITH_ROOT
+  /// Int pair vector type
   typedef TClonesArray  IntPairVector;
 #endif
 
@@ -45,26 +47,42 @@ class AliMpPad : public TObject
   AliMpPad(const AliMpPad& src);
   virtual ~AliMpPad();
 
+  //
   // operators  
+  //
   Bool_t operator == (const AliMpPad& pos2) const;
   Bool_t operator != (const AliMpPad& pos2) const;
   AliMpPad& operator = (const AliMpPad& src) ;
   
+  //
   // methods
+  //
           void PrintOn(ostream& out) const;
   virtual void Print(const char* /*option*/ = "") const;
 
+  //
   // static get methods
+  //
+               /// Return invalid pad
   static AliMpPad Invalid() {return AliMpPad();}
 
+  //
   // set methods
+  //
   Bool_t  AddLocation(const AliMpIntPair& location, Bool_t warn = true);
 
+  //
   // get methods
+  //
+               /// Return pad location
   AliMpIntPair GetLocation() const {return fLocation;}
+               /// Return pad indices
   AliMpIntPair GetIndices()  const {return fIndices;}
+               /// Return the pad position (in cm)
   TVector2     Position()    const {return fPosition  ;}
+               /// Return the pad dimensions (in cm)
   TVector2     Dimensions()  const {return fDimensions;}
+               /// Return validity
   Bool_t       IsValid()     const {return fValidity  ;}
   
   Int_t        GetNofLocations() const;

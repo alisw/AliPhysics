@@ -37,7 +37,7 @@ class AliMpConstants : public TObject
   static Int_t    ManuMask(AliMp::PlaneType planeType);
   
  private:
-  // unused derived functions
+                  /// unused derived functions
   virtual Bool_t  IsEqual(const TObject*) const { return true; }
  
   // static data members
@@ -54,10 +54,15 @@ class AliMpConstants : public TObject
 
 // inline functions
 
+                /// Return the length precision for tests
 inline Double_t AliMpConstants::LengthTolerance() { return fgkLengthTolerance;}
+                /// Return the step in length used to move from a geometric border
 inline Double_t AliMpConstants::LengthStep()      { return fgkLengthStep;}
+                /// Return global pad indices start value
 inline Int_t    AliMpConstants::StartPadIndex()   { return fgkStartPadIndex;}
+                /// Return number of chambers
 inline Int_t    AliMpConstants::NofChambers()     { return fgkNofChambers;}
+                /// Return number of geometry modules
 inline Int_t    AliMpConstants::NofGeomModules()  { return fgkNofGeomModules;}
 
 #endif //ALI_MP_CONSTANTS_H

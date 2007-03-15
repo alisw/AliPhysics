@@ -46,7 +46,9 @@ class AliMpPadPair : public TObject
 
 // inline functions
 
+                /// Return the first pad
 inline AliMpPad AliMpPadPair::GetFirst() const  { return fPadFirst; } 
+                /// Return the second pad
 inline AliMpPad AliMpPadPair::GetSecond() const { return fPadSecond; } 
 
 

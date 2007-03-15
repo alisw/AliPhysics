@@ -47,7 +47,9 @@ class AliMpMotifPosition : public AliMpVIndexed
   void Print(Option_t* option="") const;
 
  private:
+  /// Not implemented
   AliMpMotifPosition(const AliMpMotifPosition& right);
+  /// Not implemented
   AliMpMotifPosition&  operator = (const AliMpMotifPosition& right);
 
   // methods
@@ -61,15 +63,19 @@ class AliMpMotifPosition : public AliMpVIndexed
 
 // inline functions
 
+/// Return motif position ID = manu id
 inline Int_t  AliMpMotifPosition::GetID() const 
 { return fID; }
 
+/// Return motif 
 inline AliMpVMotif*  AliMpMotifPosition::GetMotif() const
 { return fMotif; }
  
+/// Return position
 inline TVector2 AliMpMotifPosition::Position() const
 { return fPosition; }
 
+/// Return dimensions
 inline TVector2 AliMpMotifPosition::Dimensions() const
 { return fMotif->Dimensions(); }
 

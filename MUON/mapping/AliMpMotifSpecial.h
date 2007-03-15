@@ -35,11 +35,15 @@ class AliMpMotifSpecial : public AliMpVMotif
 {
  public:
 #ifdef WITH_STL
+  /// Dimensions map type
   typedef std::vector< TVector2 > DimensionsMap;
+  /// Dimensions map iterator type
   typedef std::vector< TVector2 > DimensionsMap2;
 #endif    
 #ifdef WITH_ROOT
+  /// Dimensions map type
   typedef AliMpExMap DimensionsMap;
+  /// Dimensions map iterator type
   typedef TObjArray  DimensionsMap2;
 #endif    
 

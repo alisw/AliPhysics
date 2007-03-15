@@ -33,9 +33,11 @@ class AliMpSubZone : public TObject
 {
   public:
 #ifdef WITH_STL
+    /// Row segment vector type
     typedef std::vector<AliMpVRowSegment*>  RowSegmentVector;
 #endif
 #ifdef WITH_ROOT
+    /// Row segment vector type
     typedef TList  RowSegmentVector;
 #endif
 
@@ -54,7 +56,9 @@ class AliMpSubZone : public TObject
     AliMpVMotif*       GetMotif() const;
 
   private:
+    /// Not implemented
     AliMpSubZone(const AliMpSubZone& right);
+    /// Not implemented
     AliMpSubZone&  operator = (const AliMpSubZone& right);
 
     // data members

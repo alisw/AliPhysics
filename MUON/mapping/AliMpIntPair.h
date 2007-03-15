@@ -35,16 +35,28 @@ class AliMpIntPair : public TObject
   void operator += (const AliMpIntPair& op);
   void operator -= (const AliMpIntPair& op);
 
+  //
   // static get methods
+  //
+         /// Return invalid pair
   static AliMpIntPair Invalid() {return AliMpIntPair();}
 
+  //
   // get methods
+  //
+         /// Return first value
   Int_t  GetFirst() const  {return fFirst;}
+         /// Return second value
   Int_t  GetSecond() const {return fSecond;}
+         /// Return validity
   Bool_t IsValid() const   {return fValidity;}
 
+  //
   // set methods
+  //
+         /// Set first value 
   void SetFirst(Int_t ix)  {fFirst=ix; fValidity=true; }
+         /// Set second value 
   void SetSecond(Int_t iy) {fSecond=iy; fValidity=true;}
   void Set(Int_t ix, Int_t iy) { fFirst=ix; fSecond=iy; fValidity=true; }
   

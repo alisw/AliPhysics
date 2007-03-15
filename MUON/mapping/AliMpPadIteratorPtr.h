@@ -26,16 +26,17 @@ class AliMpPadIteratorPtr : public TObject
 {
   public:
     AliMpPadIteratorPtr(AliMpVPadIterator* it);
-    // AliMpPadIteratorPtr(const AliMpPadIteratorPtr& right); --> private
     virtual ~AliMpPadIteratorPtr();
   
+                       /// Operator ->
     AliMpVPadIterator* operator->() { return  fIterator; }
+                       /// Operator *
     AliMpVPadIterator& operator*()  { return *fIterator; }
 
   private:   
+    /// Not implemented
     AliMpPadIteratorPtr(const AliMpPadIteratorPtr& right);
-
-    // operators
+    /// Not implemented
     AliMpPadIteratorPtr& operator=(const AliMpPadIteratorPtr& right);
         // copy and assignment are disallowed to avoid
         // multiple deletion of fIterator

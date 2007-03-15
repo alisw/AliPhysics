@@ -27,6 +27,7 @@ class AliMpVIndexed : public TObject
   virtual ~AliMpVIndexed();
 
   // methods
+          /// Create iterator over this element
   virtual AliMpVPadIterator* CreateIterator() const = 0;
   virtual AliMpIntPair  GlobalIndices(const AliMpIntPair& localIndices) const;
 
@@ -50,15 +51,19 @@ class AliMpVIndexed : public TObject
 
 // inline functions
 
+/// Set low indices limit
 inline void AliMpVIndexed::SetLowIndicesLimit(const AliMpIntPair& limit)
 { fLowIndicesLimit = limit; }
   
+/// Set high indices limit
 inline void AliMpVIndexed::SetHighIndicesLimit(const AliMpIntPair& limit)
 { fHighIndicesLimit = limit; }  
   
+/// Return low indices limit
 inline AliMpIntPair AliMpVIndexed::GetLowIndicesLimit() const
 { return fLowIndicesLimit; }
 
+/// Return high indices limit
 inline AliMpIntPair AliMpVIndexed::GetHighIndicesLimit() const
 { return fHighIndicesLimit; }
 

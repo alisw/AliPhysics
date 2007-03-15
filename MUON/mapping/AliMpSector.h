@@ -44,11 +44,15 @@ class AliMpSector : public TNamed
 {
   public:
 #ifdef WITH_STL
+    /// Row vector type
     typedef std::vector<AliMpRow*> RowVector;
+    /// Zone vector type
     typedef std::vector<AliMpZone*> ZoneVector;
 #endif
 #ifdef WITH_ROOT
+    /// Row vector type
     typedef TObjArray  RowVector;
+    /// Zone vector type
     typedef TObjArray  ZoneVector;
 #endif
 
@@ -103,7 +107,9 @@ class AliMpSector : public TNamed
     
     
   private:
+    /// Not implemented
     AliMpSector(const AliMpSector& right);
+    /// Not implemented
     AliMpSector&  operator = (const AliMpSector& right);
 
     // methods
@@ -120,34 +126,39 @@ class AliMpSector : public TNamed
     TVector2   fOffset;   ///< sector position
     ZoneVector fZones;    ///< zones
     RowVector  fRows;     ///< rows
-    AliMpMotifMap*   fMotifMap; ///< motif map
-    AliMp::Direction fDirection;///< the direction of constant pad size
+    AliMpMotifMap*   fMotifMap;         ///< motif map
+    AliMp::Direction fDirection;        ///< the direction of constant pad size
     TVector2         fMinPadDimensions; ///< minimum pad dimensions
     TVector2         fMaxPadDimensions; ///< miximum pad dimensions
     AliMpIntPair     fMaxPadIndices;    ///< maximum pad indices    
     Int_t            fNofPads;          ///<  total number of pads
-
 
   ClassDef(AliMpSector,1)  // Sector
 };
 
 // inline functions
 
+/// Return the direction of constant pad size
 inline AliMp::Direction AliMpSector::GetDirection() const 
 { return fDirection; }    
 
+/// Return minimum pad dimensions
 inline TVector2   AliMpSector::GetMinPadDimensions() const
 { return fMinPadDimensions; }
 
+/// Return maxmum pad dimensions
 inline TVector2   AliMpSector::GetMaxPadDimensions() const
 { return fMaxPadDimensions; }
 
+/// Return maximum pad indices
 inline AliMpIntPair  AliMpSector::GetMaxPadIndices() const
 { return fMaxPadIndices; }
 
+/// Return total number of pads
 inline Int_t  AliMpSector::GetNofPads() const
 { return fNofPads; }
 
+/// Return the motif map
 inline AliMpMotifMap* AliMpSector::GetMotifMap() const 
 { return fMotifMap; }    
 

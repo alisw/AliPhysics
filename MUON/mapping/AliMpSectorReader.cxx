@@ -79,7 +79,7 @@ AliMpSectorReader::AliMpSectorReader(AliMp::StationType station,
     fSector(0),
     fMotifReader(new AliMpMotifReader(station, plane))
 {
-// Standard constructor
+/// Standard constructor
 }
 
 //_____________________________________________________________________________
@@ -90,7 +90,7 @@ AliMpSectorReader::AliMpSectorReader()
     fSector(0),
     fMotifReader(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 //_____________________________________________________________________________

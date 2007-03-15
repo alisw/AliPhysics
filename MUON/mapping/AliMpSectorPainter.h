@@ -31,7 +31,9 @@ class AliMpSectorPainter : public AliMpVPainter
   virtual TVector2 GetDimensions() const;
 
  private:
+  /// Not implemented
   AliMpSectorPainter(const AliMpSectorPainter& right);
+  /// Not implemented
   AliMpSectorPainter&  operator = (const AliMpSectorPainter& right);
 
   AliMpSector *fSector; ///< the sector to draw

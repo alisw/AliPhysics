@@ -45,8 +45,10 @@ class AliMpSectorReader : public TObject
     AliMpSector*  BuildSector();
     
   private:  
+    /// Not implemented
     AliMpSectorReader(const AliMpSectorReader& right);
-    AliMpSectorReader&  operator = (const AliMpSectorReader& right);
+    /// Not implemented
+    AliMpSectorReader& operator = (const AliMpSectorReader& right);
 
     // methods
     void  ReadSectorData(ifstream& in);

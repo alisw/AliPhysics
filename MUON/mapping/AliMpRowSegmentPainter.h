@@ -31,7 +31,9 @@ class AliMpRowSegmentPainter : public AliMpVPainter
   virtual TVector2 GetDimensions() const;
 
  private: 
+  /// Not implemented
   AliMpRowSegmentPainter(const AliMpRowSegmentPainter& right);
+  /// Not implemented
   AliMpRowSegmentPainter&  operator = (const AliMpRowSegmentPainter& right);
 
   AliMpVRowSegment *fRowSegment; ///< the row segment to draw

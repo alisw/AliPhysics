@@ -57,7 +57,9 @@ class AliMpRowSegment : public AliMpVRowSegment
     virtual Int_t         GetMotifPositionId(Int_t i) const;
 
   private:
+    /// Not implemented
     AliMpRowSegment(const AliMpRowSegment& right);
+    /// Not implemented
     AliMpRowSegment&  operator = (const AliMpRowSegment& right);
 
     // methods

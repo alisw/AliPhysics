@@ -36,9 +36,11 @@ class AliMpRow : public AliMpVIndexed
 {
   public:
 #ifdef WITH_STL
+    /// Row segment vector type
     typedef std::vector<AliMpVRowSegment*>  RowSegmentVector;
 #endif
 #ifdef WITH_ROOT
+    /// Row segment vector type
     typedef TList  RowSegmentVector;
 #endif
 
@@ -72,7 +74,9 @@ class AliMpRow : public AliMpVIndexed
     AliMpMotifMap*     GetMotifMap() const;
 
   private:
+    /// Not implemented
     AliMpRow(const AliMpRow& right);
+    /// Not implemented
     AliMpRow&  operator = (const AliMpRow& right);
 
     // methods
@@ -92,7 +96,10 @@ class AliMpRow : public AliMpVIndexed
 
 // inline functions
 
+/// Return row ID
 inline  UInt_t  AliMpRow::GetID() const { return fID; }
+
+/// Return the motif map associated with its sector
 inline  AliMpMotifMap*  AliMpRow::GetMotifMap() const { return fMotifMap; }
 
 #endif //ALI_MP_ROW_H

@@ -31,7 +31,9 @@ class AliMpStringObjMap : public TObject
     void Print(const TString& key, ofstream& out) const;
     
   private:
+    /// Not implemented
     AliMpStringObjMap(const AliMpStringObjMap& rhs);
+    /// Not implemented
     AliMpStringObjMap& operator = (const AliMpStringObjMap& rhs);
 
     // data members

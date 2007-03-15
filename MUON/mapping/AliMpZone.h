@@ -36,9 +36,11 @@ class AliMpZone : public TObject
 {
   public:
 #ifdef WITH_STL
+    /// Sub zone vector type
     typedef std::vector<AliMpSubZone*>  SubZoneVector;
 #endif
 #ifdef WITH_ROOT
+    /// Sub zone vector type
     typedef TObjArray  SubZoneVector;
 #endif
 
@@ -73,12 +75,15 @@ class AliMpZone : public TObject
 
 // inline functions
 
+/// Set pad dimensions
 inline  void AliMpZone::SetPadDimensions(const TVector2& padDimensions)
 { fPadDimensions = padDimensions; }
 
+/// Return ID
 inline  UInt_t  AliMpZone::GetID() const 
 { return fID; }
 
+/// Return pad dimensions
 inline  TVector2  AliMpZone::GetPadDimensions() const 
 { return fPadDimensions;}
 

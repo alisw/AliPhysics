@@ -37,27 +37,27 @@ ClassImp(AliMpHelper)
 //_____________________________________________________________________________
 AliMpHelper::AliMpHelper() : TObject()
 {
-  //
-  // Default (empty) ctor.
-  // 
+  ///
+  /// Default (empty) ctor.
+  /// 
 } 
  
 //_____________________________________________________________________________
 AliMpHelper::~AliMpHelper()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
 }
 
 //_____________________________________________________________________________
 void AliMpHelper::DecodeName(const char* name, char sep, TArrayI& theList)
 {
-  //
-  // From a string of the form "i-j;k;l;m-n" returns an integer array
-  // containing all the integers from i to j, then k, l and then from m to
-  // n.
-  //
+  ///
+  /// From a string of the form "i-j;k;l;m-n" returns an integer array
+  /// containing all the integers from i to j, then k, l and then from m to
+  /// n.
+  ///
   theList.Set(0);
   
   TString str(name);
@@ -99,10 +99,10 @@ void
 AliMpHelper::GetRange(const char* cstr, Int_t& begin, Int_t& end, 
                       Int_t& incr, Int_t& n)
 {
-  //
-  // From a string of the form "m-n" returns a range (begin,end),
-  // its ordering (incr=+-1) and its size (abs(begin-end)+1)
-  //
+  ///
+  /// From a string of the form "m-n" returns a range (begin,end),
+  /// its ordering (incr=+-1) and its size (abs(begin-end)+1)
+  ///
   TString str(cstr);
   
   incr = 1;
@@ -132,9 +132,9 @@ AliMpHelper::GetRange(const char* cstr, Int_t& begin, Int_t& end,
 //_____________________________________________________________________________
 TString AliMpHelper::Normalize(const char* line)
 {
-  //
-  // Remove multiple blanks, and blanks in the begining/end.
-  //
+  ///
+  /// Remove multiple blanks, and blanks in the begining/end.
+  ///
   TString rv(line);
   
   if ( rv.Length() <= 0 ) return TString();

@@ -39,23 +39,27 @@ class AliMpVSegmentation : public TObject
     virtual ~AliMpVSegmentation();
   
     // factory methods
-    /// Create a pad iterator over the given area
+    /// Create iterator over pads in the given area 
     virtual AliMpVPadIterator* CreateIterator(const AliMpArea& area) const = 0;
-    
+
     /// Create a pad iterator over the whole area
     virtual AliMpVPadIterator* CreateIterator() const = 0;
     
-    /** Fills the array with the pads that are neighbours of pad. Returns
-        the number of neighbours. */
+    /// Fill the array with the pads that are neighbours of pad. Returns
+    /// the number of neighbours.
     virtual Int_t GetNeighbours(const AliMpPad& pad, TObjArray& neighbours,
                                 Bool_t includeSelf=kFALSE,
                                 Bool_t includeVoid=kFALSE) const = 0;
 
-    // methods  
+    // methods 
+    //
+            /// Find pad by location
     virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
                                Bool_t warning = true) const = 0;
+            /// Find pad by indices
     virtual AliMpPad PadByIndices (const AliMpIntPair& indices,  
                                Bool_t warning = true) const = 0;
+            /// Find pad by position
     virtual AliMpPad PadByPosition(const TVector2& position,
                                Bool_t warning = true) const = 0;
 
@@ -64,17 +68,23 @@ class AliMpVSegmentation : public TObject
     virtual AliMpPadPair PadsLeft(const AliMpPad& pad) const;
     virtual AliMpPadPair PadsRight(const AliMpPad& pad) const;
 
+            /// Return maximum pad index in X direction
     virtual Int_t  MaxPadIndexX() const = 0;
+            /// Return maximum pad index in Y direction
     virtual Int_t  MaxPadIndexY() const = 0;
+            /// Return the number of pads in the detection element
     virtual Int_t  NofPads() const = 0;
 
+            /// Return true if the pad with given indices exists
     virtual Bool_t HasPad(const AliMpIntPair& indices) const = 0;
     
+            /// Fill the given array with the electronic card IDs
     virtual void GetAllElectronicCardIDs(TArrayI& ecn) const = 0;
 
+            /// Return the plane type
     virtual AliMp::PlaneType PlaneType() const = 0;
     
-    /// Gives the half-sizes (in cm) of the underlying detection element.
+            /// Return the half-sizes of the detection element
     virtual TVector2 Dimensions() const = 0;
     
   private:  
