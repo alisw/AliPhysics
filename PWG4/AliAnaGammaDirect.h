@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/03/08 10:24:32  schutz
+ * Coding convention
+ *
  * Revision 1.2  2007/02/09 18:40:40  schutz
  * BNew version from Gustavo
  *
@@ -67,6 +70,9 @@ public:
 
   Bool_t   IsEMCALPIDOn() const {return fEMCALPID ; }
   Bool_t   IsPHOSPIDOn() const {return fPHOSPID ; }
+  Float_t  GetEMCALPhotonWeight() { return  fEMCALPhotonWeight  ; }
+  Float_t  GetEMCALPi0Weight()    {  return fEMCALPi0Weight  ; }
+  Float_t  GetPHOSPhotonWeight()  {  return fPHOSPhotonWeight  ; }
 
   void Print(const Option_t * opt)const;
 
@@ -80,6 +86,9 @@ public:
   
   void SetEMCALPIDOn(Bool_t pid){ fEMCALPID= pid ; }
   void SetPHOSPIDOn(Bool_t pid){ fPHOSPID= pid ; }
+  void SetEMCALPhotonWeight(Float_t  w){  fEMCALPhotonWeight = w ; }
+  void SetEMCALPi0Weight(Float_t  w){  fEMCALPi0Weight = w ; }
+  void SetPHOSPhotonWeight(Float_t  w){  fPHOSPhotonWeight = w ; }
 
   void CreateParticleList(TClonesArray * particleList, 
 			  TClonesArray * plCh, TClonesArray * plNe, 
@@ -102,6 +111,9 @@ public:
   TString      fCalorimeter ; //PHOS or EMCAL detects Gamma
   Bool_t       fEMCALPID ;//Fill EMCAL particle lists with particles with corresponding pid
   Bool_t       fPHOSPID;  //Fill PHOS particle lists with particles with corresponding pid
+  Float_t      fEMCALPhotonWeight; //Bayesian PID weight for photons in EMCAL 
+  Float_t      fEMCALPi0Weight;  //Bayesian PID weight for pi0 in EMCAL 
+  Float_t      fPHOSPhotonWeight; //Bayesian PID weight for photons in PHOS 
   Float_t      fConeSize ; //Size of the isolation cone 
   Float_t      fPtThreshold ; //Mimium pt of the particles in the cone to set isolation
   Float_t      fPtSumThreshold ; //Mimium pt sum of the particles in the cone to set isolation  

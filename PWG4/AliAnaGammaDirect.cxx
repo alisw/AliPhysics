@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/03/08 10:24:32  schutz
+ * Coding convention
+ *
  * Revision 1.2  2007/02/09 18:40:40  schutz
  * BNew version from Gustavo
  *
@@ -63,6 +66,7 @@ ClassImp(AliAnaGammaDirect)
     fOutputContainer(new TObjArray(100)), 
     fPrintInfo(0), fMinGammaPt(0.),
     fCalorimeter(""), fEMCALPID(0),fPHOSPID(0),
+    fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.), fPHOSPhotonWeight(0.),
     fConeSize(0.),fPtThreshold(0.),fPtSumThreshold(0), 
     fMakeICMethod(0),fhNGamma(0),fhPhiGamma(0),fhEtaGamma(0)
 {
@@ -71,16 +75,6 @@ ClassImp(AliAnaGammaDirect)
   //Initialize parameters
   InitParameters();
 
-  TList * list = gDirectory->GetListOfKeys() ; 
-  TIter next(list) ; 
-  TH2F * h = 0 ;
-  Int_t index ; 
-  for (index = 0 ; index < list->GetSize()-1 ; index++) { 
-    //-1 to avoid GammaJet Task
-    h = dynamic_cast<TH2F*>(gDirectory->Get(list->At(index)->GetName())) ; 
-    fOutputContainer->Add(h) ; 
-  }
-  
   // Input slot #0 works with an Ntuple
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
@@ -95,6 +89,9 @@ AliAnaGammaDirect::AliAnaGammaDirect(const AliAnaGammaDirect & g) :
   fOutputContainer(g. fOutputContainer),  fPrintInfo(g.fPrintInfo),
   fMinGammaPt(g.fMinGammaPt), fCalorimeter(g.fCalorimeter),
   fEMCALPID(g.fEMCALPID),fPHOSPID(g.fPHOSPID),
+  fEMCALPhotonWeight(g.fEMCALPhotonWeight), 
+  fEMCALPi0Weight(g.fEMCALPi0Weight), 
+  fPHOSPhotonWeight(g.fPHOSPhotonWeight),
   fConeSize(g.fConeSize),
   fPtThreshold(g.fPtThreshold),
   fPtSumThreshold(g.fPtSumThreshold), 
@@ -121,6 +118,9 @@ AliAnaGammaDirect & AliAnaGammaDirect::operator = (const AliAnaGammaDirect & sou
   fCalorimeter = source. fCalorimeter ;  
   fEMCALPID = source.fEMCALPID ;
   fPHOSPID = source.fPHOSPID ;
+  fEMCALPhotonWeight = source. fEMCALPhotonWeight ;
+  fEMCALPi0Weight = source.fEMCALPi0Weight ;
+  fPHOSPhotonWeight = source.fPHOSPhotonWeight ;
   fConeSize = source.fConeSize ;
   fPtThreshold = source.fPtThreshold ;
   fPtSumThreshold = source.fPtSumThreshold ; 
@@ -128,6 +128,7 @@ AliAnaGammaDirect & AliAnaGammaDirect::operator = (const AliAnaGammaDirect & sou
   fhNGamma = source.fhNGamma ; 
   fhPhiGamma = source.fhPhiGamma ;
   fhEtaGamma = source.fhEtaGamma ;
+
 
   return *this;
 
@@ -246,7 +247,7 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
 	//cout<<"pid "<<pid[AliPID::kPhoton]<<endl ;
 	if( !fPHOSPID)
 	  new((*plPHOS)[indexNePHOS++])   TParticle(*particle) ;
-	else if( pid[AliPID::kPhoton] > 0.75)
+	else if( pid[AliPID::kPhoton] > fPHOSPhotonWeight)
 	  new((*plPHOS)[indexNePHOS++])   TParticle(*particle) ;
       }
     }
@@ -262,16 +263,18 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
   Int_t endem = fESD->GetFirstEMCALCluster() + 
     fESD->GetNumberOfEMCALClusters() ;  
  
-  if(endem < begem+12)
-    AliError("Number of pseudoclusters smaller than 12");
+//   if(endem < begem+12)
+//     AliError("Number of pseudoclusters smaller than 12");
   Bool_t *useCluster = new Bool_t[endem+1];
   
-  for (npar =  0; npar <  endem; npar++){
-    if(npar < begem+12)
-      useCluster[npar] =kFALSE; //EMCAL Pseudoclusters and PHOS clusters
-    else
-      useCluster[npar] =kTRUE;   //EMCAL clusters 
-  }
+//   for (npar =  0; npar <  endem; npar++){
+//     if(npar < begem+12)
+//       useCluster[npar] =kFALSE; //EMCAL Pseudoclusters and PHOS clusters
+//     else
+//       useCluster[npar] =kTRUE;   //EMCAL clusters 
+//   }
+  for (npar =  0; npar <  endem; npar++)
+    useCluster[npar] =kFALSE; //EMCAL Pseudoclusters and clusters
   
   //########### CTS (TPC+ITS) #####################
   Int_t begtpc   = 0 ;  
@@ -285,7 +288,7 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
 
     // step 2 for EMCAL matching, change the flag for all matched clusters found in tracks
     iemcalMatch = track->GetEMCALcluster(); 
-    if(iemcalMatch > 0) useCluster[iemcalMatch] = kFALSE; // reject matched cluster
+    if(iemcalMatch > 0) useCluster[iemcalMatch] = kTRUE; // reject matched cluster
     
     //We want tracks fitted in the detectors:
     ULong_t status=AliESDtrack::kTPCrefit;
@@ -326,13 +329,13 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
     for (npar =  begem; npar <  endem; npar++) {//////////////EMCAL track loop
       AliESDCaloCluster * clus = fESD->GetCaloCluster(npar) ; // retrieve track from esd
       Int_t clustertype= clus->GetClusterType();
-      if(clustertype == AliESDCaloCluster::kClusterv1 && useCluster[npar] ){
+      if(clustertype == AliESDCaloCluster::kClusterv1 && !useCluster[npar] ){
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum);
 	TParticle * particle = new TParticle() ;
 	//particle->SetMomentum(px,py,pz,en) ;
 	particle->SetMomentum(momentum) ;
-	
+	cout<<"GOOD EMCAL "<<particle->Pt()<<endl;
 	pid=clus->GetPid();
 	if(fCalorimeter == "EMCAL")
 	  {
@@ -341,7 +344,7 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
 	    AliDebug(4,Form("EMCAL clusters: pt %f, phi %f, eta %f", particle->Pt(),particle->Phi(),particle->Eta()));
 	    if(!fEMCALPID) //Only identified particles
 	      new((*plEMCAL)[indexNe++])       TParticle(*particle) ;
-	    else if(pid[AliPID::kPhoton] > 0.75)
+	    else if(pid[AliPID::kPhoton] > fEMCALPhotonWeight)
 	      new((*plEMCAL)[indexNe++])       TParticle(*particle) ;	    
 	  }
 	else
@@ -349,9 +352,9 @@ void AliAnaGammaDirect::CreateParticleList(TClonesArray * pl,
 	      Int_t pdg = 0;
 	      if(fEMCALPID) 
 		{
-		  if( pid[AliPID::kPhoton] > 0.75) //This has to be fixen.
+		  if( pid[AliPID::kPhoton] > fEMCALPhotonWeight) 
 		    pdg = 22;
-		  else if( pid[AliPID::kPi0] > 0.75)
+		  else if( pid[AliPID::kPi0] > fEMCALPi0Weight)
 		    pdg = 111;
 		}
 	      else
@@ -506,7 +509,9 @@ void AliAnaGammaDirect::InitParameters()
   //Fill particle lists when PID is ok
   fEMCALPID = kFALSE;
   fPHOSPID = kFALSE;
-
+  fEMCALPhotonWeight = 0.5 ;
+  fEMCALPi0Weight = 0.5 ;
+  fPHOSPhotonWeight = 0.8 ;
   fConeSize             = 0.2 ; 
   fPtThreshold         = 2.0; 
   fPtSumThreshold  = 1.; 
