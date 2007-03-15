@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/03/08 10:24:32  schutz
+ * Coding convention
+ *
  * Revision 1.2  2007/02/09 18:40:40  schutz
  * BNew version from Gustavo
  *
@@ -111,16 +114,6 @@ AliAnaGammaJet::AliAnaGammaJet(const char *name) :
         
   //Init parameters
   InitParameters();
-
-  TList * list = gDirectory->GetListOfKeys() ; 
-  TIter next(list) ; 
-  TH2F * h = 0 ;
-  Int_t index ; 
-  for (index = 0 ; index < list->GetSize()-1 ; index++) { 
-    //-1 to avoid GammaJet Task
-    h = dynamic_cast<TH2F*>(gDirectory->Get(list->At(index)->GetName())) ; 
-    fOutputContainer->Add(h) ; 
-  }
 
   // Input slot #0 works with an Ntuple
   DefineInput(0, TChain::Class());
