@@ -1,3 +1,16 @@
+2007-03-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	Drop all logicals when redrawing after loading of a new event.
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Added a static member-function LoopEvent() allowing loading of TPC
+	data in a detached thread; added option an argument
+	UpdateSectors(Bool_t dropNonPresent) allowing automatic
+	destruction of viz-sectors for which data are not present in the
+	stream.
+
 2007-03-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* KineTools.h:
