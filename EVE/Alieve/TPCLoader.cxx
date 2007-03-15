@@ -5,6 +5,7 @@
 #include <Alieve/TPCSector2D.h>
 #include <Alieve/TPCSector3D.h>
 #include <Reve/RGTopFrame.h>
+#include <Reve/RGEditor.h>
 
 #include <AliRawReaderRoot.h>
 #include <AliTPCRawStream.h>
@@ -85,6 +86,8 @@ void TPCLoader::OpenFile()
 
   if(fData == 0)
     fData = new TPCData;
+  else
+    fData->DeleteAllSectors();
 
   delete fReader;
   fReader =  0;
@@ -97,7 +100,7 @@ void TPCLoader::OpenFile()
 
   NextEvent();
   LoadEvent();
-  UpdateSectors();
+  UpdateSectors(kTRUE);
 }
 
 void TPCLoader::LoadEvent()
@@ -164,16 +167,37 @@ void TPCLoader::GotoEvent(Int_t event)
   UpdateSectors();
 }
 
+void* TPCLoader::LoopEvent(TPCLoader* loader)
+{
+  loader->NextEvent();
+  loader->LoadEvent();
+  loader->UpdateSectors();
+  if (gReve->GetEditor()->GetModel() == loader)
+    gReve->EditRenderElement(loader);
+  return 0;
+}
+
 /**************************************************************************/
 
-void TPCLoader::UpdateSectors()
+void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
 {
   gReve->DisableRedraw();
-  for(Int_t i=0; i<=35; ++i) {
-    if(fSec2Ds[i] != 0) {
-      fSec2Ds[i]->IncRTS();
-    } else {
-      TPCSectorData* sd = fData->GetSectorData(i);
+  for(Int_t i=0; i<=35; ++i)
+  {
+    TPCSectorData* sd = fData->GetSectorData(i);
+
+    // 2D sectors
+    if(fSec2Ds[i] != 0)
+    {
+      if (dropNonPresent && sd == 0) {
+	gReve->RemoveRenderElement(this, fSec2Ds[i]);
+	fSec2Ds[i] = 0;
+      } else {
+	fSec2Ds[i]->IncRTS();
+      }
+    }
+    else
+    {
       if(sd != 0) {
 	TPCSector2D* s = new TPCSector2D(Form("Sector2D %d", i));
 	fSec2Ds[i] = s;
@@ -196,10 +220,18 @@ void TPCLoader::UpdateSectors()
       }
     }
 
-    if(fSec3Ds[i] != 0) {
-      fSec3Ds[i]->IncRTS();
+    // 3D sectors
+    if(fSec3Ds[i] != 0)
+    {
+      if (dropNonPresent && sd == 0) {
+	gReve->RemoveRenderElement(this, fSec3Ds[i]);
+	fSec3Ds[i] = 0;
+      } else {
+	fSec3Ds[i]->IncRTS();
+      }
     }
   }
+  gReve->Redraw3D(kFALSE, kTRUE);
   gReve->EnableRedraw();
 }
 

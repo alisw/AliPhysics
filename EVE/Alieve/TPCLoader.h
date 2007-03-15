@@ -57,8 +57,9 @@ public:
   void LoadEvent();
   void NextEvent(Bool_t rewindOnEnd=kTRUE);
   void GotoEvent(Int_t event);
+  static void* LoopEvent(TPCLoader* loader);
 
-  void UpdateSectors();
+  void UpdateSectors(Bool_t dropNonPresent=kFALSE);
   void ReloadSectors();
   void CreateSectors3D();
   void DeleteSectors3D();
