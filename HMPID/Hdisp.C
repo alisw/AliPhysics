@@ -1,13 +1,15 @@
 TCanvas *pAll=0;
 AliRunLoader *gAL=0; AliLoader *gHL=0; AliESD *gEsd=0; TTree *gEsdTr=0; AliHMPID *gH=0;
 Int_t gEvt=0; Int_t gMaxEvt=0;
+TObjArray *pNmean;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hdisp()
 {//display events from files if any in current directory or simulated events
   pAll=new TCanvas("all","",1300,900); pAll->Divide(3,3,0,0);
 //  pAll->ToggleEditor();
   pAll->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,"","DoZoom(Int_t,Int_t,Int_t,TObject*)");
-  
+
+  OpenCalib();  
   if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
     if(gAlice) delete gAlice;                                               //in case we execute this in aliroot delete default AliRun object 
     gAL=AliRunLoader::Open();                                                                    //try to open galice.root from current dir 
@@ -56,7 +58,7 @@ void SimEvt()
              AliHMPIDv1::Hit2Sdi(&hits,&sdig);                               
       AliHMPIDDigitizer::Sdi2Dig(&sdig,&digs);     
       AliHMPIDReconstructor::Dig2Clu(&digs,&clus);
-      AliHMPIDTracker::Recon(&esd,&clus,OpenCalib());
+      AliHMPIDTracker::Recon(&esd,&clus,pNmean);
   
   pAll->cd(3);  gPad->Clear(); TLatex txt;txt.DrawLatex(0.2,0.2,Form("Simulated event %i",gEvt));
   DrawEvt(&hits,&digs,&clus,&esd);  
@@ -284,7 +286,7 @@ void PrintClus()
   Printf("totally %i clusters for event %i",iCluCnt,gEvt);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-TObjArray* OpenCalib()
+void OpenCalib()
 {
   AliCDBManager* pCDB = AliCDBManager::Instance();
   pCDB->SetDefaultStorage("local://$HOME");
@@ -293,7 +295,5 @@ TObjArray* OpenCalib()
   
   if(!pQthreEnt || ! pNmeanEnt) return;
   
-  TObjArray *pNmean=(TObjArray*)pNmeanEnt->GetObject(); 
-  TObjArray *pQthre=(TObjArray*)pQthreEnt->GetObject(); 
-  return pNmean;
+  pNmean=(TObjArray*)pNmeanEnt->GetObject(); 
 }

@@ -4,8 +4,6 @@
 #include <TChain.h>
 #include <TBenchmark.h>
 #include <TFile.h>    //docosmic()    
-#include <fstream>    //caf()      
-#include <TProof.h>   //caf()
 #include <AliSelector.h>      //base class
 #include <AliESD.h>           
 #include <AliBitPacking.h> //HmpidPayload()
@@ -15,7 +13,7 @@
 
 class AliHMPIDSelector : public AliSelector {
  public :
-           AliHMPIDSelector():AliSelector(),fChain(0),fEsd(0),fCkovP(0),fMipXY(0),fDifXY(0),fSigP(0) {for(Int_t i=0;i<5;i++) fProb[i]=0;}
+           AliHMPIDSelector():AliSelector(),fChain(0),fEsd(0),fCkovP(0),fMipXY(0),fDifX(0),fSigP(0) {for(Int_t i=0;i<5;i++) fProb[i]=0;}
   virtual ~AliHMPIDSelector()                                                                      {delete fEsd;}
 
 
@@ -36,7 +34,9 @@ class AliHMPIDSelector : public AliSelector {
   TTree          *fChain ;   //!pointer to the analyzed TTree or TChain
   AliESD         *fEsd ;     //!
 
-  TH2F           *fCkovP,*fMipXY,*fDifXY,*fSigP; //!
+  TH2F           *fCkovP,*fMipXY;                //!
+  TH1F           *fDifX;                         //!
+  TH2F           *fSigP;                         //!
   TH1F           *fProb[5];                      //!
 
   ClassDef(AliHMPIDSelector,0);  
@@ -54,10 +54,10 @@ void AliHMPIDSelector::SlaveBegin(TTree *tree)
    TString option = GetOption();
 
    // create histograms on each slave server
-   fCkovP    = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]", 150,   0,  7  ,100, -3, 1); 
+   fCkovP    = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]", 150,   0,  7  ,500, 0, 1); 
    fSigP     = new TH2F("SigP"  ,"#sigma_{#theta_c}"          , 150,   0,  7  ,100, 0, 1e20);
    fMipXY    = new TH2F("MipXY" ,"mip position"               , 260,   0,130  ,252,0,126); 
-   fDifXY    = new TH2F("DifXY" ,"diff"                       , 260, -10, 10  ,252,-10,10); 
+   fDifX     = new TH1F("DifX" ,"diff"                       , 200, -5, 5);
       
    fProb[0] = new TH1F("PidE" ,"PID: e yellow #mu magenta"  ,100,0,1); fProb[0]->SetLineColor(kYellow);
    fProb[1] = new TH1F("PidMu","pid of #mu"                 ,100,0,1); fProb[1]->SetLineColor(kMagenta);
@@ -91,7 +91,7 @@ Bool_t AliHMPIDSelector::Process(Long64_t entry)
      fSigP ->Fill(pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
      
    Float_t xm,ym; Int_t q,np;  pTrk->GetHMPIDmip(xm,ym,q,np);  fMipXY->Fill(xm,ym); //mip info
-   Float_t xd,yd,th,ph;        pTrk->GetHMPIDtrk(xd,yd,th,ph); fDifXY->Fill(xd,yd); //track info 
+   Float_t xd,yd,th,ph;        pTrk->GetHMPIDtrk(xd,yd,th,ph); fDifX->Fill(xd-xm); //track info 
      
      Double_t pid[5];  pTrk->GetHMPIDpid(pid); for(Int_t i =0;i<5;i++) fProb[i]->Fill(pid[i]);
   }//tracks loop 
@@ -110,7 +110,7 @@ void AliHMPIDSelector::SlaveTerminate()
   fOutput->Add(fCkovP);
   fOutput->Add(fSigP); 
   fOutput->Add(fMipXY);
-  fOutput->Add(fDifXY);
+  fOutput->Add(fDifX);
   
   for(Int_t i=0;i<5;i++) fOutput->Add(fProb[i]);
 }//SlaveTerminate()
@@ -122,7 +122,7 @@ void AliHMPIDSelector::Terminate()
   fCkovP   = dynamic_cast<TH2F*>(fOutput->FindObject("CkovP")) ;
   fSigP    = dynamic_cast<TH2F*>(fOutput->FindObject("SigP")) ; 
   fMipXY   = dynamic_cast<TH2F*>(fOutput->FindObject("MipXY")) ;
-  fDifXY   = dynamic_cast<TH2F*>(fOutput->FindObject("DifXY")) ;
+  fDifX    = dynamic_cast<TH1F*>(fOutput->FindObject("DifX")) ;
   
   fProb[0] = dynamic_cast<TH1F*>(fOutput->FindObject("PidE")) ;
   fProb[1] = dynamic_cast<TH1F*>(fOutput->FindObject("PidMu")) ;
@@ -137,8 +137,8 @@ void AliHMPIDSelector::Terminate()
   TF1 *pP=(TF1*)pPi->Clone(); pP ->SetLineColor(kBlue);  pP ->SetParameter(0,AliPID::ParticleMass(AliPID::kProton)); 
 
   TCanvas *pC=new TCanvas("c1","ESD QA");pC->SetFillColor(10); pC->SetHighLightColor(10); pC->Divide(3,2);
-  pC->cd(1); fCkovP->Draw(); pPi->Draw("same"); pK->Draw("same"); pP->Draw("same");   pC->cd(2); fMipXY->Draw();   pC->cd(3); fProb[0]->Draw(); fProb[1]->Draw("same"); 
-  pC->cd(4); fSigP ->Draw();                                                          pC->cd(5); fDifXY->Draw();   pC->cd(6); fProb[2]->Draw(); fProb[3]->Draw("same"); fProb[4]->Draw("same"); 
+  pC->cd(1); fCkovP->Draw(); pPi->Draw("same"); pK->Draw("same"); pP->Draw("same");   pC->cd(2); fMipXY->Draw();  pC->cd(3); fProb[0]->Draw(); fProb[1]->Draw("same"); 
+  pC->cd(4); fSigP ->Draw();                                                          pC->cd(5); fDifX->Draw();   pC->cd(6); fProb[2]->Draw(); fProb[3]->Draw("same"); fProb[4]->Draw("same"); 
 }//Terminate()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void loc()
@@ -146,33 +146,6 @@ void loc()
   TChain* pChain =new TChain("esdTree");  pChain->Add("AliESDs.root");
 
   pChain->Process("AliHMPIDSelector.C+");	
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void caf()
-{
-  gBenchmark->Start("PRooF exec");
-  TChain* pChain =new TChain("esdTree");
-  
-  ifstream list; list.open("list.txt");
-
-  TString file;
-  while(list.good()) {
-    list>>file;
-    if (!file.Contains("root")) continue; //it's wrong file name
-    pChain->Add(file.Data());
-  }
-  list.close();
-  
-  pChain->GetListOfFiles()->Print();
-  
-  TProof *pProof=TProof::Open("kir@lxb6046.cern.ch");	
-  pProof->UploadPackage("ESD.par");
-  pProof->EnablePackage("ESD");
-  
-  pChain->SetProof(pProof);
-  pChain->Process("AliHMPIDSelector.C+");
-  
-  gBenchmark->Show("PRooF exec");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t DateHeader(ifstream *pFile,Bool_t isPrint=0)
