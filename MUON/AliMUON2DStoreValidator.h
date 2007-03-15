@@ -38,13 +38,15 @@ public:
 
   AliMUONV2DStore* GetStatus() const { return fStatus; }
   
+  /// Reports what is missing, trying to be as concise as possible.
   void Report(TList& lines) const;
 
   static void Report(TList& lines, const TObjArray& chambers);
 
 private:
-    
+  /// Not implemented  
   AliMUON2DStoreValidator(const AliMUON2DStoreValidator&);
+  /// Not implemented  
   AliMUON2DStoreValidator& operator=(const AliMUON2DStoreValidator&);
 
   void AddMissingChannel(Int_t detElemId, Int_t manuId, Int_t manuChannel);
@@ -60,9 +62,9 @@ private:
   static void ReportManu(TList& list, AliMUONCheckItem& manu);
   
 private:
-  TList* fManuList; //! List of (DE,manuID) pairs.
-  TObjArray* fChambers; //! Array of AliMUONCheckItem.
-  AliMUONV2DStore* fStatus; //! Statuses
+  TList* fManuList; //!< List of (DE,manuID) pairs.
+  TObjArray* fChambers; //!< Array of AliMUONCheckItem.
+  AliMUONV2DStore* fStatus; //!< Statuses
   
   ClassDef(AliMUON2DStoreValidator,2) // Validator of 2DStore
 };

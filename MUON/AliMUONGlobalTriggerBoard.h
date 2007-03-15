@@ -7,9 +7,9 @@
 
 /// \ingroup sim
 /// \class AliMUONGlobalTriggerBoard
-/// \brief GLOBAL TRIGGER
+/// \brief Global trigger
 ///
-/// \author Rachid Guernane (LPCCFd)
+//  Author: Rachid Guernane (LPCCFd)
 
 #include "AliMUONTriggerBoard.h"
 

@@ -23,6 +23,7 @@
 #include "TClass.h"
 
 ///
+/// \class AliMUONConstants
 /// This class holds various constants to be used in many places,
 /// such as the number of tracking and trigger chambers, 
 /// some geometrical constants (to build the initial geometry for simulation)

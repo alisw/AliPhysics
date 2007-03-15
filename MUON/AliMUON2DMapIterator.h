@@ -44,19 +44,19 @@ public:
   virtual Bool_t Remove();
   
 private:
-    // copy ctor will not implemented
-    AliMUON2DMapIterator(const AliMUON2DMapIterator&);
-  // assignement operator will not implemented
+  /// copy ctor will not implemented
+  AliMUON2DMapIterator(const AliMUON2DMapIterator&);
+  /// assignement operator will not implemented
   AliMUON2DMapIterator& operator=(const AliMUON2DMapIterator&);
   
-    TObject* GetValue(TExMapIter& iter, Int_t& key) const;
+  TObject* GetValue(TExMapIter& iter, Int_t& key) const;
   AliMpExMap* GetMap(TExMapIter& iter, Int_t& key);
   
 private:
-    TExMapIter fIter; //! first iterator
-  TExMapIter* fIter2; //! second iterator
-  Int_t fCurrentI; //! current index in direction i 
-  Int_t fCurrentJ; //! current index in direction j
+  TExMapIter fIter; //!< first iterator
+  TExMapIter* fIter2; //!< second iterator
+  Int_t fCurrentI; //!< current index in direction i 
+  Int_t fCurrentJ; //!< current index in direction j
   
   ClassDef(AliMUON2DMapIterator,0) // VDataIterator for 2D maps
 };

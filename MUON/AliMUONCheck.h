@@ -45,7 +45,9 @@ public:
   void SetEventsToCheck(Int_t firstEvent, Int_t lastEvent);
 
 private:
+  /// Not implemented
   AliMUONCheck(const AliMUONCheck& rhs);
+ /// Not implemented
   AliMUONCheck& operator=(const AliMUONCheck& rhs);
   
 private:

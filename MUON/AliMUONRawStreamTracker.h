@@ -9,13 +9,7 @@
 /// \class AliMUONRawStreamTracker
 /// \brief Class for reading MUON raw digits
 ///
-/// \author Christian Finck
-///
-///////////////////////////////////////////////////////////////////////////////
-///
-/// This class provides access to MUON digits in raw data.
-///
-///////////////////////////////////////////////////////////////////////////////
+//  Author: Christian Finck
 
 #include <TObject.h>
 #include "AliMUONPayloadTracker.h"

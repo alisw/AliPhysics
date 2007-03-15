@@ -31,7 +31,7 @@ public:
   Int_t    Next(); // commands for drawing
   Bool_t   FindEvCh(Int_t nev, Int_t ch); // find requested event and chamber
   void     FillMuon(Int_t nfit, const Double_t *parOk, const Double_t *errOk); // fill muon info
-  void     ResetMuon() { fxyMu[0][6] = fxyMu[1][6] = 9999; } // reset muons
+  void     ResetMuon() { fxyMu[0][6] = fxyMu[1][6] = 9999; } ///< reset muons
   void     UpdateCluster(Int_t npad); // update cluster after removing non-overlapped pads
 
 private:
@@ -48,8 +48,11 @@ private:
 
   // Functions
 
+  /// Not implemented
   AliMUONClusterDrawAZ(const AliMUONClusterDrawAZ& rhs);
+  /// Not implemented
   AliMUONClusterDrawAZ& operator=(const AliMUONClusterDrawAZ& rhs);
+
   void   Init(); // initialization
   void   ModifyHistos(); // modify histograms
   void   DrawHits(); // draw simulated and reconstructed hits

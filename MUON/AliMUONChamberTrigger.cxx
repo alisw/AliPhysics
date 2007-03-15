@@ -31,7 +31,7 @@
 ///
 /// Implementation of AliMUONChamber for the trigger
 ///
-/// This class is to be deprecated.
+/// \deprecated This class is to be deprecated.
 ///
 
 /// \cond CLASSIMP

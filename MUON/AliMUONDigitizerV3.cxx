@@ -65,6 +65,7 @@
 /// (for performance reason mainly, and because anyway we know we have to do it
 /// here, at the digitization level).
 ///
+/// \author Laurent Aphecetche
 
 namespace
 {

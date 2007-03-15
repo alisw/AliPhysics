@@ -10,7 +10,7 @@
 /// \class AliMUONPixel
 /// \brief Pixel for MLEM method of cluster finding
 ///
-/// \author Alexander Zinchenko, JINR Dubna
+//  Author Alexander Zinchenko, JINR Dubna
 
 #include <TObject.h>
 

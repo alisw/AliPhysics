@@ -30,16 +30,27 @@ public:
   void     FindRawClusters(); // the same interface as for old cluster finder
   void     EventLoop(Int_t nev = 0, Int_t ch = 0); // first event 
   Bool_t   TestTrack(Int_t t) const; // test if track was selected
+  
+  /// Return the number of pads in the cluster on the given cathode
   Int_t    GetNPads(Int_t cath) const { return fnPads[cath]; }
+  /// Return pad information \todo add more details
   Int_t    GetIJ(Int_t indx, Int_t iPad) const { return fPadIJ[indx][iPad]; }
+  /// Return pad information \todo add more details
   Float_t  GetXyq(Int_t indx, Int_t iPad) const { return fXyq[indx][iPad]; }
+  /// Return the z-coordinate of the hit
   Float_t  GetZpad() const { return fZpad; }
+  /// Return the flag for used pads
   Bool_t GetUsed(Int_t cath, Int_t dig) const { return fUsed[cath][dig]; }
-  void SetUsed(Int_t cath, Int_t dig) { fUsed[cath][dig] = kTRUE; } // mark used digits
-  void SetUnused(Int_t cath, Int_t dig) { fUsed[cath][dig] = kFALSE; } // unmark digits
-  void SetReco(Int_t iReco) { fReco = iReco; } // set reco flag
-  void SetStart(Int_t iCath, Int_t iPad) { fCathBeg = iCath; fPadBeg[0] = fPadBeg[1] = 0; fPadBeg[fCathBeg] = iPad; } // start
- 
+
+  /// Mark used digits
+  void SetUsed(Int_t cath, Int_t dig) { fUsed[cath][dig] = kTRUE; } 
+  /// Unmark digits
+  void SetUnused(Int_t cath, Int_t dig) { fUsed[cath][dig] = kFALSE; } 
+  /// Set reco flag
+  void SetReco(Int_t iReco) { fReco = iReco; } 
+  /// Start  \todo add more details
+  void SetStart(Int_t iCath, Int_t iPad) { fCathBeg = iCath; fPadBeg[0] = fPadBeg[1] = 0; fPadBeg[fCathBeg] = iPad; } 
+
 private:
   // Some constants
   static const Int_t fgkDim = 10000; ///< array size
@@ -50,8 +61,8 @@ private:
   static  AliMUONClusterFinderAZ* fgClusterFinder; ///< the ClusterFinderAZ instance
 
   Int_t      fnPads[2];         //!< number of pads in the cluster on 2 cathodes
-  Float_t    fXyq[7][fgkDim];   //!< pad information
-  Int_t      fPadIJ[4][fgkDim]; //!< pad information
+  Float_t    fXyq[7][fgkDim];   //!< pad information \todo add more details
+  Int_t      fPadIJ[4][fgkDim]; //!< pad information \todo add more details
   AliMUONVGeometryDESegmentation *fSegmentation[2]; //!< new segmentation
   Float_t    fZpad;             //!< z-coordinate of the hit
   Int_t      fNpar;             //!< number of fit parameters
@@ -69,8 +80,11 @@ private:
 
   // Functions
 
+  /// Not implemented
   AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs);
+  /// Not implemented
   AliMUONClusterFinderAZ& operator=(const AliMUONClusterFinderAZ& rhs);
+
   void   AddPad(Int_t cath, Int_t digit); // add a pad to the cluster
   Bool_t Overlap(Int_t cath, AliMUONDigit *dig); // check if the pad from one cathode overlaps with a pad in the cluster on the other cathode
   Bool_t Overlap(Float_t *xy1, Int_t iPad, Float_t *xy12, Int_t iSkip); // check if pads xy1 and iPad overlap and return overlap area
@@ -107,10 +121,13 @@ private:
 	      Double_t dyc, Double_t dxc, Double_t qtot, 
 	      Double_t &yrec, Double_t &xrec, Double_t &erry, Double_t &errx);
 
-  // Dummy methods for overloading warnings
+  /// Dummy method for overloading warnings
   void FindCluster(int, int, int, AliMUONRawCluster&) {return;}
+  /// Dummy method for overloading warnings
   void FindLocalMaxima(AliMUONRawCluster*) {return;}
+  /// Dummy method for overloading warnings
   void Split(AliMUONRawCluster*) {return;}
+  /// Dummy method for overloading warnings
   void AddRawCluster(AliMUONRawCluster&) {return;}
 
 ClassDef(AliMUONClusterFinderAZ,0) // cluster finder in MUON arm of ALICE

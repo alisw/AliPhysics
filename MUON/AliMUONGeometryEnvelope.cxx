@@ -17,7 +17,7 @@
 //
 // Class AliMUONGeometryEnvelope
 // -----------------------------
-// Helper class for definititon an assembly of volumes.
+// Helper class for definititon of an assembly of volumes.
 // Author: Ivana Hrivnacova, IPN Orsay
 // 23/01/2004
 

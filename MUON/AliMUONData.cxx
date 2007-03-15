@@ -15,12 +15,12 @@
 
 /* $Id$ */
 
-/// AliMUONData class
+/// \class AliMUONData class
 ///
 /// Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ..
 /// The classe makes the lik between the MUON data lists and the event trees from loaders
 ///
-/// Gines Martinez, Subatech,  September 2003
+/// \author Gines Martinez, Subatech,  September 2003
 ///
 
 #include "AliMUONData.h"

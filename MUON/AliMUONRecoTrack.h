@@ -10,7 +10,7 @@
 /// \class AliMUONRecoTrack
 /// \brief A reconstructed muon track
 ///
-/// \author M.Gheata, A.Gheata 09/10/00
+//  Author: M.Gheata, A.Gheata 09/10/00
 
 #include <TObject.h>
 #include <TMath.h>

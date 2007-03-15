@@ -41,14 +41,14 @@ fIter2(0x0),
 fCurrentI(-1),
 fCurrentJ(-1)
 {
-  // default ctor
+  /// default ctor
   Reset();
 }
 
 //_____________________________________________________________________________
 AliMUON2DMapIterator::~AliMUON2DMapIterator()
 {
-  // dtor
+  /// dtor
   delete fIter2;
 }
 
@@ -56,7 +56,7 @@ AliMUON2DMapIterator::~AliMUON2DMapIterator()
 TObject*
 AliMUON2DMapIterator::GetValue(TExMapIter& iter, Int_t& theKey) const
 {
-  // return the value corresponding to theKey in iterator iter
+  /// return the value corresponding to theKey in iterator iter
   theKey = -1;
   Long_t key, value;
   Bool_t ok = iter.Next(key,value);
@@ -69,7 +69,7 @@ AliMUON2DMapIterator::GetValue(TExMapIter& iter, Int_t& theKey) const
 AliMpExMap*
 AliMUON2DMapIterator::GetMap(TExMapIter& iter, Int_t& key) 
 {
-  // get the map corresponding to key
+  /// get the map corresponding to key
   AliMpExMap* rv(0x0);
   TObject* o = GetValue(iter,key);
   if (o)
@@ -87,9 +87,9 @@ AliMUON2DMapIterator::GetMap(TExMapIter& iter, Int_t& key)
 TObject*
 AliMUON2DMapIterator::Next()
 {
-  // logic :
-  // get TObject* from fIter2
-  // if null, increment fIter2 by getting next on fIter
+  /// logic :
+  /// get TObject* from fIter2
+  /// if null, increment fIter2 by getting next on fIter
   
   if (!fIter2) return 0x0;
   
@@ -116,7 +116,7 @@ AliMUON2DMapIterator::Next()
 void
 AliMUON2DMapIterator::Reset()
 {
-  // rewind the iterator
+  /// rewind the iterator
   delete fIter2;
   fIter.Reset();
   AliMpExMap* m = GetMap(fIter,fCurrentI);
@@ -130,7 +130,7 @@ AliMUON2DMapIterator::Reset()
 Bool_t
 AliMUON2DMapIterator::Remove()
 {
-  // to be implemented if needed
+  /// to be implemented if needed
   AliInfo("Not supported yet");
   return kFALSE;
 }

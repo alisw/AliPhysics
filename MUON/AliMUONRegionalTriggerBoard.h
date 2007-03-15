@@ -7,9 +7,9 @@
 
 /// \ingroup sim
 /// \class AliMUONRegionalTriggerBoard
-/// \brief REGIONAL TRIGGER
-/// REAL HW ALGORITHM IS IMPLEMENTED
-/// \author Rachid Guernane (LPCCFd)
+/// \brief Regional trigger - real HW algorithm is implemented
+///
+//  Author: Rachid Guernane (LPCCFd)
 
 #include "AliMUONTriggerBoard.h"
 

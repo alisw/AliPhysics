@@ -9,6 +9,8 @@
 /// \ingroup base
 /// \class AliMUONChamber
 /// \brief MUON tracking chamber class
+///
+/// Now only providing DisIntegration function
 
 #include <TObject.h>
 #include <TObjArray.h>
@@ -67,8 +69,9 @@ class AliMUONChamber : public TObject
   virtual void SetChargeCorrel(Float_t correl) {fResponse->SetChargeCorrel(correl);}
 
  protected:
+  /// Not implemented
   AliMUONChamber(const AliMUONChamber & rChamber);
-  // assignment operator  
+  /// Not implemented
   AliMUONChamber& operator =(const AliMUONChamber& rhs);
 
   Int_t   fId;            ///< chamber number

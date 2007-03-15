@@ -8,7 +8,7 @@
 /// \class AliMUONGeometryModuleTransformer
 /// \brief Geometry transformer for a detector module
 ///
-/// Class for definition of the trasformation for adetector module
+/// Class for definition of the transformation for a detector module
 /// and its detection elements
 ///
 /// \author Ivana Hrivnacova, IPN Orsay

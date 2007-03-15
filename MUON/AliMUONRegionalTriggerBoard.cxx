@@ -15,11 +15,13 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
-//    DIMUON REGIONAL TRIGGER IMPLEMENTATION
-//    ENTRY ARE LOCAL BOARD RESPONSES
-//    OUTPUT IS 12-BIT WORD
-//    ALGORITHM IS SIMILAR TO THE GLOBAL ONE
+/// \class AliMUONRegionalTriggerBoard
+/// Dimuon regional trigger implementation:
+/// - entry are local board responses
+/// - output is 12-bit word
+/// - algorithm is similar to the global one
+///
+/// \author Rachid Guernane (LPCCFd)
 
 #include "AliMUONRegionalTriggerBoard.h"
 

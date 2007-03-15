@@ -15,9 +15,9 @@
 
 /* $Id$ */
 
-/// \class AliMUONVTrackReconstructor
 ////////////////////////////////////
 ///
+/// \class AliMUONVTrackReconstructor
 /// Virtual MUON track reconstructor in ALICE (class renamed from AliMUONEventReconstructor)
 ///
 /// This class contains as data:
@@ -28,6 +28,8 @@
 /// It contains as methods, among others:
 /// * EventReconstruct to build the muon tracks
 /// * EventReconstructTrigger to build the trigger tracks
+///
+///  \author Philippe Pillot
 ///
 ////////////////////////////////////
 

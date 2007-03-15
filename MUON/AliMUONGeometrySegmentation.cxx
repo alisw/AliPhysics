@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //
 // Class AliMUONGeometrySegmentation
 // -------------------------------
@@ -21,8 +23,6 @@
 // Applies transformations defined in geometry.
 //
 // Author:Ivana Hrivnacova, IPN Orsay
-
-/* $Id$ */
 
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONVGeometryDESegmentation.h"

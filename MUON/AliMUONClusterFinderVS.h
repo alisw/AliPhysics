@@ -9,6 +9,8 @@
 /// \ingroup rec
 /// \class AliMUONClusterFinderVS
 /// \brief Class for clustering and reconstruction of space points
+///
+/// (Not used by default)
 
 #include <TObject.h>
 
@@ -26,11 +28,11 @@ class AliMUONClusterFinderVS : public TObject
  public:
     AliMUONClusterFinderVS();
     virtual ~AliMUONClusterFinderVS();
-// Decluster ?
+/// Decluster ?
     virtual void SetDeclusterFlag(Int_t flag=1) {fDeclusterFlag =flag;}
-// Set max. cluster size ; bigger clusters will deconvoluted
+/// Set max. cluster size ; bigger clusters will deconvoluted
     virtual void SetClusterSize(Int_t clsize=5) {fClusterSize = clsize;}
-// Set max. number of pads per local cluster
+/// Set max. number of pads per local cluster
     virtual void SetNperMax(Int_t npermax=5) {fNperMax = npermax;}
 // Search for raw clusters
     virtual void  FindRawClusters();
@@ -50,15 +52,17 @@ class AliMUONClusterFinderVS : public TObject
 //  Build up full cluster information    
     virtual void   FillCluster(AliMUONRawCluster *cluster, Int_t flag, Int_t cath);
     virtual void   FillCluster(AliMUONRawCluster *cluster, Int_t cath);
+/// \todo add comment    
     virtual void   FillCluster(AliMUONRawCluster *cluster) {FillCluster(cluster,1,0);}
 // Add a new raw cluster    
     virtual void AddRawCluster(AliMUONRawCluster& cluster);
-//  Set tracks for debugging    
+/// Set tracks for debugging    
     virtual void SetTracks(Int_t t1, Int_t t2) {fTrack[0]=t1; fTrack[1]=t2;}
+/// Set cut in charge matching chi2
     void SetGhostChi2Cut(Float_t cut) {fGhostChi2Cut = cut;}
-// get raw cluster pointer 
+/// Get raw cluster pointer 
     TClonesArray*  GetRawClusters() {return fRawClusters;}
-// reset raw clusters
+/// Reset raw clusters
     void ResetRawClusters();
 // set evt number
     void SetEventNumber(Int_t evtNumber) {fEvtNumber = evtNumber;}
@@ -113,8 +117,9 @@ class AliMUONClusterFinderVS : public TObject
     Int_t                    fEvtNumber;       ///< evt number for AZ
     
  private:
+    /// Not implemented
     AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);
-//  Assignment operator
+    /// Not implemented assignment operator
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
 
     ClassDef(AliMUONClusterFinderVS,3) //Class for clustering and reconstruction of space points

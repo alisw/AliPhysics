@@ -8,6 +8,7 @@
 /// \ingroup rec
 /// \class AliMUONEventRecoCombi
 /// \brief Combined cluster / track finder in the MUON arm of ALICE
+/// \author Alexander Zinchenko, JINR Dubna
  
 #include <TObject.h>
 #include <TArrayD.h>

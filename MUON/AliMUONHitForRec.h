@@ -9,6 +9,8 @@
 /// \ingroup rec
 /// \class AliMUONHitForRec
 /// \brief Hit for reconstruction in ALICE dimuon spectrometer
+///
+/// \author J. Gosset
 
 #include <TObject.h>
 

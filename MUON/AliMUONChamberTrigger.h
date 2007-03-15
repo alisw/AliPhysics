@@ -33,7 +33,9 @@ class AliMUONChamberTrigger : public AliMUONChamber
        				 Int_t& nnew, Float_t newclust[6][500]);
 
   protected:   
+    /// Not implemented
     AliMUONChamberTrigger(const AliMUONChamberTrigger& right);
+    /// Not implemented
     AliMUONChamberTrigger&  operator = (const AliMUONChamberTrigger& right);
 
     const AliMUONGeometryTransformer* fkGeomTransformer;///< geometry transformations

@@ -13,9 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
+/// \class AliMUONRawStreamTrigger
 /// This class provides access to MUON digits in raw data.
 ///
 /// It loops over all MUON digits in the raw data given by the AliRawReader.
@@ -25,6 +27,7 @@
 /// in payload class.
 /// 
 /// First version implement for Trigger
+/// \author Christian Finck
 ///
 ///////////////////////////////////////////////////////////////////////////////
 

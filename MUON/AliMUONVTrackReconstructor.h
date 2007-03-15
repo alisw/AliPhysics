@@ -9,9 +9,7 @@
 /// \class AliMUONVTrackReconstructor
 /// \brief Virtual class for the MUON track reconstruction
 ///
-/////////////////////////////////////////////
-/// Virtual MUON track reconstructor in ALICE
-/////////////////////////////////////////////
+//  Author: Philippe Pillot
 
 #include <TObject.h>
 

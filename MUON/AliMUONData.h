@@ -9,12 +9,10 @@
 //
 /// \ingroup base
 /// \class AliMUONData
-/// \brief MUON data
-///
-/// Class containing MUON data: hits, digits, rawclusters, globaltrigger, 
+/// \brief Class containing MUON data: hits, digits, rawclusters, globaltrigger, 
 /// localtrigger, etc ...
 ///
-/// Author: Gines Martinez, Subatech,  September 2003
+//  Author: Gines Martinez, Subatech,  September 2003
 
 #include <TNamed.h>
 

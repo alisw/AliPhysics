@@ -61,18 +61,18 @@ class AliMUONResponseV0 : public AliMUONResponse
     virtual void    SetPitch(Float_t p1)    {fMathieson->SetPitch(p1);};
 
     /// Set Mathieson parameters
-    /// Mathieson \sqrt{Kx3} and derived Kx2 and Kx4 
+    /// Mathieson sqrt{Kx3} and derived Kx2 and Kx4 
     /// passing pointer to class Mathieson for backward compatibility
     virtual void    SetSqrtKx3AndDeriveKx2Kx4(Float_t SqrtKx3);
-    /// Mathieson \sqrt{Kx3}
+    /// Mathieson sqrt{Kx3}
     virtual void    SetSqrtKx3(Float_t p1) {fMathieson->SetSqrtKx3(p1);};
     /// Mathieson Kx2
     virtual void    SetKx2(Float_t p1)     {fMathieson->SetKx2(p1);};
     /// Mathieson Kx4
     virtual void    SetKx4(Float_t p1)     {fMathieson->SetKx4(p1);};
-    /// Mathieson \sqrt{Ky3} and derived Ky2 and Ky4
+    /// Mathieson sqrt{Ky3} and derived Ky2 and Ky4
     virtual void SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3);
-    /// Mathieson \sqrt{Ky3}
+    /// Mathieson sqrt{Ky3}
     virtual void    SetSqrtKy3(Float_t p1) {fMathieson->SetSqrtKy3(p1);};
     /// Mathieson Ky2
     virtual void    SetKy2(Float_t p1)     {fMathieson->SetKy2(p1);};

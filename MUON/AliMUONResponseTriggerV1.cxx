@@ -253,7 +253,8 @@ void AliMUONResponseTriggerV1::Neighbours(const Int_t cath,
     ///-----------------NON-BENDING-------------------------------------      /n
     /// Returns list of 10 next neighbours for given Y strip (ix, iy)         /n 
     /// neighbour number 9 8 7 6 5 (Y strip (ix, iy)) 0 1 2 3 4 in the list   /n 
-    ///                  \_______/                    \_______/               /n 
+    ///                  |_______|                    |_______/               /n 
+
     ///                    left                         right                 /n
     
     for (Int_t i=0; i<10; i++) {

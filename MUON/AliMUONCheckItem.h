@@ -29,6 +29,7 @@ public:
   AliMUONCheckItem(Int_t id, Int_t maxNumber, const char* name);
   virtual ~AliMUONCheckItem();
   
+  /// Return the identifier of this item
   Int_t GetID() const { return fID; }
   
   TObject* GetItem(Int_t id) const;
@@ -40,8 +41,11 @@ public:
   void Print(Option_t* opt="") const;
   
 private:
+  /// Not implemented
   AliMUONCheckItem(const AliMUONCheckItem&);
+  /// Not implemented
   AliMUONCheckItem& operator=(const AliMUONCheckItem&);
+
   void ComputeDead() const;
   
 private:

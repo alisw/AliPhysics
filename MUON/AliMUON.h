@@ -150,7 +150,9 @@ class AliMUON : public  AliDetector
     //PH    virtual void RemapTrackHitIDs(Int_t * map);
     
   protected:
+    /// Not implemented
     AliMUON(const AliMUON& rMUON);
+    /// Not implemented
     AliMUON& operator = (const AliMUON& rhs);
 
     const AliMUONGeometry* GetGeometry() const;

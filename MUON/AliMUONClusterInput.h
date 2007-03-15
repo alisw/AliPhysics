@@ -32,24 +32,39 @@ class AliMUONClusterInput : public TObject
     void SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig);
     void SetCluster(AliMUONRawCluster* cluster);
 // Access functions
+    /// Return the current chamber number
     Int_t Chamber() const {return fChamber;}
+    /// Return i-th digit for given cath
     AliMUONDigit* Digit(Int_t cath, Int_t i) const {return (AliMUONDigit*) (fDigits[cath]->UncheckedAt(i));}
+    /// Return the array of digits for given cathod 
     TClonesArray* Digits(Int_t cath) const {return fDigits[cath];}
+    /// Return number of digits for given cathod 
     Int_t NDigits(Int_t cath) const {return fNDigits[cath];}
+    /// Return geometry segmentation for given cathod 
     AliMUONGeometrySegmentation* Segmentation2(Int_t cath) const {return fSegmentation2[cath];}
 
+    /// Return Mathieson    
     AliMUONMathieson* Mathieson() const {return fgMathieson;}    
+    /// Return charge correlation
     Float_t ChargeCorrel() const {return fChargeCorrel;}    
+    /// Return detection elt id
     Int_t DetElemId() const {return fDetElemId;}
 
 // Fitting    
+    /// Return the fitter
     TMinuit*      Fitter() const {return fgMinuit;}
 // Current cluster information    
+    /// Return the total charge for given cathod 
     Float_t       TotalCharge(Int_t cath) const {return fChargeTot[cath];}
+    /// Return the charge for the given cluster and cathod
     Float_t       Charge(Int_t dig, Int_t cath) const {return fCharge[dig][cath];}
+    /// Return the x-position for the given cluster and cathod
     Int_t         Ix(Int_t dig, Int_t cath) const {return fix[dig][cath];}
+    /// Return the y-position for the given cluster and cathod
     Int_t         Iy(Int_t dig, Int_t cath) const {return fiy[dig][cath];}
+    /// Return the cluster multiplicity for given cathod 
     Int_t         Nmul(Int_t cath) const {return fNmul[cath];}
+
 //  Helpers for Fit     
     Float_t DiscrChargeS1(Int_t i,Double_t *par);
     Float_t DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cath);

@@ -13,9 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id $ */
+
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
+/// \class AliMUONRawStreamTracker
 /// This class provides access to MUON digits in raw data.
 ///
 /// It loops over all MUON digits in the raw data given by the AliRawReader.
@@ -26,6 +29,7 @@
 /// 
 /// First version implement for Tracker
 ///
+/// \author Christian Finck
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliMUONRawStreamTracker.h"

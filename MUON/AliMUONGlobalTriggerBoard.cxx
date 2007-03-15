@@ -15,11 +15,13 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
-//    GLOBAL TRIGGER IMPLEMENTATION
-//    INPUTS ARE REGIONAL RESPONSES
-//    OUTPUT IS A 12-BIT WORD
-//    4 BITS PER TRIGGER LEVEL
+/// \class AliMUONGlobalTriggerBoard
+/// Global trigger implementation:
+/// - inputs are regional responses
+/// - output is a 12-bit word
+/// - 4 bits per trigger level
+///
+/// \author Rachid Guernane (LPCCFd)
 
 #include "AliMUONGlobalTriggerBoard.h"
 #include "AliLog.h"
