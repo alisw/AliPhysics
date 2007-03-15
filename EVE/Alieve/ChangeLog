@@ -45,7 +45,7 @@
 	* TPCLoader.cxx:
 	* TPCLoader.h:
 	Added a static member-function LoopEvent() allowing loading of TPC
-	data in a detached thread; added option an argument
+	data in a detached thread; added optional argument to
 	UpdateSectors(Bool_t dropNonPresent) allowing automatic
 	destruction of viz-sectors for which data are not present in the
 	stream.
