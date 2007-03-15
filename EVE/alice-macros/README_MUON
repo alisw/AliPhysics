@@ -11,7 +11,7 @@ How to run the MUON display
    alieve_init.C
    event_next.C
    event_prev.C
-   MUON_digits.C
+   MUON_display.C
    MUON_geom.C
    MUON_geomAll.C
 
@@ -21,13 +21,13 @@ How to run the MUON display
 
 4. Display simulation digits
 
-   MUON_digits(0,0)   - without tracks
-   MUON_digits(0,1)   - with tracks
+   MUON_display(0,0)   - without tracks
+   MUON_display(0,1)   - with tracks
 
 5. Display raw data
 
-   MUON_digits(1,0)
-   MUON_digits(1,1)
+   MUON_display(1,0)
+   MUON_display(1,1)
 
 6. Display all geometry defined in Config.C
 
@@ -37,12 +37,19 @@ How to run the MUON display
 
    MUON_geom()
 
+Obs: to delete geometry elements from the display, click the right mouse button
+in the "Reve" window, "Object Browser" tab, on the name of the node and select 
+"Destroy" from the menu.
+
 8. Navigate in the event list
 
    event_next()
    event_prev()
 
-9. Use mouse buttons or keys:
+9. Shift + right mouse button one a muon track opens a menu:
+   - track and trigger information are available for the MUON tracks.
+
+10. Use mouse buttons or keys:
 
    Move camera with
 
@@ -65,7 +72,7 @@ See also the $ALICE_ROOT/EVE/README file.
 
 
 
-Bogdan Vulpescu, 30 Oct 2006
+Bogdan Vulpescu, 13 Mar 2007
 LPC Clermont-Ferrand
 
 

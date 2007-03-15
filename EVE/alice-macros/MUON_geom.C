@@ -4,13 +4,9 @@ void MUON_geom()
 {
   using namespace std;
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
-  TString fileName = rl->GetFileName();
-  Int_t length = fileName.Length();
-  fileName.Resize(length-11);
-  fileName.Append("geometry.root");
-
-  gGeoManager = gReve->GetGeometry(fileName.Data());
+  TString dataPath = TString(Alieve::gEvent->GetTitle());
+  dataPath.Append("/geometry.root");
+  gGeoManager = gReve->GetGeometry(dataPath.Data());
 
   TGeoNode *node1 = gGeoManager->GetTopVolume()->FindNode("DDIP_1");
   TGeoNode *node2 = gGeoManager->GetTopVolume()->FindNode("YOUT1_1");
@@ -28,6 +24,6 @@ void MUON_geom()
   re3->SetUseNodeTrans(kTRUE);
   gReve->AddGlobalRenderElement(re3);
 
-  gReve->Redraw3D();
+  gReve->Redraw3D(kTRUE);
 
 }
