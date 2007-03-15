@@ -68,7 +68,7 @@ Int_t AliHMPIDTracker::Recon(AliESD *pEsd,TObjArray *pCluAll,TObjArray *pNmean)
     Int_t cham=IntTrkCha(pTrk,xRa,yRa);                                                          //get chamber intersected by thie track 
     if(cham<0) continue;                                                                         //no intersection at all, go after next track
     Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber   
-    recon.CkovAngle(pTrk,(TClonesArray *)pCluAll->At(cham),nmean);                               //search for Cerenkov angle for this track
+    recon.CkovAngle((Double_t)xRa,(Double_t)yRa,pTrk,(TClonesArray *)pCluAll->At(cham),nmean);                               //search for Cerenkov angle for this track
   }                                                                                              //ESD tracks loop
   AliDebugClass(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;

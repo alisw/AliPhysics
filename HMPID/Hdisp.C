@@ -145,7 +145,6 @@ void DrawCh(Int_t iCh)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
 {//draws all the objects of current event in given canvas
-
   AliHMPIDRecon rec;  
   TPolyMarker *pTxC[7], *pRin[7]; TMarker *pMip,*pCko,*pFee,*pDig,*pClu;
   pMip=new TMarker; pMip->SetMarkerColor(kRed);  pMip->SetMarkerStyle(kOpenTriangleUp);
@@ -168,10 +167,16 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     
     Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
     if(ckov>0){
-      rec.SetTrack(xPc,yPc,th,ph);
-      TVector2 pos;  
-      for(int j=0;j<100;j++){
-       rec.TracePhot(ckov,j*0.0628,pos); 
+      Printf("theta %f phi %f ckov %f",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),ckov);
+      rec.SetTrack(xPc,yPc,th,ph+TMath::Pi());
+      TVector2 pos;
+       Double_t allGapz=rec.fgkWinThick+0.5*rec.fgkRadThick+rec.fgkGapThick;   //to semplify, the (x,y) are calculted from (xPc,yPc) back to radiator in straight line (Bz=0)
+      TVector3 dir(0,0,-1);TVector3 miprad(xPc,yPc,allGapz);
+      AliHMPIDRecon::Propagate(dir,miprad,0);
+      Double_t xRad=miprad.X();
+      Double_t yRad=miprad.Y();
+      for(int j=0;j<100;j++){ 
+        rec.TracePhot(xRad,yRad,ckov,j*0.0628,pos);
        if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) pRin[ch]->SetNextPoint(pos.X(),pos.Y());
       }      
     }

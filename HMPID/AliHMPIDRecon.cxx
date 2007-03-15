@@ -34,6 +34,8 @@ const Double_t AliHMPIDRecon::fgkGapThick=8.0;
 const Double_t AliHMPIDRecon::fgkWinIdx  =1.5787;
 const Double_t AliHMPIDRecon::fgkGapIdx  =1.0005;
 
+Double_t xRad;
+Double_t yRad;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
@@ -54,7 +56,7 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
+void AliHMPIDRecon::CkovAngle(Double_t xRa,Double_t yRa,AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
 {
 // Pattern recognition method based on Hough transform
 // Arguments:   pTrk     - track for which Ckov angle is to be found
@@ -68,8 +70,8 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
   Float_t xPc,yPc,th,ph;      pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  SetTrack(xPc,yPc,th,ph); //initialize this track            
   fRadNmean=nmean;
 
-  
-  
+  xRad=xRa;yRad=yRa;  
+
   Float_t dMin=999,mipX=-1,mipY=-1;Int_t chId=-1,mipId=-1,mipQ=-1;                                                                           
   fPhotCnt=0;                                                      
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
@@ -110,10 +112,10 @@ Double_t AliHMPIDRecon::FindPhotCkov(Double_t cluX,Double_t cluY)
   while(1){
     if(iIterCnt>=50) return -1;
     Double_t ckov=0.5*(ckov1+ckov2);
-    Double_t dist=cluR-TracePhot(ckov,phi,pos); iIterCnt++;   //get distance between trial point and cluster position
+    Double_t dist=cluR-TracePhot(xRad,yRad,ckov,phi,pos); iIterCnt++;   //get distance between trial point and cluster position
     if     (dist> kTol) ckov1=ckov;                           //cluster @ larger ckov 
     else if(dist<-kTol) ckov2=ckov;                           //cluster @ smaller ckov
-    else                return ckov;                          //precision achived         
+    else return ckov;                                         //precision achived
   }
 }//FindPhotTheta()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -121,9 +123,10 @@ Double_t AliHMPIDRecon::FindPhotPhi(Double_t cluX,Double_t cluY)
 {
 // Finds phi angle og photon candidate by considering the cluster's position  of this candudate w.r.t track position
   
-  Double_t emiss=0; 
-  return fPhotPhi[fPhotCnt]=TMath::ATan2(cluY-fTrkPos.Y()-emiss*TMath::Tan(fTrkDir.Theta())*TMath::Sin(fTrkDir.Phi()),
-                                         cluX-fTrkPos.X()-emiss*TMath::Tan(fTrkDir.Theta())*TMath::Cos(fTrkDir.Phi()));
+//  Double_t emiss=0; 
+//  return fPhotPhi[fPhotCnt]=TMath::ATan2(cluY-fTrkPos.Y()-emiss*TMath::Tan(fTrkDir.Theta())*TMath::Sin(fTrkDir.Phi()),
+//                                         cluX-fTrkPos.X()-emiss*TMath::Tan(fTrkDir.Theta())*TMath::Cos(fTrkDir.Phi()));
+  return fPhotPhi[fPhotCnt]=TMath::ATan2(cluY-yRad,cluX-xRad)-(TMath::Pi()+fTrkDir.Phi());
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
@@ -138,10 +141,9 @@ Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
   const Int_t kN=100;
   Double_t area=0;
   for(Int_t i=0;i<kN;i++){
-    TracePhot(ckovAng,Double_t(TMath::TwoPi()*i    /kN),pos1);//trace this photon 
-    TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN),pos2);//trace this photon 
-    area+=(pos1-fTrkPos)*(pos2-fTrkPos);
-      
+    TracePhot(xRad,yRad,ckovAng,Double_t(TMath::TwoPi()*i    /kN),pos1);//trace this photon 
+    TracePhot(xRad,yRad,ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN),pos2);//trace this photon 
+    area+=(pos1-fTrkPos)*(pos2-fTrkPos);      
   }
   return area;
 }//FindRingArea()
@@ -202,7 +204,7 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov)
   return iInsideCnt;
 }//FlagPhot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::TracePhot(Double_t ckovThe,Double_t ckovPhi,TVector2 &pos)const
+Double_t AliHMPIDRecon::TracePhot(Double_t x,Double_t y,Double_t ckovThe,Double_t ckovPhi,TVector2 &pos)const
 {
 // Trace a single Ckov photon from emission point somewhere in radiator up to photocathode taking into account ref indexes of materials it travereses
 // Arguments: ckovThe,ckovPhi- photon ckov angles, [rad]  (warning: not photon theta and phi)     
@@ -210,19 +212,17 @@ Double_t AliHMPIDRecon::TracePhot(Double_t ckovThe,Double_t ckovPhi,TVector2 &po
   TRotation mtheta;   mtheta.RotateY(fTrkDir.Theta());
   TRotation mphi;       mphi.RotateZ(fTrkDir.Phi());  
   TRotation mrot=mphi*mtheta;
-  
-  TVector3  posCkov(fTrkPos.X(),fTrkPos.Y(),-0.5*fgkRadThick-fgkWinThick-fgkGapThick);   //RAD: photon position is track position @ middle of RAD 
-  TVector3  dirCkov;   dirCkov.SetMagThetaPhi(1,ckovThe,ckovPhi);                        //initially photon is directed according to requested ckov angle
-                                               dirCkov=mrot*dirCkov;                     //now we know photon direction in LORS
-                       dirCkov.SetPhi(ckovPhi);   
+//  TVector3  posCkov(fTrkPos.X(),fTrkPos.Y(),-0.5*fgkRadThick-fgkWinThick-fgkGapThick);   //RAD: photon position is track position @ middle of RAD 
+  TVector3  posCkov(x,y,-0.5*fgkRadThick-fgkWinThick-fgkGapThick);                                                  //RAD: photon position is track position @ middle of RAD 
+  TVector3  dirCkov,dirCkovTors;   dirCkovTors.SetMagThetaPhi(1,ckovThe,ckovPhi);          //initially photon is directed according to requested ckov angle
+                                               dirCkov=mrot*dirCkovTors;                   //now we know photon direction in LORS
+//  dirCkov.SetPhi(ckovPhi);  
   if(dirCkov.Theta() > TMath::ASin(1./fRadNmean)) return -999;//total refraction on WIN-GAP boundary
-  
-  Propagate(dirCkov,posCkov,-fgkWinThick-fgkGapThick); //go to RAD-WIN boundary  remeber that z=0 is PC plane
-  Refract  (dirCkov,         fRadNmean,fgkWinIdx    ); //RAD-WIN refraction
-  Propagate(dirCkov,posCkov,-fgkGapThick           );  //go to WIN-GAP boundary
-  Refract  (dirCkov,         fgkWinIdx,fgkGapIdx    ); //WIN-GAP refraction
-  Propagate(dirCkov,posCkov,0                     );   //go to PC
-  
+  Propagate(dirCkov,posCkov,-fgkWinThick-fgkGapThick);                           //go to RAD-WIN boundary  
+  Refract  (dirCkov,         fRadNmean,fgkWinIdx    );              //RAD-WIN refraction
+  Propagate(dirCkov,posCkov,            -fgkGapThick);              //go to WIN-GAP boundary
+  Refract  (dirCkov,         fgkWinIdx,fgkGapIdx    );              //WIN-GAP refraction
+  Propagate(dirCkov,posCkov,                       0);   //go to PC
   pos.Set(posCkov.X(),posCkov.Y());
   return (pos-fTrkPos).Mod();
 }//TracePhoton()
