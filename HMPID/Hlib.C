@@ -1,6 +1,8 @@
 void Hlib()
 {
+  gSystem->Load("libPhysics.so");
   gSystem->Load("libMinuit.so");
+  gSystem->Load("libTree.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
   gSystem->Load("libSTEER.so");
