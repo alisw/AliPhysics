@@ -351,12 +351,12 @@ void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam
   
   // Check whether the geometry is available and get absorber boundaries
   if (!gGeoManager) {
-    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: no TGeo"<<endl;
+    cout<<"E-AliMUONTrackExtrap::ExtrapToVertexUncorrected: no TGeo"<<endl;
     return;
   }
   TGeoNode *absNode = gGeoManager->GetVolume("ALIC")->GetNode("ABSM_1");
   if (!absNode) {
-    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: failed to get absorber node"<<endl;
+    cout<<"E-AliMUONTrackExtrap::ExtrapToVertexUncorrected: failed to get absorber node"<<endl;
     return;
   }
   Double_t zAbsBeg, zAbsEnd;
@@ -571,28 +571,35 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
 }
 
   //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx)
+void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx,
+					Bool_t CorrectForMCS, Bool_t CorrectForEnergyLoss)
 {
   /// Extrapolation to the vertex.
-  /// Returns the track parameters resulting from the extrapolation in the current TrackParam.
+  /// Returns the track parameters resulting from the extrapolation of the current TrackParam.
   /// Changes parameters according to Branson correction through the absorber and energy loss
   
   if (trackParam->GetZ() == zVtx) return; // nothing to be done if already at vertex
   
   if (trackParam->GetZ() > zVtx) { // spectro. (z<0)
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
+    cout<<"F-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
     	<<") upstream the vertex (zVtx = "<<zVtx<<")"<<endl;
     exit(-1);
   }
   
+  // Check if correction required
+  if (!CorrectForMCS && !CorrectForEnergyLoss) {
+    ExtrapToZ(trackParam,zVtx);
+    return;
+  }
+  
   // Check whether the geometry is available and get absorber boundaries
   if (!gGeoManager) {
-    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: no TGeo"<<endl;
+    cout<<"E-AliMUONTrackExtrap::ExtrapToVertex: no TGeo"<<endl;
     return;
   }
   TGeoNode *absNode = gGeoManager->GetVolume("ALIC")->GetNode("ABSM_1");
   if (!absNode) {
-    cout<<"E-AliMUONTrackExtrap::GetAbsorberCorrectionParam: failed to get absorber node"<<endl;
+    cout<<"E-AliMUONTrackExtrap::ExtrapToVertex: failed to get absorber node"<<endl;
     return;
   }
   Double_t zAbsBeg, zAbsEnd;
@@ -647,40 +654,90 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
   Double_t deltaP = TotalMomentumEnergyLoss(pTot,pathLength,meanRho);
   
   // Correct for half of energy loss
-  pTot += 0.5 * deltaP;
+  Double_t nonBendingSlope, bendingSlope;
+  if (CorrectForEnergyLoss) {
+    pTot += 0.5 * deltaP;
+    nonBendingSlope = trackParam->GetNonBendingSlope();
+    bendingSlope = trackParam->GetBendingSlope();
+    trackParam->SetInverseBendingMomentum(charge / pTot *
+  	  TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
+  	  TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
+  }
   
-  // Position of the Branson plane (spectro. (z<0))
-  Double_t zB = (f1>0.) ? trackXYZIn[2] - f2/f1 : 0.;
-  
-  // Get track position in the Branson plane corrected for magnetic field effect
-  ExtrapToZ(trackParam,zVtx);
-  Double_t xB = trackParam->GetNonBendingCoor() + (zB - zVtx) * trackParam->GetNonBendingSlope();
-  Double_t yB = trackParam->GetBendingCoor()    + (zB - zVtx) * trackParam->GetBendingSlope();
-  
-  // Get track slopes corrected for multiple scattering (spectro. (z<0))
-  Double_t nonBendingSlope = (zB<0.) ? (xB - xVtx) / (zB - zVtx) : trackParam->GetNonBendingSlope();
-  Double_t bendingSlope    = (zB<0.) ? (yB - yVtx) / (zB - zVtx) : trackParam->GetBendingSlope();
+  if (CorrectForMCS) {
+    // Position of the Branson plane (spectro. (z<0))
+    Double_t zB = (f1>0.) ? trackXYZIn[2] - f2/f1 : 0.;
+    
+    // Get track position in the Branson plane corrected for magnetic field effect
+    ExtrapToZ(trackParam,zVtx);
+    Double_t xB = trackParam->GetNonBendingCoor() + (zB - zVtx) * trackParam->GetNonBendingSlope();
+    Double_t yB = trackParam->GetBendingCoor()    + (zB - zVtx) * trackParam->GetBendingSlope();
+    
+    // Get track slopes corrected for multiple scattering (spectro. (z<0))
+    nonBendingSlope = (zB<0.) ? (xB - xVtx) / (zB - zVtx) : trackParam->GetNonBendingSlope();
+    bendingSlope    = (zB<0.) ? (yB - yVtx) / (zB - zVtx) : trackParam->GetBendingSlope();
+    
+    // Set track parameters at vertex
+    trackParam->SetNonBendingCoor(xVtx);
+    trackParam->SetBendingCoor(yVtx);
+    trackParam->SetZ(zVtx);
+    trackParam->SetNonBendingSlope(nonBendingSlope);
+    trackParam->SetBendingSlope(bendingSlope);
+  } else {
+    ExtrapToZ(trackParam,zVtx);
+    nonBendingSlope = trackParam->GetNonBendingSlope();
+    bendingSlope = trackParam->GetBendingSlope();
+  }
   
   // Correct for second half of energy loss
-  pTot += 0.5 * deltaP;
+  if (CorrectForEnergyLoss) pTot += 0.5 * deltaP;
   
   // Set track parameters at vertex
-  trackParam->SetNonBendingCoor(xVtx);
-  trackParam->SetBendingCoor(yVtx);
-  trackParam->SetZ(zVtx);
-  trackParam->SetNonBendingSlope(nonBendingSlope);
-  trackParam->SetBendingSlope(bendingSlope);
   trackParam->SetInverseBendingMomentum(charge / pTot *
-	TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
-	TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
+        TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
+        TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
   
+}
+
+  //__________________________________________________________________________
+Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx)
+{
+  /// Calculate the total momentum energy loss in-between the track position and the vertex assuming a linear propagation
+  
+  if (trackParam->GetZ() == zVtx) return 0.; // nothing to be done if already at vertex
+  
+  // Check whether the geometry is available
+  if (!gGeoManager) {
+    cout<<"E-AliMUONTrackExtrap::TotalMomentumEnergyLoss: no TGeo"<<endl;
+    return 0.;
+  }
+  
+  // Get encountered material correction parameters assuming linear propagation from vertex to the track position
+  Double_t trackXYZOut[3];
+  trackXYZOut[0] = trackParam->GetNonBendingCoor();
+  trackXYZOut[1] = trackParam->GetBendingCoor();
+  trackXYZOut[2] = trackParam->GetZ();
+  Double_t trackXYZIn[3];
+  trackXYZIn[0] = xVtx;
+  trackXYZIn[1] = yVtx;
+  trackXYZIn[2] = zVtx;
+  Double_t pathLength = 0.;
+  Double_t f0 = 0.;
+  Double_t f1 = 0.;
+  Double_t f2 = 0.;
+  Double_t meanRho = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pathLength,f0,f1,f2,meanRho);
+  
+  // Calculate energy loss
+  Double_t pTot = trackParam->P();
+  return TotalMomentumEnergyLoss(pTot,pathLength,meanRho);
 }
 
   //__________________________________________________________________________
 Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(Double_t pTotal, Double_t pathLength, Double_t rho)
 {
   /// Returns the total momentum energy loss in the front absorber
-  Double_t muMass = 0.10566;
+  Double_t muMass = 0.105658369;
   Double_t p2=pTotal*pTotal;
   Double_t beta2=p2/(p2 + muMass*muMass);
   Double_t dE=ApproximateBetheBloch(beta2)*pathLength*rho;

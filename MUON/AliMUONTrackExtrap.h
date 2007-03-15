@@ -37,7 +37,10 @@ class AliMUONTrackExtrap : public TObject
   static void ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd);
   static void ExtrapToStation(AliMUONTrackParam *trackParamIn, Int_t station, AliMUONTrackParam *trackParamOut);
   static void ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx);
-  static void ExtrapToVertex(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
+  static void ExtrapToVertex(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx,
+  			     Bool_t CorrectForMCS = kTRUE, Bool_t CorrectForEnergyLoss = kTRUE);
+  
+  static Double_t TotalMomentumEnergyLoss(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
   
   static void AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
   

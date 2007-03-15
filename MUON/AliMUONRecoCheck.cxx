@@ -123,8 +123,8 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
     fRunLoader->UnloadTrackRefs();
     fRunLoader->UnloadTracks();
     delete fMUONData;
+    delete fRunLoader;
   }
-  delete fRunLoader;
 }
 
 //_____________________________________________________________________________
