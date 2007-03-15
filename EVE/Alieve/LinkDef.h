@@ -23,6 +23,7 @@
 // ITS
 #pragma link C++ class Alieve::ITSDigitsInfo+;
 #pragma link C++ class Alieve::ITSModule+;
+#pragma link C++ class Alieve::ITSModuleStepper+;
 
 // MUON
 #pragma link C++ class Alieve::MUONData+;
