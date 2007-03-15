@@ -1,3 +1,13 @@
+2007-03-15  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* GridStepper.h:
+	* GridStepper.cxx:
+	* LinkDef.h:
+	New class GridStepper.
+
+	* QuadSet.cxx:
+	Check ownership of quad-ids in Reset().
+
 2007-03-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RGTopFrame.cxx:

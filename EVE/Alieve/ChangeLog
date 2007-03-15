@@ -1,3 +1,21 @@
+2007-03-14  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* ITSDigitsInfo.cxx:
+	Read digits via TBranch::GetEntry() instead of TTree::GetEntry()
+	as SPD/SDD/SSD entries are interleaved.
+
+	* ITSModule.cxx:
+	Increase reference-count in initialization of global frames and
+	palettes.
+
+	* ITSModule.h:
+	Added getter for frame dimensions.
+
+	* LinkDef.h:
+	* ITSModuleStepper.h:
+	* ITSModuleStepper.cxx:
+	New class ITSModuleStepper.
+
 2007-03-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:

@@ -1,3 +1,11 @@
+2007-03-14  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* reve-genclass.pl:
+	Fix a typo.
+
+	* alice-macros/its_module_stepper.C:
+	New macro demonstrating 2D ITS-module layout.
+
 2007-03-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* alice-macros/kine_tracks.C:
