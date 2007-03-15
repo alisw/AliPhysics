@@ -34,9 +34,26 @@
 // Authors: B. Becker and J. Castillo
 // ---
 
-void MUONAlignment(Int_t nEvents = 100000, TString fileName = "galice.root", TString fileList = "")
+void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", TString fileName = "galice.root", TString fileList = "")
 {
  
+  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
+  if (!gGeoManager) {
+    TGeoManager::Import(geoFilename);
+    if (!gGeoManager) {
+      Error("MUONmass_ESD", "getting geometry from file %s failed", geoFilename);
+      return;
+    }
+  }
+  
+  // set  mag field 
+  // waiting for mag field in CDB 
+  printf("Loading field map...\n");
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+  AliTracker::SetFieldMap(field, kFALSE);
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+
   Double_t parameters[3*156];
   Double_t errors[3*156];
   Double_t pulls[3*156];
@@ -72,7 +89,7 @@ void MUONAlignment(Int_t nEvents = 100000, TString fileName = "galice.root", TSt
   alig->InitGlobalParameters(parameters);
 
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
-  transform->ReadGeometryData("volpath.dat", "transform.dat");
+  transform->ReadGeometryData("volpath.dat", gGeoManager);
   alig->SetGeometryTransformer(transform);
 
   char cFileName[100];  

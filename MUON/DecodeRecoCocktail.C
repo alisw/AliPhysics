@@ -32,6 +32,7 @@
 #include <TLorentzVector.h>
 #include <TParticle.h>
 #include <TSystem.h>
+#include <TGeoManager.h>
 #include <AliMUONRecoCheck.h>
 #include <AliMUONTrack.h>
 #include <AliMUONTrackParam.h>
@@ -39,11 +40,30 @@
 #include "AliMUONTrackLight.h"
 #include "AliMUONPairLight.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliTracker.h"
+#include "AliMagFMaps.h"
 
-void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root"){ 
+void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root", char* geoFilename = "geometry.root"){ 
   const char *startingDir = gSystem->pwd(); 
   gSystem->cd(dirname); 
   TFile *fout = new TFile(outFileName,"recreate"); 
+
+  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
+  if (!gGeoManager) {
+    TGeoManager::Import(geoFilename);
+    if (!gGeoManager) {
+      Error("MUONmass_ESD", "getting geometry from file %s failed", geoFilename);
+      return;
+    }
+  }
+  
+  // set  mag field 
+  // waiting for mag field in CDB 
+  printf("Loading field map...\n");
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+  AliTracker::SetFieldMap(field, kFALSE);
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
 
   AliMUONRecoCheck *rc = new AliMUONRecoCheck("galice.root");
   AliRunLoader *runLoader = rc->GetRunLoader();
