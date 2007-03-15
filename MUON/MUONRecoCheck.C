@@ -18,6 +18,7 @@
 #include "TH1.h"
 #include "TParticle.h"
 #include "TFile.h"
+#include <TGeoManager.h>
 
 // STEER includes
 #include "AliRun.h"
@@ -38,7 +39,7 @@
 
 Int_t TrackCheck( Bool_t *compTrack);
 
-void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
+void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", char * filename="galice.root"){
 
   // Utility macro to check the muon reconstruction. Reconstructed tracks are compared
   // to reference tracks. The reference tracks are built from AliTrackReference for the
@@ -76,11 +77,22 @@ void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
   TH1F *hResMomVertex = new TH1F("hMomVertex"," delta P vertex (GeV/c)",100,-10.,10);
   TH1F *hResMomFirstHit = new TH1F("hMomFirstHit"," delta P first hit (GeV/c)",100,-10.,10);
 
+  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
+  if (!gGeoManager) {
+    TGeoManager::Import(geoFilename);
+    if (!gGeoManager) {
+      Error("MUONmass_ESD", "getting geometry from file %s failed", geoFilename);
+      return;
+    }
+  }
+  
   // set  mag field 
   // waiting for mag field in CDB 
   printf("Loading field map...\n");
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kFALSE);
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
 
   AliRunLoader* runLoader = AliRunLoader::Open(filename,"read");
   AliLoader * MUONLoader = runLoader->GetLoader("MUONLoader");
@@ -212,8 +224,9 @@ void MUONRecoCheck (Int_t nEvent = 1, char * filename="galice.root"){
   MUONLoader->UnloadTracks();
   runLoader->UnloadKinematics();
   runLoader->UnloadTrackRefs();
-  runLoader->Delete();
-  field->Delete();
+  delete runLoader;
+  delete field;
+  delete MUONData;
 
   printf(" nb of reconstructible tracks: %d \n", nReconstructibleTracks);
   printf(" nb of reconstructed tracks: %d \n", nReconstructedTracks);
