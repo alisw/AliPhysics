@@ -11,6 +11,7 @@
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <TStyle.h>
+#include <TROOT.h>
 
 using namespace Reve;
 using namespace Alieve;
