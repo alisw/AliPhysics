@@ -66,6 +66,7 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
 
   fRedrawDisabled (0),
   fResetCameras   (kFALSE),
+  fDropLogicals   (kFALSE),
   fTimerActive    (kFALSE),
   fRedrawTimer    (),
 
@@ -183,6 +184,13 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
 
 /**************************************************************************/
 
+TGLViewer* RGTopFrame::GetGLViewer()
+{
+  return dynamic_cast<TGLViewer*>(fGLCanvas->GetViewer3D());
+}
+
+/**************************************************************************/
+
 TCanvas* RGTopFrame::AddCanvasTab(const char* name)
 {
   TGCompositeFrame    *f  = fMasterTab->AddTab(name);
@@ -238,13 +246,23 @@ void RGTopFrame::RegisterRedraw3D()
 void RGTopFrame::DoRedraw3D()
 {
   // printf("RGTopFrame::DoRedraw3D redraw triggered\n");
+  TGLViewer* glv = GetGLViewer();
   if (fResetCameras) {
-    fGLCanvas->GetViewer3D()->ResetCamerasAfterNextUpdate();
+    glv->ResetCamerasAfterNextUpdate();
     fResetCameras = kFALSE;
+  }
+  if (fDropLogicals) {
+    glv->SetSmartRefresh(kFALSE);
   }
 
   fGLCanvas->Modified();
   fGLCanvas->Update();
+
+  if (fDropLogicals) {
+    glv->SetSmartRefresh(kTRUE);
+    fDropLogicals = kFALSE;
+  }
+
   fTimerActive = kFALSE;
 }
 
@@ -354,9 +372,9 @@ TGListTreeItem* RGTopFrame::AddGlobalRenderElement(RenderElement* parent,
 void RGTopFrame::RemoveRenderElement(RenderElement* parent,
 				     RenderElement* rnr_element)
 {
-  parent->RemoveFromListTree(GetListTree());
+  rnr_element->RemoveFromListTree(GetListTree());
 
-  rnr_element->RemoveElement(rnr_element);
+  parent->RemoveElement(rnr_element);
 }
 
 void RGTopFrame::PreDeleteRenderElement(RenderElement* rnr_element)
@@ -390,10 +408,12 @@ void RGTopFrame::UndrawRenderElement(RenderElement* rnr_element, TVirtualPad* pa
 
 /**************************************************************************/
 
-void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t state)
+void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t /*state*/)
 {
   // Item's user-data is blindly casted into TObject.
   // We recast it blindly back into the render element.
+  // State is ignored as it is kept consistent with internal fRnrSelf and
+  // fRnrChildren.
 
   RenderElement* rnrEl = (RenderElement*) obj;
   rnrEl->ToggleRnrState();

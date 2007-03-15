@@ -20,6 +20,8 @@ class TGStatusBar;
 class TGListTree;
 class TGListTreeItem;
 
+class TGLViewer;
+
 namespace Reve {
 
 class VSDSelector;
@@ -71,6 +73,7 @@ private:
 
   Int_t                fRedrawDisabled;
   Bool_t               fResetCameras;
+  Bool_t               fDropLogicals;
   Bool_t               fTimerActive;
   TTimer               fRedrawTimer;
 
@@ -90,6 +93,9 @@ public:
   RGBrowser*   GetBrowser()    { return fBrowser; }
   TGStatusBar* GetStatusBar()  { return fStatusBar; }
 
+  // Temporary cheating.
+  TGLViewer*   GetGLViewer();
+
   TCanvas*     AddCanvasTab(const char* name);
 
   TGListTree*        GetListTree() const;
@@ -100,7 +106,7 @@ public:
   void               SetKeepEmptyCont(Bool_t keep) { fKeepEmptyCont=keep; }     
 
   TFolder*  GetMacroFolder() const { return fMacroFolder; }
-  TMacro*  GetMacro(const Text_t* name) const;
+  TMacro*   GetMacro(const Text_t* name) const;
 
   RGEditor* GetEditor() const { return fEditor; }
   void EditRenderElement(RenderElement* rnr_element);
@@ -108,9 +114,11 @@ public:
   void DisableRedraw() { ++fRedrawDisabled; }
   void EnableRedraw()  { --fRedrawDisabled; if(fRedrawDisabled <= 0) Redraw3D(); }
 
-  void Redraw3D(Bool_t resetCameras=kFALSE) {
+  void Redraw3D(Bool_t resetCameras=kFALSE, Bool_t dropLogicals=kFALSE)
+  {
     if(fRedrawDisabled <= 0 && !fTimerActive) RegisterRedraw3D();
     if(resetCameras) fResetCameras = kTRUE;
+    if(dropLogicals) fDropLogicals = kTRUE;
   }
   void RegisterRedraw3D();
   void DoRedraw3D();
