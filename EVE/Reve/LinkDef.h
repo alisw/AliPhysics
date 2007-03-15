@@ -45,6 +45,9 @@
 #pragma link C++ class Reve::ZTransSubEditor+;
 #pragma link C++ class Reve::ZTransEditor+;
 
+// Stepper
+#pragma link C++ class Reve::GridStepper+;
+
 // RGBAPalette
 #pragma link C++ class Reve::RGBAPalette+;
 #pragma link C++ class Reve::RGBAPaletteEditor+;
