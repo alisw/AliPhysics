@@ -23,7 +23,7 @@
 //  of cluster equal to fgkMaxNumberOfClusters    //
 ////////////////////////////////////////////////////
 
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITStrackSA.h"
 
 
@@ -81,19 +81,15 @@ fNSA(t.fNSA){
   }
 }
 //____________________________________________________
-AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t detector, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ):
+AliITStrackSA::AliITStrackSA(Int_t layer, Int_t ladder, Int_t detector, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ):
 fNSA(0) 
 {
   // standard constructor. Used for ITS standalone tracking
 
-  if(!geom){
-    Fatal("AliITStrackSA","ITS geometry not found - Abort\n");
-    return;
-  }
   // get the azimuthal angle of the detector containing the innermost
   // cluster of this track (data member fAlpha)
-  Float_t rotmatr[9];
-  geom->GetRotMatrix(layer,ladder,detector,rotmatr);
+  Double_t rotmatr[9];
+  AliITSgeomTGeo::GetRotation(layer,ladder,detector,rotmatr);
   Double_t sAlpha=TMath::ATan2(rotmatr[1],rotmatr[0])+TMath::Pi();
   sAlpha+=TMath::Pi()/2.;
   if(layer==1) sAlpha+=TMath::Pi();
@@ -102,7 +98,11 @@ fNSA(0)
   // get the radius of this detector. Procedure taken from the 
   // AliITStrackerV2 constructor
   Float_t x=0,y=0,z=0;
-  geom->GetTrans(layer,ladder,detector,x,y,z);
+  Double_t xyz[3];
+  AliITSgeomTGeo::GetTranslation(layer,ladder,detector,xyz);
+  x=xyz[0];
+  y=xyz[1];
+  z=xyz[2];
 
   Double_t fi=TMath::ATan2(rotmatr[1],rotmatr[0])+TMath::Pi();
   fi+=TMath::Pi()/2;

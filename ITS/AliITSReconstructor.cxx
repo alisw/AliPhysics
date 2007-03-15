@@ -165,14 +165,13 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
 // create a ITS tracker
 
   
-  AliITSgeom* geom = GetITSgeom(runLoader);
   TString selectedTracker = GetOption();
   AliTracker* tracker;    
   if (selectedTracker.Contains("MI")) {
     tracker = new AliITStrackerMI(0);
   }
   else {
-    tracker =  new AliITStrackerSA(geom);  // inherits from AliITStrackerMI
+    tracker =  new AliITStrackerSA(0);  // inherits from AliITStrackerMI
   }
 
   TString selectedPIDmethod = GetOption();

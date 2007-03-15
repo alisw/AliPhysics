@@ -27,9 +27,9 @@ class AliITStrackerSA : public AliITStrackerMI {
  public:
 
   AliITStrackerSA();
-  AliITStrackerSA(AliITSgeom *geom);
-  AliITStrackerSA(AliITSgeom *geom,AliESDVertex *vert);
-  AliITStrackerSA(AliITSgeom *geom,AliITSVertexer *vertexer);
+  AliITStrackerSA(const Char_t *geom);
+  AliITStrackerSA(const Char_t *geom,AliESDVertex *vert);
+  AliITStrackerSA(const Char_t *geom,AliITSVertexer *vertexer);
   AliITStrackerSA(const AliITStrackerSA& tracker);
   AliITStrackerSA& operator=(const AliITStrackerSA& source);
   virtual ~AliITStrackerSA();  
@@ -75,8 +75,8 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
                        AliITStrackSA* trs,Double_t zvertex,Int_t flagp); 
 
-  void GetCoorAngles(AliITSRecPoint* cl,Int_t module,Double_t &phi,Double_t &lambda,Float_t &x,Float_t &y,Float_t &z,Double_t* vertex);
-  void GetCoorErrors(AliITSRecPoint* cl, Int_t module,Float_t &sx,Float_t &sy, Float_t &sz);
+  void GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda,Float_t &x,Float_t &y,Float_t &z,Double_t* vertex);
+  void GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, Float_t &sz);
 
   AliITSclusterTable* GetClusterCoord(Int_t layer,Int_t n) const {return (AliITSclusterTable*)fCluCoord[layer]->UncheckedAt(n);}
   void RemoveClusterCoord(Int_t layer, Int_t n) {fCluCoord[layer]->RemoveAt(n);fCluCoord[layer]->Compress();}
@@ -97,7 +97,6 @@ class AliITStrackerSA : public AliITStrackerMI {
   Double_t *fLambdaWin; // lambda window sizes
   AliESDVertex *fVert;        //! primary vertex
   AliITSVertexer *fVertexer;  //! vertexer 
-  AliITSgeom *fGeom;          //! ITS geometry
   TObjArray *fListOfTracks;   //! container for found tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
@@ -105,7 +104,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,2)
+  ClassDef(AliITStrackerSA,3)
 };
 
 #endif
