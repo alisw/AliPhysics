@@ -35,15 +35,40 @@
 // This TJD date indication was used by the Vela and Batse missions in
 // view of Gamma Ray Burst investigations.
 //
-// The Julian Epoch (JE) indicates the fractional elapsed year count since
-// midnight (UT) on 01-jan at the start of the Gregorian year count.
-// A year is defined to be 365.25 days, so the integer part of JE corresponds
-// to the usual Gregorian year count.
-// So, 01-jan-1965 00:00:00 UT corresponds to JE=1965.0
+// The Julian Epoch (JE) indicates the fractional elapsed Julian year count
+// since the start of the Gregorian year count.
+// A Julian year is defined to be 365.25 days and starts at 01-jan 12:00:00 UT.
+// As such, the integer part of JE corresponds to the usual Gregorian year count,
+// apart from 01-jan before 12:00:00 UT.
+// So, 01-jan-1965 12:00:00 UT corresponds to JE=1965.0
+//
+// The Besselian Epoch (BE) indicates the fractional elapsed Besselian year count
+// since the start of the Gregorian year count.
+// A Besselian (or tropical) year is defined to be 365.242198781 days.
+//
+// The Besselian and Julian epochs are used in astronomical catalogs
+// to denote values of time varying observables like e.g. right ascension.
 //
 // Because of the fact that the Julian date indicators are all w.r.t. UT
 // they provide an absolute timescale irrespective of timezone or daylight
 // saving time (DST).
+//
+// In view of astronomical observations and positioning it is convenient
+// to have also a UT equivalent related to stellar meridian transitions.
+// This is achieved by the Greenwich Sidereal Time (GST).
+// The GST is defined as the right ascension of the objects passing
+// the Greenwich meridian at 00:00:00 UT.
+// Due to the rotation of the Earth around the Sun, a sidereal day
+// lasts 86164.09 seconds (23h 56m 04.09s) compared to the mean solar
+// day of 86400 seconds (24h).
+// Furthermore, precession of the earth's spin axis results in the fact
+// that the zero point of right ascension (vernal equinox) gradually 
+// moves along the celestial equator.
+// In addition, tidal friction and ocean and atmospheric effects will
+// induce seasonal variations in the earth's spin rate and polar motion
+// of the earth's spin axis.
+// To obtain a sidereal time measure, the above efects are taken
+// into account via corrections in the UT to GST conversion.
 //
 // This AliTimestamp facility allows for picosecond precision, in view
 // of time of flight analyses for particle physics experiments.
@@ -185,21 +210,38 @@ void AliTimestamp::Date(Int_t mode)
 {
 // Print date/time info.
 //
-// mode = 1 ==> Only the TTimeStamp yy-mm-dd hh:mm:ss:ns info is printed
+// mode = 1 ==> Only the TTimeStamp yy-mm-dd hh:mm:ss:ns and GMST info is printed
 //        2 ==> Only the Julian parameter info is printed
-//        3 ==> Both the TTimeStamp and Julian parameter info is printed
+//        3 ==> Both the TTimeStamp, GMST and Julian parameter info is printed
 //
 // The default is mode=3.
 //
 // Note : In case the (M/T)JD falls outside the TTimeStamp range,
-//        the TTimeStamp info will not be printed.
+//        the TTimeStamp info will be replaced by UT hh:mm:ss:ns:ps info.
 
-  Int_t mjd,mjsec,mjns;
-  GetMJD(mjd,mjsec,mjns);
+ Int_t mjd,mjsec,mjns,mjps;
+ GetMJD(mjd,mjsec,mjns);
+ mjps=GetPs();
+
+ Int_t hh,mm,ss,ns,ps;
  
- if ((mode==1 || mode==3) && mjd>=40587 && (mjd<65442 || (mjd==65442 && mjsec<8047)))
+ if (mode==1 || mode==3)
  {
-  cout << " " << AsString() << endl;
+  if (mjd>=40587 && (mjd<65442 || (mjd==65442 && mjsec<8047)))
+  {
+   cout << " " << AsString() << endl;
+  }
+  else
+  {
+   GetUT(hh,mm,ss,ns,ps);
+   cout << " UT : " << setfill('0') << setw(2) << hh << ":"
+                    << setw(2) << mm << ":" << setw(2) << ss
+                    << " ns : " << ns << " ps : " << ps << " ";
+  }
+  GetGST(hh,mm,ss,ns,ps);
+  cout << " GST : " << setfill('0') << setw(2) << hh << ":"
+                    << setw(2) << mm << ":" << setw(2) << ss
+                    << " ns : " << ns << " ps : " << ps << endl;
  }
  if (mode==2 || mode==3)
  {
@@ -207,7 +249,8 @@ void AliTimestamp::Date(Int_t mode)
   GetJD(jd,jsec,jns);
   Int_t tjd,tjsec,tjns;
   GetTJD(tjd,tjsec,tjns);
-  cout << " Julian Epoch : " << setprecision(25) << GetJE() << endl;
+  cout << " Julian Epoch : " << setprecision(25) << GetJE()
+       << " Besselian Epoch : " << setprecision(25) << GetBE() << endl;
   cout << " JD : " << jd << " sec : " << jsec << " ns : " << jns << " ps : " << fJps
        << " Fractional : " << setprecision(25) << GetJD() << endl;
   cout << " MJD : " << mjd << "  sec : " << mjsec << " ns : " << mjns << " ps : " << fJps
@@ -375,6 +418,41 @@ Double_t AliTimestamp::GetJE(Double_t date,TString mode) const
  return je;
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetBE(Double_t date,TString mode) const
+{
+// Provide the Besselian Epoch (JE) corresponding to the specified date.
+// The argument "mode" indicates the type of the argument "date".
+//
+// Available modes are :
+// mode = "jd"  ==> date represents the Julian Date
+//      = "mjd" ==> date represents the Modified Julian Date
+//      = "tjd" ==> date represents the Truncated Julian Date
+//
+// The default is mode="jd".
+//
+// In case of invalid input, a value of -99999 is returned.
+//
+// Note :
+// ------
+// This memberfunction only provides the BE corresponding to the
+// input arguments. It does NOT set the corresponding Julian parameters
+// for the current AliTimestamp instance.
+// As such the TTimeStamp limitations do NOT apply to this memberfunction.
+// To set the Julian parameters for the current AliTimestamp instance,
+// please use the corresponding SET() memberfunctions of either AliTimestamp
+// or TTimeStamp.
+
+ if ((mode != "jd") && (mode != "mjd") && (mode != "tjd")) return -99999;
+
+ Double_t jd=date;
+ if (mode=="mjd") jd=date+2400000.5;
+ if (mode=="tjd") jd=date+2440000.5;
+
+ Double_t be=1900.+(jd-2415020.31352)/365.242198781;
+
+ return be;
+}
+///////////////////////////////////////////////////////////////////////////
 void AliTimestamp::Convert(Double_t date,Int_t& days,Int_t& secs,Int_t& ns) const
 {
 // Convert date as fractional day count into integer days, secs and ns.
@@ -432,6 +510,56 @@ Double_t AliTimestamp::Convert(Int_t days,Int_t secs,Int_t ns) const
  frac=frac/double(daysecs);
  Double_t date=double(days)+frac;
  return date;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::Convert(Double_t h,Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps) const
+{
+// Convert fractional hour count h into hh:mm:ss:ns:ps.
+//
+// Note : Due to computer accuracy the ps value may become inaccurate.
+//
+// Note :
+// ------
+// This memberfunction only converts the input "h" into the corresponding
+// integer parameters. It does NOT set the corresponding Julian parameters
+// for the current AliTimestamp instance.
+// As such the TTimeStamp limitations do NOT apply to this memberfunction.
+// To set the Julian parameters for the current AliTimestamp instance,
+// please use the corresponding SET() memberfunctions of either AliTimestamp
+// or TTimeStamp.
+ 
+ hh=int(h);
+ h=h-double(hh);
+ h=h*3600.;
+ ss=int(h);
+ h=h-double(ss);
+ h=h*1.e9;
+ ns=int(h);
+ h=h-double(ns);
+ h=h*1000.;
+ ps=int(h);
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::Convert(Int_t hh,Int_t mm,Int_t ss,Int_t ns,Int_t ps) const
+{
+// Convert hh:mm:ss:ns:ps into fractional hour count. 
+//
+// Note : Due to computer accuracy the ps precision may be lost.
+//
+// Note :
+// ------
+// This memberfunction only converts the input integer parameters into the
+// corresponding fractional hour count. It does NOT set the corresponding
+// Julian parameters for the current AliTimestamp instance.
+// As such the TTimeStamp limitations do NOT apply to this memberfunction.
+// To set the Julian parameters for the current AliTimestamp instance,
+// please use the corresponding SET() memberfunctions of either AliTimestamp
+// or TTimeStamp.
+
+ Double_t h=hh;
+ h+=double(mm)/60.+(double(ss)+double(ns)*1.e-9+double(ps)*1.e-12)/3600.;
+
+ return h;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTimestamp::FillJulian()
@@ -574,6 +702,16 @@ Double_t AliTimestamp::GetJE()
  Double_t jd=GetJD();
  Double_t je=GetJE(jd);
  return je;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetBE()
+{
+// Provide the Besselian Epoch (BE) corresponding to the currently stored
+// AliTimestamp date/time parameters.
+
+ Double_t jd=GetJD();
+ Double_t be=GetBE(jd);
+ return be;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns,Int_t ps)
@@ -1286,5 +1424,152 @@ void AliTimestamp::SetUT(Int_t y,Int_t d,Int_t s,Int_t ns,Int_t ps)
  GetMJD(mjd,sec,nsec);
  SetMJD(mjd,0,0,0);
  Add(d,s,ns,ps);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::GetUT(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps)
+{
+// Provide the corrresponding UT as hh:mm:ss:ns:ps.
+// This facility is based on the MJD, so the TTimeStamp limitations
+// do not apply here.
+
+ Int_t mjd,sec,nsec,psec;
+
+ GetMJD(mjd,sec,nsec);
+ psec=GetPs();
+
+ hh=sec/3600;
+ sec=sec%3600;
+ mm=sec/60;
+ ss=sec%60;
+ ns=nsec;
+ ps=psec;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetUT()
+{
+// Provide the corrresponding UT in fractional hours.
+// This facility is based on the MJD, so the TTimeStamp limitations
+// do not apply here.
+
+ Int_t hh,mm,ss,ns,ps;
+
+ GetUT(hh,mm,ss,ns,ps);
+
+ Double_t ut=Convert(hh,mm,ss,ns,ps);
+
+ return ut;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::GetGST(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps)
+{
+// Provide the corrresponding Greenwich Sideral Time (GST).
+// The algorithm used is the one described at p. 83 of the book
+// Astronomy Methods by Hale Bradt.
+// This facility is based on the MJD, so the TTimeStamp limitations
+// do not apply here.
+
+ Int_t mjd,sec,nsec,psec;
+
+ // The current UT based timestamp data
+ GetMJD(mjd,sec,nsec);
+ psec=fJps;
+
+ // The basis for the daily corrections in units of Julian centuries w.r.t. J2000.
+ // Note : Epoch J2000 starts at 01-jan-2000 12:00:00 UT.
+ Double_t tau=(GetJD()-2451545.)/36525.;
+
+ // Syncronise sidereal time with current timestamp
+ AliTimestamp sid;
+ sid.SetMJD(mjd,sec,nsec,psec);
+
+ // Add offset for GST start value defined as 06:41:50.54841 at 01-jan 00:00:00 UT
+ sec=6*3600+41*60+50;
+ nsec=548410000;
+ psec=0;
+ sid.Add(0,sec,nsec,psec);
+
+ // Daily correction for precession and polar motion 
+ Double_t addsec=8640184.812866*tau+0.093104*pow(tau,2)-6.2e-6*pow(tau,3);
+ sec=int(addsec);
+ addsec-=double(sec);
+ nsec=int(addsec*1.e9);
+ addsec-=double(nsec)*1.e-9;
+ psec=int(addsec*1.e12);
+ sid.Add(0,sec,nsec,psec);
+
+ sid.GetMJD(mjd,sec,nsec);
+ psec=sid.GetPs();
+
+ hh=sec/3600;
+ sec=sec%3600;
+ mm=sec/60;
+ ss=sec%60;
+ ns=nsec;
+ ps=psec;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetGST()
+{
+// Provide the corrresponding Greenwich Sideral Time (GMST)
+// in fractional hours.
+// This facility is based on the MJD, so the TTimeStamp limitations
+// do not apply here.
+
+ Int_t hh,mm,ss,ns,ps;
+
+ GetGST(hh,mm,ss,ns,ps);
+
+ Double_t gst=Convert(hh,mm,ss,ns,ps);
+
+ return gst;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetJD(Double_t e,TString mode) const
+{
+// Provide the fractional Julian Date from epoch e.
+// The sort of epoch may be specified via the "mode" parameter.
+//
+// mode = "J" ==> Julian epoch
+//        "B" ==> Besselian epoch
+//
+// The default value is mode="J".
+
+ Double_t jd=0;
+
+ if (mode=="J" || mode=="j") jd=(e-2000.0)*365.25+2451545.0;
+
+ if (mode=="B" || mode=="b") jd=(e-1900.0)*365.242198781+2415020.31352;
+
+ return jd;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetMJD(Double_t e,TString mode) const
+{
+// Provide the fractional Modified Julian Date from epoch e.
+// The sort of epoch may be specified via the "mode" parameter.
+//
+// mode = "J" ==> Julian epoch
+//        "B" ==> Besselian epoch
+//
+// The default value is mode="J".
+
+ Double_t mjd=GetJD(e,mode)-2400000.5;
+
+ return mjd;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetTJD(Double_t e,TString mode) const
+{
+// Provide the fractional Truncated Julian Date from epoch e.
+// The sort of epoch may be specified via the "mode" parameter.
+//
+// mode = "J" ==> Julian epoch
+//        "B" ==> Besselian epoch
+//
+// The default value is mode="J".
+
+ Double_t tjd=GetJD(e,mode)-2440000.5;
+
+ return tjd;
 }
 ///////////////////////////////////////////////////////////////////////////

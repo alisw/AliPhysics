@@ -100,3 +100,5 @@
 28-feb-2007 NvE IceRawTWR.cxx updated to include latest bugfix of Wolfgang in memberfunction
                 update_system and also various waveform fragments of a certain OM stored as
                 separate histos in memberfunction PutWaveforms.
+15-mar-2007 GdV New class IceRoot introduced to convert I3 extracted ROOT trees
+                into IcePack event structures.

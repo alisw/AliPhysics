@@ -96,4 +96,6 @@
                 still available as IceDwalkx.
 22-jan-2007 NvE New class IceMakeHits introduced to perform waveform feature extraction.
 23-jan-2007 NvE Bug fixed by Garmt in IceMakeHits.cxx.
+15-mar-2007 GdV IceMakeHits.cxx cleaned up to remove unnecessary tests which have become
+                obsolete due to bug fix in IceRawTWR.
                  

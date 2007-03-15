@@ -75,7 +75,7 @@
 // structure itself via the device named "IceMakeHits".
 //
 //--- Author: Nick van Eijndhoven and Garmt de Vries-Uiterweerd 15-jan-2007 Utrecht University
-//- Modified: NvE $Date$ Utrecht University
+//- Modified: GdV $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
  
 #include "IceMakeHits.h"
@@ -181,7 +181,7 @@ void IceMakeHits::Amanda()
  Int_t* upend=new Int_t[fMaxPeaksA];
  Int_t* startcharge=new Int_t[fMaxPeaksA];
  Int_t* stopcharge=new Int_t[fMaxPeaksA];
- Int_t* status=new Int_t[fMaxPeaksA]; // 0=OK, 1=rejected, 2=saturation, 3=completely below baseline
+ Int_t* status=new Int_t[fMaxPeaksA]; // 0=OK, 1=rejected, 2=saturation
  Float_t* leadingedge=new Float_t[fMaxPeaksA];
  Float_t* charge=new Float_t[fMaxPeaksA];
  Float_t* tot=new Float_t[fMaxPeaksA];
@@ -266,7 +266,7 @@ void IceMakeHits::Amanda()
      if(ipeak<npeaks-1)
      {
       foo.SetAxisRange(spec.GetPositionX()[index[ipeak]],spec.GetPositionX()[index[ipeak+1]]);
-      upend[ipeak]=foo.GetMinimumBin();
+      upend[ipeak]=foo.GetMinimumBin()-1;
      }
      // (Last peak: upper edge is end of histo)
      else
@@ -278,20 +278,9 @@ void IceMakeHits::Amanda()
      foo=diff;
      // Look for steepest rise between lower edge and peak position
      foo.SetAxisRange(wf->GetBinCenter(lowend[ipeak]),wf->GetBinCenter(lookforsteepestuntilbin));
-     // Signal should be above baseline at location of steepest rise
-     do
-     {
-      steep=foo.GetMaximumBin();
-      rise=foo.GetBinContent(steep);
-      if(rise==-1e9) break;
-      foo.SetBinContent(steep,-1e9);
-     } while(wf->GetBinContent(steep)<baseline[ipeak]);
-     if(rise==-1e9)
-     {
-      status[ipeak]=3;
-      continue;
-     }
- 
+     steep=foo.GetMaximumBin();
+     rise=foo.GetBinContent(steep);
+
      // Extrapolate tangent to find leading edge
      yyy=wf->GetBinContent(steep)-baseline[ipeak];
      rc=rise/foo.GetBinWidth(steep);
@@ -326,7 +315,7 @@ void IceMakeHits::Amanda()
        break;
       }
      }
- 
+
      // Determine time over threshold
      tot[ipeak]=wf->GetBinLowEdge(stopcharge[ipeak]+1)-wf->GetBinLowEdge(startcharge[ipeak]);
  
@@ -361,9 +350,8 @@ void IceMakeHits::Amanda()
       hit.SetSignal(tot[ipeak],"TOT");
       omx->AddHit(hit);
      }
- 
-    } // end loop over peaks
 
+    } // end loop over peaks
    // If number of bins too small, use different method
    }
    else
