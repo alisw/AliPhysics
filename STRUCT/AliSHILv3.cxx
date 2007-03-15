@@ -71,6 +71,10 @@ void AliSHILv3::CreateGeometry()
     TGeoRotation* rot090 = new TGeoRotation("rot090",  90.,  90., 90., 180., 0., 0.);
     TGeoRotation* rot180 = new TGeoRotation("rot180",  90., 180., 90., 270., 0., 0.);
     TGeoRotation* rot270 = new TGeoRotation("rot270",  90., 270., 90.,   0., 0., 0.);
+    Float_t alhc = 0.794;
+    TGeoRotation* rotxzlhc   = new TGeoRotation("rotxzlhc", 0.,  -alhc, 0.);
+    TGeoRotation* rotlhc     = new TGeoRotation("rotlhc",   0.,   alhc, 0.);
+
 //
 // Media
 //
@@ -86,7 +90,6 @@ void AliSHILv3::CreateGeometry()
     TGeoMedium* kMedPb      = gGeoManager->GetMedium("SHIL_PB_C0");
     TGeoMedium* kMedPbSh    = gGeoManager->GetMedium("SHIL_PB_C2");
 //
-//  TGeoMedium* kMedConc    = gGeoManager->GetMedium("SHIL_CC_C0");
     TGeoMedium* kMedConcSh  = gGeoManager->GetMedium("SHIL_CC_C2");
 //
     const Float_t kDegRad = TMath::Pi() / 180.;
@@ -1178,9 +1181,11 @@ void AliSHILv3::CreateGeometry()
       
       TGeoBBox*   shMuonFilterO  = new TGeoBBox(550./2., 620./2., dzMuonFilter);
       shMuonFilterO->SetName("FilterO");
-      TGeoTube*   shMuonFilterI  = new TGeoTube(0., 50., dzMuonFilter + 5.);
+      TGeoCombiTrans* trFilter = new TGeoCombiTrans("trFilter", 0., -dzMuonFilter * TMath::Tan(alhc * kDegrad), 0., rotlhc);
+      trFilter->RegisterYourself();
+      TGeoTube*   shMuonFilterI  = new TGeoTube(0., 48.8, dzMuonFilter + 20.);
       shMuonFilterI->SetName("FilterI");
-      TGeoCompositeShape* shMuonFilter = new TGeoCompositeShape("MuonFilter", "FilterO-FilterI");
+      TGeoCompositeShape* shMuonFilter = new TGeoCompositeShape("MuonFilter", "FilterO-FilterI:trFilter");
       //
       // !!!!! Needs to be inclined
       TGeoVolume* voMuonFilter = new TGeoVolume("YMuonFilter", shMuonFilter, kMedSteel);
@@ -1191,7 +1196,7 @@ void AliSHILv3::CreateGeometry()
       shMuonFilterOH->SetName("FilterOH");
       TGeoTube*   shMuonFilterIH  = new TGeoTube(0., 50., dzMuonFilterH + 5.);
       shMuonFilterIH->SetName("FilterIH");
-      TGeoCompositeShape* shMuonFilterH = new TGeoCompositeShape("MuonFilterH", "FilterOH-FilterIH");
+      TGeoCompositeShape* shMuonFilterH = new TGeoCompositeShape("MuonFilterH", "FilterOH-FilterIH:trFilter");
       TGeoVolume* voMuonFilterH = new TGeoVolume("YMuonFilterH", shMuonFilterH, kMedSteelSh);
       voMuonFilter->AddNode(voMuonFilterH, 1, gGeoIdentity);
       
@@ -1313,7 +1318,7 @@ void AliSHILv3::CreateGeometry()
       InvertPcon(shYOUT2);
       TGeoVolume* voYOUT2 = new TGeoVolume("YOUT2", shYOUT2, kMedAirMu);
       voYOUT2->SetVisibility(0);
-      voYOUT2->AddNode(voMuonFilter, 1, new TGeoTranslation(0., 0., -zcFilter));            
+      voYOUT2->AddNode(voMuonFilter, 1, new TGeoCombiTrans(0., dzMuonFilter * TMath::Tan(alhc * kDegrad), -zcFilter, rotxzlhc));
       top->AddNode(voYOUT2, 1, gGeoIdentity);
 }
 
