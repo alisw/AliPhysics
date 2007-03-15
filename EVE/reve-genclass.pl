@@ -8,7 +8,7 @@ usage: $BINNAME <module> <class-base>
        $BINNAME gl   QuadSet
        $BINNAME ged  QuadSet
 Should be in module sub-directory (Reve/ or Alieve/).
-Note that GL and Editor siffixes are not present!
+Note that GL and Editor suffixes are not present!
 fnord
   exit 1;
 }
