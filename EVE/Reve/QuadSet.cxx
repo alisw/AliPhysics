@@ -271,7 +271,8 @@ void QuadSet::Reset(QuadSet::QuadType_e quadType, Bool_t valIsCol, Int_t chunkSi
   fQuadType     = quadType;
   fValueIsColor = valIsCol;
   fDefaultValue = valIsCol ? 0 : kMinInt;
-  ReleaseIds();
+  if (fOwnIds)
+    ReleaseIds();
   fPlex.Reset(SizeofAtom(fQuadType), chunkSize);
 }
 
