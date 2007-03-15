@@ -166,6 +166,7 @@
 
 #include "AliTimestamp.h"
 #include "Riostream.h"
+#include <cmath>
 
 ClassImp(AliTimestamp) // Class implementation to enable ROOT I/O
  
