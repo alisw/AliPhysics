@@ -321,22 +321,23 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, const char *fRunCut
 }
 
 //___________________________________________________________________________
-TChain *AliTagAnalysis::GetInputChain(const char* system, const char*global, const char *wn) {
+TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
   //returns the chain+event list - used in batch sessions
+  // this function will be removed once the new root 
+  // improvements are committed
   TString fsystem = system;
   Int_t iAccepted = 0;
   //ESD file chain
   TChain *fESDchain = new TChain("esdTree");
   //Event list
   TEventList *fEventList = new TEventList();
-  AliXMLCollection *collection1 = AliXMLCollection::Open(global);
-  AliXMLCollection *collection2 = AliXMLCollection::Open(wn);
-  collection1->OverlapCollection(collection2);
-  collection1->Reset();
-  while (collection1->Next()) {
-    AliInfo(Form("Adding: %s",collection1->GetTURL("")));
-    fESDchain->Add(collection1->GetTURL(""));
-    TEntryList *list = (TEntryList *)collection1->GetEventList("");
+  AliXMLCollection *collection = AliXMLCollection::Open(wn);
+
+  collection->Reset();
+  while (collection->Next()) {
+    AliInfo(Form("Adding: %s",collection->GetTURL("")));
+    fESDchain->Add(collection->GetTURL(""));
+    TEntryList *list = (TEntryList *)collection->GetEventList("");
     for(Int_t i = 0; i < list->GetN(); i++) fEventList->Enter(iAccepted+list->GetEntry(i));
 
     if(fsystem == "pp") iAccepted += 100;
@@ -348,4 +349,41 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char*global, con
   AliInfo(Form("Number of selected events: %d",fEventList->GetN()));
 
   return fESDchain;
+}
+
+//___________________________________________________________________________
+TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname, const char* treename) {
+  //returns the TChain+TEntryList object- used in batch sessions
+  TString fAliceFile = treename;
+  Int_t iAccepted = 0;
+  TChain *fAnalysisChain = new TChain();
+  if(fAliceFile == "esdTree") {
+    //ESD file chain
+    fAnalysisChain->SetName("esdTree");
+  } else if(fAliceFile == "aodTree") {
+    //AOD file chain
+    fAnalysisChain->SetName("aodTree");
+    AliFatal("AOD case not yet implemented!!!");
+  }
+  else AliFatal("Inconsistent tree name - use esdTree or aodTree!");
+  //Event list
+  TEntryList *fGlobalList = new TEntryList();
+  AliXMLCollection *collection = AliXMLCollection::Open(collectionname);
+
+  collection->Reset();
+  while (collection->Next()) {
+    AliInfo(Form("Adding: %s",collection->GetTURL("")));
+    fAnalysisChain->Add(collection->GetTURL(""));
+    TEntryList *list = (TEntryList *)collection->GetEventList("");
+    list->SetTreeName(fAliceFile.Data());
+    list->SetFileName(collection->GetTURL(""));
+    fGlobalList->Add(list);
+    iAccepted += list->GetN();
+  }
+
+  fAnalysisChain->SetEntryList(fGlobalList);
+  
+  AliInfo(Form("Number of selected events: %d",iAccepted));
+
+  return fAnalysisChain;
 }

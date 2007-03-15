@@ -49,7 +49,8 @@ class AliTagAnalysis : public TObject {
   Bool_t CreateXMLCollection(const char* name, AliRunTagCuts *RunTagCuts, AliEventTagCuts *EvTagCuts);
   Bool_t CreateXMLCollection(const char* name, const char *fRunCut, const char *fEventCut);
 
-  TChain *GetInputChain(const char* system, const char* global, const char* wn);
+  TChain *GetInputChain(const char* system, const char *wn);
+  TChain *GetChainFromCollection(const char* collectionname, const char* treename);
   
   //____________________________________________________//
  protected:
