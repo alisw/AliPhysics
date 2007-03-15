@@ -419,17 +419,14 @@ void AliITSClusterFinderSPD::DigitToPoint(Int_t nclus,
 
         Double_t sigma2x = (kconv*errxcenter[i]) * (kconv*errxcenter[i]);
         Double_t sigma2z = (kconv*errzcenter[i]) * (kconv*errzcenter[i]);
-        AliITSRecPoint rnew(fDetTypeRec->GetITSgeom());
-        rnew.SetXZ(fModule,xg,zg);
-        rnew.SetQ(1.);
+
+	Int_t lab[4] = {tr1clus[i],tr2clus[i],tr3clus[i],ind};
+	Float_t hit[5] = {xg,zg,sigma2x,sigma2z,1.0};
+	Int_t info[3] = {0,0,lyr};
+
+        AliITSRecPoint rnew(lab,hit,info,kTRUE);
         rnew.SetdEdX(0.);
-        rnew.SetSigmaDetLocX2(sigma2x);
-        rnew.SetSigmaZ2(sigma2z);
-        rnew.SetLabel(tr1clus[i],0);
-        rnew.SetLabel(tr2clus[i],1);
-        rnew.SetLabel(tr3clus[i],2);
-	rnew.SetDetectorIndex(ind);
-	rnew.SetLayer(lyr);
+
 	fDetTypeRec->AddRecPoint(rnew); 
     } // end for i
 }

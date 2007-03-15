@@ -199,13 +199,13 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	if(!rawdata) milab[3]=fNdet[iModule];
 	Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
 	if(!rawdata){
-	 AliITSRecPoint cl(iModule,fDetTypeRec->GetITSgeom(),milab,hit,info);
+	 AliITSRecPoint cl(milab,hit,info);
 	 fDetTypeRec->AddRecPoint(cl);
 	}
         else{
 	  Int_t label[4]={milab[0],milab[1],milab[2],milab[3]};
 	  new (clusters->AddrAt(nclu)) 
-		AliITSRecPoint(iModule,fDetTypeRec->GetITSgeom(),label, hit,info);
+		AliITSRecPoint(label, hit,info);
 	} 
 	nclu++;
       }// for iiy

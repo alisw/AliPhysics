@@ -24,6 +24,7 @@ class TGeoPNEntry;
 class AliClusterTGeo : public TObject {
  public:
   AliClusterTGeo();
+  AliClusterTGeo(Int_t *lab, Float_t *hit);
   AliClusterTGeo(UShort_t volId, const Float_t *hit, Float_t x = 0, Float_t sigyz = 0, const Int_t *lab = NULL);
   AliClusterTGeo(UShort_t volId,
 		 Float_t x, Float_t y, Float_t z,
@@ -51,7 +52,8 @@ class AliClusterTGeo : public TObject {
   Bool_t   Misalign();
 
   void     SetLabel(Int_t lab,Int_t i)
-  { if (i>0 && i<3) fTracks[i] = lab;}
+  { if (i>=0 && i<3) fTracks[i] = lab;}
+  void     SetX(Float_t x) {fX = x;}
   void     SetY(Float_t y) {fY = y;}
   void     SetZ(Float_t z) {fZ = z;}
   void     SetSigmaY2(Float_t sigy2) {fSigmaY2 = sigy2;}
@@ -76,7 +78,7 @@ class AliClusterTGeo : public TObject {
   UShort_t fVolumeId; // Volume ID of the detector element
   Bool_t   fIsMisaligned; // Cluster was misagned or not?
 
-  ClassDef(AliClusterTGeo,1) // Barrel detectors cluster
+  ClassDef(AliClusterTGeo,3) // Barrel detectors cluster
 };
 
 #endif

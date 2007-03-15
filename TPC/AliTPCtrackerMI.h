@@ -42,7 +42,7 @@ public:
   virtual Int_t LoadClusters (TTree * tree);
   Int_t  LoadClusters();
   void   UnloadClusters();
-  void   Transform(AliCluster * cluster);
+  void   Transform(AliTPCclusterMI * cluster);
   //
   void SetIO();  //set default IO from folders
   void SetIO(TTree * input, TTree * output, AliESD * event);

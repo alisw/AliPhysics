@@ -25,29 +25,21 @@
 #include <AliCluster.h>
 #include <Riostream.h>
 #include <AliLog.h>
-#include <AliITSgeom.h>
-
 
 class AliITSRecPoint : public AliCluster {
  public:
   AliITSRecPoint();
-  AliITSRecPoint(AliITSgeom* geom);
-  AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info);
-  AliITSRecPoint(Int_t module,AliITSgeom* geom,Int_t *lab,
-		 Float_t *hit, Int_t *info);
+  AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info, Bool_t local = kFALSE);
   AliITSRecPoint(const AliITSRecPoint& pt);
   AliITSRecPoint& operator=(const AliITSRecPoint &source);
   
   virtual ~AliITSRecPoint() {}; // distructor
-  Bool_t IsSortable() const {return kTRUE;} // allows for sorting
-  Int_t  *GetTracks(){return fTracks;}// Returns pointer to track array
-  Int_t   GetNTracks() const {return 3;} // returns track array size
+  Bool_t  IsSortable() const {return kTRUE;} // allows for sorting
   Float_t GetDetLocalX() const {return fXloc;} // gets fX
   Float_t GetDetLocalZ() const {return fZloc;} // gets fZ
   Float_t GetdEdX() const {return fdEdX;} // gets fdEdX
-  Float_t GetSigmaDetLocX2() const {return fSigmaY2;} // gets fSigmaX2
-  void SetdEdX(Float_t dedx){fdEdX=dedx;} // sets fdEdX
-  void SetSigmaDetLocX2(Float_t sx2){fSigmaY2=sx2;} // sets fSigmaX2
+  Float_t GetSigmaDetLocX2() const {return GetSigmaY2();} // gets fSigmaX2
+  void    SetdEdX(Float_t dedx){fdEdX=dedx;} // sets fdEdX
   Int_t Compare(const TObject *) const {return 0;} //to be defined
   void Print(ostream *os); 
   // Reads in the content of this class in the format of Print
@@ -55,22 +47,6 @@ class AliITSRecPoint : public AliCluster {
   virtual void Print(Option_t *option="") const {TObject::Print(option);}
   virtual Int_t Read(const char *name) {return TObject::Read(name);}
   
-  void SetITSgeom(AliITSgeom* geom) {fGeom=geom;}
-
-  virtual void SetY(Float_t  y ){fY=y;
-    AliError("For consistency, Use method SetYZ. Data members are only partially set\n");}
-  virtual void SetZ(Float_t  z ){fZ=z;
-    AliError("For consistency, Use method SetYZ. Data members are only partially set\n");}
-  void SetYZ(Int_t module, Float_t y, Float_t z){
-    fY=y;fZ=z;
-    if(fGeom)fGeom->TrackingV2ToDetL(module,y,z,fXloc,fZloc);
-    else AliError("Geometry not set. \n");
-  }
-  void SetXZ(Int_t module, Float_t x, Float_t z){
-    fXloc=x;fZloc=z;
-    if(fGeom)fGeom->DetLToTrackingV2(module,x,z,fY,fZ);
-    else AliError("Geometry not set. Nothing done!!!!!\n");
-  }
   void Use(Int_t = 0) {fQ=-fQ;}
   void UnUse() {fQ=TMath::Abs(fQ);}
   void SetQ(Float_t q) {fQ=q;}
@@ -96,13 +72,7 @@ class AliITSRecPoint : public AliCluster {
   Int_t GetType() const {return fType;}  // type of the cluster
   Float_t GetDeltaProbability() const{return fDeltaProb;} //probability to belong to the delta ray
   
-  // The following two methods deal with the misaligned x position
-  // of a cluster in the tracking coordidate system 
-  virtual Float_t GetX() const {return fX;}
-  virtual void SetX(Float_t x) {fX=x;}
-
  protected:
-  Float_t   fX;        // X coordinate in the misaligned tracking system 
 
   Float_t   fXloc ;        //X of cluster (local coordinates)
   Float_t   fZloc ;        //Z of cluster (local coordinates)
@@ -117,9 +87,7 @@ class AliITSRecPoint : public AliCluster {
   Int_t    fType;         //quality factor of the cluster
   Float_t  fDeltaProb;    // probability to be deleta electron
     
-  AliITSgeom* fGeom;     //!pointer to ITS geometry
-
-  ClassDef(AliITSRecPoint,3)  // AliITSRecPoint class
+  ClassDef(AliITSRecPoint,5)  // AliITSRecPoint class
 };
 // Input and output function for standard C++ input/output.
 ostream& operator<<(ostream &os,AliITSRecPoint &source);

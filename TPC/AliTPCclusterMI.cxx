@@ -35,7 +35,6 @@ ClassImp(AliTPCclusterMI)
 
 AliTPCclusterMI::AliTPCclusterMI(Bool_t withInfo):
   AliCluster(),
-  fX(0),
   fQ(0),
   fType(0),
   fMax(0),
@@ -54,7 +53,6 @@ AliTPCclusterMI::AliTPCclusterMI(Bool_t withInfo):
 
 AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
   AliCluster(cluster),
-  fX(cluster.fX),
   fQ(cluster.fQ),
   fType(cluster.fType),
   fMax(cluster.fMax),
@@ -80,7 +78,6 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
   //  AliInfo("Asignment operator\n");
 
   (AliCluster&)(*this) = (AliCluster&)cluster;
-  fX    = cluster.fX;
   fQ    = cluster.fQ;
   fType = cluster.fType;
   fMax  = cluster.fMax;
@@ -98,8 +95,7 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
 
 
 AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) : 
-  AliCluster(lab,hit),
-  fX(0),
+  AliCluster(0,hit,0.,0.,lab),
   fQ(0),
   fType(0),
   fMax(0),
@@ -137,5 +133,5 @@ Int_t AliTPCclusterMI::Compare(const TObject* obj) const
   //
   // compare according y
   AliTPCclusterMI * o2 = (AliTPCclusterMI*)obj;
-  return (o2->GetY()>fY)? -1:1; 
+  return (o2->GetY()>GetY())? -1:1; 
 }

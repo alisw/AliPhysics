@@ -1177,7 +1177,7 @@ Int_t  AliTPCtrackerMI::LoadClusters()
     Int_t sec,row;
     fParam->AdjustSectorRow(clrow->GetID(),sec,row);
     for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
-      Transform((AliCluster*)(clrow->GetArray()->At(icl)));
+      Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
     }
     //
     AliTPCRow * tpcrow=0;
@@ -1241,7 +1241,7 @@ void AliTPCtrackerMI::UnloadClusters()
   return ;
 }
 
-void   AliTPCtrackerMI::Transform(AliCluster * cluster){
+void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   //
   // 
   //
@@ -1254,9 +1254,9 @@ void   AliTPCtrackerMI::Transform(AliCluster * cluster){
   else{
     // chack Loading of Geo matrices from GeoManager - TEMPORARY FIX
   }
-  cluster->SetX(posC[0]);
-  cluster->SetY(posC[1]);
-  cluster->SetZ(posC[2]);
+  //cluster->SetX(posC[0]);
+  //cluster->SetY(posC[1]);
+  //cluster->SetZ(posC[2]);
 }
 
 //_____________________________________________________________________________

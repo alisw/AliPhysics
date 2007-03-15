@@ -210,29 +210,11 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
       Int_t ncl=clusters->GetEntriesFast();
       SignDeltas(clusters,GetZ());
  
-      //*** The Delta transformation
-      TGeoHMatrix delta; 
-      AliITSgeomTGeo::GetTrackingMatrix(j,delta);
-      TGeoHMatrix m;
-      AliITSgeomTGeo::GetOrigMatrix(j,m);
-      delta.MultiplyLeft(&(m.Inverse()));
-      const TGeoHMatrix *tm = AliITSgeomTGeo::GetTracking2LocalMatrix(j);
-      delta.MultiplyLeft(&(tm->Inverse())); 
-      //***
-
       while (ncl--) {
         AliITSRecPoint *c=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
+        detector=c->GetDetectorIndex();
 
-        //*** Shift the cluster to the misaligned position
-        Double_t  xyz[3]={c->GetX(),c->GetY(),c->GetZ()};
-        Double_t mxyz[3]={0.};                    
-        
-        delta.LocalToMaster(xyz,mxyz);
-
-        c->SetX(mxyz[0]);
-        c->AliCluster::SetY(mxyz[1]);
-        c->AliCluster::SetZ(mxyz[2]);
-	//***
+	if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
 
         fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
       }
@@ -241,7 +223,7 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
       if (i<2){
 	for (Float_t ydead = 0; ydead < 1.31 ; ydead+=(i+1.)*0.018){     
 	  Int_t lab[4] = {0,0,0,detector};
-	  Int_t info[3] = {0,0,0};
+	  Int_t info[3] = {0,0,i};
 	  Float_t hit[5]={0,0,0.004/12.,0.001/12.,0};
 	  if (i==0) hit[0] =ydead-0.4;
 	  if (i==1) hit[0]=ydead-3.75; 

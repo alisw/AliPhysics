@@ -31,10 +31,9 @@
 #include "AliITSsegmentationSDD.h"
 #include <TClonesArray.h>
 #include "AliITSdigitSDD.h"
+#include "AliAlignObj.h"
 
 ClassImp(AliITSClusterFinderV2SDD)
-
-extern AliRun *gAlice;
 
 AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
 fNySDD(256),
@@ -142,7 +141,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
         
       for (k=0; k<npeaks; k++) {
          if (idx[k] < 0) continue; //removed peak
-         AliITSRecPoint c(fDetTypeRec->GetITSgeom());
+         AliITSRecPoint c;
          MakeCluster(idx[k], nzBins, bins[s], msk[k], c);
 	 //mi change
 	 Int_t milab[10];
@@ -222,7 +221,8 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 //      c.SetY(y);
 	 //  c.SetZ(z);
 	 CorrectPosition(z,y);
-	 c.SetYZ(fModule,y,z);
+	 c.SetY(y);
+	 c.SetZ(z);
 	 c.SetNy(maxj-minj+1);
 	 c.SetNz(maxi-mini+1);
 	 c.SetType(npeaks);
@@ -244,6 +244,8 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	     c.SetLabel(milab[1],1);
 	     c.SetLabel(milab[2],2);
 	     c.SetLayer(fNlayer[fModule]);
+	     UShort_t id=AliAlignObj::LayerToVolUID(fNlayer[fModule]+AliAlignObj::kSPD1,fNdet[fModule]);
+	     c.SetVolumeId(id);
 	   }
 	 }
 	 if(clusters) new (cl[ncl]) AliITSRecPoint(c); 

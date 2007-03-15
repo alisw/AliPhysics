@@ -129,18 +129,12 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
 	if ( (hitdestep+deltaDe) > thrde ){
 	  locals[0] += deltaXl;
 	  locals[2] += deltaZl;
-	  AliITSRecPoint rp(gm);
-	  rp.SetLabel(hit->GetTrack(),0);
-	  //		    rp.fTracks[0]=mod->GetHitTrackIndex(ihit);
-	  rp.SetLabel(-3,1);
-	  rp.SetLabel(-3,2);
-	  rp.SetXZ(module,locals[0],locals[2]);
+	  Int_t lab[4] = {hit->GetTrack(),-3,-3,ind};
+	  Float_t hit[5] = {locals[0],locals[2],sigmarphi*sigmarphi,sigmaz*sigmaz,kdEdXtoQ*(hitdestep+deltaDe)};
+	  Int_t info[3] = {0,0,lyr};
+	  AliITSRecPoint rp(lab,hit,info,kTRUE);
 	  rp.SetdEdX(hitdestep+deltaDe);
-	  rp.SetQ(kdEdXtoQ*(hitdestep+deltaDe));  // number of e
-	  rp.SetSigmaDetLocX2(sigmarphi*sigmarphi);
-	  rp.SetSigmaZ2(sigmaz*sigmaz);
-	  rp.SetDetectorIndex(ind);
-	  rp.SetLayer(lyr);
+
 	  new (pt[irecp]) AliITSRecPoint(rp);
 	  irecp++;
 	} // end if ( (hitdestep+deltaDe)

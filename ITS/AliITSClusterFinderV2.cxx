@@ -233,7 +233,8 @@ MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSRecPoint &c) {
   Int_t i=k/max, j=k-i*max;
 
   c.SetQ(c.GetQ()+q);
-  c.SetYZ(GetModule(),c.GetY()+i*q,c.GetZ()+j*q);
+  c.SetY(c.GetY()+i*q);
+  c.SetZ(c.GetZ()+j*q);
   c.SetSigmaY2(c.GetSigmaY2()+i*i*q);
   c.SetSigmaZ2(c.GetSigmaZ2()+j*j*q);
 

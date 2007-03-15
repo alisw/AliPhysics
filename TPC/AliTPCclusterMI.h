@@ -24,8 +24,6 @@ public:
   virtual Bool_t IsSortable() const; 
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);
-  virtual Float_t GetX() const { return fX;}
-  virtual void  SetX(Float_t x) { fX = x;}
   virtual Int_t GetDetector() const {return fDetector;}
   virtual Int_t GetRow() const {return fRow;}
   virtual void SetDetector(Int_t detector){fDetector = (UChar_t)(detector%256);}
@@ -46,7 +44,6 @@ public:
   void SetInfo(AliTPCclusterInfo * info) { fInfo = info;}
 
 private:
-  Float_t   fX;        //X position of cluster
   Short_t   fQ ;       //Q of cluster (in ADC counts)  
   Char_t    fType;     //type of the cluster 0 means golden 
   Short_t   fMax;      //maximal amplitude in cluster
@@ -56,7 +53,7 @@ private:
   Float_t   fTimeBin;  //time bin coordinate
   Float_t   fPad;  //pad coordinate
   AliTPCclusterInfo * fInfo;  // pointer to the cluster debug info
-  ClassDef(AliTPCclusterMI,3)  // Time Projection Chamber clusters
+  ClassDef(AliTPCclusterMI,4)  // Time Projection Chamber clusters
 };
 
 void AliTPCclusterMI::Use(Int_t inc) 

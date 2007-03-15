@@ -61,17 +61,17 @@ AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p)
   // Constructor from AliTRDrecPoint
   //
 
-  fTracks[0] = p.GetTrackIndex(0);
-  fTracks[1] = p.GetTrackIndex(1);
-  fTracks[2] = p.GetTrackIndex(2);
-  fY         = p.GetY();
-  fZ         = p.GetZ();
+  SetLabel(p.GetTrackIndex(0),0);
+  SetLabel(p.GetTrackIndex(1),1);
+  SetLabel(p.GetTrackIndex(2),2);
+  SetY(p.GetY());
+  SetZ(p.GetZ());
 
   //fSigmaY2   = p.GetSigmaY2();
   //fSigmaZ2   = p.GetSigmaZ2();  
   // Why is this ????
-  fSigmaY2   = 0.2;
-  fSigmaZ2   = 5.0;  
+  SetSigmaY2(0.2);
+  SetSigmaZ2(5.0);  
 
 }
 
@@ -89,14 +89,14 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
   // Copy constructor 
   //
 
-  fTracks[0] = c.GetLabel(0);
-  fTracks[1] = c.GetLabel(1);
-  fTracks[2] = c.GetLabel(2);
+  SetLabel(c.GetLabel(0),0);
+  SetLabel(c.GetLabel(1),1);
+  SetLabel(c.GetLabel(2),2);
 
-  fY         = c.GetY();
-  fZ         = c.GetZ();
-  fSigmaY2   = c.GetSigmaY2();
-  fSigmaZ2   = c.GetSigmaZ2();  
+  SetY(c.GetY());
+  SetZ(c.GetZ());
+  SetSigmaY2(c.GetSigmaY2());
+  SetSigmaZ2(c.GetSigmaZ2());  
 
   for (Int_t i = 0; i < 7; i++) {
     fSignals[i] = c.fSignals[i];

@@ -130,28 +130,19 @@ void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
   //  const Float_t kdEdXtoQ = ;
   const Float_t kRMSx = 12.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
   const Float_t kRMSz = 70.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
-  Float_t a1,a2; // general float.
   
-  AliITSgeom* gm = mod->GetITS()->GetITSgeom();
-
-  AliITSRecPoint rpSPD(gm);
-
-  rpSPD.SetLabel(trackNumber,0);
-  rpSPD.SetLabel(-3,1);
-  rpSPD.SetLabel(-3,2);
-  rpSPD.SetXZ(mod->GetIndex(),fSx->GetMean(),fSz->GetMean());
-  rpSPD.SetdEdX(e);
-  rpSPD.SetQ(1.0);
-  a1 = fSx->GetRMS(); a1 *= a1; a1 += kRMSx*kRMSx;
+  Int_t lab[4] = {trackNumber,-3,-3,mod->GetIndex()};
+  Float_t a1 = fSx->GetRMS(); a1 *= a1; a1 += kRMSx*kRMSx;
   //  if(a1>1.E5) printf("addSPD: layer=%d track #%d dedx=%e sigmaX2= %e ",
   //		    mod->GetLayer(),trackNumber,e,a1);
-  rpSPD.SetSigmaDetLocX2(a1);
-  a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
+  Float_t a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
   //  if(a1>1.E5) printf(" sigmaZ2= %e\n",a2);
-  rpSPD.SetSigmaZ2(a2);
-  rpSPD.SetDetectorIndex(mod->GetIndex());
-  rpSPD.SetLayer(mod->GetLayer());
-  //(mod->GetITS())->AddRecPoint(rpSPD);
+  Float_t hit[5] = {fSx->GetMean(),fSz->GetMean(),a1,a2,1.0};
+  Int_t info[3] = {0,0,mod->GetLayer()};
+
+  AliITSRecPoint rpSPD(lab,hit,info,kTRUE);
+  rpSPD.SetdEdX(e);
+
   new (pt[fNrecp]) AliITSRecPoint(rpSPD);
   fNrecp++;
 }
@@ -164,26 +155,19 @@ void AliITSsimulationFastPointsV0::AddSDD(Float_t &e,
   const Float_t kdEdXtoQ = 2.778e+8; 
   const Float_t kRMSx = 38.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
   const Float_t kRMSz = 28.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
-  Float_t a1,a2; // general float.
-  AliITSgeom* gm = mod->GetITS()->GetITSgeom();
 
-  AliITSRecPoint rpSDD(gm);
-
-  rpSDD.SetLabel(trackNumber,0);
-  rpSDD.SetLabel(-3,1);
-  rpSDD.SetLabel(-3,2);
-  rpSDD.SetXZ(mod->GetIndex(),fSx->GetMean(),fSz->GetMean());
-  rpSDD.SetdEdX(e);
-  rpSDD.SetQ(kdEdXtoQ*e);
-  a1 = fSx->GetRMS(); a1 *= a1; a1 += kRMSx*kRMSx;
-  //  if(a1>1.E5) printf("addSDD: layer=%d track #%d dedx=%e sigmaX2= %e ",
+  Int_t lab[4] = {trackNumber,-3,-3,mod->GetIndex()};
+  Float_t a1 = fSx->GetRMS(); a1 *= a1; a1 += kRMSx*kRMSx;
+  //  if(a1>1.E5) printf("addSPD: layer=%d track #%d dedx=%e sigmaX2= %e ",
   //		    mod->GetLayer(),trackNumber,e,a1);
-  rpSDD.SetSigmaDetLocX2(a1);
-  a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
+  Float_t a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
   //  if(a1>1.E5) printf(" sigmaZ2= %e\n",a2);
-  rpSDD.SetSigmaZ2(a2);
-  rpSDD.SetDetectorIndex(mod->GetIndex());
-  rpSDD.SetLayer(mod->GetLayer());
+  Float_t hit[5] = {fSx->GetMean(),fSz->GetMean(),a1,a2,kdEdXtoQ*e};
+  Int_t info[3] = {0,0,mod->GetLayer()};
+
+  AliITSRecPoint rpSDD(lab,hit,info,kTRUE);
+  rpSDD.SetdEdX(e);
+
   new (pt[fNrecp]) AliITSRecPoint(rpSDD);
   fNrecp++;
 
@@ -197,27 +181,19 @@ void AliITSsimulationFastPointsV0::AddSSD(Float_t &e,
   const Float_t kdEdXtoQ = 2.778e+8;
   const Float_t kRMSx = 20.0*kmicronTocm;  // microns->cm ITS TDR Table 1.3
   const Float_t kRMSz = 830.0*kmicronTocm; // microns->cm ITS TDR Table 1.3
-  Float_t a1,a2; // general float.
 
-  AliITSgeom* gm = mod->GetITS()->GetITSgeom();
- 
-  AliITSRecPoint rpSSD(gm);
-
-  rpSSD.SetLabel(trackNumber,0);
-  rpSSD.SetLabel(-3,1);
-  rpSSD.SetLabel(-3,2);
-  rpSSD.SetXZ(mod->GetIndex(),fSx->GetMean(),fSz->GetMean());
-  rpSSD.SetdEdX(e);
-  rpSSD.SetQ(kdEdXtoQ*e);
-  a1 = fSx->GetRMS(); a1 *= a1; a1 += kRMSx*kRMSx;
-  //  if(a1>1.E5) printf("addSSD: layer=%d track #%d dedx=%e sigmaX2= %e ",
+  Int_t lab[4] = {trackNumber,-3,-3,mod->GetIndex()};
+  Float_t a1 = fSx->GetRMS(); a1 *= a1; a1 += kRMSx*kRMSx;
+  //  if(a1>1.E5) printf("addSPD: layer=%d track #%d dedx=%e sigmaX2= %e ",
   //		    mod->GetLayer(),trackNumber,e,a1);
-  rpSSD.SetSigmaDetLocX2(a1);
-  a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
-  //  if(a1>1.E5) printf(" sigmaZ2= %e RMSx=%e RMSz=%e\n",a2,fSx->GetRMS(),fSz->GetRMS());
-  rpSSD.SetSigmaZ2(a2);
-  rpSSD.SetDetectorIndex(mod->GetIndex());
-  rpSSD.SetLayer(mod->GetLayer());
+  Float_t a2 = fSz->GetRMS(); a2 *= a2; a2 += kRMSz*kRMSz;
+  //  if(a1>1.E5) printf(" sigmaZ2= %e\n",a2);
+  Float_t hit[5] = {fSx->GetMean(),fSz->GetMean(),a1,a2,kdEdXtoQ*e};
+  Int_t info[3] = {0,0,mod->GetLayer()};
+
+  AliITSRecPoint rpSSD(lab,hit,info,kTRUE);
+  rpSSD.SetdEdX(e);
+
   new (pt[fNrecp]) AliITSRecPoint(rpSSD);
   fNrecp++;
 

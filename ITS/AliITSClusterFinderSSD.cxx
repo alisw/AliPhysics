@@ -763,32 +763,15 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Float_t P,Float_t dP,
        fDetTypeRec->AddCluster(2,&cnew);
        //fITS->AddCluster(2,&cnew);
        //AliITSRecPoint rnew;
-        AliITSRecPoint rnew(fDetTypeRec->GetITSgeom());
-        rnew.SetXZ(fModule,P*kconv,N*kconv);
-	//rnew.SetX(P*kconv);
-	//rnew.SetZ(N*kconv);
-     rnew.SetQ(signal);
-     rnew.SetdEdX(dedx);
-        rnew.SetSigmaDetLocX2( kRMSx* kRMSx);
-	//     rnew.SetSigmaX2( kRMSx* kRMSx); 
-    rnew.SetSigmaZ2( kRMSz* kRMSz);
+       Int_t lab[4] = {tr[0],tr[1],tr[2],ind};
+       Float_t hit[5] = {P*kconv,N*kconv,kRMSx*kRMSx,kRMSz*kRMSz,signal};
+       Int_t info[3] = {nstripsP,nstripsN,lyr};
 
-         rnew.SetLabel(tr[0],0);
-        rnew.SetLabel(tr[1],1);
-        rnew.SetLabel(tr[2],2);
-        rnew.SetDetectorIndex(ind);
-        rnew.SetLayer(lyr);
+       AliITSRecPoint rnew(lab,hit,info,kTRUE);
+       rnew.SetdEdX(dedx);
 
-	rnew.SetNy(nstripsP);
-	rnew.SetNz(nstripsN);
-
-    //rnew.fTracks[0]=tr[0];
-    // rnew.fTracks[1]=tr[1];
-    //rnew.fTracks[2]=tr[2];
-     //rnew.SetMultP(nstripsP);
-     //rnew.SetMultN(nstripsN);
-        fDetTypeRec->AddRecPoint(rnew);
-	//    fITS->AddRecPoint(rnew);
+       fDetTypeRec->AddRecPoint(rnew);
+       //    fITS->AddRecPoint(rnew);
      return kTRUE;
     } // end if
     return kFALSE;  

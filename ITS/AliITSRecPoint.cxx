@@ -32,12 +32,12 @@
 
 
 #include "AliITSRecPoint.h"
-#include "AliITSgeom.h"
+#include "AliAlignObj.h"
+
 ClassImp(AliITSRecPoint)
 
 //_____________________________________________________________
 AliITSRecPoint::AliITSRecPoint(): AliCluster(),
-fX(0),
 fXloc(0),
 fZloc(0),
 fdEdX(0),
@@ -48,33 +48,14 @@ fNz(0),
 fNy(0),
 fChargeRatio(0),
 fType(0),
-fDeltaProb(0),
-fGeom(0){
-    // default creator
-}
-
-//_____________________________________________________________
-AliITSRecPoint::AliITSRecPoint(AliITSgeom* geom): AliCluster(),
-fX(0),
-fXloc(0),
-fZloc(0),
-fdEdX(0),
-fIndex(0),
-fQ(0),
-fLayer(0),
-fNz(0),
-fNy(0),
-fChargeRatio(0),
-fType(0),
-fDeltaProb(0),
-fGeom(geom) {
-    // default creator
-
+fDeltaProb(0)
+{
+    // default constructor
 }
 
 //________________________________________________________________________
-AliITSRecPoint::AliITSRecPoint(Int_t module,AliITSgeom* geom,Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit),
-fX(0),
+AliITSRecPoint::AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info, Bool_t local):
+AliCluster(AliAlignObj::LayerToVolUID((info[2]+AliAlignObj::kSPD1),lab[3]&0x3FF),hit,0,0,lab),
 fXloc(0),
 fZloc(0),
 fdEdX(0),
@@ -85,28 +66,47 @@ fNz(info[1]),
 fNy(info[0]),
 fChargeRatio(0),
 fType(0),
-fDeltaProb(0),
-fGeom(geom)
+fDeltaProb(0)
 {
   //standard constructor used in AliITSClusterFinderV2
 
-
-  fType=0;
-  fDeltaProb=0.;
-  
-  fGeom = geom;
-  fGeom->TrackingV2ToDetL(module,fY,fZ,fXloc,fZloc);
-  if(module<fGeom->GetStartSDD()) fdEdX=0.;
-  if(module>=fGeom->GetStartSDD() && module<fGeom->GetStartSSD()){
-    fdEdX=fQ*1e-6;
+  if (!local) { // Cluster V2
+    Double_t txyz[3] = {GetX(), GetY(), GetZ()};
+    Double_t lxyz[3] = {0, 0, 0};
+    GetTracking2LocalMatrix()->LocalToMaster(txyz,lxyz);
+    fXloc = lxyz[0]; fZloc = lxyz[2];
   }
-  if(module>=fGeom->GetStartSSD()) fdEdX=fQ*2.16;
-  
-  
+  else {
+    switch (fLayer) {
+    case 0:
+    case 1:
+      fdEdX = 0;
+      break;
+    case 2:
+    case 3:
+      fdEdX=fQ*1e-6;
+      break;
+    case 4:
+    case 5:
+      fdEdX=fQ*2.16;
+      break;
+    default:
+      AliError(Form("Wrong ITS layer %d (0 -> 5)",fLayer));
+      break;
+    }
+
+    Double_t lxyz[3] = {fXloc, 0, fZloc};
+    Double_t txyz[3] = {0, 0, 0};
+    GetTracking2LocalMatrix()->MasterToLocal(lxyz,txyz);
+
+    SetX(0.); SetY(txyz[1]); SetZ(txyz[2]);
+
+  }
+
 }
+
 //_______________________________________________________________________
 AliITSRecPoint::AliITSRecPoint(const AliITSRecPoint& pt):AliCluster(pt),
-fX(pt.fX),
 fXloc(pt.fXloc),
 fZloc(pt.fZloc),
 fdEdX(pt.fdEdX),
@@ -117,8 +117,8 @@ fNz(pt.fNz),
 fNy(pt.fNy),
 fChargeRatio(pt.fChargeRatio),
 fType(pt.fType),
-fDeltaProb(pt.fDeltaProb),
-fGeom(pt.fGeom){
+fDeltaProb(pt.fDeltaProb)
+{
   //Copy constructor
 
 }
@@ -131,24 +131,6 @@ AliITSRecPoint& AliITSRecPoint::operator=(const AliITSRecPoint& source){
   new(this) AliITSRecPoint(source);
   return *this;
 
-}
-
-//________________________________________________________________________
-AliITSRecPoint::AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit),
-fX(0),
-fXloc(0),
-fZloc(0),
-fdEdX(0),
-fIndex(lab[3]),
-fQ(hit[4]),
-fLayer(info[2]),
-fNz(info[1]),
-fNy(info[0]),
-fChargeRatio(0),
-fType(0),
-fDeltaProb(0),
-fGeom(0){
-  //standard constructor used in AliITSClusterFinderV2
 }
 
 //----------------------------------------------------------------------
@@ -171,12 +153,12 @@ void AliITSRecPoint::Print(ostream *os){
 #endif
  
     fmt = os->setf(ios::fixed);  // set fixed floating point output
-    *os << fTracks[0]<< " " << fTracks[1] << " " << fTracks[2] << " ";
+    *os << GetLabel(0) << " " << GetLabel(1) << " " << GetLabel(2) << " ";
     *os << fXloc << " " << fZloc << " " << fQ << " ";
     fmt = os->setf(ios::scientific); // set scientific for dEdX.
     *os << fdEdX << " ";
     fmt = os->setf(ios::fixed); // every fixed
-    *os << fSigmaY2 << " " << fSigmaZ2;
+    *os << GetSigmaY2() << " " << GetSigmaZ2();
     os->flags(fmt); // reset back to old formating.
     return;
 }
@@ -186,10 +168,16 @@ void AliITSRecPoint::Read(istream *is){
 // Standard input format for this class.
 ////////////////////////////////////////////////////////////////////////
  
+  Int_t lab[4];
+  Float_t hit[5];
+  lab[3] = 0; // ??
+  *is >> lab[0] >> lab[1] >> lab[2] >> hit[0] >> hit[1] >> hit[4];
+  *is >> fdEdX >> hit[2] >> hit[3];
+  Int_t info[3] = {0,0,0};
+  AliITSRecPoint rp(lab,hit,info,kTRUE);
+  *this = rp;
 
-    *is >> fTracks[0] >> fTracks[1] >> fTracks[2] >> fXloc >> fZloc >> fQ;
-    *is >> fdEdX >> fSigmaY2 >> fSigmaZ2;
-    return;
+  return;
 }
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSRecPoint &p){

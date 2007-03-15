@@ -951,18 +951,19 @@ void AliITSClusterFinderSDD::GetRecPoints(){
             if (!dig) dig = (AliITSdigitSDD*)Map()->GetHit(iz-1,ix+1); 
             if (!dig) printf("SDD: cannot assign the track number!\n");
         } //  end if !dig
-        AliITSRecPoint rnew(fDetTypeRec->GetITSgeom());
-	rnew.SetXZ(fModule,clusterI->X(),clusterI->Z());
-        rnew.SetQ(clusterI->Q());   // in KeV - should be ADC
-        rnew.SetdEdX(kconvGeV*clusterI->Q());
-        rnew.SetSigmaDetLocX2(kRMSx*kRMSx);
-        rnew.SetSigmaZ2(kRMSz*kRMSz);
 
-        if(dig) rnew.SetLabel(dig->GetTrack(0),0);
-        if(dig) rnew.SetLabel(dig->GetTrack(1),1);
-        if(dig) rnew.SetLabel(dig->GetTrack(2),2);
-	rnew.SetDetectorIndex(ind);
-	rnew.SetLayer(lyr);
+	Int_t lab[4] = {-3141593,-3141593,-3141593,ind};
+	if (dig) {
+	  lab[0] = dig->GetTrack(0);
+	  lab[1] = dig->GetTrack(1);
+	  lab[2] = dig->GetTrack(2);
+	}
+	Float_t hit[5] = {clusterI->X(),clusterI->Z(),kRMSx*kRMSx,kRMSz*kRMSz,clusterI->Q()};
+	Int_t info[3] = {0,0,lyr};
+
+        AliITSRecPoint rnew(lab,hit,info,kTRUE);
+        rnew.SetdEdX(kconvGeV*clusterI->Q());
+
 	fDetTypeRec->AddRecPoint(rnew);        
     } // I clusters
 //    Map()->ClearMap();

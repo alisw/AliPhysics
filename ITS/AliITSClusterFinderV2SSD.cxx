@@ -229,7 +229,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStream* input,
   while (kTRUE) {
     Bool_t next = input->Next();
 
-    if(input->GetSignal()<3 && next) continue;
+    if(input->GetSignal()<(3*4.29) && next) continue;
     // check if a new cluster starts
     Int_t strip = input->GetCoord2();
     Int_t flag = input->GetCoord1();
@@ -284,8 +284,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStream* input,
     }
 
     // add digit to current cluster
-    q += input->GetSignal();
-    y += strip * input->GetSignal();
+    q += input->GetSignal()/4.29;
+    y += strip * input->GetSignal()/4.29;
     nDigits++;
     prevStrip = strip;
     prevFlag = flag;
@@ -411,7 +411,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
       AliITSRecPoint * cl2;
       if(clusters){
-	cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	cl2->SetChargeRatio(ratio);    	
 	cl2->SetType(1);
 	pairs[ip][j]=1;
@@ -424,7 +424,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	
       }
       else{
-	cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);	
+	cl2 = new AliITSRecPoint(milab,lp,info);	
 	cl2->SetChargeRatio(ratio);    	
 	cl2->SetType(1);
 	pairs[ip][j]=1;
@@ -480,7 +480,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 
 	  AliITSRecPoint * cl2;
 	  if(clusters){
-	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    cl2->SetType(5);
 	    pairs[ip][in] = 5;
@@ -490,7 +490,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    }	    
 	  }
 	  else{
-	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    cl2->SetType(5);
 	    pairs[ip][in] = 5;
@@ -535,7 +535,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  
 	  AliITSRecPoint * cl2;
 	  if(clusters){
-	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    cl2->SetType(5);
 	    pairs[ip2][in] =5;
@@ -545,7 +545,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    }
 	  }
 	  else{
-	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    cl2->SetType(5);
 	    pairs[ip2][in] =5;
@@ -607,7 +607,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 
 	  AliITSRecPoint * cl2;
 	  if(clusters){
-	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    cl2->SetType(7);
 	    pairs[ip][jn] =7;
@@ -618,7 +618,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 
 	  }
 	  else{
-	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    cl2->SetType(7);
 	    pairs[ip][jn] =7;
@@ -660,7 +660,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  Int_t info[3] = {pos[ip].GetNd(),neg[jn2].GetNd(),fNlayer[fModule]};
 	  AliITSRecPoint * cl2;
 	  if(clusters){
-	    cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    pairs[ip][jn2]=7;
 	    cl2->SetType(7);
@@ -671,7 +671,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    
 	  }
 	  else{
-	    cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	    cl2 = new AliITSRecPoint(milab,lp,info);
 	    cl2->SetChargeRatio(ratio);    	
 	    pairs[ip][jn2]=7;
 	    cl2->SetType(7);
@@ -761,7 +761,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       Int_t info[3] = {pos[ip].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
       AliITSRecPoint * cl2;
       if(clusters){
-	cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	cl2->SetChargeRatio(ratio);    	
 	cl2->SetType(10);
 	pairs[ip][j]=10;
@@ -773,7 +773,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	cused2[j]++;      
       }
       else{
-	cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	cl2 = new AliITSRecPoint(milab,lp,info);
 	cl2->SetChargeRatio(ratio);    	
 	cl2->SetType(10);
 	pairs[ip][j]=10;
@@ -828,12 +828,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	Int_t info[3] = {pos[i].GetNd(),neg[j].GetNd(),fNlayer[fModule]};
 	AliITSRecPoint * cl2;
 	if(clusters){
-	  cl2 = new (cl[ncl]) AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	  cl2 = new (cl[ncl]) AliITSRecPoint(milab,lp,info);
 	  cl2->SetChargeRatio(ratio);
 	  cl2->SetType(100+cpositive[j]+cnegative[i]);	  
 	}
 	else{
-	  cl2 = new AliITSRecPoint(fModule,fDetTypeRec->GetITSgeom(),milab,lp,info);
+	  cl2 = new AliITSRecPoint(milab,lp,info);
 	  cl2->SetChargeRatio(ratio);
 	  cl2->SetType(100+cpositive[j]+cnegative[i]);
 	  fDetTypeRec->AddRecPoint(*cl2);

@@ -36,7 +36,8 @@ fDeltaProb(0) {
 }
 
 //_______________________________________________________
-AliITSclusterV2::AliITSclusterV2(Int_t *lab,Float_t *hit, Int_t *info) : AliCluster(lab,hit),
+AliITSclusterV2::AliITSclusterV2(Int_t *lab,Float_t *hit, Int_t *info): 
+  AliCluster(0,hit,0.,0.,lab),
 fIndex(lab[3]),
 fQ(hit[4]),
 fLayer(info[2]),

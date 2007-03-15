@@ -25,9 +25,9 @@
 
 ClassImp(AliTPCcluster)
 //
-AliTPCcluster:: AliTPCcluster(Int_t *lab, Float_t *hit)
-              :AliCluster(lab,hit),
-               fQ(0.)
+AliTPCcluster::AliTPCcluster(Int_t *lab, Float_t *hit):
+  AliCluster(0,hit,0.,0.,lab),
+  fQ(0.)
 {
   //
   // constructor

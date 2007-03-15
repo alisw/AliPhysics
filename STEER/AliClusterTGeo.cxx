@@ -52,6 +52,26 @@ AliClusterTGeo::AliClusterTGeo():
   fTracks[0]=fTracks[1]=fTracks[2]=-3141593; 
 }
 
+//_____________________________________________________________________________
+AliClusterTGeo::AliClusterTGeo(Int_t *lab, Float_t *hit): 
+  TObject(),
+  fX(0),
+  fY(hit[0]),
+  fZ(hit[1]),
+  fSigmaY2(hit[2]),
+  fSigmaZ2(hit[3]),
+  fSigmaYZ(0),
+  fVolumeId(0),
+  fIsMisaligned(kFALSE)
+{
+  //
+  // Creates a simulated cluster
+  //
+  fTracks[0]  = lab[0];
+  fTracks[1]  = lab[1];
+  fTracks[2]  = lab[2];
+}
+
 //______________________________________________________________________________
 AliClusterTGeo::AliClusterTGeo(UShort_t volId,
 			       const Float_t *hit,

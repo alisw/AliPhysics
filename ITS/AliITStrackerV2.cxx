@@ -23,6 +23,7 @@
 
 #include <new>
 
+#include <TError.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom.h>
@@ -183,29 +184,10 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
       if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
  
-      //*** The Delta transformation
-      TGeoHMatrix delta; 
-      AliITSgeomTGeo::GetTrackingMatrix(j,delta);
-      TGeoHMatrix m;
-      AliITSgeomTGeo::GetOrigMatrix(j,m);
-      delta.MultiplyLeft(&(m.Inverse()));
-      const TGeoHMatrix *tm = AliITSgeomTGeo::GetTracking2LocalMatrix(j);
-      delta.MultiplyLeft(&(tm->Inverse())); 
-      //***
-
       while (ncl--) {
         AliITSRecPoint *c=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
 
-        //*** Shift the cluster to the misaligned position
-        Double_t  xyz[3]={c->GetX(),c->GetY(),c->GetZ()};
-        Double_t mxyz[3]={0.};                    
-        
-        delta.LocalToMaster(xyz,mxyz);
-
-        c->SetX(mxyz[0]);
-        c->AliCluster::SetY(mxyz[1]);
-        c->AliCluster::SetZ(mxyz[2]);
-	//***
+	if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
 
         Int_t idx=c->GetDetectorIndex();
         AliITSdetector &det=fgLayers[i].GetDetector(idx);
