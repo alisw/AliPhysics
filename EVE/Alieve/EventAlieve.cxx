@@ -167,6 +167,7 @@ void Event::GotoEvent(Int_t event)
 		    event, 0, maxEvent));
 
   RGTopFrame::RedrawDisabler rd(gReve);
+  gReve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
 
   DestroyElements();
   fEventId = event;
