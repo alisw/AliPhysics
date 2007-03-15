@@ -208,7 +208,7 @@ void MUONData::LoadDigits(TTree* tree)
 }
 
 //______________________________________________________________________
-void MUONData::LoadRecPoints(TTree* tree)
+void MUONData::LoadRecPoints(TTree* /*tree*/)
 {
   //
   // load reconstructed points from the TreeR
