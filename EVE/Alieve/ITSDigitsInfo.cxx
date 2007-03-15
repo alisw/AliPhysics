@@ -158,47 +158,51 @@ void ITSDigitsInfo::GetSPDLocalZ(Int_t j, Float_t& z)
 TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
 {
   switch(subdet) {
-  case 0: {
-    TClonesArray* digitsSPD = 0;
-    map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
-    if(i == fSPDmap.end()) {
-      fTree->SetBranchAddress("ITSDigitsSPD",&digitsSPD);
-      fTree->GetEntry(mod);
-      fSPDmap[mod] = digitsSPD;
-      return digitsSPD;
-    } else {
-      return i->second;
+    case 0: {
+      TClonesArray* digitsSPD = 0;
+      map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
+      if(i == fSPDmap.end()) {
+        TBranch* br =  fTree->GetBranch("ITSDigitsSPD");
+        br->SetAddress(&digitsSPD);
+	br->GetEntry(mod);
+	fSPDmap[mod] = digitsSPD;
+	return digitsSPD;
+      } else {
+	return i->second;
+      }
+      break;
     }
-    break;
-  }
-  case 1: {
-    TClonesArray* digitsSDD = 0;
-    map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
-    if(i == fSDDmap.end()) {
-      fTree->SetBranchAddress("ITSDigitsSDD",&digitsSDD);
-      fTree->GetEntry(mod);
-      fSDDmap[mod] = digitsSDD;
-      return digitsSDD;
-    } else {
-      return i->second;
+    case 1: {
+      TClonesArray* digitsSDD = 0;
+      map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
+      if(i == fSDDmap.end()) {
+	TBranch* br =  fTree->GetBranch("ITSDigitsSDD");
+        br->SetAddress(&digitsSDD);
+	br->GetEntry(mod);
+	fSDDmap[mod] = digitsSDD;
+	return digitsSDD;
+      } else {
+	return i->second;
+      }
+      break;
     }
-    break;
-  }
-  case 2: {
-    TClonesArray* digitsSSD = 0;
-    map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
-    if(i == fSSDmap.end()) {
-      fTree->SetBranchAddress("ITSDigitsSSD",&digitsSSD);
-      fTree->GetEntry(mod);
-      fSSDmap[mod] = digitsSSD;
-      return digitsSSD;
-    } else {
-      return i->second;
+    case 2: {
+      TClonesArray* digitsSSD = 0;
+      map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
+      if(i == fSSDmap.end()) {
+	TBranch* br =  fTree->GetBranch("ITSDigitsSSD");
+        br->SetAddress(&digitsSSD);
+	br->GetEntry(mod);
+
+	fSSDmap[mod] = digitsSSD;
+	return digitsSSD;
+      } else {
+	return i->second;
+      }
+      break;
     }
-    break;
-  }
-  default:
-    return 0;
+    default:
+      return 0;
   } //end switch
   return 0;
 }
