@@ -60,6 +60,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   // AliPHOSCalibHistoProducer.
   // It is a responsibility of the SHUTTLE framework to form the fileName
   
+  gRandom->SetSeed(0); //the seed is set to the current  machine clock!
   AliPHOSEmcCalibData calibData;
   
   TList* list = GetFileSources(kDAQ, "AMPLITUDES");
