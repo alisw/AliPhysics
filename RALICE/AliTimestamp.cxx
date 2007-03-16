@@ -166,7 +166,6 @@
 
 #include "AliTimestamp.h"
 #include "Riostream.h"
-#include <cmath>
 
 ClassImp(AliTimestamp) // Class implementation to enable ROOT I/O
  
@@ -211,14 +210,14 @@ void AliTimestamp::Date(Int_t mode)
 {
 // Print date/time info.
 //
-// mode = 1 ==> Only the TTimeStamp yy-mm-dd hh:mm:ss:ns and GMST info is printed
+// mode = 1 ==> Only the UT yy-mm-dd hh:mm:ss:ns:ps and GST info is printed
 //        2 ==> Only the Julian parameter info is printed
-//        3 ==> Both the TTimeStamp, GMST and Julian parameter info is printed
+//        3 ==> Both the UT, GST and Julian parameter info is printed
 //
 // The default is mode=3.
 //
 // Note : In case the (M/T)JD falls outside the TTimeStamp range,
-//        the TTimeStamp info will be replaced by UT hh:mm:ss:ns:ps info.
+//        the yy-mm-dd info will be omitted.
 
  Int_t mjd,mjsec,mjns,mjps;
  GetMJD(mjd,mjsec,mjns);
@@ -230,19 +229,29 @@ void AliTimestamp::Date(Int_t mode)
  {
   if (mjd>=40587 && (mjd<65442 || (mjd==65442 && mjsec<8047)))
   {
-   cout << " " << AsString() << endl;
+   TString month[12]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+   TString day[7]={"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+
+   UInt_t y,m,d;
+   GetDate(kTRUE,0,&y,&m,&d);
+
+   Int_t wd=GetDayOfWeek(kTRUE,0);
+
+   cout << " " << day[wd-1].Data() << ", " << setfill('0') << setw(2) << d << " "
+        << setfill(' ') << month[m-1].Data() << " " << y << " ";
   }
   else
   {
-   GetUT(hh,mm,ss,ns,ps);
-   cout << " UT : " << setfill('0') << setw(2) << hh << ":"
-                    << setw(2) << mm << ":" << setw(2) << ss
-                    << " ns : " << ns << " ps : " << ps << " ";
+   cout << " Time ";
   }
+  GetUT(hh,mm,ss,ns,ps);
+  cout << setfill('0') << setw(2) << hh << ":"
+       << setw(2) << mm << ":" << setw(2) << ss << "."
+       << setw(9) << ns << setw(3) << ps << " (UT)  ";
   GetGST(hh,mm,ss,ns,ps);
-  cout << " GST : " << setfill('0') << setw(2) << hh << ":"
-                    << setw(2) << mm << ":" << setw(2) << ss
-                    << " ns : " << ns << " ps : " << ps << endl;
+  cout << setfill('0') << setw(2) << hh << ":"
+       << setw(2) << mm << ":" << setw(2) << ss << "."
+       << setw(9) << ns << setw(3) << ps << " (GST)"<< endl;
  }
  if (mode==2 || mode==3)
  {

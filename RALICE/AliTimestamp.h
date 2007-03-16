@@ -5,6 +5,8 @@
 
 // $Id$
 
+#include <math.h>
+
 #include "TTimeStamp.h"
 #include "TString.h"
 
@@ -70,6 +72,6 @@ class AliTimestamp : public TTimeStamp
   Int_t fCalcs;      // The TTimeStamp seconds counter value at Julian parameter calculation
   Int_t fCalcns;     // The TTimeStamp nanoseconds counter value at Julian parameter calculation
 
- ClassDef(AliTimestamp,6) // Handling of timestamps for (astro)particle physics research.
+ ClassDef(AliTimestamp,7) // Handling of timestamps for (astro)particle physics research.
 };
 #endif

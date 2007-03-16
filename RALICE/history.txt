@@ -755,4 +755,5 @@
                 accessible even for cases which fall outside the TTimeStamp range.
                 As such, the UT and GST info will always be provided via the Date()
                 memberfunction.
+16-mar-2007 NvE Uniform data format introduced for printout of AliTimestamp::Date().
 
