@@ -1,3 +1,8 @@
+2007-03-16  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/its_clusters.C:
+	From Cvetan: new macro to load ITS clusters.
+
 2007-03-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	The following changes are from Bogdan, for new MUON display.
