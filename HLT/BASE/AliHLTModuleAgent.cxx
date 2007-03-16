@@ -152,7 +152,7 @@ int AliHLTModuleAgent::Unregister(AliHLTModuleAgent* pAgent)
   AliHLTLogging log;
   if (!pAgent) return -EINVAL;
   if (fgAgentList.FindObject(pAgent)!=NULL) {
-    log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %s (%p) unregistered", pAgent->GetName(), pAgent);
+    log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %s (%p) removed", pAgent->GetName(), pAgent);
     fgAgentList.Remove(pAgent);
   } else {
   }

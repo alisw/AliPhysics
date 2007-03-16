@@ -539,10 +539,17 @@ int AliHLTSystem::LoadConfigurations(AliRunLoader* runloader)
   }
   int iResult=0;
   AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
-  while (pAgent) {
-    HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
-    pAgent->CreateConfigurations(fpConfigurationHandler, runloader);
-    pAgent=AliHLTModuleAgent::GetNextAgent();
+  while (pAgent && iResult>=0) {
+    const char* deplibs=pAgent->GetRequiredComponentLibraries();
+    if (deplibs) {
+      HLTDebug("load libraries \'%s\' %s for agent %s (%p)", deplibs, pAgent->GetName(), pAgent);
+      iResult=LoadComponentLibraries(deplibs);
+    }
+    if (iResult>=0) {
+      HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
+      pAgent->CreateConfigurations(fpConfigurationHandler, runloader);
+      pAgent=AliHLTModuleAgent::GetNextAgent();
+    }
   }
   return iResult;
 }
