@@ -13,6 +13,7 @@
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TArrayF.h>
+#include <TObjString.h>
 
 #include <AliRunLoader.h>
 #include <AliHeader.h>
@@ -32,6 +33,7 @@
 #include "AliHLTHoughTrack.h"
 #include "AliHLTTrackArray.h"
 
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliHLTITStracker.h"
@@ -39,39 +41,78 @@
 #include "MUON/src/AliRoot/AliHLTMUONTracker.h"
 #include "MUON/src/AliRoot/AliHLTMUONHitReconstructor.h"
 #include "AliRawReader.h"
+#include "AliHLTSystem.h"
+
 #if __GNUC__== 3
 using namespace std;
 #endif
 
+const char* kHLTDefaultLibs[]= {
+  "libAliHLTUtil.so", 
+  "libAliHLTTPC.so", 
+  //  "libAliHLTSample.so",
+  "libAliHLTPHOS.so",
+  NULL
+};
+
 ClassImp(AliHLTReconstructor)
 
-AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor() 
+AliHLTReconstructor::AliHLTReconstructor()
+  : 
+  AliReconstructor(),
+  fDoHough(0),
+  fDoTracker(1),
+  fDoBench(0),
+  fDoCleanUp(0),
+  fpSystem(NULL)
 { 
   //constructor
 #ifndef use_logging
   AliHLTLog::fgLevel=AliHLTLog::kWarning;
 #endif
-  fDoTracker=1;
-  fDoHough=0;
-  fDoBench=0;
-  fDoCleanUp=1;
 }
 
-AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough): AliReconstructor() 
-{ 
+AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough)
+  : 
+  AliReconstructor(),
+  fDoHough(doHough),
+  fDoTracker(doTracker),
+  fDoBench(0),
+  fDoCleanUp(0),
+  fpSystem(new AliHLTSystem)
+{
   //constructor
 #ifndef use_logging
   AliHLTLog::fgLevel=AliHLTLog::kWarning;
 #endif
-  fDoTracker=doTracker;
-  fDoHough=doHough;
+}
+
+AliHLTReconstructor::AliHLTReconstructor(const AliHLTReconstructor&)
+  :
+  AliReconstructor(),
+  fDoHough(0),
+  fDoTracker(0),
+  fDoBench(0),
+  fDoCleanUp(0),
+  fpSystem(NULL)
+{
+  // not a valid copy constructor
+}
+
+AliHLTReconstructor& AliHLTReconstructor::operator=(const AliHLTReconstructor&)
+{
+  // not a valid assignment operator
+  fDoHough=0;
+  fDoTracker=0;
   fDoBench=0;
-  fDoCleanUp=1;
+  fDoCleanUp=0;
+  fpSystem=NULL;
+  return *this;
 }
 
 AliHLTReconstructor::~AliHLTReconstructor()
 { 
-  //deconstructor
+  //destructor
   if(fDoCleanUp){
     char name[256];
     gSystem->Exec("rm -rf hlt");
@@ -81,35 +122,105 @@ AliHLTReconstructor::~AliHLTReconstructor()
     sprintf(name, "rm -f hough_*.root hough_*.dat");
     gSystem->Exec(name);
   }
+  if (fpSystem) {
+    delete fpSystem;
+  }
+  fpSystem=NULL;
+}
+
+void AliHLTReconstructor::Init(AliRunLoader* runLoader)
+{
+  // init the reconstructor
+  if(!runLoader) {
+    AliError("Missing RunLoader! 0x0");
+    return;
+  }
+
+  if (!fpSystem) fpSystem=new AliHLTSystem;
+  if (!fpSystem) {
+    AliError("can not create AliHLTSystem object");
+    return;
+  }
+  if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+    AliError("HLT system in error state");
+    return;
+  }
+
+  TString libs("");
+  TString option = GetOption();
+  TObjArray* pTokens=option.Tokenize(" ");
+  if (pTokens) {
+    int iEntries=pTokens->GetEntries();
+    for (int i=0; i<iEntries; i++) {
+      TString token=(((TObjString*)pTokens->At(i))->GetString());
+      if (token.Contains("loglevel=")) {
+	TString param=token.ReplaceAll("loglevel=", "");
+	if (param.IsDigit()) {
+	  fpSystem->SetGlobalLoggingLevel((AliHLTComponentLogSeverity)param.Atoi());
+	} else if (param.BeginsWith("0x") &&
+		   param.Replace(0,2,"",0).IsHex()) {
+	  int severity=0;
+	  sscanf(param.Data(),"%x", &severity);
+	  fpSystem->SetGlobalLoggingLevel((AliHLTComponentLogSeverity)severity);
+	} else {
+	  AliWarning("wrong parameter for option \'loglevel=\', (hex) number expected");
+	}
+      } else if (token.Contains("alilog=off")) {
+	fpSystem->SwitchAliLog(0);
+      } else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
+	libs+=token;
+	libs+=" ";
+      } else {
+	AliWarning(Form("unknown option: %s", token.Data()));
+      }
+    }
+    delete pTokens;
+  }
+  
+  Bool_t bForceLibLoad=0;
+  if (bForceLibLoad=(libs.IsNull())) {
+    const char** deflib=kHLTDefaultLibs;
+    while (*deflib) {
+      libs+=*deflib++;
+      libs+=" ";
+    }
+  }
+  if ((bForceLibLoad || !fpSystem->CheckStatus(AliHLTSystem::kLibrariesLoaded)) &&
+      (fpSystem->LoadComponentLibraries(libs.Data())<0)) {
+    AliError("error while loading HLT libraries");
+    return;
+  }
+  if (!fpSystem->CheckStatus(AliHLTSystem::kReady) &&
+      (fpSystem->Configure(runLoader))<0) {
+    AliError("error during HLT system configuration");
+    return;
+  }
 }
 
 void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
-  // do the standard and hough reconstruction chain
-  if(!runLoader) {
-    LOG(AliHLTLog::kFatal,"AliHLTReconstructor::Reconstruct","RunLoader")
-      <<" Missing RunLoader! 0x0"<<ENDLOG;
-    return;
-  }
-  gSystem->Exec("rm -rf hlt");
-  gSystem->MakeDirectory("hlt");
-  gSystem->Exec("rm -rf hough");
-  gSystem->MakeDirectory("hough");
+  // reconstruction of simulated data
+  Reconstruct(runLoader, NULL);
+}
 
-  Bool_t isinit=AliHLTTransform::Init(runLoader);
-  if(!isinit){
-    LOG(AliHLTLog::kError,"AliHLTReconstructor::Reconstruct","Transformer")
-     << "Could not create transform settings, please check log for error messages!" << ENDLOG;
+void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const 
+{
+  // reconstruction of real data if rawReader!=NULL
+  if(!runLoader) {
+    AliError("Missing RunLoader! 0x0");
     return;
   }
 
   Int_t nEvents = runLoader->GetNumberOfEvents();
+  int iResult=0;
 
-  for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    runLoader->GetEvent(iEvent);
-
-    if(fDoTracker) ReconstructWithConformalMapping(runLoader,iEvent);
-    if(fDoHough) ReconstructWithHoughTransform(runLoader,iEvent);
+  if (fpSystem) {
+    if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+      AliError("HLT system in error state");
+      return;
+    }
+    if ((iResult=fpSystem->Reconstruct(nEvents, runLoader, rawReader))>=0) {
+    }
   }
 }
 
@@ -213,10 +324,26 @@ void AliHLTReconstructor::FillESD(AliRunLoader* runLoader,
 				  AliESD* esd) const
 {
   //fill the esd file with found tracks
+  if(!runLoader) {
+    AliError("Missing RunLoader! 0x0");
+    return;
+  }
   Int_t iEvent = runLoader->GetEventNumber();
-
+  if (fpSystem) {
+    if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
+      AliError("HLT system in error state");
+      return;
+    }
+    if (!fpSystem->CheckStatus(AliHLTSystem::kReady)) {
+      AliError("HLT system in wrong state");
+      return;
+    }
+    fpSystem->FillESD(iEvent, runLoader, esd);
+  }
+  /*
   if(fDoTracker) FillESDforConformalMapping(esd,iEvent);
   if(fDoHough) FillESDforHoughTransform(esd,iEvent);
+  */
 }
 
 void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const

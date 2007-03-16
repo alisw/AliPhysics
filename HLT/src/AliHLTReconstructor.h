@@ -8,11 +8,32 @@
 #ifdef use_reconstruction
 #include "AliReconstructor.h"
 
+class AliHLTSystem;
+
 class AliHLTReconstructor: public AliReconstructor {
 public:
   AliHLTReconstructor();
   AliHLTReconstructor(Bool_t doTracker, Bool_t doHough);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTReconstructor(const AliHLTReconstructor& src);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
+  /** destructor */
   virtual ~AliHLTReconstructor();
+
+  /** init the reconstructor */
+  void Init(AliRunLoader* runLoader);
+
+  /** reconstruct simulated MC data */
+  void Reconstruct(AliRunLoader* runLoader) const;
+  /** reconstruct data from RawReader */
+  void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const;
+
+  /** create a tracker */
+  AliTracker*  CreateTracker(AliRunLoader*) const;
+
+  /** fill esd for one event */
+  void FillESD(AliRunLoader* runLoader, AliESD* esd) const;
 
   virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const{
     AliReconstructor::Reconstruct(digitsTree,clustersTree);
@@ -20,12 +41,7 @@ public:
   virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const {
     AliReconstructor::Reconstruct(rawReader,clustersTree);
   }
-  virtual void         Reconstruct(AliRunLoader* runLoader) const;
-  virtual void         Reconstruct(AliRunLoader* runLoader, 
-				   AliRawReader* rawReader) const {
-    AliReconstructor::Reconstruct(runLoader,rawReader);
-  }
-  virtual AliTracker*  CreateTracker(AliRunLoader*) const;
+
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
 			       AliESD* esd) const {
     AliReconstructor::FillESD(digitsTree,clustersTree,esd);
@@ -34,7 +50,6 @@ public:
 			       AliESD* esd) const {
     AliReconstructor::FillESD(rawReader,clustersTree,esd);
   }
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
   virtual void         FillESD(AliRunLoader* runLoader, 
 			       AliRawReader* rawReader, AliESD* esd) const {
     AliReconstructor:: FillESD(runLoader,rawReader,esd);
@@ -53,7 +68,11 @@ private:
   Bool_t fDoBench;   //store the benchmark results
   Bool_t fDoCleanUp; //delete tmp tracking files
 
-  ClassDef(AliHLTReconstructor, 0)   // class for the TPC reconstruction
+  AliHLTSystem* fpSystem; //! HLT steering object
+  Int_t  fRecEvents;      //! number of reconstructed events
+  Int_t  fFilled;         //! number of event filled to ESD
+
+  ClassDef(AliHLTReconstructor, 1)   // class for the TPC reconstruction
 };
 #endif
 
