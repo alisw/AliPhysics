@@ -669,18 +669,25 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   xx[1] = GetFirstPointZ();
   xx[2] = TMath::Sin(GetPsi());
   xx[3] = GetTgl();
-  xx[4] = GetPt();
+  xx[4] = 1.0/GetPt();
   //cout << "xhit=" << xhit << " y=" << xx[0] << " z=" << xx[1] << endl;
   //cout << "alpha=" << alpha << endl;
 
-  // the Set function was not available in earlier versions, check required in
-  // configure.ac
+  Int_t nCluster = GetNHits();
+  fdEdx=0;
+
+  // the Set function was not available in earlier versions, check done
+  // during configure, or by default on in the AliRoot build
 #ifdef EXTERNALTRACKPARAM_V1
 #warning track conversion to ESD format needs AliRoot version > v4-05-04
   //TODO (Feb 07): make this a real warning when logging system is adapted
   //HLTWarning("track conversion to ESD format needs AliRoot version > v4-05-04");
 #else
   Set(xhit,alpha,xx,cov);
+  SetNumberOfClusters(nCluster);
+  SetChi2(0.);
+  SetFakeRatio(0.);
+  SetMass(0.13957);
 #endif
 
   return iResult;
