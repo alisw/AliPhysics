@@ -48,6 +48,7 @@
 #include "AliTOFtrack.h"
 
 extern TGeoManager *gGeoManager;
+extern TROOT *gROOT;
 
 ClassImp(AliTOFtracker)
 
@@ -849,14 +850,14 @@ void AliTOFtracker::SaveCheckHists() {
   TFile *logFileTOF = 0;
 
   TSeqCollection *list = gROOT->GetListOfFiles();
-  int N = list->GetEntries();
-  for(int i=0; i<N; i++) {
+  int n = list->GetEntries();
+  for(int i=0; i<n; i++) {
     logFile = (TFile*)list->At(i);
     if (strstr(logFile->GetName(), "AliESDs.root")) break;
   }
 
   Bool_t isThere=kFALSE;
-  for(int i=0; i<N; i++) {
+  for(int i=0; i<n; i++) {
     logFileTOF = (TFile*)list->At(i);
     if (strstr(logFileTOF->GetName(), "TOFQA.root")){
       isThere=kTRUE;
