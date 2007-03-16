@@ -206,7 +206,7 @@ AliTimestamp::AliTimestamp(const AliTimestamp& t) : TTimeStamp(t)
  fCalcns=t.fCalcns;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTimestamp::Date(Int_t mode)
+void AliTimestamp::Date(Int_t mode,Double_t offset)
 {
 // Print date/time info.
 //
@@ -214,7 +214,12 @@ void AliTimestamp::Date(Int_t mode)
 //        2 ==> Only the Julian parameter info is printed
 //        3 ==> Both the UT, GST and Julian parameter info is printed
 //
-// The default is mode=3.
+// offset : Local time offset from UT (and also GST) in fractional hours.
+//
+// When an offset value is specified, the corresponding local times
+// LT and LST are printed as well.
+//
+// The default values are mode=3 and offset=0.
 //
 // Note : In case the (M/T)JD falls outside the TTimeStamp range,
 //        the yy-mm-dd info will be omitted.
@@ -223,20 +228,17 @@ void AliTimestamp::Date(Int_t mode)
  GetMJD(mjd,mjsec,mjns);
  mjps=GetPs();
 
+ TString month[12]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+ TString day[7]={"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+ UInt_t y,m,d,wd;
  Int_t hh,mm,ss,ns,ps;
  
  if (mode==1 || mode==3)
  {
   if (mjd>=40587 && (mjd<65442 || (mjd==65442 && mjsec<8047)))
   {
-   TString month[12]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
-   TString day[7]={"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
-
-   UInt_t y,m,d;
    GetDate(kTRUE,0,&y,&m,&d);
-
-   Int_t wd=GetDayOfWeek(kTRUE,0);
-
+   wd=GetDayOfWeek(kTRUE,0);
    cout << " " << day[wd-1].Data() << ", " << setfill('0') << setw(2) << d << " "
         << setfill(' ') << month[m-1].Data() << " " << y << " ";
   }
@@ -252,6 +254,55 @@ void AliTimestamp::Date(Int_t mode)
   cout << setfill('0') << setw(2) << hh << ":"
        << setw(2) << mm << ":" << setw(2) << ss << "."
        << setw(9) << ns << setw(3) << ps << " (GST)"<< endl;
+  if (offset)
+  {
+   // Determine the new date by including the offset
+   AliTimestamp t2(*this);
+   t2.Add(offset);
+   Int_t mjd2,mjsec2,mjns2;
+   t2.GetMJD(mjd2,mjsec2,mjns2);
+   if (mjd2>=40587 && (mjd2<65442 || (mjd2==65442 && mjsec2<8047)))
+   {
+    t2.GetDate(kTRUE,0,&y,&m,&d);
+    wd=t2.GetDayOfWeek(kTRUE,0);
+    cout << " " << day[wd-1].Data() << ", " << setfill('0') << setw(2) << d << " "
+         << setfill(' ') << month[m-1].Data() << " " << y << " ";
+   }
+   else
+   {
+    cout << " Time ";
+   }
+   // Determine the local time by including the offset w.r.t. the original timestamp
+   Double_t h;
+   h=GetUT(); 
+   h+=offset;
+   while (h<0)
+   {
+    h+=24.;
+   }
+   while (h>24)
+   {
+    h-=24.;
+   }
+   Convert(h,hh,mm,ss,ns,ps);
+   cout << setfill('0') << setw(2) << hh << ":"
+        << setw(2) << mm << ":" << setw(2) << ss << "."
+        << setw(9) << ns << setw(3) << ps << " (LT)  ";
+   h=GetGST(); 
+   h+=offset;
+   while (h<0)
+   {
+    h+=24.;
+   }
+   while (h>24)
+   {
+    h-=24.;
+   }
+   Convert(h,hh,mm,ss,ns,ps);
+   cout << setfill('0') << setw(2) << hh << ":"
+        << setw(2) << mm << ":" << setw(2) << ss << "."
+        << setw(9) << ns << setw(3) << ps << " (LST)"<< endl;
+  }
  }
  if (mode==2 || mode==3)
  {
@@ -540,7 +591,10 @@ void AliTimestamp::Convert(Double_t h,Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,In
  
  hh=int(h);
  h=h-double(hh);
- h=h*3600.;
+ h=h*60.;
+ mm=int(h);
+ h=h-double(mm);
+ h=h*60.;
  ss=int(h);
  h=h-double(ss);
  h=h*1.e9;
@@ -1101,6 +1155,27 @@ void AliTimestamp::Add(Int_t d,Int_t s,Int_t ns,Int_t ps)
  days+=d;
 
  SetMJD(days,secs,nsec,psec);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::Add(Double_t hours)
+{
+// Add (or subtract) a certain time difference to the current timestamp.
+// The time difference is specified as a (fractional) number of hours.
+// Subtraction can be achieved by entering a negative value as input argument.
+
+ Int_t d,s,ns,ps;
+ Double_t h=fabs(hours);
+ d=int(h/24.);
+ h-=double(d)*24.;
+ h*=3600.;
+ s=int(h);
+ h-=double(s);
+ h*=1.e9;
+ ns=int(h);
+ h-=double(ns);
+ ps=int(h*1000.);
+ if (hours>0) Add(d,s,ns,ps);
+ if (hours<0) Add(-d,-s,-ns,-ps);
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliTimestamp::GetDifference(AliTimestamp* t,Int_t& d,Int_t& s,Int_t& ns,Int_t& ps)

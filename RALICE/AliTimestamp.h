@@ -17,7 +17,7 @@ class AliTimestamp : public TTimeStamp
   AliTimestamp(TTimeStamp& t);                  // Constructor
   virtual ~AliTimestamp();                      // Destructor
   AliTimestamp(const AliTimestamp& t);          // Copy constructor
-  void Date(Int_t mode=3);                      // Print date/time info
+  void Date(Int_t mode=3,Double_t offset=0);    // Print date/time info
   Double_t GetJD(Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_t ns) const; // Julian Date from input args.
   Double_t GetMJD(Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_t ns) const;// Modified JD from input args.
   Double_t GetTJD(Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_t ns) const;// Truncated JD from input args.
@@ -50,6 +50,7 @@ class AliTimestamp : public TTimeStamp
   Int_t GetPs() const;                                  // Provide remaining fractional number of ns in picoseconds
   using TTimeStamp::Add;
   void Add(Int_t d,Int_t s,Int_t ns,Int_t ps=0);        // Add (or subtract) a certain time difference
+  void Add(Double_t hours);                             // Add (or subtract) a certain time difference
   Int_t GetDifference(AliTimestamp* t,Int_t& days,Int_t& sec,Int_t& ns,Int_t& ps); // Provide time difference
   Int_t GetDifference(AliTimestamp& t,Int_t& days,Int_t& sec,Int_t& ns,Int_t& ps); // Provide time difference
   Double_t GetDifference(AliTimestamp* t,TString u,Int_t mode=1); // Provide time diff. in specified units
@@ -72,6 +73,6 @@ class AliTimestamp : public TTimeStamp
   Int_t fCalcs;      // The TTimeStamp seconds counter value at Julian parameter calculation
   Int_t fCalcns;     // The TTimeStamp nanoseconds counter value at Julian parameter calculation
 
- ClassDef(AliTimestamp,7) // Handling of timestamps for (astro)particle physics research.
+ ClassDef(AliTimestamp,8) // Handling of timestamps for (astro)particle physics research.
 };
 #endif
