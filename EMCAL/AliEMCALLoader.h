@@ -42,6 +42,7 @@ class AliEMCALLoader : public AliLoader {
   AliEMCALLoader();
   AliEMCALLoader(const AliEMCALLoader & obj);
   AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername); 
+  AliEMCALLoader(const Char_t *name,TFolder *topfolder);
   
   virtual ~AliEMCALLoader() ; 
 

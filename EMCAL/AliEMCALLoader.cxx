@@ -95,6 +95,24 @@ AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfolderna
 }
 
 //____________________________________________________________________________
+AliEMCALLoader::AliEMCALLoader(const Char_t *name, TFolder *topfolder)
+  : AliLoader(name,topfolder),
+    fDebug(0),
+    fHits(0),
+    fDigits(0),
+    fSDigits(0),
+    fRecPoints(0)
+{
+  //Specific constructor for EMCAL Loader class
+
+  fDebug=0;
+  fHits = new TClonesArray("AliEMCALHit");
+  fDigits = new TClonesArray("AliEMCALDigit");
+  fSDigits = new TClonesArray("AliEMCALDigit");
+  fRecPoints = new TObjArray();
+}
+
+//____________________________________________________________________________
 AliEMCALLoader::AliEMCALLoader(const AliEMCALLoader & obj)
   : AliLoader(obj),
     fDebug(obj.fDebug),
