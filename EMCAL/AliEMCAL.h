@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.43  2007/03/10 22:19:01  pavlinov
+ * move one varibels from AliEMCALv2 to AliEMCAL
+ *
  * Revision 1.42  2007/02/24 20:42:35  pavlinov
  * fixed error of Geant3 parameters initialisation
  *
@@ -33,7 +36,6 @@ class TFolder ;
 class TRandom ; 
 class TGraph;
 class TF1;
-class AliEMCALGeometry;
 
 // --- AliRoot header files ---
 class AliRawReader;
@@ -56,45 +58,20 @@ class AliEMCAL : public AliDetector {
   virtual void  CreateMaterials() ;   
   virtual void  Digits2Raw();
   
-  using AliDetector::Raw2Digits;
-  virtual void  Raw2Digits(AliRawReader *reader);
-  
   virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const 
     {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
   virtual void    Hits2SDigits();
-  //  virtual void    Init(); 
   virtual Int_t   IsVersion(void) const = 0 ;   
   
   virtual AliTriggerDetector* CreateTriggerDetector() const 
     { return new AliEMCALTrigger(); }
 
-  // Raw Read Out
-  Double_t GetRawFormatCapa() const { return fgCapa ; }   
-  Double_t GetRawFormatHighCharge() const { return fHighCharge ; }  
-  Double_t GetRawFormatHighGain() const { return fHighGain ; }  
-  Double_t GetRawFormatHighLowGainFactor() const { return fHighLowGainFactor ; }  
-  Double_t GetRawFormatLowCharge() const { return ( fHighCharge *  fHighLowGainFactor ) ; }  
-  Double_t GetRawFormatLowGain() const { return ( fHighGain / fHighLowGainFactor ) ; }  
-  Int_t GetRawFormatLowGainOffset() const { return fLowGainOffset ; }  
-  Int_t GetRawFormatOrder() const { return fgOrder ; }   
-  Int_t GetRawFormatTimeBins() const { return fgkTimeBins ; }    
-  Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
-  Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
-  Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
-  Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
-  Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; }       
-  static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
-  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
-  //  
+   //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual const TString Version() const {return TString(" ") ; }   
 
 protected:
-  
-  static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
-  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ;
-
   void InitConstants();  //initializes some params
   void DefineMediumParameters();  // define tracking medium parameters 
 
@@ -102,27 +79,14 @@ protected:
   Double_t fBirkC1; // constants for Birk's Law implementation
   Double_t fBirkC2; // constants for Birk's Law implementation
 
-  static Double_t fgCapa ;              // capacitor of the preamplifier for the raw RO signal
-  Double_t fHighCharge ;                // high charge (to convert energy to charge) for the raw RO signal
-  Double_t fHighGain ;                  // high gain for the raw RO signal
-  Double_t fHighLowGainFactor ;         // high to low gain factor for the raw RO signal
-  Int_t    fLowGainOffset ;             // to separate high from low gain in the DDL
-  static Int_t fgOrder ;                // order of the gamma function for the RO signal
-  static const Int_t fgkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
-  static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
-  static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
-  static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
-  static Int_t fgThreshold;             // threshold
-  static Int_t fgDDLPerSuperModule;     // number of DDL per SuperModule
- 
   AliEMCALGeometry* fGeometry;          //!
 
 private:
   AliEMCAL(const AliEMCAL& emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);
 
-  ClassDef(AliEMCAL,9) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,10) // Electromagnetic calorimeter (base class)
     
-    } ;
+} ;
 
 #endif // ALIEMCAL_H

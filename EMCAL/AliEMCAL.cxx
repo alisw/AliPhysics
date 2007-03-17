@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.52  2007/03/10 22:19:01  pavlinov
+ * move one varibels from AliEMCALv2 to AliEMCAL
+ *
  * Revision 1.51  2007/02/24 20:42:35  pavlinov
  * fixed error of Geant3 parameters initialisation
  *
@@ -50,7 +53,6 @@ class TFile;
 #include <TTree.h>
 #include <TVirtualMC.h> 
 #include <TH1F.h> 
-#include <TF1.h> 
 #include <TRandom.h> 
 #include <TGraph.h> 
 
@@ -64,22 +66,9 @@ class TFile;
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALDigit.h"
-//#include "AliAltroMapping.h"
-#include "AliCaloAltroMapping.h"
-#include "AliAltroBuffer.h"
-#include "AliRawReader.h"
-#include "AliCaloRawStream.h"
-#include "AliDAQ.h"
+#include "AliEMCALRawUtils.h"
 
 ClassImp(AliEMCAL)
-Double_t AliEMCAL::fgCapa        = 1.;        // 1pF 
-Int_t    AliEMCAL::fgOrder       = 2 ;
-Double_t AliEMCAL::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTimeMax/fTimeBins
-Double_t AliEMCAL::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
-Double_t AliEMCAL::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
-// some digitization constants
-Int_t    AliEMCAL::fgThreshold = 1;
-Int_t    AliEMCAL::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
 
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL()
@@ -87,10 +76,6 @@ AliEMCAL::AliEMCAL()
     fBirkC0(0),
     fBirkC1(0.),
     fBirkC2(0.),
-    fHighCharge(0.),
-    fHighGain(0.),
-    fHighLowGainFactor(0.),
-    fLowGainOffset(0),
     fGeometry(0)
 {
   // Default ctor 
@@ -105,10 +90,6 @@ AliEMCAL::AliEMCAL(const char* name, const char* title)
     fBirkC0(0),
     fBirkC1(0.),
     fBirkC2(0.),
-    fHighCharge(0.),
-    fHighGain(0.),
-    fHighLowGainFactor(0.),
-    fLowGainOffset(0),
     fGeometry(0)
 {
   //   ctor : title is used to identify the layout
@@ -128,12 +109,7 @@ void AliEMCAL::InitConstants()
   fBirkC0 = 1;
   fBirkC1 = 0.013/1.032;
   fBirkC2 = 9.6e-6/(1.032 * 1.032);
-  
-  fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
-  fHighGain          = 6.64 ; 
-  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
-  fLowGainOffset     = 1 ;            // offset added to the module id to distinguish high and low gain data
-}
+  }
 
 //____________________________________________________________________________
 void AliEMCAL::DefineMediumParameters()
@@ -268,7 +244,7 @@ void AliEMCAL::CreateMaterials()
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
  // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
-  float deemax = 0.1; // maximum fractional energy loss in one step (0 < DEEMAX â?¤ 1);i
+  float deemax = 0.1; // maximum fractional energy loss in one step (0 < DEEMAX < deemax )
   AliMedium(2, "Scintillator$", 2, 1,
             isxfld, sxmgmx, 10.0, 0.001, deemax, 0.001, 0.001, 0, 0) ;
 
@@ -289,296 +265,11 @@ void AliEMCAL::CreateMaterials()
   // Call just in case of Geant3; What to do in case of Geant4 ?
   if(gMC->InheritsFrom("TGeant3")) DefineMediumParameters(); // Feb 20, 2007
 }
- //____________________________________________________________________________
-void AliEMCAL::Digits2Raw()
-{
-  // convert digits of the current event to raw data
-  
-  AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
-  
-  // get the digits
-  loader->LoadDigits("EMCAL");
-  loader->GetEvent();
-  TClonesArray* digits = loader->Digits() ;
-  
-  if (!digits) {
-    Error("Digits2Raw", "no digits found !");
-    return;
-  }
-  
-  // get the digitizer 
-  loader->LoadDigitizer();
-  AliEMCALDigitizer * digitizer = dynamic_cast<AliEMCALDigitizer *>(loader->Digitizer())  ; 
-  
-  // get the geometry
-  AliEMCALGeometry* geom = GetGeometry();
-  if (!geom) {
-    AliError(Form("No geometry found !"));
-    return;
-  }
-  
-  AliAltroBuffer* buffer = NULL;
-  Int_t prevDDL = -1;
-  Int_t adcValuesLow[fgkTimeBins];
-  Int_t adcValuesHigh[fgkTimeBins];
-
-  //Load Mapping RCU files once
-  TString path = gSystem->Getenv("ALICE_ROOT");
-  path += "/EMCAL/mapping/RCU";
-  TString path0 = path+"0.data";//This file will change in future
-  TString path1 = path+"1.data";//This file will change in future
-  AliAltroMapping * mapping[2] ; // For the moment only 2
-  mapping[0] = new AliCaloAltroMapping(path0.Data());
-  mapping[1] = new AliCaloAltroMapping(path1.Data());
-
-  // loop over digits (assume ordered digits)
-  for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
-    AliEMCALDigit* digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit)) ;
-    if (digit->GetAmp() < fgThreshold) 
-      continue;
-
-    //get cell indeces
-    Int_t nSM = 0;
-    Int_t nIphi = 0;
-    Int_t nIeta = 0;
-    Int_t iphi = 0;
-    Int_t ieta = 0;
-    Int_t nModule = 0;
-    geom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
-    geom->GetCellPhiEtaIndexInSModule(nSM, nModule, nIphi, nIeta,iphi, ieta) ;
-    
-    //Check which is the RCU of the cell.
-    Int_t iRCU = -111;
-    //RCU0
-    if (0<=iphi&&iphi<8) iRCU=0; // first cable row
-    else if (8<=iphi&&iphi<16 && 0<=ieta&&ieta<24) iRCU=0; // first half; 
-    //second cable row
-    //RCU1
-    else if(8<=iphi&&iphi<16 && 24<=ieta&&ieta<48) iRCU=1; // second half; 
-    //second cable row
-    else if(16<=iphi&&iphi<24) iRCU=1; // third cable row
-    
-    //Which DDL?
-    Int_t iDDL = fgDDLPerSuperModule* nSM + iRCU;
-    
-    // new DDL
-    if (iDDL != prevDDL) {
-      // write real header and close previous file
-       
-      if (buffer) {
-	buffer->Flush();
-	buffer->WriteDataHeader(kFALSE, kFALSE);
-	delete buffer;
-      }
-      
-      // open new file and write dummy header
-      TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
-      buffer = new AliAltroBuffer(fileName.Data(),mapping[iRCU]);
-      buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
-      prevDDL = iDDL;
-    }
-    
-    // out of time range signal (?)
-    if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
-      AliInfo("Signal is out of time range.\n");
-      buffer->FillBuffer((Int_t)digit->GetAmp());
-      buffer->FillBuffer(GetRawFormatTimeBins() );  // time bin
-      buffer->FillBuffer(3);          // bunch length      
-      buffer->WriteTrailer(3, ieta, iphi, nSM);  // trailer
-      // calculate the time response function
-    } else {
-
-      Double_t energy = digit->GetAmp() * digitizer->GetECAchannel() + digitizer->GetECApedestal() ; 
-      
-      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
-      
-      if (lowgain) 
-	buffer->WriteChannel(ieta, iphi, 0, GetRawFormatTimeBins(), adcValuesLow, fgThreshold);
-      else 
-	buffer->WriteChannel(ieta,iphi, 1, GetRawFormatTimeBins(), adcValuesHigh, fgThreshold);
-           
-    }
-  }
-  
-  // write real header and close last file
-  if (buffer) {
-    buffer->Flush();
-    buffer->WriteDataHeader(kFALSE, kFALSE);
-    delete buffer;
-  }
-  mapping[0]->Delete();
-  mapping[1]->Delete();
-  loader->UnloadDigits();
-}
-
 //____________________________________________________________________________
-void AliEMCAL::Raw2Digits(AliRawReader* reader)
-{
-  // convert raw data of the current event to digits
-  AliEMCALGeometry * geom = GetGeometry();
-  AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
-
-  // get the digits
-  loader->CleanDigits(); // start from scratch
-  loader->LoadDigits("EMCAL");
-  TClonesArray* digits = loader->Digits() ;
-  digits->Clear(); // yes, this is perhaps somewhat paranoid.. [clearing an extra time]
-
-  if (!digits) {
-    Error("Raw2Digits", "no digits found !");
-    return;
-  }
-  if (!reader) {
-    Error("Raw2Digits", "no raw reader found !");
-    return;
-  }
-
-  // and get the digitizer too 
-  loader->LoadDigitizer();
-  AliEMCALDigitizer * digitizer = dynamic_cast<AliEMCALDigitizer *>(loader->Digitizer())  ; 
-
-  // Use AliAltroRawStream to read the ALTRO format.  No need to
-  // reinvent the wheel :-) 
-  AliCaloRawStream in(reader,"EMCAL");
-  // Select EMCAL DDL's;
-  reader->Select("EMCAL");
-
-  // reading is from previously existing AliEMCALGetter.cxx
-  // ReadRaw method
-  Bool_t first = kTRUE ;
- 
-  TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
-  signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero"); 
-  
-  Bool_t lowGainFlag = kFALSE ; 
-  Int_t id =  -1;
-  Int_t idigit = 0 ; 
-  Int_t amp = 0 ; 
-  Double_t time = 0. ; 
-  Double_t energy = 0. ; 
-
-  TGraph * gLowGain = new TGraph(GetRawFormatTimeBins()) ; 
-  TGraph * gHighGain= new TGraph(GetRawFormatTimeBins()) ;  
-
-  while ( in.Next() ) { // EMCAL entries loop 
-    if ( in.IsNewRow() ) {//phi
-      if ( in.IsNewColumn() ) {//eta
-	id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-	if (!first) {
-	  FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
-	  
-	  if (time == 0. && energy == 0.) { 
-	    amp = 0 ; 
-	  }
-	  else {
-	    amp = static_cast<Int_t>( (energy - digitizer->GetECApedestal()) / digitizer->GetECAchannel() + 0.5 ) ; 
-	  }
-	  
-	  if (amp > 0) {
-	    new((*digits)[idigit]) AliEMCALDigit( -1, -1, id, amp, time) ;	
-	    idigit++ ; 
-	  }
-	  Int_t index ; 
-	  for (index = 0; index < GetRawFormatTimeBins(); index++) {
-	    gLowGain->SetPoint(index, index * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 0) ;  
-	    gHighGain->SetPoint(index, index * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 0) ; 
-	  } 
-	} // not first  
-	first = kFALSE ; 
-	id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-	if (in.GetModule() == GetRawFormatLowGainOffset() ) {
-	  lowGainFlag = kTRUE ; 
-	}
-	else { 
-	  lowGainFlag = kFALSE ; 
-	}
-      } //new column-eta
-    }// new row-phi
-    if (lowGainFlag) {
-      gLowGain->SetPoint(in.GetTime(), 
-			 in.GetTime()* GetRawFormatTimeMax() / GetRawFormatTimeBins(), 
-			 in.GetSignal()) ;
-    }
-    else { 
-      gHighGain->SetPoint(in.GetTime(), 
-			  in.GetTime() * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 
-			  in.GetSignal() ) ;
-    }
-  } // EMCAL entries loop
-  digits->Sort() ; 
-  
-  delete signalF ; 
-  delete gLowGain;
-  delete gHighGain ; 
-  
-  return ; 
+void AliEMCAL::Digits2Raw() {
+  static AliEMCALRawUtils rawUtil;
+  rawUtil.Digits2Raw();
 }
-
-//____________________________________________________________________________ 
-void AliEMCAL::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time)
-{
-  // Fits the raw signal time distribution; from AliEMCALGetter 
-
-  const Int_t kNoiseThreshold = 0 ;
-  Double_t timezero1 = 0., timezero2 = 0., timemax = 0. ;
-  Double_t signal = 0., signalmax = 0. ;       
-  energy = time = 0. ; 
-
-  if (lowGainFlag) {
-    timezero1 = timezero2 = signalmax = timemax = 0. ;
-    signalF->FixParameter(0, GetRawFormatLowCharge()) ; 
-    signalF->FixParameter(1, GetRawFormatLowGain()) ; 
-    Int_t index ; 
-    for (index = 0; index < GetRawFormatTimeBins(); index++) {
-      gLowGain->GetPoint(index, time, signal) ; 
-      if (signal > kNoiseThreshold && timezero1 == 0.) 
-	timezero1 = time ;
-      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
-	timezero2 = time ; 
-      if (signal > signalmax) {
-	signalmax = signal ; 
-	timemax   = time ; 
-      }
-    }
-    signalmax /= RawResponseFunctionMax(GetRawFormatLowCharge(), 
-						GetRawFormatLowGain()) ;
-    if ( timezero1 + GetRawFormatTimePeak() < GetRawFormatTimeMax() * 0.4 ) { // else its noise 
-      signalF->SetParameter(2, signalmax) ; 
-      signalF->SetParameter(3, timezero1) ;    	    
-      gLowGain->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
-      energy = signalF->GetParameter(2) ; 
-      time   = signalF->GetMaximumX() - GetRawFormatTimePeak() - GetRawFormatTimeTrigger() ;
-    }
-  } else {
-    timezero1 = timezero2 = signalmax = timemax = 0. ;
-    signalF->FixParameter(0, GetRawFormatHighCharge()) ; 
-    signalF->FixParameter(1, GetRawFormatHighGain()) ; 
-    Int_t index ; 
-    for (index = 0; index < GetRawFormatTimeBins(); index++) {
-      gHighGain->GetPoint(index, time, signal) ;               
-      if (signal > kNoiseThreshold && timezero1 == 0.) 
-	timezero1 = time ;
-      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
-	timezero2 = time ; 
-      if (signal > signalmax) {
-	signalmax = signal ;   
-	timemax   = time ; 
-      }
-    }
-    signalmax /= RawResponseFunctionMax(GetRawFormatHighCharge(), 
-						GetRawFormatHighGain()) ;;
-    if ( timezero1 + GetRawFormatTimePeak() < GetRawFormatTimeMax() * 0.4 ) { // else its noise  
-      signalF->SetParameter(2, signalmax) ; 
-      signalF->SetParameter(3, timezero1) ;               
-      gHighGain->Fit(signalF, "QRON", "", 0., timezero2) ; 
-      energy = signalF->GetParameter(2) ; 
-      time   = signalF->GetMaximumX() - GetRawFormatTimePeak() - GetRawFormatTimeTrigger() ;
-    }
-  }
-  
-  return;
-}
-
 //____________________________________________________________________________
 void AliEMCAL::Hits2SDigits()  
 { 
@@ -598,72 +289,4 @@ AliLoader* AliEMCAL::MakeLoader(const char* topfoldername)
 // --> to be discussed and made eventually coherent
  fLoader = new AliEMCALLoader(GetName(),topfoldername);
  return fLoader;
-}
-
-//__________________________________________________________________
-Double_t AliEMCAL::RawResponseFunction(Double_t *x, Double_t *par)
-{
-  // Shape of the electronics raw reponse:
-  // It is a semi-gaussian, 2nd order Gamma function of the general form
-  // v(t) = n**n * Q * A**n / C *(t/tp)**n * exp(-n * t/tp) with 
-  // tp : peaking time par[0]
-  // n  : order of the function
-  // C  : integrating capacitor in the preamplifier
-  // A  : open loop gain of the preamplifier
-  // Q  : the total APD charge to be measured Q = C * energy
-  
-  Double_t signal ;
-  Double_t xx = x[0] - ( fgTimeTrigger + par[3] ) ; 
-  
-  if (xx < 0 || xx > fgTimeMax) 
-    signal = 0. ;  
-  else { 
-    Double_t fac = par[0] * TMath::Power(fgOrder, fgOrder) * TMath::Power(par[1], fgOrder) / fgCapa ; 
-    signal = fac * par[2] * TMath::Power(xx / fgTimePeak, fgOrder) * TMath::Exp(-fgOrder * (xx / fgTimePeak)) ; 
-  }
-  return signal ;  
-}
-
-//__________________________________________________________________
-Double_t AliEMCAL::RawResponseFunctionMax(Double_t charge, Double_t gain) 
-{
-  //compute the maximum of the raw response function and return
-  return ( charge * TMath::Power(fgOrder, fgOrder) * TMath::Power(gain, fgOrder) 
-     / ( fgCapa * TMath::Exp(fgOrder) ) );  
-
-}
-//__________________________________________________________________
-Bool_t AliEMCAL::RawSampledResponse(
-const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const 
-{
-  // for a start time dtime and an amplitude damp given by digit, 
-  // calculates the raw sampled response AliEMCAL::RawResponseFunction
-
-  const Int_t kRawSignalOverflow = 0x3FF ; 
-  Bool_t lowGain = kFALSE ; 
-
-  TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
-
-  for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    signalF.SetParameter(0, GetRawFormatHighCharge() ) ; 
-    signalF.SetParameter(1, GetRawFormatHighGain() ) ; 
-    signalF.SetParameter(2, damp) ; 
-    signalF.SetParameter(3, dtime) ; 
-    Double_t time = iTime * GetRawFormatTimeMax() / GetRawFormatTimeBins() ;
-    Double_t signal = signalF.Eval(time) ;     
-    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow ){  // larger than 10 bits 
-      signal = kRawSignalOverflow ;
-      lowGain = kTRUE ; 
-    }
-    adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
-
-    signalF.SetParameter(0, GetRawFormatLowCharge() ) ;     
-    signalF.SetParameter(1, GetRawFormatLowGain() ) ; 
-    signal = signalF.Eval(time) ;  
-    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow)  // larger than 10 bits 
-      signal = kRawSignalOverflow ;
-    adcL[iTime] = static_cast<Int_t>(0.5 + signal ) ; 
-
-  }
-  return lowGain ; 
 }
