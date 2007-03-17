@@ -297,7 +297,8 @@ AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit)
   fAmp += digit.fAmp ;
   if(fTime > digit.fTime)
     fTime = digit.fTime ;
-  fTimeR = fTime ; 
+  if (digit.fTimeR < fTimeR)
+    fTimeR = digit.fTimeR ; 
 
   Int_t max1 = fNprimary ; 
   Int_t max2 = fNiparent ;  
