@@ -29,10 +29,10 @@
 #include "AliEMCALReconstructor.h"
 
 #include "AliRun.h"
-#include "AliEMCAL.h"
 #include "AliESD.h"
 #include "AliRunLoader.h"
 #include "AliEMCALLoader.h"
+#include "AliEMCALRawUtils.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
@@ -75,59 +75,71 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader) const
   TString branchName(runLoader->GetEventFolder()->GetName() ) ;  
   
   AliEMCALClusterizerv1 clu(headerFile, branchName);
-  clu.SetEventRange(0, -1) ; // do all the events
-  if ( Debug() ) 
-    clu.ExecuteTask("deb all") ; 
-  else 
-    clu.ExecuteTask("pseudo") ;  
- 
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));    
+
+  Int_t nEvents   = runLoader->GetNumberOfEvents();
+  runLoader->LoadDigits("EMCAL");
+  for (Int_t ievent = 0; ievent < nEvents; ievent++) {
+    runLoader->GetEvent(ievent);
+    if ( Debug() ) 
+      clu.ExecuteTask("deb all") ; 
+    else 
+      clu.ExecuteTask("pseudo") ;  
+  }   
+  // Unload the Digits and RecPoints
+  emcalLoader->UnloadDigits() ; 
+  emcalLoader->UnloadRecPoints() ; 
 }
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const 
+void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const 
+
 {
-  // method called by AliReconstruction; 
-  // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
-  // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
-  // the global tracking.
-  // Here we reconstruct from Raw Data
+  // Reconstruction loop for Raw Data processing
+  //
+  // Only the clusterization is performed
+  // Track-cluster matching is done in FillESD because the track
+  // segment maker needs access to the AliESD object to retrieve 
+  // the tracks reconstructed by the global tracking.
   
-  rawreader->Reset() ; 
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
 
+  static AliEMCALRawUtils rawUtils;
   AliEMCALClusterizerv1 clu(headerFile, branchName);
-  clu.SetEventRange(0, -1) ; // do all the events
-  if ( Debug() ) 
-    clu.ExecuteTask("deb pseudo all") ; 
-  else 
-    clu.ExecuteTask("pseudo") ;  
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));    
+ 
+  Int_t iEvent = 0;
+  rawReader->Reset() ; 
+  while (rawReader->NextEvent()) {  
+    runLoader->GetEvent(iEvent++);
 
+    rawUtils.Raw2Digits(rawReader);
+
+    if ( Debug() ) 
+      clu.ExecuteTask("deb pseudo all") ; 
+    else 
+      clu.ExecuteTask("pseudo") ;  
+    // Unload the RecPoints
+    emcalLoader->UnloadRecPoints() ; 
+  }
 }
 
 //____________________________________________________________________________
 void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {
-  // Called by AliReconstruct after Reconstruct() and global tracking and vertxing 
-  static  Double_t timeScale = 1.e+11; // transition constant from sec to 0.01ns (10ps)
-
-  AliDebug(1," FillESD started ");
+  // Called by AliReconstruct after Reconstruct() and global tracking and vertexing 
+  const double timeScale = 1.e+11; // transition constant from sec to 0.01 ns 
 
   Int_t eventNumber = runLoader->GetEventNumber() ;
-  AliEMCALGeometry * geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
 
-  TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
   // Creates AliESDCaloCluster from AliEMCALRecPoints 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-  rl->LoadRecPoints();
-  rl->LoadKinematics(); // To get the primary label
-  rl->LoadDigits();     // To get the primary label
-  rl->LoadHits();       // To get the primary label
-  rl->GetEvent(eventNumber);
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
+  runLoader->LoadRecPoints("EMCAL");
+  runLoader->GetEvent(eventNumber);
   TObjArray *clusters = emcalLoader->RecPoints();
   Int_t nClusters = clusters->GetEntries(), nClustersNew=0;
+  AliDebug(1,Form("Event %d: %d clusters",eventNumber,nClusters));
   //  Int_t nRP=0, nPC=0; // in input
   esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
 
@@ -141,6 +153,12 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
   Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
   Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
+
+  AliEMCALGeometry * geom = 0;
+  if (runLoader->GetAliRun() && runLoader->GetAliRun()->GetDetector("EMCAL"))
+    geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  if (geom == 0) 
+    geom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
 
   Int_t iSM2x2      = tr.Get2x2SuperModule();
   Int_t iSMnxn      = tr.GetnxnSuperModule();
@@ -206,14 +224,18 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     // Problem : we should recalculate a cluster characteristics when discard digit(s)
     Int_t newdigitMult = 0; 
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-      if(timeFloat[iDigit] < 65536./timeScale) {
+      if (amplFloat[iDigit] > 0) {
 	amplList[newdigitMult] = (UShort_t)(amplFloat[iDigit]*500);
-        if(amplList[newdigitMult] > 0) { // accept digit if poztive amplitude
-	  timeList[newdigitMult] = (UShort_t)(timeFloat[iDigit]*timeScale); // Time in units of 0.01 ns = 10 ps
-	  digiList[newdigitMult] = (UShort_t)(digitInts[iDigit]);
-          newdigitMult++;
-	}
+        // Time in units of 0.01 ns = 10 ps
+        if(timeFloat[iDigit] < 65536./timeScale) 
+	  timeList[newdigitMult] = (UShort_t)(timeFloat[iDigit]*timeScale);
+        else
+          timeList[newdigitMult] = 65535;
+	digiList[newdigitMult] = (UShort_t)(digitInts[iDigit]);
+        newdigitMult++;
       }
+      else if (clust->GetClusterType() != AliESDCaloCluster::kPseudoCluster)
+        Warning("FillESD()","Negative or 0 digit amplitude in cluster");
     }
 
     if(newdigitMult > 0) { // accept cluster if it has some digit
@@ -249,19 +271,17 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
       AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
       ec->SetEMCAL(kTRUE);
       ec->SetClusterType(clust->GetClusterType());
-
+      ec->SetGlobalPosition(xyz);
+      ec->SetClusterEnergy(clust->GetEnergy());
+      
       ec->SetNumberOfDigits(newdigitMult);
       ec->SetDigitAmplitude(amplList); //energies
       ec->SetDigitTime(timeList);      //times
       ec->SetDigitIndex(digiList);     //indices
       if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1){
-        ec->SetClusterEnergy(clust->GetEnergy());
-        ec->SetGlobalPosition(xyz);
-
         ec->SetPrimaryIndex(clust->GetPrimaryIndex());
         ec->SetNumberOfPrimaries(primMult);           //primary multiplicity
         ec->SetListOfPrimaries(primList);                  //primary List for a cluster  
-
         ec->SetClusterDisp(clust->GetDispersion());
         ec->SetClusterChi2(-1); //not yet implemented
         ec->SetM02(elipAxis[0]*elipAxis[0]) ;
@@ -277,7 +297,6 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
         delete [] digiList;
     }
   } // cycle on clusters
-  //  printf(" %i : nClusters %i : RP %i PC %i \n", eventNumber, nClusters, nRP, nPC);
   esd->SetNumberOfEMCALClusters(nClustersNew);
   //if(nClustersNew != nClusters) 
   //printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );
@@ -287,7 +306,6 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   //pid->SetPrintInfo(kTRUE);
   pid->SetReconstructor(kTRUE);
   pid->RunPID(esd);
-
-  AliDebug(1," FillESD ended ");
 }
+
 

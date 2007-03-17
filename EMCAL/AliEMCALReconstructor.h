@@ -41,7 +41,7 @@ public:
 
   using AliReconstructor::Reconstruct;
   virtual void Reconstruct(AliRunLoader* runLoader) const ;
-  virtual void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const ;
+  virtual void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const ;
   
   
   AliEMCALReconstructor & operator = (const AliEMCALReconstructor & /*rvalue*/)  {

@@ -62,7 +62,7 @@ public:
   virtual Float_t GetECALogWeight()const         { return fECAW0;}
   virtual Float_t GetMinECut()const              { return fMinECut;}
 
-  virtual Float_t GetTimeGate() const            { return fTimeGate ; }
+  virtual Float_t GetTimeCut() const            { return fTimeCut ; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
   virtual Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
@@ -74,13 +74,12 @@ public:
   virtual void SetMinECut(Float_t mine)                  { fMinECut = mine; }
   virtual void SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut ; }
   virtual void SetECALogWeight(Float_t w)                { fECAW0 = w ; }
-  virtual void SetTimeGate(Float_t gate)                 { fTimeGate = gate ;}
+  virtual void SetTimeCut(Float_t gate)                 { fTimeCut = gate ;}
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    {fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
-  void Unload() ; 
   virtual const char * Version() const { return "clu-v1" ; }  
  
   TList* BookHists();
@@ -143,10 +142,10 @@ private:
   Float_t fECALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
   Float_t fECAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
   Int_t   fRecPointsInRun ;            //! Total number of recpoints in one run
-  Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
+  Float_t fTimeCut ;                // Maximum time difference between the digits in ont EMC cluster
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
 
-  ClassDef(AliEMCALClusterizerv1,4)   // Clusterizer implementation version 1
+  ClassDef(AliEMCALClusterizerv1,5)   // Clusterizer implementation version 1
 
 };
 

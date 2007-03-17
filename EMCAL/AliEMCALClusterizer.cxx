@@ -38,9 +38,7 @@ ClassImp(AliEMCALClusterizer)
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer()
   : TTask("",""),
-    fEventFolderName(""),
-    fFirstEvent(0),
-    fLastEvent(-1)
+    fEventFolderName("")
 {
   // ctor
 }
@@ -49,9 +47,7 @@ AliEMCALClusterizer::AliEMCALClusterizer()
 AliEMCALClusterizer::AliEMCALClusterizer(const TString alirunFileName, 
 					 const TString eventFolderName)
   : TTask("EMCAL"+AliConfig::Instance()->GetReconstructionerTaskName(), alirunFileName),
-    fEventFolderName(eventFolderName),
-    fFirstEvent(0),
-    fLastEvent(-1)
+    fEventFolderName(eventFolderName)
 {
   // ctor
 }
@@ -59,9 +55,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(const TString alirunFileName,
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer(const AliEMCALClusterizer& clu)
   : TTask(clu.GetName(),clu.GetTitle()),
-    fEventFolderName(clu.fEventFolderName),
-    fFirstEvent(clu.fFirstEvent),
-    fLastEvent(clu.fLastEvent)
+    fEventFolderName(clu.fEventFolderName)
 {
   // copy ctor
 }
