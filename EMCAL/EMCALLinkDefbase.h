@@ -24,5 +24,6 @@
 #pragma link C++ class AliEMCALCalibData+;
 #pragma link C++ class AliEMCALCalibHistoProducer+;
 #pragma link C++ class AliEMCALPreprocessor+;
+#pragma link C++ class AliEMCALRawUtils+;
 
 #endif
