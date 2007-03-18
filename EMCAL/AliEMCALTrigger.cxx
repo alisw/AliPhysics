@@ -53,6 +53,7 @@
 #include "AliEMCALDigit.h"
 #include "AliEMCALTrigger.h" 
 #include "AliEMCALGeometry.h"
+#include "AliEMCALRawUtils.h"
 
 ClassImp(AliEMCALTrigger)
 
@@ -425,10 +426,8 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
   //--------Set max amplitude if larger than in other Super Modules------------
   Float_t maxtimeR2 = -1 ;
   Float_t maxtimeRn = -1 ;
-  AliRunLoader *rl  = AliRunLoader::GetRunLoader();
-  AliRun * gAlice   = rl->GetAliRun(); 
-  AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
-  Int_t nTimeBins = emcal->GetRawFormatTimeBins() ;
+  static AliEMCALRawUtils rawUtil;
+  Int_t nTimeBins = rawUtil.GetRawFormatTimeBins() ;
 
   //Set max of 2x2 amplitudes and select L0 trigger
   if(max2[0] > f2x2MaxAmp ){
@@ -449,7 +448,7 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
     //Transform digit amplitude in Raw Samples
     fADCValuesLow2x2  = new Int_t[nTimeBins];
     fADCValuesHigh2x2 = new Int_t[nTimeBins];
-    emcal->RawSampledResponse(maxtimeR2, f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
+    rawUtil.RawSampledResponse(maxtimeR2, f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //Set L0
@@ -480,7 +479,7 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
     //Transform digit amplitude in Raw Samples
     fADCValuesHighnxn = new Int_t[nTimeBins];
     fADCValuesLownxn  = new Int_t[nTimeBins];
-    emcal->RawSampledResponse(maxtimeRn, fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
+    rawUtil.RawSampledResponse(maxtimeRn, fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //SetL1 Low
