@@ -101,7 +101,10 @@ class AliMUONVGeometryBuilder : public TObject
     
   private:
     //methods
+    
+    /// Not implemented
     AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
+    /// Not implemented
     AliMUONVGeometryBuilder& operator = (const AliMUONVGeometryBuilder& rhs);
 
     TGeoHMatrix ConvertTransform(const TGeoHMatrix& transform) const;

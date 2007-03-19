@@ -46,7 +46,9 @@ public:
   virtual void Paint(Option_t* opt="");
 
 private:
+  /// Not implemented
   AliMUONClusterFinderMLEM(const AliMUONClusterFinderMLEM& rhs);
+  /// Not implemented
   AliMUONClusterFinderMLEM& operator=(const AliMUONClusterFinderMLEM& rhs);
 
   Bool_t WorkOnPreCluster();
@@ -111,13 +113,13 @@ private:
   static const TVector2 fgkIncreaseSize; ///< idem
   static const TVector2 fgkDecreaseSize; ///< idem
   
-  AliMUONVClusterFinder* fPreClusterFinder; ///!< the pre-clustering worker
-  AliMUONCluster* fPreCluster; ///<! current pre-cluster
-  TObjArray fClusterList; ///!< clusters corresponding to the current pre-cluster
+  AliMUONVClusterFinder* fPreClusterFinder; //!< the pre-clustering worker
+  AliMUONCluster* fPreCluster; //!< current pre-cluster
+  TObjArray fClusterList; //!< clusters corresponding to the current pre-cluster
   
-  Int_t fEventNumber; ///!< current event being processed
-  Int_t fDetElemId; ///!< current DE being processed
-  Int_t fClusterNumber; ///!< current cluster number
+  Int_t fEventNumber; //!< current event being processed
+  Int_t fDetElemId; //!< current DE being processed
+  Int_t fClusterNumber; //!< current cluster number
   
   const AliMpVSegmentation *fSegmentation[2]; //!< new segmentation
   
@@ -133,6 +135,8 @@ private:
   Bool_t fPlot; //!< whether we should plot thing (for debug only, quite slow!)
   
   TObjArray* fTimers; //!< internal timers
+  
+  /// \todo add comment
   enum ETimer { kMainLoop, kCheckPreCluster, kLast };
   
   AliMUONClusterSplitterMLEM* fSplitter; //!< helper class to go from pixel arrays to clusters

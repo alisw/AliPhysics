@@ -58,17 +58,17 @@ AliMpSt345Reader::AliMpSt345Reader(AliMpSlatMotifMap& motifMap)
 TObject(),
 fMotifMap(motifMap)
 {
-  //
-  // Default ctor.
-  //
+  ///
+  /// Default ctor.
+  ///
 } 
 
 //_____________________________________________________________________________
 AliMpSt345Reader::~AliMpSt345Reader()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
 }
 
 //_____________________________________________________________________________

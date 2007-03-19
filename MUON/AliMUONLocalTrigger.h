@@ -20,7 +20,7 @@ class AliMUONLocalTrigger : public TObject {
  public:
   AliMUONLocalTrigger();
   AliMUONLocalTrigger(const AliMUONLocalTrigger& rhs); // copy constructor !
-  virtual ~AliMUONLocalTrigger(){;}
+  virtual ~AliMUONLocalTrigger();
   AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& rhs); 
 
   // getter methods

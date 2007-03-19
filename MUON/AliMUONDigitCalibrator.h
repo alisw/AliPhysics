@@ -32,7 +32,9 @@ public:
   virtual void Exec(Option_t*);
 
 private:    
+    /// Not implemented
     AliMUONDigitCalibrator(const AliMUONDigitCalibrator& other);
+    /// Not implemented
     AliMUONDigitCalibrator& operator=(const AliMUONDigitCalibrator& other);
 
     AliMUONData* fData;                       //!< MUON data 

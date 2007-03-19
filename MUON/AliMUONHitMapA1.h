@@ -43,8 +43,9 @@ class AliMUONHitMapA1 : public AliHitMap
     virtual FlagType TestHit(Int_t ix, Int_t iy);
 
  private:
+    /// Not implemented
     AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap);
-    // Assignment operator
+    /// Not implemented
     AliMUONHitMapA1& operator = (const AliMUONHitMapA1& rhs);
 
     // Check index

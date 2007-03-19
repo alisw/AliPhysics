@@ -15,7 +15,7 @@
 
 /* $Id$ */
 
-/// \class AliMUONData class
+/// \class AliMUONData
 ///
 /// Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ..
 /// The classe makes the lik between the MUON data lists and the event trees from loaders
@@ -80,7 +80,7 @@ ClassImp(AliMUONData)
     fSplitLevel(0),
     fCurrentEvent(-1)
 {
-  // Default constructor
+/// Default constructor
 }
 //_____________________________________________________________________________
 AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title):
@@ -206,7 +206,7 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t detElemId,
 			 Float_t phi, Float_t length, Float_t destep,
 			 Float_t Xref,Float_t Yref,Float_t Zref)
 {
- // Add new hit to the hit list
+ /// Add new hit to the hit list
 
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliMUONHit(fIshunt, track, detElemId, 
@@ -1207,7 +1207,8 @@ AliMUONData::Print(Option_t* opt) const
 void 
 AliMUONData::DumpKine(Int_t event2Check)
 {
-  // Load kinematics
+/// Dump kinematics
+
   fRunLoader->LoadKinematics("READ");
 
   Int_t nevents = fRunLoader->GetNumberOfEvents();
@@ -1236,7 +1237,8 @@ AliMUONData::DumpKine(Int_t event2Check)
 void 
 AliMUONData::DumpHits(Int_t event2Check, Option_t* opt)
 {
-  // Loading data
+/// Dump hits
+
   fLoader->LoadHits("READ");
 
   // Event loop
@@ -1272,7 +1274,8 @@ AliMUONData::DumpHits(Int_t event2Check, Option_t* opt)
 void 
 AliMUONData::DumpDigits(Int_t event2Check, Option_t* opt)
 {
-  // Loading data
+/// Dump digits
+
   fLoader->LoadDigits("READ");
   
   // Event loop
@@ -1302,7 +1305,8 @@ AliMUONData::DumpDigits(Int_t event2Check, Option_t* opt)
 void 
 AliMUONData::DumpSDigits(Int_t event2Check, Option_t* opt)
 {
-  // Loading data
+/// Dump SDigits
+
   fLoader->LoadSDigits("READ");
   
   // Event loop
@@ -1338,7 +1342,8 @@ AliMUONData::DumpSDigits(Int_t event2Check, Option_t* opt)
 void 
 AliMUONData::DumpRecPoints(Int_t event2Check, Option_t* opt) 
 {
-  // Loading data
+/// Dump rec points
+
   fLoader->LoadRecPoints("READ");
 
   // Event loop

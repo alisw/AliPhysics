@@ -52,8 +52,10 @@ class AliMpSlat : public TObject
  public:
 
 #ifdef WITH_ROOT
+  /// Type def for the array size
   typedef Int_t Size_t;
 #else
+  /// Type def for the array size
   typedef UInt_t Size_t;
 #endif  
   
@@ -62,6 +64,8 @@ class AliMpSlat : public TObject
   virtual ~AliMpSlat();
 
   TVector2 Dimensions() const;
+  
+  /// Return position
   TVector2 Position() const { return fPosition; }
   
   const char* GetName() const;
@@ -131,12 +135,16 @@ class AliMpSlat : public TObject
     */
   void ForcePosition(const TVector2& pos);
   
+  /// Return the plane type
   AliMp::PlaneType PlaneType() const { return fPlaneType; }
   
+  /// Return the number of pads in this slat
   Int_t NofPads() const { return fNofPads; }
  
  private:
+  /// Not implemented
   AliMpSlat(const AliMpSlat& rhs);
+  /// Not implemented
   AliMpSlat& operator=(const AliMpSlat& rhs);
 
   TString fId; ///< The name of this slat, e.g. 112233N

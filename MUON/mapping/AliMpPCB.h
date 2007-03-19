@@ -49,8 +49,10 @@ class AliMpPCB : public TObject
  public:
 
 #ifdef WITH_ROOT
+  /// Type def for the array size
   typedef Int_t  Size_t;
 #else  
+  /// Type def for the array size
   typedef UInt_t Size_t;
 #endif
   
@@ -139,8 +141,10 @@ class AliMpPCB : public TObject
   
   const char* GetID() const;
   
+  /// Return the number of pads in this PCB 
   Int_t NofPads() const { return fNofPads; }
   
+  /// Return the motif map
   AliMpSlatMotifMap* MotifMap() const { return fMotifMap; }
   
   void Save() const;
@@ -150,7 +154,7 @@ class AliMpPCB : public TObject
   Double_t fPadSizeX; ///< x-size of this PCB's pads (cm)
   Double_t fPadSizeY; ///< y-size of this PCB's pads (cm)
   Double_t fEnveloppeSizeX; ///< max x-size of this PCB (cm)
-  Double_t fEnveloppeSizeY; // max y-size of this PCB (cm)
+  Double_t fEnveloppeSizeY; ///< max y-size of this PCB (cm)
   Double_t fXoffset; ///< x-offset = x of first pad of this PCB (cm)
   Double_t fActiveXmin; ///< min x of an actual pad in this PCB (cm)
   Double_t fActiveXmax; ///< max x of an actual pad in this PCB (cm)

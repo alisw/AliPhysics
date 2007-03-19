@@ -79,6 +79,13 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
 /// Copy constructor (useful for TClonesArray)
 
 }
+
+//----------------------------------------------------------------------
+AliMUONLocalTrigger::~AliMUONLocalTrigger()
+{
+/// Destructor
+}
+
 //----------------------------------------------------------------------
 AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& theMUONLocalTrig)
 {
@@ -162,9 +169,8 @@ void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& lo
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::Print(Option_t* opt) const
 {
-  //
-  // Printing Local Trigger information
-  //
+/// Printing Local Trigger information
+
   TString sopt(opt);
   sopt.ToUpper();
  

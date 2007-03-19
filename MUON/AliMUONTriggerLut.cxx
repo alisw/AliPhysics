@@ -66,8 +66,8 @@ AliMUONTriggerLut::~AliMUONTriggerLut()
   delete fAptUnde;
 }
 
-void
-AliMUONTriggerLut::ReadFromFile(const char* filename)
+//----------------------------------------------------------------------
+void AliMUONTriggerLut::ReadFromFile(const char* filename)
 {
 /// Return output of LuT for corresponding TH3S  
 

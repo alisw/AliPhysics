@@ -37,9 +37,10 @@ public:
   /// Retrieve the value for a given (channel,dim) as a float.
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const = 0;
   
-    /// Retrieve the value for a given (channel,dim) as an integer.
+  /// Retrieve the value for a given (channel,dim) as an integer.
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const = 0;
 
+  /// Return 1E38 as invalid float value
   static Float_t InvalidFloatValue() { return 1E38; }
   
   ClassDef(AliMUONVCalibParam,0) // 

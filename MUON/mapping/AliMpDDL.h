@@ -46,8 +46,11 @@ class AliMpDDL : public  TObject {
     void   GetBusPerDsp(Int_t* iBusPerDSP) const; 
 
   private:
+    /// Not implemented
     AliMpDDL();
+    /// Not implemented
     AliMpDDL(const AliMpDDL& rhs);
+    /// Not implemented
     AliMpDDL& operator=(const AliMpDDL& rhs);
 
     // data members	

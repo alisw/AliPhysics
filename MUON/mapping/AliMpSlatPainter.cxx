@@ -43,9 +43,9 @@ AliMpSlatPainter::AliMpSlatPainter()
  : AliMpVPainter(),
    fkSlat(0)
 {
-  //
-  // Empty ctor.
-  //
+  ///
+  /// Empty ctor.
+  ///
 }
 
 //_____________________________________________________________________________
@@ -53,26 +53,26 @@ AliMpSlatPainter::AliMpSlatPainter(const AliMpSlat* slat)
  : AliMpVPainter(),
    fkSlat(slat)
 {
-    //
-    // Normal ctor.
-    //
+    ///
+    /// Normal ctor.
+    ///
 }
 
 //_____________________________________________________________________________
 AliMpSlatPainter::~AliMpSlatPainter()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
 }
 
 //_____________________________________________________________________________
 TVector2
 AliMpSlatPainter::GetDimensions() const
 {
-  //
-  // Returns the half-sizes of the slat.
-  //
+  ///
+  /// Returns the half-sizes of the slat.
+  ///
   return TVector2(fkSlat->DX(),fkSlat->DY());
 }
 
@@ -80,9 +80,9 @@ AliMpSlatPainter::GetDimensions() const
 TVector2
 AliMpSlatPainter::GetPosition() const
 {
-  //
-  // Returns the (x,y) position of the slat.
-  //
+  ///
+  /// Returns the (x,y) position of the slat.
+  ///
   return TVector2(fkSlat->DX(),fkSlat->DY());
 }
 
@@ -90,11 +90,11 @@ AliMpSlatPainter::GetPosition() const
 void
 AliMpSlatPainter::Draw(Option_t* option)
 {
-  //
-  // Draws the slat.
-  //
-  // If option[0] is 'P' then PCB are drawn too.
-  //
+  ///
+  /// Draws the slat.
+  ///
+  /// If option[0] is 'P' then PCB are drawn too.
+  ///
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
 
   gr->Push();
@@ -132,9 +132,9 @@ AliMpSlatPainter::Draw(Option_t* option)
 void
 AliMpSlatPainter::Paint(Option_t* /*option*/)
 {
-  //
-  // Paint the object.
-  //
+  ///
+  /// Paint the object.
+  ///
   AliMpGraphContext* gr = AliMpGraphContext::Instance();
 
   Int_t col=gVirtualX->GetFillColor();

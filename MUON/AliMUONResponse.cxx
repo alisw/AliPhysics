@@ -26,7 +26,9 @@
 #include "AliLog.h"
 #include "TList.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONResponse)
+/// \endcond
 
 AliMUONResponse::AliMUONResponse()
   : TObject()

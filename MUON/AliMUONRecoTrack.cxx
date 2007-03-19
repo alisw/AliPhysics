@@ -62,6 +62,12 @@ AliMUONRecoTrack::AliMUONRecoTrack(Bool_t active)
 }
 
 //-------------------------------------------------------------------
+AliMUONRecoTrack::~AliMUONRecoTrack() 
+{
+/// Destructor
+}
+
+//-------------------------------------------------------------------
 Double_t AliMUONRecoTrack::Phi() const
 {
 /// Return trach phi angle

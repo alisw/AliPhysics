@@ -51,10 +51,10 @@ fOffset(0,0),
 fCurrentPad(),
 fIsDone(kTRUE)
 {
-  //
-  // Normal ctor.
-  // Iteration will be done on the slat, over the crop of (area,slat_area)
-  //
+  ///
+  /// Normal ctor.
+  /// Iteration will be done on the slat, over the crop of (area,slat_area)
+  ///
   if (!CropArea(area)) 
   {
     AliError(Form("Could not crop area : (x,y)min=(%e,%e) ; max=(%e,%e) for slat %s",
@@ -67,9 +67,9 @@ fIsDone(kTRUE)
 //_____________________________________________________________________________
 AliMpPCBPadIterator::~AliMpPCBPadIterator()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
   delete fSlatSegmentation;
 }
 
@@ -77,9 +77,9 @@ AliMpPCBPadIterator::~AliMpPCBPadIterator()
 Bool_t
 AliMpPCBPadIterator::CropArea(const AliMpArea& area)
 {
-  //
-  // Checks the area is correct, and truncate it
-  // if it goes outside the slat.
+  ///
+  /// Checks the area is correct, and truncate it
+  /// if it goes outside the slat.
   
   AliDebug(3,Form("Input area (%7.2f,%7.2f)->(%7.2f,%7.2f)",
                   area.LeftBorder(),area.DownBorder(),
@@ -144,9 +144,9 @@ AliMpPCBPadIterator::CropArea(const AliMpArea& area)
 AliMpPad
 AliMpPCBPadIterator::CurrentItem() const
 {
-  //
-  // Returns the current iteration position (i.e. a pad)
-  //
+  ///
+  /// Returns the current iteration position (i.e. a pad)
+  ///
   return fCurrentPad;
 }
 
@@ -154,9 +154,9 @@ AliMpPCBPadIterator::CurrentItem() const
 void
 AliMpPCBPadIterator::First()
 {
-  //
-  // (re)Starts the iteration.
-  //
+  ///
+  /// (re)Starts the iteration.
+  ///
   
   AliDebug(3,Form("area = (%d,%d)->(%d,%d)",
                   fMinIndices.GetFirst(),fMinIndices.GetSecond(),
@@ -184,9 +184,9 @@ AliMpPCBPadIterator::First()
 Bool_t
 AliMpPCBPadIterator::GetNextPosition(Int_t& ix, Int_t& iy)
 {
-  // Get the next iteration position. 
-  // On input, fOffset must be a valid position (i.e. within iteration
-  // area already).
+  /// Get the next iteration position. 
+  /// On input, fOffset must be a valid position (i.e. within iteration
+  /// area already).
   
   ++ix;
   
@@ -209,9 +209,9 @@ AliMpPCBPadIterator::GetNextPosition(Int_t& ix, Int_t& iy)
 void
 AliMpPCBPadIterator::Invalidate()
 {
-  //
-  // Invalidate the iterator.
-  //
+  ///
+  /// Invalidate the iterator.
+  ///
   fOffset = AliMpIntPair::Invalid();
   fCurrentPad = AliMpPad::Invalid();
   fIsDone = kTRUE;
@@ -221,9 +221,9 @@ AliMpPCBPadIterator::Invalidate()
 Bool_t
 AliMpPCBPadIterator::IsDone() const
 {
-  //
-  // Whether the iteration is finished or not.
-  //
+  ///
+  /// Whether the iteration is finished or not.
+  ///
   return fIsDone;
 }
 
@@ -231,13 +231,13 @@ AliMpPCBPadIterator::IsDone() const
 void
 AliMpPCBPadIterator::Next()
 {
-  // This one is the meat of the class.
-  // We're iterating in x-direction mainly, starting from 
-  // lower-left of the iteration area, and proceeding right,
-  // until we reach right border, in which case we increment y
-  // and go back to leftmost position.
-  // End of iteration occurs when both x and y are outside the iteration
-  // window.
+  /// This one is the meat of the class.
+  /// We're iterating in x-direction mainly, starting from 
+  /// lower-left of the iteration area, and proceeding right,
+  /// until we reach right border, in which case we increment y
+  /// and go back to leftmost position.
+  /// End of iteration occurs when both x and y are outside the iteration
+  /// window.
   
   if (IsDone()) return;
   
@@ -282,9 +282,9 @@ AliMpPCBPadIterator::Print(Option_t*) const
 void
 AliMpPCBPadIterator::SetPad(AliMpPad& pad, const AliMpIntPair& indices)
 {
-  //
-  // Sets the current pad.
-  //
+  ///
+  /// Sets the current pad.
+  ///
   pad = fSlatSegmentation->PadByIndices(indices,kFALSE);
   if (pad.IsValid())
   {

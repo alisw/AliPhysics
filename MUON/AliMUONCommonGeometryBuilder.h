@@ -33,7 +33,9 @@ class AliMUONCommonGeometryBuilder : public AliMUONVGeometryBuilder
   protected:
  
   private:
+    /// Not implemented
     AliMUONCommonGeometryBuilder(const AliMUONCommonGeometryBuilder& right);
+    /// Not implemented
     AliMUONCommonGeometryBuilder&  
                      operator = (const AliMUONCommonGeometryBuilder& right);
     // data members

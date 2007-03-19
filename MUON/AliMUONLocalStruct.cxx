@@ -91,6 +91,13 @@ AliMUONLocalStruct::AliMUONLocalStruct(const AliMUONLocalStruct& event)
 
 
 }
+
+//___________________________________________
+AliMUONLocalStruct::~AliMUONLocalStruct()
+{
+/// Destructor
+}
+
 //___________________________________________
 AliMUONLocalStruct& 
 AliMUONLocalStruct::operator=(const AliMUONLocalStruct& event)

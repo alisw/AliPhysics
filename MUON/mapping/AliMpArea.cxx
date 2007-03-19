@@ -173,6 +173,8 @@ TVector2 AliMpArea::RightUpCorner() const
 void
 AliMpArea::Print(Option_t*) const
 {
+/// Printing
+
   cout << (*this) << endl;
 }
 

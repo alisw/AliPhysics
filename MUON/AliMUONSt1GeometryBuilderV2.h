@@ -34,7 +34,7 @@
   typedef map<Int_t , AliMUONSt1SpecialMotif> SpecialMap;
 #endif
 
-//typedef Float_t GReal_t; // for AliGeant3
+// typedef Float_t GReal_t; // for AliGeant3
 typedef Double_t GReal_t;  // for VirtualMC
 
 class AliMUON;
@@ -59,8 +59,11 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
   protected:
  
   private:
+    /// Not implemented
     AliMUONSt1GeometryBuilderV2(const AliMUONSt1GeometryBuilderV2& rMUON);
+    /// Not implemented
     AliMUONSt1GeometryBuilderV2& operator = (const AliMUONSt1GeometryBuilderV2& rhs);    
+
     // Constants
     //
     static const GReal_t fgkHzPadPlane;    ///< Pad plane

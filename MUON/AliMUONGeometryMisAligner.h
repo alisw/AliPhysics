@@ -69,7 +69,9 @@ class AliMUONGeometryMisAligner:public TObject
     {fUseGaus=!useuni; fUseUni=useuni;}
   
  protected:
+  /// Not implemented
   AliMUONGeometryMisAligner(const AliMUONGeometryMisAligner & right);
+  /// Not implemented
   AliMUONGeometryMisAligner & operator =(const AliMUONGeometryMisAligner &right);
   
   

@@ -75,17 +75,17 @@ public:
   void UpdatePads(const AliMUONCluster& cluster, Int_t nfit, Double_t *par);
 
 private:
-  // will not be implemented
+  /// will not be implemented
   AliMUONClusterSplitterMLEM(const AliMUONClusterSplitterMLEM&);
-  // will not be implemented
+  /// will not be implemented
   AliMUONClusterSplitterMLEM& operator=(const AliMUONClusterSplitterMLEM&);
   
 private:
   
     static const Double_t fgkCouplMin; ///< threshold on coupling 
 
-  TObjArray* fPixArray; //! < not owner
-  AliMUONMathieson* fMathieson; //!< 
+  TObjArray* fPixArray; //!< \todo add comment
+  AliMUONMathieson* fMathieson; //!< Mathieson
   Int_t fDetElemId; //!< detection element we are working on
   Int_t fNpar; //!< number of fit parameters
   Double_t fQtot; //!< total charge

@@ -123,7 +123,9 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
   void Print(Option_t* opt = "") const;
 
  protected:
+  /// Not implemented
   AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& right);
+  /// Not implemented
   AliMUONSt345SlatSegmentation&  operator = (const AliMUONSt345SlatSegmentation& right);
      
  private:

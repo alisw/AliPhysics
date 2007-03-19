@@ -96,6 +96,7 @@ class AliMUONData : public TNamed
     void           GetRecTracks() const;
     void           GetRecTriggerTracks() const;
 
+                   /// Return split level
     Int_t          GetSplitLevel() const {return fSplitLevel;}
 
     Bool_t        IsRawClusterBranchesInTree();
@@ -150,7 +151,9 @@ class AliMUONData : public TNamed
     void DumpRecTrigger(Int_t event2Check=0, Int_t write = 0, Bool_t readFromRP = kTRUE);
     
   protected: 
+    /// Not implemented
     AliMUONData(const AliMUONData& rhs);
+    /// Not implemented
     AliMUONData& operator=(const AliMUONData& rhs);
 
     AliRunLoader*   fRunLoader; //!< Run loader pointer

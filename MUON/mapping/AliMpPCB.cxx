@@ -72,9 +72,9 @@ AliMpPCB::AliMpPCB()
   fNofPads(0),
   fMotifMap(0)
 {
-      //
-      // Default ctor.
-      //
+      ///
+      /// Default ctor.
+      ///
 #ifdef WITH_ROOT
     fMotifPositions.SetOwner(kTRUE);
 #endif
@@ -101,10 +101,10 @@ AliMpPCB::AliMpPCB(AliMpSlatMotifMap* motifMap, const char* id, Double_t padSize
   fNofPads(0),
   fMotifMap(motifMap)
 {
-      //
-      // Normal ctor. Must be fed with the PCB's name (id), the pad dimensions
-      // and the global dimension of the virtual enveloppe of the PCB
-      // (usually 400x400 mm)
+      ///
+      /// Normal ctor. Must be fed with the PCB's name (id), the pad dimensions
+      /// and the global dimension of the virtual enveloppe of the PCB
+      /// (usually 400x400 mm)
 #ifdef WITH_ROOT
     fMotifPositions.SetOwner(kTRUE);
 #endif
@@ -130,8 +130,8 @@ AliMpPCB::AliMpPCB(const AliMpPCB& o)
   fNofPads(0),
   fMotifMap(0x0)
 {
-  //
-  // Copy constructor
+  ///
+  /// Copy constructor
 
 #ifdef WITH_ROOT
     fMotifPositions.SetOwner(kTRUE);
@@ -160,14 +160,14 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
   fNofPads(ms->GetMotifType()->GetNofPads()),
   fMotifMap(0x0)
 {
-  //
-  // Very special ctor to be used by trigger stations only (and for a very
-  // specific case).
-  //
-  // Note that in this very case, we only allow one (special) motif per PCB.
-  // This limitation might not be justified, except that it's all we need
-  // so far ;-)
-  //
+  ///
+  /// Very special ctor to be used by trigger stations only (and for a very
+  /// specific case).
+  ///
+  /// Note that in this very case, we only allow one (special) motif per PCB.
+  /// This limitation might not be justified, except that it's all we need
+  /// so far ;-)
+  ///
  
     AliDebug(1,Form("this=%p (ctor special motif)",this));
     
@@ -189,7 +189,7 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
 AliMpPCB&
 AliMpPCB::operator=(const AliMpPCB& o)
 {
-  // Assignment operator
+  /// Assignment operator
 
   AliDebug(1,Form("this=%p (assignment op) : begin",this));
   o.Copy(*this);
@@ -200,9 +200,9 @@ AliMpPCB::operator=(const AliMpPCB& o)
 //_____________________________________________________________________________
 AliMpPCB::~AliMpPCB()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
   AliDebug(1,Form("this=%p",this));
 #ifndef WITH_ROOT
   for ( size_t i = 0; i < fMotifPositions.size(); ++i )
@@ -217,10 +217,10 @@ AliMpPCB::~AliMpPCB()
 Double_t
 AliMpPCB::ActiveXmin() const
 {
-  //
-  // Returns the mininum x for which there is a pad in this PCB.
-  // Different from Xmin only for PCB which are not full of pads.
-  //
+  ///
+  /// Returns the mininum x for which there is a pad in this PCB.
+  /// Different from Xmin only for PCB which are not full of pads.
+  ///
   
   return fActiveXmin;
 }
@@ -229,10 +229,10 @@ AliMpPCB::ActiveXmin() const
 Double_t
 AliMpPCB::ActiveXmax() const
 {
-  //
-  // Returns the maximum x for which there is a pad in this PCB.
-  // Different from Xmax only for PCB which are not full of pads.
-  //  
+  ///
+  /// Returns the maximum x for which there is a pad in this PCB.
+  /// Different from Xmax only for PCB which are not full of pads.
+  ///  
   
   return fActiveXmax;
 }
@@ -241,15 +241,15 @@ AliMpPCB::ActiveXmax() const
 void
 AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
 {
-  //
-  // Add a motif to this PCB. (ix,iy) indicates one corner position of the motif
-  // where the sign of ix and iy is used to indicate which corner is the 
-  // reference (then for values, abs(ix) and abs(iy) are used indeed) :
-  //
-  // (ix>0,iy>0) : bottom-left corner
-  // (ix<0,iy>0) : bottom-right corner
-  // (ix<0,iy<0) : top-right corner
-  // (ix>0,iy<0) : top-left corner.
+  ///
+  /// Add a motif to this PCB. (ix,iy) indicates one corner position of the motif
+  /// where the sign of ix and iy is used to indicate which corner is the 
+  /// reference (then for values, abs(ix) and abs(iy) are used indeed) :
+  ///
+  /// (ix>0,iy>0) : bottom-left corner
+  /// (ix<0,iy>0) : bottom-right corner
+  /// (ix<0,iy<0) : top-right corner
+  /// (ix>0,iy<0) : top-left corner.
   
   TString id(Form("%s-%e-%e",mt->GetID().Data(),PadSizeX(),PadSizeY()));
 
@@ -327,6 +327,8 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
 AliMpArea 
 AliMpPCB::Area() const
 {
+  /// Return the area of this PCB
+
   return AliMpArea(TVector2( (Xmin()+Xmax())/2.0,DY()),
                    TVector2( DX(), DY() ) );
 }
@@ -335,9 +337,9 @@ AliMpPCB::Area() const
 TObject*
 AliMpPCB::Clone(const char* /*newname*/) const
 {
-  //
-  // Return a full copy of this object.
-  //
+  ///
+  /// Return a full copy of this object.
+  ///
   AliDebug(1,"begin");
   TObject* object = new AliMpPCB(*this);
   AliDebug(1,"end");
@@ -348,14 +350,14 @@ AliMpPCB::Clone(const char* /*newname*/) const
 AliMpPCB*
 AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
 {
-  //
-  // Get a full copy of *this, and then apply 2 changes to it :
-  //
-  // a) define the relationship motifType <-> manu id
-  // b) define the x-offset
-  // c) shift ix indices backwards to insure that e.g. the first
-  //    pcb of a slat will start at ix=0 (only relevant for rounded pcbs).
-  //
+  ///
+  /// Get a full copy of *this, and then apply 2 changes to it :
+  ///
+  /// a) define the relationship motifType <-> manu id
+  /// b) define the x-offset
+  /// c) shift ix indices backwards to insure that e.g. the first
+  ///    pcb of a slat will start at ix=0 (only relevant for rounded pcbs).
+  ///
 
   AliDebug(1,"begin");
   
@@ -406,7 +408,7 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
 void
 AliMpPCB::Copy(TObject& o) const
 {
-  // Copy *this into o
+  /// Copy *this into o
 
   AliDebug(1,"begin");
   
@@ -466,9 +468,9 @@ AliMpPCB::Copy(TObject& o) const
 Double_t
 AliMpPCB::ActiveDX() const
 {
-  //
-  // Half-length (in x-direction) occupied by pads  
-  //
+  ///
+  /// Half-length (in x-direction) occupied by pads  
+  ///
   
   return GetNofPadsX()*fPadSizeX/2.0;
 }
@@ -477,13 +479,13 @@ AliMpPCB::ActiveDX() const
 Double_t
 AliMpPCB::DX() const
 {
-  //
-  // Half-length (in x-direction) of the PCB.
-  // This length is the one of the virtual enveloppe of the PCB and might
-  // be bigger than the length occupied by pads (e.g. for rounded or short
-  // PCBs).  
-  // See also ActiveDX().
-  //
+  ///
+  /// Half-length (in x-direction) of the PCB.
+  /// This length is the one of the virtual enveloppe of the PCB and might
+  /// be bigger than the length occupied by pads (e.g. for rounded or short
+  /// PCBs).  
+  /// See also ActiveDX().
+  ///
   
   return fEnveloppeSizeX/2.0;
 }
@@ -492,9 +494,9 @@ AliMpPCB::DX() const
 Double_t
 AliMpPCB::ActiveDY() const
 {
-  //
-  // Half-length (in y-direction) occupied by pads
-  //
+  ///
+  /// Half-length (in y-direction) occupied by pads
+  ///
   
   return GetNofPadsY()*fPadSizeY/2.0;
 }
@@ -503,13 +505,13 @@ AliMpPCB::ActiveDY() const
 Double_t
 AliMpPCB::DY() const
 {
-  //
-  // Half-length (in y-direction) of the PCB.
-  // This length is the one of the virtual enveloppe of the PCB and might
-  // be bigger than the length occupied by pads (e.g. for rounded or short
-  // PCBs).
-  // See also ActiveDY().
-  //
+  ///
+  /// Half-length (in y-direction) of the PCB.
+  /// This length is the one of the virtual enveloppe of the PCB and might
+  /// be bigger than the length occupied by pads (e.g. for rounded or short
+  /// PCBs).
+  /// See also ActiveDY().
+  ///
   
   return fEnveloppeSizeY/2.0;
 }
@@ -518,10 +520,10 @@ AliMpPCB::DY() const
 AliMpMotifPosition*
 AliMpPCB::FindMotifPosition(Int_t ix, Int_t iy) const
 {
-  //
-  // Returns the motifPosition located at the position referenced by
-  // integer indices (ix,iy).
-  //
+  ///
+  /// Returns the motifPosition located at the position referenced by
+  /// integer indices (ix,iy).
+  ///
   
 #ifdef WITH_ROOT
   for (Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
@@ -542,9 +544,9 @@ AliMpPCB::FindMotifPosition(Int_t ix, Int_t iy) const
 AliMpMotifPosition*
 AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
 {
-  //
-  // Returns the motifPosition located at position (x,y)
-  //
+  ///
+  /// Returns the motifPosition located at position (x,y)
+  ///
   
 #ifdef WITH_ROOT
   for (Size_t i = 0; i < fMotifPositions.GetEntriesFast(); ++i )
@@ -570,9 +572,9 @@ AliMpPCB::FindMotifPosition(Double_t x, Double_t y) const
 const char*
 AliMpPCB::GetID() const
 {
-  //
-  // Returns the name of this PCB.
-  //
+  ///
+  /// Returns the name of this PCB.
+  ///
   
   return fId.Data();
 }
@@ -581,9 +583,9 @@ AliMpPCB::GetID() const
 AliMpMotifPosition*
 AliMpPCB::GetMotifPosition(AliMpPCB::Size_t i) const
 {
-  //
-  // Get the i-th motifPosition stored in this PCB's internal array.
-  //
+  ///
+  /// Get the i-th motifPosition stored in this PCB's internal array.
+  ///
   
 #ifdef WITH_ROOT
   if ( i >= fMotifPositions.GetEntriesFast() ) return 0;
@@ -597,9 +599,9 @@ AliMpPCB::GetMotifPosition(AliMpPCB::Size_t i) const
 Int_t
 AliMpPCB::GetNofPadsX() const
 {
-  //
-  // Returns the number of pads in x-direction.
-  //
+  ///
+  /// Returns the number of pads in x-direction.
+  ///
   
   return fIxmax-fIxmin+1;
 }
@@ -608,9 +610,9 @@ AliMpPCB::GetNofPadsX() const
 Int_t
 AliMpPCB::GetNofPadsY() const
 {
-  //
-  // Returns the number of pads in y-direction.
-  //
+  ///
+  /// Returns the number of pads in y-direction.
+  ///
   
   return fIymax-fIymin+1;
 }
@@ -619,9 +621,9 @@ AliMpPCB::GetNofPadsY() const
 AliMpPCB::Size_t
 AliMpPCB::GetSize() const
 {
-  //
-  // Returns the number of motifPositions stored in this PCB.
-  //
+  ///
+  /// Returns the number of motifPositions stored in this PCB.
+  ///
   
 #ifdef WITH_ROOT
   return fMotifPositions.GetEntriesFast();
@@ -635,9 +637,9 @@ AliMpPCB::GetSize() const
 Int_t
 AliMpPCB::Ixmin() const
 {
-  //
-  // Returns the index value of the leftmost pad.
-  //
+  ///
+  /// Returns the index value of the leftmost pad.
+  ///
   
   return fIxmin;
 }
@@ -646,9 +648,9 @@ AliMpPCB::Ixmin() const
 Int_t
 AliMpPCB::Ixmax() const
 {
-  //
-  // Returns the index value of the rightmost pad.
-  //
+  ///
+  /// Returns the index value of the rightmost pad.
+  ///
   
   return Ixmin() + GetNofPadsX() - 1;
 }
@@ -657,9 +659,9 @@ AliMpPCB::Ixmax() const
 Int_t
 AliMpPCB::Iymin() const
 {
-  //
-  // Returns the index value of the bottom pad.
-  //
+  ///
+  /// Returns the index value of the bottom pad.
+  ///
   
   return fIymin;
 }
@@ -668,9 +670,9 @@ AliMpPCB::Iymin() const
 Int_t
 AliMpPCB::Iymax() const
 {
-  //
-  // Returns the index value of the top pad.
-  //
+  ///
+  /// Returns the index value of the top pad.
+  ///
   
   return Iymin() + GetNofPadsY() - 1;
 }
@@ -679,9 +681,9 @@ AliMpPCB::Iymax() const
 Double_t
 AliMpPCB::PadSizeX() const
 {
-  //
-  // Returns the pad size in x-direction (in mm)
-  //
+  ///
+  /// Returns the pad size in x-direction (in mm)
+  ///
   
   return fPadSizeX;
 }
@@ -690,9 +692,9 @@ AliMpPCB::PadSizeX() const
 Double_t
 AliMpPCB::PadSizeY() const
 {
-  //
-  // Returns the pad size in y-direction (in mm)
-  //
+  ///
+  /// Returns the pad size in y-direction (in mm)
+  ///
   
   return fPadSizeY;
 }
@@ -701,10 +703,10 @@ AliMpPCB::PadSizeY() const
 void
 AliMpPCB::Print(Option_t* option) const
 {
-  //
-  // Printout of this PCB.
-  // If option="M", the contained motifs are printed too.
-  //
+  ///
+  /// Printout of this PCB.
+  /// If option="M", the contained motifs are printed too.
+  ///
   
   cout << "PCB " << GetID() << " PADSIZES=(" << fPadSizeX << ","
   << fPadSizeY << ") iMin=(" << fIxmin << "," << fIymin << ") "
@@ -737,8 +739,8 @@ AliMpPCB::Print(Option_t* option) const
 void 
 AliMpPCB::Save() const
 {
-  // 
-  // Save this PCB in the file
+  /// 
+  /// Save this PCB in the file
 
   TString fileName(fId);
   fileName += ".pcb";
@@ -789,9 +791,9 @@ AliMpPCB::Save() const
 Double_t
 AliMpPCB::X() const
 {
-  //
-  // Returns the x-position of the PCB center.
-  //
+  ///
+  /// Returns the x-position of the PCB center.
+  ///
   
   return fXoffset + DX();
 }
@@ -800,9 +802,9 @@ AliMpPCB::X() const
 Double_t
 AliMpPCB::Xmin() const
 {
-  //
-  // Returns the leftmost x-position in this PCB.
-  //
+  ///
+  /// Returns the leftmost x-position in this PCB.
+  ///
   
   return X() - DX();
 }
@@ -811,9 +813,9 @@ AliMpPCB::Xmin() const
 Double_t
 AliMpPCB::Xmax() const
 {
-  //
-  // Returns the rightmost x-position in this PCB.
-  //
+  ///
+  /// Returns the rightmost x-position in this PCB.
+  ///
   
   return X() + DX();
 }
@@ -822,9 +824,9 @@ AliMpPCB::Xmax() const
 Double_t
 AliMpPCB::Y() const
 {
-  //
-  // Returns the y-position of the PCB center.
-  //
+  ///
+  /// Returns the y-position of the PCB center.
+  ///
   
   return DY(); // this works as PCB are organized in a single row within slats.
 }
@@ -833,9 +835,9 @@ AliMpPCB::Y() const
 Double_t
 AliMpPCB::Ymin() const
 {
-  //
-  // Returns the smallest y-position in this PCB.
-  //
+  ///
+  /// Returns the smallest y-position in this PCB.
+  ///
   
   return Y() - DY();
 }
@@ -844,9 +846,9 @@ AliMpPCB::Ymin() const
 Double_t
 AliMpPCB::Ymax() const
 {
-  //
-  // Returns the largest y-position in this PCB.
-  //
+  ///
+  /// Returns the largest y-position in this PCB.
+  ///
   
   return Y() + DY();
 }

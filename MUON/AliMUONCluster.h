@@ -51,10 +51,12 @@ public:
   /// Return the cathode's charges asymmetry
   Float_t ChargeAsymmetry() const;
 
+  /// Return chi2 of the RawCharge fit (if any)
   Float_t Chi2() const { return fChi2; }
 
   virtual void Copy(TObject& obj) const;
 
+  /// Return false for pre-cluster
   Bool_t HasPosition() const { return fHasPosition; }
 
   /// Whether we have at least one saturated pad in a given cathode 
@@ -63,8 +65,10 @@ public:
   /// Whether we have one saturated pad on *each* cathode
   Bool_t IsSaturated() const { return IsSaturated(0) && IsSaturated(1); }
   
+  /// Return the max charge on the chathod
   Int_t MaxChargeCathode() const { return Charge(0) > Charge(1) ? 0:1; }
 
+  /// Return the max raw charge on the chathod
   Int_t MaxRawChargeCathode() const { return RawCharge(0) > RawCharge(1) ? 0:1; }
 
   /// Return the smallest pad dimensions for a given cathode
@@ -86,7 +90,9 @@ public:
   
   virtual void Paint(Option_t* opt="");
   
+  /// Return (x,y) of that cluster
   TVector2 Position() const { return fPosition; }
+  /// Return errors on (x,y)
   TVector2 PositionError() const { return fPositionError; }
 
   virtual void Print(Option_t* opt="") const;
@@ -101,12 +107,15 @@ public:
   Float_t RawChargeAsymmetry() const;
   
   void RemovePad(AliMUONPad* pad);
-  
+
+  /// Set cathode (re)computed charges  
   void SetCharge(Float_t chargeCath0, Float_t chargeCath1)
   { fHasCharge = kTRUE; fCharge[0]=chargeCath0; fCharge[1]=chargeCath1; }
-  
+
+  /// Set chi2 of the RawCharge fit   
   void SetChi2(Float_t chi2) { fChi2 = chi2; }
 
+  /// Set (x,y) of that cluster and errors   
   void SetPosition(const TVector2& pos, const TVector2& errorOnPos) 
   { fHasPosition = kTRUE; fPosition = pos; fPositionError = errorOnPos; }
   

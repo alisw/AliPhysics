@@ -41,7 +41,9 @@ class AliMpDEStore : public  TObject {
     
   private:
     AliMpDEStore();
+    /// Not implemented
     AliMpDEStore(const AliMpDEStore& rhs);
+    /// Not implemented
     AliMpDEStore& operator=(const AliMpDEStore& rhs);
 
     // methods

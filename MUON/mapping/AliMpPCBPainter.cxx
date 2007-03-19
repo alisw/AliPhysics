@@ -44,26 +44,26 @@ ClassImp(AliMpPCBPainter)
 AliMpPCBPainter::AliMpPCBPainter(AliMpPCB* pcb)
   : AliMpVPainter(), fPCB(pcb)
 {
-    //
-    // Default ctor.
-    //
+    ///
+    /// Default ctor.
+    ///
 }
 
 //_____________________________________________________________________________
 AliMpPCBPainter::~AliMpPCBPainter()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
 }
 
 //_____________________________________________________________________________
 TVector2
 AliMpPCBPainter::GetDimensions() const
 {
-  //
-  // Returns the half-sizes of the PCB.
-  //
+  ///
+  /// Returns the half-sizes of the PCB.
+  ///
   return TVector2(fPCB->DX(),fPCB->DY());
 }
 
@@ -71,9 +71,9 @@ AliMpPCBPainter::GetDimensions() const
 TVector2
 AliMpPCBPainter::GetPosition() const
 {
-  //
-  // Returns the (x,y) position of the PCB.
-  //
+  ///
+  /// Returns the (x,y) position of the PCB.
+  ///
   return TVector2(fPCB->X(),fPCB->Y());
 }
 
@@ -81,9 +81,9 @@ AliMpPCBPainter::GetPosition() const
 void
 AliMpPCBPainter::Draw(Option_t* option)
 {
-  //
-  // Draws the PCB.
-  //
+  ///
+  /// Draws the PCB.
+  ///
   AliMpGraphContext *gr = AliMpGraphContext::Instance();
   if (!fPCB) return;
 
@@ -118,9 +118,9 @@ AliMpPCBPainter::Draw(Option_t* option)
 void
 AliMpPCBPainter::Paint(Option_t* /*option*/)
 {
-  //
-  // Paint the object.
-  //
+  ///
+  /// Paint the object.
+  ///
   AliMpGraphContext* gr = AliMpGraphContext::Instance();
   if (!fPCB) return;
   Int_t col=gVirtualX->GetFillColor();

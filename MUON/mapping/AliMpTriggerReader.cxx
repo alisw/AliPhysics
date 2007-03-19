@@ -65,18 +65,18 @@ AliMpTriggerReader::AliMpTriggerReader(AliMpSlatMotifMap& motifMap)
   fMotifMap(motifMap),
   fLocalBoardMap()
 {
-  //
-  // Default ctor.
-  //
+  ///
+  /// Default ctor.
+  ///
     fLocalBoardMap.SetOwner(kTRUE);
 } 
 
 //_____________________________________________________________________________
 AliMpTriggerReader::~AliMpTriggerReader()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
   fLocalBoardMap.DeleteAll();
 }
 
@@ -190,7 +190,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
 TString
 AliMpTriggerReader::GetBoardNameFromPCBLine(const TString& s)
 {
-  // Decode the string to get the board name
+  /// Decode the string to get the board name
   TString boardName;
   
   TObjArray* tokens = s.Tokenize(' ');

@@ -66,6 +66,7 @@ AliMUONDataIterator::AliMUONDataIterator()
 TObject(),
 fIterator(0x0)
 {
+/// Default constructor
 }
 
 //_____________________________________________________________________________
@@ -76,6 +77,8 @@ AliMUONDataIterator::AliMUONDataIterator(AliMUONData* data,
 TObject(),
 fIterator(0x0)
 {
+/// Standard constructor
+
   TString opt(onWhatToIterate);
   opt.ToLower();
   if ( opt.Contains("digit") || opt.Contains("d") )
@@ -95,6 +98,8 @@ fIterator(0x0)
 //_____________________________________________________________________________
 AliMUONDataIterator::~AliMUONDataIterator()
 {
+/// Destructor
+
   delete fIterator;
 }
 
@@ -102,6 +107,8 @@ AliMUONDataIterator::~AliMUONDataIterator()
 TObject* 
 AliMUONDataIterator::Next() 
 { 
+/// Set iterator to the next element
+
   if (fIterator) return fIterator->Next(); 
   return 0x0;
 }
@@ -109,7 +116,9 @@ AliMUONDataIterator::Next()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONDataIterator::Remove() 
-{ 
+{
+/// Remove current element
+ 
   if (fIterator) return fIterator->Remove(); 
   return kFALSE;
 }
@@ -118,5 +127,7 @@ AliMUONDataIterator::Remove()
 void 
 AliMUONDataIterator::Reset() 
 { 
+/// Reset 
+
   if (fIterator) fIterator->Reset(); 
 }

@@ -66,7 +66,7 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
                   
   virtual void Init(Int_t) {} ///< Not implemented
   
-  virtual void IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
+  virtual void IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& x4);
   
   virtual Int_t ISector();
   virtual Int_t Ix();
@@ -116,12 +116,12 @@ public:
     
     Int_t ModuleColNum(Int_t ixGlo) const;
     
-protected:
-
+private:
+    /// Not implemented
     AliMUONTriggerSegmentation(const AliMUONTriggerSegmentation& rhs);
+    /// Not implemented
     AliMUONTriggerSegmentation& operator=(const AliMUONTriggerSegmentation& rhs);
 
-private:
     Int_t fDetElemId;          ///< det elem Id
     AliMp::PlaneType fPlaneType; ///< plane type
     const AliMpTrigger* fSlat; ///< slat

@@ -313,7 +313,7 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(void)
   //__________________________________________________________________________
 Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
 {
-    // To make the trigger tracks from Local Trigger
+  /// To make the trigger tracks from Local Trigger
   AliDebug(1, "Enter MakeTriggerTracks");
   
   TTree* treeR;

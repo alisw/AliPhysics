@@ -27,26 +27,39 @@ class AliMUONRawStreamTracker: public TObject {
     virtual Bool_t   Next();
     virtual Bool_t   NextDDL();
 
+    /// Return maximum number of DDL in DATE file
     Int_t GetMaxDDL()   const {return fMaxDDL;}
+    /// Return maximum number of block per DDL in DATE file
     Int_t GetMaxBlock() const {return  fPayload->GetMaxBlock();}
+    /// Return maximum number of Dsp per block in DATE file
     Int_t GetMaxDsp()   const {return  fPayload->GetMaxDsp();}
+    /// Return maximum number of Buspatch per Dsp in DATE file
     Int_t GetMaxBus()   const {return  fPayload->GetMaxBus();}
 
     // check input before assigment
     void SetMaxDDL(Int_t ddl);
     void SetMaxBlock(Int_t blk);
 
-    // does not check, done via BusPatchManager
+    /// Set maximum number of Dsp per block in DATE file
+    /// does not check, done via BusPatchManager
     void SetMaxDsp(Int_t dsp) {fPayload->SetMaxDsp(dsp);}
+    /// Set maximum number of Buspatch per Dsp in DATE file
+    /// does not check, done via BusPatchManager
     void SetMaxBus(Int_t bus) {fPayload->SetMaxBus(bus);}
 
-
+    /// Set object for reading the raw data
     void SetReader(AliRawReader* rawReader) {fRawReader = rawReader;}
 
+    /// Return pointer for buspatch structure
     AliMUONDDLTracker*      GetDDLTracker()   const {return fPayload->GetDDLTracker();}
+    /// Return number of DDL
     Int_t                   GetDDL()          const {return fDDL - 1;}
 
   private :
+    /// Not implemented
+    AliMUONRawStreamTracker(const AliMUONRawStreamTracker& stream);
+    /// Not implemented
+    AliMUONRawStreamTracker& operator = (const AliMUONRawStreamTracker& stream);
 
     AliRawReader*    fRawReader;    ///< object for reading the raw data
  
@@ -60,9 +73,6 @@ class AliMUONRawStreamTracker: public TObject {
     Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file
 
     AliMUONPayloadTracker* fPayload; ///< pointer to payload decoder
-
-    AliMUONRawStreamTracker(const AliMUONRawStreamTracker& stream);
-    AliMUONRawStreamTracker& operator = (const AliMUONRawStreamTracker& stream);
 
     ClassDef(AliMUONRawStreamTracker, 2)    // base class for reading MUON raw digits
 };

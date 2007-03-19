@@ -45,12 +45,14 @@ private:
     
     static const Int_t fgkNofCells=80; ///< Number of cells
     
+    /// the cells content
     Float_t fCellContent[4][18][2][fgkNofCells][fgkNofCells]; //[trig. chambers][RPCs][cathode][cellsX][cellsY]
 
     Float_t fCellSize[4][18][2]; ///< the size of the cells
     Int_t fCellNumber[4][18][2]; ///< id of the cells
 
     static const Int_t fgkNofBoards=234; ///< Number of boards
+    /// the boards content
     Float_t fBoardContent[4][2][fgkNofBoards]; //[trig. chambers][RPCs][cathode][board]
     
     ClassDef(AliMUONTriggerEfficiencyCells,2) // Trigger efficiency store

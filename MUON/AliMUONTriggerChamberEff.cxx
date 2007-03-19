@@ -88,6 +88,7 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(Int_t firstRun, Int_t lastRun
   fDebugLevel(0),
   fGaliceDir(galiceRunDir)
 {
+/// Standard constructor
     ResetArrays();
     delete gAlice;
 }

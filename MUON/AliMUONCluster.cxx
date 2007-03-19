@@ -198,9 +198,9 @@ AliMUONCluster::Area() const
 void
 AliMUONCluster::Copy(TObject& obj) const
 {
-  //
-  // Copy this cluster to (cluster&)obj
-  //
+  ///
+  /// Copy this cluster to (cluster&)obj
+  ///
   TObject::Copy(obj);
   AliMUONCluster& dest = static_cast<AliMUONCluster&>(obj);
   dest.fPads = static_cast<TObjArray*>(fPads->Clone());

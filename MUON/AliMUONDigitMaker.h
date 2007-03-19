@@ -61,6 +61,12 @@ class AliMUONDigitMaker : public TObject
   void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
 
  private:
+  /// Not implemented
+  AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
+  /// Not implemented
+  AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
+
+  void GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg) const;
 
   AliMUONData*     fMUONData;          //!< Data container for MUON subsystem 
   
@@ -83,11 +89,6 @@ class AliMUONDigitMaker : public TObject
   TStopwatch fTrackerTimer;                    //!< time watcher for tracker part
   TStopwatch fTriggerTimer;                    //!< time watcher for trigger part
   TStopwatch fMappingTimer;                    //!< time watcher for mapping-tracker part
-
-  AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
-  AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
-
-  void GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg) const;
 
   ClassDef(AliMUONDigitMaker,1) // MUON digit maker from rawdata
 };

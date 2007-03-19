@@ -128,7 +128,7 @@ AliMUONTriggerCrateStore::Crate(Int_t ddl, Int_t reg) const
 // //____________________________________________________________________
 TString AliMUONTriggerCrateStore::GetCrateName(Int_t ddl, Int_t reg) const
 {
-  // set crate name from DDL & reg number
+  /// set crate name from DDL & reg number
 
   Char_t name[10];
   switch(reg) {

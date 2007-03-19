@@ -73,13 +73,13 @@ AliMUONPadStatusMaker::AliMUONPadStatusMaker(const AliMUONCalibrationData& calib
   fHVSt12Limits(0,5000),
   fHVSt345Limits(0,5000)
 {
-    // ctor
+   /// ctor
 }
 
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::~AliMUONPadStatusMaker()
 {
-  // dtor.
+  /// dtor.
 }
 
 //_____________________________________________________________________________

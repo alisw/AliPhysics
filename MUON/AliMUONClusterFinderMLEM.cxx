@@ -350,7 +350,7 @@ AliMUONClusterFinderMLEM::CheckPreclusterOneCathode(AliMUONCluster* cluster)
 AliMUONCluster*
 AliMUONClusterFinderMLEM::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
 {
-  // Check two-cathode cluster
+  /// Check two-cathode cluster
   
   Int_t i1 = cluster->Multiplicity(0) ? 0 : 1;
   Int_t i2 = cluster->Multiplicity(1) ? 1 : 0;

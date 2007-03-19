@@ -25,10 +25,13 @@ public:
     AliMUONTriggerChamberEff(Int_t firstRun, Int_t lastRun, const char* galiceRunDir, Int_t firstEvent=0, Int_t lastEvent=-1);
     virtual ~AliMUONTriggerChamberEff();
 
+    /// Set Reproduce trigger response
     void SetReproduceTrigResponse(Bool_t reproduceTrigRes=kFALSE)
     {fReproduceTrigResponse=reproduceTrigRes;}
+    /// Set Print informations on event
     void SetPrintInfo(Bool_t printInfo=kFALSE)
     {fPrintInfo=printInfo;}
+    /// Set Debug level
     void SetDebugLevel(Int_t debugLevel)
     {fDebugLevel=debugLevel;}
 
@@ -48,7 +51,9 @@ protected:
     void WriteEfficiencyMap(const char* outputDir);
     
 private:
+    /// Not implemented
     AliMUONTriggerChamberEff(const AliMUONTriggerChamberEff& other);
+    /// Not implemented
     AliMUONTriggerChamberEff& operator=(const AliMUONTriggerChamberEff& other);
     
     void SetGaliceFile(const char* galiceFile);

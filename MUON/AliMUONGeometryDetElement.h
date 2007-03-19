@@ -60,7 +60,9 @@ class AliMUONGeometryDetElement : public TObject
     const TGeoHMatrix*  GetGlobalTransformation() const;
 
   protected:
+    /// Not implemented
     AliMUONGeometryDetElement(const AliMUONGeometryDetElement& rhs);
+    /// Not implemented
     AliMUONGeometryDetElement& operator = (const AliMUONGeometryDetElement& rhs);
   
   private:
@@ -68,7 +70,7 @@ class AliMUONGeometryDetElement : public TObject
     void PrintTransform(const TGeoHMatrix* transform) const;
  
      // static data members
-    static const TString  fgkDENamePrefix; /// < Geometry module name prefix
+    static const TString  fgkDENamePrefix; ///< Geometry module name prefix
  
     // data members
     TString       fDEName;     ///< detection element name

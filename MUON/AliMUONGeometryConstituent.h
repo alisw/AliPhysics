@@ -45,7 +45,9 @@ class AliMUONGeometryConstituent : public TNamed
     const TGeoCombiTrans*  GetTransformation() const;
 
   protected:
+    /// Not implemented
     AliMUONGeometryConstituent(const AliMUONGeometryConstituent& rhs);
+    /// Not implemented
     AliMUONGeometryConstituent& operator = (const AliMUONGeometryConstituent& rhs);
 
   private:

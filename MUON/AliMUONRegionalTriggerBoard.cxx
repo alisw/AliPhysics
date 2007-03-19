@@ -20,6 +20,7 @@
 /// - entry are local board responses
 /// - output is 12-bit word
 /// - algorithm is similar to the global one
+/// \todo Change member functions comments in capital letters to normal text
 ///
 /// \author Rachid Guernane (LPCCFd)
 
@@ -31,26 +32,35 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONRegionalTriggerBoard)
+/// \endcond
 
 //___________________________________________
 AliMUONRegionalTriggerBoard::AliMUONRegionalTriggerBoard()
 {
+/// Default constructor
    for (Int_t i=0; i<16; i++) fLocalResponse[i] = 0;
 }
 
 //___________________________________________
 AliMUONRegionalTriggerBoard::AliMUONRegionalTriggerBoard(const char *name, Int_t a) : AliMUONTriggerBoard(name, a)
 {
+/// Standard constructor
    for (Int_t i=0; i<16; i++) fLocalResponse[i] = 0;
+}
+
+//___________________________________________
+AliMUONRegionalTriggerBoard::~AliMUONRegionalTriggerBoard()
+{
+/// Destructor
 }
 
 //___________________________________________
 void AliMUONRegionalTriggerBoard::Response()
 {
-/*   
-  RESPONSE IS GIVEN FOLLOWING THE REGIONAL ALGORITHM
-*/
+/// RESPONSE IS GIVEN FOLLOWING THE REGIONAL ALGORITHM
+
   Int_t t[16];
 
    for (Int_t i=0;i<16;i++) t[i] = fLocalResponse[i] & fMask[i];
@@ -81,9 +91,10 @@ void AliMUONRegionalTriggerBoard::Response()
 //___________________________________________
 UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, Int_t level)
 {
-// IMPLEMENTATION OF THE REGIONAL ALGORITHM
-// SIMILAR TO THE GLOBAL ALGORITHM EXCEPT FOR THE
-// INPUT LAYER
+/// IMPLEMENTATION OF THE REGIONAL ALGORITHM
+/// SIMILAR TO THE GLOBAL ALGORITHM EXCEPT FOR THE
+/// INPUT LAYER
+
   TBits a(8), b(8); a.Set(8,&i); b.Set(8,&j);
 
    TBits trg1(2), trg2(2), trg(2);
@@ -157,9 +168,8 @@ UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, 
 //___________________________________________
 void AliMUONRegionalTriggerBoard::Scan(Option_t*) const
 {
-/*  
-  SCAN LOCAL BOARD ENTRIES 
-*/
+/// SCAN LOCAL BOARD ENTRIES 
+
   for (Int_t i=0; i<16; i++) 
    {
       TBits b;
@@ -174,7 +184,8 @@ void AliMUONRegionalTriggerBoard::Scan(Option_t*) const
 //___________________________________________
 void AliMUONRegionalTriggerBoard::Mask(Int_t index, UShort_t mask)
 {
-// MASK ENTRY index
+/// MASK ENTRY index
+
   if ( index>=0 && index < 16 ) 
   {
     fMask[index]=mask;
@@ -184,5 +195,3 @@ void AliMUONRegionalTriggerBoard::Mask(Int_t index, UShort_t mask)
     AliError(Form("Index %d out of bounds (max %d)",index,16));
   }
 }
-
-ClassImp(AliMUONRegionalTriggerBoard)

@@ -30,8 +30,11 @@ public:
   virtual AliMUONCluster* NextCluster();
   
 private:
+  /// Not implemented
   AliMUONClusterFinderCOG(const AliMUONClusterFinderCOG& rhs);
+  /// Not implemented
   AliMUONClusterFinderCOG& operator=(const AliMUONClusterFinderCOG& rhs);
+
   void ComputePosition(AliMUONCluster& cluster);
 
 private:

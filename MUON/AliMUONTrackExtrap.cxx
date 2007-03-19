@@ -746,12 +746,12 @@ Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(Double_t pTotal, Double_t p
 }
 
   //__________________________________________________________________________
-Double_t AliMUONTrackExtrap::ApproximateBetheBloch(Double_t beta2) {
-  //------------------------------------------------------------------
-  // This is an approximation of the Bethe-Bloch formula with 
-  // the density effect taken into account at beta*gamma > 3.5
-  // (the approximation is reasonable only for solid materials) 
-  //------------------------------------------------------------------
+Double_t AliMUONTrackExtrap::ApproximateBetheBloch(Double_t beta2) 
+{
+/// This is an approximation of the Bethe-Bloch formula with 
+/// the density effect taken into account at beta*gamma > 3.5
+/// (the approximation is reasonable only for solid materials) 
+
   if (beta2/(1-beta2)>3.5*3.5)
      return 0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2);
 
@@ -761,6 +761,7 @@ Double_t AliMUONTrackExtrap::ApproximateBetheBloch(Double_t beta2) {
  //__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, Double_t *vect, Double_t *vout)
 {
+/// <pre>
 ///    ******************************************************************
 ///    *                                                                *
 ///    *  Performs the tracking of one step in a magnetic field         *
@@ -780,6 +781,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, Doub
 ///    *       modified  v.perevoztchikov
 ///    *                                                                *
 ///    ******************************************************************
+/// </pre>
 
 // modif: everything in double precision
 
@@ -878,6 +880,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, Doub
  //__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Double_t *vect, Double_t *vout)
 {
+/// <pre>
 ///	******************************************************************
 ///	*								 *
 ///	*	Tracking routine in a constant field oriented		 *
@@ -890,6 +893,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Doub
 ///	*	Rewritten  V.Perevoztchikov
 ///	*								 *
 ///	******************************************************************
+/// </pre>
 
     Double_t hxp[3];
     Double_t h4, hp, rho, tet;
@@ -954,6 +958,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Doub
  //__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout)
 {
+/// <pre>
 ///	******************************************************************
 ///	*								 *
 ///	*  Runge-Kutta method for tracking a particle through a magnetic *
@@ -975,6 +980,7 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 ///	*								 *
 ///	*								 *
 ///	******************************************************************
+/// </pre>
 
     Double_t h2, h4, f[4];
     Double_t xyzt[3], a, b, c, ph,ph2;

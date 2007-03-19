@@ -46,12 +46,14 @@ public:
   TObjArray* CompactAliases() const;
   
 private:
+  /// Not implemented
   AliMUONHVNamer(const AliMUONHVNamer& right);
+  /// Not implemented
   AliMUONHVNamer&  operator = (const AliMUONHVNamer& right);
     
-  static const char* fgHVChannelSt345Pattern[]; // HV Channel name template
-  static const char* fgHVChannelSt12Pattern[]; // HV Channel name template
-  static const char* fgHVSwitchSt345Pattern; // HV Switch name template
+  static const char* fgHVChannelSt345Pattern[]; ///< HV Channel name template
+  static const char* fgHVChannelSt12Pattern[]; ///< HV Channel name template
+  static const char* fgHVSwitchSt345Pattern; ///< HV Switch name template
   
   ClassDef(AliMUONHVNamer,0) // Utility class for coding/decoding DCS HV aliases
 };

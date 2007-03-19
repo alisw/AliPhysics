@@ -376,7 +376,7 @@ void AliMpDEVisu::DrawDE(Bool_t info)
 //__________________________________________________________
 void AliMpDEVisu::DrawManuMotif(Bool_t popup) 
 {
-  //  Draw manu motif in yellow and popup channel motif window
+  ///  Draw manu motif in yellow and popup channel motif window
   
   fEcanvas->GetCanvas()->SetEditable(kTRUE);
   
@@ -699,7 +699,7 @@ AliMpDEVisu::CreatePopupWindow(Int_t w, Int_t h, const char* windowName,
                                AliMpVPainter* painter,
                                const char* option)
 {
-  // Create transient frame
+  /// Create transient frame
   
   TCanvas* c = new TCanvas(windowName,windowName,-200,100,w,h);
 

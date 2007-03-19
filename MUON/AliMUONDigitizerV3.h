@@ -41,8 +41,9 @@ public:
   virtual Bool_t Init();
 
 private:
-    
+  /// Not implemented
   AliMUONDigitizerV3(const AliMUONDigitizerV3& other);
+  /// Not implemented
   AliMUONDigitizerV3& operator=(const AliMUONDigitizerV3& other);
   
   void AddOrUpdateDigit(TClonesArray& array, 

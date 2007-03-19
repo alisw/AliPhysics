@@ -30,22 +30,12 @@ class AliMUONLoader : public AliLoader
     AliMUONData *  GetMUONData();
  
   protected:
+    /// Not implemented
     AliMUONLoader(const AliMUONLoader& rhs);
+    /// Not implemented
     AliMUONLoader& operator=(const AliMUONLoader& rhs);
 
     AliMUONData * fMUONData; ///< data for MUON subsystem 
-
-  private:
-    //descendant classes should
-    //use protected interface methods to access these folders
-
-    /**********************************************/
-    /***********     P U B L I C     **************/
-    /*********       S T A T I C       ************/
-    /*********         METHODS         ************/
-    /*********     They are used by    ************/
-    /*********** AliRunLoader as well**************/
-    /**********************************************/
 
   ClassDef(AliMUONLoader,1)
 };

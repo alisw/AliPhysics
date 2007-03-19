@@ -54,6 +54,11 @@ AliMUONRegionalTrigger::AliMUONRegionalTrigger(const AliMUONRegionalTrigger& the
  
 }
 //----------------------------------------------------------------------
+AliMUONRegionalTrigger::~AliMUONRegionalTrigger()
+{
+/// Destructor
+}
+//----------------------------------------------------------------------
 AliMUONRegionalTrigger& AliMUONRegionalTrigger::operator=(const AliMUONRegionalTrigger& theMUONRegionalTrig)
 {
 /// Assigment operator;
@@ -79,9 +84,9 @@ AliMUONRegionalTrigger& AliMUONRegionalTrigger::operator=(const AliMUONRegionalT
 //----------------------------------------------------------------------
 void AliMUONRegionalTrigger::Print(Option_t* opt) const
 {
-  //
-  // Printing Regional Trigger information
-  //
+  ///
+  /// Printing Regional Trigger information
+  ///
   TString sopt(opt);
   sopt.ToUpper();
  

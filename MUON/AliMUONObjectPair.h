@@ -29,10 +29,14 @@ public:
   
   virtual ~AliMUONObjectPair();
 
+  /// Return the first element of the pair
   TObject* First() const { return fFirst; }
+  /// Return  the second element of the pair
   TObject* Second() const { return fSecond; }
 
+  /// Return the first element of the pair 
   TObject* Key() const { return fFirst; }
+  /// Return the second element of the pair 
   TObject* Value() const { return fSecond; }
 
   virtual void Copy(TObject& other) const;

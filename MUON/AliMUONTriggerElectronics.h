@@ -67,7 +67,9 @@ class AliMUONTriggerElectronics : public TTask
       virtual void Trigger();
 
    private:
+      /// Not implemented
       AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right);
+      /// Not implemented
       AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
      
    private:

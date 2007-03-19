@@ -71,7 +71,9 @@ class AliMUONSegmentation : public TObject
     TString  GetDEName(Int_t detElemId, Int_t cathod = 0) const;
 
   protected:
+    /// Not implemented
     AliMUONSegmentation(const AliMUONSegmentation& right);
+    /// Not implemented
     AliMUONSegmentation&  operator = (const AliMUONSegmentation& right);
      
   private:

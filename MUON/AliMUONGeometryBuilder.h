@@ -58,7 +58,9 @@ class AliMUONGeometryBuilder : public TObject
     virtual void    SetAlign(const TString& fileName, Bool_t align = true);
  
   protected:
+    /// Not implemented
     AliMUONGeometryBuilder(const AliMUONGeometryBuilder& right);
+    /// Not implemented
     AliMUONGeometryBuilder&  operator = (const AliMUONGeometryBuilder& right);
  
   private:

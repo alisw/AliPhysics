@@ -26,11 +26,14 @@ public:
   virtual UInt_t Process(TMap* dcsAliasMap);
   virtual void Print(Option_t* opt="") const;
   
+  /// Publish AliPreprocessor::Log function
   void Log(const char* message) { AliPreprocessor::Log(message); }
   
+  /// Publish AliPreprocessor::GetFileSources function
   TList* GetFileSources(Int_t system, const char* id) 
   { return AliPreprocessor::GetFileSources(system,id); }
 
+  /// Publish AliPreprocessor::Store function
   UInt_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
                AliCDBMetaData* metaData, 
                Int_t validityStart = 0, Bool_t validityInfinite = kFALSE)
@@ -39,6 +42,7 @@ public:
                                   validityStart,validityInfinite);
   }
   
+  /// Publish AliPreprocessor::GetFile function
   const char* GetFile(Int_t system, const char* id, const char* source)
   {
     return AliPreprocessor::GetFile(system,id,source);
@@ -52,14 +56,16 @@ protected:
   void ClearSubprocessors();
   
 private:
+  /// Not implemented
   AliMUONPreprocessor(const AliMUONPreprocessor& rhs);
+  /// Not implemented
   AliMUONPreprocessor& operator=(const AliMUONPreprocessor& rhs);
   
   AliMUONVSubprocessor* Subprocessor(Int_t i) const;
   
 private:
 
-  TObjArray* fSubprocessors; ///!< sub processors to execute
+  TObjArray* fSubprocessors; //!< sub processors to execute
   
   ClassDef(AliMUONPreprocessor,1) // MUON Shuttle preprocessor
 };

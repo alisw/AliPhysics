@@ -32,11 +32,15 @@ public:
   
   void Exec(Option_t* option);
   
+  /// Set option whether to generate DDL ascii files or not
   void MakeDDL(Bool_t value) { fMakeDDL = value; }
   
 private:
+  /// Not implemented
   AliMUONPedestalEventGenerator(const AliMUONPedestalEventGenerator&);
+  /// Not implemented
   AliMUONPedestalEventGenerator& operator=(const AliMUONPedestalEventGenerator&);
+
   Bool_t ConvertRawFilesToDate();
   void GenerateDigits(AliMUONData* data);
   AliMUONData* GetDataAccess(const char* mode);
@@ -44,12 +48,12 @@ private:
   void Digits2Raw();
   
 private:
-  TList* fManuList; //! list of (de,manu) pairs
-  AliMUONCalibrationData* fCalibrationData; //! access to pedestal CDB
-  TString fDateFileName; //! basefilename of the DATE output file
-  TString fGAliceFileName; //! absolute path to galice.root file
-  Bool_t fMakeDDL; //! whether to generate DDL ascii files or not
-  static Int_t fgCounter; //! 
+  TList* fManuList; //!< list of (de,manu) pairs
+  AliMUONCalibrationData* fCalibrationData; //!< access to pedestal CDB
+  TString fDateFileName; //!< basefilename of the DATE output file
+  TString fGAliceFileName; //!< absolute path to galice.root file
+  Bool_t fMakeDDL; //!< whether to generate DDL ascii files or not
+  static Int_t fgCounter; //!< counter 
   
   ClassDef(AliMUONPedestalEventGenerator,1) // Random generator of pedestal events for MUON TRK
 };

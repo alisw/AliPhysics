@@ -123,9 +123,9 @@ Int_t AliMUONResponseTriggerV1::SetGenerCluster()
 Float_t AliMUONResponseTriggerV1::FireStripProb(Float_t x4, Float_t theta)
 const
 {
-// parametrisation of the probability that a strip neighbour of the main 
-// strip is fired (V.Barret B.Espagnon and P.Rosnet INT/DIM/01-04 (2001)
-// WARNING : need to convert x4 from cm to mm
+/// parametrisation of the probability that a strip neighbour of the main 
+/// strip is fired (V.Barret B.Espagnon and P.Rosnet INT/DIM/01-04 (2001)
+/// WARNING : need to convert x4 from cm to mm
 
  return 
      (TMath::Cos(theta)*fA/(fA+TMath::Cos(theta)*TMath::Power(x4*10.,fB))+fC)/

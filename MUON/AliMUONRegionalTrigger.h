@@ -18,19 +18,27 @@ class AliMUONRegionalTrigger : public TObject {
  public:
   AliMUONRegionalTrigger();
   AliMUONRegionalTrigger(const AliMUONRegionalTrigger& rhs); // copy constructor !
-  virtual ~AliMUONRegionalTrigger(){;}
+  virtual ~AliMUONRegionalTrigger();
   AliMUONRegionalTrigger& operator=(const AliMUONRegionalTrigger& rhs); 
 
   // getter methods
+  /// Return regional id 
   Int_t    GetId()        const {return fId;}
+  /// Return local output Lpt & Hpt
   UInt_t   GetLocalOutput(Int_t n) const {return fLocalOutput[n];}
+  /// Return local mask
   UShort_t GetLocalMask() const {return fLocalMask;}
+  /// Return regional output (single muon:2, unlike sign:1, like sign:1)
   Char_t   GetOutput()    const {return fOutput;}
 
   // setter methods
+  /// Set regional id 
   void  SetId(Int_t d)           {fId = d;}
+  /// Set local output Lpt & Hpt
   void  SetLocalOutput(UInt_t local, Int_t n) {fLocalOutput[n] = local;}
+  /// Set local mask
   void  SetLocalMask(UShort_t m) {fLocalMask = m;}
+  /// Set regional output (single muon:2, unlike sign:1, like sign:1)
   void  SetOutput(Char_t o)      {fOutput = o;}
 
   virtual void Print(Option_t* opt="") const;

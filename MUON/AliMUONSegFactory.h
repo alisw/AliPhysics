@@ -69,11 +69,12 @@ class AliMUONSegFactory : public  TObject {
               // Returned segmentation contains all the lower level segmentations
 	      // created with the factory
 
-  protected:
+  private:
+    /// Not implemented
     AliMUONSegFactory(const AliMUONSegFactory& rhs);
+    /// Not implemented
     AliMUONSegFactory& operator=(const AliMUONSegFactory& rhs);
 
-  private:
     AliMUONVGeometryDESegmentation*  
       CreateDESegmentation(Int_t detElemId, AliMp::CathodType cath);
               // Create DE segmentation, operating in local reference frame

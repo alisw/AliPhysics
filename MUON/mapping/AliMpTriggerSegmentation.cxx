@@ -47,9 +47,9 @@ AliMpTriggerSegmentation::AliMpTriggerSegmentation()
   fIsOwner(false),
   fNofStrips(0)
 {
-  //
-  // Default ctor. Not to be used really.
-  //
+  ///
+  /// Default ctor. Not to be used really.
+  ///
   AliDebug(1,Form("this=%p Empty ctor",this));
 }
 
@@ -61,9 +61,9 @@ AliMpTriggerSegmentation::AliMpTriggerSegmentation(
   fIsOwner(own),
   fNofStrips(0)
 {
-  //
-  // Normal ctor.
-  //
+  ///
+  /// Normal ctor.
+  ///
   AliDebug(1,Form("this=%p Normal ctor slat=%p",this,slat));
   
   // Compute the number of strips.
@@ -87,9 +87,9 @@ AliMpTriggerSegmentation::AliMpTriggerSegmentation(
 //_____________________________________________________________________________
 AliMpTriggerSegmentation::~AliMpTriggerSegmentation()
 {
-  //
-  // Dtor (empty).
-  //
+  ///
+  /// Dtor (empty).
+  ///
 
   if ( fIsOwner ) delete fkSlat;
 
@@ -100,9 +100,9 @@ AliMpTriggerSegmentation::~AliMpTriggerSegmentation()
 AliMpVPadIterator*
 AliMpTriggerSegmentation::CreateIterator(const AliMpArea&) const
 {
-  //
-  // Returns an iterator to loop over the pad contained within given area.
-  // Not implemented for trigger.
+  ///
+  /// Returns an iterator to loop over the pad contained within given area.
+  /// Not implemented for trigger.
   AliError("Not implemented for trigger");
   return 0;
 }
@@ -111,9 +111,9 @@ AliMpTriggerSegmentation::CreateIterator(const AliMpArea&) const
 AliMpVPadIterator*
 AliMpTriggerSegmentation::CreateIterator() const
 {
-  //
-  // Returns an iterator to loop over all the pads
-  // Not implemented for trigger.
+  ///
+  /// Returns an iterator to loop over all the pads
+  /// Not implemented for trigger.
   AliError("Not implemented for trigger");
   
   return 0;
@@ -135,6 +135,8 @@ AliMpTriggerSegmentation::GetNeighbours(const AliMpPad& /*pad*/,
 TVector2
 AliMpTriggerSegmentation::Dimensions() const
 {
+/// Return dimensions
+
   return Slat()->Dimensions();
 }
 
@@ -142,6 +144,8 @@ AliMpTriggerSegmentation::Dimensions() const
 void 
 AliMpTriggerSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 {
+/// Fill the array ecn with all manuIds
+
   Slat()->GetAllLocalBoardNumbers(ecn);
 }
 
@@ -149,7 +153,7 @@ AliMpTriggerSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 const char*
 AliMpTriggerSegmentation::GetName() const
 {
-  // Name of that segmentation = TriggerSegmentation + slatName
+  /// Name of that segmentation = TriggerSegmentation + slatName
   TString name("TriggerSegmentation");
   if ( fkSlat) 
   {
@@ -163,10 +167,10 @@ AliMpTriggerSegmentation::GetName() const
 Bool_t
 AliMpTriggerSegmentation::HasPad(const AliMpIntPair& indices) const
 {
-  //
-  // Test if this slat has a pad located at the position referenced
-  // by the integer indices.
-  //
+  ///
+  /// Test if this slat has a pad located at the position referenced
+  /// by the integer indices.
+  ///
   
   return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
 }
@@ -175,9 +179,9 @@ AliMpTriggerSegmentation::HasPad(const AliMpIntPair& indices) const
 Int_t 
 AliMpTriggerSegmentation::MaxPadIndexX() const
 {
-  //
-  // Returns the value of the largest pad index in x-direction.
-  //
+  ///
+  /// Returns the value of the largest pad index in x-direction.
+  ///
   
   return fkSlat->GetNofPadsX()-1;
 }
@@ -186,9 +190,9 @@ AliMpTriggerSegmentation::MaxPadIndexX() const
 Int_t 
 AliMpTriggerSegmentation::MaxPadIndexY() const
 {
-  //
-  // Returns the value of the largest pad index in y-direction.
-  //
+  ///
+  /// Returns the value of the largest pad index in y-direction.
+  ///
   
   return fkSlat->GetMaxNofPadsY()-1;
 }
@@ -198,14 +202,14 @@ AliMpPad
 AliMpTriggerSegmentation::PadByLocation(const AliMpIntPair& location, 
                                         Bool_t warning) const
 {
-  //
-  // Returns the pad specified by its location, where location is the 
-  // pair (ManuID,ManuChannel).
-  // If warning=kTRUE and the pad does not exist, a warning message is 
-  // printed.
-  //
-  // AliMpPad::Invalid() is returned if there's no pad at the given location.
-  //
+  ///
+  /// Returns the pad specified by its location, where location is the 
+  /// pair (ManuID,ManuChannel).
+  /// If warning=kTRUE and the pad does not exist, a warning message is 
+  /// printed.
+  ///
+  /// AliMpPad::Invalid() is returned if there's no pad at the given location.
+  ///
   AliMpPad pad;
   AliMpIntPair invloc;
   
@@ -239,14 +243,14 @@ AliMpPad
 AliMpTriggerSegmentation::PadByIndices(const AliMpIntPair& indices, 
                                     Bool_t warning) const
 {
-  //
-  // Returns the pad specified by its integer indices.
-  // If warning=kTRUE and the pad does not exist, a warning message is 
-  // printed.
-  //
-  // AliMpPad::Invalid() is returned if there's no pad at the given location.
-  //
-  //  
+  ///
+  /// Returns the pad specified by its integer indices.
+  /// If warning=kTRUE and the pad does not exist, a warning message is 
+  /// printed.
+  ///
+  /// AliMpPad::Invalid() is returned if there's no pad at the given location.
+  ///
+  ///  
  
   AliMpPad pad;
   AliMpIntPair invloc;
@@ -282,13 +286,13 @@ AliMpPad
 AliMpTriggerSegmentation::PadByPosition(const TVector2& position, 
                                      Bool_t warning) const
 {
-  //
-  // Returns the pad specified by its (floating point) position.
-  // If warning=kTRUE and the pad does not exist, a warning message is 
-  // printed.
-  //
-  // AliMpPad::Invalid() is returned if there's no pad at the given location.
-  //
+  ///
+  /// Returns the pad specified by its (floating point) position.
+  /// If warning=kTRUE and the pad does not exist, a warning message is 
+  /// printed.
+  ///
+  /// AliMpPad::Invalid() is returned if there's no pad at the given location.
+  ///
   AliMpPad pad;
   AliMpIntPair invloc;
   
@@ -322,6 +326,8 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
 AliMp::PlaneType
 AliMpTriggerSegmentation::PlaneType() const
 {
+  /// Return plane type
+
   return Slat()->PlaneType();
 }
 
@@ -329,9 +335,9 @@ AliMpTriggerSegmentation::PlaneType() const
 const AliMpTrigger* 
 AliMpTriggerSegmentation::Slat() const
 {
-  //
-  // Returns the pointer to the referenced slat.
-  //
+  ///
+  /// Returns the pointer to the referenced slat.
+  ///
   
   return fkSlat;
 }

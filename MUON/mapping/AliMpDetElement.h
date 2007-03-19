@@ -61,8 +61,11 @@ class AliMpDetElement : public  TObject {
     Int_t  GetManuIdFromSerial(Int_t serialNb) const;
 
   private:
+    /// Not implemented
     AliMpDetElement();
+    /// Not implemented
     AliMpDetElement(const AliMpDetElement& rhs);
+    /// Not implemented
     AliMpDetElement& operator=(const AliMpDetElement& rhs);
 
     // static data members	
@@ -76,8 +79,8 @@ class AliMpDetElement : public  TObject {
     AliMp::PlaneType fPlaneType;  ///< Plane type on cathod0
     //AliMpExMap     fBusPatches; ///< Bus patches connected to this detection element
     AliMpArrayI    fBusPatchIds;  ///< Bus patches connected to this detection element
-    mutable TExMap fManuToSerialNbs; //< Map from manuId to serial #   
-    mutable TExMap fSerialNbToManus; //< Map manu serial # to manuId
+    mutable TExMap fManuToSerialNbs; ///< Map from manuId to serial #   
+    mutable TExMap fSerialNbToManus; ///< Map manu serial # to manuId
      
   ClassDef(AliMpDetElement,1)  // The manager class for definition of detection element types
 };

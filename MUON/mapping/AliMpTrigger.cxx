@@ -73,7 +73,7 @@ AliMpTrigger::AliMpTrigger()
   fDX(0), 
   fDY(0)
 {
-  // default ctor
+  /// default ctor
 
   AliDebugStream(1) << "this = " << this << endl;
 
@@ -92,7 +92,7 @@ AliMpTrigger::AliMpTrigger(const char* slatType, AliMp::PlaneType bendingOrNot)
        fDX(0), 
        fDY(0)
 {
-  // normal ctor
+  /// normal ctor
 
   AliDebugStream(1) << "this = " << this << endl;
 
@@ -103,7 +103,7 @@ AliMpTrigger::AliMpTrigger(const char* slatType, AliMp::PlaneType bendingOrNot)
 //_____________________________________________________________________________
 AliMpTrigger::~AliMpTrigger()
 {
-  // dtor
+  /// dtor
   AliDebugStream(1) << "this = " << this << endl;
 
   fSlatSegmentations.Delete();
@@ -113,8 +113,8 @@ AliMpTrigger::~AliMpTrigger()
 Bool_t
 AliMpTrigger::AdoptLayer(AliMpSlat* slat)
 {
-  // Adopt (i.e. we become owner of that pointer) a slat, as 
-  // a layer of this trigger slat.
+  /// Adopt (i.e. we become owner of that pointer) a slat, as 
+  /// a layer of this trigger slat.
 
   AliDebug(2,Form("%s is adopting %s ",
                   GetID(),slat->GetID()));
@@ -147,7 +147,7 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
 TVector2
 AliMpTrigger::Dimensions() const
 {
-  // Returns the dimensions (half-sizes) of that slat (cm)
+  /// Returns the dimensions (half-sizes) of that slat (cm)
   return TVector2(DX(),DY());
 }
 
@@ -155,7 +155,7 @@ AliMpTrigger::Dimensions() const
 Double_t
 AliMpTrigger::DX() const
 {
-  // Returns the half-size in X (cm)
+  /// Returns the half-size in X (cm)
   return fDX;
 }
 
@@ -163,7 +163,7 @@ AliMpTrigger::DX() const
 Double_t
 AliMpTrigger::DY() const
 {
-  // Returns the half-size in Y (cm)
+  /// Returns the half-size in Y (cm)
   return fDY;
 }
 
@@ -171,7 +171,7 @@ AliMpTrigger::DY() const
 void 
 AliMpTrigger::GetAllLocalBoardNumbers(TArrayI& lbn) const
 {
-  // Fills lbn with the local board numbers we're dealing with
+  /// Fills lbn with the local board numbers we're dealing with
   Int_t n(0);
   for ( Int_t i = 0; i < GetSize(); ++i )
   {
@@ -198,7 +198,7 @@ AliMpTrigger::GetAllLocalBoardNumbers(TArrayI& lbn) const
 const char*
 AliMpTrigger::GetID() const
 {
-  // returns the id of this slat
+  /// returns the id of this slat
   return fId.Data();
 }
 
@@ -206,7 +206,7 @@ AliMpTrigger::GetID() const
 const char*
 AliMpTrigger::GetName() const
 {
-  // returns the name (=id+bending/non-bending) of this slat
+  /// returns the name (=id+bending/non-bending) of this slat
   TString name(GetID());
   if ( fPlaneType == AliMp::kBendingPlane )
   {
@@ -227,7 +227,7 @@ AliMpTrigger::GetName() const
 AliMpSlat*
 AliMpTrigger::GetLayer(int layer) const
 {
-  // Returns a given layer
+  /// Returns a given layer
   if ( IsLayerValid(layer) )
   {
     return (AliMpSlat*)fSlats.At(layer);
@@ -239,7 +239,7 @@ AliMpTrigger::GetLayer(int layer) const
 AliMpVSegmentation*
 AliMpTrigger::GetLayerSegmentation(int layer) const
 {
-  // Returns a given layer
+  /// Returns a given layer
   if ( IsLayerValid(layer) )
   {
     return (AliMpSlatSegmentation*)fSlatSegmentations.At(layer);
@@ -251,7 +251,7 @@ AliMpTrigger::GetLayerSegmentation(int layer) const
 Int_t
 AliMpTrigger::GetNofPadsX() const
 {
-  // Returns the number of pad in x direction
+  /// Returns the number of pad in x direction
   if ( !GetSize() ) return -1;
   if ( GetLayer(0) )
   {
@@ -264,7 +264,7 @@ AliMpTrigger::GetNofPadsX() const
 Int_t
 AliMpTrigger::GetMaxNofPadsY() const
 {
-  // Maximum number of pads in y direction
+  /// Maximum number of pads in y direction
   return fMaxNofPadsY;
 }
 
@@ -272,7 +272,7 @@ AliMpTrigger::GetMaxNofPadsY() const
 Int_t
 AliMpTrigger::GetSize() const
 {
-  // Number of layers
+  /// Number of layers
   return fSlats.GetEntriesFast();
 }
 
@@ -280,7 +280,7 @@ AliMpTrigger::GetSize() const
 Bool_t
 AliMpTrigger::IsLayerValid(int layer) const
 {
-  // Whether a given layer index is valid or not
+  /// Whether a given layer index is valid or not
   if ( layer >= 0 && layer < GetSize() )
   {
     return kTRUE;
@@ -292,7 +292,7 @@ AliMpTrigger::IsLayerValid(int layer) const
 AliMp::PlaneType
 AliMpTrigger::PlaneType() const
 {
-  // Bending or not
+  /// Bending or not
   return fPlaneType;
 }
 
@@ -300,7 +300,7 @@ AliMpTrigger::PlaneType() const
 TVector2
 AliMpTrigger::Position() const
 {
-  // Slat position (cm)
+  /// Slat position (cm)
   return TVector2(DX(),DY());
 }
 
@@ -308,7 +308,7 @@ AliMpTrigger::Position() const
 void
 AliMpTrigger::Print(Option_t* opt) const
 {
-  // Dump on screen
+  /// Dump on screen
   cout << "AliMpTrigger::" << GetID();
   if ( GetSize() == 0 )
   {

@@ -29,8 +29,9 @@ public:
   void Print(Option_t* opt="") const;
   
 private:
-  
+  /// Not implemented
   AliMUONLogger(const AliMUONLogger& rhs); // not implemented
+  /// Not implemented
   AliMUONLogger& operator=(const AliMUONLogger& rhs); // not implemented
   
 private:

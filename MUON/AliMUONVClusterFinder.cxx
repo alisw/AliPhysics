@@ -35,11 +35,13 @@ ClassImp(AliMUONVClusterFinder)
 //_____________________________________________________________________________
 AliMUONVClusterFinder::AliMUONVClusterFinder() : TObject()
 {
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMUONVClusterFinder::~AliMUONVClusterFinder()
 {
+/// Destructor
 }
 
 //_____________________________________________________________________________

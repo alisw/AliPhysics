@@ -510,6 +510,8 @@ void AliMpMotifType::Print(Option_t *option) const
 Bool_t
 AliMpMotifType::Save() const
 {
+/// Save this motif type
+
   return Save(fID.Data());
 }
 

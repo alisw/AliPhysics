@@ -73,7 +73,7 @@ ClassImp(AliMUONCheck)
   fData(0x0),
   fTree(0)
 {
-  // ctor
+  /// ctor
  
   fRunLoader = AliRunLoader::Open(fFileName.Data(),"MUONFolder","READ");
   if (!fRunLoader) 
@@ -103,7 +103,7 @@ ClassImp(AliMUONCheck)
 //_____________________________________________________________________________
 AliMUONCheck::AliMUONCheck(const AliMUONCheck& rhs) : TObject(rhs)
 {
-  // copy ctor
+  /// copy ctor
   AliFatal("Implement me if needed");
 }
 
@@ -111,7 +111,7 @@ AliMUONCheck::AliMUONCheck(const AliMUONCheck& rhs) : TObject(rhs)
 AliMUONCheck& 
 AliMUONCheck::operator=(const AliMUONCheck&)
 {
-  // assignement operator
+  /// assignement operator
   AliFatal("Implement me if needed")
   return *this;
 }
@@ -130,7 +130,7 @@ AliMUONCheck::~AliMUONCheck()
 void
 AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse) 
 {
-  // Check ESD files
+  /// Check ESD files
 
   if ( !IsValid() ) return;
   
@@ -439,7 +439,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
 void
 AliMUONCheck::CheckKine() 
 {
-  // Check Stack 
+  /// Check Stack 
   if ( !IsValid() ) return;
   
   // Stack of particle for each event
@@ -580,7 +580,7 @@ AliMUONCheck::CheckKine()
 void
 AliMUONCheck::CheckTrackRef() 
 {
-   // Check TrackRef files
+   /// Check TrackRef files
   
   if ( !IsValid() ) return;
   Int_t flag11=0,flag12=0,flag13=0,flag14=0;

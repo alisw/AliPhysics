@@ -67,7 +67,9 @@ class AliMUONGeometryEnvelope : public TNamed
     const TObjArray*       GetConstituents() const;
 
   protected:
+    /// Not implemented
     AliMUONGeometryEnvelope(const AliMUONGeometryEnvelope& rhs);
+    /// Not implemented
     AliMUONGeometryEnvelope& operator = (const AliMUONGeometryEnvelope& rhs);
 
   private:

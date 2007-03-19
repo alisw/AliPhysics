@@ -40,20 +40,30 @@ public:
 
   static AliMUONV2DStore* GeneratePadStatus(Int_t value);
 
+  /// Return Low and High threshold for St12 HV
   TVector2 HVSt12Limits() const { return fHVSt12Limits; }
+  /// Return Low and High threshold for St345 HV
   TVector2 HVSt345Limits() const { return fHVSt345Limits; }
   
+  /// Return Low and High threshold for pedestal mean
   TVector2 PedMeanLimits() const { return fPedMeanLimits; }
+  /// Return Low and High threshold for pedestal sigma
   TVector2 PedSigmaLimits() const { return fPedSigmaLimits; }
   
+  /// Set Low and High threshold for St12 HV
   void SetHVSt12Limits(float low, float high) { fHVSt12Limits.Set(low,high); }
+  /// Set Low and High threshold for St345 HV
   void SetHVSt345Limits(float low, float high) { fHVSt345Limits.Set(low,high); }
 
+  /// Set Low and High threshold for pedestal mean
   void SetPedMeanLimits(float low, float high) { fPedMeanLimits.Set(low,high); }
+  /// Set Low and High threshold for pedestal sigma 
   void SetPedSigmaLimits(float low, float high) { fPedSigmaLimits.Set(low,high); }
   
 private:
+  /// Not implemented
   AliMUONPadStatusMaker(const AliMUONPadStatusMaker&);
+  /// Not implemented
   AliMUONPadStatusMaker& operator=(const AliMUONPadStatusMaker&);
   
 private:
@@ -82,12 +92,13 @@ private:
 
   
 private:
-  
+  /// General status
   enum EGeneralStatus
   {
     kMissing = (1<<7)
   };
   
+  /// Pedestal status
   enum EPedestalStatus
   {
     kPedOK = 0,
@@ -100,6 +111,7 @@ private:
     kPedMissing = kMissing // please always use last bit for meaning "missing"
   };
   
+  /// HV Error
   enum EHVError 
   {
     kHVOK = 0,

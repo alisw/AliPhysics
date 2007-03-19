@@ -25,39 +25,62 @@ public:
 
    virtual ~AliMUONBlockHeader();
 
+   //
    // Block header
+   //
+           /// Return data key word for CRT header
    Int_t   GetDataKey()        const {return fDataKey;}
+           /// Return total length of block structure (w/o padding word)
    Int_t   GetTotalLength()    const {return fTotalLength;}
+           /// Return length of raw data
    Int_t   GetLength()         const {return fLength;}
+           /// Return Dsp id
    Int_t   GetDspId()          const {return fDspId;}
+           /// Return L0 trigger word
    Int_t   GetL0Trigger()      const {return fL0Trigger;}
+           /// Return Bunch Crossing for mini-event id (see TDR chapter 8)
    Int_t   GetMiniEventId()    const {return fMiniEventId;}
+           /// Return Event Id in bunch crossing
    Int_t   GetEventId1()       const {return fEventId1;}
+           /// Return Event Id in orbit number
    Int_t   GetEventId2()       const {return fEventId2;}
 
+           /// Return header length in word
    Int_t   GetHeaderLength()   const {return fgkHeaderLength;}
+           /// Return default data key word for CRT header
    UInt_t  GetDefaultDataKey() const {return fgkDefaultDataKey;}
 
-   void    SetDataKey(Int_t d)     {fDataKey = d;}
-   void    SetTotalLength(Int_t l) {fTotalLength = l;}
-   void    SetLength(Int_t l)      {fLength = l;}
-   void    SetDspId(Int_t d)       {fDspId = d;}  
-   void    SetL0Trigger(Int_t l)   {fL0Trigger = l;}
-   void    SetMiniEventId(Int_t e) {fMiniEventId = e;}
-   void    SetEventId1(Int_t e)    {fEventId1 = e;}
-   void    SetEventId2(Int_t e)    {fEventId2 = e;}
 
+           /// Set data key word for CRT header
+   void    SetDataKey(Int_t d)     {fDataKey = d;}
+           /// Set total length of block structure (w/o padding word)
+   void    SetTotalLength(Int_t l) {fTotalLength = l;}
+           /// Set length of raw data
+   void    SetLength(Int_t l)      {fLength = l;}
+           /// Set Dsp id
+   void    SetDspId(Int_t d)       {fDspId = d;}  
+           /// Set L0 trigger word
+   void    SetL0Trigger(Int_t l)   {fL0Trigger = l;}
+           /// Set Bunch Crossing for mini-event id (see TDR chapter 8)
+   void    SetMiniEventId(Int_t e) {fMiniEventId = e;}
+           /// Set Event Id in bunch crossing
+   void    SetEventId1(Int_t e)    {fEventId1 = e;}
+           /// Set Event Id in orbit number
+   void    SetEventId2(Int_t e)    {fEventId2 = e;}
+   
+   
+   /// Return header
    Int_t* GetHeader() {return &fDataKey;}
 
    void   AddDspHeader(const AliMUONDspHeader& dspHeader);
 
-   // get TClonesArray
+   /// get TClonesArray
    TClonesArray*      GetDspHeaderArray()  const {return fDspHeaderArray;}
 
-   // get entries
+   /// get entries
    Int_t              GetDspHeaderEntries() const {return fDspHeaderArray->GetEntriesFast();}
 
-   // get entry
+   /// get entry
    AliMUONDspHeader*  GetDspHeaderEntry(Int_t i) const {
      return (AliMUONDspHeader*)fDspHeaderArray->At(i);}
 

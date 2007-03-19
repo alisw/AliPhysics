@@ -35,7 +35,9 @@ class AliMpSlatPainter : public AliMpVPainter
   void Paint(Option_t* option);
 
  private:
+  /// Not implemented
   AliMpSlatPainter(const AliMpSlatPainter& right);
+  /// Not implemented
   AliMpSlatPainter&  operator = (const AliMpSlatPainter& right);
 
   const AliMpSlat* fkSlat; //!< pointer to the slat to be drawn

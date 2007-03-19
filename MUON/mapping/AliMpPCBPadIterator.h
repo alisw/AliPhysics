@@ -34,7 +34,9 @@ public:
   void Print(Option_t* opt="") const;
   
 private:
-    AliMpPCBPadIterator(const AliMpPCBPadIterator& right);
+  /// Not implemented
+  AliMpPCBPadIterator(const AliMpPCBPadIterator& right);
+  /// Not implemented
   AliMpPCBPadIterator&  operator = (const AliMpPCBPadIterator& right);
   
   Bool_t GetNextPosition(Int_t& ix, Int_t& iy);
@@ -42,7 +44,7 @@ private:
   void SetPad(AliMpPad& pad, const AliMpIntPair& indices);
   
 private:
-    const AliMpSlat*       fkSlat; //!< the slat we're iterating over
+  const AliMpSlat*       fkSlat; //!< the slat we're iterating over
   AliMpSlatSegmentation* fSlatSegmentation; //!< segmentation pointer
   AliMpIntPair fMinIndices; //!< indices of bottom left of region to iterate over
   AliMpIntPair fMaxIndices; //!< indices of top right of region to iterate over

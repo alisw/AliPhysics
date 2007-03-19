@@ -114,6 +114,8 @@ AliMpSectorSegmentation::~AliMpSectorSegmentation()
 void 
 AliMpSectorSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 {
+  /// Fill the array ecn with all manuIds
+
   GetSector()->GetAllMotifPositionsIDs(ecn);
 }
 

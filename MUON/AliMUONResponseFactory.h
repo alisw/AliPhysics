@@ -30,7 +30,9 @@ class AliMUONResponseFactory : public  TNamed {
     void BuildStation(AliMUON* where, Int_t stationNumber);
 
   private:
+    /// Not implemented
     AliMUONResponseFactory(const AliMUONResponseFactory& rhs);
+    /// Not implemented
     AliMUONResponseFactory& operator=(const AliMUONResponseFactory& rhs);
 
     void BuildCommon();

@@ -122,7 +122,9 @@ class AliMUONGeometryEnvelopeStore : public TObject
     AliMUONGeometryEnvelope* FindEnvelope(const TString& name) const;
 
   protected:
+    /// Not implemented
     AliMUONGeometryEnvelopeStore(const AliMUONGeometryEnvelopeStore& rhs);
+    /// Not implemented
     AliMUONGeometryEnvelopeStore& operator = (const AliMUONGeometryEnvelopeStore& rhs);
 
   private:

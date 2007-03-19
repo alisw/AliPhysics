@@ -20,6 +20,7 @@
 /// - inputs are regional responses
 /// - output is a 12-bit word
 /// - 4 bits per trigger level
+/// \todo Change member functions comments in capital letters to normal text
 ///
 /// \author Rachid Guernane (LPCCFd)
 
@@ -34,19 +35,29 @@ ClassImp(AliMUONGlobalTriggerBoard)
 //___________________________________________
 AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard()
 {
+/// Default constructor
+
    for (Int_t i=0;i<16;i++) fRegionalResponse[i] = 0;
 }
 
 //___________________________________________
 AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard(const char *name, Int_t a) : AliMUONTriggerBoard(name, a)
 {
+/// Standard constructor
+
    for (Int_t i=0;i<16;i++) fRegionalResponse[i] = 0;
+}
+
+//___________________________________________
+AliMUONGlobalTriggerBoard::~AliMUONGlobalTriggerBoard()
+{
+/// Destructor
 }
 
 //___________________________________________
 void AliMUONGlobalTriggerBoard::Mask(Int_t index, UShort_t mask)
 {
-  // MASK GLOBAL TRIGGER BOARD INPUT index WITH VALUE mask
+  /// MASK GLOBAL TRIGGER BOARD INPUT index WITH VALUE mask
   if ( index>=0 && index < 16 ) 
   {
     fMask[index]=mask;
@@ -60,12 +71,12 @@ void AliMUONGlobalTriggerBoard::Mask(Int_t index, UShort_t mask)
 //___________________________________________
 void AliMUONGlobalTriggerBoard::Response()
 {
-   // COMPUTE THE GLOBAL TRIGGER BOARD
-   // RESPONSE ACCORDING TO THE Algo() METHOD
-/// output from global trigger algorithm
-/// [+, -, LS, US] * [Hpt, Lpt]
-/// transformed to [usHpt, usLpt, lsHpt, lsLpt, sHpt, sLpt] according
-/// to Global Trigger Unit user manual
+   /// COMPUTE THE GLOBAL TRIGGER BOARD
+   /// RESPONSE ACCORDING TO THE Algo() METHOD
+// output from global trigger algorithm
+// [+, -, LS, US] * [Hpt, Lpt]
+// transformed to [usHpt, usLpt, lsHpt, lsLpt, sHpt, sLpt] according
+// to Global Trigger Unit user manual
 
    Int_t t[16];
    for (Int_t i=0;i<16;i++) t[i] = fRegionalResponse[i] & fMask[i];
@@ -109,7 +120,7 @@ void AliMUONGlobalTriggerBoard::Response()
 //___________________________________________
 UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
 {
-   // GLOBAL TRIGGER ALGORITHM
+   /// GLOBAL TRIGGER ALGORITHM
    TBits a(8), b(8); a.Set(8,&i); b.Set(8,&j);
 
    TBits trg1(2), trg2(2), trg(2);
@@ -160,7 +171,7 @@ UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
 //___________________________________________
 void AliMUONGlobalTriggerBoard::Scan(Option_t*) const
 {
-  // PRINT GLOBAL TRIGGER OUTPUT 
+  /// PRINT GLOBAL TRIGGER OUTPUT 
   TBits w(8); w.Set(8,&fResponse);
 
 // TRG[1:0]

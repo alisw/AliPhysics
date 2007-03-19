@@ -34,7 +34,9 @@
 ///
 /// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONLogger)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONLogger::AliMUONLogger(Int_t maxNumberOfEntries) 

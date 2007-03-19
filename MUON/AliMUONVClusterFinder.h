@@ -27,9 +27,11 @@ public:
   AliMUONVClusterFinder();
   virtual ~AliMUONVClusterFinder();
   
+  /// \todo add comment
   virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
                          TClonesArray* digits[2]) = 0;
   
+  /// \todo add comment
   virtual AliMUONCluster* NextCluster() = 0;
   
   /** Add a pad to the list of pads to be considered for clustering.

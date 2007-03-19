@@ -47,7 +47,7 @@ public:
 private:
   /// Not implemented
   AliMUONCheck(const AliMUONCheck& rhs);
- /// Not implemented
+  /// Not implemented
   AliMUONCheck& operator=(const AliMUONCheck& rhs);
   
 private:
@@ -64,8 +64,8 @@ private:
 
   AliMUONData*  fData;  //!< AliMUONData pointer (to access containers)
 
-  TTree   * fTree ;     //!pointer to the analyzed TTree or TChain
-  AliESD  * fESD ;      //! Declaration of leave types
+  TTree   * fTree ;     //!< pointer to the analyzed TTree or TChain
+  AliESD  * fESD ;      //!< Declaration of leave types
 
   ClassDef(AliMUONCheck,0) // Dumper of MUON related data
 }; 

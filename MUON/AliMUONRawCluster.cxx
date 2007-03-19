@@ -34,6 +34,7 @@
 ClassImp(AliMUONRawCluster)
 /// \endcond
 
+//____________________________________________________
 AliMUONRawCluster::AliMUONRawCluster() 
   : TObject(),
     fClusterType(0),
@@ -61,6 +62,13 @@ AliMUONRawCluster::AliMUONRawCluster()
     fErrXY[0] = 0.144;
     fErrXY[1] = 0.01;
 }
+
+//____________________________________________________
+AliMUONRawCluster::~AliMUONRawCluster() 
+{
+/// Destructor
+}
+
 //____________________________________________________
 Int_t AliMUONRawCluster::Compare(const TObject *obj) const
 {
@@ -179,10 +187,10 @@ Int_t AliMUONRawCluster::PhysicsContribution() const
 //____________________________________________________
 void AliMUONRawCluster::Print(Option_t* opt) const
 {
-  //
-  // Printing Raw Cluster (Rec Point) information 
-  // "full" option for printing all the information about the raw cluster
-  //
+  ///
+  /// Printing Raw Cluster (Rec Point) information 
+  /// "full" option for printing all the information about the raw cluster
+  ///
   TString sopt(opt);
   sopt.ToUpper();
  

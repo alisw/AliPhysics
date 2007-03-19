@@ -49,6 +49,7 @@ public:
   //  void dump(const char* what, const Float_t* array, Int_t size);
   //  void dump(const char* what, const Int_t* array, Int_t size);
   
+  /// Set pointer to transformations
   void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fTransformer = transformer;}
 
 private:

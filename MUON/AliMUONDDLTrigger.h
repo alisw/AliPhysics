@@ -27,16 +27,16 @@ public:
    void    AddLocStruct(const AliMUONLocalStruct& loc, Int_t iReg);
    void    AddRegHeader(const AliMUONRegHeader& regHeader);
 
-   // get AliMUONDarcHeader
+   /// get AliMUONDarcHeader
    AliMUONDarcHeader*  GetDarcHeader() const {return fDarcHeader;}
 
  private:
-
+   /// Not implemented
+   AliMUONDDLTrigger(const AliMUONDDLTrigger& event);
+   /// Not implemented
+   AliMUONDDLTrigger& operator=(const AliMUONDDLTrigger& event);
 
    AliMUONDarcHeader* fDarcHeader;  ///< pointer of darc header
-
-   AliMUONDDLTrigger(const AliMUONDDLTrigger& event);
-   AliMUONDDLTrigger& operator=(const AliMUONDDLTrigger& event);
 
    ClassDef(AliMUONDDLTrigger,1)  // MUON DDL Trigger
 };

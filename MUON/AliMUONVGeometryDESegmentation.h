@@ -43,7 +43,9 @@ class AliMUONVGeometryDESegmentation : public AliSegmentation
     virtual const AliMpVSegmentation* GetMpSegmentation() const = 0; 		       
 
   protected:
+    /// Not implemented
     AliMUONVGeometryDESegmentation(const AliMUONVGeometryDESegmentation& rhs);
+    /// Not implemented
     AliMUONVGeometryDESegmentation& operator=(
       const AliMUONVGeometryDESegmentation& rhs);
 

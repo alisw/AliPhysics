@@ -87,6 +87,8 @@ fnCoupled(0)
 //_____________________________________________________________________________
 AliMUONClusterSplitterMLEM::~AliMUONClusterSplitterMLEM()
 {
+  /// Destructor
+  
   delete fMathieson;
 }
 

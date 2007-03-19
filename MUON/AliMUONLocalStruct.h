@@ -22,68 +22,102 @@ public:
    AliMUONLocalStruct& operator=(const AliMUONLocalStruct& event);
 
 
-   virtual ~AliMUONLocalStruct(){;}
+   virtual ~AliMUONLocalStruct();
 
    // local board info
+            /// Return local data
    UInt_t  GetData(Int_t n) const {return fData[n];}
 
+            /// Return X2
    UShort_t GetX2() const {return (fData[0]     >> 16) &  0xFFFF;}
+            /// Return X1
    UShort_t GetX1() const {return (fData[0])           &  0xFFFF;}
+            /// Return X4
    UShort_t GetX4() const {return (fData[1] >> 16) &  0xFFFF;}
+            /// Return X3
    UShort_t GetX3() const {return (fData[1])       &  0xFFFF;}
 
+            /// Return Y2
    UShort_t GetY2() const {return (fData[2] >> 16) &  0xFFFF;}
+            /// Return Y1
    UShort_t GetY1() const {return (fData[2])       &  0xFFFF;}
+            /// Return Y4
    UShort_t GetY4() const {return (fData[3] >> 16) &  0xFFFF;}
+            /// Return Y3
    UShort_t GetY3() const {return (fData[3])       &  0xFFFF;}
 
+            /// Return Id
    UChar_t  GetId()  const  {return fData[4] >> 19 &  0xF;}
+            /// Return Dec
    UChar_t  GetDec() const  {return fData[4] >> 15 &  0xF;}
+            /// Return TriggerY
    Bool_t   GetTriggerY() const {return (fData[4] >> 14 & 0x1);}
+            /// Return Upos
    UChar_t  GetYPos() const {return fData[4] >> 10 &  0xF;}
+            /// Return Xdev
    UChar_t  GetXDev() const {return fData[4] >> 5  &  0x1F;}
+            /// Return TriggerX
    Bool_t   GetTriggerX() const {return ((GetXDev() >> 4  & 0x1) && !(GetXDev() & 0xF));}
+            /// Return Xpos
    UChar_t  GetXPos() const {return fData[4]       &  0x1F;}
 
+            /// Return LPT
    Int_t   GetLpt() const {return (GetDec() & 0x3);}
+            /// Return HPT
    Int_t   GetHpt() const {return (GetDec() >> 2) & 0x3;}
 
+            /// Set local data
    void    SetData(UInt_t d, Int_t n) {fData[n] = d;}
 
+            /// Return data
    UInt_t* GetData() {return &fData[0];}
 
  // Scaler methods
+            /// Return local L0
    UInt_t  GetL0()      const {return fL0;}
+            /// Return local hold (dead time)
    UInt_t  GetHold()    const {return fHold;}
+            /// Return local clock
    UInt_t  GetClock()   const {return fClk;}
+            /// Return switch
    UChar_t GetSwitch()  const {return (fEOS >> 2) & 0x3FF;}
+            /// Return ComptXY
    UChar_t GetComptXY() const {return  fEOS & 3;}
 
+            /// Return XY1
    UShort_t GetXY1(Int_t n) const {return  (n % 2 == 0) ?
        (fScaler[TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
+            /// Return XY2
    UShort_t GetXY2(Int_t n) const {return  (n % 2 == 0) ?
        (fScaler[8 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[8 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
+            /// Return XY3
    UShort_t GetXY3(Int_t n) const {return  (n % 2 == 0) ?
        (fScaler[8*2 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[8*2 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
+            /// Return XY4
    UShort_t GetXY4(Int_t n) const {return  (n % 2 == 0) ?
        (fScaler[8*3 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[8*3 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
+            /// Return scalers
    UInt_t* GetScalers()  {return &fL0;} 
 
    // get  length
+            /// Return scaler length in word
    Int_t  GetScalerLength()  const {return fgkScalerLength;} 
+            /// Return local info length in word
    Int_t  GetLength()        const {return fgkLength;} 
+            /// Return end of local info word
    UInt_t GetEndOfLocal()    const {return fgkEndOfLocal;}
+            /// Return Word for "empty" slots
    UInt_t GetDisableWord()   const {return fgkDisableWord;}
 
-  // set random numbers to fill variable
+   // set random numbers to fill variable
    void SetScalersNumbers();
 
  private:

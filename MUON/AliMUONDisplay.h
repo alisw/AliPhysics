@@ -67,17 +67,17 @@ public:
    TObjArray        *Phits() {return fPhits;}     ///< Return hit points for each chamber
    TObjArray        *Rpoints() {return fRpoints;} ///< Return cog points for each cathode
    virtual void      Paint(Option_t *option="");
-   virtual void      SetDrawClusters(Bool_t draw=kTRUE) {fDrawClusters=draw;}   // *MENU*
-   virtual void      SetChamberAndCathode(Int_t chamber=1, Int_t cathode=1);    // *MENU*
-   virtual void      SetDrawCoG(Bool_t draw=kTRUE) {fDrawCoG=draw;}             // *MENU*
-   virtual void      SetDrawTracks(Bool_t draw=kTRUE) {fDrawTracks=draw;}       // *MENU*
-   virtual void      SetRange(Float_t rrange=250., Float_t zrange=1050.);       // *MENU*
-   virtual void      SetEvent(Int_t newevent=0);                                // *MENU*   
+   virtual void      SetDrawClusters(Bool_t draw=kTRUE) {fDrawClusters=draw;}   ///< Set flag to draw clusters
+   virtual void      SetChamberAndCathode(Int_t chamber=1, Int_t cathode=1);    ///< Set chamber and cathod
+   virtual void      SetDrawCoG(Bool_t draw=kTRUE) {fDrawCoG=draw;}             ///< Set flag to draw CoG 
+   virtual void      SetDrawTracks(Bool_t draw=kTRUE) {fDrawTracks=draw;}       ///< Set flag to draw tracks
+   virtual void      SetRange(Float_t rrange=250., Float_t zrange=1050.);      
+   virtual void      SetEvent(Int_t newevent=0);                                  
    virtual void      SetView(Float_t theta=0, Float_t phi=-90, Float_t psi=0);
    virtual void      SetPickMode();
    virtual void      SetZoomMode();
    virtual void      ShowNextEvent(Int_t delta=1);
-   virtual void      UnZoom();                                                   // *MENU* 
+   virtual void      UnZoom();                                                
    virtual void      ResetPoints();
    virtual void      ResetPhits();
    virtual void      ResetRpoints();
@@ -86,7 +86,9 @@ public:
            void      Trigger();
 
 protected:
+                     /// Not implemented
 		     AliMUONDisplay(const AliMUONDisplay& display);
+                     /// Not implemented
    AliMUONDisplay&   operator = (const AliMUONDisplay& rhs);
 	   
 

@@ -48,6 +48,10 @@ public:
   TClonesArray *GetMuonTrackRef() {return fMuonTrackRef;}
 
 private:
+  /// Not implemented
+  AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
+  /// Not implemented
+  AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
   
   AliRunLoader* fRunLoader;     ///< alice run loader 
   AliMUONData*  fMUONData;      ///< Data container for MUON subsystem 
@@ -58,9 +62,6 @@ private:
   Bool_t fIsLoadConstructor;    //!< \brief boolean to tag the constructor, 
                                 /// to decide if the class should or not deal with the loaders
 
-
-  AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
-  AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
 
   ClassDef(AliMUONRecoCheck, 0)   //Utility class to check reconstruction
 };

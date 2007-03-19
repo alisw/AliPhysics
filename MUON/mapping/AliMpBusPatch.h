@@ -41,12 +41,15 @@ class AliMpBusPatch : public  TObject {
     
 
   private:
+    /// Not implemented
     AliMpBusPatch();
+    /// Not implemented
     AliMpBusPatch(const AliMpBusPatch& rhs);
+    /// Not implemented
     AliMpBusPatch& operator=(const AliMpBusPatch& rhs);
 
     // static data members	
-    static const Int_t  fgkOffset; //< Offset for conversion global/local ID  
+    static const Int_t  fgkOffset; ///< Offset for conversion global/local ID  
 
     // data members	
     Int_t        fId;    ///< Identifier (unique)

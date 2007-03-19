@@ -22,39 +22,61 @@ class AliMUONTrackParam;
 class AliMUONHitForRec : public TObject {
  public:
   AliMUONHitForRec(); // Constructor
-  virtual ~AliMUONHitForRec(){} // Destructor
+  virtual ~AliMUONHitForRec(); // Destructor
   AliMUONHitForRec (const AliMUONHitForRec& AliMUONHitForRec); // copy constructor
   AliMUONHitForRec& operator=(const AliMUONHitForRec& AliMUONHitForRec); // assignment operator
   AliMUONHitForRec(AliTrackReference* mHit); // Constructor from track ref. hit
   AliMUONHitForRec(AliMUONRawCluster* theRawCluster); // Constructor from raw cluster
 
   // Inline functions for Get and Set
+           /// Return coordinate (cm) in bending plane
   Double_t GetBendingCoor(void) const { return fBendingCoor;}
+           /// Set coordinate (cm) in bending plane
   void SetBendingCoor(Double_t BendingCoor) { fBendingCoor = BendingCoor;}
+           /// Return coordinate (cm) in non bending plane
   Double_t GetNonBendingCoor(void) const { return fNonBendingCoor;}
+           /// Set coordinate (cm) in non bending plane
   void SetNonBendingCoor(Double_t NonBendingCoor) { fNonBendingCoor = NonBendingCoor;}
+           /// Return Z coordinate (cm)
   Double_t GetZ(void) const { return fZ;}
+           /// Set Z coordinate (cm)
   void SetZ(Double_t Z) { fZ = Z;}
+           /// Return resolution**2 (cm**2) on coordinate in bending plane
   Double_t GetBendingReso2(void) const { return fBendingReso2;}
+           /// Set resolution**2 (cm**2) on coordinate in bending plane
   void SetBendingReso2(Double_t BendingReso2) { fBendingReso2 = BendingReso2;}
+           /// Return resolution**2 (cm**2) on coordinate in non bending plane
   Double_t GetNonBendingReso2(void) const { return fNonBendingReso2;}
+           /// Set resolution**2 (cm**2) on coordinate in non bending plane
   void SetNonBendingReso2(Double_t NonBendingReso2) { fNonBendingReso2 = NonBendingReso2;}
+           /// Return chamber number (0...)
   Int_t GetChamberNumber(void) const { return fChamberNumber;}
+           /// Set chamber number (0...)
   void SetChamberNumber(Int_t ChamberNumber) { fChamberNumber = ChamberNumber;}
+           /// Return detection element Id
   Int_t GetDetElemId(void) const {return fDetElemId;}
+           /// Set detection element Id
   void SetDetElemId(Int_t id) { fDetElemId = id;}
+           /// Return hit number (0...)
   Int_t GetHitNumber(void) const { return fHitNumber;}
+           /// Set hit number (0...)
   void SetHitNumber(Int_t HitNumber) { fHitNumber = HitNumber;}
+           /// Return track number (0...) in TTR
   Int_t GetTTRTrack(void) const { return fTTRTrack;}
+           /// Set track number (0...) in TTR
   void SetTTRTrack(Int_t TTRTrack) { fTTRTrack = TTRTrack;}
+           /// Return Track ref. signal (1) or background (0)
   Int_t GetTrackRefSignal(void) const { return fTrackRefSignal;}
+           /// Set Track ref. signal (1) or background (0)
   void SetTrackRefSignal(Int_t TrackRefSignal) { fTrackRefSignal = TrackRefSignal;}
+           /// Return number of TrackHit's made with HitForRec
   Int_t GetNTrackHits(void) const { return fNTrackHits;}
+           /// Set number of TrackHit's made with HitForRec
   void SetNTrackHits(Int_t NTrackHits) { fNTrackHits = NTrackHits;}
 
   Double_t NormalizedChi2WithHitForRec(AliMUONHitForRec* Hit, Double_t Sigma2Cut) const;
 
-  // What is necessary for sorting TClonesArray's; sufficient too ????
+  /// What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* HitForRec) const; // "Compare" function for sorting
 

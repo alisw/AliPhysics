@@ -25,7 +25,9 @@ public:
   virtual UInt_t Process(TMap* dcsAliasMap);
 
 private:
+  /// Not implemented
   AliMUONHVSubprocessor(const AliMUONHVSubprocessor&);
+  /// Not implemented
   AliMUONHVSubprocessor& operator=(const AliMUONHVSubprocessor&);
   
   ClassDef(AliMUONHVSubprocessor,1) // Shuttle Subprocessor for MUON TRK HV

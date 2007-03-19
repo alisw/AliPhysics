@@ -28,16 +28,19 @@ class AliMUONTriggerGeometryBuilder : public AliMUONVGeometryBuilder
     virtual void CreateGeometry();
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
+    
+    /// Do not apply global transformation (geometry is defined in the new ALICE reference frame)
     virtual bool ApplyGlobalTransformation() { return false; }
     
   protected:  
     
   private:
+    /// Not implemented
     AliMUONTriggerGeometryBuilder(const AliMUONTriggerGeometryBuilder& rhs);
-
-    // operators  
+    /// Not implemented
     AliMUONTriggerGeometryBuilder& operator = (const AliMUONTriggerGeometryBuilder& rhs);
-     AliMUON*  fMUON; ///< the MUON detector class 
+
+    AliMUON*  fMUON; ///< the MUON detector class 
         
   ClassDef(AliMUONTriggerGeometryBuilder,1) // MUON Trigger stations geometry construction class
 };

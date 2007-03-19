@@ -71,13 +71,15 @@ class AliMUONGeometryModuleTransformer : public TObject
                         GetDetElement(Int_t detElemId, Bool_t warn = true) const;    
 
   protected:
+    /// Not implemented
     AliMUONGeometryModuleTransformer(const AliMUONGeometryModuleTransformer& rhs);
+    /// Not implemented
     AliMUONGeometryModuleTransformer& 
       operator = (const AliMUONGeometryModuleTransformer& rhs);
 
   private:
     // static data members
-    static const TString  fgkModuleNamePrefix; /// < Geometry module name prefix
+    static const TString  fgkModuleNamePrefix; ///< Geometry module name prefix
 
     // data members
     Int_t                 fModuleId;   ///< the module Id

@@ -183,7 +183,9 @@ class AliMUONGeometrySegmentation : public TObject
     virtual void Print(Option_t* opt = "") const;
 	
   protected:
+    /// Not implemented
     AliMUONGeometrySegmentation(const AliMUONGeometrySegmentation& rhs);
+    /// Not implemented
     AliMUONGeometrySegmentation& operator=(const AliMUONGeometrySegmentation & rhs);
 
   private:

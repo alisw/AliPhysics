@@ -22,10 +22,13 @@ public:
   AliMUONVDataIterator();
   virtual ~AliMUONVDataIterator();
   
+  /// \todo add comment
   virtual TObject* Next() = 0;
   
+  /// \todo add comment
   virtual void Reset() = 0; 
   
+  /// \todo add comment
   virtual Bool_t Remove() = 0;
   
   ClassDef(AliMUONVDataIterator,0) // Interface for an iterator on AliMUONData.

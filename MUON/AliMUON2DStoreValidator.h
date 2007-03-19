@@ -36,6 +36,7 @@ public:
   TObjArray* Validate(const AliMUONV2DStore& store, 
                       Bool_t (*check)(const AliMUONVCalibParam&,Int_t));
 
+  /// Return statuses
   AliMUONV2DStore* GetStatus() const { return fStatus; }
   
   /// Reports what is missing, trying to be as concise as possible.

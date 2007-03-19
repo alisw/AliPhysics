@@ -23,21 +23,35 @@ class AliMUONTriggerTrack : public TObject
     AliMUONTriggerTrack& operator=(const AliMUONTriggerTrack& AliMUONTriggerTrack); // assignment operator
     AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t iloTrg, Long_t theGTPattern); 
     
-    // getter
+    // getters
+    
+    /// Return x position of fired Y strip in MC11
     Float_t GetX11()    const {return fx11;}
+    /// Return y position of fired X strip in MC11
     Float_t GetY11()    const {return fy11;}
+    /// Return track theta angle in X 
     Float_t GetThetax() const {return fthetax;}
+    /// Return track theta angle in Y
     Float_t GetThetay() const {return fthetay;}
+    /// Return local trigger number
     Int_t   GetLoTrgNum() const {return floTrgNum;}    
 
-    // setter
+    // setters
+    
+    /// Set x position of fired Y strip in MC11
     void SetX11(Float_t x)     {fx11 = x;}
+    /// Set y position of fired X strip in MC11
     void SetY11(Float_t y)     {fy11 = y;}
+    /// Set track theta angle in X 
     void SetThetax(Float_t tx) {fthetax = tx;}
+    /// Set track theta angle in Y
     void SetThetay(Float_t ty) {fthetay = ty;}
+    /// Set local trigger number
     void SetLoTrgNum(Int_t loTrgNum) {floTrgNum = loTrgNum;}    
 
+    /// Set Global trigger pattern  (do not work with static statement) 
     void SetGTPattern(UChar_t pat) {fGTPattern = pat;}    
+    /// Return Global trigger pattern  (do not work with static statement) 
     UChar_t GetGTPattern() const {return fGTPattern;}    
     
 protected:

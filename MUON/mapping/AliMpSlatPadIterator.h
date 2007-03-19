@@ -34,8 +34,11 @@ class AliMpSlatPadIterator : public AliMpVPadIterator
   void Invalidate();
  
  private:
+  /// Not implemented
   AliMpSlatPadIterator(const AliMpSlatPadIterator&);
-	AliMpSlatPadIterator& operator=(const AliMpSlatPadIterator&);
+  /// Not implemented
+  AliMpSlatPadIterator& operator=(const AliMpSlatPadIterator&);
+
   Bool_t Prepare(const AliMpArea& area);
   AliMpArea Intersect(const AliMpArea& a, const AliMpArea& b) const;
 

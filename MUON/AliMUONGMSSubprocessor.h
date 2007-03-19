@@ -32,7 +32,9 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
     virtual UInt_t Process(TMap* /*dcsAliasMap*/);
 
   private:
+    /// Not implemented
     AliMUONGMSSubprocessor(const AliMUONGMSSubprocessor&);
+    /// Not implemented
     AliMUONGMSSubprocessor& operator=(const AliMUONGMSSubprocessor&);
 
     UInt_t ProcessFile(const TString& filename);
@@ -43,9 +45,9 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
     static const TString  fgkMatrixArrayName;  ///< The fixed matrix array name
   
     // data members
-    AliMUONGeometryTransformer fTransformer;///< Geometry transformer (used to get vo
+    AliMUONGeometryTransformer fTransformer;///< Geometry transformer
 
-    ClassDef(AliMUONGMSSubprocessor, 1); // Shuttle sub-processor for GMS
+    ClassDef(AliMUONGMSSubprocessor, 1) // Shuttle sub-processor for GMS
 };
 
 #endif

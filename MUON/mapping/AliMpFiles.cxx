@@ -311,6 +311,8 @@ TString AliMpFiles::ManuToSerialPath(const TString& deName, AliMp::StationType s
 void 
 AliMpFiles::SetTopPath(const TString& topPath)
 { 
+/// Set top file path
+
   GetTop() = topPath; 
 }
 

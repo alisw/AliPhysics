@@ -37,7 +37,9 @@ class AliMpManuGeo : public TObject
   Int_t         GetManuSerial(AliMpIntPair& pair);
 
  private:
+  /// Not implemented
   AliMpManuGeo(const AliMpManuGeo& src);
+  /// Not implemented
   AliMpManuGeo& operator = (const AliMpManuGeo& src) ;
 
 

@@ -33,11 +33,12 @@ class AliMUONSt1GeometryBuilder : public AliMUONVGeometryBuilder
   protected:
     
   private:
+    /// Not implemented
     AliMUONSt1GeometryBuilder(const AliMUONSt1GeometryBuilder& rhs);
-
-    // operators  
+    /// Not implemented
     AliMUONSt1GeometryBuilder& operator = (const AliMUONSt1GeometryBuilder& rhs);
-     AliMUON*  fMUON; ///< the MUON detector class 
+
+    AliMUON*  fMUON; ///< the MUON detector class 
         
   ClassDef(AliMUONSt1GeometryBuilder,1) //MUON Station1 coarse geometry construction class 
 };

@@ -37,11 +37,13 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor {
   
   // Parameters for reconstruction
   static const Double_t fgkMaxNormChi2; ///< maximum Chi2 per degree of freedom for reconstruction
-  static const Bool_t fgkTrackAllTracks; /// kTRUE to track all the possible candidates; kFALSE to track only the best ones
+  static const Bool_t fgkTrackAllTracks; ///< kTRUE to track all the possible candidates; kFALSE to track only the best ones
 
   // Functions
-  AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); ///< copy constructor
-  AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs); ///< assignment operator
+  /// Not implemented copy constructor
+  AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); 
+  /// Not implemented copy assignment operator
+  AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs);
   
   void RemoveIdenticalTracks(void);
   void FollowTrackInStation(AliMUONTrack* trackCandidate, Int_t nextStation);

@@ -45,7 +45,9 @@ class AliMUONv1 : public AliMUON
      {fStepMaxInActiveGas = StepMax; }
 
  protected:
+   /// Not implemented
    AliMUONv1(const AliMUONv1& right);
+   /// Not implemented
    AliMUONv1&  operator = (const AliMUONv1& right);
 
    virtual Int_t  GetGeomModuleId(Int_t volId) const;

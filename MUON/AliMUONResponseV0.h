@@ -93,6 +93,11 @@ class AliMUONResponseV0 : public AliMUONResponse
     virtual void Print(Option_t* opt="") const;
      
  protected:
+    /// Not implemented
+    AliMUONResponseV0(const AliMUONResponseV0& rhs);
+    /// Not implemented
+    AliMUONResponseV0& operator = (const AliMUONResponseV0& rhs);
+   
     Float_t fChargeSlope;              ///< Slope of the charge distribution
     Float_t fChargeSpreadX;            ///< Width of the charge distribution in x
     Float_t fChargeSpreadY;            ///< Width of the charge distribution in y
@@ -105,11 +110,6 @@ class AliMUONResponseV0 : public AliMUONResponse
     AliMUONMathieson* fMathieson;      ///< pointer to mathieson fct
     Float_t fChargeThreshold;          ///< Charges below this threshold are = 0  
 
-  private:
-    AliMUONResponseV0(const AliMUONResponseV0& rhs);
-    AliMUONResponseV0& operator = (const AliMUONResponseV0& rhs);
-
-   
     ClassDef(AliMUONResponseV0,2) // Implementation of detector response
 };
 

@@ -43,14 +43,15 @@ class AliMpConnection : public TObject
           /// Return the motif type which contains this connection
     AliMpMotifType *GetOwner() const {return fOwner;}
     
-    void SetGassiNum(Int_t n) { fGassiNum = n; }
-    
     AliMpIntPair LocalIndices() const;
     TString  PadName() const;
     
     //
     // modifiers
     //
+
+          /// Set Gassiplex channel number
+    void SetGassiNum(Int_t n) { fGassiNum = n; }
           /// Set the motif type which contains this connection
     void SetOwner(AliMpMotifType *owner) {fOwner=owner;}
 

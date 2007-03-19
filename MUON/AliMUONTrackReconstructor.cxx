@@ -935,7 +935,7 @@ Double_t MultipleScatteringAngle2(AliMUONTrackParam *param)
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructor::FillMUONTrack()
+void AliMUONTrackReconstructor::FillMUONTrack(void)
 {
   /// Fill fHitForRecAtHit of AliMUONTrack's
   AliMUONTrack *track;

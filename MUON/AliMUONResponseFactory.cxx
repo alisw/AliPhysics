@@ -34,7 +34,9 @@
 #include "AliMUONResponseTrigger.h"
 #include "AliMUONResponseTriggerV1.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONResponseFactory)
+/// \endcond
 
 //__________________________________________________________________________
   AliMUONResponseFactory::AliMUONResponseFactory(const char* name)

@@ -53,18 +53,18 @@ AliMUONPayloadTracker::AliMUONPayloadTracker()
     fBlockHeader(new AliMUONBlockHeader()),
     fDspHeader(new AliMUONDspHeader())
 {
-  //
-  // create an object to decode MUON payload
-  //
+  ///
+  /// create an object to decode MUON payload
+  ///
 
 }
 
 //___________________________________
 AliMUONPayloadTracker::~AliMUONPayloadTracker()
 {
-  //
-  // clean up
-  //
+  ///
+  /// clean up
+  ///
   delete fDDLTracker;
   delete fBusStruct;
   delete fBlockHeader;
@@ -75,11 +75,11 @@ AliMUONPayloadTracker::~AliMUONPayloadTracker()
 Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 {
 
-  // Each DDL is made with 2 Blocks each of which consists of 5 DSP's at most 
-  // and each of DSP has at most 5 buspatches.
-  // The different structures, Block (CRT), DSP (FRT) and Buspatch,
-  // are identified by a key word 0xFC0000FC, 0xF000000F and 0xB000000B respectively.
-  // (fBusPatchManager no more needed !)
+  /// Each DDL is made with 2 Blocks each of which consists of 5 DSP's at most 
+  /// and each of DSP has at most 5 buspatches.
+  /// The different structures, Block (CRT), DSP (FRT) and Buspatch,
+  /// are identified by a key word 0xFC0000FC, 0xF000000F and 0xB000000B respectively.
+  /// (fBusPatchManager no more needed !)
 
 
   //Read Header Size of DDL,Block,DSP and BusPatch
@@ -218,16 +218,16 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 //______________________________________________________
 void AliMUONPayloadTracker::ResetDDL()
 {
-  // reseting TClonesArray
-  // after each DDL
-  //
+  /// reseting TClonesArray
+  /// after each DDL
+  ///
   fDDLTracker->GetBlkHeaderArray()->Delete();
 }
 
 //______________________________________________________
 void AliMUONPayloadTracker::SetMaxBlock(Int_t blk) 
 {
-  // set regional card number
+  /// set regional card number
   if (blk > 2) blk = 2;
   fMaxBlock = blk;
 }
@@ -235,9 +235,9 @@ void AliMUONPayloadTracker::SetMaxBlock(Int_t blk)
 //______________________________________________________
 Bool_t AliMUONPayloadTracker::CheckDataParity()
 {
-  // parity check
-  // taken from MuTrkBusPatch.cxx (sotfware test for CROCUS)
-  // A. Baldisseri
+  /// parity check
+  /// taken from MuTrkBusPatch.cxx (sotfware test for CROCUS)
+  /// A. Baldisseri
 
   Int_t  parity;
   UInt_t data;

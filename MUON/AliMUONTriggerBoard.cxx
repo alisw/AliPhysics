@@ -15,14 +15,21 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
-//    TRIGGER BOARD SUPER CLASS IMPLEMENTATION
-//    CAN BE A LOCAL, REGIONAL, OR GLOBAL BOARD
-//    REGIONAL BOARD IS PER CONVENTION
-//    ALWAYS IN THE SLOT 0
+///  \class AliMUONTriggerBoard
+///  TRIGGER BOARD SUPER CLASS IMPLEMENTATION
+///  CAN BE A LOCAL, REGIONAL, OR GLOBAL BOARD
+///  REGIONAL BOARD IS PER CONVENTION
+///  ALWAYS IN THE SLOT 0
+/// \todo Change comments in capital letters to normal text
+///
+///  \author Rachid Guernane (LPCCFd)
 
 #include "AliMUONTriggerBoard.h"
 #include "AliLog.h"
+
+/// \cond CLASSIMP
+ClassImp(AliMUONTriggerBoard)
+/// \endcond
 
 //___________________________________________
 AliMUONTriggerBoard::AliMUONTriggerBoard()
@@ -30,7 +37,7 @@ AliMUONTriggerBoard::AliMUONTriggerBoard()
       fSlot(0),
       fResponse(0)
 {
-// Default Ctor
+/// Default Ctor
 
 }
 
@@ -40,33 +47,16 @@ AliMUONTriggerBoard::AliMUONTriggerBoard(const char *Name, Int_t islot)
       fSlot(islot),
       fResponse(0)
 {
-// Standard Ctor
+/// Standard Ctor
 
 }
 
 //___________________________________________
-AliMUONTriggerBoard::AliMUONTriggerBoard(const AliMUONTriggerBoard &board)
-    : TNamed(board),
-      fSlot(board.fSlot),
-      fResponse(board.fResponse)
+AliMUONTriggerBoard::~AliMUONTriggerBoard()
 {
-// Dummy Copy Ctor
-//   board.Copy(*this);
-}
+/// Destructor
+}  
 
-//___________________________________________
-AliMUONTriggerBoard& AliMUONTriggerBoard::operator=(const AliMUONTriggerBoard&)
-{
-   AliFatal("Assignment operator not implemented");
-   return *this;
-}
 
-//___________________________________________
-void AliMUONTriggerBoard::Copy(TObject&) const
-{
-   Fatal("Copy","Not implemented!\n");
-}
-
-ClassImp(AliMUONTriggerBoard)
 
 

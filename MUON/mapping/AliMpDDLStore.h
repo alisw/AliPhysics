@@ -54,7 +54,9 @@ class AliMpDDLStore : public  TObject {
 
   private:
     AliMpDDLStore();
+    /// Not implemented
     AliMpDDLStore(const AliMpDDLStore& rhs);
+    /// Not implemented
     AliMpDDLStore& operator=(const AliMpDDLStore& rhs);
 
     // methods

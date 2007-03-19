@@ -7,7 +7,7 @@
 
 /// \ingroup sim
 /// \class AliMUONGlobalTriggerBoard
-/// \brief Global trigger
+/// \brief Global trigger board
 ///
 //  Author: Rachid Guernane (LPCCFd)
 
@@ -19,18 +19,21 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
 
       AliMUONGlobalTriggerBoard();  
       AliMUONGlobalTriggerBoard(const char *name, Int_t a);
-      virtual ~AliMUONGlobalTriggerBoard() {;}
-    
+      virtual ~AliMUONGlobalTriggerBoard();
+                       
+                       /// Set regional board responses
       virtual void     SetRegionalResponse(UShort_t resp[16]) {for (Int_t i=0; i<16; i++) fRegionalResponse[i] = resp[i];}
 
       virtual void     Response();
 
       virtual UShort_t Algo(UShort_t i, UShort_t j, char *thres);
-
+                      
+                       /// Reset regional board responses
       virtual void     Reset() {for (Int_t i=0; i<16; i++) fRegionalResponse[i] = 0;}
 
       virtual void     Scan(Option_t *option) const;
 
+                       /// \todo add comment
       virtual void     Resp(Option_t*) const {}
 
       void Mask(Int_t index, UShort_t mask);

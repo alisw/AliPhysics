@@ -73,7 +73,9 @@ public:
   AliMUONTriggerEfficiencyCells* TriggerEfficiency() const;
   
 protected:
+  /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);
+  /// Not implemented
   AliMUONCalibrationData& operator=(const AliMUONCalibrationData& other);
   
 private:
@@ -88,16 +90,16 @@ private:
   AliMUONTriggerEfficiencyCells* OnDemandTriggerEfficiency() const;
   
 private:  
-  mutable Bool_t fIsValid; // Whether we were able to correctly initialize
-  Int_t fRunNumber; // The run number for which we hold calibrations
-  mutable AliMUONV2DStore* fGains; //!
-  mutable AliMUONV2DStore* fPedestals; //!
-  mutable TMap* fHV; //!
-  mutable AliMUONV1DStore* fLocalTriggerBoardMasks; //!
-  mutable AliMUONV1DStore* fRegionalTriggerBoardMasks; //!
-  mutable AliMUONVCalibParam* fGlobalTriggerBoardMasks; //!
-  mutable AliMUONTriggerLut* fTriggerLut; //!
-  mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!
+  mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize
+  Int_t fRunNumber; ///<  The run number for which we hold calibrations
+  mutable AliMUONV2DStore* fGains; //!< Gains
+  mutable AliMUONV2DStore* fPedestals; //!< Pedestals
+  mutable TMap* fHV; //!< HV
+  mutable AliMUONV1DStore* fLocalTriggerBoardMasks; //!< Local trigger board maska
+  mutable AliMUONV1DStore* fRegionalTriggerBoardMasks; //!< Regional trigger board maska
+  mutable AliMUONVCalibParam* fGlobalTriggerBoardMasks; //!< Global trigger board maska
+  mutable AliMUONTriggerLut* fTriggerLut; //!< TRigger LUTs
+  mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< Trigger efficiency cells
   
   ClassDef(AliMUONCalibrationData,4) // Storage for all MUON calibration data.
 };

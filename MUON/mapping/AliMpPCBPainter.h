@@ -31,7 +31,9 @@ public:
   TVector2 GetPosition() const;
 
  private:
+  /// Not implemented
   AliMpPCBPainter(const AliMpPCBPainter& right);
+  /// Not implemented
   AliMpPCBPainter&  operator = (const AliMpPCBPainter& right);
 
   AliMpPCB* fPCB; //!< PCB to be plotted.

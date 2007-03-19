@@ -9,7 +9,7 @@
 /// \class AliMUONTriggerBoard
 /// \brief TRIGGER BOARD BASE CLASS
 ///
-/// \author Rachid Guernane (LPCCFd)
+//  Author Rachid Guernane (LPCCFd)
 
 #include <TNamed.h>
 
@@ -17,35 +17,36 @@ class AliMUONTriggerBoard : public TNamed
 {
    public:
       AliMUONTriggerBoard();
-      AliMUONTriggerBoard(const AliMUONTriggerBoard &entry);
       AliMUONTriggerBoard(const char *name, Int_t islot);
-      virtual ~AliMUONTriggerBoard() {}
+      virtual ~AliMUONTriggerBoard();
 
-      AliMUONTriggerBoard& operator=(const AliMUONTriggerBoard &rhs);
-
+      /// \todo add comment 
       virtual void Response() = 0;
 
+      /// \todo add comment 
       virtual void Reset() = 0;
 
+      /// \todo add comment 
       virtual void Scan(Option_t *option) const = 0;
 
+      /// \todo add comment 
       virtual void Resp(Option_t *option) const = 0;
 
+      /// Return response
       virtual UShort_t GetResponse() const {return fResponse;}
 
+      /// \todo add comment 
       virtual void Mask(Int_t index, UShort_t mask) = 0;
       
    protected:
+      /// Not implemented
+      AliMUONTriggerBoard(const AliMUONTriggerBoard &entry);
+      /// Not implemented
+      AliMUONTriggerBoard& operator=(const AliMUONTriggerBoard &rhs);
 
       Int_t fSlot;                ///< SLOT NUMBER IN CRATE
 
       UShort_t fResponse;         ///< RESPONSE
-
-      void Copy(TObject&) const;
-
-   private:
-
-
 
    ClassDef(AliMUONTriggerBoard,1)
 };

@@ -45,9 +45,9 @@ AliMpSlatSegmentation::AliMpSlatSegmentation()
   fkSlat(0),
   fIsOwner(false)
 {
-  //
-  // Default ctor. Not to be used really.
-  //
+  ///
+  /// Default ctor. Not to be used really.
+  ///
   AliDebug(1,Form("this=%p Empty ctor",this));
 }
 
@@ -57,18 +57,18 @@ AliMpSlatSegmentation::AliMpSlatSegmentation(const AliMpSlat* slat, Bool_t own)
   fkSlat(slat),
   fIsOwner(own)
 {
-  //
-  // Normal ctor.
-  //
+  ///
+  /// Normal ctor.
+  ///
   AliDebug(1,Form("this=%p Normal ctor slat=%p",this,slat));
 }
 
 //_____________________________________________________________________________
 AliMpSlatSegmentation::~AliMpSlatSegmentation()
 {
-  //
-  // Dtor (empty).
-  //
+  ///
+  /// Dtor (empty).
+  ///
  
   if ( fIsOwner ) delete fkSlat;
  
@@ -80,9 +80,9 @@ AliMpSlatSegmentation::~AliMpSlatSegmentation()
 AliMpVPadIterator*
 AliMpSlatSegmentation::CreateIterator(const AliMpArea& area) const
 {
-  //
-  // Returns an iterator to loop over the pad contained within given area.
-  //
+  ///
+  /// Returns an iterator to loop over the pad contained within given area.
+  ///
   AliMpArea a(area.Position()+fkSlat->Position(),area.Dimensions());
   AliDebug(3,Form("Converted input area wrt to slat center : "
                   "%7.2f,%7.2f->%7.2f,%7.2f to wrt slat lower-left : "
@@ -124,6 +124,8 @@ AliMpSlatSegmentation::GetNeighbours(const AliMpPad& pad,
 TVector2
 AliMpSlatSegmentation::Dimensions() const
 {
+  /// Return dimensions
+
   return Slat()->Dimensions();
 }
 
@@ -131,6 +133,8 @@ AliMpSlatSegmentation::Dimensions() const
 void 
 AliMpSlatSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 {
+  /// Fill the array ecn with all manuIds
+
   Slat()->GetAllMotifPositionsIDs(ecn);
 }
 
@@ -138,7 +142,7 @@ AliMpSlatSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 const char*
 AliMpSlatSegmentation::GetName() const
 {
-  // The name of this segmentation is "SlatSegmentation"+slatName
+  /// The name of this segmentation is "SlatSegmentation"+slatName
 
   TString name("SlatSegmentation");
   if ( fkSlat) 
@@ -153,10 +157,10 @@ AliMpSlatSegmentation::GetName() const
 Bool_t
 AliMpSlatSegmentation::HasPad(const AliMpIntPair& indices) const
 {
-  //
-  // Test if this slat has a pad located at the position referenced
-  // by the integer indices.
-  //
+  ///
+  /// Test if this slat has a pad located at the position referenced
+  /// by the integer indices.
+  ///
   
   return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
 }
@@ -165,9 +169,9 @@ AliMpSlatSegmentation::HasPad(const AliMpIntPair& indices) const
 Int_t 
 AliMpSlatSegmentation::MaxPadIndexX() const
 {
-  //
-  // Returns the value of the largest pad index in x-direction.
-  //
+  ///
+  /// Returns the value of the largest pad index in x-direction.
+  ///
   
   return fkSlat->GetMaxPadIndexX();
 }
@@ -176,9 +180,9 @@ AliMpSlatSegmentation::MaxPadIndexX() const
 Int_t 
 AliMpSlatSegmentation::MaxPadIndexY() const
 {
-  //
-  // Returns the value of the largest pad index in y-direction.
-  //
+  ///
+  /// Returns the value of the largest pad index in y-direction.
+  ///
   
   return fkSlat->GetMaxNofPadsY()-1;
 }
@@ -197,14 +201,14 @@ AliMpPad
 AliMpSlatSegmentation::PadByLocation(const AliMpIntPair& location, 
                                      Bool_t warning) const
 {
-  //
-  // Returns the pad specified by its location, where location is the 
-  // pair (ManuID,ManuChannel).
-  // If warning=kTRUE and the pad does not exist, a warning message is 
-  // printed.
-  //
-  // AliMpPad::Invalid() is returned if there's no pad at the given location.
-  //
+  ///
+  /// Returns the pad specified by its location, where location is the 
+  /// pair (ManuID,ManuChannel).
+  /// If warning=kTRUE and the pad does not exist, a warning message is 
+  /// printed.
+  ///
+  /// AliMpPad::Invalid() is returned if there's no pad at the given location.
+  ///
   Int_t manuID = location.GetFirst();
 	
   AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(manuID);
@@ -245,17 +249,17 @@ AliMpPad
 AliMpSlatSegmentation::PadByIndices(const AliMpIntPair& indices, 
                                     Bool_t warning) const
 {
-  //
-  // Returns the pad specified by its integer indices.
-  // If warning=kTRUE and the pad does not exist, a warning message is 
-  // printed.
-  //
-  // AliMpPad::Invalid() is returned if there's no pad at the given location.
-  //
-  //  
-  // FIXME: except for the FindMotifPosition below, this method
-  // is exactly as the one in AliMpSectorSegmentation.
-  // See if we can merge them somehow.
+  ///
+  /// Returns the pad specified by its integer indices.
+  /// If warning=kTRUE and the pad does not exist, a warning message is 
+  /// printed.
+  ///
+  /// AliMpPad::Invalid() is returned if there's no pad at the given location.
+  ///
+  ///  
+  /// FIXME: except for the FindMotifPosition below, this method
+  /// is exactly as the one in AliMpSectorSegmentation.
+  /// See if we can merge them somehow.
 	
   AliMpMotifPosition* motifPos = fkSlat->FindMotifPosition(indices.GetFirst(),
 																									 indices.GetSecond());
@@ -297,13 +301,13 @@ AliMpPad
 AliMpSlatSegmentation::PadByPosition(const TVector2& position, 
                                      Bool_t warning) const
 {
-  //
-  // Returns the pad specified by its (floating point) position.
-  // If warning=kTRUE and the pad does not exist, a warning message is 
-  // printed.
-  //
-  // AliMpPad::Invalid() is returned if there's no pad at the given location.
-  //
+  ///
+  /// Returns the pad specified by its (floating point) position.
+  /// If warning=kTRUE and the pad does not exist, a warning message is 
+  /// printed.
+  ///
+  /// AliMpPad::Invalid() is returned if there's no pad at the given location.
+  ///
   
   TVector2 blPos(position);
   
@@ -361,6 +365,8 @@ AliMpSlatSegmentation::PlaneType() const
 void
 AliMpSlatSegmentation::Print(Option_t* opt) const
 {
+/// Printing
+
   fkSlat->Print(opt);
 }
 
@@ -368,9 +374,9 @@ AliMpSlatSegmentation::Print(Option_t* opt) const
 const AliMpSlat* 
 AliMpSlatSegmentation::Slat() const
 {
-  //
-  // Returns the pointer to the referenced slat.
-  //
+  ///
+  /// Returns the pointer to the referenced slat.
+  ///
   
   return fkSlat;
 }

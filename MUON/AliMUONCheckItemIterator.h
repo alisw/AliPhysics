@@ -30,7 +30,9 @@ public:
   TObject* Next();
   
 private:
+  /// Not implemented
   AliMUONCheckItemIterator(const AliMUONCheckItemIterator&);
+  /// Not implemented
   AliMUONCheckItemIterator& operator=(const AliMUONCheckItemIterator&);
   
 private:

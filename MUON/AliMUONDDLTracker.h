@@ -28,13 +28,13 @@ public:
    void    AddDspHeader(const AliMUONDspHeader& dspHeader, Int_t iBlock);
    void    AddBlkHeader(const AliMUONBlockHeader& blkHeader);
 
-   // get TClonesArray
+   /// get TClonesArray
    TClonesArray*  GetBlkHeaderArray() const {return fBlkHeaderArray;}
 
-   // get entries
+   /// get entries
    Int_t GetBlkHeaderEntries() const {return fBlkHeaderArray->GetEntriesFast();}
  
-   // get entry
+   /// get entry
    AliMUONBlockHeader* GetBlkHeaderEntry(Int_t i) const {
      return (AliMUONBlockHeader*)fBlkHeaderArray->At(i);}
 
@@ -43,11 +43,12 @@ public:
 
 
  private:
+   /// Not implemented
+   AliMUONDDLTracker(const AliMUONDDLTracker& event);
+   /// Not implemented
+   AliMUONDDLTracker& operator=(const AliMUONDDLTracker& event);
 
    TClonesArray* fBlkHeaderArray;  ///< array of block header
- 
-   AliMUONDDLTracker(const AliMUONDDLTracker& event);
-   AliMUONDDLTracker& operator=(const AliMUONDDLTracker& event);
  
    ClassDef(AliMUONDDLTracker,1)  // MUON DDL Tracker
 };

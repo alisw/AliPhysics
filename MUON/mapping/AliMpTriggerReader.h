@@ -70,7 +70,7 @@ private:
     
   int LocalBoardNumber(const char* localBoardName);
   
-  AliMpPCB* PCB(const char* pcbType); 
+  // AliMpPCB* PCB(const char* pcbType); 
   
   void ReadLines(const char* slatType,
                         AliMp::PlaneType planeType,

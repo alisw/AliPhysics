@@ -50,7 +50,9 @@ public:
   virtual void          SetMatrix(TMatrixF *matrix) {fMatrix = matrix;}
   
 protected:
+  /// Not implemented
   AliMUONPoints(const AliMUONPoints& points);  
+  /// Not implemented
   AliMUONPoints& operator = (const AliMUONPoints& rhs);
 
    Int_t            fHitIndex;         ///< Link to hit number 

@@ -43,7 +43,7 @@ AliMUONTriggerGeometryBuilder::AliMUONTriggerGeometryBuilder(AliMUON* muon)
  : AliMUONVGeometryBuilder(16, 4),
    fMUON(muon)
 {
-// Standard constructor
+/// Standard constructor
 
 }
 
@@ -52,12 +52,13 @@ AliMUONTriggerGeometryBuilder::AliMUONTriggerGeometryBuilder()
  : AliMUONVGeometryBuilder(),
    fMUON(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 //______________________________________________________________________________
-AliMUONTriggerGeometryBuilder::~AliMUONTriggerGeometryBuilder() {
-//
+AliMUONTriggerGeometryBuilder::~AliMUONTriggerGeometryBuilder() 
+{
+/// Destructor
 }
 
 //
@@ -67,7 +68,7 @@ AliMUONTriggerGeometryBuilder::~AliMUONTriggerGeometryBuilder() {
 //______________________________________________________________________________
 void AliMUONTriggerGeometryBuilder::CreateGeometry()
 {
-// From AliMUONv1::CreateGeometry()
+/// From AliMUONv1::CreateGeometry()
 
     /* 
        zpos1 and zpos2 are the middle of the first and second
@@ -315,8 +316,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 //______________________________________________________________________________
 void AliMUONTriggerGeometryBuilder::SetTransformations() 
 {
-// Defines the transformations for the trigger chambers.
-// ---
+/// Defines the transformations for the trigger chambers.
 
     if (gAlice->GetModule("SHIL")) {
       SetMotherVolume(16, "YOUT2");
@@ -346,8 +346,7 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
 //______________________________________________________________________________
 void AliMUONTriggerGeometryBuilder::SetSensitiveVolumes()
 {
-// Defines the sensitive volumes for trigger station chambers.
-// ---
+/// Defines the sensitive volumes for trigger station chambers.
 
   GetGeometry(16)->SetSensitiveVolume("S11G");
   GetGeometry(17)->SetSensitiveVolume("S12G");

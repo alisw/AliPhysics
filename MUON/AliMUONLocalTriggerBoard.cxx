@@ -15,13 +15,12 @@
 
 /* $Id$ */
 
-//_________________________________________________________________________
-// Implementation of local trigger board objects
-// A local trigger board has as input a bit pattern and returns 
-// the local trigger response after comparison w/ a LUT
-//*-- Author: Rachid Guernane (LPCCFd)
-//*
-//*
+/// \class AliMUONLocalTriggerBoard
+/// A local trigger board has as input a bit pattern and returns 
+/// the local trigger response after comparison w/ a LUT
+/// \todo Change member functions comments in capital letters to normal text
+///
+/// \author Rachid Guernane (LPCCFd)
 
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerLut.h"
@@ -30,6 +29,10 @@
 
 #include <TBits.h>
 #include <Riostream.h>
+
+/// \cond CLASSIMP
+ClassImp(AliMUONLocalTriggerBoard)
+/// \endcond
 
 const Int_t AliMUONLocalTriggerBoard::fgkCircuitId[234] = 
 {
@@ -66,8 +69,8 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
       fLUT(0x0),
       fCoinc44(0)      
 {
-//* constructor
-//*
+/// Default constructor
+///
 
    for (Int_t i=0; i<2; i++) 
       for (Int_t j=0; j<4; j++) 
@@ -98,8 +101,8 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
       fLUT(lut),
       fCoinc44(0)
 {
-//* constructor
-//*
+/// Standard constructor
+///
    
    for (Int_t i=0; i<2; i++) 
       for (Int_t j=0; j<4; j++) 
@@ -116,43 +119,17 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
    for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
 }
 
-//______________________________________________________________________________
-AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right) 
-    : AliMUONTriggerBoard(right),
-      fNumber(right.fNumber),
-      fCrate(right.fCrate),
-      fTC(right.fTC),
-      fStripX11(right.fStripX11),
-      fStripY11(right.fStripY11),
-      fDev(right.fDev),
-      fOutput(right.fOutput),
-      fLUT(right.fLUT),
-      fCoinc44(right.fCoinc44)
-{  
-/// Protected copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
-//______________________________________________________________________________
-AliMUONLocalTriggerBoard& 
-AliMUONLocalTriggerBoard::operator=(const AliMUONLocalTriggerBoard& right)
+//___________________________________________
+AliMUONLocalTriggerBoard::~AliMUONLocalTriggerBoard()
 {
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
+/// Destructor
+}
 
 //___________________________________________
 void AliMUONLocalTriggerBoard::Reset()
 {
-//* reset board
-//*
+/// reset board
+///
    for (Int_t i=0; i<2; i++) 
       for (Int_t j=0; j<4; j++) 
          fXY[i][j] = fXYU[i][j] = fXYD[i][j] = 0;
@@ -171,7 +148,7 @@ void AliMUONLocalTriggerBoard::Reset()
 //___________________________________________
 void AliMUONLocalTriggerBoard::Setbit(Int_t strip, Int_t cathode, Int_t chamber)
 {
-// 0 .. LBS   :   N-1 .. MSB
+/// 0 .. LBS   :   N-1 .. MSB
    TBits w, m;
 
    UShort_t xy = fXY[cathode][chamber], mask = fMask[cathode][chamber];
@@ -195,7 +172,7 @@ void AliMUONLocalTriggerBoard::Setbit(Int_t strip, Int_t cathode, Int_t chamber)
 //___________________________________________
 void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber)
 {
-// 0 .. LBS   :   N-1 .. MSB
+/// 0 .. LBS   :   N-1 .. MSB
    TBits w, m;
 
    UShort_t xy = fXY[cathode][chamber], mask = fMask[cathode][chamber];
@@ -217,8 +194,8 @@ void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber
 //___________________________________________
 void AliMUONLocalTriggerBoard::Pattern(Option_t *option) const
 {
-//* print bit pattern
-//*
+/// print bit pattern
+///
    TString op = option;
    
    if (op.Contains("X")) BP("X");
@@ -230,7 +207,7 @@ void AliMUONLocalTriggerBoard::Pattern(Option_t *option) const
 //___________________________________________
 void AliMUONLocalTriggerBoard::BP(Option_t *option) const
 {
-// RESPECT THE OLD PRINTOUT FORMAT
+/// RESPECT THE OLD PRINTOUT FORMAT
   
   const Int_t kModuleId[126] = 
   {11,12,13,14,15,16,17,         // right side of the chamber
@@ -429,8 +406,8 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option) const
 //___________________________________________
 void AliMUONLocalTriggerBoard::Conf() const
 {
-//* board switches
-//*
+/// board switches
+///
    cout << "Switch(" << GetName() << ")" 
         << " x2d = "           << fSwitch[0] 
         << " x2m = "           << fSwitch[1] 
@@ -450,8 +427,8 @@ void AliMUONLocalTriggerBoard::Conf() const
 //___________________________________________
 void AliMUONLocalTriggerBoard::Module(char *mod)
 {
-//* get module from name
-//*
+/// get module from name
+///
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
    char s[100]; strcpy(s, GetName());
@@ -472,10 +449,10 @@ void AliMUONLocalTriggerBoard::Module(char *mod)
 //___________________________________________
 void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32])
 {
-// note : coinc44 = flag 0 or 1 (0 coincidence -> 3/4, 1 coincidence -> 4/4)
-//---------------------------------------------------------
-// step # 1 : declustering, reduction DS, calculate sgle & dble
-//---------------------------------------------------------
+/// note : coinc44 = flag 0 or 1 (0 coincidence -> 3/4, 1 coincidence -> 4/4) \n
+///---------------------------------------------------------                  \n
+/// step # 1 : declustering, reduction DS, calculate sgle & dble              \n 
+///---------------------------------------------------------
    Int_t ch1e[19], ch2e[20], ch3e[35], ch4e[36]; 
    Int_t sgleHit1[31], sgleHit2[63];
    Int_t dbleHit1[31], dbleHit2[63];
@@ -832,7 +809,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
 void AliMUONLocalTriggerBoard::Sort2x5(Int_t dev1[6], Int_t dev2[6],
                                        Int_t minDev[6], Int_t &dev1GTdev2)
 { 
-// returns minimun between dev1 and dev2
+/// returns minimun between dev1 and dev2
    Int_t tmpDev1=0, tmpDev2=0;
 
    for (Int_t j=0; j<5; j++)
@@ -857,10 +834,10 @@ void AliMUONLocalTriggerBoard::Sort2x5(Int_t dev1[6], Int_t dev2[6],
 void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], Int_t y4[16],
                                      Int_t y3u[16], Int_t y3d[16], Int_t y4u[16], Int_t y4d[16])
 {
-// note : resMid = 1 -> cancel 
-//---------------------------------------------------------
-// step # 1 : prehandling Y
-//--------------------------------------------------------- 
+/// note : resMid = 1 -> cancel                             \n
+///---------------------------------------------------------\n
+/// step # 1 : prehandling Y                                \n
+///--------------------------------------------------------- 
    Int_t i;
    Int_t istrip;
 
@@ -1076,8 +1053,8 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
 //___________________________________________
 void AliMUONLocalTriggerBoard::LocalTrigger()
 {
-//* L0 trigger after LUT
-//*
+/// L0 trigger after LUT
+///
     Int_t deviation=0, iStripY=0, iStripX=0;
 
    for (Int_t i=0; i<4; i++) deviation += static_cast<int>( fMinDev[i] << i );
@@ -1118,8 +1095,8 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
 //___________________________________________
 Int_t AliMUONLocalTriggerBoard::GetI() const
 {
-//* old numbering
-//*
+/// old numbering
+///
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
    char s[100]; strcpy(s, GetName());
@@ -1163,8 +1140,8 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
 //___________________________________________
 void AliMUONLocalTriggerBoard::Mask(Int_t index, UShort_t mask)
 {
-//* set mask
-//*
+/// set mask
+///
   if ( index >= 0 && index < 2*4 )
   {
     Int_t i = index/4;
@@ -1180,8 +1157,8 @@ void AliMUONLocalTriggerBoard::Mask(Int_t index, UShort_t mask)
 //___________________________________________
 void AliMUONLocalTriggerBoard::Scan(Option_t *option) const
 {
-//* full dump
-//*
+/// full dump
+///
    TString op = option;
 
    if (op.Contains("CONF")) Conf();
@@ -1204,8 +1181,8 @@ void AliMUONLocalTriggerBoard::Scan(Option_t *option) const
 //___________________________________________
 void AliMUONLocalTriggerBoard::Resp(Option_t *option) const
 {
-//* board I/O
-//*
+/// board I/O
+///
    TString op = option;
 
    if (op.Contains("I"))
@@ -1251,8 +1228,8 @@ void AliMUONLocalTriggerBoard::Resp(Option_t *option) const
 //___________________________________________
 void AliMUONLocalTriggerBoard::Response()
 {
-//* algo
-//*
+/// algo
+///
    Int_t xX1[16], xX2[16], xXX3[32], xXX4[32];
 
    TBits x1(16), x2(16), x3(16), x4(16);
@@ -1336,6 +1313,4 @@ void AliMUONLocalTriggerBoard::Response()
        static_cast<int>(fLutHpt[0]<<2) + 
        static_cast<int>(fLutHpt[1]<<3);
 }
-
-ClassImp(AliMUONLocalTriggerBoard)
 

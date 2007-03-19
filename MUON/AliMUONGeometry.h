@@ -44,7 +44,9 @@ class AliMUONGeometry : public TObject
 
 
   protected:
+    /// Not implemented
     AliMUONGeometry(const AliMUONGeometry& right);
+    /// Not implemented
     AliMUONGeometry&  operator = (const AliMUONGeometry& right);
  
   private:

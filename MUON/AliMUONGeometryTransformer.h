@@ -93,7 +93,9 @@ class AliMUONGeometryTransformer : public TObject
     Bool_t  HasDE(Int_t detElemId) const;
 
   protected:
+    /// Not implemented
     AliMUONGeometryTransformer(const AliMUONGeometryTransformer& right);
+    /// Not implemented
     AliMUONGeometryTransformer&  operator = (const AliMUONGeometryTransformer& right);
  
   private:

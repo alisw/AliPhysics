@@ -55,7 +55,10 @@ class AliMUONTrackExtrap : public TObject
   static const Double_t fgkRungeKuttaMaxResidue;//!< Maximal distance (in Z) to destination to stop the track extrapolation (used in Runge-Kutta)
   
   // Functions
+
+  /// Not implemented
   AliMUONTrackExtrap(const AliMUONTrackExtrap& trackExtrap);
+  /// Not implemented
   AliMUONTrackExtrap& operator=(const AliMUONTrackExtrap& trackExtrap);
 
   static void ExtrapToZHelix(AliMUONTrackParam *trackParam, Double_t Z);

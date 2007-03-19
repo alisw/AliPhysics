@@ -66,7 +66,9 @@ class AliMUONGeometryModule : public TObject
     AliMUONGeometryModuleTransformer* GetTransformer() const;
 
   protected:
+    /// Not implemented
     AliMUONGeometryModule(const AliMUONGeometryModule& rhs);
+    /// Not implemented
     AliMUONGeometryModule& operator = (const AliMUONGeometryModule& rhs);
 
   private:

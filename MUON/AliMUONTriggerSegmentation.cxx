@@ -370,7 +370,7 @@ void
 AliMUONTriggerSegmentation::GiveTestPoints(Int_t& /*n*/, 
                                              Float_t* /*x*/, Float_t*/*y*/) const
 {
-// Not implemented
+/// Not implemented
 
   AliFatal("Not Implemented");
 }
@@ -451,9 +451,9 @@ void AliMUONTriggerSegmentation::IntegrationLimits(Float_t& x1,
                                                      Float_t& x4) 
 {
 /// \param x1 : hit x(y) position
-/// \param  x2 : x(y) coordinate of the main strip
-/// \param  x3 : current strip real x(y) coordinate  
-/// \param  x4 : dist. between x(y) hit pos. and the closest border of the current strip
+/// \param x2 : x(y) coordinate of the main strip
+/// \param x3 : current strip real x(y) coordinate  
+/// \param x4 : dist. between x(y) hit pos. and the closest border of the current strip
 ///
 /// Note : need to return (only) x4.
   

@@ -73,6 +73,10 @@ private:
                            const char* option);
     
 private:
+    /// Not implemented
+    AliMpDEVisu(const AliMpDEVisu& src);
+    /// Not implemented
+    AliMpDEVisu& operator=(const AliMpDEVisu& src);
 
     const TGWindow*    fkMainWindow; //!< main window
     TGMainFrame*       fMain;        //!< main frame
@@ -100,9 +104,6 @@ private:
     Bool_t           fZoomMode;        //!< flag for zoom mode on canvas instead of click mode
 
     enum {kChamberCombo, kDECombo, kPlaneType, kDEName, kManuEntries, kLogMessage, kZoomMode};
-
-    AliMpDEVisu(const AliMpDEVisu& src);
-    AliMpDEVisu& operator=(const AliMpDEVisu& src);
 
     ClassDef(AliMpDEVisu,1)
 };

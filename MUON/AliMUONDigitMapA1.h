@@ -44,8 +44,9 @@ class AliMUONDigitMapA1 : public TObject
     virtual FlagType TestHit(Int_t ix, Int_t iy) const;
 
  private:
+    /// Not implemented
     AliMUONDigitMapA1(const AliMUONDigitMapA1 & hitMap);
-    // Assignment operator
+    /// Not implemented
     AliMUONDigitMapA1& operator = (const AliMUONDigitMapA1& rhs);
 
     // Check index

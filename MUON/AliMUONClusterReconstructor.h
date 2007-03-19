@@ -32,14 +32,15 @@ class AliMUONClusterReconstructor : public TObject
   virtual void   Digits2Clusters(Int_t chBeg = 0);
   virtual void   Trigger2Trigger() ;
 
-  // Reco Model
+  /// Return cluster recontruction model
   AliMUONClusterFinderVS* GetRecoModel() {return fRecModel;}
 
   void SetRecoModel(AliMUONClusterFinderVS* rec);
 
  protected:
-
+  /// Not implemented
   AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
+  /// Not implemented
   AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
   void ClusterizeOneDE(Int_t detElemId);

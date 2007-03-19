@@ -29,9 +29,9 @@ class AliMUONDigit : public TObject
     virtual Int_t PadY() const         {return fPadY;}       ///< Return pad number along y
     virtual Int_t Cathode() const      {return fCathode;}    ///< Return cathode number
     
-    virtual Float_t Signal() const       {return fSignal;}     ///< Return signal amplitude
+    virtual Float_t Signal() const     {return fSignal;}     ///< Return signal amplitude
     
-    virtual Float_t Physics() const      {return fPhysics;}    ///< Return MC physics contribution to signal
+    virtual Float_t Physics() const    {return fPhysics;}    ///< Return MC physics contribution to signal
     
     virtual Int_t Hit() const          {return fHit;}        ///< Return MC hit number
     
@@ -46,24 +46,24 @@ class AliMUONDigit : public TObject
     virtual Bool_t IsSaturated() const;
     virtual Bool_t IsNoiseOnly() const;
     virtual Bool_t IsEfficiencyApplied() const;
-    virtual UInt_t StatusMap() const { return fStatusMap; }
+    virtual UInt_t StatusMap() const { return fStatusMap; }    ///< Return Neighbouring pad status
     
     virtual void NoiseOnly(Bool_t value=kTRUE);
     virtual void Saturated(Bool_t saturated=kTRUE);
     virtual void EfficiencyApplied(Bool_t value=kTRUE);
     
     virtual void SetElectronics(Int_t manuId, Int_t manuChannel);
-    virtual void SetADC(Int_t adc) { fADC=adc; }
+    virtual void SetADC(Int_t adc)         {fADC=adc; }        ///< Set ADC value
     virtual void SetDetElemId(Int_t id)    {fDetElemId = id;}  ///< Set detection element ID
     virtual void SetPadX(Int_t pad)        {fPadX = pad;}      ///< Set pad number along x
     virtual void SetPadY(Int_t pad)        {fPadY = pad;}      ///< Set pad number along y
-    virtual void SetSignal(Float_t q)        {fSignal = q;}      ///< Set signal amplitude
-    virtual void AddSignal(Float_t q)        {fSignal += q;}     ///< Add signal amplitude
-    virtual void AddPhysicsSignal(Float_t q) {fPhysics += q;}    ///< Add MC physics contribution to signal
+    virtual void SetSignal(Float_t q)        {fSignal = q;}    ///< Set signal amplitude
+    virtual void AddSignal(Float_t q)        {fSignal += q;}   ///< Add signal amplitude
+    virtual void AddPhysicsSignal(Float_t q) {fPhysics += q;}  ///< Add MC physics contribution to signal
     virtual void SetHit(Int_t n)           {fHit = n;}         ///< Set MC hit number
     virtual void SetCathode(Int_t c)       {fCathode = c;}     ///< Set cathode number
-    virtual void SetPhysicsSignal(Float_t q) {fPhysics = q; }    ///< Set MC physics contribution to signal
-    virtual void SetStatusMap(UInt_t statusMap) { fStatusMap = statusMap; }
+    virtual void SetPhysicsSignal(Float_t q) {fPhysics = q; }  ///< Set MC physics contribution to signal
+    virtual void SetStatusMap(UInt_t statusMap) { fStatusMap = statusMap; } ///< Set status map
     
     virtual void Print(Option_t* opt="") const;
     

@@ -71,10 +71,12 @@ class AliMUONClusterInput : public TObject
     Float_t DiscrChargeS2(Int_t i,Double_t *par);
     Float_t DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cath);
 // 
- protected:
-    AliMUONClusterInput();
  private:
+    /// Not implemented
+    AliMUONClusterInput();
+    /// Not implemented
     AliMUONClusterInput(const AliMUONClusterInput& clusterInput);
+    /// Not implemented
     AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
 
     static AliMUONClusterInput*  fgClusterInput;  //!< singleton instance

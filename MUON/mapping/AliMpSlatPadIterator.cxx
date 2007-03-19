@@ -49,9 +49,9 @@ fDelegates(),
 fCurrentDelegate(0),
 fCurrentDelegateIndex(0)
 {
-  //
-  // Empty (default) ctor.
-  //
+  ///
+  /// Empty (default) ctor.
+  ///
 }
 
 //_____________________________________________________________________________
@@ -63,10 +63,10 @@ fDelegates(),
 fCurrentDelegate(0),
 fCurrentDelegateIndex(0)
 {
-  //
-  // Normal ctor.
-  // The iteration will occur on the given slat over the specified area.
-  //
+  ///
+  /// Normal ctor.
+  /// The iteration will occur on the given slat over the specified area.
+  ///
   AliDebug(1,Form("this=%p ctor area=(%e,%e,%e,%e)",this,
 									area.LeftBorder(),area.DownBorder(),
                   area.RightBorder(),area.UpBorder()));
@@ -80,9 +80,9 @@ fCurrentDelegateIndex(0)
 //_____________________________________________________________________________
 AliMpSlatPadIterator::~AliMpSlatPadIterator()
 { 
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
   AliDebug(1,Form("this=%p dtor",this));
   Invalidate();
 }
@@ -91,9 +91,9 @@ AliMpSlatPadIterator::~AliMpSlatPadIterator()
 AliMpArea
 AliMpSlatPadIterator::Intersect(const AliMpArea& a, const AliMpArea& b) const
 { 
-  //
-  // Returns the common part of a and b.
-  //
+  ///
+  /// Returns the common part of a and b.
+  ///
   AliDebug(4,Form("a=(%7.2f,%7.2f;%7.2f,%7.2f) b=(%7.2f,%7.2f;%7.2f,%7.2f)",
 									a.LeftBorder(),a.DownBorder(),a.RightBorder(),a.UpBorder(),
 									b.LeftBorder(),b.DownBorder(),b.RightBorder(),b.UpBorder()));
@@ -114,9 +114,9 @@ AliMpSlatPadIterator::Intersect(const AliMpArea& a, const AliMpArea& b) const
 Bool_t
 AliMpSlatPadIterator::Prepare(const AliMpArea& area)
 {
-  //
-  // Split area into smaller area intersecting pcbs,
-  // and allocate the corresponding delegate iterators.
+  ///
+  /// Split area into smaller area intersecting pcbs,
+  /// and allocate the corresponding delegate iterators.
 	
   for ( AliMpSlat::Size_t i = 0; i < fkSlat->GetSize(); ++i )
 	{
@@ -141,9 +141,9 @@ AliMpSlatPadIterator::Prepare(const AliMpArea& area)
 AliMpPad
 AliMpSlatPadIterator::CurrentItem() const
 {
-  //
-  // Returns the current pad of the iteration.
-  //
+  ///
+  /// Returns the current pad of the iteration.
+  ///
   if ( fCurrentDelegate )
 	{
 		return fCurrentDelegate->CurrentItem();
@@ -158,9 +158,9 @@ AliMpSlatPadIterator::CurrentItem() const
 void
 AliMpSlatPadIterator::First()
 {
-  //
-  // (Re)starts the iteration.
-  //
+  ///
+  /// (Re)starts the iteration.
+  ///
   if ( fDelegates.GetLast() < 0 )
 	{
 		AliError("Iterator is not valid, as it gets no delegates at all !");
@@ -177,9 +177,9 @@ AliMpSlatPadIterator::First()
 void
 AliMpSlatPadIterator::Invalidate()
 {
-  //
-  // Make the iterator invalid.
-  //
+  ///
+  /// Make the iterator invalid.
+  ///
   fDelegates.Delete();
   fCurrentDelegate = 0;
   fCurrentDelegateIndex = 0;
@@ -189,9 +189,9 @@ AliMpSlatPadIterator::Invalidate()
 Bool_t
 AliMpSlatPadIterator::IsDone() const
 {
-  //
-  // Returns whether the iteration is ended or not.
-  //
+  ///
+  /// Returns whether the iteration is ended or not.
+  ///
   return ( !fCurrentDelegate ||
 					 ( fCurrentDelegateIndex > fDelegates.GetLast() && 
 						 fCurrentDelegate->IsDone() ) );
@@ -201,9 +201,9 @@ AliMpSlatPadIterator::IsDone() const
 void
 AliMpSlatPadIterator::Next()
 {
-  //
-  // Next step of the iteration.
-  //
+  ///
+  /// Next step of the iteration.
+  ///
   if (IsDone()) return;
 	
   fCurrentDelegate->Next();

@@ -23,8 +23,11 @@ class AliMUONRawCluster : public TObject {
 
 public:
    AliMUONRawCluster();
-   virtual ~AliMUONRawCluster() { }
+   virtual ~AliMUONRawCluster();
+   
+   /// Return radius
    Float_t      GetRadius(Int_t i) {return TMath::Sqrt(fX[i]*fX[i]+fY[i]*fY[i]);}
+   /// Return true as the function Compare() is implemented
    Bool_t       IsSortable() const {return kTRUE;}
    Int_t        Compare(const TObject *obj) const;
    Int_t        PhysicsContribution() const;
@@ -107,51 +110,67 @@ private:
 
 // inline functions
 
+/// Return Indices of digits
 inline  Int_t  AliMUONRawCluster::GetIndex(Int_t i, Int_t j) const
 { return fIndexMap[i][j]; }
 
+/// Return Emmanuel special offset map
 inline  Int_t  AliMUONRawCluster::GetOffset(Int_t i, Int_t j) const
 { return fOffsetMap[i][j]; }
 
+/// Return Contribution from digit
 inline  Float_t  AliMUONRawCluster::GetContrib(Int_t i, Int_t j) const
 { return fContMap[i][j]; }
 
+/// Return Distinguish signal and background contr.
 inline  Int_t  AliMUONRawCluster::GetPhysics(Int_t i) const
 { return fPhysicsMap[i]; }
 
+/// Set Indices of digits
 inline  void  AliMUONRawCluster::SetIndex(Int_t i, Int_t j, Int_t index)
 { fIndexMap[i][j] = index; }
 
+/// Set Emmanuel special offset map
 inline  void  AliMUONRawCluster::SetOffset(Int_t i, Int_t j, Int_t offset)
 { fOffsetMap[i][j] = offset; }
 
+/// Set Contribution from digit
 inline  void  AliMUONRawCluster::SetContrib(Int_t i, Int_t j, Float_t contrib)
 { fContMap[i][j] = contrib; }
 
+/// Set Distinguish signal and background contr.
 inline  void  AliMUONRawCluster::SetPhysics(Int_t i, Int_t physics)
 { fPhysicsMap[i] = physics; }
 
+/// Set ID number of the detection element (slat) on which the cluster is found.
 inline void AliMUONRawCluster::SetDetElemId(Int_t Id)
 { fDetElemId = Id; }
 
+/// Return ID number of the detection element (slat) on which the cluster is found.
 inline Int_t AliMUONRawCluster::GetDetElemId() const
 { return fDetElemId;}
 
+/// Set coordinate errors
 inline void AliMUONRawCluster::SetError(Int_t iXY, Float_t err)
 { fErrXY[iXY] = err; }
 
+/// Set x coordinate error
 inline void AliMUONRawCluster::SetErrX(Float_t err)
 { SetError(0, err); }
 
+/// Set y coordinate error
 inline void AliMUONRawCluster::SetErrY(Float_t err)
 { SetError(1, err); }
 
+/// Return coordinate errors
 inline Float_t AliMUONRawCluster::GetError(Int_t iXY) const
 { return fErrXY[iXY]; }
 
+/// Return x coordinate error
 inline Float_t AliMUONRawCluster::GetErrX() const
 { return GetError(0); }
 
+/// Return y coordinate error
 inline Float_t AliMUONRawCluster::GetErrY() const
 { return GetError(1); }
 

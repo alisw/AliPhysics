@@ -64,7 +64,7 @@ class AliMUONClusterFinderVS : public TObject
     TClonesArray*  GetRawClusters() {return fRawClusters;}
 /// Reset raw clusters
     void ResetRawClusters();
-// set evt number
+/// Set evt number
     void SetEventNumber(Int_t evtNumber) {fEvtNumber = evtNumber;}
 
  protected:

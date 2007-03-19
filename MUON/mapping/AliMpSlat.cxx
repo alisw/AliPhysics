@@ -56,9 +56,9 @@ AliMpSlat::AliMpSlat()
   fPosition(),
   fNofPads(0)
 {
-    //
-    // Empty ctor.
-    //
+    ///
+    /// Empty ctor.
+    ///
   AliDebug(1,Form("this=%p Empty ctor",this));
 #ifdef WITH_ROOT    
     fPCBs.SetOwner(kTRUE);
@@ -80,9 +80,9 @@ AliMpSlat::AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending)
   fPosition(),
   fNofPads(0)
 {
-    //
-    // Normal ctor
-    //
+    ///
+    /// Normal ctor
+    ///
   AliDebug(1,Form("this=%p id=%s",this,id));			
 #ifdef WITH_ROOT    
     fPCBs.SetOwner(kTRUE);
@@ -93,9 +93,9 @@ AliMpSlat::AliMpSlat(const char* id, AliMp::PlaneType bendingOrNonBending)
 //_____________________________________________________________________________
 AliMpSlat::~AliMpSlat()
 {
-  //
-  // Dtor.
-  //
+  ///
+  /// Dtor.
+  ///
   AliDebug(1,Form("this=%p fId=%s",this,fId.Data()));			
 #ifdef WITH_ROOT    
   fPCBs.Delete();
@@ -111,12 +111,12 @@ AliMpSlat::~AliMpSlat()
 void
 AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList) 
 {
-  //
-  // Adds a PCB to this slat. The manuList specifies the ids of the manu
-  // that compose the PCB. The manuList ordering is important, as the 
-  // assumption is that it's ordered counter-clockwise, starting from
-  // the lower-left of the PCB.
-  //
+  ///
+  /// Adds a PCB to this slat. The manuList specifies the ids of the manu
+  /// that compose the PCB. The manuList ordering is important, as the 
+  /// assumption is that it's ordered counter-clockwise, starting from
+  /// the lower-left of the PCB.
+  ///
   Int_t ixOffset = 0;
   if ( GetSize() )
 	{
@@ -164,9 +164,9 @@ AliMpSlat::Add(const AliMpPCB& pcbType, const TArrayI& manuList)
 TVector2
 AliMpSlat::Dimensions() const
 {
-  //
-  // Returns the half-sizes of the slat.
-  //
+  ///
+  /// Returns the half-sizes of the slat.
+  ///
   return TVector2(DX(),DY());
 }
 
@@ -174,9 +174,9 @@ AliMpSlat::Dimensions() const
 Double_t
 AliMpSlat::DX() const
 {
-  //
-  // Returns the x-half-size of the slat.
-  //
+  ///
+  /// Returns the x-half-size of the slat.
+  ///
   return fDX;
 }
 
@@ -184,9 +184,9 @@ AliMpSlat::DX() const
 Double_t
 AliMpSlat::DY() const
 {
-  //
-  // Returns the y-half-size of the slat.
-  //
+  ///
+  /// Returns the y-half-size of the slat.
+  ///
   return fDY;
 }
 
@@ -194,9 +194,9 @@ AliMpSlat::DY() const
 AliMpMotifPosition*
 AliMpSlat::FindMotifPosition(Int_t manuID) const
 {
-  //
-  // Returns the motifPosition referenced by it manuID
-  //
+  ///
+  /// Returns the motifPosition referenced by it manuID
+  ///
 //#ifdef WITH_ROOT
   return static_cast<AliMpMotifPosition*>(fManuMap.GetValue(manuID));
 //#else
@@ -216,9 +216,9 @@ AliMpSlat::FindMotifPosition(Int_t manuID) const
 AliMpMotifPosition*
 AliMpSlat::FindMotifPosition(Int_t ix, Int_t iy) const
 {
-  //
-  // 1. Find the PCB containing ix (iy not needed for this)
-  // 2. Forward the request to the PCB, using pcb local indices.
+  ///
+  /// - 1. Find the PCB containing ix (iy not needed for this)
+  /// - 2. Forward the request to the PCB, using pcb local indices.
 	//
   const AliMpPCB* pcb = FindPCB(ix);
   if ( pcb )
@@ -235,9 +235,9 @@ AliMpSlat::FindMotifPosition(Int_t ix, Int_t iy) const
 AliMpMotifPosition*
 AliMpSlat::FindMotifPosition(Double_t x, Double_t y) const
 {
-  //
-  // Returns the motifPosition containing position (x,y)
-  //
+  ///
+  /// Returns the motifPosition containing position (x,y)
+  ///
   const AliMpPCB* pcb = FindPCB(x,y);
   if (pcb)
 	{
@@ -253,9 +253,9 @@ AliMpSlat::FindMotifPosition(Double_t x, Double_t y) const
 AliMpPCB*
 AliMpSlat::FindPCB(Int_t ix) const
 {
-  //
-  // Returns the PCB containing x-integer-position ix
-  //
+  ///
+  /// Returns the PCB containing x-integer-position ix
+  ///
   for ( Size_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
@@ -271,9 +271,9 @@ AliMpSlat::FindPCB(Int_t ix) const
 Int_t
 AliMpSlat::FindPCBIndex(Int_t ix) const
 {
-  //
-  // Returns the index of the PCB containing x-integer-position ix.
-  //
+  ///
+  /// Returns the index of the PCB containing x-integer-position ix.
+  ///
   for ( Size_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
@@ -289,9 +289,9 @@ AliMpSlat::FindPCBIndex(Int_t ix) const
 AliMpPCB*
 AliMpSlat::FindPCB(Double_t x, Double_t y) const
 {
-  //
-  // Returns the PCB containing position (x,y)
-  //
+  ///
+  /// Returns the PCB containing position (x,y)
+  ///
   for ( Size_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
@@ -314,9 +314,9 @@ AliMpSlat::FindPCB(Double_t x, Double_t y) const
 Int_t
 AliMpSlat::FindPCBIndex(Double_t x, Double_t y) const
 {
-  //
-  // Returns the index of the PCB containing position (x,y)
-  //
+  ///
+  /// Returns the index of the PCB containing position (x,y)
+  ///
   for ( Size_t i = 0; i < GetSize(); ++i ) 
 	{
 		AliMpPCB* pcb = GetPCB(i);
@@ -333,12 +333,12 @@ AliMpSlat::FindPCBIndex(Double_t x, Double_t y) const
 void
 AliMpSlat::ForcePosition(const TVector2& pos)
 {
-  //
-  // Force the position to be different from (DX(),DY()).
-  // Normally only used by triggerSlats (for layers).
-  // Beware that this method must be called once all PCB have been added,
-  // as the Add() method resets the position.
-  //
+  ///
+  /// Force the position to be different from (DX(),DY()).
+  /// Normally only used by triggerSlats (for layers).
+  /// Beware that this method must be called once all PCB have been added,
+  /// as the Add() method resets the position.
+  ///
   fPosition = pos;
 }
 
@@ -346,9 +346,9 @@ AliMpSlat::ForcePosition(const TVector2& pos)
 void
 AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
 {
-  //
-  // Return all the manuIds (=MotifPositionIDs) of this slat
-  //
+  ///
+  /// Return all the manuIds (=MotifPositionIDs) of this slat
+  ///
   ecn.Set(GetNofElectronicCards());
 //#ifdef WITH_ROOT
   TExMapIter it(fManuMap.GetIterator());
@@ -369,9 +369,9 @@ AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
 const char*
 AliMpSlat::GetID() const
 {
-  //
-  // Returns the name of this slat.
-  //
+  ///
+  /// Returns the name of this slat.
+  ///
   return fId.Data();
 }
 
@@ -379,9 +379,9 @@ AliMpSlat::GetID() const
 Int_t 
 AliMpSlat::GetMaxNofPadsY() const
 {
-  //
-  // Returns the maximum number of pads to be found in this slat y-direction.
-  // 
+  ///
+  /// Returns the maximum number of pads to be found in this slat y-direction.
+  /// 
   return fMaxNofPadsY;
 }
 
@@ -389,9 +389,9 @@ AliMpSlat::GetMaxNofPadsY() const
 Int_t 
 AliMpSlat::GetMaxPadIndexX() const
 {
-  //
-  // Returns the max ix that is valid for this slat.
-  //
+  ///
+  /// Returns the max ix that is valid for this slat.
+  ///
   AliMpPCB* last = GetPCB(GetSize()-1);
   if (last)
   {
@@ -404,10 +404,10 @@ AliMpSlat::GetMaxPadIndexX() const
 const char*
 AliMpSlat::GetName() const
 {
-  //
-  // Returns the name of this slat, which is composed of its ID with
-  // the plane type as a suffix.
-  //
+  ///
+  /// Returns the name of this slat, which is composed of its ID with
+  /// the plane type as a suffix.
+  ///
   TString name(GetID());
   if ( fPlaneType == AliMp::kBendingPlane )
   {
@@ -428,9 +428,9 @@ AliMpSlat::GetName() const
 Int_t
 AliMpSlat::GetNofElectronicCards() const
 {
-  //
-  // Returns the number of manus that compose the readout of this slat.
-  //
+  ///
+  /// Returns the number of manus that compose the readout of this slat.
+  ///
   return fManuMap.GetSize();
 }
 
@@ -438,9 +438,9 @@ AliMpSlat::GetNofElectronicCards() const
 Int_t
 AliMpSlat::GetNofPadsX() const
 {
-  //
-  // Returns the number of pad in x-direction.
-  //
+  ///
+  /// Returns the number of pad in x-direction.
+  ///
   return fNofPadsX;
 }
 
@@ -448,9 +448,9 @@ AliMpSlat::GetNofPadsX() const
 AliMpPCB*
 AliMpSlat::GetPCB(AliMpSlat::Size_t i) const
 {
-  //
-  // Returns the i-th PCB of this slat.
-  //
+  ///
+  /// Returns the i-th PCB of this slat.
+  ///
 #ifdef WITH_ROOT
   if ( i >= fPCBs.GetEntriesFast() ) return 0;
   return (AliMpPCB*)fPCBs[i];
@@ -464,9 +464,9 @@ AliMpSlat::GetPCB(AliMpSlat::Size_t i) const
 AliMpSlat::Size_t
 AliMpSlat::GetSize() const
 {
-  //
-  // Returns the number of PCB in this slat.
-  //
+  ///
+  /// Returns the number of PCB in this slat.
+  ///
 #ifdef WITH_ROOT
   return fPCBs.GetEntriesFast();
 #else
@@ -478,9 +478,9 @@ AliMpSlat::GetSize() const
 void
 AliMpSlat::Print(Option_t* option) const
 {
-  //
-  // Prints the slat characteristics.
-  //
+  ///
+  /// Prints the slat characteristics.
+  ///
   cout << "SLAT " << GetID() <<  " 1/2 DIM = (" << DX() << "," << DY() << ")"
   << " POS = " << Position().X() << "," << Position().Y()
 	<< " NPADSX = " << GetNofPadsX() 

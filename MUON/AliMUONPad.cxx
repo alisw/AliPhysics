@@ -153,6 +153,12 @@ fChargeBackup(0.0)
 }
 
 //_____________________________________________________________________________
+AliMUONPad::~AliMUONPad()
+{
+/// Dtor
+}
+
+//_____________________________________________________________________________
 Bool_t 
 AliMUONPad::AreNeighbours(const AliMUONPad& d1, const AliMUONPad& d2) 
 {

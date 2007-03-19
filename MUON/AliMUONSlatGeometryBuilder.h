@@ -8,7 +8,7 @@
 /// \class AliMUONSlatGeometryBuilder
 /// \brief MUON Station3 geometry construction class
 ///
-/// Author: Eric Dumonteil (dumontei@cea.fr)
+//  Author: Eric Dumonteil (dumontei@cea.fr)
 
 
 #ifndef ALI_MUON_SLAT_GEOMETRY_BUILDER_H
@@ -30,13 +30,12 @@ class AliMUONSlatGeometryBuilder : public AliMUONVGeometryBuilder
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
 
-  protected:
-    
   private:
+    /// Not implemented
     AliMUONSlatGeometryBuilder(const AliMUONSlatGeometryBuilder& rhs);
-
-    // operators  
+    /// Not implemented
     AliMUONSlatGeometryBuilder& operator = (const AliMUONSlatGeometryBuilder& rhs);
+
     Int_t  ConvertSlatNum(Int_t numslat, Int_t quadnum, Int_t fspq) const;
 
     AliMUON*  fMUON; ///< the MUON detector class 

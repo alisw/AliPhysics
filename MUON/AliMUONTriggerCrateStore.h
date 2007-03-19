@@ -45,7 +45,9 @@ public:
  
 
 protected:
+  /// Not implemented
   AliMUONTriggerCrateStore(const AliMUONTriggerCrateStore& rhs);
+  /// Not implemented
   AliMUONTriggerCrateStore& operator = (const AliMUONTriggerCrateStore& rhs);
 
 private:

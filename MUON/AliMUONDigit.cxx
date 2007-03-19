@@ -383,6 +383,8 @@ AliMUONDigit::Saturated(Bool_t value)
 void
 AliMUONDigit::SetElectronics(Int_t manuId, Int_t manuChannel)
 {
+  /// Set manuIs and manuChannel
+
   //
   //FIXME: should we check that the values are ok here ??
   //

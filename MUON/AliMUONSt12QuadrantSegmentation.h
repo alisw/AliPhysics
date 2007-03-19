@@ -150,13 +150,12 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
     virtual TF1* CorrFunc(Int_t isec)  const;
                    // Get the correction Function
  
-  protected:
+  private:
+    /// Not implemented
     AliMUONSt12QuadrantSegmentation(const AliMUONSt12QuadrantSegmentation& rhs);
-  
-    // operators
+    /// Not implemented
     AliMUONSt12QuadrantSegmentation& operator=(const AliMUONSt12QuadrantSegmentation & rhs);
 
-  private:
     // methods
     void UpdateCurrentPadValues(const AliMpPad& pad);
   

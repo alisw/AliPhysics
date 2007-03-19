@@ -57,13 +57,13 @@ AliMUONPedestalSubprocessor::AliMUONPedestalSubprocessor(AliMUONPreprocessor* ma
                        "Upload MUON Tracker pedestals to OCDB"),
 fPedestals(0x0)
 {
-  // default ctor
+  /// default ctor
 }
 
 //_____________________________________________________________________________
 AliMUONPedestalSubprocessor::~AliMUONPedestalSubprocessor()
 {
-  // dtor
+  /// dtor
   delete fPedestals;
 }
 
@@ -114,7 +114,7 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
 UInt_t 
 AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
 {
-  // Store the pedestals into the CDB
+  /// Store the pedestals into the CDB
   
   if (!fPedestals) return 0;
     
@@ -135,14 +135,14 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
 Int_t
 AliMUONPedestalSubprocessor::ReadFile(const char* filename)
 {
-  // Read the pedestals from an ASCII file.
-  // Format of that file is one line per channel :
-  //---------------------------------------------------------------------------
-  // BUS_PATCH MANU_ADDR CHANNEL      MEAN       SIGMA
-  //---------------------------------------------------------------------------
-  //
-  // Return kFALSE if reading was not successfull.
-  //
+  /// Read the pedestals from an ASCII file.                                  \n
+  /// Format of that file is one line per channel :                           \n
+  ///-------------------------------------------------------------------------\n
+  /// BUS_PATCH MANU_ADDR CHANNEL      MEAN       SIGMA                       \n
+  ///-------------------------------------------------------------------------\n
+  ///                                                                         \n
+  /// Return kFALSE if reading was not successfull.                           \n
+  ///
   
   TString sFilename(gSystem->ExpandPathName(filename));
   

@@ -36,8 +36,11 @@ public:
   TVector2 GetPosition() const { return fPosition; }
 
 private:
+  /// Not implemented
   AliMpIteratorPainter();
+  /// Not implemented
   AliMpIteratorPainter(const AliMpIteratorPainter&);
+  /// Not implemented
   AliMpIteratorPainter& operator=(const AliMpIteratorPainter&);
   
   TObjArray* fPads; //!< pads of the iterator

@@ -15,23 +15,20 @@
 
 // $Id$
 //
-// Class AliMUONSlatGeometryBuilder
-// -------------------------------
-// Abstract base class for geometry construction per chamber.
-//
 
-
-
-// This Builder is designed according to the enveloppe methode. The basic idea is to be able to allow moves 
-// of the slats on the support panels. 
-// Those moves can be described with a simple set of parameters. The next step should be now to describe all 
-// the slats and their places by a unique 
-// class, which would make the SlatBuilder far more compact since now only three parameters can define a slat 
-// and its position, like:
-//   * Bool_t rounded_shape_slat
-//   * Float_t slat_length
-//   * Float_t slat_number or Float_t slat_position
-// Reference system is the one described in the note ALICE-INT-2003-038  v.2  EDMS Id 406391 
+/// \class AliMUONSlatGeometryBuilder
+/// This Builder is designed according to the enveloppe methode. The basic idea is to be able to allow moves 
+/// of the slats on the support panels. 
+/// Those moves can be described with a simple set of parameters. The next step should be now to describe all 
+/// the slats and their places by a unique 
+/// class, which would make the SlatBuilder far more compact since now only three parameters can define a slat 
+/// and its position, like:
+///   - Bool_t rounded_shape_slat
+///   - Float_t slat_length
+///   - Float_t slat_number or Float_t slat_position
+/// Reference system is the one described in the note ALICE-INT-2003-038  v.2  EDMS Id 406391 
+///
+/// \author Eric Dumonteil (dumontei@cea.fr)
 
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUON.h"
@@ -63,7 +60,7 @@ AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder(AliMUON* muon)
  : AliMUONVGeometryBuilder(4, 12),
    fMUON(muon)
 {
-// Standard constructor
+/// Standard constructor
 
 }
 
@@ -72,12 +69,13 @@ AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder()
  : AliMUONVGeometryBuilder(),
    fMUON(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 //______________________________________________________________________________
-AliMUONSlatGeometryBuilder::~AliMUONSlatGeometryBuilder() {
-//
+AliMUONSlatGeometryBuilder::~AliMUONSlatGeometryBuilder() 
+{
+/// Destructor
 }
 
 //
@@ -87,13 +85,13 @@ AliMUONSlatGeometryBuilder::~AliMUONSlatGeometryBuilder() {
 //______________________________________________________________________________
 void AliMUONSlatGeometryBuilder::CreateGeometry()
 {
-  // CreateGeometry is the method containing all the informations concerning Stations 345 geometry.
-  // It includes description and placements of support panels and slats.
-  // The code comes directly from what was written in AliMUONv1.cxx before, with modifications concerning 
-  // the use of Enveloppe method to place the Geant volumes.
-  // Now, few changes would allow the creation of a Slat methode where slat could be described by few parameters, 
-  // and this builder would then be dedicated only to the
-  // placements of the slats. Those modifications could shorten the Station 345 geometry by a non-negligeable factor...
+  /// CreateGeometry is the method containing all the informations concerning Stations 345 geometry.
+  /// It includes description and placements of support panels and slats.
+  /// The code comes directly from what was written in AliMUONv1.cxx before, with modifications concerning 
+  /// the use of Enveloppe method to place the Geant volumes.
+  /// Now, few changes would allow the creation of a Slat methode where slat could be described by few parameters, 
+  /// and this builder would then be dedicated only to the
+  /// placements of the slats. Those modifications could shorten the Station 345 geometry by a non-negligeable factor...
  
   Int_t *idtmed = fMUON->GetIdtmed()->GetArray()-1099;
 
@@ -1257,8 +1255,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 //______________________________________________________________________________
 void AliMUONSlatGeometryBuilder::SetTransformations()
 {
-// Defines the transformations for the station345 chambers.
-// ---
+/// Defines the transformations for the station345 chambers.
 
   if (gAlice->GetModule("DIPO")) {
     // if DIPO is preset, the whole station will be placed in DDIP volume
@@ -1326,8 +1323,7 @@ void AliMUONSlatGeometryBuilder::SetTransformations()
 //______________________________________________________________________________
 void AliMUONSlatGeometryBuilder::SetSensitiveVolumes()
 {
-// Defines the sensitive volumes for slat stations chambers.
-// ---
+/// Defines the sensitive volumes for slat stations chambers.
 
   GetGeometry( 4)->SetSensitiveVolume("S05G");
   GetGeometry( 5)->SetSensitiveVolume("S05G");
@@ -1346,8 +1342,8 @@ void AliMUONSlatGeometryBuilder::SetSensitiveVolumes()
 //______________________________________________________________________________
 Int_t  AliMUONSlatGeometryBuilder::ConvertSlatNum(Int_t numslat, Int_t quadnum, Int_t fspq) const
 {
-// On-line function establishing the correspondance between numslat (the slat number on a particular quadrant (numslat->0....4 for St3))
-// and slatnum (the slat number on the whole panel (slatnum->1...18 for St3)
+/// On-line function establishing the correspondance between numslat (the slat number on a particular quadrant (numslat->0....4 for St3))
+/// and slatnum (the slat number on the whole panel (slatnum->1...18 for St3)
   numslat += 1;
   if (quadnum==2 || quadnum==3) 
     numslat += fspq;

@@ -141,6 +141,12 @@ AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
 }
 
   //__________________________________________________________________________
+AliMUONHitForRec::~AliMUONHitForRec()
+{
+/// Destructor
+}
+
+  //__________________________________________________________________________
 AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& theMUONHitForRec)
 {
 /// Assignment operator

@@ -54,31 +54,31 @@ ClassImp(AliMUONSDigitizerV2)
 AliMUONSDigitizerV2::AliMUONSDigitizerV2() 
 : TTask("AliMUONSDigitizerV2","From Hits to SDigits for MUON")
 {
-  //
-  // ctor.
-  //
+  ///
+  /// ctor.
+  ///
 }
 
 //_____________________________________________________________________________
 AliMUONSDigitizerV2::~AliMUONSDigitizerV2()
 {
-  //
-  // dtor.
-  //
+  ///
+  /// dtor.
+  ///
 }
 
 //_____________________________________________________________________________
 void
 AliMUONSDigitizerV2::Exec(Option_t*)
 {
-  //
-  // Go from hits to sdigits.
-  //
-  // In the code below, apart from the loop itself (which look complicated
-  // but is really only a loop on each hit in the input file) the main
-  // work is done in AliMUONResponse::DisIntegrate method, which converts
-  // a single hit in (possibly) several sdigits.
-  //
+  ///
+  /// Go from hits to sdigits.
+  ///
+  /// In the code below, apart from the loop itself (which look complicated
+  /// but is really only a loop on each hit in the input file) the main
+  /// work is done in AliMUONResponse::DisIntegrate method, which converts
+  /// a single hit in (possibly) several sdigits.
+  ///
   
   AliDebug(1,"");
   

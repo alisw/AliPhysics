@@ -92,25 +92,28 @@ class AliMUONDataInterface : public TObject
   Int_t NumberOfRecTracks();
   AliMUONTrack* RecTrack(Int_t rectrack);
   
+  /// Returns the file name from which we are fetching data
   TString CurrentFile() const    { return fFilename;    };
   
-  // Returns the name of the currently selected folder.
+  /// Returns the name of the currently selected folder.
   TString CurrentFolder() const   { return fFoldername;  };
   
-  // Returns the number of the currently selected event.
+  /// Returns the number of the currently selected event.
   Int_t   CurrentEvent() const    { return fEventnumber; };
   
-  // Returns the currently selected track.
+  /// Returns the currently selected track.
   Int_t   CurrentTrack() const    { return fTrack;       };
   
-  // Returns the currently selected cathode in TreeS.
+  /// Returns the currently selected cathode in TreeS.
   Int_t   CurrentSCathode() const { return fSCathode;    };
   
-  // Returns the currently selected cathode in TreeD.
+  /// Returns the currently selected cathode in TreeD.
   Int_t   CurrentDCathode() const { return fCathode;     };
   
  private:
+  /// Not implemented
   AliMUONDataInterface(const AliMUONDataInterface& rhs);
+  /// Not implemented
   AliMUONDataInterface& operator=(const AliMUONDataInterface& rhs);
   
   Bool_t FetchMuonLoader(TString filename, TString foldername);

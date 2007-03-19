@@ -22,18 +22,18 @@ class AliMUONPixel : public TObject {
   AliMUONPixel(Double_t xc, Double_t yc, Double_t wx, Double_t wy, Double_t charge); // constructor
   virtual ~AliMUONPixel(); // Destructor
 
-  Double_t Charge(void) const { return fCharge; } // pixel charge
-  Double_t Size(Int_t ixy) const { return fSize[ixy]; } // pixel size
-  Double_t Coord(Int_t ixy) const { return fXY[ixy]; } // pixel coordinate
-  Int_t Flag(void) const { return fFlag; } // pixel flag
+  Double_t Charge(void) const { return fCharge; } ///< pixel charge
+  Double_t Size(Int_t ixy) const { return fSize[ixy]; } ///< pixel size
+  Double_t Coord(Int_t ixy) const { return fXY[ixy]; } ///< pixel coordinate
+  Int_t Flag(void) const { return fFlag; } ///< pixel flag
   
-  void SetCharge(Double_t Charge) { fCharge = Charge; } // set charge
-  void SetSize(Int_t ixy, Double_t Size) { fSize[ixy] = Size; } // set size
-  void SetCoord(Int_t ixy, Double_t Coord) { fXY[ixy] = Coord; } // set coordinate
-  void SetFlag(Int_t flag) { fFlag = flag; } // set flag
-  void Shift(Int_t ixy, Double_t shift) { fXY[ixy] += shift; }
+  void SetCharge(Double_t Charge) { fCharge = Charge; } ///< set charge
+  void SetSize(Int_t ixy, Double_t Size) { fSize[ixy] = Size; } ///< set size
+  void SetCoord(Int_t ixy, Double_t Coord) { fXY[ixy] = Coord; } ///< set coordinate
+  void SetFlag(Int_t flag) { fFlag = flag; } ///< set flag
+  void Shift(Int_t ixy, Double_t shift) { fXY[ixy] += shift; } ///< \todo add comment
   void Print(const char* opt="") const;
-  // What is necessary for sorting TObjArray's
+  /// What is necessary for sorting TObjArray's
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* pixel) const; // "Compare" function for sorting
 

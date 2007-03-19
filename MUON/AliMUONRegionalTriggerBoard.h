@@ -18,16 +18,19 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
    public: 
       AliMUONRegionalTriggerBoard();  
       AliMUONRegionalTriggerBoard(const char *name, Int_t a);
-      virtual ~AliMUONRegionalTriggerBoard() {;}
+      virtual ~AliMUONRegionalTriggerBoard();
     
+      /// Reset Local trigger inputs
       virtual void Reset() {for (Int_t i=0; i<16; i++) fLocalResponse[i] = 0;}
 
       virtual void Scan(Option_t *option) const;
 
+      /// Dummy implementation
       virtual void Resp(Option_t*) const {}
 
       virtual void Response();
 
+      /// Set Local trigger inputs
       virtual void SetLocalResponse(UShort_t val[16]) {for (Int_t i=0;i<16;i++) fLocalResponse[i] = val[i];}
 
       virtual UShort_t Algo(UShort_t i, UShort_t j, char *thres, Int_t level);

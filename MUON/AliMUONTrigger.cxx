@@ -39,20 +39,30 @@
 /// May 06, taken info from Global Trigger branch (Ch.F)
 
 //----------------------------------------------------------------------
+/// \cond CLASSIMP
 ClassImp(AliMUONTrigger)
+/// \endcond
 
 //----------------------------------------------------------------------
 AliMUONTrigger::AliMUONTrigger()
   : AliTriggerDetector() 
 {
+/// Default constructor
+
    SetName("MUON");
    CreateInputs();
 }
 
 //----------------------------------------------------------------------
+AliMUONTrigger::~AliMUONTrigger()
+{
+/// Destructor
+}
+
+//----------------------------------------------------------------------
 void AliMUONTrigger::CreateInputs()
 {
-   // inputs 
+   /// inputs 
    
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
@@ -70,7 +80,8 @@ void AliMUONTrigger::CreateInputs()
 //----------------------------------------------------------------------
 void AliMUONTrigger::Trigger()
 {
-  // sets the trigger inputs
+  /// sets the trigger inputs
+
   AliMUONGlobalTrigger* globalTrigger;
   TClonesArray* globalTriggerArray;
 

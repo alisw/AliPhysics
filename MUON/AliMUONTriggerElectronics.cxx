@@ -363,7 +363,7 @@ void AliMUONTriggerElectronics::Reset()
 //_______________________________________________________________________
 void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 {
-  // LOAD MASKS FROM CDB
+  /// LOAD MASKS FROM CDB
   
 
   // SET MASKS

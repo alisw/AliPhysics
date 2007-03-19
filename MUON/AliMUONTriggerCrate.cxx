@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
-//    COLLECTION OF TRIGGER BOARDS
-//    ONE REGIONAL
-//    SIXTEEN LOCAL
-//    SLOT 0 HOLDS THE REGIONAL BOARD
+/// \class AliMUONTriggerCrate
+///  Collection of trigger boards
+///  - one regional
+///  - sixteen local
+///  slot 0 holds the regional board
+/// \author Rachid Guernane (LPCCFd)
 
 #include <TObjArray.h>
 
@@ -35,12 +36,14 @@ AliMUONTriggerCrate::AliMUONTriggerCrate()
       fBoards(0x0),
       fSourceFileName(0)    
 {
-    // Def Ctor
+/// Default constructor
 }
 
 //___________________________________________
 AliMUONTriggerCrate::~AliMUONTriggerCrate()
 {
+/// Destructor
+
   delete fBoards;
 }
 
@@ -52,39 +55,14 @@ AliMUONTriggerCrate::AliMUONTriggerCrate(const char *name, Int_t n) :
     fBoards(new TObjArray(fNslots)),
     fSourceFileName(0)
 {
+/// Standard constructor
 }
 
 //___________________________________________
 void AliMUONTriggerCrate::AddBoard(AliMUONTriggerBoard *board, Int_t i)
 {
-  // ADD BOARD IN CRATE CONTAINER
+/// Add board in crate container
    fBoards->AddAt(board,i);
    fNboards++;
 }
 
-//___________________________________________
-AliMUONTriggerCrate::AliMUONTriggerCrate(const AliMUONTriggerCrate &crate) 
-    : TNamed(crate),
-      fNslots(crate.fNslots),
-      fNboards(crate.fNboards),
-      fBoards(crate.fBoards),
-      fSourceFileName(crate.fSourceFileName)
-{
-    
-// Dummy Copy Ctor
-//   crate.Copy(*this);
-}
-
-//___________________________________________
-AliMUONTriggerCrate& AliMUONTriggerCrate::operator=(const AliMUONTriggerCrate &rhs)
-{
-// Assignment optor
-   rhs.Copy(*this);
-   return (*this);
-}
-
-//___________________________________________
-void AliMUONTriggerCrate::Copy(TObject&) const
-{
-   Fatal("Copy","Not implemented!\n");
-}

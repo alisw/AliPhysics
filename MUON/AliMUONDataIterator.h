@@ -22,7 +22,7 @@ class AliMUONVDataIterator;
 class AliMUONDataIterator : public TObject
 {
 public:
-
+  /// Iteration style
   enum EIterationStyle { kAllChambers, kTrackingChambers, kTriggerChambers };
   
   AliMUONDataIterator();
@@ -40,7 +40,9 @@ private:
   AliMUONVDataIterator* fIterator; //!< the real worker   
 
 private:
+  /// Not implemented
   AliMUONDataIterator(const AliMUONDataIterator& rhs);
+  /// Not implemented
   AliMUONDataIterator& operator=(const AliMUONDataIterator& rhs);
   
   ClassDef(AliMUONDataIterator,0) // Iterator on MUON data structures.

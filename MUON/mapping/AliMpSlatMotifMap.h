@@ -38,10 +38,10 @@ public:
   void Reset();
   
 private:
-  TMap fMotifs; //< collection of motifs
-  TMap fMotifTypes; //< collection of motifTypes
+  TMap fMotifs; ///< collection of motifs
+  TMap fMotifTypes; ///< collection of motifTypes
   
-  ClassDef(AliMpSlatMotifMap,1) // 
+  ClassDef(AliMpSlatMotifMap,1) // Slat motif map 
 };
 
 #endif

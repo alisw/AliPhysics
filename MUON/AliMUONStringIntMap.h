@@ -34,7 +34,9 @@ class AliMUONStringIntMap : public TObject
     void Print(const TString& key, ofstream& out) const;
     
   protected:
+    /// Not implemented
     AliMUONStringIntMap(const AliMUONStringIntMap& rhs);
+    /// Not implemented
     AliMUONStringIntMap& operator = (const AliMUONStringIntMap& rhs);
  
   private:

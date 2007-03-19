@@ -137,9 +137,9 @@ UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
 //----------------------------------------------------------------------
 void AliMUONGlobalTrigger::Print(Option_t* opt) const
 {
-  //
-  // Printing Global Trigger information
-  //
+  ///
+  /// Printing Global Trigger information
+  ///
   TString sopt(opt);
   sopt.ToUpper();
   if ( sopt.Contains("FULL") ) { 

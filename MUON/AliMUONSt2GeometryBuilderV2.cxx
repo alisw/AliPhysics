@@ -49,7 +49,7 @@ AliMUONSt2GeometryBuilderV2::AliMUONSt2GeometryBuilderV2(AliMUON* muon)
  : AliMUONVGeometryBuilder(2, 2),
    fMUON(muon)
 {
-// Standard constructor
+/// Standard constructor
 
 }
 
@@ -58,12 +58,13 @@ AliMUONSt2GeometryBuilderV2::AliMUONSt2GeometryBuilderV2()
  : AliMUONVGeometryBuilder(),
    fMUON(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 //______________________________________________________________________________
-AliMUONSt2GeometryBuilderV2::~AliMUONSt2GeometryBuilderV2() {
-//
+AliMUONSt2GeometryBuilderV2::~AliMUONSt2GeometryBuilderV2() 
+{
+/// Destructor
 }
 
 //
@@ -73,6 +74,7 @@ AliMUONSt2GeometryBuilderV2::~AliMUONSt2GeometryBuilderV2() {
 //______________________________________________________________________________
 void AliMUONSt2GeometryBuilderV2::CreateGeometry()
 {
+/// Geometry construction
 
 //
 //********************************************************************
@@ -761,8 +763,7 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
 //______________________________________________________________________________
 void AliMUONSt2GeometryBuilderV2::SetTransformations()
 {
-// Defines the transformations for the station2 chambers.
-// ---
+/// Defines the transformations for the station2 chambers.
 
   if (gAlice->GetModule("SHIL")) {
     SetMotherVolume(2, "YOUT1");
@@ -783,8 +784,7 @@ void AliMUONSt2GeometryBuilderV2::SetTransformations()
 //______________________________________________________________________________
 void AliMUONSt2GeometryBuilderV2::SetSensitiveVolumes()
 {
-// Defines the sensitive volumes for station2 chambers.
-// ---
+/// Defines the sensitive volumes for station2 chambers.
 
   GetGeometry(2)->SetSensitiveVolume("C3G0");
   GetGeometry(2)->SetSensitiveVolume("C3G1");

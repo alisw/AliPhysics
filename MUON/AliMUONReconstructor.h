@@ -30,16 +30,20 @@ class AliMUONReconstructor: public AliReconstructor
     AliMUONReconstructor();
     virtual ~AliMUONReconstructor();
 
+    /// Dummy implementation    
     virtual void         Reconstruct(TTree* /*digitsTree*/, 
 				     TTree* /*clustersTree*/) const {return;}
+    /// Dummy implementation    
     virtual void         Reconstruct(AliRawReader* /*rawReader*/, 
 				     TTree* /*clustersTree*/) const {return;}
     virtual void         Reconstruct(AliRunLoader* runLoader) const;
     virtual void         Reconstruct(AliRunLoader* runLoader, 
                                    AliRawReader* rawReader) const;
 
+    /// Dummy implementation    
     virtual void         FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, 
 				 AliESD* /*esd*/) const {return;}
+    /// Dummy implementation    
     virtual void         FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
 				 AliESD* /*esd*/) const {return;}
     virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
@@ -55,7 +59,9 @@ private:
     TTask* GetCalibrationTask() const;
     AliMUONClusterReconstructor* CreateClusterReconstructor() const;
     
+    /// Not implemented
     AliMUONReconstructor(const AliMUONReconstructor& right);
+    /// Not implemented
     AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
 
 private:

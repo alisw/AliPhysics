@@ -29,7 +29,9 @@ public:
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
 
 private:
+  /// Not implemented
   AliMUONTrackerPreprocessor(const AliMUONTrackerPreprocessor& rhs);
+  /// Not implemented
   AliMUONTrackerPreprocessor& operator=(const AliMUONTrackerPreprocessor& rhs);
   
 private:

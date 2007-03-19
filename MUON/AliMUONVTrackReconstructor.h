@@ -43,11 +43,12 @@ class AliMUONVTrackReconstructor : public TObject {
   // Functions
   void EventReconstruct(void);
   void EventReconstructTrigger(void);
-  virtual void EventDump(void) = 0;  // dump reconstructed event
+  virtual void EventDump(void) = 0;  ///< dump reconstructed event
   void EventDumpTrigger(void);  // dump reconstructed trigger event
   
           /// Return MUON data
   AliMUONData*  GetMUONData() {return fMUONData;}
+          /// Set MUON data
   void SetMUONData(AliMUONData* data) {fMUONData = data;}
 
           /// Set trigger circuit
@@ -93,11 +94,17 @@ class AliMUONVTrackReconstructor : public TObject {
   void SortHitsForRecWithIncreasingChamber();
   TClonesArray *MakeSegmentsInStation(Int_t station);
 
+               /// \todo add comment
   virtual void AddHitsForRecFromRawClusters() = 0;
+               /// \todo add comment
   virtual void MakeTracks(void) = 0;
+               /// \todo add comment
   virtual void MakeTrackCandidates(void) = 0;
+               /// \todo add comment
   virtual void FollowTracks(void) = 0;
+               /// \todo add comment
   virtual void RemoveDoubleTracks(void) = 0;
+               /// \todo add comment
   virtual void FillMUONTrack(void) = 0;
 
  private:

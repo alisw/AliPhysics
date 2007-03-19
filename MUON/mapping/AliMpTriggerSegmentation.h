@@ -67,7 +67,9 @@ public:
   TVector2 Dimensions() const;
   
 private:
+  /// Not implemented
   AliMpTriggerSegmentation(const AliMpTriggerSegmentation& right);
+  /// Not implemented
   AliMpTriggerSegmentation&  operator = (const AliMpTriggerSegmentation& right);
 
   const AliMpTrigger* fkSlat;  ///< Slat

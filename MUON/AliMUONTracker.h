@@ -24,25 +24,34 @@ class AliMUONTracker : public AliTracker
     
   virtual Int_t Clusters2Tracks(AliESD* /*esd*/); 
   
+  /// Dummy implementation
   virtual Int_t PropagateBack(AliESD* /*event*/) {return 0;}
+  /// Dummy implementation
   virtual Int_t RefitInward(AliESD* /*event*/) {return 0;}
+  /// Dummy implementation
   virtual Int_t LoadClusters(TTree* /*tree*/) {return 0;}
+  /// Dummy implementation
   virtual void  UnloadClusters() {return;}
+  /// Dummy implementation
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return 0;}
 
+  /// Set trigger circuit
   void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}
+  /// Set pointer to data container
   void SetMUONData(AliMUONData* data) {fMUONData = data;}
+  /// Set option
   void SetOption(Option_t* opt);
 
 private:
-
+  /// Not implemented
+  AliMUONTracker(const AliMUONTracker& rhs);
+  /// Not implemented
+  AliMUONTracker& operator=(const AliMUONTracker& rhs);
+    
   TClonesArray* fTriggerCircuit;                //!< trigger circuit
   AliMUONData*  fMUONData;                      //!< pointer to container
   AliMUONVTrackReconstructor* fTrackReco;       //!< track reconstructor
 
-  AliMUONTracker(const AliMUONTracker& rhs);
-  AliMUONTracker& operator=(const AliMUONTracker& rhs);
-    
   ClassDef(AliMUONTracker,0)  //tracker base class for MUON
 };
 #endif

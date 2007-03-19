@@ -28,13 +28,12 @@ class AliMUONTriggerLut : public TNamed
   void GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev, Int_t ystrip, 
 		    Int_t lutLpt[2], Int_t lutHpt[2]);
 
- protected:
-  // assignment operator
-  AliMUONTriggerLut& operator=(const AliMUONTriggerLut& AliMUONTriggerLut); 
-		
  private:
-  // copy constructor
+  /// Not implemented copy constructor
   AliMUONTriggerLut (const AliMUONTriggerLut& AliMUONTriggerLut);
+  /// Not implemented assignment operator
+  AliMUONTriggerLut& operator=(const AliMUONTriggerLut& AliMUONTriggerLut); 
+
   Int_t GetMask(Int_t ystrip);
 
 private:

@@ -35,20 +35,20 @@ class AliMUONTrackK : public AliMUONTrack {
   AliMUONTrackK(AliMUONObjectPair *segment); // Constructor from a segment
 
   // Pointer to hits on track
-  TObjArray* GetTrackHits(void) const {return fTrackHits;} // ptr. to hits on track
-  Int_t GetNTrackHits(void) const {return fNmbTrackHits;} // hits on track
-  Double_t GetTrackQuality(void) const {return fChi2;} // track quality
-  TMatrixD* GetTrackParameters(void) const {return fTrackPar;} // track parameters
-  Double_t GetZ(void) const {return fPosition;} // Z-coordinate of track 
-  TMatrixD* GetCovariance(void) const {return fCovariance;} // covariance matrix
-  Int_t GetTrackDir(void) const {return fTrackDir;} // get track propagation direction
-  void SetTrackDir(Int_t iDir) {fTrackDir = iDir;} // set track propagation direction  
-  Bool_t GetBPFlag(void) const {return fBPFlag;} // get backpropagation flag
-  void SetBPFlag(Bool_t BPFlag) {fBPFlag = BPFlag;} // set backpropagation flag
-  Int_t GetRecover(void) const {return fRecover;} // return recover flag 
-  void SetRecover(Int_t iRecover) {fRecover = iRecover;} // set recover flag
-  AliMUONObjectPair* GetStartSegment(void) const {return fStartSegment;} // return seed segment
-  Bool_t KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, Double_t zDipole1, Double_t zDipole2); // Kalman filter
+  TObjArray* GetTrackHits(void) const {return fTrackHits;} ///< ptr. to hits on track
+  Int_t GetNTrackHits(void) const {return fNmbTrackHits;} ///< hits on track
+  Double_t GetTrackQuality(void) const {return fChi2;} ///< track quality
+  TMatrixD* GetTrackParameters(void) const {return fTrackPar;} ///< track parameters
+  Double_t GetZ(void) const {return fPosition;} ///< Z-coordinate of track 
+  TMatrixD* GetCovariance(void) const {return fCovariance;} ///< covariance matrix
+  Int_t GetTrackDir(void) const {return fTrackDir;} ///< get track propagation direction
+  void SetTrackDir(Int_t iDir) {fTrackDir = iDir;} ///< set track propagation direction  
+  Bool_t GetBPFlag(void) const {return fBPFlag;} ///< get backpropagation flag
+  void SetBPFlag(Bool_t BPFlag) {fBPFlag = BPFlag;} ///< set backpropagation flag
+  Int_t GetRecover(void) const {return fRecover;} ///< return recover flag 
+  void SetRecover(Int_t iRecover) {fRecover = iRecover;} ///< set recover flag
+  AliMUONObjectPair* GetStartSegment(void) const {return fStartSegment;} ///< return seed segment
+  Bool_t KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, Double_t zDipole1, Double_t zDipole2); ///< Kalman filter
   void StartBack(void); // start backpropagator
   void SetTrackQuality(Int_t iChi2); // compute track quality or Chi2
   Bool_t KeepTrack(AliMUONTrackK* track0) const; // keep or discard track 
@@ -56,15 +56,15 @@ class AliMUONTrackK : public AliMUONTrack {
   Bool_t Smooth(void); // apply smoother
   Double_t GetChi2PerPoint(Int_t iPoint) const; // return Chi2 at point
   void Print(FILE *lun) const; // print track information
-  void Print(const char* /*opt*/) const {return;} // print track information
+  void Print(const char* /*opt*/) const {return;} ///< print track information
   AliMUONHitForRec* GetHitLastOk(void); // get hit before the skipped one
   Int_t GetStation0(void); // return seed station number
-  Int_t DebugLevel(void) const {return fgDebug;} // return debug level
-  void SetDebugLevel(Int_t iDebug) {fgDebug = iDebug;} // set debug level
+  Int_t DebugLevel(void) const {return fgDebug;} ///< return debug level
+  void SetDebugLevel(Int_t iDebug) {fgDebug = iDebug;} ///< set debug level
   void FillMUONTrack(void); // set track parameters as for AliMUONTrack
   void SetTrackParam(AliMUONTrackParam *trackParam, TMatrixD *par, Double_t z); // fill AliMUONTrackParam object
 
-  // What is necessary for sorting TClonesArray's
+  /// What is necessary for sorting TClonesArray's
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* trackK) const; // "Compare" function for sorting
 
@@ -115,7 +115,7 @@ class AliMUONTrackK : public AliMUONTrack {
 
   // Functions
 
-  AliMUONTrackK (const AliMUONTrackK& source); // copy constructor
+  AliMUONTrackK (const AliMUONTrackK& source); ///< Not implemented copy constructor
   void EvalCovariance(Double_t dZ);
   void ParPropagation(Double_t zEnd);
   void WeightPropagation(Double_t zEnd, Bool_t smooth);
