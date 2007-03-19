@@ -23,7 +23,6 @@
 
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
-#include "AliTracker.h"
 #include "AliLog.h"
 
 #include <TObjArray.h>
@@ -36,12 +35,12 @@ class AliVertexerTracks : public TObject {
   
  public:
   AliVertexerTracks(); 
-  AliVertexerTracks(Double_t xStart, Double_t yStart); 
+  AliVertexerTracks(Double_t fieldkG); 
   virtual ~AliVertexerTracks();
 
   AliESDVertex* FindPrimaryVertex(const AliESD *esdEvent);
   AliESDVertex* VertexForSelectedTracks(TTree *trkTree,Bool_t optUseFitter=kTRUE, Bool_t optPropagate=kTRUE);
-  AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray,Bool_t optUseFitter=kTRUE, Bool_t optPropagate=kTRUE);
+  AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray, Bool_t optUseFitter=kTRUE, Bool_t optPropagate=kTRUE);
   AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,TTree *trksTree,Float_t *diamondxy); 
   void  SetConstraintOff() { fConstraint=kFALSE; return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
@@ -70,12 +69,13 @@ class AliVertexerTracks : public TObject {
   static Double_t GetDeterminant3X3(Double_t matr[][3]);
   static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d);
   static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
+  static AliVertex TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights=0);
+  void     SetFieldkG(Double_t field=-999.) { fFieldkG=field; return; }
+  Double_t GetFieldkG() const { 
+    if(fFieldkG<-99.) AliFatal("Field value not set");
+    return fFieldkG; } 
 
  protected:
-  Double_t GetField() const { 
-    if(!AliTracker::GetFieldMap())
-      AliFatal("Field map not set; use AliTracker::SetFieldMap()!");
-    return AliTracker::GetBz(); } 
   void     HelixVertexFinder();
   void     OneTrackVertFinder();
   Int_t    PrepareTracks(TTree &trkTree,Int_t optImpParCut);
@@ -89,6 +89,7 @@ class AliVertexerTracks : public TObject {
    
   AliVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter
+  Double_t  fFieldkG;         // z component of field (kGauss) 
   Double_t  fNominalPos[3];   // initial knowledge on vertex position
   Double_t  fNominalCov[6];   // initial knowledge on vertex position
   Bool_t    fConstraint;      // true when "mean vertex" was set in 
@@ -127,7 +128,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,6) // 3D Vertexing with ESD tracks 
+  ClassDef(AliVertexerTracks,7) // 3D Vertexing with ESD tracks 
 };
 
 #endif

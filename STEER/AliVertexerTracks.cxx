@@ -42,6 +42,7 @@ AliVertexerTracks::AliVertexerTracks():
 TObject(),
 fVert(),
 fCurrentVertex(0),
+fFieldkG(-999.),
 fConstraint(kFALSE),
 fOnlyFitter(kFALSE),
 fMinTracks(1),
@@ -67,11 +68,12 @@ fDebug(0)
   SetNSigmad0(); 
   SetMaxd0z0(); 
 }
-//-----------------------------------------------------------------------------
-AliVertexerTracks::AliVertexerTracks(Double_t xStart, Double_t yStart):
+//----------------------------------------------------------------------------
+AliVertexerTracks::AliVertexerTracks(Double_t fieldkG):
 TObject(),
 fVert(),
 fCurrentVertex(0),
+fFieldkG(-999.),
 fConstraint(kFALSE),
 fOnlyFitter(kFALSE),
 fMinTracks(1),
@@ -90,12 +92,13 @@ fDebug(0)
 //
 // Standard constructor
 //
-  SetVtxStart(xStart,yStart);
+  SetVtxStart();
   SetVtxStartSigma();
   SetMinTracks();
   SetMinITSClusters();
   SetNSigmad0(); 
-  SetMaxd0z0(); 
+  SetMaxd0z0();
+  SetFieldkG(fieldkG);
 }
 //-----------------------------------------------------------------------------
 AliVertexerTracks::~AliVertexerTracks() 
@@ -118,6 +121,12 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
 // All ESD tracks with inside the beam pipe are then propagated to found vertex
 //
   fCurrentVertex = 0;
+
+  // accept 1-track case only if constraint is available
+  if(!fConstraint && fMinTracks==1) fMinTracks=2;
+
+  // get Bz from ESD
+  //  SetFieldkG(esdEvent->GetMagneticField());
 
   // read tracks from ESD
   Int_t nTrksTot = (Int_t)esdEvent->GetNumberOfTracks();
@@ -360,7 +369,7 @@ void AliVertexerTracks::OneTrackVertFinder()
   if(fDebug) printf("Number of prepared tracks =%d - Call OneTrackVertFinder",fTrkArray.GetEntries());
   AliESDtrack *track1;
   track1 = (AliESDtrack*)fTrkArray.At(0);
-  Double_t field=GetField();
+  Double_t field=GetFieldkG();
   Double_t alpha=track1->GetAlpha();
   Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
   Double_t pos[3],dir[3]; 
@@ -393,7 +402,7 @@ void AliVertexerTracks::HelixVertexFinder()
   Double_t initPos[3];
   initPos[2] = 0.;
   for(Int_t i=0;i<2;i++)initPos[i]=fNominalPos[i];
-  Double_t field=GetField();
+  Double_t field=GetFieldkG();
 
   Int_t nacc = (Int_t)fTrkArray.GetEntriesFast();
 
@@ -476,7 +485,7 @@ Int_t AliVertexerTracks::PrepareTracks(TTree &trkTree,Int_t optImpParCut)
   Double_t normdistx,normdisty;
   Float_t  d0z0[2],covd0z0[3]; 
   Double_t sigma;
-  Double_t field=GetField();
+  Double_t field=GetFieldkG();
 
   AliESDVertex *initVertex = new AliESDVertex(fNominalPos,fNominalCov,1,1);
 
@@ -583,7 +592,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
     }
     Double_t alpha = track->GetAlpha();
     Double_t xl = diamondxy[0]*TMath::Cos(alpha)+diamondxy[1]*TMath::Sin(alpha);
-    track->AliExternalTrackParam::PropagateTo(xl,AliTracker::GetBz()); 
+    track->AliExternalTrackParam::PropagateTo(xl,GetFieldkG()); 
     // vector of track global coordinates
     TMatrixD ri(3,1);
     // covariance matrix of ri
@@ -692,16 +701,35 @@ void  AliVertexerTracks::SetVtxStart(AliESDVertex *vtx)
 //---------------------------------------------------------------------------
 void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
 {
+  AliESDtrack *track1;
+  Double_t field=GetFieldkG();
+  const Int_t knacc = (Int_t)fTrkArray.GetEntriesFast();
+  TClonesArray *linarray = new TClonesArray("AliStrLine",1000);
+  TClonesArray &lines = *linarray;
+  for(Int_t i=0; i<knacc; i++){
+    track1 = (AliESDtrack*)fTrkArray.At(i);
+    Double_t alpha=track1->GetAlpha();
+    Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
+    Double_t pos[3],dir[3],sigmasq[3]; 
+    track1->GetXYZAt(mindist,field,pos);
+    track1->GetPxPyPzAt(mindist,field,dir);
+    sigmasq[0]=TMath::Sin(alpha)*TMath::Sin(alpha)*track1->GetSigmaY2();
+    sigmasq[1]=TMath::Cos(alpha)*TMath::Cos(alpha)*track1->GetSigmaY2();
+    sigmasq[2]=track1->GetSigmaZ2();
+    new(lines[i]) AliStrLine(pos,sigmasq,dir); 
+  }
+  fVert=TrackletVertexFinder(linarray,optUseWeights);
+  linarray->Delete();
+  delete linarray;
+}
+//---------------------------------------------------------------------------
+AliVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights)
+{
   // Calculate the point at minimum distance to prepared tracks 
   
-  Double_t initPos[3];
-  initPos[2] = 0.;
-  Double_t sigma=0;
-  for(Int_t i=0;i<2;i++)initPos[i]=fNominalPos[i];
-  const Int_t knacc = (Int_t)fTrkArray.GetEntriesFast();
-  Double_t field=GetField();
+  const Int_t knacc = (Int_t)lines->GetEntriesFast();
+  Double_t initPos[3]={0.,0.,0.};
 
-  AliESDtrack *track1;
   Double_t (*vectP0)[3]=new Double_t [knacc][3];
   Double_t (*vectP1)[3]=new Double_t [knacc][3];
   
@@ -710,19 +738,11 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
   for(Int_t i=0;i<3;i++)
     for(Int_t j=0;j<3;j++)sum[i][j]=0;
   for(Int_t i=0; i<knacc; i++){
-    track1 = (AliESDtrack*)fTrkArray.At(i);
-    Double_t alpha=track1->GetAlpha();
-    Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
-    Double_t pos[3],dir[3]; 
-    track1->GetXYZAt(mindist,field,pos);
-    track1->GetPxPyPzAt(mindist,field,dir);
-    AliStrLine *line1 = new AliStrLine(pos,dir); 
-    //    AliStrLine *line1 = new AliStrLine();
-    //    track1->ApproximateHelixWithLine(mindist,field,line1);
-
-    Double_t p0[3],cd[3];
+    AliStrLine* line1 = (AliStrLine*)lines->At(i); 
+    Double_t p0[3],cd[3],sigmasq[3];
     line1->GetP0(p0);
     line1->GetCd(cd);
+    line1->GetSigma2P0(sigmasq);
     Double_t p1[3]={p0[0]+cd[0],p0[1]+cd[1],p0[2]+cd[2]};
     vectP0[i][0]=p0[0];
     vectP0[i][1]=p0[1];
@@ -734,23 +754,18 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
     Double_t matr[3][3];
     Double_t dknow[3];
     if(optUseWeights==0)GetStrLinDerivMatrix(p0,p1,matr,dknow);
-    if(optUseWeights==1){
-      Double_t sigmasq[3];
-      sigmasq[0]=track1->GetSigmaY2();
-      sigmasq[1]=track1->GetSigmaY2();
-      sigmasq[2]=track1->GetSigmaZ2();
-      GetStrLinDerivMatrix(p0,p1,sigmasq,matr,dknow);
-    }
+    else GetStrLinDerivMatrix(p0,p1,sigmasq,matr,dknow);
+
 
     for(Int_t iii=0;iii<3;iii++){
       dsum[iii]+=dknow[iii]; 
       for(Int_t lj=0;lj<3;lj++) sum[iii][lj]+=matr[iii][lj];
     }
-    delete line1;
   }
   
   Double_t vett[3][3];
   Double_t det=GetDeterminant3X3(sum);
+  Double_t sigma=0;
   
   if(det!=0){
     for(Int_t zz=0;zz<3;zz++){
@@ -773,14 +788,12 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
 
     sigma=TMath::Sqrt(sigma);
   }else{
-    Warning("StrLinVertexFinderMinDist","Finder did not succed");
     sigma=999;
   }
+  AliVertex theVert(initPos,sigma,knacc);
   delete vectP0;
   delete vectP1;
-  fVert.SetXYZ(initPos);
-  fVert.SetDispersion(sigma);
-  fVert.SetNContributors(knacc);
+  return theVert;
 }
 //---------------------------------------------------------------------------
 Bool_t AliVertexerTracks::TrackToPoint(AliESDtrack *t,
@@ -886,7 +899,7 @@ void AliVertexerTracks::VertexFinder(Int_t optUseWeights)
   AliESDtrack *track2;
   Double_t pos[3],dir[3]; 
   Double_t alpha,mindist;
-  Double_t field=GetField();
+  Double_t field=GetFieldkG();
 
   for(Int_t i=0; i<nacc; i++){
     track1 = (AliESDtrack*)fTrkArray.At(i);
@@ -1056,7 +1069,7 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
       alpha = t->GetAlpha();
       xlStart = initPos[0]*TMath::Cos(alpha)+initPos[1]*TMath::Sin(alpha);
       // to vtxSeed (from finder)
-      t->AliExternalTrackParam::PropagateTo(xlStart,AliTracker::GetBz());   
+      t->AliExternalTrackParam::PropagateTo(xlStart,GetFieldkG());   
  
 
       // vector of track global coordinates
@@ -1127,6 +1140,8 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
   covmatrix[4] = vV(1,2);
   covmatrix[5] = vV(2,2);
   
+  // for correct chi2/ndf, count constraint as additional "track"
+  if(fConstraint) nUsedTrks++;
   // store data in the vertex object
   fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nUsedTrks);
 
@@ -1190,7 +1205,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TTree *trkTree,Bool_t o
       indices[jj] = (UShort_t)eta->GetID();
       if(optPropagate&&optUseFitter){
 	if(TMath::Sqrt(fCurrentVertex->GetXv()*fCurrentVertex->GetXv()+fCurrentVertex->GetYv()*fCurrentVertex->GetYv())<3.) {
-	  eta->RelateToVertex(fCurrentVertex,GetField(),100.);
+	  eta->RelateToVertex(fCurrentVertex,GetFieldkG(),100.);
 	  if(fDebug) printf("Track %d propagated to found vertex\n",jj);
 	}else{
 	  AliWarning("Found vertex outside beam pipe!");
