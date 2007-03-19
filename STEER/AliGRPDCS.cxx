@@ -33,14 +33,14 @@ ClassImp(AliGRPDCS)
 
 //_______________________________________________________________
 AliGRPDCS::AliGRPDCS():
-  TObject(), fDCSArray(new TObjArray()) {
+  TObject(), fStartTime(0), fStopTime(0), fDCSArray(new TObjArray()) {
   // default constructor
   
 }
 
 //_______________________________________________________________
-AliGRPDCS::AliGRPDCS(TObjArray *dcsArray):
-  TObject(), fDCSArray(new TObjArray()) {
+AliGRPDCS::AliGRPDCS(TObjArray *dcsArray, UInt_t fStart, UInt_t fStop):
+  TObject(), fStartTime(fStart), fStopTime(fStop), fDCSArray(new TObjArray()) {
   // constructor
   fDCSArray = dcsArray;
 }
@@ -88,11 +88,17 @@ const char* AliGRPDCS::ProcessDCS(Int_t iType) {
 //_______________________________________________________________
 const char* AliGRPDCS::ProcessInt() {
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
+  Int_t iCounts = 0;
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
     AliDCSValue *v = (AliDCSValue *)fDCSArray->At(i);
-    fFDCSArraySum += v->GetInt();
+    if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fStopTime)) {
+      fFDCSArraySum += v->GetInt();
+      iCounts += 1;
+    }
   }
-  fFDCSArrayMean = fFDCSArraySum/fDCSArray->GetEntries();
+  if(iCounts != 0) fFDCSArrayMean = fFDCSArraySum/iCounts;
+  else fFDCSArrayMean = -10.;
+ 
   TString fDCSDataPointValue; fDCSDataPointValue += fFDCSArrayMean;
 
   return fDCSDataPointValue.Data();
@@ -101,11 +107,17 @@ const char* AliGRPDCS::ProcessInt() {
 //_______________________________________________________________
 const char* AliGRPDCS::ProcessUInt() {
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
+  Int_t iCounts = 0;
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
     AliDCSValue *v = (AliDCSValue *)fDCSArray->At(i);
-    fFDCSArraySum += v->GetUInt();
+    if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fStopTime)) {
+      fFDCSArraySum += v->GetUInt();
+      iCounts += 1;
+    }
   }
-  fFDCSArrayMean = fFDCSArraySum/fDCSArray->GetEntries();
+  if(iCounts != 0) fFDCSArrayMean = fFDCSArraySum/iCounts;
+  else fFDCSArrayMean = -10.;
+   
   TString fDCSDataPointValue; fDCSDataPointValue += fFDCSArrayMean;
 
   return fDCSDataPointValue.Data();
@@ -114,11 +126,17 @@ const char* AliGRPDCS::ProcessUInt() {
 //_______________________________________________________________
 const char* AliGRPDCS::ProcessFloat() {
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
+  Int_t iCounts = 0;
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
     AliDCSValue *v = (AliDCSValue *)fDCSArray->At(i);
-    fFDCSArraySum += v->GetFloat();
+    if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fStopTime)) {
+      fFDCSArraySum += v->GetFloat();
+      iCounts += 1;
+    }
   }
-  fFDCSArrayMean = fFDCSArraySum/fDCSArray->GetEntries();
+  if(iCounts != 0) fFDCSArrayMean = fFDCSArraySum/iCounts;
+  else fFDCSArrayMean = -10.;
+   
   TString fDCSDataPointValue; fDCSDataPointValue += fFDCSArrayMean;
 
   return fDCSDataPointValue.Data();
@@ -127,12 +145,22 @@ const char* AliGRPDCS::ProcessFloat() {
 //_______________________________________________________________
 const char* AliGRPDCS::ProcessString() {
   TString fDCSString, fDCSTemp;
-  AliDCSValue *v = (AliDCSValue *)fDCSArray->At(0);
+  Bool_t kFound = kFALSE;
+  Int_t iCount = 0;
+
+  AliDCSValue *v = 0x0;
+  while(!kFound) {
+    v = (AliDCSValue *)fDCSArray->At(iCount);
+    iCount += 1;
+    if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fStopTime)) kFound = kTRUE;
+  }
   fDCSTemp = v->GetChar();
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
     AliDCSValue *v1 = (AliDCSValue *)fDCSArray->At(i);
-    fDCSString = v1->GetChar();
-    if(fDCSTemp != fDCSString) AliFatal("DCS data point value changed within the run!!!");
+    if((v1->GetTimeStamp() >= fStartTime) &&(v1->GetTimeStamp() <= fStopTime)) {
+      fDCSString = v1->GetChar();
+      if(fDCSTemp != fDCSString) AliFatal("DCS data point value changed within the run!!!");
+    }
   }
   TString fDCSDataPointValue = fDCSString;
 
@@ -142,12 +170,22 @@ const char* AliGRPDCS::ProcessString() {
 //_______________________________________________________________
 const char* AliGRPDCS::ProcessBoolean() {
   Bool_t fDCSBool = kTRUE, fDCSTemp = kTRUE;
-  AliDCSValue *v = (AliDCSValue *)fDCSArray->At(0);
+  Bool_t kFound = kFALSE;
+  Int_t iCount = 0;
+
+  AliDCSValue *v = 0x0;
+  while(!kFound) {
+    v = (AliDCSValue *)fDCSArray->At(iCount);
+    iCount += 1;
+    if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fStopTime)) kFound = kTRUE;
+  }
   fDCSTemp = v->GetBool();
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
     AliDCSValue *v1 = (AliDCSValue *)fDCSArray->At(i);
-    fDCSBool = v1->GetBool();
-    if(fDCSTemp != fDCSBool) AliFatal("DCS data point value changed within the run!!!");
+    if((v1->GetTimeStamp() >= fStartTime) &&(v1->GetTimeStamp() <= fStopTime)) {
+      fDCSBool = v1->GetBool();
+      if(fDCSTemp != fDCSBool) AliFatal("DCS data point value changed within the run!!!");
+    }
   }
   TString fDCSDataPointValue = fDCSBool;
 

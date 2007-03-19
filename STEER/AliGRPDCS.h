@@ -24,14 +24,15 @@
 class AliGRPDCS: public TObject {
  public:
   AliGRPDCS();
-  AliGRPDCS(TObjArray *dcsArray);
+  AliGRPDCS(TObjArray *dcsArray, UInt_t fStart, UInt_t fStop);
   AliGRPDCS(const AliGRPDCS& grpDcs);
 
+  void SetTime(UInt_t fStart, UInt_t fStop) {fStartTime = fStart; fStopTime = fStop;}
   void SetObjArray(TObjArray *dcsSArray) {fDCSArray = dcsSArray;}
   const char *ProcessDCS(Int_t iType);  
   
  private:
-  
+  UInt_t fStartTime, fStopTime; //start and stop time of the run (DAQ lb)
   TObjArray *fDCSArray; //TObjArray for a dcs data point
   
   const char *ProcessInt();
