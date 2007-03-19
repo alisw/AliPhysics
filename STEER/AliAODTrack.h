@@ -11,6 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include <TRef.h>
+#include <TParticle.h>
 
 #include "AliVirtualParticle.h"
 #include "AliAODVertex.h"
@@ -27,8 +28,19 @@ class AliAODTrack : public AliVirtualParticle {
     kUsedForPrimVtxFit=BIT(15) // set if this track was used to fit the primary vertex
   };
 
-  enum AODTrkPID_t { // not clear why this was introduced
-    kUnknown=0, kElectron, kMuon, kPion, kProton, kDeuteron, kTriton, kAlpha, kOther}; // Where is the Kaon, why the Triton? 
+  enum AODTrkPID_t {
+    kElectron     =  0, 
+    kMuon         =  1, 
+    kPion         =  2, 
+    kKaon         =  3, 
+    kProton       =  4, 
+    kDeuteron     =  5,
+    kTriton       =  6,
+    kHelium3      =  7,
+    kAlpha        =  8,
+    kUnknown      =  9,
+    kMostProbable = -1
+  };
 
   AliAODTrack();
   AliAODTrack(Int_t id,
@@ -73,28 +85,33 @@ class AliAODTrack : public AliVirtualParticle {
   virtual Double_t Pz() const { return fMomentum[0] / TMath::Tan(fMomentum[2]); }
   virtual Double_t Pt() const { return fMomentum[0]; }
   virtual Double_t P()  const { return TMath::Sqrt(Pt()*Pt()+Pz()*Pz()); }
-
-          Double_t Chi2() const { return fChi2; }
-
-  virtual Double_t E() const { return -999.; }
-  // make a connection to the PID object, here!!!
-  virtual Double_t M() const { return -999.; }
+  
+  Double_t Chi2() const { return fChi2; }
+  
+  virtual Double_t M() const { return M(GetMostProbablePID()); }
+  Double_t M(AODTrkPID_t pid) const;
+  virtual Double_t E() const { return E(GetMostProbablePID()); }
+  Double_t E(AODTrkPID_t pid) const;
+  Double_t E(Double_t m) const { return TMath::Sqrt(P()*P() + m*m); }
+  virtual Double_t Y() const { return Y(GetMostProbablePID()); }
+  Double_t Y(AODTrkPID_t pid) const;
+  Double_t Y(Double_t m) const;
   
   virtual Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * fMomentum[2])); }
-  // make a connection to the PID object, here!!!
-  virtual Double_t Y() const { return -999.; }
 
   virtual Short_t  Charge() const {return fCharge; }
 
   // PID
   virtual const Double_t *PID() const { return fPID; }
+  AODTrkPID_t GetMostProbablePID() const;
+  void ConvertAliPIDtoAODPID();
 
   template <class T> void GetPID(T *pid) const {
     for(Int_t i=0; i<10; ++i) pid[i]=fPID[i];}
  
   template <class T> void SetPID(const T *pid) {
     if(pid) for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
-    else {for(Int_t i=1; i<10; fPID[i++]=0); fPID[0]=1.;}}
+    else {for(Int_t i=0; i<10; fPID[i++]=0.);}}
 
   Int_t GetID() const { return fID; }
   Int_t GetLabel() const { return fLabel; } 
@@ -165,7 +182,7 @@ class AliAODTrack : public AliVirtualParticle {
   Int_t         fID;             // unique track ID, points back to the ESD track
   Int_t         fLabel;          // track label, points back to MC track
   
-  AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
+  AliAODRedCov<6> *fCovMatrix;   // covariance matrix (x, y, z, px, py, pz)
   TRef          fProdVertex;     // vertex of origin
 
   Char_t        fCharge;         // particle charge

@@ -172,6 +172,157 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 }
 
 //______________________________________________________________________________
+Double_t AliAODTrack::M(AODTrkPID_t pid) const
+{
+  // Returns the mass.
+  // In the case of elementary particles the hard coded mass values were taken 
+  // from the PDG. In all cases the error on the values does not affect 
+  // the last digit.
+  
+
+  switch (pid) {
+
+  case kElectron :
+    return 0.000510999;
+    break;
+
+  case kMuon :
+    return 0.1056584;
+    break;
+
+  case kPion :
+    return 0.13957;
+    break;
+
+  case kKaon :
+    return 0.4937;
+    break;
+
+  case kProton :
+    return 0.9382720;
+    break;
+
+  case kDeuteron :
+    return 1.8756;
+    break;
+
+  case kTriton :
+    return 2.8089;
+    break;
+
+  case kHelium3 :
+    return 2.8084;
+    break;
+
+  case kAlpha :
+    return 3.7274;
+    break;
+
+  case kUnknown :
+    return -999.;
+    break;
+
+  default :
+    return -999.;
+  }
+}
+
+//______________________________________________________________________________
+Double_t AliAODTrack::E(AODTrkPID_t pid) const
+{
+  // Returns the energy of the particle of a given pid.
+  
+  if (pid != kUnknown) { // particle was identified
+    Double_t m = M(pid);
+    return TMath::Sqrt(P()*P() + m*m);
+  } else { // pid unknown
+    return -999.;
+  }
+}
+
+//______________________________________________________________________________
+Double_t AliAODTrack::Y(AODTrkPID_t pid) const
+{
+  // Returns the energy of the particle of a given pid.
+  
+  if (pid != kUnknown) { // particle was identified
+    Double_t e = E(pid);
+    Double_t pz = Pz();
+    if (e>=0 && e!=pz) { // energy was positive (e.g. not -999.) and not equal to pz
+      return 0.5*TMath::Log((e+pz)/(e-pz));
+    } else { // energy not known or equal to pz
+      return -999.;
+    }
+  } else { // pid unknown
+    return -999.;
+  }
+}
+
+//______________________________________________________________________________
+Double_t AliAODTrack::Y(Double_t m) const
+{
+  // Returns the energy of the particle of a given mass.
+  
+  if (m >= 0.) { // mass makes sense
+    Double_t e = E(m);
+    Double_t pz = Pz();
+    if (e>=0 && e!=pz) { // energy was positive (e.g. not -999.) and not equal to pz
+      return 0.5*TMath::Log((e+pz)/(e-pz));
+    } else { // energy not known or equal to pz
+      return -999.;
+    }
+  } else { // pid unknown
+    return -999.;
+  }
+}
+
+//______________________________________________________________________________
+AliAODTrack::AODTrkPID_t AliAODTrack::GetMostProbablePID() const 
+{
+  // Returns the most probable PID array element.
+  
+  Int_t nPID = 10;
+  if (fPID) {
+    AODTrkPID_t loc = kUnknown;
+    Double_t max = 0.;
+    Bool_t allTheSame = kTRUE;
+    
+    for (Int_t iPID = 0; iPID < nPID; iPID++) {
+      if (fPID[iPID] >= max) {
+	if (fPID[iPID] > max) {
+	  allTheSame = kFALSE;
+	  max = fPID[iPID];
+	  loc = (AODTrkPID_t)iPID;
+	} else {
+	  allTheSame = kTRUE;
+	}
+      }
+    }
+    
+    return allTheSame ? kUnknown : loc;
+  } else {
+    return kUnknown;
+  }
+}
+
+//______________________________________________________________________________
+void AliAODTrack::ConvertAliPIDtoAODPID()
+{
+  // Converts AliPID array.
+  // The numbering scheme is the same for electrons, muons, pions, kaons, and protons.
+  // Everything else has to be set to zero.
+
+  fPID[kDeuteron] = 0.;
+  fPID[kTriton] = 0.;
+  fPID[kHelium3] = 0.;
+  fPID[kAlpha] = 0.;
+  fPID[kUnknown] = 0.;
+  
+  return;
+}
+
+
+//______________________________________________________________________________
 template <class T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian) 
 {
   // set the momentum
