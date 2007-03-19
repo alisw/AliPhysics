@@ -79,6 +79,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   const char* beamType = GetRunParameter("beamType");
   const char* numberOfDetectors = GetRunParameter("numberOfDetectors");
   const char* detectorMask = GetRunParameter("detectorMask");
+  const char* lhcPeriod = GetRunParameter("LHCperiod");
 
   //===========//
   //DCS data points
@@ -246,6 +247,11 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("Detector mask not put in logbook!"));
   }
+  if (lhcPeriod) {
+    Log(Form("LHC period (DAQ) for run %d: %s",fRun, lhcPeriod));
+  } else {
+    Log(Form("LHCperiod not put in logbook!"));
+  }
 
   TList *values = new TList();
   values->SetOwner(1);
@@ -275,13 +281,17 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString(detectorMask));
   values->Add(mapDAQ6);
 
+  TMap *mapDAQ7 = new TMap();
+  mapDAQ7->Add(new TObjString("fLHCPeriod"),new TObjString(lhcPeriod));
+  values->Add(mapDAQ7);
+
   //DCS dp
   TMap *mapDCS1 = new TMap();
   mapDCS1->Add(new TObjString("fLHCState"),new TObjString(sLHCState));
   values->Add(mapDCS1);
 
   TMap *mapDCS2 = new TMap();
-  mapDCS2->Add(new TObjString("fLHCPeriod"),new TObjString(sLHCPeriod));
+  mapDCS2->Add(new TObjString("fLHCCondition"),new TObjString(sLHCPeriod));
   values->Add(mapDCS2);
 
   TMap *mapDCS3 = new TMap();
