@@ -30,14 +30,15 @@ public:
   void Print(Option_t* opt="") const;
   
 private:
+  /// Not implemented
   AliMUONPedestalSubprocessor(const AliMUONPedestalSubprocessor&);
+  /// Not implemented
   AliMUONPedestalSubprocessor& operator=(const AliMUONPedestalSubprocessor&);
   
   Int_t ReadFile(const char* filename);
-  void ReportMissing(const TObjArray& chambers);
-  
+
 private:
-  AliMUONV2DStore* fPedestals; //! Pedestals for the MUON TRK
+  AliMUONV2DStore* fPedestals; //!< Pedestals for the MUON TRK
   
   ClassDef(AliMUONPedestalSubprocessor,1) // A shuttle preprocessor for MUON TRK pedetals
 };
