@@ -666,7 +666,7 @@ Bool_t AliReconstruction::Run(const char* input)
      br->SetFile("AliESDfriends.root");
   }
 
-  AliVertexerTracks tVertexer;
+  AliVertexerTracks tVertexer(AliTracker::GetBz());
   if(fDiamondProfile) tVertexer.SetVtxStart(fDiamondProfile);
 
   // loop over events
