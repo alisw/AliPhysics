@@ -1,0 +1,36 @@
+#ifndef ALIT0CALIBRATOR_H
+#define ALIT0CALIBRATOR_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+#include "AliT0CalibData.h"
+#include "TTask.h"
+
+class AliT0Calibrator: public TNamed
+ {
+ public:
+
+  AliT0Calibrator();
+  AliT0Calibrator( const AliT0Calibrator& );
+  AliT0Calibrator& operator=(const AliT0Calibrator&); 
+  virtual ~AliT0Calibrator() {};
+  
+
+  Int_t WalkCorrection(Int_t ipmt, Int_t qt, Int_t time) ;
+  Int_t EquivalizeChannel(Int_t ipmt)  ;
+ protected:
+
+  Int_t fTimeDelayCFD[24]; 
+  Int_t  fChannelWidth  ;  
+  
+  TObjArray  fWalk;
+  TObjArray  fSlewingRec;
+  
+  ClassDef(AliT0Calibrator, 0)   // class for the T0 reconstruction
+
+};
+
+
+#endif
