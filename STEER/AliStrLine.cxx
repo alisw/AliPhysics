@@ -39,6 +39,7 @@ AliStrLine::AliStrLine() :
   // Default constructor
   for(Int_t i=0;i<3;i++) {
     fP0[i] = 0.;
+    fSigma2P0[i] = 0.;
     fCd[i] = 0.;
   }
 }
@@ -55,6 +56,7 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
   // if twopoint is false: point represents the 3D coordinates of a point
   //                       belonging to the straight line and cd is the
   //                       direction in space
+  for(Int_t i=0;i<3;i++) fSigma2P0[i] = 0.;
   if(twopoints){
     InitTwoPoints(point,cd);
   }
@@ -80,6 +82,7 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
   for(Int_t i=0;i<3;i++){
     point[i] = pointf[i];
     cd[i] = cdf[i];
+    fSigma2P0[i] = 0.;
   }
   if(twopoints){
     InitTwoPoints(point,cd);
@@ -89,6 +92,53 @@ AliStrLine::AliStrLine(Float_t *pointf, Float_t *cdf,Bool_t twopoints) :
   }
 }
 
+//________________________________________________________
+AliStrLine::AliStrLine(Double_t *point, Double_t *sig2point, Double_t *cd,Bool_t twopoints) :
+  TObject(),
+  fTpar(0),
+  fDebug(0)
+{
+  // Standard constructor
+  // if twopoints is true:  point and cd are the 3D coordinates of
+  //                        two points defininig the straight line
+  // if twopoint is false: point represents the 3D coordinates of a point
+  //                       belonging to the straight line and cd is the
+  //                       direction in space
+  for(Int_t i=0;i<3;i++) fSigma2P0[i] = sig2point[i];
+  if(twopoints){
+    InitTwoPoints(point,cd);
+  }
+  else {
+    InitDirection(point,cd);
+  }
+}
+
+//________________________________________________________
+AliStrLine::AliStrLine(Float_t *pointf, Float_t *sig2point, Float_t *cdf,Bool_t twopoints) :
+  TObject(),
+  fTpar(0),
+  fDebug(0)
+{
+  // Standard constructor - with float arguments
+  // if twopoints is true:  point and cd are the 3D coordinates of
+  //                        two points defininig the straight line
+  // if twopoint is false: point represents the 3D coordinates of a point
+  //                       belonging to the straight line and cd is the
+  //                       direction in space
+  Double_t point[3];
+  Double_t cd[3];
+  for(Int_t i=0;i<3;i++){
+    point[i] = pointf[i];
+    cd[i] = cdf[i];
+    fSigma2P0[i] = sig2point[i];
+  }
+  if(twopoints){
+    InitTwoPoints(point,cd);
+  }
+  else {
+    InitDirection(point,cd);
+  }
+}
 //________________________________________________________
 void AliStrLine::InitDirection(Double_t *point, Double_t *cd){
   // Initialization from a point and a direction
@@ -130,6 +180,9 @@ void AliStrLine::PrintStatus() const {
   cout <<endl;
   cout <<"Known point: ";
   for(Int_t i=0;i<3;i++)cout <<fP0[i]<<"; ";
+  cout <<endl;
+  cout <<"Error on known point: ";
+  for(Int_t i=0;i<3;i++)cout <<TMath::Sqrt(fSigma2P0[i])<<"; ";
   cout <<endl;
   cout <<"Current value for the parameter: "<<fTpar<<endl;
   cout <<" Debug flag: "<<fDebug<<endl;
