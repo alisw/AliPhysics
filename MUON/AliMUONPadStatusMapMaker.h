@@ -29,6 +29,7 @@ public:
   AliMUONPadStatusMapMaker();
   virtual ~AliMUONPadStatusMapMaker();
   
+  /// Return status bit map to tell a pad is bad
   static Int_t SelfDeadMask() { return fgkSelfDead; }
   
   AliMUONV2DStore* MakePadStatusMap(const AliMUONV2DStore& status,
@@ -38,13 +39,12 @@ public:
 
 
 private:
+  /// Not implemented
   AliMUONPadStatusMapMaker(const AliMUONPadStatusMapMaker&);
+  /// Not implemented
   AliMUONPadStatusMapMaker& operator=(const AliMUONPadStatusMapMaker&);
 
 private:
-    
-  Int_t BitNumber(const AliMpPad& centerPad, const AliMpPad& testPad) const;
-
   Int_t ComputeStatusMap(const TObjArray& neighbours, Int_t detElemId) const;
   
   Int_t GetPadStatus(Int_t detElemId, const AliMpPad& pad) const;
@@ -57,6 +57,7 @@ private:
   Int_t fMask; //!< mask to be tested
   const AliMpVSegmentation* fSegmentation; //!< segmentation of current de
   
+  /// Bit numbers
   enum EBitNumbers
   {
     kLeftBottomBit = 6,
