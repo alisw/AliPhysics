@@ -43,20 +43,20 @@ class AliJetGrid : public TNamed {
   Int_t     GetIndexJFromEta(Double_t eta);
   Int_t     GetIndex(Double_t phi,Double_t eta);
   void      GetAccParam(Int_t &nphi, Int_t &neta, Float_t &minphi, 
-			Float_t &maxphi, Float_t &mineta, Float_t &maxeta);
+			Float_t &maxphi, Float_t &mineta, Float_t &maxeta) const ;
   void      GetBinParam(Int_t &phibintpc, Int_t &etabintpc, 
-			Int_t &phibinemc, Int_t &etabinemc, Int_t &nbinphi);
-  void      GetIJFromIndex(Int_t index, Int_t i, Int_t j);
+			Int_t &phibinemc, Int_t &etabinemc, Int_t &nbinphi) const;
+  void      GetIJFromIndex(Int_t index, Int_t i, Int_t j) const;
   void      GetEtaPhiFromIndex2(Int_t index, Float_t &phi, Float_t &eta);
   Int_t     GetNEntries();
   Int_t     GetNEntries2();
-  Int_t     GetDeta() {return static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta); 
+  Int_t     GetDeta() const {return static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta); 
     if(fDebug>21) cout << "static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta) : " << 
       static_cast<Int_t>((fEtaMax-fEtaMin)/fNeta);}
-  Int_t     GetDphi() {return static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi); 
+  Int_t     GetDphi() const {return static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi); 
     if(fDebug>21) cout << "static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi) : " << 
       static_cast<Int_t>((fPhiMax-fPhiMin)/fNphi);}
-  Int_t     GetGridType() {return fGrid;}
+  Int_t     GetGridType() const {return fGrid;}
 
   // Setter
   void      SetEtaRange(Double_t etaMin, Double_t etaMax) {fEtaMin = etaMin; fEtaMax = etaMax;}
@@ -88,13 +88,13 @@ class AliJetGrid : public TNamed {
   Int_t     fPhiBinInTPCAcc;    // number of points in TPC acceptance in phi
   Int_t     fEtaBinInEMCalAcc;  // number of points in EMCal acceptance in eta
   Int_t     fPhiBinInEMCalAcc;  // number of points in EMCal acceptance in phi
-  Int_t     fNbinEta;
-  Int_t     fNbinPhi;
-  Double_t  fMaxPhi;
-  Double_t  fMinPhi;
-  Double_t  fMaxEta;
-  Double_t  fMinEta;
-  Int_t     fDebug;
+  Int_t     fNbinEta;           // number of bins in eta
+  Int_t     fNbinPhi;           // number of bins in phi
+  Double_t  fMaxPhi;            // maximum phi
+  Double_t  fMinPhi;            // minimum phi
+  Double_t  fMaxEta;            // maximum eta
+  Double_t  fMinEta;            // minimum eta
+  Int_t     fDebug;             // debug flag
 
   ClassDef(AliJetGrid,1) // Parameters used by AliTPCtrackerParam 
 };

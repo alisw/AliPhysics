@@ -164,7 +164,8 @@ AliJetGrid::~AliJetGrid() {
 
 //__________________________________________________________
 void AliJetGrid::InitParams(Double_t phiMinCal,Double_t phiMaxCal,Double_t etaMinCal,Double_t etaMaxCal) 
-{ // To set initial parameters
+{ 
+// To set initial parameters
 
   fPhiMin = phiMinCal; // rad
   fPhiMax = phiMaxCal; // rad
@@ -200,7 +201,8 @@ void AliJetGrid::InitParams(Double_t phiMinCal,Double_t phiMaxCal,Double_t etaMi
 
 //__________________________________________________________
 TArrayD* AliJetGrid::GetArrayEta() 
-{ // Returns an array with the eta points
+{ 
+// Returns an array with the eta points
 
   return fEta;
 
@@ -208,7 +210,8 @@ TArrayD* AliJetGrid::GetArrayEta()
 
 //__________________________________________________________
 TArrayD* AliJetGrid::GetArrayPhi() 
-{ // Returns an array with the phi points
+{ 
+// Returns an array with the phi points
 
   return fPhi;
 
@@ -216,7 +219,8 @@ TArrayD* AliJetGrid::GetArrayPhi()
 
 //__________________________________________________________
 TMatrixD* AliJetGrid::GetIndexObject()
-{ // Returns a pointer to the matrix
+{ 
+// Returns a pointer to the matrix
 
   return fIndex;
 
@@ -224,8 +228,9 @@ TMatrixD* AliJetGrid::GetIndexObject()
 
 //__________________________________________________________
 void AliJetGrid::GetAccParam(Int_t &nphi, Int_t &neta, Float_t &minphi, Float_t &maxphi, 
-				Float_t &mineta, Float_t &maxeta)
-{ // Returns EMCAL acceptance initially setted
+				Float_t &mineta, Float_t &maxeta) const
+{ 
+// Returns EMCAL acceptance initially setted
 
   nphi = fNphi;
   neta = fNeta;
@@ -237,8 +242,9 @@ void AliJetGrid::GetAccParam(Int_t &nphi, Int_t &neta, Float_t &minphi, Float_t 
 
 //__________________________________________________________
 void AliJetGrid::GetBinParam(Int_t &phibintpc, Int_t &etabintpc, 
-				Int_t &phibinemc, Int_t &etabinemc, Int_t &nbinphi)
-{ // Returns number of bins in TPC and EMCAL geometry
+				Int_t &phibinemc, Int_t &etabinemc, Int_t &nbinphi) const
+{ 
+// Returns number of bins in TPC and EMCAL geometry
 
   etabintpc = fEtaBinInTPCAcc;
   phibintpc = fPhiBinInTPCAcc;
@@ -249,9 +255,10 @@ void AliJetGrid::GetBinParam(Int_t &phibintpc, Int_t &etabintpc,
 
 //__________________________________________________________
 Int_t AliJetGrid::GetIndexFromEtaPhi(Double_t phi,Double_t eta) const 
-{ // Tells the index value of a corresponding (eta,phi) real position
-  // Loop over all entries -> takes time. 
-  // Used one time at the begining to fill the grids
+{ 
+// Tells the index value of a corresponding (eta,phi) real position
+// Loop over all entries -> takes time.
+// Used one time at the begining to fill the grids
 
   /*   this is how bins are numbered
    
@@ -403,7 +410,8 @@ Int_t AliJetGrid::GetIndexFromEtaPhi(Double_t phi,Double_t eta) const
 
 //__________________________________________________________
 void AliJetGrid::GetEtaPhiFromIndex(Int_t index, Float_t &eta, Float_t &phi)
-{ // Get (eta,phi) position for a given index BUT loop over all entries (takes time)
+{ 
+// Get (eta,phi) position for a given index BUT loop over all entries (takes time)
 
   for(Int_t j=0; j<fNphi+1; j++) {
     for(Int_t i=0; i<fNeta+1; i++) {
@@ -450,7 +458,8 @@ void AliJetGrid::GetEtaPhiFromIndex(Int_t index, Float_t &eta, Float_t &phi)
 
 //__________________________________________________________
 Int_t AliJetGrid::GetIndex(Double_t phi, Double_t eta) 
-{ // Get index value for a (eta,phi) position - Direct value
+{ 
+// Get index value for a (eta,phi) position - Direct value
 
   Int_t ieta = GetIndexJFromEta(eta);
   Int_t iphi = GetIndexIFromPhi(phi);
@@ -467,8 +476,9 @@ Int_t AliJetGrid::GetIndex(Double_t phi, Double_t eta)
 
 //__________________________________________________________
 Int_t AliJetGrid::GetIndexJFromEta(Double_t eta)
-{ // Get eta id 
-  // Eta discretized
+{ 
+// Get eta id
+// Eta discretized
 
   Int_t idEta =0;
   Double_t temp = (eta+fMaxEta)/(fMaxEta-fMinEta)*fNeta;
@@ -486,8 +496,9 @@ Int_t AliJetGrid::GetIndexJFromEta(Double_t eta)
 }
 //__________________________________________________________
 Int_t AliJetGrid::GetIndexIFromPhi(Double_t phi)
-{ // Get phi id
-  // Phi discretized
+{ 
+// Get phi id
+// Phi discretized
 
   Int_t idPhi = 0;
   Double_t temp = 0.;
@@ -511,8 +522,9 @@ Int_t AliJetGrid::GetIndexIFromPhi(Double_t phi)
 
 //__________________________________________________________
 void AliJetGrid::SetMatrixIndex(Int_t i,Double_t par) 
-{ // Allows to set parameters using only one index (if fGrid==0) !!
-  // Not used !
+{ 
+// Allows to set parameters using only one index (if fGrid==0) !!
+// Not used !
 
   Int_t iphi = (Int_t)i/fNeta;
   Int_t ieta = i-iphi*fNeta;
@@ -523,7 +535,8 @@ void AliJetGrid::SetMatrixIndex(Int_t i,Double_t par)
 
 //__________________________________________________________
 void AliJetGrid::SetMatrixIndexes() 
-{ // Fill the final matrix object with the corresponding index in eta/phi
+{ 
+// Fill the final matrix object with the corresponding index in eta/phi
 
   for(Int_t i=0; i<fNphi+1; i++){
     for(Int_t j=0; j<fNeta+1; j++){
@@ -542,7 +555,8 @@ void AliJetGrid::SetMatrixIndexes()
 
 //__________________________________________________________
 void AliJetGrid::SetIndexIJ()
-{ // 
+{ 
+// Set the grid index
 
   for(Int_t i=0; i<fNphi+1; i++){
     for(Int_t j=0; j<fNeta+1; j++){
@@ -562,15 +576,17 @@ void AliJetGrid::SetIndexIJ()
 }
 
 //__________________________________________________________
-void AliJetGrid::GetIJFromIndex(Int_t index, Int_t i, Int_t j)
-{ // returns i position id of eta and j position id of phi for a given grid index
+void AliJetGrid::GetIJFromIndex(Int_t index, Int_t i, Int_t j) const
+{ 
+// Returns i position id of eta and j position id of phi for a given grid index
   i = (*fIndexI)[index];
   j = (*fIndexJ)[index];
 }
 
 //__________________________________________________________
 void AliJetGrid::GetEtaPhiFromIndex2(Int_t index, Float_t &phi, Float_t &eta)
-{ // returns eta, phi values for a given grid index
+{ 
+// Returns eta, phi values for a given grid index
 
   phi = fPhi->At((*fIndexI)[index]);
   eta = fEta->At((*fIndexJ)[index]);
@@ -578,7 +594,8 @@ void AliJetGrid::GetEtaPhiFromIndex2(Int_t index, Float_t &phi, Float_t &eta)
 
 //__________________________________________________________
 Int_t AliJetGrid::GetNEntries()
-{ // Returns the number of entries of the grid
+{ 
+// Returns the number of entries of the grid
 
   if(fDebug>20){
     cout << "fMaxPhi : " << fMaxPhi << endl;
@@ -593,7 +610,8 @@ Int_t AliJetGrid::GetNEntries()
 
 //__________________________________________________________
 Int_t AliJetGrid::GetNEntries2()
-{ // Returns the number of entries of the grid
+{ 
+// Returns the number of entries of the grid
 
   Int_t indexNum = GetIndex(fMaxPhi-1.,fMaxEta-0.5);
     if(fDebug>20) cout << "indexNum : " << indexNum << endl;
