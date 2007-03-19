@@ -293,194 +293,249 @@ void SetChargeAndPID(Int_t pdgCode, AliAODTrack *track) {
   Float_t PID[10] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
 
   switch (pdgCode) {
+
   case 22: // gamma
     track->SetCharge(0);
-    PID[5] = 1.;
+    PID[AliAODTrack::kUnknown] = 1.;
     track->SetPID(PID);
     nGamma++;
     break;
 
-  case -11: // e- 
+  case 11: // e- 
     track->SetCharge(-1);
-    PID[0] = 1.;
+    PID[AliAODTrack::kElectron] = 1.;
     track->SetPID(PID);
     nElectron++;
     break;
     
-  case 11: // e+
+  case -11: // e+
     track->SetCharge(+1);
-    PID[0] = 1.;
+    PID[AliAODTrack::kElectron] = 1.;
     track->SetPID(PID);
     nPositron++;
     break;
     
-  case -13: // mu- 
+  case 13: // mu- 
     track->SetCharge(-1);
-    PID[1] = 1.;
+    PID[AliAODTrack::kMuon] = 1.;
     track->SetPID(PID);
     nMuon++;
     break;
     
-  case +13: // mu+
+  case -13: // mu+
     track->SetCharge(+1);
-    PID[1] = 1.;
+    PID[AliAODTrack::kMuon] = 1.;
     track->SetPID(PID);
     nAntiMuon++;
     break;
     
   case 111: // pi0
     track->SetCharge(0);
-    PID[6] = 1.;
+    PID[AliAODTrack::kUnknown] = 1.;
     track->SetPID(PID);
     nPi0++;
     break;
     
   case 211: // pi+
     track->SetCharge(+1);
-    PID[2] = 1.;
+    PID[AliAODTrack::kPion] = 1.;
     track->SetPID(PID);
     nPiPlus++;
     break;
     
   case -211: // pi-
     track->SetCharge(-1);
-    PID[2] = 1.;
+    PID[AliAODTrack::kPion] = 1.;
     track->SetPID(PID);
     nPiMinus++;
     break;
     
   case 130: // K0L
     track->SetCharge(0);
-    PID[8] = 1.;
+    PID[AliAODTrack::kUnknown] = 1.;
     track->SetPID(PID);
     nK0++;
     break;
     
   case 321: // K+
     track->SetCharge(+1);
-    PID[3] = 1.;
+    PID[AliAODTrack::kKaon] = 1.;
     track->SetPID(PID);
     nKPlus++;
     break;
     
   case -321: // K- 
     track->SetCharge(-1);
-    PID[3] = 1.;
+    PID[AliAODTrack::kKaon] = 1.;
     track->SetPID(PID);
     nKMinus++;
     break;
     
-  case 2122: // n
+  case 2112: // n
     track->SetCharge(0);
-    PID[7] = 1.;
+    PID[AliAODTrack::kUnknown] = 1.;
     track->SetPID(PID);
     nNeutron++;
     break;
     
   case 2212: // p
     track->SetCharge(+1);
-    PID[4] = 1.;
+    PID[AliAODTrack::kProton] = 1.;
     track->SetPID(PID);
     nProton++;
     break;
     
   case -2212: // anti-p
     track->SetCharge(-1);
-    PID[4] = 1.;
+    PID[AliAODTrack::kProton] = 1.;
     track->SetPID(PID);
     nAntiProton++;
     break;
 
   case 310: // K0S
     track->SetCharge(0);
-    PID[8] = 1.;
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
+    nK0++;
+    break;
+    
+  case 311: // K0
+    track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
+    nK0++;
+    break;
+    
+  case -311: // anti-K0
+    track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
     track->SetPID(PID);
     nK0++;
     break;
     
   case 221: // eta
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 3122: // lambda
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 3222: // Sigma+
     track->SetCharge(+1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 3212: // Sigma0
     track->SetCharge(-1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 3112: // Sigma-
     track->SetCharge(-1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 3322: // Xi0
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 3312: // Xi-
     track->SetCharge(-1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
-  case 3332: // Omega-
+  case 3334: // Omega-
     track->SetCharge(-1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -2112: // n-bar
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -3122: // anti-Lambda
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -3222: // anti-Sigma-
     track->SetCharge(-1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -3212: // anti-Sigma0
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -3112: // anti-Sigma+
     track->SetCharge(+1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -3322: // anti-Xi0
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -3312: // anti-Xi+
     track->SetCharge(+1);
     break;
 
-  case -3332: // anti-Omega+
+  case -3334: // anti-Omega+
     track->SetCharge(+1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 411: // D+
     track->SetCharge(+1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -411: // D- 
     track->SetCharge(-1);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case 421: // D0
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   case -421: // anti-D0
     track->SetCharge(0);
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
     break;
 
   default : // unknown
     track->SetCharge(-99);
-  }
+    PID[AliAODTrack::kUnknown] = 1.;
+    track->SetPID(PID);
+ }
 
   return;
 }
@@ -499,29 +554,30 @@ void SetVertexType(TParticle *part, AliAODVertex *vertex) {
     Int_t lastPdgCode = stack->Particle(mother->GetLastDaughter())->GetPdgCode();
 
     if (!(pdgMother == 22 || pdgMother == 111 || pdgMother == 130 || 
-	  TMath::Abs(pdgMother) == 2122 || pdgMother == 310 || pdgMother == 221 || 
+	  TMath::Abs(pdgMother) == 2112 || pdgMother == 310 || pdgMother == 221 || 
 	  TMath::Abs(pdgMother) == 3122 || TMath::Abs(pdgMother) == 3322 || 
-	  pdgMother == -3212 || TMath::Abs(pdgMother) == 421) // not neutral
+	  pdgMother == -3212 || TMath::Abs(pdgMother) == 421 || 
+	  TMath::Abs(pdgMother) == 311) // not neutral
 	&& (((firstPdgCode == 22 || firstPdgCode == 111 || firstPdgCode == 130 || 
-	      TMath::Abs(firstPdgCode) == 2122 || firstPdgCode == 310 || 
+	      TMath::Abs(firstPdgCode) == 2112 || firstPdgCode == 310 || 
 	      firstPdgCode == 221 || TMath::Abs(firstPdgCode) == 3122 || 
 	      TMath::Abs(firstPdgCode) == 3322 || firstPdgCode == -3212 || 
-	      TMath::Abs(firstPdgCode) == 421) // neutral
+	      TMath::Abs(firstPdgCode) == 421 || TMath::Abs(pdgMother) == 311) // neutral
 	     && !(lastPdgCode == 22 || lastPdgCode == 111 || lastPdgCode == 130 || 
-		  TMath::Abs(lastPdgCode) == 2122 || lastPdgCode == 310 || 
+		  TMath::Abs(lastPdgCode) == 2112 || lastPdgCode == 310 || 
 		  lastPdgCode == 221 || TMath::Abs(lastPdgCode) == 3122 || 
 		  TMath::Abs(lastPdgCode) == 3322 || lastPdgCode == -3212 || 
-		  TMath::Abs(lastPdgCode) == 421)) // not neutral
+		  TMath::Abs(lastPdgCode) == 421 || TMath::Abs(pdgMother) == 311)) // not neutral
 	    || !((firstPdgCode == 22 || firstPdgCode == 111 || firstPdgCode == 130 || 
-		  TMath::Abs(firstPdgCode) == 2122 || firstPdgCode == 310 || 
+		  TMath::Abs(firstPdgCode) == 2112 || firstPdgCode == 310 || 
 		  firstPdgCode == 221 || TMath::Abs(firstPdgCode) == 3122 || 
 		  TMath::Abs(firstPdgCode) == 3322 || firstPdgCode == -3212 || 
-		  TMath::Abs(firstPdgCode) == 421) // not neutral
+		  TMath::Abs(firstPdgCode) == 421 || TMath::Abs(pdgMother) == 311) // not neutral
 		 && (lastPdgCode == 22 || lastPdgCode == 111 || lastPdgCode == 130 || 
-		     TMath::Abs(lastPdgCode) == 2122 || lastPdgCode == 310 || 
+		     TMath::Abs(lastPdgCode) == 2112 || lastPdgCode == 310 || 
 		     lastPdgCode == 221 || TMath::Abs(lastPdgCode) == 3122 || 
 		     TMath::Abs(lastPdgCode) == 3322 || lastPdgCode == -3212 || 
-		     TMath::Abs(lastPdgCode) == 421)))) { // neutral
+		     TMath::Abs(lastPdgCode) == 421 || TMath::Abs(pdgMother) == 311)))) { // neutral
       
       vertex->SetType(AliAODVertex::kKink);
       jKinks++;
@@ -534,20 +590,20 @@ void SetVertexType(TParticle *part, AliAODVertex *vertex) {
     Int_t lastPdgCode = stack->Particle(mother->GetLastDaughter())->GetPdgCode();
 
     if ((pdgMother == 22 || pdgMother == 111 || pdgMother == 130 || 
-	 TMath::Abs(pdgMother) == 2122 || pdgMother == 310 || 
+	 TMath::Abs(pdgMother) == 2112 || pdgMother == 310 || 
 	 pdgMother == 221 || TMath::Abs(pdgMother) == 3122 || 
 	 TMath::Abs(pdgMother) == 3322 || pdgMother == -3212 || 
-	 TMath::Abs(pdgMother) == 421) // neutral
+	 TMath::Abs(pdgMother) == 421 || TMath::Abs(pdgMother) == 311) // neutral
 	&& !(lastPdgCode == 22 || lastPdgCode == 111 || lastPdgCode == 130 || 
-	     TMath::Abs(lastPdgCode) == 2122 || lastPdgCode == 310 || 
+	     TMath::Abs(lastPdgCode) == 2112 || lastPdgCode == 310 || 
 	     lastPdgCode == 221 || TMath::Abs(lastPdgCode) == 3122 || 
 	     TMath::Abs(lastPdgCode) == 3322 || lastPdgCode == -3212 || 
-	     TMath::Abs(lastPdgCode) == 421) // not neutral
+	     TMath::Abs(lastPdgCode) == 421 || TMath::Abs(pdgMother) == 311) // not neutral
 	&& !(firstPdgCode == 22 || firstPdgCode == 111 || firstPdgCode == 130 || 
-	     TMath::Abs(firstPdgCode) == 2122 || firstPdgCode == 310 || 
+	     TMath::Abs(firstPdgCode) == 2112 || firstPdgCode == 310 || 
 	     firstPdgCode == 221 || TMath::Abs(firstPdgCode) == 3122 || 
 	     TMath::Abs(firstPdgCode) == 3322 || firstPdgCode == -3212 || 
-	     TMath::Abs(firstPdgCode) == 421)) { // not neutral
+	     TMath::Abs(firstPdgCode) == 421 || TMath::Abs(pdgMother) == 311)) { // not neutral
       
       vertex->SetType(AliAODVertex::kV0);
       jV0s++;
@@ -559,19 +615,19 @@ void SetVertexType(TParticle *part, AliAODVertex *vertex) {
     Int_t firstPdgCode = stack->Particle(mother->GetFirstDaughter())->GetPdgCode();
     Int_t lastPdgCode = stack->Particle(mother->GetLastDaughter())->GetPdgCode();
     
-    if ((TMath::Abs(pdgMother) == 3332 || TMath::Abs(pdgMother) == 3312 || TMath::Abs(pdgMother) == 3322) &&
+    if ((TMath::Abs(pdgMother) == 3334 || TMath::Abs(pdgMother) == 3312 || TMath::Abs(pdgMother) == 3322) &&
 	(TMath::Abs(pdgPart) == 3122 || TMath::Abs(pdgPart) == 211 || TMath::Abs(pdgPart) == 321)
 	&& ((!(firstPdgCode == 22 || firstPdgCode == 111 || firstPdgCode == 130 || 
-	       TMath::Abs(firstPdgCode) == 2122 || firstPdgCode == 310 || 
+	       TMath::Abs(firstPdgCode) == 2112 || firstPdgCode == 310 || 
 	       firstPdgCode == 221 || TMath::Abs(firstPdgCode) == 3122 || 
 	       TMath::Abs(firstPdgCode) == 3322 || firstPdgCode == -3212 || 
-	       TMath::Abs(firstPdgCode) == 421) // not neutral   
+	       TMath::Abs(firstPdgCode) == 421 || TMath::Abs(pdgMother) == 311) // not neutral   
 	     && TMath::Abs(lastPdgCode) == 3122) // labmda or anti-lambda
 	    || ((!(lastPdgCode == 22 || lastPdgCode == 111 || lastPdgCode == 130 || 
-		   TMath::Abs(lastPdgCode) == 2122 || lastPdgCode == 310 || 
+		   TMath::Abs(lastPdgCode) == 2112 || lastPdgCode == 310 || 
 		   lastPdgCode == 221 || TMath::Abs(lastPdgCode) == 3122 || 
 		   TMath::Abs(lastPdgCode) == 3322 || lastPdgCode == -3212 || 
-		   TMath::Abs(lastPdgCode) == 421) // not neutral
+		   TMath::Abs(lastPdgCode) == 421 || TMath::Abs(pdgMother) == 311) // not neutral
 		 && TMath::Abs(firstPdgCode) == 3122)))) { // lambda or anti-lambda
       vertex->SetType(AliAODVertex::kCascade);
       jCascades++;
