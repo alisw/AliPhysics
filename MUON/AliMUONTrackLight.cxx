@@ -1,6 +1,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *      SigmaEffect_thetadegrees                                                                  *
+ *      SigmaEffect_thetadegrees                                          *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -38,6 +38,7 @@
 #include "AliRunLoader.h"
 #include "AliStack.h"
 #include "AliHeader.h"
+#include "AliMUONTrackExtrap.h"
 
 #include "TDatabasePDG.h"
 #include "TClonesArray.h"
@@ -53,12 +54,14 @@ AliMUONTrackLight::AliMUONTrackLight()
     fPrec(), 
     fIsTriggered(kFALSE),
     fCharge(-999), 
+    fChi2(-1), 
     fCentr(-1),
     fPgen(), 
     fTrackPythiaLine(-999),
     fTrackPDGCode(-999),
     fOscillation(kFALSE), 
-    fNParents(0)
+    fNParents(0),
+    fWeight(1)    
 {
   /// default constructor
   fPgen.SetPxPyPzE(0.,0.,0.,0.); 
@@ -80,12 +83,14 @@ AliMUONTrackLight::AliMUONTrackLight(const AliMUONTrackLight &muonCopy)
     fPrec(muonCopy.fPrec), 
     fIsTriggered(muonCopy.fIsTriggered),
     fCharge(muonCopy.fCharge), 
+    fChi2(muonCopy.fChi2), 
     fCentr(muonCopy.fCentr),
     fPgen(muonCopy.fPgen), 
     fTrackPythiaLine(muonCopy.fTrackPythiaLine),
     fTrackPDGCode(muonCopy.fTrackPDGCode),
     fOscillation(muonCopy.fOscillation), 
-    fNParents(muonCopy.fNParents)
+    fNParents(muonCopy.fNParents),
+    fWeight(muonCopy.fWeight)
 {
   /// copy constructor
   for (Int_t i=0; i<3; i++) fXYZ[i]=muonCopy.fXYZ[i]; 
@@ -105,20 +110,45 @@ AliMUONTrackLight::AliMUONTrackLight(AliESDMuonTrack* muonTrack)
     fPrec(), 
     fIsTriggered(kFALSE),
     fCharge(-999), 
+    fChi2(-1),
     fCentr(-1),
     fPgen(), 
     fTrackPythiaLine(-999),
     fTrackPDGCode(-999),
     fOscillation(kFALSE), 
-    fNParents(0)
+    fNParents(0),
+    fWeight(1)
 { 
   /// constructor
   //AliMUONTrackLight(); 
-  ComputePRecAndChargeFromESD(muonTrack); 
+  FillFromESD(muonTrack); 
 }
 
 //============================================
-void AliMUONTrackLight::ComputePRecAndChargeFromESD(AliESDMuonTrack* muonTrack){ 
+AliMUONTrackLight::~AliMUONTrackLight()
+{
+/// Destructor
+} 
+
+//============================================
+
+void AliMUONTrackLight::FillFromAliMUONTrack(AliMUONTrack *trackReco,Double_t zvert){
+  /// this method sets the muon reconstructed momentum according to the value given by AliMUONTrack
+  AliMUONTrackParam trPar(*((AliMUONTrackParam*) (trackReco->GetTrackParamAtHit()->First())));
+  //  AliMUONTrackParam *trPar  = trackReco->GetTrackParamAtVertex();
+  AliMUONTrackExtrap::ExtrapToVertex(&trPar,0.,0.,0.);
+  this->SetCharge(Int_t(TMath::Sign(1.,trPar.GetInverseBendingMomentum())));
+  this->SetPxPyPz(trPar.Px(),trPar.Py(), trPar.Pz()); 
+  this->SetTriggered(trackReco->GetMatchTrigger()); 
+  
+  Double_t xyz[3] = { trPar.GetNonBendingCoor(), 
+		      trPar.GetBendingCoor(),
+		      zvert};
+  this->SetVertex(xyz); 
+}
+
+//============================================
+void AliMUONTrackLight::FillFromESD(AliESDMuonTrack* muonTrack,Double_t zvert){
   /// computes prec and charge from ESD track
   Double_t mumass = TDatabasePDG::Instance()->GetParticle(13)->Mass(); 
   Double_t thetaX = muonTrack->GetThetaX();
@@ -132,6 +162,14 @@ void AliMUONTrackLight::ComputePRecAndChargeFromESD(AliESDMuonTrack* muonTrack){
   fCharge   = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
   Double_t energy = TMath::Sqrt(mumass * mumass + px*px + py*py + pz*pz);
   fPrec.SetPxPyPzE(px,py,pz,energy);
+  // get the position
+  fXYZ[0] = muonTrack->GetNonBendingCoor();
+  fXYZ[1] = muonTrack->GetBendingCoor();
+  if (zvert==-9999) fXYZ[2] = muonTrack->GetZ();
+  else fXYZ[2] = zvert;
+  // get the chi2 per d.o.f.
+  fChi2 = muonTrack->GetChi2()/ (2.0 * muonTrack->GetNHit() - 5);
+  fIsTriggered = muonTrack->GetMatchTrigger();
 }
 
 //============================================
@@ -194,18 +232,27 @@ Int_t AliMUONTrackLight::TrackCheck(Bool_t *compTrack){
 //============================================
 void AliMUONTrackLight::FillMuonHistory(AliRunLoader *runLoader, TParticle *part){
   /// scans the muon history to determine parents pdg code and pythia line
+  // kept for backward compatibility
+  // see the overloaded method FillMuonHistory(AliStack *stack, TParticle *part)
+  AliStack *stack = runLoader->GetHeader()->Stack();
+  FillMuonHistory(stack,part);
+}
+
+//============================================
+void AliMUONTrackLight::FillMuonHistory(AliStack *stack, TParticle *part){
+  /// scans the muon history to determine parents pdg code and pythia line
   Int_t countP = -1;
   Int_t parents[10], parLine[10];
   Int_t lineM = part->GetFirstMother();//line in the Pythia output of the particle's mother
 
-  AliStack *stack = runLoader->GetHeader()->Stack();
   TParticle *mother;
   Int_t status=-1, pdg=-1;
   while(lineM >= 0){
-
+    
     mother = stack->Particle(lineM); //direct mother of rec. track
     pdg = mother->GetPdgCode();//store PDG code of first mother
-    if(pdg == 92) break;  // break if a string is found 
+    // break if a string, gluon, quark or diquark is found 
+    if(pdg == 92 || pdg == 21 || TMath::Abs(pdg) < 10 || IsDiquark(pdg)) break;
     parents[++countP] = pdg;
     parLine[countP] = lineM;
     status = mother->GetStatusCode();//get its status code to check if oscillation occured
@@ -217,9 +264,9 @@ void AliMUONTrackLight::FillMuonHistory(AliRunLoader *runLoader, TParticle *part
     this->SetParentPDGCode(i,parents[countP-i]);
     this->SetParentPythiaLine(i,parLine[countP-i]);
   }
-
   fNParents = countP+1;
   countP = -1;
+
   //and store the lines of the string and further quarks in another array:
   while(lineM >= 0){
     mother = stack->Particle(lineM);
@@ -229,14 +276,21 @@ void AliMUONTrackLight::FillMuonHistory(AliRunLoader *runLoader, TParticle *part
     this->SetQuarkPDGCode(countP, pdg);//store the pdg of the quarks in index 1,2
     lineM = mother->GetFirstMother();
   }
-
+  
   //check if in case of HF production, the string points to the correct end
   //and correct it in case of need:
   countP = 1;
+  for(int par = 0; par < 4; par++){
+    if(TMath::Abs(this->GetQuarkPDGCode(par)) < 6){
+      countP = par; //get the quark just before hadronisation
+      break;
+    }
+  }
   if(this->GetQuarkPythiaLine(countP) > -1 && (this->GetParentFlavour(0)==4 || this->GetParentFlavour(0)==5)){
     if(this->GetParentFlavour(0) != TMath::Abs(this->GetQuarkPDGCode(countP))){
 
-      Int_t pdg = this->GetQuarkPDGCode(1), line = this->GetQuarkPythiaLine(1);
+      printf("quark flavour of parent and that of quark do not correspond: %d %d --> correcting\n", this->GetParentFlavour(0), TMath::Abs(this->GetQuarkPDGCode(countP)));
+      Int_t pdg = this->GetQuarkPDGCode(countP), line = this->GetQuarkPythiaLine(countP);
       this->ResetQuarkInfo();
       while(TMath::Abs(pdg) != this->GetParentFlavour(0)){//pdg of q,g in Pythia listing following the wrong string end
                                                         //must coincide with the flavour of the last fragmented mother
@@ -252,9 +306,11 @@ void AliMUONTrackLight::FillMuonHistory(AliRunLoader *runLoader, TParticle *part
 	this->SetQuarkPDGCode(countP++, pdg);
 	line = mother->GetFirstMother();
       }
-    }
+      this->PrintInfo("h");
+    }//mismatch
   }
 }
+
 //====================================
 void AliMUONTrackLight::ResetQuarkInfo(){
   /// resets parton information
@@ -346,5 +402,25 @@ void AliMUONTrackLight::PrintInfo(Option_t* opt){
 	   momRec.Phi(), 180./TMath::Pi() * momRec.Phi());
   }
 }
-
-
+//====================================
+Bool_t AliMUONTrackLight::IsParentPionOrKaon(Int_t idparent){
+  /// checks if a muon comes from a pion or kaon or a particle that decays into one of these two
+  Int_t pdg = this->GetParentPDGCode(idparent); 
+  if (TMath::Abs(pdg)==211 || //pi+
+      TMath::Abs(pdg)==321 || //K+
+      TMath::Abs(pdg)==213 || //rho+
+      TMath::Abs(pdg)==311 || //K0
+      TMath::Abs(pdg)==313 || //K*0
+      TMath::Abs(pdg)==323    //K*+
+      ) { 
+    return kTRUE;
+  }
+  else return kFALSE;
+}
+//====================================
+Bool_t AliMUONTrackLight::IsDiquark(Int_t pdg){
+  /// check if the provided pdg code corresponds to a diquark 
+  pdg = TMath::Abs(pdg);
+  if((pdg > 1000) && (pdg%100 < 10)) return kTRUE;
+  else return kFALSE;
+}

@@ -37,36 +37,55 @@ public:
   AliMUONPairLight(AliMUONPairLight &dimuCopy);
   virtual ~AliMUONPairLight();
   virtual void SetMuons(AliMUONTrackLight mu0, AliMUONTrackLight mu1);
-  AliMUONTrackLight* GetMuon(Int_t index) ; 
+  AliMUONTrackLight* GetMuon(Int_t index) ;   
   Int_t GetMuonMotherPDG(Int_t imuon, Int_t mother=0) ; 
+  
+  /// \todo add comment
   Bool_t IsOpenCharm() {return (TMath::Abs(fMu0.GetParentFlavour(0))==4 && TMath::Abs(fMu1.GetParentFlavour(0))==4 && fIsCorrelated && !IsAResonance());}
+  /// \todo add comment
   Bool_t IsOpenBeauty() {return (TMath::Abs(fMu0.GetParentFlavour(0))==5 && TMath::Abs(fMu1.GetParentFlavour(0))==5 && fIsCorrelated  && !IsAResonance());}
   Bool_t IsAResonance(); 
+  /// \todo add comment
+  Bool_t IsOneMuonFromPionOrKaon(){return (fMu0.IsParentPionOrKaon(0) || fMu1.IsParentPionOrKaon(0));}
+  /// Return the info if the two muons are of correlated origin
   Bool_t IsCorrelated() const {return fIsCorrelated;}   
+  /// Return the pdg of common mother
   Int_t GetCauseOfCorrelation() const {return fCauseOfCorrelation;}
+  /// Return the info if the process is from feeddown 
   Bool_t IsFeedDown() const {return fIsFeedDown;}   
+  /// \todo add comment
   Bool_t IsOneTrackNotAMuon() {return (!( fMu0.IsAMuon() && fMu1.IsAMuon() )) ;}
+  /// \todo add comment
   Int_t GetCharge() {return fMu0.GetCharge() + fMu1.GetCharge();}
+  /// \brief Return the info ablout creation process
+  ///0: pair creation, 1: gluon splitting, 2: flavour excitation, 3: same fragmented mother, -1: resonance
   Int_t GetCreationProcess() const  {return fCreationProcess;}
+  /// Set the info ablout creation process
   void SetCorrelated(Bool_t answer) {fIsCorrelated = answer; }
+  /// Set the pdg of common mother
   void SetCauseOfCorrelation(Int_t pdg) {fCauseOfCorrelation = pdg; }
+  /// Set the info if the process is from feeddown
   void SetFeedDown(Int_t answer) {fIsFeedDown = answer;}
+  /// \todo add comment
   TLorentzVector GetPRec(){return fMu0.GetPRec()+fMu1.GetPRec();}
+  /// \todo add comment
   TLorentzVector GetPGen(){return fMu0.GetPGen()+fMu1.GetPGen();}
   Double_t GetOpeningAngle(); 
   virtual void PrintInfo(Option_t* opt);//"H" single muons' decay histories
                                            //"K" dimuon kinematics
                                            //"F" dimuon flags
                                            //"A" all variables
-protected: 
-  AliMUONTrackLight fMu0;   /// first muon  
-  AliMUONTrackLight fMu1;   /// second muon
-  Int_t fCreationProcess; ///0: pair creation, 1: gluon splitting, 2: flavour excitation, 3: same fragmented mother, -1: resonance
-  Bool_t fIsCorrelated; ///tells if the two muons are of correlated origin
-  Int_t fCauseOfCorrelation; ///pdg of common mother
-  Int_t fIsFeedDown;     /// tells if the process is from feeddown 
 
-  void SetProcess();///checks if muons are correlated and assigns
+protected: 
+  /// Checks if muons are correlated and assigns
+  void SetProcess();
+
+  AliMUONTrackLight fMu0;   ///< first muon  
+  AliMUONTrackLight fMu1;   ///< second muon
+  Int_t fCreationProcess; ///<0: pair creation, 1: gluon splitting, 2: flavour excitation, 3: same fragmented mother, -1: resonance
+  Bool_t fIsCorrelated; ///<tells if the two muons are of correlated origin
+  Int_t fCauseOfCorrelation; ///<pdg of common mother
+  Int_t fIsFeedDown;     ///< tells if the process is from feeddown 
 
   ClassDef(AliMUONPairLight,1)  /// Dimuon carrying info at generation and reconstruction level
 }; 

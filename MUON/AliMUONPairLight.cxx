@@ -87,13 +87,18 @@ Bool_t AliMUONPairLight::IsAResonance(){
   if (!fIsCorrelated) return kFALSE;   //if muons not correlated, cannot be a resonance
   //if muons are correlated, check if the PDG of the
   //common mother is a resonance
-  Int_t pdg = GetCauseOfCorrelation();
-  if(pdg < 10) return kFALSE;
-  Int_t id=pdg%100000;
-  if(((id-id%10)%110)) return kFALSE;
-  else return kTRUE;
-  printf("<AliMUONPairLight::IsAResonance> arriving after this piece of code\n");
+  Int_t nparents0 = fMu0.GetNParents(); 
+  Int_t nparents1 = fMu1.GetNParents(); 
 
+  Int_t minP = TMath::Min(nparents0, nparents1);
+  for (Int_t i = 0 ; i < minP; i++) { 
+    if (fMu0.IsMotherAResonance(nparents0-1-i) && fMu1.IsMotherAResonance(nparents1-1-i) && 
+	fMu0.GetParentPythiaLine(nparents0-1-i)==fMu1.GetParentPythiaLine(nparents1-1-i)) {
+      if (nparents0-1-i) SetFeedDown(nparents0-1-i);
+      return kTRUE;
+    }
+  }
+  return kFALSE; 
 }
 
 //====================================
@@ -119,87 +124,140 @@ Int_t AliMUONPairLight::GetMuonMotherPDG(Int_t imuon, Int_t mother) {
 void AliMUONPairLight::SetProcess(){
   /// finds the process related to the muon pair (open charm/beauty, resonance, 
   /// uncorrelated...) 
+
   AliMUONTrackLight *mu1 = &fMu0;
   AliMUONTrackLight *mu2 = &fMu1;
-
-  //1.) check if one of the tracks is not a muon
-  if(IsOneTrackNotAMuon()) { 
-    this->SetCorrelated(kFALSE);
-    return;
-  }
 
   // check if the two muons are correlated
   // first check if they come from the same hadron (resonance or beauty/charm meson)
   Int_t npar1 = mu1->GetNParents(); 
   Int_t npar2 = mu2->GetNParents(); 
-  //  for (Int_t imoth1 = 0; imoth1<npar1; imoth1++) { 
   for (Int_t imoth1 = npar1-1; imoth1>=0; imoth1--) { 
     Int_t lineMo1 = mu1->GetParentPythiaLine(imoth1);
-    //    for (Int_t imoth2 = 0; imoth2<npar2; imoth2++) { 
     for (Int_t imoth2 = npar2-1; imoth2>=0; imoth2--) { 
       Int_t lineMo2 = mu2->GetParentPythiaLine(imoth2);
       if(lineMo1 == lineMo2) { 
+	//reject "diquark" mothers
+	if(mu1->IsDiquark(mu1->GetParentPDGCode(imoth1)))return;
+// 	if(IsDiquark(mu1->GetParentPDGCode(imoth1))) return;
 	this->SetCorrelated(kTRUE); 
 	this->SetCauseOfCorrelation(mu1->GetParentPDGCode(imoth1));
 	if(!IsAResonance()) fCreationProcess = 3; 
 	else fCreationProcess = -1;
-	return;   // <<<<---------------- RETURN? 
+	return;
       }
     }
   }  
-  
   // if Open Beauty/Charm we can have 3 creation processes 
   // (pair creation [0], gluon splitting [1] or flavour excitation [2])
-  //
   // 1.) gluon splitting: gluon (stored with index 2, id=21) must be the same 
-  if (mu1->GetQuarkPythiaLine(2) == mu2->GetQuarkPythiaLine(2) && mu1->GetQuarkPDGCode(2) == 21) { 
-    this->SetCorrelated(kTRUE); 
-    if(GetCauseOfCorrelation() == -1){
-      this->SetCauseOfCorrelation(mu1->GetQuarkPDGCode(2));
+  Int_t flavPar1 = mu1->GetParentFlavour(0);
+  Int_t flavPar2 = mu2->GetParentFlavour(0);
+  for (Int_t imoth1 = 0; imoth1 < 4; imoth1++) { 
+    Int_t lineMo1 = mu1->GetQuarkPythiaLine(imoth1);
+    for (Int_t imoth2 = 0; imoth2 < 4; imoth2++) { 
+      Int_t lineMo2 = mu2->GetQuarkPythiaLine(imoth2);
+      if(lineMo1 == lineMo2 && mu1->GetQuarkPDGCode(imoth1) == 21) {
+	//now, check also that the string fragmented into two hadrons
+	//of the same flavour (string usually splits into many hadrons
+	//among which there are mostly soft particles)
+	if(flavPar1 == flavPar2){
+	  this->SetCorrelated(kTRUE); 
+	  if(GetCauseOfCorrelation() == -1)
+	    this->SetCauseOfCorrelation(mu1->GetQuarkPDGCode(imoth1));
+
+	  fCreationProcess = 1; 
+	  return;
+	}
+      }
     }
-    fCreationProcess = 1; 
-    return;
   }
-  
-  // 2.) pair creation: if pythia line 6 of one track *and* pythia line 7 of second track
-  // are filled with a Q and Qbar
   Int_t line1 = mu1->GetQuarkPythiaLine(2); //[2] ... very first quark
   Int_t line2 = mu2->GetQuarkPythiaLine(2); 
-  Int_t flavour1 = TMath::Abs(mu1->GetQuarkPDGCode(2)); //[2] ... very first quark
-  Int_t flavour2 = TMath::Abs(mu2->GetQuarkPDGCode(2)); 
-  if ((line1 == 6 || line1 == 7) && (line2 == 6 || line2 == 7)) { 
-    if((flavour1 == 4 || flavour1 == 5) && (flavour2 == 4 || flavour2 == 5)){
-      this->SetCorrelated(kTRUE);
-      fCreationProcess = 0; 
-      return;
+
+  Int_t line6or7[2] = {-1, -1}; //holds the index of quark in line 6 or 7
+  Int_t flavourLine6or7[2] = {-1, -1};
+  // 2.) pair creation: if pythia line 6 of one track *and* pythia line 7 of second track
+  // are filled with a Q and Qbar
+  for (Int_t imoth1 = 3; imoth1>=0; imoth1--) { 
+    Int_t lineMo1 = mu1->GetQuarkPythiaLine(imoth1);
+    Int_t flavour1 = TMath::Abs(mu1->GetQuarkPDGCode(imoth1));
+    if(lineMo1 == 6 || lineMo1 == 7){ //track 0 has a mother in line 6 or 7
+      line6or7[0] = imoth1;
+      flavourLine6or7[0] = flavour1;
+    }
+    for (Int_t imoth2 = 3; imoth2>=0; imoth2--) { 
+      Int_t lineMo2 = mu2->GetQuarkPythiaLine(imoth2);
+      Int_t flavour2 = TMath::Abs(mu2->GetQuarkPDGCode(imoth2));
+      if(lineMo2 == 6 || lineMo2 == 7){ //track 1 has a mother in line 6 or 7
+	line6or7[1] = imoth2;
+	flavourLine6or7[1] = flavour2;
+      }
+      if((line6or7[0] > 0 && line6or7[1] > 0) && //both tracks must have an entry in line 6 or 7
+	 (flavourLine6or7[0] == 4 || flavourLine6or7[0] == 5) && //this entry must be a c or b quark
+	 (flavourLine6or7[1] == 4 || flavourLine6or7[1] == 5) && // == " ==
+	 (flavPar1 == flavPar2)){ //make sure that the first hadronised parents of the 2 tracks are of the same flavour 
+	this->SetCorrelated(kTRUE);
+	fCreationProcess = 0; 
+	return;
+      }
     }
   }
 
+
   // 3.)flavour excitation:
-  if((((line1 == 6 || line1 == 7) && (flavour1 == 4 || flavour1 == 5)) && //first track has Q in line 6 or 7
-      ((line2 == 2 || line2 == 3) && (flavour2 == 21 || flavour2 < 10))) || //second track has a g/q in line 2 or 3
-      (((line2 == 6 || line2 == 7) && (flavour2 == 4 || flavour2 == 5)) && //or the same,
-      ((line1 == 2 || line1 == 3) && (flavour1 == 21 || flavour1 < 10)))){ // swapping the track's indices
+  Int_t line2or3[2] = {-1, -1}; //holds the index of g/q in line 2 or 3
+  Int_t flavourLine2or3[2] = {-1, -1};
+  for (Int_t imoth1 = 3; imoth1>=0; imoth1--) { 
+    Int_t lineMo1 = mu1->GetQuarkPythiaLine(imoth1);
+    Int_t flavour1 = TMath::Abs(mu1->GetQuarkPDGCode(imoth1));
+    if(lineMo1 == 2 || lineMo1 == 3){ //track 0 has a mother in line 2 or 3
+      line2or3[0] = imoth1;
+      flavourLine2or3[0] = flavour1;
+    }
+    for (Int_t imoth2 = 3; imoth2>=0; imoth2--) { 
+      Int_t lineMo2 = mu2->GetQuarkPythiaLine(imoth2);
+      Int_t flavour2 = TMath::Abs(mu2->GetQuarkPDGCode(imoth2));
+      if(lineMo2 == 2 || lineMo2 == 3){ //track 1 has a mother in line 2 or 3
+	line2or3[1] = imoth2;
+	flavourLine2or3[1] = flavour2;
+      }
+      if(((line6or7[0] > 0 && (flavourLine6or7[0] == 4  || flavourLine6or7[0] == 5)) && //first track has Q in line 6 or 7
+	  (line2or3[1] > 0 && (flavourLine2or3[1] == 21 || flavourLine2or3[1] < 10))) || //second track has a g/q in line 2 or 3
+	 ((line6or7[1] > 0 && (flavourLine6or7[1] == 4 || flavourLine6or7[1] == 5)) &&  //or the same,
+	  (line2or3[0] > 0 && (flavourLine2or3[0] == 21 || flavourLine2or3[0] < 10)))){ // swapping the track's indices
+	//now, check also that the string fragmented into two hadrons
+	//of the same flavour (string usually splits into many hadrons
+	//among which there are mostly soft particles)
+	if(flavPar1 == flavPar2){
+	  this->SetCorrelated(kTRUE);
+	  fCreationProcess = 2;
+	  return;
+	}
+      }
+    }
+  } 
 
-//     printf("candidate for flavour excitation\n");
+  //now flag (rare) processes in which only the incoming parton in line 2 or 3
+  //radiates a gluon which produces a QQbar pair:
+  //exclude the light quarks
+  if(line1 == line2 && (line1 == 2 || line1 == 3)){
+    if((TMath::Abs(mu1->GetQuarkPDGCode(1)) == 4 && TMath::Abs(mu2->GetQuarkPDGCode(1)) == 4) ||
+       (TMath::Abs(mu1->GetQuarkPDGCode(1)) == 5 && TMath::Abs(mu2->GetQuarkPDGCode(1)) == 5)){
 
-    //Hermine: is it needed to check the lines 4-7???
+      //now, check also that the string fragmented into two hadrons
+      //of the same flavour (string usually splits into many hadrons
+      //among which there are mostly soft particles)
+      if(flavPar1 == flavPar2){
 
-    //now, we have a candidate for flavour excitation
-    //we must also verify if in the Pythia listing
-    //the "incoming" lines 4 and 5 and "outgoing" lines 6 and 7
-    //are filled with g Q each: e.g. 4(g),5(Q),5(g),6(Q)
-//     Int_t pdg4 = TMath::Abs(stack()->Particle(4)->GetPdgCode());
-//     Int_t pdg5 = TMath::Abs(stack()->Particle(5)->GetPdgCode());
-//     Int_t pdg6 = TMath::Abs(stack()->Particle(6)->GetPdgCode());
-//     Int_t pdg7 = TMath::Abs(stack()->Particle(7)->GetPdgCode());
-//     if((pdg4 == 21 && pdg5 < 10 || pdg5 == 21 && pdg4 < 10 ) &&
-//        (pdg6 == 21 && pdg7 < 10 || pdg7 == 21 && pdg6 < 10 )){
-//       this->PrintInfo("H");
-      this->SetCorrelated(kTRUE);
-      fCreationProcess = 2;
-      return;
-//     }
+	this->SetCorrelated(kTRUE);
+	fCreationProcess = 1;
+	if(GetCauseOfCorrelation() == -1){
+	  this->SetCauseOfCorrelation(mu1->GetQuarkPDGCode(1));
+	}
+	return;
+      }
+    }
   }
 }
 
@@ -265,8 +323,8 @@ void AliMUONPairLight::PrintInfo(Option_t* opt){
 	  printf("\n");
       }
     }
-    IsAResonance() ? printf("(*) it is a resonance: %d\n", this->GetMuonMotherPDG(fIsFeedDown)) : printf("(*) it is not a resonance\n");
-    fIsFeedDown ? printf("(*) mother has feed-down: %d --> %d\n", this->GetMuonMotherPDG(1), this->GetMuonMotherPDG(0)) : printf("(*) no feed-down\n");
+    IsAResonance() ? printf("(*) it is a resonance: %d\n", this->GetMuonMotherPDG(0, fIsFeedDown)) : printf("(*) it is not a resonance\n");
+    fIsFeedDown ? printf("(*) mother has feed-down: %d --> %d\n", this->GetMuonMotherPDG(0,fMu0.GetNParents()-2), this->GetMuonMotherPDG(0,fMu0.GetNParents()-1)) : printf("(*) no feed-down\n");
     printf("=====================================\n");
   }
   if(options.Contains("K") || options.Contains("A")){//dimuon kinematics
@@ -286,8 +344,9 @@ void AliMUONPairLight::PrintInfo(Option_t* opt){
   }
 }
 
+//====================================
 Double_t AliMUONPairLight::GetOpeningAngle() { 
-  // opening angle between the two muons in the lab frame (in degrees)
+  /// opening angle between the two muons in the lab frame (in degrees)
   TLorentzVector pRecMu0 =  fMu0.GetPRec();
   TLorentzVector pRecMu1 =  fMu1.GetPRec();
   TVector3 pRecMu03 = pRecMu0.Vect();
