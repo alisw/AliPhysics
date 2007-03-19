@@ -47,14 +47,14 @@ protected:
   Int_t WriteTriggerDDL();
   
 private:
-
-    void AddData(const AliMUONBusStruct& event);
-
   Int_t GetBusPatch(const AliMUONDigit& digit) const;
 
-  Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
-
 private:
+  /// Not implemented copy constructor
+  AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
+  /// Not implemented assignment operator
+  AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs);
+
 
   AliMUONData*  fMUONData;           //!< Data container for MUON subsystem 
  
@@ -76,9 +76,6 @@ private:
   
   TStopwatch* fTimers;             //!< time watchers
   
-  AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
-  AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs); // assignment operator
-
   ClassDef(AliMUONRawWriter,2) // MUON cluster reconstructor in ALICE
 };
 	
