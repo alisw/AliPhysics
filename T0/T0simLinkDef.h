@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ typedef  AliSTART;
 #pragma link C++ typedef  AliSTARTv0;
 #pragma link C++ typedef  AliSTARTv1;
 #pragma link C++ typedef  AliSTARThit;
