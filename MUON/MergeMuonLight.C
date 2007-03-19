@@ -21,7 +21,8 @@
 // Arguments:     foutname = name of the output file
 //                flistname = name of a text file containing the list of files
 //                            to be merged 
-void MergeMuonLight(char *foutname="MuonLightMerged.root",char *flistname="lista.lis"){ 
+//                saveAll = boolian that allows/forbids saving of events with no muons
+void MergeMuonLight(char *foutname="MuonLightMerged.root",char *flistname="lista.lis", Bool_t saveAll = kTRUE){ 
   // up to 2000 input files 
 
   TFile *file[2000];
@@ -60,9 +61,13 @@ void MergeMuonLight(char *foutname="MuonLightMerged.root",char *flistname="lista
 	    ifile, file[ifile]->GetName(),nev); 
     for (Int_t iev=0; iev<nev; iev++) {
       tree->GetEvent(iev); 
+      Int_t nMu = muonArray->GetEntriesFast(); 
+      if(!saveAll)
+	if(nMu < 1) continue;
       treeOut->Fill();
     }
-  }    
+    file[ifile]->Close();
+  }//end of scanning incoming file
   fout->cd(); 
   treeOut->Write(); 
 }

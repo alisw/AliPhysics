@@ -23,8 +23,10 @@
 // and writes the tree in an output file (outFileName) 
 // Note that if the path for the output file is not explicitly specified, 
 // it will be written in the directory containing the generation/reconstruction
+// 27-Nov-2006: modified by in order to loop on files
 
-#include <iostream>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -33,21 +35,54 @@
 #include <TParticle.h>
 #include <TSystem.h>
 #include <TGeoManager.h>
-#include <AliMUONRecoCheck.h>
-#include <AliMUONTrack.h>
-#include <AliMUONTrackParam.h>
-#include <AliRunLoader.h>
+#include "AliMUONRecoCheck.h"
+#include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+#include "AliRunLoader.h"
 #include "AliMUONTrackLight.h"
 #include "AliMUONPairLight.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliESD.h"
+#include "AliESDVertex.h" 
+#include "AliITSVertexerPPZ.h"
+#include "AliITSLoader.h"
 #include "AliTracker.h"
 #include "AliMagFMaps.h"
+#endif
 
-void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root", char* geoFilename = "geometry.root"){ 
-  const char *startingDir = gSystem->pwd(); 
+
+void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root", char* geoFilename = "geometry.root"){
+
+  
+  char startingDir[200]; 
+  sprintf (startingDir,"%s",gSystem->pwd()); 
   gSystem->cd(dirname); 
-  TFile *fout = new TFile(outFileName,"recreate"); 
 
+
+  TClonesArray *muonArray   = new TClonesArray("AliMUONTrackLight",10); 
+  TClonesArray *dimuonArray = new TClonesArray("AliMUONPairLight",10); 
+  TTree *treeOut = new TTree("tree","tree"); 
+
+  TFile *fout = new TFile(outFileName,"recreate"); 
+  fout->cd(); 
+
+  treeOut->Branch("muons",&muonArray); 
+  treeOut->Branch("dimuons",&dimuonArray); 
+  
+  TFile* esdFile = TFile::Open("AliESDs.root");
+  if (!esdFile || !esdFile->IsOpen()) {
+    Error("DecodeRecoCocktailNew", "opening ESD file %s failed", esdFileName);
+    return;
+  }
+    
+  AliESD* esd = new AliESD();
+  TTree* treeESD = (TTree*) esdFile->Get("esdTree");
+  if (!treeESD) {
+    Error("CheckESD", "no ESD tree found");
+    return;
+  }
+  treeESD->SetBranchAddress("ESD", &esd);
+   
   // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
   if (!gGeoManager) {
     TGeoManager::Import(geoFilename);
@@ -68,55 +103,61 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
   AliMUONRecoCheck *rc = new AliMUONRecoCheck("galice.root");
   AliRunLoader *runLoader = rc->GetRunLoader();
   
-  TClonesArray *muonArray   = new TClonesArray("AliMUONTrackLight",10); 
-  TClonesArray *dimuonArray = new TClonesArray("AliMUONPairLight",10); 
-  TTree *treeOut = new TTree("tree","tree"); 
-
-  fout->cd(); 
-  treeOut->Branch("muons",&muonArray); 
-  treeOut->Branch("dimuons",&dimuonArray); 
-  
-  runLoader->LoadKinematics("READ");;
+  runLoader->LoadKinematics("READ");
   Int_t nev = runLoader->GetNumberOfEvents(); 
+//   nevent = nevent +nev;  
+//     printf(" number of files and events = %d - %d \n",irun,nevent);
+    
+  AliITSLoader* ITSloader =  (AliITSLoader*) runLoader->GetLoader("ITSLoader");
+  AliITSVertexerPPZ *dovert = 0; 
+  if (ITSloader) { 
+    dovert = new AliITSVertexerPPZ("default",0,0);
+    dovert->SetDebug(0);
+    dovert->SetDiffPhiMax(0.05);
+    dovert->SetWindow(3.);
+  }
+  AliESDVertex *vert = 0;
   
   TLorentzVector v; 
+  
   for(Int_t ievent = 0; ievent < nev; ievent++){ // loop over events 
-    printf ("Event %d of %d\n",ievent,nev);
+    AliHeader *header = runLoader->GetHeader();
+    if (ITSloader) { 
+      vert = dovert->FindVertexForCurrentEvent(ievent);
+    }
+    // printf ("Event %d of %d\n",ievent,nev);
     muonArray->Clear();     // clean muon and dimuon arrays 
     dimuonArray->Clear(); 
     runLoader->GetEvent(ievent);
+    treeESD->GetEvent(ievent);
     rc->ResetTracks();
     rc->MakeTrackRef(); // make reconstructable tracks
     
     TClonesArray * trackRecoArray = rc->GetTrackReco();
     TClonesArray * trackRefArray = rc->GetMuonTrackRef();
     Int_t nTrackReco = trackRecoArray->GetEntriesFast();
+    Int_t nTracksESD = (Int_t)esd->GetNumberOfMuonTracks() ; 
+    if (nTrackReco != nTracksESD) printf ("Tracks in AliMUONTrack and in ESD do not match!\n");
     Int_t nreftracks = 0; 
     for (Int_t itrRec = 0; itrRec<nTrackReco; itrRec++) { 
       // assign parameters concerning the reconstructed tracks
+      AliMUONTrackLight muLight;
       AliMUONTrack *trackReco = (AliMUONTrack *)trackRecoArray->At(itrRec);
-      AliMUONTrackLight muLight; 
-      AliMUONTrackParam trPar(*((AliMUONTrackParam*) (trackReco->GetTrackParamAtHit()->First())));
-      AliMUONTrackExtrap::ExtrapToVertex(&trPar,0.,0.,0.);
-      muLight.SetCharge(Int_t(TMath::Sign(1.,trPar.GetInverseBendingMomentum())));
-      muLight.SetPxPyPz(trPar.Px(),trPar.Py(), trPar.Pz()); 
-      muLight.SetTriggered(trackReco->GetMatchTrigger()); 
-      Double_t xyz[3] = { trPar.GetNonBendingCoor(), 
-			  trPar.GetBendingCoor(), 
-			  trPar.GetZ()};
-      muLight.SetVertex(xyz); 
-      // find the reference track and store further information
+      muLight.FillFromESD(esd->GetMuonTrack(itrRec));
+      // 	muLight.FillFromAliMUONTrack(trackReco);
+      
+      // find the reference track and store further information	
       TParticle *part = muLight.FindRefTrack(trackReco,trackRefArray,runLoader); 
       if (part) { 
 	v.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->Energy());
 	muLight.SetPGen(v); 
 	muLight.FillMuonHistory(runLoader, part);
-	muLight.PrintInfo("A");
+	// 	  muLight.PrintInfo("A");
 	//store the referenced track in the muonArray:
 	TClonesArray &muons = *muonArray;
 	new (muons[nreftracks++]) AliMUONTrackLight(muLight);
-      }
-    }
+      } 
+    }  // end reco track
     
     // now loop over muon pairs to build dimuons
     Int_t nmuons = muonArray->GetEntriesFast(); 
@@ -125,32 +166,24 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
       AliMUONTrackLight* mu1 = (AliMUONTrackLight*) muonArray->At(itrRec1); 
       for(Int_t itrRec2 = itrRec1+1; itrRec2 < nmuons; itrRec2++){
 	AliMUONTrackLight* mu2 = (AliMUONTrackLight*) muonArray->At(itrRec2); 
-	AliMUONPairLight dimuLight; 
+	AliMUONPairLight dimuLight;
 	dimuLight.SetMuons(*mu1, *mu2);
-	//     	if(dimuLight.GetCreationProcess() == 2){
-	// 	  printf ("#dimuon = %d (%d, %d) \n", ndimuons, itrRec1, itrRec2);
-	// dimuLight.PrintInfo("A");
-	//   	}
-	//store the referenced track in the dimuonArray:
 	TClonesArray &dimuons = *dimuonArray;
 	new (dimuons[ndimuons++]) AliMUONPairLight(dimuLight);
       }
     }
-    //Int_t ndimu2 = dimuonArray->GetEntriesFast(); 
-    //     printf ("dimuonArray has %d entries\n",ndimu2); 
-    //    dimuonArray->Dump(); 
-    //     printf ("filling tree\n"); 
-    //     // fill the tree
     treeOut->Fill(); 
-    //     printf ("done\n"); 
-    
-  }
+  } 
+  
   fout->cd(); 
   treeOut->Write(); 
   gSystem->cd(startingDir); 
   fout->Close();
-  delete fout;
-  delete rc;
   delete muonArray;
   delete dimuonArray;
+  delete treeOut; 
+  delete fout;
+  delete rc;
+  delete esd; 
 }
+
