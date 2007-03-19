@@ -15,5 +15,6 @@
 #pragma link C++ class  AliT0RecPoint+;
 #pragma link C++ class  AliT0Reconstructor+;
 #pragma link C++ class  AliT0RawReader+;
+#pragma link C++ class  AliT0Calibrator+;
 
 #endif

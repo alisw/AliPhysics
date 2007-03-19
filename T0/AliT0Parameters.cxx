@@ -35,6 +35,7 @@
 
 AliT0CalibData* AliT0Parameters::fgCalibData = 0;
 AliT0CalibData* AliT0Parameters::fgLookUp = 0;
+AliT0CalibData* AliT0Parameters::fgSlewCorr =0;
 //====================================================================
 ClassImp(AliT0Parameters)
 #if 0
@@ -54,28 +55,23 @@ AliT0Parameters::Instance()
 
 //____________________________________________________________________
 AliT0Parameters::AliT0Parameters()
-  :fIsInit(kFALSE),fPh2Mip(0),fmV2Mip(0),fChannelWidth(0),fmV2Channel(0),fQTmin(0),fQTmax(0),fFixedGain(0),fSlewingLED(),fSlewingRec(),fPMTeff(),fTimeDelayLED(0),fTimeDelayCFD(0),fTimeDelayTVD(0),fCalibentry() 
+  :fIsInit(kFALSE),fPh2Mip(0),fmV2Mip(0),fChannelWidth(0),fmV2Channel(0),fQTmin(0),fQTmax(0),fSlewingLED(),fSlewingRec(),fPMTeff(),fTimeDelayLED(0),fTimeDelayCFD(0),fTimeDelayTVD(0),fCalibentry(), fLookUpentry(),fSlewCorr()
 {
   // Default constructor 
 
   for (Int_t ipmt=0; ipmt<24; ipmt++)
     {
-      SetTimeDelayCablesCFD(ipmt);
-      SetTimeDelayCablesLED(ipmt);
-      SetTimeDelayElectronicCFD(ipmt);
-      SetTimeDelayElectronicLED(ipmt);
-      SetTimeDelayPMT(ipmt);
-       SetVariableDelayLine(ipmt);
       SetSlewingLED(ipmt);
       SetSlewingRec(ipmt);
+      SetWalk(ipmt);
       SetPh2Mip();      
       SetmV2Mip();      
       SetChannelWidth();
       SetmV2channel();
-      SetGain();
       SetQTmin();
       SetQTmax();
       SetPMTeff(ipmt);
+
    }
   SetTimeDelayTVD();
   SetZposition();
@@ -95,9 +91,17 @@ AliT0Parameters::Init()
  
 
   AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
-  AliCDBEntry* fCalibentry  = stor->Get("T0/Calib/Gain_TimeDelay_Slewing_Walk",0);
+  //time equalizing
+  AliCDBEntry* fCalibentry  = stor->Get("T0/Calib/TimeDelay",0);
  if (fCalibentry){
    fgCalibData  = (AliT0CalibData*)fCalibentry->GetObject();
+  }
+ else 
+   { AliError(" ALARM !!!! No time delays in CDB "); }
+ //slewing correction
+  AliCDBEntry* fSlewCorr  = stor->Get("T0/Calib/Slewing_Walk",0);
+ if (fSlewCorr){
+   fgSlewCorr  = (AliT0CalibData*)fSlewCorr->GetObject();
   }
  // fLookUpentry  = cdb->Get("T0/Calib/LookUp_Table");
   fLookUpentry  = stor->Get("T0/Calib/LookUp_Table",0);
@@ -115,25 +119,12 @@ AliT0Parameters::Init()
 
 //__________________________________________________________________
 Float_t
-AliT0Parameters::GetGain(Int_t ipmt) const
-{
-  // Returns the calibrated gain for each PMT 
-  // 
-
-  if (!fCalibentry) 
-    return fFixedGain;
-   
-  return fgCalibData->GetGain(ipmt);
-}
-
-//__________________________________________________________________
-Float_t
 AliT0Parameters::GetTimeDelayLED(Int_t ipmt) 
 {
   // return time delay for LED channel
   // 
   if (!fCalibentry) {
-    fTimeDelayLED = fTimeDelayCablesLED[ipmt] + fTimeDelayElectronicLED[ipmt] + fTimeDelayPMT[ipmt];
+    fTimeDelayLED = 0;
     return  fTimeDelayLED;
   } 
   return fgCalibData ->GetTimeDelayLED(ipmt);
@@ -146,8 +137,8 @@ AliT0Parameters::GetTimeDelayCFD(Int_t ipmt)
    // 
   if (!fCalibentry) 
     {
-      fTimeDelayCFD = fTimeDelayCablesCFD[ipmt] + fTimeDelayElectronicCFD[ipmt] + fTimeDelayPMT[ipmt] + fVariableDelayLine[ipmt];
-      return fTimeDelayCFD+37;
+      fTimeDelayCFD = 1000+ipmt*100;
+      return fTimeDelayCFD;
     }
    
   return fgCalibData->GetTimeDelayCFD(ipmt);
@@ -230,6 +221,86 @@ TGraph *AliT0Parameters::GetSlewRec(Int_t ipmt) const
   } 
   return fgCalibData -> GetSlewRec(ipmt) ;
 }
+
+
+//________________________________________________________________
+void AliT0Parameters::SetWalk(Int_t ipmt)
+{
+
+ Int_t mv, ps; 
+  Int_t x[70000], y[70000], index[70000];
+  Float_t time[10000],amplitude[10000];
+  string buffer;
+  Bool_t down=false;
+  
+  ifstream inFile("data/CFD-Amp.txt");
+  //  if(!inFile) AliError(Form("Cannot open file %s !",filename));
+  
+  Int_t i=0, i1=0, i2=0;
+  while(getline(inFile,buffer)){
+    inFile >> ps >> mv;
+
+    x[i]=ps; y[i]=mv;
+    i++;
+  }
+  inFile.close();
+ 
+  TMath::Sort(i, y, index,down);
+  Int_t amp=0, iin=0, isum=0, sum=0;
+  Int_t ind=0;
+  for (Int_t ii=0; ii<70000; ii++)
+    {
+      ind=index[ii];
+      if(y[ind] == amp)
+	{
+	  sum +=x[ind];
+	  iin++;
+	}
+      else
+	{
+	  if(iin>0)
+	    time[isum] = Float_t (sum/(iin));
+	  else
+	    time[isum] =Float_t (x[ind]);
+	  amplitude[isum] = Float_t (amp);
+	  amp=y[ind];
+	  //	  cout<<ii<<" "<<ind<<" "<<y[ind]<<" "<<x[ind]<<" iin "<<iin<<" mean "<<time[isum]<<" amp "<< amplitude[isum]<<" "<<isum<<endl;
+	  iin=0;
+	  isum++;
+	  sum=0;
+	}
+
+
+    }
+
+  inFile.close();
+
+   TGraph* gr = new TGraph(isum, amplitude, time);
+  fWalk.AddAtAndExpand(gr,ipmt);
+  
+  
+}
+//__________________________________________________________________
+
+TGraph *AliT0Parameters::GetWalk(Int_t ipmt) const
+{
+  if (!fCalibentry) {
+    return  (TGraph*)fWalk.At(ipmt); 
+  } 
+  return fgCalibData -> GetWalk(ipmt) ;
+}
+
+//__________________________________________________________________
+
+Float_t AliT0Parameters::GetWalkVal(Int_t ipmt, Float_t mv) const
+{
+  if (!fCalibentry) {
+    return ((TGraph*)fWalk.At(ipmt))->Eval(mv); 
+  } 
+  return fgCalibData -> GetWalkVal(ipmt, mv) ;
+}
+
+//__________________________________________________________________
 
 //__________________________________________________________________
 void 

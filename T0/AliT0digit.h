@@ -14,43 +14,45 @@ class AliT0digit: public TObject {
  public:
   AliT0digit();
   virtual ~AliT0digit();
-  Int_t BestTimeRight() {return fBestTimeRight;}
-  Int_t BestTimeLeft() {return fBestTimeLeft;}
+
+  Int_t BestTimeA() {return fBestTimeA;}
+  Int_t BestTimeC() {return fBestTimeC;}
   Int_t MeanTime() {return fTimeAverage;}
   Int_t TimeDiff() {return fTimeDiff;}
   Int_t SumMult() {return fSumMult;}
-  void SetTimeBestRight( Int_t time) {fBestTimeRight = time;}
-  void SetTimeBestLeft( Int_t time) {fBestTimeLeft = time;}
+  void SetTimeBestA( Int_t time) {fBestTimeA = time;}
+  void SetTimeBestC( Int_t time) {fBestTimeC = time;}
   void SetMeanTime(Int_t time) {fTimeAverage=time;}
   void SetDiffTime(Int_t time) {fTimeDiff=time;}
   void SetSumMult(Int_t time) {fSumMult=time;}
   
-  virtual void SetTime (TArrayI &o);
-  virtual void GetTime (TArrayI &o);
-  virtual void SetADC (TArrayI &o);
-  virtual void GetADC (TArrayI &o);
+  virtual void SetTimeCFD (TArrayI &o);
+  virtual void GetTimeCFD (TArrayI &o);
+  virtual void SetQT0 (TArrayI &o);
+  virtual void GetQT0 (TArrayI &o);
   
-  virtual void SetTimeAmp (TArrayI &o);
-  virtual void GetTimeAmp (TArrayI &o);
-  virtual void SetADCAmp (TArrayI &o);
-  virtual void GetADCAmp (TArrayI &o);
+  virtual void SetTimeLED (TArrayI &o);
+  virtual void GetTimeLED (TArrayI &o);
+  virtual void SetQT1 (TArrayI &o);
+  virtual void GetQT1 (TArrayI &o);
+
  private: 
 
-  Int_t fBestTimeRight;        // TOF first particle on the right 
-  Int_t fBestTimeLeft;         // TOF first particle on the left
+  TArrayI *fTimeCFD;    // array's TDC
+  TArrayI *fQT0;    // array's ADC
+  TArrayI *fTimeLED;    // array's TDC
+  TArrayI *fQT1;    // array's ADC
   Int_t fTimeAverage;             // mean time (start signal)
   Int_t fTimeDiff;             // time difference (vertex position)
-
-  TArrayI *fTime;    // array's TDC
-  TArrayI *fADC;    // array's ADC
-  TArrayI *fTimeAmp;    // array's TDC
-  TArrayI *fADCAmp;    // array's ADC
+  Int_t fBestTimeA;        // TOF first particle on the right 
+  Int_t fBestTimeC;         // TOF first particle on the left
   Int_t fSumMult;   //multiplisity
   AliT0digit( const AliT0digit& );
   AliT0digit& operator=(const AliT0digit&); 
   
-  ClassDef(AliT0digit,4)  //Digit (Header) object for set:T0
+  ClassDef(AliT0digit,5)  //Digit (Header) object for set:T0
 };
+
 
 typedef AliT0digit AliSTARTdigit; // for backward compatibility
 

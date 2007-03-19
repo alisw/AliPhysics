@@ -12,7 +12,7 @@
  
 class AliT0hit : public AliHit {
 public:
-  AliT0hit(){}//Empty ctor
+  AliT0hit();//Empty ctor
   AliT0hit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   virtual ~AliT0hit(){}//Empty virtual dtor
   Int_t Volume() const {return fVolume;}

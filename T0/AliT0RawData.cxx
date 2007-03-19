@@ -33,11 +33,25 @@
 #include "AliBitPacking.h"
 #include "AliFstream.h"
 #include "AliRunLoader.h"
+#include "AliDAQ.h"
 
 ClassImp(AliT0RawData)
 
 //_____________________________________________________________________________
-AliT0RawData::AliT0RawData():TObject()
+  AliT0RawData::AliT0RawData():TObject(),
+ fVerbose(0),      
+ fIndex(-1) ,     
+ fEventNumber(0), 
+ fTimeCFD(new TArrayI(24)),    
+ fADC1( new TArrayI(24)),     
+ fTimeLED( new TArrayI(24)), 
+ fADC0( new TArrayI(24)),     
+ fFile(0x0),   
+ fDataHeaderPos(0),
+ fDRMDataHeaderPos(0),
+ fTRMDataHeaderPos(0),
+ fDigits(0)  
+
 {
   /*
 -  48 channels (2 words each as in TOF DDL) for :
@@ -57,22 +71,12 @@ and the same for amplified but A=Log(10*Amplitude).
 uncertances
   */
 
-  fIndex=-1;
-  fDigits = NULL;
-
-  fTimeCFD = new TArrayI(24);
-  fADC1 = new TArrayI(24);
-  fTimeLED = new TArrayI(24);
-  fADC0 = new TArrayI(24);
-  fFile = NULL;
-  fDataHeaderPos = 0;
-  fDRMDataHeaderPos = 0; 
-  memset(fBuffer,0,512*sizeof(UInt_t));
-
   //open the output file
   char fileName[15];
-  sprintf(fileName,"T0_%d.ddl", 0xd00);
+  strcpy(fileName,AliDAQ::DdlFileName("T0",0)); //The name of the output file
   fFile = new AliFstream(fileName);
+  memset(fBuffer,0,512*sizeof(UInt_t));
+
   //get event number 
   AliRunLoader *runloader = AliRunLoader::GetRunLoader();
   if (runloader) {
@@ -81,7 +85,21 @@ uncertances
 }
 
 //_____________________________________________________________________________
-AliT0RawData::AliT0RawData(const AliT0RawData &r):TObject()
+
+AliT0RawData::AliT0RawData(const AliT0RawData &r):TObject(),
+ fVerbose(0),      
+ fIndex(-1) ,     
+ fEventNumber(0), 
+ fTimeCFD(new TArrayI(24)),    
+ fADC1( new TArrayI(24)),     
+ fTimeLED( new TArrayI(24)), 
+ fADC0( new TArrayI(24)),     
+ fFile(0x0),   
+ fDataHeaderPos(0),
+ fDRMDataHeaderPos(0),
+ fTRMDataHeaderPos(0),
+ fDigits(0)  
+
 {
   //
   // AliT0rawData copy constructor
@@ -133,16 +151,16 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   
   // Get the digits array
   
-  fDigits->GetTime(*fTimeCFD);
-  fDigits->GetADC(*fADC1);
-  fDigits->GetTimeAmp(*fTimeLED);
-  fDigits->GetADCAmp(*fADC0);
+  fDigits->GetTimeCFD(*fTimeCFD);
+  fDigits->GetQT0(*fADC1);
+  fDigits->GetTimeLED(*fTimeLED);
+  fDigits->GetQT1(*fADC0);
   Int_t meantime = fDigits->MeanTime(); 
   Int_t timediff = fDigits->TimeDiff(); 
   Int_t mult0=fDigits->SumMult();
   Int_t mult1=fDigits->SumMult();
-  Int_t timeA = fDigits->BestTimeLeft();
-  Int_t timeC = fDigits->BestTimeRight();
+  Int_t timeA = fDigits->BestTimeC();
+  Int_t timeC = fDigits->BestTimeA();
   
   
   TArrayI  *allData = new TArrayI(110);
@@ -487,11 +505,11 @@ Int_t AliT0RawData::RawDataT0(AliT0digit *fDigits)
   fIndex=-1;
  
   AliRawDataHeaderSim header;
-  //loop over TOF DDL files
-    //write Dummy DATA HEADER
    WriteDataHeader(kTRUE, kFALSE);
   GetDigits(fDigits);
   //write packing digits
+  
+  
   fFile->WriteBuffer((char*) fBuffer,((fIndex+1)*sizeof(UInt_t)));
   //write real data header on its place
    WriteDataHeader(kFALSE, kFALSE);

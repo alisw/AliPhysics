@@ -67,9 +67,26 @@
 
 ClassImp(AliT0hit)
 
-AliT0hit::AliT0hit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
+
+  AliT0hit::AliT0hit(): AliHit(),
+			fVolume(0),  
+			fPmt(0),     
+			fParticle(0),
+			fEtot(0),     
+			fTime(0)  
+  
 {
+  //
+}
+AliT0hit::AliT0hit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
+  AliHit(shunt, track),
+  fVolume(0),  
+  fPmt(0),     
+  fParticle(0),
+  fEtot(0),     
+  fTime(0)  
+ 
+  {
 //Normal T0 hit ctor
   
    fVolume = vol[0];

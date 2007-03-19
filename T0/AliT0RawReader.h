@@ -11,9 +11,11 @@ class AliT0RawReader : public TTask {
   AliT0RawReader(AliRawReader *rawReader) ;
 
   virtual  ~AliT0RawReader();
-  AliT0RawReader(const AliT0RawReader& o)
-    : TTask(o)
-  {}
+  AliT0RawReader(const AliT0RawReader& o): TTask(o),
+       fData(NULL),
+       fPosition(0)
+ {}
+  
   AliT0RawReader& operator=(const AliT0RawReader&) { return *this; }
 
 

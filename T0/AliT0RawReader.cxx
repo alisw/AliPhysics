@@ -16,6 +16,7 @@ ClassImp(AliT0RawReader)
        fRawReader(rawReader),
        fData(NULL),
        fPosition(0)
+       
 {
   //
 // create an object to read T0raw digits
@@ -24,12 +25,22 @@ ClassImp(AliT0RawReader)
   fRawReader->Reset();
   fRawReader->Select("T0");
  
- 
+  cout<<"  AliT0RawReader::AliT0RawReaderfRawReader->Select "<<endl;
 }
  AliT0RawReader::~AliT0RawReader ()
 {
   // 
 }
+/*
+AliT0RawReader::AliT0RawReader(const AliT0RawReader& o): TTask(o),
+     fRawReader(rawReader),
+       fData(NULL),
+       fPosition(0)
+{
+  //
+}
+*/
+
 
 Bool_t  AliT0RawReader::Next()
 {
@@ -67,6 +78,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t time=0,  itdc=0, ichannel=0; 
   Int_t numberOfWordsInTRM=0, iTRM=0;
   Int_t tdcTime, koef,hit, meanTime, timeDiff ;
+  Int_t numTRM=2; // number of TRMs in game For test =1 !!!!!
 
 
 
@@ -89,63 +101,37 @@ Bool_t  AliT0RawReader::Next()
   for (Int_t i=0; i<4; i++) {
     word = GetNextWord();
   }
-  //TRMheader  
-   word = GetNextWord();
-   numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
-   iTRM=AliBitPacking::UnpackWord(word,0,3);
 
-   //chain header
-   Int_t ichain=0;
-   word = GetNextWord();
-  
-   for (Int_t i=0; i<numberOfWordsInTRM; i++) {
-     word = GetNextWord();
-     tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
+  for (Int_t ntrm=0; ntrm< numTRM; ntrm++)
+    {
+      //TRMheader  
+      word = GetNextWord();
+      numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
+      iTRM=AliBitPacking::UnpackWord(word,0,3);
+      
+      //chain header
+      Int_t ichain=0;
+      word = GetNextWord();
+      
+      for (Int_t i=0; i<numberOfWordsInTRM; i++) {
+	word = GetNextWord();
+	tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
 
-     if ( tdcTime == 1)
-       {
-	 itdc=AliBitPacking::UnpackWord(word,24,27);
-	 ichannel=AliBitPacking::UnpackWord(word,21,23);
-	 time=AliBitPacking::UnpackWord(word,0,20);
-	 //  koef = itdc*4 + ichannel/2;
-	 koef = param->GetChannel(iTRM,itdc,ichain,ichannel);
-	 //	 cout<<" RawReader::Next ::"<<iTRM<<"  "<<itdc<<" "<<ichain<<" "<<ichannel<<" "<<  koef<<" "<<time<<endl;
-	 if(fAllData[koef][0] == 0)  fAllData[koef][0]=time;  // yield only 1st particle
-	  
-       }
-   }
-   word = GetNextWord(); //chain trailer
-   word = GetNextWord(); //TRM trailer
-     
-  //TRMheader  
-   word = GetNextWord();
-   numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
-   iTRM=AliBitPacking::UnpackWord(word,0,3);
-   
-   //chain header
-   word = GetNextWord();
-   
-   for (Int_t iword=0; iword<numberOfWordsInTRM; iword++) {
-     word = GetNextWord();
-     tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
-
-     if ( tdcTime == 1)
-       {
-	 itdc=AliBitPacking::UnpackWord(word,24,27);
-	 ichannel=AliBitPacking::UnpackWord(word,21,23);
-	 time=AliBitPacking::UnpackWord(word,0,20);
-	 //	 koef = itdc*4 + ichannel/2;
-	 koef = param->GetChannel(iTRM,itdc,ichain,ichannel);
- 
-	   if(fAllData[koef][0] == 0)	 fAllData[koef][0]=time;
-		 //	 if(allData[koef+55] == 0) allData[koef+55]=time; // yield only 1st particle
-       }
-   }
-   meanTime = fAllData[49][0];  // T0 !!!!!!
-   timeDiff = fAllData[50][0];
-
-   word = GetNextWord();
-   word = GetNextWord();
+	if ( tdcTime == 1)
+	  {
+	    itdc=AliBitPacking::UnpackWord(word,24,27);
+	    ichannel=AliBitPacking::UnpackWord(word,21,23);
+	    time=AliBitPacking::UnpackWord(word,0,20);
+	    //  koef = itdc*4 + ichannel/2;
+	    koef = param->GetChannel(iTRM,itdc,ichain,ichannel);
+	    //	 cout<<" RawReader::Next ::"<<iTRM<<"  "<<itdc<<" "<<ichain<<" "<<ichannel<<" "<<  koef<<" "<<time<<endl;
+	    if(fAllData[koef][0] == 0)  fAllData[koef][0]=time;  // yield only 1st particle
+	    
+	  }
+      }
+      word = GetNextWord(); //chain trailer
+      word = GetNextWord(); //TRM trailer
+    } //TRM loop
    return kTRUE;
 }
 //_____________________________________________________________________________

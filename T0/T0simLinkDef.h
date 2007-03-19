@@ -15,7 +15,6 @@
 #pragma link C++ typedef  AliSTARTDigitizer;
 #pragma link C++ typedef  AliSTARTRawData;
  
-#pragma link C++ class  AliT0+;
 #pragma link C++ class  AliT0v0+;
 #pragma link C++ class  AliT0v1+;
 #pragma link C++ class  AliT0hit+;

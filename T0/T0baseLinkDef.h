@@ -9,8 +9,8 @@
 #pragma link off all functions;
  
  
+#pragma link C++ class  AliT0+;
 #pragma link C++ class  AliT0digit+;
-#pragma link C++ class  AliT0Loader+;
 #pragma link C++ class  AliT0Trigger+;
 #pragma link C++ class  AliT0CalibData+;
 #pragma link C++ class  AliT0Parameters+;

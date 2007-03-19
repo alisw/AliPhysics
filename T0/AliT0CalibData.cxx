@@ -90,7 +90,6 @@ void AliT0CalibData::Reset()
 {
     memset(fTimeDelayCFD,1,24*sizeof(Float_t));
     memset(fTimeDelayLED,1,24*sizeof(Float_t));
-    memset(fGain,1,24*sizeof(Float_t));
 }
 
 
@@ -101,58 +100,44 @@ void  AliT0CalibData::Print(Option_t*) const
   printf("\n	----	PM Arrays	----\n\n");
   printf(" Time delay CFD \n");
   for (Int_t i=0; i<24; i++) printf("  %f",fTimeDelayCFD[i]);
-  printf(" \n LED \n");
-  for (Int_t i=0; i<24; i++) printf("  %f",fTimeDelayLED[i]);
-  printf(" \n Gain \n");
-  for (Int_t i=0; i<24; i++) printf("  %f",fGain[i]);
-  printf(" \n");
 } 
 
 //________________________________________________________________
 void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChannel) const
 {
-
-   AliT0LookUpKey* lookkey= new AliT0LookUpKey();
-   AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
- 
-     lookvalue->SetTRM(iTRM);
-     lookvalue->SetTDC(iTDC);
-     lookvalue->SetChain(0);
-     lookvalue->SetChannel(iChannel);
-
-     printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i \n",iTRM, iTDC, iChannel);
-     lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
-     
-     cout<<"  AliT0CalibData::PrintLookup :: lookkey "<< lookkey<<endl;
-     if (lookkey)
-       {
-	 cout<<" lookup KEY!!! "<<lookkey->GetKey()<<" VALUE "<<lookvalue->GetTRM()<<" "
-	     <<lookvalue->GetTDC()<<" "
-	     << lookvalue->GetChain()<<" "
-	     <<lookvalue->GetChannel()<<endl;
-       }
-     
-
+  
+  AliT0LookUpKey* lookkey= new AliT0LookUpKey();
+  AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
+  
+  lookvalue->SetTRM(iTRM);
+  lookvalue->SetTDC(iTDC);
+  lookvalue->SetChain(0);
+  lookvalue->SetChannel(iChannel);
+  
+  printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i \n",iTRM, iTDC, iChannel);
+  lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
+  
+  cout<<"  AliT0CalibData::PrintLookup :: lookkey "<< lookkey<<endl;
+  if (lookkey)
+    {
+      cout<<" lookup KEY!!! "<<lookkey->GetKey()<<" VALUE "<<lookvalue->GetTRM()<<" "
+	  <<lookvalue->GetTDC()<<" "
+	  << lookvalue->GetChain()<<" "
+	  <<lookvalue->GetChannel()<<endl;
+    }
+  
+  
 }
 
 //________________________________________________________________
 void AliT0CalibData::SetTimeDelayCFD(Float_t* TimeDelay)
 {
   if(TimeDelay) for(int t=0; t<24; t++) fTimeDelayCFD[t] = TimeDelay[t];
-  //  else for(int t=0; t<24; t++) fTimeDelay[t] = 0.;
-}
-//________________________________________________________________
-void AliT0CalibData::SetTimeDelayLED(Float_t* TimeDelay)
+}  
+  //________________________________________________________________
+  void AliT0CalibData::SetTimeDelayLED(Float_t* TimeDelay)
 {
   if(TimeDelay) for(int t=0; t<24; t++) fTimeDelayLED[t] = TimeDelay[t];
-  //  else for(int t=0; t<24; t++) fTimeDelay[t] = 0.;
-}
-
-//________________________________________________________________
-void AliT0CalibData::SetGain(Float_t* Gain)
-{
-  if(Gain) for(int t=0; t<24; t++) fGain[t] = Gain[t];
-  // else for(int t=0; t<24; t++) fGain[t] = 0.;
 }
 
 
@@ -160,12 +145,55 @@ void AliT0CalibData::SetGain(Float_t* Gain)
 void AliT0CalibData::SetWalk(Int_t ipmt, const Char_t *filename)
 {
 
-  TFile *file = new TFile(filename);
-  char funcname[256];
-  sprintf(funcname,"CFD%i",ipmt+1);
-  TF1* gr = (TF1*)file->Get(funcname);
+  Int_t mv, ps; 
+  Int_t x[70000], y[70000], index[70000];
+  Float_t time[10000],amplitude[10000];
+  string buffer;
+  Bool_t down=false;
+  
+  ifstream inFile("data/CFD-Amp.txt");
+  if(!inFile) AliError(Form("Cannot open file %s !",filename));
+  
+  Int_t i=0, i1=0, i2=0;
+  while(getline(inFile,buffer)){
+    inFile >> ps >> mv;
+
+    x[i]=ps; y[i]=mv;
+    i++;
+  }
+  inFile.close();
+ 
+  TMath::Sort(i, y, index,down);
+  Int_t amp=0, iin=0, isum=0, sum=0;
+  Int_t ind=0;
+  for (Int_t ii=0; ii<70000; ii++)
+    {
+      ind=index[ii];
+      if(y[ind] == amp)
+	{
+	  sum +=x[ind];
+	  iin++;
+	  //	  cout<<ii<<" "<<ind<<" "<<y[ind]<<" "<<x[ind]<<" "<<sum<<endl;
+	}
+      else
+	{
+	  if(iin>0)
+	    time[isum] = Float_t (sum/(iin));
+	  else
+	    time[isum] =Float_t (x[ind]);
+	  amplitude[isum] = Float_t (amp);
+	  amp=y[ind];
+	  cout<<ii<<" "<<ind<<" "<<y[ind]<<" "<<x[ind]<<" iin "<<iin<<" mean "<<time[isum]<<" amp "<< amplitude[isum]<<" "<<isum<<endl;
+	  iin=0;
+	  isum++;
+	  sum=0;
+	}
+    }
+
+  inFile.close();
+
+  TGraph* gr = new TGraph(isum, amplitude, time);
   fWalk.AddAtAndExpand(gr,ipmt);
-  file->Close();
 }
 
 
@@ -225,6 +253,7 @@ void AliT0CalibData::SetSlewingRec(Int_t ipmt,const Char_t *filename)
 
 void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
 {
+  Int_t key, trm, tdc, chain, channel;
 
   if(filename == 0){
     AliError(Form("Please, specify file with database")) ;
@@ -232,17 +261,34 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
   }
 
   //  AliT0LookUpKey * lookkey= new AliT0LookUpKey();
-  //AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
+  //  AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
 
   ifstream lookup;
   lookup.open(filename);
-  if(!lookup) {AliError(Form("Cannot open file %s !",filename));}
+  if(!lookup)
+    {
+      //  AliLog(Form("Cannot open file %s ! Getting hardcoded value",filename));
+
+    trm=0; tdc=0; chain=0; channel=0; key=0;
+    for (Int_t ik=0; ik<108; ik++)
+      {
+	AliT0LookUpKey * lookkey= new AliT0LookUpKey();
+	AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
+	
+      lookvalue->SetTRM(trm);
+      lookvalue->SetTDC(tdc);
+      lookvalue->SetChain(chain);
+      lookvalue->SetChannel(channel);
+      lookkey->SetKey(ik);
+      if(ik>53) { trm=1; tdc=0; channel=0;}
+      if (channel<7) channel +=2;
+      else {channel = 0; tdc++;}
+      }
+    }
   Char_t varname[11];
-  Int_t key, trm, tdc, chain, channel;
   // while(lookup.eof())
 
  for (Int_t i=0; i<108; i++)
-//    for (Int_t i=0;i<3;i++)
     {
        AliT0LookUpKey * lookkey= new AliT0LookUpKey();
        AliT0LookUpValue * lookvalue= new AliT0LookUpValue();

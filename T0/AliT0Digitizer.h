@@ -27,7 +27,7 @@ class AliT0Digitizer : public AliDigitizer {
 
   // Do the main work
   void Exec (Option_t* /*option=0*/) ;
-  Bool_t RegisterPhotoE(Int_t impt, Double_t energy);
+  //  Bool_t RegisterPhotoE(Int_t impt, Double_t energy);
   enum {kBgTag = -1};
  
 private:

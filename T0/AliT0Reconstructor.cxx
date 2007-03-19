@@ -20,18 +20,17 @@
 #include <TDirectory.h>
 
 #include "AliRunLoader.h"
-#include "AliRun.h"
 #include <AliESD.h>
 #include "AliLog.h"
+#include "AliT0Loader.h"
 #include <TClonesArray.h>
 #include "AliT0RecPoint.h"
-#include "AliT0.h"
 #include "AliRawReader.h"
 #include "AliT0RawReader.h"
-#include "AliT0Loader.h"
 #include "AliT0digit.h"
 #include "AliT0Reconstructor.h"
 #include "AliT0Parameters.h"
+#include "AliT0Calibrator.h"
 #include "AliCDBLocal.h"
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
@@ -42,63 +41,72 @@
 
 ClassImp(AliT0Reconstructor)
 
-//____________________________________________________________________
-void
-AliT0Reconstructor::Init(AliRunLoader* runLoader,TTree* digitsTree ) const
+  AliT0Reconstructor:: AliT0Reconstructor(): AliReconstructor(),
+			fDigits(NULL),
+			fTree(0x0),
+			fZposition(0)
+
 {
-
- // Initialize the reconstructor
-  AliDebug(2, Form("Init called with runloader 0x%x", runLoader));
- 
-  // Initialize the parameters
-   AliT0Loader* pStartLoader = (AliT0Loader*) runLoader->GetLoader("T0Loader");
- 
-  pStartLoader->LoadDigits("READ");
-
-  digitsTree = pStartLoader->TreeD();
-
+ AliDebug(1,"Start reconstructor ");
 }
-
 //____________________________________________________________________
-  void  AliT0Reconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
-{
-  //T0 raw data-> digits conversion
- // reconstruct time information from raw data
-    AliT0 *baseT0;
-    baseT0->Raw2Digits(rawReader, digitsTree);
+
+AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
+  fDigits(NULL),
+  fTree(0x0),
+  fZposition(0)
   
+{
+  //
+  // AliT0Reconstructor copy constructor
+  //
+
+  ((AliT0Reconstructor &) r).Copy(*this);
 
 }
+
+//_____________________________________________________________________________
+AliT0Reconstructor &AliT0Reconstructor::operator=(const AliT0Reconstructor &r)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &r) ((AliT0Reconstructor &) r).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+
 void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
-  //void AliT0Reconstructor::Reconstruct(AliRunLoader *runLoader) const
+
 {
 // T0 digits reconstruction
 // T0RecPoint writing 
 
-    //Q->T-> coefficients !!!! should be asked!!!
-  //  Float_t ph2MIP=500;
-  Float_t gain[24], timeDelayCFD[24], timeDelayLED[24];
+  
+  Float_t  timeDelayLED[24];
   Float_t zdetA,zdetC;
-  TObjArray slewingLED;
+  TObjArray slewingLEDrec;
+  TObjArray walk;
     
-  TArrayI * fADC = new TArrayI(24); 
-  TArrayI * fTimeCFD = new TArrayI(24); 
-  TArrayI * fADCLED = new TArrayI(24); 
-  TArrayI * fTimeLED = new TArrayI(24); 
-
+  TArrayI * timeCFD = new TArrayI(24); 
+  TArrayI * timeLED = new TArrayI(24); 
+  TArrayI * chargeQT0 = new TArrayI(24); 
+  TArrayI * chargeQT1 = new TArrayI(24); 
+  
   AliT0Parameters* param = AliT0Parameters::Instance();
   param->Init();
+  AliT0Calibrator *calib=new AliT0Calibrator(); 
 
   Int_t mV2Mip = param->GetmV2Mip();     
   //mV2Mip = param->GetmV2Mip();     
   Int_t channelWidth = param->GetChannelWidth() ;  
   
   for (Int_t i=0; i<24; i++){
-    timeDelayCFD[i] = param->GetTimeDelayCFD(i);
-    timeDelayLED[i] = param->GetTimeDelayLED(i);
-    gain[i] = param->GetGain(i);
-    //gain[i] = 1;
-    slewingLED.AddAtAndExpand(param->GetSlew(i),i);
+    TGraph* gr = param ->GetSlewRec(i);
+    slewingLEDrec.AddAtAndExpand(gr,i) ;  
   }
   zdetC = param->GetZposition(0);
   zdetA  = param->GetZposition(1);
@@ -114,19 +122,18 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     return;
   }
   
-   digitsTree->GetEvent(0);
-   digitsTree->GetEntry(0);
-   brDigits->GetEntry(0);
-  fDigits->GetTime(*fTimeCFD);
-  fDigits->GetADC(*fADC);
-  fDigits->GetTimeAmp(*fTimeLED);
-  fDigits->GetADCAmp(*fADCLED);
-
-
-  Float_t besttimeright=999999;
-  Float_t besttimeleft=999999;
-  Int_t pmtBestRight=99999;
-  Int_t pmtBestLeft=99999;
+  digitsTree->GetEvent(0);
+  digitsTree->GetEntry(0);
+  brDigits->GetEntry(0);
+  fDigits->GetTimeCFD(*timeCFD);
+  fDigits->GetTimeLED(*timeLED);
+  fDigits->GetQT0(*chargeQT0);
+  fDigits->GetQT1(*chargeQT1);
+  
+  Float_t besttimeA=999999;
+  Float_t besttimeC=999999;
+  Int_t pmtBestA=99999;
+  Int_t pmtBestC=99999;
   Float_t timeDiff=999999, meanTime=0;
   
 
@@ -136,15 +143,18 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
-    if(fTimeCFD->At(ipmt)>0 ){
-      time[ipmt] = channelWidth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
-      //   Float_t adc_digPs = channelWidth * Float_t (fADCLED->At(ipmt)) ;
-      //      adc[ipmt] = TMath::Exp(adc_digPs/1000) /gain[ipmt];
-      adc[ipmt]=1;
-      AliDebug(1,Form(" time %f ps,  adc %f mv in MIP %i\n ",
-		      time[ipmt], adc[ipmt], Int_t (adc[ipmt]/mV2Mip +0.5)));
+    if(timeCFD->At(ipmt)>0 ){
+      Int_t qt0= chargeQT0->At(ipmt);
+      Int_t qt1= chargeQT1->At(ipmt);
+      if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
+      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
+      
+      //LED
+      Double_t sl = (timeLED->At(ipmt) - timeCFD->At(ipmt)- (1000.*timeDelayLED[ipmt]/channelWidth))*channelWidth;
+      Double_t qt=((TGraph*)slewingLEDrec.At(ipmt))->Eval(sl/1000.);
       frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]);
+      frecpoints->SetAmpLED(ipmt,qt);
     }
     else {
       time[ipmt] = 0;
@@ -154,27 +164,27 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 
   for (Int_t ipmt=0; ipmt<12; ipmt++){
     if(time[ipmt] > 1 ) {
-      if(time[ipmt]<besttimeleft){
-	besttimeleft=time[ipmt]; //timeleft
-	pmtBestLeft=ipmt;
+      if(time[ipmt]<besttimeC){
+	besttimeC=time[ipmt]; //timeC
+	pmtBestC=ipmt;
       }
     }
   }
   for ( Int_t ipmt=12; ipmt<24; ipmt++){
     if(time[ipmt] > 1) {
-      if(time[ipmt]<besttimeright) {
-	besttimeright=time[ipmt]; //timeright
-        pmtBestRight=ipmt;}
+      if(time[ipmt]<besttimeA) {
+	besttimeA=time[ipmt]; //timeA
+        pmtBestA=ipmt;}
     }
   }
-  if(besttimeright !=999999)  frecpoints->SetTimeBestRight(Int_t(besttimeright));
-  if( besttimeleft != 999999 ) frecpoints->SetTimeBestLeft(Int_t(besttimeleft));
-  AliDebug(1,Form(" besttimeA %f ps,  besttimeC %f ps",besttimeright, besttimeleft));
+  if(besttimeA !=999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
+  if( besttimeC != 999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
+  AliDebug(1,Form(" besttimeA %f ps,  besttimeC %f ps",besttimeA, besttimeC));
   Float_t c = 0.0299792; // cm/ps
   Float_t vertex = 0;
-  if(besttimeright !=999999 && besttimeleft != 999999 ){
-    timeDiff = besttimeleft - besttimeright;
-    meanTime = (besttimeright + besttimeleft)/2.;
+  if(besttimeA !=999999 && besttimeC != 999999 ){
+    timeDiff = besttimeC - besttimeA;
+    meanTime = (besttimeA + besttimeC)/2.;
     vertex = c*(timeDiff)/2.; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
@@ -184,6 +194,121 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   clustersTree->Fill();
 }
 
+
+//_______________________________________________________________________
+
+void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) const
+{
+// T0 raw ->
+// T0RecPoint writing 
+
+    //Q->T-> coefficients !!!! should be asked!!!
+  Float_t  timeDelayLED[24];
+  Float_t zdetA,zdetC;
+  TObjArray slewingLEDrec;
+  TObjArray walk;
+    
+  TArrayI * timeCFD = new TArrayI(24); 
+  TArrayI * timeLED = new TArrayI(24); 
+  TArrayI * chargeQT0 = new TArrayI(24); 
+  TArrayI * chargeQT1 = new TArrayI(24); 
+
+   AliT0RawReader myrawreader(rawReader);
+   if (!myrawreader.Next())
+     AliDebug(1,Form(" no raw data found!! %i", myrawreader.Next()));
+   Int_t allData[110][5];
+   for (Int_t i=0; i<110; i++) {
+     allData[i][0]=myrawreader.GetData(i,0);
+   }
+
+  AliT0Parameters* param = AliT0Parameters::Instance();
+  param->Init();
+  AliT0Calibrator *calib=new AliT0Calibrator(); 
+
+  Int_t mV2Mip = param->GetmV2Mip();     
+  //mV2Mip = param->GetmV2Mip();     
+  Int_t channelWidth = param->GetChannelWidth() ;  
+    
+  for (Int_t i=0; i<24; i++){
+    TGraph* gr = param ->GetSlewRec(i);
+    slewingLEDrec.AddAtAndExpand(gr,i) ;  
+  }
+  
+  zdetC = param->GetZposition(0);
+  zdetA  = param->GetZposition(1);
+    
+   for (Int_t in=0; in<24; in++)
+     {
+       timeLED->AddAt(allData[in+1][0],in);
+       timeCFD->AddAt(allData[in+25][0],in);
+       chargeQT1->AddAt(allData[in+55][0],in);
+       chargeQT0->AddAt(allData[in+79][0],in);
+       AliDebug(10, Form(" readed Raw %i %i %i %i %i", in, timeLED->At(in),timeCFD->At(in),chargeQT0->At(in),chargeQT1->At(in)));
+     }
+
+  Float_t besttimeA=999999;
+  Float_t besttimeC=999999;
+  Int_t pmtBestA=99999;
+  Int_t pmtBestC=99999;
+  Float_t timeDiff=999999, meanTime=0;
+
+  
+  AliT0RecPoint* frecpoints= new AliT0RecPoint ();
+ 
+  recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints, 405,1);
+  
+
+  Float_t time[24], adc[24];
+  for (Int_t ipmt=0; ipmt<24; ipmt++) {
+    if(timeCFD->At(ipmt)>0 ){
+      Int_t qt0= chargeQT0->At(ipmt);
+      Int_t qt1= chargeQT1->At(ipmt);
+      if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
+      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
+      Double_t sl = (timeLED->At(ipmt) - timeCFD->At(ipmt)- (1000.*timeDelayLED[ipmt]/channelWidth))*channelWidth;
+      Double_t qt=((TGraph*)slewingLEDrec.At(ipmt))->Eval(sl/1000.);
+      frecpoints->SetTime(ipmt,time[ipmt]);
+      frecpoints->SetAmp(ipmt,adc[ipmt]);
+      frecpoints->SetAmpLED(ipmt,qt);
+    }
+    else {
+      time[ipmt] = 0;
+      adc[ipmt] = 0;
+    }
+  }
+
+  for (Int_t ipmt=0; ipmt<12; ipmt++){
+    if(time[ipmt] > 1 ) {
+      if(time[ipmt]<besttimeC){
+	besttimeC=time[ipmt]; //timeC
+	pmtBestC=ipmt;
+      }
+    }
+  }
+  for ( Int_t ipmt=12; ipmt<24; ipmt++){
+    if(time[ipmt] > 1) {
+      if(time[ipmt]<besttimeA) {
+	besttimeA=time[ipmt]; //timeA
+        pmtBestA=ipmt;}
+    }
+  }
+  if(besttimeA !=999999)  frecpoints->SetTimeBestA(Int_t(besttimeA));
+  if( besttimeC != 999999 ) frecpoints->SetTimeBestC(Int_t(besttimeC));
+  AliDebug(1,Form(" besttimeA %f ps,  besttimeC %f ps",besttimeA, besttimeC));
+  Float_t c = 0.0299792; // cm/ps
+  Float_t vertex = 0;
+  if(besttimeA !=999999 && besttimeC != 999999 ){
+    timeDiff = besttimeC - besttimeA;
+    meanTime = (besttimeA + besttimeC)/2.;
+    vertex = c*(timeDiff)/2.; //-(lenr-lenl))/2;
+    AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
+    frecpoints->SetVertex(vertex);
+    frecpoints->SetMeanTime(Int_t(meanTime));
+    
+  }
+  recTree->Fill();
+}
+//____________________________________________________________
 
 void AliT0Reconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
 {
@@ -224,9 +349,10 @@ void AliT0Reconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
     
     brRec->GetEntry(0);
     Float_t timeStart, Zposition, amp[24], time[24];
+    Int_t mean0 = 12450;
     Int_t i;
     Zposition = frecpoints -> GetVertex();
-    timeStart = frecpoints -> GetMeanTime();
+    timeStart = frecpoints -> GetMeanTime() - mean0;
     for ( i=0; i<24; i++) {
        time[i] = Float_t (frecpoints -> GetTime(i)) / 1000.; // ps to ns
       amp[i] = frecpoints -> GetAmp(i);

@@ -16,11 +16,11 @@
 /* $Id$ */
 /////////////////////////////////////////////////////////////////////////
 //  Class AliT0RecPoint for T0 time and ADC signals
-//  fTimeRight  - right side TOF signal
-//  fTimeLeft  - left side TOF signal
-//  fTimeBestRight - TOF first particle on the right side
-//  TimeBestLeft - TOF first particle on the left side
-//  fTimeAverage = (fTimeBestRight + TimeBestLeft ) /2. T0 signal
+//  fTimeA  - A side TOF signal
+//  fTimeC  - C side TOF signal
+//  fTimeBestA - TOF first particle on the A side
+//  TimeBestC - TOF first particle on the C side
+//  fTimeAverage = (fTimeBestA + TimeBestLeft ) /2. T0 signal
 //  fVertex - vertex position 
 //
 ///////////////////////////////////////////////////////////////////////
@@ -34,12 +34,12 @@
 ClassImp(AliT0RecPoint)
 
 //------------------------------------
-  AliT0RecPoint::AliT0RecPoint() : TObject(), fTimeAverage(0),fVertexPosition(0),fTimeBestRight(0),fTimeBestLeft(0),fMultC(0),fMultA(0)
+  AliT0RecPoint::AliT0RecPoint() : TObject(), fTimeAverage(0),fVertexPosition(0),fTimeBestA(0),fTimeBestC(0),fMultC(0),fMultA(0)
 {
   //ctor
   fTimeAverage=99999;
-  fTimeBestRight=99999;
-  fTimeBestLeft=99999;
+  fTimeBestA=99999;
+  fTimeBestC=99999;
   fVertexPosition=99999;
   fMultA=0;
   fMultC=0;

@@ -137,7 +137,7 @@ void AliT0::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 
 void AliT0::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
 			Int_t timediff, Int_t sumMult,
-			TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp)
+			TArrayI *timeCFD, TArrayI *qt0, TArrayI *timeLED, TArrayI *qt1)
 {
   
   //  Add a T0 digit to the list.
@@ -146,15 +146,15 @@ void AliT0::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime,
   if (!fDigits) {
     fDigits = new AliT0digit();
   }
-  fDigits-> SetTimeBestRight(besttimeright);
-  fDigits->SetTimeBestLeft(besttimeleft);
+  fDigits-> SetTimeBestA(besttimeright);
+  fDigits->SetTimeBestC(besttimeleft);
   fDigits-> SetMeanTime(meantime);
   fDigits-> SetDiffTime(timediff);
   fDigits-> SetSumMult(sumMult);
-  fDigits->SetTime(*time);
-  fDigits->SetTimeAmp(*timeAmp);
-  fDigits->SetADC(*adc);
-  fDigits->SetADCAmp(*adcAmp);
+  fDigits->SetTimeCFD(*timeCFD);
+  fDigits->SetTimeLED(*timeLED);
+  fDigits->SetQT0(*qt0);
+  fDigits->SetQT1(*qt1);
 }
 
 
@@ -397,16 +397,16 @@ void AliT0::Raw2Digits(AliRawReader *rawReader,TTree* digitsTree)
        AliDebug(2, Form(" readed Raw %i %i %i %i %i", in, timeLED->At(in),timeCFD->At(in),chargeQT0->At(in),chargeQT1->At(in)));
      }
   
-   fDigits->SetTime(*timeCFD);
-   fDigits->SetADC(*chargeQT1);
+   fDigits->SetTimeCFD(*timeCFD);
+   fDigits->SetQT0(*chargeQT1);
 
-   fDigits->SetTimeAmp(*timeLED);
-   fDigits->SetADCAmp(*chargeQT1);
+   fDigits->SetTimeLED(*timeLED);
+   fDigits->SetQT1(*chargeQT1);
 
    fDigits->SetMeanTime(allData[49][0]);
    fDigits->SetDiffTime(allData[50][0]);
-   fDigits->SetTimeBestRight(allData[51][0]);
-   fDigits->SetTimeBestLeft(allData[52][0]);
+   fDigits->SetTimeBestA(allData[51][0]);
+   fDigits->SetTimeBestC(allData[52][0]);
    digitsTree->Fill();
    fDigits->Write();
  

@@ -16,12 +16,12 @@
 /* $Id$ */
 /////////////////////////////////////////////////////////////////////////
 //  Class AliT0digit for T0 digits
-//  fTimeRight  - right side TOF signal
-//  fTimeLeft  - left side TOF signal
-//  fTimeBestRight - TOF first particle on the right side
-//  TimeBestLeft - TOF first particle on the left side
-//  fTimeAverage = (fTimeBestRight + TimeBestLeft ) /2. T0 signal
-//  fTimeDiff = fTimeBestRight - TimeBestLeft  
+//  fTimeA  - right side TOF signal
+//  fTimeC  - left side TOF signal
+//  fTimeBestA - TOF first particle on the right side
+//  TimeBestC - TOF first particle on the left side
+//  fTimeAverage = (fTimeBestA + TimeBestC ) /2. T0 signal
+//  fTimeDiff = fTimeBestA - TimeBestC  
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -31,115 +31,117 @@
 ClassImp(AliT0digit)
 
 //-----------------------------------------------
-  AliT0digit::AliT0digit() :TObject()
+  AliT0digit::AliT0digit() :TObject(),
+			    fTimeCFD(new TArrayI(24)),    
+			    fQT0( new TArrayI(24)),     
+			    fTimeLED( new TArrayI(24)), 
+			    fQT1( new TArrayI(24)),     
+			    fTimeAverage(99999),
+			    fTimeDiff(99999),
+			    fBestTimeA(99999),
+			    fBestTimeC (99999),
+			    fSumMult(0)
+
 {
-
-  fTimeAverage   = 99999;
-  fTimeDiff      = 99999;
-  fBestTimeRight = 99999;
-  fBestTimeLeft  = 99999;
-
-  fTime = new TArrayI(24);
-  fADC  = new TArrayI(24);
-  fTimeAmp = new TArrayI(24);
-  fADCAmp  = new TArrayI(24);
+  //
 }
 
-//-----------------------------------
+//_____________________________________________________________________________
+
 AliT0digit::~AliT0digit() {
   // destructor
-  delete fTime;
-  delete fADC;
-  delete fTimeAmp;
-  delete fADCAmp;
+  delete fTimeCFD;
+  delete fQT0;
+  delete fTimeLED;
+  delete fQT1;
 }
 //-----------------------------------
-void AliT0digit::SetTime (TArrayI &o)
+void AliT0digit::SetTimeCFD (TArrayI &o)
 {
   ////////////////////////////////////////
-  fTime = new TArrayI(24);
+  fTimeCFD = new TArrayI(24);
 
   Int_t i;
   for (i=0; i<24; i++)
     {
       Int_t buf=o.At(i);
-      fTime->AddAt(buf,i);
+      fTimeCFD->AddAt(buf,i);
     }
 }
 //--------------------------------------------
-void AliT0digit::GetTime (TArrayI &o)
+void AliT0digit::GetTimeCFD (TArrayI &o)
 {
   //
   Int_t i;
   for (i=0; i<24; i++)
     {
-      o[i]=fTime->At(i);
+      o[i]=fTimeCFD->At(i);
     }
 }
 //--------------------------------------------
-void AliT0digit::GetADC (TArrayI &o)
+void AliT0digit::GetQT0 (TArrayI &o)
 {
   //
   Int_t i;
   for (i=0; i<24; i++)
     {
-      o[i]=fADC->At(i);
+      o[i]=fQT0->At(i);
     }
 }
 //--------------------------------------------
-void AliT0digit::SetADC (TArrayI &o)
+void AliT0digit::SetQT0 (TArrayI &o)
 {
   //
-  fADC  = new TArrayI(24);
+  fQT0  = new TArrayI(24);
   Int_t i;
   for (i=0; i<24; i++)
     {
       Int_t buf=(o.At(i));
-      fADC->AddAt(buf,i);
+      fQT0->AddAt(buf,i);
     }
 }
 //-----------------------------------
-void AliT0digit::SetTimeAmp (TArrayI &o)
+void AliT0digit::SetTimeLED (TArrayI &o)
 {
   ////////////////////////////////////////
-  fTimeAmp = new TArrayI(24);
+  fTimeLED = new TArrayI(24);
 
   Int_t i;
   for (i=0; i<24; i++)
     {
       Int_t buf=o.At(i);
-      fTimeAmp->AddAt(buf,i);
+      fTimeLED->AddAt(buf,i);
     }
 }
 //--------------------------------------------
-void AliT0digit::GetTimeAmp (TArrayI &o)
+void AliT0digit::GetTimeLED (TArrayI &o)
 {
   //
   Int_t i;
   for (i=0; i<24; i++)
     {
-      o[i]=fTimeAmp->At(i);
+      o[i]=fTimeLED->At(i);
     }
 }
 //--------------------------------------------
-void AliT0digit::GetADCAmp (TArrayI &o)
+void AliT0digit::GetQT1 (TArrayI &o)
 {
   //
   Int_t i;
   for (i=0; i<24; i++)
     {
-      o[i]=fADCAmp->At(i);
+      o[i]=fQT1->At(i);
     }
 }
 //--------------------------------------------
-void AliT0digit::SetADCAmp (TArrayI &o)
+void AliT0digit::SetQT1 (TArrayI &o)
 {
   //
-  fADCAmp  = new TArrayI(24);
+  fQT1  = new TArrayI(24);
   Int_t i;
   for (i=0; i<24; i++)
     {
       Int_t buf=(o.At(i));
-      fADCAmp->AddAt(buf,i);
+      fQT1->AddAt(buf,i);
     }
 }

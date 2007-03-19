@@ -76,13 +76,13 @@ void AliT0Trigger::Trigger()
     return;
   } 
   brDigits->GetEntry(0);
-  Int_t   besttimeright = fDigits->BestTimeRight();
-  Int_t   besttimeleft = fDigits->BestTimeLeft();
+  Int_t   besttimeA = fDigits->BestTimeA();
+  Int_t   besttimeC = fDigits->BestTimeC();
   Int_t   timeDiff = fDigits->TimeDiff();
   Int_t    sumMult=   fDigits->SumMult();
 
-  if (besttimeright > 0 && besttimeright <99999  )  SetInput("START_A_L0");
-  if (besttimeleft>0  && besttimeleft<99999)   SetInput("START_C_L0"); 
+  if (besttimeA > 0 && besttimeA <99999  )  SetInput("START_A_L0");
+  if (besttimeC>0  && besttimeC<99999)   SetInput("START_C_L0"); 
   if (timeDiff >5500 && timeDiff < 6500)       SetInput("START_Vertex_L0");
   if (sumMult > 175)                           SetInput("START_Centr_L0");
   if (sumMult>155 && sumMult <= 175)           SetInput("START_SemiCentral_L0");;

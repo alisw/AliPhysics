@@ -34,13 +34,10 @@ class AliT0CalibData: public TNamed {
   Float_t  GetTimeDelayLED(Int_t channel) const {return fTimeDelayLED[channel];}
   Float_t* GetTimeDelayLED()  const  {return(float*) fTimeDelayLED;}
 
-  Float_t   GetGain(Int_t channel) const {return fGain[channel];}
-  Float_t*  GetGain()  const {return (float*)fGain;}
-  void     SetGain(Float_t val, Int_t channel)  {fGain[channel]=val;}
-  void     SetGain(Float_t* Gain);
   
-  Float_t  GetWalk(Int_t ipmt, Float_t mv )  const {return ((TF1*)fWalk.At(ipmt))->Eval(mv);}
-  void SetWalk(Int_t ipmt, const Char_t *filename="calibr/re.root") ;
+  TGraph *GetWalk(Int_t ipmt )  const {return ((TGraph*)fWalk.At(ipmt));}
+  Float_t  GetWalkVal(Int_t ipmt, Float_t mv )  const {return ((TGraph*)fWalk.At(ipmt))->Eval(mv);}
+  void SetWalk(Int_t ipmt, const Char_t *filename="data/CFD-Amp.root") ;
 
    TGraph *  GetSlew(Int_t ipmt) const   {return (TGraph*)fSlewingLED.At(ipmt);}
   Float_t  GetSlewingLED(Int_t ipmt, Float_t mv)  const 
@@ -49,8 +46,8 @@ class AliT0CalibData: public TNamed {
   Float_t  GetSlewingRec(Int_t ipmt, Float_t mv)  const 
       {return((TGraph*)fSlewingRec.At(ipmt))->Eval(mv);}
 
-  void SetSlewingLED(Int_t ipmt, const Char_t *filename) ;
-  void SetSlewingRec(Int_t ipmt, const Char_t *filename) ;
+  void SetSlewingLED(Int_t ipmt, const Char_t *filename="data/CFD-LED.txt") ;
+  void SetSlewingRec(Int_t ipmt, const Char_t *filename="data/re.root") ;
 
   void     SetTimeDelayCFD(Float_t val, Int_t channel) {fTimeDelayCFD[channel]=val;}
   void     SetTimeDelayCFD(Float_t* TimeDelay);
@@ -72,7 +69,6 @@ class AliT0CalibData: public TNamed {
 
   Float_t  fTimeDelayCFD[24]; // Coeff. for time delay (24 different cables & CFD )
   Float_t  fTimeDelayLED[24]; // Coeff. for time delay (24 different cables & CFD )
-  Float_t  fGain[24]; // Coeff. for gain (24 different cables & CFD )
   Float_t fTimeDelayTVD; //time delay for TVD (vertex trigger channel)
   TObjArray fWalk;  //time - amp. walk
   TObjArray fSlewingLED;  //time - amp.LED slew
@@ -81,7 +77,7 @@ class AliT0CalibData: public TNamed {
   //Int_t fa;
 
   //
-  ClassDef(AliT0CalibData,2)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibData,3)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibData AliSTARTCalibData; // for backward compatibility
