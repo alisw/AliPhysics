@@ -22,6 +22,7 @@
 #include "AliT0Calibrator.h"
 #include <TArrayI.h>
 #include <TGraph.h>
+#include <TH1F.h>
 
 ClassImp(AliT0Calibrator)
 
