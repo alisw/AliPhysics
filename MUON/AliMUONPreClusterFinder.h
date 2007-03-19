@@ -33,18 +33,19 @@ public:
   virtual Bool_t UsePad(const AliMUONPad& pad);
   
 private:
+  /// Not implemented
   AliMUONPreClusterFinder(const AliMUONPreClusterFinder& rhs);
+  /// Not implemented
   AliMUONPreClusterFinder& operator=(const AliMUONPreClusterFinder& rhs);
 
-  Bool_t AreNeighbours(const AliMUONPad&, const AliMUONPad&);
   void AddPad(AliMUONCluster& cluster, AliMUONPad* pad);
   
 private:
-  TClonesArray* fClusters; ///<! the clusters we've found (owner)
-  const AliMpVSegmentation** fSegmentations; ///<! segmentations (not owner)
-  TClonesArray** fDigits; ///<! where to find the digits (not owner)
-  TClonesArray* fPads[2]; ///!< the pads corresponding to the digits (owner)
-  Int_t fDetElemId; ///!< which DE we're considering
+  TClonesArray* fClusters; //!< the clusters we've found (owner)
+  const AliMpVSegmentation** fSegmentations; //!< segmentations (not owner)
+  TClonesArray** fDigits; //!< where to find the digits (not owner)
+  TClonesArray* fPads[2]; //!< the pads corresponding to the digits (owner)
+  Int_t fDetElemId; //!< which DE we're considering
   
   ClassDef(AliMUONPreClusterFinder,1) // A basic pre-cluster finder
 };
