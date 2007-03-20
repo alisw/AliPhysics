@@ -39,14 +39,15 @@ class AliMUONTriggerBoard : public TNamed
       virtual void Mask(Int_t index, UShort_t mask) = 0;
       
    protected:
+      Int_t fSlot;                ///< SLOT NUMBER IN CRATE
+
+      UShort_t fResponse;         ///< RESPONSE
+
+   private:
       /// Not implemented
       AliMUONTriggerBoard(const AliMUONTriggerBoard &entry);
       /// Not implemented
       AliMUONTriggerBoard& operator=(const AliMUONTriggerBoard &rhs);
-
-      Int_t fSlot;                ///< SLOT NUMBER IN CRATE
-
-      UShort_t fResponse;         ///< RESPONSE
 
    ClassDef(AliMUONTriggerBoard,1)
 };
