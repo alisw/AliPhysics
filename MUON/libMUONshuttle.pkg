@@ -7,7 +7,8 @@ AliMUONPedestalSubprocessor.cxx \
 AliMUONGMSSubprocessor.cxx \
 AliMUONPedestalEventGenerator.cxx \
 AliMUONHVSubprocessor.cxx \
-AliMUONTrackerPreprocessor.cxx
+AliMUONGainSubprocessor.cxx \
+AliMUONTrackerPreprocessor.cxx \
 
 HDRS:= $(SRCS:.cxx=.h)
 

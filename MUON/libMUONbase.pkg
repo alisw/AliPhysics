@@ -34,13 +34,17 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONVCalibParam.cxx \
         AliMUONCalibParam1I.cxx \
         AliMUONCalibParam2F.cxx \
+        AliMUONCalibParamNF.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONTriggerEfficiencyCells.cxx\
         AliMUONRawStreamTrigger.cxx \
         AliMUONRawStreamTracker.cxx  \
         AliMUONDigitMaker.cxx \
         AliMUONTriggerChamberEff.cxx \
-        AliMUONLogger.cxx
+        AliMUONLogger.cxx \
+        AliMUON2DStoreValidator.cxx \
+        AliMUONCheckItem.cxx \
+        AliMUONCheckItemIterator.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 

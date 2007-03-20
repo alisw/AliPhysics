@@ -41,9 +41,6 @@
 #pragma link C++ class AliMUONHVNamer+;
 #pragma link C++ class AliMUONPadStatusMaker+;
 #pragma link C++ class AliMUONPadStatusMapMaker+;
-#pragma link C++ class AliMUONCheckItem+;
-#pragma link C++ class AliMUONCheckItemIterator+;
-#pragma link C++ class AliMUON2DStoreValidator+;
 
 // display
 #pragma link C++ class AliMUONDisplay+; 
