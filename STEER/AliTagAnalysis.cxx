@@ -381,7 +381,7 @@ TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname, const
     iAccepted += list->GetN();
   }
 
-  fAnalysisChain->SetEntryList(fGlobalList);
+  fAnalysisChain->SetEntryList(fGlobalList,"ne");
   
   AliInfo(Form("Number of selected events: %d",iAccepted));
 
