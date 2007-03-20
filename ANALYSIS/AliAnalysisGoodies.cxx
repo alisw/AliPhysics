@@ -32,6 +32,7 @@
 #include <Riostream.h>
 #ifdef WITHALIEN
 #include <TAlienCollection.h>
+#include <TGridResult.h>
 #endif
 #include <TChain.h>
 #include <TFileMerger.h>
@@ -211,7 +212,7 @@ Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCuts * ru
 
 #ifdef WITHALIEN
   
-  TAlienCollection * collection = TAlienCollection::Open(in);
+  TGridCollection * collection = TAlienCollection::Open(in);
   TGridResult* result = collection->GetGridResult("");
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
@@ -238,7 +239,7 @@ Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char * runCu
   
 #ifdef WITHALIEN
 
-  TAlienCollection * collection = TAlienCollection::Open(in);
+  TGridCollection * collection = TAlienCollection::Open(in);
   TGridResult* result = collection->GetGridResult("");
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
@@ -274,7 +275,7 @@ Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char * subFi
   
 #ifdef WITHALIEN
 
-  TAlienCollection * collection = TAlienCollection::Open(collectionFile);
+  TGridCollection * collection = TAlienCollection::Open(collectionFile);
   TGridResult* result = collection->GetGridResult("");
   
   Int_t index = 0  ;
@@ -575,7 +576,7 @@ Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const
 
 #ifdef WITHALIEN
 
-  TAlienCollection * collection = TAlienCollection::Open(xmlFile) ; 
+  TGridCollection * collection = TAlienCollection::Open(xmlFile) ; 
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
@@ -622,7 +623,7 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, AliRunT
 
 #ifdef WITHALIEN
 
-  TAlienCollection * collection = TAlienCollection::Open(xmlFile) ; 
+  TGridCollection * collection = TAlienCollection::Open(xmlFile) ; 
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
@@ -669,7 +670,7 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const c
   if ( gSystem->AccessPathName(xmlFile) ) 
     TGrid::Connect("alien://"); 
 
-  TAlienCollection * collection = TAlienCollection::Open(xmlFile) ; 
+  TGridCollection * collection = TAlienCollection::Open(xmlFile) ; 
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
