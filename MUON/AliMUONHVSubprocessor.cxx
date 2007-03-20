@@ -143,7 +143,7 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   if ( kNoAliases ) 
   {
     Master()->Log("ERROR : no DCS values found");
-    return 1;
+    return 0;
   }
   
   if ( aliasNotFound ) 
