@@ -55,6 +55,15 @@ Int_t nK0 = 0;
 Int_t nKPlus = 0;
 Int_t nKMinus = 0;
 
+// global arrays and pointers
+Float_t p[3];
+Float_t x[3];
+Float_t *cov = NULL; // set to NULL because not provided
+Float_t *pid = NULL; // set to NULL because not provided
+AliAODVertex *primary = NULL; 
+AliAODVertex *secondary = NULL;
+AliAODTrack *currTrack = NULL;
+
 void CreateAODfromKineTree(const char *inFileName,
 			   const char *outFileName) {
   printf("This macro works only correctly in comiled mode!\n");
@@ -148,12 +157,6 @@ void CreateAODfromKineTree(const char *inFileName,
  
     aod->ResetStd(nTracks, 1);
 
-    Float_t p[3];
-    Float_t x[3];
-    Float_t *covTr = NULL;
-    Float_t *pid = NULL;
-    AliAODVertex *primary = NULL; 
-    AliAODTrack* currTrack = NULL;
     // track loop
     for (Int_t iTrack = 0; iTrack < nPrims; ++iTrack) {
 								
@@ -177,7 +180,7 @@ void CreateAODfromKineTree(const char *inFileName,
 								kTRUE,
 								x,
 								kFALSE,
-								covTr, 
+								cov, 
 								(Short_t)-99,
 								0, // no ITSClusterMap
 								pid,
@@ -233,53 +236,49 @@ Int_t LoopOverSecondaries(TParticle *mother) {
     TClonesArray &vertices = *(aod->GetVertices());
     TClonesArray &tracks = *(aod->GetTracks());
 
-    Float_t pSec[3];
-    Float_t xSec[3];
-    Float_t *covSec = NULL;
-    Float_t *pidSec = NULL;
-    AliAODVertex *secondary = NULL;
-    AliAODTrack* currTrackSec = NULL;
-    
     for (Int_t iDaughter = mother->GetFirstDaughter(); iDaughter <= mother->GetLastDaughter(); iDaughter++) {
-      TParticle *partSec = stack->Particle(iDaughter);
-
-      pSec[0] = partSec->Px(); pSec[1] = partSec->Py(); pSec[2] = partSec->Pz();
-      xSec[0] = partSec->Vx(); xSec[1] = partSec->Vy(); xSec[2] = partSec->Vz();
+      TParticle *part = stack->Particle(iDaughter);
+      p[0] = part->Px(); 
+      p[1] = part->Py(); 
+      p[2] = part->Pz();
+      x[0] = part->Vx(); 
+      x[1] = part->Vy(); 
+      x[2] = part->Vz();
 
       if (iDaughter == mother->GetFirstDaughter()) {
 	// add secondary vertex
 	secondary = new(vertices[jVertices++])
-	  AliAODVertex(xSec, NULL, -999., tracks.Last(), AliAODVertex::kUndef);
+	  AliAODVertex(x, NULL, -999., tracks.Last(), AliAODVertex::kUndef);
 	
-	SetVertexType(partSec, secondary);
+	SetVertexType(part, secondary);
       }
 	
       // add secondary tracks
       secondary->AddDaughter(new(tracks[jTracks++]) AliAODTrack(0, // ID
 								0, // label
-								pSec,
+								p,
 								kTRUE,
-								xSec,
+								x,
 								kFALSE,
-								covSec, 
+								cov, 
 								(Short_t)-99,
 								0, // no cluster map available
-								pidSec,
+								pid,
 								secondary,
 								kFALSE, // no fit performed
 								AliAODTrack::kSecondary));
 
-      currTrackSec = (AliAODTrack*)tracks.Last();
-      SetChargeAndPID(partSec->GetPdgCode(), currTrackSec);
-      if (currTrackSec->Charge() != -99) {
-	if (currTrackSec->Charge() > 0) {
+      currTrack = (AliAODTrack*)tracks.Last();
+      SetChargeAndPID(part->GetPdgCode(), currTrack);
+      if (currTrack->Charge() != -99) {
+	if (currTrack->Charge() > 0) {
 	  nPos++;
-	} else if (currTrackSec->Charge() < 0) {
+	} else if (currTrack->Charge() < 0) {
 	  nNeg++;
 	}	    
       }
 
-      LoopOverSecondaries(partSec);
+      LoopOverSecondaries(part);
     }
     return 1;
   } else {
