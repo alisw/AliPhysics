@@ -16,6 +16,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   Int_t  collcode = 1; // pp collisions
   Bool_t useMeanVtx = kFALSE;
   
+  TGeoManager::Import("geometry.root");
   
   if (gAlice) {
     delete gAlice->GetRunLoader();
