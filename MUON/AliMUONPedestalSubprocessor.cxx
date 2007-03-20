@@ -25,13 +25,15 @@
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
-#include "AliMUONCalibParam2F.h"
+#include "AliMUONCalibParamNF.h"
 #include "AliMUONConstants.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONPedestalSubprocessor.h"
 #include "AliMUONPreprocessor.h"
 #include "AliMUONVDataIterator.h"
 #include "AliMpDDLStore.h"
+#include "AliMUON2DStoreValidator.h"
+#include "TObjString.h"
 
 ///
 /// \class AliMUONPedestalSubprocessor
@@ -116,8 +118,37 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
 {
   /// Store the pedestals into the CDB
   
-  if (!fPedestals) return 0;
+  if (!fPedestals) 
+  {
+    // this is the only reason to fail for the moment : getting no pedestal
+    // at all.
+    return 0;
+  }
     
+  AliMUON2DStoreValidator validator;
+
+  Master()->Log("Validating");
+
+  TObjArray* chambers = validator.Validate(*fPedestals);
+  
+  if (chambers)
+  {
+    // we hereby report what's missing, but this is not a reason to fail ;-)
+    // the only reason to fail would be if we got no pedestal at all
+    TList lines;
+    lines.SetOwner(kTRUE);
+  
+    validator.Report(lines,*chambers);
+  
+    TIter next(&lines);
+    TObjString* line;
+  
+    while ( ( line = static_cast<TObjString*>(next()) ) )
+    {
+      Master()->Log(line->String().Data());
+    }
+  }
+  
   Master()->Log("Storing pedestals");
   
   AliCDBMetaData metaData;
@@ -174,7 +205,7 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
     
     if (!ped) 
     {
-      ped = new AliMUONCalibParam2F(kNchannels,AliMUONCalibParam2F::InvalidFloatValue());  
+      ped = new AliMUONCalibParamNF(2,kNchannels,AliMUONVCalibParam::InvalidFloatValue());  
       fPedestals->Set(detElemID,manuID,ped,replace);
     }
     ped->SetValueAsFloat(manuChannel,0,pedMean);

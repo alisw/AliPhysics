@@ -40,7 +40,7 @@ private:
 private:
   AliMUONV2DStore* fPedestals; //!< Pedestals for the MUON TRK
   
-  ClassDef(AliMUONPedestalSubprocessor,1) // A shuttle preprocessor for MUON TRK pedetals
+  ClassDef(AliMUONPedestalSubprocessor,1) // A shuttle preprocessor for MUON TRK pedestals
 };
 
 #endif
