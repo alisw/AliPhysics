@@ -23,7 +23,7 @@ aliroot -b >& testSim.out << EOF
 // (generated via MUONGenerateGeometryData.C macro)
 // AliCDBManager* man = AliCDBManager::Instance();
 // man->SetDefaultStorage("local://$ALICE_ROOT");
-// man->SetSpecificStorage("MUON","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
+// man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
 gRandom->SetSeed($SEED);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetMakeTrigger("MUON");

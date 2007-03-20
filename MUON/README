@@ -321,19 +321,17 @@ residual misalignment settings, then you have a local CDB in
 your working directory called ResMisAlignCDB containing
 misalignement data (ResMisAlignCDB/MUON/Align).
 
-- Copy the calibration data in your local CDB.
-cp -r $ALICE_ROOT/MUON/Calib ResMisAlignCDB/MUON
-
-- Tell AliSimulation you want to use your local CDB for MUON
+- Tell AliSimulation you want to use your local CDB for 
+MUON/Align/Data
 To do this you need to instantiate the AliCDBManager, set the
-default storage and set the specific storage for MUON, before
-instantiating AliSimulation (see for example the commented
+default storage and set the specific storage for MUON/Align/Data,
+before instantiating AliSimulation (see for example the commented
 lines AlirootRun_MUONtest.sh).
 
 aliroot -b  >& testSim.out << EOF
 AliCDBManager* man = AliCDBManager::Instance();
 man->SetDefaultStorage("local://$ALICE_ROOT");
-man->SetSpecificStorage("MUON","local://ResMisAlignCDB");
+man->SetSpecificStorage("MUON/align/Data","local://ResMisAlignCDB");
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetWriteRawData("MUON");
 MuonSim.Run(10);
