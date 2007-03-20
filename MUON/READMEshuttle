@@ -94,6 +94,7 @@ root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will rea
 root[] const char* dateFileName = "raw.date"; // base filename for the output
 root[] Int_t runNumber = 80; // run number used to fetch the pedestals from the OCDB 
 root[] Int_t nevents = 100; // # of events to generate. 100 should be enough
+root[] gSystem->Load("libMUONshuttle");
 root[] AliMUONPedestalEventGenerator ped(runNumber,nevents,dateFileName);
 root[] ped.Exec("");
 
@@ -106,11 +107,10 @@ per LDC, as will be used in real life), the latter ones being roughly 100 MB eac
 
 The raw.date.LDC* files are then processed using the makeped online program 
 (currently found, pending an agreement on where to put online programs under cvs,
- under /afs/cern.ch/user/a/abaldiss/public/v15; Please contact Alberto to check 
+ under /afs/cern.ch/user/a/abaldiss/public/v16; Please contact Alberto to check 
  it's the latest version) which outputs manus-*.ped ASCII files (one per LDC) :
  
- makeped -f raw.date.LCDi (i=0,1,2,3)
- mv manus-1.ped LDCi.ped
+ makeped -f raw.date.LCDi -a LDCi.ped (i=0,1,2,3)
  
  (repeat for each LDC)
 
