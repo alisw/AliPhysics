@@ -19,7 +19,7 @@ class AliT0Calibrator: public TNamed
   
 
   Int_t WalkCorrection(Int_t ipmt, Int_t qt, Int_t time) ;
-  Int_t EquivalizeChannel(Int_t ipmt)  ;
+  //  Int_t EquivalizeChannel(Int_t ipmt)  ;
  protected:
 
   Int_t fTimeDelayCFD[24]; 
