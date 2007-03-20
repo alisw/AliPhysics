@@ -20,6 +20,7 @@
 #include "AliMUONPedestalSubprocessor.h"
 #include "AliMUONHVSubprocessor.h"
 #include "AliMUONGMSSubprocessor.h"
+#include "AliMUONGainSubprocessor.h"
 
 #include "AliLog.h"
 #include "AliShuttleInterface.h"
@@ -44,7 +45,8 @@ AliMUONTrackerPreprocessor::AliMUONTrackerPreprocessor(AliShuttleInterface* shut
 : AliMUONPreprocessor("MCH",shuttle),
   fPedestalSubprocessor(new AliMUONPedestalSubprocessor(this)),
   fGMSSubprocessor(new AliMUONGMSSubprocessor(this)),    
-  fHVSubprocessor(new AliMUONHVSubprocessor(this))    
+  fHVSubprocessor(new AliMUONHVSubprocessor(this)),
+  fGainSubprocessor(new AliMUONGainSubprocessor(this))
 {
   /// ctor. 
 }
@@ -57,6 +59,7 @@ AliMUONTrackerPreprocessor::~AliMUONTrackerPreprocessor()
   delete fPedestalSubprocessor;
   delete fGMSSubprocessor;
   delete fHVSubprocessor;
+  delete fGainSubprocessor;
 }
 
 //_____________________________________________________________________________
@@ -76,8 +79,8 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   }
   else if ( runType == "ELECTRONICS_CALIBRATION_RUN" ) // FIXME : check the name
   {
-    Log("WARNING-Subprocessor for gains not yet implemented");
-    //fSubprocessors->Add(new AliMUONGainSubprocessor(this)); // to be called only for gain runs
+    Add(new AliMUONGainSubprocessor(this)); // to be called only for gain runs
+    Log("INFO-Will run Gain subprocessor");
   }
   else if ( runType == "GMS" ) // FIXME : check the name
   {

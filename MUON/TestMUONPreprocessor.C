@@ -93,6 +93,11 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
   
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Desktop/makegain_214.online");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1","$HOME/Desktop/makegain_214.online.1");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2","$HOME/Desktop/makegain_214.online.2");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","$HOME/Desktop/makegain_214.online.3");
+  
   // and GMS file
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
 
@@ -100,7 +105,8 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-  shuttle->AddInputRunType("MCH", "PEDESTAL_RUN"); 
+//  shuttle->AddInputRunType("MCH", "PEDESTAL_RUN"); 
+  shuttle->AddInputRunType("MCH","ELECTRONICS_CALIBRATION_RUN");
   // shuttle->AddInputRunType("MCH", "GMS"); 
   // PEDESTAL_RUN -> pedestals
   // ELECTRONICS_CALIBRATION_RUN -> gains
@@ -128,6 +134,8 @@ TMap* CreateDCSAliasMap()
   
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(kTRUE);
+  
+  return aliasMap;
   
   TRandom random(0);
   
@@ -169,6 +177,7 @@ TMap* CreateDCSAliasMap()
         AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
         valueSet->Add(dcsValue);
       }
+      if ( aliasName == "MchHvLvLeft/Chamber05Left/Slat07.actual.vMon" ) continue;
       aliasMap->Add(new TObjString(*alias),valueSet);
     }
   }

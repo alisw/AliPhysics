@@ -17,6 +17,7 @@
 class AliMUONPedestalSubprocessor;
 class AliMUONGMSSubprocessor;
 class AliMUONHVSubprocessor;
+class AliMUONGainSubprocessor;
 
 class TObjArray;
 
@@ -38,8 +39,9 @@ private:
   AliMUONPedestalSubprocessor* fPedestalSubprocessor; ///< Pedestal subprocessor
   AliMUONGMSSubprocessor*      fGMSSubprocessor;      ///< GMS subprocessor
   AliMUONHVSubprocessor*       fHVSubprocessor;       ///< HV subprocessor
-
-  ClassDef(AliMUONTrackerPreprocessor,1) // MUON Tracker Shuttle preprocessor
+  AliMUONGainSubprocessor* fGainSubprocessor; ///< Gain subprocessor
+  
+  ClassDef(AliMUONTrackerPreprocessor,2) // MUON Tracker Shuttle preprocessor
 };
 
 #endif
