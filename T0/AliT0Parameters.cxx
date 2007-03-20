@@ -31,7 +31,8 @@
 #include <AliCDBManager.h>        
 #include <AliCDBEntry.h>          
 #include <AliCDBStorage.h>  
-#include <TMath.h>        
+#include <TMath.h>
+#include <TSystem.h>
 #include <Riostream.h>
 
 AliT0CalibData* AliT0Parameters::fgCalibData = 0;
@@ -234,7 +235,8 @@ void AliT0Parameters::SetWalk(Int_t ipmt)
   string buffer;
   Bool_t down=false;
   
-  ifstream inFile("data/CFD-Amp.txt");
+  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-Amp.txt");
+  ifstream inFile(filename);
   //  if(!inFile) AliError(Form("Cannot open file %s !",filename));
   
   Int_t i=0, i1=0, i2=0;
@@ -249,7 +251,7 @@ void AliT0Parameters::SetWalk(Int_t ipmt)
   TMath::Sort(i, y, index,down);
   Int_t amp=0, iin=0, isum=0, sum=0;
   Int_t ind=0;
-  for (Int_t ii=0; ii<70000; ii++)
+  for (Int_t ii=0; ii<i; ii++)
     {
       ind=index[ii];
       if(y[ind] == amp)
