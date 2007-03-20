@@ -72,14 +72,14 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
   TFile f(fileName.Data());
   if ( ! f.IsOpen() ) {
     Master()->Log(Form("Cannot open file %s",fileName.Data()));
-    return 1;
+    return 0;
   }  
   
   // Get array with matrices
   TClonesArray* array = (TClonesArray*)f.Get(fgkMatrixArrayName);
   if ( ! array ) {
     Master()->Log(Form("TClonesArray not found in file %s",fileName.Data()));
-    return 1;
+    return 0;
   }  
   
   // Convert matrices into Alice alignment objects
@@ -112,15 +112,16 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
 //______________________________________________________________________________
 UInt_t AliMUONGMSSubprocessor::Process(TMap* /*dcsAliasMap*/)
 {
-/// Process GMS alignment files
+/// Process GMS alignment files.
+/// Return failure (0) in case procession of some file has failed
 
-  UInt_t result = 0;
+  UInt_t result = 1;
   TList* sources = Master()->GetFileSources(fgkSystem, fgkDataId);
   TIter next(sources);
   TObjString* o(0x0);
   while ( ( o = static_cast<TObjString*>(next()) ) ) {
     TString fileName(Master()->GetFile(fgkSystem, fgkDataId, o->GetName()));
-    result += ProcessFile(fileName);
+    result *= ProcessFile(fileName);
   }
   delete sources;
 
