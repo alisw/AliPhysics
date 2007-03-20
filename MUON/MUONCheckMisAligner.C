@@ -41,6 +41,8 @@
   --> Default behavior generates a "residual" misalignment using gaussian
   distributions. Uniform distributions can still be used, see 
   AliMUONGeometryAligner.
+  --> User can also generate module misalignments using SetModuleCartMisAlig
+  and SetModuleAngMisAlig
   Note : If the detection elements are allowed to be misaligned in all
   directions, this has consequences for the alignment algorithm, which 
   needs to know the number of free parameters. Eric only allowed 3 : 
@@ -66,6 +68,11 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
 				       angmisaligm,angmisaligw);
 
   // Generate mis alignment data
+  // Uncomment lines below if you would like to generate module misalignments
+//  misAligner.SetModuleCartMisAlig(0.0,0.1,0.0,0.1,0.0,0.1); // Full
+//   misAligner.SetModuleAngMisAlig(0.0,0.02,0.0,0.04,0.0,0.02); // Full
+//   misAligner.SetModuleCartMisAlig(0.0,0.003,0.0,0.003,0.0,0.003); // Res
+//   misAligner.SetModuleAngMisAlig(0.0,0.0006,0.0,0.001,0.0,0.0005); // Res
   AliMUONGeometryTransformer *newTransform = misAligner.MisAlign(transform,true); 
   newTransform->WriteTransformations("transform2.dat");
   newTransform->WriteMisAlignmentData("misalign.root");

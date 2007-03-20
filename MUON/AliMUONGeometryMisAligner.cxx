@@ -41,7 +41,7 @@
 /// Eric only allowed 3 :  x,y,theta_xy, but in principle z and the other 
 /// two angles are alignable as well.
 ///
-/// \authors Bruce Becker, Javier Castillo
+/// \author Bruce Becker, Javier Castillo
 
 #include "AliMUONGeometryMisAligner.h"
 #include "AliMUONGeometryTransformer.h"
@@ -66,17 +66,24 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartXMisAligM, Dou
   : TObject(),
     fUseUni(kFALSE),
     fUseGaus(kTRUE),
-    fCartXMisAligM(cartXMisAligM),
-    fCartXMisAligW(cartXMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-    fCartYMisAligM(cartYMisAligM),
-    fCartYMisAligW(cartYMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-    fAngMisAligM(angMisAligM),
-    fAngMisAligW(angMisAligW),
     fXYAngMisAligFactor(0.0),
     fZCartMisAligFactor(0.0),
     fDisplacementGenerator(0)
 {
   /// Standard constructor
+  for (Int_t i=0; i<6; i++){
+    for (Int_t j=0; j<2; j++){
+      fDetElemMisAlig[i][j] = 0.0;
+      fModuleMisAlig[i][j] = 0.0;
+    }
+  }
+  fDetElemMisAlig[0][0] = cartXMisAligM; 
+  fDetElemMisAlig[0][1] = cartXMisAligW; 
+  fDetElemMisAlig[1][0] = cartYMisAligM; 
+  fDetElemMisAlig[1][1] = cartYMisAligW; 
+  fDetElemMisAlig[5][0] = angMisAligM; 
+  fDetElemMisAlig[5][1] = angMisAligW;
+
   fDisplacementGenerator = new TRandom(0);
 }
 
@@ -85,17 +92,24 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAligM, Doub
   : TObject(), 
     fUseUni(kFALSE),
     fUseGaus(kTRUE),
-    fCartXMisAligM(cartMisAligM),
-    fCartXMisAligW(cartMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-    fCartYMisAligM(cartMisAligM),
-    fCartYMisAligW(cartMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-    fAngMisAligM(angMisAligM),
-    fAngMisAligW(angMisAligW),
     fXYAngMisAligFactor(0.0),
     fZCartMisAligFactor(0.0),
     fDisplacementGenerator(0)
 {
   /// Standard constructor
+  for (Int_t i=0; i<6; i++){
+    for (Int_t j=0; j<2; j++){
+      fDetElemMisAlig[i][j] = 0.0;
+      fModuleMisAlig[i][j] = 0.0;
+    }
+  }
+  fDetElemMisAlig[0][0] = cartMisAligM; 
+  fDetElemMisAlig[0][1] = cartMisAligW; 
+  fDetElemMisAlig[1][0] = cartMisAligM; 
+  fDetElemMisAlig[1][1] = cartMisAligW; 
+  fDetElemMisAlig[5][0] = angMisAligM; 
+  fDetElemMisAlig[5][1] = angMisAligW;
+
   fDisplacementGenerator = new TRandom(0);
 }
 
@@ -104,17 +118,21 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAlig, Doubl
   : TObject(), 
     fUseUni(kTRUE),
     fUseGaus(kFALSE),
-    fCartXMisAligM(0.),
-    fCartXMisAligW(cartMisAlig), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-    fCartYMisAligM(0.),
-    fCartYMisAligW(cartMisAlig), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-    fAngMisAligM(0.),
-    fAngMisAligW(angMisAlig),
     fXYAngMisAligFactor(0.0),
     fZCartMisAligFactor(0.0),
     fDisplacementGenerator(0)
 {
   /// Standard constructor
+  for (Int_t i=0; i<6; i++){
+    for (Int_t j=0; j<2; j++){
+      fDetElemMisAlig[i][j] = 0.0;
+      fModuleMisAlig[i][j] = 0.0;
+    }
+  }
+  fDetElemMisAlig[0][1] = cartMisAlig; 
+  fDetElemMisAlig[1][1] = cartMisAlig; 
+  fDetElemMisAlig[5][1] = angMisAlig;
+
   fDisplacementGenerator = new TRandom(0);
 }
 
@@ -123,17 +141,17 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner()
   : TObject(), 
     fUseUni(kTRUE),
     fUseGaus(kFALSE),
-    fCartXMisAligM(0.),
-    fCartXMisAligW(0.),
-    fCartYMisAligM(0.),
-    fCartYMisAligW(0.),
-    fAngMisAligM(0.),
-    fAngMisAligW(0.),
     fXYAngMisAligFactor(0.0),
     fZCartMisAligFactor(0.0),
     fDisplacementGenerator(0)
 {
   /// Default constructor
+  for (Int_t i=0; i<6; i++){
+    for (Int_t j=0; j<2; j++){
+      fDetElemMisAlig[i][j] = 0.0;
+      fModuleMisAlig[i][j] = 0.0;
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -150,8 +168,13 @@ AliMUONGeometryMisAligner::SetXYAngMisAligFactor(Double_t factor)
 {
   /// Set XY angular misalign factor 
 
-  if (TMath::Abs(factor) > 1.0 && factor > 0.)
+  if (TMath::Abs(factor) > 1.0 && factor > 0.){
     fXYAngMisAligFactor = factor;
+    fDetElemMisAlig[3][0] = fDetElemMisAlig[5][0]*factor; // These lines were 
+    fDetElemMisAlig[3][1] = fDetElemMisAlig[5][1]*factor; // added to keep
+    fDetElemMisAlig[4][0] = fDetElemMisAlig[5][0]*factor; // backward 
+    fDetElemMisAlig[4][1] = fDetElemMisAlig[5][1]*factor; // compatibility 
+  }
   else
     AliError(Form("Invalid XY angular misalign factor, %d", factor));
 }
@@ -160,14 +183,17 @@ AliMUONGeometryMisAligner::SetXYAngMisAligFactor(Double_t factor)
 void AliMUONGeometryMisAligner::SetZCartMisAligFactor(Double_t factor) 
 {
   /// Set XY angular misalign factor 
-  if (TMath::Abs(factor)<1.0 && factor>0.)
+  if (TMath::Abs(factor)<1.0 && factor>0.) {
     fZCartMisAligFactor = factor;
+    fDetElemMisAlig[2][0] = fDetElemMisAlig[0][0];        // These lines were added to 
+    fDetElemMisAlig[2][1] = fDetElemMisAlig[0][1]*factor; // keep backward compatibility
+  }
   else
     AliError(Form("Invalid Z cartesian misalign factor, %d", factor));
 }
 
 //_________________________________________________________________________
-void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3]) const
+void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3], const Double_t lParMisAlig[6][2]) const
 {
   /// Misalign using uniform distribution
   /**
@@ -179,17 +205,17 @@ void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t cartMisAlig[3], Double_t
     detection elements are on a support structure), while rotation of the x-y
     plane is more free.
   */
-  cartMisAlig[0] = fDisplacementGenerator->Uniform(-fCartXMisAligW+fCartXMisAligM, fCartXMisAligM+fCartXMisAligW);
-  cartMisAlig[1] = fDisplacementGenerator->Uniform(-fCartYMisAligW+fCartYMisAligM, fCartYMisAligM+fCartYMisAligW);
-  cartMisAlig[2] = fDisplacementGenerator->Uniform(-fZCartMisAligFactor*(fCartXMisAligW+fCartXMisAligM), fZCartMisAligFactor*(fCartXMisAligM+fCartXMisAligW));  
+  cartMisAlig[0] = fDisplacementGenerator->Uniform(-lParMisAlig[0][1]+lParMisAlig[0][0], lParMisAlig[0][0]+lParMisAlig[0][1]);
+  cartMisAlig[1] = fDisplacementGenerator->Uniform(-lParMisAlig[1][1]+lParMisAlig[1][0], lParMisAlig[1][0]+lParMisAlig[1][1]);
+  cartMisAlig[2] = fDisplacementGenerator->Uniform(-lParMisAlig[2][1]+lParMisAlig[2][0], lParMisAlig[2][0]+lParMisAlig[2][1]);  
  
-  angMisAlig[0] = fDisplacementGenerator->Uniform(-fXYAngMisAligFactor*(fAngMisAligW+fAngMisAligM), fXYAngMisAligFactor*(fAngMisAligM+fAngMisAligW));
-  angMisAlig[1] = fDisplacementGenerator->Uniform(-fXYAngMisAligFactor*(fAngMisAligW+fAngMisAligM), fXYAngMisAligFactor*(fAngMisAligM+fAngMisAligW));
-  angMisAlig[2] = fDisplacementGenerator->Uniform(-fAngMisAligW+fAngMisAligM, fAngMisAligM+fAngMisAligW);	// degrees
+  angMisAlig[0] = fDisplacementGenerator->Uniform(-lParMisAlig[3][1]+lParMisAlig[3][0], lParMisAlig[3][0]+lParMisAlig[3][1]);
+  angMisAlig[1] = fDisplacementGenerator->Uniform(-lParMisAlig[4][1]+lParMisAlig[4][0], lParMisAlig[4][0]+lParMisAlig[4][1]);
+  angMisAlig[2] = fDisplacementGenerator->Uniform(-lParMisAlig[5][1]+lParMisAlig[5][0], lParMisAlig[5][0]+lParMisAlig[5][1]);	// degrees
 }
 
 //_________________________________________________________________________
-void AliMUONGeometryMisAligner::GetGausMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3]) const
+void AliMUONGeometryMisAligner::GetGausMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3], const Double_t lParMisAlig[6][2]) const
 {
   /// Misalign using gaussian distribution
   /**
@@ -201,76 +227,123 @@ void AliMUONGeometryMisAligner::GetGausMisAlign(Double_t cartMisAlig[3], Double_
     detection elements are on a support structure), while rotation of the x-y
     plane is more free.
   */
-  cartMisAlig[0] = fDisplacementGenerator->Gaus(fCartXMisAligM, fCartXMisAligW);
-  cartMisAlig[1] = fDisplacementGenerator->Gaus(fCartYMisAligM, fCartYMisAligW);
-  cartMisAlig[2] = fDisplacementGenerator->Gaus(fCartXMisAligM, fZCartMisAligFactor*fCartXMisAligW);
+  cartMisAlig[0] = fDisplacementGenerator->Gaus(lParMisAlig[0][0], lParMisAlig[0][1]);
+  cartMisAlig[1] = fDisplacementGenerator->Gaus(lParMisAlig[1][0], lParMisAlig[1][1]);
+  cartMisAlig[2] = fDisplacementGenerator->Gaus(lParMisAlig[2][0], lParMisAlig[2][1]);
  
-  angMisAlig[0] = fDisplacementGenerator->Gaus(fAngMisAligM, fXYAngMisAligFactor*fAngMisAligW);
-  angMisAlig[1] = fDisplacementGenerator->Gaus(fAngMisAligM, fXYAngMisAligFactor*fAngMisAligW);
-  angMisAlig[2] = fDisplacementGenerator->Gaus(fAngMisAligM, fAngMisAligW);	// degrees
+  angMisAlig[0] = fDisplacementGenerator->Gaus(lParMisAlig[3][0], lParMisAlig[3][1]);
+  angMisAlig[1] = fDisplacementGenerator->Gaus(lParMisAlig[4][0], lParMisAlig[4][1]);
+  angMisAlig[2] = fDisplacementGenerator->Gaus(lParMisAlig[5][0], lParMisAlig[5][1]);	// degrees
 }
 
 //_________________________________________________________________________
-TGeoCombiTrans AliMUONGeometryMisAligner::MisAlign(const TGeoCombiTrans & transform) const
+TGeoCombiTrans AliMUONGeometryMisAligner::MisAlignDetElem(const TGeoCombiTrans & transform) const
 {
-  /// Misalign given transformation and return the misaligned transformation
+  /// Misalign given transformation and return the misaligned transformation. 
+  /// Use misalignment parameters for detection elements.
+  /// Note that applied misalignments are small deltas with respect to the detection 
+  /// element own ideal local reference frame. Thus deltaTransf represents 
+  /// the transformation to go from the misaligned d.e. local coordinates to the 
+  /// ideal d.e. local coordinates. 
+  /// Also note that this -is not- what is in the ALICE alignment framework known 
+  /// as local nor global (see AliMUONGeometryMisAligner::MisAlign) 
   
   Double_t cartMisAlig[3] = {0,0,0};
   Double_t angMisAlig[3] = {0,0,0};
-  const Double_t *trans = transform.GetTranslation();
-  TGeoRotation *rot;
-  // check if the rotation we obtain is not NULL
-  if (transform.GetRotation())
-    {
-      rot = transform.GetRotation();
-    }
-  else
-    {
-      rot = new TGeoRotation("rot");
-    }			// default constructor.
 
   if (fUseUni) { 
-    GetUniMisAlign(cartMisAlig,angMisAlig);
+    GetUniMisAlign(cartMisAlig,angMisAlig,fDetElemMisAlig);
   }
   else { 
     if (!fUseGaus) {
       AliWarning("Neither uniform nor gausian distribution is set! Will use gausian...");
     } 
-    GetGausMisAlign(cartMisAlig,angMisAlig);
+    GetGausMisAlign(cartMisAlig,angMisAlig,fDetElemMisAlig);
   }
 
-  TGeoTranslation newTrans(cartMisAlig[0] + trans[0], cartMisAlig[1] + trans[1], cartMisAlig[2] + trans[2]);
-  
-  AliInfo(Form("Rotated by %f about Z axis.", angMisAlig[2]));
-  rot->RotateX(angMisAlig[0]);
-  rot->RotateY(angMisAlig[1]);
-  rot->RotateZ(angMisAlig[2]);
+  TGeoTranslation deltaTrans(cartMisAlig[0], cartMisAlig[1], cartMisAlig[2]);
+  TGeoRotation deltaRot;
+  deltaRot.RotateX(angMisAlig[0]);
+  deltaRot.RotateY(angMisAlig[1]);
+  deltaRot.RotateZ(angMisAlig[2]);
 
-  return TGeoCombiTrans(newTrans, *rot);
+  TGeoCombiTrans deltaTransf(deltaTrans,deltaRot);
+  TGeoHMatrix newTransfMat = transform * deltaTransf;
+    
+  AliInfo(Form("Rotated Module by %f about Z axis.", angMisAlig[2]));
+
+  return TGeoCombiTrans(newTransfMat);
+}
+
+//_________________________________________________________________________
+TGeoCombiTrans AliMUONGeometryMisAligner::MisAlignModule(const TGeoCombiTrans & transform) const
+{
+  /// Misalign given transformation and return the misaligned transformation. 
+  /// Use misalignment parameters for modules.
+  /// Note that applied misalignments are small deltas with respect to the module 
+  /// own ideal local reference frame. Thus deltaTransf represents 
+  /// the transformation to go from the misaligned module local coordinates to the 
+  /// ideal module local coordinates. 
+  /// Also note that this -is not- what is in the ALICE alignment framework known 
+  /// as local nor global (see AliMUONGeometryMisAligner::MisAlign) 
+  
+  Double_t cartMisAlig[3] = {0,0,0};
+  Double_t angMisAlig[3] = {0,0,0};
+
+  if (fUseUni) { 
+    GetUniMisAlign(cartMisAlig,angMisAlig,fModuleMisAlig);
+  }
+  else { 
+    if (!fUseGaus) {
+      AliWarning("Neither uniform nor gausian distribution is set! Will use gausian...");
+    } 
+    GetGausMisAlign(cartMisAlig,angMisAlig,fModuleMisAlig);
+  }
+
+  TGeoTranslation deltaTrans(cartMisAlig[0], cartMisAlig[1], cartMisAlig[2]);
+  TGeoRotation deltaRot;
+  deltaRot.RotateX(angMisAlig[0]);
+  deltaRot.RotateY(angMisAlig[1]);
+  deltaRot.RotateZ(angMisAlig[2]);
+
+  TGeoCombiTrans deltaTransf(deltaTrans,deltaRot);
+  TGeoHMatrix newTransfMat = transform * deltaTransf;
+
+  AliInfo(Form("Rotated Module by %f about Z axis.", angMisAlig[2]));
+
+  return TGeoCombiTrans(newTransfMat);
 }
 
 //______________________________________________________________________
 AliMUONGeometryTransformer *
 AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
-				 transformer, Bool_t verbose)
+				    transformer, Bool_t verbose)
 {
-  /// Takes the internal geometry module transformers, copies them
-  /// and gets the Detection Elements from them.
+  /// Takes the internal geometry module transformers, copies them to
+  /// new geometry module transformers. 
+  /// Calculates  module misalignment parameters and applies these
+  /// to the new module transformer.
+  /// Calculates the module misalignment delta transformation in the 
+  /// Alice Alignment Framework newTransf = delta * oldTransf.
+  /// Add a module misalignment to the new geometry transformer.
+  /// Gets the Detection Elements from the module transformer. 
   /// Calculates misalignment parameters and applies these
-  /// to the local transform of the Detection Element
-  /// Obtains the global transform by multiplying the module transformer
-  /// transformation with the local transformation 
-  /// Applies the global transform to a new detection element
-  /// Adds the new detection element to a new module transformer
-  /// Adds the new module transformer to a new geometry transformer
-  /// Returns the new geometry transformer
+  /// to the local transformation of the Detection Element.
+  /// Obtains the new global transformation by multiplying the new 
+  /// module transformer transformation with the new local transformation. 
+  /// Applies the new global transform to a new detection element.
+  /// Adds the new detection element to a new module transformer.
+  /// Calculates the d.e. misalignment delta transformation in the 
+  /// Alice Alignment Framework (newGlobalTransf = delta * oldGlobalTransf).
+  /// Add a d.e. misalignment to the new geometry transformer.
+  /// Adds the new module transformer to a new geometry transformer.
+  /// Returns the new geometry transformer.
 
 
   AliMUONGeometryTransformer *newGeometryTransformer =
     new AliMUONGeometryTransformer(kTRUE);
   for (Int_t iMt = 0; iMt < transformer->GetNofModuleTransformers(); iMt++)
     {				// module transformers
-      
       const AliMUONGeometryModuleTransformer *kModuleTransformer =
 	transformer->GetModuleTransformer(iMt, true);
       
@@ -280,22 +353,31 @@ AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
 
       TGeoCombiTrans moduleTransform =
 	TGeoCombiTrans(*kModuleTransformer->GetTransformation());
-      TGeoCombiTrans *newModuleTransform = new TGeoCombiTrans(moduleTransform);	
-              // same module transform as the previous one 
-	      // no mis align object created
-      newModuleTransformer->SetTransformation(moduleTransform);
+      // New module transformation
+      TGeoCombiTrans newModuleTransform = MisAlignModule(moduleTransform);
+      newModuleTransformer->SetTransformation(newModuleTransform);
+
+      // Get delta transformation: 
+      // Tdelta = Tnew * Told.inverse
+      TGeoHMatrix deltaModuleTransform = 
+	AliMUONGeometryBuilder::Multiply(
+	  newModuleTransform, 
+	  kModuleTransformer->GetTransformation()->Inverse());
+
+      // Create module mis alignment matrix
+      newGeometryTransformer
+	->AddMisAlignModule(kModuleTransformer->GetModuleId(), deltaModuleTransform);
 
       AliMpExMap *detElements = kModuleTransformer->GetDetElementStore();
 
       if (verbose)
-	AliInfo(Form
-		("%i DEs in old GeometryStore  %i",
-		 detElements->GetSize(), iMt));
+	AliInfo(Form("%i DEs in old GeometryStore  %i",detElements->GetSize(), iMt));
 
       for (Int_t iDe = 0; iDe < detElements->GetSize(); iDe++)
 	{			// detection elements.
 	  AliMUONGeometryDetElement *detElement =
 	    (AliMUONGeometryDetElement *) detElements->GetObject(iDe);
+
 	  if (!detElement)
 	    AliFatal("Detection element not found.");
 
@@ -307,29 +389,37 @@ AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
 	  // local transformation of this detection element.
           TGeoCombiTrans localTransform
 	    = TGeoCombiTrans(*detElement->GetLocalTransformation());
-	  TGeoCombiTrans newLocalTransform = MisAlign(localTransform);
-          newDetElement->SetLocalTransformation(newLocalTransform);					  
+	  TGeoCombiTrans newLocalTransform = MisAlignDetElem(localTransform);
+          newDetElement->SetLocalTransformation(newLocalTransform);
+
 
 	  // global transformation
 	  TGeoHMatrix newGlobalTransform =
-	    AliMUONGeometryBuilder::Multiply(*newModuleTransform,
-	                                      newLocalTransform);
+	    AliMUONGeometryBuilder::Multiply(newModuleTransform,
+					     newLocalTransform);
 	  newDetElement->SetGlobalTransformation(newGlobalTransform);
 	  
 	  // add this det element to module
 	  newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(),
 							  newDetElement);
-          // Get delta transformation: 
+
+	  // In the Alice Alignment Framework misalignment objects store
+	  // global delta transformation
+	  // Get detection "intermediate" global transformation
+	  TGeoHMatrix newOldGlobalTransform = newModuleTransform * localTransform;
+          // Get detection element global delta transformation: 
 	  // Tdelta = Tnew * Told.inverse
-	  TGeoHMatrix  deltaTransform
+	  TGeoHMatrix  deltaGlobalTransform
 	    = AliMUONGeometryBuilder::Multiply(
 	        newGlobalTransform, 
-		detElement->GetGlobalTransformation()->Inverse());
+		newOldGlobalTransform.Inverse());
 	  
 	  // Create mis alignment matrix
 	  newGeometryTransformer
-	    ->AddMisAlignDetElement(detElement->GetId(), deltaTransform);
+	    ->AddMisAlignDetElement(detElement->GetId(), deltaGlobalTransform);
 	}
+
+      
       if (verbose)
 	AliInfo(Form("Added module transformer %i to the transformer", iMt));
       newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
