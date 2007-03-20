@@ -24,8 +24,6 @@ gAlice->Init("$ALICE_ROOT/MUON/Config.C");
 .q
 EOF
 
-cp -r $ALICE_ROOT/MUON/Calib FullMisAlignCDB/MUON/
-
 echo "Running simulation  ..."
 
 aliroot -b  >& testSim.out << EOF 
@@ -33,7 +31,7 @@ aliroot -b  >& testSim.out << EOF
 // (generated via MUONGenerateGeometryData.C macro)
 AliCDBManager* man = AliCDBManager::Instance();
 man->SetDefaultStorage("local://$ALICE_ROOT");
-man->SetSpecificStorage("MUON","local://FullMisAlignCDB");
+man->SetSpecificStorage("MUON/Align/Data","local://FullMisAlignCDB");
 gRandom->SetSeed($SEED);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetMakeTrigger("MUON");
@@ -46,9 +44,11 @@ echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF
 gRandom->SetSeed($SEED);
+AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root");
 MuonRec.SetInput("$FULLPATH/");
-MuonRec.SetRunTracking("");
+MuonRec.SetRunTracking("MUON");
 MuonRec.SetRunVertexFinder(kFALSE);
 MuonRec.SetRunLocalReconstruction("MUON");
 MuonRec.SetFillESD("MUON");
