@@ -28,7 +28,7 @@
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParam1I.h"
-#include "AliMUONCalibParam2F.h"
+#include "AliMUONCalibParamNF.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHVNamer.h"
 #include "AliMUONObjectPair.h"
@@ -53,6 +53,7 @@
 #include "TRandom.h"
 #include "TStopwatch.h"
 #include "TSystem.h"
+#include "TROOT.h"
 #include <map>
 
 #endif
@@ -204,6 +205,11 @@ void plot(const AliMUONV2DStore& store, const char* name, Int_t nbins)
         ++n;
         ++nPerStation[station];
         Float_t x = value->ValueAsFloat(manuChannel,0);
+        if ( x>1E4 ) 
+        {
+          cout << Form("DE %d Manu %d Ch %d x=%e",detElemId,manuId,manuChannel,x)
+          << endl;
+        }
         h0->Fill(x);
         if (h1)
         {
@@ -326,7 +332,7 @@ Int_t makePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValues)
   while ( ( p = (AliMpIntPair*)next() ) )
   {
     ++nmanus;
-    AliMUONVCalibParam* ped = new AliMUONCalibParam2F(nChannels,AliMUONVCalibParam::InvalidFloatValue());
+    AliMUONVCalibParam* ped = new AliMUONCalibParamNF(2,nChannels,AliMUONVCalibParam::InvalidFloatValue());
     
     Int_t detElemId = p->GetFirst();
         
@@ -402,7 +408,7 @@ Int_t makeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues)
   while ( ( p = (AliMpIntPair*)next() ) )
   {
     ++nmanus;
-    AliMUONVCalibParam* gain = new AliMUONCalibParam2F(nChannels,AliMUONVCalibParam::InvalidFloatValue());
+    AliMUONVCalibParam* gain = new AliMUONCalibParamNF(2,nChannels,AliMUONVCalibParam::InvalidFloatValue());
 
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
@@ -597,6 +603,86 @@ void writeToCDB(const char* cdbpath, const char* calibpath, TObject* object,
 }
 
 //_____________________________________________________________________________
+Int_t makeNeighbourStore(AliMUONV2DStore& neighbourStore)
+{
+  /// Fill the neighbours store with, for each channel, a TObjArray of its
+  /// neighbouring pads (including itself)
+  
+  TStopwatch timer;
+  
+  timer.Start(kTRUE);
+  
+  TList* list = AliMpManuList::ManuList();
+  TIter next(list);
+  
+  AliMpIntPair* p;
+  
+  Int_t nchannels(0);
+  
+  TObjArray tmp;
+  
+  while ( ( p = (AliMpIntPair*)next() ) )
+  {
+    TObjArray* neighbours = new TObjArray(64);
+    neighbours->SetOwner(kTRUE);
+
+    Int_t detElemId = p->GetFirst();
+    Int_t manuId = p->GetSecond();
+    
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
+    
+    for ( Int_t manuChannel = 0; manuChannel < 64; ++manuChannel )
+    {
+      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
+      AliMUONVCalibParam* calibParam(0x0);
+      
+      if (pad.IsValid()) 
+      {
+        ++nchannels;
+
+        seg->GetNeighbours(pad,tmp,true,true);
+        Int_t nofPadNeighbours = tmp.GetEntriesFast();
+            
+        calibParam = new AliMUONCalibParam1I(nofPadNeighbours);
+        for ( Int_t i = 0; i < nofPadNeighbours; ++i )
+        {
+          AliMpPad* pad = static_cast<AliMpPad*>(tmp.At(i));
+          Int_t x = pad->GetLocation().GetFirst() * 1000000 + pad->GetLocation().GetSecond();
+          calibParam->SetValueAsInt(i,0,x);
+        }
+      }
+      neighbours->AddAt(calibParam,manuChannel);
+    }
+
+    Bool_t ok = neighbourStore.Set(detElemId,manuId,neighbours,kFALSE);
+    if (!ok)
+    {
+      cout << "Could not set DetElemId=" << detElemId << " manuId="
+      << manuId << endl;
+      return -1;
+    }
+  }
+  
+  timer.Print();
+  
+  return nchannels;
+}
+
+//_____________________________________________________________________________
+void writeNeighbours(const char* cdbpath, Int_t startRun, Int_t endRun)
+{
+  AliMUONV2DStore* neighbours = new AliMUON2DMap(kTRUE);
+  Int_t ngenerated = makeNeighbourStore(*neighbours);
+  cout << "Ngenerated = " << ngenerated << endl;
+  if (ngenerated>0)
+  {
+    writeToCDB(cdbpath,"MUON/Calib/Neighbours",neighbours,startRun,endRun,true);
+  }
+  delete neighbours;
+}
+
+//_____________________________________________________________________________
 void writeHV(const char* cdbpath, Bool_t defaultValues,
              Int_t startRun, Int_t endRun)
 {
@@ -608,9 +694,10 @@ void writeHV(const char* cdbpath, Bool_t defaultValues,
   TMap* hvStore = new TMap;
   Int_t ngenerated = makeHVStore(*hvStore,defaultValues);
   cout << "Ngenerated = " << ngenerated << endl;
-  
-  writeToCDB(cdbpath,"MUON/Calib/HV",hvStore,startRun,endRun,defaultValues);
-  
+  if (ngenerated>0)
+  {
+    writeToCDB(cdbpath,"MUON/Calib/HV",hvStore,startRun,endRun,defaultValues);
+  }
   delete hvStore;
 }
 
@@ -677,7 +764,7 @@ void validate2F(const AliMUONV2DStore& store)
 {
   AliMUON2DStoreValidator validator;
   
-  TObjArray* a = validator.Validate(store,AliMUONCalibParam2F::InvalidFloatValue());
+  TObjArray* a = validator.Validate(store,AliMUONVCalibParam::InvalidFloatValue());
   
   if (a) a->Print();
   

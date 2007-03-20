@@ -33,6 +33,8 @@ void testMakeStores(Int_t readLoop=10);
 void writeToCDB(const char* cdbpath, const char* calibpath, TObject* object, 
                 Int_t startRun, Int_t endRun, Bool_t defaultValues);
 
+void writeNeighbours(const char* cdbpath, Int_t startRun=0, Int_t endRun=99999999);
+
 void writeHV(const char* cdbpath, Bool_t defaultValues, 
              Int_t startRun, Int_t endRun);
 
