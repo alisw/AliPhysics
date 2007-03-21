@@ -536,7 +536,6 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *
   Int_t    row        = padplane->GetPadRowNumber(pos[2]);
   Double_t offsetz    = padplane->GetPadRowOffset(row,pos[2]);
   Double_t offsettilt = padplane->GetTiltOffset(offsetz);
-  //Int_t    col        = padplane->GetPadColNumber(pos[1] + offsettilt,offsetz);
   Int_t    col        = padplane->GetPadColNumber(pos[1]+offsettilt);
   
   // See if we are not near a masked pad
