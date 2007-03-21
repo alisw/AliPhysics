@@ -12,6 +12,7 @@
 //  Author Christian Finck
 
 #include <TObject.h>
+#include <TArrayI.h>
 
 class AliMUONDDLTracker;
 class AliMUONBusStruct;
@@ -49,6 +50,13 @@ class AliMUONPayloadTracker: public TObject {
     /// Return pointer for buspatch structure
     AliMUONDDLTracker*      GetDDLTracker()   const {return fDDLTracker;}
 
+    /// Get number of parity errors
+    Int_t   GetParityErrors() const {return fParityErrBus.GetSize();} // for online
+    /// Get parity errors in buspatch
+    TArrayI GetParityErrBus() const {return fParityErrBus;} // for MOOD
+    /// Get number of glitch errors
+    Int_t   GetGlitchErrors() const {return fGlitchErrors;}
+
   private :
     /// Not implemented
     AliMUONPayloadTracker(const AliMUONPayloadTracker& stream);
@@ -56,6 +64,7 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONPayloadTracker& operator = (const AliMUONPayloadTracker& stream);
 
     Bool_t CheckDataParity();
+    void   AddParityErrBus(Int_t buspatch);
 
     Int_t  fBusPatchId;   ///< entry of buspatch structure
     Int_t  fDspId;        ///< entry of Dsp header
@@ -71,7 +80,10 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONBlockHeader*     fBlockHeader;     //!< pointer for block structure 
     AliMUONDspHeader*       fDspHeader;       //!< pointer for dsp structure 
 
-    ClassDef(AliMUONPayloadTracker, 1)    // base class for reading MUON raw digits
+    TArrayI fParityErrBus;                    //!< list of buspatch with at least one parity errors;
+    Int_t   fGlitchErrors;                    //!< number of glitch errors;
+
+    ClassDef(AliMUONPayloadTracker, 2)    // base class for reading MUON raw digits
 };
 
 #endif

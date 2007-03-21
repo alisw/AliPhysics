@@ -100,6 +100,9 @@ public:
 
    void ResizeData(Int_t size = 0);
 
+   void Print(Option_t* opt) const;
+
+
    ClassDef(AliMUONBusStruct,3)  // MUON DDL Tracker
 };
 #endif

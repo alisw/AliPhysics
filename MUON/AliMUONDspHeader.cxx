@@ -17,6 +17,7 @@
  
 #include "AliMUONDspHeader.h"
 #include "AliMUONBusStruct.h"
+#include <Riostream.h>
 
 /// \class AliMUONDspHeader
 /// DSP structure for tracker raw data.
@@ -138,4 +139,23 @@ void AliMUONDspHeader::Clear(Option_t* )
   ///
   fBusPatchArray->Clear("C");
  
+}
+
+//___________________________________________
+void AliMUONDspHeader::Print(Option_t* /*opt*/) const
+{
+  /// print out
+
+  cout << "FRT info"        << endl;
+  cout << "DataKey: "       << fDataKey << endl;
+  cout << "TotalLength: "   << fTotalLength << endl;
+  cout << "Length : "       << fLength << endl;
+  cout << "DspId: "         << fDspId << endl;
+  cout << "BlkL1ATrigger: " << fBlkL1ATrigger << endl;
+  cout << "MiniEventId: "   << fMiniEventId << endl;
+  cout << "L1ATrigger: "    << fL1ATrigger << endl;
+  cout << "L1RTrigger: "    << fL1RTrigger << endl;
+  cout << "PaddingWord: "   << fPaddingWord << endl;
+  cout << "ErrorWord: "     << fErrorWord << endl;
+
 }

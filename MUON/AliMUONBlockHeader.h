@@ -87,6 +87,9 @@ public:
    // clear
    void Clear(Option_t* opt);
 
+   // print out
+   void Print(Option_t* /*opt*/) const;
+
  private:
 
    // block header

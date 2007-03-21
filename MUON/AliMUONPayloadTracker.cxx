@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 ///
 /// \class AliMUONPayloadTracker
 /// Decodes rawdata from buffer and stores in TClonesArray.
@@ -23,17 +22,12 @@
 
 #include "AliMUONPayloadTracker.h"
 
-#include "AliRawReader.h"
-#include "AliRawDataHeader.h"
-
-#ifndef DATE_SYS
-#include "AliLog.h"
-#endif
-
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
 #include "AliMUONBusStruct.h"
 #include "AliMUONDDLTracker.h"
+
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPayloadTracker)
@@ -51,7 +45,9 @@ AliMUONPayloadTracker::AliMUONPayloadTracker()
     fDDLTracker(new AliMUONDDLTracker()),
     fBusStruct(new AliMUONBusStruct()),
     fBlockHeader(new AliMUONBlockHeader()),
-    fDspHeader(new AliMUONDspHeader())
+    fDspHeader(new AliMUONDspHeader()),
+    fParityErrBus(),
+    fGlitchErrors(0)
 {
   ///
   /// create an object to decode MUON payload
@@ -126,14 +122,23 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
       memcpy(fDspHeader->GetHeader(),&buffer[index], kDspHeaderSize*4);
 
       totalDspSize = fDspHeader->GetTotalLength();
+
+      if (fDspHeader->GetErrorWord()) {
+	fDspHeader->Print("");
+	if (fDspHeader->GetErrorWord() == (0x000000B1 |  fBlockHeader->GetDspId())){
+	  // an event with a glitch in the readout  has been detected
+	  // it means that somewhere a 1 byte word has been randomly inserted
+	  // all the readout sequence is shifted  untill the next event 
+
+	  AliWarning(Form("Glitch in data detected, skipping event ")); 
+
+	  fGlitchErrors++;
+	  return kFALSE ; 
+	}	
+      }
+      
       indexDsp = index;
       index += kDspHeaderSize;
-
-//       if (fDspHeader->GetPaddingWord() != fDspHeader->GetDefaultPaddingWord()) {
-// 	// copy the field of Padding word into ErrorWord field
-// 	fDspHeader->SetErrorWord(fDspHeader->GetPaddingWord());
-// 	index--;
-//       }
 
       // copy in TClonesArray
       fDDLTracker->AddDspHeader(*fDspHeader, iBlock);
@@ -167,7 +172,8 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 	    fBusStruct->SetDspId(iDsp);
 
 	    // check parity
-	    CheckDataParity();
+	    if(!CheckDataParity())
+		AddParityErrBus(fBusStruct->GetBusPatchId());
 
 	    // copy in TClonesArray
 	    fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
@@ -188,12 +194,9 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
       if (fDspHeader->GetPaddingWord() == 1) {
 	if (buffer[index++] != fDspHeader->GetDefaultPaddingWord())
 
-#ifndef DATE_SYS
-	  AliWarning(Form("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", 
+	    AliError(Form("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", 
 			  iBlock, iDsp, iBusPatch));
-#else
-	printf("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", iBlock, iDsp, iBusPatch);
-#endif
+
       }
 
       index = indexDsp + totalDspSize;
@@ -222,6 +225,9 @@ void AliMUONPayloadTracker::ResetDDL()
   /// after each DDL
   ///
   fDDLTracker->GetBlkHeaderArray()->Delete();
+  fGlitchErrors = 0;
+  fParityErrBus.Reset();
+
 }
 
 //______________________________________________________
@@ -254,17 +260,21 @@ Bool_t AliMUONPayloadTracker::CheckDataParity()
 
     // Check
     if (parity != fBusStruct->GetParity(idata)) {
-#ifndef DATE_SYS
+
       AliWarning(Form("Parity error in word %d for manuId %d and channel %d\n", 
 		      idata, fBusStruct->GetManuId(idata), fBusStruct->GetChannelId(idata)));
-#else
-      printf("Parity error in word %d for manuId %d and channel %d\n", 
-	     idata, fBusStruct->GetManuId(idata), fBusStruct->GetChannelId(idata));
-#endif
 
       return kFALSE;
 		     
     }
   }
   return kTRUE;
+}
+
+//______________________________________________________
+void AliMUONPayloadTracker::AddParityErrBus(Int_t buspatch)
+{
+// adding bus with at least on parity error
+    fParityErrBus.Set(fParityErrBus.GetSize() + 1);
+    fParityErrBus.AddAt(buspatch, fParityErrBus.GetSize() - 1);
 }

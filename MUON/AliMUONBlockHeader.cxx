@@ -18,6 +18,8 @@
 #include "AliMUONBlockHeader.h"
 #include "AliMUONDspHeader.h"
 
+#include <Riostream.h>
+
 /// \class AliMUONBlockHeader
 /// Block structure for tracker raw data
 /// each DDL contains two blocks,
@@ -96,6 +98,7 @@ AliMUONBlockHeader::operator=(const AliMUONBlockHeader &event)
   ///
   if (this == &event) return *this;
 
+  fDataKey     = event.fDataKey;
   fTotalLength = event.fTotalLength;
   fLength      = event.fLength;
   fDspId       = event.fDspId;
@@ -133,4 +136,22 @@ void AliMUONBlockHeader::Clear(Option_t* )
   ///
   fDspHeaderArray->Clear("C");
  
+}
+
+//___________________________________________
+void AliMUONBlockHeader::Print(Option_t* /*opt*/) const
+{
+  /// print out
+
+  cout << "CRT info"        << endl;
+  cout << "DataKey: "       << fDataKey << endl;
+  cout << "TotalLength: "   << fTotalLength << endl;
+  cout << "Length: "        << fLength << endl;
+  cout << "DspId: "         << fDspId << endl;
+ 
+  cout << "L0Trigger: "     << fL0Trigger << endl;
+  cout << "MiniEventId: "   << fMiniEventId<< endl; 
+  cout << "EventId1: "      << fEventId1 << endl;
+  cout << "EventId2: "      << fEventId2 << endl;;
+
 }

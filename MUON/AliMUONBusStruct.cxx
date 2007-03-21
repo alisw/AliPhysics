@@ -14,10 +14,11 @@
  **************************************************************************/
 
 /* $Id$ */
- 
+
 #include "AliMUONBusStruct.h"
 #include "AliLog.h"
-
+#include <Riostream.h>
+#include <string.h>
 
 /// \class AliMUONBusStruct
 /// Bus patch structure for tracker raw data
@@ -94,7 +95,6 @@ void AliMUONBusStruct::ResizeData(Int_t size)
   /// In case of resizing the vector
   /// the most simplest way to do it
   ///
-  AliInfo("reallocating");
   if (size == 0)
     fBufSize *= 2;
   else
@@ -166,7 +166,6 @@ void AliMUONBusStruct::Clear(Option_t *)
   /// clear
   /// delete the allocated memory 
   ///
-  AliInfo("here");
   delete[] fData;
 }
 //___________________________________________
@@ -228,3 +227,23 @@ UShort_t AliMUONBusStruct::GetCharge(Int_t n) const
   AliError("Index outside limits."); 
   return 0; 
 }
+
+//___________________________________________
+void AliMUONBusStruct::Print(Option_t* opt) const
+{
+  /// print out
+
+  cout << "Bus patch info" << endl;
+  cout << "DataKey: "      << fDataKey << endl;
+  cout << "fTotalLength: " << fTotalLength << endl;
+  cout << "fLength: "      << fLength << endl;
+  cout << "fBusPatchId: "  << fBusPatchId << endl;
+  cout << "fBufSize: "     << fBufSize << endl;
+
+  if (strstr(opt, "all")) {
+  for (Int_t i = 0; i <fLength; ++i)
+      cout << "Data["<< i << "] = " << fData[i] << endl;
+  }
+}
+
+
