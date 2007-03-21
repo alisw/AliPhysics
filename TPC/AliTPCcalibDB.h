@@ -25,12 +25,12 @@ class AliTPCcalibDB : public TObject
   static void Terminate();
   void   SetRun(Long64_t run);   
   //
-  AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
-  AliTPCCalPad* GetPadTime0() {return fPadTime0;}
-  AliTPCCalPad* GetPadPRFWidth() {return fPadPRFWidth;}
-  AliTPCCalPad* GetPadNoise() {return fPadNoise;}
-  AliTPCCalPad* GetPedestals() {return fPedestals;}
-  AliTPCParam*  GetParameters(){return fParam;}
+  AliTPCCalPad* GetPadGainFactor();
+  AliTPCCalPad* GetPadTime0();
+  AliTPCCalPad* GetPadPRFWidth();
+  AliTPCCalPad* GetPadNoise();
+  AliTPCCalPad* GetPedestals();
+  AliTPCParam*  GetParameters();
   //
 protected:
   void         Update();  //update entries

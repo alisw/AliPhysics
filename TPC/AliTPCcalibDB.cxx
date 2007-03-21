@@ -199,3 +199,54 @@ void AliTPCcalibDB::Update(){
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
   
 }
+
+
+AliTPCCalPad*  AliTPCcalibDB::GetPadGainFactor() {
+  //
+  // GetPadGainFactor  
+  //
+  if (!fPadGainFactor) AliFatal("Pad gain calibration entry not available\n");  
+  return fPadGainFactor;
+}
+AliTPCCalPad*  AliTPCcalibDB::GetPadTime0() {
+  //
+  //   GetPadTime0
+  //
+  if (!fPadTime0) AliFatal("Time 0 calibration entry not available\n");  
+  return fPadTime0;
+}
+
+AliTPCCalPad*  AliTPCcalibDB::GetPadPRFWidth() {
+  //
+  // GetPRF width  
+  //
+  if (!fPadPRFWidth) AliFatal("PRF calibration entry not available\n");    
+  return fPadPRFWidth;
+}
+
+AliTPCCalPad*  AliTPCcalibDB::GetPadNoise() {
+  //
+  // GetPadNoise  
+  //
+  if (!fPadNoise) AliFatal("Pad noise calibration entry not available\n");  
+  return fPadNoise;
+}
+
+AliTPCCalPad*  AliTPCcalibDB::GetPedestals() {
+  //
+  // GetPedestal  
+  //
+  if (!fPadGainFactor) AliFatal("Pedestal calibration entry not available\n");  
+  return fPedestals;
+}
+
+AliTPCParam*   AliTPCcalibDB::GetParameters(){
+  //
+  // GetParameters
+  //
+  if (!fParam) AliFatal("Parameters calibration entry not available\n");  
+  return fParam;
+}
+
+
+
