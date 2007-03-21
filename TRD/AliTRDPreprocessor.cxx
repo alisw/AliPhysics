@@ -43,7 +43,8 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
-#include "AliTRDCalibra.h"
+#include "AliTRDCalibraFit.h"
+#include "AliTRDCalibraMode.h"
 #include "Cal/AliTRDCalDet.h"
 
 ClassImp(AliTRDPreprocessor)
@@ -107,7 +108,18 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   }
 
   // Call a AliTRDCalibra instance for fit
-  AliTRDCalibra *calibra = AliTRDCalibra::Instance();
+  AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
+
+  //Choose the fit methods
+  calibra->SetFitChargeNDB(4); //for the relative gain
+  calibra->SetFitMeanWOn();   //weighted mean
+  calibra->SetFitPHNDB(3);    //for the average pulse height
+  calibra->SetFitLagrPolOn(); //LagrPol
+  calibra->SetFitPRFNDB(0);   //for the PRF
+  calibra->SetFitPRFOn();     //gaussian fit
+
+  //Debug mode
+  //calibra->SetDebug(1);       //Debug
 
   // Init some things
   AliTRDCalDet *objgaindet          = 0x0; // Object for det average gain factor
@@ -164,8 +176,8 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
       AliInfo("Take the CH reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100); // If there is less than 100 entries in the histo: no fit
       calibra->FitCHOnline(histogain);
-      numbertotalgroup[0] = 6*4*18*((Int_t) calibra->GetDetChamb0(0))
-                          + 6*  18*((Int_t) calibra->GetDetChamb2(0));
+      numbertotalgroup[0] = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(0))
+      	                  + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(0));
       numberfit[0]        = calibra->GetNumberFit();
       statisticmean[0]    = calibra->GetStatisticMean(); 
       numberEnt[0]        = calibra->GetNumberEnt();
@@ -179,8 +191,8 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
       AliInfo("Take the PH reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100*20); // If there is less than 2000
       calibra->FitPHOnline(histodriftvelocity);
-      numbertotalgroup[1] = 6*4*18*((Int_t) calibra->GetDetChamb0(1))
-                          + 6*  18*((Int_t) calibra->GetDetChamb2(1));
+      numbertotalgroup[1] = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
+	                  + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(1));
       numberfit[1]        = calibra->GetNumberFit();
       statisticmean[1]    = calibra->GetStatisticMean(); 
       numberEnt[1]        = calibra->GetNumberEnt();
@@ -197,8 +209,8 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
       calibra->SetMinEntries(100*20); // If there is less than 2000
       calibra->SetRangeFitPRF(0.5);
       calibra->FitPRFOnline(histoprf);
-      numbertotalgroup[2] = 6*4*18*((Int_t) calibra->GetDetChamb0(2))
-                          + 6*  18*((Int_t) calibra->GetDetChamb2(2));
+      numbertotalgroup[2] = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(2))
+                           + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(2));
       numberfit[2]        = calibra->GetNumberFit();
       statisticmean[2]    = calibra->GetStatisticMean(); 
       numberEnt[2]        = calibra->GetNumberEnt();
@@ -217,7 +229,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   AliInfo(Form("FOR THE PRF: There is a mean statistic of: %f, with %d fits for %d groups and %d histos with entries"
               ,statisticmean[2],numberfit[2],numbertotalgroup[2],numberEnt[2]));
   
-
+  
   //
   // Store the coefficients in the grid OCDB if enough statistics
   //
