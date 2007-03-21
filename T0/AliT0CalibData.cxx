@@ -33,6 +33,7 @@
 #include <TAxis.h>
 #include <TH2F.h>
 #include <TMath.h>
+#include <TSystem.h>
 #include <Riostream.h>
 
 #include <string>
@@ -139,7 +140,7 @@ void AliT0CalibData::SetTimeDelayCFD(Float_t* TimeDelay)
 
 
 //________________________________________________________________
-void AliT0CalibData::SetWalk(Int_t ipmt, const Char_t *filename)
+void AliT0CalibData::SetWalk(Int_t ipmt)
 {
 
   Int_t mv, ps; 
@@ -148,7 +149,8 @@ void AliT0CalibData::SetWalk(Int_t ipmt, const Char_t *filename)
   string buffer;
   Bool_t down=false;
   
-  ifstream inFile("data/CFD-Amp.txt");
+  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-Amp.txt");
+  ifstream inFile(filename);
   if(!inFile) AliError(Form("Cannot open file %s !",filename));
   
   Int_t i=0, i1=0, i2=0;
@@ -196,12 +198,13 @@ void AliT0CalibData::SetWalk(Int_t ipmt, const Char_t *filename)
 
 //________________________________________________________________
 
-void AliT0CalibData::SetSlewingLED(Int_t ipmt,const Char_t *filename)
+void AliT0CalibData::SetSlewingLED(Int_t ipmt)
 {
   Float_t mv, ps; 
   Float_t x[100], y[100];
   string buffer;
   
+  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-LED.txt");
   ifstream inFile(filename);
   if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
   
@@ -221,13 +224,14 @@ void AliT0CalibData::SetSlewingLED(Int_t ipmt,const Char_t *filename)
 
 //________________________________________________________________
 
-void AliT0CalibData::SetSlewingRec(Int_t ipmt,const Char_t *filename)
+void AliT0CalibData::SetSlewingRec(Int_t ipmt)
 {
   Float_t mv, ps; 
   Float_t x[100], y[100];
   string buffer;
   
-  ifstream inFile(filename);
+ const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/re.root");
+   ifstream inFile(filename);
   if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
   
   inFile >> mv>>ps;
@@ -257,8 +261,6 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
     return ;
   }
 
-  //  AliT0LookUpKey * lookkey= new AliT0LookUpKey();
-  //  AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
 
   ifstream lookup;
   lookup.open(filename);
@@ -297,15 +299,8 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
       lookvalue->SetChannel(channel);
       lookkey->SetKey(key);
 
-      //      cout<<"TRM="<<trm<<" TDC="<<tdc<<" chain="<<chain<<" channel="<<channel<<" key="<<key<<endl;
-
-      cout<<"AliT0CalibData:: "<<varname<<" "<<key<<" "<<trm<<" "<<chain<<" "<<tdc<<" "<<channel<<endl;
-
-      //    fLookup.Add((TObject*)lookkey,(TObject*)lookvalue);
-      // ar_key.AddAt(lookkey,i);
-      // ar_val.AddAt(lookvalue,i);
-
-        fLookup.Add((TObject*)lookvalue,(TObject*)lookkey);
+      
+      fLookup.Add((TObject*)lookvalue,(TObject*)lookkey);
 
     }
 
@@ -321,8 +316,8 @@ Int_t AliT0CalibData::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t chann
   AliT0LookUpKey * lookkey;//= new AliT0LookUpKey();
   AliT0LookUpValue * lookvalue= new AliT0LookUpValue(trm,tdc,chain,channel);
 
-     lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
-    cout<<"AliT0CalibData:: key "<<lookkey->GetKey()<<endl;
+  lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
+
   return lookkey->GetKey();
 
 }

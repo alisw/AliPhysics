@@ -88,9 +88,6 @@ AliT0Parameters::Init()
   // CDB here. 
   //   if (fIsInit) return;
   
-  // AliCDBManager* cdb      = AliCDBManager::Instance();
-  // fCalibentry  = cdb->Get("T0/Calib/Gain_TimeDelay_Slewing_Walk");
- 
 
   AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
   //time equalizing
@@ -105,14 +102,14 @@ AliT0Parameters::Init()
  if (fSlewCorr){
    fgSlewCorr  = (AliT0CalibData*)fSlewCorr->GetObject();
   }
- // fLookUpentry  = cdb->Get("T0/Calib/LookUp_Table");
   fLookUpentry  = stor->Get("T0/Calib/LookUp_Table",0);
   if (fLookUpentry){
     fgLookUp  = (AliT0CalibData*)fLookUpentry->GetObject();
-    //   fgLookUp->Dump();
   }
   else {
-    fgLookUp->ReadAsciiLookup("$ALICE_ROOT/T0/lookUpTable.txt");
+  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/lookUpTable.txt");
+  ifstream inFile(filename);
+  fgLookUp->ReadAsciiLookup(filename);
   }
 
   fIsInit = kTRUE;
@@ -239,7 +236,7 @@ void AliT0Parameters::SetWalk(Int_t ipmt)
   ifstream inFile(filename);
   //  if(!inFile) AliError(Form("Cannot open file %s !",filename));
   
-  Int_t i=0, i1=0, i2=0;
+  Int_t i=0;
   while(getline(inFile,buffer)){
     inFile >> ps >> mv;
 

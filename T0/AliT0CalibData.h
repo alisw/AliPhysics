@@ -37,7 +37,7 @@ class AliT0CalibData: public TNamed {
   
   TGraph *GetWalk(Int_t ipmt )  const {return ((TGraph*)fWalk.At(ipmt));}
   Float_t  GetWalkVal(Int_t ipmt, Float_t mv )  const {return ((TGraph*)fWalk.At(ipmt))->Eval(mv);}
-  void SetWalk(Int_t ipmt, const Char_t *filename="data/CFD-Amp.root") ;
+  void SetWalk(Int_t ipmt) ;
 
    TGraph *  GetSlew(Int_t ipmt) const   {return (TGraph*)fSlewingLED.At(ipmt);}
   Float_t  GetSlewingLED(Int_t ipmt, Float_t mv)  const 
@@ -46,8 +46,8 @@ class AliT0CalibData: public TNamed {
   Float_t  GetSlewingRec(Int_t ipmt, Float_t mv)  const 
       {return((TGraph*)fSlewingRec.At(ipmt))->Eval(mv);}
 
-  void SetSlewingLED(Int_t ipmt, const Char_t *filename="data/CFD-LED.txt") ;
-  void SetSlewingRec(Int_t ipmt, const Char_t *filename="data/re.root") ;
+  void SetSlewingLED(Int_t ipmt) ;
+  void SetSlewingRec(Int_t ipmt) ;
 
   void     SetTimeDelayCFD(Float_t val, Int_t channel) {fTimeDelayCFD[channel]=val;}
   void     SetTimeDelayCFD(Float_t* TimeDelay);
