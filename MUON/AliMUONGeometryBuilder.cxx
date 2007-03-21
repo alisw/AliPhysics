@@ -589,7 +589,7 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
 
 //______________________________________________________________________________
 void AliMUONGeometryBuilder::WriteSVMaps(const TString& fileName, 
-                                         Bool_t rebuild)
+                                         Bool_t rebuild, Bool_t writeEnvelopes)
 {
 /// Write sensitive volume maps into files per builder
 
@@ -600,9 +600,6 @@ void AliMUONGeometryBuilder::WriteSVMaps(const TString& fileName,
 
       AliMUONVGeometryBuilder* builder
         = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
-
-      Bool_t writeEnvelopes = false;
-      if ( gMC->IsRootGeometrySupported() ) writeEnvelopes = true;
 
       builder->RebuildSVMaps(writeEnvelopes);
     }  
