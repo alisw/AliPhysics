@@ -54,7 +54,8 @@
 #include "AliTRDCommonParam.h"
 #include "AliTRDtracker.h"
 #include "AliTRDReconstructor.h"
-#include "AliTRDCalibra.h"
+#include "AliTRDCalibraFillHisto.h"
+
 ClassImp(AliTRDtracker)
 
 const  Float_t  AliTRDtracker::fgkMinClustersInTrack =  0.5;  
@@ -1217,7 +1218,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
   AliTRDtracklet tracklet;
 
   // Calibration fill 2D
-  AliTRDCalibra *calibra = AliTRDCalibra::Instance();
+  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
   if (!calibra) {
     AliInfo("Could not get Calibra instance\n");
   }

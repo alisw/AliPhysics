@@ -45,7 +45,7 @@
 #include "AliTRDtrigParam.h"
 #include "AliTRDmcm.h"
 #include "AliTRDzmaps.h"
-#include "AliTRDCalibra.h"
+#include "AliTRDCalibraFillHisto.h"
 #include "Cal/AliTRDCalPIDLQ.h"
 
 ClassImp(AliTRDtrigger)
@@ -575,7 +575,7 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   Int_t nTimeTotal  = fCalib->GetNumberOfTimeBins();
 
   // Calibration fill 2D
-  AliTRDCalibra *calibra = AliTRDCalibra::Instance();
+  AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
   if (!calibra) {
     AliInfo("Could not get Calibra instance\n");
   }
