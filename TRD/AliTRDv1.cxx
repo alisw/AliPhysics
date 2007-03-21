@@ -496,7 +496,7 @@ void AliTRDv1::StepManagerGeant()
       cIdChamber[0]   = cIdCurrent[2];
       cIdChamber[1]   = cIdCurrent[3];
       Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-      cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
+      cha = ((Int_t) idChamber / kNplan);
       pla = ((Int_t) idChamber % kNplan);
 
       // The detector number
@@ -742,7 +742,7 @@ void AliTRDv1::StepManagerErmilova()
       cIdChamber[0] = cIdCurrent[2];
       cIdChamber[1] = cIdCurrent[3];
       Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-      cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
+      cha = ((Int_t) idChamber / kNplan);
       pla = ((Int_t) idChamber % kNplan);
 
       // The detector number
@@ -932,7 +932,7 @@ void AliTRDv1::StepManagerFixedStep()
   cIdChamber[0]   = cIdCurrent[2];
   cIdChamber[1]   = cIdCurrent[3];
   Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-  cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
+  cha = ((Int_t) idChamber / kNplan);
   pla = ((Int_t) idChamber % kNplan);
 
   // The detector number

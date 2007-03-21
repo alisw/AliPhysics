@@ -37,6 +37,8 @@ class AliTRDcalibDB : public TObject {
 
   Float_t                    GetVdrift(Int_t det, Int_t col, Int_t row);
   Float_t                    GetVdriftAverage(Int_t det);
+        AliTRDCalROC        *GetVdriftROC(Int_t det);
+  const AliTRDCalDet        *GetVdriftDet();
 
   Float_t                    GetT0(Int_t det, Int_t col, Int_t row);
   Float_t                    GetT0Average(Int_t det);

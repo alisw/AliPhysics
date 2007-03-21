@@ -33,7 +33,7 @@ class AliTRDpadPlane : public TObject {
   virtual void       Copy(TObject &p) const;
 
   Int_t    GetPadRowNumber(Double_t z) const;
-  Int_t    GetPadColNumber(Double_t rphi, Double_t rowOffset) const;
+  Int_t    GetPadColNumber(Double_t rphi) const;
   Double_t GetTiltOffset(Double_t rowOffset) const 
                                              { return fTiltingTan * (rowOffset - 0.5*fLengthIPad); };
   Double_t GetPadRowOffset(Int_t row, Double_t z) const

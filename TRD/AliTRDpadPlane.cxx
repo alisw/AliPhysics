@@ -265,14 +265,9 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
   // Row direction
   //
   fPadRow = new Double_t[fNrows];
-  Double_t row = fGeo->GetChamberLength(p,0)
-    	       + fGeo->GetChamberLength(p,1)
-               + fGeo->GetChamberLength(p,2) / 2.0
+  Double_t row = fGeo->GetChamberLength(p,c) / 2.0
                - fGeo->RpadW()
                - fLengthRim;
-  for (Int_t ic = 0; ic < c; ic++) {
-    row -= fGeo->GetChamberLength(p,ic);
-  }
   for (Int_t ir = 0; ir < fNrows; ir++) {
     fPadRow[ir] = row;
     row -= fRowSpacing;
@@ -484,17 +479,16 @@ Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
-				    , Double_t /*rowOffset*/) const
+Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi) const
 {
   //
   // Finds the pad column number for a given global rphi-position
   //
 
-  Int_t    col    = 0;
-  Int_t    nabove = 0;
-  Int_t    nbelow = 0;
-  Int_t    middle = 0;
+  Int_t col    = 0;
+  Int_t nabove = 0;
+  Int_t nbelow = 0;
+  Int_t middle = 0;
 
   if ((rphi > GetCol0()  ) || 
       (rphi < GetColEnd())) {

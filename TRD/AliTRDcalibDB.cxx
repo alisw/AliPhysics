@@ -357,6 +357,49 @@ Float_t AliTRDcalibDB::GetVdrift(Int_t det, Int_t col, Int_t row)
   return calChamber->GetValue(det) * roc->GetValue(col,row);
 
 }
+ 
+//_____________________________________________________________________________
+AliTRDCalROC *AliTRDcalibDB::GetVdriftROC(Int_t det)
+{
+  //
+  // Returns the Vdrift calibration object for a given ROC
+  // containing one number per pad 
+  //
+  
+  const AliTRDCalPad     *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                       (GetCachedCDBObject(kIDVdriftPad));
+  if (!calPad) {
+    return 0;
+  }
+
+  AliTRDCalROC           *roc        = calPad->GetCalROC(det);
+  if (!roc) {
+    return 0;
+  }
+  else {
+    return roc;
+  }
+
+}
+
+//_____________________________________________________________________________
+const AliTRDCalDet *AliTRDcalibDB::GetVdriftDet()
+{
+  //
+  // Returns the Vdrift calibration object
+  // containing one number per detector
+  //
+  
+  const AliTRDCalDet     *calChamber = dynamic_cast<const AliTRDCalDet *> 
+                                       (GetCachedCDBObject(kIDVdriftChamber));
+  if (!calChamber) {
+    return 0;
+  }
+  else {
+    return calChamber;
+  }
+
+}
 
 //_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetVdriftAverage(Int_t det)
@@ -402,7 +445,7 @@ Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
   return calChamber->GetValue(det) + roc->GetValue(col,row);
 
 }
-
+ 
 //_____________________________________________________________________________
 AliTRDCalROC *AliTRDcalibDB::GetT0ROC(Int_t det)
 {

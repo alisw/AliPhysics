@@ -74,6 +74,9 @@
 #include "AliTRDSimParam.h"
 #include "AliTRDCommonParam.h"
 
+#include "Cal/AliTRDCalROC.h"
+#include "Cal/AliTRDCalDet.h"
+
 ClassImp(AliTRDdigitizer)
 
 //_____________________________________________________________________________
@@ -317,7 +320,7 @@ AliTRDdigitizer::~AliTRDdigitizer()
 
   if (fMasks) {
     delete [] fMasks;
-    fMasks = 0;
+    fMasks       = 0;
   }
 
   if (fTimeStruct1) {
@@ -710,10 +713,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
   // Number of track dictionary arrays
   const Int_t kNDict     = AliTRDdigitsManager::kNDict;
 
-  // Half the width of the amplification region
-  const Float_t kAmWidth = AliTRDgeometry::AmThick() / 2.0;
+  // Width of the amplification region
+  const Float_t kAmWidth = AliTRDgeometry::AmThick();
   // Width of the drift region
   const Float_t kDrWidth = AliTRDgeometry::DrThick();
+  // Drift + amplification region 
+  const Float_t kDrMin   =          - 0.5 * kAmWidth;
+  const Float_t kDrMax   = kDrWidth + 0.5 * kAmWidth;
   
   Int_t    iRow;
   Int_t    iCol;
@@ -730,8 +736,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t    timeBinTRFend   = 1;
 
   Double_t pos[3];
-  Double_t rot[3];
-  Double_t xyz[3];
+  Double_t loc[3];
   Double_t padSignal[kNpad];
   Double_t signalOld[kNpad];
 
@@ -741,46 +746,46 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   AliTRDpadPlane   *padPlane = 0;
 
+  AliTRDCalROC     *calVdriftROC          = 0;
+  Float_t           calVdriftDetValue     = 0.0;
+  AliTRDCalROC     *calT0ROC              = 0;
+  Float_t           calT0DetValue         = 0.0;
+  AliTRDCalROC     *calGainFactorROC      = 0;
+  Float_t           calGainFactorDetValue = 0.0;
+
   if (!gGeoManager) {
     AliFatal("No geometry manager!");
   }
-
-  AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
-  if (!simParam) {
-    AliError("Could not get simulation parameters");
-    return kFALSE;
-  }
-  
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    AliError("Could not get common parameterss");
-    return kFALSE;
-  }
-  
-  // Create a container for the amplitudes
-  AliTRDsegmentArray *signalsArray = new AliTRDsegmentArray("AliTRDdataArrayF"
-                                                           ,AliTRDgeometry::Ndet());
-
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration) {
-    AliFatal("Could not get calibration object");  
-    return kFALSE;
-  }
-
-  if (simParam->TRFOn()) {
-    timeBinTRFend = ((Int_t) (simParam->GetTRFhi() 
-                  * commonParam->GetSamplingFrequency())) - 1;
-    AliDebug(1,Form("Sample the TRF up to bin %d",timeBinTRFend));
-  }
-
-  Float_t elAttachProp = simParam->GetElAttachProp() / 100.0; 
 
   if (!fGeo) {
     AliError("No geometry defined");
     return kFALSE;
   }
+  fGeo->ReadGeoMatrices();
 
-  AliDebug(1,"Start creating digits.");
+  AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
+  if (!simParam) {
+    AliFatal("Could not get simulation parameters");
+    return kFALSE;
+  }
+  
+  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
+  if (!commonParam) {
+    AliFatal("Could not get common parameterss");
+    return kFALSE;
+  }
+
+  AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliFatal("Could not get calibration object");  
+    return kFALSE;
+  }
+
+  AliDebug(1,"Start creating digits");
+  
+  // Create a container for the amplitudes
+  AliTRDsegmentArray *signalsArray = new AliTRDsegmentArray("AliTRDdataArrayF"
+                                                           ,AliTRDgeometry::Ndet());
 
   AliLoader *gimme = fRunLoader->GetLoader("TRDLoader");
   if (!gimme->TreeH()) {
@@ -792,7 +797,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
     return kFALSE;
   }
   fTRD->SetTreeAddress();
-  
+
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
   Int_t nTrack = (Int_t) hitTree->GetEntries();
@@ -806,12 +811,23 @@ Bool_t AliTRDdigitizer::MakeDigits()
   else {
     AliDebug(1,"Constant drift velocity in drift cells.");
   }
-  
+  if (simParam->TRFOn()) {
+    timeBinTRFend = ((Int_t) (simParam->GetTRFhi() 
+                  * commonParam->GetSamplingFrequency())) - 1;
+    AliDebug(1,Form("Sample the TRF up to bin %d",timeBinTRFend));
+  }
+
+  // Get the detector wise calibration objects
+  const AliTRDCalDet *calVdriftDet     = calibration->GetVdriftDet();  
+  const AliTRDCalDet *calT0Det         = calibration->GetT0Det();  
+  const AliTRDCalDet *calGainFactorDet = calibration->GetGainFactorDet();  
+
   Int_t   detectorOld  = -1;
   Int_t   countHits    =  0;
  
   Int_t   nTimeTotal   = calibration->GetNumberOfTimeBins();
   Float_t samplingRate = commonParam->GetSamplingFrequency();
+  Float_t elAttachProp = simParam->GetElAttachProp() / 100.0; 
 
   // Loop through all entries in the tree
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
@@ -841,7 +857,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Int_t   detector = hit->GetDetector();
       Int_t   plane    = fGeo->GetPlane(detector);
       Int_t   chamber  = fGeo->GetChamber(detector);
-      Float_t time0    = AliTRDgeometry::GetTime0(plane);
       padPlane         = commonParam->GetPadPlane(plane,chamber);
       Float_t row0     = padPlane->GetRow0();
       Int_t   nRowMax  = padPlane->GetNrows();
@@ -886,55 +901,64 @@ Bool_t AliTRDdigitizer::MakeDigits()
             if (fCompress) dictionary[iDict]->Expand();
           }
         }      
+
+	// Get the calibration objects
+	calVdriftROC      = calibration->GetVdriftROC(detector);
+        calVdriftDetValue = calVdriftDet->GetValue(detector);
+	calT0ROC          = calibration->GetT0ROC(detector);
+        calT0DetValue     = calT0Det->GetValue(detector);
+
         detectorOld = detector;
+
       }
 
-      // Rotate the sectors on top of each other       
-      // by using the geoManager
-      Double_t aaa[3];
-      gGeoManager->MasterToLocal(pos,aaa);
+      // Go to the local coordinate system:
+      // loc[0] - row  direction in amplification or driftvolume
+      // loc[1] - col  direction in amplification or driftvolume
+      // loc[2] - time direction in amplification or driftvolume
+      gGeoManager->MasterToLocal(pos,loc);
+      // Now the real local coordinate system of the ROC
+      // row direction:    locR 
+      // column direction: locC
+      // time direction:   locT
+      // locR and locC are identical to the coordinates of the corresponding
+      // volumina of the drift or amplification region.
+      // locT is defined relative to the wire plane (i.e. middle of amplification
+      // region), meaming locT = 0, and is negative for hits coming from the
+      // drift region. 
+      Double_t locR = loc[0];
+      Double_t locC = loc[1];
+      Double_t locT = loc[2];
       if (inDrift) {
-        aaa[2] = time0 - (kDrWidth / 2.0 + kAmWidth) + aaa[2];
+	// locT relative to middle of amplification region
+        locT = locT - kDrWidth/2.0 - kAmWidth/2.0;
       } 
-      else {
-        aaa[2] = time0 + aaa[2];
-      }
-      aaa[1] = row0 + padPlane->GetLengthRim() + fGeo->RpadW() 
-             - 0.5 * fGeo->GetChamberLength(plane,chamber) 
-             + aaa[1];
-      rot[0] = aaa[2];
-      rot[1] = aaa[0];
-      rot[2] = aaa[1];
 
-      // The driftlength. It is negative if the hit is between pad plane and anode wires.
-      Double_t driftlength = time0 - rot[0];
+      // The driftlength (w/o diffusion yet !).
+      // It is negative if the hit is between pad plane and anode wires.
+      Double_t driftlength = -1.0 * locT;
 
       // Loop over all electrons of this hit
       // TR photons produce hits with negative charge
       Int_t nEl = ((Int_t) TMath::Abs(q));
       for (Int_t iEl = 0; iEl < nEl; iEl++) {
 
-        xyz[0] = rot[0];
-        xyz[1] = rot[1];
-        xyz[2] = rot[2];
-
 	// Stupid patch to take care of TR photons that are absorbed
 	// outside the chamber volume. A real fix would actually need
 	// a more clever implementation of the TR hit generation
         if (q < 0.0) {
-	  if ((xyz[2] < padPlane->GetRowEnd()) ||
-              (xyz[2] > padPlane->GetRow0())) {
+	  if ((locR < padPlane->GetRowEnd()) ||
+              (locR > padPlane->GetRow0())) {
             if (iEl == 0) {
-              AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)"
-                             ,xyz[2],padPlane->GetRow0(),padPlane->GetRowEnd()));
+              AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
+                             ,locR,padPlane->GetRow0(),padPlane->GetRowEnd()));
 	    }
             continue;
 	  }
-          Float_t tt = driftlength + kAmWidth;
-          if ((tt < 0.0) || 
-              (tt > kDrWidth + 2.0*kAmWidth)) {
+          if ((driftlength < kDrMin) ||
+              (driftlength > kDrMax)) {
             if (iEl == 0) {
-              AliDebug(2,Form("Hit outside of sensitive volume, time (Q = %d)"
+              AliDebug(2,Form("Hit outside of sensitive volume, time (Q = %d)\n"
                              ,((Int_t) q)));
 	    }
             continue;
@@ -943,19 +967,19 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
         // Get row and col of unsmeared electron to retrieve drift velocity
         // The pad row (z-direction)
-        Int_t    rowE         = padPlane->GetPadRowNumber(xyz[2]);
+        Int_t    rowE         = padPlane->GetPadRowNumber(locR);
         if (rowE < 0) continue;
-        Double_t rowOffset    = padPlane->GetPadRowOffset(rowE,xyz[2]);
+        Double_t rowOffset    = padPlane->GetPadRowOffset(rowE,locR);
 
         // The pad column (rphi-direction)
 	Double_t offsetTilt   = padPlane->GetTiltOffset(rowOffset);
-        Int_t    colE         = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
+        Int_t    colE         = padPlane->GetPadColNumber(locC+offsetTilt);
         if (colE < 0) continue;	  
-        Double_t colOffset    = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
+        Double_t colOffset    = padPlane->GetPadColOffset(colE,locC+offsetTilt);
 
-        Float_t driftvelocity = calibration->GetVdrift(detector,colE,rowE);
+        Float_t driftvelocity = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
                     
-        // Normalised drift length
+        // Normalized drift length
         Double_t absdriftlength = TMath::Abs(driftlength);
         if (commonParam->ExBOn()) {
           absdriftlength /= TMath::Sqrt(GetLorentzFactor(driftvelocity));
@@ -963,51 +987,57 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
         // Electron attachment
         if (simParam->ElAttachOn()) {
-          if (gRandom->Rndm() < (absdriftlength * elAttachProp)) continue;
+          if (gRandom->Rndm() < (absdriftlength * elAttachProp)) {
+            continue;
+	  }
         }
           
         // Apply the diffusion smearing
         if (simParam->DiffusionOn()) {
-          if (!(Diffusion(driftvelocity,absdriftlength,xyz))) continue;
+          if (!(Diffusion(driftvelocity,absdriftlength,locR,locC,locT))) {
+            continue;
+	  }
         }
 
         // Apply E x B effects (depends on drift direction)
         if (commonParam->ExBOn()) { 
-          if (!(ExB(driftvelocity,driftlength,xyz))) continue;
+          if (!(ExB(driftvelocity,driftlength,locR))) {
+            continue;
+	  }
         }
 
         // The electron position after diffusion and ExB in pad coordinates.
         // The pad row (z-direction)
-        rowE       = padPlane->GetPadRowNumber(xyz[2]);
+        rowE       = padPlane->GetPadRowNumber(locR);
         if (rowE < 0) continue;
-        rowOffset  = padPlane->GetPadRowOffset(rowE,xyz[2]);
+        rowOffset  = padPlane->GetPadRowOffset(rowE,locR);
 
         // The pad column (rphi-direction)
         offsetTilt = padPlane->GetTiltOffset(rowOffset);
-        colE       = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
+        colE       = padPlane->GetPadColNumber(locC+offsetTilt);
         if (colE < 0) continue;         
-        colOffset  = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
+        colOffset  = padPlane->GetPadColOffset(colE,locC+offsetTilt);
 	  
         // Also re-retrieve drift velocity because col and row may have changed
-        driftvelocity = calibration->GetVdrift(detector,colE,rowE);
-        Float_t t0    = calibration->GetT0(detector,colE,rowE);
+        driftvelocity = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
+        Float_t t0    = calT0DetValue     + calT0ROC->GetValue(colE,rowE);
 
         // Convert the position to drift time, using either constant drift velocity or
         // time structure of drift cells (non-isochronity, GARFIELD calculation).
 	Double_t drifttime;
         if (simParam->TimeStructOn()) {
-	  // Get z-position with respect to anode wire:
-          Double_t Z  =  row0 - xyz[2] + simParam->GetAnodeWireOffset();
+	  // Get z-position with respect to anode wire
+          Double_t Z  =  row0 - locR + simParam->GetAnodeWireOffset();
 	  Z -= ((Int_t)(2 * Z)) / 2.0;
 	  if (Z > 0.25) {
             Z  = 0.5 - Z;
 	  }
 	  // Use drift time map (GARFIELD)
-          drifttime = TimeStruct(driftvelocity,time0-xyz[0]+kAmWidth,Z);
+          drifttime = TimeStruct(driftvelocity,0.5*kAmWidth-1.0*locT,Z);
         } 
         else {
 	  // Use constant drift velocity
-          drifttime = TMath::Abs(time0 - xyz[0]) / driftvelocity;
+          drifttime = -1.0 * locT / driftvelocity;
         }
 
         // Apply the gas gain including fluctuations
@@ -1023,6 +1053,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	  // in units of pad width
 	  Double_t dist = (colOffset - 0.5*padPlane->GetColSize(colE))
                         / padPlane->GetColSize(colE);
+	  // This is still the fixed parametrization, i.e. not dependent on
+	  // calibration values !!!!
           if (!(calibration->PadResponse(signal,dist,plane,padSignal))) continue;
 	}
         else {
@@ -1045,9 +1077,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	// Sample the time response inside the drift region
 	// + additional time bins before and after.
         // The sampling is done always in the middle of the time bin
-        for (Int_t iTimeBin = TMath::Max(timeBinTruncated, 0);
-             iTimeBin < TMath::Min(timeBinTruncated+timeBinTRFend,nTimeTotal);
-	     iTimeBin++) {
+        for (Int_t iTimeBin = TMath::Max(timeBinTruncated,0)
+            ;iTimeBin < TMath::Min(timeBinTruncated+timeBinTRFend,nTimeTotal)
+	    ;iTimeBin++) {
 
      	  // Apply the time response
           Double_t timeResponse = 1.0;
@@ -1110,6 +1142,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   AliDebug(1,Form("Finished analyzing %d hits",countHits));
 
+  //____________________________________________________________________
+  //
+  // Create (s)digits
+  //____________________________________________________________________
+  //
+
   // The coupling factor
   Double_t coupling = simParam->GetPadCoupling() 
                     * simParam->GetTimeCoupling();
@@ -1164,13 +1202,19 @@ Bool_t AliTRDdigitizer::MakeDigits()
         (!calibration->IsChamberMasked(iDet))    &&
         ( fGeo->GetSMstatus(sector))) {
 
+      // Get the calibration objects
+      calGainFactorROC      = calibration->GetGainFactorROC(iDet);
+      calGainFactorDetValue = calGainFactorDet->GetValue(iDet);
+
       // Create the digits for this chamber
       for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
         for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
 
           // Check whether pad is masked
 	  // Bridged pads are not considered yet!!!
-          if (calibration->IsPadMasked(iDet,iCol,iRow)) continue;
+          if (calibration->IsPadMasked(iDet,iCol,iRow)) {
+            continue;
+	  }
 
 	  // Create summable digits
           if (fSDigits) {
@@ -1188,17 +1232,19 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	  // Create normal digits
           else {
 
+            Float_t padgain = calGainFactorDetValue 
+                            * calGainFactorROC->GetValue(iCol,iRow);
+            if (padgain <= 0) {
+              AliError(Form("Not a valid gain %f, %d %d %d",padgain,iDet,iCol,iRow));
+            }
+
             for (iTime = 0; iTime < nTimeTotal; iTime++) {         
 
               Float_t signalAmp = signals->GetDataUnchecked(iRow,iCol,iTime);
 
               // Pad and time coupling
               signalAmp *= coupling;
-
-              Float_t padgain = calibration->GetGainFactor(iDet,iCol,iRow);
-              if (padgain <= 0) {
-                AliError(Form("Not a valid gain %f, %d %d %d",padgain,iDet,iCol,iRow));
-              }
+	      // Gain factors
 	      signalAmp *= padgain;
 
               // Add the noise, starting from minus ADC baseline in electrons
@@ -1277,9 +1323,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   AliDebug(1,Form("Total number of analyzed hits = %d",countHits));
   AliDebug(1,Form("Total digits data size = %d, %d, %d, %d",totalSizeDigits
-                                                             ,totalSizeDict0
-                                                             ,totalSizeDict1
-                                                             ,totalSizeDict2));
+                                                           ,totalSizeDict0
+                                                           ,totalSizeDict1
+                                                           ,totalSizeDict2));
 
   return kTRUE;
 
@@ -1325,21 +1371,24 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   Int_t iCol;
   Int_t iTime;
 
-  AliTRDSimParam *simParam = AliTRDSimParam::Instance();
+  AliTRDCalROC *calGainFactorROC      = 0;
+  Float_t       calGainFactorDetValue = 0.0;
+
+  AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
   if (!simParam) {
-    AliError("Could not get simulation parameters");
+    AliFatal("Could not get simulation parameters");
     return kFALSE;
   }
   
   AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
-    AliError("Could not get common parameters");
+    AliFatal("Could not get common parameters");
     return kFALSE;
   }
   
-  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    AliError("Could not get calibration object");
+    AliFatal("Could not get calibration object");
     return kFALSE;
   }
     
@@ -1360,6 +1409,9 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   AliTRDdataArrayI *digitsOut;
   AliTRDdataArrayI *dictionaryIn[kNDict];
   AliTRDdataArrayI *dictionaryOut[kNDict];
+
+  // Get the detector wise calibration objects
+  const AliTRDCalDet *calGainFactorDet = calibration->GetGainFactorDet();  
   
   // Loop through the detectors
   for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) {
@@ -1389,26 +1441,34 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
         (!calibration->IsChamberMasked(iDet))    &&
         ( fGeo->GetSMstatus(sector))) {
 
+      // Get the calibration objects
+      calGainFactorROC      = calibration->GetGainFactorROC(iDet);
+      calGainFactorDetValue = calGainFactorDet->GetValue(iDet);
+
       for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
         for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
 
           // Check whether pad is masked
 	  // Bridged pads are not considered yet!!!
-          if (calibration->IsPadMasked(iDet,iCol,iRow)) continue;
+          if (calibration->IsPadMasked(iDet,iCol,iRow)) {
+            continue;
+	  }
 
-            for (iTime = 0; iTime < nTimeTotal; iTime++) {
+          Float_t padgain = calGainFactorDetValue 
+                          * calGainFactorROC->GetValue(iCol,iRow);
+          if (padgain <= 0) {
+            AliError(Form("Not a valid gain %f, %d %d %d",padgain,iDet,iCol,iRow));
+          }
+
+          for (iTime = 0; iTime < nTimeTotal; iTime++) {
 
  	    // Scale s-digits to normal digits
             Double_t signal = (Double_t) digitsIn->GetDataUnchecked(iRow,iCol,iTime);
             signal         *= sDigitsScale;
-	    // Apply the pad-by-pad gain factors
-            Float_t padgain = calibration->GetGainFactor(iDet,iCol,iRow);
-            if (padgain <= 0.0) {
-              AliError(Form("Not a valid gain %f, %d %d %d",padgain,iDet,iCol,iRow));
-            }
-            signal *= padgain;
             // Pad and time coupling
             signal *= coupling;
+	    // Gain factors
+            signal *= padgain;
             // Add the noise, starting from minus ADC baseline in electrons
             Double_t baselineEl = adcBaseline * (adcInRange / adcOutRange) / convert;
             signal  = TMath::Max((Double_t) gRandom->Gaus(signal,noise),-baselineEl);
@@ -1480,19 +1540,19 @@ Bool_t AliTRDdigitizer::MergeSDigits()
 
   AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
   if (!simParam) {
-    AliError("Could not get simulation parameters");
+    AliFatal("Could not get simulation parameters");
     return kFALSE;
   }
   
   AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
-    AliError("Could not get common parameters");
+    AliFatal("Could not get common parameters");
     return kFALSE;
   }
   
   AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    AliError("Could not get calibration object");
+    AliFatal("Could not get calibration object");
     return kFALSE;
   }
   
@@ -1658,7 +1718,7 @@ void AliTRDdigitizer::InitOutput(Int_t iEvent)
     return;  
   }
 
-  AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
+  AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
   if (!loader) {
     AliError("Can not get TRD loader from Run Loader");
     return;
@@ -1788,13 +1848,10 @@ void AliTRDdigitizer::SampleTimeStruct(Float_t vdrift)
   // Drift Time data calculated with Garfield (by C.Lippmann)
   //
   
-  // TODO make caching proper, if same timing structure is selected: do not update timestructs!
-  
-  // Noting to do
+  // Nothing to do
   if (vdrift == fTimeLastVdrift) {
     return;
   }
-
   fTimeLastVdrift = vdrift;
   
   // Drift time maps are saved for some drift velocity values (in drift region):
@@ -2527,19 +2584,19 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
 
   AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
   if (!simParam) {
-    AliError("Could not get simulation parameters");
+    AliFatal("Could not get simulation parameters");
     return;
   }
   
   AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
-    AliError("Could not get common parameters");
+    AliFatal("Could not get common parameters");
     return;
   }
   
   AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    AliError("Could not get calibration object");
+    AliFatal("Could not get calibration object");
     return;
   }
   
@@ -2627,20 +2684,22 @@ Float_t AliTRDdigitizer::GetDiffusionT(Float_t vdrift)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDdigitizer::Diffusion(Float_t vdrift, Double_t driftlength, Double_t *xyz)
+Int_t AliTRDdigitizer::Diffusion(Float_t vdrift, Double_t absdriftlength
+                               , Double_t &lRow, Double_t &lCol, Double_t &lTime)
 {
   //
-  // Applies the diffusion smearing to the position of a single electron
+  // Applies the diffusion smearing to the position of a single electron.
+  // Depends on absolute drift length.
   //
   
   RecalcDiffusion(vdrift);
 
-  Float_t driftSqrt = TMath::Sqrt(driftlength);
+  Float_t driftSqrt = TMath::Sqrt(absdriftlength);
   Float_t sigmaT    = driftSqrt * fDiffusionT;
   Float_t sigmaL    = driftSqrt * fDiffusionL;
-  xyz[0] = gRandom->Gaus(xyz[0],sigmaL * GetLorentzFactor(vdrift));
-  xyz[1] = gRandom->Gaus(xyz[1],sigmaT * GetLorentzFactor(vdrift));
-  xyz[2] = gRandom->Gaus(xyz[2],sigmaT);
+  lRow  = gRandom->Gaus(lRow ,sigmaT * GetLorentzFactor(vdrift));
+  lCol  = gRandom->Gaus(lCol ,sigmaT);
+  lTime = gRandom->Gaus(lTime,sigmaL * GetLorentzFactor(vdrift));
 
   return 1;
 
@@ -2660,17 +2719,16 @@ Float_t AliTRDdigitizer::GetLorentzFactor(Float_t vd)
 }
   
 //_____________________________________________________________________________
-Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t *xyz)
+Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow)
 {
   //
-  // Applies E x B effects to the position of a single electron
+  // Applies E x B effects to the position of a single electron.
+  // Depends on signed drift length.
   //
   
   RecalcDiffusion(vdrift);
-  
-  xyz[0] = xyz[0];
-  xyz[1] = xyz[1] + fOmegaTau * driftlength;
-  xyz[2] = xyz[2];
+
+  lRow = lRow + fOmegaTau * driftlength;
 
   return 1;
 

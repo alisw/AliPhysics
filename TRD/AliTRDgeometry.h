@@ -36,7 +36,7 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     Init();
   virtual void     CreateGeometry(Int_t *idtmed);
   virtual Int_t    IsVersion()                                         { return 1;               }
-  virtual Bool_t   Impact(const TParticle* ) const                     { return kTRUE;           }
+  virtual Bool_t   Impact(const TParticle *) const                     { return kTRUE;           }
   virtual Bool_t   IsHole(Int_t /*p*/, Int_t /*c*/, Int_t /*s*/) const { return kFALSE;          }
 
   virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;
@@ -72,8 +72,8 @@ class AliTRDgeometry : public AliGeometry {
           Float_t  GetChamberWidth(Int_t p) const                      { return fCwidth[p];      }
           Float_t  GetChamberLength(Int_t p, Int_t c) const            { return fClength[p][c];  }
 
-  virtual void     GetGlobal(const AliRecPoint*, TVector3&, TMatrixF& ) const { }; 
-  virtual void     GetGlobal(const AliRecPoint*, TVector3& ) const            { };
+  virtual void     GetGlobal(const AliRecPoint*, TVector3&, TMatrixF&) const { }; 
+  virtual void     GetGlobal(const AliRecPoint*, TVector3&) const            { };
  
   static  Double_t GetAlpha()                                          { return 2.0 
                                                                            * 3.14159265358979324 
@@ -219,8 +219,8 @@ class AliTRDgeometry : public AliGeometry {
   Float_t               fChamberUFboxd[3*kNdets][3];         //  [3] = x, y, z
   Float_t               fChamberUUboxd[3*kNdets][3];         // 
 
-  TObjArray            *fMatrixArray;                        //! Transformation Global to Local
-  TObjArray            *fMatrixCorrectionArray;              //! Transformation Cluster to  Tracking systerm
+  TObjArray            *fMatrixArray;                        //! Transformation global to local
+  TObjArray            *fMatrixCorrectionArray;              //! Transformation cluster to tracking system
   TObjArray            *fMatrixGeo;                          //! Geo matrices
 
   ClassDef(AliTRDgeometry,12)                                //  TRD geometry class
