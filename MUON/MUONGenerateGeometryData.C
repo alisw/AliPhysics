@@ -27,7 +27,8 @@
 
 void MUONGenerateGeometryData(Bool_t volpaths = true,
                               Bool_t transforms = true, 
-                              Bool_t svmaps = true)
+                              Bool_t svmaps = true,
+                              Bool_t writeEnvelopes = true)
 {
   // Initialize
   gAlice->Init("$ALICE_ROOT/MUON/Config.C");
@@ -55,6 +56,6 @@ void MUONGenerateGeometryData(Bool_t volpaths = true,
 
   if (svmaps) {
     cout << "Generating svmaps file ..." << endl;
-    builder->WriteSVMaps();
+    builder->WriteSVMaps("svmap.dat.out", true, writeEnvelopes);
   }  
 }  
