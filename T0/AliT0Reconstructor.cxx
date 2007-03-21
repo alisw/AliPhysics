@@ -23,7 +23,6 @@
 #include <AliESD.h>
 #include "AliLog.h"
 #include "AliT0Loader.h"
-#include <TClonesArray.h>
 #include "AliT0RecPoint.h"
 #include "AliRawReader.h"
 #include "AliT0RawReader.h"
@@ -38,13 +37,17 @@
 
 #include <TArrayI.h>
 #include <TGraph.h>
+//#include <TGeoManager.h>
+//#include <TClonesArray.h>
+//#include <TString.h>
+//#include <TGeoPNEntry.h>
+//#include <TGeoPhysicalNode.h>
+//#include  <TGeoHMatrix.h>
 
 ClassImp(AliT0Reconstructor)
 
   AliT0Reconstructor:: AliT0Reconstructor(): AliReconstructor(),
-			fDigits(NULL),
-			fTree(0x0),
-			fZposition(0)
+					     fZposition(0)
 
 {
  AliDebug(1,"Start reconstructor ");
@@ -52,8 +55,6 @@ ClassImp(AliT0Reconstructor)
 //____________________________________________________________________
 
 AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
-  fDigits(NULL),
-  fTree(0x0),
   fZposition(0)
   
 {
@@ -192,6 +193,11 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     
   }
   clustersTree->Fill();
+
+  delete timeCFD;
+  delete timeLED;
+  delete chargeQT0; 
+  delete chargeQT1; 
 }
 
 
@@ -234,9 +240,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     slewingLEDrec.AddAtAndExpand(gr,i) ;  
   }
   
-  zdetC = param->GetZposition(0);
-  zdetA  = param->GetZposition(1);
-    
+    zdetC = param->GetZposition(0);
+    zdetA  = param->GetZposition(1);
+    //  zdetC=GetZdet("C");
+    // zdetA=GetZdet("A");
+  cout<<" !!!!!  zdetC "<<zdetC<<"  zdetA "<< zdetA<<endl;    
    for (Int_t in=0; in<24; in++)
      {
        timeLED->AddAt(allData[in+1][0],in);
@@ -307,6 +315,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     
   }
   recTree->Fill();
+
+
+  delete timeCFD;
+  delete timeLED;
+  delete chargeQT0; 
+  delete chargeQT1; 
+  
 }
 //____________________________________________________________
 
