@@ -46,7 +46,7 @@ AliMpDetElement::AliMpDetElement(Int_t id, const TString& name,
     fName(name),
     fSegType(segType),
     fPlaneType(planeType),
-    fBusPatchIds(),
+    fBusPatchIds(false),
     fManuToSerialNbs(1700),
     fSerialNbToManus(1700)
 {
