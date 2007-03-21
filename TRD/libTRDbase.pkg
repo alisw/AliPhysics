@@ -23,7 +23,10 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalChamberStatus.cxx \
       Cal/AliTRDCalPadStatus.cxx \
       Cal/AliTRDCalSingleChamberStatus.cxx \
-      AliTRDCalibra.cxx \
+      AliTRDCalibraFillHisto.cxx \
+      AliTRDCalibraFit.cxx \
+      AliTRDCalibraMode.cxx \
+      AliTRDCalibraVector.cxx \
       AliTRDPreprocessor.cxx \
       AliTRDalignment.cxx \
       AliTRDTriggerL1.cxx \
