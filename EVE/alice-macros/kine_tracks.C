@@ -3,13 +3,13 @@
 #include "TParticlePDG.h"
 
 // PDG color indices
-static Color_t DefCol  = 30;
-static Color_t ECol    = 5;
-static Color_t MuCol   = 6;
-static Color_t GamaCol = 7; 
-static Color_t MesCol1 = 3;
-static Color_t MesCol2 = 38;
-static Color_t BarCol  = 10;
+static Color_t DefCol   = 30;
+static Color_t ECol     = 5;
+static Color_t MuCol    = 6;
+static Color_t GammaCol = 7; 
+static Color_t MesCol1  = 3;
+static Color_t MesCol2  = 38;
+static Color_t BarCol   = 10;
 
 
 Reve::TrackList*
@@ -81,7 +81,8 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
 }
 
 
-Color_t get_pdg_color(Int_t pdg){
+Color_t get_pdg_color(Int_t pdg)
+{
   Int_t pdga = TMath::Abs(pdg);
   Color_t col = Reve::DefCol;
 
@@ -124,7 +125,7 @@ Reve::RenderElement*
 kine_track(Int_t  label,
 	   Bool_t import_mother    = kTRUE,
            Bool_t import_daughters = kTRUE,
-           Reve::RenderElement*    cont = 0)
+           Reve::RenderElement* cont = 0)
 
 {
   if (label < 0) {
