@@ -95,13 +95,16 @@ TGListTreeItem* RenderElement::AddIntoListTree(TGListTree* ltree,
   TObject* tobj = GetObject(eH);
   TGListTreeItem* item = ltree->AddItem(parent_lti, tobj->GetName(), this,
 					0, 0, kTRUE);
-  gClient->NeedRedraw(ltree);
-  item->CheckItem(GetRnrSelf());
-  
+  item->SetCheckBoxPictures(GetCheckBoxPicture(1, fRnrChildren),
+			    GetCheckBoxPicture(0, fRnrChildren));
+  item->CheckItem(fRnrSelf);
+
   if(fMainColorPtr != 0) item->SetColor(GetMainColor());
   item->SetTipText(tobj->GetTitle());
 
   fItems.insert(ListTreeInfo(ltree, item));
+
+  gClient->NeedRedraw(ltree);
 
   return item;
 }
@@ -219,7 +222,7 @@ void RenderElement::ExportToCINT(Text_t* var_name)
 
 void RenderElement::PadPaint(Option_t* option)
 {
-  if ( GetRnrSelf() && GetObject() ) 
+  if (GetRnrSelf() && GetObject()) 
     GetObject()->Paint(option);
   
 
@@ -240,8 +243,9 @@ void RenderElement::SetRnrSelf(Bool_t rnr)
     
     for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
     {
-      if (i->fItem->IsChecked() != rnr) {
-        i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(1,fRnrChildren), GetCheckBoxPicture(0,fRnrChildren));
+      if(i->fItem->IsChecked() != rnr) {
+        i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(1, fRnrChildren),
+				      GetCheckBoxPicture(0, fRnrChildren));
 #if ROOT_VERSION_CODE <= ROOT_VERSION(5,14,0)
         // cover undesired behavior TGListTree::UpdateChecked
 	if(i->fItem->GetParent()) {
@@ -266,7 +270,8 @@ void RenderElement::SetRnrChildren(Bool_t rnr)
 
     for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
     {
-      i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(fRnrSelf, fRnrChildren), GetCheckBoxPicture(fRnrSelf,fRnrChildren));
+      i->fItem->SetCheckBoxPictures(GetCheckBoxPicture(fRnrSelf, fRnrChildren),
+				    GetCheckBoxPicture(fRnrSelf, fRnrChildren));
       gClient->NeedRedraw(i->fTree);
     }
   }
@@ -435,11 +440,11 @@ void RenderElement::DestroyElements()
   }
 }
 
-const TGPicture*  RenderElement::GetCheckBoxPicture(Bool_t rnrSelf, Bool_t rnrDaughters)
+const TGPicture* RenderElement::GetCheckBoxPicture(Bool_t rnrSelf, Bool_t rnrDaughters)
 {
   Int_t idx = 0;
-  if(rnrSelf) idx = 2;
-  if( rnrDaughters ) idx ++;
+  if(rnrSelf)       idx = 2;
+  if(rnrDaughters ) idx++;
 
   return fgRnrIcons[idx];
 }
