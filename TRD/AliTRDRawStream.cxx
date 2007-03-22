@@ -1368,6 +1368,8 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
     
   }
 
+  return 1;
+
 }
 
 //____________________________________________________________________________
@@ -1442,5 +1444,7 @@ Int_t  AliTRDRawStream::DecodeDataWordV3()
     fCOL = -1;
     
   }
+
+  return 1;
 
 }
