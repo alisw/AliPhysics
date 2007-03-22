@@ -176,11 +176,11 @@ public:
 
   virtual void AddElement(RenderElement* el);
 
-  virtual void SetMarkerColor(Color_t c) {TAttMarker::SetMarkerColor(c); if(fRnrStyle) fRnrStyle->fPMColor =c;}
-  virtual void SetMarkerStyle(Style_t s){TAttMarker::SetMarkerStyle(s); if(fRnrStyle) fRnrStyle->fPMStyle = s;}
-  virtual void SetMarkerSize(Size_t s){TAttMarker::SetMarkerSize(s); if(fRnrStyle) fRnrStyle->fPMSize = s;}
+  virtual void SetMarkerColor(Color_t c) { TAttMarker::SetMarkerColor(c); if(fRnrStyle) fRnrStyle->fPMColor = c; }
+  virtual void SetMarkerStyle(Style_t s) { TAttMarker::SetMarkerStyle(s); if(fRnrStyle) fRnrStyle->fPMStyle = s; }
+  virtual void SetMarkerSize(Size_t s)   { TAttMarker::SetMarkerSize(s);  if(fRnrStyle) fRnrStyle->fPMSize  = s; }
 
-  TrackRnrStyle* GetRnrStyle()           { fRnrStyle->fPMColor = GetMarkerColor();fRnrStyle->fPMStyle = GetMarkerStyle();fRnrStyle->fPMSize = GetMarkerSize(); return fRnrStyle;  } 
+  TrackRnrStyle* GetRnrStyle()           { fRnrStyle->fPMColor = GetMarkerColor();fRnrStyle->fPMStyle = GetMarkerStyle();fRnrStyle->fPMSize = GetMarkerSize(); return fRnrStyle; } 
   void   SetRnrStyle(TrackRnrStyle* rst) { fRnrStyle= rst; }
 
   Bool_t GetEditPathMarks() const   { return fEditPathMarks; }
@@ -206,8 +206,8 @@ public:
   Width_t GetWidth() const { return fRnrStyle->fWidth; }
   void  SetWidth(Width_t w);
 
-  Float_t GetMaxR()         const { return fRnrStyle->fMaxZ; }
-  Float_t GetMaxZ()         const { return fRnrStyle->fMaxR; }
+  Float_t GetMaxR()         const { return fRnrStyle->fMaxR; }
+  Float_t GetMaxZ()         const { return fRnrStyle->fMaxZ; }
   Float_t GetMaxOrbs()      const { return fRnrStyle->fMaxOrbs; }
   Float_t GetMinAng()       const { return fRnrStyle->fMinAng; }
   Float_t GetDelta()        const { return fRnrStyle->fDelta; }
