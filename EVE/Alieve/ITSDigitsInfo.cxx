@@ -8,7 +8,6 @@
 #include <Reve/TTreeTools.h>
 
 #include "ITSDigitsInfo.h"
-//#include <AliITSresponseSDD.h>
 #include <AliITSCalibrationSDD.h>
 #include <AliITSdigit.h>
 #include <AliITSdigitSPD.h>
@@ -63,14 +62,27 @@ void ITSDigitsInfo::SetTree(TTree* tree)
   fTree = tree;
 
   SetITSSegmentation();
-  
+
   // create tables for scaling
+  fSPDMinVal = 0;
+  fSDDMinVal = 5;
+  fSSDMinVal = 2;
+
+  fSPDMaxVal = 1;
+  fSDDMaxVal = 80;
+  fSSDMaxVal = 100;
+
+  fSPDMaxOcc  = 0.15;
+  fSDDMaxOcc  = 0.15;
+  fSSDMaxOcc  = 0.3;
+
   // lowest scale factor refers to unscaled ITS module
   fSPDScaleX[0] = 1;
   fSPDScaleZ[0] = 1;
   fSDDScaleX[0] = 1;
   fSDDScaleZ[0] = 1;
   fSSDScale [0] = 1;
+
   // spd lows resolution is in the level of 8x2 readout chips
   Int_t nx = 8; // fSegSPD->Npx()/8; // 32
   Int_t nz = 6; // fSegSPD->Npz()/2; // 128
@@ -83,7 +95,6 @@ void ITSDigitsInfo::SetTree(TTree* tree)
   fSPDScaleZ[3] = Int_t(nz*3); 
   fSPDScaleX[4] = Int_t(nx*4); 
   fSPDScaleZ[4] = Int_t(nz*4); 
-
 
   fSDDScaleX[1] = 2;
   fSDDScaleZ[1] = 2;
@@ -98,14 +109,6 @@ void ITSDigitsInfo::SetTree(TTree* tree)
   fSSDScale[2] = 9;
   fSSDScale[3] = 20;
   fSSDScale[4] = 30;
-
-  
-  // lowest scale factor refers unscaled ITS module
-  fSPDScaleX[0] = 1;
-  fSPDScaleZ[0] = 1;
-  fSDDScaleX[0] = 1;
-  fSDDScaleZ[0] = 1;
-  fSSDScale [0] = 1;
 }
 
 /**************************************************************************/

@@ -37,17 +37,30 @@ protected:
 
 public:
   TTree*                   fTree;
+
   AliITSgeom*              fGeom;
+
   AliITSsegmentationSPD*   fSegSPD;
   AliITSsegmentationSDD*   fSegSDD;
   AliITSsegmentationSSD*   fSegSSD;
 
-  Int_t        fSPDScaleX[5];
-  Int_t        fSPDScaleZ[5];
-  Int_t        fSDDScaleX[5];
-  Int_t        fSDDScaleZ[5];
-  Int_t        fSSDScale [5];
-    
+  Int_t                    fSPDMinVal;
+  Int_t                    fSSDMinVal;
+  Int_t                    fSDDMinVal;
+  Int_t                    fSPDMaxVal;
+  Int_t                    fSSDMaxVal;
+  Int_t                    fSDDMaxVal;
+
+  Float_t                  fSPDMaxOcc;
+  Float_t                  fSDDMaxOcc;
+  Float_t                  fSSDMaxOcc;
+
+  Int_t                    fSPDScaleX[5];
+  Int_t                    fSPDScaleZ[5];
+  Int_t                    fSDDScaleX[5];
+  Int_t                    fSDDScaleZ[5];
+  Int_t                    fSSDScale [5];
+
   ITSDigitsInfo();
   virtual ~ITSDigitsInfo();
 
