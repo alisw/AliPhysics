@@ -81,7 +81,7 @@ void OldQuadSet::Paint(Option_t* )
   if (fTrans)
     memcpy(buffer.fLocalMaster, fMatrix, 16*sizeof(Double_t));
   buffer.SetSectionsValid(TBuffer3D::kCore);
-   
+
   // We fill kCore on first pass and try with viewer
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
   if (reqSections == TBuffer3D::kNone) {

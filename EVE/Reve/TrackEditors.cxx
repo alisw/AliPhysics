@@ -155,9 +155,9 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
     TGMatrixLayout *ml = new TGMatrixLayout(fitPM, 0,1,6);
     fitPM->SetLayoutManager(ml);
 
-    fFitDaughters = new TGCheckButton(fitPM, "Fit Daughters", PathMark::Daughter);
-    fFitReferences = new TGCheckButton(fitPM, "Fit Refs", PathMark::Reference);
-    fFitDecay = new TGCheckButton(fitPM, "Fit Decay", PathMark::Decay);
+    fFitDaughters  = new TGCheckButton(fitPM, "Fit Daughters", PathMark::Daughter);
+    fFitReferences = new TGCheckButton(fitPM, "Fit Refs",      PathMark::Reference);
+    fFitDecay      = new TGCheckButton(fitPM, "Fit Decay",     PathMark::Decay);
 
     fitPM->AddFrame(fFitDaughters);
     fitPM->AddFrame(fFitReferences);

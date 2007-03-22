@@ -104,7 +104,7 @@ ClassImp(QuadSetGL)
 
 /**************************************************************************/
 
-  QuadSetGL::QuadSetGL() : TGLObject(), fM(0)
+QuadSetGL::QuadSetGL() : TGLObject(), fM(0)
 {
   // fCached = false; // Disable DL.
 }
