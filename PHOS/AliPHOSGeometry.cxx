@@ -349,10 +349,11 @@ void AliPHOSGeometry::ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi,
     Double_t direction=n.Dot(p) ;
     if(direction<=0.)
       continue ; //momentum directed FROM module
-    Double_t x = (n.Mag2()-n.Dot(v))/direction ;  
+    Double_t fr = (n.Mag2()-n.Dot(v))/direction ;  
     //Calculate direction in module plain
-    n-=v+x*p ;
+    n-=v+fr*p ;
     n*=-1. ;
+n.Print() ;
     Float_t * sz = fGeometryEMCA->GetInnerThermoHalfSize() ; //Wery close to the zise of the Xtl set
     if(TMath::Abs(TMath::Abs(n.Z())<sz[2]) && n.Pt()<sz[0]){
       moduleNumber = imod ;
@@ -432,8 +433,8 @@ void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
  
     //Shift and possibly apply misalignment corrections
     Int_t nCellsInStrip=fGeometryEMCA->GetNCellsXInStrip() ;
-    Int_t strip=relid[3]/fGeometryEMCA->GetNCellsZInStrip()+((relid[2]-1)/nCellsInStrip)*GetNZ()/fGeometryEMCA->GetNCellsZInStrip() ;
-    Int_t cell=fGeometryEMCA->GetNCellsZInStrip()*relid[2]%nCellsInStrip-relid[3]%fGeometryEMCA->GetNCellsZInStrip() ;
+    Int_t strip=1+(relid[3]-1)/fGeometryEMCA->GetNCellsZInStrip()+((relid[2]-1)/nCellsInStrip)*fGeometryEMCA->GetNStripZ() ;
+    Int_t cell=fGeometryEMCA->GetNCellsZInStrip()*(1+(relid[2]-1)%nCellsInStrip)-(relid[3]-1)%fGeometryEMCA->GetNCellsZInStrip() ;
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d/PCEL_%d",
             relid[0],strip,cell) ;
     if (!gGeoManager->cd(path)){
@@ -517,7 +518,7 @@ void AliPHOSGeometry::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t 
     Int_t iStrip = strip.Atoi() ; 
     relid[0] = module ;
     relid[1] = 0 ;
-    Int_t raw = fGeometryEMCA->GetNCellsXInStrip()*(iStrip-1)/fGeometryEMCA->GetNStripZ() +
+    Int_t raw = fGeometryEMCA->GetNCellsXInStrip()*((iStrip-1)/fGeometryEMCA->GetNStripZ()) +
                 1 + (icell-1)/fGeometryEMCA->GetNCellsZInStrip() ;
     Int_t col = fGeometryEMCA->GetNCellsZInStrip()*(1+(iStrip-1)%fGeometryEMCA->GetNStripZ()) - 
                 (icell-1)%fGeometryEMCA->GetNCellsZInStrip() ;
@@ -694,7 +695,7 @@ void AliPHOSGeometry::Local2Global(Int_t mod, Float_t x, Float_t z,
   else{
     AliFatal("Geo matrixes are not loaded \n") ;
   }
-  globalPosition.SetXYZ(posG[0],posG[1],posG[2]) ;
+  globalPosition.SetXYZ(posG[0],posG[1],-posG[2]) ;
  
 
 }
