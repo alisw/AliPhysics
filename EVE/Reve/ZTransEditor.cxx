@@ -70,7 +70,7 @@ ZTransSubEditor::ZTransSubEditor(TGWindow* p) :
   fEditTransFrame = new TGVerticalFrame(this);
 
   fPos = new RGTriVecValuator(fEditTransFrame, "Pos", 160, 20);
-  fPos->SetLabelWidth(9);
+  fPos->SetLabelWidth(17);
   fPos->SetNELength(6);
   fPos->Build(kFALSE, "x", "y", "z");
   fPos->SetLimits(-1e5, 1e5, TGNumberFormat::kNESRealThree);
@@ -78,14 +78,14 @@ ZTransSubEditor::ZTransSubEditor(TGWindow* p) :
 
   fRot = new RGTriVecValuator(fEditTransFrame, "Rot", 160, 20);
   fRot->SetLabelWidth(17);
-  fRot->SetNELength(5);
+  fRot->SetNELength(6);
   fRot->Build(kFALSE, "Rz", "RY", "Rx");
   fRot->SetLimits(-360, 360, TGNumberFormat::kNESRealOne);
   fEditTransFrame->AddFrame(fRot, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,0,0,0));
 
   fScale = new RGTriVecValuator(fEditTransFrame, "Scale", 160, 20);
   fScale->SetLabelWidth(17);
-  fScale->SetNELength(5);
+  fScale->SetNELength(6);
   fScale->Build(kFALSE, "Sx", "Sy", "Sz");
   fScale->SetLimits(1e-2, 1e2, TGNumberFormat::kNESRealTwo);
   fEditTransFrame->AddFrame(fScale, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,0,0,0));
@@ -103,7 +103,7 @@ ZTransSubEditor::ZTransSubEditor(TGWindow* p) :
     hframe->AddFrame(fUpdate, new TGLayoutHints(kLHintsLeft | kLHintsExpandX, 5,5,1,1));
     fUpdate->Connect("Clicked()", "Reve::ZTransSubEditor", this, "TransChanged()");
 
-    fEditTransFrame->AddFrame(hframe, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,0,0,0));
+    fEditTransFrame->AddFrame(hframe, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,0,4,0));
   }
 
   AddFrame(fEditTransFrame, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,0,1,2));
