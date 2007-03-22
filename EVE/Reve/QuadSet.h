@@ -191,6 +191,8 @@ public:
 
   FrameBox* GetFrame() const { return fFrame; }
   void SetFrame(FrameBox* b);
+ 
+  Bool_t GetValueIsColor()  const { return fValueIsColor; }
 
   RGBAPalette* GetPalette() const { return fPalette; }
   void SetPalette(RGBAPalette* p);
