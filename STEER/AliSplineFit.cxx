@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //-------------------------------------------------------------------------
 //                Implementation of the AliSplineFit class
 //   The class performs a spline fit on an incoming TGraph. The graph is 
@@ -91,6 +89,7 @@ AliSplineFit::AliSplineFit(const AliSplineFit& source) :
     fX[i]  = source.fX[i];
     fY0[i] = source.fY0[i];
     fY1[i] = source.fY1[i];
+    fChi2I[i] = source.fChi2I[i];
   }
 }
 AliSplineFit& AliSplineFit::operator=(const AliSplineFit& source){
@@ -1000,4 +999,16 @@ void AliSplineFit::Test(Int_t npoints, Int_t ntracks, Float_t snoise){
     delete hS;
   }
   delete pcstream;    
+}
+
+void AliSplineFit::Cleanup(){
+ //
+ // deletes extra information to reduce amount of information stored on the data
+ // base
+    
+     delete fGraph;  fGraph=0;
+     delete fParams; fParams=0;
+     delete fCovars; fCovars=0;
+     delete [] fIndex; fIndex=0;
+     delete [] fChi2I; fChi2I=0;
 }

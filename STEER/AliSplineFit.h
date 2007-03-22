@@ -30,6 +30,7 @@ class AliSplineFit : public TObject {
   void       SplineFit(Int_t nder);
   void       MakeSmooth(TGraph * graph, Float_t ratio, char * type);
   void       Update(TSpline3 *spline, Int_t nknots);
+  void       Cleanup();
   Int_t      GetKnots() const {return fN;} 
   Double_t*  GetX() const {return fX;}
   Double_t*  GetY0() const {return fY0;}
@@ -63,17 +64,17 @@ class AliSplineFit : public TObject {
   Int_t         fN0;      //  number of knots in iteration 0 
   TClonesArray *fParams;  //  object array of parameters in knots
   TClonesArray *fCovars;  //  object array of covariance in knots
-  Int_t        *fIndex;   //  [fN0] index of point corresponding to knot
+  Int_t        *fIndex;   //[fN0] index of point corresponding to knot
   static TLinearFitter* fitterStatic(); // static fitter to save processing time
   //
   // 
   //
   Int_t    fN;            //  number of knots after compression 
   Double_t fChi2;         //  chi2 per degree of freedom 
-  Double_t *fX;           //  [fN] - xknot value
-  Double_t *fY0;          //  [fN] - y value at X
-  Double_t *fY1;          //  [fN] - y derivative value at X
-  Double_t *fChi2I;       //  [fN] - chi2 on interval
-  ClassDef(AliSplineFit, 0);
+  Double_t *fX;           //[fN] - xknot value
+  Double_t *fY0;          //[fN] - y value at X
+  Double_t *fY1;          //[fN] - y derivative value at X
+  Double_t *fChi2I;       //[fN] - chi2 on interval
+  ClassDef(AliSplineFit, 1);
 };
 #endif 
