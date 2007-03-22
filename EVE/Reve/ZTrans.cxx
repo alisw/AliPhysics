@@ -81,6 +81,24 @@ ZTrans::ZTrans(const ZTrans& t) :
   SetTrans(t, kFALSE);
 }
 
+ZTrans::ZTrans(const Double_t arr[16]) :
+  TObject(),
+  mA1(0), mA2(0), mA3(0), bAsOK(kFALSE),
+  fUseTrans (kTRUE),
+  fEditTrans(kFALSE)
+{
+  SetFromArray(arr);
+}
+
+ZTrans::ZTrans(const Float_t  arr[16]) :
+  TObject(),
+  mA1(0), mA2(0), mA3(0), bAsOK(kFALSE),
+  fUseTrans (kTRUE),
+  fEditTrans(kFALSE)
+{
+  SetFromArray(arr);
+}
+
 /**************************************************************************/
 
 void ZTrans::UnitTrans()
@@ -112,6 +130,18 @@ void ZTrans::SetTrans(const ZTrans& t, Bool_t copyAngles)
   } else {
     bAsOK = kFALSE;
   }
+}
+
+void ZTrans::SetFromArray(const Double_t arr[16])
+{
+  for(Int_t i=0; i<16; ++i) M[i] = arr[i];
+  bAsOK = false;
+}
+
+void ZTrans::SetFromArray(const Float_t  arr[16])
+{
+  for(Int_t i=0; i<16; ++i) M[i] = arr[i];
+  bAsOK = false;
 }
 
 void ZTrans::SetupRotation(Int_t i, Int_t j, Double_t f)
@@ -166,6 +196,17 @@ ZTrans ZTrans::operator*(const ZTrans& t)
   ZTrans b(*this);
   b.MultRight(t);
   return b;
+}
+
+/**************************************************************************/
+
+void ZTrans::TransposeRotationPart()
+{
+  Double_t x;
+  x = M[F01]; M[F01] = M[F10]; M[F10] = x;
+  x = M[F02]; M[F02] = M[F20]; M[F20] = x;
+  x = M[F12]; M[F12] = M[F21]; M[F21] = x;
+  bAsOK = false;
 }
 
 /**************************************************************************/
