@@ -1,3 +1,36 @@
+2007-03-22  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TGeoShapeExtract.cxx:
+	* TGeoShapeExtract.h:
+	New files: class TGeoShapeExtract that allows import of exact
+	image of geometry as exported from gled.
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	* LinkDef.h:
+	New classes TGeoShapeExtract and Reve::GeoShapeRnrEl.
+
+	* RGBrowser.cxx:
+	Disable ROOT's auto-update of TGListTree's checkboxes.
+
+	* RenderElement.cxx:
+	Setup check-box pictures when inserting in a list-tree.
+
+	* Track.h:
+	Fix typo, swap of R/Z.
+
+	* ZTrans.cxx:
+	* ZTrans.h:
+	Add ctors/setters from float/double arrays.
+
+	* ZTransEditor.cxx:
+	Align position, rotation and scale widgets.
+
+	* QuadSet.cxx:
+	* QuadSetGL.cxx:
+	* TrackEditors.cxx:
+	White-space.
+
 2007-03-15  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* GridStepper.h:
