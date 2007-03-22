@@ -101,6 +101,7 @@ RGBrowser::RGBrowser(const TGWindow *p, UInt_t w, UInt_t h) :
   fListTree->SetCanvas(fTreeView);
   fListTree->Associate(this);
   fListTree->SetColorMode(TGListTree::EColorMarkupMode(TGListTree::kColorUnderline | TGListTree::kColorBox));
+  fListTree->SetAutoCheckBoxPic(kFALSE);
   fTreeView->SetContainer(fListTree);
 
   lo= new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,
