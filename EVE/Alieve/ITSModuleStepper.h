@@ -3,7 +3,6 @@
 #ifndef ALIEVE_ITSModuleStepper_H
 #define ALIEVE_ITSModuleStepper_H
 
-
 #include <Reve/RenderElement.h>
 #include <Reve/GridStepper.h>
 
@@ -18,6 +17,7 @@ class ITSModuleStepper : public Reve::RenderElementList
 public:
   typedef std::vector<Int_t>           vpInt_t;
   typedef std::vector<Int_t>::iterator vpInt_i;
+
 private:
   ITSModuleStepper(const ITSModuleStepper&);            // Not implemented
   ITSModuleStepper& operator=(const ITSModuleStepper&); // Not implemented
@@ -25,6 +25,9 @@ private:
 protected:
   ITSDigitsInfo*          fDigitsInfo;
   Reve::GridStepper*      fStepper;  
+ 
+  Float_t                 fExpand;
+
   vpInt_t                 fIDs;
   vpInt_i                 fPosition;
 
@@ -43,7 +46,7 @@ public:
   void   ResetList(){ fIDs.clear();}
 
   ClassDef(ITSModuleStepper, 0);
-}; // end class ITSModuleStepper
+};
 
 } // Alieve namespace
 
