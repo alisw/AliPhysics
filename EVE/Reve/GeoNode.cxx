@@ -3,9 +3,14 @@
 #include "GeoNode.h"
 #include <Reve/RGTopFrame.h>
 
+#include "TGeoShapeExtract.h"
+
 #include <TPad.h>
+#include <TBuffer3D.h>
+#include <TVirtualViewer3D.h>
 #include <TColor.h>
 
+#include <TGeoShape.h>
 #include <TGeoVolume.h>
 #include <TGeoNode.h>
 #include <TGeoManager.h>
@@ -255,4 +260,106 @@ void GeoTopNodeRnrEl::NodeVisChanged(TGeoNode* node)
   static const Exc_t eH("GeoTopNodeRnrEl::NodeVisChanged ");
   printf("%s node %s %p\n", eH.Data(), node->GetName(), (void*)node);
   UpdateNode(node);
+}
+
+
+/**************************************************************************/
+//______________________________________________________________________
+// GeoShapeRnrEl
+//
+// Minimal shape-wrapper allowing import of stuff from gled and retaining
+// user-set visibility, colors and transparency.
+/**************************************************************************/
+
+ClassImp(GeoShapeRnrEl)
+
+GeoShapeRnrEl::GeoShapeRnrEl(const Text_t* name, const Text_t* title) :
+  RenderElement (fColor),
+  TNamed        (name, title),
+  fColor        (0),
+  fTransparency (0),
+  fShape        (0)
+{}
+
+GeoShapeRnrEl::~GeoShapeRnrEl()
+{
+  if (fShape) {
+    fShape->SetUniqueID(fShape->GetUniqueID() - 1);
+    if (fShape->GetUniqueID() == 0)
+      delete fShape;
+  }
+}
+
+/**************************************************************************/
+
+void GeoShapeRnrEl::Paint(Option_t* /*option*/)
+{
+  if (fShape == 0)
+    return;
+
+  TBuffer3D& buff = (TBuffer3D&) fShape->GetBuffer3D
+    (TBuffer3D::kCore, false);
+
+  buff.fLocalFrame   = true;
+  buff.fID           = this;
+  buff.fColor        = fColor;
+  buff.fTransparency = fTransparency;
+  memcpy(buff.fLocalMaster, fHMTrans.Array(), 16*sizeof(Double_t));
+
+  fShape->GetBuffer3D(TBuffer3D::kBoundingBox | TBuffer3D::kShapeSpecific, true);
+
+  Int_t reqSec = gPad->GetViewer3D()->AddObject(buff);
+
+  if (reqSec != TBuffer3D::kNone) {
+    fShape->GetBuffer3D(reqSec, true);
+    reqSec = gPad->GetViewer3D()->AddObject(buff);
+  }
+
+  if (reqSec != TBuffer3D::kNone)
+    printf("spooky reqSec=%d for %s\n", reqSec, GetName());
+}
+
+/**************************************************************************/
+
+Int_t GeoShapeRnrEl::ImportShapeExtract(TGeoShapeExtract * gse,
+					RenderElement    * parent)
+{
+  gReve->DisableRedraw();
+  Int_t n = SubImportShapeExtract(gse, parent);
+  printf ("GeoShapeRnrEl::ImportShapeExtract imported %d elements\n", n);
+  gReve->EnableRedraw();
+  return n;
+}
+
+Int_t GeoShapeRnrEl::SubImportShapeExtract(TGeoShapeExtract * gse,
+					   RenderElement    * parent)
+{
+  Int_t ncreated = 1;
+
+  GeoShapeRnrEl* gsre = new GeoShapeRnrEl(gse->GetName(), gse->GetTitle());
+  gsre->fHMTrans.SetFromArray(gse->GetTrans());
+  gsre->fHMTrans.TransposeRotationPart(); // Transpose from gled-to-tgeo.
+  const Float_t* rgba = gse->GetRGBA();
+  gsre->fColor        = TColor::GetColor(rgba[0], rgba[1], rgba[2]);
+  gsre->fTransparency = (UChar_t) (100.0f*(1.0f - rgba[3]));
+  gsre->SetRnrSelf(gse->GetRnrSelf());
+  gsre->SetRnrChildren(gse->GetRnrElements());
+  gsre->fShape = gse->GetShape();
+  if (gsre->fShape)
+    gsre->fShape->SetUniqueID(gsre->fShape->GetUniqueID() + 1);
+
+  if (parent)
+    gReve->AddGlobalRenderElement(parent, gsre);
+  else
+    gReve->AddGlobalRenderElement(gsre);
+
+  if (gse->HasElements())
+  {
+    TIter next(gse->GetElements());
+    TGeoShapeExtract* chld;
+    while ((chld = (TGeoShapeExtract*) next()) != 0)
+      ncreated += SubImportShapeExtract(chld, gsre);
+  }
+
+  return ncreated;
 }

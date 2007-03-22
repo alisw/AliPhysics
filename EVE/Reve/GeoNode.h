@@ -4,11 +4,15 @@
 #define REVE_ReveGeom_H
 
 #include <Reve/RenderElement.h>
+#include <Reve/ZTrans.h>
 
 class TGeoVolume;
 class TGeoNode;
 class TGeoHMatrix;
 class TGeoManager;
+
+class TGeoShape;
+class TGeoShapeExtract;
 
 namespace Reve {
 
@@ -95,6 +99,45 @@ public:
 
   ClassDef(GeoTopNodeRnrEl, 1);
 }; // endclass GeoTopNodeRnrEl
+
+
+//----------------------------------------------------------------
+//----------------------------------------------------------------
+
+class GeoShapeRnrEl : public RenderElement,
+		      public TNamed
+{
+  GeoShapeRnrEl(const GeoShapeRnrEl&);            // Not implemented
+  GeoShapeRnrEl& operator=(const GeoShapeRnrEl&); // Not implemented
+
+protected:
+  ZTrans            fHMTrans;
+  Color_t           fColor;
+  UChar_t           fTransparency;
+  TGeoShape*        fShape;
+
+  static Int_t SubImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
+
+public:
+  GeoShapeRnrEl(const Text_t* name="GeoShapeRnrEl", const Text_t* title=0);
+  virtual ~GeoShapeRnrEl();
+
+  virtual Bool_t CanEditMainColor() { return kTRUE; }
+
+  ZTrans& RefHMTrans() { return fHMTrans; }
+  void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
+  void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
+
+  Color_t     GetColor()        { return fColor; }
+  UChar_t     GetTransparency() { return fTransparency; }
+  TGeoShape*  GetShape()        { return fShape; }
+
+  virtual void Paint(Option_t* option="");
+
+  static Int_t ImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
+
+  ClassDef(GeoShapeRnrEl, 1);
+};
 
 }
 

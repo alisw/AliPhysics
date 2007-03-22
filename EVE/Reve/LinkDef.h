@@ -163,6 +163,9 @@
 #pragma link C++ class Reve::GeoNodeRnrElEditor+;
 #pragma link C++ class Reve::GeoTopNodeRnrElEditor+;
 
+#pragma link C++ class TGeoShapeExtract+;
+#pragma link C++ class Reve::GeoShapeRnrEl+;
+
 // TrianlgeSet
 #pragma link C++ class Reve::TriangleSet;
 #pragma link C++ class Reve::TriangleSetEditor;
