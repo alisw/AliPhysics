@@ -128,7 +128,7 @@ Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
 }     
 
 //_____________________________________________________________________________
-Bool_t AliTOFtrack::PropagateToInnerTOF(Bool_t holes)
+Bool_t AliTOFtrack::PropagateToInnerTOF()
 {
   // Propagates a track of particle with mass=pm to a reference plane 
   // defined by x=xk through media of density=rho and radiationLength=x0
@@ -156,7 +156,7 @@ Bool_t AliTOFtrack::PropagateToInnerTOF(Bool_t holes)
   for (Int_t istep=0;istep<nsteps;istep++){
     Float_t xp = x+istep*0.5; 
     Double_t param[2];  
-    GetPropagationParameters(holes,param);  
+    GetPropagationParameters(param);  
     PropagateTo(xp,param[0],param[1]);
     
   }
@@ -201,17 +201,18 @@ Double_t AliTOFtrack::GetBz() const {
 }
 
 //_____________________________________________________________________________
-void AliTOFtrack::GetPropagationParameters(Bool_t holes, Double_t *param) {
+void AliTOFtrack::GetPropagationParameters(Double_t *param) {
 
  //Get average medium density, x0 while propagating the track
 
   //For TRD holes description
-
+  /*
   Double_t thetamin = (90.-31.1) * TMath::Pi()/180.;
   Double_t thetamax = (90.+31.1) * TMath::Pi()/180.;
 
   Double_t zmin = -55.;
   Double_t zmax =  55.;
+  */
 
   // Detector inner/outer radii
   Double_t rTPC    = 261.53;
@@ -228,10 +229,11 @@ void AliTOFtrack::GetPropagationParameters(Bool_t holes, Double_t *param) {
   Double_t x0TRD = 171.7;
   Double_t rhoTRD =0.33;
 
-  Int_t isec = GetSector();
+  //  Int_t isec = GetSector();
   Double_t r[3]; GetXYZ(r);
-  Float_t thetatr = TMath::ATan2(TMath::Sqrt(r[0]*r[0]+r[1]*r[1]),r[2]);
+  //  Float_t thetatr = TMath::ATan2(TMath::Sqrt(r[0]*r[0]+r[1]*r[1]),r[2]);
 
+  /*
   if(holes){
     if (isec == 0 || isec == 1 || isec == 2 ) {
       if( thetatr>=thetamin && thetatr<=thetamax){ 
@@ -246,7 +248,7 @@ void AliTOFtrack::GetPropagationParameters(Bool_t holes, Double_t *param) {
       }
     }
   }
-
+  */
   if(GetX() <= rTPC)
     {param[0]=x0TPC;param[1]=rhoTPC;}
   else if(GetX() > rTPC &&  GetX() < rTPCTRD)

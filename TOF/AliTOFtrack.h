@@ -42,7 +42,7 @@ public:
 
    Double_t GetYat(Double_t xk, Bool_t & skip) const;
    Bool_t   PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
-   Bool_t   PropagateToInnerTOF(Bool_t holes);
+   Bool_t   PropagateToInnerTOF();
    Bool_t   Rotate(Double_t angle) {
      return AliExternalTrackParam::Rotate(GetAlpha()+angle);
    }
@@ -60,7 +60,7 @@ protected:
 
  private:
 
-   void GetPropagationParameters(Bool_t holes, Double_t *param);
+   void GetPropagationParameters(Double_t *param);
    
    ClassDef(AliTOFtrack,1) // TOF reconstructed tracks
 
