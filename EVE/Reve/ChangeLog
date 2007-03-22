@@ -1,3 +1,8 @@
+2007-03-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* QuadSet.h:
+	Add getter for fValueIsColor.
+
 2007-03-22  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TGeoShapeExtract.cxx:

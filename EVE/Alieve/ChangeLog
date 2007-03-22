@@ -1,3 +1,29 @@
+2007-03-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* ITSScaledModule.cxx:
+	* ITSScaledModule.h:
+	* ITSScaledModuleEditor.cxx:
+	* ITSScaledModuleEditor.h:
+	New files for visualization of ITS scaled digits.
+
+	* LinkDef.h:
+	Register new classes for ITS scaled digits.
+
+	* ITSDigitsInfo.cxx:
+	* ITSDigitsInfo.h:
+	Add info for expected detector-type occupancy and default signal
+	values.
+
+	* ITSModule.cxx:
+	* ITSModule.h:
+	Make LoadQuads virtual; add missing getters; in initialization
+	read ITSDigitsInfo to configure palette.
+
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	Configure module offsets in the Reve::GridStepper. Update RGEditor
+	in Apply().
+
 2007-03-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:

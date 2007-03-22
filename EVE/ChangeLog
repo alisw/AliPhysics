@@ -1,3 +1,8 @@
+2007-03-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* alice-macros/its_module_stepper.C:
+	Fill ITSModuleStepper with a mix of modules from SPD, SDD and SSD.
+
 2007-03-16  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_clusters.C:
