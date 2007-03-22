@@ -28,6 +28,8 @@
 #pragma link C++ class AliCDBGridParam;
 
 #pragma link C++ class AliDCSValue;
+#pragma link C++ class AliDCSSensor;
+#pragma link C++ class AliDCSSensorArray;
 
 #pragma link C++ class AliPreprocessor;
 
