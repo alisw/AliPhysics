@@ -12,6 +12,7 @@
 
 #include "TObject.h"
 class AliTPCCalPad;
+class AliTPCSensorTempArray;
 class AliCDBEntry;
 class AliTPCParam;
 //class AliCDBStorage;
@@ -25,12 +26,13 @@ class AliTPCcalibDB : public TObject
   static void Terminate();
   void   SetRun(Long64_t run);   
   //
-  AliTPCCalPad* GetPadGainFactor();
-  AliTPCCalPad* GetPadTime0();
-  AliTPCCalPad* GetPadPRFWidth();
-  AliTPCCalPad* GetPadNoise();
-  AliTPCCalPad* GetPedestals();
-  AliTPCParam*  GetParameters();
+  AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
+  AliTPCCalPad* GetPadTime0() {return fPadTime0;}
+  AliTPCCalPad* GetPadPRFWidth() {return fPadPRFWidth;}
+  AliTPCCalPad* GetPadNoise() {return fPadNoise;}
+  AliTPCCalPad* GetPedestals() {return fPedestals;}
+  AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
+  AliTPCParam*  GetParameters(){return fParam;}
   //
 protected:
   void         Update();  //update entries
@@ -45,15 +47,13 @@ protected:
   AliTPCCalPad* fPadPRFWidth;
   AliTPCCalPad* fPadNoise;
   AliTPCCalPad* fPedestals;
+  AliTPCSensorTempArray* fTemperature;
   //
   //
   AliTPCParam * fParam;
   //
   static AliTPCcalibDB* fgInstance;
   static Bool_t       fgTerminated;
- private:
-  AliTPCcalibDB(const AliTPCcalibDB &param); // copy constructor
-  AliTPCcalibDB &operator = (const AliTPCcalibDB & param);
   ClassDef(AliTPCcalibDB, 0)
 };
 

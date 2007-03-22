@@ -32,10 +32,10 @@
 
 #include "AliTPCcalibDB.h"
 
-#include "AliTPCParam.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalDet.h"
+#include "AliTPCSensorTempArray.h"
 
 ClassImp(AliTPCcalibDB)
 
@@ -79,19 +79,22 @@ void AliTPCcalibDB::Terminate()
 
 //_____________________________________________________________________________
 AliTPCcalibDB::AliTPCcalibDB()
-              :TObject(),
-	       fRun(-1),
-	       fPadGainFactor(0),
-	       fPadTime0(0),
-	       fPadPRFWidth(0),
-	       fPadNoise(0),
-	       fPedestals(0),
-	       fParam(0)
 {
   //
   // constructor
   //  
-  fRun = AliCDBManager::Instance()->GetRun();
+  fRun = -1;
+      
+  //
+  //
+  //
+  fPadGainFactor = 0;
+  fPadTime0      = 0;
+  fPadPRFWidth   = 0;
+  fPadNoise      = 0;
+  fPedestals     = 0;
+  fTemperature   = 0;
+  fParam         = 0;
   Update();    // temporary
 }
 
@@ -107,7 +110,6 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //if (fPadTime0) delete fPadTime0;
   //if (fPadPRFWidth) delete fPadPRFWidth;
   //if (fPadNoise) delete fPadNoise;
-  if (fParam) {delete fParam; fParam = 0;}
 }
 
 
@@ -187,9 +189,16 @@ void AliTPCcalibDB::Update(){
     fPedestals = (AliTPCCalPad*)entry->GetObject();
   }
 
+  entry          = GetCDBEntry("TPC/Calib/Temperature");
+  if (entry){
+    //if (fTemperature) delete fTemperature;
+    entry->SetOwner(kTRUE);
+    fTemperature = (AliTPCSensorTempArray*)entry->GetObject();
+  }
+
   entry          = GetCDBEntry("TPC/Calib/Parameters");
   if (entry){
-    if (fParam) {delete fParam; fParam = 0;}
+    //if (fPadNoise) delete fPadNoise;
     entry->SetOwner(kTRUE);
     fParam = (AliTPCParam*)(entry->GetObject()->Clone());
   }
@@ -199,54 +208,3 @@ void AliTPCcalibDB::Update(){
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
   
 }
-
-
-AliTPCCalPad*  AliTPCcalibDB::GetPadGainFactor() {
-  //
-  // GetPadGainFactor  
-  //
-  if (!fPadGainFactor) AliFatal("Pad gain calibration entry not available\n");  
-  return fPadGainFactor;
-}
-AliTPCCalPad*  AliTPCcalibDB::GetPadTime0() {
-  //
-  //   GetPadTime0
-  //
-  if (!fPadTime0) AliFatal("Time 0 calibration entry not available\n");  
-  return fPadTime0;
-}
-
-AliTPCCalPad*  AliTPCcalibDB::GetPadPRFWidth() {
-  //
-  // GetPRF width  
-  //
-  if (!fPadPRFWidth) AliFatal("PRF calibration entry not available\n");    
-  return fPadPRFWidth;
-}
-
-AliTPCCalPad*  AliTPCcalibDB::GetPadNoise() {
-  //
-  // GetPadNoise  
-  //
-  if (!fPadNoise) AliFatal("Pad noise calibration entry not available\n");  
-  return fPadNoise;
-}
-
-AliTPCCalPad*  AliTPCcalibDB::GetPedestals() {
-  //
-  // GetPedestal  
-  //
-  if (!fPadGainFactor) AliFatal("Pedestal calibration entry not available\n");  
-  return fPedestals;
-}
-
-AliTPCParam*   AliTPCcalibDB::GetParameters(){
-  //
-  // GetParameters
-  //
-  if (!fParam) AliFatal("Parameters calibration entry not available\n");  
-  return fParam;
-}
-
-
-
