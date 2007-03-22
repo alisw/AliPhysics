@@ -29,7 +29,7 @@ class AliTRDPreprocessor : public AliPreprocessor
 
   private:
     
-    ClassDef(AliTRDPreprocessor,0);
+    ClassDef(AliTRDPreprocessor,0) // The SHUTTLE preprocessor for TRD
 
 };
 
