@@ -252,7 +252,7 @@ void AliMUONRecoCheck::MakeTrackRef()
 	pZ = particle->Pz();
 
 	trackParam->SetBendingCoor(y);
-	trackParam->SetNonBendingCoor(x);MakeAllDETsFullMisAlignment.C
+	trackParam->SetNonBendingCoor(x);
 	trackParam->SetZ(z);
 	if (TMath::Abs(pZ) > 0) {
 	  bendingSlope = pY/pZ;
