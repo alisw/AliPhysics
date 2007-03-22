@@ -13,9 +13,6 @@ class ITSModule : public Reve::QuadSet
   ITSModule& operator=(const ITSModule&); // Not implemented
 
 protected:
-  void LoadQuads();
-  void SetTrans();
-
   ITSDigitsInfo* fInfo; 
 
   Int_t       fID;    // Module   id
@@ -40,12 +37,14 @@ public:
 
   ITSDigitsInfo* GetDigitsInfo() const { return fInfo; }
   void SetDigitsInfo(ITSDigitsInfo* info);
+  
+  Int_t GetSubDetID() const { return fDetID; }
 
   Int_t GetID() const { return fID; }
-  void  SetID(Int_t gid);
+  void  SetID(Int_t gid, Bool_t tran=kTRUE);
 
-  void GetFrameDimensions(Float_t& x, Float_t& y, Float_t& z){ 
-    x=fDx; y =fDy; z=fDz;}
+  virtual void LoadQuads();
+  void SetTrans();
 
   virtual void QuadSelected(Int_t idx);
 

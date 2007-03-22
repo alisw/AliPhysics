@@ -62,12 +62,12 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
 
   {
     Float_t dx = info->fSegSPD->Dx()*0.00005;
-    Float_t dz = 3.48; 
+    Float_t dz = 3.50; 
 
     fgSPDFrameBox = new FrameBox();
     fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSPDFrameBox->SetFrameColor((Color_t) 31);
-    fgSPDPalette  = new RGBAPalette(0, 1);
+    fgSPDPalette  = new RGBAPalette(info->fSPDMinVal,info->fSPDMaxVal);
   }
 
   {
@@ -77,7 +77,7 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSDDFrameBox = new FrameBox();
     fgSDDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSDDFrameBox->SetFrameColor((Color_t) 32);
-    fgSDDPalette  = new RGBAPalette(5, 80);
+    fgSDDPalette  = new RGBAPalette(info->fSDDMinVal,info->fSDDMaxVal);
     fgSDDPalette->SetLimits(0, 512); // Set proper ADC range.
   }
 
@@ -88,7 +88,7 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSSDFrameBox = new FrameBox();
     fgSSDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSSDFrameBox->SetFrameColor((Color_t) 33);
-    fgSSDPalette  = new RGBAPalette(2, 100);
+    fgSSDPalette  = new RGBAPalette(info->fSSDMinVal,info->fSSDMaxVal);
     fgSSDPalette->SetLimits(0, 1024); // Set proper ADC range.
   }
 
@@ -106,7 +106,7 @@ void ITSModule::SetDigitsInfo(ITSDigitsInfo* info)
 
 /**************************************************************************/
 
-void ITSModule::SetID(Int_t gid)
+void ITSModule::SetID(Int_t gid, Bool_t trans)
 {
   static const Exc_t eH("ITSModule::SetID ");
 
@@ -165,7 +165,7 @@ void ITSModule::SetID(Int_t gid)
     SetName(symname);
     fDetID = 0;
     fDx = fInfo->fSegSPD->Dx()*0.00005;
-    fDz = 3.48; 
+    fDz = 3.50; 
     fDy = fInfo->fSegSPD->Dy()*0.00005;
 
   }
@@ -229,7 +229,8 @@ void ITSModule::SetID(Int_t gid)
 
   LoadQuads();  
   ComputeBBox();
-  SetTrans();
+  if (trans)
+    SetTrans();
 }
 
 void ITSModule::LoadQuads()
@@ -290,7 +291,7 @@ void ITSModule::LoadQuads()
 	  dpx = seg->Dpx(i)*0.0001;
 	  dpz = seg->Dpz(j)*0.0001;
 
-	  AddQuad(x-2*dpx, z, 4*dpx, dpz);
+	  AddQuad(x-2*dpx, z - dpz*0.5, 4*dpx, dpz);
 	  QuadValue(d->GetSignal());
 	  QuadId(d);
 	}
