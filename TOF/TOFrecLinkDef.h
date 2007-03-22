@@ -15,5 +15,6 @@
 #pragma link C++ class  AliTOFtrackerMI+;
 #pragma link C++ class  AliTOFpidESD+;
 #pragma link C++ class  AliTOFReconstructor+;
+#pragma link C++ class  AliTOFRecoParam;
 
 #endif
