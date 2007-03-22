@@ -53,6 +53,50 @@ AliTOFpidESD::AliTOFpidESD(Double_t *param):
 }
 
 //_________________________________________________________________________
+Int_t AliTOFpidESD::MakePID(AliESD *event, Double_t timeZero)
+{
+  //
+  //  This function calculates the "detector response" PID probabilities
+  //                Just for a bare hint... 
+
+  Int_t ntrk=event->GetNumberOfTracks();
+  AliESDtrack **tracks=new AliESDtrack*[ntrk];
+
+  Int_t i;
+  for (i=0; i<ntrk; i++) {
+    AliESDtrack *t=event->GetTrack(i);
+    tracks[i]=t;
+  }
+
+  for (i=0; i<ntrk; i++) {
+    AliESDtrack *t=tracks[i];
+    if ((t->GetStatus()&AliESDtrack::kTOFout)==0) continue;
+    if ((t->GetStatus()&AliESDtrack::kTIME)==0) continue;
+    Double_t tof=t->GetTOFsignal()-timeZero;
+    Double_t time[10]; t->GetIntegratedTimes(time);
+    Double_t p[10];
+    Double_t mom=t->GetP();
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) {
+      Double_t mass=AliPID::ParticleMass(j);
+      Double_t dpp=0.01;      //mean relative pt resolution;
+      if (mom>0.5) dpp=0.01*mom;
+      Double_t sigma=dpp*time[j]/(1.+ mom*mom/(mass*mass));
+      sigma=TMath::Sqrt(sigma*sigma + fSigma*fSigma);
+      if (TMath::Abs(tof-time[j]) > fRange*sigma) {
+	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
+        continue;
+      }
+      p[j]=TMath::Exp(-0.5*(tof-time[j])*(tof-time[j])/(sigma*sigma))/sigma;
+    }
+    t->SetTOFpid(p);
+  }
+
+  delete[] tracks;
+  
+  return 0;
+}
+
+//_________________________________________________________________________
 Int_t AliTOFpidESD::MakePID(AliESD *event)
 {
   //

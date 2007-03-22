@@ -24,7 +24,6 @@ class AliTOFGeometry;
 
 class AliTOFReconstructor: public AliReconstructor {
 public:
-  //AliTOFReconstructor(): AliReconstructor() {};
   virtual ~AliTOFReconstructor() {};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const;

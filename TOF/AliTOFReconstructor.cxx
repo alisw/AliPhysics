@@ -92,16 +92,10 @@ AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* /*runLoader*/) cons
 {
 // create a TOF tracker
 
-//  AliTOFGeometry* geom = GetTOFGeometry(runLoader);
-  AliTOFGeometry* geom = new AliTOFGeometryV5();
-  if (!geom) return NULL;
-  //  Double_t parPID[] = {130., 5.};
-  Double_t parPID[] = {80., 5.};
   TString selectedTracker = GetOption();
   // use MI tracker if selected
-  if (selectedTracker.Contains("MI")) return new AliTOFtrackerMI(geom,parPID);
-
-  return new AliTOFtracker(geom, parPID);
+  if (selectedTracker.Contains("MI")) return new AliTOFtrackerMI();
+  return new AliTOFtracker();
 }
 
 //_____________________________________________________________________________

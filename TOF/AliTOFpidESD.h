@@ -23,6 +23,7 @@ public:
  ~AliTOFpidESD(){}
 
   Int_t MakePID(AliESD *event);
+  Int_t MakePID(AliESD *event, Double_t timeZero);
   void  SetEventNumber(Int_t n) {fEventN=n;}
   Int_t GetEventNumber() const {return fEventN;}
 
