@@ -24,6 +24,7 @@ class TClonesArray;
 class AliESD;
 
 class AliTOFcluster;
+class AliTOFRecoParam;
 class AliTOFGeometry;
 class AliTOFtrack;
 
@@ -33,7 +34,7 @@ enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 
 public:
 
- AliTOFtrackerMI(AliTOFGeometry* geom, Double_t parPID[2]); 
+ AliTOFtrackerMI(); 
  AliTOFtrackerMI(const AliTOFtrackerMI &t); //Copy Ctor 
  AliTOFtrackerMI& operator=(const AliTOFtrackerMI &source); // ass. op.
 
@@ -95,11 +96,11 @@ private:
   void  CollectESD(); // Select starting Set for Matching 
   //void  Init();
   Float_t GetLinearDistances(AliTOFtrack * track, AliTOFcluster *cluster, Float_t distances[5]);
+  AliTOFRecoParam*  fRecoParam;           // Pointer to TOF Recontr. Params
   AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
-  AliTOFpidESD*    fTOFpid;               // Pointer to TOF PID
+  AliTOFpidESD*    fPid;               // Pointer to TOF PID
   AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
 
-  Bool_t fHoles;         // flag for Geometry Version(w/wo Holes) temporary!
   Int_t fN;              // Number of Clusters
   Int_t fNseeds;         // Number of track seeds  
   Int_t fNseedsTOF;      // TPC BP tracks

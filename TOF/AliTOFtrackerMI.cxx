@@ -32,9 +32,10 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 
+#include "AliTOFRecoParam.h"
 #include "AliTOFcalib.h"
 #include "AliTOFcluster.h"
-#include "AliTOFGeometry.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtrack.h"
 
@@ -43,10 +44,10 @@ extern TGeoManager *gGeoManager;
 ClassImp(AliTOFtrackerMI)
 
 //_____________________________________________________________________________
-AliTOFtrackerMI::AliTOFtrackerMI(AliTOFGeometry * geom, Double_t parPID[2]):
-  fGeom(geom),
-  fTOFpid(new AliTOFpidESD(parPID)),
-  fHoles(kFALSE),
+AliTOFtrackerMI::AliTOFtrackerMI():
+  fRecoParam(0x0),
+  fGeom(0x0),
+  fPid(0x0),
   fN(0),
   fNseeds(0),
   fNseedsTOF(0),
@@ -66,19 +67,22 @@ AliTOFtrackerMI::AliTOFtrackerMI(AliTOFGeometry * geom, Double_t parPID[2]):
  { 
   //AliTOFtrackerMI main Ctor
 
-  //fHoles=true;
-  fDy=AliTOFGeometry::XPad(); 
-  fDz=AliTOFGeometry::ZPad(); 
-  fDebugStreamer = new TTreeSRedirector("TOFdebug.root");   
-  //Init(); // temporary solution to know about Holes/no Holes
-  fHoles=geom->GetHoles();
+   fRecoParam=new AliTOFRecoParam();
+   fGeom=new AliTOFGeometryV5();
+   Double_t parPID[2];   
+   parPID[0]=fRecoParam->GetTimeResolution();
+   parPID[1]=fRecoParam->GetTimeNSigma();
+   fPid=new AliTOFpidESD(parPID);
+   fDy=fGeom->XPad(); 
+   fDz=fGeom->ZPad(); 
+   fDebugStreamer = new TTreeSRedirector("TOFdebug.root");   
 }
 //_____________________________________________________________________________
 AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):
   AliTracker(),
+  fRecoParam(0x0),
   fGeom(0x0),
-  fTOFpid(0x0),
-  fHoles(kFALSE),
+  fPid(0x0),
   fN(0),
   fNseeds(0),
   fNseedsTOF(0),
@@ -98,15 +102,15 @@ AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):
  { 
   //AliTOFtrackerMI copy Ctor
 
-  fHoles=t.fHoles;
   fNseeds=t.fNseeds;
   fNseedsTOF=t.fNseedsTOF;
   fngoodmatch=t.fngoodmatch;
   fnbadmatch=t.fnbadmatch;
   fnunmatch=t.fnunmatch;
   fnmatch=t.fnmatch;
+  fRecoParam = t.fRecoParam;
   fGeom = t.fGeom;
-  fTOFpid = t.fTOFpid;
+  fPid = t.fPid;
   fR=t.fR; 
   fTOFHeigth=t.fTOFHeigth;  
   fdCut=t.fdCut; 
@@ -123,15 +127,15 @@ AliTOFtrackerMI& AliTOFtrackerMI::operator=(const AliTOFtrackerMI &t)
 { 
   //AliTOFtrackerMI assignment operator
 
-  this->fHoles=t.fHoles;
   this->fNseeds=t.fNseeds;
   this->fNseedsTOF=t.fNseedsTOF;
   this->fngoodmatch=t.fngoodmatch;
   this->fnbadmatch=t.fnbadmatch;
   this->fnunmatch=t.fnunmatch;
   this->fnmatch=t.fnmatch;
+  this->fRecoParam = t.fRecoParam;
   this->fGeom = t.fGeom;
-  this->fTOFpid = t.fTOFpid;
+  this->fPid = t.fPid;
   this->fR=t.fR; 
   this->fTOFHeigth=t.fTOFHeigth;  
   this->fdCut=t.fdCut; 
@@ -154,27 +158,11 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
     //fDebugStreamer->Close();
     delete fDebugStreamer;
   }
-  delete fTOFpid;
+  delete fRecoParam;
+  delete fGeom;
+  delete fPid;
 }
 
-//_____________________________________________________________________________
-/*
-void AliTOFtrackerMI::Init() { 
-
-// temporary solution to know about Holes/no Holes, will be implemented as 
-// an AliTOFGeometry getter
-
-  AliModule* frame=gAlice->GetModule("FRAME"); 
-
-  if(!frame) {
-    AliError("Could Not load FRAME! Assume Frame with Holes ");
-    fHoles=true;
-  } else{
-    if(frame->IsVersion()==1) {fHoles=false;}    
-    else {fHoles=true;}      
-  }
-}
-*/
 //_____________________________________________________________________________
 Int_t AliTOFtrackerMI::PropagateBack(AliESD* event) {
   //
@@ -248,7 +236,7 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESD* event) {
 
 
   //Make TOF PID
-  fTOFpid->MakePID(event);
+  fPid->MakePID(event);
 
   if (fSeeds) {
     fSeeds->Delete();
@@ -294,8 +282,7 @@ void AliTOFtrackerMI::CollectESD() {
     // Propagate the rest of TPCbp  
 
     else {
-      if(track->PropagateToInnerTOF(fHoles)){ // temporary solution
-	//      if(track->PropagateToInnerTOF(fGeom->GetHoles())){
+      if(track->PropagateToInnerTOF()){ // temporary solution
       	track->SetSeedIndex(i);
 	t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
  	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
@@ -391,20 +378,20 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //propagat track to the middle of TOF
     //
     Float_t xs = 378.2;  // should be defined in the TOF geometry
-    Double_t ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());  
+    Double_t ymax=xs*TMath::Tan(0.5*fGeom->GetAlpha());  
     Bool_t skip=kFALSE;
     Double_t ysect=trackTOFin->GetYat(xs,skip);
     if (skip){
       xs = 372.;
-      ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
+      ymax=xs*TMath::Tan(0.5*fGeom->GetAlpha());
       ysect=trackTOFin->GetYat(xs,skip);
     }
     if (ysect > ymax) {
-      if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
+      if (!trackTOFin->Rotate(fGeom->GetAlpha())) {
 	continue;
       }
     } else if (ysect <-ymax) {
-      if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
+      if (!trackTOFin->Rotate(-fGeom->GetAlpha())) {
 	continue;
       }
     }    
@@ -483,7 +470,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       length[nfound] = trackTOFin->GetIntegratedLength();
       length[nfound]+=distances[4];
       mintimedist[nfound]=1000; 
-      Double_t tof2=AliTOFGeometry::TdcBinWidth()*cluster->GetTDC()+kTofOffset; // in ps
+      Double_t tof2=fGeom->TdcBinWidth()*cluster->GetTDC()+kTofOffset; // in ps
       // Float_t tgamma = TMath::Sqrt(cluster->GetR()*cluster->GetR()+cluster->GetZ()*cluster->GetZ())/0.03;  //time for "primary" gamma
       //if (trackTOFin->GetPt()<0.7 && TMath::Abs(tgamma-tof2)<350) continue;  // gamma conversion candidate - TEMPORARY
       for(Int_t j=0;j<=5;j++){
@@ -568,7 +555,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     tlab[1]=cgold->GetLabel(1);
     tlab[2]=cgold->GetLabel(2);
     //    Double_t tof2=25.*cgold->GetTDC()-350; // in ps
-    Double_t tof2=AliTOFGeometry::TdcBinWidth()*cgold->GetTDC()+kTofOffset; // in ps
+    Double_t tof2=fGeom->TdcBinWidth()*cgold->GetTDC()+kTofOffset; // in ps
     Float_t tgamma = TMath::Sqrt(cgold->GetR()*cgold->GetR()+cgold->GetZ()*cgold->GetZ())/0.03;
     Float_t info[11]={dist3D[igold][0],dist3D[igold][1],dist3D[igold][2],dist3D[igold][3],dist3D[igold][4],mintimedist[igold],
 		      -1,tgamma, qualityGold,cgold->GetQuality(),0};
