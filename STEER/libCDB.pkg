@@ -12,5 +12,6 @@ EXPORT:= AliCDBEntry.h AliCDBId.h AliCDBMetaData.h \
 AliCDBPath.h AliCDBRunRange.h AliCDBManager.h \
 AliCDBStorage.h AliCDBLocal.h AliCDBDump.h AliCDBGrid.h \
 AliDCSValue.h AliPreprocessor.h  AliShuttleInterface.h \
-AliGRPPreprocessor.h AliGRPDCS.h
+AliGRPPreprocessor.h AliGRPDCS.h \
+AliDCSSensorArray.h  AliDCSSensor.h
 
