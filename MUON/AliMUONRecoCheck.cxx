@@ -35,6 +35,7 @@
 #include "AliLog.h" 
 
 #include <TParticle.h>
+#include <TParticlePDG.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRecoCheck)
@@ -162,6 +163,9 @@ void AliMUONRecoCheck::MakeTrackRef()
   trackParam = new AliMUONTrackParam();
   hitForRec = new AliMUONHitForRec();
 
+  Int_t charge;
+  TParticlePDG *ppdg;
+
   Int_t max = fRunLoader->GetHeader()->Stack()->GetNtrack();
   for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; iTrackRef++) {
 
@@ -248,14 +252,20 @@ void AliMUONRecoCheck::MakeTrackRef()
 	pZ = particle->Pz();
 
 	trackParam->SetBendingCoor(y);
-	trackParam->SetNonBendingCoor(x);
+	trackParam->SetNonBendingCoor(x);MakeAllDETsFullMisAlignment.C
 	trackParam->SetZ(z);
 	if (TMath::Abs(pZ) > 0) {
 	  bendingSlope = pY/pZ;
 	  nonBendingSlope = pX/pZ;
 	}
+
 	pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
 	if (pYZ >0) inverseBendingMomentum = 1/pYZ;       
+
+	ppdg = particle->GetPDG(1);
+	charge = (Int_t)(ppdg->Charge()/3.0);
+	inverseBendingMomentum *= charge;
+
 	trackParam->SetBendingSlope(bendingSlope);
 	trackParam->SetNonBendingSlope(nonBendingSlope);
 	trackParam->SetInverseBendingMomentum(inverseBendingMomentum);
