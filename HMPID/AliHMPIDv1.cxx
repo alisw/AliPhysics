@@ -222,7 +222,8 @@ void AliHMPIDv1::DefineOpticalProperties()
     aEckov [i] =1e-9*eV;    //Ckov energy in GeV
     aAbsRad[i]=pRaAF->Eval(eV); aIdxRad[i]=1.292;//pRaIF->Eval(eV,20);      //Simulation for 20 degress C       
     aAbsWin[i]=pWiAF->Eval(eV); aIdxWin[i]=1.5787;//pWiIF->Eval(eV);
-    aAbsGap[i]=pGaAF->Eval(eV); aIdxGap[i]=1.0005;//pGaIF->Eval(eV);    aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
+    aAbsGap[i]=pGaAF->Eval(eV); aIdxGap[i]=1.0005;//pGaIF->Eval(eV);   
+    aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
     aAbsMet[i] =0.0001;                aIdxMet[i]=0;                                             //metal ref idx must be 0 in order to reflect photon
                                        aIdxPc [i]=1;           aQePc [i]=pQeF->Eval(eV);         //PC ref idx must be 1 in order to apply photon to QE conversion 
                                        
