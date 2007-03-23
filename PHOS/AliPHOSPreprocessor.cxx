@@ -34,6 +34,7 @@
 #include "TKey.h"
 #include "TList.h"
 #include "TObjString.h"
+#include "AliPHOSEmcBadChannelsMap.h"
 
 ClassImp(AliPHOSPreprocessor)
 
@@ -60,9 +61,13 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   // AliPHOSCalibHistoProducer.
   // It is a responsibility of the SHUTTLE framework to form the fileName
   
+  TString runType = GetRunType();
+  Log(Form("Run type: %s",runType.Data()));
+
   gRandom->SetSeed(0); //the seed is set to the current  machine clock!
   AliPHOSEmcCalibData calibData;
-  
+  AliPHOSEmcBadChannelsMap badMap;
+
   TList* list = GetFileSources(kDAQ, "AMPLITUDES");
   if(!list) {
     Log("Sources list not found, exit.");
@@ -71,7 +76,8 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 
   TIter iter(list);
   TObjString *source;
-
+  Int_t result=0;
+  
   while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
     AliInfo(Form("found source %s", source->String().Data()));
 
@@ -92,7 +98,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     Double_t coeff;
     char hnam[80];
     TH1F* histo=0;
-
+    
     //Get the reference histogram
     //(author: Gustavo Conesa Balbastre)
 
@@ -104,6 +110,29 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     Int_t ikey = 0;
     Int_t counter = 0;
     TH1F* hRef = 0;
+
+    // Check for dead channels    
+    if (runType=="LED") {    
+
+      Log(Form("Begin check for dead channels."));
+      for(Int_t mod=0; mod<nMod; mod++) {
+	for(Int_t col=0; col<nCol; col++) {
+	  for(Int_t row=0; row<nRow; row++) {
+	    sprintf(hnam,"mod%dcol%drow%d",mod,col,row);
+	    histo = (TH1F*)f.Get(hnam);
+	    if(histo)
+	      if (histo->GetMean()<1) {
+		Log(Form("Channel: [%d,%d,%d] seems dead, <E>=%.1f.",mod,col,row,histo->GetMean()));
+		badMap.SetBadChannel(mod,col,row);
+	      }
+	  }
+	}
+      }
+      //Store bad channels map
+      AliCDBMetaData badMapMetaData;
+      result = Store("Bad", "EmcData", &badMap, &badMapMetaData);
+      return result;
+    }
 
     //Check if the file contains any histogram
     
@@ -125,15 +154,15 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 	return 1;
       }
     }
-
+    
     Log(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
 	     hRef->GetName(),hRef->GetEntries(),
 	     hRef->GetMean(),hRef->GetRMS()));
 
     Double_t refMean=hRef->GetMean();
-
+    
     // Calculates relative calibration coefficients for all non-zero channels
-
+    
     for(Int_t mod=0; mod<nMod; mod++) {
       for(Int_t col=0; col<nCol; col++) {
 	for(Int_t row=0; row<nRow; row++) {
@@ -154,9 +183,10 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     f.Close();
   }
   
-  AliCDBMetaData metaData;
-  Int_t result = Store("Calib", "EmcData", &calibData, &metaData);
-
+  //Store EMC calibration data
+  
+  AliCDBMetaData emcMetaData;
+  result = Store("Calib", "EmcData", &calibData, &emcMetaData);
   return result;
 
 }
