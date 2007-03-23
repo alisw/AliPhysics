@@ -1,10 +1,13 @@
 // from CreateESDChain.C - instead of  #include "CreateESDChain.C"
 TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
-//
+// -
 
 void testFoF(const Char_t* dataDir=".", Int_t nRuns = 10, Int_t offset = 0)
 {
+ // include path (to find the .h files when compiling)
+ gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+
  // load needed libraries
  gSystem->Load("libESD");
  gSystem->Load("libPhysics.so");

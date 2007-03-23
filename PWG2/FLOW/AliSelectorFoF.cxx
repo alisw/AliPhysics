@@ -230,7 +230,7 @@ void AliSelectorFoF::Begin(TTree*)
    cout << " . Writing Analysis Histograms on  : " << fFlowAnal->GetHistFileName()   << "  . " << endl ;
 
   // Analysis settings
-   fFlowAnal->SetFlowForV0(kFALSE) ;         // default kTRUE.
+   fFlowAnal->SetFlowForV0() ;         // default kTRUE.
    fFlowAnal->SetEtaSub() ;            // default kFALSE
    //fFlowAnal->SetV1Ep1Ep2() ;          // default kFALSE.
    //fFlowAnal->SetShuffle() ;           // default kFALSE. shuffles track array
@@ -240,6 +240,7 @@ void AliSelectorFoF::Begin(TTree*)
    fFlowAnal->SetUseBayWgt(kFALSE) ;    // default kFALSE. uses bayesian weights in P.id.
    //fFlowAnal->SetUsePtWgt();	// default kFALSE. uses pT as a weight for RP determination
    //fFlowAnal->SetUseEtaWgt();	// default kFALSE. uses eta as a weight for RP determination
+   //fFlowAnal->SetCustomRespFunc();	// default kFALSE. uses the combined response function from the ESD
    fFlowAnal->Init() ;
   }
  }
@@ -395,7 +396,7 @@ Bool_t AliSelectorFoF::Process(Long64_t entry)
   if(fOnFlyAnalysis)  
   {
    cout << " doing analysis :| " << endl ;
-   bool done = fFlowAnal->Analyse(fFlowEvent) ;
+   bool done = fFlowAnal->Analyze(fFlowEvent) ;
    fFlowAnal->PrintEventQuantities() ;
    if(done) { cout << "# analysis done :) " << entry << "                # ok ! #       " << endl ; } 
   }

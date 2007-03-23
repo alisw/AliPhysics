@@ -6,36 +6,38 @@
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Description: parser class from AliESD to AliFlowEvent . 
-//  Nothing else to say at this point, but 3 lines of comments must be 
-//  there (at least) to make the code checker happy. I hope now is ok!
+// Description: parser class from KineTree (pure MC simulation) to 
+//  AliFlowEvent . Nothing else to say at this point, but 3 lines of 
+//  comments (at least) must be there to make the code checker happy.
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef ALIFLOWMAKER_H
-#define ALIFLOWMAKER_H
+#ifndef ALIFLOWKINEMAKER_H
+#define ALIFLOWKINEMAKER_H
 
 class AliFlowEvent ;
 class AliFlowTrack ;
 class AliFlowV0 ;
 class TClonesArray ;
 
-class AliESD ;
-class AliESDVertex ;
-class AliESDtrack ;
-class AliESDv0 ;
+class TParticle ;
+class TParticlePDG ;
+class TTree ;
+//class AliRun ;
+//class AliRunLoader ;
+//class AliStack ;
 
-class AliFlowMaker  {
+class AliFlowKineMaker { 
 
   public:
   
-    AliFlowMaker();
-    virtual ~AliFlowMaker();
+    AliFlowKineMaker();
+    virtual ~AliFlowKineMaker();
 
   // FLOW SPECIFIC METHODS (to fill the flowEvents)
-    AliFlowEvent*  FillFlowEvent(AliESD* fESD) ;	    // fills up evt quantities 
-    AliFlowTrack*  FillFlowTrack(AliESDtrack* fTrack) ;     // fills up track quantities (global & constrained) ; p.id. & bayesian calculation ; 
-    AliFlowV0*	   FillFlowV0(AliESDv0* fV0) ;  	    // fills up v0 quantities ; links v0 to tracks and back ;
+    AliFlowEvent*  FillFlowEvent(TTree* fKTree) ;	   // fills up evt quantities 
+    AliFlowTrack*  FillFlowTrack(TParticle* fParticle) ;   // fills up track quantities ; 
+    AliFlowV0*	   FillFlowV0(TParticle* fParticle) ;  	   // fills up v0 quantities ;
 
   // USEFULL METHODS
     Double_t	   Norm(Double_t nu[3]) ;		    // norm of a non-vector 3 array	 
@@ -44,13 +46,14 @@ class AliFlowMaker  {
     Double_t	   Eta(Double_t nu[3]) ;		    // eta of a non-vector 3 array	 
 
   // Cut METHODS
-    Bool_t         CheckTrack(AliESDtrack* fTrack) const ;  // checks track (applies track cuts)
-    Bool_t         CheckV0(AliESDv0* fV0) const ; 	    // checks v0 (dummy)
-    Bool_t         CheckEvent(AliESD* fESD) const ; 	    // checks event (dummy)
+    Bool_t         CheckTrack(TParticle* fParticle) const ; // checks the particle (applies particle cuts, returns the particle charge)
+    Bool_t         CheckEvent(TTree* fKTree) const ; 	    // checks the KineTree (dummy)
     void 	   PrintCutList() ;			    // prints the list of cuts
-    void 	   SetNHitsCut(Int_t nHits) 	            { fNHits = nHits ; }			// exclude tracks with less than .. TPC hits 
+
+    void 	   SetAbsEtaCut(Float_t aEta) 	            { fAbsEta = aEta ; }			// exclude tracks with eta > aEta 
     void 	   SetECut(Float_t eLow, Float_t eUp)       { fElow = eLow ; fEup = eUp ; }		// exclude tracks below and above .. GeV 
     void 	   SetLabelCut(Int_t labLo, Int_t labHi)    { fLabel[0] = labLo ; fLabel[1] = labHi ; } // exclude tracks outside label interval
+    void 	   SetPrimaryCut(Bool_t prim = kTRUE)       { fPrimary = prim ;	}                	// exclude secundaries 
 
   // Get METHODS
     Int_t          GetNgoodTracks() const         	    { return fGoodTracks ; }	  
@@ -62,12 +65,12 @@ class AliFlowMaker  {
     Int_t          GetBayesian(Int_t i = 2) const     	    { return fBayesianAll[i] ; }
     Float_t        GetBayesianNorm(Int_t i = 2) const 	    { return (Float_t)fBayesianAll[i] / (Float_t)fSumAll ; }
 
+
  protected:
  
   // enumerators 			    
-    Int_t            fEventNumber ;	  		    //! progressive enumeration of ESD events
-    Int_t            fTrackNumber ;	  		    //! progressive enumeration of ESD tracks
-    Int_t            fV0Number ;	  		    //! progressive enumeration of ESD V0
+    Int_t            fEventNumber ;	  		    //! progressive enumeration of KineTree events
+    Int_t            fPartNumber ;	  		    //! progressive enumeration of TParticle
 
     Int_t            fGoodTracks ;	  		    //! enumerator for good tracks
     Int_t            fGoodV0s ; 	  		    //! enumerator for good v0s
@@ -75,36 +78,38 @@ class AliFlowMaker  {
     Int_t            fPosiTracks ;	  		    //! enumerator for positive tracks
     Int_t            fNegaTracks ;	  		    //! enumerator for negative tracks
     Int_t            fUnconstrained ;	  		    //! enumerator for tracks not constrainable
-    Int_t            fBayesianAll[5] ;    		    //! final particles abundance -> AliFlowEvent (see Bayesian P.Id.)
+    Int_t            fBayesianAll[6] ;    		    //! final particles abundance -> AliFlowEvent (see Bayesian P.Id.)
     Int_t            fSumAll ;  	  		    //! total particles abundance (all kind)
 
     Int_t            fCutEvts ; 	  		    //! total enumerator for discarded events
-    Int_t            fCutTrks ; 	  		    //! total enumerator for discarded tracks
-    Int_t            fCutV0s ;  	  		    //! total enumerator for discarded V0s
- 
+    Int_t            fCutParts ; 	  		    //! total enumerator for discarded particles
+
   // Flags
-    Bool_t           fNewAli ;	  	  		    //! enables the new ESD features (since AliRoot 12/2006) 
-    Bool_t           fLoopTrks ;	  		    //! flag to loop over tracks 
-    Bool_t           fLoopV0s ; 	  		    //! flag to loop over v0s 
+    Bool_t           fNewAli ;	  	  		    //! enables the new features (since AliRoot 12/2006) 
+    Bool_t           fLoopParts ;	  		    //! flag to loop over tracks 
 
     Int_t 	     fCounter ;        	  		    //! number of processed events
+
 
  private:
 
   // to make the code checker happy
-   AliFlowMaker(const AliFlowMaker &flowMak) ; 		    // Copy Constructor (dummy)
-   AliFlowMaker &operator=(const AliFlowMaker &flowMak) ;   // Assignment Operator (dummy)
+   AliFlowKineMaker(const AliFlowKineMaker &flowMak) ; 		  // Copy Constructor (dummy)
+   AliFlowKineMaker &operator=(const AliFlowKineMaker &flowMak) ; // Assignment Operator (dummy)
 
-  // ESDs
-    AliESD*          fESD;      	  		    //! "ESD event"
-    AliESDtrack*     fTrack;    	  		    //! "ESD track" 
-    AliESDv0*        fV0;       	  		    //! "ESD v0" 
-    AliESDVertex*    fVertex;       	  		    //! "ESD primary vertex"  
+  // KineTree stuff
+    TTree*     	     fKTree ;      	  		    //! KineTree
+    TParticle* 	     fParticle ;      	  		    //! TParticle (momentum, decay, etc.)
+    TParticlePDG*    fParticlePDG ;    	  		    //! TParticlePDG (type, charge, etc.)
+    Int_t            fCharge ;		     		    //! charge of the TParticlePDG
+    Float_t          fVertex[3] ;      	  		    //! primary vertex  
+//    AliStack*        fStack ;  			    //! particle stack
+//    AliRunLoader*    fRunLoader ;	     		    //! AliRunLoader
+//    AliRun*          gAlice ;		     		    //! pointer to the AliRun (gAlice)
 
     Int_t            fRunID;		  		    //! last run ID
-    Int_t            fNumberOfEvents ;    		    //! total number of ESD events in file
-    Int_t            fNumberOfTracks ;    		    //! total number of tracks in the current event
-    Int_t            fNumberOfV0s ;	  		    //! total number of v0s in the current event
+    Int_t            fNumberOfEvents ;    		    //! total number of KineTree events in file
+    Int_t            fNumberOfParticles ;    		    //! total number of TParticles in the current event
     Float_t 	     fMagField ; 	  		    //! magnetic field from the ESD
 
   // Flow
@@ -113,12 +118,14 @@ class AliFlowMaker  {
     AliFlowV0*       fFlowV0;          	  		    //! pointer to flow V0
 
   // Tracks cuts
-    Int_t   fNHits;            	        		    // exclude tracks with less than .. TPC hits 
+    Float_t fAbsEta;            	        	    // exclude tracks with |eta| bigger than 
     Float_t fElow ;		        		    // exclude tracks below .. GeV (~total Momentum)
     Float_t fEup ;		        		    // exclude tracks above .. GeV (~total Momentum)
     Int_t   fLabel[2] ;	                		    // exclude tracks outside label interval
- 
-  ClassDef(AliFlowMaker,0);
+    Bool_t  fPrimary ;	                		    // exclude secundary tracks 
+    
+  ClassDef(AliFlowKineMaker,1);
 };			
 
 #endif
+

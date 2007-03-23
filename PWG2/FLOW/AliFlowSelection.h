@@ -175,7 +175,6 @@ class AliFlowSelection : public TObject {
   static Int_t    fgTPChits[AliFlowConstants::kSels];		// minimum number of TPC hits
   static Bool_t   fgConstrainable;			    	// cut un-constrainable tracks 
 
-
   ClassDef(AliFlowSelection,1)               			// macro for rootcint
 }; 
 
