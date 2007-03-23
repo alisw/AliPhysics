@@ -858,7 +858,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Int_t   plane    = fGeo->GetPlane(detector);
       Int_t   chamber  = fGeo->GetChamber(detector);
       padPlane         = commonParam->GetPadPlane(plane,chamber);
-      Float_t row0     = padPlane->GetRow0();
+      Float_t row0     = padPlane->GetRow0ROC();
       Int_t   nRowMax  = padPlane->GetNrows();
       Int_t   nColMax  = padPlane->GetNcols();
       Int_t   inDrift  = 1;
@@ -947,11 +947,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	// outside the chamber volume. A real fix would actually need
 	// a more clever implementation of the TR hit generation
         if (q < 0.0) {
-	  if ((locR < padPlane->GetRowEnd()) ||
-              (locR > padPlane->GetRow0())) {
+	  if ((locR < padPlane->GetRowEndROC()) ||
+              (locR > padPlane->GetRow0ROC())) {
             if (iEl == 0) {
               AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
-                             ,locR,padPlane->GetRow0(),padPlane->GetRowEnd()));
+                             ,locR,padPlane->GetRow0ROC(),padPlane->GetRowEndROC()));
 	    }
             continue;
 	  }
@@ -967,9 +967,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
         // Get row and col of unsmeared electron to retrieve drift velocity
         // The pad row (z-direction)
-        Int_t    rowE         = padPlane->GetPadRowNumber(locR);
+        Int_t    rowE         = padPlane->GetPadRowNumberROC(locR);
         if (rowE < 0) continue;
-        Double_t rowOffset    = padPlane->GetPadRowOffset(rowE,locR);
+        Double_t rowOffset    = padPlane->GetPadRowOffsetROC(rowE,locR);
 
         // The pad column (rphi-direction)
 	Double_t offsetTilt   = padPlane->GetTiltOffset(rowOffset);
@@ -1008,9 +1008,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
         // The electron position after diffusion and ExB in pad coordinates.
         // The pad row (z-direction)
-        rowE       = padPlane->GetPadRowNumber(locR);
+        rowE       = padPlane->GetPadRowNumberROC(locR);
         if (rowE < 0) continue;
-        rowOffset  = padPlane->GetPadRowOffset(rowE,locR);
+        rowOffset  = padPlane->GetPadRowOffsetROC(rowE,locR);
 
         // The pad column (rphi-direction)
         offsetTilt = padPlane->GetTiltOffset(rowOffset);
@@ -1063,7 +1063,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
           padSignal[2] = 0.0;
         }
 
-        // The time bin (always positive), with t0 correction
+        // The time bin (always positive), with t0 distortion
         Double_t timeBinIdeal = drifttime * samplingRate + t0;
         // Protection 
         if (TMath::Abs(timeBinIdeal) > 2*nTimeTotal) {

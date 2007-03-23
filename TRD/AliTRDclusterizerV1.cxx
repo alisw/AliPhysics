@@ -473,6 +473,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		clusterPos[0] = padPlane->GetColPos(col) - (clusterPads[1] + 0.5) * colSize;
 		clusterPos[1] = padPlane->GetRowPos(row) - 0.5                    * rowSize;
                 clusterPos[2] = CalcXposFromTimebin(clusterPads[2],idet,col,row);
+                if (idet == 510) {
+                  printf("------------> idet=%d, row=%d, col=%d, time=%d\n",idet,row,col,time);
+                  printf("              pos = %f, %f, %f\n",clusterPos[0],clusterPos[1],clusterPos[2]);
+		}
                 Double_t clusterSig[2];
                 clusterSig[0] = (clusterSigmaY2 + 1.0/12.0) * colSize*colSize;
                 clusterSig[1] = rowSize * rowSize / 12.0;                                       
