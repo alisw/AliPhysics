@@ -113,6 +113,10 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Int_t Convert8to10(Int_t signal) const {return ((AliITSresponseSDD*)fResponse)->Convert8to10(signal);}
     virtual void  SetJitterError(Double_t jitter=20) {((AliITSresponseSDD*)fResponse)->SetJitterError(jitter);}
     virtual Float_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
+    virtual Float_t GetDriftPath(Float_t time,Float_t /*anodecoord*/) const {return time*GetDriftSpeed();}
+    virtual Float_t GetThresholdAnode(Int_t anode,Int_t nsigma=3) const {
+      return fBaseline[anode]+nsigma*fNoise[anode];}
+
     virtual void  SetDo10to8(Bool_t bitcomp=kTRUE) {((AliITSresponseSDD*)fResponse)->SetDo10to8(bitcomp);}
  protected:
 

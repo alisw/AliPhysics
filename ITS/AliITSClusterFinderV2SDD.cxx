@@ -25,7 +25,7 @@
 #include "AliITSRecPoint.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
-#include "AliITSRawStreamSDD.h"
+#include "AliITSRawStreamSDDv3.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSsegmentationSDD.h"
@@ -68,15 +68,23 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
   AliBin *bins[2];
   bins[0]=new AliBin[kMAXBIN];
   bins[1]=new AliBin[kMAXBIN];
-
+  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+  
   AliITSdigitSDD *d=0;
   Int_t i, ndigits=digits->GetEntriesFast();
   for (i=0; i<ndigits; i++) {
      d=(AliITSdigitSDD*)digits->UncheckedAt(i);
+     Float_t baseline = cal->GetBaseline(d->GetCoord1());
+
      Int_t y=d->GetCoord2()+1;   //y
      Int_t z=d->GetCoord1()+1;   //z
      Int_t q=d->GetSignal();
-     if (q<3) continue;
+
+     if(q<cal->GetThresholdAnode(d->GetCoord1())) continue;
+     if(q>baseline) q-=(Int_t)baseline;
+     else q=0;
+ 
+     //if (q<3) continue;
 
      if (z <= fNzSDD) {
        bins[0][y*kNzBins+z].SetQ(q);
@@ -103,6 +111,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
   //------------------------------------------------------------
   // Actual SDD cluster finder
   //------------------------------------------------------------
+  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
   Int_t ncl=0; 
   TClonesArray &cl=*clusters;
   for (Int_t s=0; s<2; s++)
@@ -208,27 +217,38 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 //s2 = c.GetSigmaZ2()/c.GetQ() - z*z;
          //c.SetSigmaZ2(s2);
 	 //
-         y=(y-0.5)*fYpitchSDD;
-         y-=fHwSDD;
-         y-=fYoffSDD;  //delay ?
-         if (s) y=-y;
+
+	 Float_t yyyy = y;
+         //y=(y-0.5)*fYpitchSDD;
+         //y-=fHwSDD;
+         //y-=fYoffSDD;  //delay ?
+         //if (s) y=-y;
 
          z=(z-0.5)*fZpitchSDD;
          z-=fHlSDD;
-
-         y=-(-y+fYshift[fModule]);
-         z=  -z+fZshift[fModule];
+	 Float_t zdet = z;
+	 //      y=-(-y+fYshift[fModule]);
+	 // z=  -z+fZshift[fModule];
 	 //      c.SetY(y);
 	 //  c.SetZ(z);
-	 CorrectPosition(z,y);
+	 Float_t xdet = cal->GetDriftPath((yyyy-0.5)*25,0);
+	 xdet=xdet/10000.-fHwSDD-fYoffSDD;
+	 if (s) xdet=-xdet;
+	 
+	 CorrectPosition(zdet,xdet);
+
+	 y=-(-xdet+fYshift[fModule]);
+	 z=  -zdet+fZshift[fModule];
+	 
 	 c.SetY(y);
 	 c.SetZ(z);
 	 c.SetNy(maxj-minj+1);
 	 c.SetNz(maxi-mini+1);
 	 c.SetType(npeaks);
-         c.SetQ(q/12.7);  //to be consistent with the SSD charges
+         c.SetQ(q/12.7);  //this WAS consistent with SSD. To be reassessed 
+                          // 23-MAR-2007
 
-         if (c.GetQ() < 20.) continue; //noise cluster
+         //if (c.GetQ() < 20.) continue; //noise cluster
 	 
 	 if (digits) {	  
 	   //	   AliBin *b=&bins[s][idx[k]];
@@ -264,7 +284,7 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
-  AliITSRawStreamSDD inputSDD(rawReader);
+  AliITSRawStreamSDDv3 inputSDD(rawReader);
   FindClustersSDD(&inputSDD,clusters);
 
 }
@@ -338,22 +358,19 @@ void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
   static const Int_t nbina = cal->Chips()*cal->Channels();
   Float_t stepa = (GetSeg()->Dpz(0))/10000.; //anode pitch in cm
   Float_t stept = (GetSeg()->Dx()/cal->GetMapTimeNBin()/2.)/10.;
-  Float_t xdet,zdet;
-  fDetTypeRec->GetITSgeom()->TrackingV2ToDetL(fModule,y,z,xdet,zdet);
-
-  Int_t bint = TMath::Abs((Int_t)(xdet/stept));
-  if(xdet>=0) bint+=(Int_t)(nbint/2.);
+  
+  Int_t bint = TMath::Abs((Int_t)(y/stept));
+  if(y>=0) bint+=(Int_t)(nbint/2.);
   if(bint>nbint) AliError("Wrong bin number!");
 
-  Int_t bina = TMath::Abs((Int_t)(zdet/stepa));
-  if(zdet>=0) bina+=(Int_t)(nbina/2.);
+  Int_t bina = TMath::Abs((Int_t)(z/stepa));
+  if(z>=0) bina+=(Int_t)(nbina/2.);
   if(bina>nbina) AliError("Wrong bin number!");
 
   Float_t devz = cal->GetMapACell(bina,bint)/10000.;
   Float_t devx = cal->GetMapTCell(bina,bint)/10000.;
-  zdet+=devz;
-  xdet+=devx;
-  fDetTypeRec->GetITSgeom()->DetLToTrackingV2(fModule,xdet,zdet,y,z);
+  z+=devz;
+  y+=devx;
 
 
 }

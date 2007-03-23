@@ -101,9 +101,8 @@ void AliITSClusterFinderSDD::Find1DClusters(){
     Int_t dummy          = 0;
     Double_t fTimeStep    = GetSeg()->Dpx(dummy);
     Double_t fSddLength   = GetSeg()->Dx();
-    Double_t fDriftSpeed  = GetResp(fModule)->GetDriftSpeed();  
     Double_t anodePitch   = GetSeg()->Dpz(dummy);
-
+    AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
     // map the signal
     Map()->ClearMap();
     Map()->SetThresholdArr(fCutAmplitude);
@@ -216,7 +215,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 
                     Double_t clusteranodePath = (clusterAnode - fNofAnodes/2)*
                                                  anodePitch;
-                    Double_t clusterDriftPath = clusterTime*fDriftSpeed;
+		    Double_t clusterDriftPath = (Double_t)cal->GetDriftPath(clusterTime,clusteranodePath);
                     clusterDriftPath = fSddLength-clusterDriftPath;
                     if(clusterCharge <= 0.) break;
                     AliITSRawClusterSDD clust(j+1,//i
@@ -251,9 +250,8 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
     Int_t dummy=0;
     Double_t fTimeStep = GetSeg()->Dpx( dummy );
     Double_t fSddLength = GetSeg()->Dx();
-    Double_t fDriftSpeed = GetResp(fModule)->GetDriftSpeed();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
-
+    AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
     Map()->ClearMap();
     Map()->SetThresholdArr( fCutAmplitude );
     Map()->FillMap2();
@@ -313,7 +311,8 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                                 // time = lmax*fTimeStep;   // ns
                             if( time > fTimeCorr ) time -= fTimeCorr;   // ns
                             Double_t anodePath =(anode-fNofAnodes/2)*anodePitch;
-                            Double_t driftPath = time*fDriftSpeed;
+                            
+			    Double_t driftPath = (Double_t)cal->GetDriftPath(time,anodePath);
                             driftPath = fSddLength-driftPath;
                             AliITSRawClusterSDD clust(j+1,anode,time,charge,
                                                       fmax, peakpos,0.,0.,
@@ -693,11 +692,12 @@ void AliITSClusterFinderSDD::ResolveClusters(){
     Int_t dummy=0;
     Double_t fTimeStep = GetSeg()->Dpx( dummy );
     Double_t fSddLength = GetSeg()->Dx();
-    Double_t fDriftSpeed = GetResp(fModule)->GetDriftSpeed();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
     //Double_t n, baseline;
     //GetResp(fModule)->GetNoiseParam( n, baseline );
     Int_t electronics =GetResp(fModule)->GetElectronics(); // 1 = PASCAL, 2 = OLA
+    AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+    
 
     for( Int_t j=0; j<nofClusters; j++ ){ 
         // get cluster information
@@ -819,11 +819,15 @@ void AliITSClusterFinderSDD::ResolveClusters(){
                     //if(AliDebugLevel()>=3) clusterI.PrintInfo(); 
                    continue;
                 }
-                clusterI.SetPeakPos( peakpos );    
-                Double_t driftPath = fSddLength - newiTimef * fDriftSpeed;
+                clusterI.SetPeakPos( peakpos ); 
+		Float_t dp = cal->GetDriftPath(newiTimef,anodePath);   
+		Double_t driftPath = fSddLength - (Double_t)dp;
                 Double_t sign = ( wing == 1 ) ? -1. : 1.;
-                clusterI.SetX( driftPath*sign * 0.0001 );        
-                clusterI.SetZ( anodePath * 0.0001 );
+		Double_t xcoord = driftPath*sign * 0.0001;
+		Double_t zcoord = anodePath * 0.0001;
+		CorrectPosition(zcoord,xcoord);
+                clusterI.SetX( xcoord );        
+                clusterI.SetZ( zcoord );
                 clusterI.SetAnode( newAnodef );
                 clusterI.SetTime( newiTimef );
                 clusterI.SetAsigma( sigma[i]*anodePitch );
@@ -1003,4 +1007,29 @@ void AliITSClusterFinderSDD::PrintStatus() const{
     cout << "Minimum number of cells/clusters: " << fMinNCells << endl;
     cout << "Maximum number of cells/clusters: " << fMaxNCells << endl;
     cout << "**************************************************" << endl;
+}
+
+//_________________________________________________________________________
+void AliITSClusterFinderSDD::CorrectPosition(Double_t &z, Double_t&y){
+  //correction of coordinates using the maps stored in the DB
+
+  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+  static const Int_t nbint = cal->GetMapTimeNBin();
+  static const Int_t nbina = cal->Chips()*cal->Channels();
+  Float_t stepa = (GetSeg()->Dpz(0))/10000.; //anode pitch in cm
+  Float_t stept = (GetSeg()->Dx()/cal->GetMapTimeNBin()/2.)/10.;
+
+  Int_t bint = TMath::Abs((Int_t)(y/stept));
+  if(y>=0) bint+=(Int_t)(nbint/2.);
+  if(bint>nbint) AliError("Wrong bin number!");
+
+  Int_t bina = TMath::Abs((Int_t)(z/stepa));
+  if(z>=0) bina+=(Int_t)(nbina/2.);
+  if(bina>nbina) AliError("Wrong bin number!");
+
+  Double_t devz = (Double_t)cal->GetMapACell(bina,bint)/10000.;
+  Double_t devx = (Double_t)cal->GetMapTCell(bina,bint)/10000.;
+  z+=devz;
+  y+=devx;
+
 }
