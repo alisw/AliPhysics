@@ -112,5 +112,19 @@ void AliAODEvent::ResetStd(Int_t trkArrSize, Int_t vtxArrSize)
     fVertices->Expand(vtxArrSize);
 }
 
+//______________________________________________________________________________
+Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
+{
+  // fills the provided TRefArray with all found muon tracks
 
+  muonTracks->Clear();
 
+  AliAODTrack *track = 0;
+  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+    if ((track = GetTrack(iTrack))->GetMostProbablePID() == AliAODTrack::kMuon) {
+      muonTracks->Add(track);
+    }
+  }
+  
+  return muonTracks->GetSize();
+}

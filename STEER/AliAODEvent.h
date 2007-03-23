@@ -45,6 +45,7 @@ class AliAODEvent : public TObject {
   AliAODTrack  *GetTrack(Int_t nTrack)   const { return (AliAODTrack*)fTracks->At(nTrack); }
   void          AddTrack(const AliAODTrack* trk)
     {new((*fTracks)[fTracks->GetEntries()]) AliAODTrack(*trk);}
+  Int_t         GetMuonTracks(TRefArray *muonTracks) const;
 
   // -- Vertex
   TClonesArray *GetVertices()            const { return fVertices; }
