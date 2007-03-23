@@ -21,19 +21,23 @@ class AliAODTrack : public AliVirtualParticle {
 
  public:
   
-  enum AODTrk_t {kUndef=-1, kPrimary, kSecondary, kOrphan};
+  enum AODTrk_t {kUndef = -1, 
+		 kPrimary, 
+		 kSecondary, 
+		 kOrphan};
 
   enum AODTrkBits_t {
     kIsDCA=BIT(14),   // set if fPosition is the DCA and not the position of the first point
-    kUsedForPrimVtxFit=BIT(15) // set if this track was used to fit the primary vertex
+    kUsedForVtxFit=BIT(15), // set if this track was used to fit the vertex it is attached to
+    kUsedForPrimVtxFit=BIT(16) // set if this track was used to fit the primary vertex
   };
 
   enum AODTrkPID_t {
-    kElectron     =  0, 
-    kMuon         =  1, 
-    kPion         =  2, 
-    kKaon         =  3, 
-    kProton       =  4, 
+    kElectron     =  0,
+    kMuon         =  1,
+    kPion         =  2,
+    kKaon         =  3,
+    kProton       =  4,
     kDeuteron     =  5,
     kTriton       =  6,
     kHelium3      =  7,
@@ -54,6 +58,7 @@ class AliAODTrack : public AliVirtualParticle {
 	      UChar_t itsClusMap,
 	      Double_t pid[10],
 	      AliAODVertex *prodVertex,
+	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
 	      AODTrk_t ttype=kUndef);
 
@@ -68,6 +73,7 @@ class AliAODTrack : public AliVirtualParticle {
 	      UChar_t itsClusMap,
 	      Float_t pid[10],
 	      AliAODVertex *prodVertex,
+	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
 	      AODTrk_t ttype=kUndef);
 
@@ -86,7 +92,7 @@ class AliAODTrack : public AliVirtualParticle {
   virtual Double_t Pt() const { return fMomentum[0]; }
   virtual Double_t P()  const { return TMath::Sqrt(Pt()*Pt()+Pz()*Pz()); }
   
-  Double_t Chi2() const { return fChi2; }
+  Double_t Chi2perNDF() const { return fChi2perNDF; }
   
   virtual Double_t M() const { return M(GetMostProbablePID()); }
   Double_t M(AODTrkPID_t pid) const;
@@ -116,6 +122,7 @@ class AliAODTrack : public AliVirtualParticle {
   Int_t GetID() const { return fID; }
   Int_t GetLabel() const { return fLabel; } 
   Char_t GetType() const { return fType;}
+  Bool_t GetUsedForVtxFit() const { return TestBit(kUsedForVtxFit); }
   Bool_t GetUsedForPrimVtxFit() const { return TestBit(kUsedForPrimVtxFit); }
 
   template <class T> void GetP(T *p) const {
@@ -138,7 +145,9 @@ class AliAODTrack : public AliVirtualParticle {
 
   void RemoveCovMatrix() {delete fCovMatrix; fCovMatrix=NULL;}
 
-  UChar_t GetITSClusterMap() const { return fITSClusterMap; }
+  UChar_t GetITSClusterMap() const     { return (UChar_t)fITSMuonClusterMap; }
+  UInt_t  GetMUONClusterMap() const    { return fITSMuonClusterMap/65536; }
+  UInt_t  GetITSMUONClusterMap() const { return fITSMuonClusterMap; }
 
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
@@ -151,6 +160,7 @@ class AliAODTrack : public AliVirtualParticle {
 
   template <class T> void SetPosition(const T *x, Bool_t isDCA = kFALSE);
   void SetDCA(Double_t d, Double_t z);
+  void SetUsedForVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForVtxFit) : ResetBit(kUsedForVtxFit); }
   void SetUsedForPrimVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForPrimVtxFit) : ResetBit(kUsedForPrimVtxFit); }
 
   void SetOneOverPt(Double_t oneOverPt) { fMomentum[0] = oneOverPt; }
@@ -161,9 +171,11 @@ class AliAODTrack : public AliVirtualParticle {
   void SetP() {fMomentum[0]=fMomentum[1]=fMomentum[2]=-999.;}
 
   void SetCharge(Short_t q) { fCharge = q; }
-  void SetChi2(Double_t chi2) { fChi2 = chi2; }
+  void SetChi2perNDF(Double_t chi2perNDF) { fChi2perNDF = chi2perNDF; }
 
-  void SetITSClusterMap(UChar_t itsClusMap) { fITSClusterMap = itsClusMap; }
+  void SetITSClusterMap(UChar_t itsClusMap)        { fITSMuonClusterMap = (UInt_t)itsClusMap; }
+  void SetMuonClusterMap(UInt_t muonClusMap)       { fITSMuonClusterMap = muonClusMap*65536; }
+  void SetITSMuonClusterMap(UInt_t itsMuonClusMap) { fITSMuonClusterMap = itsMuonClusMap; }
 
   void SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
 
@@ -173,24 +185,24 @@ class AliAODTrack : public AliVirtualParticle {
  private :
 
   // Momentum & position
-  Double32_t    fMomentum[3];    // momemtum stored in pt, phi, theta
-  Double32_t    fPosition[3];    // position of first point on track or dca
+  Double32_t    fMomentum[3];       // momemtum stored in pt, phi, theta
+  Double32_t    fPosition[3];       // position of first point on track or dca
 
-  Double32_t    fPID[10];        // [0.,1.,8] pointer to PID object
-  Double32_t    fChi2;           // chi2 of mometum fit
+  Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
+  Double32_t    fChi2perNDF;        // chi2/NDF of mometum fit
 
-  Int_t         fID;             // unique track ID, points back to the ESD track
-  Int_t         fLabel;          // track label, points back to MC track
+  Int_t         fID;                // unique track ID, points back to the ESD track
+  Int_t         fLabel;             // track label, points back to MC track
   
-  AliAODRedCov<6> *fCovMatrix;   // covariance matrix (x, y, z, px, py, pz)
-  TRef          fProdVertex;     // vertex of origin
+  AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
+  TRef          fProdVertex;        // vertex of origin
 
-  Char_t        fCharge;         // particle charge
-  UChar_t       fITSClusterMap;  // map of ITS cluster, one bit per layer
-  Char_t        fType;           // Track Type
+  Char_t        fCharge;            // particle charge
+  UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer (ITS: bit 1-8, muon: bit 17-32) 
+  Char_t        fType;              // Track Type
 
 
-  ClassDef(AliAODTrack,1);
+  ClassDef(AliAODTrack,2);
 };
 
 #endif

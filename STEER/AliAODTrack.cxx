@@ -27,13 +27,13 @@ ClassImp(AliAODTrack)
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack() : 
   AliVirtualParticle(),
-  fChi2(-999.),
+  fChi2perNDF(-999.),
   fID(-999),
   fLabel(-999),
   fCovMatrix(NULL),
   fProdVertex(0x0),
   fCharge(-99),
-  fITSClusterMap(0),
+  fITSMuonClusterMap(0),
   fType(kUndef)
 {
   // default constructor
@@ -55,22 +55,24 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 UChar_t itsClusMap,
 			 Double_t pid[10],
 			 AliAODVertex *prodVertex,
+			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype) :
   AliVirtualParticle(),
-  fChi2(-999.),
+  fChi2perNDF(-999.),
   fID(id),
   fLabel(label),
   fCovMatrix(NULL),
   fProdVertex(prodVertex),
   fCharge(charge),
-  fITSClusterMap(itsClusMap),
+  fITSMuonClusterMap(itsClusMap),
   fType(ttype)
 {
   // constructor
  
   SetP(p, cartesian);
   SetPosition(x, isDCA);
+  SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
@@ -89,22 +91,24 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 UChar_t itsClusMap,
 			 Float_t pid[10],
 			 AliAODVertex *prodVertex,
+			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype) :
   AliVirtualParticle(),
-  fChi2(-999.),
+  fChi2perNDF(-999.),
   fID(id),
   fLabel(label),
   fCovMatrix(NULL),
   fProdVertex(prodVertex),
   fCharge(charge),
-  fITSClusterMap(itsClusMap),
+  fITSMuonClusterMap(itsClusMap),
   fType(ttype)
 {
   // constructor
  
   SetP(p, cartesian);
   SetPosition(x, isDCA);
+  SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
@@ -121,19 +125,20 @@ AliAODTrack::~AliAODTrack()
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   AliVirtualParticle(trk),
-  fChi2(trk.fChi2),
+  fChi2perNDF(trk.fChi2perNDF),
   fID(trk.fID),
   fLabel(trk.fLabel),
   fCovMatrix(NULL),
   fProdVertex(trk.fProdVertex),
   fCharge(trk.fCharge),
-  fITSClusterMap(trk.fITSClusterMap),
+  fITSMuonClusterMap(trk.fITSMuonClusterMap),
   fType(trk.fType)
 {
   // Copy constructor
 
   trk.GetP(fMomentum);
   trk.GetPosition(fPosition);
+  SetUsedForVtxFit(trk.GetUsedForVtxFit());
   SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
   if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
   SetPID(trk.fPID);
@@ -152,7 +157,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     trk.GetPosition(fPosition);
     trk.GetPID(fPID);
 
-    fChi2 = trk.fChi2;
+    fChi2perNDF = trk.fChi2perNDF;
 
     fID = trk.fID;
     fLabel = trk.fLabel;    
@@ -163,7 +168,8 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fProdVertex = trk.fProdVertex;
 
     fCharge = trk.fCharge;
-    fITSClusterMap = trk.fITSClusterMap;
+    fITSMuonClusterMap = trk.fITSMuonClusterMap;
+    SetUsedForVtxFit(trk.GetUsedForVtxFit());
     SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
     fType = trk.fType;
   }
@@ -176,7 +182,7 @@ Double_t AliAODTrack::M(AODTrkPID_t pid) const
 {
   // Returns the mass.
   // In the case of elementary particles the hard coded mass values were taken 
-  // from the PDG. In all cases the error on the values does not affect 
+  // from the PDG. In all cases the errors on the values do not affect 
   // the last digit.
   
 
@@ -398,7 +404,7 @@ void AliAODTrack::Print(Option_t* /* option */) const
   printf("      1/pt = %f\n", OneOverPt());
   printf("     theta = %f\n", Theta());
   printf("       phi = %f\n", Phi());
-  printf("      chi2 = %f\n", Chi2());
+  printf("  chi2/NDF = %f\n", Chi2perNDF());
   printf("    charge = %d\n", Charge());
   printf(" PID object: %p\n", PID());
 }
