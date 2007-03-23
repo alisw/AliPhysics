@@ -30,9 +30,14 @@ class AliVertexer : public TObject {
     virtual void FindVertices()= 0;
     virtual AliMultiplicity* GetMultiplicity() const {return fMult;}
     virtual void PrintStatus() const = 0;
-    virtual void SetDebug(Int_t debug = 0);
     virtual void SetFirstEvent(Int_t ev){fFirstEvent = ev;}
     virtual void SetLastEvent(Int_t ev){fLastEvent = ev;}
+    virtual void SetVtxStart(Double_t x,Double_t y,Double_t z) 
+           { fNominalPos[0]=x; fNominalPos[1]=y; fNominalPos[2]=z; }
+    virtual void SetVtxStartSigma(Double_t sx,Double_t sy,Double_t sz) 
+           { fNominalCov[0]=sx*sx; fNominalCov[2]=sy*sy; fNominalCov[5]=sz*sz;
+             fNominalCov[1]=0.; fNominalCov[3]=0.; fNominalCov[4]=0.; }
+    virtual void SetVtxStart(AliESDVertex *vtx);
     virtual void WriteCurrentVertex() = 0;
 
  
@@ -47,10 +52,11 @@ class AliVertexer : public TObject {
                                    //  event
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices 
-    Int_t fDebug;               //! debug flag - verbose printing if >0
+    Double_t  fNominalPos[3];   // initial knowledge on vertex position
+    Double_t  fNominalCov[6];   // initial knowledge on vertex position
     AliMultiplicity *fMult;     //! Multiplicity object
 
-  ClassDef(AliVertexer,2);
+  ClassDef(AliVertexer,3);
 };
 
 #endif

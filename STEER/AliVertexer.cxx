@@ -16,6 +16,7 @@
 /* $Id$ */
 
 #include "AliLog.h"
+#include "AliESDVertex.h"
 #include "AliVertexer.h"
 
 ClassImp(AliVertexer)
@@ -32,12 +33,13 @@ AliVertexer::AliVertexer() :
   fCurrentVertex(0),
   fFirstEvent(0),
   fLastEvent(0),
-  fDebug(0),
   fMult()
 {
   //
   // Default Constructor
   //
+  SetVtxStart(0.,0.,0.);
+  for(Int_t i=0;i<6;i++)fNominalCov[i]=0.;
 }
 
 
@@ -47,7 +49,6 @@ AliVertexer::AliVertexer(const AliVertexer &vtxr) :
   fCurrentVertex(vtxr.fCurrentVertex),
   fFirstEvent(vtxr.fFirstEvent),
   fLastEvent(vtxr.fLastEvent),
-  fDebug(vtxr.fDebug),
   fMult(vtxr.fMult)
 {
   // Copy constructor
@@ -75,9 +76,14 @@ AliVertexer::~AliVertexer() {
 
 }
 
-//______________________________________________________________________
-void AliVertexer::SetDebug(Int_t debug)
-{
-  AliWarning("Don't use this method any more, use AliDebug instead");
-  fDebug = debug;
+
+//---------------------------------------------------------------------------
+void  AliVertexer::SetVtxStart(AliESDVertex *vtx) 
+{ 
+//
+// Set initial vertex knowledge
+//
+  vtx->GetXYZ(fNominalPos);
+  vtx->GetCovMatrix(fNominalCov);
+  return; 
 }
