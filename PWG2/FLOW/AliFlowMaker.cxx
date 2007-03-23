@@ -45,7 +45,9 @@ using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliFlowMaker) 
 //-----------------------------------------------------------------------
-AliFlowMaker::AliFlowMaker()
+AliFlowMaker::AliFlowMaker():
+  fESD(0x0), fTrack(0x0), fV0(0x0), fVertex(0x0),
+  fFlowEvent(0x0), fFlowTrack(0x0), fFlowV0(0x0)
 {
  // default constructor 
  // resets counters , sets defaults
@@ -262,6 +264,10 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  Int_t idxr[130] ; // used for Cluster Map ( see AliESDtrack::GetTRDclusters() )    // old:    UInt
  Int_t nClus = 0 ;	
  Int_t fNFound = 0 ;  					// *!* fNFoundable (in AliTPCtrack) ... added by M.Ianov 
+ // -
+ Double_t detPid[5] ;		
+ Float_t  detPid6[AliFlowConstants::kPid] ; 
+
  Double_t pVecAt[3] ; 
  for(Int_t gg=0;gg<3;gg++) { pVecAt[gg] = gD[gg] ; }
  Bool_t boh ; Float_t pAt = 0 ; 			// to get p at each detector
@@ -271,6 +277,12 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
  nClus = fTrack->GetTPCclusters(idXt) ;
  fNFound = fTrack->GetTPCNclsF() ;  // was 160
+ if( (fTrack->GetStatus() & AliESDtrack::kTPCpid) != 0 )
+ {
+  fTrack->GetTPCpid(detPid) ; 
+  for(Int_t bb=0;bb<5;bb++) { detPid6[bb] = detPid[bb] ; } detPid6[5] = 0. ; 
+  fFlowTrack->SetRespFunTPC(detPid6) ; 
+ }
  fFlowTrack->SetMaxPtsTPC(fNFound) ; 	 			
  fFlowTrack->SetFitPtsTPC(nClus) ;                		
  fFlowTrack->SetDedxTPC(fTrack->GetTPCsignal()) ; 		
@@ -281,7 +293,13 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(AliFlowConstants::fgITSx, fMagField, pVecAt) ; }
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
  nClus = fTrack->GetITSclusters(idX) ;
- fNFound = 6 ;
+ fNFound = 6 ; // ? fixed
+ if( (fTrack->GetStatus() & AliESDtrack::kITSpid) != 0 )
+ {
+  fTrack->GetITSpid(detPid) ; 
+  for(Int_t bb=0;bb<5;bb++) { detPid6[bb] = detPid[bb] ; } detPid6[5] = 0. ; 
+  fFlowTrack->SetRespFunITS(detPid6) ; 
+ } 
  fFlowTrack->SetMaxPtsITS(fNFound) ; 	 			
  fFlowTrack->SetFitPtsITS(nClus) ;				
  fFlowTrack->SetDedxITS(fTrack->GetITSsignal()) ;		
@@ -291,8 +309,14 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  if(fNewAli) { boh = fTrack->GetPxPyPzAt(AliFlowConstants::fgTRDx, fMagField, pVecAt) ; } 
  else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(AliFlowConstants::fgTRDx, fMagField, pVecAt) ; } 
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
- fNFound = fTrack->GetTRDncls() ;  // was 130
  nClus = fTrack->GetTRDclusters(idxr) ;
+ fNFound = fTrack->GetTRDncls() ;  // was 130
+ if( (fTrack->GetStatus() & AliESDtrack::kTRDpid) != 0 )
+ {
+  fTrack->GetTRDpid(detPid) ; 
+  for(Int_t bb=0;bb<5;bb++) { detPid6[bb] = detPid[bb] ; } detPid6[5] = 0. ; 
+  fFlowTrack->SetRespFunTRD(detPid6) ; 
+ }
  fFlowTrack->SetMaxPtsTRD(fNFound) ;	 			
  fFlowTrack->SetNhitsTRD(nClus) ;				
  fFlowTrack->SetSigTRD(fTrack->GetTRDsignal()) ;		
@@ -302,8 +326,14 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
  if(fNewAli) { boh = fTrack->GetPxPyPzAt(AliFlowConstants::fgTOFx, fMagField, pVecAt) ; }
  else 	     { boh = fTrack->GetInnerParam()->GetPxPyPzAt(AliFlowConstants::fgTOFx, fMagField, pVecAt) ; }
  pAt = (Float_t)Norm(pVecAt) ; if(!pAt) { pAt = (Float_t)Norm(gD) ; }
- fNFound = 0 ; if(fTrack->GetTOFCalChannel() > 0) { fNFound = 1 ; }
  nClus = fTrack->GetTOFcluster() ;
+ fNFound = 0 ; if(fTrack->GetTOFCalChannel() > 0) { fNFound = 1 ; }
+ if( (fTrack->GetStatus() & AliESDtrack::kTOFpid) != 0 )
+ {
+  fTrack->GetTOFpid(detPid) ; 
+  for(Int_t bb=0;bb<5;bb++) { detPid6[bb] = detPid[bb] ; } detPid6[5] = 0. ; 
+  fFlowTrack->SetRespFunTOF(detPid6) ; 
+ }
  fFlowTrack->SetMaxPtsTOF(fNFound) ;				
  fFlowTrack->SetNhitsTOF(nClus) ;				
  fFlowTrack->SetTofTOF(fTrack->GetTOFsignal()) ;		
@@ -398,7 +428,7 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  //fFlowV0->SetDca((Float_t)fV0->GetD()) ;    // GetDistNorm 
  //fFlowV0->SetSigma((Float_t)fV0->GetDistSigma()) ;
  //fFlowV0->SetCosPointingAngle((Float_t)fV0->GetV0CosineOfPointingAngle()) ;  
- //fFlowV0->SetDaughtersDCA(fV0->GetDcaV0Daughters()) ;
+ //fFlowV0->SetDaughtersDca(fV0->GetDcaV0Daughters()) ;
  //fFlowV0->SetChi2((Float_t)fV0->GetChi2V0()) ;     // AliRoot v4-04-Release (December 2006)  
  //fFlowV0->SetChi2((Float_t)fV0->GetChi2()) ;       // AliRoot v4-04-Release (old)
  // ...when they'll stop changing the methods I'll enable the above lines. For now:

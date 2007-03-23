@@ -44,8 +44,8 @@ public:
   Float_t       Dca()          const { return fDca ; }
   Float_t       Chi2()         const { return fChi2; }
   Float_t       Mass()         const { return fMass ; }
-  AliFlowTrack* DaughterP()    const { return fDaughters[0] ; } 
-  AliFlowTrack* DaughterN()    const { return fDaughters[1] ; } 
+  AliFlowTrack* DaughterP()    const { return fDaughterP ; } 
+  AliFlowTrack* DaughterN()    const { return fDaughterN ; } 
   Float_t       V0Lenght()     const { return TMath::Sqrt(fCrossPoint[0]*fCrossPoint[0] + fCrossPoint[1]*fCrossPoint[1] + fCrossPoint[2]*fCrossPoint[2]) ; }
   Float_t       Sigma()        const { return fSigma ; }
   Float_t       CrossPointX()  const { return fCrossPoint[0] ; }
@@ -71,7 +71,7 @@ public:
   void SetCosPointingAngle(Float_t cos) { fPointAngle = cos ; }
   void SetMostLikelihoodPID(Int_t pdgCode) 		  { fMostLikelihoodPID = pdgCode ; }
   void SetCrossPoint(Float_t pox,Float_t poy,Float_t poz) { fCrossPoint[0] = pox ; fCrossPoint[1] = poy ; fCrossPoint[2] = poz ; }
-  void SetDaughters(AliFlowTrack* pos, AliFlowTrack* neg) { fDaughters[0] = pos ; fDaughters[1] = neg ; }
+  void SetDaughters(AliFlowTrack* pos, AliFlowTrack* neg) { fDaughterP = pos ; fDaughterN = neg ; }
 
 
 private:
@@ -81,19 +81,20 @@ private:
   AliFlowV0 &operator=(const AliFlowV0 &flowV0) ; // Assignment Operator (dummy)
 
  // Data Members
-  Float_t  fPhi;				// reconstructed azimuthal angle of the v0
-  Float_t  fPt;					// reconstructed transverse momentum of the v0 
-  Float_t  fEta;				// reconstructed pseudorapidity of the v0
-  Float_t  fChi2;				// chi2 of the reconstructed v0
-  Float_t  fMass;    			       	// reconstructed v0 mass 
-  Float_t  fDca;                             	// distance of closest approach of the reconstructed v0 to the main vertex
-  Float_t  fCrossPoint[3] ;			// crossing point coordinates of the two daughter tracks
-  Float_t  fCrossDCA ;				// DCA between the 2 daughter tracks at the crossing point 
-  Float_t  fSigma ;				// sigma of the DCA of the 2 daughter tracks at the crossing point 
-  Int_t    fLabel ;			       	// Label of the V0 (link: KineTree-ESD) 
-  AliFlowTrack* fDaughters[2] ;		       	// daughter tracks (pointers to the TracksCollection())
-  Int_t    fMostLikelihoodPID;  	       	// most probable P.Id. hypotesis
-  Float_t  fPointAngle;       			// cosine of the pointing angle
+  Float_t   	fPhi;	     	    		// reconstructed azimuthal angle of the v0
+  Float_t   	fPt;	     	    		// reconstructed transverse momentum of the v0 
+  Float_t   	fEta;	     	    		// reconstructed pseudorapidity of the v0
+  Float_t   	fChi2;       	    		// chi2 of the reconstructed v0
+  Float_t   	fMass;       	    		// reconstructed v0 mass 
+  Float_t  	fDca;		    		// distance of closest approach of the reconstructed v0 to the main vertex
+  Float_t   	fCrossPoint[3] ;    		// crossing point coordinates of the two daughter tracks
+  Float_t   	fCrossDCA ;  	    		// DCA between the 2 daughter tracks at the crossing point 
+  Float_t   	fSigma ;     	    		// sigma of the DCA of the 2 daughter tracks at the crossing point 
+  Int_t     	fLabel ;     	    		// Label of the V0 (link: KineTree-ESD) 
+  Int_t    	fMostLikelihoodPID; 		// most probable P.Id. hypotesis
+  Float_t   	fPointAngle;	    		// cosine of the pointing angle
+  AliFlowTrack* fDaughterP ;		       	// daughter tracks (pointers to the TracksCollection())
+  AliFlowTrack* fDaughterN ;		       	// daughter tracks (pointers to the TracksCollection())
   
   ClassDef(AliFlowV0,2) ;                  	// macro for rootcint
 };

@@ -75,6 +75,7 @@ public:
   Bool_t     OnePhiWgt() const	      { return fgOnePhiWgt ; }  		      // Returns flag for using just one phi weight
   Bool_t     NoWgt() const	      { return fgNoWgt; }       		      // returns kTRUE if weight are NOT used
   Bool_t     EtaSubs() const	      { return fgEtaSubs ; }    		      // Returns flag for eta sub-events
+  Bool_t     CustomRespFunc() const   { return fgCustomRespFunc ; }
 
  // Gets
   Int_t      EventID() const		    { return fEventID; }			  // Returns ID of the event
@@ -96,10 +97,10 @@ public:
   Float_t    ExtPsi(Int_t harN = 0) const    { if(harN<AliFlowConstants::kHars) { return fExtPsi[harN] ; } else { return 0. ; } } // external RP angle
   Float_t    ExtRes(Int_t harN = 0) const    { if(harN<AliFlowConstants::kHars) { return fExtRes[harN] ; } else { return 0. ; } } // external RP resolution
 
-  Double_t CenterOfMassEnergy() const	     { return AliFlowConstants::fgCenterOfMassEnergy ; }   // Returns center of mass energy (5.5 TeV)
-  Double_t MagneticField() const	     { return AliFlowConstants::fgMagneticField ; }	   // Returns magnetic field value
-  Short_t  BeamMassNumberEast() const	     { return AliFlowConstants::fgBeamMassNumberEast ; }   // Returns beam mass (Pb = 208)
-  Short_t  BeamMassNumberWest() const	     { return AliFlowConstants::fgBeamMassNumberWest ; }   // Returns beam mass (Pb = 208)
+  Double_t   CenterOfMassEnergy() const	     { return AliFlowConstants::fgCenterOfMassEnergy ; }   // Returns center of mass energy (5.5 TeV)
+  Double_t   MagneticField() const	     { return AliFlowConstants::fgMagneticField ; }	   // Returns magnetic field value
+  Short_t    BeamMassNumberEast() const	     { return AliFlowConstants::fgBeamMassNumberEast ; }   // Returns beam mass (Pb = 208)
+  Short_t    BeamMassNumberWest() const	     { return AliFlowConstants::fgBeamMassNumberWest ; }   // Returns beam mass (Pb = 208)
 
  // Sets
   void     SetEventID(const Int_t& id)                    	    { fEventID = id ; }  // Sets Event ID and the Event name (name = evtNumber_runId)
@@ -122,6 +123,7 @@ public:
   static void SetPtWgt(Bool_t ptWgt = kTRUE)		      	    { fgPtWgt = ptWgt; }
   static void SetEtaWgt(Bool_t etaWgt = kTRUE)  	      	    { fgEtaWgt = etaWgt ; }
   static void SetNoWgt(Bool_t nowgt = kTRUE) 		      	    { fgNoWgt = nowgt ; }  // still for odd harmonics: Wgt = +1 (positive Eta) or -1 (negative Eta)
+  static void SetCustomRespFunc(Bool_t crf = kTRUE) 		    { fgCustomRespFunc = crf ; }
 		
   void    SetBayesian(Double_t bayes[AliFlowConstants::kPid]) const { for(Int_t i=0;i<AliFlowConstants::kPid;i++) { AliFlowConstants::fgBayesian[i] = bayes[i] ; } } // Set the Bayesian vector of particle abundances
   void    SetMagneticField(const Double_t& mf) const  	      	    { AliFlowConstants::fgMagneticField = mf; }
@@ -173,14 +175,15 @@ private:
   static Bool_t       fgOnePhiWgt;                               //! flag for phi weights (just one hist)
   static Bool_t       fgNoWgt;                          	 //! No Weights (Wgt == 1)
   static Bool_t       fgEtaSubs;                                 //! Flag for making Eta Subevents
+  static Bool_t       fgCustomRespFunc ;  		 	 //! A custom "detector response function" is used for P.Id
 
  // shortcuts (to speed up the execution)
-  Bool_t   fDone ;											//! flag setted kTRUE when the loop is done
-  TVector2 fQ[AliFlowConstants::kSels][AliFlowConstants::kHars];					//! flow vector
-  UInt_t   fMult[AliFlowConstants::kSels][AliFlowConstants::kHars];                  			//! multiplicity
-  Float_t  fSumOfWeightSqr[AliFlowConstants::kSels][AliFlowConstants::kHars];          			//! Sqrt(Sum(wgt)) ~ Sqrt(Mult)
-  TVector2 fQSub[AliFlowConstants::kSubs][AliFlowConstants::kSels][AliFlowConstants::kHars];      	//! flow vector subs
-  UInt_t   fMultSub[AliFlowConstants::kSubs][AliFlowConstants::kSels][AliFlowConstants::kHars];   	//! multiplicity subs
+  Bool_t   fDone ;										//! flag setted kTRUE when the loop is done
+  TVector2 fQ[AliFlowConstants::kSels][AliFlowConstants::kHars];				//! flow vector
+  UInt_t   fMult[AliFlowConstants::kSels][AliFlowConstants::kHars];                  		//! multiplicity
+  Float_t  fSumOfWeightSqr[AliFlowConstants::kSels][AliFlowConstants::kHars];          		//! Sqrt(Sum(wgt)) ~ Sqrt(Mult)
+  TVector2 fQSub[AliFlowConstants::kSubs][AliFlowConstants::kSels][AliFlowConstants::kHars];    //! flow vector subs
+  UInt_t   fMultSub[AliFlowConstants::kSubs][AliFlowConstants::kSels][AliFlowConstants::kHars]; //! multiplicity subs
 
   ClassDef(AliFlowEvent,2) ;                    // macro for rootcint
 };

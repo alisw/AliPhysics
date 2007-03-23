@@ -167,7 +167,7 @@ Bool_t AliFlowSelection::SelectPart(AliFlowTrack* pFlowTrack) const
  } 
  
  // PID probability
- float pidProb = pFlowTrack->MostLikelihoodProb() ;
+ float pidProb = pFlowTrack->MostLikelihoodRespFunc() ;
  if(fPidProbPart[1] > fPidProbPart[0] &&  (pidProb < fPidProbPart[0] || pidProb > fPidProbPart[1])) return kFALSE;
  
  // Constrainable

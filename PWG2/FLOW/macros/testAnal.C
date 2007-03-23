@@ -123,6 +123,7 @@ void testAnal(TString output = "flowEvtsAnal.root")
  flow->SetUseBayWgt(kFALSE) ;   // default kFALSE. uses bayesian weights in P.id.
  //flow->SetUsePtWgt();		// default kFALSE. uses pT as a weight for RP determination
  //flow->SetUseEtaWgt();	// default kFALSE. uses eta as a weight for RP determination
+ //flow->SetCustomRespFunc();	// default kFALSE. uses the combined response function from the ESD
 
  // init (make histograms, start the analysis)
  cout << endl ;
@@ -145,7 +146,7 @@ void testAnal(TString output = "flowEvtsAnal.root")
   TString evtName = flowEventsList->At(ie)->GetName() ;
   flowEventsFile->GetObject(evtName.Data(),flowEvt) ;
   // cout << "dumping event " << ie << " : " << endl ; flowEvt->Dump() ; cout << endl ; 
-  Bool_t succ = flow->Analyse(flowEvt) ;  
+  Bool_t succ = flow->Analyze(flowEvt) ;  
   flow->PrintEventQuantities() ;
   if(succ) { cout << ie << " done ... " << endl ; } 
  }

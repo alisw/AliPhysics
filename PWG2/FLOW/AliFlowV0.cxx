@@ -25,7 +25,8 @@ using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliFlowV0) 
 //////////////////////////////////////////////////////////////////////////////
-AliFlowV0::AliFlowV0()
+AliFlowV0::AliFlowV0():
+  fDaughterP(0x0), fDaughterN(0x0)
 {
  // default constructor  
  
@@ -38,9 +39,9 @@ AliFlowV0::AliFlowV0()
  fCrossDCA = 0. ;
  fSigma = 1. ;
  fLabel = 0 ;
- for(Int_t dd=0;dd<3;dd++) { fCrossPoint[dd] = 0. ; }
- for(Int_t dd=0;dd<2;dd++) { fDaughters[dd] = 0  ; }
  fPointAngle = 0. ;
+ for(Int_t dd=0;dd<3;dd++) { fCrossPoint[dd] = 0. ; }
+ // fDaughterP = 0  ; fDaughterN = 0  ;
 }
 //////////////////////////////////////////////////////////////////////////////
 AliFlowV0::AliFlowV0(const Char_t* name) 

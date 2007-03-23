@@ -54,14 +54,16 @@ using namespace std; //required for resolving the 'cout' symbol
 // - Flags & Sets
 Bool_t  AliFlowEvent::fgPtWgt	       = kFALSE ;  // gives pT-based weights
 Bool_t  AliFlowEvent::fgEtaWgt	       = kFALSE ;  // gives eta-based weights
-Bool_t  AliFlowEvent::fgOnePhiWgt       = kTRUE  ;  // kTRUE --> ENABLEs SINGLE WEIGHT ISTOGRAM , kFALSE --> ENABLEs 3 WEIGHT ISTOGRAMS
+Bool_t  AliFlowEvent::fgOnePhiWgt      = kTRUE  ;  // kTRUE --> ENABLEs SINGLE WEIGHT ISTOGRAM , kFALSE --> ENABLEs 3 WEIGHT ISTOGRAMS
 Bool_t  AliFlowEvent::fgNoWgt	       = kFALSE ;  // No Weight is used
 // - Eta Sub-Events (later used to calculate the resolution)
-Bool_t  AliFlowEvent::fgEtaSubs 	       = kFALSE ;  // makes eta subevents
+Bool_t  AliFlowEvent::fgEtaSubs        = kFALSE ;  // makes eta subevents
+Bool_t  AliFlowEvent::fgCustomRespFunc = kFALSE ;  // custom "detector response function" is used for P.Id (see AliFlowTrack)
 
 ClassImp(AliFlowEvent) 
 //-----------------------------------------------------------
-AliFlowEvent::AliFlowEvent(Int_t lenght)  
+AliFlowEvent::AliFlowEvent(Int_t lenght):
+  fTrackCollection(0x0), fV0Collection(0x0)	
 {
  // Default constructor: initializes the ObjArray of FlowTracks and FlowV0s, 
  // cleans the internal variables, sets all the weights to 1, sets default flags.
@@ -570,22 +572,27 @@ void AliFlowEvent::SetSelections(AliFlowSelection* pFlowSelect)
 //-------------------------------------------------------------
 void AliFlowEvent::SetPids()
 {
- // Re-sets the tracks P.id. (using the current AliFlowConstants::fgBayesian[] array)
+ // Re-sets the tracks P.id. (using the current AliFlowConstants::fgBayesian[] array).
+ // To use the Raw P.Id (just the detector response function), set fgBayesian[] = {1,1,1,1,1,1}.
  
  const Int_t kCode[] = {11,13,211,321,2212,10010020} ;
  for(Int_t itr=0;itr<TrackCollection()->GetEntries();itr++) 
  {
   AliFlowTrack* pFlowTrack ;
   pFlowTrack = (AliFlowTrack*)TrackCollection()->At(itr) ;
-  TVector bayPid = pFlowTrack->PidProbs() ;
-  Int_t maxN = 2 ; 		   // if No id. -> then is a Pi
-  Float_t pidMax = bayPid[2] ;    // (if all equal, Pi probability get's the advantage to be the first)
+
+  Float_t bayPid[AliFlowConstants::kPid] ;
+  if(fgCustomRespFunc)  { pFlowTrack->PidProbsC(bayPid) ; }
+  else 			{ pFlowTrack->PidProbs(bayPid)  ; }
+
+  Int_t maxN = 2 ; 		  // if No id. -> then is a Pi
+  Float_t pidMax = bayPid[2] ;    // (if all equal, Pi probability was the first)
   for(Int_t nP=0;nP<AliFlowConstants::kPid;nP++)
   {
    if(bayPid[nP]>pidMax) { maxN = nP ; pidMax = bayPid[nP] ; }
   }
   Int_t pdgCode = TMath::Sign(kCode[maxN],pFlowTrack->Charge()) ;     
-  pFlowTrack->SetMostLikelihoodPID(pdgCode);			
+  pFlowTrack->SetMostLikelihoodPID(pdgCode) ;			
  }
 }
 //-------------------------------------------------------------

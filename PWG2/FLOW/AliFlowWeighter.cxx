@@ -53,7 +53,9 @@ using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliFlowWeighter) 
 //-----------------------------------------------------------------------
-AliFlowWeighter::AliFlowWeighter(const AliFlowSelection* flowSelect)
+AliFlowWeighter::AliFlowWeighter(const AliFlowSelection* flowSelect):
+  fFlowEvent(0x0), fFlowTrack(0x0), fFlowSelect(0x0), fFlowTracks(0x0),
+  fWgtFile(0x0), fPhiWgtHistList(0x0)
 {
  // default constructor (selection given or default selection)
 

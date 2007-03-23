@@ -49,7 +49,7 @@ public:
   Bool_t   Finish() ;						// Saves histograms, Closes stuff
 
  // Analysis of 1 event (can be called from outside)
-  Bool_t   Analyse(AliFlowEvent* flowEvent = 0) ; 		// Fills the defaults histograms (init them first!) and performs the calculation for the given event         
+  Bool_t   Analyze(AliFlowEvent* flowEvent = 0) ; 		// Fills the defaults histograms (init them first!) and performs the calculation for the given event         
 
  // Resolution corrections to v_n (call it at the end of the evts loop)
   Bool_t   Resolution() ;				 	// Calculates resolution and mean flow values
@@ -69,6 +69,7 @@ public:
   void     SetUseFirstLastPhiWgt(Bool_t flw = kTRUE)		{ fOnePhiWgt = !flw ; }		// uses 3 wgt histograms
   void	   SetFlowForV0(Bool_t v0 = kTRUE) 			{ fV0loop = v0 ; }		// Enables Flow study for v0
   void	   SetTrackLoop(Bool_t trkl = kTRUE) 			{ fTrackLoop = trkl ; }		// Enables Tracks loop (keep it kTRUE)
+  void	   SetCustomRespFunc(Bool_t crf = kTRUE) 		{ fCustomRespFunc = crf ; }	// Enables to use a custom detector response function
   //void     SetDebugg(Int_t db = 1) ; 				// set the cout's for debug (default is 1)
 
  // Histograms
@@ -129,6 +130,7 @@ public:
   Bool_t   	   fReadPhiWgt ;		     		//! Phi Weights are applied to Phi distrib. (default is false)
   Bool_t   	   fBayWgt ;		     			//! Bayesian Weights are applied to P.Id. (default is false) 
   Bool_t   	   fRePid ;		     			//! Re-Calculates the P.Id. basing on the bayesian wgts (if plugged in)
+  Bool_t   	   fCustomRespFunc ;		     		//! A custom "detector response function" is used for P.Id (default is false -> the combined response function from the ESD will be used)
 
   Bool_t   	   fPtWgt ;		     			//! flag to use pT as a weight for RP determination
   Bool_t   	   fEtaWgt ;		     			//! flag to use eta as a weight for RP determination

@@ -11,9 +11,11 @@
 // Description: 
 //         an array of AliFlowTrack is the core of the AliFlowEvent. 
 // The object AliFlowTrack contains data members wich summarize the track 
-// information most useful for flow study (such as Pt, eta, phi angle, 
-// p.id hypothesis, some detector informations like fitpoints, chi2, 
-// energy loss, t.o.f., ecc.). 
+// information most useful for flow study (such as Pt, eta, phi angle), some 
+// detector signals (fitpoints, chi2 of the track fit, energy loss, time of 
+// flight, ecc.), the p.id is stored as the detector response function, for 
+// each detector (with the possibility to costomly combine them), and the 
+// combined one (see bayesian P.Id. - chap.5 of the ALICE PPR). 
 // This class is optimized for reaction plane calculation and sub-event 
 // selection, through the appropriate methods in AliFlowEvent.  
 // Two arrays of flags in the AliFlowTrack object (fSelection[][] and 
@@ -53,13 +55,13 @@ AliFlowTrack::AliFlowTrack()
  fZLastPoint = 0. ;			      
  fTrackLength = 0. ;
  fMostLikelihoodPID = 0 ;		      
- for(Int_t ii=0;ii<2;ii++) 	                { fDcaSigned[ii] = 0. ; }			      
- for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++) { fPidProb[ii]   = 0. ; }
- for(Int_t ii=0;ii<4;ii++)
+ for(Int_t dd=0;dd<2;dd++) 	                { fDcaSigned[dd] = 0. ; }			      
+ for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++) { fCombRespFun[ii]   = 0. ; }
+ for(Int_t det=0;det<4;det++)
  {
-  fFitPts[4]  = 0  ; fMaxPts[4]  = 0  ; 
-  fFitChi2[4] = 0. ; fDedx[4]    = 0. ;
-  fMom[4] = 0. ;
+  fFitPts[det]  = 0  ; fMaxPts[det]   = 0  ; 
+  fFitChi2[det] = 0. ; fDedx[det]     = 0. ; fMom[det] = 0. ; 
+  for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++) { fRespFun[det][ii] = -1. ; }
  }
  ResetSelection() ;			      
 }
@@ -208,64 +210,128 @@ const Char_t* AliFlowTrack::Pid() const
  return pId.Data() ; 
 }
 //-------------------------------------------------------------
-void AliFlowTrack::PidProbs(Float_t pidN[AliFlowConstants::kPid]) const 
+void AliFlowTrack::PidProbs(Float_t *pidN) const 
 { 
- // Returns the normalized probability for the given track to be [e,mu,pi,k,p,d] 
- // The detector response is weighted by the bayesian vector of particles 
- // abundances, stored in AliFlowConstants::fgBayesian[] .
+ // Returns the normalized probability (the "bayesian weights") for the given track to be [e,mu,pi,k,p,d] .  
+ // The COMBINED detector response function is scaled by the a priori probabilities 
+ // (the normalised particle abundances is stored in AliFlowConstants::fgBayesian[]) .
 
  Double_t sum = 0 ; 
- for(Int_t n=0;n<AliFlowConstants::kPid;n++)  { sum += fPidProb[n] * AliFlowConstants::fgBayesian[n] ; }
- if(sum)
- {
-  for(Int_t n=0;n<AliFlowConstants::kPid;n++) { pidN[n] = fPidProb[n] * AliFlowConstants::fgBayesian[n] / sum ; }
+ for(Int_t n=0;n<AliFlowConstants::kPid;n++) { pidN[n] = PidProb(n) ; sum += pidN[n] ; }
+ if(sum) 
+ {  
+  for(Int_t n=0;n<AliFlowConstants::kPid;n++)  { pidN[n] /=  sum ; }
  }
  else { cout << " ERROR - Empty Bayesian Vector !!! " << endl ; }
 } 
 //-------------------------------------------------------------
-Float_t  AliFlowTrack::PidProb(Int_t nn)	const
-{
- // Returns the normalized probability of the track to be [nn] (e,mu,pi,k,pi,d).
-
- Float_t pidN[AliFlowConstants::kPid] ; 
- PidProbs(pidN) ;
- return pidN[nn] ;
-}
-//-------------------------------------------------------------
-TVector AliFlowTrack::PidProbs()  		const
-{
- // Returns the normalized probability for the given track to be [e,mu,pi,k,p,d] 
- // as a TVector.
-
- TVector pidNvec(AliFlowConstants::kPid) ;
- Float_t pidN[AliFlowConstants::kPid] ; 
- PidProbs(pidN) ;
- for(Int_t n=0;n<AliFlowConstants::kPid;n++)  { pidNvec[n] = pidN[n] ; }
-
- return pidNvec ;
-}
-//-------------------------------------------------------------
-void AliFlowTrack::RawPidProbs(Float_t pidV[AliFlowConstants::kPid]) const 
+void AliFlowTrack::PidProbsC(Float_t *pidN) const 
 { 
- // Returns the array of probabilities for the track to be [e,mu,pi,k,pi,d].
-
- for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++) { pidV[ii] = fPidProb[ii] ; }
+ // Returns the normalized probability (the "bayesian weights") for the given track to be [e,mu,pi,k,p,d] .  
+ // The CUSTOM detector response function (see AliFlowTrack) is scaled by the a priori probabilities 
+ // (the normalised particle abundances is stored in AliFlowConstants::fgBayesian[]) .
+ 
+ Double_t sum = 0 ; 
+ for(Int_t n=0;n<AliFlowConstants::kPid;n++) { pidN[n] = PidProbC(n) ; sum += pidN[n] ; }
+ if(sum) 
+ {  
+  for(Int_t n=0;n<AliFlowConstants::kPid;n++)  { pidN[n] /=  sum ; }
+ }
+ else { cout << " ERROR - Empty Bayesian Vector !!! " << endl ; }
 } 
 //-------------------------------------------------------------
-Float_t AliFlowTrack::MostLikelihoodProb()   	    const 
+Float_t  AliFlowTrack::PidProb(Int_t nPid) const
+{
+ // Returns the bayesian weight of the track to be [nPid = e,mu,pi,k,pi,d].
+ // The detector response function in use is the combined one (from the ESD)
+
+ if(nPid > AliFlowConstants::kPid) { return 0. ; } 
+
+ return (fCombRespFun[nPid] * AliFlowConstants::fgBayesian[nPid]) ;
+}
+//-------------------------------------------------------------
+Float_t  AliFlowTrack::PidProbC(Int_t nPid) const
+{
+ // Returns the bayesian weight of the track to be [nPid = e,mu,pi,k,pi,d].
+ // The detector response function in use is the custom one ...
+
+ if(nPid > AliFlowConstants::kPid) { return 0. ; } 
+
+ Float_t  customRespFun[AliFlowConstants::kPid] ;
+ GetCustomRespFun(customRespFun) ;
+
+ return (customRespFun[nPid] * AliFlowConstants::fgBayesian[nPid]) ;
+}
+//-------------------------------------------------------------
+Float_t AliFlowTrack::MostLikelihoodRespFunc() const 
 { 
- // Returns the probability of the most probable P.id.
- // (Warning: THIS IS NOT WEIGHTED IN THE BAYESIAN WAY...) 
+ // Returns the detector response function for the most probable P.id. hypothesis
+ // (Warning: THIS IS NOT THE BAYESIAN WEIGHT !) 
 
  Int_t pdgCode = TMath::Abs(MostLikelihoodPID()) ;
- if(pdgCode == 11)            { return fPidProb[0] ; }
- else if(pdgCode == 13)       { return fPidProb[1] ; }
- else if(pdgCode == 211)      { return fPidProb[2] ; }
- else if(pdgCode == 321)      { return fPidProb[3] ; }
- else if(pdgCode == 2212)     { return fPidProb[4] ; }
- else if(pdgCode == 10010020) { return fPidProb[5] ; }
+ if(pdgCode == 11)            { return fCombRespFun[0] ; }
+ else if(pdgCode == 13)       { return fCombRespFun[1] ; }
+ else if(pdgCode == 211)      { return fCombRespFun[2] ; }
+ else if(pdgCode == 321)      { return fCombRespFun[3] ; }
+ else if(pdgCode == 2212)     { return fCombRespFun[4] ; }
+ else if(pdgCode == 10010020) { return fCombRespFun[5] ; }
  else { return 0. ; }
 } 
+//-------------------------------------------------------------
+void AliFlowTrack::SetRespFun(Int_t det, Float_t *r)
+{
+ // This function fills "AliFlowConstants::kPid" PID weights 
+ // (detector response functions) of the track .
+ // The method is private, cause it is called by the public 
+ // methods: SetRespFunITS, SetRespFunTPC, ...
+
+ for(Int_t i=0;i<AliFlowConstants::kPid;i++)
+ {
+  fRespFun[det][i] = r[i] ;
+ }
+}
+//-------------------------------------------------------------
+void AliFlowTrack::GetRespFun(Int_t det, Float_t *r) const
+{
+ // This function returns the response functions of the 
+ // detector [det] for the P.Id. of the track .
+ // The method is private, and it is called by the public 
+ // methods: GetRespFunITS, GetRespFunTPC, ...
+
+ for(Int_t i=0;i<AliFlowConstants::kPid;i++)
+ {
+  r[i] = fRespFun[det][i] ;
+ }
+}
+//-------------------------------------------------------------
+void AliFlowTrack::GetCombinedRespFun(Float_t *r) const 
+{
+ // This function returns the combined response functions for  
+ // [e,mu,pi,k,pi,d] as it is stored in the ESD .
+ 
+ for(Int_t i=0;i<AliFlowConstants::kPid;i++)
+ {
+  r[i] = fCombRespFun[i] ;
+ }
+}
+//------------------------------------------------------------- 
+void AliFlowTrack::GetCustomRespFun(Float_t *r) const
+{
+ // This function returns a combined response functions as setted 
+ // by the user ... at the moment just the sum of single responses ...  
+ // for the track to be [e,mu,pi,k,pi,d] .
+ 
+ Int_t sum ;
+ for(Int_t i=0;i<AliFlowConstants::kPid;i++)
+ {
+  r[i] = 0. ; sum = 0 ;
+  for(Int_t det=0;det<4;det++) 
+  { 
+   if(fRespFun[det][i]>0) { r[i] += fRespFun[det][i] ; sum += 1 ; } 
+  }
+  if(sum) { r[i] /= sum ; }
+ }
+}
 //-------------------------------------------------------------
 void AliFlowTrack::SetPid(const Char_t* pid)	   	
 { 
@@ -283,6 +349,14 @@ void AliFlowTrack::SetPid(const Char_t* pid)
  
  if(strchr(pid,'+'))  	   { fMostLikelihoodPID = TMath::Abs(fMostLikelihoodPID) * 1 ; }
  else if(strchr(pid,'-'))  { fMostLikelihoodPID = TMath::Abs(fMostLikelihoodPID) * -1 ; } 
+}
+//-------------------------------------------------------------
+void AliFlowTrack::SetPid(Int_t pdgCode)	   	
+{ 
+ // Sets the P.Id. hypotesis of the track from the PDG code. 
+ // Sign can be given as well. 
+ 
+ fMostLikelihoodPID = pdgCode ;
 }
 //-------------------------------------------------------------
 Bool_t AliFlowTrack::IsConstrainable()      	    const 
@@ -370,8 +444,9 @@ void AliFlowTrack::ResetSelection()
 //-------------------------------------------------------------
 void AliFlowTrack::SetConstrainable()         	   	      
 { 
- // fills the constrained parameters with the unconstrained ones, making it a constrainable track.
- //                                                   !!! TRICKY METHOD !!!
+ // fills the constrained parameters with the unconstrained ones,
+ // making the track a constrainable track.
+ //                                       !!! TRICKY METHOD !!!
 
  if(!IsConstrainable()) 
  { 
@@ -383,8 +458,9 @@ void AliFlowTrack::SetConstrainable()
 //-------------------------------------------------------------
 void AliFlowTrack::SetUnConstrainable()        	   	      
 { 
- // deletes the constrained parameters making it  an unconstrainable track. 
- //                                                   !!! TRICKY METHOD !!!
+ // deletes the constrained parameters making the track an 
+ // unconstrainable track. 
+ //                                       !!! TRICKY METHOD !!!
 
  if(IsConstrainable()) 
  { 

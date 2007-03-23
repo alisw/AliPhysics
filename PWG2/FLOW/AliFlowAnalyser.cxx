@@ -11,7 +11,7 @@
 //         the AliFlowAnalyser provides the methods to perform an Event 
 // plane flow analysis over AliFlowEvents. 
 // - The method Init() generates the histograms.
-// - The method Analyse(AliFlowEvent*) calculates/extracts flow observables,  
+// - The method Analyze(AliFlowEvent*) calculates/extracts flow observables,  
 //  fills some histograms and performs the E.P. analysis.
 // - The method Resolution() calculates the resolution correction and 
 //  applies it to observed v_n values.
@@ -84,7 +84,10 @@ using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliFlowAnalyser) 
 //-----------------------------------------------------------------------
-AliFlowAnalyser::AliFlowAnalyser(const AliFlowSelection* flowSelect)
+AliFlowAnalyser::AliFlowAnalyser(const AliFlowSelection* flowSelect):
+  fHistFile(0x0), fPhiWgtFile(0x0),
+  fFlowEvent(0x0), fFlowTrack(0x0), fFlowV0(0x0), fFlowSelect(0x0), fFlowTracks(0x0), fFlowV0s(0x0), 
+  fPhiWgtHistList(0x0), fVnResHistList(0x0)
 {
  // default constructor (selection given or default selection)
 
@@ -102,18 +105,19 @@ AliFlowAnalyser::AliFlowAnalyser(const AliFlowSelection* flowSelect)
  fPhiMax  = 2*TMath::Pi() ; 
 
  // flags 
- fTrackLoop 	= kTRUE ;  // main loop for charged tracks
- fV0loop 	= kTRUE ;  // correlation analysis is done also for neutral secundary vertex
- fShuffle 	= kFALSE ; // randomly reshuffles tracks
- fV1Ep1Ep2	= kFALSE ; // disabled by default		
- fEtaSub	= kFALSE ; // eta subevents
- fReadPhiWgt	= kFALSE ; // if kTRUE & if flowPhiWgt file is there -> Phi Weights are used					 	
- fBayWgt 	= kFALSE ; // Bayesian Weights for P.Id. used	
- fRePid  	= kFALSE ; // recalculates the P.Id. (becomes kTRUE if new bayesian weights are plugged in)  		 	
- fPtWgt 	= kFALSE ; // pT as a weight
- fEtaWgt 	= kFALSE ; // eta as a weight
- fOnePhiWgt 	= kTRUE  ; // one/three phi-wgt histogram(s)
-//  fMaxLabel 	= 1000 ;     // for labels histogram
+ fTrackLoop 	 = kTRUE ;  // main loop for charged tracks
+ fV0loop 	 = kTRUE ;  // correlation analysis is done also for neutral secundary vertex
+ fShuffle 	 = kFALSE ; // randomly reshuffles tracks
+ fV1Ep1Ep2	 = kFALSE ; // disabled by default		 
+ fEtaSub	 = kFALSE ; // eta subevents
+ fReadPhiWgt	 = kFALSE ; // if kTRUE & if flowPhiWgt file is there -> Phi Weights are used		     				
+ fBayWgt 	 = kFALSE ; // Bayesian Weights for P.Id. used   
+ fRePid  	 = kFALSE ; // recalculates the P.Id. (becomes kTRUE if new bayesian weights are plugged in) 	    		
+ fPtWgt 	 = kFALSE ; // pT as a weight
+ fEtaWgt 	 = kFALSE ; // eta as a weight
+ fOnePhiWgt 	 = kTRUE  ; // one/three phi-wgt histogram(s)
+ fCustomRespFunc = kFALSE ; // custom "detector response function" used for P.Id
+// fMaxLabel 	 = 1000 ;    // for labels histogram
 
  fPhiWgtHistList = 0 ;
  fVnResHistList = 0 ;
@@ -1926,7 +1930,7 @@ void AliFlowAnalyser::Weightening()
 //-----------------------------------------------------------------------
 // ###
 //-----------------------------------------------------------------------
-Bool_t AliFlowAnalyser::Analyse(AliFlowEvent* flowEvent)         
+Bool_t AliFlowAnalyser::Analyze(AliFlowEvent* flowEvent)         
 {
  // Runs the analysis on the AliFlowEvent (* fFlowEvent). 
  // This method can be inserted in a loop over a collection of 
@@ -1948,6 +1952,8 @@ Bool_t AliFlowAnalyser::Analyse(AliFlowEvent* flowEvent)
   	    						    
   if(fReadPhiWgt) { FillEvtPhiWgt(fFlowEvent) ; }	    // phi and bayesian weights are filled previous to the loop (FillWgtArrays(TFile*))
   else 	    	  { fFlowEvent->SetNoWgt() ; }		    // phi weights can be used or not , this plugs them into the event
+
+  fFlowEvent->SetCustomRespFunc(fCustomRespFunc) ;	    // a custom "detector response function" is used for assigning P.Id
 
   if(fBayWgt)	  { FillBayesianWgt(fFlowEvent) ; }   	    // bayesian weights can be used or not , this plugs them into the event
   if(fRePid)	  { fFlowEvent->SetPids() ; }		    // re-calculate all p.id. hypotesis with the (new) bayesian array
