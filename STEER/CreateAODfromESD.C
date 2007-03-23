@@ -66,6 +66,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     aod->AddHeader(new AliAODHeader(esd->GetRunNumber(),
 				    esd->GetBunchCrossNumber(),
 				    esd->GetOrbitNumber(),
+				    esd->GetPeriodNumber(),
 				    nTracks,
 				    nPosTracks,
 				    nTracks-nPosTracks,
@@ -125,7 +126,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     vtx->GetCovMatrix(covVtx); //covariance matrix
 
     AliAODVertex * primary = new(vertices[jVertices++])
-      AliAODVertex(pos, covVtx, vtx->GetChi2(), NULL, AliAODVertex::kPrimary);
+      AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, AliAODVertex::kPrimary);
          
     // Create vertices starting from the most complex objects
       
@@ -139,7 +140,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       // Add the cascade vertex
       AliAODVertex * vcascade = new(vertices[jVertices++]) AliAODVertex(pos,
 									covVtx,
-									cascade->GetChi2Xi(),
+									cascade->GetChi2Xi(), // = chi2/NDF since NDF = 2*2-3
 									primary,
 									AliAODVertex::kCascade);
 
@@ -181,7 +182,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	
 	vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(pos,
 								 covVtx,
-								 v0->GetChi2V0(),
+								 v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 								 vcascade,
 								 AliAODVertex::kV0);
       } else {
@@ -196,7 +197,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       
 	vV0FromCascade = new(vertices[jVertices++]) AliAODVertex(pos,
 								 covVtx,
-								 v0->GetChi2V0(),
+								 v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 								 vcascade,
 								 AliAODVertex::kV0);
 	vcascade->AddDaughter(vV0FromCascade);
@@ -226,6 +227,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0FromCascade,
+					   kTRUE,  // check if this is right
 					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
@@ -260,6 +262,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0FromCascade,
+					   kTRUE,  // check if this is right
 					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
@@ -296,6 +299,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vcascade,
+					   kTRUE,  // check if this is right
 					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
@@ -324,7 +328,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       AliAODVertex * vV0 = 
 	new(vertices[jVertices++]) AliAODVertex(pos,
 						covVtx,
-						v0->GetChi2V0(),
+						v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 						primary,
 						AliAODVertex::kV0);
       primary->AddDaughter(vV0);
@@ -356,6 +360,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0,
+					   kTRUE,  // check if this is right
 					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
@@ -390,6 +395,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0,
+					   kTRUE,  // check if this is right
 					   kFALSE, // check if this is right
 					   AliAODTrack::kSecondary)
 		);
@@ -476,6 +482,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   pid,
 					   primary,
 					   kTRUE, // check if this is right
+					   kTRUE, // check if this is right
 					   AliAODTrack::kPrimary);
 	      primary->AddDaughter(mother);
 	      mother->ConvertAliPIDtoAODPID();
@@ -520,6 +527,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vkink,
+					   kTRUE, // check if this is right
 					   kTRUE, // check if this is right
 					   AliAODTrack::kPrimary);
 	      vkink->AddDaughter(daughter);
@@ -572,6 +580,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					 pid,
 					 primary,
 					 kTRUE, // check if this is right
+					 kTRUE, // check if this is right
 					 AliAODTrack::kPrimary)
 	    );
 	aodTrack->ConvertAliPIDtoAODPID();
@@ -590,6 +599,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					 esdTrack->GetITSClusterMap(), 
 					 pid,
 					 NULL,
+					 kFALSE, // check if this is right
 					 kFALSE, // check if this is right
 					 AliAODTrack::kOrphan);
 	    aodTrack->ConvertAliPIDtoAODPID();
@@ -623,7 +633,8 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					     0, // no ITSClusterMap
 					     pid,
 					     primary,
-					     kFALSE, // not used for vertex fit
+ 					     kTRUE,  // check if this is right
+					     kTRUE,  // not used for vertex fit
 					     AliAODTrack::kPrimary)
 	  );
     }

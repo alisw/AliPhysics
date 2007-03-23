@@ -125,6 +125,7 @@ void CreateAODfromKineTree(const char *inFileName,
     aod->AddHeader(new AliAODHeader(aliHeader->GetRun(),
 				    0, // bunchX number
 				    0, // orbit number
+				    0, // period number
 				    nTracks,
 				    nPos,
 				    nNeg,
@@ -185,6 +186,7 @@ void CreateAODfromKineTree(const char *inFileName,
 								0, // no ITSClusterMap
 								pid,
 								primary,
+					                        kFALSE,  // no fit performed
 								kFALSE, // no fit preformed
 								AliAODTrack::kPrimary));
 	currTrack = (AliAODTrack*)tracks.Last();
@@ -266,6 +268,7 @@ Int_t LoopOverSecondaries(TParticle *mother) {
 								pid,
 								secondary,
 								kFALSE, // no fit performed
+					                        kFALSE, // no fit performed
 								AliAODTrack::kSecondary));
 
       currTrack = (AliAODTrack*)tracks.Last();
