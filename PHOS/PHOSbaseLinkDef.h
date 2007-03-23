@@ -29,5 +29,6 @@
 #pragma link C++ class AliPHOSPulseGenerator+;
 #pragma link C++ class AliPHOSRawDecoder+;
 #pragma link C++ class AliPHOSRawDigiProducer+;
+#pragma link C++ class AliPHOSEmcBadChannelsMap+;
 
 #endif
