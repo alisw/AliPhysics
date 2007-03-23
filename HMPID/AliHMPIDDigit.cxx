@@ -145,20 +145,21 @@ void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
 // Write a list of digits for a given chamber in raw data stream
 // Arguments: pDigAll- list of digits 
 //   Returns: none      
-  ofstream ddlL,ddlR;                               //output streams, 2 per chamber
-  Int_t    cntL=0,cntR=0;                           //data words counters for DDLs
-  AliRawDataHeader header; header.SetAttribute(0);  //empty DDL header
-
-  UInt_t w32=0; Int_t ddl,r,d,a;            //32 bits data word 
   for(Int_t iCh=kMinCh;iCh<=kMaxCh;iCh++){//chambers loop
+    ofstream ddlL,ddlR;                               //output streams, 2 per chamber
+    Int_t    cntL=0,cntR=0;                           //data words counters for DDLs
+    AliRawDataHeader header; header.SetAttribute(0);  //empty DDL header
+
     ddlL.open(AliDAQ::DdlFileName("HMPID",2*iCh)); 
     ddlR.open(AliDAQ::DdlFileName("HMPID",2*iCh+1));      //open both DDL of this chamber in parallel
     ddlL.write((char*)&header,sizeof(header));            //write dummy header as place holder, actual 
     ddlR.write((char*)&header,sizeof(header));            //will be rewritten later when total size of DDL is known
   
+    UInt_t w32=0;                 //32 bits data word 
     TClonesArray *pDigCh=(TClonesArray *)pDigAll->At(iCh); //list of digits for current chamber 
     for(Int_t iDig=0;iDig<pDigCh->GetEntriesFast();iDig++){//digits loop
       AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigCh->At(iDig);
+      Int_t ddl,r,d,a;            //32 bits data word 
       pDig->Raw(w32,ddl,r,d,a);                             
       if(ddl%2){
         ddlL.write((char*)&w32,sizeof(w32));  cntL++;
