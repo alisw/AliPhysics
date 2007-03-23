@@ -46,6 +46,7 @@ public:
   void SetEventNumberInFile(Int_t n) {fEventNumberInFile=n;}
   void SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
   void SetOrbitNumber(UInt_t n) {fOrbitNumber=n;}
+  void SetPeriodNumber(UInt_t n) {fPeriodNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}
   void SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
   void SetEventType(UInt_t eventType){fEventType = eventType;}
@@ -165,6 +166,7 @@ public:
   Int_t  GetEventNumberInFile() const {return fEventNumberInFile;}
   UShort_t GetBunchCrossNumber() const {return fBunchCrossNumber;}
   UInt_t GetOrbitNumber() const {return fOrbitNumber;}
+  UInt_t GetPeriodNumber() const {return fPeriodNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
   UInt_t    GetTimeStamp()  const { return fTimeStamp;}
   UInt_t    GetEventType()  const { return fEventType;}
@@ -249,6 +251,7 @@ protected:
   Int_t        fEventNumberInFile;// running Event count in the file
   UShort_t     fBunchCrossNumber;// Bunch Crossing Number
   UInt_t       fOrbitNumber;     // Orbit Number
+  UInt_t       fPeriodNumber;    // Period Number
   Int_t        fRunNumber;       // Run Number
   UInt_t       fTimeStamp;       // Time stamp
   UInt_t       fEventType;       // Type of Event
@@ -300,7 +303,7 @@ protected:
 
   TClonesArray fErrorLogs;        // Raw-data reading error messages
 
-  ClassDef(AliESD,20)  //ESD class 
+  ClassDef(AliESD,21)  //ESD class 
 };
 #endif 
 

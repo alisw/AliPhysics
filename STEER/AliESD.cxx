@@ -32,6 +32,7 @@ AliESD::AliESD():
   fEventNumberInFile(0),
   fBunchCrossNumber(0),
   fOrbitNumber(0),
+  fPeriodNumber(0),
   fRunNumber(0),
   fTimeStamp(0),
   fEventType(0),
@@ -86,6 +87,7 @@ AliESD::AliESD(const AliESD& esd):
   fEventNumberInFile(esd.fEventNumberInFile),
   fBunchCrossNumber(esd.fBunchCrossNumber),
   fOrbitNumber(esd.fOrbitNumber),
+  fPeriodNumber(esd.fPeriodNumber),
   fRunNumber(esd.fRunNumber),
   fTimeStamp(esd.fTimeStamp),
   fEventType(esd.fEventType),
@@ -144,6 +146,7 @@ AliESD & AliESD::operator=(const AliESD& source) {
   fEventNumberInFile = source.fEventNumberInFile;
   fBunchCrossNumber = source.fBunchCrossNumber;
   fOrbitNumber = source.fOrbitNumber;
+  fPeriodNumber = source.fPeriodNumber;
   fRunNumber = source.fRunNumber;
   fTimeStamp   = source.fTimeStamp;
   fEventType   = source.fEventType;
@@ -232,6 +235,7 @@ void AliESD::Reset()
   fEventNumberInFile=0;
   fBunchCrossNumber=0;
   fOrbitNumber=0;
+  fPeriodNumber=0;
   fRunNumber=0;
   fTimeStamp = 0;
   fEventType = 0;
@@ -287,10 +291,11 @@ void AliESD::Print(Option_t *) const
   // Print header information of the event
   //
   printf("ESD run information\n");
-  printf("Event # in file %d Bunch crossing # %d Orbit # %d Run # %d Trigger %lld Magnetic field %f \n",
+  printf("Event # in file %d Bunch crossing # %d Orbit # %d Period # %d Run # %d Trigger %lld Magnetic field %f \n",
 	 GetEventNumberInFile(),
 	 GetBunchCrossNumber(),
 	 GetOrbitNumber(),
+	 GetPeriodNumber(),
 	 GetRunNumber(),
 	 GetTriggerMask(),
 	 GetMagneticField() );
