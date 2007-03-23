@@ -87,7 +87,7 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     Double_t err[3]={3.,3.,5.};
     initVertex = new AliESDVertex(pos,err);
   }
-  AliVertexerTracks *vertexer = new AliVertexerTracks();
+  AliVertexerTracks *vertexer = new AliVertexerTracks(AliTracker::GetBz());
   vertexer->SetDebug(1); // set to 1 to see what it does
   vertexer->SetVtxStart(initVertex);
   if(!useMeanVtx) vertexer->SetNoConstraint();
@@ -249,7 +249,6 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
 
   return;
 } 
-//----------------------------------------------------------------------------
 //------------------------------------------------------------------------
 void VertexForOneEvent(Int_t iev=0,
 		       Double_t nSigma=3.,
@@ -309,7 +308,7 @@ void VertexForOneEvent(Int_t iev=0,
     Double_t err[3]={3.,3.,5.};
     initVertex = new AliESDVertex(pos,err);
   }
-  AliVertexerTracks *vertexer = new AliVertexerTracks();
+  AliVertexerTracks *vertexer = new AliVertexerTracks(AliTracker::GetBz());
   //vertexer->SetITSrefitNotRequired();
   vertexer->SetVtxStart(initVertex);
   if(!useMeanVtx) vertexer->SetNoConstraint();
@@ -1418,7 +1417,7 @@ void TestRmTracks(Int_t iev=0) {
   invtx->Close();
   delete invtx;
 
-  AliVertexerTracks *vertexer = new AliVertexerTracks();
+  AliVertexerTracks *vertexer = new AliVertexerTracks(AliTracker::GetBz());
   vertexer->SetVtxStart(initVertex);
   vertexer->SetOnlyFitter();
   vertexer->SetDebug(0); // set to 1 to see what it does
@@ -1484,7 +1483,7 @@ void TestRmTracks(Int_t iev=0) {
   esdTrack = new AliESDtrack(*et);
   trksTree->Fill();
   delete esdTrack;
-  AliVertexerTracks vt;
+  AliVertexerTracks vt(AliTracker::GetBz());
   AliESDVertex *vertex3 = vt.RemoveTracksFromVertex(vertex2,trksTree,diamondxy);
   vertex3->PrintStatus();
   vertex3->PrintIndices();
