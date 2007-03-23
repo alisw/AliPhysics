@@ -26,19 +26,19 @@ class AliAODVertex : public TObject {
   AliAODVertex();
   AliAODVertex(const Double_t *position, 
 	       const Double_t *covMatrix=0x0,
-	       Double_t chi2 = -999.,
+	       Double_t chi2perNDF = -999.,
 	       TObject *parent = 0x0,
 	       Char_t vtype=kUndef);
     AliAODVertex(const Float_t *position, 
 		 const Float_t *covMatrix=0x0,
-		 Double_t chi2 = -999.,
+		 Double_t chi2perNDF = -999.,
 		 TObject *parent = 0x0,
 		 Char_t vtype=kUndef);
     AliAODVertex(const Double_t *position, 
-		 Double_t chi2,
+		 Double_t chi2perNDF,
 		 Char_t vtype=kUndef);
     AliAODVertex(const Float_t *position, 
-		 Double_t chi2,
+		 Double_t chi2perNDF,
 		 Char_t vtype=kUndef);
 
   virtual ~AliAODVertex();
@@ -52,7 +52,7 @@ class AliAODVertex : public TObject {
   template <class T> void SetPosition(T *pos)
     { fPosition[0] = pos[0]; fPosition[1] = pos[1]; fPosition[2] = pos[2]; }
 
-  void     SetChi2(Double_t chi2) { fChi2 = chi2; }
+  void     SetChi2perNDF(Double_t chi2perNDF) { fChi2perNDF = chi2perNDF; }
 
   void     SetParent(TObject *parent) { fParent = parent; }
 
@@ -74,9 +74,9 @@ class AliAODVertex : public TObject {
 
   template <class T> void     GetSigmaXYZ(T *sigma) const;
 
-  Double_t  GetChi2() const { return fChi2; }
-  Double_t  GetChi2perNDF() const
-    { return fChi2/(2.*fDaughters.GetEntriesFast()-3.); }
+  Double_t  GetChi2perNDF() const { return fChi2perNDF; }
+  Double_t  GetChi2() const { return fChi2perNDF*(Double_t)GetNDF(); }
+  Int_t     GetNDF() const { return 2*GetNContributors()-3; }
 
   Char_t    GetType() const { return fType; }
   void      SetType(AODVtx_t vtype) { fType=vtype; }
@@ -89,6 +89,7 @@ class AliAODVertex : public TObject {
   TObject* GetDaughter(Int_t i) { return fDaughters.At(i); }
   Bool_t   HasDaughter(TObject *daughter) const;
   Int_t    GetNDaughters() const { return fDaughters.GetEntriesFast(); }
+  Int_t    GetNContributors() const;
 
   // covariance matrix elements after rotation by phi around z-axis 
   // and, then, by theta around new y-axis
@@ -111,13 +112,13 @@ class AliAODVertex : public TObject {
  private :
 
   Double32_t    fPosition[3]; // vertex position
-  Double32_t    fChi2;        // chi2 of vertex fit
+  Double32_t    fChi2perNDF;  // chi2/NDF of vertex fit
   AliAODRedCov<3> *fCovMatrix;   // vertex covariance matrix; values of and below the diagonal
   TRef          fParent;      // reference to the parent particle
   TRefArray     fDaughters;   // references to the daughter particles
   Char_t        fType;        // Vertex type
 
-  ClassDef(AliAODVertex,1);
+  ClassDef(AliAODVertex,2);
 };
 
 #endif

@@ -24,12 +24,14 @@
 
 #include "AliAODVertex.h"
 
+#include "AliAODTrack.h"
+
 ClassImp(AliAODVertex)
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex() : 
   TObject(),
-  fChi2(-999.),
+  fChi2perNDF(-999.),
   fCovMatrix(NULL),
   fParent(0x0),
   fDaughters(),
@@ -43,11 +45,11 @@ AliAODVertex::AliAODVertex() :
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const Double_t position[3], 
 			   const Double_t covMatrix[6],
-			   Double_t  chi2,
+			   Double_t  chi2perNDF,
 			   TObject  *parent,
 			   Char_t vtype) :
   TObject(),
-  fChi2(chi2),
+  fChi2perNDF(chi2perNDF),
   fCovMatrix(NULL),
   fParent(parent),
   fDaughters(),
@@ -62,12 +64,12 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const Float_t position[3], 
 			   const Float_t  covMatrix[6],
-			   Double_t  chi2,
+			   Double_t  chi2perNDF,
 			   TObject  *parent,
 			   Char_t vtype) :
 
   TObject(),
-  fChi2(chi2),
+  fChi2perNDF(chi2perNDF),
   fCovMatrix(NULL),
   fParent(parent),
   fDaughters(),
@@ -81,10 +83,10 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const Double_t position[3], 
-			   Double_t  chi2,
+			   Double_t  chi2perNDF,
 			   Char_t vtype) :
   TObject(),
-  fChi2(chi2),
+  fChi2perNDF(chi2perNDF),
   fCovMatrix(NULL),
   fParent(0x0),
   fDaughters(),
@@ -97,10 +99,10 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const Float_t position[3], 
-			   Double_t  chi2,
+			   Double_t  chi2perNDF,
 			   Char_t vtype) :
   TObject(),
-  fChi2(chi2),
+  fChi2perNDF(chi2perNDF),
   fCovMatrix(NULL),
   fParent(0x0),
   fDaughters(),
@@ -122,7 +124,7 @@ AliAODVertex::~AliAODVertex()
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
   TObject(vtx),
-  fChi2(vtx.fChi2),
+  fChi2perNDF(vtx.fChi2perNDF),
   fCovMatrix(NULL),
   fParent(vtx.fParent),
   fDaughters(vtx.fDaughters),
@@ -149,7 +151,7 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
     for (int i = 0; i < 3; i++) 
       fPosition[i] = vtx.fPosition[i];
     
-    fChi2 = vtx.fChi2;
+    fChi2perNDF = vtx.fChi2perNDF;
 
     //covariance matrix
     delete fCovMatrix;
@@ -183,6 +185,20 @@ template <class T> void AliAODVertex::GetSigmaXYZ(T sigma[3]) const
     sigma[2-i] = fCovMatrix ? TMath::Sqrt(fCovMatrix[j]) : -999.;
   }
   */
+}
+
+//______________________________________________________________________________
+Int_t AliAODVertex::GetNContributors() const 
+{
+  // Returns the number of tracks used to fit this vertex.
+  
+  Int_t cont = 0;
+
+  for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {
+    if (((AliAODTrack*)fDaughters.At(iDaug))->GetUsedForVtxFit()) cont++;
+  }
+
+  return cont;
 }
 
 //______________________________________________________________________________
@@ -462,6 +478,6 @@ void AliAODVertex::Print(Option_t* /*option*/) const
 	   fCovMatrix[4],
 	   fCovMatrix[5]); 
 	   } */
-  printf(" Chi^2 = %f\n", fChi2);
+  printf(" Chi^2/NDF = %f\n", fChi2perNDF);
 }
 
