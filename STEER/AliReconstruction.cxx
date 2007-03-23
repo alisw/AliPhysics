@@ -666,6 +666,16 @@ Bool_t AliReconstruction::Run(const char* input)
      br->SetFile("AliESDfriends.root");
   }
 
+  // Get the diamond profile from OCDB
+  AliCDBEntry* entry = AliCDBManager::Instance()
+  	->Get("GRP/Calib/MeanVertex");
+	
+  if(entry) {
+  	fDiamondProfile = dynamic_cast<AliESDVertex*> (entry->GetObject());  
+  } else {
+  	AliError("No diamond profile found in OCDB!");
+  }
+
   AliVertexerTracks tVertexer(AliTracker::GetBz());
   if(fDiamondProfile) tVertexer.SetVtxStart(fDiamondProfile);
 
@@ -781,6 +791,8 @@ Bool_t AliReconstruction::Run(const char* input)
 
     //Try to improve the reconstructed primary vertex position using the tracks
     AliESDVertex *pvtx=tVertexer.FindPrimaryVertex(esd);
+    if(fDiamondProfile) esd->SetDiamond(fDiamondProfile);
+    
     if (pvtx)
     if (pvtx->GetStatus()) {
        // Store the improved primary vertex
@@ -991,6 +1003,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   }
 
   if (fVertexer) {
+    if(fDiamondProfile) fVertexer->SetVtxStart(fDiamondProfile);
     AliInfo("running the ITS vertex finder");
     if (fLoader[0]) fLoader[0]->LoadRecPoints();
     vertex = fVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
