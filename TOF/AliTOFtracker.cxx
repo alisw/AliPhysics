@@ -87,13 +87,20 @@ AliTOFtracker::AliTOFtracker():
  { 
   //AliTOFtracker main Ctor
    
-   fRecoParam=new AliTOFRecoParam();
-   if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
+
+
+
+   // Gettimg the geometry 
    fGeom=new AliTOFGeometryV5();
+   // Read the reconstruction parameters from the OCDB
+   AliTOFcalib *calib = new AliTOFcalib(fGeom);
+   fRecoParam = (AliTOFRecoParam*)calib->ReadRecParFromCDB("TOF/Calib",-1);
+   if(!fRecoParam) {AliFatal("Exiting, no Reconstruction Parameters object found!!!");exit(0);}  
+   if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
    Double_t parPID[2];   
    parPID[0]=fRecoParam->GetTimeResolution();
    parPID[1]=fRecoParam->GetTimeNSigma();
-   AliDebug(2,Form("TOF PiD pars: %f %f",parPID[0],parPID[1]));
+   AliDebug(2,Form("TOF PID pars: Sigma= %f  Range= %f",parPID[0],parPID[1]));
    fPid=new AliTOFpidESD(parPID);
    InitCheckHists();
 
@@ -252,11 +259,13 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   }
 
   //Handle Time Zero information
+
   Double_t timeZero=0.;
   Double_t timeZeroMax=99999.;
   Bool_t usetimeZero     = fRecoParam->UseTimeZero();
   Bool_t timeZeroFromT0  = fRecoParam->GetTimeZerofromT0();
   Bool_t timeZeroFromTOF = fRecoParam->GetTimeZerofromTOF();
+
   AliDebug(2,Form("Use Time Zero?: %d",usetimeZero));
   AliDebug(2,Form("Time Zero from T0? : %d",timeZeroFromT0));
   AliDebug(2,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
@@ -361,6 +370,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   AliDebug(2,Form("TOF Window max dy: %f",dyMax));
   AliDebug(2,Form("TOF Window max dz: %f",dzMax));
   AliDebug(2,Form("TOF distance Cut: %f",dCut));
+  AliDebug(2,Form("TOF Max Chi2: %f",maxChi2));
 
   //Match ESD tracks to clusters in TOF
 
@@ -617,9 +627,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     tlab[2]=c->GetLabel(2);
     
     Double_t tof=fGeom->TdcBinWidth()*c->GetTDC()+32; // in ps
-    AliDebug(2,Form("tof before correction : %f",tof));
     if(timeWalkCorr)tof=CorrectTimeWalk(mindistZ,tof);
-    AliDebug(2,Form("tof after correction : %f",tof));
     t->SetTOFsignal(tof);
     t->SetTOFcluster(idclus); // pointing to the recPoints tree
     Double_t time[10]; t->GetIntegratedTimes(time);
