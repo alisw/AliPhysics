@@ -20,12 +20,24 @@ class AliAODCluster : public AliVirtualParticle {
 
  public:
   
-  enum AODClu_t {kUndef=-1, kPHOSNeutral,kPHOSCharged,
-		 kEMCALPseudoCluster, kEMCALClusterv1,
-                 kPMDNeutral, kPMDCharged};
+  enum AODClu_t {kUndef = -1, 
+		 kPHOSNeutral, 
+		 kPHOSCharged,
+		 kEMCALPseudoCluster, 
+		 kEMCALClusterv1,
+		 kPMDNeutral, 
+		 kPMDCharged};
 
   enum AODCluPID_t {
-    kUnknown=0, kPhoton, kPi0, kNeutron, kKaon0, kEleCon, kCharged, kOther};
+    kUnknown = 0, 
+    kPhoton  = 1, 
+    kPi0     = 2, 
+    kNeutron = 3, 
+    kKaon0   = 4,
+    kEleCon  = 5, 
+    kCharged = 6, 
+    kNeutral = 7 , 
+    kOther   = 8};
 
   AliAODCluster();
   AliAODCluster(Int_t id,
@@ -33,7 +45,7 @@ class AliAODCluster : public AliVirtualParticle {
 		Double_t energy,
 		Double_t x[3],
 		Double_t covMatrix[10],
-		Double_t pid[10],
+		Double_t pid[9],
 		AliAODVertex *prodVertex, // not necessary for PMD
 		AliAODTrack *primTrack,
 		Char_t ttype=kUndef);
@@ -43,7 +55,7 @@ class AliAODCluster : public AliVirtualParticle {
 		 Float_t energy,
 		 Float_t x[3],
 		 Float_t covMatrix[10],
-		 Float_t pid[10],
+		 Float_t pid[9],
 		 AliAODVertex *prodVertex,
 		 AliAODTrack *primTrack,
 		 Char_t ttype=kUndef);
@@ -63,13 +75,14 @@ class AliAODCluster : public AliVirtualParticle {
 
   // PID
   virtual const Double_t *PID() const { return fPID; }
-
+  AODCluPID_t GetMostProbablePID() const;
+ 
   template <class T> void GetPID(T *pid) const {
-    for(Int_t i=0; i<10; ++i) pid[i]=fPID[i];}
+    for(Int_t i=0; i<9; ++i) pid[i]=fPID[i];}
  
   template <class T> void SetPID(const T *pid) {
-    if(pid) for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
-    else {for(Int_t i=1; i<10; fPID[i++]=0); fPID[0]=1.;}}
+    if(pid) for(Int_t i=0; i<9; ++i) fPID[i]=pid[i];
+    else {for(Int_t i=1; i<9; fPID[i++]=0);}}
 
   Int_t GetID() const { return fID; }
   Int_t GetLabel() const { return fLabel; } 
@@ -122,7 +135,7 @@ class AliAODCluster : public AliVirtualParticle {
   Double32_t    fEnergy;         // energy
   Double32_t    fPosition[3];    // position of the cluster
 
-  Double32_t    fPID[10];        // [0.,1.,8] pointer to PID object
+  Double32_t    fPID[9];         // [0.,1.,8] pointer to PID object
   Double32_t    fChi2;           // chi2 (probably not necessary for PMD)
 
   Int_t         fID;             // unique cluster ID, points back to the ESD cluster

@@ -48,7 +48,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     Double_t energy,
 			     Double_t x[3],
 			     Double_t covMatrix[10],
-			     Double_t pid[10],
+			     Double_t pid[9],
 			     AliAODVertex *prodVertex,
 			     AliAODTrack *primTrack,
 			     Char_t ttype) :
@@ -76,7 +76,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     Float_t energy,
 			     Float_t x[3],
 			     Float_t covMatrix[10],
-			     Float_t pid[10],
+			     Float_t pid[9],
 			     AliAODVertex *prodVertex,
 			     AliAODTrack *primTrack,
 			     Char_t ttype) :
@@ -108,49 +108,49 @@ AliAODCluster::~AliAODCluster()
 
 
 //______________________________________________________________________________
-AliAODCluster::AliAODCluster(const AliAODCluster& trk) :
-  AliVirtualParticle(trk),
-  fEnergy(trk.fEnergy),
-  fChi2(trk.fChi2),
-  fID(trk.fID),
-  fLabel(trk.fLabel),
+AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
+  AliVirtualParticle(clus),
+  fEnergy(clus.fEnergy),
+  fChi2(clus.fChi2),
+  fID(clus.fID),
+  fLabel(clus.fLabel),
   fCovMatrix(NULL),
-  fProdVertex(trk.fProdVertex),
-  fPrimTrack(trk.fPrimTrack),
-  fType(trk.fType)
+  fProdVertex(clus.fProdVertex),
+  fPrimTrack(clus.fPrimTrack),
+  fType(clus.fType)
 {
   // Copy constructor
 
-  trk.GetPosition(fPosition);
-  if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*trk.fCovMatrix);
-  SetPID(trk.fPID);
+  clus.GetPosition(fPosition);
+  if(clus.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*clus.fCovMatrix);
+  SetPID(clus.fPID);
 
 }
 
 //______________________________________________________________________________
-AliAODCluster& AliAODCluster::operator=(const AliAODCluster& trk)
+AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
 {
   // Assignment operator
-  if(this!=&trk) {
+  if(this!=&clus) {
 
-    AliVirtualParticle::operator=(trk);
+    AliVirtualParticle::operator=(clus);
 
-    trk.GetPosition(fPosition);
-    trk.GetPID(fPID);
+    clus.GetPosition(fPosition);
+    clus.GetPID(fPID);
 
-    fChi2 = trk.fEnergy;
-    fChi2 = trk.fChi2;
+    fEnergy = clus.fEnergy;
+    fChi2 = clus.fChi2;
 
-    fID = trk.fID;
-    fLabel = trk.fLabel;    
+    fID = clus.fID;
+    fLabel = clus.fLabel;    
     
     delete fCovMatrix;
-    if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*trk.fCovMatrix);
+    if(clus.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*clus.fCovMatrix);
     else fCovMatrix=NULL;
-    fProdVertex = trk.fProdVertex;
-    fPrimTrack = trk.fPrimTrack;
+    fProdVertex = clus.fProdVertex;
+    fPrimTrack = clus.fPrimTrack;
 
-    fType = trk.fType;
+    fType = clus.fType;
   }
 
   return *this;
@@ -170,6 +170,35 @@ template <class T> void AliAODCluster::SetPosition(const T *x)
     fPosition[0] = -999.;
     fPosition[1] = -999.;
     fPosition[2] = -999.;
+  }
+}
+
+//______________________________________________________________________________
+AliAODCluster::AODCluPID_t AliAODCluster::GetMostProbablePID() const 
+{
+  // Returns the most probable PID array element.
+  
+  Int_t nPID = 9;
+  if (fPID) {
+    AODCluPID_t loc = kUnknown;
+    Double_t max = 0.;
+    Bool_t allTheSame = kTRUE;
+    
+    for (Int_t iPID = 0; iPID < nPID; iPID++) {
+      if (fPID[iPID] >= max) {
+	if (fPID[iPID] > max) {
+	  allTheSame = kFALSE;
+	  max = fPID[iPID];
+	  loc = (AODCluPID_t)iPID;
+	} else {
+	  allTheSame = kTRUE;
+	}
+      }
+    }
+    
+    return allTheSame ? kUnknown : loc;
+  } else {
+    return kUnknown;
   }
 }
 
