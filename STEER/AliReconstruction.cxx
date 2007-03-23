@@ -1408,12 +1408,17 @@ Bool_t AliReconstruction::FillRawEventHeaderESD(AliESD*& esd)
   AliInfo("Filling information from RawReader Header");
   esd->SetBunchCrossNumber(0);
   esd->SetOrbitNumber(0);
+  esd->SetPeriodNumber(0);
   esd->SetTimeStamp(0);
   esd->SetEventType(0);
   const AliRawEventHeaderBase * eventHeader = fRawReader->GetEventHeader();
   if (eventHeader){
-    esd->SetBunchCrossNumber((eventHeader->GetP("Id")[0]));
-    esd->SetOrbitNumber((eventHeader->GetP("Id")[1]));
+
+    const UInt_t *id = eventHeader->GetP("Id");
+    esd->SetBunchCrossNumber((id)[1]&0x00000fff);
+    esd->SetOrbitNumber((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff));
+    esd->SetPeriodNumber(((id)[0]>>4)&0x0fffffff);
+
     esd->SetTimeStamp((eventHeader->Get("Timestamp")));  
     esd->SetEventType((eventHeader->Get("Type")));
   }
