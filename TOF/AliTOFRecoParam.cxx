@@ -41,7 +41,7 @@ AliTOFRecoParam::AliTOFRecoParam():
   fStepSize(0.1),
   fMaxChi2(150.),
   fTimeResolution(80.),
-  fTimeNSigma(150.)
+  fTimeNSigma(5.)
 {
   //
   // constructor
