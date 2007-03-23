@@ -94,7 +94,8 @@ fDeltaProb(0)
       AliError(Form("Wrong ITS layer %d (0 -> 5)",fLayer));
       break;
     }
-
+    fXloc = hit[0];
+    fZloc = hit[1];
     Double_t lxyz[3] = {fXloc, 0, fZloc};
     Double_t txyz[3] = {0, 0, 0};
     GetTracking2LocalMatrix()->MasterToLocal(lxyz,txyz);
