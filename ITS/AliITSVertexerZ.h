@@ -31,9 +31,6 @@ class AliITSVertexerZ : public AliITSVertexer {
   virtual void FindVertices();
   virtual void PrintStatus() const;
   void SetDiffPhiMax(Float_t pm = 0.01){fDiffPhiMax = pm;}
-  void SetVtxStart(Float_t x, Float_t y){
-    fX0=x; fY0=y;
-  }
   void ConfigIterations(Int_t noiter=3,Float_t *ptr=0);
   void SetFirstLayerModules(Int_t m1 = 0, Int_t m2 = 79){fFirstL1 = m1; fLastL1 = m2;}
   void SetSecondLayerModules(Int_t m1 = 80, Int_t m2 = 239){fFirstL2 = m1; fLastL2 = m2;}
@@ -62,8 +59,6 @@ class AliITSVertexerZ : public AliITSVertexer {
   Int_t fFirstL2;          // first module of the second pixel layer used
   Int_t fLastL2;           // last module of the second pixel layer used
   Float_t fDiffPhiMax;     // Maximum delta phi allowed among corr. pixels
-  Float_t fX0;             // Nominal x coordinate of the vertex
-  Float_t fY0;             // Nominal y coordinate of the vertex
   Float_t fZFound;         //! found value for the current event
   Float_t fZsig;           //! RMS of Z
   TH1F *fZCombc;           //! histogram with coarse z distribution
@@ -76,7 +71,7 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t fPhiDiffIter[5];   // Delta phi used in iterations
   Float_t fWindowWidth;      // Z window width for symmetrization
 
-  ClassDef(AliITSVertexerZ,6);
+  ClassDef(AliITSVertexerZ,7);
 };
 
 #endif

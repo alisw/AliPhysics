@@ -23,7 +23,6 @@
 #include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliITSLoader.h"
-#include "AliITSgeom.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
 /////////////////////////////////////////////////////////////////
@@ -45,7 +44,8 @@ fMaxRCut(0.),
 fZCutDiamond(0.),
 fMaxZCut(0.),
 fDCAcut(0.),
-fDiffPhiMax(0.) {
+fDiffPhiMax(0.)			    
+ {
   // Default constructor
   SetCoarseDiffPhiCut();
   SetCoarseMaxRCut();
@@ -54,7 +54,6 @@ fDiffPhiMax(0.) {
   SetMaxZCut();
   SetDCAcut();
   SetDiffPhiMax();
-
 }
 
 //______________________________________________________________________
@@ -67,7 +66,8 @@ fMaxRCut(0.),
 fZCutDiamond(0.),
 fMaxZCut(0.),
 fDCAcut(0.),
-fDiffPhiMax(0.)  {
+fDiffPhiMax(0.)				    
+{
   // Standard constructor
   fLines = new TClonesArray("AliStrLine",1000);
   SetCoarseDiffPhiCut();
@@ -82,43 +82,61 @@ fDiffPhiMax(0.)  {
 //______________________________________________________________________
 AliITSVertexer3D::~AliITSVertexer3D() {
   // Destructor
-  fVert3D = 0;  // this object is not owned by this class
-  if(fLines){
+ if(fLines){
     fLines->Delete();
     delete fLines;
   }
 }
 
 //______________________________________________________________________
+void AliITSVertexer3D::ResetVert3D(){
+  //
+  fVert3D.SetXv(0.);
+  fVert3D.SetYv(0.);
+  fVert3D.SetZv(0.);
+  fVert3D.SetDispersion(0.);
+  fVert3D.SetNContributors(0);
+}
+//______________________________________________________________________
 AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
   // Defines the AliESDVertex for the current event
+  ResetVert3D();
   AliDebug(1,Form("FindVertexForCurrentEvent - 3D - PROCESSING EVENT %d",evnumber));
-  fVert3D = 0;
   if(fLines)fLines->Clear();
 
   Int_t nolines = FindTracklets(evnumber,0);
   fCurrentVertex = 0;
   if(nolines<2)return fCurrentVertex;
   Int_t rc=Prepare3DVertex(0);
-  if(rc==0)Find3DVertex();
-  if(fVert3D){
+  if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(fLines,0);
+  /*  uncomment to debug
+    printf("Vertex found in first iteration:\n");
+    fVert3D.Print();
+    printf("Start second iteration\n");
+  end of debug lines  */
+  if(fVert3D.GetNContributors()>0){
     if(fLines) fLines->Delete();
     nolines = FindTracklets(evnumber,1);
     if(nolines>=2){
       rc=Prepare3DVertex(1);
-      if(rc==0)Find3DVertex();
+      if(rc==0) fVert3D=AliVertexerTracks::TrackletVertexFinder(fLines,0);
     }
   }
-  
-  if(fVert3D){
+  /*  uncomment to debug 
+    printf("Vertex found in second iteration:\n");
+    fVert3D.Print();
+   end of debug lines  */ 
+ 
+  Float_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
+  if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
     fCurrentVertex = new AliESDVertex();
     fCurrentVertex->SetTitle("vertexer: 3D");
     fCurrentVertex->SetName("Vertex");
-    fCurrentVertex->SetXv(fVert3D->GetXv());
-    fCurrentVertex->SetYv(fVert3D->GetYv());
-    fCurrentVertex->SetZv(fVert3D->GetZv());
-    fCurrentVertex->SetDispersion(fVert3D->GetDispersion());
-    fCurrentVertex->SetNContributors(fVert3D->GetNContributors());
+    fCurrentVertex->SetXv(fVert3D.GetXv());
+    fCurrentVertex->SetYv(fVert3D.GetYv());
+    fCurrentVertex->SetZv(fVert3D.GetZv());
+    fCurrentVertex->SetDispersion(fVert3D.GetDispersion());
+    fCurrentVertex->SetNContributors(fVert3D.GetNContributors());
   }
   FindMultiplicity(evnumber);
   return fCurrentVertex;
@@ -158,9 +176,9 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   Float_t deltaR=fCoarseMaxRCut;
   Float_t dZmax=fZCutDiamond;
   if(optCuts){
-    xbeam=fVert3D->GetXv();
-    ybeam=fVert3D->GetYv();
-    zvert=fVert3D->GetZv();
+    xbeam=fVert3D.GetXv();
+    ybeam=fVert3D.GetYv();
+    zvert=fVert3D.GetZv();
     deltaPhi = fDiffPhiMax; 
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
@@ -197,6 +215,7 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   Int_t nolines = 0;
   // Loop on modules of layer 1
   for(Int_t modul1= irstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
+    UShort_t ladder=int(modul1/4)+1; // ladders are numbered starting from 1
     branch->GetEvent(modul1);
     Int_t nrecp1 = itsRec->GetEntries();
     TClonesArray *prpl1 = new TClonesArray("AliITSRecPoint",nrecp1);
@@ -215,31 +234,36 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
       geom->LtoG(modul1,lc,gc); // global coordinates
       Double_t phi1 = TMath::ATan2(gc[1]-ybeam,gc[0]-xbeam);
       if(phi1<0)phi1=2*TMath::Pi()+phi1;
-      for(Int_t modul2= irstL2; modul2<=lastL2;modul2++){
-	branch->GetEvent(modul2);
-	Int_t nrecp2 = itsRec->GetEntries();
-	for(Int_t j2=0;j2<nrecp2;j2++){
-	  recp = (AliITSRecPoint*)itsRec->At(j2);
-	  lc2[0]=recp->GetDetLocalX();
-	  lc2[2]=recp->GetDetLocalZ();
-	  geom->LtoG(modul2,lc2,gc2);
-	  Double_t phi2 = TMath::ATan2(gc2[1]-ybeam,gc2[0]-xbeam);
-	  if(phi2<0)phi2=2*TMath::Pi()+phi2;
-          Double_t diff = TMath::Abs(phi2-phi1); 
-          if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff; 
-          if(diff>deltaPhi)continue;
-	  AliStrLine line(gc,gc2,kTRUE);
-	  Double_t cp[3];
-	  Int_t retcode = line.Cross(&zeta,cp);
-	  if(retcode<0)continue;
-	  Double_t dca = line.GetDCA(&zeta);
-	  if(dca<0.) continue;
-	  if(dca>deltaR)continue;
-	  Double_t deltaZ=cp[2]-zvert;
-	  if(TMath::Abs(deltaZ)>dZmax)continue;
-	  MakeTracklet(gc,gc2,nolines);
+      for(Int_t ladl2=0 ; ladl2<fLadOnLay2*2+1;ladl2++){
+	for(Int_t k=0;k<4;k++){
+	  Int_t ladmod=fLadders[ladder-1]+ladl2;
+ 	  if(ladmod>geom->GetNladders(2)) ladmod=ladmod-geom->GetNladders(2);
+	  Int_t modul2=geom->GetModuleIndex(2,ladmod,k+1);
+	  branch->GetEvent(modul2);
+	  Int_t nrecp2 = itsRec->GetEntries();
+	  for(Int_t j2=0;j2<nrecp2;j2++){
+	    recp = (AliITSRecPoint*)itsRec->At(j2);
+	    lc2[0]=recp->GetDetLocalX();
+	    lc2[2]=recp->GetDetLocalZ();
+	    geom->LtoG(modul2,lc2,gc2);
+	    Double_t phi2 = TMath::ATan2(gc2[1]-ybeam,gc2[0]-xbeam);
+	    if(phi2<0)phi2=2*TMath::Pi()+phi2;
+	    Double_t diff = TMath::Abs(phi2-phi1); 
+	    if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff; 
+	    if(diff>deltaPhi)continue;
+	    AliStrLine line(gc,gc2,kTRUE);
+	    Double_t cp[3];
+	    Int_t retcode = line.Cross(&zeta,cp);
+	    if(retcode<0)continue;
+	    Double_t dca = line.GetDCA(&zeta);
+	    if(dca<0.) continue;
+	    if(dca>deltaR)continue;
+	    Double_t deltaZ=cp[2]-zvert;
+	    if(TMath::Abs(deltaZ)>dZmax)continue;
+	    MakeTracklet(gc,gc2,nolines);
+	  }
+	  detTypeRec.ResetRecPoints();
 	}
-	detTypeRec.ResetRecPoints();
       }
     }
     delete prpl1;
@@ -265,96 +289,6 @@ void AliITSVertexer3D::FindVertices(){
 
 
 //______________________________________________________________________
-void AliITSVertexer3D::Find3DVertex(){
-  // Determines the vertex position 
-  // same algorithm as in AliVertexerTracks::StrLinVertexFinderMinDist(0)
-  // adapted to pure AliStrLine objects
-
-  Int_t knacc = fLines->GetEntriesFast();  
-  Double_t (*vectP0)[3]=new Double_t [knacc][3];
-  Double_t (*vectP1)[3]=new Double_t [knacc][3];
-  
-  Double_t sum[3][3];
-  Double_t dsum[3]={0,0,0};
-  for(Int_t i=0;i<3;i++)
-    for(Int_t j=0;j<3;j++)sum[i][j]=0;
-  for(Int_t i=0; i<knacc; i++){
-    AliStrLine *line1 = (AliStrLine*)fLines->At(i); 
-
-    Double_t p0[3],cd[3];
-    line1->GetP0(p0);
-    line1->GetCd(cd);
-    Double_t p1[3]={p0[0]+cd[0],p0[1]+cd[1],p0[2]+cd[2]};
-    vectP0[i][0]=p0[0];
-    vectP0[i][1]=p0[1];
-    vectP0[i][2]=p0[2];
-    vectP1[i][0]=p1[0];
-    vectP1[i][1]=p1[1];
-    vectP1[i][2]=p1[2];
-    
-    Double_t matr[3][3];
-    Double_t dknow[3];
-    AliVertexerTracks::GetStrLinDerivMatrix(p0,p1,matr,dknow);
-
-    for(Int_t iii=0;iii<3;iii++){
-      dsum[iii]+=dknow[iii]; 
-      for(Int_t lj=0;lj<3;lj++) sum[iii][lj]+=matr[iii][lj];
-    }
-  }
-  
-  Double_t vett[3][3];
-  Double_t det=AliVertexerTracks::GetDeterminant3X3(sum);
-  Double_t initPos[3];
-  Double_t sigma = 0.;
-  for(Int_t i=0;i<3;i++)initPos[i]=0.;
-
-  Int_t goodvert=0;
-
-  if(det!=0){
-    for(Int_t zz=0;zz<3;zz++){
-      for(Int_t ww=0;ww<3;ww++){
-	for(Int_t kk=0;kk<3;kk++) vett[ww][kk]=sum[ww][kk];
-      }
-      for(Int_t kk=0;kk<3;kk++) vett[kk][zz]=dsum[kk];
-      initPos[zz]=AliVertexerTracks::GetDeterminant3X3(vett)/det;
-    }
-
-    Double_t rvert=TMath::Sqrt(initPos[0]*initPos[0]+initPos[1]*initPos[1]);
-    Double_t zvert=initPos[2];
-    if(rvert<fCoarseMaxRCut && TMath::Abs(zvert)<fZCutDiamond){
-      for(Int_t i=0; i<knacc; i++){
-	Double_t p0[3]={0,0,0},p1[3]={0,0,0};
-	for(Int_t ii=0;ii<3;ii++){
-	  p0[ii]=vectP0[i][ii];
-	  p1[ii]=vectP1[i][ii];
-	}
-	sigma+=AliVertexerTracks::GetStrLinMinDist(p0,p1,initPos);
-      }
-      sigma=TMath::Sqrt(sigma);
-      goodvert=1;
-    }
-  }
-  delete vectP0;
-  delete vectP1;
-  if(!goodvert){
-    Warning("Find3DVertex","Finder did not succed");
-    for(Int_t i=0;i<3;i++)initPos[i]=0.;
-    sigma=999;
-    knacc=-1;
-  }
-  if(fVert3D){
-    fVert3D-> SetXYZ(initPos);
-    fVert3D->SetDispersion(sigma);
-    fVert3D->SetNContributors(knacc);
-  }else{
-    fVert3D = new AliVertex(initPos,sigma,knacc);
-  }
-  // fVert3D->Print();
-}
-
-
-
-//______________________________________________________________________
 Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   // Finds the 3D vertex information using tracklets
   Int_t retcode = -1;
@@ -365,9 +299,9 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Float_t deltaR=fCoarseMaxRCut;
   Float_t dZmax=fZCutDiamond;
   if(optCuts){
-    xbeam=fVert3D->GetXv();
-    ybeam=fVert3D->GetYv();
-    zvert=fVert3D->GetZv();
+    xbeam=fVert3D.GetXv();
+    ybeam=fVert3D.GetYv();
+    zvert=fVert3D.GetZv();
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
   }
@@ -382,7 +316,6 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Float_t binsizez=(zh-zl)/nbz;
   TH3F *h3d = new TH3F("h3d","xyz distribution",nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
 
- 
   // cleanup of the TCLonesArray of tracklets (i.e. fakes are removed)
   Int_t *validate = new Int_t [fLines->GetEntriesFast()];
   for(Int_t i=0; i<fLines->GetEntriesFast();i++)validate[i]=0;
@@ -404,8 +337,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       Double_t raddist=TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
       if(TMath::Abs(deltaZ)>dZmax)continue;
       if(raddist>deltaR)continue;
-      validate[i]++;
-      validate[j]++;
+      validate[i]=1;
+      validate[j]=1;
       h3d->Fill(point[0],point[1],point[2]);
     }
   }
@@ -457,26 +390,20 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   fLines->Compress();
   AliDebug(1,Form("Number of tracklets (after 2nd compression) %d",fLines->GetEntriesFast()));
 
-
   if(fLines->GetEntriesFast()>1){
-    Find3DVertex();   //  find a first candidate for the primary vertex
+    //  find a first candidate for the primary vertex
+    fVert3D=AliVertexerTracks::TrackletVertexFinder(fLines,0); 
     // make a further selection on tracklets based on this first candidate
-    fVert3D->GetXYZ(peak);
-    AliDebug(1,Form("FIRSTgv Ma V candidate: %f ; %f ; %f",peak[0],peak[1],peak[2]));
+    fVert3D.GetXYZ(peak);
+    AliDebug(1,Form("FIRST V candidate: %f ; %f ; %f",peak[0],peak[1],peak[2]));
     for(Int_t i=0; i<fLines->GetEntriesFast();i++){
       AliStrLine *l1 = (AliStrLine*)fLines->At(i);
       if(l1->GetDistFromPoint(peak)> fDCAcut)fLines->RemoveAt(i);
     }
     fLines->Compress();
     AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines->GetEntriesFast()));
-    if(fLines->GetEntriesFast()>1){
-      retcode = 0;   // this last tracklet selection will be used
-      delete fVert3D;
-      fVert3D = 0;
-    }
-    else {
-	retcode =1; // the previous tracklet selection will be used
-    }
+    if(fLines->GetEntriesFast()>1) retcode=0; // this new tracklet selection is used
+    else retcode =1; // the previous tracklet selection will be used
   }
   else {
     retcode = 0;

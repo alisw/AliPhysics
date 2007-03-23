@@ -1,7 +1,7 @@
 #ifndef ALIITSVERTEXER3D_H
 #define ALIITSVERTEXER3D_H
 
-#include<AliITSVertexerZ.h>
+#include<AliITSVertexer.h>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -21,7 +21,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   virtual ~AliITSVertexer3D();
   virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
   virtual void FindVertices();
-  AliVertex *GetVertex3D() const {return fVert3D;}
+  AliVertex GetVertex3D() const {return fVert3D;}
   virtual void MakeTracklet(Double_t *pA, Double_t *pB, Int_t &nolines);
   virtual void MakeTracklet(Float_t *pA, Float_t *pB, Int_t &nolines);
   virtual void PrintStatus() const;
@@ -37,11 +37,11 @@ protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
   AliITSVertexer3D& operator=(const AliITSVertexer3D& /* vtxr */);
   Int_t FindTracklets(Int_t evnumber, Int_t optCuts);
-  void Find3DVertex();
   Int_t Prepare3DVertex(Int_t optCuts);
+  void ResetVert3D();
 
   TClonesArray *fLines;      //! array of tracklets
-  AliVertex *fVert3D;        // 3D Vertex
+  AliVertex fVert3D;        // 3D Vertex
   Float_t fCoarseDiffPhiCut; // loose cut on DeltaPhi for RecPoint matching 
   Float_t fCoarseMaxRCut; // cut on tracklet DCA to Z axis
   Float_t fMaxRCut; // cut on tracklet DCA to beam axis
