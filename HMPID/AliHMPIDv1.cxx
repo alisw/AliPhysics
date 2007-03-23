@@ -557,7 +557,9 @@ void AliHMPIDv1::StepManager()
       Int_t tid=          gMC->GetStack()->GetCurrentTrackNumber();                               //take TID
       Int_t pid=          gMC->TrackPid();                                                        //take PID
       Double_t out[3];    gMC->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
-      out[0]=0.5*(out[0]+in[0]); out[1]=0.5*(out[1]+in[1]); out[1]=0.5*(out[1]+in[1]);            //take hit position at the anod plane
+      out[0]=0.5*(out[0]+in[0]);                                                                  //>
+      out[1]=0.5*(out[1]+in[1]);                                                                  //take hit position at the anod plane
+      out[2]=0.5*(out[2]+in[2]);                                                                  //>
       Float_t xl,yl;AliHMPIDParam::Instance()->Mars2Lors(copy,out,xl,yl);                         //take LORS position
       new((*fHits)[fNhits++])AliHMPIDHit(copy,eloss,pid,tid,xl,yl,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
       GenFee(eloss);                                                                              //generate feedback photons 
