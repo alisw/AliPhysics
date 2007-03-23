@@ -122,7 +122,6 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
   }
   totst /= nN;
   Float_t cut = totst+totst2*2.;
-  if(fDebug>1)cout<<"totst, totst2, cut: "<<totst<<", "<<totst2<<", "<<cut<<endl;
   Float_t val1=hist->GetBinLowEdge(sepa); 
   Float_t val2=hist->GetBinLowEdge(1);
   Float_t valm = 0.;
@@ -143,9 +142,7 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
   if((val2-val1)>deltaVal){
     val1 = zmax-deltaVal/2.;
     val2 = zmax+deltaVal/2.;
-    if(fDebug>0)cout<<"val1 and val2 recomputed\n";
   }
-  if(fDebug>0)cout<<"Values for Z finding: "<<val1<<" "<<val2<<" "<<val2-val1<<endl;
   fZFound=0;
   fZsig=0;
   nN=0;
@@ -252,7 +249,6 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   if(firipixe>1){
     rmszav=TMath::Sqrt(zave2/(firipixe-1)-zave*zave/firipixe/(firipixe-1));
     zave=zave/firipixe;
-    if(fDebug>1)cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++\n Number of firing pixels: "<<firipixe<<endl;
   }
   else {
     fZFound = -200;
@@ -265,16 +261,11 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t sepa=(Int_t)((zlim2-zlim1)*10.+1.);
   zlim2=zlim1 + sepa/10.;
   TH1F *zvdis = new TH1F("z_ev","zv distr",sepa,zlim1,zlim2);
-  if(fDebug>0){
-    cout<<"Z limits: "<<zlim1<<" "<<zlim2<<"; Bins= "<<sepa<<endl;
-    cout<<"Bin width: "<<zvdis->GetBinWidth(1)*10000.<<" micron\n";
-  }
   Int_t sizarr=100;
   TArrayF *zval = new TArrayF(sizarr);
   //  TArrayF *curv = new TArrayF(sizarr);
   Int_t ncoinc=0;
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
-    if(fDebug>0)cout<<"processing module   "<<module<<"                  \r";
     branch->GetEvent(module);
     Int_t nrecp1 = itsRec->GetEntries();
     TObjArray *poiL1 = new TObjArray(nrecp1);
@@ -290,7 +281,6 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
       Float_t r1=TMath::Sqrt(gc[0]*gc[0]+gc[1]*gc[1]);
       Float_t phi1 = TMath::ATan2(gc[1],gc[0]);
       if(phi1<0)phi1=2*TMath::Pi()+phi1;
-      if(fDebug>1)cout<<"module "<<module<<" "<<gc[0]<<" "<<gc[1]<<" "<<gc[2]<<" "<<phi1<<"     \n";
       for(Int_t modul2=fFirstL2; modul2<=fLastL2; modul2++){
 	branch->GetEvent(modul2);
 	Int_t nrecp2 = itsRec->GetEntries();
@@ -330,9 +320,6 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
     }
     delete poiL1;
   }         // loop on modules
-  if(fDebug>0){
-    cout<<endl<<"Number of coincidences = "<<ncoinc<<endl;
-  }
   //  EvalZ(zvdis,sepa,ncoinc,zval,curv);
   EvalZ(zvdis,sepa,ncoinc,zval);
   delete zvdis;
@@ -362,10 +349,6 @@ void AliITSVertexerPPZ::FindVertices(){
       WriteCurrentVertex();
     }
     else {
-      if(fDebug>0){
-	cout<<"Vertex not found for event "<<i<<endl;
-	cout<<"fZFound = "<<fZFound<<", fZsig= "<<fZsig<<endl;
-      }
     }
   }
 }
@@ -381,7 +364,6 @@ void AliITSVertexerPPZ::PrintStatus() const {
   cout <<" Max Phi difference: "<<fDiffPhiMax<<endl;
   cout <<" Window for Z search: "<<fWindow<<endl;
   cout <<" Current Z "<<fZFound<<"; Z sig "<<fZsig<<endl;
-  cout <<" Debug flag: "<<fDebug<<endl;
   cout<<"First event to be processed "<<fFirstEvent;
   cout<<"\n Last event to be processed "<<fLastEvent<<endl;
 }

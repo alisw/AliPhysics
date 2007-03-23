@@ -1,10 +1,11 @@
 #include "AliITSDetTypeRec.h"
 #include "AliITSVertexerIons.h"
-#include "AliITSVertexerPPZ.h"
+#include "AliITSVertexerZ.h"
 #include "AliESDVertex.h"
 #include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITSRecPoint.h"
+#include "AliLog.h"
 #include <TTree.h>
 #include <TH1.h>
 #include <TF1.h>
@@ -154,9 +155,9 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   }
 
   if(np1<fNpThreshold) {
-    Warning("FindVertexForCurrentEvent","AliITSVertexerIons finder is not reliable for low multiplicity events. Switching to AliITSVertexerPPZ with default parameters...\n");
+    Warning("FindVertexForCurrentEvent","AliITSVertexerIons finder is not reliable for low multiplicity events. Switching to AliITSVertexerZ with default parameters...\n");
     Warning("FindVertexForCurrentEvent","N rec points = %d - Threshold is %d",np1,fNpThreshold);
-    AliITSVertexerPPZ *dovert = new AliITSVertexerPPZ("default");
+    AliITSVertexerZ *dovert = new AliITSVertexerZ("default");
     fCurrentVertex =dovert->FindVertexForCurrentEvent(rl->GetEventNumber());
     delete dovert;
     return fCurrentVertex;
@@ -166,7 +167,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
     Error("FindVertexForCurrentEvent","No points in the pixer layers");
     return fCurrentVertex;
   }  
-  if(fDebug>0)   cout << "N. points layer 1 and 2 : " << np1 << " " << np2 << endl;
+  AliDebug(1,Form("N. points layer 1 and 2 : %d %d",np1,np2));
 
   Double_t asparx = (mxpiu-mxmeno)/(mxpiu+mxmeno);
   Double_t aspary = (mypiu-mymeno)/(mypiu+mymeno);
@@ -174,7 +175,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   Double_t x0 = 2.86*asparx;
   Double_t y0 = 2.86*aspary;
 
-  if(fDebug>0)   cout << "Rough xy vertex = " << x0 << " " << y0 << endl;  
+  AliDebug(1,Form("Rough xy vertex = %f %f",x0,y0));  
 
   for(Int_t i=0;i<np1;i++) {
     x1[i]-=x0;
@@ -228,7 +229,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
     Double_t resolution[3]={0,0,0};
     Double_t snr[3]={0,0,0};
     Char_t name[30];
-    if(fDebug>0)Info("FindVertexForCurrentEvent","Vertex found for event %d",evnumber);
+    AliDebug(1,Form("Vertex found for event %d",evnumber));
     sprintf(name,"Vertex");
     fCurrentVertex = new AliESDVertex(position,resolution,snr,name);
     return fCurrentVertex;
@@ -248,7 +249,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   fx->SetParameter(0,100);
   Double_t dist=0.3;
   Double_t xapprox=FindMaxAround(x0,hxv,dist);
-  if(fDebug>0) cout << "xapprox = " << xapprox << endl;
+  AliDebug(1,Form("xapprox = %f",xapprox));
   fx->SetParameter(1,xapprox);
   Double_t difcentroid=0.07;
   fx->SetParLimits(1,xapprox-difcentroid,xapprox+difcentroid);
@@ -259,7 +260,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   TF1 *fy = new TF1 ("fy","([0]*exp(-0.5*((x-[1])/[2])*((x-[1])/[2])))+[3]+[4]*x+[5]*x*x",y0-dxy,y0+dxy);  
   fy->SetParameter(0,100);
   Double_t yapprox=FindMaxAround(y0,hyv,dist);
-  if(fDebug>0) cout << "yapprox = " << yapprox << endl;
+  AliDebug(1,Form("yapprox = %f",yapprox));
   fy->SetParameter(1,yapprox);
   fy->SetParLimits(1,yapprox-difcentroid,yapprox+difcentroid);
   fy->SetParameter(2,0.1);
@@ -285,7 +286,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   Double_t snr[3]={0,0,0};
   
   Char_t name[30];
-  if(fDebug>0)Info("FindVertexForCurrentEvent","Vertex found for event %d",evnumber);
+  AliDebug(1,Form("Vertex found for event %d",evnumber));
   sprintf(name,"Vertex");
   fCurrentVertex = new AliESDVertex(position,resolution,snr,name);
 
@@ -314,9 +315,7 @@ void AliITSVertexerIons::FindVertices(){
       WriteCurrentVertex();
     }
     else {
-      if(fDebug>0){
-	cout<<"Vertex not found for event "<<i<<endl;
-      }
+      AliDebug(1,Form("Vertex not found for event %d",i));
     }
   }
 }
@@ -325,7 +324,6 @@ void AliITSVertexerIons::FindVertices(){
 void AliITSVertexerIons::PrintStatus() const {
   // Print current status
   cout <<"=======================================================\n";
-  cout <<" Debug flag: "<<fDebug<<endl;
   cout<<"First event to be processed "<<fFirstEvent;
   cout<<"\n Last event to be processed "<<fLastEvent<<endl;
   if(fCurrentVertex)fCurrentVertex->PrintStatus();

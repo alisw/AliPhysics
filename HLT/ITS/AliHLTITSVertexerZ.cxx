@@ -174,8 +174,8 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTr
       lc[0]=-recp->GetY()+yshift;
       lc[2]=-recp->GetZ()+zshift[module%4];
       geom->LtoG(module,lc,gc);
-      gc[0]-=fX0;
-      gc[1]-=fY0;
+      gc[0]-=fNominalPos[0];
+      gc[1]-=fNominalPos[1];
       Float_t xc1,yc1;
       xc1=gc[0];
       yc1=gc[1];
@@ -203,8 +203,8 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTr
       lc[0]=recp->GetY()+yshift;
       lc[2]=-recp->GetZ()+zshift[module%4];
       geom->LtoG(module,lc,gc);
-      gc[0]-=fX0;
-      gc[1]-=fY0;
+      gc[0]-=fNominalPos[0];
+      gc[1]-=fNominalPos[1];
       Float_t xc2,yc2;
       xc2=gc[0];
       yc2=gc[1];

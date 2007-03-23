@@ -19,7 +19,7 @@ AliITSVertexer::AliITSVertexer():AliVertexer() {
   // Default Constructor
 }
 
-AliITSVertexer::AliITSVertexer(TString filename) {
+AliITSVertexer::AliITSVertexer(TString filename):AliVertexer() {
   // Standard constructor
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   if(!rl){
@@ -29,7 +29,6 @@ AliITSVertexer::AliITSVertexer(TString filename) {
     Fatal("AliITSVertexer","The AliRun object is not available - nothing done");
   }
   fCurrentVertex  = 0;   
-  fDebug = 0;
   SetFirstEvent(0);
   SetLastEvent(0);
   rl->LoadHeader();

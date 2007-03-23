@@ -20,6 +20,7 @@
 #include <TH3F.h>
 #include <TTree.h>
 #include<TClonesArray.h>
+#include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliITSLoader.h"
 #include "AliITSgeom.h"
@@ -91,7 +92,7 @@ AliITSVertexer3D::~AliITSVertexer3D() {
 //______________________________________________________________________
 AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
   // Defines the AliESDVertex for the current event
-  if (fDebug) cout<<"\n \n FindVertexForCurrentEvent - 3D - PROCESSING EVENT "<<evnumber<<endl;
+  AliDebug(1,Form("FindVertexForCurrentEvent - 3D - PROCESSING EVENT %d",evnumber));
   fVert3D = 0;
   if(fLines)fLines->Clear();
 
@@ -187,7 +188,7 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
     itsLoader->UnloadRecPoints();
     return -1;
   }
-  if(fDebug) printf("RecPoints on Layer 1,2 = %d, %d\n",nrpL1,nrpL2);
+  AliDebug(1,Form("RecPoints on Layer 1,2 = %d, %d\n",nrpL1,nrpL2));
 
   Double_t a[3]={xbeam,ybeam,0.}; 
   Double_t b[3]={xbeam,ybeam,10.};
@@ -348,7 +349,7 @@ void AliITSVertexer3D::Find3DVertex(){
   }else{
     fVert3D = new AliVertex(initPos,sigma,knacc);
   }
-  if(fDebug) fVert3D->Print();
+  // fVert3D->Print();
 }
 
 
@@ -419,7 +420,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     if(validate[i]<1)fLines->RemoveAt(i);
   }
   fLines->Compress();
-  if (fDebug) cout<<"Number of tracklets (after compress) "<<fLines->GetEntriesFast()<<endl;
+  AliDebug(1,Form("Number of tracklets (after compress)%d ",fLines->GetEntriesFast()));
   delete [] validate;
 
 
@@ -454,20 +455,20 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     if(l1->GetDistFromPoint(peak)>2.5*bs)fLines->RemoveAt(i);
   }
   fLines->Compress();
-  if (fDebug) cout<<"Number of tracklets (after 2nd compression) "<<fLines->GetEntriesFast()<<endl;
+  AliDebug(1,Form("Number of tracklets (after 2nd compression) %d",fLines->GetEntriesFast()));
 
 
   if(fLines->GetEntriesFast()>1){
     Find3DVertex();   //  find a first candidate for the primary vertex
     // make a further selection on tracklets based on this first candidate
     fVert3D->GetXYZ(peak);
-    if (fDebug) cout<<"FIRSTgv Ma V candidate: "<<peak[0]<<"; "<<peak[1]<<"; "<<peak[2]<<endl;
+    AliDebug(1,Form("FIRSTgv Ma V candidate: %f ; %f ; %f",peak[0],peak[1],peak[2]));
     for(Int_t i=0; i<fLines->GetEntriesFast();i++){
       AliStrLine *l1 = (AliStrLine*)fLines->At(i);
       if(l1->GetDistFromPoint(peak)> fDCAcut)fLines->RemoveAt(i);
     }
     fLines->Compress();
-    if (fDebug) cout<<"Number of tracklets (after 3rd compression) "<<fLines->GetEntriesFast()<<endl;
+    AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines->GetEntriesFast()));
     if(fLines->GetEntriesFast()>1){
       retcode = 0;   // this last tracklet selection will be used
       delete fVert3D;

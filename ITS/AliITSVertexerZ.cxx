@@ -46,8 +46,6 @@ fLastL1(0),
 fFirstL2(0),
 fLastL2(0),
 fDiffPhiMax(0),
-fX0(0.),
-fY0(0.),
 fZFound(0),
 fZsig(0.),
 fZCombc(0),
@@ -77,8 +75,6 @@ fLastL1(0),
 fFirstL2(0),
 fLastL2(0),
 fDiffPhiMax(0),
-fX0(x0),
-fY0(y0),
 fZFound(0),
 fZsig(0.),
 fZCombc(0),
@@ -109,8 +105,6 @@ fLastL1(vtxr.fLastL1),
 fFirstL2(vtxr.fFirstL2),
 fLastL2(vtxr.fLastL2),
 fDiffPhiMax(vtxr.fDiffPhiMax),
-fX0(vtxr.fX0),
-fY0(vtxr.fY0),
 fZFound(vtxr.fZFound),
 fZsig(vtxr.fZsig),
 fZCombc(vtxr.fZCombc),
@@ -310,8 +304,8 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
       lc[2]=recp->GetDetLocalZ();
       geom->LtoG(module,lc,gc);
       // Global coordinates of this recpoints
-      gc[0]-=fX0; // Possible beam offset in the bending plane
-      gc[1]-=fY0; //   "               "
+      gc[0]-=fNominalPos[0]; // Possible beam offset in the bending plane
+      gc[1]-=fNominalPos[1]; //   "               "
       xc1[ind]=gc[0];
       yc1[ind]=gc[1];
       zc1[ind]=gc[2];
@@ -332,8 +326,8 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
       lc[0]=recp->GetDetLocalX();
       lc[2]=recp->GetDetLocalZ();
       geom->LtoG(module,lc,gc);
-      gc[0]-=fX0;
-      gc[1]-=fY0;
+      gc[0]-=fNominalPos[0];
+      gc[1]-=fNominalPos[1];
       xc2[ind]=gc[0];
       yc2[ind]=gc[1];
       zc2[ind]=gc[2];
@@ -485,7 +479,6 @@ void AliITSVertexerZ::PrintStatus() const {
   cout <<"Limits for Z histograms: "<<fLowLim<<"; "<<fHighLim<<endl;
   cout <<"Bin sizes for coarse z histos "<<fStepCoarse<<endl;
   cout <<" Current Z "<<fZFound<<"; Z sig "<<fZsig<<endl;
-  cout <<" Debug flag: "<<fDebug<<endl;
   cout <<"First event to be processed "<<fFirstEvent;
   cout <<"\n Last event to be processed "<<fLastEvent<<endl;
   if(fZCombc){
