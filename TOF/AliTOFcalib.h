@@ -19,6 +19,7 @@ class AliESD;
 
 class AliTOFCal;
 class AliTOFGeometry;
+class AliTOFRecoParam;
 
 class AliTOFcalib:public TTask{
 public:
@@ -53,6 +54,8 @@ public:
   void WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   Bool_t ReadParFromCDB(Char_t *sel, Int_t nrun);
   Int_t GetIndex(Int_t *detId); // Get channel index for Calibration 
+  void WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
+  AliTOFRecoParam * ReadRecParFromCDB(Char_t *sel, Int_t nrun);
 
  public: 
   class AliTOFArray : public TObject {

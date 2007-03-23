@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2007/02/28 18:08:26  arcelli
+Add protection against failed retrieval of the CDB cal object
+
 Revision 1.10  2006/08/22 13:30:49  arcelli
 removal of effective c++ warnings (C.Zampolli)
 
@@ -76,6 +79,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFChannel.h"
 #include "AliTOFGeometryV5.h"
 #include "AliTOFGeometry.h"
+#include "AliTOFRecoParam.h"
 
 extern TROOT *gROOT;
 extern TStyle *gStyle;
@@ -887,6 +891,36 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
   AliCDBEntry *entry2 = man->Get(out,nrun);
   TH1F *histo =(TH1F*)entry2->GetObject();
   fTOFSimToT=histo;
+}
+//_____________________________________________________________________________
+
+//_____________________________________________________________________________
+void AliTOFcalib::WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param){
+  //Write reconstruction parameters to the CDB
+
+  AliCDBManager *man = AliCDBManager::Instance();
+  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Silvia Arcelli");
+  Char_t *sel1 = "RecPar" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBId id(out,minrun,maxrun);
+  man->Put(param,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read reconstruction parameters from the CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
+  Char_t *sel1 = "RecPar" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBEntry *entry = man->Get(out,nrun);
+  AliTOFRecoParam *param=(AliTOFRecoParam*)entry->GetObject();
+  return param;
 }
 //_____________________________________________________________________________
 
