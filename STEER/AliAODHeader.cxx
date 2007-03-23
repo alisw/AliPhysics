@@ -37,8 +37,9 @@ AliAODHeader::AliAODHeader() :
   fZDCEMEnergy(-999.),
   fTriggerMask(0),
   fEventType(0),
-  fOrbitNumber(0),
   fBunchCrossNumber(0),
+  fOrbitNumber(0),
+  fPeriodNumber(0),
   fRunNumber(-999),  
   fRefMult(-999),
   fRefMultPos(-999),
@@ -53,6 +54,7 @@ AliAODHeader::AliAODHeader() :
 AliAODHeader::AliAODHeader(Int_t nRun, 
 			   UShort_t nBunchX,
 			   UInt_t nOrbit,
+			   UInt_t nPeriod,
 			   Char_t *title) :
   TNamed("header", title),
   fMagneticField(-999.),
@@ -65,8 +67,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCEMEnergy(-999.),
   fTriggerMask(0),
   fEventType(0),
-  fOrbitNumber(nOrbit),
   fBunchCrossNumber(nBunchX),
+  fOrbitNumber(nOrbit),
+  fPeriodNumber(nPeriod),
   fRunNumber(nRun),
   fRefMult(-999),
   fRefMultPos(-999),
@@ -80,6 +83,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 AliAODHeader::AliAODHeader(Int_t nRun, 
 			   UShort_t nBunchX,
 			   UInt_t nOrbit,
+			   UInt_t nPeriod,
 			   Int_t refMult,
 			   Int_t refMultPos,
 			   Int_t refMultNeg,
@@ -106,8 +110,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCEMEnergy(emEnergy),
   fTriggerMask(trigMask),
   fEventType(evttype),
-  fOrbitNumber(nOrbit),
   fBunchCrossNumber(nBunchX),
+  fOrbitNumber(nOrbit),
+  fPeriodNumber(nPeriod),
   fRunNumber(nRun),  
   fRefMult(refMult),
   fRefMultPos(refMultPos),
@@ -137,8 +142,9 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fZDCEMEnergy(hdr.fZDCEMEnergy),
   fTriggerMask(hdr.fTriggerMask),
   fEventType(hdr.fEventType),
-  fOrbitNumber(hdr.fOrbitNumber),
   fBunchCrossNumber(hdr.fBunchCrossNumber),
+  fOrbitNumber(hdr.fOrbitNumber),
+  fPeriodNumber(hdr.fPeriodNumber),
   fRunNumber(hdr.fRunNumber),  
   fRefMult(hdr.fRefMult), 
   fRefMultPos(hdr.fRefMultPos), 
@@ -167,8 +173,9 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fZDCEMEnergy      = hdr.fZDCEMEnergy;
     fTriggerMask      = hdr.fTriggerMask;
     fEventType        = hdr.fEventType;
-    fOrbitNumber      = hdr.fOrbitNumber;
     fBunchCrossNumber = hdr.fBunchCrossNumber;
+    fOrbitNumber      = hdr.fOrbitNumber;
+    fPeriodNumber     = hdr.fPeriodNumber;
     fRunNumber        = hdr.fRunNumber;
     fRefMult          = hdr.fRefMult;
     fRefMultPos       = hdr.fRefMultPos;
@@ -187,6 +194,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("Run #                   : %d\n", fRunNumber);
   printf("Bunch Crossing  #       : %d\n", fBunchCrossNumber);
   printf("Orbit Number #          : %d\n", fOrbitNumber);
+  printf("Period Number #         : %d\n", fPeriodNumber);
   printf("Trigger mask            : %lld\n", fTriggerMask);
   printf("Trigger cluster         : %d\n", fTriggerCluster);
   printf("Event Type              : %d\n", fEventType);
