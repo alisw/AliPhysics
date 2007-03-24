@@ -8,7 +8,7 @@ void geom_ddip()
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("DDIP_1");
 
   Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-  re->SetUseNodeTrans(kTRUE);
+  re->UseNodeTrans();
   gReve->AddGlobalRenderElement(re);
   gReve->Redraw3D();
 }

@@ -13,15 +13,15 @@ void MUON_geom()
   TGeoNode *node3 = gGeoManager->GetTopVolume()->FindNode("YOUT2_1");
 
   Reve::GeoTopNodeRnrEl* re1 = new Reve::GeoTopNodeRnrEl(gGeoManager,node1);
-  re1->SetUseNodeTrans(kTRUE);
+  re1->UseNodeTrans();
   gReve->AddGlobalRenderElement(re1);
 
   Reve::GeoTopNodeRnrEl* re2 = new Reve::GeoTopNodeRnrEl(gGeoManager,node2);
-  re2->SetUseNodeTrans(kTRUE);
+  re2->UseNodeTrans();
   gReve->AddGlobalRenderElement(re2);
 
   Reve::GeoTopNodeRnrEl* re3 = new Reve::GeoTopNodeRnrEl(gGeoManager,node3);
-  re3->SetUseNodeTrans(kTRUE);
+  re3->UseNodeTrans();
   gReve->AddGlobalRenderElement(re3);
 
   gReve->Redraw3D(kTRUE);

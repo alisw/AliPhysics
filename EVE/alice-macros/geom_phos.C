@@ -16,7 +16,7 @@ void geom_phos()
     TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);
 
     Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-    re->SetUseNodeTrans(kTRUE);
+    re->UseNodeTrans();
     gReve->AddGlobalRenderElement(re);
   }
 

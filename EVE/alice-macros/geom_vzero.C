@@ -14,12 +14,12 @@ void geom_vzero()
 
   node = gGeoManager->GetTopVolume()->FindNode("V0RI_1");
   re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-  re->SetUseNodeTrans(kTRUE);
+  re->UseNodeTrans();
   gReve->AddGlobalRenderElement(list, re);
 
   node = gGeoManager->GetTopVolume()->FindNode("V0LE_1");
   re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-  re->SetUseNodeTrans(kTRUE);
+  re->UseNodeTrans();
   gReve->AddGlobalRenderElement(list, re);
 
   gReve->Redraw3D();

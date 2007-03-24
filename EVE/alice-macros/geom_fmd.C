@@ -21,13 +21,13 @@ void geom_fmd()
     sprintf(form,"F%dMT_%d", i, i);
     node = gGeoManager->GetTopVolume()->FindNode(form);
     re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-    re->SetUseNodeTrans(kTRUE);
+    re->UseNodeTrans();
     gReve->AddGlobalRenderElement(list, re);
 
     sprintf(form,"F%dMB_%d", i, i);
     node = gGeoManager->GetTopVolume()->FindNode(form);
     re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-    re->SetUseNodeTrans(kTRUE);
+    re->UseNodeTrans();
     gReve->AddGlobalRenderElement(list, re);
   }
 
