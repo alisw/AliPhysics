@@ -63,8 +63,7 @@ class GeoTopNodeRnrEl : public GeoNodeRnrEl
 
 protected:
   TGeoManager* fManager;
-  TGeoHMatrix* fGlobalTrans;
-  Bool_t       fUseNodeTrans;
+  ZTrans       fGlobalTrans;
   Int_t        fVisOption;
   Int_t        fVisLevel;  
 
@@ -72,10 +71,12 @@ public:
   GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node, Int_t visopt=1, Int_t vislvl=3);
   virtual ~GeoTopNodeRnrEl();
 
-  TGeoHMatrix *GetGlobalTrans()  const { return fGlobalTrans; }
-  void         SetGlobalTrans(TGeoHMatrix* m);
-  Bool_t       GetUseNodeTrans() const { return fUseNodeTrans; }
-  void         SetUseNodeTrans(Bool_t u=kTRUE);
+  virtual Bool_t  CanEditMainHMTrans() { return  kTRUE; }
+  virtual ZTrans* PtrMainHMTrans()     { return &fGlobalTrans; }
+
+  ZTrans&      RefGlobalTrans() { return fGlobalTrans; }
+  void         SetGlobalTrans(const TGeoHMatrix* m);
+  void         UseNodeTrans();
 
   Int_t GetVisOption() const { return fVisOption; }
   void  SetVisOption(Int_t visopt);
@@ -124,12 +125,18 @@ public:
 
   virtual Bool_t CanEditMainColor() { return kTRUE; }
 
+  virtual Bool_t  CanEditMainTransparency()      { return kTRUE; }
+  virtual UChar_t GetMainTransparency() const    { return fTransparency; }
+  virtual void    SetMainTransparency(UChar_t t) { fTransparency = t; }  
+
+  virtual Bool_t  CanEditMainHMTrans() { return  kTRUE; }
+  virtual ZTrans* PtrMainHMTrans()     { return &fHMTrans; }
+
   ZTrans& RefHMTrans() { return fHMTrans; }
   void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
   void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 
   Color_t     GetColor()        { return fColor; }
-  UChar_t     GetTransparency() { return fTransparency; }
   TGeoShape*  GetShape()        { return fShape; }
 
   virtual void Paint(Option_t* option="");

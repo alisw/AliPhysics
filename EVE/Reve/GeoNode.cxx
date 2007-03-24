@@ -155,31 +155,27 @@ ClassImp(GeoTopNodeRnrEl)
 
 GeoTopNodeRnrEl::GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node,
 				 Int_t visopt, Int_t vislvl) :
-  GeoNodeRnrEl(node),
-  fManager(manager),
-  fGlobalTrans(0),
-  fUseNodeTrans(kFALSE),
-  fVisOption(visopt), fVisLevel(vislvl)
+  GeoNodeRnrEl (node),
+  fManager     (manager),
+  fVisOption   (visopt),
+  fVisLevel    (vislvl)
 {
   fRnrSelf = true;
 }
 
 GeoTopNodeRnrEl::~GeoTopNodeRnrEl()
-{
-  delete fGlobalTrans;
-}
+{}
 
 /**************************************************************************/
 
-void GeoTopNodeRnrEl::SetGlobalTrans(TGeoHMatrix* m)
+void GeoTopNodeRnrEl::SetGlobalTrans(const TGeoHMatrix* m)
 {
-  delete fGlobalTrans;
-  fGlobalTrans = m;
+  fGlobalTrans.SetFrom(*m);
 }
 
-void GeoTopNodeRnrEl::SetUseNodeTrans(Bool_t u)
+void GeoTopNodeRnrEl::UseNodeTrans()
 {
-  fUseNodeTrans = u;
+  fGlobalTrans.SetFrom(*fNode->GetMatrix());
 }
 
 /**************************************************************************/
@@ -204,11 +200,13 @@ void GeoTopNodeRnrEl::UpdateItems()
 }
 
 /**************************************************************************/
+
 void GeoTopNodeRnrEl::SetRnrSelf(Bool_t rnr)
 {
   // Revert from GeoNode to back to standard behaviour.
   RenderElement::SetRnrSelf(rnr);
 }
+
 /**************************************************************************/
 
 void GeoTopNodeRnrEl::Draw(Option_t* option)
@@ -230,7 +228,9 @@ void GeoTopNodeRnrEl::Paint(Option_t* option)
     TVirtualGeoPainter* vgp = fManager->GetGeomPainter();
     if(vgp != 0) {
 #if ROOT_VERSION_CODE > ROOT_VERSION(5,11,6)
-      vgp->PaintNode(fNode, option, fUseNodeTrans ? fNode->GetMatrix() : fGlobalTrans);
+      TGeoHMatrix geomat;
+      fGlobalTrans.SetGeoHMatrix(geomat);
+      vgp->PaintNode(fNode, option, &geomat);
 #else
       vgp->PaintNode(fNode, option);
 #endif
@@ -300,11 +300,10 @@ void GeoShapeRnrEl::Paint(Option_t* /*option*/)
   TBuffer3D& buff = (TBuffer3D&) fShape->GetBuffer3D
     (TBuffer3D::kCore, false);
 
-  buff.fLocalFrame   = true;
   buff.fID           = this;
   buff.fColor        = fColor;
   buff.fTransparency = fTransparency;
-  memcpy(buff.fLocalMaster, fHMTrans.Array(), 16*sizeof(Double_t));
+  fHMTrans.SetBuffer3D(buff);
 
   fShape->GetBuffer3D(TBuffer3D::kBoundingBox | TBuffer3D::kShapeSpecific, true);
 
