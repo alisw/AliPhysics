@@ -76,7 +76,6 @@ GeoNodeRnrElEditor::GeoNodeRnrElEditor(const TGWindow *p,
 			      TGNumberFormat::kNELLimitMinMax, 0, 100);
     fTransparency->GetNumberEntry()->SetToolTipText("0 is opaque, 100 fully transparent.");
     f->AddFrame(fTransparency, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fTransparency->Associate(f);
     fTransparency->Connect("ValueSet(Long_t)",
 			   "Reve::GeoNodeRnrElEditor", this, "DoTransparency()");
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
