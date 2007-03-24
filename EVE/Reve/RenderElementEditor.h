@@ -12,6 +12,7 @@ class TGColorSelect;
 namespace Reve {
 
 class RenderElement;
+class ZTransSubEditor;
 
 class RenderElementEditor : public TGedFrame
 {
@@ -25,6 +26,8 @@ protected:
   TGCheckButton*     fRnrSelf;
   TGCheckButton*     fRnrChildren;
   TGColorSelect*     fMainColor;
+  TGNumberEntry*     fTransparency;
+  ZTransSubEditor*   fHMTrans;
 
 public:
   RenderElementEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
@@ -36,6 +39,7 @@ public:
   void DoRnrSelf();
   void DoRnrChildren();
   void DoMainColor(Pixel_t color);
+  void DoTransparency();
 
    ClassDef(RenderElementEditor, 1); // Editor for RenderElement
 }; // endclass RenderElementEditor

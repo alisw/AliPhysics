@@ -14,6 +14,8 @@ class TGPicture;
 
 namespace Reve {
 
+class ZTrans;
+
 class RenderElement
 {
   friend class RGTopFrame;
@@ -151,6 +153,13 @@ public:
   virtual Color_t GetMainColor() const { return fMainColorPtr ? *fMainColorPtr : 0; }
   virtual void    SetMainColor(Color_t color);
   void    SetMainColor(Pixel_t pixel);
+
+  virtual Bool_t  CanEditMainTransparency()    { return kFALSE; }
+  virtual UChar_t GetMainTransparency() const  { return 0; }
+  virtual void    SetMainTransparency(UChar_t) {}
+
+  virtual Bool_t  CanEditMainHMTrans() { return kFALSE; }
+  virtual ZTrans* PtrMainHMTrans()     { return 0; }
 
   static const TGPicture* GetCheckBoxPicture(Bool_t rnrElement, Bool_t rnrDaughter);
 
