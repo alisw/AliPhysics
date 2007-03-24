@@ -17,6 +17,7 @@
 #include <TVector3.h>
 
 class TGeoMatrix;
+class TGeoHMatrix;
 class TBuffer3D;
 
 namespace Reve {
@@ -152,6 +153,7 @@ public:
 
   void SetFrom(Double_t* carr);
   void SetFrom(const TGeoMatrix& mat);
+  void SetGeoHMatrix(TGeoHMatrix& mat);
   void SetBuffer3D(TBuffer3D& buff);
 
   Bool_t GetUseTrans()  const { return fUseTrans; }

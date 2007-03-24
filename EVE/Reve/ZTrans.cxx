@@ -686,6 +686,30 @@ void ZTrans::SetFrom(const TGeoMatrix& mat)
   bAsOK = kFALSE;
 }
 
+void ZTrans::SetGeoHMatrix(TGeoHMatrix& mat)
+{
+  Double_t *r = mat.GetRotationMatrix();
+  Double_t *t = mat.GetTranslation();
+  Double_t *s = mat.GetScale();
+  if (fUseTrans)
+  {
+    mat.SetBit(TGeoMatrix::kGeoGenTrans);
+    Double_t *m = M;
+    GetScale(s[0], s[1], s[2]);
+    r[0] = m[0]/s[0]; r[3] = m[1]/s[0]; r[6] = m[2]/s[0]; m += 4;
+    r[1] = m[0]/s[1]; r[4] = m[1]/s[1]; r[7] = m[2]/s[1]; m += 4;
+    r[2] = m[0]/s[2]; r[5] = m[1]/s[2]; r[8] = m[2]/s[2]; m += 4;
+    t[0] = m[0];      t[1] = m[1];      t[2] = m[2];
+  } else {
+    mat.ResetBit(TGeoMatrix::kGeoGenTrans);
+    r[0] = 1; r[3] = 0; r[6] = 0;
+    r[1] = 0; r[4] = 1; r[7] = 0;
+    r[2] = 0; r[5] = 0; r[8] = 1;
+    s[0] = s[1] = s[2] = 1;
+    t[0] = t[1] = t[2] = 0;
+  }
+}
+
 void ZTrans::SetBuffer3D(TBuffer3D& buff)
 {
   buff.fLocalFrame = fUseTrans; 
