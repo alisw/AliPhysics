@@ -1,3 +1,25 @@
+2007-03-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RenderElement.h:
+	* RenderElementEditor.cxx:
+	* RenderElementEditor.h:
+	Add virtual interface allowing sub-classes to request editor for
+	transparency and transformation-matrix via RenderElement.
+
+	* ZTrans.cxx:
+	* ZTrans.h:
+	Added method SetGeoHMatrix(), initializing TGeoHMatrix from
+	ZTrans.
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	Use transparency/transf-matrix service from RenderElement for
+	classes GeoTopNodeRnrEl and GeoShapeRnrEl; use ZTrans for storage
+	of transforamtion matrix in class GeoTopNodeRnrEl.
+
+	* RGeoNodeEditors.cxx:
+	Removed unneeded widget association.
+
 2007-03-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* QuadSet.h:

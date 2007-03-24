@@ -1,3 +1,16 @@
+2007-03-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/MUON_geom.C:
+	* alice-macros/geom_ddip.C:
+	* alice-macros/geom_fmd.C:
+	* alice-macros/geom_phos.C:
+	* alice-macros/geom_pmd.C:
+	* alice-macros/geom_rich.C:
+	* alice-macros/geom_t0.C:
+	* alice-macros/geom_vzero.C:
+	Use new form of method UseNodeTrans() (was SetUseNodeTrans(bool))
+	to import transformation-matrix from geo-node..
+
 2007-03-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* alice-macros/its_module_stepper.C:
