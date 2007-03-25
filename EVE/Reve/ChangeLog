@@ -1,3 +1,12 @@
+2007-03-25  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* GLTextNS.cxx:
+	* GLTextNS.h:
+	New namespace GLTextNS: produce text using texture maps.
+
+	* GLUtilNS.h:
+	Helper classes/functions for GL state handling.
+
 2007-03-25  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:
