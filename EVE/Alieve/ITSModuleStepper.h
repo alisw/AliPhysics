@@ -3,6 +3,10 @@
 #ifndef ALIEVE_ITSModuleStepper_H
 #define ALIEVE_ITSModuleStepper_H
 
+#include <TNamed.h>
+#include <TAtt3D.h>
+#include <TAttBBox.h>
+
 #include <Reve/RenderElement.h>
 #include <Reve/GridStepper.h>
 
@@ -12,11 +16,16 @@ namespace Alieve {
 
 class ITSDigitsInfo;
 
-class ITSModuleStepper : public Reve::RenderElementList
+class ITSModuleStepper : public Reve::RenderElement, 
+                         public TNamed,
+		         public TAtt3D,
+		         public TAttBBox
 {
+  friend class ITSModuleStepperGL;
+
 public:
-  typedef std::vector<Int_t>           vpInt_t;
-  typedef std::vector<Int_t>::iterator vpInt_i;
+  typedef std::vector<UInt_t>           vpInt_t;
+  typedef std::vector<UInt_t>::iterator vpInt_i;
 
 private:
   ITSModuleStepper(const ITSModuleStepper&);            // Not implemented
@@ -29,9 +38,12 @@ protected:
   Float_t                 fExpand;
 
   vpInt_t                 fIDs;
-  vpInt_i                 fPosition;
+  UInt_t                  fPosition;
 
   void                    Apply();
+  Int_t                   Nxy(){ return fStepper->Nx*fStepper->Ny; }
+
+  void                    SetFirst(Int_t first);
 
 public:
   ITSModuleStepper(ITSDigitsInfo* di);
@@ -39,11 +51,37 @@ public:
 
   void   Start();
   void   Next();
+  void   Previous();
+  void   End();
+
   void   SetStepper(Int_t nx, Int_t ny, Float_t dx = -1, Float_t dy = -1);
-  Reve::GridStepper*  GetStepper(){return fStepper;}
+  Reve::GridStepper*  GetStepper(){ return fStepper; }
   
   void   AddToList( Int_t modID ){ fIDs.push_back(modID);}
   void   ResetList(){ fIDs.clear();}
+
+  void   DisplaySPD(Int_t layer = -1);
+  void   DisplayTheta(Float_t min, Float_t max);
+
+  Int_t  GetCurrentPage();
+  Int_t  GetPages();
+
+  virtual void ComputeBBox();
+
+  virtual void Paint(Option_t* option = "");
+
+  // parameters for GL widgets later packed  in a class
+  Bool_t                fRnrFrame;    
+  Color_t               fFrameColor; 
+  
+  enum PositionType_e { PT_BottomLeft, PT_BottomRight, PT_TopLeft, PT_TopRight };
+  PositionType_e        fWCorner; 
+  Color_t               fWColor;   
+  Float_t               fWWidth;
+  Float_t               fWHeight;
+  Float_t               fWPadding; // not usedw
+
+  virtual Bool_t CanEditMainColor() { return kTRUE; }
 
   ClassDef(ITSModuleStepper, 0);
 };
