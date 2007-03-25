@@ -6,6 +6,7 @@
 #include <Reve/Reve.h>
 
 #include <map>
+#include <vector>
 
 #include <TObject.h>
 #include <TClonesArray.h>
@@ -19,7 +20,27 @@
 
 
 namespace Alieve {
+/**************************************************************************/
+// ITSModuleSelection
+/**************************************************************************/
+class ITSModuleSelection
+{
+public:
+  Int_t    fType;
+  Int_t    fLayer;
+  Float_t  fMinPhi;
+  Float_t  fMaxPhi;
+  Float_t  fMinTheta;
+  Float_t  fMaxTheta; 
+  
+  ITSModuleSelection();
 
+  ClassDef(ITSModuleSelection, 1);
+};
+
+/**************************************************************************/
+// ITSDigitsInfo
+/**************************************************************************/
 class ITSDigitsInfo : public TObject, public Reve::ReferenceCount
 {
   ITSDigitsInfo(const ITSDigitsInfo&);            // Not implemented
@@ -69,6 +90,8 @@ public:
   TClonesArray* GetDigits(Int_t moduleID, Int_t detector);
 
   void GetSPDLocalZ(Int_t j, Float_t& z);
+
+  void GetModuleIDs(ITSModuleSelection* sel, std::vector<UInt_t>& ids);
 
   virtual void Print(Option_t* opt="") const;
 

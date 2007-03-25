@@ -4,17 +4,34 @@
 // ITSDigitsInfo
 //
 //
+#include <TMath.h>
+#include <TVector3.h>
 
 #include <Reve/TTreeTools.h>
+#include <Reve/ZTrans.h>
 
 #include "ITSDigitsInfo.h"
 #include <AliITSCalibrationSDD.h>
 #include <AliITSdigit.h>
 #include <AliITSdigitSPD.h>
 
+
 using namespace Reve;
 using namespace Alieve;
 using namespace std;
+
+
+ClassImp(ITSModuleSelection)
+
+ITSModuleSelection::ITSModuleSelection():
+  fType(-1),
+  fLayer(-1),
+  fMinPhi(0),
+  fMaxPhi(2*TMath::Pi()),
+  fMinTheta(0),
+  fMaxTheta(2*TMath::Pi())
+{
+}
 
 ClassImp(ITSDigitsInfo)
 
@@ -210,6 +227,53 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
   return 0;
 }
 
+/**************************************************************************/
+void ITSDigitsInfo::GetModuleIDs(ITSModuleSelection* sel, std::vector<UInt_t>& ids)
+{
+  // loop SPD
+  Int_t idx0 = 0, idx1 = 0;
+  switch(sel->fType)
+  {
+    case 0:
+      idx0 = 0;
+      idx1 = fGeom->GetLastSPD();
+      break;
+    case 1:
+      idx0 = fGeom->GetLastSPD();
+      idx1 = fGeom->GetLastSDD();
+      break;
+    case 2:
+      idx0 = fGeom->GetLastSDD();
+      idx1 = fGeom->GetLastSSD();
+      break;
+    default:
+      idx1 = 0;
+      idx1 = fGeom->GetLastSSD();
+  }
+
+  TVector3 v;
+  Double_t x[9];
+  Int_t lay, lad, det;
+  ZTrans mx;
+  for(Int_t id = idx0; id<idx1; id++){
+    fGeom->GetModuleId(id, lay, lad, det);
+    if(sel->fLayer==lay || sel->fLayer==-1)
+    {
+      // check data from matrix
+      mx.UnitTrans();
+      fGeom->GetRotMatrix(id, x);
+      mx.SetBaseVec(1, x[0], x[3], x[6]);
+      mx.SetBaseVec(2, x[1], x[4], x[7]);
+      mx.SetBaseVec(3, x[2], x[5], x[8]);
+      fGeom->GetTrans(id, x);  
+      mx.SetBaseVec(4, x);
+      mx.GetPos(v);
+      if(v.Phi()<sel->fMaxPhi && v.Phi()>sel->fMinPhi &&
+         v.Theta()<sel->fMaxTheta && v.Theta()>sel->fMinTheta )
+	ids.push_back(id);
+    }
+  }
+}
 
 /**************************************************************************/
 
