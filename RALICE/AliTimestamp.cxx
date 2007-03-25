@@ -45,6 +45,7 @@
 // The Besselian Epoch (BE) indicates the fractional elapsed Besselian year count
 // since the start of the Gregorian year count.
 // A Besselian (or tropical) year is defined to be 365.242198781 days.
+// The date 31-dec-1949 22:09:46.862 UT corresponds to BE=1950.0
 //
 // The Besselian and Julian epochs are used in astronomical catalogs
 // to denote values of time varying observables like e.g. right ascension.
@@ -67,8 +68,10 @@
 // In addition, tidal friction and ocean and atmospheric effects will
 // induce seasonal variations in the earth's spin rate and polar motion
 // of the earth's spin axis.
-// To obtain a sidereal time measure, the above efects are taken
-// into account via corrections in the UT to GST conversion.
+// Taking the above effects into account leads to what is called
+// the Greenwich Mean Sidereal Time (GMST).
+// In case also the nutation of the earth's spin axis is taken into
+// account we speak of the Greenwich Apparent Sidereal Time (GAST).
 //
 // This AliTimestamp facility allows for picosecond precision, in view
 // of time of flight analyses for particle physics experiments.
@@ -210,14 +213,14 @@ void AliTimestamp::Date(Int_t mode,Double_t offset)
 {
 // Print date/time info.
 //
-// mode = 1 ==> Only the UT yy-mm-dd hh:mm:ss:ns:ps and GST info is printed
+// mode = 1 ==> Only the UT yy-mm-dd hh:mm:ss.sss and GMST info is printed
 //        2 ==> Only the Julian parameter info is printed
-//        3 ==> Both the UT, GST and Julian parameter info is printed
+//        3 ==> Both the UT, GMST and Julian parameter info is printed
 //
-// offset : Local time offset from UT (and also GST) in fractional hours.
+// offset : Local time offset from UT (and also GMST) in fractional hours.
 //
 // When an offset value is specified, the corresponding local times
-// LT and LST are printed as well.
+// LT and LMST are printed as well.
 //
 // The default values are mode=3 and offset=0.
 //
@@ -250,10 +253,12 @@ void AliTimestamp::Date(Int_t mode,Double_t offset)
   cout << setfill('0') << setw(2) << hh << ":"
        << setw(2) << mm << ":" << setw(2) << ss << "."
        << setw(9) << ns << setw(3) << ps << " (UT)  ";
-  GetGST(hh,mm,ss,ns,ps);
+  GetGMST(hh,mm,ss,ns,ps);
   cout << setfill('0') << setw(2) << hh << ":"
        << setw(2) << mm << ":" << setw(2) << ss << "."
-       << setw(9) << ns << setw(3) << ps << " (GST)"<< endl;
+       << setw(9) << ns << setw(3) << ps << " (GMST)" << endl;
+
+  // Local time information
   if (offset)
   {
    // Determine the new date by including the offset
@@ -273,35 +278,9 @@ void AliTimestamp::Date(Int_t mode,Double_t offset)
     cout << " Time ";
    }
    // Determine the local time by including the offset w.r.t. the original timestamp
-   Double_t h;
-   h=GetUT(); 
-   h+=offset;
-   while (h<0)
-   {
-    h+=24.;
-   }
-   while (h>24)
-   {
-    h-=24.;
-   }
-   Convert(h,hh,mm,ss,ns,ps);
-   cout << setfill('0') << setw(2) << hh << ":"
-        << setw(2) << mm << ":" << setw(2) << ss << "."
-        << setw(9) << ns << setw(3) << ps << " (LT)  ";
-   h=GetGST(); 
-   h+=offset;
-   while (h<0)
-   {
-    h+=24.;
-   }
-   while (h>24)
-   {
-    h-=24.;
-   }
-   Convert(h,hh,mm,ss,ns,ps);
-   cout << setfill('0') << setw(2) << hh << ":"
-        << setw(2) << mm << ":" << setw(2) << ss << "."
-        << setw(9) << ns << setw(3) << ps << " (LST)"<< endl;
+   Double_t hlt=GetLT(offset);
+   Double_t hlst=GetLMST(offset);
+   PrintTime(hlt,12); cout << " (LT)  "; PrintTime(hlst,12); cout << " (LMST)" << endl;
   }
  }
  if (mode==2 || mode==3)
@@ -576,6 +555,8 @@ Double_t AliTimestamp::Convert(Int_t days,Int_t secs,Int_t ns) const
 void AliTimestamp::Convert(Double_t h,Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps) const
 {
 // Convert fractional hour count h into hh:mm:ss:ns:ps.
+// The sign of the input value will be neglected, so h<0 will result in
+// the same output values as h>0.
 //
 // Note : Due to computer accuracy the ps value may become inaccurate.
 //
@@ -589,6 +570,9 @@ void AliTimestamp::Convert(Double_t h,Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,In
 // please use the corresponding SET() memberfunctions of either AliTimestamp
 // or TTimeStamp.
  
+ // Neglect sign of h
+ h=fabs(h);
+
  hh=int(h);
  h=h-double(hh);
  h=h*60.;
@@ -604,9 +588,39 @@ void AliTimestamp::Convert(Double_t h,Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,In
  ps=int(h);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::Convert(Double_t h,Int_t& hh,Int_t& mm,Double_t& ss) const
+{
+// Convert fractional hour count h into hh:mm:ss.s.
+// The sign of the input value will be neglected, so h<0 will result in
+// the same output values as h>0.
+//
+// Notes :
+// -------
+// 1) This memberfunction only converts the input "h" into the corresponding
+//    hh:mm:ss.s values. It does NOT set the corresponding Julian parameters
+//    for the current AliTimestamp instance.
+//    As such the TTimeStamp limitations do NOT apply to this memberfunction.
+//    To set the Julian parameters for the current AliTimestamp instance,
+//    please use the corresponding SET() memberfunctions of either AliTimestamp
+//    or TTimeStamp.
+// 2) This facility can also be used to convert degrees in arcminutes etc...
+ 
+ // Neglect sign of h
+ h=fabs(h);
+ 
+ hh=int(h);
+ h=h-double(hh);
+ h=h*60.;
+ mm=int(h);
+ h=h-double(mm);
+ ss=h*60.;
+}
+///////////////////////////////////////////////////////////////////////////
 Double_t AliTimestamp::Convert(Int_t hh,Int_t mm,Int_t ss,Int_t ns,Int_t ps) const
 {
 // Convert hh:mm:ss:ns:ps into fractional hour count. 
+// The sign of the input values will be neglected, so the output value
+// will always correspond to a positive hh:mm:ss:ns:ps specification.
 //
 // Note : Due to computer accuracy the ps precision may be lost.
 //
@@ -620,10 +634,85 @@ Double_t AliTimestamp::Convert(Int_t hh,Int_t mm,Int_t ss,Int_t ns,Int_t ps) con
 // please use the corresponding SET() memberfunctions of either AliTimestamp
 // or TTimeStamp.
 
+ // Neglect the sign of the input values
+ hh=abs(hh);
+ mm=abs(mm);
+ ss=abs(ss);
+ ns=abs(ns);
+ ps=abs(ps);
+
  Double_t h=hh;
  h+=double(mm)/60.+(double(ss)+double(ns)*1.e-9+double(ps)*1.e-12)/3600.;
 
  return h;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::Convert(Int_t hh,Int_t mm,Double_t ss) const
+{
+// Convert hh:mm:ss.s into fractional hour count. 
+// The sign of the input values will be neglected, so the output value
+// will always correspond to a positive hh:mm:ss.s specification.
+//
+// Notes :
+// -------
+// 1) This memberfunction only converts the input hh:mm:ss.s data into the
+//    corresponding fractional hour count. It does NOT set the corresponding
+//    Julian parameters for the current AliTimestamp instance.
+//    As such the TTimeStamp limitations do NOT apply to this memberfunction.
+//    To set the Julian parameters for the current AliTimestamp instance,
+//    please use the corresponding SET() memberfunctions of either AliTimestamp
+//    or TTimeStamp.
+// 2) This facility can also be used to convert ddd:mm:ss.s into fractional degrees.
+
+ // Neglect the sign of the input values
+ hh=abs(hh);
+ mm=abs(mm);
+ ss=fabs(ss);
+
+ Double_t h=hh;
+ h+=double(mm)/60.+ss/3600.;
+
+ return h;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::PrintTime(Double_t h,Int_t ndig) const
+{
+// Print a fractional hour count in hh:mm:ss.ssss format.
+// The range of the printed hour value is : -24 < hh < 24.
+// The argument "ndig" specifies the number of digits for the fractional
+// seconds (e.g. ndig=6 corresponds to microsecond precision).
+// No rounding will be performed, so a second count of 3.473 with ndig=1
+// will appear as 03.4 on the output.
+// Due to computer accuracy, precision on the picosecond level may get lost.
+//
+// The default is ndig=1.
+//
+// Note : The time info is printed without additional spaces or "endline".
+//        This allows the print to be included in various composite output formats.
+
+ Int_t hh,mm,ss;
+ ULong64_t sfrac;
+ Double_t s;
+
+ while (h<-24)
+ {
+  h+=24.;
+ }
+ while (h>24)
+ {
+  h-=24.;
+ }
+   
+ Convert(h,hh,mm,s);
+ ss=Int_t(s);
+ s-=Double_t(ss);
+ s*=pow(10.,ndig);
+ sfrac=ULong64_t(s);
+
+ if (h<0) cout << "-";
+ cout << setfill('0')
+      << setw(2) << hh << ":" << setw(2) << mm << ":"
+      << setw(2) << ss << "." << setw(ndig) << sfrac;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTimestamp::FillJulian()
@@ -1456,7 +1545,7 @@ void AliTimestamp::SetUT(Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_
 // Note : ns=0 and ps=0 are the default values.
 //
 // This facility first determines the elapsed days, seconds etc...
-// since the beginning of the specified UT year on bais of the
+// since the beginning of the specified UT year on basis of the
 // input arguments. Subsequently it invokes the SetUT memberfunction
 // for the elapsed timespan.
 // As such this facility is valid for all AD dates in the Gregorian
@@ -1545,9 +1634,9 @@ Double_t AliTimestamp::GetUT()
  return ut;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTimestamp::GetGST(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps)
+void AliTimestamp::GetGMST(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps)
 {
-// Provide the corrresponding Greenwich Sideral Time (GST).
+// Provide the corrresponding Greenwich Mean Sideral Time (GMST).
 // The algorithm used is the one described at p. 83 of the book
 // Astronomy Methods by Hale Bradt.
 // This facility is based on the MJD, so the TTimeStamp limitations
@@ -1567,7 +1656,7 @@ void AliTimestamp::GetGST(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps)
  AliTimestamp sid;
  sid.SetMJD(mjd,sec,nsec,psec);
 
- // Add offset for GST start value defined as 06:41:50.54841 at 01-jan 00:00:00 UT
+ // Add offset for GMST start value defined as 06:41:50.54841 at 01-jan 00:00:00 UT
  sec=6*3600+41*60+50;
  nsec=548410000;
  psec=0;
@@ -1593,20 +1682,258 @@ void AliTimestamp::GetGST(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps)
  ps=psec;
 }
 ///////////////////////////////////////////////////////////////////////////
-Double_t AliTimestamp::GetGST()
+Double_t AliTimestamp::GetGMST()
 {
-// Provide the corrresponding Greenwich Sideral Time (GMST)
+// Provide the corrresponding Greenwich Mean Sideral Time (GMST)
 // in fractional hours.
 // This facility is based on the MJD, so the TTimeStamp limitations
 // do not apply here.
 
  Int_t hh,mm,ss,ns,ps;
 
- GetGST(hh,mm,ss,ns,ps);
+ GetGMST(hh,mm,ss,ns,ps);
 
  Double_t gst=Convert(hh,mm,ss,ns,ps);
 
  return gst;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetGAST()
+{
+// Provide the corrresponding Greenwich Apparent Sideral Time (GAST)
+// in fractional hours.
+// In case a hh:mm:ss.sss format is needed, please invoke the Convert()
+// memberfunction for conversion of the provided fractional hour value.
+//
+// The GAST is the GMST corrected for the shift of the vernal equinox
+// due to nutation. The right ascension component of the nutation correction
+// of the vernal equinox is called the "equation of the equinoxes".
+// So we have :
+//
+//      GAST = GMST + (equation of the equinoxes)
+//
+// With the right ascension and declination values to be (0,0) for the
+// vernal equinox, we can workout the shift in right ascension of the vernal
+// equinox due to nutation.
+// The nutation model used is the new one as documented in :
+//   "The IAU Resolutions on Astronomical Reference Systems,
+//    Time Scales and Earth Rotation Models".
+// This document is freely available as Circular 179 (2005) of the
+// United States Naval Observatory (USNO).
+// (See : http://aa.usno.navy.mil/publications/docs).
+// The new expression for the equation of the equinoxes is based on a series
+// expansion and is the most accurate one known to date.
+// The components are documented on p.17 of the USNO Circular 179.
+// 
+// Since GMST is based on the MJD, the TTimeStamp limitations
+// do not apply here.
+
+ Double_t pi=acos(-1.);
+
+ Double_t gmst=GetGMST();
+
+ Double_t days;    // Time difference in fractional Julian days w.r.t. the start of J2000.
+ Double_t t;       // Time difference in fractional Julian centuries w.r.t. the start of J2000.
+ Double_t epsilon; // Mean obliquity of the ecliptic
+ Double_t omega;   // Mean longitude of the Moon's mean ascending mode
+ Double_t f;       // Mean argument of latitude of the moon
+ Double_t d;       // Mean elongation of the Moon from the Sun
+
+ days=GetJD()-2451545.0;
+ t=days/36525.;
+
+ // Values in arcseconds
+ epsilon=84381.406-46.836769*t-0.0001831*pow(t,2)+0.00200340*pow(t,3)
+         -0.000000576*pow(t,4)-0.0000000434*pow(t,5);
+ omega=450160.398036-6962890.5431*t+7.4722*pow(t,2)+0.007702*pow(t,3)-0.00005939*pow(t,4);
+ f=335779.526232+1739527262.8478*t-12.7512*pow(t,2)-0.001037*pow(t,3)+0.00000417*pow(t,4);
+ d=1072260.70369+1602961601.2090*t-6.3706*pow(t,2)+0.006593*pow(t,3)-0.00003169*pow(t,4);
+
+ // Convert to radians
+ epsilon=epsilon*pi/(180.*3600.);
+ omega=omega*pi/(180.*3600.);
+ f=f*pi/(180.*3600.);
+ d=d*pi/(180.*3600.);
+
+ Double_t dpsi; // Nutation in longitude in arcseconds
+ Double_t beta=(125.04-0.052954*days)*pi/180.;
+ Double_t gamma=(200.94+1.97130*days)*pi/180.;
+ dpsi=-17.226*sin(beta)-1.296*sin(gamma);
+
+ Double_t da; // Right ascension shift of the vernal equinox in arcseconds
+ da=dpsi*cos(epsilon)+0.00264096*sin(omega)+0.00006352*sin(2.*omega)
+    +0.00001175*sin(2.*f-2.*d+3.*omega)+0.00001121*sin(2.*f-2.*d+omega)
+    -0.00000455*sin(2.*f-2.*d+2.*omega)+0.00000202*sin(2.*f+3.*omega)+0.00000198*sin(2.*f+omega)
+    -0.00000172*sin(3.*omega)-0.00000087*t*sin(omega);
+
+ // Convert to fractional hours
+ da=da/(3600.*15.);
+
+ Double_t gast=gmst+da;
+
+ while (gast<-24.)
+ {
+  gast+=24.;
+ }
+ while (gast>24.)
+ {
+  gast-=24.;
+ }
+
+ return gast;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetLT(Double_t offset)
+{
+// Provide the corresponding local time in fractional hours.
+// The "offset" denotes the time difference in (fractional) hours w.r.t. UT.
+// A mean solar day lasts 24h (i.e. 86400s).
+//
+// In case a hh:mm:ss format is needed, please use the Convert() facility. 
+
+ // Current UT time in fractional hours
+ Double_t h=GetUT();
+ 
+ h+=offset;
+
+ while (h<-24)
+ {
+  h+=24.;
+ }
+ while (h>24)
+ {
+  h-=24.;
+ }
+
+ return h;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetLMST(Double_t offset)
+{
+// Provide the corresponding Local Mean Sidereal Time (LMST) in fractional hours.
+// The "offset" denotes the time difference in (fractional) hours w.r.t. GMST.
+// A sidereal day corresponds to 23h 56m 04.09s (i.e. 86164.09s) mean solar time.
+// The definition of GMST is such that a sidereal clock corresponds with
+// 24 sidereal hours per revolution of the Earth.
+// As such, local time offsets w.r.t. UT and GMST can be treated similarly. 
+//
+// In case a hh:mm:ss format is needed, please use the Convert() facility. 
+
+ // Current GMST time in fractional hours
+ Double_t h=GetGMST();
+
+ h+=offset;
+
+ while (h<-24)
+ {
+  h+=24.;
+ }
+ while (h>24)
+ {
+  h-=24.;
+ }
+
+ return h;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetLAST(Double_t offset)
+{
+// Provide the corresponding Local Apparent Sidereal Time (LAST) in fractional hours.
+// The "offset" denotes the time difference in (fractional) hours w.r.t. GAST.
+// A sidereal day corresponds to 23h 56m 04.09s (i.e. 86164.09s) mean solar time.
+// The definition of GMST and GAST is such that a sidereal clock corresponds with
+// 24 sidereal hours per revolution of the Earth.
+// As such, local time offsets w.r.t. UT, GMST and GAST can be treated similarly. 
+//
+// In case a hh:mm:ss.sss format is needed, please use the Convert() facility. 
+
+ // Current GAST time in fractional hours
+ Double_t h=GetGAST();
+
+ h+=offset;
+
+ while (h<-24)
+ {
+  h+=24.;
+ }
+ while (h>24)
+ {
+  h-=24.;
+ }
+
+ return h;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::SetLT(Double_t dt,Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_t ns,Int_t ps)
+{
+// Set the AliTimestamp parameters corresponding to the LT date and time
+// in the Gregorian calendar as specified by the input arguments.
+// This facility is exact upto picosecond precision and as such is
+// for scientific observations preferable above the corresponding
+// Set function(s) of TTimestamp.
+// The latter has a random spread in the sub-second part, which
+// might be of use in generating distinguishable timestamps while
+// still keeping second precision.
+//
+// The input arguments represent the following :
+//
+// dt : the local time offset in fractional hours w.r.t. UT.
+// y  : year in LT (e.g. 1952, 2003 etc...)
+// m  : month in LT (1=jan  2=feb etc...)
+// d  : day in LT (1-31)
+// hh : elapsed hours in LT (0-23) 
+// mm : elapsed minutes in LT (0-59)
+// ss : elapsed seconds in LT (0-59)
+// ns : remaining fractional elapsed second of LT in nanosecond
+// ps : remaining fractional elapsed nanosecond of LT in picosecond
+//
+// Note : ns=0 and ps=0 are the default values.
+//
+// This facility first sets the UT as specified by the input arguments
+// and then corrects the UT by subtracting the local time offset w.r.t. UT.
+// As such this facility is valid for all AD dates in the Gregorian
+// calendar with picosecond precision.
+
+ SetUT(y,m,d,hh,mm,ss,ns,ps);
+ Add(-dt);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::SetLT(Double_t dt,Int_t y,Int_t d,Int_t s,Int_t ns,Int_t ps)
+{
+// Set the AliTimestamp parameters corresponding to the specified elapsed
+// timespan since the beginning of the new LT year.
+// This facility is exact upto picosecond precision and as such is
+// for scientific observations preferable above the corresponding
+// Set function(s) of TTimestamp.
+// The latter has a random spread in the sub-second part, which
+// might be of use in generating distinguishable timestamps while
+// still keeping second precision.
+//
+// The LT year and elapsed time span is entered via the following input arguments :
+//
+// dt : the local time offset in fractional hours w.r.t. UT.
+// y  : year in LT (e.g. 1952, 2003 etc...)
+// d  : elapsed number of days 
+// s  : (remaining) elapsed number of seconds
+// ns : (remaining) elapsed number of nanoseconds
+// ps : (remaining) elapsed number of picoseconds
+//
+// The specified d, s, ns and ps values will be used in an additive
+// way to determine the elapsed timespan.
+// So, specification of d=1, s=100, ns=0, ps=0 will result in the
+// same elapsed time span as d=0, s=24*3600+100, ns=0, ps=0.
+// However, by making use of the latter the user should take care
+// of possible integer overflow problems in the input arguments,
+// which obviously will provide incorrect results. 
+//
+// Note : ns=0 and ps=0 are the default values.
+//
+// This facility first sets the UT as specified by the input arguments
+// and then corrects the UT by subtracting the local time offset w.r.t. UT.
+// As such this facility is valid for all AD dates in the Gregorian calendar.
+
+ SetUT(y,d,s,ns,ps);
+ Add(-dt);
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliTimestamp::GetJD(Double_t e,TString mode) const

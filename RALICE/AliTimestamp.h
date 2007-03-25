@@ -27,6 +27,9 @@ class AliTimestamp : public TTimeStamp
   Double_t Convert(Int_t days,Int_t secs,Int_t ns) const;             // Convert days, secs and ns into frac. day count
   void Convert(Double_t h,Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps) const;// Convert frac. hour count
   Double_t Convert(Int_t hh,Int_t mm,Int_t ss,Int_t ns,Int_t ps) const; // Convert hh:mm:ss:ns:ps into frac. hour
+  void Convert(Double_t h,Int_t& hh,Int_t& mm,Double_t& ss) const;// Convert frac. hour count
+  Double_t Convert(Int_t hh,Int_t mm,Double_t ss) const;          // Convert hh:mm:ss.s into frac. hours
+  void PrintTime(Double_t h,Int_t ndig=1) const;// Print time in hh:mm:ss.sss format
   void GetMJD(Int_t& mjd,Int_t& sec,Int_t& ns); // Provide corresponding Modified Julian Date and time
   Double_t GetMJD();                            // Provide corresponding Modified Julian Date in fractional days
   void GetTJD(Int_t& mjd,Int_t& sec,Int_t& ns); // Provide corresponding Truncated Julian Date and time
@@ -59,8 +62,14 @@ class AliTimestamp : public TTimeStamp
   void SetUT(Int_t y,Int_t d,Int_t s,Int_t ns=0,Int_t ps=0); // Set UT based on elapsed days, secs etc...
   void GetUT(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps); // Provide corresponding UT
   Double_t GetUT(); // Provide corresponding UT in fractional hours
-  void GetGST(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps); // Corresponding Greenwich Sidereal Time (GST)
-  Double_t GetGST(); // Provide corresponding Greenwich Sidereal Time (GST) in fractional hours
+  void GetGMST(Int_t& hh,Int_t& mm,Int_t& ss,Int_t& ns,Int_t& ps); // Corresponding Greenwich Mean Sidereal Time (GMST)
+  Double_t GetGMST(); // Provide corresponding Greenwich Mean Sidereal Time (GMST) in fractional hours
+  Double_t GetGAST(); // Provide corresponding Greenwich Apparent Sidereal Time (GAST) in fractional hours
+  Double_t GetLT(Double_t offset);  // Provide corresponding Local Time (LT) in fractional hours
+  Double_t GetLMST(Double_t offset); // Provide corresponding Local Mean Sidereal Time (LMST) in fractional hours
+  Double_t GetLAST(Double_t offset); // Provide corresponding Local Apparent Sidereal Time (LAST) in fractional hours
+  void SetLT(Double_t dt,Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_t ns=0,Int_t ps=0); // Set data according to LT
+  void SetLT(Double_t dt,Int_t y,Int_t d,Int_t s,Int_t ns=0,Int_t ps=0); // Set data according to LT based on elapsed days, secs etc...
 
  protected:
   Int_t fMJD;  // Modified Julian Date
@@ -73,6 +82,6 @@ class AliTimestamp : public TTimeStamp
   Int_t fCalcs;      // The TTimeStamp seconds counter value at Julian parameter calculation
   Int_t fCalcns;     // The TTimeStamp nanoseconds counter value at Julian parameter calculation
 
- ClassDef(AliTimestamp,8) // Handling of timestamps for (astro)particle physics research.
+ ClassDef(AliTimestamp,9) // Handling of timestamps for (astro)particle physics research.
 };
 #endif

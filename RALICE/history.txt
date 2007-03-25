@@ -759,4 +759,9 @@
 17-mar-2007 NvE AliTimestamp extended to allow local time printout for a specified offset
                 and addition of a time difference specified as (fractional) hours.
                 Also bug fixed in the fractional hour conversion facility.
+20-mar-2007 NvE Support for retrieval of Local Time (LT) and Local Sidereal Time (LST)
+                introduced in AliTimestamp.
+22-mar-2007 NvE Support introduced for setting of timestamp parameters based on Local Time (LT)
+                in AliTimestamp.
+25-mar-2007 NvE AliTimestamp extended with Apparent Sidereal Time.
 
