@@ -42,8 +42,8 @@ ITSModuleStepper::ITSModuleStepper(ITSDigitsInfo* di):
     fWHeight(0.07)
 {
   fStepper = new GridStepper();
+
   fWColor = 5;
-  fFrameColor = 5;
 
   GLTextNS::LoadDefaultFont(Form("%s/icons/fontdefault.txf",gSystem->Getenv("REVESYS")));
 }
@@ -155,6 +155,9 @@ void  ITSModuleStepper::Apply()
      
       mx.Scale(fExpand, fExpand,1);
       mx.RotateLF(2,1,TMath::PiOver2());
+      
+      mx.MultLeft(fHMTrans);
+
       mod->SetRnrSelf(kTRUE);
   
       if(mod->GetSubDetID() == 2)
@@ -176,18 +179,14 @@ void  ITSModuleStepper::Apply()
   // update in case scaled module is a model in the editor
   gReve->EnableRedraw();
   gReve->GetEditor()->DisplayObject(gReve->GetEditor()->GetModel());
-  gReve->Redraw3D();
 }
 
 /**************************************************************************/
 
-void  ITSModuleStepper::DisplaySPD(Int_t layer)
+void  ITSModuleStepper::DisplayDet(Int_t det, Int_t layer)
 {
-  fStepper->Dx=12;
-  fStepper->Dy=4;
-  fIDs.clear();
   ITSModuleSelection sel = ITSModuleSelection();
-  sel.fType = 0; sel.fLayer=layer;
+  sel.fType = det; sel.fLayer=layer;
   fDigitsInfo->GetModuleIDs(&sel, fIDs);
   Start();
 }
@@ -213,12 +212,9 @@ void ITSModuleStepper::Paint(Option_t* /*option*/)
 
   // Section kCore
   buff.fID           = this;
-  buff.fColor        = 1;
+  buff.fColor        = fWColor;
   buff.fTransparency = 0;
-
-  ZTrans tr;
-  tr.UnitTrans(); 
-  tr.SetBuffer3D(buff);
+  fHMTrans.SetBuffer3D(buff);
   buff.SetSectionsValid(TBuffer3D::kCore);
 
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buff);
