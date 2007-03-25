@@ -1,11 +1,8 @@
 #include "TGLViewer.h"
-
 namespace Alieve
 {
 class ITSModuleStepper;
 }
-
-Alieve::ITSModuleStepper* stepper = 0;
 
 void its_module_stepper(Int_t col = 4 , Int_t row = 4)
 {
@@ -18,42 +15,86 @@ void its_module_stepper(Int_t col = 4 , Int_t row = 4)
   gStyle->SetPalette(1, 0);
   gReve->DisableRedraw();
 
-  Alieve::ITSModuleStepper* store = new Alieve::ITSModuleStepper(di);
-  store->SetStepper(col, row, 10, 8);
-  store->SetMainColor((Color_t)2);
-  gReve->AddRenderElement(store);
-  stepper = store;
+
+  Int_t sw = 10;
+  Int_t sh = 8;
+  Float_t CW = col*sw;
+  Float_t CH = col*sh;
+   
+  Float_t off_x = CW*0.07;
+  Float_t off_y = CH*0.1;
+
+  Reve::ZTrans* mx;
+
+  Bool_t rnrFrame = kTRUE;
+  Color_t wcol = 41;  
   
-  TRandom r(0);
-  Int_t module;
-  // SPD
-  for (Int_t i=0; i<40; ++i) {
-    module = r.Integer(240);
-    store->AddToList(module);
-  }
-  // SDD
-  for (Int_t i=0; i<40; ++i) {
-    module = 240 + r.Integer(260);
-    store->AddToList(module);
-  }
-  // SSD
-  for (Int_t i=0; i<40; ++i) {
-    module = 500 + r.Integer(1600);
-    store->AddToList(module);
-  }
+  // SPD  
+  Alieve::ITSModuleStepper* spd_lay1 = new Alieve::ITSModuleStepper(di);
+  spd_lay1->SetStepper(col, row, sw, sh);
+  spd_lay1->DisplayDet(0, 1);
+  spd_lay1->SetName("SPD 1");
+  spd_lay1->SetRnrFrame(rnrFrame);
+  spd_lay1->SetWColor(wcol);
+  gReve->AddRenderElement(spd_lay1);
+
+  Alieve::ITSModuleStepper* spd_lay2 = new Alieve::ITSModuleStepper(di);
+  spd_lay2->SetStepper(col, row, sw, sh);
+  mx = spd_lay2->PtrMainHMTrans();
+  mx->SetPos(CW+off_x, 0, 0);
+  spd_lay2->DisplayDet(0, 2);
+  spd_lay2->SetName("SPD 2");
+  spd_lay2->SetRnrFrame(rnrFrame);
+  spd_lay2->SetWColor(wcol);
+  gReve->AddRenderElement(spd_lay2);
+  
+  // SDD  
+  Alieve::ITSModuleStepper* sdd_lay1 = new Alieve::ITSModuleStepper(di);
+  sdd_lay1->SetStepper(col, row, 10, 8);
+  mx = sdd_lay1->PtrMainHMTrans();
+  mx->SetPos(0, CH+off_y, 0);
+  sdd_lay1->DisplayDet(1, 3);
+  sdd_lay1->SetName("SDD 1");
+  sdd_lay1->SetRnrFrame(rnrFrame);
+  sdd_lay1->SetWColor(wcol);
+  gReve->AddRenderElement(sdd_lay1);
+
+  Alieve::ITSModuleStepper* sdd_lay2 = new Alieve::ITSModuleStepper(di);
+  sdd_lay2->SetStepper(col, row, 10, 8); 
+  mx = sdd_lay2->PtrMainHMTrans();
+  mx->SetPos(CW+off_x, CH+off_y, 0);
+  sdd_lay2->DisplayDet(1, 4);
+  sdd_lay2->SetName("SDD 2");
+  sdd_lay2->SetRnrFrame(rnrFrame);
+  sdd_lay2->SetWColor(wcol);
+  gReve->AddRenderElement(sdd_lay2);
+  
+
+  // SSD  
+  Alieve::ITSModuleStepper* ssd_lay1 = new Alieve::ITSModuleStepper(di);
+  ssd_lay1->SetStepper(col, row, 10, 8);
+  mx = ssd_lay1->PtrMainHMTrans();
+  mx->SetPos(0, 2*(CH+off_y), 0);
+  ssd_lay1->DisplayDet(2, 5);
+  ssd_lay1->SetName("SSD 1");
+  ssd_lay1->SetRnrFrame(rnrFrame);
+  ssd_lay1->SetWColor(wcol);
+  gReve->AddRenderElement(ssd_lay1);
+
+  Alieve::ITSModuleStepper* ssd_lay2 = new Alieve::ITSModuleStepper(di);
+  ssd_lay2->SetStepper(col, row, 10, 8); 
+  mx = ssd_lay2->PtrMainHMTrans();
+  mx->SetPos(CW+off_x, 2*(CH+off_y), 0);
+  ssd_lay2->DisplayDet(2, 6);
+  ssd_lay2->SetName("SSD 2");
+  ssd_lay2->SetRnrFrame(rnrFrame);
+  ssd_lay2->SetWColor(wcol);
+  gReve->AddRenderElement(ssd_lay2);
 
   Alieve::DigitScaleInfo* si =  Alieve::ITSScaledModule::fgDigitScaleInfo;
   si->ScaleChanged(2);
 
-
-  store->Start();
   gReve->EnableRedraw();
-
-  TGListTree* lt = gReve->GetListTree();
-  TGListTreeItem* ti = stepper->FindListTreeItem(lt);
-  stepper->ExpandIntoListTree(lt, ti);
-  lt->OpenItem(ti);
-
   TGLViewer * v = (TGLViewer *)gPad->GetViewer3D();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
 }
