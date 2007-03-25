@@ -21,6 +21,7 @@
 //================================
 
 // ITS
+#pragma link C++ class Alieve::ITSModuleSelection+;
 #pragma link C++ class Alieve::ITSDigitsInfo+;
 #pragma link C++ class Alieve::ITSModule+;
 #pragma link C++ class Alieve::DigitScaleInfo+;
@@ -28,6 +29,7 @@
 #pragma link C++ class Alieve::ITSSDSubEditor+;
 #pragma link C++ class Alieve::ITSScaledModuleEditor+;
 #pragma link C++ class Alieve::ITSModuleStepper+;
+#pragma link C++ class Alieve::ITSModuleStepperGL+;
 
 // MUON
 #pragma link C++ class Alieve::MUONData+;
