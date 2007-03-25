@@ -1771,7 +1771,7 @@ Double_t AliTimestamp::GetGAST()
 
  Double_t gast=gmst+da;
 
- while (gast<-24.)
+ while (gast<0)
  {
   gast+=24.;
  }
@@ -1796,7 +1796,7 @@ Double_t AliTimestamp::GetLT(Double_t offset)
  
  h+=offset;
 
- while (h<-24)
+ while (h<0)
  {
   h+=24.;
  }
@@ -1824,7 +1824,7 @@ Double_t AliTimestamp::GetLMST(Double_t offset)
 
  h+=offset;
 
- while (h<-24)
+ while (h<0)
  {
   h+=24.;
  }
@@ -1852,7 +1852,7 @@ Double_t AliTimestamp::GetLAST(Double_t offset)
 
  h+=offset;
 
- while (h<-24)
+ while (h<0)
  {
   h+=24.;
  }
