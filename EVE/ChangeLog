@@ -1,11 +1,12 @@
 2007-03-25  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
-	* icons/fontdefault.txf
-	* icons/fonthelvetica34.txf
-        Texture maps for GL font.
-	
+	* icons/fontdefault.txf:
+	* icons/fonthelvetica34.txf:
+        New files: texture fonts for GL.
+
 	* alice-macros/its_module_stepper.C:
-	Set scale of digits from 1 to 2. Open ITSModuleStepper item.
+	Change default digit-scale from 1 to 2. Open ITSModuleStepper
+	item.
 
 2007-03-25  Matevz Tadel  <matevz.tadel@cern.ch>
 

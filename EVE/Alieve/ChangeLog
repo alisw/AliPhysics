@@ -1,3 +1,24 @@
+2007-03-25  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* ITSModuleStepperGL.cxx:
+	* ITSModuleStepperGL.h:
+	Implementation of GL user-interface to enable listing of
+	Reve::GridStepper pages.
+
+	* ITSDigitsInfo.cxx:
+	* ITSDigitsInfo.h:
+	Introduce new class ITSModuleSelection to define ITSModule
+	selection conditions; this structure is used in
+	ITSDigitsInfo::GetModuleIDs().
+
+	* LinkDef.h:
+	Register new classes: ITSModuleStepperGL and ITSModuleSelection.
+
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	Add members for rendering of ITSModuleStepperGL and stepper
+	functions.
+
 2007-03-25  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* KineTools.cxx:
