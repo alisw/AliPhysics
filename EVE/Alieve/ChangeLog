@@ -1,5 +1,16 @@
 2007-03-25  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	Multiply with parent transformation matrix thus allowing global
+	positioning.
+
+	* ITSModuleStepperGL.cxx:
+	* ITSModuleStepperGL.h:
+	Disable display lists and culling, ignore size for OfInterest.
+
+2007-03-25  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
 	* ITSModuleStepperGL.cxx:
 	* ITSModuleStepperGL.h:
 	Implementation of GL user-interface to enable listing of
