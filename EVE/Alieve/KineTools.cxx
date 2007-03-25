@@ -31,7 +31,7 @@ KineTools::KineTools()
 
 /**************************************************************************/
 
-void KineTools::SetDaughterPathMarks(TrackList* cont,  AliStack* stack)
+void KineTools::SetDaughterPathMarks(RenderElement* cont, AliStack* stack, Bool_t recurse)
 {
   // Import daughters birth points.
 
@@ -51,6 +51,8 @@ void KineTools::SetDaughterPathMarks(TrackList* cont,  AliStack* stack)
 	pm->P.Set(dp->Px(),dp->Py(), dp->Pz()); 
         pm->time = dp->T();
         track->AddPathMark(pm);
+	if (recurse)
+	  SetDaughterPathMarks(track, stack, recurse);
       }
     }
     ++iter;
@@ -60,27 +62,36 @@ void KineTools::SetDaughterPathMarks(TrackList* cont,  AliStack* stack)
 /**************************************************************************/
 
 namespace {
-struct cmp_pathmark {
+struct cmp_pathmark
+{
   bool operator()(PathMark* const & a, PathMark* const & b)
   { return a->time < b->time; }
 };
+
+void slurp_tracks(map<Int_t, Track*>& tracks, RenderElement* cont, Bool_t recurse)
+{
+  RenderElement::List_i citer = cont->BeginChildren();
+  while(citer != cont->EndChildren())
+  { 
+    Track* track = dynamic_cast<Track*>(*citer); 
+    tracks[track->GetLabel()] = track;
+    if (recurse)
+      slurp_tracks(tracks, track, recurse);
+    ++citer;
+  }
 }
 
-void KineTools::SetTrackReferences(TrackList* cont, TTree* treeTR)
+}
+
+void KineTools::SetTrackReferences(RenderElement* cont, TTree* treeTR, Bool_t recurse)
 {
   // set decay and reference points
 
   static const Exc_t eH("KineTools::ImportPathMarks");
 
-  // fill map
-  map<Int_t, Track* >      tracks;
-  RenderElement::List_i  citer = cont->BeginChildren();
-  while(citer != cont->EndChildren())
-  { 
-    Track* track = dynamic_cast<Track*>(*citer); 
-    tracks[track->GetLabel()] = track;
-    ++citer;
-  }
+  // Fill map
+  map<Int_t, Track*> tracks;
+  slurp_tracks(tracks, cont, recurse);
  
   Int_t nPrimaries = (Int_t) treeTR->GetEntries();
   TIter next(treeTR->GetListOfBranches());
@@ -129,7 +140,8 @@ void KineTools::SetTrackReferences(TrackList* cont, TTree* treeTR)
   } // end loop through top branches
 
   // sort 
-  for(map<Int_t, Track*>::iterator j=tracks.begin(); j!=tracks.end(); ++j) {
+  for(map<Int_t, Track*>::iterator j=tracks.begin(); j!=tracks.end(); ++j)
+  {
     (j->second)->SortPathMarksByTime();
   }
 }
