@@ -19,7 +19,7 @@ ClassImp(ITSModuleStepperGL)
 
 ITSModuleStepperGL::ITSModuleStepperGL() : TGLObject(), fM(0)
 {
-  // fCached = false; // Disable display list.
+  fCached = false; // Disable display list.
 }
 
 ITSModuleStepperGL::~ITSModuleStepperGL()
@@ -58,13 +58,13 @@ void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
   glGetBooleanv(GL_LIGHTING, &lightp);
   if (lightp) glDisable(GL_LIGHTING);
    
+  UChar_t color[4];
+  ColorFromIdx(MS.fWColor, color);
+  glColor4ubv(color);
+
   // render frame of grid stepper
   if (MS.fRnrFrame)
   {
-    UChar_t color[4];
-    ColorFromIdx(MS.fFrameColor, color);
-    glColor4ubv(color);
-
     glBegin(GL_LINE_LOOP);
     glVertex2f(0., 0.);       
     glVertex2f(W , 0.);
@@ -76,11 +76,7 @@ void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
   // triangles
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  // glEnable(GL_POLYGON_OFFSET_FILL);
-
-  UChar_t color[4];
-  ColorFromIdx(MS.fWColor, color);
-  glColor4ubv(color);
+  glDisable(GL_CULL_FACE);
     
   Float_t sx =0 ,sy = 0;
   switch(MS.fWCorner) {

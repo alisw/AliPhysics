@@ -31,7 +31,7 @@ public:
   virtual Bool_t SetModel(TObject* obj);
   virtual void   SetBBox();
 
-  // To support two-level selection
+  virtual Bool_t IgnoreSizeForOfInterest() const { return kTRUE; }
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
   virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
 
