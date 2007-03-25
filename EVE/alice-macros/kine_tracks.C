@@ -13,7 +13,8 @@ static Color_t BarCol   = 10;
 
 
 Reve::TrackList*
-kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
+kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
+	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE)
 {
   AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
   rl->LoadKinematics();
@@ -40,8 +41,7 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
     if(stack->IsPhysicalPrimary(i)) 
     {
       TParticle* p = stack->Particle(i);
-      Double_t  pT = p->Pt();
-      if (pT<min_pt || pT>max_pt) continue;
+      if (p->Pt() < min_pt && p->P() < min_p) continue;
 
       ++count;
       Reve::Track* track = new Reve::Track(p, i, rnrStyle);
@@ -53,25 +53,29 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), i);
       track->SetName(form);
-      TParticlePDG* pdgp = p->GetPDG();
-      track->SetMainColor(get_pdg_color(pdgp->PdgCode()));
+      if (pdg_col && p->GetPDG())
+	track->SetMainColor(get_pdg_color(p->GetPDG()->PdgCode()));
       gReve->AddRenderElement(cont, track);
+
+      if (recurse)
+	kine_daughters(track, stack, min_pt, min_p, pdg_col, recurse);
     }
   }
+
   // set path marks
   Alieve::KineTools kt; 
-  kt.SetDaughterPathMarks(cont, stack);
+  kt.SetDaughterPathMarks(cont, stack, recurse);
   rl->LoadTrackRefs();
-  kt.SetTrackReferences(cont, rl->TreeTR());
+  kt.SetTrackReferences(cont, rl->TreeTR(), recurse);
   cont->SetEditPathMarks(kTRUE);
 
-  //PH  const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
+  //PH  const Text_t* tooltip = Form("min pT=%.2lf, min P=%.2lf), N=%d", min_pt, min_p, count);
   char tooltip[1000];
-  sprintf(tooltip,"pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
+  sprintf(tooltip,"min pT=%.2lf, min P=%.2lf), N=%d", min_pt, min_p, count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
   cont->UpdateItems();
 
-  cont->MakeTracks();
+  cont->MakeTracks(recurse);
   cont->MakeMarkers();
 
   gReve->EnableRedraw();
@@ -80,6 +84,32 @@ kine_tracks(Double_t min_pt=0.5, Double_t max_pt=100, Bool_t pdg_col= kFALSE)
   return cont;
 }
 
+void kine_daughters(Reve::Track* parent,  AliStack* stack,
+		    Double_t     min_pt,  Double_t  min_p,
+		    Bool_t       pdg_col, Bool_t    recurse)
+{
+  TParticle *p = stack->Particle(parent->GetLabel());
+  if (p->GetNDaughters() > 0) 
+  {
+    Reve::TrackRnrStyle* rs = parent->GetRnrStyle();
+    for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
+    {	
+      TParticle* dp = stack->Particle(d);
+      if (dp->Pt() < min_pt && dp->P() < min_p) continue;
+
+      Track* dtrack = new Reve::Track(dp, d, rs);  
+      char form[1000];
+      sprintf(form,"%s [%d]", dp->GetName(), d);
+      dtrack->SetName(form);
+      if (pdg_col && dp->GetPDG())
+	dtrack->SetMainColor(get_pdg_color(dp->GetPDG()->PdgCode()));
+      gReve->AddRenderElement(parent, dtrack);
+
+      if (recurse)
+	kine_daughters(dtrack, stack, min_pt, min_p, pdg_col, recurse);
+    }
+  }
+}
 
 Color_t get_pdg_color(Int_t pdg)
 {
@@ -146,35 +176,40 @@ kine_track(Int_t  label,
 
     if (cont == 0)
     {
-      cont = new TrackList(Form("Kinematics of %d", label, p->GetNDaughters()));
+      Reve::TrackList* tlist = new Reve::TrackList
+	(Form("Kinematics of %d", label, p->GetNDaughters()));
+      cont = tlist;
 
-      Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
+      Reve::TrackRnrStyle* rnrStyle = tlist->GetRnrStyle();
       // !!! Watch the '-', apparently different sign convention then for ESD.
       rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
       char tooltip[1000];
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
-      cont->SetTitle(tooltip);
-      cont->SelectByPt(0.2, 100);
+      tlist->SetTitle(tooltip);
+      tlist->SelectByPt(0.2, 100);
       rnrStyle->fColor   = 8;
       rnrStyle->fMaxOrbs = 8;
-      cont->SetEditPathMarks(kTRUE);
+      tlist->SetEditPathMarks(kTRUE);
       gReve->AddRenderElement(cont);
-      rs = cont->GetRnrStyle();
+      rs = tlist->GetRnrStyle();
     }
-    else {
+    else
+    {
       // check if argument is TrackList
       Reve::Track* t = dynamic_cast<Reve::Track*>(cont);
       if(t) 
       {
 	rs = t->GetRnrStyle();
       }
-      else {
+      else
+      {
         Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(cont);
         if(l)
 	{
 	  rs = l->GetRnrStyle();
 	}
-        else {
+        else
+	{
 	  Error("kine_tracks.C", "TrackRenderStyle not set.");
 	}
       }
