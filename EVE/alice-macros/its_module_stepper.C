@@ -41,19 +41,20 @@ void its_module_stepper(Int_t col = 4 , Int_t row = 4)
     module = 500 + r.Integer(1600);
     store->AddToList(module);
   }
-  store->Start();
 
+  Alieve::DigitScaleInfo* si =  Alieve::ITSScaledModule::fgDigitScaleInfo;
+  si->ScaleChanged(2);
+
+
+  store->Start();
   gReve->EnableRedraw();
+
+  TGListTree* lt = gReve->GetListTree();
+  TGListTreeItem* ti = stepper->FindListTreeItem(lt);
+  stepper->ExpandIntoListTree(lt, ti);
+  lt->OpenItem(ti);
+
   TGLViewer * v = (TGLViewer *)gPad->GetViewer3D();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
 }
 
-void start()
-{
-  stepper->Start();
-}
-
-void next() 
-{
-  stepper->Next();
-}
