@@ -1,3 +1,20 @@
+2007-03-25  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-data/alice_fullgeo.root:
+	Store latest version of ideal geometry.
+
+	* alice-data/gentle_geo.root:
+	* alice-macros/geom_gentle.C:
+	New files: reasonably small extract of geometry and a macro to
+	load it.
+
+	* alice-macros/kine_tracks.C:
+	Import kinematics recursively with pT and full-momentum
+	descend-cut.
+	
+	* alice-macros/tpc_hits_charge_split.C:
+	New macro: split TPC hits based on their deposited charge.
+
 2007-03-24  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/MUON_geom.C:

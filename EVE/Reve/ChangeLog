@@ -1,3 +1,10 @@
+2007-03-25  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	Improve handling of multi-level track containers for kinematic
+	trees.
+
 2007-03-24  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RenderElement.h:
