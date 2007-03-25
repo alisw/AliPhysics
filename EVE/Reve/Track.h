@@ -50,7 +50,7 @@ public:
   Track(Reve::RecTrack* t, TrackRnrStyle* rs);
   virtual ~Track();
 
-  void MakeTrack(Bool_t recurse = kTRUE);
+  void MakeTrack(Bool_t recurse=kFALSE);
 
   TrackRnrStyle* GetRnrStyle() const  { return fRnrStyle; }
   void SetRnrStyle(TrackRnrStyle* rs) { fRnrStyle = rs; }
@@ -200,7 +200,7 @@ public:
   Bool_t GetRnrMarkers() const { return fRnrMarkers; }
   void   SetRnrMarkers(Bool_t);
 
-  void   MakeTracks();
+  void   MakeTracks(Bool_t recurse=kFALSE);
   void   MakeMarkers();
 
   Width_t GetWidth() const { return fRnrStyle->fWidth; }

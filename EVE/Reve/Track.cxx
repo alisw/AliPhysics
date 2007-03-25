@@ -122,7 +122,7 @@ void Track::Reset(Int_t n_points)
 
  /**************************************************************************/
 
-void Track::MakeTrack( Bool_t recurse)
+void Track::MakeTrack(Bool_t recurse)
 {
   TrackRnrStyle& RS((fRnrStyle != 0) ? *fRnrStyle : TrackRnrStyle::fgDefStyle);
 
@@ -239,27 +239,30 @@ make_polyline:
     SetNextPoint(i->x, i->y, i->z);
 
   if(recurse) {
-    Track* t;
-    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-      t = dynamic_cast<Track*>(*i);
-      if(t)t->MakeTrack(recurse); 
+    for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
+    {
+      Track* t = dynamic_cast<Track*>(*i);
+      if(t) t->MakeTrack(recurse); 
     }
   }
 }
 
 /**************************************************************************/
+
 namespace {
-struct cmp_pathmark {
+
+struct cmp_pathmark
+{
   bool operator()(PathMark* const & a, PathMark* const & b)
   { return a->time < b->time; }
 };
+
 }
 
 void Track::SortPathMarksByTime()
 {
  sort(fPathMarks.begin(), fPathMarks.end(), cmp_pathmark());
 }
-
 
 /**************************************************************************/
 
@@ -478,10 +481,11 @@ void TrackList::AddElement(RenderElement* el)
 
 /**************************************************************************/
 
-void TrackList::MakeTracks()
+void TrackList::MakeTracks(Bool_t recurse)
 {
-  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-    ((Track*)(*i))->MakeTrack();
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
+  {
+    ((Track*)(*i))->MakeTrack(recurse);
   }
   gReve->Redraw3D();
 }
@@ -607,7 +611,9 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ptsq = ((Track*)(*i))->fP.Perp2();
-    (*i)->SetRnrSelf(ptsq >= minptsq && ptsq <= maxptsq);
+    Bool_t on = ptsq >= minptsq && ptsq <= maxptsq;
+    (*i)->SetRnrSelf(on);
+    (*i)->SetRnrChildren(on);
   }
 }
 
