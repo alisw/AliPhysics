@@ -124,7 +124,7 @@ AliExternalTrackParam * AliTrackReference::MakeTrack(const AliTrackReference *re
   Double_t x = ref->X(), y = ref->Y(), z = ref->Z();
   Double_t alpha = TMath::ATan2(y,x);
   Double_t xr = TMath::Sqrt(x*x+y*y);
-  xx[0] = 0;
+  xx[0] = ref->LocalY();
   xx[1] = z;
   xx[3] = ref->Pz()/ref->Pt();
   xx[4] = 1./ref->Pt(); 
