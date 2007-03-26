@@ -32,6 +32,7 @@ ITSModuleStepper::ITSModuleStepper(ITSDigitsInfo* di):
     TNamed("ITS 2DStore", "ITSModuleStepper"),   
 
     fDigitsInfo(di),
+    fScaleInfo(0),
     fStepper(0),
     fExpand(0.85),
 
@@ -39,19 +40,23 @@ ITSModuleStepper::ITSModuleStepper(ITSDigitsInfo* di):
 
     fWCorner(PT_BottomLeft),
     fWWidth(0.05),
-    fWHeight(0.07)
+    fWHeight(0.2)
 {
   fStepper = new GridStepper();
+  
+  fScaleInfo = new DigitScaleInfo();
 
-  fWColor = 5;
+   fWColor = 5;
 
-  GLTextNS::LoadDefaultFont(Form("%s/icons/fontdefault.txf",gSystem->Getenv("REVESYS")));
+   //  GLTextNS::LoadDefaultFont(Form("%s/icons/fontdefault.txf",gSystem->Getenv("REVESYS")));
+  GLTextNS::LoadDefaultFont(Form("%s/icons/fonthelvetica34.txf",gSystem->Getenv("REVESYS")));
 }
 
 /**************************************************************************/
 ITSModuleStepper::~ITSModuleStepper()
 {
   delete fStepper;
+  delete fScaleInfo;
 }
 
 /**************************************************************************/
@@ -64,7 +69,7 @@ void ITSModuleStepper::SetStepper(Int_t nx, Int_t ny, Float_t dx, Float_t dy)
   Int_t nmod = nx*ny;
   for(Int_t m = 0; m<nmod; m++) 
   {
-    AddElement( new ITSScaledModule(m, fDigitsInfo));
+    AddElement( new ITSScaledModule(m, fDigitsInfo, fScaleInfo));
   }
 
   if(dx > 0 && dy > 0)

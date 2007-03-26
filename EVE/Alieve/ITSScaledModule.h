@@ -31,10 +31,10 @@ public:
   DigitScaleInfo();
   virtual ~DigitScaleInfo(){}
     
-  Int_t            GetScale() {return fScale;}
+  Int_t            GetScale() { return fScale; }
   void             ScaleChanged(Int_t s); //*SIGNAL*
 
-  Int_t            GetStatType() {return fStatType;}
+  Int_t            GetStatType() { return fStatType; }
   void             StatTypeChanged(Int_t t);  //*SIGNAL*
 
   ClassDef(DigitScaleInfo, 1);
@@ -79,8 +79,10 @@ protected:
   Int_t       fNCx;  // per cell
   Int_t       fNCz;
 
+  DigitScaleInfo* fScaleInfo;
+
 public:
-  ITSScaledModule(Int_t gid, ITSDigitsInfo* info);
+  ITSScaledModule(Int_t gid, ITSDigitsInfo* info, DigitScaleInfo* si );
   virtual ~ITSScaledModule();
 
   virtual void QuadSelected(Int_t idx);
@@ -88,7 +90,7 @@ public:
   virtual void LoadQuads();
   void         SetQuadValues();
 
-  static Alieve::DigitScaleInfo*  fgDigitScaleInfo;
+  DigitScaleInfo*  GetScaleInfo(){ return fScaleInfo; }
 
   ClassDef(ITSScaledModule, 1);
 }; // endclass ITSScaledModule

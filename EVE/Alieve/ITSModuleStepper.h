@@ -16,6 +16,7 @@
 namespace Alieve {
 
 class ITSDigitsInfo;
+class DigitScaleInfo;
 
 class ITSModuleStepper : public Reve::RenderElement, 
                          public TNamed,
@@ -36,6 +37,8 @@ private:
 
 protected:
   ITSDigitsInfo*          fDigitsInfo;
+  DigitScaleInfo*         fScaleInfo;
+
   Reve::GridStepper*      fStepper;  
  
   Float_t                 fExpand;

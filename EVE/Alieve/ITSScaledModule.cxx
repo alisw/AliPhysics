@@ -9,8 +9,6 @@
 using namespace Reve;
 using namespace Alieve;
 
-DigitScaleInfo*  ITSScaledModule::fgDigitScaleInfo = 0;
-
 //______________________________________________________________________
 // DigitScaleInfo
 //
@@ -65,21 +63,17 @@ void ScaledDigit::Dump() const
 
 ClassImp(ITSScaledModule)
 
-ITSScaledModule::ITSScaledModule(Int_t gid, ITSDigitsInfo* info):
+  ITSScaledModule::ITSScaledModule(Int_t gid, ITSDigitsInfo* info, DigitScaleInfo* si):
   ITSModule("ITSScaledModule", "ITSScaledModule"),
   fNx(-1),
   fNz(-1),
   fNCx(-1),
-  fNCz(-1)
+  fNCz(-1),
+  fScaleInfo(si)
 {
-  if(fgDigitScaleInfo == 0) 
-  {
-    fgDigitScaleInfo = new DigitScaleInfo();
-  } 
-
-  fgDigitScaleInfo->IncRefCount(this);
-  fgDigitScaleInfo->Connect("ScaleChanged(Int_t)", "Alieve::ITSScaledModule", this,"LoadQuads()");
-  fgDigitScaleInfo->Connect("StatTypeChanged(Int_t)", "Alieve::ITSScaledModule", this,"SetQuadValues()");
+  si->IncRefCount(this);
+  si->Connect("ScaleChanged(Int_t)", "Alieve::ITSScaledModule", this,"LoadQuads()");
+  si->Connect("StatTypeChanged(Int_t)", "Alieve::ITSScaledModule", this,"SetQuadValues()");
   SetOwnIds(kTRUE);
 
   SetDigitsInfo(info);
@@ -88,7 +82,7 @@ ITSScaledModule::ITSScaledModule(Int_t gid, ITSDigitsInfo* info):
 
 ITSScaledModule::~ITSScaledModule()
 {
-  fgDigitScaleInfo->DecRefCount();
+  fScaleInfo->DecRefCount();
 }
 
 /**************************************************************************/
@@ -112,7 +106,7 @@ void ITSScaledModule::LoadQuads()
   ndigits = digits->GetEntriesFast();
 
   ScaledDigit* sd;
-  Int_t scale = fgDigitScaleInfo->GetScale() -1;
+  Int_t scale = fScaleInfo->GetScale() -1;
   switch(fDetID)
   {
     case 0: 
@@ -300,7 +294,7 @@ void ITSScaledModule::SetQuadValues()
   {
     ScaledDigit* sd = dynamic_cast<ScaledDigit*>(GetId(i));
     Int_t v = 0;
-    switch(fgDigitScaleInfo->GetStatType()) {
+    switch(fScaleInfo->GetStatType()) {
       case DigitScaleInfo::ST_Occup:   v = sd->N;   break;
       case DigitScaleInfo::ST_Average: v = Int_t(sd->sum/(1.* sd->N)); break;
       case DigitScaleInfo::ST_Rms:     v = Int_t(TMath::Sqrt(sd->sqr_sum)/(1.*sd->N)); break;    

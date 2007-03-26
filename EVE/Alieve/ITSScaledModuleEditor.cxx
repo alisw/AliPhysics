@@ -82,8 +82,8 @@ void ITSSDSubEditor::SetModel(ITSScaledModule* mod)
   fModule = mod;
   RGBAPaletteSubEditor::SetModel(fModule->GetPalette());
   
-  fScale->SetIntNumber(ITSScaledModule::fgDigitScaleInfo->GetScale());
-  fStatistic->Select(ITSScaledModule::fgDigitScaleInfo->GetStatType(), kFALSE);
+  fScale->SetIntNumber(fModule->GetScaleInfo()->GetScale());
+  fStatistic->Select(fModule->GetScaleInfo()->GetStatType(), kFALSE);
   
   Int_t cnx, cnz, total;
   Float_t  maxoc;
@@ -125,8 +125,8 @@ void ITSSDSubEditor::GetSubDetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total, Fl
 
 void ITSSDSubEditor::SetPaletteFromDigitInfo()
 {  
-  // apply values for color palette
-  if(ITSScaledModule::fgDigitScaleInfo->fAutoUpdatePalette) 
+  // apply values for color palettefgdif
+  if(fModule->GetScaleInfo()->fAutoUpdatePalette) 
   {   
     Int_t cnx, cnz, total;
     Float_t  maxoc;
@@ -159,7 +159,7 @@ void ITSSDSubEditor::DoScale()
 
   SetPaletteFromDigitInfo();
 
-  ITSScaledModule::fgDigitScaleInfo->ScaleChanged(fScale->GetIntNumber());
+  fModule->GetScaleInfo()->ScaleChanged(fScale->GetIntNumber());
   Changed();
 }
 
@@ -170,7 +170,7 @@ void ITSSDSubEditor::DoStatType(Int_t v)
   // update palette
   SetPaletteFromDigitInfo();
 
-  ITSScaledModule::fgDigitScaleInfo->StatTypeChanged(v);
+  fModule->GetScaleInfo()->StatTypeChanged(v);
   
   Changed(); 
 }
