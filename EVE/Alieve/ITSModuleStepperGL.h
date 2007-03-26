@@ -7,6 +7,7 @@
 
 class TGLViewer;
 class TGLScene;
+class TString;
 
 namespace Alieve {
 
@@ -18,7 +19,9 @@ private:
   ITSModuleStepperGL(const ITSModuleStepperGL&);            // Not implemented
   ITSModuleStepperGL& operator=(const ITSModuleStepperGL&); // Not implemented
 
-  void   RenderTriangle(Float_t dx, Float_t dy, Int_t id) const;
+  void   RenderSymbol(Float_t dx, Float_t dy, Int_t id) const;
+  void   RenderString(TString text , Float_t dy, Bool_t trans = kTRUE) const;
+  void   RenderPalette(Float_t dx, Float_t dy) const;
 protected:
   ITSModuleStepper* fM; // fModel dynamic-casted to ITSModuleStepperGL
 
