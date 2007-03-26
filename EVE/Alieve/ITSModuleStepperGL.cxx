@@ -113,11 +113,11 @@ void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
   RenderSymbol(dx, dy, 2);
   glTranslatef(dx, 0, 0);
   if (flags.SecSelection()) glLoadName(1);
-  RenderSymbol(dx, dy, 1);
+  RenderSymbol(dx*1.2, dy, 1);
   glTranslatef(dx, 0, 0);
   RenderString(Form(" %d/%d ", MS.GetCurrentPage(), MS.GetPages()), dy);
   if (flags.SecSelection()) glLoadName(3);
-  RenderSymbol(dx, dy, 3);
+  RenderSymbol(dx*1.2, dy, 3);
   glTranslatef(dx, 0, 0);
   if (flags.SecSelection()) glLoadName(4);
   RenderSymbol(dx, dy, 4);
@@ -126,7 +126,7 @@ void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
   // scale info
   Int_t cnx = 0, cnz = 0;
   ITSDigitsInfo* di = MS.fDigitsInfo;
-  Int_t scale = fM->fScaleInfo->GetScale();
+  Int_t scale = fM->fScaleInfo->GetScale() - 1;
   ITSScaledModule* sm = dynamic_cast<ITSScaledModule*>(*fM->BeginChildren());
   switch(sm->GetSubDetID())
   {
@@ -139,17 +139,20 @@ void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
     case 2:
       cnx = di->fSSDScale[scale], cnz = 1;
       break;
-  } 
-  RenderString(Form("Scale: %dx%d ", cnx, cnz), dy);
-
+  }
+  if (flags.SecSelection()) glLoadName(0);
+  RenderString(Form("Scale"), dy);
+  glTranslatef(0.07*dx, 0, 0);
   // up down arrows 
   if (flags.SecSelection()) glLoadName(6);
-  RenderSymbol(dx, dy, 5);
+  RenderSymbol(dx*1.2, dy*0.9, 5);
+
   if (flags.SecSelection()) glLoadName(7);
-  RenderSymbol(dx, dy, 6);
-  glTranslatef(2*dx, 0, 0);
-  glTranslatef(0, dy*0.25,0);
- 
+  RenderSymbol(dx*1.2, dy*0.9, 6);
+
+  glTranslatef(1*dx, 0, 0);
+  if (flags.SecSelection()) glLoadName(0);
+  RenderString(Form(" %dx%d ", cnx, cnz), dy, kFALSE);
 
   glPopMatrix();
   if (flags.SecSelection()) glLoadName(5);
@@ -276,7 +279,7 @@ void ITSModuleStepperGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
   if (ptr[0] < 2) return;
 
   switch (ptr[4]){
-    case 1 :
+    case 1:
       fM->Previous();
       break;
     case 2:
@@ -294,17 +297,23 @@ void ITSModuleStepperGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
     case 6:
     {
       DigitScaleInfo* si = fM->fScaleInfo;
-      if(si->fScale < 4)
+      if(si->fScale < 5) 
+      {
 	si->ScaleChanged(si->fScale + 1);
-      gReve->Redraw3D();
+	gReve->GetEditor()->DisplayObject(gReve->GetEditor()->GetModel());
+	gReve->Redraw3D();
+      }
       break;
     }
     case 7:
     {
       DigitScaleInfo* si = fM->fScaleInfo;
-      if(si->fScale > 0)
+      if(si->fScale > 1) 
+      {
 	si->ScaleChanged(si->GetScale() - 1);
-      gReve->Redraw3D();
+	gReve->GetEditor()->DisplayObject(gReve->GetEditor()->GetModel());
+	gReve->Redraw3D();
+      }
       break;
     }
     default:
