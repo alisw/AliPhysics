@@ -1,6 +1,11 @@
 2007-03-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* ITSModuleStepperGL.cxx:
+	Fix obi-wan in SetScale.
+
+2007-03-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* ITSModuleStepperGL.cxx:
 	* ITSModuleStepperGL.h:
 	Add function to render string. Add actions in ProcessSelection.
 
