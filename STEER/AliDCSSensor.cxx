@@ -36,7 +36,7 @@
 
 
 #include "AliDCSSensor.h"
-ClassImp(AliDCSSensor);
+ClassImp(AliDCSSensor)
 
 
 AliDCSSensor::AliDCSSensor():

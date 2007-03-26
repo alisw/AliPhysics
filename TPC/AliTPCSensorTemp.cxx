@@ -35,7 +35,7 @@
 
 
 #include "AliTPCSensorTemp.h"
-ClassImp(AliTPCSensorTemp);
+ClassImp(AliTPCSensorTemp)
 
 
 AliTPCSensorTemp::AliTPCSensorTemp(): AliDCSSensor(),
