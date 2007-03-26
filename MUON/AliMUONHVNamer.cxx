@@ -58,7 +58,7 @@ const char* AliMUONHVNamer::fgHVChannelSt12Pattern[] =
   "MchHvLvRight/Chamber%02dRight/Quad%dSect%d.actual.vMon",
 };
   
-const char* AliMUONHVNamer::fgHVSwitchSt345Pattern = "MchDE%dsw%d.inValue";
+const char* AliMUONHVNamer::fgHVSwitchSt345Pattern = "MchDE%04dsw%d.inValue";
 
 //_____________________________________________________________________________
 AliMUONHVNamer::AliMUONHVNamer()
@@ -107,7 +107,7 @@ AliMUONHVNamer::CompactAliases() const
     Int_t detElemId = it.CurrentDEId();
     if ( AliMpDEManager::GetStationType(detElemId) == AliMp::kStation345 )
     {
-          a->Add(new TObjString(Form("MchDE%dsw[1..%d].inValue",detElemId,NumberOfPCBs(detElemId))));
+          a->Add(new TObjString(Form("MchDE%04dsw[1..%d].inValue",detElemId,NumberOfPCBs(detElemId))));
      }
     it.Next();
   }
