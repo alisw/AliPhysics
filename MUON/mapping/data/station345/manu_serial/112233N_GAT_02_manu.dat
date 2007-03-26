@@ -1,4 +1,5 @@
 # Id serial
+# serial missing/wrong for manuId 337
   1  bp 19386
   2  bp 19469
   3  bp 19380
@@ -113,7 +114,7 @@
 334  bp 19413
 335 nbp 19371
 336 nbp 19389
-337 nbp 84720
+337 nbp 40000
 338  bp 19357
 339  bp 19374
 340  bp 19373
