@@ -1,3 +1,16 @@
+2007-03-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* ITSModuleStepperGL.cxx:
+	* ITSModuleStepperGL.h:
+	Add function to render string. Add actions in ProcessSelection.
+
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	* ITSScaledModule.cxx:
+	* ITSScaledModule.h:
+	* ITSScaledModuleEditor.cxx:
+	DigitScaled info owned by ITSModuleStepper.
+
 2007-03-25  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* ITSModuleStepper.cxx:
