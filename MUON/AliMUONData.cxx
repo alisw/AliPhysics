@@ -1473,20 +1473,24 @@ AliMUONData::DumpRecTrigger(Int_t event2Check,
     for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
 
-      if (locTrg->LoLpt()!=0) { // board is fired
-
-      if (printout) locTrg->Print("full");
-      
-      AliMUONTriggerCircuit* circuit = (AliMUONTriggerCircuit*)triggerCircuit->At(locTrg->LoCircuit()-1); 
-      
-      tupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
+      if ( (locTrg->LoSdev()==1 && locTrg->LoDev()==0 && locTrg->LoStripX()==0) && // no trigger in X
+	   (locTrg->LoTrigY()==1 && locTrg->LoStripY()==15) ) { // no trigger in Y
+	  // no trigger at all
+	  
+      } else { // trigger
+	  
+	  if (printout) locTrg->Print("full");
+	  
+	  AliMUONTriggerCircuit* circuit = (AliMUONTriggerCircuit*)triggerCircuit->At(locTrg->LoCircuit()-1); 
+	  
+	  tupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
       }
       
     } // end of loop on Local Trigger
-
+    
     // fill ntuple
     tupleGlo->Fill(ievent,nglobals,gloTrg->SingleLpt(),gloTrg->SingleHpt(),gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),gloTrg->PairLikeLpt(),gloTrg->PairLikeHpt());
-
+    
     ResetTrigger();
     if (event2Check!=0) ievent=nevents;
   } // end loop on event  

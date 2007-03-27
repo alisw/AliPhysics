@@ -354,31 +354,38 @@ Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
   Float_t x11 = 0.;
 
   for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
-    locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);      
-
-    AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
-    AliMUONTriggerCircuit* circuit = 
-      (AliMUONTriggerCircuit*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
-
-    y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-    stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-    y21 = circuit->GetY21Pos(stripX21);       
-    x11 = circuit->GetX11Pos(locTrg->LoStripY());
-    
-    AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),
-        	     locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
-    
-    Float_t thetax = TMath::ATan2( x11 , z11 );
-    Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
-    
-    fTriggerTrack->SetX11(x11);
-    fTriggerTrack->SetY11(y11);
-    fTriggerTrack->SetThetax(thetax);
-    fTriggerTrack->SetThetay(thetay);
-    fTriggerTrack->SetGTPattern(gloTrigPat);
-    fTriggerTrack->SetLoTrgNum(i);
- 	  
-    fMUONData->AddRecTriggerTrack(*fTriggerTrack);
+      locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);      
+      
+      if ( (locTrg->LoSdev()==1 && locTrg->LoDev()==0 && locTrg->LoStripX()==0) && // no trigger in X
+	   (locTrg->LoTrigY()==1 && locTrg->LoStripY()==15) ) { // no trigger in Y
+	  // no trigger at all
+	  
+      } else { // trigger
+	  
+	  AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
+	  AliMUONTriggerCircuit* circuit = 
+	      (AliMUONTriggerCircuit*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
+	  
+	  y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+	  stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+	  y21 = circuit->GetY21Pos(stripX21);       
+	  x11 = circuit->GetX11Pos(locTrg->LoStripY());
+	  
+	  AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),
+			   locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
+	  
+	  Float_t thetax = TMath::ATan2( x11 , z11 );
+	  Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
+	  
+	  fTriggerTrack->SetX11(x11);
+	  fTriggerTrack->SetY11(y11);
+	  fTriggerTrack->SetThetax(thetax);
+	  fTriggerTrack->SetThetay(thetay);
+	  fTriggerTrack->SetGTPattern(gloTrigPat);
+	  fTriggerTrack->SetLoTrgNum(i);
+	  
+	  fMUONData->AddRecTriggerTrack(*fTriggerTrack);
+      } // board is fired 
   } // end of loop on Local Trigger
   
   return kTRUE;    
