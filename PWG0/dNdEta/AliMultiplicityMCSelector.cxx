@@ -23,6 +23,9 @@
 #include "AliPWG0Helper.h"
 #include "dNdEta/AliMultiplicityCorrection.h"
 
+//#define TPCMEASUREMENT
+#define ITSMEASUREMENT
+
 ClassImp(AliMultiplicityMCSelector)
 
 AliMultiplicityMCSelector::AliMultiplicityMCSelector() :
@@ -95,7 +98,9 @@ void AliMultiplicityMCSelector::Init(TTree* tree)
     tree->SetBranchStatus("fSPDVertex*", 1);
     tree->SetBranchStatus("fSPDMult*", 1);
 
-    //AliESDtrackCuts::EnableNeededBranches(tree);
+    #ifdef TPCMEASUREMENT
+      AliESDtrackCuts::EnableNeededBranches(tree);
+    #endif
   }
 }
 
@@ -149,11 +154,8 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
-  if (AliPWG0Helper::IsEventTriggered(fESD) == kFALSE)
-    return kTRUE;
-
-  if (AliPWG0Helper::IsVertexReconstructed(fESD) == kFALSE)
-    return kTRUE;
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
+  Bool_t eventVertex = AliPWG0Helper::IsVertexReconstructed(fESD);
 
   // get the ESD vertex
   const AliESDVertex* vtxESD = fESD->GetVertex();
@@ -220,13 +222,17 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   }// end of mc particle
 
   // FAKE: put back vtxMC[2]
-  fMultiplicity->FillGenerated(vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll);
+  fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll);
+
+  if (!eventTriggered || !eventVertex)
+    return kTRUE;
 
   Int_t nESDTracks05 = 0;
   Int_t nESDTracks10 = 0;
   Int_t nESDTracks15 = 0;
   Int_t nESDTracks20 = 0;
 
+#ifdef ITSMEASUREMENT
   // get multiplicity from ITS tracklets
   for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
   {
@@ -251,9 +257,11 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     if (TMath::Abs(eta) < 2.0)
       nESDTracks20++;
   }
+#endif
 
+#ifdef TPCMEASUREMENT
   // get multiplicity from ESD tracks
-  /*TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+  TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
   Int_t nGoodTracks = list->GetEntries();
   // loop over esd tracks
   for (Int_t i=0; i<nGoodTracks; i++)
@@ -273,8 +281,8 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
     Float_t pt = vector.Pt();
 
-    if (pt < kPtCut)
-      continue;
+    //if (pt < kPtCut)
+    //  continue;
 
     if (TMath::Abs(eta) < 0.5)
       nESDTracks05++;
@@ -287,7 +295,8 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
     if (TMath::Abs(eta) < 2.0)
       nESDTracks20++;
-  }*/
+  }
+#endif
 
   fMultiplicity->FillMeasured(vtxMC[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
