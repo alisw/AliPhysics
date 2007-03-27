@@ -1122,87 +1122,87 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   //
   // Digital noise
   //
-  if (max-median>30.*TMath::Max(1.,Double_t(rms06)) &&  (((*fDebugStreamer)<<"SignalDN").GetSize()<kMaxDebugSize)){    
-    //
-    //
-    TGraph * graph =new TGraph(nchannels, dtime, dsignal);
-    //
-    //
-    // jumps left - right
-    Int_t    njumps0=0;
-    Double_t deltaT0[2000];
-    Double_t deltaA0[2000];
-    Int_t    lastJump0 = fRecoParam->GetFirstBin();
-    Int_t    njumps1=0;
-    Double_t deltaT1[2000];
-    Double_t deltaA1[2000];
-    Int_t    lastJump1 = fRecoParam->GetFirstBin();
-    Int_t    njumps2=0;
-    Double_t deltaT2[2000];
-    Double_t deltaA2[2000];
-    Int_t    lastJump2 = fRecoParam->GetFirstBin();
+ //  if (max-median>30.*TMath::Max(1.,Double_t(rms06)) &&  (((*fDebugStreamer)<<"SignalDN").GetSize()<kMaxDebugSize)){    
+//     //
+//     //
+//     TGraph * graph =new TGraph(nchannels, dtime, dsignal);
+//     //
+//     //
+//     // jumps left - right
+//     Int_t    njumps0=0;
+//     Double_t deltaT0[2000];
+//     Double_t deltaA0[2000];
+//     Int_t    lastJump0 = fRecoParam->GetFirstBin();
+//     Int_t    njumps1=0;
+//     Double_t deltaT1[2000];
+//     Double_t deltaA1[2000];
+//     Int_t    lastJump1 = fRecoParam->GetFirstBin();
+//     Int_t    njumps2=0;
+//     Double_t deltaT2[2000];
+//     Double_t deltaA2[2000];
+//     Int_t    lastJump2 = fRecoParam->GetFirstBin();
 
-    for (Int_t itime=fRecoParam->GetFirstBin()+1; itime<fRecoParam->GetLastBin()-1; itime++){
-      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06))  && 
-	  TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06))  &&
-	  (dsignal[itime-1]-median<5.*rms06) &&
-	  (dsignal[itime+1]-median<5.*rms06) 	  
-	  ){
-	deltaA0[njumps0] = dsignal[itime]-dsignal[itime-1];
-	deltaT0[njumps0] = itime-lastJump0;
-	lastJump0 = itime;
-	njumps0++;
-      }
-      if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06)) &&
-	  (dsignal[itime-1]-median<5.*rms06) 
-	  ) {
-	deltaA1[njumps1] = dsignal[itime]-dsignal[itime-1];
-	deltaT1[njumps1] = itime-lastJump1;
-	lastJump1 = itime;
-	njumps1++;
-      }
-      if (TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06)) &&
-	  (dsignal[itime+1]-median<5.*rms06) 
-	  ) {
-	deltaA2[njumps2] = dsignal[itime]-dsignal[itime+1];
-	deltaT2[njumps2] = itime-lastJump2;
-	lastJump2 = itime;
-	njumps2++;
-      }
-    }
-    //
-    if (njumps0>0 || njumps1>0 || njumps2>0){
-      TGraph *graphDN0 = new TGraph(njumps0, deltaT0, deltaA0);
-      TGraph *graphDN1 = new TGraph(njumps1, deltaT1, deltaA1);
-      TGraph *graphDN2 = new TGraph(njumps2, deltaT2, deltaA2);
-      (*fDebugStreamer)<<"SignalDN"<<    //digital - noise pads - or random sample of pads
-	"TimeStamp="<<fTimeStamp<<
-	"EventType="<<fEventType<<
-	"Sector="<<uid[0]<<
-	"Row="<<uid[1]<<
-	"Pad="<<uid[2]<<
-	"Graph="<<graph<<
-	"Max="<<max<<
-	"MaxPos="<<maxPos<<
-	"Graph.="<<graph<<  
-	"P0GraphDN0.="<<graphDN0<<
-	"P1GraphDN1.="<<graphDN1<<
-	"P2GraphDN2.="<<graphDN2<<
-	//
-	"Median="<<median<<
-	"Mean="<<mean<<
-	"RMS="<<rms<<      
-	"Mean06="<<mean06<<
-	"RMS06="<<rms06<<
-	"Mean09="<<mean09<<
-	"RMS09="<<rms09<<
-	"\n";
-      delete graphDN0;
-      delete graphDN1;
-      delete graphDN2;
-    }
-    delete graph;
-  }
+//     for (Int_t itime=fRecoParam->GetFirstBin()+1; itime<fRecoParam->GetLastBin()-1; itime++){
+//       if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06))  && 
+// 	  TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06))  &&
+// 	  (dsignal[itime-1]-median<5.*rms06) &&
+// 	  (dsignal[itime+1]-median<5.*rms06) 	  
+// 	  ){
+// 	deltaA0[njumps0] = dsignal[itime]-dsignal[itime-1];
+// 	deltaT0[njumps0] = itime-lastJump0;
+// 	lastJump0 = itime;
+// 	njumps0++;
+//       }
+//       if (TMath::Abs(dsignal[itime]-dsignal[itime-1])>30.*TMath::Max(1.,Double_t(rms06)) &&
+// 	  (dsignal[itime-1]-median<5.*rms06) 
+// 	  ) {
+// 	deltaA1[njumps1] = dsignal[itime]-dsignal[itime-1];
+// 	deltaT1[njumps1] = itime-lastJump1;
+// 	lastJump1 = itime;
+// 	njumps1++;
+//       }
+//       if (TMath::Abs(dsignal[itime]-dsignal[itime+1])>30.*TMath::Max(1.,Double_t(rms06)) &&
+// 	  (dsignal[itime+1]-median<5.*rms06) 
+// 	  ) {
+// 	deltaA2[njumps2] = dsignal[itime]-dsignal[itime+1];
+// 	deltaT2[njumps2] = itime-lastJump2;
+// 	lastJump2 = itime;
+// 	njumps2++;
+//       }
+//     }
+//     //
+//     if (njumps0>0 || njumps1>0 || njumps2>0){
+//       TGraph *graphDN0 = new TGraph(njumps0, deltaT0, deltaA0);
+//       TGraph *graphDN1 = new TGraph(njumps1, deltaT1, deltaA1);
+//       TGraph *graphDN2 = new TGraph(njumps2, deltaT2, deltaA2);
+//       (*fDebugStreamer)<<"SignalDN"<<    //digital - noise pads - or random sample of pads
+// 	"TimeStamp="<<fTimeStamp<<
+// 	"EventType="<<fEventType<<
+// 	"Sector="<<uid[0]<<
+// 	"Row="<<uid[1]<<
+// 	"Pad="<<uid[2]<<
+// 	"Graph="<<graph<<
+// 	"Max="<<max<<
+// 	"MaxPos="<<maxPos<<
+// 	"Graph.="<<graph<<  
+// 	"P0GraphDN0.="<<graphDN0<<
+// 	"P1GraphDN1.="<<graphDN1<<
+// 	"P2GraphDN2.="<<graphDN2<<
+// 	//
+// 	"Median="<<median<<
+// 	"Mean="<<mean<<
+// 	"RMS="<<rms<<      
+// 	"Mean06="<<mean06<<
+// 	"RMS06="<<rms06<<
+// 	"Mean09="<<mean09<<
+// 	"RMS09="<<rms09<<
+// 	"\n";
+//       delete graphDN0;
+//       delete graphDN1;
+//       delete graphDN2;
+//     }
+//     delete graph;
+//   }
 
   //
   // NOISE STUDY  Fourier transform
