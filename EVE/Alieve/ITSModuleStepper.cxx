@@ -166,11 +166,11 @@ void  ITSModuleStepper::Apply()
       mod->SetRnrSelf(kTRUE);
   
       if(mod->GetSubDetID() == 2)
-	mod->SetName(Form("SSD %d", fPosition));
+	mod->SetName(Form("SSD %d", idx));
       else if(mod->GetSubDetID() == 1)
-	mod->SetName(Form("SDD %d", fPosition));
+	mod->SetName(Form("SDD %d", idx));
       else
-	mod->SetName(Form("SPD %d", fPosition));
+	mod->SetName(Form("SPD %d", idx));
       mod->UpdateItems();
 
       fStepper->Step();
