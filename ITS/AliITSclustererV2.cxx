@@ -846,10 +846,6 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	    }
 	 */
 
-         c.SetSigmaY2(0.0030*0.0030);
-         c.SetSigmaZ2(0.0020*0.0020);
-         c.SetDetectorIndex(fNdet[fI]);
-
          Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();
          y/=q; z/=q;
 	 //
@@ -868,12 +864,11 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 
          y=-(-y+fYshift[fI]);
          z=  -z+fZshift[fI];
-         c.SetY(y);
-         c.SetZ(z);
-	 c.SetNy(maxj-minj+1);
-	 c.SetNz(maxi-mini+1);
-	 c.SetType(npeaks);
-         c.SetQ(q/12.7);  //to be consistent with the SSD charges
+
+         q/=12.7;  //this WAS consistent with SSD. To be reassessed 
+                   // 23-MAR-2007
+         Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
+         Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fI]};
 
          if (c.GetQ() < 20.) continue; //noise cluster
 	 
@@ -887,13 +882,13 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	     //lab[2]=(d->GetTracks())[2];
 	     //CheckLabels(lab);
 	     CheckLabels2(milab); 
-	     c.SetLabel(milab[0],0);
-	     c.SetLabel(milab[1],1);
-	     c.SetLabel(milab[2],2);
-	     c.SetLayer(fNlayer[fI]);
 	   }
 	 }
-         new (cl[ncl]) AliITSclusterV2(c); ncl++;
+         milab[3]=fNdet[fI];
+
+         AliITSclusterV2 *cc = new (cl[ncl]) AliITSclusterV2(milab,hit,info);
+         cc->SetType(npeaks); 
+         ncl++;
       }
     }
 }
