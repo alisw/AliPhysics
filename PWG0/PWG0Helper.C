@@ -128,9 +128,7 @@ void ProofEnableAliRoot(Int_t aliroot)
   
   switch (aliroot)
   {
-    case 1: location = "/home/alicecaf/ALICE/aliroot-v4-04-Release"; break;
-    case 2: location = "/home/alicecaf/ALICE/aliroot-head"; break;
-		case 11: location = "/data1/qfiete/aliroot-head"; target = "tgt_linuxx8664gcc"; break;
+    case 1: location = "/afs/cern.ch/alice/caf/sw/ALICE/v4-04-Release/slc4_ia32_gcc34/aliroot"; break;
     default: return;
   }
 
