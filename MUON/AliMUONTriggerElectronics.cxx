@@ -586,6 +586,8 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 	    fLocalTrigger->SetLoCircuit(icirc);
 	    fLocalTrigger->SetLoStripX(board->GetStripX11());
 	    fLocalTrigger->SetLoDev(board->GetDev());
+	    fLocalTrigger->SetLoSdev(board->GetSdev());
+	    fLocalTrigger->SetLoTrigY(board->GetTrigY());
 	    fLocalTrigger->SetLoStripY(board->GetStripY11());
           
 	    //             SAVE LUT OUTPUT 

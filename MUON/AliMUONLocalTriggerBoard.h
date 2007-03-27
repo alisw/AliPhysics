@@ -127,8 +127,14 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
                        /// Return MT1 Y position of the valid road
       virtual Int_t    GetStripY11() const {return fStripY11;}
 
-                       /// Return Deviation in [0;+30]
+                       /// Return Deviation 
       virtual Int_t    GetDev() const {return fDev;}
+
+                       /// Return Sign of Deviation 
+      virtual Int_t    GetSdev() const {return fMinDev[4];}
+      
+                       /// Return Sign of Deviation 
+      virtual Int_t    GetTrigY() const {return fTrigY;}
       
                        /// Set Crate name
       virtual void     SetCrate(TString crate) {fCrate = crate;}
@@ -166,8 +172,9 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       Int_t    fStripY11;         ///< MT1 Y position of the valid road
 
-      Int_t    fDev;              ///< Deviation in [0;+30]
-
+      Int_t    fDev;              ///< X deviation as in table 3-1 of Local Trigger Board PRR
+      Int_t    fTrigY;            ///< Trigger in Y
+      
       Int_t    fLutLpt[2];        ///< Low Pt cuts estimated from LUT
       Int_t    fLutHpt[2];        ///< High Pt cuts estimated from LUT
 

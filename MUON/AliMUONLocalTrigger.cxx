@@ -19,6 +19,7 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliLog.h"
 #include "AliMUONLocalStruct.h"
+#include <Riostream.h>
 
 /// \class AliMUONLocalTrigger
 /// Local Trigger algorithm data outputs
@@ -36,7 +37,9 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
     fLoCircuit(0),
     fLoStripX(0),
     fLoDev(0),
-    fLoStripY(0),
+    fLoSdev(1),
+    fLoTrigY(1),
+    fLoStripY(15),
     fLoLpt(0),
     fLoHpt(0),
     
@@ -60,6 +63,8 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
       fLoCircuit(theMUONLocalTrig.fLoCircuit),
       fLoStripX(theMUONLocalTrig.fLoStripX),
       fLoDev(theMUONLocalTrig.fLoDev),
+      fLoSdev(theMUONLocalTrig.fLoSdev),
+      fLoTrigY(theMUONLocalTrig.fLoTrigY),
       fLoStripY(theMUONLocalTrig.fLoStripY),
       fLoLpt(theMUONLocalTrig.fLoLpt),
       fLoHpt(theMUONLocalTrig.fLoHpt),
@@ -101,6 +106,8 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
   fLoCircuit = theMUONLocalTrig.fLoCircuit;
   fLoStripX  = theMUONLocalTrig.fLoStripX;         
   fLoDev     = theMUONLocalTrig.fLoDev;           
+  fLoSdev    = theMUONLocalTrig.fLoSdev;           
+  fLoTrigY   = theMUONLocalTrig.fLoTrigY;           
   fLoStripY  = theMUONLocalTrig.fLoStripY;           
   fLoLpt     = theMUONLocalTrig.fLoLpt;
   fLoHpt     = theMUONLocalTrig.fLoHpt;
@@ -143,10 +150,12 @@ void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& lo
   // set id'
   SetLoCircuit(loCircuit);
 
-  // set X, Y dev  
+  // set X, Y, dev, Sdev and TrigY
   SetLoStripX((Int_t)localStruct.GetXPos());
   SetLoStripY((Int_t)localStruct.GetYPos());
   SetLoDev((Int_t)localStruct.GetXDev());
+  SetLoSdev((Int_t)localStruct.GetSXDev());
+  SetLoTrigY((Int_t)localStruct.GetTriggerY());
  
   // set L(H)pt
   SetLoLpt(localStruct.GetLpt());

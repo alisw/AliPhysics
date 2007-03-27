@@ -63,8 +63,9 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
       fCrate(0),
       fTC(kTRUE),
       fStripX11(0),
-      fStripY11(0),
+      fStripY11(15),
       fDev(0),
+      fTrigY(1),
       fOutput(0),
       fLUT(0x0),
       fCoinc44(0)      
@@ -95,8 +96,9 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
       fCrate(0),
       fTC(kTRUE),
       fStripX11(0),
-      fStripY11(0),
+      fStripY11(15),
       fDev(0),
+      fTrigY(1),
       fOutput(0),
       fLUT(lut),
       fCoinc44(0)
@@ -140,7 +142,10 @@ void AliMUONLocalTriggerBoard::Reset()
 
    fOutput = 0;
    
-   fStripX11 = fStripY11 = fDev = 0;
+   fStripX11 = 0;
+   fStripY11 = 15;
+   fDev = 0;
+   fTrigY = 1;
 
    for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
 }
@@ -1075,6 +1080,7 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
       fDev      = deviation;
       fStripY11 = iStripY;
       fStripX11 = iStripX;
+      fTrigY    = fCoordY[4];
 
       Int_t sign = 0;
 
@@ -1082,13 +1088,13 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
       if ( !fMinDev[4] && !deviation ) sign= 0;
       if (  fMinDev[4] == 1 )          sign=+1;    
 
-      fDev *= sign; 
+      deviation *= sign; 
 
 //    calculate deviation in [0;+30]
-      fDev += 15;
+      deviation += 15;
 
 //    GET LUT OUTPUT FOR icirc/istripX1/deviation/istripY
-      fLUT->GetLutOutput(fNumber, fStripX11, fDev, fStripY11, fLutLpt, fLutHpt);
+      fLUT->GetLutOutput(fNumber, fStripX11, deviation, fStripY11, fLutLpt, fLutHpt);
    }  
 }
 

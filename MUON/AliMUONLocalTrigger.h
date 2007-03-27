@@ -31,6 +31,10 @@ class AliMUONLocalTrigger : public TObject {
   Int_t LoStripX() const {return fLoStripX;}   
         /// Return Deviation
   Int_t LoDev() const {return fLoDev;}
+        /// Return Sign of Deviation
+  Int_t LoSdev() const {return fLoSdev;}
+        /// Return Trig Y
+  Int_t LoTrigY() const {return fLoTrigY;}
         /// Return Y strip in MT11
   Int_t LoStripY() const {return fLoStripY;}
         /// Return Low pt
@@ -66,6 +70,10 @@ class AliMUONLocalTrigger : public TObject {
   void SetLoStripX(Int_t loStrX) {fLoStripX = loStrX;}   
            /// Set Deviation
   void SetLoDev(Int_t loDev)     {fLoDev = loDev;}
+             /// Set Sign of Deviation
+  void SetLoSdev(Int_t loSdev)   {fLoSdev = loSdev;}
+           /// Set Trig Y
+  void SetLoTrigY(Int_t loTrigY) {fLoTrigY = loTrigY;}
            /// Set Y strip in MT11
   void SetLoStripY(Int_t loStrY) {fLoStripY = loStrY;}
            /// Set Low pt
@@ -99,7 +107,9 @@ class AliMUONLocalTrigger : public TObject {
 private:
   Int_t fLoCircuit; ///< Circuit number 
   Int_t fLoStripX;  ///< X strip in MT11 
-  Int_t fLoDev;     ///< Deviation 
+  Int_t fLoDev;     ///< Deviation
+  Int_t fLoSdev;    ///< Sign of Deviation 
+  Int_t fLoTrigY;   ///< Trig Y
   Int_t fLoStripY;  ///< Y strip in MT11 
   Int_t fLoLpt;     ///< Low pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
   Int_t fLoHpt;     ///< High pt 0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
