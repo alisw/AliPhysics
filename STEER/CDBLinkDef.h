@@ -38,4 +38,8 @@
 #pragma link C++ class AliGRPPreprocessor;
 #pragma link C++ class AliGRPDCS;
 
+#pragma link C++ class AliDCSSensorArray;
+#pragma link C++ class AliDCSSensor;
+
+
 #endif
