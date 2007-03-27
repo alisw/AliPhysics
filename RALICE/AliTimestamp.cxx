@@ -914,7 +914,7 @@ void AliTimestamp::SetMJD(Int_t mjd,Int_t sec,Int_t ns,Int_t ps)
  Int_t limit=65442; // MJD of the latest possible TTimeStamp date/time
  
  Int_t date,time;
- if (mjd<epoch || (mjd>=limit && sec>=8047))
+ if (mjd<epoch || mjd>limit || (mjd==limit && sec>=8047))
  {
   Set(0,kFALSE,0,kFALSE);
   date=GetDate();
@@ -1724,6 +1724,9 @@ Double_t AliTimestamp::GetGAST()
 // The new expression for the equation of the equinoxes is based on a series
 // expansion and is the most accurate one known to date.
 // The components are documented on p.17 of the USNO Circular 179.
+//
+// The change (dpsi) in a star's ecliptic longitude is evaluated using
+// the formulas from the book "Astronomical Algorithms" by Jean Meeus.
 // 
 // Since GMST is based on the MJD, the TTimeStamp limitations
 // do not apply here.
@@ -1735,12 +1738,18 @@ Double_t AliTimestamp::GetGAST()
  Double_t days;    // Time difference in fractional Julian days w.r.t. the start of J2000.
  Double_t t;       // Time difference in fractional Julian centuries w.r.t. the start of J2000.
  Double_t epsilon; // Mean obliquity of the ecliptic
+ Double_t lsun;    // Mean longitude of the Sun
+ Double_t lmoon;   // Mean longitude of the Moon
  Double_t omega;   // Mean longitude of the Moon's mean ascending mode
  Double_t f;       // Mean argument of latitude of the moon
  Double_t d;       // Mean elongation of the Moon from the Sun
 
  days=GetJD()-2451545.0;
  t=days/36525.;
+
+ // Values in degrees
+ lsun=280.4665+36000.7698*t;
+ lmoon=218.3165+481267.8813*t;
 
  // Values in arcseconds
  epsilon=84381.406-46.836769*t-0.0001831*pow(t,2)+0.00200340*pow(t,3)
@@ -1750,17 +1759,18 @@ Double_t AliTimestamp::GetGAST()
  d=1072260.70369+1602961601.2090*t-6.3706*pow(t,2)+0.006593*pow(t,3)-0.00003169*pow(t,4);
 
  // Convert to radians
+ lsun=lsun*pi/180.;
+ lmoon=lmoon*pi/180.;
  epsilon=epsilon*pi/(180.*3600.);
  omega=omega*pi/(180.*3600.);
  f=f*pi/(180.*3600.);
  d=d*pi/(180.*3600.);
 
- Double_t dpsi; // Nutation in longitude in arcseconds
- Double_t beta=(125.04-0.052954*days)*pi/180.;
- Double_t gamma=(200.94+1.97130*days)*pi/180.;
- dpsi=-17.226*sin(beta)-1.296*sin(gamma);
+ // Change in ecliptic longitude (in arcseconds) due to nutation
+ Double_t dpsi=-17.2*sin(omega)-1.32*sin(2.*lsun)-0.23*sin(2.*lmoon)+0.21*sin(2.*omega);
 
- Double_t da; // Right ascension shift of the vernal equinox in arcseconds
+ // Right ascension shift of the vernal equinox (in arcseconds) due to nutation
+ Double_t da;
  da=dpsi*cos(epsilon)+0.00264096*sin(omega)+0.00006352*sin(2.*omega)
     +0.00001175*sin(2.*f-2.*d+3.*omega)+0.00001121*sin(2.*f-2.*d+omega)
     -0.00000455*sin(2.*f-2.*d+2.*omega)+0.00000202*sin(2.*f+3.*omega)+0.00000198*sin(2.*f+omega)
