@@ -55,47 +55,47 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDTracker::Recon(AliESD *pEsd,TObjArray *pCluAll,TObjArray *pNmean)
 {
-// Interface callback methode invoked by AliRecontruction::RunTracking() during tracking after TOF. It's done just once per event
+// Interface callback method invoked by AliRecontruction::RunTracking() during tracking after TOF. It's done just once per event
 // Arguments: pEsd - pointer to Event Summary Data class instance which contains a list of tracks
 //   Returns: error code, 0 if no errors   
   Int_t iNtracks=pEsd->GetNumberOfTracks();  AliDebugClass(1,Form("Start with %i tracks",iNtracks));
   
-  
   AliHMPIDRecon recon;                                                                       //instance of reconstruction class, nothing important in ctor
-  Float_t xRa,yRa;
+  Double_t xPc,yPc;
   for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){                                                        //ESD tracks loop
     AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                    //get next reconstructed track    
-    Int_t cham=IntTrkCha(pTrk,xRa,yRa);                                                          //get chamber intersected by thie track 
+    Int_t cham=IntTrkCha(pTrk,xPc,yPc);                                                          //get chamber intersected by this track 
     if(cham<0) continue;                                                                         //no intersection at all, go after next track
-    Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber   
-    recon.CkovAngle((Double_t)xRa,(Double_t)yRa,pTrk,(TClonesArray *)pCluAll->At(cham),nmean);                               //search for Cerenkov angle for this track
+    Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber
+    recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
+    recon.CkovAngle(pTrk,(TClonesArray *)pCluAll->At(cham),nmean);                               //search for Cerenkov angle of this track
   }                                                                                              //ESD tracks loop
   AliDebugClass(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;
 }//PropagateBack()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Float_t &xRa,Float_t &yRa)
+Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Double_t &xToPc,Double_t &yToPc)
 {
 // Static method to find intersection in between given track and HMPID chambers
 // Arguments: pTrk    - ESD track 
-//            xRa,yRa - track intersection with the middle of radiator, LORS
+//            xPc,yPc - track intersection with PC, LORS
 //   Returns: intersected chamber ID or -1
   
   AliHMPIDParam *pParam=AliHMPIDParam::Instance();
-  Float_t xPc=0,yPc=0,theta=0,phi=0;                                                            //track intersection point and angles, LORS  
-  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++){                                                                       //chambers loop
+  Float_t xRa=0,yRa=0,xPc=0,yPc=0,theta=0,phi=0;                                                //track intersection point and angles, LORS  
+  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++){                              //chambers loop
     Double_t p1[3],n1[3]; pParam->Norm(i,n1); pParam->Lors2Mars(i,0,0,p1,AliHMPIDParam::kRad);  //point & norm  for RAD
     Double_t p2[3],n2[3]; pParam->Norm(i,n2); pParam->Lors2Mars(i,0,0,p2,AliHMPIDParam::kPc);   //point & norm  for PC
       
     if(pTrk->Intersect(p1,n1,-GetBz())==kFALSE) continue;                                       //try to intersect track with the middle of radiator
     if(pTrk->Intersect(p2,n2,-GetBz())==kFALSE) continue;                                       //try to intersect track with PC
       
-    pParam->Mars2LorsVec(i,n1,theta,phi);                                                       //track angles
+    pParam->Mars2LorsVec(i,n1,theta,phi);                                                       //track angles at RAD
     pParam->Mars2Lors   (i,p1,xRa,yRa);                                                         //TRKxRAD position
     pParam->Mars2Lors   (i,p2,xPc,yPc);                                                         //TRKxPC position
-      
-    if(AliHMPIDDigit::IsInside(xPc,yPc)==kFALSE) continue;                                      //not in active area  
-    pTrk->SetHMPIDtrk      (xPc,yPc,theta,phi);                                                 //store track intersection info
+    xToPc=(Double_t)xPc;yToPc=(Double_t)yPc;                                                    //conversion float->double only
+    if(AliHMPIDDigit::IsInside(xPc,yPc,pParam->DistCut())==kFALSE) continue;             //not in active area  
+    pTrk->SetHMPIDtrk      (xRa,yRa,theta,phi);                                                 //store track intersection info
     pTrk->SetHMPIDcluIdx   (i,0);
     return i;
   }                                                                                             //chambers loop

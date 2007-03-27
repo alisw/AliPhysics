@@ -26,17 +26,21 @@ public :
     virtual ~AliHMPIDRecon()                                                          {}
 
   
-  void     CkovAngle    (Double_t xRa,Double_t yRa,AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean); //reconstructed Theta Cerenkov
-  Double_t FindPhotCkov (Double_t cluX,Double_t cluY                                        );     //find ckov angle for single photon candidate
-  Double_t FindPhotPhi  (Double_t cluX,Double_t cluY                                        );     //find phi angle for single photon candidate
+  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean             );     //reconstructed Theta Cerenkov
+  Bool_t   FindPhotCkov (Double_t cluX,Double_t cluY,Double_t &thetaCer,Double_t &phiCer    );     //find ckov angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
   Double_t FindRingArea (Double_t ckov                                                      )const;//estimated area of ring in cm^2
   Int_t    FlagPhot     (Double_t ckov                                                      );     //is photon ckov near most probable track ckov
   Double_t HoughResponse(                                                                   );     //most probable track ckov angle
-  void     Propagate    (const TVector3 &dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
+  void     Propagate    (const TVector3  dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
   void     Refract      (      TVector3 &dir,                    Double_t n1,    Double_t n2)const;//refract photon on the boundary
-  Double_t TracePhot    (Double_t x,Double_t y,Double_t ckovTh,Double_t ckovPh,TVector2 &pos)const;//trace photon created by track to PC 
-  void     SetTrack     (Double_t x,Double_t y,Double_t theta,Double_t phi                  ){fTrkDir.SetMagThetaPhi(1,theta,phi);  fTrkPos.Set(x,y);}//set track
+  TVector2 TracePhot    (Double_t ckovTh,Double_t ckovPh                                    )const;//trace photon created by track to PC 
+  TVector2 TraceForward (TVector3 dirCkov                                                   )const;//tracing forward a photon from (x,y) to PC
+  void     RecPhot      (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               );     //theta,phi cerenkov reconstructed
+  void     SetTrack     (Double_t xRad,Double_t yRad,Double_t theta,Double_t phi            )
+                                {fTrkDir.SetMagThetaPhi(1,theta,phi);  fTrkPos.Set(xRad,yRad);}    //set track parameter at RAD
+  void     SetImpPC     (Double_t xPc,Double_t yPc                                          )
+                                {fPc.Set(xPc,yPc);}                                                //set track impact to PC 
   Double_t SigLoc       (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to cathode segmetation
   Double_t SigGeom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknown photon origin
   Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
@@ -61,8 +65,9 @@ protected:
   Float_t fDTheta;                            // Step for sliding window
   Float_t fWindowWidth;                       // Hough width of sliding window
   
-  TVector3 fTrkDir;                           //track direction in LORS
-  TVector2 fTrkPos;                           //track positon in LORS at the middle of radiator
+  TVector3 fTrkDir;                           //track direction in LORS at RAD
+  TVector2 fTrkPos;                           //track positon in LORS at RAD
+  TVector2 fPc;                               //track position at PC
   ClassDef(AliHMPIDRecon,0)
 };
 

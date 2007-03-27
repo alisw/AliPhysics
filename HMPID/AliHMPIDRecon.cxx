@@ -21,21 +21,19 @@
 // for single chamber                                                   //
 //////////////////////////////////////////////////////////////////////////
 
-#include "AliHMPIDRecon.h"  //class header
+#include "AliHMPIDRecon.h"   //class header
+#include "AliHMPIDParam.h"   //CkovAngle()
 #include "AliHMPIDCluster.h" //CkovAngle()
-#include <TRotation.h>     //TracePhoton()
-#include <TH1D.h>          //HoughResponse()
-#include <TClonesArray.h>  //CkovAngle()
-#include <AliESDtrack.h>   //CkovAngle()
+#include <TRotation.h>       //TracePhot()
+#include <TH1D.h>            //HoughResponse()
+#include <TClonesArray.h>    //CkovAngle()
+#include <AliESDtrack.h>     //CkovAngle()
 
 const Double_t AliHMPIDRecon::fgkRadThick=1.5;
 const Double_t AliHMPIDRecon::fgkWinThick=0.5;
 const Double_t AliHMPIDRecon::fgkGapThick=8.0;
 const Double_t AliHMPIDRecon::fgkWinIdx  =1.5787;
 const Double_t AliHMPIDRecon::fgkGapIdx  =1.0005;
-
-Double_t xRad;
-Double_t yRad;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
@@ -56,94 +54,144 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CkovAngle(Double_t xRa,Double_t yRa,AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
+void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
 {
 // Pattern recognition method based on Hough transform
 // Arguments:   pTrk     - track for which Ckov angle is to be found
 //              pCluLst  - list of clusters for this chamber   
 //   Returns:            - track ckov angle, [rad], 
+    
+  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
   
-  if(pCluLst->GetEntries()>200) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
-  else                          fIsWEIGHT = kFALSE;
+  if(pCluLst->GetEntries()>pParam->MultCut()) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
+  else                                        fIsWEIGHT = kFALSE;
 
-  // Photon Flag:  Flag = 0 initial set; Flag = 1 good candidate (charge compatible with photon); Flag = 2 photon used for the ring;
-  Float_t xPc,yPc,th,ph;      pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  SetTrack(xPc,yPc,th,ph); //initialize this track            
+  Float_t xRa,yRa,th,ph;       
+  pTrk->GetHMPIDtrk(xRa,yRa,th,ph);        //initialize this track: th and ph angles at middle of RAD 
+  
+  ph+=TMath::Pi();                         // right XYZ local orientation
+  SetTrack(xRa,yRa,th,ph);
+  
   fRadNmean=nmean;
-
-  xRad=xRa;yRad=yRa;  
 
   Float_t dMin=999,mipX=-1,mipY=-1;Int_t chId=-1,mipId=-1,mipQ=-1;                                                                           
   fPhotCnt=0;                                                      
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
     chId=pClu->Ch();
-    if(pClu->Q()>100){                                                                        //charge compartible with MIP clusters      
-      Float_t dX=xPc-pClu->X(),dY=yPc-pClu->Y(),d =TMath::Sqrt(dX*dX+dY*dY);                  //distance between current cluster and intersection point
-      if( d < dMin) {mipId=iClu; dMin=d;mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();}//current cluster is closer, overwrite data for min cluster
-    }else{                                                                                    //charge compartible with photon cluster
-      fPhotCkov[fPhotCnt]=FindPhotCkov(pClu->X(),pClu->Y());                                  //find ckov angle for this  photon candidate
-      fPhotCnt++;         //increment counter of photon candidates
+    if(pClu->Q()>pParam->QCut()){                                                             //charge compartible with MIP clusters      
+      Float_t dX=fPc.X()-pClu->X(),dY=fPc.Y()-pClu->Y(),d =TMath::Sqrt(dX*dX+dY*dY);          //distance between current cluster and intersection point
+      if( d < dMin) {mipId=iClu; dMin=d;mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();} //current cluster is closer, overwrite data for min cluster
+    }else{                                                                                    //charge compatible with photon cluster
+      Double_t thetaCer,phiCer;
+      if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                  //find ckov angle for this  photon candidate
+        fPhotCkov[fPhotCnt]=thetaCer;                                                         //actual theta Cerenkov (in TRS)
+        fPhotPhi [fPhotCnt]=phiCer-TMath::Pi();                                               //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
+        fPhotCnt++;                                                                           //increment counter of photon candidates
+      }
     }
   }//clusters loop
-  Int_t iNacc=FlagPhot(HoughResponse());                                   //flag photons according to individual theta ckov with respect to most probable
+  Int_t iNacc=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
+  pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNacc);                                                    //store mip info 
 
-                 pTrk->SetHMPIDmip      (mipX,mipY,mipQ,iNacc);                 //store mip info 
-
-  if(mipId==-1) {pTrk->SetHMPIDsignal   (kMipQdcCut);  return;}                 //no clusters with QDC more the threshold at all
-  if(dMin>1)    {pTrk->SetHMPIDsignal   (kMipDistCut); return;}                 //closest cluster with enough charge is still too far from intersection
-                 pTrk->SetHMPIDcluIdx(chId,mipId); 
-  if(iNacc<1)    pTrk->SetHMPIDsignal(kNoPhotAccept);                         //no photon candidates is accepted  
-  else           pTrk->SetHMPIDsignal(FindRingCkov(pCluLst->GetEntries()));   //find best Theta ckov for ring i.e. track
+  if(mipId==-1)              {pTrk->SetHMPIDsignal(kMipQdcCut);  return;}                     //no clusters with QDC more the threshold at all
+  if(dMin>pParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                     //closest cluster with enough charge is still too far from intersection
+  pTrk->SetHMPIDcluIdx(chId,mipId);                                                           //set index of cluster
+  if(iNacc<1)    pTrk->SetHMPIDsignal(kNoPhotAccept);                                         //no photon candidates is accepted
+  else           pTrk->SetHMPIDsignal(FindRingCkov(pCluLst->GetEntries()));                   //find best Theta ckov for ring i.e. track
   
-                 pTrk->SetHMPIDchi2(fCkovSigma2);                              //error squared 
+  pTrk->SetHMPIDchi2(fCkovSigma2);                                                            //errors squared 
 
 }//ThetaCerenkov()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::FindPhotCkov(Double_t cluX,Double_t cluY)
+Bool_t AliHMPIDRecon::FindPhotCkov(Double_t cluX,Double_t cluY,Double_t &thetaCer,Double_t &phiCer)
 {
 // Finds Cerenkov angle  for this photon candidate
 // Arguments: cluX,cluY - position of cadidate's cluster  
-//   Returns: Cerenkov angle 
+// Returns: Cerenkov angle 
 
-  TVector2 pos(cluX,cluY); Double_t cluR=(pos-fTrkPos).Mod();  Double_t phi=FindPhotPhi(cluX,cluY);      
-  Double_t ckov1=0,ckov2=0.75;
-  const Double_t kTol=0.05; 
+  TVector3 dirCkov;
+  
+  Double_t zRad=-0.5*AliHMPIDRecon::fgkRadThick
+                    -AliHMPIDRecon::fgkWinThick
+                    -AliHMPIDRecon::fgkGapThick;                    //z position of middle of RAD
+
+  TVector3 rad(fTrkPos.X(),fTrkPos.Y(),zRad);                       //impact point at middle of RAD
+  TVector3  pc(cluX,cluY,0);                                        //mip at PC: z=0 @ PC
+  Double_t cluR = TMath::Sqrt((cluX-fTrkPos.X())*(cluX-fTrkPos.X())+
+                              (cluY-fTrkPos.Y())*(cluY-fTrkPos.Y()));//ref. distance impact RAD-CLUSTER   
+  Double_t phi=(pc-rad).Phi();                                      //phi of photon
+    
+  Double_t ckov1=0,ckov2=0.75+fTrkDir.Theta();                      //start to find theta cerenkov in DRS
+  const Double_t kTol=0.01; 
   Int_t iIterCnt = 0;
   while(1){
-    if(iIterCnt>=50) return -1;
+    if(iIterCnt>=50) return kFALSE;
     Double_t ckov=0.5*(ckov1+ckov2);
-    Double_t dist=cluR-TracePhot(xRad,yRad,ckov,phi,pos); iIterCnt++;   //get distance between trial point and cluster position
+    dirCkov.SetMagThetaPhi(1,ckov,phi);
+    TVector2 posC=TraceForward(dirCkov);                      //trace photon with actual angles
+    Double_t dist=cluR-(posC-fTrkPos).Mod();                  //get distance between trial point and cluster position
+    if(posC.X()==-999) dist = - 999;                          //total reflection problem
+    iIterCnt++;                                               //counter step
     if     (dist> kTol) ckov1=ckov;                           //cluster @ larger ckov 
     else if(dist<-kTol) ckov2=ckov;                           //cluster @ smaller ckov
-    else return ckov;                                         //precision achived
+    else{                                                     //precision achived: ckov in DRS found
+      dirCkov.SetMagThetaPhi(1,ckov,phi);                     //
+      RecPhot(dirCkov,thetaCer,phiCer);                       //find ckov (in TRS:the effective Cherenkov angle!)
+      return kTRUE;
+    }
   }
 }//FindPhotTheta()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::FindPhotPhi(Double_t cluX,Double_t cluY)
+TVector2 AliHMPIDRecon::TraceForward(TVector3 dirCkov)const
 {
-// Finds phi angle og photon candidate by considering the cluster's position  of this candudate w.r.t track position
-  
-//  Double_t emiss=0; 
-//  return fPhotPhi[fPhotCnt]=TMath::ATan2(cluY-fTrkPos.Y()-emiss*TMath::Tan(fTrkDir.Theta())*TMath::Sin(fTrkDir.Phi()),
-//                                         cluX-fTrkPos.X()-emiss*TMath::Tan(fTrkDir.Theta())*TMath::Cos(fTrkDir.Phi()));
-  return fPhotPhi[fPhotCnt]=TMath::ATan2(cluY-yRad,cluX-xRad)-(TMath::Pi()+fTrkDir.Phi());
+  //Trace forward a photon from (x,y) up to PC
+  // Arguments: dirCkov photon vector in LORS
+  //   Returns: pos of traced photon at PC
+  TVector2 pos(-999,-999);
+  if(dirCkov.Theta() > TMath::ASin(1./fRadNmean))  return pos;      //total refraction on WIN-GAP boundary
+  Double_t zRad=-0.5*AliHMPIDRecon::fgkRadThick
+                    -AliHMPIDRecon::fgkWinThick
+                    -AliHMPIDRecon::fgkGapThick;                    //z position of middle of RAD
+  TVector3  posCkov(fTrkPos.X(),fTrkPos.Y(),zRad);                  //RAD: photon position is track position @ middle of RAD 
+  Propagate(dirCkov,posCkov,-fgkWinThick-fgkGapThick);              //go to RAD-WIN boundary  
+  Refract  (dirCkov,         fRadNmean,fgkWinIdx    );              //RAD-WIN refraction
+  Propagate(dirCkov,posCkov,            -fgkGapThick);              //go to WIN-GAP boundary
+  Refract  (dirCkov,         fgkWinIdx,fgkGapIdx    );              //WIN-GAP refraction
+  Propagate(dirCkov,posCkov,                       0);              //go to PC
+  pos.Set(posCkov.X(),posCkov.Y());
+  return pos;
+}//TraceForward()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDRecon::RecPhot(TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer)
+{
+  //Theta Cerenkov reconstruction 
+  // Arguments: (x,y) of initial point in LORS, dirCkov photon vector in LORS
+  //   Returns: thetaCer theta cerenkov reconstructed
+//  TVector3 dirTrk;
+//  dirTrk.SetMagThetaPhi(1,fTrkDir.Theta(),fTrkDir.Phi());
+//  Double_t thetaCer = TMath::ACos(dirCkov*dirTrk);
+  TRotation mtheta;   mtheta.RotateY(- fTrkDir.Theta());
+  TRotation mphi;       mphi.RotateZ(- fTrkDir.Phi());
+  TRotation mrot=mtheta*mphi;
+  TVector3 dirCkovTRS;
+  dirCkovTRS=mrot*dirCkov;
+  phiCer  = dirCkovTRS.Phi();                                          //actual value of the phi of the photon
+  thetaCer= dirCkovTRS.Theta();                                        //actual value of thetaCerenkov of the photon
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
 {
 // Find area inside the cerenkov ring which lays inside PCs
-// Arguments: ckovThe - cernkov    
+// Arguments: ckovAng - cerenkov angle    
 //   Returns: area of the ring in cm^2 for given theta ckov
    
-  
-  TVector2 pos1,pos2;
-  
   const Int_t kN=100;
   Double_t area=0;
   for(Int_t i=0;i<kN;i++){
-    TracePhot(xRad,yRad,ckovAng,Double_t(TMath::TwoPi()*i    /kN),pos1);//trace this photon 
-    TracePhot(xRad,yRad,ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN),pos2);//trace this photon 
-    area+=(pos1-fTrkPos)*(pos2-fTrkPos);      
+    TVector2 pos1=TracePhot(ckovAng,Double_t(TMath::TwoPi()*i    /kN));//trace this photon 
+    TVector2 pos2=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon 
+    area+=(pos1-fTrkPos)*(pos2-fTrkPos);                               //add area of the triangle... 
   }
   return area;
 }//FindRingArea()
@@ -163,10 +211,10 @@ Double_t AliHMPIDRecon::FindRingCkov(Int_t)
   
   for(Int_t i=0;i<fPhotCnt;i++){//candidates loop
     if(fPhotFlag[i] == 2){
-      if(fPhotCkov[i]<=0) continue;//?????????????????Flag photos = 2 may imply CkovEta = 0?????????????? 
-      if(fPhotCkov[i]<ckovMin) ckovMin=fPhotCkov[i];  //find max and min Theta ckov from all candidates within probable window
+      if(fPhotCkov[i]<ckovMin) ckovMin=fPhotCkov[i];                         //find max and min Theta ckov from all candidates within probable window
       if(fPhotCkov[i]>ckovMax) ckovMax=fPhotCkov[i]; 
-      weightThetaCerenkov += fPhotCkov[i]*fPhotWei[i];   wei += fPhotWei[i];                 //collect weight as sum of all candidate weghts   
+      weightThetaCerenkov += fPhotCkov[i]*fPhotWei[i];
+      wei += fPhotWei[i];                                                    //collect weight as sum of all candidate weghts   
       
       sigma2 += 1./Sigma2(fPhotCkov[i],fPhotPhi[i]);
     }
@@ -185,6 +233,9 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov)
 // Arguments: ckov- value of most probable ckov angle for track as returned by HoughResponse()
 //   Returns: number of photon candidates happened to be inside the window
 
+// Photon Flag:  Flag = 0 initial set; 
+//               Flag = 1 good candidate (charge compatible with photon); 
+//               Flag = 2 photon used for the ring;
   
   Int_t steps = (Int_t)((ckov )/ fDTheta); //how many times we need to have fDTheta to fill the distance between 0  and thetaCkovHough
 
@@ -204,30 +255,22 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov)
   return iInsideCnt;
 }//FlagPhot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::TracePhot(Double_t x,Double_t y,Double_t ckovThe,Double_t ckovPhi,TVector2 &pos)const
+TVector2 AliHMPIDRecon::TracePhot(Double_t ckovThe,Double_t ckovPhi)const
 {
 // Trace a single Ckov photon from emission point somewhere in radiator up to photocathode taking into account ref indexes of materials it travereses
-// Arguments: ckovThe,ckovPhi- photon ckov angles, [rad]  (warning: not photon theta and phi)     
+// Arguments: ckovThe,ckovPhi- photon ckov angles in DRS, [rad]    
 //   Returns: distance between photon point on PC and track projection  
   TRotation mtheta;   mtheta.RotateY(fTrkDir.Theta());
   TRotation mphi;       mphi.RotateZ(fTrkDir.Phi());  
   TRotation mrot=mphi*mtheta;
-//  TVector3  posCkov(fTrkPos.X(),fTrkPos.Y(),-0.5*fgkRadThick-fgkWinThick-fgkGapThick);   //RAD: photon position is track position @ middle of RAD 
-  TVector3  posCkov(x,y,-0.5*fgkRadThick-fgkWinThick-fgkGapThick);                                                  //RAD: photon position is track position @ middle of RAD 
-  TVector3  dirCkov,dirCkovTors;   dirCkovTors.SetMagThetaPhi(1,ckovThe,ckovPhi);          //initially photon is directed according to requested ckov angle
-                                               dirCkov=mrot*dirCkovTors;                   //now we know photon direction in LORS
-//  dirCkov.SetPhi(ckovPhi);  
-  if(dirCkov.Theta() > TMath::ASin(1./fRadNmean)) return -999;//total refraction on WIN-GAP boundary
-  Propagate(dirCkov,posCkov,-fgkWinThick-fgkGapThick);                           //go to RAD-WIN boundary  
-  Refract  (dirCkov,         fRadNmean,fgkWinIdx    );              //RAD-WIN refraction
-  Propagate(dirCkov,posCkov,            -fgkGapThick);              //go to WIN-GAP boundary
-  Refract  (dirCkov,         fgkWinIdx,fgkGapIdx    );              //WIN-GAP refraction
-  Propagate(dirCkov,posCkov,                       0);   //go to PC
-  pos.Set(posCkov.X(),posCkov.Y());
-  return (pos-fTrkPos).Mod();
-}//TracePhoton()
+  TVector3  dirCkov,dirCkovTors;   
+
+  dirCkovTors.SetMagThetaPhi(1,ckovThe,ckovPhi);                    //initially photon is directed according to requested ckov angle
+  dirCkov=mrot*dirCkovTors;                                         //now we know photon direction in LORS
+  return TraceForward(dirCkov);
+}//TracePhot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::Propagate(const TVector3 &dir,TVector3 &pos,Double_t z)const
+void AliHMPIDRecon::Propagate(const TVector3 dir,TVector3 &pos,Double_t z)const
 {
 // Finds an intersection point between a line and XY plane shifted along Z.
 // Arguments:  dir,pos   - vector along the line and any point of the line

@@ -87,7 +87,7 @@ void SimHits(AliESD *pEsd, TClonesArray *pHits)
   
   AliHMPIDRecon rec;
   
-  Int_t hc=0; TVector2 pos;
+  Int_t hc=0; 
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
     Float_t xRa,yRa;
@@ -101,15 +101,10 @@ void SimHits(AliESD *pEsd, TClonesArray *pHits)
     rec.SetTrack(xRa,yRa,theta,phi); 
     
     if(!AliHMPIDDigit::IsInDead(xPc,yPc)) new((*pHits)[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,iTrk,xPc,yPc);                 //mip hit
-    /*
-    for(int i=0;i<4;i++) { 
-      Float_t x=gRandom->Rndm()*130;Float_t y=gRandom->Rndm()*126;
-      if(!AliHMPIDDigit::IsInDead(x,y)) new((*pHits)[hc++]) AliHMPIDHit(ch,7.5e-9,kFeedback,iTrk,x,y); //bkg hits 4 per track
-    }
-    */
     Int_t nPhots = (Int_t)(20.*TMath::Power(TMath::Sin(ckov),2)/TMath::Power(TMath::Sin(TMath::ACos(1./1.292)),2));
     for(int i=0;i<nPhots;i++){
-      rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi(),pos);
+      TVector2 pos;
+      pos=rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi());
       if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) new((*pHits)[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,iTrk,pos.X(),pos.Y());
     }                      //photon hits  
   }//tracks loop    
@@ -162,21 +157,16 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     Int_t ch=pTrk->GetHMPIDcluIdx();
     if(ch<0) continue; //this track does not hit HMPID
     ch/=1000000; 
-    Float_t th,ph,xPc,yPc; pTrk->GetHMPIDtrk(xPc,yPc,th,ph);  //get info on current track
-    pTxC[ch]->SetNextPoint(xPc,yPc);                          //add new intersection point
+    Float_t th,ph,xRad,yRad; pTrk->GetHMPIDtrk(xRad,yRad,th,ph);//get info on current track
+//    pTxC[ch]->SetNextPoint(xPc,yPc);                          //add new intersection point  TEMPORARLY DISABLED...no more available in ESD!
     
     Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
     if(ckov>0){
       Printf("theta %f phi %f ckov %f",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),ckov);
-      rec.SetTrack(xPc,yPc,th,ph+TMath::Pi());
-      TVector2 pos;
-       Double_t allGapz=rec.fgkWinThick+0.5*rec.fgkRadThick+rec.fgkGapThick;   //to semplify, the (x,y) are calculted from (xPc,yPc) back to radiator in straight line (Bz=0)
-      TVector3 dir(0,0,-1);TVector3 miprad(xPc,yPc,allGapz);
-      AliHMPIDRecon::Propagate(dir,miprad,0);
-      Double_t xRad=miprad.X();
-      Double_t yRad=miprad.Y();
-      for(int j=0;j<100;j++){ 
-        rec.TracePhot(xRad,yRad,ckov,j*0.0628,pos);
+      rec.SetTrack(xRad,yRad,th,ph+TMath::Pi());
+      for(Int_t j=0;j<100;j++){ 
+        TVector2 pos;
+        pos=rec.TracePhot(ckov,j*0.0628);
        if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) pRin[ch]->SetNextPoint(pos.X(),pos.Y());
       }      
     }

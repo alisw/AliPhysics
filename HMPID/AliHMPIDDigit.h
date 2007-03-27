@@ -36,7 +36,7 @@ public:
          void    AddTidOffset(Int_t offset                   )     {for (Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;  } //needed for merging
          Int_t   Ch          (                               )const{return A2C(fPad);                                                } //chamber number
   static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fSigmas;                                             } //is digit over threshold????
-  static Bool_t  IsInside    (Float_t x,Float_t y            )     {return x>0&&y>0&&x<SizeAllX()&&y<SizeAllY();                     } //is point inside chamber boundary?
+  static Bool_t  IsInside    (Float_t x,Float_t y,Float_t margin=0){return x>-margin&&y>-margin&&x<SizeAllX()+margin&&y<SizeAllY()+margin;} //is point inside chamber boundary?
          Float_t LorsX       (                               )const{return LorsX(A2P(fPad),A2X(fPad));                               } //center of the pad x, [cm]
   static Float_t LorsX       (Int_t pc,Int_t padx            )     {return (padx    +0.5)*SizePadX()+(pc  %2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
          Float_t LorsY       (                               )const{return LorsY(A2P(fPad),A2Y(fPad));                               } //center of the pad y, [cm]
