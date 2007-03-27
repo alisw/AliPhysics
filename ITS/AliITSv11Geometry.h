@@ -156,6 +156,14 @@ class AliITSv11Geometry : public TObject {
     static const Double_t fgkcm; // Convert cm to TGeom's cm.
     static const Double_t fgkDegree; //Convert degrees to TGeom's degrees
     static const Double_t fgkRadian; //To Radians
+    static const Double_t fgkgcm3;   // Density in g/cm^3
+    static const Double_t fgkCelsius; // Temperature in degrees Celcius
+    static const Double_t fgkPascal;  // Preasure in Pascal
+    static const Double_t fgkKPascal;  // Preasure in KPascal
+    static const Double_t fgkeV;  // Energy in eV
+    static const Double_t fgkKeV;  // Energy in KeV
+    static const Double_t fgkMeV;  // Energy in MeV
+    static const Double_t fgkGeV;  // Energy in GeV
 
   private:
     Double_t AngleForRoundedCorners0(Double_t dx,Double_t dy,

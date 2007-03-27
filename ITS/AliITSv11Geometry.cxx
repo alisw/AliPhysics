@@ -51,7 +51,14 @@ const Double_t AliITSv11Geometry::fgkmm = 0.10;
 const Double_t AliITSv11Geometry::fgkcm = 1.00;
 const Double_t AliITSv11Geometry::fgkDegree = 1.0;
 const Double_t AliITSv11Geometry::fgkRadian = 180./3.14159265358979323846;
-
+const Double_t AliITSv11Geometry::fgkgcm3 = 1.0; // assume default is g/cm^3
+const Double_t AliITSv11Geometry::fgkCelsius = 1.0; // Assume default is C
+const Double_t AliITSv11Geometry::fgkPascal  = 1.0E-3; // Assume kPascal
+const Double_t AliITSv11Geometry::fgkKPascal = 1.0;    // Asume kPascal
+const Double_t AliITSv11Geometry::fgkeV      = 1.0E-9; // GeV default
+const Double_t AliITSv11Geometry::fgkKeV     = 1.0e-6; // GeV default
+const Double_t AliITSv11Geometry::fgkMeV     = 1.0e-3; // GeV default
+const Double_t AliITSv11Geometry::fgkGeV     = 1.0;    // GeV default
 //______________________________________________________________________
 Double_t AliITSv11Geometry::Yfrom2Points(Double_t x0,Double_t y0,
                                          Double_t x1,Double_t y1,

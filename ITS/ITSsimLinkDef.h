@@ -26,8 +26,8 @@
 #pragma link C++ class  AliITSv11GeomCableFlat+;
 #pragma link C++ class  AliITSv11GeomCableRound+;
 #pragma link C++ class  AliITSv11Geometry+;
-//#pragma link C++ class  AliITSv11GeometrySupport+;
-//#pragma link C++ class  AliITSv11GeometrySPD+;
+#pragma link C++ class  AliITSv11GeometrySupport+;
+#pragma link C++ class  AliITSv11GeometrySPD+;
 #pragma link C++ class  AliITSv11GeometrySDD+;
 //#pragma link C++ class  AliITSv11GeometrySSD+;
 #pragma link C++ class  AliITShit+;

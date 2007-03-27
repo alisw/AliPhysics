@@ -25,6 +25,7 @@
 // General Root includes
 #include <TMath.h>
 // Root Geometry includes
+#include <AliLog.h>
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoPcon.h>
@@ -44,7 +45,7 @@ ClassImp(AliITSv11GeometrySupport)
 void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth){
     // Define the detail SPD support cone geometry.
     // Inputs:
-    //   none.
+    //   TGeo Volume  *moth  The mother volume to place this object.
     // Outputs:
     //  none.
     // Return:
@@ -56,7 +57,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth){
 void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     // Define the detail SPD Thermal Sheld geometry.
     // Inputs:
-    //   none.
+    //   TGeo Volume  *moth  The mother volume to place this object.
     // Outputs:
     //  none.
     // Return:
@@ -760,7 +761,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
 void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
     // Define the detail SDD support cone geometry.
     // Inputs:
-    //   none.
+    //   TGeo Volume  *moth  The mother volume to place this object.
     // Outputs:
     //  none.
     // Return:
@@ -1219,7 +1220,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
 void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     // Define the detail SSD support cone geometry.
     // Inputs:
-    //   none.
+    //   TGeo Volume  *moth  The mother volume to place this object.
     // Outputs:
     //  none.
     // Return:
@@ -2203,7 +2204,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     // Define the detail ITS cable support trays on both the RB24 and 
     // RB26 sides..
     // Inputs:
-    //   none.
+    //   TGeo Volume  *moth  The mother volume to place this object.
     // Outputs:
     //  none.
     // Return:

@@ -18,13 +18,25 @@ void Displayv11(const char* filename=""){
     TGeoMedium   *vacmed = new TGeoMedium("Vacume_med",1,vacmat);
     TGeoVolume *ALIC = mgr2->MakeBox("ALIC",vacmed,100.,100.,200.);
     mgr2->SetTopVolume(ALIC);
+    TGeoVolume *ITS = mgr2->MakeBox("ITSV",vacmed,99.,99.,199.);
+    ALIC->AddNode(ITS,1);
     //
+    /*
     AliITSv11 *its = new AliITSv11(0,3);
     its->SetDebug(ISetits(0,-1));
     its->GetSPDGeometry()->SetDebug(ISetits(0,-1));
     its->GetSupGeometry()->SetDebug(ISetits(0,-1));
     its->CreateMaterials();
     its->CreateGeometry();
+    */
+    AliITSv11GeometrySPD *gspd = new AliITSv11GeometrySPD();
+    //AliITSv11GeometrySDD *gsdd = new AliITSgeometrySDD();
+    //AliITSv11GeometrySupport *gsupp = new AliITSGeometrySupport();
+    //AliITSv11GeometrySSD *gssd = new AliITSGeometrySSD();
+    //
+    Int_t imat=1,imed=1;
+    gspd->CreateSPDCenteralMaterials(imed,imat);
+    gspd->SPDSector(ITS,mgr2);
     //
     mgr2->CloseGeometry();
     //
@@ -61,10 +73,28 @@ void Displayv11(const char* filename=""){
                    "Run EngineeringSupTrayRB24");
     bar->AddButton("Display SUP RB26 side","EngineeringSupRB26()",
                    "Run EngineeringSupRB26");
+    bar->AddButton("Save Geometry to File","ExportToFile()",
+                   "Run ExportToFile");
     bar->AddButton("Quit/Exit",".q","Exit");
     bar->Show();
     gROOT->SaveContext();
          //Displayit();
+}
+//----------------------------------------------------------------------
+void ExportToFile(){
+    // Quirry file name and write geometry to a root file.
+    // Inputs:
+    //    const char* filename output file with the display in it
+    // Outputs:
+    //    none.
+    // Retrurn:
+    //    none.
+    Char_t filename[100];
+
+    printf("Eneter File name:");
+    scanf("%s",filename);
+
+    gGeoManager->Export(filename);
 }
 //----------------------------------------------------------------------
 Int_t ISetits(Int_t t,Int_t v){
@@ -164,7 +194,7 @@ void Displayit(){
     if(view1){
         view1->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
         if(irr) cout <<"error="<<irr<<endl;
-        if(ISetits(4,-1)==0) view1->SetParralel();
+        if(ISetits(4,-1)==0) view1->SetParallel();
         else  view1->SetPerspective();
         view1->Front();
         if(ISetits(3,-1)!=0) view1->ShowAxis();
@@ -177,7 +207,7 @@ void Displayit(){
     if(view2){
         view2->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
         if(irr) cout <<"error="<<irr<<endl;
-        if(ISetits(4,-1)==0) view2->SetParralel();
+        if(ISetits(4,-1)==0) view2->SetParallel();
         else  view2->SetPerspective();
         view2->RotateView(60.,30.);
         if(ISetits(3,-1)!=0) view2->ShowAxis();
@@ -191,7 +221,7 @@ void Displayit(){
     if(view3){
         view3->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
         if(irr) cout <<"error="<<irr<<endl;
-        if(ISetits(4,-1)==0) view3->SetParralel();
+        if(ISetits(4,-1)==0) view3->SetParallel();
         else  view3->SetPerspective();
         view3->Top();
         if(ISetits(3,-1)!=0) view3->ShowAxis();
@@ -204,7 +234,7 @@ void Displayit(){
     if(view4){
         view4->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
         if(irr) cout <<"error="<<irr<<endl;
-        if(ISetits(4,-1)==0) view4->SetParralel();
+        if(ISetits(4,-1)==0) view4->SetParallel();
         else  view4->SetPerspective();
         view4->Side();
         if(ISetits(3,-1)!=0) view4->ShowAxis();
@@ -234,7 +264,8 @@ void EngineeringSPDLayer(){
     //
     node = ALIC->FindNode("ITSV_1");
     ITS = node->GetVolume();
-    node = ITS->FindNode("ITSSPDTempSPDMotherVolume_1");
+    node = ITS->FindNode("ITSSPDCarbonFiberSectorV_1");
+    //node = ITS->FindNode("ITSSPDTempSPDMotherVolume_1");
     SPDLay = node->GetVolume();
     //
     mgr2->SetNsegments(ISetits(1,-1));

@@ -30,7 +30,9 @@ SRCS = 	AliITS.cxx \
 		AliITSv11GeomCable.cxx \
 		AliITSv11GeomCableFlat.cxx \
 		AliITSv11GeomCableRound.cxx \
-		AliITSv11GeometrySDD.cxx
+		AliITSv11GeometrySDD.cxx \
+                AliITSv11GeometrySPD.cxx \
+                AliITSv11GeometrySupport.cxx 
 
 HDRS:=  $(SRCS:.cxx=.h)
 
