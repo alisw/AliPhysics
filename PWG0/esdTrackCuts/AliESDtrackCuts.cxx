@@ -21,7 +21,9 @@
 #include <AliESDtrack.h>
 #include <AliESD.h>
 #include <AliLog.h>
+
 #include <TTree.h>
+#include <TCanvas.h>
 #include <TDirectory.h>
 
 //____________________________________________________________________
@@ -236,13 +238,13 @@ AliESDtrackCuts::~AliESDtrackCuts()
     if (fhDXYNormalized[i])
       delete fhDXYNormalized[i];           
     if (fhDZNormalized[i])
-      delete fhDZNormalized[i];            
+      delete fhDZNormalized[i];
     if (fhDXYvsDZNormalized[i])
       delete fhDXYvsDZNormalized[i];       
     if (fhNSigmaToVertex[i])
       delete fhNSigmaToVertex[i];
   }
-  
+
   if (ffDTheoretical)
     delete ffDTheoretical;
 
@@ -460,7 +462,7 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       fhDXYvsDZ[i]           ->Add(entry->fhDXYvsDZ[i]          ); 
       					  			    
       fhDXYNormalized[i]     ->Add(entry->fhDXYNormalized[i]    ); 
-      fhDZNormalized[i]      ->Add(entry->fhDZNormalized[i]     ); 
+      fhDZNormalized[i]      ->Add(entry->fhDZNormalized[i]     );
       fhDXYvsDZNormalized[i] ->Add(entry->fhDXYvsDZNormalized[i]); 
       fhNSigmaToVertex[i]    ->Add(entry->fhNSigmaToVertex[i]); 
 
@@ -812,7 +814,10 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
    // 
 
    fHistogramsOn=kTRUE;
-
+   
+   Bool_t oldStatus = TH1::AddDirectoryStatus();
+   TH1::AddDirectory(kFALSE);
+   
    //###################################################################################
    // defining histograms
 
@@ -839,48 +844,48 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
 
-    fhNClustersITS[i]        = new TH1F(Form("nClustersITS%s",str),"",8,-0.5,7.5);
-    fhNClustersTPC[i]        = new TH1F(Form("nClustersTPC%s",str),"",165,-0.5,164.5);
+    fhNClustersITS[i]        = new TH1F(Form("nClustersITS%s",str)     ,"",8,-0.5,7.5);
+    fhNClustersTPC[i]        = new TH1F(Form("nClustersTPC%s",str)     ,"",165,-0.5,164.5);
     fhChi2PerClusterITS[i]   = new TH1F(Form("chi2PerClusterITS%s",str),"",500,0,10);
     fhChi2PerClusterTPC[i]   = new TH1F(Form("chi2PerClusterTPC%s",str),"",500,0,10);
 
-    fhC11[i]                 = new TH1F(Form("covMatrixDiagonal11%s",str),"",2000,0,20);
+    fhC11[i]                 = new  TH1F(Form("covMatrixDiagonal11%s",str),"",2000,0,20);
     fhC22[i]                 = new  TH1F(Form("covMatrixDiagonal22%s",str),"",2000,0,20);
     fhC33[i]                 = new  TH1F(Form("covMatrixDiagonal33%s",str),"",1000,0,1);
     fhC44[i]                 = new  TH1F(Form("covMatrixDiagonal44%s",str),"",1000,0,5);
     fhC55[i]                 = new  TH1F(Form("covMatrixDiagonal55%s",str),"",1000,0,5);
 
-    fhDXY[i]                 = new  TH1F(Form("dXY%s",str),"",500,-10,10);
-    fhDZ[i]                  = new  TH1F(Form("dZ%s",str),"",500,-10,10);
+    fhDXY[i]                 = new  TH1F(Form("dXY%s",str)    ,"",500,-10,10);
+    fhDZ[i]                  = new  TH1F(Form("dZ%s",str)     ,"",500,-10,10);
     fhDXYvsDZ[i]             = new  TH2F(Form("dXYvsDZ%s",str),"",200,-10,10,200,-10,10);
 
-    fhDXYNormalized[i]       = new  TH1F(Form("dXYNormalized%s",str),"",500,-10,10);
-    fhDZNormalized[i]        = new  TH1F(Form("dZNormalized%s",str),"",500,-10,10);
+    fhDXYNormalized[i]       = new  TH1F(Form("dXYNormalized%s",str)    ,"",500,-10,10);
+    fhDZNormalized[i]        = new  TH1F(Form("dZNormalized%s",str)     ,"",500,-10,10);
     fhDXYvsDZNormalized[i]   = new  TH2F(Form("dXYvsDZNormalized%s",str),"",200,-10,10,200,-10,10);
 
     fhNSigmaToVertex[i]         = new  TH1F(Form("nSigmaToVertex%s",str),"",500,0,50);
 
-    fhNClustersITS[i]->SetXTitle("n ITS clusters");
-    fhNClustersTPC[i]->SetXTitle("n TPC clusters");
-    fhChi2PerClusterITS[i]->SetXTitle("#Chi^{2} per ITS cluster");
-    fhChi2PerClusterTPC[i]->SetXTitle("#Chi^{2} per TPC cluster");
+    fhNClustersITS[i]->SetTitle("n ITS clusters");
+    fhNClustersTPC[i]->SetTitle("n TPC clusters");
+    fhChi2PerClusterITS[i]->SetTitle("#Chi^{2} per ITS cluster");
+    fhChi2PerClusterTPC[i]->SetTitle("#Chi^{2} per TPC cluster");
 
-    fhC11[i]->SetXTitle("cov 11 : #sigma_{y}^{2} [cm^{2}]");
-    fhC22[i]->SetXTitle("cov 22 : #sigma_{z}^{2} [cm^{2}]");
-    fhC33[i]->SetXTitle("cov 33 : #sigma_{sin(#phi)}^{2}");
-    fhC44[i]->SetXTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}");
-    fhC55[i]->SetXTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]");
+    fhC11[i]->SetTitle("cov 11 : #sigma_{y}^{2} [cm^{2}]");
+    fhC22[i]->SetTitle("cov 22 : #sigma_{z}^{2} [cm^{2}]");
+    fhC33[i]->SetTitle("cov 33 : #sigma_{sin(#phi)}^{2}");
+    fhC44[i]->SetTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}");
+    fhC55[i]->SetTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]");
 
-    fhDXY[i]->SetXTitle("transverse impact parameter");
-    fhDZ[i]->SetXTitle("longitudinal impact parameter");
-    fhDXYvsDZ[i]->SetXTitle("longitudinal impact parameter");
+    fhDXY[i]->SetTitle("transverse impact parameter");
+    fhDZ[i]->SetTitle("longitudinal impact parameter");
+    fhDXYvsDZ[i]->SetTitle("longitudinal impact parameter");
     fhDXYvsDZ[i]->SetYTitle("transverse impact parameter");
 
-    fhDXYNormalized[i]->SetXTitle("normalized trans impact par");
-    fhDZNormalized[i]->SetXTitle("normalized long impact par");
-    fhDXYvsDZNormalized[i]->SetXTitle("normalized long impact par"); 
+    fhDXYNormalized[i]->SetTitle("normalized trans impact par");
+    fhDZNormalized[i]->SetTitle("normalized long impact par");
+    fhDXYvsDZNormalized[i]->SetTitle("normalized long impact par");
     fhDXYvsDZNormalized[i]->SetYTitle("normalized trans impact par");
-    fhNSigmaToVertex[i]->SetXTitle("n #sigma to vertex");
+    fhNSigmaToVertex[i]->SetTitle("n #sigma to vertex");
 
     fhNClustersITS[i]->SetLineColor(color);   fhNClustersITS[i]->SetLineWidth(2);
     fhNClustersTPC[i]->SetLineColor(color);   fhNClustersTPC[i]->SetLineWidth(2);
@@ -904,32 +909,107 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
   // The number of sigmas to the vertex is per definition gaussian
   ffDTheoretical = new TF1("nSigmaToVertexTheoretical","([0]/2.506628274)*exp(-(x**2)/2)",0,50);
   ffDTheoretical->SetParameter(0,1);
-}
-
-
-
-//____________________________________________________________________
-void 
-AliESDtrackCuts::Print(const Option_t*) const {
-  //
-  // print method - still to be implemented
-  //
-
-  AliInfo("AliESDtrackCuts...");
-}
-
-
-//____________________________________________________________________
-void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
-  // 
-  // saves the histograms in a directory (dir)
-  // 
-
   
+  TH1::AddDirectory(oldStatus);
+}
+
+//____________________________________________________________________
+Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
+{
+  //
+  // loads the histograms from a file
+  // if dir is empty a directory with the name of this object is taken (like in SaveHistogram)
+  //
+
+  if (!dir)
+    dir = GetName();
+
+  if (!gDirectory->cd(dir))
+    return kFALSE;
+
+  ffDTheoretical = dynamic_cast<TF1*> (gDirectory->Get("nSigmaToVertexTheory"));
+
+  fhCutStatistics = dynamic_cast<TH1F*> (gDirectory->Get("cut_statistics"));
+  fhCutCorrelation = dynamic_cast<TH2F*> (gDirectory->Get("cut_correlation"));
+
+  Char_t str[5];
+  for (Int_t i=0; i<2; i++) {
+    if (i==0)
+    {
+      gDirectory->cd("before_cuts");
+      str[0] = 0;
+    }
+    else
+    {
+      gDirectory->cd("after_cuts");
+      sprintf(str,"_cut");
+    }
+
+    fhNClustersITS[i]      = dynamic_cast<TH1F*> (gDirectory->Get(Form("nClustersITS%s",str)     ));
+    fhNClustersTPC[i]      = dynamic_cast<TH1F*> (gDirectory->Get(Form("nClustersTPC%s",str)     ));
+    fhChi2PerClusterITS[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("chi2PerClusterITS%s",str)));
+    fhChi2PerClusterTPC[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("chi2PerClusterTPC%s",str)));
+
+    fhC11[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal11%s",str)));
+    fhC22[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal22%s",str)));
+    fhC33[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal33%s",str)));
+    fhC44[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal44%s",str)));
+    fhC55[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("covMatrixDiagonal55%s",str)));
+
+    fhDXY[i] =     dynamic_cast<TH1F*> (gDirectory->Get(Form("dXY%s",str)    ));
+    fhDZ[i] =      dynamic_cast<TH1F*> (gDirectory->Get(Form("dZ%s",str)     ));
+    fhDXYvsDZ[i] = dynamic_cast<TH2F*> (gDirectory->Get(Form("dXYvsDZ%s",str)));
+
+    fhDXYNormalized[i] =     dynamic_cast<TH1F*> (gDirectory->Get(Form("dXYNormalized%s",str)    ));
+    fhDZNormalized[i] =      dynamic_cast<TH1F*> (gDirectory->Get(Form("dZNormalized%s",str)     ));
+    fhDXYvsDZNormalized[i] = dynamic_cast<TH2F*> (gDirectory->Get(Form("dXYvsDZNormalized%s",str)));
+
+    fhNSigmaToVertex[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("nSigmaToVertex%s",str)));
+
+    // TODO only temporary
+    /*fhNClustersITS[i]->SetTitle("n ITS clusters");
+    fhNClustersTPC[i]->SetTitle("n TPC clusters");
+    fhChi2PerClusterITS[i]->SetTitle("#Chi^{2} per ITS cluster");
+    fhChi2PerClusterTPC[i]->SetTitle("#Chi^{2} per TPC cluster");
+
+    fhC11[i]->SetTitle("cov 11 : #sigma_{y}^{2} [cm^{2}]");
+    fhC22[i]->SetTitle("cov 22 : #sigma_{z}^{2} [cm^{2}]");
+    fhC33[i]->SetTitle("cov 33 : #sigma_{sin(#phi)}^{2}");
+    fhC44[i]->SetTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}");
+    fhC55[i]->SetTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]");
+
+    fhDXY[i]->SetTitle("transverse impact parameter");
+    fhDZ[i]->SetTitle("longitudinal impact parameter");
+    fhDXYvsDZ[i]->SetTitle("longitudinal impact parameter");
+    fhDXYvsDZ[i]->SetYTitle("transverse impact parameter");
+
+    fhDXYNormalized[i]->SetTitle("normalized trans impact par");
+    fhDZNormalized[i]->SetTitle("normalized long impact par");
+    fhDXYvsDZNormalized[i]->SetTitle("normalized long impact par");
+    fhDXYvsDZNormalized[i]->SetYTitle("normalized trans impact par");
+    fhNSigmaToVertex[i]->SetTitle("n #sigma to vertex");*/
+
+    gDirectory->cd("../");
+  }
+
+  gDirectory->cd("..");
+
+  return kTRUE;
+}
+
+//____________________________________________________________________
+void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
+  //
+  // saves the histograms in a directory (dir)
+  //
+
   if (!fHistogramsOn) {
     AliDebug(0, "Histograms not on - cannot save histograms!!!");
     return;
   }
+
+  if (!dir)
+    dir = GetName();
 
   gDirectory->mkdir(dir);
   gDirectory->cd(dir);
@@ -949,12 +1029,12 @@ void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
       gDirectory->cd("before_cuts");
     else
       gDirectory->cd("after_cuts");
-    
+
     fhNClustersITS[i]        ->Write();
     fhNClustersTPC[i]        ->Write();
     fhChi2PerClusterITS[i]   ->Write();
     fhChi2PerClusterTPC[i]   ->Write();
-    
+
     fhC11[i]                 ->Write();
     fhC22[i]                 ->Write();
     fhC33[i]                 ->Write();
@@ -964,7 +1044,7 @@ void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
     fhDXY[i]                 ->Write();
     fhDZ[i]                  ->Write();
     fhDXYvsDZ[i]             ->Write();
-    
+
     fhDXYNormalized[i]       ->Write();
     fhDZNormalized[i]        ->Write();
     fhDXYvsDZNormalized[i]   ->Write();
@@ -976,5 +1056,132 @@ void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
   gDirectory->cd("../");
 }
 
+//____________________________________________________________________
+void AliESDtrackCuts::DrawHistograms()
+{
+  // draws some histograms
 
+  TCanvas* canvas1 = new TCanvas(Form("%s_1", GetName()), "Track Quality Results1", 800, 800);
+  canvas1->Divide(2, 2);
+
+  canvas1->cd(1);
+  fhNClustersTPC[0]->SetStats(kFALSE);
+  fhNClustersTPC[0]->Draw();
+
+  canvas1->cd(2);
+  fhChi2PerClusterTPC[0]->SetStats(kFALSE);
+  fhChi2PerClusterTPC[0]->Draw();
+
+  canvas1->cd(3);
+  fhNSigmaToVertex[0]->SetStats(kFALSE);
+  fhNSigmaToVertex[0]->GetXaxis()->SetRangeUser(0, 10);
+  fhNSigmaToVertex[0]->Draw();
+
+  canvas1->SaveAs(Form("%s_%s.gif", GetName(), canvas1->GetName()));
+
+  TCanvas* canvas2 = new TCanvas(Form("%s_2", GetName()), "Track Quality Results2", 1200, 800);
+  canvas2->Divide(3, 2);
+
+  canvas2->cd(1);
+  fhC11[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhC11[0]->Draw();
+
+  canvas2->cd(2);
+  fhC22[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhC22[0]->Draw();
+
+  canvas2->cd(3);
+  fhC33[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhC33[0]->Draw();
+
+  canvas2->cd(4);
+  fhC44[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhC44[0]->Draw();
+
+  canvas2->cd(5);
+  fhC55[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhC55[0]->Draw();
+
+  canvas2->SaveAs(Form("%s_%s.gif", GetName(), canvas2->GetName()));
+
+  TCanvas* canvas3 = new TCanvas(Form("%s_3", GetName()), "Track Quality Results3", 1200, 800);
+  canvas3->Divide(3, 2);
+
+  canvas3->cd(1);
+  fhDXY[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhDXY[0]->Draw();
+
+  canvas3->cd(2);
+  fhDZ[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhDZ[0]->Draw();
+
+  canvas3->cd(3);
+  fhDXYvsDZ[0]->SetStats(kFALSE);
+  gPad->SetLogz();
+  gPad->SetRightMargin(0.15);
+  fhDXYvsDZ[0]->Draw("COLZ");
+
+  canvas3->cd(4);
+  fhDXYNormalized[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhDXYNormalized[0]->Draw();
+
+  canvas3->cd(5);
+  fhDZNormalized[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhDZNormalized[0]->Draw();
+
+  canvas3->cd(6);
+  fhDXYvsDZNormalized[0]->SetStats(kFALSE);
+  gPad->SetLogz();
+  gPad->SetRightMargin(0.15);
+  fhDXYvsDZNormalized[0]->Draw("COLZ");
+
+  canvas3->SaveAs(Form("%s_%s.gif", GetName(), canvas3->GetName()));
+
+  TCanvas* canvas4 = new TCanvas(Form("%s_4", GetName()), "Track Quality Results4", 800, 500);
+  canvas4->Divide(2, 1);
+
+  canvas4->cd(1);
+  fhCutStatistics->SetStats(kFALSE);
+  fhCutStatistics->LabelsOption("v");
+  gPad->SetBottomMargin(0.3);
+  fhCutStatistics->Draw();
+
+  canvas4->cd(2);
+  fhCutCorrelation->SetStats(kFALSE);
+  fhCutCorrelation->LabelsOption("v");
+  gPad->SetBottomMargin(0.3);
+  gPad->SetLeftMargin(0.3);
+  fhCutCorrelation->Draw("COLZ");
+
+  canvas4->SaveAs(Form("%s_%s.gif", GetName(), canvas4->GetName()));
+
+  /*canvas->cd(1);
+  fhDXYvsDZNormalized[0]->SetStats(kFALSE);
+  fhDXYvsDZNormalized[0]->DrawCopy("COLZ");
+
+  canvas->cd(2);
+  fhNClustersTPC[0]->SetStats(kFALSE);
+  fhNClustersTPC[0]->DrawCopy();
+
+  canvas->cd(3);
+  fhChi2PerClusterITS[0]->SetStats(kFALSE);
+  fhChi2PerClusterITS[0]->DrawCopy();
+  fhChi2PerClusterITS[1]->SetLineColor(2);
+  fhChi2PerClusterITS[1]->DrawCopy("SAME");
+
+  canvas->cd(4);
+  fhChi2PerClusterTPC[0]->SetStats(kFALSE);
+  fhChi2PerClusterTPC[0]->DrawCopy();
+  fhChi2PerClusterTPC[1]->SetLineColor(2);
+  fhChi2PerClusterTPC[1]->DrawCopy("SAME");*/
+}
 

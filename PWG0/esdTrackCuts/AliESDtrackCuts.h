@@ -79,16 +79,18 @@ public:
   //######################################################
   void SetHistogramsOn(Bool_t b=kFALSE) {fHistogramsOn = b;}
   void DefineHistograms(Int_t color=1);
-  void SaveHistograms(Char_t* dir="track_selection");
+  virtual Bool_t LoadHistograms(const Char_t* dir = 0);
+  void SaveHistograms(const Char_t* dir = 0);
+  void DrawHistograms();
 
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
   
-  virtual void Print(const Option_t* = "") const;
-
   static void EnableNeededBranches(TTree* tree);
 
   // void SaveQualityCuts(Char_t* file)
   // void LoadQualityCuts(Char_t* file)
+
+	TH1* GetDZNormalized(Int_t i) const { return fhDZNormalized[i]; }
 
 protected:
   void Init(); // sets everything to 0
@@ -100,7 +102,7 @@ protected:
   static const Char_t* fgkCutNames[kNCuts]; //! names of cuts (for internal use)
 
   Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
-  Int_t   fCutMinNClusterITS;         // min number of its clusters  
+  Int_t   fCutMinNClusterITS;         // min number of its clusters
 
   Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
   Float_t fCutMaxChi2PerClusterITS;   // max its fit chi2 per its cluster
@@ -114,7 +116,7 @@ protected:
   Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
   Bool_t  fCutRequireTPCRefit;        // require TPC refit
   Bool_t  fCutRequireITSRefit;        // require ITS refit
-  
+
   // track to vertex cut
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
   Bool_t  fCutSigmaToVertexRequired;  // cut track if sigma from track-to-vertex could not be calculated
@@ -151,7 +153,7 @@ protected:
   TH1F* fhDXYNormalized[2];           //->
   TH1F* fhDZNormalized[2];            //->
   TH2F* fhDXYvsDZNormalized[2];       //->
-  TH1F* fhNSigmaToVertex[2];          //->  
+  TH1F* fhNSigmaToVertex[2];          //->
 
   TF1*  ffDTheoretical;               //-> theoretical distance to vertex normalized (2d gauss)
 
