@@ -1444,7 +1444,12 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   //--------------------------------------------------------------------
   //This function finds the detector crossed by the track
   //--------------------------------------------------------------------
-  Double_t dphi=-(phi-fPhiOffset);
+  Double_t dphi;
+  if (fZOffset<0)            // old geometry
+    dphi = -(phi-fPhiOffset);
+  else                       // new geometry
+    dphi = phi-fPhiOffset;
+
   if      (dphi <  0) dphi += 2*TMath::Pi();
   else if (dphi >= 2*TMath::Pi()) dphi -= 2*TMath::Pi();
   Int_t np=Int_t(dphi*fNladders*0.5/TMath::Pi()+0.5);
