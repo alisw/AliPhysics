@@ -9,7 +9,7 @@ PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL $(SYSLIBS)
 
 ifeq (macosx,$(ALICE_TARGET))
 
-# On Mac OS X gcc we need GL
-ELIBS+=GL
+# On Mac OS X gcc we need GL and GLU
+ELIBS+=GL GLU
 ELIBSDIR+=/usr/X11R6/lib/
 endif
